@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { keyBy } from 'lodash';
 
 import { AccountId, ChainId } from '@renderer/domain/shared-kernel';
-import { BaseModal, Button, Checkbox, FootnoteText, SearchInput } from '@renderer/shared/ui';
+import { BaseModal, Button, Checkbox, FootnoteText, InputSearch } from '@renderer/shared/ui';
 import { useI18n } from '@renderer/app/providers';
 import { AccountDS } from '@renderer/shared/api/storage';
 import { useChains } from '@renderer/entities/network';
@@ -128,7 +128,7 @@ export const SelectShardModal = ({ isOpen, onClose, activeAccounts, accounts }: 
       headerClass="px-5 py-4"
       onClose={onClose}
     >
-      <SearchInput
+      <InputSearch
         value={query}
         placeholder={t('balances.searchPlaceholder')}
         wrapperClass="mb-4"

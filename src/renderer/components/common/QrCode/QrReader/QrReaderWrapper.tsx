@@ -2,8 +2,8 @@ import cn from 'classnames';
 import React, { useEffect, useState } from 'react';
 
 import { cnTw, ValidationErrors, secondsToMinutes } from '@renderer/shared/lib/utils';
-import { Shimmering, Button, CaptionText, FootnoteText, Select, SmallTitleText } from '@renderer/shared/ui';
-import { DropdownOption, DropdownResult } from '@renderer/shared/ui/Dropdowns/common/types';
+import { Shimmering, CaptionText, FootnoteText, Select, SmallTitleText, ButtonText } from '@renderer/shared/ui';
+import { DropdownOption, DropdownResult } from '@renderer/shared/ui/types';
 import { useI18n } from '@renderer/app/providers';
 import SignatureReaderError from './SignatureReaderError';
 import QrMultiframeSignatureReader from './QrMultiframeSignatureReader';
@@ -195,13 +195,9 @@ const QrReaderWrapper = ({ className, onResult, countdown, validationError, isMu
 
       <footer className="flex w-full justify-between items-center mt-auto h-[66px] px-5 mb-1 z-10">
         {onGoBack && (
-          <Button
-            variant="text"
-            className={cn('h-6.5 px-4', isCameraOn ? WhiteTextButtonStyle : '')}
-            onClick={onGoBack}
-          >
+          <ButtonText className={cn('h-6.5 px-4', isCameraOn ? WhiteTextButtonStyle : '')} onClick={onGoBack}>
             {t('operation.goBackButton')}
-          </Button>
+          </ButtonText>
         )}
 
         {progress && (

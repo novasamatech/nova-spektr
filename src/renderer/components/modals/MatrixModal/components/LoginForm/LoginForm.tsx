@@ -14,7 +14,7 @@ import {
   Input,
   InputHint,
   Loader,
-  PasswordInput,
+  InputPassword,
 } from '@renderer/shared/ui';
 import type { ComboboxOption } from '@renderer/shared/ui/types';
 
@@ -66,6 +66,7 @@ const LoginForm = () => {
     defaultValues: { homeserver: DEFAULT_HOMESERVER, username: '', password: '' },
   });
 
+  // @ts-ignore
   const homeserver = watch('homeserver');
 
   useEffect(() => {
@@ -199,7 +200,7 @@ const LoginForm = () => {
                 rules={{ required: true }}
                 render={({ field: { value, onChange } }) => (
                   <>
-                    <PasswordInput
+                    <InputPassword
                       label={t('settings.matrix.passwordLabel')}
                       placeholder={t('settings.matrix.passwordPlaceholder')}
                       wrapperClass="py-[11px]"
@@ -208,9 +209,7 @@ const LoginForm = () => {
                       value={value}
                       onChange={changeInputValue(onChange)}
                     />
-                    {invalidLogin && (
-                      <Alert title={t('settings.matrix.badCredentialsError')} variant="error" className="-mt-2" />
-                    )}
+                    {invalidLogin && <Alert title={t('settings.matrix.badCredentialsError')} variant="error" />}
                   </>
                 )}
               />
@@ -235,7 +234,8 @@ const LoginForm = () => {
 
       <div className="flex justify-between items-center pt-3">
         <Icon name="matrix" className="!w-[56px] text-[#00000066]" size={32} />
-        <Button type="submit" isLoading={inProgress} disabled={logInDisabled || inProgress}>
+
+        <Button type="submit" disabled={logInDisabled || inProgress}>
           {t('settings.matrix.logInButton')}
         </Button>
       </div>

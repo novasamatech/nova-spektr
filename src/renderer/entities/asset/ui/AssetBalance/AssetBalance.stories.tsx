@@ -1,12 +1,13 @@
-import { ComponentMeta, ComponentStory } from '@storybook/react';
+import type { Meta, StoryObj } from '@storybook/react';
 
+import { withVersion } from '@renderer/shared/lib/utils/storybook';
 import { AssetBalance } from './AssetBalance';
 
-export default {
-  title: 'Redesign/Token balance',
+const meta: Meta<typeof AssetBalance> = {
+  title: 'Design system/AssetBalance',
   component: AssetBalance,
-  parameters: { actions: { argTypesRegex: '^on.*' } },
-} as ComponentMeta<typeof AssetBalance>;
+  decorators: [withVersion('1.0.0')],
+};
 
 const assetDot = {
   assetId: 3,
@@ -17,11 +18,13 @@ const assetDot = {
   name: 'Polkadot',
 };
 
-const Template: ComponentStory<typeof AssetBalance> = (args) => <AssetBalance {...args} />;
+export default meta;
+type Story = StoryObj<typeof AssetBalance>;
 
-export const Default = Template.bind({});
-Default.args = {
-  asset: assetDot,
-  value: '10000000',
-  showIcon: true,
+export const Default: Story = {
+  args: {
+    asset: assetDot,
+    value: '10000000',
+    showIcon: true,
+  },
 };

@@ -2,7 +2,7 @@ import { BN, BN_ZERO } from '@polkadot/util';
 import { ApiPromise } from '@polkadot/api';
 import { PropsWithChildren, useState, useEffect } from 'react';
 
-import { Icon, Button, FootnoteText, CaptionText, InputHint } from '@renderer/shared/ui';
+import { Icon, Button, ButtonText, FootnoteText, CaptionText, InputHint } from '@renderer/shared/ui';
 import { useI18n } from '@renderer/app/providers';
 import { useToggle } from '@renderer/shared/lib/hooks';
 import { RewardsDestination } from '@renderer/entities/staking';
@@ -203,14 +203,9 @@ export const Confirmation = ({
         </div>
 
         <div className="flex justify-between items-center mt-7">
-          <Button variant="text" onClick={onGoBack}>
-            {t('staking.confirmation.backButton')}
-          </Button>
-          <Button
-            disabled={feeLoading || multisigTxExist}
-            prefixElement={<Icon name="polkadotvault" size={16} />}
-            onClick={onResult}
-          >
+          <ButtonText onClick={onGoBack}>{t('staking.confirmation.backButton')}</ButtonText>
+
+          <Button disabled={feeLoading || multisigTxExist} icon="polkadotvault" onClick={onResult}>
             {t('staking.confirmation.signButton')}
           </Button>
         </div>

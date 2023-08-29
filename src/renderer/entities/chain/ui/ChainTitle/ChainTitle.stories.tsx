@@ -1,17 +1,19 @@
-import { ComponentMeta, ComponentStory } from '@storybook/react';
+import type { Meta, StoryObj } from '@storybook/react';
 
+import { TEST_CHAIN_ID, withVersion } from '@renderer/shared/lib/utils';
 import { ChainTitle } from './ChainTitle';
-import { TEST_CHAIN_ID } from '@renderer/shared/lib/utils';
 
-export default {
-  title: 'Redesign/Chain',
+const meta: Meta<typeof ChainTitle> = {
+  title: 'Design system/Chain',
   component: ChainTitle,
-  parameters: { actions: { argTypesRegex: '^on.*' } },
-} as ComponentMeta<typeof ChainTitle>;
+  decorators: [withVersion('1.0.0')],
+};
 
-const Template: ComponentStory<typeof ChainTitle> = (args) => <ChainTitle {...args} />;
+export default meta;
+type Story = StoryObj<typeof ChainTitle>;
 
-export const Primary = Template.bind({});
-Primary.args = {
-  chainId: TEST_CHAIN_ID,
+export const Playground: Story = {
+  args: {
+    chainId: TEST_CHAIN_ID,
+  },
 };

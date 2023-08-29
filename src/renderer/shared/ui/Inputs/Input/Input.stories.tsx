@@ -1,49 +1,54 @@
-import { ComponentMeta, ComponentStory } from '@storybook/react';
+import type { Meta, StoryObj } from '@storybook/react';
 
+import { withVersion } from '@renderer/shared/lib/utils/storybook';
 import { Input } from './Input';
 import { Icon } from '../../Icon/Icon';
 
-export default {
-  title: 'ui/Input',
+const meta: Meta<typeof Input> = {
+  title: 'Design system/Inputs/Input',
   component: Input,
-  parameters: { actions: { argTypesRegex: '^on.*' } },
-} as ComponentMeta<typeof Input>;
-
-const Template: ComponentStory<typeof Input> = (args) => <Input {...args} />;
-
-export const Primary = Template.bind({});
-Primary.args = {
-  placeholder: 'Test input',
+  decorators: [withVersion('1.0.0')],
 };
 
-export const Filled = Template.bind({});
-Filled.args = {
-  value: 'This is value',
+export default meta;
+type Story = StoryObj<typeof Input>;
+
+const UiOptions: Story['argTypes'] = {
+  className: { control: false },
+  wrapperClass: { control: false },
+  prefixElement: { control: false },
+  suffixElement: { control: false },
 };
 
-export const Label = Template.bind({});
-Label.args = {
-  label: 'With label',
-  value: 'This is value',
+export const Playground: Story = {
+  args: {
+    placeholder: 'Test input',
+  },
+  argTypes: UiOptions,
 };
 
-export const Invalid = Template.bind({});
-Invalid.args = {
-  label: 'With invalid',
-  value: 'This is value',
-  invalid: true,
+export const Label: Story = {
+  render: () => <Input label="With label" value="This is value" />,
 };
 
-export const Disabled = Template.bind({});
-Disabled.args = {
-  label: 'With disabled label',
-  value: 'This is value',
-  disabled: true,
+export const Disabled: Story = {
+  render: () => <Input value="This is value" disabled />,
 };
 
-export const Suffix = Template.bind({});
-Suffix.args = {
-  label: 'With suffix element',
-  value: 'This is value',
-  suffixElement: <Icon name="status-warning" className="text-alert right-2 top-[9px] absolute" size={16} />,
+export const Prefix: Story = {
+  render: () => (
+    <Input
+      value="This is value"
+      prefixElement={<Icon name="status-success" className="text-alert right-2 absolute" size={16} />}
+    />
+  ),
+};
+
+export const Suffix: Story = {
+  render: () => (
+    <Input
+      value="This is value"
+      suffixElement={<Icon name="status-warning" className="text-alert right-2 absolute" size={16} />}
+    />
+  ),
 };

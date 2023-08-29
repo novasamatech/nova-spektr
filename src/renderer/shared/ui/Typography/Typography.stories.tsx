@@ -1,58 +1,53 @@
-import { ComponentMeta, ComponentStory } from '@storybook/react';
+import type { Meta, StoryObj } from '@storybook/react';
 
+import { withVersion } from '@renderer/shared/lib/utils/storybook';
 import { TextBase } from './common/TextBase';
 import * as Typography from './index';
 
-export default {
-  title: 'ui/Typography',
+const meta: Meta<typeof TextBase> = {
+  title: 'Design system/Typography',
   component: TextBase,
-  parameters: { actions: { argTypesRegex: '^on.*' } },
-} as ComponentMeta<typeof TextBase>;
-
-const TitleTemplate: ComponentStory<typeof TextBase> = (args) => <Typography.TitleText {...args} />;
-export const Headline_Title = TitleTemplate.bind({});
-Headline_Title.args = {
-  children: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et ',
+  decorators: [withVersion('1.0.0')],
 };
 
-const LargeTitleTemplate: ComponentStory<typeof TextBase> = (args) => <Typography.LargeTitleText {...args} />;
-export const Headline_LargeTitle = LargeTitleTemplate.bind({});
-Headline_LargeTitle.args = {
-  children: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et ',
+export default meta;
+type TitleStory = StoryObj<typeof Typography.TitleText>;
+type LargeTitleStory = StoryObj<typeof Typography.LargeTitleText>;
+type MediumTitleStory = StoryObj<typeof Typography.MediumTitleText>;
+type SmallTitleStory = StoryObj<typeof Typography.SmallTitleText>;
+type CaptionStory = StoryObj<typeof Typography.CaptionText>;
+type BodyStory = StoryObj<typeof Typography.BodyText>;
+type FootnoteStory = StoryObj<typeof Typography.FootnoteText>;
+type HelpTextStory = StoryObj<typeof Typography.HelpText>;
+
+export const Headline_Title: TitleStory = {
+  render: () => <Typography.TitleText>This is a TitleText</Typography.TitleText>,
 };
 
-const MediumTitleTemplate: ComponentStory<typeof TextBase> = (args) => <Typography.MediumTitleText {...args} />;
-export const Headline_MediumTitle = MediumTitleTemplate.bind({});
-Headline_MediumTitle.args = {
-  children: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et ',
+export const Headline_LargeTitle: LargeTitleStory = {
+  render: () => <Typography.LargeTitleText>This is a LargeTitleText</Typography.LargeTitleText>,
 };
 
-const SmallTitleTemplate: ComponentStory<typeof TextBase> = (args) => <Typography.SmallTitleText {...args} />;
-export const Headline_SmallTitle = SmallTitleTemplate.bind({});
-Headline_SmallTitle.args = {
-  children: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et ',
+export const Headline_MediumTitle: MediumTitleStory = {
+  render: () => <Typography.MediumTitleText>This is a MediumTitleText</Typography.MediumTitleText>,
 };
 
-const CaptionTemplate: ComponentStory<typeof TextBase> = (args) => <Typography.CaptionText {...args} />;
-export const Body_Caption = CaptionTemplate.bind({});
-Body_Caption.args = {
-  children: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et ',
+export const Headline_SmallTitle: SmallTitleStory = {
+  render: () => <Typography.SmallTitleText>This is a SmallTitleText</Typography.SmallTitleText>,
 };
 
-const BodyTemplate: ComponentStory<typeof TextBase> = (args) => <Typography.BodyText {...args} />;
-export const Body_Body = BodyTemplate.bind({});
-Body_Body.args = {
-  children: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et ',
+export const Body_Caption: CaptionStory = {
+  render: () => <Typography.CaptionText>This is a CaptionText</Typography.CaptionText>,
 };
 
-const FootnoteTemplate: ComponentStory<typeof TextBase> = (args) => <Typography.FootnoteText {...args} />;
-export const Body_Footnote = FootnoteTemplate.bind({});
-Body_Footnote.args = {
-  children: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et ',
+export const Body_Body: BodyStory = {
+  render: () => <Typography.BodyText>This is a BodyText</Typography.BodyText>,
 };
 
-const HelpTextTemplate: ComponentStory<typeof TextBase> = (args) => <Typography.HelpText {...args} />;
-export const Body_Help = HelpTextTemplate.bind({});
-Body_Help.args = {
-  children: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et ',
+export const Body_Footnote: FootnoteStory = {
+  render: () => <Typography.FootnoteText>This is a FootnoteText</Typography.FootnoteText>,
+};
+
+export const Body_Help: HelpTextStory = {
+  render: () => <Typography.HelpText>This is a HelpText</Typography.HelpText>,
 };

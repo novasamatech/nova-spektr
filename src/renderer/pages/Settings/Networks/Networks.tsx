@@ -4,7 +4,7 @@ import { Trans } from 'react-i18next';
 import uniqBy from 'lodash/uniqBy';
 
 import { Paths, useConfirmContext, useI18n, useNetworkContext } from '@renderer/app/providers';
-import { BaseModal, BodyText, InfoLink, SearchInput } from '@renderer/shared/ui';
+import { BaseModal, BodyText, InfoLink, InputSearch } from '@renderer/shared/ui';
 import { useToggle } from '@renderer/shared/lib/hooks';
 import { ExtendedChain, useChains } from '@renderer/entities/network';
 import { DEFAULT_TRANSITION, includes } from '@renderer/shared/lib/utils';
@@ -234,7 +234,7 @@ export const Networks = () => {
         title={t('settings.networks.title')}
         onClose={closeNetworksModal}
       >
-        <SearchInput wrapperClass="mx-5" placeholder="Search" value={query} onChange={setQuery} />
+        <InputSearch wrapperClass="mx-5" placeholder="Search" value={query} onChange={setQuery} />
 
         <div className="flex flex-col gap-y-4 px-5 pb-4 pt-1 mt-5 h-[454px] overflow-y-auto">
           <NetworkList

@@ -15,9 +15,10 @@
   --icon-accent-default: #4649f6;
   --icon-accent-hover: #3e40d8;
   --icon-accent-active: #383ac5;
+  --icon-accent-disabled: #a6a8fb;
   --icon-positive-default: #01a63e;
-  --icon-warning-default: #f52163;
-  --icon-negative-default: #f68f07;
+  --icon-negative-default: #f52163;
+  --icon-warning-default: #f68f07;
 
   /* BUTTON */
   /* primary */
@@ -65,6 +66,6 @@
   --bg-transparent: rgba(54, 54, 67, 0.4);
 
   /* GRADIENT */
-  --gradient-shimmering-primary: linear-gradient(0deg, #f0f0f6 0%, #e1e1ec 50%, #f0f0f6 100%);
-  --gradient-border-primary: linear-gradient(90deg, #7a7a7a 0%, #f0f0f6 100%);
+  --gr-shimmering-primary: linear-gradient(0deg, #f0f0f6 0%, #e1e1ec 50%, #f0f0f6 100%);
+  --gr-border-primary: linear-gradient(90deg, #7a7a7a 0%, #f0f0f6 100%);
 }

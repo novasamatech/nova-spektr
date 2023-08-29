@@ -3,8 +3,8 @@ import { Fragment, PropsWithChildren, useState } from 'react';
 import cn from 'classnames';
 import { useNavigate } from 'react-router-dom';
 
-import { DropdownButton, SearchInput, SmallTitleText } from '@renderer/shared/ui';
-import { useI18n, Paths } from '@renderer/app/providers';
+import { ButtonDropdown, FootnoteText, Icon, InputSearch, SmallTitleText } from '@renderer/shared/ui';
+import { Paths, useI18n } from '@renderer/app/providers';
 import { WalletType } from '@renderer/domain/shared-kernel';
 import { useAccount } from '@renderer/entities/account';
 import WalletGroup from '@renderer/components/layout/PrimaryLayout/Wallets/WalletGroup';
@@ -13,10 +13,10 @@ import { ID, WalletDS } from '@renderer/shared/api/storage';
 import WatchOnly from '@renderer/pages/Onboarding/WatchOnly/WatchOnly';
 import Vault from '@renderer/pages/Onboarding/Vault/Vault';
 import { useToggle } from '@renderer/shared/lib/hooks';
-import { ButtonDropdownOption } from '@renderer/shared/ui/types';
 import { CreateMultisigAccount } from '@renderer/components/modals';
 import { isMultishardWalletItem } from '@renderer/components/layout/PrimaryLayout/Wallets/common/utils';
-import { DEFAULT_TRANSITION } from '@renderer/shared/lib/utils';
+import { cnTw, DEFAULT_TRANSITION } from '@renderer/shared/lib/utils';
+import { IconNames } from '@renderer/shared/ui/types';
 import {
   ChainsRecord,
   WalletGroupItem,
@@ -40,10 +40,10 @@ const WalletMenu = ({ children, chains, wallets }: PropsWithChildren<Props>) => 
 
   const groupedWallets = useGroupedWallets(wallets, chains, query);
 
-  const DropdownOptions: ButtonDropdownOption[] = [
-    { id: 'vault', title: t('wallets.addPolkadotVault'), onClick: toggleVaultModal, iconName: 'polkadotvault' },
-    { id: 'watch-only', title: t('wallets.addWatchOnly'), onClick: toggleWatchOnlyModal, iconName: 'watchonly' },
-    { id: 'multi', title: t('wallets.addMultisig'), onClick: toggleMultisigModalOpen, iconName: 'multisig' },
+  const DropdownOptions = [
+    { title: t('wallets.addPolkadotVault'), icon: 'polkadotvault', onClick: toggleVaultModal },
+    { title: t('wallets.addWatchOnly'), icon: 'watchonly', onClick: toggleWatchOnlyModal },
+    { title: t('wallets.addMultisig'), icon: 'multisig', onClick: toggleMultisigModalOpen },
   ];
 
   const getAllShardsIds = (wallet: MultishardWallet): ID[] => {
@@ -102,15 +102,27 @@ const WalletMenu = ({ children, chains, wallets }: PropsWithChildren<Props>) => 
               <section className={cn('relative w-[289px] bg-card-background')}>
                 <header className="px-5 py-3 flex items-center justify-between border-b border-divider">
                   <SmallTitleText>{t('wallets.title')}</SmallTitleText>
-                  <DropdownButton
-                    options={DropdownOptions}
-                    className="w-[134px] py-2 h-8.5"
-                    title={t('wallets.addButtonTitle')}
-                  />
+
+                  <ButtonDropdown className="w-[134px] py-2 h-8.5" title={t('wallets.addButtonTitle')}>
+                    {DropdownOptions.map(({ title, icon, onClick }) => (
+                      <ButtonDropdown.Item key={icon} className="flex items-center gap-x-1.5 p-2" onClick={onClick}>
+                        {(active) => (
+                          <>
+                            <Icon name={icon as IconNames} size={20} className="text-icon-accent" />
+                            <FootnoteText
+                              className={cnTw('text-text-secondary transition-colors', active && 'text-text-primary')}
+                            >
+                              {title}
+                            </FootnoteText>
+                          </>
+                        )}
+                      </ButtonDropdown.Item>
+                    ))}
+                  </ButtonDropdown>
                 </header>
 
                 <div className="p-2 border-b border-divider">
-                  <SearchInput value={query} placeholder={t('wallets.searchPlaceholder')} onChange={setQuery} />
+                  <InputSearch value={query} placeholder={t('wallets.searchPlaceholder')} onChange={setQuery} />
                 </div>
 
                 <ul className="flex flex-col divide-y divide-divider overflow-y-auto max-h-[530px]">

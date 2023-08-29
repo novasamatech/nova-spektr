@@ -1,18 +1,21 @@
-import { ComponentMeta, ComponentStory } from '@storybook/react';
+import type { Meta, StoryObj } from '@storybook/react';
 
+import { withVersion } from '@renderer/shared/lib/utils/storybook';
 import { ConfirmModal } from './ConfirmModal';
 
-export default {
-  title: 'ConfirmModal',
+const meta: Meta<typeof ConfirmModal> = {
+  title: 'Design system/ConfirmModal',
   component: ConfirmModal,
-  parameters: { actions: { argTypesRegex: '^on.*' } },
-} as ComponentMeta<typeof ConfirmModal>;
+  decorators: [withVersion('1.0.0')],
+};
 
-const Template: ComponentStory<typeof ConfirmModal> = (args) => <ConfirmModal {...args} />;
+export default meta;
+type Story = StoryObj<typeof ConfirmModal>;
 
-export const Primary = Template.bind({});
-Primary.args = {
-  isOpen: true,
-  children: <h2>Children content</h2>,
-  onClose: () => {},
+export const Playground: Story = {
+  args: {
+    isOpen: true,
+    children: <h2>Children content</h2>,
+    onClose: () => {},
+  },
 };

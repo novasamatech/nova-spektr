@@ -1,8 +1,16 @@
-export { Input, InputArea, InputFile, PasswordInput, AmountInput, SearchInput } from './Inputs';
+export {
+  Input,
+  InputArea,
+  InputFile,
+  InputPassword,
+  InputAmount,
+  InputSearch,
+  Select,
+  Combobox,
+  MultiSelect,
+} from './Inputs';
 
-export { Button, ButtonLink, IconButton } from './Buttons';
-
-export { Select, Combobox, MultiSelect, DropdownButton } from './Dropdowns';
+export { Button, ButtonLink, ButtonText, ButtonIcon, ButtonDropdown } from './Buttons';
 
 export { InfoPopover, MenuPopover, Popover, Tooltip } from './Popovers';
 

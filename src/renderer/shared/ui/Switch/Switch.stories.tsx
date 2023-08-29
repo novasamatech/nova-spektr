@@ -1,29 +1,26 @@
-import { ComponentStory, ComponentMeta } from '@storybook/react';
+import type { Meta, StoryObj } from '@storybook/react';
 
+import { withVersion } from '@renderer/shared/lib/utils';
 import { Switch } from './Switch';
 
-export default {
-  title: 'Switch',
+const meta: Meta<typeof Switch> = {
+  title: 'Design system/Switch',
   component: Switch,
-  parameters: { actions: { argTypesRegex: '^on.*' } },
-  decorators: [
-    (Story) => (
-      <div className="w-max">
-        <Story />
-      </div>
-    ),
-  ],
-} as ComponentMeta<typeof Switch>;
-
-const Template: ComponentStory<typeof Switch> = (args) => <Switch {...args} />;
-
-export const Primary = Template.bind({});
-Primary.args = {
-  children: 'Switch label',
+  decorators: [withVersion('1.0.0')],
 };
 
-export const Disabled = Template.bind({});
-Disabled.args = {
-  children: 'Switch label',
-  disabled: true,
+export default meta;
+type Story = StoryObj<typeof Switch>;
+
+export const Playground: Story = {
+  args: {
+    children: 'Switch label',
+  },
+};
+
+export const Disabled: Story = {
+  args: {
+    children: 'Switch label',
+    disabled: true,
+  },
 };

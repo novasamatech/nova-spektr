@@ -3,7 +3,7 @@ import { TFunction } from 'react-i18next';
 import { useForm, SubmitHandler, Controller } from 'react-hook-form';
 
 import { useI18n, useMatrix } from '@renderer/app/providers';
-import { Button, Input, InputHint, FootnoteText, InputFile, Tabs, Icon } from '@renderer/shared/ui';
+import { Button, InputHint, FootnoteText, InputFile, Tabs, Icon, Input } from '@renderer/shared/ui';
 import { TabItem } from '@renderer/shared/ui/Tabs/common/types';
 import SpektrLogo from '@images/misc/logo.svg';
 
@@ -99,6 +99,7 @@ const Verification = () => {
   };
 
   const textInput = (
+    // @ts-ignore
     <Controller
       name="secretKey"
       control={control}
@@ -117,6 +118,7 @@ const Verification = () => {
   );
 
   const fileInput = (
+    // @ts-ignore
     <Controller
       name="secretFile"
       control={control}
@@ -185,6 +187,7 @@ const Verification = () => {
 
           <div className="flex justify-between items-center pt-3 mt-2">
             <Icon name="matrix" className="!w-[56px] text-[#00000066]" size={32} />
+
             <Button type="submit" disabled={!isValid}>
               {t('settings.matrix.verifyButton')}
             </Button>

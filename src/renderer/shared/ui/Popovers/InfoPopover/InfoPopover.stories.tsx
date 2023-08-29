@@ -1,17 +1,43 @@
-import { ComponentMeta, ComponentStory } from '@storybook/react';
+import type { Meta, StoryObj } from '@storybook/react';
 
+import { withVersion } from '@renderer/shared/lib/utils/storybook';
 import { InfoPopover } from './InfoPopover';
-import { popoverItems } from './InfoPopover.test';
 
-export default {
-  title: 'ui/Info Popover',
+const meta: Meta<typeof InfoPopover> = {
+  title: 'Design system/InfoPopover',
   component: InfoPopover,
-  parameters: { actions: { argTypesRegex: '^on.*' } },
-} as ComponentMeta<typeof InfoPopover>;
+  decorators: [withVersion('1.0.0')],
+};
 
-const Template: ComponentStory<typeof InfoPopover> = (args) => <InfoPopover {...args} />;
-export const Primary = Template.bind({});
-Primary.args = {
-  data: popoverItems,
-  children: <button>click me</button>,
+export default meta;
+type Story = StoryObj<typeof InfoPopover>;
+
+const UiOptions: Story['argTypes'] = {
+  className: { control: false },
+  children: { control: false },
+  buttonClassName: { control: false },
+  position: { control: false },
+  offsetPx: { control: false },
+  containerClassName: { control: false },
+};
+
+export const Playground: Story = {
+  args: {
+    children: 'click me',
+    data: [
+      {
+        title: 'address',
+        items: [{ value: 'some text', id: '1' }],
+      },
+      { title: 'id', items: [{ value: 'item_value', id: '2' }] },
+      {
+        title: 'links',
+        items: [
+          { id: '3', value: <span>link_1</span> },
+          { id: '4', value: <span>link_2</span> },
+        ],
+      },
+    ],
+  },
+  argTypes: UiOptions,
 };

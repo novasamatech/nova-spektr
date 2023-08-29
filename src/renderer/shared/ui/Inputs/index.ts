@@ -1,6 +1,9 @@
 export { Input } from './Input/Input';
-export { PasswordInput } from './PasswordInput/PasswordInput';
+export { InputPassword } from './InputPassword/InputPassword';
 export { InputFile } from './InputFile/InputFile';
 export { InputArea } from './InputArea/InputArea';
-export { AmountInput } from './AmountInput/AmountInput';
-export { SearchInput } from './SearchInput/SearchInput';
+export { InputAmount } from './InputAmount/InputAmount';
+export { InputSearch } from './InputSearch/InputSearch';
+export { Combobox } from './Combobox/Combobox';
+export { MultiSelect } from './MultiSelect/MultiSelect';
+export { Select } from './Select/Select';

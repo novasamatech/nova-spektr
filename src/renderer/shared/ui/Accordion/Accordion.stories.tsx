@@ -1,22 +1,25 @@
-import { ComponentMeta, ComponentStory } from '@storybook/react';
+import type { Meta, StoryObj } from '@storybook/react';
 
+import { withVersion } from '@renderer/shared/lib/utils/storybook';
 import { Accordion } from './Accordion';
 
-export default {
-  title: 'Accordion',
+const meta: Meta<typeof Accordion> = {
+  title: 'Design system/Accordion',
   component: Accordion,
-  parameters: { actions: { argTypesRegex: '^on.*' } },
-} as ComponentMeta<typeof Accordion>;
+  decorators: [withVersion('1.0.0')],
+};
 
-const Template: ComponentStory<typeof Accordion> = (args) => <Accordion {...args} />;
+export default meta;
+type Story = StoryObj<typeof Accordion>;
 
-export const Primary = Template.bind({});
-Primary.args = {
-  isDefaultOpen: false,
-  children: (
-    <>
-      <Accordion.Button>Button</Accordion.Button>
-      <Accordion.Content>Hidden content</Accordion.Content>
-    </>
-  ),
+export const Playground: Story = {
+  args: {
+    isDefaultOpen: false,
+    children: (
+      <>
+        <Accordion.Button>Button</Accordion.Button>
+        <Accordion.Content>Hidden content</Accordion.Content>
+      </>
+    ),
+  },
 };

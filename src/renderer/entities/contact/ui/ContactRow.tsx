@@ -1,6 +1,6 @@
 import { PropsWithChildren } from 'react';
 
-import { BodyText, IconButton, Identicon, Plate, Truncate } from '@renderer/shared/ui';
+import { BodyText, ButtonIcon, Identicon, Plate, Truncate } from '@renderer/shared/ui';
 import { ContactDS } from '@renderer/shared/api/storage';
 import { copyToClipboard } from '@renderer/shared/lib/utils';
 
@@ -17,7 +17,7 @@ export const ContactRow = ({ contact, children }: PropsWithChildren<Props>) => {
           <BodyText className="truncate">{contact.name}</BodyText>
           <div className="flex items-center gap-1 text-text-tertiary">
             <Truncate className="text-help-text" ellipsis="..." start={4} end={4} text={contact.address} />
-            <IconButton name="copy" size={16} onClick={() => copyToClipboard(contact.address)} />
+            <ButtonIcon icon="copy" size="sm" onClick={() => copyToClipboard(contact.address)} />
           </div>
         </div>
       </div>

@@ -11,9 +11,10 @@ import {
   InfoPopover,
   FootnoteText,
   Button,
-  SearchInput,
+  InputSearch,
   SmallTitleText,
   Checkbox,
+  ButtonText,
 } from '@renderer/shared/ui';
 import { useI18n } from '@renderer/app/providers';
 import { Asset, AssetBalance } from '@renderer/entities/asset';
@@ -115,7 +116,7 @@ export const Validators = ({ api, chainId, asset, explorers, isLightClient, onGo
             {t('staking.validators.maxValidatorsLabel', { max: maxValidators })}
           </SmallTitleText>
         )}
-        <SearchInput
+        <InputSearch
           wrapperClass="w-[220px] ml-auto"
           placeholder={t('staking.validators.searchPlaceholder')}
           value={query}
@@ -182,9 +183,8 @@ export const Validators = ({ api, chainId, asset, explorers, isLightClient, onGo
       )}
 
       <div className="flex justify-between mt-7 px-5">
-        <Button variant="text" onClick={onGoBack}>
-          {t('staking.bond.backButton')}
-        </Button>
+        <ButtonText onClick={onGoBack}>{t('staking.bond.backButton')}</ButtonText>
+
         <Button disabled={nextStepDisabled} onClick={onCompleteValidators}>
           {selectedLength
             ? t('staking.validators.continueButton', { selected: selectedLength })

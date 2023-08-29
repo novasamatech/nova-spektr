@@ -1,6 +1,6 @@
 import { cnTw, copyToClipboard, toShortAddress } from '@renderer/shared/lib/utils';
 import { IconSize } from '@renderer/shared/ui/types';
-import { IconButton, Identicon, Truncate } from '@renderer/shared/ui';
+import { ButtonIcon, Identicon, Truncate } from '@renderer/shared/ui';
 import { AccountId, Address, SigningType } from '@renderer/domain/shared-kernel';
 import { getAddress } from '@renderer/entities/account';
 
@@ -58,9 +58,9 @@ export const AddressWithName = ({
       {canCopySubName ? (
         <div className="flex items-center gap-1">
           {addressContent}
-          <IconButton
-            name="copy"
-            size={16}
+          <ButtonIcon
+            icon="copy"
+            size="sm"
             className="text-text-tertiary p-0"
             onClick={() => copyToClipboard(currentAddress)}
           />

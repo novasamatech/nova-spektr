@@ -97,7 +97,7 @@ export const EditContactForm = ({ contactToEdit, onSubmit }: Props) => {
         </InputHint>
       </div>
 
-      <Button className="ml-auto" type="submit" disabled={!isValid || pending} isLoading={pending}>
+      <Button className="ml-auto" type="submit" disabled={!isValid || pending}>
         {t('addressBook.editContact.saveContactButton')}
       </Button>
     </form>

@@ -2,7 +2,7 @@ import cn from 'classnames';
 
 import { useI18n } from '@renderer/app/providers';
 import { MultisigAccount, AddressWithExplorers } from '@renderer/entities/account';
-import { Icon, Button, FootnoteText, DetailRow } from '@renderer/shared/ui';
+import { ButtonText, Icon, FootnoteText, DetailRow } from '@renderer/shared/ui';
 import { copyToClipboard, truncate, cnTw } from '@renderer/shared/lib/utils';
 import { useToggle } from '@renderer/shared/lib/hooks';
 import { ExtendedChain } from '@renderer/entities/network';
@@ -137,16 +137,14 @@ const Details = ({ tx, account, connection, isCardDetails = true }: Props) => {
       )}
 
       {isCardDetails && (
-        <Button
-          variant="text"
-          pallet="primary"
+        <ButtonText
           size="sm"
-          suffixElement={<Icon name={isAdvancedShown ? 'chevron-up' : 'chevron-down'} size={16} />}
+          icon={isAdvancedShown ? 'chevron-up' : 'chevron-down'}
           className="text-action-text-default hover:text-action-text-default w-fit -ml-2"
           onClick={toggleAdvanced}
         >
           {t('operation.advanced')}
-        </Button>
+        </ButtonText>
       )}
 
       {isAdvancedShown && (

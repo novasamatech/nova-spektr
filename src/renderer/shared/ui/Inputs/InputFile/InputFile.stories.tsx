@@ -1,28 +1,27 @@
-import { ComponentMeta, ComponentStory } from '@storybook/react';
+import type { Meta, StoryObj } from '@storybook/react';
 
+import { withVersion } from '@renderer/shared/lib/utils/storybook';
 import { InputFile } from './InputFile';
 
-export default {
-  title: 'InputFile',
+const meta: Meta<typeof InputFile> = {
+  title: 'Design system/Inputs/InputFile',
   component: InputFile,
-  parameters: { actions: { argTypesRegex: '^on.*' } },
-} as ComponentMeta<typeof InputFile>;
-
-const Template: ComponentStory<typeof InputFile> = (args) => <InputFile {...args} />;
-
-export const Primary = Template.bind({});
-Primary.args = {
-  placeholder: 'Upload file',
+  decorators: [withVersion('1.0.0')],
 };
 
-export const Invalid = Template.bind({});
-Invalid.args = {
-  placeholder: 'Upload file',
-  invalid: true,
+export default meta;
+type Story = StoryObj<typeof InputFile>;
+
+export const Playground: Story = {
+  args: {
+    placeholder: 'Upload file',
+  },
 };
 
-export const Disabled = Template.bind({});
-Disabled.args = {
-  placeholder: 'Upload file',
-  disabled: true,
+export const Disabled: Story = {
+  render: () => <InputFile placeholder="Upload file" disabled />,
+};
+
+export const Invalid: Story = {
+  render: () => <InputFile placeholder="Upload file" invalid />,
 };
