@@ -1,21 +1,20 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { UnsignedTransaction } from '@substrate/txwrapper-polkadot';
 
 import { useI18n, useNetworkContext } from '@renderer/app/providers';
 import { ChainId, HexString } from '@renderer/domain/shared-kernel';
 import { useChains } from '@renderer/entities/network';
-import { Transaction } from '@renderer/entities/transaction';
-import { Account, MultisigAccount, isMultisig, isMultishard } from '@renderer/entities/account';
-import { useCountdown } from '@renderer/shared/lib/hooks';
+import { Transaction, useTransaction, validateBalance } from '@renderer/entities/transaction';
+import { Account, MultisigAccount } from '@renderer/entities/account';
 import { BaseModal, Button, Loader } from '@renderer/shared/ui';
 import OperationModalTitle from '../Operations/components/OperationModalTitle';
-import { InitOperation, Confirmation, Signing, Submit } from './components/ActionSteps';
-import ScanSingleframeQr from '@renderer/components/common/Scanning/ScanSingleframeQr';
+import { Confirmation, InitOperation, Submit } from './components/ActionSteps';
+import { Signing } from '@renderer/features/operation';
+import { useBalance } from '@renderer/entities/asset';
 
 const enum Step {
   INIT,
   CONFIRMATION,
-  SCANNING,
   SIGNING,
   SUBMIT,
 }
@@ -30,6 +29,8 @@ type Props = {
 export const Transfer = ({ assetId, chainId, isOpen, onClose }: Props) => {
   const { t } = useI18n();
   const { getChainById } = useChains();
+  const { getBalance } = useBalance();
+  const { getTransactionFee } = useTransaction();
   const { connections } = useNetworkContext();
 
   const [activeStep, setActiveStep] = useState<Step>(Step.INIT);
@@ -40,11 +41,10 @@ export const Transfer = ({ assetId, chainId, isOpen, onClose }: Props) => {
   const [transferTx, setTransferTx] = useState<Transaction>({} as Transaction);
   const [multisigTx, setMultisigTx] = useState<Transaction>();
   const [unsignedTx, setUnsignedTx] = useState<UnsignedTransaction>({} as UnsignedTransaction);
-  const [txPayload, setTxPayload] = useState<Uint8Array>();
   const [signature, setSignature] = useState<HexString>('0x0');
 
   const connection = connections[chainId];
-  const [countdown, resetCountdown] = useCountdown(connection?.api);
+  const transaction = multisigTx || transferTx;
 
   useEffect(() => {
     getChainById(chainId).then((chain) => setChainName(chain?.name || ''));
@@ -64,12 +64,23 @@ export const Transfer = ({ assetId, chainId, isOpen, onClose }: Props) => {
     setActiveStep(Step.CONFIRMATION);
   };
 
+  const checkBalance = () =>
+    validateBalance({
+      api,
+      chainId,
+      transaction,
+      assetId: assetId.toString(),
+      getBalance,
+      getTransactionFee,
+    });
+
   const onConfirmResult = () => {
-    setActiveStep(Step.SCANNING);
+    setActiveStep(Step.SIGNING);
   };
 
-  const onSignResult = (signature: HexString) => {
-    setSignature(signature);
+  const onSignResult = (signature: HexString[], tx: UnsignedTransaction[]) => {
+    setUnsignedTx(tx[0]);
+    setSignature(signature[0]);
     setActiveStep(Step.SUBMIT);
   };
 
@@ -77,26 +88,12 @@ export const Transfer = ({ assetId, chainId, isOpen, onClose }: Props) => {
     setAccount(account);
   };
 
-  const onStartOver = () => {
-    setActiveStep(Step.INIT);
-  };
-
   const handleClose = () => {
     onClose?.();
     setSignatory(undefined);
   };
 
-  const onScanResult = (tx: UnsignedTransaction, payload: Uint8Array) => {
-    setUnsignedTx(tx);
-    setActiveStep(Step.SIGNING);
-    setTxPayload(payload);
-  };
-
   const commonProps = { explorers, addressPrefix };
-
-  const getSignatory = (): Account | undefined => {
-    return isMultisig(account) ? signatory : isMultishard(account) ? account : undefined;
-  };
 
   return (
     <>
@@ -118,7 +115,7 @@ export const Transfer = ({ assetId, chainId, isOpen, onClose }: Props) => {
           </div>
         ) : (
           <>
-            {activeStep === Step.INIT && (
+            {activeStep === Step.INIT && asset && (
               <InitOperation
                 chainId={chainId}
                 asset={asset}
@@ -143,32 +140,17 @@ export const Transfer = ({ assetId, chainId, isOpen, onClose }: Props) => {
                 onResult={onConfirmResult}
               />
             )}
-            {activeStep === Step.SCANNING && (
-              <ScanSingleframeQr
-                chainId={chainId}
-                account={getSignatory()}
-                transaction={multisigTx || transferTx}
-                countdown={countdown}
-                api={api}
-                onResetCountdown={resetCountdown}
-                onResult={onScanResult}
-                onGoBack={() => setActiveStep(Step.CONFIRMATION)}
-                {...commonProps}
-              />
-            )}
             {activeStep === Step.SIGNING && (
               <Signing
                 chainId={chainId}
-                transaction={multisigTx || transferTx}
-                assetId={assetId.toString()}
-                countdown={countdown}
                 api={api}
-                accountId={(signatory || account).accountId}
-                txPayload={txPayload}
-                onGoBack={() => setActiveStep(Step.SCANNING)}
-                onStartOver={onStartOver}
+                addressPrefix={addressPrefix}
+                accounts={[account]}
+                signatory={signatory}
+                transactions={[transaction]}
+                validateBalance={checkBalance}
+                onGoBack={() => setActiveStep(Step.CONFIRMATION)}
                 onResult={onSignResult}
-                {...commonProps}
               />
             )}
           </>

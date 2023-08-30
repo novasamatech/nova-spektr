@@ -2,23 +2,22 @@ import { ApiPromise } from '@polkadot/api';
 import { BN } from '@polkadot/util';
 import { useEffect, useState } from 'react';
 
-import { DropdownOption, DropdownResult } from '@renderer/shared/ui/Dropdowns/common/types';
 import { useI18n } from '@renderer/app/providers';
 import { Asset, useBalance, Balance as AccountBalance } from '@renderer/entities/asset';
-import { ChainId, AccountId, SigningType } from '@renderer/domain/shared-kernel';
+import { ChainId, AccountId } from '@renderer/domain/shared-kernel';
 import { Transaction, TransactionType } from '@renderer/entities/transaction';
-import { useAccount, Account, isMultisig } from '@renderer/entities/account';
+import { Account, isMultisig } from '@renderer/entities/account';
 import { formatAmount, unlockingAmount, toAddress, nonNullable } from '@renderer/shared/lib/utils';
 import { StakingMap, useStakingData } from '@renderer/entities/staking';
 import { OperationForm } from '../../components';
-import { Select, MultiSelect, InputHint } from '@renderer/shared/ui';
 import {
   getRestakeAccountOption,
   validateRestake,
   validateBalanceForFee,
-  getSignatoryOptions,
   validateBalanceForFeeDeposit,
 } from '../../common/utils';
+import { getSignatoryOption } from '@renderer/pages/Transfer/common/utils';
+import { OperationError, OperationFooter, OperationHeader } from '@renderer/features/operation';
 
 export type RestakeResult = {
   accounts: Account[];
@@ -38,11 +37,8 @@ type Props = {
 
 const InitOperation = ({ api, chainId, accounts, addressPrefix, asset, onResult }: Props) => {
   const { t } = useI18n();
-  const { getLiveAccounts } = useAccount();
   const { subscribeStaking } = useStakingData();
   const { getLiveAssetBalances } = useBalance();
-
-  const dbAccounts = getLiveAccounts();
 
   const [fee, setFee] = useState('');
   const [feeLoading, setFeeLoading] = useState(true);
@@ -52,16 +48,13 @@ const InitOperation = ({ api, chainId, accounts, addressPrefix, asset, onResult 
 
   const [minBalance, setMinBalance] = useState<string>('0');
 
-  const [restakeAccounts, setRestakeAccounts] = useState<DropdownOption<Account>[]>([]);
-  const [activeRestakeAccounts, setActiveRestakeAccounts] = useState<DropdownResult<Account>[]>([]);
-
-  const [activeSignatory, setActiveSignatory] = useState<DropdownResult<Account>>();
-  const [signatoryOptions, setSignatoryOptions] = useState<DropdownOption<Account>[]>([]);
+  const [activeRestakeAccounts, setActiveRestakeAccounts] = useState<Account[]>([]);
+  const [activeSignatory, setActiveSignatory] = useState<Account>();
 
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [activeBalances, setActiveBalances] = useState<AccountBalance[]>([]);
 
-  const firstAccount = activeRestakeAccounts[0]?.value;
+  const firstAccount = activeRestakeAccounts[0] || accounts[0];
   const accountIsMultisig = isMultisig(firstAccount);
   const formFields = accountIsMultisig ? [{ name: 'amount' }, { name: 'description' }] : [{ name: 'amount' }];
 
@@ -70,10 +63,16 @@ const InitOperation = ({ api, chainId, accounts, addressPrefix, asset, onResult 
 
   const signatoryIds = accountIsMultisig ? firstAccount.signatories.map((s) => s.accountId) : [];
   const signatoriesBalances = getLiveAssetBalances(signatoryIds, chainId, asset.assetId.toString());
-  const signerBalance = signatoriesBalances.find((b) => b.accountId === activeSignatory?.value.accountId);
+  const signerBalance = signatoriesBalances.find((b) => b.accountId === activeSignatory?.accountId);
 
   useEffect(() => {
-    const addresses = activeRestakeAccounts.map((stake) => toAddress(stake.id, { prefix: addressPrefix }));
+    if (accounts.length === 0) return;
+
+    setActiveRestakeAccounts(accounts);
+  }, [accounts.length]);
+
+  useEffect(() => {
+    const addresses = activeRestakeAccounts.map((stake) => toAddress(stake.accountId, { prefix: addressPrefix }));
 
     let unsubStaking: () => void | undefined;
     (async () => {
@@ -88,7 +87,7 @@ const InitOperation = ({ api, chainId, accounts, addressPrefix, asset, onResult 
   useEffect(() => {
     const balancesMap = new Map(balances.map((balance) => [balance.accountId, balance]));
     const newActiveBalances = activeRestakeAccounts
-      .map((a) => balancesMap.get(a.id as AccountId))
+      .map((a) => balancesMap.get(a.accountId))
       .filter(nonNullable) as AccountBalance[];
 
     setActiveBalances(newActiveBalances);
@@ -98,7 +97,7 @@ const InitOperation = ({ api, chainId, accounts, addressPrefix, asset, onResult 
     if (!Object.keys(staking).length) return;
 
     const stakedBalances = activeRestakeAccounts.map((a) => {
-      const address = toAddress(a.id, { prefix: addressPrefix });
+      const address = toAddress(a.accountId, { prefix: addressPrefix });
 
       return unlockingAmount(staking[address]?.unlocking);
     });
@@ -113,51 +112,11 @@ const InitOperation = ({ api, chainId, accounts, addressPrefix, asset, onResult 
   }, [activeRestakeAccounts.length, staking]);
 
   useEffect(() => {
-    const formattedAccounts = accounts.map((account) => {
-      const balance = balances.find((b) => b.accountId === account.accountId);
-      const address = toAddress(account.accountId, { prefix: addressPrefix });
-      const stake = staking[address];
-
-      return getRestakeAccountOption(account, { balance, stake, asset, fee, addressPrefix, amount });
-    });
-
-    setRestakeAccounts(formattedAccounts);
-  }, [staking, amount, fee, balances, accounts.length]);
-
-  useEffect(() => {
-    if (!accountIsMultisig) return;
-
-    const signerOptions = dbAccounts.reduce<DropdownOption<Account>[]>((acc, signer) => {
-      const isWatchOnly = signer.signingType === SigningType.WATCH_ONLY;
-      const signerExist = signatoryIds.includes(signer.accountId);
-      if (!isWatchOnly && signerExist) {
-        const balance = signatoriesBalances.find((b) => b.accountId === signer.accountId);
-
-        acc.push(getSignatoryOptions(signer, { addressPrefix, asset, balance }));
-      }
-
-      return acc;
-    }, []);
-
-    if (signerOptions.length === 0) return;
-
-    setSignatoryOptions(signerOptions);
-    setActiveSignatory({ id: signerOptions[0].id, value: signerOptions[0].value });
-  }, [accountIsMultisig, dbAccounts.length, signatoriesBalances.length]);
-
-  useEffect(() => {
-    if (restakeAccounts.length === 0) return;
-
-    const activeAccounts = restakeAccounts.map(({ id, value }) => ({ id, value }));
-    setActiveRestakeAccounts(activeAccounts);
-  }, [restakeAccounts.length]);
-
-  useEffect(() => {
-    const newTransactions = activeRestakeAccounts.map(({ value }) => {
+    const newTransactions = activeRestakeAccounts.map((account) => {
       return {
         chainId,
         type: TransactionType.RESTAKE,
-        address: toAddress(value.accountId, { prefix: addressPrefix }),
+        address: toAddress(account.accountId, { prefix: addressPrefix }),
         args: { value: formatAmount(amount, asset.precision) },
       };
     });
@@ -165,8 +124,22 @@ const InitOperation = ({ api, chainId, accounts, addressPrefix, asset, onResult 
     setTransactions(newTransactions);
   }, [activeRestakeAccounts.length, amount]);
 
+  const getAccountDropdownOption = (account: Account) => {
+    const balance = balances.find((b) => b.accountId === account.accountId);
+    const address = toAddress(account.accountId, { prefix: addressPrefix });
+    const stake = staking[address];
+
+    return getRestakeAccountOption(account, { balance, stake, asset, fee, addressPrefix, amount });
+  };
+
+  const getSignatoryDrowdownOption = (account: Account) => {
+    const balance = signatoriesBalances.find((b) => b.accountId === account.accountId);
+
+    return getSignatoryOption(account, { balance, asset, addressPrefix, fee, deposit });
+  };
+
   const submitRestake = (data: { amount: string; description?: string }) => {
-    const selectedAccountIds = activeRestakeAccounts.map((stake) => stake.id);
+    const selectedAccountIds = activeRestakeAccounts.map((stake) => stake.accountId);
     const selectedAccounts = accounts.filter((account) => selectedAccountIds.includes(account.accountId));
 
     onResult({
@@ -174,14 +147,14 @@ const InitOperation = ({ api, chainId, accounts, addressPrefix, asset, onResult 
       amount: formatAmount(data.amount, asset.precision),
       ...(accountIsMultisig && {
         description: data.description || t('transactionMessage.restake', { amount: data.amount, asset: asset.symbol }),
-        signer: activeSignatory?.value,
+        signer: activeSignatory,
       }),
     });
   };
 
   const validateBalance = (amount: string): boolean => {
     return activeRestakeAccounts.every((a) => {
-      const address = toAddress(a.id, { prefix: addressPrefix });
+      const address = toAddress(a.accountId, { prefix: addressPrefix });
 
       return validateRestake(staking[address] || '0', amount, asset.precision);
     });
@@ -211,9 +184,9 @@ const InitOperation = ({ api, chainId, accounts, addressPrefix, asset, onResult 
   };
 
   const getActiveAccounts = (): AccountId[] => {
-    if (!accountIsMultisig) return activeRestakeAccounts.map((acc) => acc.id as AccountId);
+    if (!accountIsMultisig) return activeRestakeAccounts.map((acc) => acc.accountId);
 
-    return activeSignatory ? [activeSignatory.id as AccountId] : [];
+    return activeSignatory ? [activeSignatory.accountId] : [];
   };
 
   const canSubmit = !feeLoading && (activeRestakeAccounts.length > 0 || Boolean(activeSignatory));
@@ -231,8 +204,20 @@ const InitOperation = ({ api, chainId, accounts, addressPrefix, asset, onResult 
         validateBalance={validateBalance}
         validateFee={validateFee}
         validateDeposit={validateDeposit}
+        header={({ invalidBalance, invalidFee, invalidDeposit }) => (
+          <OperationHeader
+            chainId={chainId}
+            accounts={accounts}
+            isMultiselect
+            errors={invalidDeposit || invalidFee || invalidBalance ? [OperationError.EMPTY_ERROR] : undefined}
+            getSignatoryOption={getSignatoryDrowdownOption}
+            getAccountOption={getAccountDropdownOption}
+            onSignatoryChange={setActiveSignatory}
+            onAccountChange={setActiveRestakeAccounts}
+          />
+        )}
         footer={
-          <OperationForm.Footer
+          <OperationFooter
             api={api}
             asset={asset}
             account={firstAccount}
@@ -245,35 +230,7 @@ const InitOperation = ({ api, chainId, accounts, addressPrefix, asset, onResult 
         }
         onSubmit={submitRestake}
         onAmountChange={setAmount}
-      >
-        {({ invalidBalance, invalidFee, invalidDeposit }) =>
-          accountIsMultisig ? (
-            <div className="flex flex-col gap-y-2 mb-4">
-              <Select
-                label={t('staking.bond.signatoryLabel')}
-                placeholder={t('staking.bond.signatoryPlaceholder')}
-                disabled={!signatoryOptions.length}
-                invalid={invalidDeposit || invalidFee}
-                selectedId={activeSignatory?.id}
-                options={signatoryOptions}
-                onChange={setActiveSignatory}
-              />
-              <InputHint active={!signatoryOptions.length}>{t('multisigOperations.noSignatory')}</InputHint>
-            </div>
-          ) : (
-            <MultiSelect
-              className="mb-4"
-              label={t('staking.bond.accountLabel')}
-              placeholder={t('staking.bond.accountPlaceholder')}
-              multiPlaceholder={t('staking.bond.manyAccountsPlaceholder')}
-              invalid={invalidBalance || invalidFee}
-              selectedIds={activeRestakeAccounts.map((acc) => acc.id)}
-              options={restakeAccounts}
-              onChange={setActiveRestakeAccounts}
-            />
-          )
-        }
-      </OperationForm>
+      />
     </div>
   );
 };
