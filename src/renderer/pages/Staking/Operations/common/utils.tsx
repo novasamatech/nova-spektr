@@ -69,6 +69,10 @@ const getElement = (address: Address, accountName: string, content?: ReactNode):
   );
 };
 
+const validateSignatoryBalance = (balance: string, fee: string, deposit: string): boolean => {
+  return new BN(deposit).add(new BN(fee)).lte(new BN(balance));
+};
+
 const getBalance = (balance: string, asset: Asset, isCorrect = true): ReactNode => {
   if (!balance) return null;
 
@@ -81,6 +85,7 @@ type Params = {
   fee?: string;
   amount?: string;
   balance?: AccountBalance;
+  deposit?: string;
 };
 type ParamsWithStake = Params & {
   stake?: Stake;
@@ -188,13 +193,19 @@ export const getUnstakeAccountOption = (
   return { id: account.accountId, value: account, element };
 };
 
-export const getSignatoryOptions = (
+export const getSignatoryOption = (
   account: Account,
-  { balance, asset, addressPrefix }: Params,
+  { balance, asset, addressPrefix, fee, deposit }: Params,
 ): DropdownOption<Account> => {
   const address = toAddress(account.accountId, { prefix: addressPrefix });
+  const canValidateBalance = balance && fee && deposit;
 
-  const balanceContent = getBalance(transferableAmount(balance), asset);
+  let balanceIsCorrect = true;
+  if (canValidateBalance) {
+    balanceIsCorrect = validateSignatoryBalance(transferableAmount(balance), fee, deposit);
+  }
+
+  const balanceContent = getBalance(transferableAmount(balance), asset, balanceIsCorrect);
   const element = getElement(address, account.name, balanceContent);
 
   return { id: account.accountId + account.name, value: account, element };

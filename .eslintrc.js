@@ -12,6 +12,9 @@ module.exports = {
     node: true,
     jest: true,
   },
+  globals: {
+    JSX: 'readonly',
+  },
   parser: '@typescript-eslint/parser',
   extends: [
     'eslint:recommended',

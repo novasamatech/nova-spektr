@@ -45,7 +45,7 @@ const ScanSingleframeQr = ({
     if (txPayload) return;
 
     setupTransaction().catch(() => console.warn('ScanSingleframeQr | setupTransaction() failed'));
-  }, []);
+  }, [transaction, api]);
 
   const setupTransaction = async (): Promise<void> => {
     try {

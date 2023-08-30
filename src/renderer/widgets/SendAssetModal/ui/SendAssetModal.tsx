@@ -3,21 +3,20 @@ import { UnsignedTransaction } from '@substrate/txwrapper-polkadot';
 
 import { useI18n, useNetworkContext } from '@renderer/app/providers';
 import { HexString } from '@renderer/domain/shared-kernel';
-import { Transaction } from '@renderer/entities/transaction';
-import { Account, isMultishard, isMultisig, MultisigAccount } from '@renderer/entities/account';
-import { useCountdown, useToggle } from '@renderer/shared/lib/hooks';
+import { Transaction, useTransaction, validateBalance } from '@renderer/entities/transaction';
+import { Account, MultisigAccount } from '@renderer/entities/account';
 import { BaseModal, Button, Loader } from '@renderer/shared/ui';
-import ScanSingleframeQr from '@renderer/components/common/Scanning/ScanSingleframeQr';
+import { Confirmation, InitOperation, Submit } from './components/ActionSteps';
+import { Signing } from '@renderer/features/operation';
+import { Asset, useBalance } from '@renderer/entities/asset';
 import { OperationTitle } from '@renderer/components/common';
-import { Confirmation, InitOperation, Signing, Submit } from './components/ActionSteps';
 import { Chain } from '@renderer/entities/chain';
-import { Asset } from '@renderer/entities/asset';
 import { DEFAULT_TRANSITION } from '@renderer/shared/lib/utils';
+import { useToggle } from '@renderer/shared/lib/hooks';
 
 const enum Step {
   INIT,
   CONFIRMATION,
-  SCANNING,
   SIGNING,
   SUBMIT,
 }
@@ -28,9 +27,10 @@ type Props = {
   onClose: () => void;
 };
 
-// TODO: Divide into model + feature/entity
 export const SendAssetModal = ({ chain, asset, onClose }: Props) => {
   const { t } = useI18n();
+  const { getBalance } = useBalance();
+  const { getTransactionFee } = useTransaction();
   const { connections } = useNetworkContext();
 
   const [isModalOpen, toggleIsModalOpen] = useToggle(true);
@@ -41,13 +41,12 @@ export const SendAssetModal = ({ chain, asset, onClose }: Props) => {
   const [transferTx, setTransferTx] = useState<Transaction>({} as Transaction);
   const [multisigTx, setMultisigTx] = useState<Transaction>();
   const [unsignedTx, setUnsignedTx] = useState<UnsignedTransaction>({} as UnsignedTransaction);
-  const [txPayload, setTxPayload] = useState<Uint8Array>();
   const [signature, setSignature] = useState<HexString>('0x0');
 
   const connection = connections[chain.chainId];
-  const { api, assets, addressPrefix, explorers } = connection;
+  const transaction = multisigTx || transferTx;
 
-  const [countdown, resetCountdown] = useCountdown(connection?.api);
+  const { api, assets, addressPrefix, explorers } = connection;
 
   const onInitResult = (transferTx: Transaction, multisig?: { multisigTx: Transaction; description: string }) => {
     setTransferTx(transferTx);
@@ -56,31 +55,24 @@ export const SendAssetModal = ({ chain, asset, onClose }: Props) => {
     setActiveStep(Step.CONFIRMATION);
   };
 
+  const checkBalance = () =>
+    validateBalance({
+      api,
+      transaction,
+      chainId: chain.chainId,
+      assetId: asset.assetId.toString(),
+      getBalance,
+      getTransactionFee,
+    });
+
   const onConfirmResult = () => {
-    setActiveStep(Step.SCANNING);
-  };
-
-  const onSignResult = (signature: HexString) => {
-    setSignature(signature);
-    setActiveStep(Step.SUBMIT);
-  };
-
-  const onAccountChange = (account: Account | MultisigAccount) => {
-    setAccount(account);
-  };
-
-  const onStartOver = () => {
-    setActiveStep(Step.INIT);
-  };
-
-  const onScanResult = (tx: UnsignedTransaction, payload: Uint8Array) => {
-    setUnsignedTx(tx);
     setActiveStep(Step.SIGNING);
-    setTxPayload(payload);
   };
 
-  const getSignatory = (): Account | undefined => {
-    return isMultisig(account) ? signatory : isMultishard(account) ? account : undefined;
+  const onSignResult = (signature: HexString[], tx: UnsignedTransaction[]) => {
+    setUnsignedTx(tx[0]);
+    setSignature(signature[0]);
+    setActiveStep(Step.SUBMIT);
   };
 
   const closeSendModal = () => {
@@ -93,13 +85,13 @@ export const SendAssetModal = ({ chain, asset, onClose }: Props) => {
   if (activeStep === Step.SUBMIT) {
     return api ? (
       <Submit
-        api={api}
         tx={transferTx}
         multisigTx={multisigTx}
         account={account}
         unsignedTx={unsignedTx}
         signature={signature}
         description={description}
+        api={api}
         onClose={closeSendModal}
         {...commonProps}
       />
@@ -114,7 +106,7 @@ export const SendAssetModal = ({ chain, asset, onClose }: Props) => {
     <BaseModal
       closeButton
       isOpen={isModalOpen}
-      title={<OperationTitle title={`${t('transfer.title', { asset: asset.symbol })}`} chainId={chain.chainId} />}
+      title={<OperationTitle title={`${t('transfer.title', { asset: asset?.symbol })}`} chainId={chain.chainId} />}
       contentClass={activeStep === Step.SIGNING ? '' : undefined}
       panelClass="w-[440px]"
       headerClass="py-3 px-5 max-w-[440px]"
@@ -129,7 +121,7 @@ export const SendAssetModal = ({ chain, asset, onClose }: Props) => {
         </div>
       ) : (
         <>
-          {activeStep === Step.INIT && (
+          {activeStep === Step.INIT && asset && (
             <InitOperation
               chainId={chain.chainId}
               asset={asset}
@@ -137,7 +129,7 @@ export const SendAssetModal = ({ chain, asset, onClose }: Props) => {
               network={chain.name}
               api={api}
               onResult={onInitResult}
-              onAccountChange={onAccountChange}
+              onAccountChange={setAccount}
               onSignatoryChange={setSignatory}
               {...commonProps}
             />
@@ -154,32 +146,17 @@ export const SendAssetModal = ({ chain, asset, onClose }: Props) => {
               onResult={onConfirmResult}
             />
           )}
-          {activeStep === Step.SCANNING && (
-            <ScanSingleframeQr
-              chainId={chain.chainId}
-              account={getSignatory()}
-              transaction={multisigTx || transferTx}
-              countdown={countdown}
-              api={api}
-              onResetCountdown={resetCountdown}
-              onResult={onScanResult}
-              onGoBack={() => setActiveStep(Step.CONFIRMATION)}
-              {...commonProps}
-            />
-          )}
           {activeStep === Step.SIGNING && (
             <Signing
               chainId={chain.chainId}
-              transaction={multisigTx || transferTx}
-              assetId={asset.assetId.toString()}
-              countdown={countdown}
               api={api}
-              accountId={(signatory || account).accountId}
-              txPayload={txPayload}
-              onGoBack={() => setActiveStep(Step.SCANNING)}
-              onStartOver={onStartOver}
+              addressPrefix={addressPrefix}
+              accounts={[account]}
+              signatory={signatory}
+              transactions={[transaction]}
+              validateBalance={checkBalance}
+              onGoBack={() => setActiveStep(Step.CONFIRMATION)}
               onResult={onSignResult}
-              {...commonProps}
             />
           )}
         </>
