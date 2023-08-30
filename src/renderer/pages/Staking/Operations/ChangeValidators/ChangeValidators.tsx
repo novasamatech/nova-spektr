@@ -15,7 +15,7 @@ import InitOperation, { ValidatorsResult } from './InitOperation/InitOperation';
 import ScanMultiframeQr from '@renderer/components/common/Scanning/ScanMultiframeQr';
 import ScanSingleframeQr from '@renderer/components/common/Scanning/ScanSingleframeQr';
 import { isLightClient } from '@renderer/entities/network';
-import OperationModalTitle from '@renderer/pages/Operations/components/OperationModalTitle';
+import { OperationTitle } from '@renderer/components/common';
 
 const enum Step {
   INIT,
@@ -95,7 +95,7 @@ export const ChangeValidators = () => {
         headerClass="py-3 px-5 max-w-[440px]"
         panelClass="w-max"
         isOpen={isValidatorsModalOpen}
-        title={<OperationModalTitle title={`${t('staking.validators.title', { asset: '' })}`} chainId={chainId} />}
+        title={<OperationTitle title={`${t('staking.validators.title', { asset: '' })}`} chainId={chainId} />}
         onClose={closeValidatorsModal}
       >
         <div className="w-[440px] px-5 py-4">
@@ -116,7 +116,7 @@ export const ChangeValidators = () => {
         headerClass="py-3 px-5 max-w-[440px]"
         panelClass="w-max"
         isOpen={isValidatorsModalOpen}
-        title={<OperationModalTitle title={`${t('staking.validators.title', { asset: '' })}`} chainId={chainId} />}
+        title={<OperationTitle title={`${t('staking.validators.title', { asset: '' })}`} chainId={chainId} />}
         onClose={closeValidatorsModal}
       >
         <div className="w-[440px] px-5 py-20">
@@ -209,7 +209,7 @@ export const ChangeValidators = () => {
         panelClass="w-max"
         headerClass="py-3 px-5 max-w-[440px]"
         isOpen={activeStep !== Step.SUBMIT && isValidatorsModalOpen}
-        title={<OperationModalTitle title={`${t('staking.validators.title', { asset: '' })}`} chainId={chainId} />}
+        title={<OperationTitle title={`${t('staking.validators.title', { asset: '' })}`} chainId={chainId} />}
         onClose={closeValidatorsModal}
       >
         {activeStep === Step.INIT && (

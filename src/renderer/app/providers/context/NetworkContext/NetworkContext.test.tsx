@@ -30,7 +30,7 @@ jest.mock('@renderer/services/subscription/subscriptionService', () => ({
 }));
 
 jest.mock('@renderer/entities/account', () => ({
-  ...jest.requireActual('@renderer/entities/account'),
+  isMultisig: jest.fn(),
   useAccount: jest.fn().mockReturnValue({
     getActiveAccounts: () => [{ name: 'Test Wallet', accountId: TEST_ACCOUNT_ID }],
     getLiveAccounts: () => [{ name: 'Test Wallet', accountId: TEST_ACCOUNT_ID }],

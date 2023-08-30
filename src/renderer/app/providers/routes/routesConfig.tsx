@@ -13,8 +13,15 @@ export const routesConfig: RouteObject[] = [
     element: <Layouts.PrimaryLayout />,
     children: [
       { index: true, element: <Navigate to={Paths.ASSETS} replace /> },
+      {
+        path: Paths.ASSETS,
+        element: <Screens.Assets.AssetsList />,
+        children: [
+          { path: Paths.SEND_ASSET, element: <Screens.Assets.SendAsset /> },
+          { path: Paths.RECEIVE_ASSET, element: <Screens.Assets.ReceiveAsset /> },
+        ],
+      },
       { path: Paths.OPERATIONS, element: <Screens.Operations /> },
-      { path: Paths.ASSETS, element: <Screens.Assets.Assets /> },
       { path: Paths.NOTIFICATIONS, element: <Screens.Notifications /> },
       {
         path: Paths.ADDRESS_BOOK,
@@ -47,4 +54,5 @@ export const routesConfig: RouteObject[] = [
       },
     ],
   },
+  { path: '*', element: <Navigate to={Paths.ASSETS} replace /> },
 ];

@@ -16,8 +16,8 @@ import { Submit } from '../ActionSteps/Submit';
 import { useBalance } from '@renderer/entities/asset';
 import RejectReasonModal from './RejectReasonModal';
 import Confirmation from '@renderer/pages/Operations/components/ActionSteps/Confirmation';
-import OperationModalTitle from '@renderer/pages/Operations/components/OperationModalTitle';
-import Signing from '@renderer/pages/Transfer/components/ActionSteps/Signing';
+import { OperationTitle } from '@renderer/components/common';
+import Signing from '@renderer/widgets/SendAssetModal/ui/components/ActionSteps/Signing';
 import ScanSingleframeQr from '@renderer/components/common/Scanning/ScanSingleframeQr';
 
 type Props = {
@@ -150,7 +150,7 @@ const RejectTx = ({ tx, account, connection }: Props) => {
         closeButton
         isOpen={activeStep !== Step.SUBMIT && isModalOpen}
         title={
-          <OperationModalTitle
+          <OperationTitle
             title={`${t('operation.cancelTitle')} ${t(transactionTitle)} ${t('on')}`}
             chainId={tx.chainId}
           />

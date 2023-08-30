@@ -17,7 +17,7 @@ const VerifyMethods = {
   FILE: 2,
 } as const;
 
-type VerifyMethodsType = (typeof VerifyMethods)[keyof typeof VerifyMethods];
+type VerifyMethodsType = typeof VerifyMethods[keyof typeof VerifyMethods];
 
 const getVerifyLabel = (t: TFunction, method: VerifyMethodsType): string => {
   const Labels = {

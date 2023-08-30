@@ -4,8 +4,12 @@ export const Paths = {
   // Onboarding
   ONBOARDING: '/onboarding',
 
-  // Navigation
+  // Assets
   ASSETS: '/assets',
+  SEND_ASSET: '/assets/send',
+  RECEIVE_ASSET: '/assets/receive',
+
+  // Navigation
   OPERATIONS: '/operations',
   NOTIFICATIONS: '/notifications',
 
@@ -29,4 +33,4 @@ export const Paths = {
   VALIDATORS: '/staking/validators/:chainId',
 } as const;
 
-export type PathValue = (typeof Paths)[keyof typeof Paths];
+export type PathValue = typeof Paths[keyof typeof Paths];

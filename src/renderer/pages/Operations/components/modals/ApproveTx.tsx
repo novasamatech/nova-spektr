@@ -3,29 +3,29 @@ import { UnsignedTransaction } from '@substrate/txwrapper-polkadot';
 import { Weight } from '@polkadot/types/interfaces';
 import { BN } from '@polkadot/util';
 
-import { Icon, BaseModal, Button } from '@renderer/shared/ui';
+import { BaseModal, Button, Icon } from '@renderer/shared/ui';
 import { useI18n } from '@renderer/app/providers';
 import { AccountDS, MultisigTransactionDS } from '@renderer/shared/api/storage';
 import { useCountdown, useToggle } from '@renderer/shared/lib/hooks';
 import { Account, MultisigAccount, useAccount } from '@renderer/entities/account';
 import { ExtendedChain } from '@renderer/entities/network';
 import { Address, HexString, SigningType, Timepoint } from '@renderer/domain/shared-kernel';
-import { toAddress, transferableAmount, TEST_ADDRESS } from '@renderer/shared/lib/utils';
+import { TEST_ADDRESS, toAddress, transferableAmount } from '@renderer/shared/lib/utils';
 import { getTransactionTitle } from '../../common/utils';
 import { Submit } from '../ActionSteps/Submit';
 import { useBalance } from '@renderer/entities/asset';
 import Confirmation from '@renderer/pages/Operations/components/ActionSteps/Confirmation';
 import SignatorySelectModal from '@renderer/pages/Operations/components/modals/SignatorySelectModal';
-import OperationModalTitle from '@renderer/pages/Operations/components/OperationModalTitle';
-import { Signing } from '@renderer/pages/Transfer/components/ActionSteps';
+import { Signing } from '@renderer/widgets/SendAssetModal/ui/components/ActionSteps';
 import ScanSingleframeQr from '@renderer/components/common/Scanning/ScanSingleframeQr';
 import { useMultisigEvent } from '@renderer/entities/multisig';
+import { OperationTitle } from '@renderer/components/common';
 import {
+  OperationResult,
   Transaction,
   TransactionType,
-  useTransaction,
-  OperationResult,
   useCallDataDecoder,
+  useTransaction,
 } from '@renderer/entities/transaction';
 
 type Props = {
@@ -197,7 +197,7 @@ const ApproveTx = ({ tx, account, connection }: Props) => {
       <BaseModal
         closeButton
         isOpen={activeStep !== Step.SUBMIT && isModalOpen}
-        title={<OperationModalTitle title={`${t(transactionTitle)} ${t('on')}`} chainId={tx.chainId} />}
+        title={<OperationTitle title={`${t(transactionTitle)} ${t('on')}`} chainId={tx.chainId} />}
         contentClass={activeStep === Step.SIGNING ? '' : undefined}
         headerClass="py-3 px-5 max-w-[440px]"
         panelClass="w-[440px]"

@@ -13,7 +13,7 @@ import { useCountdown, useToggle } from '@renderer/shared/lib/hooks';
 import { Alert, BaseModal, Button, Loader } from '@renderer/shared/ui';
 import ScanMultiframeQr from '@renderer/components/common/Scanning/ScanMultiframeQr';
 import ScanSingleframeQr from '@renderer/components/common/Scanning/ScanSingleframeQr';
-import OperationModalTitle from '@renderer/pages/Operations/components/OperationModalTitle';
+import { OperationTitle } from '@renderer/components/common';
 
 const enum Step {
   INIT,
@@ -92,7 +92,7 @@ export const Restake = () => {
         panelClass="w-max"
         headerClass="py-3 px-5 max-w-[440px]"
         isOpen={isRestakeModalOpen}
-        title={<OperationModalTitle title={`${t('staking.restake.title', { asset: '' })}`} chainId={chainId} />}
+        title={<OperationTitle title={`${t('staking.restake.title', { asset: '' })}`} chainId={chainId} />}
         onClose={closeRestakeModal}
       >
         <div className="w-[440px] px-5 py-4">
@@ -113,7 +113,7 @@ export const Restake = () => {
         headerClass="py-3 px-5 max-w-[440px]"
         panelClass="w-max"
         isOpen={isRestakeModalOpen}
-        title={<OperationModalTitle title={`${t('staking.restake.title', { asset: '' })}`} chainId={chainId} />}
+        title={<OperationTitle title={`${t('staking.restake.title', { asset: '' })}`} chainId={chainId} />}
         onClose={closeRestakeModal}
       >
         <div className="w-[440px] px-5 py-20">
@@ -198,7 +198,7 @@ export const Restake = () => {
         headerClass="py-3 px-5 max-w-[440px]"
         panelClass="w-max"
         isOpen={activeStep !== Step.SUBMIT && isRestakeModalOpen}
-        title={<OperationModalTitle title={`${t('staking.restake.title', { asset: '' })}`} chainId={chainId} />}
+        title={<OperationTitle title={`${t('staking.restake.title', { asset: '' })}`} chainId={chainId} />}
         onClose={closeRestakeModal}
       >
         {activeStep === Step.INIT && (

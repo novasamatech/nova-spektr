@@ -11,7 +11,7 @@ import { getRelaychainAsset, toAddress, DEFAULT_TRANSITION } from '@renderer/sha
 import { useCountdown, useToggle } from '@renderer/shared/lib/hooks';
 import { isMultisig, MultisigAccount, Account, useAccount } from '@renderer/entities/account';
 import { Alert, BaseModal, Button, Loader } from '@renderer/shared/ui';
-import OperationModalTitle from '@renderer/pages/Operations/components/OperationModalTitle';
+import { OperationTitle } from '@renderer/components/common';
 import ScanMultiframeQr from '@renderer/components/common/Scanning/ScanMultiframeQr';
 import ScanSingleframeQr from '@renderer/components/common/Scanning/ScanSingleframeQr';
 
@@ -92,7 +92,7 @@ export const StakeMore = () => {
         headerClass="py-3 px-5 max-w-[440px]"
         panelClass="w-max"
         isOpen={isStakeMoreModalOpen}
-        title={<OperationModalTitle title={`${t('staking.stakeMore.title', { asset: '' })}`} chainId={chainId} />}
+        title={<OperationTitle title={`${t('staking.stakeMore.title', { asset: '' })}`} chainId={chainId} />}
         onClose={closeStakeMoreModal}
       >
         <div className="w-[440px] px-5 py-4">
@@ -113,7 +113,7 @@ export const StakeMore = () => {
         panelClass="w-max"
         headerClass="py-3 px-5 max-w-[440px]"
         isOpen={isStakeMoreModalOpen}
-        title={<OperationModalTitle title={`${t('staking.stakeMore.title', { asset: '' })}`} chainId={chainId} />}
+        title={<OperationTitle title={`${t('staking.stakeMore.title', { asset: '' })}`} chainId={chainId} />}
         onClose={closeStakeMoreModal}
       >
         <div className="w-[440px] px-5 py-20">
@@ -198,9 +198,7 @@ export const StakeMore = () => {
         headerClass="py-3 px-5 max-w-[440px]"
         panelClass="w-max"
         isOpen={activeStep !== Step.SUBMIT && isStakeMoreModalOpen}
-        title={
-          <OperationModalTitle title={`${t('staking.stakeMore.title', { asset: asset.symbol })}`} chainId={chainId} />
-        }
+        title={<OperationTitle title={`${t('staking.stakeMore.title', { asset: asset.symbol })}`} chainId={chainId} />}
         onClose={closeStakeMoreModal}
       >
         {activeStep === Step.INIT && (
