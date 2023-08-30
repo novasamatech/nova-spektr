@@ -9,12 +9,13 @@ type Props = {
 };
 
 export const LabelHelpBox = ({ className, children, disabled = false, ...props }: PropsWithChildren<Props>) => (
-  <div
+  <button
     className={cnTw(
       'flex gap-x-1 items-center rounded-md py-1.5b px-2b group outline-offset-1',
       'bg-button-secondary-default hover:bg-button-secondary-hover active:bg-button-secondary-active',
       className,
     )}
+    disabled={disabled}
     data-testid="labelHelpbox"
     {...props}
   >
@@ -24,5 +25,5 @@ export const LabelHelpBox = ({ className, children, disabled = false, ...props }
       className="text-icon-primary-default group-hover:text-icon-primary-hover group-active:text-icon-primary-active"
       size={16}
     />
-  </div>
+  </button>
 );
