@@ -8,6 +8,7 @@ import Header from './Header/Header';
 import ExplorerLink from './ExplorerLink/ExplorerLink';
 import QrGeneratorContainer from './QrCode/QrGeneratorContainer/QrGeneratorContainer';
 import ExtrinsicExplorers from './ExtrinsicExplorers/ExtrinsicExplorers';
+import { OperationTitle } from './OperationTitle/OperationTitle';
 
 // FIXME: SignatoryCard, AddressWithExplorers, ScanMultiframeQr and ScanSingleframeQr exported separately.
 // Adding them to this file causes to crash all tests which use anything from that file
@@ -25,4 +26,5 @@ export {
   Header,
   ExplorerLink,
   ExtrinsicExplorers,
+  OperationTitle,
 };

@@ -22,7 +22,16 @@ type Props = {
   onBack?: () => void;
 };
 
-const Confirmation = ({ account, connection, transaction, signatory, description, feeTx, onResult, onBack }: Props) => {
+export const Confirmation = ({
+  account,
+  connection,
+  transaction,
+  signatory,
+  description,
+  feeTx,
+  onResult,
+  onBack,
+}: Props) => {
   const { t } = useI18n();
 
   const { getWallet } = useWallet();
@@ -87,5 +96,3 @@ const Confirmation = ({ account, connection, transaction, signatory, description
     </div>
   );
 };
-
-export default Confirmation;

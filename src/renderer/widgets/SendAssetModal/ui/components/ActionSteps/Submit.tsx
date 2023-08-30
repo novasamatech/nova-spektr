@@ -33,7 +33,7 @@ type Props = {
   onClose: () => void;
 };
 
-const Submit = ({ api, tx, multisigTx, account, unsignedTx, signature, description, onClose }: Props) => {
+export const Submit = ({ api, tx, multisigTx, account, unsignedTx, signature, description, onClose }: Props) => {
   const { t } = useI18n();
   const navigate = useNavigate();
 
@@ -174,5 +174,3 @@ const Submit = ({ api, tx, multisigTx, account, unsignedTx, signature, descripti
     </OperationResult>
   );
 };
-
-export default Submit;

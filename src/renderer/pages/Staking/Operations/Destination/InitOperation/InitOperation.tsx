@@ -7,10 +7,14 @@ import { Address, ChainId, AccountId } from '@renderer/domain/shared-kernel';
 import { getOperationErrors, Transaction, TransactionType } from '@renderer/entities/transaction';
 import { Account, isMultisig } from '@renderer/entities/account';
 import { toAddress, nonNullable, TEST_ADDRESS } from '@renderer/shared/lib/utils';
-import { OperationForm } from '../../components';
-import { validateBalanceForFeeDeposit, validateBalanceForFee, getGeneralAccountOption } from '../../common/utils';
 import { OperationFooter, OperationHeader } from '@renderer/features/operation';
-import { getSignatoryOption } from '@renderer/pages/Transfer/common/utils';
+import { OperationForm } from '../../components';
+import {
+  validateBalanceForFeeDeposit,
+  validateBalanceForFee,
+  getGeneralAccountOption,
+  getSignatoryOption,
+} from '../../common/utils';
 
 export type DestinationResult = {
   accounts: Account[];

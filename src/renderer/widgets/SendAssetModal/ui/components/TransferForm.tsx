@@ -1,24 +1,24 @@
 import { BN } from '@polkadot/util';
 import { ReactNode, useEffect, useState } from 'react';
-import { Controller, useForm, SubmitHandler } from 'react-hook-form';
+import { Controller, SubmitHandler, useForm } from 'react-hook-form';
 import { ApiPromise } from '@polkadot/api';
 import { Trans } from 'react-i18next';
 
-import {
-  toAccountId,
-  validateAddress,
-  toAddress,
-  formatAmount,
-  transferableAmount,
-  getAssetId,
-} from '@renderer/shared/lib/utils';
-import { Icon, Identicon, Button, AmountInput, Input, InputHint } from '@renderer/shared/ui';
+import { AmountInput, Button, Icon, Identicon, Input, InputHint } from '@renderer/shared/ui';
 import { useI18n } from '@renderer/app/providers';
 import { Asset, AssetType, useBalance } from '@renderer/entities/asset';
-import { Transaction, MultisigTxInitStatus, TransactionType, useTransaction } from '@renderer/entities/transaction';
-import { Address, ChainId, AccountId } from '@renderer/domain/shared-kernel';
+import { MultisigTxInitStatus, Transaction, TransactionType, useTransaction } from '@renderer/entities/transaction';
+import { AccountId, Address, ChainId } from '@renderer/domain/shared-kernel';
 import { useMultisigTx } from '@renderer/entities/multisig';
-import { MultisigAccount, Account, isMultisig } from '@renderer/entities/account';
+import { Account, isMultisig, MultisigAccount } from '@renderer/entities/account';
+import {
+  formatAmount,
+  getAssetId,
+  toAccountId,
+  toAddress,
+  transferableAmount,
+  validateAddress,
+} from '@renderer/shared/lib/utils';
 
 const DESCRIPTION_MAX_LENGTH = 120;
 

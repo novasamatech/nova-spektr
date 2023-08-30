@@ -8,11 +8,9 @@ type Props = {
 
 const ChainFontStyle = 'font-manrope text-header-title text-text-primary truncate';
 
-const OperationModalTitle = ({ title, chainId }: Props) => (
+export const OperationTitle = ({ title, chainId }: Props) => (
   <div className="flex items-center h-7 whitespace-nowrap">
     {title}
     <ChainTitle className="ml-1.5 gap-x-1.5 overflow-hidden" chainId={chainId} fontClass={ChainFontStyle} />
   </div>
 );
-
-export default OperationModalTitle;

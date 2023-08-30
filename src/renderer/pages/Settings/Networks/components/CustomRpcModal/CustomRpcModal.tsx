@@ -6,7 +6,7 @@ import { useI18n, useNetworkContext } from '@renderer/app/providers';
 import { RpcNode } from '@renderer/entities/chain';
 import { RpcValidation, ExtendedChain } from '@renderer/entities/network';
 import { validateWsAddress } from '@renderer/shared/lib/utils';
-import OperationModalTitle from '@renderer/pages/Operations/components/OperationModalTitle';
+import { OperationTitle } from '@renderer/components/common';
 
 const MODAL_ANIMATION = 300;
 
@@ -140,7 +140,7 @@ export const CustomRpcModal = ({ network, node, isOpen, onClose }: Props) => {
   return (
     <BaseModal
       closeButton
-      title={<OperationModalTitle title={modalTitle} chainId={network.chainId} />}
+      title={<OperationTitle title={modalTitle} chainId={network.chainId} />}
       headerClass="py-3 px-5 max-w-[440px]"
       isOpen={isOpen}
       onClose={onClose}

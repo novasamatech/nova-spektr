@@ -16,8 +16,8 @@ import {
   validateBalanceForFee,
   validateBalanceForFeeDeposit,
   validateStake,
+  getSignatoryOption,
 } from '../../common/utils';
-import { getSignatoryOption } from '@renderer/pages/Transfer/common/utils';
 
 export type BondResult = {
   amount: string;

@@ -18,20 +18,9 @@ type Props = {
   chain: Chain | ExtendedChain;
   accounts: Account[];
   canMakeActions?: boolean;
-  onReceiveClick?: (asset: Asset) => void;
-  onTransferClick?: (asset: Asset) => void;
 };
 
-export const NetworkAssets = ({
-  query,
-  hideZeroBalance,
-  chain,
-  accounts,
-  searchSymbolOnly,
-  canMakeActions,
-  onReceiveClick,
-  onTransferClick,
-}: Props) => {
+export const NetworkAssets = ({ query, hideZeroBalance, chain, accounts, searchSymbolOnly, canMakeActions }: Props) => {
   const { t } = useI18n();
   const { getLiveNetworkBalances } = useBalance();
 
@@ -121,11 +110,10 @@ export const NetworkAssets = ({
             {filteredAssets.map((asset) => (
               <AssetCard
                 key={asset.assetId}
+                chainId={chain.chainId}
                 asset={asset}
                 balance={balancesObject[asset.assetId.toString()]}
                 canMakeActions={canMakeActions}
-                onReceiveClick={() => onReceiveClick?.(asset)}
-                onTransferClick={() => onTransferClick?.(asset)}
               />
             ))}
           </ul>

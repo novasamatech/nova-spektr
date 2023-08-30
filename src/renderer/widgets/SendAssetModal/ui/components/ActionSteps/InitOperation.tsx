@@ -23,7 +23,7 @@ type Props = {
   onResult: (transferTx: Transaction, multisig?: { multisigTx: Transaction; description: string }) => void;
 };
 
-const InitOperation = ({
+export const InitOperation = ({
   api,
   chainId,
   network,
@@ -63,6 +63,7 @@ const InitOperation = ({
 
   useEffect(() => {
     setActiveAccount(accounts[0]);
+    onAccountChange(accounts[0]);
   }, [accounts.length, accounts[0]?.accountId]);
 
   useEffect(() => {
@@ -85,7 +86,6 @@ const InitOperation = ({
   };
 
   const changeAccount = (account: Account | MultisigAccount) => {
-    console.log(account);
     onAccountChange(account);
     setActiveAccount(account);
   };
@@ -141,5 +141,3 @@ const InitOperation = ({
     </div>
   );
 };
-
-export default InitOperation;

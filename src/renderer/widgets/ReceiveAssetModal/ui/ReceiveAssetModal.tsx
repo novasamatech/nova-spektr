@@ -1,30 +1,30 @@
 import cn from 'classnames';
 import { useEffect, useState } from 'react';
 
-import { QrTextGenerator } from '@renderer/components/common';
+import { OperationTitle, QrTextGenerator } from '@renderer/components/common';
 import { DefaultExplorer, ExplorerIcons } from '@renderer/components/common/ExplorerLink/constants';
-import { Icon, BaseModal, Button, FootnoteText, Select, HelpText } from '@renderer/shared/ui';
+import { BaseModal, Button, FootnoteText, HelpText, Icon, Select } from '@renderer/shared/ui';
 import { DropdownOption, DropdownResult } from '@renderer/shared/ui/types';
 import { useI18n } from '@renderer/app/providers';
-import { Asset } from '@renderer/entities/asset';
-import { Chain } from '@renderer/entities/chain';
 import { SigningType } from '@renderer/domain/shared-kernel';
-import { copyToClipboard, toAddress, cnTw } from '@renderer/shared/lib/utils';
-import { useAccount, AccountAddress } from '@renderer/entities/account';
-import OperationModalTitle from '@renderer/pages/Operations/components/OperationModalTitle';
-import { IconButtonStyle } from '@renderer/shared/ui/Buttons/IconButton/IconButton';
+import { copyToClipboard, DEFAULT_TRANSITION, toAddress } from '@renderer/shared/lib/utils';
+import { AccountAddress, useAccount } from '@renderer/entities/account';
+import { Chain } from '@renderer/entities/chain';
+import { Asset } from '@renderer/entities/asset';
+import { useToggle } from '@renderer/shared/lib/hooks';
 
 type Props = {
   chain: Chain;
   asset: Asset;
-  isOpen: boolean;
   onClose: () => void;
 };
 
-export const ReceiveModal = ({ chain, asset, isOpen, onClose }: Props) => {
+// TODO: Divide into model + feature/entity
+export const ReceiveAssetModal = ({ chain, asset, onClose }: Props) => {
   const { t } = useI18n();
   const { getActiveAccounts } = useAccount();
 
+  const [isModalOpen, toggleIsModalOpen] = useToggle(true);
   const [activeAccount, setActiveAccount] = useState<DropdownResult<number>>();
   const [activeAccountsOptions, setActiveAccountsOptions] = useState<DropdownOption<number>[]>([]);
 
@@ -56,7 +56,12 @@ export const ReceiveModal = ({ chain, asset, isOpen, onClose }: Props) => {
 
     setActiveAccountsOptions(accounts);
     setActiveAccount({ id: accounts[0].id, value: accounts[0].value });
-  }, [activeAccounts.length, chain.chainId]);
+  }, [activeAccounts.length, chain]);
+
+  const closeReceiveModal = () => {
+    toggleIsModalOpen();
+    setTimeout(onClose, DEFAULT_TRANSITION);
+  };
 
   const hasShards = activeAccounts.length > 1;
   const account = activeAccount ? activeAccounts[activeAccount.value] : undefined;
@@ -69,12 +74,12 @@ export const ReceiveModal = ({ chain, asset, isOpen, onClose }: Props) => {
 
   return (
     <BaseModal
-      title={<OperationModalTitle title={t('receive.title', { asset: asset.symbol })} chainId={chain.chainId} />}
+      isOpen={isModalOpen}
+      title={<OperationTitle title={t('receive.title', { asset: asset.symbol })} chainId={chain.chainId} />}
       contentClass="pb-6 px-4 pt-4 flex flex-col items-center"
       headerClass="py-3 px-5 max-w-[440px]"
       closeButton
-      isOpen={isOpen}
-      onClose={onClose}
+      onClose={closeReceiveModal}
     >
       {hasShards && (
         <Select
@@ -103,12 +108,7 @@ export const ReceiveModal = ({ chain, asset, isOpen, onClose }: Props) => {
         <ul className="flex gap-x-2 mb-4">
           {chain.explorers?.map(({ name, account }) => (
             <li aria-label={t('receive.explorerLinkLabel', { name })} key={name} className="flex">
-              <a
-                href={account?.replace('{address}', address)}
-                rel="noopener noreferrer"
-                target="_blank"
-                className={cnTw(IconButtonStyle, 'spektr-icon-button flex py-1 px-1.5 rounded')}
-              >
+              <a href={account?.replace('{address}', address)} rel="noopener noreferrer" target="_blank">
                 <Icon size={16} as="img" name={ExplorerIcons[name] || ExplorerIcons[DefaultExplorer]} />
               </a>
             </li>

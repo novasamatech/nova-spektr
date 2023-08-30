@@ -8,10 +8,14 @@ import { getOperationErrors, Transaction, TransactionType } from '@renderer/enti
 import { Account, isMultisig, MultisigAccount } from '@renderer/entities/account';
 import { useValidators } from '@renderer/entities/staking';
 import { toAddress, nonNullable } from '@renderer/shared/lib/utils';
-import { OperationForm } from '../../components';
-import { getGeneralAccountOption, validateBalanceForFee, validateBalanceForFeeDeposit } from '../../common/utils';
 import { OperationFooter, OperationHeader } from '@renderer/features/operation';
-import { getSignatoryOption } from '@renderer/pages/Transfer/common/utils';
+import { OperationForm } from '../../components';
+import {
+  getSignatoryOption,
+  getGeneralAccountOption,
+  validateBalanceForFee,
+  validateBalanceForFeeDeposit,
+} from '../../common/utils';
 
 export type ValidatorsResult = {
   accounts: Account[];

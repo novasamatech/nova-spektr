@@ -8,13 +8,6 @@ import { AccountDS, MultisigTransactionDS } from '@renderer/shared/api/storage';
 import { useToggle } from '@renderer/shared/lib/hooks';
 import { MultisigAccount, useAccount } from '@renderer/entities/account';
 import { ExtendedChain } from '@renderer/entities/network';
-import {
-  Transaction,
-  TransactionType,
-  useTransaction,
-  OperationResult,
-  validateBalance,
-} from '@renderer/entities/transaction';
 import { Address, HexString, Timepoint } from '@renderer/domain/shared-kernel';
 import { toAddress, transferableAmount } from '@renderer/shared/lib/utils';
 import { getTransactionTitle } from '../../common/utils';
@@ -22,8 +15,15 @@ import { Submit } from '../ActionSteps/Submit';
 import { useBalance } from '@renderer/entities/asset';
 import RejectReasonModal from './RejectReasonModal';
 import Confirmation from '@renderer/pages/Operations/components/ActionSteps/Confirmation';
-import OperationModalTitle from '@renderer/pages/Operations/components/OperationModalTitle';
 import { Signing } from '@renderer/features/operation';
+import { OperationTitle } from '@renderer/components/common';
+import {
+  Transaction,
+  TransactionType,
+  useTransaction,
+  OperationResult,
+  validateBalance,
+} from '@renderer/entities/transaction';
 
 type Props = {
   tx: MultisigTransactionDS;
@@ -163,7 +163,7 @@ const RejectTx = ({ tx, account, connection }: Props) => {
         closeButton
         isOpen={activeStep !== Step.SUBMIT && isModalOpen}
         title={
-          <OperationModalTitle
+          <OperationTitle
             title={`${t('operation.cancelTitle')} ${t(transactionTitle)} ${t('on')}`}
             chainId={tx.chainId}
           />

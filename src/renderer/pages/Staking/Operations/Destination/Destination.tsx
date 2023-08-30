@@ -13,7 +13,7 @@ import { useToggle } from '@renderer/shared/lib/hooks';
 import { MultisigAccount, isMultisig, Account, useAccount } from '@renderer/entities/account';
 import { DestinationType } from '../common/types';
 import { BaseModal, Button, Loader } from '@renderer/shared/ui';
-import OperationModalTitle from '@renderer/pages/Operations/components/OperationModalTitle';
+import { OperationTitle } from '@renderer/components/common';
 import { Signing } from '@renderer/features/operation';
 
 const enum Step {
@@ -89,7 +89,7 @@ export const Destination = () => {
         headerClass="py-3 px-5 max-w-[440px]"
         panelClass="w-max"
         isOpen={isDestModalOpen}
-        title={<OperationModalTitle title={`${t('staking.destination.title', { asset: '' })}`} chainId={chainId} />}
+        title={<OperationTitle title={`${t('staking.destination.title', { asset: '' })}`} chainId={chainId} />}
         onClose={closeDestinationModal}
       >
         <div className="w-[440px] px-5 py-4">
@@ -110,7 +110,7 @@ export const Destination = () => {
         panelClass="w-max"
         headerClass="py-3 px-5 max-w-[440px]"
         isOpen={isDestModalOpen}
-        title={<OperationModalTitle title={`${t('staking.destination.title', { asset: '' })}`} chainId={chainId} />}
+        title={<OperationTitle title={`${t('staking.destination.title', { asset: '' })}`} chainId={chainId} />}
         onClose={closeDestinationModal}
       >
         <div className="w-[440px] px-5 py-20">
@@ -194,7 +194,7 @@ export const Destination = () => {
         headerClass="py-3 px-5 max-w-[440px]"
         panelClass="w-max"
         isOpen={activeStep !== Step.SUBMIT && isDestModalOpen}
-        title={<OperationModalTitle title={`${t('staking.destination.title', { asset: '' })}`} chainId={chainId} />}
+        title={<OperationTitle title={`${t('staking.destination.title', { asset: '' })}`} chainId={chainId} />}
         onClose={closeDestinationModal}
       >
         {activeStep === Step.INIT && (

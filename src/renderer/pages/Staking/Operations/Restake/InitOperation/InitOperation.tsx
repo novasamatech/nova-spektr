@@ -9,15 +9,15 @@ import { Transaction, TransactionType } from '@renderer/entities/transaction';
 import { Account, isMultisig } from '@renderer/entities/account';
 import { formatAmount, unlockingAmount, toAddress, nonNullable } from '@renderer/shared/lib/utils';
 import { StakingMap, useStakingData } from '@renderer/entities/staking';
+import { OperationError, OperationFooter, OperationHeader } from '@renderer/features/operation';
 import { OperationForm } from '../../components';
 import {
   getRestakeAccountOption,
   validateRestake,
   validateBalanceForFee,
   validateBalanceForFeeDeposit,
+  getSignatoryOption,
 } from '../../common/utils';
-import { getSignatoryOption } from '@renderer/pages/Transfer/common/utils';
-import { OperationError, OperationFooter, OperationHeader } from '@renderer/features/operation';
 
 export type RestakeResult = {
   accounts: Account[];

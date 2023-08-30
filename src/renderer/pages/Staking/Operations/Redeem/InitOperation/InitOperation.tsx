@@ -9,10 +9,14 @@ import { Transaction, TransactionType } from '@renderer/entities/transaction';
 import { Account, isMultisig } from '@renderer/entities/account';
 import { redeemableAmount, formatBalance, nonNullable, toAddress } from '@renderer/shared/lib/utils';
 import { StakingMap, useStakingData, useEra } from '@renderer/entities/staking';
-import { OperationForm } from '../../components';
-import { validateBalanceForFee, validateBalanceForFeeDeposit, getRedeemAccountOption } from '../../common/utils';
-import { getSignatoryOption } from '@renderer/pages/Transfer/common/utils';
 import { OperationError, OperationFooter, OperationHeader } from '@renderer/features/operation';
+import { OperationForm } from '../../components';
+import {
+  getSignatoryOption,
+  validateBalanceForFee,
+  validateBalanceForFeeDeposit,
+  getRedeemAccountOption,
+} from '../../common/utils';
 
 export type RedeemResult = {
   accounts: Account[];

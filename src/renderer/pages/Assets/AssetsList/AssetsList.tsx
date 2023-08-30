@@ -1,20 +1,20 @@
 import { useEffect, useState } from 'react';
+import { Outlet } from 'react-router-dom';
 
-import { Icon, BodyText, Button, SmallTitleText } from '@renderer/shared/ui';
+import { BodyText, Button, Icon, SmallTitleText } from '@renderer/shared/ui';
 import { useI18n, useNetworkContext } from '@renderer/app/providers';
-import { Asset, useBalance } from '@renderer/entities/asset';
+import { useBalance } from '@renderer/entities/asset';
 import { Chain } from '@renderer/entities/chain';
 import { ConnectionType } from '@renderer/domain/connection';
 import { SigningType } from '@renderer/domain/shared-kernel';
 import { useToggle } from '@renderer/shared/lib/hooks';
 import { useChains } from '@renderer/entities/network';
 import { useSettingsStorage } from '@renderer/entities/settings';
-import { useAccount, isMultisig, Account } from '@renderer/entities/account';
-import { AssetsFilters, NetworkAssets, ReceiveModal, SelectShardModal } from './components';
+import { Account, isMultisig, useAccount } from '@renderer/entities/account';
+import { AssetsFilters, NetworkAssets, SelectShardModal } from './components';
 import { Header } from '@renderer/components/common';
-import { Transfer } from '@renderer/pages';
 
-export const Assets = () => {
+export const AssetsList = () => {
   const { t } = useI18n();
   const { connections } = useNetworkContext();
   const { getActiveAccounts } = useAccount();
@@ -22,13 +22,9 @@ export const Assets = () => {
   const { sortChainsByBalance } = useChains();
   const { setHideZeroBalance, getHideZeroBalance } = useSettingsStorage();
 
-  const [isReceiveOpen, toggleReceive] = useToggle();
-  const [isTransferOpen, toggleTransfer] = useToggle();
   const [isSelectShardsOpen, toggleSelectShardsOpen] = useToggle();
 
   const [query, setQuery] = useState('');
-  const [activeChain, setActiveChain] = useState<Chain>();
-  const [activeAsset, setActiveAsset] = useState<Asset>();
   const [sortedChains, setSortedChains] = useState<Chain[]>([]);
 
   const [activeAccounts, setActiveAccounts] = useState<Account[]>([]);
@@ -77,18 +73,6 @@ export const Assets = () => {
     );
   };
 
-  const onReceive = (chain: Chain) => (asset: Asset) => {
-    setActiveChain(chain);
-    setActiveAsset(asset);
-    toggleReceive();
-  };
-
-  const onTransfer = (chain: Chain) => (asset: Asset) => {
-    setActiveChain(chain);
-    setActiveAsset(asset);
-    toggleTransfer();
-  };
-
   const handleShardSelect = (selectedAccounts?: Account[]) => {
     toggleSelectShardsOpen();
 
@@ -135,8 +119,6 @@ export const Assets = () => {
                   chain={chain}
                   accounts={activeAccounts}
                   canMakeActions={checkCanMakeActions()}
-                  onReceiveClick={onReceive(chain)}
-                  onTransferClick={onTransfer(chain)}
                 />
               ))}
 
@@ -162,20 +144,7 @@ export const Assets = () => {
         />
       )}
 
-      {/* TODO: Make navigational modal */}
-      {activeAsset && activeChain && (
-        <ReceiveModal chain={activeChain} asset={activeAsset} isOpen={isReceiveOpen} onClose={toggleReceive} />
-      )}
-
-      {/* TODO: Make navigational modal */}
-      {activeAsset && activeChain && (
-        <Transfer
-          isOpen={isTransferOpen}
-          assetId={activeAsset.assetId}
-          chainId={activeChain.chainId}
-          onClose={toggleTransfer}
-        />
-      )}
+      <Outlet />
     </>
   );
 };

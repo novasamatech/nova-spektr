@@ -1,10 +1,9 @@
 import { render, screen } from '@testing-library/react';
-import { MemoryRouter } from 'react-router-dom';
 
 import { TEST_ACCOUNT_ID } from '@renderer/shared/lib/utils';
 import { ConnectionType } from '@renderer/domain/connection';
 import { useAccount } from '@renderer/entities/account';
-import { Assets } from './Assets';
+import { AssetsList } from './AssetsList';
 
 jest.mock('@renderer/app/providers', () => ({
   useI18n: jest.fn().mockReturnValue({
@@ -54,22 +53,20 @@ jest.mock('@renderer/entities/asset', () => ({
   }),
 }));
 
-jest.mock('@renderer/pages/Transfer/Transfer', () => <span>TransferButton</span>);
-
 jest.mock('./components/NetworkAssets/NetworkAssets', () => ({
   NetworkAssets: () => <span>NetworkAssets</span>,
 }));
 
 describe('screen/Assets/Assets', () => {
   test('should render component', () => {
-    render(<Assets />, { wrapper: MemoryRouter });
+    render(<AssetsList />);
 
     const text = screen.getByText('balances.title');
     expect(text).toBeInTheDocument();
   });
 
   test('should render networks', () => {
-    render(<Assets />, { wrapper: MemoryRouter });
+    render(<AssetsList />);
 
     const balances = screen.getAllByText('NetworkAssets');
     expect(balances).toHaveLength(2);
@@ -80,7 +77,7 @@ describe('screen/Assets/Assets', () => {
       getActiveAccounts: () => [{ name: 'Test Wallet', accountId: TEST_ACCOUNT_ID }],
     });
 
-    render(<Assets />, { wrapper: MemoryRouter });
+    render(<AssetsList />);
 
     const noResults = screen.getByTestId('emptyList-img');
     expect(noResults).toBeInTheDocument();
