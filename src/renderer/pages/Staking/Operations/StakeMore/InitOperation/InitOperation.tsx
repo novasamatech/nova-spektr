@@ -8,15 +8,15 @@ import { ChainId, AccountId } from '@renderer/domain/shared-kernel';
 import { Transaction, TransactionType } from '@renderer/entities/transaction';
 import { Account, isMultisig } from '@renderer/entities/account';
 import { formatAmount, stakeableAmount, nonNullable, toAddress } from '@renderer/shared/lib/utils';
+import { OperationError, OperationFooter, OperationHeader } from '@renderer/features/operation';
 import { OperationForm } from '../../components';
 import {
   getStakeAccountOption,
   validateBalanceForFee,
   validateStake,
   validateBalanceForFeeDeposit,
+  getSignatoryOption,
 } from '../../common/utils';
-import { getSignatoryOption } from '@renderer/pages/Transfer/common/utils';
-import { OperationError, OperationFooter, OperationHeader } from '@renderer/features/operation';
 
 export type StakeMoreResult = {
   accounts: Account[];

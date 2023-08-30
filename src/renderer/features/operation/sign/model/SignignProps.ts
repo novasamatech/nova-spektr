@@ -12,8 +12,8 @@ export type SigningProps = {
   addressPrefix: number;
   accounts: Account[];
   signatory?: Account;
-  validateBalance?: () => Promise<ValidationErrors | undefined>;
-  onGoBack: () => void;
   transactions: Transaction[];
+  onGoBack: () => void;
+  validateBalance?: () => Promise<ValidationErrors | undefined>;
   onResult: (signatures: HexString[], unsignedTxs: UnsignedTransaction[]) => void;
 };

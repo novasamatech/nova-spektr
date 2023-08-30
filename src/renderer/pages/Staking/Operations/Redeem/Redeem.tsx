@@ -10,7 +10,7 @@ import InitOperation, { RedeemResult } from './InitOperation/InitOperation';
 import { Confirmation, Submit, NoAsset } from '../components';
 import { getRelaychainAsset, toAddress, DEFAULT_TRANSITION } from '@renderer/shared/lib/utils';
 import { useToggle } from '@renderer/shared/lib/hooks';
-import OperationModalTitle from '@renderer/pages/Operations/components/OperationModalTitle';
+import { OperationTitle } from '@renderer/components/common';
 import { BaseModal, Button, Loader } from '@renderer/shared/ui';
 import { Signing } from '@renderer/features/operation';
 
@@ -92,7 +92,7 @@ export const Redeem = () => {
         panelClass="w-max"
         headerClass="py-3 px-5 max-w-[440px]"
         isOpen={isRedeemModalOpen}
-        title={<OperationModalTitle title={`${t('staking.redeem.title', { asset: '' })}`} chainId={chainId} />}
+        title={<OperationTitle title={`${t('staking.redeem.title', { asset: '' })}`} chainId={chainId} />}
         onClose={closeRedeemModal}
       >
         <div className="w-[440px] px-5 py-4">
@@ -113,7 +113,7 @@ export const Redeem = () => {
         headerClass="py-3 px-5 max-w-[440px]"
         panelClass="w-max"
         isOpen={isRedeemModalOpen}
-        title={<OperationModalTitle title={`${t('staking.redeem.title', { asset: '' })}`} chainId={chainId} />}
+        title={<OperationTitle title={`${t('staking.redeem.title', { asset: '' })}`} chainId={chainId} />}
         onClose={closeRedeemModal}
       >
         <div className="w-[440px] px-5 py-20">
@@ -193,9 +193,7 @@ export const Redeem = () => {
         headerClass="py-3 px-5 max-w-[440px]"
         panelClass="w-max"
         isOpen={activeStep !== Step.SUBMIT && isRedeemModalOpen}
-        title={
-          <OperationModalTitle title={`${t('staking.redeem.title', { asset: asset.symbol })}`} chainId={chainId} />
-        }
+        title={<OperationTitle title={`${t('staking.redeem.title', { asset: asset.symbol })}`} chainId={chainId} />}
         onClose={closeRedeemModal}
       >
         {activeStep === Step.INIT && (

@@ -4,8 +4,12 @@ export const Paths = {
   // Onboarding
   ONBOARDING: '/onboarding',
 
-  // Navigation
+  // Assets
   ASSETS: '/assets',
+  SEND_ASSET: '/assets/send',
+  RECEIVE_ASSET: '/assets/receive',
+
+  // Navigation
   OPERATIONS: '/operations',
   NOTIFICATIONS: '/notifications',
 

@@ -10,14 +10,14 @@ import { isMultisig, Account } from '@renderer/entities/account';
 import { formatAmount, nonNullable, toAddress } from '@renderer/shared/lib/utils';
 import { StakingMap, useStakingData } from '@renderer/entities/staking';
 import { OperationForm } from '@renderer/pages/Staking/Operations/components';
+import { OperationError, OperationFooter, OperationHeader } from '@renderer/features/operation';
 import {
   getUnstakeAccountOption,
   validateBalanceForFee,
   validateUnstake,
   validateBalanceForFeeDeposit,
+  getSignatoryOption,
 } from '../../common/utils';
-import { getSignatoryOption } from '@renderer/pages/Transfer/common/utils';
-import { OperationError, OperationFooter, OperationHeader } from '@renderer/features/operation';
 
 export type UnstakeResult = {
   accounts: Account[];
