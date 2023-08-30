@@ -1,5 +1,5 @@
 import { BN } from '@polkadot/util';
-import { useEffect, useState } from 'react';
+import { ReactNode, useEffect, useState } from 'react';
 import { Controller, useForm, SubmitHandler } from 'react-hook-form';
 import { ApiPromise } from '@polkadot/api';
 import { Trans } from 'react-i18next';
@@ -12,17 +12,10 @@ import {
   transferableAmount,
   getAssetId,
 } from '@renderer/shared/lib/utils';
-import { Icon, Identicon, Button, AmountInput, Input, InputHint, DetailRow } from '@renderer/shared/ui';
+import { Icon, Identicon, Button, AmountInput, Input, InputHint } from '@renderer/shared/ui';
 import { useI18n } from '@renderer/app/providers';
 import { Asset, AssetType, useBalance } from '@renderer/entities/asset';
-import {
-  Transaction,
-  MultisigTxInitStatus,
-  TransactionType,
-  useTransaction,
-  DepositWithLabel,
-  Fee,
-} from '@renderer/entities/transaction';
+import { Transaction, MultisigTxInitStatus, TransactionType, useTransaction } from '@renderer/entities/transaction';
 import { Address, ChainId, AccountId } from '@renderer/domain/shared-kernel';
 import { useMultisigTx } from '@renderer/entities/multisig';
 import { MultisigAccount, Account, isMultisig } from '@renderer/entities/account';
@@ -45,10 +38,14 @@ type Props = {
   asset: Asset;
   nativeToken: Asset;
   addressPrefix: number;
+  fee: string;
+  feeIsLoading: boolean;
+  deposit: string;
+  footer: ReactNode;
+  header?: ReactNode;
   onSubmit: (transferTx: Transaction, multisig?: { multisigTx: Transaction; description: string }) => void;
   onChangeAmount: (amount: string) => void;
-  onChangeFee: (fee: string) => void;
-  onChangeDeposit: (deposit: string) => void;
+  onTxChange: (tx: Transaction) => void;
 };
 
 export const TransferForm = ({
@@ -57,21 +54,20 @@ export const TransferForm = ({
   account,
   signer,
   asset,
-  nativeToken,
   addressPrefix,
+  header,
+  footer,
   onSubmit,
   onChangeAmount,
-  onChangeFee,
-  onChangeDeposit,
+  onTxChange,
+  feeIsLoading,
+  fee,
+  deposit,
 }: Props) => {
   const { t } = useI18n();
   const { getBalance } = useBalance();
   const { getMultisigTxs } = useMultisigTx({});
   const { getTransactionHash } = useTransaction();
-
-  const [fee, setFee] = useState('');
-  const [feeLoading, setFeeLoading] = useState(false);
-  const [deposit, setDeposit] = useState('');
 
   const [accountBalance, setAccountBalance] = useState('');
   const [signerBalance, setSignerBalance] = useState('');
@@ -103,14 +99,6 @@ export const TransferForm = ({
   useEffect(() => {
     onChangeAmount(formatAmount(amount, asset.precision));
   }, [amount]);
-
-  useEffect(() => {
-    onChangeFee(fee);
-  }, [fee]);
-
-  useEffect(() => {
-    onChangeDeposit(deposit);
-  }, [deposit]);
 
   const setupBalances = (
     address: Address,
@@ -145,9 +133,14 @@ export const TransferForm = ({
   useEffect(() => {
     if (!isMultisig(account)) {
       setMultisigTx(undefined);
-      setDeposit('0');
     }
   }, [account]);
+
+  useEffect(() => {
+    if (fee !== '0') {
+      trigger('amount').then();
+    }
+  }, [fee]);
 
   useEffect(() => {
     if (!account || !amount || !validateAddress(destination)) return;
@@ -159,6 +152,7 @@ export const TransferForm = ({
     }
 
     setTransferTx(transferPayload);
+    onTxChange(transferPayload);
   }, [account, signer, destination, amount]);
 
   const getTransferTx = (accountId: AccountId): Transaction => {
@@ -244,14 +238,6 @@ export const TransferForm = ({
     return new BN(deposit).add(new BN(fee)).lte(new BN(signerBalance));
   };
 
-  const updateFee = async (fee: string) => {
-    setFee(fee);
-
-    if (fee !== '0') {
-      await trigger('amount');
-    }
-  };
-
   const submitTransaction: SubmitHandler<TransferFormData> = async ({ description }) => {
     if (!transferTx) return;
 
@@ -282,6 +268,7 @@ export const TransferForm = ({
   return (
     <form className="w-full" onSubmit={handleSubmit(submitTransaction)}>
       <div className="flex flex-col gap-y-4">
+        {header}
         <Controller
           name="destination"
           control={control}
@@ -383,36 +370,14 @@ export const TransferForm = ({
           />
         )}
 
-        <div className="flex flex-col items-center mt-2 gap-y-4">
-          {isMultisig(account) && (
-            <DepositWithLabel
-              className="text-footnote text-text-primary"
-              api={api}
-              asset={nativeToken}
-              threshold={account.threshold}
-              onDepositChange={setDeposit}
-            />
-          )}
-          <DetailRow label={t('operation.networkFee')} className="text-text-primary">
-            {api && (
-              <Fee
-                className="text-footnote text-text-primary"
-                api={api}
-                asset={nativeToken}
-                transaction={transferTx}
-                onFeeLoading={setFeeLoading}
-                onFeeChange={updateFee}
-              />
-            )}
-          </DetailRow>
-        </div>
+        {footer}
       </div>
 
       <InputHint className="mt-2" active={multisigTxExist} variant="error">
         {t('transfer.multisigTransactionExist')}
       </InputHint>
 
-      <Button className="w-fit flex-0 mt-7 ml-auto" type="submit" disabled={feeLoading || !isValid}>
+      <Button className="w-fit flex-0 mt-7 ml-auto" type="submit" disabled={feeIsLoading || !isValid}>
         {t('transfer.continueButton')}
       </Button>
     </form>

@@ -57,23 +57,13 @@ jest.mock('./InitOperation/InitOperation', () => ({ onResult }: any) => {
 });
 
 jest.mock('../components/index', () => ({
-  Confirmation: ({ onResult }: any) => mockButton('to scan', onResult),
-  Signing: ({ onResult }: any) => mockButton('to submit', onResult),
+  Confirmation: ({ onResult }: any) => mockButton('to sign', onResult),
   Submit: () => 'finish',
 }));
 
-jest.mock(
-  '@renderer/components/common/Scanning/ScanMultiframeQr',
-  () =>
-    ({ onResult }: any) =>
-      mockButton('to sign', onResult),
-);
-jest.mock(
-  '@renderer/components/common/Scanning/ScanSingleframeQr',
-  () =>
-    ({ onResult }: any) =>
-      mockButton('to sign', onResult),
-);
+jest.mock('@renderer/features/operation', () => ({
+  Signing: ({ onResult }: any) => mockButton('to submit', onResult),
+}));
 
 describe('pages/Staking/Unstake', () => {
   test('should render component', async () => {
@@ -93,9 +83,6 @@ describe('pages/Staking/Unstake', () => {
     });
 
     let nextButton = screen.getByRole('button', { name: 'to confirm' });
-    await act(async () => nextButton.click());
-
-    nextButton = screen.getByRole('button', { name: 'to scan' });
     await act(async () => nextButton.click());
 
     nextButton = screen.getByRole('button', { name: 'to sign' });

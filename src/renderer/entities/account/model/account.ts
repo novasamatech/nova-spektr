@@ -106,11 +106,11 @@ export const isMultisig = (account?: Account | MultisigAccount): account is Mult
   return hasSignatories && hasThreshold;
 };
 
-export function isMultishard(account?: Account | MultisigAccount): boolean {
+export const isMultishard = (account?: Account | MultisigAccount): boolean => {
   if (!account) return false;
 
   return Boolean(account.walletId);
-}
+};
 
 export function isWalletContact(account?: Account | MultisigAccount): boolean {
   if (!account) return false;

@@ -7,18 +7,16 @@ import { ChainId, HexString, AccountId, Address } from '@renderer/domain/shared-
 import { Transaction, TransactionType, useTransaction } from '@renderer/entities/transaction';
 import { useAccount, Account, MultisigAccount, isMultisig } from '@renderer/entities/account';
 import InitOperation, { RedeemResult } from './InitOperation/InitOperation';
-import { Confirmation, Signing, Submit, NoAsset } from '../components';
+import { Confirmation, Submit, NoAsset } from '../components';
 import { getRelaychainAsset, toAddress, DEFAULT_TRANSITION } from '@renderer/shared/lib/utils';
-import { useCountdown, useToggle } from '@renderer/shared/lib/hooks';
+import { useToggle } from '@renderer/shared/lib/hooks';
 import OperationModalTitle from '@renderer/pages/Operations/components/OperationModalTitle';
 import { BaseModal, Button, Loader } from '@renderer/shared/ui';
-import ScanMultiframeQr from '@renderer/components/common/Scanning/ScanMultiframeQr';
-import ScanSingleframeQr from '@renderer/components/common/Scanning/ScanSingleframeQr';
+import { Signing } from '@renderer/features/operation';
 
 const enum Step {
   INIT,
   CONFIRMATION,
-  SCANNING,
   SIGNING,
   SUBMIT,
 }
@@ -47,7 +45,6 @@ export const Redeem = () => {
   const [multisigTx, setMultisigTx] = useState<Transaction>();
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [unsignedTransactions, setUnsignedTransactions] = useState<UnsignedTransaction[]>([]);
-  const [txPayloads, setTxPayloads] = useState<Uint8Array[]>([]);
 
   const [signatures, setSignatures] = useState<HexString[]>([]);
 
@@ -60,8 +57,6 @@ export const Redeem = () => {
 
   const { api, explorers, addressPrefix, assets, name } = connections[chainId];
   const asset = getRelaychainAsset(assets);
-
-  const [countdown, resetCountdown] = useCountdown(api);
 
   useEffect(() => {
     const selectedAccounts = dbAccounts.reduce<Account[]>((acc, account) => {
@@ -182,12 +177,8 @@ export const Redeem = () => {
     setActiveStep(Step.CONFIRMATION);
   };
 
-  const onScanResult = (unsigned: UnsignedTransaction[]) => {
+  const onSignResult = (signatures: HexString[], unsigned: UnsignedTransaction[]) => {
     setUnsignedTransactions(unsigned);
-    setActiveStep(Step.SIGNING);
-  };
-
-  const onSignResult = (signatures: HexString[]) => {
     setSignatures(signatures);
     setActiveStep(Step.SUBMIT);
   };
@@ -219,56 +210,21 @@ export const Redeem = () => {
             description={description}
             transaction={transactions[0]}
             multisigTx={multisigTx}
-            onResult={() => setActiveStep(Step.SCANNING)}
+            onResult={() => setActiveStep(Step.SIGNING)}
             onGoBack={goToPrevStep}
             {...explorersProps}
           />
         )}
-        {activeStep === Step.SCANNING && (
-          <div className="w-[440px] px-5 py-4">
-            {transactions.length > 1 ? (
-              <ScanMultiframeQr
-                api={api}
-                addressPrefix={addressPrefix}
-                countdown={countdown}
-                accounts={txAccounts}
-                transactions={transactions}
-                chainId={chainId}
-                onGoBack={() => setActiveStep(Step.CONFIRMATION)}
-                onResetCountdown={resetCountdown}
-                onResult={(unsignedTx, payloads) => {
-                  onScanResult(unsignedTx);
-                  setTxPayloads(payloads);
-                }}
-              />
-            ) : (
-              <ScanSingleframeQr
-                api={api}
-                addressPrefix={addressPrefix}
-                countdown={countdown}
-                account={signer || txAccounts[0]}
-                transaction={multisigTx || transactions[0]}
-                chainId={chainId}
-                onGoBack={() => setActiveStep(Step.CONFIRMATION)}
-                onResetCountdown={resetCountdown}
-                onResult={(unsignedTx, txPayload) => {
-                  onScanResult([unsignedTx]);
-                  setTxPayloads([txPayload]);
-                }}
-              />
-            )}
-          </div>
-        )}
         {activeStep === Step.SIGNING && (
           <Signing
-            txPayloads={txPayloads}
-            countdown={countdown}
-            accountIds={
-              transactions.length > 1 ? txAccounts.map((t) => t.accountId) : [(signer || txAccounts[0])?.accountId]
-            }
-            multiQr={transactions.length > 1}
+            chainId={chainId}
+            api={api}
+            addressPrefix={addressPrefix}
+            signatory={signer}
+            accounts={txAccounts}
+            transactions={multisigTx ? [multisigTx] : transactions}
+            onGoBack={() => setActiveStep(Step.CONFIRMATION)}
             onResult={onSignResult}
-            onGoBack={() => setActiveStep(Step.SCANNING)}
           />
         )}
       </BaseModal>

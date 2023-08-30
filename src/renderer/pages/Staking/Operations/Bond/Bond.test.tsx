@@ -58,9 +58,12 @@ jest.mock('./InitOperation/InitOperation', () => ({ onResult }: any) => {
 
 jest.mock('../components/index', () => ({
   Validators: ({ onResult }: any) => mockButton('to confirm', onResult),
-  Confirmation: ({ onResult }: any) => mockButton('to scan', onResult),
-  Signing: ({ onResult }: any) => mockButton('to submit', onResult),
+  Confirmation: ({ onResult }: any) => mockButton('to sign', onResult),
   Submit: () => 'finish',
+}));
+
+jest.mock('@renderer/features/operation', () => ({
+  Signing: ({ onResult }: any) => mockButton('to submit', onResult),
 }));
 
 jest.mock(
@@ -97,9 +100,6 @@ describe('pages/Staking/Bond', () => {
     await act(async () => nextButton.click());
 
     nextButton = screen.getByRole('button', { name: 'to confirm' });
-    await act(async () => nextButton.click());
-
-    nextButton = screen.getByRole('button', { name: 'to scan' });
     await act(async () => nextButton.click());
 
     nextButton = screen.getByRole('button', { name: 'to sign' });

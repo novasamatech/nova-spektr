@@ -17,7 +17,7 @@ type Props = {
   onFeeLoading: (value: boolean) => void;
 };
 
-const OperationFooter = ({
+export const OperationFooter = ({
   api,
   asset,
   transaction,
@@ -77,5 +77,3 @@ const OperationFooter = ({
     </div>
   );
 };
-
-export default OperationFooter;

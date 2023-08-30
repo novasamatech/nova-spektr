@@ -12,7 +12,6 @@ import { RadioOption } from '@renderer/shared/ui/RadioGroup/common/types';
 import { DropdownOption, ComboboxOption } from '@renderer/shared/ui/Dropdowns/common/types';
 import { useAccount } from '@renderer/entities/account';
 import { getPayoutAccountOption } from '../../common/utils';
-import OperationFooter from './OperationFooter';
 
 const getDestinations = (t: TFunction): RadioOption<RewardsDestination>[] => {
   const Options = [
@@ -57,7 +56,7 @@ type Props = {
   validateFee?: (amount: string) => boolean;
   validateDeposit?: (amount: string) => boolean;
   footer: ReactNode;
-  children?: ReactNode | ((data: ErrorPayload) => ReactNode);
+  header?: ReactNode | ((data: ErrorPayload) => ReactNode);
   onAmountChange?: (amount: string) => void;
   onSubmit: (data: FormData<Address>) => void;
 };
@@ -74,7 +73,7 @@ export const OperationForm = ({
   validateFee = () => true,
   validateDeposit = () => true,
   footer,
-  children,
+  header,
   onAmountChange,
   onSubmit,
 }: Props) => {
@@ -158,13 +157,13 @@ export const OperationForm = ({
 
   return (
     <form className="w-full" onSubmit={handleSubmit(submitForm)}>
-      {typeof children === 'function'
-        ? children({
+      {typeof header === 'function'
+        ? header({
             invalidBalance: errors.amount?.type === 'insufficientBalance',
             invalidFee: errors.amount?.type === 'insufficientBalanceForFee',
             invalidDeposit: errors.amount?.type === 'insufficientBalanceForDeposit',
           })
-        : children}
+        : header}
 
       <div className="flex flex-col gap-y-5">
         {amountField && (
@@ -295,5 +294,3 @@ export const OperationForm = ({
     </form>
   );
 };
-
-OperationForm.Footer = OperationFooter;

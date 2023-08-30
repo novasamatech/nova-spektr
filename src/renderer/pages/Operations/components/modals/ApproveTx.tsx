@@ -6,9 +6,17 @@ import { BN } from '@polkadot/util';
 import { Icon, BaseModal, Button } from '@renderer/shared/ui';
 import { useI18n } from '@renderer/app/providers';
 import { AccountDS, MultisigTransactionDS } from '@renderer/shared/api/storage';
-import { useCountdown, useToggle } from '@renderer/shared/lib/hooks';
+import { useToggle } from '@renderer/shared/lib/hooks';
 import { Account, MultisigAccount, useAccount } from '@renderer/entities/account';
 import { ExtendedChain } from '@renderer/entities/network';
+import {
+  Transaction,
+  TransactionType,
+  useTransaction,
+  OperationResult,
+  useCallDataDecoder,
+  validateBalance,
+} from '@renderer/entities/transaction';
 import { Address, HexString, SigningType, Timepoint } from '@renderer/domain/shared-kernel';
 import { toAddress, transferableAmount, TEST_ADDRESS } from '@renderer/shared/lib/utils';
 import { getTransactionTitle } from '../../common/utils';
@@ -17,16 +25,8 @@ import { useBalance } from '@renderer/entities/asset';
 import Confirmation from '@renderer/pages/Operations/components/ActionSteps/Confirmation';
 import SignatorySelectModal from '@renderer/pages/Operations/components/modals/SignatorySelectModal';
 import OperationModalTitle from '@renderer/pages/Operations/components/OperationModalTitle';
-import { Signing } from '@renderer/pages/Transfer/components/ActionSteps';
-import ScanSingleframeQr from '@renderer/components/common/Scanning/ScanSingleframeQr';
 import { useMultisigEvent } from '@renderer/entities/multisig';
-import {
-  Transaction,
-  TransactionType,
-  useTransaction,
-  OperationResult,
-  useCallDataDecoder,
-} from '@renderer/entities/transaction';
+import { Signing } from '@renderer/features/operation';
 
 type Props = {
   tx: MultisigTransactionDS;
@@ -36,12 +36,11 @@ type Props = {
 
 const enum Step {
   CONFIRMATION,
-  SCANNING,
   SIGNING,
   SUBMIT,
 }
 
-const AllSteps = [Step.CONFIRMATION, Step.SCANNING, Step.SIGNING, Step.SUBMIT];
+const AllSteps = [Step.CONFIRMATION, Step.SIGNING, Step.SUBMIT];
 
 const ApproveTx = ({ tx, account, connection }: Props) => {
   const { t } = useI18n();
@@ -57,13 +56,11 @@ const ApproveTx = ({ tx, account, connection }: Props) => {
   const [isFeeModalOpen, toggleFeeModal] = useToggle();
 
   const [activeStep, setActiveStep] = useState(Step.CONFIRMATION);
-  const [countdown, resetCountdown] = useCountdown(connection.api);
   const [signAccount, setSignAccount] = useState<Account>();
 
   const [feeTx, setFeeTx] = useState<Transaction>();
   const [approveTx, setApproveTx] = useState<Transaction>();
   const [unsignedTx, setUnsignedTx] = useState<UnsignedTransaction>();
-  const [txPayload, setTxPayload] = useState<Uint8Array>();
 
   const [txWeight, setTxWeight] = useState<Weight>();
   const [signature, setSignature] = useState<HexString>();
@@ -79,6 +76,8 @@ const ApproveTx = ({ tx, account, connection }: Props) => {
 
     return isSignatory && notSigned && isCurrentChain && notWatchOnly;
   });
+
+  const nativeAsset = connection.assets[0];
 
   useEffect(() => {
     setFeeTx(getMultisigTx(TEST_ADDRESS));
@@ -100,8 +99,9 @@ const ApproveTx = ({ tx, account, connection }: Props) => {
     setActiveStep(AllSteps.indexOf(activeStep) - 1);
   };
 
-  const onSignResult = (signature: HexString) => {
-    setSignature(signature);
+  const onSignResult = (signature: HexString[], unsigned: UnsignedTransaction[]) => {
+    setSignature(signature[0]);
+    setUnsignedTx(unsigned[0]);
     setIsModalOpen(false);
     setActiveStep(Step.SUBMIT);
   };
@@ -110,8 +110,6 @@ const ApproveTx = ({ tx, account, connection }: Props) => {
     setIsModalOpen(false);
     setActiveStep(Step.CONFIRMATION);
   };
-
-  const nativeAsset = connection.assets[0];
 
   const getMultisigTx = (signer: Address): Transaction => {
     const signerAddress = toAddress(signer, { prefix: connection?.addressPrefix });
@@ -161,7 +159,7 @@ const ApproveTx = ({ tx, account, connection }: Props) => {
     const isValid = await validateBalanceForFee(account);
 
     if (isValid) {
-      setActiveStep(Step.SCANNING);
+      setActiveStep(Step.SIGNING);
     } else {
       toggleFeeModal();
     }
@@ -172,11 +170,21 @@ const ApproveTx = ({ tx, account, connection }: Props) => {
   const selectAccount = () => {
     if (unsignedAccounts.length === 1) {
       setSignAccount(unsignedAccounts[0]);
-      setActiveStep(Step.SCANNING);
+      setActiveStep(Step.SIGNING);
     } else {
       toggleSelectAccountModal();
     }
   };
+
+  const checkBalance = () =>
+    validateBalance({
+      api: connection.api,
+      chainId: tx.chainId,
+      transaction: approveTx,
+      assetId: nativeAsset?.assetId.toString(),
+      getBalance,
+      getTransactionFee,
+    });
 
   const thresholdReached = events.filter((e) => e.status === 'SIGNED').length === account.threshold - 1;
 
@@ -212,42 +220,18 @@ const ApproveTx = ({ tx, account, connection }: Props) => {
           </>
         )}
 
-        {activeStep === Step.SCANNING && approveTx && connection.api && signAccount && (
-          <ScanSingleframeQr
-            api={connection.api}
+        {activeStep === Step.SIGNING && approveTx && connection.api && signAccount && (
+          <Signing
             chainId={tx.chainId}
-            transaction={approveTx}
-            account={signAccount}
-            explorers={connection?.explorers}
+            api={connection.api}
             addressPrefix={connection?.addressPrefix}
-            countdown={countdown}
-            onResetCountdown={resetCountdown}
+            accounts={[signAccount]}
+            transactions={[approveTx]}
+            signatory={signAccount}
+            validateBalance={checkBalance}
             onGoBack={goBack}
-            onResult={(tx, txPayload) => {
-              setUnsignedTx(tx);
-              setTxPayload(txPayload);
-              setActiveStep(Step.SIGNING);
-            }}
+            onResult={onSignResult}
           />
-        )}
-
-        {activeStep === Step.SIGNING && (
-          <div>
-            {approveTx && connection.api && signAccount && (
-              <Signing
-                api={connection.api}
-                chainId={tx.chainId}
-                transaction={approveTx}
-                countdown={countdown}
-                accountId={signAccount?.accountId}
-                assetId={nativeAsset?.assetId.toString() || '0'}
-                txPayload={txPayload}
-                onGoBack={goBack}
-                onStartOver={() => {}}
-                onResult={onSignResult}
-              />
-            )}
-          </div>
         )}
 
         <SignatorySelectModal

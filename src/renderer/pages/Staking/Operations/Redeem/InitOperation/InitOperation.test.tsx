@@ -46,11 +46,11 @@ jest.mock('@renderer/entities/asset', () => ({
 }));
 
 jest.mock('../../components', () => ({
-  OperationForm: ({ children }: any) => {
+  OperationForm: ({ header }: any) => {
     return (
       <div>
         <p>operationForm</p>
-        {children({ invalidBalance: false, invalidFee: false, invalidDeposit: false })}
+        {header({ invalidBalance: false, invalidFee: false, invalidDeposit: false })}
       </div>
     );
   },
@@ -61,7 +61,7 @@ describe('pages/Staking/Redeem/InitOperation', () => {
     api: {} as ApiPromise,
     chainId: '0x123' as ChainId,
     addressPrefix: 0,
-    accounts: [{ name: 'Test Wallet', accountId: TEST_ACCOUNT_ID }] as unknown as Account[],
+    accounts: [{ name: 'Test Wallet', accountId: TEST_ACCOUNT_ID, walletId: 1 }] as unknown as Account[],
     asset: { assetId: 1, symbol: 'DOT', precision: 10 } as Asset,
     onResult: noop,
   };

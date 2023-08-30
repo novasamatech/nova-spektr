@@ -2,23 +2,22 @@ import { ApiPromise } from '@polkadot/api';
 import { BN } from '@polkadot/util';
 import { useEffect, useState } from 'react';
 
-import { DropdownOption, DropdownResult } from '@renderer/shared/ui/Dropdowns/common/types';
+import { OperationError, OperationFooter, OperationHeader } from '@renderer/features/operation';
 import { useI18n } from '@renderer/app/providers';
 import { Asset, Balance as AccountBalance, useBalance } from '@renderer/entities/asset';
-import { AccountId, Address, ChainId, SigningType } from '@renderer/domain/shared-kernel';
+import { AccountId, Address, ChainId } from '@renderer/domain/shared-kernel';
 import { Transaction, TransactionType } from '@renderer/entities/transaction';
-import { useAccount, Account, isMultisig, MultisigAccount } from '@renderer/entities/account';
+import { Account, isMultisig, MultisigAccount } from '@renderer/entities/account';
 import { formatAmount, stakeableAmount, toAddress, nonNullable, TEST_ADDRESS } from '@renderer/shared/lib/utils';
 import { useValidators } from '@renderer/entities/staking';
-import { InputHint, MultiSelect, Select } from '@renderer/shared/ui';
 import { OperationForm } from '../../components';
 import {
-  getSignatoryOptions,
   getStakeAccountOption,
   validateBalanceForFee,
   validateBalanceForFeeDeposit,
   validateStake,
 } from '../../common/utils';
+import { getSignatoryOption } from '@renderer/pages/Transfer/common/utils';
 
 export type BondResult = {
   amount: string;
@@ -39,11 +38,8 @@ type Props = {
 
 const InitOperation = ({ api, chainId, accounts, asset, addressPrefix, onResult }: Props) => {
   const { t } = useI18n();
-  const { getLiveAccounts } = useAccount();
   const { getMaxValidators } = useValidators();
   const { getLiveAssetBalances } = useBalance();
-
-  const dbAccounts = getLiveAccounts();
 
   const [fee, setFee] = useState('');
   const [feeLoading, setFeeLoading] = useState(true);
@@ -52,16 +48,14 @@ const InitOperation = ({ api, chainId, accounts, asset, addressPrefix, onResult 
 
   const [minBalance, setMinBalance] = useState('0');
 
-  const [stakeAccounts, setStakeAccounts] = useState<DropdownOption<Account | MultisigAccount>[]>([]);
-  const [activeStakeAccounts, setActiveStakeAccounts] = useState<DropdownResult<Account | MultisigAccount>[]>([]);
+  const [activeStakeAccounts, setActiveStakeAccounts] = useState<(Account | MultisigAccount)[]>([]);
 
-  const [activeSignatory, setActiveSignatory] = useState<DropdownResult<Account>>();
-  const [signatoryOptions, setSignatoryOptions] = useState<DropdownOption<Account>[]>([]);
+  const [activeSignatory, setActiveSignatory] = useState<Account>();
 
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [activeBalances, setActiveBalances] = useState<AccountBalance[]>([]);
 
-  const firstAccount = activeStakeAccounts[0]?.value;
+  const firstAccount = activeStakeAccounts[0] || accounts[0];
   const accountIsMultisig = isMultisig(firstAccount);
   const formFields = accountIsMultisig
     ? [{ name: 'amount' }, { name: 'destination' }, { name: 'description' }]
@@ -72,16 +66,34 @@ const InitOperation = ({ api, chainId, accounts, asset, addressPrefix, onResult 
 
   const signatoryIds = accountIsMultisig ? firstAccount.signatories.map((s) => s.accountId) : [];
   const signatoriesBalances = getLiveAssetBalances(signatoryIds, chainId, asset.assetId.toString());
-  const signerBalance = signatoriesBalances.find((b) => b.accountId === activeSignatory?.value.accountId);
+  const signerBalance = signatoriesBalances.find((b) => b.accountId === activeSignatory?.accountId);
+
+  useEffect(() => {
+    if (accounts.length === 0) return;
+
+    setActiveStakeAccounts(accounts);
+  }, [accounts.length]);
 
   useEffect(() => {
     const balancesMap = new Map(balances.map((balance) => [balance.accountId, balance]));
     const newActiveBalances = activeStakeAccounts
-      .map((a) => balancesMap.get(a.id as AccountId))
+      .map((a) => balancesMap.get(a.accountId))
       .filter(nonNullable) as AccountBalance[];
 
     setActiveBalances(newActiveBalances);
   }, [activeStakeAccounts.length, balances]);
+
+  const getAccountDropdownOption = (account: Account) => {
+    const balance = balances.find((b) => b.accountId === account.accountId);
+
+    return getStakeAccountOption(account, { asset, fee, amount, balance, addressPrefix });
+  };
+
+  const getSignatoryDrowdownOption = (account: Account) => {
+    const balance = signatoriesBalances.find((b) => b.accountId === account.accountId);
+
+    return getSignatoryOption(account, { balance, asset, addressPrefix, fee, deposit });
+  };
 
   useEffect(() => {
     if (accountIsMultisig || activeBalances.length === 1) {
@@ -104,50 +116,16 @@ const InitOperation = ({ api, chainId, accounts, asset, addressPrefix, onResult 
   }, [activeBalances.length, activeSignatory, signerBalance]);
 
   useEffect(() => {
-    const formattedAccounts = accounts.map((account) => {
-      const balance = balances.find((b) => b.accountId === account.accountId);
-
-      return getStakeAccountOption(account, { asset, fee, amount, balance, addressPrefix });
-    });
-
-    if (formattedAccounts.length === 0) return;
-
-    setStakeAccounts(formattedAccounts);
-  }, [amount, fee, balances, accounts.length]);
-
-  useEffect(() => {
-    if (!accountIsMultisig) return;
-
-    const signerOptions = dbAccounts.reduce<DropdownOption<Account>[]>((acc, signer) => {
-      const isWatchOnly = signer.signingType === SigningType.WATCH_ONLY;
-      const signerExist = signatoryIds.includes(signer.accountId);
-      if (!isWatchOnly && signerExist) {
-        const balance = signatoriesBalances.find((b) => b.accountId === signer.accountId);
-
-        acc.push(getSignatoryOptions(signer, { addressPrefix, asset, balance }));
-      }
-
-      return acc;
-    }, []);
-
-    if (signerOptions.length === 0) return;
-
-    setSignatoryOptions(signerOptions);
-    !activeSignatory && setActiveSignatory({ id: signerOptions[0].id, value: signerOptions[0].value });
-  }, [accountIsMultisig, dbAccounts.length, signatoriesBalances]);
-
-  useEffect(() => {
-    if (stakeAccounts.length === 0) return;
-
-    const activeAccounts = stakeAccounts.map(({ id, value }) => ({ id, value }));
-    setActiveStakeAccounts(activeAccounts);
-  }, [stakeAccounts.length]);
+    if (accountIsMultisig) {
+      setActiveStakeAccounts(accounts);
+    }
+  }, [accountIsMultisig, firstAccount?.accountId]);
 
   useEffect(() => {
     const maxValidators = getMaxValidators(api);
 
-    const bondPayload = activeStakeAccounts.map(({ id }) => {
-      const address = toAddress(id, { prefix: addressPrefix });
+    const bondPayload = activeStakeAccounts.map(({ accountId }) => {
+      const address = toAddress(accountId, { prefix: addressPrefix });
       const commonPayload = { chainId, address };
 
       const bondTx = {
@@ -177,7 +155,7 @@ const InitOperation = ({ api, chainId, accounts, asset, addressPrefix, onResult 
   }, [activeStakeAccounts.length, amount]);
 
   const submitBond = (data: { amount: string; destination?: string; description?: string }) => {
-    const selectedAccountIds = activeStakeAccounts.map((a) => a.id);
+    const selectedAccountIds = activeStakeAccounts.map((a) => a.accountId);
     const selectedAccounts = accounts.filter((account) => selectedAccountIds.includes(account.accountId));
 
     onResult({
@@ -186,7 +164,7 @@ const InitOperation = ({ api, chainId, accounts, asset, addressPrefix, onResult 
       destination: data.destination || '',
       ...(accountIsMultisig && {
         description: data.description || t('transactionMessage.bond', { amount: data.amount, asset: asset.symbol }),
-        signer: activeSignatory?.value,
+        signer: activeSignatory,
       }),
     });
   };
@@ -221,9 +199,9 @@ const InitOperation = ({ api, chainId, accounts, asset, addressPrefix, onResult 
   const canSubmit = !feeLoading && (activeStakeAccounts.length > 0 || Boolean(activeSignatory));
 
   const getActiveAccounts = (): AccountId[] => {
-    if (!accountIsMultisig) return activeStakeAccounts.map((acc) => acc.id as AccountId);
+    if (!accountIsMultisig) return activeStakeAccounts.map((acc) => acc.accountId as AccountId);
 
-    return activeSignatory ? [activeSignatory.id as AccountId] : [];
+    return activeSignatory ? [activeSignatory.accountId] : [];
   };
 
   return (
@@ -239,8 +217,20 @@ const InitOperation = ({ api, chainId, accounts, asset, addressPrefix, onResult 
         validateBalance={validateBalance}
         validateFee={validateFee}
         validateDeposit={validateDeposit}
+        header={({ invalidBalance, invalidFee, invalidDeposit }) => (
+          <OperationHeader
+            chainId={chainId}
+            accounts={accounts}
+            isMultiselect
+            errors={invalidDeposit || invalidFee || invalidBalance ? [OperationError.EMPTY_ERROR] : undefined}
+            getSignatoryOption={getSignatoryDrowdownOption}
+            getAccountOption={getAccountDropdownOption}
+            onSignatoryChange={setActiveSignatory}
+            onAccountChange={setActiveStakeAccounts}
+          />
+        )}
         footer={
-          <OperationForm.Footer
+          <OperationFooter
             api={api}
             asset={asset}
             account={firstAccount}
@@ -253,35 +243,7 @@ const InitOperation = ({ api, chainId, accounts, asset, addressPrefix, onResult 
         }
         onSubmit={submitBond}
         onAmountChange={setAmount}
-      >
-        {({ invalidBalance, invalidFee, invalidDeposit }) =>
-          accountIsMultisig ? (
-            <div className="flex flex-col gap-y-2 mb-4">
-              <Select
-                label={t('staking.bond.signatoryLabel')}
-                placeholder={t('staking.bond.signatoryPlaceholder')}
-                disabled={!signatoryOptions.length}
-                invalid={invalidDeposit || invalidFee}
-                selectedId={activeSignatory?.id}
-                options={signatoryOptions}
-                onChange={setActiveSignatory}
-              />
-              <InputHint active={!signatoryOptions.length}>{t('multisigOperations.noSignatory')}</InputHint>
-            </div>
-          ) : (
-            <MultiSelect
-              className="mb-4"
-              label={t('staking.bond.accountLabel')}
-              placeholder={t('staking.bond.accountPlaceholder')}
-              multiPlaceholder={t('staking.bond.manyAccountsPlaceholder')}
-              invalid={invalidBalance || invalidFee}
-              selectedIds={activeStakeAccounts.map((acc) => acc.id)}
-              options={stakeAccounts}
-              onChange={setActiveStakeAccounts}
-            />
-          )
-        }
-      </OperationForm>
+      />
     </div>
   );
 };
