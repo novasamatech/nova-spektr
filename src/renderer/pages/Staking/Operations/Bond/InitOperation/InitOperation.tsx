@@ -69,6 +69,12 @@ const InitOperation = ({ api, chainId, accounts, asset, addressPrefix, onResult 
   const signerBalance = signatoriesBalances.find((b) => b.accountId === activeSignatory?.accountId);
 
   useEffect(() => {
+    if (accounts.length === 0) return;
+
+    setActiveStakeAccounts(accounts);
+  }, [accounts.length]);
+
+  useEffect(() => {
     const balancesMap = new Map(balances.map((balance) => [balance.accountId, balance]));
     const newActiveBalances = activeStakeAccounts
       .map((a) => balancesMap.get(a.accountId))
@@ -211,6 +217,18 @@ const InitOperation = ({ api, chainId, accounts, asset, addressPrefix, onResult 
         validateBalance={validateBalance}
         validateFee={validateFee}
         validateDeposit={validateDeposit}
+        header={({ invalidBalance, invalidFee, invalidDeposit }) => (
+          <OperationHeader
+            chainId={chainId}
+            accounts={accounts}
+            isMultiselect
+            errors={invalidDeposit || invalidFee || invalidBalance ? [OperationError.EMPTY_ERROR] : undefined}
+            getSignatoryOption={getSignatoryDrowdownOption}
+            getAccountOption={getAccountDropdownOption}
+            onSignatoryChange={setActiveSignatory}
+            onAccountChange={setActiveStakeAccounts}
+          />
+        )}
         footer={
           <OperationFooter
             api={api}
@@ -223,20 +241,6 @@ const InitOperation = ({ api, chainId, accounts, asset, addressPrefix, onResult 
             onDepositChange={setDeposit}
           />
         }
-        header={({ invalidBalance, invalidFee, invalidDeposit }) => (
-          <div>
-            <OperationHeader
-              chainId={chainId}
-              accounts={accounts}
-              isMultiselect
-              errors={invalidDeposit || invalidFee || invalidBalance ? [OperationError.EMPTY_ERROR] : undefined}
-              getSignatoryOption={getSignatoryDrowdownOption}
-              getAccountOption={getAccountDropdownOption}
-              onSignatoryChange={setActiveSignatory}
-              onAccountChange={setActiveStakeAccounts}
-            />
-          </div>
-        )}
         onSubmit={submitBond}
         onAmountChange={setAmount}
       />

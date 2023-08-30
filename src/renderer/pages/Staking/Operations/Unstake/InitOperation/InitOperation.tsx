@@ -72,6 +72,12 @@ const InitOperation = ({ api, chainId, addressPrefix, accounts, asset, onResult 
   }, [api]);
 
   useEffect(() => {
+    if (accounts.length === 0) return;
+
+    setActiveUnstakeAccounts(accounts);
+  }, [accounts.length]);
+
+  useEffect(() => {
     const addresses = activeUnstakeAccounts.map((stake) => toAddress(stake.accountId, { prefix: addressPrefix }));
 
     let unsubStaking: () => void | undefined;
@@ -213,18 +219,6 @@ const InitOperation = ({ api, chainId, addressPrefix, accounts, asset, onResult 
         validateBalance={validateBalance}
         validateFee={validateFee}
         validateDeposit={validateDeposit}
-        footer={
-          <OperationFooter
-            api={api}
-            asset={asset}
-            account={firstAccount}
-            totalAccounts={activeUnstakeAccounts.length}
-            transaction={transactions[0]}
-            onFeeChange={setFee}
-            onFeeLoading={setFeeLoading}
-            onDepositChange={setDeposit}
-          />
-        }
         header={({ invalidBalance, invalidFee, invalidDeposit }) => (
           <OperationHeader
             chainId={chainId}
@@ -237,6 +231,18 @@ const InitOperation = ({ api, chainId, addressPrefix, accounts, asset, onResult 
             onAccountChange={setActiveUnstakeAccounts}
           />
         )}
+        footer={
+          <OperationFooter
+            api={api}
+            asset={asset}
+            account={firstAccount}
+            totalAccounts={activeUnstakeAccounts.length}
+            transaction={transactions[0]}
+            onFeeChange={setFee}
+            onFeeLoading={setFeeLoading}
+            onDepositChange={setDeposit}
+          />
+        }
         onSubmit={submitUnstake}
         onAmountChange={setAmount}
       />

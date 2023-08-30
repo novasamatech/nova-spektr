@@ -66,6 +66,12 @@ const InitOperation = ({ api, chainId, accounts, addressPrefix, asset, onResult 
   const signerBalance = signatoriesBalances.find((b) => b.accountId === activeSignatory?.accountId);
 
   useEffect(() => {
+    if (accounts.length === 0) return;
+
+    setActiveRedeemAccounts(accounts);
+  }, [accounts.length]);
+
+  useEffect(() => {
     const addresses = activeRedeemAccounts.map((stake) => toAddress(stake.accountId, { prefix: addressPrefix }));
 
     let unsubEra: () => void | undefined;
@@ -192,18 +198,6 @@ const InitOperation = ({ api, chainId, accounts, addressPrefix, asset, onResult 
         balanceRange={totalRedeem}
         validateFee={validateFee}
         validateDeposit={validateDeposit}
-        footer={
-          <OperationFooter
-            api={api}
-            asset={asset}
-            account={firstAccount}
-            totalAccounts={activeRedeemAccounts.length}
-            transaction={transactions[0]}
-            onFeeChange={setFee}
-            onFeeLoading={setFeeLoading}
-            onDepositChange={setDeposit}
-          />
-        }
         header={({ invalidBalance, invalidFee, invalidDeposit }) => (
           <OperationHeader
             chainId={chainId}
@@ -216,6 +210,18 @@ const InitOperation = ({ api, chainId, accounts, addressPrefix, asset, onResult 
             onAccountChange={setActiveRedeemAccounts}
           />
         )}
+        footer={
+          <OperationFooter
+            api={api}
+            asset={asset}
+            account={firstAccount}
+            totalAccounts={activeRedeemAccounts.length}
+            transaction={transactions[0]}
+            onFeeChange={setFee}
+            onFeeLoading={setFeeLoading}
+            onDepositChange={setDeposit}
+          />
+        }
         onSubmit={submitRedeem}
       />
     </div>

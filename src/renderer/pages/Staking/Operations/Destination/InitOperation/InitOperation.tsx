@@ -54,6 +54,12 @@ const InitOperation = ({ api, chainId, accounts, addressPrefix, asset, onResult 
   const signerBalance = signatoriesBalances.find((b) => b.accountId === activeSignatory?.accountId);
 
   useEffect(() => {
+    if (accounts.length === 0) return;
+
+    setActiveDestAccounts(accounts);
+  }, [accounts.length]);
+
+  useEffect(() => {
     const balancesMap = new Map(balances.map((balance) => [balance.accountId, balance]));
     const newActiveBalances = activeDestAccounts
       .map((a) => balancesMap.get(a.accountId))
@@ -146,18 +152,6 @@ const InitOperation = ({ api, chainId, accounts, addressPrefix, asset, onResult 
         addressPrefix={addressPrefix}
         fields={formFields}
         asset={asset}
-        footer={
-          <OperationFooter
-            api={api}
-            asset={asset}
-            account={firstAccount}
-            totalAccounts={activeDestAccounts.length}
-            transaction={transactions[0]}
-            onFeeChange={setFee}
-            onFeeLoading={setFeeLoading}
-            onDepositChange={setDeposit}
-          />
-        }
         header={
           <OperationHeader
             chainId={chainId}
@@ -168,6 +162,18 @@ const InitOperation = ({ api, chainId, accounts, addressPrefix, asset, onResult 
             getSignatoryOption={getSignatoryDrowdownOption}
             onSignatoryChange={setActiveSignatory}
             onAccountChange={setActiveDestAccounts}
+          />
+        }
+        footer={
+          <OperationFooter
+            api={api}
+            asset={asset}
+            account={firstAccount}
+            totalAccounts={activeDestAccounts.length}
+            transaction={transactions[0]}
+            onFeeChange={setFee}
+            onFeeLoading={setFeeLoading}
+            onDepositChange={setDeposit}
           />
         }
         onSubmit={submitDestination}

@@ -56,6 +56,12 @@ const InitOperation = ({ api, chainId, accounts, asset, addressPrefix, onResult 
   const signerBalance = signatoriesBalances.find((b) => b.accountId === activeSignatory?.accountId);
 
   useEffect(() => {
+    if (accounts.length === 0) return;
+
+    setActiveValidatorsAccounts(accounts);
+  }, [accounts.length]);
+
+  useEffect(() => {
     const balancesMap = new Map(balances.map((balance) => [balance.accountId, balance]));
     const newActiveBalances = activeValidatorsAccounts
       .map((a) => balancesMap.get(a.accountId))
@@ -150,18 +156,6 @@ const InitOperation = ({ api, chainId, accounts, asset, addressPrefix, onResult 
         addressPrefix={addressPrefix}
         fields={formFields}
         asset={asset}
-        footer={
-          <OperationFooter
-            api={api}
-            asset={asset}
-            account={firstAccount}
-            totalAccounts={activeValidatorsAccounts.length}
-            transaction={transactions[0]}
-            onFeeChange={setFee}
-            onFeeLoading={setFeeLoading}
-            onDepositChange={setDeposit}
-          />
-        }
         header={
           <OperationHeader
             chainId={chainId}
@@ -172,6 +166,18 @@ const InitOperation = ({ api, chainId, accounts, asset, addressPrefix, onResult 
             getSignatoryOption={getSignatoryDrowdownOption}
             onSignatoryChange={setActiveSignatory}
             onAccountChange={setActiveValidatorsAccounts}
+          />
+        }
+        footer={
+          <OperationFooter
+            api={api}
+            asset={asset}
+            account={firstAccount}
+            totalAccounts={activeValidatorsAccounts.length}
+            transaction={transactions[0]}
+            onFeeChange={setFee}
+            onFeeLoading={setFeeLoading}
+            onDepositChange={setDeposit}
           />
         }
         onSubmit={submitBond}

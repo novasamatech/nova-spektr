@@ -66,6 +66,12 @@ const InitOperation = ({ api, chainId, accounts, addressPrefix, asset, onResult 
   const signerBalance = signatoriesBalances.find((b) => b.accountId === activeSignatory?.accountId);
 
   useEffect(() => {
+    if (accounts.length === 0) return;
+
+    setActiveRestakeAccounts(accounts);
+  }, [accounts.length]);
+
+  useEffect(() => {
     const addresses = activeRestakeAccounts.map((stake) => toAddress(stake.accountId, { prefix: addressPrefix }));
 
     let unsubStaking: () => void | undefined;
@@ -198,18 +204,6 @@ const InitOperation = ({ api, chainId, accounts, addressPrefix, asset, onResult 
         validateBalance={validateBalance}
         validateFee={validateFee}
         validateDeposit={validateDeposit}
-        footer={
-          <OperationFooter
-            api={api}
-            asset={asset}
-            account={firstAccount}
-            totalAccounts={activeRestakeAccounts.length}
-            transaction={transactions[0]}
-            onFeeChange={setFee}
-            onFeeLoading={setFeeLoading}
-            onDepositChange={setDeposit}
-          />
-        }
         header={({ invalidBalance, invalidFee, invalidDeposit }) => (
           <OperationHeader
             chainId={chainId}
@@ -222,6 +216,18 @@ const InitOperation = ({ api, chainId, accounts, addressPrefix, asset, onResult 
             onAccountChange={setActiveRestakeAccounts}
           />
         )}
+        footer={
+          <OperationFooter
+            api={api}
+            asset={asset}
+            account={firstAccount}
+            totalAccounts={activeRestakeAccounts.length}
+            transaction={transactions[0]}
+            onFeeChange={setFee}
+            onFeeLoading={setFeeLoading}
+            onDepositChange={setDeposit}
+          />
+        }
         onSubmit={submitRestake}
         onAmountChange={setAmount}
       />

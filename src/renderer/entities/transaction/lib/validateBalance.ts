@@ -70,9 +70,6 @@ export const getOperationErrors = (
   isDepositInvalid: boolean,
   hasOtherErrors?: boolean,
 ): OperationErrorType[] => {
-  console.log('isFeeInvalid', isFeeInvalid);
-  console.log('isDepositInvalid', isDepositInvalid);
-  console.log('hasOtherErrors', hasOtherErrors);
   const errors: OperationErrorType[] = [];
 
   if (isDepositInvalid) {
