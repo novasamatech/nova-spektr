@@ -1,4 +1,4 @@
-import { groupBy } from 'lodash';
+import groupBy from 'lodash/groupBy';
 import { format } from 'date-fns';
 
 import { useI18n } from '@renderer/app/providers';

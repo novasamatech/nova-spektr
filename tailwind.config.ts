@@ -18,8 +18,8 @@ export default {
       colors,
       fontSize: fontSizes,
       boxShadow: {
-        'shadow-primary': '0 4px 4px rgba(69, 69, 137, 0.12), 0 -0.5px 0 rgba(69, 69, 137, 0.04)',
-        'shadow-secondary': '0 4px 6px rgba(69, 69, 137, 0.12), 0 -0.5px 0 rgba(69, 69, 137, 0.06)',
+        'shadow-primary': '0 4px 4px 0 rgba(69, 69, 137, 0.0016), 0 -0.5px 0 0 rgba(69, 69, 137, 0.0144) inset',
+        'shadow-secondary': '0 4px 6px 0 rgba(69, 69, 137, 0.0036), 0 -0.5px 0 0 rgba(69, 69, 137, 0.0144) inset',
       },
       spacing: {
         1.25: '0.3125rem',
@@ -37,6 +37,7 @@ export default {
         15: '3.75rem',
       },
       padding: {
+        '0.5b': '1px',
         '1.5b': '5px',
         '2b': '7px',
         '3b': '11px',

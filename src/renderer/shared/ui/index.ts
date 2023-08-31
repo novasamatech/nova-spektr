@@ -38,6 +38,7 @@ export { Alert } from './Alert/Alert';
 export { Counter } from './Counter/Counter';
 export { StatusMark } from './StatusMark/StatusMark';
 export { LabelHelpBox } from './LabelHelpbox/LabelHelpBox';
+export { Label } from './Label/Label';
 export { Tabs } from './Tabs/Tabs';
 export { Switch } from './Switch/Switch';
 export { Identicon } from './Identicon/Identicon';
