@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { UnsignedTransaction } from '@substrate/txwrapper-polkadot';
 
 import { useI18n, useNetworkContext } from '@renderer/app/providers';
@@ -13,6 +13,7 @@ import { OperationTitle } from '@renderer/components/common';
 import { Chain } from '@renderer/entities/chain';
 import { DEFAULT_TRANSITION } from '@renderer/shared/lib/utils';
 import { useToggle } from '@renderer/shared/lib/hooks';
+import * as sendAssetModel from '../model/send-asset';
 
 const enum Step {
   INIT,
@@ -47,6 +48,10 @@ export const SendAssetModal = ({ chain, asset, onClose }: Props) => {
   const transaction = multisigTx || transferTx;
 
   const { api, assets, addressPrefix, explorers } = connection;
+
+  useEffect(() => {
+    sendAssetModel.events.xcmConfigRequested();
+  }, []);
 
   const onInitResult = (transferTx: Transaction, multisig?: { multisigTx: Transaction; description: string }) => {
     setTransferTx(transferTx);
