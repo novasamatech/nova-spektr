@@ -24,7 +24,7 @@ export const Tooltip = ({
   panelClass,
   contentClass,
   pointerDirection = 'down',
-  pointerPosition = 'start',
+  pointerPosition = 'center',
   children,
 }: PopoverProps) => (
   <Popover

@@ -36,9 +36,9 @@ export const Popover = ({
         tabIndex={0}
         aria-details={id}
         onFocus={() => setIsOpen(true)}
-        // onBlur={() => setIsOpen(false)}
+        onBlur={() => setIsOpen(false)}
         onMouseEnter={() => setIsOpen(true)}
-        // onMouseLeave={() => setIsOpen(false)}
+        onMouseLeave={() => setIsOpen(false)}
       >
         {children}
       </div>
