@@ -1,4 +1,4 @@
-import type { Metadata } from '@renderer/entities/metadata';
+import type { Metadata } from '@renderer/entities/network';
 import { ID, IMetadataStorage, MetadataDS, TMetadata } from './common/types';
 import { ChainId } from '@renderer/domain/shared-kernel';
 

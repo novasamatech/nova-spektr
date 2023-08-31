@@ -11,10 +11,10 @@ import { ChainId } from '@renderer/domain/shared-kernel';
 import { ISubscriptionService } from '../../../services/subscription/common/types';
 import { useChainSpec } from './chainSpecService';
 import { useChains } from './chainsService';
+import { useMetadata } from './metadataService';
 import { AUTO_BALANCE_TIMEOUT, MAX_ATTEMPTS, PROGRESSION_BASE } from './common/constants';
 import { ConnectionsMap, ConnectProps, INetworkService, RpcValidation } from './common/types';
 import { createCachedProvider } from './provider/CachedProvider';
-import { useMetadata } from '@renderer/entities/metadata';
 
 export const useNetwork = (networkSubscription?: ISubscriptionService<ChainId>): INetworkService => {
   const chains = useRef<Record<ChainId, Chain>>({});
@@ -22,7 +22,7 @@ export const useNetwork = (networkSubscription?: ISubscriptionService<ChainId>):
 
   const { getChainsData, sortChains } = useChains();
   const { getKnownChain, getLightClientChains } = useChainSpec();
-  const { subscribeMetadata } = useMetadata();
+  const { subscribeMetadata, getMetadata } = useMetadata();
 
   const connectionStorage = storage.connectTo('connections');
 
@@ -153,7 +153,7 @@ export const useNetwork = (networkSubscription?: ISubscriptionService<ChainId>):
     const knownChainId = getKnownChain(chainId);
 
     if (knownChainId) {
-      const CachedScProvider = createCachedProvider(ScProvider, chainId);
+      const CachedScProvider = createCachedProvider(ScProvider, chainId, getMetadata);
 
       return new CachedScProvider(Sc, knownChainId);
     } else {
@@ -163,7 +163,7 @@ export const useNetwork = (networkSubscription?: ISubscriptionService<ChainId>):
 
   const createWebsocketProvider = (rpcUrl: string, chainId: ChainId): ProviderInterface => {
     // TODO: handle limited retries provider = new WsProvider(node.address, 5000, {1}, 11000);
-    const CachedWsProvider = createCachedProvider(WsProvider, chainId);
+    const CachedWsProvider = createCachedProvider(WsProvider, chainId, getMetadata);
 
     return new CachedWsProvider(rpcUrl, 2000);
   };
@@ -296,7 +296,7 @@ export const useNetwork = (networkSubscription?: ISubscriptionService<ChainId>):
 
   const validateRpcNode = (chainId: ChainId, rpcUrl: string): Promise<RpcValidation> => {
     return new Promise((resolve) => {
-      const CachedWsProvider = createCachedProvider(WsProvider, chainId);
+      const CachedWsProvider = createCachedProvider(WsProvider, chainId, getMetadata);
 
       const provider = new CachedWsProvider(rpcUrl);
 

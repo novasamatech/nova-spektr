@@ -12,7 +12,7 @@ import {
   MultisigTransaction,
   MultisigTransactionKey,
 } from '@renderer/entities/transaction/model/transaction';
-import { Metadata } from '@renderer/entities/metadata';
+import { Metadata } from '@renderer/entities/network';
 
 // =====================================================
 // ================ Storage interface ==================

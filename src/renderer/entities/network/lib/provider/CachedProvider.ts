@@ -1,12 +1,14 @@
 import { ProviderInterface } from '@polkadot/rpc-provider/types';
 
 import { GET_METADATA_METHOD } from '../common/constants';
-import { useMetadata } from '@renderer/entities/metadata';
+import { Metadata } from '../common/types';
 import { ChainId } from '@renderer/domain/shared-kernel';
 
-const { getMetadata } = useMetadata();
-
-export const createCachedProvider = (Provider: new (...args: any[]) => ProviderInterface, chainId: ChainId) => {
+export const createCachedProvider = (
+  Provider: new (...args: any[]) => ProviderInterface,
+  chainId: ChainId,
+  getMetadata: (chainId: ChainId) => Promise<Metadata | undefined>,
+) => {
   class CachedProvider extends Provider {
     async send(method: string, params: unknown[], ...args: any[]): Promise<any> {
       if (method === GET_METADATA_METHOD && params.length === 0) {

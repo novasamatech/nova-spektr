@@ -1,8 +1,7 @@
 import { ApiPromise } from '@polkadot/api';
 import { UnsubscribePromise } from '@polkadot/api/types';
 
-import { IMetadataService } from './common/types';
-import { Metadata, metadataModel } from '..';
+import { IMetadataService, Metadata } from './common/types';
 import { ChainId } from '@renderer/domain/shared-kernel';
 import storage from '@renderer/shared/api/storage';
 
@@ -13,7 +12,7 @@ export const useMetadata = (): IMetadataService => {
     throw new Error('=== 🔴 Metadata storage in not defined 🔴 ===');
   }
 
-  const { getAllMetadata } = metadataStorage;
+  const { getAllMetadata, addMetadata } = metadataStorage;
 
   const getMetadata = async (chainId: ChainId): Promise<Metadata | undefined> => {
     const metadata = await getAllMetadata({ chainId });
@@ -32,14 +31,15 @@ export const useMetadata = (): IMetadataService => {
   };
 
   const syncMetadata = async (api: ApiPromise): Promise<Metadata> => {
-    const metadata = await api.rpc.state.getMetadata();
+    const [metadata, version] = await Promise.all([api.rpc.state.getMetadata(), api.rpc.state.getRuntimeVersion()]);
+
     const newMetadata: Metadata = {
       metadata: metadata.toHex(),
-      version: metadata.version,
+      version: version.specVersion.toNumber(),
       chainId: api.genesisHash.toHex(),
     };
 
-    metadataModel.effects.addMetadataFx(newMetadata);
+    await addMetadata(newMetadata);
 
     return newMetadata;
   };
