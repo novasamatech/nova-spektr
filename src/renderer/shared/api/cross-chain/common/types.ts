@@ -1,21 +1,7 @@
 import { HexString } from '@renderer/domain/shared-kernel';
 
-// =====================================================
-// =========== ICrossChainService interface ============
-// =====================================================
-
-export interface ICrossChainService {
-  fetchXcmConfig: () => Promise<XcmConfig>;
-  getXcmConfig: () => XcmConfig | null;
-  saveXcmConfig: (config: XcmConfig) => void;
-}
-
-// =====================================================
-// ====================== General ======================
-// =====================================================
-
 export type XcmConfig = {
-  assetLocation: AssetLocation;
+  assetsLocation: AssetLocation;
   instructions: Instructions;
   networkBaseWeight: NetworkBaseWeight;
   chains: ChainXCM[];
@@ -36,7 +22,7 @@ type AssetLocation = {
 };
 
 type Instructions = {
-  xtokensDest: ['reserveAssetDeposited', 'clearOrigin', 'buyExecution', 'depositAsset'];
+  xtokensDest: ['ReserveAssetDeposited', 'ClearOrigin', 'BuyExecution', 'DepositAsset'];
   xtokensReserve: ['WithdrawAsset', 'ClearOrigin', 'BuyExecution', 'DepositReserveAsset'];
   xcmPalletDest: ['ReserveAssetDeposited', 'ClearOrigin', 'BuyExecution', 'DepositAsset'];
   xcmPalletTeleportDest: ['ReceiveTeleportedAsset', 'ClearOrigin', 'BuyExecution', 'DepositAsset'];

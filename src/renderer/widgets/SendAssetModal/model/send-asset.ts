@@ -1,8 +1,6 @@
 import { createStore, createEffect, createEvent, sample, forward } from 'effector';
 
-import { XcmConfig, useCrossChain } from '@renderer/shared/api/cross-chain';
-
-const { fetchXcmConfig, getXcmConfig, saveXcmConfig } = useCrossChain();
+import { XcmConfig, fetchXcmConfig, getXcmConfig, saveXcmConfig } from '@renderer/shared/api/cross-chain';
 
 export const $finalConfig = createStore<any | null>(null);
 const xcmConfigRequested = createEvent();
@@ -10,17 +8,16 @@ const xcmConfigRequested = createEvent();
 const getConfigFx = createEffect((): XcmConfig | null => {
   return getXcmConfig();
 });
-
 const fetchConfigFx = createEffect((): Promise<XcmConfig> => {
   return fetchXcmConfig();
 });
-
 const saveConfigFx = createEffect((config: XcmConfig) => {
   return saveXcmConfig(config);
 });
 
-const calculateFinalConfig = createEffect((config: XcmConfig) => {
-  return 'success';
+// TODO: continue config calculation in cross-chain service task
+const calculateFinalConfigFx = createEffect((config: XcmConfig): XcmConfig => {
+  return config;
 });
 
 sample({
@@ -28,15 +25,20 @@ sample({
   target: [getConfigFx, fetchConfigFx],
 });
 
-// sample({
-//   clock: getConfigFx.doneData,
-//   filter: (config) => Boolean(config),
-//   target: calculateFinalConfig,
-// });
+sample({
+  clock: getConfigFx.doneData,
+  filter: (config): config is XcmConfig => Boolean(config),
+  target: calculateFinalConfigFx,
+});
 
 forward({
   from: fetchConfigFx.doneData,
-  to: [saveConfigFx, calculateFinalConfig, $finalConfig],
+  to: [saveConfigFx, calculateFinalConfigFx],
+});
+
+forward({
+  from: calculateFinalConfigFx.doneData,
+  to: $finalConfig,
 });
 
 export const events = {

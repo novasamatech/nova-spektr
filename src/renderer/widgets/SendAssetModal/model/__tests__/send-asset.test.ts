@@ -1,31 +1,27 @@
 import { fork, allSettled } from 'effector';
 
-import { useCrossChain } from '@renderer/shared/api/cross-chain';
 import * as sendAssetModel from '../../model/send-asset';
+import * as service from '@renderer/shared/api/cross-chain';
 
 jest.mock('@renderer/shared/api/cross-chain', () => ({
-  useCrossChain: jest.fn().mockReturnValue({
-    fetchXcmConfig: jest.fn().mockResolvedValue(null),
-    getXcmConfig: jest.fn(),
-    saveXcmConfig: jest.fn(),
-  }),
+  __esModule: true,
+  ...jest.requireActual('@renderer/shared/api/cross-chain'),
 }));
 
 describe('widgets/SendAssetModal/model/send-asset', () => {
-  test('should save to localStorage', async () => {
-    const spyFetchXcmConfig = jest.fn().mockImplementation(() => {
-      console.log(123);
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
 
-      return 2;
-    });
-    const spyGetXcmConfig = jest.fn().mockReturnValue(2);
-    const spySaveXcmConfig = jest.fn().mockReturnValue(2);
+  test('should call xcmConfigRequested and all related effects', async () => {
+    const spyFetchXcmConfig = jest.spyOn(service, 'fetchXcmConfig');
+    spyFetchXcmConfig.mockImplementation();
 
-    (useCrossChain as jest.Mock).mockImplementation(() => ({
-      fetchXcmConfig: spyFetchXcmConfig,
-      getXcmConfig: spyGetXcmConfig,
-      saveXcmConfig: spySaveXcmConfig,
-    }));
+    const spyGetXcmConfig = jest.spyOn(service, 'getXcmConfig');
+    spyGetXcmConfig.mockImplementation();
+
+    const spySaveXcmConfig = jest.spyOn(service, 'saveXcmConfig');
+    spySaveXcmConfig.mockImplementation();
 
     const scope = fork();
     await allSettled(sendAssetModel.events.xcmConfigRequested, { scope });
@@ -33,6 +29,16 @@ describe('widgets/SendAssetModal/model/send-asset', () => {
     expect(spyGetXcmConfig).toHaveBeenCalled();
     expect(spyFetchXcmConfig).toHaveBeenCalled();
     expect(spySaveXcmConfig).toHaveBeenCalled();
-    expect(scope.getState(sendAssetModel.$finalConfig)).toEqual(2);
+  });
+
+  test('should call xcmConfigRequested and get final config', async () => {
+    jest.spyOn(service, 'fetchXcmConfig').mockResolvedValue('config' as any);
+    jest.spyOn(service, 'getXcmConfig').mockImplementation();
+    jest.spyOn(service, 'saveXcmConfig').mockImplementation();
+
+    const scope = fork();
+    await allSettled(sendAssetModel.events.xcmConfigRequested, { scope });
+
+    expect(scope.getState(sendAssetModel.$finalConfig)).toEqual('config');
   });
 });
