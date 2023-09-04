@@ -22,7 +22,7 @@
     "webpack:main:dev": "webpack --config webpack/webpack.main.dev.ts",
     "webpack:main:stage": "webpack --config webpack/webpack.main.stage.ts",
     "webpack:main:prod": "webpack --config webpack/webpack.main.prod.ts",
-    "build": "cross-env NODE_ENV=production CHAINS_FILE=chains pnpm r clean:prod webpack:renderer:prod webpack:main:prod",
+    "build": "cross-env NODE_ENV=production CHAINS_FILE=chains BUILD_SOURCE=github pnpm r clean:prod webpack:renderer:prod webpack:main:prod",
     "postbuild": "node scripts/postbuild.js",
     "dist": "electron-builder -p never",
     "clean:build": "rimraf release/build",

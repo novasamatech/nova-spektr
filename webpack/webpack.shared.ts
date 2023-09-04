@@ -5,6 +5,7 @@ import CopyPlugin from 'copy-webpack-plugin';
 import SimpleProgressWebpackPlugin from 'simple-progress-webpack-plugin';
 
 import { APP_CONFIG } from '../app.config';
+import process from "process";
 
 export const getSwcConfig = (isDev: boolean) => {
   return {
@@ -123,6 +124,7 @@ const sharedConfig: Configuration = {
     new webpack.DefinePlugin({
       'process.env.PRODUCT_NAME': JSON.stringify(APP_CONFIG.TITLE),
       'process.env.VERSION': JSON.stringify(APP_CONFIG.VERSION),
+      'process.env.BUILD_SOURCE': JSON.stringify(process.env.BUILD_SOURCE),
       'process.env.CHAINS_FILE': JSON.stringify(process.env.CHAINS_FILE),
     }),
   ],
