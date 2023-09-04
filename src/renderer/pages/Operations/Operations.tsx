@@ -49,7 +49,7 @@ export const Operations = () => {
 
   useEffect(() => {
     setTxs(allTxs.filter((tx) => connections[tx.chainId]));
-  }, [allTxs]);
+  }, [allTxs.length]);
 
   useEffect(() => {
     setFilteredTxs([]);
