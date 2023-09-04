@@ -7,8 +7,6 @@ import { makeAppWithSingleInstanceLock } from './factories/instance';
 import { makeAppSetup } from './factories/setup';
 
 const setupAutoUpdate = () => {
-  console.log('process.env.BUILD_SOURCE', process.env.BUILD_SOURCE);
-
   if (process.env.BUILD_SOURCE !== 'github') {
     return;
   }
