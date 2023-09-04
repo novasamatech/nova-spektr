@@ -20,7 +20,7 @@ const transaction = {
   },
 } as Transaction;
 
-describe('screen/Operations/components/TransactionTitle', () => {
+describe('pages/Operations/components/TransactionTitle', () => {
   test('should render component', async () => {
     await act(async () => {
       render(<TransactionTitle tx={transaction} />);

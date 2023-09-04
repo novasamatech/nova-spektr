@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, act } from '@testing-library/react';
 
 import { TEST_ACCOUNT_ID } from '@renderer/shared/lib/utils';
 import { ConnectionType } from '@renderer/domain/connection';
@@ -21,12 +21,9 @@ jest.mock('@renderer/app/providers', () => ({
   })),
 }));
 
-const mockTxs = [{ name: 'Test Wallet', accountId: TEST_ACCOUNT_ID }];
-const mockAccounts = [{ name: 'Test Account', accountId: TEST_ACCOUNT_ID }];
-
 jest.mock('@renderer/entities/multisig', () => ({
   useMultisigTx: jest.fn().mockReturnValue({
-    getLiveAccountMultisigTxs: () => mockTxs,
+    getLiveAccountMultisigTxs: () => [{ name: 'Test Wallet', accountId: TEST_ACCOUNT_ID }],
   }),
   useMultisigEvent: jest.fn().mockReturnValue({
     getLiveEventsByKeys: jest.fn().mockResolvedValue([]),
@@ -35,18 +32,25 @@ jest.mock('@renderer/entities/multisig', () => ({
 
 jest.mock('@renderer/entities/account', () => ({
   useAccount: jest.fn().mockReturnValue({
-    getActiveMultisigAccount: () => mockAccounts,
+    getActiveMultisigAccount: () => [{ name: 'Test Account', accountId: TEST_ACCOUNT_ID }],
   }),
 }));
 
 jest.mock('./components/Operation', () => () => 'Operation');
-jest.mock('./components/Filters', () => () => 'Filters');
+jest.mock('../../features/operation', () => ({
+  OperationsFilter: () => 'filters',
+}));
 
-describe('screen/Operations', () => {
-  test('should render component', () => {
-    render(<Operations />);
+describe('pages/Operations', () => {
+  test('should render component', async () => {
+    await act(async () => {
+      render(<Operations />);
+    });
 
     const title = screen.getByText('operations.title');
+    const filters = screen.getByText('filters');
+
     expect(title).toBeInTheDocument();
+    expect(filters).toBeInTheDocument();
   });
 });

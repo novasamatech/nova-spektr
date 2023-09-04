@@ -15,6 +15,7 @@ const TransactionTitle = ({ tx, description, withoutIcon, className }: Props) =>
   const { t } = useI18n();
 
   const iconName = getIconName(tx);
+  console.log(iconName);
   const transactionTitle = getTransactionTitle(tx);
 
   return (

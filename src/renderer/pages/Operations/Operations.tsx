@@ -8,7 +8,7 @@ import { useAccount, MultisigAccount } from '@renderer/entities/account';
 import Operation from './components/Operation';
 import { sortByDateDesc } from './common/utils';
 import { FootnoteText } from '@renderer/shared/ui';
-import Filters from './components/Filters';
+import { OperationsFilter } from '@renderer/features/operation';
 import { MultisigTransactionDS } from '@renderer/shared/api/storage';
 import { useMultisigTx, useMultisigEvent } from '@renderer/entities/multisig';
 import { Header } from '@renderer/components/common';
@@ -16,9 +16,9 @@ import { MultisigEvent, MultisigTransactionKey } from '@renderer/entities/transa
 
 export const Operations = () => {
   const { t, dateLocale } = useI18n();
+  const { connections } = useNetworkContext();
   const { getActiveMultisigAccount } = useAccount();
   const { getLiveAccountMultisigTxs } = useMultisigTx({});
-  const { connections } = useNetworkContext();
   const { getLiveEventsByKeys } = useMultisigEvent({});
 
   const account = getActiveMultisigAccount();
@@ -49,7 +49,7 @@ export const Operations = () => {
 
   useEffect(() => {
     setTxs(allTxs.filter((tx) => connections[tx.chainId]));
-  }, [allTxs]);
+  }, [allTxs.length]);
 
   useEffect(() => {
     setFilteredTxs([]);
@@ -59,7 +59,7 @@ export const Operations = () => {
     <div className="flex flex-col items-center relative h-full">
       <Header title={t('operations.title')} />
 
-      {Boolean(txs.length) && <Filters txs={txs} onChangeFilters={setFilteredTxs} />}
+      {Boolean(txs.length) && <OperationsFilter txs={txs} onChange={setFilteredTxs} />}
 
       {Boolean(filteredTxs.length) && (
         <div className="pl-6 overflow-y-auto w-full mt-4 h-full flex flex-col items-center">

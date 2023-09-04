@@ -10,7 +10,7 @@ jest.mock('@renderer/app/providers', () => ({
   }),
 }));
 
-describe('screen/Settings/Overview/GeneralActions', () => {
+describe('pages/Settings/Overview/GeneralActions', () => {
   test('should render label and link to network', () => {
     render(<GeneralActions />, { wrapper: MemoryRouter });
 

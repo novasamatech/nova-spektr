@@ -2,23 +2,24 @@ import { useEffect, useState } from 'react';
 
 import { useI18n, useNetworkContext } from '@renderer/app/providers';
 import { MultisigTransactionDS } from '@renderer/shared/api/storage';
-import { UNKNOWN_TYPE, getStatusOptions, getTransactionOptions, TransferTypes } from '../common/utils';
 import { DropdownOption, DropdownResult } from '@renderer/shared/ui/types';
-import { MultisigTransaction, Transaction, TransactionType } from '@renderer/entities/transaction';
+import { MultisigTransaction, Transaction, TransactionType } from '@renderer/entities/transaction/model/transaction';
 import { Button, MultiSelect } from '@renderer/shared/ui';
+import { getStatusOptions, getTransactionOptions } from '../lib/utils';
+import { UNKNOWN_TYPE, TransferTypes } from '../lib/constants';
 
 type FilterName = 'status' | 'network' | 'type';
 
 type FiltersOptions = Record<FilterName, Set<DropdownOption>>;
 type SelectedFilters = Record<FilterName, DropdownResult[]>;
 
-const emptyOptions: FiltersOptions = {
+const EmptyOptions: FiltersOptions = {
   status: new Set<DropdownOption>(),
   network: new Set<DropdownOption>(),
   type: new Set<DropdownOption>(),
 };
 
-const emptySelected: SelectedFilters = {
+const EmptySelected: SelectedFilters = {
   status: [],
   network: [],
   type: [],
@@ -28,10 +29,10 @@ const mapValues = (result: DropdownResult) => result.value;
 
 type Props = {
   txs: MultisigTransactionDS[];
-  onChangeFilters: (filteredTxs: MultisigTransaction[]) => void;
+  onChange: (filteredTxs: MultisigTransaction[]) => void;
 };
 
-const Filters = ({ txs, onChangeFilters }: Props) => {
+export const OperationsFilter = ({ txs, onChange }: Props) => {
   const { t } = useI18n();
   const { connections } = useNetworkContext();
 
@@ -43,12 +44,12 @@ const Filters = ({ txs, onChangeFilters }: Props) => {
     element: c.name,
   }));
 
-  const [filtersOptions, setFiltersOptions] = useState<FiltersOptions>(emptyOptions);
-  const [selectedOptions, setSelectedOptions] = useState<SelectedFilters>(emptySelected);
+  const [filtersOptions, setFiltersOptions] = useState<FiltersOptions>(EmptyOptions);
+  const [selectedOptions, setSelectedOptions] = useState<SelectedFilters>(EmptySelected);
 
   useEffect(() => {
     setFiltersOptions(getAvailableFiltersOptions(txs));
-    onChangeFilters(txs);
+    onChange(txs);
   }, [txs]);
 
   const getFilterableType = (tx: MultisigTransaction): TransactionType | typeof UNKNOWN_TYPE => {
@@ -71,8 +72,8 @@ const Filters = ({ txs, onChangeFilters }: Props) => {
     return TransactionOptions.find((s) => s.value === getFilterableType(tx));
   };
 
-  const getAvailableFiltersOptions = (transactions: MultisigTransaction[]) =>
-    transactions.reduce(
+  const getAvailableFiltersOptions = (transactions: MultisigTransaction[]) => {
+    return transactions.reduce(
       (acc, tx) => {
         const statusOption = StatusOptions.find((s) => s.value === tx.status);
         const networkOption = NetworkOptions.find((s) => s.value === tx.chainId);
@@ -90,23 +91,27 @@ const Filters = ({ txs, onChangeFilters }: Props) => {
         type: new Set<DropdownOption>(),
       },
     );
-
-  const clearFilters = () => {
-    setSelectedOptions(emptySelected);
-    onChangeFilters(txs);
   };
 
-  const filterTx = (tx: MultisigTransaction, filters: SelectedFilters) =>
-    (!filters.status.length || filters.status.map(mapValues).includes(tx.status)) &&
-    (!filters.network.length || filters.network.map(mapValues).includes(tx.chainId)) &&
-    (!filters.type.length || filters.type.map(mapValues).includes(getFilterableType(tx)));
+  const filterTx = (tx: MultisigTransaction, filters: SelectedFilters) => {
+    return (
+      (!filters.status.length || filters.status.map(mapValues).includes(tx.status)) &&
+      (!filters.network.length || filters.network.map(mapValues).includes(tx.chainId)) &&
+      (!filters.type.length || filters.type.map(mapValues).includes(getFilterableType(tx)))
+    );
+  };
 
   const handleFilterChange = (values: DropdownResult[], filterName: FilterName) => {
     const newSelectedOptions = { ...selectedOptions, [filterName]: values };
     setSelectedOptions(newSelectedOptions);
 
     const filteredTxs = txs.filter((tx) => filterTx(tx, newSelectedOptions));
-    onChangeFilters(filteredTxs);
+    onChange(filteredTxs);
+  };
+
+  const clearFilters = () => {
+    setSelectedOptions(EmptySelected);
+    onChange(txs);
   };
 
   const filtersSelected =
@@ -144,5 +149,3 @@ const Filters = ({ txs, onChangeFilters }: Props) => {
     </div>
   );
 };
-
-export default Filters;
