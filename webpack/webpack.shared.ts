@@ -5,7 +5,6 @@ import CopyPlugin from 'copy-webpack-plugin';
 import SimpleProgressWebpackPlugin from 'simple-progress-webpack-plugin';
 
 import { APP_CONFIG } from '../app.config';
-import process from "process";
 
 export const getSwcConfig = (isDev: boolean) => {
   return {
