@@ -4,7 +4,7 @@ import { format } from 'date-fns';
 import { useI18n } from '@renderer/app/providers';
 import { Account, MultisigAccount } from '@renderer/entities/account';
 import { ExtendedChain } from '@renderer/entities/network';
-import { MultisigEvent, SigningStatus } from '@renderer/entities/transaction';
+import { MultisigEvent, SigningStatus, TransactionType } from '@renderer/entities/transaction';
 import { TransactionTitle } from './TransactionTitle/TransactionTitle';
 import OperationStatus from './OperationStatus';
 import { getSignatoryName, sortByDateAsc } from '../common/utils';
@@ -14,6 +14,7 @@ import { ExtrinsicExplorers } from '@renderer/components/common';
 import { Contact } from '@renderer/entities/contact';
 import { useMultisigEvent } from '@renderer/entities/multisig';
 import { MultisigTransactionDS } from '@renderer/shared/api/storage';
+import { TransactionAmount } from '../components/TransactionAmount';
 
 type Props = {
   tx: MultisigTransactionDS;
@@ -64,6 +65,21 @@ const LogModal = ({ isOpen, onClose, tx, account, connection, contacts, accounts
     return `${signatoryName} ${t(eventMessage)}`;
   };
 
+  const showTxAmount = (): boolean => {
+    if (!transaction?.type) return false;
+
+    return [
+      TransactionType.TRANSFER,
+      TransactionType.ORML_TRANSFER,
+      TransactionType.ASSET_TRANSFER,
+      TransactionType.XCM_LIMITED_TRANSFER,
+      TransactionType.XCM_TELEPORT,
+      TransactionType.POLKADOT_XCM_LIMITED_TRANSFER,
+      TransactionType.POLKADOT_XCM_TELEPORT,
+      TransactionType.XTOKENS_TRANSFER_MULTIASSET,
+    ].includes(transaction.type);
+  };
+
   return (
     <BaseModal
       title={t('log.title')}
@@ -75,8 +91,17 @@ const LogModal = ({ isOpen, onClose, tx, account, connection, contacts, accounts
       onClose={onClose}
     >
       <div className="flex gap-2 items-center justify-between px-4 py-3">
-        <TransactionTitle tx={transaction} description={description} />
-        <OperationStatus status={status} signed={approvals.length} threshold={account?.threshold || 0} />
+        <TransactionTitle className="overflow-hidden" tx={transaction} description={description}>
+          {transaction && showTxAmount() && (
+            <TransactionAmount className="truncate" tx={transaction} showIcon={false} />
+          )}
+        </TransactionTitle>
+        <OperationStatus
+          className="shrink-0"
+          status={status}
+          signed={approvals.length}
+          threshold={account?.threshold || 0}
+        />
       </div>
 
       <div className="bg-main-app-background p-5 flex flex-col gap-y-4 min-h-[464px] max-h-[600px] overflow-y-scroll">

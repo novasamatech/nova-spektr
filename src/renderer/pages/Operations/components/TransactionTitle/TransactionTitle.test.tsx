@@ -1,4 +1,4 @@
-import { act, render, screen } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 
 import { Transaction, TransactionType } from '@renderer/entities/transaction';
 import { TEST_ADDRESS, TEST_CHAIN_ID } from '@renderer/shared/lib/utils';
@@ -21,10 +21,8 @@ const transaction = {
 } as Transaction;
 
 describe('pages/Operations/components/TransactionTitle', () => {
-  test('should render component', async () => {
-    await act(async () => {
-      render(<TransactionTitle tx={transaction} />);
-    });
+  test('should render component', () => {
+    render(<TransactionTitle tx={transaction} />);
 
     const title = screen.getByText('operations.titles.transfer');
     expect(title).toBeInTheDocument();
