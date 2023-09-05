@@ -2,7 +2,7 @@ import { XCM_KEY } from '../common/constants';
 import { estimateFee, getXcmConfig } from '../crossChainService';
 import { CONFIG } from './config';
 
-describe.only('shared/api/cross-chain/crossChainService', () => {
+describe('shared/api/cross-chain/crossChainService', () => {
   afterEach(() => {
     localStorage.clear();
   });
