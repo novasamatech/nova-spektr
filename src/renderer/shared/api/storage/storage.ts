@@ -65,15 +65,6 @@ class DexieStorage extends Dexie {
       .upgrade(upgradeEvents);
 
     this.version(18).stores({
-      connections: '++id,chainId,type',
-      wallets: '++id,isActive,type',
-      balances: '[accountId+chainId+assetId],[accountId+chainId]',
-      accounts: '++id,isActive,walletId,rootId,signingType',
-      contacts: '++id,name,accountId,matrixId',
-      multisigTransactions:
-        '[accountId+chainId+callHash+blockCreated+indexCreated],[accountId+status],[accountId+callHash],[callHash+status+chainId],accountId,status,callHash',
-      multisigEvents: '++id,[txAccountId+txChainId+txCallHash+txBlock+txIndex],status,accountId',
-      notifications: '++id,type,read',
       metadata: '[chainId+version],chainId',
     });
 
