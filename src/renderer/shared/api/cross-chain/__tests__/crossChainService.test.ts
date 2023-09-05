@@ -1,4 +1,4 @@
-import { XcmConfig } from '../common/types';
+import { Action, XcmConfig } from '../common/types';
 import { XCM_KEY } from '../common/constants';
 import { getXcmConfig } from '../crossChainService';
 
@@ -14,10 +14,15 @@ const CONFIG: XcmConfig = {
     },
   },
   instructions: {
-    xtokensDest: ['ReserveAssetDeposited', 'ClearOrigin', 'BuyExecution', 'DepositAsset'],
-    xtokensReserve: ['WithdrawAsset', 'ClearOrigin', 'BuyExecution', 'DepositReserveAsset'],
-    xcmPalletDest: ['ReserveAssetDeposited', 'ClearOrigin', 'BuyExecution', 'DepositAsset'],
-    xcmPalletTeleportDest: ['ReceiveTeleportedAsset', 'ClearOrigin', 'BuyExecution', 'DepositAsset'],
+    xtokensDest: [Action.RESERVE_ASSET_DEPOSITED, Action.CLEAR_ORIGIN, Action.BUY_EXECUTION, Action.DEPOSIT_ASSET],
+    xtokensReserve: [Action.WITHDRAW_ASSET, Action.CLEAR_ORIGIN, Action.BUY_EXECUTION, Action.DEPOSIT_RESERVE_ASSET],
+    xcmPalletDest: [Action.RESERVE_ASSET_DEPOSITED, Action.CLEAR_ORIGIN, Action.BUY_EXECUTION, Action.DEPOSIT_ASSET],
+    xcmPalletTeleportDest: [
+      Action.RECEIVE_TELEPORTED_ASSET,
+      Action.CLEAR_ORIGIN,
+      Action.BUY_EXECUTION,
+      Action.DEPOSIT_ASSET,
+    ],
   },
   networkBaseWeight: {
     b0a8d493285c2df73290dfb7e61f870f17b41801197a149ca93654499ea3dafe: '1000000000',

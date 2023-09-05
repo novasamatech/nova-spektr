@@ -1,7 +1,8 @@
 import { ApiPromise } from '@polkadot/api';
-import { UnsignedTransaction } from '@substrate/txwrapper-polkadot';
+import { UnsignedTransaction, Args } from '@substrate/txwrapper-polkadot';
 import { Weight } from '@polkadot/types/interfaces';
 import { SubmittableExtrinsic } from '@polkadot/api/types';
+import { AnyJson } from '@polkadot/types/types';
 
 import { Address, CallData, HexString, Timepoint, Threshold, AccountId } from '@renderer/domain/shared-kernel';
 import { DecodedTransaction, Transaction } from '@renderer/entities/transaction/model/transaction';
@@ -57,3 +58,20 @@ export type ExtrinsicResultParams = {
   isFinalApprove: boolean;
   multisigError: string;
 };
+
+export type XcmPallet = 'xcmPallet' | 'polkadotXcm';
+
+export interface XcmPalletTransferArgs extends Args {
+  dest: AnyJson;
+  beneficiary: AnyJson;
+  assets: AnyJson;
+  feeAssetItem: number;
+  weightLimit: AnyJson;
+}
+
+export interface XTokenPalletTransferArgs extends Args {
+  asset: AnyJson;
+  dest: AnyJson;
+  destWeight?: AnyJson;
+  destWeightLimit?: AnyJson;
+}
