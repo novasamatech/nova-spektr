@@ -1,6 +1,6 @@
 import { XCM_KEY } from '../common/constants';
 import { estimateFee, getXcmConfig } from '../crossChainService';
-import { CONFIG } from './config';
+import { CONFIG } from '../common/testConfig';
 
 describe('shared/api/cross-chain/crossChainService', () => {
   afterEach(() => {
