@@ -5,16 +5,15 @@ import { useI18n } from '@renderer/app/providers';
 import { Account, MultisigAccount } from '@renderer/entities/account';
 import { ExtendedChain } from '@renderer/entities/network';
 import { MultisigEvent, SigningStatus } from '@renderer/entities/transaction';
-import TransactionTitle from './TransactionTitle/TransactionTitle';
+import { TransactionTitle } from './TransactionTitle/TransactionTitle';
 import OperationStatus from './OperationStatus';
-import { getSignatoryName, getTransactionAmount, sortByDateAsc } from '../common/utils';
+import { getSignatoryName, sortByDateAsc } from '../common/utils';
 import { BaseModal, BodyText, FootnoteText, Identicon } from '@renderer/shared/ui';
-import { getAssetById, toAddress, SS58_DEFAULT_PREFIX } from '@renderer/shared/lib/utils';
+import { toAddress, SS58_DEFAULT_PREFIX } from '@renderer/shared/lib/utils';
 import { ExtrinsicExplorers } from '@renderer/components/common';
 import { Contact } from '@renderer/entities/contact';
 import { useMultisigEvent } from '@renderer/entities/multisig';
 import { MultisigTransactionDS } from '@renderer/shared/api/storage';
-import { AssetIcon } from '@renderer/entities/asset';
 
 type Props = {
   tx: MultisigTransactionDS;
@@ -42,9 +41,7 @@ const LogModal = ({ isOpen, onClose, tx, account, connection, contacts, accounts
   const { transaction, description, status } = tx;
   const approvals = events.filter((e) => e.status === 'SIGNED');
 
-  const asset = getAssetById(transaction?.args.assetId, connection?.assets);
   const addressPrefix = connection?.addressPrefix || SS58_DEFAULT_PREFIX;
-  const showAsset = Boolean(transaction && getTransactionAmount(transaction));
 
   const groupedEvents = groupBy(events, ({ dateCreated }) =>
     format(new Date(dateCreated || 0), 'PP', { locale: dateLocale }),
@@ -77,13 +74,9 @@ const LogModal = ({ isOpen, onClose, tx, account, connection, contacts, accounts
       isOpen={isOpen}
       onClose={onClose}
     >
-      <div className="flex gap-2 items-center px-4 py-3">
-        {showAsset && <AssetIcon name={asset?.name} src={asset?.icon} />}
-        <TransactionTitle withoutIcon tx={transaction} description={description} />
-
-        <div className="ml-auto">
-          <OperationStatus status={status} signed={approvals.length} threshold={account?.threshold || 0} />
-        </div>
+      <div className="flex gap-2 items-center justify-between px-4 py-3">
+        <TransactionTitle tx={transaction} description={description} />
+        <OperationStatus status={status} signed={approvals.length} threshold={account?.threshold || 0} />
       </div>
 
       <div className="bg-main-app-background p-5 flex flex-col gap-y-4 min-h-[464px] max-h-[600px] overflow-y-scroll">
