@@ -1,6 +1,6 @@
 import { BN, BN_TEN, BN_ZERO } from '@polkadot/util';
 import { ApiPromise } from '@polkadot/api';
-import { MultiAsset, MultiLocation } from '@polkadot/types/interfaces';
+import { MultiLocation, VersionedMultiAsset, VersionedMultiLocation } from '@polkadot/types/interfaces';
 
 import { XCM_URL, XCM_KEY } from './common/constants';
 import {
@@ -51,7 +51,7 @@ export const getAvailableDirections = (chains: ChainXCM[], assetId: number, chai
 export const weightToFee = (weight: BN, unitsPerSecond: BN): BN => {
   const pico = BN_TEN.pow(new BN(12));
 
-  return weight.mul(unitsPerSecond).sub(pico);
+  return weight.mul(unitsPerSecond).div(pico);
 };
 
 export const getEstimatedWeight = (
@@ -76,8 +76,9 @@ export const estimateFee = (
   const weight = getEstimatedWeight(
     instructions,
     xcmTransfer.destination.fee.instructions,
-    new BN(baseWeights[xcmTransfer.destination.fee.mode.value]),
+    new BN(xcmTransfer.destination.fee.mode.value),
   );
+
   const fee = weightToFee(weight, new BN(baseWeights[xcmTransfer.destination.chainId]));
 
   if (originChain === assetLocation.chainId || xcmTransfer.destination.chainId === assetLocation.chainId) return fee;
@@ -85,8 +86,9 @@ export const estimateFee = (
   const reserveWeight = getEstimatedWeight(
     instructions,
     assetLocation.reserveFee.instructions,
-    new BN(baseWeights[assetLocation.reserveFee.mode.value]),
+    new BN(assetLocation.reserveFee.mode.value),
   );
+
   const reserveFee = weightToFee(reserveWeight, new BN(baseWeights[assetLocation.chainId]));
 
   return fee.add(reserveFee);
@@ -145,25 +147,23 @@ const RelativeAssetLocation = (
   api: ApiPromise,
   assetLocation: LocalMultiLocation | undefined,
   amount: BN,
-): MultiLocation | undefined => {
+): VersionedMultiAsset | undefined => {
   if (!assetLocation) return;
 
   const { parachainId: _, ...location } = assetLocation;
 
-  return api.createType('MultiLocation', {
-    V1: [
-      {
-        id: {
-          Concrete: {
-            parents: 0,
-            interior: !Object.values(location).length ? 'Here' : createJunctionFromObject(api, location),
-          },
-        },
-        fun: {
-          Fungible: amount.toNumber(),
+  return api.createType('VersionedMultiAsset', {
+    V2: {
+      id: {
+        Concrete: {
+          parents: 0,
+          interior: Object.values(location).length ? createJunctionFromObject(api, location) : 'Here',
         },
       },
-    ],
+      fun: {
+        Fungible: amount.toNumber(),
+      },
+    },
   });
 };
 
@@ -171,23 +171,21 @@ const AbsoluteAssetLocation = (
   api: ApiPromise,
   assetLocation: LocalMultiLocation,
   amount: BN,
-): MultiAsset | undefined => {
+): VersionedMultiAsset | undefined => {
   if (!assetLocation) return;
 
-  return api.createType('MultiAsset', {
-    V1: [
-      {
-        id: {
-          Concrete: {
-            parents: 1,
-            interior: !Object.values(assetLocation).length ? 'Here' : createJunctionFromObject(api, assetLocation),
-          },
-        },
-        fun: {
-          Fungible: amount.toNumber(),
+  return api.createType('VersionedMultiAsset', {
+    V2: {
+      id: {
+        Concrete: {
+          parents: 1,
+          interior: Object.values(assetLocation).length ? createJunctionFromObject(api, assetLocation) : 'Here',
         },
       },
-    ],
+      fungibility: {
+        Fungible: amount.toNumber(),
+      },
+    },
   });
 };
 
@@ -195,25 +193,23 @@ const ConcreteAssetLocation = (
   api: ApiPromise,
   assetLocation: LocalMultiLocation | undefined,
   amount: BN,
-): MultiLocation | undefined => {
+): VersionedMultiAsset | undefined => {
   if (!assetLocation) return;
 
   const { parents, ...location } = assetLocation;
 
-  return api.createType('MultiLocation', {
-    V1: [
-      {
-        id: {
-          Concrete: {
-            parents,
-            interior: !Object.values(location).length ? 'Here' : createJunctionFromObject(api, location),
-          },
-        },
-        fun: {
-          Fungible: amount.toNumber(),
+  return api.createType('VersionedMultiAsset', {
+    V2: {
+      id: {
+        Concrete: {
+          parents,
+          interior: Object.values(location).length ? createJunctionFromObject(api, location) : 'Here',
         },
       },
-    ],
+      fun: {
+        Fungible: amount.toNumber(),
+      },
+    },
   });
 };
 
@@ -221,7 +217,7 @@ export const getDestinationLocation = (
   api: ApiPromise,
   chain: Chain,
   destinationParaId: number,
-  accountId: AccountId,
+  accountId?: AccountId,
 ) => {
   if (chain.parentId && destinationParaId !== null) {
     return SiblingParachain(api, destinationParaId, accountId);
@@ -274,17 +270,20 @@ const ParentChain = (api: ApiPromise, accountId?: AccountId): MultiLocation => {
   });
 };
 
-const SiblingParachain = (api: ApiPromise, parachainId: number, accountId?: AccountId): MultiLocation => {
+const SiblingParachain = (api: ApiPromise, parachainId: number, accountId?: AccountId): VersionedMultiLocation => {
   const location: Record<string, any> = {
     parachainId,
   };
 
   if (accountId) {
-    location.accountId = accountId;
+    location.accountId = {
+      network: 'Any',
+      id: accountId,
+    };
   }
 
-  return api.createType('MultiLocation', {
-    V3: {
+  return api.createType('VersionedMultiLocation', {
+    V2: {
       parents: 1,
       interior: createJunctionFromObject(api, location),
     },

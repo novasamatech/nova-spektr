@@ -1,60 +1,8 @@
-import { Action, XcmConfig } from '../common/types';
 import { XCM_KEY } from '../common/constants';
-import { getXcmConfig } from '../crossChainService';
+import { estimateFee, getXcmConfig } from '../crossChainService';
+import { CONFIG } from './config';
 
-const CONFIG: XcmConfig = {
-  assetsLocation: {
-    KAR: {
-      chainId: 'baf5aabe40646d11f0ee8abbdc64f4a4b7674925cba08e4a05ff9ebed6e2126b',
-      multiLocation: { parachainId: 2000, generalKey: '0x0080' },
-      reserveFee: {
-        mode: { type: 'proportional', value: '10016000000000' },
-        instructions: 'xtokensReserve',
-      },
-    },
-  },
-  instructions: {
-    xtokensDest: [Action.RESERVE_ASSET_DEPOSITED, Action.CLEAR_ORIGIN, Action.BUY_EXECUTION, Action.DEPOSIT_ASSET],
-    xtokensReserve: [Action.WITHDRAW_ASSET, Action.CLEAR_ORIGIN, Action.BUY_EXECUTION, Action.DEPOSIT_RESERVE_ASSET],
-    xcmPalletDest: [Action.RESERVE_ASSET_DEPOSITED, Action.CLEAR_ORIGIN, Action.BUY_EXECUTION, Action.DEPOSIT_ASSET],
-    xcmPalletTeleportDest: [
-      Action.RECEIVE_TELEPORTED_ASSET,
-      Action.CLEAR_ORIGIN,
-      Action.BUY_EXECUTION,
-      Action.DEPOSIT_ASSET,
-    ],
-  },
-  networkBaseWeight: {
-    b0a8d493285c2df73290dfb7e61f870f17b41801197a149ca93654499ea3dafe: '1000000000',
-  },
-  chains: [
-    {
-      chainId: '401a1f9dca3da46f5c4091016c8a2f26dcea05865116b286f60f668207d1474b',
-      assets: [
-        {
-          assetId: 4,
-          assetLocation: 'KAR',
-          assetLocationPath: { type: 'absolute' },
-          xcmTransfers: [
-            {
-              type: 'xtokens',
-              destination: {
-                chainId: 'baf5aabe40646d11f0ee8abbdc64f4a4b7674925cba08e4a05ff9ebed6e2126b',
-                assetId: 0,
-                fee: {
-                  mode: { type: 'proportional', value: '10016000000000' },
-                  instructions: 'xtokensDest',
-                },
-              },
-            },
-          ],
-        },
-      ],
-    },
-  ],
-};
-
-describe('shared/api/cross-chain/crossChainService', () => {
+describe.only('shared/api/cross-chain/crossChainService', () => {
   afterEach(() => {
     localStorage.clear();
   });
@@ -72,5 +20,29 @@ describe('shared/api/cross-chain/crossChainService', () => {
 
     const config = getXcmConfig();
     expect(config).toEqual(CONFIG);
+  });
+
+  test('should calculate correct fee for ACA from Acala to Parallel ', () => {
+    const fee = estimateFee(
+      CONFIG.instructions,
+      CONFIG.networkBaseWeight,
+      CONFIG.assetsLocation['ACA'],
+      'fc41b9bd8ef8fe53d58c7ea67c794c7ec9a73daf05e6d54b14ff6342c99ba64c',
+      CONFIG.chains[0].assets[0].xcmTransfers[1],
+    );
+
+    expect(fee.toString()).toEqual('117647058823');
+  });
+
+  test('should calculate correct fee for DOT from Acala to Parallel', () => {
+    const fee = estimateFee(
+      CONFIG.instructions,
+      CONFIG.networkBaseWeight,
+      CONFIG.assetsLocation['DOT'],
+      'fc41b9bd8ef8fe53d58c7ea67c794c7ec9a73daf05e6d54b14ff6342c99ba64c',
+      CONFIG.chains[0].assets[1].xcmTransfers[0],
+    );
+
+    expect(fee.toString()).toEqual('403808327');
   });
 });
