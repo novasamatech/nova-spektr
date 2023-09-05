@@ -29,9 +29,9 @@ const Operation = ({ tx, account }: Props) => {
 
   return (
     <Accordion className="bg-block-background-default transition-shadow rounded hover:shadow-card-shadow focus-visible:shadow-card-shadow">
-      <Accordion.Button className="px-2">
+      <Accordion.Button buttonClass="px-2" iconWrapper="px-1.5">
         <div className="h-[52px] flex gap-x-4 items-center w-full overflow-hidden">
-          <div className="w-[52px] pr-0.5">
+          <div className="w-[62px] pr-2">
             <FootnoteText className="text-text-tertiary" align="right">
               {format(date, 'p', { locale: dateLocale })}
             </FootnoteText>
@@ -45,7 +45,7 @@ const Operation = ({ tx, account }: Props) => {
           />
 
           {tx.transaction && getTransactionAmount(tx.transaction) && (
-            <TransactionAmount wrapperClassName="w-[160px]" tx={tx.transaction} />
+            <TransactionAmount wrapperClassName="w-[166px]" tx={tx.transaction} />
           )}
 
           <ChainTitle chainId={tx.chainId} className="w-[114px]" />
