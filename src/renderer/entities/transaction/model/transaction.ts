@@ -89,6 +89,7 @@ export type MultisigTransaction = {
   deposit?: string;
   depositor?: AccountId;
   description?: string;
+  xcmDestination?: ChainId;
   cancelDescription?: string;
   blockCreated: number;
   indexCreated: number;
