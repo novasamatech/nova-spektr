@@ -1,6 +1,6 @@
 import { BN, BN_TEN, BN_ZERO } from '@polkadot/util';
 import { ApiPromise } from '@polkadot/api';
-import { MultiLocation, VersionedMultiAsset, VersionedMultiLocation } from '@polkadot/types/interfaces';
+import { VersionedMultiAsset, VersionedMultiLocation } from '@polkadot/types/interfaces';
 
 import { XCM_URL, XCM_KEY } from './common/constants';
 import {
@@ -232,7 +232,7 @@ export const getDestinationLocation = (
   }
 };
 
-const ChildParachain = (api: ApiPromise, parachainId: number, accountId?: AccountId): MultiLocation => {
+const ChildParachain = (api: ApiPromise, parachainId: number, accountId?: AccountId): VersionedMultiLocation => {
   const location: Record<string, any> = {
     parachainId,
   };
@@ -244,7 +244,7 @@ const ChildParachain = (api: ApiPromise, parachainId: number, accountId?: Accoun
     };
   }
 
-  return api.createType('MultiLocation', {
+  return api.createType('VersionedMultiLocation', {
     V3: {
       parents: 0,
       interior: createJunctionFromObject(api, location),
@@ -252,7 +252,7 @@ const ChildParachain = (api: ApiPromise, parachainId: number, accountId?: Accoun
   });
 };
 
-const ParentChain = (api: ApiPromise, accountId?: AccountId): MultiLocation => {
+const ParentChain = (api: ApiPromise, accountId?: AccountId): VersionedMultiLocation => {
   const location: Record<string, any> = {};
 
   if (accountId) {
@@ -262,7 +262,7 @@ const ParentChain = (api: ApiPromise, accountId?: AccountId): MultiLocation => {
     };
   }
 
-  return api.createType('MultiLocation', {
+  return api.createType('VersionedMultiLocation', {
     V3: {
       parents: 1,
       interior: createJunctionFromObject(api, location),
