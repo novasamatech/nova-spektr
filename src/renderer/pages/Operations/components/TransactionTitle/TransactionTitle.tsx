@@ -10,10 +10,9 @@ type Props = {
   tx?: Transaction | DecodedTransaction;
   description?: string;
   className?: string;
-  truncate?: boolean;
 };
 
-export const TransactionTitle = ({ tx, description, truncate, className, children }: PropsWithChildren<Props>) => {
+export const TransactionTitle = ({ tx, description, className, children }: PropsWithChildren<Props>) => {
   const { t } = useI18n();
 
   const iconName = getIconName(tx);
@@ -26,7 +25,7 @@ export const TransactionTitle = ({ tx, description, truncate, className, childre
       </div>
       <div className="flex flex-col gap-y-0.5 justify-center overflow-hidden">
         <div className="flex gap-x-1 items-center">
-          <BodyText className={cnTw('whitespace-nowrap', truncate && 'truncate')}>{t(title)}</BodyText>
+          <BodyText className={cnTw('whitespace-nowrap', !children && 'truncate')}>{t(title)}</BodyText>
           {children}
         </div>
         {description && <FootnoteText className="text-text-tertiary truncate">{description} </FootnoteText>}

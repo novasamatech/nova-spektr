@@ -37,20 +37,15 @@ const Operation = ({ tx, account }: Props) => {
             </FootnoteText>
           </div>
 
-          <TransactionTitle
-            truncate
-            className="flex-1 overflow-hidden"
-            tx={tx.transaction}
-            description={tx.description}
-          />
+          <TransactionTitle className="flex-1 overflow-hidden" tx={tx.transaction} description={tx.description} />
 
           {tx.transaction && getTransactionAmount(tx.transaction) && (
-            <TransactionAmount wrapperClassName="w-[166px]" tx={tx.transaction} />
+            <TransactionAmount wrapperClassName="w-[160px]" tx={tx.transaction} />
           )}
 
-          <ChainTitle chainId={tx.chainId} className="w-[114px]" />
+          <ChainTitle chainId={tx.chainId} className="w-[120px]" />
 
-          <div className="flex justify-end w-[114px]">
+          <div className="flex justify-end w-[120px]">
             <OperationStatus status={tx.status} signed={approvals.length} threshold={account?.threshold || 0} />
           </div>
         </div>

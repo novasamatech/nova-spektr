@@ -96,6 +96,7 @@ const LogModal = ({ isOpen, onClose, tx, account, connection, contacts, accounts
             <TransactionAmount className="truncate" tx={transaction} showIcon={false} />
           )}
         </TransactionTitle>
+
         <OperationStatus
           className="shrink-0"
           status={status}
