@@ -52,15 +52,7 @@ class DexieStorage extends Dexie {
     // Move Multisig events from transaction to separate table
     this.version(17)
       .stores({
-        connections: '++id,chainId,type',
-        wallets: '++id,isActive,type',
-        balances: '[accountId+chainId+assetId],[accountId+chainId]',
-        accounts: '++id,isActive,walletId,rootId,signingType',
-        contacts: '++id,name,accountId,matrixId',
-        multisigTransactions:
-          '[accountId+chainId+callHash+blockCreated+indexCreated],[accountId+status],[accountId+callHash],[callHash+status+chainId],accountId,status,callHash',
         multisigEvents: '++id,[txAccountId+txChainId+txCallHash+txBlock+txIndex],status,accountId',
-        notifications: '++id,type,read',
       })
       .upgrade(upgradeEvents);
 
