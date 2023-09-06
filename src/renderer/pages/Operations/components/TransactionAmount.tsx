@@ -4,7 +4,7 @@ import { DecodedTransaction, Transaction } from '@renderer/entities/transaction'
 import { useChains } from '@renderer/entities/network';
 import { Asset, AssetBalance } from '@renderer/entities/asset';
 import { getAssetById } from '@renderer/shared/lib/utils';
-import { getTransactionAmount } from '@renderer/pages/Operations/common/utils';
+import { getTransactionAmount } from '../common/utils';
 
 type Props = {
   tx: Transaction | DecodedTransaction;
@@ -12,7 +12,7 @@ type Props = {
 
 type BalanceProps = Pick<ComponentProps<typeof AssetBalance>, 'className' | 'showIcon' | 'wrapperClassName'>;
 
-const TransactionAmount = ({ tx, ...balanceProps }: Props & BalanceProps) => {
+export const TransactionAmount = ({ tx, ...balanceProps }: Props & BalanceProps) => {
   const { getChainById } = useChains();
   const [assets, setAssets] = useState<Asset[]>([]);
 
@@ -27,5 +27,3 @@ const TransactionAmount = ({ tx, ...balanceProps }: Props & BalanceProps) => {
 
   return <AssetBalance value={value} asset={asset} showIcon {...balanceProps} />;
 };
-
-export default TransactionAmount;

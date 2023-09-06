@@ -367,6 +367,7 @@
     "noOperationsWalletNotMulti": "You can only view operations for your Multisig wallets. Transaction history for other types of wallets will be available later. Stay tuned.",
     "title": "Операции",
     "titles": {
+      "crossChainTransfer": "Кросс-чейн трансфер",
       "destination": "Установить кошелёк получения награды",
       "nominate": "Смена валидаторов",
       "redeem": "Забрать",

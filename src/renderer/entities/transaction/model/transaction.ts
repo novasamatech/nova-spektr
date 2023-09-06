@@ -6,9 +6,17 @@ export const enum TransactionType {
   TRANSFER = 'transfer',
   ORML_TRANSFER = 'ormlTransfer',
   ASSET_TRANSFER = 'assetTransfer',
+
   MULTISIG_AS_MULTI = 'multisig_as_multi',
   MULTISIG_APPROVE_AS_MULTI = 'multisig_approve_as_multi',
   MULTISIG_CANCEL_AS_MULTI = 'cancel_as_multi',
+
+  XCM_LIMITED_TRANSFER = 'xcm_limited_reserve_transfer_assets',
+  XCM_TELEPORT = 'xcm_limited_teleport_assets',
+  POLKADOT_XCM_LIMITED_TRANSFER = 'polkadotxcm_limited_reserve_transfer_assets',
+  POLKADOT_XCM_TELEPORT = 'polkadotxcm_limited_teleport_assets',
+  XTOKENS_TRANSFER_MULTIASSET = 'xtokens_transfer_multiasset',
+
   BOND = 'bond',
   STAKE_MORE = 'bondExtra',
   UNSTAKE = 'unbond',
@@ -81,6 +89,7 @@ export type MultisigTransaction = {
   deposit?: string;
   depositor?: AccountId;
   description?: string;
+  xcmDestination?: ChainId;
   cancelDescription?: string;
   blockCreated: number;
   indexCreated: number;
@@ -92,11 +101,3 @@ export type MultisigTransactionKey = Pick<
   MultisigTransaction,
   'accountId' | 'callHash' | 'chainId' | 'indexCreated' | 'blockCreated'
 >;
-
-export function isDecodedTx(tx: Transaction | DecodedTransaction): tx is DecodedTransaction {
-  const hasType = tx.type !== undefined;
-  const hasMethod = (tx as DecodedTransaction).method !== undefined;
-  const hasSection = (tx as DecodedTransaction).section !== undefined;
-
-  return !hasType && hasMethod && hasSection;
-}
