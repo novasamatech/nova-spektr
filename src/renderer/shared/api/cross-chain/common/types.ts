@@ -1,75 +1,84 @@
 import { HexString } from '@renderer/domain/shared-kernel';
 
+// =====================================================
+// ====================== General ======================
+// =====================================================
+
+export type AssetName = string;
+
 export type XcmConfig = {
-  assetsLocation: AssetLocation;
+  assetsLocation: AssetsLocation;
   instructions: Instructions;
   networkBaseWeight: NetworkBaseWeight;
   chains: ChainXCM[];
 };
 
-type AssetLocation = {
-  [asset: string]: {
-    chainId: string;
-    multiLocation: {
-      parachainId?: number;
-      generalKey?: HexString;
-    };
-    reserveFee: {
-      instructions: keyof Instructions;
-      mode: FeeMode;
-    };
-  };
+export type MultiLocation = {
+  parents?: number;
+  parachainId?: number;
+  palletInstance?: number;
+  generalKey?: HexString;
 };
 
-type Instructions = {
-  xtokensDest: ['ReserveAssetDeposited', 'ClearOrigin', 'BuyExecution', 'DepositAsset'];
-  xtokensReserve: ['WithdrawAsset', 'ClearOrigin', 'BuyExecution', 'DepositReserveAsset'];
-  xcmPalletDest: ['ReserveAssetDeposited', 'ClearOrigin', 'BuyExecution', 'DepositAsset'];
-  xcmPalletTeleportDest: ['ReceiveTeleportedAsset', 'ClearOrigin', 'BuyExecution', 'DepositAsset'];
+export type Fee = {
+  instructions: InstructionType;
+  mode: FeeMode;
 };
 
-type FeeMode = {
-  type: 'proportional';
+export type AssetLocation = {
+  chainId: string;
+  multiLocation: MultiLocation;
+  reserveFee: Fee;
+};
+export type AssetsLocation = Record<AssetName, AssetLocation>;
+
+export type InstructionType = 'xtokensDest' | 'xtokensReserve' | 'xcmPalletDest' | 'xcmPalletTeleportDest';
+
+export type Instructions = Record<InstructionType, Action[]>;
+
+export type FeeModeType = 'proportional' | 'standard';
+export type FeeMode = {
+  type: FeeModeType;
   value: string;
 };
 
-type NetworkBaseWeight = {
-  [token: string]: string;
+export type NetworkBaseWeight = {
+  [chainId: string]: string;
 };
 
-type ChainXCM = {
+export type AssetXCM = {
+  assetId: number;
+  assetLocation: string;
+  assetLocationPath: {
+    type: PathType;
+    path?: MultiLocation;
+  };
+  xcmTransfers: XcmTransfer[];
+};
+
+export type ChainXCM = {
   chainId: string;
-  assets: {
-    assetId: number;
-    assetLocation: string;
-    assetLocationPath: {
-      type: PathType;
-    };
-    xcmTransfers: XcmTransfer[];
-  }[];
+  assets: AssetXCM[];
 };
 
-type XcmTransfer = {
+export type XcmTransfer = {
   type: XcmTransferType;
   destination: {
     chainId: string;
     assetId: number;
-    fee: {
-      mode: FeeMode;
-      instructions: keyof Instructions;
-    };
+    fee: Fee;
   };
 };
 
-type XcmTransferType = 'xtokens' | 'xcmpallet';
-type PathType = 'absolute' | 'relative';
+export type XcmTransferType = 'xtokens' | 'xcmpallet';
+export type PathType = 'absolute' | 'relative' | 'concrete';
 
-// const enum Action {
-//   ReserveAssetDeposited = 'ReserveAssetDeposited',
-//   WithdrawAsset = 'WithdrawAsset',
-//   ReceiveTeleportedAsset = 'ReceiveTeleportedAsset',
-//   ClearOrigin = 'ClearOrigin',
-//   BuyExecution = 'BuyExecution',
-//   DepositReserveAsset = 'DepositReserveAsset',
-//   DepositAsset = 'DepositAsset',
-// }
+export const enum Action {
+  RESERVE_ASSET_DEPOSITED = 'ReserveAssetDeposited',
+  WITHDRAW_ASSET = 'WithdrawAsset',
+  RECEIVE_TELEPORTED_ASSET = 'ReceiveTeleportedAsset',
+  CLEAR_ORIGIN = 'ClearOrigin',
+  BUY_EXECUTION = 'BuyExecution',
+  DEPOSIT_RESERVE_ASSET = 'DepositReserveAsset',
+  DEPOSIT_ASSET = 'DepositAsset',
+}
