@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 
 import { Transaction, DepositWithLabel, Fee } from '@renderer/entities/transaction';
-import TransactionAmount from '@renderer/pages/Operations/components/TransactionAmount';
+import { TransactionAmount } from '@renderer/pages/Operations/components/TransactionAmount';
 import { Button, DetailRow, FootnoteText, Icon } from '@renderer/shared/ui';
 import { Account, MultisigAccount } from '@renderer/entities/account';
 import { ExtendedChain } from '@renderer/entities/network';
