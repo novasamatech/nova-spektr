@@ -1,4 +1,4 @@
-import { TransactionType } from '@renderer/entities/transaction';
+import { TransactionType } from '../../model/transaction';
 
 export const MAX_WEIGHT = {
   refTime: '0',
