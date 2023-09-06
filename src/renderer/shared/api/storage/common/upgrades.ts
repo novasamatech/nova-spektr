@@ -2,7 +2,13 @@ import { Transaction } from 'dexie';
 
 import { MultisigEventDS } from './types';
 
-export const upgradeEvents = async (trans: Transaction) => {
+/**
+ * Remove events from MultisigTransactions
+ * Add events to separate table MultisigEvents
+ * @param trans transactions from DB
+ * @return {Promise}
+ */
+export const upgradeEvents = async (trans: Transaction): Promise<any> => {
   const txs = await trans.table('multisigTransactions').toArray();
   const newEvents = txs
     .map((tx) =>
