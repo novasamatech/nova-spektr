@@ -45,11 +45,11 @@ const TransactionIcons: Record<TransactionType, IconNames> = {
   [TransactionType.MULTISIG_APPROVE_AS_MULTI]: 'transferMst',
   [TransactionType.MULTISIG_CANCEL_AS_MULTI]: 'transferMst',
   // XCM
-  [TransactionType.XCM_LIMITED_TRANSFER]: 'unknownMst',
-  [TransactionType.XCM_TELEPORT]: 'unknownMst',
-  [TransactionType.POLKADOT_XCM_LIMITED_TRANSFER]: 'unknownMst',
-  [TransactionType.POLKADOT_XCM_TELEPORT]: 'unknownMst',
-  [TransactionType.XTOKENS_TRANSFER_MULTIASSET]: 'unknownMst',
+  [TransactionType.XCM_LIMITED_TRANSFER]: 'crossChain',
+  [TransactionType.XCM_TELEPORT]: 'crossChain',
+  [TransactionType.POLKADOT_XCM_LIMITED_TRANSFER]: 'crossChain',
+  [TransactionType.POLKADOT_XCM_TELEPORT]: 'crossChain',
+  [TransactionType.XTOKENS_TRANSFER_MULTIASSET]: 'crossChain',
   // Staking
   [TransactionType.BOND]: 'stakingMst',
   [TransactionType.NOMINATE]: 'stakingMst',

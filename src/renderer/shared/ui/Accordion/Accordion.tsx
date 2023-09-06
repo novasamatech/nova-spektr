@@ -18,24 +18,27 @@ const Accordion = ({ className, isDefaultOpen, children }: PropsWithChildren<Pro
 };
 
 type ButtonProps = {
-  className?: string;
+  buttonClass?: string;
+  iconWrapper?: string;
 };
 
-const Button = ({ className, children }: PropsWithChildren<ButtonProps>) => {
+const Button = ({ buttonClass, iconWrapper, children }: PropsWithChildren<ButtonProps>) => {
   return (
-    <Disclosure.Button className={cnTw('group flex items-center justify-between w-full gap-x-2', className)}>
+    <Disclosure.Button className={cnTw('group flex items-center justify-between w-full gap-x-2', buttonClass)}>
       {({ open }) => (
         <>
           {children}
-          <Icon
-            name={open ? 'up' : 'down'}
-            size={16}
-            className={cnTw(
-              'cursor-pointer rounded-full transition-colors',
-              'group-hover:text-icon-hover group-hover:bg-hover',
-              'group-focus-visible:text-icon-hover group-focus-visible:bg-hover',
-            )}
-          />
+          <div className={cnTw('shrink-0', iconWrapper)}>
+            <Icon
+              name={open ? 'up' : 'down'}
+              size={16}
+              className={cnTw(
+                'cursor-pointer rounded-full transition-colors',
+                'group-hover:text-icon-hover group-hover:bg-hover',
+                'group-focus-visible:text-icon-hover group-focus-visible:bg-hover',
+              )}
+            />
+          </div>
         </>
       )}
     </Disclosure.Button>

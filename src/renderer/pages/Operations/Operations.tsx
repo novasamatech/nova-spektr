@@ -68,7 +68,7 @@ export const Operations = () => {
             .map(([date, txs]) => (
               <section className="w-fit mt-6" key={date}>
                 <FootnoteText className="text-text-tertiary mb-3 ml-2">{date}</FootnoteText>
-                <ul className="flex flex-col gap-y-1.5">
+                <ul className="flex flex-col gap-y-1.5 w-[736px]">
                   {txs
                     .sort((a, b) => (b.dateCreated || 0) - (a.dateCreated || 0))
                     .map((tx) => (

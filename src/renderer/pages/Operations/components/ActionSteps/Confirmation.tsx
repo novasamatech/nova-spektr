@@ -1,5 +1,5 @@
 import { MultisigTransaction, Transaction, Fee } from '@renderer/entities/transaction';
-import TransactionAmount from '@renderer/pages/Operations/components/TransactionAmount';
+import { TransactionAmount } from '@renderer/pages/Operations/components/TransactionAmount';
 import { DetailRow, FootnoteText } from '@renderer/shared/ui';
 import { MultisigAccount } from '@renderer/entities/account';
 import { ExtendedChain } from '@renderer/entities/network';

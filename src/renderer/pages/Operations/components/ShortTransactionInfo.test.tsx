@@ -1,6 +1,6 @@
 import { act, render, screen } from '@testing-library/react';
 
-import TransactionAmount from './TransactionAmount';
+import { TransactionAmount } from './TransactionAmount';
 import { Transaction, TransactionType } from '@renderer/entities/transaction';
 import { TEST_ADDRESS, TEST_CHAIN_ID } from '@renderer/shared/lib/utils';
 

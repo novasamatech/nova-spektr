@@ -29,14 +29,19 @@ type Props = {
   status: MultisigTransaction['status'];
   signed?: number;
   threshold?: number;
+  className?: string;
 };
 
-const OperationStatus = ({ status, signed, threshold }: Props) => {
+const OperationStatus = ({ status, signed, threshold, className }: Props) => {
   const { t } = useI18n();
 
   return (
     <CaptionText
-      className={cn('py-1 px-2.5 rounded-[20px] border border-redesign-shade-8 uppercase', StatusColor[status])}
+      className={cn(
+        'py-1 px-2.5 rounded-[20px] border border-redesign-shade-8 uppercase',
+        StatusColor[status],
+        className,
+      )}
       align="center"
     >
       {status === 'SIGNING'

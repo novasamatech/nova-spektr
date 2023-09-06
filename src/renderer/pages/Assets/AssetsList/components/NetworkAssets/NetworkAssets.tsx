@@ -86,7 +86,7 @@ export const NetworkAssets = ({ query, hideZeroBalance, chain, accounts, searchS
     <li className="w-[546px]">
       <Accordion isDefaultOpen>
         <Accordion.Button
-          className={cnTw(
+          buttonClass={cnTw(
             'sticky top-0 z-10 bg-background-default px-2 py-1.5',
             'transition-colors rounded hover:bg-block-background-hover focus-visible:bg-block-background-hover',
           )}
