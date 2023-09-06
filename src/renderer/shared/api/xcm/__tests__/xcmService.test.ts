@@ -1,28 +1,25 @@
 import { ApiPromise } from '@polkadot/api';
 
 import { XCM_KEY } from '../common/constants';
-import { estimateFee, getXcmConfig, getDestinationLocation } from '../crossChainService';
-import { CONFIG } from './mock/testConfig';
+import { estimateFee, getXcmConfig, getDestinationLocation } from '../xcmService';
+import { CONFIG } from '@renderer/shared/api/xcm/__tests__/mock/xcmData';
 
 const mockApi = () =>
   ({
     createType: (_, typeParams) => typeParams,
   } as ApiPromise);
 
-describe('shared/api/cross-chain/crossChainService', () => {
-  afterEach(() => {
+describe('shared/api/xcm/crossChainService', () => {
+  beforeEach(() => {
     localStorage.clear();
   });
 
   test('should get empty config from localStorage', () => {
-    localStorage.clear();
-
     const config = getXcmConfig();
     expect(config).toEqual(null);
   });
 
   test('should get not empty config from localStorage', () => {
-    localStorage.clear();
     localStorage.setItem(XCM_KEY, JSON.stringify(CONFIG));
 
     const config = getXcmConfig();
