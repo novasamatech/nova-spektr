@@ -3,10 +3,16 @@ import { useEffect, useState } from 'react';
 import { useI18n, useNetworkContext } from '@renderer/app/providers';
 import { MultisigTransactionDS } from '@renderer/shared/api/storage';
 import { DropdownOption, DropdownResult } from '@renderer/shared/ui/types';
-import { MultisigTransaction, Transaction, TransactionType } from '@renderer/entities/transaction/model/transaction';
 import { Button, MultiSelect } from '@renderer/shared/ui';
 import { getStatusOptions, getTransactionOptions } from '../lib/utils';
-import { UNKNOWN_TYPE, TransferTypes, XcmTypes } from '../lib/constants';
+import { UNKNOWN_TYPE } from '../lib/constants';
+import {
+  MultisigTransaction,
+  Transaction,
+  TransactionType,
+  TransferTypes,
+  XcmTypes,
+} from '@renderer/entities/transaction';
 
 type FilterName = 'status' | 'network' | 'type';
 
