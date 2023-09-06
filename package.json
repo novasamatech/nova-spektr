@@ -10,12 +10,9 @@
   "scripts": {
     "start": "pnpm clean:build && concurrently \"pnpm start:renderer\" \"pnpm start:main\" && watch",
     "start:dev": "pnpm clean:build && concurrently \"pnpm start:renderer:dev\" \"pnpm start:main:dev\" && watch",
-
     "start:electron": "electron .",
-
     "start:renderer": "cross-env NODE_ENV=staging CHAINS_FILE=chains pnpm webpack:renderer:stage",
     "start:renderer:dev": "cross-env NODE_ENV=development CHAINS_FILE=chains-dev pnpm webpack:renderer:dev",
-
     "start:main": "cross-env NODE_ENV=staging pnpm r webpack:main:stage start:electron",
     "start:main:dev": "cross-env NODE_ENV=development pnpm r webpack:main:dev start:electron",
     "watch": "nodemon --watch src/main --watch src/renderer/bridge --watch src/shared --ignore src/main/resources --ext \"*\" --exec",
@@ -23,7 +20,6 @@
     "webpack:renderer:dev": "webpack serve --config webpack/webpack.renderer.dev.ts",
     "webpack:renderer:stage": "webpack serve --config webpack/webpack.renderer.stage.ts",
     "webpack:renderer:prod": "webpack --config webpack/webpack.renderer.prod.ts",
-
     "webpack:main:dev": "webpack --config webpack/webpack.main.dev.ts",
     "webpack:main:stage": "webpack --config webpack/webpack.main.stage.ts",
     "webpack:main:prod": "webpack --config webpack/webpack.main.prod.ts",
@@ -31,7 +27,6 @@
     "build": "cross-env NODE_ENV=production CHAINS_FILE=chains pnpm r clean:prod webpack:renderer:prod webpack:main:prod",
     "postbuild": "node scripts/postbuild.js",
     "dist": "electron-builder -p never",
-
     "clean:build": "rimraf release/build",
     "clean:prod": "rimraf release/dist",
 
@@ -50,6 +45,7 @@
 
     "storybook": "start-storybook -p 6006",
     "build:storybook": "build-storybook",
+
     "update:chains-file": "node scripts/buildChainsJson.js",
     "githook:pre-commit": "cross-env NODE_ENV=production lint-staged && tsc -p tsconfig.json",
     "githook:pre-push": "cross-env pnpm test:coverage",
