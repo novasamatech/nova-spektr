@@ -215,19 +215,19 @@ const ConcreteAssetLocation = (
 
 export const getDestinationLocation = (
   api: ApiPromise,
-  chain: Chain,
-  destinationParaId: number,
+  originChain: Pick<Chain, 'parentId'>,
+  destinationParaId?: number,
   accountId?: AccountId,
-) => {
-  if (chain.parentId && destinationParaId !== null) {
+): VersionedMultiLocation | undefined => {
+  if (originChain.parentId && destinationParaId) {
     return SiblingParachain(api, destinationParaId, accountId);
   }
 
-  if (chain.parentId) {
+  if (originChain.parentId) {
     return ParentChain(api, accountId);
   }
 
-  if (destinationParaId !== null) {
+  if (destinationParaId) {
     return ChildParachain(api, destinationParaId, accountId);
   }
 };
@@ -245,7 +245,7 @@ const ChildParachain = (api: ApiPromise, parachainId: number, accountId?: Accoun
   }
 
   return api.createType('VersionedMultiLocation', {
-    V3: {
+    V2: {
       parents: 0,
       interior: createJunctionFromObject(api, location),
     },
@@ -263,7 +263,7 @@ const ParentChain = (api: ApiPromise, accountId?: AccountId): VersionedMultiLoca
   }
 
   return api.createType('VersionedMultiLocation', {
-    V3: {
+    V2: {
       parents: 1,
       interior: createJunctionFromObject(api, location),
     },
