@@ -4,7 +4,7 @@ import { format } from 'date-fns';
 import { useI18n } from '@renderer/app/providers';
 import { Account, MultisigAccount } from '@renderer/entities/account';
 import { ExtendedChain } from '@renderer/entities/network';
-import { MultisigEvent, SigningStatus, TransactionType } from '@renderer/entities/transaction';
+import { MultisigEvent, SigningStatus, TransferTypes, XcmTypes } from '@renderer/entities/transaction';
 import { TransactionTitle } from './TransactionTitle/TransactionTitle';
 import OperationStatus from './OperationStatus';
 import { getSignatoryName, sortByDateAsc } from '../common/utils';
@@ -68,16 +68,7 @@ const LogModal = ({ isOpen, onClose, tx, account, connection, contacts, accounts
   const showTxAmount = (): boolean => {
     if (!transaction?.type) return false;
 
-    return [
-      TransactionType.TRANSFER,
-      TransactionType.ORML_TRANSFER,
-      TransactionType.ASSET_TRANSFER,
-      TransactionType.XCM_LIMITED_TRANSFER,
-      TransactionType.XCM_TELEPORT,
-      TransactionType.POLKADOT_XCM_LIMITED_TRANSFER,
-      TransactionType.POLKADOT_XCM_TELEPORT,
-      TransactionType.XTOKENS_TRANSFER_MULTIASSET,
-    ].includes(transaction.type);
+    return [...TransferTypes, ...XcmTypes].includes(transaction.type);
   };
 
   return (
