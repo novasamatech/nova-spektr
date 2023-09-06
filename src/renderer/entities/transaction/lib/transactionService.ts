@@ -167,6 +167,22 @@ export const useTransaction = (): ITransactionService => {
         options,
       );
     },
+    // TODO: finish during XCM transfer
+    [TransactionType.XCM_LIMITED_TRANSFER]: (transaction, info, options, api) => {
+      return {} as UnsignedTransaction;
+    },
+    [TransactionType.XCM_TELEPORT]: (transaction, info, options, api) => {
+      return {} as UnsignedTransaction;
+    },
+    [TransactionType.POLKADOT_XCM_LIMITED_TRANSFER]: (transaction, info, options, api) => {
+      return {} as UnsignedTransaction;
+    },
+    [TransactionType.POLKADOT_XCM_TELEPORT]: (transaction, info, options, api) => {
+      return {} as UnsignedTransaction;
+    },
+    [TransactionType.XTOKENS_TRANSFER_MULTIASSET]: (transaction, info, options, api) => {
+      return {} as UnsignedTransaction;
+    },
     [TransactionType.BOND]: (transaction, info, options, api) => {
       return isControllerMissing(api)
         ? bondWithoutController(
@@ -282,6 +298,22 @@ export const useTransaction = (): ITransactionService => {
     ) => api.tx.multisig.approveAsMulti(threshold, otherSignatories, maybeTimepoint, callHash, maxWeight),
     [TransactionType.MULTISIG_CANCEL_AS_MULTI]: ({ threshold, otherSignatories, maybeTimepoint, callHash }, api) =>
       api.tx.multisig.cancelAsMulti(threshold, otherSignatories, maybeTimepoint, callHash),
+    // TODO: finish during XCM transfer
+    [TransactionType.XCM_LIMITED_TRANSFER]: () => {
+      return {} as SubmittableExtrinsic<'promise'>;
+    },
+    [TransactionType.XCM_TELEPORT]: () => {
+      return {} as SubmittableExtrinsic<'promise'>;
+    },
+    [TransactionType.POLKADOT_XCM_LIMITED_TRANSFER]: () => {
+      return {} as SubmittableExtrinsic<'promise'>;
+    },
+    [TransactionType.POLKADOT_XCM_TELEPORT]: () => {
+      return {} as SubmittableExtrinsic<'promise'>;
+    },
+    [TransactionType.XTOKENS_TRANSFER_MULTIASSET]: () => {
+      return {} as SubmittableExtrinsic<'promise'>;
+    },
     // controller arg removed from bond but changes not released yet
     // https://github.com/paritytech/substrate/pull/14039
     // @ts-ignore

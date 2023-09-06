@@ -367,6 +367,7 @@
     "noOperationsWalletNotMulti": "You can only view operations for your Multisig wallets. Transaction history for other types of wallets will be available later. Stay tuned.",
     "title": "Operations",
     "titles": {
+      "crossChainTransfer": "Cross-chain transfer",
       "destination": "Set reward destination",
       "nominate": "Change Validators",
       "redeem": "Withdraw Unstaked",

@@ -136,6 +136,21 @@ export const useCallDataDecoder = (): ICallDataDecoder => {
     [TransactionType.TRANSFER]: (method, section, decoded): Record<string, any> => {
       return { dest: decoded.args[0].toString(), value: decoded.args[1].toString() };
     },
+    [TransactionType.XCM_LIMITED_TRANSFER]: (method, section, decoded): Record<string, any> => {
+      return {};
+    },
+    [TransactionType.XCM_TELEPORT]: (method, section, decoded): Record<string, any> => {
+      return {};
+    },
+    [TransactionType.POLKADOT_XCM_LIMITED_TRANSFER]: (method, section, decoded): Record<string, any> => {
+      return {};
+    },
+    [TransactionType.POLKADOT_XCM_TELEPORT]: (method, section, decoded): Record<string, any> => {
+      return {};
+    },
+    [TransactionType.XTOKENS_TRANSFER_MULTIASSET]: (method, section, decoded): Record<string, any> => {
+      return {};
+    },
     [TransactionType.ASSET_TRANSFER]: (method, section, decoded): Record<string, any> => {
       return {
         assetId: decoded.args[0].toString(),
