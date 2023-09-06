@@ -1,12 +1,14 @@
 import { app, dialog } from 'electron';
 import { autoUpdater } from 'electron-updater';
+import * as process from 'process';
 
 import { MainWindow } from './main';
 import { makeAppWithSingleInstanceLock } from './factories/instance';
 import { makeAppSetup } from './factories/setup';
 
-makeAppWithSingleInstanceLock(async () => {
-  app.commandLine.appendSwitch('autoplay-policy', 'no-user-gesture-required');
+const setupAutoUpdate = () => {
+  if (process.env.BUILD_SOURCE !== 'github') return;
+
   autoUpdater.autoRunAppAfterInstall = true;
 
   app.on('ready', () => {
@@ -59,6 +61,13 @@ makeAppWithSingleInstanceLock(async () => {
     console.error('[app-updater] Error on update', err);
     dialog.showErrorBox('Error', 'Error updating the application');
   });
+};
+
+makeAppWithSingleInstanceLock(async () => {
+  app.commandLine.appendSwitch('autoplay-policy', 'no-user-gesture-required');
+
+  setupAutoUpdate();
+
   await app.whenReady();
   await makeAppSetup(MainWindow);
 });
