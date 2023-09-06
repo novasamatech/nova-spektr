@@ -1,5 +1,6 @@
 import { ComponentProps, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useStore } from 'effector-react';
 
 import { BaseModal, HeaderTitleText, StatusLabel, Button } from '@renderer/shared/ui';
 import { useI18n, useMatrix, Paths } from '@renderer/app/providers';
@@ -14,10 +15,10 @@ import { useToggle } from '@renderer/shared/lib/hooks';
 import { OperationResult } from '@renderer/entities/transaction';
 import { MatrixModal } from '../MatrixModal/MatrixModal';
 import { Wallet, useWallet } from '@renderer/entities/wallet';
-import { useContact } from '@renderer/entities/contact';
 import { ExtendedContact, ExtendedWallet } from './common/types';
 import { SelectSignatories, ConfirmSignatories, WalletForm } from './components';
 import { AccountId } from '@renderer/domain/shared-kernel';
+import { contactModel } from '@renderer/entities/contact';
 
 type OperationResultProps = Pick<ComponentProps<typeof OperationResult>, 'variant' | 'description'>;
 
@@ -35,7 +36,6 @@ export const CreateMultisigAccount = ({ isOpen, onClose }: Props) => {
   const { t } = useI18n();
   const { matrix, isLoggedIn } = useMatrix();
   const { getWallets } = useWallet();
-  const { getLiveContacts } = useContact();
   const { getAccounts, addAccount, setActiveAccount } = useAccount();
   const navigate = useNavigate();
 
@@ -52,7 +52,7 @@ export const CreateMultisigAccount = ({ isOpen, onClose }: Props) => {
   const [wallets, setWallets] = useState<Wallet[]>([]);
   const [accounts, setAccounts] = useState<Account[]>([]);
 
-  const contacts = getLiveContacts();
+  const contacts = useStore(contactModel.$contacts);
   const signatories = signatoryWallets.concat(signatoryContacts);
 
   useEffect(() => {
