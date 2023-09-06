@@ -1,4 +1,4 @@
-import { Action, XcmConfig } from './types';
+import { Action, XcmConfig } from '../../common/types';
 
 export const CONFIG: XcmConfig = {
   assetsLocation: {
