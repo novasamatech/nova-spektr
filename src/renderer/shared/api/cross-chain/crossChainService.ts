@@ -20,7 +20,7 @@ import { AccountId, ChainId } from '@renderer/domain/shared-kernel';
 import { Chain } from '@renderer/entities/chain';
 
 export const fetchXcmConfig = async (): Promise<XcmConfig> => {
-  const response = await fetch(XCM_URL);
+  const response = await fetch(XCM_URL, { cache: 'default' });
 
   return response.json();
 };

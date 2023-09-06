@@ -1,4 +1,4 @@
-import { Address } from '@renderer/domain/shared-kernel';
+import { Address } from './shared-kernel';
 
 export type Identity = {
   subName: string;

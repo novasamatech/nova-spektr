@@ -1,28 +1,23 @@
-import { createStore, createEffect, createEvent, sample, forward } from 'effector';
+import { createStore, createEffect, createEvent, sample, forward, attach } from 'effector';
 
-import { XcmConfig, fetchXcmConfig, getXcmConfig, saveXcmConfig } from '@renderer/shared/api/cross-chain';
+import { XcmConfig } from '@renderer/shared/api/cross-chain';
+import { xcmModel } from '@renderer/entities/xcm';
 
 export const $finalConfig = createStore<any | null>(null);
 const xcmConfigRequested = createEvent();
-
-const getConfigFx = createEffect((): XcmConfig | null => {
-  return getXcmConfig();
-});
-const fetchConfigFx = createEffect((): Promise<XcmConfig> => {
-  return fetchXcmConfig();
-});
-const saveConfigFx = createEffect((config: XcmConfig) => {
-  return saveXcmConfig(config);
-});
 
 // TODO: continue config calculation in cross-chain service task
 const calculateFinalConfigFx = createEffect((config: XcmConfig): XcmConfig => {
   return config;
 });
 
-sample({
-  clock: xcmConfigRequested,
-  target: [getConfigFx, fetchConfigFx],
+const getConfigFx = attach({ effect: xcmModel.effects.getConfigFx });
+const saveConfigFx = attach({ effect: xcmModel.effects.saveConfigFx });
+const fetchConfigFx = attach({ effect: xcmModel.effects.fetchConfigFx });
+
+forward({
+  from: xcmConfigRequested,
+  to: [getConfigFx, fetchConfigFx],
 });
 
 sample({
