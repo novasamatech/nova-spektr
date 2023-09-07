@@ -17,21 +17,11 @@ type Props = {
   signatory?: Account;
   description?: string;
   connection: ExtendedChain;
-  feeTx?: Transaction;
   onResult?: () => void;
   onBack?: () => void;
 };
 
-export const Confirmation = ({
-  account,
-  connection,
-  transaction,
-  signatory,
-  description,
-  feeTx,
-  onResult,
-  onBack,
-}: Props) => {
+export const Confirmation = ({ account, connection, transaction, signatory, description, onResult, onBack }: Props) => {
   const { t } = useI18n();
 
   const { getWallet } = useWallet();
@@ -65,12 +55,12 @@ export const Confirmation = ({
       <hr className="border-divider my-1 w-full" />
 
       <DetailRow label={t('operation.networkFee')} className="text-text-primary">
-        {connection.api && feeTx && (
+        {connection.api && transaction && (
           <Fee
             className="text-footnote text-text-primary"
             api={connection.api}
             asset={connection.assets[0]}
-            transaction={feeTx}
+            transaction={transaction}
             onFeeChange={(fee) => setFeeLoaded(Boolean(fee))}
           />
         )}

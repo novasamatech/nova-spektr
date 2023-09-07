@@ -28,40 +28,15 @@ export type ITransactionService = {
     callback: (executed: boolean, params: ExtrinsicResultParams | string) => void,
   ) => void;
   getTransactionFee: (transaction: Transaction, api: ApiPromise) => Promise<string>;
-  getTransactionFeeV2: (api: ApiPromise) => Promise<string>;
   getExtrinsicWeight: (extrinsic: SubmittableExtrinsic<'promise'>) => Promise<Weight>;
   getTransactionDeposit: (threshold: Threshold, api: ApiPromise) => string;
   getTransactionHash: (transaction: Transaction, api: ApiPromise) => HashData;
   decodeCallData: (api: ApiPromise, accountId: Address, callData: CallData) => DecodedTransaction;
   verifySignature: (payload: Uint8Array, signature: HexString, accountId: AccountId) => Boolean;
   setTxs: (txs: Transaction[]) => void;
-};
-
-export type ITransactionServiceV2 = {
-  createPayload: (
-    transaction: Transaction,
-    api: ApiPromise,
-  ) => Promise<{
-    unsigned: UnsignedTransaction;
-    payload: Uint8Array;
-  }>;
-  getSignedExtrinsic: (unsigned: UnsignedTransaction, signature: HexString, api: ApiPromise) => Promise<string>;
-  submitAndWatchExtrinsic: (
-    tx: string,
-    unsigned: UnsignedTransaction,
-    api: ApiPromise,
-    callback: (executed: boolean, params: ExtrinsicResultParams | string) => void,
-  ) => void;
-  getTransactionFee: (api: ApiPromise) => Promise<string>;
-  getExtrinsicWeight: (extrinsic: SubmittableExtrinsic<'promise'>) => Promise<Weight>;
-  getTransactionDeposit: (threshold: Threshold, api: ApiPromise) => string;
-  getTransactionHash: (api: ApiPromise, transaction?: Transaction) => HashData;
-  decodeCallData: (api: ApiPromise, accountId: Address, callData: CallData) => DecodedTransaction;
-  verifySignature: (payload: Uint8Array, signature: HexString, accountId: AccountId) => Boolean;
-  setTxs: (txs: Transaction[]) => void;
   txs: Transaction[];
   setWrapAs: (wrappers: TxWrappers[]) => void;
-  wrapTx: (api: ApiPromise, addressPrefix: number) => Transaction;
+  wrapTx: (tx: Transaction, api: ApiPromise, addressPrefix: number) => Transaction;
 };
 
 // =====================================================

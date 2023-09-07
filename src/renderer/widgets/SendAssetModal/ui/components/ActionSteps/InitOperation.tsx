@@ -8,7 +8,7 @@ import { Asset, AssetType, useBalance } from '@renderer/entities/asset';
 import { Transaction, TransactionType, useExtrinsicService } from '@renderer/entities/transaction';
 import { TransferForm, TransferFormData } from '../TransferForm';
 import { getAccountOption, getSignatoryOption } from '../../common/utils';
-import { OperationFooterNew, OperationHeader } from '@renderer/features/operation';
+import { OperationFooter, OperationHeader } from '@renderer/features/operation';
 import { getAssetId, TEST_ACCOUNT_ID, toAddress } from '@renderer/shared/lib/utils';
 
 type Props = {
@@ -19,7 +19,7 @@ type Props = {
   nativeToken: Asset;
   explorers?: Explorer[];
   addressPrefix: number;
-  getFee: () => Promise<string>;
+  feeTx: Transaction;
   onTxChange: (transactions: Transaction[]) => void;
   onAccountChange: (account: Account | MultisigAccount) => void;
   onSignatoryChange: (account: Account) => void;
@@ -34,7 +34,7 @@ export const InitOperation = ({
   nativeToken,
   addressPrefix,
   onResult,
-  getFee,
+  feeTx,
   onTxChange,
   onAccountChange,
   onSignatoryChange,
@@ -150,12 +150,12 @@ export const InitOperation = ({
         footer={
           activeAccount &&
           formData && (
-            <OperationFooterNew
+            <OperationFooter
               api={api}
               asset={asset}
               account={activeAccount}
               totalAccounts={1}
-              getFee={getFee}
+              feeTX={feeTx}
               onFeeChange={setFee}
               onFeeLoading={setFeeIsLoading}
               onDepositChange={setDeposit}
