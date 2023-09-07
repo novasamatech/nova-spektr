@@ -2,9 +2,10 @@ import { useI18n } from '@renderer/app/providers';
 import { Account, MultisigAccount, AddressWithExplorers } from '@renderer/entities/account';
 import { ExtendedChain } from '@renderer/entities/network';
 import { Transaction } from '@renderer/entities/transaction';
-import { AddressStyle } from '../common/constants';
 import { Wallet } from '@renderer/entities/wallet';
 import { DetailRow } from '@renderer/shared/ui';
+
+const AddressStyle = 'text-footnote text-inherit';
 
 type Props = {
   transaction: Transaction;
