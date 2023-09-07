@@ -4,7 +4,7 @@ import { UnsignedTransaction } from '@substrate/txwrapper-polkadot';
 import { useI18n, useNetworkContext } from '@renderer/app/providers';
 import { HexString } from '@renderer/domain/shared-kernel';
 import { Transaction, useTransaction, validateBalance } from '@renderer/entities/transaction';
-import { Account, MultisigAccount } from '@renderer/entities/account';
+import { Account, isMultisig, MultisigAccount } from '@renderer/entities/account';
 import { BaseModal, Button, Loader } from '@renderer/shared/ui';
 import { Confirmation, InitOperation, Submit } from './components/ActionSteps';
 import { Signing } from '@renderer/features/operation';
@@ -94,7 +94,7 @@ export const SendAssetModal = ({ chain, asset, onClose }: Props) => {
     return api ? (
       <Submit
         tx={transaction}
-        multisigTx={wrapTx(transaction, api, addressPrefix)}
+        multisigTx={isMultisig(account) ? wrapTx(transaction, api, addressPrefix) : undefined}
         account={account}
         unsignedTx={unsignedTx}
         signature={signature}
