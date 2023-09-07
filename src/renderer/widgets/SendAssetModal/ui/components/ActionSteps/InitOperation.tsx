@@ -1,14 +1,17 @@
 import { ApiPromise } from '@polkadot/api';
 import { useEffect, useState } from 'react';
+import { useStore } from 'effector-react';
 
 import { ChainId } from '@renderer/domain/shared-kernel';
 import { useAccount, Account, isMultisig, MultisigAccount } from '@renderer/entities/account';
-import { Explorer } from '@renderer/entities/chain';
+import { Chain, Explorer } from '@renderer/entities/chain';
 import { Asset, useBalance } from '@renderer/entities/asset';
 import { Transaction } from '@renderer/entities/transaction';
 import { TransferForm } from '../TransferForm';
 import { getAccountOption, getSignatoryOption } from '../../common/utils';
 import { OperationFooter, OperationHeader } from '@renderer/features/operation';
+import * as sendAssetModel from '../../../model/send-asset';
+import { useNetworkContext } from '@renderer/app/providers';
 
 type Props = {
   api: ApiPromise;
@@ -36,6 +39,8 @@ export const InitOperation = ({
 }: Props) => {
   const { getActiveAccounts } = useAccount();
   const { getLiveAssetBalances } = useBalance();
+  const { connections } = useNetworkContext();
+  const availableDestinations = useStore(sendAssetModel.$destinations);
 
   const accounts = getActiveAccounts();
 
@@ -44,9 +49,9 @@ export const InitOperation = ({
   const [amount, setAmount] = useState<string>('0');
   const [deposit, setDeposit] = useState<string>('0');
   const [tx, setTx] = useState<Transaction>();
+  const [destinations, setDestinations] = useState<Chain[]>([]);
 
   const [activeAccount, setActiveAccount] = useState<Account | MultisigAccount>();
-
   const [activeSignatory, setActiveSignatory] = useState<Account>();
 
   const accountIds = accounts.map((account) => account.accountId);
@@ -60,6 +65,27 @@ export const InitOperation = ({
     chainId,
     nativeToken?.assetId.toString() || asset?.assetId.toString() || '',
   );
+
+  useEffect(() => {
+    if (!availableDestinations?.length) {
+      return;
+    }
+
+    setDestinations([
+      connections[chainId],
+      ...[...availableDestinations].reduce<Chain[]>((acc, destination) => {
+        // eslint-disable-next-line i18next/no-literal-string
+        const chainId = `0x${destination.destination.chainId}` as ChainId;
+        const connection = connections[chainId];
+
+        if (connection && connection.connection.connectionType !== 'DISABLED') {
+          acc.push(connection);
+        }
+
+        return acc;
+      }, []),
+    ]);
+  }, [availableDestinations.length]);
 
   useEffect(() => {
     setActiveAccount(accounts[0]);
@@ -95,6 +121,10 @@ export const InitOperation = ({
     setActiveSignatory(account);
   };
 
+  const changeDestinationChain = (chainId: ChainId) => {
+    sendAssetModel.events.destinationChainSelected(connections[chainId]);
+  };
+
   return (
     <div className="flex flex-col gap-y-4">
       <TransferForm
@@ -109,6 +139,7 @@ export const InitOperation = ({
         fee={fee}
         deposit={deposit}
         feeIsLoading={feeIsLoading}
+        destinations={destinations}
         header={
           <OperationHeader
             chainId={chainId}
@@ -137,6 +168,7 @@ export const InitOperation = ({
         onTxChange={setTx}
         onSubmit={onResult}
         onChangeAmount={setAmount}
+        onDestinationChainChange={changeDestinationChain}
       />
     </div>
   );

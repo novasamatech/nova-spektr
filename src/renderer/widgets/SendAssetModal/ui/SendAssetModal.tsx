@@ -51,6 +51,10 @@ export const SendAssetModal = ({ chain, asset, onClose }: Props) => {
 
   useEffect(() => {
     sendAssetModel.events.xcmConfigRequested();
+    sendAssetModel.events.formOpened({
+      chain,
+      asset,
+    });
   }, []);
 
   const onInitResult = (transferTx: Transaction, multisig?: { multisigTx: Transaction; description: string }) => {

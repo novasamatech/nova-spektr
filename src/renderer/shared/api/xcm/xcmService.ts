@@ -42,7 +42,7 @@ export const saveXcmConfig = (config: XcmConfig) => {
 };
 
 export const getAvailableDirections = (chains: ChainXCM[], assetId: number, chainId: ChainId): XcmTransfer[] => {
-  const chain = chains.find((c) => c.chainId === chainId);
+  const chain = chains.find((c) => c.chainId === chainId.replace('0x', ''));
   const asset = chain?.assets.find((a) => a.assetId === assetId);
 
   return asset?.xcmTransfers || [];

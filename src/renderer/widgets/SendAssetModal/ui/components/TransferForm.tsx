@@ -4,7 +4,7 @@ import { Controller, SubmitHandler, useForm } from 'react-hook-form';
 import { ApiPromise } from '@polkadot/api';
 import { Trans } from 'react-i18next';
 
-import { AmountInput, Button, Icon, Identicon, Input, InputHint } from '@renderer/shared/ui';
+import { AmountInput, Button, Icon, Identicon, Input, InputHint, Select } from '@renderer/shared/ui';
 import { useI18n } from '@renderer/app/providers';
 import { Asset, AssetType, useBalance } from '@renderer/entities/asset';
 import { MultisigTxInitStatus, Transaction, TransactionType, useTransaction } from '@renderer/entities/transaction';
@@ -19,6 +19,9 @@ import {
   transferableAmount,
   validateAddress,
 } from '@renderer/shared/lib/utils';
+import { Chain } from '@renderer/entities/chain';
+import { getChainOption } from '../common/utils';
+import { DropdownOption, DropdownResult } from '@renderer/shared/ui/types';
 
 const DESCRIPTION_MAX_LENGTH = 120;
 
@@ -27,6 +30,7 @@ type TransferFormData = {
   signatory: Address;
   destination: Address;
   description: string;
+  destinationChain?: DropdownResult<ChainId>;
 };
 
 type Props = {
@@ -43,8 +47,10 @@ type Props = {
   deposit: string;
   footer: ReactNode;
   header?: ReactNode;
+  destinations: Chain[];
   onSubmit: (transferTx: Transaction, multisig?: { multisigTx: Transaction; description: string }) => void;
   onChangeAmount: (amount: string) => void;
+  onDestinationChainChange: (destinationChain: ChainId) => void;
   onTxChange: (tx: Transaction) => void;
 };
 
@@ -60,9 +66,11 @@ export const TransferForm = ({
   onSubmit,
   onChangeAmount,
   onTxChange,
+  onDestinationChainChange,
   feeIsLoading,
   fee,
   deposit,
+  destinations,
 }: Props) => {
   const { t } = useI18n();
   const { getBalance } = useBalance();
@@ -77,20 +85,33 @@ export const TransferForm = ({
   const [transferTx, setTransferTx] = useState<Transaction>();
   const [multisigTx, setMultisigTx] = useState<Transaction>();
   const [multisigTxExist, setMultisigTxExist] = useState(false);
+  const [destinationOptions, setDestinationOptions] = useState<DropdownOption<ChainId>[]>([]);
 
   const {
     handleSubmit,
     control,
     watch,
     trigger,
+    setValue,
     formState: { isValid, isDirty },
   } = useForm<TransferFormData>({
     mode: 'onChange',
     defaultValues: { amount: '', destination: '', signatory: '', description: '' },
   });
 
+  useEffect(() => {
+    const destinationOptions = destinations.map(getChainOption);
+    destinationOptions.length && setDestinationOptions(destinations.map(getChainOption));
+    setValue('destinationChain', destinationOptions[0]);
+  }, [destinations.length]);
+
   const amount = watch('amount');
   const destination = watch('destination');
+  const destinationChain = watch('destinationChain');
+
+  useEffect(() => {
+    destinationChain && onDestinationChainChange(destinationChain.value);
+  }, [destinationChain]);
 
   useEffect(() => {
     isDirty && trigger('amount');
@@ -269,6 +290,24 @@ export const TransferForm = ({
     <form className="w-full" onSubmit={handleSubmit(submitTransaction)}>
       <div className="flex flex-col gap-y-4">
         {header}
+
+        {Boolean(destinations?.length) && (
+          <Controller
+            name="destinationChain"
+            control={control}
+            render={({ field: { onChange, value }, fieldState: { error } }) => (
+              <Select
+                label={t('staking.bond.destinationChainLabel')}
+                placeholder={t('staking.bond.destinationChainPlaceholder')}
+                invalid={Boolean(error)}
+                selectedId={value?.id}
+                options={destinationOptions}
+                onChange={onChange}
+              />
+            )}
+          />
+        )}
+
         <Controller
           name="destination"
           control={control}
