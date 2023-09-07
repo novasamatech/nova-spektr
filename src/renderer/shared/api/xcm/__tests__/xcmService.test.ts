@@ -9,7 +9,7 @@ const mockApi = () =>
     createType: (_, typeParams) => typeParams,
   } as ApiPromise);
 
-describe('shared/api/xcm/crossChainService', () => {
+describe('shared/api/xcm/xcmService', () => {
   beforeEach(() => {
     localStorage.clear();
   });
@@ -50,7 +50,7 @@ describe('shared/api/xcm/crossChainService', () => {
     expect(fee.toString()).toEqual('403808327');
   });
 
-  test.only('should calculate correct location for sibling prachain', () => {
+  test('should calculate correct location for sibling prachain', () => {
     const api = mockApi();
 
     const location = getDestinationLocation(api, { parentId: '0x00' }, 2000) as any;
@@ -59,7 +59,7 @@ describe('shared/api/xcm/crossChainService', () => {
     expect(location.V2.interior.X1.Parachain).toEqual(2000);
   });
 
-  test.only('should calculate correct location for parent parachain', () => {
+  test('should calculate correct location for parent parachain', () => {
     const api = mockApi();
 
     const location = getDestinationLocation(api, { parentId: '0x00' }) as any;
