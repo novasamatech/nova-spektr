@@ -20,7 +20,7 @@ import { AccountId, ChainId } from '@renderer/domain/shared-kernel';
 import { Chain } from '@renderer/entities/chain';
 
 export const fetchXcmConfig = async (): Promise<XcmConfig> => {
-  const response = await fetch(XCM_URL);
+  const response = await fetch(XCM_URL, { cache: 'default' });
 
   return response.json();
 };
@@ -58,7 +58,7 @@ export const getEstimatedWeight = (
   instructions: Instructions,
   instructionName: InstructionType,
   instructionWeight: BN,
-) => {
+): BN => {
   if (!instructionName || !instructionWeight) return BN_ZERO;
 
   const instruction = instructions[instructionName];
@@ -106,7 +106,7 @@ const JunctionType: Record<string, string> = {
 };
 type JunctionTypeKey = keyof typeof JunctionType;
 
-export const createJunctionFromObject = (api: ApiPromise, data: {}) => {
+export const createJunctionFromObject = (data: {}) => {
   const entries = Object.entries(data);
 
   if (entries.length === 0) return 'Here';
@@ -153,7 +153,7 @@ const getRelativeAssetLocation = (
       id: {
         Concrete: {
           parents: 0,
-          interior: Object.values(location).length ? createJunctionFromObject(api, location) : 'Here',
+          interior: Object.values(location).length ? createJunctionFromObject(location) : 'Here',
         },
       },
       fun: {
@@ -175,7 +175,7 @@ const getAbsoluteAssetLocation = (
       id: {
         Concrete: {
           parents: 1,
-          interior: Object.values(assetLocation).length ? createJunctionFromObject(api, assetLocation) : 'Here',
+          interior: Object.values(assetLocation).length ? createJunctionFromObject(assetLocation) : 'Here',
         },
       },
       fungibility: {
@@ -199,7 +199,7 @@ const getConcreteAssetLocation = (
       id: {
         Concrete: {
           parents,
-          interior: Object.values(location).length ? createJunctionFromObject(api, location) : 'Here',
+          interior: Object.values(location).length ? createJunctionFromObject(location) : 'Here',
         },
       },
       fun: {
@@ -226,12 +226,12 @@ export const getDestinationLocation = (
   if (destinationParaId) {
     return getChildLocation(api, destinationParaId, accountId);
   }
+
+  return undefined;
 };
 
 const getChildLocation = (api: ApiPromise, parachainId: number, accountId?: AccountId): VersionedMultiLocation => {
-  const location: Record<string, any> = {
-    parachainId,
-  };
+  const location: Record<string, any> = { parachainId };
 
   if (accountId) {
     location.accountId = {
@@ -243,7 +243,7 @@ const getChildLocation = (api: ApiPromise, parachainId: number, accountId?: Acco
   return api.createType('VersionedMultiLocation', {
     V2: {
       parents: 0,
-      interior: createJunctionFromObject(api, location),
+      interior: createJunctionFromObject(location),
     },
   });
 };
@@ -261,15 +261,13 @@ const getParentLocation = (api: ApiPromise, accountId?: AccountId): VersionedMul
   return api.createType('VersionedMultiLocation', {
     V2: {
       parents: 1,
-      interior: createJunctionFromObject(api, location),
+      interior: createJunctionFromObject(location),
     },
   });
 };
 
 const getSiblingLocation = (api: ApiPromise, parachainId: number, accountId?: AccountId): VersionedMultiLocation => {
-  const location: Record<string, any> = {
-    parachainId,
-  };
+  const location: Record<string, any> = { parachainId };
 
   if (accountId) {
     location.accountId = {
@@ -281,7 +279,7 @@ const getSiblingLocation = (api: ApiPromise, parachainId: number, accountId?: Ac
   return api.createType('VersionedMultiLocation', {
     V2: {
       parents: 1,
-      interior: createJunctionFromObject(api, location),
+      interior: createJunctionFromObject(location),
     },
   });
 };
