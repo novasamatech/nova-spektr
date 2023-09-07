@@ -1,12 +1,12 @@
 import { createStore, createEffect, createEvent, sample, forward, attach } from 'effector';
 
-import { XcmConfig } from '@renderer/shared/api/cross-chain';
+import { XcmConfig } from '@renderer/shared/api/xcm';
 import { xcmModel } from '@renderer/entities/xcm';
 
 export const $finalConfig = createStore<any | null>(null);
 const xcmConfigRequested = createEvent();
 
-// TODO: continue config calculation in cross-chain service task
+// TODO: continue config calculation in xcm service task
 const calculateFinalConfigFx = createEffect((config: XcmConfig): XcmConfig => {
   return config;
 });

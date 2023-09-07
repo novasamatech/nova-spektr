@@ -81,7 +81,9 @@ export const estimateFee = (
 
   const fee = weightToFee(weight, new BN(baseWeights[xcmTransfer.destination.chainId]));
 
-  if (originChain === assetLocation.chainId || xcmTransfer.destination.chainId === assetLocation.chainId) return fee;
+  const isReserveChain = [originChain, xcmTransfer.destination.chainId].includes(assetLocation.chainId);
+
+  if (isReserveChain) return fee;
 
   const reserveWeight = getEstimatedWeight(
     instructions,
@@ -94,7 +96,7 @@ export const estimateFee = (
   return fee.add(reserveFee);
 };
 
-const JunctionKey: Record<string, string> = {
+const JunctionType: Record<string, string> = {
   parachainId: 'Parachain',
   generalKey: 'GeneralKey',
   palletInstance: 'PalletInstance',
@@ -102,25 +104,24 @@ const JunctionKey: Record<string, string> = {
   accountId: 'AccountId32',
   generalIndex: 'GeneralIndex',
 };
+type JunctionTypeKey = keyof typeof JunctionType;
 
 export const createJunctionFromObject = (api: ApiPromise, data: {}) => {
   const entries = Object.entries(data);
 
-  if (entries.length === 0) {
-    return 'Here';
-  }
+  if (entries.length === 0) return 'Here';
 
   if (entries.length === 1) {
     return {
       X1: {
-        [JunctionKey[entries[0][0] as keyof typeof JunctionKey]]: entries[0][1],
+        [JunctionType[entries[0][0] as JunctionTypeKey]]: entries[0][1],
       },
     };
   }
 
   return {
     [`X${entries.length}`]: entries.map((e) => ({
-      [JunctionKey[e[0] as keyof typeof JunctionKey]]: e[1],
+      [JunctionType[e[0] as JunctionTypeKey]]: e[1],
     })),
   };
 };
@@ -130,23 +131,18 @@ export const getAssetLocation = (
   asset: AssetXCM,
   assets: Record<AssetName, AssetLocation>,
   amount: BN,
-) => {
-  if (asset.assetLocationPath.type === 'relative') {
-    return RelativeAssetLocation(api, assets[asset.assetLocation].multiLocation, amount);
-  }
-
-  if (asset.assetLocationPath.type === 'absolute') {
-    return AbsoluteAssetLocation(api, assets[asset.assetLocation].multiLocation, amount);
-  }
-  if (asset.assetLocationPath.type === 'concrete') {
-    return ConcreteAssetLocation(api, asset.assetLocationPath.path, amount);
-  }
+): VersionedMultiAsset | undefined => {
+  return {
+    relative: () => getRelativeAssetLocation(api, amount, assets[asset.assetLocation].multiLocation),
+    absolute: () => getAbsoluteAssetLocation(api, amount, assets[asset.assetLocation].multiLocation),
+    concrete: () => getConcreteAssetLocation(api, amount, asset.assetLocationPath.path),
+  }[asset.assetLocationPath.type]();
 };
 
-const RelativeAssetLocation = (
+const getRelativeAssetLocation = (
   api: ApiPromise,
-  assetLocation: LocalMultiLocation | undefined,
   amount: BN,
+  assetLocation?: LocalMultiLocation,
 ): VersionedMultiAsset | undefined => {
   if (!assetLocation) return;
 
@@ -167,10 +163,10 @@ const RelativeAssetLocation = (
   });
 };
 
-const AbsoluteAssetLocation = (
+const getAbsoluteAssetLocation = (
   api: ApiPromise,
-  assetLocation: LocalMultiLocation,
   amount: BN,
+  assetLocation?: LocalMultiLocation,
 ): VersionedMultiAsset | undefined => {
   if (!assetLocation) return;
 
@@ -189,10 +185,10 @@ const AbsoluteAssetLocation = (
   });
 };
 
-const ConcreteAssetLocation = (
+const getConcreteAssetLocation = (
   api: ApiPromise,
-  assetLocation: LocalMultiLocation | undefined,
   amount: BN,
+  assetLocation?: LocalMultiLocation,
 ): VersionedMultiAsset | undefined => {
   if (!assetLocation) return;
 
@@ -220,19 +216,19 @@ export const getDestinationLocation = (
   accountId?: AccountId,
 ): VersionedMultiLocation | undefined => {
   if (originChain.parentId && destinationParaId) {
-    return SiblingParachain(api, destinationParaId, accountId);
+    return getSiblingLocation(api, destinationParaId, accountId);
   }
 
   if (originChain.parentId) {
-    return ParentChain(api, accountId);
+    return getParentLocation(api, accountId);
   }
 
   if (destinationParaId) {
-    return ChildParachain(api, destinationParaId, accountId);
+    return getChildLocation(api, destinationParaId, accountId);
   }
 };
 
-const ChildParachain = (api: ApiPromise, parachainId: number, accountId?: AccountId): VersionedMultiLocation => {
+const getChildLocation = (api: ApiPromise, parachainId: number, accountId?: AccountId): VersionedMultiLocation => {
   const location: Record<string, any> = {
     parachainId,
   };
@@ -252,7 +248,7 @@ const ChildParachain = (api: ApiPromise, parachainId: number, accountId?: Accoun
   });
 };
 
-const ParentChain = (api: ApiPromise, accountId?: AccountId): VersionedMultiLocation => {
+const getParentLocation = (api: ApiPromise, accountId?: AccountId): VersionedMultiLocation => {
   const location: Record<string, any> = {};
 
   if (accountId) {
@@ -270,7 +266,7 @@ const ParentChain = (api: ApiPromise, accountId?: AccountId): VersionedMultiLoca
   });
 };
 
-const SiblingParachain = (api: ApiPromise, parachainId: number, accountId?: AccountId): VersionedMultiLocation => {
+const getSiblingLocation = (api: ApiPromise, parachainId: number, accountId?: AccountId): VersionedMultiLocation => {
   const location: Record<string, any> = {
     parachainId,
   };

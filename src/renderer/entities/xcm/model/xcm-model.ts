@@ -1,7 +1,7 @@
 import { createEffect, forward } from 'effector';
 
 import { kernelModel } from '@renderer/shared/core';
-import { XcmConfig, getXcmConfig, fetchXcmConfig, saveXcmConfig } from '@renderer/shared/api/cross-chain';
+import { XcmConfig, getXcmConfig, fetchXcmConfig, saveXcmConfig } from '@renderer/shared/api/xcm';
 
 const getConfigFx = createEffect((): XcmConfig | null => {
   return getXcmConfig();

@@ -1,11 +1,11 @@
 import { fork, allSettled } from 'effector';
 
 import * as sendAssetModel from '../../model/send-asset';
-import * as service from '@renderer/shared/api/cross-chain';
+import * as service from '@renderer/shared/api/xcm';
 
-jest.mock('@renderer/shared/api/cross-chain', () => ({
+jest.mock('@renderer/shared/api/xcm', () => ({
   __esModule: true,
-  ...jest.requireActual('@renderer/shared/api/cross-chain'),
+  ...jest.requireActual('@renderer/shared/api/xcm'),
 }));
 
 describe('widgets/SendAssetModal/model/send-asset', () => {

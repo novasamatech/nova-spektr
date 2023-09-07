@@ -1,23 +1,25 @@
 import { ApiPromise } from '@polkadot/api';
 
 import { XCM_KEY } from '../common/constants';
-import { estimateFee, getXcmConfig, getDestinationLocation } from '../crossChainService';
-import { CONFIG } from '../common/testConfig';
+import { estimateFee, getXcmConfig, getDestinationLocation } from '../xcmService';
+import { CONFIG } from '@renderer/shared/api/xcm/__tests__/mock/xcmData';
 
-describe('shared/api/cross-chain/crossChainService', () => {
-  afterEach(() => {
+const mockApi = () =>
+  ({
+    createType: (_, typeParams) => typeParams,
+  } as ApiPromise);
+
+describe('shared/api/xcm/crossChainService', () => {
+  beforeEach(() => {
     localStorage.clear();
   });
 
   test('should get empty config from localStorage', () => {
-    localStorage.clear();
-
     const config = getXcmConfig();
     expect(config).toEqual(null);
   });
 
   test('should get not empty config from localStorage', () => {
-    localStorage.clear();
     localStorage.setItem(XCM_KEY, JSON.stringify(CONFIG));
 
     const config = getXcmConfig();
@@ -49,9 +51,7 @@ describe('shared/api/cross-chain/crossChainService', () => {
   });
 
   test.only('should calculate correct location for sibling prachain', () => {
-    const api = {
-      createType: (_, typeParams) => typeParams,
-    } as ApiPromise;
+    const api = mockApi();
 
     const location = getDestinationLocation(api, { parentId: '0x00' }, 2000) as any;
 
@@ -60,9 +60,7 @@ describe('shared/api/cross-chain/crossChainService', () => {
   });
 
   test.only('should calculate correct location for parent parachain', () => {
-    const api = {
-      createType: (_, typeParams) => typeParams,
-    } as ApiPromise;
+    const api = mockApi();
 
     const location = getDestinationLocation(api, { parentId: '0x00' }) as any;
 
@@ -71,9 +69,7 @@ describe('shared/api/cross-chain/crossChainService', () => {
   });
 
   test('should calculate correct address location for parent parachain', () => {
-    const api = {
-      createType: (_, typeParams) => typeParams,
-    } as ApiPromise;
+    const api = mockApi();
 
     const location = getDestinationLocation(api, { parentId: '0x00' }, undefined, '0x00') as any;
 
@@ -82,9 +78,7 @@ describe('shared/api/cross-chain/crossChainService', () => {
   });
 
   test('should calculate correct location for child parachain', () => {
-    const api = {
-      createType: (_, typeParams) => typeParams,
-    } as ApiPromise;
+    const api = mockApi();
 
     const location = getDestinationLocation(api, { parentId: undefined }, 2000) as any;
 

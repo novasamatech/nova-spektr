@@ -1,9 +1,5 @@
 import { HexString } from '@renderer/domain/shared-kernel';
 
-// =====================================================
-// ====================== General ======================
-// =====================================================
-
 export type AssetName = string;
 
 export type XcmConfig = {
