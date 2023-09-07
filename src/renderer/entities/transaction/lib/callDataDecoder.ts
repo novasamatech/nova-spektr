@@ -6,6 +6,7 @@ import { Type } from '@polkadot/types';
 
 import { Address, CallData } from '@renderer/domain/shared-kernel';
 import { DecodedTransaction, TransactionType } from '@renderer/entities/transaction/model/transaction';
+import { ICallDataDecoder } from './common/types';
 import {
   BOND_WITH_CONTROLLER_ARGS_AMOUNT,
   OLD_MULTISIG_ARGS_AMOUNT,
@@ -13,7 +14,6 @@ import {
   STAKING_SECTION,
   XCM_SECTIONS,
 } from './common/constants';
-import { ICallDataDecoder } from './common/types';
 
 export const useCallDataDecoder = (): ICallDataDecoder => {
   const getDataFromCallData = (
@@ -161,6 +161,21 @@ export const useCallDataDecoder = (): ICallDataDecoder => {
     },
     [TransactionType.XTOKENS_TRANSFER_MULTIASSET]: (method, section, decoded): Record<string, any> => {
       return { dest: decoded.args[0].toString(), value: decoded.args[1].toString() };
+    },
+    [TransactionType.XCM_LIMITED_TRANSFER]: (method, section, decoded): Record<string, any> => {
+      return {};
+    },
+    [TransactionType.XCM_TELEPORT]: (method, section, decoded): Record<string, any> => {
+      return {};
+    },
+    [TransactionType.POLKADOT_XCM_LIMITED_TRANSFER]: (method, section, decoded): Record<string, any> => {
+      return {};
+    },
+    [TransactionType.POLKADOT_XCM_TELEPORT]: (method, section, decoded): Record<string, any> => {
+      return {};
+    },
+    [TransactionType.XTOKENS_TRANSFER_MULTIASSET]: (method, section, decoded): Record<string, any> => {
+      return {};
     },
     [TransactionType.ASSET_TRANSFER]: (method, section, decoded): Record<string, any> => {
       return {

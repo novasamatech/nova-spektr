@@ -1,5 +1,3 @@
-import cn from 'classnames';
-
 import {
   MultisigTransaction,
   MultisigTxFinalStatus,
@@ -8,6 +6,7 @@ import {
 } from '@renderer/entities/transaction';
 import { CaptionText } from '@renderer/shared/ui';
 import { useI18n } from '@renderer/app/providers';
+import { cnTw } from '@renderer/shared/lib/utils';
 
 const StatusTitle: Record<MultisigTxStatus, string> = {
   [MultisigTxInitStatus.SIGNING]: 'operation.status.signing',
@@ -29,9 +28,10 @@ type Props = {
   status: MultisigTransaction['status'];
   signed?: number;
   threshold?: number;
+  className?: string;
 };
 
-const OperationStatus = ({ status, signed, threshold }: Props) => {
+const OperationStatus = ({ status, signed, threshold, className }: Props) => {
   const { t } = useI18n();
 
   const text =
@@ -40,7 +40,11 @@ const OperationStatus = ({ status, signed, threshold }: Props) => {
   return (
     <CaptionText
       align="center"
-      className={cn('py-1 px-2.5 rounded-[20px] border border-redesign-shade-8 uppercase', StatusColor[status])}
+      className={cnTw(
+        'py-1 px-2.5 rounded-[20px] border border-redesign-shade-8 uppercase',
+        StatusColor[status],
+        className,
+      )}
     >
       {text}
     </CaptionText>

@@ -1,8 +1,8 @@
 import { IconNames } from '@renderer/shared/ui/Icon/data';
 import { Explorer } from '@renderer/entities/chain';
 import { AccountId, HexString } from '@renderer/domain/shared-kernel';
-import { toAddress, formatSectionAndMethod } from '@renderer/shared/lib/utils';
 import { DecodedTransaction, Transaction, TransactionType } from '@renderer/entities/transaction/model/transaction';
+import { toAddress, formatSectionAndMethod } from '@renderer/shared/lib/utils';
 import { Account } from '@renderer/entities/account';
 import { Signatory } from '@renderer/entities/signatory';
 import type { Contact } from '@renderer/entities/contact';

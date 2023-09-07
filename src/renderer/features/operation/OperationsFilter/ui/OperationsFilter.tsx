@@ -3,10 +3,11 @@ import { useEffect, useState } from 'react';
 import { useI18n, useNetworkContext } from '@renderer/app/providers';
 import { MultisigTransactionDS } from '@renderer/shared/api/storage';
 import { DropdownOption, DropdownResult } from '@renderer/shared/ui/types';
-import { MultisigTransaction, Transaction, TransactionType } from '@renderer/entities/transaction/model/transaction';
 import { Button, MultiSelect } from '@renderer/shared/ui';
+import { MultisigTransaction, Transaction, TransactionType } from '@renderer/entities/transaction/model/transaction';
+import { TransferTypes, XcmTypes } from '@renderer/entities/transaction/lib/common/constants';
 import { getStatusOptions, getTransactionOptions } from '../lib/utils';
-import { UNKNOWN_TYPE, TransferTypes } from '../lib/constants';
+import { UNKNOWN_TYPE } from '../lib/constants';
 
 type FilterName = 'status' | 'network' | 'type';
 
@@ -52,10 +53,11 @@ export const OperationsFilter = ({ txs, onChange }: Props) => {
     onChange(txs);
   }, [txs]);
 
-  const getFilterableType = (tx: MultisigTransaction): TransactionType | typeof UNKNOWN_TYPE => {
+  const getFilterableTxType = (tx: MultisigTransaction): TransactionType | typeof UNKNOWN_TYPE => {
     if (!tx.transaction?.type) return UNKNOWN_TYPE;
 
     if (TransferTypes.includes(tx.transaction.type)) return TransactionType.TRANSFER;
+    if (XcmTypes.includes(tx.transaction.type)) return TransactionType.XCM_LIMITED_TRANSFER;
 
     if (tx.transaction.type === TransactionType.BATCH_ALL) {
       const txMatch = tx.transaction.args?.transactions?.find((tx: Transaction) => {
@@ -68,16 +70,14 @@ export const OperationsFilter = ({ txs, onChange }: Props) => {
     return tx.transaction.type;
   };
 
-  const getTransactionTypeOption = (tx: MultisigTransaction) => {
-    return TransactionOptions.find((s) => s.value === getFilterableType(tx));
-  };
-
   const getAvailableFiltersOptions = (transactions: MultisigTransaction[]) => {
     return transactions.reduce(
       (acc, tx) => {
+        const txType = getFilterableTxType(tx);
+
         const statusOption = StatusOptions.find((s) => s.value === tx.status);
-        const networkOption = NetworkOptions.find((s) => s.value === tx.chainId);
-        const typeOption = getTransactionTypeOption(tx);
+        const networkOption = NetworkOptions.find((s) => s.value === tx.chainId || s.value === tx.xcmDestination);
+        const typeOption = TransactionOptions.find((s) => s.value === txType);
 
         if (statusOption) acc.status.add(statusOption);
         if (networkOption) acc.network.add(networkOption);
@@ -97,7 +97,7 @@ export const OperationsFilter = ({ txs, onChange }: Props) => {
     return (
       (!filters.status.length || filters.status.map(mapValues).includes(tx.status)) &&
       (!filters.network.length || filters.network.map(mapValues).includes(tx.chainId)) &&
-      (!filters.type.length || filters.type.map(mapValues).includes(getFilterableType(tx)))
+      (!filters.type.length || filters.type.map(mapValues).includes(getFilterableTxType(tx)))
     );
   };
 

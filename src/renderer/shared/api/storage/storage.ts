@@ -11,6 +11,7 @@ import {
   TMultisigTransaction,
   TNotification,
   TMultisigEvent,
+  TMetadata,
 } from './common/types';
 import { useBalanceStorage } from './balanceStorage';
 import { useConnectionStorage } from './connectionStorage';
@@ -21,6 +22,7 @@ import { useTransactionStorage } from './transactionStorage';
 import { useNotificationStorage } from './notificationStorage';
 import { useMultisigEventStorage } from './multisigEventStorage';
 import { upgradeEvents } from './common/upgrades';
+import { useMetadataStorage } from './metadataStorage';
 
 class DexieStorage extends Dexie {
   connections: TConnection;
@@ -31,6 +33,7 @@ class DexieStorage extends Dexie {
   multisigTransactions: TMultisigTransaction;
   multisigEvents: TMultisigEvent;
   notifications: TNotification;
+  metadata: TMetadata;
 
   constructor() {
     super('spektr');
@@ -46,20 +49,15 @@ class DexieStorage extends Dexie {
       notifications: '++id,type,read',
     });
 
-    // Move Multisig events from transaction to separate table
     this.version(17)
       .stores({
-        connections: '++id,chainId,type',
-        wallets: '++id,isActive,type',
-        balances: '[accountId+chainId+assetId],[accountId+chainId]',
-        accounts: '++id,isActive,walletId,rootId,signingType',
-        contacts: '++id,name,accountId,matrixId',
-        multisigTransactions:
-          '[accountId+chainId+callHash+blockCreated+indexCreated],[accountId+status],[accountId+callHash],[callHash+status+chainId],accountId,status,callHash',
         multisigEvents: '++id,[txAccountId+txChainId+txCallHash+txBlock+txIndex],status,accountId',
-        notifications: '++id,type,read',
       })
       .upgrade(upgradeEvents);
+
+    this.version(18).stores({
+      metadata: '[chainId+version],chainId',
+    });
 
     this.connections = this.table('connections');
     this.balances = this.table('balances');
@@ -69,6 +67,7 @@ class DexieStorage extends Dexie {
     this.multisigTransactions = this.table('multisigTransactions');
     this.multisigEvents = this.table('multisigEvents');
     this.notifications = this.table('notifications');
+    this.metadata = this.table('metadata');
   }
 }
 
@@ -97,6 +96,8 @@ class StorageFactory implements IStorage {
         return useMultisigEventStorage(this.dexieDB.multisigEvents) as DataStorage[T];
       case 'notifications':
         return useNotificationStorage(this.dexieDB.notifications) as DataStorage[T];
+      case 'metadata':
+        return useMetadataStorage(this.dexieDB.metadata) as DataStorage[T];
       default:
         return undefined;
     }

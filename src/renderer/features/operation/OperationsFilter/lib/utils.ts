@@ -45,6 +45,11 @@ export const getTransactionOptions = (t: TFunction) => {
       element: t('operations.titles.transfer'),
     },
     {
+      id: TransactionType.XCM_LIMITED_TRANSFER,
+      value: TransactionType.XCM_LIMITED_TRANSFER,
+      element: t('operations.titles.crossChainTransfer'),
+    },
+    {
       id: TransactionType.BOND,
       value: TransactionType.BOND,
       element: t('operations.titles.startStaking'),

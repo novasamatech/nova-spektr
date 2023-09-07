@@ -8,11 +8,11 @@ import { useAccount, MultisigAccount } from '@renderer/entities/account';
 import Operation from './components/Operation';
 import { sortByDateDesc } from './common/utils';
 import { FootnoteText } from '@renderer/shared/ui';
-import { OperationsFilter } from '@renderer/features/operation';
 import { MultisigTransactionDS } from '@renderer/shared/api/storage';
 import { useMultisigTx, useMultisigEvent } from '@renderer/entities/multisig';
 import { Header } from '@renderer/components/common';
 import { MultisigEvent, MultisigTransactionKey } from '@renderer/entities/transaction';
+import { OperationsFilter } from '@renderer/features/operation';
 
 export const Operations = () => {
   const { t, dateLocale } = useI18n();
@@ -68,7 +68,7 @@ export const Operations = () => {
             .map(([date, txs]) => (
               <section className="w-fit mt-6" key={date}>
                 <FootnoteText className="text-text-tertiary mb-3 ml-2">{date}</FootnoteText>
-                <ul className="flex flex-col gap-y-1.5">
+                <ul className="flex flex-col gap-y-1.5 w-[736px]">
                   {txs
                     .sort((a, b) => (b.dateCreated || 0) - (a.dateCreated || 0))
                     .map((tx) => (

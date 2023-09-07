@@ -23,7 +23,7 @@ jest.mock('@renderer/app/providers', () => ({
 
 jest.mock('@renderer/entities/multisig', () => ({
   useMultisigTx: jest.fn().mockReturnValue({
-    getLiveAccountMultisigTxs: () => [{ name: 'Test Wallet', accountId: TEST_ACCOUNT_ID }],
+    getLiveAccountMultisigTxs: () => [{ name: 'Test Wallet', accountId: TEST_ACCOUNT_ID, chainId: '0x00' }],
   }),
   useMultisigEvent: jest.fn().mockReturnValue({
     getLiveEventsByKeys: jest.fn().mockResolvedValue([]),
@@ -37,8 +37,8 @@ jest.mock('@renderer/entities/account', () => ({
 }));
 
 jest.mock('./components/Operation', () => () => 'Operation');
-jest.mock('../../features/operation', () => ({
-  OperationsFilter: () => 'filters',
+jest.mock('@renderer/features/operation', () => ({
+  OperationsFilter: () => 'filter',
 }));
 
 describe('pages/Operations', () => {
@@ -48,9 +48,9 @@ describe('pages/Operations', () => {
     });
 
     const title = screen.getByText('operations.title');
-    const filters = screen.getByText('filters');
+    const filter = screen.getByText('filter');
 
     expect(title).toBeInTheDocument();
-    expect(filters).toBeInTheDocument();
+    expect(filter).toBeInTheDocument();
   });
 });
