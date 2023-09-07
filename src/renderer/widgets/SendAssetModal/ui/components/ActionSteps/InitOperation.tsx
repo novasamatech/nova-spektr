@@ -4,11 +4,12 @@ import { useEffect, useState } from 'react';
 import { ChainId } from '@renderer/domain/shared-kernel';
 import { useAccount, Account, isMultisig, MultisigAccount } from '@renderer/entities/account';
 import { Explorer } from '@renderer/entities/chain';
-import { Asset, useBalance } from '@renderer/entities/asset';
-import { Transaction } from '@renderer/entities/transaction';
-import { TransferForm } from '../TransferForm';
+import { Asset, AssetType, useBalance } from '@renderer/entities/asset';
+import { Transaction, TransactionType, useExtrinsicService } from '@renderer/entities/transaction';
+import { TransferForm, TransferFormData } from '../TransferForm';
 import { getAccountOption, getSignatoryOption } from '../../common/utils';
-import { OperationFooter, OperationHeader } from '@renderer/features/operation';
+import { OperationFooterNew, OperationHeader } from '@renderer/features/operation';
+import { getAssetId, TEST_ACCOUNT_ID, toAddress } from '@renderer/shared/lib/utils';
 
 type Props = {
   api: ApiPromise;
@@ -18,9 +19,11 @@ type Props = {
   nativeToken: Asset;
   explorers?: Explorer[];
   addressPrefix: number;
+  getFee: () => Promise<string>;
+  onTxChange: (transactions: Transaction[]) => void;
   onAccountChange: (account: Account | MultisigAccount) => void;
   onSignatoryChange: (account: Account) => void;
-  onResult: (transferTx: Transaction, multisig?: { multisigTx: Transaction; description: string }) => void;
+  onResult: (transferTx: Transaction, description?: string) => void;
 };
 
 export const InitOperation = ({
@@ -31,19 +34,21 @@ export const InitOperation = ({
   nativeToken,
   addressPrefix,
   onResult,
+  getFee,
+  onTxChange,
   onAccountChange,
   onSignatoryChange,
 }: Props) => {
   const { getActiveAccounts } = useAccount();
   const { getLiveAssetBalances } = useBalance();
+  const { buildTransaction } = useExtrinsicService();
 
   const accounts = getActiveAccounts();
 
   const [fee, setFee] = useState<string>('0');
   const [feeIsLoading, setFeeIsLoading] = useState(false);
-  const [amount, setAmount] = useState<string>('0');
   const [deposit, setDeposit] = useState<string>('0');
-  const [tx, setTx] = useState<Transaction>();
+  const [formData, setFormData] = useState<Partial<TransferFormData>>();
 
   const [activeAccount, setActiveAccount] = useState<Account | MultisigAccount>();
 
@@ -61,6 +66,8 @@ export const InitOperation = ({
     nativeToken?.assetId.toString() || asset?.assetId.toString() || '',
   );
 
+  const amount = formData?.amount || '0';
+
   useEffect(() => {
     setActiveAccount(accounts[0]);
     onAccountChange(accounts[0]);
@@ -71,6 +78,27 @@ export const InitOperation = ({
       setDeposit('0');
     }
   }, [activeAccount]);
+
+  useEffect(() => {
+    const TransferType: Record<AssetType, TransactionType> = {
+      [AssetType.ORML]: TransactionType.ORML_TRANSFER,
+      [AssetType.STATEMINE]: TransactionType.ASSET_TRANSFER,
+    };
+
+    const transactionType = asset.type ? TransferType[asset.type] : TransactionType.TRANSFER;
+    const transferTx = buildTransaction(
+      transactionType,
+      toAddress(activeAccount?.accountId || TEST_ACCOUNT_ID, { prefix: addressPrefix }),
+      chainId,
+      {
+        dest: formData?.destination,
+        value: formData?.amount,
+        ...(transactionType !== TransactionType.TRANSFER && { asset: getAssetId(asset) }),
+      },
+    );
+
+    onTxChange([transferTx]);
+  }, [activeAccount, formData?.amount, formData?.destination]);
 
   const getAccountDropdownOption = (account: Account) => {
     const balance = balances.find((b) => b.accountId === account.accountId);
@@ -121,22 +149,21 @@ export const InitOperation = ({
         }
         footer={
           activeAccount &&
-          tx && (
-            <OperationFooter
+          formData && (
+            <OperationFooterNew
               api={api}
               asset={asset}
               account={activeAccount}
               totalAccounts={1}
-              transaction={tx}
+              getFee={getFee}
               onFeeChange={setFee}
               onFeeLoading={setFeeIsLoading}
               onDepositChange={setDeposit}
             />
           )
         }
-        onTxChange={setTx}
-        onSubmit={onResult}
-        onChangeAmount={setAmount}
+        onTxChange={setFormData}
+        onSubmit={(tx) => onResult(tx, formData?.description)}
       />
     </div>
   );

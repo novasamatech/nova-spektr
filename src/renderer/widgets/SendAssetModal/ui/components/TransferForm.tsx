@@ -7,8 +7,14 @@ import { Trans } from 'react-i18next';
 import { AmountInput, Button, Icon, Identicon, Input, InputHint } from '@renderer/shared/ui';
 import { useI18n } from '@renderer/app/providers';
 import { Asset, AssetType, useBalance } from '@renderer/entities/asset';
-import { MultisigTxInitStatus, Transaction, TransactionType, useTransaction } from '@renderer/entities/transaction';
-import { AccountId, Address, ChainId } from '@renderer/domain/shared-kernel';
+import {
+  MultisigTxInitStatus,
+  Transaction,
+  TransactionType,
+  useExtrinsicService,
+  useTransaction,
+} from '@renderer/entities/transaction';
+import { Address, ChainId } from '@renderer/domain/shared-kernel';
 import { useMultisigTx } from '@renderer/entities/multisig';
 import { Account, isMultisig, MultisigAccount } from '@renderer/entities/account';
 import {
@@ -22,7 +28,7 @@ import {
 
 const DESCRIPTION_MAX_LENGTH = 120;
 
-type TransferFormData = {
+export type TransferFormData = {
   amount: string;
   signatory: Address;
   destination: Address;
@@ -43,9 +49,8 @@ type Props = {
   deposit: string;
   footer: ReactNode;
   header?: ReactNode;
-  onSubmit: (transferTx: Transaction, multisig?: { multisigTx: Transaction; description: string }) => void;
-  onChangeAmount: (amount: string) => void;
-  onTxChange: (tx: Transaction) => void;
+  onSubmit: (tx: Transaction) => void;
+  onTxChange: (formData: Partial<TransferFormData>) => void;
 };
 
 export const TransferForm = ({
@@ -58,7 +63,6 @@ export const TransferForm = ({
   header,
   footer,
   onSubmit,
-  onChangeAmount,
   onTxChange,
   feeIsLoading,
   fee,
@@ -68,14 +72,13 @@ export const TransferForm = ({
   const { getBalance } = useBalance();
   const { getMultisigTxs } = useMultisigTx({});
   const { getTransactionHash } = useTransaction();
+  const { buildTransaction } = useExtrinsicService();
 
   const [accountBalance, setAccountBalance] = useState('');
   const [signerBalance, setSignerBalance] = useState('');
   const [accountNativeTokenBalance, setAccountNativeTokenBalance] = useState<string>();
   const [signerNativeTokenBalance, setSignerNativeTokenBalance] = useState<string>();
 
-  const [transferTx, setTransferTx] = useState<Transaction>();
-  const [multisigTx, setMultisigTx] = useState<Transaction>();
   const [multisigTxExist, setMultisigTxExist] = useState(false);
 
   const {
@@ -91,14 +94,11 @@ export const TransferForm = ({
 
   const amount = watch('amount');
   const destination = watch('destination');
+  const description = watch('description');
 
   useEffect(() => {
     isDirty && trigger('amount');
   }, [accountBalance, signerBalance]);
-
-  useEffect(() => {
-    onChangeAmount(formatAmount(amount, asset.precision));
-  }, [amount]);
 
   const setupBalances = (
     address: Address,
@@ -131,12 +131,6 @@ export const TransferForm = ({
   }, [signer]);
 
   useEffect(() => {
-    if (!isMultisig(account)) {
-      setMultisigTx(undefined);
-    }
-  }, [account]);
-
-  useEffect(() => {
     if (fee !== '0') {
       trigger('amount').then();
     }
@@ -145,64 +139,20 @@ export const TransferForm = ({
   useEffect(() => {
     if (!account || !amount || !validateAddress(destination)) return;
 
-    const transferPayload = getTransferTx(account.accountId);
-
-    if (isMultisig(account) && signer) {
-      setMultisigTx(getMultisigTx(account, signer.accountId, transferPayload));
-    }
-
-    setTransferTx(transferPayload);
-    onTxChange(transferPayload);
+    const dest = toAddress(destination, { prefix: addressPrefix });
+    onTxChange({
+      destination: dest,
+      amount: formatAmount(amount, asset.precision),
+      signatory: signer?.accountId,
+      description:
+        description ||
+        t('transactionMessage.transfer', {
+          amount,
+          asset: asset.symbol,
+          address: dest,
+        }),
+    });
   }, [account, signer, destination, amount]);
-
-  const getTransferTx = (accountId: AccountId): Transaction => {
-    const TransferType: Record<AssetType, TransactionType> = {
-      [AssetType.ORML]: TransactionType.ORML_TRANSFER,
-      [AssetType.STATEMINE]: TransactionType.ASSET_TRANSFER,
-    };
-
-    const transactionType = asset.type ? TransferType[asset.type] : TransactionType.TRANSFER;
-
-    return {
-      chainId,
-      address: toAddress(accountId, { prefix: addressPrefix }),
-      type: transactionType,
-      args: {
-        dest: toAddress(destination, { prefix: addressPrefix }),
-        value: formatAmount(amount, asset.precision),
-        ...(transactionType !== TransactionType.TRANSFER && { asset: getAssetId(asset) }),
-      },
-    };
-  };
-
-  const getMultisigTx = (
-    account: MultisigAccount,
-    signerAccountId: AccountId,
-    transaction: Transaction,
-  ): Transaction => {
-    const { callData, callHash } = getTransactionHash(transaction, api);
-
-    const otherSignatories = account.signatories.reduce<Address[]>((acc, s) => {
-      if (s.accountId !== signerAccountId) {
-        acc.push(toAddress(s.accountId, { prefix: addressPrefix }));
-      }
-
-      return acc;
-    }, []);
-
-    return {
-      chainId,
-      address: toAddress(signerAccountId, { prefix: addressPrefix }),
-      type: TransactionType.MULTISIG_AS_MULTI,
-      args: {
-        threshold: account.threshold,
-        otherSignatories: otherSignatories.sort(),
-        maybeTimepoint: null,
-        callData,
-        callHash,
-      },
-    };
-  };
 
   const validateBalance = (amount: string): boolean => {
     if (!accountBalance) return false;
@@ -239,9 +189,27 @@ export const TransferForm = ({
   };
 
   const submitTransaction: SubmitHandler<TransferFormData> = async ({ description }) => {
-    if (!transferTx) return;
+    if (!amount || !destination || !account) return;
 
-    if (!multisigTx) {
+    const TransferType: Record<AssetType, TransactionType> = {
+      [AssetType.ORML]: TransactionType.ORML_TRANSFER,
+      [AssetType.STATEMINE]: TransactionType.ASSET_TRANSFER,
+    };
+
+    const transactionType = asset.type ? TransferType[asset.type] : TransactionType.TRANSFER;
+
+    const transferTx = buildTransaction(
+      transactionType,
+      toAddress(account.accountId, { prefix: addressPrefix }),
+      chainId,
+      {
+        dest: toAddress(destination, { prefix: addressPrefix }),
+        value: formatAmount(amount, asset.precision),
+        ...(transactionType !== TransactionType.TRANSFER && { asset: getAssetId(asset) }),
+      },
+    );
+
+    if (!isMultisig(account)) {
       onSubmit(transferTx);
 
       return;
@@ -253,15 +221,7 @@ export const TransferForm = ({
     if (multisigTxs.length !== 0) {
       setMultisigTxExist(true);
     } else {
-      description =
-        description ||
-        t('transactionMessage.transfer', {
-          amount,
-          asset: asset.symbol,
-          address: transferTx.args.dest,
-        });
-
-      onSubmit(transferTx, { multisigTx, description });
+      onSubmit(transferTx);
     }
   };
 

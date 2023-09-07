@@ -9,16 +9,25 @@ import { useState } from 'react';
 import { AccountId, HexString, Threshold } from '@renderer/domain/shared-kernel';
 import { Transaction } from '@renderer/entities/transaction/model/transaction';
 import { createTxMetadata, toAccountId } from '@renderer/shared/lib/utils';
-import { ITransactionService, HashData, ExtrinsicResultParams } from './common/types';
+import { ITransactionServiceV2, HashData, ExtrinsicResultParams } from './common/types';
 import { decodeDispatchError } from './common/utils';
 import { useCallDataDecoder } from './callDataDecoder';
 import { useExtrinsicService } from '@renderer/entities/transaction';
+import { MultisigAccount } from '@renderer/entities/account';
 
-export const useTransaction = (): ITransactionService => {
+type WrapAsMullti = {
+  account: MultisigAccount;
+  signatoryId: AccountId;
+};
+
+export type TxWrappers = WrapAsMullti; // add proxy here
+
+export const useTransactionV2 = (): ITransactionServiceV2 => {
   const { decodeCallData } = useCallDataDecoder();
-  const { getUnsignedTransaction, getExtrinsic } = useExtrinsicService();
+  const { getUnsignedTransaction, getExtrinsic, wrapAsMulti } = useExtrinsicService();
 
   const [txs, setTxs] = useState<Transaction[]>([]);
+  const [wrapAs, setWrapAs] = useState<TxWrappers[]>([]);
 
   const createRegistry = async (api: ApiPromise) => {
     const metadataRpc = await api.rpc.state.getMetadata();
@@ -60,8 +69,8 @@ export const useTransaction = (): ITransactionService => {
     return construct.signedTx(unsigned, signature, { registry, metadataRpc });
   };
 
-  const getTransactionHash = (transaction: Transaction, api: ApiPromise): HashData => {
-    const extrinsic = getExtrinsic[transaction.type](transaction.args, api);
+  const getTransactionHash = (api: ApiPromise, transaction?: Transaction): HashData => {
+    const extrinsic = getExtrinsic[(transaction || txs[0]).type]((transaction || txs[0]).args, api);
 
     return {
       callData: extrinsic.method.toHex(),
@@ -69,17 +78,16 @@ export const useTransaction = (): ITransactionService => {
     };
   };
 
-  const getTransactionFee = async (transaction: Transaction, api: ApiPromise): Promise<string> => {
-    const extrinsic = getExtrinsic[transaction.type](transaction.args, api);
-    const paymentInfo = await extrinsic.paymentInfo(transaction.address);
-
-    return paymentInfo.partialFee.toString();
-  };
-
-  const getTransactionFeeV2 = async (api: ApiPromise): Promise<string> => {
-    if (!txs.length) return '';
+  const getTransactionFee = async (api: ApiPromise) => {
+    if (!txs.length) {
+      return Promise.resolve('0');
+    }
 
     const transaction = txs[0];
+    if (!transaction.address) {
+      return Promise.resolve('0');
+    }
+
     const extrinsic = getExtrinsic[transaction.type](transaction.args, api);
     const paymentInfo = await extrinsic.paymentInfo(transaction.address);
 
@@ -181,6 +189,17 @@ export const useTransaction = (): ITransactionService => {
     return signatureVerify(payloadToVerify, signature, accountId).isValid;
   };
 
+  const wrapTx = (api: ApiPromise, addressPrefix: number) => {
+    let transaction = txs[0];
+    wrapAs.forEach((wrapper) => {
+      if ('signatoryId' in wrapper) {
+        transaction = wrapAsMulti(wrapper.account, wrapper.signatoryId, transaction, api, addressPrefix);
+      }
+    });
+
+    return transaction;
+  };
+
   return {
     createPayload,
     getSignedExtrinsic,
@@ -191,7 +210,9 @@ export const useTransaction = (): ITransactionService => {
     getTransactionHash,
     decodeCallData,
     verifySignature,
+    txs,
     setTxs,
-    getTransactionFeeV2,
+    setWrapAs,
+    wrapTx,
   };
 };
