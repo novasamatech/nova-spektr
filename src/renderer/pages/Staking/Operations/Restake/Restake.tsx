@@ -3,9 +3,9 @@ import { useEffect, useState } from 'react';
 import { Navigate, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 
 import { useI18n, useNetworkContext, Paths } from '@renderer/app/providers';
-import { Address, ChainId, HexString, AccountId } from '@renderer/domain/shared-kernel';
-import { Transaction, TransactionType, useTransaction } from '@renderer/entities/transaction';
-import { useAccount, Account, MultisigAccount, isMultisig } from '@renderer/entities/account';
+import { ChainId, HexString } from '@renderer/domain/shared-kernel';
+import { Transaction, TransactionType, useExtrinsicService, useTransaction } from '@renderer/entities/transaction';
+import { useAccount, Account, isMultisig } from '@renderer/entities/account';
 import InitOperation, { RestakeResult } from './InitOperation/InitOperation';
 import { Confirmation, Submit, NoAsset } from '../components';
 import { getRelaychainAsset, toAddress, DEFAULT_TRANSITION } from '@renderer/shared/lib/utils';
@@ -25,7 +25,8 @@ export const Restake = () => {
   const { t } = useI18n();
   const navigate = useNavigate();
   const { connections } = useNetworkContext();
-  const { getTransactionHash } = useTransaction();
+  const { buildTransaction } = useExtrinsicService();
+  const { setTxs, txs, setWrapAs, wrapTx } = useTransaction();
   const { getActiveAccounts } = useAccount();
   const [searchParams] = useSearchParams();
   const params = useParams<{ chainId: ChainId }>();
@@ -38,8 +39,6 @@ export const Restake = () => {
   const [restakeAmount, setRestakeAmount] = useState('');
   const [description, setDescription] = useState('');
 
-  const [multisigTx, setMultisigTx] = useState<Transaction>();
-  const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [unsignedTransactions, setUnsignedTransactions] = useState<UnsignedTransaction[]>([]);
 
   const [accounts, setAccounts] = useState<Account[]>([]);
@@ -123,54 +122,27 @@ export const Restake = () => {
     const transactions = getRestakeTxs(accounts, amount);
 
     if (signer && isMultisig(accounts[0])) {
-      const multisigTx = getMultisigTx(accounts[0], signer.accountId, transactions[0]);
-      setMultisigTx(multisigTx);
+      const wrapAsMulti = {
+        signatoryId: signer.accountId,
+        account: txAccounts[0],
+      };
+      setWrapAs([wrapAsMulti]);
       setSigner(signer);
       setDescription(description || '');
     }
 
-    setTransactions(transactions);
+    setTxs(transactions);
     setTxAccounts(accounts);
     setRestakeAmount(amount);
     setActiveStep(Step.CONFIRMATION);
   };
 
   const getRestakeTxs = (accounts: Account[], amount: string): Transaction[] => {
-    return accounts.map(({ accountId }) => ({
-      chainId,
-      address: toAddress(accountId, { prefix: addressPrefix }),
-      type: TransactionType.RESTAKE,
-      args: { value: amount },
-    }));
-  };
-
-  const getMultisigTx = (
-    account: MultisigAccount,
-    signerAccountId: AccountId,
-    transaction: Transaction,
-  ): Transaction => {
-    const { callData, callHash } = getTransactionHash(transaction, api);
-
-    const otherSignatories = account.signatories.reduce<Address[]>((acc, s) => {
-      if (s.accountId !== signerAccountId) {
-        acc.push(toAddress(s.accountId, { prefix: addressPrefix }));
-      }
-
-      return acc;
-    }, []);
-
-    return {
-      chainId,
-      address: toAddress(signerAccountId, { prefix: addressPrefix }),
-      type: TransactionType.MULTISIG_AS_MULTI,
-      args: {
-        threshold: account.threshold,
-        otherSignatories: otherSignatories.sort(),
-        maybeTimepoint: null,
-        callData,
-        callHash,
-      },
-    };
+    return accounts.map(({ accountId }) =>
+      buildTransaction(TransactionType.RESTAKE, toAddress(accountId, { prefix: addressPrefix }), chainId, {
+        value: amount,
+      }),
+    );
   };
 
   const onSignResult = (signatures: HexString[], unsigned: UnsignedTransaction[]) => {
@@ -181,6 +153,7 @@ export const Restake = () => {
 
   const explorersProps = { explorers, addressPrefix, asset };
   const restakeValues = new Array(accounts.length).fill(restakeAmount);
+  const multisigTx = isMultisig(txAccounts[0]) ? wrapTx(txs[0], api, addressPrefix) : undefined;
 
   return (
     <>
@@ -202,8 +175,7 @@ export const Restake = () => {
             accounts={txAccounts}
             signer={signer}
             amounts={restakeValues}
-            transaction={transactions[0]}
-            multisigTx={multisigTx}
+            transaction={txs[0]}
             onResult={() => setActiveStep(Step.SIGNING)}
             onGoBack={goToPrevStep}
             {...explorersProps}
@@ -222,7 +194,7 @@ export const Restake = () => {
             addressPrefix={addressPrefix}
             signatory={signer}
             accounts={txAccounts}
-            transactions={multisigTx ? [multisigTx] : transactions}
+            transactions={multisigTx ? [multisigTx] : txs}
             onGoBack={() => setActiveStep(Step.CONFIRMATION)}
             onResult={onSignResult}
           />
@@ -232,7 +204,7 @@ export const Restake = () => {
       {activeStep === Step.SUBMIT && (
         <Submit
           api={api}
-          txs={transactions}
+          txs={txs}
           multisigTx={multisigTx}
           signatures={signatures}
           unsignedTx={unsignedTransactions}

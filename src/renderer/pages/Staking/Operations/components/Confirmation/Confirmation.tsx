@@ -7,10 +7,16 @@ import { useI18n } from '@renderer/app/providers';
 import { useToggle } from '@renderer/shared/lib/hooks';
 import { RewardsDestination } from '@renderer/entities/staking';
 import { Validator } from '@renderer/domain/validator';
-import { Account, AddressWithExplorers } from '@renderer/entities/account';
+import { Account, AddressWithExplorers, isMultisig } from '@renderer/entities/account';
 import { Asset, AssetBalance } from '@renderer/entities/asset';
 import { Explorer } from '@renderer/entities/chain';
-import { Transaction, MultisigTxInitStatus, DepositWithLabel, Fee } from '@renderer/entities/transaction';
+import {
+  MultisigTxInitStatus,
+  DepositWithLabel,
+  Fee,
+  useTransaction,
+  Transaction,
+} from '@renderer/entities/transaction';
 import AccountsModal from '../Modals/AccountsModal/AccountsModal';
 import ValidatorsModal from '../Modals/ValidatorsModal/ValidatorsModal';
 import { DestinationType } from '../../common/types';
@@ -31,7 +37,6 @@ type Props = {
   explorers?: Explorer[];
   addressPrefix: number;
   transaction: Transaction;
-  multisigTx?: Transaction;
   onResult: () => void;
   onGoBack: () => void;
 };
@@ -48,13 +53,13 @@ export const Confirmation = ({
   explorers,
   addressPrefix,
   transaction,
-  multisigTx,
   children,
   onResult,
   onGoBack,
 }: PropsWithChildren<Props>) => {
   const { t } = useI18n();
   const { getMultisigTxs } = useMultisigTx({});
+  const { getTransactionHash } = useTransaction();
 
   const [isAccountsOpen, toggleAccounts] = useToggle();
   const [isValidatorsOpen, toggleValidators] = useToggle();
@@ -66,15 +71,15 @@ export const Confirmation = ({
   const validatorsExist = validators && validators.length > 0;
   const totalAmount = amounts.reduce((acc, amount) => acc.add(new BN(amount)), BN_ZERO).toString();
 
-  const threshold = multisigTx?.args.threshold;
-
   useEffect(() => {
-    if (!multisigTx) return;
+    if (!accounts.length && !isMultisig(accounts[0])) return;
+
+    const { callHash } = getTransactionHash(transaction, api);
 
     getMultisigTxs({
-      chainId: multisigTx.chainId,
+      chainId: transaction.chainId,
       accountId: accounts[0].accountId,
-      callHash: multisigTx.args.callHash,
+      callHash: callHash,
       status: MultisigTxInitStatus.SIGNING,
     })
       .then((txs) => setMultisigTxExist(Boolean(txs.length)))
@@ -169,7 +174,7 @@ export const Confirmation = ({
             </>
           )}
 
-          {multisigTx && <DepositWithLabel api={api} asset={asset} threshold={threshold} />}
+          {isMultisig(accounts[0]) && <DepositWithLabel api={api} asset={asset} threshold={accounts[0].threshold} />}
 
           <div className="flex justify-between items-center gap-x-2">
             <FootnoteText className="text-text-tertiary">
