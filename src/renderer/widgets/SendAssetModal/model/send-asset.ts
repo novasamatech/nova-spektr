@@ -1,5 +1,4 @@
 import { createStore, createEffect, createEvent, sample, forward, attach } from 'effector';
-import { VersionedMultiAssets, VersionedMultiLocation } from '@polkadot/types/interfaces';
 import { ApiPromise } from '@polkadot/api';
 import { BN } from '@polkadot/util';
 
@@ -29,9 +28,9 @@ export const $api = createStore<ApiPromise | null>(null);
 export const $destinationParaId = createStore<number | null>(null);
 export const $accountId = createStore<AccountId | null>(null);
 
-export const $txDest = createStore<VersionedMultiLocation | null>(null);
-export const $txBeneficiary = createStore<VersionedMultiLocation | null>(null);
-export const $txAsset = createStore<VersionedMultiAssets | null>(null);
+export const $txDest = createStore<Object | null>(null);
+export const $txBeneficiary = createStore<Object | null>(null);
+export const $txAsset = createStore<Object | null>(null);
 export const $xcmFee = createStore<string>('');
 export const $amount = createStore<string>('');
 
@@ -135,9 +134,9 @@ sample({
 sample({
   source: { xcmTransfer: $xcmTransfer, chain: assetGuardModel.$chain, api: $api, paraId: $destinationParaId },
   fn: ({ xcmTransfer, api, chain, paraId }) => {
-    if (!xcmTransfer || !api || !chain || !paraId) return null;
+    if (!xcmTransfer || !api || !chain) return null;
 
-    return getDestinationLocation(api, chain, paraId) || null;
+    return getDestinationLocation(api, chain, paraId || undefined) || null;
   },
   target: $txDest,
 });
@@ -156,9 +155,9 @@ sample({
     accountId: $accountId,
   },
   fn: ({ xcmTransfer, api, chain, paraId, accountId }) => {
-    if (!xcmTransfer || !api || !chain || !paraId || !accountId || accountId === '0x00') return null;
+    if (!xcmTransfer || !api || !chain || !accountId || accountId === '0x00') return null;
 
-    return getDestinationLocation(api, chain, paraId, accountId) || null;
+    return getDestinationLocation(api, chain, paraId || undefined, accountId) || null;
   },
   target: $txBeneficiary,
 });

@@ -3,7 +3,6 @@ import { ReactNode, useEffect, useState } from 'react';
 import { Controller, SubmitHandler, useForm } from 'react-hook-form';
 import { ApiPromise } from '@polkadot/api';
 import { Trans } from 'react-i18next';
-import { VersionedMultiAssets, VersionedMultiLocation } from '@polkadot/types/interfaces';
 
 import { AmountInput, Button, Icon, Identicon, Input, InputHint, Select } from '@renderer/shared/ui';
 import { useI18n } from '@renderer/app/providers';
@@ -46,9 +45,9 @@ type Props = {
   addressPrefix: number;
   fee: string;
   feeIsLoading: boolean;
-  xcmDest?: VersionedMultiLocation;
-  xcmBeneficiary?: VersionedMultiLocation;
-  xcmAsset?: VersionedMultiAssets;
+  xcmDest?: Object;
+  xcmBeneficiary?: Object;
+  xcmAsset?: Object;
   xcmTransfer?: XcmTransfer;
   xcmFee: string;
   deposit: string;

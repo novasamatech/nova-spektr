@@ -173,9 +173,9 @@ export const useTransaction = (): ITransactionService => {
       return xcmMethods.limitedReserveTransferAssets(
         'xcmPallet',
         {
-          dest: transaction.args.xcmDest.toJSON(),
-          beneficiary: transaction.args.xcmBeneficiary.toJSON(),
-          assets: transaction.args.xcmAsset.toJSON(),
+          dest: transaction.args.xcmDest,
+          beneficiary: transaction.args.xcmBeneficiary,
+          assets: transaction.args.xcmAsset,
           feeAssetItem: 0,
           weightLimit: api.createType('WeightLimitV2', 'Unlimited').toJSON(),
         },
@@ -187,9 +187,9 @@ export const useTransaction = (): ITransactionService => {
       return xcmMethods.limitedTeleportAssets(
         'xcmPallet',
         {
-          dest: transaction.args.xcmDest.toJSON(),
-          beneficiary: transaction.args.xcmBeneficiary.toJSON(),
-          assets: transaction.args.xcmAsset.toJSON(),
+          dest: transaction.args.xcmDest,
+          beneficiary: transaction.args.xcmBeneficiary,
+          assets: transaction.args.xcmAsset,
           feeAssetItem: 0,
           weightLimit: api.createType('WeightLimitV2', 'Unlimited').toJSON(),
         },
@@ -201,9 +201,9 @@ export const useTransaction = (): ITransactionService => {
       return xcmMethods.limitedReserveTransferAssets(
         'polkadotXcm',
         {
-          dest: transaction.args.xcmDest.toJSON(),
-          beneficiary: transaction.args.xcmBeneficiary.toJSON(),
-          assets: transaction.args.xcmAsset.toJSON(),
+          dest: transaction.args.xcmDest,
+          beneficiary: transaction.args.xcmBeneficiary,
+          assets: transaction.args.xcmAsset,
           feeAssetItem: 0,
           weightLimit: api.createType('WeightLimitV2', 'Unlimited').toJSON(),
         },
@@ -215,9 +215,9 @@ export const useTransaction = (): ITransactionService => {
       return xcmMethods.limitedTeleportAssets(
         'polkadotXcm',
         {
-          dest: transaction.args.xcmDest.toJSON(),
-          beneficiary: transaction.args.xcmBeneficiary.toJSON(),
-          assets: transaction.args.xcmAsset.toJSON(),
+          dest: transaction.args.xcmDest,
+          beneficiary: transaction.args.xcmBeneficiary,
+          assets: transaction.args.xcmAsset,
           feeAssetItem: 0,
           weightLimit: api.createType('WeightLimitV2', 'Unlimited').toJSON(),
         },
@@ -226,15 +226,12 @@ export const useTransaction = (): ITransactionService => {
       );
     },
     [TransactionType.XTOKENS_TRANSFER_MULTIASSET]: (transaction, info, options, api) => {
-      const singleXcmAsset = api.createType('VersionedMultiAsset', { V2: transaction.args.xcmAsset.asV2[0] });
-
-      const dest = transaction.args.xcmBeneficiary.toJSON();
-      dest.v2.interior.x2[1].accountId32.id = toAccountId(dest.v2.interior.x2[1].accountId32.id);
+      const singleXcmAsset = { V2: transaction.args.xcmAsset.V2[0] };
 
       return xcmMethods.transferMultiAsset(
         {
-          dest,
-          asset: singleXcmAsset.toJSON(),
+          dest: transaction.args.xcmBeneficiary,
+          asset: singleXcmAsset,
           destWeightLimit: api.createType('WeightLimitV2', 'Unlimited').toJSON(),
         },
         info,
@@ -359,46 +356,46 @@ export const useTransaction = (): ITransactionService => {
     // TODO: finish during XCM transfer
     [TransactionType.XCM_LIMITED_TRANSFER]: ({ xcmDest, xcmBeneficiary, xcmAsset }, api) => {
       return api.tx.xcmPallet.limitedReserveTransferAssets(
-        xcmDest.toJSON(),
-        xcmBeneficiary.toJSON(),
-        xcmAsset.toJSON(),
+        xcmDest,
+        xcmBeneficiary,
+        xcmAsset,
         0,
         api.createType('WeightLimitV2', 'Unlimited').toJSON(),
       );
     },
     [TransactionType.XCM_TELEPORT]: ({ xcmDest, xcmBeneficiary, xcmAsset }, api) => {
       return api.tx.xcmPallet.limitedTeleportAssets(
-        xcmDest.toJSON(),
-        xcmBeneficiary.toJSON(),
-        xcmAsset.toJSON(),
+        xcmDest,
+        xcmBeneficiary,
+        xcmAsset,
         0,
         api.createType('WeightLimitV2', 'Unlimited').toJSON(),
       );
     },
     [TransactionType.POLKADOT_XCM_LIMITED_TRANSFER]: ({ xcmDest, xcmBeneficiary, xcmAsset }, api) => {
       return api.tx.polkadotXcm.limitedReserveTransferAssets(
-        xcmDest.toJSON(),
-        xcmBeneficiary.toJSON(),
-        xcmAsset.toJSON(),
+        xcmDest,
+        xcmBeneficiary,
+        xcmAsset,
         0,
         api.createType('WeightLimitV2', 'Unlimited').toJSON(),
       );
     },
     [TransactionType.POLKADOT_XCM_TELEPORT]: ({ xcmDest, xcmBeneficiary, xcmAsset }, api) => {
       return api.tx.polkadotXcm.limitedTeleportAssets(
-        xcmDest.toJSON(),
-        xcmBeneficiary.toJSON(),
-        xcmAsset.toJSON(),
+        xcmDest,
+        xcmBeneficiary,
+        xcmAsset,
         0,
         api.createType('WeightLimitV2', 'Unlimited').toJSON(),
       );
     },
     [TransactionType.XTOKENS_TRANSFER_MULTIASSET]: ({ xcmBeneficiary, xcmAsset }, api) => {
-      const singleXcmAsset = api.createType('VersionedMultiAsset', { V2: xcmAsset.asV2[0] });
+      const singleXcmAsset = { V2: xcmAsset.V2[0] };
 
       return api.tx.xTokens.transferMultiasset(
-        xcmBeneficiary.toJSON(),
-        singleXcmAsset.toJSON(),
+        xcmBeneficiary,
+        singleXcmAsset,
         api.createType('WeightLimitV2', 'Unlimited').toJSON(),
       );
     },
