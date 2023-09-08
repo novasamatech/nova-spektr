@@ -287,7 +287,7 @@ export const useExtrinsicService = (): IExtrinsicService => {
 
   const buildTransaction: IExtrinsicService['buildTransaction'] = (type, address, chainId, args) => {
     return {
-      type: TransactionType.BOND,
+      type: type,
       address: address,
       chainId: chainId,
       args: args,
