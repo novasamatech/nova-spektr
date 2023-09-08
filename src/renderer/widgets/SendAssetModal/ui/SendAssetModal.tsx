@@ -51,11 +51,11 @@ export const SendAssetModal = ({ chain, asset, onClose }: Props) => {
 
   useEffect(() => {
     sendAssetModel.events.xcmConfigRequested();
-    sendAssetModel.events.formOpened({
-      chain,
-      asset,
-    });
   }, []);
+
+  useEffect(() => {
+    api && sendAssetModel.events.apiInited(api);
+  }, [api]);
 
   const onInitResult = (transferTx: Transaction, multisig?: { multisigTx: Transaction; description: string }) => {
     setTransferTx(transferTx);

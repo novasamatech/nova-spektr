@@ -28,8 +28,7 @@ describe('shared/api/xcm/xcmService', () => {
 
   test('should calculate correct fee for ACA from Acala to Parallel ', () => {
     const fee = estimateFee(
-      CONFIG.instructions,
-      CONFIG.networkBaseWeight,
+      CONFIG,
       CONFIG.assetsLocation['ACA'],
       'fc41b9bd8ef8fe53d58c7ea67c794c7ec9a73daf05e6d54b14ff6342c99ba64c',
       CONFIG.chains[0].assets[0].xcmTransfers[1],
@@ -40,8 +39,7 @@ describe('shared/api/xcm/xcmService', () => {
 
   test('should calculate correct fee for DOT from Acala to Parallel', () => {
     const fee = estimateFee(
-      CONFIG.instructions,
-      CONFIG.networkBaseWeight,
+      CONFIG,
       CONFIG.assetsLocation['DOT'],
       'fc41b9bd8ef8fe53d58c7ea67c794c7ec9a73daf05e6d54b14ff6342c99ba64c',
       CONFIG.chains[0].assets[1].xcmTransfers[0],

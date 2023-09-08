@@ -20,6 +20,7 @@ import { createTxMetadata, toAccountId } from '@renderer/shared/lib/utils';
 import { ITransactionService, HashData, ExtrinsicResultParams } from './common/types';
 import { decodeDispatchError, getMaxWeight, isControllerMissing, isOldMultisigPallet } from './common/utils';
 import { useCallDataDecoder } from './callDataDecoder';
+import * as xcmMethods from './common/xcmMethods';
 
 type BalancesTransferArgs = Parameters<typeof methods.balances.transfer>[0];
 type BondWithoutContollerArgs = Omit<Parameters<typeof methods.staking.bond>[0], 'controller'>;
@@ -169,19 +170,76 @@ export const useTransaction = (): ITransactionService => {
     },
     // TODO: finish during XCM transfer
     [TransactionType.XCM_LIMITED_TRANSFER]: (transaction, info, options, api) => {
-      return {} as UnsignedTransaction;
+      return xcmMethods.limitedReserveTransferAssets(
+        'xcmPallet',
+        {
+          dest: transaction.args.xcmDest.toJSON(),
+          beneficiary: transaction.args.xcmBeneficiary.toJSON(),
+          assets: transaction.args.xcmAsset.toJSON(),
+          feeAssetItem: 0,
+          weightLimit: api.createType('WeightLimitV2', 'Unlimited').toJSON(),
+        },
+        info,
+        options,
+      );
     },
     [TransactionType.XCM_TELEPORT]: (transaction, info, options, api) => {
-      return {} as UnsignedTransaction;
+      return xcmMethods.limitedTeleportAssets(
+        'xcmPallet',
+        {
+          dest: transaction.args.xcmDest.toJSON(),
+          beneficiary: transaction.args.xcmBeneficiary.toJSON(),
+          assets: transaction.args.xcmAsset.toJSON(),
+          feeAssetItem: 0,
+          weightLimit: api.createType('WeightLimitV2', 'Unlimited').toJSON(),
+        },
+        info,
+        options,
+      );
     },
     [TransactionType.POLKADOT_XCM_LIMITED_TRANSFER]: (transaction, info, options, api) => {
-      return {} as UnsignedTransaction;
+      return xcmMethods.limitedReserveTransferAssets(
+        'polkadotXcm',
+        {
+          dest: transaction.args.xcmDest.toJSON(),
+          beneficiary: transaction.args.xcmBeneficiary.toJSON(),
+          assets: transaction.args.xcmAsset.toJSON(),
+          feeAssetItem: 0,
+          weightLimit: api.createType('WeightLimitV2', 'Unlimited').toJSON(),
+        },
+        info,
+        options,
+      );
     },
     [TransactionType.POLKADOT_XCM_TELEPORT]: (transaction, info, options, api) => {
-      return {} as UnsignedTransaction;
+      return xcmMethods.limitedTeleportAssets(
+        'polkadotXcm',
+        {
+          dest: transaction.args.xcmDest.toJSON(),
+          beneficiary: transaction.args.xcmBeneficiary.toJSON(),
+          assets: transaction.args.xcmAsset.toJSON(),
+          feeAssetItem: 0,
+          weightLimit: api.createType('WeightLimitV2', 'Unlimited').toJSON(),
+        },
+        info,
+        options,
+      );
     },
     [TransactionType.XTOKENS_TRANSFER_MULTIASSET]: (transaction, info, options, api) => {
-      return {} as UnsignedTransaction;
+      const singleXcmAsset = api.createType('VersionedMultiAsset', { V2: transaction.args.xcmAsset.asV2[0] });
+
+      const dest = transaction.args.xcmBeneficiary.toJSON();
+      dest.v2.interior.x2[1].accountId32.id = toAccountId(dest.v2.interior.x2[1].accountId32.id);
+
+      return xcmMethods.transferMultiAsset(
+        {
+          dest,
+          asset: singleXcmAsset.toJSON(),
+          destWeightLimit: api.createType('WeightLimitV2', 'Unlimited').toJSON(),
+        },
+        info,
+        options,
+      );
     },
     [TransactionType.BOND]: (transaction, info, options, api) => {
       return isControllerMissing(api)
@@ -299,20 +357,50 @@ export const useTransaction = (): ITransactionService => {
     [TransactionType.MULTISIG_CANCEL_AS_MULTI]: ({ threshold, otherSignatories, maybeTimepoint, callHash }, api) =>
       api.tx.multisig.cancelAsMulti(threshold, otherSignatories, maybeTimepoint, callHash),
     // TODO: finish during XCM transfer
-    [TransactionType.XCM_LIMITED_TRANSFER]: () => {
-      return {} as SubmittableExtrinsic<'promise'>;
+    [TransactionType.XCM_LIMITED_TRANSFER]: ({ xcmDest, xcmBeneficiary, xcmAsset }, api) => {
+      return api.tx.xcmPallet.limitedReserveTransferAssets(
+        xcmDest.toJSON(),
+        xcmBeneficiary.toJSON(),
+        xcmAsset.toJSON(),
+        0,
+        api.createType('WeightLimitV2', 'Unlimited').toJSON(),
+      );
     },
-    [TransactionType.XCM_TELEPORT]: () => {
-      return {} as SubmittableExtrinsic<'promise'>;
+    [TransactionType.XCM_TELEPORT]: ({ xcmDest, xcmBeneficiary, xcmAsset }, api) => {
+      return api.tx.xcmPallet.limitedTeleportAssets(
+        xcmDest.toJSON(),
+        xcmBeneficiary.toJSON(),
+        xcmAsset.toJSON(),
+        0,
+        api.createType('WeightLimitV2', 'Unlimited').toJSON(),
+      );
     },
-    [TransactionType.POLKADOT_XCM_LIMITED_TRANSFER]: () => {
-      return {} as SubmittableExtrinsic<'promise'>;
+    [TransactionType.POLKADOT_XCM_LIMITED_TRANSFER]: ({ xcmDest, xcmBeneficiary, xcmAsset }, api) => {
+      return api.tx.polkadotXcm.limitedReserveTransferAssets(
+        xcmDest.toJSON(),
+        xcmBeneficiary.toJSON(),
+        xcmAsset.toJSON(),
+        0,
+        api.createType('WeightLimitV2', 'Unlimited').toJSON(),
+      );
     },
-    [TransactionType.POLKADOT_XCM_TELEPORT]: () => {
-      return {} as SubmittableExtrinsic<'promise'>;
+    [TransactionType.POLKADOT_XCM_TELEPORT]: ({ xcmDest, xcmBeneficiary, xcmAsset }, api) => {
+      return api.tx.polkadotXcm.limitedTeleportAssets(
+        xcmDest.toJSON(),
+        xcmBeneficiary.toJSON(),
+        xcmAsset.toJSON(),
+        0,
+        api.createType('WeightLimitV2', 'Unlimited').toJSON(),
+      );
     },
-    [TransactionType.XTOKENS_TRANSFER_MULTIASSET]: () => {
-      return {} as SubmittableExtrinsic<'promise'>;
+    [TransactionType.XTOKENS_TRANSFER_MULTIASSET]: ({ xcmBeneficiary, xcmAsset }, api) => {
+      const singleXcmAsset = api.createType('VersionedMultiAsset', { V2: xcmAsset.asV2[0] });
+
+      return api.tx.xTokens.transferMultiasset(
+        xcmBeneficiary.toJSON(),
+        singleXcmAsset.toJSON(),
+        api.createType('WeightLimitV2', 'Unlimited').toJSON(),
+      );
     },
     // controller arg removed from bond but changes not released yet
     // https://github.com/paritytech/substrate/pull/14039

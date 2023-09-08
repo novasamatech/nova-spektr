@@ -2,7 +2,7 @@ import { ApiPromise } from '@polkadot/api';
 import { useEffect, useState } from 'react';
 import { useStore } from 'effector-react';
 
-import { ChainId } from '@renderer/domain/shared-kernel';
+import { AccountId, ChainId } from '@renderer/domain/shared-kernel';
 import { useAccount, Account, isMultisig, MultisigAccount } from '@renderer/entities/account';
 import { Chain, Explorer } from '@renderer/entities/chain';
 import { Asset, useBalance } from '@renderer/entities/asset';
@@ -41,6 +41,12 @@ export const InitOperation = ({
   const { getLiveAssetBalances } = useBalance();
   const { connections } = useNetworkContext();
   const availableDestinations = useStore(sendAssetModel.$destinations);
+  const config = useStore(sendAssetModel.$finalConfig);
+  const xcmAsset = useStore(sendAssetModel.$txAsset);
+  const xcmDest = useStore(sendAssetModel.$txDest);
+  const xcmBeneficiary = useStore(sendAssetModel.$txBeneficiary);
+  const xcmTransfer = useStore(sendAssetModel.$xcmTransfer);
+  const xcmFee = useStore(sendAssetModel.$xcmFee);
 
   const accounts = getActiveAccounts();
 
@@ -125,6 +131,15 @@ export const InitOperation = ({
     sendAssetModel.events.destinationChainSelected(connections[chainId]);
   };
 
+  const changeDestination = (accountId: AccountId) => {
+    sendAssetModel.events.accountIdSelected(accountId);
+  };
+
+  const changeAmount = (amount: string) => {
+    setAmount(amount);
+    sendAssetModel.events.amountChanged(amount);
+  };
+
   return (
     <div className="flex flex-col gap-y-4">
       <TransferForm
@@ -137,6 +152,11 @@ export const InitOperation = ({
         nativeToken={nativeToken}
         addressPrefix={addressPrefix}
         fee={fee}
+        xcmFee={xcmFee}
+        xcmAsset={xcmAsset || undefined}
+        xcmDest={xcmDest || undefined}
+        xcmBeneficiary={xcmBeneficiary || undefined}
+        xcmTransfer={xcmTransfer || undefined}
         deposit={deposit}
         feeIsLoading={feeIsLoading}
         destinations={destinations}
@@ -159,6 +179,7 @@ export const InitOperation = ({
               account={activeAccount}
               totalAccounts={1}
               transaction={tx}
+              xcmConfig={config || undefined}
               onFeeChange={setFee}
               onFeeLoading={setFeeIsLoading}
               onDepositChange={setDeposit}
@@ -167,8 +188,9 @@ export const InitOperation = ({
         }
         onTxChange={setTx}
         onSubmit={onResult}
-        onChangeAmount={setAmount}
+        onChangeAmount={changeAmount}
         onDestinationChainChange={changeDestinationChain}
+        onDestinationChange={changeDestination}
       />
     </div>
   );

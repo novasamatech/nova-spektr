@@ -87,7 +87,7 @@ export const getAccountOption = <T extends Account | MultisigAccount>(
 };
 
 export const getChainOption = ({ chainId }: Chain): DropdownOption<ChainId> => {
-  const element = <ChainTitle key={chainId} chainId={chainId} />;
+  const element = <ChainTitle key={chainId} chainId={chainId} fontClass="text-text-primary" />;
 
   return { id: chainId, value: chainId, element };
 };

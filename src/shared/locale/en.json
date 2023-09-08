@@ -755,6 +755,8 @@
     "amountPlaceholder": "0",
     "continueButton": "Continue",
     "descriptionLengthError": "Description must be { maxLength } symbols long",
+    "destinationChainLabel": "Recipient network",
+    "destinationChainPlaceholder": "Select recipient network",
     "editOperationButton": "Edit operation",
     "executing": "Submitting operation",
     "formTitle": "Send <strong>{ asset }</strong> on <strong>{ network }</strong>",

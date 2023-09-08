@@ -1,6 +1,6 @@
 import { BN, BN_TEN, BN_ZERO } from '@polkadot/util';
 import { ApiPromise } from '@polkadot/api';
-import { VersionedMultiAsset, VersionedMultiLocation } from '@polkadot/types/interfaces';
+import { VersionedMultiAssets, VersionedMultiLocation } from '@polkadot/types/interfaces';
 
 import { XCM_URL, XCM_KEY } from './common/constants';
 import {
@@ -12,7 +12,6 @@ import {
   ChainXCM,
   InstructionType,
   Instructions,
-  NetworkBaseWeight,
   XcmTransfer,
 } from './common/types';
 import { AccountId, ChainId } from '@renderer/domain/shared-kernel';
@@ -67,31 +66,30 @@ export const getEstimatedWeight = (
 };
 
 export const estimateFee = (
-  instructions: Instructions,
-  baseWeights: NetworkBaseWeight,
+  config: XcmConfig,
   assetLocation: AssetLocation,
   originChain: string,
   xcmTransfer: XcmTransfer,
 ): BN => {
   const weight = getEstimatedWeight(
-    instructions,
+    config.instructions,
     xcmTransfer.destination.fee.instructions,
     new BN(xcmTransfer.destination.fee.mode.value),
   );
 
-  const fee = weightToFee(weight, new BN(baseWeights[xcmTransfer.destination.chainId]));
+  const fee = weightToFee(weight, new BN(config.networkBaseWeight[xcmTransfer.destination.chainId]));
 
   const isReserveChain = [originChain, xcmTransfer.destination.chainId].includes(assetLocation.chainId);
 
   if (isReserveChain) return fee;
 
   const reserveWeight = getEstimatedWeight(
-    instructions,
+    config.instructions,
     assetLocation.reserveFee.instructions,
     new BN(assetLocation.reserveFee.mode.value),
   );
 
-  const reserveFee = weightToFee(reserveWeight, new BN(baseWeights[assetLocation.chainId]));
+  const reserveFee = weightToFee(reserveWeight, new BN(config.networkBaseWeight[assetLocation.chainId]));
 
   return fee.add(reserveFee);
 };
@@ -104,7 +102,21 @@ const JunctionType: Record<string, string> = {
   accountId: 'AccountId32',
   generalIndex: 'GeneralIndex',
 };
+
 type JunctionTypeKey = keyof typeof JunctionType;
+
+const JunctionWeight: Record<JunctionTypeKey, number> = {
+  parachainId: 0,
+  palletInstance: 1,
+  accountKey: 1,
+  accountId: 1,
+  generalKey: 2,
+  generalIndex: 2,
+};
+
+export const sortJunctions = (a: JunctionTypeKey, b: JunctionTypeKey): number => {
+  return JunctionWeight[a] - JunctionWeight[b];
+};
 
 export const createJunctionFromObject = (data: {}) => {
   const entries = Object.entries(data);
@@ -120,9 +132,11 @@ export const createJunctionFromObject = (data: {}) => {
   }
 
   return {
-    [`X${entries.length}`]: entries.map((e) => ({
-      [JunctionType[e[0] as JunctionTypeKey]]: e[1],
-    })),
+    [`X${entries.length}`]: entries
+      .sort((a, b) => sortJunctions(a[0], b[0]))
+      .map((e) => ({
+        [JunctionType[e[0] as JunctionTypeKey]]: e[1],
+      })),
   };
 };
 
@@ -131,7 +145,7 @@ export const getAssetLocation = (
   asset: AssetXCM,
   assets: Record<AssetName, AssetLocation>,
   amount: BN,
-): VersionedMultiAsset | undefined => {
+): VersionedMultiAssets | undefined => {
   return {
     relative: () => getRelativeAssetLocation(api, amount, assets[asset.assetLocation].multiLocation),
     absolute: () => getAbsoluteAssetLocation(api, amount, assets[asset.assetLocation].multiLocation),
@@ -143,23 +157,28 @@ const getRelativeAssetLocation = (
   api: ApiPromise,
   amount: BN,
   assetLocation?: LocalMultiLocation,
-): VersionedMultiAsset | undefined => {
+): VersionedMultiAssets | undefined => {
   if (!assetLocation) return;
 
   const { parachainId: _, ...location } = assetLocation;
 
-  return api.createType('VersionedMultiAsset', {
-    V2: {
-      id: {
-        Concrete: {
-          parents: 0,
-          interior: Object.values(location).length ? createJunctionFromObject(location) : 'Here',
+  return api.createType('VersionedMultiAssets', {
+    V2: [
+      {
+        id: api.createType('XcmAssetId', {
+          Concrete: {
+            parents: 0,
+            interior: api.createType(
+              'Junctions',
+              Object.values(location).length ? createJunctionFromObject(location) : 'Here',
+            ),
+          },
+        }),
+        fungibility: {
+          Fungible: amount.toNumber(),
         },
       },
-      fun: {
-        Fungible: amount.toNumber(),
-      },
-    },
+    ],
   });
 };
 
@@ -167,21 +186,26 @@ const getAbsoluteAssetLocation = (
   api: ApiPromise,
   amount: BN,
   assetLocation?: LocalMultiLocation,
-): VersionedMultiAsset | undefined => {
+): VersionedMultiAssets | undefined => {
   if (!assetLocation) return;
 
-  return api.createType('VersionedMultiAsset', {
-    V2: {
-      id: {
-        Concrete: {
-          parents: 1,
-          interior: Object.values(assetLocation).length ? createJunctionFromObject(assetLocation) : 'Here',
+  return api.createType('VersionedMultiAssets', {
+    V2: [
+      {
+        id: api.createType('XcmAssetId', {
+          Concrete: {
+            parents: 1,
+            interior: api.createType(
+              'Junctions',
+              Object.values(assetLocation).length ? createJunctionFromObject(assetLocation) : 'Here',
+            ),
+          },
+        }),
+        fungibility: {
+          Fungible: amount.toNumber(),
         },
       },
-      fungibility: {
-        Fungible: amount.toNumber(),
-      },
-    },
+    ],
   });
 };
 
@@ -189,23 +213,28 @@ const getConcreteAssetLocation = (
   api: ApiPromise,
   amount: BN,
   assetLocation?: LocalMultiLocation,
-): VersionedMultiAsset | undefined => {
+): VersionedMultiAssets | undefined => {
   if (!assetLocation) return;
 
   const { parents, ...location } = assetLocation;
 
-  return api.createType('VersionedMultiAsset', {
-    V2: {
-      id: {
-        Concrete: {
-          parents,
-          interior: Object.values(location).length ? createJunctionFromObject(location) : 'Here',
+  return api.createType('VersionedMultiAssets', {
+    V2: [
+      {
+        id: api.createType('XcmAssetId', {
+          Concrete: {
+            parents,
+            interior: api.createType(
+              'Junctions',
+              Object.values(location).length ? createJunctionFromObject(location) : 'Here',
+            ),
+          },
+        }),
+        fungibility: {
+          Fungible: amount.toNumber(),
         },
       },
-      fun: {
-        Fungible: amount.toNumber(),
-      },
-    },
+    ],
   });
 };
 
@@ -243,7 +272,7 @@ const getChildLocation = (api: ApiPromise, parachainId: number, accountId?: Acco
   return api.createType('VersionedMultiLocation', {
     V2: {
       parents: 0,
-      interior: createJunctionFromObject(location),
+      interior: api.createType('Junctions', createJunctionFromObject(location)),
     },
   });
 };
@@ -261,7 +290,7 @@ const getParentLocation = (api: ApiPromise, accountId?: AccountId): VersionedMul
   return api.createType('VersionedMultiLocation', {
     V2: {
       parents: 1,
-      interior: createJunctionFromObject(location),
+      interior: api.createType('Junctions', createJunctionFromObject(location)),
     },
   });
 };
@@ -279,7 +308,7 @@ const getSiblingLocation = (api: ApiPromise, parachainId: number, accountId?: Ac
   return api.createType('VersionedMultiLocation', {
     V2: {
       parents: 1,
-      interior: createJunctionFromObject(location),
+      interior: api.createType('Junctions', createJunctionFromObject(location)),
     },
   });
 };

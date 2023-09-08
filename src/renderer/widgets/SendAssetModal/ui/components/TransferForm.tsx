@@ -3,6 +3,7 @@ import { ReactNode, useEffect, useState } from 'react';
 import { Controller, SubmitHandler, useForm } from 'react-hook-form';
 import { ApiPromise } from '@polkadot/api';
 import { Trans } from 'react-i18next';
+import { VersionedMultiAssets, VersionedMultiLocation } from '@polkadot/types/interfaces';
 
 import { AmountInput, Button, Icon, Identicon, Input, InputHint, Select } from '@renderer/shared/ui';
 import { useI18n } from '@renderer/app/providers';
@@ -22,6 +23,7 @@ import {
 import { Chain } from '@renderer/entities/chain';
 import { getChainOption } from '../common/utils';
 import { DropdownOption, DropdownResult } from '@renderer/shared/ui/types';
+import { XcmTransfer, XcmTransferType } from '@renderer/shared/api/xcm';
 
 const DESCRIPTION_MAX_LENGTH = 120;
 
@@ -44,6 +46,11 @@ type Props = {
   addressPrefix: number;
   fee: string;
   feeIsLoading: boolean;
+  xcmDest?: VersionedMultiLocation;
+  xcmBeneficiary?: VersionedMultiLocation;
+  xcmAsset?: VersionedMultiAssets;
+  xcmTransfer?: XcmTransfer;
+  xcmFee: string;
   deposit: string;
   footer: ReactNode;
   header?: ReactNode;
@@ -51,6 +58,7 @@ type Props = {
   onSubmit: (transferTx: Transaction, multisig?: { multisigTx: Transaction; description: string }) => void;
   onChangeAmount: (amount: string) => void;
   onDestinationChainChange: (destinationChain: ChainId) => void;
+  onDestinationChange: (accountId: AccountId) => void;
   onTxChange: (tx: Transaction) => void;
 };
 
@@ -67,10 +75,16 @@ export const TransferForm = ({
   onChangeAmount,
   onTxChange,
   onDestinationChainChange,
+  onDestinationChange,
   feeIsLoading,
   fee,
   deposit,
   destinations,
+  xcmFee,
+  xcmAsset,
+  xcmBeneficiary,
+  xcmDest,
+  xcmTransfer,
 }: Props) => {
   const { t } = useI18n();
   const { getBalance } = useBalance();
@@ -120,6 +134,10 @@ export const TransferForm = ({
   useEffect(() => {
     onChangeAmount(formatAmount(amount, asset.precision));
   }, [amount]);
+
+  useEffect(() => {
+    onDestinationChange(toAccountId(destination));
+  }, [destination]);
 
   const setupBalances = (
     address: Address,
@@ -176,23 +194,55 @@ export const TransferForm = ({
     onTxChange(transferPayload);
   }, [account, signer, destination, amount]);
 
+  const getXcmTransferType = (type: XcmTransferType) => {
+    if (type === 'xtokens') {
+      return TransactionType.XTOKENS_TRANSFER_MULTIASSET;
+    }
+
+    if (type === 'xcmpallet-teleport') {
+      return api.tx.xcmPallet ? TransactionType.XCM_TELEPORT : TransactionType.POLKADOT_XCM_TELEPORT;
+    }
+
+    return api.tx.xcmPallet ? TransactionType.XCM_LIMITED_TRANSFER : TransactionType.POLKADOT_XCM_LIMITED_TRANSFER;
+  };
+
   const getTransferTx = (accountId: AccountId): Transaction => {
     const TransferType: Record<AssetType, TransactionType> = {
       [AssetType.ORML]: TransactionType.ORML_TRANSFER,
       [AssetType.STATEMINE]: TransactionType.ASSET_TRANSFER,
     };
 
-    const transactionType = asset.type ? TransferType[asset.type] : TransactionType.TRANSFER;
+    const isXcmTransfer = destinationChain?.value !== chainId && xcmTransfer;
+
+    let transactionType;
+    let args;
+
+    if (isXcmTransfer) {
+      transactionType = getXcmTransferType(xcmTransfer.type);
+
+      args = {
+        destinationChain: destinationChain?.value,
+        value: formatAmount(amount, asset.precision),
+        dest: toAddress(destination, { prefix: addressPrefix }),
+        xcmFee,
+        xcmAsset,
+        xcmDest,
+        xcmBeneficiary,
+      };
+    } else {
+      transactionType = asset.type ? TransferType[asset.type] : TransactionType.TRANSFER;
+      args = {
+        dest: toAddress(destination, { prefix: addressPrefix }),
+        value: formatAmount(amount, asset.precision),
+        ...(transactionType !== TransactionType.TRANSFER && { asset: getAssetId(asset) }),
+      };
+    }
 
     return {
       chainId,
       address: toAddress(accountId, { prefix: addressPrefix }),
       type: transactionType,
-      args: {
-        dest: toAddress(destination, { prefix: addressPrefix }),
-        value: formatAmount(amount, asset.precision),
-        ...(transactionType !== TransactionType.TRANSFER && { asset: getAssetId(asset) }),
-      },
+      args,
     };
   };
 
@@ -297,8 +347,8 @@ export const TransferForm = ({
             control={control}
             render={({ field: { onChange, value }, fieldState: { error } }) => (
               <Select
-                label={t('staking.bond.destinationChainLabel')}
-                placeholder={t('staking.bond.destinationChainPlaceholder')}
+                label={t('transfer.destinationChainLabel')}
+                placeholder={t('transfer.destinationChainPlaceholder')}
                 invalid={Boolean(error)}
                 selectedId={value?.id}
                 options={destinationOptions}

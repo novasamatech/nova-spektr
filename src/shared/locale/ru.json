@@ -755,6 +755,8 @@
     "amountPlaceholder": "0",
     "continueButton": "Продолжить",
     "descriptionLengthError": "Описание может быть { maxLength } символов в длину",
+    "destinationChainLabel": "Recipient network",
+    "destinationChainPlaceholder": "Select recipient network",
     "editOperationButton": "Редактировать операцию",
     "executing": "Выполнение транзакции",
     "formTitle": "Отправить <strong>{ asset }</strong> в сети <strong>{ network }</strong>",
