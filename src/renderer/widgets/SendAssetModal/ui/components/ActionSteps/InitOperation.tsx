@@ -5,7 +5,7 @@ import { ChainId } from '@renderer/domain/shared-kernel';
 import { useAccount, Account, isMultisig, MultisigAccount } from '@renderer/entities/account';
 import { Explorer } from '@renderer/entities/chain';
 import { Asset, AssetType, useBalance } from '@renderer/entities/asset';
-import { Transaction, TransactionType, useExtrinsicService } from '@renderer/entities/transaction';
+import { Transaction, TransactionType, useTransaction } from '@renderer/entities/transaction';
 import { TransferForm, TransferFormData } from '../TransferForm';
 import { getAccountOption, getSignatoryOption } from '../../common/utils';
 import { OperationFooter, OperationHeader } from '@renderer/features/operation';
@@ -39,9 +39,9 @@ export const InitOperation = ({
   onAccountChange,
   onSignatoryChange,
 }: Props) => {
+  const { buildTransaction } = useTransaction();
   const { getActiveAccounts } = useAccount();
   const { getLiveAssetBalances } = useBalance();
-  const { buildTransaction } = useExtrinsicService();
 
   const accounts = getActiveAccounts();
 

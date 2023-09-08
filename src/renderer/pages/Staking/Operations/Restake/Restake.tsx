@@ -4,7 +4,7 @@ import { Navigate, useNavigate, useParams, useSearchParams } from 'react-router-
 
 import { useI18n, useNetworkContext, Paths } from '@renderer/app/providers';
 import { ChainId, HexString } from '@renderer/domain/shared-kernel';
-import { Transaction, TransactionType, useExtrinsicService, useTransaction } from '@renderer/entities/transaction';
+import { Transaction, TransactionType, useTransaction } from '@renderer/entities/transaction';
 import { useAccount, Account, isMultisig } from '@renderer/entities/account';
 import InitOperation, { RestakeResult } from './InitOperation/InitOperation';
 import { Confirmation, Submit, NoAsset } from '../components';
@@ -25,8 +25,7 @@ export const Restake = () => {
   const { t } = useI18n();
   const navigate = useNavigate();
   const { connections } = useNetworkContext();
-  const { buildTransaction } = useExtrinsicService();
-  const { setTxs, txs, setWrapAs, wrapTx } = useTransaction();
+  const { setTxs, txs, setWrapAs, wrapTx, buildTransaction } = useTransaction();
   const { getActiveAccounts } = useAccount();
   const [searchParams] = useSearchParams();
   const params = useParams<{ chainId: ChainId }>();

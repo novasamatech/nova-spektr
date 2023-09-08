@@ -5,7 +5,7 @@ import { Navigate, useNavigate, useParams, useSearchParams } from 'react-router-
 import { UnstakingDuration } from '@renderer/pages/Staking/Overview/components';
 import { Paths, useI18n, useNetworkContext } from '@renderer/app/providers';
 import { ChainId, HexString } from '@renderer/domain/shared-kernel';
-import { Transaction, TransactionType, useExtrinsicService, useTransaction } from '@renderer/entities/transaction';
+import { Transaction, TransactionType, useTransaction } from '@renderer/entities/transaction';
 import { Account, isMultisig, useAccount } from '@renderer/entities/account';
 import InitOperation, { UnstakeResult } from './InitOperation/InitOperation';
 import { Confirmation, NoAsset, Submit } from '../components';
@@ -25,8 +25,7 @@ const enum Step {
 export const Unstake = () => {
   const { t } = useI18n();
   const navigate = useNavigate();
-  const { buildTransaction } = useExtrinsicService();
-  const { setTxs, txs, setWrapAs, wrapTx } = useTransaction();
+  const { setTxs, txs, setWrapAs, wrapTx, buildTransaction } = useTransaction();
   const { connections } = useNetworkContext();
   const { getActiveAccounts } = useAccount();
   const [searchParams] = useSearchParams();

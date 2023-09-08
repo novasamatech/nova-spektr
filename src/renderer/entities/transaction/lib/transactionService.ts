@@ -6,14 +6,14 @@ import { Weight } from '@polkadot/types/interfaces';
 import { blake2AsU8a, signatureVerify } from '@polkadot/util-crypto';
 import { useState } from 'react';
 
-import { AccountId, HexString, Threshold } from '@renderer/domain/shared-kernel';
-import { Transaction } from '@renderer/entities/transaction/model/transaction';
+import { AccountId, Address, ChainId, HexString, Threshold } from '@renderer/domain/shared-kernel';
+import { Transaction, TransactionType } from '@renderer/entities/transaction/model/transaction';
 import { createTxMetadata, toAccountId } from '@renderer/shared/lib/utils';
 import { ITransactionService, HashData, ExtrinsicResultParams } from './common/types';
 import { decodeDispatchError } from './common/utils';
 import { useCallDataDecoder } from './callDataDecoder';
-import { useExtrinsicService } from '@renderer/entities/transaction';
 import { MultisigAccount } from '@renderer/entities/account';
+import { useExtrinsicService } from './extrinsicService';
 
 type WrapAsMullti = {
   account: MultisigAccount;
@@ -194,6 +194,20 @@ export const useTransaction = (): ITransactionService => {
     return transaction;
   };
 
+  const buildTransaction = (
+    type: TransactionType,
+    address: Address,
+    chainId: ChainId,
+    args: Record<string, any>,
+  ): Transaction => {
+    return {
+      type: type,
+      address: address,
+      chainId: chainId,
+      args: args,
+    };
+  };
+
   return {
     createPayload,
     getSignedExtrinsic,
@@ -208,5 +222,6 @@ export const useTransaction = (): ITransactionService => {
     setTxs,
     setWrapAs,
     wrapTx,
+    buildTransaction,
   };
 };

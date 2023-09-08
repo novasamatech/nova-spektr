@@ -7,13 +7,7 @@ import { Trans } from 'react-i18next';
 import { AmountInput, Button, Icon, Identicon, Input, InputHint } from '@renderer/shared/ui';
 import { useI18n } from '@renderer/app/providers';
 import { Asset, AssetType, useBalance } from '@renderer/entities/asset';
-import {
-  MultisigTxInitStatus,
-  Transaction,
-  TransactionType,
-  useExtrinsicService,
-  useTransaction,
-} from '@renderer/entities/transaction';
+import { MultisigTxInitStatus, Transaction, TransactionType, useTransaction } from '@renderer/entities/transaction';
 import { Address, ChainId } from '@renderer/domain/shared-kernel';
 import { useMultisigTx } from '@renderer/entities/multisig';
 import { Account, isMultisig, MultisigAccount } from '@renderer/entities/account';
@@ -71,8 +65,7 @@ export const TransferForm = ({
   const { t } = useI18n();
   const { getBalance } = useBalance();
   const { getMultisigTxs } = useMultisigTx({});
-  const { getTransactionHash } = useTransaction();
-  const { buildTransaction } = useExtrinsicService();
+  const { getTransactionHash, buildTransaction } = useTransaction();
 
   const [accountBalance, setAccountBalance] = useState('');
   const [signerBalance, setSignerBalance] = useState('');

@@ -4,7 +4,7 @@ import { Navigate, useNavigate, useParams, useSearchParams } from 'react-router-
 
 import { Paths, useI18n, useNetworkContext } from '@renderer/app/providers';
 import { ChainId, HexString } from '@renderer/domain/shared-kernel';
-import { Transaction, TransactionType, useExtrinsicService, useTransaction } from '@renderer/entities/transaction';
+import { Transaction, TransactionType, useTransaction } from '@renderer/entities/transaction';
 import { useAccount, Account, isMultisig } from '@renderer/entities/account';
 import InitOperation, { RedeemResult } from './InitOperation/InitOperation';
 import { Confirmation, Submit, NoAsset } from '../components';
@@ -24,8 +24,7 @@ const enum Step {
 export const Redeem = () => {
   const { t } = useI18n();
   const navigate = useNavigate();
-  const { buildTransaction } = useExtrinsicService();
-  const { setTxs, txs, setWrapAs, wrapTx } = useTransaction();
+  const { setTxs, txs, setWrapAs, wrapTx, buildTransaction } = useTransaction();
   const { connections } = useNetworkContext();
   const { getLiveAccounts } = useAccount();
   const [searchParams] = useSearchParams();

@@ -37,6 +37,12 @@ export type ITransactionService = {
   txs: Transaction[];
   setWrapAs: (wrappers: TxWrappers[]) => void;
   wrapTx: (tx: Transaction, api: ApiPromise, addressPrefix: number) => Transaction;
+  buildTransaction: (
+    type: TransactionType,
+    address: Address,
+    chainId: ChainId,
+    args: Record<string, any>,
+  ) => Transaction;
 };
 
 // =====================================================
@@ -51,12 +57,6 @@ export type IExtrinsicService = {
     TransactionType,
     (args: Record<string, any>, api: ApiPromise) => SubmittableExtrinsic<'promise'>
   >;
-  buildTransaction: (
-    type: TransactionType,
-    address: Address,
-    chainId: ChainId,
-    args: Record<string, any>,
-  ) => Transaction;
   wrapAsMulti: (
     account: MultisigAccount,
     signerAccountId: AccountId,

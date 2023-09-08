@@ -10,9 +10,9 @@ import {
   isControllerMissing,
   isOldMultisigPallet,
 } from '@renderer/entities/transaction/lib/index';
-import {MultisigAccount} from "@renderer/entities/account";
-import {AccountId, Address} from "@renderer/domain/shared-kernel";
-import {toAddress} from "@renderer/shared/lib/utils";
+import { MultisigAccount } from '@renderer/entities/account';
+import { AccountId, Address } from '@renderer/domain/shared-kernel';
+import { toAddress } from '@renderer/shared/lib/utils';
 
 type BalancesTransferArgs = Parameters<typeof methods.balances.transfer>[0];
 type BondWithoutContollerArgs = Omit<Parameters<typeof methods.staking.bond>[0], 'controller'>;
@@ -285,15 +285,6 @@ export const useExtrinsicService = (): IExtrinsicService => {
     },
   };
 
-  const buildTransaction: IExtrinsicService['buildTransaction'] = (type, address, chainId, args) => {
-    return {
-      type: type,
-      address: address,
-      chainId: chainId,
-      args: args,
-    };
-  };
-
   const wrapAsMulti = (
     account: MultisigAccount,
     signerAccountId: AccountId,
@@ -330,7 +321,6 @@ export const useExtrinsicService = (): IExtrinsicService => {
   return {
     getUnsignedTransaction,
     getExtrinsic,
-    buildTransaction,
     wrapAsMulti,
   };
 };

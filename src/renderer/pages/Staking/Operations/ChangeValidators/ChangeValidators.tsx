@@ -4,7 +4,7 @@ import { Navigate, useNavigate, useParams, useSearchParams } from 'react-router-
 
 import { useI18n, useNetworkContext, Paths } from '@renderer/app/providers';
 import { ChainId, HexString, Address } from '@renderer/domain/shared-kernel';
-import { Transaction, TransactionType, useExtrinsicService, useTransaction } from '@renderer/entities/transaction';
+import { Transaction, TransactionType, useTransaction } from '@renderer/entities/transaction';
 import { useAccount, Account, isMultisig } from '@renderer/entities/account';
 import { ValidatorMap } from '@renderer/entities/staking';
 import { toAddress, getRelaychainAsset, DEFAULT_TRANSITION } from '@renderer/shared/lib/utils';
@@ -28,8 +28,7 @@ export const ChangeValidators = () => {
   const { t } = useI18n();
   const navigate = useNavigate();
   const { getActiveAccounts } = useAccount();
-  const { buildTransaction } = useExtrinsicService();
-  const { setTxs, txs, setWrapAs, wrapTx } = useTransaction();
+  const { setTxs, txs, setWrapAs, wrapTx, buildTransaction } = useTransaction();
   const { connections } = useNetworkContext();
   const [searchParams] = useSearchParams();
   const params = useParams<{ chainId: ChainId }>();

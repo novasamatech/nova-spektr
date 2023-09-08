@@ -6,7 +6,7 @@ import { toAddress, getRelaychainAsset, DEFAULT_TRANSITION } from '@renderer/sha
 import { RewardsDestination } from '@renderer/entities/staking';
 import { useI18n, useNetworkContext, Paths } from '@renderer/app/providers';
 import { Address, ChainId, HexString } from '@renderer/domain/shared-kernel';
-import { Transaction, TransactionType, useExtrinsicService, useTransaction } from '@renderer/entities/transaction';
+import { Transaction, TransactionType, useTransaction } from '@renderer/entities/transaction';
 import { Confirmation, Submit, NoAsset } from '../components';
 import InitOperation, { DestinationResult } from './InitOperation/InitOperation';
 import { useToggle } from '@renderer/shared/lib/hooks';
@@ -28,8 +28,7 @@ export const Destination = () => {
   const navigate = useNavigate();
   const { getActiveAccounts } = useAccount();
   const { connections } = useNetworkContext();
-  const { buildTransaction } = useExtrinsicService();
-  const { setTxs, txs, setWrapAs, wrapTx } = useTransaction();
+  const { setTxs, txs, setWrapAs, wrapTx, buildTransaction } = useTransaction();
   const [searchParams] = useSearchParams();
   const params = useParams<{ chainId: ChainId }>();
 
