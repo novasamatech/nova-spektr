@@ -133,11 +133,21 @@ sample({
 });
 
 sample({
-  source: { xcmTransfer: $xcmTransfer, chain: assetGuardModel.$chain, api: $api, paraId: $destinationParaId },
-  fn: ({ xcmTransfer, api, chain, paraId }) => {
+  source: {
+    xcmTransfer: $xcmTransfer,
+    chain: assetGuardModel.$chain,
+    api: $api,
+    accountId: $accountId,
+    paraId: $destinationParaId,
+  },
+  fn: ({ xcmTransfer, api, chain, paraId, accountId }) => {
     if (!xcmTransfer || !api || !chain) return null;
 
-    return getDestinationLocation(api, chain, paraId || undefined) || null;
+    return (
+      (xcmTransfer.type === 'xtokens' && accountId
+        ? getDestinationLocation(api, chain, paraId || undefined, accountId)
+        : getDestinationLocation(api, chain, paraId || undefined)) || null
+    );
   },
   target: $txDest,
 });
@@ -158,9 +168,7 @@ sample({
   fn: ({ xcmTransfer, api, chain, paraId, accountId }) => {
     if (!xcmTransfer || !api || !chain || !accountId || accountId === '0x00') return null;
 
-    return xcmTransfer.type === 'xtokens'
-      ? getDestinationLocation(api, chain, paraId || undefined, accountId) || null
-      : getAccountLocation(accountId) || null;
+    return getAccountLocation(accountId) || null;
   },
   target: $txBeneficiary,
 });

@@ -4,7 +4,7 @@ import { act, render, screen } from '@testing-library/react';
 import { Asset } from '@renderer/entities/asset';
 import { Transaction } from '@renderer/entities/transaction';
 import { XcmFee } from './XcmFee';
-import { XcmConfig } from '@renderer/shared/api/xcm';
+import { ChainXCM, XcmConfig } from '@renderer/shared/api/xcm';
 
 jest.mock('@renderer/components/common');
 
@@ -28,13 +28,27 @@ jest.mock('@renderer/entities/asset', () => ({
 describe('components/common/XcmFee', () => {
   test('should render component', async () => {
     const asset = { symbol: 'DOT', precision: 10 } as Asset;
-    const tx = { address: '0x123', args: {} } as Transaction;
+    const tx = {
+      address: '0x123',
+      chainId: '0x00',
+      type: 'xcm_limited_teleport_assets',
+      args: {
+        destinationChain: '0x00',
+      },
+    } as Transaction;
 
     await act(async () => {
-      render(<XcmFee config={{} as XcmConfig} api={{} as ApiPromise} asset={asset} transaction={tx} />);
+      render(
+        <XcmFee
+          config={{ chains: [] as ChainXCM[] } as XcmConfig}
+          api={{} as ApiPromise}
+          asset={asset}
+          transaction={tx}
+        />,
+      );
     });
 
-    const value = screen.getByText('12');
+    const value = screen.getByText('0');
     expect(value).toBeInTheDocument();
   });
 });
