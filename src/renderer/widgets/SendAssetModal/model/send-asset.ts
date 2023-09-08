@@ -10,6 +10,7 @@ import {
   getDestinationLocation,
   estimateFee,
   getAssetLocation,
+  getAccountLocation,
 } from '@renderer/shared/api/xcm';
 import { xcmModel } from '@renderer/entities/xcm';
 import { Chain } from '@renderer/entities/chain';
@@ -157,7 +158,9 @@ sample({
   fn: ({ xcmTransfer, api, chain, paraId, accountId }) => {
     if (!xcmTransfer || !api || !chain || !accountId || accountId === '0x00') return null;
 
-    return getDestinationLocation(api, chain, paraId || undefined, accountId) || null;
+    return xcmTransfer.type === 'xtokens'
+      ? getDestinationLocation(api, chain, paraId || undefined, accountId) || null
+      : getAccountLocation(accountId) || null;
   },
   target: $txBeneficiary,
 });

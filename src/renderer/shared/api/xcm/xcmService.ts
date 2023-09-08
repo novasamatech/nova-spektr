@@ -249,6 +249,22 @@ export const getDestinationLocation = (
   return undefined;
 };
 
+export const getAccountLocation = (accountId?: AccountId): Object | undefined => {
+  return {
+    V2: {
+      parents: 0,
+      interior: {
+        X1: {
+          accountId32: {
+            network: 'Any',
+            id: accountId,
+          },
+        },
+      },
+    },
+  };
+};
+
 const getChildLocation = (api: ApiPromise, parachainId: number, accountId?: AccountId): Object => {
   const location: Record<string, any> = { parachainId };
 
