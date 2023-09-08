@@ -4,18 +4,19 @@ import { NavigateFunction } from 'react-router-dom';
 import { Contact, contactModel } from '@renderer/entities/contact';
 import { ContactDS } from '@renderer/shared/api/storage';
 
+const validateUrlParams = createEvent<URLSearchParams>();
+const storeCleared = createEvent();
+
+export const $contact = createStore<Contact | null>(null).reset(storeCleared);
+
 type Navigation = {
   redirectPath: string;
   navigate: NavigateFunction;
 };
-const $navigation = createStore<Navigation | null>(null);
+const $navigation = createStore<Navigation | null>(null).reset(storeCleared);
 const navigationApi = createApi($navigation, {
   navigateApiChanged: (state, { navigate, redirectPath }) => ({ ...state, navigate, redirectPath }),
 });
-
-export const $contact = createStore<Contact | null>(null);
-
-const validateUrlParams = createEvent<URLSearchParams>();
 
 type ValidateParams = {
   contactId: string | null;
@@ -52,4 +53,5 @@ sample({
 export const events = {
   navigateApiChanged: navigationApi.navigateApiChanged,
   validateUrlParams,
+  storeCleared,
 };
