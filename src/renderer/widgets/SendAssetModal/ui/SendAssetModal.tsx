@@ -4,7 +4,7 @@ import { useStore } from 'effector-react';
 
 import { useI18n, useNetworkContext } from '@renderer/app/providers';
 import { HexString } from '@renderer/domain/shared-kernel';
-import { Transaction, XcmTypes, useTransaction, validateBalance } from '@renderer/entities/transaction';
+import { Transaction, useTransaction, validateBalance } from '@renderer/entities/transaction';
 import { Account, MultisigAccount } from '@renderer/entities/account';
 import { BaseModal, Button, Loader } from '@renderer/shared/ui';
 import { Confirmation, InitOperation, Submit } from './components/ActionSteps';
@@ -36,6 +36,7 @@ export const SendAssetModal = ({ chain, asset, onClose }: Props) => {
   const { connections } = useNetworkContext();
   const config = useStore(sendAssetModel.$finalConfig);
   const xcmAsset = useStore(sendAssetModel.$xcmAsset);
+  const destinationChain = useStore(sendAssetModel.$destinationChain);
 
   const [isModalOpen, toggleIsModalOpen] = useToggle(true);
   const [activeStep, setActiveStep] = useState<Step>(Step.INIT);
@@ -113,7 +114,8 @@ export const SendAssetModal = ({ chain, asset, onClose }: Props) => {
       </div>
     );
   }
-  const operationTitle = XcmTypes.includes(transferTx.type) ? 'transfer.xcmTitle' : 'transfer.title';
+
+  const operationTitle = destinationChain?.chainId !== chain.chainId ? 'transfer.xcmTitle' : 'transfer.title';
 
   return (
     <BaseModal
