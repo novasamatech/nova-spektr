@@ -188,8 +188,10 @@ export const TransferForm = ({
 
     const transferPayload = getTransferTx(account.accountId);
 
-    if (isMultisig(account) && signer && xcmFee && xcmAsset && xcmDest) {
-      setMultisigTx(getMultisigTx(account, signer.accountId, transferPayload));
+    if (isMultisig(account) && signer && (!isXcmTransfer || (xcmFee && xcmAsset && xcmDest))) {
+      const multisigTx = getMultisigTx(account, signer.accountId, transferPayload);
+
+      setMultisigTx(multisigTx);
     }
 
     setTransferTx(transferPayload);

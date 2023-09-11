@@ -35,7 +35,7 @@ export const OperationFooter = ({
 }: Props) => {
   const { t } = useI18n();
 
-  const isXcmTransfer = XcmTypes.includes(transaction.type);
+  const isXcmTransfer = XcmTypes.includes(transaction?.type);
 
   return (
     <div className="flex flex-col gap-y-2">
