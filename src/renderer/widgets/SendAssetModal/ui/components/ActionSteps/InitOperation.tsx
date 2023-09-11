@@ -180,6 +180,7 @@ export const InitOperation = ({
               totalAccounts={1}
               transaction={tx}
               xcmConfig={config || undefined}
+              onXcmFeeChange={sendAssetModel.events.xcmFeeChanged}
               onFeeChange={setFee}
               onFeeLoading={setFeeIsLoading}
               onDepositChange={setDeposit}

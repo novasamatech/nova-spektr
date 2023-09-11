@@ -8,7 +8,6 @@ import {
   getAvailableDirections,
   AssetXCM,
   getDestinationLocation,
-  estimateFee,
   getAssetLocation,
   getAccountLocation,
 } from '@renderer/shared/api/xcm';
@@ -40,6 +39,7 @@ const destinationChainSelected = createEvent<ExtendedChain>();
 const apiInited = createEvent<ApiPromise>();
 const accountIdSelected = createEvent<AccountId>();
 const amountChanged = createEvent<string>();
+const xcmFeeChanged = createEvent<string>();
 
 // TODO: continue config calculation in xcm service task
 const calculateFinalConfigFx = createEffect((config: XcmConfig): XcmConfig => {
@@ -136,17 +136,16 @@ sample({
   source: {
     xcmTransfer: $xcmTransfer,
     chain: assetGuardModel.$chain,
-    api: $api,
     accountId: $accountId,
     paraId: $destinationParaId,
   },
-  fn: ({ xcmTransfer, api, chain, paraId, accountId }) => {
-    if (!xcmTransfer || !api || !chain) return null;
+  fn: ({ xcmTransfer, chain, paraId, accountId }) => {
+    if (!xcmTransfer || !chain) return null;
 
     return (
       (xcmTransfer.type === 'xtokens' && accountId
-        ? getDestinationLocation(api, chain, paraId || undefined, accountId)
-        : getDestinationLocation(api, chain, paraId || undefined)) || null
+        ? getDestinationLocation(chain, paraId || undefined, accountId)
+        : getDestinationLocation(chain, paraId || undefined)) || null
     );
   },
   target: $txDest,
@@ -173,20 +172,9 @@ sample({
   target: $txBeneficiary,
 });
 
-sample({
-  source: {
-    xcmTransfer: $xcmTransfer,
-    chain: assetGuardModel.$chain,
-    api: $api,
-    xcmAsset: $xcmAsset,
-    config: $finalConfig,
-  },
-  fn: ({ xcmTransfer, api, chain, xcmAsset, config }) => {
-    if (!xcmTransfer || !api || !chain || !xcmAsset || !config) return '';
-
-    return estimateFee(config, config.assetsLocation[xcmAsset.assetLocation], chain.chainId, xcmTransfer).toString();
-  },
-  target: $xcmFee,
+forward({
+  from: xcmFeeChanged,
+  to: $xcmFee,
 });
 
 sample({
@@ -232,4 +220,5 @@ export const events = {
   accountIdSelected,
   amountChanged,
   apiInited,
+  xcmFeeChanged,
 };

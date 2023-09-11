@@ -194,7 +194,7 @@ export const TransferForm = ({
 
     setTransferTx(transferPayload);
     onTxChange(transferPayload);
-  }, [account, signer, destination, amount, destinationChain, isXcmTransfer]);
+  }, [account, signer, destination, amount, destinationChain, xcmDest, isXcmTransfer]);
 
   const getXcmTransferType = (type: XcmTransferType) => {
     if (type === 'xtokens') {

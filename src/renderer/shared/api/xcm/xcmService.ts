@@ -229,21 +229,20 @@ const getConcreteAssetLocation = (
 };
 
 export const getDestinationLocation = (
-  api: ApiPromise,
   originChain: Pick<Chain, 'parentId'>,
   destinationParaId?: number,
   accountId?: AccountId,
 ): Object | undefined => {
   if (originChain.parentId && destinationParaId) {
-    return getSiblingLocation(api, destinationParaId, accountId);
+    return getSiblingLocation(destinationParaId, accountId);
   }
 
   if (originChain.parentId) {
-    return getParentLocation(api, accountId);
+    return getParentLocation(accountId);
   }
 
   if (destinationParaId) {
-    return getChildLocation(api, destinationParaId, accountId);
+    return getChildLocation(destinationParaId, accountId);
   }
 
   return undefined;
@@ -265,7 +264,7 @@ export const getAccountLocation = (accountId?: AccountId): Object | undefined =>
   };
 };
 
-const getChildLocation = (api: ApiPromise, parachainId: number, accountId?: AccountId): Object => {
+const getChildLocation = (parachainId: number, accountId?: AccountId): Object => {
   const location: Record<string, any> = { parachainId };
 
   if (accountId) {
@@ -283,7 +282,7 @@ const getChildLocation = (api: ApiPromise, parachainId: number, accountId?: Acco
   };
 };
 
-const getParentLocation = (api: ApiPromise, accountId?: AccountId): Object => {
+const getParentLocation = (accountId?: AccountId): Object => {
   const location: Record<string, any> = {};
 
   if (accountId) {
@@ -301,7 +300,7 @@ const getParentLocation = (api: ApiPromise, accountId?: AccountId): Object => {
   };
 };
 
-const getSiblingLocation = (api: ApiPromise, parachainId: number, accountId?: AccountId): Object => {
+const getSiblingLocation = (parachainId: number, accountId?: AccountId): Object => {
   const location: Record<string, any> = { parachainId };
 
   if (accountId) {
