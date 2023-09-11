@@ -93,6 +93,31 @@ export const estimateFee = (
   return fee.add(reserveFee);
 };
 
+export const estimateRequiredDestWeight = (
+  config: XcmConfig,
+  assetLocation: AssetLocation,
+  originChain: string,
+  xcmTransfer: XcmTransfer,
+): BN => {
+  const weight = getEstimatedWeight(
+    config.instructions,
+    xcmTransfer.destination.fee.instructions,
+    new BN(xcmTransfer.destination.fee.mode.value),
+  );
+
+  const isReserveChain = [originChain, xcmTransfer.destination.chainId].includes(assetLocation.chainId);
+
+  if (isReserveChain) return weight;
+
+  const reserveWeight = getEstimatedWeight(
+    config.instructions,
+    assetLocation.reserveFee.instructions,
+    new BN(assetLocation.reserveFee.mode.value),
+  );
+
+  return weight.gte(reserveWeight) ? weight : reserveWeight;
+};
+
 const JunctionType: Record<string, string> = {
   parachainId: 'Parachain',
   generalKey: 'GeneralKey',

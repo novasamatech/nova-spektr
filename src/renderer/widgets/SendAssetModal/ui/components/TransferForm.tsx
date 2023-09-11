@@ -50,6 +50,7 @@ type Props = {
   xcmAsset?: Object;
   xcmTransfer?: XcmTransfer;
   xcmFee: string;
+  xcmWeight: string;
   deposit: string;
   footer: ReactNode;
   header?: ReactNode;
@@ -84,6 +85,7 @@ export const TransferForm = ({
   xcmBeneficiary,
   xcmDest,
   xcmTransfer,
+  xcmWeight,
 }: Props) => {
   const { t } = useI18n();
   const { getBalance } = useBalance();
@@ -230,6 +232,7 @@ export const TransferForm = ({
         xcmAsset,
         xcmDest,
         xcmBeneficiary,
+        xcmWeight,
       };
     } else {
       transactionType = asset.type ? TransferType[asset.type] : TransactionType.TRANSFER;

@@ -18,7 +18,13 @@ import { AccountId, HexString, Threshold } from '@renderer/domain/shared-kernel'
 import { Transaction, TransactionType } from '@renderer/entities/transaction/model/transaction';
 import { createTxMetadata, toAccountId } from '@renderer/shared/lib/utils';
 import { ITransactionService, HashData, ExtrinsicResultParams } from './common/types';
-import { decodeDispatchError, getMaxWeight, isControllerMissing, isOldMultisigPallet } from './common/utils';
+import {
+  decodeDispatchError,
+  getMaxWeight,
+  hasDestWeight,
+  isControllerMissing,
+  isOldMultisigPallet,
+} from './common/utils';
 import { useCallDataDecoder } from './callDataDecoder';
 import * as xcmMethods from './common/xcmMethods';
 
@@ -233,6 +239,7 @@ export const useTransaction = (): ITransactionService => {
           dest: transaction.args.xcmDest,
           asset: singleXcmAsset,
           destWeightLimit: { Unlimited: true },
+          destWeight: transaction.args.xcmWeight,
         },
         info,
         options,
@@ -366,10 +373,11 @@ export const useTransaction = (): ITransactionService => {
     [TransactionType.POLKADOT_XCM_TELEPORT]: ({ xcmDest, xcmBeneficiary, xcmAsset }, api) => {
       return api.tx.polkadotXcm.limitedTeleportAssets(xcmDest, xcmBeneficiary, xcmAsset, 0, { Unlimited: true });
     },
-    [TransactionType.XTOKENS_TRANSFER_MULTIASSET]: ({ xcmDest, xcmAsset }, api) => {
+    [TransactionType.XTOKENS_TRANSFER_MULTIASSET]: ({ xcmDest, xcmAsset, xcmWeight }, api) => {
       const singleXcmAsset = { V2: xcmAsset.V2[0] };
+      const weight = hasDestWeight(api) ? xcmWeight : { Unlimited: true };
 
-      return api.tx.xTokens.transferMultiasset(xcmDest, singleXcmAsset, { Unlimited: true });
+      return api.tx.xTokens.transferMultiasset(xcmDest, singleXcmAsset, weight);
     },
     // controller arg removed from bond but changes not released yet
     // https://github.com/paritytech/substrate/pull/14039

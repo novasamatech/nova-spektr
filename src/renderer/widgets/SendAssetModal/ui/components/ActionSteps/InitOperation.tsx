@@ -47,6 +47,7 @@ export const InitOperation = ({
   const xcmBeneficiary = useStore(sendAssetModel.$txBeneficiary);
   const xcmTransfer = useStore(sendAssetModel.$xcmTransfer);
   const xcmFee = useStore(sendAssetModel.$xcmFee);
+  const xcmWeight = useStore(sendAssetModel.$xcmWeight);
 
   const accounts = getActiveAccounts();
 
@@ -153,6 +154,7 @@ export const InitOperation = ({
         addressPrefix={addressPrefix}
         fee={fee}
         xcmFee={xcmFee}
+        xcmWeight={xcmWeight}
         xcmAsset={xcmAsset || undefined}
         xcmDest={xcmDest || undefined}
         xcmBeneficiary={xcmBeneficiary || undefined}

@@ -10,6 +10,7 @@ import {
   getDestinationLocation,
   getAssetLocation,
   getAccountLocation,
+  estimateRequiredDestWeight,
 } from '@renderer/shared/api/xcm';
 import { xcmModel } from '@renderer/entities/xcm';
 import { Chain } from '@renderer/entities/chain';
@@ -33,6 +34,7 @@ export const $txBeneficiary = createStore<Object | null>(null).reset(assetGuardM
 export const $txAsset = createStore<Object | null>(null).reset(assetGuardModel.events.storeCleared);
 export const $xcmFee = createStore<string>('').reset(assetGuardModel.events.storeCleared);
 export const $amount = createStore<string>('').reset(assetGuardModel.events.storeCleared);
+export const $xcmWeight = createStore<string>('').reset(assetGuardModel.events.storeCleared);
 
 const xcmConfigRequested = createEvent();
 const destinationChainSelected = createEvent<ExtendedChain>();
@@ -170,6 +172,26 @@ sample({
 forward({
   from: xcmFeeChanged,
   to: $xcmFee,
+});
+
+sample({
+  source: {
+    config: $finalConfig,
+    xcmTransfer: $xcmTransfer,
+    asset: $xcmAsset,
+    chain: assetGuardModel.$chain,
+  },
+  fn: ({ config, xcmTransfer, chain, asset }) => {
+    if (!config || !xcmTransfer || !chain || !asset) return '';
+
+    return estimateRequiredDestWeight(
+      config,
+      config.assetsLocation[asset.assetLocation],
+      chain.chainId.replace('0x', ''),
+      xcmTransfer,
+    ).toString();
+  },
+  target: $xcmWeight,
 });
 
 sample({
