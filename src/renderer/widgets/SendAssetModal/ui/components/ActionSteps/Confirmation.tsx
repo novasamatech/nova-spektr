@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 
-import { Transaction, DepositWithLabel, Fee } from '@renderer/entities/transaction';
+import { Transaction, DepositWithLabel, Fee, XcmTypes } from '@renderer/entities/transaction';
 import { TransactionAmount } from '@renderer/pages/Operations/components/TransactionAmount';
 import { Button, DetailRow, FootnoteText, Icon } from '@renderer/shared/ui';
 import { Account, MultisigAccount } from '@renderer/entities/account';
@@ -49,8 +49,16 @@ export const Confirmation = ({
     account.walletId && getWallet(account.walletId).then((wallet) => setWallet(wallet));
   }, [account]);
 
+  const isXcmTransfer = XcmTypes.includes(transaction?.type);
+
   return (
     <div className="flex flex-col items-center pt-4 gap-y-3">
+      {isXcmTransfer && (
+        <div className="flex items-center justify-center shrink-0 w-15 h-15 box-border rounded-full border-[2.5px] border-icon-default">
+          <Icon name="crossChain" size={42} />
+        </div>
+      )}
+
       {transaction && <TransactionAmount tx={transaction} showIcon={false} className={AmountFontStyle} />}
 
       {description && (

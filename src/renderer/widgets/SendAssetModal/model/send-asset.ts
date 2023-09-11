@@ -20,20 +20,20 @@ import { getParachainId } from '@renderer/services/dataVerification/dataVerifica
 import { ExtendedChain } from '@renderer/entities/network';
 import { AccountId } from '@renderer/domain/shared-kernel';
 
-export const $destinationChain = createStore<ExtendedChain | null>(null);
+export const $destinationChain = createStore<ExtendedChain | null>(null).reset(assetGuardModel.events.storeCleared);
 export const $finalConfig = createStore<XcmConfig | null>(null);
-export const $xcmTransfer = createStore<XcmTransfer | null>(null);
-export const $xcmAsset = createStore<AssetXCM | null>(null);
-export const $destinations = createStore<XcmTransfer[] | []>([]);
-export const $api = createStore<ApiPromise | null>(null);
-export const $destinationParaId = createStore<number | null>(null);
-export const $accountId = createStore<AccountId | null>(null);
+export const $xcmTransfer = createStore<XcmTransfer | null>(null).reset(assetGuardModel.events.storeCleared);
+export const $xcmAsset = createStore<AssetXCM | null>(null).reset(assetGuardModel.events.storeCleared);
+export const $destinations = createStore<XcmTransfer[] | []>([]).reset(assetGuardModel.events.storeCleared);
+export const $api = createStore<ApiPromise | null>(null).reset(assetGuardModel.events.storeCleared);
+export const $destinationParaId = createStore<number | null>(null).reset(assetGuardModel.events.storeCleared);
+export const $accountId = createStore<AccountId | null>(null).reset(assetGuardModel.events.storeCleared);
 
-export const $txDest = createStore<Object | null>(null);
-export const $txBeneficiary = createStore<Object | null>(null);
-export const $txAsset = createStore<Object | null>(null);
-export const $xcmFee = createStore<string>('');
-export const $amount = createStore<string>('');
+export const $txDest = createStore<Object | null>(null).reset(assetGuardModel.events.storeCleared);
+export const $txBeneficiary = createStore<Object | null>(null).reset(assetGuardModel.events.storeCleared);
+export const $txAsset = createStore<Object | null>(null).reset(assetGuardModel.events.storeCleared);
+export const $xcmFee = createStore<string>('').reset(assetGuardModel.events.storeCleared);
+export const $amount = createStore<string>('').reset(assetGuardModel.events.storeCleared);
 
 const xcmConfigRequested = createEvent();
 const destinationChainSelected = createEvent<ExtendedChain>();

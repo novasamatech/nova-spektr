@@ -6,6 +6,7 @@ import { toAddress, formatSectionAndMethod } from '@renderer/shared/lib/utils';
 import { Account } from '@renderer/entities/account/model/account';
 import { Signatory } from '@renderer/entities/signatory/model/signatory';
 import type { Contact } from '@renderer/entities/contact';
+import { TransferTypes, XcmTypes } from '@renderer/entities/transaction';
 
 export const TRANSACTION_UNKNOWN = 'operations.titles.unknown';
 
@@ -121,14 +122,9 @@ export const getTransactionAmount = (tx: Transaction | DecodedTransaction): stri
   if (!txType) return null;
 
   if (
-    [
-      TransactionType.ASSET_TRANSFER,
-      TransactionType.ORML_TRANSFER,
-      TransactionType.TRANSFER,
-      TransactionType.BOND,
-      TransactionType.RESTAKE,
-      TransactionType.UNSTAKE,
-    ].includes(txType)
+    [...TransferTypes, ...XcmTypes, TransactionType.BOND, TransactionType.RESTAKE, TransactionType.UNSTAKE].includes(
+      txType,
+    )
   ) {
     return tx.args.value;
   }
