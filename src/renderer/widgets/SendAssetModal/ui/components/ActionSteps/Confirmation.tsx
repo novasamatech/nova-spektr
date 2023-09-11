@@ -8,6 +8,8 @@ import { ExtendedChain } from '@renderer/entities/network';
 import { useI18n } from '@renderer/app/providers';
 import Details from '../Details';
 import { Wallet, useWallet } from '@renderer/entities/wallet';
+import { XcmFee } from '@renderer/entities/transaction/ui/XcmFee/XcmFee';
+import { AssetXCM, XcmConfig } from '@renderer/shared/api/xcm';
 
 const AmountFontStyle = 'font-manrope text-text-primary text-[32px] leading-[36px] font-bold';
 
@@ -18,6 +20,8 @@ type Props = {
   description?: string;
   connection: ExtendedChain;
   feeTx?: Transaction;
+  config?: XcmConfig;
+  xcmAsset?: AssetXCM;
   onResult?: () => void;
   onBack?: () => void;
 };
@@ -29,6 +33,8 @@ export const Confirmation = ({
   signatory,
   description,
   feeTx,
+  config,
+  xcmAsset,
   onResult,
   onBack,
 }: Props) => {
@@ -75,6 +81,12 @@ export const Confirmation = ({
           />
         )}
       </DetailRow>
+
+      {config && xcmAsset && (
+        <DetailRow label={t('operation.xcmFee')} className="text-text-primary">
+          {config && <XcmFee transaction={feeTx} asset={connection.assets[xcmAsset.assetId]} config={config} />}
+        </DetailRow>
+      )}
 
       {signatory && connection.api && (
         <DepositWithLabel

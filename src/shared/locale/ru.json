@@ -303,6 +303,7 @@
       "deposit": "Multisig депозит",
       "depositor": "Депозитор",
       "description": "Описание",
+      "destinationChain": "To network",
       "multisigWallet": "Отправитель",
       "payee": "Payee",
       "recipient": "Получатель",
@@ -343,7 +344,8 @@
       "signing": "Подписание"
     },
     "successMessage": "Operation Approved",
-    "successRejectMessage": "Операция Отменена"
+    "successRejectMessage": "Операция Отменена",
+    "xcmFee": "Cross-chain fee"
   },
   "operations": {
     "callData": {
@@ -784,8 +786,7 @@
     "signatoryLabel": "Подписант",
     "startSigningButton": "Подписать в Polkadot Vault",
     "successMessage": "Транзакция отправлена!",
-    "title": "Перевод { asset } в сети",
-    "xcmFee": "Cross-chain fee"
+    "title": "Перевод { asset } в сети"
   },
   "transferDetails": {
     "fromNetwork": "Из сети",

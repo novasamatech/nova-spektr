@@ -1,4 +1,3 @@
-import { ApiPromise } from '@polkadot/api';
 import { BN } from '@polkadot/util';
 import { useEffect, useState, memo } from 'react';
 
@@ -8,7 +7,6 @@ import { Shimmering } from '@renderer/shared/ui';
 import { XcmConfig, estimateFee } from '@renderer/shared/api/xcm';
 
 type Props = {
-  api: ApiPromise;
   multiply?: number;
   asset: Asset;
   config: XcmConfig;
@@ -19,7 +17,7 @@ type Props = {
 };
 
 export const XcmFee = memo(
-  ({ api, multiply = 1, config, asset, transaction, className, onFeeChange, onFeeLoading }: Props) => {
+  ({ multiply = 1, config, asset, transaction, className, onFeeChange, onFeeLoading }: Props) => {
     const [fee, setFee] = useState('');
     const [isLoading, setIsLoading] = useState(false);
 
@@ -40,7 +38,7 @@ export const XcmFee = memo(
         setIsLoading(false);
       } else {
         const originChainId = transaction.chainId.replace('0x', '');
-        const destinationChainId = transaction.args.destinationChain.replace('0x', '');
+        const destinationChainId = transaction.args.destinationChain?.replace('0x', '');
         const configChain = config.chains.find((c) => c.chainId === originChainId);
         const configAsset = configChain?.assets.find((a) => a.assetId === asset.assetId);
         const configXcmTransfer = configAsset?.xcmTransfers.find((t) => t.destination.chainId === destinationChainId);
@@ -59,7 +57,7 @@ export const XcmFee = memo(
 
         setIsLoading(false);
       }
-    }, [transaction, api]);
+    }, [transaction]);
 
     if (isLoading) {
       return <Shimmering width={90} height={20} data-testid="fee-loader" />;

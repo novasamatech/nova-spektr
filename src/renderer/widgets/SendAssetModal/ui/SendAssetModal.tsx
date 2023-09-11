@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { UnsignedTransaction } from '@substrate/txwrapper-polkadot';
+import { useStore } from 'effector-react';
 
 import { useI18n, useNetworkContext } from '@renderer/app/providers';
 import { HexString } from '@renderer/domain/shared-kernel';
@@ -33,6 +34,8 @@ export const SendAssetModal = ({ chain, asset, onClose }: Props) => {
   const { getBalance } = useBalance();
   const { getTransactionFee } = useTransaction();
   const { connections } = useNetworkContext();
+  const config = useStore(sendAssetModel.$finalConfig);
+  const xcmAsset = useStore(sendAssetModel.$xcmAsset);
 
   const [isModalOpen, toggleIsModalOpen] = useToggle(true);
   const [activeStep, setActiveStep] = useState<Step>(Step.INIT);
@@ -145,6 +148,8 @@ export const SendAssetModal = ({ chain, asset, onClose }: Props) => {
           )}
           {activeStep === Step.CONFIRMATION && (
             <Confirmation
+              config={config || undefined}
+              xcmAsset={xcmAsset || undefined}
               transaction={transferTx}
               description={description}
               feeTx={transferTx}

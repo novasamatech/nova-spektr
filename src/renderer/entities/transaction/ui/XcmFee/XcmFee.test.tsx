@@ -1,4 +1,3 @@
-import { ApiPromise } from '@polkadot/api';
 import { act, render, screen } from '@testing-library/react';
 
 import { Asset } from '@renderer/entities/asset';
@@ -38,14 +37,7 @@ describe('components/common/XcmFee', () => {
     } as Transaction;
 
     await act(async () => {
-      render(
-        <XcmFee
-          config={{ chains: [] as ChainXCM[] } as XcmConfig}
-          api={{} as ApiPromise}
-          asset={asset}
-          transaction={tx}
-        />,
-      );
+      render(<XcmFee config={{ chains: [] as ChainXCM[] } as XcmConfig} asset={asset} transaction={tx} />);
     });
 
     const value = screen.getByText('0');
