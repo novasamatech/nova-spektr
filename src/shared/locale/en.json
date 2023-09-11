@@ -786,7 +786,8 @@
     "signatoryLabel": "Signatory",
     "startSigningButton": "Sign with Polkadot Vault",
     "successMessage": "Operation Success",
-    "title": "Transfer { asset } on"
+    "title": "Transfer { asset } on",
+    "xcmTitle": "Transfer { asset } from"
   },
   "transferDetails": {
     "fromNetwork": "From network",

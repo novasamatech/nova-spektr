@@ -786,7 +786,8 @@
     "signatoryLabel": "Подписант",
     "startSigningButton": "Подписать в Polkadot Vault",
     "successMessage": "Транзакция отправлена!",
-    "title": "Перевод { asset } в сети"
+    "title": "Перевод { asset } в сети",
+    "xcmTitle": "Transfer { asset } from"
   },
   "transferDetails": {
     "fromNetwork": "Из сети",

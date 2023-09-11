@@ -4,7 +4,7 @@ import { useStore } from 'effector-react';
 
 import { useI18n, useNetworkContext } from '@renderer/app/providers';
 import { HexString } from '@renderer/domain/shared-kernel';
-import { Transaction, useTransaction, validateBalance } from '@renderer/entities/transaction';
+import { Transaction, XcmTypes, useTransaction, validateBalance } from '@renderer/entities/transaction';
 import { Account, MultisigAccount } from '@renderer/entities/account';
 import { BaseModal, Button, Loader } from '@renderer/shared/ui';
 import { Confirmation, InitOperation, Submit } from './components/ActionSteps';
@@ -113,12 +113,13 @@ export const SendAssetModal = ({ chain, asset, onClose }: Props) => {
       </div>
     );
   }
+  const operationTitle = XcmTypes.includes(transferTx.type) ? 'transfer.xcmTitle' : 'transfer.title';
 
   return (
     <BaseModal
       closeButton
       isOpen={isModalOpen}
-      title={<OperationTitle title={`${t('transfer.title', { asset: asset?.symbol })}`} chainId={chain.chainId} />}
+      title={<OperationTitle title={`${t(operationTitle, { asset: asset?.symbol })}`} chainId={chain.chainId} />}
       contentClass={activeStep === Step.SIGNING ? '' : undefined}
       panelClass="w-[440px]"
       headerClass="py-3 px-5 max-w-[440px]"
