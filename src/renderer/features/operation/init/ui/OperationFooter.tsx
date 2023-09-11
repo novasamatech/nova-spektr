@@ -9,7 +9,7 @@ import { MultisigAccount, Account, isMultisig } from '@renderer/entities/account
 type Props = {
   api: ApiPromise;
   asset: Asset;
-  feeTX: Transaction;
+  feeTx?: Transaction;
   account: Account | MultisigAccount;
   totalAccounts: number;
   onDepositChange: (value: string) => void;
@@ -20,7 +20,7 @@ type Props = {
 export const OperationFooter = ({
   api,
   asset,
-  feeTX,
+  feeTx,
   account,
   totalAccounts,
   onDepositChange,
@@ -49,7 +49,7 @@ export const OperationFooter = ({
       <div className="flex justify-between items-center gap-x-2">
         <FootnoteText className="text-text-tertiary">{t('staking.networkFee', { count: totalAccounts })}</FootnoteText>
         <FootnoteText className="text-text-tertiary">
-          <Fee api={api} asset={asset} transaction={feeTX} onFeeChange={onFeeChange} onFeeLoading={onFeeLoading} />
+          <Fee api={api} asset={asset} transaction={feeTx} onFeeChange={onFeeChange} onFeeLoading={onFeeLoading} />
         </FootnoteText>
       </div>
 
@@ -61,7 +61,7 @@ export const OperationFooter = ({
               api={api}
               asset={asset}
               multiply={totalAccounts}
-              transaction={feeTX}
+              transaction={feeTx}
               onFeeChange={onFeeChange}
               onFeeLoading={onFeeLoading}
             />
