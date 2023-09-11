@@ -784,7 +784,8 @@
     "signatoryLabel": "Подписант",
     "startSigningButton": "Подписать в Polkadot Vault",
     "successMessage": "Транзакция отправлена!",
-    "title": "Перевод { asset } в сети"
+    "title": "Перевод { asset } в сети",
+    "xcmFee": "Cross-chain fee"
   },
   "transferDetails": {
     "fromNetwork": "Из сети",

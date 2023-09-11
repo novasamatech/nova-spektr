@@ -180,6 +180,9 @@ export const TransferForm = ({
     }
   }, [fee]);
 
+  const isXcmTransfer = destinationChain?.value !== chainId && xcmTransfer;
+  const isXcmValid = xcmAsset && xcmBeneficiary && xcmDest;
+
   useEffect(() => {
     if (!account || !amount || !validateAddress(destination)) return;
 
@@ -191,7 +194,7 @@ export const TransferForm = ({
 
     setTransferTx(transferPayload);
     onTxChange(transferPayload);
-  }, [account, signer, destination, amount]);
+  }, [account, signer, destination, amount, destinationChain, isXcmTransfer]);
 
   const getXcmTransferType = (type: XcmTransferType) => {
     if (type === 'xtokens') {
@@ -211,8 +214,6 @@ export const TransferForm = ({
       [AssetType.STATEMINE]: TransactionType.ASSET_TRANSFER,
     };
 
-    const isXcmTransfer = destinationChain?.value !== chainId && xcmTransfer;
-
     let transactionType;
     let args;
 
@@ -221,8 +222,8 @@ export const TransferForm = ({
 
       args = {
         destinationChain: destinationChain?.value,
-        value: formatAmount(amount, asset.precision),
         dest: toAddress(destination, { prefix: addressPrefix }),
+        value: formatAmount(amount, asset.precision),
         xcmFee,
         xcmAsset,
         xcmDest,
@@ -283,6 +284,7 @@ export const TransferForm = ({
   const validateBalanceForFee = (amount: string): boolean => {
     const balance = isMultisig(account) ? signerBalance : accountBalance;
     const nativeTokenBalance = isMultisig(account) ? signerNativeTokenBalance : accountNativeTokenBalance;
+    const amountBN = new BN(formatAmount(amount, asset.precision));
 
     if (!balance) return false;
 
@@ -291,10 +293,13 @@ export const TransferForm = ({
     }
 
     if (isMultisig(account)) {
-      return new BN(fee).lte(new BN(balance));
+      return new BN(fee).add(amountBN).lte(new BN(balance));
     }
 
-    return new BN(fee).add(new BN(formatAmount(amount, asset.precision))).lte(new BN(balance));
+    return new BN(fee)
+      .add(amountBN)
+      .add(new BN(xcmFee || 0))
+      .lte(new BN(balance));
   };
 
   const validateBalanceForFeeAndDeposit = (): boolean => {
@@ -465,7 +470,11 @@ export const TransferForm = ({
         {t('transfer.multisigTransactionExist')}
       </InputHint>
 
-      <Button className="w-fit flex-0 mt-7 ml-auto" type="submit" disabled={feeIsLoading || !isValid}>
+      <Button
+        className="w-fit flex-0 mt-7 ml-auto"
+        type="submit"
+        disabled={feeIsLoading || !isValid || (isXcmTransfer && !isXcmValid)}
+      >
         {t('transfer.continueButton')}
       </Button>
     </form>

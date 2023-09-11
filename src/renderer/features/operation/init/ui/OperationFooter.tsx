@@ -81,7 +81,7 @@ export const OperationFooter = ({
 
       {transaction?.args?.destinationChain && xcmConfig && (
         <div className="flex justify-between items-center gap-x-2">
-          <FootnoteText className="text-text-tertiary">{t('staking.xcmFee')}</FootnoteText>
+          <FootnoteText className="text-text-tertiary">{t('transfer.xcmFee')}</FootnoteText>
           <FootnoteText className="text-text-tertiary">
             <XcmFee
               api={api}
