@@ -24,7 +24,7 @@ const enum Step {
 export const Redeem = () => {
   const { t } = useI18n();
   const navigate = useNavigate();
-  const { setTxs, txs, setWrapAs, wrapTx, buildTransaction } = useTransaction();
+  const { setTxs, txs, setWrappers, wrapTx, buildTransaction } = useTransaction();
   const { connections } = useNetworkContext();
   const { getLiveAccounts } = useAccount();
   const [searchParams] = useSearchParams();
@@ -137,7 +137,7 @@ export const Redeem = () => {
         signatoryId: signer.accountId,
         account: accounts[0],
       };
-      setWrapAs([wrapAsMulti]);
+      setWrappers([wrapAsMulti]);
       setSigner(signer);
       setDescription(description || '');
     }

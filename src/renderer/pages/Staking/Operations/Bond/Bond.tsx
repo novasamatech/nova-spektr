@@ -31,7 +31,7 @@ export const Bond = () => {
   const navigate = useNavigate();
   const { connections } = useNetworkContext();
   const { getActiveAccounts } = useAccount();
-  const { setTxs, txs, setWrapAs, wrapTx, buildTransaction } = useTransaction();
+  const { setTxs, txs, setWrappers, wrapTx, buildTransaction } = useTransaction();
   const [searchParams] = useSearchParams();
   const params = useParams<{ chainId: ChainId }>();
 
@@ -148,7 +148,7 @@ export const Bond = () => {
         signatoryId: signer.accountId,
         account: txAccounts[0],
       };
-      setWrapAs([wrapAsMulti]);
+      setWrappers([wrapAsMulti]);
     }
 
     setTxs(transactions);

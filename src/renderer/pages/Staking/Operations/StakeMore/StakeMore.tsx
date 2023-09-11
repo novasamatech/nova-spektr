@@ -25,7 +25,7 @@ export const StakeMore = () => {
   const { t } = useI18n();
   const navigate = useNavigate();
   const { getActiveAccounts } = useAccount();
-  const { setTxs, txs, setWrapAs, wrapTx, buildTransaction } = useTransaction();
+  const { setTxs, txs, setWrappers, wrapTx, buildTransaction } = useTransaction();
   const { connections } = useNetworkContext();
   const [searchParams] = useSearchParams();
   const params = useParams<{ chainId: ChainId }>();
@@ -133,7 +133,7 @@ export const StakeMore = () => {
         signatoryId: signer.accountId,
         account: accounts[0],
       };
-      setWrapAs([wrapAsMulti]);
+      setWrappers([wrapAsMulti]);
       setSigner(signer);
       setDescription(description || '');
     }

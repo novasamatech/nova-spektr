@@ -28,7 +28,7 @@ export const Destination = () => {
   const navigate = useNavigate();
   const { getActiveAccounts } = useAccount();
   const { connections } = useNetworkContext();
-  const { setTxs, txs, setWrapAs, wrapTx, buildTransaction } = useTransaction();
+  const { setTxs, txs, setWrappers, wrapTx, buildTransaction } = useTransaction();
   const [searchParams] = useSearchParams();
   const params = useParams<{ chainId: ChainId }>();
 
@@ -130,7 +130,7 @@ export const Destination = () => {
         signatoryId: signer.accountId,
         account: accounts[0],
       };
-      setWrapAs([wrapAsMulti]);
+      setWrappers([wrapAsMulti]);
       setSigner(signer);
       setDescription(description || '');
     }

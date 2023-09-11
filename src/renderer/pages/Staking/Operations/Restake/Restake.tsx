@@ -25,7 +25,7 @@ export const Restake = () => {
   const { t } = useI18n();
   const navigate = useNavigate();
   const { connections } = useNetworkContext();
-  const { setTxs, txs, setWrapAs, wrapTx, buildTransaction } = useTransaction();
+  const { setTxs, txs, setWrappers, wrapTx, buildTransaction } = useTransaction();
   const { getActiveAccounts } = useAccount();
   const [searchParams] = useSearchParams();
   const params = useParams<{ chainId: ChainId }>();
@@ -125,7 +125,7 @@ export const Restake = () => {
         signatoryId: signer.accountId,
         account: accounts[0],
       };
-      setWrapAs([wrapAsMulti]);
+      setWrappers([wrapAsMulti]);
       setSigner(signer);
       setDescription(description || '');
     }

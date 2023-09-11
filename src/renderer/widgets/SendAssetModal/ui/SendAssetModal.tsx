@@ -30,7 +30,7 @@ type Props = {
 export const SendAssetModal = ({ chain, asset, onClose }: Props) => {
   const { t } = useI18n();
   const { getBalance } = useBalance();
-  const { getTransactionFee, setTxs, txs, setWrapAs, wrapTx } = useTransaction();
+  const { getTransactionFee, setTxs, txs, setWrappers, wrapTx } = useTransaction();
   const { connections } = useNetworkContext();
 
   const [isModalOpen, toggleIsModalOpen] = useToggle(true);
@@ -85,7 +85,7 @@ export const SendAssetModal = ({ chain, asset, onClose }: Props) => {
       signatoryId: signatory.accountId,
       account: account as MultisigAccount,
     };
-    setWrapAs([wrapAsMulti]);
+    setWrappers([wrapAsMulti]);
   };
 
   const commonProps = { explorers, addressPrefix };

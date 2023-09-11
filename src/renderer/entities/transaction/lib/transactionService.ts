@@ -15,7 +15,7 @@ import { useCallDataDecoder } from './callDataDecoder';
 import { MultisigAccount } from '@renderer/entities/account';
 import { useExtrinsicService } from './extrinsicService';
 
-type WrapAsMullti = {
+type WrapAsMulti = {
   account: MultisigAccount;
   signatoryId: AccountId;
 };
@@ -24,14 +24,14 @@ type WrapAsProxy = {
   // TBD
 };
 
-export type TxWrappers = WrapAsMullti | WrapAsProxy;
+export type TxWrappers = WrapAsMulti | WrapAsProxy;
 
 export const useTransaction = (): ITransactionService => {
   const { decodeCallData } = useCallDataDecoder();
   const { getUnsignedTransaction, getExtrinsic, wrapAsMulti } = useExtrinsicService();
 
   const [txs, setTxs] = useState<Transaction[]>([]);
-  const [wrapAs, setWrapAs] = useState<TxWrappers[]>([]);
+  const [wrappers, setWrappers] = useState<TxWrappers[]>([]);
 
   const createRegistry = async (api: ApiPromise) => {
     const metadataRpc = await api.rpc.state.getMetadata();
@@ -185,7 +185,7 @@ export const useTransaction = (): ITransactionService => {
   };
 
   const wrapTx = (transaction: Transaction, api: ApiPromise, addressPrefix: number) => {
-    wrapAs.forEach((wrapper) => {
+    wrappers.forEach((wrapper) => {
       if ('signatoryId' in wrapper) {
         transaction = wrapAsMulti(wrapper.account, wrapper.signatoryId, transaction, api, addressPrefix);
       }
@@ -220,7 +220,7 @@ export const useTransaction = (): ITransactionService => {
     verifySignature,
     txs,
     setTxs,
-    setWrapAs,
+    setWrappers,
     wrapTx,
     buildTransaction,
   };

@@ -35,7 +35,7 @@ export type ITransactionService = {
   verifySignature: (payload: Uint8Array, signature: HexString, accountId: AccountId) => Boolean;
   setTxs: (txs: Transaction[]) => void;
   txs: Transaction[];
-  setWrapAs: (wrappers: TxWrappers[]) => void;
+  setWrappers: (wrappers: TxWrappers[]) => void;
   wrapTx: (tx: Transaction, api: ApiPromise, addressPrefix: number) => Transaction;
   buildTransaction: (
     type: TransactionType,
