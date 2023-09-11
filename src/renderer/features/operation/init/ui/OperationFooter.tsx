@@ -35,6 +35,7 @@ export const OperationFooter = ({
 }: Props) => {
   const { t } = useI18n();
 
+  // TODO: Check why transaction can be empty
   const isXcmTransfer = XcmTypes.includes(transaction?.type);
 
   return (
