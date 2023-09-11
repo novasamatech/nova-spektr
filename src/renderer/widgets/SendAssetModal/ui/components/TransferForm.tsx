@@ -188,13 +188,13 @@ export const TransferForm = ({
 
     const transferPayload = getTransferTx(account.accountId);
 
-    if (isMultisig(account) && signer) {
+    if (isMultisig(account) && signer && xcmFee && xcmAsset && xcmDest) {
       setMultisigTx(getMultisigTx(account, signer.accountId, transferPayload));
     }
 
     setTransferTx(transferPayload);
     onTxChange(transferPayload);
-  }, [account, signer, destination, amount, destinationChain, xcmFee, xcmDest, isXcmTransfer]);
+  }, [account, signer, destination, amount, destinationChain, xcmFee, xcmAsset, xcmDest, isXcmTransfer]);
 
   const getXcmTransferType = (type: XcmTransferType) => {
     if (type === 'xtokens') {
