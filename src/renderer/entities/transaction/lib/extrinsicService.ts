@@ -4,12 +4,8 @@ import { methods as ormlMethods } from '@substrate/txwrapper-orml';
 import { SubmittableExtrinsic } from '@polkadot/api/types';
 
 import { Transaction, TransactionType } from '@renderer/entities/transaction/model/transaction';
-import {
-  getMaxWeight,
-  IExtrinsicService,
-  isControllerMissing,
-  isOldMultisigPallet,
-} from '@renderer/entities/transaction/lib/index';
+import { getMaxWeight, isControllerMissing, isOldMultisigPallet } from './common/utils';
+import { IExtrinsicService } from './common/types';
 import { MultisigAccount } from '@renderer/entities/account';
 import { AccountId, Address } from '@renderer/domain/shared-kernel';
 import { toAddress } from '@renderer/shared/lib/utils';

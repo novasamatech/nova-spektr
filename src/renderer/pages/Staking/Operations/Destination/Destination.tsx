@@ -125,10 +125,10 @@ export const Destination = () => {
 
     const transactions = getDestinationTxs(accounts, destination);
 
-    if (signer && isMultisig(txAccounts[0])) {
+    if (signer && isMultisig(accounts[0])) {
       const wrapAsMulti = {
         signatoryId: signer.accountId,
-        account: txAccounts[0],
+        account: accounts[0],
       };
       setWrapAs([wrapAsMulti]);
       setSigner(signer);

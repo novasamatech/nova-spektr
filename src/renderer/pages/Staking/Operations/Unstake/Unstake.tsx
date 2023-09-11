@@ -124,7 +124,7 @@ export const Unstake = () => {
     if (signer && isMultisig(accounts[0])) {
       const wrapAsMulti = {
         signatoryId: signer.accountId,
-        account: txAccounts[0],
+        account: accounts[0],
       };
       setWrapAs([wrapAsMulti]);
       setSigner(signer);
