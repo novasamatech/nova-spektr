@@ -770,6 +770,7 @@
       "transactions": "Transactions"
     },
     "multisigTransactionExist": "Multisig transaction already exists",
+    "myselfButton": "Myself",
     "networkDeposit": "Multisig deposit",
     "networkDepositHint": "The deposit stays locked on the depositor’s account until the multisig operation is executed or rejected",
     "networkFee": "Network fee",
