@@ -13,7 +13,7 @@ import { toAddress } from '@renderer/shared/lib/utils';
 type BalancesTransferArgs = Parameters<typeof methods.balances.transfer>[0];
 type BondWithoutContollerArgs = Omit<Parameters<typeof methods.staking.bond>[0], 'controller'>;
 
-// TODO change to substrate txwrapper method when it'll update
+// TODO: change to substrate txwrapper method when it'll update
 const transferAllowDeath = (
   args: BalancesTransferArgs,
   info: BaseTxInfo,
