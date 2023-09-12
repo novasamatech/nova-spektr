@@ -38,6 +38,7 @@ const config: Config = {
     '^(?!.*\\.(js|jsx|mjs|cjs|ts|tsx|json)$)': '<rootDir>/scripts/fileTransform.js',
   },
   transformIgnorePatterns: [],
+  testRegex: ['^.*\\.(test|spec)\\.[jt]sx?$'],
   moduleNameMapper: {
     '\\.(css|less|scss|sass)$': 'identity-obj-proxy',
     '^raptorq$': '<rootDir>/node_modules/raptorq/raptorq.js',
