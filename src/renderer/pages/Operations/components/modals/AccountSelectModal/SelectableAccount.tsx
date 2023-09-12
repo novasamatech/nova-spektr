@@ -31,7 +31,7 @@ export const SelectableAccount = <T extends any>({
       <InfoPopover data={popoverItems}>
         <Icon name="info" size={14} className="ml-2 mr-auto" />
       </InfoPopover>
-      <Icon name="right" className="ml-auto" size={20} />
+      <Icon name="right" className="ml-auto" size={16} />
     </button>
   );
 };

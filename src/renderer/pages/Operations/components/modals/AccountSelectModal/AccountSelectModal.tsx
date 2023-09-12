@@ -19,11 +19,12 @@ const AccountSelectModal = ({ isOpen, onClose, onSelect, accounts, chain }: Prop
     <BaseModal
       closeButton
       isOpen={isOpen}
+      contentClass="pb-4 px-3"
       title={t('operation.selectAccount')}
       panelClass="w-[368px]"
       onClose={onClose}
     >
-      <ul className="mt-1 max-h-[332px] overflow-y-scroll">
+      <ul className="mt-1 max-h-[332px] overflow-y-auto">
         {accounts.map((a) => (
           <li key={a.id}>
             <SelectableAccount
