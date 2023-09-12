@@ -158,7 +158,7 @@ export const buildMultisigTx = (
   account: MultisigAccount,
   description?: string,
 ): MultisigTxResult | undefined => {
-  if (tx.type !== TransactionType.MULTISIG_AS_MULTI) {
+  if (tx.type !== TransactionType.MULTISIG_AS_MULTI) return;
     return;
   }
 
