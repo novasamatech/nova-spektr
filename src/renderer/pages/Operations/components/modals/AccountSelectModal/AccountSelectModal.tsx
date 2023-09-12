@@ -19,8 +19,8 @@ const AccountSelectModal = ({ isOpen, onClose, onSelect, accounts, chain }: Prop
     <BaseModal
       closeButton
       isOpen={isOpen}
-      title={t('operation.selectSignatory')}
-      panelClass="w-[420px]"
+      title={t('operation.selectAccount')}
+      panelClass="w-[368px]"
       onClose={onClose}
     >
       <ul className="mt-1 max-h-[332px] overflow-y-scroll">

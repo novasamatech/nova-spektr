@@ -331,6 +331,7 @@
       "placeholder": "Причина...",
       "title": "Укажите причину отмены"
     },
+    "selectAccount": "Select account",
     "selectSignatory": "Выберите подписанта",
     "selectSignatoryTitle": "Выберите подписанта",
     "signButton": "Подписать в Polkadot Vault",

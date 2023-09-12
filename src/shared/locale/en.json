@@ -331,6 +331,7 @@
       "placeholder": "Reason...",
       "title": "Enter reject reason"
     },
+    "selectAccount": "Select account",
     "selectSignatory": "Select signatory",
     "selectSignatoryTitle": "Select signatory",
     "signButton": "Sign with Polkadot Vault",
