@@ -12,7 +12,7 @@ export const useMetadata = (): IMetadataService => {
     throw new Error('=== 🔴 Metadata storage in not defined 🔴 ===');
   }
 
-  const { getAllMetadata, addMetadata } = metadataStorage;
+  const { getAllMetadata, addMetadata, updateMetadata } = metadataStorage;
 
   const getMetadata = async (chainId: ChainId): Promise<Metadata | undefined> => {
     const metadata = await getAllMetadata({ chainId });
@@ -39,7 +39,7 @@ export const useMetadata = (): IMetadataService => {
       chainId: api.genesisHash.toHex(),
     };
 
-    await addMetadata(newMetadata);
+    await updateMetadata(newMetadata);
 
     return newMetadata;
   };
@@ -50,6 +50,11 @@ export const useMetadata = (): IMetadataService => {
       const oldMetadata = await getMetadata(chainId);
 
       if (!oldMetadata || version.specVersion.toNumber() > oldMetadata.version) {
+        await addMetadata({
+          version: version.specVersion.toNumber(),
+          chainId,
+        });
+
         syncMetadata(api);
       }
     });

@@ -68,7 +68,7 @@ export type ConnectProps = {
 export type Metadata = {
   chainId: ChainId;
   version: number;
-  metadata: HexString;
+  metadata?: HexString;
 };
 
 export interface IMetadataService {
