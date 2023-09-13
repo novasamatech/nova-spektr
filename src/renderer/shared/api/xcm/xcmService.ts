@@ -192,7 +192,7 @@ const getRelativeAssetLocation = (
         id: {
           Concrete: {
             parents: 0,
-            interior: Object.values(location).length ? createJunctionFromObject(location) : 'Here',
+            interior: createJunctionFromObject(location),
           },
         },
         fun: {
@@ -216,7 +216,7 @@ const getAbsoluteAssetLocation = (
         id: {
           Concrete: {
             parents: 1,
-            interior: Object.values(assetLocation).length ? createJunctionFromObject(assetLocation) : 'Here',
+            interior: createJunctionFromObject(assetLocation),
           },
         },
         fun: {
@@ -242,7 +242,7 @@ const getConcreteAssetLocation = (
         id: {
           Concrete: {
             parents,
-            interior: Object.values(location).length ? createJunctionFromObject(location) : 'Here',
+            interior: createJunctionFromObject(location),
           },
         },
         fun: {

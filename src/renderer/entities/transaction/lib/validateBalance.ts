@@ -59,7 +59,7 @@ const validateBalanceForFee = async ({ transaction, getTransactionFee, api, ...p
   const transferableBalance = transferableAmount(tokenBalance);
   const transferableNativeTokenBalance = transferableAmount(nativeTokenBalance);
   const fee = await getTransactionFee(transaction, api);
-  const feeBN = new BN(fee).add(new BN(transaction.args.xcmFee || 0));
+  const feeBN = new BN(fee);
 
   return nativeTokenBalance
     ? new BN(transferableNativeTokenBalance).gte(feeBN)
