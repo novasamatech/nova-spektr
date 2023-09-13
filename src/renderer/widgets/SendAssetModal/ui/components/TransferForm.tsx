@@ -233,15 +233,17 @@ export const TransferForm = ({
     };
 
     let transactionType;
-    let args;
+    let args: any = {
+      dest: toAddress(destination, { prefix: addressPrefix }),
+      value: formatAmount(amount, asset.precision),
+      ...(transactionType !== TransactionType.TRANSFER && { asset: getAssetId(asset) }),
+    };
 
     if (isXcmTransfer) {
       transactionType = getXcmTransferType(xcmTransfer.type);
 
       args = {
-        destinationChain: destinationChain?.value,
-        dest: toAddress(destination, { prefix: addressPrefix }),
-        value: formatAmount(amount, asset.precision),
+        ...args,
         xcmFee,
         xcmAsset,
         xcmDest,
@@ -250,11 +252,6 @@ export const TransferForm = ({
       };
     } else {
       transactionType = asset.type ? TransferType[asset.type] : TransactionType.TRANSFER;
-      args = {
-        dest: toAddress(destination, { prefix: addressPrefix }),
-        value: formatAmount(amount, asset.precision),
-        ...(transactionType !== TransactionType.TRANSFER && { asset: getAssetId(asset) }),
-      };
     }
 
     return {
