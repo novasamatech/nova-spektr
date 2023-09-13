@@ -116,7 +116,10 @@ export const TransferForm = ({
 
   useEffect(() => {
     const destinationOptions = destinations.map(getChainOption);
-    destinationOptions.length && setDestinationOptions(destinations.map(getChainOption));
+    if (destinationOptions.length) {
+      setDestinationOptions(destinations.map(getChainOption));
+    }
+
     setValue('destinationChain', destinationOptions[0]);
   }, [destinations.length]);
 
@@ -125,7 +128,9 @@ export const TransferForm = ({
   const destinationChain = watch('destinationChain');
 
   useEffect(() => {
-    destinationChain && onDestinationChainChange(destinationChain.value);
+    if (destinationChain) {
+      onDestinationChainChange(destinationChain.value);
+    }
   }, [destinationChain]);
 
   useEffect(() => {
@@ -200,7 +205,7 @@ export const TransferForm = ({
     onTxChange(transferPayload);
   }, [account, signer, destination, amount, destinationChain, xcmFee, xcmAsset, xcmDest, isXcmTransfer]);
 
-  const getXcmTransferType = (type: XcmTransferType) => {
+  const getXcmTransferType = (type: XcmTransferType): TransactionType => {
     if (type === 'xtokens') {
       return TransactionType.XTOKENS_TRANSFER_MULTIASSET;
     }

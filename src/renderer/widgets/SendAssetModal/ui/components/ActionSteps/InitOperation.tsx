@@ -74,24 +74,21 @@ export const InitOperation = ({
   );
 
   useEffect(() => {
-    if (!availableDestinations?.length) {
-      return;
-    }
+    if (!availableDestinations?.length) return;
 
-    setDestinations([
-      connections[chainId],
-      ...[...availableDestinations].reduce<Chain[]>((acc, destination) => {
-        // eslint-disable-next-line i18next/no-literal-string
-        const chainId = `0x${destination.destination.chainId}` as ChainId;
-        const connection = connections[chainId];
+    const options = [...availableDestinations].reduce<Chain[]>((acc, destination) => {
+      // eslint-disable-next-line i18next/no-literal-string
+      const chainId = `0x${destination.destination.chainId}` as ChainId;
+      const connection = connections[chainId];
 
-        if (connection && connection.connection.connectionType !== 'DISABLED') {
-          acc.push(connection);
-        }
+      if (connection?.connection.connectionType !== 'DISABLED') {
+        acc.push(connection);
+      }
 
-        return acc;
-      }, []),
-    ]);
+      return acc;
+    }, []);
+
+    setDestinations([connections[chainId], ...options]);
   }, [availableDestinations.length]);
 
   useEffect(() => {

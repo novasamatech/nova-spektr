@@ -54,7 +54,7 @@ const fetchConfigFx = attach({ effect: xcmModel.effects.fetchConfigFx });
 
 const getParaIdFx = createEffect(async (api: ApiPromise): Promise<number | null> => {
   try {
-    return await getParachainId(api);
+    return getParachainId(api);
   } catch (e) {
     return null;
   }
