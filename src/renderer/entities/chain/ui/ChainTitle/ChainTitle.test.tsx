@@ -15,4 +15,16 @@ describe('ui/ChainTitle', () => {
     const chainImage = screen.getByRole('img');
     expect(chainImage).toBeInTheDocument();
   });
+
+  test('should not render title', async () => {
+    await act(async () => {
+      render(<ChainTitle chainId={TEST_CHAIN_ID} showChainName={false} />);
+    });
+
+    const title = screen.queryByText('Polkadot');
+    expect(title).not.toBeInTheDocument();
+
+    const chainImage = screen.getByRole('img');
+    expect(chainImage).toBeInTheDocument();
+  });
 });
