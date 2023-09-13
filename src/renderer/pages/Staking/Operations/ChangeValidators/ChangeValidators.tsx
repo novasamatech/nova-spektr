@@ -134,11 +134,12 @@ export const ChangeValidators = () => {
     const transactions = getNominateTxs(Object.keys(validators));
 
     if (signer && isMultisig(txAccounts[0])) {
-      const wrapAsMulti = {
-        signatoryId: signer.accountId,
-        account: txAccounts[0],
-      };
-      setWrappers([wrapAsMulti]);
+      setWrappers([
+        {
+          signatoryId: signer.accountId,
+          account: txAccounts[0],
+        },
+      ]);
     }
 
     setTxs(transactions);

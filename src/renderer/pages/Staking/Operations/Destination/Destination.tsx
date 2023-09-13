@@ -126,11 +126,12 @@ export const Destination = () => {
     const transactions = getDestinationTxs(accounts, destination);
 
     if (signer && isMultisig(accounts[0])) {
-      const wrapAsMulti = {
-        signatoryId: signer.accountId,
-        account: accounts[0],
-      };
-      setWrappers([wrapAsMulti]);
+      setWrappers([
+        {
+          signatoryId: signer.accountId,
+          account: accounts[0],
+        },
+      ]);
       setSigner(signer);
       setDescription(description || '');
     }
@@ -142,9 +143,11 @@ export const Destination = () => {
   };
 
   const getDestinationTxs = (accounts: Account[], destination?: Address): Transaction[] => {
+    const payee = destination ? { Account: destination } : 'Staked';
+
     return accounts.map(({ accountId }) =>
       buildTransaction(TransactionType.DESTINATION, toAddress(accountId, { prefix: addressPrefix }), chainId, {
-        payee: destination ? { Account: destination } : 'Staked',
+        payee,
       }),
     );
   };

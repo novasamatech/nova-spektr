@@ -1,12 +1,11 @@
 import { ApiPromise } from '@polkadot/api';
-import { BaseTxInfo, OptionsWithMeta, UnsignedTransaction } from '@substrate/txwrapper-polkadot';
+import { UnsignedTransaction } from '@substrate/txwrapper-polkadot';
 import { Weight } from '@polkadot/types/interfaces';
 import { SubmittableExtrinsic } from '@polkadot/api/types';
 
 import { Address, CallData, HexString, Timepoint, Threshold, AccountId, ChainId } from '@renderer/domain/shared-kernel';
 import { DecodedTransaction, Transaction, TransactionType } from '@renderer/entities/transaction/model/transaction';
 import { TxWrappers } from '@renderer/entities/transaction';
-import { MultisigAccount } from '@renderer/entities/account';
 
 // =====================================================
 // =========== ITransactionService interface ===========
@@ -42,27 +41,6 @@ export type ITransactionService = {
     address: Address,
     chainId: ChainId,
     args: Record<string, any>,
-  ) => Transaction;
-};
-
-// =====================================================
-// =========== IExtrinsicService interface ===========
-// =====================================================
-export type IExtrinsicService = {
-  getUnsignedTransaction: Record<
-    TransactionType,
-    (args: Transaction, info: BaseTxInfo, options: OptionsWithMeta, api: ApiPromise) => UnsignedTransaction
-  >;
-  getExtrinsic: Record<
-    TransactionType,
-    (args: Record<string, any>, api: ApiPromise) => SubmittableExtrinsic<'promise'>
-  >;
-  wrapAsMulti: (
-    account: MultisigAccount,
-    signerAccountId: AccountId,
-    transaction: Transaction,
-    api: ApiPromise,
-    addressPrefix: number,
   ) => Transaction;
 };
 

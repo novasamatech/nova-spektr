@@ -9,7 +9,6 @@ import {
   MultisigTransaction,
   MultisigTxInitStatus,
   Transaction,
-  TransactionType,
 } from '@renderer/entities/transaction/model/transaction';
 import { PendingMultisigTransaction } from './types';
 import { getCreatedDate, toAccountId } from '@renderer/shared/lib/utils';
@@ -157,11 +156,7 @@ export const buildMultisigTx = (
   params: ExtrinsicResultParams,
   account: MultisigAccount,
   description?: string,
-): MultisigTxResult | undefined => {
-  if (tx.type !== TransactionType.MULTISIG_AS_MULTI) {
-    return;
-  }
-
+): MultisigTxResult => {
   const transaction: MultisigTransaction = {
     accountId: account.accountId,
     chainId: multisigTx.chainId,

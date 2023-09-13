@@ -80,14 +80,12 @@ export const Submit = ({ api, tx, multisigTx, account, unsignedTx, signature, de
         if (multisigTx && isMultisig(account)) {
           const result = buildMultisigTx(tx, multisigTx, params as ExtrinsicResultParams, account, description);
 
-          if (result) {
-            await Promise.all([addMultisigTx(result.transaction), addEventWithQueue(result.event)]);
+          await Promise.all([addMultisigTx(result.transaction), addEventWithQueue(result.event)]);
 
-            console.log(`New transfer was created with call hash ${result.transaction.callHash}`);
+          console.log(`New transfer was created with call hash ${result.transaction.callHash}`);
 
-            if (matrix.userIsLoggedIn) {
-              sendMultisigEvent(account.matrixRoomId, result.transaction, params as ExtrinsicResultParams);
-            }
+          if (matrix.userIsLoggedIn) {
+            sendMultisigEvent(account.matrixRoomId, result.transaction, params as ExtrinsicResultParams);
           }
         }
 

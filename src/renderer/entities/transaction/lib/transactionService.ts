@@ -13,7 +13,7 @@ import { ITransactionService, HashData, ExtrinsicResultParams } from './common/t
 import { decodeDispatchError } from './common/utils';
 import { useCallDataDecoder } from './callDataDecoder';
 import { MultisigAccount } from '@renderer/entities/account';
-import { useExtrinsicService } from './extrinsicService';
+import { getExtrinsic, getUnsignedTransaction, wrapAsMulti } from './extrinsicService';
 
 type WrapAsMulti = {
   account: MultisigAccount;
@@ -26,9 +26,10 @@ type WrapAsProxy = {
 
 export type TxWrappers = WrapAsMulti | WrapAsProxy;
 
+const shouldWrapAsMulti = (wrapper: TxWrappers): wrapper is WrapAsMulti => 'signatoryId' in wrapper && 'account' in wrapper;
+
 export const useTransaction = (): ITransactionService => {
   const { decodeCallData } = useCallDataDecoder();
-  const { getUnsignedTransaction, getExtrinsic, wrapAsMulti } = useExtrinsicService();
 
   const [txs, setTxs] = useState<Transaction[]>([]);
   const [wrappers, setWrappers] = useState<TxWrappers[]>([]);
@@ -186,7 +187,7 @@ export const useTransaction = (): ITransactionService => {
 
   const wrapTx = (transaction: Transaction, api: ApiPromise, addressPrefix: number) => {
     wrappers.forEach((wrapper) => {
-      if ('signatoryId' in wrapper) {
+      if (shouldWrapAsMulti(wrapper)) {
         transaction = wrapAsMulti(wrapper.account, wrapper.signatoryId, transaction, api, addressPrefix);
       }
     });

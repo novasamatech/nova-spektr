@@ -129,11 +129,12 @@ export const StakeMore = () => {
     const transactions = getStakeMoreTxs(accounts, amount);
 
     if (signer && isMultisig(accounts[0])) {
-      const wrapAsMulti = {
-        signatoryId: signer.accountId,
-        account: accounts[0],
-      };
-      setWrappers([wrapAsMulti]);
+      setWrappers([
+        {
+          signatoryId: signer.accountId,
+          account: accounts[0],
+        },
+      ]);
       setSigner(signer);
       setDescription(description || '');
     }

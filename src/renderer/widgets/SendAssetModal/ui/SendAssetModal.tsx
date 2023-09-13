@@ -42,7 +42,6 @@ export const SendAssetModal = ({ chain, asset, onClose }: Props) => {
   const [signature, setSignature] = useState<HexString>('0x0');
 
   const connection = connections[chain.chainId];
-  // const transaction = multisigTx || transferTx;
 
   const { api, assets, addressPrefix, explorers } = connection;
 
@@ -81,11 +80,12 @@ export const SendAssetModal = ({ chain, asset, onClose }: Props) => {
 
   const onSignatoryChange = (signatory: Account) => {
     setSignatory(signatory);
-    const wrapAsMulti = {
-      signatoryId: signatory.accountId,
-      account: account as MultisigAccount,
-    };
-    setWrappers([wrapAsMulti]);
+    setWrappers([
+      {
+        signatoryId: signatory.accountId,
+        account: account as MultisigAccount,
+      },
+    ]);
   };
 
   const commonProps = { explorers, addressPrefix };
