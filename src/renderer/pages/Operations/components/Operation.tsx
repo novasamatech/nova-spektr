@@ -9,8 +9,9 @@ import OperationStatus from './OperationStatus';
 import OperationFullInfo from './OperationFullInfo';
 import { MultisigTransactionDS } from '@renderer/shared/api/storage';
 import { useMultisigEvent } from '@renderer/entities/multisig';
-import { ChainTitle } from '@renderer/entities/chain';
+import { ChainTitle, XcmChains } from '@renderer/entities/chain';
 import { getTransactionAmount } from '../common/utils';
+import { isXcmTransaction } from '@renderer/entities/transaction';
 
 type Props = {
   tx: MultisigTransactionDS;
@@ -42,7 +43,15 @@ const Operation = ({ tx, account }: Props) => {
             <TransactionAmount wrapperClassName="w-[160px]" tx={tx.transaction} />
           )}
 
-          <ChainTitle chainId={tx.chainId} className="w-[120px]" />
+          {isXcmTransaction(tx.transaction) ? (
+            <XcmChains
+              chainIdFrom={tx.chainId}
+              chainIdTo={tx.transaction?.args.destinationChain}
+              className="w-[120px]"
+            />
+          ) : (
+            <ChainTitle chainId={tx.chainId} className="w-[120px]" />
+          )}
 
           <div className="flex justify-end w-[120px]">
             <OperationStatus status={tx.status} signed={approvals.length} threshold={account?.threshold || 0} />

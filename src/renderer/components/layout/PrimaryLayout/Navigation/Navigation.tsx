@@ -25,7 +25,9 @@ const Navigation = () => {
   const [chains, setChains] = useState<ChainsRecord>({});
 
   useEffect(() => {
-    getChainsData().then((chainsData) => setChains(keyBy(chainsData, 'chainId')));
+    const chains = getChainsData();
+
+    setChains(keyBy(chains, 'chainId'));
   }, []);
 
   const activeAccounts = getActiveAccounts();

@@ -3,6 +3,7 @@ import { Explorer } from '@renderer/entities/chain';
 import { AccountId, HexString } from '@renderer/domain/shared-kernel';
 import { DecodedTransaction, Transaction, TransactionType } from '@renderer/entities/transaction/model/transaction';
 import { toAddress, formatSectionAndMethod } from '@renderer/shared/lib/utils';
+import { TransferTypes, XcmTypes } from '@renderer/entities/transaction';
 import { Account } from '@renderer/entities/account';
 import { Signatory } from '@renderer/entities/signatory';
 import type { Contact } from '@renderer/entities/contact';
@@ -121,14 +122,9 @@ export const getTransactionAmount = (tx: Transaction | DecodedTransaction): stri
   if (!txType) return null;
 
   if (
-    [
-      TransactionType.ASSET_TRANSFER,
-      TransactionType.ORML_TRANSFER,
-      TransactionType.TRANSFER,
-      TransactionType.BOND,
-      TransactionType.RESTAKE,
-      TransactionType.UNSTAKE,
-    ].includes(txType)
+    [...TransferTypes, ...XcmTypes, TransactionType.BOND, TransactionType.RESTAKE, TransactionType.UNSTAKE].includes(
+      txType,
+    )
   ) {
     return tx.args.value;
   }

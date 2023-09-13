@@ -6,11 +6,12 @@ import { Icon, Button, FootnoteText, DetailRow } from '@renderer/shared/ui';
 import { copyToClipboard, truncate, cnTw } from '@renderer/shared/lib/utils';
 import { useToggle } from '@renderer/shared/lib/hooks';
 import { ExtendedChain } from '@renderer/entities/network';
-import { MultisigTransaction, Transaction, TransactionType } from '@renderer/entities/transaction';
+import { MultisigTransaction, Transaction, TransactionType, isXcmTransaction } from '@renderer/entities/transaction';
 import ValidatorsModal from '@renderer/pages/Staking/Operations/components/Modals/ValidatorsModal/ValidatorsModal';
 import { AddressStyle, DescriptionBlockStyle, InteractionStyle } from '../common/constants';
 import { getMultisigExtrinsicLink } from '../common/utils';
 import { AssetBalance } from '@renderer/entities/asset';
+import { ChainTitle } from '@renderer/entities/chain';
 
 type Props = {
   tx: MultisigTransaction;
@@ -85,13 +86,40 @@ const Details = ({ tx, account, connection, isCardDetails = true }: Props) => {
         </DetailRow>
       )}
 
+      {isXcmTransaction(tx.transaction) && (
+        <>
+          <DetailRow label={t('operation.details.fromNetwork')} className={valueClass}>
+            <ChainTitle chainId={tx.chainId} />
+          </DetailRow>
+
+          {account && (
+            <DetailRow label={t('operation.details.sender')} className={valueClass}>
+              <AddressWithExplorers
+                explorers={explorers}
+                addressFont={AddressStyle}
+                type="short"
+                accountId={account.accountId}
+                addressPrefix={addressPrefix}
+                wrapperClassName="-mr-2 min-w-min"
+              />
+            </DetailRow>
+          )}
+
+          {transaction.args.destinationChain && (
+            <DetailRow label={t('operation.details.toNetwork')} className={valueClass}>
+              <ChainTitle chainId={transaction?.args.destinationChain} />
+            </DetailRow>
+          )}
+        </>
+      )}
+
       {transaction?.args.dest && (
         <DetailRow label={t('operation.details.recipient')} className={valueClass}>
           <AddressWithExplorers
             type="short"
             explorers={explorers}
             addressFont={AddressStyle}
-            address={transaction.args.dest}
+            accountId={transaction.args.dest}
             addressPrefix={addressPrefix}
             wrapperClassName="-mr-2 min-w-min"
           />
