@@ -115,8 +115,10 @@ export const TransferForm = ({
   });
 
   useEffect(() => {
+    const destinationOptions = destinations.map(getChainOption);
+
     if (destinationOptions.length) {
-      setDestinationOptions(destinations.map(getChainOption));
+      setDestinationOptions(destinationOptions);
     }
 
     setValue('destinationChain', destinationOptions[0]);

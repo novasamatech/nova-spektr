@@ -81,7 +81,7 @@ export const InitOperation = ({
       const chainId = `0x${destination.destination.chainId}` as ChainId;
       const connection = connections[chainId];
 
-      if (connection?.connection.connectionType !== 'DISABLED') {
+      if (connection && connection.connection.connectionType !== 'DISABLED') {
         acc.push(connection);
       }
 
