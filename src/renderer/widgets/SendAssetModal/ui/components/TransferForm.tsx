@@ -12,6 +12,7 @@ import { AccountId, Address, ChainId } from '@renderer/domain/shared-kernel';
 import { useMultisigTx } from '@renderer/entities/multisig';
 import { Account, isMultisig, MultisigAccount } from '@renderer/entities/account';
 import {
+  SS58_DEFAULT_PREFIX,
   formatAmount,
   getAssetId,
   toAccountId,
@@ -23,6 +24,7 @@ import { Chain } from '@renderer/entities/chain';
 import { getChainOption } from '../common/utils';
 import { DropdownOption, DropdownResult } from '@renderer/shared/ui/types';
 import { XcmTransfer, XcmTransferType } from '@renderer/shared/api/xcm';
+import AccountSelectModal from '@renderer/pages/Operations/components/modals/AccountSelectModal/AccountSelectModal';
 
 const DESCRIPTION_MAX_LENGTH = 120;
 
@@ -37,8 +39,10 @@ type TransferFormData = {
 type Props = {
   api: ApiPromise;
   chainId: ChainId;
+  chain: Chain;
   network: string;
   account?: Account | MultisigAccount;
+  accounts?: Account[];
   signer?: Account;
   asset: Asset;
   nativeToken: Asset;
@@ -66,6 +70,8 @@ export const TransferForm = ({
   api,
   chainId,
   account,
+  accounts,
+  chain,
   signer,
   asset,
   addressPrefix,
@@ -101,6 +107,7 @@ export const TransferForm = ({
   const [multisigTx, setMultisigTx] = useState<Transaction>();
   const [multisigTxExist, setMultisigTxExist] = useState(false);
   const [destinationOptions, setDestinationOptions] = useState<DropdownOption<ChainId>[]>([]);
+  const [isSelectAccountModalOpen, setSelectAccountModalOpen] = useState(false);
 
   const {
     handleSubmit,
@@ -127,6 +134,7 @@ export const TransferForm = ({
   const amount = watch('amount');
   const destination = watch('destination');
   const destinationChain = watch('destinationChain');
+  const destinationChainAccounts = accounts?.filter((a) => !a.rootId || a.chainId === destinationChain?.value) || [];
 
   useEffect(() => {
     if (destinationChain) {
@@ -351,6 +359,26 @@ export const TransferForm = ({
     }
   };
 
+  const handleMyselfClick = () => {
+    if (destinationChainAccounts.length > 1) {
+      setSelectAccountModalOpen(true);
+    } else if (account) {
+      handleAccountSelect(account);
+    }
+  };
+
+  const handleAccountSelect = (account: Account) => {
+    setSelectAccountModalOpen(false);
+
+    if (!account) return;
+
+    const prefix =
+      destinations.find((c) => c.chainId === destinationChain?.value)?.addressPrefix || SS58_DEFAULT_PREFIX;
+    const address = toAddress(account.accountId, { prefix });
+
+    setValue('destination', address, { shouldValidate: true });
+  };
+
   return (
     <form className="w-full" onSubmit={handleSubmit(submitTransaction)}>
       <div className="flex flex-col gap-y-4">
@@ -381,13 +409,23 @@ export const TransferForm = ({
             <div className="flex flex-col gap-y-2">
               <Input
                 prefixElement={
-                  value && !error ? (
-                    <Identicon className="mr-2" size={20} address={value} background={false} />
-                  ) : (
-                    <Icon className="mr-2" size={20} name="emptyIdenticon" />
+                  <div className="flex h-auto items-center">
+                    {value && !error ? (
+                      <Identicon className="mr-2" size={20} address={value} background={false} />
+                    ) : (
+                      <Icon className="mr-2" size={20} name="emptyIdenticon" />
+                    )}
+                  </div>
+                }
+                suffixElement={
+                  isXcmTransfer &&
+                  !destination && (
+                    <Button size="sm" pallet="secondary" onClick={handleMyselfClick}>
+                      {t('transfer.myselfButton')}
+                    </Button>
                   )
                 }
-                className="w-full"
+                wrapperClass="w-full h-10.5"
                 invalid={Boolean(error)}
                 value={value}
                 label={t('transfer.recipientLabel')}
@@ -488,6 +526,16 @@ export const TransferForm = ({
       >
         {t('transfer.continueButton')}
       </Button>
+
+      {accounts && (
+        <AccountSelectModal
+          isOpen={isSelectAccountModalOpen}
+          accounts={destinationChainAccounts}
+          chain={chain}
+          onClose={() => setSelectAccountModalOpen(false)}
+          onSelect={handleAccountSelect}
+        />
+      )}
     </form>
   );
 };

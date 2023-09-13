@@ -143,7 +143,9 @@ export const InitOperation = ({
       <TransferForm
         api={api}
         chainId={chainId}
+        chain={connections[chainId]}
         network={network}
+        accounts={accounts}
         account={activeAccount}
         signer={activeSignatory}
         asset={asset}

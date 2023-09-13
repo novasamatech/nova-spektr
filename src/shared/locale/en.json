@@ -331,6 +331,7 @@
       "placeholder": "Reason...",
       "title": "Enter reject reason"
     },
+    "selectAccount": "Select account",
     "selectSignatory": "Select signatory",
     "selectSignatoryTitle": "Select signatory",
     "signButton": "Sign with Polkadot Vault",
@@ -770,6 +771,7 @@
       "transactions": "Transactions"
     },
     "multisigTransactionExist": "Multisig transaction already exists",
+    "myselfButton": "Myself",
     "networkDeposit": "Multisig deposit",
     "networkDepositHint": "The deposit stays locked on the depositor’s account until the multisig operation is executed or rejected",
     "networkFee": "Network fee",
