@@ -12,6 +12,7 @@ import { AccountId, Address, ChainId } from '@renderer/domain/shared-kernel';
 import { useMultisigTx } from '@renderer/entities/multisig';
 import { Account, isMultisig, MultisigAccount } from '@renderer/entities/account';
 import {
+  SS58_DEFAULT_PREFIX,
   formatAmount,
   getAssetId,
   toAccountId,
@@ -353,24 +354,23 @@ export const TransferForm = ({
   };
 
   const handleMyselfClick = () => {
-    destinationChainAccounts?.length && destinationChainAccounts?.length > 1
-      ? setSelectAccountModalOpen(true)
-      : account && handleAccountSelect(account);
+    if (destinationChainAccounts.length > 1) {
+      setSelectAccountModalOpen(true);
+    } else if (account) {
+      handleAccountSelect(account);
+    }
   };
 
   const handleAccountSelect = (account: Account) => {
-    account &&
-      setValue(
-        'destination',
-        toAddress(account?.accountId, {
-          prefix: destinations.find((c) => c.chainId === destinationChain?.value)?.addressPrefix || 42,
-        }),
-        {
-          shouldValidate: true,
-        },
-      );
-
     setSelectAccountModalOpen(false);
+
+    if (!account) return;
+
+    const prefix =
+      destinations.find((c) => c.chainId === destinationChain?.value)?.addressPrefix || SS58_DEFAULT_PREFIX;
+    const address = toAddress(account.accountId, { prefix });
+
+    setValue('destination', address, { shouldValidate: true });
   };
 
   return (
