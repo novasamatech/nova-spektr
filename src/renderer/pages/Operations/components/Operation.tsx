@@ -31,7 +31,7 @@ const Operation = ({ tx, account }: Props) => {
     <Accordion className="bg-block-background-default transition-shadow rounded hover:shadow-card-shadow focus-visible:shadow-card-shadow">
       <Accordion.Button buttonClass="px-2" iconWrapper="px-1.5">
         <div className="h-[52px] flex gap-x-4 items-center w-full overflow-hidden">
-          <div className="w-[62px] pr-2">
+          <div className="w-[58px] pr-1">
             <FootnoteText className="text-text-tertiary" align="right">
               {format(date, 'p', { locale: dateLocale })}
             </FootnoteText>
@@ -47,10 +47,10 @@ const Operation = ({ tx, account }: Props) => {
             <XcmChains
               chainIdFrom={tx.chainId}
               chainIdTo={tx.transaction?.args.destinationChain}
-              className="w-[120px]"
+              className="w-[114px]"
             />
           ) : (
-            <ChainTitle chainId={tx.chainId} className="w-[120px]" />
+            <ChainTitle chainId={tx.chainId} className="w-[114px]" />
           )}
 
           <div className="flex justify-end w-[120px]">

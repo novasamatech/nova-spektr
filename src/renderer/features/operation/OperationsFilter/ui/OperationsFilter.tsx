@@ -74,9 +74,10 @@ export const OperationsFilter = ({ txs, onChange }: Props) => {
     return transactions.reduce(
       (acc, tx) => {
         const txType = getFilterableTxType(tx);
+        const xcmDestination = tx.transaction?.args.destinationChain;
 
         const statusOption = StatusOptions.find((s) => s.value === tx.status);
-        const networkOption = NetworkOptions.find((s) => s.value === tx.chainId || s.value === tx.xcmDestination);
+        const networkOption = NetworkOptions.find((s) => s.value === tx.chainId || s.value === xcmDestination);
         const typeOption = TransactionOptions.find((s) => s.value === txType);
 
         if (statusOption) acc.status.add(statusOption);
@@ -94,10 +95,13 @@ export const OperationsFilter = ({ txs, onChange }: Props) => {
   };
 
   const filterTx = (tx: MultisigTransaction, filters: SelectedFilters) => {
+    const xcmDestination = tx.transaction?.args.destinationChain;
+
     return (
-      (!filters.status.length || filters.status.map(mapValues).includes(tx.status)) &&
-      (!filters.network.length || filters.network.map(mapValues).includes(tx.chainId)) &&
-      (!filters.type.length || filters.type.map(mapValues).includes(getFilterableTxType(tx)))
+      ((!filters.status.length || filters.status.map(mapValues).includes(tx.status)) &&
+        (!filters.network.length || filters.network.map(mapValues).includes(tx.chainId))) ||
+      (filters.network.map(mapValues).includes(xcmDestination) &&
+        (!filters.type.length || filters.type.map(mapValues).includes(getFilterableTxType(tx))))
     );
   };
 
