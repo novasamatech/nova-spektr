@@ -26,7 +26,8 @@ type WrapAsProxy = {
 
 export type TxWrappers = WrapAsMulti | WrapAsProxy;
 
-const shouldWrapAsMulti = (wrapper: TxWrappers): wrapper is WrapAsMulti => 'signatoryId' in wrapper && 'account' in wrapper;
+const shouldWrapAsMulti = (wrapper: TxWrappers): wrapper is WrapAsMulti =>
+  'signatoryId' in wrapper && 'account' in wrapper;
 
 export const useTransaction = (): ITransactionService => {
   const { decodeCallData } = useCallDataDecoder();
