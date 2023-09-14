@@ -232,11 +232,13 @@ export const TransferForm = ({
       [AssetType.STATEMINE]: TransactionType.ASSET_TRANSFER,
     };
 
+    const isNativeTransfer = !asset.type;
+
     let transactionType;
     let args: any = {
       dest: toAddress(destination, { prefix: addressPrefix }),
       value: formatAmount(amount, asset.precision),
-      ...(transactionType !== TransactionType.TRANSFER && { asset: getAssetId(asset) }),
+      ...(!isNativeTransfer && { asset: getAssetId(asset) }),
     };
 
     if (isXcmTransfer) {
@@ -251,7 +253,7 @@ export const TransferForm = ({
         xcmWeight,
       };
     } else {
-      transactionType = asset.type ? TransferType[asset.type] : TransactionType.TRANSFER;
+      transactionType = isNativeTransfer ? TransactionType.TRANSFER : TransferType[asset.type!];
     }
 
     return {

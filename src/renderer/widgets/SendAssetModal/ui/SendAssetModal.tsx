@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { UnsignedTransaction } from '@substrate/txwrapper-polkadot';
-import { useStore } from 'effector-react';
+import { useStore, useGate } from 'effector-react';
 
 import { useI18n, useNetworkContext } from '@renderer/app/providers';
 import { HexString } from '@renderer/domain/shared-kernel';
@@ -38,6 +38,8 @@ export const SendAssetModal = ({ chain, asset, onClose }: Props) => {
   const xcmAsset = useStore(sendAssetModel.$xcmAsset);
   const destinationChain = useStore(sendAssetModel.$destinationChain);
 
+  useGate(sendAssetModel.PropsGate, { chain, asset });
+
   const [isModalOpen, toggleIsModalOpen] = useToggle(true);
   const [activeStep, setActiveStep] = useState<Step>(Step.INIT);
   const [account, setAccount] = useState<Account | MultisigAccount>({} as Account);
@@ -55,6 +57,10 @@ export const SendAssetModal = ({ chain, asset, onClose }: Props) => {
 
   useEffect(() => {
     sendAssetModel.events.xcmConfigRequested();
+
+    return () => {
+      sendAssetModel.events.storeCleared();
+    };
   }, []);
 
   useEffect(() => {

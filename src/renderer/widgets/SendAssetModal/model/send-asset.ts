@@ -1,6 +1,7 @@
 import { createStore, createEffect, createEvent, sample, forward, attach } from 'effector';
 import { ApiPromise } from '@polkadot/api';
 import { BN } from '@polkadot/util';
+import { createGate } from 'effector-react';
 
 import {
   XcmConfig,
@@ -15,26 +16,10 @@ import {
 import { xcmModel } from '@renderer/entities/xcm';
 import { Chain } from '@renderer/entities/chain';
 import { Asset } from '@renderer/entities/asset';
-import * as assetGuardModel from '@renderer/features/assets/AssetRouteGuard/model/asset-guard';
 import { getParachainId } from '@renderer/services/dataVerification/dataVerification';
 import { ExtendedChain } from '@renderer/entities/network';
 import { AccountId } from '@renderer/domain/shared-kernel';
-
-export const $destinationChain = createStore<ExtendedChain | null>(null).reset(assetGuardModel.events.storeCleared);
-export const $finalConfig = createStore<XcmConfig | null>(null);
-export const $xcmTransfer = createStore<XcmTransfer | null>(null).reset(assetGuardModel.events.storeCleared);
-export const $xcmAsset = createStore<AssetXCM | null>(null).reset(assetGuardModel.events.storeCleared);
-export const $destinations = createStore<XcmTransfer[] | []>([]).reset(assetGuardModel.events.storeCleared);
-export const $api = createStore<ApiPromise | null>(null).reset(assetGuardModel.events.storeCleared);
-export const $destinationParaId = createStore<number | null>(null).reset(assetGuardModel.events.storeCleared);
-export const $accountId = createStore<AccountId | null>(null).reset(assetGuardModel.events.storeCleared);
-
-export const $txDest = createStore<Object | null>(null).reset(assetGuardModel.events.storeCleared);
-export const $txBeneficiary = createStore<Object | null>(null).reset(assetGuardModel.events.storeCleared);
-export const $txAsset = createStore<Object | null>(null).reset(assetGuardModel.events.storeCleared);
-export const $xcmFee = createStore<string>('').reset(assetGuardModel.events.storeCleared);
-export const $amount = createStore<string>('').reset(assetGuardModel.events.storeCleared);
-export const $xcmWeight = createStore<string>('').reset(assetGuardModel.events.storeCleared);
+import { toLocalChainId } from '@renderer/shared/lib/utils';
 
 const xcmConfigRequested = createEvent();
 const destinationChainSelected = createEvent<ExtendedChain>();
@@ -42,8 +27,28 @@ const apiInited = createEvent<ApiPromise>();
 const accountIdSelected = createEvent<AccountId>();
 const amountChanged = createEvent<string>();
 const xcmFeeChanged = createEvent<string>();
+const storeCleared = createEvent();
 
-// TODO: continue config calculation in xcm service task
+export const $destinationChain = createStore<ExtendedChain | null>(null).reset(storeCleared);
+export const $finalConfig = createStore<XcmConfig | null>(null);
+export const $xcmTransfer = createStore<XcmTransfer | null>(null).reset(storeCleared);
+export const $xcmAsset = createStore<AssetXCM | null>(null).reset(storeCleared);
+export const $destinations = createStore<XcmTransfer[] | []>([]).reset(storeCleared);
+export const $api = createStore<ApiPromise | null>(null).reset(storeCleared);
+export const $destinationParaId = createStore<number | null>(null).reset(storeCleared);
+export const $accountId = createStore<AccountId | null>(null).reset(storeCleared);
+export const $chain = createStore<Chain | null>(null);
+export const $asset = createStore<Asset | null>(null);
+
+export const $txDest = createStore<Object | null>(null).reset(storeCleared);
+export const $txBeneficiary = createStore<Object | null>(null).reset(storeCleared);
+export const $txAsset = createStore<Object | null>(null).reset(storeCleared);
+export const $xcmFee = createStore<string>('').reset(storeCleared);
+export const $amount = createStore<string>('').reset(storeCleared);
+export const $xcmWeight = createStore<string>('').reset(storeCleared);
+
+export const PropsGate = createGate<{ chain: Chain; asset: Asset }>('props');
+
 const calculateFinalConfigFx = createEffect((config: XcmConfig): XcmConfig => {
   return config;
 });
@@ -60,13 +65,16 @@ const getParaIdFx = createEffect(async (api: ApiPromise): Promise<number | null>
   }
 });
 
+sample({ clock: PropsGate.state, fn: ({ asset }) => asset, target: $asset });
+sample({ clock: PropsGate.state, fn: ({ chain }) => chain, target: $chain });
+
 forward({
   from: xcmConfigRequested,
   to: [getConfigFx, fetchConfigFx],
 });
 
 sample({
-  source: { asset: assetGuardModel.$asset, chain: assetGuardModel.$chain, config: $finalConfig },
+  source: { asset: $asset, chain: $chain, config: $finalConfig },
   filter: (props: {
     asset: Asset | null;
     chain: Chain | null;
@@ -102,14 +110,14 @@ forward({
 
 sample({
   source: {
-    chain: assetGuardModel.$chain,
-    asset: assetGuardModel.$asset,
+    chain: $chain,
+    asset: $asset,
     config: $finalConfig,
   },
   fn: ({ config, chain, asset }) => {
     if (!config || !chain || !asset) return null;
 
-    const originChainId = chain.chainId.replace('0x', '');
+    const originChainId = toLocalChainId(chain.chainId);
     const configChain = config.chains.find((c) => c.chainId === originChainId);
     const configAsset = configChain?.assets.find((a) => a.assetId === asset.assetId);
 
@@ -126,7 +134,7 @@ sample({
   fn: ({ xcmAsset, destinationChain }) => {
     if (!xcmAsset || !destinationChain) return null;
 
-    const destinationChainId = destinationChain.chainId.replace('0x', '');
+    const destinationChainId = toLocalChainId(destinationChain.chainId);
     const configXcmTransfer = xcmAsset?.xcmTransfers.find((t) => t.destination.chainId === destinationChainId);
 
     return configXcmTransfer || null;
@@ -137,7 +145,7 @@ sample({
 sample({
   source: {
     xcmTransfer: $xcmTransfer,
-    chain: assetGuardModel.$chain,
+    chain: $chain,
     accountId: $accountId,
     paraId: $destinationParaId,
   },
@@ -179,7 +187,7 @@ sample({
     config: $finalConfig,
     xcmTransfer: $xcmTransfer,
     asset: $xcmAsset,
-    chain: assetGuardModel.$chain,
+    chain: $chain,
   },
   fn: ({ config, xcmTransfer, chain, asset }) => {
     if (!config || !xcmTransfer || !chain || !asset) return '';
@@ -187,7 +195,7 @@ sample({
     return estimateRequiredDestWeight(
       config,
       config.assetsLocation[asset.assetLocation],
-      chain.chainId.replace('0x', ''),
+      toLocalChainId(chain.chainId)!,
       xcmTransfer,
     ).toString();
   },
@@ -238,4 +246,5 @@ export const events = {
   amountChanged,
   apiInited,
   xcmFeeChanged,
+  storeCleared,
 };

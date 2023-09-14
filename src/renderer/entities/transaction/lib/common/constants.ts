@@ -21,3 +21,5 @@ export const XcmTypes = [
   TransactionType.POLKADOT_XCM_LIMITED_TRANSFER,
   TransactionType.XTOKENS_TRANSFER_MULTIASSET,
 ];
+
+export const DEFAULT_FEE_ASSET_ITEM = 0;

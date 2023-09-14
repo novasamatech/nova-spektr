@@ -27,6 +27,7 @@ import {
 } from './common/utils';
 import { useCallDataDecoder } from './callDataDecoder';
 import * as xcmMethods from './common/xcmMethods';
+import { DEFAULT_FEE_ASSET_ITEM } from './common/constants';
 
 type BalancesTransferArgs = Parameters<typeof methods.balances.transfer>[0];
 type BondWithoutContollerArgs = Omit<Parameters<typeof methods.staking.bond>[0], 'controller'>;
@@ -174,7 +175,6 @@ export const useTransaction = (): ITransactionService => {
         options,
       );
     },
-    // TODO: finish during XCM transfer
     [TransactionType.XCM_LIMITED_TRANSFER]: (transaction, info, options, api) => {
       return xcmMethods.limitedReserveTransferAssets(
         'xcmPallet',
@@ -182,7 +182,7 @@ export const useTransaction = (): ITransactionService => {
           dest: transaction.args.xcmDest,
           beneficiary: transaction.args.xcmBeneficiary,
           assets: transaction.args.xcmAsset,
-          feeAssetItem: 0,
+          feeAssetItem: DEFAULT_FEE_ASSET_ITEM,
           weightLimit: { Unlimited: true },
         },
         info,
@@ -196,7 +196,7 @@ export const useTransaction = (): ITransactionService => {
           dest: transaction.args.xcmDest,
           beneficiary: transaction.args.xcmBeneficiary,
           assets: transaction.args.xcmAsset,
-          feeAssetItem: 0,
+          feeAssetItem: DEFAULT_FEE_ASSET_ITEM,
           weightLimit: { Unlimited: true },
         },
         info,
@@ -210,7 +210,7 @@ export const useTransaction = (): ITransactionService => {
           dest: transaction.args.xcmDest,
           beneficiary: transaction.args.xcmBeneficiary,
           assets: transaction.args.xcmAsset,
-          feeAssetItem: 0,
+          feeAssetItem: DEFAULT_FEE_ASSET_ITEM,
           weightLimit: { Unlimited: true },
         },
         info,
@@ -224,7 +224,7 @@ export const useTransaction = (): ITransactionService => {
           dest: transaction.args.xcmDest,
           beneficiary: transaction.args.xcmBeneficiary,
           assets: transaction.args.xcmAsset,
-          feeAssetItem: 0,
+          feeAssetItem: DEFAULT_FEE_ASSET_ITEM,
           weightLimit: { Unlimited: true },
         },
         info,
@@ -360,18 +360,29 @@ export const useTransaction = (): ITransactionService => {
     ) => api.tx.multisig.approveAsMulti(threshold, otherSignatories, maybeTimepoint, callHash, maxWeight),
     [TransactionType.MULTISIG_CANCEL_AS_MULTI]: ({ threshold, otherSignatories, maybeTimepoint, callHash }, api) =>
       api.tx.multisig.cancelAsMulti(threshold, otherSignatories, maybeTimepoint, callHash),
-    // TODO: finish during XCM transfer
     [TransactionType.XCM_LIMITED_TRANSFER]: ({ xcmDest, xcmBeneficiary, xcmAsset }, api) => {
-      return api.tx.xcmPallet.limitedReserveTransferAssets(xcmDest, xcmBeneficiary, xcmAsset, 0, { Unlimited: true });
+      return api.tx.xcmPallet.limitedReserveTransferAssets(xcmDest, xcmBeneficiary, xcmAsset, DEFAULT_FEE_ASSET_ITEM, {
+        Unlimited: true,
+      });
     },
     [TransactionType.XCM_TELEPORT]: ({ xcmDest, xcmBeneficiary, xcmAsset }, api) => {
-      return api.tx.xcmPallet.limitedTeleportAssets(xcmDest, xcmBeneficiary, xcmAsset, 0, { Unlimited: true });
+      return api.tx.xcmPallet.limitedTeleportAssets(xcmDest, xcmBeneficiary, xcmAsset, DEFAULT_FEE_ASSET_ITEM, {
+        Unlimited: true,
+      });
     },
     [TransactionType.POLKADOT_XCM_LIMITED_TRANSFER]: ({ xcmDest, xcmBeneficiary, xcmAsset }, api) => {
-      return api.tx.polkadotXcm.limitedReserveTransferAssets(xcmDest, xcmBeneficiary, xcmAsset, 0, { Unlimited: true });
+      return api.tx.polkadotXcm.limitedReserveTransferAssets(
+        xcmDest,
+        xcmBeneficiary,
+        xcmAsset,
+        DEFAULT_FEE_ASSET_ITEM,
+        { Unlimited: true },
+      );
     },
     [TransactionType.POLKADOT_XCM_TELEPORT]: ({ xcmDest, xcmBeneficiary, xcmAsset }, api) => {
-      return api.tx.polkadotXcm.limitedTeleportAssets(xcmDest, xcmBeneficiary, xcmAsset, 0, { Unlimited: true });
+      return api.tx.polkadotXcm.limitedTeleportAssets(xcmDest, xcmBeneficiary, xcmAsset, DEFAULT_FEE_ASSET_ITEM, {
+        Unlimited: true,
+      });
     },
     [TransactionType.XTOKENS_TRANSFER_MULTIASSET]: ({ xcmDest, xcmAsset, xcmWeight }, api) => {
       const singleXcmAsset = { V2: xcmAsset.V2[0] };

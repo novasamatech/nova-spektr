@@ -16,6 +16,7 @@ import {
 import { AccountId, ChainId } from '@renderer/domain/shared-kernel';
 // TODO: Move chain to shared
 import { Chain } from '@renderer/entities/chain';
+import { toLocalChainId } from '@renderer/shared/lib/utils';
 
 export const fetchXcmConfig = async (): Promise<XcmConfig> => {
   const response = await fetch(XCM_URL, { cache: 'default' });
@@ -40,7 +41,7 @@ export const saveXcmConfig = (config: XcmConfig) => {
 };
 
 export const getAvailableDirections = (chains: ChainXCM[], assetId: number, chainId: ChainId): XcmTransfer[] => {
-  const chain = chains.find((c) => c.chainId === chainId.replace('0x', ''));
+  const chain = chains.find((c) => c.chainId === toLocalChainId(chainId));
   const asset = chain?.assets.find((a) => a.assetId === assetId);
 
   return asset?.xcmTransfers || [];
@@ -73,10 +74,10 @@ export const estimateFee = (
   const weight = getEstimatedWeight(
     config.instructions,
     xcmTransfer.destination.fee.instructions,
-    new BN(xcmTransfer.destination.fee.mode.value),
+    new BN(config.networkBaseWeight[xcmTransfer.destination.chainId]),
   );
 
-  const fee = weightToFee(weight, new BN(config.networkBaseWeight[xcmTransfer.destination.chainId]));
+  const fee = weightToFee(weight, new BN(xcmTransfer.destination.fee.mode.value));
 
   const isReserveChain = [originChain, xcmTransfer.destination.chainId].includes(assetLocation.chainId);
 
@@ -85,10 +86,10 @@ export const estimateFee = (
   const reserveWeight = getEstimatedWeight(
     config.instructions,
     assetLocation.reserveFee.instructions,
-    new BN(assetLocation.reserveFee.mode.value),
+    new BN(config.networkBaseWeight[assetLocation.chainId]),
   );
 
-  const reserveFee = weightToFee(reserveWeight, new BN(config.networkBaseWeight[assetLocation.chainId]));
+  const reserveFee = weightToFee(reserveWeight, new BN(assetLocation.reserveFee.mode.value));
 
   return fee.add(reserveFee);
 };
@@ -102,7 +103,7 @@ export const estimateRequiredDestWeight = (
   const weight = getEstimatedWeight(
     config.instructions,
     xcmTransfer.destination.fee.instructions,
-    new BN(xcmTransfer.destination.fee.mode.value),
+    new BN(config.networkBaseWeight[xcmTransfer.destination.chainId]),
   );
 
   const isReserveChain = [originChain, xcmTransfer.destination.chainId].includes(assetLocation.chainId);
@@ -112,7 +113,7 @@ export const estimateRequiredDestWeight = (
   const reserveWeight = getEstimatedWeight(
     config.instructions,
     assetLocation.reserveFee.instructions,
-    new BN(assetLocation.reserveFee.mode.value),
+    new BN(config.networkBaseWeight[assetLocation.chainId]),
   );
 
   return weight.gte(reserveWeight) ? weight : reserveWeight;
@@ -129,7 +130,7 @@ const JunctionType: Record<string, string> = {
 
 type JunctionTypeKey = keyof typeof JunctionType;
 
-const JunctionWeight: Record<JunctionTypeKey, number> = {
+const JunctionHierarchyLevel: Record<JunctionTypeKey, number> = {
   parachainId: 0,
   palletInstance: 1,
   accountKey: 1,
@@ -139,7 +140,7 @@ const JunctionWeight: Record<JunctionTypeKey, number> = {
 };
 
 export const sortJunctions = (a: JunctionTypeKey, b: JunctionTypeKey): number => {
-  return JunctionWeight[a] - JunctionWeight[b];
+  return JunctionHierarchyLevel[a] - JunctionHierarchyLevel[b];
 };
 
 export const createJunctionFromObject = (data: {}) => {
@@ -196,7 +197,7 @@ const getRelativeAssetLocation = (
           },
         },
         fun: {
-          Fungible: amount.toNumber(),
+          Fungible: amount,
         },
       },
     ],
@@ -220,7 +221,7 @@ const getAbsoluteAssetLocation = (
           },
         },
         fun: {
-          Fungible: amount.toNumber(),
+          Fungible: amount,
         },
       },
     ],
@@ -246,7 +247,7 @@ const getConcreteAssetLocation = (
           },
         },
         fun: {
-          Fungible: amount.toNumber(),
+          Fungible: amount,
         },
       },
     ],

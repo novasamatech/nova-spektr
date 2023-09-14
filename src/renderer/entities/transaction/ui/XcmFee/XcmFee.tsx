@@ -5,6 +5,7 @@ import { Asset, AssetBalance } from '@renderer/entities/asset';
 import { Transaction } from '@renderer/entities/transaction';
 import { Shimmering } from '@renderer/shared/ui';
 import { XcmConfig, estimateFee } from '@renderer/shared/api/xcm';
+import { toLocalChainId } from '@renderer/shared/lib/utils';
 
 type Props = {
   multiply?: number;
@@ -37,13 +38,13 @@ export const XcmFee = memo(
         updateFee('0');
         setIsLoading(false);
       } else {
-        const originChainId = transaction.chainId.replace('0x', '');
-        const destinationChainId = transaction.args.destinationChain?.replace('0x', '');
+        const originChainId = toLocalChainId(transaction.chainId);
+        const destinationChainId = toLocalChainId(transaction.args.destinationChain);
         const configChain = config.chains.find((c) => c.chainId === originChainId);
         const configAsset = configChain?.assets.find((a) => a.assetId === asset.assetId);
         const configXcmTransfer = configAsset?.xcmTransfers.find((t) => t.destination.chainId === destinationChainId);
 
-        if (configXcmTransfer && configAsset) {
+        if (originChainId && configXcmTransfer && configAsset) {
           const fee = estimateFee(
             config,
             config.assetsLocation[configAsset.assetLocation],
