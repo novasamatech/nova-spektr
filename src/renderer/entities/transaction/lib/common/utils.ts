@@ -2,13 +2,7 @@ import { ApiPromise } from '@polkadot/api';
 import { SpRuntimeDispatchError } from '@polkadot/types/lookup';
 
 import { Transaction, DecodedTransaction } from '@renderer/entities/transaction/model/transaction';
-import {
-  MAX_WEIGHT,
-  OLD_MULTISIG_ARGS_AMOUNT,
-  CONTROLLER_ARG_NAME,
-  DEST_WEIGHT_ARG_NAME,
-  XcmTypes
-} from './constants';
+import { MAX_WEIGHT, OLD_MULTISIG_ARGS_AMOUNT, CONTROLLER_ARG_NAME, DEST_WEIGHT_ARG_NAME, XcmTypes } from './constants';
 
 export const decodeDispatchError = (error: SpRuntimeDispatchError, api: ApiPromise): string => {
   let errorInfo = error.toString();

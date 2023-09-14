@@ -7,7 +7,6 @@ import { TransferTypes, XcmTypes } from '@renderer/entities/transaction';
 import { Account } from '@renderer/entities/account';
 import { Signatory } from '@renderer/entities/signatory';
 import type { Contact } from '@renderer/entities/contact';
-import { TransferTypes, XcmTypes } from '@renderer/entities/transaction';
 
 export const TRANSACTION_UNKNOWN = 'operations.titles.unknown';
 

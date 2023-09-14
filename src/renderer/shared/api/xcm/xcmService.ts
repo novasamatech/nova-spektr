@@ -1,6 +1,5 @@
 import { BN, BN_TEN, BN_ZERO } from '@polkadot/util';
 import { ApiPromise } from '@polkadot/api';
-import { VersionedMultiAsset } from '@polkadot/types/interfaces';
 import get from 'lodash/get';
 
 import { XCM_URL, XCM_KEY } from './common/constants';
@@ -176,7 +175,7 @@ export const getAssetLocation = (
   assets: Record<AssetName, AssetLocation>,
   amount: BN,
 ): Object | undefined => {
-  const PathMap: Record<PathType, () => VersionedMultiAsset | undefined> = {
+  const PathMap: Record<PathType, () => Object | undefined> = {
     relative: () => getRelativeAssetLocation(assets[asset.assetLocation].multiLocation),
     absolute: () => getAbsoluteAssetLocation(assets[asset.assetLocation].multiLocation),
     concrete: () => getConcreteAssetLocation(asset.assetLocationPath.path),
