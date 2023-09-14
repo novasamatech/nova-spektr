@@ -1,7 +1,7 @@
 # Effector
 
 ### Sample with type guard
-Sometimes you need to filter `effect` result and pass it further into `target`, but TypeScript warns you that
+Sometimes you need to filter `effector` result and pass it further into `target`, but TypeScript warns you that
 types do not align: `error: clock should extend target type`.
 
 To fix this you need to provide a `type guard` as `filter` return value. 
