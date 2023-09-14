@@ -152,12 +152,14 @@ export const InitOperation = ({
         nativeToken={nativeToken}
         addressPrefix={addressPrefix}
         fee={fee}
-        xcmFee={xcmFee}
-        xcmWeight={xcmWeight}
-        xcmAsset={xcmAsset || undefined}
-        xcmDest={xcmDest || undefined}
-        xcmBeneficiary={xcmBeneficiary || undefined}
-        xcmTransfer={xcmTransfer || undefined}
+        xcmParams={{
+          fee: xcmFee,
+          weight: xcmWeight,
+          dest: xcmDest || undefined,
+          beneficiary: xcmBeneficiary || undefined,
+          transfer: xcmTransfer || undefined,
+          asset: xcmAsset || undefined,
+        }}
         deposit={deposit}
         feeIsLoading={feeIsLoading}
         destinations={destinations}
@@ -176,11 +178,12 @@ export const InitOperation = ({
           tx && (
             <OperationFooter
               api={api}
-              asset={asset}
+              asset={nativeToken}
               account={activeAccount}
               totalAccounts={1}
               transaction={tx}
               xcmConfig={config || undefined}
+              xcmAsset={asset}
               onXcmFeeChange={sendAssetModel.events.xcmFeeChanged}
               onFeeChange={setFee}
               onFeeLoading={setFeeIsLoading}

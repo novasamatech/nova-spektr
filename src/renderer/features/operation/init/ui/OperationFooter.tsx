@@ -15,6 +15,7 @@ type Props = {
   account: Account | MultisigAccount;
   totalAccounts: number;
   xcmConfig?: XcmConfig;
+  xcmAsset?: Asset;
   onXcmFeeChange?: (value: string) => void;
   onDepositChange: (value: string) => void;
   onFeeChange: (value: string) => void;
@@ -28,6 +29,7 @@ export const OperationFooter = ({
   account,
   totalAccounts,
   xcmConfig,
+  xcmAsset,
   onXcmFeeChange,
   onDepositChange,
   onFeeChange,
@@ -84,12 +86,12 @@ export const OperationFooter = ({
         </div>
       )}
 
-      {isXcmTransfer && xcmConfig && (
+      {isXcmTransfer && xcmConfig && xcmAsset && (
         <div className="flex justify-between items-center gap-x-2">
           <FootnoteText className="text-text-tertiary">{t('operation.xcmFee')}</FootnoteText>
           <FootnoteText className="text-text-tertiary">
             <XcmFee
-              asset={asset}
+              asset={xcmAsset}
               transaction={transaction}
               config={xcmConfig}
               onFeeChange={onXcmFeeChange}

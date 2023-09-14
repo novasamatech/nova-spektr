@@ -49,16 +49,19 @@ type Props = {
   addressPrefix: number;
   fee: string;
   feeIsLoading: boolean;
-  xcmDest?: Object;
-  xcmBeneficiary?: Object;
-  xcmAsset?: Object;
-  xcmTransfer?: XcmTransfer;
-  xcmFee: string;
-  xcmWeight: string;
+  xcmParams: {
+    dest?: Object;
+    beneficiary?: Object;
+    asset?: Object;
+    transfer?: XcmTransfer;
+    fee: string;
+    weight: string;
+  };
   deposit: string;
   footer: ReactNode;
   header?: ReactNode;
   destinations: Chain[];
+
   onSubmit: (transferTx: Transaction, multisig?: { multisigTx: Transaction; description: string }) => void;
   onChangeAmount: (amount: string) => void;
   onDestinationChainChange: (destinationChain: ChainId) => void;
@@ -86,12 +89,7 @@ export const TransferForm = ({
   fee,
   deposit,
   destinations,
-  xcmFee,
-  xcmAsset,
-  xcmBeneficiary,
-  xcmDest,
-  xcmTransfer,
-  xcmWeight,
+  xcmParams,
 }: Props) => {
   const { t } = useI18n();
   const { getBalance } = useBalance();
@@ -196,15 +194,15 @@ export const TransferForm = ({
     }
   }, [fee]);
 
-  const isXcmTransfer = destinationChain?.value !== chainId && xcmTransfer;
-  const isXcmValid = xcmAsset && xcmBeneficiary && xcmDest;
+  const isXcmTransfer = destinationChain?.value !== chainId && !!xcmParams.transfer;
+  const isXcmValid = xcmParams.fee && xcmParams.asset && xcmParams.beneficiary && xcmParams.dest;
 
   useEffect(() => {
     if (!account || !amount || !validateAddress(destination)) return;
 
     const transferPayload = getTransferTx(account.accountId);
 
-    if (isMultisig(account) && signer && (!isXcmTransfer || (xcmFee && xcmAsset && xcmDest))) {
+    if (isMultisig(account) && signer && (!isXcmTransfer || isXcmValid)) {
       const multisigTx = getMultisigTx(account, signer.accountId, transferPayload);
 
       setMultisigTx(multisigTx);
@@ -212,7 +210,7 @@ export const TransferForm = ({
 
     setTransferTx(transferPayload);
     onTxChange(transferPayload);
-  }, [account, signer, destination, amount, destinationChain, xcmFee, xcmAsset, xcmDest, isXcmTransfer]);
+  }, [account, signer, destination, amount, destinationChain, isXcmValid, isXcmTransfer]);
 
   const getXcmTransferType = (type: XcmTransferType): TransactionType => {
     if (type === 'xtokens') {
@@ -241,17 +239,17 @@ export const TransferForm = ({
       ...(!isNativeTransfer && { asset: getAssetId(asset) }),
     };
 
-    if (isXcmTransfer) {
-      transactionType = getXcmTransferType(xcmTransfer.type);
+    if (isXcmTransfer && xcmParams.transfer) {
+      transactionType = getXcmTransferType(xcmParams.transfer.type);
 
       args = {
         ...args,
         destinationChain: destinationChain?.value,
-        xcmFee,
-        xcmAsset,
-        xcmDest,
-        xcmBeneficiary,
-        xcmWeight,
+        xcmFee: xcmParams.fee,
+        xcmAsset: xcmParams.asset,
+        xcmDest: xcmParams.dest,
+        xcmBeneficiary: xcmParams.beneficiary,
+        xcmWeight: xcmParams.weight,
       };
     } else {
       transactionType = isNativeTransfer ? TransactionType.TRANSFER : TransferType[asset.type!];
@@ -296,14 +294,17 @@ export const TransferForm = ({
 
   const validateBalance = (amount: string): boolean => {
     if (!accountBalance) return false;
+    const amountBN = new BN(formatAmount(amount, asset.precision));
+    const xcmFeeBN = new BN(xcmParams.fee || 0);
 
-    return new BN(formatAmount(amount, asset.precision)).lte(new BN(accountBalance));
+    return amountBN.add(xcmFeeBN).lte(new BN(accountBalance));
   };
 
   const validateBalanceForFee = (amount: string): boolean => {
     const balance = isMultisig(account) ? signerBalance : accountBalance;
     const nativeTokenBalance = isMultisig(account) ? signerNativeTokenBalance : accountNativeTokenBalance;
     const amountBN = new BN(formatAmount(amount, asset.precision));
+    const xcmFeeBN = new BN(xcmParams.fee || 0);
 
     if (!balance) return false;
 
@@ -312,24 +313,25 @@ export const TransferForm = ({
     }
 
     if (isMultisig(account)) {
-      return new BN(fee).add(amountBN).lte(new BN(balance));
+      return new BN(fee).add(amountBN).add(xcmFeeBN).lte(new BN(balance));
     }
 
-    return new BN(fee)
-      .add(amountBN)
-      .add(new BN(xcmFee || 0))
-      .lte(new BN(balance));
+    return new BN(fee).add(amountBN).add(xcmFeeBN).lte(new BN(balance));
   };
 
   const validateBalanceForFeeAndDeposit = (): boolean => {
     if (!isMultisig(account)) return true;
     if (!signerBalance) return false;
 
+    const amountBN = new BN(formatAmount(amount, asset.precision));
+    const xcmFeeBN = new BN(xcmParams.fee || 0);
+    const feeBN = new BN(fee);
+
     if (signerNativeTokenBalance) {
-      return new BN(deposit).add(new BN(fee)).lte(new BN(signerNativeTokenBalance));
+      return new BN(deposit).add(feeBN).lte(new BN(signerNativeTokenBalance));
     }
 
-    return new BN(deposit).add(new BN(fee)).lte(new BN(signerBalance));
+    return new BN(deposit).add(feeBN).add(amountBN).add(xcmFeeBN).lte(new BN(signerBalance));
   };
 
   const submitTransaction: SubmitHandler<TransferFormData> = async ({ description }) => {

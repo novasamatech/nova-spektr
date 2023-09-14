@@ -53,17 +53,18 @@ const validateBalanceForAmount = async ({ transaction, ...props }: Props): Promi
 };
 
 const validateBalanceForFee = async ({ transaction, getTransactionFee, api, ...props }: Props): Promise<boolean> => {
-  const amount = transaction.args.value;
+  const amountBN = new BN(transaction.args.value);
   const nativeTokenBalance = await getNativeTokenBalance({ transaction, api, getTransactionFee, ...props });
   const tokenBalance = await getTokenBalance({ transaction, api, getTransactionFee, ...props });
   const transferableBalance = transferableAmount(tokenBalance);
   const transferableNativeTokenBalance = transferableAmount(nativeTokenBalance);
   const fee = await getTransactionFee(transaction, api);
   const feeBN = new BN(fee);
+  const xcmFeeBN = new BN(transaction.args.xcmFee || 0);
 
   return nativeTokenBalance
     ? new BN(transferableNativeTokenBalance).gte(feeBN)
-    : new BN(transferableBalance).gte(feeBN.add(new BN(amount)));
+    : new BN(transferableBalance).gte(feeBN.add(amountBN).add(xcmFeeBN));
 };
 
 export const getOperationErrors = (
