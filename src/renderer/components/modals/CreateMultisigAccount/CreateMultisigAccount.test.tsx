@@ -1,8 +1,10 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, act } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
+import { fork } from 'effector';
 import noop from 'lodash/noop';
 
 import { TEST_ACCOUNT_ID } from '@renderer/shared/lib/utils';
+import { contactModel } from '@renderer/entities/contact';
 import { CreateMultisigAccount } from './CreateMultisigAccount';
 
 jest.mock('@renderer/app/providers', () => ({
@@ -27,12 +29,6 @@ jest.mock('@renderer/entities/account', () => ({
     addAccount: jest.fn(),
     setActiveAccount: jest.fn(),
     getAccounts: jest.fn().mockResolvedValue([{ name: 'Test Wallet', accountId: TEST_ACCOUNT_ID }]),
-  }),
-}));
-
-jest.mock('@renderer/entities/contact', () => ({
-  useContact: jest.fn().mockReturnValue({
-    getLiveContacts: jest.fn().mockReturnValue([]),
   }),
 }));
 
@@ -62,10 +58,15 @@ jest.mock('./components', () => ({
   ConfirmSignatories: () => <span>confirmSignatories</span>,
 }));
 
-describe('pages/CreateMultisigAccount', () => {
-  test('should render component', () => {
-    render(<CreateMultisigAccount isOpen={true} onClose={noop} />, { wrapper: MemoryRouter });
+describe('screen/CreateMultisigAccount', () => {
+  test('should render component', async () => {
+    fork({
+      values: new Map().set(contactModel.$contacts, []),
+    });
 
+    await act(async () => {
+      render(<CreateMultisigAccount isOpen={true} onClose={noop} />, { wrapper: MemoryRouter });
+    });
     const text = screen.getByText('createMultisigAccount.title');
     const form = screen.getByText('walletForm');
     const select = screen.getByText('selectSignatories');

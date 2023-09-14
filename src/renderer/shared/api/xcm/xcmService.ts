@@ -1,9 +1,14 @@
 import { BN, BN_TEN, BN_ZERO } from '@polkadot/util';
 import { ApiPromise } from '@polkadot/api';
-import { VersionedMultiAsset, VersionedMultiLocation } from '@polkadot/types/interfaces';
 import get from 'lodash/get';
 
 import { XCM_URL, XCM_KEY } from './common/constants';
+import { AccountId, ChainId, HexString } from '@renderer/domain/shared-kernel';
+import { Chain } from '@renderer/entities/chain';
+import { getTypeVersion, toLocalChainId, getAssetId } from '@renderer/shared/lib/utils';
+import { XcmPalletTransferArgs, XTokenPalletTransferArgs } from '@renderer/entities/transaction';
+import { useChains } from '@renderer/entities/network';
+import { toRawString } from './common/utils';
 import {
   XcmConfig,
   AssetLocation,
@@ -13,17 +18,9 @@ import {
   ChainXCM,
   InstructionType,
   Instructions,
-  NetworkBaseWeight,
   XcmTransfer,
   PathType,
 } from './common/types';
-import { AccountId, ChainId, HexString } from '@renderer/domain/shared-kernel';
-// TODO: Move chain to shared
-import { Chain } from '@renderer/entities/chain';
-import { XcmPalletTransferArgs, XTokenPalletTransferArgs } from '@renderer/entities/transaction';
-import { useChains } from '@renderer/entities/network';
-import { getAssetId } from '@renderer/shared/lib/utils';
-import { toRawString } from './common/utils';
 
 export const fetchXcmConfig = async (): Promise<XcmConfig> => {
   const response = await fetch(XCM_URL, { cache: 'default' });
@@ -48,7 +45,7 @@ export const saveXcmConfig = (config: XcmConfig) => {
 };
 
 export const getAvailableDirections = (chains: ChainXCM[], assetId: number, chainId: ChainId): XcmTransfer[] => {
-  const chain = chains.find((c) => c.chainId === chainId);
+  const chain = chains.find((c) => c.chainId === toLocalChainId(chainId));
   const asset = chain?.assets.find((a) => a.assetId === assetId);
 
   return asset?.xcmTransfers || [];
@@ -73,33 +70,57 @@ export const getEstimatedWeight = (
 };
 
 export const estimateFee = (
-  instructions: Instructions,
-  baseWeights: NetworkBaseWeight,
+  config: XcmConfig,
   assetLocation: AssetLocation,
   originChain: string,
   xcmTransfer: XcmTransfer,
 ): BN => {
   const weight = getEstimatedWeight(
-    instructions,
+    config.instructions,
     xcmTransfer.destination.fee.instructions,
-    new BN(xcmTransfer.destination.fee.mode.value),
+    new BN(config.networkBaseWeight[xcmTransfer.destination.chainId]),
   );
 
-  const fee = weightToFee(weight, new BN(baseWeights[xcmTransfer.destination.chainId]));
+  const fee = weightToFee(weight, new BN(xcmTransfer.destination.fee.mode.value));
 
   const isReserveChain = [originChain, xcmTransfer.destination.chainId].includes(assetLocation.chainId);
 
   if (isReserveChain) return fee;
 
   const reserveWeight = getEstimatedWeight(
-    instructions,
+    config.instructions,
     assetLocation.reserveFee.instructions,
-    new BN(assetLocation.reserveFee.mode.value),
+    new BN(config.networkBaseWeight[assetLocation.chainId]),
   );
 
-  const reserveFee = weightToFee(reserveWeight, new BN(baseWeights[assetLocation.chainId]));
+  const reserveFee = weightToFee(reserveWeight, new BN(assetLocation.reserveFee.mode.value));
 
   return fee.add(reserveFee);
+};
+
+export const estimateRequiredDestWeight = (
+  config: XcmConfig,
+  assetLocation: AssetLocation,
+  originChain: string,
+  xcmTransfer: XcmTransfer,
+): BN => {
+  const weight = getEstimatedWeight(
+    config.instructions,
+    xcmTransfer.destination.fee.instructions,
+    new BN(config.networkBaseWeight[xcmTransfer.destination.chainId]),
+  );
+
+  const isReserveChain = [originChain, xcmTransfer.destination.chainId].includes(assetLocation.chainId);
+
+  if (isReserveChain) return weight;
+
+  const reserveWeight = getEstimatedWeight(
+    config.instructions,
+    assetLocation.reserveFee.instructions,
+    new BN(config.networkBaseWeight[assetLocation.chainId]),
+  );
+
+  return weight.gte(reserveWeight) ? weight : reserveWeight;
 };
 
 const JunctionType: Record<string, string> = {
@@ -110,7 +131,21 @@ const JunctionType: Record<string, string> = {
   accountId: 'AccountId32',
   generalIndex: 'GeneralIndex',
 };
+
 type JunctionTypeKey = keyof typeof JunctionType;
+
+const JunctionHierarchyLevel: Record<JunctionTypeKey, number> = {
+  parachainId: 0,
+  palletInstance: 1,
+  accountKey: 1,
+  accountId: 1,
+  generalKey: 2,
+  generalIndex: 2,
+};
+
+export const sortJunctions = (a: JunctionTypeKey, b: JunctionTypeKey): number => {
+  return JunctionHierarchyLevel[a] - JunctionHierarchyLevel[b];
+};
 
 export const createJunctionFromObject = (data: {}) => {
   const entries = Object.entries(data);
@@ -126,9 +161,11 @@ export const createJunctionFromObject = (data: {}) => {
   }
 
   return {
-    [`X${entries.length}`]: entries.map((e) => ({
-      [JunctionType[e[0] as JunctionTypeKey]]: e[1],
-    })),
+    [`X${entries.length}`]: entries
+      .sort((a, b) => sortJunctions(a[0], b[0]))
+      .map((e) => ({
+        [JunctionType[e[0] as JunctionTypeKey]]: e[1],
+      })),
   };
 };
 
@@ -137,108 +174,110 @@ export const getAssetLocation = (
   asset: AssetXCM,
   assets: Record<AssetName, AssetLocation>,
   amount: BN,
-): VersionedMultiAsset | undefined => {
-  const PathMap: Record<PathType, () => VersionedMultiAsset | undefined> = {
-    relative: () => getRelativeAssetLocation(api, amount, assets[asset.assetLocation].multiLocation),
-    absolute: () => getAbsoluteAssetLocation(api, amount, assets[asset.assetLocation].multiLocation),
-    concrete: () => getConcreteAssetLocation(api, amount, asset.assetLocationPath.path),
+): Object | undefined => {
+  const PathMap: Record<PathType, () => Object | undefined> = {
+    relative: () => getRelativeAssetLocation(assets[asset.assetLocation].multiLocation),
+    absolute: () => getAbsoluteAssetLocation(assets[asset.assetLocation].multiLocation),
+    concrete: () => getConcreteAssetLocation(asset.assetLocationPath.path),
   };
 
-  return PathMap[asset.assetLocationPath.type]();
+  const location = PathMap[asset.assetLocationPath.type]();
+  const assetVersionType = getTypeVersion(api, 'VersionedMultiAssets');
+
+  return {
+    [assetVersionType]: [
+      {
+        id: {
+          Concrete: location,
+        },
+        fun: {
+          Fungible: amount,
+        },
+      },
+    ],
+  };
 };
 
-const getRelativeAssetLocation = (
-  api: ApiPromise,
-  amount: BN,
-  assetLocation?: LocalMultiLocation,
-): VersionedMultiAsset | undefined => {
+const getRelativeAssetLocation = (assetLocation?: LocalMultiLocation): Object | undefined => {
   if (!assetLocation) return;
 
   const { parachainId: _, ...location } = assetLocation;
 
-  return api.createType('VersionedMultiAsset', {
-    V2: {
-      id: {
-        Concrete: {
-          parents: 0,
-          interior: Object.values(location).length ? createJunctionFromObject(location) : 'Here',
-        },
-      },
-      fun: {
-        Fungible: amount.toNumber(),
-      },
-    },
-  });
+  return {
+    parents: 0,
+    interior: createJunctionFromObject(location),
+  };
 };
 
-const getAbsoluteAssetLocation = (
-  api: ApiPromise,
-  amount: BN,
-  assetLocation?: LocalMultiLocation,
-): VersionedMultiAsset | undefined => {
+const getAbsoluteAssetLocation = (assetLocation?: LocalMultiLocation): Object | undefined => {
   if (!assetLocation) return;
 
-  return api.createType('VersionedMultiAsset', {
-    V2: {
-      id: {
-        Concrete: {
-          parents: 1,
-          interior: Object.values(assetLocation).length ? createJunctionFromObject(assetLocation) : 'Here',
-        },
-      },
-      fungibility: {
-        Fungible: amount.toNumber(),
-      },
-    },
-  });
+  return {
+    parents: 1,
+    interior: createJunctionFromObject(assetLocation),
+  };
 };
 
-const getConcreteAssetLocation = (
-  api: ApiPromise,
-  amount: BN,
-  assetLocation?: LocalMultiLocation,
-): VersionedMultiAsset | undefined => {
+const getConcreteAssetLocation = (assetLocation?: LocalMultiLocation): Object | undefined => {
   if (!assetLocation) return;
 
   const { parents, ...location } = assetLocation;
 
-  return api.createType('VersionedMultiAsset', {
-    V2: {
-      id: {
-        Concrete: {
-          parents,
-          interior: Object.values(location).length ? createJunctionFromObject(location) : 'Here',
-        },
-      },
-      fun: {
-        Fungible: amount.toNumber(),
-      },
-    },
-  });
+  return {
+    parents,
+    interior: createJunctionFromObject(location),
+  };
 };
 
-export const getDestinationLocation = (
+export const getVersionedDestinationLocation = (
   api: ApiPromise,
   originChain: Pick<Chain, 'parentId'>,
   destinationParaId?: number,
   accountId?: AccountId,
-): VersionedMultiLocation | undefined => {
+): Object | undefined => {
+  const location = getDestinationLocation(originChain, destinationParaId, accountId);
+  const version = getTypeVersion(api, 'VersionedMultiLocation');
+
+  return {
+    [version]: location,
+  };
+};
+
+export const getDestinationLocation = (
+  originChain: Pick<Chain, 'parentId'>,
+  destinationParaId?: number,
+  accountId?: AccountId,
+): Object | undefined => {
   if (originChain.parentId && destinationParaId) {
-    return getSiblingLocation(api, destinationParaId, accountId);
+    return getSiblingLocation(destinationParaId, accountId);
   }
 
   if (originChain.parentId) {
-    return getParentLocation(api, accountId);
+    return getParentLocation(accountId);
   }
 
   if (destinationParaId) {
-    return getChildLocation(api, destinationParaId, accountId);
+    return getChildLocation(destinationParaId, accountId);
   }
 
   return undefined;
 };
 
-const getChildLocation = (api: ApiPromise, parachainId: number, accountId?: AccountId): VersionedMultiLocation => {
+export const getAccountLocation = (accountId?: AccountId): Object | undefined => {
+  return {
+    parents: 0,
+    interior: {
+      X1: {
+        accountId32: {
+          network: 'Any',
+          id: accountId,
+        },
+      },
+    },
+  };
+};
+
+const getChildLocation = (parachainId: number, accountId?: AccountId): Object => {
   const location: Record<string, any> = { parachainId };
 
   if (accountId) {
@@ -248,15 +287,13 @@ const getChildLocation = (api: ApiPromise, parachainId: number, accountId?: Acco
     };
   }
 
-  return api.createType('VersionedMultiLocation', {
-    V2: {
-      parents: 0,
-      interior: createJunctionFromObject(location),
-    },
-  });
+  return {
+    parents: 0,
+    interior: createJunctionFromObject(location),
+  };
 };
 
-const getParentLocation = (api: ApiPromise, accountId?: AccountId): VersionedMultiLocation => {
+const getParentLocation = (accountId?: AccountId): Object => {
   const location: Record<string, any> = {};
 
   if (accountId) {
@@ -266,15 +303,13 @@ const getParentLocation = (api: ApiPromise, accountId?: AccountId): VersionedMul
     };
   }
 
-  return api.createType('VersionedMultiLocation', {
-    V2: {
-      parents: 1,
-      interior: createJunctionFromObject(location),
-    },
-  });
+  return {
+    parents: 1,
+    interior: createJunctionFromObject(location),
+  };
 };
 
-const getSiblingLocation = (api: ApiPromise, parachainId: number, accountId?: AccountId): VersionedMultiLocation => {
+const getSiblingLocation = (parachainId: number, accountId?: AccountId): Object => {
   const location: Record<string, any> = { parachainId };
 
   if (accountId) {
@@ -284,12 +319,10 @@ const getSiblingLocation = (api: ApiPromise, parachainId: number, accountId?: Ac
     };
   }
 
-  return api.createType('VersionedMultiLocation', {
-    V2: {
-      parents: 1,
-      interior: createJunctionFromObject(location),
-    },
-  });
+  return {
+    parents: 1,
+    interior: createJunctionFromObject(location),
+  };
 };
 
 type ParsedPayload = {

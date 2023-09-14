@@ -22,7 +22,7 @@ export const TransactionAmount = ({ tx, ...balanceProps }: Props & BalanceProps)
     setAssets(chain?.assets || []);
   }, []);
 
-  const asset = getAssetById(tx.args.assetId, assets);
+  const asset = getAssetById(tx.args.asset, assets);
   const value = getTransactionAmount(tx);
 
   if (!asset || !value) return null;

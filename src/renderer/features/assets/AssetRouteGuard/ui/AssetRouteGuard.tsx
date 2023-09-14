@@ -20,6 +20,10 @@ export const AssetRouteGuard = ({ redirectPath, children }: Props) => {
   useEffect(() => {
     assetGuardModel.events.navigateApiChanged({ navigate, redirectPath });
     assetGuardModel.events.validateUrlParams(searchParams);
+
+    return () => {
+      assetGuardModel.events.storeCleared();
+    };
   }, [searchParams]);
 
   if (!chain || !asset) return null;

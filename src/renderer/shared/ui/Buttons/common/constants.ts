@@ -15,8 +15,8 @@ export const ViewClass: Record<`${Variant}_${Pallet}`, string> = {
 };
 
 export const SizeClass = {
-  sm: 'h-6.5 rounded-[34px] text-button-small',
-  md: 'h-10.5 rounded-[34px] text-button-large',
+  sm: 'h-6.5 box-border rounded-[34px] text-button-small',
+  md: 'h-10.5 box-border rounded-[34px] text-button-large',
 };
 
 export const Padding = {

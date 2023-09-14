@@ -40,7 +40,7 @@ export function limitedTeleportAssets(
   );
 }
 
-export function transferMultiAssets(
+export function transferMultiAsset(
   args: XTokenPalletTransferArgs,
   info: BaseTxInfo,
   options: OptionsWithMeta,
@@ -49,7 +49,7 @@ export function transferMultiAssets(
     {
       method: {
         args,
-        name: 'transferMultiassets',
+        name: 'transferMultiasset',
         pallet: 'xTokens',
       },
       ...info,

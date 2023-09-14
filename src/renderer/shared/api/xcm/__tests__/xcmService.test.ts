@@ -1,5 +1,3 @@
-import { ApiPromise } from '@polkadot/api';
-
 import { XCM_KEY } from '../common/constants';
 import {
   estimateFee,
@@ -15,11 +13,6 @@ import {
   XCMPALLET_TRANSFER_KSM_BIFROST,
   XCMPALLET_TRANSFER_HUB_ASTAR,
 } from './mock/xcmData';
-
-const mockApi = () =>
-  ({
-    createType: (_, typeParams) => typeParams,
-  } as ApiPromise);
 
 describe('shared/api/xcm/xcmService', () => {
   beforeEach(() => {
@@ -40,8 +33,7 @@ describe('shared/api/xcm/xcmService', () => {
 
   test('should calculate correct fee for ACA from Acala to Parallel ', () => {
     const fee = estimateFee(
-      CONFIG.instructions,
-      CONFIG.networkBaseWeight,
+      CONFIG,
       CONFIG.assetsLocation['ACA'],
       'fc41b9bd8ef8fe53d58c7ea67c794c7ec9a73daf05e6d54b14ff6342c99ba64c',
       CONFIG.chains[0].assets[0].xcmTransfers[1],
@@ -52,8 +44,7 @@ describe('shared/api/xcm/xcmService', () => {
 
   test('should calculate correct fee for DOT from Acala to Parallel', () => {
     const fee = estimateFee(
-      CONFIG.instructions,
-      CONFIG.networkBaseWeight,
+      CONFIG,
       CONFIG.assetsLocation['DOT'],
       'fc41b9bd8ef8fe53d58c7ea67c794c7ec9a73daf05e6d54b14ff6342c99ba64c',
       CONFIG.chains[0].assets[1].xcmTransfers[0],
@@ -63,39 +54,31 @@ describe('shared/api/xcm/xcmService', () => {
   });
 
   test('should calculate correct location for sibling prachain', () => {
-    const api = mockApi();
+    const location = getDestinationLocation({ parentId: '0x00' }, 2000) as any;
 
-    const location = getDestinationLocation(api, { parentId: '0x00' }, 2000) as any;
-
-    expect(location.V2.parents).toEqual(1);
-    expect(location.V2.interior.X1.Parachain).toEqual(2000);
+    expect(location.parents).toEqual(1);
+    expect(location.interior.X1.Parachain).toEqual(2000);
   });
 
   test('should calculate correct location for parent parachain', () => {
-    const api = mockApi();
+    const location = getDestinationLocation({ parentId: '0x00' }) as any;
 
-    const location = getDestinationLocation(api, { parentId: '0x00' }) as any;
-
-    expect(location.V2.parents).toEqual(1);
-    expect(location.V2.interior).toEqual('Here');
+    expect(location.parents).toEqual(1);
+    expect(location.interior).toEqual('Here');
   });
 
   test('should calculate correct address location for parent parachain', () => {
-    const api = mockApi();
+    const location = getDestinationLocation({ parentId: '0x00' }, undefined, '0x00') as any;
 
-    const location = getDestinationLocation(api, { parentId: '0x00' }, undefined, '0x00') as any;
-
-    expect(location.V2.parents).toEqual(1);
-    expect(location.V2.interior.X1.AccountId32.id).toEqual('0x00');
+    expect(location.parents).toEqual(1);
+    expect(location.interior.X1.AccountId32.id).toEqual('0x00');
   });
 
   test('should calculate correct location for child parachain', () => {
-    const api = mockApi();
+    const location = getDestinationLocation({ parentId: undefined }, 2000) as any;
 
-    const location = getDestinationLocation(api, { parentId: undefined }, 2000) as any;
-
-    expect(location.V2.parents).toEqual(0);
-    expect(location.V2.interior.X1.Parachain).toEqual(2000);
+    expect(location.parents).toEqual(0);
+    expect(location.interior.X1.Parachain).toEqual(2000);
   });
 
   test('should parse xcmPallet relaychain > parachain', () => {
