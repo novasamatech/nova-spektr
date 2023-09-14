@@ -16,9 +16,9 @@ import { OperationsFilter } from '@renderer/features/operation';
 
 export const Operations = () => {
   const { t, dateLocale } = useI18n();
+  const { connections } = useNetworkContext();
   const { getActiveMultisigAccount } = useAccount();
   const { getLiveAccountMultisigTxs } = useMultisigTx({});
-  const { connections } = useNetworkContext();
   const { getLiveEventsByKeys } = useMultisigEvent({});
 
   const account = getActiveMultisigAccount();

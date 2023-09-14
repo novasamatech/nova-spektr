@@ -21,7 +21,7 @@ const transaction = {
   },
 } as Transaction;
 
-describe('screen/Operations/components/ShortTransactionInfo', () => {
+describe('pages/Operations/components/ShortTransactionInfo', () => {
   test('should render component', async () => {
     await act(async () => {
       render(

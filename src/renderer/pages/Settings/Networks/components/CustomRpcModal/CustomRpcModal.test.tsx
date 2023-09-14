@@ -16,7 +16,7 @@ jest.mock('@renderer/app/providers', () => ({
   })),
 }));
 
-describe('screen/Settings/Networks/CustomRpcModal', () => {
+describe('pages/Settings/Networks/CustomRpcModal', () => {
   const defaultProps = {
     network: {
       name: 'Westend',

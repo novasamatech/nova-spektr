@@ -57,7 +57,7 @@ jest.mock('./components/NetworkAssets/NetworkAssets', () => ({
   NetworkAssets: () => <span>NetworkAssets</span>,
 }));
 
-describe('screen/Assets/Assets', () => {
+describe('pages/Assets/Assets', () => {
   test('should render component', () => {
     render(<AssetsList />);
 

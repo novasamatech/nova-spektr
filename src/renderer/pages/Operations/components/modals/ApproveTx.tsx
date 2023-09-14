@@ -10,8 +10,8 @@ import { useToggle } from '@renderer/shared/lib/hooks';
 import { Account, MultisigAccount, useAccount } from '@renderer/entities/account';
 import { ExtendedChain } from '@renderer/entities/network';
 import { Address, HexString, SigningType, Timepoint } from '@renderer/domain/shared-kernel';
-import { TEST_ADDRESS, toAddress, transferableAmount } from '@renderer/shared/lib/utils';
-import { getTransactionTitle } from '../../common/utils';
+import { TEST_ADDRESS, toAddress, transferableAmount, getAssetById } from '@renderer/shared/lib/utils';
+import { getModalTransactionTitle } from '../../common/utils';
 import { Submit } from '../ActionSteps/Submit';
 import { useBalance } from '@renderer/entities/asset';
 import Confirmation from '@renderer/pages/Operations/components/ActionSteps/Confirmation';
@@ -26,6 +26,7 @@ import {
   useCallDataDecoder,
   useTransaction,
   validateBalance,
+  isXcmTransaction,
 } from '@renderer/entities/transaction';
 
 type Props = {
@@ -66,7 +67,10 @@ const ApproveTx = ({ tx, account, connection }: Props) => {
   const [signature, setSignature] = useState<HexString>();
 
   const accounts = getLiveAccounts();
-  const transactionTitle = getTransactionTitle(tx.transaction);
+  const transactionTitle = getModalTransactionTitle(isXcmTransaction(tx.transaction), tx.transaction);
+
+  const nativeAsset = connection.assets[0];
+  const asset = getAssetById(tx.transaction?.args.assetId, connection.assets);
 
   const unsignedAccounts = accounts.filter((a) => {
     const isSignatory = account.signatories.find((s) => s.accountId === a.accountId);
@@ -76,8 +80,6 @@ const ApproveTx = ({ tx, account, connection }: Props) => {
 
     return isSignatory && notSigned && isCurrentChain && notWatchOnly;
   });
-
-  const nativeAsset = connection.assets[0];
 
   useEffect(() => {
     setFeeTx(getMultisigTx(TEST_ADDRESS));
@@ -205,7 +207,7 @@ const ApproveTx = ({ tx, account, connection }: Props) => {
       <BaseModal
         closeButton
         isOpen={activeStep !== Step.SUBMIT && isModalOpen}
-        title={<OperationTitle title={`${t(transactionTitle)} ${t('on')}`} chainId={tx.chainId} />}
+        title={<OperationTitle title={t(transactionTitle, { asset: asset?.symbol })} chainId={tx.chainId} />}
         contentClass={activeStep === Step.SIGNING ? '' : undefined}
         headerClass="py-3 px-5 max-w-[440px]"
         panelClass="w-[440px]"

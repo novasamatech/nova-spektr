@@ -14,9 +14,17 @@ type Props = {
   fontClass?: string;
   className?: string;
   iconSize?: number;
+  showChainName?: boolean;
 } & (WithChain | WithChainId);
 
-export const ChainTitle = ({ as: Tag = 'div', fontClass, className, iconSize = 16, ...chainProps }: Props) => {
+export const ChainTitle = ({
+  as: Tag = 'div',
+  showChainName = true,
+  fontClass,
+  className,
+  iconSize = 16,
+  ...chainProps
+}: Props) => {
   const { getChainById } = useChains();
 
   const [chainObj, setChainObj] = useState<ChainType>();
@@ -25,9 +33,13 @@ export const ChainTitle = ({ as: Tag = 'div', fontClass, className, iconSize = 1
     if ('chain' in chainProps) {
       setChainObj(chainProps.chain);
     } else {
-      getChainById(chainProps.chainId).then(setChainObj);
+      setChainObj(getChainById(chainProps.chainId));
     }
   }, []);
+
+  if (!showChainName) {
+    return <ChainIcon src={chainObj?.icon} name={chainObj?.name} size={iconSize} />;
+  }
 
   return (
     <Tag className={cnTw('flex items-center gap-x-2', className)}>

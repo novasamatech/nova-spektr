@@ -1,6 +1,7 @@
 import { BN, BN_TEN, BN_ZERO } from '@polkadot/util';
 import { ApiPromise } from '@polkadot/api';
 import { VersionedMultiAsset, VersionedMultiLocation } from '@polkadot/types/interfaces';
+import get from 'lodash/get';
 
 import { XCM_URL, XCM_KEY } from './common/constants';
 import {
@@ -14,10 +15,15 @@ import {
   Instructions,
   NetworkBaseWeight,
   XcmTransfer,
+  PathType,
 } from './common/types';
-import { AccountId, ChainId } from '@renderer/domain/shared-kernel';
+import { AccountId, ChainId, HexString } from '@renderer/domain/shared-kernel';
 // TODO: Move chain to shared
 import { Chain } from '@renderer/entities/chain';
+import { XcmPalletTransferArgs, XTokenPalletTransferArgs } from '@renderer/entities/transaction';
+import { useChains } from '@renderer/entities/network';
+import { getAssetId } from '@renderer/shared/lib/utils';
+import { toRawString } from './common/utils';
 
 export const fetchXcmConfig = async (): Promise<XcmConfig> => {
   const response = await fetch(XCM_URL, { cache: 'default' });
@@ -132,11 +138,13 @@ export const getAssetLocation = (
   assets: Record<AssetName, AssetLocation>,
   amount: BN,
 ): VersionedMultiAsset | undefined => {
-  return {
+  const PathMap: Record<PathType, () => VersionedMultiAsset | undefined> = {
     relative: () => getRelativeAssetLocation(api, amount, assets[asset.assetLocation].multiLocation),
     absolute: () => getAbsoluteAssetLocation(api, amount, assets[asset.assetLocation].multiLocation),
     concrete: () => getConcreteAssetLocation(api, amount, asset.assetLocationPath.path),
-  }[asset.assetLocationPath.type]();
+  };
+
+  return PathMap[asset.assetLocationPath.type]();
 };
 
 const getRelativeAssetLocation = (
@@ -282,4 +290,169 @@ const getSiblingLocation = (api: ApiPromise, parachainId: number, accountId?: Ac
       interior: createJunctionFromObject(location),
     },
   });
+};
+
+type ParsedPayload = {
+  isRelayToken: boolean;
+  amount: string;
+  destParachain: number;
+  destAccountId: string;
+  toRelayChain: boolean;
+};
+
+type XcmPalletPayload = ParsedPayload & {
+  assetGeneralIndex: string;
+  type: 'xcmPallet';
+};
+
+type XTokensPayload = ParsedPayload & {
+  assetGeneralKey: string;
+  assetParachain: number;
+  type: 'xTokens';
+};
+
+export const parseXcmPalletExtrinsic = (
+  args: Omit<XcmPalletTransferArgs, 'feeAssetItem' | 'weightLimit'>,
+): XcmPalletPayload => {
+  const xcmVersion = Object.keys(args.dest as Object)[0];
+
+  const assetInterior = get(args.assets, `${xcmVersion}[0].id.Concrete.interior`) as Object;
+  const destInterior = get(args.dest, `${xcmVersion}.interior`) as Object;
+  const beneficiaryInterior = get(args.beneficiary, `${xcmVersion}.interior`) as Object;
+
+  const parsedPayload = {
+    isRelayToken: assetInterior === 'Here',
+    amount: toRawString(get(args.assets, `${xcmVersion}[0].fun.Fungible`)),
+    destParachain: 0,
+    destAccountId: '',
+    assetGeneralIndex: '',
+    toRelayChain: destInterior === 'Here',
+    type: 'xcmPallet' as const,
+  };
+
+  const beneficiaryJunction = Object.keys(beneficiaryInterior)[0];
+  parsedPayload.destAccountId = get(beneficiaryInterior, `${beneficiaryJunction}.AccountId32.id`);
+
+  const destJunction = Object.keys(destInterior)[0];
+  parsedPayload.destParachain = Number(toRawString(get(destInterior, `${destJunction}.Parachain`)));
+
+  if (!parsedPayload.isRelayToken) {
+    const assetJunction = Object.keys(assetInterior)[0];
+    const cols = getJunctionCols<{ GeneralIndex: string }>(assetInterior, assetJunction);
+    parsedPayload.assetGeneralIndex = toRawString(cols.GeneralIndex);
+  }
+
+  return parsedPayload;
+};
+
+export const parseXTokensExtrinsic = (
+  args: Omit<XTokenPalletTransferArgs, 'destWeight' | 'destWeightLimit'>,
+): XTokensPayload => {
+  const xcmVersion = Object.keys(args.dest as Object)[0];
+
+  const assetInterior = get(args.asset, `${xcmVersion}.id.Concrete.interior`) as Object;
+  const destInterior = get(args.dest, `${xcmVersion}.interior`) as Object;
+
+  const parsedPayload = {
+    isRelayToken: assetInterior === 'Here',
+    amount: toRawString(get(args.asset, `${xcmVersion}.fun.Fungible`)),
+    destParachain: 0,
+    destAccountId: '',
+    assetParachain: 0,
+    assetGeneralKey: '',
+    toRelayChain: false,
+    type: 'xTokens' as const,
+  };
+
+  if (!parsedPayload.isRelayToken) {
+    const assetJunction = Object.keys(assetInterior)[0];
+    const cols = getJunctionCols<{ Parachain: number; GeneralKey: string }>(assetInterior, assetJunction);
+    parsedPayload.assetParachain = cols.Parachain;
+    parsedPayload.assetGeneralKey = cols.GeneralKey;
+  }
+
+  const destJunction = Object.keys(destInterior)[0];
+  parsedPayload.toRelayChain = destJunction === 'X1';
+
+  if (parsedPayload.toRelayChain) {
+    parsedPayload.destAccountId = get(destInterior, 'X1.AccountId32.id');
+  } else {
+    const cols = getJunctionCols<{ Parachain?: number }>(destInterior, destJunction);
+    if (cols.Parachain) {
+      parsedPayload.destParachain = cols.Parachain;
+      parsedPayload.toRelayChain = false;
+    }
+    parsedPayload.destAccountId = get(cols, 'AccountId32.id');
+  }
+
+  return parsedPayload;
+};
+
+type DecodedPayload = {
+  assetId?: number | string;
+  destinationChain?: HexString;
+  value: string;
+  dest: string;
+};
+
+const getJunctionCols = <T extends Object>(interior: Object, path: string): T => {
+  return Object.values(get(interior, path) as Object).reduce((acc, item) => {
+    return { ...acc, ...item };
+  }, {});
+};
+
+export const decodeXcm = (chainId: ChainId, data: XcmPalletPayload | XTokensPayload): DecodedPayload => {
+  const { getChainById } = useChains();
+
+  const config = getXcmConfig();
+  if (!config) return {} as DecodedPayload;
+
+  let destinationChain: HexString | undefined;
+  if (data.toRelayChain) {
+    destinationChain = getChainById(chainId)?.parentId;
+  } else {
+    const destination = Object.values(config.assetsLocation).find(({ multiLocation }) => {
+      return multiLocation.parachainId === data.destParachain;
+    });
+
+    destinationChain = destination ? `0x${destination.chainId}` : undefined;
+  }
+
+  const configOriginChain = config.chains.find((c) => `0x${c.chainId}` === chainId);
+
+  let assetId: number | string | undefined;
+  if (!data.isRelayToken && configOriginChain) {
+    const filteredAssetLocations = configOriginChain.assets.reduce<[number, AssetLocation][]>((acc, asset) => {
+      acc.push([asset.assetId, config.assetsLocation[asset.assetLocation]]);
+
+      return acc;
+    }, []);
+
+    const assetKeyVal = filteredAssetLocations.find(([_, { multiLocation }]) => {
+      const xcmPalletMatch = data.type === 'xcmPallet' && multiLocation.generalIndex === data.assetGeneralIndex;
+
+      const xTokensMatch =
+        data.type === 'xTokens' &&
+        multiLocation.parachainId === data.assetParachain &&
+        multiLocation.generalKey === data.assetGeneralKey;
+
+      return xcmPalletMatch || xTokensMatch;
+    });
+
+    if (assetKeyVal) {
+      const assetFromChain = getChainById(chainId)?.assets.find((asset) => asset.assetId === assetKeyVal[0]);
+      if (assetFromChain) {
+        assetId = getAssetId(assetFromChain);
+      }
+    } else {
+      console.log(`XCM config cannot handle - ${data}`);
+    }
+  }
+
+  return {
+    assetId,
+    destinationChain,
+    value: data.amount,
+    dest: data.destAccountId,
+  };
 };

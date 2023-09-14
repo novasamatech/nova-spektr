@@ -33,7 +33,7 @@ const renderAssetCard = (canMakeActions = false) => {
   render(<AssetCard {...defaultProps} canMakeActions={canMakeActions} />, { wrapper: BrowserRouter });
 };
 
-describe('screen/Assets/AssetCard', () => {
+describe('pages/Assets/AssetCard', () => {
   test('should render component', () => {
     renderAssetCard();
 

@@ -1,8 +1,8 @@
 import { ApiPromise } from '@polkadot/api';
 import { SpRuntimeDispatchError } from '@polkadot/types/lookup';
 
-import { Transaction } from '@renderer/entities/transaction/model/transaction';
-import { MAX_WEIGHT, OLD_MULTISIG_ARGS_AMOUNT, CONTROLLER_ARG_NAME } from './constants';
+import { Transaction, DecodedTransaction } from '@renderer/entities/transaction/model/transaction';
+import { MAX_WEIGHT, OLD_MULTISIG_ARGS_AMOUNT, CONTROLLER_ARG_NAME, XcmTypes } from './constants';
 
 export const decodeDispatchError = (error: SpRuntimeDispatchError, api: ApiPromise): string => {
   let errorInfo = error.toString();
@@ -29,4 +29,10 @@ export const getMaxWeight = (api: ApiPromise, transaction: Transaction) => {
   const maxWeight = transaction.args.maxWeight || MAX_WEIGHT;
 
   return (isOldMultisigPallet(api) && maxWeight.refTime) || maxWeight;
+};
+
+export const isXcmTransaction = (transaction?: Transaction | DecodedTransaction): boolean => {
+  if (!transaction?.type) return false;
+
+  return XcmTypes.includes(transaction.type);
 };

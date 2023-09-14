@@ -111,7 +111,7 @@ export const SendAssetModal = ({ chain, asset, onClose }: Props) => {
     <BaseModal
       closeButton
       isOpen={isModalOpen}
-      title={<OperationTitle title={`${t('transfer.title', { asset: asset?.symbol })}`} chainId={chain.chainId} />}
+      title={<OperationTitle title={t('transfer.title', { asset: asset.symbol })} chainId={chain.chainId} />}
       contentClass={activeStep === Step.SIGNING ? '' : undefined}
       panelClass="w-[440px]"
       headerClass="py-3 px-5 max-w-[440px]"
@@ -126,7 +126,7 @@ export const SendAssetModal = ({ chain, asset, onClose }: Props) => {
         </div>
       ) : (
         <>
-          {activeStep === Step.INIT && asset && (
+          {activeStep === Step.INIT && (
             <InitOperation
               chainId={chain.chainId}
               asset={asset}

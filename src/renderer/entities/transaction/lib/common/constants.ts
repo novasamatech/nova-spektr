@@ -11,6 +11,12 @@ export const BOND_WITH_CONTROLLER_ARGS_AMOUNT = 3;
 
 export const CONTROLLER_ARG_NAME = 'controller';
 
+export const TRANSFER_SECTIONS = ['balances', 'assets', 'currencies', 'tokens'];
+
+export const XCM_SECTIONS = ['xcmPallet', 'polkadotXcm', 'xTokens'];
+
+export const STAKING_SECTION = 'staking';
+
 export const TransferTypes = [TransactionType.TRANSFER, TransactionType.ASSET_TRANSFER, TransactionType.ORML_TRANSFER];
 
 export const XcmTypes = [

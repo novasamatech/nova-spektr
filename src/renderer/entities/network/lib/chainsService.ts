@@ -18,29 +18,26 @@ const CHAINS: Record<string, any> = {
 };
 
 export function useChains(): IChainService {
-  const getChainsData = (): Promise<Chain[]> => {
-    return Promise.resolve(CHAINS[process.env.CHAINS_FILE || 'chains']);
+  const getChainsData = (): Chain[] => {
+    return CHAINS[process.env.CHAINS_FILE || 'chains'];
   };
 
-  const getChainById = (chainId: ChainId): Promise<Chain | undefined> => {
+  const getChainById = (chainId: ChainId): Chain | undefined => {
     const chainsData: Chain[] = CHAINS[process.env.CHAINS_FILE || 'chains'];
-    const chainMatch = chainsData.find((chain) => chain.chainId === chainId);
 
-    return Promise.resolve(chainMatch);
+    return chainsData.find((chain) => chain.chainId === chainId);
   };
 
-  const getStakingChainsData = (): Promise<Chain[]> => {
+  const getStakingChainsData = (): Chain[] => {
     const chainsData: Chain[] = CHAINS[process.env.CHAINS_FILE || 'chains'];
 
-    const stakingChains = chainsData.reduce<Chain[]>((acc, chain) => {
+    return chainsData.reduce<Chain[]>((acc, chain) => {
       if (getRelaychainAsset(chain.assets)) {
         acc.push(chain);
       }
 
       return acc;
     }, []);
-
-    return Promise.resolve(stakingChains);
   };
 
   const sortChains = <T extends ChainLike>(chains: T[]): T[] => {

@@ -4,10 +4,17 @@ import { SubmittableExtrinsic } from '@polkadot/api/types';
 import { HexString } from '@polkadot/util/types';
 import { Type } from '@polkadot/types';
 
-import { Address, CallData } from '@renderer/domain/shared-kernel';
+import { parseXcmPalletExtrinsic, parseXTokensExtrinsic, decodeXcm } from '@renderer/shared/api/xcm';
+import { Address, CallData, ChainId } from '@renderer/domain/shared-kernel';
 import { DecodedTransaction, TransactionType } from '@renderer/entities/transaction/model/transaction';
-import { BOND_WITH_CONTROLLER_ARGS_AMOUNT, OLD_MULTISIG_ARGS_AMOUNT } from './common/constants';
 import { ICallDataDecoder } from './common/types';
+import {
+  BOND_WITH_CONTROLLER_ARGS_AMOUNT,
+  OLD_MULTISIG_ARGS_AMOUNT,
+  TRANSFER_SECTIONS,
+  STAKING_SECTION,
+  XCM_SECTIONS,
+} from './common/constants';
 
 export const useCallDataDecoder = (): ICallDataDecoder => {
   const getDataFromCallData = (
@@ -20,7 +27,6 @@ export const useCallDataDecoder = (): ICallDataDecoder => {
   } => {
     let extrinsicCall: Call;
     let decoded: SubmittableExtrinsic<'promise'> | null = null;
-
     try {
       decoded = api.tx(callData);
       extrinsicCall = api.createType('Call', decoded.method);
@@ -124,48 +130,77 @@ export const useCallDataDecoder = (): ICallDataDecoder => {
       method,
       section,
       chainId: genesisHash,
-      args: parser(method, section, decoded),
+      args: parser(decoded, genesisHash),
       type: transactionType,
     };
   };
 
   const getCallDataParser: Record<
     TransactionType,
-    (method: string, section: string, decoded: SubmittableExtrinsic<'promise'>) => Record<string, any>
+    (decoded: SubmittableExtrinsic<'promise'>, chainId: ChainId) => Record<string, any>
   > = {
-    [TransactionType.TRANSFER]: (method, section, decoded): Record<string, any> => {
+    [TransactionType.TRANSFER]: (decoded, chainId): Record<string, any> => {
       return { dest: decoded.args[0].toString(), value: decoded.args[1].toString() };
     },
-    [TransactionType.XCM_LIMITED_TRANSFER]: (method, section, decoded): Record<string, any> => {
-      return {};
-    },
-    [TransactionType.XCM_TELEPORT]: (method, section, decoded): Record<string, any> => {
-      return {};
-    },
-    [TransactionType.POLKADOT_XCM_LIMITED_TRANSFER]: (method, section, decoded): Record<string, any> => {
-      return {};
-    },
-    [TransactionType.POLKADOT_XCM_TELEPORT]: (method, section, decoded): Record<string, any> => {
-      return {};
-    },
-    [TransactionType.XTOKENS_TRANSFER_MULTIASSET]: (method, section, decoded): Record<string, any> => {
-      return {};
-    },
-    [TransactionType.ASSET_TRANSFER]: (method, section, decoded): Record<string, any> => {
+    [TransactionType.ASSET_TRANSFER]: (decoded, chainId): Record<string, any> => {
       return {
         assetId: decoded.args[0].toString(),
         dest: decoded.args[1].toString(),
         value: decoded.args[2].toString(),
       };
     },
-    [TransactionType.ORML_TRANSFER]: (method, section, decoded): Record<string, any> => {
+    [TransactionType.ORML_TRANSFER]: (decoded, chainId): Record<string, any> => {
       return {
         dest: decoded.args[0].toString(),
         assetId: decoded.args[1].toString(),
         value: decoded.args[2].toString(),
       };
     },
-    [TransactionType.BOND]: (method, section, decoded): Record<string, any> => {
+    [TransactionType.XCM_LIMITED_TRANSFER]: (decoded, chainId): Record<string, any> => {
+      const parsedData = parseXcmPalletExtrinsic({
+        dest: decoded.args[0].toHuman(),
+        beneficiary: decoded.args[1].toHuman(),
+        assets: decoded.args[2].toHuman(),
+      });
+
+      return decodeXcm(chainId, parsedData);
+    },
+    [TransactionType.XCM_TELEPORT]: (decoded, chainId): Record<string, any> => {
+      const parsedData = parseXcmPalletExtrinsic({
+        dest: decoded.args[0].toHuman(),
+        beneficiary: decoded.args[1].toHuman(),
+        assets: decoded.args[2].toHuman(),
+      });
+
+      return decodeXcm(chainId, parsedData);
+    },
+    [TransactionType.POLKADOT_XCM_LIMITED_TRANSFER]: (decoded, chainId): Record<string, any> => {
+      const parsedData = parseXcmPalletExtrinsic({
+        dest: decoded.args[0].toHuman(),
+        beneficiary: decoded.args[1].toHuman(),
+        assets: decoded.args[2].toHuman(),
+      });
+
+      return decodeXcm(chainId, parsedData);
+    },
+    [TransactionType.POLKADOT_XCM_TELEPORT]: (decoded, chainId): Record<string, any> => {
+      const parsedData = parseXcmPalletExtrinsic({
+        dest: decoded.args[0].toHuman(),
+        beneficiary: decoded.args[1].toHuman(),
+        assets: decoded.args[2].toHuman(),
+      });
+
+      return decodeXcm(chainId, parsedData);
+    },
+    [TransactionType.XTOKENS_TRANSFER_MULTIASSET]: (decoded, chainId): Record<string, any> => {
+      const parsedData = parseXTokensExtrinsic({
+        asset: decoded.args[0].toHuman(),
+        dest: decoded.args[1].toHuman(),
+      });
+
+      return decodeXcm(chainId, parsedData);
+    },
+    [TransactionType.BOND]: (decoded, chainId): Record<string, any> => {
       const args: Record<string, any> = {};
       let index = 0;
       if (decoded.args.length === BOND_WITH_CONTROLLER_ARGS_AMOUNT) {
@@ -184,25 +219,25 @@ export const useCallDataDecoder = (): ICallDataDecoder => {
 
       return args;
     },
-    [TransactionType.UNSTAKE]: (method, section, decoded): Record<string, any> => {
+    [TransactionType.UNSTAKE]: (decoded, chainId): Record<string, any> => {
       return { value: decoded.args[0].toString() };
     },
     [TransactionType.CHILL]: (): Record<string, any> => {
       return {};
     },
-    [TransactionType.RESTAKE]: (method, section, decoded): Record<string, any> => {
+    [TransactionType.RESTAKE]: (decoded, chainId): Record<string, any> => {
       return { value: decoded.args[0].toString() };
     },
     [TransactionType.REDEEM]: (): Record<string, any> => {
       return {};
     },
-    [TransactionType.NOMINATE]: (method, section, decoded): Record<string, any> => {
+    [TransactionType.NOMINATE]: (decoded, chainId): Record<string, any> => {
       return { targets: (decoded.args[0] as any).map((a: Type) => a.toString()) };
     },
-    [TransactionType.STAKE_MORE]: (method, section, decoded): Record<string, any> => {
+    [TransactionType.STAKE_MORE]: (decoded, chainId): Record<string, any> => {
       return { maxAdditional: decoded.args[0].toString() };
     },
-    [TransactionType.DESTINATION]: (method, section, decoded): Record<string, any> => {
+    [TransactionType.DESTINATION]: (decoded, chainId): Record<string, any> => {
       const args: Record<string, any> = {};
       try {
         args.payee = JSON.parse(decoded.args[0].toString());
@@ -213,10 +248,10 @@ export const useCallDataDecoder = (): ICallDataDecoder => {
 
       return args;
     },
-    [TransactionType.BATCH_ALL]: (method, section, decoded): Record<string, any> => {
+    [TransactionType.BATCH_ALL]: (decoded, chainId): Record<string, any> => {
       return { calls: decoded.args[0].toHex() };
     },
-    [TransactionType.MULTISIG_AS_MULTI]: (method, section, decoded): Record<string, any> => {
+    [TransactionType.MULTISIG_AS_MULTI]: (decoded, chainId): Record<string, any> => {
       if (decoded.args.length === OLD_MULTISIG_ARGS_AMOUNT) {
         return {
           threshold: decoded.args[0],
@@ -236,7 +271,7 @@ export const useCallDataDecoder = (): ICallDataDecoder => {
         maxWeight: decoded.args[4],
       };
     },
-    [TransactionType.MULTISIG_APPROVE_AS_MULTI]: (method, section, decoded): Record<string, any> => {
+    [TransactionType.MULTISIG_APPROVE_AS_MULTI]: (decoded, chainId): Record<string, any> => {
       return {
         threshold: decoded.args[0],
         otherSignatories: decoded.args[1],
@@ -245,7 +280,7 @@ export const useCallDataDecoder = (): ICallDataDecoder => {
         maxWeight: decoded.args[4],
       };
     },
-    [TransactionType.MULTISIG_CANCEL_AS_MULTI]: (method, section, decoded): Record<string, any> => {
+    [TransactionType.MULTISIG_CANCEL_AS_MULTI]: (decoded, chainId): Record<string, any> => {
       return {
         threshold: decoded.args[0],
         otherSignatories: decoded.args[1],
@@ -260,23 +295,60 @@ export const useCallDataDecoder = (): ICallDataDecoder => {
   };
 
   const getTransactionType = (method: string, section: string): TransactionType | undefined => {
+    const transferType = getTransferTxType(method, section);
+    const stakingType = getStakingTxType(method, section);
+    const xcmType = getXcmTxType(method, section);
+
+    return transferType || stakingType || xcmType;
+  };
+
+  const getTransferTxType = (method: string, section: string): TransactionType | undefined => {
+    if (!TRANSFER_SECTIONS.includes(section)) return;
+
     const TRANSFER_METHODS = ['transfer', 'transferKeepAlive', 'transferAllowDeath'];
 
     if (TRANSFER_METHODS.includes(method) && section === 'balances') return TransactionType.TRANSFER;
     if (TRANSFER_METHODS.includes(method) && section === 'assets') return TransactionType.ASSET_TRANSFER;
-    if (method === 'transfer' && (section === 'currencies' || section === 'tokens'))
-      return TransactionType.ORML_TRANSFER;
+    if (method === 'transfer') return TransactionType.ORML_TRANSFER;
 
-    if (section !== 'staking') return undefined;
+    return undefined;
+  };
 
-    if (method === 'bond') return TransactionType.BOND;
-    if (method === 'unbond') return TransactionType.UNSTAKE;
-    if (method === 'chill') return TransactionType.CHILL;
-    if (method === 'rebond') return TransactionType.RESTAKE;
-    if (method === 'withdrawUnbonded') return TransactionType.REDEEM;
-    if (method === 'nominate') return TransactionType.NOMINATE;
-    if (method === 'bondExtra') return TransactionType.STAKE_MORE;
-    if (method === 'setPayee') return TransactionType.DESTINATION;
+  const getStakingTxType = (method: string, section: string): TransactionType | undefined => {
+    if (!STAKING_SECTION.includes(section)) return;
+
+    return {
+      bond: TransactionType.BOND,
+      unbond: TransactionType.UNSTAKE,
+      chill: TransactionType.CHILL,
+      rebond: TransactionType.RESTAKE,
+      withdrawUnbonded: TransactionType.REDEEM,
+      nominate: TransactionType.NOMINATE,
+      bondExtra: TransactionType.STAKE_MORE,
+      setPayee: TransactionType.DESTINATION,
+    }[method];
+  };
+
+  const getXcmTxType = (method: string, section: string): TransactionType | undefined => {
+    if (!XCM_SECTIONS.includes(section)) return;
+
+    if (section === 'xcmPallet') {
+      return {
+        limitedReserveTransferAssets: TransactionType.XCM_LIMITED_TRANSFER,
+        limitedTeleportAssets: TransactionType.XCM_TELEPORT,
+      }[method];
+    }
+
+    if (section === 'polkadotXcm') {
+      return {
+        limitedReserveTransferAssets: TransactionType.POLKADOT_XCM_LIMITED_TRANSFER,
+        limitedTeleportAssets: TransactionType.POLKADOT_XCM_TELEPORT,
+      }[method];
+    }
+
+    if (method === 'transferMultiasset' && section === 'xTokens') {
+      return TransactionType.XTOKENS_TRANSFER_MULTIASSET;
+    }
 
     return undefined;
   };

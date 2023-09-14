@@ -65,16 +65,15 @@ const ManageStep = ({ seedInfo, onBack, onComplete }: Props) => {
   const [accounts, setAccounts] = useState<CompactSeedInfo[]>([]);
 
   useEffect(() => {
-    getChainsData().then((chains) => {
-      const chainsMap = keyBy(sortChains(chains), 'chainId');
-      setChainsObject(chainsMap);
+    const chains = getChainsData();
+    const chainsMap = keyBy(sortChains(chains), 'chainId');
+    setChainsObject(chainsMap);
 
-      const filteredQrData = seedInfo.map((data) => filterByExistingChains(data, chainsMap));
+    const filteredQrData = seedInfo.map((data) => filterByExistingChains(data, chainsMap));
 
-      const names = filteredQrData.reduce((acc, data, index) => ({ ...acc, [getAccountId(index)]: data.name }), {});
-      setAccountNames(names);
-      setAccounts(filteredQrData.map(formatAccount));
-    });
+    const names = filteredQrData.reduce((acc, data, index) => ({ ...acc, [getAccountId(index)]: data.name }), {});
+    setAccountNames(names);
+    setAccounts(filteredQrData.map(formatAccount));
   }, []);
 
   const filterByExistingChains = (seedInfo: SeedInfo, chainsMap: Record<ChainId, Chain>): SeedInfo => {
