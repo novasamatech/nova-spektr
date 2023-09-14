@@ -172,3 +172,7 @@ All issues are being tracked in the [Nova Spektr Support project](https://github
 # Feedback
 Your feedback is welcome. Use GitHub issues for submitting the feedback.
 All feedback is being tracked in the [Nova Spektr Feedback project](https://github.com/orgs/novasamatech/projects/5)
+
+## License
+Nova Spektr - Polkadot, Kusama enterprise application is available under the Apache 2.0 license. See the LICENSE file for more info.
+© Novasama Technologies GmbH 2023

@@ -12,6 +12,7 @@ import {
   MultisigTransaction,
   MultisigTransactionKey,
 } from '@renderer/entities/transaction/model/transaction';
+import { Metadata } from '@renderer/entities/network';
 
 // =====================================================
 // ================ Storage interface ==================
@@ -76,6 +77,14 @@ export interface IContactStorage {
   deleteContact: (contactId: ID) => Promise<void>;
 }
 
+export interface IMetadataStorage {
+  getMetadata: (chainId: ChainId, version: number) => Promise<MetadataDS | undefined>;
+  getAllMetadata: <T extends Metadata>(where?: Partial<T>) => Promise<MetadataDS[]>;
+  addMetadata: (metadata: Metadata) => Promise<ID[]>;
+  updateMetadata: (metadata: Metadata) => Promise<ID[]>;
+  deleteMetadata: (chainId: ChainId, version: number) => Promise<void>;
+}
+
 export interface IMultisigTransactionStorage {
   getMultisigTx: (
     accountId: AccountId,
@@ -114,6 +123,7 @@ export type DataStorage = {
   multisigTransactions: IMultisigTransactionStorage;
   multisigEvents: IMultisigEventStorage;
   notifications: INotificationStorage;
+  metadata: IMetadataStorage;
 };
 
 export type ID = string;
@@ -127,6 +137,7 @@ export type AccountDS = WithID<Account | MultisigAccount>;
 export type MultisigTransactionDS = WithID<MultisigTransaction>;
 export type MultisigEventDS = WithID<MultisigEvent>;
 export type NotificationDS = WithID<Notification>;
+export type MetadataDS = WithID<Metadata>;
 
 export type TWallet = Table<Wallet, ID>;
 export type TContact = Table<Contact, ID>;
@@ -136,3 +147,4 @@ export type TAccount = Table<Account | MultisigAccount, ID>;
 export type TMultisigTransaction = Table<MultisigTransaction, ID[]>;
 export type TMultisigEvent = Table<MultisigEvent, ID>;
 export type TNotification = Table<Notification, ID>;
+export type TMetadata = Table<Metadata, ID[]>;

@@ -1,9 +1,10 @@
 import { ApiPromise } from '@polkadot/api';
 import { ProviderInterface } from '@polkadot/rpc-provider/types';
+import { UnsubscribePromise } from '@polkadot/api/types';
 
 import { Chain, RpcNode } from '@renderer/entities/chain/model/chain';
 import { Connection, ConnectionType } from '@renderer/domain/connection';
-import { ChainId } from '@renderer/domain/shared-kernel';
+import { ChainId, HexString } from '@renderer/domain/shared-kernel';
 import { Balance } from '@renderer/entities/asset/model/balance';
 
 // =====================================================
@@ -63,3 +64,24 @@ export type ConnectProps = {
   attempt?: number;
   timeoutId?: any;
 };
+
+export type Metadata = {
+  chainId: ChainId;
+  version: number;
+  metadata?: HexString;
+};
+
+export interface IMetadataService {
+  /**
+   * If metadata exists return latest version from cache, else run syncMetadata and return new metadata
+   */
+  getMetadata: (chainId: HexString) => Promise<Metadata | undefined>;
+  /**
+   * Update metadata from chain
+   */
+  syncMetadata: (api: ApiPromise) => Promise<Metadata>;
+  /**
+   * Subscribe to subscribeRuntimeVersion and trigger syncMetadata if it will be changed
+   */
+  subscribeMetadata: (api: ApiPromise) => UnsubscribePromise;
+}

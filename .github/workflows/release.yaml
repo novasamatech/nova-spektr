@@ -8,6 +8,7 @@ on:
 env:
   CSC_FOR_PULL_REQUEST: true
   CI: true
+  BUILD_SOURCE: 'github'
 
 jobs:
   release-build:
@@ -92,7 +93,7 @@ jobs:
           filename="${original%.*}"
           new="$filename"_x86_64.AppImage
           mv "$original" "$new"
-      
+
       - name: Replace space by "-"
         run: |
           for file in *; do
