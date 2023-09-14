@@ -51,6 +51,7 @@ export const XcmFee = memo(
             originChainId,
             configXcmTransfer,
           );
+
           updateFee(fee.toString());
         } else {
           updateFee('0');

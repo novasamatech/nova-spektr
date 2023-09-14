@@ -246,6 +246,7 @@ export const TransferForm = ({
 
       args = {
         ...args,
+        destinationChain: destinationChain?.value,
         xcmFee,
         xcmAsset,
         xcmDest,
