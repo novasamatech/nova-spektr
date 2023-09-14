@@ -37,6 +37,40 @@ const TransactionTitles: Record<TransactionType, string> = {
   [TransactionType.BATCH_ALL]: 'operations.titles.unknown',
 };
 
+const TransactionTitlesModal: Record<TransactionType, (crossChain: boolean) => string> = {
+  // Transfer
+  [TransactionType.ASSET_TRANSFER]: (crossChain) =>
+    `operations.modalTitles.${crossChain ? 'transferFrom' : 'transferOn'}`,
+  [TransactionType.ORML_TRANSFER]: (crossChain) =>
+    `operations.modalTitles.${crossChain ? 'transferFrom' : 'transferOn'}`,
+  [TransactionType.TRANSFER]: (crossChain) => `operations.modalTitles.${crossChain ? 'transferFrom' : 'transferOn'}`,
+  [TransactionType.MULTISIG_AS_MULTI]: () => 'operations.modalTitles.approveMultisig',
+  [TransactionType.MULTISIG_APPROVE_AS_MULTI]: () => 'operations.modalTitles.approveMultisig',
+  [TransactionType.MULTISIG_CANCEL_AS_MULTI]: () => 'operations.modalTitles.cancelMultisig',
+  // XCM
+  [TransactionType.XCM_LIMITED_TRANSFER]: (crossChain) =>
+    `operations.modalTitles.${crossChain ? 'transferFrom' : 'transferOn'}`,
+  [TransactionType.XCM_TELEPORT]: (crossChain) =>
+    `operations.modalTitles.${crossChain ? 'transferFrom' : 'transferOn'}`,
+  [TransactionType.POLKADOT_XCM_LIMITED_TRANSFER]: (crossChain) =>
+    `operations.modalTitles.${crossChain ? 'transferFrom' : 'transferOn'}`,
+  [TransactionType.POLKADOT_XCM_TELEPORT]: (crossChain) =>
+    `operations.modalTitles.${crossChain ? 'transferFrom' : 'transferOn'}`,
+  [TransactionType.XTOKENS_TRANSFER_MULTIASSET]: (crossChain) =>
+    `operations.modalTitles.${crossChain ? 'transferFrom' : 'transferOn'}`,
+  // Staking
+  [TransactionType.BOND]: () => 'operations.modalTitles.startStakingOn',
+  [TransactionType.NOMINATE]: () => 'operations.modalTitles.nominateOn',
+  [TransactionType.STAKE_MORE]: () => 'operations.modalTitles.stakeMoreOn',
+  [TransactionType.REDEEM]: () => 'operations.modalTitles.redeemOn',
+  [TransactionType.RESTAKE]: () => 'operations.modalTitles.restakeOn',
+  [TransactionType.DESTINATION]: () => 'operations.modalTitles.destinationOn',
+  [TransactionType.UNSTAKE]: () => 'operations.modalTitles.unstakeOn',
+  // Technical
+  [TransactionType.CHILL]: () => 'operations.modalTitles.unstakeOn',
+  [TransactionType.BATCH_ALL]: () => 'operations.modalTitles.unknownOn',
+};
+
 const TransactionIcons: Record<TransactionType, IconNames> = {
   // Transfer
   [TransactionType.ASSET_TRANSFER]: 'transferMst',
@@ -72,10 +106,27 @@ export const getTransactionTitle = (transaction?: Transaction | DecodedTransacti
   }
 
   if (transaction.type === TransactionType.BATCH_ALL) {
-    return getTransactionTitle(transaction?.args?.transactions?.[0]);
+    return getTransactionTitle(transaction.args?.transactions?.[0]);
   }
 
   return TransactionTitles[transaction.type];
+};
+
+export const getModalTransactionTitle = (
+  crossChain: boolean,
+  transaction?: Transaction | DecodedTransaction,
+): string => {
+  if (!transaction) return TRANSACTION_UNKNOWN;
+
+  if (!transaction.type) {
+    return formatSectionAndMethod(transaction.section, transaction.method);
+  }
+
+  if (transaction.type === TransactionType.BATCH_ALL) {
+    return getModalTransactionTitle(crossChain, transaction.args?.transactions?.[0]);
+  }
+
+  return TransactionTitlesModal[transaction.type](crossChain);
 };
 
 export const getIconName = (transaction?: Transaction | DecodedTransaction): IconNames => {
