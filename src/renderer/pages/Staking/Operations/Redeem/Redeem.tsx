@@ -113,7 +113,7 @@ export const Redeem = () => {
         headerClass="py-3 px-5 max-w-[440px]"
         panelClass="w-max"
         isOpen={isRedeemModalOpen}
-        title={<OperationTitle title={t('staking.redeem.title', { asset: '' })} chainId={chainId} />}
+        title={<OperationTitle title={t('staking.redeem.title')} chainId={chainId} />}
         onClose={closeRedeemModal}
       >
         <div className="w-[440px] px-5 py-20">

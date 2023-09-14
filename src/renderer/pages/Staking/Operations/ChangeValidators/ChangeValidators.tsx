@@ -112,7 +112,7 @@ export const ChangeValidators = () => {
         headerClass="py-3 px-5 max-w-[440px]"
         panelClass="w-max"
         isOpen={isValidatorsModalOpen}
-        title={<OperationTitle title={t('staking.validators.title', { asset: '' })} chainId={chainId} />}
+        title={<OperationTitle title={t('staking.validators.title')} chainId={chainId} />}
         onClose={closeValidatorsModal}
       >
         <div className="w-[440px] px-5 py-20">
@@ -201,7 +201,7 @@ export const ChangeValidators = () => {
         panelClass="w-max"
         headerClass="py-3 px-5 max-w-[440px]"
         isOpen={activeStep !== Step.SUBMIT && isValidatorsModalOpen}
-        title={<OperationTitle title={t('staking.validators.title', { asset: '' })} chainId={chainId} />}
+        title={<OperationTitle title={t('staking.validators.title')} chainId={chainId} />}
         onClose={closeValidatorsModal}
       >
         {activeStep === Step.INIT && (
