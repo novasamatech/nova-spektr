@@ -8,7 +8,7 @@ jest.mock('@renderer/entities/network', () => ({
   useChains: jest.fn().mockReturnValue({
     getStakingChainsData: jest
       .fn()
-      .mockResolvedValue([
+      .mockReturnValue([
         { chainId: '0x123', externalApi: { staking: [{ type: 'subquery', url: 'https://localhost:8080' }] } },
       ]),
   }),

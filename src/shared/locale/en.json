@@ -304,12 +304,14 @@
       "depositor": "Depositor",
       "description": "Description",
       "destinationChain": "To network",
+      "fromNetwork": "From network",
       "multisigWallet": "Multisig wallet",
       "payee": "Rewards destination",
       "recipient": "Recipient",
       "rejectReason": "Reject reason",
       "sender": "Sender",
       "timePoint": "Time Point",
+      "toNetwork": "To network",
       "validators": "Selected validators",
       "wallet": "Wallet"
     },
@@ -364,6 +366,18 @@
       "operationTypeSummary": "Operation types",
       "statusPlaceholder": "Operation status",
       "statusSummary": "Operation statuses"
+    },
+    "modalTitles": {
+      "destinationOn": "Set reward destination on",
+      "nominateOn": "Change Validators on",
+      "redeemOn": "Withdraw Unstaked { asset } on",
+      "restakeOn": "Restake { asset } on",
+      "stakeMoreOn": "Stake More { asset } on",
+      "startStakingOn": "Start Staking { asset } on",
+      "transferFrom": "Transfer { asset } from",
+      "transferOn": "Transfer { asset } on",
+      "unknownOn": "Unknown Operation on",
+      "unstakeOn": "Unstake { asset } on"
     },
     "noOperationsDescription": "Your operation history will appear here",
     "noOperationsFilters": "Nothing was found for the filters. Try changing filters or canceling filtering.",

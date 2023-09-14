@@ -67,7 +67,6 @@ describe('screen/CreateMultisigAccount', () => {
     await act(async () => {
       render(<CreateMultisigAccount isOpen={true} onClose={noop} />, { wrapper: MemoryRouter });
     });
-
     const text = screen.getByText('createMultisigAccount.title');
     const form = screen.getByText('walletForm');
     const select = screen.getByText('selectSignatories');

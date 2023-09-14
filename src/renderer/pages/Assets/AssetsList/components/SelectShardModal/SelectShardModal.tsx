@@ -35,17 +35,16 @@ export const SelectShardModal = ({ isOpen, onClose, activeAccounts, accounts }: 
   useEffect(() => {
     if (!accounts[0]?.walletId) return;
 
-    getChainsData().then((chains) => {
-      const chainsById = keyBy(sortChains(chains), 'chainId');
-      const activeIds = activeAccounts.map((a) => a.id || '');
+    const chains = getChainsData();
+    const chainsById = keyBy(sortChains(chains), 'chainId');
+    const activeIds = activeAccounts.map((a) => a.id || '');
 
-      const multishard = getMultishardStructure(accounts, chainsById, accounts[0].walletId!);
-      const selectable = getSelectableShards(multishard, activeIds);
+    const multishard = getMultishardStructure(accounts, chainsById, accounts[0].walletId!);
+    const selectable = getSelectableShards(multishard, activeIds);
 
-      setChains(chainsById);
-      setShards(selectable);
-      setQuery('');
-    });
+    setChains(chainsById);
+    setShards(selectable);
+    setQuery('');
   }, [activeAccounts]);
 
   const [shards, setShards] = useState<SelectableShards>({ rootAccounts: [], amount: 0 });

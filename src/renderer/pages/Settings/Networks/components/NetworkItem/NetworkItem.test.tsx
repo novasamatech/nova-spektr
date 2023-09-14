@@ -15,7 +15,7 @@ jest.mock('../NetworkSelector/NetworkSelector', () => ({
   NetworkSelector: () => 'selector',
 }));
 
-describe('screen/Settings/Networks/NetworkItem', () => {
+describe('pages/Settings/Networks/NetworkItem', () => {
   const defaultProps = {
     networkItem: {
       icon: 'wnd.svg',

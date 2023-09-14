@@ -17,7 +17,9 @@ export const TransactionAmount = ({ tx, ...balanceProps }: Props & BalanceProps)
   const [assets, setAssets] = useState<Asset[]>([]);
 
   useEffect(() => {
-    getChainById(tx.chainId).then((chain) => setAssets(chain?.assets || []));
+    const chain = getChainById(tx.chainId);
+
+    setAssets(chain?.assets || []);
   }, []);
 
   const asset = getAssetById(tx.args.asset, assets);

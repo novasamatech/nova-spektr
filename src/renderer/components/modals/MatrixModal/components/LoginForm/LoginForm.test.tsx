@@ -18,7 +18,7 @@ jest.mock('@renderer/app/providers', () => ({
   }),
 }));
 
-describe('screen/Settings/Matrix/LoginForm', () => {
+describe('pages/Settings/Matrix/LoginForm', () => {
   const setupForm = async (withCredentials = false) => {
     const user = userEvent.setup({ delay: null });
 

@@ -15,7 +15,7 @@ jest.mock('./components', () => ({
   Version: () => <span>version</span>,
 }));
 
-describe('screen/Settings/Overview', () => {
+describe('pages/Settings/Overview', () => {
   test('should render all parts', () => {
     render(<Overview />);
 

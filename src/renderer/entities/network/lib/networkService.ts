@@ -358,7 +358,7 @@ export const useNetwork = (networkSubscription?: ISubscriptionService<ChainId>):
 
   const setupConnections = async (): Promise<void> => {
     try {
-      const chainsData = await getChainsData();
+      const chainsData = getChainsData();
       chains.current = keyBy(sortChains(chainsData), 'chainId');
 
       const newConnections = await getNewConnections();

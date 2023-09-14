@@ -14,6 +14,7 @@ export type MultiLocation = {
   parachainId?: number;
   palletInstance?: number;
   generalKey?: HexString;
+  generalIndex?: string;
 };
 
 export type Fee = {
