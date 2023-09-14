@@ -12,6 +12,7 @@ import { getAccountOption, getSignatoryOption } from '../../common/utils';
 import { OperationFooter, OperationHeader } from '@renderer/features/operation';
 import * as sendAssetModel from '../../../model/send-asset';
 import { useNetworkContext } from '@renderer/app/providers';
+import { toHexChainId } from '@renderer/shared/lib/utils';
 
 type Props = {
   api: ApiPromise;
@@ -48,6 +49,7 @@ export const InitOperation = ({
   const xcmTransfer = useStore(sendAssetModel.$xcmTransfer);
   const xcmFee = useStore(sendAssetModel.$xcmFee);
   const xcmWeight = useStore(sendAssetModel.$xcmWeight);
+  const reserveAsset = useStore(sendAssetModel.$xcmAsset);
 
   const accounts = getActiveAccounts();
 
@@ -138,6 +140,10 @@ export const InitOperation = ({
     sendAssetModel.events.amountChanged(amount);
   };
 
+  const reserveChainId =
+    reserveAsset && config && toHexChainId(config.assetsLocation[reserveAsset.assetLocation].chainId);
+  const reserveApi = reserveChainId && connections[reserveChainId].api;
+
   return (
     <div className="flex flex-col gap-y-4">
       <TransferForm
@@ -178,6 +184,7 @@ export const InitOperation = ({
           tx && (
             <OperationFooter
               api={api}
+              reserveApi={reserveApi || undefined}
               asset={nativeToken}
               account={activeAccount}
               totalAccounts={1}

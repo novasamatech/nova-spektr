@@ -10,6 +10,7 @@ import { XcmFee } from '@renderer/entities/transaction/ui/XcmFee/XcmFee';
 
 type Props = {
   api: ApiPromise;
+  reserveApi?: ApiPromise;
   asset: Asset;
   transaction: Transaction;
   account: Account | MultisigAccount;
@@ -30,6 +31,7 @@ export const OperationFooter = ({
   totalAccounts,
   xcmConfig,
   xcmAsset,
+  reserveApi,
   onXcmFeeChange,
   onDepositChange,
   onFeeChange,
@@ -94,6 +96,7 @@ export const OperationFooter = ({
               asset={xcmAsset}
               transaction={transaction}
               config={xcmConfig}
+              api={reserveApi}
               onFeeChange={onXcmFeeChange}
               onFeeLoading={onFeeLoading}
             />
