@@ -303,6 +303,7 @@
       "deposit": "Multisig deposit",
       "depositor": "Depositor",
       "description": "Description",
+      "destinationChain": "To network",
       "fromNetwork": "From network",
       "multisigWallet": "Multisig wallet",
       "payee": "Rewards destination",
@@ -332,6 +333,7 @@
       "placeholder": "Reason...",
       "title": "Enter reject reason"
     },
+    "selectAccount": "Select account",
     "selectSignatory": "Select signatory",
     "selectSignatoryTitle": "Select signatory",
     "signButton": "Sign with Polkadot Vault",
@@ -345,7 +347,8 @@
       "signing": "On signing"
     },
     "successMessage": "Operation Approved",
-    "successRejectMessage": "Operation Rejected"
+    "successRejectMessage": "Operation Rejected",
+    "xcmFee": "Cross-chain fee"
   },
   "operations": {
     "callData": {
@@ -769,6 +772,8 @@
     "amountPlaceholder": "0",
     "continueButton": "Continue",
     "descriptionLengthError": "Description must be { maxLength } symbols long",
+    "destinationChainLabel": "Recipient network",
+    "destinationChainPlaceholder": "Select recipient network",
     "editOperationButton": "Edit operation",
     "executing": "Submitting operation",
     "formTitle": "Send <strong>{ asset }</strong> on <strong>{ network }</strong>",
@@ -780,6 +785,7 @@
       "transactions": "Transactions"
     },
     "multisigTransactionExist": "Multisig transaction already exists",
+    "myselfButton": "Myself",
     "networkDeposit": "Multisig deposit",
     "networkDepositHint": "The deposit stays locked on the depositor’s account until the multisig operation is executed or rejected",
     "networkFee": "Network fee",
@@ -796,7 +802,8 @@
     "signatoryLabel": "Signatory",
     "startSigningButton": "Sign with Polkadot Vault",
     "successMessage": "Operation Success",
-    "title": "Transfer { asset } on"
+    "title": "Transfer { asset } on",
+    "xcmTitle": "Transfer { asset } from"
   },
   "transferDetails": {
     "fromNetwork": "From network",

@@ -72,6 +72,6 @@ export interface XcmPalletTransferArgs extends Args {
 export interface XTokenPalletTransferArgs extends Args {
   asset: AnyJson;
   dest: AnyJson;
-  destWeight?: AnyJson;
   destWeightLimit?: AnyJson;
+  destWeight?: number;
 }

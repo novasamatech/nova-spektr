@@ -8,19 +8,20 @@ import { ChainId } from '@renderer/domain/shared-kernel';
 
 const { getChainById } = useChains();
 
+const validateUrlParams = createEvent<URLSearchParams>();
+const storeCleared = createEvent();
+
+export const $chain = createStore<Chain | null>(null).reset(storeCleared);
+export const $asset = createStore<Asset | null>(null).reset(storeCleared);
+
 type Navigation = {
   redirectPath: string;
   navigate: NavigateFunction;
 };
-const $navigation = createStore<Navigation | null>(null);
+const $navigation = createStore<Navigation | null>(null).reset(storeCleared);
 const navigationApi = createApi($navigation, {
   navigateApiChanged: (state, { navigate, redirectPath }) => ({ ...state, navigate, redirectPath }),
 });
-
-export const $chain = createStore<Chain | null>(null);
-export const $asset = createStore<Asset | null>(null);
-
-const validateUrlParams = createEvent<URLSearchParams>();
 
 type ValidateParams = {
   chainId: string | null;
@@ -68,4 +69,5 @@ sample({
 export const events = {
   navigateApiChanged: navigationApi.navigateApiChanged,
   validateUrlParams,
+  storeCleared,
 };

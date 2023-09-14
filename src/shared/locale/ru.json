@@ -303,6 +303,7 @@
       "deposit": "Multisig депозит",
       "depositor": "Депозитор",
       "description": "Описание",
+      "destinationChain": "В сеть",
       "fromNetwork": "Из сети",
       "multisigWallet": "Отправитель",
       "payee": "Payee",
@@ -332,6 +333,7 @@
       "placeholder": "Причина...",
       "title": "Укажите причину отмены"
     },
+    "selectAccount": "Select account",
     "selectSignatory": "Выберите подписанта",
     "selectSignatoryTitle": "Выберите подписанта",
     "signButton": "Подписать в Polkadot Vault",
@@ -345,7 +347,8 @@
       "signing": "Подписание"
     },
     "successMessage": "Operation Approved",
-    "successRejectMessage": "Операция Отменена"
+    "successRejectMessage": "Операция Отменена",
+    "xcmFee": "Cross-chain fee"
   },
   "operations": {
     "callData": {
@@ -769,6 +772,8 @@
     "amountPlaceholder": "0",
     "continueButton": "Продолжить",
     "descriptionLengthError": "Описание может быть { maxLength } символов в длину",
+    "destinationChainLabel": "Recipient network",
+    "destinationChainPlaceholder": "Select recipient network",
     "editOperationButton": "Редактировать операцию",
     "executing": "Выполнение транзакции",
     "formTitle": "Отправить <strong>{ asset }</strong> в сети <strong>{ network }</strong>",
@@ -780,6 +785,7 @@
       "transactions": "Транзакции"
     },
     "multisigTransactionExist": "Мультисиг транзакция уже существует",
+    "myselfButton": "Myself",
     "networkDeposit": "Депозит",
     "networkDepositHint": "The deposit stays locked on the depositor’s account until the multisig operation is executed or rejected",
     "networkFee": "Комиссия сети",
@@ -796,7 +802,8 @@
     "signatoryLabel": "Подписант",
     "startSigningButton": "Подписать в Polkadot Vault",
     "successMessage": "Транзакция отправлена!",
-    "title": "Перевод { asset } в сети"
+    "title": "Перевод { asset } в сети",
+    "xcmTitle": "Transfer { asset } from"
   },
   "transferDetails": {
     "fromNetwork": "Из сети",

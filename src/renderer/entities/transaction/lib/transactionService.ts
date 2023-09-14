@@ -18,8 +18,16 @@ import { AccountId, HexString, Threshold } from '@renderer/domain/shared-kernel'
 import { Transaction, TransactionType } from '@renderer/entities/transaction/model/transaction';
 import { createTxMetadata, toAccountId } from '@renderer/shared/lib/utils';
 import { ITransactionService, HashData, ExtrinsicResultParams } from './common/types';
-import { decodeDispatchError, getMaxWeight, isControllerMissing, isOldMultisigPallet } from './common/utils';
+import {
+  decodeDispatchError,
+  getMaxWeight,
+  hasDestWeight,
+  isControllerMissing,
+  isOldMultisigPallet,
+} from './common/utils';
 import { useCallDataDecoder } from './callDataDecoder';
+import * as xcmMethods from './common/xcmMethods';
+import { DEFAULT_FEE_ASSET_ITEM } from './common/constants';
 
 type BalancesTransferArgs = Parameters<typeof methods.balances.transfer>[0];
 type BondWithoutContollerArgs = Omit<Parameters<typeof methods.staking.bond>[0], 'controller'>;
@@ -167,21 +175,75 @@ export const useTransaction = (): ITransactionService => {
         options,
       );
     },
-    // TODO: finish during XCM transfer
     [TransactionType.XCM_LIMITED_TRANSFER]: (transaction, info, options, api) => {
-      return {} as UnsignedTransaction;
+      return xcmMethods.limitedReserveTransferAssets(
+        'xcmPallet',
+        {
+          dest: transaction.args.xcmDest,
+          beneficiary: transaction.args.xcmBeneficiary,
+          assets: transaction.args.xcmAsset,
+          feeAssetItem: DEFAULT_FEE_ASSET_ITEM,
+          weightLimit: { Unlimited: true },
+        },
+        info,
+        options,
+      );
     },
     [TransactionType.XCM_TELEPORT]: (transaction, info, options, api) => {
-      return {} as UnsignedTransaction;
+      return xcmMethods.limitedTeleportAssets(
+        'xcmPallet',
+        {
+          dest: transaction.args.xcmDest,
+          beneficiary: transaction.args.xcmBeneficiary,
+          assets: transaction.args.xcmAsset,
+          feeAssetItem: DEFAULT_FEE_ASSET_ITEM,
+          weightLimit: { Unlimited: true },
+        },
+        info,
+        options,
+      );
     },
     [TransactionType.POLKADOT_XCM_LIMITED_TRANSFER]: (transaction, info, options, api) => {
-      return {} as UnsignedTransaction;
+      return xcmMethods.limitedReserveTransferAssets(
+        'polkadotXcm',
+        {
+          dest: transaction.args.xcmDest,
+          beneficiary: transaction.args.xcmBeneficiary,
+          assets: transaction.args.xcmAsset,
+          feeAssetItem: DEFAULT_FEE_ASSET_ITEM,
+          weightLimit: { Unlimited: true },
+        },
+        info,
+        options,
+      );
     },
     [TransactionType.POLKADOT_XCM_TELEPORT]: (transaction, info, options, api) => {
-      return {} as UnsignedTransaction;
+      return xcmMethods.limitedTeleportAssets(
+        'polkadotXcm',
+        {
+          dest: transaction.args.xcmDest,
+          beneficiary: transaction.args.xcmBeneficiary,
+          assets: transaction.args.xcmAsset,
+          feeAssetItem: DEFAULT_FEE_ASSET_ITEM,
+          weightLimit: { Unlimited: true },
+        },
+        info,
+        options,
+      );
     },
     [TransactionType.XTOKENS_TRANSFER_MULTIASSET]: (transaction, info, options, api) => {
-      return {} as UnsignedTransaction;
+      const singleXcmAsset = { V2: transaction.args.xcmAsset.V2[0] };
+
+      return xcmMethods.transferMultiAsset(
+        {
+          dest: transaction.args.xcmDest,
+          asset: singleXcmAsset,
+          destWeightLimit: { Unlimited: true },
+          destWeight: transaction.args.xcmWeight,
+        },
+        info,
+        options,
+      );
     },
     [TransactionType.BOND]: (transaction, info, options, api) => {
       return isControllerMissing(api)
@@ -298,21 +360,36 @@ export const useTransaction = (): ITransactionService => {
     ) => api.tx.multisig.approveAsMulti(threshold, otherSignatories, maybeTimepoint, callHash, maxWeight),
     [TransactionType.MULTISIG_CANCEL_AS_MULTI]: ({ threshold, otherSignatories, maybeTimepoint, callHash }, api) =>
       api.tx.multisig.cancelAsMulti(threshold, otherSignatories, maybeTimepoint, callHash),
-    // TODO: finish during XCM transfer
-    [TransactionType.XCM_LIMITED_TRANSFER]: () => {
-      return {} as SubmittableExtrinsic<'promise'>;
+    [TransactionType.XCM_LIMITED_TRANSFER]: ({ xcmDest, xcmBeneficiary, xcmAsset }, api) => {
+      return api.tx.xcmPallet.limitedReserveTransferAssets(xcmDest, xcmBeneficiary, xcmAsset, DEFAULT_FEE_ASSET_ITEM, {
+        Unlimited: true,
+      });
     },
-    [TransactionType.XCM_TELEPORT]: () => {
-      return {} as SubmittableExtrinsic<'promise'>;
+    [TransactionType.XCM_TELEPORT]: ({ xcmDest, xcmBeneficiary, xcmAsset }, api) => {
+      return api.tx.xcmPallet.limitedTeleportAssets(xcmDest, xcmBeneficiary, xcmAsset, DEFAULT_FEE_ASSET_ITEM, {
+        Unlimited: true,
+      });
     },
-    [TransactionType.POLKADOT_XCM_LIMITED_TRANSFER]: () => {
-      return {} as SubmittableExtrinsic<'promise'>;
+    [TransactionType.POLKADOT_XCM_LIMITED_TRANSFER]: ({ xcmDest, xcmBeneficiary, xcmAsset }, api) => {
+      return api.tx.polkadotXcm.limitedReserveTransferAssets(
+        xcmDest,
+        xcmBeneficiary,
+        xcmAsset,
+        DEFAULT_FEE_ASSET_ITEM,
+        { Unlimited: true },
+      );
     },
-    [TransactionType.POLKADOT_XCM_TELEPORT]: () => {
-      return {} as SubmittableExtrinsic<'promise'>;
+    [TransactionType.POLKADOT_XCM_TELEPORT]: ({ xcmDest, xcmBeneficiary, xcmAsset }, api) => {
+      return api.tx.polkadotXcm.limitedTeleportAssets(xcmDest, xcmBeneficiary, xcmAsset, DEFAULT_FEE_ASSET_ITEM, {
+        Unlimited: true,
+      });
     },
-    [TransactionType.XTOKENS_TRANSFER_MULTIASSET]: () => {
-      return {} as SubmittableExtrinsic<'promise'>;
+    [TransactionType.XTOKENS_TRANSFER_MULTIASSET]: ({ xcmDest, xcmAsset, xcmWeight }, api) => {
+      const version = Object.keys(xcmAsset)[0];
+      const singleXcmAsset = { [version]: xcmAsset[version][0] };
+      const weight = hasDestWeight(api) ? xcmWeight : { Unlimited: true };
+
+      return api.tx.xTokens.transferMultiasset(xcmDest, singleXcmAsset, weight);
     },
     // controller arg removed from bond but changes not released yet
     // https://github.com/paritytech/substrate/pull/14039

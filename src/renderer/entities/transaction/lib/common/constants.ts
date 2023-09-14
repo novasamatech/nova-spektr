@@ -10,6 +10,7 @@ export const OLD_MULTISIG_ARGS_AMOUNT = 6;
 export const BOND_WITH_CONTROLLER_ARGS_AMOUNT = 3;
 
 export const CONTROLLER_ARG_NAME = 'controller';
+export const DEST_WEIGHT_ARG_NAME = 'destWeight';
 
 export const TRANSFER_SECTIONS = ['balances', 'assets', 'currencies', 'tokens'];
 
@@ -26,3 +27,5 @@ export const XcmTypes = [
   TransactionType.POLKADOT_XCM_LIMITED_TRANSFER,
   TransactionType.XTOKENS_TRANSFER_MULTIASSET,
 ];
+
+export const DEFAULT_FEE_ASSET_ITEM = 0;
