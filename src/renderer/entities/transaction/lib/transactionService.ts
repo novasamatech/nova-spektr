@@ -385,7 +385,8 @@ export const useTransaction = (): ITransactionService => {
       });
     },
     [TransactionType.XTOKENS_TRANSFER_MULTIASSET]: ({ xcmDest, xcmAsset, xcmWeight }, api) => {
-      const singleXcmAsset = { V2: xcmAsset.V2[0] };
+      const version = Object.keys(xcmAsset)[0];
+      const singleXcmAsset = { [version]: xcmAsset[version][0] };
       const weight = hasDestWeight(api) ? xcmWeight : { Unlimited: true };
 
       return api.tx.xTokens.transferMultiasset(xcmDest, singleXcmAsset, weight);

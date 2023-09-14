@@ -38,8 +38,6 @@ export const SendAssetModal = ({ chain, asset, onClose }: Props) => {
   const xcmAsset = useStore(sendAssetModel.$xcmAsset);
   const destinationChain = useStore(sendAssetModel.$destinationChain);
 
-  useGate(sendAssetModel.PropsGate, { chain, asset });
-
   const [isModalOpen, toggleIsModalOpen] = useToggle(true);
   const [activeStep, setActiveStep] = useState<Step>(Step.INIT);
   const [account, setAccount] = useState<Account | MultisigAccount>({} as Account);
@@ -55,6 +53,8 @@ export const SendAssetModal = ({ chain, asset, onClose }: Props) => {
 
   const { api, assets, addressPrefix, explorers } = connection;
 
+  useGate(sendAssetModel.PropsGate, { chain, asset, api });
+
   useEffect(() => {
     sendAssetModel.events.xcmConfigRequested();
 
@@ -62,10 +62,6 @@ export const SendAssetModal = ({ chain, asset, onClose }: Props) => {
       sendAssetModel.events.storeCleared();
     };
   }, []);
-
-  useEffect(() => {
-    api && sendAssetModel.events.apiInited(api);
-  }, [api]);
 
   const onInitResult = (transferTx: Transaction, multisig?: { multisigTx: Transaction; description: string }) => {
     setTransferTx(transferTx);

@@ -16,7 +16,7 @@ import {
 import { AccountId, ChainId } from '@renderer/domain/shared-kernel';
 // TODO: Move chain to shared
 import { Chain } from '@renderer/entities/chain';
-import { toLocalChainId } from '@renderer/shared/lib/utils';
+import { getTypeVersion, toLocalChainId } from '@renderer/shared/lib/utils';
 
 export const fetchXcmConfig = async (): Promise<XcmConfig> => {
   const response = await fetch(XCM_URL, { cache: 'default' });
@@ -171,86 +171,72 @@ export const getAssetLocation = (
   assets: Record<AssetName, AssetLocation>,
   amount: BN,
 ): Object | undefined => {
-  return {
-    relative: () => getRelativeAssetLocation(api, amount, assets[asset.assetLocation].multiLocation),
-    absolute: () => getAbsoluteAssetLocation(api, amount, assets[asset.assetLocation].multiLocation),
-    concrete: () => getConcreteAssetLocation(api, amount, asset.assetLocationPath.path),
+  const location = {
+    relative: () => getRelativeAssetLocation(assets[asset.assetLocation].multiLocation),
+    absolute: () => getAbsoluteAssetLocation(assets[asset.assetLocation].multiLocation),
+    concrete: () => getConcreteAssetLocation(asset.assetLocationPath.path),
   }[asset.assetLocationPath.type]();
+
+  const assetVersionType = getTypeVersion(api, 'VersionedMultiAssets');
+
+  const assetLocation = {
+    [assetVersionType]: [
+      {
+        id: {
+          Concrete: location,
+        },
+        fun: {
+          Fungible: amount,
+        },
+      },
+    ],
+  };
+
+  return assetLocation;
 };
 
-const getRelativeAssetLocation = (
-  api: ApiPromise,
-  amount: BN,
-  assetLocation?: LocalMultiLocation,
-): Object | undefined => {
+const getRelativeAssetLocation = (assetLocation?: LocalMultiLocation): Object | undefined => {
   if (!assetLocation) return;
 
   const { parachainId: _, ...location } = assetLocation;
 
   return {
-    V2: [
-      {
-        id: {
-          Concrete: {
-            parents: 0,
-            interior: createJunctionFromObject(location),
-          },
-        },
-        fun: {
-          Fungible: amount,
-        },
-      },
-    ],
+    parents: 0,
+    interior: createJunctionFromObject(location),
   };
 };
 
-const getAbsoluteAssetLocation = (
-  api: ApiPromise,
-  amount: BN,
-  assetLocation?: LocalMultiLocation,
-): Object | undefined => {
+const getAbsoluteAssetLocation = (assetLocation?: LocalMultiLocation): Object | undefined => {
   if (!assetLocation) return;
 
   return {
-    V2: [
-      {
-        id: {
-          Concrete: {
-            parents: 1,
-            interior: createJunctionFromObject(assetLocation),
-          },
-        },
-        fun: {
-          Fungible: amount,
-        },
-      },
-    ],
+    parents: 1,
+    interior: createJunctionFromObject(assetLocation),
   };
 };
 
-const getConcreteAssetLocation = (
-  api: ApiPromise,
-  amount: BN,
-  assetLocation?: LocalMultiLocation,
-): Object | undefined => {
+const getConcreteAssetLocation = (assetLocation?: LocalMultiLocation): Object | undefined => {
   if (!assetLocation) return;
 
   const { parents, ...location } = assetLocation;
 
   return {
-    V2: [
-      {
-        id: {
-          Concrete: {
-            parents,
-            interior: createJunctionFromObject(location),
-          },
-        },
-        fun: {
-          Fungible: amount,
-        },
-      },
-    ],
+    parents,
+    interior: createJunctionFromObject(location),
+  };
+};
+
+export const getVersionedDestinationLocation = (
+  api: ApiPromise,
+  originChain: Pick<Chain, 'parentId'>,
+  destinationParaId?: number,
+  accountId?: AccountId,
+): Object | undefined => {
+  const location = getDestinationLocation(originChain, destinationParaId, accountId);
+  const version = getTypeVersion(api, 'VersionedMultiLocation');
+
+  return {
+    [version]: location,
   };
 };
 
@@ -276,14 +262,12 @@ export const getDestinationLocation = (
 
 export const getAccountLocation = (accountId?: AccountId): Object | undefined => {
   return {
-    V2: {
-      parents: 0,
-      interior: {
-        X1: {
-          accountId32: {
-            network: 'Any',
-            id: accountId,
-          },
+    parents: 0,
+    interior: {
+      X1: {
+        accountId32: {
+          network: 'Any',
+          id: accountId,
         },
       },
     },
@@ -301,10 +285,8 @@ const getChildLocation = (parachainId: number, accountId?: AccountId): Object =>
   }
 
   return {
-    V2: {
-      parents: 0,
-      interior: createJunctionFromObject(location),
-    },
+    parents: 0,
+    interior: createJunctionFromObject(location),
   };
 };
 
@@ -319,10 +301,8 @@ const getParentLocation = (accountId?: AccountId): Object => {
   }
 
   return {
-    V2: {
-      parents: 1,
-      interior: createJunctionFromObject(location),
-    },
+    parents: 1,
+    interior: createJunctionFromObject(location),
   };
 };
 
@@ -337,9 +317,7 @@ const getSiblingLocation = (parachainId: number, accountId?: AccountId): Object 
   }
 
   return {
-    V2: {
-      parents: 1,
-      interior: createJunctionFromObject(location),
-    },
+    parents: 1,
+    interior: createJunctionFromObject(location),
   };
 };
