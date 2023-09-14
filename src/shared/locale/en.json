@@ -364,6 +364,18 @@
       "statusPlaceholder": "Operation status",
       "statusSummary": "Operation statuses"
     },
+    "modalTitles": {
+      "destinationOn": "Set reward destination on",
+      "nominateOn": "Change Validators on",
+      "redeemOn": "Withdraw Unstaked { asset } on",
+      "restakeOn": "Restake { asset } on",
+      "stakeMoreOn": "Stake More { asset } on",
+      "startStakingOn": "Start Staking { asset } on",
+      "transferFrom": "Transfer { asset } from",
+      "transferOn": "Transfer { asset } on",
+      "unknownOn": "Unknown Operation on",
+      "unstakeOn": "Unstake { asset } on"
+    },
     "noOperationsDescription": "Your operation history will appear here",
     "noOperationsFilters": "Nothing was found for the filters. Try changing filters or canceling filtering.",
     "noOperationsWalletNotMulti": "You can only view operations for your Multisig wallets. Transaction history for other types of wallets will be available later. Stay tuned.",

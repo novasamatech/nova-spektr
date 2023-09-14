@@ -364,6 +364,18 @@
       "statusPlaceholder": "Статус операции",
       "statusSummary": "Статусы операции"
     },
+    "modalTitles": {
+      "destinationOn": "Установить кошелёк получения награды на",
+      "nominateOn": "Смена валидаторов на",
+      "redeemOn": "Забрать { asset } на",
+      "restakeOn": "Рестейк { asset } на",
+      "stakeMoreOn": "Стейкать ещё { asset } на",
+      "startStakingOn": "Старт стейкинга { asset } на",
+      "transferFrom": "Перевод { asset } из",
+      "transferOn": "Перевод { asset } на",
+      "unknownOn": "Неизвестная операция на",
+      "unstakeOn": "Вывод из стейкинга { asset } на"
+    },
     "noOperationsDescription": "Нет ожидающих операций с мультиподписью",
     "noOperationsFilters": "Nothing was found for the filters, try changing filters or canceling filtering",
     "noOperationsWalletNotMulti": "You can only view operations for your Multisig wallets. Transaction history for other types of wallets will be available later. Stay tuned.",
