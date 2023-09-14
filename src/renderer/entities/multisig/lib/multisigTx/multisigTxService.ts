@@ -209,7 +209,7 @@ export const useMultisigTx = ({ addTask }: Props): IMultisigTxService => {
 
   const updateCallData = async (api: ApiPromise, tx: MultisigTransaction, callData: CallData) => {
     try {
-      const chain = await getChainById(tx.chainId);
+      const chain = getChainById(tx.chainId);
 
       const transaction = decodeCallData(api, toAddress(tx.accountId, { prefix: chain?.addressPrefix }), callData);
 

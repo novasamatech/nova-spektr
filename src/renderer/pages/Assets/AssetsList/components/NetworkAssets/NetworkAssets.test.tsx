@@ -54,7 +54,7 @@ const accounts = [
   },
 ] as Account[];
 
-describe('screen/Assets/NetworkAssets', () => {
+describe('pages/Assets/NetworkAssets', () => {
   test('should render component', () => {
     render(<NetworkAssets chain={testChain} accounts={accounts} />);
 

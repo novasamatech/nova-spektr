@@ -9,8 +9,8 @@ import { useToggle } from '@renderer/shared/lib/hooks';
 import { MultisigAccount, useAccount } from '@renderer/entities/account';
 import { ExtendedChain } from '@renderer/entities/network';
 import { Address, HexString, Timepoint } from '@renderer/domain/shared-kernel';
-import { toAddress, transferableAmount } from '@renderer/shared/lib/utils';
-import { getTransactionTitle } from '../../common/utils';
+import { toAddress, transferableAmount, getAssetById } from '@renderer/shared/lib/utils';
+import { getModalTransactionTitle } from '../../common/utils';
 import { Submit } from '../ActionSteps/Submit';
 import { useBalance } from '@renderer/entities/asset';
 import RejectReasonModal from './RejectReasonModal';
@@ -23,6 +23,7 @@ import {
   useTransaction,
   OperationResult,
   validateBalance,
+  isXcmTransaction,
 } from '@renderer/entities/transaction';
 
 type Props = {
@@ -59,9 +60,10 @@ const RejectTx = ({ tx, account, connection }: Props) => {
 
   const accounts = getLiveAccounts();
   const signAccount = accounts.find((a) => a.accountId === tx.depositor);
-  const transactionTitle = getTransactionTitle(tx.transaction);
+  const transactionTitle = getModalTransactionTitle(isXcmTransaction(tx.transaction), tx.transaction);
 
   const nativeAsset = connection.assets[0];
+  const asset = getAssetById(tx.transaction?.args.assetId, connection.assets);
 
   const checkBalance = () =>
     validateBalance({
@@ -164,7 +166,7 @@ const RejectTx = ({ tx, account, connection }: Props) => {
         isOpen={activeStep !== Step.SUBMIT && isModalOpen}
         title={
           <OperationTitle
-            title={`${t('operation.cancelTitle')} ${t(transactionTitle)} ${t('on')}`}
+            title={`${t('operation.cancelTitle')} ${t(transactionTitle, { asset: asset?.symbol })}`}
             chainId={tx.chainId}
           />
         }

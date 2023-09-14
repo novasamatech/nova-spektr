@@ -148,3 +148,168 @@ export const CONFIG: XcmConfig = {
     },
   ],
 };
+
+export const XCMPALLET_TRANSFER_KSM_BIFROST = {
+  dest: {
+    V2: {
+      parents: '0',
+      interior: {
+        X1: {
+          Parachain: '2,001',
+        },
+      },
+    },
+  },
+  beneficiary: {
+    V2: {
+      parents: '0',
+      interior: {
+        X1: {
+          AccountId32: {
+            network: 'Any',
+            id: '0x7a28037947ecebe0dd86dc0e910911cb33185fd0714b37b75943f67dcf9b6e7c',
+          },
+        },
+      },
+    },
+  },
+  assets: {
+    V2: [
+      {
+        id: {
+          Concrete: {
+            parents: '0',
+            interior: 'Here',
+          },
+        },
+        fun: {
+          Fungible: '10,070,392,000',
+        },
+      },
+    ],
+  },
+};
+
+export const XCMPALLET_TRANSFER_HUB_ASTAR = {
+  dest: {
+    V2: {
+      parents: '1',
+      interior: {
+        X1: {
+          Parachain: '2,006',
+        },
+      },
+    },
+  },
+  beneficiary: {
+    V2: {
+      parents: '0',
+      interior: {
+        X1: {
+          AccountId32: {
+            network: 'Any',
+            id: '0x4d081065a791aaabf8c4c9ec8ed87dce10145c86869c66e80286645730d70c44',
+          },
+        },
+      },
+    },
+  },
+  assets: {
+    V2: [
+      {
+        id: {
+          Concrete: {
+            parents: '0',
+            interior: {
+              X2: {
+                col0: {
+                  PalletInstance: 50,
+                },
+                col1: {
+                  GeneralIndex: '1984',
+                },
+              },
+            },
+          },
+        },
+        fun: {
+          Fungible: '176,500,000',
+        },
+      },
+    ],
+  },
+};
+
+export const XTOKENS_ACA_DOT = {
+  asset: {
+    V2: {
+      id: {
+        Concrete: {
+          parents: '1',
+          interior: 'Here',
+        },
+      },
+      fun: {
+        Fungible: '4,371,581,450',
+      },
+    },
+  },
+  dest: {
+    V2: {
+      parents: '0',
+      interior: {
+        X1: {
+          AccountId32: {
+            network: 'Any',
+            id: '0x7a28037947ecebe0dd86dc0e910911cb33185fd0714b37b75943f67dcf9b6e7c',
+          },
+        },
+      },
+    },
+  },
+};
+
+export const XTOKENS_ACA_PARALLEL = {
+  asset: {
+    V2: {
+      fun: {
+        Fungible: '617,647,058,823',
+      },
+      id: {
+        Concrete: {
+          interior: {
+            X2: {
+              col0: {
+                Parachain: 2000,
+              },
+              col1: {
+                GeneralKey: '0x0000',
+              },
+            },
+          },
+          parents: 1,
+        },
+      },
+    },
+  },
+  dest: {
+    V2: {
+      parents: 1,
+      interior: {
+        X2: {
+          col0: {
+            Parachain: 2012,
+          },
+          col1: {
+            AccountId32: {
+              id: '0xd02b1de0e29d201d48f1a48fb0ead05bf292366ffe90efec9368bb2c7849de59',
+              network: {
+                Any: 'NULL',
+              },
+            },
+          },
+        },
+      },
+    },
+  },
+};

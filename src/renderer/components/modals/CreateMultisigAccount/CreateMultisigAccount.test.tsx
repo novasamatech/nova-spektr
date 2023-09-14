@@ -62,7 +62,7 @@ jest.mock('./components', () => ({
   ConfirmSignatories: () => <span>confirmSignatories</span>,
 }));
 
-describe('screen/CreateMultisigAccount', () => {
+describe('pages/CreateMultisigAccount', () => {
   test('should render component', () => {
     render(<CreateMultisigAccount isOpen={true} onClose={noop} />, { wrapper: MemoryRouter });
 

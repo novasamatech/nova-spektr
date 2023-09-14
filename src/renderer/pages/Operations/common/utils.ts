@@ -1,10 +1,11 @@
 import { IconNames } from '@renderer/shared/ui/Icon/data';
-import { Explorer } from '@renderer/entities/chain/model/chain';
+import { Explorer } from '@renderer/entities/chain';
 import { AccountId, HexString } from '@renderer/domain/shared-kernel';
 import { DecodedTransaction, Transaction, TransactionType } from '@renderer/entities/transaction/model/transaction';
 import { toAddress, formatSectionAndMethod } from '@renderer/shared/lib/utils';
-import { Account } from '@renderer/entities/account/model/account';
-import { Signatory } from '@renderer/entities/signatory/model/signatory';
+import { TransferTypes, XcmTypes } from '@renderer/entities/transaction';
+import { Account } from '@renderer/entities/account';
+import { Signatory } from '@renderer/entities/signatory';
 import type { Contact } from '@renderer/entities/contact';
 
 export const TRANSACTION_UNKNOWN = 'operations.titles.unknown';
@@ -34,6 +35,40 @@ const TransactionTitles: Record<TransactionType, string> = {
   // Technical
   [TransactionType.CHILL]: 'operations.titles.unstake',
   [TransactionType.BATCH_ALL]: 'operations.titles.unknown',
+};
+
+const TransactionTitlesModal: Record<TransactionType, (crossChain: boolean) => string> = {
+  // Transfer
+  [TransactionType.ASSET_TRANSFER]: (crossChain) =>
+    `operations.modalTitles.${crossChain ? 'transferFrom' : 'transferOn'}`,
+  [TransactionType.ORML_TRANSFER]: (crossChain) =>
+    `operations.modalTitles.${crossChain ? 'transferFrom' : 'transferOn'}`,
+  [TransactionType.TRANSFER]: (crossChain) => `operations.modalTitles.${crossChain ? 'transferFrom' : 'transferOn'}`,
+  [TransactionType.MULTISIG_AS_MULTI]: () => 'operations.modalTitles.approveMultisig',
+  [TransactionType.MULTISIG_APPROVE_AS_MULTI]: () => 'operations.modalTitles.approveMultisig',
+  [TransactionType.MULTISIG_CANCEL_AS_MULTI]: () => 'operations.modalTitles.cancelMultisig',
+  // XCM
+  [TransactionType.XCM_LIMITED_TRANSFER]: (crossChain) =>
+    `operations.modalTitles.${crossChain ? 'transferFrom' : 'transferOn'}`,
+  [TransactionType.XCM_TELEPORT]: (crossChain) =>
+    `operations.modalTitles.${crossChain ? 'transferFrom' : 'transferOn'}`,
+  [TransactionType.POLKADOT_XCM_LIMITED_TRANSFER]: (crossChain) =>
+    `operations.modalTitles.${crossChain ? 'transferFrom' : 'transferOn'}`,
+  [TransactionType.POLKADOT_XCM_TELEPORT]: (crossChain) =>
+    `operations.modalTitles.${crossChain ? 'transferFrom' : 'transferOn'}`,
+  [TransactionType.XTOKENS_TRANSFER_MULTIASSET]: (crossChain) =>
+    `operations.modalTitles.${crossChain ? 'transferFrom' : 'transferOn'}`,
+  // Staking
+  [TransactionType.BOND]: () => 'operations.modalTitles.startStakingOn',
+  [TransactionType.NOMINATE]: () => 'operations.modalTitles.nominateOn',
+  [TransactionType.STAKE_MORE]: () => 'operations.modalTitles.stakeMoreOn',
+  [TransactionType.REDEEM]: () => 'operations.modalTitles.redeemOn',
+  [TransactionType.RESTAKE]: () => 'operations.modalTitles.restakeOn',
+  [TransactionType.DESTINATION]: () => 'operations.modalTitles.destinationOn',
+  [TransactionType.UNSTAKE]: () => 'operations.modalTitles.unstakeOn',
+  // Technical
+  [TransactionType.CHILL]: () => 'operations.modalTitles.unstakeOn',
+  [TransactionType.BATCH_ALL]: () => 'operations.modalTitles.unknownOn',
 };
 
 const TransactionIcons: Record<TransactionType, IconNames> = {
@@ -71,10 +106,27 @@ export const getTransactionTitle = (transaction?: Transaction | DecodedTransacti
   }
 
   if (transaction.type === TransactionType.BATCH_ALL) {
-    return getTransactionTitle(transaction?.args?.transactions?.[0]);
+    return getTransactionTitle(transaction.args?.transactions?.[0]);
   }
 
   return TransactionTitles[transaction.type];
+};
+
+export const getModalTransactionTitle = (
+  crossChain: boolean,
+  transaction?: Transaction | DecodedTransaction,
+): string => {
+  if (!transaction) return TRANSACTION_UNKNOWN;
+
+  if (!transaction.type) {
+    return formatSectionAndMethod(transaction.section, transaction.method);
+  }
+
+  if (transaction.type === TransactionType.BATCH_ALL) {
+    return getModalTransactionTitle(crossChain, transaction.args?.transactions?.[0]);
+  }
+
+  return TransactionTitlesModal[transaction.type](crossChain);
 };
 
 export const getIconName = (transaction?: Transaction | DecodedTransaction): IconNames => {
@@ -121,14 +173,9 @@ export const getTransactionAmount = (tx: Transaction | DecodedTransaction): stri
   if (!txType) return null;
 
   if (
-    [
-      TransactionType.ASSET_TRANSFER,
-      TransactionType.ORML_TRANSFER,
-      TransactionType.TRANSFER,
-      TransactionType.BOND,
-      TransactionType.RESTAKE,
-      TransactionType.UNSTAKE,
-    ].includes(txType)
+    [...TransferTypes, ...XcmTypes, TransactionType.BOND, TransactionType.RESTAKE, TransactionType.UNSTAKE].includes(
+      txType,
+    )
   ) {
     return tx.args.value;
   }
