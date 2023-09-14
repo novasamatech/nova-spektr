@@ -88,11 +88,13 @@ const Details = ({ tx, account, connection, isCardDetails = true }: Props) => {
 
       {isXcmTransaction(tx.transaction) && (
         <>
-          <DetailRow label={t('operation.details.fromNetwork')} className={valueClass}>
-            <ChainTitle chainId={tx.chainId} />
-          </DetailRow>
+          {isCardDetails && (
+            <DetailRow label={t('operation.details.fromNetwork')} className={valueClass}>
+              <ChainTitle chainId={tx.chainId} fontClass={valueClass} />
+            </DetailRow>
+          )}
 
-          {account && (
+          {isCardDetails && account && (
             <DetailRow label={t('operation.details.sender')} className={valueClass}>
               <AddressWithExplorers
                 explorers={explorers}
@@ -107,7 +109,7 @@ const Details = ({ tx, account, connection, isCardDetails = true }: Props) => {
 
           {transaction.args.destinationChain && (
             <DetailRow label={t('operation.details.toNetwork')} className={valueClass}>
-              <ChainTitle chainId={transaction?.args.destinationChain} />
+              <ChainTitle chainId={transaction?.args.destinationChain} fontClass={valueClass} />
             </DetailRow>
           )}
         </>
