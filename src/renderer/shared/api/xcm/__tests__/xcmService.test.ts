@@ -44,28 +44,28 @@ describe('shared/api/xcm/xcmService', () => {
   test('should calculate correct location for sibling prachain', () => {
     const location = getDestinationLocation({ parentId: '0x00' }, 2000) as any;
 
-    expect(location.V2.parents).toEqual(1);
-    expect(location.V2.interior.X1.Parachain).toEqual(2000);
+    expect(location.parents).toEqual(1);
+    expect(location.interior.X1.Parachain).toEqual(2000);
   });
 
   test('should calculate correct location for parent parachain', () => {
     const location = getDestinationLocation({ parentId: '0x00' }) as any;
 
-    expect(location.V2.parents).toEqual(1);
-    expect(location.V2.interior).toEqual('Here');
+    expect(location.parents).toEqual(1);
+    expect(location.interior).toEqual('Here');
   });
 
   test('should calculate correct address location for parent parachain', () => {
     const location = getDestinationLocation({ parentId: '0x00' }, undefined, '0x00') as any;
 
-    expect(location.V2.parents).toEqual(1);
-    expect(location.V2.interior.X1.AccountId32.id).toEqual('0x00');
+    expect(location.parents).toEqual(1);
+    expect(location.interior.X1.AccountId32.id).toEqual('0x00');
   });
 
   test('should calculate correct location for child parachain', () => {
     const location = getDestinationLocation({ parentId: undefined }, 2000) as any;
 
-    expect(location.V2.parents).toEqual(0);
-    expect(location.V2.interior.X1.Parachain).toEqual(2000);
+    expect(location.parents).toEqual(0);
+    expect(location.interior.X1.Parachain).toEqual(2000);
   });
 });
