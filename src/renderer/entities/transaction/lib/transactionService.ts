@@ -468,6 +468,13 @@ export const useTransaction = (): ITransactionService => {
     return paymentInfo.weight;
   };
 
+  const getTxWeight = async (transaction: Transaction, api: ApiPromise): Promise<Weight> => {
+    const extrinsic = getExtrinsic[transaction.type](transaction.args, api);
+    const { weight } = await extrinsic.paymentInfo(transaction.address);
+
+    return weight;
+  };
+
   const getTransactionDeposit = (threshold: Threshold, api: ApiPromise): string => {
     const { depositFactor, depositBase } = api.consts.multisig;
     const deposit = depositFactor.muln(threshold).add(depositBase);
@@ -563,6 +570,7 @@ export const useTransaction = (): ITransactionService => {
     submitAndWatchExtrinsic,
     getTransactionFee,
     getExtrinsicWeight,
+    getTxWeight,
     getTransactionDeposit,
     getTransactionHash,
     decodeCallData,

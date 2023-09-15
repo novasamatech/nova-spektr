@@ -28,6 +28,7 @@ export type ITransactionService = {
   ) => void;
   getTransactionFee: (transaction: Transaction, api: ApiPromise) => Promise<string>;
   getExtrinsicWeight: (extrinsic: SubmittableExtrinsic<'promise'>) => Promise<Weight>;
+  getTxWeight: (transaction: Transaction, api: ApiPromise) => Promise<Weight>;
   getTransactionDeposit: (threshold: Threshold, api: ApiPromise) => string;
   getTransactionHash: (transaction: Transaction, api: ApiPromise) => HashData;
   decodeCallData: (api: ApiPromise, accountId: Address, callData: CallData) => DecodedTransaction;
