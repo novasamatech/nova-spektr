@@ -12,10 +12,10 @@ import { ExtendedChain } from '@renderer/entities/network';
 import { Address, HexString, SigningType, Timepoint } from '@renderer/domain/shared-kernel';
 import { TEST_ADDRESS, toAddress, transferableAmount, getAssetById } from '@renderer/shared/lib/utils';
 import { getModalTransactionTitle } from '../../common/utils';
-import { Submit } from '../ActionSteps/Submit';
 import { useBalance } from '@renderer/entities/asset';
-import Confirmation from '@renderer/pages/Operations/components/ActionSteps/Confirmation';
-import SignatorySelectModal from '@renderer/pages/Operations/components/modals/SignatorySelectModal';
+import { Submit } from '../ActionSteps/Submit';
+import { Confirmation } from '../ActionSteps/Confirmation';
+import { SignatorySelectModal } from './SignatorySelectModal';
 import { useMultisigEvent } from '@renderer/entities/multisig';
 import { Signing } from '@renderer/features/operation';
 import { OperationTitle } from '@renderer/components/common';
@@ -74,11 +74,11 @@ const ApproveTx = ({ tx, account, connection }: Props) => {
 
   const unsignedAccounts = accounts.filter((a) => {
     const isSignatory = account.signatories.find((s) => s.accountId === a.accountId);
-    const notSigned = !events.find((e) => e.accountId === a.accountId);
+    const isSigned = events.some((e) => e.accountId === a.accountId);
     const isCurrentChain = !a.chainId || a.chainId === tx.chainId;
-    const notWatchOnly = account.signingType !== SigningType.WATCH_ONLY;
+    const isWatchOnly = a.signingType === SigningType.WATCH_ONLY;
 
-    return isSignatory && notSigned && isCurrentChain && notWatchOnly;
+    return isSignatory && !isSigned && isCurrentChain && !isWatchOnly;
   });
 
   useEffect(() => {
@@ -155,8 +155,9 @@ const ApproveTx = ({ tx, account, connection }: Props) => {
     return new BN(fee).lte(new BN(transferableAmount(balance)));
   };
 
-  const handleAccountSelect = async (account: Account) => {
+  const selectSignerAccount = async (account: Account) => {
     setSignAccount(account);
+    toggleSelectAccountModal();
 
     const isValid = await validateBalanceForFee(account);
 
@@ -165,11 +166,9 @@ const ApproveTx = ({ tx, account, connection }: Props) => {
     } else {
       toggleFeeModal();
     }
-
-    toggleSelectAccountModal();
   };
 
-  const selectAccount = () => {
+  const trySetSignerAccount = () => {
     if (unsignedAccounts.length === 1) {
       setSignAccount(unsignedAccounts[0]);
       setActiveStep(Step.SIGNING);
@@ -183,7 +182,7 @@ const ApproveTx = ({ tx, account, connection }: Props) => {
       api: connection.api,
       chainId: tx.chainId,
       transaction: approveTx,
-      assetId: nativeAsset?.assetId.toString(),
+      assetId: nativeAsset.assetId.toString(),
       getBalance,
       getTransactionFee,
     });
@@ -216,7 +215,11 @@ const ApproveTx = ({ tx, account, connection }: Props) => {
         {activeStep === Step.CONFIRMATION && (
           <>
             <Confirmation tx={tx} account={account} connection={connection} feeTx={feeTx} />
-            <Button className="mt-7 ml-auto" prefixElement={<Icon name="vault" size={14} />} onClick={selectAccount}>
+            <Button
+              className="mt-7 ml-auto"
+              prefixElement={<Icon name="vault" size={14} />}
+              onClick={trySetSignerAccount}
+            >
               {t('operation.signButton')}
             </Button>
           </>
@@ -240,9 +243,9 @@ const ApproveTx = ({ tx, account, connection }: Props) => {
           isOpen={isSelectAccountModalOpen}
           accounts={unsignedAccounts}
           chain={connection}
-          asset={nativeAsset}
+          nativeAsset={nativeAsset}
           onClose={toggleSelectAccountModal}
-          onSelect={handleAccountSelect}
+          onSelect={selectSignerAccount}
         />
 
         <OperationResult

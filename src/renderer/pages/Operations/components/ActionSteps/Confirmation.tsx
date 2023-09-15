@@ -15,7 +15,7 @@ type Props = {
   connection: ExtendedChain;
   feeTx?: Transaction;
 };
-const Confirmation = ({ tx, account, connection, feeTx }: Props) => {
+export const Confirmation = ({ tx, account, connection, feeTx }: Props) => {
   const { t } = useI18n();
 
   const iconName = getIconName(tx.transaction);
@@ -53,5 +53,3 @@ const Confirmation = ({ tx, account, connection, feeTx }: Props) => {
     </div>
   );
 };
-
-export default Confirmation;

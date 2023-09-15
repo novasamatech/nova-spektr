@@ -11,10 +11,10 @@ import { ExtendedChain } from '@renderer/entities/network';
 import { Address, HexString, Timepoint } from '@renderer/domain/shared-kernel';
 import { toAddress, transferableAmount, getAssetById } from '@renderer/shared/lib/utils';
 import { getModalTransactionTitle } from '../../common/utils';
-import { Submit } from '../ActionSteps/Submit';
 import { useBalance } from '@renderer/entities/asset';
 import RejectReasonModal from './RejectReasonModal';
-import Confirmation from '@renderer/pages/Operations/components/ActionSteps/Confirmation';
+import { Submit } from '../ActionSteps/Submit';
+import { Confirmation } from '../ActionSteps/Confirmation';
 import { Signing } from '@renderer/features/operation';
 import { OperationTitle } from '@renderer/components/common';
 import {
@@ -70,7 +70,7 @@ const RejectTx = ({ tx, account, connection }: Props) => {
       api: connection.api,
       chainId: tx.chainId,
       transaction: rejectTx,
-      assetId: nativeAsset?.assetId.toString(),
+      assetId: nativeAsset.assetId.toString(),
       getBalance,
       getTransactionFee,
     });
