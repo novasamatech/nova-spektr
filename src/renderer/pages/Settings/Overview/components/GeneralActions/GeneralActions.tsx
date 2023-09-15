@@ -1,13 +1,16 @@
 import { Link } from 'react-router-dom';
+import { useUnit } from 'effector-react/effector-react.umd';
 
 import { Icon, BodyText, Plate, FootnoteText, HelpText } from '@renderer/shared/ui';
 import { useI18n } from '@renderer/app/providers';
-import { Paths } from '../../../../../app/providers/routes/paths';
+import { Paths } from '@renderer/app/providers';
 import { cnTw } from '@renderer/shared/lib/utils';
+import { currencyModel } from '@renderer/entities/currency';
 
 // TODO: Language switcher temporary removed
 export const GeneralActions = () => {
   const { t } = useI18n();
+  const currency = useUnit(currencyModel.$currency);
 
   // const localeOptions: DropdownOption[] = locales.map((option) => ({
   //   id: option.value,
@@ -57,6 +60,20 @@ export const GeneralActions = () => {
           <Icon className="row-span-2" name="network" size={36} />
           <BodyText>{t('settings.overview.networkLabel')}</BodyText>
           <HelpText className="text-text-tertiary">{t('settings.overview.networkDetailsLabel')}</HelpText>
+        </Link>
+      </Plate>
+
+      <Plate className="p-0">
+        <Link
+          to={Paths.CURRENCY}
+          className={cnTw(
+            'w-full flex items-center gap-x-2 p-3 rounded',
+            'transition hover:shadow-card-shadow focus:shadow-card-shadow',
+          )}
+        >
+          <Icon className="row-span-2" name="network" size={36} />
+          <BodyText>{t('settings.currency.plateTitle')}</BodyText>
+          {currency && <FootnoteText className="text-text-tertiary ml-auto">{currency.code}</FootnoteText>}
         </Link>
       </Plate>
     </div>

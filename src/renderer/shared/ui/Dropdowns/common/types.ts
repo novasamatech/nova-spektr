@@ -15,3 +15,8 @@ export type DropdownResult<T extends any = any> = {
 };
 
 export type ComboboxOption<T extends any = any> = DropdownOption<T>;
+
+export type DropdownOptionGroup<T extends any = any> = {
+  label: string | ReactNode;
+  options: DropdownOption<T>[];
+};

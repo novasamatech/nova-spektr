@@ -15,6 +15,7 @@ import {
   Paths,
   routesConfig,
 } from './providers';
+import { currencyModel } from '@renderer/entities/currency';
 
 const SPLASH_SCREEN_DELAY = 450;
 
@@ -28,6 +29,7 @@ const App = () => {
 
   useEffect(() => {
     contactModel.events.appStarted();
+    currencyModel.events.appStarted();
   }, []);
 
   useEffect(() => {
