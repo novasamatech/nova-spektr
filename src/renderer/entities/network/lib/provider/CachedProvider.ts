@@ -14,7 +14,7 @@ export const createCachedProvider = (
       if (method === GET_METADATA_METHOD && params.length === 0) {
         const metadata = await getMetadata(chainId);
 
-        if (metadata) return metadata.metadata;
+        if (metadata?.metadata) return metadata.metadata;
       }
 
       return super.send(method, params, ...args);
