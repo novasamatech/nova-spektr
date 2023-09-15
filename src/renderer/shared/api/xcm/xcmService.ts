@@ -22,7 +22,6 @@ import {
   PathType,
   Action,
 } from './common/types';
-import { MAX_WEIGHT } from '@renderer/entities/transaction';
 
 export const fetchXcmConfig = async (): Promise<XcmConfig> => {
   const response = await fetch(XCM_URL, { cache: 'default' });
@@ -642,7 +641,12 @@ export const estimateFeeFromApi = async (
   try {
     paymentInfo = await api.tx[pallet].execute(message, 0).paymentInfo(TEST_ACCOUNT_ID);
   } catch (e) {
-    paymentInfo = await api.tx[pallet].execute(message, MAX_WEIGHT).paymentInfo(TEST_ACCOUNT_ID);
+    paymentInfo = await api.tx[pallet]
+      .execute(message, {
+        refTime: '0',
+        proofSize: '0',
+      })
+      .paymentInfo(TEST_ACCOUNT_ID);
   }
 
   return paymentInfo.partialFee;
