@@ -7,6 +7,7 @@ export type DropdownOption<T extends any = any> = {
   id: string;
   element: ReactNode;
   value: T;
+  disabled?: boolean;
 };
 
 export type DropdownResult<T extends any = any> = {

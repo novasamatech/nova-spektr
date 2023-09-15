@@ -12,7 +12,7 @@ jest.mock('@renderer/app/providers', () => ({
 }));
 
 jest.mock('@renderer/entities/network', () => ({
-  useChains: jest.fn().mockReturnValue({
+  chainsService: {
     sortChains: jest.fn((value: Chain[]) => value),
     getChainsData: jest.fn().mockReturnValue([
       {
@@ -28,7 +28,7 @@ jest.mock('@renderer/entities/network', () => ({
         assets: [{ symbol: 'DOT', staking: 'relaychain', name: 'Polkadot' }],
       },
     ]),
-  }),
+  },
 }));
 
 jest.mock('@renderer/entities/settings', () => ({
