@@ -5,7 +5,7 @@ import get from 'lodash/get';
 import { XCM_URL, XCM_KEY } from './common/constants';
 import { AccountId, ChainId, HexString } from '@renderer/domain/shared-kernel';
 import { Chain } from '@renderer/entities/chain';
-import { getTypeVersion, toLocalChainId, getAssetId } from '@renderer/shared/lib/utils';
+import { getTypeVersion, toLocalChainId, getAssetId, TEST_ACCOUNT_ID } from '@renderer/shared/lib/utils';
 import { XcmPalletTransferArgs, XTokenPalletTransferArgs } from '@renderer/entities/transaction';
 import { chainsService } from '@renderer/entities/network';
 import { toRawString } from './common/utils';
@@ -20,6 +20,7 @@ import {
   Instructions,
   XcmTransfer,
   PathType,
+  Action,
 } from './common/types';
 
 export const fetchXcmConfig = async (): Promise<XcmConfig> => {
@@ -69,7 +70,35 @@ export const getEstimatedWeight = (
   return instructionWeight.mul(new BN(instruction.length));
 };
 
-export const estimateFee = (
+export const estimateFee = async (
+  config: XcmConfig,
+  assetLocation: AssetLocation,
+  originChain: string,
+  xcmTransfer: XcmTransfer,
+  api?: ApiPromise,
+  xcmAsset?: object,
+  xcmDest?: object,
+): Promise<BN> => {
+  if (xcmTransfer.destination.fee.mode.type === 'proportional') {
+    return estimateFeeFromConfig(config, assetLocation, originChain, xcmTransfer);
+  }
+
+  if (api && xcmAsset && xcmDest) {
+    const xcmAssetLocation = Object.values(xcmAsset)[0][0].id.Concrete;
+    const xcmDestLocation = Object.values(xcmDest as object)[0];
+
+    return estimateFeeFromApi(
+      api,
+      config.instructions[xcmTransfer.destination.fee.instructions],
+      xcmAssetLocation,
+      xcmDestLocation,
+    );
+  }
+
+  return new BN(0);
+};
+
+export const estimateFeeFromConfig = (
   config: XcmConfig,
   assetLocation: AssetLocation,
   originChain: string,
@@ -261,6 +290,15 @@ export const getDestinationLocation = (
   }
 
   return undefined;
+};
+
+export const getVersionedAccountLocation = (api: ApiPromise, accountId?: AccountId): Object | undefined => {
+  const location = getAccountLocation(accountId);
+  const version = getTypeVersion(api, 'VersionedMultiLocation');
+
+  return {
+    [version]: location,
+  };
 };
 
 export const getAccountLocation = (accountId?: AccountId): Object | undefined => {
@@ -488,4 +526,137 @@ export const decodeXcm = (chainId: ChainId, data: XcmPalletPayload | XTokensPayl
     value: data.amount,
     dest: data.destAccountId,
   };
+};
+
+const InstructionObjects: Record<Action, (assetLocation: object, destLocation: object) => object> = {
+  [Action.WITHDRAW_ASSET]: (assetLocation: object) => {
+    return {
+      WithdrawAsset: [
+        {
+          fun: {
+            Fungible: '0',
+          },
+          id: assetLocation,
+        },
+      ],
+    };
+  },
+
+  [Action.CLEAR_ORIGIN]: () => {
+    return {
+      ClearOrigin: null,
+    };
+  },
+
+  [Action.DEPOSIT_ASSET]: () => {
+    return {
+      DepositAsset: {
+        assets: {
+          Wild: 'All',
+        },
+        maxAssets: 1,
+        beneficiary: {
+          interior: {
+            X1: {
+              AccountId32: {
+                network: 'Any',
+                id: TEST_ACCOUNT_ID,
+              },
+            },
+          },
+          parents: 0,
+        },
+      },
+    };
+  },
+
+  [Action.DEPOSIT_RESERVE_ASSET]: (_, destLocation) => {
+    return {
+      DepositReserveAsset: {
+        assets: {
+          Wild: 'All',
+        },
+        dest: destLocation,
+        xcm: [],
+      },
+    };
+  },
+
+  [Action.RECEIVE_TELEPORTED_ASSET]: (assetLocation: object) => {
+    return {
+      ReceiveTeleportedAsset: [
+        {
+          fun: {
+            Fungible: '0',
+          },
+          id: {
+            Concrete: assetLocation,
+          },
+        },
+      ],
+    };
+  },
+
+  [Action.RESERVE_ASSET_DEPOSITED]: (assetLocation: object) => {
+    return {
+      ReserveAssetDeposited: [
+        {
+          fun: {
+            Fungible: '0',
+          },
+          id: {
+            Concrete: assetLocation,
+          },
+        },
+      ],
+    };
+  },
+
+  [Action.BUY_EXECUTION]: (assetLocation: object) => {
+    return {
+      BuyExecution: {
+        fees: {
+          id: {
+            Concrete: assetLocation,
+          },
+          fun: {
+            Fungible: '0',
+          },
+        },
+        weightLimit: {
+          Unlimited: true,
+        },
+      },
+    };
+  },
+};
+
+export const estimateFeeFromApi = async (
+  api: ApiPromise,
+  instructions: Action[],
+  assetLocation: object,
+  destLocation: object,
+) => {
+  const pallet = api.tx.xcmPallet ? 'xcmPallet' : 'polkadotXcm';
+
+  const xcmVersion = getTypeVersion(api, 'VersionedXcm');
+
+  const message = {
+    [xcmVersion]: instructions.map((i) => InstructionObjects[i](assetLocation, destLocation)),
+  };
+
+  let paymentInfo;
+
+  try {
+    paymentInfo = await api.tx[pallet].execute(message, 0).paymentInfo(TEST_ACCOUNT_ID);
+  } catch (e) {
+    paymentInfo = await api.tx[pallet]
+      .execute(message, {
+        refTime: '0',
+        proofSize: '0',
+      })
+      .paymentInfo(TEST_ACCOUNT_ID);
+  }
+
+  return paymentInfo.partialFee;
 };

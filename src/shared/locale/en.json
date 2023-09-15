@@ -771,6 +771,7 @@
   "transfer": {
     "amountPlaceholder": "0",
     "continueButton": "Continue",
+    "crossChainPlaceholder": "Cross-chain",
     "descriptionLengthError": "Description must be { maxLength } symbols long",
     "destinationChainLabel": "Recipient network",
     "destinationChainPlaceholder": "Select recipient network",
@@ -792,6 +793,7 @@
     "notEnoughBalanceError": "Not enough funds to transfer specific amount",
     "notEnoughBalanceForDepositError": "Insufficient balance to pay deposit and network fee",
     "notEnoughBalanceForFeeError": "Insufficient balance to pay network fee",
+    "onChainPlaceholder": "On-chain",
     "pasteButton": "Paste",
     "recipientLabel": "Recipient",
     "recipientPlaceholder": "Address",

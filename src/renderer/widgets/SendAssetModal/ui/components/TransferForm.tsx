@@ -21,7 +21,7 @@ import {
   validateAddress,
 } from '@renderer/shared/lib/utils';
 import { Chain } from '@renderer/entities/chain';
-import { getChainOption } from '../common/utils';
+import { getChainOption, getPlaceholder } from '../common/utils';
 import { DropdownOption, DropdownResult } from '@renderer/shared/ui/types';
 import { XcmTransfer, XcmTransferType } from '@renderer/shared/api/xcm';
 import AccountSelectModal from '@renderer/pages/Operations/components/modals/AccountSelectModal/AccountSelectModal';
@@ -104,7 +104,7 @@ export const TransferForm = ({
   const [transferTx, setTransferTx] = useState<Transaction>();
   const [multisigTx, setMultisigTx] = useState<Transaction>();
   const [multisigTxExist, setMultisigTxExist] = useState(false);
-  const [destinationOptions, setDestinationOptions] = useState<DropdownOption<ChainId>[]>([]);
+  const [destinationOptions, setDestinationOptions] = useState<DropdownOption<ChainId | string>[]>([]);
   const [isSelectAccountModalOpen, setSelectAccountModalOpen] = useState(false);
 
   const {
@@ -123,7 +123,14 @@ export const TransferForm = ({
     const destinationOptions = destinations.map(getChainOption);
 
     if (destinationOptions.length) {
-      setDestinationOptions(destinationOptions);
+      const [first, ...rest] = destinationOptions;
+
+      setDestinationOptions([
+        getPlaceholder(t('transfer.onChainPlaceholder')),
+        first,
+        getPlaceholder(t('transfer.crossChainPlaceholder')),
+        ...rest,
+      ]);
     }
 
     setValue('destinationChain', destinationOptions[0]);

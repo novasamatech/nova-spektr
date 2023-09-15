@@ -9,7 +9,7 @@ import {
   getAvailableDirections,
   AssetXCM,
   getAssetLocation,
-  getAccountLocation,
+  getVersionedAccountLocation,
   estimateRequiredDestWeight,
   getVersionedDestinationLocation,
 } from '@renderer/shared/api/xcm';
@@ -160,12 +160,11 @@ forward({
 });
 
 sample({
-  source: $accountId,
+  source: { accountId: $accountId, props: $xcmProps },
+  fn: ({ accountId, props: { api } }) => {
+    if (!accountId || accountId === '0x00' || !api) return null;
 
-  fn: (accountId) => {
-    if (!accountId || accountId === '0x00') return null;
-
-    return getAccountLocation(accountId) || null;
+    return getVersionedAccountLocation(api, accountId) || null;
   },
   target: $txBeneficiary,
 });
@@ -206,7 +205,9 @@ sample({
   fn: ({ props: { api }, xcmAsset, config, amount, xcmFee }) => {
     if (!api || !xcmAsset || !amount || !config || !xcmFee) return null;
 
-    return getAssetLocation(api, xcmAsset, config.assetsLocation, new BN(amount).add(new BN(xcmFee))) || null;
+    const resultAmount = new BN(amount).add(new BN(xcmFee));
+
+    return getAssetLocation(api, xcmAsset, config.assetsLocation, resultAmount) || null;
   },
   target: $txAsset,
 });

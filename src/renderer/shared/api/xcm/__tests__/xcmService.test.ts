@@ -1,6 +1,6 @@
 import { XCM_KEY } from '../common/constants';
 import {
-  estimateFee,
+  estimateFeeFromConfig,
   getXcmConfig,
   getDestinationLocation,
   parseXTokensExtrinsic,
@@ -32,7 +32,7 @@ describe('shared/api/xcm/xcmService', () => {
   });
 
   test('should calculate correct fee for ACA from Acala to Parallel ', () => {
-    const fee = estimateFee(
+    const fee = estimateFeeFromConfig(
       CONFIG,
       CONFIG.assetsLocation['ACA'],
       'fc41b9bd8ef8fe53d58c7ea67c794c7ec9a73daf05e6d54b14ff6342c99ba64c',
@@ -43,7 +43,7 @@ describe('shared/api/xcm/xcmService', () => {
   });
 
   test('should calculate correct fee for DOT from Acala to Parallel', () => {
-    const fee = estimateFee(
+    const fee = estimateFeeFromConfig(
       CONFIG,
       CONFIG.assetsLocation['DOT'],
       'fc41b9bd8ef8fe53d58c7ea67c794c7ec9a73daf05e6d54b14ff6342c99ba64c',
