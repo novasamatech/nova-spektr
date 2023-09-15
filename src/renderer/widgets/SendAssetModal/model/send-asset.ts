@@ -9,7 +9,7 @@ import {
   getAvailableDirections,
   AssetXCM,
   getAssetLocation,
-  getAccountLocation,
+  getVersionedAccountLocation,
   estimateRequiredDestWeight,
   getVersionedDestinationLocation,
 } from '@renderer/shared/api/xcm';
@@ -160,12 +160,11 @@ forward({
 });
 
 sample({
-  source: $accountId,
+  source: { accountId: $accountId, props: $xcmProps },
+  fn: ({ accountId, props: { api } }) => {
+    if (!accountId || accountId === '0x00' || !api) return null;
 
-  fn: (accountId) => {
-    if (!accountId || accountId === '0x00') return null;
-
-    return getAccountLocation(accountId) || null;
+    return getVersionedAccountLocation(api, accountId) || null;
   },
   target: $txBeneficiary,
 });

@@ -292,6 +292,15 @@ export const getDestinationLocation = (
   return undefined;
 };
 
+export const getVersionedAccountLocation = (api: ApiPromise, accountId?: AccountId): Object | undefined => {
+  const location = getAccountLocation(accountId);
+  const version = getTypeVersion(api, 'VersionedMultiLocation');
+
+  return {
+    [version]: location,
+  };
+};
+
 export const getAccountLocation = (accountId?: AccountId): Object | undefined => {
   return {
     parents: 0,
