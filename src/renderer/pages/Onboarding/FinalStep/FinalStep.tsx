@@ -31,6 +31,9 @@ const FinalStep = ({ signingType }: Props) => {
       {signingType === SigningType.PARITY_SIGNER && (
         <img className="absolute" src={ParityImg} alt="" width={260} height={120} />
       )}
+      {signingType === SigningType.WALLET_CONNECT && (
+        <img className="absolute" src={ParityImg} alt="" width={260} height={120} />
+      )}
       <p className="absolute mt-[160px] text-neutral-variant font-semibold">{t('onboarding.readyToUseLabel')}</p>
     </div>
   );

@@ -6,6 +6,7 @@ export const SigningFlow: Record<SigningType, (props: SigningProps) => JSX.Eleme
   [SigningType.MULTISIG]: (props) => <VaultSigning {...props} />,
   [SigningType.PARITY_SIGNER]: (props) => <VaultSigning {...props} />,
   [SigningType.WATCH_ONLY]: () => null,
+  [SigningType.WALLET_CONNECT]: () => null,
 };
 
 export const Signing = (props: SigningProps) => {

@@ -252,6 +252,14 @@
       "scanTitle": "Scan the account QR code",
       "title": "Add wallet by Polkadot Vault"
     },
+    "walletConnect": {
+      "accountsTitle": "Manage accounts",
+      "addressColumn": "Address",
+      "manageTitle": "Set up your wallet",
+      "nameColumn": "Account name",
+      "scanTitle": "Scan the QR code",
+      "title": "Add wallet by Wallet Connect"
+    },
     "walletNameExample": "Name examples: Main account, My validator, Dotsama crowdloans, etc",
     "walletNameLabel": "Wallet name",
     "walletNamePlaceholder": "Enter a name for your wallet",
@@ -796,6 +804,7 @@
     "addButtonTitle": "Add",
     "addMultisig": "Multisig",
     "addPolkadotVault": "Polkadot Vault",
+    "addWalletConnect": "Wallet Connect",
     "addWatchOnly": "Watch-only",
     "multishardLabel": "Multishard",
     "multisigLabel": "Multisig",
@@ -803,6 +812,7 @@
     "searchPlaceholder": "Search",
     "shards": "Shards",
     "title": "Wallets",
+    "walletConnectLabel": "Wallet Connect",
     "watchOnlyLabel": "Watch-only"
   },
   "welcome": {

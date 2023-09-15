@@ -8,6 +8,7 @@ import { useToggle } from '@renderer/shared/lib/hooks';
 import { cnTw, DEFAULT_TRANSITION } from '@renderer/shared/lib/utils';
 import WatchOnly from '../WatchOnly/WatchOnly';
 import Vault from '../Vault/Vault';
+import WalletConnect from '../WalletConnect/WalletConnect';
 import PrivacyPolicy from './PrivacyPolicy';
 import { WelcomeCard } from './WelcomeCard';
 
@@ -20,6 +21,7 @@ export const Welcome = () => {
 
   const [isWatchOnlyModalOpen, toggleWatchOnlyModal] = useToggle();
   const [isVaultModalOpen, toggleVaultModal] = useToggle();
+  const [isWalletConnectModalOpen, toggleWalletConnectModal] = useToggle();
 
   const logo = useRef<HTMLDivElement>(null);
 
@@ -50,6 +52,11 @@ export const Welcome = () => {
     setTimeout(() => navigate(Paths.ASSETS), DEFAULT_TRANSITION);
   };
 
+  const handleCreateWalletConnectWallet = () => {
+    toggleWalletConnectModal();
+    setTimeout(() => navigate(Paths.ASSETS), DEFAULT_TRANSITION);
+  };
+
   return (
     <div className="flex h-screen w-screen">
       <div className="w-[512px] flex flex-col p-10 h-full">
@@ -74,20 +81,20 @@ export const Welcome = () => {
             title={t('onboarding.welcome.novaWalletTitle')}
             description={t('onboarding.welcome.novaWalletDescription')}
             iconName="novaWallet"
-            disabled
-          />
-
-          <WelcomeCard
-            title={t('onboarding.welcome.ledgerTitle')}
-            description={t('onboarding.welcome.ledgerDescription')}
-            iconName="ledger"
-            disabled
+            onClick={toggleWalletConnectModal}
           />
 
           <WelcomeCard
             title={t('onboarding.welcome.walletConnectTitle')}
             description={t('onboarding.welcome.walletConnectDescription')}
             iconName="walletConnect"
+            onClick={toggleWalletConnectModal}
+          />
+
+          <WelcomeCard
+            title={t('onboarding.welcome.ledgerTitle')}
+            description={t('onboarding.welcome.ledgerDescription')}
+            iconName="ledger"
             disabled
           />
         </div>
@@ -112,6 +119,12 @@ export const Welcome = () => {
       />
 
       <Vault isOpen={isVaultModalOpen} onClose={toggleVaultModal} onComplete={handleCreateVaultWallet} />
+
+      <WalletConnect
+        isOpen={isWalletConnectModalOpen}
+        onClose={toggleWalletConnectModal}
+        onComplete={handleCreateWalletConnectWallet}
+      />
     </div>
   );
 };

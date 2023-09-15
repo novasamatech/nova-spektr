@@ -30,6 +30,7 @@ interface IContext {
   setChains: any;
   relayerRegion: string;
   setRelayerRegion: any;
+  uri?: string;
 }
 
 /**
@@ -54,6 +55,7 @@ export const WalletConnectProvider = ({ children }: { children: ReactNode | Reac
   const [client, setClient] = useState<Client>();
   const [pairings, setPairings] = useState<PairingTypes.Struct[]>([]);
   const [session, setSession] = useState<SessionTypes.Struct>();
+  const [uri, setUri] = useState<string>('');
 
   const [isInitializing, setIsInitializing] = useState(false);
   const prevRelayerValue = useRef<string>('');
@@ -85,6 +87,7 @@ export const WalletConnectProvider = ({ children }: { children: ReactNode | Reac
       if (typeof client === 'undefined') {
         throw new Error('WalletConnect is not initialized');
       }
+
       console.log('connect, pairing topic is:', pairing?.topic);
       const chains = await getChainsData();
 
@@ -105,7 +108,7 @@ export const WalletConnectProvider = ({ children }: { children: ReactNode | Reac
 
         // Open QRCode modal if a URI was returned (i.e. we're not connecting an existing pairing).
         if (uri) {
-          walletConnectModal.openModal({ uri });
+          setUri(uri);
         }
 
         const session = await approval();
@@ -127,6 +130,7 @@ export const WalletConnectProvider = ({ children }: { children: ReactNode | Reac
     if (typeof client === 'undefined') {
       throw new Error('WalletConnect is not initialized');
     }
+
     if (typeof session === 'undefined') {
       throw new Error('Session is not connected');
     }
@@ -260,6 +264,7 @@ export const WalletConnectProvider = ({ children }: { children: ReactNode | Reac
       relayerRegion,
       client,
       session,
+      uri,
       connect,
       disconnect,
       setChains,
@@ -273,6 +278,7 @@ export const WalletConnectProvider = ({ children }: { children: ReactNode | Reac
       relayerRegion,
       client,
       session,
+      uri,
       connect,
       disconnect,
       setChains,

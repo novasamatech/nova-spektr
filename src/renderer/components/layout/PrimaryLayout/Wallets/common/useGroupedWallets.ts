@@ -28,9 +28,10 @@ export const useGroupedWallets = (
   useEffect(() => {
     setWallets({
       [WalletType.SINGLE_PARITY_SIGNER]: paritySignerAccounts.filter((a) => !a.walletId),
-      [WalletType.MULTISHARD_PARITY_SIGNER]: getMultishardWallets(),
+      [WalletType.MULTISHARD_PARITY_SIGNER]: getMultishardWallets(WalletType.MULTISHARD_PARITY_SIGNER),
       [WalletType.MULTISIG]: multisigAccounts,
       [WalletType.WATCH_ONLY]: watchOnlyAccounts,
+      [WalletType.WALLET_CONNECT]: getMultishardWallets(WalletType.WALLET_CONNECT),
     });
   }, [watchOnlyAccounts.length, paritySignerAccounts.length, multisigAccounts.length, liveWallets.length]);
 
@@ -38,10 +39,15 @@ export const useGroupedWallets = (
     const searchedParitySignerAccounts = searchAccount(paritySignerAccounts, searchQuery);
     const searchedWatchOnlyAccounts = searchAccount(watchOnlyAccounts, searchQuery);
     const searchedMultisigAccounts = searchAccount(multisigAccounts, searchQuery);
+    // const searchedWalletConnectAccounts = searchAccount(walletConnectAccounts, searchQuery);
 
     const searchedShards = uniq(searchedParitySignerAccounts.map((a) => a.walletId).filter((a) => a));
 
-    const multishardWallets = getMultishardWallets().filter(
+    const multishardWallets = getMultishardWallets(WalletType.MULTISHARD_PARITY_SIGNER).filter(
+      (w) => includes(w.name, searchQuery) || searchedShards.includes(w.id),
+    );
+
+    const walletConnectWallets = getMultishardWallets(WalletType.WALLET_CONNECT).filter(
       (w) => includes(w.name, searchQuery) || searchedShards.includes(w.id),
     );
 
@@ -50,6 +56,7 @@ export const useGroupedWallets = (
       [WalletType.MULTISHARD_PARITY_SIGNER]: multishardWallets,
       [WalletType.MULTISIG]: searchedMultisigAccounts,
       [WalletType.WATCH_ONLY]: searchedWatchOnlyAccounts,
+      [WalletType.WALLET_CONNECT]: walletConnectWallets,
     });
   }, [searchQuery, firstActiveAccount?.id, firstActiveAccount?.signingType]);
 
@@ -64,9 +71,9 @@ export const useGroupedWallets = (
     });
   };
 
-  const getMultishardWallets = () =>
+  const getMultishardWallets = (walletType: WalletType) =>
     liveWallets
-      .filter((w) => w.id && w.type === WalletType.MULTISHARD_PARITY_SIGNER)
+      .filter((w) => w.id && w.type === walletType)
       .map((w) => ({ ...w, ...getMultishardStructure(paritySignerAccounts, chains, w.id!) }));
 
   return wallets;

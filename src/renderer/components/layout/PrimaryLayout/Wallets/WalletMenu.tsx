@@ -22,7 +22,7 @@ import {
   WalletGroupItem,
   MultishardWallet,
 } from '@renderer/components/layout/PrimaryLayout/Wallets/common/types';
-import WalletConnectQR from '@renderer/shared/ui/WalletConnectQR/WalletConnectQR';
+import WalletConnect from '@renderer/pages/Onboarding/WalletConnect/WalletConnect';
 
 type Props = {
   chains: ChainsRecord;
@@ -90,6 +90,11 @@ const WalletMenu = ({ children, chains, wallets }: PropsWithChildren<Props>) => 
     setTimeout(() => navigate(Paths.ASSETS), DEFAULT_TRANSITION);
   };
 
+  const handleCompleteWalletConnectWalletCreation = () => {
+    toggleWalletConnectModalOpen();
+    setTimeout(() => navigate(Paths.ASSETS), DEFAULT_TRANSITION);
+  };
+
   return (
     <>
       <Popover className="relative">
@@ -145,7 +150,11 @@ const WalletMenu = ({ children, chains, wallets }: PropsWithChildren<Props>) => 
       />
       <Vault isOpen={isVaultModalOpen} onClose={toggleVaultModal} onComplete={handleCompleteVaultWalletCreation} />
       <CreateMultisigAccount isOpen={isMultisigModalOpen} onClose={toggleMultisigModalOpen} />
-      <WalletConnectQR isOpen={isWalletConnectModalOpen} onClose={toggleWalletConnectModalOpen} />
+      <WalletConnect
+        isOpen={isWalletConnectModalOpen}
+        onClose={toggleWalletConnectModalOpen}
+        onComplete={handleCompleteWalletConnectWalletCreation}
+      />
     </>
   );
 };

@@ -54,7 +54,7 @@ const WalletGroup = ({ type, wallets, onWalletClick }: Props) => {
                 className={cn('hover:bg-action-background-hover rounded', isActive && 'bg-selected-background')}
               >
                 <button className="w-full py-1.5 px-4 flex flex-col" onClick={() => !isActive && onWalletClick(wallet)}>
-                  {type === WalletType.MULTISHARD_PARITY_SIGNER ? (
+                  {[WalletType.MULTISHARD_PARITY_SIGNER, WalletType.WALLET_CONNECT].includes(type) ? (
                     <>
                       <BodyText className="text-text-secondary max-w-[260px] truncate">
                         {(wallet as MultishardWallet).name}
