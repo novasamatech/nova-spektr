@@ -27,6 +27,7 @@ import {
   useTransaction,
   validateBalance,
   isXcmTransaction,
+  MAX_WEIGHT,
 } from '@renderer/entities/transaction';
 
 type Props = {
@@ -47,7 +48,7 @@ const ApproveTx = ({ tx, account, connection }: Props) => {
   const { t } = useI18n();
   const { getBalance } = useBalance();
   const { getLiveAccounts } = useAccount();
-  const { getTransactionFee, getExtrinsicWeight } = useTransaction();
+  const { getTransactionFee, getExtrinsicWeight, getTxWeight } = useTransaction();
   const { getTxFromCallData } = useCallDataDecoder();
   const { getLiveTxEvents } = useMultisigEvent({});
   const events = getLiveTxEvents(tx.accountId, tx.chainId, tx.callHash, tx.blockCreated, tx.indexCreated);
@@ -89,12 +90,27 @@ const ApproveTx = ({ tx, account, connection }: Props) => {
     setApproveTx(getMultisigTx(signAccount?.accountId));
   }, [tx, signAccount?.accountId, txWeight]);
 
+  const initWeight = async () => {
+    let weight;
+    try {
+      if (!tx.callData || !connection.api) return;
+
+      const transaction = getTxFromCallData(connection.api, tx.callData);
+
+      weight = await getExtrinsicWeight(transaction);
+    } catch (e) {
+      if (tx.transaction?.args && connection.api) {
+        weight = await getTxWeight(tx.transaction as Transaction, connection.api);
+      } else {
+        weight = connection.api?.createType('Weight', MAX_WEIGHT);
+      }
+    }
+
+    setTxWeight(weight);
+  };
+
   useEffect(() => {
-    if (!tx.callData || !connection.api) return;
-
-    const transaction = getTxFromCallData(connection.api, tx.callData);
-
-    getExtrinsicWeight(transaction).then(setTxWeight);
+    initWeight();
   }, [tx.transaction, connection.api]);
 
   const goBack = () => {
@@ -200,9 +216,11 @@ const ApproveTx = ({ tx, account, connection }: Props) => {
 
   return (
     <>
-      <Button size="sm" className="ml-auto" onClick={() => setIsModalOpen(true)}>
-        {t('operation.approveButton')}
-      </Button>
+      {txWeight && (
+        <Button size="sm" className="ml-auto" onClick={() => setIsModalOpen(true)}>
+          {t('operation.approveButton')}
+        </Button>
+      )}
 
       <BaseModal
         closeButton
