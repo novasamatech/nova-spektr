@@ -1,5 +1,5 @@
 export * from './chainSpecService';
-export * from './chainsService';
+export { chainsService } from './chainsService';
 export * from './networkService';
 export * from './common/types';
 export * from './common/utils';

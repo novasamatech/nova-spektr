@@ -2,7 +2,7 @@ import { ElementType, useEffect, useState } from 'react';
 
 import { cnTw } from '@renderer/shared/lib/utils';
 import { ChainId } from '@renderer/domain/shared-kernel';
-import { useChains } from '@renderer/entities/network';
+import { chainsService } from '@renderer/entities/network';
 import { Chain as ChainType, ChainIcon } from '@renderer/entities/chain';
 import TextBase from '@renderer/shared/ui/Typography/common/TextBase';
 
@@ -25,15 +25,13 @@ export const ChainTitle = ({
   iconSize = 16,
   ...chainProps
 }: Props) => {
-  const { getChainById } = useChains();
-
   const [chainObj, setChainObj] = useState<ChainType>();
 
   useEffect(() => {
     if ('chain' in chainProps) {
       setChainObj(chainProps.chain);
     } else {
-      setChainObj(getChainById(chainProps.chainId));
+      setChainObj(chainsService.getChainById(chainProps.chainId));
     }
   }, []);
 

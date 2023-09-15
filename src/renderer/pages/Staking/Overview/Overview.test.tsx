@@ -20,7 +20,7 @@ jest.mock('@renderer/app/providers', () => ({
 }));
 
 jest.mock('@renderer/entities/network', () => ({
-  useChains: jest.fn().mockReturnValue({
+  chainsService: {
     sortChains: (value: Chain[]) => value,
     getChainsData: jest.fn().mockResolvedValue([
       {
@@ -30,7 +30,7 @@ jest.mock('@renderer/entities/network', () => ({
         name: 'My test chain',
       },
     ]),
-  }),
+  },
 }));
 
 jest.mock('@renderer/entities/account', () => ({

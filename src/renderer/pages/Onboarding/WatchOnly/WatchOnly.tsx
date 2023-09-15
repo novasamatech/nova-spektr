@@ -15,7 +15,7 @@ import {
 import { useI18n } from '@renderer/app/providers';
 import { Chain } from '@renderer/entities/chain';
 import { ErrorType, AccountId, SigningType } from '@renderer/domain/shared-kernel';
-import { useChains } from '@renderer/entities/network';
+import { chainsService } from '@renderer/entities/network';
 import { toAccountId, validateAddress } from '@renderer/shared/lib/utils';
 import EmptyState from './EmptyState';
 import { createAccount, useAccount, AccountsList } from '@renderer/entities/account';
@@ -34,7 +34,6 @@ type Props = {
 const WatchOnly = ({ isOpen, onClose, onComplete }: Props) => {
   const { t } = useI18n();
 
-  const { getChainsData, sortChains } = useChains();
   const { addAccount, setActiveAccount } = useAccount();
 
   const [chains, setChains] = useState<Chain[]>([]);
@@ -58,9 +57,9 @@ const WatchOnly = ({ isOpen, onClose, onComplete }: Props) => {
   }, [address]);
 
   useEffect(() => {
-    const chains = getChainsData();
+    const chains = chainsService.getChainsData();
 
-    setChains(sortChains(chains));
+    setChains(chainsService.sortChains(chains));
   }, []);
 
   const createWallet: SubmitHandler<WalletForm> = async ({ walletName, address }) => {
