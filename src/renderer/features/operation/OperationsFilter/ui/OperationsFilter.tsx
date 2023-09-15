@@ -97,12 +97,12 @@ export const OperationsFilter = ({ txs, onChange }: Props) => {
   const filterTx = (tx: MultisigTransaction, filters: SelectedFilters) => {
     const xcmDestination = tx.transaction?.args.destinationChain;
 
-    return (
-      ((!filters.status.length || filters.status.map(mapValues).includes(tx.status)) &&
-        (!filters.network.length || filters.network.map(mapValues).includes(tx.chainId))) ||
-      (filters.network.map(mapValues).includes(xcmDestination) &&
-        (!filters.type.length || filters.type.map(mapValues).includes(getFilterableTxType(tx))))
-    );
+    const hasStatus = !filters.status.length || filters.status.map(mapValues).includes(tx.status);
+    const hasOrigin = !filters.network.length || filters.network.map(mapValues).includes(tx.chainId);
+    const hasDestination = !filters.network.length || filters.network.map(mapValues).includes(xcmDestination);
+    const hasTxType = !filters.type.length || filters.type.map(mapValues).includes(getFilterableTxType(tx));
+
+    return hasStatus && hasOrigin && hasDestination && hasTxType;
   };
 
   const handleFilterChange = (values: DropdownResult[], filterName: FilterName) => {
