@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 
-import { useI18n, useNetworkContext } from '@renderer/app/providers';
+import { useI18n } from '@renderer/app/providers';
 import { MultisigTransactionDS } from '@renderer/shared/api/storage';
 import { DropdownOption, DropdownResult } from '@renderer/shared/ui/types';
 import { Button, MultiSelect } from '@renderer/shared/ui';
@@ -8,6 +8,8 @@ import { MultisigTransaction, Transaction, TransactionType } from '@renderer/ent
 import { TransferTypes, XcmTypes } from '@renderer/entities/transaction/lib/common/constants';
 import { getStatusOptions, getTransactionOptions } from '../lib/utils';
 import { UNKNOWN_TYPE } from '../lib/constants';
+import { ChainId } from '@renderer/domain/shared-kernel';
+import { chainsService } from '@renderer/entities/network';
 
 type FilterName = 'status' | 'network' | 'type';
 
@@ -35,23 +37,29 @@ type Props = {
 
 export const OperationsFilter = ({ txs, onChange }: Props) => {
   const { t } = useI18n();
-  const { connections } = useNetworkContext();
 
-  const StatusOptions = getStatusOptions(t);
-  const TransactionOptions = getTransactionOptions(t);
-  const NetworkOptions = Object.values(connections).map((c) => ({
-    id: c.chainId,
-    value: c.chainId,
-    element: c.name,
-  }));
-
+  const [availableChains, setAvailableChains] = useState<{ chainId: ChainId; name: string }[]>([]);
   const [filtersOptions, setFiltersOptions] = useState<FiltersOptions>(EmptyOptions);
   const [selectedOptions, setSelectedOptions] = useState<SelectedFilters>(EmptySelected);
 
   useEffect(() => {
+    const chains = chainsService.getChainsData().map(({ chainId, name }) => ({ chainId, name }));
+
+    setAvailableChains(chains);
+  }, []);
+
+  const StatusOptions = getStatusOptions(t);
+  const TransactionOptions = getTransactionOptions(t);
+  const NetworkOptions = availableChains.map(({ chainId, name }) => ({
+    id: chainId,
+    value: chainId,
+    element: name,
+  }));
+
+  useEffect(() => {
     setFiltersOptions(getAvailableFiltersOptions(txs));
     onChange(txs);
-  }, [txs]);
+  }, [txs, availableChains]);
 
   const getFilterableTxType = (tx: MultisigTransaction): TransactionType | typeof UNKNOWN_TYPE => {
     if (!tx.transaction?.type) return UNKNOWN_TYPE;
@@ -77,11 +85,13 @@ export const OperationsFilter = ({ txs, onChange }: Props) => {
         const xcmDestination = tx.transaction?.args.destinationChain;
 
         const statusOption = StatusOptions.find((s) => s.value === tx.status);
-        const networkOption = NetworkOptions.find((s) => s.value === tx.chainId || s.value === xcmDestination);
+        const originNetworkOption = NetworkOptions.find((s) => s.value === tx.chainId);
+        const destNetworkOption = NetworkOptions.find((s) => s.value === xcmDestination);
         const typeOption = TransactionOptions.find((s) => s.value === txType);
 
         if (statusOption) acc.status.add(statusOption);
-        if (networkOption) acc.network.add(networkOption);
+        if (originNetworkOption) acc.network.add(originNetworkOption);
+        if (destNetworkOption) acc.network.add(destNetworkOption);
         if (typeOption) acc.type.add(typeOption);
 
         return acc;
@@ -102,7 +112,7 @@ export const OperationsFilter = ({ txs, onChange }: Props) => {
     const hasDestination = !filters.network.length || filters.network.map(mapValues).includes(xcmDestination);
     const hasTxType = !filters.type.length || filters.type.map(mapValues).includes(getFilterableTxType(tx));
 
-    return hasStatus && hasOrigin && hasDestination && hasTxType;
+    return hasStatus && (hasOrigin || hasDestination) && hasTxType;
   };
 
   const handleFilterChange = (values: DropdownResult[], filterName: FilterName) => {

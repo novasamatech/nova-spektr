@@ -39,9 +39,9 @@ jest.mock('@renderer/entities/wallet', () => ({
 }));
 
 jest.mock('@renderer/entities/network', () => ({
-  useChains: jest.fn().mockReturnValue({
+  chainsService: {
     getChainsData: jest.fn().mockResolvedValue([]),
-  }),
+  },
 }));
 
 jest.mock('@renderer/components/modals/MatrixModal/MatrixModal', () => ({

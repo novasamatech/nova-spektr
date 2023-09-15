@@ -18,7 +18,7 @@ import {
   createNewEventsPayload,
   updateOldEventsPayload,
 } from './common/utils';
-import { useChains } from '../../../network/lib/chainsService';
+import { chainsService } from '../../../network/lib/chainsService';
 import { useTransaction } from '../../../transaction/lib/transactionService';
 import { CallData, AccountId } from '@renderer/domain/shared-kernel';
 import { toAddress, getCurrentBlockNumber, getExpectedBlockTime } from '@renderer/shared/lib/utils';
@@ -37,7 +37,6 @@ export const useMultisigTx = ({ addTask }: Props): IMultisigTxService => {
   }
   const { getMultisigTx, getMultisigTxs, getAccountMultisigTxs, addMultisigTx, updateMultisigTx, deleteMultisigTx } =
     transactionStorage;
-  const { getChainById } = useChains();
   const { decodeCallData } = useTransaction();
   const { addEventWithQueue, getEvents, updateEvent } = useMultisigEvent({ addTask });
 
@@ -209,7 +208,7 @@ export const useMultisigTx = ({ addTask }: Props): IMultisigTxService => {
 
   const updateCallData = async (api: ApiPromise, tx: MultisigTransaction, callData: CallData) => {
     try {
-      const chain = getChainById(tx.chainId);
+      const chain = chainsService.getChainById(tx.chainId);
 
       const transaction = decodeCallData(api, toAddress(tx.accountId, { prefix: chain?.addressPrefix }), callData);
 

@@ -7,7 +7,7 @@ import { AccountId, ChainId, HexString } from '@renderer/domain/shared-kernel';
 import { Chain } from '@renderer/entities/chain';
 import { getTypeVersion, toLocalChainId, getAssetId } from '@renderer/shared/lib/utils';
 import { XcmPalletTransferArgs, XTokenPalletTransferArgs } from '@renderer/entities/transaction';
-import { useChains } from '@renderer/entities/network';
+import { chainsService } from '@renderer/entities/network';
 import { toRawString } from './common/utils';
 import {
   XcmConfig,
@@ -435,14 +435,12 @@ const getJunctionCols = <T extends Object>(interior: Object, path: string): T =>
 };
 
 export const decodeXcm = (chainId: ChainId, data: XcmPalletPayload | XTokensPayload): DecodedPayload => {
-  const { getChainById } = useChains();
-
   const config = getXcmConfig();
   if (!config) return {} as DecodedPayload;
 
   let destinationChain: HexString | undefined;
   if (data.toRelayChain) {
-    destinationChain = getChainById(chainId)?.parentId;
+    destinationChain = chainsService.getChainById(chainId)?.parentId;
   } else {
     const destination = Object.values(config.assetsLocation).find(({ multiLocation }) => {
       return multiLocation.parachainId === data.destParachain;
@@ -473,7 +471,9 @@ export const decodeXcm = (chainId: ChainId, data: XcmPalletPayload | XTokensPayl
     });
 
     if (assetKeyVal) {
-      const assetFromChain = getChainById(chainId)?.assets.find((asset) => asset.assetId === assetKeyVal[0]);
+      const assetFromChain = chainsService
+        .getChainById(chainId)
+        ?.assets.find((asset) => asset.assetId === assetKeyVal[0]);
       if (assetFromChain) {
         assetId = getAssetId(assetFromChain);
       }
