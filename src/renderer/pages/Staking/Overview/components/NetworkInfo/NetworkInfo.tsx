@@ -4,7 +4,7 @@ import { BN, BN_ZERO } from '@polkadot/util';
 import { Select, FootnoteText, Plate, IconButton, Shimmering } from '@renderer/shared/ui';
 import { DropdownOption, DropdownResult } from '@renderer/shared/ui/types';
 import { getRelaychainAsset } from '@renderer/shared/lib/utils';
-import { useChains } from '@renderer/entities/network';
+import { chainsService } from '@renderer/entities/network';
 import { useSettingsStorage } from '@renderer/entities/settings';
 import { Chain, ChainTitle } from '@renderer/entities/chain';
 import { useToggle } from '@renderer/shared/lib/hooks';
@@ -32,7 +32,6 @@ export const NetworkInfo = ({
   onNetworkChange,
 }: PropsWithChildren<Props>) => {
   const { t } = useI18n();
-  const { sortChains, getChainsData } = useChains();
   const { getStakingNetwork, setStakingNetwork } = useSettingsStorage();
 
   const [isChildrenShown, toggleChildren] = useToggle();
@@ -40,8 +39,8 @@ export const NetworkInfo = ({
   const [activeNetwork, setActiveNetwork] = useState<DropdownResult<Chain>>();
 
   useEffect(() => {
-    const chains = getChainsData();
-    const relaychains = sortChains(chains).reduce<DropdownOption<Chain>[]>((acc, chain) => {
+    const chains = chainsService.getChainsData();
+    const relaychains = chainsService.sortChains(chains).reduce<DropdownOption<Chain>[]>((acc, chain) => {
       const { chainId, assets } = chain;
 
       if (getRelaychainAsset(assets)) {

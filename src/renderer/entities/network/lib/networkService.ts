@@ -10,7 +10,7 @@ import { Connection, ConnectionStatus, ConnectionType } from '@renderer/domain/c
 import { ChainId } from '@renderer/domain/shared-kernel';
 import { ISubscriptionService } from '../../../services/subscription/common/types';
 import { useChainSpec } from './chainSpecService';
-import { useChains } from './chainsService';
+import { chainsService } from './chainsService';
 import { useMetadata } from './metadataService';
 import { AUTO_BALANCE_TIMEOUT, MAX_ATTEMPTS, PROGRESSION_BASE } from './common/constants';
 import { ConnectionsMap, ConnectProps, INetworkService, RpcValidation } from './common/types';
@@ -20,7 +20,6 @@ export const useNetwork = (networkSubscription?: ISubscriptionService<ChainId>):
   const chains = useRef<Record<ChainId, Chain>>({});
   const [connections, setConnections] = useState<ConnectionsMap>({});
 
-  const { getChainsData, sortChains } = useChains();
   const { getKnownChain, getLightClientChains } = useChainSpec();
   const { subscribeMetadata, getMetadata } = useMetadata();
 
@@ -358,8 +357,8 @@ export const useNetwork = (networkSubscription?: ISubscriptionService<ChainId>):
 
   const setupConnections = async (): Promise<void> => {
     try {
-      const chainsData = getChainsData();
-      chains.current = keyBy(sortChains(chainsData), 'chainId');
+      const chainsData = chainsService.getChainsData();
+      chains.current = keyBy(chainsService.sortChains(chainsData), 'chainId');
 
       const newConnections = await getNewConnections();
       await clearConnections();

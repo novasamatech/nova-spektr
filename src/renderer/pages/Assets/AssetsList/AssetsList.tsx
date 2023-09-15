@@ -8,7 +8,7 @@ import { Chain } from '@renderer/entities/chain';
 import { ConnectionType } from '@renderer/domain/connection';
 import { SigningType } from '@renderer/domain/shared-kernel';
 import { useToggle } from '@renderer/shared/lib/hooks';
-import { useChains } from '@renderer/entities/network';
+import { chainsService } from '@renderer/entities/network';
 import { useSettingsStorage } from '@renderer/entities/settings';
 import { Account, isMultisig, useAccount } from '@renderer/entities/account';
 import { AssetsFilters, NetworkAssets, SelectShardModal } from './components';
@@ -19,7 +19,6 @@ export const AssetsList = () => {
   const { connections } = useNetworkContext();
   const { getActiveAccounts } = useAccount();
   const { getLiveBalances } = useBalance();
-  const { sortChainsByBalance } = useChains();
   const { setHideZeroBalance, getHideZeroBalance } = useSettingsStorage();
 
   const [isSelectShardsOpen, toggleSelectShardsOpen] = useToggle();
@@ -55,7 +54,7 @@ export const AssetsList = () => {
       return !isDisabled && hasMultiPallet;
     });
 
-    setSortedChains(sortChainsByBalance(filteredChains, balances));
+    setSortedChains(chainsService.sortChainsByBalance(filteredChains, balances));
   }, [balances]);
 
   const updateHideZeroBalance = (value: boolean) => {

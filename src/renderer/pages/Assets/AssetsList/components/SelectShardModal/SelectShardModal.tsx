@@ -5,7 +5,7 @@ import { AccountId, ChainId } from '@renderer/domain/shared-kernel';
 import { BaseModal, Button, Checkbox, FootnoteText, SearchInput } from '@renderer/shared/ui';
 import { useI18n } from '@renderer/app/providers';
 import { AccountDS } from '@renderer/shared/api/storage';
-import { useChains } from '@renderer/entities/network';
+import { chainsService } from '@renderer/entities/network';
 import {
   getMultishardStructure,
   getSelectableShards,
@@ -28,15 +28,14 @@ type Props = {
 
 export const SelectShardModal = ({ isOpen, onClose, activeAccounts, accounts }: Props) => {
   const { t } = useI18n();
-  const { getChainsData, sortChains } = useChains();
 
   const [chains, setChains] = useState<ChainsRecord>({});
 
   useEffect(() => {
     if (!accounts[0]?.walletId) return;
 
-    const chains = getChainsData();
-    const chainsById = keyBy(sortChains(chains), 'chainId');
+    const chains = chainsService.getChainsData();
+    const chainsById = keyBy(chainsService.sortChains(chains), 'chainId');
     const activeIds = activeAccounts.map((a) => a.id || '');
 
     const multishard = getMultishardStructure(accounts, chainsById, accounts[0].walletId!);
