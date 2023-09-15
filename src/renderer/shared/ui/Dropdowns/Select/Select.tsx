@@ -88,13 +88,13 @@ const Select = <T extends any>({
                 position !== 'auto' && ViewClass[position],
               )}
             >
-              {options.map(({ id, value, element, unavailable }) => (
+              {options.map(({ id, value, element, disabled }) => (
                 <Listbox.Option
                   key={id}
                   value={{ id, value }}
-                  disabled={unavailable}
+                  disabled={disabled}
                   className={({ active, selected }) =>
-                    cnTw(OptionStyle, unavailable ? 'cursor-default' : OptionStyleTheme[theme](active, selected))
+                    cnTw(OptionStyle, disabled ? 'cursor-default' : OptionStyleTheme[theme](active, selected))
                   }
                 >
                   {['string', 'number'].includes(typeof element) ? (

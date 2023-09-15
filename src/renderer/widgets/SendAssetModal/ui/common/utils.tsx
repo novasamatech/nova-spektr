@@ -96,5 +96,5 @@ export const getChainOption = ({ chainId }: Chain): DropdownOption<ChainId> => {
 export const getPlaceholder = (text: string): DropdownOption<string> => {
   const element = <HelpText className="text-text-secondary">{text}</HelpText>;
 
-  return { id: text, value: text, element, unavailable: true };
+  return { id: text, value: text, element, disabled: true };
 };

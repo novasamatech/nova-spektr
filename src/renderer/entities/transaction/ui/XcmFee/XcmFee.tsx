@@ -34,38 +34,37 @@ export const XcmFee = memo(
     }, [isLoading]);
 
     useEffect(() => {
-      (async () => {
-        setIsLoading(true);
+      const handleFee = (fee: string) => {
+        updateFee(fee);
+        setIsLoading(false);
+      };
 
-        if (!transaction?.address) {
-          updateFee('0');
-          setIsLoading(false);
-        } else {
-          const originChainId = toLocalChainId(transaction.chainId);
-          const destinationChainId = toLocalChainId(transaction.args.destinationChain);
-          const configChain = config.chains.find((c) => c.chainId === originChainId);
-          const configAsset = configChain?.assets.find((a) => a.assetId === asset.assetId);
-          const configXcmTransfer = configAsset?.xcmTransfers.find((t) => t.destination.chainId === destinationChainId);
+      setIsLoading(true);
+      if (!transaction?.address) {
+        handleFee('0');
 
-          if (originChainId && configXcmTransfer && configAsset) {
-            const fee = await estimateFee(
-              config,
-              config.assetsLocation[configAsset.assetLocation],
-              originChainId,
-              configXcmTransfer,
-              api,
-              transaction.args.xcmAsset,
-              transaction.args.xcmDest,
-            );
+        return;
+      }
 
-            updateFee(fee.toString());
-          } else {
-            updateFee('0');
-          }
+      const originChainId = toLocalChainId(transaction.chainId);
+      const destinationChainId = toLocalChainId(transaction.args.destinationChain);
+      const configChain = config.chains.find((c) => c.chainId === originChainId);
+      const configAsset = configChain?.assets.find((a) => a.assetId === asset.assetId);
+      const configXcmTransfer = configAsset?.xcmTransfers.find((t) => t.destination.chainId === destinationChainId);
 
-          setIsLoading(false);
-        }
-      })();
+      if (originChainId && configXcmTransfer && configAsset) {
+        estimateFee(
+          config,
+          config.assetsLocation[configAsset.assetLocation],
+          originChainId,
+          configXcmTransfer,
+          api,
+          transaction.args.xcmAsset,
+          transaction.args.xcmDest,
+        ).then((fee) => handleFee(fee.toString()));
+      } else {
+        handleFee('0');
+      }
     }, [transaction]);
 
     if (isLoading) {
