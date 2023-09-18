@@ -142,7 +142,7 @@ export const InitOperation = ({
 
   const reserveChainId =
     reserveAsset && config && toHexChainId(config.assetsLocation[reserveAsset.assetLocation].chainId);
-  const reserveApi = reserveChainId && connections[reserveChainId].api;
+  const reserveApi = reserveChainId && connections[reserveChainId]?.api;
 
   return (
     <div className="flex flex-col gap-y-4">
