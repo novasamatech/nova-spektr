@@ -109,9 +109,13 @@ export const getCreatedDateFromApi = async (neededBlock: number, api: ApiPromise
 };
 
 export const getTypeVersion = (api: ApiPromise, typeName: string): string => {
+  return getTypeVersions(api, typeName).pop() || '';
+};
+
+export const getTypeVersions = (api: ApiPromise, typeName: string): string[] => {
   try {
-    return Object.keys(JSON.parse(api.registry.getDefinition(typeName) as string)?._enum).pop() || '';
+    return Object.keys(JSON.parse(api.registry.getDefinition(typeName) as string)?._enum) || [];
   } catch (e) {
-    return '';
+    return [];
   }
 };

@@ -5,7 +5,13 @@ import get from 'lodash/get';
 import { XCM_URL, XCM_KEY } from './common/constants';
 import { AccountId, ChainId, HexString } from '@renderer/domain/shared-kernel';
 import { Chain } from '@renderer/entities/chain';
-import { getTypeVersion, toLocalChainId, getAssetId, TEST_ACCOUNT_ID } from '@renderer/shared/lib/utils';
+import {
+  getTypeVersion,
+  toLocalChainId,
+  getAssetId,
+  TEST_ACCOUNT_ID,
+  getTypeVersions,
+} from '@renderer/shared/lib/utils';
 import { XcmPalletTransferArgs, XTokenPalletTransferArgs } from '@renderer/entities/transaction';
 import { chainsService } from '@renderer/entities/network';
 import { toRawString } from './common/utils';
@@ -203,6 +209,7 @@ export const getAssetLocation = (
   asset: AssetXCM,
   assets: Record<AssetName, AssetLocation>,
   amount: BN,
+  isArray: boolean = true,
 ): Object | undefined => {
   const PathMap: Record<PathType, () => Object | undefined> = {
     relative: () => getRelativeAssetLocation(assets[asset.assetLocation].multiLocation),
@@ -211,19 +218,19 @@ export const getAssetLocation = (
   };
 
   const location = PathMap[asset.assetLocationPath.type]();
-  const assetVersionType = getTypeVersion(api, 'VersionedMultiAssets');
+
+  const assetVersionType = getTypeVersion(api, isArray ? 'VersionedMultiAssets' : 'VersionedMultiAsset');
+  const assetObject = {
+    id: {
+      Concrete: location,
+    },
+    fun: {
+      Fungible: amount,
+    },
+  };
 
   return {
-    [assetVersionType]: [
-      {
-        id: {
-          Concrete: location,
-        },
-        fun: {
-          Fungible: amount,
-        },
-      },
-    ],
+    [assetVersionType]: isArray ? [assetObject] : assetObject,
   };
 };
 
@@ -265,11 +272,33 @@ export const getVersionedDestinationLocation = (
   accountId?: AccountId,
 ): Object | undefined => {
   const location = getDestinationLocation(originChain, destinationParaId, accountId);
-  const version = getTypeVersion(api, 'VersionedMultiLocation');
 
-  return {
+  // TODO: Refactor it
+  const versions = getTypeVersions(api, 'VersionedMultiLocation');
+  const version = versions.pop();
+
+  if (!version) return location;
+
+  let locationObject = {
     [version]: location,
   };
+
+  try {
+    api.createType('VersionedMultiLocation', locationObject);
+
+    return locationObject;
+  } catch {
+    const version = versions.pop();
+    if (!version) return location;
+
+    locationObject = {
+      [version]: location,
+    };
+
+    api.createType('VersionedMultiLocation', locationObject);
+
+    return locationObject;
+  }
 };
 
 export const getDestinationLocation = (
@@ -294,11 +323,33 @@ export const getDestinationLocation = (
 
 export const getVersionedAccountLocation = (api: ApiPromise, accountId?: AccountId): Object | undefined => {
   const location = getAccountLocation(accountId);
-  const version = getTypeVersion(api, 'VersionedMultiLocation');
 
-  return {
+  // TODO: Refactor it
+  const versions = getTypeVersions(api, 'VersionedMultiLocation');
+  const version = versions.pop();
+
+  if (!version) return location;
+
+  let locationObject = {
     [version]: location,
   };
+
+  try {
+    api.createType('VersionedMultiLocation', locationObject);
+
+    return locationObject;
+  } catch {
+    const version = versions.pop();
+    if (!version) return location;
+
+    locationObject = {
+      [version]: location,
+    };
+
+    api.createType('VersionedMultiLocation', locationObject);
+
+    return locationObject;
+  }
 };
 
 export const getAccountLocation = (accountId?: AccountId): Object | undefined => {
