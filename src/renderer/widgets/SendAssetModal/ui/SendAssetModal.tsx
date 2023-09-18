@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 import { UnsignedTransaction } from '@substrate/txwrapper-polkadot';
 import { useStore, useGate } from 'effector-react';
+import { useNavigate } from 'react-router-dom';
 
-import { useI18n, useNetworkContext } from '@renderer/app/providers';
+import { Paths, useI18n, useNetworkContext } from '@renderer/app/providers';
 import { HexString } from '@renderer/domain/shared-kernel';
 import { Transaction, useTransaction, validateBalance } from '@renderer/entities/transaction';
 import { Account, MultisigAccount } from '@renderer/entities/account';
@@ -12,7 +13,6 @@ import { Signing } from '@renderer/features/operation';
 import { Asset, useBalance } from '@renderer/entities/asset';
 import { OperationTitle } from '@renderer/components/common';
 import { Chain } from '@renderer/entities/chain';
-import { DEFAULT_TRANSITION } from '@renderer/shared/lib/utils';
 import { useToggle } from '@renderer/shared/lib/hooks';
 import * as sendAssetModel from '../model/send-asset';
 
@@ -26,11 +26,12 @@ const enum Step {
 type Props = {
   chain: Chain;
   asset: Asset;
-  onClose: () => void;
 };
 
-export const SendAssetModal = ({ chain, asset, onClose }: Props) => {
+export const SendAssetModal = ({ chain, asset }: Props) => {
   const { t } = useI18n();
+  const navigate = useNavigate();
+
   const { getBalance } = useBalance();
   const { getTransactionFee } = useTransaction();
   const { connections } = useNetworkContext();
@@ -92,7 +93,11 @@ export const SendAssetModal = ({ chain, asset, onClose }: Props) => {
 
   const closeSendModal = () => {
     toggleIsModalOpen();
-    setTimeout(onClose, DEFAULT_TRANSITION);
+    navigate(Paths.ASSETS);
+  };
+
+  const closeSendModalFromSubmit = () => {
+    toggleIsModalOpen();
   };
 
   const commonProps = { explorers, addressPrefix };
@@ -107,7 +112,7 @@ export const SendAssetModal = ({ chain, asset, onClose }: Props) => {
         signature={signature}
         description={description}
         api={api}
-        onClose={closeSendModal}
+        onClose={closeSendModalFromSubmit}
         {...commonProps}
       />
     ) : (
