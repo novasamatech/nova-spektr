@@ -343,14 +343,13 @@ export const TransferForm = ({
     if (!signerBalance) return false;
 
     const amountBN = new BN(formatAmount(amount, asset.precision));
-    const xcmFeeBN = new BN(xcmParams.fee || 0);
     const feeBN = new BN(fee);
 
     if (signerNativeTokenBalance) {
       return new BN(deposit).add(feeBN).lte(new BN(signerNativeTokenBalance));
     }
 
-    return new BN(deposit).add(feeBN).add(amountBN).add(xcmFeeBN).lte(new BN(signerBalance));
+    return new BN(deposit).add(feeBN).add(amountBN).lte(new BN(signerBalance));
   };
 
   const submitTransaction: SubmitHandler<TransferFormData> = async ({ description }) => {
