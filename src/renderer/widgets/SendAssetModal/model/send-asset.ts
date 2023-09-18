@@ -203,9 +203,9 @@ sample({
     xcmFee: $xcmFee,
   },
   fn: ({ props: { api }, xcmAsset, config, amount, xcmFee }) => {
-    if (!api || !xcmAsset || !amount || !config || !xcmFee) return null;
+    if (!api || !xcmAsset || !config) return null;
 
-    const resultAmount = new BN(amount).add(new BN(xcmFee));
+    const resultAmount = new BN(amount || 0).add(new BN(xcmFee || 0));
 
     return getAssetLocation(api, xcmAsset, config.assetsLocation, resultAmount) || null;
   },
