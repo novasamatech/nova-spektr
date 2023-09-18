@@ -268,8 +268,6 @@ export const getVersionedDestinationLocation = (
   const location = getDestinationLocation(originChain, destinationParaId, accountId);
   const version = getTypeVersion(api, 'XcmVersionedMultiLocation');
 
-  console.log('xcmVersion', version);
-
   if (!version) return location;
 
   return {
@@ -300,7 +298,6 @@ export const getDestinationLocation = (
 export const getVersionedAccountLocation = (api: ApiPromise, accountId?: AccountId): Object | undefined => {
   const location = getAccountLocation(accountId);
   const version = getTypeVersion(api, 'XcmVersionedMultiLocation');
-  console.log('xcmVersion', version);
 
   if (!version) return location;
 
