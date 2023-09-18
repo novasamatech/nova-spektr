@@ -88,11 +88,14 @@ const Select = <T extends any>({
                 position !== 'auto' && ViewClass[position],
               )}
             >
-              {options.map(({ id, value, element }) => (
+              {options.map(({ id, value, element, disabled }) => (
                 <Listbox.Option
                   key={id}
                   value={{ id, value }}
-                  className={({ active, selected }) => cnTw(OptionStyle, OptionStyleTheme[theme](active, selected))}
+                  disabled={disabled}
+                  className={({ active, selected }) =>
+                    cnTw(OptionStyle, disabled ? 'cursor-default' : OptionStyleTheme[theme](active, selected))
+                  }
                 >
                   {['string', 'number'].includes(typeof element) ? (
                     <FootnoteText className={OptionTextStyle[theme]}>{element}</FootnoteText>

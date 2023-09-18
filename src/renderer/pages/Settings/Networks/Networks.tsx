@@ -6,7 +6,7 @@ import uniqBy from 'lodash/uniqBy';
 import { useI18n, useNetworkContext, useConfirmContext, Paths } from '@renderer/app/providers';
 import { BaseModal, SearchInput, BodyText, InfoLink, Icon } from '@renderer/shared/ui';
 import { useToggle } from '@renderer/shared/lib/hooks';
-import { ExtendedChain, useChains } from '@renderer/entities/network';
+import { ExtendedChain, chainsService } from '@renderer/entities/network';
 import { includes, DEFAULT_TRANSITION } from '@renderer/shared/lib/utils';
 import { ConnectionType, ConnectionStatus } from '@renderer/domain/connection';
 import { RpcNode } from '@renderer/entities/chain';
@@ -22,7 +22,6 @@ const DATA_VERIFICATION = 'https://docs.novaspektr.io/network-management/light-c
 export const Networks = () => {
   const { t } = useI18n();
   const navigate = useNavigate();
-  const { sortChains } = useChains();
   const { confirm } = useConfirmContext();
   const { connections, connectToNetwork, connectWithAutoBalance, removeRpcNode, getParachains } = useNetworkContext();
   const { setBalanceIsValid } = useBalance();
@@ -240,7 +239,7 @@ export const Networks = () => {
             isDefaultOpen={false}
             query={query}
             title={t('settings.networks.disabledNetworksLabel')}
-            networkList={sortChains(inactive)}
+            networkList={chainsService.sortChains(inactive)}
           >
             {(network) => (
               <NetworkItem
@@ -257,7 +256,7 @@ export const Networks = () => {
             isDefaultOpen
             query={query}
             title={t('settings.networks.activeNetworksLabel')}
-            networkList={sortChains(active)}
+            networkList={chainsService.sortChains(active)}
           >
             {(network) => (
               <NetworkItem

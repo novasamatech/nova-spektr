@@ -1,10 +1,10 @@
 import { useEffect, useState, ComponentProps } from 'react';
 
 import { DecodedTransaction, Transaction } from '@renderer/entities/transaction';
-import { useChains } from '@renderer/entities/network';
+import { chainsService } from '@renderer/entities/network';
 import { Asset, AssetBalance } from '@renderer/entities/asset';
 import { getAssetById } from '@renderer/shared/lib/utils';
-import { getTransactionAmount } from '@renderer/pages/Operations/common/utils';
+import { getTransactionAmount } from '../common/utils';
 
 type Props = {
   tx: Transaction | DecodedTransaction;
@@ -12,20 +12,19 @@ type Props = {
 
 type BalanceProps = Pick<ComponentProps<typeof AssetBalance>, 'className' | 'showIcon' | 'wrapperClassName'>;
 
-const TransactionAmount = ({ tx, ...balanceProps }: Props & BalanceProps) => {
-  const { getChainById } = useChains();
+export const TransactionAmount = ({ tx, ...balanceProps }: Props & BalanceProps) => {
   const [assets, setAssets] = useState<Asset[]>([]);
 
   useEffect(() => {
-    getChainById(tx.chainId).then((chain) => setAssets(chain?.assets || []));
+    const chain = chainsService.getChainById(tx.chainId);
+
+    setAssets(chain?.assets || []);
   }, []);
 
-  const asset = getAssetById(tx.args.assetId, assets);
+  const asset = getAssetById(tx.args.asset, assets);
   const value = getTransactionAmount(tx);
 
   if (!asset || !value) return null;
 
   return <AssetBalance value={value} asset={asset} showIcon {...balanceProps} />;
 };
-
-export default TransactionAmount;

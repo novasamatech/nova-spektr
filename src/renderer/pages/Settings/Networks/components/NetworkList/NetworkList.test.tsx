@@ -4,7 +4,7 @@ import { ConnectionStatus, ConnectionType } from '@renderer/domain/connection';
 import { ExtendedChain } from '@renderer/entities/network';
 import { NetworkList } from './NetworkList';
 
-describe('screen/Settings/Networks/NetworkList', () => {
+describe('pages/Settings/Networks/NetworkList', () => {
   const children = () => 'children';
   const networks: ExtendedChain[] = [
     {
