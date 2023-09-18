@@ -803,11 +803,13 @@
   "wallets": {
     "addButtonTitle": "Добавить",
     "addMultisig": "Multisig",
+    "addNovaWallet": "Nova Wallet",
     "addPolkadotVault": "Polkadot Vault",
     "addWalletConnect": "Wallet Connect",
     "addWatchOnly": "Watch-only",
     "multishardLabel": "Multishard",
     "multisigLabel": "Multisig",
+    "novaWalletLabel": "Nova Wallet",
     "paritySignerLabel": "Polkadot Vault",
     "searchPlaceholder": "Поиск",
     "shards": "Shards",

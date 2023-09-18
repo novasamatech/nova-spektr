@@ -47,10 +47,16 @@ const WalletMenu = ({ children, chains, wallets }: PropsWithChildren<Props>) => 
     { id: 'watch-only', title: t('wallets.addWatchOnly'), onClick: toggleWatchOnlyModal, iconName: 'watchOnly' },
     { id: 'multi', title: t('wallets.addMultisig'), onClick: toggleMultisigModalOpen, iconName: 'multisig' },
     {
+      id: 'nova-wallet',
+      title: t('wallets.adNovaWallet'),
+      onClick: toggleWalletConnectModalOpen,
+      iconName: 'novaWallet',
+    },
+    {
       id: 'wallet-connect',
       title: t('wallets.addWalletConnect'),
       onClick: toggleWalletConnectModalOpen,
-      iconName: 'multisig',
+      iconName: 'walletConnect',
     },
   ];
 
@@ -59,7 +65,7 @@ const WalletMenu = ({ children, chains, wallets }: PropsWithChildren<Props>) => 
       if (root.id) {
         acc.push(root.id);
       }
-      root.chains.forEach((c) => c.accounts.forEach((a) => a.id && acc.push(a.id)));
+      root.chains?.forEach((c) => c.accounts.forEach((a) => a.id && acc.push(a.id)));
 
       return acc;
     }, []);
@@ -71,6 +77,7 @@ const WalletMenu = ({ children, chains, wallets }: PropsWithChildren<Props>) => 
 
   const changeActiveAccount = (wallet: WalletGroupItem, closeMenu: () => void) => {
     closeMenu();
+
     if (isMultishardWalletItem(wallet)) {
       selectMultishardWallet(wallet as MultishardWallet);
     } else {

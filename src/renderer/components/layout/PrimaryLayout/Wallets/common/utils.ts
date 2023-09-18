@@ -46,6 +46,15 @@ export const getMultishardStructure = (
   };
 };
 
+export const getWalletConnectStructure = (accounts: AccountDS[], walletId: string): MultishardStructure => {
+  const walletAccounts = accounts.filter((a) => a.walletId === walletId);
+
+  return {
+    amount: walletAccounts.length,
+    rootAccounts: walletAccounts as RootAccount[],
+  };
+};
+
 export const getSelectableShards = (multishard: MultishardStructure, selectedIds: string[]): SelectableShards => {
   return {
     ...multishard,
