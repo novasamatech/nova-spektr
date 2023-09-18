@@ -8,7 +8,7 @@ import { AccountDS, MultisigTransactionDS } from '@renderer/shared/api/storage';
 import { useToggle } from '@renderer/shared/lib/hooks';
 import { MultisigAccount, useAccount } from '@renderer/entities/account';
 import { ExtendedChain } from '@renderer/entities/network';
-import { Address, HexString, Timepoint } from '@renderer/domain/shared-kernel';
+import { Address, HexString, Timepoint, SigningType } from '@renderer/domain/shared-kernel';
 import { toAddress, transferableAmount, getAssetById } from '@renderer/shared/lib/utils';
 import { getModalTransactionTitle } from '../../common/utils';
 import { Submit } from '../ActionSteps/Submit';
@@ -58,12 +58,18 @@ const RejectTx = ({ tx, account, connection }: Props) => {
   const [rejectReason, setRejectReason] = useState('');
   const [signature, setSignature] = useState<HexString>();
 
-  const accounts = getLiveAccounts();
-  const signAccount = accounts.find((a) => a.accountId === tx.depositor);
   const transactionTitle = getModalTransactionTitle(isXcmTransaction(tx.transaction), tx.transaction);
 
   const nativeAsset = connection.assets[0];
   const asset = getAssetById(tx.transaction?.args.assetId, connection.assets);
+
+  const accounts = getLiveAccounts();
+  const signAccount = accounts.find((a) => {
+    const isDepositor = a.accountId === tx.depositor;
+    const isWatchOnly = a.signingType === SigningType.WATCH_ONLY;
+
+    return isDepositor && !isWatchOnly;
+  });
 
   const checkBalance = () =>
     validateBalance({
