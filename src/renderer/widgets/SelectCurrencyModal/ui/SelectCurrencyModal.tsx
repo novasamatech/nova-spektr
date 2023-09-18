@@ -33,7 +33,7 @@ export const SelectCurrencyModal = ({ onClose }: Props) => {
   const getCurrencyOption = (currency: Currency): DropdownOption<string> => ({
     id: currency.coingeckoId,
     value: currency.coingeckoId,
-    element: [currency.code, currency.symbol, currency.name].join(' • '),
+    element: [currency.code, currency.symbol, currency.name].filter(Boolean).join(' • '),
   });
 
   const currenciesGroups: DropdownOptionGroup<string>[] = [
