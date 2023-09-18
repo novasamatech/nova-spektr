@@ -19,7 +19,7 @@ log.transports.console.useStyles = true;
 log.transports.file.fileName = 'nova-spektr.log';
 log.transports.file.format = '{y}/{m}/{d} {h}:{i}:{s}.{ms} [{env}#{version}]-{processType} [{level}] > {text}';
 log.transports.file.level = 'info';
-log.transports.file.maxSize = 1048576 * 5; //5mb;
+log.transports.file.maxSize = 1048576 * 5; // 5 MB;
 log.transports.file.archiveLogFn = (oldLogFile: LogFile): void => {
   const file = oldLogFile.toString();
   const info = path.parse(file);
@@ -36,7 +36,7 @@ log.transports.file.archiveLogFn = (oldLogFile: LogFile): void => {
 Object.assign(console, log.functions);
 log.errorHandler.startCatching({
   showDialog: false,
-  onError({ createIssue, error, processType, versions }) {
+  onError({ error }) {
     console.error('Uncaught error', error);
   },
 });

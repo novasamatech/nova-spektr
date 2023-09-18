@@ -2,16 +2,13 @@ import { Disclosure } from '@headlessui/react';
 import cn from 'classnames';
 
 import { WalletGroupItem, MultishardWallet } from '@renderer/components/layout/PrimaryLayout/Wallets/common/types';
-import { Icon } from '@renderer/components/ui';
+import { Icon, HelpText, BodyText, CaptionText } from '@renderer/shared/ui';
 import { WalletType } from '@renderer/domain/shared-kernel';
 import { GroupIcons, GroupLabels } from '@renderer/components/layout/PrimaryLayout/Wallets/common/constants';
-import { BodyText, CaptionText } from '@renderer/components/ui-redesign';
-import { useI18n } from '@renderer/context/I18nContext';
-import { HelpText } from '@renderer/components/ui-redesign/Typography';
-import { AccountAddress } from '@renderer/components/common';
-import { Account } from '@renderer/domain/account';
+import { useI18n } from '@renderer/app/providers';
+import { Account, AccountAddress } from '@renderer/entities/account';
 import { isMultishardWalletItem } from '@renderer/components/layout/PrimaryLayout/Wallets/common/utils';
-import cnTw from '@renderer/shared/utils/twMerge';
+import { cnTw } from '@renderer/shared/lib/utils';
 
 type Props = {
   type: WalletType;

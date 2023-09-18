@@ -2,8 +2,8 @@ import { ApiPromise } from '@polkadot/api';
 import { AccountInfo } from '@polkadot/types/interfaces';
 import { Codec } from '@polkadot/types/types';
 
-import chains from '@renderer/services/network/common/chains/chains.json';
-import { validate } from '@renderer/services/dataVerification/dataVerification';
+import chains from '../../../src/renderer/assets/chains/chains.json';
+import { validate } from '../../../src/renderer/services/dataVerification';
 import {
   getTestAccounts,
   TestAccountsURL,

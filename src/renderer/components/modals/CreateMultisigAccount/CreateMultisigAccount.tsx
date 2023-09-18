@@ -1,21 +1,24 @@
 import { ComponentProps, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useStore } from 'effector-react';
 
-import { BaseModal, HeaderTitleText, StatusLabel, Button } from '@renderer/components/ui-redesign';
-import { useI18n } from '@renderer/context/I18nContext';
-import { useMatrix } from '@renderer/context/MatrixContext';
-import { useAccount } from '@renderer/services/account/accountService';
-import { createMultisigAccount, MultisigAccount, Account, getMultisigAccountId } from '@renderer/domain/account';
-import { useToggle } from '@renderer/shared/hooks';
-import { OperationResult } from '@renderer/components/common/OperationResult/OperationResult';
+import { BaseModal, HeaderTitleText, StatusLabel, Button } from '@renderer/shared/ui';
+import { useI18n, useMatrix, Paths } from '@renderer/app/providers';
+import {
+  useAccount,
+  createMultisigAccount,
+  MultisigAccount,
+  Account,
+  getMultisigAccountId,
+} from '@renderer/entities/account';
+import { useToggle } from '@renderer/shared/lib/hooks';
+import { OperationResult } from '@renderer/entities/transaction';
 import { MatrixModal } from '../MatrixModal/MatrixModal';
-import { Wallet } from '@renderer/domain/wallet';
-import { useWallet } from '@renderer/services/wallet/walletService';
-import { useContact } from '@renderer/services/contact/contactService';
+import { Wallet, useWallet } from '@renderer/entities/wallet';
 import { ExtendedContact, ExtendedWallet } from './common/types';
 import { SelectSignatories, ConfirmSignatories, WalletForm } from './components';
 import { AccountId } from '@renderer/domain/shared-kernel';
-import Paths from '@renderer/routes/paths';
+import { contactModel } from '@renderer/entities/contact';
 
 type OperationResultProps = Pick<ComponentProps<typeof OperationResult>, 'variant' | 'description'>;
 
@@ -33,7 +36,6 @@ export const CreateMultisigAccount = ({ isOpen, onClose }: Props) => {
   const { t } = useI18n();
   const { matrix, isLoggedIn } = useMatrix();
   const { getWallets } = useWallet();
-  const { getLiveContacts } = useContact();
   const { getAccounts, addAccount, setActiveAccount } = useAccount();
   const navigate = useNavigate();
 
@@ -50,7 +52,7 @@ export const CreateMultisigAccount = ({ isOpen, onClose }: Props) => {
   const [wallets, setWallets] = useState<Wallet[]>([]);
   const [accounts, setAccounts] = useState<Account[]>([]);
 
-  const contacts = getLiveContacts();
+  const contacts = useStore(contactModel.$contacts);
   const signatories = signatoryWallets.concat(signatoryContacts);
 
   useEffect(() => {

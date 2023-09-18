@@ -1,6 +1,5 @@
-import { Icon } from '@renderer/components/ui';
-import { BodyText, Button } from '@renderer/components/ui-redesign';
-import { useI18n } from '@renderer/context/I18nContext';
+import { Icon, BodyText, Button } from '@renderer/shared/ui';
+import { useI18n } from '@renderer/app/providers';
 
 const FallbackScreen = () => {
   const { t } = useI18n();

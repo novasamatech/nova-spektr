@@ -1,5 +1,5 @@
-import { Button, FootnoteText } from '@renderer/components/ui-redesign';
-import { useI18n } from '@renderer/context/I18nContext';
+import { Button, FootnoteText } from '@renderer/shared/ui';
+import { useI18n } from '@renderer/app/providers';
 import { CameraError, CameraErrorText } from '../common/constants';
 
 type Props = {

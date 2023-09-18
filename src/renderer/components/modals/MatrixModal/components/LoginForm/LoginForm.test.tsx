@@ -5,7 +5,7 @@ import LoginForm from './LoginForm';
 
 jest.mock('react-i18next', () => ({ Trans: (props: any) => props.i18nKey }));
 
-jest.mock('@renderer/context/MatrixContext', () => ({
+jest.mock('@renderer/app/providers', () => ({
   useMatrix: jest.fn().mockReturnValue({
     matrix: {
       setHomeserver: jest.fn(),
@@ -13,15 +13,12 @@ jest.mock('@renderer/context/MatrixContext', () => ({
       loginWithCreds: jest.fn(),
     },
   }),
-}));
-
-jest.mock('@renderer/context/I18nContext', () => ({
   useI18n: jest.fn().mockReturnValue({
     t: (key: string) => key,
   }),
 }));
 
-describe('screen/Settings/Matrix/LoginForm', () => {
+describe('pages/Settings/Matrix/LoginForm', () => {
   const setupForm = async (withCredentials = false) => {
     const user = userEvent.setup({ delay: null });
 

@@ -2,19 +2,12 @@ import { render, screen, act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
 import Verification from './Verification';
-import { useMatrix } from '@renderer/context/MatrixContext';
+import { useMatrix } from '@renderer/app/providers';
 
-jest.mock('@renderer/context/I18nContext', () => ({
+jest.mock('@renderer/app/providers', () => ({
   useI18n: jest.fn().mockReturnValue({
     t: (key: string) => key,
   }),
-}));
-
-jest.mock('@renderer/shared/utils/browser', () => ({
-  getOperatingSystem: jest.fn().mockReturnValue('macOS'),
-}));
-
-jest.mock('@renderer/context/MatrixContext', () => ({
   useMatrix: jest.fn().mockReturnValue({
     matrix: {
       sessionIsVerified: false,
@@ -24,7 +17,12 @@ jest.mock('@renderer/context/MatrixContext', () => ({
   }),
 }));
 
-describe('screens/Settings/Matrix/Verification', () => {
+jest.mock('@renderer/shared/lib/utils', () => ({
+  ...jest.requireActual('@renderer/shared/lib/utils'),
+  getOperatingSystem: jest.fn().mockReturnValue('macOS'),
+}));
+
+describe('pages/Settings/Matrix/Verification', () => {
   const submitFormWithString = async () => {
     const user = userEvent.setup({ delay: null });
     render(<Verification />);

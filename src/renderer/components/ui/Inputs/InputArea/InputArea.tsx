@@ -1,9 +1,8 @@
 import { ComponentPropsWithoutRef, forwardRef } from 'react';
 
-import cnTw from '@renderer/shared/utils/twMerge';
-import { CommonInputStyles, CommonInputStylesTheme } from '@renderer/components/ui-redesign/Inputs/common/styles';
-import { HTMLTextAreaProps } from '../common/types';
-import { Theme } from '@renderer/components/ui-redesign/Dropdowns/common/types';
+import { cnTw } from '@renderer/shared/lib/utils';
+import type { HTMLTextAreaProps, Theme } from '@renderer/shared/ui/types';
+import { CommonInputStyles, CommonInputStylesTheme } from '@renderer/shared/ui/Inputs/common/styles';
 
 interface Props extends Pick<ComponentPropsWithoutRef<'textarea'>, HTMLTextAreaProps> {
   invalid?: boolean;
