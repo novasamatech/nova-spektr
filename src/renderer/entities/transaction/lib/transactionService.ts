@@ -359,16 +359,22 @@ export const useTransaction = (): ITransactionService => {
     [TransactionType.MULTISIG_CANCEL_AS_MULTI]: ({ threshold, otherSignatories, maybeTimepoint, callHash }, api) =>
       api.tx.multisig.cancelAsMulti(threshold, otherSignatories, maybeTimepoint, callHash),
     [TransactionType.XCM_LIMITED_TRANSFER]: ({ xcmDest, xcmBeneficiary, xcmAsset }, api) => {
+      console.log('xcmMethod', api.tx.xcmPallet.limitedTeleportAssets.meta.args);
+
       return api.tx.xcmPallet.limitedReserveTransferAssets(xcmDest, xcmBeneficiary, xcmAsset, DEFAULT_FEE_ASSET_ITEM, {
         Unlimited: true,
       });
     },
     [TransactionType.XCM_TELEPORT]: ({ xcmDest, xcmBeneficiary, xcmAsset }, api) => {
+      console.log('xcmMethod', api.tx.xcmPallet.limitedTeleportAssets.meta.args);
+
       return api.tx.xcmPallet.limitedTeleportAssets(xcmDest, xcmBeneficiary, xcmAsset, DEFAULT_FEE_ASSET_ITEM, {
         Unlimited: true,
       });
     },
     [TransactionType.POLKADOT_XCM_LIMITED_TRANSFER]: ({ xcmDest, xcmBeneficiary, xcmAsset }, api) => {
+      console.log('xcmMethod', api.tx.polkadotXcm.limitedTeleportAssets.meta.args);
+
       return api.tx.polkadotXcm.limitedReserveTransferAssets(
         xcmDest,
         xcmBeneficiary,
@@ -378,12 +384,16 @@ export const useTransaction = (): ITransactionService => {
       );
     },
     [TransactionType.POLKADOT_XCM_TELEPORT]: ({ xcmDest, xcmBeneficiary, xcmAsset }, api) => {
+      console.log('xcmMethod', api.tx.polkadotXcm.limitedTeleportAssets.meta.args);
+
       return api.tx.polkadotXcm.limitedTeleportAssets(xcmDest, xcmBeneficiary, xcmAsset, DEFAULT_FEE_ASSET_ITEM, {
         Unlimited: true,
       });
     },
     [TransactionType.XTOKENS_TRANSFER_MULTIASSET]: ({ xcmDest, xcmAsset, xcmWeight }, api) => {
       const weight = hasDestWeight(api) ? xcmWeight : { Unlimited: true };
+
+      console.log('xcmMethod', api.tx.xTokens.transferMultiasset.meta.args);
 
       return api.tx.xTokens.transferMultiasset(xcmAsset, xcmDest, weight);
     },
