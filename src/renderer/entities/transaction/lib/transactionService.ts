@@ -447,8 +447,6 @@ export const useTransaction = (): ITransactionService => {
   const getTransactionHash = (transaction: Transaction, api: ApiPromise): HashData => {
     const extrinsic = getExtrinsic[transaction.type](transaction.args, api);
 
-    console.log('xcmMethod', extrinsic.method.toJSON());
-
     return {
       callData: extrinsic.method.toHex(),
       callHash: extrinsic.method.hash.toHex(),

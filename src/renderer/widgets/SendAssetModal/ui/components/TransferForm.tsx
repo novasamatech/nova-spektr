@@ -322,6 +322,7 @@ export const TransferForm = ({
   const validateBalanceForFee = (amount: string): boolean => {
     const balance = isMultisig(account) ? signerBalance : accountBalance;
     const nativeTokenBalance = isMultisig(account) ? signerNativeTokenBalance : accountNativeTokenBalance;
+
     const amountBN = new BN(formatAmount(amount, asset.precision));
     const xcmFeeBN = new BN(xcmParams.fee || 0);
 
@@ -332,7 +333,7 @@ export const TransferForm = ({
     }
 
     if (isMultisig(account)) {
-      return new BN(fee).add(amountBN).add(xcmFeeBN).lte(new BN(balance));
+      return new BN(fee).lte(new BN(balance));
     }
 
     return new BN(fee).add(amountBN).add(xcmFeeBN).lte(new BN(balance));
