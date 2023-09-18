@@ -1,6 +1,6 @@
 import { groupBy } from 'lodash';
 
-import { AccountDS } from '@renderer/services/storage';
+import { AccountDS } from '@renderer/shared/api/storage';
 import {
   ChainsRecord,
   ChainWithAccounts,
@@ -10,7 +10,7 @@ import {
   SelectableShards,
   WalletGroupItem,
 } from '@renderer/components/layout/PrimaryLayout/Wallets/common/types';
-import { includes } from '@renderer/shared/utils/strings';
+import { includes } from '@renderer/shared/lib/utils';
 
 const getRootAccount = (accounts: AccountDS[], chains: ChainsRecord, root: AccountDS): RootAccount => {
   const accountsByChain = groupBy(

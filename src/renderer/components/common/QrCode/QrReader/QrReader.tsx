@@ -3,10 +3,9 @@ import { BrowserCodeReader, BrowserQRCodeReader, IScannerControls } from '@zxing
 import init, { Decoder, EncodingPacket } from 'raptorq';
 import { useEffect, useRef } from 'react';
 
-import cnTw from '@renderer/shared/utils/twMerge';
-import { validateSignerFormat } from '@renderer/shared/utils/strings';
+import { cnTw, validateSignerFormat } from '@renderer/shared/lib/utils';
 import { CryptoTypeString } from '@renderer/domain/shared-kernel';
-import { useI18n } from '@renderer/context/I18nContext';
+import { useI18n } from '@renderer/app/providers';
 import { ErrorFields, EXPORT_ADDRESS, FRAME_KEY } from '../common/constants';
 import { QR_READER_ERRORS } from '../common/errors';
 import { DecodeCallback, ErrorObject, Progress, QrError, SeedInfo, VideoInput } from '../common/types';

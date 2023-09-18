@@ -1,4 +1,4 @@
-import Matrix from '@renderer/services/matrix';
+import Matrix from '../../../src/renderer/shared/api/matrix';
 
 export async function matrixLoginAndSync(matrix: Matrix, login: string, password: string): Promise<void> {
   await matrix.loginWithCreds(login, password);

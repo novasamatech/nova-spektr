@@ -3,21 +3,20 @@ import { Fragment, PropsWithChildren, useState } from 'react';
 import cn from 'classnames';
 import { useNavigate } from 'react-router-dom';
 
-import { DropdownButton, SearchInput, SmallTitleText } from '@renderer/components/ui-redesign';
-import { useI18n } from '@renderer/context/I18nContext';
+import { DropdownButton, SearchInput, SmallTitleText } from '@renderer/shared/ui';
+import { useI18n, Paths } from '@renderer/app/providers';
 import { WalletType } from '@renderer/domain/shared-kernel';
-import { useAccount } from '@renderer/services/account/accountService';
+import { useAccount } from '@renderer/entities/account';
 import WalletGroup from '@renderer/components/layout/PrimaryLayout/Wallets/WalletGroup';
 import { useGroupedWallets } from './common/useGroupedWallets';
-import { ID, WalletDS } from '@renderer/services/storage';
-import WatchOnly from '@renderer/screens/Onboarding/WatchOnly/WatchOnly';
-import Vault from '@renderer/screens/Onboarding/Vault/Vault';
-import { useToggle } from '@renderer/shared/hooks';
-import { ButtonDropdownOption } from '@renderer/components/ui-redesign/Dropdowns/DropdownButton/DropdownButton';
+import { ID, WalletDS } from '@renderer/shared/api/storage';
+import WatchOnly from '@renderer/pages/Onboarding/WatchOnly/WatchOnly';
+import Vault from '@renderer/pages/Onboarding/Vault/Vault';
+import { useToggle } from '@renderer/shared/lib/hooks';
+import { ButtonDropdownOption } from '@renderer/shared/ui/types';
 import { CreateMultisigAccount } from '@renderer/components/modals';
 import { isMultishardWalletItem } from '@renderer/components/layout/PrimaryLayout/Wallets/common/utils';
-import Paths from '@renderer/routes/paths';
-import { DEFAULT_TRANSITION } from '@renderer/shared/utils/constants';
+import { DEFAULT_TRANSITION } from '@renderer/shared/lib/utils';
 import {
   ChainsRecord,
   WalletGroupItem,

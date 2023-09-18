@@ -2,28 +2,28 @@ import { render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 
 import Navigation from './Navigation';
-import { TEST_ACCOUNT_ID } from '@renderer/shared/utils/constants';
+import { TEST_ACCOUNT_ID } from '@renderer/shared/lib/utils';
 
-jest.mock('@renderer/context/I18nContext', () => ({
+jest.mock('@renderer/app/providers', () => ({
   useI18n: jest.fn().mockReturnValue({
     LocaleComponent: () => <div>localeComponent</div>,
     t: (key: string) => key,
   }),
 }));
 
-jest.mock('@renderer/services/account/accountService', () => ({
+jest.mock('@renderer/entities/account', () => ({
   useAccount: jest.fn().mockReturnValue({
     getActiveAccounts: () => [{ name: 'Test Wallet', accountId: TEST_ACCOUNT_ID }],
   }),
 }));
 
-jest.mock('@renderer/services/multisigTx/multisigTxService', () => ({
+jest.mock('@renderer/entities/multisig', () => ({
   useMultisigTx: jest.fn().mockReturnValue({
     getLiveAccountMultisigTxs: jest.fn().mockReturnValue([]),
   }),
 }));
 
-jest.mock('@renderer/services/wallet/walletService', () => ({
+jest.mock('@renderer/entities/wallet', () => ({
   useWallet: jest.fn().mockReturnValue({
     getLiveWallets: jest.fn().mockReturnValue([]),
   }),

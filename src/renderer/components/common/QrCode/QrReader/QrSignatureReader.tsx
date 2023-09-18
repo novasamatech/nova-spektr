@@ -3,8 +3,8 @@ import { BrowserCodeReader, BrowserQRCodeReader, IScannerControls } from '@zxing
 import { useEffect, useRef } from 'react';
 import init from 'raptorq';
 
-import cnTw from '@renderer/shared/utils/twMerge';
-import { useI18n } from '@renderer/context/I18nContext';
+import { cnTw } from '@renderer/shared/lib/utils';
+import { useI18n } from '@renderer/app/providers';
 import { ErrorFields } from '../common/constants';
 import { QR_READER_ERRORS } from '../common/errors';
 import { DecodeCallback, ErrorObject, QrError, VideoInput } from '../common/types';

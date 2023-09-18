@@ -3,14 +3,12 @@ import { useEffect, useState } from 'react';
 import { UnsignedTransaction } from '@substrate/txwrapper-polkadot';
 
 import { QrTxGenerator, QrGeneratorContainer } from '@renderer/components/common';
-import { useI18n } from '@renderer/context/I18nContext';
-import { Transaction } from '@renderer/domain/transaction';
-import { useTransaction } from '@renderer/services/transaction/transactionService';
+import { useI18n } from '@renderer/app/providers';
+import { Transaction, useTransaction } from '@renderer/entities/transaction';
 import { ChainId } from '@renderer/domain/shared-kernel';
-import { Explorer } from '@renderer/domain/chain';
-import { Account } from '@renderer/domain/account';
-import { Button, FootnoteText } from '@renderer/components/ui-redesign';
-import AddressWithExplorers from '@renderer/components/common/AddressWithExplorers/AddressWithExplorers';
+import { Explorer } from '@renderer/entities/chain';
+import { Account, AddressWithExplorers } from '@renderer/entities/account';
+import { Button, FootnoteText } from '@renderer/shared/ui';
 
 type Props = {
   api: ApiPromise;
@@ -47,7 +45,7 @@ const ScanSingleframeQr = ({
     if (txPayload) return;
 
     setupTransaction().catch(() => console.warn('ScanSingleframeQr | setupTransaction() failed'));
-  }, []);
+  }, [transaction, api]);
 
   const setupTransaction = async (): Promise<void> => {
     try {

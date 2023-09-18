@@ -1,5 +1,5 @@
-import { BASE_MATRIX_URL } from '@renderer/services/matrix/common/constants';
-import Matrix, { Membership, Signatory } from '@renderer/services/matrix';
+import { BASE_MATRIX_URL, Matrix, Membership } from '../../../src/renderer/shared/api/matrix';
+import { Signatory } from '../../../src/renderer/entities/signatory';
 import { createRoom } from '../utils/matrixCreateRoom';
 import { matrixLoginAndSync } from '../utils/matrixLogin';
 import test_data from './matrix_data.json';
