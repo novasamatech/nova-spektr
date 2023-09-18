@@ -14,7 +14,7 @@ jest.mock('@renderer/app/providers', () => ({
 
 jest.mock('@renderer/shared/lib/hooks');
 
-describe('screen/Settings/Networks/NetworkSelector', () => {
+describe('pages/Settings/Networks/NetworkSelector', () => {
   beforeAll(() => {
     (useScrollTo as jest.Mock).mockReturnValue([{ current: {} }, noop]);
   });

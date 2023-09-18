@@ -1,6 +1,6 @@
 import { act, render, screen } from '@testing-library/react';
 
-import TransactionAmount from './TransactionAmount';
+import { TransactionAmount } from './TransactionAmount';
 import { Transaction, TransactionType } from '@renderer/entities/transaction';
 import { TEST_ADDRESS, TEST_CHAIN_ID } from '@renderer/shared/lib/utils';
 
@@ -21,7 +21,7 @@ const transaction = {
   },
 } as Transaction;
 
-describe('screen/Operations/components/ShortTransactionInfo', () => {
+describe('pages/Operations/components/ShortTransactionInfo', () => {
   test('should render component', async () => {
     await act(async () => {
       render(

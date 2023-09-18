@@ -2,7 +2,7 @@ import { ElementType, useEffect, useState } from 'react';
 
 import { cnTw } from '@renderer/shared/lib/utils';
 import { ChainId } from '@renderer/domain/shared-kernel';
-import { useChains } from '@renderer/entities/network';
+import { chainsService } from '@renderer/entities/network';
 import { Chain as ChainType, ChainIcon } from '@renderer/entities/chain';
 import TextBase from '@renderer/shared/ui/Typography/common/TextBase';
 
@@ -14,20 +14,30 @@ type Props = {
   fontClass?: string;
   className?: string;
   iconSize?: number;
+  showChainName?: boolean;
 } & (WithChain | WithChainId);
 
-export const ChainTitle = ({ as: Tag = 'div', fontClass, className, iconSize = 16, ...chainProps }: Props) => {
-  const { getChainById } = useChains();
-
+export const ChainTitle = ({
+  as: Tag = 'div',
+  showChainName = true,
+  fontClass,
+  className,
+  iconSize = 16,
+  ...chainProps
+}: Props) => {
   const [chainObj, setChainObj] = useState<ChainType>();
 
   useEffect(() => {
     if ('chain' in chainProps) {
       setChainObj(chainProps.chain);
     } else {
-      getChainById(chainProps.chainId).then(setChainObj);
+      setChainObj(chainsService.getChainById(chainProps.chainId));
     }
   }, []);
+
+  if (!showChainName) {
+    return <ChainIcon src={chainObj?.icon} name={chainObj?.name} size={iconSize} />;
+  }
 
   return (
     <Tag className={cnTw('flex items-center gap-x-2', className)}>

@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { UnsignedTransaction } from '@substrate/txwrapper-polkadot';
+import { useStore, useGate } from 'effector-react';
 
 import { useI18n, useNetworkContext } from '@renderer/app/providers';
 import { HexString } from '@renderer/domain/shared-kernel';
@@ -13,6 +14,7 @@ import { OperationTitle } from '@renderer/components/common';
 import { Chain } from '@renderer/entities/chain';
 import { DEFAULT_TRANSITION } from '@renderer/shared/lib/utils';
 import { useToggle } from '@renderer/shared/lib/hooks';
+import * as sendAssetModel from '../model/send-asset';
 
 const enum Step {
   INIT,
@@ -32,6 +34,9 @@ export const SendAssetModal = ({ chain, asset, onClose }: Props) => {
   const { getBalance } = useBalance();
   const { getTransactionFee } = useTransaction();
   const { connections } = useNetworkContext();
+  const config = useStore(sendAssetModel.$finalConfig);
+  const xcmAsset = useStore(sendAssetModel.$xcmAsset);
+  const destinationChain = useStore(sendAssetModel.$destinationChain);
 
   const [isModalOpen, toggleIsModalOpen] = useToggle(true);
   const [activeStep, setActiveStep] = useState<Step>(Step.INIT);
@@ -47,6 +52,16 @@ export const SendAssetModal = ({ chain, asset, onClose }: Props) => {
   const transaction = multisigTx || transferTx;
 
   const { api, assets, addressPrefix, explorers } = connection;
+
+  useGate(sendAssetModel.PropsGate, { chain, asset, api });
+
+  useEffect(() => {
+    sendAssetModel.events.xcmConfigRequested();
+
+    return () => {
+      sendAssetModel.events.storeCleared();
+    };
+  }, []);
 
   const onInitResult = (transferTx: Transaction, multisig?: { multisigTx: Transaction; description: string }) => {
     setTransferTx(transferTx);
@@ -102,11 +117,13 @@ export const SendAssetModal = ({ chain, asset, onClose }: Props) => {
     );
   }
 
+  const operationTitle = destinationChain?.chainId !== chain.chainId ? 'transfer.xcmTitle' : 'transfer.title';
+
   return (
     <BaseModal
       closeButton
       isOpen={isModalOpen}
-      title={<OperationTitle title={`${t('transfer.title', { asset: asset?.symbol })}`} chainId={chain.chainId} />}
+      title={<OperationTitle title={`${t(operationTitle, { asset: asset.symbol })}`} chainId={chain.chainId} />}
       contentClass={activeStep === Step.SIGNING ? '' : undefined}
       panelClass="w-[440px]"
       headerClass="py-3 px-5 max-w-[440px]"
@@ -121,7 +138,7 @@ export const SendAssetModal = ({ chain, asset, onClose }: Props) => {
         </div>
       ) : (
         <>
-          {activeStep === Step.INIT && asset && (
+          {activeStep === Step.INIT && (
             <InitOperation
               chainId={chain.chainId}
               asset={asset}
@@ -136,6 +153,8 @@ export const SendAssetModal = ({ chain, asset, onClose }: Props) => {
           )}
           {activeStep === Step.CONFIRMATION && (
             <Confirmation
+              config={config || undefined}
+              xcmAsset={xcmAsset || undefined}
               transaction={transferTx}
               description={description}
               feeTx={transferTx}

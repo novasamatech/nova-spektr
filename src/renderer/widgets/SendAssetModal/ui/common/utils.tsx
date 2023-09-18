@@ -2,10 +2,12 @@ import { ReactNode } from 'react';
 import { BN } from '@polkadot/util';
 
 import { Account, MultisigAccount, AccountAddress } from '@renderer/entities/account';
-import { Address } from '@renderer/domain/shared-kernel';
+import { Address, ChainId } from '@renderer/domain/shared-kernel';
 import { DropdownOption } from '@renderer/shared/ui/Dropdowns/common/types';
 import { toAddress, cnTw, transferableAmount } from '@renderer/shared/lib/utils';
 import { Balance, Asset, AssetBalance } from '@renderer/entities/asset';
+import { Chain, ChainTitle } from '@renderer/entities/chain';
+import { HelpText } from '@renderer/shared/ui';
 
 type Params = {
   asset: Asset;
@@ -83,4 +85,16 @@ export const getAccountOption = <T extends Account | MultisigAccount>(
   const element = getElement(address, account.name, balanceContent);
 
   return { id: account.accountId + account.name, value: account, element };
+};
+
+export const getChainOption = ({ chainId }: Chain): DropdownOption<ChainId> => {
+  const element = <ChainTitle key={chainId} chainId={chainId} fontClass="text-text-primary" />;
+
+  return { id: chainId, value: chainId, element };
+};
+
+export const getPlaceholder = (text: string): DropdownOption<string> => {
+  const element = <HelpText className="text-text-secondary">{text}</HelpText>;
+
+  return { id: text, value: text, element, disabled: true };
 };

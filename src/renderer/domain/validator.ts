@@ -1,5 +1,5 @@
-import { Identity } from '@renderer/domain/identity';
-import { Address, ChainId } from '@renderer/domain/shared-kernel';
+import { Identity } from './identity';
+import { Address, ChainId } from './shared-kernel';
 
 export type Validator = {
   address: Address;

@@ -4,7 +4,7 @@ import { BN, BN_ZERO } from '@polkadot/util';
 import { Select, FootnoteText, Plate, IconButton, Shimmering } from '@renderer/shared/ui';
 import { DropdownOption, DropdownResult } from '@renderer/shared/ui/types';
 import { getRelaychainAsset } from '@renderer/shared/lib/utils';
-import { useChains } from '@renderer/entities/network';
+import { chainsService } from '@renderer/entities/network';
 import { useSettingsStorage } from '@renderer/entities/settings';
 import { Chain, ChainTitle } from '@renderer/entities/chain';
 import { useToggle } from '@renderer/shared/lib/hooks';
@@ -32,7 +32,6 @@ export const NetworkInfo = ({
   onNetworkChange,
 }: PropsWithChildren<Props>) => {
   const { t } = useI18n();
-  const { sortChains, getChainsData } = useChains();
   const { getStakingNetwork, setStakingNetwork } = useSettingsStorage();
 
   const [isChildrenShown, toggleChildren] = useToggle();
@@ -40,35 +39,34 @@ export const NetworkInfo = ({
   const [activeNetwork, setActiveNetwork] = useState<DropdownResult<Chain>>();
 
   useEffect(() => {
-    getChainsData().then((chainsData) => {
-      const relaychains = sortChains(chainsData).reduce<DropdownOption<Chain>[]>((acc, chain) => {
-        const { chainId, assets } = chain;
+    const chains = chainsService.getChainsData();
+    const relaychains = chainsService.sortChains(chains).reduce<DropdownOption<Chain>[]>((acc, chain) => {
+      const { chainId, assets } = chain;
 
-        if (getRelaychainAsset(assets)) {
-          // without key dropdown doesn't show changes (thought functionally everything works fine)
-          // TODO look into it
-          const element = (
-            <ChainTitle
-              key={chain.chainId}
-              className="overflow-hidden"
-              fontClass="text-text-primary truncate"
-              chain={chain}
-            />
-          );
+      if (getRelaychainAsset(assets)) {
+        // without key dropdown doesn't show changes (thought functionally everything works fine)
+        // TODO look into it
+        const element = (
+          <ChainTitle
+            key={chain.chainId}
+            className="overflow-hidden"
+            fontClass="text-text-primary truncate"
+            chain={chain}
+          />
+        );
 
-          acc.push({ id: chainId, value: chain, element });
-        }
+        acc.push({ id: chainId, value: chain, element });
+      }
 
-        return acc;
-      }, []);
+      return acc;
+    }, []);
 
-      const settingsChainId = getStakingNetwork();
-      const settingsChain = relaychains.find((chain) => chain.id === settingsChainId);
+    const settingsChainId = getStakingNetwork();
+    const settingsChain = relaychains.find((chain) => chain.id === settingsChainId);
 
-      setNetworks(relaychains);
-      setActiveNetwork(settingsChain || { id: relaychains[0].id, value: relaychains[0].value });
-      onNetworkChange(settingsChain?.value || relaychains[0].value);
-    });
+    setNetworks(relaychains);
+    setActiveNetwork(settingsChain || { id: relaychains[0].id, value: relaychains[0].value });
+    onNetworkChange(settingsChain?.value || relaychains[0].value);
   }, []);
 
   const totalInfo = [

@@ -2,6 +2,7 @@ import { createRoot } from 'react-dom/client';
 import { HashRouter as Router } from 'react-router-dom';
 import log from 'electron-log';
 
+import { kernelModel } from '@renderer/shared/core';
 import App from './App';
 
 import './i18n';
@@ -26,6 +27,8 @@ if (!container) {
   throw new Error('Root container is missing in index.html');
 }
 
+kernelModel.events.appStarted();
+
 createRoot(container).render(
   <Router>
     <App />
@@ -33,4 +36,5 @@ createRoot(container).render(
 );
 
 // NOTE: React 18 Strict mode renders twice in DEV mode
+// which leads to errors in components that use camera
 // https://reactjs.org/docs/strict-mode.html#ensuring-reusable-state

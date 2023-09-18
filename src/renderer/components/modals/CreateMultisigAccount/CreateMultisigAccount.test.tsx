@@ -39,9 +39,9 @@ jest.mock('@renderer/entities/wallet', () => ({
 }));
 
 jest.mock('@renderer/entities/network', () => ({
-  useChains: jest.fn().mockReturnValue({
+  chainsService: {
     getChainsData: jest.fn().mockResolvedValue([]),
-  }),
+  },
 }));
 
 jest.mock('@renderer/components/modals/MatrixModal/MatrixModal', () => ({
@@ -67,7 +67,6 @@ describe('screen/CreateMultisigAccount', () => {
     await act(async () => {
       render(<CreateMultisigAccount isOpen={true} onClose={noop} />, { wrapper: MemoryRouter });
     });
-
     const text = screen.getByText('createMultisigAccount.title');
     const form = screen.getByText('walletForm');
     const select = screen.getByText('selectSignatories');

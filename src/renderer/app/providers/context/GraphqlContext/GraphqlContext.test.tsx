@@ -5,13 +5,13 @@ import { GraphqlProvider, useGraphql } from './GraphqlContext';
 jest.mock('@renderer/shared/lib/hooks');
 
 jest.mock('@renderer/entities/network', () => ({
-  useChains: jest.fn().mockReturnValue({
+  chainsService: {
     getStakingChainsData: jest
       .fn()
-      .mockResolvedValue([
+      .mockReturnValue([
         { chainId: '0x123', externalApi: { staking: [{ type: 'subquery', url: 'https://localhost:8080' }] } },
       ]),
-  }),
+  },
 }));
 
 jest.mock('@renderer/entities/settings', () => ({

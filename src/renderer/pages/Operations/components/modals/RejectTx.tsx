@@ -8,13 +8,13 @@ import { AccountDS, MultisigTransactionDS } from '@renderer/shared/api/storage';
 import { useToggle } from '@renderer/shared/lib/hooks';
 import { MultisigAccount, useAccount } from '@renderer/entities/account';
 import { ExtendedChain } from '@renderer/entities/network';
-import { Address, HexString, Timepoint } from '@renderer/domain/shared-kernel';
-import { toAddress, transferableAmount } from '@renderer/shared/lib/utils';
-import { getTransactionTitle } from '../../common/utils';
-import { Submit } from '../ActionSteps/Submit';
+import { Address, HexString, Timepoint, SigningType } from '@renderer/domain/shared-kernel';
+import { toAddress, transferableAmount, getAssetById } from '@renderer/shared/lib/utils';
+import { getModalTransactionTitle } from '../../common/utils';
 import { useBalance } from '@renderer/entities/asset';
 import RejectReasonModal from './RejectReasonModal';
-import Confirmation from '@renderer/pages/Operations/components/ActionSteps/Confirmation';
+import { Submit } from '../ActionSteps/Submit';
+import { Confirmation } from '../ActionSteps/Confirmation';
 import { Signing } from '@renderer/features/operation';
 import { OperationTitle } from '@renderer/components/common';
 import {
@@ -23,6 +23,7 @@ import {
   useTransaction,
   OperationResult,
   validateBalance,
+  isXcmTransaction,
 } from '@renderer/entities/transaction';
 
 type Props = {
@@ -57,18 +58,25 @@ const RejectTx = ({ tx, account, connection }: Props) => {
   const [rejectReason, setRejectReason] = useState('');
   const [signature, setSignature] = useState<HexString>();
 
-  const accounts = getLiveAccounts();
-  const signAccount = accounts.find((a) => a.accountId === tx.depositor);
-  const transactionTitle = getTransactionTitle(tx.transaction);
+  const transactionTitle = getModalTransactionTitle(isXcmTransaction(tx.transaction), tx.transaction);
 
   const nativeAsset = connection.assets[0];
+  const asset = getAssetById(tx.transaction?.args.assetId, connection.assets);
+
+  const accounts = getLiveAccounts();
+  const signAccount = accounts.find((a) => {
+    const isDepositor = a.accountId === tx.depositor;
+    const isWatchOnly = a.signingType === SigningType.WATCH_ONLY;
+
+    return isDepositor && !isWatchOnly;
+  });
 
   const checkBalance = () =>
     validateBalance({
       api: connection.api,
       chainId: tx.chainId,
       transaction: rejectTx,
-      assetId: nativeAsset?.assetId.toString(),
+      assetId: nativeAsset.assetId.toString(),
       getBalance,
       getTransactionFee,
     });
@@ -164,7 +172,7 @@ const RejectTx = ({ tx, account, connection }: Props) => {
         isOpen={activeStep !== Step.SUBMIT && isModalOpen}
         title={
           <OperationTitle
-            title={`${t('operation.cancelTitle')} ${t(transactionTitle)} ${t('on')}`}
+            title={`${t('operation.cancelTitle')} ${t(transactionTitle, { asset: asset?.symbol })}`}
             chainId={tx.chainId}
           />
         }

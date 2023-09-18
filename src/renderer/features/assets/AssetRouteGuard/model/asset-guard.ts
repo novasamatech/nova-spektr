@@ -3,10 +3,8 @@ import { NavigateFunction } from 'react-router-dom';
 
 import { Chain } from '@renderer/entities/chain';
 import { Asset } from '@renderer/entities/asset';
-import { useChains } from '@renderer/entities/network';
+import { chainsService } from '@renderer/entities/network';
 import { ChainId } from '@renderer/domain/shared-kernel';
-
-const { getChainById } = useChains();
 
 const validateUrlParams = createEvent<URLSearchParams>();
 const storeCleared = createEvent();
@@ -27,10 +25,10 @@ type ValidateParams = {
   chainId: string | null;
   assetId: string | null;
 };
-const getChainAndAssetFx = createEffect(async ({ chainId, assetId }: ValidateParams) => {
+const getChainAndAssetFx = createEffect(({ chainId, assetId }: ValidateParams) => {
   if (!chainId || !assetId) return undefined;
 
-  const chain = await getChainById(chainId as ChainId);
+  const chain = chainsService.getChainById(chainId as ChainId);
   const asset = chain?.assets.find((a) => a.assetId === Number(assetId));
 
   return { chain, asset };

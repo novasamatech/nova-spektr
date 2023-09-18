@@ -8,7 +8,7 @@ jest.mock('@renderer/app/providers', () => ({
   }),
 }));
 
-describe('screen/Settings/Overview/SocialLinks', () => {
+describe('pages/Settings/Overview/SocialLinks', () => {
   test('should render all social links', () => {
     render(<SocialLinks />);
 

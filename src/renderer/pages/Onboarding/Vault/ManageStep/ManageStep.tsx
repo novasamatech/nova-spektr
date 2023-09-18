@@ -4,7 +4,7 @@ import { Controller, SubmitHandler, useForm } from 'react-hook-form';
 import { u8aToHex } from '@polkadot/util';
 import { keyBy } from 'lodash';
 
-import { useChains } from '@renderer/entities/network';
+import { chainsService } from '@renderer/entities/network';
 import { ID } from '@renderer/shared/api/storage';
 import { useI18n } from '@renderer/app/providers';
 import { Chain, Explorer, ChainTitle } from '@renderer/entities/chain';
@@ -42,8 +42,6 @@ type Props = {
 const ManageStep = ({ seedInfo, onBack, onComplete }: Props) => {
   const { t } = useI18n();
 
-  const { getChainsData, sortChains } = useChains();
-
   const {
     handleSubmit,
     control,
@@ -65,16 +63,15 @@ const ManageStep = ({ seedInfo, onBack, onComplete }: Props) => {
   const [accounts, setAccounts] = useState<CompactSeedInfo[]>([]);
 
   useEffect(() => {
-    getChainsData().then((chains) => {
-      const chainsMap = keyBy(sortChains(chains), 'chainId');
-      setChainsObject(chainsMap);
+    const chains = chainsService.getChainsData();
+    const chainsMap = keyBy(chainsService.sortChains(chains), 'chainId');
+    setChainsObject(chainsMap);
 
-      const filteredQrData = seedInfo.map((data) => filterByExistingChains(data, chainsMap));
+    const filteredQrData = seedInfo.map((data) => filterByExistingChains(data, chainsMap));
 
-      const names = filteredQrData.reduce((acc, data, index) => ({ ...acc, [getAccountId(index)]: data.name }), {});
-      setAccountNames(names);
-      setAccounts(filteredQrData.map(formatAccount));
-    });
+    const names = filteredQrData.reduce((acc, data, index) => ({ ...acc, [getAccountId(index)]: data.name }), {});
+    setAccountNames(names);
+    setAccounts(filteredQrData.map(formatAccount));
   }, []);
 
   const filterByExistingChains = (seedInfo: SeedInfo, chainsMap: Record<ChainId, Chain>): SeedInfo => {

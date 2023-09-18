@@ -2,7 +2,7 @@ import { render, screen } from '@testing-library/react';
 
 import PopoverLink from './PopoverLink';
 
-describe('screen/Settings/PopoverLink', () => {
+describe('pages/Settings/PopoverLink', () => {
   test('should render component', () => {
     render(
       <PopoverLink iconName="globe" showIcon>

@@ -95,7 +95,7 @@ export const Bond = () => {
         headerClass="py-3 px-5 max-w-[440px]"
         panelClass="w-max"
         isOpen={isBondModalOpen}
-        title={<OperationTitle title={`${t('staking.bond.title', { asset: '' })}`} chainId={chainId} />}
+        title={<OperationTitle title={t('staking.bond.title')} chainId={chainId} />}
         onClose={closeBondModal}
       >
         <div className="w-[440px] px-5 py-4">
@@ -116,7 +116,7 @@ export const Bond = () => {
         headerClass="py-3 px-5 max-w-[440px]"
         panelClass="w-max"
         isOpen={isBondModalOpen}
-        title={<OperationTitle title={`${t('staking.bond.title', { asset: '' })}`} chainId={chainId} />}
+        title={<OperationTitle title={t('staking.bond.title')} chainId={chainId} />}
         onClose={closeBondModal}
       >
         <div className="w-[440px] px-5 py-20">
@@ -230,7 +230,7 @@ export const Bond = () => {
         panelClass="w-max"
         headerClass="py-3 px-5 max-w-[440px]"
         isOpen={activeStep !== Step.SUBMIT && isBondModalOpen}
-        title={<OperationTitle title={`${t('staking.bond.title', { asset: asset.symbol })}`} chainId={chainId} />}
+        title={<OperationTitle title={t('staking.bond.title', { asset: asset.symbol })} chainId={chainId} />}
         onClose={closeBondModal}
       >
         {activeStep === Step.INIT && (
