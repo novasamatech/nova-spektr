@@ -54,6 +54,8 @@ export const Submit = ({ api, tx, multisigTx, account, unsignedTx, signature, de
     if (isMultisig(account) && successMessage) {
       navigate(Paths.OPERATIONS);
     } else {
+      // TODO: rework to context-free solution
+
       navigate(Paths.ASSETS);
     }
   };
@@ -65,6 +67,8 @@ export const Submit = ({ api, tx, multisigTx, account, unsignedTx, signature, de
     if (isMultisig(account)) {
       navigate(Paths.OPERATIONS);
     } else {
+      // TODO: rework to context-free solution
+
       navigate(Paths.ASSETS);
     }
   };

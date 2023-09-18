@@ -93,6 +93,7 @@ export const SendAssetModal = ({ chain, asset }: Props) => {
 
   const closeSendModal = () => {
     toggleIsModalOpen();
+    // TODO: rework to context-free solution
     navigate(Paths.ASSETS);
   };
 
