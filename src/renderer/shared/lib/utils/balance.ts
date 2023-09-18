@@ -90,9 +90,10 @@ export const formatBalance = (balance = '0', precision = 0): FormattedBalance =>
 export const totalAmount = (balance?: Balance): string => {
   if (!balance) return ZERO_BALANCE;
 
-  const { free = ZERO_BALANCE, reserved = ZERO_BALANCE } = balance;
+  const bnFree = new BN(balance.free || ZERO_BALANCE);
+  const bnReserved = new BN(balance.reserved || ZERO_BALANCE);
 
-  return new BN(free).add(new BN(reserved)).toString();
+  return bnFree.add(bnReserved).toString();
 };
 
 export const lockedAmount = ({ locked = [] }: Balance): string => {
@@ -105,9 +106,8 @@ export const lockedAmount = ({ locked = [] }: Balance): string => {
 export const transferableAmount = (balance?: Balance): string => {
   if (!balance) return ZERO_BALANCE;
 
-  const { free = ZERO_BALANCE, frozen = ZERO_BALANCE } = balance;
-  const bnFree = new BN(free);
-  const bnFrozen = new BN(frozen);
+  const bnFree = new BN(balance.free || ZERO_BALANCE);
+  const bnFrozen = new BN(balance.frozen || ZERO_BALANCE);
 
   return bnFree.gt(bnFrozen) ? bnFree.sub(bnFrozen).toString() : ZERO_BALANCE;
 };

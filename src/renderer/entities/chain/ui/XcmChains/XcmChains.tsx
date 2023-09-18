@@ -11,7 +11,7 @@ type Props = {
 
 export const XcmChains = ({ chainIdFrom, chainIdTo, className }: Props) => {
   if (!chainIdTo) {
-    return <ChainTitle chainId={chainIdFrom} showChainName={false} />;
+    return <ChainTitle chainId={chainIdFrom} className={className} />;
   }
 
   return (

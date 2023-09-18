@@ -3,13 +3,14 @@ import { useI18n } from '@renderer/app/providers';
 import { AccountDS } from '@renderer/shared/api/storage';
 import { Chain } from '@renderer/entities/chain';
 import { SelectableAccount } from './SelectableAccount';
+import { cnTw } from '@renderer/shared/lib/utils';
 
 type Props = {
   isOpen: boolean;
-  onClose: () => void;
-  onSelect: (account: AccountDS) => void;
-  accounts: AccountDS[];
   chain: Chain;
+  accounts: AccountDS[];
+  onSelect: (account: AccountDS) => void;
+  onClose: () => void;
 };
 
 const AccountSelectModal = ({ isOpen, onClose, onSelect, accounts, chain }: Props) => {
@@ -24,7 +25,7 @@ const AccountSelectModal = ({ isOpen, onClose, onSelect, accounts, chain }: Prop
       panelClass="w-[368px]"
       onClose={onClose}
     >
-      <ul className="mt-1 max-h-[332px] overflow-y-auto">
+      <ul className={cnTw('mt-1', accounts.length > 7 && 'max-h-[332px] overflow-y-auto')}>
         {accounts.map((a) => (
           <li key={a.id}>
             <SelectableAccount
