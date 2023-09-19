@@ -14,14 +14,20 @@ type Props = {
   onComplete: () => void;
 };
 
+const enum Step {
+  SCAN,
+  MANAGE,
+}
+
 const WalletConnect = ({ isOpen, onClose, onComplete }: Props) => {
   const { t } = useI18n();
   const { connect, uri, session, disconnect } = useWalletConnectClient();
 
   const [qrCode, setQrCode] = useState<string>('');
+  const [step, setStep] = useState<Step>(Step.SCAN);
 
   useEffect(() => {
-    connect();
+    connect(undefined, () => setStep(Step.MANAGE));
   }, []);
 
   useEffect(() => {
@@ -32,10 +38,6 @@ const WalletConnect = ({ isOpen, onClose, onComplete }: Props) => {
     }
   }, [uri]);
 
-  useEffect(() => {
-    console.log('wc', session);
-  }, [session]);
-
   return (
     <BaseModal
       closeButton
@@ -44,7 +46,7 @@ const WalletConnect = ({ isOpen, onClose, onComplete }: Props) => {
       panelClass="w-[944px] h-[576px]"
       onClose={onClose}
     >
-      {uri && !session && (
+      {step === Step.SCAN && uri && (
         <>
           <div className="w-[472px] flex flex-col px-5 py-4 bg-white rounded-l-lg">
             <HeaderTitleText className="mb-10">{t('onboarding.walletConnect.title')}</HeaderTitleText>
@@ -63,7 +65,8 @@ const WalletConnect = ({ isOpen, onClose, onComplete }: Props) => {
           </div>
         </>
       )}
-      {session && (
+
+      {step === Step.MANAGE && session && (
         <ManageStep
           accounts={session.namespaces.polkadot.accounts}
           topic={session.topic}

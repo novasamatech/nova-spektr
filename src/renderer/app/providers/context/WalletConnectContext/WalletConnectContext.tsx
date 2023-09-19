@@ -21,7 +21,7 @@ import { useChains } from '@renderer/entities/network';
 interface IContext {
   client: Client | undefined;
   session: SessionTypes.Struct | undefined;
-  connect: (pairing?: { topic: string }) => Promise<void>;
+  connect: (pairing?: { topic: string }, onConnect?: () => void) => Promise<void>;
   disconnect: () => Promise<void>;
   isInitializing: boolean;
   chains: string[];
@@ -83,7 +83,7 @@ export const WalletConnectProvider = ({ children }: { children: ReactNode | Reac
   }, []);
 
   const connect = useCallback(
-    async (pairing: any) => {
+    async (pairing: any, onConnect?: () => void) => {
       if (typeof client === 'undefined') {
         throw new Error('WalletConnect is not initialized');
       }
@@ -117,6 +117,7 @@ export const WalletConnectProvider = ({ children }: { children: ReactNode | Reac
         await onSessionConnected(session);
 
         setPairings(client.pairing.getAll({ active: true }));
+        onConnect?.();
       } catch (e) {
         console.error(e);
       } finally {

@@ -69,7 +69,7 @@ export const AssetsList = () => {
 
   const checkCanMakeActions = (): boolean => {
     return activeAccounts.some((account) =>
-      [SigningType.MULTISIG, SigningType.PARITY_SIGNER].includes(account.signingType),
+      [SigningType.MULTISIG, SigningType.PARITY_SIGNER, SigningType.WALLET_CONNECT].includes(account.signingType),
     );
   };
 
