@@ -203,6 +203,7 @@ export const getAssetLocation = (
   asset: AssetXCM,
   assets: Record<AssetName, AssetLocation>,
   amount: BN,
+  isArray: boolean = true,
 ): Object | undefined => {
   const PathMap: Record<PathType, () => Object | undefined> = {
     relative: () => getRelativeAssetLocation(assets[asset.assetLocation].multiLocation),
@@ -211,19 +212,19 @@ export const getAssetLocation = (
   };
 
   const location = PathMap[asset.assetLocationPath.type]();
-  const assetVersionType = getTypeVersion(api, 'VersionedMultiAssets');
+
+  const assetVersionType = getTypeVersion(api, isArray ? 'XcmVersionedMultiAssets' : 'XcmVersionedMultiAsset');
+  const assetObject = {
+    id: {
+      Concrete: location,
+    },
+    fun: {
+      Fungible: amount,
+    },
+  };
 
   return {
-    [assetVersionType]: [
-      {
-        id: {
-          Concrete: location,
-        },
-        fun: {
-          Fungible: amount,
-        },
-      },
-    ],
+    [assetVersionType]: isArray ? [assetObject] : assetObject,
   };
 };
 
@@ -265,7 +266,9 @@ export const getVersionedDestinationLocation = (
   accountId?: AccountId,
 ): Object | undefined => {
   const location = getDestinationLocation(originChain, destinationParaId, accountId);
-  const version = getTypeVersion(api, 'VersionedMultiLocation');
+  const version = getTypeVersion(api, 'XcmVersionedMultiLocation');
+
+  if (!version) return location;
 
   return {
     [version]: location,
@@ -294,7 +297,9 @@ export const getDestinationLocation = (
 
 export const getVersionedAccountLocation = (api: ApiPromise, accountId?: AccountId): Object | undefined => {
   const location = getAccountLocation(accountId);
-  const version = getTypeVersion(api, 'VersionedMultiLocation');
+  const version = getTypeVersion(api, 'XcmVersionedMultiLocation');
+
+  if (!version) return location;
 
   return {
     [version]: location,
