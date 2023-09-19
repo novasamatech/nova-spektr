@@ -86,7 +86,7 @@ export const StakeMore = () => {
         headerClass="py-3 px-5 max-w-[440px]"
         panelClass="w-max"
         isOpen={isStakeMoreModalOpen}
-        title={<OperationTitle title={`${t('staking.stakeMore.title', { asset: '' })}`} chainId={chainId} />}
+        title={<OperationTitle title={t('staking.stakeMore.title')} chainId={chainId} />}
         onClose={closeStakeMoreModal}
       >
         <div className="w-[440px] px-5 py-4">
@@ -107,7 +107,7 @@ export const StakeMore = () => {
         panelClass="w-max"
         headerClass="py-3 px-5 max-w-[440px]"
         isOpen={isStakeMoreModalOpen}
-        title={<OperationTitle title={`${t('staking.stakeMore.title', { asset: '' })}`} chainId={chainId} />}
+        title={<OperationTitle title={t('staking.stakeMore.title')} chainId={chainId} />}
         onClose={closeStakeMoreModal}
       >
         <div className="w-[440px] px-5 py-20">
@@ -163,7 +163,7 @@ export const StakeMore = () => {
         headerClass="py-3 px-5 max-w-[440px]"
         panelClass="w-max"
         isOpen={activeStep !== Step.SUBMIT && isStakeMoreModalOpen}
-        title={<OperationTitle title={`${t('staking.stakeMore.title', { asset: asset.symbol })}`} chainId={chainId} />}
+        title={<OperationTitle title={t('staking.stakeMore.title', { asset: asset.symbol })} chainId={chainId} />}
         onClose={closeStakeMoreModal}
       >
         {activeStep === Step.INIT && (

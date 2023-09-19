@@ -1,6 +1,7 @@
-import { createEffect, createEvent, createStore, forward } from 'effector';
+import { createEffect, createStore, forward } from 'effector';
 
 import { ContactDS } from '@renderer/shared/api/storage';
+import { kernelModel } from '@renderer/shared/core';
 import { splice } from '@renderer/shared/lib/utils';
 import { useContact } from '../lib';
 import type { Contact } from './types';
@@ -8,7 +9,6 @@ import type { Contact } from './types';
 const contactService = useContact();
 
 export const $contacts = createStore<ContactDS[]>([]);
-const appStarted = createEvent();
 
 const populateContactsFx = createEffect(() => {
   return contactService.getContacts();
@@ -47,13 +47,10 @@ $contacts
   });
 
 forward({
-  from: appStarted,
+  from: kernelModel.events.appStarted,
   to: populateContactsFx,
 });
 
-export const events = {
-  appStarted,
-};
 export const effects = {
   addContactFx,
   deleteContactFx,

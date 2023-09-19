@@ -49,7 +49,6 @@ class DexieStorage extends Dexie {
       notifications: '++id,type,read',
     });
 
-    // Move Multisig events from transaction to separate table
     this.version(17)
       .stores({
         multisigEvents: '++id,[txAccountId+txChainId+txCallHash+txBlock+txIndex],status,accountId',

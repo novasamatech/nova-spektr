@@ -88,7 +88,7 @@ jest.mock('./components', () => ({
   ),
 }));
 
-describe('screen/Settings/Networks', () => {
+describe('pages/Settings/Networks', () => {
   test('should render component', async () => {
     await act(async () => {
       render(<Networks />, { wrapper: MemoryRouter });

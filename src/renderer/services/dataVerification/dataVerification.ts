@@ -11,7 +11,7 @@ async function getHeader(api: ApiPromise, chainId: number): Promise<any> {
   return api.query.paras.heads(chainId);
 }
 
-async function getParachainId(api: ApiPromise): Promise<number> {
+export async function getParachainId(api: ApiPromise): Promise<number> {
   const parachainId = (await api.query.parachainInfo.parachainId()) as unknown as u32;
 
   return parachainId.toNumber();

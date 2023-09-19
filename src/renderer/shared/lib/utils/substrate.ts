@@ -6,6 +6,9 @@ import { blake2AsHex } from '@polkadot/util-crypto';
 import { Address, CallData, CallHash } from '@renderer/domain/shared-kernel';
 import { DEFAULT_TIME, ONE_DAY, THRESHOLD } from '@renderer/entities/network/lib/common/constants';
 
+const V3_LABEL = 'V3';
+const UNUSED_LABEL = 'unused';
+
 /**
  * Compose and return all the data needed for @substrate/txwrapper-polkadot signing
  * @param accountId account identification
@@ -106,4 +109,22 @@ export const getCreatedDateFromApi = async (neededBlock: number, api: ApiPromise
   const blockTime = getExpectedBlockTime(api);
 
   return getCreatedDate(neededBlock, currentBlock, blockTime.toNumber());
+};
+
+export const getTypeVersion = (api: ApiPromise, typeName: string): string => {
+  return (
+    getTypeVersions(api, typeName)
+      .filter((value: string) => {
+        const isV3 = value === V3_LABEL;
+        const isUnused = value.toLowerCase().includes(UNUSED_LABEL);
+
+        return !isV3 && !isUnused;
+      })
+      .pop() || ''
+  );
+};
+
+export const getTypeVersions = (api: ApiPromise, typeName: string): string[] => {
+  // @ts-ignore
+  return api.createType(typeName).defKeys;
 };

@@ -86,7 +86,7 @@ export const Restake = () => {
         panelClass="w-max"
         headerClass="py-3 px-5 max-w-[440px]"
         isOpen={isRestakeModalOpen}
-        title={<OperationTitle title={`${t('staking.restake.title', { asset: '' })}`} chainId={chainId} />}
+        title={<OperationTitle title={t('staking.restake.title')} chainId={chainId} />}
         onClose={closeRestakeModal}
       >
         <div className="w-[440px] px-5 py-4">
@@ -107,7 +107,7 @@ export const Restake = () => {
         headerClass="py-3 px-5 max-w-[440px]"
         panelClass="w-max"
         isOpen={isRestakeModalOpen}
-        title={<OperationTitle title={`${t('staking.restake.title', { asset: '' })}`} chainId={chainId} />}
+        title={<OperationTitle title={t('staking.restake.title')} chainId={chainId} />}
         onClose={closeRestakeModal}
       >
         <div className="w-[440px] px-5 py-20">
@@ -163,7 +163,7 @@ export const Restake = () => {
         headerClass="py-3 px-5 max-w-[440px]"
         panelClass="w-max"
         isOpen={activeStep !== Step.SUBMIT && isRestakeModalOpen}
-        title={<OperationTitle title={`${t('staking.restake.title', { asset: '' })}`} chainId={chainId} />}
+        title={<OperationTitle title={t('staking.restake.title')} chainId={chainId} />}
         onClose={closeRestakeModal}
       >
         {activeStep === Step.INIT && (

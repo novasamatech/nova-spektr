@@ -303,12 +303,15 @@
       "deposit": "Multisig deposit",
       "depositor": "Depositor",
       "description": "Description",
+      "destinationChain": "To network",
+      "fromNetwork": "From network",
       "multisigWallet": "Multisig wallet",
       "payee": "Rewards destination",
       "recipient": "Recipient",
       "rejectReason": "Reject reason",
       "sender": "Sender",
       "timePoint": "Time Point",
+      "toNetwork": "To network",
       "validators": "Selected validators",
       "wallet": "Wallet"
     },
@@ -330,6 +333,7 @@
       "placeholder": "Reason...",
       "title": "Enter reject reason"
     },
+    "selectAccount": "Select account",
     "selectSignatory": "Select signatory",
     "selectSignatoryTitle": "Select signatory",
     "signButton": "Sign with Polkadot Vault",
@@ -343,7 +347,8 @@
       "signing": "On signing"
     },
     "successMessage": "Operation Approved",
-    "successRejectMessage": "Operation Rejected"
+    "successRejectMessage": "Operation Rejected",
+    "xcmFee": "Cross-chain fee"
   },
   "operations": {
     "callData": {
@@ -362,11 +367,24 @@
       "statusPlaceholder": "Operation status",
       "statusSummary": "Operation statuses"
     },
+    "modalTitles": {
+      "destinationOn": "Set reward destination on",
+      "nominateOn": "Change Validators on",
+      "redeemOn": "Withdraw Unstaked { asset } on",
+      "restakeOn": "Restake { asset } on",
+      "stakeMoreOn": "Stake More { asset } on",
+      "startStakingOn": "Start Staking { asset } on",
+      "transferFrom": "Transfer { asset } from",
+      "transferOn": "Transfer { asset } on",
+      "unknownOn": "Unknown Operation on",
+      "unstakeOn": "Unstake { asset } on"
+    },
     "noOperationsDescription": "Your operation history will appear here",
     "noOperationsFilters": "Nothing was found for the filters. Try changing filters or canceling filtering.",
     "noOperationsWalletNotMulti": "You can only view operations for your Multisig wallets. Transaction history for other types of wallets will be available later. Stay tuned.",
     "title": "Operations",
     "titles": {
+      "crossChainTransfer": "Cross-chain transfer",
       "destination": "Set reward destination",
       "nominate": "Change Validators",
       "redeem": "Withdraw Unstaked",
@@ -753,7 +771,10 @@
   "transfer": {
     "amountPlaceholder": "0",
     "continueButton": "Continue",
+    "crossChainPlaceholder": "Cross-chain",
     "descriptionLengthError": "Description must be { maxLength } symbols long",
+    "destinationChainLabel": "Recipient network",
+    "destinationChainPlaceholder": "Select recipient network",
     "editOperationButton": "Edit operation",
     "executing": "Submitting operation",
     "formTitle": "Send <strong>{ asset }</strong> on <strong>{ network }</strong>",
@@ -765,12 +786,14 @@
       "transactions": "Transactions"
     },
     "multisigTransactionExist": "Multisig transaction already exists",
+    "myselfButton": "Myself",
     "networkDeposit": "Multisig deposit",
     "networkDepositHint": "The deposit stays locked on the depositor’s account until the multisig operation is executed or rejected",
     "networkFee": "Network fee",
     "notEnoughBalanceError": "Not enough funds to transfer specific amount",
     "notEnoughBalanceForDepositError": "Insufficient balance to pay deposit and network fee",
     "notEnoughBalanceForFeeError": "Insufficient balance to pay network fee",
+    "onChainPlaceholder": "On-chain",
     "pasteButton": "Paste",
     "recipientLabel": "Recipient",
     "recipientPlaceholder": "Address",
@@ -781,7 +804,8 @@
     "signatoryLabel": "Signatory",
     "startSigningButton": "Sign with Polkadot Vault",
     "successMessage": "Operation Success",
-    "title": "Transfer { asset } on"
+    "title": "Transfer { asset } on",
+    "xcmTitle": "Transfer { asset } from"
   },
   "transferDetails": {
     "fromNetwork": "From network",

@@ -87,7 +87,7 @@ export const Destination = () => {
         headerClass="py-3 px-5 max-w-[440px]"
         panelClass="w-max"
         isOpen={isDestModalOpen}
-        title={<OperationTitle title={`${t('staking.destination.title', { asset: '' })}`} chainId={chainId} />}
+        title={<OperationTitle title={t('staking.destination.title')} chainId={chainId} />}
         onClose={closeDestinationModal}
       >
         <div className="w-[440px] px-5 py-4">
@@ -108,7 +108,7 @@ export const Destination = () => {
         panelClass="w-max"
         headerClass="py-3 px-5 max-w-[440px]"
         isOpen={isDestModalOpen}
-        title={<OperationTitle title={`${t('staking.destination.title', { asset: '' })}`} chainId={chainId} />}
+        title={<OperationTitle title={t('staking.destination.title')} chainId={chainId} />}
         onClose={closeDestinationModal}
       >
         <div className="w-[440px] px-5 py-20">
@@ -169,7 +169,7 @@ export const Destination = () => {
         headerClass="py-3 px-5 max-w-[440px]"
         panelClass="w-max"
         isOpen={activeStep !== Step.SUBMIT && isDestModalOpen}
-        title={<OperationTitle title={`${t('staking.destination.title', { asset: '' })}`} chainId={chainId} />}
+        title={<OperationTitle title={t('staking.destination.title')} chainId={chainId} />}
         onClose={closeDestinationModal}
       >
         {activeStep === Step.INIT && (

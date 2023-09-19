@@ -87,7 +87,7 @@ export const Unstake = () => {
         headerClass="py-3 px-5 max-w-[440px]"
         panelClass="w-max"
         isOpen={isUnstakeModalOpen}
-        title={<OperationTitle title={`${t('staking.unstake.title', { asset: '' })}`} chainId={chainId} />}
+        title={<OperationTitle title={t('staking.unstake.title')} chainId={chainId} />}
         onClose={closeUnstakeModal}
       >
         <div className="w-[440px] px-5 py-4">
@@ -108,7 +108,7 @@ export const Unstake = () => {
         headerClass="py-3 px-5 max-w-[440px]"
         panelClass="w-max"
         isOpen={isUnstakeModalOpen}
-        title={<OperationTitle title={`${t('staking.unstake.title', { asset: '' })}`} chainId={chainId} />}
+        title={<OperationTitle title={t('staking.unstake.title')} chainId={chainId} />}
         onClose={closeUnstakeModal}
       >
         <div className="w-[440px] px-5 py-20">
@@ -170,7 +170,7 @@ export const Unstake = () => {
         panelClass="w-max"
         headerClass="py-3 px-5 max-w-[440px]"
         isOpen={activeStep !== Step.SUBMIT && isUnstakeModalOpen}
-        title={<OperationTitle title={`${t('staking.unstake.title', { asset: asset.symbol })}`} chainId={chainId} />}
+        title={<OperationTitle title={t('staking.unstake.title', { asset: asset.symbol })} chainId={chainId} />}
         onClose={closeUnstakeModal}
       >
         {activeStep === Step.INIT && (

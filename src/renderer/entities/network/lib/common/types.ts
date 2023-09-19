@@ -12,9 +12,9 @@ import { Balance } from '@renderer/entities/asset/model/balance';
 // =====================================================
 
 export interface IChainService {
-  getChainsData: () => Promise<Chain[]>;
-  getChainById: (chainId: ChainId) => Promise<Chain | undefined>;
-  getStakingChainsData: () => Promise<Chain[]>;
+  getChainsData: () => Chain[];
+  getChainById: (chainId: ChainId) => Chain | undefined;
+  getStakingChainsData: () => Chain[];
   sortChains: <T extends ChainLike>(chains: T[]) => T[];
   sortChainsByBalance: (chains: Chain[], balances: Balance[]) => Chain[];
 }
@@ -68,7 +68,7 @@ export type ConnectProps = {
 export type Metadata = {
   chainId: ChainId;
   version: number;
-  metadata: HexString;
+  metadata?: HexString;
 };
 
 export interface IMetadataService {

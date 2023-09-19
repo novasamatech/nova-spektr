@@ -10,10 +10,10 @@ import { AccountId, Address, ChainId, HexString, Threshold } from '@renderer/dom
 import { Transaction, TransactionType } from '@renderer/entities/transaction/model/transaction';
 import { createTxMetadata, toAccountId } from '@renderer/shared/lib/utils';
 import { ITransactionService, HashData, ExtrinsicResultParams } from './common/types';
-import { decodeDispatchError } from './common/utils';
-import { useCallDataDecoder } from './callDataDecoder';
 import { MultisigAccount } from '@renderer/entities/account';
 import { getExtrinsic, getUnsignedTransaction, wrapAsMulti } from './extrinsicService';
+import { decodeDispatchError } from './common/utils';
+import { useCallDataDecoder } from './callDataDecoder';
 
 type WrapAsMulti = {
   account: MultisigAccount;
@@ -95,6 +95,13 @@ export const useTransaction = (): ITransactionService => {
     const paymentInfo = await extrinsic.paymentInfo(extrinsic.signer);
 
     return paymentInfo.weight;
+  };
+
+  const getTxWeight = async (transaction: Transaction, api: ApiPromise): Promise<Weight> => {
+    const extrinsic = getExtrinsic[transaction.type](transaction.args, api);
+    const { weight } = await extrinsic.paymentInfo(transaction.address);
+
+    return weight;
   };
 
   const getTransactionDeposit = (threshold: Threshold, api: ApiPromise): string => {
@@ -216,6 +223,7 @@ export const useTransaction = (): ITransactionService => {
     submitAndWatchExtrinsic,
     getTransactionFee,
     getExtrinsicWeight,
+    getTxWeight,
     getTransactionDeposit,
     getTransactionHash,
     decodeCallData,

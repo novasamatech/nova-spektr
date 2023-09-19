@@ -22,7 +22,7 @@ jest.mock('./components/MatrixInfoPopover/MatrixInfoPopover', () => () => <span>
 jest.mock('./components/Credentials/Credentials', () => () => <span>Credentials</span>);
 jest.mock('./components/Verification/Verification', () => () => <span>Verification</span>);
 
-describe('screen/Settings/Matrix', () => {
+describe('pages/Settings/Matrix', () => {
   afterEach(() => {
     jest.clearAllMocks();
   });
