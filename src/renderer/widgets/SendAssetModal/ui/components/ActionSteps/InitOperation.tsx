@@ -90,6 +90,8 @@ export const InitOperation = ({
       return acc;
     }, []);
 
+    if (!options.length) return;
+
     setDestinations([connections[chainId], ...options]);
   }, [availableDestinations.length]);
 

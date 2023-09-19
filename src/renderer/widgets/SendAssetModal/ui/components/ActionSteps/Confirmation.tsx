@@ -50,6 +50,7 @@ export const Confirmation = ({
   }, [account]);
 
   const isXcmTransfer = XcmTypes.includes(transaction?.type);
+  const asset = xcmAsset && connection.assets.find((a) => a.assetId === xcmAsset.assetId);
 
   return (
     <div className="flex flex-col items-center pt-4 gap-y-3">
@@ -90,15 +91,10 @@ export const Confirmation = ({
         )}
       </DetailRow>
 
-      {isXcmTransfer && config && xcmAsset && (
+      {isXcmTransfer && config && asset && (
         <DetailRow label={t('operation.xcmFee')} className="text-text-primary">
           {config && connection.api && (
-            <XcmFee
-              api={connection.api}
-              transaction={feeTx}
-              asset={connection.assets[xcmAsset.assetId]}
-              config={config}
-            />
+            <XcmFee api={connection.api} transaction={feeTx} asset={asset} config={config} />
           )}
         </DetailRow>
       )}
