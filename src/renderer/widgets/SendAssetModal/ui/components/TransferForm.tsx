@@ -5,10 +5,10 @@ import { ApiPromise } from '@polkadot/api';
 import { Trans } from 'react-i18next';
 
 import { AmountInput, Button, Icon, Identicon, Input, InputHint, Select } from '@renderer/shared/ui';
-import { useI18n } from '@renderer/app/providers';
+import { useI18n, useNetworkContext } from '@renderer/app/providers';
 import { Asset, AssetType, useBalance } from '@renderer/entities/asset';
 import { MultisigTxInitStatus, Transaction, TransactionType, useTransaction } from '@renderer/entities/transaction';
-import { AccountId, Address, ChainId } from '@renderer/domain/shared-kernel';
+import { Address, ChainId } from '@renderer/domain/shared-kernel';
 import { useMultisigTx } from '@renderer/entities/multisig';
 import { Account, isMultisig, MultisigAccount } from '@renderer/entities/account';
 import {
@@ -23,8 +23,8 @@ import {
 import { Chain } from '@renderer/entities/chain';
 import { getChainOption, getPlaceholder } from '../common/utils';
 import { DropdownOption, DropdownResult } from '@renderer/shared/ui/types';
-import { XcmTransfer } from '@renderer/shared/api/xcm';
 import AccountSelectModal from '@renderer/pages/Operations/components/modals/AccountSelectModal/AccountSelectModal';
+import * as sendAssetModel from '../../model/send-asset';
 
 const DESCRIPTION_MAX_LENGTH = 120;
 
@@ -49,23 +49,15 @@ type Props = {
   addressPrefix: number;
   fee: string;
   feeIsLoading: boolean;
-  xcmParams: {
-    dest?: Object;
-    beneficiary?: Object;
-    asset?: Object;
-    transfer?: XcmTransfer;
-    fee: string;
-    weight: string;
-  };
+  isXcmTransfer?: boolean;
+  isXcmValid?: boolean;
+  xcmFee: string;
   deposit: string;
   footer: ReactNode;
   header?: ReactNode;
   onSubmit: (tx: Transaction) => void;
   onTxChange: (formData: Partial<TransferFormData>) => void;
   destinations: Chain[];
-  onChangeAmount: (amount: string) => void;
-  onDestinationChainChange: (destinationChain: ChainId) => void;
-  onDestinationChange: (accountId: AccountId) => void;
 };
 
 export const TransferForm = ({
@@ -81,19 +73,19 @@ export const TransferForm = ({
   footer,
   onSubmit,
   onTxChange,
-  onDestinationChainChange,
-  onDestinationChange,
-  onChangeAmount,
   feeIsLoading,
   fee,
   deposit,
   destinations,
-  xcmParams,
+  isXcmTransfer,
+  isXcmValid,
+  xcmFee,
 }: Props) => {
   const { t } = useI18n();
   const { getBalance } = useBalance();
   const { getMultisigTxs } = useMultisigTx({});
   const { getTransactionHash, buildTransaction } = useTransaction();
+  const { connections } = useNetworkContext();
 
   const [accountBalance, setAccountBalance] = useState('');
   const [signerBalance, setSignerBalance] = useState('');
@@ -141,7 +133,7 @@ export const TransferForm = ({
 
   useEffect(() => {
     if (destinationChain) {
-      onDestinationChainChange(destinationChain.value);
+      sendAssetModel.events.destinationChainSelected(connections[destinationChain.value]);
     }
   }, [destinationChain]);
 
@@ -150,11 +142,11 @@ export const TransferForm = ({
   }, [accountBalance, signerBalance]);
 
   useEffect(() => {
-    onChangeAmount(formatAmount(amount, asset.precision));
+    sendAssetModel.events.amountChanged(formatAmount(amount, asset.precision));
   }, [amount]);
 
   useEffect(() => {
-    onDestinationChange(toAccountId(destination));
+    sendAssetModel.events.accountIdSelected(toAccountId(destination));
   }, [destination]);
 
   const setupBalances = (
@@ -193,9 +185,6 @@ export const TransferForm = ({
     }
   }, [fee]);
 
-  const isXcmTransfer = destinationChain?.value !== chainId && !!xcmParams.transfer;
-  const isXcmValid = xcmParams.fee && xcmParams.asset && xcmParams.beneficiary && xcmParams.dest;
-
   useEffect(() => {
     if (!account || !amount || !validateAddress(destination)) return;
 
@@ -218,7 +207,7 @@ export const TransferForm = ({
   const validateBalance = (amount: string): boolean => {
     if (!accountBalance) return false;
     const amountBN = new BN(formatAmount(amount, asset.precision));
-    const xcmFeeBN = new BN(xcmParams.fee || 0);
+    const xcmFeeBN = new BN(xcmFee || 0);
 
     return amountBN.add(xcmFeeBN).lte(new BN(accountBalance));
   };
@@ -228,7 +217,7 @@ export const TransferForm = ({
     const nativeTokenBalance = isMultisig(account) ? signerNativeTokenBalance : accountNativeTokenBalance;
 
     const amountBN = new BN(formatAmount(amount, asset.precision));
-    const xcmFeeBN = new BN(xcmParams.fee || 0);
+    const xcmFeeBN = new BN(xcmFee || 0);
 
     if (!balance) return false;
 

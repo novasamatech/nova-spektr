@@ -2,7 +2,7 @@ import { ApiPromise } from '@polkadot/api';
 import { useEffect, useState } from 'react';
 import { useStore } from 'effector-react';
 
-import { AccountId, ChainId } from '@renderer/domain/shared-kernel';
+import { ChainId } from '@renderer/domain/shared-kernel';
 import { useAccount, Account, isMultisig, MultisigAccount } from '@renderer/entities/account';
 import { formatAmount, getAssetId, TEST_ACCOUNT_ID, toAddress, toHexChainId } from '@renderer/shared/lib/utils';
 import { Chain, Explorer } from '@renderer/entities/chain';
@@ -82,6 +82,7 @@ export const InitOperation = ({
 
   const amount = formData?.amount || '0';
   const isXcmTransfer = formData?.destinationChain?.value !== chainId && !!xcmTransfer;
+  const isXcmValid = Boolean(xcmFee && xcmAsset && xcmBeneficiary && xcmDest);
 
   useEffect(() => {
     if (!availableDestinations?.length) return;
@@ -203,18 +204,6 @@ export const InitOperation = ({
     setActiveSignatory(account);
   };
 
-  const changeDestinationChain = (chainId: ChainId) => {
-    sendAssetModel.events.destinationChainSelected(connections[chainId]);
-  };
-
-  const changeDestination = (accountId: AccountId) => {
-    sendAssetModel.events.accountIdSelected(accountId);
-  };
-
-  const changeAmount = (amount: string) => {
-    sendAssetModel.events.amountChanged(amount);
-  };
-
   const reserveChainId =
     reserveAsset && config && toHexChainId(config.assetsLocation[reserveAsset.assetLocation].chainId);
   const reserveApi = reserveChainId && connections[reserveChainId]?.api;
@@ -233,14 +222,9 @@ export const InitOperation = ({
         nativeToken={nativeToken}
         addressPrefix={addressPrefix}
         fee={fee}
-        xcmParams={{
-          fee: xcmFee,
-          weight: xcmWeight,
-          dest: xcmDest || undefined,
-          beneficiary: xcmBeneficiary || undefined,
-          transfer: xcmTransfer || undefined,
-          asset: xcmAsset || undefined,
-        }}
+        isXcmTransfer={isXcmTransfer}
+        isXcmValid={isXcmValid}
+        xcmFee={xcmFee}
         deposit={deposit}
         feeIsLoading={feeIsLoading}
         destinations={destinations}
@@ -275,9 +259,6 @@ export const InitOperation = ({
         }
         onTxChange={setFormData}
         onSubmit={(tx) => onResult(tx, formData?.description)}
-        onChangeAmount={changeAmount}
-        onDestinationChainChange={changeDestinationChain}
-        onDestinationChange={changeDestination}
       />
     </div>
   );
