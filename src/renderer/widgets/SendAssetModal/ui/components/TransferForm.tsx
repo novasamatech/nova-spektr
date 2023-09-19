@@ -317,6 +317,7 @@ export const TransferForm = ({
               <AmountInput
                 invalid={Boolean(error)}
                 value={value}
+                currencyId="usd"
                 balance={accountBalance}
                 balancePlaceholder={t('general.input.availableLabel')}
                 placeholder={t('general.input.amountLabel')}
