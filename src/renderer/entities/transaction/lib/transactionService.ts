@@ -232,13 +232,10 @@ export const useTransaction = (): ITransactionService => {
       );
     },
     [TransactionType.XTOKENS_TRANSFER_MULTIASSET]: (transaction, info, options, api) => {
-      const version = Object.keys(transaction.args.xcmAsset)[0];
-      const singleXcmAsset = { [version]: transaction.args.xcmAsset[version][0] };
-
       return xcmMethods.transferMultiAsset(
         {
           dest: transaction.args.xcmDest,
-          asset: singleXcmAsset,
+          asset: transaction.args.xcmAsset,
           destWeightLimit: { Unlimited: true },
           destWeight: transaction.args.xcmWeight,
         },
@@ -386,11 +383,9 @@ export const useTransaction = (): ITransactionService => {
       });
     },
     [TransactionType.XTOKENS_TRANSFER_MULTIASSET]: ({ xcmDest, xcmAsset, xcmWeight }, api) => {
-      const version = Object.keys(xcmAsset)[0];
-      const singleXcmAsset = { [version]: xcmAsset[version][0] };
       const weight = hasDestWeight(api) ? xcmWeight : { Unlimited: true };
 
-      return api.tx.xTokens.transferMultiasset(singleXcmAsset, xcmDest, weight);
+      return api.tx.xTokens.transferMultiasset(xcmAsset, xcmDest, weight);
     },
     // controller arg removed from bond but changes not released yet
     // https://github.com/paritytech/substrate/pull/14039

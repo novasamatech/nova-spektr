@@ -199,15 +199,17 @@ sample({
     config: $finalConfig,
     props: $xcmProps,
     amount: $amount,
+    xcmTransfer: $xcmTransfer,
     xcmAsset: $xcmAsset,
     xcmFee: $xcmFee,
   },
-  fn: ({ props: { api }, xcmAsset, config, amount, xcmFee }) => {
-    if (!api || !xcmAsset || !config) return null;
+  fn: ({ props: { api }, xcmAsset, config, amount, xcmTransfer, xcmFee }) => {
+    if (!api || !xcmAsset || !config || !xcmTransfer) return null;
 
     const resultAmount = new BN(amount || 0).add(new BN(xcmFee || 0));
+    const isArray = xcmTransfer.type !== 'xtokens';
 
-    return getAssetLocation(api, xcmAsset, config.assetsLocation, resultAmount) || null;
+    return getAssetLocation(api, xcmAsset, config.assetsLocation, resultAmount, isArray) || null;
   },
   target: $txAsset,
 });
