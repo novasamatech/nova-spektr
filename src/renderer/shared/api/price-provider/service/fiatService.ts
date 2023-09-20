@@ -3,7 +3,7 @@ import { CurrencyConfig } from '../common/types';
 import {
   CURRENCY_URL,
   CURRENCY_CONFIG_KEY,
-  ACTIVE_CURRENCY_KEY,
+  CURRENCY_CODE_KEY,
   FIAT_FLAG_KEY,
   FIAT_PROVIDER,
   ASSETS_PRICES,
@@ -13,8 +13,8 @@ export const fiatService = {
   fetchCurrencyConfig,
   getCurrencyConfig,
   saveCurrencyConfig,
-  getActiveCurrencySymbol,
-  saveActiveCurrencySymbol,
+  getActiveCurrencyCode,
+  saveActiveCurrencyCode,
   getFiatFlag,
   saveFiatFlag,
   getFiatProvider,
@@ -37,12 +37,13 @@ function saveCurrencyConfig(config: CurrencyConfig[]) {
   localStorageService.saveToStorage(CURRENCY_CONFIG_KEY, config);
 }
 
-function getActiveCurrencySymbol(defaultSymbol: string): string {
-  return localStorageService.getFromStorage(ACTIVE_CURRENCY_KEY, defaultSymbol);
+function getActiveCurrencyCode(defaultCode: string): string {
+  return localStorageService.getFromStorage(CURRENCY_CODE_KEY, defaultCode.toLowerCase());
 }
 
-function saveActiveCurrencySymbol(symbol: string) {
-  localStorageService.saveToStorage(ACTIVE_CURRENCY_KEY, symbol);
+function saveActiveCurrencyCode(code: string) {
+  console.log(code);
+  localStorageService.saveToStorage(CURRENCY_CODE_KEY, code.toLowerCase());
 }
 
 function getFiatFlag(defaultFlag: boolean): boolean {
@@ -53,7 +54,7 @@ function saveFiatFlag(flag: boolean) {
   localStorageService.saveToStorage(FIAT_FLAG_KEY, flag);
 }
 
-function getFiatProvider(defaultFiatProvider: string): string {
+function getFiatProvider<T extends any>(defaultFiatProvider: T): T {
   return localStorageService.getFromStorage(FIAT_PROVIDER, defaultFiatProvider);
 }
 
@@ -61,10 +62,10 @@ function saveFiatProvider(provider: string) {
   localStorageService.saveToStorage(FIAT_PROVIDER, provider);
 }
 
-function getAssetsPrices<T extends any>(defaultPrices: T[]): T[] {
+function getAssetsPrices<T extends any>(defaultPrices: T): T {
   return localStorageService.getFromStorage(ASSETS_PRICES, defaultPrices);
 }
 
-function saveAssetsPrices<T extends any>(prices: T[]) {
+function saveAssetsPrices<T extends any>(prices: T) {
   localStorageService.saveToStorage(ASSETS_PRICES, prices);
 }
