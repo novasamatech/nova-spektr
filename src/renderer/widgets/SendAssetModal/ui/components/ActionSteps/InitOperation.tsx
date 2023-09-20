@@ -23,7 +23,7 @@ type Props = {
   nativeToken: Asset;
   explorers?: Explorer[];
   addressPrefix: number;
-  feeTx: Transaction;
+  tx?: Transaction;
   onTxChange: (transactions: Transaction[]) => void;
   onAccountChange: (account: Account | MultisigAccount) => void;
   onSignatoryChange: (account: Account) => void;
@@ -38,12 +38,12 @@ export const InitOperation = ({
   nativeToken,
   addressPrefix,
   onResult,
-  feeTx,
+  tx,
   onTxChange,
   onAccountChange,
   onSignatoryChange,
 }: Props) => {
-  const { buildTransaction } = useTransaction();
+  const { buildTransaction, getTransactionHash } = useTransaction();
   const { getActiveAccounts } = useAccount();
   const { getLiveAssetBalances } = useBalance();
   const { connections } = useNetworkContext();
@@ -116,6 +116,26 @@ export const InitOperation = ({
   }, [activeAccount]);
 
   useEffect(() => {
+    onTxChange([buildTransferTx()]);
+  }, [
+    activeAccount,
+    formData?.amount,
+    formData?.destination,
+    xcmFee,
+    xcmAsset,
+    xcmBeneficiary,
+    xcmDest,
+    formData?.destinationChain,
+    isXcmTransfer,
+  ]);
+
+  const getCallhash = () => {
+    if (!tx) return;
+
+    return getTransactionHash(tx, api).callHash;
+  };
+
+  const buildTransferTx = (): Transaction => {
     const TransferType: Record<AssetType, TransactionType> = {
       [AssetType.ORML]: TransactionType.ORML_TRANSFER,
       [AssetType.STATEMINE]: TransactionType.ASSET_TRANSFER,
@@ -131,9 +151,7 @@ export const InitOperation = ({
     };
 
     if (isXcmTransfer) {
-      const destinationChain = formData?.destinationChain?.value
-        ? connections[formData?.destinationChain?.value as ChainId]
-        : undefined;
+      const destinationChain = formData?.destinationChain?.value;
       transactionType = getXcmTransferType(xcmTransfer.type);
 
       args = {
@@ -149,25 +167,13 @@ export const InitOperation = ({
       transactionType = isNativeTransfer ? TransactionType.TRANSFER : TransferType[asset.type!];
     }
 
-    const transferTx = buildTransaction(
+    return buildTransaction(
       transactionType,
       toAddress(activeAccount?.accountId || TEST_ACCOUNT_ID, { prefix: addressPrefix }),
       chainId,
       args,
     );
-
-    onTxChange([transferTx]);
-  }, [
-    activeAccount,
-    formData?.amount,
-    formData?.destination,
-    xcmFee,
-    xcmAsset,
-    xcmBeneficiary,
-    xcmDest,
-    formData?.destinationChain,
-    isXcmTransfer,
-  ]);
+  };
 
   const getXcmTransferType = (type: XcmTransferType): TransactionType => {
     if (type === 'xtokens') {
@@ -222,6 +228,7 @@ export const InitOperation = ({
         nativeToken={nativeToken}
         addressPrefix={addressPrefix}
         fee={fee}
+        getCallHash={getCallhash}
         isXcmTransfer={isXcmTransfer}
         isXcmValid={isXcmValid}
         xcmFee={xcmFee}
@@ -247,7 +254,7 @@ export const InitOperation = ({
               asset={nativeToken}
               account={activeAccount}
               totalAccounts={1}
-              feeTx={feeTx}
+              feeTx={tx}
               xcmConfig={config || undefined}
               xcmAsset={asset}
               onXcmFeeChange={sendAssetModel.events.xcmFeeChanged}
@@ -258,7 +265,7 @@ export const InitOperation = ({
           )
         }
         onTxChange={setFormData}
-        onSubmit={(tx) => onResult(tx, formData?.description)}
+        onSubmit={() => onResult(buildTransferTx(), formData?.description)}
       />
     </div>
   );

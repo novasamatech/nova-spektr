@@ -159,7 +159,7 @@ export const SendAssetModal = ({ chain, asset }: Props) => {
               nativeToken={assets[0]}
               network={chain.name}
               api={api}
-              feeTx={transaction}
+              tx={transaction}
               onTxChange={setTxs}
               onResult={onInitResult}
               onAccountChange={setAccount}
