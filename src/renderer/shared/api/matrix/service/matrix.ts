@@ -316,7 +316,6 @@ export class Matrix implements ISecureMessenger {
 
       await this.initStateEvents(roomId, params);
       await this.inviteSignatories(roomId, matrixIds);
-      await this.verifyDevices(matrixIds);
 
       return roomId;
     } catch (error) {
@@ -672,28 +671,6 @@ export class Matrix implements ISecureMessenger {
       await Promise.all(inviteRequests);
     } catch (error) {
       throw this.createError(MatrixError.INVITE_USERS, error);
-    }
-  }
-
-  /**
-   * Verify Matrix devices
-   * @param matrixIds array of Matrix ids
-   * @return {Promise}
-   */
-  private async verifyDevices(matrixIds: string[]): Promise<void> {
-    try {
-      const memberKeys = await this.matrixClient.downloadKeys(matrixIds);
-
-      const verifyRequests = matrixIds.map((matrixId) => {
-        // @ts-ignore
-        const keys = Object.keys(memberKeys[matrixId]);
-
-        return keys.map((deviceId) => this.matrixClient.setDeviceVerified(matrixId, deviceId));
-      });
-
-      await Promise.all(verifyRequests.flat());
-    } catch (error) {
-      throw this.createError(MatrixError.MEMBERS_VERIFICATION, error);
     }
   }
 

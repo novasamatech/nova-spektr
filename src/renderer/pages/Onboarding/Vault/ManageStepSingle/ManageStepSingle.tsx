@@ -6,7 +6,7 @@ import { u8aToHex } from '@polkadot/util';
 import { useI18n } from '@renderer/app/providers';
 import { Chain } from '@renderer/entities/chain';
 import { ErrorType, SigningType } from '@renderer/domain/shared-kernel';
-import { useChains } from '@renderer/entities/network';
+import { chainsService } from '@renderer/entities/network';
 import { Button, Input, InputHint, HeaderTitleText, SmallTitleText } from '@renderer/shared/ui';
 import { SeedInfo } from '@renderer/components/common/QrCode/common/types';
 import { useAccount, createAccount, AccountsList } from '@renderer/entities/account';
@@ -26,8 +26,6 @@ const ManageStepSingle = ({ seedInfo, onBack, onComplete }: Props) => {
   const accountId = u8aToHex(seedInfo[0].multiSigner?.public);
   const { addAccount, setActiveAccount } = useAccount();
 
-  const { getChainsData, sortChains } = useChains();
-
   const [chains, setChains] = useState<Chain[]>([]);
 
   const {
@@ -41,7 +39,9 @@ const ManageStepSingle = ({ seedInfo, onBack, onComplete }: Props) => {
   });
 
   useEffect(() => {
-    getChainsData().then((chains) => setChains(sortChains(chains)));
+    const chains = chainsService.getChainsData();
+
+    setChains(chainsService.sortChains(chains));
   }, []);
 
   const submitHandler: SubmitHandler<WalletForm> = async ({ walletName }) => {

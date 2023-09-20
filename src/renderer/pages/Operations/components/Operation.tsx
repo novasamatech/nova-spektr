@@ -1,16 +1,17 @@
 import { format } from 'date-fns';
 
 import { useI18n } from '@renderer/app/providers';
-import TransactionTitle from './TransactionTitle/TransactionTitle';
+import { TransactionTitle } from './TransactionTitle/TransactionTitle';
 import { MultisigAccount } from '@renderer/entities/account';
 import { FootnoteText, Accordion } from '@renderer/shared/ui';
-import TransactionAmount from './TransactionAmount';
+import { TransactionAmount } from './TransactionAmount';
 import OperationStatus from './OperationStatus';
 import OperationFullInfo from './OperationFullInfo';
-import { getTransactionAmount } from '@renderer/pages/Operations/common/utils';
 import { MultisigTransactionDS } from '@renderer/shared/api/storage';
 import { useMultisigEvent } from '@renderer/entities/multisig';
-import { ChainTitle } from '@renderer/entities/chain';
+import { ChainTitle, XcmChains } from '@renderer/entities/chain';
+import { getTransactionAmount } from '../common/utils';
+import { isXcmTransaction } from '@renderer/entities/transaction';
 
 type Props = {
   tx: MultisigTransactionDS;
@@ -19,28 +20,40 @@ type Props = {
 
 const Operation = ({ tx, account }: Props) => {
   const { dateLocale } = useI18n();
-
   const { getLiveEventsByKeys } = useMultisigEvent({});
-  const events = getLiveEventsByKeys([tx]);
 
+  const events = getLiveEventsByKeys([tx]);
   const approvals = events?.filter((e) => e.status === 'SIGNED') || [];
   const initEvent = approvals.find((e) => e.accountId === tx.depositor);
+  const date = new Date(tx.dateCreated || initEvent?.dateCreated || Date.now());
 
   return (
     <Accordion className="bg-block-background-default transition-shadow rounded hover:shadow-card-shadow focus-visible:shadow-card-shadow">
-      <Accordion.Button className="px-2">
-        <div className="h-[52px] grid grid-cols-operation-card items-center justify-items-start">
-          <FootnoteText className="text-text-tertiary pl-6">
-            {format(new Date(tx.dateCreated || initEvent?.dateCreated || Date.now()), 'p', { locale: dateLocale })}
-          </FootnoteText>
-          <TransactionTitle tx={tx.transaction} description={tx.description} className="px-2" />
-          {tx.transaction && getTransactionAmount(tx.transaction) ? (
-            <TransactionAmount tx={tx.transaction} wrapperClassName="px-2" />
-          ) : (
-            <span />
+      <Accordion.Button buttonClass="px-2" iconWrapper="px-1.5">
+        <div className="h-[52px] flex gap-x-4 items-center w-full overflow-hidden">
+          <div className="w-[58px] pr-1">
+            <FootnoteText className="text-text-tertiary" align="right">
+              {format(date, 'p', { locale: dateLocale })}
+            </FootnoteText>
+          </div>
+
+          <TransactionTitle className="flex-1 overflow-hidden" tx={tx.transaction} description={tx.description} />
+
+          {tx.transaction && getTransactionAmount(tx.transaction) && (
+            <TransactionAmount wrapperClassName="w-[160px]" tx={tx.transaction} />
           )}
-          <ChainTitle chainId={tx.chainId} className="px-2" />
-          <div className="flex justify-end px-2 w-full">
+
+          {isXcmTransaction(tx.transaction) ? (
+            <XcmChains
+              chainIdFrom={tx.chainId}
+              chainIdTo={tx.transaction?.args.destinationChain}
+              className="w-[114px]"
+            />
+          ) : (
+            <ChainTitle chainId={tx.chainId} className="w-[114px]" />
+          )}
+
+          <div className="flex justify-end w-[120px]">
             <OperationStatus status={tx.status} signed={approvals.length} threshold={account?.threshold || 0} />
           </div>
         </div>

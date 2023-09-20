@@ -18,8 +18,16 @@ import { AccountId, HexString, Threshold } from '@renderer/domain/shared-kernel'
 import { Transaction, TransactionType } from '@renderer/entities/transaction/model/transaction';
 import { createTxMetadata, toAccountId } from '@renderer/shared/lib/utils';
 import { ITransactionService, HashData, ExtrinsicResultParams } from './common/types';
-import { decodeDispatchError, getMaxWeight, isControllerMissing, isOldMultisigPallet } from './common/utils';
+import {
+  decodeDispatchError,
+  getMaxWeight,
+  hasDestWeight,
+  isControllerMissing,
+  isOldMultisigPallet,
+} from './common/utils';
 import { useCallDataDecoder } from './callDataDecoder';
+import * as xcmMethods from './common/xcmMethods';
+import { DEFAULT_FEE_ASSET_ITEM } from './common/constants';
 
 type BalancesTransferArgs = Parameters<typeof methods.balances.transfer>[0];
 type BondWithoutContollerArgs = Omit<Parameters<typeof methods.staking.bond>[0], 'controller'>;
@@ -167,6 +175,74 @@ export const useTransaction = (): ITransactionService => {
         options,
       );
     },
+    [TransactionType.XCM_LIMITED_TRANSFER]: (transaction, info, options, api) => {
+      return xcmMethods.limitedReserveTransferAssets(
+        'xcmPallet',
+        {
+          dest: transaction.args.xcmDest,
+          beneficiary: transaction.args.xcmBeneficiary,
+          assets: transaction.args.xcmAsset,
+          feeAssetItem: DEFAULT_FEE_ASSET_ITEM,
+          weightLimit: { Unlimited: true },
+        },
+        info,
+        options,
+      );
+    },
+    [TransactionType.XCM_TELEPORT]: (transaction, info, options, api) => {
+      return xcmMethods.limitedTeleportAssets(
+        'xcmPallet',
+        {
+          dest: transaction.args.xcmDest,
+          beneficiary: transaction.args.xcmBeneficiary,
+          assets: transaction.args.xcmAsset,
+          feeAssetItem: DEFAULT_FEE_ASSET_ITEM,
+          weightLimit: { Unlimited: true },
+        },
+        info,
+        options,
+      );
+    },
+    [TransactionType.POLKADOT_XCM_LIMITED_TRANSFER]: (transaction, info, options, api) => {
+      return xcmMethods.limitedReserveTransferAssets(
+        'polkadotXcm',
+        {
+          dest: transaction.args.xcmDest,
+          beneficiary: transaction.args.xcmBeneficiary,
+          assets: transaction.args.xcmAsset,
+          feeAssetItem: DEFAULT_FEE_ASSET_ITEM,
+          weightLimit: { Unlimited: true },
+        },
+        info,
+        options,
+      );
+    },
+    [TransactionType.POLKADOT_XCM_TELEPORT]: (transaction, info, options, api) => {
+      return xcmMethods.limitedTeleportAssets(
+        'polkadotXcm',
+        {
+          dest: transaction.args.xcmDest,
+          beneficiary: transaction.args.xcmBeneficiary,
+          assets: transaction.args.xcmAsset,
+          feeAssetItem: DEFAULT_FEE_ASSET_ITEM,
+          weightLimit: { Unlimited: true },
+        },
+        info,
+        options,
+      );
+    },
+    [TransactionType.XTOKENS_TRANSFER_MULTIASSET]: (transaction, info, options, api) => {
+      return xcmMethods.transferMultiAsset(
+        {
+          dest: transaction.args.xcmDest,
+          asset: transaction.args.xcmAsset,
+          destWeightLimit: { Unlimited: true },
+          destWeight: transaction.args.xcmWeight,
+        },
+        info,
+        options,
+      );
+    },
     [TransactionType.BOND]: (transaction, info, options, api) => {
       return isControllerMissing(api)
         ? bondWithoutController(
@@ -282,6 +358,35 @@ export const useTransaction = (): ITransactionService => {
     ) => api.tx.multisig.approveAsMulti(threshold, otherSignatories, maybeTimepoint, callHash, maxWeight),
     [TransactionType.MULTISIG_CANCEL_AS_MULTI]: ({ threshold, otherSignatories, maybeTimepoint, callHash }, api) =>
       api.tx.multisig.cancelAsMulti(threshold, otherSignatories, maybeTimepoint, callHash),
+    [TransactionType.XCM_LIMITED_TRANSFER]: ({ xcmDest, xcmBeneficiary, xcmAsset }, api) => {
+      return api.tx.xcmPallet.limitedReserveTransferAssets(xcmDest, xcmBeneficiary, xcmAsset, DEFAULT_FEE_ASSET_ITEM, {
+        Unlimited: true,
+      });
+    },
+    [TransactionType.XCM_TELEPORT]: ({ xcmDest, xcmBeneficiary, xcmAsset }, api) => {
+      return api.tx.xcmPallet.limitedTeleportAssets(xcmDest, xcmBeneficiary, xcmAsset, DEFAULT_FEE_ASSET_ITEM, {
+        Unlimited: true,
+      });
+    },
+    [TransactionType.POLKADOT_XCM_LIMITED_TRANSFER]: ({ xcmDest, xcmBeneficiary, xcmAsset }, api) => {
+      return api.tx.polkadotXcm.limitedReserveTransferAssets(
+        xcmDest,
+        xcmBeneficiary,
+        xcmAsset,
+        DEFAULT_FEE_ASSET_ITEM,
+        { Unlimited: true },
+      );
+    },
+    [TransactionType.POLKADOT_XCM_TELEPORT]: ({ xcmDest, xcmBeneficiary, xcmAsset }, api) => {
+      return api.tx.polkadotXcm.limitedTeleportAssets(xcmDest, xcmBeneficiary, xcmAsset, DEFAULT_FEE_ASSET_ITEM, {
+        Unlimited: true,
+      });
+    },
+    [TransactionType.XTOKENS_TRANSFER_MULTIASSET]: ({ xcmDest, xcmAsset, xcmWeight }, api) => {
+      const weight = hasDestWeight(api) ? xcmWeight : { Unlimited: true };
+
+      return api.tx.xTokens.transferMultiasset(xcmAsset, xcmDest, weight);
+    },
     // controller arg removed from bond but changes not released yet
     // https://github.com/paritytech/substrate/pull/14039
     // @ts-ignore
@@ -354,6 +459,13 @@ export const useTransaction = (): ITransactionService => {
     const paymentInfo = await extrinsic.paymentInfo(extrinsic.signer);
 
     return paymentInfo.weight;
+  };
+
+  const getTxWeight = async (transaction: Transaction, api: ApiPromise): Promise<Weight> => {
+    const extrinsic = getExtrinsic[transaction.type](transaction.args, api);
+    const { weight } = await extrinsic.paymentInfo(transaction.address);
+
+    return weight;
   };
 
   const getTransactionDeposit = (threshold: Threshold, api: ApiPromise): string => {
@@ -451,6 +563,7 @@ export const useTransaction = (): ITransactionService => {
     submitAndWatchExtrinsic,
     getTransactionFee,
     getExtrinsicWeight,
+    getTxWeight,
     getTransactionDeposit,
     getTransactionHash,
     decodeCallData,

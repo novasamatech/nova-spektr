@@ -10,12 +10,12 @@ import { useToggle } from '@renderer/shared/lib/hooks';
 import { Account, MultisigAccount, useAccount } from '@renderer/entities/account';
 import { ExtendedChain } from '@renderer/entities/network';
 import { Address, HexString, SigningType, Timepoint } from '@renderer/domain/shared-kernel';
-import { TEST_ADDRESS, toAddress, transferableAmount } from '@renderer/shared/lib/utils';
-import { getTransactionTitle } from '../../common/utils';
-import { Submit } from '../ActionSteps/Submit';
+import { TEST_ADDRESS, toAddress, transferableAmount, getAssetById } from '@renderer/shared/lib/utils';
+import { getModalTransactionTitle } from '../../common/utils';
 import { useBalance } from '@renderer/entities/asset';
-import Confirmation from '@renderer/pages/Operations/components/ActionSteps/Confirmation';
-import SignatorySelectModal from '@renderer/pages/Operations/components/modals/SignatorySelectModal';
+import { Submit } from '../ActionSteps/Submit';
+import { Confirmation } from '../ActionSteps/Confirmation';
+import { SignatorySelectModal } from './SignatorySelectModal';
 import { useMultisigEvent } from '@renderer/entities/multisig';
 import { Signing } from '@renderer/features/operation';
 import { OperationTitle } from '@renderer/components/common';
@@ -26,6 +26,8 @@ import {
   useCallDataDecoder,
   useTransaction,
   validateBalance,
+  isXcmTransaction,
+  MAX_WEIGHT,
 } from '@renderer/entities/transaction';
 
 type Props = {
@@ -46,7 +48,7 @@ const ApproveTx = ({ tx, account, connection }: Props) => {
   const { t } = useI18n();
   const { getBalance } = useBalance();
   const { getLiveAccounts } = useAccount();
-  const { getTransactionFee, getExtrinsicWeight } = useTransaction();
+  const { getTransactionFee, getExtrinsicWeight, getTxWeight } = useTransaction();
   const { getTxFromCallData } = useCallDataDecoder();
   const { getLiveTxEvents } = useMultisigEvent({});
   const events = getLiveTxEvents(tx.accountId, tx.chainId, tx.callHash, tx.blockCreated, tx.indexCreated);
@@ -66,18 +68,19 @@ const ApproveTx = ({ tx, account, connection }: Props) => {
   const [signature, setSignature] = useState<HexString>();
 
   const accounts = getLiveAccounts();
-  const transactionTitle = getTransactionTitle(tx.transaction);
+  const transactionTitle = getModalTransactionTitle(isXcmTransaction(tx.transaction), tx.transaction);
+
+  const nativeAsset = connection.assets[0];
+  const asset = getAssetById(tx.transaction?.args.assetId, connection.assets);
 
   const unsignedAccounts = accounts.filter((a) => {
     const isSignatory = account.signatories.find((s) => s.accountId === a.accountId);
-    const notSigned = !events.find((e) => e.accountId === a.accountId);
+    const isSigned = events.some((e) => e.accountId === a.accountId);
     const isCurrentChain = !a.chainId || a.chainId === tx.chainId;
-    const notWatchOnly = account.signingType !== SigningType.WATCH_ONLY;
+    const isWatchOnly = a.signingType === SigningType.WATCH_ONLY;
 
-    return isSignatory && notSigned && isCurrentChain && notWatchOnly;
+    return isSignatory && !isSigned && isCurrentChain && !isWatchOnly;
   });
-
-  const nativeAsset = connection.assets[0];
 
   useEffect(() => {
     setFeeTx(getMultisigTx(TEST_ADDRESS));
@@ -87,12 +90,27 @@ const ApproveTx = ({ tx, account, connection }: Props) => {
     setApproveTx(getMultisigTx(signAccount?.accountId));
   }, [tx, signAccount?.accountId, txWeight]);
 
+  const initWeight = async () => {
+    let weight;
+    try {
+      if (!tx.callData || !connection.api) return;
+
+      const transaction = getTxFromCallData(connection.api, tx.callData);
+
+      weight = await getExtrinsicWeight(transaction);
+    } catch (e) {
+      if (tx.transaction?.args && connection.api) {
+        weight = await getTxWeight(tx.transaction as Transaction, connection.api);
+      } else {
+        weight = connection.api?.createType('Weight', MAX_WEIGHT);
+      }
+    }
+
+    setTxWeight(weight);
+  };
+
   useEffect(() => {
-    if (!tx.callData || !connection.api) return;
-
-    const transaction = getTxFromCallData(connection.api, tx.callData);
-
-    getExtrinsicWeight(transaction).then(setTxWeight);
+    initWeight();
   }, [tx.transaction, connection.api]);
 
   const goBack = () => {
@@ -153,8 +171,9 @@ const ApproveTx = ({ tx, account, connection }: Props) => {
     return new BN(fee).lte(new BN(transferableAmount(balance)));
   };
 
-  const handleAccountSelect = async (account: Account) => {
+  const selectSignerAccount = async (account: Account) => {
     setSignAccount(account);
+    toggleSelectAccountModal();
 
     const isValid = await validateBalanceForFee(account);
 
@@ -163,11 +182,9 @@ const ApproveTx = ({ tx, account, connection }: Props) => {
     } else {
       toggleFeeModal();
     }
-
-    toggleSelectAccountModal();
   };
 
-  const selectAccount = () => {
+  const trySetSignerAccount = () => {
     if (unsignedAccounts.length === 1) {
       setSignAccount(unsignedAccounts[0]);
       setActiveStep(Step.SIGNING);
@@ -181,7 +198,7 @@ const ApproveTx = ({ tx, account, connection }: Props) => {
       api: connection.api,
       chainId: tx.chainId,
       transaction: approveTx,
-      assetId: nativeAsset?.assetId.toString(),
+      assetId: nativeAsset.assetId.toString(),
       getBalance,
       getTransactionFee,
     });
@@ -198,14 +215,16 @@ const ApproveTx = ({ tx, account, connection }: Props) => {
 
   return (
     <>
-      <Button size="sm" className="ml-auto" onClick={() => setIsModalOpen(true)}>
-        {t('operation.approveButton')}
-      </Button>
+      {txWeight && (
+        <Button size="sm" className="ml-auto" onClick={() => setIsModalOpen(true)}>
+          {t('operation.approveButton')}
+        </Button>
+      )}
 
       <BaseModal
         closeButton
         isOpen={activeStep !== Step.SUBMIT && isModalOpen}
-        title={<OperationTitle title={`${t(transactionTitle)} ${t('on')}`} chainId={tx.chainId} />}
+        title={<OperationTitle title={t(transactionTitle, { asset: asset?.symbol })} chainId={tx.chainId} />}
         contentClass={activeStep === Step.SIGNING ? '' : undefined}
         headerClass="py-3 px-5 max-w-[440px]"
         panelClass="w-[440px]"
@@ -214,7 +233,11 @@ const ApproveTx = ({ tx, account, connection }: Props) => {
         {activeStep === Step.CONFIRMATION && (
           <>
             <Confirmation tx={tx} account={account} connection={connection} feeTx={feeTx} />
-            <Button className="mt-7 ml-auto" prefixElement={<Icon name="vault" size={14} />} onClick={selectAccount}>
+            <Button
+              className="mt-7 ml-auto"
+              prefixElement={<Icon name="vault" size={14} />}
+              onClick={trySetSignerAccount}
+            >
               {t('operation.signButton')}
             </Button>
           </>
@@ -238,9 +261,9 @@ const ApproveTx = ({ tx, account, connection }: Props) => {
           isOpen={isSelectAccountModalOpen}
           accounts={unsignedAccounts}
           chain={connection}
-          asset={nativeAsset}
+          nativeAsset={nativeAsset}
           onClose={toggleSelectAccountModal}
-          onSelect={handleAccountSelect}
+          onSelect={selectSignerAccount}
         />
 
         <OperationResult
