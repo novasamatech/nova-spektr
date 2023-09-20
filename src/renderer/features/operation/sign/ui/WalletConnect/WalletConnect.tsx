@@ -8,6 +8,7 @@ import { HexString } from '@renderer/domain/shared-kernel';
 import { useI18n, useWalletConnectClient } from '@renderer/app/providers';
 import { DEFAULT_POLKADOT_METHODS } from '@renderer/app/providers/context/WalletConnectContext/const';
 import { BodyText, Button, HeadlineText } from '@renderer/shared/ui';
+import { useAccount } from '@renderer/entities/account';
 
 const ValidationErrorLabels = {
   [ValidationErrors.INVALID_SIGNATURE]: 'transfer.walletConnect.invalidSignature',
@@ -16,22 +17,47 @@ const ValidationErrorLabels = {
 export const WalletConnect = ({ api, validateBalance, onGoBack, accounts, transactions, onResult }: SigningProps) => {
   const { t } = useI18n();
   const { verifySignature, createPayload } = useTransaction();
-  const { client, connect, session } = useWalletConnectClient();
+  const { client, connect, disconnect, session } = useWalletConnectClient();
+  const { updateAccount } = useAccount();
 
   const [txPayload, setTxPayload] = useState<Uint8Array>();
   const [unsignedTx, setUnsignedTx] = useState<UnsignedTransaction>();
+  const [isNeedUpdate, setIsNeedUpdate] = useState<boolean>(false);
 
   const transaction = transactions[0];
   const account = accounts[0];
 
   useEffect(() => {
     if (txPayload) return;
-    const isCurrentSession = session && account && session.topic === account.signingExtras?.topic;
 
-    Promise.resolve(isCurrentSession && connect({ topic: account.signingExtras?.pairingTopic })).then(() => {
+    (async () => {
+      const isCurrentSession = session && account && session.topic === account.signingExtras?.sessionTopic;
+
+      if (!isCurrentSession) {
+        if (session) {
+          await disconnect();
+        }
+        await connect({ topic: account.signingExtras?.pairingTopic });
+
+        setIsNeedUpdate(true);
+      }
+
       setupTransaction().catch(() => console.warn('WalletConnect | setupTransaction() failed'));
-    });
+    })();
   }, [transaction, api]);
+
+  useEffect(() => {
+    if (isNeedUpdate) {
+      setIsNeedUpdate(false);
+      updateAccount({
+        ...account,
+        signingExtras: {
+          ...account.signingExtras,
+          sessionTopic: session?.topic,
+        },
+      });
+    }
+  }, [session]);
 
   useEffect(() => {
     unsignedTx && signTransaction();
