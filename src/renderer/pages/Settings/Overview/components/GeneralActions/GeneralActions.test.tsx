@@ -15,7 +15,7 @@ describe('pages/Settings/Overview/GeneralActions', () => {
     render(<GeneralActions />, { wrapper: MemoryRouter });
 
     const label = screen.getByText('settings.overview.generalLabel');
-    const link = screen.getByRole('link');
+    const link = screen.getAllByRole('link')[0];
     expect(label).toBeInTheDocument();
     expect(link).toBeInTheDocument();
     expect(link).toHaveAttribute('href', Paths.NETWORK);
