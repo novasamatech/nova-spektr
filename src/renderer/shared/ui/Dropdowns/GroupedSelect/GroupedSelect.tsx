@@ -104,7 +104,9 @@ export const GroupedSelect = <T extends any>({
                       key={id}
                       value={{ id, value }}
                       as="dd"
-                      className={({ active, selected }) => cnTw(OptionStyle, OptionStyleTheme[theme](active, selected))}
+                      className={({ active, selected }) =>
+                        cnTw(OptionStyle, OptionStyleTheme[theme](active, selectedId === id))
+                      }
                     >
                       {['string', 'number'].includes(typeof element) ? (
                         <FootnoteText className="text-text-secondary">{element}</FootnoteText>
