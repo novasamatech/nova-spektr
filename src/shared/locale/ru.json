@@ -303,6 +303,7 @@
     "approveButton": "Approve",
     "cancelTitle": "Отменить",
     "continueButton": "Продолжить",
+    "defaultWalletName": "WalletConnect app",
     "details": {
       "amount": "количество",
       "callData": "Call Data",
@@ -351,7 +352,8 @@
       "signing": "Подписание"
     },
     "successMessage": "Operation Approved",
-    "successRejectMessage": "Операция Отменена"
+    "successRejectMessage": "Операция Отменена",
+    "walletConnectTitle": "Approve transaction in { walletName }"
   },
   "operations": {
     "callData": {

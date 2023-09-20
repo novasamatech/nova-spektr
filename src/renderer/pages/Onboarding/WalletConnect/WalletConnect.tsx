@@ -6,6 +6,7 @@ import { BaseModal, HeaderTitleText, SmallTitleText } from '@renderer/shared/ui'
 import ManageStep from './ManageStep/ManageStep';
 import onboarding_tutorial from '@video/onboarding_tutorial.mp4';
 import onboarding_tutorial_webm from '@video/onboarding_tutorial.webm';
+import { usePrevious } from '@renderer/shared/lib/hooks';
 
 type Props = {
   isOpen: boolean;
@@ -21,14 +22,27 @@ const enum Step {
 
 const WalletConnect = ({ isOpen, onClose, onComplete }: Props) => {
   const { t } = useI18n();
-  const { connect, uri, session, disconnect } = useWalletConnectClient();
+  const { client, connect, uri, session, pairings, disconnect } = useWalletConnectClient();
+
+  const previousPairings = usePrevious(pairings);
 
   const [qrCode, setQrCode] = useState<string>('');
   const [step, setStep] = useState<Step>(Step.SCAN);
+  const [pairingTopic, setPairingTopic] = useState<string>();
 
   useEffect(() => {
-    connect(undefined, () => setStep(Step.MANAGE));
-  }, []);
+    if (client && isOpen) {
+      connect(undefined, () => setStep(Step.MANAGE));
+    }
+  }, [client, isOpen]);
+
+  useEffect(() => {
+    const newPairing = pairings?.find((p) => !previousPairings?.find((pp) => pp.topic === p.topic));
+
+    if (newPairing) {
+      setPairingTopic(newPairing.topic);
+    }
+  }, [pairings.length]);
 
   useEffect(() => {
     if (uri) {
@@ -46,7 +60,7 @@ const WalletConnect = ({ isOpen, onClose, onComplete }: Props) => {
       panelClass="w-[944px] h-[576px]"
       onClose={onClose}
     >
-      {step === Step.SCAN && uri && (
+      {step === Step.SCAN && qrCode && (
         <>
           <div className="w-[472px] flex flex-col px-5 py-4 bg-white rounded-l-lg">
             <HeaderTitleText className="mb-10">{t('onboarding.walletConnect.title')}</HeaderTitleText>
@@ -66,10 +80,11 @@ const WalletConnect = ({ isOpen, onClose, onComplete }: Props) => {
         </>
       )}
 
-      {step === Step.MANAGE && session && (
+      {step === Step.MANAGE && session && pairingTopic && (
         <ManageStep
           accounts={session.namespaces.polkadot.accounts}
-          topic={session.topic}
+          pairingTopic={pairingTopic}
+          sessionTopic={session.topic}
           onBack={disconnect}
           onComplete={onComplete}
         />

@@ -18,12 +18,13 @@ type WalletForm = {
 
 type Props = {
   accounts: string[];
-  topic: string;
+  pairingTopic: string;
+  sessionTopic: string;
   onBack: () => void;
   onComplete: () => void;
 };
 
-const ManageStep = ({ accounts, topic, onBack, onComplete }: Props) => {
+const ManageStep = ({ accounts, pairingTopic, sessionTopic, onBack, onComplete }: Props) => {
   const { t } = useI18n();
   const { addAccount, setActiveAccount } = useAccount();
   const { addWallet } = useWallet();
@@ -92,7 +93,8 @@ const ManageStep = ({ accounts, topic, onBack, onComplete }: Props) => {
           chainId: chain?.chainId,
           walletId,
           signingExtras: {
-            topic,
+            pairingTopic,
+            sessionTopic,
           },
         }),
       );
