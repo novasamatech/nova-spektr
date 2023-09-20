@@ -48,7 +48,7 @@ const WalletMenu = ({ children, chains, wallets }: PropsWithChildren<Props>) => 
     { id: 'multi', title: t('wallets.addMultisig'), onClick: toggleMultisigModalOpen, iconName: 'multisig' },
     {
       id: 'nova-wallet',
-      title: t('wallets.adNovaWallet'),
+      title: t('wallets.addNovaWallet'),
       onClick: toggleWalletConnectModalOpen,
       iconName: 'novaWallet',
     },
