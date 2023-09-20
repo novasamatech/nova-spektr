@@ -5,12 +5,13 @@ import { Icon, BodyText, Plate, FootnoteText, HelpText } from '@renderer/shared/
 import { useI18n } from '@renderer/app/providers';
 import { Paths } from '@renderer/app/providers';
 import { cnTw } from '@renderer/shared/lib/utils';
-import { currencyModel } from '@renderer/entities/currency';
+import { currencyModel, priceProviderModel } from '@renderer/entities/price';
 
 // TODO: Language switcher temporary removed
 export const GeneralActions = () => {
   const { t } = useI18n();
-  const currency = useUnit(currencyModel.$currency);
+  const currency = useUnit(currencyModel.$activeCurrency);
+  const fiatFlag = useUnit(priceProviderModel.$fiatFlag);
 
   // const localeOptions: DropdownOption[] = locales.map((option) => ({
   //   id: option.value,
@@ -73,7 +74,7 @@ export const GeneralActions = () => {
         >
           <Icon className="row-span-2" name="network" size={36} />
           <BodyText>{t('settings.currency.plateTitle')}</BodyText>
-          {currency && <FootnoteText className="text-text-tertiary ml-auto">{currency.code}</FootnoteText>}
+          {fiatFlag && <FootnoteText className="text-text-tertiary ml-auto">{currency?.code}</FootnoteText>}
         </Link>
       </Plate>
     </div>
