@@ -86,6 +86,7 @@ export const GroupedSelect = <T extends any>({
 
           <Transition as={Fragment} leave="transition ease-in duration-100" leaveFrom="opacity-100" leaveTo="opacity-0">
             <Listbox.Options
+              as="dl"
               className={cnTw(
                 'gap-y-1',
                 OptionsContainerStyle,
@@ -93,15 +94,16 @@ export const GroupedSelect = <T extends any>({
                 position !== 'auto' && ViewClass[position],
               )}
             >
-              {optionsGroups.map(({ label, options }) => (
+              {optionsGroups.map(({ label, options }, index) => (
                 <>
-                  <HelpText className="px-2 py-1 text-text-secondary" as="h5">
+                  <HelpText className="px-2 py-1 text-text-secondary" as="dt">
                     {label}
                   </HelpText>
                   {options.map(({ id, value, element }) => (
                     <Listbox.Option
                       key={id}
                       value={{ id, value }}
+                      as="dd"
                       className={({ active, selected }) => cnTw(OptionStyle, OptionStyleTheme[theme](active, selected))}
                     >
                       {['string', 'number'].includes(typeof element) ? (
