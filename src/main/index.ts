@@ -6,6 +6,7 @@ import { MainWindow } from './main';
 import { makeAppWithSingleInstanceLock } from './factories/instance';
 import { makeAppSetup } from './factories/setup';
 
+// @ts-ignore
 const setupAutoUpdate = () => {
   if (process.env.BUILD_SOURCE !== 'github') return;
 
@@ -66,7 +67,7 @@ const setupAutoUpdate = () => {
 makeAppWithSingleInstanceLock(async () => {
   app.commandLine.appendSwitch('autoplay-policy', 'no-user-gesture-required');
 
-  setupAutoUpdate();
+  // setupAutoUpdate();
 
   await app.whenReady();
   await makeAppSetup(MainWindow);

@@ -4,7 +4,7 @@ import { Controller, SubmitHandler, useForm } from 'react-hook-form';
 import { ApiPromise } from '@polkadot/api';
 import { Trans } from 'react-i18next';
 
-import { AmountInput, Button, Icon, Identicon, Input, InputHint } from '@renderer/shared/ui';
+import { AmountInput, Button, Icon, Identicon, Input, InputHint, Select } from '@renderer/shared/ui';
 import { useI18n } from '@renderer/app/providers';
 import { Asset, AssetType, useBalance } from '@renderer/entities/asset';
 import { MultisigTxInitStatus, Transaction, TransactionType, useTransaction } from '@renderer/entities/transaction';
@@ -12,6 +12,7 @@ import { AccountId, Address, ChainId } from '@renderer/domain/shared-kernel';
 import { useMultisigTx } from '@renderer/entities/multisig';
 import { Account, isMultisig, MultisigAccount } from '@renderer/entities/account';
 import {
+  SS58_DEFAULT_PREFIX,
   formatAmount,
   getAssetId,
   toAccountId,
@@ -19,6 +20,11 @@ import {
   transferableAmount,
   validateAddress,
 } from '@renderer/shared/lib/utils';
+import { Chain } from '@renderer/entities/chain';
+import { getChainOption, getPlaceholder } from '../common/utils';
+import { DropdownOption, DropdownResult } from '@renderer/shared/ui/types';
+import { XcmTransfer, XcmTransferType } from '@renderer/shared/api/xcm';
+import AccountSelectModal from '@renderer/pages/Operations/components/modals/AccountSelectModal/AccountSelectModal';
 
 const DESCRIPTION_MAX_LENGTH = 120;
 
@@ -27,24 +33,39 @@ type TransferFormData = {
   signatory: Address;
   destination: Address;
   description: string;
+  destinationChain?: DropdownResult<ChainId>;
 };
 
 type Props = {
   api: ApiPromise;
   chainId: ChainId;
+  chain: Chain;
   network: string;
   account?: Account | MultisigAccount;
+  accounts?: Account[];
   signer?: Account;
   asset: Asset;
   nativeToken: Asset;
   addressPrefix: number;
   fee: string;
   feeIsLoading: boolean;
+  xcmParams: {
+    dest?: Object;
+    beneficiary?: Object;
+    asset?: Object;
+    transfer?: XcmTransfer;
+    fee: string;
+    weight: string;
+  };
   deposit: string;
   footer: ReactNode;
   header?: ReactNode;
+  destinations: Chain[];
+
   onSubmit: (transferTx: Transaction, multisig?: { multisigTx: Transaction; description: string }) => void;
   onChangeAmount: (amount: string) => void;
+  onDestinationChainChange: (destinationChain: ChainId) => void;
+  onDestinationChange: (accountId: AccountId) => void;
   onTxChange: (tx: Transaction) => void;
 };
 
@@ -52,6 +73,8 @@ export const TransferForm = ({
   api,
   chainId,
   account,
+  accounts,
+  chain,
   signer,
   asset,
   addressPrefix,
@@ -60,9 +83,13 @@ export const TransferForm = ({
   onSubmit,
   onChangeAmount,
   onTxChange,
+  onDestinationChainChange,
+  onDestinationChange,
   feeIsLoading,
   fee,
   deposit,
+  destinations,
+  xcmParams,
 }: Props) => {
   const { t } = useI18n();
   const { getBalance } = useBalance();
@@ -77,20 +104,48 @@ export const TransferForm = ({
   const [transferTx, setTransferTx] = useState<Transaction>();
   const [multisigTx, setMultisigTx] = useState<Transaction>();
   const [multisigTxExist, setMultisigTxExist] = useState(false);
+  const [destinationOptions, setDestinationOptions] = useState<DropdownOption<ChainId | string>[]>([]);
+  const [isSelectAccountModalOpen, setSelectAccountModalOpen] = useState(false);
 
   const {
     handleSubmit,
     control,
     watch,
     trigger,
+    setValue,
     formState: { isValid, isDirty },
   } = useForm<TransferFormData>({
     mode: 'onChange',
     defaultValues: { amount: '', destination: '', signatory: '', description: '' },
   });
 
+  useEffect(() => {
+    const destinationOptions = destinations.map(getChainOption);
+
+    if (destinationOptions.length) {
+      const [first, ...rest] = destinationOptions;
+
+      setDestinationOptions([
+        getPlaceholder(t('transfer.onChainPlaceholder')),
+        first,
+        getPlaceholder(t('transfer.crossChainPlaceholder')),
+        ...rest,
+      ]);
+    }
+
+    setValue('destinationChain', destinationOptions[0]);
+  }, [destinations.length]);
+
   const amount = watch('amount');
   const destination = watch('destination');
+  const destinationChain = watch('destinationChain');
+  const destinationChainAccounts = accounts?.filter((a) => !a.rootId || a.chainId === destinationChain?.value) || [];
+
+  useEffect(() => {
+    if (destinationChain) {
+      onDestinationChainChange(destinationChain.value);
+    }
+  }, [destinationChain]);
 
   useEffect(() => {
     isDirty && trigger('amount');
@@ -99,6 +154,10 @@ export const TransferForm = ({
   useEffect(() => {
     onChangeAmount(formatAmount(amount, asset.precision));
   }, [amount]);
+
+  useEffect(() => {
+    onDestinationChange(toAccountId(destination));
+  }, [destination]);
 
   const setupBalances = (
     address: Address,
@@ -142,18 +201,47 @@ export const TransferForm = ({
     }
   }, [fee]);
 
+  const isXcmTransfer = destinationChain?.value !== chainId && !!xcmParams.transfer;
+  const isXcmValid = xcmParams.fee && xcmParams.asset && xcmParams.beneficiary && xcmParams.dest;
+
   useEffect(() => {
     if (!account || !amount || !validateAddress(destination)) return;
 
     const transferPayload = getTransferTx(account.accountId);
 
-    if (isMultisig(account) && signer) {
-      setMultisigTx(getMultisigTx(account, signer.accountId, transferPayload));
+    if (isMultisig(account) && signer && (!isXcmTransfer || isXcmValid)) {
+      const multisigTx = getMultisigTx(account, signer.accountId, transferPayload);
+
+      setMultisigTx(multisigTx);
     }
 
     setTransferTx(transferPayload);
     onTxChange(transferPayload);
-  }, [account, signer, destination, amount]);
+  }, [
+    account,
+    signer,
+    destination,
+    amount,
+    destinationChain,
+    isXcmValid,
+    isXcmTransfer,
+    xcmParams.fee,
+    xcmParams.asset,
+    xcmParams.beneficiary,
+    xcmParams.dest,
+  ]);
+
+  const getXcmTransferType = (type: XcmTransferType): TransactionType => {
+    if (type === 'xtokens') {
+      return TransactionType.XTOKENS_TRANSFER_MULTIASSET;
+    }
+
+    if (type === 'xcmpallet-teleport') {
+      return api.tx.xcmPallet ? TransactionType.XCM_TELEPORT : TransactionType.POLKADOT_XCM_TELEPORT;
+    }
+
+    return api.tx.xcmPallet ? TransactionType.XCM_LIMITED_TRANSFER : TransactionType.POLKADOT_XCM_LIMITED_TRANSFER;
+  };
 
   const getTransferTx = (accountId: AccountId): Transaction => {
     const TransferType: Record<AssetType, TransactionType> = {
@@ -161,17 +249,36 @@ export const TransferForm = ({
       [AssetType.STATEMINE]: TransactionType.ASSET_TRANSFER,
     };
 
-    const transactionType = asset.type ? TransferType[asset.type] : TransactionType.TRANSFER;
+    const isNativeTransfer = !asset.type;
+
+    let transactionType;
+    let args: any = {
+      dest: toAddress(destination, { prefix: addressPrefix }),
+      value: formatAmount(amount, asset.precision),
+      ...(!isNativeTransfer && { asset: getAssetId(asset) }),
+    };
+
+    if (isXcmTransfer && xcmParams.transfer) {
+      transactionType = getXcmTransferType(xcmParams.transfer.type);
+
+      args = {
+        ...args,
+        destinationChain: destinationChain?.value,
+        xcmFee: xcmParams.fee,
+        xcmAsset: xcmParams.asset,
+        xcmDest: xcmParams.dest,
+        xcmBeneficiary: xcmParams.beneficiary,
+        xcmWeight: xcmParams.weight,
+      };
+    } else {
+      transactionType = isNativeTransfer ? TransactionType.TRANSFER : TransferType[asset.type!];
+    }
 
     return {
       chainId,
       address: toAddress(accountId, { prefix: addressPrefix }),
       type: transactionType,
-      args: {
-        dest: toAddress(destination, { prefix: addressPrefix }),
-        value: formatAmount(amount, asset.precision),
-        ...(transactionType !== TransactionType.TRANSFER && { asset: getAssetId(asset) }),
-      },
+      args,
     };
   };
 
@@ -206,13 +313,18 @@ export const TransferForm = ({
 
   const validateBalance = (amount: string): boolean => {
     if (!accountBalance) return false;
+    const amountBN = new BN(formatAmount(amount, asset.precision));
+    const xcmFeeBN = new BN(xcmParams.fee || 0);
 
-    return new BN(formatAmount(amount, asset.precision)).lte(new BN(accountBalance));
+    return amountBN.add(xcmFeeBN).lte(new BN(accountBalance));
   };
 
   const validateBalanceForFee = (amount: string): boolean => {
     const balance = isMultisig(account) ? signerBalance : accountBalance;
     const nativeTokenBalance = isMultisig(account) ? signerNativeTokenBalance : accountNativeTokenBalance;
+
+    const amountBN = new BN(formatAmount(amount, asset.precision));
+    const xcmFeeBN = new BN(xcmParams.fee || 0);
 
     if (!balance) return false;
 
@@ -224,18 +336,20 @@ export const TransferForm = ({
       return new BN(fee).lte(new BN(balance));
     }
 
-    return new BN(fee).add(new BN(formatAmount(amount, asset.precision))).lte(new BN(balance));
+    return new BN(fee).add(amountBN).add(xcmFeeBN).lte(new BN(balance));
   };
 
   const validateBalanceForFeeAndDeposit = (): boolean => {
     if (!isMultisig(account)) return true;
     if (!signerBalance) return false;
 
+    const feeBN = new BN(fee);
+
     if (signerNativeTokenBalance) {
-      return new BN(deposit).add(new BN(fee)).lte(new BN(signerNativeTokenBalance));
+      return new BN(deposit).add(feeBN).lte(new BN(signerNativeTokenBalance));
     }
 
-    return new BN(deposit).add(new BN(fee)).lte(new BN(signerBalance));
+    return new BN(deposit).add(feeBN).lte(new BN(signerBalance));
   };
 
   const submitTransaction: SubmitHandler<TransferFormData> = async ({ description }) => {
@@ -265,10 +379,48 @@ export const TransferForm = ({
     }
   };
 
+  const handleMyselfClick = () => {
+    if (destinationChainAccounts.length > 1) {
+      setSelectAccountModalOpen(true);
+    } else if (account) {
+      handleAccountSelect(account);
+    }
+  };
+
+  const handleAccountSelect = (account: Account) => {
+    setSelectAccountModalOpen(false);
+
+    if (!account) return;
+
+    const prefix =
+      destinations.find((c) => c.chainId === destinationChain?.value)?.addressPrefix || SS58_DEFAULT_PREFIX;
+    const address = toAddress(account.accountId, { prefix });
+
+    setValue('destination', address, { shouldValidate: true });
+  };
+
   return (
     <form className="w-full" onSubmit={handleSubmit(submitTransaction)}>
       <div className="flex flex-col gap-y-4">
         {header}
+
+        {Boolean(destinations?.length) && (
+          <Controller
+            name="destinationChain"
+            control={control}
+            render={({ field: { onChange, value }, fieldState: { error } }) => (
+              <Select
+                label={t('transfer.destinationChainLabel')}
+                placeholder={t('transfer.destinationChainPlaceholder')}
+                invalid={Boolean(error)}
+                selectedId={value?.id}
+                options={destinationOptions}
+                onChange={onChange}
+              />
+            )}
+          />
+        )}
+
         <Controller
           name="destination"
           control={control}
@@ -277,13 +429,23 @@ export const TransferForm = ({
             <div className="flex flex-col gap-y-2">
               <Input
                 prefixElement={
-                  value && !error ? (
-                    <Identicon className="mr-2" size={20} address={value} background={false} />
-                  ) : (
-                    <Icon className="mr-2" size={20} name="emptyIdenticon" />
+                  <div className="flex h-auto items-center">
+                    {value && !error ? (
+                      <Identicon className="mr-2" size={20} address={value} background={false} />
+                    ) : (
+                      <Icon className="mr-2" size={20} name="emptyIdenticon" />
+                    )}
+                  </div>
+                }
+                suffixElement={
+                  isXcmTransfer &&
+                  !destination && (
+                    <Button size="sm" pallet="secondary" onClick={handleMyselfClick}>
+                      {t('transfer.myselfButton')}
+                    </Button>
                   )
                 }
-                className="w-full"
+                wrapperClass="w-full h-10.5"
                 invalid={Boolean(error)}
                 value={value}
                 label={t('transfer.recipientLabel')}
@@ -377,9 +539,23 @@ export const TransferForm = ({
         {t('transfer.multisigTransactionExist')}
       </InputHint>
 
-      <Button className="w-fit flex-0 mt-7 ml-auto" type="submit" disabled={feeIsLoading || !isValid}>
+      <Button
+        className="w-fit flex-0 mt-7 ml-auto"
+        type="submit"
+        disabled={feeIsLoading || !isValid || (isXcmTransfer && !isXcmValid)}
+      >
         {t('transfer.continueButton')}
       </Button>
+
+      {accounts && (
+        <AccountSelectModal
+          isOpen={isSelectAccountModalOpen}
+          accounts={destinationChainAccounts}
+          chain={chain}
+          onClose={() => setSelectAccountModalOpen(false)}
+          onSelect={handleAccountSelect}
+        />
+      )}
     </form>
   );
 };

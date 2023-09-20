@@ -4,6 +4,7 @@ import log from 'electron-log';
 
 import { currencyModel } from '@renderer/entities/price';
 // import { priceModel, currencyModel } from '@renderer/entities/price';
+import { kernelModel } from '@renderer/shared/core';
 import App from './App';
 
 import './i18n';
@@ -31,6 +32,8 @@ if (!container) {
 // priceModel.events.appStarted();
 currencyModel.events.appStarted();
 
+kernelModel.events.appStarted();
+
 createRoot(container).render(
   <Router>
     <App />
@@ -38,4 +41,5 @@ createRoot(container).render(
 );
 
 // NOTE: React 18 Strict mode renders twice in DEV mode
+// which leads to errors in components that use camera
 // https://reactjs.org/docs/strict-mode.html#ensuring-reusable-state
