@@ -2,6 +2,8 @@ import { createRoot } from 'react-dom/client';
 import { HashRouter as Router } from 'react-router-dom';
 import log from 'electron-log';
 
+import { currencyModel } from '@renderer/entities/price';
+// import { priceModel, currencyModel } from '@renderer/entities/price';
 import App from './App';
 
 import './i18n';
@@ -25,6 +27,9 @@ const container = document.getElementById('app');
 if (!container) {
   throw new Error('Root container is missing in index.html');
 }
+
+// priceModel.events.appStarted();
+currencyModel.events.appStarted();
 
 createRoot(container).render(
   <Router>

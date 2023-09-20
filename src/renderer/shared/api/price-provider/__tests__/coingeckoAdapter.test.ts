@@ -1,7 +1,7 @@
-import { useCoinGeckoAdapter } from './CoingeckoAdapter';
+import { coingekoService } from '../service/coingeckoService';
 
-describe('api/price/coingecko/CoinGeckoAdapter', () => {
-  test('get price from coingecko', async () => {
+describe('shared/api/price-provider/coinGeckoAdapter', () => {
+  test('get price-provider from coingecko', async () => {
     global.fetch = jest.fn(() =>
       Promise.resolve({
         json: () =>
@@ -22,15 +22,13 @@ describe('api/price/coingecko/CoinGeckoAdapter', () => {
       }),
     ) as jest.Mock;
 
-    const { getPrice } = useCoinGeckoAdapter();
-
-    const result = await getPrice(['kusama', 'polkadot'], ['usd', 'rub'], true);
+    const result = await coingekoService.getPrice(['kusama', 'polkadot'], ['usd', 'rub'], true);
 
     expect(result['kusama']['usd'].price).toBeDefined();
     expect(result['polkadot']['rub'].change).toBeDefined();
   });
 
-  test('get price from coingecko', async () => {
+  test('get history data from coingecko', async () => {
     global.fetch = jest.fn(() =>
       Promise.resolve({
         json: () =>
@@ -44,10 +42,8 @@ describe('api/price/coingecko/CoinGeckoAdapter', () => {
       }),
     ) as jest.Mock;
 
-    const { getHistoryData } = useCoinGeckoAdapter();
+    const result = await coingekoService.getHistoryData('kusama', 'usd', 1692700000, 1692701000);
 
-    const result = await getHistoryData('kusama', 'usd', 1692700000, 1692701000);
-
-    expect(result.length).toBe(3);
+    expect(result.length).toEqual(3);
   });
 });
