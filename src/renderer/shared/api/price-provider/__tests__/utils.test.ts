@@ -7,7 +7,7 @@ describe('api/price-provider/common', () => {
     expect(result).toEqual('polkadot_24h_change');
   });
 
-  test('convert price-provider from object to array', () => {
+  test('convert price from object to array', () => {
     const result = convertPriceToDBView({
       kusama: {
         usd: {
@@ -34,7 +34,7 @@ describe('api/price-provider/common', () => {
     expect(result.length).toEqual(4);
   });
 
-  test('convert price-provider from array to object', () => {
+  test('convert price from array to object', () => {
     const result = convertPriceToObjectView([
       { assetId: 'kusama', currency: 'usd', price: 19.06, change: -5.22061353514796 },
       { assetId: 'kusama', currency: 'rub', price: 1795.2, change: -5.284952983744856 },

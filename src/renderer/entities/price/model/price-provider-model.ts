@@ -94,5 +94,7 @@ sample({
 });
 
 export const events = {
-  showFiatChanged: fiatFlagChanged,
+  fiatFlagChanged,
+  priceProviderChanged,
+  assetsPricesRequested,
 };
