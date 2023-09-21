@@ -11,6 +11,7 @@ jest.mock('react-router-dom', () => ({
 }));
 
 jest.mock('@renderer/entities/account', () => ({
+  ...jest.requireActual('@renderer/entities/account'),
   useAccount: jest.fn().mockReturnValue({
     getActiveAccounts: jest.fn().mockReturnValue([]),
   }),

@@ -6,7 +6,7 @@ import { useNavigate } from 'react-router-dom';
 import { Paths, useI18n, useNetworkContext } from '@renderer/app/providers';
 import { HexString } from '@renderer/domain/shared-kernel';
 import { Transaction, useTransaction, validateBalance } from '@renderer/entities/transaction';
-import { Account, MultisigAccount } from '@renderer/entities/account';
+import { Account, isMultisig, MultisigAccount } from '@renderer/entities/account';
 import { BaseModal, Button, Loader } from '@renderer/shared/ui';
 import { Confirmation, InitOperation, Submit } from './components/ActionSteps';
 import { Signing } from '@renderer/features/operation';
@@ -33,7 +33,7 @@ export const SendAssetModal = ({ chain, asset }: Props) => {
   const navigate = useNavigate();
 
   const { getBalance } = useBalance();
-  const { getTransactionFee } = useTransaction();
+  const { getTransactionFee, setTxs, txs, setWrappers, wrapTx } = useTransaction();
   const { connections } = useNetworkContext();
   const config = useStore(sendAssetModel.$finalConfig);
   const xcmAsset = useStore(sendAssetModel.$xcmAsset);
@@ -44,13 +44,10 @@ export const SendAssetModal = ({ chain, asset }: Props) => {
   const [account, setAccount] = useState<Account | MultisigAccount>({} as Account);
   const [signatory, setSignatory] = useState<Account>();
   const [description, setDescription] = useState('');
-  const [transferTx, setTransferTx] = useState<Transaction>({} as Transaction);
-  const [multisigTx, setMultisigTx] = useState<Transaction>();
   const [unsignedTx, setUnsignedTx] = useState<UnsignedTransaction>({} as UnsignedTransaction);
   const [signature, setSignature] = useState<HexString>('0x0');
 
   const connection = connections[chain.chainId];
-  const transaction = multisigTx || transferTx;
 
   const { api, assets, addressPrefix, explorers } = connection;
 
@@ -64,12 +61,13 @@ export const SendAssetModal = ({ chain, asset }: Props) => {
     };
   }, []);
 
-  const onInitResult = (transferTx: Transaction, multisig?: { multisigTx: Transaction; description: string }) => {
-    setTransferTx(transferTx);
-    setMultisigTx(multisig?.multisigTx || undefined);
-    setDescription(multisig?.description || '');
+  const onInitResult = (transferTx: Transaction, description?: string) => {
+    setTxs([transferTx]);
+    setDescription(description || '');
     setActiveStep(Step.CONFIRMATION);
   };
+
+  const transaction = txs[0];
 
   const checkBalance = () =>
     validateBalance({
@@ -78,7 +76,7 @@ export const SendAssetModal = ({ chain, asset }: Props) => {
       chainId: chain.chainId,
       assetId: asset.assetId.toString(),
       getBalance,
-      getTransactionFee,
+      getTransactionFee: (transaction, api) => getTransactionFee(transaction, api),
     });
 
   const onConfirmResult = () => {
@@ -101,13 +99,23 @@ export const SendAssetModal = ({ chain, asset }: Props) => {
     toggleIsModalOpen();
   };
 
+  const onSignatoryChange = (signatory: Account) => {
+    setSignatory(signatory);
+    setWrappers([
+      {
+        signatoryId: signatory.accountId,
+        account: account as MultisigAccount,
+      },
+    ]);
+  };
+
   const commonProps = { explorers, addressPrefix };
 
   if (activeStep === Step.SUBMIT) {
     return api ? (
       <Submit
-        tx={transferTx}
-        multisigTx={multisigTx}
+        tx={transaction}
+        multisigTx={isMultisig(account) ? wrapTx(transaction, api, addressPrefix) : undefined}
         account={account}
         unsignedTx={unsignedTx}
         signature={signature}
@@ -151,19 +159,20 @@ export const SendAssetModal = ({ chain, asset }: Props) => {
               nativeToken={assets[0]}
               network={chain.name}
               api={api}
+              tx={transaction}
+              onTxChange={setTxs}
               onResult={onInitResult}
               onAccountChange={setAccount}
-              onSignatoryChange={setSignatory}
+              onSignatoryChange={onSignatoryChange}
               {...commonProps}
             />
           )}
           {activeStep === Step.CONFIRMATION && (
             <Confirmation
+              transaction={transaction}
               config={config || undefined}
               xcmAsset={xcmAsset || undefined}
-              transaction={transferTx}
               description={description}
-              feeTx={transferTx}
               account={account}
               signatory={signatory}
               connection={connection}
@@ -178,7 +187,7 @@ export const SendAssetModal = ({ chain, asset }: Props) => {
               addressPrefix={addressPrefix}
               accounts={[account]}
               signatory={signatory}
-              transactions={[transaction]}
+              transactions={[wrapTx(transaction, api, addressPrefix)]}
               validateBalance={checkBalance}
               onGoBack={() => setActiveStep(Step.CONFIRMATION)}
               onResult={onSignResult}

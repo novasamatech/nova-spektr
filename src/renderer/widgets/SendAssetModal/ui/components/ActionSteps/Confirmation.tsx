@@ -19,7 +19,6 @@ type Props = {
   signatory?: Account;
   description?: string;
   connection: ExtendedChain;
-  feeTx?: Transaction;
   config?: XcmConfig;
   xcmAsset?: AssetXCM;
   onResult?: () => void;
@@ -32,7 +31,6 @@ export const Confirmation = ({
   transaction,
   signatory,
   description,
-  feeTx,
   config,
   xcmAsset,
   onResult,
@@ -80,12 +78,12 @@ export const Confirmation = ({
       <hr className="border-divider my-1 w-full" />
 
       <DetailRow label={t('operation.networkFee')} className="text-text-primary">
-        {connection.api && feeTx && (
+        {connection.api && transaction && (
           <Fee
             className="text-footnote text-text-primary"
             api={connection.api}
             asset={connection.assets[0]}
-            transaction={feeTx}
+            transaction={transaction}
             onFeeChange={(fee) => setFeeLoaded(Boolean(fee))}
           />
         )}
@@ -94,7 +92,7 @@ export const Confirmation = ({
       {isXcmTransfer && config && asset && (
         <DetailRow label={t('operation.xcmFee')} className="text-text-primary">
           {config && connection.api && (
-            <XcmFee api={connection.api} transaction={feeTx} asset={asset} config={config} />
+            <XcmFee api={connection.api} transaction={transaction} asset={asset} config={config} />
           )}
         </DetailRow>
       )}

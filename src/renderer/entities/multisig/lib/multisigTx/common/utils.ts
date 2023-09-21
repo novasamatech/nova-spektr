@@ -8,9 +8,16 @@ import {
   MultisigEvent,
   MultisigTransaction,
   MultisigTxInitStatus,
+  Transaction,
 } from '@renderer/entities/transaction/model/transaction';
 import { PendingMultisigTransaction } from './types';
-import { getCreatedDate } from '@renderer/shared/lib/utils';
+import { getCreatedDate, toAccountId } from '@renderer/shared/lib/utils';
+import { ExtrinsicResultParams } from '@renderer/entities/transaction';
+
+type MultisigTxResult = {
+  transaction: MultisigTransaction;
+  event: MultisigEvent;
+};
 
 export const getPendingMultisigTxs = async (
   api: ApiPromise,
@@ -140,5 +147,46 @@ export const createTransactionPayload = (
     deposit: deposit.toString(),
     depositor: depositor.toHex(),
     accountId: account.accountId || '0x',
+  };
+};
+
+export const buildMultisigTx = (
+  tx: Transaction,
+  multisigTx: Transaction,
+  params: ExtrinsicResultParams,
+  account: MultisigAccount,
+  description?: string,
+): MultisigTxResult => {
+  const transaction: MultisigTransaction = {
+    accountId: account.accountId,
+    chainId: multisigTx.chainId,
+    signatories: account.signatories,
+    callData: multisigTx.args.callData,
+    callHash: multisigTx.args.callHash,
+    transaction: tx,
+    status: MultisigTxInitStatus.SIGNING,
+    blockCreated: params.timepoint.height,
+    indexCreated: params.timepoint.index,
+    description,
+    dateCreated: Date.now(),
+  };
+
+  const event: MultisigEvent = {
+    txAccountId: transaction.accountId,
+    txChainId: transaction.chainId,
+    txCallHash: transaction.callHash,
+    txBlock: transaction.blockCreated,
+    txIndex: transaction.indexCreated,
+    status: 'SIGNED',
+    accountId: toAccountId(multisigTx.address),
+    extrinsicHash: params.extrinsicHash,
+    eventBlock: params.timepoint.height,
+    eventIndex: params.timepoint.index,
+    dateCreated: Date.now(),
+  };
+
+  return {
+    event,
+    transaction,
   };
 };
