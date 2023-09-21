@@ -1,40 +1,22 @@
+import CURRENCY from '@renderer/assets/currency/currencies.json';
 import { localStorageService } from '@renderer/shared/api/local-storage';
-import { CurrencyConfig } from '../common/types';
-import {
-  CURRENCY_URL,
-  CURRENCY_CONFIG_KEY,
-  CURRENCY_CODE_KEY,
-  FIAT_FLAG_KEY,
-  FIAT_PROVIDER,
-  ASSETS_PRICES,
-} from '../common/constants';
+import { CurrencyItem } from '../common/types';
+import { CURRENCY_CODE_KEY, FIAT_FLAG_KEY, PRICE_PROVIDER_KEY, ASSETS_PRICES_KEY } from '../common/constants';
 
 export const fiatService = {
-  fetchCurrencyConfig,
   getCurrencyConfig,
-  saveCurrencyConfig,
   getActiveCurrencyCode,
   saveActiveCurrencyCode,
   getFiatFlag,
   saveFiatFlag,
-  getFiatProvider,
-  saveFiatProvider,
+  getPriceProvider,
+  savePriceProvider,
   getAssetsPrices,
   saveAssetsPrices,
 };
 
-async function fetchCurrencyConfig(): Promise<CurrencyConfig[]> {
-  const response = await fetch(CURRENCY_URL, { cache: 'default' });
-
-  return response.json();
-}
-
-function getCurrencyConfig(defaultConfig: CurrencyConfig[]): CurrencyConfig[] {
-  return localStorageService.getFromStorage<CurrencyConfig[]>(CURRENCY_CONFIG_KEY, defaultConfig);
-}
-
-function saveCurrencyConfig(config: CurrencyConfig[]) {
-  localStorageService.saveToStorage(CURRENCY_CONFIG_KEY, config);
+function getCurrencyConfig(): CurrencyItem[] {
+  return CURRENCY as CurrencyItem[];
 }
 
 function getActiveCurrencyCode(defaultCode: string): string {
@@ -42,7 +24,6 @@ function getActiveCurrencyCode(defaultCode: string): string {
 }
 
 function saveActiveCurrencyCode(code: string) {
-  console.log(code);
   localStorageService.saveToStorage(CURRENCY_CODE_KEY, code.toLowerCase());
 }
 
@@ -54,18 +35,18 @@ function saveFiatFlag(flag: boolean) {
   localStorageService.saveToStorage(FIAT_FLAG_KEY, flag);
 }
 
-function getFiatProvider<T extends any>(defaultFiatProvider: T): T {
-  return localStorageService.getFromStorage(FIAT_PROVIDER, defaultFiatProvider);
+function getPriceProvider<T extends any>(defaultFiatProvider: T): T {
+  return localStorageService.getFromStorage(PRICE_PROVIDER_KEY, defaultFiatProvider);
 }
 
-function saveFiatProvider(provider: string) {
-  localStorageService.saveToStorage(FIAT_PROVIDER, provider);
+function savePriceProvider(provider: string) {
+  localStorageService.saveToStorage(PRICE_PROVIDER_KEY, provider);
 }
 
 function getAssetsPrices<T extends any>(defaultPrices: T): T {
-  return localStorageService.getFromStorage(ASSETS_PRICES, defaultPrices);
+  return localStorageService.getFromStorage(ASSETS_PRICES_KEY, defaultPrices);
 }
 
 function saveAssetsPrices<T extends any>(prices: T) {
-  localStorageService.saveToStorage(ASSETS_PRICES, prices);
+  localStorageService.saveToStorage(ASSETS_PRICES_KEY, prices);
 }
