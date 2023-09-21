@@ -1,6 +1,6 @@
 import { coingekoService } from '../service/coingeckoService';
 
-describe('shared/api/price-provider/coinGeckoAdapter', () => {
+describe('shared/api/price-provider/services/coingekoService', () => {
   test('get price-provider from coingecko', async () => {
     global.fetch = jest.fn(() =>
       Promise.resolve({

@@ -4,17 +4,17 @@ import { PriceApiProvider } from '../lib/types';
 import { DEFAULT_FIAT_PROVIDER, DEFAULT_ASSETS_PRICES, DEFAULT_FIAT_FLAG } from '../lib/constants';
 import { fiatService, coingekoService, PriceObject, PriceAdapter } from '@renderer/shared/api/price-provider';
 import { kernelModel } from '@renderer/shared/core';
-import * as currencyModel from './currency-model';
 import { chainsService } from '@renderer/entities/network';
 import { nonNullable } from '@renderer/shared/lib/utils';
+import { currencyModel } from './currency-model';
 
-export const $fiatFlag = createStore<boolean | null>(null);
-export const $priceProvider = createStore<PriceApiProvider | null>(null);
-export const $assetsPrices = createStore<PriceObject | null>(null);
+const $fiatFlag = createStore<boolean | null>(null);
+const $priceProvider = createStore<PriceApiProvider | null>(null);
+const $assetsPrices = createStore<PriceObject | null>(null);
 
 const fiatFlagChanged = createEvent<boolean>();
 const priceProviderChanged = createEvent<PriceApiProvider>();
-const assetsPricesRequested = createEvent<boolean>();
+const assetsPricesRequested = createEvent<{ includeRates: boolean }>();
 
 const getFiatFlagFx = createEffect((): boolean => {
   return fiatService.getFiatFlag(DEFAULT_FIAT_FLAG);
@@ -25,11 +25,11 @@ const saveFiatFlagFx = createEffect((flag: boolean) => {
 });
 
 const getPriceProviderFx = createEffect((): PriceApiProvider => {
-  return fiatService.getFiatProvider(DEFAULT_FIAT_PROVIDER);
+  return fiatService.getPriceProvider(DEFAULT_FIAT_PROVIDER);
 });
 
 const savePriceProviderFx = createEffect((provider: string) => {
-  fiatService.saveFiatProvider(provider);
+  fiatService.savePriceProvider(provider);
 });
 
 type FetchPrices = {
@@ -72,7 +72,7 @@ forward({ from: getPriceProviderFx.doneData, to: $priceProvider });
 forward({ from: getAssetsPricesFx.doneData, to: $assetsPrices });
 
 sample({
-  clock: [$priceProvider, currencyModel.$activeCurrency],
+  clock: [assetsPricesRequested, $priceProvider, currencyModel.$activeCurrency],
   source: { provider: $priceProvider, currency: currencyModel.$activeCurrency },
   filter: ({ provider, currency }) => provider !== null && currency !== null,
   fn: ({ provider, currency }) => {
@@ -87,12 +87,13 @@ forward({ from: priceProviderChanged, to: [$priceProvider, savePriceProviderFx] 
 
 forward({ from: fetchAssetsPricesFx.doneData, to: [$assetsPrices, saveAssetsPricesFx] });
 
-sample({
-  clock: assetsPricesRequested,
-  source: $priceProvider,
-  target: [$priceProvider, saveAssetsPricesFx],
-});
-
-export const events = {
-  showFiatChanged: fiatFlagChanged,
+export const priceProviderModel = {
+  $fiatFlag,
+  $priceProvider,
+  $assetsPrices,
+  events: {
+    fiatFlagChanged,
+    priceProviderChanged,
+    assetsPricesRequested,
+  },
 };
