@@ -2,17 +2,18 @@ import { ApiPromise } from '@polkadot/api';
 import { useEffect, useState } from 'react';
 import { useStore } from 'effector-react';
 
-import { AccountId, ChainId } from '@renderer/domain/shared-kernel';
+import { ChainId } from '@renderer/domain/shared-kernel';
 import { useAccount, Account, isMultisig, MultisigAccount } from '@renderer/entities/account';
+import { getAssetId, TEST_ACCOUNT_ID, toAddress, toHexChainId } from '@renderer/shared/lib/utils';
 import { Chain, Explorer } from '@renderer/entities/chain';
-import { Asset, useBalance } from '@renderer/entities/asset';
-import { Transaction } from '@renderer/entities/transaction';
-import { TransferForm } from '../TransferForm';
+import { Asset, AssetType, useBalance } from '@renderer/entities/asset';
+import { Transaction, TransactionType, useTransaction } from '@renderer/entities/transaction';
+import { TransferForm, TransferFormData } from '../TransferForm';
 import { getAccountOption, getSignatoryOption } from '../../common/utils';
 import { OperationFooter, OperationHeader } from '@renderer/features/operation';
 import * as sendAssetModel from '../../../model/send-asset';
 import { useNetworkContext } from '@renderer/app/providers';
-import { toHexChainId } from '@renderer/shared/lib/utils';
+import { XcmTransferType } from '@renderer/shared/api/xcm';
 
 type Props = {
   api: ApiPromise;
@@ -22,9 +23,11 @@ type Props = {
   nativeToken: Asset;
   explorers?: Explorer[];
   addressPrefix: number;
+  tx?: Transaction;
+  onTxChange: (transactions: Transaction[]) => void;
   onAccountChange: (account: Account | MultisigAccount) => void;
   onSignatoryChange: (account: Account) => void;
-  onResult: (transferTx: Transaction, multisig?: { multisigTx: Transaction; description: string }) => void;
+  onResult: (transferTx: Transaction, description?: string) => void;
 };
 
 export const InitOperation = ({
@@ -35,9 +38,12 @@ export const InitOperation = ({
   nativeToken,
   addressPrefix,
   onResult,
+  tx,
+  onTxChange,
   onAccountChange,
   onSignatoryChange,
 }: Props) => {
+  const { buildTransaction, getTransactionHash } = useTransaction();
   const { getActiveAccounts } = useAccount();
   const { getLiveAssetBalances } = useBalance();
   const { connections } = useNetworkContext();
@@ -55,9 +61,8 @@ export const InitOperation = ({
 
   const [fee, setFee] = useState<string>('0');
   const [feeIsLoading, setFeeIsLoading] = useState(false);
-  const [amount, setAmount] = useState<string>('0');
   const [deposit, setDeposit] = useState<string>('0');
-  const [tx, setTx] = useState<Transaction>();
+  const [formData, setFormData] = useState<Partial<TransferFormData>>();
   const [destinations, setDestinations] = useState<Chain[]>([]);
 
   const [activeAccount, setActiveAccount] = useState<Account | MultisigAccount>();
@@ -74,6 +79,10 @@ export const InitOperation = ({
     chainId,
     nativeToken?.assetId.toString() || asset?.assetId.toString() || '',
   );
+
+  const amount = formData?.amount || '0';
+  const isXcmTransfer = formData?.destinationChain?.value !== chainId && !!xcmTransfer;
+  const isXcmValid = Boolean(xcmFee && xcmAsset && xcmBeneficiary && xcmDest);
 
   useEffect(() => {
     if (!availableDestinations?.length) return;
@@ -106,6 +115,78 @@ export const InitOperation = ({
     }
   }, [activeAccount]);
 
+  useEffect(() => {
+    onTxChange([buildTransferTx()]);
+  }, [
+    activeAccount,
+    formData?.amount,
+    formData?.destination,
+    xcmFee,
+    xcmAsset,
+    xcmBeneficiary,
+    xcmDest,
+    formData?.destinationChain,
+    isXcmTransfer,
+  ]);
+
+  const getCallhash = () => {
+    if (!tx) return;
+
+    return getTransactionHash(tx, api).callHash;
+  };
+
+  const buildTransferTx = (): Transaction => {
+    const TransferType: Record<AssetType, TransactionType> = {
+      [AssetType.ORML]: TransactionType.ORML_TRANSFER,
+      [AssetType.STATEMINE]: TransactionType.ASSET_TRANSFER,
+    };
+
+    const isNativeTransfer = !asset.type;
+
+    let transactionType;
+    let args: any = {
+      dest: toAddress(formData?.destination || '', { prefix: addressPrefix }),
+      value: amount,
+      ...(!isNativeTransfer && { asset: getAssetId(asset) }),
+    };
+
+    if (isXcmTransfer) {
+      const destinationChain = formData?.destinationChain?.value;
+      transactionType = getXcmTransferType(xcmTransfer.type);
+
+      args = {
+        ...args,
+        destinationChain,
+        xcmFee: xcmFee,
+        xcmAsset: xcmAsset || undefined,
+        xcmDest: xcmDest || undefined,
+        xcmBeneficiary: xcmBeneficiary || undefined,
+        xcmWeight: xcmWeight,
+      };
+    } else {
+      transactionType = isNativeTransfer ? TransactionType.TRANSFER : TransferType[asset.type!];
+    }
+
+    return buildTransaction(
+      transactionType,
+      toAddress(activeAccount?.accountId || TEST_ACCOUNT_ID, { prefix: addressPrefix }),
+      chainId,
+      args,
+    );
+  };
+
+  const getXcmTransferType = (type: XcmTransferType): TransactionType => {
+    if (type === 'xtokens') {
+      return TransactionType.XTOKENS_TRANSFER_MULTIASSET;
+    }
+
+    if (type === 'xcmpallet-teleport') {
+      return api.tx.xcmPallet ? TransactionType.XCM_TELEPORT : TransactionType.POLKADOT_XCM_TELEPORT;
+    }
+
+    return api.tx.xcmPallet ? TransactionType.XCM_LIMITED_TRANSFER : TransactionType.POLKADOT_XCM_LIMITED_TRANSFER;
+  };
+
   const getAccountDropdownOption = (account: Account) => {
     const balance = balances.find((b) => b.accountId === account.accountId);
     const nativeBalance = nativeBalances.find((b) => b.accountId === account.accountId);
@@ -129,19 +210,6 @@ export const InitOperation = ({
     setActiveSignatory(account);
   };
 
-  const changeDestinationChain = (chainId: ChainId) => {
-    sendAssetModel.events.destinationChainSelected(connections[chainId]);
-  };
-
-  const changeDestination = (accountId: AccountId) => {
-    sendAssetModel.events.accountIdSelected(accountId);
-  };
-
-  const changeAmount = (amount: string) => {
-    setAmount(amount);
-    sendAssetModel.events.amountChanged(amount);
-  };
-
   const reserveChainId =
     reserveAsset && config && toHexChainId(config.assetsLocation[reserveAsset.assetLocation].chainId);
   const reserveApi = reserveChainId && connections[reserveChainId]?.api;
@@ -149,8 +217,6 @@ export const InitOperation = ({
   return (
     <div className="flex flex-col gap-y-4">
       <TransferForm
-        api={api}
-        chainId={chainId}
         chain={connections[chainId]}
         network={network}
         accounts={accounts}
@@ -160,14 +226,10 @@ export const InitOperation = ({
         nativeToken={nativeToken}
         addressPrefix={addressPrefix}
         fee={fee}
-        xcmParams={{
-          fee: xcmFee,
-          weight: xcmWeight,
-          dest: xcmDest || undefined,
-          beneficiary: xcmBeneficiary || undefined,
-          transfer: xcmTransfer || undefined,
-          asset: xcmAsset || undefined,
-        }}
+        getCallHash={getCallhash}
+        isXcmTransfer={isXcmTransfer}
+        isXcmValid={isXcmValid}
+        xcmFee={xcmFee}
         deposit={deposit}
         feeIsLoading={feeIsLoading}
         destinations={destinations}
@@ -183,14 +245,14 @@ export const InitOperation = ({
         }
         footer={
           activeAccount &&
-          tx && (
+          formData && (
             <OperationFooter
               api={api}
               reserveApi={reserveApi || undefined}
               asset={nativeToken}
               account={activeAccount}
               totalAccounts={1}
-              transaction={tx}
+              feeTx={tx}
               xcmConfig={config || undefined}
               xcmAsset={asset}
               onXcmFeeChange={sendAssetModel.events.xcmFeeChanged}
@@ -200,11 +262,8 @@ export const InitOperation = ({
             />
           )
         }
-        onTxChange={setTx}
-        onSubmit={onResult}
-        onChangeAmount={changeAmount}
-        onDestinationChainChange={changeDestinationChain}
-        onDestinationChange={changeDestination}
+        onTxChange={setFormData}
+        onSubmit={() => onResult(buildTransferTx(), formData?.description)}
       />
     </div>
   );
