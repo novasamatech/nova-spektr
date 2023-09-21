@@ -36,7 +36,7 @@
     "test:matrix": "jest --config=tests/integrations/jest.config.ts --group=matrix --json --outputFile=jest-results.json",
     "test:coverage": "jest --config=jest.config.ts --coverage --passWithNoTests | tee ./coverage.txt",
     "test:coverage-new-files": "jest --config=jest.config.ts --coverage --changedSince=dev | tee ./coverage.txt",
-    "test:system": "jest --config=tests/system/jest.system.config.ts",
+    "test:system": "npx playwright test",
 
     "lint": "eslint . --ext=js,ts,tsx,json",
     "lint:fix": "pnpm lint --fix",
