@@ -186,7 +186,7 @@ export const TransferForm = ({
     const dest = toAddress(destination, { prefix: addressPrefix });
     onTxChange({
       destination: dest,
-      amount: amount,
+      amount: formatAmount(amount, asset.precision),
       signatory: signer?.accountId,
       destinationChain,
       description: isMultisig(account)

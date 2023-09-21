@@ -4,7 +4,7 @@ import { useStore } from 'effector-react';
 
 import { ChainId } from '@renderer/domain/shared-kernel';
 import { useAccount, Account, isMultisig, MultisigAccount } from '@renderer/entities/account';
-import { formatAmount, getAssetId, TEST_ACCOUNT_ID, toAddress, toHexChainId } from '@renderer/shared/lib/utils';
+import { getAssetId, TEST_ACCOUNT_ID, toAddress, toHexChainId } from '@renderer/shared/lib/utils';
 import { Chain, Explorer } from '@renderer/entities/chain';
 import { Asset, AssetType, useBalance } from '@renderer/entities/asset';
 import { Transaction, TransactionType, useTransaction } from '@renderer/entities/transaction';
@@ -146,7 +146,7 @@ export const InitOperation = ({
     let transactionType;
     let args: any = {
       dest: toAddress(formData?.destination || '', { prefix: addressPrefix }),
-      value: formatAmount(amount, asset.precision),
+      value: amount,
       ...(!isNativeTransfer && { asset: getAssetId(asset) }),
     };
 
