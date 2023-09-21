@@ -1,6 +1,7 @@
 name: Run system tests
 
-on: pull_request
+on:
+  pull_request:
 
 jobs:
   test:
