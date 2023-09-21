@@ -1,6 +1,6 @@
-# Dockerfile.tests
 FROM mcr.microsoft.com/playwright:v1.38.0-jammy
 
+RUN mkdir -p /tests
 WORKDIR /tests
 
 COPY package*.json ./
@@ -10,4 +10,4 @@ RUN pnpm install
 
 COPY . .
 
-CMD [ "pnpm", "test:system" ]
+CMD [ "npx", "playwright", "test" ]
