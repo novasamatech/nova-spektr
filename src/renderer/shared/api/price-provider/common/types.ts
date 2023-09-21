@@ -20,11 +20,11 @@ export type PriceAdapter = {
   getHistoryData: (id: AssetId, currency: Currency, from: number, to: number) => Promise<PriceRange[]>;
 };
 
-export type CurrencyConfig = {
+export type CurrencyItem = {
   id: number;
   code: string;
   name: string;
-  symbol: string;
+  symbol?: string;
   category: 'fiat' | 'crypto';
   popular: boolean;
   coingeckoId: string;

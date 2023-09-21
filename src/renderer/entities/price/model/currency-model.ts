@@ -1,42 +1,33 @@
 import { createEvent, createStore, createEffect, forward, sample } from 'effector';
 
 import { kernelModel } from '@renderer/shared/core';
-import { CurrencyConfig, fiatService } from '@renderer/shared/api/price-provider';
-import { DEFAULT_CURRENCY_CODE, DEFAULT_CURRENCY_CONFIG } from '../lib/constants';
+import { CurrencyItem, fiatService } from '@renderer/shared/api/price-provider';
+import { DEFAULT_CURRENCY_CODE } from '../lib/constants';
 
-export const $currencyConfig = createStore<CurrencyConfig[]>([]);
-export const $activeCurrency = createStore<CurrencyConfig | null>(null);
+const $currencyConfig = createStore<CurrencyItem[]>([]);
+const $activeCurrency = createStore<CurrencyItem | null>(null);
+const $activeCurrencyCode = createStore<CurrencyItem['code'] | null>(null);
 
-const $activeCurrencyCode = createStore<CurrencyConfig['code'] | null>(null);
+const currencyChanged = createEvent<CurrencyItem['id']>();
 
-const currencyChanged = createEvent<CurrencyConfig['id']>();
-
-const getCurrencyConfigFx = createEffect((): CurrencyConfig[] => {
-  return fiatService.getCurrencyConfig(DEFAULT_CURRENCY_CONFIG);
-});
-
-const fetchCurrencyConfigFx = createEffect((): Promise<CurrencyConfig[]> => {
-  return fiatService.fetchCurrencyConfig();
-});
-
-const saveCurrencyConfigFx = createEffect((config: CurrencyConfig[]) => {
-  fiatService.saveCurrencyConfig(config);
+const getCurrencyConfigFx = createEffect((): CurrencyItem[] => {
+  return fiatService.getCurrencyConfig();
 });
 
 const getActiveCurrencyCodeFx = createEffect((): string => {
   return fiatService.getActiveCurrencyCode(DEFAULT_CURRENCY_CODE);
 });
 
-const saveActiveCurrencyCodeFx = createEffect((currency: CurrencyConfig) => {
+const saveActiveCurrencyCodeFx = createEffect((currency: CurrencyItem) => {
   fiatService.saveActiveCurrencyCode(currency.code);
 });
 
 type ChangeParams = {
-  id?: CurrencyConfig['id'];
-  code?: CurrencyConfig['code'];
-  config: CurrencyConfig[];
+  id?: CurrencyItem['id'];
+  code?: CurrencyItem['code'];
+  config: CurrencyItem[];
 };
-const currencyChangedFx = createEffect<ChangeParams, CurrencyConfig | undefined>(({ id, code, config }) => {
+const currencyChangedFx = createEffect<ChangeParams, CurrencyItem | undefined>(({ id, code, config }) => {
   return config.find((currency) => {
     const hasId = currency.id === id;
     const hasCode = currency.code.toLowerCase() === code?.toLowerCase();
@@ -47,19 +38,17 @@ const currencyChangedFx = createEffect<ChangeParams, CurrencyConfig | undefined>
 
 forward({
   from: kernelModel.events.appStarted,
-  to: [getActiveCurrencyCodeFx, getCurrencyConfigFx, fetchCurrencyConfigFx],
+  to: [getActiveCurrencyCodeFx, getCurrencyConfigFx],
 });
 
 forward({ from: getActiveCurrencyCodeFx.doneData, to: $activeCurrencyCode });
 
 forward({ from: getCurrencyConfigFx.doneData, to: $currencyConfig });
 
-forward({ from: fetchCurrencyConfigFx.doneData, to: [$currencyConfig, saveCurrencyConfigFx] });
-
 sample({
-  clock: [getCurrencyConfigFx.doneData, fetchCurrencyConfigFx.doneData],
+  clock: getCurrencyConfigFx.doneData,
   source: $activeCurrencyCode,
-  filter: (code: CurrencyConfig['code'] | null): code is CurrencyConfig['code'] => Boolean(code),
+  filter: (code: CurrencyItem['code'] | null): code is CurrencyItem['code'] => Boolean(code),
   fn: (code, config) => ({ code, config }),
   target: currencyChangedFx,
 });
@@ -79,6 +68,10 @@ sample({
   target: [$activeCurrency, saveActiveCurrencyCodeFx],
 });
 
-export const events = {
-  currencyChanged,
+export const currencyModel = {
+  $currencyConfig,
+  $activeCurrency,
+  events: {
+    currencyChanged,
+  },
 };
