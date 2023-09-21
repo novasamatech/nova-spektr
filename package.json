@@ -16,20 +16,17 @@
     "start:main": "cross-env NODE_ENV=staging pnpm r webpack:main:stage start:electron",
     "start:main:dev": "cross-env NODE_ENV=development pnpm r webpack:main:dev start:electron",
     "watch": "nodemon --watch src/main --watch src/renderer/bridge --watch src/shared --ignore src/main/resources --ext \"*\" --exec",
-
     "webpack:renderer:dev": "webpack serve --config webpack/webpack.renderer.dev.ts",
     "webpack:renderer:stage": "webpack serve --config webpack/webpack.renderer.stage.ts",
     "webpack:renderer:prod": "webpack --config webpack/webpack.renderer.prod.ts",
     "webpack:main:dev": "webpack --config webpack/webpack.main.dev.ts",
     "webpack:main:stage": "webpack --config webpack/webpack.main.stage.ts",
     "webpack:main:prod": "webpack --config webpack/webpack.main.prod.ts",
-
     "build": "cross-env NODE_ENV=production CHAINS_FILE=chains pnpm r clean:prod webpack:renderer:prod webpack:main:prod",
     "postbuild": "node scripts/postbuild.js",
     "dist": "electron-builder -p never",
     "clean:build": "rimraf release/build",
     "clean:prod": "rimraf release/dist",
-
     "test": "jest --config=jest.config.ts --json --outputFile=jest-unit-results.json",
     "test:integration": "jest --config=tests/integrations/jest.config.ts --group=integration --json --outputFile=jest-results.json",
     "test:dataVerification": "jest --config=tests/integrations/jest.config.ts --group=dataVerification --json --outputFile=jest-results.json",
@@ -37,16 +34,13 @@
     "test:coverage": "jest --config=jest.config.ts --coverage --passWithNoTests | tee ./coverage.txt",
     "test:coverage-new-files": "jest --config=jest.config.ts --coverage --changedSince=dev | tee ./coverage.txt",
     "test:system": "jest --config=tests/system/jest.system.config.ts",
-
     "lint": "eslint . --ext=js,ts,tsx,json",
     "lint:fix": "pnpm lint --fix",
     "lint:i18n-locale": "cross-env I18N=true eslint ./src/shared/locale/ --ext=json --plugin i18n-json",
     "lint:i18n-fix": "cross-env I18N=true pnpm lint:i18n-locale --fix",
     "lint:i18n-tsx": "cross-env I18N=true eslint . --ext=tsx --ignore-pattern=**/*.test.* --ignore-pattern=**/*.stories.* --plugin i18next",
-
     "storybook": "start-storybook -p 6006",
     "build:storybook": "build-storybook",
-
     "update:chains-file": "node scripts/buildChainsJson.js",
     "githook:pre-commit": "cross-env NODE_ENV=production lint-staged && tsc -p tsconfig.json",
     "githook:pre-push": "cross-env pnpm test:coverage",
@@ -115,6 +109,7 @@
     "@electron/notarize": "^1.2.3",
     "@headlessui/tailwindcss": "^0.1.2",
     "@jest/types": "^29.6.3",
+    "@playwright/test": "^1.38.0",
     "@pmmmwh/react-refresh-webpack-plugin": "^0.5.7",
     "@storybook/addon-actions": "^6.5.9",
     "@storybook/addon-essentials": "^6.5.9",
