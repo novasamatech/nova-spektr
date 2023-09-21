@@ -1,11 +1,9 @@
 import { chromium, Browser, Page, BrowserContext } from 'playwright';
 import { test, expect } from '@playwright/test';
-import { BaseLoginPage } from '../pages/loginPage/BaseLoginPage';
-import { LoginPageElements } from '../pages/loginPage/LoginPageElements';
+import { BaseLoginPage } from '../../pages/loginPage/BaseLoginPage';
+import { LoginPageElements } from '../../pages/_elements/LoginPageElements';
 
-test.setTimeout(60_000);
-
-test.describe('Basic Playwright Test', () => {
+test.describe('Login in Matrix', () => {
   let browser: Browser;
   let context: BrowserContext;
   let page: Page;
@@ -20,15 +18,14 @@ test.describe('Basic Playwright Test', () => {
   });
 
   test.beforeEach(async () => {
-    const context = await browser.newContext({ ignoreHTTPSErrors: true });
+    context = await browser.newContext({ ignoreHTTPSErrors: true });
     page = await context.newPage();
     const pageElements = new LoginPageElements();
     loginPage = new BaseLoginPage(page, pageElements);
   });
 
-  test('should open a new page', async () => {
-    await (await loginPage.gotoOnboarding()).clickWatchOnlyButton();
-    await page.click('text=Add Watch-only wallet');
+  test('User can login in Matrix from Settings page', async () => {
+    const assetsPage = await loginPage.createBaseWatchOnlyWallet();
     expect(await page.isVisible('text=Add Watch-only wallet')).toBeTruthy();
   });
 });

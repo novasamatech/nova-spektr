@@ -21,4 +21,19 @@ export class BasePage {
     await this.page.fill(selector, value);
     return this;
   }
+
+  async clickIntoField(placeholder: string) {
+    await this.page.getByPlaceholder(placeholder).click()
+    return this
+  }
+
+  async fillFieldByValue(placeholder: string, value: string) {
+    await this.page.getByPlaceholder(placeholder).fill(value)
+    return this
+  }
+
+  async clickOnButton(name: string){
+    await this.page.getByRole('button', { name: name }).click();
+    return this
+  }
 }
