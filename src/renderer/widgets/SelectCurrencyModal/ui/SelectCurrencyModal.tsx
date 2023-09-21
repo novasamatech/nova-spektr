@@ -7,8 +7,15 @@ import { useToggle } from '@renderer/shared/lib/hooks';
 import { useI18n } from '@renderer/app/providers';
 import { DropdownOption, DropdownOptionGroup, DropdownResult } from '@renderer/shared/ui/Dropdowns/common/types';
 import { GroupedSelect } from '@renderer/shared/ui/Dropdowns/GroupedSelect/GroupedSelect';
-import { CurrencyConfig } from '@renderer/shared/api/price-provider';
+import { CurrencyItem } from '@renderer/shared/api/price-provider';
 import { currencyModel, priceProviderModel } from '@renderer/entities/price';
+import { DEFAULT_TRANSITION } from '@renderer/shared/lib/utils';
+
+const getCurrencyOption = (currency: CurrencyItem): DropdownOption<number> => ({
+  id: currency.coingeckoId,
+  value: currency.id,
+  element: [currency.code, currency.symbol, currency.name].filter(Boolean).join(' • '),
+});
 
 type Props = {
   onClose: () => void;
@@ -16,28 +23,21 @@ type Props = {
 
 export const SelectCurrencyModal = ({ onClose }: Props) => {
   const activeCurrency = useUnit(currencyModel.$activeCurrency);
-  const allCurrencies = useUnit(currencyModel.$currencyConfig);
-  const initialShowCurrency = useUnit(priceProviderModel.$fiatFlag);
+  const fiatFlag = useUnit(priceProviderModel.$fiatFlag);
+
+  const popularFiatCurrencies = useUnit(currencyModel.$popularFiatCurrencies);
+  const cryptoCurrencies = useUnit(currencyModel.$cryptoCurrencies);
+  const unpopularFiatCurrencies = useUnit(currencyModel.$unpopularFiatCurrencies);
 
   const updateCurrency = useEvent(currencyModel.events.currencyChanged);
-  const updateFiatFlag = useEvent(priceProviderModel.events.showFiatChanged);
+  const updateFiatFlag = useEvent(priceProviderModel.events.fiatFlagChanged);
 
   const { t } = useI18n();
   const [isOpen, toggleIsOpen] = useToggle(true);
-  const [showCurrency, toggleShowCurrency] = useToggle(!!initialShowCurrency);
+  const [showCurrency, toggleShowCurrency] = useToggle(!!fiatFlag);
   const [selectedCurrency, setSelectedCurrency] = useState<DropdownResult<number> | undefined>(
     activeCurrency ? { id: activeCurrency.coingeckoId, value: activeCurrency.id } : undefined,
   );
-
-  const cryptoCurrencies = allCurrencies.filter((c: CurrencyConfig) => c.category === 'crypto');
-  const popularFiatCurrencies = allCurrencies.filter((c: CurrencyConfig) => c.category === 'fiat' && c.popular);
-  const unpopularFiatCurrencies = allCurrencies.filter((c: CurrencyConfig) => c.category === 'fiat' && !c.popular);
-
-  const getCurrencyOption = (currency: CurrencyConfig): DropdownOption<number> => ({
-    id: currency.coingeckoId,
-    value: currency.id,
-    element: [currency.code, currency.symbol, currency.name].filter(Boolean).join(' • '),
-  });
 
   const currenciesGroups: DropdownOptionGroup<number>[] = [
     { label: t('settings.currency.cryptocurrenciesLabel'), options: cryptoCurrencies.map(getCurrencyOption) },
@@ -47,7 +47,7 @@ export const SelectCurrencyModal = ({ onClose }: Props) => {
 
   const handleClose = () => {
     toggleIsOpen();
-    onClose();
+    setTimeout(onClose, DEFAULT_TRANSITION);
   };
 
   const saveChanges = () => {

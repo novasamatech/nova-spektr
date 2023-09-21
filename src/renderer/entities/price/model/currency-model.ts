@@ -8,6 +8,14 @@ const $currencyConfig = createStore<CurrencyItem[]>([]);
 const $activeCurrency = createStore<CurrencyItem | null>(null);
 const $activeCurrencyCode = createStore<CurrencyItem['code'] | null>(null);
 
+const $cryptoCurrencies = $currencyConfig.map((config) => config.filter((c) => c.category === 'crypto'));
+const $popularFiatCurrencies = $currencyConfig.map((config) =>
+  config.filter((c) => c.category === 'fiat' && c.popular),
+);
+const $unpopularFiatCurrencies = $currencyConfig.map((config) =>
+  config.filter((c) => c.category === 'fiat' && !c.popular),
+);
+
 const currencyChanged = createEvent<CurrencyItem['id']>();
 
 const getCurrencyConfigFx = createEffect((): CurrencyItem[] => {
@@ -71,6 +79,9 @@ sample({
 export const currencyModel = {
   $currencyConfig,
   $activeCurrency,
+  $popularFiatCurrencies,
+  $cryptoCurrencies,
+  $unpopularFiatCurrencies,
   events: {
     currencyChanged,
   },

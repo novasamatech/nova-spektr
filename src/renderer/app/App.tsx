@@ -1,11 +1,9 @@
 import { useEffect, useState } from 'react';
 import { ErrorBoundary } from 'react-error-boundary';
 import { useNavigate, useRoutes } from 'react-router-dom';
-import { useUnit } from 'effector-react';
 
 import { FallbackScreen } from '@renderer/components/common';
 import { useAccount } from '@renderer/entities/account';
-import { priceProviderModel, currencyModel } from '@renderer/entities/price';
 import {
   ConfirmDialogProvider,
   I18Provider,
@@ -23,10 +21,6 @@ const App = () => {
   const navigate = useNavigate();
   const appRoutes = useRoutes(routesConfig);
   const { getAccounts } = useAccount();
-
-  const [assetsPrices, activeCurrency] = useUnit([priceProviderModel.$assetsPrices, currencyModel.$activeCurrency]);
-  console.log('🔴 assetsPrices === > ', assetsPrices);
-  console.log('🔴 currency === > ', activeCurrency);
 
   const [showSplashScreen, setShowSplashScreen] = useState(true);
   const [isAccountsLoading, setIsAccountsLoading] = useState(true);

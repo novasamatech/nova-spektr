@@ -1,1 +1,1 @@
-export * from './ui/SelectCurrencyModal';
+export { SelectCurrencyModal } from './ui/SelectCurrencyModal';
