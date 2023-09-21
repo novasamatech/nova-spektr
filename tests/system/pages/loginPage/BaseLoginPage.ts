@@ -31,6 +31,7 @@ export class BaseLoginPage extends BasePage {
   }
 
   public async createBaseWatchOnlyWallet(): Promise<WatchOnlyAssetsPage> {
+    await this.gotoOnboarding()
     return (
       await this.clickWatchOnlyButton()
     ).createWatchOnlyAccount(baseTestConfig.test_name, baseTestConfig.test_address)

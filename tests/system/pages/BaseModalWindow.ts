@@ -1,22 +1,13 @@
 import { Page } from 'playwright';
 import { BasePageElements } from './_elements/BasePageElements';
+import { BaseModalElements } from './_elements/BaseModalElements';
 
-export abstract class BasePage {
+export abstract class BaseModal {
   protected page: Page;
-  protected pageElements: BasePageElements
+  protected pageElements: BaseModalElements
 
   constructor(page: Page) {
     this.page = page;
-  }
-
-  async goto(url: string) {
-    await this.page.goto(url);
-    return this;
-  }
-
-  public async gotoMain(): Promise<this> {
-    await this.page.goto(this.pageElements.url);
-    return this;
   }
 
   async click(selector: string) {

@@ -1,4 +1,6 @@
-export class LoginPageElements {
+import { BasePageElements } from "./BasePageElements"
+
+export class LoginPageElements implements BasePageElements {
     url = 'https://localhost:3000/#/onboarding'
     enterAccountAddress = 'Enter or paste your account address'
     accountNameField = 'Enter a name for your wallet'
