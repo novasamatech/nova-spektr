@@ -36,6 +36,7 @@
     "test:matrix": "jest --config=tests/integrations/jest.config.ts --group=matrix --json --outputFile=jest-results.json",
     "test:coverage": "jest --config=jest.config.ts --coverage --passWithNoTests | tee ./coverage.txt",
     "test:coverage-new-files": "jest --config=jest.config.ts --coverage --changedSince=dev | tee ./coverage.txt",
+    "test:system": "jest --config=tests/system/jest.system.config.ts",
 
     "lint": "eslint . --ext=js,ts,tsx,json",
     "lint:fix": "pnpm lint --fix",
@@ -113,6 +114,7 @@
     "@commitlint/config-conventional": "^17.0.3",
     "@electron/notarize": "^1.2.3",
     "@headlessui/tailwindcss": "^0.1.2",
+    "@jest/types": "^29.6.3",
     "@pmmmwh/react-refresh-webpack-plugin": "^0.5.7",
     "@storybook/addon-actions": "^6.5.9",
     "@storybook/addon-essentials": "^6.5.9",
@@ -179,6 +181,7 @@
     "mini-css-extract-plugin": "^2.6.1",
     "nodemon": "^2.0.18",
     "npm-run-all": "^4.1.5",
+    "playwright": "^1.38.0",
     "pnpm": "^8.6.11",
     "postcss": "^8.4.18",
     "postcss-loader": "^7.0.1",
