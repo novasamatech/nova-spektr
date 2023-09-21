@@ -217,8 +217,6 @@ export const InitOperation = ({
   return (
     <div className="flex flex-col gap-y-4">
       <TransferForm
-        api={api}
-        chainId={chainId}
         chain={connections[chainId]}
         network={network}
         accounts={accounts}

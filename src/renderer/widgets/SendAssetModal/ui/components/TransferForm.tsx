@@ -1,7 +1,6 @@
 import { BN } from '@polkadot/util';
 import { ReactNode, useEffect, useState } from 'react';
 import { Controller, SubmitHandler, useForm } from 'react-hook-form';
-import { ApiPromise } from '@polkadot/api';
 import { Trans } from 'react-i18next';
 
 import { AmountInput, Button, Icon, Identicon, Input, InputHint, Select } from '@renderer/shared/ui';
@@ -36,8 +35,6 @@ export type TransferFormData = {
 };
 
 type Props = {
-  api: ApiPromise;
-  chainId: ChainId;
   chain: Chain;
   network: string;
   account?: Account | MultisigAccount;
@@ -61,8 +58,6 @@ type Props = {
 };
 
 export const TransferForm = ({
-  api,
-  chainId,
   account,
   accounts,
   chain,
@@ -156,12 +151,12 @@ export const TransferForm = ({
   ) => {
     const accountId = toAccountId(address);
 
-    getBalance(accountId, chainId, asset.assetId.toString()).then((balance) => {
+    getBalance(accountId, chain.chainId, asset.assetId.toString()).then((balance) => {
       callbackBalance(balance ? transferableAmount(balance) : '0');
     });
 
     if (asset.assetId !== 0) {
-      getBalance(accountId, chainId, '0').then((balance) => {
+      getBalance(accountId, chain.chainId, '0').then((balance) => {
         callbackNativeToken(balance ? transferableAmount(balance) : '0');
       });
     }
@@ -191,16 +186,17 @@ export const TransferForm = ({
     const dest = toAddress(destination, { prefix: addressPrefix });
     onTxChange({
       destination: dest,
-      amount: formatAmount(amount, asset.precision),
+      amount: amount,
       signatory: signer?.accountId,
       destinationChain,
-      description:
-        description ||
-        t('transactionMessage.transfer', {
-          amount,
-          asset: asset.symbol,
-          address: dest,
-        }),
+      description: isMultisig(account)
+        ? description ||
+          t('transactionMessage.transfer', {
+            amount,
+            asset: asset.symbol,
+            address: dest,
+          })
+        : undefined,
     });
   }, [account, signer, destination, amount, description, destinationChain]);
 
@@ -255,7 +251,7 @@ export const TransferForm = ({
     }
 
     const multisigTxs = await getMultisigTxs({
-      chainId,
+      chainId: chain.chainId,
       callHash: getCallHash(),
       status: MultisigTxInitStatus.SIGNING,
     });
