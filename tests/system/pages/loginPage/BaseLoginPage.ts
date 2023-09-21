@@ -21,28 +21,28 @@ export class BaseLoginPage extends BasePage {
     return this
   }
 
-  private async clickContinueButton(): Promise<BaseLoginPage>  {
-    await this.page.click(this.pageElements.continueButton);
-    return this
-  }
+  // private async clickContinueButton(): Promise<BaseLoginPage>  {
+  //   await this.page.click(this.pageElements.continueButton);
+  //   return this
+  // }
 
-  private async clickWatchOnlyAccountButton(accountName: string): Promise<BaseLoginPage>  {
-    await this.page.click(`text=${accountName} Watch-only`);
-    return this
-  }
+  // private async clickWatchOnlyAccountButton(accountName: string): Promise<BaseLoginPage>  {
+  //   await this.page.click(`text=${accountName} Watch-only`);
+  //   return this
+  // }
 
-  private async clickAddButton(): Promise<BaseLoginPage>  {
-    await this.page.click('text=Add');
-    return this
-  }
+  // private async clickAddButton(): Promise<BaseLoginPage>  {
+  //   await this.page.click('text=Add');
+  //   return this
+  // }
 
-  private async clickMultisigButton(): Promise<BaseLoginPage>  {
-    await this.page.click('text=Multisig');
-    return this
-  }
+  // private async clickMultisigButton(): Promise<BaseLoginPage>  {
+  //   await this.page.click('text=Multisig');
+  //   return this
+  // }
 
-  private async clickUsernameField(): Promise<BaseLoginPage> {
-    await this.page.click('placeholder=Enter username');
-    return this
-  }
+  // private async clickUsernameField(): Promise<BaseLoginPage> {
+  //   await this.page.click('placeholder=Enter username');
+  //   return this
+  // }
 }

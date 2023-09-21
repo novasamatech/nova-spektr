@@ -1,0 +1,13 @@
+# Dockerfile.tests
+FROM mcr.microsoft.com/playwright:v1.14.1-focal
+
+WORKDIR /tests
+
+COPY package*.json ./
+
+RUN npm install -g pnpm
+RUN pnpm install
+
+COPY . .
+
+CMD [ "pnpm", "test:system" ]

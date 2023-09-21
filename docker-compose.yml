@@ -1,0 +1,21 @@
+version: '3.8'
+
+services:
+  build-app:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+
+  web-app:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    ports:
+      - '3000:3000'
+
+  tests:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.tests
+    depends_on:
+      - web-app
