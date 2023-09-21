@@ -1,6 +1,6 @@
-import { convertPriceToObjectView, convertPriceToDBView, getCurrencyChangeKey } from './utils';
+import { convertPriceToObjectView, convertPriceToDBView, getCurrencyChangeKey } from '../common/utils';
 
-describe('api/price/common', () => {
+describe('shared/api/price-provider/common/utils', () => {
   test('get correct change key', () => {
     const result = getCurrencyChangeKey('polkadot');
 
