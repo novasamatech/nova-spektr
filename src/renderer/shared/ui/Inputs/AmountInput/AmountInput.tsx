@@ -1,16 +1,15 @@
 import { useCallback } from 'react';
+import { useUnit } from 'effector-react';
 
-// FIXME components in shared shouldn't use components from entity so we need to move it to entity
 import { AssetBalance, AssetIcon, Asset } from '@renderer/entities/asset';
 import { cleanAmount, cnTw, formatGroups, validatePrecision, validateSymbols } from '@renderer/shared/lib/utils';
 import { useI18n } from '@renderer/app/providers';
 import { FootnoteText, HelpText, TitleText } from '../../Typography';
 import Input from '../Input/Input';
-import AllIcons, { IconNames } from '@renderer/shared/ui/Icon/data';
-import Icon from '../../Icon/Icon';
 import { IconButton } from '@renderer/shared/ui';
 import { useToggle } from '@renderer/shared/lib/hooks';
-import { useCurrency } from '@renderer/shared/ui/Inputs/AmountInput/useCurrency';
+import { useCurrencyRate } from './useCurrency';
+import { currencyModel } from '@renderer/entities/price';
 
 const CURRENCY_PRECISION = 6;
 
@@ -23,7 +22,7 @@ type Props = {
   balancePlaceholder?: string;
   balance?: string | string[];
   invalid?: boolean;
-  currencyId?: string;
+  showCurrency?: boolean;
   onChange?: (value: string) => void;
 };
 
@@ -36,11 +35,12 @@ export const AmountInput = ({
   placeholder,
   disabled,
   invalid,
-  currencyId,
+  showCurrency = true,
   onChange,
 }: Props) => {
   const { t } = useI18n();
-  const { currency, rate } = useCurrency(asset.symbol.toLowerCase(), currencyId);
+  const rate = useCurrencyRate(asset.priceId, showCurrency);
+  const activeCurrency = useUnit(currencyModel.$activeCurrency);
   const [currencyMode, toggleCurrencyMode] = useToggle(false);
 
   const handleChange = (amount: string) => {
@@ -50,7 +50,7 @@ export const AmountInput = ({
       validateSymbols(cleanedAmount) &&
       validatePrecision(cleanedAmount, currencyMode ? CURRENCY_PRECISION : asset.precision)
     ) {
-      onChange?.(currencyMode ? (Number(cleanedAmount) * (1 / rate)).toString() : cleanedAmount);
+      onChange?.(currencyMode && rate ? (Number(cleanedAmount) * (1 / rate)).toString() : cleanedAmount);
     } else {
       onChange?.(value);
     }
@@ -91,16 +91,12 @@ export const AmountInput = ({
     </div>
   );
 
-  const currencyIcon = currencyId && (
+  const currencyIcon = showCurrency && activeCurrency && (
     <div className="flex items-center gap-x-1 min-w-fit">
       <div className="relative rounded-full bg-token-background border border-token-border p-[1px] min-w-fit">
-        {AllIcons[currencyId as IconNames] ? (
-          <Icon name={currencyId as IconNames} className="text-white" size={28} />
-        ) : (
-          <TitleText className="text-white">{currency.symbol}</TitleText>
-        )}
+        <TitleText className="text-white">{activeCurrency.symbol || activeCurrency.code}</TitleText>
       </div>
-      <TitleText>{currency.code}</TitleText>
+      <TitleText>{activeCurrency.code}</TitleText>
     </div>
   );
 
@@ -111,11 +107,11 @@ export const AmountInput = ({
     </div>
   );
 
-  const suffixElement = (
+  const suffixElement = showCurrency && rate && (
     <div className="flex flex-row gap-x-2 absolute right-3 bottom-2">
       <IconButton name="swapArrow" alt="swap input to currency" size={16} onClick={toggleCurrencyMode} />
       <HelpText className="uppercase text-text-tertiary">
-        {currencyMode ? `${value} ${asset.symbol}` : `${currency.symbol} ${Number(value) * rate}`}
+        {currencyMode ? `${value} ${asset.symbol}` : `${activeCurrency?.symbol} ${Number(value) * rate}`}
       </HelpText>
     </div>
   );
@@ -123,14 +119,14 @@ export const AmountInput = ({
   return (
     <Input
       name={name}
-      className={cnTw('text-right text-title font-manrope', currencyId && 'mb-4')}
+      className={cnTw('text-right text-title font-manrope', activeCurrency && 'mb-4')}
       wrapperClass="py-2 items-start"
       label={label}
-      value={formatGroups(currencyMode ? (Number(value) * rate).toString() : value)}
+      value={formatGroups(currencyMode && rate ? (Number(value) * rate).toString() : value)}
       placeholder={t('transfer.amountPlaceholder')}
       invalid={invalid}
       prefixElement={currencyMode ? currencyIcon : prefixElement}
-      suffixElement={currencyId && suffixElement}
+      suffixElement={suffixElement}
       disabled={disabled}
       onChange={handleChange}
     />

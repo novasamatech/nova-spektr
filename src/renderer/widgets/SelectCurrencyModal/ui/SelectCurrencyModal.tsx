@@ -1,59 +1,50 @@
-import { useState } from 'react';
-import { useUnit } from 'effector-react/effector-react.umd';
-import { useEvent } from 'effector-react';
-
-import { BaseModal, Button, FootnoteText, HelpText, Switch } from '@renderer/shared/ui';
+import { BaseModal } from '@renderer/shared/ui';
 import { useToggle } from '@renderer/shared/lib/hooks';
 import { useI18n } from '@renderer/app/providers';
-import { DropdownOption, DropdownOptionGroup, DropdownResult } from '@renderer/shared/ui/Dropdowns/common/types';
-import { GroupedSelect } from '@renderer/shared/ui/Dropdowns/GroupedSelect/GroupedSelect';
-import { currencyModel } from '@renderer/entities/price';
-import { CurrencyItem } from '@renderer/shared/api/price-provider';
+import { DEFAULT_TRANSITION } from '@renderer/shared/lib/utils';
 
-const CURRENCiES = require('../temp/mock-currencies.json');
+// const getCurrencyOption = (currency: CurrencyItem): DropdownOption<CurrencyItem> => ({
+//   id: currency.id.toString(),
+//   value: currency,
+//   element: [currency.code, currency.symbol, currency.name].filter(Boolean).join(' • '),
+// });
 
 type Props = {
   onClose: () => void;
 };
 
 export const SelectCurrencyModal = ({ onClose }: Props) => {
-  const savedCurrency = useUnit(currencyModel.$activeCurrency)?.coingeckoId;
-  const updateCurrency = useEvent(currencyModel.events.currencyChanged);
+  // const activeCurrency = useUnit(currencyForm.$activeCurrency);
+  // const fiatFlag = useUnit(currencyForm.$fiatFlag);
+
+  // const popularFiatCurrencies: CurrencyItem[] = [];
+  // const cryptoCurrencies: CurrencyItem[] = [];
+  // const unpopularFiatCurrencies: CurrencyItem[] = [];
 
   const { t } = useI18n();
   const [isOpen, toggleIsOpen] = useToggle(true);
-  const [showCurrency, toggleShowCurrency] = useToggle(Boolean(savedCurrency));
-  const [selectedCurrency, setSelectedCurrency] = useState<DropdownResult<string> | undefined>(
-    savedCurrency ? { id: savedCurrency, value: savedCurrency } : undefined,
-  );
 
-  const cryptoCurrencies = CURRENCiES.filter((c: CurrencyItem) => c.category === 'crypto');
-  const popularFiatCurrencies = CURRENCiES.filter((c: CurrencyItem) => c.category === 'fiat' && c.popular);
-  const unpopularFiatCurrencies = CURRENCiES.filter((c: CurrencyItem) => c.category === 'fiat' && !c.popular);
+  // const currenciesGroups: DropdownOptionGroup<CurrencyItem>[] = [
+  //   { label: t('settings.currency.cryptocurrenciesLabel'), options: cryptoCurrencies.map(getCurrencyOption) },
+  //   { label: t('settings.currency.popularFiatLabel'), options: popularFiatCurrencies.map(getCurrencyOption) },
+  //   { label: t('settings.currency.unpopularFiatLabel'), options: unpopularFiatCurrencies.map(getCurrencyOption) },
+  // ];
 
-  const getCurrencyOption = (currency: CurrencyItem): DropdownOption<string> => ({
-    id: currency.coingeckoId,
-    value: currency.coingeckoId,
-    element: [currency.code, currency.symbol, currency.name].filter(Boolean).join(' • '),
-  });
-
-  const currenciesGroups: DropdownOptionGroup<string>[] = [
-    { label: t('settings.currency.cryptocurrenciesLabel'), options: cryptoCurrencies.map(getCurrencyOption) },
-    { label: t('settings.currency.popularFiatLabel'), options: popularFiatCurrencies.map(getCurrencyOption) },
-    { label: t('settings.currency.unpopularFiatLabel'), options: unpopularFiatCurrencies.map(getCurrencyOption) },
-  ];
-
-  const handleClose = () => {
+  const handleClose = (submitted?: boolean) => {
     toggleIsOpen();
-    onClose();
+
+    if (!submitted) {
+      // setTimeout(currencyForm.events.resetValues, DEFAULT_TRANSITION);
+    }
+
+    setTimeout(onClose, DEFAULT_TRANSITION);
   };
 
   const saveChanges = () => {
-    if (showCurrency && selectedCurrency) {
-      updateCurrency(CURRENCiES.find((c: CurrencyItem) => c.coingeckoId === selectedCurrency.id));
-    }
+    // currencyForm.events.submitForm();
 
-    handleClose();
+    handleClose(true);
+    // setTimeout(handleClose, DEFAULT_TRANSITION);
   };
 
   return (
@@ -66,24 +57,24 @@ export const SelectCurrencyModal = ({ onClose }: Props) => {
       onClose={handleClose}
     >
       <form className="flex flex-col gap-y-4" onSubmit={saveChanges}>
-        <Switch checked={showCurrency} className="gap-x-2" onChange={toggleShowCurrency}>
-          <div className="flex flex-col">
-            <FootnoteText>{t('settings.currency.switchLabel')}</FootnoteText>
-            <HelpText className="text-text-tertiary">{t('settings.currency.switchHint')}</HelpText>
-          </div>
-        </Switch>
+        {/*<Switch checked={fiatFlag} className="gap-x-2" onChange={currencyForm.events.fiatFlagChanged}>*/}
+        {/*  <div className="flex flex-col">*/}
+        {/*    <FootnoteText>{t('settings.currency.switchLabel')}</FootnoteText>*/}
+        {/*    <HelpText className="text-text-tertiary">{t('settings.currency.switchHint')}</HelpText>*/}
+        {/*  </div>*/}
+        {/*</Switch>*/}
 
-        <GroupedSelect
-          placeholder={t('settings.currency.selectPlaceholder')}
-          disabled={!showCurrency}
-          selectedId={selectedCurrency?.id}
-          optionsGroups={currenciesGroups}
-          onChange={setSelectedCurrency}
-        />
+        {/*<GroupedSelect*/}
+        {/*  placeholder={t('settings.currency.selectPlaceholder')}*/}
+        {/*  disabled={!fiatFlag}*/}
+        {/*  selectedId={activeCurrency.toString()}*/}
+        {/*  optionsGroups={currenciesGroups}*/}
+        {/*  onChange={(currency) => currencyForm.events.currencyChanged(currency.value.id)}*/}
+        {/*/>*/}
 
-        <Button className="w-fit ml-auto" type="submit" disabled={showCurrency && !selectedCurrency}>
-          {t('settings.currency.save')}
-        </Button>
+        {/*<Button className="w-fit ml-auto" type="submit" disabled={!!fiatFlag && !activeCurrency}>*/}
+        {/*  {t('settings.currency.save')}*/}
+        {/*</Button>*/}
       </form>
     </BaseModal>
   );

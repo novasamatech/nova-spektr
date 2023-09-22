@@ -1,30 +1,15 @@
-import { CurrencyItem } from '@renderer/shared/api/price-provider';
+import { useUnit } from 'effector-react';
 
-type CurrencyInfo = {
-  currency: CurrencyItem;
-  rate: number;
-};
+import { currencyModel, priceProviderModel } from '@renderer/entities/price';
 
-export const useCurrency = (currencyId: string, altCurrencyId?: string): CurrencyInfo => {
-  const getCurrency = (altCurrencyId?: string): CurrencyItem => {
-    return {
-      code: 'USD',
-      name: 'United States Dollar',
-      symbol: '$',
-      category: 'fiat',
-      popular: true,
-      id: 0,
-      coingeckoId: 'usd',
-    };
-  };
+export const useCurrencyRate = (assetId?: string, showCurrency?: boolean): number | null => {
+  const fiatFlag = useUnit(priceProviderModel.$fiatFlag);
+  const activeCurrency = useUnit(currencyModel.$activeCurrency);
+  const assetsPrices = useUnit(priceProviderModel.$assetsPrices);
 
-  const getCurrencyRate = (currencyId: string, altCurrencyId?: string) => {
-    // call currency provider
-    return 0.5;
-  };
+  if (!showCurrency || !fiatFlag || !activeCurrency || !assetsPrices || !assetId) return null;
 
-  return {
-    currency: getCurrency(currencyId),
-    rate: getCurrencyRate(currencyId, altCurrencyId),
-  };
+  console.log(assetsPrices);
+
+  return assetsPrices[assetId][activeCurrency.id].price;
 };
