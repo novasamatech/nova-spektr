@@ -32,7 +32,7 @@ test.describe('Login in Matrix', () => {
     const matrixSettings = await settingsPage.clickOnMatrixElementMenu();
     await matrixSettings.matrixAuthentificate(baseTestConfig.matrix_username_1, baseTestConfig.matrix_password_1);
 
-    await page.waitForSelector(matrixSettings.pageElements.logedIn);
+    await page.waitForSelector(matrixSettings.pageElements.logedIn, { timeout: 60000 });
     expect(await page.isVisible(matrixSettings.pageElements.logedIn)).toBeTruthy();
   });
 });

@@ -1,11 +1,6 @@
 version: '3.8'
 
 services:
-  build-app:
-    build:
-      context: .
-      dockerfile: docker/Dockerfile
-
   web-app:
     build:
       context: .
@@ -13,7 +8,7 @@ services:
     ports:
       - '3000:3000'
 
-  tests:
+  system-tests:
     build:
       context: .
       dockerfile: docker/Dockerfile.tests

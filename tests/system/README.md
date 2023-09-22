@@ -2,7 +2,39 @@
 
  This document describes the process of running playwright end-to-end (e2e) tests.
 
- ## Running the Application
+ ## Running without docker
+
+ Install dependencies:
+
+ ```bash
+ pnpm install
+ ```
+
+ Install browsers:
+
+ ```bash
+ pnpm run pretest:system
+ ```
+
+ To run the application, use the following command:
+
+ ```bash
+ pnpm run start:renderer
+ ```
+
+ To run the tests, use the following command:
+
+ ```bash
+ pnpm run test:system
+ ```
+
+ To see results use:
+
+ ```bash
+ pnpm exec playwright show-report
+ ```
+
+ ## Running with docker
 
  To run the application, use the following command:
 
@@ -10,16 +42,13 @@
  docker-compose run web-app
  ```
 
- ## Running the Tests
-
  To run the tests, use the following command:
 
  ```bash
- docker-compose run tests
+ docker-compose run system-tests
  ```
 
  ## TODO
 
- - Implement Allure reports
- - Run tests in Continuous Integration (CI)
+ - Implement Report storing
  - Save screenshots after run
