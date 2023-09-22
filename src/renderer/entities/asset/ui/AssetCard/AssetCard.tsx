@@ -9,6 +9,8 @@ import { useI18n } from '@renderer/app/providers';
 import { Paths } from '../../../../app/providers/routes/paths';
 import { createLink } from '../../../../app/providers/routes/utils';
 import { ChainId } from '@renderer/domain/shared-kernel';
+import { TokenPrice } from '@renderer/entities/price/ui/TokenPrice';
+import { AssetFiatBalance } from '@renderer/entities/price/ui/AssetFiatBalance';
 
 type Props = {
   chainId: ChainId;
@@ -48,13 +50,24 @@ export const AssetCard = ({ chainId, asset, balance, canMakeActions }: Props) =>
       <div className="flex items-center py-1.5 px-2">
         <div className="flex items-center gap-x-2 px-2 py-1  mr-auto">
           <AssetIcon src={asset.icon} name={asset.name} />
-          <BodyText>{asset.name}</BodyText>
+          <div>
+            <BodyText>{asset.name}</BodyText>
+            {<TokenPrice assetId={asset.priceId} />}
+          </div>
         </div>
-        {balance?.free ? (
-          <AssetBalance value={totalAmount(balance)} asset={asset} />
-        ) : (
-          <Shimmering width={82} height={20} />
-        )}
+        <div className="flex flex-col items-end">
+          {balance?.free ? (
+            <>
+              <AssetBalance value={totalAmount(balance)} asset={asset} />
+              <AssetFiatBalance amount={totalAmount(balance)} asset={asset} />
+            </>
+          ) : (
+            <>
+              <Shimmering width={82} height={20} />
+              <Shimmering width={56} height={18} />
+            </>
+          )}
+        </div>
         {canMakeActions && (
           <div className="flex gap-x-2 ml-3">
             <Link

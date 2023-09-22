@@ -396,6 +396,10 @@
       "unstake": "Вывод из стейкинга"
     }
   },
+  "price": {
+    "withCode": "{ amount } { code }",
+    "withSymbol": "{ symbol }{ amount }"
+  },
   "qrReader": {
     "parsingLabel": "Обработка данных",
     "parsingProgress": "{decoded} из {total}",
@@ -663,6 +667,7 @@
       "emptyFilterLabel": "Результаты не найдены",
       "networkDisabledDescription": "Пожалуйста, проверьте соеднинение в настройках сети",
       "networkDisabledLabel": "Сеть неактивна",
+      "networkLabel": "Network",
       "networkPlaceholder": "Выберите сеть",
       "networkSettingsLink": "Настройки сети",
       "noAccountsLabel": "Не выбран ни один аккаунт",

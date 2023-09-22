@@ -396,6 +396,10 @@
       "unstake": "Unstake"
     }
   },
+  "price": {
+    "withCode": "{ amount } { code }",
+    "withSymbol": "{ symbol }{ amount }"
+  },
   "qrReader": {
     "parsingLabel": "Parsing data",
     "parsingProgress": "{decoded} of {total}",
@@ -663,6 +667,7 @@
       "emptyFilterLabel": "No results",
       "networkDisabledDescription": "Please check the connection in Network Settings",
       "networkDisabledLabel": "Network is inactive",
+      "networkLabel": "Network",
       "networkPlaceholder": "Select network",
       "networkSettingsLink": "Network settings",
       "noAccountsLabel": "Your haven’t got any account to start staking",
@@ -671,7 +676,7 @@
       "noResultsDescription": "Please try another filter parameters",
       "noResultsLabel": "No staking found",
       "noValidatorsLabel": "No validators nominated",
-      "rewardsTableHeader": "Total rewards",
+      "rewardsTableHeader": "Rewards",
       "searchPlaceholder": "Search by account name",
       "stakeTableHeader": "Staked",
       "stakingAssetLabel": "Staking <strong>{ asset }</strong> on",
