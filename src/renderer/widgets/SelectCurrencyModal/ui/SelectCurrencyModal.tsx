@@ -1,19 +1,18 @@
-import { useState } from 'react';
 import { useUnit } from 'effector-react/effector-react.umd';
-import { useEvent } from 'effector-react';
 
 import { BaseModal, Button, FootnoteText, HelpText, Switch } from '@renderer/shared/ui';
 import { useToggle } from '@renderer/shared/lib/hooks';
 import { useI18n } from '@renderer/app/providers';
-import { DropdownOption, DropdownOptionGroup, DropdownResult } from '@renderer/shared/ui/Dropdowns/common/types';
+import { DropdownOption, DropdownOptionGroup } from '@renderer/shared/ui/Dropdowns/common/types';
 import { GroupedSelect } from '@renderer/shared/ui/Dropdowns/GroupedSelect/GroupedSelect';
 import { CurrencyItem } from '@renderer/shared/api/price-provider';
-import { currencyModel, priceProviderModel } from '@renderer/entities/price';
+import { currencyModel } from '@renderer/entities/price';
 import { DEFAULT_TRANSITION } from '@renderer/shared/lib/utils';
+import { currencyForm } from '@renderer/features/currency';
 
-const getCurrencyOption = (currency: CurrencyItem): DropdownOption<number> => ({
-  id: currency.coingeckoId,
-  value: currency.id,
+const getCurrencyOption = (currency: CurrencyItem): DropdownOption<CurrencyItem> => ({
+  id: currency.id.toString(),
+  value: currency,
   element: [currency.code, currency.symbol, currency.name].filter(Boolean).join(' • '),
 });
 
@@ -22,42 +21,37 @@ type Props = {
 };
 
 export const SelectCurrencyModal = ({ onClose }: Props) => {
-  const activeCurrency = useUnit(currencyModel.$activeCurrency);
-  const fiatFlag = useUnit(priceProviderModel.$fiatFlag);
+  const activeCurrency = useUnit(currencyForm.$activeCurrency);
+  const fiatFlag = useUnit(currencyForm.$fiatFlag);
 
   const popularFiatCurrencies = useUnit(currencyModel.$popularFiatCurrencies);
   const cryptoCurrencies = useUnit(currencyModel.$cryptoCurrencies);
   const unpopularFiatCurrencies = useUnit(currencyModel.$unpopularFiatCurrencies);
 
-  const updateCurrency = useEvent(currencyModel.events.currencyChanged);
-  const updateFiatFlag = useEvent(priceProviderModel.events.fiatFlagChanged);
-
   const { t } = useI18n();
   const [isOpen, toggleIsOpen] = useToggle(true);
-  const [showCurrency, toggleShowCurrency] = useToggle(!!fiatFlag);
-  const [selectedCurrency, setSelectedCurrency] = useState<DropdownResult<number> | undefined>(
-    activeCurrency ? { id: activeCurrency.coingeckoId, value: activeCurrency.id } : undefined,
-  );
 
-  const currenciesGroups: DropdownOptionGroup<number>[] = [
+  const currenciesGroups: DropdownOptionGroup<CurrencyItem>[] = [
     { label: t('settings.currency.cryptocurrenciesLabel'), options: cryptoCurrencies.map(getCurrencyOption) },
     { label: t('settings.currency.popularFiatLabel'), options: popularFiatCurrencies.map(getCurrencyOption) },
     { label: t('settings.currency.unpopularFiatLabel'), options: unpopularFiatCurrencies.map(getCurrencyOption) },
   ];
 
-  const handleClose = () => {
+  const handleClose = (submitted?: boolean) => {
     toggleIsOpen();
+
+    if (!submitted) {
+      setTimeout(currencyForm.events.resetValues, DEFAULT_TRANSITION);
+    }
+
     setTimeout(onClose, DEFAULT_TRANSITION);
   };
 
   const saveChanges = () => {
-    updateFiatFlag(showCurrency);
+    currencyForm.events.submitForm();
 
-    if (showCurrency && selectedCurrency) {
-      updateCurrency(selectedCurrency.value);
-    }
-
-    handleClose();
+    handleClose(true);
+    // setTimeout(handleClose, DEFAULT_TRANSITION);
   };
 
   return (
@@ -70,7 +64,7 @@ export const SelectCurrencyModal = ({ onClose }: Props) => {
       onClose={handleClose}
     >
       <form className="flex flex-col gap-y-4" onSubmit={saveChanges}>
-        <Switch checked={showCurrency} className="gap-x-2" onChange={toggleShowCurrency}>
+        <Switch checked={fiatFlag} className="gap-x-2" onChange={currencyForm.events.fiatFlagChanged}>
           <div className="flex flex-col">
             <FootnoteText>{t('settings.currency.switchLabel')}</FootnoteText>
             <HelpText className="text-text-tertiary">{t('settings.currency.switchHint')}</HelpText>
@@ -79,13 +73,13 @@ export const SelectCurrencyModal = ({ onClose }: Props) => {
 
         <GroupedSelect
           placeholder={t('settings.currency.selectPlaceholder')}
-          disabled={!showCurrency}
-          selectedId={selectedCurrency?.id}
+          disabled={!fiatFlag}
+          selectedId={activeCurrency.toString()}
           optionsGroups={currenciesGroups}
-          onChange={setSelectedCurrency}
+          onChange={(currency) => currencyForm.events.currencyChanged(currency.value.id)}
         />
 
-        <Button className="w-fit ml-auto" type="submit" disabled={showCurrency && !selectedCurrency}>
+        <Button className="w-fit ml-auto" type="submit" disabled={!!fiatFlag && !activeCurrency}>
           {t('settings.currency.save')}
         </Button>
       </form>
