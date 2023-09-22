@@ -1,9 +1,9 @@
 import { Page } from 'playwright';
+
 import { BasePage } from '../BasePage';
-import { AssetsPageElements } from '../_elements/AssetsPageElements'
+import { AssetsPageElements } from '../_elements/AssetsPageElements';
 import { BaseSettingsPage } from '../settingsPage/BaseSettingsPage';
 import { SettingsPageElements } from '../_elements/SettingsPageElements';
-
 
 export class WatchOnlyAssetsPage extends BasePage {
   protected pageElements: AssetsPageElements;
@@ -14,6 +14,6 @@ export class WatchOnlyAssetsPage extends BasePage {
   }
 
   public async goToSettingsPage(): Promise<BaseSettingsPage> {
-    return new BaseSettingsPage(this.page, new SettingsPageElements()).gotoMain()
+    return new BaseSettingsPage(this.page, new SettingsPageElements()).gotoMain();
   }
 }

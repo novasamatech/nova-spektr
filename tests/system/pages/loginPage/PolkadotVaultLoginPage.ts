@@ -1,13 +1,13 @@
 import { Page } from 'playwright';
-import { BaseLoginPage } from "./BaseLoginPage";
-import { LoginPageElements } from "../_elements/LoginPageElements"
+
+import { LoginPageElements } from '../_elements/LoginPageElements';
 import { BasePage } from '../BasePage';
 
 export class PolkadotVaultLoginPage extends BasePage {
-    public pageElements: LoginPageElements;
+  public pageElements: LoginPageElements;
 
-    constructor(page: Page, pageElements: LoginPageElements) {
-      super(page);
-      this.pageElements = pageElements;
-    }
+  constructor(page: Page, pageElements: LoginPageElements) {
+    super(page);
+    this.pageElements = pageElements;
+  }
 }
