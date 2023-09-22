@@ -13,6 +13,7 @@ import {
   MultisigTransactionKey,
 } from '@renderer/entities/transaction/model/transaction';
 import { Metadata } from '@renderer/entities/network';
+import { LightClientState } from '@renderer/domain/lightClientState';
 
 // =====================================================
 // ================ Storage interface ==================
@@ -110,6 +111,11 @@ export interface INotificationStorage {
   addNotification: (notification: Notification) => Promise<ID>;
 }
 
+export interface ILightClientStateStorage {
+  getLightClientState: (chainId: ChainId) => Promise<lightClientStateDS | undefined>;
+  addLightClientState: (lightClient: LightClientState) => Promise<void>;
+}
+
 // =====================================================
 // ================== Storage Schemes ==================
 // =====================================================
@@ -124,6 +130,7 @@ export type DataStorage = {
   multisigEvents: IMultisigEventStorage;
   notifications: INotificationStorage;
   metadata: IMetadataStorage;
+  lightClientState: ILightClientStateStorage;
 };
 
 export type ID = string;
@@ -138,6 +145,7 @@ export type MultisigTransactionDS = WithID<MultisigTransaction>;
 export type MultisigEventDS = WithID<MultisigEvent>;
 export type NotificationDS = WithID<Notification>;
 export type MetadataDS = WithID<Metadata>;
+export type lightClientStateDS = WithID<LightClientState>;
 
 export type TWallet = Table<Wallet, ID>;
 export type TContact = Table<Contact, ID>;
@@ -148,3 +156,4 @@ export type TMultisigTransaction = Table<MultisigTransaction, ID[]>;
 export type TMultisigEvent = Table<MultisigEvent, ID>;
 export type TNotification = Table<Notification, ID>;
 export type TMetadata = Table<Metadata, ID[]>;
+export type TLightClientState = Table<LightClientState, ID>;

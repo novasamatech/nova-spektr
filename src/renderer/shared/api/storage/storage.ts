@@ -12,6 +12,7 @@ import {
   TNotification,
   TMultisigEvent,
   TMetadata,
+  TLightClientState,
 } from './common/types';
 import { useBalanceStorage } from './balanceStorage';
 import { useConnectionStorage } from './connectionStorage';
@@ -23,6 +24,7 @@ import { useNotificationStorage } from './notificationStorage';
 import { useMultisigEventStorage } from './multisigEventStorage';
 import { upgradeEvents } from './common/upgrades';
 import { useMetadataStorage } from './metadataStorage';
+import { useLightClientStateStorage } from './lightClientStateStorage';
 
 class DexieStorage extends Dexie {
   connections: TConnection;
@@ -34,6 +36,7 @@ class DexieStorage extends Dexie {
   multisigEvents: TMultisigEvent;
   notifications: TNotification;
   metadata: TMetadata;
+  lightClientState: TLightClientState;
 
   constructor() {
     super('spektr');
@@ -47,6 +50,7 @@ class DexieStorage extends Dexie {
       multisigTransactions:
         '[accountId+chainId+callHash+blockCreated+indexCreated],[accountId+status],[accountId+callHash],[callHash+status+chainId],accountId,status,callHash',
       notifications: '++id,type,read',
+      lightClientState: '++id,chainId,type',
     });
 
     // Move Multisig events from transaction to separate table
@@ -60,6 +64,10 @@ class DexieStorage extends Dexie {
       metadata: '[chainId+version],chainId',
     });
 
+    this.version(19).stores({
+      lightClientState: '++id,chainId,type',
+    });
+
     this.connections = this.table('connections');
     this.balances = this.table('balances');
     this.wallets = this.table('wallets');
@@ -69,6 +77,7 @@ class DexieStorage extends Dexie {
     this.multisigEvents = this.table('multisigEvents');
     this.notifications = this.table('notifications');
     this.metadata = this.table('metadata');
+    this.lightClientState = this.table('lightClientState');
   }
 }
 
@@ -99,6 +108,8 @@ class StorageFactory implements IStorage {
         return useNotificationStorage(this.dexieDB.notifications) as DataStorage[T];
       case 'metadata':
         return useMetadataStorage(this.dexieDB.metadata) as DataStorage[T];
+      case 'lightClientState':
+        return useLightClientStateStorage(this.dexieDB.lightClientState) as DataStorage[T];
       default:
         return undefined;
     }

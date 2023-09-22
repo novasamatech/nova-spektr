@@ -12,7 +12,7 @@ import { ISubscriptionService } from '../../../services/subscription/common/type
 import { useChainSpec } from './chainSpecService';
 import { useChains } from './chainsService';
 import { useMetadata } from './metadataService';
-import { AUTO_BALANCE_TIMEOUT, MAX_ATTEMPTS, PROGRESSION_BASE } from './common/constants';
+import { AUTO_BALANCE_TIMEOUT, MAX_ATTEMPTS, PROGRESSION_BASE} from './common/constants';
 import { ConnectionsMap, ConnectProps, INetworkService, RpcValidation } from './common/types';
 import { createCachedProvider } from './provider/CachedProvider';
 
@@ -25,12 +25,18 @@ export const useNetwork = (networkSubscription?: ISubscriptionService<ChainId>):
   const { subscribeMetadata, getMetadata } = useMetadata();
 
   const connectionStorage = storage.connectTo('connections');
+  const lightClientStateStorage = storage.connectTo('lightClientState');
 
   if (!connectionStorage) {
     throw new Error('=== 🔴 Connections storage in not defined 🔴 ===');
   }
 
+  if (!lightClientStateStorage) {
+    throw new Error('=== 🔴 LightClientState storage in not defined 🔴 ===');
+  }
+
   const { getConnections, getConnection, addConnections, clearConnections, updateConnection } = connectionStorage;
+  const { getLightClientState, addLightClientState } = lightClientStateStorage;
 
   const updateConnectionState = (
     chainId: ChainId,
@@ -279,7 +285,12 @@ export const useNetwork = (networkSubscription?: ISubscriptionService<ChainId>):
 
     if (provider.instance) {
       if (provider.isScProvider) {
-        await provider.instance.connect();
+        const previousState = await getLightClientState(chainId);
+        await (provider.instance as ScProvider).connect(undefined, undefined, previousState?.state || undefined);
+        (provider.instance as ScProvider).on("connected", async () => {
+          const currentState = await (provider.instance as ScProvider).send("chainHead_unstable_finalizedDatabase", [1e9,]); // TODO: calculate good size
+          addLightClientState({chainId: chainId, state: currentState});
+        })
       }
 
       subscribeConnected(chainId, provider.instance, type, node);
