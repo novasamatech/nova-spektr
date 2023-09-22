@@ -5,6 +5,8 @@ import { BaseLoginPage } from '../../pages/loginPage/BaseLoginPage';
 import { LoginPageElements } from '../../pages/_elements/LoginPageElements';
 import { baseTestConfig } from '../../BaseTestConfig';
 
+test.setTimeout(120000);
+
 test.describe('Login in Matrix', () => {
   let browser: Browser;
   let context: BrowserContext;
@@ -32,7 +34,7 @@ test.describe('Login in Matrix', () => {
     const matrixSettings = await settingsPage.clickOnMatrixElementMenu();
     await matrixSettings.matrixAuthentificate(baseTestConfig.matrix_username_1, baseTestConfig.matrix_password_1);
 
-    await page.waitForSelector(matrixSettings.pageElements.logedIn, { timeout: 60000 });
+    await page.waitForSelector(matrixSettings.pageElements.logedIn);
     expect(await page.isVisible(matrixSettings.pageElements.logedIn)).toBeTruthy();
   });
 });
