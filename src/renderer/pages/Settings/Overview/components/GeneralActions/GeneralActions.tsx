@@ -5,12 +5,12 @@ import { Icon, BodyText, Plate, FootnoteText, HelpText } from '@renderer/shared/
 import { useI18n } from '@renderer/app/providers';
 import { Paths } from '@renderer/app/providers';
 import { cnTw } from '@renderer/shared/lib/utils';
-import { currencyModel } from '@renderer/entities/currency';
+import { currencyModel } from '@renderer/entities/price';
 
 // TODO: Language switcher temporary removed
 export const GeneralActions = () => {
   const { t } = useI18n();
-  const currency = useUnit(currencyModel.$currency);
+  const currency = useUnit(currencyModel.$activeCurrency);
 
   // const localeOptions: DropdownOption[] = locales.map((option) => ({
   //   id: option.value,

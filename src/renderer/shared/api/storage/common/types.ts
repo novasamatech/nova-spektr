@@ -7,12 +7,12 @@ import { Wallet } from '@renderer/entities/wallet/model/wallet';
 import { Account, MultisigAccount } from '@renderer/entities/account/model/account';
 import { Notification } from '@renderer/entities/notification/model/notification';
 import type { Contact } from '@renderer/entities/contact';
+import type { Metadata } from '@renderer/entities/network';
 import {
   MultisigEvent,
   MultisigTransaction,
   MultisigTransactionKey,
 } from '@renderer/entities/transaction/model/transaction';
-import { Metadata } from '@renderer/entities/network';
 
 // =====================================================
 // ================ Storage interface ==================

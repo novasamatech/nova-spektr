@@ -4,7 +4,6 @@ import { useNavigate, useRoutes } from 'react-router-dom';
 
 import { FallbackScreen } from '@renderer/components/common';
 import { useAccount } from '@renderer/entities/account';
-import { contactModel } from '@renderer/entities/contact';
 import {
   ConfirmDialogProvider,
   I18Provider,
@@ -15,7 +14,6 @@ import {
   Paths,
   routesConfig,
 } from './providers';
-import { currencyModel } from '@renderer/entities/currency';
 
 const SPLASH_SCREEN_DELAY = 450;
 
@@ -26,11 +24,6 @@ const App = () => {
 
   const [showSplashScreen, setShowSplashScreen] = useState(true);
   const [isAccountsLoading, setIsAccountsLoading] = useState(true);
-
-  useEffect(() => {
-    contactModel.events.appStarted();
-    currencyModel.events.appStarted();
-  }, []);
 
   useEffect(() => {
     setTimeout(() => setShowSplashScreen(false), SPLASH_SCREEN_DELAY);

@@ -1,0 +1,22 @@
+export const localStorageService = {
+  getFromStorage,
+  saveToStorage,
+};
+
+function getFromStorage<T extends any>(key: string, defaultValue: T): T {
+  const storageItem = localStorage.getItem(key);
+
+  if (!storageItem) return defaultValue;
+
+  try {
+    return storageItem ? JSON.parse(storageItem) : defaultValue;
+  } catch {
+    console.error(`🔸LocalStorageService - Could not retrieve item by key - ${key}`);
+
+    return defaultValue;
+  }
+}
+
+function saveToStorage<T extends any>(key: string, value: T) {
+  localStorage.setItem(key, JSON.stringify(value));
+}

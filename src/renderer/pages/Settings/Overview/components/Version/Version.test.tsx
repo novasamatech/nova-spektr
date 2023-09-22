@@ -8,7 +8,7 @@ jest.mock('@renderer/app/providers', () => ({
   }),
 }));
 
-describe('screen/Settings/Overview/Version', () => {
+describe('pages/Settings/Overview/Version', () => {
   test('should render app version', () => {
     process.env.VERSION = '1.0.0';
     render(<Version />);

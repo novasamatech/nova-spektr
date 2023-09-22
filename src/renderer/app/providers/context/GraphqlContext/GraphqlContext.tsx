@@ -3,7 +3,7 @@ import { onError } from '@apollo/client/link/error';
 import { createContext, PropsWithChildren, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 
 import { ChainId } from '@renderer/domain/shared-kernel';
-import { useChains } from '@renderer/entities/network';
+import { chainsService } from '@renderer/entities/network';
 import { useSettingsStorage } from '@renderer/entities/settings';
 
 type GraphqlContextProps = {
@@ -27,7 +27,6 @@ const errorLink = onError(({ graphQLErrors, networkError }) => {
 });
 
 export const GraphqlProvider = ({ children }: PropsWithChildren) => {
-  const { getStakingChainsData } = useChains();
   const { getStakingNetwork } = useSettingsStorage();
 
   const chainUrls = useRef<Record<ChainId, string>>({});
@@ -45,23 +44,21 @@ export const GraphqlProvider = ({ children }: PropsWithChildren) => {
   }, []);
 
   useEffect(() => {
-    (async () => {
-      const chainsData = await getStakingChainsData();
+    const chainsData = chainsService.getStakingChainsData();
 
-      chainUrls.current = chainsData.reduce((acc, chain) => {
-        const subqueryMatch = chain.externalApi?.staking.find((api) => api.type === 'subquery');
+    chainUrls.current = chainsData.reduce((acc, chain) => {
+      const subqueryMatch = chain.externalApi?.staking.find((api) => api.type === 'subquery');
 
-        if (subqueryMatch) {
-          return { ...acc, [chain.chainId]: subqueryMatch.url };
-        }
+      if (subqueryMatch) {
+        return { ...acc, [chain.chainId]: subqueryMatch.url };
+      }
 
-        console.warn(`${chain.name} doesn't contain Subquery URL`);
+      console.warn(`${chain.name} doesn't contain Subquery URL`);
 
-        return acc;
-      }, {});
+      return acc;
+    }, {});
 
-      changeClient(getStakingNetwork());
-    })();
+    changeClient(getStakingNetwork());
   }, []);
 
   const value = useMemo(() => ({ changeClient }), [changeClient]);

@@ -6,11 +6,11 @@ import { cleanAmount, cnTw, formatGroups, validatePrecision, validateSymbols } f
 import { useI18n } from '@renderer/app/providers';
 import { FootnoteText, HelpText, TitleText } from '../../Typography';
 import Input from '../Input/Input';
-import { useCurrency } from '@renderer/entities/currency';
 import AllIcons, { IconNames } from '@renderer/shared/ui/Icon/data';
 import Icon from '../../Icon/Icon';
 import { IconButton } from '@renderer/shared/ui';
 import { useToggle } from '@renderer/shared/lib/hooks';
+import { useCurrency } from '@renderer/shared/ui/Inputs/AmountInput/useCurrency';
 
 const CURRENCY_PRECISION = 6;
 

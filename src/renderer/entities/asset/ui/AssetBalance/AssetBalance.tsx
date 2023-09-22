@@ -27,9 +27,7 @@ export const AssetBalance = ({ value, asset, className, showIcon, imgClassName, 
     </span>
   );
 
-  if (!showIcon) {
-    return balance;
-  }
+  if (!showIcon) return balance;
 
   return (
     <span className={cnTw('flex items-center gap-x-2', wrapperClassName)}>

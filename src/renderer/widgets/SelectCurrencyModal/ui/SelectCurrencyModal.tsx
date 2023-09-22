@@ -6,8 +6,9 @@ import { BaseModal, Button, FootnoteText, HelpText, Switch } from '@renderer/sha
 import { useToggle } from '@renderer/shared/lib/hooks';
 import { useI18n } from '@renderer/app/providers';
 import { DropdownOption, DropdownOptionGroup, DropdownResult } from '@renderer/shared/ui/Dropdowns/common/types';
-import { Currency, currencyModel } from '@renderer/entities/currency';
 import { GroupedSelect } from '@renderer/shared/ui/Dropdowns/GroupedSelect/GroupedSelect';
+import { currencyModel } from '@renderer/entities/price';
+import { CurrencyItem } from '@renderer/shared/api/price-provider';
 
 const CURRENCiES = require('../temp/mock-currencies.json');
 
@@ -16,8 +17,8 @@ type Props = {
 };
 
 export const SelectCurrencyModal = ({ onClose }: Props) => {
-  const savedCurrency = useUnit(currencyModel.$currency)?.coingeckoId;
-  const updateCurrency = useEvent(currencyModel.events.updateCurrency);
+  const savedCurrency = useUnit(currencyModel.$activeCurrency)?.coingeckoId;
+  const updateCurrency = useEvent(currencyModel.events.currencyChanged);
 
   const { t } = useI18n();
   const [isOpen, toggleIsOpen] = useToggle(true);
@@ -26,11 +27,11 @@ export const SelectCurrencyModal = ({ onClose }: Props) => {
     savedCurrency ? { id: savedCurrency, value: savedCurrency } : undefined,
   );
 
-  const cryptoCurrencies = CURRENCiES.filter((c: Currency) => c.category === 'crypto');
-  const popularFiatCurrencies = CURRENCiES.filter((c: Currency) => c.category === 'fiat' && c.popular);
-  const unpopularFiatCurrencies = CURRENCiES.filter((c: Currency) => c.category === 'fiat' && !c.popular);
+  const cryptoCurrencies = CURRENCiES.filter((c: CurrencyItem) => c.category === 'crypto');
+  const popularFiatCurrencies = CURRENCiES.filter((c: CurrencyItem) => c.category === 'fiat' && c.popular);
+  const unpopularFiatCurrencies = CURRENCiES.filter((c: CurrencyItem) => c.category === 'fiat' && !c.popular);
 
-  const getCurrencyOption = (currency: Currency): DropdownOption<string> => ({
+  const getCurrencyOption = (currency: CurrencyItem): DropdownOption<string> => ({
     id: currency.coingeckoId,
     value: currency.coingeckoId,
     element: [currency.code, currency.symbol, currency.name].filter(Boolean).join(' • '),
@@ -49,9 +50,7 @@ export const SelectCurrencyModal = ({ onClose }: Props) => {
 
   const saveChanges = () => {
     if (showCurrency && selectedCurrency) {
-      updateCurrency(CURRENCiES.find((c: Currency) => c.coingeckoId === selectedCurrency.id));
-    } else {
-      updateCurrency(null);
+      updateCurrency(CURRENCiES.find((c: CurrencyItem) => c.coingeckoId === selectedCurrency.id));
     }
 
     handleClose();
