@@ -80,7 +80,7 @@ export const SelectCurrencyModal = ({ onClose }: Props) => {
           onChange={(currency) => currencyForm.events.currencyChanged(currency.value.id)}
         />
 
-        <Button className="w-fit ml-auto" type="submit" disabled={!!fiatFlag && !activeCurrency}>
+        <Button className="w-fit ml-auto" type="submit">
           {t('settings.currency.save')}
         </Button>
       </form>
