@@ -1,4 +1,5 @@
 import { useUnit } from 'effector-react/effector-react.umd';
+import { FormEvent } from 'react';
 
 import { BaseModal, Button, FootnoteText, HelpText, Switch } from '@renderer/shared/ui';
 import { useToggle } from '@renderer/shared/lib/hooks';
@@ -47,11 +48,11 @@ export const SelectCurrencyModal = ({ onClose }: Props) => {
     setTimeout(onClose, DEFAULT_TRANSITION);
   };
 
-  const saveChanges = () => {
+  const saveChanges = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
     currencyForm.events.submitForm();
 
     handleClose(true);
-    // setTimeout(handleClose, DEFAULT_TRANSITION);
   };
 
   return (
