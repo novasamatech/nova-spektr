@@ -44,7 +44,7 @@ jest.mock('@renderer/entities/network', () => ({
   },
 }));
 
-jest.mock('@renderer/components/modals/MatrixModal/MatrixModal', () => ({
+jest.mock('@renderer/widgets/MatrixModal', () => ({
   MatrixModal: () => <span>matrixModal</span>,
 }));
 

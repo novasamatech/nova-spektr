@@ -13,7 +13,6 @@ import {
 } from '@renderer/entities/account';
 import { useToggle } from '@renderer/shared/lib/hooks';
 import { OperationResult } from '@renderer/entities/transaction';
-import { MatrixModal } from '../MatrixModal/MatrixModal';
 import { Wallet, useWallet } from '@renderer/entities/wallet';
 import { ExtendedContact, ExtendedWallet } from './common/types';
 import { SelectSignatories, ConfirmSignatories, WalletForm } from './components';
@@ -178,6 +177,8 @@ export const CreateMultisigAccount = ({ isOpen, onClose }: Props) => {
         contentClass="flex h-[524px]"
         onClose={handleClose}
       >
+        {/*<MatrixLoginModal isOpen={isOpen && !isLoggedIn} onClose={onClose} />*/}
+
         <WalletForm
           accounts={accounts}
           signatories={signatories}
@@ -205,11 +206,18 @@ export const CreateMultisigAccount = ({ isOpen, onClose }: Props) => {
         />
       </BaseModal>
 
+      <BaseModal
+        isOpen={isOpen && !isLoggedIn}
+        headerClass="py-[15px] px-5"
+        contentClass="px-5 pb-4 w-[440px]"
+        onClose={onClose}
+      >
+        <div>MATRIX_LOL</div>
+      </BaseModal>
+
       <OperationResult {...getResultProps()} title={name} isOpen={isResultModalOpen} onClose={handleSuccessClose}>
         {error && <Button onClick={toggleResultModal}>{t('createMultisigAccount.closeButton')}</Button>}
       </OperationResult>
-
-      <MatrixModal isOpen={isOpen && !isLoggedIn} onClose={onClose} />
     </>
   );
 };

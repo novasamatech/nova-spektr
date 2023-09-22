@@ -1,7 +1,6 @@
 import { render, screen, act } from '@testing-library/react';
-import noop from 'lodash/noop';
 
-import Credentials from './Credentials';
+import { Credentials } from '../Credentials';
 import { useMatrix } from '@renderer/app/providers';
 
 jest.mock('@renderer/app/providers', () => ({
@@ -19,7 +18,7 @@ describe('pages/Settings/Matrix/Credentials', () => {
   });
 
   test('should render component', () => {
-    render(<Credentials onLogOut={noop} />);
+    render(<Credentials />);
 
     const title = screen.getByText('settings.matrix.userIdLabel');
     expect(title).toBeInTheDocument();
@@ -30,7 +29,7 @@ describe('pages/Settings/Matrix/Credentials', () => {
     (useMatrix as jest.Mock).mockReturnValue({
       matrix: { logout: spyLogout },
     });
-    render(<Credentials onLogOut={noop} />);
+    render(<Credentials />);
 
     const button = screen.getByRole('button');
     await act(async () => button.click());

@@ -1,0 +1,1 @@
+export { MatrixRouteGuard } from './MatrixRouteGuard';
