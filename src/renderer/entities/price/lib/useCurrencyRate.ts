@@ -9,7 +9,5 @@ export const useCurrencyRate = (assetId?: string, showCurrency?: boolean): numbe
 
   if (!showCurrency || !fiatFlag || !activeCurrency || !assetsPrices || !assetId) return null;
 
-  console.log(assetsPrices);
-
-  return assetsPrices[assetId][activeCurrency.id].price;
+  return assetsPrices[assetId][activeCurrency.coingeckoId].price;
 };

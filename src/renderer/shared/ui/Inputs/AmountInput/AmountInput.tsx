@@ -1,4 +1,4 @@
-import { useCallback } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useUnit } from 'effector-react';
 
 import { AssetBalance, AssetIcon, Asset } from '@renderer/entities/asset';
@@ -8,10 +8,7 @@ import { FootnoteText, HelpText, TitleText } from '../../Typography';
 import Input from '../Input/Input';
 import { IconButton } from '@renderer/shared/ui';
 import { useToggle } from '@renderer/shared/lib/hooks';
-import { useCurrencyRate } from './useCurrency';
-import { currencyModel } from '@renderer/entities/price';
-
-const CURRENCY_PRECISION = 6;
+import { currencyModel, useCurrencyRate } from '@renderer/entities/price';
 
 type Props = {
   name?: string;
@@ -42,19 +39,24 @@ export const AmountInput = ({
   const rate = useCurrencyRate(asset.priceId, showCurrency);
   const activeCurrency = useUnit(currencyModel.$activeCurrency);
   const [currencyMode, toggleCurrencyMode] = useToggle(false);
+  const [internalValue, setInternalValue] = useState(value);
 
   const handleChange = (amount: string) => {
     const cleanedAmount = cleanAmount(amount);
+    setInternalValue(cleanedAmount);
 
-    if (
-      validateSymbols(cleanedAmount) &&
-      validatePrecision(cleanedAmount, currencyMode ? CURRENCY_PRECISION : asset.precision)
-    ) {
+    if (validateSymbols(cleanedAmount) && (currencyMode || validatePrecision(cleanedAmount, asset.precision))) {
       onChange?.(currencyMode && rate ? (Number(cleanedAmount) * (1 / rate)).toString() : cleanedAmount);
     } else {
       onChange?.(value);
     }
   };
+
+  useEffect(() => {
+    if (currencyMode && rate) {
+      setInternalValue((Number(value) * rate).toString());
+    }
+  }, [currencyMode]);
 
   const getBalance = useCallback(() => {
     if (!balance) return;
@@ -93,8 +95,10 @@ export const AmountInput = ({
 
   const currencyIcon = showCurrency && activeCurrency && (
     <div className="flex items-center gap-x-1 min-w-fit">
-      <div className="relative rounded-full bg-token-background border border-token-border p-[1px] min-w-fit">
-        <TitleText className="text-white">{activeCurrency.symbol || activeCurrency.code}</TitleText>
+      <div className="relative rounded-full bg-token-background border border-token-border p-[1px] w-8 h-8">
+        <TitleText align="center" className="text-white">
+          {activeCurrency.symbol || activeCurrency.code}
+        </TitleText>
       </div>
       <TitleText>{activeCurrency.code}</TitleText>
     </div>
@@ -122,7 +126,7 @@ export const AmountInput = ({
       className={cnTw('text-right text-title font-manrope', activeCurrency && 'mb-4')}
       wrapperClass="py-2 items-start"
       label={label}
-      value={formatGroups(currencyMode && rate ? (Number(value) * rate).toString() : value)}
+      value={formatGroups(currencyMode ? internalValue : value)}
       placeholder={t('transfer.amountPlaceholder')}
       invalid={invalid}
       prefixElement={currencyMode ? currencyIcon : prefixElement}
