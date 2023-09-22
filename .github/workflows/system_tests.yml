@@ -3,8 +3,11 @@ name: Run system tests
 on:
   pull_request:
 
+env:
+  CI: true
+
 jobs:
-  test:
+  system-tests:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -15,7 +18,7 @@ jobs:
       - name: Install Playwright Browsers
         run: npx playwright install --with-deps
       - name: Run Playwright tests
-        run: pnpm run test:system
+        run: npx playwright test
       - uses: actions/upload-artifact@v3
         if: always()
         with:

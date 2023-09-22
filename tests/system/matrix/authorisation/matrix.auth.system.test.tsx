@@ -5,7 +5,7 @@ import { BaseLoginPage } from '../../pages/loginPage/BaseLoginPage';
 import { LoginPageElements } from '../../pages/_elements/LoginPageElements';
 import { baseTestConfig } from '../../BaseTestConfig';
 
-test.setTimeout(120000);
+test.setTimeout(60_000);
 
 test.describe('Login in Matrix', () => {
   let browser: Browser;
@@ -28,10 +28,24 @@ test.describe('Login in Matrix', () => {
     loginPage = new BaseLoginPage(page, pageElements);
   });
 
+  test.afterEach(async () => {
+    await context.close();
+  });
+
   test('User can login in Matrix from Settings page', async () => {
     const assetsPage = await loginPage.createBaseWatchOnlyWallet();
     const settingsPage = await assetsPage.goToSettingsPage();
     const matrixSettings = await settingsPage.clickOnMatrixElementMenu();
+    await matrixSettings.matrixAuthentificate(baseTestConfig.matrix_username_1, baseTestConfig.matrix_password_1);
+
+    await page.waitForSelector(matrixSettings.pageElements.logedIn);
+    expect(await page.isVisible(matrixSettings.pageElements.logedIn)).toBeTruthy();
+  });
+
+  test('User can login in Matrix from Multisig creation flow', async () => {
+    const assetsPage = await loginPage.createBaseWatchOnlyWallet();
+    const walletModalWindow = await assetsPage.openWalletManagement();
+    const matrixSettings = await (await walletModalWindow.clickOnAddButton()).clickOnMultisigButtonWithoutAuth();
     await matrixSettings.matrixAuthentificate(baseTestConfig.matrix_username_1, baseTestConfig.matrix_password_1);
 
     await page.waitForSelector(matrixSettings.pageElements.logedIn);
