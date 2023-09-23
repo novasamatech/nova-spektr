@@ -1,5 +1,4 @@
 import { render, screen, act } from '@testing-library/react';
-import { MemoryRouter } from 'react-router-dom';
 import { fork } from 'effector';
 import noop from 'lodash/noop';
 
@@ -45,7 +44,7 @@ jest.mock('@renderer/entities/network', () => ({
 }));
 
 jest.mock('@renderer/widgets/MatrixModal', () => ({
-  MatrixModal: () => <span>matrixModal</span>,
+  MatrixLoginModal: () => <span>matrixModal</span>,
 }));
 
 jest.mock('@renderer/entities/transaction', () => ({
@@ -65,7 +64,7 @@ describe('screen/CreateMultisigAccount', () => {
     });
 
     await act(async () => {
-      render(<CreateMultisigAccount isOpen={true} onClose={noop} />, { wrapper: MemoryRouter });
+      render(<CreateMultisigAccount isOpen={true} onClose={noop} onComplete={noop} />);
     });
     const text = screen.getByText('createMultisigAccount.title');
     const form = screen.getByText('walletForm');

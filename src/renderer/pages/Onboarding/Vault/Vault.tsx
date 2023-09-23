@@ -5,6 +5,8 @@ import ScanStep from './ScanStep/ScanStep';
 import ManageStep from './ManageStep/ManageStep';
 import ManageStepSingle from './ManageStepSingle/ManageStepSingle';
 import { BaseModal } from '@renderer/shared/ui';
+import { DEFAULT_TRANSITION } from '@renderer/shared/lib/utils';
+import { useToggle } from '@renderer/shared/lib/hooks';
 
 const enum Step {
   SCAN,
@@ -18,11 +20,23 @@ type Props = {
 };
 
 const Vault = ({ isOpen, onClose, onComplete }: Props) => {
+  const [isModalOpen, toggleIsModalOpen] = useToggle(isOpen);
+
   const [activeStep, setActiveStep] = useState<Step>(Step.SCAN);
   const [qrPayload, setQrPayload] = useState<SeedInfo[]>();
 
   useEffect(() => {
-    isOpen && setActiveStep(Step.SCAN);
+    if (isOpen) {
+      setActiveStep(Step.SCAN);
+    }
+
+    if (isOpen && !isModalOpen) {
+      toggleIsModalOpen();
+    }
+
+    if (!isOpen && isModalOpen) {
+      closeVaultModal();
+    }
   }, [isOpen]);
 
   const onReceiveQr = (payload: SeedInfo[]) => {
@@ -35,29 +49,35 @@ const Vault = ({ isOpen, onClose, onComplete }: Props) => {
     ((qrPayload[0].derivedKeys.length === 0 && qrPayload[0].name === '') ||
       qrPayload[0].derivedKeys.every((d) => !d.derivationPath));
 
-  const closeModal = () => {
-    onClose();
-  };
+  const closeVaultModal = (params?: { complete: boolean }) => {
+    toggleIsModalOpen();
 
-  const complete = () => {
-    onComplete();
+    setTimeout(params?.complete ? onComplete : onClose, DEFAULT_TRANSITION);
   };
 
   return (
     <BaseModal
       closeButton
-      isOpen={isOpen}
+      isOpen={isModalOpen}
       contentClass="flex h-full"
       panelClass="w-[944px] h-[576px]"
-      onClose={closeModal}
+      onClose={closeVaultModal}
     >
-      {activeStep === Step.SCAN && <ScanStep onBack={closeModal} onNextStep={onReceiveQr} />}
+      {activeStep === Step.SCAN && <ScanStep onBack={closeVaultModal} onNextStep={onReceiveQr} />}
       {activeStep === Step.MANAGE && qrPayload && (
         <>
           {isPlainQr ? (
-            <ManageStepSingle seedInfo={qrPayload} onBack={() => setActiveStep(Step.SCAN)} onComplete={complete} />
+            <ManageStepSingle
+              seedInfo={qrPayload}
+              onBack={() => setActiveStep(Step.SCAN)}
+              onComplete={() => closeVaultModal({ complete: true })}
+            />
           ) : (
-            <ManageStep seedInfo={qrPayload} onBack={() => setActiveStep(Step.SCAN)} onComplete={complete} />
+            <ManageStep
+              seedInfo={qrPayload}
+              onBack={() => setActiveStep(Step.SCAN)}
+              onComplete={() => closeVaultModal({ complete: true })}
+            />
           )}
         </>
       )}

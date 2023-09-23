@@ -9,10 +9,11 @@ import { DEFAULT_TRANSITION } from '@renderer/shared/lib/utils';
 
 type Props = {
   isOpen?: boolean;
+  zIndex?: string;
   onClose: () => void;
 };
 
-export const MatrixLoginModal = ({ isOpen = true, onClose }: Props) => {
+export const MatrixLoginModal = ({ isOpen = true, zIndex, onClose }: Props) => {
   const { t } = useI18n();
 
   const [isModalOpen, toggleIsModalOpen] = useToggle(isOpen);
@@ -23,17 +24,26 @@ export const MatrixLoginModal = ({ isOpen = true, onClose }: Props) => {
     }
 
     if (!isOpen && isModalOpen) {
-      closeMatrixModal();
+      closeMatrixModal({ skipEvent: true });
     }
   }, [isOpen]);
 
-  const closeMatrixModal = () => {
+  const closeMatrixModal = (options?: { skipEvent: boolean }) => {
     toggleIsModalOpen();
-    setTimeout(onClose, DEFAULT_TRANSITION);
+
+    if (!options?.skipEvent) {
+      setTimeout(onClose, DEFAULT_TRANSITION);
+    }
   };
 
   return (
-    <BaseModal closeButton isOpen={isModalOpen} title={t('settings.matrix.logInTitle')} onClose={closeMatrixModal}>
+    <BaseModal
+      closeButton
+      isOpen={isModalOpen}
+      title={t('settings.matrix.logInTitle')}
+      zIndex={zIndex}
+      onClose={closeMatrixModal}
+    >
       <MatrixInfoPopover />
       <LoginForm />
     </BaseModal>
