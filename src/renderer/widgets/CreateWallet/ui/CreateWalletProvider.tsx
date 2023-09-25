@@ -6,7 +6,7 @@ import { WalletType } from '@renderer/domain/shared-kernel';
 import { walletProviderModel } from '../model/wallet-provider-model';
 import WatchOnly from '@renderer/pages/Onboarding/WatchOnly/WatchOnly';
 import Vault from '@renderer/pages/Onboarding/Vault/Vault';
-import { CreateMultisigAccount } from '@renderer/components/modals';
+import { MultisigAccount } from './MultisigAccount/MultisigAccount';
 import { Paths } from '../../../app/providers/routes/paths';
 
 // TODO: Break down WatchOnly / Vault / CreateMultisig to widgets
@@ -18,7 +18,7 @@ const WalletModals: Record<WalletType, (props: ModalProps) => JSX.Element> = {
   [WalletType.WATCH_ONLY]: (props) => <WatchOnly isOpen {...props} />,
   [WalletType.SINGLE_PARITY_SIGNER]: (props) => <Vault isOpen {...props} />,
   [WalletType.MULTISHARD_PARITY_SIGNER]: (props) => <Vault isOpen {...props} />,
-  [WalletType.MULTISIG]: (props) => <CreateMultisigAccount isOpen {...props} />,
+  [WalletType.MULTISIG]: (props) => <MultisigAccount isOpen {...props} />,
 };
 
 export const CreateWalletProvider = () => {

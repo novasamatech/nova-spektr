@@ -4,7 +4,7 @@ import noop from 'lodash/noop';
 
 import { TEST_ACCOUNT_ID } from '@renderer/shared/lib/utils';
 import { contactModel } from '@renderer/entities/contact';
-import { CreateMultisigAccount } from './CreateMultisigAccount';
+import { MultisigAccount } from './MultisigAccount';
 
 jest.mock('@renderer/app/providers', () => ({
   useI18n: jest.fn().mockReturnValue({
@@ -17,10 +17,6 @@ jest.mock('@renderer/app/providers', () => ({
       userId: 'userId',
     },
   }),
-}));
-
-jest.mock('react-router-dom', () => ({
-  useNavigate: jest.fn(),
 }));
 
 jest.mock('@renderer/entities/account', () => ({
@@ -57,14 +53,14 @@ jest.mock('./components', () => ({
   ConfirmSignatories: () => <span>confirmSignatories</span>,
 }));
 
-describe('screen/CreateMultisigAccount', () => {
+describe('widgets/CreteWallet/ui/MultisigAccount', () => {
   test('should render component', async () => {
     fork({
       values: new Map().set(contactModel.$contacts, []),
     });
 
     await act(async () => {
-      render(<CreateMultisigAccount isOpen={true} onClose={noop} onComplete={noop} />);
+      render(<MultisigAccount isOpen={true} onClose={noop} onComplete={noop} />);
     });
     const text = screen.getByText('createMultisigAccount.title');
     const form = screen.getByText('walletForm');

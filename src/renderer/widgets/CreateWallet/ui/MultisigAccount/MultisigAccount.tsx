@@ -3,13 +3,7 @@ import { useStore } from 'effector-react';
 
 import { BaseModal, HeaderTitleText, StatusLabel, Button } from '@renderer/shared/ui';
 import { useI18n, useMatrix } from '@renderer/app/providers';
-import {
-  useAccount,
-  createMultisigAccount,
-  MultisigAccount,
-  Account,
-  getMultisigAccountId,
-} from '@renderer/entities/account';
+import { useAccount, createMultisigAccount, Account, getMultisigAccountId } from '@renderer/entities/account';
 import { useToggle } from '@renderer/shared/lib/hooks';
 import { OperationResult } from '@renderer/entities/transaction';
 import { Wallet, useWallet } from '@renderer/entities/wallet';
@@ -33,7 +27,7 @@ type Props = {
   onComplete: () => void;
 };
 
-export const CreateMultisigAccount = ({ isOpen, onClose, onComplete }: Props) => {
+export const MultisigAccount = ({ isOpen, onClose, onComplete }: Props) => {
   const { t } = useI18n();
   const { matrix, isLoggedIn } = useMatrix();
   const { getWallets } = useWallet();
@@ -129,7 +123,7 @@ export const CreateMultisigAccount = ({ isOpen, onClose, onComplete }: Props) =>
       isActive: false,
     });
 
-    await addAccount<MultisigAccount>(mstAccount).then(setActiveAccount);
+    await addAccount(mstAccount).then(setActiveAccount);
   };
 
   const createNewRoom = async (name: string, threshold: number, creatorId: AccountId): Promise<void> => {
@@ -152,7 +146,7 @@ export const CreateMultisigAccount = ({ isOpen, onClose, onComplete }: Props) =>
       signatories: signatories.map(({ accountId, matrixId }) => ({ accountId, matrixId })),
     });
 
-    await addAccount<MultisigAccount>({ ...mstAccount, matrixRoomId }).then(setActiveAccount);
+    await addAccount({ ...mstAccount, matrixRoomId }).then(setActiveAccount);
   };
 
   const getResultProps = (): OperationResultProps => {
