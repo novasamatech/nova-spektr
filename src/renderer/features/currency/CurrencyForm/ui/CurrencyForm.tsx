@@ -2,10 +2,9 @@ import { FormEvent, useEffect } from 'react';
 import { useForm } from 'effector-forms';
 import { useUnit } from 'effector-react';
 
-import { Switch, FootnoteText, HelpText, Button } from '@renderer/shared/ui';
+import { Switch, FootnoteText, HelpText, Button, Select } from '@renderer/shared/ui';
 import { useI18n } from '@renderer/app/providers';
-import { GroupedSelect } from '@renderer/shared/ui/Dropdowns/GroupedSelect/GroupedSelect';
-import { DropdownOption, DropdownOptionGroup } from '@renderer/shared/ui/Dropdowns/common/types';
+import { DropdownOption } from '@renderer/shared/ui/Dropdowns/common/types';
 import { CurrencyItem } from '@renderer/shared/api/price-provider';
 import { Callbacks, currencyFormModel } from '../model/currency-form';
 
@@ -30,25 +29,30 @@ export const CurrencyForm = ({ onSubmit }: Props) => {
 
   const cryptoCurrencies = useUnit(currencyFormModel.$cryptoCurrencies);
   const popularFiatCurrencies = useUnit(currencyFormModel.$popularFiatCurrencies);
-
   const unpopularFiatCurrencies = useUnit(currencyFormModel.$unpopularFiatCurrencies);
 
-  const currenciesGroups: DropdownOptionGroup<CurrencyItem>[] = [
+  const currenciesOptions: DropdownOption<CurrencyItem>[] = [
     {
       id: 'crypto',
-      label: t('settings.currency.cryptocurrenciesLabel'),
-      options: cryptoCurrencies.map(getCurrencyOption),
+      element: <HelpText className="text-text-secondary">{t('settings.currency.cryptocurrenciesLabel')}</HelpText>,
+      value: {} as CurrencyItem,
+      disabled: true,
     },
+    ...cryptoCurrencies.map(getCurrencyOption),
     {
-      id: 'populat',
-      label: t('settings.currency.popularFiatLabel'),
-      options: popularFiatCurrencies.map(getCurrencyOption),
+      id: 'popular',
+      element: <HelpText className="text-text-secondary">{t('settings.currency.popularFiatLabel')}</HelpText>,
+      value: {} as CurrencyItem,
+      disabled: true,
     },
+    ...popularFiatCurrencies.map(getCurrencyOption),
     {
       id: 'unpopular',
-      label: t('settings.currency.unpopularFiatLabel'),
-      options: unpopularFiatCurrencies.map(getCurrencyOption),
+      element: <HelpText className="text-text-secondary">{t('settings.currency.unpopularFiatLabel')}</HelpText>,
+      value: {} as CurrencyItem,
+      disabled: true,
     },
+    ...unpopularFiatCurrencies.map(getCurrencyOption),
   ];
 
   const submitForm = (event: FormEvent) => {
@@ -65,11 +69,11 @@ export const CurrencyForm = ({ onSubmit }: Props) => {
         </div>
       </Switch>
 
-      <GroupedSelect
+      <Select
         placeholder={t('settings.currency.selectPlaceholder')}
         disabled={!fiatFlag?.value}
+        options={currenciesOptions}
         selectedId={currency?.value.toString()}
-        optionsGroups={currenciesGroups}
         onChange={({ value }) => currency?.onChange(value.id)}
       />
 
