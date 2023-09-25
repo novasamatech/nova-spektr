@@ -176,3 +176,16 @@ export const formatGroups = (amount: string): string => {
 export const cleanAmount = (amount: string) => {
   return trimLeadingZeros(amount).replace(/,/g, '');
 };
+
+export const formatFiatBalance = (balance = '0', precision = 0): string => {
+  const BNWithConfig = BigNumber.clone();
+  BNWithConfig.config({
+    ROUNDING_MODE: BNWithConfig.ROUND_DOWN,
+  });
+
+  const bnBalance = new BNWithConfig(balance);
+  const bnPrecision = new BNWithConfig(precision);
+  const TEN = new BNWithConfig(10);
+
+  return bnBalance.div(TEN.pow(bnPrecision)).decimalPlaces(2).toString();
+};

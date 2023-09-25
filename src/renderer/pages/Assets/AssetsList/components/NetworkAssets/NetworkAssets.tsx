@@ -10,6 +10,7 @@ import { useI18n } from '@renderer/app/providers';
 import { balanceSorter, sumBalances } from '../../common/utils';
 import { Account } from '@renderer/entities/account';
 import { AccountId } from '@renderer/domain/shared-kernel';
+import { NetworkFiatBalance } from '../NetworkFiatBalance/NetworkFiatBalance';
 
 type Props = {
   hideZeroBalance?: boolean;
@@ -91,18 +92,21 @@ export const NetworkAssets = ({ query, hideZeroBalance, chain, accounts, searchS
             'transition-colors rounded hover:bg-block-background-hover focus-visible:bg-block-background-hover',
           )}
         >
-          <div className="flex items-center justify-between gap-x-2">
-            <ChainTitle chain={chain} fontClass="text-caption uppercase" as="h2" iconSize={20} />
+          <div className="flex items-center justify-between gap-x-2 w-full">
+            <div className="flex items-center gap-x-2">
+              <ChainTitle chain={chain} fontClass="text-caption uppercase" as="h2" iconSize={20} />
 
-            {hasFailedVerification && (
-              <div className="flex items-center gap-x-2 text-text-warning">
-                {/* FIXME: tooltip not visible when first displayed network invalid. For now just render it below icon */}
-                <Tooltip content={t('balances.verificationTooltip')} pointer="up">
-                  <Icon name="warn" className="cursor-pointer" size={16} />
-                </Tooltip>
-                <CaptionText className="uppercase text-inherit">{t('balances.verificationFailedLabel')}</CaptionText>
-              </div>
-            )}
+              {hasFailedVerification && (
+                <div className="flex items-center gap-x-2 text-text-warning">
+                  {/* FIXME: tooltip not visible when first displayed network invalid. For now just render it below icon */}
+                  <Tooltip content={t('balances.verificationTooltip')} pointer="up">
+                    <Icon name="warn" className="cursor-pointer" size={16} />
+                  </Tooltip>
+                  <CaptionText className="uppercase text-inherit">{t('balances.verificationFailedLabel')}</CaptionText>
+                </div>
+              )}
+            </div>
+            <NetworkFiatBalance balances={balancesObject} assets={filteredAssets} />
           </div>
         </Accordion.Button>
         <Accordion.Content className="mt-1">
