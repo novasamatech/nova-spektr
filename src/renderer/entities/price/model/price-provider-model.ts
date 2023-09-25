@@ -20,16 +20,16 @@ const getFiatFlagFx = createEffect((): boolean => {
   return fiatService.getFiatFlag(DEFAULT_FIAT_FLAG);
 });
 
-const saveFiatFlagFx = createEffect((flag: boolean) => {
-  fiatService.saveFiatFlag(flag);
+const saveFiatFlagFx = createEffect((flag: boolean): boolean => {
+  return fiatService.saveFiatFlag(flag);
 });
 
 const getPriceProviderFx = createEffect((): PriceApiProvider => {
   return fiatService.getPriceProvider(DEFAULT_FIAT_PROVIDER);
 });
 
-const savePriceProviderFx = createEffect((provider: string) => {
-  fiatService.savePriceProvider(provider);
+const savePriceProviderFx = createEffect((provider: PriceApiProvider): PriceApiProvider => {
+  return fiatService.savePriceProvider(provider);
 });
 
 type FetchPrices = {
@@ -56,8 +56,8 @@ const getAssetsPricesFx = createEffect((): PriceObject => {
   return fiatService.getAssetsPrices(DEFAULT_ASSETS_PRICES);
 });
 
-const saveAssetsPricesFx = createEffect((prices: PriceObject) => {
-  fiatService.saveAssetsPrices(prices);
+const saveAssetsPricesFx = createEffect((prices: PriceObject): PriceObject => {
+  return fiatService.saveAssetsPrices(prices);
 });
 
 forward({
@@ -81,11 +81,14 @@ sample({
   target: fetchAssetsPricesFx,
 });
 
-forward({ from: fiatFlagChanged, to: [$fiatFlag, saveFiatFlagFx] });
+forward({ from: fiatFlagChanged, to: saveFiatFlagFx });
+forward({ from: saveFiatFlagFx.doneData, to: $fiatFlag });
 
-forward({ from: priceProviderChanged, to: [$priceProvider, savePriceProviderFx] });
+forward({ from: priceProviderChanged, to: savePriceProviderFx });
+forward({ from: savePriceProviderFx.doneData, to: $priceProvider });
 
-forward({ from: fetchAssetsPricesFx.doneData, to: [$assetsPrices, saveAssetsPricesFx] });
+forward({ from: fetchAssetsPricesFx.doneData, to: saveAssetsPricesFx });
+forward({ from: saveAssetsPricesFx.doneData, to: $assetsPrices });
 
 export const priceProviderModel = {
   $fiatFlag,
@@ -95,5 +98,9 @@ export const priceProviderModel = {
     fiatFlagChanged,
     priceProviderChanged,
     assetsPricesRequested,
+  },
+  watch: {
+    fiatFlagChangedDone: saveFiatFlagFx.done,
+    fiatFlagChangedFail: saveFiatFlagFx.fail,
   },
 };

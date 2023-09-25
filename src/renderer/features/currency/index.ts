@@ -1,1 +1,1 @@
-export * from './ChangeCurrency';
+export { CurrencyForm } from './CurrencyForm';

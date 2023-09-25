@@ -94,9 +94,9 @@ export const GroupedSelect = <T extends any>({
                 position !== 'auto' && ViewClass[position],
               )}
             >
-              {optionsGroups.map(({ label, options }, index) => (
-                <>
-                  <HelpText className="px-2 py-1 text-text-secondary" as="dt">
+              {optionsGroups.map(({ id, label, options }, index) => (
+                <Fragment key={id}>
+                  <HelpText className="px-2 py-1 text-text-secondary cursor-default" as="dt">
                     {label}
                   </HelpText>
                   {options.map(({ id, value, element }) => (
@@ -115,7 +115,7 @@ export const GroupedSelect = <T extends any>({
                       )}
                     </Listbox.Option>
                   ))}
-                </>
+                </Fragment>
               ))}
             </Listbox.Options>
           </Transition>

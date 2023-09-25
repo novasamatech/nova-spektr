@@ -72,7 +72,7 @@ export const GeneralActions = () => {
             'transition hover:shadow-card-shadow focus:shadow-card-shadow',
           )}
         >
-          <Icon className="row-span-2" name="network" size={36} />
+          <Icon className="row-span-2" name="currency" size={36} />
           <BodyText>{t('settings.currency.plateTitle')}</BodyText>
           {fiatFlag && <FootnoteText className="text-text-tertiary ml-auto">{currency?.code}</FootnoteText>}
         </Link>
