@@ -48,7 +48,7 @@ test.describe('Login in Matrix', () => {
     const matrixSettings = await (await walletModalWindow.clickOnAddButton()).clickOnMultisigButtonWithoutAuth();
     await matrixSettings.matrixAuthentificate(baseTestConfig.matrix_username_1, baseTestConfig.matrix_password_1);
 
-    await page.waitForSelector(matrixSettings.pageElements.logedIn);
-    expect(await page.isVisible(matrixSettings.pageElements.logedIn)).toBeTruthy();
+    await page.waitForSelector(matrixSettings.pageElements.multisigLoggednInd);
+    expect(await page.isVisible(matrixSettings.pageElements.multisigLoggednInd)).toBeTruthy();
   });
 });
