@@ -1,1 +1,1 @@
-export * from './AssetRouteGuard';
+export { AssetRouteGuard } from './AssetRouteGuard';

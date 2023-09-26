@@ -49,7 +49,7 @@ const getErrorMessage = (t: TFunction, method: VerifyMethodsType): string => {
   return Errors[method];
 };
 
-const Verification = () => {
+export const Verification = () => {
   const { t } = useI18n();
   const { matrix } = useMatrix();
 
@@ -195,5 +195,3 @@ const Verification = () => {
     </>
   );
 };
-
-export default Verification;
