@@ -1,6 +1,6 @@
 import { app, shell, Menu, MenuItem, MenuItemConstructorOptions } from 'electron';
 
-import { PLATFORM } from '@shared/constants';
+import { ENVIRONMENT, PLATFORM } from '@shared/constants';
 
 export function buildMenuTemplate(): Menu {
   const template: Array<MenuItemConstructorOptions | MenuItem> = [
@@ -79,10 +79,6 @@ export function buildMenuTemplate(): Menu {
           role: 'togglefullscreen',
           label: 'Toggle Full Screen',
         },
-        {
-          role: 'toggleDevTools',
-          label: 'Toggle Developer Tools',
-        },
       ],
     },
     {
@@ -108,12 +104,22 @@ export function buildMenuTemplate(): Menu {
         {
           label: 'Nova Spektr Help',
           click(): void {
-            shell.openExternal('https://wiki.novaspektr.io/');
+            shell.openExternal('https://docs.novaspektr.io/');
           },
         },
       ],
     },
   ];
+
+  if (ENVIRONMENT.IS_STAGE || ENVIRONMENT.IS_DEV) {
+    const viewSubmenu = template[1].submenu as MenuItemConstructorOptions[];
+    if (viewSubmenu) {
+      viewSubmenu.push({
+        role: 'toggleDevTools',
+        label: 'Toggle Developer Tools',
+      });
+    }
+  }
 
   // macOS has specific menu conventions...
   if (PLATFORM.IS_MAC) {
