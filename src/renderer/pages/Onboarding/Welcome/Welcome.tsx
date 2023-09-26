@@ -1,28 +1,21 @@
-import { useNavigate } from 'react-router-dom';
 import { useLayoutEffect, useRef, useState } from 'react';
 import { throttle } from 'lodash';
 
 import { Icon, TitleText } from '@renderer/shared/ui';
-import { useI18n, Paths } from '@renderer/app/providers';
-import { useToggle } from '@renderer/shared/lib/hooks';
-import { cnTw, DEFAULT_TRANSITION } from '@renderer/shared/lib/utils';
-import WatchOnly from '../WatchOnly/WatchOnly';
-import Vault from '../Vault/Vault';
+import { useI18n } from '@renderer/app/providers';
+import { cnTw } from '@renderer/shared/lib/utils';
 import PrivacyPolicy from './PrivacyPolicy';
 import { WelcomeCard } from './WelcomeCard';
+import { walletProviderModel } from '@renderer/widgets/CreateWallet';
+import { WalletType } from '@renderer/domain/shared-kernel';
 
 const LOGO_WIDTH = 232;
 const RIGHT_PADDING = 225;
 
 export const Welcome = () => {
   const { t } = useI18n();
-  const navigate = useNavigate();
-
-  const [isWatchOnlyModalOpen, toggleWatchOnlyModal] = useToggle();
-  const [isVaultModalOpen, toggleVaultModal] = useToggle();
 
   const logo = useRef<HTMLDivElement>(null);
-
   const [fixed, setFixed] = useState(true);
 
   useLayoutEffect(() => {
@@ -40,16 +33,6 @@ export const Welcome = () => {
     };
   }, []);
 
-  const handleCreateWatchOnlyWallet = () => {
-    toggleWatchOnlyModal();
-    navigate(Paths.ASSETS);
-  };
-
-  const handleCreateVaultWallet = () => {
-    toggleVaultModal();
-    setTimeout(() => navigate(Paths.ASSETS), DEFAULT_TRANSITION);
-  };
-
   return (
     <div className="flex h-screen w-screen">
       <div className="w-[512px] flex flex-col p-10 h-full">
@@ -60,14 +43,14 @@ export const Welcome = () => {
             title={t('onboarding.welcome.polkadotVaultTitle')}
             description={t('onboarding.welcome.polkadotVaultDescription')}
             iconName="vault"
-            onClick={toggleVaultModal}
+            onClick={() => walletProviderModel.events.walletTypeSet(WalletType.SINGLE_PARITY_SIGNER)}
           />
 
           <WelcomeCard
             title={t('onboarding.welcome.watchOnlyTitle')}
             description={t('onboarding.welcome.watchOnlyDescription')}
             iconName="watchOnlyOnboarding"
-            onClick={toggleWatchOnlyModal}
+            onClick={() => walletProviderModel.events.walletTypeSet(WalletType.WATCH_ONLY)}
           />
 
           <WelcomeCard
@@ -104,14 +87,6 @@ export const Welcome = () => {
           <Icon name="logoTitle" className="-scale-y-100" size={LOGO_WIDTH} />
         </div>
       </div>
-
-      <WatchOnly
-        isOpen={isWatchOnlyModalOpen}
-        onClose={toggleWatchOnlyModal}
-        onComplete={handleCreateWatchOnlyWallet}
-      />
-
-      <Vault isOpen={isVaultModalOpen} onClose={toggleVaultModal} onComplete={handleCreateVaultWallet} />
     </div>
   );
 };

@@ -3,9 +3,9 @@ import { useState, useEffect } from 'react';
 import { Navigate, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 
 import { useI18n, useNetworkContext, Paths } from '@renderer/app/providers';
-import { ChainId, HexString, AccountId, Address } from '@renderer/domain/shared-kernel';
+import { ChainId, HexString, Address } from '@renderer/domain/shared-kernel';
 import { Transaction, TransactionType, useTransaction } from '@renderer/entities/transaction';
-import { useAccount, Account, isMultisig, MultisigAccount } from '@renderer/entities/account';
+import { useAccount, Account, isMultisig } from '@renderer/entities/account';
 import { ValidatorMap } from '@renderer/entities/staking';
 import { toAddress, getRelaychainAsset, DEFAULT_TRANSITION } from '@renderer/shared/lib/utils';
 import { Confirmation, Submit, Validators, NoAsset } from '../components';
@@ -28,7 +28,7 @@ export const ChangeValidators = () => {
   const { t } = useI18n();
   const navigate = useNavigate();
   const { getActiveAccounts } = useAccount();
-  const { getTransactionHash } = useTransaction();
+  const { setTxs, txs, setWrappers, wrapTx, buildTransaction } = useTransaction();
   const { connections } = useNetworkContext();
   const [searchParams] = useSearchParams();
   const params = useParams<{ chainId: ChainId }>();
@@ -41,8 +41,6 @@ export const ChangeValidators = () => {
 
   const [description, setDescription] = useState('');
 
-  const [multisigTx, setMultisigTx] = useState<Transaction>();
-  const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [unsignedTransactions, setUnsignedTransactions] = useState<UnsignedTransaction[]>([]);
 
   const [accounts, setAccounts] = useState<Account[]>([]);
@@ -136,53 +134,25 @@ export const ChangeValidators = () => {
     const transactions = getNominateTxs(Object.keys(validators));
 
     if (signer && isMultisig(txAccounts[0])) {
-      const multisigTx = getMultisigTx(txAccounts[0], signer.accountId, transactions[0]);
-      setMultisigTx(multisigTx);
+      setWrappers([
+        {
+          signatoryId: signer.accountId,
+          account: txAccounts[0],
+        },
+      ]);
     }
 
-    setTransactions(transactions);
+    setTxs(transactions);
     setValidators(validators);
     setActiveStep(Step.CONFIRMATION);
   };
 
   const getNominateTxs = (validators: Address[]): Transaction[] => {
     return txAccounts.map(({ accountId }) => {
-      return {
-        chainId,
-        address: toAddress(accountId, { prefix: addressPrefix }),
-        type: TransactionType.NOMINATE,
-        args: { targets: validators },
-      };
+      const address = toAddress(accountId, { prefix: addressPrefix });
+
+      return buildTransaction(TransactionType.NOMINATE, address, chainId, { targets: validators });
     });
-  };
-
-  const getMultisigTx = (
-    account: MultisigAccount,
-    signerAccountId: AccountId,
-    transaction: Transaction,
-  ): Transaction => {
-    const { callData, callHash } = getTransactionHash(transaction, api);
-
-    const otherSignatories = account.signatories.reduce<Address[]>((acc, s) => {
-      if (s.accountId !== signerAccountId) {
-        acc.push(toAddress(s.accountId, { prefix: addressPrefix }));
-      }
-
-      return acc;
-    }, []);
-
-    return {
-      chainId,
-      address: toAddress(signerAccountId, { prefix: addressPrefix }),
-      type: TransactionType.MULTISIG_AS_MULTI,
-      args: {
-        threshold: account.threshold,
-        otherSignatories: otherSignatories.sort(),
-        maybeTimepoint: null,
-        callData,
-        callHash,
-      },
-    };
   };
 
   const onSignResult = (signatures: HexString[], unsigned: UnsignedTransaction[]) => {
@@ -192,6 +162,7 @@ export const ChangeValidators = () => {
   };
 
   const explorersProps = { explorers, addressPrefix, asset };
+  const multisigTx = isMultisig(txAccounts[0]) ? wrapTx(txs[0], api, addressPrefix) : undefined;
 
   return (
     <>
@@ -225,8 +196,7 @@ export const ChangeValidators = () => {
             accounts={txAccounts}
             validators={Object.values(validators)}
             description={description}
-            transaction={transactions[0]}
-            multisigTx={multisigTx}
+            transaction={txs[0]}
             signer={signer}
             onResult={() => setActiveStep(Step.SIGNING)}
             onGoBack={goToPrevStep}
@@ -246,7 +216,7 @@ export const ChangeValidators = () => {
             addressPrefix={addressPrefix}
             signatory={signer}
             accounts={txAccounts}
-            transactions={multisigTx ? [multisigTx] : transactions}
+            transactions={multisigTx ? [multisigTx] : txs}
             onGoBack={() => setActiveStep(Step.CONFIRMATION)}
             onResult={onSignResult}
           />
@@ -255,7 +225,7 @@ export const ChangeValidators = () => {
       {activeStep === Step.SUBMIT && (
         <Submit
           api={api}
-          txs={transactions}
+          txs={txs}
           multisigTx={multisigTx}
           signatures={signatures}
           unsignedTx={unsignedTransactions}

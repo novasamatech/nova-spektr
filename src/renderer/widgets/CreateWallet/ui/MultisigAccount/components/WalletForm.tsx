@@ -31,7 +31,7 @@ const getThresholdOptions = (optionsAmount: number): DropdownOption<number>[] =>
 type Props = {
   signatories: Signatory[];
   accounts: (Account | MultisigAccount)[];
-  isEditState: boolean;
+  isActive: boolean;
   isLoading: boolean;
   onContinue: () => void;
   onGoBack: () => void;
@@ -42,7 +42,7 @@ export const WalletForm = ({
   signatories,
   accounts,
   onContinue,
-  isEditState,
+  isActive,
   isLoading,
   onGoBack,
   onCreateAccount,
@@ -107,7 +107,7 @@ export const WalletForm = ({
               label={t('createMultisigAccount.walletNameLabel')}
               invalid={!!error}
               value={value}
-              disabled={!isEditState}
+              disabled={!isActive}
               onChange={onChange}
             />
           )}
@@ -124,7 +124,7 @@ export const WalletForm = ({
                 label={t('createMultisigAccount.thresholdName')}
                 className="w-[208px]"
                 selectedId={value?.id.toString()}
-                disabled={signatories.length < 2 || !isEditState}
+                disabled={signatories.length < 2 || !isActive}
                 options={thresholdOptions}
                 onChange={onChange}
               />
@@ -157,7 +157,7 @@ export const WalletForm = ({
           <Button variant="text" onClick={onGoBack}>
             {t('createMultisigAccount.backButton')}
           </Button>
-          {isEditState ? (
+          {isActive ? (
             // without key continue button triggers form submit
             <Button key="continue" disabled={!canContinue} onClick={onContinue}>
               {t('createMultisigAccount.continueButton')}

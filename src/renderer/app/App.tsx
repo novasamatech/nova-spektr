@@ -4,6 +4,7 @@ import { useNavigate, useRoutes } from 'react-router-dom';
 
 import { FallbackScreen } from '@renderer/components/common';
 import { useAccount } from '@renderer/entities/account';
+import { CreateWalletProvider } from '@renderer/widgets/CreateWallet';
 import {
   ConfirmDialogProvider,
   I18Provider,
@@ -52,7 +53,10 @@ const App = () => {
           <MultisigChainProvider>
             <MatrixProvider>
               <ConfirmDialogProvider>
-                <GraphqlProvider>{getContent()}</GraphqlProvider>
+                <GraphqlProvider>
+                  {getContent()}
+                  <CreateWalletProvider />
+                </GraphqlProvider>
               </ConfirmDialogProvider>
             </MatrixProvider>
           </MultisigChainProvider>

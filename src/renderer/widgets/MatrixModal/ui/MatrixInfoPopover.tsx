@@ -9,7 +9,7 @@ const SMP = 'https://docs.novaspektr.io/multisig-accounts/spektr-matrix-protocol
 const sectionClass = 'flex flex-col gap-y-2';
 const linkClass = 'text-footnote text-tab-text-accent';
 
-const MatrixInfoPopover = () => {
+export const MatrixInfoPopover = () => {
   const { t } = useI18n();
 
   const matrix = <InfoLink url={MATRIX} showIcon={false} className={linkClass} />;
@@ -45,5 +45,3 @@ const MatrixInfoPopover = () => {
     </Popover>
   );
 };
-
-export default MatrixInfoPopover;
