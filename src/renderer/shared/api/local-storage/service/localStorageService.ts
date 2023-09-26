@@ -17,6 +17,8 @@ function getFromStorage<T extends any>(key: string, defaultValue: T): T {
   }
 }
 
-function saveToStorage<T extends any>(key: string, value: T) {
+function saveToStorage<T extends any>(key: string, value: T): T {
   localStorage.setItem(key, JSON.stringify(value));
+
+  return value;
 }
