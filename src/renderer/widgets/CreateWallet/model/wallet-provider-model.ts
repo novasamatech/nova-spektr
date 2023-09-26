@@ -3,12 +3,12 @@ import { NavigateFunction } from 'react-router-dom';
 
 import { WalletType } from '@renderer/domain/shared-kernel';
 
-const $walletType = createStore<WalletType | null>(null);
-
 const walletTypeSet = createEvent<WalletType | null>();
 const modalClosed = createEvent();
 const storeCleared = createEvent();
 const completed = createEvent();
+
+const $walletType = createStore<WalletType | null>(null).reset([modalClosed, completed]);
 
 type Navigation = {
   redirectPath: string;
@@ -24,12 +24,6 @@ const navigateFx = createEffect(({ navigate, redirectPath }: Navigation) => {
 });
 
 forward({ from: walletTypeSet, to: $walletType });
-
-sample({
-  clock: [modalClosed, completed],
-  fn: () => null,
-  target: $walletType,
-});
 
 sample({
   clock: completed,
