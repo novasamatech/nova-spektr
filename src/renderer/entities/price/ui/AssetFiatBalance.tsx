@@ -1,4 +1,4 @@
-import { useStore, useStoreMap } from 'effector-react';
+import { useStoreMap, useUnit } from 'effector-react';
 import BN from 'bignumber.js';
 
 import { Shimmering } from '@renderer/shared/ui';
@@ -19,7 +19,7 @@ type Props = {
 export const AssetFiatBalance = ({ asset, amount, className }: Props) => {
   const { t } = useI18n();
 
-  const currency = useStore(currencyModel.$activeCurrency);
+  const currency = useUnit(currencyModel.$activeCurrency);
   const price = useStoreMap(priceProviderModel.$assetsPrices, (prices) => {
     if (!currency || !prices) return;
 

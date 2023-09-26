@@ -9,6 +9,7 @@ import { useI18n } from '@renderer/app/providers';
 import { Paths } from '../../../../app/providers/routes/paths';
 import { createLink } from '../../../../app/providers/routes/utils';
 import { ChainId } from '@renderer/domain/shared-kernel';
+// TODO: Move it to another layer https://app.clickup.com/t/8692tr8x0
 import { TokenPrice } from '@renderer/entities/price/ui/TokenPrice';
 import { AssetFiatBalance } from '@renderer/entities/price/ui/AssetFiatBalance';
 
@@ -52,7 +53,7 @@ export const AssetCard = ({ chainId, asset, balance, canMakeActions }: Props) =>
           <AssetIcon src={asset.icon} name={asset.name} />
           <div>
             <BodyText>{asset.name}</BodyText>
-            {<TokenPrice assetId={asset.priceId} />}
+            <TokenPrice assetId={asset.priceId} />
           </div>
         </div>
         <div className="flex flex-col items-end">

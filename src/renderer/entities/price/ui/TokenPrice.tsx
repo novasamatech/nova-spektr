@@ -1,4 +1,4 @@
-import { useStore, useStoreMap } from 'effector-react';
+import { useStoreMap, useUnit } from 'effector-react';
 import BN from 'bignumber.js';
 
 import { FootnoteText, Shimmering } from '@renderer/shared/ui';
@@ -14,7 +14,7 @@ type Props = {
 };
 
 export const TokenPrice = ({ assetId, className }: Props) => {
-  const currency = useStore(currencyModel.$activeCurrency);
+  const currency = useUnit(currencyModel.$activeCurrency);
   const price = useStoreMap(priceProviderModel.$assetsPrices, (prices) => {
     if (!currency || !prices) return;
 

@@ -89,8 +89,10 @@ export const NominatorsList = ({
     <div className="flex flex-col gap-y-2">
       <div className="grid grid-cols-[226px,104px,104px,40px] items-center gap-x-6 px-3">
         <FootnoteText className="text-text-tertiary">{t('staking.overview.accountTableHeader')}</FootnoteText>
-        <FootnoteText className="text-text-tertiary text-right">{t('staking.overview.stakeTableHeader')}</FootnoteText>
-        <FootnoteText className="text-text-tertiary text-right">
+        <FootnoteText className="text-text-tertiary" align="right">
+          {t('staking.overview.stakeTableHeader')}
+        </FootnoteText>
+        <FootnoteText className="text-text-tertiary" align="right">
           {t('staking.overview.rewardsTableHeader')}
         </FootnoteText>
       </div>

@@ -153,10 +153,10 @@ export const ValidatorsModal = ({
                     <FootnoteText className="text-text-tertiary">
                       {t('staking.validators.validatorTableHeader')}
                     </FootnoteText>
-                    <FootnoteText className="text-text-tertiary text-right">
+                    <FootnoteText className="text-text-tertiary" align="right">
                       {t('staking.validators.ownStakeTableHeader')}
                     </FootnoteText>
-                    <FootnoteText className="text-text-tertiary text-right">
+                    <FootnoteText className="text-text-tertiary" align="right">
                       {t('staking.validators.totalStakeTableHeader')}
                     </FootnoteText>
                   </div>
@@ -181,10 +181,10 @@ export const ValidatorsModal = ({
                     <FootnoteText className="text-text-tertiary">
                       {t('staking.validators.validatorTableHeader')}
                     </FootnoteText>
-                    <FootnoteText className="text-text-tertiary text-right">
+                    <FootnoteText className="text-text-tertiary" align="right">
                       {t('staking.validators.ownStakeTableHeader')}
                     </FootnoteText>
-                    <FootnoteText className="text-text-tertiary text-right">
+                    <FootnoteText className="text-text-tertiary" align="right">
                       {t('staking.validators.totalStakeTableHeader')}
                     </FootnoteText>
                   </div>

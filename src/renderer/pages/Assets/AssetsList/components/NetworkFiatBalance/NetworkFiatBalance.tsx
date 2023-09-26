@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useStore } from 'effector-react';
+import { useUnit } from 'effector-react';
 import BN from 'bignumber.js';
 
 import { Asset, Balance } from '@renderer/entities/asset';
@@ -18,10 +18,11 @@ export const NetworkFiatBalance = ({ assets, balances, className }: Props) => {
   const { t } = useI18n();
   const [fiatAmount, setFiatAmount] = useState<BN>(new BN(0));
 
-  const currency = useStore(currencyModel.$activeCurrency);
-  const prices = useStore(priceProviderModel.$assetsPrices);
+  const currency = useUnit(currencyModel.$activeCurrency);
+  const prices = useUnit(priceProviderModel.$assetsPrices);
 
   useEffect(() => {
+    // TODO: Move logic to model https://app.clickup.com/t/8692tr8x0
     const totalFiatAmount = assets.reduce<BN>((acc, asset) => {
       if (!prices || !asset.priceId || !currency || !currency?.coingeckoId) return acc;
 

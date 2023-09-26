@@ -1,4 +1,4 @@
-import { useStore } from 'effector-react';
+import { useUnit } from 'effector-react';
 
 import { FootnoteText, Shimmering } from '@renderer/shared/ui';
 import { currencyModel } from '../model/currency-model';
@@ -12,7 +12,7 @@ type Props = {
 };
 
 export const FiatBalance = ({ amount, className }: Props) => {
-  const currency = useStore(currencyModel.$activeCurrency);
+  const currency = useUnit(currencyModel.$activeCurrency);
 
   if (!amount) return <Shimmering width={56} height={18} />;
 
