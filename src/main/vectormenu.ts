@@ -47,6 +47,12 @@ export function buildMenuTemplate(): Menu {
       label: 'View',
       accelerator: 'V',
       submenu: [
+        {
+          role: 'reload',
+        },
+        {
+          role: 'forceReload',
+        },
         { type: 'separator' },
         {
           role: 'resetZoom',
