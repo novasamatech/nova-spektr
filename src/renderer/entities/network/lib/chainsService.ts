@@ -1,6 +1,5 @@
 import sortBy from 'lodash/sortBy';
 import concat from 'lodash/concat';
-import keyBy from 'lodash/keyBy';
 import orderBy from 'lodash/orderBy';
 import BigNumber from 'bignumber.js';
 
@@ -19,6 +18,7 @@ import { Balance } from '@renderer/entities/asset/model/balance';
 import { ChainLike } from './common/types';
 import { isKusama, isPolkadot, isTestnet, isNameWithNumber } from './common/utils';
 import { PriceObject } from '@renderer/shared/api/price-provider';
+import { sumBalances } from '@renderer/pages/Assets/AssetsList/common/utils';
 
 type ChainWithFiatBalance = Chain & {
   fiatBalance: string;
@@ -94,7 +94,12 @@ function sortChainsByBalance(
   const numberchains = { withBalance: [], noBalance: [] };
   const testnets = { withBalance: [], noBalance: [] };
 
-  const balancesMap = keyBy(balances, (b) => `${b.chainId}_${b.assetId}`);
+  const balancesMap = balances.reduce<Record<string, Balance>>((acc, b) => {
+    const key = `${b.chainId}_${b.assetId}`;
+    acc[key] = acc[key] ? sumBalances(acc[key], b) : b;
+
+    return acc;
+  }, {});
 
   chains.forEach((chain) => {
     const fiatBalance = chain.assets.reduce((acc, a) => {
