@@ -41,7 +41,7 @@ type MatrixForm = {
   password: string;
 };
 
-const LoginForm = () => {
+export const LoginForm = () => {
   const { t } = useI18n();
 
   const { matrix } = useMatrix();
@@ -257,5 +257,3 @@ const LoginForm = () => {
 //   ))}
 // </ul>
 // </div>
-
-export default LoginForm;

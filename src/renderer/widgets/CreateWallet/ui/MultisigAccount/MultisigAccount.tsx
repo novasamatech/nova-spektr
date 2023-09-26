@@ -1,24 +1,18 @@
 import { ComponentProps, useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { useStore } from 'effector-react';
 
 import { BaseModal, HeaderTitleText, StatusLabel, Button } from '@renderer/shared/ui';
-import { useI18n, useMatrix, Paths } from '@renderer/app/providers';
-import {
-  useAccount,
-  createMultisigAccount,
-  MultisigAccount,
-  Account,
-  getMultisigAccountId,
-} from '@renderer/entities/account';
+import { useI18n, useMatrix } from '@renderer/app/providers';
+import { useAccount, createMultisigAccount, Account, getMultisigAccountId } from '@renderer/entities/account';
 import { useToggle } from '@renderer/shared/lib/hooks';
 import { OperationResult } from '@renderer/entities/transaction';
-import { MatrixModal } from '../MatrixModal/MatrixModal';
 import { Wallet, useWallet } from '@renderer/entities/wallet';
 import { ExtendedContact, ExtendedWallet } from './common/types';
 import { SelectSignatories, ConfirmSignatories, WalletForm } from './components';
 import { AccountId } from '@renderer/domain/shared-kernel';
 import { contactModel } from '@renderer/entities/contact';
+import { DEFAULT_TRANSITION } from '@renderer/shared/lib/utils';
+import { MatrixLoginModal } from '@renderer/widgets/MatrixModal';
 
 type OperationResultProps = Pick<ComponentProps<typeof OperationResult>, 'variant' | 'description'>;
 
@@ -30,16 +24,17 @@ const enum Step {
 type Props = {
   isOpen: boolean;
   onClose: () => void;
+  onComplete: () => void;
 };
 
-export const CreateMultisigAccount = ({ isOpen, onClose }: Props) => {
+export const MultisigAccount = ({ isOpen, onClose, onComplete }: Props) => {
   const { t } = useI18n();
   const { matrix, isLoggedIn } = useMatrix();
   const { getWallets } = useWallet();
   const { getAccounts, addAccount, setActiveAccount } = useAccount();
-  const navigate = useNavigate();
 
   const [isLoading, toggleLoading] = useToggle();
+  const [isModalOpen, toggleIsModalOpen] = useToggle(isOpen);
   const [isResultModalOpen, toggleResultModal] = useToggle();
 
   const [name, setName] = useState('');
@@ -62,17 +57,28 @@ export const CreateMultisigAccount = ({ isOpen, onClose }: Props) => {
     getWallets().then(setWallets);
   }, [isOpen]);
 
+  useEffect(() => {
+    if (isOpen && !isModalOpen) {
+      toggleIsModalOpen();
+    }
+
+    if (!isOpen && isModalOpen) {
+      closeMultisigModal();
+    }
+  }, [isOpen]);
+
   const goToPrevStep = () => {
     if (activeStep === Step.INIT) {
-      onClose();
+      closeMultisigModal();
     } else {
       setActiveStep((prev) => prev - 1);
     }
   };
 
-  const handleSuccessClose = () => {
-    toggleResultModal();
-    navigate(Paths.ASSETS);
+  const closeMultisigModal = (params?: { complete: boolean }) => {
+    toggleIsModalOpen();
+
+    setTimeout(params?.complete ? onComplete : onClose, DEFAULT_TRANSITION);
   };
 
   const onCreateAccount = async (name: string, threshold: number, creatorId: AccountId): Promise<void> => {
@@ -92,14 +98,12 @@ export const CreateMultisigAccount = ({ isOpen, onClose }: Props) => {
       } else {
         await createNewRoom(name, threshold, creatorId);
       }
-
-      setTimeout(handleSuccessClose, 2000);
     } catch (error: any) {
       setError(error?.message || t('createMultisigAccount.errorMessage'));
     }
 
     toggleLoading();
-    handleClose();
+    setTimeout(() => closeMultisigModal({ complete: true }), 2000);
   };
 
   const createFromExistingRoom = async (
@@ -119,7 +123,7 @@ export const CreateMultisigAccount = ({ isOpen, onClose }: Props) => {
       isActive: false,
     });
 
-    await addAccount<MultisigAccount>(mstAccount).then(setActiveAccount);
+    await addAccount(mstAccount).then(setActiveAccount);
   };
 
   const createNewRoom = async (name: string, threshold: number, creatorId: AccountId): Promise<void> => {
@@ -142,7 +146,7 @@ export const CreateMultisigAccount = ({ isOpen, onClose }: Props) => {
       signatories: signatories.map(({ accountId, matrixId }) => ({ accountId, matrixId })),
     });
 
-    await addAccount<MultisigAccount>({ ...mstAccount, matrixRoomId }).then(setActiveAccount);
+    await addAccount({ ...mstAccount, matrixRoomId }).then(setActiveAccount);
   };
 
   const getResultProps = (): OperationResultProps => {
@@ -152,18 +156,10 @@ export const CreateMultisigAccount = ({ isOpen, onClose }: Props) => {
     return { variant: 'success', description: t('createMultisigAccount.successMessage') };
   };
 
-  // TODO: use modal navigation
-  const handleClose = () => {
-    onClose();
-    setActiveStep(Step.INIT);
-    setSignatoryWallets([]);
-    setSignatoryContacts([]);
-  };
-
   const modalTitle = (
     <div className="flex justify-between items-center px-5 py-3 w-[472px] bg-white rounded-tl-lg">
       <HeaderTitleText className="py-[3px]">{t('createMultisigAccount.title')}</HeaderTitleText>
-      <StatusLabel title={matrix.userId || ''} variant="success" />
+      {isLoggedIn && <StatusLabel title={matrix.userId || ''} variant="success" />}
     </div>
   );
 
@@ -172,16 +168,16 @@ export const CreateMultisigAccount = ({ isOpen, onClose }: Props) => {
       <BaseModal
         closeButton
         title={modalTitle}
-        isOpen={isOpen && !isResultModalOpen}
+        isOpen={isModalOpen && !isResultModalOpen}
         headerClass="bg-input-background-disabled"
         panelClass="w-[944px] h-[576px]"
         contentClass="flex h-[524px]"
-        onClose={handleClose}
+        onClose={closeMultisigModal}
       >
         <WalletForm
+          isActive={activeStep === Step.INIT}
           accounts={accounts}
           signatories={signatories}
-          isEditState={activeStep === Step.INIT}
           isLoading={isLoading}
           onGoBack={goToPrevStep}
           onContinue={() => setActiveStep(Step.CONFIRMATION)}
@@ -203,13 +199,18 @@ export const CreateMultisigAccount = ({ isOpen, onClose }: Props) => {
           wallets={signatoryWallets}
           contacts={signatoryContacts}
         />
+
+        <MatrixLoginModal isOpen={!isLoggedIn} zIndex="z-60" onClose={closeMultisigModal} />
       </BaseModal>
 
-      <OperationResult {...getResultProps()} title={name} isOpen={isResultModalOpen} onClose={handleSuccessClose}>
+      <OperationResult
+        {...getResultProps()}
+        title={name}
+        isOpen={isModalOpen && isResultModalOpen}
+        onClose={closeMultisigModal}
+      >
         {error && <Button onClick={toggleResultModal}>{t('createMultisigAccount.closeButton')}</Button>}
       </OperationResult>
-
-      <MatrixModal isOpen={isOpen && !isLoggedIn} onClose={onClose} />
     </>
   );
 };
