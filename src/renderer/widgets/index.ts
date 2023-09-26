@@ -1,4 +1,4 @@
 export * from './ManageContactModal';
 export * from './ReceiveAssetModal';
 export * from './SendAssetModal';
-export * from './SelectCurrencyModal';
+export * from './CurrencyModal';
