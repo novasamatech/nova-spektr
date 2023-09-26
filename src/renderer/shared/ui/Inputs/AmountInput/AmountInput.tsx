@@ -4,7 +4,7 @@ import { useUnit } from 'effector-react';
 import { AssetBalance, AssetIcon, Asset } from '@renderer/entities/asset';
 import { cleanAmount, cnTw, formatGroups, validatePrecision, validateSymbols } from '@renderer/shared/lib/utils';
 import { useI18n } from '@renderer/app/providers';
-import { FootnoteText, HelpText, TitleText } from '../../Typography';
+import { FootnoteText, TitleText } from '../../Typography';
 import Input from '../Input/Input';
 import { IconButton } from '@renderer/shared/ui';
 import { useToggle } from '@renderer/shared/lib/hooks';
@@ -112,19 +112,24 @@ export const AmountInput = ({
   );
 
   const suffixElement = showCurrency && rate && (
-    <div className="flex flex-row gap-x-2 absolute right-3 bottom-2">
-      <IconButton name="swapArrow" alt="swap input to currency" size={16} onClick={toggleCurrencyMode} />
-      <HelpText className="uppercase text-text-tertiary">
+    <div className="flex items-center gap-x-2 absolute right-3 bottom-3">
+      <IconButton
+        name="swapArrow"
+        alt={t(currencyMode ? 'transfer.swapToCryptoModeAlt' : 'transfer.swapToCurrencyModeAlt')}
+        size={16}
+        onClick={toggleCurrencyMode}
+      />
+      <FootnoteText className="uppercase text-text-tertiary">
         {currencyMode ? `${value} ${asset.symbol}` : `${activeCurrency?.symbol} ${Number(value) * rate}`}
-      </HelpText>
+      </FootnoteText>
     </div>
   );
 
   return (
     <Input
       name={name}
-      className={cnTw('text-right text-title font-manrope', activeCurrency && 'mb-4')}
-      wrapperClass="py-2 items-start"
+      className={cnTw('text-right text-title font-manrope', activeCurrency && rate && 'mb-7')}
+      wrapperClass="py-3 items-start"
       label={label}
       value={formatGroups(currencyMode ? internalValue : value)}
       placeholder={t('transfer.amountPlaceholder')}
