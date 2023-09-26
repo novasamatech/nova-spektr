@@ -3,7 +3,7 @@ const { writeFile } = require('fs/promises');
 const axios = require('axios');
 
 const SPEKTR_CONFIG_VERSION = process.env.CHAINS_VERSION || 'v1';
-const CONFIG_PATH = 'src/renderer/services/network/common/chains';
+const CONFIG_PATH = 'src/renderer/assets/chains';
 const SPEKTR_CONFIG_URL = `https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/chains/${SPEKTR_CONFIG_VERSION}/`;
 
 const CHAINS_ENV = ['chains_dev.json', 'chains.json'];
