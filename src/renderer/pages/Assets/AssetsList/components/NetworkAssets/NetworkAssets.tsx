@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { groupBy } from 'lodash';
+import { useUnit } from 'effector-react';
 
 import { Icon, CaptionText, Tooltip, Accordion } from '@renderer/shared/ui';
 import { Asset, useBalance, Balance, AssetCard } from '@renderer/entities/asset';
@@ -11,6 +12,7 @@ import { balanceSorter, sumBalances } from '../../common/utils';
 import { Account } from '@renderer/entities/account';
 import { AccountId } from '@renderer/domain/shared-kernel';
 import { NetworkFiatBalance } from '../NetworkFiatBalance/NetworkFiatBalance';
+import { currencyModel, priceProviderModel } from '@renderer/entities/price';
 
 type Props = {
   hideZeroBalance?: boolean;
@@ -24,6 +26,9 @@ type Props = {
 export const NetworkAssets = ({ query, hideZeroBalance, chain, accounts, searchSymbolOnly, canMakeActions }: Props) => {
   const { t } = useI18n();
   const { getLiveNetworkBalances } = useBalance();
+
+  const assetsPrices = useUnit(priceProviderModel.$assetsPrices);
+  const currency = useUnit(currencyModel.$activeCurrency);
 
   const [filteredAssets, setFilteredAssets] = useState<Asset[]>([]);
   const [balancesObject, setBalancesObject] = useState<Record<string, Balance>>({});
@@ -72,7 +77,9 @@ export const NetworkAssets = ({ query, hideZeroBalance, chain, accounts, searchS
       return !hideZeroBalance || balance?.verified === false || totalAmount(balance) !== ZERO_BALANCE;
     });
 
-    filteredAssets.sort((a, b) => balanceSorter(a, b, balancesObject));
+    filteredAssets.sort((a, b) =>
+      balanceSorter(a, b, balancesObject, assetsPrices || undefined, currency?.coingeckoId),
+    );
 
     setFilteredAssets(filteredAssets);
   }, [balancesObject, query, hideZeroBalance]);
