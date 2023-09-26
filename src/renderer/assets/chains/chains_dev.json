@@ -385,9 +385,9 @@
     "explorers": [
       {
         "name": "Subscan",
-        "extrinsic": "https://statemine.subscan.io/extrinsic/{hash}",
-        "account": "https://statemine.subscan.io/account/{address}",
-        "multisig": "https://statemine.subscan.io/multisig_extrinsic/{index}?call_hash={callHash}"
+        "extrinsic": "https://assethub-kusama.subscan.io/extrinsic/{hash}",
+        "account": "https://assethub-kusama.subscan.io/account/{address}",
+        "multisig": "https://assethub-kusama.subscan.io/multisig_extrinsic/{index}?call_hash={callHash}"
       },
       {
         "name": "Statescan",
@@ -2151,6 +2151,42 @@
         "priceId": "calamari-network",
         "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Calamari_(KMA).svg",
         "name": "Calamari Network"
+      },
+      {
+        "assetId": 1,
+        "symbol": "KAR",
+        "precision": 12,
+        "type": "statemine",
+        "priceId": "karura",
+        "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Karura_(KAR).svg",
+        "typeExtras": {
+          "assetId": "8"
+        },
+        "name": "Karura"
+      },
+      {
+        "assetId": 2,
+        "symbol": "KSM",
+        "precision": 12,
+        "type": "statemine",
+        "priceId": "kusama",
+        "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Kusama_(KSM).svg",
+        "typeExtras": {
+          "assetId": "12"
+        },
+        "name": "Kusama"
+      },
+      {
+        "assetId": 3,
+        "symbol": "MOVR",
+        "precision": 18,
+        "type": "statemine",
+        "priceId": "moonriver",
+        "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Moonriver_(MOVR).svg",
+        "typeExtras": {
+          "assetId": "11"
+        },
+        "name": "Moonriver"
       }
     ],
     "explorers": [
@@ -3141,6 +3177,12 @@
     ],
     "explorers": [
       {
+        "name": "Subscan",
+        "account": "https://assethub-polkadot.subscan.io/account/{address}",
+        "extrinsic": "https://assethub-polkadot.subscan.io/extrinsic/{hash}",
+        "multisig": "https://assethub-polkadot.subscan.io/multisig_extrinsic/{index}?call_hash={callHash}"
+      },
+      {
         "name": "Statescan",
         "account": "https://statemint.statescan.io/account/{address}",
         "extrinsic": "https://statemint.statescan.io/extrinsic/{hash}",
@@ -3672,57 +3714,6 @@
         {
           "type": "subquery",
           "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-centrifuge"
-        }
-      ]
-    }
-  },
-  {
-    "name": "Efinity",
-    "addressPrefix": 1110,
-    "chainId": "0x99ded175d436bee7d751fa3f2f8c7a257ddc063a541f8daa5e6152604f66b2a0",
-    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/chains/Efinity.svg",
-    "nodes": [
-      {
-        "url": "wss://rpc.efinity.io",
-        "name": "Efinity node"
-      },
-      {
-        "url": "wss://efinity-rpc.dwellir.com",
-        "name": "Dwellir node"
-      },
-      {
-        "url": "wss://efinity.api.onfinality.io/public-ws",
-        "name": "OnFinality node"
-      }
-    ],
-    "assets": [
-      {
-        "assetId": 0,
-        "symbol": "EFI",
-        "precision": 18,
-        "priceId": "efinity",
-        "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Efinity_(EFI).svg",
-        "name": "Efinity"
-      }
-    ],
-    "explorers": [
-      {
-        "name": "Subscan",
-        "extrinsic": "https://efinity.subscan.io/extrinsic/{hash}",
-        "account": "https://efinity.subscan.io/account/{address}",
-        "multisig": "https://efinity.subscan.io/multisig_extrinsic/{index}?call_hash={callHash}"
-      },
-      {
-        "name": "Polkaholic",
-        "account": "https://polkaholic.io/account/{address}",
-        "extrinsic": "https://polkaholic.io/tx/{hash}"
-      }
-    ],
-    "externalApi": {
-      "history": [
-        {
-          "type": "subquery",
-          "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-efinity"
         }
       ]
     }
@@ -5411,7 +5402,7 @@
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/chains/Imbue.svg",
     "nodes": [
       {
-        "url": "wss://imbue-kusama.imbue.network",
+        "url": "wss://kusama.imbuenetwork.com",
         "name": "Imbue node"
       }
     ],
@@ -7161,6 +7152,40 @@
         "precision": 12,
         "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/tVARA.svg",
         "name": "Vara testnet"
+      }
+    ]
+  },
+  {
+    "name": "Enjin",
+    "addressPrefix": 1110,
+    "chainId": "0x3af4ff48ec76d2efc8476730f423ac07e25ad48f5f4c9dc39c778b164d808615",
+    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/chains/Enjin.svg",
+    "nodes": [
+      {
+        "url": "wss://rpc.matrix.blockchain.enjin.io",
+        "name": "Enjin node"
+      },
+      {
+        "url": "wss://enjin-matrix-rpc-1.dwellir.com",
+        "name": "Dwellir node"
+      }
+    ],
+    "assets": [
+      {
+        "assetId": 0,
+        "symbol": "ENJ",
+        "precision": 18,
+        "priceId": "enjincoin",
+        "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Enjin_(ENJ).svg",
+        "name": "Enjin token"
+      }
+    ],
+    "explorers": [
+      {
+        "name": "Subscan",
+        "extrinsic": "https://matrix.subscan.io/extrinsic/{hash}",
+        "account": "https://matrix.subscan.io/account/{address}",
+        "multisig": "https://matrix.subscan.io/multisig_extrinsic/{index}?call_hash={callHash}"
       }
     ]
   }
