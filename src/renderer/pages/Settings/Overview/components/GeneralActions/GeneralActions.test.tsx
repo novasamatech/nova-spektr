@@ -13,7 +13,7 @@ jest.mock('@renderer/app/providers', () => ({
   },
 }));
 
-describe('pages/Settings/Overview/GeneralActions', () => {
+describe('screens/Settings/Overview/GeneralActions', () => {
   test('should render label and link to network and currency', () => {
     render(<GeneralActions />, { wrapper: MemoryRouter });
 
