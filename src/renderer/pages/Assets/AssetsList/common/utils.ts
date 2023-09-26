@@ -48,7 +48,7 @@ export const balanceSorter = (
   first: Asset,
   second: Asset,
   balancesObject: Record<string, Balance>,
-  assetPrices?: PriceObject,
+  assetPrices: PriceObject | null,
   currency?: string,
 ) => {
   const firstTotal = totalAmount(balancesObject[first.assetId.toString()]);

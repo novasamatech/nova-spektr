@@ -22,7 +22,9 @@ export const AssetsList = () => {
   const { getActiveAccounts } = useAccount();
   const { getLiveBalances } = useBalance();
   const { setHideZeroBalance, getHideZeroBalance } = useSettingsStorage();
+
   const assetsPrices = useUnit(priceProviderModel.$assetsPrices);
+  const fiatFlag = useUnit(priceProviderModel.$fiatFlag);
   const currency = useUnit(currencyModel.$activeCurrency);
 
   const [isSelectShardsOpen, toggleSelectShardsOpen] = useToggle();
@@ -59,7 +61,12 @@ export const AssetsList = () => {
     });
 
     setSortedChains(
-      chainsService.sortChainsByBalance(filteredChains, balances, assetsPrices || undefined, currency?.coingeckoId),
+      chainsService.sortChainsByBalance(
+        filteredChains,
+        balances,
+        assetsPrices,
+        fiatFlag ? currency?.coingeckoId : undefined,
+      ),
     );
   }, [balances]);
 

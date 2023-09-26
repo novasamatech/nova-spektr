@@ -82,13 +82,18 @@ function sortChains<T extends ChainLike>(chains: T[]): T[] {
   );
 }
 
+const compareFiatBalances = (a: ChainWithFiatBalance, b: ChainWithFiatBalance) => {
+  return new BigNumber(b.fiatBalance).lt(new BigNumber(a.fiatBalance)) ? -1 : 1;
+};
+
 function sortChainsByBalance(
   chains: Chain[],
   balances: Balance[],
-  assetPrices?: PriceObject,
+  assetPrices: PriceObject | null,
   currency?: string,
 ): Chain[] {
   const chainsWithFiatBalance = [] as ChainWithFiatBalance[];
+
   const relaychains = { withBalance: [], noBalance: [] };
   const parachains = { withBalance: [], noBalance: [] };
   const numberchains = { withBalance: [], noBalance: [] };
@@ -138,10 +143,6 @@ function sortChainsByBalance(
 
     collection.push(chain);
   });
-
-  const compareFiatBalances = (a: ChainWithFiatBalance, b: ChainWithFiatBalance) => {
-    return new BigNumber(b.fiatBalance).lt(new BigNumber(a.fiatBalance)) ? -1 : 1;
-  };
 
   return concat(
     chainsWithFiatBalance.sort(compareFiatBalances),

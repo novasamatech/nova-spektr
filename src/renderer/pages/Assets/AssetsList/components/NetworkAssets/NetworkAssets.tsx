@@ -28,6 +28,7 @@ export const NetworkAssets = ({ query, hideZeroBalance, chain, accounts, searchS
   const { getLiveNetworkBalances } = useBalance();
 
   const assetsPrices = useUnit(priceProviderModel.$assetsPrices);
+  const fiatFlag = useUnit(priceProviderModel.$fiatFlag);
   const currency = useUnit(currencyModel.$activeCurrency);
 
   const [filteredAssets, setFilteredAssets] = useState<Asset[]>([]);
@@ -78,7 +79,7 @@ export const NetworkAssets = ({ query, hideZeroBalance, chain, accounts, searchS
     });
 
     filteredAssets.sort((a, b) =>
-      balanceSorter(a, b, balancesObject, assetsPrices || undefined, currency?.coingeckoId),
+      balanceSorter(a, b, balancesObject, assetsPrices, fiatFlag ? currency?.coingeckoId : undefined),
     );
 
     setFilteredAssets(filteredAssets);
