@@ -3,7 +3,7 @@ import { app, shell, Menu, MenuItem, MenuItemConstructorOptions } from 'electron
 import { ENVIRONMENT, PLATFORM } from '@shared/constants';
 
 export function buildMenuTemplate(): Menu {
-  const template: Array<MenuItemConstructorOptions | MenuItem> = [
+  const template: MenuItemConstructorOptions[] | MenuItem[] = [
     {
       label: 'Edit',
       accelerator: 'e',
