@@ -74,4 +74,13 @@ describe('entities/price/model/price-provider-model', () => {
     await allSettled(priceProviderModel.events.assetsPricesRequested, { scope, params: { includeRates: false } });
     expect(scope.getState(priceProviderModel.$assetsPrices)).toEqual(prices);
   });
+
+  test('should update asset prices on currency change', async () => {
+    jest.spyOn(fiatService, 'getAssetsPrices').mockReturnValue(prices);
+
+    const scope = fork();
+    await allSettled(kernelModel.events.appStarted, { scope });
+    await allSettled(currencyModel.events.currencyChanged, { scope, params: 1 });
+    expect(scope.getState(priceProviderModel.$assetsPrices)).toEqual(prices);
+  });
 });
