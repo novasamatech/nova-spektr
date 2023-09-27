@@ -99,9 +99,9 @@ function sortChainsByBalance(
   const numberchains = { withBalance: [], noBalance: [] };
   const testnets = { withBalance: [], noBalance: [] };
 
-  const balancesMap = balances.reduce<Record<string, Balance>>((acc, b) => {
-    const key = `${b.chainId}_${b.assetId}`;
-    acc[key] = acc[key] ? sumBalances(acc[key], b) : b;
+  const balancesMap = balances.reduce<Record<string, Balance>>((acc, balance) => {
+    const key = `${balance.chainId}_${balance.assetId}`;
+    acc[key] = acc[key] ? sumBalances(acc[key], balance) : balance;
 
     return acc;
   }, {});
@@ -119,10 +119,9 @@ function sortChainsByBalance(
     }, new BigNumber(0));
 
     if (fiatBalance.gt(0) && !isTestnet(chain.options)) {
-      chainsWithFiatBalance.push({
-        ...chain,
-        fiatBalance: fiatBalance.toString(),
-      });
+      (chain as ChainWithFiatBalance).fiatBalance = fiatBalance.toString();
+
+      chainsWithFiatBalance.push(chain as ChainWithFiatBalance);
 
       return;
     }
