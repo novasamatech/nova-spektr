@@ -2,14 +2,17 @@ const { name: NAME, author: AUTHOR, version: VERSION, description: DESCRIPTION }
 
 const AUTHOR_IN_KEBAB_CASE = AUTHOR.name.replace(/\s+/g, '-');
 
+const prod_app_id = `com.${AUTHOR_IN_KEBAB_CASE}.${NAME}`.toLowerCase();
+const stage_app_id = `com.${AUTHOR_IN_KEBAB_CASE}.${NAME}.stage`.toLowerCase();
+
 exports.APP_CONFIG = {
   NAME,
   AUTHOR,
   VERSION,
   DESCRIPTION,
 
-  TITLE: 'Nova Spektr',
-  APP_ID: `com.${AUTHOR_IN_KEBAB_CASE}.${NAME}`.toLowerCase(),
+  TITLE: process.env.NODE_ENV === 'staging' ? 'Nova Spektr Stage' : 'Nova Spektr',
+  APP_ID: process.env.NODE_ENV === 'staging' ? stage_app_id : prod_app_id,
 
   MAIN: {
     WINDOW: {
@@ -21,7 +24,11 @@ exports.APP_CONFIG = {
   RENDERER: {
     DEV_SERVER: {
       URL: 'https://localhost',
-      PORT: '3000',
+      PORT: '3010',
+    },
+    STAGE_SERVER: {
+      URL: 'https://localhost',
+      PORT: '3010',
     },
   },
 
