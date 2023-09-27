@@ -9,7 +9,7 @@ import sharedConfig from './webpack.shared';
 import { APP_CONFIG } from '../app.config';
 
 const { FOLDERS, RENDERER } = APP_CONFIG;
-const port = RENDERER.STAGE_SERVER.URL.split(':')?.[2] || 3010;
+const port = RENDERER.DEV_SERVER.URL.split(':')?.[2] || 3000;
 
 const config = merge<WpConfig & WdsConfig>(sharedConfig, {
   mode: 'none',

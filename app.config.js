@@ -24,11 +24,7 @@ exports.APP_CONFIG = {
   RENDERER: {
     DEV_SERVER: {
       URL: 'https://localhost',
-      PORT: '3010',
-    },
-    STAGE_SERVER: {
-      URL: 'https://localhost',
-      PORT: '3010',
+      PORT: '3000',
     },
   },
 
