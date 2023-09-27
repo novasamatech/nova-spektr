@@ -7,7 +7,6 @@ on:
 env:
   CSC_FOR_PULL_REQUEST: true
   CI: true
-  BUILD_SOURCE: 'github'
 
 jobs:
   release-build:
