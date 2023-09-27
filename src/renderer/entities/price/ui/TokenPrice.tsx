@@ -20,6 +20,9 @@ export const TokenPrice = ({ assetId, className }: Props) => {
 
     return assetId && prices[assetId]?.[currency.coingeckoId];
   });
+  const fiatFlag = useUnit(priceProviderModel.$fiatFlag);
+
+  if (!fiatFlag) return null;
 
   if (!assetId) {
     return <FiatBalance amount={ZERO_FIAT_BALANCE} className={className} />;

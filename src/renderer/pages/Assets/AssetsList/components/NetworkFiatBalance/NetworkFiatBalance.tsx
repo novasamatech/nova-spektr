@@ -20,6 +20,7 @@ export const NetworkFiatBalance = ({ assets, balances, className }: Props) => {
 
   const currency = useUnit(currencyModel.$activeCurrency);
   const prices = useUnit(priceProviderModel.$assetsPrices);
+  const fiatFlag = useUnit(priceProviderModel.$fiatFlag);
 
   useEffect(() => {
     // TODO: Move logic to model https://app.clickup.com/t/8692tr8x0
@@ -42,6 +43,8 @@ export const NetworkFiatBalance = ({ assets, balances, className }: Props) => {
 
     setFiatAmount(totalFiatAmount);
   }, [assets.length]);
+
+  if (!fiatFlag) return null;
 
   const { value: formattedValue, suffix } = formatBalance(fiatAmount.toString(), 2);
 
