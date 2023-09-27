@@ -9,7 +9,11 @@ export function createWindow(settings: BrowserWindowConstructorOptions) {
   const { URL, PORT } = APP_CONFIG.RENDERER.DEV_SERVER;
   const devServerURL = `${URL}:${PORT}`;
 
-  ENVIRONMENT.IS_DEV ? window.loadURL(devServerURL) : window.loadFile('index.html');
+  if (ENVIRONMENT.IS_FORCE_ELECTRON) {
+    window.loadFile('index.html');
+  } else {
+    ENVIRONMENT.IS_DEV || ENVIRONMENT.IS_STAGE ? window.loadURL(devServerURL) : window.loadFile('index.html');
+  }
 
   window.on('closed', window.destroy);
   session.defaultSession.webRequest.onBeforeSendHeaders((details, callback) => {
