@@ -25,6 +25,7 @@ import {
   validateBalance,
   isXcmTransaction,
 } from '@renderer/entities/transaction';
+import { priceProviderModel } from '@renderer/entities/price';
 
 type Props = {
   tx: MultisigTransactionDS;
@@ -80,6 +81,10 @@ const RejectTx = ({ tx, account, connection }: Props) => {
       getBalance,
       getTransactionFee,
     });
+
+  useEffect(() => {
+    priceProviderModel.events.assetsPricesRequested({ includeRates: true });
+  }, []);
 
   useEffect(() => {
     const accountId = signAccount?.accountId || account.signatories[0].accountId;

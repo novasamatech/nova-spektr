@@ -13,6 +13,7 @@ import { useSettingsStorage } from '@renderer/entities/settings';
 import { Account, isMultisig, useAccount } from '@renderer/entities/account';
 import { AssetsFilters, NetworkAssets, SelectShardModal } from './components';
 import { Header } from '@renderer/components/common';
+import { priceProviderModel } from '@renderer/entities/price';
 
 export const AssetsList = () => {
   const { t } = useI18n();
@@ -36,6 +37,10 @@ export const AssetsList = () => {
 
   const firstActiveAccount = activeAccountsFromWallet.length > 0 && activeAccountsFromWallet[0].accountId;
   const activeWallet = activeAccountsFromWallet.length > 0 && activeAccountsFromWallet[0].walletId;
+
+  useEffect(() => {
+    priceProviderModel.events.assetsPricesRequested({ includeRates: true });
+  }, []);
 
   useEffect(() => {
     updateAccounts(activeAccountsFromWallet);
