@@ -75,7 +75,7 @@ describe('entities/price/model/price-provider-model', () => {
     expect(scope.getState(priceProviderModel.$assetsPrices)).toEqual(prices);
   });
 
-  test('should update asset prices on currency change', async () => {
+  test('should update $assetPrices when currencyChanged', async () => {
     jest.spyOn(fiatService, 'getAssetsPrices').mockReturnValue(prices);
 
     const scope = fork();
