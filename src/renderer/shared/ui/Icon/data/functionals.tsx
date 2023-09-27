@@ -44,6 +44,7 @@ import LockImg, { ReactComponent as LockSvg } from '@images/functionals/lock.svg
 import MagicImg, { ReactComponent as MagicSvg } from '@images/functionals/magic.svg';
 import QuestionImg, { ReactComponent as QuestionSvg } from '@images/functionals/question.svg';
 import UploadFileImg, { ReactComponent as UploadFileSvg } from '@images/functionals/updload-file.svg';
+import CurrencyImg, { ReactComponent as CurrencySvg } from '@images/functionals/currency.svg';
 
 const FunctionalImages = {
   copy: { svg: CopySvg, img: CopyImg },
@@ -56,6 +57,7 @@ const FunctionalImages = {
   checkmarkCutout: { svg: CheckCutoutSvg, img: CheckCutoutImg },
   checkmark: { svg: CheckSvg, img: CheckImg },
   checkmarkLine: { svg: CheckLineSvg, img: CheckLineImg },
+  currency: { svg: CurrencySvg, img: CurrencyImg },
   warnCutout: { svg: WarnCutoutSvg, img: WarnCutoutImg },
   disableCutout: { svg: DisableCutoutSvg, img: DisableCutoutImg },
   disable: { svg: DisableSvg, img: DisableImg },

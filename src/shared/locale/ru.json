@@ -415,6 +415,17 @@
     "title": "Получить {asset} на"
   },
   "settings": {
+    "currency": {
+      "cryptocurrenciesLabel": "Cryptocurrencies",
+      "modalTitle": "Currency",
+      "plateTitle": "Currency",
+      "popularFiatLabel": "Popular fiat currencies",
+      "save": "Save",
+      "selectPlaceholder": "Select currency",
+      "switchHint": "Nova Spektr is using CoinGecko to show currency",
+      "switchLabel": "Show currency values",
+      "unpopularFiatLabel": "Fiat currencies"
+    },
     "matrix": {
       "badCredentialsError": "Invalid username or password",
       "badServerError": "Server is not a correct matrix server",

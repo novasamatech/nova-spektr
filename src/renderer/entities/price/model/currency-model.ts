@@ -74,4 +74,8 @@ export const currencyModel = {
   events: {
     currencyChanged,
   },
+  watch: {
+    currencyChangedDone: currencyChangedFx.done,
+    currencyChangedFail: currencyChangedFx.fail,
+  },
 };
