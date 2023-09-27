@@ -55,7 +55,7 @@
   --alert-border: rgb(123, 41, 255);
   --alert-border-warning: rgb(246, 143, 7);
   --alert-border-negative: rgb(245, 33, 99);
-  --token-border: #c3c3cb;
+  --token-border: #5e5e69;
   --border-dark: #6e6e78;
 
   /* DIVIDER */
@@ -71,7 +71,7 @@
   --left-navigation-menu-background: #ffffff;
   --main-app-background: rgba(69, 69, 137, 0.04);
   --token-container-background: #ffffff;
-  --token-background: #79797d;
+  --token-background: #363643;
   --input-background: #fff;
   --input-background-disabled: rgba(69, 69, 137, 0.04);
   --action-background-hover: rgba(69, 69, 137, 0.06);

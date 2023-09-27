@@ -8,6 +8,7 @@ type Props = {
   className?: string;
 };
 
+// TODO add currency support
 export const AssetIcon = ({ src, name, size = 32, className }: Props) => {
   const [isImgLoaded, toggleImgLoaded] = useToggle();
 
