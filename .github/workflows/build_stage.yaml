@@ -1,0 +1,110 @@
+name: Build stage app
+
+on:
+  workflow_dispatch:
+  pull_request:
+
+env:
+  CSC_FOR_PULL_REQUEST: true
+  CI: true
+  BUILD_SOURCE: 'github'
+
+jobs:
+  release-build:
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
+
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest, windows-latest, ubuntu-latest]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: ⚙️ Install dependencies
+        uses: ./.github/workflows/install-pnpm
+
+      - name: Add MacOS certs
+        if: startsWith(matrix.os, 'macos')
+        run: chmod +x .github/add_cert_in_keychain.sh && .github/add_cert_in_keychain.sh
+        env:
+          CERTIFICATE_OSX_APPLICATION: ${{ secrets.CERTIFICATE_OSX_APPLICATION }}
+          CERTIFICATE_PASSWORD: ${{ secrets.CERTIFICATE_PASSWORD }}
+
+      - name: Build app
+        env:
+          # secrets for notarization
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_ID_PASS: ${{ secrets.APPLE_ID_PASS }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+        run: |
+          pnpm build
+          pnpm postbuild
+          pnpm dist
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: build-artifats
+          path: |
+            release/dist/*.exe
+            release/dist/*.dmg
+            release/dist/*.AppImage
+
+  distribute:
+    name: Distribute version
+    runs-on: ubuntu-latest
+    needs: release-build
+    steps:
+      - name: Download build artifacts
+        uses: actions/download-artifact@v2
+        with:
+          name: build-artifats
+
+      - name: Debug
+        run: ls -la
+      
+      - name: Add artifacts links to commit status
+        run: |
+          set -x
+          workflow_id=${{ github.event.workflow_run.workflow_id }}
+          run_id=${{ github.event.workflow_run.id }}  # instead of ${{ github.run_id }}
+          run_number=${{ github.event.workflow_run.run_number }}
+          head_branch=${{ github.event.workflow_run.head_branch }}
+          head_sha=${{ github.event.workflow_run.head_sha }}  # instead of ${{ github.event.pull_request.head.sha }} (or ${{ github.sha }})
+          check_suite_id=${{ github.event.workflow_run.check_suite_id }}
+          set +x
+
+          curl \
+          -H "Accept: application/vnd.github+json" \
+          "https://api.github.com/repos/${{ github.repository }}/actions/runs/${run_id}/artifacts" \
+          | jq '[.artifacts | .[] | {"id": .id, "name": .name, "created_at": .created_at, "expires_at": .expires_at, "archive_download_url": .archive_download_url}] | sort_by(.name)' \
+          > artifacts.json
+
+          cat artifacts.json
+
+          < artifacts.json jq -r ".[] | \
+            .name + \"§\" + \
+            ( .id | tostring | \"https://github.com/${{ github.repository }}/suites/${check_suite_id}/artifacts/\" + . ) + \"§\" + \
+            ( \"Link to \" + .name + \".zip [\" + ( .created_at | sub(\"T.*\"; \"→\") ) + ( .expires_at | sub(\"T.*\"; \"] (you must be logged)\" ) ) )" \
+          | while IFS="§" read name url descr; do
+              curl \
+              -X POST \
+              -H "Accept: application/vnd.github+json" \
+              -H "Authorization: Bearer ${{ github.token }}" \
+              "https://api.github.com/repos/${{ github.repository }}/statuses/${head_sha}" \
+              -d "$( printf '{"state":"%s","target_url":"%s","description":"%s","context":"%s"}' "${{ github.event.workflow_run.conclusion }}" "$url" "$descr" "$name (artifact)" )"
+          done
+
+      - name: Notify Telegram channel
+        uses: appleboy/telegram-action@master
+        with:
+          to: ${{ secrets.TELEGRAM_TO }}
+          token: ${{ secrets.TELEGRAM_TOKEN }}
+          message: |
+            New metadata is available and signed! 📑
+            ${{ steps.cpr.outputs.pull-request-url }}
+
+      
