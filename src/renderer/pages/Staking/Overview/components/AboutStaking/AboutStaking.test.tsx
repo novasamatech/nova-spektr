@@ -54,7 +54,7 @@ describe('pages/Staking/Overview/AboutStaking', () => {
     });
 
     const loaders = screen.getAllByTestId('shimmer');
-    expect(loaders).toHaveLength(4);
+    expect(loaders).toHaveLength(6);
   });
 
   test('should show whole info', async () => {
