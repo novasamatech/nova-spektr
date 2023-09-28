@@ -15,12 +15,21 @@ export type Account = {
   cryptoType: CryptoType;
   chainType: ChainType;
   chainId?: ChainId;
-  type?: AccountType;
+  keyType?: KeyType;
+  type?: AccountType; // TODO: make required during wallet / account refactoring
   shardedId?: ID;
   isActive: boolean;
   derivationPath?: string;
   signingExtras?: Record<string, any>;
 };
+
+export const enum KeyType {
+  ROOT = 'root',
+  CHAIN = 'chain',
+  SHARDED = 'sharded',
+  SHARD = 'shard',
+  MULTISIG = 'multisig',
+}
 
 export const enum AccountType {
   MAIN = 'main',
