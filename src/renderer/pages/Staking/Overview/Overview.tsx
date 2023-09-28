@@ -5,7 +5,14 @@ import { Header } from '@renderer/components/common';
 import { Chain } from '@renderer/entities/chain';
 import { getRelaychainAsset, toAddress } from '@renderer/shared/lib/utils';
 import { useGraphql, useI18n, useNetworkContext, PathValue, createLink } from '@renderer/app/providers';
-import { ChainId, Address, SigningType } from '@renderer/domain/shared-kernel';
+import { ChainId, Address } from '@renderer/domain/shared-kernel';
+import { useAccount } from '@renderer/entities/account';
+import { useToggle } from '@renderer/shared/lib/hooks';
+import { NominatorInfo } from '@renderer/pages/Staking/Overview/components/NominatorsList/NominatorsList';
+import { AccountDS } from '@renderer/shared/api/storage';
+import { ConnectionType, ConnectionStatus } from '@renderer/domain/connection';
+import { AboutStaking, NetworkInfo, NominatorsList, Actions, ValidatorsModal, InactiveChain } from './components';
+import { SigningType } from '@renderer/entities/wallet';
 import {
   useEra,
   useStakingData,
@@ -15,12 +22,6 @@ import {
   useStakingRewards,
   Stake,
 } from '@renderer/entities/staking';
-import { useAccount } from '@renderer/entities/account';
-import { useToggle } from '@renderer/shared/lib/hooks';
-import { NominatorInfo } from '@renderer/pages/Staking/Overview/components/NominatorsList/NominatorsList';
-import { AccountDS } from '@renderer/shared/api/storage';
-import { ConnectionType, ConnectionStatus } from '@renderer/domain/connection';
-import { AboutStaking, NetworkInfo, NominatorsList, Actions, ValidatorsModal, InactiveChain } from './components';
 
 export const Overview = () => {
   const { t } = useI18n();

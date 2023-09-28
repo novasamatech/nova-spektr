@@ -9,7 +9,7 @@ import { AccountDS, MultisigTransactionDS } from '@renderer/shared/api/storage';
 import { useToggle } from '@renderer/shared/lib/hooks';
 import { Account, MultisigAccount, useAccount } from '@renderer/entities/account';
 import { ExtendedChain } from '@renderer/entities/network';
-import { Address, HexString, SigningType, Timepoint } from '@renderer/domain/shared-kernel';
+import { Address, HexString, Timepoint } from '@renderer/domain/shared-kernel';
 import { TEST_ADDRESS, toAddress, transferableAmount, getAssetById } from '@renderer/shared/lib/utils';
 import { getModalTransactionTitle } from '../../common/utils';
 import { useBalance } from '@renderer/entities/asset';
@@ -19,6 +19,7 @@ import { SignatorySelectModal } from './SignatorySelectModal';
 import { useMultisigEvent } from '@renderer/entities/multisig';
 import { Signing } from '@renderer/features/operation';
 import { OperationTitle } from '@renderer/components/common';
+import { SigningType } from '@renderer/entities/wallet';
 import {
   OperationResult,
   Transaction,

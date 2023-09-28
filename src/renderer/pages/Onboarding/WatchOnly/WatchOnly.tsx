@@ -14,12 +14,13 @@ import {
 } from '@renderer/shared/ui';
 import { useI18n } from '@renderer/app/providers';
 import { Chain } from '@renderer/entities/chain';
-import { ErrorType, AccountId, SigningType } from '@renderer/domain/shared-kernel';
+import { ErrorType, AccountId } from '@renderer/domain/shared-kernel';
 import { chainsService } from '@renderer/entities/network';
 import { toAccountId, validateAddress, DEFAULT_TRANSITION } from '@renderer/shared/lib/utils';
 import EmptyState from './EmptyState';
 import { createAccount, useAccount, AccountsList } from '@renderer/entities/account';
 import { useToggle } from '@renderer/shared/lib/hooks';
+import { SigningType } from '@renderer/entities/wallet';
 
 type WalletForm = {
   walletName: string;

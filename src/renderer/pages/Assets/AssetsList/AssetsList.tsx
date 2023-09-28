@@ -6,13 +6,13 @@ import { useI18n, useNetworkContext } from '@renderer/app/providers';
 import { useBalance } from '@renderer/entities/asset';
 import { Chain } from '@renderer/entities/chain';
 import { ConnectionType } from '@renderer/domain/connection';
-import { SigningType } from '@renderer/domain/shared-kernel';
 import { useToggle } from '@renderer/shared/lib/hooks';
 import { chainsService } from '@renderer/entities/network';
 import { useSettingsStorage } from '@renderer/entities/settings';
 import { Account, isMultisig, useAccount } from '@renderer/entities/account';
 import { AssetsFilters, NetworkAssets, SelectShardModal } from './components';
 import { Header } from '@renderer/components/common';
+import { SigningType } from '@renderer/entities/wallet';
 
 export const AssetsList = () => {
   const { t } = useI18n();

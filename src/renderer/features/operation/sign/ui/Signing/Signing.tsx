@@ -1,6 +1,6 @@
 import { SigningProps } from '../../model';
-import { SigningType } from '@renderer/domain/shared-kernel';
 import { VaultSigning } from '../VaultSigning/VaultSigning';
+import { SigningType } from '@renderer/entities/wallet';
 
 export const SigningFlow: Record<SigningType, (props: SigningProps) => JSX.Element | null> = {
   [SigningType.MULTISIG]: (props) => <VaultSigning {...props} />,

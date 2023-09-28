@@ -4,8 +4,9 @@ import noop from 'lodash/noop';
 
 import { OperationHeader } from '../OperationHeader';
 import { TEST_ACCOUNT_ID, TEST_ADDRESS, TEST_CHAIN_ID } from '@renderer/shared/lib/utils';
-import { AccountId, ChainType, CryptoType, SigningType } from '@renderer/domain/shared-kernel';
+import { AccountId, ChainType, CryptoType } from '@renderer/domain/shared-kernel';
 import { Account } from '@renderer/entities/account';
+import { SigningType } from '@renderer/entities/wallet';
 
 const accountProps = {
   signingType: SigningType.PARITY_SIGNER,

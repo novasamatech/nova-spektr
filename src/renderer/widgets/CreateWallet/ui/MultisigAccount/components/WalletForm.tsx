@@ -4,6 +4,8 @@ import { Alert, Button, Input, InputHint, Select, SmallTitleText } from '@render
 import { useI18n, useMatrix } from '@renderer/app/providers';
 import { DropdownOption, DropdownResult } from '@renderer/shared/ui/Dropdowns/common/types';
 import { Signatory } from '@renderer/entities/signatory';
+import { AccountId } from '@renderer/domain/shared-kernel';
+import { SigningType } from '@renderer/entities/wallet';
 import {
   getMultisigAccountId,
   isMultisig,
@@ -11,7 +13,6 @@ import {
   Account,
   MultisigAccount,
 } from '@renderer/entities/account';
-import { SigningType, AccountId } from '@renderer/domain/shared-kernel';
 
 type MultisigAccountForm = {
   name: string;

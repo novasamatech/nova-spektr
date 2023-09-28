@@ -2,16 +2,9 @@ import { createKeyMulti } from '@polkadot/util-crypto';
 import { u8aToHex } from '@polkadot/util';
 
 import { AccountDS, ID } from '@renderer/shared/api/storage';
-import {
-  ChainId,
-  CryptoType,
-  AccountId,
-  ChainType,
-  SigningType,
-  Threshold,
-  WalletType,
-} from '../../../domain/shared-kernel';
+import { ChainId, CryptoType, AccountId, ChainType, Threshold } from '../../../domain/shared-kernel';
 import { Signatory } from '@renderer/entities/signatory/model/signatory';
+import { WalletType, SigningType } from '@renderer/entities/wallet/model/wallet';
 
 export type Account = {
   walletId?: ID;
@@ -22,12 +15,21 @@ export type Account = {
   cryptoType: CryptoType;
   chainType: ChainType;
   chainId?: ChainId;
-  // TODO: rename this to something as replacer for root account
-  isMain: boolean;
+  type?: AccountType;
+  shardedId?: ID;
   isActive: boolean;
   derivationPath?: string;
   signingExtras?: Record<string, any>;
 };
+
+export const enum AccountType {
+  MAIN = 'main',
+  PUBLIC = 'public',
+  HOT = 'hot',
+  GOVERNANCE = 'governance',
+  STAKING = 'staking',
+  CUSTOM = 'custom',
+}
 
 export function createAccount({
   accountId,
@@ -48,7 +50,6 @@ export function createAccount({
     name,
     chainId,
     signingType,
-    isMain: false,
     isActive: false,
     derivationPath,
     signingExtras,
@@ -92,7 +93,6 @@ export function createMultisigAccount({
     matrixRoomId,
     signingType: SigningType.MULTISIG,
     creatorAccountId,
-    isMain: false,
     isActive,
   } as MultisigAccount;
 }

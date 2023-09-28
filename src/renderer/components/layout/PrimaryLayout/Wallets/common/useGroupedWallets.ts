@@ -4,10 +4,10 @@ import { uniq } from 'lodash';
 import { WalletDS } from '@renderer/shared/api/storage';
 import { ChainsRecord, GroupedWallets } from './types';
 import { getMultishardStructure } from '@renderer/components/layout/PrimaryLayout/Wallets/common/utils';
-import { SigningType, WalletType } from '@renderer/domain/shared-kernel';
 import { includes, toAddress } from '@renderer/shared/lib/utils';
 import { useAccount } from '@renderer/entities/account/lib/accountService';
 import { Account } from '@renderer/entities/account/model/account';
+import { WalletType, SigningType } from '@renderer/entities/wallet';
 
 export const useGroupedWallets = (
   liveWallets: WalletDS[],

@@ -2,10 +2,10 @@ import { useEffect, useState } from 'react';
 
 import { DropdownOption, DropdownResult } from '@renderer/shared/ui/Dropdowns/common/types';
 import { Account, MultisigAccount, useAccount } from '@renderer/entities/account';
-import { SigningType } from '@renderer/domain/shared-kernel';
 import { InputHint, Select } from '@renderer/shared/ui';
 import { useI18n } from '@renderer/app/providers';
 import { OperationErrorType } from '@renderer/features/operation/init/model';
+import { SigningType } from '@renderer/entities/wallet';
 
 type Props = {
   account: MultisigAccount;

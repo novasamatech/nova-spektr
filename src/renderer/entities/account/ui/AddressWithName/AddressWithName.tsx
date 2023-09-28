@@ -1,7 +1,8 @@
 import { cnTw, toShortAddress, copyToClipboard } from '@renderer/shared/lib/utils';
 import { Identicon, IconButton, Truncate } from '@renderer/shared/ui';
-import { SigningType, AccountId, Address } from '@renderer/domain/shared-kernel';
+import { AccountId, Address } from '@renderer/domain/shared-kernel';
 import { getAddress } from '@renderer/entities/account';
+import { SigningType } from '@renderer/entities/wallet';
 
 type AddressType = 'full' | 'short' | 'adaptive';
 

@@ -1,11 +1,11 @@
 import { BodyText, CaptionText, FootnoteText, Icon, Identicon } from '@renderer/shared/ui';
-import { WalletType } from '@renderer/domain/shared-kernel';
 import { GroupIcons, GroupLabels } from '@renderer/components/layout/PrimaryLayout/Wallets/common/constants';
 import { toAddress, SS58_DEFAULT_PREFIX } from '@renderer/shared/lib/utils';
 import { useI18n } from '@renderer/app/providers';
 import { WalletDS } from '@renderer/shared/api/storage';
 import { ChainsRecord } from './common/types';
 import { Account, getActiveWalletType } from '@renderer/entities/account';
+import { WalletType } from '@renderer/entities/wallet';
 
 type Props = {
   activeAccounts: Account[];
