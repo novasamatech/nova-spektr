@@ -6,12 +6,12 @@ import { DefaultExplorer, ExplorerIcons } from '@renderer/components/common/Expl
 import { BaseModal, Button, FootnoteText, HelpText, Icon, Select } from '@renderer/shared/ui';
 import { DropdownOption, DropdownResult } from '@renderer/shared/ui/types';
 import { useI18n } from '@renderer/app/providers';
-import { SigningType } from '@renderer/domain/shared-kernel';
 import { copyToClipboard, DEFAULT_TRANSITION, toAddress } from '@renderer/shared/lib/utils';
 import { AccountAddress, useAccount } from '@renderer/entities/account';
 import { Chain } from '@renderer/entities/chain';
 import { Asset } from '@renderer/entities/asset';
 import { useToggle } from '@renderer/shared/lib/hooks';
+import { SigningType } from '@renderer/entities/wallet';
 
 type Props = {
   chain: Chain;

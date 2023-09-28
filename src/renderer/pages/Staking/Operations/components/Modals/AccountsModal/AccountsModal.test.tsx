@@ -1,9 +1,10 @@
 import { render, screen } from '@testing-library/react';
 
 import { Asset } from '@renderer/entities/asset';
-import { SigningType, ChainType, CryptoType } from '@renderer/domain/shared-kernel';
+import { ChainType, CryptoType } from '@renderer/domain/shared-kernel';
 import { Account } from '@renderer/entities/account';
 import AccountsModal from './AccountsModal';
+import { SigningType } from '@renderer/entities/wallet';
 
 jest.mock('@renderer/app/providers', () => ({
   useI18n: jest.fn().mockReturnValue({
@@ -36,7 +37,6 @@ describe('pages/Staking/components/AccountsModal', () => {
         signingType: SigningType.PARITY_SIGNER,
         chainType: ChainType.SUBSTRATE,
         cryptoType: CryptoType.SR25519,
-        isMain: false,
         isActive: false,
       },
       {
@@ -45,7 +45,6 @@ describe('pages/Staking/components/AccountsModal', () => {
         signingType: SigningType.PARITY_SIGNER,
         chainType: ChainType.SUBSTRATE,
         cryptoType: CryptoType.SR25519,
-        isMain: false,
         isActive: false,
       },
     ] as Account[],

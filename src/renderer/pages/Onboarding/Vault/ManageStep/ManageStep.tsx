@@ -8,7 +8,7 @@ import { chainsService } from '@renderer/entities/network';
 import { ID } from '@renderer/shared/api/storage';
 import { useI18n } from '@renderer/app/providers';
 import { Chain, Explorer, ChainTitle } from '@renderer/entities/chain';
-import { Address, ChainId, ErrorType, HexString, SigningType, WalletType } from '@renderer/domain/shared-kernel';
+import { Address, ChainId, ErrorType, HexString } from '@renderer/domain/shared-kernel';
 import {
   Button,
   Input,
@@ -20,7 +20,7 @@ import {
   Icon,
 } from '@renderer/shared/ui';
 import { AddressInfo, CompactSeedInfo, SeedInfo } from '@renderer/components/common/QrCode/common/types';
-import { useWallet, createWallet } from '@renderer/entities/wallet';
+import { useWallet, createWallet, SigningType, WalletType } from '@renderer/entities/wallet';
 import { useAccount, Account, createAccount, AddressWithExplorers } from '@renderer/entities/account';
 import { toAccountId, toAddress, cnTw } from '@renderer/shared/lib/utils';
 

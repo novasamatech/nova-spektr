@@ -2,7 +2,7 @@ import { createContext, PropsWithChildren, useContext, useEffect, useRef, useSta
 
 import { createMultisigAccount, getMultisigAccountId, MultisigAccount, useAccount } from '@renderer/entities/account';
 import { getCreatedDateFromApi, toAddress, validateCallData } from '@renderer/shared/lib/utils';
-import { AccountId, Address, CallHash, ChainId, SigningType } from '@renderer/domain/shared-kernel';
+import { AccountId, Address, CallHash, ChainId } from '@renderer/domain/shared-kernel';
 import { useMultisigEvent, useMultisigTx } from '@renderer/entities/multisig';
 import { Signatory } from '@renderer/entities/signatory';
 import { useContact } from '@renderer/entities/contact';
@@ -30,6 +30,7 @@ import {
   SigningStatus,
   useTransaction,
 } from '@renderer/entities/transaction';
+import { SigningType } from '@renderer/entities/wallet';
 
 type MatrixContextProps = {
   matrix: ISecureMessenger;

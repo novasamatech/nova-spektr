@@ -7,7 +7,7 @@ import { cnTw } from '@renderer/shared/lib/utils';
 import PrivacyPolicy from './PrivacyPolicy';
 import { WelcomeCard } from './WelcomeCard';
 import { walletProviderModel } from '@renderer/widgets/CreateWallet';
-import { WalletType } from '@renderer/domain/shared-kernel';
+import { WalletType } from '@renderer/entities/wallet';
 
 const LOGO_WIDTH = 232;
 const RIGHT_PADDING = 225;

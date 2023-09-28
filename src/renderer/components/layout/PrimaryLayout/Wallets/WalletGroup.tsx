@@ -3,12 +3,12 @@ import cn from 'classnames';
 
 import { WalletGroupItem, MultishardWallet } from '@renderer/components/layout/PrimaryLayout/Wallets/common/types';
 import { Icon, HelpText, BodyText, CaptionText } from '@renderer/shared/ui';
-import { WalletType } from '@renderer/domain/shared-kernel';
 import { GroupIcons, GroupLabels } from '@renderer/components/layout/PrimaryLayout/Wallets/common/constants';
 import { useI18n } from '@renderer/app/providers';
 import { Account, AccountAddress } from '@renderer/entities/account';
 import { isMultishardWalletItem } from '@renderer/components/layout/PrimaryLayout/Wallets/common/utils';
 import { cnTw } from '@renderer/shared/lib/utils';
+import { WalletType } from '@renderer/entities/wallet';
 
 type Props = {
   type: WalletType;

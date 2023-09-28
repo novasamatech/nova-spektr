@@ -1,6 +1,7 @@
 import { AccountDS, WalletDS } from '@renderer/shared/api/storage';
 import { Chain } from '@renderer/entities/chain/model/chain';
-import { ChainId, WalletType } from '@renderer/domain/shared-kernel';
+import { ChainId } from '@renderer/domain/shared-kernel';
+import { WalletType } from '@renderer/entities/wallet';
 
 export type ChainWithAccounts = Chain & { accounts: AccountDS[] };
 export type RootAccount = AccountDS & { chains: ChainWithAccounts[]; amount: number };

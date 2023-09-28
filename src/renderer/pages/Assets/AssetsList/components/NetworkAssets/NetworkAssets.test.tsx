@@ -5,7 +5,8 @@ import { TEST_ACCOUNT_ID } from '@renderer/shared/lib/utils';
 import chains from '@renderer/assets/chains/chains.json';
 import { NetworkAssets } from './NetworkAssets';
 import { Account } from '@renderer/entities/account';
-import { ChainType, CryptoType, SigningType } from '@renderer/domain/shared-kernel';
+import { ChainType, CryptoType } from '@renderer/domain/shared-kernel';
+import { SigningType } from '@renderer/entities/wallet';
 
 const testChain = chains.find((chain) => chain.assets.length > 1) as Chain;
 const testAsset = testChain.assets[0];
@@ -47,7 +48,6 @@ const accounts = [
     accountId: TEST_ACCOUNT_ID,
     name: 'test',
     isActive: true,
-    isMain: true,
     signingType: SigningType.PARITY_SIGNER,
     cryptoType: CryptoType.SR25519,
     chainType: ChainType.SUBSTRATE,

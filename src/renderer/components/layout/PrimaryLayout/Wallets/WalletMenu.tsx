@@ -4,7 +4,6 @@ import cn from 'classnames';
 
 import { DropdownButton, SearchInput, SmallTitleText } from '@renderer/shared/ui';
 import { useI18n } from '@renderer/app/providers';
-import { WalletType } from '@renderer/domain/shared-kernel';
 import { useAccount } from '@renderer/entities/account';
 import WalletGroup from '@renderer/components/layout/PrimaryLayout/Wallets/WalletGroup';
 import { useGroupedWallets } from './common/useGroupedWallets';
@@ -12,6 +11,7 @@ import { ID, WalletDS } from '@renderer/shared/api/storage';
 import { ButtonDropdownOption } from '@renderer/shared/ui/types';
 import { isMultishardWalletItem } from '@renderer/components/layout/PrimaryLayout/Wallets/common/utils';
 import { walletProviderModel } from '@renderer/widgets/CreateWallet';
+import { WalletType } from '@renderer/entities/wallet';
 import {
   ChainsRecord,
   WalletGroupItem,

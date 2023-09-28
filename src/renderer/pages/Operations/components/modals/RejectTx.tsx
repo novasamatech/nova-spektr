@@ -8,7 +8,7 @@ import { AccountDS, MultisigTransactionDS } from '@renderer/shared/api/storage';
 import { useToggle } from '@renderer/shared/lib/hooks';
 import { MultisigAccount, useAccount } from '@renderer/entities/account';
 import { ExtendedChain } from '@renderer/entities/network';
-import { Address, HexString, Timepoint, SigningType } from '@renderer/domain/shared-kernel';
+import { Address, HexString, Timepoint } from '@renderer/domain/shared-kernel';
 import { toAddress, transferableAmount, getAssetById } from '@renderer/shared/lib/utils';
 import { getModalTransactionTitle } from '../../common/utils';
 import { useBalance } from '@renderer/entities/asset';
@@ -17,6 +17,7 @@ import { Submit } from '../ActionSteps/Submit';
 import { Confirmation } from '../ActionSteps/Confirmation';
 import { Signing } from '@renderer/features/operation';
 import { OperationTitle } from '@renderer/components/common';
+import { SigningType } from '@renderer/entities/wallet';
 import {
   Transaction,
   TransactionType,

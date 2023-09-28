@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react';
 
-import { SigningType } from '@renderer/domain/shared-kernel';
 import { TEST_ADDRESS } from '@renderer/shared/lib/utils';
+import { SigningType } from '@renderer/entities/wallet';
 import Identicon from './Identicon';
 
 describe('ui/Identicon', () => {
