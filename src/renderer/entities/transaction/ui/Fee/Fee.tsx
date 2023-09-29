@@ -53,23 +53,15 @@ export const Fee = memo(({ api, multiply = 1, asset, transaction, className, onF
   }, [transaction, api]);
 
   if (isLoading) {
-    if (!fiatFlag) {
-      return <Shimmering width={90} height={20} data-testid="fee-loader" />;
-    }
-
     return (
       <div className="flex flex-col gap-y-0.5 items-end">
         <Shimmering width={90} height={20} data-testid="fee-loader" />
-        <Shimmering width={70} height={18} data-testid="fee-loader" />
+        {fiatFlag && <Shimmering width={70} height={18} data-testid="fee-loader" />}
       </div>
     );
   }
 
   const totalFee = new BN(fee).muln(multiply).toString();
-
-  if (!fiatFlag) {
-    return <AssetBalance value={totalFee} asset={asset} className={className} />;
-  }
 
   return (
     <div className="flex flex-col gap-y-0.5 items-end">
