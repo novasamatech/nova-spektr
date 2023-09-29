@@ -12,7 +12,7 @@ type Props = {
   api: ApiPromise;
   reserveApi?: ApiPromise;
   asset: Asset;
-  transaction: Transaction;
+  feeTx?: Transaction;
   account: Account | MultisigAccount;
   totalAccounts: number;
   xcmConfig?: XcmConfig;
@@ -26,7 +26,7 @@ type Props = {
 export const OperationFooter = ({
   api,
   asset,
-  transaction,
+  feeTx,
   account,
   totalAccounts,
   xcmConfig,
@@ -40,7 +40,7 @@ export const OperationFooter = ({
   const { t } = useI18n();
 
   // TODO: Check why transaction can be empty
-  const isXcmTransfer = XcmTypes.includes(transaction?.type);
+  const isXcmTransfer = feeTx && XcmTypes.includes(feeTx.type);
 
   return (
     <div className="flex flex-col gap-y-2">
@@ -62,13 +62,7 @@ export const OperationFooter = ({
       <div className="flex justify-between items-center gap-x-2">
         <FootnoteText className="text-text-tertiary">{t('staking.networkFee', { count: totalAccounts })}</FootnoteText>
         <FootnoteText className="text-text-tertiary">
-          <Fee
-            api={api}
-            asset={asset}
-            transaction={transaction}
-            onFeeChange={onFeeChange}
-            onFeeLoading={onFeeLoading}
-          />
+          <Fee api={api} asset={asset} transaction={feeTx} onFeeChange={onFeeChange} onFeeLoading={onFeeLoading} />
         </FootnoteText>
       </div>
 
@@ -80,7 +74,7 @@ export const OperationFooter = ({
               api={api}
               asset={asset}
               multiply={totalAccounts}
-              transaction={transaction}
+              transaction={feeTx}
               onFeeChange={onFeeChange}
               onFeeLoading={onFeeLoading}
             />
@@ -94,7 +88,7 @@ export const OperationFooter = ({
           <FootnoteText className="text-text-tertiary">
             <XcmFee
               asset={xcmAsset}
-              transaction={transaction}
+              transaction={feeTx}
               config={xcmConfig}
               api={reserveApi}
               onFeeChange={onXcmFeeChange}

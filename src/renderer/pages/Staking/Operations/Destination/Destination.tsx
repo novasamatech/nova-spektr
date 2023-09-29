@@ -5,12 +5,12 @@ import { Navigate, useNavigate, useParams, useSearchParams } from 'react-router-
 import { toAddress, getRelaychainAsset, DEFAULT_TRANSITION } from '@renderer/shared/lib/utils';
 import { RewardsDestination } from '@renderer/entities/staking';
 import { useI18n, useNetworkContext, Paths } from '@renderer/app/providers';
-import { Address, ChainId, HexString, AccountId } from '@renderer/domain/shared-kernel';
+import { Address, ChainId, HexString } from '@renderer/domain/shared-kernel';
 import { Transaction, TransactionType, useTransaction } from '@renderer/entities/transaction';
 import { Confirmation, Submit, NoAsset } from '../components';
 import InitOperation, { DestinationResult } from './InitOperation/InitOperation';
 import { useToggle } from '@renderer/shared/lib/hooks';
-import { MultisigAccount, isMultisig, Account, useAccount } from '@renderer/entities/account';
+import { isMultisig, Account, useAccount } from '@renderer/entities/account';
 import { DestinationType } from '../common/types';
 import { BaseModal, Button, Loader } from '@renderer/shared/ui';
 import { OperationTitle } from '@renderer/components/common';
@@ -29,7 +29,7 @@ export const Destination = () => {
   const navigate = useNavigate();
   const { getActiveAccounts } = useAccount();
   const { connections } = useNetworkContext();
-  const { getTransactionHash } = useTransaction();
+  const { setTxs, txs, setWrappers, wrapTx, buildTransaction } = useTransaction();
   const [searchParams] = useSearchParams();
   const params = useParams<{ chainId: ChainId }>();
 
@@ -40,8 +40,6 @@ export const Destination = () => {
   const [destination, setDestination] = useState<DestinationType>();
   const [description, setDescription] = useState('');
 
-  const [multisigTx, setMultisigTx] = useState<Transaction>();
-  const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [unsignedTransactions, setUnsignedTransactions] = useState<UnsignedTransaction[]>([]);
 
   const [accounts, setAccounts] = useState<Account[]>([]);
@@ -133,54 +131,30 @@ export const Destination = () => {
     const transactions = getDestinationTxs(accounts, destination);
 
     if (signer && isMultisig(accounts[0])) {
-      const multisigTx = getMultisigTx(accounts[0], signer.accountId, transactions[0]);
-      setMultisigTx(multisigTx);
+      setWrappers([
+        {
+          signatoryId: signer.accountId,
+          account: accounts[0],
+        },
+      ]);
       setSigner(signer);
       setDescription(description || '');
     }
 
-    setTransactions(transactions);
+    setTxs(transactions);
     setTxAccounts(accounts);
     setDestination(destPayload);
     setActiveStep(Step.CONFIRMATION);
   };
 
   const getDestinationTxs = (accounts: Account[], destination?: Address): Transaction[] => {
-    return accounts.map(({ accountId }) => ({
-      chainId,
-      address: toAddress(accountId, { prefix: addressPrefix }),
-      type: TransactionType.DESTINATION,
-      args: { payee: destination ? { Account: destination } : 'Staked' },
-    }));
-  };
+    const payee = destination ? { Account: destination } : 'Staked';
 
-  const getMultisigTx = (
-    account: MultisigAccount,
-    signerAccountId: AccountId,
-    transaction: Transaction,
-  ): Transaction => {
-    const { callData, callHash } = getTransactionHash(transaction, api);
-
-    const otherSignatories = account.signatories.reduce<Address[]>((acc, s) => {
-      if (s.accountId !== signerAccountId) {
-        acc.push(toAddress(s.accountId, { prefix: addressPrefix }));
-      }
-
-      return acc;
-    }, []);
-
-    return {
-      chainId,
-      address: toAddress(signerAccountId, { prefix: addressPrefix }),
-      type: TransactionType.MULTISIG_AS_MULTI,
-      args: {
-        threshold: account.threshold,
-        otherSignatories: otherSignatories.sort(),
-        maybeTimepoint: null,
-        callData,
-        callHash,
-      },
-    };
+    return accounts.map(({ accountId }) =>
+      buildTransaction(TransactionType.DESTINATION, toAddress(accountId, { prefix: addressPrefix }), chainId, {
+        payee,
+      }),
+    );
   };
 
   const onSignResult = (signatures: HexString[], unsigned: UnsignedTransaction[]) => {
@@ -190,6 +164,7 @@ export const Destination = () => {
   };
 
   const explorersProps = { explorers, addressPrefix, asset };
+  const multisigTx = isMultisig(txAccounts[0]) ? wrapTx(txs[0], api, addressPrefix) : undefined;
 
   return (
     <>
@@ -212,8 +187,7 @@ export const Destination = () => {
             signer={signer}
             destination={destination}
             description={description}
-            transaction={transactions[0]}
-            multisigTx={multisigTx}
+            transaction={txs[0]}
             onResult={() => setActiveStep(Step.SIGNING)}
             onGoBack={goToPrevStep}
             {...explorersProps}
@@ -226,7 +200,7 @@ export const Destination = () => {
             addressPrefix={addressPrefix}
             signatory={signer}
             accounts={txAccounts}
-            transactions={multisigTx ? [multisigTx] : transactions}
+            transactions={multisigTx ? [multisigTx] : txs}
             onGoBack={() => setActiveStep(Step.CONFIRMATION)}
             onResult={onSignResult}
           />
@@ -236,7 +210,7 @@ export const Destination = () => {
       {activeStep === Step.SUBMIT && (
         <Submit
           api={api}
-          txs={transactions}
+          txs={txs}
           multisigTx={multisigTx}
           signatures={signatures}
           unsignedTx={unsignedTransactions}

@@ -3,13 +3,13 @@ import { useEffect, useState } from 'react';
 import { Navigate, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 
 import { UnstakingDuration } from '@renderer/pages/Staking/Overview/components';
-import { useI18n, useNetworkContext, Paths } from '@renderer/app/providers';
-import { Address, ChainId, HexString, AccountId } from '@renderer/domain/shared-kernel';
+import { Paths, useI18n, useNetworkContext } from '@renderer/app/providers';
+import { ChainId, HexString } from '@renderer/domain/shared-kernel';
 import { Transaction, TransactionType, useTransaction } from '@renderer/entities/transaction';
-import { useAccount, Account, MultisigAccount, isMultisig } from '@renderer/entities/account';
+import { Account, isMultisig, useAccount } from '@renderer/entities/account';
 import InitOperation, { UnstakeResult } from './InitOperation/InitOperation';
-import { Confirmation, Submit, NoAsset } from '../components';
-import { toAddress, getRelaychainAsset, DEFAULT_TRANSITION } from '@renderer/shared/lib/utils';
+import { Confirmation, NoAsset, Submit } from '../components';
+import { DEFAULT_TRANSITION, getRelaychainAsset, toAddress } from '@renderer/shared/lib/utils';
 import { useToggle } from '@renderer/shared/lib/hooks';
 import { Alert, BaseModal, Button, Loader } from '@renderer/shared/ui';
 import { OperationTitle } from '@renderer/components/common';
@@ -26,7 +26,7 @@ const enum Step {
 export const Unstake = () => {
   const { t } = useI18n();
   const navigate = useNavigate();
-  const { getTransactionHash } = useTransaction();
+  const { setTxs, txs, setWrappers, wrapTx, buildTransaction } = useTransaction();
   const { connections } = useNetworkContext();
   const { getActiveAccounts } = useAccount();
   const [searchParams] = useSearchParams();
@@ -40,8 +40,6 @@ export const Unstake = () => {
   const [unstakeAmount, setUnstakeAmount] = useState('');
   const [description, setDescription] = useState('');
 
-  const [multisigTx, setMultisigTx] = useState<Transaction>();
-  const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [unsignedTransactions, setUnsignedTransactions] = useState<UnsignedTransaction[]>([]);
 
   const [accounts, setAccounts] = useState<Account[]>([]);
@@ -129,13 +127,17 @@ export const Unstake = () => {
     const transactions = getUnstakeTxs(accounts, amount, withChill);
 
     if (signer && isMultisig(accounts[0])) {
-      const multisigTx = getMultisigTx(accounts[0], signer.accountId, transactions[0]);
-      setMultisigTx(multisigTx);
+      setWrappers([
+        {
+          signatoryId: signer.accountId,
+          account: accounts[0],
+        },
+      ]);
       setSigner(signer);
       setDescription(description || '');
     }
 
-    setTransactions(transactions);
+    setTxs(transactions);
     setTxAccounts(accounts);
     setUnstakeAmount(amount);
     setActiveStep(Step.CONFIRMATION);
@@ -144,57 +146,15 @@ export const Unstake = () => {
   const getUnstakeTxs = (accounts: Account[], amount: string, withChill: boolean[]): Transaction[] => {
     return accounts.map(({ accountId }, index) => {
       const address = toAddress(accountId, { prefix: addressPrefix });
-      const commonPayload = { chainId, address };
 
-      const unstakeTx = {
-        ...commonPayload,
-        type: TransactionType.UNSTAKE,
-        args: { value: amount },
-      };
+      const unstakeTx = buildTransaction(TransactionType.UNSTAKE, address, chainId, { value: amount });
 
       if (!withChill[index]) return unstakeTx;
 
-      const chillTx = {
-        ...commonPayload,
-        type: TransactionType.CHILL,
-        args: {},
-      };
+      const chillTx = buildTransaction(TransactionType.CHILL, address, chainId, {});
 
-      return {
-        ...commonPayload,
-        type: TransactionType.BATCH_ALL,
-        args: { transactions: [chillTx, unstakeTx] },
-      };
+      return buildTransaction(TransactionType.BATCH_ALL, address, chainId, { transactions: [chillTx, unstakeTx] });
     });
-  };
-
-  const getMultisigTx = (
-    account: MultisigAccount,
-    signerAccountId: AccountId,
-    transaction: Transaction,
-  ): Transaction => {
-    const { callData, callHash } = getTransactionHash(transaction, api);
-
-    const otherSignatories = account.signatories.reduce<Address[]>((acc, s) => {
-      if (s.accountId !== signerAccountId) {
-        acc.push(toAddress(s.accountId, { prefix: addressPrefix }));
-      }
-
-      return acc;
-    }, []);
-
-    return {
-      chainId,
-      address: toAddress(signerAccountId, { prefix: addressPrefix }),
-      type: TransactionType.MULTISIG_AS_MULTI,
-      args: {
-        threshold: account.threshold,
-        otherSignatories: otherSignatories.sort(),
-        maybeTimepoint: null,
-        callData,
-        callHash,
-      },
-    };
   };
 
   const onSignResult = (signatures: HexString[], unsigned: UnsignedTransaction[]) => {
@@ -205,6 +165,7 @@ export const Unstake = () => {
 
   const explorersProps = { explorers, addressPrefix, asset };
   const unstakeValues = new Array(txAccounts.length).fill(unstakeAmount);
+  const multisigTx = isMultisig(txAccounts[0]) ? wrapTx(txs[0], api, addressPrefix) : undefined;
 
   return (
     <>
@@ -226,8 +187,7 @@ export const Unstake = () => {
             accounts={txAccounts}
             signer={signer}
             description={description}
-            transaction={transactions[0]}
-            multisigTx={multisigTx}
+            transaction={txs[0]}
             amounts={unstakeValues}
             onResult={() => setActiveStep(Step.SIGNING)}
             onGoBack={goToPrevStep}
@@ -253,7 +213,7 @@ export const Unstake = () => {
             addressPrefix={addressPrefix}
             signatory={signer}
             accounts={txAccounts}
-            transactions={multisigTx ? [multisigTx] : transactions}
+            transactions={multisigTx ? [multisigTx] : txs}
             onGoBack={() => setActiveStep(Step.CONFIRMATION)}
             onResult={onSignResult}
           />
@@ -263,7 +223,7 @@ export const Unstake = () => {
       {activeStep === Step.SUBMIT && (
         <Submit
           api={api}
-          txs={transactions}
+          txs={txs}
           multisigTx={multisigTx}
           signatures={signatures}
           unsignedTx={unsignedTransactions}
