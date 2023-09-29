@@ -24,7 +24,7 @@ export type Account = {
 };
 
 export const enum KeyType {
-  ROOT = 'root',
+  BASE = 'base',
   CHAIN = 'chain',
   SHARDED = 'sharded',
   SHARD = 'shard',
