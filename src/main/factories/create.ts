@@ -9,10 +9,11 @@ export function createWindow(settings: BrowserWindowConstructorOptions) {
   const { URL, PORT } = APP_CONFIG.RENDERER.DEV_SERVER;
   const devServerURL = `${URL}:${PORT}`;
 
-  if (ENVIRONMENT.IS_FORCE_ELECTRON) {
+  const isDevServer = ENVIRONMENT.IS_DEV || ENVIRONMENT.IS_STAGE;
+  if (ENVIRONMENT.IS_FORCE_ELECTRON || !isDevServer) {
     window.loadFile('index.html');
   } else {
-    ENVIRONMENT.IS_DEV || ENVIRONMENT.IS_STAGE ? window.loadURL(devServerURL) : window.loadFile('index.html');
+    window.loadURL(devServerURL);
   }
 
   window.on('closed', window.destroy);
