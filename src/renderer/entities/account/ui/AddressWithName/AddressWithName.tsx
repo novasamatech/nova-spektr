@@ -2,7 +2,6 @@ import { cnTw, toShortAddress, copyToClipboard } from '@renderer/shared/lib/util
 import { Identicon, IconButton, Truncate } from '@renderer/shared/ui';
 import { AccountId, Address } from '@renderer/domain/shared-kernel';
 import { getAddress } from '@renderer/entities/account';
-import { SigningType } from '@renderer/entities/wallet';
 
 type AddressType = 'full' | 'short' | 'adaptive';
 
@@ -19,7 +18,6 @@ type Props = {
   className?: string;
   type?: AddressType;
   addressFont?: string;
-  signType?: SigningType;
   name?: string;
   size?: number;
   symbols?: number;
@@ -31,7 +29,6 @@ type Props = {
 export const AddressWithName = ({
   className,
   symbols,
-  signType,
   name,
   size = 16,
   addressFont,
@@ -74,9 +71,7 @@ export const AddressWithName = ({
 
   return (
     <div className={cnTw('flex items-center gap-x-2', className)}>
-      {showIcon && (
-        <Identicon address={currentAddress} signType={signType} size={size} background={false} canCopy={canCopy} />
-      )}
+      {showIcon && <Identicon address={currentAddress} size={size} background={false} canCopy={canCopy} />}
       <div className="truncate">
         {firstLine}
         {secondLine}

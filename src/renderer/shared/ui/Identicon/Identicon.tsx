@@ -1,21 +1,13 @@
 import { Identicon as PolkadotIdenticon } from '@polkadot/react-identicon';
 import { IconTheme } from '@polkadot/react-identicon/types';
-import { ReactNode, useLayoutEffect, useRef, memo, SyntheticEvent } from 'react';
+import { useLayoutEffect, useRef, memo, SyntheticEvent } from 'react';
 
 import { cnTw, copyToClipboard } from '@renderer/shared/lib/utils';
 import { Address } from '@renderer/domain/shared-kernel';
-import { SigningType } from '@renderer/entities/wallet';
 import Icon from '../Icon/Icon';
-
-const Badges: Record<SigningType, (size?: number) => ReactNode> = {
-  [SigningType.WATCH_ONLY]: (size?: number) => <Icon as="img" name="watchOnlyBg" size={size} />,
-  [SigningType.PARITY_SIGNER]: (size?: number) => <Icon as="img" name="paritySignerBg" size={size} />,
-  [SigningType.MULTISIG]: (size?: number) => <Icon as="img" name="multisigBg" size={size} />,
-};
 
 type Props = {
   theme?: IconTheme;
-  signType?: SigningType;
   address?: Address;
   size?: number;
   background?: boolean;
@@ -28,7 +20,6 @@ const Identicon = ({
   theme = 'polkadot',
   address,
   size = 24,
-  signType,
   background = true,
   canCopy = true,
   className,
@@ -58,16 +49,6 @@ const Identicon = ({
     <Icon name="emptyIdenticon" size={size} />
   );
 
-  const content =
-    signType === undefined ? (
-      icon
-    ) : (
-      <>
-        {icon}
-        <div className="absolute bottom-0 right-0 pointer-events-none">{Badges[signType](size * 0.58)}</div>
-      </>
-    );
-
   if (!canCopy || !address) {
     return (
       <div
@@ -76,7 +57,7 @@ const Identicon = ({
         style={{ width: size, height: size }}
         data-testid={`identicon-${address}`}
       >
-        {content}
+        {icon}
       </div>
     );
   }
@@ -94,7 +75,7 @@ const Identicon = ({
         data-testid={`identicon-${address}`}
         onClick={onCopyToClipboard}
       >
-        {content}
+        {icon}
       </button>
     </div>
   );
