@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useUnit } from 'effector-react';
-import BN from 'bignumber.js';
+import BigNumber from 'bignumber.js';
 
 import { formatAmount, formatBalance, formatFiatBalance, totalAmount } from '@renderer/shared/lib/utils';
 import { FiatBalance } from '@renderer/entities/price/ui/FiatBalance';
@@ -11,6 +11,10 @@ import { useBalance } from '@renderer/entities/asset';
 import { HexString } from '@renderer/domain/shared-kernel';
 import { Shimmering } from '@renderer/shared/ui';
 
+BigNumber.config({
+  ROUNDING_MODE: BigNumber.ROUND_DOWN,
+});
+
 type Props = {
   className?: string;
   walletId?: string;
@@ -19,7 +23,7 @@ type Props = {
 
 export const WalletFiatBalance = ({ className, walletId, accountId }: Props) => {
   const { t } = useI18n();
-  const [fiatAmount, setFiatAmount] = useState<BN>(new BN(0));
+  const [fiatAmount, setFiatAmount] = useState<BigNumber>(new BigNumber(0));
   const [isLoading, setIsLoading] = useState(true);
 
   const { getLiveAccounts } = useAccount();
@@ -38,7 +42,7 @@ export const WalletFiatBalance = ({ className, walletId, accountId }: Props) => 
   useEffect(() => {
     setIsLoading(true);
     // TODO: Move logic to model https://app.clickup.com/t/8692tr8x0
-    const totalFiatAmount = balances.reduce<BN>((acc, balance) => {
+    const totalFiatAmount = balances.reduce<BigNumber>((acc, balance) => {
       const asset = connections[balance.chainId].assets.find((a) => a.assetId.toString() === balance.assetId);
 
       if (!prices || !asset?.priceId || !currency || !currency?.coingeckoId) return acc;
@@ -46,14 +50,14 @@ export const WalletFiatBalance = ({ className, walletId, accountId }: Props) => 
       const price = prices[asset.priceId][currency.coingeckoId];
 
       if (price) {
-        const fiatBalance = new BN(price.price).multipliedBy(new BN(totalAmount(balance)));
+        const fiatBalance = new BigNumber(price.price).multipliedBy(new BigNumber(totalAmount(balance)));
         const formattedFiatBalance = formatFiatBalance(fiatBalance.toString(), asset.precision);
 
-        acc = acc.plus(new BN(formatAmount(formattedFiatBalance, 2)));
+        acc = acc.plus(new BigNumber(formatAmount(formattedFiatBalance, 2)));
       }
 
       return acc;
-    }, new BN(0));
+    }, new BigNumber(0));
 
     if (balances.length > 0) {
       setIsLoading(false);
