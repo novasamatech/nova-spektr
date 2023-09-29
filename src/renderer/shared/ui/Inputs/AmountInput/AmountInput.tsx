@@ -1,11 +1,14 @@
-import { useCallback } from 'react';
+import { useCallback, useEffect, useState } from 'react';
+import { useUnit } from 'effector-react';
 
+import { AssetBalance, AssetIcon, Asset } from '@renderer/entities/asset';
+import { cleanAmount, cnTw, formatGroups, validatePrecision, validateSymbols } from '@renderer/shared/lib/utils';
 import { useI18n } from '@renderer/app/providers';
 import { FootnoteText, TitleText } from '../../Typography';
-// FIXME components in shared shouldn't use components from entity so we need to move it to entity
-import { AssetBalance, AssetIcon, Asset } from '@renderer/entities/asset';
 import Input from '../Input/Input';
-import { cleanAmount, formatGroups, validatePrecision, validateSymbols } from '@renderer/shared/lib/utils';
+import { IconButton } from '@renderer/shared/ui';
+import { useToggle } from '@renderer/shared/lib/hooks';
+import { currencyModel, useCurrencyRate } from '@renderer/entities/price';
 
 type Props = {
   name?: string;
@@ -16,10 +19,11 @@ type Props = {
   balancePlaceholder?: string;
   balance?: string | string[];
   invalid?: boolean;
+  showCurrency?: boolean;
   onChange?: (value: string) => void;
 };
 
-const AmountInput = ({
+export const AmountInput = ({
   name,
   value,
   asset,
@@ -28,19 +32,31 @@ const AmountInput = ({
   placeholder,
   disabled,
   invalid,
+  showCurrency = true,
   onChange,
 }: Props) => {
   const { t } = useI18n();
+  const rate = useCurrencyRate(asset.priceId, showCurrency);
+  const activeCurrency = useUnit(currencyModel.$activeCurrency);
+  const [currencyMode, toggleCurrencyMode] = useToggle(false);
+  const [internalValue, setInternalValue] = useState(value);
 
   const handleChange = (amount: string) => {
     const cleanedAmount = cleanAmount(amount);
+    setInternalValue(cleanedAmount);
 
-    if (validateSymbols(cleanedAmount) && validatePrecision(cleanedAmount, asset.precision)) {
-      onChange?.(cleanedAmount);
+    if (validateSymbols(cleanedAmount) && (currencyMode || validatePrecision(cleanedAmount, asset.precision))) {
+      onChange?.(currencyMode && rate ? (Number(cleanedAmount) * (1 / rate)).toString() : cleanedAmount);
     } else {
       onChange?.(value);
     }
   };
+
+  useEffect(() => {
+    if (currencyMode && rate) {
+      setInternalValue((Number(value) * rate).toString());
+    }
+  }, [currencyMode]);
 
   const getBalance = useCallback(() => {
     if (!balance) return;
@@ -48,15 +64,20 @@ const AmountInput = ({
     if (Array.isArray(balance)) {
       return (
         <span className="flex gap-x-1">
-          <AssetBalance className="text-text-primary text-footnote" value={balance[0]} asset={asset} />
+          <AssetBalance className="text-text-tertiary text-footnote" value={balance[0]} asset={asset} />
           <span>-</span>
-          <AssetBalance className="text-text-primary text-footnote" value={balance[1]} asset={asset} />
+          <AssetBalance className="text-text-tertiary text-footnote" value={balance[1]} asset={asset} />
         </span>
       );
     }
 
     return (
-      <AssetBalance className="inline text-text-primary text-footnote" value={balance} asset={asset} showIcon={false} />
+      <AssetBalance
+        className="inline text-text-tertiary text-footnote"
+        value={balance}
+        asset={asset}
+        showIcon={false}
+      />
     );
   }, [balance]);
 
@@ -72,6 +93,17 @@ const AmountInput = ({
     </div>
   );
 
+  const currencyIcon = showCurrency && activeCurrency && (
+    <div className="flex items-center gap-x-1 min-w-fit">
+      <div className="relative rounded-full bg-token-background border border-token-border p-[1px] w-8 h-8">
+        <TitleText align="center" className="text-white">
+          {activeCurrency.symbol || activeCurrency.code}
+        </TitleText>
+      </div>
+      <TitleText>{activeCurrency.code}</TitleText>
+    </div>
+  );
+
   const prefixElement = (
     <div className="flex items-center gap-x-1 min-w-fit">
       <AssetIcon src={asset.icon} name={asset.name} size={28} className="flex" />
@@ -79,19 +111,33 @@ const AmountInput = ({
     </div>
   );
 
+  const suffixElement = showCurrency && rate && (
+    <div className="flex items-center gap-x-2 absolute right-3 bottom-3">
+      <IconButton
+        name="swapArrow"
+        alt={t(currencyMode ? 'transfer.swapToCryptoModeAlt' : 'transfer.swapToCurrencyModeAlt')}
+        size={16}
+        onClick={toggleCurrencyMode}
+      />
+      <FootnoteText className="uppercase text-text-tertiary">
+        {currencyMode ? `${value} ${asset.symbol}` : `${activeCurrency?.symbol} ${Number(value) * rate}`}
+      </FootnoteText>
+    </div>
+  );
+
   return (
     <Input
       name={name}
-      className="text-right text-title font-manrope"
+      className={cnTw('text-right text-title font-manrope', activeCurrency && rate && 'mb-7')}
+      wrapperClass="py-3 items-start"
       label={label}
-      value={formatGroups(value)}
+      value={formatGroups(currencyMode ? internalValue : value)}
       placeholder={t('transfer.amountPlaceholder')}
       invalid={invalid}
-      prefixElement={prefixElement}
+      prefixElement={currencyMode ? currencyIcon : prefixElement}
+      suffixElement={suffixElement}
       disabled={disabled}
       onChange={handleChange}
     />
   );
 };
-
-export default AmountInput;

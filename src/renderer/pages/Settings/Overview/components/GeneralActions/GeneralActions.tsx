@@ -2,8 +2,7 @@ import { Link } from 'react-router-dom';
 import { useUnit } from 'effector-react/effector-react.umd';
 
 import { Icon, BodyText, Plate, FootnoteText, HelpText } from '@renderer/shared/ui';
-import { useI18n } from '@renderer/app/providers';
-import { Paths } from '../../../../../app/providers/routes/paths';
+import { useI18n, Paths } from '@renderer/app/providers';
 import { cnTw } from '@renderer/shared/lib/utils';
 import { currencyModel, priceProviderModel } from '@renderer/entities/price';
 
