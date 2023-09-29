@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react';
 import { useUnit } from 'effector-react';
 import BN from 'bignumber.js';
 
-// import { Asset, Balance } from '@renderer/entities/asset';
 import { formatAmount, formatBalance, formatFiatBalance, totalAmount } from '@renderer/shared/lib/utils';
 import { FiatBalance } from '@renderer/entities/price/ui/FiatBalance';
 import { currencyModel, priceProviderModel } from '@renderer/entities/price';
