@@ -1,4 +1,5 @@
 import { Controller, useForm, SubmitHandler } from 'react-hook-form';
+import { keyBy } from 'lodash';
 
 import { Alert, Button, Input, InputHint, Select, SmallTitleText } from '@renderer/shared/ui';
 import { useI18n, useMatrix } from '@renderer/app/providers';
@@ -12,6 +13,7 @@ import {
   MultisigAccount,
 } from '@renderer/entities/account';
 import { SigningType, AccountId } from '@renderer/domain/shared-kernel';
+import { WalletDS } from '@renderer/shared/api/storage';
 
 type MultisigAccountForm = {
   name: string;
@@ -31,6 +33,7 @@ const getThresholdOptions = (optionsAmount: number): DropdownOption<number>[] =>
 type Props = {
   signatories: Signatory[];
   accounts: (Account | MultisigAccount)[];
+  wallets: WalletDS[];
   isActive: boolean;
   isLoading: boolean;
   onContinue: () => void;
@@ -41,6 +44,7 @@ type Props = {
 export const WalletForm = ({
   signatories,
   accounts,
+  wallets,
   onContinue,
   isActive,
   isLoading,
@@ -66,6 +70,8 @@ export const WalletForm = ({
   const threshold = watch('threshold');
   const thresholdOptions = getThresholdOptions(signatories.length - 1);
 
+  const walletMap = keyBy(wallets, 'id');
+
   const multisigAccountId =
     threshold &&
     getMultisigAccountId(
@@ -81,7 +87,7 @@ export const WalletForm = ({
     onCreateAccount(name, threshold.value, creator.accountId);
   };
 
-  const hasNoAccounts = accounts.filter(isWalletContact).length === 0;
+  const hasNoAccounts = accounts.filter((a) => isWalletContact(a, walletMap[a.walletId || ''])).length === 0;
   const hasOwnSignatory = signatories.some((s) =>
     accounts.find((a) => a.accountId === s.accountId && a.signingType !== SigningType.WATCH_ONLY && !isMultisig(a)),
   );
