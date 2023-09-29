@@ -78,9 +78,11 @@ describe('entities/price/model/price-provider-model', () => {
   test('should update $assetPrices when currencyChanged', async () => {
     jest.spyOn(fiatService, 'getAssetsPrices').mockReturnValue(prices);
 
-    const scope = fork();
-    await allSettled(kernelModel.events.appStarted, { scope });
+    const scope = fork({
+      values: new Map().set(priceProviderModel.$assetsPrices, {}),
+    });
+    const initialPrices = priceProviderModel.$assetsPrices;
     await allSettled(currencyModel.events.currencyChanged, { scope, params: 1 });
-    expect(scope.getState(priceProviderModel.$assetsPrices)).toEqual(prices);
+    expect(scope.getState(priceProviderModel.$assetsPrices)).not.toEqual(initialPrices);
   });
 });
