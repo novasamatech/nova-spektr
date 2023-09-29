@@ -102,5 +102,14 @@ module.exports = {
       },
     ],
   },
-  ignorePatterns: ['node_modules', 'coverage.txt', 'junit.xml', 'jest-unit-results.json', 'package.json'],
+  ignorePatterns: [
+    '.vscode',
+    'coverage',
+    'release',
+    'node_modules',
+    'coverage.txt',
+    'junit.xml',
+    'jest-unit-results.json',
+    'package.json',
+  ],
 };

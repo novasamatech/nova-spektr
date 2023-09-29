@@ -1,0 +1,55 @@
+# build_stage.yaml
+---
+name: Build stage app
+
+on:
+  workflow_dispatch:
+  pull_request:
+    types: [ labeled ]
+
+env:
+  CSC_FOR_PULL_REQUEST: true
+  CI: true
+
+jobs:
+  internal-release-build:
+    if: ${{ github.event.label.name == 'internal-build' || github.event_name == 'workflow_dispatch' }}
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
+
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest, windows-latest, ubuntu-latest]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: ⚙️ Install dependencies
+        uses: ./.github/workflows/install-pnpm
+
+      - name: Add MacOS certs
+        if: startsWith(matrix.os, 'macos')
+        run: chmod +x .github/add_cert_in_keychain.sh && .github/add_cert_in_keychain.sh
+        env:
+          CERTIFICATE_OSX_APPLICATION: ${{ secrets.CERTIFICATE_OSX_APPLICATION }}
+          CERTIFICATE_PASSWORD: ${{ secrets.CERTIFICATE_PASSWORD }}
+
+      - name: Build app
+        env:
+          # secrets for notarization
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_ID_PASS: ${{ secrets.APPLE_ID_PASS }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+        run: |
+          pnpm stage:sequence
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: build-artifats
+          path: |
+            release/dist/*.exe
+            release/dist/*.dmg
+            release/dist/*.AppImage
