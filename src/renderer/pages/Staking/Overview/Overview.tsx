@@ -21,6 +21,7 @@ import { NominatorInfo } from '@renderer/pages/Staking/Overview/components/Nomin
 import { AccountDS } from '@renderer/shared/api/storage';
 import { ConnectionType, ConnectionStatus } from '@renderer/domain/connection';
 import { AboutStaking, NetworkInfo, NominatorsList, Actions, ValidatorsModal, InactiveChain } from './components';
+import { priceProviderModel } from '@renderer/entities/price';
 
 export const Overview = () => {
   const { t } = useI18n();
@@ -68,6 +69,10 @@ export const Overview = () => {
   const { rewards, isRewardsLoading } = useStakingRewards(addresses);
 
   const isLightClient = connection?.connectionType === ConnectionType.LIGHT_CLIENT;
+
+  useEffect(() => {
+    priceProviderModel.events.assetsPricesRequested({ includeRates: true });
+  }, []);
 
   useEffect(() => {
     if (!connection) return;

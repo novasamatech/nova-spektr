@@ -44,6 +44,10 @@ export const AssetsList = () => {
   const activeWallet = activeAccountsFromWallet.length > 0 && activeAccountsFromWallet[0].walletId;
 
   useEffect(() => {
+    priceProviderModel.events.assetsPricesRequested({ includeRates: true });
+  }, []);
+
+  useEffect(() => {
     updateAccounts(activeAccountsFromWallet);
   }, [firstActiveAccount, activeWallet]);
 
