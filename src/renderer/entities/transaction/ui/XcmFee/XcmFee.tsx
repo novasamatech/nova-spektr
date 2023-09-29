@@ -1,12 +1,15 @@
 import { BN } from '@polkadot/util';
 import { useEffect, useState, memo } from 'react';
 import { ApiPromise } from '@polkadot/api';
+import { useUnit } from 'effector-react';
 
 import { Asset, AssetBalance } from '@renderer/entities/asset';
 import { Transaction } from '@renderer/entities/transaction';
 import { Shimmering } from '@renderer/shared/ui';
 import { estimateFee, XcmConfig } from '@renderer/shared/api/xcm';
 import { toLocalChainId } from '@renderer/shared/lib/utils';
+import { priceProviderModel } from '@renderer/entities/price';
+import { AssetFiatBalance } from '@renderer/entities/price/ui/AssetFiatBalance';
 
 type Props = {
   api?: ApiPromise;
@@ -23,6 +26,7 @@ export const XcmFee = memo(
   ({ multiply = 1, config, asset, transaction, className, onFeeChange, onFeeLoading, api }: Props) => {
     const [fee, setFee] = useState('0');
     const [isLoading, setIsLoading] = useState(false);
+    const fiatFlag = useUnit(priceProviderModel.$fiatFlag);
 
     const updateFee = (fee: string) => {
       setFee(fee);
@@ -68,11 +72,21 @@ export const XcmFee = memo(
     }, [transaction]);
 
     if (isLoading) {
-      return <Shimmering width={90} height={20} data-testid="fee-loader" />;
+      return (
+        <div className="flex flex-col gap-y-0.5 items-end">
+          <Shimmering width={90} height={20} data-testid="fee-loader" />
+          {fiatFlag && <Shimmering width={70} height={18} data-testid="fee-loader" />}
+        </div>
+      );
     }
 
     const totalFee = new BN(fee).muln(multiply).toString();
 
-    return <AssetBalance value={totalFee} asset={asset} className={className} />;
+    return (
+      <div className="flex flex-col gap-y-0.5 items-end">
+        <AssetBalance value={totalFee} asset={asset} className={className} />
+        <AssetFiatBalance asset={asset} amount={totalFee} />
+      </div>
+    );
   },
 );
