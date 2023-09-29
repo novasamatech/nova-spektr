@@ -1,7 +1,6 @@
 import { cnTw, toShortAddress, toAddress } from '@renderer/shared/lib/utils';
 import { Identicon, Truncate } from '@renderer/shared/ui';
 import { AccountId, Address } from '@renderer/domain/shared-kernel';
-import { SigningType } from '@renderer/entities/wallet';
 
 type AddressType = 'full' | 'short' | 'adaptive';
 
@@ -18,7 +17,6 @@ export type Props = {
   className?: string;
   type?: AddressType;
   addressFont?: string;
-  signType?: SigningType;
   name?: string;
   size?: number;
   symbols?: number;
@@ -37,7 +35,6 @@ export const getAddress = (props: WithAccountId | WithAddress): Address => {
 export const AccountAddress = ({
   className,
   symbols,
-  signType,
   name,
   size = 16,
   addressFont,
@@ -69,14 +66,7 @@ export const AccountAddress = ({
   return (
     <div className={cnTw('flex items-center gap-x-2', className)}>
       {showIcon && (
-        <Identicon
-          className="inline-block"
-          address={currentAddress}
-          signType={signType}
-          size={size}
-          background={false}
-          canCopy={canCopy}
-        />
+        <Identicon className="inline-block" address={currentAddress} size={size} background={false} canCopy={canCopy} />
       )}
       {nameContent || addressContent}
     </div>
