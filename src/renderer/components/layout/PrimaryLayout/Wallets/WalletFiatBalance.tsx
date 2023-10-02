@@ -43,7 +43,7 @@ export const WalletFiatBalance = ({ className, walletId, accountId }: Props) => 
     setIsLoading(true);
     // TODO: Move logic to model https://app.clickup.com/t/8692tr8x0
     const totalFiatAmount = balances.reduce<BigNumber>((acc, balance) => {
-      const asset = connections[balance.chainId].assets.find((a) => a.assetId.toString() === balance.assetId);
+      const asset = (connections[balance.chainId]?.assets || []).find((a) => a.assetId.toString() === balance.assetId);
 
       if (!prices || !asset?.priceId || !currency || !currency?.coingeckoId) return acc;
 
