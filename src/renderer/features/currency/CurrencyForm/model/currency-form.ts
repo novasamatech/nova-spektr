@@ -1,4 +1,4 @@
-import { sample, createStore, createApi, attach } from 'effector';
+import { sample, createStore, createApi, attach, createEvent } from 'effector';
 import { createForm } from 'effector-forms';
 import { spread, combineEvents } from 'patronum';
 
@@ -13,6 +13,8 @@ const $callbacks = createStore<Callbacks | null>(null);
 const callbacksApi = createApi($callbacks, {
   callbacksChanged: (state, props: Callbacks) => ({ ...state, ...props }),
 });
+
+const resetForm = createEvent();
 
 const $currencyForm = createForm({
   fields: {
@@ -33,13 +35,15 @@ const $unpopularFiatCurrencies = currencyModel.$currencyConfig.map((config) => {
 });
 
 sample({
-  clock: priceProviderModel.$fiatFlag,
+  clock: [priceProviderModel.$fiatFlag, resetForm],
+  source: priceProviderModel.$fiatFlag,
   filter: (fiatFlag): fiatFlag is boolean => fiatFlag !== null,
   target: $currencyForm.fields.fiatFlag.set,
 });
 
 sample({
-  clock: currencyModel.$activeCurrency,
+  clock: [currencyModel.$activeCurrency, resetForm],
+  source: currencyModel.$activeCurrency,
   filter: (currency): currency is CurrencyItem => currency !== null,
   fn: (currency) => currency!.id,
   target: $currencyForm.fields.currency.set,
@@ -76,5 +80,6 @@ export const currencyFormModel = {
   $unpopularFiatCurrencies,
   events: {
     callbacksChanged: callbacksApi.callbacksChanged,
+    resetForm,
   },
 };

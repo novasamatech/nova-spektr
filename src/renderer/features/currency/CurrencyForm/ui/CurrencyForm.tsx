@@ -22,6 +22,10 @@ export const CurrencyForm = ({ onSubmit }: Props) => {
     currencyFormModel.events.callbacksChanged({ onSubmit });
   }, [onSubmit]);
 
+  useEffect(() => {
+    return currencyFormModel.events.resetForm;
+  }, []);
+
   const {
     submit,
     fields: { fiatFlag, currency },
