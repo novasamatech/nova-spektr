@@ -17,10 +17,15 @@ const getCurrencyOption = (currency: CurrencyItem): DropdownOption<CurrencyItem>
 type Props = Callbacks;
 export const CurrencyForm = ({ onSubmit }: Props) => {
   const { t } = useI18n();
+  const isFormValid = useUnit(currencyFormModel.$isFormValid);
 
   useEffect(() => {
     currencyFormModel.events.callbacksChanged({ onSubmit });
   }, [onSubmit]);
+
+  useEffect(() => {
+    currencyFormModel.events.formInitiated();
+  }, []);
 
   const {
     submit,
@@ -77,7 +82,7 @@ export const CurrencyForm = ({ onSubmit }: Props) => {
         onChange={({ value }) => currency?.onChange(value.id)}
       />
 
-      <Button className="w-fit ml-auto" type="submit">
+      <Button className="w-fit ml-auto" type="submit" disabled={!isFormValid}>
         {t('settings.currency.save')}
       </Button>
     </form>

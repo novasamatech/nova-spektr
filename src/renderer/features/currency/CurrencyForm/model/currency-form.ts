@@ -1,4 +1,4 @@
-import { sample, createStore, createApi, attach } from 'effector';
+import { sample, createStore, createApi, attach, createEvent, combine } from 'effector';
 import { createForm } from 'effector-forms';
 import { spread, combineEvents } from 'patronum';
 
@@ -13,6 +13,8 @@ const $callbacks = createStore<Callbacks | null>(null);
 const callbacksApi = createApi($callbacks, {
   callbacksChanged: (state, props: Callbacks) => ({ ...state, ...props }),
 });
+
+const formInitiated = createEvent();
 
 const $currencyForm = createForm({
   fields: {
@@ -32,17 +34,25 @@ const $unpopularFiatCurrencies = currencyModel.$currencyConfig.map((config) => {
   return config.filter((c) => c.category === 'fiat' && !c.popular);
 });
 
-sample({
-  clock: priceProviderModel.$fiatFlag,
-  filter: (fiatFlag): fiatFlag is boolean => fiatFlag !== null,
-  target: $currencyForm.fields.fiatFlag.set,
-});
+const $isFormValid = combine(
+  $currencyForm.fields.currency.$isDirty,
+  $currencyForm.fields.fiatFlag.$isDirty,
+  (isCurrencyDirty, isFiatFlagDirty) => isFiatFlagDirty || isCurrencyDirty,
+);
+
+type Params = {
+  fiatFlag: boolean | null;
+  currency: CurrencyItem | null;
+};
 
 sample({
-  clock: currencyModel.$activeCurrency,
-  filter: (currency): currency is CurrencyItem => currency !== null,
-  fn: (currency) => currency!.id,
-  target: $currencyForm.fields.currency.set,
+  clock: [priceProviderModel.watch.fiatFlagLoaded, currencyModel.watch.activeCurrencyLoaded, formInitiated],
+  source: {
+    fiatFlag: priceProviderModel.$fiatFlag,
+    currency: currencyModel.$activeCurrency,
+  },
+  fn: ({ fiatFlag, currency }: Params) => ({ fiatFlag: Boolean(fiatFlag), currency: currency?.id || 0 }),
+  target: $currencyForm.setInitialForm,
 });
 
 sample({
@@ -74,7 +84,9 @@ export const currencyFormModel = {
   $cryptoCurrencies,
   $popularFiatCurrencies,
   $unpopularFiatCurrencies,
+  $isFormValid,
   events: {
     callbacksChanged: callbacksApi.callbacksChanged,
+    formInitiated,
   },
 };
