@@ -3,9 +3,9 @@ import { useEffect, useState } from 'react';
 import { Navigate, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 
 import { Paths, useI18n, useNetworkContext } from '@renderer/app/providers';
-import { ChainId, HexString, AccountId, Address } from '@renderer/domain/shared-kernel';
+import { ChainId, HexString } from '@renderer/domain/shared-kernel';
 import { Transaction, TransactionType, useTransaction } from '@renderer/entities/transaction';
-import { useAccount, Account, MultisigAccount, isMultisig } from '@renderer/entities/account';
+import { useAccount, Account, isMultisig } from '@renderer/entities/account';
 import InitOperation, { RedeemResult } from './InitOperation/InitOperation';
 import { Confirmation, Submit, NoAsset } from '../components';
 import { getRelaychainAsset, toAddress, DEFAULT_TRANSITION } from '@renderer/shared/lib/utils';
@@ -24,7 +24,7 @@ const enum Step {
 export const Redeem = () => {
   const { t } = useI18n();
   const navigate = useNavigate();
-  const { getTransactionHash } = useTransaction();
+  const { setTxs, txs, setWrappers, wrapTx, buildTransaction } = useTransaction();
   const { connections } = useNetworkContext();
   const { getLiveAccounts } = useAccount();
   const [searchParams] = useSearchParams();
@@ -42,8 +42,6 @@ export const Redeem = () => {
   const [txAccounts, setTxAccounts] = useState<Account[]>([]);
   const [signer, setSigner] = useState<Account>();
 
-  const [multisigTx, setMultisigTx] = useState<Transaction>();
-  const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [unsignedTransactions, setUnsignedTransactions] = useState<UnsignedTransaction[]>([]);
 
   const [signatures, setSignatures] = useState<HexString[]>([]);
@@ -92,7 +90,7 @@ export const Redeem = () => {
         panelClass="w-max"
         headerClass="py-3 px-5 max-w-[440px]"
         isOpen={isRedeemModalOpen}
-        title={<OperationTitle title={`${t('staking.redeem.title', { asset: '' })}`} chainId={chainId} />}
+        title={<OperationTitle title={t('staking.redeem.title')} chainId={chainId} />}
         onClose={closeRedeemModal}
       >
         <div className="w-[440px] px-5 py-4">
@@ -113,7 +111,7 @@ export const Redeem = () => {
         headerClass="py-3 px-5 max-w-[440px]"
         panelClass="w-max"
         isOpen={isRedeemModalOpen}
-        title={<OperationTitle title={`${t('staking.redeem.title', { asset: '' })}`} chainId={chainId} />}
+        title={<OperationTitle title={t('staking.redeem.title')} chainId={chainId} />}
         onClose={closeRedeemModal}
       >
         <div className="w-[440px] px-5 py-20">
@@ -124,54 +122,28 @@ export const Redeem = () => {
   }
 
   const getRedeemTxs = (accounts: Account[]): Transaction[] => {
-    return accounts.map(({ accountId }) => ({
-      chainId,
-      address: toAddress(accountId, { prefix: addressPrefix }),
-      type: TransactionType.REDEEM,
-      args: { numSlashingSpans: 1 },
-    }));
-  };
-
-  const getMultisigTx = (
-    account: MultisigAccount,
-    signerAccountId: AccountId,
-    transaction: Transaction,
-  ): Transaction => {
-    const { callData, callHash } = getTransactionHash(transaction, api);
-
-    const otherSignatories = account.signatories.reduce<Address[]>((acc, s) => {
-      if (s.accountId !== signerAccountId) {
-        acc.push(toAddress(s.accountId, { prefix: addressPrefix }));
-      }
-
-      return acc;
-    }, []);
-
-    return {
-      chainId,
-      address: toAddress(signerAccountId, { prefix: addressPrefix }),
-      type: TransactionType.MULTISIG_AS_MULTI,
-      args: {
-        threshold: account.threshold,
-        otherSignatories: otherSignatories.sort(),
-        maybeTimepoint: null,
-        callData,
-        callHash,
-      },
-    };
+    return accounts.map(({ accountId }) =>
+      buildTransaction(TransactionType.REDEEM, toAddress(accountId, { prefix: addressPrefix }), chainId, {
+        numSlashingSpans: 1,
+      }),
+    );
   };
 
   const onInitResult = ({ accounts, signer, amounts, description }: RedeemResult) => {
     const transactions = getRedeemTxs(accounts);
 
     if (signer && isMultisig(accounts[0])) {
-      const multisigTx = getMultisigTx(accounts[0], signer.accountId, transactions[0]);
-      setMultisigTx(multisigTx);
+      setWrappers([
+        {
+          signatoryId: signer.accountId,
+          account: accounts[0],
+        },
+      ]);
       setSigner(signer);
       setDescription(description || '');
     }
 
-    setTransactions(transactions);
+    setTxs(transactions);
     setTxAccounts(accounts);
     setRedeemAmounts(amounts);
     setActiveStep(Step.CONFIRMATION);
@@ -184,6 +156,7 @@ export const Redeem = () => {
   };
 
   const explorersProps = { explorers, addressPrefix, asset };
+  const multisigTx = isMultisig(txAccounts[0]) ? wrapTx(txs[0], api, addressPrefix) : undefined;
 
   return (
     <>
@@ -193,7 +166,7 @@ export const Redeem = () => {
         headerClass="py-3 px-5 max-w-[440px]"
         panelClass="w-max"
         isOpen={activeStep !== Step.SUBMIT && isRedeemModalOpen}
-        title={<OperationTitle title={`${t('staking.redeem.title', { asset: asset.symbol })}`} chainId={chainId} />}
+        title={<OperationTitle title={t('staking.redeem.title', { asset: asset.symbol })} chainId={chainId} />}
         onClose={closeRedeemModal}
       >
         {activeStep === Step.INIT && (
@@ -206,8 +179,7 @@ export const Redeem = () => {
             signer={signer}
             amounts={redeemAmounts}
             description={description}
-            transaction={transactions[0]}
-            multisigTx={multisigTx}
+            transaction={txs[0]}
             onResult={() => setActiveStep(Step.SIGNING)}
             onGoBack={goToPrevStep}
             {...explorersProps}
@@ -220,7 +192,7 @@ export const Redeem = () => {
             addressPrefix={addressPrefix}
             signatory={signer}
             accounts={txAccounts}
-            transactions={multisigTx ? [multisigTx] : transactions}
+            transactions={multisigTx ? [multisigTx] : txs}
             onGoBack={() => setActiveStep(Step.CONFIRMATION)}
             onResult={onSignResult}
           />
@@ -230,7 +202,7 @@ export const Redeem = () => {
       {activeStep === Step.SUBMIT && (
         <Submit
           api={api}
-          txs={transactions}
+          txs={txs}
           multisigTx={multisigTx}
           description={description}
           signatures={signatures}

@@ -26,7 +26,6 @@ export const VaultSigning = ({
   const [countdown, resetCountdown] = useCountdown(api);
   const [unsignedTxs, setUnsignedTxs] = useState<UnsignedTransaction[]>([]);
   const [txPayloads, setTxPayloads] = useState<Uint8Array[]>([]);
-
   const [validationError, setValidationError] = useState<ValidationErrors>();
 
   const isScanStep = !unsignedTxs.length && !txPayloads.length;
@@ -38,7 +37,7 @@ export const VaultSigning = ({
     }
   }, [countdown]);
 
-  const handleSignature = async (data: string | string[]) => {
+  const handleSignature = async (data: string | string[]): Promise<void> => {
     const isMultishard = Array.isArray(data);
     const signatures = isMultishard ? (data as HexString[]) : [data as HexString];
     const accountIds = isMultiframe ? accounts.map((t) => t.accountId) : [(signatory || accounts[0])?.accountId];
@@ -75,43 +74,45 @@ export const VaultSigning = ({
     setTxPayloads([]);
   };
 
-  const ScanStep = (
-    <div className="w-[440px] px-5 py-4">
-      {isMultiframe ? (
-        <ScanMultiframeQr
-          api={api}
-          addressPrefix={addressPrefix}
-          countdown={countdown}
-          accounts={accounts}
-          transactions={transactions}
-          chainId={chainId}
-          onGoBack={onGoBack}
-          onResetCountdown={resetCountdown}
-          onResult={(unsignedTx, payloads) => {
-            setUnsignedTxs(unsignedTx);
-            setTxPayloads(payloads);
-          }}
-        />
-      ) : (
-        <ScanSingleframeQr
-          api={api}
-          addressPrefix={addressPrefix}
-          countdown={countdown}
-          account={signatory || accounts[0]}
-          transaction={transactions[0]}
-          chainId={chainId}
-          onGoBack={onGoBack}
-          onResetCountdown={resetCountdown}
-          onResult={(unsignedTx, payload) => {
-            setUnsignedTxs([unsignedTx]);
-            setTxPayloads([payload]);
-          }}
-        />
-      )}
-    </div>
-  );
+  if (isScanStep) {
+    return (
+      <div className="w-[440px] px-5 py-4">
+        {isMultiframe ? (
+          <ScanMultiframeQr
+            api={api}
+            addressPrefix={addressPrefix}
+            countdown={countdown}
+            accounts={accounts}
+            transactions={transactions}
+            chainId={chainId}
+            onGoBack={onGoBack}
+            onResetCountdown={resetCountdown}
+            onResult={(unsignedTx, payloads) => {
+              setUnsignedTxs(unsignedTx);
+              setTxPayloads(payloads);
+            }}
+          />
+        ) : (
+          <ScanSingleframeQr
+            api={api}
+            addressPrefix={addressPrefix}
+            countdown={countdown}
+            account={signatory || accounts[0]}
+            transaction={transactions[0]}
+            chainId={chainId}
+            onGoBack={onGoBack}
+            onResetCountdown={resetCountdown}
+            onResult={(unsignedTx, payload) => {
+              setUnsignedTxs([unsignedTx]);
+              setTxPayloads([payload]);
+            }}
+          />
+        )}
+      </div>
+    );
+  }
 
-  const SignStep = (
+  return (
     <div className="flex flex-col items-center gap-y-2.5 w-[440px] rounded-b-lg bg-black">
       <QrReaderWrapper
         isMultiFrame={isMultiframe}
@@ -122,10 +123,4 @@ export const VaultSigning = ({
       />
     </div>
   );
-
-  if (isScanStep) {
-    return ScanStep;
-  }
-
-  return SignStep;
 };

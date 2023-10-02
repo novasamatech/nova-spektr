@@ -2,6 +2,7 @@ import { render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 
 import { MatrixAction } from './MatrixAction';
+import { Paths } from '../../../../../app/providers/routes/paths';
 
 jest.mock('@renderer/app/providers', () => ({
   useI18n: jest.fn().mockReturnValue({
@@ -13,21 +14,17 @@ jest.mock('@renderer/app/providers', () => ({
   }),
 }));
 
-jest.mock('@renderer/components/modals', () => ({
-  MatrixModal: () => <span>matrixModal</span>,
-}));
-
-describe('screen/Settings/Overview/MatrixAction', () => {
+describe('pages/Settings/Overview/MatrixAction', () => {
   test('should render label and link to SMP', () => {
     render(<MatrixAction />, { wrapper: MemoryRouter });
 
     const label = screen.getByText('settings.overview.smpLabel');
     const matrixId = screen.getByText('@some_id:matrix.com');
-    // const link = screen.getByRole('link');
+    const link = screen.getByRole('link');
+
     expect(label).toBeInTheDocument();
     expect(matrixId).toBeInTheDocument();
-    // TODO fix test
-    // expect(link).toBeInTheDocument();
-    // expect(link).toHaveAttribute('href', Paths.MATRIX);
+    expect(link).toBeInTheDocument();
+    expect(link).toHaveAttribute('href', Paths.MATRIX);
   });
 });

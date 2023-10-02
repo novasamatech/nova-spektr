@@ -42,9 +42,9 @@ const CHAINS = [
 ];
 
 jest.mock('@renderer/entities/network', () => ({
-  useChains: jest.fn().mockReturnValue({
+  chainsService: {
     sortChainsByBalance: () => CHAINS,
-  }),
+  },
 }));
 
 jest.mock('@renderer/entities/asset', () => ({
@@ -57,7 +57,7 @@ jest.mock('./components/NetworkAssets/NetworkAssets', () => ({
   NetworkAssets: () => <span>NetworkAssets</span>,
 }));
 
-describe('screen/Assets/Assets', () => {
+describe('pages/Assets/Assets', () => {
   test('should render component', () => {
     render(<AssetsList />);
 

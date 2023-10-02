@@ -312,12 +312,15 @@
       "deposit": "Multisig депозит",
       "depositor": "Депозитор",
       "description": "Описание",
+      "destinationChain": "В сеть",
+      "fromNetwork": "Из сети",
       "multisigWallet": "Отправитель",
       "payee": "Payee",
       "recipient": "Получатель",
       "rejectReason": "Причина отмены",
       "sender": "Отправитель",
       "timePoint": "Time Point",
+      "toNetwork": "В сеть",
       "validators": "Валидаторы",
       "wallet": "Кошелёк"
     },
@@ -339,6 +342,7 @@
       "placeholder": "Причина...",
       "title": "Укажите причину отмены"
     },
+    "selectAccount": "Select account",
     "selectSignatory": "Выберите подписанта",
     "selectSignatoryTitle": "Выберите подписанта",
     "signButton": "Подписать в Polkadot Vault",
@@ -353,7 +357,8 @@
     },
     "successMessage": "Operation Approved",
     "successRejectMessage": "Операция Отменена",
-    "walletConnectTitle": "Approve transaction in { walletName }"
+    "walletConnectTitle": "Approve transaction in { walletName }",
+    "xcmFee": "Cross-chain fee"
   },
   "operations": {
     "callData": {
@@ -372,11 +377,24 @@
       "statusPlaceholder": "Статус операции",
       "statusSummary": "Статусы операции"
     },
+    "modalTitles": {
+      "destinationOn": "Установить кошелёк получения награды на",
+      "nominateOn": "Смена валидаторов на",
+      "redeemOn": "Забрать { asset } на",
+      "restakeOn": "Рестейк { asset } на",
+      "stakeMoreOn": "Стейкать ещё { asset } на",
+      "startStakingOn": "Старт стейкинга { asset } на",
+      "transferFrom": "Перевод { asset } из",
+      "transferOn": "Перевод { asset } на",
+      "unknownOn": "Неизвестная операция на",
+      "unstakeOn": "Вывод из стейкинга { asset } на"
+    },
     "noOperationsDescription": "Нет ожидающих операций с мультиподписью",
     "noOperationsFilters": "Nothing was found for the filters, try changing filters or canceling filtering",
     "noOperationsWalletNotMulti": "You can only view operations for your Multisig wallets. Transaction history for other types of wallets will be available later. Stay tuned.",
     "title": "Операции",
     "titles": {
+      "crossChainTransfer": "Кросс-чейн трансфер",
       "destination": "Установить кошелёк получения награды",
       "nominate": "Смена валидаторов",
       "redeem": "Забрать",
@@ -409,6 +427,7 @@
       "fileError": "File does not contain a valid verification key, please upload another one",
       "formSubtitle": "Sign in with your Matrix ID and password",
       "formTitle": "Matrix credentials",
+      "generalTitle": "Matrix account",
       "homeserverLabel": "Matrix server",
       "homeserverPlaceholder": "Choose homeserver",
       "infoMatrixDescription": "<matrix>Matrix</matrix> is an open source, secure, decentralised, real-time communication standard. The <smp>Spektr Matrix Protocol</smp> extension is built on Matrix and uses Matrix for:",
@@ -448,7 +467,6 @@
       "verificationHint": "Verify your session for enhanced secure messaging providing your Matrix Security Key.",
       "verificationLabel": "Session verification",
       "verificationSubtitle": "Verify your device for secure connection",
-      "verificationTitle": "Matrix account",
       "verifyButton": "Verify",
       "verifyWithFile": "File",
       "verifyWithKey": "Key",
@@ -763,7 +781,10 @@
   "transfer": {
     "amountPlaceholder": "0",
     "continueButton": "Продолжить",
+    "crossChainPlaceholder": "Cross-chain",
     "descriptionLengthError": "Описание может быть { maxLength } символов в длину",
+    "destinationChainLabel": "Recipient network",
+    "destinationChainPlaceholder": "Select recipient network",
     "editOperationButton": "Редактировать операцию",
     "executing": "Выполнение транзакции",
     "formTitle": "Отправить <strong>{ asset }</strong> в сети <strong>{ network }</strong>",
@@ -775,12 +796,14 @@
       "transactions": "Транзакции"
     },
     "multisigTransactionExist": "Мультисиг транзакция уже существует",
+    "myselfButton": "Myself",
     "networkDeposit": "Депозит",
     "networkDepositHint": "The deposit stays locked on the depositor’s account until the multisig operation is executed or rejected",
     "networkFee": "Комиссия сети",
     "notEnoughBalanceError": "Недостаточно средств для указанной суммы",
     "notEnoughBalanceForDepositError": "Недостаточно средств для оплаты депозита и комиссии сети",
     "notEnoughBalanceForFeeError": "Недостаточно средств для оплаты комиссии",
+    "onChainPlaceholder": "On-chain",
     "pasteButton": "Вставить",
     "recipientLabel": "Получатель",
     "recipientPlaceholder": "Address",
@@ -791,7 +814,8 @@
     "signatoryLabel": "Подписант",
     "startSigningButton": "Подписать в Polkadot Vault",
     "successMessage": "Транзакция отправлена!",
-    "title": "Перевод { asset } в сети"
+    "title": "Перевод { asset } в сети",
+    "xcmTitle": "Transfer { asset } from"
   },
   "transferDetails": {
     "fromNetwork": "Из сети",

@@ -4,7 +4,7 @@ import { useNavigate, useRoutes } from 'react-router-dom';
 
 import { FallbackScreen } from '@renderer/components/common';
 import { useAccount } from '@renderer/entities/account';
-import { contactModel } from '@renderer/entities/contact';
+import { CreateWalletProvider } from '@renderer/widgets/CreateWallet';
 import {
   ConfirmDialogProvider,
   I18Provider,
@@ -14,7 +14,6 @@ import {
   MultisigChainProvider,
   Paths,
   routesConfig,
-  WalletConnectProvider,
 } from './providers';
 
 const SPLASH_SCREEN_DELAY = 450;
@@ -26,10 +25,6 @@ const App = () => {
 
   const [showSplashScreen, setShowSplashScreen] = useState(true);
   const [isAccountsLoading, setIsAccountsLoading] = useState(true);
-
-  useEffect(() => {
-    contactModel.events.appStarted();
-  }, []);
 
   useEffect(() => {
     setTimeout(() => setShowSplashScreen(false), SPLASH_SCREEN_DELAY);
@@ -58,9 +53,10 @@ const App = () => {
           <MultisigChainProvider>
             <MatrixProvider>
               <ConfirmDialogProvider>
-                <WalletConnectProvider>
-                  <GraphqlProvider>{getContent()}</GraphqlProvider>
-                </WalletConnectProvider>
+                <GraphqlProvider>
+                  {getContent()}
+                  <CreateWalletProvider />
+                </GraphqlProvider>
               </ConfirmDialogProvider>
             </MatrixProvider>
           </MultisigChainProvider>

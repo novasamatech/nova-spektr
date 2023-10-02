@@ -1,66 +1,39 @@
 import { ApiPromise } from '@polkadot/api';
 import { SubmittableExtrinsic } from '@polkadot/api/types';
 import { hexToU8a } from '@polkadot/util';
-import { methods as ormlMethods } from '@substrate/txwrapper-orml';
-import {
-  BaseTxInfo,
-  construct,
-  defineMethod,
-  methods,
-  OptionsWithMeta,
-  TypeRegistry,
-  UnsignedTransaction,
-} from '@substrate/txwrapper-polkadot';
+import { construct, TypeRegistry, UnsignedTransaction } from '@substrate/txwrapper-polkadot';
 import { Weight } from '@polkadot/types/interfaces';
 import { blake2AsU8a, signatureVerify } from '@polkadot/util-crypto';
+import { useState } from 'react';
 
-import { AccountId, HexString, Threshold } from '@renderer/domain/shared-kernel';
+import { AccountId, Address, ChainId, HexString, Threshold } from '@renderer/domain/shared-kernel';
 import { Transaction, TransactionType } from '@renderer/entities/transaction/model/transaction';
 import { createTxMetadata, toAccountId } from '@renderer/shared/lib/utils';
 import { ITransactionService, HashData, ExtrinsicResultParams } from './common/types';
-import { decodeDispatchError, getMaxWeight, isControllerMissing, isOldMultisigPallet } from './common/utils';
+import { MultisigAccount } from '@renderer/entities/account';
+import { getExtrinsic, getUnsignedTransaction, wrapAsMulti } from './extrinsicService';
+import { decodeDispatchError } from './common/utils';
 import { useCallDataDecoder } from './callDataDecoder';
 
-type BalancesTransferArgs = Parameters<typeof methods.balances.transfer>[0];
-type BondWithoutContollerArgs = Omit<Parameters<typeof methods.staking.bond>[0], 'controller'>;
+type WrapAsMulti = {
+  account: MultisigAccount;
+  signatoryId: AccountId;
+};
 
-// TODO change to substrate txwrapper method when it'll update
-const transferAllowDeath = (
-  args: BalancesTransferArgs,
-  info: BaseTxInfo,
-  options: OptionsWithMeta,
-): UnsignedTransaction =>
-  defineMethod(
-    {
-      method: {
-        args,
-        name: 'transferAllowDeath',
-        pallet: 'balances',
-      },
-      ...info,
-    },
-    options,
-  );
+type WrapAsProxy = {
+  // TBD
+};
 
-const bondWithoutController = (
-  args: BondWithoutContollerArgs,
-  info: BaseTxInfo,
-  options: OptionsWithMeta,
-): UnsignedTransaction =>
-  defineMethod(
-    {
-      method: {
-        args,
-        name: 'bond',
-        pallet: 'staking',
-      },
-      ...info,
-    },
-    options,
-  );
+export type TxWrappers = WrapAsMulti | WrapAsProxy;
+
+const shouldWrapAsMulti = (wrapper: TxWrappers): wrapper is WrapAsMulti =>
+  'signatoryId' in wrapper && 'account' in wrapper;
 
 export const useTransaction = (): ITransactionService => {
   const { decodeCallData } = useCallDataDecoder();
+
+  const [txs, setTxs] = useState<Transaction[]>([]);
+  const [wrappers, setWrappers] = useState<TxWrappers[]>([]);
 
   const createRegistry = async (api: ApiPromise) => {
     const metadataRpc = await api.rpc.state.getMetadata();
@@ -69,238 +42,6 @@ export const useTransaction = (): ITransactionService => {
       registry: api.registry as unknown as TypeRegistry,
       metadataRpc: metadataRpc.toHex(),
     };
-  };
-
-  const getUnsignedTransaction: Record<
-    TransactionType,
-    (args: Transaction, info: BaseTxInfo, options: OptionsWithMeta, api: ApiPromise) => UnsignedTransaction
-  > = {
-    [TransactionType.TRANSFER]: (transaction, info, options, api) => {
-      // @ts-ignore
-      return api.tx.balances.transferAllowDeath
-        ? transferAllowDeath(
-            {
-              dest: transaction.args.dest,
-              value: transaction.args.value,
-            },
-            info,
-            options,
-          )
-        : methods.balances.transfer(
-            {
-              dest: transaction.args.dest,
-              value: transaction.args.value,
-            },
-            info,
-            options,
-          );
-    },
-    [TransactionType.ASSET_TRANSFER]: (transaction, info, options) => {
-      return methods.assets.transfer(
-        {
-          id: transaction.args.asset,
-          target: transaction.args.dest,
-          amount: transaction.args.value,
-        },
-        info,
-        options,
-      );
-    },
-    [TransactionType.ORML_TRANSFER]: (transaction, info, options, api) => {
-      return api.tx.currencies
-        ? ormlMethods.currencies.transfer(
-            {
-              dest: transaction.args.dest,
-              amount: transaction.args.value,
-              currencyId: transaction.args.asset,
-            },
-            info,
-            options,
-          )
-        : ormlMethods.tokens.transfer(
-            {
-              dest: transaction.args.dest,
-              amount: transaction.args.value,
-              currencyId: transaction.args.asset,
-            },
-            info,
-            options,
-          );
-    },
-    [TransactionType.MULTISIG_AS_MULTI]: (transaction, info, options, api) => {
-      return methods.multisig.asMulti(
-        {
-          threshold: transaction.args.threshold,
-          otherSignatories: transaction.args.otherSignatories,
-          maybeTimepoint: transaction.args.maybeTimepoint,
-          maxWeight: getMaxWeight(api, transaction),
-          storeCall: false,
-          call: transaction.args.callData,
-          callHash: transaction.args.callHash,
-        },
-        info,
-        options,
-      );
-    },
-    [TransactionType.MULTISIG_APPROVE_AS_MULTI]: (transaction, info, options, api) => {
-      return methods.multisig.approveAsMulti(
-        {
-          threshold: transaction.args.threshold,
-          otherSignatories: transaction.args.otherSignatories,
-          maybeTimepoint: transaction.args.maybeTimepoint,
-          maxWeight: getMaxWeight(api, transaction),
-          callHash: transaction.args.callHash,
-        },
-        info,
-        options,
-      );
-    },
-    [TransactionType.MULTISIG_CANCEL_AS_MULTI]: (transaction, info, options) => {
-      return methods.multisig.cancelAsMulti(
-        {
-          timepoint: transaction.args.maybeTimepoint,
-          callHash: transaction.args.callHash,
-          threshold: transaction.args.threshold,
-          otherSignatories: transaction.args.otherSignatories,
-        },
-        info,
-        options,
-      );
-    },
-    [TransactionType.BOND]: (transaction, info, options, api) => {
-      return isControllerMissing(api)
-        ? bondWithoutController(
-            {
-              value: transaction.args.value,
-              payee: transaction.args.payee,
-            },
-            info,
-            options,
-          )
-        : methods.staking.bond(
-            {
-              controller: transaction.args.controller,
-              value: transaction.args.value,
-              payee: transaction.args.payee,
-            },
-            info,
-            options,
-          );
-    },
-    [TransactionType.UNSTAKE]: (transaction, info, options) => {
-      return methods.staking.unbond(
-        {
-          value: transaction.args.value,
-        },
-        info,
-        options,
-      );
-    },
-    [TransactionType.STAKE_MORE]: (transaction, info, options) => {
-      return methods.staking.bondExtra(
-        {
-          maxAdditional: transaction.args.maxAdditional,
-        },
-        info,
-        options,
-      );
-    },
-    [TransactionType.RESTAKE]: (transaction, info, options) => {
-      return methods.staking.rebond(
-        {
-          value: transaction.args.value,
-        },
-        info,
-        options,
-      );
-    },
-    [TransactionType.REDEEM]: (transaction, info, options) => {
-      return methods.staking.withdrawUnbonded(
-        {
-          numSlashingSpans: transaction.args.numSlashingSpans,
-        },
-        info,
-        options,
-      );
-    },
-    [TransactionType.NOMINATE]: (transaction, info, options) => {
-      return methods.staking.nominate(
-        {
-          targets: transaction.args.targets,
-        },
-        info,
-        options,
-      );
-    },
-    [TransactionType.DESTINATION]: (transaction, info, options) => {
-      return methods.staking.setPayee(
-        {
-          payee: transaction.args.payee,
-        },
-        info,
-        options,
-      );
-    },
-    [TransactionType.CHILL]: (transaction, info, options) => {
-      return methods.staking.chill({}, info, options);
-    },
-    [TransactionType.BATCH_ALL]: (transaction, info, options, api) => {
-      const txMethods = transaction.args.transactions.map(
-        (tx: Transaction) => getUnsignedTransaction[tx.type](tx, info, options, api).method,
-      );
-
-      return methods.utility.batchAll(
-        {
-          calls: txMethods,
-        },
-        info,
-        options,
-      );
-    },
-  };
-
-  const getExtrinsic: Record<
-    TransactionType,
-    (args: Record<string, any>, api: ApiPromise) => SubmittableExtrinsic<'promise'>
-  > = {
-    [TransactionType.TRANSFER]: ({ dest, value }, api) =>
-      api.tx.balances.transferAllowDeath
-        ? api.tx.balances.transferAllowDeath(dest, value)
-        : api.tx.balances.transfer(dest, value),
-    [TransactionType.ASSET_TRANSFER]: ({ dest, value, asset }, api) => api.tx.assets.transfer(asset, dest, value),
-    [TransactionType.ORML_TRANSFER]: ({ dest, value, asset }, api) =>
-      api.tx.currencies ? api.tx.currencies.transfer(dest, asset, value) : api.tx.tokens.transfer(dest, asset, value),
-    [TransactionType.MULTISIG_AS_MULTI]: ({ threshold, otherSignatories, maybeTimepoint, call, maxWeight }, api) => {
-      return isOldMultisigPallet(api)
-        ? // @ts-ignore
-          api.tx.multisig.asMulti(threshold, otherSignatories, maybeTimepoint, call, false, maxWeight)
-        : api.tx.multisig.asMulti(threshold, otherSignatories, maybeTimepoint, call, maxWeight);
-    },
-    [TransactionType.MULTISIG_APPROVE_AS_MULTI]: (
-      { threshold, otherSignatories, maybeTimepoint, callHash, maxWeight },
-      api,
-    ) => api.tx.multisig.approveAsMulti(threshold, otherSignatories, maybeTimepoint, callHash, maxWeight),
-    [TransactionType.MULTISIG_CANCEL_AS_MULTI]: ({ threshold, otherSignatories, maybeTimepoint, callHash }, api) =>
-      api.tx.multisig.cancelAsMulti(threshold, otherSignatories, maybeTimepoint, callHash),
-    // controller arg removed from bond but changes not released yet
-    // https://github.com/paritytech/substrate/pull/14039
-    // @ts-ignore
-    [TransactionType.BOND]: ({ controller, value, payee }, api) =>
-      isControllerMissing(api)
-        ? api.tx.staking.bond(value, payee) // @ts-ignore
-        : api.tx.staking.bond(controller, value, payee),
-    [TransactionType.UNSTAKE]: ({ value }, api) => api.tx.staking.unbond(value),
-    [TransactionType.STAKE_MORE]: ({ maxAdditional }, api) => api.tx.staking.bondExtra(maxAdditional),
-    [TransactionType.RESTAKE]: ({ value }, api) => api.tx.staking.rebond(value),
-    [TransactionType.REDEEM]: ({ numSlashingSpans }, api) => api.tx.staking.withdrawUnbonded(numSlashingSpans),
-    [TransactionType.NOMINATE]: ({ targets }, api) => api.tx.staking.nominate(targets),
-    [TransactionType.DESTINATION]: ({ payee }, api) => api.tx.staking.setPayee(payee),
-    [TransactionType.CHILL]: (_, api) => api.tx.staking.chill(),
-    [TransactionType.BATCH_ALL]: ({ transactions }, api) => {
-      const calls = transactions.map((t: Transaction) => getExtrinsic[t.type](t.args, api).method);
-
-      return api.tx.utility.batchAll(calls);
-    },
   };
 
   const createPayload = async (
@@ -354,6 +95,13 @@ export const useTransaction = (): ITransactionService => {
     const paymentInfo = await extrinsic.paymentInfo(extrinsic.signer);
 
     return paymentInfo.weight;
+  };
+
+  const getTxWeight = async (transaction: Transaction, api: ApiPromise): Promise<Weight> => {
+    const extrinsic = getExtrinsic[transaction.type](transaction.args, api);
+    const { weight } = await extrinsic.paymentInfo(transaction.address);
+
+    return weight;
   };
 
   const getTransactionDeposit = (threshold: Threshold, api: ApiPromise): string => {
@@ -445,15 +193,45 @@ export const useTransaction = (): ITransactionService => {
     return signatureVerify(payloadToVerify, signature, accountId).isValid;
   };
 
+  const wrapTx = (transaction: Transaction, api: ApiPromise, addressPrefix: number) => {
+    wrappers.forEach((wrapper) => {
+      if (shouldWrapAsMulti(wrapper)) {
+        transaction = wrapAsMulti(wrapper.account, wrapper.signatoryId, transaction, api, addressPrefix);
+      }
+    });
+
+    return transaction;
+  };
+
+  const buildTransaction = (
+    type: TransactionType,
+    address: Address,
+    chainId: ChainId,
+    args: Record<string, any>,
+  ): Transaction => {
+    return {
+      type: type,
+      address: address,
+      chainId: chainId,
+      args: args,
+    };
+  };
+
   return {
     createPayload,
     getSignedExtrinsic,
     submitAndWatchExtrinsic,
     getTransactionFee,
     getExtrinsicWeight,
+    getTxWeight,
     getTransactionDeposit,
     getTransactionHash,
     decodeCallData,
     verifySignature,
+    txs,
+    setTxs,
+    setWrappers,
+    wrapTx,
+    buildTransaction,
   };
 };

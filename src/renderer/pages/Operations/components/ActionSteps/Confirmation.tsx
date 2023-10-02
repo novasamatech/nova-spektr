@@ -1,9 +1,10 @@
 import { MultisigTransaction, Transaction, Fee } from '@renderer/entities/transaction';
-import TransactionAmount from '@renderer/pages/Operations/components/TransactionAmount';
-import { DetailRow, FootnoteText } from '@renderer/shared/ui';
+import { TransactionAmount } from '@renderer/pages/Operations/components/TransactionAmount';
+import { DetailRow, FootnoteText, Icon } from '@renderer/shared/ui';
 import { MultisigAccount } from '@renderer/entities/account';
 import { ExtendedChain } from '@renderer/entities/network';
 import { useI18n } from '@renderer/app/providers';
+import { getIconName } from '../../common/utils';
 import Details from '../Details';
 
 const AmountFontStyle = 'font-manrope text-text-primary text-[32px] leading-[36px] font-bold';
@@ -14,18 +15,26 @@ type Props = {
   connection: ExtendedChain;
   feeTx?: Transaction;
 };
-const Confirmation = ({ tx, account, connection, feeTx }: Props) => {
+export const Confirmation = ({ tx, account, connection, feeTx }: Props) => {
   const { t } = useI18n();
+
+  const iconName = getIconName(tx.transaction);
 
   return (
     <div className="flex flex-col items-center gap-y-3">
-      {tx.transaction && <TransactionAmount tx={tx.transaction} showIcon={false} className={AmountFontStyle} />}
+      <div className="flex flex-col items-center gap-y-3 mb-6">
+        <div className="flex items-center justify-center w-15 h-15 box-content rounded-full border-2 border-icon-default">
+          <Icon className="text-icon-default" name={iconName} size={42} />
+        </div>
 
-      {tx.description && (
-        <FootnoteText className="py-2 px-3 rounded bg-block-background ml-3 text-text-secondary">
-          {tx.description}
-        </FootnoteText>
-      )}
+        {tx.transaction && <TransactionAmount tx={tx.transaction} showIcon={false} className={AmountFontStyle} />}
+
+        {tx.description && (
+          <FootnoteText className="py-2 px-3 rounded bg-block-background ml-3 text-text-secondary">
+            {tx.description}
+          </FootnoteText>
+        )}
+      </div>
 
       <Details tx={tx} account={account} connection={connection} isCardDetails={false} />
 
@@ -44,5 +53,3 @@ const Confirmation = ({ tx, account, connection, feeTx }: Props) => {
     </div>
   );
 };
-
-export default Confirmation;

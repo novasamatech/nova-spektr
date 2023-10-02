@@ -134,7 +134,7 @@ export const ValidatorsModal = ({
         <div className="max-h-[512px] flex flex-col gap-y-5 pt-5 pb-4 overflow-y-auto">
           {elected.length > 0 && (
             <Accordion isDefaultOpen>
-              <Accordion.Button className="px-5">
+              <Accordion.Button buttonClass="px-5">
                 <div className="flex items-center gap-x-1 w-full">
                   <SmallTitleText>{t('staking.nominators.electedTitle')}</SmallTitleText>
                   <SmallTitleText className="text-text-tertiary">({elected.length})</SmallTitleText>
@@ -162,7 +162,7 @@ export const ValidatorsModal = ({
 
           {notElected.length > 0 && (
             <Accordion isDefaultOpen>
-              <Accordion.Button className="px-5">
+              <Accordion.Button buttonClass="px-5">
                 <div className="flex items-center gap-x-1 w-full">
                   <SmallTitleText>{t('staking.nominators.notElectedTitle')}</SmallTitleText>
                   <SmallTitleText className="text-text-tertiary">({notElected.length})</SmallTitleText>

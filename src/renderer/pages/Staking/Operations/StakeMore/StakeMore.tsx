@@ -1,15 +1,15 @@
 import { UnsignedTransaction } from '@substrate/txwrapper-polkadot';
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Navigate, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 
-import { useI18n, useNetworkContext, Paths } from '@renderer/app/providers';
-import { ChainId, HexString, Address, AccountId } from '@renderer/domain/shared-kernel';
+import { Paths, useI18n, useNetworkContext } from '@renderer/app/providers';
+import { ChainId, HexString } from '@renderer/domain/shared-kernel';
 import { Transaction, TransactionType, useTransaction } from '@renderer/entities/transaction';
 import InitOperation, { StakeMoreResult } from './InitOperation/InitOperation';
-import { Confirmation, Submit, NoAsset } from '../components';
-import { getRelaychainAsset, toAddress, DEFAULT_TRANSITION } from '@renderer/shared/lib/utils';
+import { Confirmation, NoAsset, Submit } from '../components';
+import { DEFAULT_TRANSITION, getRelaychainAsset, toAddress } from '@renderer/shared/lib/utils';
 import { useToggle } from '@renderer/shared/lib/hooks';
-import { isMultisig, MultisigAccount, Account, useAccount } from '@renderer/entities/account';
+import { Account, isMultisig, useAccount } from '@renderer/entities/account';
 import { Alert, BaseModal, Button, Loader } from '@renderer/shared/ui';
 import { OperationTitle } from '@renderer/components/common';
 import { Signing } from '@renderer/features/operation';
@@ -25,7 +25,7 @@ export const StakeMore = () => {
   const { t } = useI18n();
   const navigate = useNavigate();
   const { getActiveAccounts } = useAccount();
-  const { getTransactionHash } = useTransaction();
+  const { setTxs, txs, setWrappers, wrapTx, buildTransaction } = useTransaction();
   const { connections } = useNetworkContext();
   const [searchParams] = useSearchParams();
   const params = useParams<{ chainId: ChainId }>();
@@ -38,8 +38,6 @@ export const StakeMore = () => {
   const [stakeMoreAmount, setStakeMoreAmount] = useState('');
   const [description, setDescription] = useState('');
 
-  const [multisigTx, setMultisigTx] = useState<Transaction>();
-  const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [unsignedTransactions, setUnsignedTransactions] = useState<UnsignedTransaction[]>([]);
 
   const [accounts, setAccounts] = useState<Account[]>([]);
@@ -88,7 +86,7 @@ export const StakeMore = () => {
         headerClass="py-3 px-5 max-w-[440px]"
         panelClass="w-max"
         isOpen={isStakeMoreModalOpen}
-        title={<OperationTitle title={`${t('staking.stakeMore.title', { asset: '' })}`} chainId={chainId} />}
+        title={<OperationTitle title={t('staking.stakeMore.title')} chainId={chainId} />}
         onClose={closeStakeMoreModal}
       >
         <div className="w-[440px] px-5 py-4">
@@ -109,7 +107,7 @@ export const StakeMore = () => {
         panelClass="w-max"
         headerClass="py-3 px-5 max-w-[440px]"
         isOpen={isStakeMoreModalOpen}
-        title={<OperationTitle title={`${t('staking.stakeMore.title', { asset: '' })}`} chainId={chainId} />}
+        title={<OperationTitle title={t('staking.stakeMore.title')} chainId={chainId} />}
         onClose={closeStakeMoreModal}
       >
         <div className="w-[440px] px-5 py-20">
@@ -120,54 +118,28 @@ export const StakeMore = () => {
   }
 
   const getStakeMoreTxs = (accounts: Account[], amount: string): Transaction[] => {
-    return accounts.map(({ accountId }) => ({
-      chainId,
-      address: toAddress(accountId, { prefix: addressPrefix }),
-      type: TransactionType.STAKE_MORE,
-      args: { maxAdditional: amount },
-    }));
-  };
-
-  const getMultisigTx = (
-    account: MultisigAccount,
-    signerAccountId: AccountId,
-    transaction: Transaction,
-  ): Transaction => {
-    const { callData, callHash } = getTransactionHash(transaction, api);
-
-    const otherSignatories = account.signatories.reduce<Address[]>((acc, s) => {
-      if (s.accountId !== signerAccountId) {
-        acc.push(toAddress(s.accountId, { prefix: addressPrefix }));
-      }
-
-      return acc;
-    }, []);
-
-    return {
-      chainId,
-      address: toAddress(signerAccountId, { prefix: addressPrefix }),
-      type: TransactionType.MULTISIG_AS_MULTI,
-      args: {
-        threshold: account.threshold,
-        otherSignatories: otherSignatories.sort(),
-        maybeTimepoint: null,
-        callData,
-        callHash,
-      },
-    };
+    return accounts.map(({ accountId }) =>
+      buildTransaction(TransactionType.STAKE_MORE, toAddress(accountId, { prefix: addressPrefix }), chainId, {
+        maxAdditional: amount,
+      }),
+    );
   };
 
   const onInitResult = ({ accounts, amount, signer, description }: StakeMoreResult) => {
     const transactions = getStakeMoreTxs(accounts, amount);
 
     if (signer && isMultisig(accounts[0])) {
-      const multisigTx = getMultisigTx(accounts[0], signer.accountId, transactions[0]);
-      setMultisigTx(multisigTx);
+      setWrappers([
+        {
+          signatoryId: signer.accountId,
+          account: accounts[0],
+        },
+      ]);
       setSigner(signer);
       setDescription(description || '');
     }
 
-    setTransactions(transactions);
+    setTxs(transactions);
     setTxAccounts(accounts);
     setStakeMoreAmount(amount);
     setActiveStep(Step.CONFIRMATION);
@@ -181,6 +153,7 @@ export const StakeMore = () => {
 
   const explorersProps = { explorers, addressPrefix, asset };
   const stakeMoreValues = new Array(txAccounts.length).fill(stakeMoreAmount);
+  const multisigTx = isMultisig(txAccounts[0]) ? wrapTx(txs[0], api, addressPrefix) : undefined;
 
   return (
     <>
@@ -190,7 +163,7 @@ export const StakeMore = () => {
         headerClass="py-3 px-5 max-w-[440px]"
         panelClass="w-max"
         isOpen={activeStep !== Step.SUBMIT && isStakeMoreModalOpen}
-        title={<OperationTitle title={`${t('staking.stakeMore.title', { asset: asset.symbol })}`} chainId={chainId} />}
+        title={<OperationTitle title={t('staking.stakeMore.title', { asset: asset.symbol })} chainId={chainId} />}
         onClose={closeStakeMoreModal}
       >
         {activeStep === Step.INIT && (
@@ -201,10 +174,9 @@ export const StakeMore = () => {
             api={api}
             accounts={txAccounts}
             signer={signer}
-            transaction={transactions[0]}
+            transaction={txs[0]}
             description={description}
             amounts={stakeMoreValues}
-            multisigTx={multisigTx}
             onResult={() => setActiveStep(Step.SIGNING)}
             onGoBack={goToPrevStep}
             {...explorersProps}
@@ -223,7 +195,7 @@ export const StakeMore = () => {
             addressPrefix={addressPrefix}
             signatory={signer}
             accounts={txAccounts}
-            transactions={multisigTx ? [multisigTx] : transactions}
+            transactions={multisigTx ? [multisigTx] : txs}
             onGoBack={() => setActiveStep(Step.CONFIRMATION)}
             onResult={onSignResult}
           />
@@ -233,7 +205,7 @@ export const StakeMore = () => {
       {activeStep === Step.SUBMIT && (
         <Submit
           api={api}
-          txs={transactions}
+          txs={txs}
           multisigTx={multisigTx}
           signatures={signatures}
           unsignedTx={unsignedTransactions}

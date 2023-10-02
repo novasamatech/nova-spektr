@@ -5,17 +5,15 @@ import { useNavigate } from 'react-router-dom';
 
 import { useI18n, useMatrix, useMultisigChainContext, Paths } from '@renderer/app/providers';
 import {
-  MultisigEvent,
   Transaction,
   MultisigTransaction,
-  MultisigTxInitStatus,
   useTransaction,
   ExtrinsicResultParams,
   OperationResult,
 } from '@renderer/entities/transaction';
 import { HexString } from '@renderer/domain/shared-kernel';
 import { Account, MultisigAccount, isMultisig } from '@renderer/entities/account';
-import { useMultisigTx, useMultisigEvent } from '@renderer/entities/multisig';
+import { useMultisigTx, useMultisigEvent, buildMultisigTx } from '@renderer/entities/multisig';
 import { toAccountId } from '@renderer/shared/lib/utils';
 import { useToggle } from '@renderer/shared/lib/hooks';
 import { Button } from '@renderer/shared/ui';
@@ -53,6 +51,10 @@ export const Submit = ({ api, tx, multisigTx, account, unsignedTx, signature, de
 
     if (isMultisig(account) && successMessage) {
       navigate(Paths.OPERATIONS);
+    } else {
+      // TODO: rework to context-free solution
+
+      navigate(Paths.ASSETS);
     }
   };
 
@@ -62,6 +64,10 @@ export const Submit = ({ api, tx, multisigTx, account, unsignedTx, signature, de
 
     if (isMultisig(account)) {
       navigate(Paths.OPERATIONS);
+    } else {
+      // TODO: rework to context-free solution
+
+      navigate(Paths.ASSETS);
     }
   };
 
@@ -79,43 +85,15 @@ export const Submit = ({ api, tx, multisigTx, account, unsignedTx, signature, de
 
     submitAndWatchExtrinsic(extrinsic, unsignedTx, api, async (executed, params) => {
       if (executed) {
-        const typedParams = params as ExtrinsicResultParams;
-
         if (multisigTx && isMultisig(account)) {
-          const newTx: MultisigTransaction = {
-            accountId: account.accountId,
-            chainId: multisigTx.chainId,
-            signatories: account.signatories,
-            callData: multisigTx.args.callData,
-            callHash: multisigTx.args.callHash,
-            transaction: tx,
-            status: MultisigTxInitStatus.SIGNING,
-            blockCreated: typedParams.timepoint.height,
-            indexCreated: typedParams.timepoint.index,
-            description,
-            dateCreated: Date.now(),
-          };
+          const result = buildMultisigTx(tx, multisigTx, params as ExtrinsicResultParams, account, description);
 
-          const event: MultisigEvent = {
-            txAccountId: newTx.accountId,
-            txChainId: newTx.chainId,
-            txCallHash: newTx.callHash,
-            txBlock: newTx.blockCreated,
-            txIndex: newTx.indexCreated,
-            status: 'SIGNED',
-            accountId: toAccountId(multisigTx.address),
-            extrinsicHash: typedParams.extrinsicHash,
-            eventBlock: typedParams.timepoint.height,
-            eventIndex: typedParams.timepoint.index,
-            dateCreated: Date.now(),
-          };
+          await Promise.all([addMultisigTx(result.transaction), addEventWithQueue(result.event)]);
 
-          await Promise.all([addMultisigTx(newTx), addEventWithQueue(event)]);
-
-          console.log(`New transfer was created with call hash ${newTx.callHash}`);
+          console.log(`New transfer was created with call hash ${result.transaction.callHash}`);
 
           if (matrix.userIsLoggedIn) {
-            sendMultisigEvent(account.matrixRoomId, newTx, typedParams);
+            sendMultisigEvent(account.matrixRoomId, result.transaction, params as ExtrinsicResultParams);
           }
         }
 

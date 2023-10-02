@@ -19,6 +19,7 @@ jest.mock('@renderer/entities/multisig', () => ({
 }));
 
 jest.mock('@renderer/entities/account', () => ({
+  ...jest.requireActual('@renderer/entities/account'),
   AddressWithExplorers: ({ address }: any) => <span data-testid="address">{address}</span>,
 }));
 

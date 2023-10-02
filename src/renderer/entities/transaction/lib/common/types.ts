@@ -1,10 +1,12 @@
 import { ApiPromise } from '@polkadot/api';
-import { UnsignedTransaction } from '@substrate/txwrapper-polkadot';
+import { UnsignedTransaction, Args } from '@substrate/txwrapper-polkadot';
 import { Weight } from '@polkadot/types/interfaces';
 import { SubmittableExtrinsic } from '@polkadot/api/types';
+import { AnyJson } from '@polkadot/types/types';
 
-import { Address, CallData, HexString, Timepoint, Threshold, AccountId } from '@renderer/domain/shared-kernel';
-import { DecodedTransaction, Transaction } from '@renderer/entities/transaction/model/transaction';
+import { Address, CallData, HexString, Timepoint, Threshold, AccountId, ChainId } from '@renderer/domain/shared-kernel';
+import { DecodedTransaction, Transaction, TransactionType } from '@renderer/entities/transaction/model/transaction';
+import { TxWrappers } from '@renderer/entities/transaction';
 
 // =====================================================
 // =========== ITransactionService interface ===========
@@ -27,10 +29,21 @@ export type ITransactionService = {
   ) => void;
   getTransactionFee: (transaction: Transaction, api: ApiPromise) => Promise<string>;
   getExtrinsicWeight: (extrinsic: SubmittableExtrinsic<'promise'>) => Promise<Weight>;
+  getTxWeight: (transaction: Transaction, api: ApiPromise) => Promise<Weight>;
   getTransactionDeposit: (threshold: Threshold, api: ApiPromise) => string;
   getTransactionHash: (transaction: Transaction, api: ApiPromise) => HashData;
   decodeCallData: (api: ApiPromise, accountId: Address, callData: CallData) => DecodedTransaction;
   verifySignature: (payload: Uint8Array, signature: HexString, accountId: AccountId) => Boolean;
+  setTxs: (txs: Transaction[]) => void;
+  txs: Transaction[];
+  setWrappers: (wrappers: TxWrappers[]) => void;
+  wrapTx: (tx: Transaction, api: ApiPromise, addressPrefix: number) => Transaction;
+  buildTransaction: (
+    type: TransactionType,
+    address: Address,
+    chainId: ChainId,
+    args: Record<string, any>,
+  ) => Transaction;
 };
 
 // =====================================================
@@ -57,3 +70,20 @@ export type ExtrinsicResultParams = {
   isFinalApprove: boolean;
   multisigError: string;
 };
+
+export type XcmPallet = 'xcmPallet' | 'polkadotXcm';
+
+export interface XcmPalletTransferArgs extends Args {
+  dest: AnyJson;
+  beneficiary: AnyJson;
+  assets: AnyJson;
+  feeAssetItem: number;
+  weightLimit: AnyJson;
+}
+
+export interface XTokenPalletTransferArgs extends Args {
+  asset: AnyJson;
+  dest: AnyJson;
+  destWeightLimit?: AnyJson;
+  destWeight?: number;
+}

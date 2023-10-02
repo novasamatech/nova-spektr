@@ -89,11 +89,15 @@ export default {
       outlineOffset: {
         reduced: '-2px', // same as outline width, so it would be aligned by inner border of element
       },
-      gridTemplateColumns: {
-        'operation-card': '72px 182px 182px 130px 130px',
-      },
       letterSpacing: {
         tight: '-.01em',
+      },
+      zIndex: {
+        60: '60',
+        70: '70',
+        80: '80',
+        90: '90',
+        100: '100',
       },
     },
   },

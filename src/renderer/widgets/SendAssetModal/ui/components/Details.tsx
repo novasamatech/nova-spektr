@@ -1,10 +1,12 @@
 import { useI18n } from '@renderer/app/providers';
 import { Account, MultisigAccount, AddressWithExplorers } from '@renderer/entities/account';
+import { ChainTitle } from '@renderer/entities/chain';
 import { ExtendedChain } from '@renderer/entities/network';
 import { Transaction } from '@renderer/entities/transaction';
-import { AddressStyle } from '../common/constants';
 import { Wallet } from '@renderer/entities/wallet';
 import { DetailRow } from '@renderer/shared/ui';
+
+const AddressStyle = 'text-footnote text-inherit';
 
 type Props = {
   transaction: Transaction;
@@ -58,6 +60,12 @@ const Details = ({ transaction, wallet, account, signatory, connection, withAdva
             addressPrefix={addressPrefix}
             name={signatory.name}
           />
+        </DetailRow>
+      )}
+
+      {transaction?.args.destinationChain && (
+        <DetailRow label={t('operation.details.destinationChain')} className={valueClass}>
+          <ChainTitle chainId={transaction.args.destinationChain} fontClass="text-text-primary text-footnote" />
         </DetailRow>
       )}
 
