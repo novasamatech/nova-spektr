@@ -63,7 +63,7 @@ export const WalletFiatBalance = ({ className, walletId, accountId }: Props) => 
       setIsLoading(false);
       setFiatAmount(totalFiatAmount);
     }
-  }, [walletId, accountId, balances.length, currency]);
+  }, [walletId, accountId, balances.length, currency, prices]);
 
   if (!fiatFlag) return null;
   if (isLoading) return <Shimmering width={56} height={18} />;
