@@ -23,7 +23,7 @@ export const CurrencyForm = ({ onSubmit }: Props) => {
   }, [onSubmit]);
 
   useEffect(() => {
-    return currencyFormModel.events.resetForm;
+    currencyFormModel.events.formInitiated();
   }, []);
 
   const {
@@ -81,7 +81,7 @@ export const CurrencyForm = ({ onSubmit }: Props) => {
         onChange={({ value }) => currency?.onChange(value.id)}
       />
 
-      <Button className="w-fit ml-auto" type="submit">
+      <Button className="w-fit ml-auto" type="submit" disabled={!currency?.isDirty && !fiatFlag?.isDirty}>
         {t('settings.currency.save')}
       </Button>
     </form>

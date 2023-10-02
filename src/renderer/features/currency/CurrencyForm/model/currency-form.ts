@@ -14,7 +14,7 @@ const callbacksApi = createApi($callbacks, {
   callbacksChanged: (state, props: Callbacks) => ({ ...state, ...props }),
 });
 
-const resetForm = createEvent();
+const formInitiated = createEvent();
 
 const $currencyForm = createForm({
   fields: {
@@ -34,19 +34,19 @@ const $unpopularFiatCurrencies = currencyModel.$currencyConfig.map((config) => {
   return config.filter((c) => c.category === 'fiat' && !c.popular);
 });
 
-sample({
-  clock: [priceProviderModel.$fiatFlag, resetForm],
-  source: priceProviderModel.$fiatFlag,
-  filter: (fiatFlag): fiatFlag is boolean => fiatFlag !== null,
-  target: $currencyForm.fields.fiatFlag.set,
-});
+type Params = {
+  fiatFlag: boolean | null;
+  currency: CurrencyItem | null;
+};
 
 sample({
-  clock: [currencyModel.$activeCurrency, resetForm],
-  source: currencyModel.$activeCurrency,
-  filter: (currency): currency is CurrencyItem => currency !== null,
-  fn: (currency) => currency!.id,
-  target: $currencyForm.fields.currency.set,
+  clock: formInitiated,
+  source: {
+    fiatFlag: priceProviderModel.$fiatFlag,
+    currency: currencyModel.$activeCurrency,
+  },
+  fn: ({ fiatFlag, currency }: Params) => ({ fiatFlag: Boolean(fiatFlag), currency: currency?.id || 0 }),
+  target: $currencyForm.setInitialForm,
 });
 
 sample({
@@ -80,6 +80,6 @@ export const currencyFormModel = {
   $unpopularFiatCurrencies,
   events: {
     callbacksChanged: callbacksApi.callbacksChanged,
-    resetForm,
+    formInitiated,
   },
 };
