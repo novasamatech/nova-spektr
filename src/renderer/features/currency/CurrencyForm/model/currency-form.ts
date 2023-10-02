@@ -1,4 +1,4 @@
-import { sample, createStore, createApi, attach, createEvent } from 'effector';
+import { sample, createStore, createApi, attach, createEvent, combine } from 'effector';
 import { createForm } from 'effector-forms';
 import { spread, combineEvents } from 'patronum';
 
@@ -34,13 +34,19 @@ const $unpopularFiatCurrencies = currencyModel.$currencyConfig.map((config) => {
   return config.filter((c) => c.category === 'fiat' && !c.popular);
 });
 
+const $isFormValid = combine(
+  $currencyForm.fields.currency.$isDirty,
+  $currencyForm.fields.fiatFlag.$isDirty,
+  (isCurrencyDirty, isFiatFlagDirty) => isFiatFlagDirty || isCurrencyDirty,
+);
+
 type Params = {
   fiatFlag: boolean | null;
   currency: CurrencyItem | null;
 };
 
 sample({
-  clock: formInitiated,
+  clock: [priceProviderModel.watch.fiatFlagLoaded, currencyModel.watch.activeCurrencyLoaded, formInitiated],
   source: {
     fiatFlag: priceProviderModel.$fiatFlag,
     currency: currencyModel.$activeCurrency,
@@ -78,6 +84,7 @@ export const currencyFormModel = {
   $cryptoCurrencies,
   $popularFiatCurrencies,
   $unpopularFiatCurrencies,
+  $isFormValid,
   events: {
     callbacksChanged: callbacksApi.callbacksChanged,
     formInitiated,

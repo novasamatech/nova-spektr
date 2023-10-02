@@ -36,4 +36,17 @@ describe('features/currency/model/currency-form', () => {
     expect(scope.getState($popularFiatCurrencies)).toEqual([config[0], config[2]]);
     expect(scope.getState($unpopularFiatCurrencies)).toEqual([config[1]]);
   });
+
+  test('should set form initial values on formInitiated event', async () => {
+    const scope = fork({
+      values: new Map().set(priceProviderModel.$fiatFlag, true).set(currencyModel.$activeCurrency, config[1]),
+    });
+
+    await allSettled(currencyFormModel.events.formInitiated, { scope });
+
+    const { fiatFlag, currency } = currencyFormModel.$currencyForm.fields;
+
+    expect(scope.getState(fiatFlag.$value)).toEqual(true);
+    expect(scope.getState(currency.$value)).toEqual(config[1].id);
+  });
 });

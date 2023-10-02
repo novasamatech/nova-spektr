@@ -77,5 +77,6 @@ export const currencyModel = {
   watch: {
     currencyChangedDone: currencyChangedFx.done,
     currencyChangedFail: currencyChangedFx.fail,
+    activeCurrencyLoaded: getActiveCurrencyCodeFx.done,
   },
 };

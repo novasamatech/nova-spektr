@@ -102,5 +102,6 @@ export const priceProviderModel = {
   watch: {
     fiatFlagChangedDone: saveFiatFlagFx.done,
     fiatFlagChangedFail: saveFiatFlagFx.fail,
+    fiatFlagLoaded: getFiatFlagFx.done,
   },
 };
