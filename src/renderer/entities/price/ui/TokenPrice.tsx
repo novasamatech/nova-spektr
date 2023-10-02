@@ -40,7 +40,7 @@ export const TokenPrice = ({ assetId, className }: Props) => {
     <div className="flex gap-1">
       <FiatBalance amount={priceToShow} className={className} />
 
-      {price.change && <FootnoteText className={changeStyle}>({changeToShow}%)</FootnoteText>}
+      {Boolean(price.change) && <FootnoteText className={changeStyle}>({changeToShow}%)</FootnoteText>}
     </div>
   );
 };
