@@ -42,7 +42,7 @@ export const NetworkFiatBalance = ({ assets, balances, className }: Props) => {
     }, new BN(0));
 
     setFiatAmount(totalFiatAmount);
-  }, [assets.length, prices, currency]);
+  }, [assets.length, prices, currency, balances]);
 
   if (!fiatFlag) return null;
 
