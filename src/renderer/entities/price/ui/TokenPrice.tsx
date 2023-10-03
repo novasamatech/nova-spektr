@@ -1,10 +1,9 @@
 import { useStoreMap, useUnit } from 'effector-react';
-import BN from 'bignumber.js';
 
 import { FootnoteText, Shimmering } from '@renderer/shared/ui';
 import { priceProviderModel } from '../model/price-provider-model';
 import { currencyModel } from '../model/currency-model';
-import { Decimal } from '@renderer/shared/lib/utils';
+import { formatFiatBalance } from '@renderer/shared/lib/utils';
 import { ZERO_FIAT_BALANCE } from '../lib/constants';
 import { FiatBalance } from './FiatBalance';
 
@@ -34,11 +33,11 @@ export const TokenPrice = ({ assetId, className }: Props) => {
   const changeToShow = price.change && `${isGrow ? '+' : ''}${price.change.toFixed(2)}`;
   const changeStyle = isGrow ? 'text-text-positive' : 'text-text-negative';
 
-  const priceToShow = new BN(price.price || 0).toFormat(Decimal.BIG_NUMBER);
+  const { value: formattedValue, suffix } = formatFiatBalance(price.price.toString(), 0);
 
   return (
     <div className="flex gap-1">
-      <FiatBalance amount={priceToShow} className={className} />
+      <FiatBalance amount={`${formattedValue}${suffix}`} className={className} />
 
       {Boolean(price.change) && <FootnoteText className={changeStyle}>({changeToShow}%)</FootnoteText>}
     </div>
