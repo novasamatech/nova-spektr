@@ -177,15 +177,39 @@ export const cleanAmount = (amount: string) => {
   return trimLeadingZeros(amount).replace(/,/g, '');
 };
 
-export const formatFiatBalance = (balance = '0', precision = 0): string => {
+export const formatFiatBalance = (balance = '0', precision = 0): Omit<FormattedBalance, 'decimalPlaces'> => {
+  if (balance === '0') {
+    return { value: '0', suffix: '0' };
+  }
   const BNWithConfig = BigNumber.clone();
   BNWithConfig.config({
     ROUNDING_MODE: BNWithConfig.ROUND_DOWN,
   });
 
-  const bnBalance = new BNWithConfig(balance);
   const bnPrecision = new BNWithConfig(precision);
   const TEN = new BNWithConfig(10);
+  const bnBalance = new BNWithConfig(balance).div(TEN.pow(bnPrecision));
 
-  return bnBalance.div(TEN.pow(bnPrecision)).decimalPlaces(2).toString();
+  let divider = new BNWithConfig(1);
+  let suffix = '';
+  let decimalPlaces = 2;
+
+  if (bnBalance.lt(1)) {
+    const decimalPart = bnBalance.toString().split('.')[1];
+    decimalPlaces = decimalPart.search(/[1-9]/) + 3;
+  } else if (bnBalance.gt(1_000_000) && bnBalance.lt(1_000_000_000)) {
+    divider = TEN.pow(new BNWithConfig(6));
+    suffix = Suffix.MILLIONS;
+  } else if (bnBalance.gt(1_000_000_000) && bnBalance.lt(1_000_000_000_000)) {
+    divider = TEN.pow(new BNWithConfig(9));
+    suffix = Suffix.BILLIONS;
+  } else if (bnBalance.gt(1_000_000_000_000)) {
+    divider = TEN.pow(new BNWithConfig(12));
+    suffix = Suffix.TRILLIONS;
+  }
+
+  return {
+    value: new BNWithConfig(bnBalance).div(divider).decimalPlaces(decimalPlaces).toFormat(),
+    suffix,
+  };
 };

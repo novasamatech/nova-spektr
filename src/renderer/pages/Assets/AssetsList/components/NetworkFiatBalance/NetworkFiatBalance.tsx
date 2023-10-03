@@ -3,7 +3,7 @@ import { useUnit } from 'effector-react';
 import BN from 'bignumber.js';
 
 import { Asset, Balance } from '@renderer/entities/asset';
-import { formatAmount, formatBalance, formatFiatBalance, totalAmount } from '@renderer/shared/lib/utils';
+import { formatFiatBalance, totalAmount } from '@renderer/shared/lib/utils';
 import { FiatBalance } from '@renderer/entities/price/ui/FiatBalance';
 import { currencyModel, priceProviderModel } from '@renderer/entities/price';
 import { useI18n } from '@renderer/app/providers';
@@ -33,9 +33,15 @@ export const NetworkFiatBalance = ({ assets, balances, className }: Props) => {
 
       if (price && balance) {
         const fiatBalance = new BN(price.price).multipliedBy(new BN(totalAmount(balance)));
-        const formattedFiatBalance = formatFiatBalance(fiatBalance.toString(), asset.precision);
+        const BNWithConfig = BN.clone();
+        BNWithConfig.config({
+          ROUNDING_MODE: BNWithConfig.ROUND_DOWN,
+        });
 
-        acc = acc.plus(new BN(formatAmount(formattedFiatBalance, 2)));
+        const bnPrecision = new BNWithConfig(asset.precision);
+        const TEN = new BNWithConfig(10);
+
+        acc = acc.plus(new BNWithConfig(fiatBalance.toString()).div(TEN.pow(bnPrecision)));
       }
 
       return acc;
@@ -46,11 +52,10 @@ export const NetworkFiatBalance = ({ assets, balances, className }: Props) => {
 
   if (!fiatFlag) return null;
 
-  const { value: formattedValue, suffix } = formatBalance(fiatAmount.toString(), 2);
+  const { value: formattedValue, suffix } = formatFiatBalance(fiatAmount.toString(), 0);
 
   const balanceValue = t('assetBalance.number', {
     value: formattedValue,
-    maximumFractionDigits: 2,
   });
 
   return <FiatBalance amount={`${balanceValue}${suffix}`} className={className} />;
