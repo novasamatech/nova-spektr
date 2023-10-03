@@ -37,7 +37,7 @@ export const routesConfig: RouteObject[] = [
         children: [
           { path: Paths.NETWORK, element: <Screens.Settings.Networks /> },
           { path: Paths.CURRENCY, element: <Screens.Settings.Currency /> },
-          // { path: Paths.MATRIX, element: <Screens.Settings.Matrix /> },
+          { path: Paths.MATRIX, element: <Screens.Settings.Matrix /> },
         ],
       },
       {

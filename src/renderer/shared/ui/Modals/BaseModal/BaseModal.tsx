@@ -12,6 +12,7 @@ import { HeaderTitleText, IconButton } from '@renderer/shared/ui';
 type Props = {
   isOpen: boolean;
   title?: ReactNode;
+  zIndex?: string;
   contentClass?: string;
   headerClass?: string;
   panelClass?: string;
@@ -22,18 +23,19 @@ type Props = {
 const BaseModal = ({
   isOpen,
   title,
-  children,
-  onClose,
+  zIndex = 'z-50',
   contentClass = 'pb-4 px-5',
   headerClass = 'py-3 px-5',
   closeButton,
   panelClass,
+  children,
+  onClose,
 }: PropsWithChildren<Props>) => {
   const { t } = useI18n();
 
   return (
     <Transition appear show={isOpen} as={Fragment}>
-      <Dialog as="div" className="relative z-50" onClose={() => onClose()}>
+      <Dialog as="div" className={cnTw('relative', zIndex)} onClose={() => onClose()}>
         <ModalBackdrop />
 
         <div className="fixed inset-0 overflow-hidden flex min-h-full items-center justify-center p-4">

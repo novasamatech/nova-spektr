@@ -16,9 +16,10 @@ import { useI18n } from '@renderer/app/providers';
 import { Chain } from '@renderer/entities/chain';
 import { ErrorType, AccountId, SigningType } from '@renderer/domain/shared-kernel';
 import { chainsService } from '@renderer/entities/network';
-import { toAccountId, validateAddress } from '@renderer/shared/lib/utils';
+import { toAccountId, validateAddress, DEFAULT_TRANSITION } from '@renderer/shared/lib/utils';
 import EmptyState from './EmptyState';
 import { createAccount, useAccount, AccountsList } from '@renderer/entities/account';
+import { useToggle } from '@renderer/shared/lib/hooks';
 
 type WalletForm = {
   walletName: string;
@@ -36,14 +37,24 @@ const WatchOnly = ({ isOpen, onClose, onComplete }: Props) => {
 
   const { addAccount, setActiveAccount } = useAccount();
 
+  const [isModalOpen, toggleIsModalOpen] = useToggle(isOpen);
   const [chains, setChains] = useState<Chain[]>([]);
   const [accountId, setAccountId] = useState<AccountId>();
+
+  useEffect(() => {
+    if (isOpen && !isModalOpen) {
+      toggleIsModalOpen();
+    }
+
+    if (!isOpen && isModalOpen) {
+      closeWowModal();
+    }
+  }, [isOpen]);
 
   const {
     handleSubmit,
     control,
     watch,
-    reset,
     formState: { errors, isValid },
   } = useForm<WalletForm>({
     mode: 'onChange',
@@ -62,31 +73,30 @@ const WatchOnly = ({ isOpen, onClose, onComplete }: Props) => {
     setChains(chainsService.sortChains(chains));
   }, []);
 
-  const createWallet: SubmitHandler<WalletForm> = async ({ walletName, address }) => {
+  const createWallet: SubmitHandler<WalletForm> = ({ walletName, address }) => {
     const newAccount = createAccount({
       name: walletName.trim(),
       signingType: SigningType.WATCH_ONLY,
       accountId: toAccountId(address),
     });
 
-    const id = await addAccount(newAccount);
-    setActiveAccount(id);
-    reset();
-    onComplete();
+    addAccount(newAccount).then(setActiveAccount);
+    closeWowModal({ complete: true });
   };
 
-  const closeModal = () => {
-    reset();
-    onClose();
+  const closeWowModal = (params?: { complete: boolean }) => {
+    toggleIsModalOpen();
+
+    setTimeout(params?.complete ? onComplete : onClose, DEFAULT_TRANSITION);
   };
 
   return (
     <BaseModal
       contentClass="flex h-full"
       panelClass="w-[944px] h-[576px]"
-      isOpen={isOpen}
+      isOpen={isModalOpen}
       closeButton
-      onClose={closeModal}
+      onClose={closeWowModal}
     >
       <div className="w-[472px] flex flex-col px-5 py-4 bg-white rounded-l-lg">
         <HeaderTitleText className="mb-10">{t('onboarding.watchOnly.title')}</HeaderTitleText>
@@ -145,7 +155,7 @@ const WatchOnly = ({ isOpen, onClose, onComplete }: Props) => {
           />
 
           <div className="flex flex-1 justify-between items-end">
-            <Button variant="text" onClick={closeModal}>
+            <Button variant="text" onClick={() => closeWowModal()}>
               {t('onboarding.backButton')}
             </Button>
 

@@ -22,6 +22,7 @@ export const Paths = {
   SETTINGS: '/settings',
   NETWORK: '/settings/network',
   CURRENCY: '/settings/currency',
+  MATRIX: '/settings/matrix',
 
   // Staking
   STAKING: '/staking',

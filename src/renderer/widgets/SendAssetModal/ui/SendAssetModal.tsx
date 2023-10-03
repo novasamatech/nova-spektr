@@ -77,7 +77,7 @@ export const SendAssetModal = ({ chain, asset }: Props) => {
   const checkBalance = () =>
     validateBalance({
       api,
-      transaction,
+      transaction: api && wrapTx(transaction, api, addressPrefix),
       chainId: chain.chainId,
       assetId: asset.assetId.toString(),
       getBalance,

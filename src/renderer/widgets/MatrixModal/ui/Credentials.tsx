@@ -2,11 +2,7 @@ import { useI18n, useMatrix } from '@renderer/app/providers';
 import { useToggle } from '@renderer/shared/lib/hooks';
 import { Button, FootnoteText, StatusLabel } from '@renderer/shared/ui';
 
-type Props = {
-  onLogOut: () => void;
-};
-
-const Credentials = ({ onLogOut }: Props) => {
+export const Credentials = () => {
   const { t } = useI18n();
   const { matrix } = useMatrix();
 
@@ -16,7 +12,6 @@ const Credentials = ({ onLogOut }: Props) => {
     toggleProgress();
     try {
       await matrix.logout();
-      onLogOut();
     } catch (error) {
       console.warn(error);
     }
@@ -35,5 +30,3 @@ const Credentials = ({ onLogOut }: Props) => {
     </div>
   );
 };
-
-export default Credentials;

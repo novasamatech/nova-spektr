@@ -53,37 +53,35 @@ const Navigation = () => {
   ];
 
   return (
-    <>
-      <aside
-        className={cn(
-          'relative flex gap-y-6 flex-col w-[240px] p-4 z-30',
-          'bg-left-navigation-menu-background border-r border-r-container-border',
+    <aside
+      className={cn(
+        'relative flex gap-y-6 flex-col w-[240px] p-4 z-30',
+        'bg-left-navigation-menu-background border-r border-r-container-border',
+      )}
+    >
+      <WalletMenu chains={chains} wallets={wallets}>
+        {activeAccounts?.length ? (
+          <ActiveAccountCard activeAccounts={activeAccounts} chains={chains} wallets={wallets} />
+        ) : (
+          <Shimmering height={54} className="w-full" />
         )}
-      >
-        <WalletMenu chains={chains} wallets={wallets}>
-          {activeAccounts?.length ? (
-            <ActiveAccountCard activeAccounts={activeAccounts} chains={chains} wallets={wallets} />
-          ) : (
-            <Shimmering height={54} className="w-full" />
-          )}
-        </WalletMenu>
+      </WalletMenu>
 
-        <nav className="flex-1 overflow-y-auto">
-          <ul className="flex flex-col gap-2">
-            {NavItems.map(({ icon, title, link, badge }) => (
-              <li key={title}>
-                <NavItem icon={icon} title={title} link={link} badge={badge} />
-              </li>
-            ))}
-          </ul>
-        </nav>
+      <nav className="flex-1 overflow-y-auto">
+        <ul className="flex flex-col gap-2">
+          {NavItems.map(({ icon, title, link, badge }) => (
+            <li key={title}>
+              <NavItem icon={icon} title={title} link={link} badge={badge} />
+            </li>
+          ))}
+        </ul>
+      </nav>
 
-        <div className="flex flex-col gap-2">
-          <NavItem icon={'notification'} title={'navigation.notificationsLabel'} link={Paths.NOTIFICATIONS} />
-          <NavItem icon={'settings'} title={'navigation.settingsLabel'} link={Paths.SETTINGS} />
-        </div>
-      </aside>
-    </>
+      <div className="flex flex-col gap-2">
+        <NavItem icon={'notification'} title={'navigation.notificationsLabel'} link={Paths.NOTIFICATIONS} />
+        <NavItem icon={'settings'} title={'navigation.settingsLabel'} link={Paths.SETTINGS} />
+      </div>
+    </aside>
   );
 };
 
