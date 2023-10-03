@@ -5,12 +5,12 @@ import { Controller, useForm, SubmitHandler } from 'react-hook-form';
 import { useI18n } from '@renderer/app/providers';
 import { Chain } from '@renderer/entities/chain';
 import { AccountId, ErrorType, SigningType, WalletType } from '@renderer/domain/shared-kernel';
-import { useChains } from '@renderer/entities/network';
 import { Button, Input, InputHint, HeaderTitleText, SmallTitleText } from '@renderer/shared/ui';
 import { useAccount, createAccount } from '@renderer/entities/account';
 import { useWallet } from '@renderer/entities/wallet';
 import { toAccountId } from '@renderer/shared/lib/utils';
 import { MultiAccountList } from '@renderer/entities/account/ui/MultiAccountsList/MultiAccountsList';
+import { chainsService } from '@renderer/entities/network';
 
 type WalletForm = {
   walletName: string;
@@ -29,8 +29,6 @@ const ManageStep = ({ accounts, pairingTopic, sessionTopic, onBack, onComplete }
   const { addAccount, setActiveAccount } = useAccount();
   const { addWallet } = useWallet();
 
-  const { getChainsData, sortChains } = useChains();
-
   const [chains, setChains] = useState<Chain[]>([]);
   const [accountsList, setAccountsList] = useState<{ chain: Chain; accountId: AccountId }[]>([]);
 
@@ -45,7 +43,8 @@ const ManageStep = ({ accounts, pairingTopic, sessionTopic, onBack, onComplete }
   });
 
   useEffect(() => {
-    getChainsData().then((chains) => setChains(sortChains(chains)));
+    const chains = chainsService.getChainsData();
+    setChains(chainsService.sortChains(chains));
   }, []);
 
   useEffect(() => {

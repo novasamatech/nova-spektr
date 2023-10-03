@@ -1,12 +1,12 @@
-export const DEFAULT_PROJECT_ID = '4fae85e642724ee66587fa9f37b997e2';
+export const DEFAULT_PROJECT_ID = 'af50115ecc7e992a0ef4a577daf5c1c8';
 export const DEFAULT_RELAY_URL = 'wss://relay.walletconnect.com';
 
 export const DEFAULT_LOGGER = 'debug';
 
 export const DEFAULT_APP_METADATA = {
   name: 'Nova Spektr', //dApp name
-  description: 'Nova Spektr Enterprise Wallet', //dApp description
-  url: '#', //dApp url
+  description: 'Full-spectrum Polkadot Desktop Wallet', //dApp description
+  url: 'https://novaspektr.io', //dApp url
   icons: ['https://walletconnect.com/walletconnect-logo.png'], //dApp logo url
   verifyUrl: 'https://verify.walletconnect.com',
 };

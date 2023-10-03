@@ -4,4 +4,3 @@ export * from './I18nContext';
 export * from './MatrixContext';
 export * from './MultisigChainContext';
 export * from './NetworkContext';
-export * from './WalletConnectContext';

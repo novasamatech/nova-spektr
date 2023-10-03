@@ -1,14 +1,17 @@
 import { useEffect, useState } from 'react';
 import { UnsignedTransaction } from '@substrate/txwrapper-polkadot';
+import { useUnit } from 'effector-react';
 
 import { SigningProps } from '@renderer/features/operation';
 import { ValidationErrors } from '@renderer/shared/lib/utils';
 import { useTransaction } from '@renderer/entities/transaction';
 import { HexString } from '@renderer/domain/shared-kernel';
-import { useI18n, useWalletConnectClient } from '@renderer/app/providers';
-import { DEFAULT_POLKADOT_METHODS } from '@renderer/app/providers/context/WalletConnectContext/const';
+import { useI18n } from '@renderer/app/providers';
 import { BodyText, Button, HeadlineText } from '@renderer/shared/ui';
 import { useAccount } from '@renderer/entities/account';
+import * as walletConnectModel from '@renderer/entities/walletConnect';
+import { DEFAULT_POLKADOT_METHODS, getWalletConnectChains } from '@renderer/entities/walletConnect';
+import { chainsService } from '@renderer/entities/network';
 
 const ValidationErrorLabels = {
   [ValidationErrors.INVALID_SIGNATURE]: 'transfer.walletConnect.invalidSignature',
@@ -17,8 +20,14 @@ const ValidationErrorLabels = {
 export const WalletConnect = ({ api, validateBalance, onGoBack, accounts, transactions, onResult }: SigningProps) => {
   const { t } = useI18n();
   const { verifySignature, createPayload } = useTransaction();
-  const { client, connect, disconnect, session } = useWalletConnectClient();
   const { updateAccount } = useAccount();
+
+  const session = useUnit(walletConnectModel.$session);
+  const client = useUnit(walletConnectModel.$client);
+  const connect = useUnit(walletConnectModel.events.connect);
+  const updateSession = useUnit(walletConnectModel.updateSession);
+
+  const chains = chainsService.getChainsData();
 
   const [txPayload, setTxPayload] = useState<Uint8Array>();
   const [unsignedTx, setUnsignedTx] = useState<UnsignedTransaction>();
@@ -28,16 +37,24 @@ export const WalletConnect = ({ api, validateBalance, onGoBack, accounts, transa
   const account = accounts[0];
 
   useEffect(() => {
-    if (txPayload) return;
+    if (txPayload || !client) return;
 
     (async () => {
       const isCurrentSession = session && account && session.topic === account.signingExtras?.sessionTopic;
 
       if (!isCurrentSession) {
-        if (session) {
-          await disconnect();
+        const sessions = client.session.getAll();
+
+        const newSession = sessions.find((s) => s.topic === account.signingExtras?.sessionTopic);
+
+        if (newSession) {
+          updateSession(newSession);
+        } else {
+          await connect({
+            chains: getWalletConnectChains(chains),
+            pairing: { topic: account.signingExtras?.pairingTopic },
+          });
         }
-        await connect({ topic: account.signingExtras?.pairingTopic });
 
         setIsNeedUpdate(true);
       }
@@ -47,8 +64,10 @@ export const WalletConnect = ({ api, validateBalance, onGoBack, accounts, transa
   }, [transaction, api]);
 
   useEffect(() => {
+    console.log('xcm2', isNeedUpdate);
     if (isNeedUpdate) {
       setIsNeedUpdate(false);
+
       updateAccount({
         ...account,
         signingExtras: {
@@ -60,7 +79,11 @@ export const WalletConnect = ({ api, validateBalance, onGoBack, accounts, transa
   }, [session]);
 
   useEffect(() => {
-    unsignedTx && signTransaction();
+    console.log('xcmTx', unsignedTx);
+
+    if (unsignedTx) {
+      signTransaction();
+    }
   }, [unsignedTx]);
 
   const setupTransaction = async (): Promise<void> => {
@@ -79,6 +102,8 @@ export const WalletConnect = ({ api, validateBalance, onGoBack, accounts, transa
   const signTransaction = async () => {
     if (!api || !client || !session) return;
 
+    console.log('xcmTx2', session.topic);
+
     const result = await client.request<{
       payload: string;
       signature: HexString;
@@ -94,6 +119,8 @@ export const WalletConnect = ({ api, validateBalance, onGoBack, accounts, transa
         },
       },
     });
+
+    console.log('xcmTx2', result);
 
     handleSignature(result.signature);
   };

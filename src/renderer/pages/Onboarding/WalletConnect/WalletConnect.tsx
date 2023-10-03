@@ -1,12 +1,17 @@
 import QRCode from 'qrcode';
 import { useEffect, useState } from 'react';
+import { useUnit } from 'effector-react';
 
-import { useI18n, useWalletConnectClient } from '@renderer/app/providers';
+import { useI18n } from '@renderer/app/providers';
 import { BaseModal, HeaderTitleText, SmallTitleText } from '@renderer/shared/ui';
 import ManageStep from './ManageStep/ManageStep';
 import onboarding_tutorial from '@video/onboarding_tutorial.mp4';
 import onboarding_tutorial_webm from '@video/onboarding_tutorial.webm';
 import { usePrevious } from '@renderer/shared/lib/hooks';
+import * as walletConnectModel from '@renderer/entities/walletConnect';
+import { chainsService } from '@renderer/entities/network';
+import { wcOnboardingModel } from './model/walletConnectOnboarding';
+import { Step } from './common/const';
 
 type Props = {
   isOpen: boolean;
@@ -15,24 +20,33 @@ type Props = {
   onComplete: () => void;
 };
 
-const enum Step {
-  SCAN,
-  MANAGE,
-}
-
 const WalletConnect = ({ isOpen, onClose, onComplete }: Props) => {
   const { t } = useI18n();
-  const { client, connect, uri, session, pairings, disconnect } = useWalletConnectClient();
+
+  const session = useUnit(walletConnectModel.$session);
+  const client = useUnit(walletConnectModel.$client);
+  const pairings = useUnit(walletConnectModel.$pairings);
+  const uri = useUnit(walletConnectModel.$uri);
+  const connect = useUnit(walletConnectModel.events.connect);
+  const disconnect = useUnit(walletConnectModel.events.disconnect);
+  const step = useUnit(wcOnboardingModel.$step);
+  const startOnboarding = useUnit(wcOnboardingModel.events.startOnboarding);
 
   const previousPairings = usePrevious(pairings);
 
   const [qrCode, setQrCode] = useState<string>('');
-  const [step, setStep] = useState<Step>(Step.SCAN);
   const [pairingTopic, setPairingTopic] = useState<string>();
 
   useEffect(() => {
+    if (isOpen) {
+      startOnboarding();
+    }
+  }, [isOpen]);
+
+  useEffect(() => {
     if (client && isOpen) {
-      connect(undefined, () => setStep(Step.MANAGE));
+      const chains = walletConnectModel.getWalletConnectChains(chainsService.getChainsData());
+      connect({ chains });
     }
   }, [client, isOpen]);
 
