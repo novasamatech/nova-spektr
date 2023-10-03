@@ -197,13 +197,13 @@ export const formatFiatBalance = (balance = '0', precision = 0): Omit<FormattedB
   if (bnBalance.lt(1)) {
     const decimalPart = bnBalance.toString().split('.')[1];
     decimalPlaces = decimalPart.search(/[1-9]/) + 3;
-  } else if (bnBalance.gt(1_000_000) && bnBalance.lt(1_000_000_000)) {
+  } else if (bnBalance.gte(1_000_000) && bnBalance.lt(1_000_000_000)) {
     divider = TEN.pow(new BNWithConfig(6));
     suffix = Suffix.MILLIONS;
-  } else if (bnBalance.gt(1_000_000_000) && bnBalance.lt(1_000_000_000_000)) {
+  } else if (bnBalance.gte(1_000_000_000) && bnBalance.lt(1_000_000_000_000)) {
     divider = TEN.pow(new BNWithConfig(9));
     suffix = Suffix.BILLIONS;
-  } else if (bnBalance.gt(1_000_000_000_000)) {
+  } else if (bnBalance.gte(1_000_000_000_000)) {
     divider = TEN.pow(new BNWithConfig(12));
     suffix = Suffix.TRILLIONS;
   }
