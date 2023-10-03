@@ -10,6 +10,8 @@ import { IconButton } from '@renderer/shared/ui';
 import { useToggle } from '@renderer/shared/lib/hooks';
 import { currencyModel, useCurrencyRate } from '@renderer/entities/price';
 
+const formatValueForAsset = (value: number, asset: Asset) => parseFloat(value.toFixed(asset.precision)).toString();
+
 type Props = {
   name?: string;
   value: string;
@@ -43,10 +45,17 @@ export const AmountInput = ({
 
   const handleChange = (amount: string) => {
     const cleanedAmount = cleanAmount(amount);
-    setInternalValue(cleanedAmount);
 
-    if (validateSymbols(cleanedAmount) && (currencyMode || validatePrecision(cleanedAmount, asset.precision))) {
-      onChange?.(currencyMode && rate ? (Number(cleanedAmount) * (1 / rate)).toString() : cleanedAmount);
+    const calculatedAssetValue = rate && formatValueForAsset(Number(cleanedAmount) * (1 / rate), asset);
+
+    const isSymbolsValid = validateSymbols(cleanedAmount);
+    const isAssetValueValid = currencyMode || validatePrecision(cleanedAmount, asset.precision);
+    const isCurrencyValueValid =
+      !currencyMode || (calculatedAssetValue && validatePrecision(calculatedAssetValue, asset.precision));
+
+    if (isSymbolsValid && isAssetValueValid && isCurrencyValueValid) {
+      setInternalValue(cleanedAmount);
+      onChange?.(currencyMode && calculatedAssetValue ? calculatedAssetValue : cleanedAmount);
     } else {
       onChange?.(value);
     }
@@ -120,7 +129,7 @@ export const AmountInput = ({
         onClick={toggleCurrencyMode}
       />
       <FootnoteText className="uppercase text-text-tertiary">
-        {currencyMode ? `${value} ${asset.symbol}` : `${activeCurrency?.symbol} ${Number(value) * rate}`}
+        {currencyMode ? `${value} ${asset.symbol}` : `${activeCurrency?.symbol} ${Number(value ?? 0) * rate}`}
       </FootnoteText>
     </div>
   );
