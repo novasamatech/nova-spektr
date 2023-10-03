@@ -8,6 +8,7 @@ import { Asset, AssetBalance } from '@renderer/entities/asset';
 import { EraIndex } from '@renderer/domain/shared-kernel';
 import { Validator } from '@renderer/domain/validator';
 import { useStakingData } from '@renderer/entities/staking';
+import { AssetFiatBalance } from '@renderer/entities/price/ui/AssetFiatBalance';
 
 type Props = {
   api?: ApiPromise;
@@ -104,20 +105,36 @@ export const AboutStaking = ({ api, era, asset, validators }: Props) => {
       <div className="grid grid-cols-2 gap-y-3 gap-x-6">
         <div className="flex justify-between gap-x-1">
           <FootnoteText className="text-text-secondary">{t('staking.about.totalStakedLabel')}</FootnoteText>
-          {totalStaked && asset ? (
-            <AssetBalance value={totalStaked} asset={asset} className="text-footnote text-right" />
-          ) : (
-            <Shimmering className="justify-self-end" width={100} height={18} />
-          )}
+          <div className="flex flex-col justify-self-end items-end">
+            {totalStaked && asset ? (
+              <>
+                <AssetBalance value={totalStaked} asset={asset} className="text-footnote" />
+                <AssetFiatBalance amount={totalStaked} asset={asset} />
+              </>
+            ) : (
+              <>
+                <Shimmering width={100} height={18} />
+                <Shimmering width={56} height={18} />
+              </>
+            )}
+          </div>
         </div>
 
         <div className="flex justify-between gap-x-1">
           <FootnoteText className="text-text-secondary">{t('staking.about.minimumStakeLabel')}</FootnoteText>
-          {minimumStake && asset ? (
-            <AssetBalance value={minimumStake} asset={asset} className="text-footnote text-right" />
-          ) : (
-            <Shimmering className="justify-self-end" width={100} height={18} />
-          )}
+          <div className="flex flex-col justify-self-end items-end">
+            {minimumStake && asset ? (
+              <>
+                <AssetBalance value={minimumStake} asset={asset} className="text-footnote" />
+                <AssetFiatBalance amount={minimumStake} asset={asset} />
+              </>
+            ) : (
+              <>
+                <Shimmering width={100} height={18} />
+                <Shimmering width={56} height={18} />
+              </>
+            )}
+          </div>
         </div>
 
         {/*<div className="flex justify-between gap-x-1">*/}

@@ -7,8 +7,6 @@ import { useI18n } from '@renderer/app/providers';
 import { getIconName } from '../../common/utils';
 import Details from '../Details';
 
-const AmountFontStyle = 'font-manrope text-text-primary text-[32px] leading-[36px] font-bold';
-
 type Props = {
   tx: MultisigTransaction;
   account: MultisigAccount;
@@ -27,7 +25,7 @@ export const Confirmation = ({ tx, account, connection, feeTx }: Props) => {
           <Icon className="text-icon-default" name={iconName} size={42} />
         </div>
 
-        {tx.transaction && <TransactionAmount tx={tx.transaction} showIcon={false} className={AmountFontStyle} />}
+        {tx.transaction && <TransactionAmount tx={tx.transaction} />}
 
         {tx.description && (
           <FootnoteText className="py-2 px-3 rounded bg-block-background ml-3 text-text-secondary">

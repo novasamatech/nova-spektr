@@ -6,6 +6,7 @@ import { useI18n } from '@renderer/app/providers';
 import { WalletDS } from '@renderer/shared/api/storage';
 import { ChainsRecord } from './common/types';
 import { Account, getActiveWalletType } from '@renderer/entities/account';
+import { WalletFiatBalance } from './WalletFiatBalance';
 
 type Props = {
   activeAccounts: Account[];
@@ -24,6 +25,14 @@ const ActiveAccountCard = ({ activeAccounts, chains, wallets }: Props) => {
 
   const account = isMultishard ? null : activeAccounts[0];
   const addressPrefix = account?.chainId ? chains[account.chainId]?.addressPrefix : SS58_DEFAULT_PREFIX;
+
+  const walletProps = isMultishard
+    ? {
+        walletId: multishardWallet?.id,
+      }
+    : {
+        accountId: account?.accountId,
+      };
 
   return (
     <div className="flex items-center px-3 py-2 gap-x-2 flex-1">
@@ -46,6 +55,7 @@ const ActiveAccountCard = ({ activeAccounts, chains, wallets }: Props) => {
           <Icon name={GroupIcons[walletType]} className="text-chip-icon" size={14} />
           <CaptionText className="text-chip-text uppercase">{t(GroupLabels[walletType])}</CaptionText>
         </div>
+        <WalletFiatBalance key={JSON.stringify(walletProps)} {...walletProps} />
       </div>
 
       <Icon name="down" size={16} className="ml-auto shrink-0" />

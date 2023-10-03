@@ -17,6 +17,7 @@ import { DestinationType } from '../common/types';
 import { UnstakingDuration } from '@renderer/pages/Staking/Overview/components';
 import { isLightClient } from '@renderer/entities/network';
 import { Signing } from '@renderer/features/operation';
+import { priceProviderModel } from '@renderer/entities/price';
 
 const enum Step {
   INIT,
@@ -55,6 +56,10 @@ export const Bond = () => {
   const accountIds = searchParams.get('id')?.split(',') || [];
   const chainId = params.chainId || ('' as ChainId);
   const activeAccounts = getActiveAccounts();
+
+  useEffect(() => {
+    priceProviderModel.events.assetsPricesRequested({ includeRates: true });
+  }, []);
 
   useEffect(() => {
     if (!activeAccounts.length || !accountIds.length) return;

@@ -3,3 +3,4 @@ export type { Props as AccountAddressProps } from './AccountAddress/AccountAddre
 export * from './AccountsList/AccountsList';
 export * from './AddressWithExplorers/AddressWithExplorers';
 export * from './AddressWithName/AddressWithName';
+export * from './AddressWithTwoLines/AddressWithTwoLines';
