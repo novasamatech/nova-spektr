@@ -4,7 +4,7 @@ import { useUnit } from 'effector-react';
 import { AssetBalance, AssetIcon, Asset } from '@renderer/entities/asset';
 import { cleanAmount, cnTw, formatGroups, validatePrecision, validateSymbols } from '@renderer/shared/lib/utils';
 import { useI18n } from '@renderer/app/providers';
-import { FootnoteText, TitleText } from '../../Typography';
+import { FootnoteText, HelpText, TitleText } from '../../Typography';
 import Input from '../Input/Input';
 import { IconButton } from '@renderer/shared/ui';
 import { useToggle } from '@renderer/shared/lib/hooks';
@@ -104,10 +104,16 @@ export const AmountInput = ({
 
   const currencyIcon = showCurrency && activeCurrency && (
     <div className="flex items-center gap-x-1 min-w-fit">
-      <div className="relative rounded-full bg-token-background border border-token-border p-[1px] w-8 h-8">
-        <TitleText align="center" className="text-white">
-          {activeCurrency.symbol || activeCurrency.code}
-        </TitleText>
+      <div className="relative rounded-full bg-token-background border border-token-border p-[1px] w-8 h-8 flex items-center justify-center">
+        {activeCurrency.symbol ? (
+          <TitleText align="center" className="text-white">
+            {activeCurrency.symbol}
+          </TitleText>
+        ) : (
+          <HelpText align="center" className="text-white">
+            {activeCurrency.code}
+          </HelpText>
+        )}
       </div>
       <TitleText>{activeCurrency.code}</TitleText>
     </div>
@@ -129,7 +135,9 @@ export const AmountInput = ({
         onClick={toggleCurrencyMode}
       />
       <FootnoteText className="uppercase text-text-tertiary">
-        {currencyMode ? `${value ?? 0} ${asset.symbol}` : `${activeCurrency?.symbol} ${Number(value ?? 0) * rate}`}
+        {currencyMode
+          ? `${value ?? 0} ${asset.symbol}`
+          : `${activeCurrency?.symbol || activeCurrency?.code} ${Number(value ?? 0) * rate}`}
       </FootnoteText>
     </div>
   );
