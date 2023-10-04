@@ -220,3 +220,24 @@ export const formatFiatBalance = (balance = '0', precision = 0): FormattedBalanc
     decimalPlaces,
   };
 };
+
+export const getRoundedFiatValue = (assetBalance: string, price: number, precision: number) => {
+  const fiatBalance = new BigNumber(price).multipliedBy(new BigNumber(assetBalance));
+  const BNWithConfig = BigNumber.clone();
+  BNWithConfig.config({
+    ROUNDING_MODE: BNWithConfig.ROUND_DOWN,
+  });
+
+  const bnPrecision = new BNWithConfig(precision);
+  const TEN = new BNWithConfig(10);
+  const bnFiatBalance = new BNWithConfig(fiatBalance.toString()).div(TEN.pow(bnPrecision));
+
+  if (bnFiatBalance.gte(1)) {
+    return bnFiatBalance.decimalPlaces(2);
+  }
+
+  const decimalPart = bnFiatBalance.toString().split('.')[1];
+  const decimalPlaces = Math.max((decimalPart || '').search(/[1-9]/) + 1, 5);
+
+  return bnFiatBalance.decimalPlaces(decimalPlaces);
+};
