@@ -45,7 +45,7 @@ export const WalletFiatBalance = ({ className, walletId, accountId }: Props) => 
     const totalFiatAmount = balances.reduce<BigNumber>((acc, balance) => {
       const asset = connections[balance.chainId]?.assets?.find((a) => a.assetId.toString() === balance.assetId);
 
-      if (!prices || !asset?.priceId || !currency || !currency?.coingeckoId) return acc;
+      if (!prices || !asset?.priceId || !currency || !currency?.coingeckoId || !prices[asset.priceId]) return acc;
 
       const price = prices[asset.priceId][currency.coingeckoId];
 

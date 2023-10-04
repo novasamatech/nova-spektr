@@ -34,7 +34,7 @@ export const TokenPrice = ({ assetId, className }: Props) => {
   const changeToShow = price.change && `${isGrow ? '+' : ''}${price.change.toFixed(2)}`;
   const changeStyle = isGrow ? 'text-text-positive' : 'text-text-negative';
 
-  const { value: formattedValue, suffix, decimalPlaces } = formatFiatBalance(price.price.toString());
+  const { value: formattedValue, suffix, decimalPlaces } = formatFiatBalance((price.price ?? 0).toString());
 
   const balanceValue = t('assetBalance.number', {
     value: formattedValue,
