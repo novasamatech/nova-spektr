@@ -196,7 +196,7 @@ export const formatFiatBalance = (balance = '0', precision = 0): Omit<FormattedB
 
   if (bnBalance.lt(1)) {
     const decimalPart = bnBalance.toString().split('.')[1];
-    decimalPlaces = decimalPart.search(/[1-9]/) + 3;
+    decimalPlaces = Math.max(decimalPart.search(/[1-9]/), 5);
   } else if (bnBalance.gte(1_000_000) && bnBalance.lt(1_000_000_000)) {
     divider = TEN.pow(new BNWithConfig(6));
     suffix = Suffix.MILLIONS;
@@ -208,8 +208,10 @@ export const formatFiatBalance = (balance = '0', precision = 0): Omit<FormattedB
     suffix = Suffix.TRILLIONS;
   }
 
+  const bnFiatBalance = new BNWithConfig(bnBalance).div(divider).decimalPlaces(decimalPlaces).toFormat();
+
   return {
-    value: new BNWithConfig(bnBalance).div(divider).decimalPlaces(decimalPlaces).toFormat(),
+    value: bnFiatBalance,
     suffix,
   };
 };

@@ -2,7 +2,6 @@ import sortBy from 'lodash/sortBy';
 import concat from 'lodash/concat';
 import orderBy from 'lodash/orderBy';
 import BigNumber from 'bignumber.js';
-import BN from 'bignumber.js';
 
 import { Chain } from '@renderer/entities/chain/model/chain';
 import chainsProd from '@renderer/assets/chains/chains.json';
@@ -106,17 +105,18 @@ function sortChainsByBalance(
       const amount = totalAmount(balancesMap[`${chain.chainId}_${a.assetId}`]);
       const assetPrice = a.priceId && currency && assetPrices?.[a.priceId]?.[currency]?.price;
 
-      const BNWithConfig = BN.clone();
+      const BNWithConfig = BigNumber.clone();
       BNWithConfig.config({
         ROUNDING_MODE: BNWithConfig.ROUND_DOWN,
       });
 
       const bnPrecision = new BNWithConfig(a.precision);
       const TEN = new BNWithConfig(10);
-
-      return acc.plus(
-        new BNWithConfig(new BigNumber(amount).multipliedBy(assetPrice || 0).toString()).div(TEN.pow(bnPrecision)),
+      const bnFiatBalance = new BNWithConfig(new BigNumber(amount).multipliedBy(assetPrice || 0).toString()).div(
+        TEN.pow(bnPrecision),
       );
+
+      return acc.plus(bnFiatBalance);
     }, new BigNumber(0));
 
     if (fiatBalance.gt(0) && !isTestnet(chain.options)) {

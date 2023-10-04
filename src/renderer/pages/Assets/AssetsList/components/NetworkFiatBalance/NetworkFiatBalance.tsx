@@ -40,8 +40,9 @@ export const NetworkFiatBalance = ({ assets, balances, className }: Props) => {
 
         const bnPrecision = new BNWithConfig(asset.precision);
         const TEN = new BNWithConfig(10);
+        const bnFiatBalance = new BNWithConfig(fiatBalance.toString()).div(TEN.pow(bnPrecision));
 
-        acc = acc.plus(new BNWithConfig(fiatBalance.toString()).div(TEN.pow(bnPrecision)));
+        acc = acc.plus(bnFiatBalance);
       }
 
       return acc;
