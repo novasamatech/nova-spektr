@@ -177,9 +177,9 @@ export const cleanAmount = (amount: string) => {
   return trimLeadingZeros(amount).replace(/,/g, '');
 };
 
-export const formatFiatBalance = (balance = '0', precision = 0): Omit<FormattedBalance, 'decimalPlaces'> => {
-  if (balance === '0') {
-    return { value: '0', suffix: '0' };
+export const formatFiatBalance = (balance = '0', precision = 0): FormattedBalance => {
+  if (Number(balance) === 0) {
+    return { value: ZERO_BALANCE, suffix: '', decimalPlaces: 0 };
   }
   const BNWithConfig = BigNumber.clone();
   BNWithConfig.config({
@@ -196,7 +196,7 @@ export const formatFiatBalance = (balance = '0', precision = 0): Omit<FormattedB
 
   if (bnBalance.lt(1)) {
     const decimalPart = bnBalance.toString().split('.')[1];
-    decimalPlaces = Math.max(decimalPart.search(/[1-9]/), 5);
+    decimalPlaces = Math.max(decimalPart.search(/[1-9]/) + 1, 5);
   } else if (bnBalance.gte(1_000_000) && bnBalance.lt(1_000_000_000)) {
     divider = TEN.pow(new BNWithConfig(6));
     suffix = Suffix.MILLIONS;
@@ -213,5 +213,6 @@ export const formatFiatBalance = (balance = '0', precision = 0): Omit<FormattedB
   return {
     value: bnFiatBalance,
     suffix,
+    decimalPlaces,
   };
 };
