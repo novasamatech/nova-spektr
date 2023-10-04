@@ -63,7 +63,7 @@ export const AmountInput = ({
 
   useEffect(() => {
     if (currencyMode && rate) {
-      setInternalValue((Number(value) * rate).toString());
+      setInternalValue((Number(value) * rate || 0).toString());
     }
   }, [currencyMode]);
 
@@ -129,7 +129,7 @@ export const AmountInput = ({
         onClick={toggleCurrencyMode}
       />
       <FootnoteText className="uppercase text-text-tertiary">
-        {currencyMode ? `${value} ${asset.symbol}` : `${activeCurrency?.symbol} ${Number(value ?? 0) * rate}`}
+        {currencyMode ? `${value ?? 0} ${asset.symbol}` : `${activeCurrency?.symbol} ${Number(value ?? 0) * rate}`}
       </FootnoteText>
     </div>
   );
