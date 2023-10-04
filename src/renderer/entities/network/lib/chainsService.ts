@@ -7,13 +7,7 @@ import { Chain } from '@renderer/entities/chain/model/chain';
 import chainsProd from '@renderer/assets/chains/chains.json';
 import chainsDev from '@renderer/assets/chains/chains_dev.json';
 import { ChainId } from '@renderer/domain/shared-kernel';
-import {
-  formatFiatBalance,
-  getRelaychainAsset,
-  nonNullable,
-  totalAmount,
-  ZERO_BALANCE,
-} from '@renderer/shared/lib/utils';
+import { getRelaychainAsset, nonNullable, totalAmount, ZERO_BALANCE } from '@renderer/shared/lib/utils';
 import { Balance } from '@renderer/entities/asset/model/balance';
 import { ChainLike } from './common/types';
 import { isKusama, isPolkadot, isTestnet, isNameWithNumber } from './common/utils';
@@ -110,12 +104,19 @@ function sortChainsByBalance(
     const fiatBalance = chain.assets.reduce((acc, a) => {
       const amount = totalAmount(balancesMap[`${chain.chainId}_${a.assetId}`]);
       const assetPrice = a.priceId && currency && assetPrices?.[a.priceId]?.[currency]?.price;
-      const fiatBalance = formatFiatBalance(
-        new BigNumber(amount).multipliedBy(assetPrice || 0).toString(),
-        a.precision,
+
+      const BNWithConfig = BigNumber.clone();
+      BNWithConfig.config({
+        ROUNDING_MODE: BNWithConfig.ROUND_DOWN,
+      });
+
+      const bnPrecision = new BNWithConfig(a.precision);
+      const TEN = new BNWithConfig(10);
+      const bnFiatBalance = new BNWithConfig(new BigNumber(amount).multipliedBy(assetPrice || 0).toString()).div(
+        TEN.pow(bnPrecision),
       );
 
-      return acc.plus(new BigNumber(fiatBalance));
+      return acc.plus(bnFiatBalance);
     }, new BigNumber(0));
 
     if (fiatBalance.gt(0) && !isTestnet(chain.options)) {
