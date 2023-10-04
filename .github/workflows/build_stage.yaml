@@ -53,3 +53,56 @@ jobs:
             release/dist/*.exe
             release/dist/*.dmg
             release/dist/*.AppImage
+    
+  internal-release-distribute:
+    needs: internal-release-build
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Download build artifacts
+        uses: actions/download-artifact@v2
+        with:
+          name: build-artifats
+
+      - name: Debug
+        run: ls -la
+      
+      - name: Replace space by "-"
+        run: |
+          for file in *; do
+            if [ -f "$file" ]; then
+              new_name=$(echo "$file" | tr ' ' '-')
+              if [ "$new_name" != "$file" ]; then # Skip files with no spaces
+                mv "$file" "$new_name"
+              fi
+            fi
+          done
+
+      - name: Set up S3cmd cli tool
+        uses: s3-actions/s3cmd@v1.5.0
+        with:
+          provider: scaleway
+          access_key: ${{ secrets.S3_ACCESS_KEY }}
+          secret_key: ${{ secrets.S3_SECRET_KEY }}
+      
+      - name: Interact with object storage
+        run: |
+          artifacts=("*.exe" "*arm64.dmg" "*.AppImage" "*[!arm64].dmg")
+          for artifact_pattern in "${artifacts[@]}"; do
+            for artifact in $artifact_pattern; do
+              if [ -f "$artifact" ]; then
+                s3cmd put "$artifact" --acl-public "s3://spektr-releases/$artifact"
+                s3cmd signurl "s3://spektr-releases/$artifact" $(echo "`date +%s` + 3600 * 24 * 7" | bc)
+              fi
+            done
+          done
+
+      - name: Notify Telegram channel
+        uses: appleboy/telegram-action@master
+        with:
+          to: ${{ secrets.TELEGRAM_TO }}
+          token: ${{ secrets.TELEGRAM_TOKEN }}
+          message: |
+            👨‍💻 Stage build was created successfully, URL to download:
+            ${{ github.env.ARTIFACT_URL }}
+
