@@ -11,6 +11,7 @@ import { createWindow } from './factories/create';
 import { buildMenuTemplate } from '@main/vectormenu';
 
 const { MAIN, TITLE } = APP_CONFIG;
+const MAX_LOG_FILES_TO_KEEP = 10;
 log.initialize({ preload: true });
 log.variables.version = process.env.VERSION;
 log.variables.env = process.env.NODE_ENV;
@@ -24,7 +25,14 @@ log.transports.file.maxSize = 1048576 * 5; // 5 MB;
 log.transports.file.archiveLogFn = (oldLogFile: LogFile): void => {
   const file = oldLogFile.toString();
   const info = path.parse(file);
-
+  const files = fs.readdirSync(info.dir);
+  if (files.length > MAX_LOG_FILES_TO_KEEP) {
+    const filesToDelete = files.sort().slice(0, files.length - MAX_LOG_FILES_TO_KEEP);
+    for (const fileToDelete of filesToDelete) {
+      const filePath = path.join(info.dir, fileToDelete);
+      fs.rmSync(filePath);
+    }
+  }
   try {
     const date = new Date().toISOString();
     let newFileName = path.join(info.dir, info.name + '.' + date + info.ext);
