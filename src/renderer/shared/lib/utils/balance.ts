@@ -178,12 +178,16 @@ export const cleanAmount = (amount: string) => {
 };
 
 export const formatFiatBalance = (balance = '0', precision = 0): FormattedBalance => {
-  if (Number(balance) === 0) {
+  if (Number(balance) === 0 || isNaN(Number(balance))) {
     return { value: ZERO_BALANCE, suffix: '', decimalPlaces: 0 };
   }
   const BNWithConfig = BigNumber.clone();
   BNWithConfig.config({
     ROUNDING_MODE: BNWithConfig.ROUND_DOWN,
+    FORMAT: {
+      decimalSeparator: '.',
+      groupSeparator: '',
+    },
   });
 
   const bnPrecision = new BNWithConfig(precision);
