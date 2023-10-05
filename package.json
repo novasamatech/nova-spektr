@@ -56,7 +56,7 @@
 
     "update:chains-file": "node scripts/buildChainsJson.js",
     "githook:pre-commit": "cross-env NODE_ENV=production lint-staged && tsc -p tsconfig.json",
-    "githook:pre-push": "cross-env pnpm test:coverage",
+    "githook:pre-push": "cross-env pnpm test --changedSince=origin/dev",
     "prepare": "husky install",
     "r": "pnpm run-s"
   },
