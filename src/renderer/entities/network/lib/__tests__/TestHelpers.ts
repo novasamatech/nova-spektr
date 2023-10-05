@@ -13,7 +13,9 @@ export const chainMapping: { [key: string]: HexString } = {
   "Ajuna": '0xe358eb1d11b31255a286c12e44fe6780b7edb171d657905a97e39f71d9c6c3ee',
   "Astar": '0x9eb76c5184c4ab8679d2d5d819fdf90b9c001403e9e17da2e14b6d8aec4029c6',
   "Bifrost Kusama": '0x9f28c6a68e0fc9646eff64935684f6eeeece527e37bbe1f213d22caa1d9d6bed',
-  "Litmus": '0xda5831fbc8570e3c6336d0d72b8c08f8738beefec812df21ef2afc2982ede09c'
+  "Litmus": '0xda5831fbc8570e3c6336d0d72b8c08f8738beefec812df21ef2afc2982ede09c',
+  "Kusama Asset Hub": '0x48239ef607d7928874027a43a67689209727dfb3d3dc5e5b03a39bdc2eda771a',
+  "Polkadot Asset Hub": '0x68d56f15f85d3136970ec16946040bc1752654e906147f7e43e9d539d7c3de2f'
 }
 
 export function fakeBalance(chain: Chain, assetSymbol: string, free: string, accountId: HexString = '0x00'): Balance {

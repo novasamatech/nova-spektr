@@ -11,6 +11,8 @@ describe('service/chainsService', () => {
   let ajuna: Chain = getChain('Ajuna');
   let bifrostKusama: Chain = getChain('Bifrost Kusama');
   let litmus: Chain = getChain('Litmus')
+  let kusamaAssetHub: Chain = getChain('Kusama Asset Hub')
+  let polkadotAssetHub: Chain = getChain('Polkadot Asset Hub')
 
   test('should init', () => {
     expect(chainsService.sortChains).toBeDefined();
@@ -109,6 +111,20 @@ describe('service/chainsService', () => {
       [fakeBalance(ajuna, 'AJUN', '1'),fakeBalance(bifrostKusama, 'BNC', '1')],
       fakePrice({'AJUN': 0.01, 'BNC': 0.1}, [ajuna, bifrostKusama]),
       [bifrostKusama, ajuna, threeDPass],
+    ],
+    [
+      'Bifrost Kusama BNC 0.1$ => Kusama Asset Hub KSM 0$',
+      [threeDPass, bifrostKusama, kusamaAssetHub],
+      [fakeBalance(kusamaAssetHub, 'KSM', '1'),fakeBalance(bifrostKusama, 'BNC', '1')],
+      fakePrice({'KSM': 0, 'BNC': 0.1}, [kusamaAssetHub, bifrostKusama]),
+      [bifrostKusama, kusamaAssetHub, threeDPass],
+    ],
+    [
+      'Bifrost Kusama BNC 1$ => Polkadot Asset Hub DOT 0.1$',
+      [threeDPass, bifrostKusama, polkadotAssetHub],
+      [fakeBalance(polkadotAssetHub, 'DOT', '1'),fakeBalance(bifrostKusama, 'BNC', '1')],
+      fakePrice({'DOT': 0.1, 'BNC': 1}, [polkadotAssetHub, bifrostKusama]),
+      [bifrostKusama, polkadotAssetHub, threeDPass],
     ],
     [
       'Litmus LIT 1$ => Ajuna AJUN 0.1$ => Bifrost Kusama BNC 0.1$',
