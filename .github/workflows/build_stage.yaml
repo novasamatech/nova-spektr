@@ -98,7 +98,7 @@ jobs:
                 mv "$artifact" "${{ github.sha }}/"
                 s3cmd put "${{ github.sha }}/$artifact" --acl-public "${{ env.S3_BUCKET }}/${{ github.sha }}/$artifact"
                 url=$(s3cmd signurl "${{ env.S3_BUCKET }}/${{ github.sha }}/$artifact" $(echo "`date +%s` + 3600 * 24 * ${{ env.STORING_DAYS }}" | bc))
-                urls="$urls- [$artifact]($url)<br>"
+                urls="$urls- [$artifact]($url)               "
               fi
             done
           done
@@ -110,6 +110,6 @@ jobs:
           to: ${{ secrets.TELEGRAM_TO }}
           token: ${{ secrets.TELEGRAM_TOKEN }}
           format: markdown
-          message: |
+          message: | 
             👨‍💻 Stage build was created successfully, URLs to download:
             ${{ steps.interact_with_storage.outputs.urls }}
