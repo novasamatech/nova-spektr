@@ -177,15 +177,71 @@ export const cleanAmount = (amount: string) => {
   return trimLeadingZeros(amount).replace(/,/g, '');
 };
 
-export const formatFiatBalance = (balance = '0', precision = 0): string => {
+const getDecimalPlaceForFirstNonZeroChar = (value: string) => {
+  const decimalPart = value.toString().split('.')[1];
+
+  return Math.max((decimalPart || '').search(/[1-9]/) + 1, 5);
+};
+
+export const formatFiatBalance = (balance = '0', precision = 0): FormattedBalance => {
+  if (Number(balance) === 0 || isNaN(Number(balance))) {
+    return { value: ZERO_BALANCE, suffix: '', decimalPlaces: 0 };
+  }
+  const BNWithConfig = BigNumber.clone();
+  BNWithConfig.config({
+    ROUNDING_MODE: BNWithConfig.ROUND_DOWN,
+    FORMAT: {
+      decimalSeparator: '.',
+      groupSeparator: '',
+    },
+  });
+
+  const bnPrecision = new BNWithConfig(precision);
+  const TEN = new BNWithConfig(10);
+  const bnBalance = new BNWithConfig(balance).div(TEN.pow(bnPrecision));
+
+  let divider = new BNWithConfig(1);
+  let suffix = '';
+  let decimalPlaces = 2;
+
+  if (bnBalance.lt(1)) {
+    decimalPlaces = getDecimalPlaceForFirstNonZeroChar(bnBalance.toString());
+  } else if (bnBalance.gte(1_000_000) && bnBalance.lt(1_000_000_000)) {
+    divider = TEN.pow(new BNWithConfig(6));
+    suffix = Suffix.MILLIONS;
+  } else if (bnBalance.gte(1_000_000_000) && bnBalance.lt(1_000_000_000_000)) {
+    divider = TEN.pow(new BNWithConfig(9));
+    suffix = Suffix.BILLIONS;
+  } else if (bnBalance.gte(1_000_000_000_000)) {
+    divider = TEN.pow(new BNWithConfig(12));
+    suffix = Suffix.TRILLIONS;
+  }
+
+  const bnFiatBalance = new BNWithConfig(bnBalance).div(divider).decimalPlaces(decimalPlaces).toFormat();
+
+  return {
+    value: bnFiatBalance,
+    suffix,
+    decimalPlaces,
+  };
+};
+
+export const getRoundedFiatValue = (assetBalance: string, price: number, precision: number) => {
+  const fiatBalance = new BigNumber(price).multipliedBy(new BigNumber(assetBalance));
   const BNWithConfig = BigNumber.clone();
   BNWithConfig.config({
     ROUNDING_MODE: BNWithConfig.ROUND_DOWN,
   });
 
-  const bnBalance = new BNWithConfig(balance);
   const bnPrecision = new BNWithConfig(precision);
   const TEN = new BNWithConfig(10);
+  const bnFiatBalance = new BNWithConfig(fiatBalance.toString()).div(TEN.pow(bnPrecision));
 
-  return bnBalance.div(TEN.pow(bnPrecision)).decimalPlaces(2).toString();
+  if (bnFiatBalance.gte(1)) {
+    return bnFiatBalance.decimalPlaces(2);
+  }
+
+  const decimalPlaces = getDecimalPlaceForFirstNonZeroChar(bnFiatBalance.toString());
+
+  return bnFiatBalance.decimalPlaces(decimalPlaces);
 };
