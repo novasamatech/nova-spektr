@@ -2,15 +2,20 @@ import { useCallback, useEffect, useState } from 'react';
 import { useUnit } from 'effector-react';
 
 import { AssetBalance, AssetIcon, Asset } from '@renderer/entities/asset';
-import { cleanAmount, cnTw, formatGroups, validatePrecision, validateSymbols } from '@renderer/shared/lib/utils';
+import {
+  cleanAmount,
+  cnTw,
+  formatGroups,
+  toFixedNotation,
+  validatePrecision,
+  validateSymbols,
+} from '@renderer/shared/lib/utils';
 import { useI18n } from '@renderer/app/providers';
 import { FootnoteText, HelpText, TitleText } from '../../Typography';
 import Input from '../Input/Input';
 import { IconButton } from '@renderer/shared/ui';
 import { useToggle } from '@renderer/shared/lib/hooks';
 import { currencyModel, useCurrencyRate } from '@renderer/entities/price';
-
-const formatValueForAsset = (value: number, asset: Asset) => parseFloat(value.toFixed(asset.precision)).toString();
 
 type Props = {
   name?: string;
@@ -46,7 +51,7 @@ export const AmountInput = ({
   const handleChange = (amount: string) => {
     const cleanedAmount = cleanAmount(amount);
 
-    const calculatedAssetValue = rate && formatValueForAsset(Number(cleanedAmount) * (1 / rate), asset);
+    const calculatedAssetValue = rate && toFixedNotation(Number(cleanedAmount) * (1 / rate), asset.precision);
 
     const isSymbolsValid = validateSymbols(cleanedAmount);
     const isAssetValueValid = currencyMode || validatePrecision(cleanedAmount, asset.precision);
@@ -63,7 +68,7 @@ export const AmountInput = ({
 
   useEffect(() => {
     if (currencyMode && rate) {
-      setInternalValue((Number(value) * rate || 0).toString());
+      setInternalValue(toFixedNotation(Number(value) * rate || 0));
     }
   }, [currencyMode]);
 
@@ -137,7 +142,7 @@ export const AmountInput = ({
       <FootnoteText className="uppercase text-text-tertiary">
         {currencyMode
           ? `${value ?? 0} ${asset.symbol}`
-          : `${activeCurrency?.symbol || activeCurrency?.code} ${Number(value ?? 0) * rate}`}
+          : `${activeCurrency?.symbol || activeCurrency?.code} ${toFixedNotation(Number(value ?? 0) * rate)}`}
       </FootnoteText>
     </div>
   );
