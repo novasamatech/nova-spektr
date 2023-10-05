@@ -180,7 +180,7 @@ export const cleanAmount = (amount: string) => {
 const getDecimalPlaceForFirstNonZeroChar = (value: string) => {
   const decimalPart = value.toString().split('.')[1];
 
-  return Math.max((decimalPart || '').search(/[1-9]/) + 1, 5);
+  return Math.max((decimalPart || '').search(/[1-9]/) + 3, 5);
 };
 
 export const formatFiatBalance = (balance = '0', precision = 0): FormattedBalance => {
@@ -202,17 +202,25 @@ export const formatFiatBalance = (balance = '0', precision = 0): FormattedBalanc
 
   let divider = new BNWithConfig(1);
   let suffix = '';
-  let decimalPlaces = 2;
+  let decimalPlaces: number;
 
   if (bnBalance.lt(1)) {
-    decimalPlaces = getDecimalPlaceForFirstNonZeroChar(bnBalance.toString());
-  } else if (bnBalance.gte(1_000_000) && bnBalance.lt(1_000_000_000)) {
+    // if number has more than 7 digits in decimal part BigNumber.toString returns number in scientific notation
+    decimalPlaces = getDecimalPlaceForFirstNonZeroChar(bnBalance.toFixed());
+  } else if (bnBalance.lt(10)) {
+    decimalPlaces = Decimal.SMALL_NUMBER;
+  } else if (bnBalance.lt(1_000_000)) {
+    decimalPlaces = Decimal.BIG_NUMBER;
+  } else if (bnBalance.lt(1_000_000_000)) {
+    decimalPlaces = Decimal.BIG_NUMBER;
     divider = TEN.pow(new BNWithConfig(6));
     suffix = Suffix.MILLIONS;
-  } else if (bnBalance.gte(1_000_000_000) && bnBalance.lt(1_000_000_000_000)) {
+  } else if (bnBalance.lt(1_000_000_000_000)) {
+    decimalPlaces = Decimal.BIG_NUMBER;
     divider = TEN.pow(new BNWithConfig(9));
     suffix = Suffix.BILLIONS;
-  } else if (bnBalance.gte(1_000_000_000_000)) {
+  } else {
+    decimalPlaces = Decimal.BIG_NUMBER;
     divider = TEN.pow(new BNWithConfig(12));
     suffix = Suffix.TRILLIONS;
   }
@@ -237,11 +245,13 @@ export const getRoundedFiatValue = (assetBalance: string, price: number, precisi
   const TEN = new BNWithConfig(10);
   const bnFiatBalance = new BNWithConfig(fiatBalance.toString()).div(TEN.pow(bnPrecision));
 
-  if (bnFiatBalance.gte(1)) {
-    return bnFiatBalance.decimalPlaces(2);
+  if (bnFiatBalance.gte(1) && bnFiatBalance.lt(10)) {
+    return bnFiatBalance.decimalPlaces(Decimal.SMALL_NUMBER);
+  } else if (bnFiatBalance.gt(10)) {
+    return bnFiatBalance.decimalPlaces(Decimal.BIG_NUMBER);
   }
 
-  const decimalPlaces = getDecimalPlaceForFirstNonZeroChar(bnFiatBalance.toString());
+  const decimalPlaces = getDecimalPlaceForFirstNonZeroChar(bnFiatBalance.toFixed());
 
-  return bnFiatBalance.decimalPlaces(decimalPlaces);
+  return bnFiatBalance.decimalPlaces(decimalPlaces).toFixed();
 };
