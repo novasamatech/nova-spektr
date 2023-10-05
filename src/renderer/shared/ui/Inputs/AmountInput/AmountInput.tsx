@@ -63,7 +63,7 @@ export const AmountInput = ({
 
     if (isSymbolsValid && isAssetValueValid && isCurrencyValueValid) {
       setInternalValue(cleanedAmount);
-      onChange?.(currencyMode && calculatedAssetValue ? calculatedAssetValue : cleanedAmount);
+      onChange?.(currencyMode && calculatedAssetValue ? getRoundedValue(calculatedAssetValue, 1, 0, 1) : cleanedAmount);
     } else {
       onChange?.(value);
     }
