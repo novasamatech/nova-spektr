@@ -21,7 +21,7 @@ export const AssetFiatBalance = ({ asset, amount, className }: Props) => {
   const currency = useUnit(currencyModel.$activeCurrency);
   const fiatFlag = useUnit(priceProviderModel.$fiatFlag);
   const price = useStoreMap(priceProviderModel.$assetsPrices, (prices) => {
-    if (!currency || !prices) return;
+    if (!currency || !prices || !asset.priceId || !prices[asset.priceId]) return;
 
     return asset.priceId && prices[asset.priceId][currency.coingeckoId];
   });
