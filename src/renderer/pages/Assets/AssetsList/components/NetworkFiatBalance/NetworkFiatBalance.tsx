@@ -25,7 +25,7 @@ export const NetworkFiatBalance = ({ assets, balances, className }: Props) => {
   useEffect(() => {
     // TODO: Move logic to model https://app.clickup.com/t/8692tr8x0
     const totalFiatAmount = assets.reduce<BN>((acc, asset) => {
-      if (!prices || !asset.priceId || !currency || !currency?.coingeckoId) return acc;
+      if (!prices || !asset.priceId || !currency || !currency?.coingeckoId || !prices[asset.priceId]) return acc;
 
       const price = prices[asset.priceId][currency.coingeckoId];
 
