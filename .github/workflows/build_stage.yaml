@@ -77,8 +77,16 @@ jobs:
             fi
           done
       
+      - name: Set up S3cmd cli tool
+        uses: s3-actions/s3cmd@v1.5.0
+        with:
+          provider: scaleway
+          access_key: ${{ secrets.S3_ACCESS_KEY }}
+          secret_key: ${{ secrets.S3_SECRET_KEY }}
+      
       - name: Create .s3cfg file
         run: |
+          rm ~/.s3cfg
           echo "[default]" > ~/.s3cfg
           echo "signature = s3v4" >> ~/.s3cfg
           echo "bucket_location = fr-par" >> ~/.s3cfg
