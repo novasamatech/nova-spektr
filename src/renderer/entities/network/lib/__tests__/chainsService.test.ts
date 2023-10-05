@@ -113,4 +113,3 @@ describe('service/chainsService', () => {
     expect(sortedChains.map((chain) => chain.name)).toEqual(expectedOrder.map((chain) => chain.name));
   });
 });
-
