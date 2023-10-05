@@ -75,7 +75,6 @@ export const AmountInput = ({
     if (currencyMode) {
       setInternalValue(getRoundedValue(currencyValue, 1, 0));
     } else {
-      // debugger;
       handleChange(getRoundedValue(value || undefined, 1, 0, 1));
     }
   }, [currencyMode]);
@@ -165,7 +164,7 @@ export const AmountInput = ({
       className={cnTw('text-right text-title font-manrope', activeCurrency && rate && 'mb-7')}
       wrapperClass="py-3 items-start"
       label={label}
-      value={formatGroups(currencyMode ? internalValue : value)}
+      value={formatGroups(internalValue)}
       placeholder={t('transfer.amountPlaceholder')}
       invalid={invalid}
       prefixElement={currencyMode ? currencyIcon : prefixElement}
