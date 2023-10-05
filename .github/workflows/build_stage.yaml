@@ -106,7 +106,8 @@ jobs:
                 mv "$artifact" "${{ github.sha }}/"
                 s3cmd put "${{ github.sha }}/$artifact" --acl-public "s3://spektr-releases/${{ github.sha }}/$artifact"
                 url=$(s3cmd signurl "s3://spektr-releases/${{ github.sha }}/$artifact" $(echo "`date +%s` + 3600 * 24 * 7" | bc))
-                urls="$urls\n$url"
+                urls="$urls 
+                [$artifact]($url)"
               fi
             done
           done
@@ -117,6 +118,7 @@ jobs:
         with:
           to: ${{ secrets.TELEGRAM_TO }}
           token: ${{ secrets.TELEGRAM_TOKEN }}
+          format: markdown
           message: |
             👨‍💻 Stage build was created successfully, URL to download:
             ${{ steps.interact_with_storage.outputs.urls }}
