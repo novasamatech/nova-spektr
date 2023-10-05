@@ -49,7 +49,8 @@ export const AmountInput = ({
   const rate = useCurrencyRate(asset.priceId, showCurrency);
   const activeCurrency = useUnit(currencyModel.$activeCurrency);
   const [currencyMode, toggleCurrencyMode] = useToggle(false);
-  const [internalValue, setInternalValue] = useState(value);
+  const [inputValue, setInputValue] = useState(value);
+  const [assetValue, setAssetValue] = useState(value);
 
   const handleChange = (amount: string) => {
     const cleanedAmount = cleanAmount(amount);
@@ -62,8 +63,11 @@ export const AmountInput = ({
       !currencyMode || (calculatedAssetValue && validatePrecision(calculatedAssetValue, asset.precision));
 
     if (isSymbolsValid && isAssetValueValid && isCurrencyValueValid) {
-      setInternalValue(cleanedAmount);
-      onChange?.(currencyMode && calculatedAssetValue ? getRoundedValue(calculatedAssetValue, 1, 0, 1) : cleanedAmount);
+      setInputValue(cleanedAmount);
+      const newAssetValue =
+        currencyMode && calculatedAssetValue ? getRoundedValue(calculatedAssetValue, 1, 0, 1) : cleanedAmount;
+      setAssetValue(newAssetValue);
+      onChange?.(newAssetValue);
     } else {
       onChange?.(value);
     }
@@ -73,11 +77,24 @@ export const AmountInput = ({
 
   useEffect(() => {
     if (currencyMode) {
-      setInternalValue(getRoundedValue(currencyValue, 1, 0));
+      setInputValue(getRoundedValue(currencyValue, 1, 0));
     } else {
       handleChange(getRoundedValue(value || undefined, 1, 0, 1));
     }
   }, [currencyMode]);
+
+  useEffect(() => {
+    // handle value change from parent component
+    if (value !== assetValue) {
+      if (currencyMode) {
+        setInputValue(getRoundedValue(currencyValue, 1, 0));
+        setAssetValue(value);
+      } else {
+        setInputValue(value);
+        setAssetValue(value);
+      }
+    }
+  }, [value]);
 
   const getBalance = useCallback(() => {
     if (!balance) return;
@@ -164,7 +181,7 @@ export const AmountInput = ({
       className={cnTw('text-right text-title font-manrope', activeCurrency && rate && 'mb-7')}
       wrapperClass="py-3 items-start"
       label={label}
-      value={formatGroups(internalValue)}
+      value={formatGroups(inputValue)}
       placeholder={t('transfer.amountPlaceholder')}
       invalid={invalid}
       prefixElement={currencyMode ? currencyIcon : prefixElement}
