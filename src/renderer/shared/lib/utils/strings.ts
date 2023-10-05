@@ -89,8 +89,8 @@ export const formatSectionAndMethod = (section: string, method: string): string 
 
 /**
  * Formats number without exponential notation and removes trailing zeroe
- * @param value number
- * @param maxPrecision Maximum number of characters on decimal part
+ * @param value number to format
+ * @param maxPrecision Maximum number of characters in decimal part
  * @return {String}
  */
 export const toFixedNotation = (value: number, maxPrecision = 20) => {
