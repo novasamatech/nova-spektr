@@ -14,9 +14,9 @@ runs:
     - name: Set up S3cmd cli tool
       uses: s3-actions/s3cmd@v1.5.0
       with:
-      provider: scaleway
-      access_key: ${{ inputs.s3_access_key }}
-      secret_key: ${{ inputs.s3_secret_key }}
+        provider: scaleway
+        access_key: ${{ inputs.s3_access_key }}
+        secret_key: ${{ inputs.s3_secret_key }}
 
     - name: Create .s3cfg file
       run: |
