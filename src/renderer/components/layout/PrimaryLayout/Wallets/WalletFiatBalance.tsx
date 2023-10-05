@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useUnit } from 'effector-react';
 import BigNumber from 'bignumber.js';
 
-import { formatAmount, formatBalance, formatFiatBalance, totalAmount } from '@renderer/shared/lib/utils';
+import { formatFiatBalance, getRoundedFiatValue, totalAmount } from '@renderer/shared/lib/utils';
 import { FiatBalance } from '@renderer/entities/price/ui/FiatBalance';
 import { currencyModel, priceProviderModel } from '@renderer/entities/price';
 import { useI18n, useNetworkContext } from '@renderer/app/providers';
@@ -45,15 +45,13 @@ export const WalletFiatBalance = ({ className, walletId, accountId }: Props) => 
     const totalFiatAmount = balances.reduce<BigNumber>((acc, balance) => {
       const asset = connections[balance.chainId]?.assets?.find((a) => a.assetId.toString() === balance.assetId);
 
-      if (!prices || !asset?.priceId || !currency || !currency?.coingeckoId) return acc;
+      if (!prices || !asset?.priceId || !currency || !currency?.coingeckoId || !prices[asset.priceId]) return acc;
 
       const price = prices[asset.priceId][currency.coingeckoId];
 
       if (price) {
-        const fiatBalance = new BigNumber(price.price).multipliedBy(new BigNumber(totalAmount(balance)));
-        const formattedFiatBalance = formatFiatBalance(fiatBalance.toString(), asset.precision);
-
-        acc = acc.plus(new BigNumber(formatAmount(formattedFiatBalance, 2)));
+        const bnFiatBalance = getRoundedFiatValue(totalAmount(balance), price.price, asset.precision);
+        acc = acc.plus(bnFiatBalance);
       }
 
       return acc;
@@ -68,11 +66,10 @@ export const WalletFiatBalance = ({ className, walletId, accountId }: Props) => 
   if (!fiatFlag) return null;
   if (isLoading) return <Shimmering width={56} height={18} />;
 
-  const { value: formattedValue, suffix } = formatBalance(fiatAmount.toString(), 2);
+  const { value: formattedValue, suffix } = formatFiatBalance(fiatAmount.toString());
 
   const balanceValue = t('assetBalance.number', {
     value: formattedValue,
-    maximumFractionDigits: 2,
   });
 
   return <FiatBalance amount={`${balanceValue}${suffix}`} className={className} />;

@@ -7,7 +7,16 @@ export const useCurrencyRate = (assetId?: string, showCurrency?: boolean): numbe
   const activeCurrency = useUnit(currencyModel.$activeCurrency);
   const assetsPrices = useUnit(priceProviderModel.$assetsPrices);
 
-  if (!showCurrency || !fiatFlag || !activeCurrency || !assetsPrices || !assetId) return null;
+  if (
+    !showCurrency ||
+    !fiatFlag ||
+    !activeCurrency ||
+    !assetsPrices ||
+    !assetId ||
+    !assetsPrices[assetId] ||
+    !assetsPrices[assetId][activeCurrency.coingeckoId]
+  )
+    return null;
 
   return assetsPrices[assetId][activeCurrency.coingeckoId].price;
 };
