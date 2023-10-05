@@ -52,7 +52,7 @@ jobs:
             release/dist/*.exe
             release/dist/*.dmg
             release/dist/*.AppImage
-    
+
   internal-release-distribute:
     needs: internal-release-build
     runs-on: ubuntu-latest
@@ -65,7 +65,7 @@ jobs:
 
       - name: Debug
         run: ls -la
-      
+
       - name: Replace space by "-"
         run: |
           for file in *; do
@@ -83,15 +83,17 @@ jobs:
           provider: scaleway
           access_key: ${{ secrets.S3_ACCESS_KEY }}
           secret_key: ${{ secrets.S3_SECRET_KEY }}
-      
+
       - name: Interact with object storage
         run: |
+          mkdir ${{ github.sha }}
           artifacts=("*.exe" "*arm64.dmg" "*.AppImage" "*[!arm64].dmg")
           for artifact_pattern in "${artifacts[@]}"; do
             for artifact in $artifact_pattern; do
               if [ -f "$artifact" ]; then
-                s3cmd put "$artifact" --acl-public "s3://spektr-releases/$artifact"
-                s3cmd signurl "s3://spektr-releases/$artifact" $(echo "`date +%s` + 3600 * 24 * 7" | bc)
+                mv "$artifact" "${{ github.sha }}/"
+                s3cmd put "${{ github.sha }}/$artifact" --acl-public "s3://spektr-releases/${{ github.sha }}/$artifact"
+                s3cmd signurl "s3://spektr-releases/${{ github.sha }}/$artifact" $(echo "`date +%s` + 3600 * 24 * 7" | bc)
               fi
             done
           done
@@ -104,4 +106,3 @@ jobs:
           message: |
             👨‍💻 Stage build was created successfully, URL to download:
             ${{ github.env.ARTIFACT_URL }}
-
