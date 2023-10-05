@@ -112,6 +112,6 @@ jobs:
           message: | 
             👨‍💻 Stage build was created successfully, URLs to download:
               - Windows: ${{ steps.interact_with_storage.outputs.windows_app }}
-              - MacOS_64: ${{ steps.interact_with_storage.outputs.macos_64_app }}
               - Linux: ${{ steps.interact_with_storage.outputs.linux_app }}
+              - MacOS_64: ${{ steps.interact_with_storage.outputs.macos_64_app }}
               - MacOS: ${{ steps.interact_with_storage.outputs.macos_app }}
