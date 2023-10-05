@@ -86,3 +86,22 @@ export const formatSectionAndMethod = (section: string, method: string): string 
 
   return `${splitFn(sectionSplit)}: ${splitFn(methodSplit)}`;
 };
+
+/**
+ * Formats number without exponential notation and removes trailing zeroe
+ * @param value number
+ * @param maxPrecision Maximum number of characters on decimal part
+ * @return {String}
+ */
+export const toFixedNotation = (value: number, maxPrecision = 20) => {
+  const fixedValue = value.toFixed(maxPrecision);
+  const decimalPart = fixedValue.split('.')[1];
+  if (!decimalPart) return value.toString();
+
+  const trailingZeros = decimalPart.search(/0*(?![1-9])+$/g);
+  if (trailingZeros === -1 || trailingZeros === decimalPart.length) {
+    return fixedValue;
+  } else {
+    return value.toFixed(trailingZeros);
+  }
+};
