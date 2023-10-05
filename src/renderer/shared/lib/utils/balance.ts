@@ -205,7 +205,7 @@ export const formatFiatBalance = (balance = '0', precision = 0): FormattedBalanc
   let decimalPlaces: number;
 
   if (bnBalance.lt(1)) {
-    // if number has more than 6 leading zeros after 0. BigNumber.toString return number in scientific notation
+    // if number has more than 7 digits in decimal part BigNumber.toString returns number in scientific notation
     decimalPlaces = getDecimalPlaceForFirstNonZeroChar(bnBalance.toFixed());
   } else if (bnBalance.lt(10)) {
     decimalPlaces = Decimal.SMALL_NUMBER;
