@@ -8,7 +8,7 @@ describe('service/chainsService', () => {
   let threeDPass: Chain = getChain('3DPass');
   let westend: Chain = getChain('Westend');
   let acala: Chain = getChain('Acala');
-  let ajuna: Chain = getChain('Ajuna');
+  let interlay: Chain = getChain('Interlay');
   let bifrostKusama: Chain = getChain('Bifrost Kusama');
   let litmus: Chain = getChain('Litmus');
   let kusamaAssetHub: Chain = getChain('Kusama Asset Hub');
@@ -66,25 +66,25 @@ describe('service/chainsService', () => {
 
   test.each([
     [
-      'Bifrost Kusama BNC 100$ => Ajuna AJUN 10$',
-      [ajuna, bifrostKusama, threeDPass],
-      [fakeBalance(ajuna, 'AJUN', '100'), fakeBalance(bifrostKusama, 'BNC', '10')],
-      fakePrice({ AJUN: 1, BNC: 1 }, [ajuna, bifrostKusama]),
-      [bifrostKusama, ajuna, threeDPass],
+      'Bifrost Kusama BNC 100$ => Interlay INTR 10$',
+      [interlay, bifrostKusama, threeDPass],
+      [fakeBalance(interlay, 'INTR', '100'), fakeBalance(bifrostKusama, 'BNC', '10')],
+      fakePrice({ INTR: 1, BNC: 1 }, [interlay, bifrostKusama]),
+      [bifrostKusama, interlay, threeDPass],
     ],
     [
-      'Ajuna AJUN 100$ => Bifrost Kusama BNC 10$',
-      [threeDPass, ajuna, bifrostKusama],
-      [fakeBalance(ajuna, 'AJUN', '100'), fakeBalance(bifrostKusama, 'BNC', '10')],
-      fakePrice({ AJUN: 1, BNC: 1 }, [ajuna, bifrostKusama]),
-      [ajuna, bifrostKusama, threeDPass],
+      'Interlay INTR 100$ => Bifrost Kusama BNC 10$',
+      [threeDPass, interlay, bifrostKusama],
+      [fakeBalance(interlay, 'INTR', '100'), fakeBalance(bifrostKusama, 'BNC', '10')],
+      fakePrice({ INTR: 1, BNC: 1 }, [interlay, bifrostKusama]),
+      [interlay, bifrostKusama, threeDPass],
     ],
     [
-      'Bifrost Kusama BNC 0.1$ => Ajuna AJUN 0.01$',
-      [threeDPass, ajuna, bifrostKusama],
-      [fakeBalance(ajuna, 'AJUN', '1'), fakeBalance(bifrostKusama, 'BNC', '1')],
-      fakePrice({ AJUN: 0.01, BNC: 0.1 }, [ajuna, bifrostKusama]),
-      [bifrostKusama, ajuna, threeDPass],
+      'Bifrost Kusama BNC 0.1$ => Interlay INTR 0.01$',
+      [threeDPass, interlay, bifrostKusama],
+      [fakeBalance(interlay, 'INTR', '1'), fakeBalance(bifrostKusama, 'BNC', '1')],
+      fakePrice({ INTR: 0.01, BNC: 0.1 }, [interlay, bifrostKusama]),
+      [bifrostKusama, interlay, threeDPass],
     ],
     [
       'Bifrost Kusama BNC 0.1$ => Kusama Asset Hub KSM 0$',
@@ -101,11 +101,11 @@ describe('service/chainsService', () => {
       [bifrostKusama, polkadotAssetHub, threeDPass],
     ],
     [
-      'Litmus LIT 1$ => Ajuna AJUN 0.1$ => Bifrost Kusama BNC 0.1$',
-      [litmus, ajuna, bifrostKusama],
-      [fakeBalance(litmus, 'LIT', '1'), fakeBalance(ajuna, 'AJUN', '1'), fakeBalance(bifrostKusama, 'BNC', '1')],
-      fakePrice({ AJUN: 0.1, BNC: 0.1, LIT: 1 }, [litmus, ajuna, bifrostKusama]),
-      [litmus, ajuna, bifrostKusama],
+      'Litmus LIT 1$ => Interlay INTR 0.1$ => Bifrost Kusama BNC 0.1$',
+      [litmus, interlay, bifrostKusama],
+      [fakeBalance(litmus, 'LIT', '1'), fakeBalance(interlay, 'INTR', '1'), fakeBalance(bifrostKusama, 'BNC', '1')],
+      fakePrice({ INTR: 0.1, BNC: 0.1, LIT: 1 }, [litmus, interlay, bifrostKusama]),
+      [litmus, interlay, bifrostKusama],
     ],
   ])('Production networks group with balances - %s', (_, notSortedChains, balances, prices, expectedOrder) => {
     const sortedChains = chainsService.sortChainsByBalance(notSortedChains, balances, prices, 'usd');
