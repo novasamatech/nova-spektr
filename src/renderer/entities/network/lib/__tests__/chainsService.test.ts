@@ -107,7 +107,7 @@ describe('service/chainsService', () => {
       fakePrice({ INTR: 0.1, BNC: 0.1, LIT: 1 }, [litmus, interlay, bifrostKusama]),
       [litmus, interlay, bifrostKusama],
     ],
-  ])('Production networks group with balances - %s', (_, notSortedChains, balances, prices, expectedOrder) => {
+  ])('Parachain networks group with balances - %s', (_, notSortedChains, balances, prices, expectedOrder) => {
     const sortedChains = chainsService.sortChainsByBalance(notSortedChains, balances, prices, 'usd');
 
     expect(sortedChains.map((chain) => chain.name)).toEqual(expectedOrder.map((chain) => chain.name));
