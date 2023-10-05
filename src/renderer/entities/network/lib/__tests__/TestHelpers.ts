@@ -3,6 +3,7 @@ import { chainsService } from '../chainsService';
 import { Chain } from '@renderer/entities/chain';
 import { Balance } from '@renderer/entities/asset';
 import { PriceObject } from '@renderer/shared/api/price-provider/common/types';
+import BigNumber from 'bignumber.js';
 
 export const chainMapping: { [key: string]: HexString } = {
   Polkadot: '0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3',
@@ -23,12 +24,13 @@ export function fakeBalance(chain: Chain, assetSymbol: string, free: string, acc
   if (!asset) {
     throw new Error(`Asset ${assetSymbol} not found in chain ${chain.name}`);
   }
+  const freeBigNumber = new BigNumber(free).multipliedBy(new BigNumber(10).pow(asset.precision));
 
   return {
     accountId: accountId,
     chainId: chain.chainId,
     assetId: asset.assetId.toString(),
-    free: free,
+    free: freeBigNumber.toString(),
   } as Balance;
 }
 

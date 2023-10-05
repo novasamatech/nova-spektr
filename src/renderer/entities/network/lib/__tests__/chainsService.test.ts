@@ -52,11 +52,11 @@ describe('service/chainsService', () => {
       [kusama, polkadot],
     ],
     [
-      'Polkadot 10$ => Kusama 10$',
-      [kusama, polkadot],
+      'Kusama 10$ => Polkadot 10$',
+      [polkadot, kusama],
       [fakeBalance(polkadot, 'DOT', '10'), fakeBalance(kusama, 'KSM', '10')],
       fakePrice({ DOT: 1, KSM: 1 }, [polkadot, kusama]),
-      [polkadot, kusama],
+      [kusama, polkadot],
     ],
   ])('Dotsama group with balances - %s', (_, notSortedChains, balances, prices, expectedOrder) => {
     const sortedChains = chainsService.sortChainsByBalance(notSortedChains, balances, prices, 'usd');
@@ -74,7 +74,7 @@ describe('service/chainsService', () => {
     ],
     [
       'Interlay INTR 100$ => Bifrost Kusama BNC 10$',
-      [threeDPass, interlay, bifrostKusama],
+      [threeDPass, bifrostKusama, interlay],
       [fakeBalance(interlay, 'INTR', '100'), fakeBalance(bifrostKusama, 'BNC', '10')],
       fakePrice({ INTR: 1, BNC: 1 }, [interlay, bifrostKusama]),
       [interlay, bifrostKusama, threeDPass],
