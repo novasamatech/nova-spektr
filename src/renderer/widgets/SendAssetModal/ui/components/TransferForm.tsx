@@ -3,7 +3,7 @@ import { ReactNode, useEffect, useState } from 'react';
 import { Controller, SubmitHandler, useForm } from 'react-hook-form';
 import { Trans } from 'react-i18next';
 
-import { AmountInput, Button, Icon, Identicon, Input, InputHint, Select } from '@renderer/shared/ui';
+import { AmountInput, Button, FootnoteText, Icon, Identicon, Input, InputHint, Select } from '@renderer/shared/ui';
 import { useI18n, useNetworkContext } from '@renderer/app/providers';
 import { Asset, useBalance } from '@renderer/entities/asset';
 import { MultisigTxInitStatus } from '@renderer/entities/transaction';
@@ -346,6 +346,7 @@ export const TransferForm = ({
           )}
         />
 
+        <FootnoteText>{amount}</FootnoteText>
         <Controller
           name="amount"
           control={control}

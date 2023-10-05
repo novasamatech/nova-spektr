@@ -5,7 +5,10 @@ import { AssetBalance, AssetIcon, Asset } from '@renderer/entities/asset';
 import {
   cleanAmount,
   cnTw,
+  formatBalance,
+  formatFiatBalance,
   formatGroups,
+  getRoundedValue,
   toFixedNotation,
   validatePrecision,
   validateSymbols,
@@ -66,9 +69,14 @@ export const AmountInput = ({
     }
   };
 
+  const currencyValue = rate ? toFixedNotation(Number(value ?? 0) * rate) : undefined;
+
   useEffect(() => {
-    if (currencyMode && rate) {
-      setInternalValue(toFixedNotation(Number(value) * rate || 0));
+    if (currencyMode) {
+      setInternalValue(getRoundedValue(currencyValue, 1, 0));
+    } else {
+      // debugger;
+      handleChange(getRoundedValue(value || undefined, 1, 0, 1));
     }
   }, [currencyMode]);
 
@@ -131,6 +139,10 @@ export const AmountInput = ({
     </div>
   );
 
+  const { value: altValue, suffix: altValueSuffix } = currencyMode
+    ? formatBalance(value || undefined)
+    : formatFiatBalance(currencyValue);
+
   const suffixElement = showCurrency && rate && (
     <div className="flex items-center gap-x-2 absolute right-3 bottom-3">
       <IconButton
@@ -141,8 +153,8 @@ export const AmountInput = ({
       />
       <FootnoteText className="uppercase text-text-tertiary">
         {currencyMode
-          ? `${value ?? 0} ${asset.symbol}`
-          : `${activeCurrency?.symbol || activeCurrency?.code} ${toFixedNotation(Number(value ?? 0) * rate)}`}
+          ? `${altValue}${altValueSuffix} ${asset.symbol}`
+          : `${activeCurrency?.symbol || activeCurrency?.code} ${altValue}${altValueSuffix}`}
       </FootnoteText>
     </div>
   );
