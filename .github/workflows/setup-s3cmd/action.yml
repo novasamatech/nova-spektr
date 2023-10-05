@@ -1,0 +1,31 @@
+name: Setup s3cmd
+description: That action will setup s3cmd
+inputs:
+  s3_access_key:
+    description: 'Access key to s3'
+    required: true
+  s3_secret_key:
+    description: 'Secret key for s3'
+    required: true
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Set up S3cmd cli tool
+      uses: s3-actions/s3cmd@v1.5.0
+      with:
+      provider: scaleway
+      access_key: ${{ inputs.s3_access_key }}
+      secret_key: ${{ inputs.s3_secret_key }}
+
+    - name: Create .s3cfg file
+      run: |
+        rm ~/.s3cfg
+        echo "[default]" > ~/.s3cfg
+        echo "signature = s3v4" >> ~/.s3cfg
+        echo "bucket_location = fr-par" >> ~/.s3cfg
+        echo "host_base = https://s3.fr-par.scw.cloud" >> ~/.s3cfg
+        echo "host_bucket = https://s3.fr-par.scw.cloud" >> ~/.s3cfg
+        echo "access_key = ${{ inputs.s3_access_key }}" >> ~/.s3cfg
+        echo "secret_key = ${{ inputs.s3_secret_key }}" >> ~/.s3cfg
+      shell: bash

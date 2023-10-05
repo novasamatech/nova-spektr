@@ -9,6 +9,8 @@ on:
 env:
   CSC_FOR_PULL_REQUEST: true
   CI: true
+  S3_BUCKET: s3://spektr-releases
+  STORING_DAYS: 60
 
 jobs:
   internal-release-build:
@@ -76,24 +78,9 @@ jobs:
               fi
             fi
           done
-      
-      - name: Set up S3cmd cli tool
-        uses: s3-actions/s3cmd@v1.5.0
-        with:
-          provider: scaleway
-          access_key: ${{ secrets.S3_ACCESS_KEY }}
-          secret_key: ${{ secrets.S3_SECRET_KEY }}
-      
-      - name: Create .s3cfg file
-        run: |
-          rm ~/.s3cfg
-          echo "[default]" > ~/.s3cfg
-          echo "signature = s3v4" >> ~/.s3cfg
-          echo "bucket_location = fr-par" >> ~/.s3cfg
-          echo "host_base = https://s3.fr-par.scw.cloud" >> ~/.s3cfg
-          echo "host_bucket = https://s3.fr-par.scw.cloud" >> ~/.s3cfg
-          echo "access_key = ${{ secrets.S3_ACCESS_KEY }}" >> ~/.s3cfg
-          echo "secret_key = ${{ secrets.S3_SECRET_KEY }}" >> ~/.s3cfg
+        
+      - name: ⚙️ Install dependencies
+        uses: ./.github/workflows/setup-s3cmd
 
       - name: Interact with object storage
         id: interact_with_storage
@@ -104,10 +91,9 @@ jobs:
             for artifact in $artifact_pattern; do
               if [ -f "$artifact" ]; then
                 mv "$artifact" "${{ github.sha }}/"
-                s3cmd put "${{ github.sha }}/$artifact" --acl-public "s3://spektr-releases/${{ github.sha }}/$artifact"
-                url=$(s3cmd signurl "s3://spektr-releases/${{ github.sha }}/$artifact" $(echo "`date +%s` + 3600 * 24 * 7" | bc))
-                urls="$urls 
-                [$artifact]($url)"
+                s3cmd put "${{ github.sha }}/$artifact" --acl-public "${{ env.S3_BUCKET }}/${{ github.sha }}/$artifact"
+                url=$(s3cmd signurl "${{ env.S3_BUCKET }}/${{ github.sha }}/$artifact" $(echo "`date +%s` + 3600 * 24 * ${{ env.STORING_DAYS }}" | bc))
+                urls="$urls [$artifact]($url)"
               fi
             done
           done
@@ -120,5 +106,5 @@ jobs:
           token: ${{ secrets.TELEGRAM_TOKEN }}
           format: markdown
           message: |
-            👨‍💻 Stage build was created successfully, URL to download:
+            👨‍💻 Stage build was created successfully, URLs to download:
             ${{ steps.interact_with_storage.outputs.urls }}
