@@ -5,6 +5,7 @@ name: Build stage app
 on:
   workflow_dispatch:
   pull_request:
+    types: [labeled]
 
 env:
   CSC_FOR_PULL_REQUEST: true
@@ -14,7 +15,7 @@ env:
 
 jobs:
   internal-release-build:
-    # if: ${{ github.event.label.name == 'internal-build' || github.event_name == 'workflow_dispatch' }}
+    if: ${{ github.event.label.name == 'internal-build' || github.event_name == 'workflow_dispatch' }}
     runs-on: ${{ matrix.os }}
     timeout-minutes: 30
 
@@ -97,7 +98,7 @@ jobs:
               if [ -f "$artifact" ]; then
                 s3cmd put "$artifact" --acl-public "${{ env.S3_BUCKET }}/${{ github.sha }}/$artifact"
                 url=$(s3cmd signurl "${{ env.S3_BUCKET }}/${{ github.sha }}/$artifact" $(echo "`date +%s` + 3600 * 24 * ${{ env.STORING_DAYS }}" | bc))
-                echo "::set-output name=$artifact_name::$url"
+                echo "::set-output name=$artifact_name::[$artifact]($url)"
               fi
             done
           done
