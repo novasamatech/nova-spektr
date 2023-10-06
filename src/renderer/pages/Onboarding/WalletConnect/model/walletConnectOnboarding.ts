@@ -13,6 +13,12 @@ sample({
   target: $step,
 });
 
+sample({
+  clock: wcModel.events.rejectConnection,
+  fn: () => Step.REJECT,
+  target: $step,
+});
+
 export const wcOnboardingModel = {
   $step,
   events: {

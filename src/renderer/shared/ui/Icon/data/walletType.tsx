@@ -7,11 +7,13 @@ import MultisigImg, { ReactComponent as MultisigSvg } from '@images/walletTypes/
 import VaultImg, { ReactComponent as VaultSvg } from '@images/walletTypes/vault.svg';
 import MultishardImg, { ReactComponent as MultishardSvg } from '@images/walletTypes/multishard.svg';
 import NovaWalletImg, { ReactComponent as NovaWalletSvg } from '@images/walletTypes/novaWallet.svg';
+import NovaWalletBgImg, { ReactComponent as NovaWalletBgSvg } from '@images/walletTypes/novaWalletBg.svg';
 import WatchOnlyOnboardingImg, {
   ReactComponent as WatchOnlyOnboardingSvg,
 } from '@images/walletTypes/watchOnlyOnboardiing.svg';
 import LedgerImg, { ReactComponent as LedgerSvg } from '@images/walletTypes/ledger.svg';
 import WalletConnectImg, { ReactComponent as WalletConnectSvg } from '@images/walletTypes/walletConnect.svg';
+import WalletConnectBgImg, { ReactComponent as WalletConnectBgSvg } from '@images/walletTypes/walletConnectBg.svg';
 
 const WalletTypeImages = {
   paritySigner: { svg: ParitySignerSvg, img: ParitySignerImg },
@@ -24,8 +26,10 @@ const WalletTypeImages = {
   vault: { svg: VaultSvg, img: VaultImg },
   multishard: { svg: MultishardSvg, img: MultishardImg },
   novaWallet: { img: NovaWalletImg, svg: NovaWalletSvg },
+  novaWalletBg: { img: NovaWalletBgImg, svg: NovaWalletBgSvg },
   ledger: { img: LedgerImg, svg: LedgerSvg },
   walletConnect: { img: WalletConnectImg, svg: WalletConnectSvg },
+  walletConnectBg: { img: WalletConnectBgImg, svg: WalletConnectBgSvg },
 } as const;
 
 export type WalletImages = keyof typeof WalletTypeImages;

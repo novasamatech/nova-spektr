@@ -23,6 +23,7 @@ export const disconnect = createEvent();
 export const reset = createEvent();
 export const updateSession = createEvent<SessionTypes.Struct>();
 export const connected = createEvent();
+export const rejectConnection = createEvent<any>();
 
 export const $client = createStore<Client | null>(null).reset(reset);
 export const $session = createStore<SessionTypes.Struct | null>(null).reset(reset);
@@ -131,13 +132,17 @@ const initConnectFx = createEffect(async ({ client, chains, pairing }: InitConne
 });
 
 const connectFx = createEffect(async ({ client, approval }: ConnectProps) => {
-  const session = await approval();
-  console.log('Established session:', session);
+  try {
+    const session = await approval();
+    console.log('Established session:', session);
 
-  return {
-    pairings: client.pairing.getAll({ active: true }),
-    session: session as SessionTypes.Struct,
-  };
+    return {
+      pairings: client.pairing.getAll({ active: true }),
+      session: session as SessionTypes.Struct,
+    };
+  } catch (e: any) {
+    rejectConnection(e);
+  }
 });
 
 const disconnectFx = createEffect(async ({ client, session }: DisconnectProps) => {
@@ -195,8 +200,9 @@ sample({
 
 sample({
   clock: connectFx.doneData,
-  fn: ({ session }) => {
-    return Object.values(session.namespaces)
+  filter: (props) => nonNullable(props),
+  fn: (props) => {
+    return Object.values(props!.session.namespaces)
       .map((namespace) => namespace.accounts)
       .flat();
   },
@@ -205,13 +211,15 @@ sample({
 
 sample({
   clock: connectFx.doneData,
-  fn: ({ session }) => session,
+  filter: (props) => nonNullable(props),
+  fn: (props) => props!.session,
   target: $session,
 });
 
 sample({
   clock: connectFx.doneData,
-  fn: ({ pairings }) => pairings,
+  filter: (props) => nonNullable(props),
+  fn: (props) => props!.pairings,
   target: $pairings,
 });
 
@@ -244,4 +252,5 @@ export const events = {
   disconnect,
   updateSession,
   connected,
+  rejectConnection,
 };

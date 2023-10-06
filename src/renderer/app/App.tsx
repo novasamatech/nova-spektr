@@ -7,6 +7,7 @@ import { useAccount } from '@renderer/entities/account';
 import { CreateWalletProvider } from '@renderer/widgets/CreateWallet';
 import {
   ConfirmDialogProvider,
+  StatusModalProvider,
   I18Provider,
   MatrixProvider,
   NetworkProvider,
@@ -53,10 +54,12 @@ const App = () => {
           <MultisigChainProvider>
             <MatrixProvider>
               <ConfirmDialogProvider>
-                <GraphqlProvider>
-                  {getContent()}
-                  <CreateWalletProvider />
-                </GraphqlProvider>
+                <StatusModalProvider>
+                  <GraphqlProvider>
+                    {getContent()}
+                    <CreateWalletProvider />
+                  </GraphqlProvider>
+                </StatusModalProvider>
               </ConfirmDialogProvider>
             </MatrixProvider>
           </MultisigChainProvider>

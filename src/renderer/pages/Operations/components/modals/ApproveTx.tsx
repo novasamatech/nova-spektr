@@ -3,13 +3,13 @@ import { UnsignedTransaction } from '@substrate/txwrapper-polkadot';
 import { Weight } from '@polkadot/types/interfaces';
 import { BN } from '@polkadot/util';
 
-import { BaseModal, Button, Icon } from '@renderer/shared/ui';
+import { BaseModal, Button } from '@renderer/shared/ui';
 import { useI18n } from '@renderer/app/providers';
 import { AccountDS, MultisigTransactionDS } from '@renderer/shared/api/storage';
 import { useToggle } from '@renderer/shared/lib/hooks';
 import { Account, MultisigAccount, useAccount } from '@renderer/entities/account';
 import { ExtendedChain } from '@renderer/entities/network';
-import { Address, HexString, SigningType, Timepoint } from '@renderer/domain/shared-kernel';
+import { Address, HexString, SigningType, Timepoint, WalletType } from '@renderer/domain/shared-kernel';
 import { TEST_ADDRESS, toAddress, transferableAmount, getAssetById } from '@renderer/shared/lib/utils';
 import { getModalTransactionTitle } from '../../common/utils';
 import { useBalance } from '@renderer/entities/asset';
@@ -29,6 +29,8 @@ import {
   isXcmTransaction,
   MAX_WEIGHT,
 } from '@renderer/entities/transaction';
+import { Wallet, useWallet } from '@renderer/entities/wallet';
+import { SignButton } from '@renderer/entities/operation/ui/SignButton';
 
 type Props = {
   tx: MultisigTransactionDS;
@@ -66,6 +68,14 @@ const ApproveTx = ({ tx, account, connection }: Props) => {
 
   const [txWeight, setTxWeight] = useState<Weight>();
   const [signature, setSignature] = useState<HexString>();
+
+  const { getWallet } = useWallet();
+
+  const [wallet, setWallet] = useState<Wallet>();
+
+  useEffect(() => {
+    account.walletId && getWallet(account.walletId).then((wallet) => setWallet(wallet));
+  }, [account]);
 
   const accounts = getLiveAccounts();
   const transactionTitle = getModalTransactionTitle(isXcmTransaction(tx.transaction), tx.transaction);
@@ -233,13 +243,12 @@ const ApproveTx = ({ tx, account, connection }: Props) => {
         {activeStep === Step.CONFIRMATION && (
           <>
             <Confirmation tx={tx} account={account} connection={connection} feeTx={feeTx} />
-            <Button
+
+            <SignButton
               className="mt-7 ml-auto"
-              prefixElement={<Icon name="vault" size={14} />}
+              type={wallet?.type || WalletType.SINGLE_PARITY_SIGNER}
               onClick={trySetSignerAccount}
-            >
-              {t('operation.signButton')}
-            </Button>
+            />
           </>
         )}
 

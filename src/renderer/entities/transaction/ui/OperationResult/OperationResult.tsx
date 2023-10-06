@@ -1,8 +1,6 @@
-import { Fragment, PropsWithChildren, useEffect, useState } from 'react';
-import { Dialog, Transition } from '@headlessui/react';
+import { PropsWithChildren, useEffect, useState } from 'react';
 
-import { ModalBackdrop, ModalTransition } from '@renderer/shared/ui/Modals/common';
-import { FootnoteText, SmallTitleText } from '@renderer/shared/ui';
+import { StatusModal } from '@renderer/shared/ui';
 import { Animation } from '@renderer/shared/ui/Animation/Animation';
 import { VariantAnimationProps } from './common/constants';
 import { Variant } from './common/types';
@@ -35,27 +33,14 @@ export const OperationResult = ({
   }, [isOpen, variant]);
 
   return (
-    <Transition appear show={isOpen} as={Fragment}>
-      <Dialog as="div" className="relative z-50" onClose={onClose}>
-        <ModalBackdrop />
-
-        <div className="fixed inset-0 overflow-hidden flex min-h-full w-full items-center justify-center text-center">
-          <ModalTransition>
-            <Dialog.Panel className="w-[240px] max-w-md transform flex flex-col items-center justify-center rounded-lg bg-white p-4 align-middle shadow-card-shadow transition-all">
-              {animation && <Animation animation={animation} {...VariantAnimationProps[variant]} />}
-              <Dialog.Title className="font-semibold mb-2">
-                <SmallTitleText align="center">{title}</SmallTitleText>
-              </Dialog.Title>
-              {description && (
-                <FootnoteText className="text-text-tertiary" align="center">
-                  {description}
-                </FootnoteText>
-              )}
-              <div className="mt-3">{children}</div>
-            </Dialog.Panel>
-          </ModalTransition>
-        </div>
-      </Dialog>
-    </Transition>
+    <StatusModal
+      content={animation && <Animation animation={animation} {...VariantAnimationProps[variant]} />}
+      title={title}
+      description={description}
+      isOpen={isOpen}
+      onClose={onClose}
+    >
+      {children}
+    </StatusModal>
   );
 };

@@ -192,6 +192,10 @@
     "checkAccountsButton": "Check your accounts",
     "confirmAccountsListButton": "Yes, these are my accounts",
     "continueButton": "Continue",
+    "novaWallet": {
+      "scanTitle": "Scan with Nova Wallet",
+      "title": "Pair Nova Wallet"
+    },
     "paritySigner": {
       "accessDeniedDescription": "Please make sure you grant access to camera",
       "accessDeniedLabel": "Access denied!",
@@ -257,8 +261,9 @@
       "addressColumn": "Address",
       "manageTitle": "Set up your wallet",
       "nameColumn": "Account name",
-      "scanTitle": "Scan the QR code",
-      "title": "Add wallet by Wallet Connect"
+      "rejected": "Pairing rejected",
+      "scanTitle": "Scan with your mobile wallet",
+      "title": "Pair via Wallet Connect"
     },
     "walletNameExample": "Name examples: Main account, My validator, Dotsama crowdloans, etc",
     "walletNameLabel": "Wallet name",
@@ -303,7 +308,6 @@
     "approveButton": "Approve",
     "cancelTitle": "Reject",
     "continueButton": "Continue",
-    "defaultWalletName": "WalletConnect app",
     "details": {
       "amount": "Amount",
       "callData": "Call Data",
@@ -345,7 +349,11 @@
     "selectAccount": "Select account",
     "selectSignatory": "Select signatory",
     "selectSignatoryTitle": "Select signatory",
-    "signButton": "Sign with Polkadot Vault",
+    "sign": {
+      "novaWallet": "Sign with Nova Wallet",
+      "polkadotVault": "Sign with Polkadot Vault",
+      "walletConnect": "Sign with WalletConnect"
+    },
     "signatoriesTitle": "Signatories",
     "signing": "{ signed } of { threshold } signed",
     "status": {
@@ -357,7 +365,10 @@
     },
     "successMessage": "Operation Approved",
     "successRejectMessage": "Operation Rejected",
-    "walletConnectTitle": "Approve transaction in { walletName }",
+    "walletConnect": {
+      "defaultWalletName": "WalletConnect",
+      "signTitle": "Confirm the operation on your { walletName } app"
+    },
     "xcmFee": "Cross-chain fee"
   },
   "operations": {
@@ -632,7 +643,6 @@
       "queueButton": "Add to operation queue",
       "restakeRewards": "Restake rewards",
       "rewardsDestinationLabel": "Rewards destination",
-      "signButton": "Sign with Polkadot Vault",
       "signatoryLabel": "Signatory",
       "signer": "Signer",
       "submittingOperation": "Submitting operation",

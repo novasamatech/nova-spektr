@@ -52,7 +52,7 @@ const WalletMenu = ({ children, chains, wallets }: PropsWithChildren<Props>) => 
     {
       id: 'nova-wallet',
       title: t('wallets.addNovaWallet'),
-      onClick: () => walletProviderModel.events.walletTypeSet(WalletType.WALLET_CONNECT),
+      onClick: () => walletProviderModel.events.walletTypeSet(WalletType.NOVA_WALLET),
       iconName: 'multisig',
     },
     {

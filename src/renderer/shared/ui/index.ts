@@ -8,6 +8,7 @@ import ButtonLink from './Buttons/ButtonLink/ButtonLink';
 import ButtonBack from './Buttons/ButtonBack/ButtonBack';
 import BaseModal from './Modals/BaseModal/BaseModal';
 import ConfirmModal from './Modals/ConfirmModal/ConfirmModal';
+import { StatusModal } from './Modals/StatusModal/StatusModal';
 import InfoPopover from './Popovers/InfoPopover/InfoPopover';
 import { Popover } from './Popovers/Popover/Popover';
 import InfoLink from './InfoLink/InfoLink';
@@ -70,6 +71,7 @@ export {
   IconButton,
   BaseModal,
   ConfirmModal,
+  StatusModal,
   InfoPopover,
   MenuPopover,
   Popover,

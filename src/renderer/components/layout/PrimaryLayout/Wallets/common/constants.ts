@@ -7,6 +7,7 @@ export const GroupLabels: Record<WalletType, string> = {
   [WalletType.WATCH_ONLY]: 'wallets.watchOnlyLabel',
   [WalletType.SINGLE_PARITY_SIGNER]: 'wallets.paritySignerLabel',
   [WalletType.WALLET_CONNECT]: 'wallets.walletConnectLabel',
+  [WalletType.NOVA_WALLET]: 'wallets.novaWalletLabel',
 };
 
 export const GroupIcons: Record<WalletType, IconNames> = {
@@ -14,5 +15,6 @@ export const GroupIcons: Record<WalletType, IconNames> = {
   [WalletType.MULTISHARD_PARITY_SIGNER]: 'multishard',
   [WalletType.WATCH_ONLY]: 'watchOnly',
   [WalletType.SINGLE_PARITY_SIGNER]: 'vault',
-  [WalletType.WALLET_CONNECT]: 'vault',
+  [WalletType.WALLET_CONNECT]: 'walletConnect',
+  [WalletType.NOVA_WALLET]: 'novaWallet',
 };

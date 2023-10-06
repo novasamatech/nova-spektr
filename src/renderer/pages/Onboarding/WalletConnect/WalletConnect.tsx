@@ -1,17 +1,18 @@
-import QRCode from 'qrcode';
-import { useEffect, useState } from 'react';
+import QRCodeStyling from 'qr-code-styling';
+import { useEffect, useRef, useState } from 'react';
 import { useUnit } from 'effector-react';
 
 import { useI18n } from '@renderer/app/providers';
 import { BaseModal, HeaderTitleText, SmallTitleText } from '@renderer/shared/ui';
 import ManageStep from './ManageStep/ManageStep';
-import onboarding_tutorial from '@video/onboarding_tutorial.mp4';
-import onboarding_tutorial_webm from '@video/onboarding_tutorial.webm';
+import novawallet_onboarding_tutorial from '@video/novawallet_onboarding_tutorial.mp4';
+import novawallet_onboarding_tutorial_webm from '@video/novawallet_onboarding_tutorial.webm';
 import { usePrevious } from '@renderer/shared/lib/hooks';
 import * as walletConnectModel from '@renderer/entities/walletConnect';
 import { chainsService } from '@renderer/entities/network';
 import { wcOnboardingModel } from './model/walletConnectOnboarding';
-import { Step } from './common/const';
+import { Step, WCQRConfig } from './common/const';
+import { useStatusContext } from '@renderer/app/providers/context/StatusContext';
 
 type Props = {
   isOpen: boolean;
@@ -20,8 +21,12 @@ type Props = {
   onComplete: () => void;
 };
 
+const qrCode = new QRCodeStyling(WCQRConfig);
+
 const WalletConnect = ({ isOpen, onClose, onComplete }: Props) => {
   const { t } = useI18n();
+
+  const { showStatus } = useStatusContext();
 
   const session = useUnit(walletConnectModel.$session);
   const client = useUnit(walletConnectModel.$client);
@@ -34,14 +39,37 @@ const WalletConnect = ({ isOpen, onClose, onComplete }: Props) => {
 
   const previousPairings = usePrevious(pairings);
 
-  const [qrCode, setQrCode] = useState<string>('');
   const [pairingTopic, setPairingTopic] = useState<string>();
+
+  const ref = useRef(null);
+
+  useEffect(() => {
+    if (ref.current) {
+      qrCode.append(ref.current);
+    }
+  }, []);
+
+  useEffect(() => {
+    qrCode.update({
+      data: uri,
+    });
+  }, [uri]);
 
   useEffect(() => {
     if (isOpen) {
       startOnboarding();
     }
   }, [isOpen]);
+
+  useEffect(() => {
+    if (step === Step.REJECT) {
+      showStatus({
+        title: t('onboarding.walletConnect.rejected'),
+        content: <></>,
+      });
+      onClose();
+    }
+  }, [step]);
 
   useEffect(() => {
     if (client && isOpen) {
@@ -58,14 +86,6 @@ const WalletConnect = ({ isOpen, onClose, onComplete }: Props) => {
     }
   }, [pairings.length]);
 
-  useEffect(() => {
-    if (uri) {
-      QRCode.toDataURL(uri).then(setQrCode);
-    } else {
-      setQrCode('');
-    }
-  }, [uri]);
-
   return (
     <BaseModal
       closeButton
@@ -80,15 +100,15 @@ const WalletConnect = ({ isOpen, onClose, onComplete }: Props) => {
             <HeaderTitleText className="mb-10">{t('onboarding.walletConnect.title')}</HeaderTitleText>
             <SmallTitleText className="mb-6">{t('onboarding.walletConnect.scanTitle')}</SmallTitleText>
 
-            <div>
-              <img className="w-[400px] h-[400px]" src={qrCode} />
+            <div className="flex items-center justify-center">
+              <div ref={ref}></div>
             </div>
           </div>
 
           <div className="w-[472px] flex flex-col bg-black">
             <video className="object-contain h-full" autoPlay loop>
-              <source src={onboarding_tutorial_webm} type="video/webm" />
-              <source src={onboarding_tutorial} type="video/mp4" />
+              <source src={novawallet_onboarding_tutorial_webm} type="video/webm" />
+              <source src={novawallet_onboarding_tutorial} type="video/mp4" />
             </video>
           </div>
         </>

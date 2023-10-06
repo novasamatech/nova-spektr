@@ -10,6 +10,8 @@ import Details from '../Details';
 import { Wallet, useWallet } from '@renderer/entities/wallet';
 import { XcmFee } from '@renderer/entities/transaction/ui/XcmFee/XcmFee';
 import { AssetXCM, XcmConfig } from '@renderer/shared/api/xcm';
+import { SignButton } from '@renderer/entities/operation/ui/SignButton';
+import { WalletType } from '@renderer/domain/shared-kernel';
 
 const AmountFontStyle = 'font-manrope text-text-primary text-[32px] leading-[36px] font-bold';
 
@@ -110,9 +112,7 @@ export const Confirmation = ({
           {t('operation.goBackButton')}
         </Button>
 
-        <Button disabled={!feeLoaded} prefixElement={<Icon name="vault" size={14} />} onClick={onResult}>
-          {t('operation.signButton')}
-        </Button>
+        <SignButton disabled={!feeLoaded} type={wallet?.type || WalletType.SINGLE_PARITY_SIGNER} onClick={onResult} />
       </div>
     </div>
   );

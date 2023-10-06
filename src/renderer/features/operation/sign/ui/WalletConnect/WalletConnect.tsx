@@ -6,21 +6,23 @@ import { SigningProps } from '@renderer/features/operation';
 import { ValidationErrors } from '@renderer/shared/lib/utils';
 import { useTransaction } from '@renderer/entities/transaction';
 import { HexString } from '@renderer/domain/shared-kernel';
-import { useI18n } from '@renderer/app/providers';
-import { BodyText, Button, HeadlineText } from '@renderer/shared/ui';
+import { useConfirmContext, useI18n } from '@renderer/app/providers';
+import { Button, SmallTitleText } from '@renderer/shared/ui';
 import { useAccount } from '@renderer/entities/account';
 import * as walletConnectModel from '@renderer/entities/walletConnect';
 import { DEFAULT_POLKADOT_METHODS, getWalletConnectChains } from '@renderer/entities/walletConnect';
 import { chainsService } from '@renderer/entities/network';
-
-const ValidationErrorLabels = {
-  [ValidationErrors.INVALID_SIGNATURE]: 'transfer.walletConnect.invalidSignature',
-};
+import { Countdown } from './Countdown';
+import { useCountdown } from '@renderer/shared/lib/hooks';
+import wallet_connect_confirm from '@video/wallet_connect_confirm.mp4';
+import wallet_connect_confirm_webm from '@video/wallet_connect_confirm.webm';
 
 export const WalletConnect = ({ api, validateBalance, onGoBack, accounts, transactions, onResult }: SigningProps) => {
   const { t } = useI18n();
   const { verifySignature, createPayload } = useTransaction();
   const { updateAccount } = useAccount();
+  const [countdown, resetCountdown] = useCountdown(api);
+  const { confirm } = useConfirmContext();
 
   const session = useUnit(walletConnectModel.$session);
   const client = useUnit(walletConnectModel.$client);
@@ -36,6 +38,15 @@ export const WalletConnect = ({ api, validateBalance, onGoBack, accounts, transa
   const transaction = transactions[0];
   const account = accounts[0];
 
+  const reconnect = async () => {
+    await connect({
+      chains: getWalletConnectChains(chains),
+      pairing: { topic: account.signingExtras?.pairingTopic },
+    });
+
+    setIsNeedUpdate(true);
+  };
+
   useEffect(() => {
     if (txPayload || !client) return;
 
@@ -49,22 +60,30 @@ export const WalletConnect = ({ api, validateBalance, onGoBack, accounts, transa
 
         if (newSession) {
           updateSession(newSession);
+          setIsNeedUpdate(true);
+
+          setupTransaction().catch(() => console.warn('WalletConnect | setupTransaction() failed'));
         } else {
-          await connect({
-            chains: getWalletConnectChains(chains),
-            pairing: { topic: account.signingExtras?.pairingTopic },
+          confirm({
+            title: t('signing.walletConnect.reconnectTitle', {
+              walletName,
+            }),
+            message: t('signing.walletConnect.reconnectDescription'),
+            confirmText: t('signing.walletConnect.reconnectButton'),
+            cancelText: t('signing.walletConnect.cancelButton'),
+          }).then((result) => {
+            if (result) {
+              reconnect()
+                .then(setupTransaction)
+                .catch(() => console.warn('WalletConnect | setupTransaction() failed'));
+            }
           });
         }
-
-        setIsNeedUpdate(true);
       }
-
-      setupTransaction().catch(() => console.warn('WalletConnect | setupTransaction() failed'));
     })();
   }, [transaction, api]);
 
   useEffect(() => {
-    console.log('xcm2', isNeedUpdate);
     if (isNeedUpdate) {
       setIsNeedUpdate(false);
 
@@ -79,8 +98,6 @@ export const WalletConnect = ({ api, validateBalance, onGoBack, accounts, transa
   }, [session]);
 
   useEffect(() => {
-    console.log('xcmTx', unsignedTx);
-
     if (unsignedTx) {
       signTransaction();
     }
@@ -92,37 +109,43 @@ export const WalletConnect = ({ api, validateBalance, onGoBack, accounts, transa
 
       setTxPayload(payload);
       setUnsignedTx(unsigned);
+
+      if (payload) {
+        resetCountdown();
+      }
     } catch (error) {
       console.warn(error);
     }
   };
 
-  const [validationError, setValidationError] = useState<ValidationErrors>();
+  const [_, setValidationError] = useState<ValidationErrors>();
 
   const signTransaction = async () => {
     if (!api || !client || !session) return;
 
-    console.log('xcmTx2', session.topic);
-
-    const result = await client.request<{
-      payload: string;
-      signature: HexString;
-    }>({
-      // eslint-disable-next-line i18next/no-literal-string
-      chainId: `polkadot:${transaction.chainId.slice(2, 34)}`,
-      topic: session.topic,
-      request: {
-        method: DEFAULT_POLKADOT_METHODS.POLKADOT_SIGN_TRANSACTION,
-        params: {
-          address: transaction.address,
-          transactionPayload: unsignedTx,
+    try {
+      const result = await client.request<{
+        payload: string;
+        signature: HexString;
+      }>({
+        // eslint-disable-next-line i18next/no-literal-string
+        chainId: `polkadot:${transaction.chainId.slice(2, 34)}`,
+        topic: session.topic,
+        request: {
+          method: DEFAULT_POLKADOT_METHODS.POLKADOT_SIGN_TRANSACTION,
+          params: {
+            address: transaction.address,
+            transactionPayload: unsignedTx,
+          },
         },
-      },
-    });
+      });
 
-    console.log('xcmTx2', result);
-
-    handleSignature(result.signature);
+      if (result.signature) {
+        handleSignature(result.signature);
+      }
+    } catch (e) {
+      console.warn(e);
+    }
   };
 
   const handleSignature = async (signature: HexString) => {
@@ -139,14 +162,23 @@ export const WalletConnect = ({ api, validateBalance, onGoBack, accounts, transa
     }
   };
 
+  const walletName = session?.peer.metadata.name || t('operation.walletConnect.defaultWalletName');
+
   return (
     <div className="flex flex-col items-center p-4 gap-y-2.5 w-[440px] rounded-b-lg">
-      <HeadlineText>
-        {t('operation.walletConnectTitle', {
-          walletName: session?.peer.metadata.name || t('operation.defaultWalletName'),
+      <SmallTitleText>
+        {t('operation.walletConnect.signTitle', {
+          walletName,
         })}
-      </HeadlineText>
-      <BodyText> {t(ValidationErrorLabels[validationError as keyof typeof ValidationErrorLabels])}</BodyText>
+      </SmallTitleText>
+
+      <Countdown countdown={countdown} />
+
+      <video className="object-contain h-[240px]" autoPlay loop>
+        <source src={wallet_connect_confirm_webm} type="video/webm" />
+        <source src={wallet_connect_confirm} type="video/mp4" />
+      </video>
+
       <div className="flex w-full justify-between mt-5">
         <Button variant="text" onClick={onGoBack}>
           {t('operation.goBackButton')}

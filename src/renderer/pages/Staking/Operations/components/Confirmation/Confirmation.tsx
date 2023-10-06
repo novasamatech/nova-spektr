@@ -22,6 +22,9 @@ import ValidatorsModal from '../Modals/ValidatorsModal/ValidatorsModal';
 import { DestinationType } from '../../common/types';
 import { cnTw } from '@renderer/shared/lib/utils';
 import { useMultisigTx } from '@renderer/entities/multisig';
+import { SignButton } from '@renderer/entities/operation/ui/SignButton';
+import { Wallet, useWallet } from '@renderer/entities/wallet';
+import { WalletType } from '@renderer/domain/shared-kernel';
 
 const ActionStyle = 'group hover:bg-action-background-hover px-2 py-1 rounded';
 
@@ -60,12 +63,14 @@ export const Confirmation = ({
   const { t } = useI18n();
   const { getMultisigTxs } = useMultisigTx({});
   const { getTransactionHash } = useTransaction();
+  const { getWallet } = useWallet();
 
   const [isAccountsOpen, toggleAccounts] = useToggle();
   const [isValidatorsOpen, toggleValidators] = useToggle();
 
   const [feeLoading, setFeeLoading] = useState(true);
   const [multisigTxExist, setMultisigTxExist] = useState(false);
+  const [wallet, setWallet] = useState<Wallet>();
 
   const singleAccount = accounts.length === 1;
   const validatorsExist = validators && validators.length > 0;
@@ -86,6 +91,10 @@ export const Confirmation = ({
       .catch(() => {
         console.warn('Could not retrieve multisig transactions from DB');
       });
+
+    if (accounts[0].walletId) {
+      getWallet(accounts[0].walletId).then(setWallet);
+    }
   }, []);
 
   return (
@@ -211,13 +220,11 @@ export const Confirmation = ({
           <Button variant="text" onClick={onGoBack}>
             {t('staking.confirmation.backButton')}
           </Button>
-          <Button
+          <SignButton
             disabled={feeLoading || multisigTxExist}
-            prefixElement={<Icon name="vault" size={14} />}
+            type={wallet?.type || WalletType.SINGLE_PARITY_SIGNER}
             onClick={onResult}
-          >
-            {t('staking.confirmation.signButton')}
-          </Button>
+          />
         </div>
       </div>
 

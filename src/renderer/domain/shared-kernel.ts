@@ -47,6 +47,7 @@ export const enum WalletType {
   MULTISHARD_PARITY_SIGNER = 'wallet_mps',
   MULTISIG = 'wallet_ms',
   WALLET_CONNECT = 'wallet_wc',
+  NOVA_WALLET = 'wallet_nw',
 }
 
 export const enum SigningType {

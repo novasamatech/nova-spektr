@@ -2,13 +2,13 @@ import { useEffect, useState } from 'react';
 import { UnsignedTransaction } from '@substrate/txwrapper-polkadot';
 import { BN } from '@polkadot/util';
 
-import { BaseModal, Button, Icon } from '@renderer/shared/ui';
+import { BaseModal, Button } from '@renderer/shared/ui';
 import { useI18n } from '@renderer/app/providers';
 import { AccountDS, MultisigTransactionDS } from '@renderer/shared/api/storage';
 import { useToggle } from '@renderer/shared/lib/hooks';
 import { MultisigAccount, useAccount } from '@renderer/entities/account';
 import { ExtendedChain } from '@renderer/entities/network';
-import { Address, HexString, Timepoint, SigningType } from '@renderer/domain/shared-kernel';
+import { Address, HexString, Timepoint, SigningType, WalletType } from '@renderer/domain/shared-kernel';
 import { toAddress, transferableAmount, getAssetById } from '@renderer/shared/lib/utils';
 import { getModalTransactionTitle } from '../../common/utils';
 import { useBalance } from '@renderer/entities/asset';
@@ -25,6 +25,8 @@ import {
   validateBalance,
   isXcmTransaction,
 } from '@renderer/entities/transaction';
+import { SignButton } from '@renderer/entities/operation/ui/SignButton';
+import { Wallet, useWallet } from '@renderer/entities/wallet';
 
 type Props = {
   tx: MultisigTransactionDS;
@@ -57,6 +59,14 @@ const RejectTx = ({ tx, account, connection }: Props) => {
 
   const [rejectReason, setRejectReason] = useState('');
   const [signature, setSignature] = useState<HexString>();
+
+  const { getWallet } = useWallet();
+
+  const [wallet, setWallet] = useState<Wallet>();
+
+  useEffect(() => {
+    account.walletId && getWallet(account.walletId).then((wallet) => setWallet(wallet));
+  }, [account]);
 
   const transactionTitle = getModalTransactionTitle(isXcmTransaction(tx.transaction), tx.transaction);
 
@@ -184,13 +194,11 @@ const RejectTx = ({ tx, account, connection }: Props) => {
         {activeStep === Step.CONFIRMATION && (
           <>
             <Confirmation tx={tx} account={account} connection={connection} feeTx={rejectTx} />
-            <Button
+            <SignButton
               className="mt-7 ml-auto"
-              prefixElement={<Icon name="vault" size={14} />}
+              type={wallet?.type || WalletType.SINGLE_PARITY_SIGNER}
               onClick={toggleRejectReasonModal}
-            >
-              {t('operation.signButton')}
-            </Button>
+            />
           </>
         )}
         {activeStep === Step.SIGNING && rejectTx && connection.api && signAccount && (

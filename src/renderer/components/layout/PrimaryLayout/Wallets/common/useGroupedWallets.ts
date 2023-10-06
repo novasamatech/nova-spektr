@@ -36,6 +36,7 @@ export const useGroupedWallets = (
       [WalletType.MULTISIG]: multisigAccounts,
       [WalletType.WATCH_ONLY]: watchOnlyAccounts,
       [WalletType.WALLET_CONNECT]: getWalletConnectWallets(),
+      [WalletType.NOVA_WALLET]: getNovaWalletWallets(),
     });
   }, [watchOnlyAccounts.length, paritySignerAccounts.length, multisigAccounts.length, liveWallets.length]);
 
@@ -55,12 +56,17 @@ export const useGroupedWallets = (
       (w) => includes(w.name, searchQuery) || searchedShards.includes(w.id),
     );
 
+    const novaWalletWallets = getNovaWalletWallets().filter(
+      (w) => includes(w.name, searchQuery) || searchedShards.includes(w.id),
+    );
+
     setWallets({
       [WalletType.SINGLE_PARITY_SIGNER]: searchedParitySignerAccounts.filter((a) => !a.walletId),
       [WalletType.MULTISHARD_PARITY_SIGNER]: multishardWallets,
       [WalletType.MULTISIG]: searchedMultisigAccounts,
       [WalletType.WATCH_ONLY]: searchedWatchOnlyAccounts,
       [WalletType.WALLET_CONNECT]: walletConnectWallets,
+      [WalletType.NOVA_WALLET]: novaWalletWallets,
     });
   }, [searchQuery, firstActiveAccount?.id, firstActiveAccount?.signingType]);
 
@@ -83,6 +89,11 @@ export const useGroupedWallets = (
   const getWalletConnectWallets = () =>
     liveWallets
       .filter((w) => w.id && w.type === WalletType.WALLET_CONNECT)
+      .map((w) => ({ ...w, ...getWalletConnectStructure(walletConnectAccounts, w.id!) }));
+
+  const getNovaWalletWallets = () =>
+    liveWallets
+      .filter((w) => w.id && w.type === WalletType.NOVA_WALLET)
       .map((w) => ({ ...w, ...getWalletConnectStructure(walletConnectAccounts, w.id!) }));
 
   return wallets;

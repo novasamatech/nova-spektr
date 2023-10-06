@@ -192,6 +192,10 @@
     "checkAccountsButton": "Ваши аккаунты",
     "confirmAccountsListButton": "Да, это мои аккаунты",
     "continueButton": "Continue",
+    "novaWallet": {
+      "scanTitle": "Scan with Nova Wallet",
+      "title": "Pair Nova Wallet"
+    },
     "paritySigner": {
       "accessDeniedDescription": "Убедитесь, что доступ к камере разрешен",
       "accessDeniedLabel": "Доступ запрещен!",
@@ -257,8 +261,9 @@
       "addressColumn": "Address",
       "manageTitle": "Set up your wallet",
       "nameColumn": "Account name",
-      "scanTitle": "Scan the QR code",
-      "title": "Add wallet by Wallet Connect"
+      "rejected": "Pairing rejected",
+      "scanTitle": "Scan with your mobile wallet",
+      "title": "Pair via Wallet Connect"
     },
     "walletNameExample": "Например: Основной аккаунт, My validator, Dotsama crowdloans, и т.д.",
     "walletNameLabel": "Название кошелька",
@@ -303,7 +308,6 @@
     "approveButton": "Approve",
     "cancelTitle": "Отменить",
     "continueButton": "Продолжить",
-    "defaultWalletName": "WalletConnect app",
     "details": {
       "amount": "количество",
       "callData": "Call Data",
@@ -345,7 +349,11 @@
     "selectAccount": "Select account",
     "selectSignatory": "Выберите подписанта",
     "selectSignatoryTitle": "Выберите подписанта",
-    "signButton": "Подписать в Polkadot Vault",
+    "sign": {
+      "novaWallet": "Sign with Nova Wallet",
+      "polkadotVault": "Sign with Polkadot Vault",
+      "walletConnect": "Sign with WalletConnect"
+    },
     "signatoriesTitle": "Подписи",
     "signing": "{ signed } из { threshold } подписали",
     "status": {
@@ -357,7 +365,10 @@
     },
     "successMessage": "Operation Approved",
     "successRejectMessage": "Операция Отменена",
-    "walletConnectTitle": "Approve transaction in { walletName }",
+    "walletConnect": {
+      "defaultWalletName": "WalletConnect",
+      "signTitle": "Confirm the operation on your { walletName } app"
+    },
     "xcmFee": "Cross-chain fee"
   },
   "operations": {
@@ -632,7 +643,6 @@
       "queueButton": "добавить в очередь",
       "restakeRewards": "Вложить награды",
       "rewardsDestinationLabel": "Выплата наград",
-      "signButton": "Подписать в Polkadot Vault",
       "signatoryLabel": "Подписант",
       "signer": "Подписант",
       "submittingOperation": "Подтверждение операции",
