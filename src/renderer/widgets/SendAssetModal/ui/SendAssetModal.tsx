@@ -4,17 +4,16 @@ import { useStore, useGate } from 'effector-react';
 import { useNavigate } from 'react-router-dom';
 
 import { Paths, useI18n, useNetworkContext } from '@renderer/app/providers';
-import { HexString } from '@renderer/domain/shared-kernel';
 import { Transaction, useTransaction, validateBalance } from '@renderer/entities/transaction';
-import { Account, isMultisig, MultisigAccount } from '@renderer/entities/account';
 import { BaseModal, Button, Loader } from '@renderer/shared/ui';
 import { Confirmation, InitOperation, Submit } from './components/ActionSteps';
 import { Signing } from '@renderer/features/operation';
-import { Asset, useBalance } from '@renderer/entities/asset';
+import { useBalance } from '@renderer/entities/asset';
 import { OperationTitle } from '@renderer/components/common';
-import { Chain } from '@renderer/entities/chain';
 import { useToggle } from '@renderer/shared/lib/hooks';
 import * as sendAssetModel from '../model/send-asset';
+import type { Chain, Asset, Account, MultisigAccount, HexString } from '@renderer/shared/core';
+import { accountUtils } from '@renderer/entities/wallet';
 
 const enum Step {
   INIT,
@@ -115,7 +114,7 @@ export const SendAssetModal = ({ chain, asset }: Props) => {
     return api ? (
       <Submit
         tx={transaction}
-        multisigTx={isMultisig(account) ? wrapTx(transaction, api, addressPrefix) : undefined}
+        multisigTx={accountUtils.isMultisigAccount(account) ? wrapTx(transaction, api, addressPrefix) : undefined}
         account={account}
         unsignedTx={unsignedTx}
         signature={signature}

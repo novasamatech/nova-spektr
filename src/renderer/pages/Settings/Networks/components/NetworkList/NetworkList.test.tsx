@@ -1,6 +1,6 @@
 import { act, render, screen, waitFor } from '@testing-library/react';
 
-import { ConnectionStatus, ConnectionType } from '@renderer/domain/connection';
+import { ConnectionStatus, ConnectionType } from '@renderer/shared/core';
 import { ExtendedChain } from '@renderer/entities/network';
 import { NetworkList } from './NetworkList';
 

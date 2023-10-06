@@ -1,4 +1,4 @@
-import { HexString } from '@renderer/domain/shared-kernel';
+import { HexString } from '@renderer/shared/core';
 
 export type AssetName = string;
 

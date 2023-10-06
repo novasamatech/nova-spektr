@@ -1,4 +1,4 @@
-import { ObjectValues } from '@renderer/domain/utility';
+import type { ObjectValues } from '@renderer/shared/core';
 
 export const OperationError = {
   INVALID_FEE: 'staking.notEnoughBalanceForFeeError',

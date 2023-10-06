@@ -7,8 +7,10 @@ import { keyBy } from 'lodash';
 import { chainsService } from '@renderer/entities/network';
 import { ID } from '@renderer/shared/api/storage';
 import { useI18n } from '@renderer/app/providers';
-import { Chain, Explorer, ChainTitle } from '@renderer/entities/chain';
-import { Address, ChainId, ErrorType, HexString } from '@renderer/domain/shared-kernel';
+import { ChainTitle } from '@renderer/entities/chain';
+import { AddressInfo, CompactSeedInfo, SeedInfo } from '@renderer/components/common/QrCode/common/types';
+import { toAccountId, toAddress, cnTw } from '@renderer/shared/lib/utils';
+import { walletModel, AddressWithExplorers } from '@renderer/entities/wallet';
 import {
   Button,
   Input,
@@ -19,10 +21,18 @@ import {
   FootnoteText,
   Icon,
 } from '@renderer/shared/ui';
-import { AddressInfo, CompactSeedInfo, SeedInfo } from '@renderer/components/common/QrCode/common/types';
-import { useWallet, createWallet, SigningType, WalletType } from '@renderer/entities/wallet';
-import { useAccount, Account, createAccount, AddressWithExplorers } from '@renderer/entities/account';
-import { toAccountId, toAddress, cnTw } from '@renderer/shared/lib/utils';
+import type {
+  Wallet,
+  Explorer,
+  Chain,
+  BaseAccount,
+  Account,
+  ChainAccount,
+  ChainId,
+  HexString,
+  Address,
+} from '@renderer/shared/core';
+import { CryptoType, ChainType, AccountType, WalletType, SigningType, ErrorType } from '@renderer/shared/core';
 
 const RootExplorers: Explorer[] = [
   { name: 'Subscan', account: 'https://subscan.io/account/{address}' },
@@ -52,14 +62,9 @@ const ManageStep = ({ seedInfo, onBack, onComplete }: Props) => {
     defaultValues: { walletName: '' },
   });
 
-  const { addWallet } = useWallet();
-  const { addAccount, setActiveAccounts } = useAccount();
-
   const [chainsObject, setChainsObject] = useState<Record<ChainId, Chain>>({});
-
   const [inactiveAccounts, setInactiveAccounts] = useState<Record<string, boolean>>({});
   const [accountNames, setAccountNames] = useState<Record<string, string>>({});
-
   const [accounts, setAccounts] = useState<CompactSeedInfo[]>([]);
 
   useEffect(() => {
@@ -101,8 +106,11 @@ const ManageStep = ({ seedInfo, onBack, onComplete }: Props) => {
     }, {});
   };
 
-  const getAccountId = (accountIndex: number, chainId?: string, derivedKeyIndex?: number): string =>
-    `${accountIndex}${chainId ? `-${chainId}` : ''}${derivedKeyIndex !== undefined ? `-${derivedKeyIndex}` : ''}`;
+  const getAccountId = (accountIndex: number, chainId?: string, derivedKeyIndex?: number): string => {
+    return `${accountIndex}${chainId ? `-${chainId}` : ''}${
+      derivedKeyIndex !== undefined ? `-${derivedKeyIndex}` : ''
+    }`;
+  };
 
   const updateAccountName = (name: string, accountIndex: number, chainId?: string, derivedKeyIndex?: number) => {
     setAccountNames((prev) => {
@@ -147,41 +155,42 @@ const ManageStep = ({ seedInfo, onBack, onComplete }: Props) => {
     });
   };
 
-  const saveRootAccount = async (address: Address, accountIndex: number, walletId: ID) => {
-    const rootAccountNameId = getAccountId(accountIndex);
+  const saveRootAccount = async (address: Address, accountIndex: number, walletId: Wallet['id']) => {
+    const baseAccountNameId = getAccountId(accountIndex);
 
-    const rootAccount = createAccount({
-      name: accountNames[rootAccountNameId],
-      signingType: SigningType.PARITY_SIGNER,
-      accountId: toAccountId(address),
+    const payload = {
       walletId,
-    });
+      name: accountNames[baseAccountNameId],
+      accountId: toAccountId(address),
+      cryptoType: CryptoType.SR25519,
+      chainType: ChainType.SUBSTRATE,
+      type: AccountType.BASE,
+    };
 
-    return addAccount(rootAccount);
+    return addAccount(payload as BaseAccount);
   };
 
   const createDerivedAccounts = (
     derivedKeys: AddressInfo[],
     chainId: ChainId,
     accountIndex: number,
-    rootAccountId: ID,
-    walletId: ID,
+    baseAccountId: Account['id'],
+    walletId: Wallet['id'],
   ): Account[] => {
-    return derivedKeys.reduce<Account[]>((acc, derivedKey, index) => {
+    return derivedKeys.reduce<ChainAccount[]>((acc, derivedKey, index) => {
       const accountId = getAccountId(accountIndex, chainId, index);
 
       if (!inactiveAccounts[accountId]) {
-        acc.push(
-          createAccount({
-            name: accountNames[accountId],
-            signingType: SigningType.PARITY_SIGNER,
-            rootId: rootAccountId,
-            accountId: toAccountId(derivedKey.address),
-            derivationPath: derivedKey.derivationPath,
-            chainId,
-            walletId,
-          }),
-        );
+        const chainAccount = {
+          walletId,
+          chainId,
+          baseAccountId,
+          name: accountNames[accountId],
+          accountId: toAccountId(derivedKey.address),
+          derivationPath: derivedKey.derivationPath || '',
+          type: AccountType.CHAIN,
+        };
+        acc.push(chainAccount as ChainAccount);
       }
 
       return acc;
@@ -189,45 +198,37 @@ const ManageStep = ({ seedInfo, onBack, onComplete }: Props) => {
   };
 
   const saveNewWallet: SubmitHandler<WalletForm> = async ({ walletName }) => {
-    let walletId: ID;
-
-    try {
-      walletId = await addWallet(createWallet({ name: walletName, type: WalletType.MULTISHARD_PARITY_SIGNER }));
-    } catch (e) {
-      console.warn('Error saving main account', e);
-    }
+    const wallet = await walletModel.effects.walletCreatedFx({
+      name: walletName,
+      type: WalletType.MULTISHARD_PARITY_SIGNER,
+      signingType: SigningType.PARITY_SIGNER,
+    });
 
     const allShardsIds: ID[] = [];
 
-    const promises = accounts.map(async ({ address, derivedKeys }, accountIndex) => {
-      let rootAccountId: ID;
+    const requests = accounts.map(async ({ address, derivedKeys }, accountIndex) => {
+      let baseAccountId: Account['id'];
 
       try {
-        rootAccountId = await saveRootAccount(address, accountIndex, walletId);
-        allShardsIds.push(rootAccountId);
+        baseAccountId = await saveRootAccount(address, accountIndex, wallet.id);
+        allShardsIds.push(baseAccountId);
       } catch (e) {
         console.warn('Error saving main account', e);
       }
 
       const derivedAccounts = Object.entries(derivedKeys)
-        .map(([chainId, chainDerivedKeys]) =>
-          createDerivedAccounts(chainDerivedKeys, chainId as ChainId, accountIndex, rootAccountId, walletId),
-        )
+        .map(([chainId, chainDerivedKeys]) => {
+          return createDerivedAccounts(chainDerivedKeys, chainId as ChainId, accountIndex, baseAccountId, wallet.id);
+        })
         .flat();
 
-      return derivedAccounts.map((account) => addAccount(account).then((ids) => allShardsIds.push(ids)));
+      return derivedAccounts.map((account) => addAccount(account).then(allShardsIds.push));
     });
 
     try {
-      await Promise.all(promises);
+      await Promise.all(requests);
     } catch (e) {
       console.warn('Error saving wallets', e);
-    }
-
-    try {
-      await setActiveAccounts(allShardsIds);
-    } catch (e) {
-      console.warn('Error activating new accounts', e);
     }
 
     reset();

@@ -1,14 +1,13 @@
 import { useEffect, useState } from 'react';
 import { UnsignedTransaction } from '@substrate/txwrapper-polkadot';
 import { BN } from '@polkadot/util';
+import { useUnit } from 'effector-react';
 
 import { BaseModal, Button, Icon } from '@renderer/shared/ui';
 import { useI18n } from '@renderer/app/providers';
-import { AccountDS, MultisigTransactionDS } from '@renderer/shared/api/storage';
+import { MultisigTransactionDS } from '@renderer/shared/api/storage';
 import { useToggle } from '@renderer/shared/lib/hooks';
-import { MultisigAccount, useAccount } from '@renderer/entities/account';
 import { ExtendedChain } from '@renderer/entities/network';
-import { Address, HexString, Timepoint } from '@renderer/domain/shared-kernel';
 import { toAddress, transferableAmount, getAssetById } from '@renderer/shared/lib/utils';
 import { getModalTransactionTitle } from '../../common/utils';
 import { useBalance } from '@renderer/entities/asset';
@@ -17,7 +16,7 @@ import { Submit } from '../ActionSteps/Submit';
 import { Confirmation } from '../ActionSteps/Confirmation';
 import { Signing } from '@renderer/features/operation';
 import { OperationTitle } from '@renderer/components/common';
-import { SigningType } from '@renderer/entities/wallet';
+import type { MultisigAccount, Account, Address, HexString, Timepoint } from '@renderer/shared/core';
 import {
   Transaction,
   TransactionType,
@@ -26,6 +25,7 @@ import {
   validateBalance,
   isXcmTransaction,
 } from '@renderer/entities/transaction';
+import { accountModel, walletModel, walletUtils } from '@renderer/entities/wallet';
 
 type Props = {
   tx: MultisigTransactionDS;
@@ -43,8 +43,10 @@ const AllSteps = [Step.CONFIRMATION, Step.SIGNING, Step.SUBMIT];
 
 const RejectTx = ({ tx, account, connection }: Props) => {
   const { t } = useI18n();
+  const activeWallet = useUnit(walletModel.$activeWallet);
+  const accounts = useUnit(accountModel.$activeAccounts);
+
   const { getBalance } = useBalance();
-  const { getLiveAccounts } = useAccount();
   const { getTransactionFee } = useTransaction();
 
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -64,10 +66,9 @@ const RejectTx = ({ tx, account, connection }: Props) => {
   const nativeAsset = connection.assets[0];
   const asset = getAssetById(tx.transaction?.args.assetId, connection.assets);
 
-  const accounts = getLiveAccounts();
   const signAccount = accounts.find((a) => {
     const isDepositor = a.accountId === tx.depositor;
-    const isWatchOnly = a.signingType === SigningType.WATCH_ONLY;
+    const isWatchOnly = walletUtils.isWatchOnly(activeWallet);
 
     return isDepositor && !isWatchOnly;
   });
@@ -133,7 +134,7 @@ const RejectTx = ({ tx, account, connection }: Props) => {
     };
   };
 
-  const validateBalanceForFee = async (signAccount: AccountDS): Promise<boolean> => {
+  const validateBalanceForFee = async (signAccount: Account): Promise<boolean> => {
     if (!connection.api || !rejectTx || !signAccount.accountId || !nativeAsset) return false;
 
     const fee = await getTransactionFee(rejectTx, connection.api);

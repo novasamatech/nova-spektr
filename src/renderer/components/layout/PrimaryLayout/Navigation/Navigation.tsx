@@ -1,25 +1,24 @@
 import { useEffect, useState } from 'react';
 import { keyBy } from 'lodash';
-import cn from 'classnames';
+import { useUnit } from 'effector-react';
 
-import { useAccount } from '@renderer/entities/account';
 import { useMultisigTx } from '@renderer/entities/multisig';
 import './Navigation.css';
 import { MultisigTxInitStatus } from '@renderer/entities/transaction';
-import WalletMenu from '@renderer/components/layout/PrimaryLayout/Wallets/WalletMenu';
-import ActiveAccountCard from '@renderer/components/layout/PrimaryLayout/Wallets/ActiveAccountCard';
+import { WalletMenu } from '../Wallets/WalletMenu';
+import { WalletCard } from '../Wallets/WalletCard';
 import NavItem, { Props as NavItemProps } from '../NavItem/NavItem';
 import { chainsService } from '@renderer/entities/network';
 import { ChainsRecord } from '@renderer/components/layout/PrimaryLayout/Wallets/common/types';
 import { Paths } from '../../../../app/providers/routes/paths';
-import { useWallet } from '@renderer/entities/wallet';
 import { Shimmering } from '@renderer/shared/ui';
+import { accountModel } from '@renderer/entities/wallet';
+import { cnTw } from '@renderer/shared/lib/utils';
 
 const Navigation = () => {
-  const { getActiveAccounts } = useAccount();
+  const activeAccounts = useUnit(accountModel.$activeAccounts);
+
   const { getLiveAccountMultisigTxs } = useMultisigTx({});
-  const { getLiveWallets } = useWallet();
-  const wallets = getLiveWallets();
 
   const [chains, setChains] = useState<ChainsRecord>({});
 
@@ -28,8 +27,6 @@ const Navigation = () => {
 
     setChains(keyBy(chains, 'chainId'));
   }, []);
-
-  const activeAccounts = getActiveAccounts();
 
   const txs = getLiveAccountMultisigTxs(activeAccounts.map((a) => a.accountId)).filter(
     (tx) => tx.status === MultisigTxInitStatus.SIGNING && chains[tx.chainId],
@@ -54,17 +51,13 @@ const Navigation = () => {
 
   return (
     <aside
-      className={cn(
+      className={cnTw(
         'relative flex gap-y-6 flex-col w-[240px] p-4 z-30',
         'bg-left-navigation-menu-background border-r border-r-container-border',
       )}
     >
-      <WalletMenu chains={chains} wallets={wallets}>
-        {activeAccounts?.length ? (
-          <ActiveAccountCard activeAccounts={activeAccounts} chains={chains} wallets={wallets} />
-        ) : (
-          <Shimmering height={54} className="w-full" />
-        )}
+      <WalletMenu chains={chains}>
+        {activeAccounts?.length ? <WalletCard chains={chains} /> : <Shimmering height={54} className="w-full" />}
       </WalletMenu>
 
       <nav className="flex-1 overflow-y-auto">

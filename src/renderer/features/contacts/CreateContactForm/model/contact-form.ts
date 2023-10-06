@@ -1,9 +1,10 @@
 import { attach, createApi, createStore, forward, sample } from 'effector';
 import { createForm } from 'effector-forms';
 
-import { Contact, contactModel } from '@renderer/entities/contact';
+import { contactModel } from '@renderer/entities/contact';
 import { toAccountId, validateAddress } from '@renderer/shared/lib/utils';
 import { validateFullUserName } from '@renderer/shared/api/matrix';
+import type { Contact } from '@renderer/shared/core';
 
 export type Callbacks = {
   onSubmit: () => void;
@@ -70,7 +71,7 @@ function validateMatrixId(value: string): boolean {
 }
 
 const createContactFx = attach({
-  effect: contactModel.effects.addContactFx,
+  effect: contactModel.effects.createContactFx,
   source: contactForm.$values,
   mapParams: (_, data) => {
     return { ...data, accountId: toAccountId(data.address) };

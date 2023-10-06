@@ -14,12 +14,10 @@ import {
   getVersionedDestinationLocation,
 } from '@renderer/shared/api/xcm';
 import { xcmModel } from '@renderer/entities/xcm';
-import { Chain } from '@renderer/entities/chain';
-import { Asset } from '@renderer/entities/asset';
 import { getParachainId } from '@renderer/services/dataVerification/dataVerification';
 import { ExtendedChain } from '@renderer/entities/network';
-import { AccountId } from '@renderer/domain/shared-kernel';
 import { toLocalChainId } from '@renderer/shared/lib/utils';
+import type { AccountId, Asset, Chain } from '@renderer/shared/core';
 
 const xcmConfigRequested = createEvent();
 const destinationChainSelected = createEvent<ExtendedChain>();

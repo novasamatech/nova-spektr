@@ -1,9 +1,9 @@
 import { ApiPromise } from '@polkadot/api';
 import { useEffect, useState, memo } from 'react';
 
-import { Asset, AssetBalance } from '@renderer/entities/asset';
-import { Threshold } from '@renderer/domain/shared-kernel';
+import { AssetBalance } from '@renderer/entities/asset';
 import { useTransaction } from '@renderer/entities/transaction';
+import type { Asset, Threshold } from '@renderer/shared/core';
 
 type Props = {
   api: ApiPromise;

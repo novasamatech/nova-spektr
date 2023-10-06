@@ -1,17 +1,15 @@
 import { ApiPromise } from '@polkadot/api';
 import { Trans } from 'react-i18next';
+import { useUnit } from 'effector-react';
 
-import { Address, EraIndex } from '@renderer/domain/shared-kernel';
-import { Unlocking } from '@renderer/entities/staking';
 import { useI18n } from '@renderer/app/providers';
 import { FootnoteText, Plate, Checkbox, InfoPopover, Tooltip, Icon, Shimmering, HelpText } from '@renderer/shared/ui';
 import { ExplorerLink } from '@renderer/components/common';
-import { Explorer } from '@renderer/entities/chain';
-import { Asset, AssetBalance } from '@renderer/entities/asset';
 import { TimeToEra } from '../TimeToEra/TimeToEra';
 import { redeemableAmount } from '@renderer/shared/lib/utils';
-import { AccountAddress } from '@renderer/entities/account';
-import { SigningType } from '@renderer/entities/wallet';
+import { AccountAddress, walletModel, walletUtils } from '@renderer/entities/wallet';
+import { AssetBalance } from '@renderer/entities/asset';
+import type { Asset, Explorer, Address, EraIndex, Unlocking } from '@renderer/shared/core';
 
 const getNextUnstakingEra = (unlocking: Unlocking[] = [], era?: number): EraIndex | undefined => {
   if (!era) return undefined;
@@ -30,7 +28,6 @@ const hasRedeem = (unlocking: Unlocking[] = [], era?: number): boolean => {
 export type NominatorInfo = {
   address: Address;
   stash?: Address;
-  signingType: SigningType;
   accountName: string;
   isSelected: boolean;
   totalReward?: string;
@@ -60,6 +57,8 @@ export const NominatorsList = ({
   onToggleNominator,
 }: Props) => {
   const { t } = useI18n();
+
+  const activeWallet = useUnit(walletModel.$activeWallet);
 
   const getExplorers = (address: Address, stash?: Address, explorers: Explorer[] = []) => {
     const explorersContent = explorers.map((explorer) => ({
@@ -125,7 +124,7 @@ export const NominatorsList = ({
           return (
             <li key={stake.address}>
               <Plate className="grid grid-cols-[226px,104px,104px,16px] items-center gap-x-6">
-                {stake.signingType === SigningType.PARITY_SIGNER && nominators.length > 1 ? (
+                {!walletUtils.isWatchOnly(activeWallet) && nominators.length > 1 ? (
                   <Checkbox
                     disabled={isStakingLoading}
                     checked={stake.isSelected}

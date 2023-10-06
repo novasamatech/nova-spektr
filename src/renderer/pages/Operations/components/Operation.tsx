@@ -2,7 +2,6 @@ import { format } from 'date-fns';
 
 import { useI18n } from '@renderer/app/providers';
 import { TransactionTitle } from './TransactionTitle/TransactionTitle';
-import { MultisigAccount } from '@renderer/entities/account';
 import { FootnoteText, Accordion } from '@renderer/shared/ui';
 import { TransactionAmount } from './TransactionAmount';
 import OperationStatus from './OperationStatus';
@@ -12,6 +11,7 @@ import { useMultisigEvent } from '@renderer/entities/multisig';
 import { ChainTitle, XcmChains } from '@renderer/entities/chain';
 import { getTransactionAmount } from '../common/utils';
 import { isXcmTransaction } from '@renderer/entities/transaction';
+import type { MultisigAccount } from '@renderer/shared/core';
 
 type Props = {
   tx: MultisigTransactionDS;

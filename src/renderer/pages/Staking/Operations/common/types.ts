@@ -1,5 +1,5 @@
-import { Address } from '@renderer/domain/shared-kernel';
-import { RewardsDestination } from '@renderer/entities/staking/model/stake';
+import { Address } from '@renderer/shared/core';
+import { RewardsDestination } from '@renderer/shared/core/types/stake';
 
 export type DestinationType = {
   address?: Address;

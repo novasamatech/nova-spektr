@@ -8,7 +8,7 @@ import {
   CallHash,
   CallData,
   ChainId,
-} from '@renderer/domain/shared-kernel';
+} from '@renderer/shared/core';
 import { MultisigTxStatus } from '@renderer/entities/transaction/model/transaction';
 
 // =====================================================

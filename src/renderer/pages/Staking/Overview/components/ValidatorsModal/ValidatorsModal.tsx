@@ -3,13 +3,13 @@ import { useEffect, useState, ReactNode } from 'react';
 
 import { ExplorerLink } from '@renderer/components/common';
 import { useI18n } from '@renderer/app/providers';
-import { Asset, AssetBalance } from '@renderer/entities/asset';
-import { Explorer } from '@renderer/entities/chain';
-import { Address } from '@renderer/domain/shared-kernel';
-import { Validator } from '@renderer/domain/validator';
+import { AssetBalance } from '@renderer/entities/asset';
+import { Address } from '@renderer/shared/core';
+import { Validator } from '@renderer/shared/core/types/validator';
 import { ValidatorMap, useValidators } from '@renderer/entities/staking';
 import { getComposedIdentity, toShortAddress } from '@renderer/shared/lib/utils';
 import { NoValidators } from '../EmptyState/NoValidators';
+import type { Asset, Explorer } from '@renderer/shared/core';
 import {
   Icon,
   Identicon,

@@ -1,11 +1,11 @@
 import { PropsWithChildren } from 'react';
 
 import { BodyText, IconButton, Identicon, Plate, Truncate } from '@renderer/shared/ui';
-import { ContactDS } from '@renderer/shared/api/storage';
 import { copyToClipboard } from '@renderer/shared/lib/utils';
+import type { Contact } from '@renderer/shared/core';
 
 type Props = {
-  contact: ContactDS;
+  contact: Contact;
 };
 
 export const ContactRow = ({ contact, children }: PropsWithChildren<Props>) => {

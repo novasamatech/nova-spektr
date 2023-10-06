@@ -1,17 +1,15 @@
-import cn from 'classnames';
 import { useEffect, useState } from 'react';
+import { useUnit } from 'effector-react';
 
 import { OperationTitle, QrTextGenerator } from '@renderer/components/common';
 import { DefaultExplorer, ExplorerIcons } from '@renderer/components/common/ExplorerLink/constants';
 import { BaseModal, Button, FootnoteText, HelpText, Icon, Select } from '@renderer/shared/ui';
 import { DropdownOption, DropdownResult } from '@renderer/shared/ui/types';
 import { useI18n } from '@renderer/app/providers';
-import { copyToClipboard, DEFAULT_TRANSITION, toAddress } from '@renderer/shared/lib/utils';
-import { AccountAddress, useAccount } from '@renderer/entities/account';
-import { Chain } from '@renderer/entities/chain';
-import { Asset } from '@renderer/entities/asset';
+import { copyToClipboard, DEFAULT_TRANSITION, toAddress, cnTw } from '@renderer/shared/lib/utils';
+import { AccountAddress, accountModel, walletModel, walletUtils, accountUtils } from '@renderer/entities/wallet';
 import { useToggle } from '@renderer/shared/lib/hooks';
-import { SigningType } from '@renderer/entities/wallet';
+import type { Chain, Asset } from '@renderer/shared/core';
 
 type Props = {
   chain: Chain;
@@ -22,20 +20,19 @@ type Props = {
 // TODO: Divide into model + feature/entity
 export const ReceiveAssetModal = ({ chain, asset, onClose }: Props) => {
   const { t } = useI18n();
-  const { getActiveAccounts } = useAccount();
+  const activeWallet = useUnit(walletModel.$activeWallet);
+  const activeAccounts = useUnit(accountModel.$activeAccounts);
 
   const [isModalOpen, toggleIsModalOpen] = useToggle(true);
   const [activeAccount, setActiveAccount] = useState<DropdownResult<number>>();
   const [activeAccountsOptions, setActiveAccountsOptions] = useState<DropdownOption<number>[]>([]);
 
-  const activeAccounts = getActiveAccounts();
-
   useEffect(() => {
     const accounts = activeAccounts.reduce<DropdownOption[]>((acc, account, index) => {
-      const isWatchOnly = account.signingType === SigningType.WATCH_ONLY;
-      const isWrongChain = account.chainId && account.chainId !== chain.chainId;
+      const isWatchOnly = walletUtils.isWatchOnly(activeWallet);
+      const isChainMatch = accountUtils.isChainAccountMatch(account, chain.chainId);
 
-      if (isWatchOnly || isWrongChain) return acc;
+      if (isWatchOnly || !isChainMatch) return acc;
 
       const element = (
         <AccountAddress
@@ -99,7 +96,7 @@ export const ReceiveAssetModal = ({ chain, asset, onClose }: Props) => {
 
       <QrTextGenerator
         skipEncoding
-        className={cn('mb-4', !activeAccount && 'invisible')}
+        className={cnTw('mb-4', !activeAccount && 'invisible')}
         payload={qrCodePayload}
         size={240}
       />

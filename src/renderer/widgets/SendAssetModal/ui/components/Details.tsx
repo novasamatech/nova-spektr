@@ -1,10 +1,10 @@
 import { useI18n } from '@renderer/app/providers';
-import { Account, MultisigAccount, AddressWithExplorers } from '@renderer/entities/account';
+import { AddressWithExplorers } from '@renderer/entities/wallet';
 import { ChainTitle } from '@renderer/entities/chain';
 import { ExtendedChain } from '@renderer/entities/network';
 import { Transaction } from '@renderer/entities/transaction';
-import { Wallet } from '@renderer/entities/wallet';
 import { DetailRow } from '@renderer/shared/ui';
+import type { Wallet, Account, MultisigAccount } from '@renderer/shared/core';
 
 const AddressStyle = 'text-footnote text-inherit';
 
@@ -12,7 +12,7 @@ type Props = {
   transaction: Transaction;
   account?: Account | MultisigAccount;
   signatory?: Account;
-  wallet?: Wallet;
+  wallet: Wallet | null;
   connection?: ExtendedChain;
   withAdvanced?: boolean;
 };

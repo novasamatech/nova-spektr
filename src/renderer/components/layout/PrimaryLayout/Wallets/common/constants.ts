@@ -1,5 +1,5 @@
 import { IconNames } from '@renderer/shared/ui/Icon/data';
-import { WalletType } from '@renderer/entities/wallet/model/wallet';
+import { WalletType } from '@renderer/shared/core';
 
 export const GroupLabels: Record<WalletType, string> = {
   [WalletType.MULTISIG]: 'wallets.multisigLabel',

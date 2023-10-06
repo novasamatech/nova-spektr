@@ -1,14 +1,13 @@
 import { createContext, PropsWithChildren, useContext, useEffect, useRef, useState } from 'react';
+import { useUnit } from 'effector-react';
 
-import { createMultisigAccount, getMultisigAccountId, MultisigAccount, useAccount } from '@renderer/entities/account';
 import { getCreatedDateFromApi, toAddress, validateCallData } from '@renderer/shared/lib/utils';
-import { AccountId, Address, CallHash, ChainId } from '@renderer/domain/shared-kernel';
 import { useMultisigEvent, useMultisigTx } from '@renderer/entities/multisig';
-import { Signatory } from '@renderer/entities/signatory';
-import { useContact } from '@renderer/entities/contact';
 import { MultisigNotificationType, useNotification } from '@renderer/entities/notification';
 import { useMultisigChainContext } from '@renderer/app/providers';
 import { useNetworkContext } from '../NetworkContext';
+import { contactModel } from '@renderer/entities/contact';
+import type { Signatory, MultisigAccount, AccountId, Address, CallHash, ChainId } from '@renderer/shared/core';
 import {
   ApprovePayload,
   BaseMultisigPayload,
@@ -30,7 +29,7 @@ import {
   SigningStatus,
   useTransaction,
 } from '@renderer/entities/transaction';
-import { SigningType } from '@renderer/entities/wallet';
+import { accountModel, accountUtils } from '@renderer/entities/wallet';
 
 type MatrixContextProps = {
   matrix: ISecureMessenger;
@@ -40,10 +39,11 @@ type MatrixContextProps = {
 const MatrixContext = createContext<MatrixContextProps>({} as MatrixContextProps);
 
 export const MatrixProvider = ({ children }: PropsWithChildren) => {
-  const { getContacts } = useContact();
+  const contacts = useUnit(contactModel.$contacts);
+  const accounts = useUnit(accountModel.$accounts);
+
   const { addTask } = useMultisigChainContext();
   const { getMultisigTx, addMultisigTx, updateMultisigTx, updateCallData } = useMultisigTx({ addTask });
-  const { getAccounts, addAccount, updateAccount, setActiveAccount } = useAccount();
   const { decodeCallData } = useTransaction();
   const { connections } = useNetworkContext();
   const { addNotification } = useNotification();
@@ -86,7 +86,6 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
     try {
       validateMstAccount(accountId, signatories, threshold);
 
-      const accounts = await getAccounts();
       const mstAccount = accounts.find((a) => a.accountId === accountId) as MultisigAccount;
 
       if (!mstAccount) {
@@ -122,7 +121,7 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
   };
 
   const validateMstAccount = (accountId: AccountId, signatories: AccountId[], threshold: number) => {
-    const isValid = accountId === getMultisigAccountId(signatories, threshold);
+    const isValid = accountId === accountUtils.getMultisigAccountId(signatories, threshold);
 
     if (!isValid) {
       throw new Error(`Multisig address ${accountId} can't be derived from signatories and threshold`);
@@ -132,7 +131,6 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
   const createMstAccount = async (roomId: string, extras: SpektrExtras, makeActive: boolean) => {
     const { signatories, threshold, accountName, creatorAccountId } = extras.mstAccount;
 
-    const contacts = await getContacts();
     const contactsMap = contacts.reduce<Record<AccountId, [Address, string]>>((acc, contact) => {
       acc[contact.accountId] = [contact.address, contact.name];
 
@@ -203,9 +201,9 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
 
     if (!validateMatrixEvent(content, extras)) return;
 
-    const multisigAccount = await getMultisigAccount(extras.mstAccount.accountId);
+    const multisigAccount = accounts.find((a) => a.accountId === extras.mstAccount.accountId);
 
-    if (!multisigAccount) return;
+    if (!multisigAccount || !accountUtils.isMultisigAccount(multisigAccount)) return;
 
     const multisigTx = await getMultisigTx(
       multisigAccount.accountId,
@@ -234,16 +232,10 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
   ): boolean => {
     const { accountId, threshold, signatories } = extras.mstAccount;
     const senderIsSignatory = signatories.some((accountId) => accountId === senderAccountId);
-    const mstAccountIsValid = accountId === getMultisigAccountId(signatories, threshold);
+    const mstAccountIsValid = accountId === accountUtils.getMultisigAccountId(signatories, threshold);
     const callDataIsValid = !callData || validateCallData(callData, callHash);
 
     return senderIsSignatory && mstAccountIsValid && callDataIsValid;
-  };
-
-  const getMultisigAccount = async (accountId: AccountId): Promise<MultisigAccount | undefined> => {
-    const accounts = await getAccounts<MultisigAccount>({ signingType: SigningType.MULTISIG });
-
-    return accounts.find((a) => a.accountId === accountId) as MultisigAccount;
   };
 
   const createEvent = async (

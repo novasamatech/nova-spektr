@@ -7,10 +7,10 @@ import { DropdownOption, DropdownResult } from '@renderer/shared/ui/Dropdowns/co
 import { useI18n } from '@renderer/app/providers';
 import SignatureReaderError from './SignatureReaderError';
 import QrMultiframeSignatureReader from './QrMultiframeSignatureReader';
-import { HexString } from '@renderer/domain/shared-kernel';
 import { CameraError, CameraAccessErrors, WhiteTextButtonStyle } from '../common/constants';
 import { ErrorObject, Progress, QrError, VideoInput } from '../common/types';
 import QrSignatureReader from './QrSignatureReader';
+import type { HexString } from '@renderer/shared/core';
 import './style.css';
 
 const RESULT_DELAY = 250;

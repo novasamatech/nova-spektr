@@ -1,6 +1,6 @@
-import { Asset } from '@renderer/entities/asset';
 import { AssetBalance } from '../index';
 import { Shimmering, HelpText } from '@renderer/shared/ui';
+import type { Asset } from '@renderer/shared/core';
 
 type Props = {
   asset: Asset;

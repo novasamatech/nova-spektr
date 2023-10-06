@@ -1,8 +1,8 @@
 import { render, screen, act } from '@testing-library/react';
 import { fork } from 'effector';
 import noop from 'lodash/noop';
+import { Provider } from 'effector-react';
 
-import { TEST_ACCOUNT_ID } from '@renderer/shared/lib/utils';
 import { contactModel } from '@renderer/entities/contact';
 import { MultisigAccount } from './MultisigAccount';
 
@@ -19,13 +19,13 @@ jest.mock('@renderer/app/providers', () => ({
   }),
 }));
 
-jest.mock('@renderer/entities/account', () => ({
-  useAccount: jest.fn().mockReturnValue({
-    addAccount: jest.fn(),
-    setActiveAccount: jest.fn(),
-    getAccounts: jest.fn().mockResolvedValue([{ name: 'Test Wallet', accountId: TEST_ACCOUNT_ID }]),
-  }),
-}));
+// jest.mock('@renderer/entities/account', () => ({
+//   useAccount: jest.fn().mockReturnValue({
+//     addAccount: jest.fn(),
+//     setActiveAccount: jest.fn(),
+//     getAccounts: jest.fn().mockResolvedValue([{ name: 'Test Wallet', accountId: TEST_ACCOUNT_ID }]),
+//   }),
+// }));
 
 jest.mock('@renderer/entities/wallet', () => ({
   useWallet: jest.fn().mockReturnValue({
@@ -55,12 +55,16 @@ jest.mock('./components', () => ({
 
 describe('widgets/CreteWallet/ui/MultisigAccount', () => {
   test('should render component', async () => {
-    fork({
+    const scope = fork({
       values: new Map().set(contactModel.$contacts, []),
     });
 
     await act(async () => {
-      render(<MultisigAccount isOpen={true} onClose={noop} onComplete={noop} />);
+      render(
+        <Provider value={scope}>
+          <MultisigAccount isOpen={true} onClose={noop} onComplete={noop} />
+        </Provider>,
+      );
     });
     const text = screen.getByText('createMultisigAccount.title');
     const form = screen.getByText('walletForm');

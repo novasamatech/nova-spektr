@@ -1,12 +1,9 @@
 import { ApiPromise } from '@polkadot/api';
 import { useEffect, useState } from 'react';
-import { useStore } from 'effector-react';
+import { useStore, useUnit } from 'effector-react';
 
-import { ChainId } from '@renderer/domain/shared-kernel';
-import { useAccount, Account, isMultisig, MultisigAccount } from '@renderer/entities/account';
 import { getAssetId, TEST_ACCOUNT_ID, toAddress, toHexChainId } from '@renderer/shared/lib/utils';
-import { Chain, Explorer } from '@renderer/entities/chain';
-import { Asset, AssetType, useBalance } from '@renderer/entities/asset';
+import { useBalance } from '@renderer/entities/asset';
 import { Transaction, TransactionType, useTransaction } from '@renderer/entities/transaction';
 import { TransferForm, TransferFormData } from '../TransferForm';
 import { getAccountOption, getSignatoryOption } from '../../common/utils';
@@ -14,6 +11,9 @@ import { OperationFooter, OperationHeader } from '@renderer/features/operation';
 import * as sendAssetModel from '../../../model/send-asset';
 import { useNetworkContext } from '@renderer/app/providers';
 import { XcmTransferType } from '@renderer/shared/api/xcm';
+import { accountModel, accountUtils } from '@renderer/entities/wallet';
+import { AssetType } from '@renderer/shared/core';
+import type { ChainId, Asset, Explorer, Account, MultisigAccount, Chain } from '@renderer/shared/core';
 
 type Props = {
   api: ApiPromise;
@@ -44,9 +44,11 @@ export const InitOperation = ({
   onSignatoryChange,
 }: Props) => {
   const { buildTransaction, getTransactionHash } = useTransaction();
-  const { getActiveAccounts } = useAccount();
   const { getLiveAssetBalances } = useBalance();
   const { connections } = useNetworkContext();
+
+  const activeAccounts = useUnit(accountModel.$activeAccounts);
+
   const availableDestinations = useStore(sendAssetModel.$destinations);
   const config = useStore(sendAssetModel.$finalConfig);
   const xcmAsset = useStore(sendAssetModel.$txAsset);
@@ -57,8 +59,6 @@ export const InitOperation = ({
   const xcmWeight = useStore(sendAssetModel.$xcmWeight);
   const reserveAsset = useStore(sendAssetModel.$xcmAsset);
 
-  const accounts = getActiveAccounts();
-
   const [fee, setFee] = useState<string>('0');
   const [feeIsLoading, setFeeIsLoading] = useState(false);
   const [deposit, setDeposit] = useState<string>('0');
@@ -68,12 +68,12 @@ export const InitOperation = ({
   const [activeAccount, setActiveAccount] = useState<Account | MultisigAccount>();
   const [activeSignatory, setActiveSignatory] = useState<Account>();
 
-  const accountIds = accounts.map((account) => account.accountId);
+  const accountIds = activeAccounts.map((account) => account.accountId);
   const balances = getLiveAssetBalances(accountIds, chainId, asset?.assetId.toString() || '');
   const nativeBalances = getLiveAssetBalances(accountIds, chainId, nativeToken?.assetId.toString() || '');
 
-  const accountIsMultisig = activeAccount && isMultisig(activeAccount);
-  const signatoryIds = accountIsMultisig ? (activeAccount as MultisigAccount).signatories.map((s) => s.accountId) : [];
+  const isMultisigAccount = activeAccount && accountUtils.isMultisigAccount(activeAccount);
+  const signatoryIds = isMultisigAccount ? activeAccount.signatories.map((s) => s.accountId) : [];
   const signatoriesBalances = getLiveAssetBalances(
     signatoryIds,
     chainId,
@@ -105,12 +105,12 @@ export const InitOperation = ({
   }, [availableDestinations.length]);
 
   useEffect(() => {
-    setActiveAccount(accounts[0]);
-    onAccountChange(accounts[0]);
-  }, [accounts.length, accounts[0]?.accountId]);
+    setActiveAccount(activeAccounts[0]);
+    onAccountChange(activeAccounts[0]);
+  }, [activeAccounts.length, activeAccounts[0]?.accountId]);
 
   useEffect(() => {
-    if (!isMultisig(activeAccount)) {
+    if (!isMultisigAccount) {
       setDeposit('0');
     }
   }, [activeAccount]);
@@ -219,7 +219,7 @@ export const InitOperation = ({
       <TransferForm
         chain={connections[chainId]}
         network={network}
-        accounts={accounts}
+        accounts={activeAccounts}
         account={activeAccount}
         signer={activeSignatory}
         asset={asset}
@@ -236,7 +236,7 @@ export const InitOperation = ({
         header={
           <OperationHeader
             chainId={chainId}
-            accounts={accounts}
+            accounts={activeAccounts}
             getSignatoryOption={getSignatoryDrowdownOption}
             getAccountOption={getAccountDropdownOption}
             onSignatoryChange={changeSignatory}

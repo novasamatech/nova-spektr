@@ -1,17 +1,18 @@
 import { useForm, Controller, SubmitHandler } from 'react-hook-form';
 import { useState, useEffect, ReactNode } from 'react';
 import { Trans, TFunction } from 'react-i18next';
+import { useUnit } from 'effector-react';
 
-import { Identicon, Button, AmountInput, InputHint, Combobox, RadioGroup, Input } from '@renderer/shared/ui';
+import { AmountInput, Button, Combobox, Identicon, Input, InputHint, RadioGroup } from '@renderer/shared/ui';
 import { useI18n } from '@renderer/app/providers';
-import { RewardsDestination } from '@renderer/entities/staking';
 import { validateAddress } from '@renderer/shared/lib/utils';
-import { Asset, useBalance } from '@renderer/entities/asset';
-import { Address, ChainId, AccountId } from '@renderer/domain/shared-kernel';
+import { useBalance } from '@renderer/entities/asset';
 import { RadioOption } from '@renderer/shared/ui/RadioGroup/common/types';
 import { DropdownOption, ComboboxOption } from '@renderer/shared/ui/Dropdowns/common/types';
-import { useAccount } from '@renderer/entities/account';
 import { getPayoutAccountOption } from '../../common/utils';
+import type { Asset, Address, ChainId, AccountId } from '@renderer/shared/core';
+import { RewardsDestination } from '@renderer/shared/core';
+import { accountModel, accountUtils } from '@renderer/entities/wallet';
 
 const getDestinations = (t: TFunction): RadioOption<RewardsDestination>[] => {
   const Options = [
@@ -78,16 +79,21 @@ export const OperationForm = ({
   onSubmit,
 }: Props) => {
   const { t } = useI18n();
-  const { getLiveAccounts } = useAccount();
+  const dbAccounts = useUnit(accountModel.$accounts);
+
   const { getLiveAssetBalances } = useBalance();
 
-  const dbAccounts = getLiveAccounts();
   const destinations = getDestinations(t);
 
   const [activePayout, setActivePayout] = useState<Address>('');
   const [payoutAccounts, setPayoutAccounts] = useState<ComboboxOption<Address>[]>([]);
 
-  const destAccounts = dbAccounts.filter((a) => !a.chainId || a.chainId === chainId);
+  const destAccounts = dbAccounts.filter((a) => {
+    const isBaseAccount = accountUtils.isBaseAccount(a);
+    const isChainAccountMatch = accountUtils.isChainAccountMatch(a, chainId);
+
+    return isChainAccountMatch || isBaseAccount;
+  });
   const payoutIds = destAccounts.map((a) => a.accountId);
   const balances = getLiveAssetBalances(payoutIds, chainId, asset.assetId.toString());
 
@@ -128,7 +134,10 @@ export const OperationForm = ({
 
   useEffect(() => {
     const payoutAccounts = destAccounts.reduce<DropdownOption<Address>[]>((acc, account) => {
-      if (!account.chainId || account.chainId === chainId) {
+      const isBaseAccount = accountUtils.isBaseAccount(account);
+      const isChainAccountMatch = accountUtils.isChainAccountMatch(account, chainId);
+
+      if (isChainAccountMatch || isBaseAccount) {
         const balance = balances.find((b) => b.accountId === account.accountId);
         const option = getPayoutAccountOption(account, { asset, addressPrefix, balance });
 

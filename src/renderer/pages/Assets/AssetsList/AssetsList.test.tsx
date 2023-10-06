@@ -1,9 +1,11 @@
 import { render, screen } from '@testing-library/react';
+import { fork } from 'effector';
+import { Provider } from 'effector-react';
 
 import { TEST_ACCOUNT_ID } from '@renderer/shared/lib/utils';
-import { ConnectionType } from '@renderer/domain/connection';
-import { useAccount } from '@renderer/entities/account';
+import { ConnectionType } from '@renderer/shared/core';
 import { AssetsList } from './AssetsList';
+import { accountModel } from '@renderer/entities/wallet';
 
 jest.mock('@renderer/app/providers', () => ({
   useI18n: jest.fn().mockReturnValue({
@@ -15,14 +17,6 @@ jest.mock('@renderer/app/providers', () => ({
       '0x01': CHAINS[1],
     },
   })),
-}));
-
-jest.mock('@renderer/entities/account', () => ({
-  useAccount: jest.fn().mockReturnValue({
-    getActiveAccounts: () => [{ name: 'Test Wallet', accountId: TEST_ACCOUNT_ID }],
-  }),
-  AddressWithExplorers: ({ address }: { address: string }) => <span data-testid="validator">{address}</span>,
-  isMultisig: () => true,
 }));
 
 const CHAINS = [
@@ -58,26 +52,34 @@ jest.mock('./components/NetworkAssets/NetworkAssets', () => ({
 }));
 
 describe('pages/Assets/Assets', () => {
+  const scope = fork({
+    values: new Map().set(accountModel.$activeAccounts, [{ name: 'Test Wallet', accountId: TEST_ACCOUNT_ID }]),
+  });
+
+  const renderComponent = () => {
+    render(
+      <Provider value={scope}>
+        <AssetsList />
+      </Provider>,
+    );
+  };
+
   test('should render component', () => {
-    render(<AssetsList />);
+    renderComponent();
 
     const text = screen.getByText('balances.title');
     expect(text).toBeInTheDocument();
   });
 
   test('should render networks', () => {
-    render(<AssetsList />);
+    renderComponent();
 
     const balances = screen.getAllByText('NetworkAssets');
     expect(balances).toHaveLength(2);
   });
 
   test('should render empty state', () => {
-    (useAccount as jest.Mock).mockReturnValue({
-      getActiveAccounts: () => [{ name: 'Test Wallet', accountId: TEST_ACCOUNT_ID }],
-    });
-
-    render(<AssetsList />);
+    renderComponent();
 
     const noResults = screen.getByTestId('emptyList-img');
     expect(noResults).toBeInTheDocument();

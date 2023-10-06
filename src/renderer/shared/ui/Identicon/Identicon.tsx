@@ -3,7 +3,7 @@ import { IconTheme } from '@polkadot/react-identicon/types';
 import { useLayoutEffect, useRef, memo, SyntheticEvent } from 'react';
 
 import { cnTw, copyToClipboard } from '@renderer/shared/lib/utils';
-import { Address } from '@renderer/domain/shared-kernel';
+import { Address } from '@renderer/shared/core';
 import Icon from '../Icon/Icon';
 
 type Props = {

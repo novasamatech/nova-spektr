@@ -1,6 +1,6 @@
 import { SigningProps } from '../../model';
 import { VaultSigning } from '../VaultSigning/VaultSigning';
-import { SigningType } from '@renderer/entities/wallet/model/wallet';
+import { SigningType } from '@renderer/shared/core';
 
 export const SigningFlow: Record<SigningType, (props: SigningProps) => JSX.Element | null> = {
   [SigningType.MULTISIG]: (props) => <VaultSigning {...props} />,
@@ -9,7 +9,7 @@ export const SigningFlow: Record<SigningType, (props: SigningProps) => JSX.Eleme
 };
 
 export const Signing = (props: SigningProps) => {
-  const signingType = props.accounts[0].signingType;
+  if (!props.wallet) return null;
 
-  return SigningFlow[signingType](props);
+  return SigningFlow[props.wallet.signingType](props);
 };

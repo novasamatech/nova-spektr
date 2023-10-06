@@ -2,10 +2,10 @@ import { attach, combine, createApi, createStore, forward, sample } from 'effect
 import { createForm } from 'effector-forms';
 import { not } from 'patronum';
 
-import { Contact, contactModel } from '@renderer/entities/contact';
+import { contactModel } from '@renderer/entities/contact';
+import { Contact } from '@renderer/shared/core';
 import { toAccountId, validateAddress } from '@renderer/shared/lib/utils';
 import { validateFullUserName } from '@renderer/shared/api/matrix';
-import { ContactDS } from '@renderer/shared/api/storage';
 
 export type Callbacks = {
   onSubmit: () => void;
@@ -16,9 +16,9 @@ const callbacksApi = createApi($callbacks, {
   callbacksChanged: (state, props: Callbacks) => ({ ...state, ...props }),
 });
 
-export const $contactToEdit = createStore<ContactDS | null>(null);
+export const $contactToEdit = createStore<Contact | null>(null);
 const contactApi = createApi($contactToEdit, {
-  formInitiated: (state, props: ContactDS) => ({ ...state, ...props }),
+  formInitiated: (state, props: Contact) => ({ ...state, ...props }),
 });
 
 export const contactForm = createForm({
@@ -111,7 +111,7 @@ const editContactFx = attach({
     form: contactForm.$values,
   },
   mapParams: (_, { contactToEdit, form }) => {
-    return { ...form, id: contactToEdit?.id, accountId: toAccountId(form.address) };
+    return { ...form, id: contactToEdit.id, accountId: toAccountId(form.address) };
   },
 });
 

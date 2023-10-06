@@ -1,9 +1,8 @@
 import { BN } from '@polkadot/util';
 import BigNumber from 'bignumber.js';
 
-import { Balance } from '@renderer/entities/asset/model/balance';
 import { Decimal, totalAmount } from '@renderer/shared/lib/utils';
-import { Asset } from '@renderer/entities/asset/model/asset';
+import type { Asset, Balance } from '@renderer/shared/core';
 
 export const sumBalances = (firstBalance: Balance, secondBalance?: Balance): Balance => {
   if (!secondBalance) return firstBalance;

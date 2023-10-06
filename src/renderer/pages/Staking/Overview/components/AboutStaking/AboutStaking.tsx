@@ -4,10 +4,9 @@ import { Trans } from 'react-i18next';
 
 import { Duration, Shimmering, FootnoteText } from '@renderer/shared/ui';
 import { useI18n } from '@renderer/app/providers';
-import { Asset, AssetBalance } from '@renderer/entities/asset';
-import { EraIndex } from '@renderer/domain/shared-kernel';
-import { Validator } from '@renderer/domain/validator';
+import { AssetBalance } from '@renderer/entities/asset';
 import { useStakingData } from '@renderer/entities/staking';
+import type { Asset, EraIndex, Validator } from '@renderer/shared/core';
 
 type Props = {
   api?: ApiPromise;

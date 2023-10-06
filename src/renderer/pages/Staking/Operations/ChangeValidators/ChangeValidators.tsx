@@ -1,11 +1,10 @@
 import { UnsignedTransaction } from '@substrate/txwrapper-polkadot';
 import { useState, useEffect } from 'react';
 import { Navigate, useNavigate, useParams, useSearchParams } from 'react-router-dom';
+import { useUnit } from 'effector-react';
 
 import { useI18n, useNetworkContext, Paths } from '@renderer/app/providers';
-import { ChainId, HexString, Address } from '@renderer/domain/shared-kernel';
 import { Transaction, TransactionType, useTransaction } from '@renderer/entities/transaction';
-import { useAccount, Account, isMultisig } from '@renderer/entities/account';
 import { ValidatorMap } from '@renderer/entities/staking';
 import { toAddress, getRelaychainAsset, DEFAULT_TRANSITION } from '@renderer/shared/lib/utils';
 import { Confirmation, Submit, Validators, NoAsset } from '../components';
@@ -15,6 +14,8 @@ import InitOperation, { ValidatorsResult } from './InitOperation/InitOperation';
 import { isLightClient } from '@renderer/entities/network';
 import { OperationTitle } from '@renderer/components/common';
 import { Signing } from '@renderer/features/operation';
+import type { Account, ChainId, HexString, Address } from '@renderer/shared/core';
+import { accountModel, walletUtils, walletModel } from '@renderer/entities/wallet';
 
 const enum Step {
   INIT,
@@ -26,8 +27,10 @@ const enum Step {
 
 export const ChangeValidators = () => {
   const { t } = useI18n();
+  const activeWallet = useUnit(walletModel.$activeWallet);
+  const activeAccounts = useUnit(accountModel.$activeAccounts) || [];
+
   const navigate = useNavigate();
-  const { getActiveAccounts } = useAccount();
   const { setTxs, txs, setWrappers, wrapTx, buildTransaction } = useTransaction();
   const { connections } = useNetworkContext();
   const [searchParams] = useSearchParams();
@@ -48,9 +51,10 @@ export const ChangeValidators = () => {
   const [signer, setSigner] = useState<Account>();
   const [signatures, setSignatures] = useState<HexString[]>([]);
 
+  const isMultisigWallet = walletUtils.isMultisig(activeWallet);
+
   const accountIds = searchParams.get('id')?.split(',') || [];
   const chainId = params.chainId || ('' as ChainId);
-  const activeAccounts = getActiveAccounts();
 
   useEffect(() => {
     if (!activeAccounts.length || !accountIds.length) return;
@@ -121,7 +125,7 @@ export const ChangeValidators = () => {
   }
 
   const onInitResult = ({ accounts, signer, description }: ValidatorsResult) => {
-    if (signer && isMultisig(accounts[0])) {
+    if (signer && isMultisigWallet) {
       setSigner(signer);
       setDescription(description || '');
     }
@@ -133,7 +137,7 @@ export const ChangeValidators = () => {
   const onSelectValidators = (validators: ValidatorMap) => {
     const transactions = getNominateTxs(Object.keys(validators));
 
-    if (signer && isMultisig(txAccounts[0])) {
+    if (signer && isMultisigWallet) {
       setWrappers([
         {
           signatoryId: signer.accountId,
@@ -162,7 +166,7 @@ export const ChangeValidators = () => {
   };
 
   const explorersProps = { explorers, addressPrefix, asset };
-  const multisigTx = isMultisig(txAccounts[0]) ? wrapTx(txs[0], api, addressPrefix) : undefined;
+  const multisigTx = isMultisigWallet ? wrapTx(txs[0], api, addressPrefix) : undefined;
 
   return (
     <>

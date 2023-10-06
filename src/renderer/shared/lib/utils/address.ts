@@ -1,7 +1,7 @@
 import { isHex, isU8a, u8aToHex, u8aToU8a } from '@polkadot/util';
 import { base58Decode, checkAddressChecksum, decodeAddress, encodeAddress } from '@polkadot/util-crypto';
 
-import { AccountId, Address } from '@renderer/domain/shared-kernel';
+import { AccountId, Address } from '@renderer/shared/core';
 import {
   ADDRESS_ALLOWED_ENCODED_LENGTHS,
   PUBLIC_KEY_LENGTH,

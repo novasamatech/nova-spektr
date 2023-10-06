@@ -5,8 +5,8 @@ import { HexString } from '@polkadot/util/types';
 import { Type } from '@polkadot/types';
 
 import { parseXcmPalletExtrinsic, parseXTokensExtrinsic, decodeXcm } from '@renderer/shared/api/xcm';
-import { Address, CallData, ChainId } from '@renderer/domain/shared-kernel';
 import { DecodedTransaction, TransactionType } from '@renderer/entities/transaction/model/transaction';
+import type { Address, CallData, ChainId } from '@renderer/shared/core';
 import { ICallDataDecoder } from './common/types';
 import {
   BOND_WITH_CONTROLLER_ARGS_AMOUNT,

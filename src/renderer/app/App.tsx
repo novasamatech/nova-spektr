@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react';
 import { ErrorBoundary } from 'react-error-boundary';
 import { useNavigate, useRoutes } from 'react-router-dom';
+import { useUnit } from 'effector-react';
 
 import { FallbackScreen } from '@renderer/components/common';
-import { useAccount } from '@renderer/entities/account';
 import { CreateWalletProvider } from '@renderer/widgets/CreateWallet';
+import { accountModel } from '@renderer/entities/wallet';
 import {
   ConfirmDialogProvider,
   I18Provider,
@@ -18,28 +19,23 @@ import {
 
 const SPLASH_SCREEN_DELAY = 450;
 
-const App = () => {
+export const App = () => {
   const navigate = useNavigate();
   const appRoutes = useRoutes(routesConfig);
-  const { getAccounts } = useAccount();
+  const accounts = useUnit(accountModel.$accounts);
 
   const [showSplashScreen, setShowSplashScreen] = useState(true);
-  const [isAccountsLoading, setIsAccountsLoading] = useState(true);
 
   useEffect(() => {
-    setTimeout(() => setShowSplashScreen(false), SPLASH_SCREEN_DELAY);
-
-    getAccounts().then((accounts) => {
-      setIsAccountsLoading(false);
-
-      if (accounts.length === 0) {
-        navigate(Paths.ONBOARDING, { replace: true });
-      }
-    });
-  }, []);
+    if (accounts.length === 0) {
+      navigate(Paths.ONBOARDING, { replace: true });
+    } else {
+      setTimeout(() => setShowSplashScreen(false), SPLASH_SCREEN_DELAY);
+    }
+  }, [accounts.length]);
 
   const getContent = () => {
-    if (showSplashScreen || isAccountsLoading) return null;
+    if (showSplashScreen) return null;
 
     document.querySelector('.splash_placeholder')?.remove();
 
@@ -65,5 +61,3 @@ const App = () => {
     </I18Provider>
   );
 };
-
-export default App;
