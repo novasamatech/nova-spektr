@@ -177,10 +177,10 @@ export const cleanAmount = (amount: string) => {
   return trimLeadingZeros(amount).replace(/,/g, '');
 };
 
-const getDecimalPlaceForFirstNonZeroChar = (value: string) => {
+const getDecimalPlaceForFirstNonZeroChar = (value: string, nonZeroDigits = 3) => {
   const decimalPart = value.toString().split('.')[1];
 
-  return Math.max((decimalPart || '').search(/[1-9]/) + 3, 5);
+  return Math.max((decimalPart || '').search(/[1-9]/) + nonZeroDigits, 5);
 };
 
 export const formatFiatBalance = (balance = '0', precision = 0): FormattedBalance => {
@@ -234,7 +234,11 @@ export const formatFiatBalance = (balance = '0', precision = 0): FormattedBalanc
   };
 };
 
-export const getRoundedFiatValue = (assetBalance: string, price: number, precision: number) => {
+export const getRoundedValue = (assetBalance = '0', price: number, precision = 0, nonZeroDigits?: number): string => {
+  if (Number(assetBalance) === 0 || isNaN(Number(assetBalance))) {
+    return ZERO_BALANCE;
+  }
+
   const fiatBalance = new BigNumber(price).multipliedBy(new BigNumber(assetBalance));
   const BNWithConfig = BigNumber.clone();
   BNWithConfig.config({
@@ -246,12 +250,12 @@ export const getRoundedFiatValue = (assetBalance: string, price: number, precisi
   const bnFiatBalance = new BNWithConfig(fiatBalance.toString()).div(TEN.pow(bnPrecision));
 
   if (bnFiatBalance.gte(1) && bnFiatBalance.lt(10)) {
-    return bnFiatBalance.decimalPlaces(Decimal.SMALL_NUMBER);
+    return bnFiatBalance.decimalPlaces(Decimal.SMALL_NUMBER).toString();
   } else if (bnFiatBalance.gt(10)) {
-    return bnFiatBalance.decimalPlaces(Decimal.BIG_NUMBER);
+    return bnFiatBalance.decimalPlaces(Decimal.BIG_NUMBER).toString();
   }
 
-  const decimalPlaces = getDecimalPlaceForFirstNonZeroChar(bnFiatBalance.toFixed());
+  const decimalPlaces = getDecimalPlaceForFirstNonZeroChar(bnFiatBalance.toFixed(), nonZeroDigits);
 
-  return bnFiatBalance.decimalPlaces(decimalPlaces).toFixed();
+  return bnFiatBalance.toFixed(decimalPlaces);
 };

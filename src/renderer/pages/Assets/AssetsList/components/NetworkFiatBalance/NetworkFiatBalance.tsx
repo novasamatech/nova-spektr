@@ -3,7 +3,7 @@ import { useUnit } from 'effector-react';
 import BN from 'bignumber.js';
 
 import { Asset, Balance } from '@renderer/entities/asset';
-import { formatFiatBalance, getRoundedFiatValue, totalAmount } from '@renderer/shared/lib/utils';
+import { formatFiatBalance, getRoundedValue, totalAmount } from '@renderer/shared/lib/utils';
 import { FiatBalance } from '@renderer/entities/price/ui/FiatBalance';
 import { currencyModel, priceProviderModel } from '@renderer/entities/price';
 import { useI18n } from '@renderer/app/providers';
@@ -32,7 +32,7 @@ export const NetworkFiatBalance = ({ assets, balances, className }: Props) => {
       const balance = balances[asset.assetId.toString()];
 
       if (price && balance) {
-        const bnFiatBalance = getRoundedFiatValue(totalAmount(balance), price.price, asset.precision);
+        const bnFiatBalance = getRoundedValue(totalAmount(balance), price.price, asset.precision);
         acc = acc.plus(bnFiatBalance);
       }
 
