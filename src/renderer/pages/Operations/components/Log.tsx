@@ -3,19 +3,18 @@ import { format } from 'date-fns';
 
 import { useI18n } from '@renderer/app/providers';
 import { Account, MultisigAccount } from '@renderer/entities/account';
-import { ExtendedChain } from '@renderer/entities/network';
+import { chainsService, ExtendedChain } from '@renderer/entities/network';
 import { MultisigEvent, SigningStatus } from '@renderer/entities/transaction/model/transaction';
-import { TransferTypes, XcmTypes } from '@renderer/entities/transaction/lib/common/constants';
 import { TransactionTitle } from './TransactionTitle/TransactionTitle';
 import OperationStatus from './OperationStatus';
-import { getSignatoryName, sortByDateAsc } from '../common/utils';
+import { getSignatoryName, getTransactionAmount, sortByDateAsc } from '../common/utils';
 import { BaseModal, BodyText, FootnoteText, Identicon } from '@renderer/shared/ui';
-import { toAddress, SS58_DEFAULT_PREFIX } from '@renderer/shared/lib/utils';
+import { toAddress, SS58_DEFAULT_PREFIX, getAssetById } from '@renderer/shared/lib/utils';
 import { ExtrinsicExplorers } from '@renderer/components/common';
 import { Contact } from '@renderer/entities/contact';
 import { useMultisigEvent } from '@renderer/entities/multisig';
 import { MultisigTransactionDS } from '@renderer/shared/api/storage';
-import { TransactionAmount } from '../components/TransactionAmount';
+import { AssetBalance } from '@renderer/entities/asset';
 
 type Props = {
   tx: MultisigTransactionDS;
@@ -43,6 +42,10 @@ const LogModal = ({ isOpen, onClose, tx, account, connection, contacts, accounts
   const { transaction, description, status } = tx;
   const approvals = events.filter((e) => e.status === 'SIGNED');
 
+  const asset =
+    tx.transaction && getAssetById(tx.transaction.args.asset, chainsService.getChainById(tx.chainId)?.assets);
+  const amount = tx.transaction && getTransactionAmount(tx.transaction);
+
   const addressPrefix = connection?.addressPrefix || SS58_DEFAULT_PREFIX;
 
   const groupedEvents = groupBy(events, ({ dateCreated }) =>
@@ -66,12 +69,6 @@ const LogModal = ({ isOpen, onClose, tx, account, connection, contacts, accounts
     return `${signatoryName} ${t(eventMessage)}`;
   };
 
-  const showTxAmount = (): boolean => {
-    if (!transaction?.type) return false;
-
-    return [...TransferTypes, ...XcmTypes].includes(transaction.type);
-  };
-
   return (
     <BaseModal
       title={t('log.title')}
@@ -84,9 +81,7 @@ const LogModal = ({ isOpen, onClose, tx, account, connection, contacts, accounts
     >
       <div className="flex gap-2 items-center justify-between px-4 py-3">
         <TransactionTitle className="overflow-hidden" tx={transaction} description={description}>
-          {transaction && showTxAmount() && (
-            <TransactionAmount className="truncate" tx={transaction} showIcon={false} />
-          )}
+          {asset && amount && <AssetBalance value={amount} asset={asset} className="truncate" />}
         </TransactionTitle>
 
         <OperationStatus
