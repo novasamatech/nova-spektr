@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Outlet } from 'react-router-dom';
+import { useUnit } from 'effector-react';
 
 import { BodyText, Button, Icon, SmallTitleText } from '@renderer/shared/ui';
 import { useI18n, useNetworkContext } from '@renderer/app/providers';
@@ -13,6 +14,7 @@ import { useSettingsStorage } from '@renderer/entities/settings';
 import { Account, isMultisig, useAccount } from '@renderer/entities/account';
 import { AssetsFilters, NetworkAssets, SelectShardModal } from './components';
 import { Header } from '@renderer/components/common';
+import { currencyModel, priceProviderModel } from '@renderer/entities/price';
 
 export const AssetsList = () => {
   const { t } = useI18n();
@@ -20,6 +22,10 @@ export const AssetsList = () => {
   const { getActiveAccounts } = useAccount();
   const { getLiveBalances } = useBalance();
   const { setHideZeroBalance, getHideZeroBalance } = useSettingsStorage();
+
+  const assetsPrices = useUnit(priceProviderModel.$assetsPrices);
+  const fiatFlag = useUnit(priceProviderModel.$fiatFlag);
+  const currency = useUnit(currencyModel.$activeCurrency);
 
   const [isSelectShardsOpen, toggleSelectShardsOpen] = useToggle();
 
@@ -38,6 +44,10 @@ export const AssetsList = () => {
   const activeWallet = activeAccountsFromWallet.length > 0 && activeAccountsFromWallet[0].walletId;
 
   useEffect(() => {
+    priceProviderModel.events.assetsPricesRequested({ includeRates: true });
+  }, []);
+
+  useEffect(() => {
     updateAccounts(activeAccountsFromWallet);
   }, [firstActiveAccount, activeWallet]);
 
@@ -54,8 +64,15 @@ export const AssetsList = () => {
       return !isDisabled && hasMultiPallet;
     });
 
-    setSortedChains(chainsService.sortChainsByBalance(filteredChains, balances));
-  }, [balances]);
+    setSortedChains(
+      chainsService.sortChainsByBalance(
+        filteredChains,
+        balances,
+        assetsPrices,
+        fiatFlag ? currency?.coingeckoId : undefined,
+      ),
+    );
+  }, [balances, assetsPrices]);
 
   const updateHideZeroBalance = (value: boolean) => {
     setHideZeroBalance(value);

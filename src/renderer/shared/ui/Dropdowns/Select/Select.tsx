@@ -64,7 +64,7 @@ const Select = <T extends any>({
               'w-full flex items-center gap-x-2 justify-between pr-2',
             )}
           >
-            {selectedOption ? (
+            {selectedOption && !open ? (
               typeof selectedOption.element === 'string' ? (
                 <FootnoteText as="span" className={cnTw('truncate', ButtonTextFilledStyle[theme])}>
                   {selectedOption.element}
@@ -93,8 +93,8 @@ const Select = <T extends any>({
                   key={id}
                   value={{ id, value }}
                   disabled={disabled}
-                  className={({ active, selected }) =>
-                    cnTw(OptionStyle, disabled ? 'cursor-default' : OptionStyleTheme[theme](active, selected))
+                  className={({ active }) =>
+                    cnTw(OptionStyle, disabled ? 'cursor-default' : OptionStyleTheme[theme](active, id === selectedId))
                   }
                 >
                   {['string', 'number'].includes(typeof element) ? (

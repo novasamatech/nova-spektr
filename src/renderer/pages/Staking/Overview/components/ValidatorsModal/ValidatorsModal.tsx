@@ -21,6 +21,7 @@ import {
   BodyText,
   Accordion,
 } from '@renderer/shared/ui';
+import { AssetFiatBalance } from '@renderer/entities/price/ui/AssetFiatBalance';
 
 type Props = {
   api?: ApiPromise;
@@ -103,8 +104,14 @@ export const ValidatorsModal = ({
                 <BodyText>{toShortAddress(validator.address, 11)}</BodyText>
               )}
             </div>
-            <AssetBalance value={validator.ownStake || '0'} asset={asset} />
-            <AssetBalance value={validator.totalStake || '0'} asset={asset} />
+            <div className="flex flex-col items-end">
+              <AssetBalance value={validator.ownStake || '0'} asset={asset} />
+              <AssetFiatBalance amount={validator.ownStake} asset={asset} />
+            </div>
+            <div className="flex flex-col items-end">
+              <AssetBalance value={validator.totalStake || '0'} asset={asset} />
+              <AssetFiatBalance amount={validator.totalStake} asset={asset} />
+            </div>
             <Icon name="info" size={14} className="group-hover:text-icon-hover" />
           </div>
         </InfoPopover>
@@ -142,14 +149,14 @@ export const ValidatorsModal = ({
               </Accordion.Button>
               <Accordion.Content>
                 <div className="flex flex-col gap-y-2 mt-4">
-                  <div className="grid grid-cols-[400px,130px,1fr] items-center gap-x-6 px-5">
+                  <div className="grid grid-cols-[400px,130px,130px,1fr] items-center gap-x-6 px-5">
                     <FootnoteText className="text-text-tertiary">
                       {t('staking.validators.validatorTableHeader')}
                     </FootnoteText>
-                    <FootnoteText className="text-text-tertiary">
+                    <FootnoteText className="text-text-tertiary" align="right">
                       {t('staking.validators.ownStakeTableHeader')}
                     </FootnoteText>
-                    <FootnoteText className="text-text-tertiary">
+                    <FootnoteText className="text-text-tertiary" align="right">
                       {t('staking.validators.totalStakeTableHeader')}
                     </FootnoteText>
                   </div>
@@ -174,10 +181,10 @@ export const ValidatorsModal = ({
                     <FootnoteText className="text-text-tertiary">
                       {t('staking.validators.validatorTableHeader')}
                     </FootnoteText>
-                    <FootnoteText className="text-text-tertiary">
+                    <FootnoteText className="text-text-tertiary" align="right">
                       {t('staking.validators.ownStakeTableHeader')}
                     </FootnoteText>
-                    <FootnoteText className="text-text-tertiary">
+                    <FootnoteText className="text-text-tertiary" align="right">
                       {t('staking.validators.totalStakeTableHeader')}
                     </FootnoteText>
                   </div>

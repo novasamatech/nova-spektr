@@ -6,6 +6,7 @@ import ArrowLeftCutoutImg, { ReactComponent as ArrowLeftCutoutSvg } from '@image
 import SendArrowImg, { ReactComponent as SendArrowSvg } from '@images/arrows/send-arrow.svg';
 import ReceiveArrowImg, { ReactComponent as ReceiveArrowSvg } from '@images/arrows/receive-arrow.svg';
 import CurveArrowImg, { ReactComponent as CurveArrowSvg } from '@images/arrows/arrow-curve-left-right.svg';
+import SwapArrowImg, { ReactComponent as SwapArrowSvg } from '@images/arrows/swap-arrow.svg';
 import CrossChainImg, { ReactComponent as CrossChainSvg } from '@images/arrows/cross-chain-arrow.svg';
 
 const ArrowImages = {
@@ -17,6 +18,7 @@ const ArrowImages = {
   sendArrow: { svg: SendArrowSvg, img: SendArrowImg },
   receiveArrow: { svg: ReceiveArrowSvg, img: ReceiveArrowImg },
   curveArrow: { svg: CurveArrowSvg, img: CurveArrowImg },
+  swapArrow: { svg: SwapArrowSvg, img: SwapArrowImg },
   crossChain: { svg: CrossChainSvg, img: CrossChainImg },
 } as const;
 

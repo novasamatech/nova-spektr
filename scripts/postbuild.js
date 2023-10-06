@@ -13,6 +13,11 @@ async function createPackageJSONDistVersion() {
     ...restOfPackageJSON,
   };
 
+  // Check if the script was run with the 'stage' argument
+  if (process.argv.includes('stage')) {
+    packageJSONDistVersion.name += '-stage';
+  }
+
   try {
     await writeFile(
       resolve(APP_CONFIG.FOLDERS.DEV_BUILD, 'package.json'),

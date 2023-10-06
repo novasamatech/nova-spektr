@@ -29,6 +29,7 @@ import {
   isXcmTransaction,
   MAX_WEIGHT,
 } from '@renderer/entities/transaction';
+import { priceProviderModel } from '@renderer/entities/price';
 
 type Props = {
   tx: MultisigTransactionDS;
@@ -81,6 +82,10 @@ const ApproveTx = ({ tx, account, connection }: Props) => {
 
     return isSignatory && !isSigned && isCurrentChain && !isWatchOnly;
   });
+
+  useEffect(() => {
+    priceProviderModel.events.assetsPricesRequested({ includeRates: true });
+  }, []);
 
   useEffect(() => {
     setFeeTx(getMultisigTx(TEST_ADDRESS));

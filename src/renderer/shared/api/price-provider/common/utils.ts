@@ -1,10 +1,10 @@
 import { PriceObject, PriceDB } from './types';
 
-export const getCurrencyChangeKey = (currency: string): string => {
+export function getCurrencyChangeKey(currency: string): string {
   return `${currency}_24h_change`;
-};
+}
 
-export const convertPriceToDBView = (price: PriceObject): PriceDB[] => {
+export function convertPriceToDBView(price: PriceObject): PriceDB[] {
   const priceDB: PriceDB[] = [];
 
   Object.entries(price).forEach(([assetId, assetPrice]) => {
@@ -19,19 +19,16 @@ export const convertPriceToDBView = (price: PriceObject): PriceDB[] => {
   });
 
   return priceDB;
-};
+}
 
-export const convertPriceToObjectView = (prices: PriceDB[]): PriceObject => {
+export function convertPriceToObjectView(prices: PriceDB[]): PriceObject {
   return prices.reduce<PriceObject>((result, { assetId, currency, price, change }) => {
     if (!result[assetId]) {
       result[assetId] = {};
     }
 
-    result[assetId][currency] = {
-      price,
-      change,
-    };
+    result[assetId][currency] = { price, change };
 
     return result;
   }, {});
-};
+}
