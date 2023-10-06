@@ -1,7 +1,7 @@
 import { createKeyMulti } from '@polkadot/util-crypto';
 import { u8aToHex } from '@polkadot/util';
 
-import { AccountDS, ID, WalletDS } from '@renderer/shared/api/storage';
+import { AccountDS, ID } from '@renderer/shared/api/storage';
 import {
   AccountId,
   ChainId,
@@ -12,6 +12,7 @@ import {
   WalletType,
 } from '../../../domain/shared-kernel';
 import { Signatory } from '@renderer/entities/signatory/model/signatory';
+import { Wallet } from '@renderer/entities/wallet';
 
 export type Account = {
   walletId?: ID;
@@ -112,11 +113,12 @@ export const isMultishard = (account?: Account | MultisigAccount): boolean => {
   return Boolean(account.walletId);
 };
 
-export function isWalletContact(account?: Account | MultisigAccount, wallet?: WalletDS): boolean {
+export function isWalletContact(account?: Account | MultisigAccount, wallet?: Wallet): boolean {
   if (!account) return false;
-  const notMultishard = !wallet || wallet.type !== WalletType.MULTISHARD_PARITY_SIGNER;
+  const isMultishard = wallet && wallet.type === WalletType.MULTISHARD_PARITY_SIGNER;
+  const isWatchOnly = account.signingType === SigningType.WATCH_ONLY;
 
-  return account.signingType !== SigningType.WATCH_ONLY && notMultishard && !isMultisig(account);
+  return !isWatchOnly && !isMultishard && !isMultisig(account);
 }
 
 export function isVaultAccount(account?: Account | MultisigAccount): boolean {
