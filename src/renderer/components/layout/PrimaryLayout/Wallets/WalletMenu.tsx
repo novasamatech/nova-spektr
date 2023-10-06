@@ -1,34 +1,52 @@
 import { Popover, Transition } from '@headlessui/react';
 import { Fragment, PropsWithChildren, useState } from 'react';
 import cn from 'classnames';
+import { useUnit } from 'effector-react';
 
 import { DropdownButton, SearchInput, SmallTitleText } from '@renderer/shared/ui';
 import { useI18n } from '@renderer/app/providers';
-import { useAccount } from '@renderer/entities/account';
-import WalletGroup from '@renderer/components/layout/PrimaryLayout/Wallets/WalletGroup';
-import { useGroupedWallets } from './common/useGroupedWallets';
-import { ID, WalletDS } from '@renderer/shared/api/storage';
+import { WalletGroup } from './WalletGroup';
 import { ButtonDropdownOption } from '@renderer/shared/ui/types';
-import { isMultishardWalletItem } from '@renderer/components/layout/PrimaryLayout/Wallets/common/utils';
+import { ChainsRecord } from './common/types';
 import { walletProviderModel } from '@renderer/widgets/CreateWallet';
-import { WalletType } from '@renderer/entities/wallet';
-import {
-  ChainsRecord,
-  WalletGroupItem,
-  MultishardWallet,
-} from '@renderer/components/layout/PrimaryLayout/Wallets/common/types';
+import type { Wallet } from '@renderer/shared/core';
+import { WalletType } from '@renderer/shared/core';
+import { walletModel, walletUtils } from '@renderer/entities/wallet';
+import { includes } from '@renderer/shared/lib/utils';
 
 type Props = {
   chains: ChainsRecord;
-  wallets: WalletDS[];
 };
 
-const WalletMenu = ({ children, chains, wallets }: PropsWithChildren<Props>) => {
+export const WalletMenu = ({ chains, children }: PropsWithChildren<Props>) => {
   const { t } = useI18n();
-  const { setActiveAccount, setActiveAccounts } = useAccount();
+
+  const wallets = useUnit(walletModel.$wallets);
 
   const [query, setQuery] = useState('');
-  const groupedWallets = useGroupedWallets(wallets, chains, query);
+
+  const getWalletGroups = (wallets: Wallet[], query = ''): Record<WalletType, Wallet[]> => {
+    return wallets.reduce<Record<WalletType, Wallet[]>>(
+      (acc, wallet) => {
+        let groupIndex: WalletType | undefined;
+        if (walletUtils.isSingleShard(wallet)) groupIndex = WalletType.SINGLE_PARITY_SIGNER;
+        if (walletUtils.isMultiShard(wallet)) groupIndex = WalletType.MULTISHARD_PARITY_SIGNER;
+        if (walletUtils.isMultisig(wallet)) groupIndex = WalletType.MULTISIG;
+        if (walletUtils.isWatchOnly(wallet)) groupIndex = WalletType.WATCH_ONLY;
+        if (groupIndex && includes(wallet.name, query)) {
+          acc[groupIndex].push(wallet);
+        }
+
+        return acc;
+      },
+      {
+        [WalletType.SINGLE_PARITY_SIGNER]: [],
+        [WalletType.MULTISHARD_PARITY_SIGNER]: [],
+        [WalletType.MULTISIG]: [],
+        [WalletType.WATCH_ONLY]: [],
+      },
+    );
+  };
 
   const dropdownOptions: ButtonDropdownOption[] = [
     {
@@ -51,30 +69,9 @@ const WalletMenu = ({ children, chains, wallets }: PropsWithChildren<Props>) => 
     },
   ];
 
-  const getAllShardsIds = (wallet: MultishardWallet): ID[] => {
-    return wallet.rootAccounts.reduce<ID[]>((acc, root) => {
-      if (root.id) {
-        acc.push(root.id);
-      }
-      root.chains.forEach((c) => c.accounts.forEach((a) => a.id && acc.push(a.id)));
-
-      return acc;
-    }, []);
-  };
-
-  const selectMultishardWallet = (wallet: MultishardWallet) => {
-    setActiveAccounts(getAllShardsIds(wallet));
-  };
-
-  const changeActiveAccount = (wallet: WalletGroupItem, closeMenu: () => void) => {
+  const selectWallet = (walletId: Wallet['id'], closeMenu: () => void) => {
+    walletModel.events.walletSelected(walletId);
     closeMenu();
-    if (isMultishardWalletItem(wallet)) {
-      selectMultishardWallet(wallet as MultishardWallet);
-    } else {
-      if (wallet.id) {
-        setActiveAccount(wallet.id);
-      }
-    }
   };
 
   return (
@@ -108,15 +105,14 @@ const WalletMenu = ({ children, chains, wallets }: PropsWithChildren<Props>) => 
               </div>
 
               <ul className="flex flex-col divide-y divide-divider overflow-y-auto max-h-[530px]">
-                {groupedWallets &&
-                  Object.entries(groupedWallets).map(([type, wallets]) => (
-                    <WalletGroup
-                      key={type}
-                      type={type as WalletType}
-                      wallets={wallets}
-                      onWalletClick={(wallet) => changeActiveAccount(wallet, close)}
-                    />
-                  ))}
+                {Object.entries(getWalletGroups(wallets, query)).map(([type, wallets]) => (
+                  <WalletGroup
+                    key={type}
+                    type={type as WalletType}
+                    wallets={wallets}
+                    onSelect={(walletId) => selectWallet(walletId, close)}
+                  />
+                ))}
               </ul>
             </section>
           )}
@@ -125,5 +121,3 @@ const WalletMenu = ({ children, chains, wallets }: PropsWithChildren<Props>) => 
     </Popover>
   );
 };
-
-export default WalletMenu;

@@ -1,13 +1,13 @@
+import { useUnit } from 'effector-react';
 import { createContext, PropsWithChildren, useContext, useEffect, useState } from 'react';
 
-import { RpcNode } from '@renderer/entities/chain';
-import { ConnectionStatus, ConnectionType } from '@renderer/domain/connection';
-import { ChainId, AccountId } from '@renderer/domain/shared-kernel';
 import { useBalance } from '@renderer/entities/asset';
 import { ConnectProps, ExtendedChain, RpcValidation, useNetwork } from '@renderer/entities/network';
 import { useSubscription } from '@renderer/services/subscription/subscriptionService';
-import { useAccount, isMultisig } from '@renderer/entities/account';
 import { usePrevious } from '@renderer/shared/lib/hooks';
+import type { RpcNode, ChainId, AccountId } from '@renderer/shared/core';
+import { ConnectionStatus, ConnectionType } from '@renderer/shared/core';
+import { accountModel, accountUtils } from '@renderer/entities/wallet';
 
 type NetworkContextProps = {
   connections: Record<ChainId, ExtendedChain>;
@@ -23,14 +23,13 @@ type NetworkContextProps = {
 const NetworkContext = createContext<NetworkContextProps>({} as NetworkContextProps);
 
 export const NetworkProvider = ({ children }: PropsWithChildren) => {
-  const { getActiveAccounts } = useAccount();
+  const activeAccounts = useUnit(accountModel.$activeAccounts);
+
   const networkSubscriptions = useSubscription<ChainId>();
   const { subscribe, unsubscribe, hasSubscription, unsubscribeAll } = networkSubscriptions;
   const { connections, setupConnections, connectToNetwork, connectWithAutoBalance, ...rest } =
     useNetwork(networkSubscriptions);
   const { subscribeBalances, subscribeLockBalances } = useBalance();
-
-  const activeAccounts = getActiveAccounts();
 
   const [everyConnectionIsReady, setEveryConnectionIsReady] = useState(false);
 
@@ -94,11 +93,11 @@ export const NetworkProvider = ({ children }: PropsWithChildren) => {
   const getAccountIds = (chainId: ChainId): AccountId[] => {
     return Array.from(
       activeAccounts.reduce<Set<AccountId>>((acc, account) => {
-        if (account.accountId && (!account.rootId || account.chainId === chainId)) {
+        if (accountUtils.isChainAccountMatch(account, chainId) || accountUtils.isBaseAccount(account)) {
           acc.add(account.accountId);
         }
 
-        if (isMultisig(account)) {
+        if (accountUtils.isMultisigAccount(account)) {
           account.signatories.forEach((signatory) => {
             acc.add(signatory.accountId);
           });

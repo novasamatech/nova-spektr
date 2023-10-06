@@ -1,10 +1,9 @@
 import { ApiPromise } from '@polkadot/api';
 import { render, screen } from '@testing-library/react';
 
-import { Asset } from '@renderer/entities/asset';
 import { Transaction } from '@renderer/entities/transaction';
-import { AccountDS } from '@renderer/shared/api/storage';
 import { Confirmation } from './Confirmation';
+import type { Asset, Account } from '@renderer/shared/core';
 
 jest.mock('@renderer/app/providers', () => ({
   useI18n: jest.fn().mockReturnValue({
@@ -18,10 +17,10 @@ jest.mock('@renderer/entities/multisig', () => ({
   }),
 }));
 
-jest.mock('@renderer/entities/account', () => ({
-  ...jest.requireActual('@renderer/entities/account'),
-  AddressWithExplorers: ({ address }: any) => <span data-testid="address">{address}</span>,
-}));
+// jest.mock('@renderer/entities/account', () => ({
+//   ...jest.requireActual('@renderer/entities/account'),
+//   AddressWithExplorers: ({ address }: any) => <span data-testid="address">{address}</span>,
+// }));
 
 describe('pages/Staking/components/Confirmation', () => {
   const spyResult = jest.fn();
@@ -32,7 +31,7 @@ describe('pages/Staking/components/Confirmation', () => {
     asset: { symbol: 'DOT', precision: 10 } as Asset,
     addressPrefix: 0,
     transaction: {} as Transaction,
-    accounts: [] as AccountDS[],
+    accounts: [] as Account[],
     onResult: spyResult,
     onGoBack: spyGoBack,
   };

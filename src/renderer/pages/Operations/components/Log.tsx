@@ -2,7 +2,6 @@ import { groupBy } from 'lodash';
 import { format } from 'date-fns';
 
 import { useI18n } from '@renderer/app/providers';
-import { Account, MultisigAccount } from '@renderer/entities/account';
 import { ExtendedChain } from '@renderer/entities/network';
 import { MultisigEvent, SigningStatus } from '@renderer/entities/transaction/model/transaction';
 import { TransferTypes, XcmTypes } from '@renderer/entities/transaction/lib/common/constants';
@@ -12,10 +11,10 @@ import { getSignatoryName, sortByDateAsc } from '../common/utils';
 import { BaseModal, BodyText, FootnoteText, Identicon } from '@renderer/shared/ui';
 import { toAddress, SS58_DEFAULT_PREFIX } from '@renderer/shared/lib/utils';
 import { ExtrinsicExplorers } from '@renderer/components/common';
-import { Contact } from '@renderer/entities/contact';
 import { useMultisigEvent } from '@renderer/entities/multisig';
 import { MultisigTransactionDS } from '@renderer/shared/api/storage';
 import { TransactionAmount } from '../components/TransactionAmount';
+import type { Account, MultisigAccount, Contact } from '@renderer/shared/core';
 
 type Props = {
   tx: MultisigTransactionDS;

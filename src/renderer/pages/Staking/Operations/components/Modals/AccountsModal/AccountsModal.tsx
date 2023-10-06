@@ -1,9 +1,8 @@
 import { useI18n } from '@renderer/app/providers';
-import { Asset } from '@renderer/entities/asset';
-import { Explorer } from '@renderer/entities/chain';
-import { Account, AddressWithExplorers } from '@renderer/entities/account';
 import { BaseModal } from '@renderer/shared/ui';
 import { cnTw } from '@renderer/shared/lib/utils';
+import { AddressWithExplorers } from '@renderer/entities/wallet';
+import type { Account, Asset, Explorer } from '@renderer/shared/core';
 
 type Props = {
   isOpen: boolean;

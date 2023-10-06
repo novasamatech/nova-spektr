@@ -2,11 +2,10 @@ import { ApiPromise } from '@polkadot/api';
 import { act, render, screen } from '@testing-library/react';
 import noop from 'lodash/noop';
 
-import { Asset } from '@renderer/entities/asset';
 import { TEST_ACCOUNT_ID } from '@renderer/shared/lib/utils';
 import InitOperation from './InitOperation';
-import { ChainId } from '@renderer/domain/shared-kernel';
-import { Account } from '@renderer/entities/account';
+import { ChainId } from '@renderer/shared/core';
+import type { Asset, Account } from '@renderer/shared/core';
 
 jest.mock('@renderer/app/providers', () => ({
   useI18n: jest.fn().mockReturnValue({
@@ -14,12 +13,12 @@ jest.mock('@renderer/app/providers', () => ({
   }),
 }));
 
-jest.mock('@renderer/entities/account', () => ({
-  ...jest.requireActual('@renderer/entities/account'),
-  useAccount: jest.fn().mockReturnValue({
-    getLiveAccounts: () => [{ name: 'Test Wallet', accountId: TEST_ACCOUNT_ID }],
-  }),
-}));
+// jest.mock('@renderer/entities/account', () => ({
+//   ...jest.requireActual('@renderer/entities/account'),
+//   useAccount: jest.fn().mockReturnValue({
+//     getLiveAccounts: () => [{ name: 'Test Wallet', accountId: TEST_ACCOUNT_ID }],
+//   }),
+// }));
 
 jest.mock('@renderer/entities/asset', () => ({
   useBalance: jest.fn().mockReturnValue({

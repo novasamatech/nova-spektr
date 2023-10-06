@@ -3,16 +3,15 @@ import { useStore } from 'effector-react';
 
 import { BaseModal, HeaderTitleText, StatusLabel, Button } from '@renderer/shared/ui';
 import { useI18n, useMatrix } from '@renderer/app/providers';
-import { useAccount, createMultisigAccount, Account, getMultisigAccountId } from '@renderer/entities/account';
 import { useToggle } from '@renderer/shared/lib/hooks';
 import { OperationResult } from '@renderer/entities/transaction';
-import { Wallet, useWallet } from '@renderer/entities/wallet';
 import { ExtendedContact, ExtendedWallet } from './common/types';
 import { SelectSignatories, ConfirmSignatories, WalletForm } from './components';
-import { AccountId } from '@renderer/domain/shared-kernel';
 import { contactModel } from '@renderer/entities/contact';
 import { DEFAULT_TRANSITION } from '@renderer/shared/lib/utils';
 import { MatrixLoginModal } from '@renderer/widgets/MatrixModal';
+import type { AccountId } from '@renderer/shared/core';
+import { walletModel, accountModel } from '@renderer/entities/wallet';
 
 type OperationResultProps = Pick<ComponentProps<typeof OperationResult>, 'variant' | 'description'>;
 
@@ -29,9 +28,11 @@ type Props = {
 
 export const MultisigAccount = ({ isOpen, onClose, onComplete }: Props) => {
   const { t } = useI18n();
+  const wallets = useStore(walletModel.$wallets);
+  const accounts = useStore(accountModel.$accounts);
+  const contacts = useStore(contactModel.$contacts);
+
   const { matrix, isLoggedIn } = useMatrix();
-  const { getWallets } = useWallet();
-  const { getAccounts, addAccount, setActiveAccount } = useAccount();
 
   const [isLoading, toggleLoading] = useToggle();
   const [isModalOpen, toggleIsModalOpen] = useToggle(isOpen);
@@ -44,18 +45,7 @@ export const MultisigAccount = ({ isOpen, onClose, onComplete }: Props) => {
   const [signatoryWallets, setSignatoryWallets] = useState<ExtendedWallet[]>([]);
   const [signatoryContacts, setSignatoryContacts] = useState<ExtendedContact[]>([]);
 
-  const [wallets, setWallets] = useState<Wallet[]>([]);
-  const [accounts, setAccounts] = useState<Account[]>([]);
-
-  const contacts = useStore(contactModel.$contacts);
   const signatories = signatoryWallets.concat(signatoryContacts);
-
-  useEffect(() => {
-    if (!isOpen) return;
-
-    getAccounts().then(setAccounts);
-    getWallets().then(setWallets);
-  }, [isOpen]);
 
   useEffect(() => {
     if (isOpen && !isModalOpen) {

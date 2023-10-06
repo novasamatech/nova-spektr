@@ -3,9 +3,8 @@ import { U8aFixed } from '@polkadot/types';
 import { PalletMultisigMultisig } from '@polkadot/types/lookup';
 
 import { MultisigTransactionDS } from '@renderer/shared/api/storage';
-import { MultisigAccount } from '@renderer/entities/account/model/account';
 import { MultisigTransaction } from '@renderer/entities/transaction/model/transaction';
-import { CallData, AccountId, ChainId, CallHash } from '@renderer/domain/shared-kernel';
+import type { CallData, AccountId, ChainId, CallHash, MultisigAccount } from '@renderer/shared/core';
 
 export interface IMultisigTxService {
   subscribeMultisigAccount: (api: ApiPromise, account: MultisigAccount) => () => void;

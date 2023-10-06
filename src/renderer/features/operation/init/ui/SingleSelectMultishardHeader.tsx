@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 
-import { Account, MultisigAccount } from '@renderer/entities/account';
+import type { Account, MultisigAccount } from '@renderer/shared/core';
 import { InputHint, MultiSelect } from '@renderer/shared/ui';
 import { useI18n } from '@renderer/app/providers';
 import { DropdownOption, DropdownResult } from '@renderer/shared/ui/Dropdowns/common/types';

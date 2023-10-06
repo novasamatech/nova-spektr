@@ -4,8 +4,8 @@ import cn from 'classnames';
 import { Button, CaptionText, FootnoteText, InfoLink, SmallTitleText, Icon, Shimmering } from '@renderer/shared/ui';
 import { secondsToMinutes } from '@renderer/shared/lib/utils';
 import { useI18n } from '@renderer/app/providers';
-import { ChainId } from '@renderer/domain/shared-kernel';
 import { getMetadataPortalMetadataUrl, TROUBLESHOOTING_URL } from '../common/constants';
+import type { ChainId } from '@renderer/shared/core';
 
 type Props = {
   countdown: number;

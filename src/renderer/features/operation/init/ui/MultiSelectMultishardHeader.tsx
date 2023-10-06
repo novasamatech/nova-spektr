@@ -1,11 +1,10 @@
 import { useEffect, useState } from 'react';
 
-import { Account, MultisigAccount } from '@renderer/entities/account';
 import { InputHint, Select } from '@renderer/shared/ui';
 import { useI18n } from '@renderer/app/providers';
 import { DropdownOption, DropdownResult } from '@renderer/shared/ui/Dropdowns/common/types';
-import { ChainId } from '@renderer/domain/shared-kernel';
 import { OperationErrorType } from '@renderer/features/operation/init/model';
+import type { Account, MultisigAccount, ChainId } from '@renderer/shared/core';
 
 type Props = {
   accounts: Account[];

@@ -4,13 +4,13 @@ import { useState, Fragment, useEffect } from 'react';
 import { cnTw } from '@renderer/shared/lib/utils';
 import { Icon, FootnoteText, IconButton, Button, HelpText } from '@renderer/shared/ui';
 import { useI18n } from '@renderer/app/providers';
-import { RpcNode } from '@renderer/entities/chain';
-import { ConnectionType } from '@renderer/domain/connection';
 import { ExtendedChain } from '@renderer/entities/network';
 import { SelectButtonStyle, OptionStyle } from '@renderer/shared/ui/Dropdowns/common/constants';
 import { useScrollTo } from '@renderer/shared/lib/hooks';
 import { CommonInputStyles, CommonInputStylesTheme } from '@renderer/shared/ui/Inputs/common/styles';
+import { ConnectionType } from '@renderer/shared/core';
 import type { Theme } from '@renderer/shared/ui/types';
+import type { RpcNode } from '@renderer/shared/core';
 
 export const OptionsContainerStyle =
   'mt-1 absolute z-20 py-1 px-1 w-full border border-token-container-border rounded bg-input-background shadow-card-shadow';

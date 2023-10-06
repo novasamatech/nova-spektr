@@ -2,18 +2,18 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Trans } from 'react-i18next';
 import uniqBy from 'lodash/uniqBy';
+import { useUnit } from 'effector-react';
 
 import { useI18n, useNetworkContext, useConfirmContext, Paths } from '@renderer/app/providers';
 import { BaseModal, SearchInput, BodyText, InfoLink, Icon } from '@renderer/shared/ui';
 import { useToggle } from '@renderer/shared/lib/hooks';
 import { ExtendedChain, chainsService } from '@renderer/entities/network';
 import { includes, DEFAULT_TRANSITION } from '@renderer/shared/lib/utils';
-import { ConnectionType, ConnectionStatus } from '@renderer/domain/connection';
-import { RpcNode } from '@renderer/entities/chain';
-import { ChainId } from '@renderer/domain/shared-kernel';
 import { NetworkList, NetworkItem, CustomRpcModal } from './components';
 import { useBalance } from '@renderer/entities/asset';
-import { useAccount } from '@renderer/entities/account';
+import type { RpcNode, ChainId } from '@renderer/shared/core';
+import { ConnectionType, ConnectionStatus } from '@renderer/shared/core';
+import { accountModel } from '@renderer/entities/wallet';
 
 const MAX_LIGHT_CLIENTS = 3;
 
@@ -21,11 +21,12 @@ const DATA_VERIFICATION = 'https://docs.novaspektr.io/network-management/light-c
 
 export const Networks = () => {
   const { t } = useI18n();
+  const accounts = useUnit(accountModel.$accounts);
+
   const navigate = useNavigate();
   const { confirm } = useConfirmContext();
   const { connections, connectToNetwork, connectWithAutoBalance, removeRpcNode, getParachains } = useNetworkContext();
   const { setBalanceIsValid } = useBalance();
-  const { getAccounts } = useAccount();
 
   const [isCustomRpcOpen, toggleCustomRpc] = useToggle();
   const [isNetworksModalOpen, toggleNetworksModal] = useToggle(true);
@@ -137,8 +138,7 @@ export const Networks = () => {
 
   const resetBalanceValidation = async (relaychainId: ChainId) => {
     const parachains = getParachains(relaychainId);
-    const allAccounts = await getAccounts();
-    const uniqAccounts = uniqBy(allAccounts, 'accountId');
+    const uniqAccounts = uniqBy(accounts, 'accountId');
 
     parachains.forEach(({ chainId, assets }) => {
       uniqAccounts.forEach(({ accountId }) => {

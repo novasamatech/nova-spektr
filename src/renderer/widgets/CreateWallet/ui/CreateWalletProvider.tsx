@@ -6,7 +6,7 @@ import { walletProviderModel } from '../model/wallet-provider-model';
 import WatchOnly from '@renderer/pages/Onboarding/WatchOnly/WatchOnly';
 import Vault from '@renderer/pages/Onboarding/Vault/Vault';
 import { MultisigAccount } from './MultisigAccount/MultisigAccount';
-import { WalletType } from '@renderer/entities/wallet';
+import { WalletType } from '@renderer/shared/core';
 import { Paths } from '../../../app/providers/routes/paths';
 
 // TODO: Break down WatchOnly / Vault / CreateMultisig to widgets

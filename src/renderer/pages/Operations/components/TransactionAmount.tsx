@@ -2,9 +2,10 @@ import { useEffect, useState, ComponentProps } from 'react';
 
 import { DecodedTransaction, Transaction } from '@renderer/entities/transaction';
 import { chainsService } from '@renderer/entities/network';
-import { Asset, AssetBalance } from '@renderer/entities/asset';
+import { AssetBalance } from '@renderer/entities/asset';
 import { getAssetById } from '@renderer/shared/lib/utils';
 import { getTransactionAmount } from '../common/utils';
+import type { Asset } from '@renderer/shared/core';
 
 type Props = {
   tx: Transaction | DecodedTransaction;

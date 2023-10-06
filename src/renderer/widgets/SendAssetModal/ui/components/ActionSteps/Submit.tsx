@@ -11,12 +11,13 @@ import {
   ExtrinsicResultParams,
   OperationResult,
 } from '@renderer/entities/transaction';
-import { HexString } from '@renderer/domain/shared-kernel';
-import { Account, MultisigAccount, isMultisig } from '@renderer/entities/account';
+import { HexString } from '@renderer/shared/core';
 import { useMultisigTx, useMultisigEvent, buildMultisigTx } from '@renderer/entities/multisig';
 import { toAccountId } from '@renderer/shared/lib/utils';
 import { useToggle } from '@renderer/shared/lib/hooks';
 import { Button } from '@renderer/shared/ui';
+import type { Account, MultisigAccount } from '@renderer/shared/core';
+import { accountUtils } from '@renderer/entities/wallet';
 
 type ResultProps = Pick<ComponentProps<typeof OperationResult>, 'title' | 'description' | 'variant'>;
 
@@ -33,8 +34,8 @@ type Props = {
 
 export const Submit = ({ api, tx, multisigTx, account, unsignedTx, signature, description, onClose }: Props) => {
   const { t } = useI18n();
-  const navigate = useNavigate();
 
+  const navigate = useNavigate();
   const { matrix } = useMatrix();
   const { addTask } = useMultisigChainContext();
 
@@ -46,10 +47,12 @@ export const Submit = ({ api, tx, multisigTx, account, unsignedTx, signature, de
   const [successMessage, toggleSuccessMessage] = useToggle();
   const [errorMessage, setErrorMessage] = useState('');
 
+  const isMultisigAccount = account && accountUtils.isMultisigAccount(account);
+
   const handleClose = () => {
     onClose();
 
-    if (isMultisig(account) && successMessage) {
+    if (isMultisigAccount && successMessage) {
       navigate(Paths.OPERATIONS);
     } else {
       // TODO: rework to context-free solution
@@ -62,7 +65,7 @@ export const Submit = ({ api, tx, multisigTx, account, unsignedTx, signature, de
     onClose();
     toggleSuccessMessage();
 
-    if (isMultisig(account)) {
+    if (isMultisigAccount) {
       navigate(Paths.OPERATIONS);
     } else {
       // TODO: rework to context-free solution
@@ -85,7 +88,7 @@ export const Submit = ({ api, tx, multisigTx, account, unsignedTx, signature, de
 
     submitAndWatchExtrinsic(extrinsic, unsignedTx, api, async (executed, params) => {
       if (executed) {
-        if (multisigTx && isMultisig(account)) {
+        if (multisigTx && isMultisigAccount) {
           const result = buildMultisigTx(tx, multisigTx, params as ExtrinsicResultParams, account, description);
 
           await Promise.all([addMultisigTx(result.transaction), addEventWithQueue(result.event)]);
