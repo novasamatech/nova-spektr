@@ -3,7 +3,8 @@ import { useEffect, useRef, useState } from 'react';
 import { useUnit } from 'effector-react';
 
 import { useI18n } from '@renderer/app/providers';
-import { BaseModal, HeaderTitleText, SmallTitleText } from '@renderer/shared/ui';
+import { BaseModal, Button, HeaderTitleText, SmallTitleText } from '@renderer/shared/ui';
+import { Animation } from '@renderer/shared/ui/Animation/Animation';
 import ManageStep from './ManageStep/ManageStep';
 import novawallet_onboarding_tutorial from '@video/novawallet_onboarding_tutorial.mp4';
 import novawallet_onboarding_tutorial_webm from '@video/novawallet_onboarding_tutorial.webm';
@@ -11,8 +12,10 @@ import { usePrevious } from '@renderer/shared/lib/hooks';
 import * as walletConnectModel from '@renderer/entities/walletConnect';
 import { chainsService } from '@renderer/entities/network';
 import { wcOnboardingModel } from './model/walletConnectOnboarding';
-import { Step, WCQRConfig } from './common/const';
+import { WCQRConfig, Step } from './common/const';
 import { useStatusContext } from '@renderer/app/providers/context/StatusContext';
+import Animations from '@renderer/shared/ui/Animation/Data';
+import { WalletType } from '@renderer/domain/shared-kernel';
 
 type Props = {
   isOpen: boolean;
@@ -22,11 +25,8 @@ type Props = {
 };
 
 const qrCode = new QRCodeStyling(WCQRConfig);
-
 const WalletConnect = ({ isOpen, onClose, onComplete }: Props) => {
   const { t } = useI18n();
-
-  const { showStatus } = useStatusContext();
 
   const session = useUnit(walletConnectModel.$session);
   const client = useUnit(walletConnectModel.$client);
@@ -40,6 +40,8 @@ const WalletConnect = ({ isOpen, onClose, onComplete }: Props) => {
   const previousPairings = usePrevious(pairings);
 
   const [pairingTopic, setPairingTopic] = useState<string>();
+
+  const { showStatus } = useStatusContext();
 
   const ref = useRef(null);
 
@@ -65,7 +67,7 @@ const WalletConnect = ({ isOpen, onClose, onComplete }: Props) => {
     if (step === Step.REJECT) {
       showStatus({
         title: t('onboarding.walletConnect.rejected'),
-        content: <></>,
+        content: <Animation animation={Animations.error} />,
       });
       onClose();
     }
@@ -87,43 +89,52 @@ const WalletConnect = ({ isOpen, onClose, onComplete }: Props) => {
   }, [pairings.length]);
 
   return (
-    <BaseModal
-      closeButton
-      isOpen={isOpen}
-      contentClass="flex h-full"
-      panelClass="w-[944px] h-[576px]"
-      onClose={onClose}
-    >
-      {step === Step.SCAN && qrCode && (
-        <>
-          <div className="w-[472px] flex flex-col px-5 py-4 bg-white rounded-l-lg">
-            <HeaderTitleText className="mb-10">{t('onboarding.walletConnect.title')}</HeaderTitleText>
-            <SmallTitleText className="mb-6">{t('onboarding.walletConnect.scanTitle')}</SmallTitleText>
+    <>
+      <BaseModal
+        closeButton
+        isOpen={isOpen}
+        contentClass="flex h-full"
+        panelClass="w-[944px] h-[576px]"
+        onClose={onClose}
+      >
+        {step === Step.SCAN && qrCode && (
+          <>
+            <div className="w-[472px] flex flex-col px-5 py-4 bg-white rounded-l-lg">
+              <HeaderTitleText className="mb-10">{t('onboarding.walletConnect.title')}</HeaderTitleText>
+              <SmallTitleText className="mb-6">{t('onboarding.walletConnect.scanTitle')}</SmallTitleText>
 
-            <div className="flex items-center justify-center">
-              <div ref={ref}></div>
+              <div className="flex flex-1 items-center justify-center">
+                <div ref={ref}></div>
+              </div>
+
+              <div className="flex justify-between items-end">
+                <Button variant="text" onClick={onClose}>
+                  {t('onboarding.backButton')}
+                </Button>
+              </div>
             </div>
-          </div>
 
-          <div className="w-[472px] flex flex-col bg-black">
-            <video className="object-contain h-full" autoPlay loop>
-              <source src={novawallet_onboarding_tutorial_webm} type="video/webm" />
-              <source src={novawallet_onboarding_tutorial} type="video/mp4" />
-            </video>
-          </div>
-        </>
-      )}
+            <div className="w-[472px] flex flex-col bg-black">
+              <video className="object-contain h-full" autoPlay loop>
+                <source src={novawallet_onboarding_tutorial_webm} type="video/webm" />
+                <source src={novawallet_onboarding_tutorial} type="video/mp4" />
+              </video>
+            </div>
+          </>
+        )}
 
-      {step === Step.MANAGE && session && pairingTopic && (
-        <ManageStep
-          accounts={session.namespaces.polkadot.accounts}
-          pairingTopic={pairingTopic}
-          sessionTopic={session.topic}
-          onBack={disconnect}
-          onComplete={onComplete}
-        />
-      )}
-    </BaseModal>
+        {step === Step.MANAGE && session && pairingTopic && (
+          <ManageStep
+            type={WalletType.WALLET_CONNECT}
+            accounts={session.namespaces.polkadot.accounts}
+            pairingTopic={pairingTopic}
+            sessionTopic={session.topic}
+            onBack={disconnect}
+            onComplete={onComplete}
+          />
+        )}
+      </BaseModal>
+    </>
   );
 };
 

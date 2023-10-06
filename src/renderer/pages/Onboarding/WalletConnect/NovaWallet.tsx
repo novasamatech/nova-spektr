@@ -15,6 +15,7 @@ import { wcOnboardingModel } from './model/walletConnectOnboarding';
 import { NWQRConfig, Step } from './common/const';
 import { useStatusContext } from '@renderer/app/providers/context/StatusContext';
 import Animations from '@renderer/shared/ui/Animation/Data';
+import { WalletType } from '@renderer/domain/shared-kernel';
 
 type Props = {
   isOpen: boolean;
@@ -127,6 +128,7 @@ const NovaWallet = ({ isOpen, onClose, onComplete }: Props) => {
 
         {step === Step.MANAGE && session && pairingTopic && (
           <ManageStep
+            type={WalletType.NOVA_WALLET}
             accounts={session.namespaces.polkadot.accounts}
             pairingTopic={pairingTopic}
             sessionTopic={session.topic}
@@ -135,12 +137,6 @@ const NovaWallet = ({ isOpen, onClose, onComplete }: Props) => {
           />
         )}
       </BaseModal>
-
-      {/* <StatusModal
-        title={t('onboarding.walletConnect.rejected')}
-        isOpen={isRejectedModalOpen}
-        onClose={() => setIsRejectedModalOpen(false)}
-      /> */}
     </>
   );
 };

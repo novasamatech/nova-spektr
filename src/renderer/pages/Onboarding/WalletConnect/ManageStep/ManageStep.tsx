@@ -20,11 +20,12 @@ type Props = {
   accounts: string[];
   pairingTopic: string;
   sessionTopic: string;
+  type: WalletType.NOVA_WALLET | WalletType.WALLET_CONNECT;
   onBack: () => void;
   onComplete: () => void;
 };
 
-const ManageStep = ({ accounts, pairingTopic, sessionTopic, onBack, onComplete }: Props) => {
+const ManageStep = ({ accounts, type, pairingTopic, sessionTopic, onBack, onComplete }: Props) => {
   const { t } = useI18n();
   const { addAccount, setActiveAccount } = useAccount();
   const { addWallet } = useWallet();
@@ -75,7 +76,7 @@ const ManageStep = ({ accounts, pairingTopic, sessionTopic, onBack, onComplete }
   const submitHandler: SubmitHandler<WalletForm> = async ({ walletName }) => {
     const walletId = await addWallet({
       name: walletName.trim(),
-      type: WalletType.WALLET_CONNECT,
+      type,
     });
 
     accounts.forEach(async (account) => {
@@ -109,10 +110,15 @@ const ManageStep = ({ accounts, pairingTopic, sessionTopic, onBack, onComplete }
     onBack();
   };
 
+  const Title = {
+    [WalletType.WALLET_CONNECT]: t('onboarding.walletConnect.title'),
+    [WalletType.NOVA_WALLET]: t('onboarding.novaWallet.title'),
+  };
+
   return (
     <>
       <div className="w-[472px] flex flex-col px-5 py-4 bg-white rounded-l-lg">
-        <HeaderTitleText className="mb-10">{t('onboarding.walletConnect.title')}</HeaderTitleText>
+        <HeaderTitleText className="mb-10">{Title[type]}</HeaderTitleText>
         <SmallTitleText className="mb-6">{t('onboarding.walletConnect.manageTitle')}</SmallTitleText>
 
         <form className="flex flex-col gap-4 h-full" onSubmit={handleSubmit(submitHandler)}>
