@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useUnit } from 'effector-react';
 import BigNumber from 'bignumber.js';
 
-import { formatFiatBalance, getRoundedFiatValue, totalAmount } from '@renderer/shared/lib/utils';
+import { formatFiatBalance, getRoundedValue, totalAmount } from '@renderer/shared/lib/utils';
 import { FiatBalance } from '@renderer/entities/price/ui/FiatBalance';
 import { currencyModel, priceProviderModel } from '@renderer/entities/price';
 import { useI18n, useNetworkContext } from '@renderer/app/providers';
@@ -50,7 +50,7 @@ export const WalletFiatBalance = ({ className, walletId, accountId }: Props) => 
       const price = prices[asset.priceId][currency.coingeckoId];
 
       if (price) {
-        const bnFiatBalance = getRoundedFiatValue(totalAmount(balance), price.price, asset.precision);
+        const bnFiatBalance = getRoundedValue(totalAmount(balance), price.price, asset.precision);
         acc = acc.plus(bnFiatBalance);
       }
 
