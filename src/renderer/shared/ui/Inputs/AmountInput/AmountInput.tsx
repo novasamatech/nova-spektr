@@ -79,7 +79,9 @@ export const AmountInput = ({
     if (currencyMode) {
       setInputValue(getRoundedValue(currencyValue, 1, 0));
     } else {
-      handleChange(getRoundedValue(value || undefined, 1, 0, 1));
+      if (value !== undefined) {
+        handleChange(getRoundedValue(value || undefined, 1, 0, 1));
+      }
     }
   }, [currencyMode]);
 
