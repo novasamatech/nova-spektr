@@ -58,9 +58,16 @@ const WalletConnect = ({ isOpen, onClose, onComplete }: Props) => {
   }, [uri]);
 
   useEffect(() => {
+    let timeout: any;
     if (isOpen) {
       startOnboarding();
+
+      timeout = setTimeout(onClose, 5 * 60 * 1000);
     }
+
+    return () => {
+      timeout && clearTimeout(timeout);
+    };
   }, [isOpen]);
 
   useEffect(() => {
