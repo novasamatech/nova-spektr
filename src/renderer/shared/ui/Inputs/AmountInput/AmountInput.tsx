@@ -76,10 +76,12 @@ export const AmountInput = ({
   const currencyValue = rate ? toFixedNotation(Number(value ?? 0) * rate) : undefined;
 
   useEffect(() => {
-    if (currencyMode) {
-      setInputValue(getRoundedValue(currencyValue, 1, 0));
-    } else {
-      handleChange(getRoundedValue(value || undefined, 1, 0, 1));
+    if (value) {
+      if (currencyMode) {
+        setInputValue(getRoundedValue(currencyValue, 1, 0));
+      } else {
+        handleChange(getRoundedValue(value || undefined, 1, 0, 1));
+      }
     }
   }, [currencyMode]);
 

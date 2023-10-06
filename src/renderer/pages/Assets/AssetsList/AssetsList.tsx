@@ -72,7 +72,7 @@ export const AssetsList = () => {
         fiatFlag ? currency?.coingeckoId : undefined,
       ),
     );
-  }, [balances]);
+  }, [balances, assetsPrices]);
 
   const updateHideZeroBalance = (value: boolean) => {
     setHideZeroBalance(value);
