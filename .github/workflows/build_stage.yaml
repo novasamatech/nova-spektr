@@ -5,11 +5,13 @@ name: Build stage app
 on:
   workflow_dispatch:
   pull_request:
-    types: [ labeled ]
+    types: [labeled]
 
 env:
   CSC_FOR_PULL_REQUEST: true
   CI: true
+  S3_BUCKET: s3://spektr-releases
+  STORING_DAYS: 60
 
 jobs:
   internal-release-build:
@@ -53,3 +55,63 @@ jobs:
             release/dist/*.exe
             release/dist/*.dmg
             release/dist/*.AppImage
+
+  internal-release-distribute:
+    needs: internal-release-build
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Download build artifacts
+        uses: actions/download-artifact@v2
+        with:
+          name: build-artifats
+
+      - name: Debug
+        run: ls -la
+
+      - name: Replace space by "-"
+        run: |
+          for file in *; do
+            if [ -f "$file" ]; then
+              new_name=$(echo "$file" | tr ' ' '-')
+              if [ "$new_name" != "$file" ]; then # Skip files with no spaces
+                mv "$file" "$new_name"
+              fi
+            fi
+          done
+        
+      - name: ⚙️ Install dependencies
+        uses: ./.github/workflows/setup-s3cmd
+        with:
+          s3_access_key: ${{ secrets.S3_ACCESS_KEY }}
+          s3_secret_key: ${{ secrets.S3_SECRET_KEY }}
+
+      - name: Interact with object storage
+        id: interact_with_storage
+        run: |
+          declare -A artifacts=(["windows_app"]="*.exe" ["macos_64_app"]="*arm64.dmg" ["linux_app"]="*.AppImage" ["macos_app"]="*[!arm64].dmg")
+          for artifact_name in "${!artifacts[@]}"; do
+            artifact_pattern=${artifacts[$artifact_name]}
+            for artifact in $artifact_pattern; do
+              if [ -f "$artifact" ]; then
+                s3cmd put "$artifact" --acl-public "${{ env.S3_BUCKET }}/${{ github.sha }}/$artifact"
+                url=$(s3cmd signurl "${{ env.S3_BUCKET }}/${{ github.sha }}/$artifact" $(echo "`date +%s` + 3600 * 24 * ${{ env.STORING_DAYS }}" | bc))
+                echo "::set-output name=$artifact_name::[$artifact]($url)"
+              fi
+            done
+          done
+
+      - name: Notify Telegram channel
+        uses: appleboy/telegram-action@master
+        with:
+          to: ${{ secrets.TELEGRAM_TO }}
+          token: ${{ secrets.TELEGRAM_TOKEN }}
+          format: markdown
+          message: | 
+            👨‍💻 Stage build was created successfully, URLs to download:
+              - Windows: ${{ steps.interact_with_storage.outputs.windows_app }}
+              - Linux: ${{ steps.interact_with_storage.outputs.linux_app }}
+              - MacOS_64: ${{ steps.interact_with_storage.outputs.macos_64_app }}
+              - MacOS: ${{ steps.interact_with_storage.outputs.macos_app }}
