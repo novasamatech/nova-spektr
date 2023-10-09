@@ -9,7 +9,7 @@ import { HexString } from '@renderer/domain/shared-kernel';
 import { useConfirmContext, useI18n } from '@renderer/app/providers';
 import { Button, SmallTitleText } from '@renderer/shared/ui';
 import { useAccount } from '@renderer/entities/account';
-import * as walletConnectModel from '@renderer/entities/walletConnect';
+import { wcModel } from '@renderer/entities/walletConnect';
 import { DEFAULT_POLKADOT_METHODS, getWalletConnectChains } from '@renderer/entities/walletConnect';
 import { chainsService } from '@renderer/entities/network';
 import { Countdown } from './Countdown';
@@ -24,10 +24,10 @@ export const WalletConnect = ({ api, validateBalance, onGoBack, accounts, transa
   const [countdown, resetCountdown] = useCountdown(api);
   const { confirm } = useConfirmContext();
 
-  const session = useUnit(walletConnectModel.$session);
-  const client = useUnit(walletConnectModel.$client);
-  const connect = useUnit(walletConnectModel.events.connect);
-  const sessionUpdated = useUnit(walletConnectModel.events.sessionUpdated);
+  const session = useUnit(wcModel.$session);
+  const client = useUnit(wcModel.$client);
+  const connect = useUnit(wcModel.events.connect);
+  const sessionUpdated = useUnit(wcModel.events.sessionUpdated);
 
   const chains = chainsService.getChainsData();
 

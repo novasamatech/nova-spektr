@@ -24,11 +24,11 @@ const sessionUpdated = createEvent<SessionTypes.Struct>();
 const connected = createEvent();
 const rejectConnection = createEvent<any>();
 
-export const $client = createStore<Client | null>(null).reset(reset);
-export const $session = createStore<SessionTypes.Struct | null>(null).reset(reset);
-export const $uri = createStore<string>('').reset(reset);
-export const $accounts = createStore<string[]>([]).reset(reset);
-export const $pairings = createStore<PairingTypes.Struct[]>([]).reset(reset);
+const $client = createStore<Client | null>(null).reset(reset);
+const $session = createStore<SessionTypes.Struct | null>(null).reset(reset);
+const $uri = createStore<string>('').reset(reset);
+const $accounts = createStore<string[]>([]).reset(reset);
+const $pairings = createStore<PairingTypes.Struct[]>([]).reset(reset);
 
 const _subscribeToEvents = createEffect(async (client: Client) => {
   if (!client) return;
@@ -252,11 +252,18 @@ forward({
   to: reset,
 });
 
-export const events = {
-  connect,
-  disconnect,
-  sessionUpdated,
-  connected,
-  rejectConnection,
-  reset,
+export const wcModel = {
+  $client,
+  $session,
+  $uri,
+  $accounts,
+  $pairings,
+  events: {
+    connect,
+    disconnect,
+    sessionUpdated,
+    connected,
+    rejectConnection,
+    reset,
+  },
 };
