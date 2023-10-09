@@ -134,9 +134,6 @@ dependencies:
   qr-code-styling:
     specifier: 1.6.0-rc.1
     version: 1.6.0-rc.1
-  qrcode:
-    specifier: ^1.5.3
-    version: 1.5.3
   qrcode-generator:
     specifier: ^1.4.4
     version: 1.4.4
