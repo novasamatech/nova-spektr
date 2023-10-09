@@ -1,7 +1,7 @@
 {
   "name": "nova-spektr",
   "description": "Polkadot Enterprise application",
-  "version": "1.1.2",
+  "version": "1.2.0",
   "main": "./release/build/main.js",
   "repository": "https://github.com/novasamatech/nova-spektr",
   "license": "MIT",
@@ -55,7 +55,7 @@
 
     "update:chains-file": "node scripts/buildChainsJson.js",
     "githook:pre-commit": "cross-env NODE_ENV=production lint-staged && tsc -p tsconfig.json",
-    "githook:pre-push": "cross-env pnpm test:coverage",
+    "githook:pre-push": "cross-env pnpm test -- --changedSince=dev",
     "prepare": "husky install",
     "r": "pnpm run-s"
   },

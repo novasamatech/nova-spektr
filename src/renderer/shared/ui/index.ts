@@ -1,6 +1,6 @@
 import Input from './Inputs/Input/Input';
 import Plate from './Plate/Plate';
-import AmountInput from './Inputs/AmountInput/AmountInput';
+import { AmountInput } from './Inputs/AmountInput/AmountInput';
 import PasswordInput from './Inputs/PasswordInput/PasswordInput';
 import InputHint from './InputHint/InputHint';
 import Button from './Buttons/Button/Button';

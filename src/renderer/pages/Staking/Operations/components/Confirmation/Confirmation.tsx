@@ -25,6 +25,7 @@ import { useMultisigTx } from '@renderer/entities/multisig';
 import { SignButton } from '@renderer/entities/operation/ui/SignButton';
 import { Wallet, useWallet } from '@renderer/entities/wallet';
 import { WalletType } from '@renderer/domain/shared-kernel';
+import { AssetFiatBalance } from '@renderer/entities/price/ui/AssetFiatBalance';
 
 const ActionStyle = 'group hover:bg-action-background-hover px-2 py-1 rounded';
 
@@ -102,7 +103,14 @@ export const Confirmation = ({
       <div className="w-[440px] px-5 py-4">
         <div className="flex flex-col items-center gap-y-3 mb-6">
           {amounts.length > 0 && (
-            <AssetBalance className="block mx-auto text-center text-4xl font-bold" value={totalAmount} asset={asset} />
+            <div className="flex flex-col gap-y-1 items-center mx-auto">
+              <AssetBalance
+                value={totalAmount}
+                asset={asset}
+                className="font-manrope text-text-primary text-[32px] leading-[36px] font-bold"
+              />
+              <AssetFiatBalance asset={asset} amount={totalAmount} className="text-headline" />
+            </div>
           )}
 
           {description && (

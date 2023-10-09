@@ -417,6 +417,10 @@
       "unstake": "Unstake"
     }
   },
+  "price": {
+    "withCode": "{ amount } { code }",
+    "withSymbol": "{ symbol }{ amount }"
+  },
   "qrReader": {
     "parsingLabel": "Parsing data",
     "parsingProgress": "{decoded} of {total}",
@@ -432,6 +436,17 @@
     "title": "Receive {asset} on"
   },
   "settings": {
+    "currency": {
+      "cryptocurrenciesLabel": "Cryptocurrencies",
+      "modalTitle": "Currency",
+      "plateTitle": "Currency",
+      "popularFiatLabel": "Popular fiat currencies",
+      "save": "Save",
+      "selectPlaceholder": "Select currency",
+      "switchHint": "Nova Spektr is using CoinGecko to show currency",
+      "switchLabel": "Show currency values",
+      "unpopularFiatLabel": "Fiat currencies"
+    },
     "matrix": {
       "badCredentialsError": "Invalid username or password",
       "badServerError": "Server is not a correct matrix server",
@@ -683,6 +698,7 @@
       "emptyFilterLabel": "No results",
       "networkDisabledDescription": "Please check the connection in Network Settings",
       "networkDisabledLabel": "Network is inactive",
+      "networkLabel": "Network",
       "networkPlaceholder": "Select network",
       "networkSettingsLink": "Network settings",
       "noAccountsLabel": "Your haven’t got any account to start staking",
@@ -691,7 +707,7 @@
       "noResultsDescription": "Please try another filter parameters",
       "noResultsLabel": "No staking found",
       "noValidatorsLabel": "No validators nominated",
-      "rewardsTableHeader": "Total rewards",
+      "rewardsTableHeader": "Rewards",
       "searchPlaceholder": "Search by account name",
       "stakeTableHeader": "Staked",
       "stakingAssetLabel": "Staking <strong>{ asset }</strong> on",
@@ -824,6 +840,8 @@
     "signatoryLabel": "Signatory",
     "startSigningButton": "Sign with Polkadot Vault",
     "successMessage": "Operation Success",
+    "swapToCryptoModeAlt": "swap input to crypto",
+    "swapToCurrencyModeAlt": "swap input to currency",
     "title": "Transfer { asset } on",
     "xcmTitle": "Transfer { asset } from"
   },

@@ -19,3 +19,13 @@ export type PriceAdapter = {
   getPrice: (ids: AssetId[], currencies: Currency[], includeRateChange: boolean) => Promise<PriceObject>;
   getHistoryData: (id: AssetId, currency: Currency, from: number, to: number) => Promise<PriceRange[]>;
 };
+
+export type CurrencyItem = {
+  id: number;
+  code: string;
+  name: string;
+  symbol?: string;
+  category: 'fiat' | 'crypto';
+  popular: boolean;
+  coingeckoId: string;
+};

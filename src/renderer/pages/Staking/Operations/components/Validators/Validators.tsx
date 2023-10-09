@@ -22,6 +22,7 @@ import { Address, ChainId } from '@renderer/domain/shared-kernel';
 import { ValidatorMap, useEra, useValidators } from '@renderer/entities/staking';
 import { includes, getComposedIdentity, toShortAddress } from '@renderer/shared/lib/utils';
 import { ExplorerLink } from '@renderer/components/common';
+import { AssetFiatBalance } from '@renderer/entities/price/ui/AssetFiatBalance';
 
 type Props = {
   api: ApiPromise;
@@ -139,17 +140,21 @@ export const Validators = ({ api, chainId, asset, explorers, isLightClient, onGo
 
       {!isValidatorsLoading && validatorList.length > 0 && (
         <div className="flex flex-col gap-y-2 mt-4">
-          <div className="grid grid-cols-[400px,120px,1fr] items-center gap-x-6 px-5">
+          <div className="grid grid-cols-[400px,120px,120px,1fr] items-center gap-x-6 px-5">
             <FootnoteText className="text-text-secondary">{t('staking.validators.validatorTableHeader')}</FootnoteText>
-            <FootnoteText className="text-text-secondary">{t('staking.validators.ownStakeTableHeader')}</FootnoteText>
-            <FootnoteText className="text-text-secondary">{t('staking.validators.totalStakeTableHeader')}</FootnoteText>
+            <FootnoteText className="text-text-secondary text-right">
+              {t('staking.validators.ownStakeTableHeader')}
+            </FootnoteText>
+            <FootnoteText className="text-text-secondary text-right">
+              {t('staking.validators.totalStakeTableHeader')}
+            </FootnoteText>
           </div>
 
-          <ul className="flex flex-col gap-y-4 overflow-y-auto max-h-[448px]">
+          <ul className="flex flex-col overflow-y-auto max-h-[448px]">
             {validatorList.map((v) => (
               <li
                 key={v.address}
-                className="grid grid-cols-[400px,120px,120px,1fr] items-center gap-x-6 px-5 shrink-0 h-9 hover:bg-hover"
+                className="grid grid-cols-[400px,120px,120px,1fr] items-center gap-x-6 px-5 shrink-0 h-14 hover:bg-hover"
               >
                 <Checkbox
                   checked={selectedValidators[v.address]}
@@ -165,12 +170,18 @@ export const Validators = ({ api, chainId, asset, explorers, isLightClient, onGo
                     )}
                   </div>
                 </Checkbox>
-                <BodyText>
-                  <AssetBalance value={v.ownStake || '0'} asset={asset} />
-                </BodyText>
-                <BodyText>
-                  <AssetBalance value={v.totalStake || '0'} asset={asset} />
-                </BodyText>
+                <div className="flex flex-col items-end">
+                  <BodyText>
+                    <AssetBalance value={v.ownStake || '0'} asset={asset} />
+                  </BodyText>
+                  <AssetFiatBalance amount={v.ownStake} asset={asset} />
+                </div>
+                <div className="flex flex-col items-end">
+                  <BodyText>
+                    <AssetBalance value={v.totalStake || '0'} asset={asset} />
+                  </BodyText>
+                  <AssetFiatBalance amount={v.totalStake} asset={asset} />
+                </div>
                 <InfoPopover data={getExplorers(v.address, explorers)} position="top-full right-0">
                   <Icon name="info" size={14} className="ml-2 mr-auto" />
                 </InfoPopover>

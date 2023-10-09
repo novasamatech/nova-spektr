@@ -13,8 +13,6 @@ import { AssetXCM, XcmConfig } from '@renderer/shared/api/xcm';
 import { SignButton } from '@renderer/entities/operation/ui/SignButton';
 import { WalletType } from '@renderer/domain/shared-kernel';
 
-const AmountFontStyle = 'font-manrope text-text-primary text-[32px] leading-[36px] font-bold';
-
 type Props = {
   transaction: Transaction;
   account: Account | MultisigAccount;
@@ -60,7 +58,7 @@ export const Confirmation = ({
         </div>
       )}
 
-      {transaction && <TransactionAmount tx={transaction} showIcon={false} className={AmountFontStyle} />}
+      {transaction && <TransactionAmount tx={transaction} />}
 
       {description && (
         <FootnoteText className="py-2 px-3 rounded bg-block-background ml-3 text-text-secondary">

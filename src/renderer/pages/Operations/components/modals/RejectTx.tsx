@@ -27,6 +27,7 @@ import {
 } from '@renderer/entities/transaction';
 import { SignButton } from '@renderer/entities/operation/ui/SignButton';
 import { Wallet, useWallet } from '@renderer/entities/wallet';
+import { priceProviderModel } from '@renderer/entities/price';
 
 type Props = {
   tx: MultisigTransactionDS;
@@ -90,6 +91,10 @@ const RejectTx = ({ tx, account, connection }: Props) => {
       getBalance,
       getTransactionFee,
     });
+
+  useEffect(() => {
+    priceProviderModel.events.assetsPricesRequested({ includeRates: true });
+  }, []);
 
   useEffect(() => {
     const accountId = signAccount?.accountId || account.signatories[0].accountId;

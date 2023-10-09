@@ -6,9 +6,10 @@ import { Icon, HelpText, BodyText, CaptionText } from '@renderer/shared/ui';
 import { WalletType } from '@renderer/domain/shared-kernel';
 import { GroupIcons, GroupLabels } from '@renderer/components/layout/PrimaryLayout/Wallets/common/constants';
 import { useI18n } from '@renderer/app/providers';
-import { Account, AccountAddress } from '@renderer/entities/account';
+import { Account, AddressWithTwoLines } from '@renderer/entities/account';
 import { isMultishardWalletItem } from '@renderer/components/layout/PrimaryLayout/Wallets/common/utils';
 import { cnTw } from '@renderer/shared/lib/utils';
+import { WalletFiatBalance } from './WalletFiatBalance';
 
 type Props = {
   type: WalletType;
@@ -62,15 +63,21 @@ const WalletGroup = ({ type, wallets, onWalletClick }: Props) => {
                       <HelpText className="text-text-tertiary">
                         {(wallet as MultishardWallet).amount}&nbsp;{t('wallets.shards')}
                       </HelpText>
+                      <WalletFiatBalance walletId={wallet.id} className="text-help-text" />
                     </>
                   ) : (
-                    <AccountAddress
-                      size={20}
-                      className="max-w-[260px]"
-                      addressFont="text-body text-text-primary font-medium truncate"
-                      name={(wallet as Account).name}
-                      accountId={(wallet as Account).accountId}
-                    />
+                    <div className="flex gap-2">
+                      <AddressWithTwoLines
+                        size={20}
+                        showIcon={true}
+                        className="max-w-[260px]"
+                        accountId={(wallet as Account).accountId}
+                        firstLine={<BodyText className="text-text-secondary">{(wallet as Account).name}</BodyText>}
+                        secondLine={
+                          <WalletFiatBalance accountId={(wallet as Account).accountId} className="text-help-text" />
+                        }
+                      />
+                    </div>
                   )}
                 </button>
               </li>
