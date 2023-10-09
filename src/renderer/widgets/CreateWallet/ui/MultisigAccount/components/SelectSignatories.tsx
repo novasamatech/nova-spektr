@@ -49,7 +49,7 @@ export const SelectSignatories = ({ isActive, wallets, accounts, contacts, onSel
       .map((contact, index) => ({ ...contact, index: index.toString() }));
 
     const walletContacts = accounts.reduce<ExtendedWallet[]>((acc, a, index) => {
-      if (isWalletContact(a)) {
+      if (isWalletContact(a, walletMap[a.walletId || ''])) {
         acc.push({
           index: index.toString(),
           name: a.name || a.accountId,
