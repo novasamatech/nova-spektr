@@ -17,13 +17,12 @@ import {
 } from '../lib';
 import { kernelModel } from '@renderer/shared/core';
 
-export const initClient = createEvent();
-export const connect = createEvent<Omit<InitConnectProps, 'client'>>();
-export const disconnect = createEvent();
-export const reset = createEvent();
-export const updateSession = createEvent<SessionTypes.Struct>();
-export const connected = createEvent();
-export const rejectConnection = createEvent<any>();
+const connect = createEvent<Omit<InitConnectProps, 'client'>>();
+const disconnect = createEvent();
+const reset = createEvent();
+const sessionUpdated = createEvent<SessionTypes.Struct>();
+const connected = createEvent();
+const rejectConnection = createEvent<any>();
 
 export const $client = createStore<Client | null>(null).reset(reset);
 export const $session = createStore<SessionTypes.Struct | null>(null).reset(reset);
@@ -32,6 +31,8 @@ export const $accounts = createStore<string[]>([]).reset(reset);
 export const $pairings = createStore<PairingTypes.Struct[]>([]).reset(reset);
 
 const _subscribeToEvents = createEffect(async (client: Client) => {
+  if (!client) return;
+
   client.on('session_ping', (args) => {
     console.log('WC EVENT', 'session_ping', args);
   });
@@ -46,7 +47,7 @@ const _subscribeToEvents = createEffect(async (client: Client) => {
     const _session = client.session.get(topic);
     const updatedSession = { ..._session, namespaces };
 
-    updateSession(updatedSession);
+    sessionUpdated(updatedSession);
   });
 
   client.on('session_delete', () => {
@@ -56,6 +57,8 @@ const _subscribeToEvents = createEffect(async (client: Client) => {
 });
 
 const _checkPersistedState = createEffect(async (client: Client) => {
+  if (!client) return;
+
   const pairings = client.pairing.getAll({ active: true });
 
   // Set pairings
@@ -66,11 +69,13 @@ const _checkPersistedState = createEffect(async (client: Client) => {
     const _session = client.session.get(client.session.keys[lastKeyIndex]);
     console.log('RESTORED SESSION:', _session);
 
-    updateSession(_session);
+    sessionUpdated(_session);
   }
 });
 
 const _logClientId = createEffect(async (client: Client) => {
+  if (!client) return;
+
   try {
     const clientId = await client.core.crypto.getClientId();
     console.log('WalletConnect ClientID: ', clientId);
@@ -157,7 +162,7 @@ const disconnectFx = createEffect(async ({ client, session }: DisconnectProps) =
 });
 
 forward({
-  from: updateSession,
+  from: sessionUpdated,
   to: $session,
 });
 
@@ -250,7 +255,8 @@ forward({
 export const events = {
   connect,
   disconnect,
-  updateSession,
+  sessionUpdated,
   connected,
   rejectConnection,
+  reset,
 };

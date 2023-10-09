@@ -27,7 +27,7 @@ export const WalletConnect = ({ api, validateBalance, onGoBack, accounts, transa
   const session = useUnit(walletConnectModel.$session);
   const client = useUnit(walletConnectModel.$client);
   const connect = useUnit(walletConnectModel.events.connect);
-  const updateSession = useUnit(walletConnectModel.updateSession);
+  const sessionUpdated = useUnit(walletConnectModel.events.sessionUpdated);
 
   const chains = chainsService.getChainsData();
 
@@ -59,7 +59,7 @@ export const WalletConnect = ({ api, validateBalance, onGoBack, accounts, transa
         const newSession = sessions.find((s) => s.topic === account.signingExtras?.sessionTopic);
 
         if (newSession) {
-          updateSession(newSession);
+          sessionUpdated(newSession);
           setIsNeedUpdate(true);
 
           setupTransaction().catch(() => console.warn('WalletConnect | setupTransaction() failed'));

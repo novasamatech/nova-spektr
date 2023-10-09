@@ -1,6 +1,6 @@
 import { createEvent, createStore, sample } from 'effector';
 
-import * as wcModel from '@renderer/entities/walletConnect';
+import * as wcModel from '@renderer/entities/walletConnect/model/walletConnect';
 import { Step } from '../common/const';
 
 const startOnboarding = createEvent();
