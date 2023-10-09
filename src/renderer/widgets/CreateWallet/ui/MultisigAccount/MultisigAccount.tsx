@@ -177,6 +177,7 @@ export const MultisigAccount = ({ isOpen, onClose, onComplete }: Props) => {
         <WalletForm
           isActive={activeStep === Step.INIT}
           accounts={accounts}
+          wallets={wallets}
           signatories={signatories}
           isLoading={isLoading}
           onGoBack={goToPrevStep}
