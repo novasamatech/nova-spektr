@@ -12,7 +12,7 @@ import { getSelectedLength } from '../common/utils';
 import { ExtendedContact, ExtendedWallet, SelectedMap } from '../common/types';
 import { EmptyContactList } from '@renderer/entities/contact';
 import type { Contact, AccountId, Wallet, Account, MultisigAccount } from '@renderer/shared/core';
-import { accountUtils } from '@renderer/entities/wallet';
+import { walletUtils } from '@renderer/entities/wallet';
 
 const enum SignatoryTabs {
   WALLETS = 'wallets',
@@ -29,7 +29,7 @@ type Props = {
 
 export const SelectSignatories = ({ isActive, wallets, accounts, contacts, onSelect }: Props) => {
   const { t } = useI18n();
-  const { matrix } = useMatrix();
+  const { matrix, isLoggedIn } = useMatrix();
   const { connections } = useNetworkContext();
 
   const [query, setQuery] = useState('');
@@ -46,20 +46,18 @@ export const SelectSignatories = ({ isActive, wallets, accounts, contacts, onSel
       .filter((c) => c.matrixId)
       .map((contact, index) => ({ ...contact, index: index.toString() }));
 
-    const walletContacts = accounts.reduce<ExtendedWallet[]>((acc, a, index) => {
-      const isBaseAccount = accountUtils.isBaseAccount(a);
-      const isChainAccount = accountUtils.isChainAccount(a);
+    const walletContacts = accounts.reduce<ExtendedWallet[]>((acc, account, index) => {
+      const wallet = walletMap[account.walletId];
 
-      if (isBaseAccount || isChainAccount) {
+      if (walletUtils.isSingleShard(wallet)) {
         acc.push({
-          id: a.id,
+          id: account.id,
           index: index.toString(),
-          name: a.name || a.accountId,
-          address: toAddress(a.accountId),
-          accountId: a.accountId,
+          name: account.name || account.accountId,
+          address: toAddress(account.accountId),
+          accountId: account.accountId,
           matrixId: matrix.userId,
-          walletName: walletMap[a.walletId].name,
-          ...(isChainAccount && { chainId: a.chainId }),
+          walletName: wallet.name,
         });
       }
 
@@ -68,7 +66,7 @@ export const SelectSignatories = ({ isActive, wallets, accounts, contacts, onSel
 
     setWalletList(walletContacts);
     setContactList(addressBookContacts);
-  }, [accounts.length, contacts.length, wallets.length]);
+  }, [accounts.length, contacts.length, wallets.length, isLoggedIn]);
 
   const selectSignatory = (tab: SignatoryTabs, index: string, accountId: AccountId, selection: SelectedMap) => {
     const newValue = !selection[accountId]?.[index];
