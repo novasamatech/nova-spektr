@@ -368,6 +368,7 @@
     "successRejectMessage": "Operation Rejected",
     "walletConnect": {
       "defaultWalletName": "WalletConnect",
+      "expiredDescription": "The operation isn’t valid anymore",
       "reconnect": {
         "cancelButton": "Cancel",
         "confirmButton": "Reconnect",
@@ -377,7 +378,8 @@
         "title": "{ walletName } is not connected"
       },
       "rejected": "Rejected",
-      "signTitle": "Confirm the operation on your { walletName } app"
+      "signTitle": "Confirm the operation on your { walletName } app",
+      "tryAgainButton": "Try again"
     },
     "xcmFee": "Cross-chain fee"
   },

@@ -37,6 +37,7 @@ export const WalletConnect = ({ api, validateBalance, onGoBack, accounts, transa
   const [isReconnectingModalOpen, setIsReconnectingModalOpen] = useState<boolean>(false);
   const [isConnectedModalOpen, setIsConnectedModalOpen] = useState<boolean>(false);
   const [isRejectedStatusOpen, toggleRejectedStatus] = useToggle();
+  const [validationError, setValidationError] = useState<ValidationErrors>();
 
   const transaction = transactions[0];
   const account = accounts[0];
@@ -89,6 +90,12 @@ export const WalletConnect = ({ api, validateBalance, onGoBack, accounts, transa
     }
   }, [isReconnectingModalOpen]);
 
+  useEffect(() => {
+    if (countdown <= 0) {
+      setValidationError(ValidationErrors.EXPIRED);
+    }
+  }, [countdown]);
+
   const setupTransaction = async (): Promise<void> => {
     try {
       const { payload, unsigned } = await createPayload(transaction, api);
@@ -103,8 +110,6 @@ export const WalletConnect = ({ api, validateBalance, onGoBack, accounts, transa
       console.warn(error);
     }
   };
-
-  const [validationError, setValidationError] = useState<ValidationErrors>();
 
   const reconnect = async () => {
     setIsReconnectModalOpen(false);
@@ -186,11 +191,15 @@ export const WalletConnect = ({ api, validateBalance, onGoBack, accounts, transa
         </video>
 
         {validationError === ValidationErrors.EXPIRED && (
-          <div className="absolute top-0 left-0 right-0 bottom-0 bg-white opacity-70 flex items-center justify-center">
-            <Button size="sm" onClick={onGoBack}>
-              {t('operation.walletConnect.reconnect.reconnectButton')}
-            </Button>
-          </div>
+          <>
+            <div className="absolute top-0 left-0 right-0 bottom-0 bg-white opacity-70" />
+            <div className="absolute top-0 left-0 right-0 bottom-0 gap-4 flex flex-col items-center justify-center">
+              <FootnoteText>{t('operation.walletConnect.expiredDescription')}</FootnoteText>
+              <Button size="sm" onClick={onGoBack}>
+                {t('operation.walletConnect.tryAgainButton')}
+              </Button>
+            </div>
+          </>
         )}
       </div>
 
