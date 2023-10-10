@@ -29,7 +29,8 @@ import {
   SigningStatus,
   useTransaction,
 } from '@renderer/entities/transaction';
-import { accountModel, accountUtils } from '@renderer/entities/wallet';
+import { walletModel, accountUtils } from '@renderer/entities/wallet';
+import { WalletType, SigningType, CryptoType, ChainType, AccountType } from '@renderer/shared/core';
 
 type MatrixContextProps = {
   matrix: ISecureMessenger;
@@ -40,7 +41,7 @@ const MatrixContext = createContext<MatrixContextProps>({} as MatrixContextProps
 
 export const MatrixProvider = ({ children }: PropsWithChildren) => {
   const contacts = useUnit(contactModel.$contacts);
-  const accounts = useUnit(accountModel.$accounts);
+  const accounts = useUnit(walletModel.$accounts);
 
   const { addTask } = useMultisigChainContext();
   const { getMultisigTx, addMultisigTx, updateMultisigTx, updateCallData } = useMultisigTx({ addTask });
@@ -80,7 +81,7 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
   const onInvite = async (payload: InvitePayload) => {
     console.info('💛 ===> onInvite', payload);
 
-    const { roomId, content, sender } = payload;
+    const { roomId, content } = payload;
     const { accountId, threshold, signatories, accountName, creatorAccountId } = content.mstAccount;
 
     try {
@@ -91,7 +92,7 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
       if (!mstAccount) {
         console.log(`No multisig account ${accountId} found. Joining room and adding wallet`);
 
-        await joinRoom(roomId, content, sender === matrix.userId);
+        await joinRoom(roomId, content);
         await addNotification({
           smpRoomId: roomId,
           multisigAccountId: accountId,
@@ -128,7 +129,7 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
     }
   };
 
-  const createMstAccount = async (roomId: string, extras: SpektrExtras, makeActive: boolean) => {
+  const createMstAccount = (roomId: string, extras: SpektrExtras) => {
     const { signatories, threshold, accountName, creatorAccountId } = extras.mstAccount;
 
     const contactsMap = contacts.reduce<Record<AccountId, [Address, string]>>((acc, contact) => {
@@ -136,25 +137,32 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
 
       return acc;
     }, {});
+
     const mstSignatories = signatories.map((accountId) => ({
       accountId,
       address: contactsMap[accountId]?.[0] || toAddress(accountId),
       name: contactsMap[accountId]?.[1],
     }));
 
-    const mstAccount = createMultisigAccount({
-      threshold,
-      creatorAccountId,
-      name: accountName,
-      signatories: mstSignatories,
-      matrixRoomId: roomId,
-      isActive: false,
-    });
-
-    await addAccount(mstAccount).then((id) => {
-      if (!makeActive) return;
-
-      setActiveAccount(id);
+    walletModel.events.multisigCreated({
+      wallet: {
+        name: accountName,
+        type: WalletType.MULTISIG,
+        signingType: SigningType.MULTISIG,
+      },
+      accounts: [
+        {
+          threshold,
+          creatorAccountId,
+          accountId: accountUtils.getMultisigAccountId(signatories, threshold),
+          signatories: mstSignatories,
+          name: accountName,
+          matrixRoomId: roomId,
+          cryptoType: CryptoType.SR25519,
+          chainType: ChainType.SUBSTRATE,
+          type: AccountType.MULTISIG,
+        },
+      ],
     });
   };
 
@@ -175,8 +183,9 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
         console.log(`Leave old ${mstAccount.matrixRoomId}, join new room ${roomId}`);
         await matrix.leaveRoom(mstAccount.matrixRoomId);
         await matrix.joinRoom(roomId);
-        await updateAccount<MultisigAccount>({
-          ...mstAccount,
+
+        walletModel.events.multisigAccountUpdated({
+          id: mstAccount.id,
           name: accountName,
           matrixRoomId: roomId,
           creatorAccountId,
@@ -187,10 +196,10 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
     }
   };
 
-  const joinRoom = async (roomId: string, extras: SpektrExtras, makeActive: boolean) => {
+  const joinRoom = async (roomId: string, extras: SpektrExtras): Promise<void> => {
     try {
       await matrix.joinRoom(roomId);
-      await createMstAccount(roomId, extras, makeActive);
+      createMstAccount(roomId, extras);
     } catch (error) {
       console.error(error);
     }

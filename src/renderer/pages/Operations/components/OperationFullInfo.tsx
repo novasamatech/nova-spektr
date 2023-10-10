@@ -17,7 +17,7 @@ import { MultisigTransactionDS } from '@renderer/shared/api/storage';
 import { contactModel } from '@renderer/entities/contact';
 import type { AccountId, CallData, ChainId, MultisigAccount, Signatory } from '@renderer/shared/core';
 import LogModal from './Log';
-import { accountModel } from '@renderer/entities/wallet';
+import { walletModel } from '@renderer/entities/wallet';
 
 type Props = {
   tx: MultisigTransactionDS;
@@ -27,7 +27,7 @@ type Props = {
 const OperationFullInfo = ({ tx, account }: Props) => {
   const { t } = useI18n();
   const contacts = useUnit(contactModel.$contacts);
-  const accounts = useUnit(accountModel.$accounts);
+  const accounts = useUnit(walletModel.$accounts);
 
   const { callData, signatories, accountId, chainId, callHash, blockCreated, indexCreated } = tx;
 

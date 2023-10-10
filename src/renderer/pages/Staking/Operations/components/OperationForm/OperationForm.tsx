@@ -12,7 +12,7 @@ import { DropdownOption, ComboboxOption } from '@renderer/shared/ui/Dropdowns/co
 import { getPayoutAccountOption } from '../../common/utils';
 import type { Asset, Address, ChainId, AccountId } from '@renderer/shared/core';
 import { RewardsDestination } from '@renderer/shared/core';
-import { accountModel, accountUtils } from '@renderer/entities/wallet';
+import { walletModel, accountUtils } from '@renderer/entities/wallet';
 
 const getDestinations = (t: TFunction): RadioOption<RewardsDestination>[] => {
   const Options = [
@@ -79,7 +79,7 @@ export const OperationForm = ({
   onSubmit,
 }: Props) => {
   const { t } = useI18n();
-  const dbAccounts = useUnit(accountModel.$accounts);
+  const dbAccounts = useUnit(walletModel.$accounts);
 
   const { getLiveAssetBalances } = useBalance();
 
@@ -88,12 +88,7 @@ export const OperationForm = ({
   const [activePayout, setActivePayout] = useState<Address>('');
   const [payoutAccounts, setPayoutAccounts] = useState<ComboboxOption<Address>[]>([]);
 
-  const destAccounts = dbAccounts.filter((a) => {
-    const isBaseAccount = accountUtils.isBaseAccount(a);
-    const isChainAccountMatch = accountUtils.isChainAccountMatch(a, chainId);
-
-    return isChainAccountMatch || isBaseAccount;
-  });
+  const destAccounts = dbAccounts.filter((a) => accountUtils.isChainIdMatch(a, chainId));
   const payoutIds = destAccounts.map((a) => a.accountId);
   const balances = getLiveAssetBalances(payoutIds, chainId, asset.assetId.toString());
 
@@ -134,10 +129,9 @@ export const OperationForm = ({
 
   useEffect(() => {
     const payoutAccounts = destAccounts.reduce<DropdownOption<Address>[]>((acc, account) => {
-      const isBaseAccount = accountUtils.isBaseAccount(account);
-      const isChainAccountMatch = accountUtils.isChainAccountMatch(account, chainId);
+      const isChainIdMatch = accountUtils.isChainIdMatch(account, chainId);
 
-      if (isChainAccountMatch || isBaseAccount) {
+      if (isChainIdMatch) {
         const balance = balances.find((b) => b.accountId === account.accountId);
         const option = getPayoutAccountOption(account, { asset, addressPrefix, balance });
 

@@ -7,9 +7,9 @@ import { useI18n } from '@renderer/app/providers';
 import { chainsService } from '@renderer/entities/network';
 import { Button, Input, InputHint, HeaderTitleText, SmallTitleText } from '@renderer/shared/ui';
 import { SeedInfo } from '@renderer/components/common/QrCode/common/types';
-import { AccountsList } from '@renderer/entities/wallet';
-import { SigningType, ErrorType } from '@renderer/shared/core';
+import { AccountsList, walletModel } from '@renderer/entities/wallet';
 import type { Chain } from '@renderer/shared/core';
+import { SigningType, ErrorType, WalletType, CryptoType, ChainType, AccountType } from '@renderer/shared/core';
 
 type WalletForm = {
   walletName: string;
@@ -21,13 +21,12 @@ type Props = {
   onComplete: () => void;
 };
 
-const ManageStepSingle = ({ seedInfo, onBack, onComplete }: Props) => {
+export const ManageSingleshard = ({ seedInfo, onBack, onComplete }: Props) => {
   const { t } = useI18n();
-  const accountId = u8aToHex(seedInfo[0].multiSigner?.public);
-  const { addAccount, setActiveAccount } = useAccount();
 
   const [chains, setChains] = useState<Chain[]>([]);
 
+  const accountId = u8aToHex(seedInfo[0].multiSigner?.public);
   const {
     handleSubmit,
     control,
@@ -44,18 +43,26 @@ const ManageStepSingle = ({ seedInfo, onBack, onComplete }: Props) => {
     setChains(chainsService.sortChains(chains));
   }, []);
 
-  const submitHandler: SubmitHandler<WalletForm> = async ({ walletName }) => {
+  const createWallet: SubmitHandler<WalletForm> = async ({ walletName }) => {
     if (!accountId || accountId.length === 0) return;
 
-    const newAccount = createAccount({
-      name: walletName.trim(),
-      signingType: SigningType.PARITY_SIGNER,
-      accountId,
+    walletModel.events.singleshardCreated({
+      wallet: {
+        name: walletName,
+        type: WalletType.SINGLE_PARITY_SIGNER,
+        signingType: SigningType.PARITY_SIGNER,
+      },
+      accounts: [
+        {
+          accountId,
+          name: walletName.trim(),
+          cryptoType: CryptoType.SR25519,
+          chainType: ChainType.SUBSTRATE,
+          type: AccountType.BASE,
+        },
+      ],
     });
 
-    const id = await addAccount(newAccount);
-    setActiveAccount(id);
-    reset();
     onComplete();
   };
 
@@ -70,7 +77,7 @@ const ManageStepSingle = ({ seedInfo, onBack, onComplete }: Props) => {
         <HeaderTitleText className="mb-10">{t('onboarding.vault.title')}</HeaderTitleText>
         <SmallTitleText className="mb-6">{t('onboarding.vault.manageTitle')}</SmallTitleText>
 
-        <form className="flex flex-col gap-4 h-full" onSubmit={handleSubmit(submitHandler)}>
+        <form className="flex flex-col gap-4 h-full" onSubmit={handleSubmit(createWallet)}>
           <Controller
             name="walletName"
             control={control}
@@ -114,5 +121,3 @@ const ManageStepSingle = ({ seedInfo, onBack, onComplete }: Props) => {
     </>
   );
 };
-
-export default ManageStepSingle;

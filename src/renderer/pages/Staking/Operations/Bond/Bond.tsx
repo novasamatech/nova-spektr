@@ -18,7 +18,7 @@ import { DestinationType } from '../common/types';
 import { UnstakingDuration } from '@renderer/pages/Staking/Overview/components';
 import { isLightClient } from '@renderer/entities/network';
 import { Signing } from '@renderer/features/operation';
-import { accountModel, walletUtils, walletModel } from '@renderer/entities/wallet';
+import { walletUtils, walletModel } from '@renderer/entities/wallet';
 
 const enum Step {
   INIT,
@@ -31,7 +31,7 @@ const enum Step {
 export const Bond = () => {
   const { t } = useI18n();
   const activeWallet = useUnit(walletModel.$activeWallet);
-  const activeAccounts = useUnit(accountModel.$activeAccounts);
+  const activeAccounts = useUnit(walletModel.$activeAccounts);
 
   const navigate = useNavigate();
   const { connections } = useNetworkContext();
@@ -242,7 +242,6 @@ export const Bond = () => {
         )}
         {activeStep === Step.SIGNING && (
           <Signing
-            wallet={activeWallet}
             chainId={chainId}
             api={api}
             addressPrefix={addressPrefix}

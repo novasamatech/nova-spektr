@@ -16,10 +16,10 @@ import { useI18n } from '@renderer/app/providers';
 import { chainsService } from '@renderer/entities/network';
 import { toAccountId, validateAddress, DEFAULT_TRANSITION } from '@renderer/shared/lib/utils';
 import EmptyState from './EmptyState';
-import { AccountsList, accountModel } from '@renderer/entities/wallet';
+import { AccountsList, walletModel } from '@renderer/entities/wallet';
 import { useToggle } from '@renderer/shared/lib/hooks';
-import { ErrorType } from '@renderer/shared/core';
 import type { AccountId, Chain } from '@renderer/shared/core';
+import { ErrorType, CryptoType, ChainType, WalletType, SigningType, AccountType } from '@renderer/shared/core';
 
 type WalletForm = {
   walletName: string;
@@ -72,15 +72,23 @@ const WatchOnly = ({ isOpen, onClose, onComplete }: Props) => {
   }, []);
 
   const createWallet: SubmitHandler<WalletForm> = async ({ walletName, address }) => {
-    const wallet = {};
-    const account = {};
-
-    await accountModel.effects.accountsCreatedFx([
-      {
-        name: walletName.trim(),
-        accountId: toAccountId(address),
+    walletModel.events.watchOnlyCreated({
+      wallet: {
+        name: walletName,
+        type: WalletType.WATCH_ONLY,
+        signingType: SigningType.WATCH_ONLY,
       },
-    ]);
+      accounts: [
+        {
+          name: walletName.trim(),
+          accountId: toAccountId(address),
+          cryptoType: CryptoType.SR25519,
+          chainType: ChainType.SUBSTRATE,
+          type: AccountType.BASE,
+        },
+      ],
+    });
+
     closeWowModal({ complete: true });
   };
 

@@ -14,7 +14,7 @@ import { Alert, BaseModal, Button, Loader } from '@renderer/shared/ui';
 import { OperationTitle } from '@renderer/components/common';
 import { Signing } from '@renderer/features/operation';
 import type { Account } from '@renderer/shared/core';
-import { accountModel, walletModel, walletUtils } from '@renderer/entities/wallet';
+import { walletModel, walletUtils } from '@renderer/entities/wallet';
 
 const enum Step {
   INIT,
@@ -26,7 +26,7 @@ const enum Step {
 export const Restake = () => {
   const { t } = useI18n();
   const activeWallet = useUnit(walletModel.$activeWallet);
-  const activeAccounts = useUnit(accountModel.$activeAccounts);
+  const activeAccounts = useUnit(walletModel.$activeAccounts);
 
   const navigate = useNavigate();
   const { connections } = useNetworkContext();

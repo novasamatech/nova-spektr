@@ -15,7 +15,7 @@ import { isLightClient } from '@renderer/entities/network';
 import { OperationTitle } from '@renderer/components/common';
 import { Signing } from '@renderer/features/operation';
 import type { Account, ChainId, HexString, Address } from '@renderer/shared/core';
-import { accountModel, walletUtils, walletModel } from '@renderer/entities/wallet';
+import { walletUtils, walletModel } from '@renderer/entities/wallet';
 
 const enum Step {
   INIT,
@@ -28,7 +28,7 @@ const enum Step {
 export const ChangeValidators = () => {
   const { t } = useI18n();
   const activeWallet = useUnit(walletModel.$activeWallet);
-  const activeAccounts = useUnit(accountModel.$activeAccounts) || [];
+  const activeAccounts = useUnit(walletModel.$activeAccounts);
 
   const navigate = useNavigate();
   const { setTxs, txs, setWrappers, wrapTx, buildTransaction } = useTransaction();

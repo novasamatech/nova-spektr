@@ -6,12 +6,12 @@ import { useMatrix } from '@renderer/app/providers';
 import { toAccountId } from '@renderer/shared/lib/utils';
 import { ExplorerLink } from '@renderer/components/common';
 import { contactModel } from '../../contact/model/contact-model';
-import { accountModel } from '../model/account-model';
+import { walletModel } from '../model/wallet-model';
 
 export const useAddressInfo = (address: Address, explorers?: Explorer[], showMatrix = false): InfoSection[] => {
   const { matrix } = useMatrix();
   const contacts = useUnit(contactModel.$contacts);
-  const accounts = useUnit(accountModel.$accounts);
+  const accounts = useUnit(walletModel.$accounts);
 
   const accountFromUser = accounts.find((account) => account.accountId === toAccountId(address));
   const accountFromContact = contacts.find((contact) => toAccountId(contact.address) === toAccountId(address));

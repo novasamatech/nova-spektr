@@ -25,7 +25,7 @@ import {
   validateBalance,
   isXcmTransaction,
 } from '@renderer/entities/transaction';
-import { accountModel, walletModel, walletUtils } from '@renderer/entities/wallet';
+import { walletModel, walletUtils } from '@renderer/entities/wallet';
 
 type Props = {
   tx: MultisigTransactionDS;
@@ -44,7 +44,7 @@ const AllSteps = [Step.CONFIRMATION, Step.SIGNING, Step.SUBMIT];
 const RejectTx = ({ tx, account, connection }: Props) => {
   const { t } = useI18n();
   const activeWallet = useUnit(walletModel.$activeWallet);
-  const accounts = useUnit(accountModel.$activeAccounts);
+  const accounts = useUnit(walletModel.$activeAccounts);
 
   const { getBalance } = useBalance();
   const { getTransactionFee } = useTransaction();

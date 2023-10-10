@@ -1,49 +1,126 @@
-import { createStore, createEvent, forward, createEffect, sample } from 'effector';
+import { createStore, createEvent, forward, createEffect, sample, combine } from 'effector';
+import { spread } from 'patronum';
 
-import type { Wallet, ID, NoID, Account } from '@renderer/shared/core';
+import type { Wallet, NoID, Account, BaseAccount, ChainAccount, MultisigAccount } from '@renderer/shared/core';
 import { kernelModel } from '@renderer/shared/core';
 import { storageService } from '@renderer/shared/api/storage';
+import { modelUtils } from '../lib/model-utils';
 
+type WalletId = Wallet['id'];
 type NoIdWallet = NoID<Wallet>;
 
 const $wallets = createStore<Wallet[]>([]);
-const $activeWallet = createStore<Wallet | null>(null);
+const $activeWallet = $wallets.map((wallets) => wallets.find((w) => w.isActive));
 
-type CreationParams = { wallet: NoIdWallet; accounts: NoID<Account>[] };
-const walletCreated = createEvent<CreationParams>();
-const walletSelected = createEvent<ID>();
+const $accounts = createStore<Account[]>([]);
+const $activeAccounts = combine($activeWallet, $accounts, (activeWallet, accounts) => {
+  if (!activeWallet) return [];
+
+  return accounts.filter((account) => account.walletId === activeWallet.id);
+});
+
+type CreateParams<T extends Account> = {
+  wallet: Omit<NoIdWallet, 'isActive'>;
+  accounts: Omit<NoID<T>, 'walletId'>[];
+};
+type MultisigUpdateParams = Partial<MultisigAccount> & { id: Account['id'] };
+
+const watchOnlyCreated = createEvent<CreateParams<BaseAccount>>();
+const multishardCreated = createEvent<CreateParams<BaseAccount | ChainAccount>>();
+const singleshardCreated = createEvent<CreateParams<BaseAccount>>();
+const multisigCreated = createEvent<CreateParams<MultisigAccount>>();
+const walletSelected = createEvent<WalletId>();
+const multisigAccountUpdated = createEvent<MultisigUpdateParams>();
+
+const fetchAllAccountsFx = createEffect((): Promise<Account[]> => {
+  return storageService.accounts.readAll();
+});
 
 const fetchAllWalletsFx = createEffect((): Promise<Wallet[]> => {
-  return storageService.wallets.readBulk();
+  return storageService.wallets.readAll();
 });
 
-const walletCreatedFx = createEffect(async (data: Omit<NoIdWallet, 'isActive'>): Promise<Wallet | undefined> => {
-  const payload = { ...data, isActive: true };
-  const id = await storageService.wallets.create(payload);
+type CreateResult = {
+  wallet: Wallet;
+  accounts: Account[];
+};
 
-  return id ? { id, ...payload } : undefined;
-});
+const walletCreatedFx = createEffect(
+  async ({ wallet, accounts }: CreateParams<BaseAccount>): Promise<CreateResult | undefined> => {
+    const dbWallet = await storageService.wallets.create({ ...wallet, isActive: false });
+
+    if (!dbWallet) return undefined;
+
+    const accountsPayload = accounts.map((account) => ({ ...account, walletId: dbWallet.id }));
+    const dbAccounts = await storageService.accounts.createAll(accountsPayload);
+
+    if (!dbAccounts) return undefined;
+
+    return { wallet: dbWallet, accounts: dbAccounts };
+  },
+);
+
+const multishardCreatedFx = createEffect(
+  async ({ wallet, accounts }: CreateParams<BaseAccount | ChainAccount>): Promise<CreateResult | undefined> => {
+    const dbWallet = await storageService.wallets.create({ ...wallet, isActive: false });
+
+    if (!dbWallet) return undefined;
+
+    const { base, chains } = modelUtils.groupAccounts(accounts);
+
+    const multishardAccounts = [];
+
+    for (const [index, baseAccount] of base.entries()) {
+      const dbBaseAccount = await storageService.accounts.create({ ...baseAccount, walletId: dbWallet.id });
+      if (!dbBaseAccount) return undefined;
+
+      multishardAccounts.push(dbBaseAccount);
+      if (!chains[index]) continue;
+
+      const accountsPayload = chains[index].map((account) => ({
+        ...account,
+        walletId: dbWallet.id,
+        baseId: dbBaseAccount.id,
+      }));
+      const dbChainAccounts = await storageService.accounts.createAll(accountsPayload);
+      if (!dbChainAccounts) return undefined;
+
+      multishardAccounts.push(...dbChainAccounts);
+    }
+
+    return { wallet: dbWallet, accounts: multishardAccounts };
+  },
+);
 
 type SelectParams = {
-  prevId?: ID;
-  nextId: ID;
+  prevId?: WalletId;
+  nextId: WalletId;
 };
-const walletSelectedFx = createEffect(async ({ prevId, nextId }: SelectParams): Promise<ID | undefined> => {
+const walletSelectedFx = createEffect(async ({ prevId, nextId }: SelectParams): Promise<WalletId | undefined> => {
   if (!prevId) {
     return storageService.wallets.update(nextId, { isActive: true });
   }
 
   // TODO: consider using Dexie transaction() | Task --> https://app.clickup.com/t/8692uyemn
-  const [prevIdDB, nextIdDB] = await Promise.all([
+  const [prevWallet, nextWallet] = await Promise.all([
     storageService.wallets.update(prevId, { isActive: false }),
     storageService.wallets.update(nextId, { isActive: true }),
   ]);
 
-  return prevIdDB && nextIdDB ? nextIdDB : undefined;
+  return prevWallet && nextWallet ? nextId : undefined;
 });
 
-forward({ from: kernelModel.events.appStarted, to: fetchAllWalletsFx });
+const multisigWalletUpdatedFx = createEffect(
+  async (account: MultisigUpdateParams): Promise<MultisigUpdateParams | undefined> => {
+    const id = await storageService.accounts.update(account.id, account);
+
+    return id ? account : undefined;
+  },
+);
+
+forward({ from: kernelModel.events.appStarted, to: [fetchAllWalletsFx, fetchAllAccountsFx] });
 forward({ from: fetchAllWalletsFx.doneData, to: $wallets });
+forward({ from: fetchAllAccountsFx.doneData, to: $accounts });
 
 sample({
   clock: fetchAllWalletsFx.doneData,
@@ -66,42 +143,64 @@ sample({
 sample({
   clock: walletSelectedFx.doneData,
   source: $wallets,
-  filter: (wallets, nextId) => {
-    return wallets !== null && wallets.length > 0 && Boolean(nextId);
-  },
+  filter: (_, nextId) => Boolean(nextId),
   fn: (wallets, nextId) => {
-    return wallets!.find((wallet) => wallet.id === nextId) || wallets![0];
+    return wallets.map((wallet) => ({ ...wallet, isActive: wallet.id === nextId }));
   },
-  target: $activeWallet,
-});
-
-forward({ from: walletCreated, to: walletCreatedFx });
-
-sample({
-  clock: walletCreatedFx.doneData,
-  source: $wallets,
-  filter: (_, newWallet) => Boolean(newWallet),
-  fn: (wallets, newWallet) => (wallets || []).concat(newWallet!),
   target: $wallets,
 });
 
+forward({
+  from: [watchOnlyCreated, multisigCreated, singleshardCreated],
+  to: walletCreatedFx,
+});
+forward({ from: multishardCreated, to: multishardCreatedFx });
+
 sample({
-  clock: walletCreatedFx.doneData,
-  filter: (newWallet) => Boolean(newWallet),
-  fn: (newWallet) => newWallet!.id,
+  clock: [walletCreatedFx.doneData, multishardCreatedFx.doneData],
+  source: { wallets: $wallets, accounts: $accounts },
+  filter: (_, data) => Boolean(data),
+  fn: ({ wallets, accounts }, data) => {
+    return {
+      wallets: wallets.concat(data!.wallet),
+      accounts: accounts.concat(data!.accounts),
+    };
+  },
+  target: spread({
+    targets: { wallets: $wallets, accounts: $accounts },
+  }),
+});
+
+sample({
+  clock: [walletCreatedFx.doneData, multishardCreatedFx.doneData],
+  filter: (data) => Boolean(data),
+  fn: (data) => data!.wallet.id,
   target: walletSelected,
+});
+
+forward({ from: multisigAccountUpdated, to: multisigWalletUpdatedFx });
+
+sample({
+  clock: multisigWalletUpdatedFx.doneData,
+  source: $accounts,
+  filter: (_, data) => Boolean(data),
+  fn: (accounts, data) => {
+    return accounts.map((account) => (account.id === data!.id ? { ...account, ...data } : account));
+  },
+  target: $accounts,
 });
 
 export const walletModel = {
   $wallets,
   $activeWallet,
+  $accounts,
+  $activeAccounts,
   events: {
-    walletCreated,
+    watchOnlyCreated,
+    multishardCreated,
+    singleshardCreated,
+    multisigCreated,
     walletSelected,
-  },
-  // TODO: remove when effector will have been integrated in client components / models
-  effects: {
-    walletCreatedFx,
-    walletSelectedFx,
+    multisigAccountUpdated,
   },
 };

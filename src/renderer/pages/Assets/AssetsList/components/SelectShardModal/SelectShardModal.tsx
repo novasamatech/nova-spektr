@@ -41,13 +41,13 @@ export const SelectShardModal = ({ isOpen, activeShards, accounts, onClose }: Pr
     setChains(chainsById);
     setShards(selectable);
     setQuery('');
-  }, [activeShards.length]);
+  }, [accounts.length, activeShards.length]);
 
   const [shards, setShards] = useState<SelectableShards>({ rootAccounts: [], amount: 0 });
   const [query, setQuery] = useState('');
 
-  const selectRoot = (value: boolean, baseAccountId: AccountId) => {
-    const root = shards.rootAccounts.find((r) => r.accountId === baseAccountId);
+  const selectRoot = (value: boolean, accountId: AccountId) => {
+    const root = shards.rootAccounts.find((r) => r.accountId === accountId);
     if (!root) return;
 
     root.isSelected = value;

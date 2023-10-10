@@ -2,8 +2,8 @@ import { useEffect, useState } from 'react';
 
 import { SeedInfo } from '@renderer/components/common/QrCode/common/types';
 import ScanStep from './ScanStep/ScanStep';
-import ManageStep from './ManageStep/ManageStep';
-import ManageStepSingle from './ManageStepSingle/ManageStepSingle';
+import { ManageMultishard } from './ManageMultishard/ManageMultishard';
+import { ManageSingleshard } from './ManageSingleshard/ManageSingleshard';
 import { BaseModal } from '@renderer/shared/ui';
 import { DEFAULT_TRANSITION } from '@renderer/shared/lib/utils';
 import { useToggle } from '@renderer/shared/lib/hooks';
@@ -67,13 +67,13 @@ const Vault = ({ isOpen, onClose, onComplete }: Props) => {
       {activeStep === Step.MANAGE && qrPayload && (
         <>
           {isPlainQr ? (
-            <ManageStepSingle
+            <ManageSingleshard
               seedInfo={qrPayload}
               onBack={() => setActiveStep(Step.SCAN)}
               onComplete={() => closeVaultModal({ complete: true })}
             />
           ) : (
-            <ManageStep
+            <ManageMultishard
               seedInfo={qrPayload}
               onBack={() => setActiveStep(Step.SCAN)}
               onComplete={() => closeVaultModal({ complete: true })}

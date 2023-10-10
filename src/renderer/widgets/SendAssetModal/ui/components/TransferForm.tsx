@@ -126,7 +126,7 @@ export const TransferForm = ({
   const description = watch('description');
   const destinationChain = watch('destinationChain');
   const destinationChainAccounts =
-    accounts?.filter((a) => accountUtils.isChainAccountMatch(a, destinationChain?.value || '0x00')) || [];
+    accounts?.filter((a) => accountUtils.isChainIdMatch(a, destinationChain?.value || '0x00')) || [];
 
   useEffect(() => {
     if (destinationChain) {

@@ -7,7 +7,7 @@ import { BaseModal, Button, FootnoteText, HelpText, Icon, Select } from '@render
 import { DropdownOption, DropdownResult } from '@renderer/shared/ui/types';
 import { useI18n } from '@renderer/app/providers';
 import { copyToClipboard, DEFAULT_TRANSITION, toAddress, cnTw } from '@renderer/shared/lib/utils';
-import { AccountAddress, accountModel, walletModel, walletUtils, accountUtils } from '@renderer/entities/wallet';
+import { AccountAddress, walletModel, walletUtils, accountUtils } from '@renderer/entities/wallet';
 import { useToggle } from '@renderer/shared/lib/hooks';
 import type { Chain, Asset } from '@renderer/shared/core';
 
@@ -21,7 +21,7 @@ type Props = {
 export const ReceiveAssetModal = ({ chain, asset, onClose }: Props) => {
   const { t } = useI18n();
   const activeWallet = useUnit(walletModel.$activeWallet);
-  const activeAccounts = useUnit(accountModel.$activeAccounts);
+  const activeAccounts = useUnit(walletModel.$activeAccounts);
 
   const [isModalOpen, toggleIsModalOpen] = useToggle(true);
   const [activeAccount, setActiveAccount] = useState<DropdownResult<number>>();
@@ -30,7 +30,7 @@ export const ReceiveAssetModal = ({ chain, asset, onClose }: Props) => {
   useEffect(() => {
     const accounts = activeAccounts.reduce<DropdownOption[]>((acc, account, index) => {
       const isWatchOnly = walletUtils.isWatchOnly(activeWallet);
-      const isChainMatch = accountUtils.isChainAccountMatch(account, chain.chainId);
+      const isChainMatch = accountUtils.isChainIdMatch(account, chain.chainId);
 
       if (isWatchOnly || !isChainMatch) return acc;
 

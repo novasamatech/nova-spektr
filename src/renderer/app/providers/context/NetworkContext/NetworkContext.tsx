@@ -7,7 +7,7 @@ import { useSubscription } from '@renderer/services/subscription/subscriptionSer
 import { usePrevious } from '@renderer/shared/lib/hooks';
 import type { RpcNode, ChainId, AccountId } from '@renderer/shared/core';
 import { ConnectionStatus, ConnectionType } from '@renderer/shared/core';
-import { accountModel, accountUtils } from '@renderer/entities/wallet';
+import { walletModel, accountUtils } from '@renderer/entities/wallet';
 
 type NetworkContextProps = {
   connections: Record<ChainId, ExtendedChain>;
@@ -23,7 +23,7 @@ type NetworkContextProps = {
 const NetworkContext = createContext<NetworkContextProps>({} as NetworkContextProps);
 
 export const NetworkProvider = ({ children }: PropsWithChildren) => {
-  const activeAccounts = useUnit(accountModel.$activeAccounts);
+  const activeAccounts = useUnit(walletModel.$activeAccounts);
 
   const networkSubscriptions = useSubscription<ChainId>();
   const { subscribe, unsubscribe, hasSubscription, unsubscribeAll } = networkSubscriptions;
@@ -93,7 +93,7 @@ export const NetworkProvider = ({ children }: PropsWithChildren) => {
   const getAccountIds = (chainId: ChainId): AccountId[] => {
     return Array.from(
       activeAccounts.reduce<Set<AccountId>>((acc, account) => {
-        if (accountUtils.isChainAccountMatch(account, chainId) || accountUtils.isBaseAccount(account)) {
+        if (accountUtils.isChainIdMatch(account, chainId)) {
           acc.add(account.accountId);
         }
 

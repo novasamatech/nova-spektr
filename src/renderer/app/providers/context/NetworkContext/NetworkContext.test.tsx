@@ -1,9 +1,12 @@
 import { act, render, renderHook, screen, waitFor } from '@testing-library/react';
+import { fork } from 'effector';
+import { Provider } from 'effector-react';
 
 import { useBalance } from '@renderer/entities/asset';
 import { useNetwork } from '@renderer/entities/network';
 import { NetworkProvider, useNetworkContext } from './NetworkContext';
 import { ConnectionStatus, ConnectionType } from '@renderer/shared/core';
+import { walletModel } from '@renderer/entities/wallet';
 
 jest.mock('@renderer/entities/network', () => ({
   useNetwork: jest.fn().mockReturnValue({
@@ -110,8 +113,16 @@ describe('context/NetworkContext', () => {
       subscribeLockBalances: spySubscribeLockBalances,
     }));
 
+    const scope = fork({
+      values: new Map().set(walletModel.$activeAccounts, []),
+    });
+
     await act(async () => {
-      render(<NetworkProvider>children</NetworkProvider>);
+      render(
+        <Provider value={scope}>
+          <NetworkProvider>children</NetworkProvider>
+        </Provider>,
+      );
     });
 
     expect(spySubscribeBalances).toBeCalled();

@@ -31,7 +31,7 @@ export const NetworkAssets = ({ query, hideZeroBalance, chain, accounts, searchS
 
   const accountIds = useMemo(() => {
     return accounts.reduce<AccountId[]>((acc, account) => {
-      if (accountUtils.isChainAccountMatch(account, chain.chainId)) {
+      if (accountUtils.isChainIdMatch(account, chain.chainId)) {
         acc.push(account.accountId);
       }
 

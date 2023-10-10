@@ -36,7 +36,7 @@ export const WalletGroup = ({ type, wallets, onSelect }: Props) => {
         </Disclosure.Button>
 
         <Disclosure.Panel as="ul" className="flex flex-col gap-y-1 px-1 py-2">
-          {wallets.map((wallet, index) => (
+          {wallets.map((wallet) => (
             <li
               key={wallet.id}
               className={cn('hover:bg-action-background-hover rounded', wallet.isActive && 'bg-selected-background')}

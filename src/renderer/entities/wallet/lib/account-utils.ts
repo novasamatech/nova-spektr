@@ -8,7 +8,7 @@ export const accountUtils = {
   isBaseAccount,
   isChainAccount,
   isMultisigAccount,
-  isChainAccountMatch,
+  isChainIdMatch,
   getMultisigAccountId,
 };
 
@@ -16,19 +16,19 @@ function getMultisigAccountId(ids: AccountId[], threshold: Threshold): AccountId
   return u8aToHex(createKeyMulti(ids, threshold));
 }
 
-function isBaseAccount(account: Account): account is BaseAccount {
+function isBaseAccount(account: Pick<Account, 'type'>): account is BaseAccount {
   return account.type === AccountType.BASE;
 }
 
-function isChainAccount(account: Account): account is ChainAccount {
+function isChainAccount(account: Pick<Account, 'type'>): account is ChainAccount {
   return account.type === AccountType.CHAIN;
 }
 
-function isChainAccountMatch(account: Account, chainId: ChainId): boolean {
-  return isChainAccount(account) && account.chainId === chainId;
+function isChainIdMatch(account: Pick<Account, 'type'>, chainId: ChainId): boolean {
+  return !isChainAccount(account) || account.chainId === chainId;
 }
 
-function isMultisigAccount(account: Account): account is MultisigAccount {
+function isMultisigAccount(account: Pick<Account, 'type'>): account is MultisigAccount {
   return account.type === AccountType.MULTISIG;
 }
 

@@ -12,11 +12,12 @@ import { chainsService } from '@renderer/entities/network';
 import { ChainsRecord } from '@renderer/components/layout/PrimaryLayout/Wallets/common/types';
 import { Paths } from '../../../../app/providers/routes/paths';
 import { Shimmering } from '@renderer/shared/ui';
-import { accountModel } from '@renderer/entities/wallet';
+import { walletModel } from '@renderer/entities/wallet';
 import { cnTw } from '@renderer/shared/lib/utils';
 
 const Navigation = () => {
-  const activeAccounts = useUnit(accountModel.$activeAccounts);
+  const activeWallet = useUnit(walletModel.$activeWallet);
+  const activeAccounts = useUnit(walletModel.$activeAccounts);
 
   const { getLiveAccountMultisigTxs } = useMultisigTx({});
 
@@ -56,8 +57,8 @@ const Navigation = () => {
         'bg-left-navigation-menu-background border-r border-r-container-border',
       )}
     >
-      <WalletMenu chains={chains}>
-        {activeAccounts?.length ? <WalletCard chains={chains} /> : <Shimmering height={54} className="w-full" />}
+      <WalletMenu>
+        {activeWallet ? <WalletCard chains={chains} /> : <Shimmering height={54} className="w-full" />}
       </WalletMenu>
 
       <nav className="flex-1 overflow-y-auto">
