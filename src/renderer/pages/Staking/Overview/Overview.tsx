@@ -1,11 +1,17 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, Outlet } from 'react-router-dom';
+import { useUnit } from 'effector-react';
 
 import { Header } from '@renderer/components/common';
-import { Chain } from '@renderer/entities/chain';
 import { getRelaychainAsset, toAddress } from '@renderer/shared/lib/utils';
-import { useGraphql, useI18n, useNetworkContext, PathValue, createLink } from '@renderer/app/providers';
-import { ChainId, Address, SigningType } from '@renderer/domain/shared-kernel';
+import { createLink, PathValue, useGraphql, useI18n, useNetworkContext } from '@renderer/app/providers';
+import { useToggle } from '@renderer/shared/lib/hooks';
+import { NominatorInfo } from '@renderer/pages/Staking/Overview/components/NominatorsList/NominatorsList';
+import { AboutStaking, NetworkInfo, NominatorsList, Actions, ValidatorsModal, InactiveChain } from './components';
+import type { ChainId, Chain, Address, Account, Stake } from '@renderer/shared/core';
+import { ConnectionType, ConnectionStatus } from '@renderer/shared/core';
+import { accountUtils, walletModel, walletUtils } from '@renderer/entities/wallet';
+import { priceProviderModel } from '@renderer/entities/price';
 import {
   useEra,
   useStakingData,
@@ -13,18 +19,13 @@ import {
   ValidatorMap,
   useValidators,
   useStakingRewards,
-  Stake,
 } from '@renderer/entities/staking';
-import { useAccount } from '@renderer/entities/account';
-import { useToggle } from '@renderer/shared/lib/hooks';
-import { NominatorInfo } from '@renderer/pages/Staking/Overview/components/NominatorsList/NominatorsList';
-import { AccountDS } from '@renderer/shared/api/storage';
-import { ConnectionType, ConnectionStatus } from '@renderer/domain/connection';
-import { AboutStaking, NetworkInfo, NominatorsList, Actions, ValidatorsModal, InactiveChain } from './components';
-import { priceProviderModel } from '@renderer/entities/price';
 
 export const Overview = () => {
   const { t } = useI18n();
+  const activeWallet = useUnit(walletModel.$activeWallet);
+  const activeAccounts = useUnit(walletModel.$activeAccounts);
+
   const navigate = useNavigate();
   const { changeClient } = useGraphql();
   const { connections } = useNetworkContext();
@@ -32,7 +33,6 @@ export const Overview = () => {
   const { subscribeActiveEra } = useEra();
   const { subscribeStaking } = useStakingData();
   const { getValidatorsList } = useValidators();
-  const { getActiveAccounts } = useAccount();
   const [isShowNominators, toggleNominators] = useToggle();
 
   const [chainEra, setChainEra] = useState<Record<ChainId, number | undefined>>({});
@@ -52,18 +52,14 @@ export const Overview = () => {
   const addressPrefix = activeChain?.addressPrefix;
   const explorers = activeChain?.explorers;
 
-  const accounts = getActiveAccounts().reduce<AccountDS[]>((acc, a) => {
-    const derivationIsCorrect = a.rootId && a.derivationPath && a.chainId === chainId;
-
-    if (!a.rootId || derivationIsCorrect) {
-      acc.push(a);
+  const accounts = activeAccounts.reduce<Account[]>((acc, account) => {
+    if (accountUtils.isChainIdMatch(account, chainId)) {
+      acc.push(account);
     }
 
     return acc;
   }, []);
 
-  const signingType = accounts[0]?.signingType;
-  const rootAccountId = accounts[0]?.accountId;
   const addresses = accounts.map((a) => toAddress(a.accountId, { prefix: addressPrefix }));
 
   const { rewards, isRewardsLoading } = useStakingRewards(addresses);
@@ -105,18 +101,19 @@ export const Overview = () => {
       unsubEra?.();
       unsubStaking?.();
     };
-  }, [chainId, api, signingType, rootAccountId, addresses.length]);
+  }, [chainId, api, activeAccounts]);
 
   useEffect(() => {
-    const isMultiShard = signingType === SigningType.PARITY_SIGNER && addresses.length > 1;
-    const isSingleShard = signingType === SigningType.PARITY_SIGNER && addresses.length === 1;
+    const isMultisig = walletUtils.isMultisig(activeWallet);
+    const isSingleShard = walletUtils.isSingleShard(activeWallet);
+    const isSingleMultishard = walletUtils.isMultiShard(activeWallet) && addresses.length === 1;
 
-    if (signingType === SigningType.WATCH_ONLY || isMultiShard) {
-      setSelectedNominators([]);
-    } else if (signingType === SigningType.MULTISIG || isSingleShard) {
+    if (isMultisig || isSingleShard || isSingleMultishard) {
       setSelectedNominators([addresses[0]]);
+    } else {
+      setSelectedNominators([]);
     }
-  }, [chainId, signingType, rootAccountId, addresses.length]);
+  }, [chainId, activeWallet]);
 
   useEffect(() => {
     if (!chainId || !api?.isConnected) return;
@@ -149,8 +146,8 @@ export const Overview = () => {
 
     acc.push({
       address,
+      id: account.id,
       stash: staking[address]?.stash,
-      signingType: account.signingType,
       accountName: account.name,
       isSelected: selectedNominators.includes(address),
       totalStake: isStakingLoading ? undefined : staking[address]?.total || '0',
@@ -175,7 +172,7 @@ export const Overview = () => {
       return;
     }
 
-    const accountsMap = accounts.reduce<Record<Address, string>>((acc, account) => {
+    const accountsMap = accounts.reduce<Record<Address, number>>((acc, account) => {
       if (account.id) {
         acc[toAddress(account.accountId, { prefix: addressPrefix })] = account.id;
       }
@@ -224,7 +221,7 @@ export const Overview = () => {
             {networkIsActive && accounts.length > 0 && (
               <>
                 <Actions
-                  canInteract={signingType !== SigningType.WATCH_ONLY}
+                  canInteract={!walletUtils.isWatchOnly(activeWallet)}
                   stakes={selectedStakes}
                   isStakingLoading={isStakingLoading}
                   onNavigate={navigateToStake}

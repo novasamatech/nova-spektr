@@ -1,15 +1,14 @@
 import { BN, BN_ZERO } from '@polkadot/util';
 import { ApiPromise } from '@polkadot/api';
 import { PropsWithChildren, useState, useEffect } from 'react';
+import { useUnit } from 'effector-react';
 
 import { Icon, Button, FootnoteText, CaptionText, InputHint } from '@renderer/shared/ui';
 import { useI18n } from '@renderer/app/providers';
 import { useToggle } from '@renderer/shared/lib/hooks';
-import { RewardsDestination } from '@renderer/entities/staking';
-import { Validator } from '@renderer/domain/validator';
-import { Account, AddressWithExplorers, isMultisig } from '@renderer/entities/account';
-import { Asset, AssetBalance } from '@renderer/entities/asset';
-import { Explorer } from '@renderer/entities/chain';
+import { Validator } from '@renderer/shared/core/types/validator';
+import { AddressWithExplorers, accountUtils, walletModel } from '@renderer/entities/wallet';
+import { AssetBalance } from '@renderer/entities/asset';
 import {
   MultisigTxInitStatus,
   DepositWithLabel,
@@ -22,10 +21,10 @@ import ValidatorsModal from '../Modals/ValidatorsModal/ValidatorsModal';
 import { DestinationType } from '../../common/types';
 import { cnTw } from '@renderer/shared/lib/utils';
 import { useMultisigTx } from '@renderer/entities/multisig';
-import { SignButton } from '@renderer/entities/operation/ui/SignButton';
-import { Wallet, useWallet } from '@renderer/entities/wallet';
-import { WalletType } from '@renderer/domain/shared-kernel';
+import { RewardsDestination, WalletType } from '@renderer/shared/core';
+import type { Account, Asset, Explorer } from '@renderer/shared/core';
 import { AssetFiatBalance } from '@renderer/entities/price/ui/AssetFiatBalance';
+import { SignButton } from '@renderer/entities/operation/ui/SignButton';
 
 const ActionStyle = 'group hover:bg-action-background-hover px-2 py-1 rounded';
 
@@ -64,21 +63,21 @@ export const Confirmation = ({
   const { t } = useI18n();
   const { getMultisigTxs } = useMultisigTx({});
   const { getTransactionHash } = useTransaction();
-  const { getWallet } = useWallet();
+  const activeWallet = useUnit(walletModel.$activeWallet);
 
   const [isAccountsOpen, toggleAccounts] = useToggle();
   const [isValidatorsOpen, toggleValidators] = useToggle();
 
   const [feeLoading, setFeeLoading] = useState(true);
   const [multisigTxExist, setMultisigTxExist] = useState(false);
-  const [wallet, setWallet] = useState<Wallet>();
 
+  const isMultisigAccount = accountUtils.isMultisigAccount(accounts[0]);
   const singleAccount = accounts.length === 1;
   const validatorsExist = validators && validators.length > 0;
   const totalAmount = amounts.reduce((acc, amount) => acc.add(new BN(amount)), BN_ZERO).toString();
 
   useEffect(() => {
-    if (!accounts.length && !isMultisig(accounts[0])) return;
+    if (!accounts.length && !isMultisigAccount) return;
 
     const { callHash } = getTransactionHash(transaction, api);
 
@@ -92,10 +91,6 @@ export const Confirmation = ({
       .catch(() => {
         console.warn('Could not retrieve multisig transactions from DB');
       });
-
-    if (accounts[0].walletId) {
-      getWallet(accounts[0].walletId).then(setWallet);
-    }
   }, []);
 
   return (
@@ -191,7 +186,9 @@ export const Confirmation = ({
             </>
           )}
 
-          {isMultisig(accounts[0]) && <DepositWithLabel api={api} asset={asset} threshold={accounts[0].threshold} />}
+          {accountUtils.isMultisigAccount(accounts[0]) && (
+            <DepositWithLabel api={api} asset={asset} threshold={accounts[0].threshold} />
+          )}
 
           <div className="flex justify-between items-center gap-x-2">
             <FootnoteText className="text-text-tertiary">
@@ -230,7 +227,7 @@ export const Confirmation = ({
           </Button>
           <SignButton
             disabled={feeLoading || multisigTxExist}
-            type={wallet?.type || WalletType.SINGLE_PARITY_SIGNER}
+            type={activeWallet?.type || WalletType.SINGLE_PARITY_SIGNER}
             onClick={onResult}
           />
         </div>

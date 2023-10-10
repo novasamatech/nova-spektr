@@ -1,8 +1,8 @@
-import { useAddressInfo } from '@renderer/entities/account';
-import { Explorer } from '@renderer/entities/chain';
+import { useAddressInfo } from '@renderer/entities/wallet/lib/useAddressInfo';
 import { toAddress } from '@renderer/shared/lib/utils';
 import { Icon, Identicon, BodyText, InfoPopover, HelpText } from '@renderer/shared/ui';
 import { ExtendedWallet } from '../common/types';
+import type { Explorer } from '@renderer/shared/core';
 
 type Props = Pick<ExtendedWallet, 'accountId' | 'walletName' | 'name'> & { explorers?: Explorer[] };
 

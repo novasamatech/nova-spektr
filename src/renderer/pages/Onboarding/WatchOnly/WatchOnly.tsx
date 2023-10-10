@@ -13,13 +13,13 @@ import {
   SmallTitleText,
 } from '@renderer/shared/ui';
 import { useI18n } from '@renderer/app/providers';
-import { Chain } from '@renderer/entities/chain';
-import { ErrorType, AccountId, SigningType } from '@renderer/domain/shared-kernel';
 import { chainsService } from '@renderer/entities/network';
 import { toAccountId, validateAddress, DEFAULT_TRANSITION } from '@renderer/shared/lib/utils';
 import EmptyState from './EmptyState';
-import { createAccount, useAccount, AccountsList } from '@renderer/entities/account';
+import { AccountsList, walletModel } from '@renderer/entities/wallet';
 import { useToggle } from '@renderer/shared/lib/hooks';
+import type { AccountId, Chain } from '@renderer/shared/core';
+import { ErrorType, CryptoType, ChainType, WalletType, SigningType, AccountType } from '@renderer/shared/core';
 
 type WalletForm = {
   walletName: string;
@@ -34,8 +34,6 @@ type Props = {
 
 const WatchOnly = ({ isOpen, onClose, onComplete }: Props) => {
   const { t } = useI18n();
-
-  const { addAccount, setActiveAccount } = useAccount();
 
   const [isModalOpen, toggleIsModalOpen] = useToggle(isOpen);
   const [chains, setChains] = useState<Chain[]>([]);
@@ -73,14 +71,24 @@ const WatchOnly = ({ isOpen, onClose, onComplete }: Props) => {
     setChains(chainsService.sortChains(chains));
   }, []);
 
-  const createWallet: SubmitHandler<WalletForm> = ({ walletName, address }) => {
-    const newAccount = createAccount({
-      name: walletName.trim(),
-      signingType: SigningType.WATCH_ONLY,
-      accountId: toAccountId(address),
+  const createWallet: SubmitHandler<WalletForm> = async ({ walletName, address }) => {
+    walletModel.events.watchOnlyCreated({
+      wallet: {
+        name: walletName,
+        type: WalletType.WATCH_ONLY,
+        signingType: SigningType.WATCH_ONLY,
+      },
+      accounts: [
+        {
+          name: walletName.trim(),
+          accountId: toAccountId(address),
+          cryptoType: CryptoType.SR25519,
+          chainType: ChainType.SUBSTRATE,
+          type: AccountType.BASE,
+        },
+      ],
     });
 
-    addAccount(newAccount).then(setActiveAccount);
     closeWowModal({ complete: true });
   };
 

@@ -3,6 +3,11 @@ import { UnsignedTransaction } from '@substrate/txwrapper-polkadot';
 import { useEffect, useState, ComponentProps } from 'react';
 
 import { useI18n, useMatrix, useMultisigChainContext } from '@renderer/app/providers';
+import { useMultisigTx, useMultisigEvent } from '@renderer/entities/multisig';
+import { toAccountId } from '@renderer/shared/lib/utils';
+import { useToggle } from '@renderer/shared/lib/hooks';
+import { Button } from '@renderer/shared/ui';
+import type { Account, HexString } from '@renderer/shared/core';
 import {
   MultisigEvent,
   MultisigTxFinalStatus,
@@ -14,12 +19,6 @@ import {
   ExtrinsicResultParams,
   OperationResult,
 } from '@renderer/entities/transaction';
-import { HexString } from '@renderer/domain/shared-kernel';
-import { Account } from '@renderer/entities/account';
-import { useMultisigTx, useMultisigEvent } from '@renderer/entities/multisig';
-import { toAccountId } from '@renderer/shared/lib/utils';
-import { useToggle } from '@renderer/shared/lib/hooks';
-import { Button } from '@renderer/shared/ui';
 
 type ResultProps = Pick<ComponentProps<typeof OperationResult>, 'title' | 'description' | 'variant'>;
 

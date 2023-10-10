@@ -4,7 +4,7 @@ import init, { Decoder, EncodingPacket } from 'raptorq';
 import { useEffect, useRef } from 'react';
 
 import { cnTw, validateSignerFormat } from '@renderer/shared/lib/utils';
-import { CryptoTypeString } from '@renderer/domain/shared-kernel';
+import { CryptoTypeString } from '@renderer/shared/core';
 import { useI18n } from '@renderer/app/providers';
 import { ErrorFields, EXPORT_ADDRESS, FRAME_KEY } from '../common/constants';
 import { QR_READER_ERRORS } from '../common/errors';

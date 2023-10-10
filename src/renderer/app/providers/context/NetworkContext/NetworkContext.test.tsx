@@ -1,10 +1,12 @@
 import { act, render, renderHook, screen, waitFor } from '@testing-library/react';
+import { fork } from 'effector';
+import { Provider } from 'effector-react';
 
-import { ConnectionStatus, ConnectionType } from '@renderer/domain/connection';
 import { useBalance } from '@renderer/entities/asset';
 import { useNetwork } from '@renderer/entities/network';
 import { NetworkProvider, useNetworkContext } from './NetworkContext';
-import { TEST_ACCOUNT_ID } from '@renderer/shared/lib/utils';
+import { ConnectionStatus, ConnectionType } from '@renderer/shared/core';
+import { walletModel } from '@renderer/entities/wallet';
 
 jest.mock('@renderer/entities/network', () => ({
   useNetwork: jest.fn().mockReturnValue({
@@ -26,14 +28,6 @@ jest.mock('@renderer/services/subscription/subscriptionService', () => ({
     hasSubscription: jest.fn(),
     unsubscribe: jest.fn(),
     unsubscribeAll: jest.fn(),
-  }),
-}));
-
-jest.mock('@renderer/entities/account', () => ({
-  isMultisig: jest.fn(),
-  useAccount: jest.fn().mockReturnValue({
-    getActiveAccounts: () => [{ name: 'Test Wallet', accountId: TEST_ACCOUNT_ID }],
-    getLiveAccounts: () => [{ name: 'Test Wallet', accountId: TEST_ACCOUNT_ID }],
   }),
 }));
 
@@ -119,8 +113,16 @@ describe('context/NetworkContext', () => {
       subscribeLockBalances: spySubscribeLockBalances,
     }));
 
+    const scope = fork({
+      values: new Map().set(walletModel.$activeAccounts, []),
+    });
+
     await act(async () => {
-      render(<NetworkProvider>children</NetworkProvider>);
+      render(
+        <Provider value={scope}>
+          <NetworkProvider>children</NetworkProvider>
+        </Provider>,
+      );
     });
 
     expect(spySubscribeBalances).toBeCalled();

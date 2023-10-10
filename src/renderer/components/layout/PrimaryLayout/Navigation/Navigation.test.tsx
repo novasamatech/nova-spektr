@@ -2,18 +2,11 @@ import { render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 
 import Navigation from './Navigation';
-import { TEST_ACCOUNT_ID } from '@renderer/shared/lib/utils';
 
 jest.mock('@renderer/app/providers', () => ({
   useI18n: jest.fn().mockReturnValue({
     LocaleComponent: () => <div>localeComponent</div>,
     t: (key: string) => key,
-  }),
-}));
-
-jest.mock('@renderer/entities/account', () => ({
-  useAccount: jest.fn().mockReturnValue({
-    getActiveAccounts: () => [{ name: 'Test Wallet', accountId: TEST_ACCOUNT_ID }],
   }),
 }));
 

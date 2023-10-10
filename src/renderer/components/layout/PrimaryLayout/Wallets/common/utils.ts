@@ -1,6 +1,5 @@
 import { groupBy } from 'lodash';
 
-import { AccountDS } from '@renderer/shared/api/storage';
 import {
   ChainsRecord,
   ChainWithAccounts,
@@ -9,87 +8,86 @@ import {
   RootAccount,
   SelectableShards,
   WalletGroupItem,
-} from '@renderer/components/layout/PrimaryLayout/Wallets/common/types';
+} from './types';
 import { includes } from '@renderer/shared/lib/utils';
+import { accountUtils } from '@renderer/entities/wallet';
+import type { Account, BaseAccount, ChainAccount } from '@renderer/shared/core';
 
-const getRootAccount = (accounts: AccountDS[], chains: ChainsRecord, root: AccountDS): RootAccount => {
-  const accountsByChain = groupBy(
-    accounts.filter((a) => a.rootId === root.id),
-    ({ chainId }) => chainId,
-  );
+const getBaseAccountGroup = (base: BaseAccount, accounts: ChainAccount[], chains: ChainsRecord): RootAccount => {
+  const accountsByChain = groupBy(accounts, ({ chainId }) => chainId);
 
   // iterate by chain and not the account to preserve chains order (if sorted)
-  const chainAccounts: ChainWithAccounts[] = Object.values(chains)
-    .filter((chain) => accountsByChain[chain.chainId])
-    .map((chain) => ({ ...chain, accounts: accountsByChain[chain.chainId] }));
+  const chainAccounts = Object.values(chains).reduce<ChainWithAccounts[]>((acc, chain) => {
+    if (accountsByChain[chain.chainId]) {
+      acc.push({ ...chain, accounts: accountsByChain[chain.chainId] });
+    }
+
+    return acc;
+  }, []);
+
+  // start with 1 because we want to count root acc as well
+  const accountsAmount = chainAccounts.reduce((acc, chain) => acc + chain.accounts.length, 1);
 
   return {
-    ...root,
+    ...base,
     chains: chainAccounts,
-    amount: chainAccounts.reduce((acc, chain) => acc + chain.accounts.length, 1), // start with 1 because we want to count root acc as well
+    amount: accountsAmount,
   };
 };
 
-export const getMultishardStructure = (
-  accounts: AccountDS[],
-  chains: ChainsRecord,
-  walletId: string,
-): MultishardStructure => {
-  const walletAccounts = accounts.filter((a) => a.walletId === walletId);
-  const rootAccounts = walletAccounts
-    .filter((a) => !a.rootId)
-    .map((root) => getRootAccount(walletAccounts, chains, root));
+export const getMultishardStructure = (accounts: Account[], chains: ChainsRecord): MultishardStructure => {
+  const chainAccounts = accounts.filter(accountUtils.isChainAccount);
+
+  const rootAccounts = accounts.reduce<RootAccount[]>((acc, account) => {
+    if (accountUtils.isBaseAccount(account)) {
+      acc.push(getBaseAccountGroup(account, chainAccounts, chains));
+    }
+
+    return acc;
+  }, []);
+
+  const accountsAmount = rootAccounts.reduce((acc, root) => acc + root.amount, 0);
 
   return {
-    amount: rootAccounts.reduce((acc, rootAccount) => acc + rootAccount.amount, 0),
     rootAccounts,
+    amount: accountsAmount,
   };
 };
 
-export const getWalletConnectStructure = (accounts: AccountDS[], walletId: string): MultishardStructure => {
-  const walletAccounts = accounts.filter((a) => a.walletId === walletId);
-
-  return {
-    amount: walletAccounts.length,
-    rootAccounts: walletAccounts as RootAccount[],
-  };
-};
-
-export const getSelectableShards = (multishard: MultishardStructure, selectedIds: string[]): SelectableShards => {
-  return {
-    ...multishard,
-    rootAccounts: multishard.rootAccounts.map((r) => {
-      const chains = r.chains.map((c) => {
-        const accounts = c.accounts.map((a) => ({ ...a, isSelected: selectedIds.includes(a.id || '') }));
-        const selectedAccounts = accounts.filter((a) => a.isSelected);
-
-        return {
-          ...c,
-          accounts: accounts,
-          isSelected: selectedAccounts.length === accounts.length,
-          selectedAmount: selectedAccounts.length,
-        };
-      });
+export const getSelectableShards = (multishard: MultishardStructure, ids: Account['id'][]): SelectableShards => {
+  const rootAccounts = multishard.rootAccounts.map((root) => {
+    const chains = root.chains.map((chain) => {
+      const accounts = chain.accounts.map((a) => ({ ...a, isSelected: ids.includes(a.id) }));
+      const selectedAccounts = accounts.filter((a) => a.isSelected);
 
       return {
-        ...r,
-        isSelected: selectedIds.includes(r.id || ''),
-        chains: chains,
-        selectedAmount: chains.filter((c) => c.isSelected).length,
+        ...chain,
+        accounts,
+        isSelected: selectedAccounts.length === accounts.length,
+        selectedAmount: selectedAccounts.length,
       };
-    }),
-  };
+    });
+
+    return {
+      ...root,
+      chains,
+      isSelected: ids.includes(root.id),
+      selectedAmount: chains.filter((c) => c.isSelected).length,
+    };
+  });
+
+  return { ...multishard, rootAccounts };
 };
 
 export const searchShards = (shards: SelectableShards, query: string): SelectableShards => {
-  const rootAccounts = shards.rootAccounts.map((r) => {
-    const chains = r.chains.map((c) => ({
-      ...c,
-      accounts: c.accounts.filter((a) => includes(a.name, query) || includes(a.accountId, query)),
+  const rootAccounts = shards.rootAccounts.map((root) => {
+    const chains = root.chains.map((chain) => ({
+      ...chain,
+      accounts: chain.accounts.filter((a) => includes(a.name, query) || includes(a.accountId, query)),
     }));
 
     return {
-      ...r,
+      ...root,
       chains: chains.filter((c) => c.accounts.length),
     };
   });
@@ -97,7 +95,7 @@ export const searchShards = (shards: SelectableShards, query: string): Selectabl
   return {
     ...shards,
     rootAccounts: rootAccounts.filter(
-      (r) => includes(r.accountId, query) || includes(r.name, query) || r.chains.length,
+      (root) => includes(root.accountId, query) || includes(root.name, query) || root.chains.length,
     ),
   };
 };

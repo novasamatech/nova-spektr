@@ -3,7 +3,7 @@ import { HashRouter as Router } from 'react-router-dom';
 import log from 'electron-log';
 
 import { kernelModel } from '@renderer/shared/core';
-import App from './App';
+import { App } from './App';
 
 import './i18n';
 import './index.css';
@@ -14,7 +14,7 @@ log.variables.env = process.env.NODE_ENV;
 log.transports.console.format = '{y}/{m}/{d} {h}:{i}:{s}.{ms} [{env}#{version}]-{processType} [{level}] > {text}';
 log.transports.console.useStyles = true;
 
-Object.assign(console, log.functions);
+// Object.assign(console, log.functions);
 log.errorHandler.startCatching({
   showDialog: false,
   onError({ createIssue, error, processType, versions }) {

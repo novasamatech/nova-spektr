@@ -3,18 +3,16 @@ import { keyBy } from 'lodash';
 
 import { cnTw, includes, toAddress } from '@renderer/shared/lib/utils';
 import { useI18n, useMatrix, useNetworkContext } from '@renderer/app/providers';
-import { AccountId } from '@renderer/domain/shared-kernel';
 import { useToggle } from '@renderer/shared/lib/hooks';
 import { WalletsTabItem } from './WalletsTabItem';
 import { Button, Checkbox, FootnoteText, Icon, SearchInput, SmallTitleText, Tabs } from '@renderer/shared/ui';
-import { Account, isWalletContact, MultisigAccount } from '@renderer/entities/account';
 import { TabItem } from '@renderer/shared/ui/types';
-import { WalletDS } from '@renderer/shared/api/storage';
 import { CreateContactModal } from '@renderer/widgets';
 import { getSelectedLength } from '../common/utils';
 import { ExtendedContact, ExtendedWallet, SelectedMap } from '../common/types';
 import { EmptyContactList } from '@renderer/entities/contact';
-import type { Contact } from '@renderer/entities/contact';
+import type { Contact, AccountId, Wallet, Account, MultisigAccount } from '@renderer/shared/core';
+import { accountUtils } from '@renderer/entities/wallet';
 
 const enum SignatoryTabs {
   WALLETS = 'wallets',
@@ -23,7 +21,7 @@ const enum SignatoryTabs {
 
 type Props = {
   isActive: boolean;
-  wallets: WalletDS[];
+  wallets: Wallet[];
   accounts: (Account | MultisigAccount)[];
   contacts: Contact[];
   onSelect: (wallets: ExtendedWallet[], contacts: ExtendedContact[]) => void;
@@ -49,15 +47,19 @@ export const SelectSignatories = ({ isActive, wallets, accounts, contacts, onSel
       .map((contact, index) => ({ ...contact, index: index.toString() }));
 
     const walletContacts = accounts.reduce<ExtendedWallet[]>((acc, a, index) => {
-      if (isWalletContact(a)) {
+      const isBaseAccount = accountUtils.isBaseAccount(a);
+      const isChainAccount = accountUtils.isChainAccount(a);
+
+      if (isBaseAccount || isChainAccount) {
         acc.push({
+          id: a.id,
           index: index.toString(),
           name: a.name || a.accountId,
           address: toAddress(a.accountId),
           accountId: a.accountId,
           matrixId: matrix.userId,
-          chainId: a.chainId,
-          walletName: walletMap[a.walletId || '']?.name,
+          walletName: walletMap[a.walletId].name,
+          ...(isChainAccount && { chainId: a.chainId }),
         });
       }
 

@@ -1,11 +1,10 @@
 import { act, render, screen } from '@testing-library/react';
 
-import { Chain } from '@renderer/entities/chain';
 import { TEST_ACCOUNT_ID } from '@renderer/shared/lib/utils';
 import chains from '@renderer/assets/chains/chains.json';
 import { NetworkAssets } from './NetworkAssets';
-import { Account } from '@renderer/entities/account';
-import { ChainType, CryptoType, SigningType } from '@renderer/domain/shared-kernel';
+import type { Account, Chain } from '@renderer/shared/core';
+import { ChainType, CryptoType, AccountType } from '@renderer/shared/core';
 
 const testChain = chains.find((chain) => chain.assets.length > 1) as Chain;
 const testAsset = testChain.assets[0];
@@ -44,11 +43,11 @@ jest.mock('@renderer/entities/asset', () => ({
 
 const accounts = [
   {
-    accountId: TEST_ACCOUNT_ID,
+    id: 1,
+    walletId: 1,
     name: 'test',
-    isActive: true,
-    isMain: true,
-    signingType: SigningType.PARITY_SIGNER,
+    type: AccountType.BASE,
+    accountId: TEST_ACCOUNT_ID,
     cryptoType: CryptoType.SR25519,
     chainType: ChainType.SUBSTRATE,
   },

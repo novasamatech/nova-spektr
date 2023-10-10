@@ -5,10 +5,10 @@ import { useForm } from 'effector-forms';
 import * as editFormModel from '../model/contact-form';
 import { Button, Icon, Identicon, Input, InputHint } from '@renderer/shared/ui';
 import { useI18n } from '@renderer/app/providers';
-import { ContactDS } from '@renderer/shared/api/storage';
+import { Contact } from '@renderer/shared/core';
 
 type Props = editFormModel.Callbacks & {
-  contactToEdit: ContactDS;
+  contactToEdit: Contact;
 };
 export const EditContactForm = ({ contactToEdit, onSubmit }: Props) => {
   const { t } = useI18n();

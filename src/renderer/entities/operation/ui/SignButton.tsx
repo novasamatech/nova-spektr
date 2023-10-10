@@ -1,5 +1,5 @@
 import { useI18n } from '@renderer/app/providers';
-import { WalletType } from '@renderer/domain/shared-kernel';
+import { WalletType } from '@renderer/shared/core';
 import { Button, Icon } from '@renderer/shared/ui';
 import { IconNames } from '@renderer/shared/ui/Icon/data';
 

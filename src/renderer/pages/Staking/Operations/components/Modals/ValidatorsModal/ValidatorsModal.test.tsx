@@ -1,8 +1,8 @@
 import { render, screen } from '@testing-library/react';
 
-import { Validator } from '@renderer/domain/validator';
-import { Asset } from '@renderer/entities/asset';
+import { Validator } from '@renderer/shared/core/types/validator';
 import ValidatorsModal from './ValidatorsModal';
+import type { Asset } from '@renderer/shared/core';
 
 jest.mock('@renderer/app/providers', () => ({
   useI18n: jest.fn().mockReturnValue({
@@ -10,7 +10,7 @@ jest.mock('@renderer/app/providers', () => ({
   }),
 }));
 
-jest.mock('@renderer/entities/account', () => ({
+jest.mock('@renderer/entities/wallet', () => ({
   AddressWithExplorers: ({ address }: { address: string }) => <span data-testid="validator">{address}</span>,
 }));
 

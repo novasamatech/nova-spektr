@@ -1,7 +1,7 @@
 import { createStore, createEvent, forward, sample, createApi, createEffect } from 'effector';
 import { NavigateFunction } from 'react-router-dom';
 
-import { WalletType } from '@renderer/domain/shared-kernel';
+import { WalletType } from '@renderer/shared/core';
 
 const walletTypeSet = createEvent<WalletType | null>();
 const modalClosed = createEvent();
