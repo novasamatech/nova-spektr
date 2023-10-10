@@ -3,7 +3,6 @@ import { format } from 'date-fns';
 import { useI18n } from '@renderer/app/providers';
 import { TransactionTitle } from './TransactionTitle/TransactionTitle';
 import { FootnoteText, Accordion } from '@renderer/shared/ui';
-import { TransactionAmount } from './TransactionAmount';
 import OperationStatus from './OperationStatus';
 import OperationFullInfo from './OperationFullInfo';
 import { MultisigTransactionDS } from '@renderer/shared/api/storage';
@@ -12,6 +11,9 @@ import { ChainTitle, XcmChains } from '@renderer/entities/chain';
 import { getTransactionAmount } from '../common/utils';
 import { isXcmTransaction } from '@renderer/entities/transaction';
 import type { MultisigAccount } from '@renderer/shared/core';
+import { chainsService } from '@renderer/entities/network';
+import { getAssetById } from '@renderer/shared/lib/utils';
+import { AssetBalance } from '@renderer/entities/asset';
 
 type Props = {
   tx: MultisigTransactionDS;
@@ -26,6 +28,9 @@ const Operation = ({ tx, account }: Props) => {
   const approvals = events?.filter((e) => e.status === 'SIGNED') || [];
   const initEvent = approvals.find((e) => e.accountId === tx.depositor);
   const date = new Date(tx.dateCreated || initEvent?.dateCreated || Date.now());
+  const asset =
+    tx.transaction && getAssetById(tx.transaction.args.asset, chainsService.getChainById(tx.chainId)?.assets);
+  const amount = tx.transaction && getTransactionAmount(tx.transaction);
 
   return (
     <Accordion className="bg-block-background-default transition-shadow rounded hover:shadow-card-shadow focus-visible:shadow-card-shadow">
@@ -39,8 +44,12 @@ const Operation = ({ tx, account }: Props) => {
 
           <TransactionTitle className="flex-1 overflow-hidden" tx={tx.transaction} description={tx.description} />
 
-          {tx.transaction && getTransactionAmount(tx.transaction) && (
-            <TransactionAmount wrapperClassName="w-[160px]" tx={tx.transaction} />
+          {asset && amount ? (
+            <div className="w-[160px]">
+              <AssetBalance value={amount} asset={asset} showIcon />
+            </div>
+          ) : (
+            <span className="w-[160px]" />
           )}
 
           {isXcmTransaction(tx.transaction) ? (

@@ -15,6 +15,7 @@ import { OperationTitle } from '@renderer/components/common';
 import { BaseModal, Button, Loader } from '@renderer/shared/ui';
 import { Signing } from '@renderer/features/operation';
 import { walletModel, walletUtils } from '@renderer/entities/wallet';
+import { priceProviderModel } from '@renderer/entities/price';
 
 const enum Step {
   INIT,
@@ -59,6 +60,10 @@ export const Redeem = () => {
 
   const { api, explorers, addressPrefix, assets, name } = connections[chainId];
   const asset = getRelaychainAsset(assets);
+
+  useEffect(() => {
+    priceProviderModel.events.assetsPricesRequested({ includeRates: true });
+  }, []);
 
   useEffect(() => {
     const selectedAccounts = activeAccounts.reduce<Account[]>((acc, account) => {

@@ -9,7 +9,7 @@ import { useSettingsStorage } from '@renderer/entities/settings';
 import { ChainTitle } from '@renderer/entities/chain';
 import { useToggle } from '@renderer/shared/lib/hooks';
 import { useI18n } from '@renderer/app/providers';
-import { AssetBalance } from '@renderer/entities/asset';
+import { AssetBalance, AssetFiatBalance } from '@renderer/entities/asset';
 import type { Chain } from '@renderer/shared/core';
 
 const getTotal = (values: string[]): BN => {
@@ -88,26 +88,31 @@ export const NetworkInfo = ({
   return (
     <Plate className="flex flex-col gap-y-3 w-full">
       <div className="grid grid-cols-[178px,repeat(2,122px),28px] items-center gap-x-6">
-        <Select
-          placeholder={t('staking.overview.networkPlaceholder')}
-          options={networks}
-          selectedId={activeNetwork?.id}
-          onChange={(chain) => {
-            setActiveNetwork(chain);
-            setStakingNetwork(chain.value.chainId);
-            onNetworkChange(chain.value);
-          }}
-        />
+        <div className="flex flex-col gap-2">
+          <FootnoteText className="text-text-secondary">{t('staking.overview.networkLabel')}</FootnoteText>
+          <Select
+            placeholder={t('staking.overview.networkPlaceholder')}
+            options={networks}
+            selectedId={activeNetwork?.id}
+            onChange={(chain) => {
+              setActiveNetwork(chain);
+              setStakingNetwork(chain.value.chainId);
+              onNetworkChange(chain.value);
+            }}
+          />
+        </div>
         {totalInfo.map(({ isLoading, title, amount, asset }) =>
           isLoading || !asset ? (
             <div key={title} className="flex flex-col gap-y-1" data-testid="value-loading">
-              <Shimmering width={80} height={12} />
+              <FootnoteText className="text-text-secondary">{title}</FootnoteText>
               <Shimmering width={122} height={20} />
+              <Shimmering width={47} height={18} />
             </div>
           ) : (
             <div key={title} className="text-left">
               <FootnoteText className="text-text-secondary">{title}</FootnoteText>
               <AssetBalance value={amount.toString()} asset={asset} className="text-small-title" />
+              <AssetFiatBalance amount={amount.toString()} asset={asset} />
             </div>
           ),
         )}

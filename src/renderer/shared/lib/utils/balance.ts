@@ -176,3 +176,86 @@ export const formatGroups = (amount: string): string => {
 export const cleanAmount = (amount: string) => {
   return trimLeadingZeros(amount).replace(/,/g, '');
 };
+
+const getDecimalPlaceForFirstNonZeroChar = (value: string, nonZeroDigits = 3) => {
+  const decimalPart = value.toString().split('.')[1];
+
+  return Math.max((decimalPart || '').search(/[1-9]/) + nonZeroDigits, 5);
+};
+
+export const formatFiatBalance = (balance = '0', precision = 0): FormattedBalance => {
+  if (Number(balance) === 0 || isNaN(Number(balance))) {
+    return { value: ZERO_BALANCE, suffix: '', decimalPlaces: 0 };
+  }
+  const BNWithConfig = BigNumber.clone();
+  BNWithConfig.config({
+    ROUNDING_MODE: BNWithConfig.ROUND_DOWN,
+    FORMAT: {
+      decimalSeparator: '.',
+      groupSeparator: '',
+    },
+  });
+
+  const bnPrecision = new BNWithConfig(precision);
+  const TEN = new BNWithConfig(10);
+  const bnBalance = new BNWithConfig(balance).div(TEN.pow(bnPrecision));
+
+  let divider = new BNWithConfig(1);
+  let suffix = '';
+  let decimalPlaces: number;
+
+  if (bnBalance.lt(1)) {
+    // if number has more than 7 digits in decimal part BigNumber.toString returns number in scientific notation
+    decimalPlaces = getDecimalPlaceForFirstNonZeroChar(bnBalance.toFixed());
+  } else if (bnBalance.lt(10)) {
+    decimalPlaces = Decimal.SMALL_NUMBER;
+  } else if (bnBalance.lt(1_000_000)) {
+    decimalPlaces = Decimal.BIG_NUMBER;
+  } else if (bnBalance.lt(1_000_000_000)) {
+    decimalPlaces = Decimal.BIG_NUMBER;
+    divider = TEN.pow(new BNWithConfig(6));
+    suffix = Suffix.MILLIONS;
+  } else if (bnBalance.lt(1_000_000_000_000)) {
+    decimalPlaces = Decimal.BIG_NUMBER;
+    divider = TEN.pow(new BNWithConfig(9));
+    suffix = Suffix.BILLIONS;
+  } else {
+    decimalPlaces = Decimal.BIG_NUMBER;
+    divider = TEN.pow(new BNWithConfig(12));
+    suffix = Suffix.TRILLIONS;
+  }
+
+  const bnFiatBalance = new BNWithConfig(bnBalance).div(divider).decimalPlaces(decimalPlaces).toFormat();
+
+  return {
+    value: bnFiatBalance,
+    suffix,
+    decimalPlaces,
+  };
+};
+
+export const getRoundedValue = (assetBalance = '0', price: number, precision = 0, nonZeroDigits?: number): string => {
+  if (Number(assetBalance) === 0 || isNaN(Number(assetBalance))) {
+    return ZERO_BALANCE;
+  }
+
+  const fiatBalance = new BigNumber(price).multipliedBy(new BigNumber(assetBalance));
+  const BNWithConfig = BigNumber.clone();
+  BNWithConfig.config({
+    ROUNDING_MODE: BNWithConfig.ROUND_DOWN,
+  });
+
+  const bnPrecision = new BNWithConfig(precision);
+  const TEN = new BNWithConfig(10);
+  const bnFiatBalance = new BNWithConfig(fiatBalance.toString()).div(TEN.pow(bnPrecision));
+
+  if (bnFiatBalance.gte(1) && bnFiatBalance.lt(10)) {
+    return bnFiatBalance.decimalPlaces(Decimal.SMALL_NUMBER).toString();
+  } else if (bnFiatBalance.gt(10)) {
+    return bnFiatBalance.decimalPlaces(Decimal.BIG_NUMBER).toString();
+  }
+
+  const decimalPlaces = getDecimalPlaceForFirstNonZeroChar(bnFiatBalance.toFixed(), nonZeroDigits);
+
+  return bnFiatBalance.toFixed(decimalPlaces);
+};

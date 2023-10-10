@@ -50,12 +50,14 @@ export const AddressWithName = ({
   );
 
   return (
-    <div className={cnTw('flex items-center gap-x-2', className)}>
-      {showIcon && <Identicon address={currentAddress} size={size} background={false} canCopy={canCopy} />}
-      <div className="truncate">
-        {firstLine}
-        {secondLine}
-      </div>
-    </div>
+    <AddressWithTwoLines
+      showIcon={showIcon}
+      signType={signType}
+      size={size}
+      canCopy={canCopy}
+      firstLine={firstLine}
+      secondLine={secondLine}
+      {...props}
+    />
   );
 };

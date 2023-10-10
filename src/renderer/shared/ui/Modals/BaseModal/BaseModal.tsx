@@ -35,7 +35,7 @@ const BaseModal = ({
 
   return (
     <Transition appear show={isOpen} as={Fragment}>
-      <Dialog as="div" className={cnTw('relative', zIndex)} onClose={onClose}>
+      <Dialog as="div" className={cnTw('relative', zIndex)} onClose={() => onClose()}>
         <ModalBackdrop />
 
         <div className="fixed inset-0 overflow-hidden flex min-h-full items-center justify-center p-4">
@@ -62,7 +62,7 @@ const BaseModal = ({
                   size={20}
                   className="absolute top-[18px] right-[14px] z-10"
                   ariaLabel={t('basemodal.closeButton')}
-                  onClick={onClose}
+                  onClick={() => onClose()}
                 />
               )}
 

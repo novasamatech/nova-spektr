@@ -10,6 +10,8 @@ import { NominatorInfo } from '@renderer/pages/Staking/Overview/components/Nomin
 import { AboutStaking, NetworkInfo, NominatorsList, Actions, ValidatorsModal, InactiveChain } from './components';
 import type { ChainId, Chain, Address, Account, Stake } from '@renderer/shared/core';
 import { ConnectionType, ConnectionStatus } from '@renderer/shared/core';
+import { accountUtils, walletModel, walletUtils } from '@renderer/entities/wallet';
+import { priceProviderModel } from '@renderer/entities/price';
 import {
   useEra,
   useStakingData,
@@ -18,7 +20,6 @@ import {
   useValidators,
   useStakingRewards,
 } from '@renderer/entities/staking';
-import { accountUtils, walletModel, walletUtils } from '@renderer/entities/wallet';
 
 export const Overview = () => {
   const { t } = useI18n();
@@ -64,6 +65,10 @@ export const Overview = () => {
   const { rewards, isRewardsLoading } = useStakingRewards(addresses);
 
   const isLightClient = connection?.connectionType === ConnectionType.LIGHT_CLIENT;
+
+  useEffect(() => {
+    priceProviderModel.events.assetsPricesRequested({ includeRates: true });
+  }, []);
 
   useEffect(() => {
     if (!connection) return;

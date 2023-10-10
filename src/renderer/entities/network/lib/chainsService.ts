@@ -1,7 +1,7 @@
 import sortBy from 'lodash/sortBy';
 import concat from 'lodash/concat';
-import keyBy from 'lodash/keyBy';
 import orderBy from 'lodash/orderBy';
+import BigNumber from 'bignumber.js';
 
 import chainsProd from '@renderer/assets/chains/chains.json';
 import chainsDev from '@renderer/assets/chains/chains_dev.json';
@@ -9,6 +9,12 @@ import { getRelaychainAsset, nonNullable, totalAmount, ZERO_BALANCE } from '@ren
 import { ChainLike } from './common/types';
 import { isKusama, isPolkadot, isTestnet, isNameWithNumber } from './common/utils';
 import type { Chain, ChainId, Balance } from '@renderer/shared/core';
+import { PriceObject } from '@renderer/shared/api/price-provider';
+import { sumBalances } from '@renderer/pages/Assets/AssetsList/common/utils';
+
+type ChainWithFiatBalance = Chain & {
+  fiatBalance: string;
+};
 
 const CHAINS: Record<string, any> = {
   chains: chainsProd,
@@ -68,15 +74,57 @@ function sortChains<T extends ChainLike>(chains: T[]): T[] {
   );
 }
 
-function sortChainsByBalance(chains: Chain[], balances: Balance[]): Chain[] {
+const compareFiatBalances = (a: ChainWithFiatBalance, b: ChainWithFiatBalance) => {
+  return new BigNumber(b.fiatBalance).lt(new BigNumber(a.fiatBalance)) ? -1 : 1;
+};
+
+function sortChainsByBalance(
+  chains: Chain[],
+  balances: Balance[],
+  assetPrices: PriceObject | null,
+  currency?: string,
+): Chain[] {
+  const chainsWithFiatBalance = [] as ChainWithFiatBalance[];
+
   const relaychains = { withBalance: [], noBalance: [] };
   const parachains = { withBalance: [], noBalance: [] };
   const numberchains = { withBalance: [], noBalance: [] };
   const testnets = { withBalance: [], noBalance: [] };
 
-  const balancesMap = keyBy(balances, (b) => `${b.chainId}_${b.assetId}`);
+  const balancesMap = balances.reduce<Record<string, Balance>>((acc, balance) => {
+    const key = `${balance.chainId}_${balance.assetId}`;
+    acc[key] = acc[key] ? sumBalances(acc[key], balance) : balance;
+
+    return acc;
+  }, {});
 
   chains.forEach((chain) => {
+    const fiatBalance = chain.assets.reduce((acc, a) => {
+      const amount = totalAmount(balancesMap[`${chain.chainId}_${a.assetId}`]);
+      const assetPrice = a.priceId && currency && assetPrices?.[a.priceId]?.[currency]?.price;
+
+      const BNWithConfig = BigNumber.clone();
+      BNWithConfig.config({
+        ROUNDING_MODE: BNWithConfig.ROUND_DOWN,
+      });
+
+      const bnPrecision = new BNWithConfig(a.precision);
+      const TEN = new BNWithConfig(10);
+      const bnFiatBalance = new BNWithConfig(new BigNumber(amount).multipliedBy(assetPrice || 0).toString()).div(
+        TEN.pow(bnPrecision),
+      );
+
+      return acc.plus(bnFiatBalance);
+    }, new BigNumber(0));
+
+    if (fiatBalance.gt(0) && !isTestnet(chain.options)) {
+      (chain as ChainWithFiatBalance).fiatBalance = fiatBalance.toString();
+
+      chainsWithFiatBalance.push(chain as ChainWithFiatBalance);
+
+      return;
+    }
+
     const hasBalance = chain.assets.some((a) => {
       return totalAmount(balancesMap[`${chain.chainId}_${a.assetId}`]) !== ZERO_BALANCE;
     });
@@ -95,6 +143,7 @@ function sortChainsByBalance(chains: Chain[], balances: Balance[]): Chain[] {
   });
 
   return concat(
+    chainsWithFiatBalance.sort(compareFiatBalances),
     orderBy(relaychains.withBalance, 'name', ['desc']),
     orderBy(relaychains.noBalance, 'name', ['desc']),
     sortBy(parachains.withBalance, 'name'),
