@@ -62,7 +62,7 @@ export const useBalance = (): IBalanceService => {
       return getBalances(accountIds);
     };
 
-    return useLiveQuery(query, [accountIds.length], []);
+    return useLiveQuery(query, [accountIds.length, accountIds[0]], []);
   };
 
   const runValidation = async (

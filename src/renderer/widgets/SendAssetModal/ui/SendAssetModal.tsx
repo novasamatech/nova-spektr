@@ -14,6 +14,7 @@ import { useToggle } from '@renderer/shared/lib/hooks';
 import * as sendAssetModel from '../model/send-asset';
 import type { Chain, Asset, Account, MultisigAccount, HexString } from '@renderer/shared/core';
 import { accountUtils } from '@renderer/entities/wallet';
+import { priceProviderModel } from '@renderer/entities/price';
 
 const enum Step {
   INIT,
@@ -50,6 +51,10 @@ export const SendAssetModal = ({ chain, asset }: Props) => {
 
   const { api, assets, addressPrefix, explorers } = connection;
 
+  useEffect(() => {
+    priceProviderModel.events.assetsPricesRequested({ includeRates: true });
+  }, []);
+
   useGate(sendAssetModel.PropsGate, { chain, asset, api });
 
   useEffect(() => {
@@ -71,7 +76,7 @@ export const SendAssetModal = ({ chain, asset }: Props) => {
   const checkBalance = () =>
     validateBalance({
       api,
-      transaction,
+      transaction: api && wrapTx(transaction, api, addressPrefix),
       chainId: chain.chainId,
       assetId: asset.assetId.toString(),
       getBalance,

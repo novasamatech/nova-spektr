@@ -14,6 +14,7 @@ import { Alert, BaseModal, Button, Loader } from '@renderer/shared/ui';
 import { OperationTitle } from '@renderer/components/common';
 import { Signing } from '@renderer/features/operation';
 import { walletModel, walletUtils } from '@renderer/entities/wallet';
+import { priceProviderModel } from '@renderer/entities/price';
 
 const enum Step {
   INIT,
@@ -52,6 +53,10 @@ export const StakeMore = () => {
 
   const accountIds = searchParams.get('id')?.split(',') || [];
   const chainId = params.chainId || ('' as ChainId);
+
+  useEffect(() => {
+    priceProviderModel.events.assetsPricesRequested({ includeRates: true });
+  }, []);
 
   useEffect(() => {
     if (!activeAccounts.length || !accountIds.length) return;

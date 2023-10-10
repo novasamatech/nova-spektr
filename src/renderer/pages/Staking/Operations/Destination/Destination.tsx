@@ -16,6 +16,7 @@ import { Signing } from '@renderer/features/operation';
 import { RewardsDestination } from '@renderer/shared/core';
 import type { Account, Address, ChainId, HexString } from '@renderer/shared/core';
 import { walletModel, walletUtils } from '@renderer/entities/wallet';
+import { priceProviderModel } from '@renderer/entities/price';
 
 const enum Step {
   INIT,
@@ -53,6 +54,10 @@ export const Destination = () => {
 
   const accountIds = searchParams.get('id')?.split(',') || [];
   const chainId = params.chainId || ('' as ChainId);
+
+  useEffect(() => {
+    priceProviderModel.events.assetsPricesRequested({ includeRates: true });
+  }, []);
 
   useEffect(() => {
     if (!activeAccounts.length || !accountIds.length) return;

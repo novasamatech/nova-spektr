@@ -16,6 +16,7 @@ import { OperationTitle } from '@renderer/components/common';
 import { Signing } from '@renderer/features/operation';
 import type { Account, ChainId, HexString, Address } from '@renderer/shared/core';
 import { walletUtils, walletModel } from '@renderer/entities/wallet';
+import { priceProviderModel } from '@renderer/entities/price';
 
 const enum Step {
   INIT,
@@ -55,6 +56,10 @@ export const ChangeValidators = () => {
 
   const accountIds = searchParams.get('id')?.split(',') || [];
   const chainId = params.chainId || ('' as ChainId);
+
+  useEffect(() => {
+    priceProviderModel.events.assetsPricesRequested({ includeRates: true });
+  }, []);
 
   useEffect(() => {
     if (!activeAccounts.length || !accountIds.length) return;

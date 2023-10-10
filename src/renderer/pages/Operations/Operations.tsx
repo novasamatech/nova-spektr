@@ -14,6 +14,7 @@ import { Header } from '@renderer/components/common';
 import { MultisigEvent, MultisigTransactionKey } from '@renderer/entities/transaction';
 import { OperationsFilter } from '@renderer/features/operation';
 import { walletModel, accountUtils } from '@renderer/entities/wallet';
+import { priceProviderModel } from '@renderer/entities/price';
 
 export const Operations = () => {
   const { t, dateLocale } = useI18n();
@@ -50,6 +51,10 @@ export const Operations = () => {
 
     return format(new Date(date), 'PP', { locale: dateLocale });
   });
+
+  useEffect(() => {
+    priceProviderModel.events.assetsPricesRequested({ includeRates: true });
+  }, []);
 
   useEffect(() => {
     setTxs(allTxs.filter((tx) => connections[tx.chainId]));

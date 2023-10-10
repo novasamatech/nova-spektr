@@ -1,11 +1,12 @@
 import { Controller, useForm, SubmitHandler } from 'react-hook-form';
-import { useStore } from 'effector-react';
+import { useUnit } from 'effector-react';
 
 import { Alert, Button, Input, InputHint, Select, SmallTitleText } from '@renderer/shared/ui';
 import { useI18n, useMatrix } from '@renderer/app/providers';
 import { DropdownOption, DropdownResult } from '@renderer/shared/ui/Dropdowns/common/types';
 import type { AccountId, Signatory } from '@renderer/shared/core';
 import { accountUtils, walletModel, walletUtils } from '@renderer/entities/wallet';
+import { WalletDS } from '@renderer/shared/api/storage';
 
 type MultisigAccountForm = {
   name: string;
@@ -33,8 +34,8 @@ type Props = {
 
 export const WalletForm = ({ signatories, onContinue, isActive, isLoading, onGoBack, onSubmit }: Props) => {
   const { t } = useI18n();
-  const wallets = useStore(walletModel.$wallets);
-  const accounts = useStore(walletModel.$accounts);
+  const wallets = useUnit(walletModel.$wallets);
+  const accounts = useUnit(walletModel.$accounts);
 
   const { matrix } = useMatrix();
 

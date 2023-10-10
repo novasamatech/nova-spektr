@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { groupBy } from 'lodash';
+import { useUnit } from 'effector-react';
 
 import { Icon, CaptionText, Tooltip, Accordion } from '@renderer/shared/ui';
 import { useBalance, AssetCard } from '@renderer/entities/asset';
@@ -10,6 +11,8 @@ import { useI18n } from '@renderer/app/providers';
 import { balanceSorter, sumBalances } from '../../common/utils';
 import type { AccountId, Account, Chain, Asset, Balance } from '@renderer/shared/core';
 import { accountUtils } from '@renderer/entities/wallet';
+import { NetworkFiatBalance } from '../NetworkFiatBalance/NetworkFiatBalance';
+import { currencyModel, priceProviderModel } from '@renderer/entities/price';
 
 type Props = {
   hideZeroBalance?: boolean;
@@ -23,6 +26,10 @@ type Props = {
 export const NetworkAssets = ({ query, hideZeroBalance, chain, accounts, searchSymbolOnly, canMakeActions }: Props) => {
   const { t } = useI18n();
   const { getLiveNetworkBalances } = useBalance();
+
+  const assetsPrices = useUnit(priceProviderModel.$assetsPrices);
+  const fiatFlag = useUnit(priceProviderModel.$fiatFlag);
+  const currency = useUnit(currencyModel.$activeCurrency);
 
   const [filteredAssets, setFilteredAssets] = useState<Asset[]>([]);
   const [balancesObject, setBalancesObject] = useState<Record<string, Balance>>({});
@@ -73,7 +80,9 @@ export const NetworkAssets = ({ query, hideZeroBalance, chain, accounts, searchS
       return !hideZeroBalance || balance?.verified === false || totalAmount(balance) !== ZERO_BALANCE;
     });
 
-    filteredAssets.sort((a, b) => balanceSorter(a, b, balancesObject));
+    filteredAssets.sort((a, b) =>
+      balanceSorter(a, b, balancesObject, assetsPrices, fiatFlag ? currency?.coingeckoId : undefined),
+    );
 
     setFilteredAssets(filteredAssets);
   }, [balancesObject, query, hideZeroBalance]);
@@ -93,18 +102,21 @@ export const NetworkAssets = ({ query, hideZeroBalance, chain, accounts, searchS
             'transition-colors rounded hover:bg-block-background-hover focus-visible:bg-block-background-hover',
           )}
         >
-          <div className="flex items-center justify-between gap-x-2">
-            <ChainTitle chain={chain} fontClass="text-caption uppercase" as="h2" iconSize={20} />
+          <div className="flex items-center justify-between gap-x-2 w-full">
+            <div className="flex items-center gap-x-2">
+              <ChainTitle chain={chain} fontClass="text-caption uppercase" as="h2" iconSize={20} />
 
-            {hasFailedVerification && (
-              <div className="flex items-center gap-x-2 text-text-warning">
-                {/* FIXME: tooltip not visible when first displayed network invalid. For now just render it below icon */}
-                <Tooltip content={t('balances.verificationTooltip')} pointer="up">
-                  <Icon name="warn" className="cursor-pointer" size={16} />
-                </Tooltip>
-                <CaptionText className="uppercase text-inherit">{t('balances.verificationFailedLabel')}</CaptionText>
-              </div>
-            )}
+              {hasFailedVerification && (
+                <div className="flex items-center gap-x-2 text-text-warning">
+                  {/* FIXME: tooltip not visible when first displayed network invalid. For now just render it below icon */}
+                  <Tooltip content={t('balances.verificationTooltip')} pointer="up">
+                    <Icon name="warn" className="cursor-pointer" size={16} />
+                  </Tooltip>
+                  <CaptionText className="uppercase text-inherit">{t('balances.verificationFailedLabel')}</CaptionText>
+                </div>
+              )}
+            </div>
+            <NetworkFiatBalance balances={balancesObject} assets={filteredAssets} />
           </div>
         </Accordion.Button>
         <Accordion.Content className="mt-1">

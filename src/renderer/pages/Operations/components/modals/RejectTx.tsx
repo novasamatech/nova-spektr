@@ -17,6 +17,8 @@ import { Confirmation } from '../ActionSteps/Confirmation';
 import { Signing } from '@renderer/features/operation';
 import { OperationTitle } from '@renderer/components/common';
 import type { MultisigAccount, Account, Address, HexString, Timepoint } from '@renderer/shared/core';
+import { walletModel, walletUtils } from '@renderer/entities/wallet';
+import { priceProviderModel } from '@renderer/entities/price';
 import {
   Transaction,
   TransactionType,
@@ -25,7 +27,6 @@ import {
   validateBalance,
   isXcmTransaction,
 } from '@renderer/entities/transaction';
-import { walletModel, walletUtils } from '@renderer/entities/wallet';
 
 type Props = {
   tx: MultisigTransactionDS;
@@ -82,6 +83,10 @@ const RejectTx = ({ tx, account, connection }: Props) => {
       getBalance,
       getTransactionFee,
     });
+
+  useEffect(() => {
+    priceProviderModel.events.assetsPricesRequested({ includeRates: true });
+  }, []);
 
   useEffect(() => {
     const accountId = signAccount?.accountId || account.signatories[0].accountId;

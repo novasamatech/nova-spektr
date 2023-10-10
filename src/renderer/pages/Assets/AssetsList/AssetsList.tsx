@@ -13,6 +13,7 @@ import { Header } from '@renderer/components/common';
 import type { Account, Chain } from '@renderer/shared/core';
 import { ConnectionType } from '@renderer/shared/core';
 import { walletModel, walletUtils } from '@renderer/entities/wallet';
+import { currencyModel, priceProviderModel } from '@renderer/entities/price';
 
 export const AssetsList = () => {
   const { t } = useI18n();
@@ -23,6 +24,10 @@ export const AssetsList = () => {
 
   const { getLiveBalances } = useBalance();
   const { setHideZeroBalance, getHideZeroBalance } = useSettingsStorage();
+
+  const assetsPrices = useUnit(priceProviderModel.$assetsPrices);
+  const fiatFlag = useUnit(priceProviderModel.$fiatFlag);
+  const currency = useUnit(currencyModel.$activeCurrency);
 
   const [isSelectShardsOpen, toggleSelectShardsOpen] = useToggle();
 
@@ -36,6 +41,10 @@ export const AssetsList = () => {
 
   const isMultishard = walletUtils.isMultiShard(activeWallet);
   const isMultisig = walletUtils.isMultisig(activeWallet);
+
+  useEffect(() => {
+    priceProviderModel.events.assetsPricesRequested({ includeRates: true });
+  }, []);
 
   useEffect(() => {
     updateAccounts(activeAccounts);
@@ -53,8 +62,15 @@ export const AssetsList = () => {
       return !isDisabled && hasMultiPallet;
     });
 
-    setSortedChains(chainsService.sortChainsByBalance(filteredChains, balances));
-  }, [balances]);
+    setSortedChains(
+      chainsService.sortChainsByBalance(
+        filteredChains,
+        balances,
+        assetsPrices,
+        fiatFlag ? currency?.coingeckoId : undefined,
+      ),
+    );
+  }, [balances, assetsPrices]);
 
   const updateHideZeroBalance = (value: boolean) => {
     setHideZeroBalance(value);

@@ -10,6 +10,7 @@ import { redeemableAmount } from '@renderer/shared/lib/utils';
 import { AccountAddress, walletModel, walletUtils } from '@renderer/entities/wallet';
 import { AssetBalance } from '@renderer/entities/asset';
 import type { Asset, Explorer, Address, EraIndex, Unlocking } from '@renderer/shared/core';
+import { AssetFiatBalance } from '@renderer/entities/price/ui/AssetFiatBalance';
 
 const getNextUnstakingEra = (unlocking: Unlocking[] = [], era?: number): EraIndex | undefined => {
   if (!era) return undefined;
@@ -87,10 +88,14 @@ export const NominatorsList = ({
 
   return (
     <div className="flex flex-col gap-y-2">
-      <div className="grid grid-cols-[226px,104px,144px] items-center gap-x-6 px-3">
+      <div className="grid grid-cols-[226px,104px,104px,40px] items-center gap-x-6 px-3">
         <FootnoteText className="text-text-tertiary">{t('staking.overview.accountTableHeader')}</FootnoteText>
-        <FootnoteText className="text-text-tertiary">{t('staking.overview.stakeTableHeader')}</FootnoteText>
-        <FootnoteText className="text-text-tertiary">{t('staking.overview.rewardsTableHeader')}</FootnoteText>
+        <FootnoteText className="text-text-tertiary" align="right">
+          {t('staking.overview.stakeTableHeader')}
+        </FootnoteText>
+        <FootnoteText className="text-text-tertiary" align="right">
+          {t('staking.overview.rewardsTableHeader')}
+        </FootnoteText>
       </div>
 
       <ul className="flex flex-col gap-y-2">
@@ -124,7 +129,7 @@ export const NominatorsList = ({
 
           return (
             <li key={stake.id}>
-              <Plate className="grid grid-cols-[226px,104px,104px,16px] items-center gap-x-6">
+              <Plate className="grid grid-cols-[226px,104px,104px,40px] items-center gap-x-6">
                 {!walletUtils.isWatchOnly(activeWallet) && nominators.length > 1 ? (
                   <Checkbox
                     disabled={isStakingLoading}
@@ -136,16 +141,32 @@ export const NominatorsList = ({
                 ) : (
                   <div className="flex items-center gap-x-2">{content}</div>
                 )}
-                {!stake.totalStake || !asset ? (
-                  <Shimmering width={104} height={16} />
-                ) : (
-                  <AssetBalance value={stake.totalStake} asset={asset} />
-                )}
-                {!stake.totalReward || !asset ? (
-                  <Shimmering width={104} height={16} />
-                ) : (
-                  <AssetBalance value={stake.totalReward} asset={asset} />
-                )}
+                <div className="justify-self-end flex flex-col items-end">
+                  {!stake.totalStake || !asset ? (
+                    <>
+                      <Shimmering width={82} height={20} />
+                      <Shimmering width={56} height={18} />
+                    </>
+                  ) : (
+                    <>
+                      <AssetBalance value={stake.totalStake} asset={asset} />
+                      <AssetFiatBalance amount={stake.totalStake} asset={asset} />
+                    </>
+                  )}
+                </div>
+                <div className="justify-self-end flex flex-col items-end">
+                  {!stake.totalReward || !asset ? (
+                    <>
+                      <Shimmering width={82} height={20} />
+                      <Shimmering width={56} height={18} />
+                    </>
+                  ) : (
+                    <>
+                      <AssetBalance value={stake.totalReward} asset={asset} />
+                      <AssetFiatBalance amount={stake.totalReward} asset={asset} />
+                    </>
+                  )}
+                </div>
                 <InfoPopover data={getExplorers(stake.address, stake.stash, explorers)} position="top-full right-0">
                   <Icon name="info" size={14} />
                 </InfoPopover>

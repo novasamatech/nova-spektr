@@ -1,6 +1,7 @@
 import { AssetBalance } from '../index';
 import { Shimmering, HelpText } from '@renderer/shared/ui';
 import type { Asset } from '@renderer/shared/core';
+import { AssetFiatBalance } from '@renderer/entities/price/ui/AssetFiatBalance';
 
 type Props = {
   asset: Asset;
@@ -16,6 +17,7 @@ export const AssetDetails = ({ asset, value, label }: Props) => {
         {label}
       </HelpText>
       <dd>{value ? <AssetBalance value={value} asset={asset} /> : <Shimmering width={150} height={20} />}</dd>
+      <dd>{value ? <AssetFiatBalance amount={value} asset={asset} /> : <Shimmering width={56} height={18} />}</dd>
     </div>
   );
 };
