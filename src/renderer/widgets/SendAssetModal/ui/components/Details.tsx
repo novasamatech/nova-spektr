@@ -1,10 +1,12 @@
+import { useUnit } from 'effector-react';
+
 import { useI18n } from '@renderer/app/providers';
-import { AddressWithExplorers } from '@renderer/entities/wallet';
+import { AddressWithExplorers, walletModel } from '@renderer/entities/wallet';
 import { ChainTitle } from '@renderer/entities/chain';
 import { ExtendedChain } from '@renderer/entities/network';
 import { Transaction } from '@renderer/entities/transaction';
 import { DetailRow } from '@renderer/shared/ui';
-import type { Wallet, Account, MultisigAccount } from '@renderer/shared/core';
+import type { Account, MultisigAccount } from '@renderer/shared/core';
 
 const AddressStyle = 'text-footnote text-inherit';
 
@@ -12,13 +14,13 @@ type Props = {
   transaction: Transaction;
   account?: Account | MultisigAccount;
   signatory?: Account;
-  wallet: Wallet | null;
   connection?: ExtendedChain;
   withAdvanced?: boolean;
 };
 
-const Details = ({ transaction, wallet, account, signatory, connection, withAdvanced = true }: Props) => {
+const Details = ({ transaction, account, signatory, connection, withAdvanced = true }: Props) => {
   const { t } = useI18n();
+  const activeWallet = useUnit(walletModel.$activeWallet);
 
   const addressPrefix = connection?.addressPrefix;
   const explorers = connection?.explorers;
@@ -27,14 +29,14 @@ const Details = ({ transaction, wallet, account, signatory, connection, withAdva
 
   return (
     <dl className="flex flex-col gap-y-4 w-full">
-      {wallet && account && (
+      {activeWallet && account && (
         <DetailRow label={t('operation.details.wallet')} className={valueClass}>
           <AddressWithExplorers
             explorers={explorers}
             addressFont={AddressStyle}
             accountId={account.accountId}
             addressPrefix={addressPrefix}
-            name={wallet.name}
+            name={activeWallet.name}
           />
         </DetailRow>
       )}
