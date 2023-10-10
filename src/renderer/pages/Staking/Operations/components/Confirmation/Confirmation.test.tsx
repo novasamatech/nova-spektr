@@ -40,14 +40,14 @@ describe('pages/Staking/components/Confirmation', () => {
   test('should render component', () => {
     render(<Confirmation {...defaultProps} />);
 
-    const signButton = screen.getByText('staking.confirmation.signButton');
+    const signButton = screen.getByText('operation.sign.polkadotVault');
     expect(signButton).toBeInTheDocument();
   });
 
   test('should call onResult and onGoBack', () => {
     render(<Confirmation {...defaultProps} />);
 
-    const signButton = screen.getByText('staking.confirmation.signButton');
+    const signButton = screen.getByText('operation.sign.polkadotVault');
     const backButton = screen.getByText('staking.confirmation.backButton');
     signButton.click();
     backButton.click();

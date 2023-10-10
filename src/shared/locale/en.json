@@ -261,6 +261,7 @@
       "addressColumn": "Address",
       "manageTitle": "Set up your wallet",
       "nameColumn": "Account name",
+      "pairedDescription": "Paired",
       "rejected": "Pairing rejected",
       "scanTitle": "Scan with your mobile wallet",
       "title": "Pair via Wallet Connect"

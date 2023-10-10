@@ -6,7 +6,7 @@ import { useAccount } from '@renderer/entities/account';
 import { useMultisigTx } from '@renderer/entities/multisig';
 import './Navigation.css';
 import { MultisigTxInitStatus } from '@renderer/entities/transaction';
-import WalletMenu from '@renderer/components/layout/PrimaryLayout/Wallets/WalletMenu';
+import { WalletMenu } from '@renderer/components/layout/PrimaryLayout/Wallets/WalletMenu';
 import ActiveAccountCard from '@renderer/components/layout/PrimaryLayout/Wallets/ActiveAccountCard';
 import NavItem, { Props as NavItemProps } from '../NavItem/NavItem';
 import { chainsService } from '@renderer/entities/network';

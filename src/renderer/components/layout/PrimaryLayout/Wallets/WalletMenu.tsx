@@ -6,7 +6,7 @@ import { DropdownButton, SearchInput, SmallTitleText } from '@renderer/shared/ui
 import { useI18n } from '@renderer/app/providers';
 import { WalletType } from '@renderer/domain/shared-kernel';
 import { useAccount } from '@renderer/entities/account';
-import WalletGroup from '@renderer/components/layout/PrimaryLayout/Wallets/WalletGroup';
+import { WalletGroup } from '@renderer/components/layout/PrimaryLayout/Wallets/WalletGroup';
 import { useGroupedWallets } from './common/useGroupedWallets';
 import { ID, WalletDS } from '@renderer/shared/api/storage';
 import { ButtonDropdownOption } from '@renderer/shared/ui/types';
@@ -23,7 +23,7 @@ type Props = {
   wallets: WalletDS[];
 };
 
-const WalletMenu = ({ children, chains, wallets }: PropsWithChildren<Props>) => {
+export const WalletMenu = ({ children, chains, wallets }: PropsWithChildren<Props>) => {
   const { t } = useI18n();
   const { setActiveAccount, setActiveAccounts } = useAccount();
 
@@ -53,13 +53,13 @@ const WalletMenu = ({ children, chains, wallets }: PropsWithChildren<Props>) => 
       id: 'nova-wallet',
       title: t('wallets.addNovaWallet'),
       onClick: () => walletProviderModel.events.walletTypeSet(WalletType.NOVA_WALLET),
-      iconName: 'multisig',
+      iconName: 'novaWallet',
     },
     {
       id: 'wallet-connect',
       title: t('wallets.addWalletConnect'),
       onClick: () => walletProviderModel.events.walletTypeSet(WalletType.WALLET_CONNECT),
-      iconName: 'multisig',
+      iconName: 'walletConnect',
     },
   ];
 
@@ -138,5 +138,3 @@ const WalletMenu = ({ children, chains, wallets }: PropsWithChildren<Props>) => 
     </Popover>
   );
 };
-
-export default WalletMenu;

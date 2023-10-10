@@ -25,7 +25,8 @@ type Props = {
 };
 
 const qrCode = new QRCodeStyling(WCQRConfig);
-const WalletConnect = ({ isOpen, onClose, onComplete }: Props) => {
+
+export const WalletConnect = ({ isOpen, onClose, onComplete }: Props) => {
   const { t } = useI18n();
 
   const session = useUnit(wcModel.$session);
@@ -144,5 +145,3 @@ const WalletConnect = ({ isOpen, onClose, onComplete }: Props) => {
     </>
   );
 };
-
-export default WalletConnect;

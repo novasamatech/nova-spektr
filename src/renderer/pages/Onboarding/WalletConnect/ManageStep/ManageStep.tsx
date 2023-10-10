@@ -2,25 +2,28 @@ import cn from 'classnames';
 import { useEffect, useState } from 'react';
 import { Controller, useForm, SubmitHandler } from 'react-hook-form';
 
-import { useI18n } from '@renderer/app/providers';
+import { useI18n, useStatusContext } from '@renderer/app/providers';
 import { Chain } from '@renderer/entities/chain';
 import { AccountId, ErrorType, SigningType, WalletType } from '@renderer/domain/shared-kernel';
-import { Button, Input, InputHint, HeaderTitleText, SmallTitleText } from '@renderer/shared/ui';
+import { Button, Input, InputHint, HeaderTitleText, SmallTitleText, Icon } from '@renderer/shared/ui';
 import { useAccount, createAccount } from '@renderer/entities/account';
 import { useWallet } from '@renderer/entities/wallet';
 import { toAccountId } from '@renderer/shared/lib/utils';
 import { MultiAccountList } from '@renderer/entities/account/ui/MultiAccountsList/MultiAccountsList';
 import { chainsService } from '@renderer/entities/network';
+import { IconNames } from '@renderer/shared/ui/Icon/data';
 
 type WalletForm = {
   walletName: string;
 };
 
+type WalletTypeName = WalletType.NOVA_WALLET | WalletType.WALLET_CONNECT;
+
 type Props = {
   accounts: string[];
   pairingTopic: string;
   sessionTopic: string;
-  type: WalletType.NOVA_WALLET | WalletType.WALLET_CONNECT;
+  type: WalletTypeName;
   onBack: () => void;
   onComplete: () => void;
 };
@@ -29,6 +32,7 @@ const ManageStep = ({ accounts, type, pairingTopic, sessionTopic, onBack, onComp
   const { t } = useI18n();
   const { addAccount, setActiveAccount } = useAccount();
   const { addWallet } = useWallet();
+  const { showStatus } = useStatusContext();
 
   const [chains, setChains] = useState<Chain[]>([]);
   const [accountsList, setAccountsList] = useState<{ chain: Chain; accountId: AccountId }[]>([]);
@@ -102,6 +106,26 @@ const ManageStep = ({ accounts, type, pairingTopic, sessionTopic, onBack, onComp
       setActiveAccount(id);
     });
     reset();
+
+    const WalletLogo: Record<WalletTypeName, IconNames> = {
+      [WalletType.WALLET_CONNECT]: 'walletConnectBg',
+      [WalletType.NOVA_WALLET]: 'novaWalletBg',
+    };
+
+    showStatus({
+      title: walletName.trim(),
+      description: t('onboarding.walletConnect.pairedDescription'),
+      content: (
+        <div className="flex justify-center items-center h-20 gap-1">
+          <Icon name="logo" size={56} />
+          <div className="w-3 h-0 border-[1.5px] rounded border-text-positive"></div>
+          <Icon name="checkLineRedesign" className="text-text-positive" size={18} />
+          <div className="w-3 h-0 border-[1.5px] rounded border-text-positive"></div>
+          <Icon name={WalletLogo[type]} size={56} />
+        </div>
+      ),
+    });
+
     onComplete();
   };
 

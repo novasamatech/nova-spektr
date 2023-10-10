@@ -17,7 +17,7 @@ type Props = {
   onWalletClick: (wallet: WalletGroupItem) => void;
 };
 
-const WalletGroup = ({ type, wallets, onWalletClick }: Props) => {
+export const WalletGroup = ({ type, wallets, onWalletClick }: Props) => {
   const { t } = useI18n();
 
   if (!wallets.length) {
@@ -88,5 +88,3 @@ const WalletGroup = ({ type, wallets, onWalletClick }: Props) => {
     </li>
   );
 };
-
-export default WalletGroup;

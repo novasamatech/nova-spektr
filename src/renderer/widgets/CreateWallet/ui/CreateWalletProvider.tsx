@@ -6,8 +6,8 @@ import { WalletType } from '@renderer/domain/shared-kernel';
 import { walletProviderModel } from '../model/wallet-provider-model';
 import WatchOnly from '@renderer/pages/Onboarding/WatchOnly/WatchOnly';
 import Vault from '@renderer/pages/Onboarding/Vault/Vault';
-import NovaWallet from '@renderer/pages/Onboarding/WalletConnect/NovaWallet';
-import WalletConnect from '@renderer/pages/Onboarding/WalletConnect/WalletConnect';
+import { NovaWallet } from '@renderer/pages/Onboarding/WalletConnect/NovaWallet';
+import { WalletConnect } from '@renderer/pages/Onboarding/WalletConnect/WalletConnect';
 import { MultisigAccount } from './MultisigAccount/MultisigAccount';
 import { Paths } from '../../../app/providers/routes/paths';
 
