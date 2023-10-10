@@ -5,8 +5,8 @@ import { useUnit } from 'effector-react';
 import { SigningProps } from '@renderer/features/operation';
 import { ValidationErrors } from '@renderer/shared/lib/utils';
 import { useTransaction } from '@renderer/entities/transaction';
-import { useConfirmContext, useI18n } from '@renderer/app/providers';
-import { Button, SmallTitleText } from '@renderer/shared/ui';
+import { useI18n } from '@renderer/app/providers';
+import { Button, ConfirmModal, FootnoteText, SmallTitleText, StatusModal } from '@renderer/shared/ui';
 import { wcModel, DEFAULT_POLKADOT_METHODS, getWalletConnectChains } from '@renderer/entities/walletConnect';
 import { chainsService } from '@renderer/entities/network';
 import { Countdown } from './Countdown';
@@ -15,12 +15,13 @@ import wallet_connect_confirm from '@video/wallet_connect_confirm.mp4';
 import wallet_connect_confirm_webm from '@video/wallet_connect_confirm.webm';
 import { HexString } from '@renderer/shared/core';
 import { walletModel } from '@renderer/entities/wallet';
+import Animations from '@renderer/shared/ui/Animation/Data';
+import { Animation } from '@renderer/shared/ui/Animation/Animation';
 
 export const WalletConnect = ({ api, validateBalance, onGoBack, accounts, transactions, onResult }: SigningProps) => {
   const { t } = useI18n();
   const { verifySignature, createPayload } = useTransaction();
   const [countdown, resetCountdown] = useCountdown(api);
-  const { confirm } = useConfirmContext();
 
   const session = useUnit(wcModel.$session);
   const client = useUnit(wcModel.$client);
@@ -32,18 +33,12 @@ export const WalletConnect = ({ api, validateBalance, onGoBack, accounts, transa
   const [txPayload, setTxPayload] = useState<Uint8Array>();
   const [unsignedTx, setUnsignedTx] = useState<UnsignedTransaction>();
   const [isNeedUpdate, setIsNeedUpdate] = useState<boolean>(false);
+  const [isReconnectModalOpen, setIsReconnectModalOpen] = useState<boolean>(false);
+  const [isReconnectingModalOpen, setIsReconnectingModalOpen] = useState<boolean>(false);
+  const [isConnectedModalOpen, setIsConnectedModalOpen] = useState<boolean>(false);
 
   const transaction = transactions[0];
   const account = accounts[0];
-
-  const reconnect = async () => {
-    await connect({
-      chains: getWalletConnectChains(chains),
-      pairing: { topic: account.signingExtras?.pairingTopic },
-    });
-
-    setIsNeedUpdate(true);
-  };
 
   useEffect(() => {
     if (txPayload || !client) return;
@@ -51,31 +46,20 @@ export const WalletConnect = ({ api, validateBalance, onGoBack, accounts, transa
     (async () => {
       const isCurrentSession = session && account && session.topic === account.signingExtras?.sessionTopic;
 
-      if (!isCurrentSession) {
+      if (isCurrentSession) {
+        setupTransaction().catch(() => console.warn('WalletConnect | setupTransaction() failed'));
+      } else {
         const sessions = client.session.getAll();
 
-        const newSession = sessions.find((s) => s.topic === account.signingExtras?.sessionTopic);
+        const storedSession = sessions.find((s) => s.topic === account.signingExtras?.sessionTopic);
 
-        if (newSession) {
-          sessionUpdated(newSession);
+        if (storedSession) {
+          sessionUpdated(storedSession);
           setIsNeedUpdate(true);
 
           setupTransaction().catch(() => console.warn('WalletConnect | setupTransaction() failed'));
         } else {
-          confirm({
-            title: t('signing.walletConnect.reconnectTitle', {
-              walletName,
-            }),
-            message: t('signing.walletConnect.reconnectDescription'),
-            confirmText: t('signing.walletConnect.reconnectButton'),
-            cancelText: t('signing.walletConnect.cancelButton'),
-          }).then((result) => {
-            if (result) {
-              reconnect()
-                .then(setupTransaction)
-                .catch(() => console.warn('WalletConnect | setupTransaction() failed'));
-            }
-          });
+          setIsReconnectModalOpen(true);
         }
       }
     })();
@@ -97,6 +81,13 @@ export const WalletConnect = ({ api, validateBalance, onGoBack, accounts, transa
     }
   }, [unsignedTx]);
 
+  useEffect(() => {
+    if (isReconnectingModalOpen && session?.topic === account.signingExtras?.sessionTopic) {
+      setIsReconnectingModalOpen(false);
+      setIsConnectedModalOpen(true);
+    }
+  }, [isReconnectingModalOpen]);
+
   const setupTransaction = async (): Promise<void> => {
     try {
       const { payload, unsigned } = await createPayload(transaction, api);
@@ -113,6 +104,24 @@ export const WalletConnect = ({ api, validateBalance, onGoBack, accounts, transa
   };
 
   const [_, setValidationError] = useState<ValidationErrors>();
+
+  const reconnect = async () => {
+    setIsReconnectModalOpen(false);
+    setIsReconnectingModalOpen(true);
+
+    connect({
+      chains: getWalletConnectChains(chains),
+      pairing: { topic: account.signingExtras?.pairingTopic },
+    });
+
+    setIsNeedUpdate(true);
+  };
+
+  const handleReconnect = () => {
+    reconnect()
+      .then(setupTransaction)
+      .catch(() => console.warn('WalletConnect | setupTransaction() failed'));
+  };
 
   const signTransaction = async () => {
     if (!api || !client || !session) return;
@@ -178,6 +187,38 @@ export const WalletConnect = ({ api, validateBalance, onGoBack, accounts, transa
           {t('operation.goBackButton')}
         </Button>
       </div>
+
+      <ConfirmModal
+        panelClass="w-[300px]"
+        isOpen={isReconnectModalOpen}
+        confirmText={t('operation.walletConnect.reconnect.confirmButton')}
+        cancelText={t('operation.walletConnect.reconnect.cancelButton')}
+        onClose={onGoBack}
+        onConfirm={handleReconnect}
+      >
+        <SmallTitleText align="center">
+          {t('operation.walletConnect.reconnect.title', {
+            walletName,
+          })}
+        </SmallTitleText>
+        <FootnoteText className="mt-2 text-text-tertiary" align="center">
+          {t('operation.walletConnect.reconnect.description')}
+        </FootnoteText>
+      </ConfirmModal>
+
+      <StatusModal
+        title={t('operation.walletConnect.reconnect.reconnecting')}
+        isOpen={isReconnectingModalOpen}
+        content={<Animation animation={Animations.loading} loop />}
+        onClose={onGoBack}
+      />
+
+      <StatusModal
+        title={t('operation.walletConnect.reconnect.connected')}
+        isOpen={isConnectedModalOpen}
+        content={<Animation animation={Animations.success} />}
+        onClose={() => setIsConnectedModalOpen(false)}
+      />
     </div>
   );
 };

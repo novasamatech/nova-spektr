@@ -368,7 +368,16 @@
     "successRejectMessage": "Операция Отменена",
     "walletConnect": {
       "defaultWalletName": "WalletConnect",
-      "signTitle": "Confirm the operation on your { walletName } app"
+      "signTitle": "Confirm the operation on your { walletName } app",
+      "reconnect": {
+        "title": "{ walletName } is not connected",
+        "description": "You need to reconnect to proceed with signing",
+        "cancelButton": "Cancel",
+        "confirmButton": "Reconnect",
+        "reconnecting": "Waiting for Reconnect...",
+        "connected": "Connected"
+
+      }
     },
     "xcmFee": "Cross-chain fee"
   },

@@ -368,7 +368,15 @@
     "successRejectMessage": "Operation Rejected",
     "walletConnect": {
       "defaultWalletName": "WalletConnect",
-      "signTitle": "Confirm the operation on your { walletName } app"
+      "signTitle": "Confirm the operation on your { walletName } app",
+      "reconnect": {
+        "title": "{ walletName } is not connected",
+        "description": "You need to reconnect to proceed with signing",
+        "cancelButton": "Cancel",
+        "confirmButton": "Reconnect",
+        "reconnecting": "Waiting for Reconnect...",
+        "connected": "Connected"
+      }
     },
     "xcmFee": "Cross-chain fee"
   },
@@ -575,7 +583,7 @@
     "metadataPortalLink": "Update metadata in Polkadot Vault",
     "parsingCount": "{current} of {total}",
     "parsingLabel": "Parsing data",
-    "qrCountdownTitle": "QR code is valid for",
+    "qrCountdownTitle": "Time remaining",
     "qrNotValid": "QR code isn’t valid anymore",
     "scanQrTitle": "Scan the operation QR code with Polkadot Vault",
     "scanSignatureTitle": "Scan QR code from Polkadot Vault",

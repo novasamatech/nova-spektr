@@ -25,7 +25,7 @@ const WalletText: Record<WalletType, string> = {
   [WalletType.MULTISIG]: 'operation.polkadotVault',
   [WalletType.WATCH_ONLY]: '',
   [WalletType.WALLET_CONNECT]: 'operation.sign.walletConnect',
-  [WalletType.NOVA_WALLET]: 'novaWallet.sign.novaWallet',
+  [WalletType.NOVA_WALLET]: 'operation.sign.novaWallet',
 };
 
 export const SignButton = ({ disabled, type, onClick, className }: Props) => {
@@ -37,7 +37,7 @@ export const SignButton = ({ disabled, type, onClick, className }: Props) => {
     <Button
       className={className}
       disabled={disabled}
-      prefixElement={icon && <Icon name={icon} size={14} />}
+      prefixElement={icon && <Icon className="text-icon-button" name={icon} size={14} />}
       onClick={onClick}
     >
       {t(WalletText[type])}
