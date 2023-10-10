@@ -1,6 +1,7 @@
 import { useUnit } from 'effector-react';
 
 import { BodyText, CaptionText, FootnoteText, Icon, Identicon } from '@renderer/shared/ui';
+import { WalletFiatBalance } from './WalletFiatBalance';
 import { GroupIcons, GroupLabels } from '@renderer/components/layout/PrimaryLayout/Wallets/common/constants';
 import { toAddress, SS58_DEFAULT_PREFIX } from '@renderer/shared/lib/utils';
 import { useI18n } from '@renderer/app/providers';
@@ -49,6 +50,7 @@ export const WalletCard = ({ chains }: Props) => {
           <Icon name={GroupIcons[activeWallet.type]} className="text-chip-icon" size={14} />
           <CaptionText className="text-chip-text uppercase">{t(GroupLabels[activeWallet.type])}</CaptionText>
         </div>
+        <WalletFiatBalance key={activeWallet.id} />
       </div>
 
       <Icon name="down" size={16} className="ml-auto shrink-0" />

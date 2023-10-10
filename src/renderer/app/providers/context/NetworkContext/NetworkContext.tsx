@@ -139,7 +139,7 @@ export const NetworkProvider = ({ children }: PropsWithChildren) => {
         unsubscribe(chain.chainId);
       });
     })();
-  }, [connectedConnections.length, activeAccounts.length, activeAccounts.length && activeAccounts[0]]);
+  }, [connectedConnections.length, activeAccounts.length]);
 
   return (
     <NetworkContext.Provider value={{ connections, connectToNetwork, connectWithAutoBalance, ...rest }}>

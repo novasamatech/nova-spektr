@@ -6,7 +6,6 @@ import { useI18n, useMatrix } from '@renderer/app/providers';
 import { DropdownOption, DropdownResult } from '@renderer/shared/ui/Dropdowns/common/types';
 import type { AccountId, Signatory } from '@renderer/shared/core';
 import { accountUtils, walletModel, walletUtils } from '@renderer/entities/wallet';
-import { WalletDS } from '@renderer/shared/api/storage';
 
 type MultisigAccountForm = {
   name: string;

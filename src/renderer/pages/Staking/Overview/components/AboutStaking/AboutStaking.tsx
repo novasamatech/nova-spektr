@@ -5,8 +5,9 @@ import { Trans } from 'react-i18next';
 import { Duration, Shimmering, FootnoteText } from '@renderer/shared/ui';
 import { useI18n } from '@renderer/app/providers';
 import { useStakingData } from '@renderer/entities/staking';
-import { AssetBalance,AssetFiatBalance } from '@renderer/entities/asset';
+import { AssetBalance } from '@renderer/entities/asset';
 import type { Asset, EraIndex, Validator } from '@renderer/shared/core';
+import { AssetFiatBalance } from '@renderer/entities/price/ui/AssetFiatBalance';
 
 type Props = {
   api?: ApiPromise;

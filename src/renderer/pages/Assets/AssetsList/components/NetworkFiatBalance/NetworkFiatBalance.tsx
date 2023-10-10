@@ -2,11 +2,11 @@ import { useEffect, useState } from 'react';
 import { useUnit } from 'effector-react';
 import BN from 'bignumber.js';
 
-import { Asset, Balance } from '@renderer/entities/asset';
 import { formatFiatBalance, getRoundedValue, totalAmount } from '@renderer/shared/lib/utils';
 import { FiatBalance } from '@renderer/entities/price/ui/FiatBalance';
 import { currencyModel, priceProviderModel } from '@renderer/entities/price';
 import { useI18n } from '@renderer/app/providers';
+import type { Asset, Balance } from '@renderer/shared/core';
 
 type Props = {
   assets: Asset[];

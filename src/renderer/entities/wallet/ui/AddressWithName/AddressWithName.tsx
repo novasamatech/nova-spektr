@@ -1,6 +1,7 @@
 import { cnTw, toShortAddress, copyToClipboard } from '@renderer/shared/lib/utils';
-import { Identicon, IconButton, Truncate } from '@renderer/shared/ui';
+import { IconButton, Truncate } from '@renderer/shared/ui';
 import { AccountAddressProps, getAddress } from '../AccountAddress/AccountAddress';
+import { AddressWithTwoLines } from '../AddressWithTwoLines/AddressWithTwoLines';
 
 type Props = {
   canCopySubName?: boolean;
@@ -52,7 +53,6 @@ export const AddressWithName = ({
   return (
     <AddressWithTwoLines
       showIcon={showIcon}
-      signType={signType}
       size={size}
       canCopy={canCopy}
       firstLine={firstLine}
