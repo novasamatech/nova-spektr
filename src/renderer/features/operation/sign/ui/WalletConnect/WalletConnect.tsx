@@ -10,7 +10,7 @@ import { Button, ConfirmModal, FootnoteText, SmallTitleText, StatusModal } from 
 import { wcModel, DEFAULT_POLKADOT_METHODS, getWalletConnectChains } from '@renderer/entities/walletConnect';
 import { chainsService } from '@renderer/entities/network';
 import { Countdown } from './Countdown';
-import { useCountdown } from '@renderer/shared/lib/hooks';
+import { useCountdown, useToggle } from '@renderer/shared/lib/hooks';
 import wallet_connect_confirm from '@video/wallet_connect_confirm.mp4';
 import wallet_connect_confirm_webm from '@video/wallet_connect_confirm.webm';
 import { HexString } from '@renderer/shared/core';
@@ -36,6 +36,7 @@ export const WalletConnect = ({ api, validateBalance, onGoBack, accounts, transa
   const [isReconnectModalOpen, setIsReconnectModalOpen] = useState<boolean>(false);
   const [isReconnectingModalOpen, setIsReconnectingModalOpen] = useState<boolean>(false);
   const [isConnectedModalOpen, setIsConnectedModalOpen] = useState<boolean>(false);
+  const [isRejectedStatusOpen, toggleRejectedStatus] = useToggle();
 
   const transaction = transactions[0];
   const account = accounts[0];
@@ -103,7 +104,7 @@ export const WalletConnect = ({ api, validateBalance, onGoBack, accounts, transa
     }
   };
 
-  const [_, setValidationError] = useState<ValidationErrors>();
+  const [validationError, setValidationError] = useState<ValidationErrors>();
 
   const reconnect = async () => {
     setIsReconnectModalOpen(false);
@@ -148,6 +149,7 @@ export const WalletConnect = ({ api, validateBalance, onGoBack, accounts, transa
       }
     } catch (e) {
       console.warn(e);
+      toggleRejectedStatus();
     }
   };
 
@@ -177,10 +179,20 @@ export const WalletConnect = ({ api, validateBalance, onGoBack, accounts, transa
 
       <Countdown countdown={countdown} />
 
-      <video className="object-contain h-[240px]" autoPlay loop>
-        <source src={wallet_connect_confirm_webm} type="video/webm" />
-        <source src={wallet_connect_confirm} type="video/mp4" />
-      </video>
+      <div className="relative">
+        <video className="object-contain h-[240px]" autoPlay loop>
+          <source src={wallet_connect_confirm_webm} type="video/webm" />
+          <source src={wallet_connect_confirm} type="video/mp4" />
+        </video>
+
+        {validationError === ValidationErrors.EXPIRED && (
+          <div className="absolute top-0 left-0 right-0 bottom-0 bg-white opacity-70 flex items-center justify-center">
+            <Button size="sm" onClick={onGoBack}>
+              {t('operation.walletConnect.reconnect.reconnectButton')}
+            </Button>
+          </div>
+        )}
+      </div>
 
       <div className="flex w-full justify-between mt-5">
         <Button variant="text" onClick={onGoBack}>
@@ -218,6 +230,13 @@ export const WalletConnect = ({ api, validateBalance, onGoBack, accounts, transa
         isOpen={isConnectedModalOpen}
         content={<Animation animation={Animations.success} />}
         onClose={() => setIsConnectedModalOpen(false)}
+      />
+
+      <StatusModal
+        title={t('operation.walletConnect.rejected')}
+        content={<Animation animation={Animations.error} />}
+        isOpen={isRejectedStatusOpen}
+        onClose={onGoBack}
       />
     </div>
   );

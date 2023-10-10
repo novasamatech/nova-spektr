@@ -194,7 +194,7 @@
     "continueButton": "Continue",
     "novaWallet": {
       "scanTitle": "Scan with Nova Wallet",
-      "title": "Pair Nova Wallet"
+      "title": "Add wallet by Nova Wallet"
     },
     "paritySigner": {
       "accessDeniedDescription": "Please make sure you grant access to camera",
@@ -264,7 +264,7 @@
       "pairedDescription": "Paired",
       "rejected": "Pairing rejected",
       "scanTitle": "Scan with your mobile wallet",
-      "title": "Pair via Wallet Connect"
+      "title": "Add wallet by Wallet Connect"
     },
     "walletNameExample": "Name examples: Main account, My validator, Dotsama crowdloans, etc",
     "walletNameLabel": "Wallet name",
@@ -376,7 +376,8 @@
         "confirmButton": "Reconnect",
         "reconnecting": "Waiting for Reconnect...",
         "connected": "Connected"
-      }
+      },
+      "rejected": "Rejected"
     },
     "xcmFee": "Cross-chain fee"
   },

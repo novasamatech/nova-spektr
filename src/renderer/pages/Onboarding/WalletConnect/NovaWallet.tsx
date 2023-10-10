@@ -28,6 +28,7 @@ const qrCode = new QRCodeStyling(NWQRConfig);
 
 export const NovaWallet = ({ isOpen, onClose, onComplete }: Props) => {
   const { t } = useI18n();
+  const { showStatus } = useStatusContext();
 
   const session = useUnit(wcModel.$session);
   const client = useUnit(wcModel.$client);
@@ -41,8 +42,6 @@ export const NovaWallet = ({ isOpen, onClose, onComplete }: Props) => {
   const previousPairings = usePrevious(pairings);
 
   const [pairingTopic, setPairingTopic] = useState<string>();
-
-  const { showStatus } = useStatusContext();
 
   const ref = useRef(null);
 
