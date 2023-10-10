@@ -15,8 +15,9 @@ import {
   SelectableAccount,
   SelectableShards,
 } from '@renderer/components/layout/PrimaryLayout/Wallets/common/types';
-import { AddressWithExplorers } from '@renderer/entities/wallet';
+import { SelectableShard } from '@renderer/entities/wallet';
 import { ChainTitle } from '@renderer/entities/chain';
+import { toAddress } from '@renderer/shared/lib/utils';
 
 type Props = {
   accounts: Account[];
@@ -119,21 +120,21 @@ export const SelectShardModal = ({ isOpen, activeShards, accounts, onClose }: Pr
       isOpen={isOpen}
       title={t('balances.shardsModalTitle')}
       closeButton
-      contentClass="px-5 py-4"
+      contentClass="pl-3 pr-0 py-4"
       headerClass="px-5 py-4"
       onClose={onClose}
     >
       <SearchInput
         value={query}
         placeholder={t('balances.searchPlaceholder')}
-        wrapperClass="mb-4"
+        wrapperClass="mb-4 ml-2 mr-5"
         onChange={setQuery}
       />
 
       {/* root accounts */}
-      <ul className="overflow-y-scroll max-h-[470px]">
+      <ul className="overflow-y-scroll max-h-[470px] pr-3">
         {!query && (
-          <li key="all" className="mb-2">
+          <li key="all" className="p-2">
             <Checkbox
               checked={allShardsChecked}
               semiChecked={allShardsSemiChecked}
@@ -145,22 +146,22 @@ export const SelectShardModal = ({ isOpen, activeShards, accounts, onClose }: Pr
         )}
         {searchedShards.rootAccounts.map((root) => (
           <li key={root.id}>
-            <Checkbox
+            <SelectableShard
+              className="ml-2"
+              name={root.name}
+              address={toAddress(root.accountId)}
               checked={root.isSelected}
-              className="py-0.5"
               semiChecked={root.selectedAmount > 0}
-              onChange={(event) => selectRoot(event.target?.checked, root.accountId)}
-            >
-              <AddressWithExplorers accountId={root.accountId} name={root.name} />
-            </Checkbox>
+              onChange={(checked) => selectRoot(checked, root.accountId)}
+            />
 
-            {/* chains accounts */}
+            {/* select all chain accounts */}
             <ul>
               {root.chains.map((chain) => (
                 <li key={chain.chainId}>
                   <Checkbox
                     checked={chain.isSelected}
-                    className="py-1.5 ml-6"
+                    className="ml-6 p-2"
                     semiChecked={chain.selectedAmount > 0 && chain.selectedAmount < chain.accounts.length}
                     onChange={(event) => selectChain(event.target?.checked, chain.chainId, root.accountId)}
                   >
@@ -174,18 +175,16 @@ export const SelectShardModal = ({ isOpen, activeShards, accounts, onClose }: Pr
                   <ul>
                     {chain.accounts.map((account) => (
                       <li key={account.id}>
-                        <Checkbox
+                        <SelectableShard
+                          className="ml-14"
+                          name={account.name}
+                          address={toAddress(account.accountId, {
+                            prefix: chains[account.chainId]?.addressPrefix,
+                          })}
                           checked={account.isSelected}
-                          className="py-0.5 ml-12"
-                          onChange={(event) => selectAccount(event.target?.checked, account)}
-                        >
-                          <AddressWithExplorers
-                            explorers={chains[account.chainId]?.explorers}
-                            accountId={account.accountId}
-                            addressPrefix={chains[account.chainId]?.addressPrefix}
-                            name={account.name}
-                          />
-                        </Checkbox>
+                          explorers={chains[account.chainId]?.explorers}
+                          onChange={(checked) => selectAccount(checked, account)}
+                        />
                       </li>
                     ))}
                   </ul>
