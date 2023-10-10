@@ -195,6 +195,7 @@ export const walletModel = {
   $activeWallet,
   $accounts,
   $activeAccounts,
+  $isLoadingWallets: fetchAllWalletsFx.pending,
   events: {
     watchOnlyCreated,
     multishardCreated,

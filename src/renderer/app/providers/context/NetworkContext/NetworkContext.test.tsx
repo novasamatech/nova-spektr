@@ -7,6 +7,7 @@ import { useNetwork } from '@renderer/entities/network';
 import { NetworkProvider, useNetworkContext } from './NetworkContext';
 import { ConnectionStatus, ConnectionType } from '@renderer/shared/core';
 import { walletModel } from '@renderer/entities/wallet';
+import { TEST_ACCOUNT_ID } from '@renderer/shared/lib/utils';
 
 jest.mock('@renderer/entities/network', () => ({
   useNetwork: jest.fn().mockReturnValue({
@@ -114,7 +115,7 @@ describe('context/NetworkContext', () => {
     }));
 
     const scope = fork({
-      values: new Map().set(walletModel.$activeAccounts, []),
+      values: new Map().set(walletModel.$activeAccounts, [{ name: 'Test Wallet', accountId: TEST_ACCOUNT_ID }]),
     });
 
     await act(async () => {

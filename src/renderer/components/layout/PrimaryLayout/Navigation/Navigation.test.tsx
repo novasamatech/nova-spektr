@@ -16,20 +16,9 @@ jest.mock('@renderer/entities/multisig', () => ({
   }),
 }));
 
-jest.mock('@renderer/entities/wallet', () => ({
-  useWallet: jest.fn().mockReturnValue({
-    getLiveWallets: jest.fn().mockReturnValue([]),
-  }),
+jest.mock('../Wallets/WalletMenu', () => ({
+  WalletMenu: () => <div>wallets-mock</div>,
 }));
-
-jest.mock('../Wallets/WalletMenu', () => {
-  const { forwardRef } = jest.requireActual('react');
-
-  return {
-    __esModule: true,
-    default: forwardRef((_: any, ref: any) => <div ref={ref}>wallets-mock</div>),
-  };
-});
 
 describe('layout/PrimaryLayout/Navigation', () => {
   afterEach(() => {
