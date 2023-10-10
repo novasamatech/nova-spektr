@@ -3,15 +3,14 @@ import { useEffect, useState } from 'react';
 import { Controller, useForm, SubmitHandler } from 'react-hook-form';
 
 import { useI18n, useStatusContext } from '@renderer/app/providers';
-import { Chain } from '@renderer/entities/chain';
-import { AccountId, ErrorType, SigningType, WalletType } from '@renderer/domain/shared-kernel';
+import { AccountId, Chain, ChainType, ErrorType, NoID, SigningType, WalletType } from '@renderer/shared/core';
 import { Button, Input, InputHint, HeaderTitleText, SmallTitleText, Icon } from '@renderer/shared/ui';
-import { useAccount, createAccount } from '@renderer/entities/account';
-import { useWallet } from '@renderer/entities/wallet';
 import { toAccountId } from '@renderer/shared/lib/utils';
 import { MultiAccountList } from '@renderer/entities/account/ui/MultiAccountsList/MultiAccountsList';
 import { chainsService } from '@renderer/entities/network';
 import { IconNames } from '@renderer/shared/ui/Icon/data';
+import { walletModel } from '@renderer/entities/wallet';
+import { AccountType, WalletConnectAccount } from '@renderer/shared/core/types/account';
 
 type WalletForm = {
   walletName: string;
@@ -30,8 +29,6 @@ type Props = {
 
 const ManageStep = ({ accounts, type, pairingTopic, sessionTopic, onBack, onComplete }: Props) => {
   const { t } = useI18n();
-  const { addAccount, setActiveAccount } = useAccount();
-  const { addWallet } = useWallet();
   const { showStatus } = useStatusContext();
 
   const [chains, setChains] = useState<Chain[]>([]);
@@ -78,33 +75,31 @@ const ManageStep = ({ accounts, type, pairingTopic, sessionTopic, onBack, onComp
   }, [chains.length]);
 
   const submitHandler: SubmitHandler<WalletForm> = async ({ walletName }) => {
-    const walletId = await addWallet({
-      name: walletName.trim(),
-      type,
-    });
+    walletModel.events.walletConnectCreated({
+      wallet: {
+        name: walletName.trim(),
+        type,
+        signingType: SigningType.WALLET_CONNECT,
+      },
+      accounts: accounts.map((account) => {
+        const [_, chainId, address] = account.split(':');
+        const chain = chains.find((chain) => chain.chainId.includes(chainId));
+        const accountId = toAccountId(address);
 
-    accounts.forEach(async (account) => {
-      const [_, chainId, address] = account.split(':');
-      const chain = chains.find((chain) => chain.chainId.includes(chainId));
-      const accountId = toAccountId(address);
-
-      const id = await addAccount(
-        createAccount({
-          // eslint-disable-next-line i18next/no-literal-string
-          name: `${walletName.trim()} - ${chain?.name}`,
-          signingType: SigningType.WALLET_CONNECT,
+        return {
+          name: walletName.trim(),
           accountId,
+          type: AccountType.WALLET_CONNECT,
+          chainType: ChainType.SUBSTRATE,
           chainId: chain?.chainId,
-          walletId,
           signingExtras: {
             pairingTopic,
             sessionTopic,
           },
-        }),
-      );
-
-      setActiveAccount(id);
+        } as Omit<NoID<WalletConnectAccount>, 'walletId'>;
+      }),
     });
+
     reset();
 
     const WalletLogo: Record<WalletTypeName, IconNames> = {

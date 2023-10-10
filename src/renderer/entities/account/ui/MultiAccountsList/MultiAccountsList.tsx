@@ -1,9 +1,9 @@
 import { cnTw } from '@renderer/shared/lib/utils';
-import { Chain, ChainTitle } from '@renderer/entities/chain';
-import { AccountId } from '@renderer/domain/shared-kernel';
-import { AddressWithExplorers } from '@renderer/entities/account';
+import { ChainTitle } from '@renderer/entities/chain';
 import { useI18n } from '@renderer/app/providers';
 import { FootnoteText } from '@renderer/shared/ui';
+import { AccountId, Chain } from '@renderer/shared/core';
+import { AddressWithExplorers } from '@renderer/entities/wallet';
 
 type Props = {
   accounts: {

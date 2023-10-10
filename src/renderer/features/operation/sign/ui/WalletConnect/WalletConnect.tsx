@@ -5,21 +5,20 @@ import { useUnit } from 'effector-react';
 import { SigningProps } from '@renderer/features/operation';
 import { ValidationErrors } from '@renderer/shared/lib/utils';
 import { useTransaction } from '@renderer/entities/transaction';
-import { HexString } from '@renderer/domain/shared-kernel';
 import { useConfirmContext, useI18n } from '@renderer/app/providers';
 import { Button, SmallTitleText } from '@renderer/shared/ui';
-import { useAccount } from '@renderer/entities/account';
 import { wcModel, DEFAULT_POLKADOT_METHODS, getWalletConnectChains } from '@renderer/entities/walletConnect';
 import { chainsService } from '@renderer/entities/network';
 import { Countdown } from './Countdown';
 import { useCountdown } from '@renderer/shared/lib/hooks';
 import wallet_connect_confirm from '@video/wallet_connect_confirm.mp4';
 import wallet_connect_confirm_webm from '@video/wallet_connect_confirm.webm';
+import { HexString } from '@renderer/shared/core';
+import { walletModel } from '@renderer/entities/wallet';
 
 export const WalletConnect = ({ api, validateBalance, onGoBack, accounts, transactions, onResult }: SigningProps) => {
   const { t } = useI18n();
   const { verifySignature, createPayload } = useTransaction();
-  const { updateAccount } = useAccount();
   const [countdown, resetCountdown] = useCountdown(api);
   const { confirm } = useConfirmContext();
 
@@ -86,13 +85,9 @@ export const WalletConnect = ({ api, validateBalance, onGoBack, accounts, transa
     if (isNeedUpdate) {
       setIsNeedUpdate(false);
 
-      updateAccount({
-        ...account,
-        signingExtras: {
-          ...account.signingExtras,
-          sessionTopic: session?.topic,
-        },
-      });
+      if (session?.topic) {
+        walletModel.events.sessionTopicUpdated(session?.topic);
+      }
     }
   }, [session]);
 

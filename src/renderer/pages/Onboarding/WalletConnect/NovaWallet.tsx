@@ -15,7 +15,7 @@ import { wcOnboardingModel } from './model/wc-onboarding-model';
 import { NWQRConfig, Step } from './common/const';
 import { useStatusContext } from '@renderer/app/providers/context/StatusContext';
 import Animations from '@renderer/shared/ui/Animation/Data';
-import { WalletType } from '@renderer/domain/shared-kernel';
+import { WalletType } from '@renderer/shared/core';
 
 type Props = {
   isOpen: boolean;

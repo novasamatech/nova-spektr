@@ -42,11 +42,11 @@ export type MultisigAccount = BaseAccount & {
   creatorAccountId: AccountId;
 };
 
-// export type WalletConnectAccount = Omit<BaseAccount, 'cryptoType'> & {
-//   chainId: ChainId;
-// };
+export type WalletConnectAccount = Omit<BaseAccount, 'cryptoType'> & {
+  chainId: ChainId;
+};
 
-export type Account = BaseAccount | ChainAccount | MultisigAccount;
+export type Account = BaseAccount | ChainAccount | MultisigAccount | WalletConnectAccount;
 
 export const enum AccountType {
   BASE = 'base',
@@ -54,7 +54,7 @@ export const enum AccountType {
   // SHARDED = 'sharded',
   // SHARD = 'shard',
   MULTISIG = 'multisig',
-  // WALLET_CONNECT = 'wallet_connect',
+  WALLET_CONNECT = 'wallet_connect',
 }
 
 export const enum KeyType {
