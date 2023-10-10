@@ -12,7 +12,7 @@ import { useDebounce, useTaskQueue } from '@renderer/shared/lib/hooks';
 import { Task } from '@renderer/shared/lib/hooks/useTaskQueue';
 import type { MultisigAccount, ChainId } from '@renderer/shared/core';
 import { ConnectionStatus } from '@renderer/shared/core';
-import { accountModel, accountUtils } from '@renderer/entities/wallet';
+import { walletModel, accountUtils } from '@renderer/entities/wallet';
 
 type MultisigChainContextProps = {
   addTask: (task: Task) => void;
@@ -34,7 +34,7 @@ export const MultisigChainProvider = ({ children }: PropsWithChildren) => {
     updateCallData,
     updateCallDataFromChain,
   } = useMultisigTx({ addTask });
-  const activeAccounts = useUnit(accountModel.$activeAccounts);
+  const activeAccounts = useUnit(walletModel.$activeAccounts);
 
   const { updateEvent, getEvents, addEventWithQueue } = useMultisigEvent({ addTask });
 

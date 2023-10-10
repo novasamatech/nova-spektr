@@ -13,7 +13,7 @@ import { NetworkList, NetworkItem, CustomRpcModal } from './components';
 import { useBalance } from '@renderer/entities/asset';
 import type { RpcNode, ChainId } from '@renderer/shared/core';
 import { ConnectionType, ConnectionStatus } from '@renderer/shared/core';
-import { accountModel } from '@renderer/entities/wallet';
+import { walletModel } from '@renderer/entities/wallet';
 
 const MAX_LIGHT_CLIENTS = 3;
 
@@ -21,7 +21,7 @@ const DATA_VERIFICATION = 'https://docs.novaspektr.io/network-management/light-c
 
 export const Networks = () => {
   const { t } = useI18n();
-  const accounts = useUnit(accountModel.$accounts);
+  const accounts = useUnit(walletModel.$accounts);
 
   const navigate = useNavigate();
   const { confirm } = useConfirmContext();

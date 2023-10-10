@@ -26,6 +26,7 @@ const hasRedeem = (unlocking: Unlocking[] = [], era?: number): boolean => {
 };
 
 export type NominatorInfo = {
+  id: number;
   address: Address;
   stash?: Address;
   accountName: string;
@@ -122,7 +123,7 @@ export const NominatorsList = ({
           );
 
           return (
-            <li key={stake.address}>
+            <li key={stake.id}>
               <Plate className="grid grid-cols-[226px,104px,104px,16px] items-center gap-x-6">
                 {!walletUtils.isWatchOnly(activeWallet) && nominators.length > 1 ? (
                   <Checkbox

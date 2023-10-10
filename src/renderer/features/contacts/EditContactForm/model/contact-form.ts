@@ -1,4 +1,4 @@
-import { attach, combine, createApi, createStore, forward, sample } from 'effector';
+import { attach, combine, createApi, createStore, sample } from 'effector';
 import { createForm } from 'effector-forms';
 import { not } from 'patronum';
 
@@ -104,31 +104,25 @@ function validateMatrixId(value: string): boolean {
   return validateFullUserName(value);
 }
 
-const editContactFx = attach({
-  effect: contactModel.effects.updateContactFx,
-  source: {
-    contactToEdit: $contactToEdit,
-    form: contactForm.$values,
+sample({
+  clock: contactForm.formValidated,
+  source: $contactToEdit,
+  filter: (contactToEdit) => contactToEdit !== null,
+  fn: (contactToEdit, form) => {
+    return { ...form, id: contactToEdit!.id, accountId: toAccountId(form.address) };
   },
-  mapParams: (_, { contactToEdit, form }) => {
-    return { ...form, id: contactToEdit.id, accountId: toAccountId(form.address) };
-  },
-});
-
-forward({
-  from: contactForm.formValidated,
-  to: editContactFx,
+  target: contactModel.effects.updateContactFx,
 });
 
 sample({
-  clock: editContactFx.doneData,
+  clock: contactModel.effects.updateContactFx,
   target: attach({
     source: $callbacks,
     effect: (state) => state?.onSubmit(),
   }),
 });
 
-export const $submitPending = editContactFx.pending;
+export const $submitPending = contactModel.effects.updateContactFx.pending;
 
 export const events = {
   callbacksChanged: callbacksApi.callbacksChanged,

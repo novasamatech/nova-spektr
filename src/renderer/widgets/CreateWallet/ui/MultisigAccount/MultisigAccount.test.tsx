@@ -4,6 +4,7 @@ import noop from 'lodash/noop';
 import { Provider } from 'effector-react';
 
 import { contactModel } from '@renderer/entities/contact';
+import { walletModel } from '@renderer/entities/wallet';
 import { MultisigAccount } from './MultisigAccount';
 
 jest.mock('@renderer/app/providers', () => ({
@@ -16,20 +17,6 @@ jest.mock('@renderer/app/providers', () => ({
       createRoom: jest.fn(),
       userId: 'userId',
     },
-  }),
-}));
-
-// jest.mock('@renderer/entities/account', () => ({
-//   useAccount: jest.fn().mockReturnValue({
-//     addAccount: jest.fn(),
-//     setActiveAccount: jest.fn(),
-//     getAccounts: jest.fn().mockResolvedValue([{ name: 'Test Wallet', accountId: TEST_ACCOUNT_ID }]),
-//   }),
-// }));
-
-jest.mock('@renderer/entities/wallet', () => ({
-  useWallet: jest.fn().mockReturnValue({
-    getWallets: jest.fn().mockResolvedValue([]),
   }),
 }));
 
@@ -56,7 +43,7 @@ jest.mock('./components', () => ({
 describe('widgets/CreteWallet/ui/MultisigAccount', () => {
   test('should render component', async () => {
     const scope = fork({
-      values: new Map().set(contactModel.$contacts, []),
+      values: new Map().set(contactModel.$contacts, []).set(walletModel.$wallets, []).set(walletModel.$accounts, []),
     });
 
     await act(async () => {

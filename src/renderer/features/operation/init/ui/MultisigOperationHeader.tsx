@@ -6,10 +6,10 @@ import { InputHint, Select } from '@renderer/shared/ui';
 import { useI18n } from '@renderer/app/providers';
 import { OperationErrorType } from '@renderer/features/operation/init/model';
 import type { Account, MultisigAccount } from '@renderer/shared/core';
-import { accountModel, walletModel, walletUtils } from '@renderer/entities/wallet';
+import { walletModel, walletUtils } from '@renderer/entities/wallet';
 
 type Props = {
-  account: MultisigAccount;
+  account?: MultisigAccount;
   invalid?: boolean;
   error?: OperationErrorType;
   getSignatoryOption: (account: Account) => DropdownOption<Account>;
@@ -19,12 +19,12 @@ type Props = {
 export const MultisigOperationHeader = ({ account, invalid, error, getSignatoryOption, onSignatoryChange }: Props) => {
   const { t } = useI18n();
   const activeWallet = useUnit(walletModel.$activeWallet);
-  const accounts = useUnit(accountModel.$accounts);
+  const accounts = useUnit(walletModel.$accounts);
 
   const [signatoryOptions, setSignatoryOptions] = useState<DropdownOption<Account>[]>([]);
   const [activeSignatory, setActiveSignatory] = useState<DropdownResult<Account>>();
 
-  const signatoryIds = account.signatories.map((s) => s.accountId);
+  const signatoryIds = account?.signatories.map((s) => s.accountId) || [];
 
   useEffect(() => {
     const signerOptions = accounts.reduce<DropdownOption<Account>[]>((acc, signer) => {
@@ -41,7 +41,7 @@ export const MultisigOperationHeader = ({ account, invalid, error, getSignatoryO
 
     setSignatoryOptions(signerOptions);
     !activeSignatory && onChange({ id: signerOptions[0].id, value: signerOptions[0].value });
-  }, [accounts.length, getSignatoryOption]);
+  }, [accounts.length, getSignatoryOption, signatoryIds]);
 
   const onChange = (signatory: DropdownResult<Account>) => {
     onSignatoryChange(signatory.value);

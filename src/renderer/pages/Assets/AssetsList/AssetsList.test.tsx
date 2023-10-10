@@ -5,7 +5,7 @@ import { Provider } from 'effector-react';
 import { TEST_ACCOUNT_ID } from '@renderer/shared/lib/utils';
 import { ConnectionType } from '@renderer/shared/core';
 import { AssetsList } from './AssetsList';
-import { accountModel } from '@renderer/entities/wallet';
+import { walletModel } from '@renderer/entities/wallet';
 
 jest.mock('@renderer/app/providers', () => ({
   useI18n: jest.fn().mockReturnValue({
@@ -53,7 +53,7 @@ jest.mock('./components/NetworkAssets/NetworkAssets', () => ({
 
 describe('pages/Assets/Assets', () => {
   const scope = fork({
-    values: new Map().set(accountModel.$activeAccounts, [{ name: 'Test Wallet', accountId: TEST_ACCOUNT_ID }]),
+    values: new Map().set(walletModel.$activeAccounts, [{ name: 'Test Wallet', accountId: TEST_ACCOUNT_ID }]),
   });
 
   const renderComponent = () => {

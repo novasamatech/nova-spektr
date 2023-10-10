@@ -1,74 +1,94 @@
 import { fork, allSettled } from 'effector';
 
 import { walletModel } from '../wallet-model';
-import { Wallet, WalletType, SigningType, kernelModel } from '@renderer/shared/core';
+import { walletMock } from './mocks/wallet-mock';
+import { kernelModel } from '@renderer/shared/core';
 import { storageService } from '@renderer/shared/api/storage';
 
 describe('entities/wallet/model/wallet-model', () => {
-  const activeWallet: Wallet = {
-    id: 2,
-    name: 'My second wallet',
-    isActive: true,
-    type: WalletType.WATCH_ONLY,
-    signingType: SigningType.WATCH_ONLY,
-  };
-
-  const wallets: Wallet[] = [
-    {
-      id: 1,
-      name: 'My first wallet',
-      isActive: false,
-      type: WalletType.MULTISIG,
-      signingType: SigningType.MULTISIG,
-    },
-    activeWallet,
-  ];
-
   afterEach(() => {
     jest.clearAllMocks();
   });
 
-  test('should set $wallets and $activeWallet with data on appStarted', async () => {
-    jest.spyOn(storageService.wallets, 'readBulk').mockResolvedValue(wallets);
-    jest.spyOn(storageService.wallets, 'update').mockResolvedValue(activeWallet.id);
+  test('should set $wallets, $accounts, $activeWallets, $activeAccounts with data on appStarted', async () => {
+    const wallets = walletMock.getWallets(1);
+    const [acc1, acc2] = walletMock.accounts;
+
+    jest.spyOn(storageService.contacts, 'readAll').mockResolvedValue([]);
+    jest.spyOn(storageService.wallets, 'readAll').mockResolvedValue(wallets);
+    jest.spyOn(storageService.accounts, 'readAll').mockResolvedValue(walletMock.accounts);
+    jest.spyOn(storageService.wallets, 'update').mockResolvedValue(1);
 
     const scope = fork();
 
     await allSettled(kernelModel.events.appStarted, { scope });
     expect(scope.getState(walletModel.$wallets)).toEqual(wallets);
-    expect(scope.getState(walletModel.$activeWallet)).toEqual(activeWallet);
-  });
-
-  test('should set $activeWallet on walletSelected', async () => {
-    jest.spyOn(storageService.wallets, 'update').mockResolvedValue(1);
-
-    const scope = fork({
-      values: new Map().set(walletModel.$wallets, wallets).set(walletModel.$activeWallet, activeWallet),
-    });
-
-    await allSettled(walletModel.events.walletSelected, { scope, params: 1 });
+    expect(scope.getState(walletModel.$accounts)).toEqual(walletMock.accounts);
     expect(scope.getState(walletModel.$activeWallet)).toEqual(wallets[0]);
+    expect(scope.getState(walletModel.$activeAccounts)).toEqual([acc1, acc2]);
   });
 
-  test('should update $wallets and $activeWallet on walletCreated', async () => {
-    const nextId = 3;
-    jest.spyOn(storageService.wallets, 'create').mockResolvedValue(nextId);
-    jest.spyOn(storageService.wallets, 'update').mockResolvedValue(nextId);
+  test('should set $activeWallet, $activeAccounts on walletSelected', async () => {
+    const prevWallets = walletMock.getWallets(1);
+    const [acc1, acc2, acc3, acc4] = walletMock.accounts;
+
+    jest.spyOn(storageService.wallets, 'update').mockResolvedValue(2);
 
     const scope = fork({
-      values: new Map().set(walletModel.$wallets, wallets).set(walletModel.$activeWallet, activeWallet),
+      values: new Map()
+        .set(walletModel.$wallets, prevWallets)
+        .set(walletModel.$activeWallet, prevWallets[0])
+        .set(walletModel.$accounts, walletMock.accounts)
+        .set(walletModel.$activeAccounts, [acc1, acc2]),
     });
 
-    const payload = {
-      name: 'My third wallet',
-      type: WalletType.WATCH_ONLY,
-      signingType: SigningType.WATCH_ONLY,
-    };
-    expect(scope.getState(walletModel.$wallets)).toHaveLength(wallets.length);
-    expect(scope.getState(walletModel.$activeWallet)).toEqual(activeWallet);
-    await allSettled(walletModel.events.walletCreated, { scope, params: payload });
+    const nextWallets = walletMock.getWallets(2);
+    await allSettled(walletModel.events.walletSelected, { scope, params: 2 });
+    expect(scope.getState(walletModel.$activeWallet)).toEqual(nextWallets[1]);
+    expect(scope.getState(walletModel.$activeAccounts)).toEqual([acc3, acc4]);
+  });
 
-    expect(scope.getState(walletModel.$wallets)).toHaveLength(wallets.length + 1);
-    expect(scope.getState(walletModel.$activeWallet)).toEqual({ id: nextId, isActive: true, ...payload });
+  test('should update $wallets, $accounts on watchOnlyCreated', async () => {
+    const wallets = walletMock.getWallets(0);
+    const { newAccounts, newWallet } = walletMock;
+
+    jest.spyOn(storageService.wallets, 'create').mockResolvedValue(newWallet);
+    jest.spyOn(storageService.accounts, 'createAll').mockResolvedValue([newAccounts[0]]);
+    jest.spyOn(storageService.wallets, 'update').mockResolvedValue(3);
+
+    const scope = fork({
+      values: new Map().set(walletModel.$wallets, wallets).set(walletModel.$accounts, walletMock.accounts),
+    });
+
+    await allSettled(walletModel.events.watchOnlyCreated, {
+      scope,
+      params: { wallet: newWallet, accounts: [newAccounts[0]] },
+    });
+
+    expect(scope.getState(walletModel.$wallets)).toEqual(wallets.concat({ ...newWallet, isActive: true }));
+    expect(scope.getState(walletModel.$accounts)).toEqual(walletMock.accounts.concat(newAccounts[0]));
+  });
+
+  test('should update $wallets, $accounts on multishardCreated', async () => {
+    const wallets = walletMock.getWallets(0);
+    const { newAccounts, newWallet } = walletMock;
+
+    jest.spyOn(storageService.wallets, 'create').mockResolvedValue(newWallet);
+    jest.spyOn(storageService.accounts, 'create').mockResolvedValue(newAccounts[0]);
+    jest.spyOn(storageService.accounts, 'createAll').mockResolvedValue([newAccounts[1]]);
+    jest.spyOn(storageService.wallets, 'update').mockResolvedValue(3);
+
+    const scope = fork({
+      values: new Map().set(walletModel.$wallets, wallets).set(walletModel.$accounts, walletMock.accounts),
+    });
+
+    expect(scope.getState(walletModel.$wallets)).toHaveLength(wallets.length);
+    await allSettled(walletModel.events.multishardCreated, {
+      scope,
+      params: { wallet: newWallet, accounts: newAccounts },
+    });
+
+    expect(scope.getState(walletModel.$wallets)).toEqual(wallets.concat({ ...newWallet, isActive: true }));
+    expect(scope.getState(walletModel.$accounts)).toEqual(walletMock.accounts.concat(newAccounts));
   });
 });

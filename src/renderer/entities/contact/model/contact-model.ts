@@ -7,13 +7,11 @@ import { splice } from '@renderer/shared/lib/utils';
 const $contacts = createStore<Contact[]>([]);
 
 const populateContactsFx = createEffect((): Promise<Contact[]> => {
-  return storageService.contacts.readBulk();
+  return storageService.contacts.readAll();
 });
 
 const createContactFx = createEffect(async (contact: Omit<Contact, 'id'>): Promise<Contact | undefined> => {
-  const id = await storageService.contacts.create(contact);
-
-  return id ? { id, ...contact } : undefined;
+  return storageService.contacts.create(contact);
 });
 
 const updateContactFx = createEffect(async ({ id, ...rest }: Contact): Promise<Contact> => {

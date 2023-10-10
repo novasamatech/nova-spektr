@@ -5,7 +5,6 @@ import { u8aToHex } from '@polkadot/util';
 import { keyBy } from 'lodash';
 
 import { chainsService } from '@renderer/entities/network';
-import { ID } from '@renderer/shared/api/storage';
 import { useI18n } from '@renderer/app/providers';
 import { ChainTitle } from '@renderer/entities/chain';
 import { AddressInfo, CompactSeedInfo, SeedInfo } from '@renderer/components/common/QrCode/common/types';
@@ -21,18 +20,8 @@ import {
   FootnoteText,
   Icon,
 } from '@renderer/shared/ui';
-import type {
-  Wallet,
-  Explorer,
-  Chain,
-  BaseAccount,
-  Account,
-  ChainAccount,
-  ChainId,
-  HexString,
-  Address,
-} from '@renderer/shared/core';
-import { CryptoType, ChainType, AccountType, WalletType, SigningType, ErrorType } from '@renderer/shared/core';
+import type { Explorer, Chain, Account, ChainId, HexString, ChainAccount, BaseAccount } from '@renderer/shared/core';
+import { CryptoType, ChainType, AccountType, WalletType, SigningType, ErrorType, KeyType } from '@renderer/shared/core';
 
 const RootExplorers: Explorer[] = [
   { name: 'Subscan', account: 'https://subscan.io/account/{address}' },
@@ -49,7 +38,7 @@ type Props = {
   onComplete: () => void;
 };
 
-const ManageStep = ({ seedInfo, onBack, onComplete }: Props) => {
+export const ManageMultishard = ({ seedInfo, onBack, onComplete }: Props) => {
   const { t } = useI18n();
 
   const {
@@ -155,83 +144,57 @@ const ManageStep = ({ seedInfo, onBack, onComplete }: Props) => {
     });
   };
 
-  const saveRootAccount = async (address: Address, accountIndex: number, walletId: Wallet['id']) => {
-    const baseAccountNameId = getAccountId(accountIndex);
-
-    const payload = {
-      walletId,
-      name: accountNames[baseAccountNameId],
-      accountId: toAccountId(address),
-      cryptoType: CryptoType.SR25519,
-      chainType: ChainType.SUBSTRATE,
-      type: AccountType.BASE,
-    };
-
-    return addAccount(payload as BaseAccount);
-  };
-
-  const createDerivedAccounts = (
-    derivedKeys: AddressInfo[],
-    chainId: ChainId,
-    accountIndex: number,
-    baseAccountId: Account['id'],
-    walletId: Wallet['id'],
-  ): Account[] => {
+  const createDerivedAccounts = (derivedKeys: AddressInfo[], chainId: ChainId, accountIndex: number): Account[] => {
     return derivedKeys.reduce<ChainAccount[]>((acc, derivedKey, index) => {
       const accountId = getAccountId(accountIndex, chainId, index);
 
       if (!inactiveAccounts[accountId]) {
-        const chainAccount = {
-          walletId,
+        acc.push({
           chainId,
-          baseAccountId,
           name: accountNames[accountId],
           accountId: toAccountId(derivedKey.address),
           derivationPath: derivedKey.derivationPath || '',
           type: AccountType.CHAIN,
-        };
-        acc.push(chainAccount as ChainAccount);
+          chainType: ChainType.SUBSTRATE,
+          cryptoType: CryptoType.SR25519,
+          keyType: KeyType.CUSTOM,
+        } as ChainAccount);
       }
 
       return acc;
     }, []);
   };
 
-  const saveNewWallet: SubmitHandler<WalletForm> = async ({ walletName }) => {
-    const wallet = await walletModel.effects.walletCreatedFx({
-      name: walletName,
-      type: WalletType.MULTISHARD_PARITY_SIGNER,
-      signingType: SigningType.PARITY_SIGNER,
-    });
+  const createWallet: SubmitHandler<WalletForm> = async ({ walletName }) => {
+    const accountsToSave = accounts.reduce<Account[]>((acc, account, index) => {
+      acc.push({
+        name: accountNames[getAccountId(index)],
+        accountId: toAccountId(account.address),
+        cryptoType: CryptoType.SR25519,
+        chainType: ChainType.SUBSTRATE,
+        type: AccountType.BASE,
+      } as BaseAccount);
 
-    const allShardsIds: ID[] = [];
-
-    const requests = accounts.map(async ({ address, derivedKeys }, accountIndex) => {
-      let baseAccountId: Account['id'];
-
-      try {
-        baseAccountId = await saveRootAccount(address, accountIndex, wallet.id);
-        allShardsIds.push(baseAccountId);
-      } catch (e) {
-        console.warn('Error saving main account', e);
-      }
-
-      const derivedAccounts = Object.entries(derivedKeys)
+      const derivedAccounts = Object.entries(account.derivedKeys)
         .map(([chainId, chainDerivedKeys]) => {
-          return createDerivedAccounts(chainDerivedKeys, chainId as ChainId, accountIndex, baseAccountId, wallet.id);
+          return createDerivedAccounts(chainDerivedKeys, chainId as ChainId, index);
         })
         .flat();
 
-      return derivedAccounts.map((account) => addAccount(account).then(allShardsIds.push));
+      acc.push(...derivedAccounts);
+
+      return acc;
+    }, []);
+
+    walletModel.events.multishardCreated({
+      wallet: {
+        name: walletName.trim(),
+        type: WalletType.MULTISHARD_PARITY_SIGNER,
+        signingType: SigningType.PARITY_SIGNER,
+      },
+      accounts: accountsToSave,
     });
 
-    try {
-      await Promise.all(requests);
-    } catch (e) {
-      console.warn('Error saving wallets', e);
-    }
-
-    reset();
     onComplete();
   };
 
@@ -246,7 +209,7 @@ const ManageStep = ({ seedInfo, onBack, onComplete }: Props) => {
         <HeaderTitleText className="mb-10">{t('onboarding.vault.title')}</HeaderTitleText>
         <SmallTitleText className="mb-6">{t('onboarding.vault.manageTitle')}</SmallTitleText>
 
-        <form className="flex flex-col h-full" onSubmit={handleSubmit(saveNewWallet)}>
+        <form className="flex flex-col h-full" onSubmit={handleSubmit(createWallet)}>
           <Controller
             name="walletName"
             control={control}
@@ -364,5 +327,3 @@ const ManageStep = ({ seedInfo, onBack, onComplete }: Props) => {
     </>
   );
 };
-
-export default ManageStep;

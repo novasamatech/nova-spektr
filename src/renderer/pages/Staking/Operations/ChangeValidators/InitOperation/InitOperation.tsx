@@ -53,7 +53,7 @@ const InitOperation = ({ api, chainId, accounts, asset, addressPrefix, onResult 
 
   const firstAccount = activeValidatorsAccounts[0] || accounts[0];
   const isMultisigWallet = walletUtils.isMultisig(activeWallet);
-  const isMultisigAccount = accountUtils.isMultisigAccount(firstAccount);
+  const isMultisigAccount = firstAccount && accountUtils.isMultisigAccount(firstAccount);
   const formFields = isMultisigWallet ? [{ name: 'description' }] : [];
 
   const accountIds = accounts.map((account) => account.accountId);

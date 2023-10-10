@@ -18,12 +18,12 @@ import {
   useValidators,
   useStakingRewards,
 } from '@renderer/entities/staking';
-import { accountModel, accountUtils, walletModel, walletUtils } from '@renderer/entities/wallet';
+import { accountUtils, walletModel, walletUtils } from '@renderer/entities/wallet';
 
 export const Overview = () => {
   const { t } = useI18n();
   const activeWallet = useUnit(walletModel.$activeWallet);
-  const activeAccounts = useUnit(accountModel.$activeAccounts);
+  const activeAccounts = useUnit(walletModel.$activeAccounts);
 
   const navigate = useNavigate();
   const { changeClient } = useGraphql();
@@ -51,9 +51,9 @@ export const Overview = () => {
   const addressPrefix = activeChain?.addressPrefix;
   const explorers = activeChain?.explorers;
 
-  const accounts = activeAccounts.reduce<Account[]>((acc, a) => {
-    if (accountUtils.isChainAccountMatch(a, chainId) || accountUtils.isBaseAccount(a)) {
-      acc.push(a);
+  const accounts = activeAccounts.reduce<Account[]>((acc, account) => {
+    if (accountUtils.isChainIdMatch(account, chainId)) {
+      acc.push(account);
     }
 
     return acc;
@@ -141,6 +141,7 @@ export const Overview = () => {
 
     acc.push({
       address,
+      id: account.id,
       stash: staking[address]?.stash,
       accountName: account.name,
       isSelected: selectedNominators.includes(address),

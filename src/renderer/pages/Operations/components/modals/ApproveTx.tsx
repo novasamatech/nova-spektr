@@ -19,7 +19,7 @@ import { useMultisigEvent } from '@renderer/entities/multisig';
 import { Signing } from '@renderer/features/operation';
 import { OperationTitle } from '@renderer/components/common';
 import type { Address, HexString, Timepoint, MultisigAccount, Account } from '@renderer/shared/core';
-import { accountModel, walletModel, accountUtils, walletUtils } from '@renderer/entities/wallet';
+import { walletModel, accountUtils, walletUtils } from '@renderer/entities/wallet';
 import {
   OperationResult,
   Transaction,
@@ -48,7 +48,7 @@ const AllSteps = [Step.CONFIRMATION, Step.SIGNING, Step.SUBMIT];
 const ApproveTx = ({ tx, account, connection }: Props) => {
   const { t } = useI18n();
   const activeWallet = useUnit(walletModel.$activeWallet);
-  const accounts = useUnit(accountModel.$accounts);
+  const accounts = useUnit(walletModel.$accounts);
 
   const { getBalance } = useBalance();
   const { getTransactionFee, getExtrinsicWeight, getTxWeight } = useTransaction();
@@ -78,7 +78,7 @@ const ApproveTx = ({ tx, account, connection }: Props) => {
   const unsignedAccounts = accounts.filter((a) => {
     const isSignatory = account.signatories.find((s) => s.accountId === a.accountId);
     const isSigned = events.some((e) => e.accountId === a.accountId);
-    const isCurrentChain = accountUtils.isChainAccountMatch(a, tx.chainId);
+    const isCurrentChain = accountUtils.isChainIdMatch(a, tx.chainId);
     const isWatchOnly = walletUtils.isWatchOnly(activeWallet);
 
     return isSignatory && !isSigned && isCurrentChain && !isWatchOnly;

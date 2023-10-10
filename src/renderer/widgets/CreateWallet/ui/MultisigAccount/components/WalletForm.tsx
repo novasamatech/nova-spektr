@@ -1,10 +1,11 @@
 import { Controller, useForm, SubmitHandler } from 'react-hook-form';
+import { useStore } from 'effector-react';
 
 import { Alert, Button, Input, InputHint, Select, SmallTitleText } from '@renderer/shared/ui';
 import { useI18n, useMatrix } from '@renderer/app/providers';
 import { DropdownOption, DropdownResult } from '@renderer/shared/ui/Dropdowns/common/types';
-import { SigningType } from '@renderer/shared/core';
-import type { AccountId, Signatory, Account, MultisigAccount } from '@renderer/shared/core';
+import type { AccountId, Signatory } from '@renderer/shared/core';
+import { accountUtils, walletModel, walletUtils } from '@renderer/entities/wallet';
 
 type MultisigAccountForm = {
   name: string;
@@ -23,24 +24,18 @@ const getThresholdOptions = (optionsAmount: number): DropdownOption<number>[] =>
 
 type Props = {
   signatories: Signatory[];
-  accounts: (Account | MultisigAccount)[];
   isActive: boolean;
   isLoading: boolean;
   onContinue: () => void;
   onGoBack: () => void;
-  onCreateAccount: (name: string, threshold: number, creatorId: AccountId) => void;
+  onSubmit: (name: string, threshold: number, creatorId: AccountId) => void;
 };
 
-export const WalletForm = ({
-  signatories,
-  accounts,
-  onContinue,
-  isActive,
-  isLoading,
-  onGoBack,
-  onCreateAccount,
-}: Props) => {
+export const WalletForm = ({ signatories, onContinue, isActive, isLoading, onGoBack, onSubmit }: Props) => {
   const { t } = useI18n();
+  const wallets = useStore(walletModel.$wallets);
+  const accounts = useStore(walletModel.$accounts);
+
   const { matrix } = useMatrix();
 
   const {
@@ -61,7 +56,7 @@ export const WalletForm = ({
 
   const multisigAccountId =
     threshold &&
-    getMultisigAccountId(
+    accountUtils.getMultisigAccountId(
       signatories.map((s) => s.accountId),
       threshold.value,
     );
@@ -71,14 +66,22 @@ export const WalletForm = ({
 
     if (!threshold || !creator) return;
 
-    onCreateAccount(name, threshold.value, creator.accountId);
+    onSubmit(name, threshold.value, creator.accountId);
   };
 
-  const hasNoAccounts = accounts.filter(isWalletContact).length === 0;
-  const hasOwnSignatory = signatories.some((s) =>
-    accounts.find((a) => a.accountId === s.accountId && a.signingType !== SigningType.WATCH_ONLY && !isMultisig(a)),
-  );
+  const hasNoAccounts =
+    wallets.filter((wallet) => !walletUtils.isWatchOnly(wallet) || !walletUtils.isMultisig(wallet)).length === 0;
+
+  const hasOwnSignatory = signatories.some((s) => {
+    const walletIds = accounts.filter((a) => a.accountId === s.accountId).map((a) => a.walletId);
+
+    return wallets.some(
+      (wallet) => walletIds.includes(wallet.id) && !walletUtils.isWatchOnly(wallet) && !walletUtils.isMultisig(wallet),
+    );
+  });
+
   const accountAlreadyExists = accounts.some((a) => a.accountId === multisigAccountId);
+
   const hasTwoSignatories = signatories.length > 1;
 
   const signatoriesAreValid = hasOwnSignatory && hasTwoSignatories && !accountAlreadyExists;

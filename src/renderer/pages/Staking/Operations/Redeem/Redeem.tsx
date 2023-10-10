@@ -14,7 +14,7 @@ import { useToggle } from '@renderer/shared/lib/hooks';
 import { OperationTitle } from '@renderer/components/common';
 import { BaseModal, Button, Loader } from '@renderer/shared/ui';
 import { Signing } from '@renderer/features/operation';
-import { walletModel, accountModel, walletUtils } from '@renderer/entities/wallet';
+import { walletModel, walletUtils } from '@renderer/entities/wallet';
 
 const enum Step {
   INIT,
@@ -26,7 +26,7 @@ const enum Step {
 export const Redeem = () => {
   const { t } = useI18n();
   const activeWallet = useUnit(walletModel.$activeWallet);
-  const activeAccounts = useUnit(accountModel.$activeAccounts);
+  const activeAccounts = useUnit(walletModel.$activeAccounts);
 
   const navigate = useNavigate();
   const { setTxs, txs, setWrappers, wrapTx, buildTransaction } = useTransaction();

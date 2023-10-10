@@ -11,9 +11,12 @@ class StorageService<T extends { id: K }, K extends IndexableType> {
     this.dexieTable = table;
   }
 
-  async create(item: NoID<T, K>): Promise<K | undefined> {
+  async create(item: NoID<T, K>): Promise<T | undefined> {
     try {
-      return this.dexieTable.add(item as T);
+      const id = await this.dexieTable.add(item as T);
+      if (!id) return undefined;
+
+      return { id, ...item } as T;
     } catch (error) {
       console.log('Error creating object - ', error);
 
@@ -21,9 +24,12 @@ class StorageService<T extends { id: K }, K extends IndexableType> {
     }
   }
 
-  async createBulk(items: NoID<T, K>[]): Promise<K[] | undefined> {
+  async createAll(items: NoID<T, K>[]): Promise<T[] | undefined> {
     try {
-      return this.dexieTable.bulkAdd(items as T[], { allKeys: true });
+      const ids = await this.dexieTable.bulkAdd(items as T[], { allKeys: true });
+      if (!ids) return undefined;
+
+      return items.map((item, index) => ({ id: ids[index], ...item })) as T[];
     } catch (error) {
       console.log('Error creating object - ', error);
 
@@ -41,7 +47,7 @@ class StorageService<T extends { id: K }, K extends IndexableType> {
     }
   }
 
-  readBulk(): Promise<T[]> {
+  readAll(): Promise<T[]> {
     try {
       return this.dexieTable.toArray();
     } catch (error) {

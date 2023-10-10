@@ -7,18 +7,13 @@ import { DropdownButton, SearchInput, SmallTitleText } from '@renderer/shared/ui
 import { useI18n } from '@renderer/app/providers';
 import { WalletGroup } from './WalletGroup';
 import { ButtonDropdownOption } from '@renderer/shared/ui/types';
-import { ChainsRecord } from './common/types';
 import { walletProviderModel } from '@renderer/widgets/CreateWallet';
 import type { Wallet } from '@renderer/shared/core';
 import { WalletType } from '@renderer/shared/core';
 import { walletModel, walletUtils } from '@renderer/entities/wallet';
 import { includes } from '@renderer/shared/lib/utils';
 
-type Props = {
-  chains: ChainsRecord;
-};
-
-export const WalletMenu = ({ chains, children }: PropsWithChildren<Props>) => {
+export const WalletMenu = ({ children }: PropsWithChildren) => {
   const { t } = useI18n();
 
   const wallets = useUnit(walletModel.$wallets);

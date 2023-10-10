@@ -11,7 +11,7 @@ import { OperationFooter, OperationHeader } from '@renderer/features/operation';
 import * as sendAssetModel from '../../../model/send-asset';
 import { useNetworkContext } from '@renderer/app/providers';
 import { XcmTransferType } from '@renderer/shared/api/xcm';
-import { accountModel, accountUtils } from '@renderer/entities/wallet';
+import { walletModel, accountUtils } from '@renderer/entities/wallet';
 import { AssetType } from '@renderer/shared/core';
 import type { ChainId, Asset, Explorer, Account, MultisigAccount, Chain } from '@renderer/shared/core';
 
@@ -47,7 +47,7 @@ export const InitOperation = ({
   const { getLiveAssetBalances } = useBalance();
   const { connections } = useNetworkContext();
 
-  const activeAccounts = useUnit(accountModel.$activeAccounts);
+  const activeAccounts = useUnit(walletModel.$activeAccounts);
 
   const availableDestinations = useStore(sendAssetModel.$destinations);
   const config = useStore(sendAssetModel.$finalConfig);

@@ -13,11 +13,11 @@ import { useMultisigTx, useMultisigEvent } from '@renderer/entities/multisig';
 import { Header } from '@renderer/components/common';
 import { MultisigEvent, MultisigTransactionKey } from '@renderer/entities/transaction';
 import { OperationsFilter } from '@renderer/features/operation';
-import { accountModel, accountUtils } from '@renderer/entities/wallet';
+import { walletModel, accountUtils } from '@renderer/entities/wallet';
 
 export const Operations = () => {
   const { t, dateLocale } = useI18n();
-  const activeAccounts = useUnit(accountModel.$activeAccounts);
+  const activeAccounts = useUnit(walletModel.$activeAccounts);
 
   const { connections } = useNetworkContext();
   const { getLiveAccountMultisigTxs } = useMultisigTx({});

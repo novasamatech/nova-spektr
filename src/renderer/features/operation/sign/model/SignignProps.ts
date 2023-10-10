@@ -3,13 +3,12 @@ import { UnsignedTransaction } from '@substrate/txwrapper-polkadot';
 
 import { Transaction } from '@renderer/entities/transaction';
 import { ValidationErrors } from '@renderer/shared/lib/utils';
-import type { Wallet, Account, ChainId, HexString } from '@renderer/shared/core';
+import type { Account, ChainId, HexString } from '@renderer/shared/core';
 
 export type SigningProps = {
   chainId: ChainId;
   api: ApiPromise;
   addressPrefix: number;
-  wallet?: Wallet | null;
   accounts: Account[];
   signatory?: Account;
   transactions: Transaction[];

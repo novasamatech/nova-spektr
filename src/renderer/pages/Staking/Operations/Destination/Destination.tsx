@@ -15,7 +15,7 @@ import { OperationTitle } from '@renderer/components/common';
 import { Signing } from '@renderer/features/operation';
 import { RewardsDestination } from '@renderer/shared/core';
 import type { Account, Address, ChainId, HexString } from '@renderer/shared/core';
-import { accountModel, walletModel, walletUtils } from '@renderer/entities/wallet';
+import { walletModel, walletUtils } from '@renderer/entities/wallet';
 
 const enum Step {
   INIT,
@@ -27,7 +27,7 @@ const enum Step {
 export const Destination = () => {
   const { t } = useI18n();
   const activeWallet = useUnit(walletModel.$activeWallet);
-  const activeAccounts = useUnit(accountModel.$activeAccounts);
+  const activeAccounts = useUnit(walletModel.$activeAccounts);
 
   const navigate = useNavigate();
   const { connections } = useNetworkContext();

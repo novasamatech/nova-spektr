@@ -12,12 +12,12 @@ import { AssetsFilters, NetworkAssets, SelectShardModal } from './components';
 import { Header } from '@renderer/components/common';
 import type { Account, Chain } from '@renderer/shared/core';
 import { ConnectionType } from '@renderer/shared/core';
-import { accountModel, walletModel, walletUtils } from '@renderer/entities/wallet';
+import { walletModel, walletUtils } from '@renderer/entities/wallet';
 
 export const AssetsList = () => {
   const { t } = useI18n();
   const activeWallet = useUnit(walletModel.$activeWallet);
-  const activeAccounts = useUnit(accountModel.$activeAccounts);
+  const activeAccounts = useUnit(walletModel.$activeAccounts);
 
   const { connections } = useNetworkContext();
 

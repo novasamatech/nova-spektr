@@ -5,7 +5,7 @@ import { useUnit } from 'effector-react';
 
 import { FallbackScreen } from '@renderer/components/common';
 import { CreateWalletProvider } from '@renderer/widgets/CreateWallet';
-import { accountModel } from '@renderer/entities/wallet';
+import { walletModel } from '@renderer/entities/wallet';
 import {
   ConfirmDialogProvider,
   I18Provider,
@@ -22,17 +22,29 @@ const SPLASH_SCREEN_DELAY = 450;
 export const App = () => {
   const navigate = useNavigate();
   const appRoutes = useRoutes(routesConfig);
-  const accounts = useUnit(accountModel.$accounts);
+  const wallets = useUnit(walletModel.$wallets);
 
   const [showSplashScreen, setShowSplashScreen] = useState(true);
 
   useEffect(() => {
-    if (accounts.length === 0) {
-      navigate(Paths.ONBOARDING, { replace: true });
-    } else {
-      setTimeout(() => setShowSplashScreen(false), SPLASH_SCREEN_DELAY);
-    }
-  }, [accounts.length]);
+    const timeoutId = setTimeout(
+      (wallets) => {
+        setShowSplashScreen(false);
+
+        if (wallets.length === 0) {
+          navigate(Paths.ONBOARDING, { replace: true });
+        } else {
+          navigate(Paths.ASSETS, { replace: true });
+        }
+      },
+      SPLASH_SCREEN_DELAY,
+      wallets,
+    );
+
+    return () => {
+      clearTimeout(timeoutId);
+    };
+  }, [wallets.length]);
 
   const getContent = () => {
     if (showSplashScreen) return null;
