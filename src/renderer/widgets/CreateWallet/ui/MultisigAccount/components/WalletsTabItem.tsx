@@ -1,4 +1,4 @@
-import { useAddressInfo } from '@renderer/entities/wallet';
+import { useAddressInfo } from '@renderer/entities/wallet/lib/useAddressInfo';
 import { toAddress } from '@renderer/shared/lib/utils';
 import { Icon, Identicon, BodyText, InfoPopover, HelpText } from '@renderer/shared/ui';
 import { ExtendedWallet } from '../common/types';

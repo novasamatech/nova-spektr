@@ -2,8 +2,9 @@ import { ReactNode } from 'react';
 
 import { cnTw } from '@renderer/shared/lib/utils';
 import { Identicon } from '@renderer/shared/ui';
-import { SigningType, AccountId, Address } from '@renderer/domain/shared-kernel';
-import { getAddress } from '@renderer/entities/account';
+import { SigningType } from '@renderer/shared/core';
+import { getAddress } from '../AccountAddress/AccountAddress';
+import type { AccountId, Address } from '@renderer/shared/core';
 
 type WithAccountId = {
   accountId: AccountId;
@@ -34,13 +35,9 @@ export const AddressWithTwoLines = ({
   secondLine,
   ...props
 }: Props) => {
-  const currentAddress = getAddress(props);
-
   return (
     <div className={cnTw('flex items-center gap-x-2', className)}>
-      {showIcon && (
-        <Identicon address={currentAddress} signType={signType} size={size} background={false} canCopy={canCopy} />
-      )}
+      {showIcon && <Identicon address={getAddress(props)} size={size} background={false} canCopy={canCopy} />}
       <div className="truncate">
         {firstLine}
         {secondLine}

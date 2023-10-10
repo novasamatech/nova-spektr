@@ -1,4 +1,5 @@
-import { AccountAddress, getAddress, AccountAddressProps, useAddressInfo } from '@renderer/entities/wallet';
+import { AccountAddress, getAddress, AccountAddressProps } from '@renderer/entities/wallet';
+import { useAddressInfo } from '@renderer/entities/wallet/lib/useAddressInfo';
 import { InfoPopover, Icon } from '@renderer/shared/ui';
 import { SigningStatus } from '@renderer/entities/transaction';
 import { cnTw } from '@renderer/shared/lib/utils';
