@@ -19,7 +19,10 @@ export const SelectableShard = ({ className, name, address, semiChecked, checked
   return (
     <Checkbox
       checked={checked}
-      className={cnTw('flex items-center gap-x-2 pr-2 py-1.5 hover:bg-action-background-hover', className)}
+      className={cnTw(
+        'flex items-center gap-x-2 px-2 py-1.5 hover:bg-action-background-hover group rounded',
+        className,
+      )}
       semiChecked={semiChecked}
       onChange={(event) => onChange(event.target?.checked)}
     >
@@ -28,7 +31,7 @@ export const SelectableShard = ({ className, name, address, semiChecked, checked
         <BodyText>{name}</BodyText>
         <HelpText className="text-text-tertiary truncate">{address}</HelpText>
       </div>
-      <InfoPopover data={popoverItems} className="w-[230px]">
+      <InfoPopover data={popoverItems} className="w-[230px]" position="right-0 top-full">
         <Icon name="info" size={16} className="shrink-0 group-hover:text-icon-hover" />
       </InfoPopover>
     </Checkbox>

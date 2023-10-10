@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { keyBy } from 'lodash';
 
 import type { AccountId, ChainId, Account } from '@renderer/shared/core';
-import { BaseModal, Button, Checkbox, FootnoteText, SearchInput } from '@renderer/shared/ui';
+import { Accordion, BaseModal, Button, Checkbox, FootnoteText, SearchInput } from '@renderer/shared/ui';
 import { useI18n } from '@renderer/app/providers';
 import { chainsService } from '@renderer/entities/network';
 import {
@@ -147,7 +147,6 @@ export const SelectShardModal = ({ isOpen, activeShards, accounts, onClose }: Pr
         {searchedShards.rootAccounts.map((root) => (
           <li key={root.id}>
             <SelectableShard
-              className="ml-2"
               name={root.name}
               address={toAddress(root.accountId)}
               checked={root.isSelected}
@@ -159,35 +158,41 @@ export const SelectShardModal = ({ isOpen, activeShards, accounts, onClose }: Pr
             <ul>
               {root.chains.map((chain) => (
                 <li key={chain.chainId}>
-                  <Checkbox
-                    checked={chain.isSelected}
-                    className="ml-6 p-2"
-                    semiChecked={chain.selectedAmount > 0 && chain.selectedAmount < chain.accounts.length}
-                    onChange={(event) => selectChain(event.target?.checked, chain.chainId, root.accountId)}
-                  >
-                    <ChainTitle chain={chain} fontClass="text-text-primary" />
-                    <FootnoteText className="text-text-tertiary">
-                      {chain.selectedAmount}/{chain.accounts.length}
-                    </FootnoteText>
-                  </Checkbox>
-
-                  {/* chains accounts */}
-                  <ul>
-                    {chain.accounts.map((account) => (
-                      <li key={account.id}>
-                        <SelectableShard
-                          className="ml-14"
-                          name={account.name}
-                          address={toAddress(account.accountId, {
-                            prefix: chains[account.chainId]?.addressPrefix,
-                          })}
-                          checked={account.isSelected}
-                          explorers={chains[account.chainId]?.explorers}
-                          onChange={(checked) => selectAccount(checked, account)}
-                        />
-                      </li>
-                    ))}
-                  </ul>
+                  <Accordion isDefaultOpen className="ml-6 w-auto rounded">
+                    <div className="hover:bg-action-background-hover flex">
+                      <Checkbox
+                        checked={chain.isSelected}
+                        className="p-2 w-full"
+                        semiChecked={chain.selectedAmount > 0 && chain.selectedAmount < chain.accounts.length}
+                        onChange={(event) => selectChain(event.target?.checked, chain.chainId, root.accountId)}
+                      >
+                        <ChainTitle chain={chain} fontClass="text-text-primary" />
+                        <FootnoteText className="text-text-tertiary">
+                          {chain.selectedAmount}/{chain.accounts.length}
+                        </FootnoteText>
+                      </Checkbox>
+                      <Accordion.Button buttonClass="ml-auto w-auto p-2" />
+                    </div>
+                    <Accordion.Content>
+                      {/* chains accounts */}
+                      <ul>
+                        {chain.accounts.map((account) => (
+                          <li key={account.id}>
+                            <SelectableShard
+                              className="ml-6"
+                              name={account.name}
+                              address={toAddress(account.accountId, {
+                                prefix: chains[account.chainId]?.addressPrefix,
+                              })}
+                              checked={account.isSelected}
+                              explorers={chains[account.chainId]?.explorers}
+                              onChange={(checked) => selectAccount(checked, account)}
+                            />
+                          </li>
+                        ))}
+                      </ul>
+                    </Accordion.Content>
+                  </Accordion>
                 </li>
               ))}
             </ul>
@@ -195,7 +200,7 @@ export const SelectShardModal = ({ isOpen, activeShards, accounts, onClose }: Pr
         ))}
       </ul>
 
-      <Button className="ml-auto mt-7" onClick={handleSubmit}>
+      <Button className="ml-auto mt-7 mr-5" onClick={handleSubmit}>
         {t('balances.shardsModalButton')}
       </Button>
     </BaseModal>
