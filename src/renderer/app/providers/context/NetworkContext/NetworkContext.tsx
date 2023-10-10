@@ -23,6 +23,7 @@ type NetworkContextProps = {
 const NetworkContext = createContext<NetworkContextProps>({} as NetworkContextProps);
 
 export const NetworkProvider = ({ children }: PropsWithChildren) => {
+  const activeWallet = useUnit(walletModel.$activeWallet);
   const activeAccounts = useUnit(walletModel.$activeAccounts);
 
   const networkSubscriptions = useSubscription<ChainId>();
@@ -139,7 +140,7 @@ export const NetworkProvider = ({ children }: PropsWithChildren) => {
         unsubscribe(chain.chainId);
       });
     })();
-  }, [connectedConnections.length, activeAccounts.length]);
+  }, [connectedConnections.length, activeWallet]);
 
   return (
     <NetworkContext.Provider value={{ connections, connectToNetwork, connectWithAutoBalance, ...rest }}>

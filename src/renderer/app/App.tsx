@@ -23,32 +23,25 @@ const SPLASH_SCREEN_DELAY = 450;
 export const App = () => {
   const navigate = useNavigate();
   const appRoutes = useRoutes(routesConfig);
-  const wallets = useUnit(walletModel.$wallets);
 
-  const [showSplashScreen, setShowSplashScreen] = useState(true);
+  const wallets = useUnit(walletModel.$wallets);
+  const isLoadingWallets = useUnit(walletModel.$isLoadingWallets);
+
+  const [splashScreenLoading, setSplashScreenLoading] = useState(true);
 
   useEffect(() => {
-    const timeoutId = setTimeout(
-      (wallets) => {
-        setShowSplashScreen(false);
+    setTimeout(() => setSplashScreenLoading(false), SPLASH_SCREEN_DELAY);
+  }, []);
 
-        if (wallets.length === 0) {
-          navigate(Paths.ONBOARDING, { replace: true });
-        } else {
-          navigate(Paths.ASSETS, { replace: true });
-        }
-      },
-      SPLASH_SCREEN_DELAY,
-      wallets,
-    );
+  useEffect(() => {
+    if (isLoadingWallets) return;
 
-    return () => {
-      clearTimeout(timeoutId);
-    };
-  }, [wallets.length]);
+    const path = wallets.length > 0 ? Paths.ASSETS : Paths.ONBOARDING;
+    navigate(path, { replace: true });
+  }, [isLoadingWallets, wallets]);
 
   const getContent = () => {
-    if (showSplashScreen) return null;
+    if (splashScreenLoading || isLoadingWallets) return null;
 
     document.querySelector('.splash_placeholder')?.remove();
 
