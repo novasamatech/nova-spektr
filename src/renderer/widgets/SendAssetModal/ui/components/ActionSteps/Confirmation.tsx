@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { useUnit } from 'effector-react';
 
 import { Transaction, DepositWithLabel, Fee, XcmTypes } from '@renderer/entities/transaction';
 import { TransactionAmount } from '@renderer/pages/Operations/components/TransactionAmount';
@@ -10,7 +9,6 @@ import { XcmFee } from '@renderer/entities/transaction/ui/XcmFee/XcmFee';
 import { AssetXCM, XcmConfig } from '@renderer/shared/api/xcm';
 import type { Account, MultisigAccount } from '@renderer/shared/core';
 import Details from '../Details';
-import { walletModel } from '@renderer/entities/wallet';
 
 const AmountFontStyle = 'font-manrope text-text-primary text-[32px] leading-[36px] font-bold';
 
@@ -38,9 +36,6 @@ export const Confirmation = ({
   onBack,
 }: Props) => {
   const { t } = useI18n();
-
-  const activeWallet = useUnit(walletModel.$activeWallet);
-
   const [feeLoaded, setFeeLoaded] = useState(false);
 
   const isXcmTransfer = XcmTypes.includes(transaction?.type);
@@ -65,7 +60,6 @@ export const Confirmation = ({
       <Details
         transaction={transaction}
         account={account}
-        wallet={activeWallet}
         signatory={signatory}
         connection={connection}
         withAdvanced={false}
