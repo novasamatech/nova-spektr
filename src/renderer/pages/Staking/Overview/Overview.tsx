@@ -108,7 +108,7 @@ export const Overview = () => {
     const isSingleShard = walletUtils.isSingleShard(activeWallet);
     const isSingleMultishard = walletUtils.isMultiShard(activeWallet) && addresses.length === 1;
     const isNovaWallet = walletUtils.isNovaWallet(activeWallet);
-    const isWalletConnect = walletUtils.isNovaWallet(activeWallet);
+    const isWalletConnect = walletUtils.isWalletConnect(activeWallet);
 
     if (isMultisig || isSingleShard || isSingleMultishard || isNovaWallet || isWalletConnect) {
       setSelectedNominators([addresses[0]]);
