@@ -72,6 +72,7 @@ const createMissingWallets = async (dbAccounts: any[], trans: Transaction): Prom
     (acc, account) => {
       const isWatchOnly = account.signingType === SigningType.WATCH_ONLY;
       const isMultisig = account.signingType === SigningType.MULTISIG;
+      const isChainAccount = account.signingType === SigningType.PARITY_SIGNER && account.chainId;
       const isSingleParitySigner = account.signingType === SigningType.PARITY_SIGNER && !account.walletId;
 
       if (isWatchOnly || isMultisig || isSingleParitySigner) {
@@ -87,6 +88,8 @@ const createMissingWallets = async (dbAccounts: any[], trans: Transaction): Prom
           isActive: account.isActive,
           signingType: account.signingType,
         });
+      } else if (isChainAccount) {
+        acc.accounts.push(account);
       }
 
       return acc;
@@ -115,6 +118,10 @@ const createMissingWallets = async (dbAccounts: any[], trans: Transaction): Prom
     .table('accounts')
     .toCollection()
     .modify((account) => {
+      if (account.baseAccountId === undefined) delete account.baseAccountId;
+      if (account.chainId === undefined) delete account.chainId;
+      if (account.derivationPath === undefined) delete account.derivationPath;
+
       delete account.isMain;
       delete account.isActive;
       delete account.rootId;
