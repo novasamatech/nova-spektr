@@ -19,15 +19,14 @@ export const AssetsList = () => {
   const { t } = useI18n();
   const activeWallet = useUnit(walletModel.$activeWallet);
   const activeAccounts = useUnit(walletModel.$activeAccounts);
+  const assetsPrices = useUnit(priceProviderModel.$assetsPrices);
+  const fiatFlag = useUnit(priceProviderModel.$fiatFlag);
+  const currency = useUnit(currencyModel.$activeCurrency);
 
   const { connections } = useNetworkContext();
 
   const { getLiveBalances } = useBalance();
   const { setHideZeroBalance, getHideZeroBalance } = useSettingsStorage();
-
-  const assetsPrices = useUnit(priceProviderModel.$assetsPrices);
-  const fiatFlag = useUnit(priceProviderModel.$fiatFlag);
-  const currency = useUnit(currencyModel.$activeCurrency);
 
   const [isSelectShardsOpen, toggleSelectShardsOpen] = useToggle();
 

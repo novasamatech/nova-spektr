@@ -18,8 +18,8 @@ import { useConnectionStorage } from './connectionStorage';
 import { useTransactionStorage } from './transactionStorage';
 import { useNotificationStorage } from './notificationStorage';
 import { useMultisigEventStorage } from './multisigEventStorage';
-import { upgradeEvents } from '../common/upgrades';
 import { useMetadataStorage } from './metadataStorage';
+import { upgradeEvents, upgradeWallets } from '../common/upgrades';
 
 class DexieStorage extends Dexie {
   connections: TConnection;
@@ -37,7 +37,10 @@ class DexieStorage extends Dexie {
 
     this.version(16).stores({
       connections: '++id,chainId,type',
+      wallets: '++id,isActive,type',
       balances: '[accountId+chainId+assetId],[accountId+chainId]',
+      accounts: '++id,isActive,walletId,rootId,signingType',
+      contacts: '++id,name,accountId,matrixId',
       multisigTransactions:
         '[accountId+chainId+callHash+blockCreated+indexCreated],[accountId+status],[accountId+callHash],[callHash+status+chainId],accountId,status,callHash',
       notifications: '++id,type,read',
@@ -49,12 +52,14 @@ class DexieStorage extends Dexie {
       })
       .upgrade(upgradeEvents);
 
-    this.version(19).stores({
-      wallets: '++id',
-      contacts: '++id',
-      accounts: '++id',
-      metadata: '[chainId+version],chainId',
-    });
+    this.version(19)
+      .stores({
+        wallets: '++id',
+        contacts: '++id',
+        accounts: '++id',
+        metadata: '[chainId+version],chainId',
+      })
+      .upgrade(upgradeWallets);
 
     this.connections = this.table('connections');
     this.balances = this.table('balances');

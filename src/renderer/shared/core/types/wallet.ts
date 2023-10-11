@@ -10,13 +10,17 @@ export type Wallet = {
 
 export const enum WalletType {
   WATCH_ONLY = 'wallet_wo',
-  MULTISHARD_PARITY_SIGNER = 'wallet_mps',
-  SINGLE_PARITY_SIGNER = 'wallet_sps',
+  POLKADOT_VAULT = 'wallet_pv',
   MULTISIG = 'wallet_ms',
-  // POLKADOT_VAULT = 'wallet_pv',
   // WALLET_CONNECT = 'wallet_wc',
   // NOVA_WALLET = 'wallet_nw',
+
+  // Legacy
+  MULTISHARD_PARITY_SIGNER = 'wallet_mps',
+  SINGLE_PARITY_SIGNER = 'wallet_sps',
 }
+
+export type WalletFamily = WalletType.POLKADOT_VAULT | WalletType.MULTISIG | WalletType.WATCH_ONLY;
 
 export const enum SigningType {
   WATCH_ONLY = 'signing_wo',
