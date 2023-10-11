@@ -180,6 +180,7 @@ export const SelectShardModal = ({ isOpen, activeShards, accounts, onClose }: Pr
                           <li key={account.id}>
                             <SelectableShard
                               className="ml-6"
+                              truncate
                               name={account.name}
                               address={toAddress(account.accountId, {
                                 prefix: chains[account.chainId]?.addressPrefix,
