@@ -47,10 +47,10 @@ export const upgradeWallets = async (trans: Transaction): Promise<any> => {
   return Promise.all([modifyExistingWallets(dbAccounts, trans), createMissingWallets(dbAccounts, trans)]);
 };
 
-const modifyExistingWallets = (dbAccounts: any[], trans: Transaction): Promise<any> => {
+const modifyExistingWallets = async (dbAccounts: any[], trans: Transaction): Promise<void> => {
   const activeAccount = dbAccounts.find((account) => account.isActive);
 
-  return trans
+  await trans
     .table('wallets')
     .toCollection()
     .modify((wallet) => {
@@ -72,7 +72,7 @@ const createMissingWallets = async (dbAccounts: any[], trans: Transaction): Prom
     (acc, account) => {
       const isWatchOnly = account.signingType === SigningType.WATCH_ONLY;
       const isMultisig = account.signingType === SigningType.MULTISIG;
-      const isSingleParitySigner = account.signingType === SigningType.PARITY_SIGNER && !account.rootId;
+      const isSingleParitySigner = account.signingType === SigningType.PARITY_SIGNER && !account.walletId;
 
       if (isWatchOnly || isMultisig || isSingleParitySigner) {
         const walletType =
@@ -96,21 +96,28 @@ const createMissingWallets = async (dbAccounts: any[], trans: Transaction): Prom
 
   const walletsIds = await trans.table('wallets').bulkAdd(walletParams, { allKeys: true });
   const updatedAccounts = accounts.map((account: any, index: number) => {
-    const { rootId, ...rest } = account;
-
     const accountType =
       (!account.rootId && AccountType.BASE) ||
       (account.signingType === SigningType.MULTISIG && AccountType.MULTISIG) ||
       (account.chainId && AccountType.CHAIN);
 
     return {
-      ...rest,
+      ...account,
       ...(account.chainId && { keyType: KeyType.CUSTOM }),
-      baseAccountId: rootId,
+      baseAccountId: account.rootId,
       walletId: walletsIds[index],
       type: accountType,
     };
   });
 
-  return trans.table('accounts').bulkPut(updatedAccounts);
+  await trans.table('accounts').bulkPut(updatedAccounts);
+  await trans
+    .table('accounts')
+    .toCollection()
+    .modify((account) => {
+      delete account.isMain;
+      delete account.isActive;
+      delete account.rootId;
+      delete account.signingType;
+    });
 };
