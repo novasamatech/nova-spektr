@@ -19,7 +19,7 @@ import { useTransactionStorage } from './transactionStorage';
 import { useNotificationStorage } from './notificationStorage';
 import { useMultisigEventStorage } from './multisigEventStorage';
 import { useMetadataStorage } from './metadataStorage';
-import { upgradeEvents, upgradeWallets } from '../common/upgrades';
+import { migrateEvents, migrateWallets } from '../migration';
 
 class DexieStorage extends Dexie {
   connections: TConnection;
@@ -50,7 +50,7 @@ class DexieStorage extends Dexie {
       .stores({
         multisigEvents: '++id,[txAccountId+txChainId+txCallHash+txBlock+txIndex],status,accountId',
       })
-      .upgrade(upgradeEvents);
+      .upgrade(migrateEvents);
 
     this.version(19)
       .stores({
@@ -59,7 +59,7 @@ class DexieStorage extends Dexie {
         accounts: '++id',
         metadata: '[chainId+version],chainId',
       })
-      .upgrade(upgradeWallets);
+      .upgrade(migrateWallets);
 
     this.connections = this.table('connections');
     this.balances = this.table('balances');
