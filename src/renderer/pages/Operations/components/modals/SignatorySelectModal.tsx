@@ -20,6 +20,7 @@ export const SignatorySelectModal = ({ isOpen, onClose, onSelect, accounts, nati
     <BaseModal
       closeButton
       panelClass="w-[420px]"
+      contentClass="px-3 pb-3 py-2"
       isOpen={isOpen}
       title={t('operation.selectSignatory')}
       onClose={onClose}

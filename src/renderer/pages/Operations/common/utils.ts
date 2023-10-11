@@ -1,8 +1,26 @@
+import { keyBy } from 'lodash';
+
 import { IconNames } from '@renderer/shared/ui/Icon/data';
-import { DecodedTransaction, Transaction, TransactionType } from '@renderer/entities/transaction/model/transaction';
+import {
+  DecodedTransaction,
+  MultisigEvent,
+  Transaction,
+  TransactionType,
+} from '@renderer/entities/transaction/model/transaction';
 import { toAddress, formatSectionAndMethod } from '@renderer/shared/lib/utils';
 import { TransferTypes, XcmTypes } from '@renderer/entities/transaction';
-import type { AccountId, HexString, Contact, Explorer, Signatory, Account } from '@renderer/shared/core';
+import type {
+  AccountId,
+  HexString,
+  Contact,
+  Explorer,
+  Signatory,
+  Account,
+  Wallet,
+  ChainId,
+} from '@renderer/shared/core';
+import { accountUtils } from '@renderer/entities/wallet';
+import { WalletType } from '@renderer/shared/core';
 
 export const TRANSACTION_UNKNOWN = 'operations.titles.unknown';
 
@@ -217,4 +235,40 @@ export const getSignatoryName = (
   if (fromAccount) return fromAccount;
 
   return toAddress(signatoryId, { chunk: 5, prefix: addressPrefix });
+};
+
+export const getSignatoryAccounts = (
+  accounts: Account[],
+  wallets: Wallet[],
+  events: MultisigEvent[],
+  signatories: Signatory[],
+  chainId: ChainId,
+) => {
+  const walletsDict = keyBy(wallets, 'id');
+
+  return signatories.reduce((accum: Account[], signatory) => {
+    const filteredAccounts = accounts.filter(
+      (a) => a.accountId === signatory.accountId && !events.some((e) => e.accountId === a.accountId),
+    );
+
+    const signatoryAccount = filteredAccounts.find((a) => {
+      const isCurrentChain = accountUtils.isChainIdMatch(a, chainId);
+      const walletType = walletsDict[a.walletId].type;
+      // TODO add wallet connect
+      const isCorrectWalletType = walletType === WalletType.SINGLE_PARITY_SIGNER;
+
+      return isCurrentChain && isCorrectWalletType;
+    });
+
+    if (signatoryAccount) {
+      accum.push(signatoryAccount);
+    } else {
+      const legacySignatoryAccount = filteredAccounts.find(
+        (a) => accountUtils.isChainAccount(a) && a.chainId === chainId,
+      );
+      legacySignatoryAccount && accum.push(legacySignatoryAccount);
+    }
+
+    return accum;
+  }, []);
 };

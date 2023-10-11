@@ -5,6 +5,7 @@ import { Icon } from '@renderer/shared/ui';
 import { cnTw, toAccountId, toAddress, transferableAmount } from '@renderer/shared/lib/utils';
 import { AssetBalance, useBalance } from '@renderer/entities/asset';
 import type { AccountId, Asset, ChainId } from '@renderer/shared/core';
+import { WalletType } from '@renderer/shared/core';
 import { Body } from '@renderer/shared/ui/Typography/Typography.stories';
 
 type Props<T extends any> = {
@@ -36,12 +37,18 @@ export const SelectableSignatory = <T extends any>({
   const { getLiveBalance } = useBalance();
   const balance = getLiveBalance(toAccountId(address), chainId, asset.assetId.toString());
 
+  // support for legacy signatory as shard from multishard account
+  const walletType =
+    signatoryWallet.type === WalletType.MULTISHARD_PARITY_SIGNER
+      ? WalletType.SINGLE_PARITY_SIGNER
+      : signatoryWallet.type;
+
   return (
     <button
       className="group flex items-center cursor-pointer hover:bg-action-background-hover px-2 py-1.5 rounded w-full text-text-secondary hover:text-text-primary"
       onClick={() => onSelected(value)}
     >
-      <WalletIcon type={signatoryWallet.type} />
+      <WalletIcon type={walletType} />
       <Body className="ml-2 text-inherit">{signatoryWallet.name}</Body>
       {balance && asset && (
         <AssetBalance
