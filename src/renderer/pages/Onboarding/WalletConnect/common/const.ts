@@ -45,10 +45,10 @@ const QrConfig = {
 
 export const WCQRConfig = {
   ...QrConfig,
-  image: WalletTypeImages.walletConnectBg.img,
+  image: WalletTypeImages.walletConnectOnboarding.img,
 };
 
 export const NWQRConfig = {
   ...QrConfig,
-  image: WalletTypeImages.novaWalletBg.img,
+  image: WalletTypeImages.novaWalletOnboarding.img,
 };

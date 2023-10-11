@@ -24,8 +24,12 @@ function isChainAccount(account: Pick<Account, 'type'>): account is ChainAccount
   return account.type === AccountType.CHAIN;
 }
 
+function isWalletConnectAccount(account: Pick<Account, 'type'>): account is ChainAccount {
+  return account.type === AccountType.WALLET_CONNECT;
+}
+
 function isChainIdMatch(account: Pick<Account, 'type'>, chainId: ChainId): boolean {
-  return !isChainAccount(account) || account.chainId === chainId;
+  return (!isChainAccount(account) && !isWalletConnectAccount(account)) || account.chainId === chainId;
 }
 
 function isMultisigAccount(account: Pick<Account, 'type'>): account is MultisigAccount {

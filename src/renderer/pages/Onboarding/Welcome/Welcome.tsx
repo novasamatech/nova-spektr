@@ -42,8 +42,22 @@ export const Welcome = () => {
           <WelcomeCard
             title={t('onboarding.welcome.polkadotVaultTitle')}
             description={t('onboarding.welcome.polkadotVaultDescription')}
-            iconName="vault"
+            iconName="vaultOnboarding"
             onClick={() => walletProviderModel.events.walletTypeSet(WalletType.SINGLE_PARITY_SIGNER)}
+          />
+
+          <WelcomeCard
+            title={t('onboarding.welcome.novaWalletTitle')}
+            description={t('onboarding.welcome.novaWalletDescription')}
+            iconName="novaWalletOnboarding"
+            onClick={() => walletProviderModel.events.walletTypeSet(WalletType.NOVA_WALLET)}
+          />
+
+          <WelcomeCard
+            title={t('onboarding.welcome.walletConnectTitle')}
+            description={t('onboarding.welcome.walletConnectDescription')}
+            iconName="walletConnectOnboarding"
+            onClick={() => walletProviderModel.events.walletTypeSet(WalletType.WALLET_CONNECT)}
           />
 
           <WelcomeCard
@@ -54,23 +68,9 @@ export const Welcome = () => {
           />
 
           <WelcomeCard
-            title={t('onboarding.welcome.novaWalletTitle')}
-            description={t('onboarding.welcome.novaWalletDescription')}
-            iconName="novaWallet"
-            onClick={() => walletProviderModel.events.walletTypeSet(WalletType.NOVA_WALLET)}
-          />
-
-          <WelcomeCard
-            title={t('onboarding.welcome.walletConnectTitle')}
-            description={t('onboarding.welcome.walletConnectDescription')}
-            iconName="walletConnect"
-            onClick={() => walletProviderModel.events.walletTypeSet(WalletType.WALLET_CONNECT)}
-          />
-
-          <WelcomeCard
             title={t('onboarding.welcome.ledgerTitle')}
             description={t('onboarding.welcome.ledgerDescription')}
-            iconName="ledger"
+            iconName="ledgerOnboarding"
             disabled
           />
         </div>

@@ -103,8 +103,8 @@ const ManageStep = ({ accounts, type, pairingTopic, sessionTopic, onBack, onComp
     reset();
 
     const WalletLogo: Record<WalletTypeName, IconNames> = {
-      [WalletType.WALLET_CONNECT]: 'walletConnectBg',
-      [WalletType.NOVA_WALLET]: 'novaWalletBg',
+      [WalletType.WALLET_CONNECT]: 'walletConnectOnboarding',
+      [WalletType.NOVA_WALLET]: 'novaWalletOnboarding',
     };
 
     showStatus({
