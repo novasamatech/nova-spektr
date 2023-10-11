@@ -30,10 +30,9 @@ export const SignatorySelectModal = ({ isOpen, onClose, onSelect, accounts, nati
             <SelectableSignatory
               accountId={account.accountId}
               addressPrefix={chain.addressPrefix}
-              name={account.name}
               asset={nativeAsset}
+              walletId={account.walletId}
               chainId={chain.chainId}
-              explorers={chain.explorers}
               value={account}
               onSelected={onSelect}
             />
