@@ -9,16 +9,13 @@ import { SigningType, WalletType, AccountType, KeyType } from '@renderer/shared/
  * @param trans transactions from DB
  * @return {Promise}
  */
-export const migrateWallets = async (trans: Transaction): Promise<void> => {
+export async function migrateWallets(trans: Transaction): Promise<void> {
   const dbAccounts = await trans.table('accounts').toArray();
 
-  await Promise.all([
-    modifyExistingWallets(dbAccounts, trans),
-    modifyChainAccounts(dbAccounts, trans),
-    createMissingWallets(dbAccounts, trans),
-    cleanAccounts(trans),
-  ]);
-};
+  await Promise.all([modifyExistingWallets(dbAccounts, trans), createMissingWallets(dbAccounts, trans)]);
+
+  await modifyAccounts(trans);
+}
 
 const isWatchOnly = (account: any) => account.signingType === SigningType.WATCH_ONLY;
 const isMultisig = (account: any) => account.signingType === SigningType.MULTISIG;
@@ -45,7 +42,50 @@ async function modifyExistingWallets(dbAccounts: any[], trans: Transaction): Pro
     });
 }
 
-async function modifyChainAccounts(dbAccounts: any[], trans: Transaction): Promise<void> {
+async function createMissingWallets(dbAccounts: any[], trans: Transaction): Promise<void> {
+  const { newWallets, accountsToUpdate } = dbAccounts.reduce(
+    (acc, account) => {
+      if (isWatchOnly(account) || isMultisig(account) || isSingleParitySigner(account)) {
+        const walletType =
+          (isWatchOnly(account) && WalletType.WATCH_ONLY) ||
+          (isMultisig(account) && WalletType.MULTISIG) ||
+          (isSingleParitySigner(account) && WalletType.SINGLE_PARITY_SIGNER);
+
+        acc.accountsToUpdate.push(account);
+        acc.newWallets.push({
+          type: walletType,
+          name: account.name,
+          isActive: account.isActive,
+          signingType: account.signingType,
+        });
+      }
+
+      return acc;
+    },
+    { newWallets: [], accountsToUpdate: [] },
+  );
+
+  const walletsIds = await trans.table('wallets').bulkAdd(newWallets, { allKeys: true });
+  const updatedAccounts = accountsToUpdate.map((account: any, index: number) => {
+    const accountType =
+      (!account.rootId && AccountType.BASE) ||
+      (account.signingType === SigningType.MULTISIG && AccountType.MULTISIG) ||
+      (account.chainId && AccountType.CHAIN);
+
+    account.walletId = walletsIds[index];
+    account.type = accountType;
+
+    return {
+      ...account,
+      walletId: walletsIds[index],
+      type: accountType,
+    };
+  });
+
+  await trans.table('accounts').bulkPut(updatedAccounts);
+}
+
+async function modifyAccounts(trans: Transaction): Promise<void> {
   await trans
     .table('accounts')
     .toCollection()
@@ -54,56 +94,7 @@ async function modifyChainAccounts(dbAccounts: any[], trans: Transaction): Promi
         account.keyType = KeyType.CUSTOM;
         account.baseAccountId = account.rootId;
         account.type = AccountType.CHAIN;
-      }
-    });
-}
-
-async function createMissingWallets(dbAccounts: any[], trans: Transaction): Promise<void> {
-  const newWallets = dbAccounts.reduce((acc, account) => {
-    if (isWatchOnly(account) || isMultisig(account) || isSingleParitySigner(account)) {
-      const walletType =
-        (isWatchOnly(account) && WalletType.WATCH_ONLY) ||
-        (isMultisig(account) && WalletType.MULTISIG) ||
-        (isSingleParitySigner(account) && WalletType.SINGLE_PARITY_SIGNER);
-
-      acc.walletParams.push({
-        type: walletType,
-        name: account.name,
-        isActive: account.isActive,
-        signingType: account.signingType,
-      });
-    }
-
-    return acc;
-  }, []);
-
-  const walletsIds = await trans.table('wallets').bulkAdd(newWallets, { allKeys: true });
-
-  let index = 0;
-
-  await trans
-    .table('accounts')
-    .toCollection()
-    .modify((account) => {
-      if (isWatchOnly(account) || isMultisig(account) || isSingleParitySigner(account)) {
-        const accountType =
-          (!account.rootId && AccountType.BASE) ||
-          (account.signingType === SigningType.MULTISIG && AccountType.MULTISIG) ||
-          (account.chainId && AccountType.CHAIN);
-
-        account.walletId = walletsIds[index];
-        account.type = accountType;
-        index++;
-      }
-    });
-}
-
-async function cleanAccounts(trans: Transaction): Promise<void> {
-  await trans
-    .table('accounts')
-    .toCollection()
-    .modify((account) => {
-      if (!isChainAccount(account)) {
+      } else {
         delete account.chainId;
         delete account.derivationPath;
       }
