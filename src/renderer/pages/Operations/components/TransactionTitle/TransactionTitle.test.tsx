@@ -4,6 +4,15 @@ import { Transaction, TransactionType } from '@renderer/entities/transaction';
 import { TEST_ADDRESS, TEST_CHAIN_ID } from '@renderer/shared/lib/utils';
 import { TransactionTitle } from './TransactionTitle';
 
+jest.mock('@renderer/entities/walletConnect', () => ({
+  wcModel: { events: {} },
+  DEFAULT_POLKADOT_METHODS: {},
+  getWalletConnectChains: jest.fn(),
+}));
+jest.mock('@renderer/pages/Onboarding/WalletConnect/model/wc-onboarding-model', () => ({
+  wcOnboardingModel: { events: {} },
+}));
+
 jest.mock('@renderer/app/providers', () => ({
   useI18n: jest.fn().mockReturnValue({
     t: (key: string) => key,

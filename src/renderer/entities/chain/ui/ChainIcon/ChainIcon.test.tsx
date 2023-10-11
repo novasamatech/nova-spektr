@@ -3,6 +3,15 @@ import { act, render, screen } from '@testing-library/react';
 import { ChainIcon } from './ChainIcon';
 import { TEST_CHAIN_ICON } from '@renderer/shared/lib/utils';
 
+jest.mock('@renderer/entities/walletConnect', () => ({
+  wcModel: { events: {} },
+  DEFAULT_POLKADOT_METHODS: {},
+  getWalletConnectChains: jest.fn(),
+}));
+jest.mock('@renderer/pages/Onboarding/WalletConnect/model/wc-onboarding-model', () => ({
+  wcOnboardingModel: { events: {} },
+}));
+
 describe('ui/ChainIcon', () => {
   test('should render component', async () => {
     await act(async () => {

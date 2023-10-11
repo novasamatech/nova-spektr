@@ -3,6 +3,15 @@ import { MemoryRouter } from 'react-router-dom';
 
 import Navigation from './Navigation';
 
+jest.mock('@renderer/entities/walletConnect', () => ({
+  wcModel: { events: {} },
+  DEFAULT_POLKADOT_METHODS: {},
+  getWalletConnectChains: jest.fn(),
+}));
+jest.mock('@renderer/pages/Onboarding/WalletConnect/model/wc-onboarding-model', () => ({
+  wcOnboardingModel: { events: {} },
+}));
+
 jest.mock('@renderer/app/providers', () => ({
   useI18n: jest.fn().mockReturnValue({
     LocaleComponent: () => <div>localeComponent</div>,

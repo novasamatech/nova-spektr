@@ -11,7 +11,7 @@ import novawallet_onboarding_tutorial_webm from '@video/novawallet_onboarding_tu
 import { usePrevious } from '@renderer/shared/lib/hooks';
 import { getWalletConnectChains, wcModel } from '@renderer/entities/walletConnect';
 import { chainsService } from '@renderer/entities/network';
-import { wcOnboardingModel } from './model/wc-onboarding-model';
+import { wcOnboardingModel } from '@renderer/pages/Onboarding/WalletConnect/model/wc-onboarding-model';
 import { WCQRConfig, Step } from './common/const';
 import { useStatusContext } from '@renderer/app/providers/context/StatusContext';
 import Animations from '@renderer/shared/ui/Animation/Data';

@@ -2,6 +2,15 @@ import { render, screen } from '@testing-library/react';
 
 import PopoverLink from './PopoverLink';
 
+jest.mock('@renderer/entities/walletConnect', () => ({
+  wcModel: { events: {} },
+  DEFAULT_POLKADOT_METHODS: {},
+  getWalletConnectChains: jest.fn(),
+}));
+jest.mock('@renderer/pages/Onboarding/WalletConnect/model/wc-onboarding-model', () => ({
+  wcOnboardingModel: { events: {} },
+}));
+
 describe('pages/Settings/PopoverLink', () => {
   test('should render component', () => {
     render(

@@ -2,6 +2,15 @@ import { render, screen } from '@testing-library/react';
 
 import Button from './Button';
 
+jest.mock('@renderer/entities/walletConnect', () => ({
+  wcModel: { events: {} },
+  DEFAULT_POLKADOT_METHODS: {},
+  getWalletConnectChains: jest.fn(),
+}));
+jest.mock('@renderer/pages/Onboarding/WalletConnect/model/wc-onboarding-model', () => ({
+  wcOnboardingModel: { events: {} },
+}));
+
 describe('ui/Buttons/Button', () => {
   test('should render component', () => {
     render(

@@ -2,6 +2,15 @@ import { render, screen } from '@testing-library/react';
 
 import StatusLabel from './StatusLabel';
 
+jest.mock('@renderer/entities/walletConnect', () => ({
+  wcModel: { events: {} },
+  DEFAULT_POLKADOT_METHODS: {},
+  getWalletConnectChains: jest.fn(),
+}));
+jest.mock('@renderer/pages/Onboarding/WalletConnect/model/wc-onboarding-model', () => ({
+  wcOnboardingModel: { events: {} },
+}));
+
 describe('ui/StatusLabel', () => {
   test('should render component', () => {
     render(<StatusLabel title="My label" subtitle="Subtitle" variant="success" />);

@@ -2,6 +2,15 @@ import { modelUtils } from '../model-utils';
 import { AccountType, ChainType, CryptoType, KeyType, BaseAccount, ChainAccount } from '@renderer/shared/core';
 import { TEST_ACCOUNT_ID, TEST_CHAIN_ID } from '@renderer/shared/lib/utils';
 
+jest.mock('@renderer/entities/walletConnect', () => ({
+  wcModel: { events: {} },
+  DEFAULT_POLKADOT_METHODS: {},
+  getWalletConnectChains: jest.fn(),
+}));
+jest.mock('@renderer/pages/Onboarding/WalletConnect/model/wc-onboarding-model', () => ({
+  wcOnboardingModel: { events: {} },
+}));
+
 const accounts = [
   {
     name: 'My base account',

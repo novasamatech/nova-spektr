@@ -2,6 +2,15 @@ import { render, screen } from '@testing-library/react';
 
 import Loader from './Loader';
 
+jest.mock('@renderer/entities/walletConnect', () => ({
+  wcModel: { events: {} },
+  DEFAULT_POLKADOT_METHODS: {},
+  getWalletConnectChains: jest.fn(),
+}));
+jest.mock('@renderer/pages/Onboarding/WalletConnect/model/wc-onboarding-model', () => ({
+  wcOnboardingModel: { events: {} },
+}));
+
 describe('ui/Loader', () => {
   test('should render component', () => {
     render(<Loader color="primary" />);

@@ -3,6 +3,15 @@ import userEvent from '@testing-library/user-event';
 
 import { Tooltip } from './Tooltip';
 
+jest.mock('@renderer/entities/walletConnect', () => ({
+  wcModel: { events: {} },
+  DEFAULT_POLKADOT_METHODS: {},
+  getWalletConnectChains: jest.fn(),
+}));
+jest.mock('@renderer/pages/Onboarding/WalletConnect/model/wc-onboarding-model', () => ({
+  wcOnboardingModel: { events: {} },
+}));
+
 describe('ui/Popover', () => {
   test('should render component', () => {
     render(<Tooltip content="content">Hover me</Tooltip>);

@@ -4,6 +4,15 @@ import userEvent from '@testing-library/user-event';
 import { Tabs } from './Tabs';
 import { TabItem } from './common/types';
 
+jest.mock('@renderer/entities/walletConnect', () => ({
+  wcModel: { events: {} },
+  DEFAULT_POLKADOT_METHODS: {},
+  getWalletConnectChains: jest.fn(),
+}));
+jest.mock('@renderer/pages/Onboarding/WalletConnect/model/wc-onboarding-model', () => ({
+  wcOnboardingModel: { events: {} },
+}));
+
 const tabItems: TabItem[] = [
   { id: '1', title: 'Tab 1 title', panel: <div>tab 1 content</div> },
   { id: '2', title: 'Tab 2 title', panel: <div>tab 2 content</div> },

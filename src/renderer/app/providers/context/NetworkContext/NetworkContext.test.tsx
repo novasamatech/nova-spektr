@@ -9,6 +9,15 @@ import { ConnectionStatus, ConnectionType } from '@renderer/shared/core';
 import { walletModel } from '@renderer/entities/wallet';
 import { TEST_ACCOUNT_ID } from '@renderer/shared/lib/utils';
 
+jest.mock('@renderer/entities/walletConnect', () => ({
+  wcModel: { events: {} },
+  DEFAULT_POLKADOT_METHODS: {},
+  getWalletConnectChains: jest.fn(),
+}));
+jest.mock('@renderer/pages/Onboarding/WalletConnect/model/wc-onboarding-model', () => ({
+  wcOnboardingModel: { events: {} },
+}));
+
 jest.mock('@renderer/entities/network', () => ({
   useNetwork: jest.fn().mockReturnValue({
     connections: {},
