@@ -7,6 +7,7 @@ export const WalletIconNames: Record<`${WalletType}`, IconNames> = {
   [WalletType.MULTISIG]: 'multisigNew',
   [WalletType.MULTISHARD_PARITY_SIGNER]: 'multishard',
   // [WalletType.WALLET_CONNECT]: 'walletConnectNew',
+  // [WalletType.NOVA_WALLET]: 'novaWalletNew',
 };
 
 export const WalletIconBg: Record<`${WalletType}`, string> = {
@@ -15,4 +16,5 @@ export const WalletIconBg: Record<`${WalletType}`, string> = {
   [WalletType.MULTISIG]: 'bg-[linear-gradient(223deg,_#D4FF59_-17.82%,_#00AF9A_55.03%,_#1AB775_100.43%)]',
   [WalletType.MULTISHARD_PARITY_SIGNER]: '',
   // [WalletType.WALLET_CONNECT]: 'bg-[#EC007D]',
+  // [WalletType.NOVA_WALLET]: '',
 };
