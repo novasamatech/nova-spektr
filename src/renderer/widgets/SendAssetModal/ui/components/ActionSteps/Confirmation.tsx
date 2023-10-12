@@ -40,30 +40,24 @@ export const Confirmation = ({
   const asset = xcmAsset && connection.assets.find((a) => a.assetId === xcmAsset.assetId);
 
   return (
-    <div className="flex flex-col items-center pt-4 gap-y-3">
-      {isXcmTransfer && (
-        <div className="flex items-center justify-center shrink-0 w-15 h-15 box-border rounded-full border-[2.5px] border-icon-default">
-          <Icon name="crossChain" size={42} />
-        </div>
-      )}
+    <div className="flex flex-col items-center pt-4 gap-y-4">
+      <div className="flex flex-col items-center gap-y-3 mb-2">
+        {isXcmTransfer && (
+          <div className="flex items-center justify-center shrink-0 w-15 h-15 box-border rounded-full border-[2.5px] border-icon-default">
+            <Icon name="crossChain" size={42} />
+          </div>
+        )}
 
-      {transaction && <TransactionAmount tx={transaction} />}
+        {transaction && <TransactionAmount tx={transaction} />}
 
-      {description && (
-        <FootnoteText className="py-2 px-3 rounded bg-block-background ml-3 text-text-secondary">
-          {description}
-        </FootnoteText>
-      )}
+        {description && (
+          <FootnoteText className="py-2 px-3 rounded bg-block-background ml-3 text-text-secondary">
+            {description}
+          </FootnoteText>
+        )}
+      </div>
 
-      <Details
-        transaction={transaction}
-        account={account}
-        signatory={signatory}
-        connection={connection}
-        withAdvanced={false}
-      />
-
-      <hr className="border-divider my-1 w-full" />
+      <Details transaction={transaction} account={account} signatory={signatory} connection={connection} />
 
       <DetailRow label={t('operation.networkFee')} className="text-text-primary">
         {connection.api && transaction && (
@@ -93,7 +87,7 @@ export const Confirmation = ({
         />
       )}
 
-      <div className="flex w-full justify-between mt-5">
+      <div className="flex w-full justify-between mt-3">
         <Button variant="text" onClick={onBack}>
           {t('operation.goBackButton')}
         </Button>
