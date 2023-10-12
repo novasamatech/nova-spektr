@@ -7,7 +7,7 @@ export const DEFAULT_APP_METADATA = {
   name: 'Nova Spektr', //dApp name
   description: 'Full-spectrum Polkadot Desktop Wallet', //dApp description
   url: 'https://novaspektr.io', //dApp url
-  icons: ['https://walletconnect.com/walletconnect-logo.png'], //dApp logo url
+  icons: ['https://drive.google.com/uc?id=1oud8FHw3PcldUgHVeX5OjCg8XANhGO5s'], //dApp logo url
   verifyUrl: 'https://verify.walletconnect.com',
 };
 
