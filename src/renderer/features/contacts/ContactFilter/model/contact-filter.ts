@@ -5,7 +5,7 @@ import { contactModel } from '@renderer/entities/contact';
 
 const componentMounted = createEvent();
 
-export const $filterQuery = createStore<string>('');
+const $filterQuery = createStore<string>('');
 const queryChanged = createEvent<string>();
 const queryReset = createEvent();
 
@@ -16,7 +16,7 @@ forward({
   to: queryReset,
 });
 
-export const $contactsFiltered = combine(contactModel.$contacts, $filterQuery, (contacts, query) => {
+const $contactsFiltered = combine(contactModel.$contacts, $filterQuery, (contacts, query) => {
   return contacts
     .filter((c) => {
       const hasName = includes(c.name, query);
@@ -28,7 +28,11 @@ export const $contactsFiltered = combine(contactModel.$contacts, $filterQuery, (
     .sort((a, b) => a.name.localeCompare(b.name));
 });
 
-export const events = {
-  componentMounted,
-  queryChanged,
+export const filterModel = {
+  $filterQuery,
+  $contactsFiltered,
+  events: {
+    componentMounted,
+    queryChanged,
+  },
 };
