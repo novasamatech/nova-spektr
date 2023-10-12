@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { keyBy } from 'lodash';
 
 import type { AccountId, ChainId, Account } from '@renderer/shared/core';
-import { BaseModal, Button, Checkbox, FootnoteText, SearchInput } from '@renderer/shared/ui';
+import { Accordion, BaseModal, Button, Checkbox, FootnoteText, SearchInput } from '@renderer/shared/ui';
 import { useI18n } from '@renderer/app/providers';
 import { chainsService } from '@renderer/entities/network';
 import {
@@ -15,8 +15,9 @@ import {
   SelectableAccount,
   SelectableShards,
 } from '@renderer/components/layout/PrimaryLayout/Wallets/common/types';
-import { AddressWithExplorers } from '@renderer/entities/wallet';
+import { SelectableShard } from '@renderer/entities/wallet';
 import { ChainTitle } from '@renderer/entities/chain';
+import { toAddress } from '@renderer/shared/lib/utils';
 
 type Props = {
   accounts: Account[];
@@ -119,21 +120,21 @@ export const SelectShardModal = ({ isOpen, activeShards, accounts, onClose }: Pr
       isOpen={isOpen}
       title={t('balances.shardsModalTitle')}
       closeButton
-      contentClass="px-5 py-4"
+      contentClass="pl-3 pr-0 py-4"
       headerClass="px-5 py-4"
       onClose={onClose}
     >
       <SearchInput
         value={query}
         placeholder={t('balances.searchPlaceholder')}
-        wrapperClass="mb-4"
+        wrapperClass="mb-4 ml-2 mr-5"
         onChange={setQuery}
       />
 
       {/* root accounts */}
-      <ul className="overflow-y-scroll max-h-[470px]">
+      <ul className="overflow-y-scroll max-h-[470px] pr-3">
         {!query && (
-          <li key="all" className="mb-2">
+          <li key="all" className="p-2">
             <Checkbox
               checked={allShardsChecked}
               semiChecked={allShardsSemiChecked}
@@ -145,50 +146,54 @@ export const SelectShardModal = ({ isOpen, activeShards, accounts, onClose }: Pr
         )}
         {searchedShards.rootAccounts.map((root) => (
           <li key={root.id}>
-            <Checkbox
+            <SelectableShard
+              name={root.name}
+              address={toAddress(root.accountId)}
               checked={root.isSelected}
-              className="py-0.5"
               semiChecked={root.selectedAmount > 0}
-              onChange={(event) => selectRoot(event.target?.checked, root.accountId)}
-            >
-              <AddressWithExplorers accountId={root.accountId} name={root.name} />
-            </Checkbox>
+              onChange={(checked) => selectRoot(checked, root.accountId)}
+            />
 
-            {/* chains accounts */}
+            {/* select all chain accounts */}
             <ul>
               {root.chains.map((chain) => (
                 <li key={chain.chainId}>
-                  <Checkbox
-                    checked={chain.isSelected}
-                    className="py-1.5 ml-6"
-                    semiChecked={chain.selectedAmount > 0 && chain.selectedAmount < chain.accounts.length}
-                    onChange={(event) => selectChain(event.target?.checked, chain.chainId, root.accountId)}
-                  >
-                    <ChainTitle chain={chain} fontClass="text-text-primary" />
-                    <FootnoteText className="text-text-tertiary">
-                      {chain.selectedAmount}/{chain.accounts.length}
-                    </FootnoteText>
-                  </Checkbox>
-
-                  {/* chains accounts */}
-                  <ul>
-                    {chain.accounts.map((account) => (
-                      <li key={account.id}>
-                        <Checkbox
-                          checked={account.isSelected}
-                          className="py-0.5 ml-12"
-                          onChange={(event) => selectAccount(event.target?.checked, account)}
-                        >
-                          <AddressWithExplorers
-                            explorers={chains[account.chainId]?.explorers}
-                            accountId={account.accountId}
-                            addressPrefix={chains[account.chainId]?.addressPrefix}
-                            name={account.name}
-                          />
-                        </Checkbox>
-                      </li>
-                    ))}
-                  </ul>
+                  <Accordion isDefaultOpen className="ml-6 w-auto rounded">
+                    <div className="hover:bg-action-background-hover flex">
+                      <Checkbox
+                        checked={chain.isSelected}
+                        className="p-2 w-full"
+                        semiChecked={chain.selectedAmount > 0 && chain.selectedAmount < chain.accounts.length}
+                        onChange={(event) => selectChain(event.target?.checked, chain.chainId, root.accountId)}
+                      >
+                        <ChainTitle chain={chain} fontClass="text-text-primary" />
+                        <FootnoteText className="text-text-tertiary">
+                          {chain.selectedAmount}/{chain.accounts.length}
+                        </FootnoteText>
+                      </Checkbox>
+                      <Accordion.Button buttonClass="ml-auto w-auto p-2" />
+                    </div>
+                    <Accordion.Content>
+                      {/* chains accounts */}
+                      <ul>
+                        {chain.accounts.map((account) => (
+                          <li key={account.id}>
+                            <SelectableShard
+                              className="ml-6"
+                              truncate
+                              name={account.name}
+                              address={toAddress(account.accountId, {
+                                prefix: chains[account.chainId]?.addressPrefix,
+                              })}
+                              checked={account.isSelected}
+                              explorers={chains[account.chainId]?.explorers}
+                              onChange={(checked) => selectAccount(checked, account)}
+                            />
+                          </li>
+                        ))}
+                      </ul>
+                    </Accordion.Content>
+                  </Accordion>
                 </li>
               ))}
             </ul>
@@ -196,7 +201,7 @@ export const SelectShardModal = ({ isOpen, activeShards, accounts, onClose }: Pr
         ))}
       </ul>
 
-      <Button className="ml-auto mt-7" onClick={handleSubmit}>
+      <Button className="ml-auto mt-7 mr-5" onClick={handleSubmit}>
         {t('balances.shardsModalButton')}
       </Button>
     </BaseModal>
