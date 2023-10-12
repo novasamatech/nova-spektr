@@ -22,7 +22,7 @@ import {
 
 // React routes v6 hint:
 // https://github.com/remix-run/react-router/blob/main/docs/upgrading/v5.md#use-useroutes-instead-of-react-router-config
-export const routesConfig: RouteObject[] = [
+export const ROUTES_CONFIG: RouteObject[] = [
   { path: Paths.ONBOARDING, element: <Onboarding /> },
   {
     path: Paths.ROOT,
