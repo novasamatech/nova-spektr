@@ -11,7 +11,7 @@ import WalletTypeImages, { WalletImages } from './walletType';
 import StakingImages, { Staking } from './staking';
 import SocialImages, { Social } from './social';
 import MstImages, { Mst } from '@renderer/shared/ui/Icon/data/mst';
-import WalletTypeImagesNew, { WalletTypeNew } from "@renderer/shared/ui/Icon/data/walletTypeNew";
+import WalletTypeImagesNew, { WalletTypeNew } from '@renderer/shared/ui/Icon/data/walletTypeNew';
 
 const AllIcons = {
   ...CurrencyImages,
