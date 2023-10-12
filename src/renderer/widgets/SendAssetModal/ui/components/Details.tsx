@@ -32,7 +32,7 @@ const Details = ({ transaction, account, signatory, connection }: Props) => {
       {activeWallet && account && (
         <DetailRow label={t('operation.details.wallet')} className="flex gap-x-2">
           <WalletIcon type={activeWallet.type} size={16} />
-          <FootnoteText>{activeWallet.name}</FootnoteText>
+          <FootnoteText className="pr-2">{activeWallet.name}</FootnoteText>
         </DetailRow>
       )}
 
@@ -60,11 +60,15 @@ const Details = ({ transaction, account, signatory, connection }: Props) => {
         </DetailRow>
       )}
 
-      <hr className="border-filter-border w-full" />
+      <hr className="border-filter-border w-full pr-2" />
 
       {transaction?.args.destinationChain && (
         <DetailRow label={t('operation.details.destinationChain')}>
-          <ChainTitle chainId={transaction.args.destinationChain} fontClass="text-text-primary text-footnote" />
+          <ChainTitle
+            chainId={transaction.args.destinationChain}
+            fontClass="text-text-primary text-footnote"
+            className="px-2"
+          />
         </DetailRow>
       )}
 
@@ -81,7 +85,7 @@ const Details = ({ transaction, account, signatory, connection }: Props) => {
         </DetailRow>
       )}
 
-      <hr className="border-filter-border w-full" />
+      <hr className="border-filter-border w-full pr-2" />
     </dl>
   );
 };

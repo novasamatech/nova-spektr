@@ -40,7 +40,7 @@ export const Confirmation = ({
   const asset = xcmAsset && connection.assets.find((a) => a.assetId === xcmAsset.assetId);
 
   return (
-    <div className="flex flex-col items-center pt-4 gap-y-4">
+    <div className="flex flex-col items-center pt-4 gap-y-4 pb-4 pl-5 pr-3">
       <div className="flex flex-col items-center gap-y-3 mb-2">
         {isXcmTransfer && (
           <div className="flex items-center justify-center shrink-0 w-15 h-15 box-border rounded-full border-[2.5px] border-icon-default">
@@ -59,7 +59,7 @@ export const Confirmation = ({
 
       <Details transaction={transaction} account={account} signatory={signatory} connection={connection} />
 
-      <DetailRow label={t('operation.networkFee')} className="text-text-primary">
+      <DetailRow label={t('operation.networkFee')} className="text-text-primary pr-2">
         {connection.api && transaction && (
           <Fee
             className="text-footnote text-text-primary"
@@ -72,7 +72,7 @@ export const Confirmation = ({
       </DetailRow>
 
       {isXcmTransfer && config && asset && (
-        <DetailRow label={t('operation.xcmFee')} className="text-text-primary">
+        <DetailRow label={t('operation.xcmFee')} className="text-text-primary pr-2">
           {config && connection.api && (
             <XcmFee api={connection.api} transaction={transaction} asset={asset} config={config} />
           )}
@@ -83,11 +83,12 @@ export const Confirmation = ({
         <DepositWithLabel
           api={connection.api}
           asset={connection.assets[0]}
+          className="pr-2"
           threshold={(account as MultisigAccount).threshold}
         />
       )}
 
-      <div className="flex w-full justify-between mt-3">
+      <div className="flex w-full justify-between mt-3  pr-2">
         <Button variant="text" onClick={onBack}>
           {t('operation.goBackButton')}
         </Button>
