@@ -30,13 +30,14 @@ export const SelectableSignatory = <T extends any>({
   const wallets = useUnit(walletModel.$wallets);
   const signatoryWallet = wallets.find((w) => w.id === walletId);
 
-  if (!signatoryWallet) return <></>;
-
   const address = toAddress(accountId, { prefix: addressPrefix });
 
   const { getLiveBalance } = useBalance();
   const balance = getLiveBalance(toAccountId(address), chainId, asset.assetId.toString());
 
+  if (!signatoryWallet) return <></>;
+
+  // TODO remove after PR merged https://github.com/novasamatech/nova-spektr/pull/1143
   // support for legacy signatory as shard from multishard account
   const walletType =
     signatoryWallet.type === WalletType.MULTISHARD_PARITY_SIGNER

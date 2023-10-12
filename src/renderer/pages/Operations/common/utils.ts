@@ -1,5 +1,3 @@
-import { keyBy } from 'lodash';
-
 import { IconNames } from '@renderer/shared/ui/Icon/data';
 import {
   DecodedTransaction,
@@ -19,8 +17,7 @@ import type {
   Wallet,
   ChainId,
 } from '@renderer/shared/core';
-import { accountUtils } from '@renderer/entities/wallet';
-import { WalletType } from '@renderer/shared/core';
+import { accountUtils, walletUtils } from '@renderer/entities/wallet';
 
 export const TRANSACTION_UNKNOWN = 'operations.titles.unknown';
 
@@ -244,7 +241,7 @@ export const getSignatoryAccounts = (
   signatories: Signatory[],
   chainId: ChainId,
 ) => {
-  const walletsDict = keyBy(wallets, 'id');
+  const walletsMap = new Map(wallets.map((wallet) => [wallet.id, wallet]));
 
   return signatories.reduce((accum: Account[], signatory) => {
     const filteredAccounts = accounts.filter(
@@ -253,11 +250,9 @@ export const getSignatoryAccounts = (
 
     const signatoryAccount = filteredAccounts.find((a) => {
       const isCurrentChain = accountUtils.isChainIdMatch(a, chainId);
-      const walletType = walletsDict[a.walletId].type;
-      // TODO add wallet connect
-      const isCorrectWalletType = walletType === WalletType.SINGLE_PARITY_SIGNER;
+      const wallet = walletsMap.get(a.walletId);
 
-      return isCurrentChain && isCorrectWalletType;
+      return isCurrentChain && walletUtils.isWalidSignatory(wallet);
     });
 
     if (signatoryAccount) {
