@@ -4,7 +4,8 @@ import { Navigate, useNavigate, useParams, useSearchParams } from 'react-router-
 import { useUnit } from 'effector-react';
 
 import { toAddress, getRelaychainAsset, DEFAULT_TRANSITION } from '@renderer/shared/lib/utils';
-import { useI18n, useNetworkContext, Paths } from '@renderer/app/providers';
+import { useI18n, useNetworkContext } from '@renderer/app/providers';
+import { Paths } from '@renderer/shared/routes';
 import { Transaction, TransactionType, useTransaction } from '@renderer/entities/transaction';
 import { Confirmation, Submit, NoAsset } from '../components';
 import InitOperation, { DestinationResult } from './InitOperation/InitOperation';

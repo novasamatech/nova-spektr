@@ -4,7 +4,8 @@ import { Navigate, useNavigate, useParams, useSearchParams } from 'react-router-
 import { useUnit } from 'effector-react';
 
 import { UnstakingDuration } from '@renderer/pages/Staking/Overview/components';
-import { Paths, useI18n, useNetworkContext } from '@renderer/app/providers';
+import { Paths } from '@renderer/shared/routes';
+import { useI18n, useNetworkContext } from '@renderer/app/providers';
 import { Transaction, TransactionType, useTransaction } from '@renderer/entities/transaction';
 import InitOperation, { UnstakeResult } from './InitOperation/InitOperation';
 import { Confirmation, NoAsset, Submit } from '../components';

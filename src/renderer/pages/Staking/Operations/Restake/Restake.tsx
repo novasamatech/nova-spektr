@@ -3,7 +3,8 @@ import { useEffect, useState } from 'react';
 import { Navigate, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { useUnit } from 'effector-react';
 
-import { useI18n, useNetworkContext, Paths } from '@renderer/app/providers';
+import { useI18n, useNetworkContext } from '@renderer/app/providers';
+import { Paths } from '@renderer/shared/routes';
 import { ChainId, HexString } from '@renderer/shared/core';
 import { Transaction, TransactionType, useTransaction } from '@renderer/entities/transaction';
 import InitOperation, { RestakeResult } from './InitOperation/InitOperation';

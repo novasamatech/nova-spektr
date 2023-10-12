@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import { Trans } from 'react-i18next';
 
-import { useI18n, PathValue } from '@renderer/app/providers';
-import { Paths } from '../../../../../app/providers/routes/paths';
+import { useI18n } from '@renderer/app/providers';
+import { Paths } from '@renderer/shared/routes';
+import type { PathValue } from '@renderer/shared/routes';
 import { SmallTitleText, DropdownButton, Button, BaseModal, Icon } from '@renderer/shared/ui';
 import { toAccountId } from '@renderer/shared/lib/utils';
 import { useToggle } from '@renderer/shared/lib/hooks';

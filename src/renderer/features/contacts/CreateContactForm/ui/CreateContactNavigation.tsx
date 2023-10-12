@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 
-import { Paths, useI18n } from '@renderer/app/providers';
+import { useI18n } from '@renderer/app/providers';
+import { Paths } from '@renderer/shared/routes';
 import { Button } from '@renderer/shared/ui';
 
 export const CreateContactNavigation = () => {

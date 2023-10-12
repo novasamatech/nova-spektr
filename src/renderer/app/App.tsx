@@ -6,6 +6,8 @@ import { useUnit } from 'effector-react';
 import { FallbackScreen } from '@renderer/components/common';
 import { CreateWalletProvider } from '@renderer/widgets/CreateWallet';
 import { walletModel } from '@renderer/entities/wallet';
+import { routesConfig } from '@renderer/pages';
+import { Paths } from '@renderer/shared/routes';
 import {
   ConfirmDialogProvider,
   I18Provider,
@@ -13,8 +15,6 @@ import {
   NetworkProvider,
   GraphqlProvider,
   MultisigChainProvider,
-  Paths,
-  routesConfig,
 } from './providers';
 
 const SPLASH_SCREEN_DELAY = 450;

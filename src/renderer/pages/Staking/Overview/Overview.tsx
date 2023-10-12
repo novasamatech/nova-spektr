@@ -4,7 +4,9 @@ import { useUnit } from 'effector-react';
 
 import { Header } from '@renderer/components/common';
 import { getRelaychainAsset, toAddress } from '@renderer/shared/lib/utils';
-import { createLink, PathValue, useGraphql, useI18n, useNetworkContext } from '@renderer/app/providers';
+import { createLink } from '@renderer/shared/routes';
+import type { PathValue } from '@renderer/shared/routes';
+import { useGraphql, useI18n, useNetworkContext } from '@renderer/app/providers';
 import { useToggle } from '@renderer/shared/lib/hooks';
 import { NominatorInfo } from '@renderer/pages/Staking/Overview/components/NominatorsList/NominatorsList';
 import { AboutStaking, NetworkInfo, NominatorsList, Actions, ValidatorsModal, InactiveChain } from './components';

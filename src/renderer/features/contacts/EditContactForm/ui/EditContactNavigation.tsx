@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 
-import { createLink, Paths } from '@renderer/app/providers';
+import { Paths, createLink } from '@renderer/shared/routes';
 import { IconButton } from '@renderer/shared/ui';
 import { Contact } from '@renderer/shared/core';
 
