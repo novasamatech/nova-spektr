@@ -13,6 +13,7 @@ import WatchOnlyOnboardingImg, {
 import LedgerImg, { ReactComponent as LedgerSvg } from '@images/walletTypes/ledger.svg';
 import WalletConnectImg, { ReactComponent as WalletConnectSvg } from '@images/walletTypes/walletConnect.svg';
 
+// TODO: Remove old wallet images after wallets and accounts cleanup finished
 const WalletTypeImages = {
   paritySigner: { svg: ParitySignerSvg, img: ParitySignerImg },
   paritySignerBg: { svg: ParitySignerBgSvg, img: ParitySignerBgImg },

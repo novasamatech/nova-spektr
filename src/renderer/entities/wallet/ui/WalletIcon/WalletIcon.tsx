@@ -1,6 +1,6 @@
 import { WalletType } from '@renderer/shared/core';
 import { Icon } from '@renderer/shared/ui';
-import { WalletIconBg, WalletIconNames } from '@renderer/entities/wallet/model/constansts';
+import { WalletIconBg, WalletIconNames } from '../../model/constansts';
 import { cnTw } from '@renderer/shared/lib/utils';
 
 type Props = {
