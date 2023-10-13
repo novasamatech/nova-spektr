@@ -2,22 +2,12 @@ import { ApiPromise } from '@polkadot/api';
 import { ProviderInterface } from '@polkadot/rpc-provider/types';
 import { UnsubscribePromise } from '@polkadot/api/types';
 
-import { Chain, RpcNode } from '@renderer/entities/chain/model/chain';
-import { Connection, ConnectionType } from '@renderer/domain/connection';
-import { ChainId, HexString } from '@renderer/domain/shared-kernel';
-import { Balance } from '@renderer/entities/asset/model/balance';
+import { ConnectionType } from '@renderer/shared/core';
+import type { Connection, Chain, ChainId, RpcNode, HexString } from '@renderer/shared/core';
 
 // =====================================================
 // ================ Service interface ==================
 // =====================================================
-
-export interface IChainService {
-  getChainsData: () => Chain[];
-  getChainById: (chainId: ChainId) => Chain | undefined;
-  getStakingChainsData: () => Chain[];
-  sortChains: <T extends ChainLike>(chains: T[]) => T[];
-  sortChainsByBalance: (chains: Chain[], balances: Balance[]) => Chain[];
-}
 
 export interface IChainSpecService {
   getLightClientChains: () => ChainId[];

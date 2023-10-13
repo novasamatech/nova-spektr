@@ -2,12 +2,12 @@ import { useEffect } from 'react';
 import { useUnit } from 'effector-react';
 import { useNavigate } from 'react-router-dom';
 
-import { WalletType } from '@renderer/domain/shared-kernel';
 import { walletProviderModel } from '../model/wallet-provider-model';
 import WatchOnly from '@renderer/pages/Onboarding/WatchOnly/WatchOnly';
 import Vault from '@renderer/pages/Onboarding/Vault/Vault';
 import { MultisigAccount } from './MultisigAccount/MultisigAccount';
-import { Paths } from '../../../app/providers/routes/paths';
+import { WalletType } from '@renderer/shared/core';
+import { Paths } from '@renderer/shared/routes';
 
 // TODO: Break down WatchOnly / Vault / CreateMultisig to widgets
 type ModalProps = {
@@ -16,8 +16,9 @@ type ModalProps = {
 };
 const WalletModals: Record<WalletType, (props: ModalProps) => JSX.Element> = {
   [WalletType.WATCH_ONLY]: (props) => <WatchOnly isOpen {...props} />,
-  [WalletType.SINGLE_PARITY_SIGNER]: (props) => <Vault isOpen {...props} />,
+  [WalletType.POLKADOT_VAULT]: (props) => <Vault isOpen {...props} />,
   [WalletType.MULTISHARD_PARITY_SIGNER]: (props) => <Vault isOpen {...props} />,
+  [WalletType.SINGLE_PARITY_SIGNER]: (props) => <Vault isOpen {...props} />,
   [WalletType.MULTISIG]: (props) => <MultisigAccount isOpen {...props} />,
 };
 

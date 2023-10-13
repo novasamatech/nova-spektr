@@ -1,9 +1,9 @@
 import { act, render, screen } from '@testing-library/react';
 
-import { Asset } from '@renderer/entities/asset';
 import { Transaction } from '@renderer/entities/transaction';
 import { XcmFee } from './XcmFee';
 import { ChainXCM, XcmConfig } from '@renderer/shared/api/xcm';
+import type { Asset } from '@renderer/shared/core';
 
 jest.mock('@renderer/components/common');
 

@@ -45,7 +45,7 @@ export const Contacts = () => {
               <ContactList>
                 {contactsFiltered.map((contact) => (
                   <ContactRow key={contact.id} contact={contact}>
-                    <EditContactNavigation contactId={contact.id || '-1'} />
+                    <EditContactNavigation contactId={contact.id} />
                   </ContactRow>
                 ))}
               </ContactList>

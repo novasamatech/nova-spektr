@@ -7,7 +7,7 @@ import { cnTw } from '@renderer/shared/lib/utils';
 import PrivacyPolicy from './PrivacyPolicy';
 import { WelcomeCard } from './WelcomeCard';
 import { walletProviderModel } from '@renderer/widgets/CreateWallet';
-import { WalletType } from '@renderer/domain/shared-kernel';
+import { WalletType } from '@renderer/shared/core';
 
 const LOGO_WIDTH = 232;
 const RIGHT_PADDING = 225;
@@ -43,7 +43,7 @@ export const Welcome = () => {
             title={t('onboarding.welcome.polkadotVaultTitle')}
             description={t('onboarding.welcome.polkadotVaultDescription')}
             iconName="vault"
-            onClick={() => walletProviderModel.events.walletTypeSet(WalletType.SINGLE_PARITY_SIGNER)}
+            onClick={() => walletProviderModel.events.walletTypeSet(WalletType.POLKADOT_VAULT)}
           />
 
           <WelcomeCard

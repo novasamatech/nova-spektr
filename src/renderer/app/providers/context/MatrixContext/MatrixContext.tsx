@@ -1,14 +1,13 @@
 import { createContext, PropsWithChildren, useContext, useEffect, useRef, useState } from 'react';
+import { useUnit } from 'effector-react';
 
-import { createMultisigAccount, getMultisigAccountId, MultisigAccount, useAccount } from '@renderer/entities/account';
 import { getCreatedDateFromApi, toAddress, validateCallData } from '@renderer/shared/lib/utils';
-import { AccountId, Address, CallHash, ChainId, SigningType } from '@renderer/domain/shared-kernel';
 import { useMultisigEvent, useMultisigTx } from '@renderer/entities/multisig';
-import { Signatory } from '@renderer/entities/signatory';
-import { useContact } from '@renderer/entities/contact';
 import { MultisigNotificationType, useNotification } from '@renderer/entities/notification';
 import { useMultisigChainContext } from '@renderer/app/providers';
 import { useNetworkContext } from '../NetworkContext';
+import { contactModel } from '@renderer/entities/contact';
+import type { Signatory, MultisigAccount, AccountId, Address, CallHash, ChainId } from '@renderer/shared/core';
 import {
   ApprovePayload,
   BaseMultisigPayload,
@@ -30,6 +29,8 @@ import {
   SigningStatus,
   useTransaction,
 } from '@renderer/entities/transaction';
+import { walletModel, accountUtils } from '@renderer/entities/wallet';
+import { WalletType, SigningType, CryptoType, ChainType, AccountType } from '@renderer/shared/core';
 
 type MatrixContextProps = {
   matrix: ISecureMessenger;
@@ -39,10 +40,11 @@ type MatrixContextProps = {
 const MatrixContext = createContext<MatrixContextProps>({} as MatrixContextProps);
 
 export const MatrixProvider = ({ children }: PropsWithChildren) => {
-  const { getContacts } = useContact();
+  const contacts = useUnit(contactModel.$contacts);
+  const accounts = useUnit(walletModel.$accounts);
+
   const { addTask } = useMultisigChainContext();
   const { getMultisigTx, addMultisigTx, updateMultisigTx, updateCallData } = useMultisigTx({ addTask });
-  const { getAccounts, addAccount, updateAccount, setActiveAccount } = useAccount();
   const { decodeCallData } = useTransaction();
   const { connections } = useNetworkContext();
   const { addNotification } = useNotification();
@@ -79,19 +81,18 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
   const onInvite = async (payload: InvitePayload) => {
     console.info('💛 ===> onInvite', payload);
 
-    const { roomId, content, sender } = payload;
+    const { roomId, content } = payload;
     const { accountId, threshold, signatories, accountName, creatorAccountId } = content.mstAccount;
 
     try {
       validateMstAccount(accountId, signatories, threshold);
 
-      const accounts = await getAccounts();
       const mstAccount = accounts.find((a) => a.accountId === accountId) as MultisigAccount;
 
       if (!mstAccount) {
         console.log(`No multisig account ${accountId} found. Joining room and adding wallet`);
 
-        await joinRoom(roomId, content, sender === matrix.userId);
+        await joinRoom(roomId, content);
         await addNotification({
           smpRoomId: roomId,
           multisigAccountId: accountId,
@@ -121,41 +122,47 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
   };
 
   const validateMstAccount = (accountId: AccountId, signatories: AccountId[], threshold: number) => {
-    const isValid = accountId === getMultisigAccountId(signatories, threshold);
+    const isValid = accountId === accountUtils.getMultisigAccountId(signatories, threshold);
 
     if (!isValid) {
       throw new Error(`Multisig address ${accountId} can't be derived from signatories and threshold`);
     }
   };
 
-  const createMstAccount = async (roomId: string, extras: SpektrExtras, makeActive: boolean) => {
+  const createMstAccount = (roomId: string, extras: SpektrExtras) => {
     const { signatories, threshold, accountName, creatorAccountId } = extras.mstAccount;
 
-    const contacts = await getContacts();
     const contactsMap = contacts.reduce<Record<AccountId, [Address, string]>>((acc, contact) => {
       acc[contact.accountId] = [contact.address, contact.name];
 
       return acc;
     }, {});
+
     const mstSignatories = signatories.map((accountId) => ({
       accountId,
       address: contactsMap[accountId]?.[0] || toAddress(accountId),
       name: contactsMap[accountId]?.[1],
     }));
 
-    const mstAccount = createMultisigAccount({
-      threshold,
-      creatorAccountId,
-      name: accountName,
-      signatories: mstSignatories,
-      matrixRoomId: roomId,
-      isActive: false,
-    });
-
-    await addAccount(mstAccount).then((id) => {
-      if (!makeActive) return;
-
-      setActiveAccount(id);
+    walletModel.events.multisigCreated({
+      wallet: {
+        name: accountName,
+        type: WalletType.MULTISIG,
+        signingType: SigningType.MULTISIG,
+      },
+      accounts: [
+        {
+          threshold,
+          creatorAccountId,
+          accountId: accountUtils.getMultisigAccountId(signatories, threshold),
+          signatories: mstSignatories,
+          name: accountName,
+          matrixRoomId: roomId,
+          cryptoType: CryptoType.SR25519,
+          chainType: ChainType.SUBSTRATE,
+          type: AccountType.MULTISIG,
+        },
+      ],
     });
   };
 
@@ -176,8 +183,9 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
         console.log(`Leave old ${mstAccount.matrixRoomId}, join new room ${roomId}`);
         await matrix.leaveRoom(mstAccount.matrixRoomId);
         await matrix.joinRoom(roomId);
-        await updateAccount<MultisigAccount>({
-          ...mstAccount,
+
+        walletModel.events.multisigAccountUpdated({
+          id: mstAccount.id,
           name: accountName,
           matrixRoomId: roomId,
           creatorAccountId,
@@ -188,10 +196,10 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
     }
   };
 
-  const joinRoom = async (roomId: string, extras: SpektrExtras, makeActive: boolean) => {
+  const joinRoom = async (roomId: string, extras: SpektrExtras): Promise<void> => {
     try {
       await matrix.joinRoom(roomId);
-      await createMstAccount(roomId, extras, makeActive);
+      createMstAccount(roomId, extras);
     } catch (error) {
       console.error(error);
     }
@@ -202,9 +210,9 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
 
     if (!validateMatrixEvent(content, extras)) return;
 
-    const multisigAccount = await getMultisigAccount(extras.mstAccount.accountId);
+    const multisigAccount = accounts.find((a) => a.accountId === extras.mstAccount.accountId);
 
-    if (!multisigAccount) return;
+    if (!multisigAccount || !accountUtils.isMultisigAccount(multisigAccount)) return;
 
     const multisigTx = await getMultisigTx(
       multisigAccount.accountId,
@@ -233,16 +241,10 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
   ): boolean => {
     const { accountId, threshold, signatories } = extras.mstAccount;
     const senderIsSignatory = signatories.some((accountId) => accountId === senderAccountId);
-    const mstAccountIsValid = accountId === getMultisigAccountId(signatories, threshold);
+    const mstAccountIsValid = accountId === accountUtils.getMultisigAccountId(signatories, threshold);
     const callDataIsValid = !callData || validateCallData(callData, callHash);
 
     return senderIsSignatory && mstAccountIsValid && callDataIsValid;
-  };
-
-  const getMultisigAccount = async (accountId: AccountId): Promise<MultisigAccount | undefined> => {
-    const accounts = await getAccounts<MultisigAccount>({ signingType: SigningType.MULTISIG });
-
-    return accounts.find((a) => a.accountId === accountId) as MultisigAccount;
   };
 
   const createEvent = async (

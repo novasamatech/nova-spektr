@@ -1,8 +1,9 @@
-import { AccountAddress, getAddress, AccountAddressProps, useAddressInfo } from '@renderer/entities/account';
+import { AccountAddress, getAddress, AccountAddressProps } from '@renderer/entities/wallet';
+import { useAddressInfo } from '@renderer/entities/wallet/lib/useAddressInfo';
 import { InfoPopover, Icon } from '@renderer/shared/ui';
-import { Explorer } from '@renderer/entities/chain';
 import { SigningStatus } from '@renderer/entities/transaction';
 import { cnTw } from '@renderer/shared/lib/utils';
+import type { Explorer } from '@renderer/shared/core';
 
 const IconProps = {
   SIGNED: { className: 'group-hover:hidden text-text-positive', name: 'checkLineRedesign' },

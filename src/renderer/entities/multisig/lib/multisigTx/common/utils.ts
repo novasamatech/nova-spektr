@@ -2,17 +2,16 @@ import { ApiPromise } from '@polkadot/api';
 import { Vec } from '@polkadot/types';
 import { AccountId32 } from '@polkadot/types/interfaces';
 
-import { MultisigAccount } from '@renderer/entities/account/model/account';
-import { Address, ChainId } from '@renderer/domain/shared-kernel';
+import { PendingMultisigTransaction } from './types';
+import { getCreatedDate, toAccountId } from '@renderer/shared/lib/utils';
+import { ExtrinsicResultParams } from '@renderer/entities/transaction';
+import type { MultisigAccount, Address, ChainId } from '@renderer/shared/core';
 import {
   MultisigEvent,
   MultisigTransaction,
   MultisigTxInitStatus,
   Transaction,
 } from '@renderer/entities/transaction/model/transaction';
-import { PendingMultisigTransaction } from './types';
-import { getCreatedDate, toAccountId } from '@renderer/shared/lib/utils';
-import { ExtrinsicResultParams } from '@renderer/entities/transaction';
 
 type MultisigTxResult = {
   transaction: MultisigTransaction;

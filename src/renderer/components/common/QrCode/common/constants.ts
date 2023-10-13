@@ -1,7 +1,8 @@
 import { array, Codec, object, option, sizedUint8Array, str, taggedUnion, u8, uint8Array } from 'parity-scale-codec';
 
-import { CryptoType, CryptoTypeString, ChainId } from '@renderer/domain/shared-kernel';
 import { AddressInfo, SeedInfo } from './types';
+import { CryptoType, CryptoTypeString } from '@renderer/shared/core';
+import type { ChainId } from '@renderer/shared/core';
 
 export const FRAME_KEY = 2;
 

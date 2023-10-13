@@ -4,7 +4,7 @@ import { Weight } from '@polkadot/types/interfaces';
 import { SubmittableExtrinsic } from '@polkadot/api/types';
 import { AnyJson } from '@polkadot/types/types';
 
-import { Address, CallData, HexString, Timepoint, Threshold, AccountId, ChainId } from '@renderer/domain/shared-kernel';
+import type { Address, CallData, HexString, Timepoint, Threshold, AccountId, ChainId } from '@renderer/shared/core';
 import { DecodedTransaction, Transaction, TransactionType } from '@renderer/entities/transaction/model/transaction';
 import { TxWrappers } from '@renderer/entities/transaction';
 

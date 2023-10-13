@@ -1,7 +1,8 @@
 import { useNavigate } from 'react-router-dom';
 
 import { MatrixLoginModal, MatrixInfoModal } from '@renderer/widgets/MatrixModal';
-import { Paths, useMatrix } from '@renderer/app/providers';
+import { useMatrix } from '@renderer/app/providers';
+import { Paths } from '@renderer/shared/routes';
 
 export const Matrix = () => {
   const navigate = useNavigate();

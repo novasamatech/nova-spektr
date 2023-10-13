@@ -1,4 +1,4 @@
-import { Identity } from '@renderer/domain/identity';
+import { Identity } from '@renderer/shared/core/types/identity';
 
 /**
  * Validate WebSocket address

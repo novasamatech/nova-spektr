@@ -16,12 +16,11 @@ import {
   Checkbox,
 } from '@renderer/shared/ui';
 import { useI18n } from '@renderer/app/providers';
-import { Asset, AssetBalance } from '@renderer/entities/asset';
-import { Explorer } from '@renderer/entities/chain';
-import { Address, ChainId } from '@renderer/domain/shared-kernel';
+import { AssetBalance } from '@renderer/entities/asset';
 import { ValidatorMap, useEra, useValidators } from '@renderer/entities/staking';
 import { includes, getComposedIdentity, toShortAddress } from '@renderer/shared/lib/utils';
 import { ExplorerLink } from '@renderer/components/common';
+import type { Asset, Explorer, Address, ChainId } from '@renderer/shared/core';
 import { AssetFiatBalance } from '@renderer/entities/price/ui/AssetFiatBalance';
 
 type Props = {

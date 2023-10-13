@@ -1,5 +1,4 @@
-import { AccountId, CallHash, ChainId, Timepoint } from '../../../domain/shared-kernel';
-import { ObjectValues } from '@renderer/domain/utility';
+import type { ObjectValues, AccountId, CallHash, ChainId, Timepoint } from '@renderer/shared/core';
 
 export const MultisigNotificationType = {
   ACCOUNT_INVITED: 'MultisigAccountInvitedNotification',
