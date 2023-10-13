@@ -20,7 +20,12 @@ export const enum WalletType {
   SINGLE_PARITY_SIGNER = 'wallet_sps',
 }
 
-export type WalletFamily = WalletType.POLKADOT_VAULT | WalletType.MULTISIG | WalletType.WATCH_ONLY;
+export type WalletFamily =
+  | WalletType.POLKADOT_VAULT
+  | WalletType.MULTISIG
+  | WalletType.WATCH_ONLY
+  | WalletType.WALLET_CONNECT
+  | WalletType.NOVA_WALLET;
 
 export const enum SigningType {
   WATCH_ONLY = 'signing_wo',
