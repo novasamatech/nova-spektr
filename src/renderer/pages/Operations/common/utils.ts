@@ -243,27 +243,27 @@ export const getSignatoryAccounts = (
 ) => {
   const walletsMap = new Map(wallets.map((wallet) => [wallet.id, wallet]));
 
-  return signatories.reduce((accum: Account[], signatory) => {
+  return signatories.reduce((acc: Account[], signatory) => {
     const filteredAccounts = accounts.filter(
       (a) => a.accountId === signatory.accountId && !events.some((e) => e.accountId === a.accountId),
     );
 
     const signatoryAccount = filteredAccounts.find((a) => {
-      const isCurrentChain = accountUtils.isChainIdMatch(a, chainId);
+      const isChainMatch = accountUtils.isChainIdMatch(a, chainId);
       const wallet = walletsMap.get(a.walletId);
 
-      return isCurrentChain && walletUtils.isWalidSignatory(wallet);
+      return isChainMatch && walletUtils.isWalidSignatory(wallet);
     });
 
     if (signatoryAccount) {
-      accum.push(signatoryAccount);
+      acc.push(signatoryAccount);
     } else {
       const legacySignatoryAccount = filteredAccounts.find(
         (a) => accountUtils.isChainAccount(a) && a.chainId === chainId,
       );
-      legacySignatoryAccount && accum.push(legacySignatoryAccount);
+      legacySignatoryAccount && acc.push(legacySignatoryAccount);
     }
 
-    return accum;
+    return acc;
   }, []);
 };

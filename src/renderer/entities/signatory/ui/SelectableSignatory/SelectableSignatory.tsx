@@ -1,12 +1,11 @@
 import { useUnit } from 'effector-react';
 
 import { WalletIcon, walletModel } from '@renderer/entities/wallet';
-import { Icon } from '@renderer/shared/ui';
+import { BodyText, Icon } from '@renderer/shared/ui';
 import { cnTw, toAccountId, toAddress, transferableAmount } from '@renderer/shared/lib/utils';
 import { AssetBalance, useBalance } from '@renderer/entities/asset';
 import type { AccountId, Asset, ChainId } from '@renderer/shared/core';
 import { WalletType } from '@renderer/shared/core';
-import { Body } from '@renderer/shared/ui/Typography/Typography.stories';
 
 type Props<T extends any> = {
   value: T;
@@ -50,7 +49,7 @@ export const SelectableSignatory = <T extends any>({
       onClick={() => onSelected(value)}
     >
       <WalletIcon type={walletType} />
-      <Body className="ml-2 text-inherit">{signatoryWallet.name}</Body>
+      <BodyText className="ml-2 text-inherit">{signatoryWallet.name}</BodyText>
       {balance && asset && (
         <AssetBalance
           value={transferableAmount(balance)}

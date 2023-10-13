@@ -6,10 +6,8 @@ export const walletUtils = {
   isMultiShard,
   isMultisig,
   isWatchOnly,
-  isWalidSignatory,
+  isWalidSignatory: isValidSignatory,
 };
-
-const VALID_SIGNATORY_WALLETS = [WalletType.SINGLE_PARITY_SIGNER];
 
 function isSingleShard(wallet?: Wallet | null): boolean {
   return wallet?.type === WalletType.SINGLE_PARITY_SIGNER;
@@ -27,7 +25,9 @@ function isWatchOnly(wallet?: Wallet | null): boolean {
   return wallet?.type === WalletType.WATCH_ONLY;
 }
 
-function isWalidSignatory(wallet?: Wallet | null) {
+function isValidSignatory(wallet?: Wallet | null) {
   // TODO: add wallet connect
-  return wallet && VALID_SIGNATORY_WALLETS.includes(wallet.type);
+  const VALID_SIGNATORY_WALLET_TYPES = [WalletType.SINGLE_PARITY_SIGNER];
+
+  return wallet && VALID_SIGNATORY_WALLET_TYPES.includes(wallet.type);
 }
