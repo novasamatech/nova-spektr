@@ -1,7 +1,8 @@
 import { useNavigate } from 'react-router-dom';
 
 import { BodyText, Button, Icon } from '@renderer/shared/ui';
-import { Paths, useI18n } from '@renderer/app/providers';
+import { useI18n } from '@renderer/app/providers';
+import { Paths } from '@renderer/shared/routes';
 
 type Props = {
   description?: string;

@@ -42,8 +42,8 @@ export const Welcome = () => {
           <WelcomeCard
             title={t('onboarding.welcome.polkadotVaultTitle')}
             description={t('onboarding.welcome.polkadotVaultDescription')}
-            iconName="vaultOnboarding"
-            onClick={() => walletProviderModel.events.walletTypeSet(WalletType.SINGLE_PARITY_SIGNER)}
+            iconName="vault"
+            onClick={() => walletProviderModel.events.walletTypeSet(WalletType.POLKADOT_VAULT)}
           />
 
           <WelcomeCard

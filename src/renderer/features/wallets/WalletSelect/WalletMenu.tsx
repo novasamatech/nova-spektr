@@ -8,7 +8,8 @@ import { useI18n } from '@renderer/app/providers';
 import { WalletGroup } from './WalletGroup';
 import { ButtonDropdownOption } from '@renderer/shared/ui/types';
 import { walletProviderModel } from '@renderer/widgets/CreateWallet';
-import { Wallet, WalletType } from '@renderer/shared/core';
+import type { Wallet, WalletFamily } from '@renderer/shared/core';
+import { WalletType } from '@renderer/shared/core';
 import { walletModel, walletUtils } from '@renderer/entities/wallet';
 import { includes } from '@renderer/shared/lib/utils';
 
@@ -19,12 +20,11 @@ export const WalletMenu = ({ children }: PropsWithChildren) => {
 
   const [query, setQuery] = useState('');
 
-  const getWalletGroups = (wallets: Wallet[], query = ''): Record<WalletType, Wallet[]> => {
-    return wallets.reduce<Record<WalletType, Wallet[]>>(
+  const getWalletGroups = (wallets: Wallet[], query = ''): Record<WalletFamily, Wallet[]> => {
+    return wallets.reduce<Record<WalletFamily, Wallet[]>>(
       (acc, wallet) => {
-        let groupIndex: WalletType | undefined;
-        if (walletUtils.isSingleShard(wallet)) groupIndex = WalletType.SINGLE_PARITY_SIGNER;
-        if (walletUtils.isMultiShard(wallet)) groupIndex = WalletType.MULTISHARD_PARITY_SIGNER;
+        let groupIndex: WalletFamily | undefined;
+        if (walletUtils.isPolkadotVault(wallet)) groupIndex = WalletType.POLKADOT_VAULT;
         if (walletUtils.isMultisig(wallet)) groupIndex = WalletType.MULTISIG;
         if (walletUtils.isWatchOnly(wallet)) groupIndex = WalletType.WATCH_ONLY;
         if (walletUtils.isNovaWallet(wallet)) groupIndex = WalletType.NOVA_WALLET;
@@ -36,8 +36,7 @@ export const WalletMenu = ({ children }: PropsWithChildren) => {
         return acc;
       },
       {
-        [WalletType.SINGLE_PARITY_SIGNER]: [],
-        [WalletType.MULTISHARD_PARITY_SIGNER]: [],
+        [WalletType.POLKADOT_VAULT]: [],
         [WalletType.MULTISIG]: [],
         [WalletType.WATCH_ONLY]: [],
         [WalletType.NOVA_WALLET]: [],
@@ -50,7 +49,7 @@ export const WalletMenu = ({ children }: PropsWithChildren) => {
     {
       id: 'vault',
       title: t('wallets.addPolkadotVault'),
-      onClick: () => walletProviderModel.events.walletTypeSet(WalletType.SINGLE_PARITY_SIGNER),
+      onClick: () => walletProviderModel.events.walletTypeSet(WalletType.POLKADOT_VAULT),
       iconName: 'vault',
     },
     {
