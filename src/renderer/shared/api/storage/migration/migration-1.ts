@@ -1,6 +1,6 @@
 import { Transaction } from 'dexie';
 
-import { MultisigEventDS } from './types';
+import { MultisigEventDS } from '../common/types';
 
 /**
  * Remove events from MultisigTransactions
@@ -8,7 +8,7 @@ import { MultisigEventDS } from './types';
  * @param trans transactions from DB
  * @return {Promise}
  */
-export const upgradeEvents = async (trans: Transaction): Promise<any> => {
+export async function migrateEvents(trans: Transaction): Promise<void> {
   const txs = await trans.table('multisigTransactions').toArray();
   const newEvents = txs
     .map((tx) =>
@@ -23,7 +23,7 @@ export const upgradeEvents = async (trans: Transaction): Promise<any> => {
     )
     .flat();
 
-  return Promise.all([
+  await Promise.all([
     trans
       .table('multisigTransactions')
       .toCollection()
@@ -32,4 +32,4 @@ export const upgradeEvents = async (trans: Transaction): Promise<any> => {
       }),
     trans.table('multisigEvents').bulkAdd(newEvents),
   ]);
-};
+}

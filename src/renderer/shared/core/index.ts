@@ -6,7 +6,7 @@ export * from './types/utility';
 export type { Contact } from './types/contact';
 export type { Signatory } from './types/signatory';
 
-export type { Wallet } from './types/wallet';
+export type { Wallet, WalletFamily } from './types/wallet';
 export { WalletType, SigningType } from './types/wallet';
 
 export { AccountType, KeyType } from './types/account';

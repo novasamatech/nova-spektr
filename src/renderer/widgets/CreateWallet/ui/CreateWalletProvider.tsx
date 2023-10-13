@@ -16,8 +16,9 @@ type ModalProps = {
 };
 const WalletModals: Record<WalletType, (props: ModalProps) => JSX.Element> = {
   [WalletType.WATCH_ONLY]: (props) => <WatchOnly isOpen {...props} />,
-  [WalletType.SINGLE_PARITY_SIGNER]: (props) => <Vault isOpen {...props} />,
+  [WalletType.POLKADOT_VAULT]: (props) => <Vault isOpen {...props} />,
   [WalletType.MULTISHARD_PARITY_SIGNER]: (props) => <Vault isOpen {...props} />,
+  [WalletType.SINGLE_PARITY_SIGNER]: (props) => <Vault isOpen {...props} />,
   [WalletType.MULTISIG]: (props) => <MultisigAccount isOpen {...props} />,
 };
 
