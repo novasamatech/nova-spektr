@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useUnit } from 'effector-react';
 
-import { AssetBalance, AssetIcon, Asset } from '@renderer/entities/asset';
 import {
   cleanAmount,
   cnTw,
@@ -13,12 +12,14 @@ import {
   validatePrecision,
   validateSymbols,
 } from '@renderer/shared/lib/utils';
+import { AssetBalance, AssetIcon } from '@renderer/entities/asset';
 import { useI18n } from '@renderer/app/providers';
 import { FootnoteText, HelpText, TitleText } from '../../Typography';
 import Input from '../Input/Input';
 import { IconButton } from '@renderer/shared/ui';
 import { useToggle } from '@renderer/shared/lib/hooks';
 import { currencyModel, useCurrencyRate } from '@renderer/entities/price';
+import type { Asset } from '@renderer/shared/core';
 
 type Props = {
   name?: string;

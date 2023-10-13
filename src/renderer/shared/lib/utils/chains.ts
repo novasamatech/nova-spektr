@@ -1,4 +1,4 @@
-import { ChainId } from '@renderer/domain/shared-kernel';
+import { ChainId } from '@renderer/shared/core';
 
 export const toLocalChainId = (chainId?: ChainId): string | undefined => {
   return chainId?.replace('0x', '');

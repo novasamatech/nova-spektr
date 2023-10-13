@@ -2,8 +2,8 @@ import { ApiPromise } from '@polkadot/api';
 import { act, render, screen } from '@testing-library/react';
 import noop from 'lodash/noop';
 
-import { Asset } from '@renderer/entities/asset';
 import { Validators } from './Validators';
+import type { Asset } from '@renderer/shared/core';
 
 jest.mock('@renderer/components/common');
 

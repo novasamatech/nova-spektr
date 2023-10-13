@@ -3,7 +3,7 @@ import { BaseTxInfo, getRegistry, GetRegistryOpts, OptionsWithMeta, TypeRegistry
 import { isHex, hexToU8a, bnMin, BN_TWO, BN } from '@polkadot/util';
 import { blake2AsHex } from '@polkadot/util-crypto';
 
-import { Address, CallData, CallHash } from '@renderer/domain/shared-kernel';
+import { Address, CallData, CallHash } from '@renderer/shared/core';
 import { DEFAULT_TIME, ONE_DAY, THRESHOLD } from '@renderer/entities/network/lib/common/constants';
 
 const V3_LABEL = 'V3';

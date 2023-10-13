@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 
-import { Paths } from '@renderer/app/providers';
+import { Paths } from '@renderer/shared/routes';
 import { EditContactModal } from '@renderer/widgets';
 import { EditRouteGuard } from '@renderer/features/contacts';
 

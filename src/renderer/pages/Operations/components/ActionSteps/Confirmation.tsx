@@ -1,10 +1,10 @@
 import { MultisigTransaction, Transaction, Fee } from '@renderer/entities/transaction';
 import { TransactionAmount } from '@renderer/pages/Operations/components/TransactionAmount';
 import { DetailRow, FootnoteText, Icon } from '@renderer/shared/ui';
-import { MultisigAccount } from '@renderer/entities/account';
 import { ExtendedChain } from '@renderer/entities/network';
 import { useI18n } from '@renderer/app/providers';
 import { getIconName } from '../../common/utils';
+import type { MultisigAccount } from '@renderer/shared/core';
 import Details from '../Details';
 
 type Props = {

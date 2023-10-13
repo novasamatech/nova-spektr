@@ -1,9 +1,9 @@
 import { ApiPromise } from '@polkadot/api';
 import { UnsubscribePromise } from '@polkadot/api/types';
 
+import { storage } from '@renderer/shared/api/storage';
 import { IMetadataService, Metadata } from './common/types';
-import { ChainId } from '@renderer/domain/shared-kernel';
-import storage from '@renderer/shared/api/storage';
+import type { ChainId } from '@renderer/shared/core';
 
 export const useMetadata = (): IMetadataService => {
   const metadataStorage = storage.connectTo('metadata');

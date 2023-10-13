@@ -3,11 +3,12 @@ import { useEffect, useState, memo } from 'react';
 import { ApiPromise } from '@polkadot/api';
 import { useUnit } from 'effector-react';
 
-import { Asset, AssetBalance } from '@renderer/entities/asset';
+import { AssetBalance } from '@renderer/entities/asset';
 import { Transaction } from '@renderer/entities/transaction';
 import { Shimmering } from '@renderer/shared/ui';
 import { estimateFee, XcmConfig } from '@renderer/shared/api/xcm';
 import { toLocalChainId } from '@renderer/shared/lib/utils';
+import type { Asset } from '@renderer/shared/core';
 import { priceProviderModel } from '@renderer/entities/price';
 import { AssetFiatBalance } from '@renderer/entities/price/ui/AssetFiatBalance';
 

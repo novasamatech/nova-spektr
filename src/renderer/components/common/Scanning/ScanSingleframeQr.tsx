@@ -5,10 +5,9 @@ import { UnsignedTransaction } from '@substrate/txwrapper-polkadot';
 import { QrTxGenerator, QrGeneratorContainer } from '@renderer/components/common';
 import { useI18n } from '@renderer/app/providers';
 import { Transaction, useTransaction } from '@renderer/entities/transaction';
-import { ChainId } from '@renderer/domain/shared-kernel';
-import { Explorer } from '@renderer/entities/chain';
-import { Account, AddressWithExplorers } from '@renderer/entities/account';
+import { AddressWithExplorers } from '@renderer/entities/wallet';
 import { Button, FootnoteText } from '@renderer/shared/ui';
+import type { ChainId, Account, Explorer } from '@renderer/shared/core';
 
 type Props = {
   api: ApiPromise;

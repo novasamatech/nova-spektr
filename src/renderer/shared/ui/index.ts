@@ -28,6 +28,7 @@ import StatusLabel from './StatusLabel/StatusLabel';
 import InputFile from './Inputs/InputFile/InputFile';
 import { Tooltip } from './Popovers/Tooltip/Tooltip';
 import { LabelHelpBox } from './LabelHelpbox/LabelHelpBox';
+import { MainLayout } from './Layouts/MainLayout/MainLayout';
 import { Tabs } from './Tabs/Tabs';
 import {
   LargeTitleText,
@@ -109,4 +110,5 @@ export {
   HelpText,
   DetailRow,
   Truncate,
+  MainLayout,
 };

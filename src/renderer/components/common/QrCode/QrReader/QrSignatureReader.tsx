@@ -8,7 +8,7 @@ import { useI18n } from '@renderer/app/providers';
 import { ErrorFields } from '../common/constants';
 import { QR_READER_ERRORS } from '../common/errors';
 import { DecodeCallback, ErrorObject, QrError, VideoInput } from '../common/types';
-import { HexString } from '@renderer/domain/shared-kernel';
+import type { HexString } from '@renderer/shared/core';
 
 type Props = {
   size?: number;

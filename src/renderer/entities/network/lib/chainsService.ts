@@ -3,14 +3,12 @@ import concat from 'lodash/concat';
 import orderBy from 'lodash/orderBy';
 import BigNumber from 'bignumber.js';
 
-import { Chain } from '@renderer/entities/chain/model/chain';
 import chainsProd from '@renderer/assets/chains/chains.json';
 import chainsDev from '@renderer/assets/chains/chains_dev.json';
-import { ChainId } from '@renderer/domain/shared-kernel';
 import { getRelaychainAsset, nonNullable, totalAmount, ZERO_BALANCE } from '@renderer/shared/lib/utils';
-import { Balance } from '@renderer/entities/asset/model/balance';
 import { ChainLike } from './common/types';
 import { isKusama, isPolkadot, isTestnet, isNameWithNumber } from './common/utils';
+import type { Chain, ChainId, Balance } from '@renderer/shared/core';
 import { PriceObject } from '@renderer/shared/api/price-provider';
 import { sumBalances } from '@renderer/pages/Assets/AssetsList/common/utils';
 

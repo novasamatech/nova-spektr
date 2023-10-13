@@ -5,11 +5,10 @@ import { SubmittableExtrinsic } from '@polkadot/api/types';
 
 import { Transaction, TransactionType } from '@renderer/entities/transaction/model/transaction';
 import { getMaxWeight, hasDestWeight, isControllerMissing, isOldMultisigPallet } from './common/utils';
-import { MultisigAccount } from '@renderer/entities/account';
-import { AccountId, Address } from '@renderer/domain/shared-kernel';
 import { toAddress } from '@renderer/shared/lib/utils';
 import * as xcmMethods from '@renderer/entities/transaction/lib/common/xcmMethods';
 import { DEFAULT_FEE_ASSET_ITEM } from '@renderer/entities/transaction';
+import type { AccountId, Address, MultisigAccount } from '@renderer/shared/core';
 
 type BalancesTransferArgs = Parameters<typeof methods.balances.transfer>[0];
 type BondWithoutContollerArgs = Omit<Parameters<typeof methods.staking.bond>[0], 'controller'>;

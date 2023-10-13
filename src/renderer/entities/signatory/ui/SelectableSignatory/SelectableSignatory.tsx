@@ -1,9 +1,9 @@
-import { AccountAddress, getAddress, AccountAddressProps, useAddressInfo } from '@renderer/entities/account';
+import { AccountAddress, getAddress, AccountAddressProps } from '@renderer/entities/wallet';
+import { useAddressInfo } from '@renderer/entities/wallet/lib/useAddressInfo';
 import { InfoPopover, Icon } from '@renderer/shared/ui';
-import { Explorer } from '@renderer/entities/chain';
 import { toAccountId, transferableAmount, cnTw } from '@renderer/shared/lib/utils';
-import { useBalance, Asset, AssetBalance } from '@renderer/entities/asset';
-import { ChainId } from '@renderer/domain/shared-kernel';
+import { useBalance, AssetBalance } from '@renderer/entities/asset';
+import type { Explorer, Asset, ChainId } from '@renderer/shared/core';
 
 type Props<T extends any> = {
   explorers?: Explorer[];

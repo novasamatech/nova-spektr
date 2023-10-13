@@ -1,22 +1,23 @@
 import { useEffect, useState } from 'react';
+import { useUnit } from 'effector-react';
 
 import { MultisigEvent, SigningStatus } from '@renderer/entities/transaction';
-import { MultisigAccount, useAccount } from '@renderer/entities/account';
 import { Icon, Button, CaptionText, InfoLink, SmallTitleText } from '@renderer/shared/ui';
 import Details from '@renderer/pages/Operations/components/Details';
 import RejectTx from '@renderer/pages/Operations/components/modals/RejectTx';
 import ApproveTx from '@renderer/pages/Operations/components/modals/ApproveTx';
 import { getMultisigExtrinsicLink, getSignatoryName } from '@renderer/pages/Operations/common/utils';
-import { Signatory, SignatoryCard } from '@renderer/entities/signatory';
+import { SignatoryCard } from '@renderer/entities/signatory';
 import CallDataModal from '@renderer/pages/Operations/components/modals/CallDataModal';
-import { AccountId, CallData, ChainId } from '@renderer/domain/shared-kernel';
 import { nonNullable } from '@renderer/shared/lib/utils';
 import { useMatrix, useNetworkContext, useI18n, useMultisigChainContext } from '@renderer/app/providers';
 import { useMultisigTx, useMultisigEvent } from '@renderer/entities/multisig';
 import { useToggle } from '@renderer/shared/lib/hooks';
-import LogModal from './Log';
-import { useContact } from '@renderer/entities/contact';
 import { MultisigTransactionDS } from '@renderer/shared/api/storage';
+import { contactModel } from '@renderer/entities/contact';
+import type { AccountId, CallData, ChainId, MultisigAccount, Signatory } from '@renderer/shared/core';
+import LogModal from './Log';
+import { walletModel } from '@renderer/entities/wallet';
 
 type Props = {
   tx: MultisigTransactionDS;
@@ -25,8 +26,8 @@ type Props = {
 
 const OperationFullInfo = ({ tx, account }: Props) => {
   const { t } = useI18n();
-  const { getLiveContacts } = useContact();
-  const { getLiveAccounts } = useAccount();
+  const contacts = useUnit(contactModel.$contacts);
+  const accounts = useUnit(walletModel.$accounts);
 
   const { callData, signatories, accountId, chainId, callHash, blockCreated, indexCreated } = tx;
 
@@ -47,9 +48,6 @@ const OperationFullInfo = ({ tx, account }: Props) => {
 
   const [signatoriesList, setSignatories] = useState<Signatory[]>([]);
   const explorerLink = getMultisigExtrinsicLink(tx.callHash, tx.indexCreated, tx.blockCreated, connection?.explorers);
-
-  const contacts = getLiveContacts();
-  const accounts = getLiveAccounts();
 
   const setupCallData = async (callData: CallData) => {
     const api = connection.api;

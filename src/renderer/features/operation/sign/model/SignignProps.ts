@@ -1,10 +1,9 @@
 import { ApiPromise } from '@polkadot/api';
 import { UnsignedTransaction } from '@substrate/txwrapper-polkadot';
 
-import { ChainId, HexString } from '@renderer/domain/shared-kernel';
-import { Account } from '@renderer/entities/account';
 import { Transaction } from '@renderer/entities/transaction';
 import { ValidationErrors } from '@renderer/shared/lib/utils';
+import type { Account, ChainId, HexString } from '@renderer/shared/core';
 
 export type SigningProps = {
   chainId: ChainId;

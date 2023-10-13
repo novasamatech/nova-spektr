@@ -1,7 +1,7 @@
 import cn from 'classnames';
 
 import { useI18n } from '@renderer/app/providers';
-import { MultisigAccount, AddressWithExplorers } from '@renderer/entities/account';
+import { AddressWithExplorers } from '@renderer/entities/wallet';
 import { Icon, Button, FootnoteText, DetailRow } from '@renderer/shared/ui';
 import { copyToClipboard, truncate, cnTw } from '@renderer/shared/lib/utils';
 import { useToggle } from '@renderer/shared/lib/hooks';
@@ -12,6 +12,7 @@ import { AddressStyle, DescriptionBlockStyle, InteractionStyle } from '../common
 import { getMultisigExtrinsicLink } from '../common/utils';
 import { AssetBalance } from '@renderer/entities/asset';
 import { ChainTitle } from '@renderer/entities/chain';
+import type { MultisigAccount } from '@renderer/shared/core';
 
 type Props = {
   tx: MultisigTransaction;

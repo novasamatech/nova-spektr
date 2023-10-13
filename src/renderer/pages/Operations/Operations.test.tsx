@@ -1,7 +1,7 @@
 import { render, screen, act } from '@testing-library/react';
 
 import { TEST_ACCOUNT_ID } from '@renderer/shared/lib/utils';
-import { ConnectionType } from '@renderer/domain/connection';
+import { ConnectionType } from '@renderer/shared/core';
 import { Operations } from './Operations';
 
 jest.mock('@renderer/app/providers', () => ({
@@ -27,12 +27,6 @@ jest.mock('@renderer/entities/multisig', () => ({
   }),
   useMultisigEvent: jest.fn().mockReturnValue({
     getLiveEventsByKeys: jest.fn().mockResolvedValue([]),
-  }),
-}));
-
-jest.mock('@renderer/entities/account', () => ({
-  useAccount: jest.fn().mockReturnValue({
-    getActiveMultisigAccount: () => [{ name: 'Test Account', accountId: TEST_ACCOUNT_ID }],
   }),
 }));
 

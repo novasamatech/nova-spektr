@@ -4,18 +4,18 @@ import { BN, hexToU8a } from '@polkadot/util';
 import { ApiPromise } from '@polkadot/api';
 import { Codec } from '@polkadot/types/types';
 import { Option } from '@polkadot/types';
-import _ from 'lodash';
+import isEqual from 'lodash/isEqual';
 
-import { Asset, AssetType, OrmlExtras, StatemineExtras } from '@renderer/entities/asset/model/asset';
-import { ChainId, AccountId } from '@renderer/domain/shared-kernel';
 import { ExtendedChain } from '@renderer/entities/network/lib/common/types';
 import { isLightClient } from '@renderer/entities/network/lib/common/utils';
 import { validate } from '../../../services/dataVerification/dataVerification';
-import storage, { BalanceDS } from '../../../shared/api/storage';
+import { storage, BalanceDS } from '../../../shared/api/storage';
 import { IBalanceService } from './common/types';
 import { VERIFY_TIMEOUT } from './common/constants';
 import { useSubscription } from '@renderer/services/subscription/subscriptionService';
 import { toAddress } from '@renderer/shared/lib/utils';
+import { AssetType } from '@renderer/shared/core';
+import type { ChainId, AccountId, Asset, OrmlExtras, StatemineExtras } from '@renderer/shared/core';
 
 export const useBalance = (): IBalanceService => {
   const balanceStorage = storage.connectTo('balances');
@@ -301,7 +301,7 @@ export const useBalance = (): IBalanceService => {
         const existingBalance = await balanceStorage.getBalance(balance.accountId, balance.chainId, balance.assetId);
         if (!existingBalance) {
           await addBalance(balance);
-        } else if (!_.isEqual(balance.locked, existingBalance.locked)) {
+        } else if (!isEqual(balance.locked, existingBalance.locked)) {
           await updateBalance(balance);
         }
       });
@@ -338,7 +338,7 @@ export const useBalance = (): IBalanceService => {
           const existingBalance = await balanceStorage.getBalance(balance.accountId, balance.chainId, balance.assetId);
           if (!existingBalance) {
             await addBalance(balance);
-          } else if (!_.isEqual(balance.locked, existingBalance.locked)) {
+          } else if (!isEqual(balance.locked, existingBalance.locked)) {
             await updateBalance(balance);
           }
         });

@@ -3,14 +3,14 @@ import { groupBy } from 'lodash';
 import { useUnit } from 'effector-react';
 
 import { Icon, CaptionText, Tooltip, Accordion } from '@renderer/shared/ui';
-import { Asset, useBalance, Balance, AssetCard } from '@renderer/entities/asset';
-import { Chain, ChainTitle } from '@renderer/entities/chain';
+import { useBalance, AssetCard } from '@renderer/entities/asset';
+import { ChainTitle } from '@renderer/entities/chain';
 import { ZERO_BALANCE, totalAmount, includes, cnTw } from '@renderer/shared/lib/utils';
 import { ExtendedChain } from '@renderer/entities/network';
 import { useI18n } from '@renderer/app/providers';
 import { balanceSorter, sumBalances } from '../../common/utils';
-import { Account } from '@renderer/entities/account';
-import { AccountId } from '@renderer/domain/shared-kernel';
+import type { AccountId, Account, Chain, Asset, Balance } from '@renderer/shared/core';
+import { accountUtils } from '@renderer/entities/wallet';
 import { NetworkFiatBalance } from '../NetworkFiatBalance/NetworkFiatBalance';
 import { currencyModel, priceProviderModel } from '@renderer/entities/price';
 
@@ -38,7 +38,9 @@ export const NetworkAssets = ({ query, hideZeroBalance, chain, accounts, searchS
 
   const accountIds = useMemo(() => {
     return accounts.reduce<AccountId[]>((acc, account) => {
-      if (!account.chainId || account.chainId === chain.chainId) acc.push(account.accountId);
+      if (accountUtils.isChainIdMatch(account, chain.chainId)) {
+        acc.push(account.accountId);
+      }
 
       return acc;
     }, []);

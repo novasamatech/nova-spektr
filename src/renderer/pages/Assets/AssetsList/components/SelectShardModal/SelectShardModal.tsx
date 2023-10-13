@@ -1,56 +1,53 @@
 import { useEffect, useState } from 'react';
 import { keyBy } from 'lodash';
 
-import { AccountId, ChainId } from '@renderer/domain/shared-kernel';
+import type { AccountId, ChainId, Account } from '@renderer/shared/core';
 import { BaseModal, Button, Checkbox, FootnoteText, SearchInput } from '@renderer/shared/ui';
 import { useI18n } from '@renderer/app/providers';
-import { AccountDS } from '@renderer/shared/api/storage';
 import { chainsService } from '@renderer/entities/network';
 import {
   getMultishardStructure,
   getSelectableShards,
   searchShards,
-} from '@renderer/components/layout/PrimaryLayout/Wallets/common/utils';
+} from '@renderer/features/wallets/WalletSelect/common/utils';
 import {
   ChainsRecord,
   SelectableAccount,
   SelectableShards,
-} from '@renderer/components/layout/PrimaryLayout/Wallets/common/types';
-import { AddressWithExplorers } from '@renderer/entities/account';
+} from '@renderer/features/wallets/WalletSelect/common/types';
+import { AddressWithExplorers } from '@renderer/entities/wallet';
 import { ChainTitle } from '@renderer/entities/chain';
 
 type Props = {
-  accounts: AccountDS[];
-  activeAccounts: AccountDS[];
+  accounts: Account[];
+  activeShards: Account[];
   isOpen: boolean;
-  onClose: (selectedAccounts?: AccountDS[]) => void;
+  onClose: (selectedAccounts?: Account[]) => void;
 };
 
-export const SelectShardModal = ({ isOpen, onClose, activeAccounts, accounts }: Props) => {
+export const SelectShardModal = ({ isOpen, activeShards, accounts, onClose }: Props) => {
   const { t } = useI18n();
 
   const [chains, setChains] = useState<ChainsRecord>({});
 
   useEffect(() => {
-    if (!accounts[0]?.walletId) return;
-
     const chains = chainsService.getChainsData();
     const chainsById = keyBy(chainsService.sortChains(chains), 'chainId');
-    const activeIds = activeAccounts.map((a) => a.id || '');
+    const activeIds = activeShards.map((shard) => shard.id);
 
-    const multishard = getMultishardStructure(accounts, chainsById, accounts[0].walletId!);
+    const multishard = getMultishardStructure(accounts, chainsById);
     const selectable = getSelectableShards(multishard, activeIds);
 
     setChains(chainsById);
     setShards(selectable);
     setQuery('');
-  }, [activeAccounts]);
+  }, [accounts.length, activeShards.length]);
 
   const [shards, setShards] = useState<SelectableShards>({ rootAccounts: [], amount: 0 });
   const [query, setQuery] = useState('');
 
-  const selectRoot = (value: boolean, rootId: AccountId) => {
-    const root = shards.rootAccounts.find((r) => r.accountId === rootId);
+  const selectRoot = (value: boolean, accountId: AccountId) => {
+    const root = shards.rootAccounts.find((r) => r.accountId === accountId);
     if (!root) return;
 
     root.isSelected = value;
@@ -64,8 +61,8 @@ export const SelectShardModal = ({ isOpen, onClose, activeAccounts, accounts }: 
     setShards({ ...shards });
   };
 
-  const selectChain = (value: boolean, chainId: ChainId, rootId: AccountId) => {
-    const root = shards.rootAccounts.find((r) => r.accountId === rootId);
+  const selectChain = (value: boolean, chainId: ChainId, accountId: AccountId) => {
+    const root = shards.rootAccounts.find((r) => r.accountId === accountId);
     const chain = root?.chains.find((c) => c.chainId === chainId);
     if (!root || !chain) return;
 
@@ -73,14 +70,14 @@ export const SelectShardModal = ({ isOpen, onClose, activeAccounts, accounts }: 
     chain.accounts.forEach((a) => (a.isSelected = value));
     chain.selectedAmount = value ? chain.accounts.length : 0;
 
-    root.selectedAmount = root.chains.reduce((acc, c) => acc + c.selectedAmount, 0);
+    root.selectedAmount = root.chains.reduce((acc, chain) => acc + chain.selectedAmount, 0);
 
     setShards({ ...shards });
   };
 
   const selectAccount = (value: boolean, account: SelectableAccount) => {
-    const root = shards.rootAccounts.find((r) => r.id === account.rootId);
-    const chain = root?.chains.find((c) => c.chainId === account.chainId);
+    const root = shards.rootAccounts.find((root) => root.id === account.baseId);
+    const chain = root?.chains.find((chain) => chain.chainId === account.chainId);
 
     if (!root || !chain) return;
     account.isSelected = value;
@@ -99,7 +96,7 @@ export const SelectShardModal = ({ isOpen, onClose, activeAccounts, accounts }: 
   };
 
   const handleSubmit = () => {
-    const selected: AccountDS[] = [];
+    const selected: Account[] = [];
     shards.rootAccounts.forEach((root) => {
       if (root.isSelected) {
         selected.push(root);
@@ -154,12 +151,7 @@ export const SelectShardModal = ({ isOpen, onClose, activeAccounts, accounts }: 
               semiChecked={root.selectedAmount > 0}
               onChange={(event) => selectRoot(event.target?.checked, root.accountId)}
             >
-              <AddressWithExplorers
-                explorers={root.chainId && chains[root.chainId]?.explorers}
-                accountId={root.accountId}
-                addressPrefix={root.chainId && chains[root.chainId]?.addressPrefix}
-                name={root.name}
-              />
+              <AddressWithExplorers accountId={root.accountId} name={root.name} />
             </Checkbox>
 
             {/* chains accounts */}
@@ -188,9 +180,9 @@ export const SelectShardModal = ({ isOpen, onClose, activeAccounts, accounts }: 
                           onChange={(event) => selectAccount(event.target?.checked, account)}
                         >
                           <AddressWithExplorers
-                            explorers={account.chainId && chains[account.chainId]?.explorers}
+                            explorers={chains[account.chainId]?.explorers}
                             accountId={account.accountId}
-                            addressPrefix={account.chainId && chains[account.chainId]?.addressPrefix}
+                            addressPrefix={chains[account.chainId]?.addressPrefix}
                             name={account.name}
                           />
                         </Checkbox>

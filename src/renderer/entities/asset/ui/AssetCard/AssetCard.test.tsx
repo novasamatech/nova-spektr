@@ -3,10 +3,9 @@ import { BrowserRouter } from 'react-router-dom';
 import userEvent from '@testing-library/user-event';
 
 import chains from '@renderer/assets/chains/chains.json';
-import { Chain } from '@renderer/entities/chain';
-import { Asset, Balance } from '@renderer/entities/asset';
 import { TEST_ACCOUNT_ID } from '@renderer/shared/lib/utils';
 import { AssetCard } from './AssetCard';
+import type { Chain, Asset, Balance } from '@renderer/shared/core';
 
 jest.mock('@renderer/app/providers', () => ({
   useI18n: jest.fn().mockReturnValue({
