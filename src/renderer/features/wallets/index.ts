@@ -1,1 +1,2 @@
-export { WalletSelect } from './WalletSelect/ui/WalletSelect';
+export { WalletSelect } from './WalletSelect';
+export { SelectWalletPairing, walletPairingModel } from './SelectWalletPairing';

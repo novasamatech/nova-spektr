@@ -29,7 +29,6 @@ const $contactsFiltered = combine(contactModel.$contacts, $filterQuery, (contact
 });
 
 export const filterModel = {
-  $filterQuery,
   $contactsFiltered,
   events: {
     componentMounted,

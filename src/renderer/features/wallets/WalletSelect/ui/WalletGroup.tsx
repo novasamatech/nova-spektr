@@ -1,53 +1,52 @@
-import { Disclosure } from '@headlessui/react';
-import cn from 'classnames';
-
-import { Icon, BodyText, CaptionText } from '@renderer/shared/ui';
-import { GroupIcons, GroupLabels } from '@renderer/features/wallets/WalletSelect/common/constants';
+import { Accordion, CaptionText, BodyText } from '@renderer/shared/ui';
 import { useI18n } from '@renderer/app/providers';
+import { Wallet, WalletFamily, WalletType } from '@renderer/shared/core';
+import { WalletIcon, walletModel } from '@renderer/entities/wallet';
 import { cnTw } from '@renderer/shared/lib/utils';
-import { WalletType, Wallet } from '@renderer/shared/core';
 
-type Props = {
-  type: WalletType;
-  wallets: Wallet[];
-  onSelect: (wallet: Wallet['id']) => void;
+export const GroupLabels: Record<WalletFamily, string> = {
+  [WalletType.POLKADOT_VAULT]: 'wallets.paritySignerLabel',
+  [WalletType.MULTISIG]: 'wallets.multisigLabel',
+  [WalletType.WATCH_ONLY]: 'wallets.watchOnlyLabel',
 };
 
-export const WalletGroup = ({ type, wallets, onSelect }: Props) => {
+type Props = {
+  type: WalletFamily;
+  wallets: Wallet[];
+};
+
+export const WalletGroup = ({ type, wallets }: Props) => {
   const { t } = useI18n();
 
   return (
-    <li>
-      <Disclosure defaultOpen>
-        <Disclosure.Button className="w-full flex justify-between items-center py-3.5 px-5">
-          {({ open }) => (
-            <>
-              <div className="flex items-center justify-between gap-x-1.5">
-                <Icon size={14} name={GroupIcons[type]} className="text-chip-icon" />
-                <CaptionText className="text-chip-text uppercase">{t(GroupLabels[type])}</CaptionText>
-                <CaptionText className="bg-chip-icon text-white px-1.5 py-0.5 h-4 rounded-full" align="center">
-                  {wallets.length}
-                </CaptionText>
-              </div>
-
-              <Icon name="down" size={16} className={cnTw(open && 'rotate-180')} />
-            </>
-          )}
-        </Disclosure.Button>
-
-        <Disclosure.Panel as="ul" className="flex flex-col gap-y-1 px-1 py-2">
+    <Accordion isDefaultOpen>
+      <Accordion.Button buttonClass="px-2 py-1.5 hover:bg-action-background-hover focus:bg-action-background-hover focus:outline-none">
+        <div className="flex gap-x-2 items-center">
+          <WalletIcon type={type} />
+          <CaptionText className="text-text-secondary  font-semibold uppercase">{t(GroupLabels[type])}</CaptionText>
+          <CaptionText className="text-text-tertiary font-semibold">{wallets.length}</CaptionText>
+        </div>
+      </Accordion.Button>
+      <Accordion.Content>
+        <ul>
           {wallets.map((wallet) => (
             <li
               key={wallet.id}
-              className={cn('hover:bg-action-background-hover rounded', wallet.isActive && 'bg-selected-background')}
+              className={cnTw(
+                'hover:bg-action-background-hover focus:bg-action-background-hover',
+                wallet.isActive && 'bg-selected-background',
+              )}
             >
-              <button className="w-full py-1.5 px-4 flex flex-col" onClick={() => onSelect(wallet.id)}>
+              <button
+                className="w-full py-1.5 px-4 flex flex-col"
+                onClick={() => walletModel.events.walletSelected(wallet.id)}
+              >
                 <BodyText className="text-text-secondary max-w-[260px] truncate">{wallet.name}</BodyText>
               </button>
             </li>
           ))}
-        </Disclosure.Panel>
-      </Disclosure>
-    </li>
+        </ul>
+      </Accordion.Content>
+    </Accordion>
   );
 };

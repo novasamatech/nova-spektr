@@ -90,7 +90,7 @@ export const AssetsList = () => {
 
   return (
     <>
-      <section className="h-full flex flex-col items-start relative">
+      <section className="h-full flex flex-col">
         <Header title={t('balances.title')} titleClass="py-[3px]" headerClass="pt-4 pb-[15px]">
           <AssetsFilters
             searchQuery={query}
