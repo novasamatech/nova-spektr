@@ -13,11 +13,7 @@ import { nonNullable } from '@renderer/shared/lib/utils';
 import { contactModel } from '@renderer/entities/contact';
 import LogModal from './LogModal';
 import { useMultisigEvent } from '@renderer/entities/multisig';
-
-const SIGNATORY_STATUS_ICON: Partial<Record<SigningStatus, () => JSX.Element>> = {
-  ['SIGNED']: () => <Icon size={16} name="checkLineRedesign" className="text-text-positive" />,
-  ['CANCELLED']: () => <Icon size={16} name="closeLineRedesign" className="text-text-negative" />,
-};
+import { SignatoryCard } from '@renderer/entities/signatory';
 
 type WalletSignatory = Signatory & { wallet: Wallet };
 
@@ -110,18 +106,18 @@ export const OperationSignatories = ({ tx, connection, account }: Props) => {
           {t('operation.walletSignatoriesTitle')}
         </FootnoteText>
         <ul className="flex flex-col gap-y-2">
-          {walletSignatories.map((signatory) => {
-            const signatoryStatus = getSignatoryStatus(signatory.accountId);
-            const statusIcon = signatoryStatus && SIGNATORY_STATUS_ICON[signatoryStatus];
-
-            return (
-              <div key={signatory.accountId} className="flex gap-x-2 px-2 py-1.5 items-center">
-                <WalletIcon type={signatory.wallet.type} size={20} />
-                <BodyText className="text-text-secondary mr-auto">{signatory.wallet.name}</BodyText>
-                {statusIcon && statusIcon()}
-              </div>
-            );
-          })}
+          {walletSignatories.map((signatory) => (
+            <SignatoryCard
+              key={signatory.accountId}
+              accountId={signatory.accountId}
+              addressPrefix={connection.addressPrefix}
+              status={getSignatoryStatus(signatory.accountId)}
+              explorers={connection.explorers}
+            >
+              <WalletIcon type={signatory.wallet.type} size={20} />
+              <BodyText className="text-inherit mr-auto">{signatory.wallet.name}</BodyText>
+            </SignatoryCard>
+          ))}
         </ul>
 
         {Boolean(contactSignatories.length) && (
@@ -130,30 +126,32 @@ export const OperationSignatories = ({ tx, connection, account }: Props) => {
               {t('operation.contactSignatoriesTitle')}
             </FootnoteText>
             <ul className="flex flex-col gap-y-2">
-              {contactSignatories.map((signatory) => {
-                const signatoryStatus = getSignatoryStatus(signatory.accountId);
-                const statusIcon = signatoryStatus && SIGNATORY_STATUS_ICON[signatoryStatus];
-
-                return (
-                  <div key={signatory.accountId} className="flex gap-x-2 px-2 py-1.5 items-center">
-                    <AddressWithName
-                      name={getSignatoryName(
-                        signatory.accountId,
-                        signatories,
-                        contacts,
-                        accounts,
-                        connection.addressPrefix,
-                      )}
-                      symbols={8}
-                      type="short"
-                      addressFont="text-text-secondary"
-                      accountId={signatory.accountId}
-                      addressPrefix={connection.addressPrefix}
-                    />
-                    {statusIcon && statusIcon()}
-                  </div>
-                );
-              })}
+              {contactSignatories.map((signatory) => (
+                <SignatoryCard
+                  key={signatory.accountId}
+                  accountId={signatory.accountId}
+                  addressPrefix={connection.addressPrefix}
+                  matrixId={signatory.matrixId}
+                  status={getSignatoryStatus(signatory.accountId)}
+                  explorers={connection.explorers}
+                >
+                  <AddressWithName
+                    name={getSignatoryName(
+                      signatory.accountId,
+                      signatories,
+                      contacts,
+                      accounts,
+                      connection.addressPrefix,
+                    )}
+                    symbols={8}
+                    type="short"
+                    addressFont="text-inherit text-left"
+                    accountId={signatory.accountId}
+                    className="flex-1"
+                    addressPrefix={connection.addressPrefix}
+                  />
+                </SignatoryCard>
+              ))}
             </ul>
           </>
         )}
