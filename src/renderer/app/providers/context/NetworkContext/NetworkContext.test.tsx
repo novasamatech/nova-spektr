@@ -124,7 +124,9 @@ describe('context/NetworkContext', () => {
     }));
 
     const scope = fork({
-      values: new Map().set(walletModel.$activeAccounts, [{ name: 'Test Wallet', accountId: TEST_ACCOUNT_ID }]),
+      values: new Map().set(walletModel.$activeAccounts, [
+        { name: 'Test Wallet', chainId: '0x123', accountId: TEST_ACCOUNT_ID },
+      ]),
     });
 
     await act(async () => {
