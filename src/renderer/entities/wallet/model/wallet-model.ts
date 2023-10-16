@@ -2,10 +2,9 @@ import { createStore, createEvent, forward, createEffect, sample, combine } from
 import { spread } from 'patronum';
 
 import type { Wallet, NoID, Account, BaseAccount, ChainAccount, MultisigAccount } from '@renderer/shared/core';
-import { kernelModel } from '@renderer/shared/core';
+import { kernelModel, WalletConnectAccount } from '@renderer/shared/core';
 import { storageService } from '@renderer/shared/api/storage';
 import { modelUtils } from '../lib/model-utils';
-import { WalletConnectAccount } from '@renderer/shared/core/types/account';
 
 type WalletId = Wallet['id'];
 type NoIdWallet = NoID<Wallet>;

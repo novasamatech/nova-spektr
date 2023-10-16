@@ -10,22 +10,26 @@ type Props = {
   className?: string;
 };
 
-const WalletIcon: Record<WalletType, IconNames | undefined> = {
-  [WalletType.MULTISHARD_PARITY_SIGNER]: 'vault',
-  [WalletType.SINGLE_PARITY_SIGNER]: 'vault',
+const WalletIcon: Record<WalletType, IconNames> = {
+  [WalletType.POLKADOT_VAULT]: 'vault',
   [WalletType.MULTISIG]: 'vault',
-  [WalletType.WATCH_ONLY]: undefined,
+  [WalletType.WATCH_ONLY]: 'watchOnly',
   [WalletType.WALLET_CONNECT]: 'walletConnect',
   [WalletType.NOVA_WALLET]: 'novaWallet',
+  // legacy
+  [WalletType.MULTISHARD_PARITY_SIGNER]: 'vault',
+  [WalletType.SINGLE_PARITY_SIGNER]: 'vault',
 };
 
 const WalletText: Record<WalletType, string> = {
-  [WalletType.MULTISHARD_PARITY_SIGNER]: 'operation.sign.polkadotVault',
-  [WalletType.SINGLE_PARITY_SIGNER]: 'operation.sign.polkadotVault',
+  [WalletType.POLKADOT_VAULT]: 'operation.polkadotVault',
   [WalletType.MULTISIG]: 'operation.polkadotVault',
-  [WalletType.WATCH_ONLY]: '',
+  [WalletType.WATCH_ONLY]: 'operation.sign.watchOnly',
   [WalletType.WALLET_CONNECT]: 'operation.sign.walletConnect',
   [WalletType.NOVA_WALLET]: 'operation.sign.novaWallet',
+  // legacy
+  [WalletType.MULTISHARD_PARITY_SIGNER]: 'operation.sign.polkadotVault',
+  [WalletType.SINGLE_PARITY_SIGNER]: 'operation.sign.polkadotVault',
 };
 
 export const SignButton = ({ disabled, type, onClick, className }: Props) => {
@@ -37,7 +41,7 @@ export const SignButton = ({ disabled, type, onClick, className }: Props) => {
     <Button
       className={className}
       disabled={disabled}
-      prefixElement={icon && <Icon className="text-icon-button" name={icon} size={14} />}
+      prefixElement={<Icon className="text-icon-button" name={icon} size={14} />}
       onClick={onClick}
     >
       {t(WalletText[type])}

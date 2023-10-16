@@ -3,14 +3,23 @@ import { useEffect, useState } from 'react';
 import { Controller, useForm, SubmitHandler } from 'react-hook-form';
 
 import { useI18n, useStatusContext } from '@renderer/app/providers';
-import { AccountId, Chain, ChainType, ErrorType, NoID, SigningType, WalletType } from '@renderer/shared/core';
+import {
+  AccountId,
+  Chain,
+  ChainType,
+  ErrorType,
+  NoID,
+  SigningType,
+  WalletType,
+  AccountType,
+  WalletConnectAccount,
+} from '@renderer/shared/core';
 import { Button, Input, InputHint, HeaderTitleText, SmallTitleText, Icon } from '@renderer/shared/ui';
 import { toAccountId } from '@renderer/shared/lib/utils';
 import { MultiAccountList } from '@renderer/entities/account/ui/MultiAccountsList/MultiAccountsList';
 import { chainsService } from '@renderer/entities/network';
 import { IconNames } from '@renderer/shared/ui/Icon/data';
 import { walletModel } from '@renderer/entities/wallet';
-import { AccountType, WalletConnectAccount } from '@renderer/shared/core/types/account';
 
 type WalletForm = {
   walletName: string;
