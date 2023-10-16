@@ -32,9 +32,9 @@ jobs:
           INTERNAL_BUILD_VERSION=${{ secrets.INTERNAL_BUILD_VERSION }}
           if [[ $PKG_VERSION == "$INTERNAL_BUILD_VERSION"* ]]; then
             # Increment the last number of INTERNAL_BUILD_VERSION
-            NEW_VERSION=$(echo $INTERNAL_BUILD_VERSION | awk -F. '{$NF++; print}' OFS=.)
+            NEW_VERSION=$(echo $INTERNAL_BUILD_VERSION | awk 'BEGIN{FS=OFS="-"} {n=split($NF, a, "."); if(n>1) $NF=a[1]"."a[2]+1; else $NF++;} 1')
           else
-            NEW_VERSION="${PKG_VERSION}.1"
+            NEW_VERSION="${PKG_VERSION}-1"
           fi
           echo "::set-output name=new_version::$NEW_VERSION"
         shell: bash
