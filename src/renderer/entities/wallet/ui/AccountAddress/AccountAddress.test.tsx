@@ -12,9 +12,11 @@ describe('ui/AccountAddress', () => {
   });
 
   test('should render short component', () => {
-    render(<AccountAddress type="short" accountId={TEST_ACCOUNT_ID} />);
+    render(<AccountAddress type="short" accountId={TEST_ACCOUNT_ID} addressPrefix={0} />);
 
-    const elipsis = screen.getByText('5CGQ7B...VbXyr9');
-    expect(elipsis).toBeInTheDocument();
+    const shortAddress = TEST_ADDRESS.slice(0, 8) + '...' + TEST_ADDRESS.slice(TEST_ADDRESS.length - 8);
+
+    const formattedAddress = screen.getByText(shortAddress);
+    expect(formattedAddress).toBeInTheDocument();
   });
 });
