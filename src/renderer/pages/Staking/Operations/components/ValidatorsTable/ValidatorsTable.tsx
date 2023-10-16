@@ -20,7 +20,7 @@ const ValidatorsTable = ({ validators, children }: Props) => {
 
   return (
     <div className="flex flex-col gap-y-2 mt-4">
-      <div className={cnTw('grid items-center px-5', TABLE_GRID_CELLS)}>
+      <div className={cnTw('grid items-center pl-5 pr-2', TABLE_GRID_CELLS)}>
         <FootnoteText className="text-text-secondary">{t('staking.validators.validatorTableHeader')}</FootnoteText>
         <FootnoteText className="text-text-secondary px-3">{t('staking.validators.ownStakeTableHeader')}</FootnoteText>
         <FootnoteText className="text-text-secondary px-3">
@@ -28,7 +28,7 @@ const ValidatorsTable = ({ validators, children }: Props) => {
         </FootnoteText>
       </div>
 
-      <ul className="flex flex-col overflow-y-auto max-h-[448px]">
+      <ul className="flex flex-col [overflow-y:overlay] max-h-[448px]">
         {validators.map((validator) => children && children(validator, rowStyle))}
       </ul>
     </div>
