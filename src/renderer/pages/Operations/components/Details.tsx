@@ -3,16 +3,17 @@ import cn from 'classnames';
 import { useI18n } from '@renderer/app/providers';
 import { AddressWithExplorers } from '@renderer/entities/wallet';
 import { Icon, Button, FootnoteText, DetailRow } from '@renderer/shared/ui';
-import { copyToClipboard, truncate, cnTw } from '@renderer/shared/lib/utils';
+import { copyToClipboard, truncate, cnTw, getAssetById } from '@renderer/shared/lib/utils';
 import { useToggle } from '@renderer/shared/lib/hooks';
-import { ExtendedChain } from '@renderer/entities/network';
+import { chainsService, ExtendedChain, isLightClient } from '@renderer/entities/network';
 import { MultisigTransaction, Transaction, TransactionType, isXcmTransaction } from '@renderer/entities/transaction';
 import ValidatorsModal from '@renderer/pages/Staking/Operations/components/Modals/ValidatorsModal/ValidatorsModal';
 import { AddressStyle, DescriptionBlockStyle, InteractionStyle } from '../common/constants';
 import { getMultisigExtrinsicLink } from '../common/utils';
 import { AssetBalance } from '@renderer/entities/asset';
 import { ChainTitle } from '@renderer/entities/chain';
-import type { MultisigAccount } from '@renderer/shared/core';
+import type { Address, MultisigAccount, Validator } from '@renderer/shared/core';
+import { useValidatorsMap } from '@renderer/entities/staking';
 
 type Props = {
   tx: MultisigTransaction;
@@ -24,8 +25,15 @@ type Props = {
 const Details = ({ tx, account, connection, isCardDetails = true }: Props) => {
   const { t } = useI18n();
 
+  const api = connection?.api;
+  const chainId = connection?.chainId;
+
+  const allValidators = Object.values(useValidatorsMap(api, chainId, connection && isLightClient(connection)));
+
   const [isAdvancedShown, toggleAdvanced] = useToggle();
   const [isValidatorsOpen, toggleValidators] = useToggle();
+  const asset =
+    tx.transaction && getAssetById(tx.transaction.args.asset, chainsService.getChainById(tx.chainId)?.assets);
 
   const { indexCreated, blockCreated, deposit, depositor, callHash, callData, description, cancelDescription } = tx;
 
@@ -36,11 +44,14 @@ const Details = ({ tx, account, connection, isCardDetails = true }: Props) => {
         ) || tx.transaction.args.transactions[0]
       : tx.transaction;
 
-  const startStakingValidators =
+  const startStakingValidators: Address[] =
     tx.transaction?.type === 'batchAll' &&
     tx.transaction.args.transactions.find((tx: Transaction) => tx.type === 'nominate')?.args?.targets;
 
-  const validators = transaction?.args.targets || startStakingValidators;
+  const selectedValidators: Validator[] =
+    transaction?.args.targets || allValidators.filter((v) => startStakingValidators.includes(v.address)) || [];
+  const selectedValidatorsAddress = selectedValidators.map((validator) => validator.address);
+  const notSelectedValidators = allValidators.filter((v) => !selectedValidatorsAddress.includes(v.address));
 
   const defaultAsset = connection?.assets[0];
   const addressPrefix = connection?.addressPrefix;
@@ -129,7 +140,7 @@ const Details = ({ tx, account, connection, isCardDetails = true }: Props) => {
         </DetailRow>
       )}
 
-      {validators && defaultAsset && (
+      {Boolean(selectedValidators.length) && defaultAsset && (
         <>
           <DetailRow label={t('operation.details.validators')} className={valueClass}>
             <button
@@ -137,13 +148,15 @@ const Details = ({ tx, account, connection, isCardDetails = true }: Props) => {
               className={cn('flex gap-x-1 items-center', InteractionStyle)}
               onClick={toggleValidators}
             >
-              <FootnoteText as="span">{validators.length}</FootnoteText>
+              <FootnoteText as="span">{selectedValidators.length}</FootnoteText>
               <Icon name="info" size={16} />
             </button>
           </DetailRow>
           <ValidatorsModal
             isOpen={isValidatorsOpen}
-            validators={validators.map((address: string) => ({ address }))}
+            asset={asset}
+            selectedValidators={selectedValidators}
+            notSelectedValidators={notSelectedValidators}
             explorers={connection?.explorers}
             onClose={toggleValidators}
           />
