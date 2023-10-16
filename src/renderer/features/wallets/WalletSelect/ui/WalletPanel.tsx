@@ -28,7 +28,7 @@ export const WalletPanel = ({ action }: Props) => {
           <SearchInput placeholder={t('wallets.searchPlaceholder')} onChange={walletSelectModel.events.queryChanged} />
         </div>
 
-        <div className="flex flex-col divide-y divide-divider overflow-y-auto max-h-[530px]">
+        <div className="flex flex-col divide-y divide-divider overflow-y-auto max-h-[530px] px-1">
           {Object.entries(filteredWalletGroups).map(([walletType, wallets]) => {
             if (wallets.length === 0) return null;
 

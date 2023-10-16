@@ -16,7 +16,7 @@ export const WalletButton = ({ wallet }: Props) => {
 
         <div className="flex flex-col gap-y-1 overflow-hidden">
           <BodyText className="truncate">{wallet.name}</BodyText>
-          <WalletFiatBalance key={wallet.id} className="truncate" />
+          <WalletFiatBalance walletId={wallet.id} className="truncate" />
         </div>
 
         <Icon name="down" size={16} className="ml-auto shrink-0" />

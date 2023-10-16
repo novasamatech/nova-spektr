@@ -1,8 +1,9 @@
-import { Accordion, CaptionText, BodyText } from '@renderer/shared/ui';
+import { Accordion, CaptionText, BodyText, Icon, IconButton } from '@renderer/shared/ui';
 import { useI18n } from '@renderer/app/providers';
 import { Wallet, WalletFamily, WalletType } from '@renderer/shared/core';
 import { WalletIcon, walletModel } from '@renderer/entities/wallet';
 import { cnTw } from '@renderer/shared/lib/utils';
+import { WalletFiatBalance } from './WalletFiatBalance';
 
 export const GroupLabels: Record<WalletFamily, string> = {
   [WalletType.POLKADOT_VAULT]: 'wallets.paritySignerLabel',
@@ -20,7 +21,7 @@ export const WalletGroup = ({ type, wallets }: Props) => {
 
   return (
     <Accordion isDefaultOpen>
-      <Accordion.Button buttonClass="px-2 py-1.5 hover:bg-action-background-hover focus:bg-action-background-hover focus:outline-none">
+      <Accordion.Button buttonClass="px-2 py-1.5 my-2 rounded hover:bg-action-background-hover focus:bg-action-background-hover">
         <div className="flex gap-x-2 items-center">
           <WalletIcon type={type} />
           <CaptionText className="text-text-secondary  font-semibold uppercase">{t(GroupLabels[type])}</CaptionText>
@@ -30,19 +31,35 @@ export const WalletGroup = ({ type, wallets }: Props) => {
       <Accordion.Content>
         <ul>
           {wallets.map((wallet) => (
-            <li
-              key={wallet.id}
-              className={cnTw(
-                'hover:bg-action-background-hover focus:bg-action-background-hover',
-                wallet.isActive && 'bg-selected-background',
-              )}
-            >
-              <button
-                className="w-full py-1.5 px-4 flex flex-col"
-                onClick={() => walletModel.events.walletSelected(wallet.id)}
+            <li key={wallet.id} className="mb-2">
+              {/* TODO: should become a part of WalletCard */}
+              <div
+                className={cnTw(
+                  'group relative flex items-center transition-colors',
+                  'hover:bg-action-background-hover focus-within:bg-action-background-hover',
+                  wallet.isActive && 'bg-action-background-hover',
+                )}
               >
-                <BodyText className="text-text-secondary max-w-[260px] truncate">{wallet.name}</BodyText>
-              </button>
+                <button
+                  className="w-full flex gap-x-2 items-center py-1.5 px-2 rounded"
+                  onClick={() => walletModel.events.walletSelected(wallet.id)}
+                >
+                  {wallet.isActive ? (
+                    <Icon name="checkmark" className="text-icon-accent" size={20} />
+                  ) : (
+                    <div className="w-5 h-5 row-span-2" />
+                  )}
+                  <div className="flex flex-col">
+                    <BodyText className="text-text-secondary max-w-[260px] truncate">{wallet.name}</BodyText>
+                    <WalletFiatBalance walletId={wallet.id} className="text-help-text" />
+                  </div>
+                </button>
+                <IconButton
+                  className="absolute right-2 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 focus:opacity-100"
+                  name="info"
+                  onClick={() => console.log('🔴 OPEN DETAILS 🔴')}
+                />
+              </div>
             </li>
           ))}
         </ul>

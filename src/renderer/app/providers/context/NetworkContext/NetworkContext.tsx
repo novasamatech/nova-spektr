@@ -5,7 +5,7 @@ import { useBalance } from '@renderer/entities/asset';
 import { ConnectProps, ExtendedChain, RpcValidation, useNetwork } from '@renderer/entities/network';
 import { useSubscription } from '@renderer/services/subscription/subscriptionService';
 import { usePrevious } from '@renderer/shared/lib/hooks';
-import type { RpcNode, ChainId, AccountId } from '@renderer/shared/core';
+import type { RpcNode, ChainId, AccountId, Account } from '@renderer/shared/core';
 import { ConnectionStatus, ConnectionType } from '@renderer/shared/core';
 import { walletModel, accountUtils } from '@renderer/entities/wallet';
 
@@ -22,9 +22,24 @@ type NetworkContextProps = {
 
 const NetworkContext = createContext<NetworkContextProps>({} as NetworkContextProps);
 
+const getAccountIds = (accounts: Account[], chainId: ChainId): AccountId[] => {
+  const accountsIds = accounts.reduce<Set<AccountId>>((acc, account) => {
+    if (accountUtils.isChainIdMatch(account, chainId)) {
+      acc.add(account.accountId);
+    }
+
+    if (accountUtils.isMultisigAccount(account)) {
+      account.signatories.forEach((signatory) => acc.add(signatory.accountId));
+    }
+
+    return acc;
+  }, new Set());
+
+  return Array.from(accountsIds);
+};
+
 export const NetworkProvider = ({ children }: PropsWithChildren) => {
-  const activeWallet = useUnit(walletModel.$activeWallet);
-  const activeAccounts = useUnit(walletModel.$activeAccounts);
+  const accounts = useUnit(walletModel.$accounts);
 
   const networkSubscriptions = useSubscription<ChainId>();
   const { subscribe, unsubscribe, hasSubscription, unsubscribeAll } = networkSubscriptions;
@@ -35,35 +50,26 @@ export const NetworkProvider = ({ children }: PropsWithChildren) => {
   const [everyConnectionIsReady, setEveryConnectionIsReady] = useState(false);
 
   useEffect(() => {
-    (async () => {
-      await setupConnections();
+    setupConnections().then(() => {
       setEveryConnectionIsReady(true);
-    })();
+    });
   }, []);
 
   useEffect(() => {
     if (!everyConnectionIsReady) return;
 
-    const startNetworks = async () => {
-      const requestConnections = Object.values(connections).map(({ connection }) => {
-        const { chainId, connectionType, activeNode } = connection;
+    const requestConnections = Object.values(connections).map(({ connection }) => {
+      const { chainId, connectionType, activeNode } = connection;
 
-        if (connectionType === ConnectionType.DISABLED) return;
-        if (connectionType === ConnectionType.AUTO_BALANCE) {
-          return connectWithAutoBalance(chainId, 0);
-        }
-
-        return connectToNetwork({ chainId, type: connectionType, node: activeNode });
-      });
-
-      try {
-        await Promise.allSettled(requestConnections);
-      } catch (error) {
-        console.warn(error);
+      if (connectionType === ConnectionType.DISABLED) return;
+      if (connectionType === ConnectionType.AUTO_BALANCE) {
+        return connectWithAutoBalance(chainId, 0);
       }
-    };
 
-    startNetworks();
+      return connectToNetwork({ chainId, type: connectionType, node: activeNode });
+    });
+
+    Promise.allSettled(requestConnections).catch(console.warn);
 
     return () => {
       const requests = Object.values(connections).map((connection) => connection.disconnect || (() => {}));
@@ -89,58 +95,31 @@ export const NetworkProvider = ({ children }: PropsWithChildren) => {
   );
 
   const previousConnectedConnections = usePrevious(connectedConnections);
-  const previousAccounts = usePrevious(activeAccounts);
-
-  const getAccountIds = (chainId: ChainId): AccountId[] => {
-    return Array.from(
-      activeAccounts.reduce<Set<AccountId>>((acc, account) => {
-        if (accountUtils.isChainIdMatch(account, chainId)) {
-          acc.add(account.accountId);
-        }
-
-        if (accountUtils.isMultisigAccount(account)) {
-          account.signatories.forEach((signatory) => {
-            acc.add(signatory.accountId);
-          });
-        }
-
-        return acc;
-      }, new Set()),
-    );
-  };
 
   useEffect(() => {
-    (async () => {
-      if (activeAccounts.length === 0) {
-        await unsubscribeAll();
+    if (accounts.length === 0) {
+      unsubscribeAll();
 
-        return;
-      }
+      return;
+    }
 
-      const firstPrevAcc = previousAccounts?.length && previousAccounts[0];
-      const firstNewAcc = activeAccounts.length && activeAccounts[0];
-      if (previousAccounts?.length !== activeAccounts.length || firstPrevAcc !== firstNewAcc) {
-        connectedConnections.forEach((chain) => {
-          const accountIds = getAccountIds(chain.chainId);
-          subscribeBalanceChanges(chain, accountIds);
-        });
-      }
+    connectedConnections.forEach((chain) => {
+      subscribeBalanceChanges(chain, getAccountIds(accounts, chain.chainId));
+    });
 
-      // subscribe to new connections
-      const newConnections = connectedConnections.filter((c) => !previousConnectedConnections?.includes(c));
+    // subscribe to new connections
+    const newConnections = connectedConnections.filter((c) => !previousConnectedConnections?.includes(c));
 
-      newConnections.forEach((chain) => {
-        const accountIds = getAccountIds(chain.chainId);
-        subscribeBalanceChanges(chain, accountIds);
-      });
+    newConnections.forEach((chain) => {
+      subscribeBalanceChanges(chain, getAccountIds(accounts, chain.chainId));
+    });
 
-      // unsubscribe from removed connections
-      const removedConnections = previousConnectedConnections?.filter((c) => !connectedConnections.includes(c));
-      removedConnections?.forEach((chain) => {
-        unsubscribe(chain.chainId);
-      });
-    })();
-  }, [connectedConnections.length, activeWallet]);
+    // unsubscribe from removed connections
+    const removedConnections = previousConnectedConnections?.filter((c) => !connectedConnections.includes(c));
+    removedConnections?.forEach((chain) => {
+      unsubscribe(chain.chainId);
+    });
+  }, [connectedConnections.length, accounts]);
 
   return (
     <NetworkContext.Provider value={{ connections, connectToNetwork, connectWithAutoBalance, ...rest }}>
