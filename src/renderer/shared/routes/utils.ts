@@ -1,7 +1,7 @@
-import { PathValue } from './paths';
+import type { PathValue } from './paths';
 
 /**
- * Create router link with url parameters and query string
+ * Create route link with url parameters and query string
  * @param path key of existing Paths
  * @param params url params
  * @param query url query params
