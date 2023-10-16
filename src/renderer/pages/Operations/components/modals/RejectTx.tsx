@@ -16,6 +16,8 @@ import { Submit } from '../ActionSteps/Submit';
 import { Confirmation } from '../ActionSteps/Confirmation';
 import { Signing } from '@renderer/features/operation';
 import { OperationTitle } from '@renderer/components/common';
+import { walletModel, walletUtils } from '@renderer/entities/wallet';
+import { priceProviderModel } from '@renderer/entities/price';
 import {
   type MultisigAccount,
   type Account,
@@ -24,8 +26,6 @@ import {
   type Timepoint,
   WalletType,
 } from '@renderer/shared/core';
-import { walletModel, walletUtils } from '@renderer/entities/wallet';
-import { priceProviderModel } from '@renderer/entities/price';
 import {
   Transaction,
   TransactionType,
