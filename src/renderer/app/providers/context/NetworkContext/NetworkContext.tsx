@@ -50,9 +50,7 @@ export const NetworkProvider = ({ children }: PropsWithChildren) => {
   const [everyConnectionIsReady, setEveryConnectionIsReady] = useState(false);
 
   useEffect(() => {
-    setupConnections().then(() => {
-      setEveryConnectionIsReady(true);
-    });
+    setupConnections().then(() => setEveryConnectionIsReady(true));
   }, []);
 
   useEffect(() => {
