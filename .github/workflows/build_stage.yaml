@@ -5,7 +5,7 @@ name: Build stage app
 on:
   workflow_dispatch:
   pull_request:
-    types: [labeled]
+    # types: [labeled]
 
 env:
   CSC_FOR_PULL_REQUEST: true
@@ -15,7 +15,7 @@ env:
 
 jobs:
   internal-version-increment:
-    if: ${{ github.event.label.name == 'internal-build' || github.event_name == 'workflow_dispatch' }}
+    # if: ${{ github.event.label.name == 'internal-build' || github.event_name == 'workflow_dispatch' }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
