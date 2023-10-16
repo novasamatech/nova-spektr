@@ -37,7 +37,6 @@ export const WalletGroup = ({ type, wallets }: Props) => {
                 className={cnTw(
                   'group relative flex items-center transition-colors',
                   'hover:bg-action-background-hover focus-within:bg-action-background-hover',
-                  wallet.isActive && 'bg-action-background-hover',
                 )}
               >
                 <button
