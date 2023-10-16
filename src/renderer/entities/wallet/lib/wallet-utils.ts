@@ -6,7 +6,7 @@ export const walletUtils = {
   isMultiShard,
   isMultisig,
   isWatchOnly,
-  isWalidSignatory: isValidSignatory,
+  isValidSignatory,
 };
 
 function isSingleShard(wallet?: Wallet | null): boolean {

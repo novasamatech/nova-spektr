@@ -240,7 +240,7 @@ export const getSignatoryAccounts = (
   events: MultisigEvent[],
   signatories: Signatory[],
   chainId: ChainId,
-) => {
+): Account[] => {
   const walletsMap = new Map(wallets.map((wallet) => [wallet.id, wallet]));
 
   return signatories.reduce((acc: Account[], signatory) => {
@@ -252,7 +252,7 @@ export const getSignatoryAccounts = (
       const isChainMatch = accountUtils.isChainIdMatch(a, chainId);
       const wallet = walletsMap.get(a.walletId);
 
-      return isChainMatch && walletUtils.isWalidSignatory(wallet);
+      return isChainMatch && walletUtils.isValidSignatory(wallet);
     });
 
     if (signatoryAccount) {
