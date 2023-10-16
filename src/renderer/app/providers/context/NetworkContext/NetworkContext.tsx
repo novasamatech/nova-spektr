@@ -119,6 +119,7 @@ export const NetworkProvider = ({ children }: PropsWithChildren) => {
 
       const firstPrevAcc = previousAccounts?.length && previousAccounts[0];
       const firstNewAcc = activeAccounts.length && activeAccounts[0];
+
       if (previousAccounts?.length !== activeAccounts.length || firstPrevAcc !== firstNewAcc) {
         connectedConnections.forEach((chain) => {
           const accountIds = getAccountIds(chain.chainId);

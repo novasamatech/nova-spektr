@@ -41,7 +41,7 @@ function isChainIdMatch(account: Pick<Account, 'type'>, chainId: ChainId): boole
   const isBaseAccountType = isBaseAccount(account);
   const isMultisigAccountType = isMultisigAccount(account);
 
-  return isBaseAccountType || isMultisigAccountType || (isChainAccount(account) && account.chainId === chainId);
+  return isBaseAccountType || isMultisigAccountType || ('chainId' in account && account.chainId === chainId);
 }
 
 function isMultisigAccount(account: Pick<Account, 'type'>): account is MultisigAccount {
