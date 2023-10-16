@@ -52,3 +52,5 @@ export const NWQRConfig = {
   ...QrConfig,
   image: WalletTypeImages.novaWalletOnboarding.img,
 };
+
+export const EXPIRE_TIMEOUT = 5 * 60 * 1000;

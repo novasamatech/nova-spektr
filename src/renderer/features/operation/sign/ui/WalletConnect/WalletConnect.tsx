@@ -6,16 +6,14 @@ import { SigningProps } from '@renderer/features/operation';
 import { ValidationErrors } from '@renderer/shared/lib/utils';
 import { useTransaction } from '@renderer/entities/transaction';
 import { useI18n } from '@renderer/app/providers';
-import { Button, ConfirmModal, FootnoteText, SmallTitleText, StatusModal } from '@renderer/shared/ui';
+import { Button, ConfirmModal, Countdown, FootnoteText, SmallTitleText, StatusModal } from '@renderer/shared/ui';
 import { wcModel, DEFAULT_POLKADOT_METHODS, getWalletConnectChains } from '@renderer/entities/walletConnect';
 import { chainsService } from '@renderer/entities/network';
-import { Countdown } from './Countdown';
 import { useCountdown, useToggle } from '@renderer/shared/lib/hooks';
 import wallet_connect_confirm from '@video/wallet_connect_confirm.mp4';
 import wallet_connect_confirm_webm from '@video/wallet_connect_confirm.webm';
 import { HexString } from '@renderer/shared/core';
 import { walletModel } from '@renderer/entities/wallet';
-import Animations from '@renderer/shared/ui/Animation/Data';
 import { Animation } from '@renderer/shared/ui/Animation/Animation';
 
 export const WalletConnect = ({ api, validateBalance, onGoBack, accounts, transactions, onResult }: SigningProps) => {
@@ -126,7 +124,10 @@ export const WalletConnect = ({ api, validateBalance, onGoBack, accounts, transa
   const handleReconnect = () => {
     reconnect()
       .then(setupTransaction)
-      .catch(() => console.warn('WalletConnect | setupTransaction() failed'));
+      .catch(() => {
+        console.warn('WalletConnect | setupTransaction() failed');
+        toggleRejectedStatus();
+      });
   };
 
   const signTransaction = async () => {
@@ -173,6 +174,38 @@ export const WalletConnect = ({ api, validateBalance, onGoBack, accounts, transa
   };
 
   const walletName = session?.peer.metadata.name || t('operation.walletConnect.defaultWalletName');
+
+  const getStatusProps = () => {
+    if (isReconnectingModalOpen) {
+      return {
+        title: t('operation.walletConnect.reconnect.reconnecting'),
+        content: <Animation variant="loading" loop />,
+        onClose: onGoBack,
+      };
+    }
+
+    if (isConnectedModalOpen) {
+      return {
+        title: t('operation.walletConnect.reconnect.connected'),
+        content: <Animation variant="success" />,
+        onClose: () => setIsConnectedModalOpen(false),
+      };
+    }
+
+    if (isRejectedStatusOpen) {
+      return {
+        title: t('operation.walletConnect.rejected'),
+        content: <Animation variant="error" />,
+        onClose: onGoBack,
+      };
+    }
+
+    return {
+      title: '',
+      content: <></>,
+      onClose: () => {},
+    };
+  };
 
   return (
     <div className="flex flex-col items-center p-4 gap-y-2.5 w-[440px] rounded-b-lg">
@@ -228,24 +261,8 @@ export const WalletConnect = ({ api, validateBalance, onGoBack, accounts, transa
       </ConfirmModal>
 
       <StatusModal
-        title={t('operation.walletConnect.reconnect.reconnecting')}
-        isOpen={isReconnectingModalOpen}
-        content={<Animation animation={Animations.loading} loop />}
-        onClose={onGoBack}
-      />
-
-      <StatusModal
-        title={t('operation.walletConnect.reconnect.connected')}
-        isOpen={isConnectedModalOpen}
-        content={<Animation animation={Animations.success} />}
-        onClose={() => setIsConnectedModalOpen(false)}
-      />
-
-      <StatusModal
-        title={t('operation.walletConnect.rejected')}
-        content={<Animation animation={Animations.error} />}
-        isOpen={isRejectedStatusOpen}
-        onClose={onGoBack}
+        isOpen={isReconnectingModalOpen || isConnectedModalOpen || isRejectedStatusOpen}
+        {...getStatusProps()}
       />
     </div>
   );

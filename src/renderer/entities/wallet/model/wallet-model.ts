@@ -25,7 +25,6 @@ type CreateParams<T extends Account> = {
   accounts: Omit<NoID<T>, 'walletId'>[];
 };
 type MultisigUpdateParams = Partial<MultisigAccount> & { id: Account['id'] };
-type WalletConnectUpdateParams = Partial<WalletConnectAccount> & { id: Account['id'] };
 
 const watchOnlyCreated = createEvent<CreateParams<BaseAccount>>();
 const multishardCreated = createEvent<CreateParams<BaseAccount | ChainAccount>>();
@@ -51,10 +50,7 @@ type CreateResult = {
 };
 
 const walletCreatedFx = createEffect(
-  async ({
-    wallet,
-    accounts,
-  }: CreateParams<BaseAccount> | CreateParams<WalletConnectAccount>): Promise<CreateResult | undefined> => {
+  async ({ wallet, accounts }: CreateParams<BaseAccount | WalletConnectAccount>): Promise<CreateResult | undefined> => {
     const dbWallet = await storageService.wallets.create({ ...wallet, isActive: false });
 
     if (!dbWallet) return undefined;

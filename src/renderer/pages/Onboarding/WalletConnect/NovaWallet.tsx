@@ -12,9 +12,8 @@ import { usePrevious } from '@renderer/shared/lib/hooks';
 import { getWalletConnectChains, wcModel } from '@renderer/entities/walletConnect';
 import { chainsService } from '@renderer/entities/network';
 import { wcOnboardingModel } from '@renderer/pages/Onboarding/WalletConnect/model/wc-onboarding-model';
-import { NWQRConfig, Step } from './common/const';
+import { EXPIRE_TIMEOUT, NWQRConfig, Step } from './common/const';
 import { useStatusContext } from '@renderer/app/providers/context/StatusContext';
-import Animations from '@renderer/shared/ui/Animation/Data';
 import { WalletType } from '@renderer/shared/core';
 
 type Props = {
@@ -62,7 +61,7 @@ export const NovaWallet = ({ isOpen, onClose, onComplete }: Props) => {
     if (isOpen) {
       startOnboarding();
 
-      timeout = setTimeout(onClose, 5 * 60 * 1000);
+      timeout = setTimeout(onClose, EXPIRE_TIMEOUT);
     }
 
     return () => {
@@ -74,7 +73,7 @@ export const NovaWallet = ({ isOpen, onClose, onComplete }: Props) => {
     if (step === Step.REJECT) {
       showStatus({
         title: t('onboarding.walletConnect.rejected'),
-        content: <Animation animation={Animations.error} />,
+        content: <Animation variant="error" />,
       });
       onClose();
     }

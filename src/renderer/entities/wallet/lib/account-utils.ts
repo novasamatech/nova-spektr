@@ -2,13 +2,22 @@ import { u8aToHex } from '@polkadot/util';
 import { createKeyMulti } from '@polkadot/util-crypto';
 
 import { AccountType, ChainId } from '@renderer/shared/core';
-import type { AccountId, Threshold, MultisigAccount, Account, BaseAccount, ChainAccount } from '@renderer/shared/core';
+import type {
+  AccountId,
+  Threshold,
+  MultisigAccount,
+  Account,
+  BaseAccount,
+  ChainAccount,
+  WalletConnectAccount,
+} from '@renderer/shared/core';
 
 export const accountUtils = {
   isBaseAccount,
   isChainAccount,
   isMultisigAccount,
   isChainIdMatch,
+  isWalletConnectAccount,
   getMultisigAccountId,
 };
 
@@ -24,12 +33,15 @@ function isChainAccount(account: Pick<Account, 'type'>): account is ChainAccount
   return account.type === AccountType.CHAIN;
 }
 
-function isWalletConnectAccount(account: Pick<Account, 'type'>): account is ChainAccount {
+function isWalletConnectAccount(account: Pick<Account, 'type'>): account is WalletConnectAccount {
   return account.type === AccountType.WALLET_CONNECT;
 }
 
 function isChainIdMatch(account: Pick<Account, 'type'>, chainId: ChainId): boolean {
-  return (!isChainAccount(account) && !isWalletConnectAccount(account)) || account.chainId === chainId;
+  const isBaseAccountType = isBaseAccount(account);
+  const isMultisigAccountType = isMultisigAccount(account);
+
+  return isBaseAccountType || isMultisigAccountType || (isChainAccount(account) && account.chainId === chainId);
 }
 
 function isMultisigAccount(account: Pick<Account, 'type'>): account is MultisigAccount {

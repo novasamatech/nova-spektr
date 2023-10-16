@@ -53,6 +53,7 @@ import Duration from './Duration/Duration';
 import Loader from './Loader/Loader';
 import DetailRow from './DetailRow/DetailRow';
 import { Truncate } from './Truncate/Truncate';
+import { Countdown } from './Countdown/Countdown';
 
 // FIXME: Animation component exported separately.
 // Adding them to this file causes to crash all tests which use anything from that file
@@ -113,4 +114,5 @@ export {
   DetailRow,
   Truncate,
   MainLayout,
+  Countdown,
 };
