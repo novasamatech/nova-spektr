@@ -4,7 +4,8 @@ import { Trans } from 'react-i18next';
 import uniqBy from 'lodash/uniqBy';
 import { useUnit } from 'effector-react';
 
-import { useI18n, useNetworkContext, useConfirmContext, Paths } from '@renderer/app/providers';
+import { useI18n, useNetworkContext, useConfirmContext } from '@renderer/app/providers';
+import { Paths } from '@renderer/shared/routes';
 import { BaseModal, SearchInput, BodyText, InfoLink, Icon } from '@renderer/shared/ui';
 import { useToggle } from '@renderer/shared/lib/hooks';
 import { ExtendedChain, chainsService } from '@renderer/entities/network';

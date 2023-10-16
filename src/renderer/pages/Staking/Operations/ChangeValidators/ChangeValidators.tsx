@@ -3,7 +3,8 @@ import { useState, useEffect } from 'react';
 import { Navigate, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { useUnit } from 'effector-react';
 
-import { useI18n, useNetworkContext, Paths } from '@renderer/app/providers';
+import { useI18n, useNetworkContext } from '@renderer/app/providers';
+import { Paths } from '@renderer/shared/routes';
 import { Transaction, TransactionType, useTransaction } from '@renderer/entities/transaction';
 import { ValidatorMap } from '@renderer/entities/staking';
 import { toAddress, getRelaychainAsset, DEFAULT_TRANSITION } from '@renderer/shared/lib/utils';

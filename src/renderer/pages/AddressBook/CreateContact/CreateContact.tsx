@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 
-import { Paths } from '@renderer/app/providers';
+import { Paths } from '@renderer/shared/routes';
 import { CreateContactModal } from '@renderer/widgets';
 
 export const CreateContact = () => {

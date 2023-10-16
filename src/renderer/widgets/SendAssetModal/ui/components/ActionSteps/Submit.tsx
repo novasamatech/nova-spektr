@@ -3,7 +3,8 @@ import { UnsignedTransaction } from '@substrate/txwrapper-polkadot';
 import { useEffect, useState, ComponentProps } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-import { useI18n, useMatrix, useMultisigChainContext, Paths } from '@renderer/app/providers';
+import { useI18n, useMatrix, useMultisigChainContext } from '@renderer/app/providers';
+import { Paths } from '@renderer/shared/routes';
 import {
   Transaction,
   MultisigTransaction,

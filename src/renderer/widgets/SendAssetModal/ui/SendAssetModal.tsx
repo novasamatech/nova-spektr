@@ -3,7 +3,8 @@ import { UnsignedTransaction } from '@substrate/txwrapper-polkadot';
 import { useStore, useGate } from 'effector-react';
 import { useNavigate } from 'react-router-dom';
 
-import { Paths, useI18n, useNetworkContext } from '@renderer/app/providers';
+import { useI18n, useNetworkContext } from '@renderer/app/providers';
+import { Paths } from '@renderer/shared/routes';
 import { Transaction, useTransaction, validateBalance } from '@renderer/entities/transaction';
 import { BaseModal, Button, Loader } from '@renderer/shared/ui';
 import { Confirmation, InitOperation, Submit } from './components/ActionSteps';

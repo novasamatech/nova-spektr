@@ -13,7 +13,7 @@ export type Props = {
   badge?: ReactNode;
 };
 
-const NavItem = ({ title, link, icon, badge }: Props) => {
+export const NavItem = ({ title, link, icon, badge }: Props) => {
   const { t } = useI18n();
 
   return (
@@ -38,5 +38,3 @@ const NavItem = ({ title, link, icon, badge }: Props) => {
     </NavLink>
   );
 };
-
-export default NavItem;

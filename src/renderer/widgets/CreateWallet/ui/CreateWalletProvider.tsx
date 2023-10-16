@@ -7,7 +7,7 @@ import WatchOnly from '@renderer/pages/Onboarding/WatchOnly/WatchOnly';
 import Vault from '@renderer/pages/Onboarding/Vault/Vault';
 import { MultisigAccount } from './MultisigAccount/MultisigAccount';
 import { WalletType } from '@renderer/shared/core';
-import { Paths } from '../../../app/providers/routes/paths';
+import { Paths } from '@renderer/shared/routes';
 
 // TODO: Break down WatchOnly / Vault / CreateMultisig to widgets
 type ModalProps = {

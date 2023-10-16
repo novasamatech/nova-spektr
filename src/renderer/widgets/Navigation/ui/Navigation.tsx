@@ -3,19 +3,17 @@ import { keyBy } from 'lodash';
 import { useUnit } from 'effector-react';
 
 import { useMultisigTx } from '@renderer/entities/multisig';
-import './Navigation.css';
 import { MultisigTxInitStatus } from '@renderer/entities/transaction';
-import { WalletMenu } from '../Wallets/WalletMenu';
-import { WalletCard } from '../Wallets/WalletCard';
-import NavItem, { Props as NavItemProps } from '../NavItem/NavItem';
+import { WalletCard, WalletMenu } from '@renderer/features/wallets';
+import { NavItem, Props as NavItemProps } from './NavItem';
 import { chainsService } from '@renderer/entities/network';
-import { ChainsRecord } from '@renderer/components/layout/PrimaryLayout/Wallets/common/types';
-import { Paths } from '../../../../app/providers/routes/paths';
+import { ChainsRecord } from '@renderer/features/wallets/WalletSelect/common/types';
+import { Paths } from '@renderer/shared/routes';
 import { Shimmering } from '@renderer/shared/ui';
 import { walletModel } from '@renderer/entities/wallet';
 import { cnTw } from '@renderer/shared/lib/utils';
 
-const Navigation = () => {
+export const Navigation = () => {
   const activeWallet = useUnit(walletModel.$activeWallet);
   const activeAccounts = useUnit(walletModel.$activeAccounts);
 
@@ -43,11 +41,6 @@ const Navigation = () => {
       badge: txs.length,
     },
     { icon: 'addressBook', title: 'navigation.addressBookLabel', link: Paths.ADDRESS_BOOK },
-
-    // { icon: <Icon name="history" />, title: 'navigation.historyLabel', link: Paths.HISTORY },
-    // { icon: <Icon name="eth" />, title: 'navigation.cameraDEVLabel', link: Paths.CAMERA_DEV },
-    // { icon: <Icon name="btc" />, title: 'navigation.chatDEVLabel', link: Paths.CHAT_DEV },
-    // { icon: <Icon name="history" />, title: 'navigation.signingDEVLabel', link: Paths.SIGNING },
   ];
 
   return (
@@ -78,5 +71,3 @@ const Navigation = () => {
     </aside>
   );
 };
-
-export default Navigation;

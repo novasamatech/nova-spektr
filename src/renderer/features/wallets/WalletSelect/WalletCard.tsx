@@ -2,7 +2,7 @@ import { useUnit } from 'effector-react';
 
 import { BodyText, CaptionText, FootnoteText, Icon, Identicon } from '@renderer/shared/ui';
 import { WalletFiatBalance } from './WalletFiatBalance';
-import { GroupIcons, GroupLabels } from '@renderer/components/layout/PrimaryLayout/Wallets/common/constants';
+import { GroupIcons, GroupLabels } from '@renderer/features/wallets/WalletSelect/common/constants';
 import { toAddress, SS58_DEFAULT_PREFIX } from '@renderer/shared/lib/utils';
 import { useI18n } from '@renderer/app/providers';
 import { ChainsRecord } from './common/types';

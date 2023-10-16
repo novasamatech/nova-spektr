@@ -1,7 +1,7 @@
-import { Paths } from './paths';
-import { createLink } from './utils';
+import { Paths } from '../paths';
+import { createLink } from '../utils';
 
-describe('routes/utils/createLink', () => {
+describe('shared/routes/utils', () => {
   test('parse route with params', () => {
     const result = createLink(Paths.BOND, { chainId: '0x123' });
     expect(result).toEqual('/staking/bond/0x123');
