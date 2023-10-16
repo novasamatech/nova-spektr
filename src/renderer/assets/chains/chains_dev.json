@@ -174,7 +174,9 @@
     "addressPrefix": 42,
     "chainId": "0xe143f23803ac50e8f6f8e62695d1ce9e4e1d68aa36c1cd2cfd15340213f3423e",
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/chains/Westend_Testnet.svg",
-    "options": ["testnet"],
+    "options": [
+      "testnet"
+    ],
     "nodes": [
       {
         "url": "wss://rpc.ibp.network/westend",
@@ -236,7 +238,9 @@
     "chainId": "0x67f9723393ef76214df0118c34bbbd3dbebc8ed46a10973a8c969d48fe7598c9",
     "parentId": "0xe143f23803ac50e8f6f8e62695d1ce9e4e1d68aa36c1cd2cfd15340213f3423e",
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/chains/Westmint_Testnet.svg",
-    "options": ["testnet"],
+    "options": [
+      "testnet"
+    ],
     "nodes": [
       {
         "url": "wss://westmint-rpc.polkadot.io",
@@ -2106,7 +2110,9 @@
     "addressPrefix": 38,
     "chainId": "0xa0c6e3bac382b316a68bca7141af1fba507207594c761076847ce358aeedcc21",
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/chains/KILT_Peregrine_Testnet.svg",
-    "options": ["testnet"],
+    "options": [
+      "testnet"
+    ],
     "nodes": [
       {
         "url": "wss://peregrine.kilt.io/parachain-public-ws/",
@@ -2620,7 +2626,9 @@
     "addressPrefix": 42,
     "chainId": "0x23fc729c2cdb7bd6770a4e8c58748387cc715fcf338f1f74a16833d90383f4b0",
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/chains/Acala_Mandala_Testnet.svg",
-    "options": ["testnet"],
+    "options": [
+      "testnet"
+    ],
     "nodes": [
       {
         "url": "wss://mandala-rpc.aca-staging.network/ws",
@@ -4291,7 +4299,9 @@
     "addressPrefix": 0,
     "chainId": "0x55b88a59dded27563391d619d805572dd6b6b89d302b0dd792d01b3c41cfe5b1",
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/chains/Singular_Testnet.svg",
-    "options": ["testnet"],
+    "options": [
+      "testnet"
+    ],
     "nodes": [
       {
         "url": "wss://staging.node.rmrk.app",
@@ -5234,7 +5244,9 @@
     "addressPrefix": 42,
     "chainId": "0x05d5279c52c484cc80396535a316add7d47b1c5b9e0398dd1f584149341460c5",
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/chains/AlephZero_Testnet.svg",
-    "options": ["testnet"],
+    "options": [
+      "testnet"
+    ],
     "nodes": [
       {
         "url": "wss://ws.test.azero.dev",
@@ -5257,7 +5269,9 @@
     "addressPrefix": 42,
     "chainId": "0xe1ea3ab1d46ba8f4898b6b4b9c54ffc05282d299f89e84bd0fd08067758c9443",
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/chains/Moonbase_Alpha_Testnet.svg",
-    "options": ["testnet"],
+    "options": [
+      "testnet"
+    ],
     "nodes": [
       {
         "url": "wss://frag-moonbase-relay-rpc-ws.g.moonbase.moonbeam.network",
@@ -5279,7 +5293,9 @@
     "addressPrefix": 42,
     "chainId": "0x3c3183f6d701500766ff7d147b79c4f10014a095eaaa98e960dcef6b3ead50ee",
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/chains/Polymesh_Testnet.svg",
-    "options": ["testnet"],
+    "options": [
+      "testnet"
+    ],
     "nodes": [
       {
         "url": "wss://testnet-rpc.polymesh.live",
@@ -5436,7 +5452,9 @@
     "addressPrefix": 42,
     "chainId": "0x6408de7737c59c238890533af25896a2c20608d8b380bb01029acb392781063e",
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/chains/Rococo_Testnet.svg",
-    "options": ["testnet"],
+    "options": [
+      "testnet"
+    ],
     "nodes": [
       {
         "url": "wss://rococo-rpc.polkadot.io/",
@@ -5634,7 +5652,9 @@
     "addressPrefix": 42,
     "chainId": "0x18bcdb75a0bba577b084878db2dc2546eb21504eaad4b564bb7d47f9d02b6ace",
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/chains/Ternoa_Alphanet.svg",
-    "options": ["testnet"],
+    "options": [
+      "testnet"
+    ],
     "nodes": [
       {
         "url": "wss://alphanet.ternoa.com",
@@ -5664,7 +5684,9 @@
     "addressPrefix": 51,
     "chainId": "0xd54f0988402deb4548538626ce37e4a318441ea0529ca369400ebec4e04dfe4b",
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/chains/Turing_Staging.svg",
-    "options": ["testnet"],
+    "options": [
+      "testnet"
+    ],
     "nodes": [
       {
         "url": "wss://rpc.turing-staging.oak.tech",
@@ -5686,7 +5708,9 @@
     "addressPrefix": 42,
     "chainId": "0xa2ee5a1f55a23dccd0c35e36512f9009e6e50a5654e8e5e469445d0748632aa8",
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/chains/Governance2_Testnet.svg",
-    "options": ["testnet"],
+    "options": [
+      "testnet"
+    ],
     "nodes": [
       {
         "url": "wss://governance2-testnet.litentry.io",
@@ -5832,7 +5856,9 @@
     "addressPrefix": 7,
     "chainId": "0x8da6a03e0989154ff8c1977cbc0cbd55f6879d8759c272a4f3c078cef794bf5f",
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/chains/Beresheet.svg",
-    "options": ["testnet"],
+    "options": [
+      "testnet"
+    ],
     "nodes": [
       {
         "url": "wss://beresheet.jelliedowl.net",
@@ -5854,7 +5880,9 @@
     "addressPrefix": 2,
     "chainId": "0xf460fe68f5f34ced6b18d8e4612410e334c55521bf27714cdca654b63b685ae6",
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/chains/Governance2_Testnet.svg",
-    "options": ["testnet"],
+    "options": [
+      "testnet"
+    ],
     "nodes": [
       {
         "url": "wss://novasama.uz",
@@ -6103,7 +6131,9 @@
     "addressPrefix": 42,
     "chainId": "0xa6ffcef7fb8caadf7f6c5ad8ada65e3eaa90d1604f3eabda546ff1d486865a0c",
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/chains/Aventus_Testnet.svg",
-    "options": ["testnet"],
+    "options": [
+      "testnet"
+    ],
     "nodes": [
       {
         "url": "wss://public-rpc.public-testnet.aventus.io",
@@ -6210,7 +6240,9 @@
     "chainId": "0x3a5a5cd27eb15fd26c37315a0f0b938733bb798c897428448efac5e6150cad06",
     "parentId": "0xb0a8d493285c2df73290dfb7e61f870f17b41801197a149ca93654499ea3dafe",
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/chains/Kintsugi_Testnet.svg",
-    "options": ["testnet"],
+    "options": [
+      "testnet"
+    ],
     "nodes": [
       {
         "url": "wss://api-dev-kintsugi.interlay.io:443/parachain",
@@ -6630,7 +6662,9 @@
     "chainId": "0xc9824829d23066e7dd92b80cfef52559c7692866fcfc3530e737e3fe01410eef",
     "parentId": "0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3",
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/chains/Giant_Testnet.svg",
-    "options": ["testnet"],
+    "options": [
+      "testnet"
+    ],
     "nodes": [
       {
         "url": "wss://rpc-4-us-east-1-dev.giantprotocol.org:443",
@@ -6790,7 +6824,9 @@
     "chainId": "0x67221cd96c1551b72d55f65164d6a39f31b570c77a05c90e31931b0e2f379e13",
     "parentId": "0xb0a8d493285c2df73290dfb7e61f870f17b41801197a149ca93654499ea3dafe",
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/chains/Amplitude_foucoco.svg",
-    "options": ["testnet"],
+    "options": [
+      "testnet"
+    ],
     "nodes": [
       {
         "url": "wss://rpc-foucoco.pendulumchain.tech/",
@@ -6813,7 +6849,9 @@
     "chainId": "0x418ae94c9fce02b1ab3b5bc211cd2f2133426f2861d97482bbdfdac1bbb0fb92",
     "parentId": "0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3",
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/chains/Interlay_Testnet.svg",
-    "options": ["testnet"],
+    "options": [
+      "testnet"
+    ],
     "nodes": [
       {
         "url": "wss://api-testnet.interlay.io:443/parachain",
@@ -7138,7 +7176,9 @@
     "addressPrefix": 137,
     "chainId": "0x9b86ea7366584c5ddf67de243433fcc05732864933258de9467db46eb9bef8b5",
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/chains/Vara_Testnet.svg",
-    "options": ["testnet"],
+    "options": [
+      "testnet"
+    ],
     "nodes": [
       {
         "url": "wss://vit.vara-network.io",
