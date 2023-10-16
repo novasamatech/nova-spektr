@@ -105,7 +105,12 @@ export const ReceiveAssetModal = ({ chain, asset, onClose }: Props) => {
         <ul className="flex gap-x-2 mb-4">
           {chain.explorers?.map(({ name, account }) => (
             <li aria-label={t('receive.explorerLinkLabel', { name })} key={name} className="flex">
-              <a href={account?.replace('{address}', address)} rel="noopener noreferrer" target="_blank">
+              <a
+                href={account?.replace('{address}', address)}
+                rel="noopener noreferrer"
+                target="_blank"
+                className="px-1.5 py-1"
+              >
                 <Icon size={16} as="img" name={ExplorerIcons[name] || ExplorerIcons[DefaultExplorer]} />
               </a>
             </li>
@@ -113,13 +118,8 @@ export const ReceiveAssetModal = ({ chain, asset, onClose }: Props) => {
         </ul>
       )}
 
-      <HelpText className="w-[240px] mb-2 break-all" align="center">
-        <AccountAddress
-          className="justify-center"
-          address={toAddress(accountId, { prefix })}
-          showIcon={false}
-          type="adaptive"
-        />
+      <HelpText className="w-[240px] text-text-secondary break-all mb-2" align="center">
+        {toAddress(accountId, { prefix })}
       </HelpText>
 
       <Button variant="text" size="sm" onClick={() => copyToClipboard(address)}>
