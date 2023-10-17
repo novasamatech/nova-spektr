@@ -7,7 +7,7 @@ import { ExtendedChain } from '@renderer/entities/network';
 import { Transaction } from '@renderer/entities/transaction';
 import { DetailRow, FootnoteText } from '@renderer/shared/ui';
 import type { Account, MultisigAccount } from '@renderer/shared/core';
-import { WalletCardSm } from '@renderer/entities/wallet/ui/WalletCardSm/WalletCardSm';
+import { WalletCardSm } from '@renderer/entities/wallet/ui/cards/WalletCardSm/WalletCardSm';
 
 const AddressStyle = 'text-footnote text-inherit';
 
