@@ -5,7 +5,7 @@ import { FootnoteText } from '@renderer/shared/ui';
 
 type Props = {
   label: ReactNode;
-  className: string;
+  className?: string;
 };
 
 const DetailRow = ({ label, className, children }: PropsWithChildren<Props>) => (
