@@ -1,11 +1,13 @@
 import { useUnit } from 'effector-react';
 
-import { WalletType, Wallet } from '@renderer/shared/core';
+import { WalletType, Wallet, Account } from '@renderer/shared/core';
 import { walletSelectModel } from '@renderer/features/wallets';
+import { walletProviderModel } from '../model/wallet-provider-model';
 import { WalletDetails } from './WalletDetails';
 
 type ModalProps = {
   wallet: Wallet;
+  accounts: Account[];
   onClose: () => void;
 };
 const WalletModals: Record<WalletType, (props: ModalProps) => JSX.Element> = {
@@ -18,11 +20,13 @@ const WalletModals: Record<WalletType, (props: ModalProps) => JSX.Element> = {
 
 export const WalletDetailsProvider = () => {
   const wallet = useUnit(walletSelectModel.$walletForDetails);
+  const accounts = useUnit(walletProviderModel.$accounts);
 
   if (!wallet) return null;
 
   const props: ModalProps = {
     wallet,
+    accounts,
     onClose: walletSelectModel.events.walletForDetailsCleared,
   };
 
