@@ -1,8 +1,23 @@
 import { IconNames } from '@renderer/shared/ui/Icon/data';
-import { DecodedTransaction, Transaction, TransactionType } from '@renderer/entities/transaction/model/transaction';
+import {
+  DecodedTransaction,
+  MultisigEvent,
+  Transaction,
+  TransactionType,
+} from '@renderer/entities/transaction/model/transaction';
 import { toAddress, formatSectionAndMethod } from '@renderer/shared/lib/utils';
 import { TransferTypes, XcmTypes } from '@renderer/entities/transaction';
-import type { AccountId, HexString, Contact, Explorer, Signatory, Account } from '@renderer/shared/core';
+import type {
+  AccountId,
+  HexString,
+  Contact,
+  Explorer,
+  Signatory,
+  Account,
+  Wallet,
+  ChainId,
+} from '@renderer/shared/core';
+import { accountUtils, walletUtils } from '@renderer/entities/wallet';
 
 export const TRANSACTION_UNKNOWN = 'operations.titles.unknown';
 
@@ -217,4 +232,38 @@ export const getSignatoryName = (
   if (fromAccount) return fromAccount;
 
   return toAddress(signatoryId, { chunk: 5, prefix: addressPrefix });
+};
+
+export const getSignatoryAccounts = (
+  accounts: Account[],
+  wallets: Wallet[],
+  events: MultisigEvent[],
+  signatories: Signatory[],
+  chainId: ChainId,
+): Account[] => {
+  const walletsMap = new Map(wallets.map((wallet) => [wallet.id, wallet]));
+
+  return signatories.reduce((acc: Account[], signatory) => {
+    const filteredAccounts = accounts.filter(
+      (a) => a.accountId === signatory.accountId && !events.some((e) => e.accountId === a.accountId),
+    );
+
+    const signatoryAccount = filteredAccounts.find((a) => {
+      const isChainMatch = accountUtils.isChainIdMatch(a, chainId);
+      const wallet = walletsMap.get(a.walletId);
+
+      return isChainMatch && walletUtils.isValidSignatory(wallet);
+    });
+
+    if (signatoryAccount) {
+      acc.push(signatoryAccount);
+    } else {
+      const legacySignatoryAccount = filteredAccounts.find(
+        (a) => accountUtils.isChainAccount(a) && a.chainId === chainId,
+      );
+      legacySignatoryAccount && acc.push(legacySignatoryAccount);
+    }
+
+    return acc;
+  }, []);
 };

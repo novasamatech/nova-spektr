@@ -9,8 +9,8 @@ import { useI18n } from '@renderer/app/providers';
 import { MultisigTransactionDS } from '@renderer/shared/api/storage';
 import { useToggle } from '@renderer/shared/lib/hooks';
 import { ExtendedChain } from '@renderer/entities/network';
-import { TEST_ADDRESS, toAddress, transferableAmount, getAssetById } from '@renderer/shared/lib/utils';
-import { getModalTransactionTitle } from '../../common/utils';
+import { getAssetById, TEST_ADDRESS, toAddress, transferableAmount } from '@renderer/shared/lib/utils';
+import { getModalTransactionTitle, getSignatoryAccounts } from '../../common/utils';
 import { useBalance } from '@renderer/entities/asset';
 import { Submit } from '../ActionSteps/Submit';
 import { Confirmation } from '../ActionSteps/Confirmation';
@@ -18,17 +18,17 @@ import { SignatorySelectModal } from './SignatorySelectModal';
 import { useMultisigEvent } from '@renderer/entities/multisig';
 import { Signing } from '@renderer/features/operation';
 import { OperationTitle } from '@renderer/components/common';
-import type { Address, HexString, Timepoint, MultisigAccount, Account } from '@renderer/shared/core';
-import { walletModel, accountUtils, walletUtils } from '@renderer/entities/wallet';
+import type { Account, Address, HexString, MultisigAccount, Timepoint } from '@renderer/shared/core';
+import { walletModel } from '@renderer/entities/wallet';
 import {
+  isXcmTransaction,
+  MAX_WEIGHT,
   OperationResult,
   Transaction,
   TransactionType,
   useCallDataDecoder,
   useTransaction,
   validateBalance,
-  isXcmTransaction,
-  MAX_WEIGHT,
 } from '@renderer/entities/transaction';
 import { priceProviderModel } from '@renderer/entities/price';
 
@@ -48,8 +48,8 @@ const AllSteps = [Step.CONFIRMATION, Step.SIGNING, Step.SUBMIT];
 
 const ApproveTx = ({ tx, account, connection }: Props) => {
   const { t } = useI18n();
-  const activeWallet = useUnit(walletModel.$activeWallet);
   const accounts = useUnit(walletModel.$accounts);
+  const wallets = useUnit(walletModel.$wallets);
 
   const { getBalance } = useBalance();
   const { getTransactionFee, getExtrinsicWeight, getTxWeight } = useTransaction();
@@ -76,14 +76,7 @@ const ApproveTx = ({ tx, account, connection }: Props) => {
   const nativeAsset = connection.assets[0];
   const asset = getAssetById(tx.transaction?.args.assetId, connection.assets);
 
-  const unsignedAccounts = accounts.filter((a) => {
-    const isSignatory = account.signatories.find((s) => s.accountId === a.accountId);
-    const isSigned = events.some((e) => e.accountId === a.accountId);
-    const isCurrentChain = accountUtils.isChainIdMatch(a, tx.chainId);
-    const isWatchOnly = walletUtils.isWatchOnly(activeWallet);
-
-    return isSignatory && !isSigned && isCurrentChain && !isWatchOnly;
-  });
+  const unsignedAccounts = getSignatoryAccounts(accounts, wallets, events, account.signatories, tx.chainId);
 
   useEffect(() => {
     priceProviderModel.events.assetsPricesRequested({ includeRates: true });

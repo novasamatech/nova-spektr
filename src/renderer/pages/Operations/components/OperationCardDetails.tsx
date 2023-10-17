@@ -2,7 +2,7 @@ import cn from 'classnames';
 import { useUnit } from 'effector-react';
 
 import { useI18n } from '@renderer/app/providers';
-import { AddressWithExplorers, walletModel, WalletRow } from '@renderer/entities/wallet';
+import { AddressWithExplorers, WalletCardSm, walletModel } from '@renderer/entities/wallet';
 import { Icon, Button, FootnoteText, DetailRow } from '@renderer/shared/ui';
 import { copyToClipboard, truncate, cnTw } from '@renderer/shared/lib/utils';
 import { useToggle } from '@renderer/shared/lib/hooks';
@@ -76,7 +76,7 @@ const OperationCardDetails = ({ tx, account, connection }: Props) => {
 
       {account && wallet && (
         <DetailRow label={t('operation.details.multisigWallet')} className={valueClass}>
-          <WalletRow
+          <WalletCardSm
             wallet={wallet}
             accountId={account.accountId}
             addressPrefix={addressPrefix}
@@ -131,10 +131,12 @@ const OperationCardDetails = ({ tx, account, connection }: Props) => {
           <DetailRow label={t('operation.details.validators')} className={valueClass}>
             <button
               type="button"
-              className={cn('flex gap-x-1 items-center', InteractionStyle)}
+              className={cn('flex gap-x-1 items-center text-text-secondary', InteractionStyle)}
               onClick={toggleValidators}
             >
-              <FootnoteText as="span">{validators.length}</FootnoteText>
+              <FootnoteText as="span" className="text-inherit">
+                {validators.length}
+              </FootnoteText>
               <Icon name="info" size={16} />
             </button>
           </DetailRow>

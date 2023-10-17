@@ -2,7 +2,7 @@ import cn from 'classnames';
 import { useUnit } from 'effector-react';
 
 import { useI18n } from '@renderer/app/providers';
-import { AddressWithExplorers, WalletIcon, walletModel, WalletRow } from '@renderer/entities/wallet';
+import { AddressWithExplorers, WalletCardSm, WalletIcon, walletModel } from '@renderer/entities/wallet';
 import { Icon, FootnoteText, DetailRow, CaptionText } from '@renderer/shared/ui';
 import { useToggle } from '@renderer/shared/lib/hooks';
 import { ExtendedChain } from '@renderer/entities/network';
@@ -93,7 +93,7 @@ const Details = ({ tx, account, connection, signatory }: Props) => {
 
       {signatory && signatoryWallet && (
         <DetailRow label={t('transfer.signatoryLabel')} className="text-text-secondary -mr-2">
-          <WalletRow
+          <WalletCardSm
             wallet={signatoryWallet}
             accountId={signatory.accountId}
             addressPrefix={addressPrefix}
