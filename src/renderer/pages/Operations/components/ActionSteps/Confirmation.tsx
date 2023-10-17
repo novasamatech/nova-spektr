@@ -68,7 +68,7 @@ export const Confirmation = ({ tx, account, connection, signatory, feeTx, onSign
         <DepositWithLabel
           api={connection.api}
           asset={connection.assets[0]}
-          className="pr-2"
+          className="text-footnote"
           threshold={(account as MultisigAccount).threshold}
         />
       )}
@@ -76,7 +76,7 @@ export const Confirmation = ({ tx, account, connection, signatory, feeTx, onSign
       <DetailRow label={t('operation.networkFee')} className="text-text-primary">
         {connection?.api && feeTx && (
           <Fee
-            className="text-footnote text-text-primary"
+            className="text-footnote"
             api={connection.api}
             asset={connection.assets[0]}
             transaction={feeTx}
@@ -96,7 +96,7 @@ export const Confirmation = ({ tx, account, connection, signatory, feeTx, onSign
 
       <Button
         disabled={!isFeeLoaded}
-        className="mt-7 ml-auto"
+        className="mt-3 ml-auto"
         prefixElement={<Icon name="vault" size={14} />}
         onClick={onSign}
       >

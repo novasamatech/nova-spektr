@@ -92,7 +92,7 @@ const Details = ({ tx, account, connection, signatory }: Props) => {
       )}
 
       {signatory && signatoryWallet && (
-        <DetailRow label={t('transfer.signatoryLabel')} className="text-text-secondary">
+        <DetailRow label={t('transfer.signatoryLabel')} className="text-text-secondary -mr-2">
           <WalletRow
             wallet={signatoryWallet}
             accountId={signatory.accountId}
@@ -151,7 +151,7 @@ const Details = ({ tx, account, connection, signatory }: Props) => {
       {transaction?.args.payee && (
         <DetailRow
           label={t('operation.details.payee')}
-          className={transaction.args.payee.Account && 'text-text-secondary'}
+          className={transaction.args.payee.Account ? 'text-text-secondary' : 'pr-0'}
         >
           {transaction.args.payee.Account ? (
             <AddressWithExplorers

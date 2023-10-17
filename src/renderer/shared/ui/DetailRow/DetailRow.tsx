@@ -19,7 +19,7 @@ const DetailRow = ({ label, className, children }: PropsWithChildren<Props>) => 
     )}
 
     {typeof children === 'string' ? (
-      <FootnoteText as="dd" align="right" className={cn(className, 'justify-end py-[3px] px-2')}>
+      <FootnoteText as="dd" align="right" className={cn('justify-end py-[3px] px-2', className)}>
         {children}
       </FootnoteText>
     ) : (
