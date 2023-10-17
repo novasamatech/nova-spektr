@@ -1,6 +1,15 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { useStore } from 'effector-react';
 
-import { MultisigTransaction, Transaction, Fee, DepositWithLabel } from '@renderer/entities/transaction';
+import {
+  MultisigTransaction,
+  Transaction,
+  Fee,
+  DepositWithLabel,
+  isXcmTransaction,
+  TransactionType,
+  XcmFee,
+} from '@renderer/entities/transaction';
 import { TransactionAmount } from '@renderer/pages/Operations/components/TransactionAmount';
 import { Button, DetailRow, FootnoteText, Icon } from '@renderer/shared/ui';
 import { ExtendedChain } from '@renderer/entities/network';
@@ -8,6 +17,8 @@ import { useI18n } from '@renderer/app/providers';
 import { getIconName } from '../../common/utils';
 import type { Account, MultisigAccount } from '@renderer/shared/core';
 import Details from '../Details';
+import { sendAssetModel } from '@renderer/widgets';
+import { getAssetById } from '@renderer/shared/lib/utils';
 
 type Props = {
   tx: MultisigTransaction;
@@ -18,23 +29,23 @@ type Props = {
   onSign: () => void;
 };
 export const Confirmation = ({ tx, account, connection, signatory, feeTx, onSign }: Props) => {
-  // const xcmConfig = useStore(sendAssetModel.$finalConfig);
+  const xcmConfig = useStore(sendAssetModel.$finalConfig);
   const { t } = useI18n();
   const [isFeeLoaded, setIsFeeLoaded] = useState(false);
 
-  // const asset = connection.assets[0];
+  const asset = getAssetById(tx.transaction?.args.assetId, connection.assets) || connection.assets[0];
 
   const iconName = getIconName(tx.transaction);
-  // const transaction =
-  //   tx.transaction?.type === 'batchAll'
-  //     ? tx.transaction.args.transactions.find(
-  //         (tx: Transaction) => tx.type === TransactionType.BOND || tx.type === TransactionType.UNSTAKE,
-  //       ) || tx.transaction.args.transactions[0]
-  //     : tx.transaction;
+  const transaction =
+    tx.transaction?.type === 'batchAll'
+      ? tx.transaction.args.transactions.find(
+          (tx: Transaction) => tx.type === TransactionType.BOND || tx.type === TransactionType.UNSTAKE,
+        ) || tx.transaction.args.transactions[0]
+      : tx.transaction;
 
-  // useEffect(() => {
-  //   sendAssetModel.events.xcmConfigRequested();
-  // }, []);
+  useEffect(() => {
+    sendAssetModel.events.xcmConfigRequested();
+  }, []);
 
   return (
     <div className="flex flex-col items-center gap-y-3">
@@ -75,14 +86,13 @@ export const Confirmation = ({ tx, account, connection, signatory, feeTx, onSign
         )}
       </DetailRow>
 
-      {/*{isXcmTransaction(transaction) && xcmConfig && (*/}
-      {/*  <DetailRow label={t('operation.xcmFee')} className="text-text-primary pr-2">*/}
-      {/*    {xcmConfig && connection.api && (*/}
-      {/*      // TODO pass proper asset*/}
-      {/*      <XcmFee api={connection.api} transaction={transaction} asset={asset} config={xcmConfig} />*/}
-      {/*    )}*/}
-      {/*  </DetailRow>*/}
-      {/*)}*/}
+      {isXcmTransaction(transaction) && xcmConfig && (
+        <DetailRow label={t('operation.xcmFee')} className="text-text-primary pr-2">
+          {xcmConfig && connection.api && (
+            <XcmFee api={connection.api} transaction={transaction} asset={asset} config={xcmConfig} />
+          )}
+        </DetailRow>
+      )}
 
       <Button
         disabled={!isFeeLoaded}
