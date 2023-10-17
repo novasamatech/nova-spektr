@@ -1,6 +1,6 @@
 import { useAddressInfo } from '@renderer/entities/wallet/lib/useAddressInfo';
 import { toAddress } from '@renderer/shared/lib/utils';
-import { Icon, Identicon, BodyText, InfoPopover } from '@renderer/shared/ui';
+import { Icon, Identicon, BodyText, InfoPopover, HelpText } from '@renderer/shared/ui';
 import { ExtendedContact } from '../common/types';
 import type { Explorer } from '@renderer/shared/core';
 
@@ -15,9 +15,8 @@ export const ContactItem = ({ accountId, name, explorers = [] }: Props) => {
       <Identicon address={address} size={20} background={false} />
 
       <div className="flex flex-col max-w-[348px]">
-        <BodyText as="span" className=" tracking-tight truncate">
-          {name || address}
-        </BodyText>
+        <BodyText className="tracking-tight">{name}</BodyText>
+        <HelpText className="text-text-tertiary truncate">{address}</HelpText>
       </div>
 
       <InfoPopover data={popoverItems} containerClassName="ml-auto" position="right-0">
