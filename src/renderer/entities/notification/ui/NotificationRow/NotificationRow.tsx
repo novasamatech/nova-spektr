@@ -16,7 +16,7 @@ import { Wallet } from '@renderer/shared/core';
 const NotificationBody = {
   [MultisigNotificationType.ACCOUNT_INVITED]: (n: Notification, t: TFunction, w?: Wallet) => {
     if (!w) {
-      return <div className="flex"></div>;
+      return <></>;
     }
     const typedNotification = n as Notification & MultisigNotification & MultisigAccountInvitedNotification;
 
@@ -37,10 +37,10 @@ const NotificationBody = {
       </BodyText>
     );
   },
-  [MultisigNotificationType.MST_CREATED]: () => <div className="flex"></div>,
-  [MultisigNotificationType.MST_APPROVED]: () => <div className="flex"></div>,
-  [MultisigNotificationType.MST_EXECUTED]: () => <div className="flex"></div>,
-  [MultisigNotificationType.MST_CANCELLED]: () => <div className="flex"></div>,
+  [MultisigNotificationType.MST_CREATED]: () => <></>,
+  [MultisigNotificationType.MST_APPROVED]: () => <></>,
+  [MultisigNotificationType.MST_EXECUTED]: () => <></>,
+  [MultisigNotificationType.MST_CANCELLED]: () => <></>,
 } as const;
 
 type Props = {

@@ -39,7 +39,7 @@ const LogModal = ({ isOpen, onClose, tx, account, connection, contacts, accounts
   const { t, dateLocale } = useI18n();
   const { getLiveTxEvents } = useMultisigEvent({});
   const walletsMap = new Map(useUnit(walletModel.$wallets).map((w) => [w.id, w]));
-  const accountMap = new Map(useUnit(walletModel.$accounts).map((a) => [a.accountId, a]));
+  const accountsMap = new Map(useUnit(walletModel.$accounts).map((a) => [a.accountId, a]));
   const events = getLiveTxEvents(tx.accountId, tx.chainId, tx.callHash, tx.blockCreated, tx.indexCreated);
 
   const { transaction, description, status } = tx;
@@ -108,7 +108,7 @@ const LogModal = ({ isOpen, onClose, tx, account, connection, contacts, accounts
                 {events
                   .sort((a, b) => (a.dateCreated || 0) - (b.dateCreated || 0))
                   .map((event) => {
-                    const account = accountMap.get(event.accountId);
+                    const account = accountsMap.get(event.accountId);
                     const wallet = account && walletsMap.get(account.walletId);
 
                     return (
