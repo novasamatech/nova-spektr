@@ -4,6 +4,6 @@ export { AddressWithName } from './AddressWithName/AddressWithName';
 export { AccountAddress, getAddress } from './AccountAddress/AccountAddress';
 export { AddressWithTwoLines } from './AddressWithTwoLines/AddressWithTwoLines';
 export { WalletIcon } from './WalletIcon/WalletIcon';
-export { WalletRow } from './WalletRow/WalletRow';
+export { WalletCardSm } from '@renderer/entities/wallet/ui/WalletCardSm/WalletCardSm';
 export { SelectableShard } from './SelectableShard/SelectableShard';
 export type { AccountAddressProps } from './AccountAddress/AccountAddress';

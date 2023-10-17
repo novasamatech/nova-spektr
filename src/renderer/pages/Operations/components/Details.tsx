@@ -2,7 +2,7 @@ import cn from 'classnames';
 import { useUnit } from 'effector-react';
 
 import { useI18n } from '@renderer/app/providers';
-import { AddressWithExplorers, walletModel, WalletRow } from '@renderer/entities/wallet';
+import { AddressWithExplorers, walletModel, WalletCardSm } from '@renderer/entities/wallet';
 import { Icon, Button, FootnoteText, DetailRow } from '@renderer/shared/ui';
 import { copyToClipboard, truncate, cnTw } from '@renderer/shared/lib/utils';
 import { useToggle } from '@renderer/shared/lib/hooks';
@@ -77,7 +77,7 @@ const Details = ({ tx, account, connection, isCardDetails = true }: Props) => {
 
       {account && wallet && (
         <DetailRow label={t('operation.details.multisigWallet')} className={valueClass}>
-          <WalletRow
+          <WalletCardSm
             wallet={wallet}
             accountId={account.accountId}
             addressPrefix={addressPrefix}

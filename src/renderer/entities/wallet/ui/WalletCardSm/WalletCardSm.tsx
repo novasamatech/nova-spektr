@@ -12,7 +12,7 @@ type Props = {
   accountId: AccountId;
 };
 
-export const WalletRow = ({ wallet, className, iconSize = 16, addressPrefix, accountId, explorers }: Props) => {
+export const WalletCardSm = ({ wallet, className, iconSize = 16, addressPrefix, accountId, explorers }: Props) => {
   const address = toAddress(accountId, { prefix: addressPrefix });
   const popoverItems = useAddressInfo(address, explorers, false);
 
