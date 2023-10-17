@@ -15,9 +15,7 @@ export const useValidatorsMap = (api?: ApiPromise, chainId?: ChainId, isLightCli
     let unsubEra: () => void | undefined;
 
     if (api) {
-      (async () => {
-        unsubEra = await subscribeActiveEra(api, setEra);
-      })();
+      subscribeActiveEra(api, setEra).then((unsubFn) => (unsubEra = unsubFn));
     }
 
     return () => {
@@ -28,9 +26,7 @@ export const useValidatorsMap = (api?: ApiPromise, chainId?: ChainId, isLightCli
   useEffect(() => {
     if (!era || !chainId || !api) return;
 
-    getValidatorsWithInfo(chainId, api, era, isLightClient).then((validators) => {
-      setValidators(validators);
-    });
+    getValidatorsWithInfo(chainId, api, era, isLightClient).then(setValidators);
   }, [era]);
 
   return validators;

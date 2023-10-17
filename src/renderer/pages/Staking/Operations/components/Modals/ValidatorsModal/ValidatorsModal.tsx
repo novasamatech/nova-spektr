@@ -3,7 +3,7 @@ import { useI18n } from '@renderer/app/providers';
 import { Validator } from '@renderer/shared/core/types/validator';
 import { cnTw } from '@renderer/shared/lib/utils';
 import type { Asset, Explorer } from '@renderer/shared/core';
-import ValidatorsTable from '../../ValidatorsTable/ValidatorsTable';
+import { ValidatorsTable } from '../../ValidatorsTable/ValidatorsTable';
 
 type Props = {
   isOpen: boolean;

@@ -7,7 +7,7 @@ import { useI18n } from '@renderer/app/providers';
 import { ValidatorMap, useValidators, useValidatorsMap } from '@renderer/entities/staking';
 import { includes, cnTw } from '@renderer/shared/lib/utils';
 import type { Asset, Explorer, Address, ChainId } from '@renderer/shared/core';
-import ValidatorsTable from '@renderer/pages/Staking/Operations/components/ValidatorsTable/ValidatorsTable';
+import { ValidatorsTable } from '../ValidatorsTable/ValidatorsTable';
 
 type Props = {
   api: ApiPromise;
