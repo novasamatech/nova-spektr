@@ -1,5 +1,6 @@
 import { groupBy } from 'lodash';
 import { format } from 'date-fns';
+import { useUnit } from 'effector-react';
 
 import { useI18n } from '@renderer/app/providers';
 import { chainsService, ExtendedChain } from '@renderer/entities/network';
@@ -14,6 +15,7 @@ import { useMultisigEvent } from '@renderer/entities/multisig';
 import { MultisigTransactionDS } from '@renderer/shared/api/storage';
 import { AssetBalance } from '@renderer/entities/asset';
 import type { Account, MultisigAccount, Contact } from '@renderer/shared/core';
+import { WalletIcon, walletModel } from '@renderer/entities/wallet';
 
 type Props = {
   tx: MultisigTransactionDS;
@@ -36,6 +38,8 @@ const EventMessage: Partial<Record<SigningStatus | 'INITIATED', string>> = {
 const LogModal = ({ isOpen, onClose, tx, account, connection, contacts, accounts }: Props) => {
   const { t, dateLocale } = useI18n();
   const { getLiveTxEvents } = useMultisigEvent({});
+  const walletsMap = new Map(useUnit(walletModel.$wallets).map((w) => [w.id, w]));
+  const accountsMap = new Map(useUnit(walletModel.$accounts).map((a) => [a.accountId, a]));
   const events = getLiveTxEvents(tx.accountId, tx.chainId, tx.callHash, tx.blockCreated, tx.indexCreated);
 
   const { transaction, description, status } = tx;
@@ -103,28 +107,37 @@ const LogModal = ({ isOpen, onClose, tx, account, connection, contacts, accounts
               <ul className="flex flex-col gap-y-4">
                 {events
                   .sort((a, b) => (a.dateCreated || 0) - (b.dateCreated || 0))
-                  .map((event) => (
-                    <li key={`${event.accountId}_${event.status}`} className="flex flex-col">
-                      <div className="flex gap-x-2 w-full items-center">
-                        <Identicon
-                          size={16}
-                          address={toAddress(event.accountId, { prefix: addressPrefix })}
-                          background={false}
-                        />
-                        <BodyText className="text-text-secondary">{getEventMessage(event)}</BodyText>
-                        <BodyText className="text-text-tertiary ml-auto">
-                          {event.dateCreated && format(new Date(event.dateCreated), 'p', { locale: dateLocale })}
-                        </BodyText>
-                        {event.extrinsicHash && connection?.explorers && (
-                          <ExtrinsicExplorers hash={event.extrinsicHash} explorers={connection.explorers} />
-                        )}
-                      </div>
+                  .map((event) => {
+                    const account = accountsMap.get(event.accountId);
+                    const wallet = account && walletsMap.get(account.walletId);
 
-                      {(event.status === 'ERROR_CANCELLED' || event.status === 'ERROR_SIGNED') && (
-                        <BodyText className="text-text-negative">{t('log.error')}</BodyText>
-                      )}
-                    </li>
-                  ))}
+                    return (
+                      <li key={`${event.accountId}_${event.status}`} className="flex flex-col">
+                        <div className="flex gap-x-2 w-full items-center">
+                          {wallet ? (
+                            <WalletIcon type={wallet.type} size={16} />
+                          ) : (
+                            <Identicon
+                              size={16}
+                              address={toAddress(event.accountId, { prefix: addressPrefix })}
+                              background={false}
+                            />
+                          )}
+                          <BodyText className="text-text-secondary">{getEventMessage(event)}</BodyText>
+                          <BodyText className="text-text-tertiary ml-auto">
+                            {event.dateCreated && format(new Date(event.dateCreated), 'p', { locale: dateLocale })}
+                          </BodyText>
+                          {event.extrinsicHash && connection?.explorers && (
+                            <ExtrinsicExplorers hash={event.extrinsicHash} explorers={connection.explorers} />
+                          )}
+                        </div>
+
+                        {(event.status === 'ERROR_CANCELLED' || event.status === 'ERROR_SIGNED') && (
+                          <BodyText className="text-text-negative">{t('log.error')}</BodyText>
+                        )}
+                      </li>
+                    );
+                  })}
               </ul>
             </section>
           ))}
