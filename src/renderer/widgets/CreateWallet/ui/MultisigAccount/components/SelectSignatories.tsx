@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 
 import { cnTw, includes, toAddress } from '@renderer/shared/lib/utils';
-import { useI18n, useMatrix, useNetworkContext } from '@renderer/app/providers';
+import { useI18n, useMatrix } from '@renderer/app/providers';
 import { useToggle } from '@renderer/shared/lib/hooks';
 import { Button, Checkbox, FootnoteText, Icon, SearchInput, SmallTitleText, Tabs, Tooltip } from '@renderer/shared/ui';
 import { TabItem } from '@renderer/shared/ui/types';
@@ -29,7 +29,6 @@ type Props = {
 export const SelectSignatories = ({ isActive, wallets, accounts, contacts, onSelect }: Props) => {
   const { t } = useI18n();
   const { matrix, isLoggedIn } = useMatrix();
-  const { connections } = useNetworkContext();
 
   const [query, setQuery] = useState('');
   const [contactList, setContactList] = useState<ExtendedContact[]>([]);
@@ -59,7 +58,7 @@ export const SelectSignatories = ({ isActive, wallets, accounts, contacts, onSel
 
         const accountId = walletAccounts[0].accountId;
 
-        if (walletUtils.isSingleShard(wallet) || walletAccounts.every((a) => a.accountId === accountId)) {
+        if (walletAccounts.every((a) => a.accountId === accountId && !walletUtils.isMultisig(wallet))) {
           acc.available.push({
             ...wallet,
             index: index.toString(),
