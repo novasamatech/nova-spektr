@@ -8,9 +8,14 @@ import type { WalletFamily, Wallet, Balance, Chain, ChainId, AccountId } from '@
 import { WalletType } from '@renderer/shared/core';
 import { currencyModel, priceProviderModel } from '@renderer/entities/price';
 
+const queryChanged = createEvent<string>();
+const walletForDetailsSet = createEvent<Wallet>();
+const walletForDetailsCleared = createEvent();
+
 const PropsGate = createGate<{ balances: Balance[]; chains: Record<ChainId, Chain> }>();
 
 const $filterQuery = createStore<string>('');
+const $walletForDetails = createStore<Wallet | null>(null).reset(walletForDetailsCleared);
 
 const $filteredWalletGroups = combine(walletModel.$wallets, $filterQuery, (wallets, query) => {
   return wallets.reduce<Record<WalletFamily, Wallet[]>>(
@@ -83,15 +88,17 @@ const $walletBalances = combine(
   },
 );
 
-const queryChanged = createEvent<string>();
-
 forward({ from: queryChanged, to: $filterQuery });
+forward({ from: walletForDetailsSet, to: $walletForDetails });
 
 export const walletSelectModel = {
   $filteredWalletGroups,
   $walletBalances,
+  $walletForDetails,
   PropsGate,
   events: {
     queryChanged,
+    walletForDetailsSet,
+    walletForDetailsCleared,
   },
 };

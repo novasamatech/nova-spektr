@@ -1,2 +1,2 @@
-export { WalletSelect } from './WalletSelect';
+export { WalletSelect, walletSelectModel } from './WalletSelect';
 export { SelectWalletPairing, walletPairingModel } from './SelectWalletPairing';

@@ -25,7 +25,7 @@ sample({
   target: navigateFx,
 });
 
-forward({ from: navigateFx.doneData, to: walletPairingModel.events.clearWalletType });
+forward({ from: navigateFx.doneData, to: walletPairingModel.events.walletTypeCleared });
 
 export const walletProviderModel = {
   events: {

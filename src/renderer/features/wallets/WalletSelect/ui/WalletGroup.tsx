@@ -4,6 +4,7 @@ import { Wallet, WalletFamily, WalletType } from '@renderer/shared/core';
 import { WalletIcon, walletModel } from '@renderer/entities/wallet';
 import { cnTw } from '@renderer/shared/lib/utils';
 import { WalletFiatBalance } from './WalletFiatBalance';
+import { walletSelectModel } from '../model/wallet-select-model';
 
 export const GroupLabels: Record<WalletFamily, string> = {
   [WalletType.POLKADOT_VAULT]: 'wallets.paritySignerLabel',
@@ -56,7 +57,7 @@ export const WalletGroup = ({ type, wallets }: Props) => {
                 <IconButton
                   className="absolute right-2 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 focus:opacity-100"
                   name="info"
-                  onClick={() => console.log('🔴 OPEN DETAILS 🔴')}
+                  onClick={() => walletSelectModel.events.walletForDetailsSet(wallet)}
                 />
               </div>
             </li>
