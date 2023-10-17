@@ -834,6 +834,9 @@
     "title": "Отправить",
     "wallet": "Кошелёк"
   },
+  "walletDetails": {
+    "simpleTitle": "Детали кошелька"
+  },
   "wallets": {
     "addButtonTitle": "Добавить",
     "addMultisig": "Multisig",

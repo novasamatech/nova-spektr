@@ -834,6 +834,9 @@
     "title": "Send",
     "wallet": "Wallet"
   },
+  "walletDetails": {
+    "simpleTitle": "Wallet details"
+  },
   "wallets": {
     "addButtonTitle": "Add",
     "addMultisig": "Multisig",

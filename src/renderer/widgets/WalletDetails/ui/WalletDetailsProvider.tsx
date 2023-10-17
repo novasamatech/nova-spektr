@@ -3,7 +3,7 @@ import { useUnit } from 'effector-react';
 import { WalletType, Wallet, Account } from '@renderer/shared/core';
 import { walletSelectModel } from '@renderer/features/wallets';
 import { walletProviderModel } from '../model/wallet-provider-model';
-import { WalletDetails } from './WalletDetails';
+import { SimpleWalletDetails } from './SimpleWalletDetails';
 
 type ModalProps = {
   wallet: Wallet;
@@ -11,11 +11,15 @@ type ModalProps = {
   onClose: () => void;
 };
 const WalletModals: Record<WalletType, (props: ModalProps) => JSX.Element> = {
-  [WalletType.POLKADOT_VAULT]: (props) => <WalletDetails isOpen {...props} />,
-  [WalletType.MULTISHARD_PARITY_SIGNER]: (props) => <WalletDetails isOpen {...props} />,
-  [WalletType.SINGLE_PARITY_SIGNER]: (props) => <WalletDetails isOpen {...props} />,
-  [WalletType.WATCH_ONLY]: (props) => <WalletDetails isOpen {...props} />,
-  [WalletType.MULTISIG]: (props) => <WalletDetails isOpen {...props} />,
+  [WalletType.POLKADOT_VAULT]: (props) => <></>,
+  [WalletType.MULTISHARD_PARITY_SIGNER]: (props) => <></>,
+  [WalletType.SINGLE_PARITY_SIGNER]: ({ accounts, ...rest }: ModalProps) => (
+    <SimpleWalletDetails isOpen account={accounts[0]} {...rest} />
+  ),
+  [WalletType.WATCH_ONLY]: ({ accounts, ...rest }: ModalProps) => (
+    <SimpleWalletDetails isOpen account={accounts[0]} {...rest} />
+  ),
+  [WalletType.MULTISIG]: (props) => <></>,
 };
 
 export const WalletDetailsProvider = () => {
