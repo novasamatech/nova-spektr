@@ -6,7 +6,7 @@ import { useEffect, useRef } from 'react';
 import { cnTw, validateSignerFormat } from '@renderer/shared/lib/utils';
 import { CryptoTypeString } from '@renderer/shared/core';
 import { useI18n } from '@renderer/app/providers';
-import { ErrorFields, EXPORT_ADDRESS, EXPORT_ADDRESS_2, FRAME_KEY } from '../common/constants';
+import { ErrorFields, EXPORT_ADDRESS, FRAME_KEY } from '../common/constants';
 import { QR_READER_ERRORS } from '../common/errors';
 import { DecodeCallback, ErrorObject, Progress, QrError, SeedInfo, VideoInput } from '../common/types';
 import RaptorFrame from './RaptorFrame';
@@ -65,13 +65,9 @@ const QrReader = ({
   };
 
   const makeResultPayload = <T extends string | SeedInfo[] | { addr: SeedInfo }>(data: T): SeedInfo[] => {
-    if (typeof data !== 'string') {
-      if (data.constructor === Array) {
-        return data as SeedInfo[];
-      } else {
-        return [(data as { addr: SeedInfo }).addr as SeedInfo];
-      }
-    }
+    if (Array.isArray(data)) return data;
+
+    if (typeof data !== 'string') return [data.addr];
 
     return [
       {
@@ -111,7 +107,7 @@ const QrReader = ({
 
     isComplete.current = true;
     onProgress?.({ decoded: 1, total: 1 });
-    onResult?.(makeResultPayload<string>(signerAddress));
+    onResult?.(makeResultPayload(signerAddress));
 
     return true;
   };
@@ -134,14 +130,9 @@ const QrReader = ({
 
     if (fountainResult) {
       // decode the 1st frame --> it's a single frame QR
-      let result: { payload: string | SeedInfo[] | { addr: SeedInfo } };
-      try {
-        result = EXPORT_ADDRESS.decode(fountainResult.slice(3));
-      } catch (e) {
-        result = EXPORT_ADDRESS_2.decode(fountainResult.slice(3));
-      }
+      let result = EXPORT_ADDRESS.decode(fountainResult.slice(3));
       isComplete.current = true;
-      onResult?.(makeResultPayload<string | SeedInfo[] | { addr: SeedInfo }>(result.payload));
+      onResult?.(makeResultPayload(result.payload));
     } else {
       // if there is more than 1 frame --> proceed scanning and keep the progress
       onProgress?.({ decoded: 1, total: frameData.total });
@@ -193,14 +184,9 @@ const QrReader = ({
         continue;
       }
 
-      let result;
-      try {
-        result = EXPORT_ADDRESS.decode(fountainResult.slice(3));
-      } catch (e) {
-        result = EXPORT_ADDRESS_2.decode(fountainResult.slice(3));
-      }
+      let result = EXPORT_ADDRESS.decode(fountainResult.slice(3));
       isComplete.current = true;
-      onResult?.(makeResultPayload<SeedInfo[] | { addr: SeedInfo }>(result.payload));
+      onResult?.(makeResultPayload(result.payload));
       break;
     }
   };

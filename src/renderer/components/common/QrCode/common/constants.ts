@@ -39,8 +39,7 @@ const SEED_INFO: Codec<SeedInfo> = object(
 const FEATURE = taggedUnion('VaultFeatures', [['BulkOperations'], ['DynamicDerivations']]);
 
 // Export address format for decoding; Rust enum is a tagged union
-export const EXPORT_ADDRESS = taggedUnion('ExportAddrs', [['V1', ['payload', array(SEED_INFO)]]]);
-export const EXPORT_ADDRESS_2 = taggedUnion('ExportAddrs', [
+export const EXPORT_ADDRESS = taggedUnion('ExportAddrs', [
   ['V1', ['payload', array(SEED_INFO)]],
   ['V2', ['payload', object(['addr', SEED_INFO], ['features', array(FEATURE)])]],
 ]);
