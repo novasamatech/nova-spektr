@@ -81,22 +81,22 @@
     "closeButton": "Закрыть окно"
   },
   "createMultisigAccount": {
-    "disabledError": {
-      "unsupportedType": "This type of wallet is not supported for the Multisig wallet creation",
-      "differentAccounts": "Wallets with different accounts for chains are not supported"
-    },
-    "availableLabel": "Available",
-    "disabledLabel": "Not supported",
     "accountsAlertText": "Add signatory wallet before creating Multisig wallet",
     "addContact": "Добавить новый",
     "addContactsButton": "Добавить выбранные",
     "addSignatoryButton": "Добавить подписанта",
     "alertTitle": "Выберете кошелёк",
+    "availableLabel": "Available",
     "backButton": "Назад",
     "closeButton": "Закрыть",
     "contactsTab": "Контакты",
     "continueButton": "Продолжить",
     "create": "Создать",
+    "disabledError": {
+      "differentAccounts": "Wallets with different accounts for chains are not supported",
+      "unsupportedType": "This type of wallet is not supported for the Multisig wallet creation"
+    },
+    "disabledLabel": "Not supported",
     "errorMessage": "Что-то пошло не так",
     "multisigExistText": "Multisig аккаунт с выбранными подписантами и порогом уже существует",
     "multisigExistTitle": "Аккаунт уже существует",

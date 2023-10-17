@@ -81,22 +81,22 @@
     "closeButton": "Close modal window"
   },
   "createMultisigAccount": {
-    "disabledError": {
-      "unsupportedType": "This type of wallet is not supported for the Multisig wallet creation",
-      "differentAccounts": "Wallets with different accounts for chains are not supported"
-    },
-    "availableLabel": "Available",
-    "disabledLabel": "Not supported",
     "accountsAlertText": "Add signatory wallet before creating Multisig wallet",
     "addContact": "Add new",
     "addContactsButton": "Add selected",
     "addSignatoryButton": "Add signatory",
     "alertTitle": "Select wallet",
+    "availableLabel": "Available",
     "backButton": "Back",
     "closeButton": "Close",
     "contactsTab": "Contacts",
     "continueButton": "Continue",
     "create": "Create",
+    "disabledError": {
+      "differentAccounts": "Wallets with different accounts for chains are not supported",
+      "unsupportedType": "This type of wallet is not supported for the Multisig wallet creation"
+    },
+    "disabledLabel": "Not supported",
     "errorMessage": "Something went wrong",
     "multisigExistText": "Multisig account with selected signatories and threshold already exists",
     "multisigExistTitle": "Account already exists",
