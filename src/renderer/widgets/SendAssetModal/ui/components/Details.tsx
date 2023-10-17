@@ -7,7 +7,7 @@ import { ExtendedChain } from '@renderer/entities/network';
 import { Transaction } from '@renderer/entities/transaction';
 import { DetailRow, FootnoteText } from '@renderer/shared/ui';
 import type { Account, MultisigAccount } from '@renderer/shared/core';
-import { WalletRow } from '@renderer/entities/wallet/ui/WalletRow/WalletRow';
+import { WalletCardSm } from '@renderer/entities/wallet/ui/cards/WalletCardSm/WalletCardSm';
 
 const AddressStyle = 'text-footnote text-inherit';
 
@@ -51,7 +51,7 @@ const Details = ({ transaction, account, signatory, connection }: Props) => {
 
       {signatory && signatoryWallet && (
         <DetailRow label={t('transfer.signatoryLabel')}>
-          <WalletRow
+          <WalletCardSm
             wallet={signatoryWallet}
             accountId={signatory.accountId}
             addressPrefix={addressPrefix}

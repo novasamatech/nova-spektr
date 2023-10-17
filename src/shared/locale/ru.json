@@ -294,6 +294,7 @@
     "advanced": "Дополнительно",
     "approveButton": "Approve",
     "cancelTitle": "Отменить",
+    "contactSignatoriesTitle": "Contacts",
     "continueButton": "Продолжить",
     "details": {
       "amount": "количество",
@@ -348,6 +349,7 @@
     },
     "successMessage": "Operation Approved",
     "successRejectMessage": "Операция Отменена",
+    "walletSignatoriesTitle": "Your wallets",
     "xcmFee": "Cross-chain fee"
   },
   "operations": {

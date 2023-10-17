@@ -1,7 +1,8 @@
 import cn from 'classnames';
+import { useUnit } from 'effector-react';
 
 import { useI18n } from '@renderer/app/providers';
-import { AddressWithExplorers } from '@renderer/entities/wallet';
+import { AddressWithExplorers, walletModel, WalletCardSm } from '@renderer/entities/wallet';
 import { Icon, Button, FootnoteText, DetailRow } from '@renderer/shared/ui';
 import { copyToClipboard, truncate, cnTw } from '@renderer/shared/lib/utils';
 import { useToggle } from '@renderer/shared/lib/hooks';
@@ -23,6 +24,7 @@ type Props = {
 
 const Details = ({ tx, account, connection, isCardDetails = true }: Props) => {
   const { t } = useI18n();
+  const wallet = useUnit(walletModel.$activeWallet);
 
   const [isAdvancedShown, toggleAdvanced] = useToggle();
   const [isValidatorsOpen, toggleValidators] = useToggle();
@@ -73,16 +75,14 @@ const Details = ({ tx, account, connection, isCardDetails = true }: Props) => {
         </div>
       )}
 
-      {!isCardDetails && account && (
+      {account && wallet && (
         <DetailRow label={t('operation.details.multisigWallet')} className={valueClass}>
-          <AddressWithExplorers
-            explorers={explorers}
-            addressFont={AddressStyle}
+          <WalletCardSm
+            wallet={wallet}
             accountId={account.accountId}
             addressPrefix={addressPrefix}
-            wrapperClassName="-mr-2 min-w-min"
-            name={account.name}
-            type="short"
+            explorers={explorers}
+            className="-mr-2 max-w-none"
           />
         </DetailRow>
       )}
