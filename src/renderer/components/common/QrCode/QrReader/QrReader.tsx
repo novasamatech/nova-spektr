@@ -130,7 +130,7 @@ const QrReader = ({
 
     if (fountainResult) {
       // decode the 1st frame --> it's a single frame QR
-      let result = EXPORT_ADDRESS.decode(fountainResult.slice(3));
+      const result = EXPORT_ADDRESS.decode(fountainResult.slice(3));
       isComplete.current = true;
       onResult?.(makeResultPayload(result.payload));
     } else {
@@ -184,7 +184,7 @@ const QrReader = ({
         continue;
       }
 
-      let result = EXPORT_ADDRESS.decode(fountainResult.slice(3));
+      const result = EXPORT_ADDRESS.decode(fountainResult.slice(3));
       isComplete.current = true;
       onResult?.(makeResultPayload(result.payload));
       break;
