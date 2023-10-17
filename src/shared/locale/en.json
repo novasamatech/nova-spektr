@@ -297,6 +297,7 @@
     "contactSignatoriesTitle": "Contacts",
     "continueButton": "Continue",
     "details": {
+      "account": "Account",
       "amount": "Amount",
       "callData": "Call Data",
       "callHash": "Call Hash",
@@ -313,7 +314,7 @@
       "sender": "Sender",
       "timePoint": "Time Point",
       "toNetwork": "To network",
-      "validators": "Selected validators",
+      "validators": "Validators",
       "wallet": "Wallet"
     },
     "detailsTitle": "Details",
