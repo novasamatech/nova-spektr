@@ -7,13 +7,12 @@ import { ValidationErrors } from '@renderer/shared/lib/utils';
 import { useTransaction } from '@renderer/entities/transaction';
 import { useI18n } from '@renderer/app/providers';
 import { Button, ConfirmModal, Countdown, FootnoteText, SmallTitleText, StatusModal } from '@renderer/shared/ui';
-import { wcModel, DEFAULT_POLKADOT_METHODS, getWalletConnectChains } from '@renderer/entities/walletConnect';
+import { walletConnectModel, DEFAULT_POLKADOT_METHODS, getWalletConnectChains } from '@renderer/entities/walletConnect';
 import { chainsService } from '@renderer/entities/network';
 import { useCountdown, useToggle } from '@renderer/shared/lib/hooks';
 import wallet_connect_confirm from '@video/wallet_connect_confirm.mp4';
 import wallet_connect_confirm_webm from '@video/wallet_connect_confirm.webm';
 import { HexString } from '@renderer/shared/core';
-import { walletModel } from '@renderer/entities/wallet';
 import { Animation } from '@renderer/shared/ui/Animation/Animation';
 
 export const WalletConnect = ({ api, validateBalance, onGoBack, accounts, transactions, onResult }: SigningProps) => {
@@ -21,10 +20,10 @@ export const WalletConnect = ({ api, validateBalance, onGoBack, accounts, transa
   const { verifySignature, createPayload } = useTransaction();
   const [countdown, resetCountdown] = useCountdown(api);
 
-  const session = useUnit(wcModel.$session);
-  const client = useUnit(wcModel.$client);
-  const connect = useUnit(wcModel.events.connect);
-  const sessionUpdated = useUnit(wcModel.events.sessionUpdated);
+  const session = useUnit(walletConnectModel.$session);
+  const client = useUnit(walletConnectModel.$client);
+  const connect = useUnit(walletConnectModel.events.connect);
+  const sessionUpdated = useUnit(walletConnectModel.events.sessionUpdated);
 
   const chains = chainsService.getChainsData();
 
@@ -68,7 +67,7 @@ export const WalletConnect = ({ api, validateBalance, onGoBack, accounts, transa
       setIsNeedUpdate(false);
 
       if (session?.topic) {
-        walletModel.events.sessionTopicUpdated(session?.topic);
+        walletConnectModel.events.sessionTopicUpdated(session?.topic);
       }
     }
   }, [session]);

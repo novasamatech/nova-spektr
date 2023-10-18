@@ -3,7 +3,7 @@ import { act, render, screen } from '@testing-library/react';
 import RadioGroup from './RadioGroup';
 
 jest.mock('@renderer/entities/walletConnect', () => ({
-  wcModel: { events: {} },
+  walletConnectModel: { events: {} },
   DEFAULT_POLKADOT_METHODS: {},
   getWalletConnectChains: jest.fn(),
 }));

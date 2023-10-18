@@ -5,7 +5,7 @@ import { ConfirmDialogProvider, useConfirmContext } from './ConfirmContext';
 
 jest.mock('@renderer/shared/lib/hooks');
 jest.mock('@renderer/entities/walletConnect', () => ({
-  wcModel: { events: {} },
+  walletConnectModel: { events: {} },
   DEFAULT_POLKADOT_METHODS: {},
   getWalletConnectChains: jest.fn(),
 }));

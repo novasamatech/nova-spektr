@@ -3,7 +3,7 @@ import { render, screen } from '@testing-library/react';
 import { Countdown } from './Countdown';
 
 jest.mock('@renderer/entities/walletConnect', () => ({
-  wcModel: { events: {} },
+  walletConnectModel: { events: {} },
   DEFAULT_POLKADOT_METHODS: {},
   getWalletConnectChains: jest.fn(),
 }));

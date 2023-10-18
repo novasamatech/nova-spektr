@@ -6,7 +6,7 @@ import { kernelModel } from '@renderer/shared/core';
 import { storageService } from '@renderer/shared/api/storage';
 
 jest.mock('@renderer/entities/walletConnect', () => ({
-  wcModel: { events: {} },
+  walletConnectModel: { events: {} },
   DEFAULT_POLKADOT_METHODS: {},
   getWalletConnectChains: jest.fn(),
 }));

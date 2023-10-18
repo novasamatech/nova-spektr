@@ -5,7 +5,7 @@ import { Tabs } from './Tabs';
 import { TabItem } from './common/types';
 
 jest.mock('@renderer/entities/walletConnect', () => ({
-  wcModel: { events: {} },
+  walletConnectModel: { events: {} },
   DEFAULT_POLKADOT_METHODS: {},
   getWalletConnectChains: jest.fn(),
 }));

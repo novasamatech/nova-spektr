@@ -47,3 +47,5 @@ export const REGIONALIZED_RELAYER_ENDPOINTS: RelayerType[] = [
     label: 'Asia Pacific',
   },
 ];
+
+export const WALLETCONNECT_CLIENT_ID = 'WALLETCONNECT_CLIENT_ID';

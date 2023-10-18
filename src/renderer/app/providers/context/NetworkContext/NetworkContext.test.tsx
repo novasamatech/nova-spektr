@@ -10,7 +10,7 @@ import { walletModel } from '@renderer/entities/wallet';
 import { TEST_ACCOUNT_ID } from '@renderer/shared/lib/utils';
 
 jest.mock('@renderer/entities/walletConnect', () => ({
-  wcModel: { events: {} },
+  walletConnectModel: { events: {} },
   DEFAULT_POLKADOT_METHODS: {},
   getWalletConnectChains: jest.fn(),
 }));
