@@ -16,10 +16,14 @@ import {
 } from '@renderer/shared/core';
 import { Button, Input, InputHint, HeaderTitleText, SmallTitleText, Icon } from '@renderer/shared/ui';
 import { toAccountId } from '@renderer/shared/lib/utils';
-import { MultiAccountList } from '@renderer/entities/account/ui/MultiAccountsList/MultiAccountsList';
 import { chainsService } from '@renderer/entities/network';
 import { IconNames } from '@renderer/shared/ui/Icon/data';
-import { walletModel } from '@renderer/entities/wallet';
+import { MultiAccountsList, walletModel } from '@renderer/entities/wallet';
+
+const WalletLogo: Record<WalletTypeName, IconNames> = {
+  [WalletType.WALLET_CONNECT]: 'walletConnectOnboarding',
+  [WalletType.NOVA_WALLET]: 'novaWalletOnboarding',
+};
 
 type WalletForm = {
   walletName: string;
@@ -83,6 +87,7 @@ const ManageStep = ({ accounts, type, pairingTopic, sessionTopic, onBack, onComp
     setAccountsList(list.filter(Boolean));
   }, [chains.length]);
 
+  // TODO: Rewrite with effector forms
   const submitHandler: SubmitHandler<WalletForm> = async ({ walletName }) => {
     walletModel.events.walletConnectCreated({
       wallet: {
@@ -110,11 +115,6 @@ const ManageStep = ({ accounts, type, pairingTopic, sessionTopic, onBack, onComp
     });
 
     reset();
-
-    const WalletLogo: Record<WalletTypeName, IconNames> = {
-      [WalletType.WALLET_CONNECT]: 'walletConnectOnboarding',
-      [WalletType.NOVA_WALLET]: 'novaWalletOnboarding',
-    };
 
     showStatus({
       title: walletName.trim(),
@@ -188,7 +188,7 @@ const ManageStep = ({ accounts, type, pairingTopic, sessionTopic, onBack, onComp
 
       <div className="w-[472px] flex flex-col bg-input-background-disabled px-3 py-4 rounded-r-lg">
         <SmallTitleText className="px-2 mt-[52px] mb-6">{t('onboarding.vault.accountsTitle')}</SmallTitleText>
-        <MultiAccountList accounts={accountsList} />
+        <MultiAccountsList accounts={accountsList} />
       </div>
     </>
   );

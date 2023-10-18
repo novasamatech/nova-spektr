@@ -13,7 +13,7 @@ type Props = {
   className?: string;
 };
 
-export const MultiAccountList = ({ accounts, className }: Props) => {
+export const MultiAccountsList = ({ accounts, className }: Props) => {
   const { t } = useI18n();
 
   return (

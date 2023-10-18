@@ -1,5 +1,6 @@
 import { createStore, createEvent, forward, createEffect, sample, combine } from 'effector';
 import { spread } from 'patronum';
+import keyBy from 'lodash/keyBy';
 
 import type { Wallet, NoID, Account, BaseAccount, ChainAccount, MultisigAccount } from '@renderer/shared/core';
 import { kernelModel, WalletConnectAccount } from '@renderer/shared/core';
@@ -130,17 +131,21 @@ const sessionTopicUpdatedFx = createEffect(
     sessionTopic: string;
   }): Promise<Array<Account | undefined>> => {
     return Promise.all(
-      activeAccounts.map(async (account) => {
-        const id = await storageService.accounts.update(account.id, {
-          ...account,
-          signingExtras: {
-            ...account.signingExtras,
-            sessionTopic,
-          },
-        });
+      activeAccounts
+        .map(async (account) => {
+          const updatedAccount = {
+            ...account,
+            signingExtras: {
+              ...account.signingExtras,
+              sessionTopic,
+            },
+          };
 
-        return id ? account : undefined;
-      }),
+          const id = await storageService.accounts.update(account.id, updatedAccount);
+
+          return id ? updatedAccount : undefined;
+        })
+        .filter(Boolean),
     );
   },
 );
@@ -226,15 +231,9 @@ sample({
   clock: sessionTopicUpdatedFx.doneData,
   source: $accounts,
   fn: (accounts, updatedAccounts) => {
-    return accounts.map((account) => {
-      const updatedAccount = updatedAccounts.find((a) => a?.id === account.id);
+    const updatedMap = keyBy(updatedAccounts, 'id');
 
-      if (updatedAccount) {
-        return updatedAccount;
-      }
-
-      return account;
-    });
+    return accounts.map((account) => updatedMap[account.id] || account);
   },
   target: $accounts,
 });

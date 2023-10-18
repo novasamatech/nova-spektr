@@ -35,13 +35,11 @@ const WalletText: Record<WalletType, string> = {
 export const SignButton = ({ disabled, type, onClick, className }: Props) => {
   const { t } = useI18n();
 
-  const icon = WalletIcon[type];
-
   return (
     <Button
       className={className}
       disabled={disabled}
-      prefixElement={<Icon className="text-icon-button" name={icon} size={14} />}
+      prefixElement={<Icon className="text-icon-button" name={WalletIcon[type]} size={14} />}
       onClick={onClick}
     >
       {t(WalletText[type])}
