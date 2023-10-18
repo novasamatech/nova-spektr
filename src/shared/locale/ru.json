@@ -836,9 +836,9 @@
   },
   "walletDetails": {
     "common": {
-      "title": "Детали кошелька",
+      "forgetButton": "Забыть",
       "renameButton": "Переименовать",
-      "forgetButton": "Забыть"
+      "title": "Детали кошелька"
     }
   },
   "wallets": {

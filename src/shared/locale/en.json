@@ -836,9 +836,9 @@
   },
   "walletDetails": {
     "common": {
-      "title": "Wallet details",
+      "forgetButton": "Forget",
       "renameButton": "Rename",
-      "forgetButton": "Forget"
+      "title": "Wallet details"
     }
   },
   "wallets": {
