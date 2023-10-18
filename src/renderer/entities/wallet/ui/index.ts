@@ -6,4 +6,5 @@ export { AddressWithTwoLines } from './AddressWithTwoLines/AddressWithTwoLines';
 export { WalletIcon } from './WalletIcon/WalletIcon';
 export { WalletRow } from './WalletRow/WalletRow';
 export { SelectableShard } from './SelectableShard/SelectableShard';
+export { MultiAccountsList } from './MultiAccountsList/MultiAccountsList';
 export type { AccountAddressProps } from './AccountAddress/AccountAddress';

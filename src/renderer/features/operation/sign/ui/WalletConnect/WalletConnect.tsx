@@ -43,26 +43,24 @@ export const WalletConnect = ({ api, validateBalance, onGoBack, accounts, transa
   useEffect(() => {
     if (txPayload || !client) return;
 
-    (async () => {
-      const isCurrentSession = session && account && session.topic === account.signingExtras?.sessionTopic;
+    const isCurrentSession = session && account && session.topic === account.signingExtras?.sessionTopic;
 
-      if (isCurrentSession) {
+    if (isCurrentSession) {
+      setupTransaction().catch(() => console.warn('WalletConnect | setupTransaction() failed'));
+    } else {
+      const sessions = client.session.getAll();
+
+      const storedSession = sessions.find((s) => s.topic === account.signingExtras?.sessionTopic);
+
+      if (storedSession) {
+        sessionUpdated(storedSession);
+        setIsNeedUpdate(true);
+
         setupTransaction().catch(() => console.warn('WalletConnect | setupTransaction() failed'));
       } else {
-        const sessions = client.session.getAll();
-
-        const storedSession = sessions.find((s) => s.topic === account.signingExtras?.sessionTopic);
-
-        if (storedSession) {
-          sessionUpdated(storedSession);
-          setIsNeedUpdate(true);
-
-          setupTransaction().catch(() => console.warn('WalletConnect | setupTransaction() failed'));
-        } else {
-          setIsReconnectModalOpen(true);
-        }
+        setIsReconnectModalOpen(true);
       }
-    })();
+    }
   }, [transaction, api]);
 
   useEffect(() => {

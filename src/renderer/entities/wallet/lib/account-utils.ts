@@ -38,12 +38,13 @@ function isWalletConnectAccount(account: Pick<Account, 'type'>): account is Wall
 }
 
 function isChainIdMatch(account: Pick<Account, 'type'>, chainId: ChainId): boolean {
-  const isBaseAccountType = isBaseAccount(account);
-  const isMultisigAccountType = isMultisigAccount(account);
+  if (isBaseAccount(account) || isMultisigAccount(account)) return true;
 
-  return isBaseAccountType || isMultisigAccountType || ('chainId' in account && account.chainId === chainId);
+  const chainAccountMatch = isChainAccount(account) && account.chainId === chainId;
+  const walletConnectAccountMatch = isWalletConnectAccount(account) && account.chainId === chainId;
+
+  return chainAccountMatch || walletConnectAccountMatch;
 }
-
 function isMultisigAccount(account: Pick<Account, 'type'>): account is MultisigAccount {
   return account.type === AccountType.MULTISIG;
 }
