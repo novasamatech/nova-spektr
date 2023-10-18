@@ -834,6 +834,13 @@
     "title": "Отправить",
     "wallet": "Кошелёк"
   },
+  "walletDetails": {
+    "common": {
+      "forgetButton": "Забыть",
+      "renameButton": "Переименовать",
+      "title": "Детали кошелька"
+    }
+  },
   "wallets": {
     "addButtonTitle": "Добавить",
     "addMultisig": "Multisig",
