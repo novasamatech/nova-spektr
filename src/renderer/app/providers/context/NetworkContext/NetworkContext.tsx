@@ -5,7 +5,7 @@ import { useBalance } from '@renderer/entities/asset';
 import { ConnectProps, ExtendedChain, RpcValidation, useNetwork } from '@renderer/entities/network';
 import { useSubscription } from '@renderer/services/subscription/subscriptionService';
 import { usePrevious } from '@renderer/shared/lib/hooks';
-import type { RpcNode, ChainId, AccountId, Account } from '@renderer/shared/core';
+import type { RpcNode, ChainId, AccountId } from '@renderer/shared/core';
 import { ConnectionStatus, ConnectionType } from '@renderer/shared/core';
 import { walletModel, accountUtils } from '@renderer/entities/wallet';
 
@@ -21,22 +21,6 @@ type NetworkContextProps = {
 };
 
 const NetworkContext = createContext<NetworkContextProps>({} as NetworkContextProps);
-
-const getAccountIds = (accounts: Account[], chainId: ChainId): AccountId[] => {
-  const accountsIds = accounts.reduce<Set<AccountId>>((acc, account) => {
-    if (accountUtils.isChainIdMatch(account, chainId)) {
-      acc.add(account.accountId);
-    }
-
-    if (accountUtils.isMultisigAccount(account)) {
-      account.signatories.forEach((signatory) => acc.add(signatory.accountId));
-    }
-
-    return acc;
-  }, new Set());
-
-  return Array.from(accountsIds);
-};
 
 export const NetworkProvider = ({ children }: PropsWithChildren) => {
   const accounts = useUnit(walletModel.$accounts);
@@ -102,14 +86,14 @@ export const NetworkProvider = ({ children }: PropsWithChildren) => {
     }
 
     connectedConnections.forEach((chain) => {
-      subscribeBalanceChanges(chain, getAccountIds(accounts, chain.chainId));
+      subscribeBalanceChanges(chain, accountUtils.getAllAccountIds(accounts, chain.chainId));
     });
 
     // subscribe to new connections
     const newConnections = connectedConnections.filter((c) => !previousConnectedConnections?.includes(c));
 
     newConnections.forEach((chain) => {
-      subscribeBalanceChanges(chain, getAccountIds(accounts, chain.chainId));
+      subscribeBalanceChanges(chain, accountUtils.getAllAccountIds(accounts, chain.chainId));
     });
 
     // unsubscribe from removed connections
