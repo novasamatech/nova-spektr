@@ -14,6 +14,9 @@ import {
   unlockingAmount,
   redeemableAmount,
 } from '@renderer/shared/lib/utils';
+import { Explorer } from '@renderer/shared/core';
+import { ExplorerLink } from '@renderer/components/common';
+import { InfoSection } from '@renderer/shared/ui/Popovers/InfoPopover/InfoPopover';
 
 export const validateBalanceForFee = (balance: AccountBalance | string, fee: string): boolean => {
   const transferableBalance = typeof balance === 'string' ? balance : transferableAmount(balance);
@@ -208,4 +211,13 @@ export const getSignatoryOption = (
   const element = getElement(address, account.name, balanceContent);
 
   return { id: account.accountId + account.name, value: account, element };
+};
+
+export const getExplorers = (address: Address, explorers: Explorer[] = []): [InfoSection] => {
+  const explorersContent = explorers.map((explorer) => ({
+    id: explorer.name,
+    value: <ExplorerLink explorer={explorer} address={address} />,
+  }));
+
+  return [{ items: explorersContent }];
 };

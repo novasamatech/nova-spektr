@@ -2,26 +2,12 @@ import { ApiPromise } from '@polkadot/api';
 import { useEffect, useState } from 'react';
 import { mapValues } from 'lodash';
 
-import {
-  Icon,
-  Identicon,
-  Shimmering,
-  Loader,
-  BodyText,
-  InfoPopover,
-  FootnoteText,
-  Button,
-  SearchInput,
-  SmallTitleText,
-  Checkbox,
-} from '@renderer/shared/ui';
+import { Icon, Shimmering, Loader, BodyText, Button, SearchInput, SmallTitleText, Checkbox } from '@renderer/shared/ui';
 import { useI18n } from '@renderer/app/providers';
-import { AssetBalance } from '@renderer/entities/asset';
-import { ValidatorMap, useEra, useValidators } from '@renderer/entities/staking';
-import { includes, getComposedIdentity, toShortAddress } from '@renderer/shared/lib/utils';
-import { ExplorerLink } from '@renderer/components/common';
+import { ValidatorMap, useValidators, useValidatorsMap } from '@renderer/entities/staking';
+import { includes, cnTw } from '@renderer/shared/lib/utils';
 import type { Asset, Explorer, Address, ChainId } from '@renderer/shared/core';
-import { AssetFiatBalance } from '@renderer/entities/price/ui/AssetFiatBalance';
+import { ValidatorsTable } from '../ValidatorsTable/ValidatorsTable';
 
 type Props = {
   api: ApiPromise;
@@ -36,11 +22,9 @@ type Props = {
 
 export const Validators = ({ api, chainId, asset, explorers, isLightClient, onGoBack, onResult }: Props) => {
   const { t } = useI18n();
-  const { subscribeActiveEra } = useEra();
-  const { getMaxValidators, getValidatorsWithInfo } = useValidators();
+  const { getMaxValidators } = useValidators();
+  const validators = useValidatorsMap(api, chainId, isLightClient);
 
-  const [era, setEra] = useState<number>();
-  const [validators, setValidators] = useState<ValidatorMap>({});
   const [isValidatorsLoading, setIsValidatorsLoading] = useState(true);
 
   const [query, setQuery] = useState('');
@@ -48,26 +32,10 @@ export const Validators = ({ api, chainId, asset, explorers, isLightClient, onGo
   const [selectedValidators, setSelectedValidators] = useState<Record<Address, boolean>>({});
 
   useEffect(() => {
-    let unsubEra: () => void | undefined;
-    (async () => {
-      unsubEra = await subscribeActiveEra(api, setEra);
-    })();
-
-    return () => {
-      unsubEra?.();
-    };
-  }, []);
-
-  useEffect(() => {
-    if (!era) return;
-
-    getValidatorsWithInfo(chainId, api, era, isLightClient).then((validators) => {
-      setValidators(validators);
-      setMaxValidators(getMaxValidators(api));
-      setIsValidatorsLoading(false);
-      setSelectedValidators(mapValues(validators, () => false));
-    });
-  }, [era]);
+    setMaxValidators(getMaxValidators(api));
+    setIsValidatorsLoading(false);
+    setSelectedValidators(mapValues(validators, () => false));
+  }, [validators]);
 
   const validatorList = Object.values(validators).filter((validator) => {
     const addressMatch = includes(validator.address, query);
@@ -76,15 +44,6 @@ export const Validators = ({ api, chainId, asset, explorers, isLightClient, onGo
 
     return addressMatch || identityMatch || subIdentityMatch;
   });
-
-  const getExplorers = (address: Address, explorers: Explorer[] = []) => {
-    const explorersContent = explorers.map((explorer) => ({
-      id: explorer.name,
-      value: <ExplorerLink explorer={explorer} address={address} />,
-    }));
-
-    return [{ items: explorersContent }];
-  };
 
   const toggleSelectedValidators = (address: Address) => {
     setSelectedValidators((validators) => ({ ...validators, [address]: !validators[address] }));
@@ -138,56 +97,21 @@ export const Validators = ({ api, chainId, asset, explorers, isLightClient, onGo
       )}
 
       {!isValidatorsLoading && validatorList.length > 0 && (
-        <div className="flex flex-col gap-y-2 mt-4">
-          <div className="grid grid-cols-[400px,120px,120px,1fr] items-center gap-x-6 px-5">
-            <FootnoteText className="text-text-secondary">{t('staking.validators.validatorTableHeader')}</FootnoteText>
-            <FootnoteText className="text-text-secondary text-right">
-              {t('staking.validators.ownStakeTableHeader')}
-            </FootnoteText>
-            <FootnoteText className="text-text-secondary text-right">
-              {t('staking.validators.totalStakeTableHeader')}
-            </FootnoteText>
-          </div>
-
-          <ul className="flex flex-col overflow-y-auto max-h-[448px]">
-            {validatorList.map((v) => (
-              <li
-                key={v.address}
-                className="grid grid-cols-[400px,120px,120px,1fr] items-center gap-x-6 px-5 shrink-0 h-14 hover:bg-hover"
+        <ValidatorsTable validators={validatorList}>
+          {(validtor, rowStyle) => (
+            <li key={validtor.address} className="pl-5 hover:bg-hover group">
+              <Checkbox
+                checked={selectedValidators[validtor.address]}
+                disabled={validtor.blocked}
+                onChange={() => toggleSelectedValidators(validtor.address)}
               >
-                <Checkbox
-                  checked={selectedValidators[v.address]}
-                  disabled={v.blocked}
-                  onChange={() => toggleSelectedValidators(v.address)}
-                >
-                  <div className="flex gap-x-2">
-                    <Identicon address={v.address} background={false} size={20} />
-                    {v.identity ? (
-                      <BodyText>{getComposedIdentity(v.identity)}</BodyText>
-                    ) : (
-                      <BodyText>{toShortAddress(v.address, 11)}</BodyText>
-                    )}
-                  </div>
-                </Checkbox>
-                <div className="flex flex-col items-end">
-                  <BodyText>
-                    <AssetBalance value={v.ownStake || '0'} asset={asset} />
-                  </BodyText>
-                  <AssetFiatBalance amount={v.ownStake} asset={asset} />
+                <div className={cnTw(rowStyle, 'pl-0 hover:bg-transparent flex-1')}>
+                  <ValidatorsTable.Row validator={validtor} asset={asset} explorers={explorers} />
                 </div>
-                <div className="flex flex-col items-end">
-                  <BodyText>
-                    <AssetBalance value={v.totalStake || '0'} asset={asset} />
-                  </BodyText>
-                  <AssetFiatBalance amount={v.totalStake} asset={asset} />
-                </div>
-                <InfoPopover data={getExplorers(v.address, explorers)} position="top-full right-0">
-                  <Icon name="info" size={14} className="ml-2 mr-auto" />
-                </InfoPopover>
-              </li>
-            ))}
-          </ul>
-        </div>
+              </Checkbox>
+            </li>
+          )}
+        </ValidatorsTable>
       )}
 
       <div className="flex justify-between mt-7 px-5">
