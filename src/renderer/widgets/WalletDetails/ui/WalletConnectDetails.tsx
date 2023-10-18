@@ -1,12 +1,14 @@
 import { useMemo } from 'react';
+import { useUnit } from 'effector-react';
 
 import { Wallet, Chain, Account, WalletConnectAccount } from '@renderer/shared/core';
-import { BaseModal, BodyText } from '@renderer/shared/ui';
+import { BaseModal, BodyText, StatusLabel } from '@renderer/shared/ui';
 import { DEFAULT_TRANSITION } from '@renderer/shared/lib/utils';
 import { useToggle } from '@renderer/shared/lib/hooks';
 import { MultiAccountsList, WalletIcon } from '@renderer/entities/wallet';
 import { useI18n } from '@renderer/app/providers';
 import { chainsService } from '@renderer/entities/network';
+import { walletProviderModel } from '../model/wallet-provider-model';
 
 type AccountItem = {
   accountId: `0x${string}`;
@@ -23,6 +25,8 @@ export const WalletConnectDetails = ({ isOpen, wallet, accounts, onClose }: Prop
   const { t } = useI18n();
 
   const [isModalOpen, toggleIsModalOpen] = useToggle(isOpen);
+
+  const connected = useUnit(walletProviderModel.$connected);
 
   const closeWowModal = () => {
     toggleIsModalOpen();
@@ -59,9 +63,19 @@ export const WalletConnectDetails = ({ isOpen, wallet, accounts, onClose }: Prop
       onClose={closeWowModal}
     >
       <div className="flex flex-col w-full">
-        <div className="flex items-center gap-x-2 py-5 px-5 border-b border-divider">
-          <WalletIcon type={wallet.type} size={32} />
-          <BodyText>{wallet.name}</BodyText>
+        <div className="flex items-center justify-between gap-x-2 py-5 px-5 border-b border-divider">
+          <div className="flex items-center justify-between gap-x-2">
+            <WalletIcon type={wallet.type} size={32} />
+            <BodyText>{wallet.name}</BodyText>
+          </div>
+          <StatusLabel
+            variant={connected ? 'success' : 'waiting'}
+            title={t(
+              connected
+                ? 'walletDetails.walletConnect.connectedStatus'
+                : 'walletDetails.walletConnect.disconnectedStatus',
+            )}
+          />
         </div>
 
         <div className="px-3">
