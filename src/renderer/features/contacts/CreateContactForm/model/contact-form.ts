@@ -15,7 +15,7 @@ const callbacksApi = createApi($callbacks, {
   callbacksChanged: (state, props: Callbacks) => ({ ...state, ...props }),
 });
 
-export const contactForm = createForm({
+const $contactForm = createForm({
   fields: {
     name: {
       init: '',
@@ -72,14 +72,14 @@ function validateMatrixId(value: string): boolean {
 
 const createContactFx = attach({
   effect: contactModel.effects.createContactFx,
-  source: contactForm.$values,
+  source: $contactForm.$values,
   mapParams: (_, data) => {
     return { ...data, accountId: toAccountId(data.address) };
   },
 });
 
 forward({
-  from: contactForm.formValidated,
+  from: $contactForm.formValidated,
   to: createContactFx,
 });
 
@@ -91,9 +91,11 @@ sample({
   }),
 });
 
-export const $submitPending = createContactFx.pending;
-
-export const events = {
-  callbacksChanged: callbacksApi.callbacksChanged,
-  formInitiated: contactForm.reset,
+export const createFormModel = {
+  $contactForm,
+  $submitPending: createContactFx.pending,
+  events: {
+    callbacksChanged: callbacksApi.callbacksChanged,
+    formInitiated: $contactForm.reset,
+  },
 };

@@ -200,7 +200,7 @@ export const Overview = () => {
 
   return (
     <>
-      <div className="h-full flex flex-col items-start relative">
+      <div className="h-full flex flex-col">
         <Header title={t('staking.title')} />
 
         <div className="overflow-y-auto w-full h-full mt-6">

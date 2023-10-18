@@ -1,20 +1,15 @@
-import { createStore, createEvent, forward, sample, createApi, createEffect } from 'effector';
+import { createStore, createEvent, sample, createApi, createEffect, forward } from 'effector';
 import { NavigateFunction } from 'react-router-dom';
 
-import { WalletType } from '@renderer/shared/core';
+import { walletPairingModel } from '@renderer/features/wallets';
 
-const walletTypeSet = createEvent<WalletType | null>();
-const modalClosed = createEvent();
-const storeCleared = createEvent();
 const completed = createEvent();
-
-const $walletType = createStore<WalletType | null>(null).reset([modalClosed, completed]);
 
 type Navigation = {
   redirectPath: string;
   navigate: NavigateFunction;
 };
-const $navigation = createStore<Navigation | null>(null).reset(storeCleared);
+const $navigation = createStore<Navigation | null>(null);
 const navigationApi = createApi($navigation, {
   navigateApiChanged: (state, { navigate, redirectPath }) => ({ ...state, navigate, redirectPath }),
 });
@@ -23,8 +18,6 @@ const navigateFx = createEffect(({ navigate, redirectPath }: Navigation) => {
   navigate(redirectPath);
 });
 
-forward({ from: walletTypeSet, to: $walletType });
-
 sample({
   clock: completed,
   source: $navigation,
@@ -32,11 +25,10 @@ sample({
   target: navigateFx,
 });
 
+forward({ from: navigateFx.doneData, to: walletPairingModel.events.walletTypeCleared });
+
 export const walletProviderModel = {
-  $walletType,
   events: {
-    walletTypeSet,
-    modalClosed,
     completed,
     navigateApiChanged: navigationApi.navigateApiChanged,
   },

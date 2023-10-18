@@ -13,11 +13,17 @@ const $wallets = createStore<Wallet[]>([]);
 const $activeWallet = $wallets.map((wallets) => wallets.find((w) => w.isActive));
 
 const $accounts = createStore<Account[]>([]);
-const $activeAccounts = combine($activeWallet, $accounts, (activeWallet, accounts) => {
-  if (!activeWallet) return [];
+const $activeAccounts = combine(
+  {
+    wallet: $activeWallet,
+    accounts: $accounts,
+  },
+  ({ wallet, accounts }) => {
+    if (!wallet) return [];
 
-  return accounts.filter((account) => account.walletId === activeWallet.id);
-});
+    return accounts.filter((account) => account.walletId === wallet.id);
+  },
+);
 
 type CreateParams<T extends Account> = {
   wallet: Omit<NoIdWallet, 'isActive'>;
