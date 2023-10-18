@@ -178,7 +178,7 @@ const WatchOnly = ({ isOpen, onClose, onComplete }: Props) => {
         {accountId && accountId.length > 12 ? (
           <>
             <SmallTitleText className="px-2 mt-[52px] mb-6">{t('onboarding.watchOnly.accountsTitle')}</SmallTitleText>
-            <AccountsList chains={chains} accountId={accountId} />
+            <AccountsList chains={chains} accountId={accountId} className="h-[424px]" />
           </>
         ) : (
           <EmptyState />
