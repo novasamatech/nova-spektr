@@ -12,7 +12,7 @@ import { TEST_ACCOUNT_ID } from '@renderer/shared/lib/utils';
 jest.mock('@renderer/entities/network', () => ({
   useNetwork: jest.fn().mockReturnValue({
     connections: {},
-    setupConnections: jest.fn(),
+    setupConnections: jest.fn().mockResolvedValue({}),
   }),
 }));
 
@@ -46,7 +46,7 @@ describe('context/NetworkContext', () => {
   });
 
   test('should setup connections', async () => {
-    const spySetupConnections = jest.fn();
+    const spySetupConnections = jest.fn().mockResolvedValue({});
     (useNetwork as jest.Mock).mockImplementation(() => ({
       connections: {},
       setupConnections: spySetupConnections,
@@ -65,7 +65,7 @@ describe('context/NetworkContext', () => {
 
     (useNetwork as jest.Mock).mockImplementation(() => ({
       connections: { [connection.chainId]: { connection } },
-      setupConnections: jest.fn(),
+      setupConnections: jest.fn().mockResolvedValue({}),
       connectToNetwork: spyConnectToNetwork,
     }));
 
@@ -83,7 +83,7 @@ describe('context/NetworkContext', () => {
 
     (useNetwork as jest.Mock).mockImplementation(() => ({
       connections: { [connection.chainId]: { connection } },
-      setupConnections: jest.fn(),
+      setupConnections: jest.fn().mockResolvedValue({}),
       connectWithAutoBalance: spyConnectWithAutoBalance,
     }));
 
@@ -106,7 +106,7 @@ describe('context/NetworkContext', () => {
 
     (useNetwork as jest.Mock).mockImplementation(() => ({
       connections: { [connection.chainId]: { api: { isConnected: true }, connection } },
-      setupConnections: jest.fn(),
+      setupConnections: jest.fn().mockResolvedValue({}),
       connectToNetwork: jest.fn(),
     }));
     (useBalance as jest.Mock).mockImplementation(() => ({
@@ -115,7 +115,7 @@ describe('context/NetworkContext', () => {
     }));
 
     const scope = fork({
-      values: new Map().set(walletModel.$activeAccounts, [{ name: 'Test Wallet', accountId: TEST_ACCOUNT_ID }]),
+      values: new Map().set(walletModel.$accounts, [{ name: 'Test Wallet', accountId: TEST_ACCOUNT_ID }]),
     });
 
     await act(async () => {

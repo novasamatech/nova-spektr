@@ -1,7 +1,6 @@
 import { Navigate, RouteObject } from 'react-router-dom';
 
-import { MainLayout } from '@renderer/shared/ui';
-import { Navigation } from '@renderer/widgets';
+import { MainLayout } from '@renderer/widgets';
 import { Paths } from '@renderer/shared/routes';
 import { Onboarding } from './Onboarding';
 import { AssetsList, ReceiveAsset, SendAsset } from './Assets';
@@ -26,11 +25,7 @@ export const ROUTES_CONFIG: RouteObject[] = [
   { path: Paths.ONBOARDING, element: <Onboarding /> },
   {
     path: Paths.ROOT,
-    element: (
-      <MainLayout>
-        <Navigation />
-      </MainLayout>
-    ),
+    element: <MainLayout />,
     children: [
       { index: true, element: <Navigate to={Paths.ASSETS} replace /> },
       {
