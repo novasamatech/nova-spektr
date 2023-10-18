@@ -835,7 +835,11 @@
     "wallet": "Wallet"
   },
   "walletDetails": {
-    "simpleTitle": "Wallet details"
+    "common": {
+      "title": "Wallet details",
+      "renameButton": "Rename",
+      "forgetButton": "Forget"
+    }
   },
   "wallets": {
     "addButtonTitle": "Add",

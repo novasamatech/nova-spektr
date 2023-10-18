@@ -835,7 +835,11 @@
     "wallet": "Кошелёк"
   },
   "walletDetails": {
-    "simpleTitle": "Детали кошелька"
+    "common": {
+      "title": "Детали кошелька",
+      "renameButton": "Переименовать",
+      "forgetButton": "Забыть"
+    }
   },
   "wallets": {
     "addButtonTitle": "Добавить",
