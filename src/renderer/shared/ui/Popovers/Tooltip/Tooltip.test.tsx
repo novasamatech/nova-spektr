@@ -4,7 +4,7 @@ import userEvent from '@testing-library/user-event';
 import { Tooltip } from './Tooltip';
 
 jest.mock('@renderer/entities/walletConnect', () => ({
-  wcModel: { events: {} },
+  walletConnectModel: { events: {} },
   DEFAULT_POLKADOT_METHODS: {},
   getWalletConnectChains: jest.fn(),
 }));

@@ -4,7 +4,7 @@ import noop from 'lodash/noop';
 import DropdownButton, { ButtonDropdownOption } from './DropdownButton';
 
 jest.mock('@renderer/entities/walletConnect', () => ({
-  wcModel: { events: {} },
+  walletConnectModel: { events: {} },
   DEFAULT_POLKADOT_METHODS: {},
   getWalletConnectChains: jest.fn(),
 }));

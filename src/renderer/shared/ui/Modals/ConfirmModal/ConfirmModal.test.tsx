@@ -4,7 +4,7 @@ import noop from 'lodash/noop';
 import ConfirmModal from './ConfirmModal';
 
 jest.mock('@renderer/entities/walletConnect', () => ({
-  wcModel: { events: {} },
+  walletConnectModel: { events: {} },
   DEFAULT_POLKADOT_METHODS: {},
   getWalletConnectChains: jest.fn(),
 }));

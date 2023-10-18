@@ -5,7 +5,7 @@ import { ConnectionType } from '@renderer/shared/core';
 import { MatrixProvider } from './MatrixContext';
 
 jest.mock('@renderer/entities/walletConnect', () => ({
-  wcModel: { events: {} },
+  walletConnectModel: { events: {} },
   DEFAULT_POLKADOT_METHODS: {},
   getWalletConnectChains: jest.fn(),
 }));

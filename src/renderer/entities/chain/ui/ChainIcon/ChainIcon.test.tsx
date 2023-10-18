@@ -4,7 +4,7 @@ import { ChainIcon } from './ChainIcon';
 import { TEST_CHAIN_ICON } from '@renderer/shared/lib/utils';
 
 jest.mock('@renderer/entities/walletConnect', () => ({
-  wcModel: { events: {} },
+  walletConnectModel: { events: {} },
   DEFAULT_POLKADOT_METHODS: {},
   getWalletConnectChains: jest.fn(),
 }));

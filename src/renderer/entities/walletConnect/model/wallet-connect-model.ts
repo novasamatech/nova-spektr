@@ -1,7 +1,8 @@
 import Client from '@walletconnect/sign-client';
 import { PairingTypes, SessionTypes } from '@walletconnect/types';
-import { createEffect, createEvent, createStore, forward, sample } from 'effector';
+import { createEffect, createEvent, createStore, forward, sample, scopeBind } from 'effector';
 import { getSdkError } from '@walletconnect/utils';
+import keyBy from 'lodash/keyBy';
 
 import { nonNullable } from '@renderer/shared/lib/utils';
 import {
@@ -14,8 +15,22 @@ import {
   DEFAULT_RELAY_URL,
   DisconnectProps,
   InitConnectProps,
+  WALLETCONNECT_CLIENT_ID,
 } from '../lib';
-import { kernelModel } from '@renderer/shared/core';
+import { Account, kernelModel } from '@renderer/shared/core';
+import { localStorageService } from '@renderer/shared/api/local-storage';
+import { walletModel } from '@renderer/entities/wallet/model/wallet-model';
+import { storageService } from '@renderer/shared/api/storage';
+
+type InitConnectResult = {
+  uri: string | undefined;
+  approval: () => Promise<SessionTypes.Struct>;
+};
+
+type ConnectResult = {
+  pairings: PairingTypes.Struct[];
+  session: SessionTypes.Struct;
+};
 
 const connect = createEvent<Omit<InitConnectProps, 'client'>>();
 const disconnect = createEvent();
@@ -23,6 +38,7 @@ const reset = createEvent();
 const sessionUpdated = createEvent<SessionTypes.Struct>();
 const connected = createEvent();
 const rejectConnection = createEvent<any>();
+const sessionTopicUpdated = createEvent<string>();
 
 const $client = createStore<Client | null>(null).reset(reset);
 const $session = createStore<SessionTypes.Struct | null>(null).reset(reset);
@@ -30,8 +46,18 @@ const $uri = createStore<string>('').reset(reset);
 const $accounts = createStore<string[]>([]).reset(reset);
 const $pairings = createStore<PairingTypes.Struct[]>([]).reset(reset);
 
-const _subscribeToEvents = createEffect(async (client: Client) => {
-  if (!client) return;
+const _subscribeToEventsFx = createEffect((client: Client) => {
+  const bindedSessionUpdated = scopeBind(sessionUpdated);
+  const bindedReset = scopeBind(reset);
+
+  client.on('session_update', ({ topic, params }) => {
+    console.log('WC EVENT', 'session_update', { topic, params });
+    const { namespaces } = params;
+    const _session = client.session.get(topic);
+    const updatedSession = { ..._session, namespaces };
+
+    bindedSessionUpdated(updatedSession);
+  });
 
   client.on('session_ping', (args) => {
     console.log('WC EVENT', 'session_ping', args);
@@ -41,22 +67,13 @@ const _subscribeToEvents = createEffect(async (client: Client) => {
     console.log('WC EVENT', 'session_event', args);
   });
 
-  client.on('session_update', ({ topic, params }) => {
-    console.log('WC EVENT', 'session_update', { topic, params });
-    const { namespaces } = params;
-    const _session = client.session.get(topic);
-    const updatedSession = { ..._session, namespaces };
-
-    sessionUpdated(updatedSession);
-  });
-
   client.on('session_delete', () => {
     console.log('WC EVENT', 'session_delete');
-    reset();
+    bindedReset();
   });
 });
 
-const _checkPersistedState = createEffect(async (client: Client) => {
+const _checkPersistedStateFx = createEffect(async (client: Client) => {
   if (!client) return;
 
   const pairings = client.pairing.getAll({ active: true });
@@ -66,26 +83,54 @@ const _checkPersistedState = createEffect(async (client: Client) => {
 
   if (client.session.length) {
     const lastKeyIndex = client.session.keys.length - 1;
-    const _session = client.session.get(client.session.keys[lastKeyIndex]);
-    console.log('RESTORED SESSION:', _session);
+    const session = client.session.get(client.session.keys[lastKeyIndex]);
+    console.log('RESTORED SESSION:', session);
 
-    sessionUpdated(_session);
+    sessionUpdated(session);
   }
 });
 
-const _logClientId = createEffect(async (client: Client) => {
+const _logClientIdFx = createEffect(async (client: Client) => {
   if (!client) return;
 
   try {
     const clientId = await client.core.crypto.getClientId();
     console.log('WalletConnect ClientID: ', clientId);
-    localStorage.setItem('WALLETCONNECT_CLIENT_ID', clientId);
+    localStorageService.saveToStorage(WALLETCONNECT_CLIENT_ID, clientId);
   } catch (error) {
     console.error('Failed to set WalletConnect clientId in localStorage: ', error);
   }
 });
 
-const createClient = createEffect(async () => {
+const sessionTopicUpdatedFx = createEffect(
+  async ({
+    activeAccounts,
+    sessionTopic,
+  }: {
+    activeAccounts: Account[];
+    sessionTopic: string;
+  }): Promise<Array<Account | undefined>> => {
+    return Promise.all(
+      activeAccounts
+        .map(async (account) => {
+          const updatedAccount = {
+            ...account,
+            signingExtras: {
+              ...account.signingExtras,
+              sessionTopic,
+            },
+          };
+
+          const id = await storageService.accounts.update(account.id, updatedAccount);
+
+          return id ? updatedAccount : undefined;
+        })
+        .filter(Boolean),
+    );
+  },
+);
+
+const createClientFx = createEffect(async (): Promise<Client | undefined> => {
   try {
     const _client = await Client.init({
       logger: DEFAULT_LOGGER,
@@ -95,48 +140,49 @@ const createClient = createEffect(async () => {
     });
 
     return _client;
-  } catch (err) {
-    console.log(err);
+  } catch (e) {
+    console.log(`Failed to create new Client`, e);
   }
 });
 
 forward({
   from: kernelModel.events.appStarted,
-  to: createClient,
+  to: createClientFx,
 });
 
 sample({
-  clock: createClient.doneData,
-  filter: (client) => client !== null,
-  fn: (client) => client!,
-  target: [_subscribeToEvents, _checkPersistedState, _logClientId],
+  clock: createClientFx.doneData,
+  filter: (client): client is Client => client !== null,
+  target: [_subscribeToEventsFx, _checkPersistedStateFx, _logClientIdFx],
 });
 
-const initConnectFx = createEffect(async ({ client, chains, pairing }: InitConnectProps) => {
-  try {
-    const optionalNamespaces = {
-      polkadot: {
-        methods: [DEFAULT_POLKADOT_METHODS.POLKADOT_SIGN_TRANSACTION],
-        chains,
-        events: [DEFAULT_POLKADOT_EVENTS.CHAIN_CHANGED, DEFAULT_POLKADOT_EVENTS.ACCOUNTS_CHANGED],
-      },
-    };
+const initConnectFx = createEffect(
+  async ({ client, chains, pairing }: InitConnectProps): Promise<InitConnectResult | undefined> => {
+    try {
+      const optionalNamespaces = {
+        polkadot: {
+          methods: [DEFAULT_POLKADOT_METHODS.POLKADOT_SIGN_TRANSACTION],
+          chains,
+          events: [DEFAULT_POLKADOT_EVENTS.CHAIN_CHANGED, DEFAULT_POLKADOT_EVENTS.ACCOUNTS_CHANGED],
+        },
+      };
 
-    const { uri, approval } = await client.connect({
-      pairingTopic: pairing?.topic,
-      optionalNamespaces,
-    });
+      const { uri, approval } = await client.connect({
+        pairingTopic: pairing?.topic,
+        optionalNamespaces,
+      });
 
-    return {
-      uri,
-      approval,
-    };
-  } catch (e) {
-    console.error(e);
-  }
-});
+      return {
+        uri,
+        approval,
+      };
+    } catch (e) {
+      console.log(`Failed to init connection`, e);
+    }
+  },
+);
 
-const connectFx = createEffect(async ({ client, approval }: ConnectProps) => {
+const connectFx = createEffect(async ({ client, approval }: ConnectProps): Promise<ConnectResult | undefined> => {
   try {
     const session = await approval();
     console.log('Established session:', session);
@@ -167,7 +213,7 @@ forward({
 });
 
 sample({
-  clock: createClient.doneData,
+  clock: createClientFx.doneData,
   filter: (client) => nonNullable(client),
   fn: (client) => client!,
   target: $client,
@@ -188,12 +234,10 @@ sample({
   clock: initConnectFx.doneData,
   source: $client,
   filter: (client, initData) => client !== null && initData?.approval !== null,
-  fn: ($client, initData) => {
-    return {
-      client: $client!,
-      approval: initData?.approval!,
-    };
-  },
+  fn: ($client, initData) => ({
+    client: $client!,
+    approval: initData?.approval!,
+  }),
   target: connectFx,
 });
 
@@ -252,7 +296,28 @@ forward({
   to: reset,
 });
 
-export const wcModel = {
+sample({
+  clock: sessionTopicUpdated,
+  source: walletModel.$activeAccounts,
+  fn: (activeAccounts, sessionTopic) => ({
+    activeAccounts,
+    sessionTopic,
+  }),
+  target: sessionTopicUpdatedFx,
+});
+
+sample({
+  clock: sessionTopicUpdatedFx.doneData,
+  source: walletModel.$accounts,
+  fn: (accounts, updatedAccounts) => {
+    const updatedMap = keyBy(updatedAccounts, 'id');
+
+    return accounts.map((account) => updatedMap[account.id] || account);
+  },
+  target: walletModel.$accounts,
+});
+
+export const walletConnectModel = {
   $client,
   $session,
   $uri,
@@ -264,6 +329,7 @@ export const wcModel = {
     sessionUpdated,
     connected,
     rejectConnection,
+    sessionTopicUpdated,
     reset,
   },
 };

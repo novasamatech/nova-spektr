@@ -3,7 +3,7 @@ import { render, screen } from '@testing-library/react';
 import { LabelHelpBox } from './LabelHelpBox';
 
 jest.mock('@renderer/entities/walletConnect', () => ({
-  wcModel: { events: {} },
+  walletConnectModel: { events: {} },
   DEFAULT_POLKADOT_METHODS: {},
   getWalletConnectChains: jest.fn(),
 }));

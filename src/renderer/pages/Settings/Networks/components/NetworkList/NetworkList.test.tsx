@@ -5,7 +5,7 @@ import { ExtendedChain } from '@renderer/entities/network';
 import { NetworkList } from './NetworkList';
 
 jest.mock('@renderer/entities/walletConnect', () => ({
-  wcModel: { events: {} },
+  walletConnectModel: { events: {} },
   DEFAULT_POLKADOT_METHODS: {},
   getWalletConnectChains: jest.fn(),
 }));

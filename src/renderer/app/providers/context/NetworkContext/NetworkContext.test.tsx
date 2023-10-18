@@ -5,12 +5,12 @@ import { Provider } from 'effector-react';
 import { useBalance } from '@renderer/entities/asset';
 import { useNetwork } from '@renderer/entities/network';
 import { NetworkProvider, useNetworkContext } from './NetworkContext';
-import { ConnectionStatus, ConnectionType } from '@renderer/shared/core';
+import { AccountType, ConnectionStatus, ConnectionType } from '@renderer/shared/core';
 import { walletModel } from '@renderer/entities/wallet';
 import { TEST_ACCOUNT_ID } from '@renderer/shared/lib/utils';
 
 jest.mock('@renderer/entities/walletConnect', () => ({
-  wcModel: { events: {} },
+  walletConnectModel: { events: {} },
   DEFAULT_POLKADOT_METHODS: {},
   getWalletConnectChains: jest.fn(),
 }));
@@ -125,7 +125,7 @@ describe('context/NetworkContext', () => {
 
     const scope = fork({
       values: new Map().set(walletModel.$activeAccounts, [
-        { name: 'Test Wallet', chainId: '0x123', accountId: TEST_ACCOUNT_ID },
+        { name: 'Test Wallet', type: AccountType.BASE, accountId: TEST_ACCOUNT_ID },
       ]),
     });
 

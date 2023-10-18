@@ -9,7 +9,7 @@ import ManageStep from './ManageStep/ManageStep';
 import novawallet_onboarding_tutorial from '@video/novawallet_onboarding_tutorial.mp4';
 import novawallet_onboarding_tutorial_webm from '@video/novawallet_onboarding_tutorial.webm';
 import { usePrevious } from '@renderer/shared/lib/hooks';
-import { getWalletConnectChains, wcModel } from '@renderer/entities/walletConnect';
+import { getWalletConnectChains, walletConnectModel } from '@renderer/entities/walletConnect';
 import { chainsService } from '@renderer/entities/network';
 import { wcOnboardingModel } from '@renderer/pages/Onboarding/WalletConnect/model/wc-onboarding-model';
 import { WCQRConfig, Step, EXPIRE_TIMEOUT } from './common/const';
@@ -28,12 +28,12 @@ const qrCode = new QRCodeStyling(WCQRConfig);
 export const WalletConnect = ({ isOpen, onClose, onComplete }: Props) => {
   const { t } = useI18n();
 
-  const session = useUnit(wcModel.$session);
-  const client = useUnit(wcModel.$client);
-  const pairings = useUnit(wcModel.$pairings);
-  const uri = useUnit(wcModel.$uri);
-  const connect = useUnit(wcModel.events.connect);
-  const disconnect = useUnit(wcModel.events.disconnect);
+  const session = useUnit(walletConnectModel.$session);
+  const client = useUnit(walletConnectModel.$client);
+  const pairings = useUnit(walletConnectModel.$pairings);
+  const uri = useUnit(walletConnectModel.$uri);
+  const connect = useUnit(walletConnectModel.events.connect);
+  const disconnect = useUnit(walletConnectModel.events.disconnect);
   const step = useUnit(wcOnboardingModel.$step);
   const startOnboarding = useUnit(wcOnboardingModel.events.startOnboarding);
 

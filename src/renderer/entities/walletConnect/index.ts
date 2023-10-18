@@ -1,2 +1,2 @@
 export * from './lib';
-export * from './model/wc-model';
+export * from './model/wallet-connect-model';

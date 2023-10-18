@@ -1,6 +1,6 @@
 import { createEvent, createStore, sample } from 'effector';
 
-import { wcModel } from '@renderer/entities/walletConnect';
+import { walletConnectModel } from '@renderer/entities/walletConnect';
 import { Step } from '../common/const';
 
 const startOnboarding = createEvent();
@@ -8,13 +8,13 @@ const startOnboarding = createEvent();
 const $step = createStore(Step.SCAN).reset(startOnboarding);
 
 sample({
-  clock: wcModel.events.connected,
+  clock: walletConnectModel.events.connected,
   fn: () => Step.MANAGE,
   target: $step,
 });
 
 sample({
-  clock: wcModel.events.rejectConnection,
+  clock: walletConnectModel.events.rejectConnection,
   fn: () => Step.REJECT,
   target: $step,
 });

@@ -1,6 +1,5 @@
 import { createStore, createEvent, forward, createEffect, sample, combine } from 'effector';
 import { spread } from 'patronum';
-import keyBy from 'lodash/keyBy';
 
 import type { Wallet, NoID, Account, BaseAccount, ChainAccount, MultisigAccount } from '@renderer/shared/core';
 import { kernelModel, WalletConnectAccount } from '@renderer/shared/core';
@@ -34,7 +33,6 @@ const walletConnectCreated = createEvent<CreateParams<WalletConnectAccount>>();
 
 const walletSelected = createEvent<WalletId>();
 const multisigAccountUpdated = createEvent<MultisigUpdateParams>();
-const sessionTopicUpdated = createEvent<string>();
 
 const fetchAllAccountsFx = createEffect((): Promise<Account[]> => {
   return storageService.accounts.readAll();
@@ -122,34 +120,6 @@ const multisigWalletUpdatedFx = createEffect(
   },
 );
 
-const sessionTopicUpdatedFx = createEffect(
-  async ({
-    activeAccounts,
-    sessionTopic,
-  }: {
-    activeAccounts: Account[];
-    sessionTopic: string;
-  }): Promise<Array<Account | undefined>> => {
-    return Promise.all(
-      activeAccounts
-        .map(async (account) => {
-          const updatedAccount = {
-            ...account,
-            signingExtras: {
-              ...account.signingExtras,
-              sessionTopic,
-            },
-          };
-
-          const id = await storageService.accounts.update(account.id, updatedAccount);
-
-          return id ? updatedAccount : undefined;
-        })
-        .filter(Boolean),
-    );
-  },
-);
-
 forward({ from: kernelModel.events.appStarted, to: [fetchAllWalletsFx, fetchAllAccountsFx] });
 forward({ from: fetchAllWalletsFx.doneData, to: $wallets });
 forward({ from: fetchAllAccountsFx.doneData, to: $accounts });
@@ -218,27 +188,6 @@ sample({
 forward({ from: multisigAccountUpdated, to: multisigWalletUpdatedFx });
 
 sample({
-  clock: sessionTopicUpdated,
-  source: $activeAccounts,
-  fn: (activeAccounts, sessionTopic) => ({
-    activeAccounts,
-    sessionTopic,
-  }),
-  target: sessionTopicUpdatedFx,
-});
-
-sample({
-  clock: sessionTopicUpdatedFx.doneData,
-  source: $accounts,
-  fn: (accounts, updatedAccounts) => {
-    const updatedMap = keyBy(updatedAccounts, 'id');
-
-    return accounts.map((account) => updatedMap[account.id] || account);
-  },
-  target: $accounts,
-});
-
-sample({
   clock: multisigWalletUpdatedFx.doneData,
   source: $accounts,
   filter: (_, data) => Boolean(data),
@@ -262,6 +211,5 @@ export const walletModel = {
     walletConnectCreated,
     walletSelected,
     multisigAccountUpdated,
-    sessionTopicUpdated,
   },
 };
