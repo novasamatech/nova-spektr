@@ -51,14 +51,14 @@ export const Welcome = () => {
             title={t('onboarding.welcome.novaWalletTitle')}
             description={t('onboarding.welcome.novaWalletDescription')}
             iconName="novaWalletOnboarding"
-            onClick={() => walletProviderModel.events.walletTypeSet(WalletType.NOVA_WALLET)}
+            onClick={() => walletPairingModel.events.walletTypeSet(WalletType.NOVA_WALLET)}
           />
 
           <WelcomeCard
             title={t('onboarding.welcome.walletConnectTitle')}
             description={t('onboarding.welcome.walletConnectDescription')}
             iconName="walletConnectOnboarding"
-            onClick={() => walletProviderModel.events.walletTypeSet(WalletType.WALLET_CONNECT)}
+            onClick={() => walletPairingModel.events.walletTypeSet(WalletType.WALLET_CONNECT)}
           />
 
           <WelcomeCard
