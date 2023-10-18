@@ -16,8 +16,8 @@ type ModalProps = {
   onComplete: () => void;
 };
 const WalletModals: Record<WalletFamily, (props: ModalProps) => JSX.Element> = {
-  [WalletType.WATCH_ONLY]: (props) => <WatchOnly isOpen {...props} />,
   [WalletType.POLKADOT_VAULT]: (props) => <Vault isOpen {...props} />,
+  [WalletType.WATCH_ONLY]: (props) => <WatchOnly isOpen {...props} />,
   [WalletType.MULTISIG]: (props) => <MultisigAccount isOpen {...props} />,
 };
 
@@ -32,7 +32,7 @@ export const CreateWalletProvider = () => {
   if (!walletType) return null;
 
   const props: ModalProps = {
-    onClose: walletPairingModel.events.clearWalletType,
+    onClose: walletPairingModel.events.walletTypeCleared,
     onComplete: walletProviderModel.events.completed,
   };
 
