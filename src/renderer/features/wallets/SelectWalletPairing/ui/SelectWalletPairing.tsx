@@ -26,6 +26,18 @@ const getDropdownOptions = (t: TFunction): ButtonDropdownOption[] => {
       iconName: 'multisig',
       onClick: () => walletPairingModel.events.walletTypeSet(WalletType.MULTISIG),
     },
+    {
+      id: 'novaWallet',
+      title: t('wallets.addNovaWallet'),
+      iconName: 'novaWallet',
+      onClick: () => walletPairingModel.events.walletTypeSet(WalletType.NOVA_WALLET),
+    },
+    {
+      id: 'walletConnect',
+      title: t('wallets.addWalletConnect'),
+      iconName: 'walletConnect',
+      onClick: () => walletPairingModel.events.walletTypeSet(WalletType.WALLET_CONNECT),
+    },
   ];
 };
 
