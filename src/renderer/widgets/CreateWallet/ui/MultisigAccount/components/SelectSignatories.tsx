@@ -150,18 +150,25 @@ export const SelectSignatories = ({ isActive, wallets, accounts, contacts, onSel
       <FootnoteText className="text-text-tertiary px-2">{t('createMultisigAccount.availableLabel')}</FootnoteText>
 
       <ul className="gap-y-2">
-        {availableWallets.map((wallet) => (
-          <li key={wallet.id + '_wallets'} className="p-1.5 rounded-md hover:bg-action-background-hover">
-            <Checkbox
-              checked={!!selectedWallets[wallet.id]}
-              disabled={isDisabledWallet(wallet)}
-              className="px-0.5"
-              onChange={() => selectWallet(wallet)}
+        {availableWallets.map((wallet) => {
+          const disabled = isDisabledWallet(wallet);
+
+          return (
+            <li
+              key={wallet.id + '_wallets'}
+              className={cnTw('py-1.5 rounded-md', !disabled && 'hover:bg-action-background-hover')}
             >
-              <WalletItem name={wallet.name} type={wallet.type || WalletType.POLKADOT_VAULT} />
-            </Checkbox>
-          </li>
-        ))}
+              <Checkbox
+                checked={!!selectedWallets[wallet.id]}
+                disabled={disabled}
+                className="px-0.5"
+                onChange={() => selectWallet(wallet)}
+              >
+                <WalletItem name={wallet.name} type={wallet.type || WalletType.POLKADOT_VAULT} />
+              </Checkbox>
+            </li>
+          );
+        })}
       </ul>
 
       {!!disabledWallets.length && (
@@ -207,17 +214,24 @@ export const SelectSignatories = ({ isActive, wallets, accounts, contacts, onSel
 
       {hasContacts ? (
         <ul className="flex flex-col gap-y-2">
-          {searchedContactList.map((contact) => (
-            <li key={contact.index + '_contacts'} className="py-1.5 px-2 rounded-md hover:bg-action-background-hover">
-              <Checkbox
-                checked={!!selectedContacts[contact.index] || false}
-                disabled={isDisabledContact(contact)}
-                onChange={() => selectContact(contact)}
+          {searchedContactList.map((contact) => {
+            const disabled = isDisabledContact(contact);
+
+            return (
+              <li
+                key={contact.index + '_contacts'}
+                className={cnTw('py-1.5 px-2 rounded-md', !disabled && 'hover:bg-action-background-hover')}
               >
-                <ContactItem name={contact.name} accountId={contact.accountId} />
-              </Checkbox>
-            </li>
-          ))}
+                <Checkbox
+                  checked={!!selectedContacts[contact.index] || false}
+                  disabled={disabled}
+                  onChange={() => selectContact(contact)}
+                >
+                  <ContactItem disabled={disabled} name={contact.name} accountId={contact.accountId} />
+                </Checkbox>
+              </li>
+            );
+          })}
         </ul>
       ) : (
         <EmptyContactList onNewContact={toggleContactModalOpen} />
