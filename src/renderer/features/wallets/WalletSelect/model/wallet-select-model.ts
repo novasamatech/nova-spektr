@@ -61,7 +61,6 @@ const $walletBalances = combine(
       if (!asset?.priceId || !prices[asset.priceId]) return acc;
 
       const price = prices[asset.priceId][currency.coingeckoId];
-
       if (price) {
         const fiatBalance = getRoundedValue(totalAmount(balance), price.price, asset.precision);
         const newBalance = new BigNumber(fiatBalance);
@@ -71,26 +70,26 @@ const $walletBalances = combine(
       return acc;
     }, {});
 
-    const walletsBalancesMap = accounts.reduce<Record<Wallet['id'], { [key: AccountId]: BigNumber }>>(
+    // skip repeated accounts and sum balances in a single array traversal
+    const { result } = accounts.reduce(
       (acc, account) => {
-        const balance = accountsBalancesMap[account.accountId] || new BigNumber(0);
+        const { accountId, walletId } = account;
+        const balance = accountsBalancesMap[accountId] || new BigNumber(0);
 
-        if (acc[account.walletId]) {
-          acc[account.walletId][account.accountId] = balance;
-        } else {
-          acc[account.walletId] = { [account.accountId]: balance };
+        if (!acc.temp[walletId]) {
+          acc.temp[walletId] = { [accountId]: true };
+          acc.result[walletId] = balance;
+        } else if (!acc.temp[walletId][accountId]) {
+          acc.temp[walletId][accountId] = true;
+          acc.result[walletId].plus(balance);
         }
 
         return acc;
       },
-      {},
+      { temp: {} as Record<Wallet['id'], Record<AccountId, boolean>>, result: {} as WalletsBalances },
     );
 
-    return Object.entries(walletsBalancesMap).reduce<WalletsBalances>((acc, [walletId, balancesMap]) => {
-      acc[Number(walletId)] = Object.values(balancesMap).reduce((sum, balance) => sum.plus(balance), new BigNumber(0));
-
-      return acc;
-    }, {});
+    return result;
   },
 );
 
