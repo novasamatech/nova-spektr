@@ -64,8 +64,10 @@ const QrReader = ({
     return typeof error === 'object' && ErrorFields.CODE in error && ErrorFields.MESSAGE in error;
   };
 
-  const makeResultPayload = <T extends string | SeedInfo[]>(data: T): SeedInfo[] => {
-    if (typeof data !== 'string') return data;
+  const makeResultPayload = <T extends string | SeedInfo[] | { addr: SeedInfo }>(data: T): SeedInfo[] => {
+    if (Array.isArray(data)) return data;
+
+    if (typeof data !== 'string') return [data.addr];
 
     return [
       {
@@ -105,7 +107,7 @@ const QrReader = ({
 
     isComplete.current = true;
     onProgress?.({ decoded: 1, total: 1 });
-    onResult?.(makeResultPayload<string>(signerAddress));
+    onResult?.(makeResultPayload(signerAddress));
 
     return true;
   };
@@ -130,7 +132,7 @@ const QrReader = ({
       // decode the 1st frame --> it's a single frame QR
       const result = EXPORT_ADDRESS.decode(fountainResult.slice(3));
       isComplete.current = true;
-      onResult?.(makeResultPayload<SeedInfo[]>(result.payload));
+      onResult?.(makeResultPayload(result.payload));
     } else {
       // if there is more than 1 frame --> proceed scanning and keep the progress
       onProgress?.({ decoded: 1, total: frameData.total });
@@ -184,7 +186,7 @@ const QrReader = ({
 
       const result = EXPORT_ADDRESS.decode(fountainResult.slice(3));
       isComplete.current = true;
-      onResult?.(makeResultPayload<SeedInfo[]>(result.payload));
+      onResult?.(makeResultPayload(result.payload));
       break;
     }
   };
