@@ -63,7 +63,7 @@ export const WalletConnectDetails = ({ isOpen, wallet, accounts, onClose }: Prop
       onClose={closeWowModal}
     >
       <div className="flex flex-col w-full">
-        <div className="flex items-center justify-between gap-x-2 py-5 px-5 border-b border-divider">
+        <div className="flex items-center justify-between gap-x-2 p-5 border-b border-divider">
           <div className="flex items-center justify-between gap-x-2">
             <WalletIcon type={wallet.type} size={32} />
             <BodyText>{wallet.name}</BodyText>
