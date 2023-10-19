@@ -57,8 +57,8 @@ export const SelectSignatories = ({ isActive, wallets, accounts, contacts, onSel
         const walletAccounts = accounts.filter((a) => a.walletId === wallet.id);
 
         const accountId = walletAccounts[0].accountId;
-
-        if (walletAccounts.every((a) => a.accountId === accountId && !walletUtils.isMultisig(wallet))) {
+        const isSameAccounts = walletAccounts.every((a) => a.accountId === accountId);
+        if (isSameAccounts && !walletUtils.isMultisig(wallet)) {
           acc.available.push({
             ...wallet,
             index: index.toString(),
