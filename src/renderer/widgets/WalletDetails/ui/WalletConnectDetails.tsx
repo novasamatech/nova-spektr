@@ -59,7 +59,7 @@ export const WalletConnectDetails = ({ isOpen, wallet, accounts, onClose }: Prop
     <BaseModal
       closeButton
       contentClass=""
-      title={t('walletDetails.simpleTitle')}
+      title={t('walletDetails.common.title')}
       isOpen={isModalOpen}
       onClose={closeWowModal}
     >
