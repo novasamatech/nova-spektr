@@ -191,13 +191,13 @@ export const buildMultisigTx = (
 };
 
 export const getTransactionFromMultisigTx = (tx: MultisigTransaction): Transaction | DecodedTransaction | undefined => {
-  if (tx.transaction?.type === 'batchAll') {
-    return (
-      tx.transaction.args.transactions.find(
-        (tx: Transaction) => tx.type === TransactionType.BOND || tx.type === TransactionType.UNSTAKE,
-      ) || tx.transaction.args.transactions[0]
-    );
+  if (!tx.transaction || tx.transaction.type !== 'batchAll') {
+    return tx.transaction;
   }
 
-  return tx.transaction;
+  const transactionMatch = tx.transaction.args.transactions.find((tx: Transaction) => {
+    return tx.type === TransactionType.BOND || tx.type === TransactionType.UNSTAKE;
+  });
+
+  return transactionMatch || tx.transaction.args.transactions[0];
 };
