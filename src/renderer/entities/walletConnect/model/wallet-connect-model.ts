@@ -110,17 +110,11 @@ const sessionTopicUpdatedFx = createEffect(
     activeAccounts: Account[];
     sessionTopic: string;
   }): Promise<Account[] | undefined> => {
-    const updatedAccounts = activeAccounts.map(
-      (account) =>
-        ({
-          ...account,
-          signingExtras: {
-            ...account.signingExtras,
-            sessionTopic,
-          },
-        } as Account),
-    );
+    const updatedAccounts = activeAccounts.map(({ signingExtras, ...rest }) => {
+      const newSigningExtras = { ...signingExtras, sessionTopic };
 
+      return { ...rest, signingExtras: newSigningExtras } as Account;
+    });
     const updated = await storageService.accounts.updateAll(updatedAccounts);
 
     return updated && updatedAccounts;
