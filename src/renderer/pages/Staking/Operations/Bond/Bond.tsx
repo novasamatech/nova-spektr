@@ -5,7 +5,8 @@ import { useUnit } from 'effector-react';
 
 import { DEFAULT_TRANSITION, getRelaychainAsset, toAddress } from '@renderer/shared/lib/utils';
 import { ValidatorMap } from '@renderer/entities/staking';
-import { Paths, useI18n, useNetworkContext } from '@renderer/app/providers';
+import { useI18n, useNetworkContext } from '@renderer/app/providers';
+import { Paths } from '@renderer/shared/routes';
 import { Transaction, TransactionType, useTransaction } from '@renderer/entities/transaction';
 import { Confirmation, NoAsset, Submit, Validators } from '../components';
 import { useToggle } from '@renderer/shared/lib/hooks';

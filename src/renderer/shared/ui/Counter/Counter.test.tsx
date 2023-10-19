@@ -2,6 +2,15 @@ import { render, screen } from '@testing-library/react';
 
 import Counter from './Counter';
 
+jest.mock('@renderer/entities/walletConnect', () => ({
+  walletConnectModel: { events: {} },
+  DEFAULT_POLKADOT_METHODS: {},
+  getWalletConnectChains: jest.fn(),
+}));
+jest.mock('@renderer/pages/Onboarding/WalletConnect/model/wc-onboarding-model', () => ({
+  wcOnboardingModel: { events: {} },
+}));
+
 describe('ui/Counter', () => {
   test('should render component', () => {
     render(<Counter variant="success">25</Counter>);

@@ -1,4 +1,5 @@
 import { IconNames } from '@renderer/shared/ui/Icon/data';
+import { accountUtils, walletUtils } from '@renderer/entities/wallet';
 import {
   DecodedTransaction,
   MultisigEvent,
@@ -17,7 +18,6 @@ import type {
   Wallet,
   ChainId,
 } from '@renderer/shared/core';
-import { accountUtils, walletUtils } from '@renderer/entities/wallet';
 
 export const TRANSACTION_UNKNOWN = 'operations.titles.unknown';
 

@@ -9,12 +9,12 @@ import {
   getMultishardStructure,
   getSelectableShards,
   searchShards,
-} from '@renderer/components/layout/PrimaryLayout/Wallets/common/utils';
+} from '@renderer/features/wallets/WalletSelect/common/utils';
 import {
   ChainsRecord,
   SelectableAccount,
   SelectableShards,
-} from '@renderer/components/layout/PrimaryLayout/Wallets/common/types';
+} from '@renderer/features/wallets/WalletSelect/common/types';
 import { SelectableShard } from '@renderer/entities/wallet';
 import { ChainTitle } from '@renderer/entities/chain';
 import { toAddress } from '@renderer/shared/lib/utils';

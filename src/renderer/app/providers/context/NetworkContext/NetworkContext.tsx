@@ -119,9 +119,10 @@ export const NetworkProvider = ({ children }: PropsWithChildren) => {
 
       const firstPrevAcc = previousAccounts?.length && previousAccounts[0];
       const firstNewAcc = activeAccounts.length && activeAccounts[0];
+
       if (previousAccounts?.length !== activeAccounts.length || firstPrevAcc !== firstNewAcc) {
         connectedConnections.forEach((chain) => {
-          const accountIds = getAccountIds(chain.chainId);
+          const accountIds = getAccountIds(chain.connection.chainId);
           subscribeBalanceChanges(chain, accountIds);
         });
       }
@@ -130,7 +131,7 @@ export const NetworkProvider = ({ children }: PropsWithChildren) => {
       const newConnections = connectedConnections.filter((c) => !previousConnectedConnections?.includes(c));
 
       newConnections.forEach((chain) => {
-        const accountIds = getAccountIds(chain.chainId);
+        const accountIds = getAccountIds(chain.connection.chainId);
         subscribeBalanceChanges(chain, accountIds);
       });
 

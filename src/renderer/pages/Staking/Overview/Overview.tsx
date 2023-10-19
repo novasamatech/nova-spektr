@@ -4,7 +4,9 @@ import { useUnit } from 'effector-react';
 
 import { Header } from '@renderer/components/common';
 import { getRelaychainAsset, toAddress } from '@renderer/shared/lib/utils';
-import { createLink, PathValue, useGraphql, useI18n, useNetworkContext } from '@renderer/app/providers';
+import { createLink } from '@renderer/shared/routes';
+import type { PathValue } from '@renderer/shared/routes';
+import { useGraphql, useI18n, useNetworkContext } from '@renderer/app/providers';
 import { useToggle } from '@renderer/shared/lib/hooks';
 import { NominatorInfo } from '@renderer/pages/Staking/Overview/components/NominatorsList/NominatorsList';
 import { AboutStaking, NetworkInfo, NominatorsList, Actions, ValidatorsModal, InactiveChain } from './components';
@@ -107,8 +109,10 @@ export const Overview = () => {
     const isMultisig = walletUtils.isMultisig(activeWallet);
     const isSingleShard = walletUtils.isSingleShard(activeWallet);
     const isSingleMultishard = walletUtils.isMultiShard(activeWallet) && addresses.length === 1;
+    const isNovaWallet = walletUtils.isNovaWallet(activeWallet);
+    const isWalletConnect = walletUtils.isWalletConnect(activeWallet);
 
-    if (isMultisig || isSingleShard || isSingleMultishard) {
+    if (isMultisig || isSingleShard || isSingleMultishard || isNovaWallet || isWalletConnect) {
       setSelectedNominators([addresses[0]]);
     } else {
       setSelectedNominators([]);

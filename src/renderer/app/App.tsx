@@ -6,22 +6,23 @@ import { useUnit } from 'effector-react';
 import { FallbackScreen } from '@renderer/components/common';
 import { CreateWalletProvider } from '@renderer/widgets/CreateWallet';
 import { walletModel } from '@renderer/entities/wallet';
+import { ROUTES_CONFIG } from '@renderer/pages';
+import { Paths } from '@renderer/shared/routes';
 import {
   ConfirmDialogProvider,
+  StatusModalProvider,
   I18Provider,
   MatrixProvider,
   NetworkProvider,
   GraphqlProvider,
   MultisigChainProvider,
-  Paths,
-  routesConfig,
 } from './providers';
 
 const SPLASH_SCREEN_DELAY = 450;
 
 export const App = () => {
   const navigate = useNavigate();
-  const appRoutes = useRoutes(routesConfig);
+  const appRoutes = useRoutes(ROUTES_CONFIG);
 
   const wallets = useUnit(walletModel.$wallets);
   const isLoadingWallets = useUnit(walletModel.$isLoadingWallets);
@@ -54,10 +55,12 @@ export const App = () => {
           <MultisigChainProvider>
             <MatrixProvider>
               <ConfirmDialogProvider>
-                <GraphqlProvider>
-                  {getContent()}
-                  <CreateWalletProvider />
-                </GraphqlProvider>
+                <StatusModalProvider>
+                  <GraphqlProvider>
+                    {getContent()}
+                    <CreateWalletProvider />
+                  </GraphqlProvider>
+                </StatusModalProvider>
               </ConfirmDialogProvider>
             </MatrixProvider>
           </MultisigChainProvider>
