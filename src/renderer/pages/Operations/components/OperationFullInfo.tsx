@@ -1,9 +1,9 @@
 import { Icon, Button, InfoLink, SmallTitleText } from '@renderer/shared/ui';
-import OperationCardDetails from '@renderer/pages/Operations/components/OperationCardDetails';
-import RejectTx from '@renderer/pages/Operations/components/modals/RejectTx';
-import ApproveTx from '@renderer/pages/Operations/components/modals/ApproveTx';
-import { getMultisigExtrinsicLink } from '@renderer/pages/Operations/common/utils';
-import CallDataModal from '@renderer/pages/Operations/components/modals/CallDataModal';
+import { OperationCardDetails } from './OperationCardDetails';
+import RejectTx from './modals/RejectTx';
+import ApproveTx from './modals/ApproveTx';
+import { getMultisigExtrinsicLink } from '../common/utils';
+import CallDataModal from './modals/CallDataModal';
 import { useMatrix, useNetworkContext, useI18n, useMultisigChainContext } from '@renderer/app/providers';
 import { useMultisigTx } from '@renderer/entities/multisig';
 import { useToggle } from '@renderer/shared/lib/hooks';

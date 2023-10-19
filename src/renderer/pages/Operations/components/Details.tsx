@@ -9,7 +9,6 @@ import { ExtendedChain } from '@renderer/entities/network';
 import {
   MultisigTransaction,
   Transaction,
-  TransactionType,
   isXcmTransaction,
   isTransferTransaction,
 } from '@renderer/entities/transaction';
@@ -18,6 +17,7 @@ import { AddressStyle, DescriptionBlockStyle, InteractionStyle } from '../common
 import { ChainTitle } from '@renderer/entities/chain';
 import type { MultisigAccount } from '@renderer/shared/core';
 import { Account } from '@renderer/shared/core';
+import { getTransactionFromMultisigTx } from '@renderer/entities/multisig';
 
 type Props = {
   tx: MultisigTransaction;
@@ -28,7 +28,7 @@ type Props = {
 
 const Details = ({ tx, account, connection, signatory }: Props) => {
   const { t } = useI18n();
-  const wallet = useUnit(walletModel.$activeWallet);
+  const activeWallet = useUnit(walletModel.$activeWallet);
 
   const wallets = useUnit(walletModel.$wallets);
   const signatoryWallet = wallets.find((w) => w.id === signatory?.walletId);
@@ -37,12 +37,7 @@ const Details = ({ tx, account, connection, signatory }: Props) => {
 
   const cancelDescription = tx.cancelDescription;
 
-  const transaction =
-    tx.transaction?.type === 'batchAll'
-      ? tx.transaction.args.transactions.find(
-          (tx: Transaction) => tx.type === TransactionType.BOND || tx.type === TransactionType.UNSTAKE,
-        ) || tx.transaction.args.transactions[0]
-      : tx.transaction;
+  const transaction = getTransactionFromMultisigTx(tx);
 
   const startStakingValidators =
     tx.transaction?.type === 'batchAll' &&
@@ -69,17 +64,20 @@ const Details = ({ tx, account, connection, signatory }: Props) => {
         </div>
       )}
 
-      {account && wallet && (
+      {account && activeWallet && (
         <DetailRow label={t('operation.details.multisigWallet')}>
           <div className="flex gap-x-2 items-center max-w-none">
-            <WalletIcon type={wallet.type} size={16} />
-            <FootnoteText>{wallet.name}</FootnoteText>
+            <WalletIcon type={activeWallet.type} size={16} />
+            <FootnoteText>{activeWallet.name}</FootnoteText>
           </div>
         </DetailRow>
       )}
 
       {account && (
-        <DetailRow label={t('operation.details.' + hasSender ? 'sender' : 'account')} className="text-text-secondary">
+        <DetailRow
+          label={t(hasSender ? 'operation.details.sender' : 'operation.details.account')}
+          className="text-text-secondary"
+        >
           <AddressWithExplorers
             explorers={explorers}
             addressFont={AddressStyle}
@@ -129,7 +127,7 @@ const Details = ({ tx, account, connection, signatory }: Props) => {
 
       <hr className="border-filter-border" />
 
-      {isXcmTransaction(tx.transaction) && transaction.args.destinationChain && (
+      {isXcmTransaction(tx.transaction) && transaction?.args.destinationChain && (
         <DetailRow label={t('operation.details.toNetwork')}>
           <ChainTitle chainId={transaction?.args.destinationChain} />
         </DetailRow>

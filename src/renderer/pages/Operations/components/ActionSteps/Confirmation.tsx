@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useStore } from 'effector-react';
+import { useUnit } from 'effector-react';
 
 import {
   MultisigTransaction,
@@ -7,7 +7,6 @@ import {
   Fee,
   DepositWithLabel,
   isXcmTransaction,
-  TransactionType,
   XcmFee,
 } from '@renderer/entities/transaction';
 import { TransactionAmount } from '@renderer/pages/Operations/components/TransactionAmount';
@@ -19,6 +18,7 @@ import type { Account, MultisigAccount } from '@renderer/shared/core';
 import Details from '../Details';
 import { sendAssetModel } from '@renderer/widgets';
 import { getAssetById } from '@renderer/shared/lib/utils';
+import { getTransactionFromMultisigTx } from '@renderer/entities/multisig';
 
 type Props = {
   tx: MultisigTransaction;
@@ -29,19 +29,14 @@ type Props = {
   onSign: () => void;
 };
 export const Confirmation = ({ tx, account, connection, signatory, feeTx, onSign }: Props) => {
-  const xcmConfig = useStore(sendAssetModel.$finalConfig);
   const { t } = useI18n();
   const [isFeeLoaded, setIsFeeLoaded] = useState(false);
 
+  const xcmConfig = useUnit(sendAssetModel.$finalConfig);
   const asset = getAssetById(tx.transaction?.args.assetId, connection.assets) || connection.assets[0];
 
   const iconName = getIconName(tx.transaction);
-  const transaction =
-    tx.transaction?.type === 'batchAll'
-      ? tx.transaction.args.transactions.find(
-          (tx: Transaction) => tx.type === TransactionType.BOND || tx.type === TransactionType.UNSTAKE,
-        ) || tx.transaction.args.transactions[0]
-      : tx.transaction;
+  const transaction = getTransactionFromMultisigTx(tx);
 
   useEffect(() => {
     sendAssetModel.events.xcmConfigRequested();
@@ -86,11 +81,9 @@ export const Confirmation = ({ tx, account, connection, signatory, feeTx, onSign
         )}
       </DetailRow>
 
-      {isXcmTransaction(transaction) && xcmConfig && (
+      {isXcmTransaction(transaction) && xcmConfig && connection.api && (
         <DetailRow label={t('operation.xcmFee')} className="text-text-primary pr-2">
-          {xcmConfig && connection.api && (
-            <XcmFee api={connection.api} transaction={transaction} asset={asset} config={xcmConfig} />
-          )}
+          <XcmFee api={connection.api} transaction={transaction} asset={asset} config={xcmConfig} />
         </DetailRow>
       )}
 

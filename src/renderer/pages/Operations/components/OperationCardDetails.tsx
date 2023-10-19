@@ -21,9 +21,9 @@ type Props = {
   connection?: ExtendedChain;
 };
 
-const OperationCardDetails = ({ tx, account, connection }: Props) => {
+export const OperationCardDetails = ({ tx, account, connection }: Props) => {
   const { t } = useI18n();
-  const wallet = useUnit(walletModel.$activeWallet);
+  const activeWallet = useUnit(walletModel.$activeWallet);
 
   const [isAdvancedShown, toggleAdvanced] = useToggle();
   const [isValidatorsOpen, toggleValidators] = useToggle();
@@ -74,10 +74,10 @@ const OperationCardDetails = ({ tx, account, connection }: Props) => {
         </div>
       )}
 
-      {account && wallet && (
+      {account && activeWallet && (
         <DetailRow label={t('operation.details.multisigWallet')} className={valueClass}>
           <WalletCardSm
-            wallet={wallet}
+            wallet={activeWallet}
             accountId={account.accountId}
             addressPrefix={addressPrefix}
             explorers={explorers}
@@ -259,4 +259,3 @@ const OperationCardDetails = ({ tx, account, connection }: Props) => {
     </dl>
   );
 };
-export default OperationCardDetails;
