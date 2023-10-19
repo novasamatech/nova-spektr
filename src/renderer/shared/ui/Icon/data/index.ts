@@ -11,6 +11,7 @@ import WalletTypeImages, { WalletImages } from './walletType';
 import StakingImages, { Staking } from './staking';
 import SocialImages, { Social } from './social';
 import MstImages, { Mst } from '@renderer/shared/ui/Icon/data/mst';
+import WalletTypeImagesNew, { WalletTypeNew } from '@renderer/shared/ui/Icon/data/walletTypeNew';
 
 const AllIcons = {
   ...CurrencyImages,
@@ -23,6 +24,7 @@ const AllIcons = {
   ...AestheticImages,
   ...ArrowImages,
   ...WalletTypeImages,
+  ...WalletTypeImagesNew,
   ...StakingImages,
   ...SocialImages,
   ...MstImages,
@@ -41,6 +43,7 @@ export type IconNames =
   | Staking
   | Social
   | WalletImages
+  | WalletTypeNew
   | Mst;
 
 export default AllIcons;

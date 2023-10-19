@@ -34,7 +34,7 @@ export const getAddress = (props: WithAccountId | WithAddress): Address => {
 
 export const AccountAddress = ({
   className,
-  symbols,
+  symbols = 8,
   name,
   size = 16,
   addressFont,

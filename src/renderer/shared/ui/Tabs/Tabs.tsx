@@ -9,12 +9,20 @@ type Props = {
   unmount?: boolean;
   panelClassName?: string;
   tabClassName?: string;
+  tabsClassName?: string;
   onChange?: (index: number) => void;
 };
 
-export const Tabs = ({ items, unmount = true, tabClassName, panelClassName = 'mt-4', onChange }: Props) => (
+export const Tabs = ({
+  items,
+  unmount = true,
+  tabClassName,
+  tabsClassName,
+  panelClassName = 'mt-4',
+  onChange,
+}: Props) => (
   <Tab.Group onChange={onChange}>
-    <Tab.List className="p-0.5 flex bg-tab-background rounded-md gap-x-1">
+    <Tab.List className={cnTw('p-0.5 flex bg-tab-background rounded-md gap-x-1', tabsClassName)}>
       {items.map(({ id, title }) => (
         <Tab
           key={id}

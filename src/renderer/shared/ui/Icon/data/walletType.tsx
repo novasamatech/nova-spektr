@@ -21,6 +21,7 @@ import NovaWalletOnboardingImg, {
   ReactComponent as NovaWalletOnboardingSvg,
 } from '@images/walletTypes/novaWalletOnboarding.svg';
 
+// TODO: Remove old wallet images after wallets and accounts cleanup finished
 const WalletTypeImages = {
   paritySigner: { svg: ParitySignerSvg, img: ParitySignerImg },
   paritySignerBg: { svg: ParitySignerBgSvg, img: ParitySignerBgImg },

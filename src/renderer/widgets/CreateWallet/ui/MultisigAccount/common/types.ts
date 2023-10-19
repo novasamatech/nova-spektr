@@ -1,7 +1,7 @@
-import type { Contact, AccountId, ChainId } from '@renderer/shared/core';
+import type { Contact, AccountId, WalletType } from '@renderer/shared/core';
 
 export type ExtendedContact = Contact & { index: string };
-export type ExtendedWallet = ExtendedContact & { walletName?: string; chainId?: ChainId };
+export type ExtendedWallet = ExtendedContact & { type?: WalletType };
 
 export type SelectedMap = {
   [key: AccountId]: {

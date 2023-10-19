@@ -1,8 +1,10 @@
 import { cnTw } from '@renderer/shared/lib/utils';
-import { useI18n, useNetworkContext } from '@renderer/app/providers';
+import { useI18n } from '@renderer/app/providers';
 import { FootnoteText, SmallTitleText } from '@renderer/shared/ui';
-import { WalletsTabItem } from './WalletsTabItem';
 import { ExtendedWallet, ExtendedContact } from '../common/types';
+import { WalletItem } from './WalletItem';
+import { ContactItem } from './ContactItem';
+import { WalletType } from '@renderer/shared/core';
 
 type Props = {
   isActive: boolean;
@@ -12,7 +14,6 @@ type Props = {
 
 export const ConfirmSignatories = ({ isActive, wallets, contacts }: Props) => {
   const { t } = useI18n();
-  const { connections } = useNetworkContext();
 
   return (
     <section
@@ -25,14 +26,9 @@ export const ConfirmSignatories = ({ isActive, wallets, contacts }: Props) => {
           {t('createMultisigAccount.walletsTab')} <span className="ml-2">{wallets.length}</span>
         </FootnoteText>
         <ul className="gap-y-2">
-          {wallets.map(({ index, name, accountId, walletName, chainId }) => (
+          {wallets.map(({ index, name, type }) => (
             <li key={index} className="p-1 mb-0.5 last:mb-0 rounded-md hover:bg-action-background-hover">
-              <WalletsTabItem
-                name={name}
-                accountId={accountId}
-                walletName={walletName}
-                explorers={chainId ? connections[chainId]?.explorers : []}
-              />
+              <WalletItem name={name} type={type || WalletType.POLKADOT_VAULT} />
             </li>
           ))}
         </ul>
@@ -45,7 +41,7 @@ export const ConfirmSignatories = ({ isActive, wallets, contacts }: Props) => {
             <ul className="gap-y-2">
               {contacts.map(({ index, accountId, name }) => (
                 <li key={index} className="p-1 mb-0.5 last:mb-0 rounded-md hover:bg-action-background-hover">
-                  <WalletsTabItem name={name} accountId={accountId} />
+                  <ContactItem name={name} accountId={accountId} />
                 </li>
               ))}
             </ul>
