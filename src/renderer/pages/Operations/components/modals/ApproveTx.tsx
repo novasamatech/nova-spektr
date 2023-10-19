@@ -4,7 +4,7 @@ import { Weight } from '@polkadot/types/interfaces';
 import { BN } from '@polkadot/util';
 import { useUnit } from 'effector-react';
 
-import { BaseModal, Button, Icon } from '@renderer/shared/ui';
+import { BaseModal, Button } from '@renderer/shared/ui';
 import { useI18n } from '@renderer/app/providers';
 import { MultisigTransactionDS } from '@renderer/shared/api/storage';
 import { useToggle } from '@renderer/shared/lib/hooks';
@@ -231,16 +231,14 @@ const ApproveTx = ({ tx, account, connection }: Props) => {
         onClose={handleClose}
       >
         {activeStep === Step.CONFIRMATION && (
-          <>
-            <Confirmation tx={tx} account={account} connection={connection} feeTx={feeTx} />
-            <Button
-              className="mt-7 ml-auto"
-              prefixElement={<Icon name="vault" size={14} />}
-              onClick={trySetSignerAccount}
-            >
-              {t('operation.signButton')}
-            </Button>
-          </>
+          <Confirmation
+            tx={tx}
+            account={account}
+            connection={connection}
+            feeTx={feeTx}
+            signatory={unsignedAccounts.length === 1 ? unsignedAccounts[0] : undefined}
+            onSign={trySetSignerAccount}
+          />
         )}
 
         {activeStep === Step.SIGNING && approveTx && connection.api && signAccount && (

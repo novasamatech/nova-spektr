@@ -297,6 +297,7 @@
     "contactSignatoriesTitle": "Contacts",
     "continueButton": "Продолжить",
     "details": {
+      "account": "Account",
       "amount": "количество",
       "callData": "Call Data",
       "callHash": "Call Hash",
