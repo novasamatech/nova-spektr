@@ -879,12 +879,15 @@
       "title": "Детали кошелька"
     },
     "walletConnect": {
+      "abortRejectButton": "Close",
       "connectedStatus": "Connected",
+      "disconnectedDescription": "Resume the connection to work with the WalletConnect",
       "disconnectedStatus": "Not connected",
       "disconnectedTitle": "Wallet not connected",
-      "disconnectedDescription": "Resume the connection to work with the WalletConnect",
-      "reconnectButton": "Reconnect"
-
+      "reconnectButton": "Reconnect",
+      "refreshButton": "Refresh",
+      "rejectDescription": "The operation was successfully canceled",
+      "rejectTitle": "Rejected"
     }
   },
   "wallets": {

@@ -8,7 +8,10 @@ import {
   BodyText,
   Button,
   FootnoteText,
+  HeaderTitleText,
   Icon,
+  IconButton,
+  MenuPopover,
   SmallTitleText,
   StatusLabel,
   StatusModal,
@@ -47,17 +50,17 @@ export const WalletConnectDetails = ({ isOpen, wallet, accounts, onClose }: Prop
   const reconnectAborted = useUnit(walletProviderModel.events.reconnectAborted);
   const reconnectStep = useUnit(walletProviderModel.$reconnectStep);
 
-  const closeModal = () => {
-    toggleIsModalOpen();
-
-    setTimeout(onClose, DEFAULT_TRANSITION);
-  };
-
   useEffect(() => {
     if (isModalOpen) {
       reset();
     }
   }, [isModalOpen]);
+
+  const closeModal = () => {
+    toggleIsModalOpen();
+
+    setTimeout(onClose, DEFAULT_TRANSITION);
+  };
 
   // TODO: Rework with https://app.clickup.com/t/8692ykm3y
   const accountsList = useMemo(() => {
@@ -87,11 +90,40 @@ export const WalletConnectDetails = ({ isOpen, wallet, accounts, onClose }: Prop
     reconnectStarted();
   };
 
+  const isAccountsStep = reconnectStep === ReconnectStep.NOT_STARTED && connected;
+  const isReconnectingStep = reconnectStep === ReconnectStep.RECONNECTING;
+  const isReadyToReconnectStep =
+    (reconnectStep === ReconnectStep.NOT_STARTED && !connected) || reconnectStep === ReconnectStep.REJECTED;
+
   return (
     <BaseModal
       closeButton
       contentClass=""
-      title={t('walletDetails.common.title')}
+      title={
+        <div className="flex items-center">
+          <HeaderTitleText className="flex-1 truncate">{t('walletDetails.common.title')}</HeaderTitleText>
+
+          <MenuPopover
+            className="w-[98px] p-0"
+            position="top-full right-0"
+            buttonClassName="rounded-full"
+            offsetPx={0}
+            content={
+              <Button
+                variant="text"
+                size="md"
+                className="text-text-secondary hover:text-text-secondary px-2"
+                prefixElement={<Icon name="refresh" size={20} className="text-icon-accent" />}
+                onClick={reconnect}
+              >
+                {t('walletDetails.walletConnect.refreshButton')}
+              </Button>
+            }
+          >
+            <IconButton name="options" className="p-1.5" />
+          </MenuPopover>
+        </div>
+      }
       isOpen={isModalOpen}
       onClose={closeModal}
     >
@@ -111,31 +143,28 @@ export const WalletConnectDetails = ({ isOpen, wallet, accounts, onClose }: Prop
           />
         </div>
 
-        <div className="px-3 flex-1 h-[450px]">
-          {connected ? (
-            <MultiAccountsList accounts={accountsList} className="" />
-          ) : (
-            <>
-              {[ReconnectStep.NOT_STARTED, ReconnectStep.REJECTED].includes(reconnectStep) && (
-                <div className="flex flex-col h-full justify-center items-center">
-                  <Icon name="document" size={64} className="mb-6" />
-                  <SmallTitleText className="mb-2">{t('walletDetails.walletConnect.disconnectedTitle')}</SmallTitleText>
-                  <FootnoteText className="mb-4 text-text-tertiary">
-                    {t('walletDetails.walletConnect.disconnectedDescription')}
-                  </FootnoteText>
-                  <Button onClick={reconnect}>{t('walletDetails.walletConnect.reconnectButton')}</Button>
-                </div>
-              )}
-              {reconnectStep === ReconnectStep.RECONNECTING && (
-                <div className="flex flex-col h-full justify-center items-center">
-                  <video className="object-contain h-[454px]" autoPlay loop>
-                    <source src={wallet_connect_reconnect_webm} type="video/webm" />
-                    <source src={wallet_connect_reconnect} type="video/mp4" />
-                  </video>
-                </div>
-              )}
-            </>
-          )}
+        <div className="px-3 flex-1">
+          <>
+            {isAccountsStep && <MultiAccountsList accounts={accountsList} className="h-[404px]" />}
+            {isReadyToReconnectStep && (
+              <div className="flex flex-col h-[454px] justify-center items-center">
+                <Icon name="document" size={64} className="mb-6" />
+                <SmallTitleText className="mb-2">{t('walletDetails.walletConnect.disconnectedTitle')}</SmallTitleText>
+                <FootnoteText className="mb-4 text-text-tertiary">
+                  {t('walletDetails.walletConnect.disconnectedDescription')}
+                </FootnoteText>
+                <Button onClick={reconnect}>{t('walletDetails.walletConnect.reconnectButton')}</Button>
+              </div>
+            )}
+            {isReconnectingStep && (
+              <div className="flex flex-col h-[454px] justify-center items-center">
+                <video className="object-contain h-[454px]" autoPlay loop>
+                  <source src={wallet_connect_reconnect_webm} type="video/webm" />
+                  <source src={wallet_connect_reconnect} type="video/mp4" />
+                </video>
+              </div>
+            )}
+          </>
         </div>
 
         <StatusModal
