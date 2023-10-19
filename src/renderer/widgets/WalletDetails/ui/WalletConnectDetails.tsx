@@ -1,7 +1,8 @@
 import { useMemo } from 'react';
 import { useUnit } from 'effector-react';
+import keyBy from 'lodash/keyBy';
 
-import { Wallet, Chain, Account, WalletConnectAccount } from '@renderer/shared/core';
+import { Wallet, Chain, Account } from '@renderer/shared/core';
 import { BaseModal, BodyText, StatusLabel } from '@renderer/shared/ui';
 import { DEFAULT_TRANSITION } from '@renderer/shared/lib/utils';
 import { useToggle } from '@renderer/shared/lib/hooks';
@@ -34,12 +35,15 @@ export const WalletConnectDetails = ({ isOpen, wallet, accounts, onClose }: Prop
     setTimeout(onClose, DEFAULT_TRANSITION);
   };
 
+  // TODO: Rework with https://app.clickup.com/t/8692ykm3y
   const accountsList = useMemo(() => {
     const chains = chainsService.getChainsData();
     const sortedChains = chainsService.sortChains(chains);
 
+    const accountsMap = keyBy(accounts, 'chainId');
+
     const accountsList = sortedChains.reduce<AccountItem[]>((acc, c) => {
-      const account = accounts.find((a) => c.chainId === (a as WalletConnectAccount).chainId);
+      const account = accountsMap[c.chainId];
 
       if (account) {
         acc.push({
