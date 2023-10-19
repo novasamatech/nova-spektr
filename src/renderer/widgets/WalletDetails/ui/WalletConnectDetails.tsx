@@ -42,14 +42,11 @@ export const WalletConnectDetails = ({ isOpen, wallet, accounts, onClose }: Prop
 
     const accountsMap = keyBy(accounts, 'chainId');
 
-    const accountsList = sortedChains.reduce<AccountItem[]>((acc, c) => {
-      const account = accountsMap[c.chainId];
+    const accountsList = sortedChains.reduce<AccountItem[]>((acc, chain) => {
+      const accountId = accountsMap[chain.chainId]?.accountId;
 
-      if (account) {
-        acc.push({
-          accountId: account.accountId,
-          chain: c,
-        });
+      if (accountId) {
+        acc.push({ accountId, chain });
       }
 
       return acc;

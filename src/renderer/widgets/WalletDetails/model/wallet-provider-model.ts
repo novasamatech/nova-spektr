@@ -1,8 +1,8 @@
 import { combine } from 'effector';
 
-import { walletModel } from '@renderer/entities/wallet';
+import { accountUtils, walletModel } from '@renderer/entities/wallet';
 import { walletSelectModel } from '@renderer/features/wallets';
-import { Account, AccountType } from '@renderer/shared/core';
+import { Account } from '@renderer/shared/core';
 import { walletConnectModel } from '@renderer/entities/walletConnect';
 
 const $accounts = combine(walletSelectModel.$walletForDetails, walletModel.$accounts, (...args): Account[] => {
@@ -14,7 +14,8 @@ const $accounts = combine(walletSelectModel.$walletForDetails, walletModel.$acco
 });
 
 const $connected = combine($accounts, walletConnectModel.$client, (accounts, client): boolean => {
-  if (accounts[0]?.type !== AccountType.WALLET_CONNECT) return false;
+  const account = accounts[0];
+  if (!client || !account || !accountUtils.isWalletConnectAccount(account)) return false;
 
   const sessions = client?.session.getAll() || [];
 
