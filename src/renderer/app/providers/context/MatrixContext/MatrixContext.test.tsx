@@ -4,6 +4,15 @@ import { Matrix } from '@renderer/shared/api/matrix';
 import { ConnectionType } from '@renderer/shared/core';
 import { MatrixProvider } from './MatrixContext';
 
+jest.mock('@renderer/entities/walletConnect', () => ({
+  walletConnectModel: { events: {} },
+  DEFAULT_POLKADOT_METHODS: {},
+  getWalletConnectChains: jest.fn(),
+}));
+jest.mock('@renderer/pages/Onboarding/WalletConnect/model/wc-onboarding-model', () => ({
+  wcOnboardingModel: { events: {} },
+}));
+
 jest.mock('@renderer/shared/api/matrix', () => ({ Matrix: jest.fn().mockReturnValue({}) }));
 
 jest.mock('@renderer/entities/multisig', () => ({

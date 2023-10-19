@@ -1,8 +1,8 @@
 import cn from 'classnames';
 import React, { useEffect, useState } from 'react';
 
-import { cnTw, ValidationErrors, secondsToMinutes } from '@renderer/shared/lib/utils';
-import { Shimmering, Button, CaptionText, FootnoteText, Select, SmallTitleText } from '@renderer/shared/ui';
+import { cnTw, ValidationErrors } from '@renderer/shared/lib/utils';
+import { Shimmering, Button, CaptionText, FootnoteText, Select, SmallTitleText, Countdown } from '@renderer/shared/ui';
 import { DropdownOption, DropdownResult } from '@renderer/shared/ui/Dropdowns/common/types';
 import { useI18n } from '@renderer/app/providers';
 import SignatureReaderError from './SignatureReaderError';
@@ -129,20 +129,7 @@ const QrReaderWrapper = ({ className, onResult, countdown, validationError, isMu
         {t('signing.scanQrTitle')}
       </SmallTitleText>
 
-      {/* countdown */}
-      <div className="flex items-center gap-x-2 mt-3 mb-4.5 z-10">
-        <FootnoteText className="text-text-tertiary">{t('signing.qrCountdownTitle')}</FootnoteText>
-        <CaptionText
-          align="center"
-          className={cn(
-            'py-1 px-2 w-[50px] h-5 rounded-[26px] text-white',
-            (countdown === 0 && 'bg-label-background-gray') ||
-              (countdown >= 60 ? 'bg-label-background-green' : 'bg-label-background-red'),
-          )}
-        >
-          {secondsToMinutes(countdown)}
-        </CaptionText>
-      </div>
+      <Countdown countdown={countdown} />
 
       {/* scanning frame */}
       <div className="w-[240px] h-[240px] mb-4">

@@ -1,12 +1,13 @@
 import { BN, BN_ZERO } from '@polkadot/util';
 import { ApiPromise } from '@polkadot/api';
 import { PropsWithChildren, useState, useEffect } from 'react';
+import { useUnit } from 'effector-react';
 
 import { Icon, Button, FootnoteText, CaptionText, InputHint } from '@renderer/shared/ui';
 import { useI18n } from '@renderer/app/providers';
 import { useToggle } from '@renderer/shared/lib/hooks';
 import { Validator } from '@renderer/shared/core/types/validator';
-import { AddressWithExplorers, accountUtils } from '@renderer/entities/wallet';
+import { AddressWithExplorers, accountUtils, walletModel } from '@renderer/entities/wallet';
 import { AssetBalance } from '@renderer/entities/asset';
 import {
   MultisigTxInitStatus,
@@ -20,9 +21,10 @@ import ValidatorsModal from '../Modals/ValidatorsModal/ValidatorsModal';
 import { DestinationType } from '../../common/types';
 import { cnTw } from '@renderer/shared/lib/utils';
 import { useMultisigTx } from '@renderer/entities/multisig';
-import { RewardsDestination } from '@renderer/shared/core';
+import { RewardsDestination, WalletType } from '@renderer/shared/core';
 import type { Account, Asset, Explorer } from '@renderer/shared/core';
 import { AssetFiatBalance } from '@renderer/entities/price/ui/AssetFiatBalance';
+import { SignButton } from '@renderer/entities/operation/ui/SignButton';
 
 const ActionStyle = 'group hover:bg-action-background-hover px-2 py-1 rounded';
 
@@ -61,6 +63,7 @@ export const Confirmation = ({
   const { t } = useI18n();
   const { getMultisigTxs } = useMultisigTx({});
   const { getTransactionHash } = useTransaction();
+  const activeWallet = useUnit(walletModel.$activeWallet);
 
   const [isAccountsOpen, toggleAccounts] = useToggle();
   const [isValidatorsOpen, toggleValidators] = useToggle();
@@ -222,13 +225,11 @@ export const Confirmation = ({
           <Button variant="text" onClick={onGoBack}>
             {t('staking.confirmation.backButton')}
           </Button>
-          <Button
+          <SignButton
             disabled={feeLoading || multisigTxExist}
-            prefixElement={<Icon name="vault" size={14} />}
+            type={activeWallet?.type || WalletType.SINGLE_PARITY_SIGNER}
             onClick={onResult}
-          >
-            {t('staking.confirmation.signButton')}
-          </Button>
+          />
         </div>
       </div>
 

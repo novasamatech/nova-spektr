@@ -3,6 +3,15 @@ import noop from 'lodash/noop';
 
 import ConfirmModal from './ConfirmModal';
 
+jest.mock('@renderer/entities/walletConnect', () => ({
+  walletConnectModel: { events: {} },
+  DEFAULT_POLKADOT_METHODS: {},
+  getWalletConnectChains: jest.fn(),
+}));
+jest.mock('@renderer/pages/Onboarding/WalletConnect/model/wc-onboarding-model', () => ({
+  wcOnboardingModel: { events: {} },
+}));
+
 describe('ui/Modals/ConfirmModal', () => {
   const defaultProps = {
     isOpen: true,

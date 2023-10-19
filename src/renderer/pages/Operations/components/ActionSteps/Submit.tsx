@@ -6,7 +6,7 @@ import { useI18n, useMatrix, useMultisigChainContext } from '@renderer/app/provi
 import { useMultisigTx, useMultisigEvent } from '@renderer/entities/multisig';
 import { toAccountId } from '@renderer/shared/lib/utils';
 import { useToggle } from '@renderer/shared/lib/hooks';
-import { Button } from '@renderer/shared/ui';
+import { Button, StatusModal } from '@renderer/shared/ui';
 import type { Account, HexString } from '@renderer/shared/core';
 import {
   MultisigEvent,
@@ -165,12 +165,8 @@ export const Submit = ({
   };
 
   return (
-    <OperationResult
-      isOpen={Boolean(inProgress || errorMessage || successMessage)}
-      {...getResultProps()}
-      onClose={onClose}
-    >
+    <StatusModal isOpen={Boolean(inProgress || errorMessage || successMessage)} {...getResultProps()} onClose={onClose}>
       {errorMessage && <Button onClick={closeErrorMessage}>{t('operation.feeErrorButton')}</Button>}
-    </OperationResult>
+    </StatusModal>
   );
 };

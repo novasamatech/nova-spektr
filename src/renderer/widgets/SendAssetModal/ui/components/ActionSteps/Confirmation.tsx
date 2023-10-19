@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useUnit } from 'effector-react';
 
 import { Transaction, DepositWithLabel, Fee, XcmTypes } from '@renderer/entities/transaction';
 import { TransactionAmount } from '@renderer/pages/Operations/components/TransactionAmount';
@@ -7,8 +8,11 @@ import { ExtendedChain } from '@renderer/entities/network';
 import { useI18n } from '@renderer/app/providers';
 import { XcmFee } from '@renderer/entities/transaction/ui/XcmFee/XcmFee';
 import { AssetXCM, XcmConfig } from '@renderer/shared/api/xcm';
+import { SignButton } from '@renderer/entities/operation/ui/SignButton';
+import { WalletType } from '@renderer/shared/core';
 import type { Account, MultisigAccount } from '@renderer/shared/core';
 import Details from '../Details';
+import { walletModel } from '@renderer/entities/wallet';
 
 type Props = {
   transaction: Transaction;
@@ -34,6 +38,7 @@ export const Confirmation = ({
   onBack,
 }: Props) => {
   const { t } = useI18n();
+  const activeWallet = useUnit(walletModel.$activeWallet);
   const [feeLoaded, setFeeLoaded] = useState(false);
 
   const isXcmTransfer = XcmTypes.includes(transaction?.type);
@@ -98,9 +103,11 @@ export const Confirmation = ({
           {t('operation.goBackButton')}
         </Button>
 
-        <Button disabled={!feeLoaded} prefixElement={<Icon name="vault" size={14} />} onClick={onResult}>
-          {t('operation.signButton')}
-        </Button>
+        <SignButton
+          disabled={!feeLoaded}
+          type={activeWallet?.type || WalletType.SINGLE_PARITY_SIGNER}
+          onClick={onResult}
+        />
       </div>
     </div>
   );

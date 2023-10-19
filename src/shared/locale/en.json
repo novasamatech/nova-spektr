@@ -192,6 +192,10 @@
     "checkAccountsButton": "Check your accounts",
     "confirmAccountsListButton": "Yes, these are my accounts",
     "continueButton": "Continue",
+    "novaWallet": {
+      "scanTitle": "Scan with Nova Wallet",
+      "title": "Add wallet by Nova Wallet"
+    },
     "paritySigner": {
       "accessDeniedDescription": "Please make sure you grant access to camera",
       "accessDeniedLabel": "Access denied!",
@@ -251,6 +255,16 @@
       "nameColumn": "Account name",
       "scanTitle": "Scan the account QR code",
       "title": "Add wallet by Polkadot Vault"
+    },
+    "walletConnect": {
+      "accountsTitle": "Manage accounts",
+      "addressColumn": "Address",
+      "manageTitle": "Set up your wallet",
+      "nameColumn": "Account name",
+      "pairedDescription": "Paired",
+      "rejected": "Pairing rejected",
+      "scanTitle": "Scan with your mobile wallet",
+      "title": "Add wallet by Wallet Connect"
     },
     "walletNameExample": "Name examples: Main account, My validator, Dotsama crowdloans, etc",
     "walletNameLabel": "Wallet name",
@@ -336,7 +350,11 @@
     "selectAccount": "Select account",
     "selectSignatory": "Select signatory",
     "selectSignatoryTitle": "Select signatory",
-    "signButton": "Sign with Polkadot Vault",
+    "sign": {
+      "novaWallet": "Sign with Nova Wallet",
+      "polkadotVault": "Sign with Polkadot Vault",
+      "walletConnect": "Sign with WalletConnect"
+    },
     "signatoriesTitle": "Signatories",
     "signing": "{ signed } of { threshold } signed",
     "status": {
@@ -348,6 +366,21 @@
     },
     "successMessage": "Operation Approved",
     "successRejectMessage": "Operation Rejected",
+    "walletConnect": {
+      "defaultWalletName": "WalletConnect",
+      "expiredDescription": "The operation isn’t valid anymore",
+      "reconnect": {
+        "cancelButton": "Cancel",
+        "confirmButton": "Reconnect",
+        "connected": "Connected",
+        "description": "You need to reconnect to proceed with signing",
+        "reconnecting": "Waiting for Reconnect...",
+        "title": "{ walletName } is not connected"
+      },
+      "rejected": "Rejected",
+      "signTitle": "Confirm the operation on your { walletName } app",
+      "tryAgainButton": "Try again"
+    },
     "xcmFee": "Cross-chain fee"
   },
   "operations": {
@@ -553,7 +586,7 @@
     "metadataPortalLink": "Update metadata in Polkadot Vault",
     "parsingCount": "{current} of {total}",
     "parsingLabel": "Parsing data",
-    "qrCountdownTitle": "QR code is valid for",
+    "qrCountdownTitle": "Time remaining",
     "qrNotValid": "QR code isn’t valid anymore",
     "scanQrTitle": "Scan the operation QR code with Polkadot Vault",
     "scanSignatureTitle": "Scan QR code from Polkadot Vault",
@@ -637,7 +670,6 @@
       "queueButton": "Add to operation queue",
       "restakeRewards": "Restake rewards",
       "rewardsDestinationLabel": "Rewards destination",
-      "signButton": "Sign with Polkadot Vault",
       "signatoryLabel": "Signatory",
       "signer": "Signer",
       "submittingOperation": "Submitting operation",
@@ -837,14 +869,18 @@
   "wallets": {
     "addButtonTitle": "Add",
     "addMultisig": "Multisig",
+    "addNovaWallet": "Nova Wallet",
     "addPolkadotVault": "Polkadot Vault",
+    "addWalletConnect": "Wallet Connect",
     "addWatchOnly": "Watch-only",
     "multishardLabel": "Multishard",
     "multisigLabel": "Multisig",
+    "novaWalletLabel": "Nova Wallet",
     "paritySignerLabel": "Polkadot Vault",
     "searchPlaceholder": "Search",
     "shards": "Shards",
     "title": "Wallets",
+    "walletConnectLabel": "Wallet Connect",
     "watchOnlyLabel": "Watch-only"
   },
   "welcome": {

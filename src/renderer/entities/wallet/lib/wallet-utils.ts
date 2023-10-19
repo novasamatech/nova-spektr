@@ -7,6 +7,8 @@ export const walletUtils = {
   isSingleShard,
   isMultisig,
   isWatchOnly,
+  isNovaWallet,
+  isWalletConnect,
 };
 
 function isPolkadotVault(wallet?: Wallet | null): boolean {
@@ -34,4 +36,12 @@ function isMultisig(wallet?: Wallet | null): boolean {
 
 function isWatchOnly(wallet?: Wallet | null): boolean {
   return wallet?.type === WalletType.WATCH_ONLY;
+}
+
+function isNovaWallet(wallet?: Wallet | null): boolean {
+  return wallet?.type === WalletType.NOVA_WALLET;
+}
+
+function isWalletConnect(wallet?: Wallet | null): boolean {
+  return wallet?.type === WalletType.WALLET_CONNECT;
 }

@@ -3,7 +3,7 @@ import { UnsignedTransaction } from '@substrate/txwrapper-polkadot';
 import { BN } from '@polkadot/util';
 import { useUnit } from 'effector-react';
 
-import { BaseModal, Button, Icon } from '@renderer/shared/ui';
+import { BaseModal, Button } from '@renderer/shared/ui';
 import { useI18n } from '@renderer/app/providers';
 import { MultisigTransactionDS } from '@renderer/shared/api/storage';
 import { useToggle } from '@renderer/shared/lib/hooks';
@@ -16,9 +16,16 @@ import { Submit } from '../ActionSteps/Submit';
 import { Confirmation } from '../ActionSteps/Confirmation';
 import { Signing } from '@renderer/features/operation';
 import { OperationTitle } from '@renderer/components/common';
-import type { MultisigAccount, Account, Address, HexString, Timepoint } from '@renderer/shared/core';
 import { walletModel, walletUtils } from '@renderer/entities/wallet';
 import { priceProviderModel } from '@renderer/entities/price';
+import {
+  type MultisigAccount,
+  type Account,
+  type Address,
+  type HexString,
+  type Timepoint,
+  WalletType,
+} from '@renderer/shared/core';
 import {
   Transaction,
   TransactionType,
@@ -27,6 +34,7 @@ import {
   validateBalance,
   isXcmTransaction,
 } from '@renderer/entities/transaction';
+import { SignButton } from '@renderer/entities/operation/ui/SignButton';
 
 type Props = {
   tx: MultisigTransactionDS;
@@ -191,13 +199,11 @@ const RejectTx = ({ tx, account, connection }: Props) => {
         {activeStep === Step.CONFIRMATION && (
           <>
             <Confirmation tx={tx} account={account} connection={connection} feeTx={rejectTx} />
-            <Button
+            <SignButton
               className="mt-7 ml-auto"
-              prefixElement={<Icon name="vault" size={14} />}
+              type={activeWallet?.type || WalletType.SINGLE_PARITY_SIGNER}
               onClick={toggleRejectReasonModal}
-            >
-              {t('operation.signButton')}
-            </Button>
+            />
           </>
         )}
         {activeStep === Step.SIGNING && rejectTx && connection.api && signAccount && (

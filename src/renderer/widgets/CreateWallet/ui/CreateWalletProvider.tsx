@@ -5,6 +5,8 @@ import { useNavigate } from 'react-router-dom';
 import { walletProviderModel } from '../model/wallet-provider-model';
 import WatchOnly from '@renderer/pages/Onboarding/WatchOnly/WatchOnly';
 import Vault from '@renderer/pages/Onboarding/Vault/Vault';
+import { NovaWallet } from '@renderer/pages/Onboarding/WalletConnect/NovaWallet';
+import { WalletConnect } from '@renderer/pages/Onboarding/WalletConnect/WalletConnect';
 import { MultisigAccount } from './MultisigAccount/MultisigAccount';
 import { WalletType } from '@renderer/shared/core';
 import { Paths } from '@renderer/shared/routes';
@@ -20,6 +22,8 @@ const WalletModals: Record<WalletType, (props: ModalProps) => JSX.Element> = {
   [WalletType.MULTISHARD_PARITY_SIGNER]: (props) => <Vault isOpen {...props} />,
   [WalletType.SINGLE_PARITY_SIGNER]: (props) => <Vault isOpen {...props} />,
   [WalletType.MULTISIG]: (props) => <MultisigAccount isOpen {...props} />,
+  [WalletType.WALLET_CONNECT]: (props) => <WalletConnect isOpen {...props} />,
+  [WalletType.NOVA_WALLET]: (props) => <NovaWallet isOpen {...props} />,
 };
 
 export const CreateWalletProvider = () => {
