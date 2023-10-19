@@ -32,6 +32,11 @@ type ConnectResult = {
   session: SessionTypes.Struct;
 };
 
+type SessionTopicUpdateProps = {
+  activeAccounts: Account[];
+  sessionTopic: string;
+};
+
 const connect = createEvent<Omit<InitConnectProps, 'client'>>();
 const disconnect = createEvent();
 const reset = createEvent();
@@ -111,24 +116,12 @@ const logClientIdFx = createEffect(async (client: Client) => {
 });
 
 const sessionTopicUpdatedFx = createEffect(
-  async ({
-    activeAccounts,
-    sessionTopic,
-  }: {
-    activeAccounts: Account[];
-    sessionTopic: string;
-  }): Promise<Account[] | undefined> => {
-    const updatedAccounts = activeAccounts.map(
-      (account) =>
-        ({
-          ...account,
-          signingExtras: {
-            ...account.signingExtras,
-            sessionTopic,
-          },
-        } as Account),
-    );
+  async ({ activeAccounts, sessionTopic }: SessionTopicUpdateProps): Promise<Account[] | undefined> => {
+    const updatedAccounts = activeAccounts.map(({ signingExtras, ...rest }) => {
+      const newSigningExtras = { ...signingExtras, sessionTopic };
 
+      return { ...rest, signingExtras: newSigningExtras } as Account;
+    });
     const updated = await storageService.accounts.updateAll(updatedAccounts);
 
     return updated && updatedAccounts;
