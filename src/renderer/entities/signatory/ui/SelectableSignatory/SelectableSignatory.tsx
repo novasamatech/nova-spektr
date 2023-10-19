@@ -5,7 +5,6 @@ import { BodyText, Icon } from '@renderer/shared/ui';
 import { cnTw, toAccountId, toAddress, transferableAmount } from '@renderer/shared/lib/utils';
 import { AssetBalance, useBalance } from '@renderer/entities/asset';
 import type { AccountId, Asset, ChainId } from '@renderer/shared/core';
-import { WalletType } from '@renderer/shared/core';
 
 type Props<T extends any> = {
   value: T;
@@ -36,19 +35,12 @@ export const SelectableSignatory = <T extends any>({
 
   if (!signatoryWallet) return <></>;
 
-  // TODO remove after PR merged https://github.com/novasamatech/nova-spektr/pull/1143
-  // support for legacy signatory as shard from multishard account
-  const walletType =
-    signatoryWallet.type === WalletType.MULTISHARD_PARITY_SIGNER
-      ? WalletType.SINGLE_PARITY_SIGNER
-      : signatoryWallet.type;
-
   return (
     <button
       className="group flex items-center cursor-pointer hover:bg-action-background-hover px-2 py-1.5 rounded w-full text-text-secondary hover:text-text-primary"
       onClick={() => onSelected(value)}
     >
-      <WalletIcon type={walletType} />
+      <WalletIcon type={signatoryWallet.type} />
       <BodyText className="ml-2 text-inherit">{signatoryWallet.name}</BodyText>
       {balance && asset && (
         <AssetBalance
