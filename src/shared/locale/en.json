@@ -368,7 +368,6 @@
     },
     "successMessage": "Operation Approved",
     "successRejectMessage": "Operation Rejected",
-    "walletSignatoriesTitle": "Your wallets",
     "walletConnect": {
       "defaultWalletName": "WalletConnect",
       "expiredDescription": "The operation isn’t valid anymore",
@@ -384,6 +383,7 @@
       "signTitle": "Confirm the operation on your { walletName } app",
       "tryAgainButton": "Try again"
     },
+    "walletSignatoriesTitle": "Your wallets",
     "xcmFee": "Cross-chain fee"
   },
   "operations": {
