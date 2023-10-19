@@ -42,7 +42,7 @@ const disconnect = createEvent();
 const reset = createEvent();
 const sessionUpdated = createEvent<SessionTypes.Struct>();
 const connected = createEvent();
-const connectionRejected = createEvent<any>();
+const connectionRejected = createEvent<string>();
 const currentSessionTopicUpdated = createEvent<string>();
 const sessionTopicUpdated = createEvent<SessionTopicUpdateProps>();
 
@@ -180,19 +180,13 @@ const initConnectFx = createEffect(
 );
 
 const connectFx = createEffect(async ({ client, approval }: ConnectProps): Promise<ConnectResult | undefined> => {
-  // const bindedReject = scopeBind(connectionRejected);
+  const session = await approval();
+  console.log('Established session:', session);
 
-  try {
-    const session = await approval();
-    console.log('Established session:', session);
-
-    return {
-      pairings: client.pairing.getAll({ active: true }),
-      session: session as SessionTypes.Struct,
-    };
-  } catch (e: any) {
-    connectionRejected(e);
-  }
+  return {
+    pairings: client.pairing.getAll({ active: true }),
+    session: session as SessionTypes.Struct,
+  };
 });
 
 const disconnectFx = createEffect(async ({ client, session }: DisconnectProps) => {
@@ -319,6 +313,16 @@ sample({
     return accounts.map((account) => updatedMap[account.id] || account);
   },
   target: walletModel.$accounts,
+});
+
+sample({
+  clock: connectFx.fail,
+  fn: ({ error }) => {
+    console.error('Failed to connect:', error);
+
+    return error.message;
+  },
+  target: connectionRejected,
 });
 
 export const walletConnectModel = {

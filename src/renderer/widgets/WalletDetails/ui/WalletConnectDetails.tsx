@@ -4,6 +4,7 @@ import keyBy from 'lodash/keyBy';
 
 import { Wallet, Chain, Account } from '@renderer/shared/core';
 import {
+  Animation,
   BaseModal,
   BodyText,
   Button,
@@ -171,6 +172,7 @@ export const WalletConnectDetails = ({ isOpen, wallet, accounts, onClose }: Prop
           isOpen={reconnectStep === ReconnectStep.REJECTED}
           title={t('walletDetails.walletConnect.rejectTitle')}
           description={t('walletDetails.walletConnect.rejectDescription')}
+          content={<Animation variant="error" />}
           onClose={reconnectAborted}
         >
           <Button onClick={reconnectAborted}>{t('walletDetails.walletConnect.abortRejectButton')}</Button>
