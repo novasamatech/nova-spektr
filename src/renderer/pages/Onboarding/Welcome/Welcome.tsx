@@ -48,6 +48,20 @@ export const Welcome = () => {
           />
 
           <WelcomeCard
+            title={t('onboarding.welcome.novaWalletTitle')}
+            description={t('onboarding.welcome.novaWalletDescription')}
+            iconName="novaWalletOnboarding"
+            onClick={() => walletPairingModel.events.walletTypeSet(WalletType.NOVA_WALLET)}
+          />
+
+          <WelcomeCard
+            title={t('onboarding.welcome.walletConnectTitle')}
+            description={t('onboarding.welcome.walletConnectDescription')}
+            iconName="walletConnectOnboarding"
+            onClick={() => walletPairingModel.events.walletTypeSet(WalletType.WALLET_CONNECT)}
+          />
+
+          <WelcomeCard
             title={t('onboarding.welcome.watchOnlyTitle')}
             description={t('onboarding.welcome.watchOnlyDescription')}
             iconName="watchOnlyOnboarding"
@@ -55,23 +69,9 @@ export const Welcome = () => {
           />
 
           <WelcomeCard
-            title={t('onboarding.welcome.novaWalletTitle')}
-            description={t('onboarding.welcome.novaWalletDescription')}
-            iconName="novaWallet"
-            disabled
-          />
-
-          <WelcomeCard
             title={t('onboarding.welcome.ledgerTitle')}
             description={t('onboarding.welcome.ledgerDescription')}
-            iconName="ledger"
-            disabled
-          />
-
-          <WelcomeCard
-            title={t('onboarding.welcome.walletConnectTitle')}
-            description={t('onboarding.welcome.walletConnectDescription')}
-            iconName="walletConnect"
+            iconName="ledgerOnboarding"
             disabled
           />
         </div>

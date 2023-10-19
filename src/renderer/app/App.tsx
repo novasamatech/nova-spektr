@@ -11,6 +11,7 @@ import { ROUTES_CONFIG } from '@renderer/pages';
 import { Paths } from '@renderer/shared/routes';
 import {
   ConfirmDialogProvider,
+  StatusModalProvider,
   I18Provider,
   MatrixProvider,
   NetworkProvider,
@@ -55,11 +56,13 @@ export const App = () => {
           <MultisigChainProvider>
             <MatrixProvider>
               <ConfirmDialogProvider>
-                <GraphqlProvider>
-                  {getContent()}
-                  <CreateWalletProvider />
-                  <WalletDetailsProvider />
-                </GraphqlProvider>
+                <StatusModalProvider>
+                  <GraphqlProvider>
+                    {getContent()}
+                    <CreateWalletProvider />
+                    <WalletDetailsProvider />
+                  </GraphqlProvider>
+                </StatusModalProvider>
               </ConfirmDialogProvider>
             </MatrixProvider>
           </MultisigChainProvider>

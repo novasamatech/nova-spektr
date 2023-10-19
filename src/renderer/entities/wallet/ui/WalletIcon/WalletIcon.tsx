@@ -9,8 +9,8 @@ const WalletIconNames: Record<WalletType, IconNames> = {
   [WalletType.MULTISHARD_PARITY_SIGNER]: 'vaultNew',
   [WalletType.MULTISIG]: 'multisigNew',
   [WalletType.WATCH_ONLY]: 'watchOnlyNew',
-  // [WalletType.WALLET_CONNECT]: 'walletConnectNew',
-  // [WalletType.NOVA_WALLET]: 'novaWalletNew',
+  [WalletType.WALLET_CONNECT]: 'walletConnectNew',
+  [WalletType.NOVA_WALLET]: 'novaWalletNew',
 };
 
 const WalletIconBg: Record<WalletType, string> = {
@@ -19,8 +19,8 @@ const WalletIconBg: Record<WalletType, string> = {
   [WalletType.MULTISHARD_PARITY_SIGNER]: 'bg-[#EC007D]',
   [WalletType.WATCH_ONLY]: 'bg-[linear-gradient(222deg,_#FFC700_13.44%,_#FF2E00_87.12%)]',
   [WalletType.MULTISIG]: 'bg-[linear-gradient(223deg,_#D4FF59_-17.82%,_#00AF9A_55.03%,_#1AB775_100.43%)]',
-  // [WalletType.WALLET_CONNECT]: 'bg-[#EC007D]',
-  // [WalletType.NOVA_WALLET]: '',
+  [WalletType.WALLET_CONNECT]: 'bg-[#3396FF]',
+  [WalletType.NOVA_WALLET]: '',
 };
 
 type Props = {
