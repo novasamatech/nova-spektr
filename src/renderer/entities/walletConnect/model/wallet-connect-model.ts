@@ -33,8 +33,8 @@ type ConnectResult = {
 };
 
 type SessionTopicUpdateProps = {
-  activeAccounts: Account[];
-  sessionTopic: string;
+  accounts: Account[];
+  topic: string;
 };
 
 const connect = createEvent<Omit<InitConnectProps, 'client'>>();
@@ -42,8 +42,9 @@ const disconnect = createEvent();
 const reset = createEvent();
 const sessionUpdated = createEvent<SessionTypes.Struct>();
 const connected = createEvent();
-const rejectConnection = createEvent<any>();
-const sessionTopicUpdated = createEvent<string>();
+const connectionRejected = createEvent<any>();
+const currentSessionTopicUpdated = createEvent<string>();
+const sessionTopicUpdated = createEvent<SessionTopicUpdateProps>();
 
 const $client = createStore<Client | null>(null).reset(reset);
 const $session = createStore<SessionTypes.Struct | null>(null).reset(reset);
@@ -116,9 +117,9 @@ const logClientIdFx = createEffect(async (client: Client) => {
 });
 
 const sessionTopicUpdatedFx = createEffect(
-  async ({ activeAccounts, sessionTopic }: SessionTopicUpdateProps): Promise<Account[] | undefined> => {
-    const updatedAccounts = activeAccounts.map(({ signingExtras, ...rest }) => {
-      const newSigningExtras = { ...signingExtras, sessionTopic };
+  async ({ accounts, topic }: SessionTopicUpdateProps): Promise<Account[] | undefined> => {
+    const updatedAccounts = accounts.map(({ signingExtras, ...rest }) => {
+      const newSigningExtras = { ...signingExtras, sessionTopic: topic };
 
       return { ...rest, signingExtras: newSigningExtras } as Account;
     });
@@ -179,6 +180,8 @@ const initConnectFx = createEffect(
 );
 
 const connectFx = createEffect(async ({ client, approval }: ConnectProps): Promise<ConnectResult | undefined> => {
+  // const bindedReject = scopeBind(connectionRejected);
+
   try {
     const session = await approval();
     console.log('Established session:', session);
@@ -188,7 +191,7 @@ const connectFx = createEffect(async ({ client, approval }: ConnectProps): Promi
       session: session as SessionTypes.Struct,
     };
   } catch (e: any) {
-    rejectConnection(e);
+    connectionRejected(e);
   }
 });
 
@@ -293,13 +296,18 @@ forward({
 });
 
 sample({
-  clock: sessionTopicUpdated,
+  clock: currentSessionTopicUpdated,
   source: walletModel.$activeAccounts,
-  fn: (activeAccounts, sessionTopic) => ({
-    activeAccounts,
-    sessionTopic,
+  fn: (accounts, topic) => ({
+    accounts,
+    topic,
   }),
-  target: sessionTopicUpdatedFx,
+  target: sessionTopicUpdated,
+});
+
+forward({
+  from: sessionTopicUpdated,
+  to: sessionTopicUpdatedFx,
 });
 
 sample({
@@ -324,7 +332,8 @@ export const walletConnectModel = {
     disconnect,
     sessionUpdated,
     connected,
-    rejectConnection,
+    connectionRejected,
+    currentSessionTopicUpdated,
     sessionTopicUpdated,
     reset,
   },

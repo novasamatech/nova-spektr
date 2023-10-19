@@ -880,7 +880,13 @@
     },
     "walletConnect": {
       "connectedStatus": "Connected",
-      "disconnectedStatus": "Not connected"
+      "disconnectedStatus": "Not connected",
+      "disconnectedTitle": "Wallet not connected",
+      "disconnectedDescription": "Resume the connection to work with the WalletConnect",
+      "reconnectButton": "Reconnect",
+      "rejectTitle": "Rejected",
+      "rejectDescription": "The operation was successfully canceled",
+      "abortRejectButton": "Close"
     }
   },
   "wallets": {
