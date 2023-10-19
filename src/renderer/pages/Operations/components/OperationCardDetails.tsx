@@ -4,16 +4,18 @@ import { useUnit } from 'effector-react';
 import { useI18n } from '@renderer/app/providers';
 import { AddressWithExplorers, WalletCardSm, walletModel } from '@renderer/entities/wallet';
 import { Icon, Button, FootnoteText, DetailRow } from '@renderer/shared/ui';
-import { copyToClipboard, truncate, cnTw } from '@renderer/shared/lib/utils';
+import { copyToClipboard, truncate, cnTw, getAssetById } from '@renderer/shared/lib/utils';
 import { useToggle } from '@renderer/shared/lib/hooks';
-import { ExtendedChain } from '@renderer/entities/network';
-import { MultisigTransaction, Transaction, TransactionType, isXcmTransaction } from '@renderer/entities/transaction';
+import { chainsService, ExtendedChain, isLightClient } from '@renderer/entities/network';
+import { MultisigTransaction, Transaction, isXcmTransaction } from '@renderer/entities/transaction';
 import ValidatorsModal from '@renderer/pages/Staking/Operations/components/Modals/ValidatorsModal/ValidatorsModal';
 import { AddressStyle, DescriptionBlockStyle, InteractionStyle } from '../common/constants';
 import { getMultisigExtrinsicLink } from '../common/utils';
 import { AssetBalance } from '@renderer/entities/asset';
 import { ChainTitle } from '@renderer/entities/chain';
-import type { MultisigAccount } from '@renderer/shared/core';
+import type { Address, MultisigAccount, Validator } from '@renderer/shared/core';
+import { getTransactionFromMultisigTx } from '@renderer/entities/multisig';
+import { useValidatorsMap } from '@renderer/entities/staking';
 
 type Props = {
   tx: MultisigTransaction;
@@ -25,29 +27,34 @@ export const OperationCardDetails = ({ tx, account, connection }: Props) => {
   const { t } = useI18n();
   const activeWallet = useUnit(walletModel.$activeWallet);
 
+  const api = connection?.api;
+  const chainId = connection?.chainId;
+
   const [isAdvancedShown, toggleAdvanced] = useToggle();
   const [isValidatorsOpen, toggleValidators] = useToggle();
 
   const { indexCreated, blockCreated, deposit, depositor, callHash, callData, description, cancelDescription } = tx;
 
-  const transaction =
-    tx.transaction?.type === 'batchAll'
-      ? tx.transaction.args.transactions.find(
-          (tx: Transaction) => tx.type === TransactionType.BOND || tx.type === TransactionType.UNSTAKE,
-        ) || tx.transaction.args.transactions[0]
-      : tx.transaction;
+  const transaction = getTransactionFromMultisigTx(tx);
 
-  const startStakingValidators =
+  const startStakingValidators: Address[] =
     tx.transaction?.type === 'batchAll' &&
     tx.transaction.args.transactions.find((tx: Transaction) => tx.type === 'nominate')?.args?.targets;
 
   const validators = transaction?.args.targets || startStakingValidators;
+  const allValidators = Object.values(useValidatorsMap(api, chainId, connection && isLightClient(connection)));
+  const selectedValidators: Validator[] =
+    transaction?.args.targets || allValidators.filter((v) => startStakingValidators.includes(v.address)) || [];
+  const selectedValidatorsAddress = selectedValidators.map((validator) => validator.address);
+  const notSelectedValidators = allValidators.filter((v) => !selectedValidatorsAddress.includes(v.address));
 
   const defaultAsset = connection?.assets[0];
   const addressPrefix = connection?.addressPrefix;
   const explorers = connection?.explorers;
   const depositorSignatory = account?.signatories.find((s) => s.accountId === depositor);
   const extrinsicLink = getMultisigExtrinsicLink(callHash, indexCreated, blockCreated, explorers);
+  const validatorsAsset =
+    tx.transaction && getAssetById(tx.transaction.args.asset, chainsService.getChainById(tx.chainId)?.assets);
 
   const valueClass = 'text-text-secondary';
 
@@ -105,7 +112,7 @@ export const OperationCardDetails = ({ tx, account, connection }: Props) => {
             </DetailRow>
           )}
 
-          {transaction.args.destinationChain && (
+          {transaction?.args.destinationChain && (
             <DetailRow label={t('operation.details.toNetwork')} className={valueClass}>
               <ChainTitle chainId={transaction?.args.destinationChain} fontClass={valueClass} />
             </DetailRow>
@@ -142,7 +149,9 @@ export const OperationCardDetails = ({ tx, account, connection }: Props) => {
           </DetailRow>
           <ValidatorsModal
             isOpen={isValidatorsOpen}
-            validators={validators.map((address: string) => ({ address }))}
+            asset={validatorsAsset}
+            selectedValidators={selectedValidators}
+            notSelectedValidators={notSelectedValidators}
             explorers={connection?.explorers}
             onClose={toggleValidators}
           />
