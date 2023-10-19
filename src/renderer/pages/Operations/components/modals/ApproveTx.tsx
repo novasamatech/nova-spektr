@@ -241,7 +241,14 @@ const ApproveTx = ({ tx, account, connection }: Props) => {
       >
         {activeStep === Step.CONFIRMATION && (
           <>
-            <Confirmation tx={tx} account={account} connection={connection} feeTx={feeTx} />
+            <Confirmation
+              tx={tx}
+              account={account}
+              connection={connection}
+              feeTx={feeTx}
+              signatory={unsignedAccounts.length === 1 ? unsignedAccounts[0] : undefined}
+              onSign={trySetSignerAccount}
+            />
 
             <SignButton
               className="mt-7 ml-auto"

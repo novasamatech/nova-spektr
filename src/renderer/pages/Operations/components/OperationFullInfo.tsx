@@ -1,9 +1,9 @@
 import { Icon, Button, InfoLink, SmallTitleText } from '@renderer/shared/ui';
-import Details from '@renderer/pages/Operations/components/Details';
-import RejectTx from '@renderer/pages/Operations/components/modals/RejectTx';
-import ApproveTx from '@renderer/pages/Operations/components/modals/ApproveTx';
-import { getMultisigExtrinsicLink } from '@renderer/pages/Operations/common/utils';
-import CallDataModal from '@renderer/pages/Operations/components/modals/CallDataModal';
+import { OperationCardDetails } from './OperationCardDetails';
+import RejectTx from './modals/RejectTx';
+import ApproveTx from './modals/ApproveTx';
+import { getMultisigExtrinsicLink } from '../common/utils';
+import CallDataModal from './modals/CallDataModal';
 import { useMatrix, useNetworkContext, useI18n, useMultisigChainContext } from '@renderer/app/providers';
 import { useMultisigTx } from '@renderer/entities/multisig';
 import { useToggle } from '@renderer/shared/lib/hooks';
@@ -76,7 +76,7 @@ const OperationFullInfo = ({ tx, account }: Props) => {
           )}
         </div>
 
-        <Details tx={tx} account={account} connection={connection} />
+        <OperationCardDetails tx={tx} account={account} connection={connection} />
 
         <div className="flex items-center mt-3">
           {account && connection && <RejectTx tx={tx} account={account} connection={connection} />}

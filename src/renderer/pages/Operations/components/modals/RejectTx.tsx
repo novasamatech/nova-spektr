@@ -198,7 +198,14 @@ const RejectTx = ({ tx, account, connection }: Props) => {
       >
         {activeStep === Step.CONFIRMATION && (
           <>
-            <Confirmation tx={tx} account={account} connection={connection} feeTx={rejectTx} />
+            <Confirmation
+              tx={tx}
+              account={account}
+              connection={connection}
+              feeTx={rejectTx}
+              signatory={signAccount}
+              onSign={toggleRejectReasonModal}
+            />
             <SignButton
               className="mt-7 ml-auto"
               type={activeWallet?.type || WalletType.SINGLE_PARITY_SIGNER}
