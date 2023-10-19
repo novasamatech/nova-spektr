@@ -17,49 +17,55 @@ const PropsGate = createGate<{ balances: Balance[]; chains: Record<ChainId, Chai
 const $filterQuery = createStore<string>('');
 const $walletForDetails = createStore<Wallet | null>(null).reset(walletForDetailsCleared);
 
-const $filteredWalletGroups = combine(walletModel.$wallets, $filterQuery, (wallets, query) => {
-  return wallets.reduce<Record<WalletFamily, Wallet[]>>(
-    (acc, wallet) => {
-      let groupIndex: WalletFamily | undefined;
-      if (walletUtils.isPolkadotVault(wallet)) groupIndex = WalletType.POLKADOT_VAULT;
-      if (walletUtils.isMultisig(wallet)) groupIndex = WalletType.MULTISIG;
-      if (walletUtils.isWatchOnly(wallet)) groupIndex = WalletType.WATCH_ONLY;
-      if (walletUtils.isNovaWallet(wallet)) groupIndex = WalletType.NOVA_WALLET;
-      if (walletUtils.isWalletConnect(wallet)) groupIndex = WalletType.WALLET_CONNECT;
-      if (groupIndex && includes(wallet.name, query)) {
-        acc[groupIndex].push(wallet);
-      }
+const $filteredWalletGroups = combine(
+  {
+    wallets: walletModel.$wallets,
+    query: $filterQuery,
+  },
+  ({ wallets, query }) => {
+    return wallets.reduce<Record<WalletFamily, Wallet[]>>(
+      (acc, wallet) => {
+        let groupIndex: WalletFamily | undefined;
+        if (walletUtils.isPolkadotVault(wallet)) groupIndex = WalletType.POLKADOT_VAULT;
+        if (walletUtils.isMultisig(wallet)) groupIndex = WalletType.MULTISIG;
+        if (walletUtils.isWatchOnly(wallet)) groupIndex = WalletType.WATCH_ONLY;
+        if (walletUtils.isNovaWallet(wallet)) groupIndex = WalletType.NOVA_WALLET;
+        if (walletUtils.isWalletConnect(wallet)) groupIndex = WalletType.WALLET_CONNECT;
 
-      return acc;
-    },
-    {
-      [WalletType.POLKADOT_VAULT]: [],
-      [WalletType.MULTISIG]: [],
-      [WalletType.WATCH_ONLY]: [],
-      [WalletType.NOVA_WALLET]: [],
-      [WalletType.WALLET_CONNECT]: [],
-    },
-  );
-});
+        if (groupIndex && includes(wallet.name, query)) {
+          acc[groupIndex].push(wallet);
+        }
+
+        return acc;
+      },
+      {
+        [WalletType.POLKADOT_VAULT]: [],
+        [WalletType.MULTISIG]: [],
+        [WalletType.WATCH_ONLY]: [],
+        [WalletType.NOVA_WALLET]: [],
+        [WalletType.WALLET_CONNECT]: [],
+      },
+    );
+  },
+);
 
 type WalletsBalances = Record<Wallet['id'], BigNumber>;
 const $walletBalances = combine(
-  walletModel.$accounts,
-  currencyModel.$activeCurrency,
-  priceProviderModel.$assetsPrices,
-  PropsGate.state,
-  (...args): WalletsBalances => {
-    const [accounts, currency, prices, { balances, chains }] = args;
+  {
+    accounts: walletModel.$accounts,
+    currency: currencyModel.$activeCurrency,
+    prices: priceProviderModel.$assetsPrices,
+    gate: PropsGate.state,
+  },
+  ({ accounts, currency, prices, gate }): WalletsBalances => {
+    if (!currency?.coingeckoId || !prices || !gate.balances) return {};
 
-    if (!currency?.coingeckoId || !prices || !balances) return {};
-
-    const accountsBalancesMap = balances.reduce<Record<AccountId, BigNumber>>((acc, balance) => {
-      const asset = chains[balance.chainId]?.assets?.find((asset) => asset.assetId.toString() === balance.assetId);
+    const accountsBalancesMap = gate.balances.reduce<Record<AccountId, BigNumber>>((acc, balance) => {
+      const asset = gate.chains[balance.chainId]?.assets?.find((asset) => asset.assetId.toString() === balance.assetId);
 
       if (!asset?.priceId || !prices[asset.priceId]) return acc;
 
       const price = prices[asset.priceId][currency.coingeckoId];
-
       if (price) {
         const fiatBalance = getRoundedValue(totalAmount(balance), price.price, asset.precision);
         const newBalance = new BigNumber(fiatBalance);
@@ -69,26 +75,26 @@ const $walletBalances = combine(
       return acc;
     }, {});
 
-    const walletsBalancesMap = accounts.reduce<Record<Wallet['id'], { [key: AccountId]: BigNumber }>>(
+    // skip repeated accounts and sum balances in a single array traversal
+    const { result } = accounts.reduce(
       (acc, account) => {
-        const balance = accountsBalancesMap[account.accountId] || new BigNumber(0);
+        const { accountId, walletId } = account;
+        const balance = accountsBalancesMap[accountId] || new BigNumber(0);
 
-        if (acc[account.walletId]) {
-          acc[account.walletId][account.accountId] = balance;
-        } else {
-          acc[account.walletId] = { [account.accountId]: balance };
+        if (!acc.temp[walletId]) {
+          acc.temp[walletId] = { [accountId]: true };
+          acc.result[walletId] = balance;
+        } else if (!acc.temp[walletId][accountId]) {
+          acc.temp[walletId][accountId] = true;
+          acc.result[walletId].plus(balance);
         }
 
         return acc;
       },
-      {},
+      { temp: {} as Record<Wallet['id'], Record<AccountId, boolean>>, result: {} as WalletsBalances },
     );
 
-    return Object.entries(walletsBalancesMap).reduce<WalletsBalances>((acc, [walletId, balancesMap]) => {
-      acc[Number(walletId)] = Object.values(balancesMap).reduce((sum, balance) => sum.plus(balance), new BigNumber(0));
-
-      return acc;
-    }, {});
+    return result;
   },
 );
 

@@ -873,7 +873,11 @@
     "wallet": "Wallet"
   },
   "walletDetails": {
-    "simpleTitle": "Wallet details",
+    "common": {
+      "forgetButton": "Forget",
+      "renameButton": "Rename",
+      "title": "Wallet details"
+    },
     "walletConnect": {
       "connectedStatus": "Connected",
       "disconnectedStatus": "Not connected"

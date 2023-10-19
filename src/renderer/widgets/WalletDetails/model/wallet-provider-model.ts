@@ -5,13 +5,17 @@ import { walletSelectModel } from '@renderer/features/wallets';
 import { Account } from '@renderer/shared/core';
 import { walletConnectModel } from '@renderer/entities/walletConnect';
 
-const $accounts = combine(walletSelectModel.$walletForDetails, walletModel.$accounts, (...args): Account[] => {
-  const [walletForDetails, accounts] = args;
+const $accounts = combine(
+  {
+    details: walletSelectModel.$walletForDetails,
+    accounts: walletModel.$accounts,
+  },
+  ({ details, accounts }): Account[] => {
+    if (!details) return [];
 
-  if (!walletForDetails) return [];
-
-  return accounts.filter((account) => account.walletId === walletForDetails.id);
-});
+    return accounts.filter((account) => account.walletId === details.id);
+  },
+);
 
 const $connected = combine($accounts, walletConnectModel.$client, (accounts, client): boolean => {
   const account = accounts[0];

@@ -873,13 +873,16 @@
     "wallet": "Кошелёк"
   },
   "walletDetails": {
-    "simpleTitle": "Детали кошелька",
+    "common": {
+      "forgetButton": "Забыть",
+      "renameButton": "Переименовать",
+      "title": "Детали кошелька"
+    },
     "walletConnect": {
       "connectedStatus": "Connected",
       "disconnectedStatus": "Not connected"
     }
   },
-
   "wallets": {
     "addButtonTitle": "Добавить",
     "addMultisig": "Multisig",
