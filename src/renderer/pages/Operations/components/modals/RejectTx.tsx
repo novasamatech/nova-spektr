@@ -18,13 +18,7 @@ import { Signing } from '@renderer/features/operation';
 import { OperationTitle } from '@renderer/components/common';
 import { walletModel, walletUtils } from '@renderer/entities/wallet';
 import { priceProviderModel } from '@renderer/entities/price';
-import type {
-  Address,
-  HexString,
-  Timepoint,
-  MultisigAccount,
-  Account,
-} from '@renderer/shared/core';
+import type { Address, HexString, Timepoint, MultisigAccount, Account } from '@renderer/shared/core';
 import {
   Transaction,
   TransactionType,

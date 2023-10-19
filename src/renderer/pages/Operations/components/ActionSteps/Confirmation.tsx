@@ -14,14 +14,13 @@ import { DetailRow, FootnoteText, Icon } from '@renderer/shared/ui';
 import { ExtendedChain } from '@renderer/entities/network';
 import { useI18n } from '@renderer/app/providers';
 import { getIconName } from '../../common/utils';
-import type { Account, MultisigAccount } from '@renderer/shared/core';
+import { type Account, type MultisigAccount, WalletType } from '@renderer/shared/core';
 import Details from '../Details';
 import { getAssetById } from '@renderer/shared/lib/utils';
 import { getTransactionFromMultisigTx } from '@renderer/entities/multisig';
 import { sendAssetModel } from '@renderer/widgets/SendAssetModal';
-import { WalletType } from "@renderer/shared/core";
-import { SignButton } from "@renderer/entities/operation/ui/SignButton";
-import { walletModel } from "@renderer/entities/wallet";
+import { SignButton } from '@renderer/entities/operation/ui/SignButton';
+import { walletModel } from '@renderer/entities/wallet';
 
 type Props = {
   tx: MultisigTransaction;

@@ -19,13 +19,7 @@ import { useMultisigEvent } from '@renderer/entities/multisig';
 import { Signing } from '@renderer/features/operation';
 import { OperationTitle } from '@renderer/components/common';
 import { walletModel } from '@renderer/entities/wallet';
-import type {
-  Address,
-  HexString,
-  Timepoint,
-  MultisigAccount,
-  Account,
-} from '@renderer/shared/core';
+import type { Address, HexString, Timepoint, MultisigAccount, Account } from '@renderer/shared/core';
 import {
   isXcmTransaction,
   MAX_WEIGHT,
