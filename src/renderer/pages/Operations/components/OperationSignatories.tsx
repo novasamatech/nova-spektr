@@ -51,8 +51,8 @@ export const OperationSignatories = ({ tx, connection, account }: Props) => {
     return acc;
   }, []);
 
-  const accountsIds = accounts.map((a) => a.accountId);
-  const contactSignatories = signatories.filter((s) => !accountsIds.includes(s.accountId));
+  const walletSignatoriesIds = walletSignatories.map((a) => a.accountId);
+  const contactSignatories = signatories.filter((s) => !walletSignatoriesIds.includes(s.accountId));
 
   useEffect(() => {
     const tempCancellation = [];
@@ -102,23 +102,27 @@ export const OperationSignatories = ({ tx, connection, account }: Props) => {
       </div>
 
       <div className="flex flex-col gap-y-2">
-        <FootnoteText className="text-text-tertiary mb-2" as="h4">
-          {t('operation.walletSignatoriesTitle')}
-        </FootnoteText>
-        <ul className="flex flex-col gap-y-2">
-          {walletSignatories.map((signatory) => (
-            <SignatoryCard
-              key={signatory.accountId}
-              accountId={signatory.accountId}
-              addressPrefix={connection.addressPrefix}
-              status={getSignatoryStatus(signatory.accountId)}
-              explorers={connection.explorers}
-            >
-              <WalletIcon type={signatory.wallet.type} size={20} />
-              <BodyText className="text-inherit mr-auto">{signatory.wallet.name}</BodyText>
-            </SignatoryCard>
-          ))}
-        </ul>
+        {Boolean(walletSignatories.length) && (
+          <>
+            <FootnoteText className="text-text-tertiary mb-2" as="h4">
+              {t('operation.walletSignatoriesTitle')}
+            </FootnoteText>
+            <ul className="flex flex-col gap-y-2">
+              {walletSignatories.map((signatory) => (
+                <SignatoryCard
+                  key={signatory.accountId}
+                  accountId={signatory.accountId}
+                  addressPrefix={connection.addressPrefix}
+                  status={getSignatoryStatus(signatory.accountId)}
+                  explorers={connection.explorers}
+                >
+                  <WalletIcon type={signatory.wallet.type} size={20} />
+                  <BodyText className="text-inherit mr-auto">{signatory.wallet.name}</BodyText>
+                </SignatoryCard>
+              ))}
+            </ul>
+          </>
+        )}
 
         {Boolean(contactSignatories.length) && (
           <>
