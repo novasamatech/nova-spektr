@@ -7,6 +7,7 @@ const walletTypeSet = createEvent<WalletType | null>();
 const modalClosed = createEvent();
 const storeCleared = createEvent();
 const completed = createEvent();
+const rejected = createEvent();
 
 const $walletType = createStore<WalletType | null>(null).reset([modalClosed, completed]);
 
@@ -38,6 +39,7 @@ export const walletProviderModel = {
     walletTypeSet,
     modalClosed,
     completed,
+    rejected,
     navigateApiChanged: navigationApi.navigateApiChanged,
   },
 };

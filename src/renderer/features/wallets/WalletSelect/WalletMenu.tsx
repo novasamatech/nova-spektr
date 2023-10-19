@@ -27,6 +27,8 @@ export const WalletMenu = ({ children }: PropsWithChildren) => {
         if (walletUtils.isPolkadotVault(wallet)) groupIndex = WalletType.POLKADOT_VAULT;
         if (walletUtils.isMultisig(wallet)) groupIndex = WalletType.MULTISIG;
         if (walletUtils.isWatchOnly(wallet)) groupIndex = WalletType.WATCH_ONLY;
+        if (walletUtils.isNovaWallet(wallet)) groupIndex = WalletType.NOVA_WALLET;
+        if (walletUtils.isWalletConnect(wallet)) groupIndex = WalletType.WALLET_CONNECT;
         if (groupIndex && includes(wallet.name, query)) {
           acc[groupIndex].push(wallet);
         }
@@ -37,6 +39,8 @@ export const WalletMenu = ({ children }: PropsWithChildren) => {
         [WalletType.POLKADOT_VAULT]: [],
         [WalletType.MULTISIG]: [],
         [WalletType.WATCH_ONLY]: [],
+        [WalletType.NOVA_WALLET]: [],
+        [WalletType.WALLET_CONNECT]: [],
       },
     );
   };
@@ -59,6 +63,18 @@ export const WalletMenu = ({ children }: PropsWithChildren) => {
       title: t('wallets.addMultisig'),
       onClick: () => walletProviderModel.events.walletTypeSet(WalletType.MULTISIG),
       iconName: 'multisig',
+    },
+    {
+      id: 'nova-wallet',
+      title: t('wallets.addNovaWallet'),
+      onClick: () => walletProviderModel.events.walletTypeSet(WalletType.NOVA_WALLET),
+      iconName: 'novaWallet',
+    },
+    {
+      id: 'wallet-connect',
+      title: t('wallets.addWalletConnect'),
+      onClick: () => walletProviderModel.events.walletTypeSet(WalletType.WALLET_CONNECT),
+      iconName: 'walletConnect',
     },
   ];
 
