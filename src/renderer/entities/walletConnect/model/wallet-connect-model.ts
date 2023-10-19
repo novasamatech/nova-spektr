@@ -46,7 +46,7 @@ const $uri = createStore<string>('').reset(reset);
 const $accounts = createStore<string[]>([]).reset(reset);
 const $pairings = createStore<PairingTypes.Struct[]>([]).reset(reset);
 
-const _extendSessions = createEffect((client: Client) => {
+const extendSessions = createEffect((client: Client) => {
   const sessions = client.session.getAll();
 
   sessions.forEach((s) => {
@@ -54,7 +54,7 @@ const _extendSessions = createEffect((client: Client) => {
   });
 });
 
-const _subscribeToEventsFx = createEffect((client: Client) => {
+const subscribeToEventsFx = createEffect((client: Client) => {
   const bindedSessionUpdated = scopeBind(sessionUpdated);
   const bindedReset = scopeBind(reset);
 
@@ -81,7 +81,7 @@ const _subscribeToEventsFx = createEffect((client: Client) => {
   });
 });
 
-const _checkPersistedStateFx = createEffect(async (client: Client) => {
+const checkPersistedStateFx = createEffect(async (client: Client) => {
   if (!client) return;
 
   const pairings = client.pairing.getAll({ active: true });
@@ -98,7 +98,7 @@ const _checkPersistedStateFx = createEffect(async (client: Client) => {
   }
 });
 
-const _logClientIdFx = createEffect(async (client: Client) => {
+const logClientIdFx = createEffect(async (client: Client) => {
   if (!client) return;
 
   try {
@@ -117,37 +117,32 @@ const sessionTopicUpdatedFx = createEffect(
   }: {
     activeAccounts: Account[];
     sessionTopic: string;
-  }): Promise<Array<Account | undefined>> => {
-    return Promise.all(
-      activeAccounts
-        .map(async (account) => {
-          const updatedAccount = {
-            ...account,
-            signingExtras: {
-              ...account.signingExtras,
-              sessionTopic,
-            },
-          };
-
-          const id = await storageService.accounts.update(account.id, updatedAccount);
-
-          return id ? updatedAccount : undefined;
-        })
-        .filter(Boolean),
+  }): Promise<Account[] | undefined> => {
+    const updatedAccounts = activeAccounts.map(
+      (account) =>
+        ({
+          ...account,
+          signingExtras: {
+            ...account.signingExtras,
+            sessionTopic,
+          },
+        } as Account),
     );
+
+    const updated = await storageService.accounts.updateAll(updatedAccounts);
+
+    return updated && updatedAccounts;
   },
 );
 
 const createClientFx = createEffect(async (): Promise<Client | undefined> => {
   try {
-    const _client = await Client.init({
+    return Client.init({
       logger: DEFAULT_LOGGER,
       relayUrl: DEFAULT_RELAY_URL,
       projectId: DEFAULT_PROJECT_ID,
       metadata: DEFAULT_APP_METADATA,
     });
-
-    return _client;
   } catch (e) {
     console.log(`Failed to create new Client`, e);
   }
@@ -161,7 +156,7 @@ forward({
 sample({
   clock: createClientFx.doneData,
   filter: (client): client is Client => client !== null,
-  target: [_extendSessions, _subscribeToEventsFx, _checkPersistedStateFx, _logClientIdFx],
+  target: [extendSessions, subscribeToEventsFx, checkPersistedStateFx, logClientIdFx],
 });
 
 const initConnectFx = createEffect(

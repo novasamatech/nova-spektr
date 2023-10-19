@@ -15,9 +15,7 @@ export const ContactItem = ({ accountId, name, explorers = [], disabled }: Props
       <Identicon address={address} size={20} background={false} className={cnTw(disabled && 'opacity-60')} />
 
       <div className="flex flex-col max-w-[348px]">
-        <BodyText className={cnTw('tracking-tight', disabled ? 'text-text-secondary' : 'text-text-primary')}>
-          {name}
-        </BodyText>
+        <BodyText className={cnTw('tracking-tight', disabled && 'text-text-secondary')}>{name}</BodyText>
         <HelpText className="text-text-tertiary truncate">{address}</HelpText>
       </div>
 
