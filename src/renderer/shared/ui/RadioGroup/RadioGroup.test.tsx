@@ -2,6 +2,15 @@ import { act, render, screen } from '@testing-library/react';
 
 import RadioGroup from './RadioGroup';
 
+jest.mock('@renderer/entities/walletConnect', () => ({
+  walletConnectModel: { events: {} },
+  DEFAULT_POLKADOT_METHODS: {},
+  getWalletConnectChains: jest.fn(),
+}));
+jest.mock('@renderer/pages/Onboarding/WalletConnect/model/wc-onboarding-model', () => ({
+  wcOnboardingModel: { events: {} },
+}));
+
 describe('ui/RadioGroup', () => {
   const options = [
     { id: '1', value: 1, title: 'Test 1' },

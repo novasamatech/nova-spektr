@@ -4,6 +4,8 @@ import { useNavigate } from 'react-router-dom';
 
 import WatchOnly from '@renderer/pages/Onboarding/WatchOnly/WatchOnly';
 import Vault from '@renderer/pages/Onboarding/Vault/Vault';
+import { NovaWallet } from '@renderer/pages/Onboarding/WalletConnect/NovaWallet';
+import { WalletConnect } from '@renderer/pages/Onboarding/WalletConnect/WalletConnect';
 import { MultisigAccount } from './MultisigAccount/MultisigAccount';
 import { WalletType, WalletFamily } from '@renderer/shared/core';
 import { walletPairingModel } from '@renderer/features/wallets';
@@ -19,6 +21,8 @@ const WalletModals: Record<WalletFamily, (props: ModalProps) => JSX.Element> = {
   [WalletType.POLKADOT_VAULT]: (props) => <Vault isOpen {...props} />,
   [WalletType.WATCH_ONLY]: (props) => <WatchOnly isOpen {...props} />,
   [WalletType.MULTISIG]: (props) => <MultisigAccount isOpen {...props} />,
+  [WalletType.WALLET_CONNECT]: (props) => <WalletConnect isOpen {...props} />,
+  [WalletType.NOVA_WALLET]: (props) => <NovaWallet isOpen {...props} />,
 };
 
 export const CreateWalletProvider = () => {

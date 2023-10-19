@@ -5,4 +5,5 @@ export const enum ValidationErrors {
   INSUFFICIENT_BALANCE,
   INSUFFICIENT_BALANCE_FOR_FEE,
   INVALID_SIGNATURE,
+  EXPIRED,
 }

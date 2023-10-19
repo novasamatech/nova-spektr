@@ -3,6 +3,15 @@ import noop from 'lodash/noop';
 
 import DropdownButton, { ButtonDropdownOption } from './DropdownButton';
 
+jest.mock('@renderer/entities/walletConnect', () => ({
+  walletConnectModel: { events: {} },
+  DEFAULT_POLKADOT_METHODS: {},
+  getWalletConnectChains: jest.fn(),
+}));
+jest.mock('@renderer/pages/Onboarding/WalletConnect/model/wc-onboarding-model', () => ({
+  wcOnboardingModel: { events: {} },
+}));
+
 describe('ui/Dropdowns/DropdownButton', () => {
   const options: ButtonDropdownOption[] = [
     { id: '0', title: 'label_0', iconName: 'globe', onClick: noop },

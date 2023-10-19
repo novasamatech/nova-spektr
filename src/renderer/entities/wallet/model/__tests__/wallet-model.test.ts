@@ -5,6 +5,15 @@ import { walletMock } from './mocks/wallet-mock';
 import { kernelModel } from '@renderer/shared/core';
 import { storageService } from '@renderer/shared/api/storage';
 
+jest.mock('@renderer/entities/walletConnect', () => ({
+  walletConnectModel: { events: {} },
+  DEFAULT_POLKADOT_METHODS: {},
+  getWalletConnectChains: jest.fn(),
+}));
+jest.mock('@renderer/pages/Onboarding/WalletConnect/model/wc-onboarding-model', () => ({
+  wcOnboardingModel: { events: {} },
+}));
+
 describe('entities/wallet/model/wallet-model', () => {
   afterEach(() => {
     jest.clearAllMocks();

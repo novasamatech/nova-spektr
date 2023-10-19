@@ -1,1 +1,26 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="none"><g clip-path="url(#a)"><mask id="b" width="32" height="32" x="0" y="0" maskUnits="userSpaceOnUse" style="mask-type:alpha"><circle cx="16" cy="16" r="16" fill="red"/></mask><g mask="url(#b)"><path fill="url(#c)" d="M0 0h32v32H0z"/></g><path fill="#fff" d="M27.2 16v.296c-1.828.29-5.752.967-7.683 1.707a2.625 2.625 0 0 0-1.505 1.491c-.74 1.922-1.425 5.87-1.716 7.706h-.592c-.29-1.837-.976-5.784-1.716-7.706a2.626 2.626 0 0 0-1.505-1.491c-1.93-.74-5.855-1.416-7.683-1.707v-.592c1.828-.29 5.752-.967 7.683-1.707a2.625 2.625 0 0 0 1.505-1.491c.74-1.922 1.425-5.87 1.716-7.706h.592c.29 1.837.976 5.784 1.716 7.706.268.685.82 1.232 1.505 1.492 1.93.739 5.855 1.415 7.683 1.706V16Z"/></g><defs><radialGradient id="c" cx="0" cy="0" r="1" gradientTransform="translate(.805 30.23) scale(36.8035)" gradientUnits="userSpaceOnUse"><stop offset=".053" stop-color="#D7D3E9"/><stop offset=".193" stop-color="#A19CDE"/><stop offset=".383" stop-color="#696BD9"/><stop offset=".54" stop-color="#3A5AE7"/><stop offset=".773" stop-color="#225FE7"/><stop offset="1" stop-color="#0883D1"/></radialGradient><clipPath id="a"><path fill="#fff" d="M0 0h32v32H0z"/></clipPath></defs></svg>
+<svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="Nova Wallet Logo" clip-path="url(#clip0_5109_84392)">
+<g id="BG">
+<mask id="mask0_5109_84392" style="mask-type:alpha" maskUnits="userSpaceOnUse" x="0" y="0" width="20" height="20">
+<circle id="Mask" cx="10" cy="10" r="10" fill="#FF0000"/>
+</mask>
+<g mask="url(#mask0_5109_84392)">
+<rect id="Base" width="20" height="20" fill="url(#paint0_radial_5109_84392)"/>
+</g>
+</g>
+<path id="Star" d="M17 10V10.1848C15.8576 10.3668 13.4048 10.7896 12.198 11.2516C11.7668 11.4168 11.4252 11.7556 11.2572 12.184C10.7952 13.3852 10.3668 15.852 10.1848 17H9.8152C9.6332 15.852 9.2048 13.3852 8.7428 12.184C8.5748 11.7556 8.2304 11.414 7.802 11.2516C6.5952 10.7896 4.1424 10.3668 3 10.1848V9.8152C4.1424 9.6332 6.5952 9.2104 7.802 8.7484C8.2332 8.5832 8.5748 8.2444 8.7428 7.816C9.2048 6.6148 9.6332 4.148 9.8152 3H10.1848C10.3668 4.148 10.7952 6.6148 11.2572 7.816C11.4252 8.2444 11.7696 8.586 12.198 8.7484C13.4048 9.2104 15.8576 9.6332 17 9.8152V10Z" fill="white"/>
+</g>
+<defs>
+<radialGradient id="paint0_radial_5109_84392" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(0.503086 18.8932) scale(23.0022)">
+<stop offset="0.0533191" stop-color="#D7D3E9"/>
+<stop offset="0.1933" stop-color="#A19CDE"/>
+<stop offset="0.3834" stop-color="#696BD9"/>
+<stop offset="0.54" stop-color="#3A5AE7"/>
+<stop offset="0.7735" stop-color="#225FE7"/>
+<stop offset="1" stop-color="#0883D1"/>
+</radialGradient>
+<clipPath id="clip0_5109_84392">
+<rect width="20" height="20" fill="white"/>
+</clipPath>
+</defs>
+</svg>

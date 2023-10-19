@@ -4,6 +4,7 @@ import { NavigateFunction } from 'react-router-dom';
 import { walletPairingModel } from '@renderer/features/wallets';
 
 const completed = createEvent();
+const rejected = createEvent();
 
 type Navigation = {
   redirectPath: string;
@@ -30,6 +31,7 @@ forward({ from: navigateFx.doneData, to: walletPairingModel.events.walletTypeCle
 export const walletProviderModel = {
   events: {
     completed,
+    rejected,
     navigateApiChanged: navigationApi.navigateApiChanged,
   },
 };

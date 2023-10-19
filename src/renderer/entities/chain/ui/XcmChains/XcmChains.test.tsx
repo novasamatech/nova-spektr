@@ -2,6 +2,15 @@ import { render, screen } from '@testing-library/react';
 
 import { XcmChains } from './XcmChains';
 
+jest.mock('@renderer/entities/walletConnect', () => ({
+  walletConnectModel: { events: {} },
+  DEFAULT_POLKADOT_METHODS: {},
+  getWalletConnectChains: jest.fn(),
+}));
+jest.mock('@renderer/pages/Onboarding/WalletConnect/model/wc-onboarding-model', () => ({
+  wcOnboardingModel: { events: {} },
+}));
+
 jest.mock('../ChainTitle/ChainTitle', () => ({
   ChainTitle: ({ chainId }: any) => <span>{chainId}</span>,
 }));

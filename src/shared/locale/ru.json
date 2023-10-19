@@ -86,11 +86,17 @@
     "addContactsButton": "Добавить выбранные",
     "addSignatoryButton": "Добавить подписанта",
     "alertTitle": "Выберете кошелёк",
+    "availableLabel": "Available",
     "backButton": "Назад",
     "closeButton": "Закрыть",
     "contactsTab": "Контакты",
     "continueButton": "Продолжить",
     "create": "Создать",
+    "disabledError": {
+      "differentAccounts": "Wallets with different accounts for chains are not supported",
+      "unsupportedType": "This type of wallet is not yet supported for the Multisig wallet creation"
+    },
+    "disabledLabel": "Not supported",
     "errorMessage": "Что-то пошло не так",
     "multisigExistText": "Multisig аккаунт с выбранными подписантами и порогом уже существует",
     "multisigExistTitle": "Аккаунт уже существует",
@@ -192,6 +198,10 @@
     "checkAccountsButton": "Ваши аккаунты",
     "confirmAccountsListButton": "Да, это мои аккаунты",
     "continueButton": "Continue",
+    "novaWallet": {
+      "scanTitle": "Scan with Nova Wallet",
+      "title": "Pair Nova Wallet"
+    },
     "paritySigner": {
       "accessDeniedDescription": "Убедитесь, что доступ к камере разрешен",
       "accessDeniedLabel": "Доступ запрещен!",
@@ -251,6 +261,16 @@
       "nameColumn": "Account name",
       "scanTitle": "Scan the account QR code",
       "title": "Add wallet by Polkadot Vault"
+    },
+    "walletConnect": {
+      "accountsTitle": "Manage accounts",
+      "addressColumn": "Address",
+      "manageTitle": "Set up your wallet",
+      "nameColumn": "Account name",
+      "pairedDescription": "Paired",
+      "rejected": "Pairing rejected",
+      "scanTitle": "Scan with your mobile wallet",
+      "title": "Pair via Wallet Connect"
     },
     "walletNameExample": "Например: Основной аккаунт, My validator, Dotsama crowdloans, и т.д.",
     "walletNameLabel": "Название кошелька",
@@ -336,7 +356,11 @@
     "selectAccount": "Select account",
     "selectSignatory": "Выберите подписанта",
     "selectSignatoryTitle": "Выберите подписанта",
-    "signButton": "Подписать в Polkadot Vault",
+    "sign": {
+      "novaWallet": "Sign with Nova Wallet",
+      "polkadotVault": "Sign with Polkadot Vault",
+      "walletConnect": "Sign with WalletConnect"
+    },
     "signatoriesTitle": "Подписи",
     "signing": "{ signed } из { threshold } подписали",
     "status": {
@@ -348,6 +372,21 @@
     },
     "successMessage": "Operation Approved",
     "successRejectMessage": "Операция Отменена",
+    "walletConnect": {
+      "defaultWalletName": "WalletConnect",
+      "expiredDescription": "The operation isn’t valid anymore",
+      "reconnect": {
+        "cancelButton": "Cancel",
+        "confirmButton": "Reconnect",
+        "connected": "Connected",
+        "description": "You need to reconnect to proceed with signing",
+        "reconnecting": "Waiting for Reconnect...",
+        "title": "{ walletName } is not connected"
+      },
+      "rejected": "Rejected",
+      "signTitle": "Confirm the operation on your { walletName } app",
+      "tryAgainButton": "Try again"
+    },
     "xcmFee": "Cross-chain fee"
   },
   "operations": {
@@ -637,7 +676,6 @@
       "queueButton": "добавить в очередь",
       "restakeRewards": "Вложить награды",
       "rewardsDestinationLabel": "Выплата наград",
-      "signButton": "Подписать в Polkadot Vault",
       "signatoryLabel": "Подписант",
       "signer": "Подписант",
       "submittingOperation": "Подтверждение операции",
@@ -839,19 +877,27 @@
       "forgetButton": "Забыть",
       "renameButton": "Переименовать",
       "title": "Детали кошелька"
+    },
+    "walletConnect": {
+      "connectedStatus": "Connected",
+      "disconnectedStatus": "Not connected"
     }
   },
   "wallets": {
     "addButtonTitle": "Добавить",
     "addMultisig": "Multisig",
+    "addNovaWallet": "Nova Wallet",
     "addPolkadotVault": "Polkadot Vault",
+    "addWalletConnect": "Wallet Connect",
     "addWatchOnly": "Watch-only",
     "multishardLabel": "Multishard",
     "multisigLabel": "Multisig",
+    "novaWalletLabel": "Nova Wallet",
     "paritySignerLabel": "Polkadot Vault",
     "searchPlaceholder": "Поиск",
     "shards": "Shards",
     "title": "Кошельки",
+    "walletConnectLabel": "Wallet Connect",
     "watchOnlyLabel": "Watch-only"
   },
   "welcome": {

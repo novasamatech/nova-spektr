@@ -2,7 +2,7 @@ import { createStore, createEvent, forward, createEffect, sample, combine } from
 import { spread } from 'patronum';
 
 import type { Wallet, NoID, Account, BaseAccount, ChainAccount, MultisigAccount } from '@renderer/shared/core';
-import { kernelModel } from '@renderer/shared/core';
+import { kernelModel, WalletConnectAccount } from '@renderer/shared/core';
 import { storageService } from '@renderer/shared/api/storage';
 import { modelUtils } from '../lib/model-utils';
 
@@ -35,6 +35,8 @@ const watchOnlyCreated = createEvent<CreateParams<BaseAccount>>();
 const multishardCreated = createEvent<CreateParams<BaseAccount | ChainAccount>>();
 const singleshardCreated = createEvent<CreateParams<BaseAccount>>();
 const multisigCreated = createEvent<CreateParams<MultisigAccount>>();
+const walletConnectCreated = createEvent<CreateParams<WalletConnectAccount>>();
+
 const walletSelected = createEvent<WalletId>();
 const multisigAccountUpdated = createEvent<MultisigUpdateParams>();
 
@@ -52,7 +54,7 @@ type CreateResult = {
 };
 
 const walletCreatedFx = createEffect(
-  async ({ wallet, accounts }: CreateParams<BaseAccount>): Promise<CreateResult | undefined> => {
+  async ({ wallet, accounts }: CreateParams<BaseAccount | WalletConnectAccount>): Promise<CreateResult | undefined> => {
     const dbWallet = await storageService.wallets.create({ ...wallet, isActive: false });
 
     if (!dbWallet) return undefined;
@@ -157,6 +159,11 @@ sample({
 });
 
 forward({
+  from: walletConnectCreated,
+  to: walletCreatedFx,
+});
+
+forward({
   from: [watchOnlyCreated, multisigCreated, singleshardCreated],
   to: walletCreatedFx,
 });
@@ -207,6 +214,7 @@ export const walletModel = {
     multishardCreated,
     singleshardCreated,
     multisigCreated,
+    walletConnectCreated,
     walletSelected,
     multisigAccountUpdated,
   },

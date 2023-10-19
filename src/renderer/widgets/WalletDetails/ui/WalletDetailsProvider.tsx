@@ -4,6 +4,7 @@ import { WalletType, Wallet, Account } from '@renderer/shared/core';
 import { walletSelectModel } from '@renderer/features/wallets';
 import { walletProviderModel } from '../model/wallet-provider-model';
 import { SimpleWalletDetails } from './SimpleWalletDetails';
+import { WalletConnectDetails } from './WalletConnectDetails';
 
 type ModalProps = {
   wallet: Wallet;
@@ -20,6 +21,8 @@ const WalletModals: Record<WalletType, (props: ModalProps) => JSX.Element> = {
     <SimpleWalletDetails isOpen account={accounts[0]} {...rest} />
   ),
   [WalletType.MULTISIG]: (props) => <></>,
+  [WalletType.NOVA_WALLET]: (props) => <WalletConnectDetails isOpen {...props} />,
+  [WalletType.WALLET_CONNECT]: (props) => <WalletConnectDetails isOpen {...props} />,
 };
 
 export const WalletDetailsProvider = () => {
