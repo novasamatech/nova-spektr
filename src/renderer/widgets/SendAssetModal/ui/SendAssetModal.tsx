@@ -143,7 +143,7 @@ export const SendAssetModal = ({ chain, asset }: Props) => {
       closeButton
       isOpen={isModalOpen}
       title={<OperationTitle title={`${t(operationTitle, { asset: asset.symbol })}`} chainId={chain.chainId} />}
-      contentClass={activeStep === Step.SIGNING ? '' : undefined}
+      contentClass=''
       panelClass="w-[440px]"
       headerClass="py-3 px-5 max-w-[440px]"
       onClose={closeSendModal}

@@ -16,9 +16,9 @@ import { useI18n } from '@renderer/app/providers';
 import { getIconName } from '../../common/utils';
 import type { Account, MultisigAccount } from '@renderer/shared/core';
 import Details from '../Details';
-import { sendAssetModel } from '@renderer/widgets';
 import { getAssetById } from '@renderer/shared/lib/utils';
 import { getTransactionFromMultisigTx } from '@renderer/entities/multisig';
+import { sendAssetModel } from '@renderer/widgets/SendAssetModal';
 
 type Props = {
   tx: MultisigTransaction;
