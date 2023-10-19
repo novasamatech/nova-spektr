@@ -18,13 +18,12 @@ import { Signing } from '@renderer/features/operation';
 import { OperationTitle } from '@renderer/components/common';
 import { walletModel, walletUtils } from '@renderer/entities/wallet';
 import { priceProviderModel } from '@renderer/entities/price';
-import {
-  type MultisigAccount,
-  type Account,
-  type Address,
-  type HexString,
-  type Timepoint,
-  WalletType,
+import type {
+  Address,
+  HexString,
+  Timepoint,
+  MultisigAccount,
+  Account,
 } from '@renderer/shared/core';
 import {
   Transaction,
@@ -34,7 +33,6 @@ import {
   validateBalance,
   isXcmTransaction,
 } from '@renderer/entities/transaction';
-import { SignButton } from '@renderer/entities/operation/ui/SignButton';
 
 type Props = {
   tx: MultisigTransactionDS;
@@ -197,21 +195,14 @@ const RejectTx = ({ tx, account, connection }: Props) => {
         onClose={handleClose}
       >
         {activeStep === Step.CONFIRMATION && (
-          <>
-            <Confirmation
-              tx={tx}
-              account={account}
-              connection={connection}
-              feeTx={rejectTx}
-              signatory={signAccount}
-              onSign={toggleRejectReasonModal}
-            />
-            <SignButton
-              className="mt-7 ml-auto"
-              type={activeWallet?.type || WalletType.SINGLE_PARITY_SIGNER}
-              onClick={toggleRejectReasonModal}
-            />
-          </>
+          <Confirmation
+            tx={tx}
+            account={account}
+            connection={connection}
+            feeTx={rejectTx}
+            signatory={signAccount}
+            onSign={toggleRejectReasonModal}
+          />
         )}
         {activeStep === Step.SIGNING && rejectTx && connection.api && signAccount && (
           <Signing

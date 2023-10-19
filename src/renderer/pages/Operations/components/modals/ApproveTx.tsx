@@ -19,13 +19,12 @@ import { useMultisigEvent } from '@renderer/entities/multisig';
 import { Signing } from '@renderer/features/operation';
 import { OperationTitle } from '@renderer/components/common';
 import { walletModel } from '@renderer/entities/wallet';
-import {
-  type Address,
-  type HexString,
-  type Timepoint,
-  type MultisigAccount,
-  type Account,
-  WalletType,
+import type {
+  Address,
+  HexString,
+  Timepoint,
+  MultisigAccount,
+  Account,
 } from '@renderer/shared/core';
 import {
   isXcmTransaction,
@@ -37,7 +36,6 @@ import {
   useTransaction,
   validateBalance,
 } from '@renderer/entities/transaction';
-import { SignButton } from '@renderer/entities/operation/ui/SignButton';
 import { priceProviderModel } from '@renderer/entities/price';
 
 type Props = {
@@ -57,7 +55,6 @@ const AllSteps = [Step.CONFIRMATION, Step.SIGNING, Step.SUBMIT];
 const ApproveTx = ({ tx, account, connection }: Props) => {
   const { t } = useI18n();
   const wallets = useUnit(walletModel.$wallets);
-  const activeWallet = useUnit(walletModel.$activeWallet);
   const accounts = useUnit(walletModel.$accounts);
 
   const { getBalance } = useBalance();
@@ -240,22 +237,14 @@ const ApproveTx = ({ tx, account, connection }: Props) => {
         onClose={handleClose}
       >
         {activeStep === Step.CONFIRMATION && (
-          <>
-            <Confirmation
-              tx={tx}
-              account={account}
-              connection={connection}
-              feeTx={feeTx}
-              signatory={unsignedAccounts.length === 1 ? unsignedAccounts[0] : undefined}
-              onSign={trySetSignerAccount}
-            />
-
-            <SignButton
-              className="mt-7 ml-auto"
-              type={activeWallet?.type || WalletType.SINGLE_PARITY_SIGNER}
-              onClick={trySetSignerAccount}
-            />
-          </>
+          <Confirmation
+            tx={tx}
+            account={account}
+            connection={connection}
+            feeTx={feeTx}
+            signatory={unsignedAccounts.length === 1 ? unsignedAccounts[0] : undefined}
+            onSign={trySetSignerAccount}
+          />
         )}
 
         {activeStep === Step.SIGNING && approveTx && connection.api && signAccount && (
