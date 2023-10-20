@@ -2,13 +2,14 @@ import { useMemo } from 'react';
 import { useUnit } from 'effector-react';
 
 import { Wallet, MultisigAccount } from '@renderer/shared/core';
-import { BaseModal, BodyText, Tabs, FootnoteText } from '@renderer/shared/ui';
-import { DEFAULT_TRANSITION } from '@renderer/shared/lib/utils';
+import { BaseModal, BodyText, Tabs, FootnoteText, Icon, InfoPopover } from '@renderer/shared/ui';
+import { DEFAULT_TRANSITION, RootExplorers, toAddress } from '@renderer/shared/lib/utils';
 import { useToggle } from '@renderer/shared/lib/hooks';
-import { AccountsList, WalletIcon, AddressWithName } from '@renderer/entities/wallet';
+import { AccountsList, WalletIcon, ContactItem, useAddressInfo } from '@renderer/entities/wallet';
 import { chainsService } from '@renderer/entities/network';
 import { useI18n } from '@renderer/app/providers';
 import { walletProviderModel } from '../model/wallet-provider-model';
+// TODO: think about combining balances and wallets
 import { WalletFiatBalance } from '@renderer/features/wallets/WalletSelect/ui/WalletFiatBalance';
 
 type Props = {
@@ -22,6 +23,7 @@ export const MultisigWalletDetails = ({ isOpen, wallet, account, onClose }: Prop
 
   const contacts = useUnit(walletProviderModel.$contacts);
   const signatoryWallets = useUnit(walletProviderModel.$signatoryWallets);
+  const popoverItems = useAddressInfo(toAddress(account.accountId), RootExplorers);
 
   const [isModalOpen, toggleIsModalOpen] = useToggle(isOpen);
 
@@ -70,7 +72,7 @@ export const MultisigWalletDetails = ({ isOpen, wallet, account, onClose }: Prop
                     Threshold {account.threshold} out of {account.signatories.length}
                   </FootnoteText>
 
-                  <div className="overflow-y-auto mt-4 max-h-[357px]">
+                  <div className="overflow-y-auto mt-4 h-[357px]">
                     {signatoryWallets.length > 0 && (
                       <div className="flex flex-col gap-y-2">
                         <FootnoteText className="text-text-tertiary">Your wallets</FootnoteText>
@@ -84,6 +86,10 @@ export const MultisigWalletDetails = ({ isOpen, wallet, account, onClose }: Prop
                                 <BodyText className="text-text-secondary truncate">{wallet.name}</BodyText>
                                 <WalletFiatBalance walletId={wallet.id} className="truncate" />
                               </div>
+
+                              <InfoPopover data={popoverItems} containerClassName="ml-auto" position="right-0">
+                                <Icon name="info" size={16} className="hover:text-icon-hover" />
+                              </InfoPopover>
                             </li>
                           ))}
                         </ul>
@@ -97,11 +103,10 @@ export const MultisigWalletDetails = ({ isOpen, wallet, account, onClose }: Prop
                         <ul className="flex flex-col gap-y-2">
                           {contacts.map((contact) => (
                             <li key={contact.accountId} className="flex items-center gap-x-2 py-1.5">
-                              <AddressWithName
+                              <ContactItem
                                 name={contact.name}
-                                size={20}
                                 accountId={contact.accountId}
-                                // explorers={RootExplorers}
+                                explorers={RootExplorers}
                               />
                             </li>
                           ))}

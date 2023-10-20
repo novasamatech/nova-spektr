@@ -29,6 +29,9 @@ const $filteredWalletGroups = combine(
         if (walletUtils.isPolkadotVault(wallet)) groupIndex = WalletType.POLKADOT_VAULT;
         if (walletUtils.isMultisig(wallet)) groupIndex = WalletType.MULTISIG;
         if (walletUtils.isWatchOnly(wallet)) groupIndex = WalletType.WATCH_ONLY;
+        if (walletUtils.isWalletConnect(wallet)) groupIndex = WalletType.WALLET_CONNECT;
+        if (walletUtils.isNovaWallet(wallet)) groupIndex = WalletType.NOVA_WALLET;
+
         if (groupIndex && includes(wallet.name, query)) {
           acc[groupIndex].push(wallet);
         }
@@ -38,6 +41,8 @@ const $filteredWalletGroups = combine(
       {
         [WalletType.POLKADOT_VAULT]: [],
         [WalletType.MULTISIG]: [],
+        [WalletType.NOVA_WALLET]: [],
+        [WalletType.WALLET_CONNECT]: [],
         [WalletType.WATCH_ONLY]: [],
       },
     );

@@ -7,4 +7,5 @@ export { WalletIcon } from './WalletIcon/WalletIcon';
 export { WalletRow } from './WalletRow/WalletRow';
 export { SelectableShard } from './SelectableShard/SelectableShard';
 export { MultiAccountsList } from './MultiAccountsList/MultiAccountsList';
+export { ContactItem } from './ContactItem/ContactItem';
 export type { AccountAddressProps } from './AccountAddress/AccountAddress';

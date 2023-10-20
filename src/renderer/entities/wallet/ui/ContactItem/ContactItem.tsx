@@ -1,11 +1,14 @@
 import { useAddressInfo } from '@renderer/entities/wallet/lib/useAddressInfo';
 import { cnTw, toAddress } from '@renderer/shared/lib/utils';
 import { Icon, Identicon, BodyText, InfoPopover, HelpText } from '@renderer/shared/ui';
-import { ExtendedContact } from '../common/types';
-import type { Explorer } from '@renderer/shared/core';
+import type { Explorer, AccountId } from '@renderer/shared/core';
 
-type Props = Pick<ExtendedContact, 'accountId' | 'name'> & { explorers?: Explorer[]; disabled?: boolean };
-
+type Props = {
+  name?: string;
+  accountId: AccountId;
+  explorers?: Explorer[];
+  disabled?: boolean;
+};
 export const ContactItem = ({ accountId, name, explorers = [], disabled }: Props) => {
   const address = toAddress(accountId);
   const popoverItems = useAddressInfo(address, explorers);
@@ -15,7 +18,7 @@ export const ContactItem = ({ accountId, name, explorers = [], disabled }: Props
       <Identicon address={address} size={20} background={false} className={cnTw(disabled && 'opacity-60')} />
 
       <div className="flex flex-col max-w-[348px]">
-        <BodyText className={cnTw('tracking-tight', disabled && 'text-text-secondary')}>{name}</BodyText>
+        {name && <BodyText className={cnTw('tracking-tight', disabled && 'text-text-secondary')}>{name}</BodyText>}
         <HelpText className="text-text-tertiary truncate">{address}</HelpText>
       </div>
 
