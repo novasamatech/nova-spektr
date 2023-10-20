@@ -45,6 +45,7 @@ import MagicImg, { ReactComponent as MagicSvg } from '@images/functionals/magic.
 import QuestionImg, { ReactComponent as QuestionSvg } from '@images/functionals/question.svg';
 import UploadFileImg, { ReactComponent as UploadFileSvg } from '@images/functionals/updload-file.svg';
 import CurrencyImg, { ReactComponent as CurrencySvg } from '@images/functionals/currency.svg';
+import ImportImg, { ReactComponent as ImportSvg } from '@images/functionals/import.svg';
 
 const FunctionalImages = {
   copy: { svg: CopySvg, img: CopyImg },
@@ -90,6 +91,7 @@ const FunctionalImages = {
   magic: { img: MagicImg, svg: MagicSvg },
   questionOutline: { img: QuestionImg, svg: QuestionSvg },
   uploadFile: { img: UploadFileImg, svg: UploadFileSvg },
+  import: { img: ImportImg, svg: ImportSvg },
 } as const;
 
 export type Functional = keyof typeof FunctionalImages;

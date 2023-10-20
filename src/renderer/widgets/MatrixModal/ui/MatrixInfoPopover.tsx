@@ -12,8 +12,8 @@ const linkClass = 'text-footnote text-tab-text-accent';
 export const MatrixInfoPopover = () => {
   const { t } = useI18n();
 
-  const matrix = <InfoLink url={MATRIX} showIcon={false} className={linkClass} />;
-  const smp = <InfoLink url={SMP} showIcon={false} className={linkClass} />;
+  const matrix = <InfoLink url={MATRIX} className={linkClass} />;
+  const smp = <InfoLink url={SMP} className={linkClass} />;
 
   return (
     <Popover

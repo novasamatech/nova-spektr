@@ -125,6 +125,15 @@
   "dropdown": {
     "chooseOptionLabel": "Choose an option"
   },
+  "dynamicDerivations": {
+    "importKeys": {
+      "modalTitle": "Import keys",
+      "fileInputPlaceholder": "Select .yaml or .txt file on your computer",
+      "downloadTemplateButton": "Download the template",
+      "backButton": "Back",
+      "continueButton": "Continue"
+    }
+  },
   "fallbackScreen": {
     "message": "Что-то пошло не так",
     "omniLogoAlt": "Логотип Nova Spektr",

@@ -141,7 +141,7 @@ export const LoginForm = () => {
 
   const logInDisabled = isHomeserverLoading || !isValid || invalidHomeserver || invalidLogin;
   const isEditing = !isLoggedIn && !isHomeserverLoading && !inProgress;
-  const register = <InfoLink url="https://app.element.io/#/register" showIcon={false} />;
+  const register = <InfoLink url="https://app.element.io/#/register" />;
 
   return (
     <form className="flex flex-col gap-y-4" onSubmit={handleSubmit(submitMatrixLogin)}>

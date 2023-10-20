@@ -9,8 +9,8 @@ const PRIVACY_POLICY = 'https://novaspektr.io/privacy';
 const PrivacyPolicy = () => {
   const { t } = useI18n();
 
-  const terms = <InfoLink className="px-1" url={TERMS_AND_CONDITIONS} showIcon={false} />;
-  const privacy = <InfoLink className="px-1" url={PRIVACY_POLICY} showIcon={false} />;
+  const terms = <InfoLink className="px-1" url={TERMS_AND_CONDITIONS} />;
+  const privacy = <InfoLink className="px-1" url={PRIVACY_POLICY} />;
 
   return (
     <FootnoteText className="flex items-center">

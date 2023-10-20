@@ -10,6 +10,8 @@ type AbstractAccount = {
   type: AccountType;
 };
 
+type ExtractKeys = <T, K >
+
 export type BaseAccount = AbstractAccount & {
   accountId: AccountId;
   chainType: ChainType;
