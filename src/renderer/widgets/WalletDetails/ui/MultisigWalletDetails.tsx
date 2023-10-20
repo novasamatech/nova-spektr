@@ -1,14 +1,12 @@
 import { useMemo } from 'react';
-import { useUnit } from 'effector-react';
 
-import { Wallet, MultisigAccount } from '@renderer/shared/core';
+import { Wallet, MultisigAccount, Signatory } from '@renderer/shared/core';
 import { BaseModal, BodyText, Tabs, FootnoteText, Icon, InfoPopover } from '@renderer/shared/ui';
 import { DEFAULT_TRANSITION, RootExplorers, toAddress } from '@renderer/shared/lib/utils';
 import { useToggle } from '@renderer/shared/lib/hooks';
 import { AccountsList, WalletIcon, ContactItem, useAddressInfo } from '@renderer/entities/wallet';
 import { chainsService } from '@renderer/entities/network';
 import { useI18n } from '@renderer/app/providers';
-import { walletProviderModel } from '../model/wallet-provider-model';
 // TODO: think about combining balances and wallets
 import { WalletFiatBalance } from '@renderer/features/wallets/WalletSelect/ui/WalletFiatBalance';
 
@@ -16,13 +14,20 @@ type Props = {
   isOpen: boolean;
   wallet: Wallet;
   account: MultisigAccount;
+  signatoryWallets: Wallet[];
+  signatoryContacts: Signatory[];
   onClose: () => void;
 };
-export const MultisigWalletDetails = ({ isOpen, wallet, account, onClose }: Props) => {
+export const MultisigWalletDetails = ({
+  isOpen,
+  wallet,
+  account,
+  signatoryWallets,
+  signatoryContacts,
+  onClose,
+}: Props) => {
   const { t } = useI18n();
 
-  const contacts = useUnit(walletProviderModel.$contacts);
-  const signatoryWallets = useUnit(walletProviderModel.$signatoryWallets);
   const popoverItems = useAddressInfo(toAddress(account.accountId), RootExplorers);
 
   const [isModalOpen, toggleIsModalOpen] = useToggle(isOpen);
@@ -61,20 +66,20 @@ export const MultisigWalletDetails = ({ isOpen, wallet, account, onClose }: Prop
             {
               id: 1,
               title: 'Networks',
-              panel: <AccountsList accountId={account.accountId} chains={chains} className="h-[349px]" />,
+              panel: <AccountsList accountId={account.accountId} chains={chains} className="h-[365px]" />,
             },
             {
               id: 2,
               title: 'Signatories',
               panel: (
-                <div className="flex flex-col px-5">
-                  <FootnoteText className="text-text-tertiary">
+                <div className="flex flex-col">
+                  <FootnoteText className="text-text-tertiary px-5">
                     Threshold {account.threshold} out of {account.signatories.length}
                   </FootnoteText>
 
                   <div className="overflow-y-auto mt-4 h-[357px]">
                     {signatoryWallets.length > 0 && (
-                      <div className="flex flex-col gap-y-2">
+                      <div className="flex flex-col gap-y-2 px-5">
                         <FootnoteText className="text-text-tertiary">Your wallets</FootnoteText>
 
                         <ul className="flex flex-col gap-y-2">
@@ -96,16 +101,16 @@ export const MultisigWalletDetails = ({ isOpen, wallet, account, onClose }: Prop
                       </div>
                     )}
 
-                    {contacts.length > 0 && (
-                      <div className="flex flex-col gap-y-2 mt-4">
+                    {signatoryContacts.length > 0 && (
+                      <div className="flex flex-col gap-y-2 mt-4 px-5">
                         <FootnoteText className="text-text-tertiary">Contacts</FootnoteText>
 
                         <ul className="flex flex-col gap-y-2">
-                          {contacts.map((contact) => (
-                            <li key={contact.accountId} className="flex items-center gap-x-2 py-1.5">
+                          {signatoryContacts.map((sigmatory) => (
+                            <li key={sigmatory.accountId} className="flex items-center gap-x-2 py-1.5">
                               <ContactItem
-                                name={contact.name}
-                                accountId={contact.accountId}
+                                name={sigmatory.name}
+                                accountId={sigmatory.accountId}
                                 explorers={RootExplorers}
                               />
                             </li>

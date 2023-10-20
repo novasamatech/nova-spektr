@@ -2,8 +2,8 @@ import { combine } from 'effector';
 
 import { walletModel, accountUtils } from '@renderer/entities/wallet';
 import { walletSelectModel } from '@renderer/features/wallets';
-import { Account, Signatory, Wallet } from '@renderer/shared/core';
 import { dictionary, nonNullable } from '@renderer/shared/lib/utils';
+import type { Account, Signatory, Wallet, MultisigAccount, BaseAccount } from '@renderer/shared/core';
 
 const $accounts = combine(
   {
@@ -17,7 +17,32 @@ const $accounts = combine(
   },
 );
 
-const $contacts = combine(
+const $singleShardAccount = combine(
+  {
+    accounts: walletModel.$accounts,
+  },
+  ({ accounts }): BaseAccount | undefined => {
+    const account = accounts[0];
+
+    return account && accountUtils.isBaseAccount(account) ? account : undefined;
+  },
+);
+
+const $multisigAccount = combine(
+  {
+    details: walletSelectModel.$walletForDetails,
+    accounts: walletModel.$accounts,
+  },
+  ({ details, accounts }): MultisigAccount | undefined => {
+    if (!details) return undefined;
+
+    const match = accounts.find((account) => account.walletId === details.id);
+
+    return match && accountUtils.isMultisigAccount(match) ? match : undefined;
+  },
+);
+
+const $signatoryContacts = combine(
   {
     account: $accounts.map((accounts) => accounts[0]),
     accounts: walletModel.$accounts,
@@ -50,6 +75,8 @@ const $signatoryWallets = combine(
 
 export const walletProviderModel = {
   $accounts,
-  $contacts,
+  $singleShardAccount,
+  $multisigAccount,
+  $signatoryContacts,
   $signatoryWallets,
 };

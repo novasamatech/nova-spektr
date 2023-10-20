@@ -15,16 +15,28 @@ const getDropdownOptions = (t: TFunction): ButtonDropdownOption[] => {
       onClick: () => walletPairingModel.events.walletTypeSet(WalletType.POLKADOT_VAULT),
     },
     {
-      id: 'watch-only',
-      title: t('wallets.addWatchOnly'),
-      iconName: 'watchOnly',
-      onClick: () => walletPairingModel.events.walletTypeSet(WalletType.WATCH_ONLY),
-    },
-    {
       id: 'multi',
       title: t('wallets.addMultisig'),
       iconName: 'multisig',
       onClick: () => walletPairingModel.events.walletTypeSet(WalletType.MULTISIG),
+    },
+    {
+      id: 'walletConnect',
+      title: t('wallets.addWalletConnect'),
+      iconName: 'walletConnect',
+      onClick: () => walletPairingModel.events.walletTypeSet(WalletType.WALLET_CONNECT),
+    },
+    {
+      id: 'novaWallet',
+      title: t('wallets.addNovaWallet'),
+      iconName: 'novaWallet',
+      onClick: () => walletPairingModel.events.walletTypeSet(WalletType.NOVA_WALLET),
+    },
+    {
+      id: 'watch-only',
+      title: t('wallets.addWatchOnly'),
+      iconName: 'watchOnly',
+      onClick: () => walletPairingModel.events.walletTypeSet(WalletType.WATCH_ONLY),
     },
   ];
 };

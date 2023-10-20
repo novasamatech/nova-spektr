@@ -1,17 +1,17 @@
 import { useMemo } from 'react';
 
-import { Wallet, Account } from '@renderer/shared/core';
 import { BaseModal, BodyText } from '@renderer/shared/ui';
 import { DEFAULT_TRANSITION } from '@renderer/shared/lib/utils';
 import { useToggle } from '@renderer/shared/lib/hooks';
 import { AccountsList, WalletIcon } from '@renderer/entities/wallet';
 import { chainsService } from '@renderer/entities/network';
 import { useI18n } from '@renderer/app/providers';
+import type { Wallet, BaseAccount } from '@renderer/shared/core';
 
 type Props = {
   isOpen: boolean;
   wallet: Wallet;
-  account: Account;
+  account: BaseAccount;
   onClose: () => void;
 };
 export const SimpleWalletDetails = ({ isOpen, wallet, account, onClose }: Props) => {
@@ -40,7 +40,7 @@ export const SimpleWalletDetails = ({ isOpen, wallet, account, onClose }: Props)
       isOpen={isModalOpen}
       onClose={closeWowModal}
     >
-      <div className="flex flex-col w-full">
+      <div className="flex flex-col w-full gap-y-4">
         <div className="flex items-center gap-x-2 py-5 px-5 border-b border-divider">
           <WalletIcon type={wallet.type} size={32} />
           <BodyText>{wallet.name}</BodyText>

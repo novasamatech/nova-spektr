@@ -1,41 +1,46 @@
 import { useUnit } from 'effector-react';
 
-import { WalletType, Wallet, Account } from '@renderer/shared/core';
 import { walletSelectModel } from '@renderer/features/wallets';
-import { walletProviderModel } from '../model/wallet-provider-model';
 import { SimpleWalletDetails } from './SimpleWalletDetails';
 import { MultisigWalletDetails } from './MultisigWalletDetails';
+import { walletProviderModel } from '@renderer/widgets/WalletDetails/model/wallet-provider-model';
+import { walletUtils } from '@renderer/entities/wallet';
+import type { Wallet } from '@renderer/shared/core';
 
 type ModalProps = {
   wallet: Wallet;
-  accounts: Account[];
   onClose: () => void;
 };
-const WalletModals: Record<WalletType, (props: ModalProps) => JSX.Element> = {
-  [WalletType.POLKADOT_VAULT]: (props) => <></>,
-  [WalletType.MULTISHARD_PARITY_SIGNER]: (props) => <></>,
-  [WalletType.SINGLE_PARITY_SIGNER]: ({ accounts, ...rest }: ModalProps) => (
-    <SimpleWalletDetails isOpen account={accounts[0]} {...rest} />
-  ),
-  [WalletType.WATCH_ONLY]: ({ accounts, ...rest }: ModalProps) => (
-    <SimpleWalletDetails isOpen account={accounts[0]} {...rest} />
-  ),
-  [WalletType.MULTISIG]: ({ accounts, ...rest }: ModalProps) => (
-    <MultisigWalletDetails isOpen account={accounts[0]} {...rest} />
-  ),
-};
-
 export const WalletDetailsProvider = () => {
   const wallet = useUnit(walletSelectModel.$walletForDetails);
-  const accounts = useUnit(walletProviderModel.$accounts);
+  // const accounts = useUnit(walletProviderModel.$accounts);
+  const singleShardAccount = useUnit(walletProviderModel.$singleShardAccount);
+  const multisigAccount = useUnit(walletProviderModel.$multisigAccount);
+  const contacts = useUnit(walletProviderModel.$signatoryContacts);
+  const signatoryWallets = useUnit(walletProviderModel.$signatoryWallets);
 
   if (!wallet) return null;
 
-  const props: ModalProps = {
+  const commonProps: ModalProps = {
     wallet,
-    accounts,
     onClose: walletSelectModel.events.walletForDetailsCleared,
   };
 
-  return WalletModals[wallet.type](props);
+  if ((walletUtils.isWatchOnly(wallet) || walletUtils.isSingleShard(wallet)) && singleShardAccount) {
+    return <SimpleWalletDetails isOpen account={singleShardAccount} {...commonProps} />;
+  }
+
+  if (walletUtils.isMultisig(wallet) && multisigAccount) {
+    return (
+      <MultisigWalletDetails
+        isOpen
+        account={multisigAccount}
+        signatoryWallets={signatoryWallets}
+        signatoryContacts={contacts}
+        {...commonProps}
+      />
+    );
+  }
+
+  return <></>;
 };
