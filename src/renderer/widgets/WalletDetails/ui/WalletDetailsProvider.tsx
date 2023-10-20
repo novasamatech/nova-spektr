@@ -14,10 +14,11 @@ type ModalProps = {
 };
 export const WalletDetailsProvider = () => {
   const wallet = useUnit(walletSelectModel.$walletForDetails);
-  // const accounts = useUnit(walletProviderModel.$accounts);
+  const accounts = useUnit(walletProviderModel.$accounts);
   const singleShardAccount = useUnit(walletProviderModel.$singleShardAccount);
   const multisigAccount = useUnit(walletProviderModel.$multisigAccount);
   const contacts = useUnit(walletProviderModel.$signatoryContacts);
+  const isConnected = useUnit(walletProviderModel.$isConnected);
   const signatoryWallets = useUnit(walletProviderModel.$signatoryWallets);
 
   if (!wallet) return null;
@@ -43,13 +44,8 @@ export const WalletDetailsProvider = () => {
     );
   }
 
-  if ((walletUtils.isWalletConnect(wallet) || walletUtils.isNovaWallet(wallet)) && ) {
-    return (
-      <WalletConnectDetails
-        isOpen
-        {...commonProps}
-      />
-    );
+  if (walletUtils.isWalletConnect(wallet) || walletUtils.isNovaWallet(wallet)) {
+    return <WalletConnectDetails isOpen accounts={accounts} isConnected={isConnected} {...commonProps} />;
   }
 
   return <></>;

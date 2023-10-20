@@ -38,7 +38,7 @@ export const MultisigWalletDetails = ({
     return chainsService.sortChains(chains);
   }, []);
 
-  const closeWowModal = () => {
+  const closeDetailsModal = () => {
     toggleIsModalOpen();
 
     setTimeout(onClose, DEFAULT_TRANSITION);
@@ -51,7 +51,7 @@ export const MultisigWalletDetails = ({
       panelClass="h-modal"
       title={t('walletDetails.common.title')}
       isOpen={isModalOpen}
-      onClose={closeWowModal}
+      onClose={closeDetailsModal}
     >
       <div className="flex flex-col w-full">
         <div className="flex items-center gap-x-2 py-5 px-5 border-b border-divider">

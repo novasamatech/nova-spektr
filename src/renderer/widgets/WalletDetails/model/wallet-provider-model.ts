@@ -1,6 +1,6 @@
 import { combine } from 'effector';
 
-import { accountUtils, walletModel, accountUtils } from '@renderer/entities/wallet';
+import { accountUtils, walletModel } from '@renderer/entities/wallet';
 import { walletSelectModel } from '@renderer/features/wallets';
 import { dictionary, nonNullable } from '@renderer/shared/lib/utils';
 import type { Account, Signatory, Wallet, MultisigAccount, BaseAccount } from '@renderer/shared/core';
@@ -74,16 +74,21 @@ const $signatoryWallets = combine(
   },
 );
 
-const $connected = combine($accounts, walletConnectModel.$client, (accounts, client): boolean => {
-  const account = accounts[0];
-  if (!client || !account || !accountUtils.isWalletConnectAccount(account)) return false;
+const $isConnected = combine(
+  {
+    accounts: $accounts,
+    client: walletConnectModel.$client,
+  },
+  ({ accounts, client }): boolean => {
+    const account = accounts[0];
+    if (!client || !account || !accountUtils.isWalletConnectAccount(account)) return false;
 
-  const sessions = client?.session.getAll() || [];
+    const sessions = client.session.getAll() || [];
+    const storedSession = sessions.find((s) => s.topic === account.signingExtras?.sessionTopic);
 
-  const storedSession = sessions.find((s) => s.topic === accounts[0].signingExtras?.sessionTopic);
-
-  return Boolean(storedSession);
-});
+    return Boolean(storedSession);
+  },
+);
 
 export const walletProviderModel = {
   $accounts,
@@ -91,5 +96,5 @@ export const walletProviderModel = {
   $multisigAccount,
   $signatoryContacts,
   $signatoryWallets,
-  $connected,
+  $isConnected,
 };

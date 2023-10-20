@@ -1,15 +1,13 @@
 import { useMemo } from 'react';
-import { useUnit } from 'effector-react';
 import keyBy from 'lodash/keyBy';
 
-import { Wallet, Chain, Account } from '@renderer/shared/core';
 import { BaseModal, BodyText, StatusLabel } from '@renderer/shared/ui';
 import { DEFAULT_TRANSITION } from '@renderer/shared/lib/utils';
 import { useToggle } from '@renderer/shared/lib/hooks';
 import { MultiAccountsList, WalletIcon } from '@renderer/entities/wallet';
 import { useI18n } from '@renderer/app/providers';
 import { chainsService } from '@renderer/entities/network';
-import { walletProviderModel } from '../model/wallet-provider-model';
+import type { Wallet, Chain, Account } from '@renderer/shared/core';
 
 type AccountItem = {
   accountId: `0x${string}`;
@@ -20,16 +18,15 @@ type Props = {
   isOpen: boolean;
   wallet: Wallet;
   accounts: Account[];
+  isConnected: boolean;
   onClose: () => void;
 };
-export const WalletConnectDetails = ({ isOpen, wallet, accounts, onClose }: Props) => {
+export const WalletConnectDetails = ({ isOpen, wallet, accounts, isConnected, onClose }: Props) => {
   const { t } = useI18n();
 
   const [isModalOpen, toggleIsModalOpen] = useToggle(isOpen);
 
-  const connected = useUnit(walletProviderModel.$connected);
-
-  const closeWowModal = () => {
+  const closeDetailsModal = () => {
     toggleIsModalOpen();
 
     setTimeout(onClose, DEFAULT_TRANSITION);
@@ -42,7 +39,7 @@ export const WalletConnectDetails = ({ isOpen, wallet, accounts, onClose }: Prop
 
     const accountsMap = keyBy(accounts, 'chainId');
 
-    const accountsList = sortedChains.reduce<AccountItem[]>((acc, chain) => {
+    return sortedChains.reduce<AccountItem[]>((acc, chain) => {
       const accountId = accountsMap[chain.chainId]?.accountId;
 
       if (accountId) {
@@ -51,17 +48,16 @@ export const WalletConnectDetails = ({ isOpen, wallet, accounts, onClose }: Prop
 
       return acc;
     }, []);
-
-    return accountsList;
   }, []);
 
   return (
     <BaseModal
       closeButton
       contentClass=""
+      panelClass="h-modal"
       title={t('walletDetails.common.title')}
       isOpen={isModalOpen}
-      onClose={closeWowModal}
+      onClose={closeDetailsModal}
     >
       <div className="flex flex-col w-full">
         <div className="flex items-center justify-between gap-x-2 p-5 border-b border-divider">
@@ -70,9 +66,9 @@ export const WalletConnectDetails = ({ isOpen, wallet, accounts, onClose }: Prop
             <BodyText>{wallet.name}</BodyText>
           </div>
           <StatusLabel
-            variant={connected ? 'success' : 'waiting'}
+            variant={isConnected ? 'success' : 'waiting'}
             title={t(
-              connected
+              isConnected
                 ? 'walletDetails.walletConnect.connectedStatus'
                 : 'walletDetails.walletConnect.disconnectedStatus',
             )}

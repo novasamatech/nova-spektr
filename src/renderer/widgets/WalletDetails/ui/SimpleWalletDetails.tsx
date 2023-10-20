@@ -25,7 +25,7 @@ export const SimpleWalletDetails = ({ isOpen, wallet, account, onClose }: Props)
     return chainsService.sortChains(chains);
   }, []);
 
-  const closeWowModal = () => {
+  const closeDetailsModal = () => {
     toggleIsModalOpen();
 
     setTimeout(onClose, DEFAULT_TRANSITION);
@@ -38,7 +38,7 @@ export const SimpleWalletDetails = ({ isOpen, wallet, account, onClose }: Props)
       panelClass="h-modal"
       title={t('walletDetails.common.title')}
       isOpen={isModalOpen}
-      onClose={closeWowModal}
+      onClose={closeDetailsModal}
     >
       <div className="flex flex-col w-full gap-y-4">
         <div className="flex items-center gap-x-2 py-5 px-5 border-b border-divider">
