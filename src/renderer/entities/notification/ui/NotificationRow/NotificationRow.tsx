@@ -2,7 +2,7 @@ import { format } from 'date-fns';
 import { TFunction, Trans } from 'react-i18next';
 import { useUnit } from 'effector-react';
 
-import { BodyText, FootnoteText } from '@renderer/shared/ui';
+import { BodyText, FootnoteText, Identicon } from '@renderer/shared/ui';
 import {
   MultisigAccountInvitedNotification,
   MultisigNotification,
@@ -12,13 +12,24 @@ import {
 import { useI18n } from '@renderer/app/providers';
 import { WalletIcon, walletModel } from '@renderer/entities/wallet';
 import { Wallet } from '@renderer/shared/core';
+import { toAddress } from '@renderer/shared/lib/utils';
 
 const NotificationBody = {
-  [MultisigNotificationType.ACCOUNT_INVITED]: (n: Notification, t: TFunction, w?: Wallet) => {
-    if (!w) {
-      return <></>;
-    }
+  [MultisigNotificationType.ACCOUNT_INVITED]: (n: Notification, t: TFunction, wallet?: Wallet) => {
     const typedNotification = n as Notification & MultisigNotification & MultisigAccountInvitedNotification;
+
+    const identicon = wallet ? (
+      <WalletIcon type={wallet.type} size={20} className="inline mx-2" />
+    ) : (
+      <Identicon
+        className="inline-block mx-2"
+        buttonClassName="inline align-bottom"
+        address={toAddress(typedNotification.multisigAccountId)}
+        size={20}
+        background={false}
+        canCopy={true}
+      />
+    );
 
     return (
       <BodyText className="inline-flex">
@@ -28,10 +39,10 @@ const NotificationBody = {
           values={{
             threshold: typedNotification.threshold,
             signatories: typedNotification.signatories.length,
-            name: w.name,
+            name: wallet?.name || typedNotification.multisigAccountName,
           }}
           components={{
-            identicon: <WalletIcon type={w.type} size={20} className="inline mx-2" />,
+            identicon: identicon,
           }}
         />
       </BodyText>
