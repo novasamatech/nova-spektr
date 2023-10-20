@@ -1,18 +1,20 @@
-import { combine, createEvent, createStore, sample } from 'effector';
+import { combine, createEvent, createStore, forward, sample } from 'effector';
 
 import { accountUtils, walletModel } from '@renderer/entities/wallet';
 import { walletSelectModel } from '@renderer/features/wallets';
 import { Account, Wallet } from '@renderer/shared/core';
 import { walletConnectModel } from '@renderer/entities/walletConnect';
-import { ReconnectStep } from '../common/const';
+import { ReconnectStep, ForgetStep } from '../common/const';
 
 const reset = createEvent();
 const reconnectStarted = createEvent();
 const reconnectAborted = createEvent();
 const sessionTopicUpdated = createEvent();
 const forgetButtonClicked = createEvent();
+const forgetModalClosed = createEvent();
 
 const $reconnectStep = createStore<ReconnectStep>(ReconnectStep.NOT_STARTED).reset(reset);
+const $forgetStep = createStore<ForgetStep>(ForgetStep.NOT_STARTED).reset(reset);
 
 const $accounts = combine(
   {
@@ -39,6 +41,12 @@ const $connected = combine($accounts, walletConnectModel.$client, (accounts, cli
 
 sample({
   clock: forgetButtonClicked,
+  fn: () => ForgetStep.FORGETTING,
+  target: $forgetStep,
+});
+
+sample({
+  clock: forgetButtonClicked,
   source: {
     wallet: walletSelectModel.$walletForDetails,
     accounts: walletModel.$accounts,
@@ -56,7 +64,18 @@ sample({
   clock: forgetButtonClicked,
   source: walletSelectModel.$walletForDetails,
   filter: (wallet): wallet is Wallet => wallet !== null,
-  target: [walletSelectModel.events.walletForDetailsCleared, walletModel.events.walletRemoved],
+  target: walletModel.events.walletRemoved,
+});
+
+sample({
+  clock: walletModel.events.walletRemovedSuccess,
+  fn: () => ForgetStep.SUCCESS,
+  target: $forgetStep,
+});
+
+forward({
+  from: forgetModalClosed,
+  to: walletSelectModel.events.walletForDetailsCleared,
 });
 
 sample({
@@ -100,11 +119,13 @@ export const walletProviderModel = {
   $accounts,
   $connected,
   $reconnectStep,
+  $forgetStep,
   events: {
     reset,
     reconnectStarted,
     reconnectAborted,
     sessionTopicUpdated,
     forgetButtonClicked,
+    forgetModalClosed,
   },
 };

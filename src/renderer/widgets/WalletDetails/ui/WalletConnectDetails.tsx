@@ -8,6 +8,7 @@ import {
   BaseModal,
   BodyText,
   Button,
+  ConfirmModal,
   FootnoteText,
   HeaderTitleText,
   Icon,
@@ -24,7 +25,7 @@ import { useI18n } from '@renderer/app/providers';
 import { chainsService } from '@renderer/entities/network';
 import { walletProviderModel } from '../model/wallet-provider-model';
 import { getWalletConnectChains, walletConnectModel } from '@renderer/entities/walletConnect';
-import { ReconnectStep } from '../common/const';
+import { ForgetStep, ReconnectStep } from '../common/const';
 import wallet_connect_reconnect from '@video/wallet_connect_reconnect.mp4';
 import wallet_connect_reconnect_webm from '@video/wallet_connect_reconnect.webm';
 
@@ -43,6 +44,7 @@ export const WalletConnectDetails = ({ isOpen, wallet, accounts, onClose }: Prop
   const { t } = useI18n();
 
   const [isModalOpen, toggleIsModalOpen] = useToggle(isOpen);
+  const [isConfirmForgetOpen, toggleConfirmForget] = useToggle(false);
 
   const connected = useUnit(walletProviderModel.$connected);
   const reset = useUnit(walletProviderModel.events.reset);
@@ -50,7 +52,9 @@ export const WalletConnectDetails = ({ isOpen, wallet, accounts, onClose }: Prop
   const reconnectStarted = useUnit(walletProviderModel.events.reconnectStarted);
   const reconnectAborted = useUnit(walletProviderModel.events.reconnectAborted);
   const forgetWallet = useUnit(walletProviderModel.events.forgetButtonClicked);
+  const closeForgetModal = useUnit(walletProviderModel.events.forgetModalClosed);
   const reconnectStep = useUnit(walletProviderModel.$reconnectStep);
+  const forgetStep = useUnit(walletProviderModel.$forgetStep);
 
   useEffect(() => {
     if (isModalOpen) {
@@ -117,7 +121,7 @@ export const WalletConnectDetails = ({ isOpen, wallet, accounts, onClose }: Prop
                   size="md"
                   className="text-text-secondary hover:text-text-secondary px-2"
                   prefixElement={<Icon name="delete" size={20} className="text-icon-accent" />}
-                  onClick={forgetWallet}
+                  onClick={toggleConfirmForget}
                 >
                   {t('walletDetails.common.forgetButton')}
                 </Button>
@@ -180,6 +184,39 @@ export const WalletConnectDetails = ({ isOpen, wallet, accounts, onClose }: Prop
             )}
           </>
         </div>
+
+        <ConfirmModal
+          panelClass="w-[300px]"
+          isOpen={isConfirmForgetOpen}
+          confirmText={t('walletDetails.common.removeButton')}
+          cancelText={t('walletDetails.common.cancelButton')}
+          confirmPallet="error"
+          onConfirm={() => {
+            forgetWallet();
+            toggleConfirmForget();
+          }}
+          onClose={toggleConfirmForget}
+        >
+          <SmallTitleText className="mb-2" align="center">
+            {t('walletDetails.common.removeTitle')}
+          </SmallTitleText>
+          <FootnoteText className="text-text-tertiary" align="center">
+            {t('walletDetails.common.removeMessage', { walletName: wallet.name })}
+          </FootnoteText>
+        </ConfirmModal>
+
+        <StatusModal
+          isOpen={[ForgetStep.FORGETTING, ForgetStep.SUCCESS].includes(forgetStep)}
+          title={t(
+            forgetStep === ForgetStep.FORGETTING
+              ? 'walletDetails.common.removingWallet'
+              : 'walletDetails.common.walletRemoved',
+          )}
+          content={
+            forgetStep === ForgetStep.FORGETTING ? <Animation variant="loading" /> : <Animation variant="success" />
+          }
+          onClose={closeForgetModal}
+        />
 
         <StatusModal
           isOpen={reconnectStep === ReconnectStep.REJECTED}

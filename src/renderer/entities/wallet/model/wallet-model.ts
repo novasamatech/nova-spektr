@@ -267,5 +267,6 @@ export const walletModel = {
     walletSelected,
     multisigAccountUpdated,
     walletRemoved,
+    walletRemovedSuccess: removeWalletFx.done,
   },
 };

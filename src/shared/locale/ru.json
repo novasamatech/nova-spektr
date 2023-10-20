@@ -874,9 +874,15 @@
   },
   "walletDetails": {
     "common": {
+      "cancelButton": "Cancel",
       "forgetButton": "Забыть",
+      "removeButton": "Remove",
+      "removeMessage": "Are you sure you want to remove { walletName }?",
+      "removeTitle": "Remove wallet",
+      "removingWallet": "Removing wallet",
       "renameButton": "Переименовать",
-      "title": "Детали кошелька"
+      "title": "Детали кошелька",
+      "walletRemoved": "Wallet removed"
     },
     "walletConnect": {
       "abortRejectButton": "Close",
