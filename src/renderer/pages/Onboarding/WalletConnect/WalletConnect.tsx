@@ -95,6 +95,11 @@ export const WalletConnect = ({ isOpen, onClose, onComplete }: Props) => {
     }
   }, [pairings.length]);
 
+  const handleClose = () => {
+    disconnect();
+    onClose();
+  };
+
   return (
     <>
       <BaseModal
@@ -102,7 +107,7 @@ export const WalletConnect = ({ isOpen, onClose, onComplete }: Props) => {
         isOpen={isOpen}
         contentClass="flex h-full"
         panelClass="w-[944px] h-[576px]"
-        onClose={onClose}
+        onClose={handleClose}
       >
         {step === Step.SCAN && qrCode && (
           <>

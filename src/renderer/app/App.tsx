@@ -60,8 +60,8 @@ export const App = () => {
                   <GraphqlProvider>
                     {getContent()}
                     <CreateWalletProvider />
-                  <WalletDetailsProvider />
-                </GraphqlProvider>
+                    <WalletDetailsProvider />
+                  </GraphqlProvider>
                 </StatusModalProvider>
               </ConfirmDialogProvider>
             </MatrixProvider>

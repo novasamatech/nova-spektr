@@ -57,6 +57,7 @@ export const SelectSignatories = ({ isActive, wallets, accounts, contacts, onSel
 
         const accountId = walletAccounts[0].accountId;
         const isSameAccounts = walletAccounts.every((a) => a.accountId === accountId);
+
         if (isSameAccounts && !walletUtils.isMultisig(wallet)) {
           acc.available.push({
             ...wallet,
@@ -71,10 +72,7 @@ export const SelectSignatories = ({ isActive, wallets, accounts, contacts, onSel
 
         return acc;
       },
-      {
-        available: [],
-        disabled: [],
-      },
+      { available: [], disabled: [] },
     );
 
     setAvailableWallets(available);

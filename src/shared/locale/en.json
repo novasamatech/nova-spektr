@@ -877,6 +877,10 @@
       "forgetButton": "Forget",
       "renameButton": "Rename",
       "title": "Wallet details"
+    },
+    "walletConnect": {
+      "connectedStatus": "Connected",
+      "disconnectedStatus": "Not connected"
     }
   },
   "wallets": {

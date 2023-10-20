@@ -3,6 +3,7 @@ import { useUnit } from 'effector-react';
 import { walletSelectModel } from '@renderer/features/wallets';
 import { SimpleWalletDetails } from './SimpleWalletDetails';
 import { MultisigWalletDetails } from './MultisigWalletDetails';
+import { WalletConnectDetails } from './WalletConnectDetails';
 import { walletProviderModel } from '@renderer/widgets/WalletDetails/model/wallet-provider-model';
 import { walletUtils } from '@renderer/entities/wallet';
 import type { Wallet } from '@renderer/shared/core';
@@ -37,6 +38,15 @@ export const WalletDetailsProvider = () => {
         account={multisigAccount}
         signatoryWallets={signatoryWallets}
         signatoryContacts={contacts}
+        {...commonProps}
+      />
+    );
+  }
+
+  if ((walletUtils.isWalletConnect(wallet) || walletUtils.isNovaWallet(wallet)) && ) {
+    return (
+      <WalletConnectDetails
+        isOpen
         {...commonProps}
       />
     );

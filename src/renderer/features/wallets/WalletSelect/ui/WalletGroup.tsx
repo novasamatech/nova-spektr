@@ -12,6 +12,8 @@ export const GroupLabels: Record<WalletFamily, string> = {
   [WalletType.WALLET_CONNECT]: 'wallets.walletConnectLabel',
   [WalletType.NOVA_WALLET]: 'wallets.novaWalletLabel',
   [WalletType.WATCH_ONLY]: 'wallets.watchOnlyLabel',
+  [WalletType.NOVA_WALLET]: 'wallets.novaWalletLabel',
+  [WalletType.WALLET_CONNECT]: 'wallets.walletConnectLabel',
 };
 
 type Props = {

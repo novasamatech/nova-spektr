@@ -51,6 +51,14 @@ const $uri = createStore<string>('').reset(reset);
 const $accounts = createStore<string[]>([]).reset(reset);
 const $pairings = createStore<PairingTypes.Struct[]>([]).reset(reset);
 
+const extendSessionsFx = createEffect((client: Client) => {
+  const sessions = client.session.getAll();
+
+  sessions.forEach((s) => {
+    client.extend({ topic: s.topic }).catch((e) => console.warn(e));
+  });
+});
+
 const subscribeToEventsFx = createEffect((client: Client) => {
   const bindedSessionUpdated = scopeBind(sessionUpdated);
   const bindedReset = scopeBind(reset);
@@ -141,7 +149,7 @@ forward({
 sample({
   clock: createClientFx.doneData,
   filter: (client): client is Client => client !== null,
-  target: [subscribeToEventsFx, checkPersistedStateFx, logClientIdFx],
+  target: [extendSessionsFx, subscribeToEventsFx, checkPersistedStateFx, logClientIdFx],
 });
 
 const initConnectFx = createEffect(
