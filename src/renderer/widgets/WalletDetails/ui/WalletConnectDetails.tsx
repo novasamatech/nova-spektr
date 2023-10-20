@@ -75,9 +75,7 @@ export const WalletConnectDetails = ({ isOpen, wallet, accounts, isConnected, on
           />
         </div>
 
-        <div className="px-3">
-          <MultiAccountsList accounts={accountsList} className="h-[450px]" />
-        </div>
+        <MultiAccountsList accounts={accountsList} className="h-[408px]" />
       </div>
     </BaseModal>
   );
