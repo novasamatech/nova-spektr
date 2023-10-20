@@ -51,7 +51,7 @@ const $uri = createStore<string>('').reset(reset);
 const $accounts = createStore<string[]>([]).reset(reset);
 const $pairings = createStore<PairingTypes.Struct[]>([]).reset(reset);
 
-const extendSessions = createEffect((client: Client) => {
+const extendSessionsFx = createEffect((client: Client) => {
   const sessions = client.session.getAll();
 
   sessions.forEach((s) => {
@@ -149,7 +149,7 @@ forward({
 sample({
   clock: createClientFx.doneData,
   filter: (client): client is Client => client !== null,
-  target: [extendSessions, subscribeToEventsFx, checkPersistedStateFx, logClientIdFx],
+  target: [extendSessionsFx, subscribeToEventsFx, checkPersistedStateFx, logClientIdFx],
 });
 
 const initConnectFx = createEffect(

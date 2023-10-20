@@ -20,7 +20,7 @@ import {
   FootnoteText,
   Icon,
 } from '@renderer/shared/ui';
-import type { Explorer, Chain, Account, ChainId, HexString, ChainAccount, BaseAccount } from '@renderer/shared/core';
+import type { Explorer, Chain, ChainId, HexString, ChainAccount, BaseAccount } from '@renderer/shared/core';
 import { CryptoType, ChainType, AccountType, WalletType, SigningType, ErrorType, KeyType } from '@renderer/shared/core';
 
 const RootExplorers: Explorer[] = [
@@ -144,7 +144,11 @@ export const ManageMultishard = ({ seedInfo, onBack, onComplete }: Props) => {
     });
   };
 
-  const createDerivedAccounts = (derivedKeys: AddressInfo[], chainId: ChainId, accountIndex: number): Account[] => {
+  const createDerivedAccounts = (
+    derivedKeys: AddressInfo[],
+    chainId: ChainId,
+    accountIndex: number,
+  ): ChainAccount[] => {
     return derivedKeys.reduce<ChainAccount[]>((acc, derivedKey, index) => {
       const accountId = getAccountId(accountIndex, chainId, index);
 
@@ -166,7 +170,7 @@ export const ManageMultishard = ({ seedInfo, onBack, onComplete }: Props) => {
   };
 
   const createWallet: SubmitHandler<WalletForm> = async ({ walletName }) => {
-    const accountsToSave = accounts.reduce<Account[]>((acc, account, index) => {
+    const accountsToSave = accounts.reduce<BaseAccount[]>((acc, account, index) => {
       acc.push({
         name: accountNames[getAccountId(index)],
         accountId: toAccountId(account.address),
