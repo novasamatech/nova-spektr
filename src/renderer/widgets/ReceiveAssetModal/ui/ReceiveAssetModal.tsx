@@ -60,7 +60,7 @@ export const ReceiveAssetModal = ({ chain, asset, onClose }: Props) => {
     setTimeout(onClose, DEFAULT_TRANSITION);
   };
 
-  const hasShards = activeAccounts.length > 1;
+  const hasShards = walletUtils.isMultiShard(activeWallet) && activeAccounts.length > 1;
   const account = activeAccount ? activeAccounts[activeAccount.value] : undefined;
   const accountId = account?.accountId || '0x00';
   const prefix = chain.addressPrefix;
