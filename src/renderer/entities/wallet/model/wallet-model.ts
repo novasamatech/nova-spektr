@@ -39,6 +39,7 @@ const walletConnectCreated = createEvent<CreateParams<WalletConnectAccount>>();
 
 const walletSelected = createEvent<WalletId>();
 const multisigAccountUpdated = createEvent<MultisigUpdateParams>();
+const walletRemoved = createEvent<Wallet>();
 
 const fetchAllAccountsFx = createEffect((): Promise<Account[]> => {
   return storageService.accounts.readAll();
@@ -126,6 +127,20 @@ const multisigWalletUpdatedFx = createEffect(
   },
 );
 
+type RemoveProps = {
+  wallet: Wallet;
+  accounts: Account[];
+};
+
+const removeWalletFx = createEffect(async ({ wallet, accounts }: RemoveProps): Promise<Wallet> => {
+  await Promise.all([
+    storageService.accounts.deleteAll(accounts.map((a) => a.id)),
+    storageService.wallets.delete(wallet.id),
+  ]);
+
+  return wallet;
+});
+
 forward({ from: kernelModel.events.appStarted, to: [fetchAllWalletsFx, fetchAllAccountsFx] });
 forward({ from: fetchAllWalletsFx.doneData, to: $wallets });
 forward({ from: fetchAllAccountsFx.doneData, to: $accounts });
@@ -203,6 +218,40 @@ sample({
   target: $accounts,
 });
 
+sample({
+  clock: walletRemoved,
+  source: $accounts,
+  fn: (accounts, wallet) => ({ accounts: accounts.filter((a) => a.walletId === wallet.id), wallet }),
+  target: removeWalletFx,
+});
+
+sample({
+  clock: removeWalletFx.doneData,
+  source: $wallets,
+  fn: (wallets, wallet) => wallets.filter((w) => w.id !== wallet.id),
+  target: $wallets,
+});
+
+sample({
+  clock: removeWalletFx.doneData,
+  source: $accounts,
+  fn: (accounts, wallet) => accounts.filter((a) => a.walletId !== wallet.id),
+  target: $accounts,
+});
+
+sample({
+  clock: removeWalletFx.doneData,
+  source: {
+    activeWallet: $activeWallet,
+    wallets: $wallets,
+  },
+  filter: ({ activeWallet }, wallet) => activeWallet?.id === wallet.id,
+  fn: ({ wallets }) => ({
+    nextId: wallets[0].id,
+  }),
+  target: walletSelectedFx,
+});
+
 export const walletModel = {
   $wallets,
   $activeWallet,
@@ -217,5 +266,6 @@ export const walletModel = {
     walletConnectCreated,
     walletSelected,
     multisigAccountUpdated,
+    walletRemoved,
   },
 };

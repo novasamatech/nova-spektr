@@ -2,7 +2,7 @@ import { combine, createEvent, createStore, sample } from 'effector';
 
 import { accountUtils, walletModel } from '@renderer/entities/wallet';
 import { walletSelectModel } from '@renderer/features/wallets';
-import { Account } from '@renderer/shared/core';
+import { Account, Wallet } from '@renderer/shared/core';
 import { walletConnectModel } from '@renderer/entities/walletConnect';
 import { ReconnectStep } from '../common/const';
 
@@ -10,6 +10,7 @@ const reset = createEvent();
 const reconnectStarted = createEvent();
 const reconnectAborted = createEvent();
 const sessionTopicUpdated = createEvent();
+const forgetButtonClicked = createEvent();
 
 const $reconnectStep = createStore<ReconnectStep>(ReconnectStep.NOT_STARTED).reset(reset);
 
@@ -34,6 +35,28 @@ const $connected = combine($accounts, walletConnectModel.$client, (accounts, cli
   const storedSession = sessions.find((s) => s.topic === accounts[0].signingExtras?.sessionTopic);
 
   return Boolean(storedSession);
+});
+
+sample({
+  clock: forgetButtonClicked,
+  source: {
+    wallet: walletSelectModel.$walletForDetails,
+    accounts: walletModel.$accounts,
+  },
+  filter: ({ wallet }) => wallet !== null,
+  fn: ({ wallet, accounts }) => {
+    const account = accounts.find((a) => a.walletId === wallet!.id);
+
+    return account?.signingExtras?.sessionTopic;
+  },
+  target: walletConnectModel.events.disconnectStarted,
+});
+
+sample({
+  clock: forgetButtonClicked,
+  source: walletSelectModel.$walletForDetails,
+  filter: (wallet): wallet is Wallet => wallet !== null,
+  target: [walletSelectModel.events.walletForDetailsCleared, walletModel.events.walletRemoved],
 });
 
 sample({
@@ -82,5 +105,6 @@ export const walletProviderModel = {
     reconnectStarted,
     reconnectAborted,
     sessionTopicUpdated,
+    forgetButtonClicked,
   },
 };

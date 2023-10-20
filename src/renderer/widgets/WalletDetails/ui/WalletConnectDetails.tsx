@@ -49,6 +49,7 @@ export const WalletConnectDetails = ({ isOpen, wallet, accounts, onClose }: Prop
   const connect = useUnit(walletConnectModel.events.connect);
   const reconnectStarted = useUnit(walletProviderModel.events.reconnectStarted);
   const reconnectAborted = useUnit(walletProviderModel.events.reconnectAborted);
+  const forgetWallet = useUnit(walletProviderModel.events.forgetButtonClicked);
   const reconnectStep = useUnit(walletProviderModel.$reconnectStep);
 
   useEffect(() => {
@@ -110,15 +111,27 @@ export const WalletConnectDetails = ({ isOpen, wallet, accounts, onClose }: Prop
             buttonClassName="rounded-full"
             offsetPx={0}
             content={
-              <Button
-                variant="text"
-                size="md"
-                className="text-text-secondary hover:text-text-secondary px-2"
-                prefixElement={<Icon name="refresh" size={20} className="text-icon-accent" />}
-                onClick={reconnect}
-              >
-                {t('walletDetails.walletConnect.refreshButton')}
-              </Button>
+              <>
+                <Button
+                  variant="text"
+                  size="md"
+                  className="text-text-secondary hover:text-text-secondary px-2"
+                  prefixElement={<Icon name="delete" size={20} className="text-icon-accent" />}
+                  onClick={forgetWallet}
+                >
+                  {t('walletDetails.common.forgetButton')}
+                </Button>
+
+                <Button
+                  variant="text"
+                  size="md"
+                  className="text-text-secondary hover:text-text-secondary px-2"
+                  prefixElement={<Icon name="refresh" size={20} className="text-icon-accent" />}
+                  onClick={reconnect}
+                >
+                  {t('walletDetails.walletConnect.refreshButton')}
+                </Button>
+              </>
             }
           >
             <IconButton name="options" className="p-1.5" />

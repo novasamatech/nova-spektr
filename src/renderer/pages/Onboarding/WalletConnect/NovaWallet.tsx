@@ -34,7 +34,7 @@ export const NovaWallet = ({ isOpen, onClose, onComplete }: Props) => {
   const pairings = useUnit(walletConnectModel.$pairings);
   const uri = useUnit(walletConnectModel.$uri);
   const connect = useUnit(walletConnectModel.events.connect);
-  const disconnect = useUnit(walletConnectModel.events.disconnect);
+  const disconnect = useUnit(walletConnectModel.events.disconnectCurrentStarted);
   const step = useUnit(wcOnboardingModel.$step);
   const startOnboarding = useUnit(wcOnboardingModel.events.startOnboarding);
 
