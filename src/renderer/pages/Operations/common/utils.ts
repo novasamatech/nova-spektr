@@ -3,20 +3,21 @@ import { accountUtils, walletUtils } from '@renderer/entities/wallet';
 import {
   DecodedTransaction,
   MultisigEvent,
+  MultisigTransaction,
   Transaction,
   TransactionType,
 } from '@renderer/entities/transaction/model/transaction';
-import { toAddress, formatSectionAndMethod } from '@renderer/shared/lib/utils';
+import { formatSectionAndMethod, toAddress } from '@renderer/shared/lib/utils';
 import { TransferTypes, XcmTypes } from '@renderer/entities/transaction';
 import type {
+  Account,
   AccountId,
-  HexString,
+  ChainId,
   Contact,
   Explorer,
+  HexString,
   Signatory,
-  Account,
   Wallet,
-  ChainId,
 } from '@renderer/shared/core';
 
 export const TRANSACTION_UNKNOWN = 'operations.titles.unknown';
@@ -138,6 +139,25 @@ export const getModalTransactionTitle = (
   }
 
   return TransactionTitlesModal[transaction.type](crossChain);
+};
+
+export const getMultisigSignOperationTitle = (
+  crossChain: boolean,
+  t: (key: string) => string,
+  type?: TransactionType,
+  transaction?: MultisigTransaction,
+) => {
+  const innerTxTitle = getModalTransactionTitle(crossChain, transaction?.transaction);
+
+  if (type === TransactionType.MULTISIG_AS_MULTI || type === TransactionType.MULTISIG_APPROVE_AS_MULTI) {
+    return `${t('operations.modalTitles.approve')} ${t(innerTxTitle)}`;
+  }
+
+  if (type === TransactionType.MULTISIG_CANCEL_AS_MULTI) {
+    return `${t('operations.modalTitles.reject')} ${t(innerTxTitle)}`;
+  }
+
+  return '';
 };
 
 export const getIconName = (transaction?: Transaction | DecodedTransaction): IconNames => {

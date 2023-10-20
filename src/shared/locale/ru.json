@@ -368,7 +368,6 @@
     },
     "successMessage": "Operation Approved",
     "successRejectMessage": "Операция Отменена",
-    "walletSignatoriesTitle": "Your wallets",
     "walletConnect": {
       "defaultWalletName": "WalletConnect",
       "expiredDescription": "The operation isn’t valid anymore",
@@ -384,6 +383,7 @@
       "signTitle": "Confirm the operation on your { walletName } app",
       "tryAgainButton": "Try again"
     },
+    "walletSignatoriesTitle": "Your wallets",
     "xcmFee": "Cross-chain fee"
   },
   "operations": {
@@ -404,9 +404,11 @@
       "statusSummary": "Статусы операции"
     },
     "modalTitles": {
+      "approve": "Подтвердить",
       "destinationOn": "Установить кошелёк получения награды на",
       "nominateOn": "Смена валидаторов на",
       "redeemOn": "Забрать { asset } на",
+      "reject": "Отклонить",
       "restakeOn": "Рестейк { asset } на",
       "stakeMoreOn": "Стейкать ещё { asset } на",
       "startStakingOn": "Старт стейкинга { asset } на",
