@@ -67,7 +67,6 @@ export const Welcome = () => {
             iconName="watchOnlyOnboarding"
             onClick={() => walletPairingModel.events.walletTypeSet(WalletType.WATCH_ONLY)}
           />
-
           <WelcomeCard
             title={t('onboarding.welcome.ledgerTitle')}
             description={t('onboarding.welcome.ledgerDescription')}
