@@ -73,10 +73,7 @@ export const SelectSignatories = ({ isActive, wallets, accounts, contacts, onSel
 
         return acc;
       },
-      {
-        available: [],
-        disabled: [],
-      },
+      { available: [], disabled: [] },
     );
 
     setAvailableWallets(available);
