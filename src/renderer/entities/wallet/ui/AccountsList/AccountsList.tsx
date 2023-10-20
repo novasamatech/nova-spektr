@@ -16,7 +16,7 @@ export const AccountsList = ({ accountId, chains, className }: Props) => {
 
   return (
     <div className="flex flex-col">
-      <div className="flex items-center px-5 pt-4 pb-2">
+      <div className="flex items-center px-5 pb-2">
         <FootnoteText className="flex-1 text-text-tertiary">
           {t('accountList.networksColumn', { chains: chains.length })}
         </FootnoteText>

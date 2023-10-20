@@ -4,6 +4,7 @@ import { WalletType, Wallet, Account } from '@renderer/shared/core';
 import { walletSelectModel } from '@renderer/features/wallets';
 import { walletProviderModel } from '../model/wallet-provider-model';
 import { SimpleWalletDetails } from './SimpleWalletDetails';
+import { MultisigWalletDetails } from './MultisigWalletDetails';
 
 type ModalProps = {
   wallet: Wallet;
@@ -19,7 +20,9 @@ const WalletModals: Record<WalletType, (props: ModalProps) => JSX.Element> = {
   [WalletType.WATCH_ONLY]: ({ accounts, ...rest }: ModalProps) => (
     <SimpleWalletDetails isOpen account={accounts[0]} {...rest} />
   ),
-  [WalletType.MULTISIG]: (props) => <></>,
+  [WalletType.MULTISIG]: ({ accounts, ...rest }: ModalProps) => (
+    <MultisigWalletDetails isOpen account={accounts[0]} {...rest} />
+  ),
 };
 
 export const WalletDetailsProvider = () => {

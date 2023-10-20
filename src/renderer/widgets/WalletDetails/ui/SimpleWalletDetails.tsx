@@ -35,6 +35,7 @@ export const SimpleWalletDetails = ({ isOpen, wallet, account, onClose }: Props)
     <BaseModal
       closeButton
       contentClass=""
+      panelClass="h-modal"
       title={t('walletDetails.common.title')}
       isOpen={isModalOpen}
       onClose={closeWowModal}
@@ -44,7 +45,7 @@ export const SimpleWalletDetails = ({ isOpen, wallet, account, onClose }: Props)
           <WalletIcon type={wallet.type} size={32} />
           <BodyText>{wallet.name}</BodyText>
         </div>
-        <AccountsList accountId={account.accountId} chains={chains} className="h-[450px]" />
+        <AccountsList accountId={account.accountId} chains={chains} className="h-[415px]" />
       </div>
     </BaseModal>
   );
