@@ -4,13 +4,13 @@ import { cnTw } from '@renderer/shared/lib/utils';
 import { IconNames } from '@renderer/shared/ui/Icon/data';
 
 const WalletIconNames: Record<WalletType, IconNames> = {
-  [WalletType.POLKADOT_VAULT]: 'vaultNew',
-  [WalletType.SINGLE_PARITY_SIGNER]: 'vaultNew',
-  [WalletType.WATCH_ONLY]: 'watchOnlyNew',
-  [WalletType.MULTISIG]: 'multisigNew',
-  [WalletType.MULTISHARD_PARITY_SIGNER]: 'vaultNew',
-  [WalletType.WALLET_CONNECT]: 'walletConnectNew',
-  [WalletType.NOVA_WALLET]: 'novaWalletNew',
+  [WalletType.POLKADOT_VAULT]: 'vault',
+  [WalletType.SINGLE_PARITY_SIGNER]: 'vault',
+  [WalletType.WATCH_ONLY]: 'watchOnly',
+  [WalletType.MULTISIG]: 'multisig',
+  [WalletType.MULTISHARD_PARITY_SIGNER]: 'vault',
+  [WalletType.WALLET_CONNECT]: 'walletConnect',
+  [WalletType.NOVA_WALLET]: 'novaWallet',
 };
 
 const WalletIconBg: Record<WalletType, string> = {
