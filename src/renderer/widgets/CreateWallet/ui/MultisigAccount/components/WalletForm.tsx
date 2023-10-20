@@ -89,10 +89,10 @@ export const WalletForm = ({ signatories, onContinue, isActive, isLoading, onGoB
   const canContinue = isValid && signatoriesAreValid;
 
   return (
-    <section className="flex flex-col gap-y-4 px-5 py-4 flex-1 h-full">
-      <SmallTitleText className="py-2">{t('createMultisigAccount.walletFormTitle')}</SmallTitleText>
+    <section className="flex flex-col gap-y-4 px-3 py-4 flex-1 h-full">
+      <SmallTitleText className="py-2 px-2">{t('createMultisigAccount.walletFormTitle')}</SmallTitleText>
 
-      <form id="multisigForm" className="flex flex-col gap-y-4 h-full" onSubmit={handleSubmit(submitMstAccount)}>
+      <form id="multisigForm" className="flex flex-col px-2 gap-y-4 h-full" onSubmit={handleSubmit(submitMstAccount)}>
         <Controller
           name="name"
           control={control}

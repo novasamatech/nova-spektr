@@ -4,7 +4,7 @@ export { AddressWithName } from './AddressWithName/AddressWithName';
 export { AccountAddress, getAddress } from './AccountAddress/AccountAddress';
 export { AddressWithTwoLines } from './AddressWithTwoLines/AddressWithTwoLines';
 export { WalletIcon } from './WalletIcon/WalletIcon';
-export { WalletCardSm } from '@renderer/entities/wallet/ui/cards/WalletCardSm/WalletCardSm';
+export { WalletCardSm } from './cards/WalletCardSm/WalletCardSm';
 export { SelectableShard } from './SelectableShard/SelectableShard';
 export { MultiAccountsList } from './MultiAccountsList/MultiAccountsList';
 export type { AccountAddressProps } from './AccountAddress/AccountAddress';
