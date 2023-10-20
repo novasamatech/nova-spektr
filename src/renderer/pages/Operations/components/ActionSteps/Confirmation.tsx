@@ -10,15 +10,17 @@ import {
   XcmFee,
 } from '@renderer/entities/transaction';
 import { TransactionAmount } from '@renderer/pages/Operations/components/TransactionAmount';
-import { Button, DetailRow, FootnoteText, Icon } from '@renderer/shared/ui';
+import { DetailRow, FootnoteText, Icon } from '@renderer/shared/ui';
 import { ExtendedChain } from '@renderer/entities/network';
 import { useI18n } from '@renderer/app/providers';
 import { getIconName } from '../../common/utils';
-import type { Account, MultisigAccount } from '@renderer/shared/core';
+import { type Account, type MultisigAccount, WalletType } from '@renderer/shared/core';
 import Details from '../Details';
 import { getAssetById } from '@renderer/shared/lib/utils';
 import { getTransactionFromMultisigTx } from '@renderer/entities/multisig';
 import { sendAssetModel } from '@renderer/widgets/SendAssetModal';
+import { SignButton } from '@renderer/entities/operation/ui/SignButton';
+import { walletModel } from '@renderer/entities/wallet';
 
 type Props = {
   tx: MultisigTransaction;
@@ -32,6 +34,7 @@ export const Confirmation = ({ tx, account, connection, signatory, feeTx, onSign
   const { t } = useI18n();
   const [isFeeLoaded, setIsFeeLoaded] = useState(false);
 
+  const activeWallet = useUnit(walletModel.$activeWallet);
   const xcmConfig = useUnit(sendAssetModel.$finalConfig);
   const asset = getAssetById(tx.transaction?.args.assetId, connection.assets) || connection.assets[0];
 
@@ -87,14 +90,12 @@ export const Confirmation = ({ tx, account, connection, signatory, feeTx, onSign
         </DetailRow>
       )}
 
-      <Button
+      <SignButton
         disabled={!isFeeLoaded}
         className="mt-3 ml-auto"
-        prefixElement={<Icon name="vault" size={14} />}
+        type={activeWallet?.type || WalletType.SINGLE_PARITY_SIGNER}
         onClick={onSign}
-      >
-        {t('operation.signButton')}
-      </Button>
+      />
     </div>
   );
 };
