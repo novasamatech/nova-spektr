@@ -4,7 +4,7 @@ import { Weight } from '@polkadot/types/interfaces';
 import { BN } from '@polkadot/util';
 import { useUnit } from 'effector-react';
 
-import { BaseModal, Button, Icon } from '@renderer/shared/ui';
+import { BaseModal, Button } from '@renderer/shared/ui';
 import { useI18n } from '@renderer/app/providers';
 import { MultisigTransactionDS } from '@renderer/shared/api/storage';
 import { useToggle } from '@renderer/shared/lib/hooks';
@@ -18,8 +18,15 @@ import { SignatorySelectModal } from './SignatorySelectModal';
 import { useMultisigEvent } from '@renderer/entities/multisig';
 import { Signing } from '@renderer/features/operation';
 import { OperationTitle } from '@renderer/components/common';
-import type { Address, HexString, Timepoint, MultisigAccount, Account } from '@renderer/shared/core';
 import { walletModel, accountUtils, walletUtils } from '@renderer/entities/wallet';
+import {
+  type Address,
+  type HexString,
+  type Timepoint,
+  type MultisigAccount,
+  type Account,
+  WalletType,
+} from '@renderer/shared/core';
 import {
   OperationResult,
   Transaction,
@@ -30,6 +37,7 @@ import {
   isXcmTransaction,
   MAX_WEIGHT,
 } from '@renderer/entities/transaction';
+import { SignButton } from '@renderer/entities/operation/ui/SignButton';
 import { priceProviderModel } from '@renderer/entities/price';
 
 type Props = {
@@ -240,13 +248,12 @@ const ApproveTx = ({ tx, account, connection }: Props) => {
         {activeStep === Step.CONFIRMATION && (
           <>
             <Confirmation tx={tx} account={account} connection={connection} feeTx={feeTx} />
-            <Button
+
+            <SignButton
               className="mt-7 ml-auto"
-              prefixElement={<Icon name="vault" size={14} />}
+              type={activeWallet?.type || WalletType.SINGLE_PARITY_SIGNER}
               onClick={trySetSignerAccount}
-            >
-              {t('operation.signButton')}
-            </Button>
+            />
           </>
         )}
 

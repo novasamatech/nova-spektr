@@ -102,14 +102,14 @@ export const NetworkProvider = ({ children }: PropsWithChildren) => {
     }
 
     connectedConnections.forEach((chain) => {
-      subscribeBalanceChanges(chain, accountUtils.getAllAccountIds(accounts, chain.chainId));
+      subscribeBalanceChanges(chain, accountUtils.getAllAccountIds(accounts, chain.connection.chainId));
     });
 
     // subscribe to new connections
     const newConnections = connectedConnections.filter((c) => !previousConnectedConnections?.includes(c));
 
     newConnections.forEach((chain) => {
-      subscribeBalanceChanges(chain, accountUtils.getAllAccountIds(accounts, chain.chainId));
+      subscribeBalanceChanges(chain, accountUtils.getAllAccountIds(accounts, chain.connection.chainId));
     });
 
     // unsubscribe from removed connections
