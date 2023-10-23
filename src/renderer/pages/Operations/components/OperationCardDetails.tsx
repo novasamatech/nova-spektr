@@ -8,14 +8,13 @@ import { copyToClipboard, truncate, cnTw, getAssetById } from '@renderer/shared/
 import { useToggle } from '@renderer/shared/lib/hooks';
 import { chainsService, ExtendedChain, isLightClient } from '@renderer/entities/network';
 import { MultisigTransaction, Transaction, isXcmTransaction } from '@renderer/entities/transaction';
-import ValidatorsModal from '@renderer/pages/Staking/Operations/components/Modals/ValidatorsModal/ValidatorsModal';
 import { AddressStyle, DescriptionBlockStyle, InteractionStyle } from '../common/constants';
 import { getMultisigExtrinsicLink } from '../common/utils';
 import { AssetBalance } from '@renderer/entities/asset';
 import { ChainTitle } from '@renderer/entities/chain';
 import type { Address, MultisigAccount, Validator } from '@renderer/shared/core';
 import { getTransactionFromMultisigTx } from '@renderer/entities/multisig';
-import { useValidatorsMap } from '@renderer/entities/staking';
+import { useValidatorsMap, ValidatorsModal } from '@renderer/entities/staking';
 
 type Props = {
   tx: MultisigTransaction;

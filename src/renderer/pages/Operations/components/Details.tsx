@@ -12,13 +12,12 @@ import {
 } from '@renderer/entities/transaction';
 import { cnTw, getAssetById } from '@renderer/shared/lib/utils';
 import { chainsService, ExtendedChain, isLightClient } from '@renderer/entities/network';
-import ValidatorsModal from '@renderer/pages/Staking/Operations/components/Modals/ValidatorsModal/ValidatorsModal';
 import { AddressStyle, DescriptionBlockStyle, InteractionStyle } from '../common/constants';
 import { ChainTitle } from '@renderer/entities/chain';
 import { Account } from '@renderer/shared/core';
 import { getTransactionFromMultisigTx } from '@renderer/entities/multisig';
 import type { Address, MultisigAccount, Validator } from '@renderer/shared/core';
-import { useValidatorsMap } from '@renderer/entities/staking';
+import { useValidatorsMap, ValidatorsModal } from '@renderer/entities/staking';
 
 type Props = {
   tx: MultisigTransaction;

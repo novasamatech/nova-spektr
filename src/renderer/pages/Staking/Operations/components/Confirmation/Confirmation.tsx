@@ -17,14 +17,13 @@ import {
   Transaction,
 } from '@renderer/entities/transaction';
 import AccountsModal from '../Modals/AccountsModal/AccountsModal';
-import ValidatorsModal from '../Modals/ValidatorsModal/ValidatorsModal';
 import { DestinationType } from '../../common/types';
 import { cnTw } from '@renderer/shared/lib/utils';
 import { useMultisigTx } from '@renderer/entities/multisig';
 import { RewardsDestination, WalletType } from '@renderer/shared/core';
 import type { Account, Asset, Explorer } from '@renderer/shared/core';
 import { AssetFiatBalance } from '@renderer/entities/price/ui/AssetFiatBalance';
-import { useValidatorsMap } from '@renderer/entities/staking';
+import { useValidatorsMap, ValidatorsModal } from '@renderer/entities/staking';
 import { isLightClient } from '@renderer/entities/network';
 import { SignButton } from '@renderer/entities/operation/ui/SignButton';
 

@@ -4,10 +4,9 @@ import { mapValues } from 'lodash';
 
 import { Icon, Shimmering, Loader, BodyText, Button, SearchInput, SmallTitleText, Checkbox } from '@renderer/shared/ui';
 import { useI18n } from '@renderer/app/providers';
-import { ValidatorMap, useValidators, useValidatorsMap } from '@renderer/entities/staking';
+import { ValidatorMap, useValidators, useValidatorsMap, ValidatorsTable } from '@renderer/entities/staking';
 import { includes, cnTw } from '@renderer/shared/lib/utils';
 import type { Asset, Explorer, Address, ChainId } from '@renderer/shared/core';
-import { ValidatorsTable } from '../ValidatorsTable/ValidatorsTable';
 
 type Props = {
   api: ApiPromise;
@@ -32,9 +31,11 @@ export const Validators = ({ api, chainId, asset, explorers, isLightClient, onGo
   const [selectedValidators, setSelectedValidators] = useState<Record<Address, boolean>>({});
 
   useEffect(() => {
-    setMaxValidators(getMaxValidators(api));
-    setIsValidatorsLoading(false);
-    setSelectedValidators(mapValues(validators, () => false));
+    if (Object.values(validators).length) {
+      setMaxValidators(getMaxValidators(api));
+      setIsValidatorsLoading(false);
+      setSelectedValidators(mapValues(validators, () => false));
+    }
   }, [validators]);
 
   const validatorList = Object.values(validators).filter((validator) => {
@@ -103,9 +104,10 @@ export const Validators = ({ api, chainId, asset, explorers, isLightClient, onGo
               <Checkbox
                 checked={selectedValidators[validtor.address]}
                 disabled={validtor.blocked}
+                className="overflow-hidden"
                 onChange={() => toggleSelectedValidators(validtor.address)}
               >
-                <div className={cnTw(rowStyle, 'pl-0 hover:bg-transparent flex-1')}>
+                <div className={cnTw(rowStyle, 'pl-0 hover:bg-transparent flex-1 overflow-hidden')}>
                   <ValidatorsTable.Row validator={validtor} asset={asset} explorers={explorers} />
                 </div>
               </Checkbox>

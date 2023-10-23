@@ -3,7 +3,7 @@ import { useI18n } from '@renderer/app/providers';
 import { Validator } from '@renderer/shared/core/types/validator';
 import { cnTw } from '@renderer/shared/lib/utils';
 import type { Asset, Explorer } from '@renderer/shared/core';
-import { ValidatorsTable } from '../../ValidatorsTable/ValidatorsTable';
+import { ValidatorsTable } from '../ValidatorsTable/ValidatorsTable';
 
 type Props = {
   isOpen: boolean;
@@ -14,7 +14,14 @@ type Props = {
   onClose: () => void;
 };
 
-const ValidatorsModal = ({ isOpen, selectedValidators, notSelectedValidators, explorers, asset, onClose }: Props) => {
+export const ValidatorsModal = ({
+  isOpen,
+  selectedValidators,
+  notSelectedValidators,
+  explorers,
+  asset,
+  onClose,
+}: Props) => {
   const { t } = useI18n();
 
   return (
@@ -66,5 +73,3 @@ const ValidatorsModal = ({ isOpen, selectedValidators, notSelectedValidators, ex
     </BaseModal>
   );
 };
-
-export default ValidatorsModal;
