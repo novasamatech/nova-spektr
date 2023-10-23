@@ -37,8 +37,9 @@ export const OperationCardDetails = ({ tx, account, connection }: Props) => {
   const transaction = getTransactionFromMultisigTx(tx);
 
   const startStakingValidators: Address[] =
-    tx.transaction?.type === 'batchAll' &&
-    tx.transaction.args.transactions.find((tx: Transaction) => tx.type === 'nominate')?.args?.targets;
+    (tx.transaction?.type === 'batchAll' &&
+      tx.transaction.args.transactions.find((tx: Transaction) => tx.type === 'nominate')?.args?.targets) ||
+    [];
 
   const validators = transaction?.args.targets || startStakingValidators;
   const allValidators = Object.values(useValidatorsMap(api, chainId, connection && isLightClient(connection)));
