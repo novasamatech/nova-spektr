@@ -4,7 +4,8 @@ import { walletSelectModel } from '@renderer/features/wallets';
 import { SimpleWalletDetails } from './SimpleWalletDetails';
 import { MultisigWalletDetails } from './MultisigWalletDetails';
 import { WalletConnectDetails } from './WalletConnectDetails';
-import { walletProviderModel } from '@renderer/widgets/WalletDetails/model/wallet-provider-model';
+import { walletProviderModel } from '../model/wallet-provider-model';
+import { MultishardWalletDetails } from './MultishardWalletDetails';
 import { walletUtils } from '@renderer/entities/wallet';
 import type { Wallet } from '@renderer/shared/core';
 
@@ -16,6 +17,7 @@ export const WalletDetailsProvider = () => {
   const wallet = useUnit(walletSelectModel.$walletForDetails);
   const accounts = useUnit(walletProviderModel.$accounts);
   const singleShardAccount = useUnit(walletProviderModel.$singleShardAccount);
+  const multiShardAccounts = useUnit(walletProviderModel.$multiShardAccounts);
   const multisigAccount = useUnit(walletProviderModel.$multisigAccount);
   const contacts = useUnit(walletProviderModel.$signatoryContacts);
   const isConnected = useUnit(walletProviderModel.$isConnected);
@@ -30,6 +32,10 @@ export const WalletDetailsProvider = () => {
 
   if ((walletUtils.isWatchOnly(wallet) || walletUtils.isSingleShard(wallet)) && singleShardAccount) {
     return <SimpleWalletDetails isOpen account={singleShardAccount} {...commonProps} />;
+  }
+
+  if (walletUtils.isMultiShard(wallet) && multiShardAccounts.size > 0) {
+    return <MultishardWalletDetails isOpen accounts={multiShardAccounts} {...commonProps} />;
   }
 
   if (walletUtils.isMultisig(wallet) && multisigAccount) {
@@ -48,5 +54,5 @@ export const WalletDetailsProvider = () => {
     return <WalletConnectDetails isOpen accounts={accounts} isConnected={isConnected} {...commonProps} />;
   }
 
-  return <></>;
+  return <></>; // HINT: Only Polkadot Vault left
 };

@@ -14,7 +14,7 @@ type Props = {
 
 export const WalletRow = ({ wallet, className, iconSize = 16, addressPrefix, accountId, explorers }: Props) => {
   const address = toAddress(accountId, { prefix: addressPrefix });
-  const popoverItems = useAddressInfo(address, explorers, false);
+  const popoverItems = useAddressInfo({ address, explorers });
 
   return (
     <InfoPopover data={popoverItems} className="w-[230px]">

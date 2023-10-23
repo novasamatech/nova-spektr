@@ -2,8 +2,8 @@ import { useMemo } from 'react';
 
 import { Wallet, MultisigAccount, Signatory } from '@renderer/shared/core';
 import { BaseModal, BodyText, Tabs, FootnoteText, Icon, InfoPopover } from '@renderer/shared/ui';
-import { DEFAULT_TRANSITION, RootExplorers, toAddress } from '@renderer/shared/lib/utils';
-import { useToggle } from '@renderer/shared/lib/hooks';
+import { RootExplorers, toAddress } from '@renderer/shared/lib/utils';
+import { useModalClose } from '@renderer/shared/lib/hooks';
 import { AccountsList, WalletIcon, ContactItem, useAddressInfo } from '@renderer/entities/wallet';
 import { chainsService } from '@renderer/entities/network';
 import { useI18n } from '@renderer/app/providers';
@@ -28,21 +28,15 @@ export const MultisigWalletDetails = ({
 }: Props) => {
   const { t } = useI18n();
 
-  const popoverItems = useAddressInfo(toAddress(account.accountId), RootExplorers);
+  const popoverItems = useAddressInfo({ address: toAddress(account.accountId), explorers: RootExplorers });
 
-  const [isModalOpen, toggleIsModalOpen] = useToggle(isOpen);
+  const [isModalOpen, closeModal] = useModalClose(isOpen, onClose);
 
   const chains = useMemo(() => {
     const chains = chainsService.getChainsData();
 
     return chainsService.sortChains(chains);
   }, []);
-
-  const closeDetailsModal = () => {
-    toggleIsModalOpen();
-
-    setTimeout(onClose, DEFAULT_TRANSITION);
-  };
 
   return (
     <BaseModal
@@ -51,7 +45,7 @@ export const MultisigWalletDetails = ({
       panelClass="h-modal"
       title={t('walletDetails.common.title')}
       isOpen={isModalOpen}
-      onClose={closeDetailsModal}
+      onClose={closeModal}
     >
       <div className="flex flex-col w-full">
         <div className="flex items-center gap-x-2 py-5 px-5 border-b border-divider">
