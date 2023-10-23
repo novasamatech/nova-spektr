@@ -47,8 +47,9 @@ const Details = ({ tx, account, connection, signatory }: Props) => {
   const transaction = getTransactionFromMultisigTx(tx);
 
   const startStakingValidators: Address[] =
-    tx.transaction?.type === 'batchAll' &&
-    tx.transaction.args.transactions.find((tx: Transaction) => tx.type === 'nominate')?.args?.targets;
+    (tx.transaction?.type === 'batchAll' &&
+      tx.transaction.args.transactions.find((tx: Transaction) => tx.type === 'nominate')?.args?.targets) ||
+    [];
 
   const selectedValidators: Validator[] =
     transaction?.args.targets || allValidators.filter((v) => startStakingValidators.includes(v.address)) || [];
