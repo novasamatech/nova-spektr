@@ -21,8 +21,8 @@ import {
   ValidatorMap,
   useValidators,
   useStakingRewards,
+  ValidatorsModal,
 } from '@renderer/entities/staking';
-import ValidatorsModal from '../Operations/components/Modals/ValidatorsModal/ValidatorsModal';
 
 export const Overview = () => {
   const { t } = useI18n();
@@ -132,11 +132,11 @@ export const Overview = () => {
   }, [chainId, api, chainEra]);
 
   useEffect(() => {
-    if (api) {
-      getNominators(api, selectedStash, isLightClient).then((nominators) => {
-        setNominators(Object.values(nominators));
-      });
-    }
+    if (!api) return;
+
+    getNominators(api, selectedStash, isLightClient).then((nominators) => {
+      setNominators(Object.values(nominators));
+    });
   }, [api, selectedStash]);
 
   const changeNetwork = (chain: Chain) => {

@@ -4,7 +4,7 @@ import { BodyText, FootnoteText, HelpText, Icon, Identicon, InfoPopover } from '
 import { AssetBalance } from '@renderer/entities/asset';
 import { AssetFiatBalance } from '@renderer/entities/price/ui/AssetFiatBalance';
 import { useI18n } from '@renderer/app/providers';
-import { getExplorers } from '../../common/utils';
+import { getExplorers } from '../../../../pages/Staking/Operations/common/utils';
 
 const TABLE_GRID_CELLS = 'grid-cols-[1fr,128px,128px,40px]';
 

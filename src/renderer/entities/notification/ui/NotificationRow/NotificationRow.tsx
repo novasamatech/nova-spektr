@@ -42,7 +42,7 @@ const NotificationBody = {
             name: wallet?.name || typedNotification.multisigAccountName,
           }}
           components={{
-            identicon: identicon,
+            identicon,
           }}
         />
       </BodyText>
