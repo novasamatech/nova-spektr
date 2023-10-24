@@ -1,7 +1,7 @@
 import { createStore, createEvent, forward, createEffect, sample, combine } from 'effector';
 import { spread } from 'patronum';
 
-import type { Wallet, NoID, Account, BaseAccount, ChainAccount, MultisigAccount } from '@renderer/shared/core';
+import type { Wallet, NoID, Account, BaseAccount, ChainAccount, MultisigAccount, ID } from '@renderer/shared/core';
 import { kernelModel, WalletConnectAccount } from '@renderer/shared/core';
 import { storageService } from '@renderer/shared/api/storage';
 import { modelUtils } from '../lib/model-utils';
@@ -127,16 +127,13 @@ const multisigWalletUpdatedFx = createEffect(
   },
 );
 
-type RemoveProps = {
+type RemoveParams = {
   wallet: Wallet;
-  accounts: Account[];
+  accountIds: ID[];
 };
 
-const removeWalletFx = createEffect(async ({ wallet, accounts }: RemoveProps): Promise<Wallet> => {
-  await Promise.all([
-    storageService.accounts.deleteAll(accounts.map((a) => a.id)),
-    storageService.wallets.delete(wallet.id),
-  ]);
+const removeWalletFx = createEffect(async ({ wallet, accountIds }: RemoveParams): Promise<Wallet> => {
+  await Promise.all([storageService.accounts.deleteAll(accountIds), storageService.wallets.delete(wallet.id)]);
 
   return wallet;
 });
@@ -221,7 +218,7 @@ sample({
 sample({
   clock: walletRemoved,
   source: $accounts,
-  fn: (accounts, wallet) => ({ accounts: accounts.filter((a) => a.walletId === wallet.id), wallet }),
+  fn: (accounts, wallet) => ({ accountIds: accounts.filter((a) => a.walletId === wallet.id).map((a) => a.id), wallet }),
   target: removeWalletFx,
 });
 

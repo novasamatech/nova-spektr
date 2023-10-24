@@ -105,6 +105,7 @@ describe('entities/wallet/model/wallet-model', () => {
     const wallets = walletMock.getWallets(0);
     const [removedWallet, ...newWallets] = wallets;
 
+    const newAccounts = walletMock.accounts.filter((a) => a.walletId !== removedWallet.id);
     const removedAccounts = walletMock.accounts.filter((a) => a.walletId === removedWallet.id);
 
     jest.spyOn(storageService.wallets, 'delete').mockResolvedValue();
@@ -114,8 +115,6 @@ describe('entities/wallet/model/wallet-model', () => {
       values: new Map().set(walletModel.$wallets, wallets).set(walletModel.$accounts, walletMock.accounts),
     });
 
-    expect(scope.getState(walletModel.$wallets)).toHaveLength(wallets.length);
-
     await allSettled(walletModel.events.walletRemoved, {
       scope,
       params: removedWallet,
@@ -123,8 +122,6 @@ describe('entities/wallet/model/wallet-model', () => {
 
     expect(deleteAccountsSpy).toHaveBeenCalledWith(removedAccounts.map((a) => a.id));
     expect(scope.getState(walletModel.$wallets)).toEqual(newWallets);
-    expect(scope.getState(walletModel.$accounts)).toEqual(
-      walletMock.accounts.filter((a) => a.walletId !== removedWallet.id),
-    );
+    expect(scope.getState(walletModel.$accounts)).toEqual(newAccounts);
   });
 });
