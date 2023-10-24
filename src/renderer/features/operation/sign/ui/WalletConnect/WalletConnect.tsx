@@ -67,7 +67,7 @@ export const WalletConnect = ({ api, validateBalance, onGoBack, accounts, transa
       setIsNeedUpdate(false);
 
       if (session?.topic) {
-        walletConnectModel.events.sessionTopicUpdated(session?.topic);
+        walletConnectModel.events.currentSessionTopicUpdated(session?.topic);
       }
     }
   }, [session]);

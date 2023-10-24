@@ -43,7 +43,7 @@ import LinkImg, { ReactComponent as LinkSvg } from '@images/functionals/link.svg
 import LockImg, { ReactComponent as LockSvg } from '@images/functionals/lock.svg';
 import MagicImg, { ReactComponent as MagicSvg } from '@images/functionals/magic.svg';
 import QuestionImg, { ReactComponent as QuestionSvg } from '@images/functionals/question.svg';
-import UploadFileImg, { ReactComponent as UploadFileSvg } from '@images/functionals/updload-file.svg';
+import UploadFileImg, { ReactComponent as UploadFileSvg } from '@images/functionals/upload-file.svg';
 import CurrencyImg, { ReactComponent as CurrencySvg } from '@images/functionals/currency.svg';
 
 const FunctionalImages = {
