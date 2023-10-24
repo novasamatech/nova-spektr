@@ -21,11 +21,9 @@ const $connected = combine(
     const account = accounts[0];
     if (!client || !account || !accountUtils.isWalletConnectAccount(account)) return false;
 
-    const sessions = client?.session.getAll() || [];
+    const sessions = client.session.getAll() || [];
 
-    const storedSession = sessions.find((s) => s.topic === accounts[0].signingExtras?.sessionTopic);
-
-    return Boolean(storedSession);
+    return sessions.some((session) => session.topic === account.signingExtras?.sessionTopic);
   },
 );
 
