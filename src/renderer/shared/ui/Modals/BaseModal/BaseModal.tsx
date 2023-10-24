@@ -17,6 +17,7 @@ type Props = {
   headerClass?: string;
   panelClass?: string;
   closeButton?: boolean;
+  actionButton?: ReactNode;
   onClose: () => void;
 };
 
@@ -26,6 +27,7 @@ const BaseModal = ({
   zIndex = 'z-50',
   contentClass = 'pb-4 px-5',
   headerClass = 'py-3 px-5',
+  actionButton,
   closeButton,
   panelClass,
   children,

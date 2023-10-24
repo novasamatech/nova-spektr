@@ -879,8 +879,15 @@
       "title": "Wallet details"
     },
     "walletConnect": {
+      "abortRejectButton": "Close",
       "connectedStatus": "Connected",
-      "disconnectedStatus": "Not connected"
+      "disconnectedDescription": "Resume the connection to work with the WalletConnect",
+      "disconnectedStatus": "Not connected",
+      "disconnectedTitle": "Wallet not connected",
+      "reconnectButton": "Reconnect",
+      "refreshButton": "Refresh",
+      "rejectDescription": "The operation was successfully canceled",
+      "rejectTitle": "Rejected"
     }
   },
   "wallets": {
