@@ -26,7 +26,7 @@ import { getWalletConnectChains } from '@renderer/entities/walletConnect';
 import wallet_connect_reconnect from '@video/wallet_connect_reconnect.mp4';
 import wallet_connect_reconnect_webm from '@video/wallet_connect_reconnect.webm';
 import { walletConnectDetailsModel } from '../model/wallet-connect-details-model';
-import { walletConnectDetailsUtils } from '../common/utils';
+import { wcDetailsUtils } from '../lib/utils';
 
 type AccountItem = {
   accountId: `0x${string}`;
@@ -85,10 +85,10 @@ export const WalletConnectDetails = ({ isOpen, wallet, accounts, onClose }: Prop
     });
   };
 
-  const isAccountsStep = walletConnectDetailsUtils.isAccountsStep(reconnectStep, connected);
-  const isReconnectingStep = walletConnectDetailsUtils.isReconnectingStep(reconnectStep);
-  const isReadyToReconnectStep = walletConnectDetailsUtils.isReadyToReconnectStep(reconnectStep, connected);
-  const isRejected = walletConnectDetailsUtils.isRejected(reconnectStep);
+  const isAccountsStep = wcDetailsUtils.isNotStarted(reconnectStep, connected);
+  const isReconnectingStep = wcDetailsUtils.isReconnecting(reconnectStep);
+  const isReadyToReconnectStep = wcDetailsUtils.isReadyToReconnect(reconnectStep, connected);
+  const isRejected = wcDetailsUtils.isRejected(reconnectStep);
 
   return (
     <BaseModal
