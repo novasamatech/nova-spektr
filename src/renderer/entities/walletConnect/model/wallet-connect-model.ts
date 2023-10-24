@@ -38,7 +38,8 @@ type SessionTopicParams = {
 };
 
 const connect = createEvent<Omit<InitConnectProps, 'client'>>();
-const disconnect = createEvent();
+const disconnectCurrentSessionStarted = createEvent();
+const disconnectStarted = createEvent<string>();
 const reset = createEvent();
 const sessionUpdated = createEvent<SessionTypes.Struct>();
 const connected = createEvent();
@@ -265,29 +266,28 @@ sample({
   target: $pairings,
 });
 
-forward({
-  from: connectFx.done,
-  to: connected,
+forward({ from: connectFx.done, to: connected });
+
+sample({
+  clock: disconnectCurrentSessionStarted,
+  source: $session,
+  filter: (session: SessionTypes.Struct | null): session is SessionTypes.Struct => session !== null,
+  fn: (session) => session.topic,
+  target: disconnectStarted,
 });
 
 sample({
-  clock: disconnect,
-  source: {
-    client: $client,
-    session: $session,
-  },
-  filter: ({ client, session }) => client !== null && session !== null,
-  fn: ({ client, session }) => ({
+  clock: disconnectStarted,
+  source: $client,
+  filter: (client, sessionTopic) => Boolean(client?.session.get(sessionTopic)),
+  fn: (client, sessionTopic) => ({
     client: client!,
-    session: session!,
+    session: client!.session.get(sessionTopic)!,
   }),
   target: disconnectFx,
 });
 
-forward({
-  from: disconnectFx.done,
-  to: reset,
-});
+forward({ from: disconnectFx.done, to: reset });
 
 sample({
   clock: currentSessionTopicUpdated,
@@ -296,10 +296,7 @@ sample({
   target: sessionTopicUpdatedFx,
 });
 
-forward({
-  from: sessionTopicUpdated,
-  to: sessionTopicUpdatedFx,
-});
+forward({ from: sessionTopicUpdated, to: sessionTopicUpdatedFx });
 
 sample({
   clock: sessionTopicUpdatedFx.doneData,
@@ -330,7 +327,8 @@ export const walletConnectModel = {
   $pairings,
   events: {
     connect,
-    disconnect,
+    disconnectCurrentSessionStarted,
+    disconnectStarted,
     sessionUpdated,
     connected,
     connectionRejected,

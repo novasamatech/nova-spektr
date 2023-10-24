@@ -153,7 +153,7 @@ export const SelectSignatories = ({ isActive, wallets, accounts, contacts, onSel
           return (
             <li
               key={wallet.id + '_wallets'}
-              className={cnTw('py-1.5 rounded-md', !disabled && 'hover:bg-action-background-hover')}
+              className={cnTw('py-1.5 px-2 rounded-md', !disabled && 'hover:bg-action-background-hover')}
             >
               <Checkbox
                 checked={!!selectedWallets[wallet.id]}
@@ -174,7 +174,7 @@ export const SelectSignatories = ({ isActive, wallets, accounts, contacts, onSel
 
       <ul className="gap-y-2">
         {disabledWallets.map(({ id, name, type }) => (
-          <li key={id + '_wallets'} className="p-1.5 rounded-md">
+          <li key={id + '_wallets'} className="py-1.5 px-2 rounded-md">
             <Tooltip
               position="start"
               offsetPx={-65}

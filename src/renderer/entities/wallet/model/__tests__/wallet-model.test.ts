@@ -100,4 +100,28 @@ describe('entities/wallet/model/wallet-model', () => {
     expect(scope.getState(walletModel.$wallets)).toEqual(wallets.concat({ ...newWallet, isActive: true }));
     expect(scope.getState(walletModel.$accounts)).toEqual(walletMock.accounts.concat(newAccounts));
   });
+
+  test('should update $wallets, $accounts on removeWallet', async () => {
+    const wallets = walletMock.getWallets(0);
+    const [removedWallet, ...newWallets] = wallets;
+
+    const newAccounts = walletMock.accounts.filter((a) => a.walletId !== removedWallet.id);
+    const removedAccounts = walletMock.accounts.filter((a) => a.walletId === removedWallet.id);
+
+    jest.spyOn(storageService.wallets, 'delete').mockResolvedValue();
+    const deleteAccountsSpy = jest.spyOn(storageService.accounts, 'deleteAll').mockResolvedValue();
+
+    const scope = fork({
+      values: new Map().set(walletModel.$wallets, wallets).set(walletModel.$accounts, walletMock.accounts),
+    });
+
+    await allSettled(walletModel.events.walletRemoved, {
+      scope,
+      params: removedWallet.id,
+    });
+
+    expect(deleteAccountsSpy).toHaveBeenCalledWith(removedAccounts.map((a) => a.id));
+    expect(scope.getState(walletModel.$wallets)).toEqual(newWallets);
+    expect(scope.getState(walletModel.$accounts)).toEqual(newAccounts);
+  });
 });
