@@ -29,7 +29,7 @@ import { ForgetStep } from '../common/const';
 import wallet_connect_reconnect from '@video/wallet_connect_reconnect.mp4';
 import wallet_connect_reconnect_webm from '@video/wallet_connect_reconnect.webm';
 import { walletConnectDetailsModel } from '../model/wallet-connect-details-model';
-import { walletConnectDetailsUtils } from '../common/utils';
+import { walletConnectDetailsUtils, walletUtils } from '../common/utils';
 
 type AccountItem = {
   accountId: `0x${string}`;
@@ -48,11 +48,9 @@ export const WalletConnectDetails = ({ isOpen, wallet, accounts, onClose }: Prop
   const [isModalOpen, toggleIsModalOpen] = useToggle(isOpen);
   const [isConfirmForgetOpen, toggleConfirmForget] = useToggle(false);
 
-  const connected = useUnit(walletProviderModel.$connected);
-  const reconnectStep = useUnit(walletProviderModel.$reconnectStep);
+  const connected = useUnit(walletConnectDetailsModel.$connected);
+  const reconnectStep = useUnit(walletConnectDetailsModel.$reconnectStep);
 
-  const forgetWallet = useUnit(walletProviderModel.events.forgetButtonClicked);
-  const closeForgetModal = useUnit(walletProviderModel.events.forgetModalClosed);
   const forgetStep = useUnit(walletProviderModel.$forgetStep);
 
   useEffect(() => {
@@ -91,6 +89,11 @@ export const WalletConnectDetails = ({ isOpen, wallet, accounts, onClose }: Prop
       chains: getWalletConnectChains(chainsService.getChainsData()),
       pairing: { topic: accounts[0].signingExtras?.pairingTopic },
     });
+  };
+
+  const handleForgetWallet = () => {
+    walletProviderModel.events.forgetButtonClicked();
+    toggleConfirmForget();
   };
 
   const isAccountsStep = walletConnectDetailsUtils.isAccountsStep(reconnectStep, connected);
@@ -190,10 +193,7 @@ export const WalletConnectDetails = ({ isOpen, wallet, accounts, onClose }: Prop
           confirmText={t('walletDetails.common.removeButton')}
           cancelText={t('walletDetails.common.cancelButton')}
           confirmPallet="error"
-          onConfirm={() => {
-            forgetWallet();
-            toggleConfirmForget();
-          }}
+          onConfirm={handleForgetWallet}
           onClose={toggleConfirmForget}
         >
           <SmallTitleText className="mb-2" align="center">
@@ -205,7 +205,7 @@ export const WalletConnectDetails = ({ isOpen, wallet, accounts, onClose }: Prop
         </ConfirmModal>
 
         <StatusModal
-          isOpen={[ForgetStep.FORGETTING, ForgetStep.SUCCESS].includes(forgetStep)}
+          isOpen={walletUtils.isForgetModalOpen(forgetStep)}
           title={t(
             forgetStep === ForgetStep.FORGETTING
               ? 'walletDetails.common.removingWallet'
@@ -214,7 +214,7 @@ export const WalletConnectDetails = ({ isOpen, wallet, accounts, onClose }: Prop
           content={
             forgetStep === ForgetStep.FORGETTING ? <Animation variant="loading" /> : <Animation variant="success" />
           }
-          onClose={closeForgetModal}
+          onClose={walletProviderModel.events.forgetModalClosed}
         />
 
         <StatusModal

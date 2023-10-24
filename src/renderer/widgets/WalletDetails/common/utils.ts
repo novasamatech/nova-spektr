@@ -1,4 +1,4 @@
-import { ReconnectStep } from './const';
+import { ForgetStep, ReconnectStep } from './const';
 
 const isAccountsStep = (step: ReconnectStep, connected: boolean) => step === ReconnectStep.NOT_STARTED && connected;
 const isReconnectingStep = (step: ReconnectStep) => step === ReconnectStep.RECONNECTING;
@@ -12,4 +12,10 @@ export const walletConnectDetailsUtils = {
   isReconnectingStep,
   isReadyToReconnectStep,
   isRejected,
+};
+
+const isForgetModalOpen = (step: ForgetStep) => [ForgetStep.FORGETTING, ForgetStep.SUCCESS].includes(step);
+
+export const walletUtils = {
+  isForgetModalOpen,
 };
