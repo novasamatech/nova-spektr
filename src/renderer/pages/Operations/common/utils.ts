@@ -1,3 +1,5 @@
+import { TFunction } from 'react-i18next';
+
 import { IconNames } from '@renderer/shared/ui/Icon/data';
 import { accountUtils, walletUtils } from '@renderer/entities/wallet';
 import {
@@ -143,7 +145,7 @@ export const getModalTransactionTitle = (
 
 export const getMultisigSignOperationTitle = (
   crossChain: boolean,
-  t: (key: string) => string,
+  t: TFunction,
   type?: TransactionType,
   transaction?: MultisigTransaction,
 ) => {
