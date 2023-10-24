@@ -2,7 +2,7 @@ import { combine, createEvent, createStore, forward, sample } from 'effector';
 
 import { accountUtils, walletModel } from '@renderer/entities/wallet';
 import { InitConnectProps, walletConnectModel } from '@renderer/entities/walletConnect';
-import { ReconnectStep } from '../common/const';
+import { ReconnectStep } from '../lib/constants';
 import { walletProviderModel } from './wallet-provider-model';
 import { walletSelectModel } from '@renderer/features/wallets';
 
@@ -13,16 +13,22 @@ const sessionTopicUpdated = createEvent();
 
 const $reconnectStep = createStore<ReconnectStep>(ReconnectStep.NOT_STARTED).reset(reset);
 
-const $connected = combine(walletProviderModel.$accounts, walletConnectModel.$client, (accounts, client): boolean => {
-  const account = accounts[0];
-  if (!client || !account || !accountUtils.isWalletConnectAccount(account)) return false;
+const $connected = combine(
+  {
+    accounts: walletProviderModel.$accounts,
+    client: walletConnectModel.$client,
+  },
+  ({ accounts, client }): boolean => {
+    const account = accounts[0];
+    if (!client || !account || !accountUtils.isWalletConnectAccount(account)) return false;
 
-  const sessions = client?.session.getAll() || [];
+    const sessions = client?.session.getAll() || [];
 
-  const storedSession = sessions.find((s) => s.topic === accounts[0].signingExtras?.sessionTopic);
+    const storedSession = sessions.find((s) => s.topic === accounts[0].signingExtras?.sessionTopic);
 
-  return Boolean(storedSession);
-});
+    return Boolean(storedSession);
+  },
+);
 
 sample({
   clock: reconnectStarted,
@@ -43,10 +49,7 @@ sample({
   },
 
   filter: ({ accounts, session }) => accounts.length > 0 && Boolean(session?.topic),
-  fn: ({ accounts, session }) => ({
-    accounts,
-    topic: session?.topic!,
-  }),
+  fn: ({ accounts, session }) => ({ accounts, topic: session?.topic! }),
   target: walletConnectModel.events.sessionTopicUpdated,
 });
 

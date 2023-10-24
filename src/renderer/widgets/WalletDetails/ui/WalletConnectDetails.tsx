@@ -25,11 +25,11 @@ import { useI18n } from '@renderer/app/providers';
 import { chainsService } from '@renderer/entities/network';
 import { walletProviderModel } from '../model/wallet-provider-model';
 import { getWalletConnectChains } from '@renderer/entities/walletConnect';
-import { ForgetStep } from '../common/const';
+import { ForgetStep } from '../lib/constants';
 import wallet_connect_reconnect from '@video/wallet_connect_reconnect.mp4';
 import wallet_connect_reconnect_webm from '@video/wallet_connect_reconnect.webm';
 import { walletConnectDetailsModel } from '../model/wallet-connect-details-model';
-import { walletConnectDetailsUtils, walletUtils } from '../common/utils';
+import { wcDetailsUtils, walletDetailsUtils } from '../lib/utils';
 
 type AccountItem = {
   accountId: `0x${string}`;
@@ -96,10 +96,10 @@ export const WalletConnectDetails = ({ isOpen, wallet, accounts, onClose }: Prop
     toggleConfirmForget();
   };
 
-  const isAccountsStep = walletConnectDetailsUtils.isAccountsStep(reconnectStep, connected);
-  const isReconnectingStep = walletConnectDetailsUtils.isReconnectingStep(reconnectStep);
-  const isReadyToReconnectStep = walletConnectDetailsUtils.isReadyToReconnectStep(reconnectStep, connected);
-  const isRejected = walletConnectDetailsUtils.isRejected(reconnectStep);
+  const isAccountsStep = wcDetailsUtils.isNotStarted(reconnectStep, connected);
+  const isReconnectingStep = wcDetailsUtils.isReconnecting(reconnectStep);
+  const isReadyToReconnectStep = wcDetailsUtils.isReadyToReconnect(reconnectStep, connected);
+  const isRejected = wcDetailsUtils.isRejected(reconnectStep);
 
   return (
     <BaseModal
@@ -205,7 +205,7 @@ export const WalletConnectDetails = ({ isOpen, wallet, accounts, onClose }: Prop
         </ConfirmModal>
 
         <StatusModal
-          isOpen={walletUtils.isForgetModalOpen(forgetStep)}
+          isOpen={walletDetailsUtils.isForgetModalOpen(forgetStep)}
           title={t(
             forgetStep === ForgetStep.FORGETTING
               ? 'walletDetails.common.removingWallet'
