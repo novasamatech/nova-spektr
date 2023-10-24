@@ -2,16 +2,20 @@ import { combine, createEvent, createStore, forward, sample } from 'effector';
 
 import { accountUtils, walletModel } from '@renderer/entities/wallet';
 import { InitConnectProps, walletConnectModel } from '@renderer/entities/walletConnect';
-import { ReconnectStep } from '../lib/constants';
+import { ReconnectStep, ForgetStep } from '../lib/constants';
 import { walletProviderModel } from './wallet-provider-model';
 import { walletSelectModel } from '@renderer/features/wallets';
+import type { Wallet } from '@renderer/shared/core';
 
 const reset = createEvent();
 const reconnectStarted = createEvent<Omit<InitConnectProps, 'client'>>();
 const reconnectAborted = createEvent();
 const sessionTopicUpdated = createEvent();
+const forgetButtonClicked = createEvent();
+const forgetModalClosed = createEvent();
 
 const $reconnectStep = createStore<ReconnectStep>(ReconnectStep.NOT_STARTED).reset(reset);
+const $forgetStep = createStore<ForgetStep>(ForgetStep.NOT_STARTED).reset(reset);
 
 const $connected = combine(
   {
@@ -63,7 +67,7 @@ sample({
 });
 
 sample({
-  clock: walletProviderModel.events.forgetButtonClicked,
+  clock: forgetButtonClicked,
   source: {
     wallet: walletSelectModel.$walletForDetails,
     accounts: walletModel.$accounts,
@@ -77,13 +81,41 @@ sample({
   target: walletConnectModel.events.disconnectStarted,
 });
 
-export const walletConnectDetailsModel = {
+sample({
+  clock: forgetButtonClicked,
+  fn: () => ForgetStep.FORGETTING,
+  target: $forgetStep,
+});
+
+sample({
+  clock: forgetButtonClicked,
+  source: walletSelectModel.$walletForDetails,
+  filter: (wallet): wallet is Wallet => wallet !== null,
+  fn: (wallet) => wallet!.id,
+  target: walletModel.events.walletRemoved,
+});
+
+sample({
+  clock: walletModel.events.walletRemovedSuccess,
+  fn: () => ForgetStep.SUCCESS,
+  target: $forgetStep,
+});
+
+forward({
+  from: forgetModalClosed,
+  to: walletSelectModel.events.walletForDetailsCleared,
+});
+
+export const wcDetailsModel = {
   $connected,
   $reconnectStep,
+  $forgetStep,
   events: {
     reset,
     reconnectStarted,
     reconnectAborted,
     sessionTopicUpdated,
+    forgetButtonClicked,
+    forgetModalClosed,
   },
 };

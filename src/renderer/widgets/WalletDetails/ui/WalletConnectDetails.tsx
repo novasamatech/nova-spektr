@@ -4,14 +4,15 @@ import keyBy from 'lodash/keyBy';
 
 import wallet_connect_reconnect_webm from '@video/wallet_connect_reconnect.webm';
 import wallet_connect_reconnect from '@video/wallet_connect_reconnect.mp4';
-import { useModalClose } from '@renderer/shared/lib/hooks';
+import { useModalClose, useToggle } from '@renderer/shared/lib/hooks';
 import { MultiAccountsList, WalletIcon } from '@renderer/entities/wallet';
 import { useI18n } from '@renderer/app/providers';
 import { chainsService } from '@renderer/entities/network';
 import { getWalletConnectChains } from '@renderer/entities/walletConnect';
 import type { Wallet, Chain, Account } from '@renderer/shared/core';
-import { walletConnectDetailsModel } from '../model/wallet-connect-details-model';
-import { wcDetailsUtils } from '../lib/utils';
+import { wcDetailsModel } from '../model/wc-details-model';
+import { wcDetailsUtils, walletDetailsUtils } from '../lib/utils';
+import { ForgetStep } from '../lib/constants';
 import {
   Animation,
   BaseModal,
@@ -25,21 +26,8 @@ import {
   MenuPopover,
   StatusLabel,
   SmallTitleText,
-  FootnoteText,
   StatusModal,
 } from '@renderer/shared/ui';
-import { DEFAULT_TRANSITION } from '@renderer/shared/lib/utils';
-import { useToggle } from '@renderer/shared/lib/hooks';
-import { MultiAccountsList, WalletIcon } from '@renderer/entities/wallet';
-import { useI18n } from '@renderer/app/providers';
-import { chainsService } from '@renderer/entities/network';
-import { walletProviderModel } from '../model/wallet-provider-model';
-import { getWalletConnectChains } from '@renderer/entities/walletConnect';
-import { ForgetStep } from '../lib/constants';
-import wallet_connect_reconnect from '@video/wallet_connect_reconnect.mp4';
-import wallet_connect_reconnect_webm from '@video/wallet_connect_reconnect.webm';
-import { walletConnectDetailsModel } from '../model/wallet-connect-details-model';
-import { wcDetailsUtils, walletDetailsUtils } from '../lib/utils';
 
 type AccountItem = {
   accountId: `0x${string}`;
@@ -58,13 +46,12 @@ export const WalletConnectDetails = ({ wallet, accounts, isConnected, onClose }:
   const [isModalOpen, closeModal] = useModalClose(true, onClose);
   const [isConfirmForgetOpen, toggleConfirmForget] = useToggle(false);
 
-  const connected = useUnit(walletConnectDetailsModel.$connected);
-  const reconnectStep = useUnit(walletConnectDetailsModel.$reconnectStep);
-
-  const forgetStep = useUnit(walletProviderModel.$forgetStep);
+  const connected = useUnit(wcDetailsModel.$connected);
+  const reconnectStep = useUnit(wcDetailsModel.$reconnectStep);
+  const forgetStep = useUnit(wcDetailsModel.$forgetStep);
 
   useEffect(() => {
-    walletConnectDetailsModel.events.reset();
+    wcDetailsModel.events.reset();
   }, []);
 
   // TODO: Rework with https://app.clickup.com/t/8692ykm3y
@@ -85,14 +72,14 @@ export const WalletConnectDetails = ({ wallet, accounts, isConnected, onClose }:
   }, []);
 
   const reconnect = () => {
-    walletConnectDetailsModel.events.reconnectStarted({
+    wcDetailsModel.events.reconnectStarted({
       chains: getWalletConnectChains(chainsService.getChainsData()),
       pairing: { topic: accounts[0].signingExtras?.pairingTopic },
     });
   };
 
   const handleForgetWallet = () => {
-    walletProviderModel.events.forgetButtonClicked();
+    wcDetailsModel.events.forgetButtonClicked();
     toggleConfirmForget();
   };
 
@@ -216,7 +203,7 @@ export const WalletConnectDetails = ({ wallet, accounts, isConnected, onClose }:
               <Animation variant="success" />
             )
           }
-          onClose={walletProviderModel.events.forgetModalClosed}
+          onClose={wcDetailsModel.events.forgetModalClosed}
         />
 
         <StatusModal
@@ -224,9 +211,9 @@ export const WalletConnectDetails = ({ wallet, accounts, isConnected, onClose }:
           title={t('walletDetails.walletConnect.rejectTitle')}
           description={t('walletDetails.walletConnect.rejectDescription')}
           content={<Animation variant="error" />}
-          onClose={walletConnectDetailsModel.events.reconnectAborted}
+          onClose={wcDetailsModel.events.reconnectAborted}
         >
-          <Button onClick={() => walletConnectDetailsModel.events.reconnectAborted()}>
+          <Button onClick={() => wcDetailsModel.events.reconnectAborted()}>
             {t('walletDetails.walletConnect.abortRejectButton')}
           </Button>
         </StatusModal>

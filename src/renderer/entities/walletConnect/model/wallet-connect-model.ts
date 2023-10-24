@@ -266,16 +266,13 @@ sample({
   target: $pairings,
 });
 
-forward({
-  from: connectFx.done,
-  to: connected,
-});
+forward({ from: connectFx.done, to: connected });
 
 sample({
   clock: disconnectCurrentSessionStarted,
   source: $session,
-  filter: (session): session is SessionTypes.Struct => session !== null,
-  fn: (session) => session!.topic,
+  filter: (session: SessionTypes.Struct | null): session is SessionTypes.Struct => session !== null,
+  fn: (session) => session.topic,
   target: disconnectStarted,
 });
 
@@ -290,10 +287,7 @@ sample({
   target: disconnectFx,
 });
 
-forward({
-  from: disconnectFx.done,
-  to: reset,
-});
+forward({ from: disconnectFx.done, to: reset });
 
 sample({
   clock: currentSessionTopicUpdated,
@@ -302,10 +296,7 @@ sample({
   target: sessionTopicUpdatedFx,
 });
 
-forward({
-  from: sessionTopicUpdated,
-  to: sessionTopicUpdatedFx,
-});
+forward({ from: sessionTopicUpdated, to: sessionTopicUpdatedFx });
 
 sample({
   clock: sessionTopicUpdatedFx.doneData,
