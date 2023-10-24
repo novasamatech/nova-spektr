@@ -35,26 +35,27 @@ const EventMessage: Partial<Record<SigningStatus | 'INITIATED', string>> = {
   ERROR_CANCELLED: 'log.errorCancelledMessage',
 } as const;
 
-type WalletsMap = Map<Wallet['id'], Wallet>;
+type WalletsMap = Record<Wallet['id'], Wallet>;
 
-const getFilteredWalletsMap = (wallets: Wallet[]): WalletsMap =>
-  wallets.reduce((acc: WalletsMap, w: Wallet) => {
+const getFilteredWalletsMap = (wallets: Wallet[]): WalletsMap => {
+  return wallets.reduce<WalletsMap>((acc, w) => {
     // 2nd condition for legacy multisig
     if (walletUtils.isValidSignatory(w) || walletUtils.isMultiShard(w)) {
-      acc.set(w.id, w);
+      acc[w.id] = w;
     }
 
     return acc;
-  }, new Map());
+  }, {});
+};
 
 const getFilteredAccountsMap = (accounts: Account[], walletsMap: WalletsMap) =>
-  accounts.reduce((acc: Map<Account['accountId'], Account>, a: Account) => {
-    if (walletsMap.has(a.walletId)) {
-      acc.set(a.accountId, a);
+  accounts.reduce<Record<Account['accountId'], Account>>((acc, a) => {
+    if (walletsMap[a.walletId]) {
+      acc[a.accountId] = a;
     }
 
     return acc;
-  }, new Map());
+  }, {});
 
 const LogModal = ({ isOpen, onClose, tx, account, connection, contacts, accounts }: Props) => {
   const { t, dateLocale } = useI18n();
@@ -129,8 +130,8 @@ const LogModal = ({ isOpen, onClose, tx, account, connection, contacts, accounts
                 {events
                   .sort((a, b) => (a.dateCreated || 0) - (b.dateCreated || 0))
                   .map((event) => {
-                    const account = filteredAccountMap.get(event.accountId);
-                    const wallet = account && filteredWalletsMap.get(account.walletId);
+                    const account = filteredAccountMap[event.accountId];
+                    const wallet = account && filteredWalletsMap[account.walletId];
 
                     return (
                       <li key={`${event.accountId}_${event.status}`} className="flex flex-col">
