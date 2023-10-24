@@ -212,7 +212,11 @@ export const WalletConnectDetails = ({ isOpen, wallet, accounts, onClose }: Prop
               : 'walletDetails.common.walletRemoved',
           )}
           content={
-            forgetStep === ForgetStep.FORGETTING ? <Animation variant="loading" /> : <Animation variant="success" />
+            forgetStep === ForgetStep.FORGETTING ? (
+              <Animation variant="loading" loop />
+            ) : (
+              <Animation variant="success" />
+            )
           }
           onClose={walletProviderModel.events.forgetModalClosed}
         />
