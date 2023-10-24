@@ -41,7 +41,6 @@ function isWatchOnly(wallet?: Wallet | null): boolean {
 
 function isValidSignatory(wallet?: Wallet | null) {
   const VALID_SIGNATORY_WALLET_TYPES = [
-    WalletType.POLKADOT_VAULT,
     WalletType.SINGLE_PARITY_SIGNER,
     WalletType.WALLET_CONNECT,
     WalletType.NOVA_WALLET,
