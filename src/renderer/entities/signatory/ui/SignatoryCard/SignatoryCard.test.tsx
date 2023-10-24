@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/react';
 
-import { TEST_ADDRESS } from '@renderer/shared/lib/utils';
+import { TEST_ACCOUNT_ID } from '@renderer/shared/lib/utils';
 import { SignatoryCard } from './SignatoryCard';
 
 jest.mock('@renderer/app/providers', () => ({
@@ -9,11 +9,14 @@ jest.mock('@renderer/app/providers', () => ({
 
 describe('ui/SignatoryCard', () => {
   test('should render component', () => {
-    const name = 'John Doe';
-    render(<SignatoryCard address={TEST_ADDRESS} name={name} />);
+    render(
+      <SignatoryCard accountId={TEST_ACCOUNT_ID} addressPrefix={0} status={'SIGNED'}>
+        <p>address</p>
+      </SignatoryCard>,
+    );
 
-    const nameElement = screen.getByText(name);
+    const successIcon = screen.getByTestId('checkLineRedesign-svg');
 
-    expect(nameElement).toBeInTheDocument();
+    expect(successIcon).toHaveClass('text-text-positive');
   });
 });

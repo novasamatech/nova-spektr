@@ -62,13 +62,13 @@ export const WalletMenu = ({ children }: PropsWithChildren) => {
       id: 'multi',
       title: t('wallets.addMultisig'),
       onClick: () => walletProviderModel.events.walletTypeSet(WalletType.MULTISIG),
-      iconName: 'multisig',
+      iconName: 'multisigOld',
     },
     {
       id: 'nova-wallet',
       title: t('wallets.addNovaWallet'),
       onClick: () => walletProviderModel.events.walletTypeSet(WalletType.NOVA_WALLET),
-      iconName: 'novaWallet',
+      iconName: 'novaWalletOld',
     },
     {
       id: 'wallet-connect',

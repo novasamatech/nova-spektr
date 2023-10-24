@@ -7,3 +7,4 @@ export * from './OperationResult/common/constants';
 export type { Variant } from './OperationResult/common/types';
 
 export { Fee, DepositWithLabel, OperationResult, Deposit };
+export { XcmFee } from './XcmFee/XcmFee';

@@ -4,7 +4,7 @@ import { AccountId32 } from '@polkadot/types/interfaces';
 
 import { PendingMultisigTransaction } from './types';
 import { getCreatedDate, toAccountId } from '@renderer/shared/lib/utils';
-import { ExtrinsicResultParams } from '@renderer/entities/transaction';
+import { DecodedTransaction, ExtrinsicResultParams, TransactionType } from '@renderer/entities/transaction';
 import type { MultisigAccount, Address, ChainId } from '@renderer/shared/core';
 import {
   MultisigEvent,
@@ -188,4 +188,16 @@ export const buildMultisigTx = (
     event,
     transaction,
   };
+};
+
+export const getTransactionFromMultisigTx = (tx: MultisigTransaction): Transaction | DecodedTransaction | undefined => {
+  if (!tx.transaction || tx.transaction.type !== 'batchAll') {
+    return tx.transaction;
+  }
+
+  const transactionMatch = tx.transaction.args.transactions.find((tx: Transaction) => {
+    return tx.type === TransactionType.BOND || tx.type === TransactionType.UNSTAKE;
+  });
+
+  return transactionMatch || tx.transaction.args.transactions[0];
 };

@@ -186,7 +186,7 @@
   },
   "notifications": {
     "details": {
-      "newMultisigAccountDescription": "New multisig wallet added: <identicon /> {name}, with threshold { threshold } out of { signatories } signatories"
+      "newMultisigAccountDescription": "New multisig wallet added:<identicon />{name}, with threshold { threshold } out of { signatories } signatories"
     },
     "noNotificationsDescription": "You don't have notifications yet",
     "title": "Notifications"
@@ -314,8 +314,10 @@
     "advanced": "Advanced",
     "approveButton": "Approve",
     "cancelTitle": "Reject",
+    "contactSignatoriesTitle": "Contacts",
     "continueButton": "Continue",
     "details": {
+      "account": "Account",
       "amount": "Amount",
       "callData": "Call Data",
       "callHash": "Call Hash",
@@ -325,14 +327,14 @@
       "description": "Description",
       "destinationChain": "To network",
       "fromNetwork": "From network",
-      "multisigWallet": "Multisig wallet",
+      "multisigWallet": "Wallet",
       "payee": "Rewards destination",
       "recipient": "Recipient",
       "rejectReason": "Reject reason",
       "sender": "Sender",
       "timePoint": "Time Point",
       "toNetwork": "To network",
-      "validators": "Selected validators",
+      "validators": "Validators",
       "wallet": "Wallet"
     },
     "detailsTitle": "Details",
@@ -387,6 +389,7 @@
       "signTitle": "Confirm the operation on your { walletName } app",
       "tryAgainButton": "Try again"
     },
+    "walletSignatoriesTitle": "Your wallets",
     "xcmFee": "Cross-chain fee"
   },
   "operations": {
@@ -407,9 +410,11 @@
       "statusSummary": "Operation statuses"
     },
     "modalTitles": {
+      "approve": "Approve",
       "destinationOn": "Set reward destination on",
       "nominateOn": "Change Validators on",
       "redeemOn": "Withdraw Unstaked { asset } on",
+      "reject": "Reject",
       "restakeOn": "Restake { asset } on",
       "stakeMoreOn": "Stake More { asset } on",
       "startStakingOn": "Start Staking { asset } on",
@@ -598,7 +603,7 @@
     "scanSignatureTitle": "Scan QR code from Polkadot Vault",
     "signatureExpiredDescription": "For security reasons generated operations valid for only 5 mins. Please generate new QR code and sign it with Polkadot Vault",
     "signatureExpiredLabel": "QR Code has expired",
-    "signer": "Signer:",
+    "signer": "Signatory:",
     "title": "Signing",
     "troubleshootingLink": "I have an error in Polkadot Vault"
   },
@@ -659,6 +664,7 @@
       "accountsTitle": "Selected accounts",
       "backButton": "Back",
       "changeValidatorsTitle": "Change validators",
+      "electedValidators": "Elected",
       "errorModalDiscardButton": "Discard",
       "errorModalEditButton": "Edit",
       "errorModalSubtitle": "You can discard these transactions",
@@ -673,6 +679,7 @@
       "hintTitle": "Learn more",
       "hintUnstakePeriod": "To unstake tokens you will have to wait for the ustaking period",
       "hintWithdraw": "After unstaking period don’t forget to redeem your tokens",
+      "notElectedValidators": "Not elected",
       "queueButton": "Add to operation queue",
       "restakeRewards": "Restake rewards",
       "rewardsDestinationLabel": "Rewards destination",

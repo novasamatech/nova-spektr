@@ -16,7 +16,7 @@ export const GroupIcons: Record<WalletType, IconNames> = {
   [WalletType.MULTISHARD_PARITY_SIGNER]: 'vault',
   [WalletType.SINGLE_PARITY_SIGNER]: 'vault',
   [WalletType.WALLET_CONNECT]: 'walletConnect',
-  [WalletType.NOVA_WALLET]: 'novaWallet',
-  [WalletType.MULTISIG]: 'multisig',
-  [WalletType.WATCH_ONLY]: 'watchOnly',
+  [WalletType.NOVA_WALLET]: 'novaWalletOld',
+  [WalletType.MULTISIG]: 'multisigOld',
+  [WalletType.WATCH_ONLY]: 'watchOnlyOld',
 };
