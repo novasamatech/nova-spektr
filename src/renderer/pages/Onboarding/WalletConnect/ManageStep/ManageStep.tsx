@@ -186,9 +186,9 @@ const ManageStep = ({ accounts, type, pairingTopic, sessionTopic, onBack, onComp
         </form>
       </div>
 
-      <div className="w-[472px] flex flex-col bg-input-background-disabled px-3 py-4 rounded-r-lg">
-        <SmallTitleText className="px-2 mt-[52px] mb-6">{t('onboarding.vault.accountsTitle')}</SmallTitleText>
-        <MultiAccountsList accounts={accountsList} />
+      <div className="w-[472px] flex flex-col gap-y-6 bg-input-background-disabled py-4 rounded-r-lg">
+        <SmallTitleText className="px-5 mt-[52px]">{t('onboarding.vault.accountsTitle')}</SmallTitleText>
+        <MultiAccountsList accounts={accountsList} className="h-[416px]" />
       </div>
     </>
   );

@@ -2,7 +2,16 @@ import { useEffect, useMemo } from 'react';
 import { useUnit } from 'effector-react';
 import keyBy from 'lodash/keyBy';
 
-import { Wallet, Chain, Account } from '@renderer/shared/core';
+import wallet_connect_reconnect_webm from '@video/wallet_connect_reconnect.webm';
+import wallet_connect_reconnect from '@video/wallet_connect_reconnect.mp4';
+import { useModalClose } from '@renderer/shared/lib/hooks';
+import { MultiAccountsList, WalletIcon } from '@renderer/entities/wallet';
+import { useI18n } from '@renderer/app/providers';
+import { chainsService } from '@renderer/entities/network';
+import { getWalletConnectChains } from '@renderer/entities/walletConnect';
+import type { Wallet, Chain, Account } from '@renderer/shared/core';
+import { walletConnectDetailsModel } from '../model/wallet-connect-details-model';
+import { wcDetailsUtils } from '../lib/utils';
 import {
   Animation,
   BaseModal,
@@ -14,8 +23,9 @@ import {
   Icon,
   IconButton,
   MenuPopover,
-  SmallTitleText,
   StatusLabel,
+  SmallTitleText,
+  FootnoteText,
   StatusModal,
 } from '@renderer/shared/ui';
 import { DEFAULT_TRANSITION } from '@renderer/shared/lib/utils';
@@ -37,15 +47,15 @@ type AccountItem = {
 };
 
 type Props = {
-  isOpen: boolean;
   wallet: Wallet;
   accounts: Account[];
+  isConnected: boolean;
   onClose: () => void;
 };
-export const WalletConnectDetails = ({ isOpen, wallet, accounts, onClose }: Props) => {
+export const WalletConnectDetails = ({ wallet, accounts, isConnected, onClose }: Props) => {
   const { t } = useI18n();
 
-  const [isModalOpen, toggleIsModalOpen] = useToggle(isOpen);
+  const [isModalOpen, closeModal] = useModalClose(true, onClose);
   const [isConfirmForgetOpen, toggleConfirmForget] = useToggle(false);
 
   const connected = useUnit(walletConnectDetailsModel.$connected);
@@ -54,16 +64,8 @@ export const WalletConnectDetails = ({ isOpen, wallet, accounts, onClose }: Prop
   const forgetStep = useUnit(walletProviderModel.$forgetStep);
 
   useEffect(() => {
-    if (!isModalOpen) {
-      walletConnectDetailsModel.events.reset();
-    }
-  }, [isModalOpen]);
-
-  const closeModal = () => {
-    toggleIsModalOpen();
-
-    setTimeout(onClose, DEFAULT_TRANSITION);
-  };
+    walletConnectDetailsModel.events.reset();
+  }, []);
 
   // TODO: Rework with https://app.clickup.com/t/8692ykm3y
   const accountsList = useMemo(() => {
@@ -71,7 +73,7 @@ export const WalletConnectDetails = ({ isOpen, wallet, accounts, onClose }: Prop
 
     const accountsMap = keyBy(accounts, 'chainId');
 
-    const accountsList = sortedChains.reduce<AccountItem[]>((acc, chain) => {
+    return sortedChains.reduce<AccountItem[]>((acc, chain) => {
       const accountId = accountsMap[chain.chainId]?.accountId;
 
       if (accountId) {
@@ -80,8 +82,6 @@ export const WalletConnectDetails = ({ isOpen, wallet, accounts, onClose }: Prop
 
       return acc;
     }, []);
-
-    return accountsList;
   }, []);
 
   const reconnect = () => {
@@ -96,15 +96,11 @@ export const WalletConnectDetails = ({ isOpen, wallet, accounts, onClose }: Prop
     toggleConfirmForget();
   };
 
-  const isAccountsStep = wcDetailsUtils.isNotStarted(reconnectStep, connected);
-  const isReconnectingStep = wcDetailsUtils.isReconnecting(reconnectStep);
-  const isReadyToReconnectStep = wcDetailsUtils.isReadyToReconnect(reconnectStep, connected);
-  const isRejected = wcDetailsUtils.isRejected(reconnectStep);
-
   return (
     <BaseModal
       closeButton
       contentClass=""
+      panelClass="h-modal"
       title={
         <div className="flex items-center">
           <HeaderTitleText className="flex-1 truncate">{t('walletDetails.common.title')}</HeaderTitleText>
@@ -152,9 +148,9 @@ export const WalletConnectDetails = ({ isOpen, wallet, accounts, onClose }: Prop
             <BodyText>{wallet.name}</BodyText>
           </div>
           <StatusLabel
-            variant={connected ? 'success' : 'waiting'}
+            variant={isConnected ? 'success' : 'waiting'}
             title={t(
-              connected
+              isConnected
                 ? 'walletDetails.walletConnect.connectedStatus'
                 : 'walletDetails.walletConnect.disconnectedStatus',
             )}
@@ -163,9 +159,11 @@ export const WalletConnectDetails = ({ isOpen, wallet, accounts, onClose }: Prop
 
         <div className="px-3 flex-1">
           <>
-            {isAccountsStep && <MultiAccountsList accounts={accountsList} className="h-[404px]" />}
+            {wcDetailsUtils.isNotStarted(reconnectStep, connected) && (
+              <MultiAccountsList accounts={accountsList} className="h-[404px]" />
+            )}
 
-            {isReadyToReconnectStep && (
+            {wcDetailsUtils.isReadyToReconnect(reconnectStep, connected) && (
               <div className="flex flex-col h-[454px] justify-center items-center">
                 <Icon name="document" size={64} className="mb-6" />
                 <SmallTitleText className="mb-2">{t('walletDetails.walletConnect.disconnectedTitle')}</SmallTitleText>
@@ -176,7 +174,7 @@ export const WalletConnectDetails = ({ isOpen, wallet, accounts, onClose }: Prop
               </div>
             )}
 
-            {isReconnectingStep && (
+            {wcDetailsUtils.isReconnecting(reconnectStep) && (
               <div className="flex flex-col h-[454px] justify-center items-center">
                 <video className="object-contain h-[454px]" autoPlay loop>
                   <source src={wallet_connect_reconnect_webm} type="video/webm" />
@@ -222,7 +220,7 @@ export const WalletConnectDetails = ({ isOpen, wallet, accounts, onClose }: Prop
         />
 
         <StatusModal
-          isOpen={isRejected}
+          isOpen={wcDetailsUtils.isRejected(reconnectStep)}
           title={t('walletDetails.walletConnect.rejectTitle')}
           description={t('walletDetails.walletConnect.rejectDescription')}
           content={<Animation variant="error" />}

@@ -1,41 +1,57 @@
 import { useUnit } from 'effector-react';
 
-import { WalletType, Wallet, Account } from '@renderer/shared/core';
 import { walletSelectModel } from '@renderer/features/wallets';
-import { walletProviderModel } from '../model/wallet-provider-model';
 import { SimpleWalletDetails } from './SimpleWalletDetails';
+import { MultisigWalletDetails } from './MultisigWalletDetails';
 import { WalletConnectDetails } from './WalletConnectDetails';
+import { walletProviderModel } from '../model/wallet-provider-model';
+import { MultishardWalletDetails } from './MultishardWalletDetails';
+import { walletUtils } from '@renderer/entities/wallet';
+import type { Wallet } from '@renderer/shared/core';
 
 type ModalProps = {
   wallet: Wallet;
-  accounts: Account[];
   onClose: () => void;
 };
-const WalletModals: Record<WalletType, (props: ModalProps) => JSX.Element> = {
-  [WalletType.POLKADOT_VAULT]: (props) => <></>,
-  [WalletType.MULTISHARD_PARITY_SIGNER]: (props) => <></>,
-  [WalletType.SINGLE_PARITY_SIGNER]: ({ accounts, ...rest }: ModalProps) => (
-    <SimpleWalletDetails isOpen account={accounts[0]} {...rest} />
-  ),
-  [WalletType.WATCH_ONLY]: ({ accounts, ...rest }: ModalProps) => (
-    <SimpleWalletDetails isOpen account={accounts[0]} {...rest} />
-  ),
-  [WalletType.MULTISIG]: (props) => <></>,
-  [WalletType.NOVA_WALLET]: (props) => <WalletConnectDetails isOpen {...props} />,
-  [WalletType.WALLET_CONNECT]: (props) => <WalletConnectDetails isOpen {...props} />,
-};
-
 export const WalletDetailsProvider = () => {
   const wallet = useUnit(walletSelectModel.$walletForDetails);
   const accounts = useUnit(walletProviderModel.$accounts);
+  const singleShardAccount = useUnit(walletProviderModel.$singleShardAccount);
+  const multiShardAccounts = useUnit(walletProviderModel.$multiShardAccounts);
+  const multisigAccount = useUnit(walletProviderModel.$multisigAccount);
+  const contacts = useUnit(walletProviderModel.$signatoryContacts);
+  const isConnected = useUnit(walletProviderModel.$isConnected);
+  const signatoryWallets = useUnit(walletProviderModel.$signatoryWallets);
 
   if (!wallet) return null;
 
-  const props: ModalProps = {
+  const commonProps: ModalProps = {
     wallet,
-    accounts,
     onClose: walletSelectModel.events.walletForDetailsCleared,
   };
 
-  return WalletModals[wallet.type](props);
+  if ((walletUtils.isWatchOnly(wallet) || walletUtils.isSingleShard(wallet)) && singleShardAccount) {
+    return <SimpleWalletDetails account={singleShardAccount} {...commonProps} />;
+  }
+
+  if (walletUtils.isMultiShard(wallet) && multiShardAccounts.size > 0) {
+    return <MultishardWalletDetails accounts={multiShardAccounts} {...commonProps} />;
+  }
+
+  if (walletUtils.isMultisig(wallet) && multisigAccount) {
+    return (
+      <MultisigWalletDetails
+        account={multisigAccount}
+        signatoryWallets={signatoryWallets}
+        signatoryContacts={contacts}
+        {...commonProps}
+      />
+    );
+  }
+
+  if (walletUtils.isWalletConnect(wallet) || walletUtils.isNovaWallet(wallet)) {
+    return <WalletConnectDetails accounts={accounts} isConnected={isConnected} {...commonProps} />;
+  }
+
+  return <></>; // HINT: Only Polkadot Vault left
 };

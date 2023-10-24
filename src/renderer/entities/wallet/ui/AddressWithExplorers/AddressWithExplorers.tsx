@@ -19,7 +19,7 @@ export const AddressWithExplorers = ({
   ...addressProps
 }: Props) => {
   const address = getAddress(addressProps);
-  const popoverItems = useAddressInfo(address, explorers, showMatrix);
+  const popoverItems = useAddressInfo({ address, explorers, showMatrix });
 
   return (
     <InfoPopover data={popoverItems} position={position} className="w-[230px]">
