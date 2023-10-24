@@ -1,3 +1,4 @@
+import { Animation } from './Animation/Animation';
 import Input from './Inputs/Input/Input';
 import Plate from './Plate/Plate';
 import { AmountInput } from './Inputs/AmountInput/AmountInput';
@@ -61,6 +62,7 @@ import { Countdown } from './Countdown/Countdown';
 // https://stackoverflow.com/questions/49156356/why-does-jest-try-to-resolve-every-component-in-my-index-ts
 
 export {
+  Animation,
   Input,
   Plate,
   AmountInput,
