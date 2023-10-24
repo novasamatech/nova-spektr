@@ -40,7 +40,6 @@ function isWatchOnly(wallet?: Wallet | null): boolean {
 }
 
 function isValidSignatory(wallet?: Wallet | null) {
-  // TODO: add wallet connect
   const VALID_SIGNATORY_WALLET_TYPES = [
     WalletType.SINGLE_PARITY_SIGNER,
     WalletType.WALLET_CONNECT,

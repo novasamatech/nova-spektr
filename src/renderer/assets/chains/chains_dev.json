@@ -265,6 +265,19 @@
           "assetId": "81"
         },
         "name": "Siri"
+      },
+      {
+        "assetId": 2,
+        "symbol": "DOT",
+        "precision": 10,
+        "type": "statemine",
+        "priceId": "polkadot",
+        "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Polkadot_(DOT).svg",
+        "typeExtras": {
+          "assetId": "0x02010902",
+          "palletName": "ForeignAssets"
+        },
+        "name": "Polkadot"
       }
     ],
     "explorers": [
@@ -290,10 +303,6 @@
       {
         "url": "wss://sys.dotters.network/statemine",
         "name": "Dotters Net node"
-      },
-      {
-        "url": "wss://statemine.api.onfinality.io/public-ws",
-        "name": "OnFinality node"
       },
       {
         "url": "wss://statemine-rpc.dwellir.com",
@@ -421,10 +430,6 @@
     "parentId": "0xb0a8d493285c2df73290dfb7e61f870f17b41801197a149ca93654499ea3dafe",
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/chains/Karura.svg",
     "nodes": [
-      {
-        "url": "wss://karura-rpc.dwellir.com",
-        "name": "Dwellir node"
-      },
       {
         "url": "wss://karura-rpc-0.aca-api.network",
         "name": "Acala Foundation 0 node"
@@ -3215,8 +3220,8 @@
         "name": "Airalab node"
       },
       {
-        "url": "wss://robonomics.leemo.me",
-        "name": "Leemo node"
+        "url": "wss://robonomics.0xsamsara.com",
+        "name": "Samsara node"
       }
     ],
     "assets": [
@@ -5491,7 +5496,7 @@
     }
   },
   {
-    "name": "GM",
+    "name": "GM PAUSED",
     "addressPrefix": 7013,
     "chainId": "0x19a3733beb9cb8a970a308d835599e9005e02dc007a35440e461a451466776f8",
     "parentId": "0xb0a8d493285c2df73290dfb7e61f870f17b41801197a149ca93654499ea3dafe",
@@ -5574,6 +5579,36 @@
         "precision": 12,
         "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Amplitude_(AMPE).svg",
         "name": "Amplitude"
+      },
+      {
+        "assetId": 1,
+        "symbol": "KSM",
+        "precision": 12,
+        "type": "orml",
+        "priceId": "kusama",
+        "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Kusama_(KSM).svg",
+        "typeExtras": {
+          "currencyIdScale": "0x0100",
+          "currencyIdType": "SpacewalkPrimitivesCurrencyId",
+          "existentialDeposit": "0",
+          "transfersEnabled": true
+        },
+        "name": "Kusama"
+      },
+      {
+        "assetId": 2,
+        "symbol": "USDT",
+        "precision": 6,
+        "type": "orml",
+        "priceId": "tether",
+        "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/USDT.svg",
+        "typeExtras": {
+          "currencyIdScale": "0x0101",
+          "currencyIdType": "SpacewalkPrimitivesCurrencyId",
+          "existentialDeposit": "0",
+          "transfersEnabled": true
+        },
+        "name": "USD Tether"
       }
     ],
     "externalApi": {

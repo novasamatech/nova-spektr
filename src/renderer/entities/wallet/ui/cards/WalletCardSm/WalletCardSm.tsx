@@ -25,7 +25,7 @@ export const WalletCardSm = ({ wallet, className, iconSize = 16, addressPrefix, 
         )}
       >
         <WalletIcon type={wallet.type} size={iconSize} />
-        <FootnoteText className="text-inherit inline">{wallet.name}</FootnoteText>
+        <FootnoteText className="text-inherit inline w-max">{wallet.name}</FootnoteText>
         <Icon name="info" size={16} className="shrink-0 group-hover:text-icon-hover" />
       </div>
     </InfoPopover>

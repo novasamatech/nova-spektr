@@ -410,9 +410,11 @@
       "statusSummary": "Operation statuses"
     },
     "modalTitles": {
+      "approve": "Approve",
       "destinationOn": "Set reward destination on",
       "nominateOn": "Change Validators on",
       "redeemOn": "Withdraw Unstaked { asset } on",
+      "reject": "Reject",
       "restakeOn": "Restake { asset } on",
       "stakeMoreOn": "Stake More { asset } on",
       "startStakingOn": "Start Staking { asset } on",
@@ -601,7 +603,7 @@
     "scanSignatureTitle": "Scan QR code from Polkadot Vault",
     "signatureExpiredDescription": "For security reasons generated operations valid for only 5 mins. Please generate new QR code and sign it with Polkadot Vault",
     "signatureExpiredLabel": "QR Code has expired",
-    "signer": "Signer:",
+    "signer": "Signatory:",
     "title": "Signing",
     "troubleshootingLink": "I have an error in Polkadot Vault"
   },

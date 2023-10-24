@@ -9,7 +9,7 @@ import { MultisigTransactionDS } from '@renderer/shared/api/storage';
 import { useToggle } from '@renderer/shared/lib/hooks';
 import { ExtendedChain } from '@renderer/entities/network';
 import { toAddress, transferableAmount, getAssetById } from '@renderer/shared/lib/utils';
-import { getModalTransactionTitle } from '../../common/utils';
+import { getMultisigSignOperationTitle } from '../../common/utils';
 import { useBalance } from '@renderer/entities/asset';
 import RejectReasonModal from './RejectReasonModal';
 import { Submit } from '../ActionSteps/Submit';
@@ -45,7 +45,7 @@ const AllSteps = [Step.CONFIRMATION, Step.SIGNING, Step.SUBMIT];
 const RejectTx = ({ tx, account, connection }: Props) => {
   const { t } = useI18n();
   const activeWallet = useUnit(walletModel.$activeWallet);
-  const accounts = useUnit(walletModel.$activeAccounts);
+  const accounts = useUnit(walletModel.$accounts);
 
   const { getBalance } = useBalance();
   const { getTransactionFee } = useTransaction();
@@ -62,7 +62,12 @@ const RejectTx = ({ tx, account, connection }: Props) => {
   const [rejectReason, setRejectReason] = useState('');
   const [signature, setSignature] = useState<HexString>();
 
-  const transactionTitle = getModalTransactionTitle(isXcmTransaction(tx.transaction), tx.transaction);
+  const transactionTitle = getMultisigSignOperationTitle(
+    isXcmTransaction(tx.transaction),
+    t,
+    TransactionType.MULTISIG_CANCEL_AS_MULTI,
+    tx,
+  );
 
   const nativeAsset = connection.assets[0];
   const asset = getAssetById(tx.transaction?.args.assetId, connection.assets);

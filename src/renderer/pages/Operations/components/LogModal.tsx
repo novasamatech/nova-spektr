@@ -9,13 +9,13 @@ import { TransactionTitle } from './TransactionTitle/TransactionTitle';
 import OperationStatus from './OperationStatus';
 import { getSignatoryName, getTransactionAmount, sortByDateAsc } from '../common/utils';
 import { BaseModal, BodyText, FootnoteText, Identicon } from '@renderer/shared/ui';
-import { toAddress, SS58_DEFAULT_PREFIX, getAssetById } from '@renderer/shared/lib/utils';
+import { getAssetById, SS58_DEFAULT_PREFIX, toAddress } from '@renderer/shared/lib/utils';
 import { ExtrinsicExplorers } from '@renderer/components/common';
 import { useMultisigEvent } from '@renderer/entities/multisig';
 import { MultisigTransactionDS } from '@renderer/shared/api/storage';
 import { AssetBalance } from '@renderer/entities/asset';
-import type { Account, MultisigAccount, Contact } from '@renderer/shared/core';
-import { WalletIcon, walletModel } from '@renderer/entities/wallet';
+import type { Account, Contact, MultisigAccount, Wallet, AccountId } from '@renderer/shared/core';
+import { WalletIcon, walletModel, walletUtils } from '@renderer/entities/wallet';
 
 type Props = {
   tx: MultisigTransactionDS;
@@ -35,11 +35,33 @@ const EventMessage: Partial<Record<SigningStatus | 'INITIATED', string>> = {
   ERROR_CANCELLED: 'log.errorCancelledMessage',
 } as const;
 
+type WalletsMap = Record<Wallet['id'], Wallet>;
+
+const getFilteredWalletsMap = (wallets: Wallet[]): WalletsMap => {
+  return wallets.reduce<WalletsMap>((acc, wallet) => {
+    // 2nd condition for legacy multisig
+    if (walletUtils.isValidSignatory(wallet) || walletUtils.isMultiShard(wallet)) {
+      acc[wallet.id] = wallet;
+    }
+
+    return acc;
+  }, {});
+};
+
+const getFilteredAccountsMap = (accounts: Account[], walletsMap: WalletsMap) =>
+  accounts.reduce<Record<AccountId, Account>>((acc, account) => {
+    if (walletsMap[account.walletId]) {
+      acc[account.accountId] = account;
+    }
+
+    return acc;
+  }, {});
+
 const LogModal = ({ isOpen, onClose, tx, account, connection, contacts, accounts }: Props) => {
   const { t, dateLocale } = useI18n();
   const { getLiveTxEvents } = useMultisigEvent({});
-  const walletsMap = new Map(useUnit(walletModel.$wallets).map((w) => [w.id, w]));
-  const accountsMap = new Map(useUnit(walletModel.$accounts).map((a) => [a.accountId, a]));
+  const filteredWalletsMap = getFilteredWalletsMap(useUnit(walletModel.$wallets));
+  const filteredAccountMap = getFilteredAccountsMap(accounts, filteredWalletsMap);
   const events = getLiveTxEvents(tx.accountId, tx.chainId, tx.callHash, tx.blockCreated, tx.indexCreated);
 
   const { transaction, description, status } = tx;
@@ -108,8 +130,8 @@ const LogModal = ({ isOpen, onClose, tx, account, connection, contacts, accounts
                 {events
                   .sort((a, b) => (a.dateCreated || 0) - (b.dateCreated || 0))
                   .map((event) => {
-                    const account = accountsMap.get(event.accountId);
-                    const wallet = account && walletsMap.get(account.walletId);
+                    const account = filteredAccountMap[event.accountId];
+                    const wallet = filteredWalletsMap[account?.walletId];
 
                     return (
                       <li key={`${event.accountId}_${event.status}`} className="flex flex-col">

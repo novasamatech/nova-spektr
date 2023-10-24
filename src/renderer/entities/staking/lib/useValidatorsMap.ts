@@ -14,7 +14,7 @@ export const useValidatorsMap = (api?: ApiPromise, chainId?: ChainId, isLightCli
   useEffect(() => {
     let unsubEra: () => void | undefined;
 
-    if (api) {
+    if (api?.query.staking) {
       subscribeActiveEra(api, setEra).then((unsubFn) => (unsubEra = unsubFn));
     }
 
