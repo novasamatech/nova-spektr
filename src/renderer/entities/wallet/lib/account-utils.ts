@@ -10,6 +10,7 @@ import type {
   BaseAccount,
   ChainAccount,
   WalletConnectAccount,
+  Wallet,
 } from '@renderer/shared/core';
 
 export const accountUtils = {
@@ -20,6 +21,7 @@ export const accountUtils = {
   isWalletConnectAccount,
   getMultisigAccountId,
   getAllAccountIds,
+  getWalletAccounts,
 };
 
 function getMultisigAccountId(ids: AccountId[], threshold: Threshold): AccountId {
@@ -64,4 +66,8 @@ function getAllAccountIds(accounts: Account[], chainId: ChainId): AccountId[] {
   }, new Set());
 
   return Array.from(uniqIds);
+}
+
+function getWalletAccounts<T extends Account>(walletId: Wallet['id'], accounts: T[]): T[] {
+  return accounts.filter((account) => account.walletId === walletId);
 }

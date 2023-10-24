@@ -33,6 +33,7 @@ sample({
   clock: forgetButtonClicked,
   source: walletSelectModel.$walletForDetails,
   filter: (wallet): wallet is Wallet => wallet !== null,
+  fn: (wallet) => wallet!.id,
   target: walletModel.events.walletRemoved,
 });
 

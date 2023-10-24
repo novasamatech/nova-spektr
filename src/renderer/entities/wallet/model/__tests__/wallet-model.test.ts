@@ -117,7 +117,7 @@ describe('entities/wallet/model/wallet-model', () => {
 
     await allSettled(walletModel.events.walletRemoved, {
       scope,
-      params: removedWallet,
+      params: removedWallet.id,
     });
 
     expect(deleteAccountsSpy).toHaveBeenCalledWith(removedAccounts.map((a) => a.id));

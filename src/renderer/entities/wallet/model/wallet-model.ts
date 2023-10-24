@@ -5,6 +5,7 @@ import type { Wallet, NoID, Account, BaseAccount, ChainAccount, MultisigAccount,
 import { kernelModel, WalletConnectAccount } from '@renderer/shared/core';
 import { storageService } from '@renderer/shared/api/storage';
 import { modelUtils } from '../lib/model-utils';
+import { accountUtils } from '../lib/account-utils';
 
 type WalletId = Wallet['id'];
 type NoIdWallet = NoID<Wallet>;
@@ -39,7 +40,7 @@ const walletConnectCreated = createEvent<CreateParams<WalletConnectAccount>>();
 
 const walletSelected = createEvent<WalletId>();
 const multisigAccountUpdated = createEvent<MultisigUpdateParams>();
-const walletRemoved = createEvent<Wallet>();
+const walletRemoved = createEvent<WalletId>();
 
 const fetchAllAccountsFx = createEffect((): Promise<Account[]> => {
   return storageService.accounts.readAll();
@@ -128,14 +129,14 @@ const multisigWalletUpdatedFx = createEffect(
 );
 
 type RemoveParams = {
-  wallet: Wallet;
+  walletId: WalletId;
   accountIds: ID[];
 };
 
-const removeWalletFx = createEffect(async ({ wallet, accountIds }: RemoveParams): Promise<Wallet> => {
-  await Promise.all([storageService.accounts.deleteAll(accountIds), storageService.wallets.delete(wallet.id)]);
+const removeWalletFx = createEffect(async ({ walletId, accountIds }: RemoveParams): Promise<WalletId> => {
+  await Promise.all([storageService.accounts.deleteAll(accountIds), storageService.wallets.delete(walletId)]);
 
-  return wallet;
+  return walletId;
 });
 
 forward({ from: kernelModel.events.appStarted, to: [fetchAllWalletsFx, fetchAllAccountsFx] });
@@ -218,22 +219,23 @@ sample({
 sample({
   clock: walletRemoved,
   source: $accounts,
-  fn: (accounts, wallet) => ({ accountIds: accounts.filter((a) => a.walletId === wallet.id).map((a) => a.id), wallet }),
+  fn: (accounts, walletId) => ({
+    accountIds: accountUtils.getWalletAccounts(walletId, accounts).map((a) => a.id),
+    walletId,
+  }),
   target: removeWalletFx,
 });
 
 sample({
   clock: removeWalletFx.doneData,
-  source: $wallets,
-  fn: (wallets, wallet) => wallets.filter((w) => w.id !== wallet.id),
-  target: $wallets,
-});
-
-sample({
-  clock: removeWalletFx.doneData,
-  source: $accounts,
-  fn: (accounts, wallet) => accounts.filter((a) => a.walletId !== wallet.id),
-  target: $accounts,
+  source: { wallets: $wallets, accounts: $accounts },
+  fn: ({ accounts, wallets }, walletId) => ({
+    accounts: accounts.filter((a) => a.walletId !== walletId),
+    wallets: wallets.filter((w) => w.id !== walletId),
+  }),
+  target: spread({
+    targets: { wallets: $wallets, accounts: $accounts },
+  }),
 });
 
 sample({
@@ -242,7 +244,7 @@ sample({
     activeWallet: $activeWallet,
     wallets: $wallets,
   },
-  filter: ({ activeWallet }, wallet) => activeWallet?.id === wallet.id,
+  filter: ({ activeWallet }, walletId) => activeWallet?.id === walletId,
   fn: ({ wallets }) => ({
     nextId: wallets[0].id,
   }),
