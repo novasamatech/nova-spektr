@@ -9,6 +9,8 @@ import { walletSelectModel } from '../model/wallet-select-model';
 export const GroupLabels: Record<WalletFamily, string> = {
   [WalletType.POLKADOT_VAULT]: 'wallets.paritySignerLabel',
   [WalletType.MULTISIG]: 'wallets.multisigLabel',
+  [WalletType.WALLET_CONNECT]: 'wallets.walletConnectLabel',
+  [WalletType.NOVA_WALLET]: 'wallets.novaWalletLabel',
   [WalletType.WATCH_ONLY]: 'wallets.watchOnlyLabel',
   [WalletType.NOVA_WALLET]: 'wallets.novaWalletLabel',
   [WalletType.WALLET_CONNECT]: 'wallets.walletConnectLabel',

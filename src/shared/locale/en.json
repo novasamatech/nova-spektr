@@ -1,7 +1,7 @@
 {
   "accountList": {
-    "addressColumn": "Address",
-    "networksColumn": "Networks { chains }"
+    "addressColumn": "Account",
+    "networksColumn": "Network { chains }"
   },
   "addressBook": {
     "contactList": {
@@ -877,6 +877,13 @@
       "forgetButton": "Forget",
       "renameButton": "Rename",
       "title": "Wallet details"
+    },
+    "multisig": {
+      "contactsGroup": "Contacts",
+      "networksTab": "Networks",
+      "signatoriesTab": "Signatories",
+      "thresholdLabel": "Threshold { min } out of { max }",
+      "walletsGroup": "Your wallets"
     },
     "walletConnect": {
       "abortRejectButton": "Close",

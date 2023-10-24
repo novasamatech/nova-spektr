@@ -1,7 +1,7 @@
 {
   "accountList": {
-    "addressColumn": "Address",
-    "networksColumn": "Networks { chains }"
+    "addressColumn": "Аккаунт",
+    "networksColumn": "Сеть { chains }"
   },
   "addressBook": {
     "contactList": {
@@ -877,6 +877,13 @@
       "forgetButton": "Забыть",
       "renameButton": "Переименовать",
       "title": "Детали кошелька"
+    },
+    "multisig": {
+      "contactsGroup": "Контакты",
+      "networksTab": "Сети",
+      "signatoriesTab": "Подписанты",
+      "thresholdLabel": "Требуется подписей { min } из { max }",
+      "walletsGroup": "Мои кошельки"
     },
     "walletConnect": {
       "abortRejectButton": "Close",

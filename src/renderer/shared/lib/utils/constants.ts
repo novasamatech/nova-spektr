@@ -22,3 +22,8 @@ export const TEST_CHAIN_ICON =
 export const enum KeyboardKey {
   ENTER = 'Enter',
 }
+
+export const RootExplorers = [
+  { name: 'Subscan', account: 'https://subscan.io/account/{address}' },
+  { name: 'Sub.ID', account: 'https://sub.id/{address}' },
+];

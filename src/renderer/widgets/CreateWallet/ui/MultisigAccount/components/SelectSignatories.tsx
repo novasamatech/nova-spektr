@@ -9,8 +9,7 @@ import { CreateContactModal } from '@renderer/widgets';
 import { ExtendedContact, ExtendedWallet } from '../common/types';
 import { EmptyContactList } from '@renderer/entities/contact';
 import { type Contact, type Wallet, type Account, type MultisigAccount, WalletType } from '@renderer/shared/core';
-import { walletUtils } from '@renderer/entities/wallet';
-import { ContactItem } from './ContactItem';
+import { walletUtils, ContactItem } from '@renderer/entities/wallet';
 import { WalletItem } from './WalletItem';
 
 const enum SignatoryTabs {
