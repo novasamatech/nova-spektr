@@ -45,7 +45,7 @@ const AllSteps = [Step.CONFIRMATION, Step.SIGNING, Step.SUBMIT];
 const RejectTx = ({ tx, account, connection }: Props) => {
   const { t } = useI18n();
   const activeWallet = useUnit(walletModel.$activeWallet);
-  const accounts = useUnit(walletModel.$activeAccounts);
+  const accounts = useUnit(walletModel.$accounts);
 
   const { getBalance } = useBalance();
   const { getTransactionFee } = useTransaction();
