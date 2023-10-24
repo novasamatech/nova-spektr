@@ -15,7 +15,6 @@ import { useMultisigEvent } from '@renderer/entities/multisig';
 import { MultisigTransactionDS } from '@renderer/shared/api/storage';
 import { AssetBalance } from '@renderer/entities/asset';
 import type { Account, Contact, MultisigAccount, Wallet } from '@renderer/shared/core';
-import { WalletType } from '@renderer/shared/core';
 import { WalletIcon, walletModel, walletUtils } from '@renderer/entities/wallet';
 
 type Props = {
@@ -36,20 +35,32 @@ const EventMessage: Partial<Record<SigningStatus | 'INITIATED', string>> = {
   ERROR_CANCELLED: 'log.errorCancelledMessage',
 } as const;
 
-const getFilteredWalletsMap = (wallets: Wallet[]): Map<Wallet['id'], Wallet> =>
-  new Map(
-    wallets
-      .filter((w) => walletUtils.isValidSignatory(w) || w.type === WalletType.MULTISHARD_PARITY_SIGNER) // 2nd condition for legacy multisig
-      .map((w) => [w.id, w]),
-  );
+type WalletsMap = Map<Wallet['id'], Wallet>;
+
+const getFilteredWalletsMap = (wallets: Wallet[]): WalletsMap =>
+  wallets.reduce((acc: WalletsMap, w: Wallet) => {
+    // 2nd condition for legacy multisig
+    if (walletUtils.isValidSignatory(w) || walletUtils.isMultiShard(w)) {
+      acc.set(w.id, w);
+    }
+
+    return acc;
+  }, new Map());
+
+const getFilteredAccountsMap = (accounts: Account[], walletsMap: WalletsMap) =>
+  accounts.reduce((acc: Map<Account['accountId'], Account>, a: Account) => {
+    if (walletsMap.has(a.walletId)) {
+      acc.set(a.accountId, a);
+    }
+
+    return acc;
+  }, new Map());
 
 const LogModal = ({ isOpen, onClose, tx, account, connection, contacts, accounts }: Props) => {
   const { t, dateLocale } = useI18n();
   const { getLiveTxEvents } = useMultisigEvent({});
   const filteredWalletsMap = getFilteredWalletsMap(useUnit(walletModel.$wallets));
-  const filteredAccountMap = new Map(
-    accounts.filter((a) => filteredWalletsMap.has(a.walletId)).map((a) => [a.accountId, a]),
-  );
+  const filteredAccountMap = getFilteredAccountsMap(accounts, filteredWalletsMap);
   const events = getLiveTxEvents(tx.accountId, tx.chainId, tx.callHash, tx.blockCreated, tx.indexCreated);
 
   const { transaction, description, status } = tx;
