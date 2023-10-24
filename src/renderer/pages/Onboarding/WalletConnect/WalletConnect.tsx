@@ -32,10 +32,7 @@ export const WalletConnect = ({ isOpen, onClose, onComplete }: Props) => {
   const client = useUnit(walletConnectModel.$client);
   const pairings = useUnit(walletConnectModel.$pairings);
   const uri = useUnit(walletConnectModel.$uri);
-  const connect = useUnit(walletConnectModel.events.connect);
-  const disconnect = useUnit(walletConnectModel.events.disconnectCurrentStarted);
   const step = useUnit(wcOnboardingModel.$step);
-  const startOnboarding = useUnit(wcOnboardingModel.events.startOnboarding);
 
   const previousPairings = usePrevious(pairings);
 
@@ -49,7 +46,7 @@ export const WalletConnect = ({ isOpen, onClose, onComplete }: Props) => {
     if (ref.current) {
       qrCode.append(ref.current);
     }
-  }, []);
+  }, [ref.current]);
 
   useEffect(() => {
     qrCode.update({
@@ -60,7 +57,7 @@ export const WalletConnect = ({ isOpen, onClose, onComplete }: Props) => {
   useEffect(() => {
     let timeout: any;
     if (isOpen) {
-      startOnboarding();
+      wcOnboardingModel.events.startOnboarding();
 
       timeout = setTimeout(onClose, EXPIRE_TIMEOUT);
     }
@@ -83,7 +80,7 @@ export const WalletConnect = ({ isOpen, onClose, onComplete }: Props) => {
   useEffect(() => {
     if (client && isOpen) {
       const chains = getWalletConnectChains(chainsService.getChainsData());
-      connect({ chains });
+      walletConnectModel.events.connect({ chains });
     }
   }, [client, isOpen]);
 
@@ -96,7 +93,7 @@ export const WalletConnect = ({ isOpen, onClose, onComplete }: Props) => {
   }, [pairings.length]);
 
   const handleClose = () => {
-    disconnect();
+    walletConnectModel.events.disconnectCurrentStarted();
     onClose();
   };
 
@@ -141,7 +138,7 @@ export const WalletConnect = ({ isOpen, onClose, onComplete }: Props) => {
             accounts={session.namespaces.polkadot.accounts}
             pairingTopic={pairingTopic}
             sessionTopic={session.topic}
-            onBack={disconnect}
+            onBack={walletConnectModel.events.disconnectCurrentStarted}
             onComplete={onComplete}
           />
         )}
