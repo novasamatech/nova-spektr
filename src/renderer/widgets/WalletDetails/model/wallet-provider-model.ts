@@ -44,12 +44,6 @@ sample({
 
 sample({
   clock: walletConnectModel.events.connected,
-  fn: () => ReconnectStep.NOT_STARTED,
-  target: $reconnectStep,
-});
-
-sample({
-  clock: walletConnectModel.events.connected,
   source: {
     accounts: $accounts,
     session: walletConnectModel.$session,
@@ -68,7 +62,7 @@ sample({
 });
 
 sample({
-  clock: reconnectAborted,
+  clock: [walletConnectModel.events.connected, reconnectAborted],
   fn: () => ReconnectStep.NOT_STARTED,
   target: $reconnectStep,
 });
