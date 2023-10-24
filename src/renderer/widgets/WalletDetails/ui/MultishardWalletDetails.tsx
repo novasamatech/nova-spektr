@@ -5,12 +5,13 @@ import { useModalClose } from '@renderer/shared/lib/hooks';
 import { MultishardAccountsList, WalletIcon } from '@renderer/entities/wallet';
 import { chainsService } from '@renderer/entities/network';
 import { useI18n } from '@renderer/app/providers';
-import type { Wallet, BaseAccount, ChainAccount, ChainId } from '@renderer/shared/core';
+import type { Wallet } from '@renderer/shared/core';
+import type { MultishardMap } from '../lib/types';
 
 type Props = {
   isOpen: boolean;
   wallet: Wallet;
-  accounts: Map<BaseAccount, Record<ChainId, ChainAccount[]>>;
+  accounts: MultishardMap;
   onClose: () => void;
 };
 export const MultishardWalletDetails = ({ isOpen, wallet, accounts, onClose }: Props) => {
