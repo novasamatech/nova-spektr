@@ -66,6 +66,17 @@ export const SendAssetModal = ({ chain, asset }: Props) => {
     };
   }, []);
 
+  useEffect(() => {
+    if (signatory && account) {
+      setWrappers([
+        {
+          signatoryId: signatory.accountId,
+          account: account as MultisigAccount,
+        },
+      ]);
+    }
+  }, [account, signatory]);
+
   const onInitResult = (transferTx: Transaction, description?: string) => {
     setTxs([transferTx]);
     setDescription(description || '');
@@ -106,12 +117,6 @@ export const SendAssetModal = ({ chain, asset }: Props) => {
 
   const onSignatoryChange = (signatory: Account) => {
     setSignatory(signatory);
-    setWrappers([
-      {
-        signatoryId: signatory.accountId,
-        account: account as MultisigAccount,
-      },
-    ]);
   };
 
   const commonProps = { explorers, addressPrefix };

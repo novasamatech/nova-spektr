@@ -174,7 +174,7 @@ const RejectTx = ({ tx, account, connection }: Props) => {
   return (
     <>
       <div className="flex justify-between">
-        <Button size="sm" pallet="error" variant="fill" onClick={() => setIsModalOpen(true)}>
+        <Button pallet="error" variant="fill" onClick={() => setIsModalOpen(true)}>
           {t('operation.rejectButton')}
         </Button>
       </div>
