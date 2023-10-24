@@ -69,7 +69,7 @@ export const WalletConnectDetails = ({ wallet, accounts, isConnected, onClose }:
 
       return acc;
     }, []);
-  }, []);
+  }, [accounts]);
 
   const reconnect = () => {
     wcDetailsModel.events.reconnectStarted({

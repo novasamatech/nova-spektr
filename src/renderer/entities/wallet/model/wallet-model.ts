@@ -1,14 +1,21 @@
 import { createStore, createEvent, forward, createEffect, sample, combine } from 'effector';
 import { spread } from 'patronum';
 
-import type { Wallet, NoID, Account, BaseAccount, ChainAccount, MultisigAccount, ID } from '@renderer/shared/core';
+import type {
+  Wallet,
+  NoID,
+  Account,
+  BaseAccount,
+  ChainAccount,
+  MultisigAccount,
+  ID,
+  WalletId,
+  NoIdWallet,
+} from '@renderer/shared/core';
 import { kernelModel, WalletConnectAccount } from '@renderer/shared/core';
 import { storageService } from '@renderer/shared/api/storage';
 import { modelUtils } from '../lib/model-utils';
 import { accountUtils } from '../lib/account-utils';
-
-type WalletId = Wallet['id'];
-type NoIdWallet = NoID<Wallet>;
 
 const $wallets = createStore<Wallet[]>([]);
 const $activeWallet = $wallets.map((wallets) => wallets.find((w) => w.isActive));

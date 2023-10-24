@@ -158,7 +158,6 @@ export const SelectSignatories = ({ isActive, wallets, accounts, contacts, onSel
               <Checkbox
                 checked={!!selectedWallets[wallet.id]}
                 disabled={disabled}
-                className="px-0.5"
                 onChange={() => selectWallet(wallet)}
               >
                 <WalletItem name={wallet.name} type={wallet.type || WalletType.POLKADOT_VAULT} />
@@ -181,7 +180,7 @@ export const SelectSignatories = ({ isActive, wallets, accounts, contacts, onSel
               content={getDisabledMessage(type)}
               panelClass="left-0 -translate-x-2"
             >
-              <Checkbox className="px-0.5" disabled>
+              <Checkbox disabled>
                 <WalletItem name={name} type={type} />
               </Checkbox>
             </Tooltip>

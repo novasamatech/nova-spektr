@@ -27,6 +27,7 @@ export const chainsService = {
   getStakingChainsData,
   sortChains,
   sortChainsByBalance,
+  searchChain,
 };
 
 function getChainsData(): Chain[] {
@@ -37,6 +38,12 @@ function getChainById(chainId: ChainId): Chain | undefined {
   const chainsData: Chain[] = CHAINS[process.env.CHAINS_FILE || 'chains'];
 
   return chainsData.find((chain) => chain.chainId === chainId);
+}
+
+function searchChain(query: string): Chain | undefined {
+  const chainsData: Chain[] = CHAINS[process.env.CHAINS_FILE || 'chains'];
+
+  return chainsData.find((chain) => chain.chainId.includes(query));
 }
 
 function getStakingChainsData(): Chain[] {

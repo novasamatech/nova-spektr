@@ -1,11 +1,14 @@
 import { combine, createEvent, createStore, forward, sample } from 'effector';
+import { combineEvents } from 'patronum';
 
 import { accountUtils, walletModel } from '@renderer/entities/wallet';
 import { InitConnectProps, walletConnectModel } from '@renderer/entities/walletConnect';
 import { ReconnectStep, ForgetStep } from '../lib/constants';
 import { walletProviderModel } from './wallet-provider-model';
 import { walletSelectModel } from '@renderer/features/wallets';
-import type { Wallet } from '@renderer/shared/core';
+import type { Wallet, WalletConnectAccount } from '@renderer/shared/core';
+import { chainsService } from '@renderer/entities/network';
+import { toAccountId } from '@renderer/shared/lib/utils';
 
 const reset = createEvent();
 const reconnectStarted = createEvent<Omit<InitConnectProps, 'client'>>();
@@ -44,7 +47,9 @@ forward({
 });
 
 sample({
-  clock: walletConnectModel.events.connected,
+  clock: combineEvents({
+    events: [reconnectStarted, walletConnectModel.events.connected],
+  }),
   source: {
     accounts: walletProviderModel.$accounts,
     session: walletConnectModel.$session,
@@ -52,6 +57,39 @@ sample({
   filter: ({ accounts, session }) => accounts.length > 0 && Boolean(session?.topic),
   fn: ({ accounts, session }) => ({ accounts, topic: session?.topic! }),
   target: walletConnectModel.events.sessionTopicUpdated,
+});
+
+sample({
+  clock: combineEvents({
+    events: [reconnectStarted, walletConnectModel.events.connected],
+  }),
+  source: {
+    newAccounts: walletConnectModel.$accounts,
+    accounts: walletProviderModel.$accounts,
+    wallet: walletSelectModel.$walletForDetails,
+  },
+  filter: ({ wallet }) => wallet !== null,
+  fn: ({ accounts, wallet, newAccounts }) => {
+    const oldAccount = accounts.find((a) => a.walletId === wallet!.id);
+    const { id, ...oldAccountParams } = oldAccount!;
+
+    return {
+      walletId: wallet!.id,
+      accounts,
+      newAccounts: newAccounts.map((account) => {
+        const [_, chainId, address] = account.split(':');
+        const chain = chainsService.searchChain(chainId);
+        const accountId = toAccountId(address);
+
+        return {
+          ...oldAccountParams,
+          chainId: chain?.chainId,
+          accountId,
+        } as WalletConnectAccount;
+      }),
+    };
+  },
+  target: walletConnectModel.events.accountsUpdated,
 });
 
 sample({
