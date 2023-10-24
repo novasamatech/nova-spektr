@@ -133,7 +133,7 @@ export const OperationCardDetails = ({ tx, account, connection }: Props) => {
         </DetailRow>
       )}
 
-      {validators && defaultAsset && (
+      {Boolean(validators?.length) && defaultAsset && (
         <>
           <DetailRow label={t('operation.details.validators')} className={valueClass}>
             <button
