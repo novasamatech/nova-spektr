@@ -3,7 +3,6 @@ import { Dialog, Transition } from '@headlessui/react';
 
 import { cnTw } from '@renderer/shared/lib/utils';
 import { ModalBackdrop, ModalTransition } from '@renderer/shared/ui/Modals/common';
-import { useI18n } from '@renderer/app/providers';
 import { HeaderTitleText, IconButton } from '@renderer/shared/ui';
 
 // HINT: There are no modals with description right now
@@ -33,8 +32,6 @@ const BaseModal = ({
   children,
   onClose,
 }: PropsWithChildren<Props>) => {
-  const { t } = useI18n();
-
   return (
     <Transition appear show={isOpen} as={Fragment}>
       <Dialog as="div" className={cnTw('relative', zIndex)} onClose={() => onClose()}>
@@ -63,7 +60,6 @@ const BaseModal = ({
                   name="close"
                   size={20}
                   className="absolute top-[18px] right-[14px] z-10"
-                  ariaLabel={t('basemodal.closeButton')}
                   onClick={() => onClose()}
                 />
               )}

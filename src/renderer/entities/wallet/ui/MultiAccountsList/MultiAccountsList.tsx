@@ -17,8 +17,8 @@ export const MultiAccountsList = ({ accounts, className }: Props) => {
   const { t } = useI18n();
 
   return (
-    <>
-      <div className="flex mx-2 py-4">
+    <div className="flex flex-col">
+      <div className="flex px-5 py-4">
         <FootnoteText className="w-[214px] text-text-tertiary">
           {t('accountList.networksColumn', { chains: accounts.length })}
         </FootnoteText>
@@ -30,7 +30,7 @@ export const MultiAccountsList = ({ accounts, className }: Props) => {
           const { chainId, addressPrefix, explorers } = chain;
 
           return (
-            <li key={chainId} className="flex items-center mx-2 py-4">
+            <li key={chainId} className="flex items-center px-5 py-4">
               <ChainTitle className="w-[214px]" fontClass="text-text-primary" chain={chain} />
 
               <div className="w-[214]">
@@ -47,6 +47,6 @@ export const MultiAccountsList = ({ accounts, className }: Props) => {
           );
         })}
       </ul>
-    </>
+    </div>
   );
 };

@@ -28,7 +28,7 @@ export const SignatoryCard = ({
   ...addressProps
 }: Props) => {
   const address = getAddress(addressProps);
-  const popoverItems = useAddressInfo(address, explorers, true);
+  const popoverItems = useAddressInfo({ address, explorers, showMatrix: true });
 
   if (!popoverItems.find((item) => item.title === 'Matrix ID') && matrixId) {
     popoverItems.push({
