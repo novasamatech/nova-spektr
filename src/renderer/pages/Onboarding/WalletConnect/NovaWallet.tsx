@@ -12,7 +12,7 @@ import { usePrevious } from '@renderer/shared/lib/hooks';
 import { getWalletConnectChains, walletConnectModel } from '@renderer/entities/walletConnect';
 import { chainsService } from '@renderer/entities/network';
 import { wcOnboardingModel } from '@renderer/pages/Onboarding/WalletConnect/model/wc-onboarding-model';
-import { WCQRConfig, Step, EXPIRE_TIMEOUT } from './common/const';
+import { NWQRConfig, Step, EXPIRE_TIMEOUT } from './common/const';
 import { useStatusContext } from '@renderer/app/providers/context/StatusContext';
 import { WalletType } from '@renderer/shared/core';
 
@@ -23,7 +23,7 @@ type Props = {
   onComplete: () => void;
 };
 
-const qrCode = new QRCodeStyling(WCQRConfig);
+const qrCode = new QRCodeStyling(NWQRConfig);
 
 export const NovaWallet = ({ isOpen, onClose, onComplete }: Props) => {
   const { t } = useI18n();
