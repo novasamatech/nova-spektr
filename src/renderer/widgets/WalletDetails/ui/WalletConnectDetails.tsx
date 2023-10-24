@@ -4,26 +4,28 @@ import keyBy from 'lodash/keyBy';
 
 import wallet_connect_reconnect_webm from '@video/wallet_connect_reconnect.webm';
 import wallet_connect_reconnect from '@video/wallet_connect_reconnect.mp4';
-import { useModalClose } from '@renderer/shared/lib/hooks';
+import { useModalClose, useToggle } from '@renderer/shared/lib/hooks';
 import { MultiAccountsList, WalletIcon } from '@renderer/entities/wallet';
 import { useI18n } from '@renderer/app/providers';
 import { chainsService } from '@renderer/entities/network';
 import { getWalletConnectChains } from '@renderer/entities/walletConnect';
 import type { Wallet, Chain, Account } from '@renderer/shared/core';
-import { walletConnectDetailsModel } from '../model/wallet-connect-details-model';
-import { wcDetailsUtils } from '../lib/utils';
+import { wcDetailsModel } from '../model/wc-details-model';
+import { wcDetailsUtils, walletDetailsUtils } from '../lib/utils';
+import { ForgetStep } from '../lib/constants';
 import {
   Animation,
   BaseModal,
   BodyText,
   Button,
+  ConfirmModal,
+  FootnoteText,
   HeaderTitleText,
   Icon,
   IconButton,
   MenuPopover,
   StatusLabel,
   SmallTitleText,
-  FootnoteText,
   StatusModal,
 } from '@renderer/shared/ui';
 
@@ -42,12 +44,14 @@ export const WalletConnectDetails = ({ wallet, accounts, isConnected, onClose }:
   const { t } = useI18n();
 
   const [isModalOpen, closeModal] = useModalClose(true, onClose);
+  const [isConfirmForgetOpen, toggleConfirmForget] = useToggle(false);
 
-  const connected = useUnit(walletConnectDetailsModel.$connected);
-  const reconnectStep = useUnit(walletConnectDetailsModel.$reconnectStep);
+  const connected = useUnit(wcDetailsModel.$connected);
+  const reconnectStep = useUnit(wcDetailsModel.$reconnectStep);
+  const forgetStep = useUnit(wcDetailsModel.$forgetStep);
 
   useEffect(() => {
-    walletConnectDetailsModel.events.reset();
+    wcDetailsModel.events.reset();
   }, []);
 
   // TODO: Rework with https://app.clickup.com/t/8692ykm3y
@@ -68,10 +72,15 @@ export const WalletConnectDetails = ({ wallet, accounts, isConnected, onClose }:
   }, []);
 
   const reconnect = () => {
-    walletConnectDetailsModel.events.reconnectStarted({
+    wcDetailsModel.events.reconnectStarted({
       chains: getWalletConnectChains(chainsService.getChainsData()),
       pairing: { topic: accounts[0].signingExtras?.pairingTopic },
     });
+  };
+
+  const handleForgetWallet = () => {
+    wcDetailsModel.events.forgetButtonClicked();
+    toggleConfirmForget();
   };
 
   return (
@@ -89,15 +98,27 @@ export const WalletConnectDetails = ({ wallet, accounts, isConnected, onClose }:
             buttonClassName="rounded-full"
             offsetPx={0}
             content={
-              <Button
-                variant="text"
-                size="md"
-                className="text-text-secondary hover:text-text-secondary px-2"
-                prefixElement={<Icon name="refresh" size={20} className="text-icon-accent" />}
-                onClick={reconnect}
-              >
-                {t('walletDetails.walletConnect.refreshButton')}
-              </Button>
+              <>
+                <Button
+                  variant="text"
+                  size="md"
+                  className="text-text-secondary hover:text-text-secondary px-2"
+                  prefixElement={<Icon name="delete" size={20} className="text-icon-accent" />}
+                  onClick={toggleConfirmForget}
+                >
+                  {t('walletDetails.common.forgetButton')}
+                </Button>
+
+                <Button
+                  variant="text"
+                  size="md"
+                  className="text-text-secondary hover:text-text-secondary px-2"
+                  prefixElement={<Icon name="refresh" size={20} className="text-icon-accent" />}
+                  onClick={reconnect}
+                >
+                  {t('walletDetails.walletConnect.refreshButton')}
+                </Button>
+              </>
             }
           >
             <IconButton name="options" className="p-1.5" />
@@ -151,14 +172,48 @@ export const WalletConnectDetails = ({ wallet, accounts, isConnected, onClose }:
           </>
         </div>
 
+        <ConfirmModal
+          panelClass="w-[300px]"
+          isOpen={isConfirmForgetOpen}
+          confirmText={t('walletDetails.common.removeButton')}
+          cancelText={t('walletDetails.common.cancelButton')}
+          confirmPallet="error"
+          onConfirm={handleForgetWallet}
+          onClose={toggleConfirmForget}
+        >
+          <SmallTitleText className="mb-2" align="center">
+            {t('walletDetails.common.removeTitle')}
+          </SmallTitleText>
+          <FootnoteText className="text-text-tertiary" align="center">
+            {t('walletDetails.common.removeMessage', { walletName: wallet.name })}
+          </FootnoteText>
+        </ConfirmModal>
+
+        <StatusModal
+          isOpen={walletDetailsUtils.isForgetModalOpen(forgetStep)}
+          title={t(
+            forgetStep === ForgetStep.FORGETTING
+              ? 'walletDetails.common.removingWallet'
+              : 'walletDetails.common.walletRemoved',
+          )}
+          content={
+            forgetStep === ForgetStep.FORGETTING ? (
+              <Animation variant="loading" loop />
+            ) : (
+              <Animation variant="success" />
+            )
+          }
+          onClose={wcDetailsModel.events.forgetModalClosed}
+        />
+
         <StatusModal
           isOpen={wcDetailsUtils.isRejected(reconnectStep)}
           title={t('walletDetails.walletConnect.rejectTitle')}
           description={t('walletDetails.walletConnect.rejectDescription')}
           content={<Animation variant="error" />}
-          onClose={walletConnectDetailsModel.events.reconnectAborted}
+          onClose={wcDetailsModel.events.reconnectAborted}
         >
-          <Button onClick={() => walletConnectDetailsModel.events.reconnectAborted()}>
+          <Button onClick={() => wcDetailsModel.events.reconnectAborted()}>
             {t('walletDetails.walletConnect.abortRejectButton')}
           </Button>
         </StatusModal>

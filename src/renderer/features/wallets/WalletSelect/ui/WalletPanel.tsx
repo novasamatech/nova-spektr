@@ -17,7 +17,7 @@ export const WalletPanel = ({ action }: Props) => {
   const filteredWalletGroups = useUnit(walletSelectModel.$filteredWalletGroups);
 
   return (
-    <Popover.Panel className="absolute mt-2 z-10 rounded-md bg-token-container-background border border-token-container-border shadow-card-shadow overflow-hidden">
+    <Popover.Panel className="absolute mt-2 z-10 rounded-md bg-token-container-background border border-token-container-border shadow-card-shadow overflow-visible">
       <section className="relative w-[290px] bg-card-background">
         <header className="px-5 py-3 flex items-center justify-between border-b border-divider">
           <SmallTitleText>{t('wallets.title')}</SmallTitleText>

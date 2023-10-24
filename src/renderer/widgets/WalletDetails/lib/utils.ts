@@ -1,10 +1,14 @@
-import { ReconnectStep } from './constants';
+import { ForgetStep, ReconnectStep } from './constants';
 
 export const wcDetailsUtils = {
   isNotStarted,
   isReconnecting,
   isRejected,
   isReadyToReconnect,
+};
+
+export const walletDetailsUtils = {
+  isForgetModalOpen,
 };
 
 function isNotStarted(step: ReconnectStep, connected: boolean): boolean {
@@ -21,4 +25,8 @@ function isRejected(step: ReconnectStep): boolean {
 
 function isReadyToReconnect(step: ReconnectStep, connected: boolean): boolean {
   return isRejected(step) || (step === ReconnectStep.NOT_STARTED && !connected);
+}
+
+function isForgetModalOpen(step: ForgetStep): boolean {
+  return [ForgetStep.FORGETTING, ForgetStep.SUCCESS].includes(step);
 }

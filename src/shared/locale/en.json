@@ -874,9 +874,15 @@
   },
   "walletDetails": {
     "common": {
+      "cancelButton": "Cancel",
       "forgetButton": "Forget",
+      "removeButton": "Remove",
+      "removeMessage": "Are you sure you want to remove { walletName }?",
+      "removeTitle": "Remove wallet",
+      "removingWallet": "Removing wallet",
       "renameButton": "Rename",
-      "title": "Wallet details"
+      "title": "Wallet details",
+      "walletRemoved": "Wallet removed"
     },
     "multisig": {
       "contactsGroup": "Contacts",

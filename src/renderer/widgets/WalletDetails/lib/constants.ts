@@ -3,3 +3,9 @@ export const enum ReconnectStep {
   RECONNECTING,
   REJECTED,
 }
+
+export const enum ForgetStep {
+  NOT_STARTED,
+  FORGETTING,
+  SUCCESS,
+}

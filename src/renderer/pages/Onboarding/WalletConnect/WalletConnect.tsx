@@ -32,10 +32,7 @@ export const WalletConnect = ({ isOpen, onClose, onComplete }: Props) => {
   const client = useUnit(walletConnectModel.$client);
   const pairings = useUnit(walletConnectModel.$pairings);
   const uri = useUnit(walletConnectModel.$uri);
-  const connect = useUnit(walletConnectModel.events.connect);
-  const disconnect = useUnit(walletConnectModel.events.disconnect);
   const step = useUnit(wcOnboardingModel.$step);
-  const startOnboarding = useUnit(wcOnboardingModel.events.startOnboarding);
 
   const previousPairings = usePrevious(pairings);
 
@@ -49,7 +46,7 @@ export const WalletConnect = ({ isOpen, onClose, onComplete }: Props) => {
     if (ref.current) {
       qrCode.append(ref.current);
     }
-  }, []);
+  }, [ref.current]);
 
   useEffect(() => {
     qrCode.update({
@@ -60,7 +57,7 @@ export const WalletConnect = ({ isOpen, onClose, onComplete }: Props) => {
   useEffect(() => {
     let timeout: any;
     if (isOpen) {
-      startOnboarding();
+      wcOnboardingModel.events.startOnboarding();
 
       timeout = setTimeout(onClose, EXPIRE_TIMEOUT);
     }
@@ -83,7 +80,7 @@ export const WalletConnect = ({ isOpen, onClose, onComplete }: Props) => {
   useEffect(() => {
     if (client && isOpen) {
       const chains = getWalletConnectChains(chainsService.getChainsData());
-      connect({ chains });
+      walletConnectModel.events.connect({ chains });
     }
   }, [client, isOpen]);
 
@@ -96,56 +93,54 @@ export const WalletConnect = ({ isOpen, onClose, onComplete }: Props) => {
   }, [pairings.length]);
 
   const handleClose = () => {
-    disconnect();
+    walletConnectModel.events.disconnectCurrentSessionStarted();
     onClose();
   };
 
   return (
-    <>
-      <BaseModal
-        closeButton
-        isOpen={isOpen}
-        contentClass="flex h-full"
-        panelClass="w-[944px] h-[576px]"
-        onClose={handleClose}
-      >
-        {step === Step.SCAN && qrCode && (
-          <>
-            <div className="w-[472px] flex flex-col px-5 py-4 bg-white rounded-l-lg">
-              <HeaderTitleText className="mb-10">{t('onboarding.walletConnect.title')}</HeaderTitleText>
-              <SmallTitleText className="mb-6">{t('onboarding.walletConnect.scanTitle')}</SmallTitleText>
+    <BaseModal
+      closeButton
+      isOpen={isOpen}
+      contentClass="flex h-full"
+      panelClass="w-[944px] h-[576px]"
+      onClose={handleClose}
+    >
+      {step === Step.SCAN && qrCode && (
+        <>
+          <div className="w-[472px] flex flex-col px-5 py-4 bg-white rounded-l-lg">
+            <HeaderTitleText className="mb-10">{t('onboarding.walletConnect.title')}</HeaderTitleText>
+            <SmallTitleText className="mb-6">{t('onboarding.walletConnect.scanTitle')}</SmallTitleText>
 
-              <div className="flex flex-1 items-center justify-center">
-                <div ref={ref}></div>
-              </div>
-
-              <div className="flex justify-between items-end">
-                <Button variant="text" onClick={onClose}>
-                  {t('onboarding.backButton')}
-                </Button>
-              </div>
+            <div className="flex flex-1 items-center justify-center">
+              <div ref={ref}></div>
             </div>
 
-            <div className="w-[472px] flex flex-col bg-black">
-              <video className="object-contain h-full" autoPlay loop>
-                <source src={novawallet_onboarding_tutorial_webm} type="video/webm" />
-                <source src={novawallet_onboarding_tutorial} type="video/mp4" />
-              </video>
+            <div className="flex justify-between items-end">
+              <Button variant="text" onClick={onClose}>
+                {t('onboarding.backButton')}
+              </Button>
             </div>
-          </>
-        )}
+          </div>
 
-        {step === Step.MANAGE && session && pairingTopic && (
-          <ManageStep
-            type={WalletType.WALLET_CONNECT}
-            accounts={session.namespaces.polkadot.accounts}
-            pairingTopic={pairingTopic}
-            sessionTopic={session.topic}
-            onBack={disconnect}
-            onComplete={onComplete}
-          />
-        )}
-      </BaseModal>
-    </>
+          <div className="w-[472px] flex flex-col bg-black">
+            <video className="object-contain h-full" autoPlay loop>
+              <source src={novawallet_onboarding_tutorial_webm} type="video/webm" />
+              <source src={novawallet_onboarding_tutorial} type="video/mp4" />
+            </video>
+          </div>
+        </>
+      )}
+
+      {step === Step.MANAGE && session && pairingTopic && (
+        <ManageStep
+          type={WalletType.WALLET_CONNECT}
+          accounts={session.namespaces.polkadot.accounts}
+          pairingTopic={pairingTopic}
+          sessionTopic={session.topic}
+          onBack={walletConnectModel.events.disconnectCurrentSessionStarted}
+          onComplete={onComplete}
+        />
+      )}
+    </BaseModal>
   );
 };
