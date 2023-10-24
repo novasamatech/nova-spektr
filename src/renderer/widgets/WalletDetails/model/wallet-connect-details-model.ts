@@ -44,7 +44,6 @@ sample({
     accounts: walletProviderModel.$accounts,
     session: walletConnectModel.$session,
   },
-
   filter: ({ accounts, session }) => accounts.length > 0 && Boolean(session?.topic),
   fn: ({ accounts, session }) => ({ accounts, topic: session?.topic! }),
   target: walletConnectModel.events.sessionTopicUpdated,

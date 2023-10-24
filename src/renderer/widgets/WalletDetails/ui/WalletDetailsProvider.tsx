@@ -31,17 +31,16 @@ export const WalletDetailsProvider = () => {
   };
 
   if ((walletUtils.isWatchOnly(wallet) || walletUtils.isSingleShard(wallet)) && singleShardAccount) {
-    return <SimpleWalletDetails isOpen account={singleShardAccount} {...commonProps} />;
+    return <SimpleWalletDetails account={singleShardAccount} {...commonProps} />;
   }
 
   if (walletUtils.isMultiShard(wallet) && multiShardAccounts.size > 0) {
-    return <MultishardWalletDetails isOpen accounts={multiShardAccounts} {...commonProps} />;
+    return <MultishardWalletDetails accounts={multiShardAccounts} {...commonProps} />;
   }
 
   if (walletUtils.isMultisig(wallet) && multisigAccount) {
     return (
       <MultisigWalletDetails
-        isOpen
         account={multisigAccount}
         signatoryWallets={signatoryWallets}
         signatoryContacts={contacts}
@@ -51,7 +50,7 @@ export const WalletDetailsProvider = () => {
   }
 
   if (walletUtils.isWalletConnect(wallet) || walletUtils.isNovaWallet(wallet)) {
-    return <WalletConnectDetails isOpen accounts={accounts} isConnected={isConnected} {...commonProps} />;
+    return <WalletConnectDetails accounts={accounts} isConnected={isConnected} {...commonProps} />;
   }
 
   return <></>; // HINT: Only Polkadot Vault left

@@ -11,26 +11,18 @@ import { useI18n } from '@renderer/app/providers';
 import { WalletFiatBalance } from '@renderer/features/wallets/WalletSelect/ui/WalletFiatBalance';
 
 type Props = {
-  isOpen: boolean;
   wallet: Wallet;
   account: MultisigAccount;
   signatoryWallets: Wallet[];
   signatoryContacts: Signatory[];
   onClose: () => void;
 };
-export const MultisigWalletDetails = ({
-  isOpen,
-  wallet,
-  account,
-  signatoryWallets,
-  signatoryContacts,
-  onClose,
-}: Props) => {
+export const MultisigWalletDetails = ({ wallet, account, signatoryWallets, signatoryContacts, onClose }: Props) => {
   const { t } = useI18n();
 
   const popoverItems = useAddressInfo({ address: toAddress(account.accountId), explorers: RootExplorers });
 
-  const [isModalOpen, closeModal] = useModalClose(isOpen, onClose);
+  const [isModalOpen, closeModal] = useModalClose(true, onClose);
 
   const chains = useMemo(() => {
     const chains = chainsService.getChainsData();

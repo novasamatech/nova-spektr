@@ -9,15 +9,14 @@ import type { Wallet } from '@renderer/shared/core';
 import type { MultishardMap } from '../lib/types';
 
 type Props = {
-  isOpen: boolean;
   wallet: Wallet;
   accounts: MultishardMap;
   onClose: () => void;
 };
-export const MultishardWalletDetails = ({ isOpen, wallet, accounts, onClose }: Props) => {
+export const MultishardWalletDetails = ({ wallet, accounts, onClose }: Props) => {
   const { t } = useI18n();
 
-  const [isModalOpen, closeModal] = useModalClose(isOpen, onClose);
+  const [isModalOpen, closeModal] = useModalClose(true, onClose);
 
   const chains = useMemo(() => {
     return chainsService.sortChains(chainsService.getChainsData());

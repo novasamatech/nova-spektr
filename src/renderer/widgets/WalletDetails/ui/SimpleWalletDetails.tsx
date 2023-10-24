@@ -8,15 +8,14 @@ import { useI18n } from '@renderer/app/providers';
 import type { Wallet, BaseAccount } from '@renderer/shared/core';
 
 type Props = {
-  isOpen: boolean;
   wallet: Wallet;
   account: BaseAccount;
   onClose: () => void;
 };
-export const SimpleWalletDetails = ({ isOpen, wallet, account, onClose }: Props) => {
+export const SimpleWalletDetails = ({ wallet, account, onClose }: Props) => {
   const { t } = useI18n();
 
-  const [isModalOpen, closeModal] = useModalClose(isOpen, onClose);
+  const [isModalOpen, closeModal] = useModalClose(true, onClose);
 
   const chains = useMemo(() => {
     const chains = chainsService.getChainsData();
