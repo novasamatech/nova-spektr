@@ -3,7 +3,7 @@ import { combine, createEvent, createStore, forward, sample } from 'effector';
 import { walletModel } from '@renderer/entities/wallet';
 import { walletSelectModel } from '@renderer/features/wallets';
 import { Account, Wallet } from '@renderer/shared/core';
-import { ForgetStep } from '../common/const';
+import { ForgetStep } from '../lib/constants';
 
 const reset = createEvent();
 const forgetButtonClicked = createEvent();
