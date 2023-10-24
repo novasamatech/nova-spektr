@@ -10,7 +10,7 @@ import { MultisigTransactionDS } from '@renderer/shared/api/storage';
 import { useToggle } from '@renderer/shared/lib/hooks';
 import { ExtendedChain } from '@renderer/entities/network';
 import { TEST_ADDRESS, toAddress, transferableAmount, getAssetById } from '@renderer/shared/lib/utils';
-import { getModalTransactionTitle, getSignatoryAccounts } from '../../common/utils';
+import { getMultisigSignOperationTitle, getSignatoryAccounts } from '../../common/utils';
 import { useBalance } from '@renderer/entities/asset';
 import { Submit } from '../ActionSteps/Submit';
 import { Confirmation } from '../ActionSteps/Confirmation';
@@ -71,7 +71,7 @@ const ApproveTx = ({ tx, account, connection }: Props) => {
   const [txWeight, setTxWeight] = useState<Weight>();
   const [signature, setSignature] = useState<HexString>();
 
-  const transactionTitle = getModalTransactionTitle(isXcmTransaction(tx.transaction), tx.transaction);
+  const transactionTitle = getMultisigSignOperationTitle(isXcmTransaction(tx.transaction), t, feeTx?.type, tx);
 
   const nativeAsset = connection.assets[0];
   const asset = getAssetById(tx.transaction?.args.assetId, connection.assets);
