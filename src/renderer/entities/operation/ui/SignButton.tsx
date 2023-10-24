@@ -13,17 +13,17 @@ type Props = {
 const WalletIcon: Record<WalletType, IconNames> = {
   [WalletType.POLKADOT_VAULT]: 'vault',
   [WalletType.MULTISIG]: 'vault',
-  [WalletType.WATCH_ONLY]: 'watchOnly',
+  [WalletType.WATCH_ONLY]: 'watchOnlyOld',
   [WalletType.WALLET_CONNECT]: 'walletConnect',
-  [WalletType.NOVA_WALLET]: 'novaWallet',
+  [WalletType.NOVA_WALLET]: 'novaWalletOld',
   // legacy
   [WalletType.MULTISHARD_PARITY_SIGNER]: 'vault',
   [WalletType.SINGLE_PARITY_SIGNER]: 'vault',
 };
 
 const WalletText: Record<WalletType, string> = {
-  [WalletType.POLKADOT_VAULT]: 'operation.polkadotVault',
-  [WalletType.MULTISIG]: 'operation.polkadotVault',
+  [WalletType.POLKADOT_VAULT]: 'operation.sign.polkadotVault',
+  [WalletType.MULTISIG]: 'operation.sign.polkadotVault',
   [WalletType.WATCH_ONLY]: 'operation.sign.watchOnly',
   [WalletType.WALLET_CONNECT]: 'operation.sign.walletConnect',
   [WalletType.NOVA_WALLET]: 'operation.sign.novaWallet',

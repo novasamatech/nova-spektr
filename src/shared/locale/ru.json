@@ -186,7 +186,7 @@
   },
   "notifications": {
     "details": {
-      "newMultisigAccountDescription": "New multisig wallet added: <identicon /> {name}, with threshold { threshold } out of { signatories } signatories"
+      "newMultisigAccountDescription": "New multisig wallet added: <identicon />{name}, with threshold { threshold } out of { signatories } signatories"
     },
     "noNotificationsDescription": "There are no notifications yet",
     "title": "Notifications"
@@ -314,8 +314,10 @@
     "advanced": "Дополнительно",
     "approveButton": "Approve",
     "cancelTitle": "Отменить",
+    "contactSignatoriesTitle": "Contacts",
     "continueButton": "Продолжить",
     "details": {
+      "account": "Account",
       "amount": "количество",
       "callData": "Call Data",
       "callHash": "Call Hash",
@@ -387,6 +389,7 @@
       "signTitle": "Confirm the operation on your { walletName } app",
       "tryAgainButton": "Try again"
     },
+    "walletSignatoriesTitle": "Your wallets",
     "xcmFee": "Cross-chain fee"
   },
   "operations": {
@@ -407,9 +410,11 @@
       "statusSummary": "Статусы операции"
     },
     "modalTitles": {
+      "approve": "Подтвердить",
       "destinationOn": "Установить кошелёк получения награды на",
       "nominateOn": "Смена валидаторов на",
       "redeemOn": "Забрать { asset } на",
+      "reject": "Отклонить",
       "restakeOn": "Рестейк { asset } на",
       "stakeMoreOn": "Стейкать ещё { asset } на",
       "startStakingOn": "Старт стейкинга { asset } на",
@@ -659,6 +664,7 @@
       "accountsTitle": "Выбранные аккаунты",
       "backButton": "Назад",
       "changeValidatorsTitle": "Смена валидаторов",
+      "electedValidators": "Elected",
       "errorModalDiscardButton": "Пропустить",
       "errorModalEditButton": "Редактировать",
       "errorModalSubtitle": "Вы можете пропустить эти транзакции",
@@ -673,6 +679,7 @@
       "hintTitle": "Узнайте больше о наградах",
       "hintUnstakePeriod": "Для вывода токенов нужно дождаться разблокировки",
       "hintWithdraw": "После разблокировки не забудбте забрать токены",
+      "notElectedValidators": "Not elected",
       "queueButton": "добавить в очередь",
       "restakeRewards": "Вложить награды",
       "rewardsDestinationLabel": "Выплата наград",

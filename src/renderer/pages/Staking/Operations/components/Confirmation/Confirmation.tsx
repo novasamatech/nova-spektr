@@ -4,7 +4,7 @@ import { PropsWithChildren, useState, useEffect } from 'react';
 import { useUnit } from 'effector-react';
 
 import { Icon, Button, FootnoteText, CaptionText, InputHint } from '@renderer/shared/ui';
-import { useI18n } from '@renderer/app/providers';
+import { useI18n, useNetworkContext } from '@renderer/app/providers';
 import { useToggle } from '@renderer/shared/lib/hooks';
 import { Validator } from '@renderer/shared/core/types/validator';
 import { AddressWithExplorers, accountUtils, walletModel } from '@renderer/entities/wallet';
@@ -17,13 +17,14 @@ import {
   Transaction,
 } from '@renderer/entities/transaction';
 import AccountsModal from '../Modals/AccountsModal/AccountsModal';
-import ValidatorsModal from '../Modals/ValidatorsModal/ValidatorsModal';
 import { DestinationType } from '../../common/types';
 import { cnTw } from '@renderer/shared/lib/utils';
 import { useMultisigTx } from '@renderer/entities/multisig';
 import { RewardsDestination, WalletType } from '@renderer/shared/core';
 import type { Account, Asset, Explorer } from '@renderer/shared/core';
 import { AssetFiatBalance } from '@renderer/entities/price/ui/AssetFiatBalance';
+import { useValidatorsMap, ValidatorsModal } from '@renderer/entities/staking';
+import { isLightClient } from '@renderer/entities/network';
 import { SignButton } from '@renderer/entities/operation/ui/SignButton';
 
 const ActionStyle = 'group hover:bg-action-background-hover px-2 py-1 rounded';
@@ -63,6 +64,12 @@ export const Confirmation = ({
   const { t } = useI18n();
   const { getMultisigTxs } = useMultisigTx({});
   const { getTransactionHash } = useTransaction();
+  const { connections } = useNetworkContext();
+
+  const chainId = transaction.chainId;
+  const connection = connections[chainId];
+
+  const allValidators = Object.values(useValidatorsMap(api, chainId, connection && isLightClient(connection)));
   const activeWallet = useUnit(walletModel.$activeWallet);
 
   const [isAccountsOpen, toggleAccounts] = useToggle();
@@ -75,6 +82,9 @@ export const Confirmation = ({
   const singleAccount = accounts.length === 1;
   const validatorsExist = validators && validators.length > 0;
   const totalAmount = amounts.reduce((acc, amount) => acc.add(new BN(amount)), BN_ZERO).toString();
+
+  const selectedValidatorsAddress = validators?.map((validator) => validator.address);
+  const notSelectedValidators = allValidators.filter((v) => !selectedValidatorsAddress?.includes(v.address));
 
   useEffect(() => {
     if (!accounts.length && !isMultisigAccount) return;
@@ -246,7 +256,9 @@ export const Confirmation = ({
       {validatorsExist && (
         <ValidatorsModal
           isOpen={isValidatorsOpen}
-          validators={validators}
+          asset={asset}
+          selectedValidators={validators}
+          notSelectedValidators={notSelectedValidators}
           explorers={explorers}
           onClose={toggleValidators}
         />
