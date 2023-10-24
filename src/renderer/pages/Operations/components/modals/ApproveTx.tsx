@@ -216,7 +216,7 @@ const ApproveTx = ({ tx, account, connection }: Props) => {
   return (
     <>
       {txWeight && (
-        <Button size="sm" className="ml-auto" onClick={() => setIsModalOpen(true)}>
+        <Button className="ml-auto" onClick={() => setIsModalOpen(true)}>
           {t('operation.approveButton')}
         </Button>
       )}
