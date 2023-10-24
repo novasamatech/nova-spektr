@@ -2,12 +2,11 @@ import { BN } from '@polkadot/util';
 import BigNumber from 'bignumber.js';
 import { groupBy } from 'lodash';
 
-import { Decimal, totalAmount, includes } from '@renderer/shared/lib/utils';
-import type { Asset, Balance } from '@renderer/shared/core';
-import { BaseAccount, ChainAccount, Account } from '@renderer/shared/core';
+import { Decimal, totalAmount, isStringsMatchQuery } from '@renderer/shared/lib/utils';
 import { PriceObject } from '@renderer/shared/api/price-provider';
 import { accountUtils } from '@renderer/entities/wallet';
 import { RootAccount, SelectableShards, ChainsRecord, ChainWithAccounts, MultishardStructure } from '../common/types';
+import type { Asset, Balance, BaseAccount, ChainAccount, Account } from '@renderer/shared/core';
 
 export const sumBalances = (firstBalance: Balance, secondBalance?: Balance): Balance => {
   if (!secondBalance) return firstBalance;
@@ -145,7 +144,7 @@ export const searchShards = (shards: SelectableShards, query: string): Selectabl
   const rootAccounts = shards.rootAccounts.map((root) => {
     const chains = root.chains.map((chain) => ({
       ...chain,
-      accounts: chain.accounts.filter((a) => includes(a.name, query) || includes(a.accountId, query)),
+      accounts: chain.accounts.filter((a) => isStringsMatchQuery(query, [a.name, a.accountId])),
     }));
 
     return {
@@ -157,7 +156,7 @@ export const searchShards = (shards: SelectableShards, query: string): Selectabl
   return {
     ...shards,
     rootAccounts: rootAccounts.filter(
-      (root) => includes(root.accountId, query) || includes(root.name, query) || root.chains.length,
+      (root) => isStringsMatchQuery(query, [root.name, root.accountId]) || root.chains.length,
     ),
   };
 };
