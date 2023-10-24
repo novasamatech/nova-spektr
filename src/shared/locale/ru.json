@@ -878,6 +878,13 @@
       "renameButton": "Переименовать",
       "title": "Детали кошелька"
     },
+    "multisig": {
+      "contactsGroup": "Контакты",
+      "networksTab": "Сети",
+      "signatoriesTab": "Подписанты",
+      "thresholdLabel": "Требуется подписей { min } из { max }",
+      "walletsGroup": "Мои кошельки"
+    },
     "walletConnect": {
       "connectedStatus": "Connected",
       "disconnectedStatus": "Not connected"

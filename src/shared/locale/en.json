@@ -878,6 +878,13 @@
       "renameButton": "Rename",
       "title": "Wallet details"
     },
+    "multisig": {
+      "contactsGroup": "Contacts",
+      "networksTab": "Networks",
+      "signatoriesTab": "Signatories",
+      "thresholdLabel": "Threshold { min } out of { max }",
+      "walletsGroup": "Your wallets"
+    },
     "walletConnect": {
       "connectedStatus": "Connected",
       "disconnectedStatus": "Not connected"
