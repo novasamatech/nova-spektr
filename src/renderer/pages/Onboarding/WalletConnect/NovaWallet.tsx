@@ -25,7 +25,7 @@ type Props = {
 
 const qrCode = new QRCodeStyling(WCQRConfig);
 
-export const WalletConnect = ({ isOpen, onClose, onComplete }: Props) => {
+export const NovaWallet = ({ isOpen, onClose, onComplete }: Props) => {
   const { t } = useI18n();
 
   const session = useUnit(walletConnectModel.$session);
