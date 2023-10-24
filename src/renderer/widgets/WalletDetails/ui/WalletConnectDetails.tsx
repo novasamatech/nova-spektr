@@ -24,10 +24,12 @@ import { MultiAccountsList, WalletIcon } from '@renderer/entities/wallet';
 import { useI18n } from '@renderer/app/providers';
 import { chainsService } from '@renderer/entities/network';
 import { walletProviderModel } from '../model/wallet-provider-model';
-import { getWalletConnectChains, walletConnectModel } from '@renderer/entities/walletConnect';
-import { ForgetStep, ReconnectStep } from '../common/const';
+import { getWalletConnectChains } from '@renderer/entities/walletConnect';
+import { ForgetStep } from '../common/const';
 import wallet_connect_reconnect from '@video/wallet_connect_reconnect.mp4';
 import wallet_connect_reconnect_webm from '@video/wallet_connect_reconnect.webm';
+import { walletConnectDetailsModel } from '../model/wallet-connect-details-model';
+import { walletConnectDetailsUtils } from '../common/utils';
 
 type AccountItem = {
   accountId: `0x${string}`;
@@ -47,18 +49,15 @@ export const WalletConnectDetails = ({ isOpen, wallet, accounts, onClose }: Prop
   const [isConfirmForgetOpen, toggleConfirmForget] = useToggle(false);
 
   const connected = useUnit(walletProviderModel.$connected);
-  const reset = useUnit(walletProviderModel.events.reset);
-  const connect = useUnit(walletConnectModel.events.connect);
-  const reconnectStarted = useUnit(walletProviderModel.events.reconnectStarted);
-  const reconnectAborted = useUnit(walletProviderModel.events.reconnectAborted);
+  const reconnectStep = useUnit(walletProviderModel.$reconnectStep);
+
   const forgetWallet = useUnit(walletProviderModel.events.forgetButtonClicked);
   const closeForgetModal = useUnit(walletProviderModel.events.forgetModalClosed);
-  const reconnectStep = useUnit(walletProviderModel.$reconnectStep);
   const forgetStep = useUnit(walletProviderModel.$forgetStep);
 
   useEffect(() => {
-    if (isModalOpen) {
-      reset();
+    if (!isModalOpen) {
+      walletConnectDetailsModel.events.reset();
     }
   }, [isModalOpen]);
 
@@ -88,18 +87,16 @@ export const WalletConnectDetails = ({ isOpen, wallet, accounts, onClose }: Prop
   }, []);
 
   const reconnect = () => {
-    connect({
+    walletConnectDetailsModel.events.reconnectStarted({
       chains: getWalletConnectChains(chainsService.getChainsData()),
       pairing: { topic: accounts[0].signingExtras?.pairingTopic },
     });
-
-    reconnectStarted();
   };
 
-  const isAccountsStep = reconnectStep === ReconnectStep.NOT_STARTED && connected;
-  const isReconnectingStep = reconnectStep === ReconnectStep.RECONNECTING;
-  const isReadyToReconnectStep =
-    (reconnectStep === ReconnectStep.NOT_STARTED && !connected) || reconnectStep === ReconnectStep.REJECTED;
+  const isAccountsStep = walletConnectDetailsUtils.isAccountsStep(reconnectStep, connected);
+  const isReconnectingStep = walletConnectDetailsUtils.isReconnectingStep(reconnectStep);
+  const isReadyToReconnectStep = walletConnectDetailsUtils.isReadyToReconnectStep(reconnectStep, connected);
+  const isRejected = walletConnectDetailsUtils.isRejected(reconnectStep);
 
   return (
     <BaseModal
@@ -164,6 +161,7 @@ export const WalletConnectDetails = ({ isOpen, wallet, accounts, onClose }: Prop
         <div className="px-3 flex-1">
           <>
             {isAccountsStep && <MultiAccountsList accounts={accountsList} className="h-[404px]" />}
+
             {isReadyToReconnectStep && (
               <div className="flex flex-col h-[454px] justify-center items-center">
                 <Icon name="document" size={64} className="mb-6" />
@@ -174,6 +172,7 @@ export const WalletConnectDetails = ({ isOpen, wallet, accounts, onClose }: Prop
                 <Button onClick={reconnect}>{t('walletDetails.walletConnect.reconnectButton')}</Button>
               </div>
             )}
+
             {isReconnectingStep && (
               <div className="flex flex-col h-[454px] justify-center items-center">
                 <video className="object-contain h-[454px]" autoPlay loop>
@@ -219,13 +218,15 @@ export const WalletConnectDetails = ({ isOpen, wallet, accounts, onClose }: Prop
         />
 
         <StatusModal
-          isOpen={reconnectStep === ReconnectStep.REJECTED}
+          isOpen={isRejected}
           title={t('walletDetails.walletConnect.rejectTitle')}
           description={t('walletDetails.walletConnect.rejectDescription')}
           content={<Animation variant="error" />}
-          onClose={reconnectAborted}
+          onClose={walletConnectDetailsModel.events.reconnectAborted}
         >
-          <Button onClick={reconnectAborted}>{t('walletDetails.walletConnect.abortRejectButton')}</Button>
+          <Button onClick={() => walletConnectDetailsModel.events.reconnectAborted()}>
+            {t('walletDetails.walletConnect.abortRejectButton')}
+          </Button>
         </StatusModal>
       </div>
     </BaseModal>

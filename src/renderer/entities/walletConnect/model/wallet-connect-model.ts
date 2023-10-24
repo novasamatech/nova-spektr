@@ -32,7 +32,7 @@ type ConnectResult = {
   session: SessionTypes.Struct;
 };
 
-type SessionTopicUpdateProps = {
+type SessionTopicParams = {
   accounts: Account[];
   topic: string;
 };
@@ -45,7 +45,7 @@ const sessionUpdated = createEvent<SessionTypes.Struct>();
 const connected = createEvent();
 const connectionRejected = createEvent<string>();
 const currentSessionTopicUpdated = createEvent<string>();
-const sessionTopicUpdated = createEvent<SessionTopicUpdateProps>();
+const sessionTopicUpdated = createEvent<SessionTopicParams>();
 
 const $client = createStore<Client | null>(null).reset(reset);
 const $session = createStore<SessionTypes.Struct | null>(null).reset(reset);
@@ -118,7 +118,7 @@ const logClientIdFx = createEffect(async (client: Client) => {
 });
 
 const sessionTopicUpdatedFx = createEffect(
-  async ({ accounts, topic }: SessionTopicUpdateProps): Promise<Account[] | undefined> => {
+  async ({ accounts, topic }: SessionTopicParams): Promise<Account[] | undefined> => {
     const updatedAccounts = accounts.map(({ signingExtras, ...rest }) => {
       const newSigningExtras = { ...signingExtras, sessionTopic: topic };
 
@@ -302,11 +302,8 @@ forward({
 sample({
   clock: currentSessionTopicUpdated,
   source: walletModel.$activeAccounts,
-  fn: (accounts, topic) => ({
-    accounts,
-    topic,
-  }),
-  target: sessionTopicUpdated,
+  fn: (accounts, topic) => ({ accounts, topic }),
+  target: sessionTopicUpdatedFx,
 });
 
 forward({
