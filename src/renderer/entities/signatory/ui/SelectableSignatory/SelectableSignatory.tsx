@@ -26,7 +26,7 @@ export const SelectableSignatory = <T extends any>({
   const address = getAddress(addressProps);
 
   const { getLiveBalance } = useBalance();
-  const popoverItems = useAddressInfo(address, explorers, true);
+  const popoverItems = useAddressInfo({ address, explorers, showMatrix: true });
   const balance = getLiveBalance(toAccountId(address), chainId, asset.assetId.toString());
 
   return (

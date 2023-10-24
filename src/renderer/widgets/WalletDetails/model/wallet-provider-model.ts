@@ -3,8 +3,17 @@ import { combine } from 'effector';
 import { accountUtils, walletModel } from '@renderer/entities/wallet';
 import { walletSelectModel } from '@renderer/features/wallets';
 import { dictionary, nonNullable } from '@renderer/shared/lib/utils';
-import type { Account, Signatory, Wallet, MultisigAccount, BaseAccount } from '@renderer/shared/core';
 import { walletConnectModel } from '@renderer/entities/walletConnect';
+import type { MultishardMap } from '../lib/types';
+import type {
+  Account,
+  Signatory,
+  Wallet,
+  MultisigAccount,
+  BaseAccount,
+  ChainAccount,
+  ChainId,
+} from '@renderer/shared/core';
 
 const $accounts = combine(
   {
@@ -18,16 +27,36 @@ const $accounts = combine(
   },
 );
 
-const $singleShardAccount = combine(
-  {
-    accounts: walletModel.$accounts,
-  },
-  ({ accounts }): BaseAccount | undefined => {
-    const account = accounts[0];
+const $singleShardAccount = combine(walletModel.$accounts, (accounts): BaseAccount | undefined => {
+  const account = accounts[0];
 
-    return account && accountUtils.isBaseAccount(account) ? account : undefined;
-  },
-);
+  return account && accountUtils.isBaseAccount(account) ? account : undefined;
+});
+
+const $multiShardAccounts = combine($accounts, (accounts): MultishardMap => {
+  if (accounts.length === 0) return new Map();
+
+  return accounts.reduce<Map<BaseAccount, Record<ChainId, ChainAccount[]>>>((acc, account) => {
+    if (accountUtils.isBaseAccount(account)) {
+      acc.set(account, {});
+    }
+
+    if (accountUtils.isChainAccount(account)) {
+      for (const [baseAccount, chainMap] of acc.entries()) {
+        if (baseAccount.id !== account.baseId) continue;
+
+        if (chainMap[account.chainId]) {
+          chainMap[account.chainId].push(account);
+        } else {
+          chainMap[account.chainId] = [account];
+        }
+        break;
+      }
+    }
+
+    return acc;
+  }, new Map());
+});
 
 const $multisigAccount = combine(
   {
@@ -47,9 +76,8 @@ const $signatoryContacts = combine(
   {
     account: $accounts.map((accounts) => accounts[0]),
     accounts: walletModel.$accounts,
-    wallets: walletModel.$wallets,
   },
-  ({ account, accounts, wallets }): Signatory[] => {
+  ({ account, accounts }): Signatory[] => {
     if (!account || !accountUtils.isMultisigAccount(account)) return [];
 
     const accountsMap = dictionary(accounts, 'accountId', () => true);
@@ -93,6 +121,7 @@ const $isConnected = combine(
 export const walletProviderModel = {
   $accounts,
   $singleShardAccount,
+  $multiShardAccounts,
   $multisigAccount,
   $signatoryContacts,
   $signatoryWallets,

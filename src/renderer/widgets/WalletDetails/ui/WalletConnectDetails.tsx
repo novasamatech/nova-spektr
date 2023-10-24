@@ -2,8 +2,7 @@ import { useMemo } from 'react';
 import keyBy from 'lodash/keyBy';
 
 import { BaseModal, BodyText, StatusLabel } from '@renderer/shared/ui';
-import { DEFAULT_TRANSITION } from '@renderer/shared/lib/utils';
-import { useToggle } from '@renderer/shared/lib/hooks';
+import { useModalClose } from '@renderer/shared/lib/hooks';
 import { MultiAccountsList, WalletIcon } from '@renderer/entities/wallet';
 import { useI18n } from '@renderer/app/providers';
 import { chainsService } from '@renderer/entities/network';
@@ -24,13 +23,7 @@ type Props = {
 export const WalletConnectDetails = ({ isOpen, wallet, accounts, isConnected, onClose }: Props) => {
   const { t } = useI18n();
 
-  const [isModalOpen, toggleIsModalOpen] = useToggle(isOpen);
-
-  const closeDetailsModal = () => {
-    toggleIsModalOpen();
-
-    setTimeout(onClose, DEFAULT_TRANSITION);
-  };
+  const [isModalOpen, closeModal] = useModalClose(isOpen, onClose);
 
   // TODO: Rework with https://app.clickup.com/t/8692ykm3y
   const accountsList = useMemo(() => {
@@ -57,7 +50,7 @@ export const WalletConnectDetails = ({ isOpen, wallet, accounts, isConnected, on
       panelClass="h-modal"
       title={t('walletDetails.common.title')}
       isOpen={isModalOpen}
-      onClose={closeDetailsModal}
+      onClose={closeModal}
     >
       <div className="flex flex-col w-full">
         <div className="flex items-center justify-between gap-x-2 p-5 border-b border-divider">

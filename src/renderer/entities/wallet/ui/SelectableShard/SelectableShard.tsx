@@ -24,7 +24,7 @@ export const SelectableShard = ({
   explorers,
   onChange,
 }: Props) => {
-  const popoverItems = useAddressInfo(address, explorers, false);
+  const popoverItems = useAddressInfo({ address, explorers });
 
   return (
     <Checkbox

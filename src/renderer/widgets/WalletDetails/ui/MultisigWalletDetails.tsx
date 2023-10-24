@@ -2,8 +2,8 @@ import { useMemo } from 'react';
 
 import { Wallet, MultisigAccount, Signatory } from '@renderer/shared/core';
 import { BaseModal, BodyText, Tabs, FootnoteText, Icon, InfoPopover } from '@renderer/shared/ui';
-import { DEFAULT_TRANSITION, RootExplorers, toAddress } from '@renderer/shared/lib/utils';
-import { useToggle } from '@renderer/shared/lib/hooks';
+import { RootExplorers, toAddress } from '@renderer/shared/lib/utils';
+import { useModalClose } from '@renderer/shared/lib/hooks';
 import { AccountsList, WalletIcon, ContactItem, useAddressInfo } from '@renderer/entities/wallet';
 import { chainsService } from '@renderer/entities/network';
 import { useI18n } from '@renderer/app/providers';
@@ -28,21 +28,15 @@ export const MultisigWalletDetails = ({
 }: Props) => {
   const { t } = useI18n();
 
-  const popoverItems = useAddressInfo(toAddress(account.accountId), RootExplorers);
+  const popoverItems = useAddressInfo({ address: toAddress(account.accountId), explorers: RootExplorers });
 
-  const [isModalOpen, toggleIsModalOpen] = useToggle(isOpen);
+  const [isModalOpen, closeModal] = useModalClose(isOpen, onClose);
 
   const chains = useMemo(() => {
     const chains = chainsService.getChainsData();
 
     return chainsService.sortChains(chains);
   }, []);
-
-  const closeDetailsModal = () => {
-    toggleIsModalOpen();
-
-    setTimeout(onClose, DEFAULT_TRANSITION);
-  };
 
   return (
     <BaseModal
@@ -51,7 +45,7 @@ export const MultisigWalletDetails = ({
       panelClass="h-modal"
       title={t('walletDetails.common.title')}
       isOpen={isModalOpen}
-      onClose={closeDetailsModal}
+      onClose={closeModal}
     >
       <div className="flex flex-col w-full">
         <div className="flex items-center gap-x-2 py-5 px-5 border-b border-divider">
@@ -65,22 +59,27 @@ export const MultisigWalletDetails = ({
           items={[
             {
               id: 1,
-              title: 'Networks',
+              title: t('walletDetails.multisig.networksTab'),
               panel: <AccountsList accountId={account.accountId} chains={chains} className="h-[365px]" />,
             },
             {
               id: 2,
-              title: 'Signatories',
+              title: t('walletDetails.multisig.signatoriesTab'),
               panel: (
                 <div className="flex flex-col">
                   <FootnoteText className="text-text-tertiary px-5">
-                    Threshold {account.threshold} out of {account.signatories.length}
+                    {t('walletDetails.multisig.thresholdLabel', {
+                      min: account.threshold,
+                      max: account.signatories.length,
+                    })}
                   </FootnoteText>
 
                   <div className="overflow-y-auto mt-4 h-[357px]">
                     {signatoryWallets.length > 0 && (
                       <div className="flex flex-col gap-y-2 px-5">
-                        <FootnoteText className="text-text-tertiary">Your wallets</FootnoteText>
+                        <FootnoteText className="text-text-tertiary">
+                          {t('walletDetails.multisig.walletsGroup')}
+                        </FootnoteText>
 
                         <ul className="flex flex-col gap-y-2">
                           {signatoryWallets.map((wallet) => (
@@ -103,7 +102,9 @@ export const MultisigWalletDetails = ({
 
                     {signatoryContacts.length > 0 && (
                       <div className="flex flex-col gap-y-2 mt-4 px-5">
-                        <FootnoteText className="text-text-tertiary">Contacts</FootnoteText>
+                        <FootnoteText className="text-text-tertiary">
+                          {t('walletDetails.multisig.contactsGroup')}
+                        </FootnoteText>
 
                         <ul className="flex flex-col gap-y-2">
                           {signatoryContacts.map((sigmatory) => (

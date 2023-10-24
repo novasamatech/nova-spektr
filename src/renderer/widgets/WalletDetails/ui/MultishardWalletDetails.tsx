@@ -2,26 +2,25 @@ import { useMemo } from 'react';
 
 import { BaseModal, BodyText } from '@renderer/shared/ui';
 import { useModalClose } from '@renderer/shared/lib/hooks';
-import { AccountsList, WalletIcon } from '@renderer/entities/wallet';
+import { MultishardAccountsList, WalletIcon } from '@renderer/entities/wallet';
 import { chainsService } from '@renderer/entities/network';
 import { useI18n } from '@renderer/app/providers';
-import type { Wallet, BaseAccount } from '@renderer/shared/core';
+import type { Wallet } from '@renderer/shared/core';
+import type { MultishardMap } from '../lib/types';
 
 type Props = {
   isOpen: boolean;
   wallet: Wallet;
-  account: BaseAccount;
+  accounts: MultishardMap;
   onClose: () => void;
 };
-export const SimpleWalletDetails = ({ isOpen, wallet, account, onClose }: Props) => {
+export const MultishardWalletDetails = ({ isOpen, wallet, accounts, onClose }: Props) => {
   const { t } = useI18n();
 
   const [isModalOpen, closeModal] = useModalClose(isOpen, onClose);
 
   const chains = useMemo(() => {
-    const chains = chainsService.getChainsData();
-
-    return chainsService.sortChains(chains);
+    return chainsService.sortChains(chainsService.getChainsData());
   }, []);
 
   return (
@@ -33,12 +32,12 @@ export const SimpleWalletDetails = ({ isOpen, wallet, account, onClose }: Props)
       isOpen={isModalOpen}
       onClose={closeModal}
     >
-      <div className="flex flex-col gap-y-4 w-full">
+      <div className="flex flex-col w-full">
         <div className="flex items-center gap-x-2 py-5 px-5 border-b border-divider">
           <WalletIcon type={wallet.type} size={32} />
           <BodyText>{wallet.name}</BodyText>
         </div>
-        <AccountsList accountId={account.accountId} chains={chains} className="h-[415px]" />
+        <MultishardAccountsList accounts={accounts} chains={chains} className="h-[457px]" />
       </div>
     </BaseModal>
   );
