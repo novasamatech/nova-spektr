@@ -38,7 +38,7 @@ export const App = () => {
 
     const path = wallets.length > 0 ? Paths.ASSETS : Paths.ONBOARDING;
     navigate(path, { replace: true });
-  }, [isLoadingWallets, wallets]);
+  }, [isLoadingWallets, wallets.length]);
 
   const getContent = () => {
     if (splashScreenLoading || isLoadingWallets) return null;
