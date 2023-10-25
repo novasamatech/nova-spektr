@@ -191,11 +191,6 @@ sample({
   },
   filter: (_, newAccounts) => Boolean(newAccounts?.length),
   fn: ({ accounts }, newAccounts) => {
-    console.log(
-      'xcm',
-      accounts.filter((a) => a.walletId !== newAccounts![0].walletId).concat(newAccounts as Account[]),
-    );
-
     return accounts.filter((a) => a.walletId !== newAccounts![0].walletId).concat((newAccounts as Account[]) || []);
   },
   target: walletModel.$accounts,

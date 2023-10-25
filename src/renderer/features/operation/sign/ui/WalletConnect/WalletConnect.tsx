@@ -22,8 +22,6 @@ export const WalletConnect = ({ api, validateBalance, onGoBack, accounts, transa
 
   const session = useUnit(walletConnectModel.$session);
   const client = useUnit(walletConnectModel.$client);
-  const connect = useUnit(walletConnectModel.events.connect);
-  const sessionUpdated = useUnit(walletConnectModel.events.sessionUpdated);
 
   const chains = chainsService.getChainsData();
 
@@ -38,11 +36,10 @@ export const WalletConnect = ({ api, validateBalance, onGoBack, accounts, transa
 
   const transaction = transactions[0];
   const account = accounts[0];
+  const isCurrentSession = session && account && session.topic === account.signingExtras?.sessionTopic;
 
   useEffect(() => {
     if (txPayload || !client) return;
-
-    const isCurrentSession = session && account && session.topic === account.signingExtras?.sessionTopic;
 
     if (isCurrentSession) {
       setupTransaction().catch(() => console.warn('WalletConnect | setupTransaction() failed'));
@@ -52,7 +49,7 @@ export const WalletConnect = ({ api, validateBalance, onGoBack, accounts, transa
       const storedSession = sessions.find((s) => s.topic === account.signingExtras?.sessionTopic);
 
       if (storedSession) {
-        sessionUpdated(storedSession);
+        walletConnectModel.events.sessionUpdated(storedSession);
         setIsNeedUpdate(true);
 
         setupTransaction().catch(() => console.warn('WalletConnect | setupTransaction() failed'));
@@ -60,7 +57,7 @@ export const WalletConnect = ({ api, validateBalance, onGoBack, accounts, transa
         setIsReconnectModalOpen(true);
       }
     }
-  }, [transaction, api]);
+  }, [transaction, api, isCurrentSession]);
 
   useEffect(() => {
     if (isNeedUpdate) {
@@ -106,25 +103,14 @@ export const WalletConnect = ({ api, validateBalance, onGoBack, accounts, transa
     }
   };
 
-  const reconnect = async () => {
+  const reconnect = () => {
     setIsReconnectModalOpen(false);
     setIsReconnectingModalOpen(true);
 
-    connect({
+    walletConnectModel.events.connect({
       chains: walletConnectUtils.getWalletConnectChains(chains),
       pairing: { topic: account.signingExtras?.pairingTopic },
     });
-
-    setIsNeedUpdate(true);
-  };
-
-  const handleReconnect = () => {
-    reconnect()
-      .then(setupTransaction)
-      .catch(() => {
-        console.warn('WalletConnect | setupTransaction() failed');
-        toggleRejectedStatus();
-      });
   };
 
   const signTransaction = async () => {
@@ -245,7 +231,7 @@ export const WalletConnect = ({ api, validateBalance, onGoBack, accounts, transa
         confirmText={t('operation.walletConnect.reconnect.confirmButton')}
         cancelText={t('operation.walletConnect.reconnect.cancelButton')}
         onClose={onGoBack}
-        onConfirm={handleReconnect}
+        onConfirm={reconnect}
       >
         <SmallTitleText align="center">
           {t('operation.walletConnect.reconnect.title', {

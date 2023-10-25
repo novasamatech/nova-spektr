@@ -46,7 +46,6 @@ export const WalletConnectDetails = ({ wallet, accounts, isConnected, onClose }:
   const [isModalOpen, closeModal] = useModalClose(true, onClose);
   const [isConfirmForgetOpen, toggleConfirmForget] = useToggle(false);
 
-  const connected = useUnit(wcDetailsModel.$connected);
   const reconnectStep = useUnit(wcDetailsModel.$reconnectStep);
   const forgetStep = useUnit(wcDetailsModel.$forgetStep);
 
@@ -146,11 +145,11 @@ export const WalletConnectDetails = ({ wallet, accounts, isConnected, onClose }:
 
         <div className="px-3 flex-1">
           <>
-            {wcDetailsUtils.isNotStarted(reconnectStep, connected) && (
+            {wcDetailsUtils.isNotStarted(reconnectStep, isConnected) && (
               <MultiAccountsList accounts={accountsList} className="h-[404px]" />
             )}
 
-            {wcDetailsUtils.isReadyToReconnect(reconnectStep, connected) && (
+            {wcDetailsUtils.isReadyToReconnect(reconnectStep, isConnected) && (
               <div className="flex flex-col h-[454px] justify-center items-center">
                 <Icon name="document" size={64} className="mb-6" />
                 <SmallTitleText className="mb-2">{t('walletDetails.walletConnect.disconnectedTitle')}</SmallTitleText>

@@ -20,7 +20,7 @@ const forgetModalClosed = createEvent();
 const $reconnectStep = createStore<ReconnectStep>(ReconnectStep.NOT_STARTED).reset(reset);
 const $forgetStep = createStore<ForgetStep>(ForgetStep.NOT_STARTED).reset(reset);
 
-const $connected = combine(
+const $isConnected = combine(
   {
     accounts: walletProviderModel.$accounts,
     client: walletConnectModel.$client,
@@ -93,7 +93,9 @@ sample({
 });
 
 sample({
-  clock: walletConnectModel.events.connectionRejected,
+  clock: combineEvents({
+    events: [reconnectStarted, walletConnectModel.events.connectionRejected],
+  }),
   fn: () => ReconnectStep.REJECTED,
   target: $reconnectStep,
 });
@@ -145,7 +147,7 @@ forward({
 });
 
 export const wcDetailsModel = {
-  $connected,
+  $isConnected,
   $reconnectStep,
   $forgetStep,
   events: {

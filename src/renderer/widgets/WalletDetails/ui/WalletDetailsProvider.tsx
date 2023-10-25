@@ -8,6 +8,7 @@ import { walletProviderModel } from '../model/wallet-provider-model';
 import { MultishardWalletDetails } from './MultishardWalletDetails';
 import { walletUtils } from '@renderer/entities/wallet';
 import type { Wallet } from '@renderer/shared/core';
+import { wcDetailsModel } from '../model/wc-details-model';
 
 type ModalProps = {
   wallet: Wallet;
@@ -20,7 +21,7 @@ export const WalletDetailsProvider = () => {
   const multiShardAccounts = useUnit(walletProviderModel.$multiShardAccounts);
   const multisigAccount = useUnit(walletProviderModel.$multisigAccount);
   const contacts = useUnit(walletProviderModel.$signatoryContacts);
-  const isConnected = useUnit(walletProviderModel.$isConnected);
+  const isConnected = useUnit(wcDetailsModel.$isConnected);
   const signatoryWallets = useUnit(walletProviderModel.$signatoryWallets);
 
   if (!wallet) return null;
