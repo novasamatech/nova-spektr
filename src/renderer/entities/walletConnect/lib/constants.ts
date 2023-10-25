@@ -14,11 +14,11 @@ export const DEFAULT_APP_METADATA = {
 /**
  * POLKADOT
  */
-export enum DEFAULT_POLKADOT_METHODS {
+export const enum DEFAULT_POLKADOT_METHODS {
   POLKADOT_SIGN_TRANSACTION = 'polkadot_signTransaction',
 }
 
-export enum DEFAULT_POLKADOT_EVENTS {
+export const enum DEFAULT_POLKADOT_EVENTS {
   CHAIN_CHANGED = 'chainChanged',
   ACCOUNTS_CHANGED = 'accountsChanged',
 }

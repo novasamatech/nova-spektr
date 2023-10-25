@@ -5,18 +5,17 @@ import { WalletFiatBalance } from './WalletFiatBalance';
 import { GroupIcons, GroupLabels } from '@renderer/features/wallets/WalletSelect/common/constants';
 import { toAddress, SS58_DEFAULT_PREFIX } from '@renderer/shared/lib/utils';
 import { useI18n } from '@renderer/app/providers';
-import { ChainsRecord } from './common/types';
 import { walletModel, walletUtils, accountUtils } from '@renderer/entities/wallet';
-import { Account } from '@renderer/shared/core';
+import type { Account, ChainId, Chain } from '@renderer/shared/core';
 
-function getChainAddressPrefix(chains: ChainsRecord, account: Account): number {
+function getChainAddressPrefix(chains: Record<ChainId, Chain>, account: Account): number {
   if (!accountUtils.isChainAccount(account)) return SS58_DEFAULT_PREFIX;
 
   return chains[account.chainId]?.addressPrefix || SS58_DEFAULT_PREFIX;
 }
 
 type Props = {
-  chains: ChainsRecord;
+  chains: Record<ChainId, Chain>;
 };
 
 export const WalletCard = ({ chains }: Props) => {

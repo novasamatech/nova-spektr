@@ -47,7 +47,7 @@ export const AssetsList = () => {
 
   useEffect(() => {
     updateAccounts(activeAccounts);
-  }, [activeAccounts.length]);
+  }, [activeAccounts]);
 
   const updateAccounts = (accounts: Account[]) => {
     setActiveShards(accounts.length > 0 ? accounts : []);

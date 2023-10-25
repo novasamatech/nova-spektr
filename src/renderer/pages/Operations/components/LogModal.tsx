@@ -14,7 +14,7 @@ import { ExtrinsicExplorers } from '@renderer/components/common';
 import { useMultisigEvent } from '@renderer/entities/multisig';
 import { MultisigTransactionDS } from '@renderer/shared/api/storage';
 import { AssetBalance } from '@renderer/entities/asset';
-import type { Account, Contact, MultisigAccount, Wallet } from '@renderer/shared/core';
+import type { Account, Contact, MultisigAccount, Wallet, AccountId } from '@renderer/shared/core';
 import { WalletIcon, walletModel, walletUtils } from '@renderer/entities/wallet';
 
 type Props = {
@@ -38,10 +38,10 @@ const EventMessage: Partial<Record<SigningStatus | 'INITIATED', string>> = {
 type WalletsMap = Record<Wallet['id'], Wallet>;
 
 const getFilteredWalletsMap = (wallets: Wallet[]): WalletsMap => {
-  return wallets.reduce<WalletsMap>((acc, w) => {
+  return wallets.reduce<WalletsMap>((acc, wallet) => {
     // 2nd condition for legacy multisig
-    if (walletUtils.isValidSignatory(w) || walletUtils.isMultiShard(w)) {
-      acc[w.id] = w;
+    if (walletUtils.isValidSignatory(wallet) || walletUtils.isMultiShard(wallet)) {
+      acc[wallet.id] = wallet;
     }
 
     return acc;
@@ -49,9 +49,9 @@ const getFilteredWalletsMap = (wallets: Wallet[]): WalletsMap => {
 };
 
 const getFilteredAccountsMap = (accounts: Account[], walletsMap: WalletsMap) =>
-  accounts.reduce<Record<Account['accountId'], Account>>((acc, a) => {
-    if (walletsMap[a.walletId]) {
-      acc[a.accountId] = a;
+  accounts.reduce<Record<AccountId, Account>>((acc, account) => {
+    if (walletsMap[account.walletId]) {
+      acc[account.accountId] = account;
     }
 
     return acc;
@@ -131,7 +131,7 @@ const LogModal = ({ isOpen, onClose, tx, account, connection, contacts, accounts
                   .sort((a, b) => (a.dateCreated || 0) - (b.dateCreated || 0))
                   .map((event) => {
                     const account = filteredAccountMap[event.accountId];
-                    const wallet = account && filteredWalletsMap[account.walletId];
+                    const wallet = filteredWalletsMap[account?.walletId];
 
                     return (
                       <li key={`${event.accountId}_${event.status}`} className="flex flex-col">

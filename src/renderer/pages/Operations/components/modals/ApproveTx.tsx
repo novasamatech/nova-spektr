@@ -19,6 +19,7 @@ import { useMultisigEvent } from '@renderer/entities/multisig';
 import { Signing } from '@renderer/features/operation';
 import { OperationTitle } from '@renderer/components/common';
 import { walletModel } from '@renderer/entities/wallet';
+import { priceProviderModel } from '@renderer/entities/price';
 import type { Address, HexString, Timepoint, MultisigAccount, Account } from '@renderer/shared/core';
 import {
   isXcmTransaction,
@@ -30,7 +31,6 @@ import {
   useTransaction,
   validateBalance,
 } from '@renderer/entities/transaction';
-import { priceProviderModel } from '@renderer/entities/price';
 
 type Props = {
   tx: MultisigTransactionDS;

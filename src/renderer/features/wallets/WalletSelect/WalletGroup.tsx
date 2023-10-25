@@ -2,10 +2,10 @@ import { Disclosure } from '@headlessui/react';
 import cn from 'classnames';
 
 import { Icon, BodyText, CaptionText } from '@renderer/shared/ui';
-import { GroupIcons, GroupLabels } from '@renderer/features/wallets/WalletSelect/common/constants';
 import { useI18n } from '@renderer/app/providers';
 import { cnTw } from '@renderer/shared/lib/utils';
 import { WalletType, Wallet } from '@renderer/shared/core';
+import { GroupIcons, GroupLabels } from './common/constants';
 
 type Props = {
   type: WalletType;
