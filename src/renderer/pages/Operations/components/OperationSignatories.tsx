@@ -41,7 +41,7 @@ export const OperationSignatories = ({ tx, connection, account }: Props) => {
   const cancellation = events.filter((e) => e.status === 'CANCELLED');
 
   const walletSignatories: WalletSignatory[] = signatoriesList.reduce((acc: WalletSignatory[], signatory) => {
-    const signatoryWallet = singnatoryUtils.getSignatoryWallet(signatory.accountId, accounts, wallets);
+    const signatoryWallet = singnatoryUtils.getSignatoryWallet(wallets, accounts, signatory.accountId);
 
     if (signatoryWallet) {
       acc.push({ ...signatory, wallet: signatoryWallet });

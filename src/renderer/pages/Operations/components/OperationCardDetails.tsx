@@ -61,7 +61,7 @@ export const OperationCardDetails = ({ tx, account, connection }: Props) => {
 
   const valueClass = 'text-text-secondary';
   const depositorWallet =
-    depositorSignatory && singnatoryUtils.getSignatoryWallet(depositorSignatory.accountId, accounts, wallets);
+    depositorSignatory && singnatoryUtils.getSignatoryWallet(wallets, accounts, depositorSignatory.accountId);
 
   return (
     <dl className="flex flex-col gap-y-1 w-full">
