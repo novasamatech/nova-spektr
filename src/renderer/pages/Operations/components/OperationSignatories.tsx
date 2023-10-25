@@ -13,7 +13,7 @@ import { nonNullable } from '@renderer/shared/lib/utils';
 import { contactModel } from '@renderer/entities/contact';
 import LogModal from './LogModal';
 import { useMultisigEvent } from '@renderer/entities/multisig';
-import { SignatoryCard } from '@renderer/entities/signatory';
+import { SignatoryCard, singnatoryUtils } from '@renderer/entities/signatory';
 
 type WalletSignatory = Signatory & { wallet: Wallet };
 
@@ -32,7 +32,7 @@ export const OperationSignatories = ({ tx, connection, account }: Props) => {
 
   const contacts = useUnit(contactModel.$contacts);
   const accounts = useUnit(walletModel.$accounts);
-  const walletsMap = new Map(useUnit(walletModel.$wallets).map((w) => [w.id, w]));
+  const wallets = useUnit(walletModel.$wallets);
 
   const [isLogModalOpen, toggleLogModal] = useToggle();
   const [signatoriesList, setSignatories] = useState<Signatory[]>([]);
@@ -41,10 +41,9 @@ export const OperationSignatories = ({ tx, connection, account }: Props) => {
   const cancellation = events.filter((e) => e.status === 'CANCELLED');
 
   const walletSignatories: WalletSignatory[] = signatoriesList.reduce((acc: WalletSignatory[], signatory) => {
-    const signatoryAccount = accounts.find((a) => signatory.accountId === a.accountId);
-    const signatoryWallet = signatoryAccount && walletsMap.get(signatoryAccount.walletId);
+    const signatoryWallet = singnatoryUtils.getSignatoryWallet(wallets, accounts, signatory.accountId);
 
-    if (signatoryAccount && signatoryWallet) {
+    if (signatoryWallet) {
       acc.push({ ...signatory, wallet: signatoryWallet });
     }
 
