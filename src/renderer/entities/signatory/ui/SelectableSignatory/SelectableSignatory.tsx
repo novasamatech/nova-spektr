@@ -31,10 +31,9 @@ export const SelectableSignatory = <T extends any>({
   const address = toAddress(accountId, { prefix: addressPrefix });
 
   const { getLiveBalance } = useBalance();
-  const popoverItems = useAddressInfo({ address, explorers, showMatrix: true });
   const balance = getLiveBalance(toAccountId(address), chainId, asset.assetId.toString());
 
-  if (!signatoryWallet) return <></>;
+  if (!signatoryWallet) return null;
 
   return (
     <button
