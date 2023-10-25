@@ -7,11 +7,11 @@ import { MultisigTxInitStatus } from '@renderer/entities/transaction';
 import { WalletCard, WalletMenu } from '@renderer/features/wallets';
 import { NavItem, Props as NavItemProps } from './NavItem';
 import { chainsService } from '@renderer/entities/network';
-import { ChainsRecord } from '@renderer/features/wallets/WalletSelect/common/types';
 import { Paths } from '@renderer/shared/routes';
 import { Shimmering } from '@renderer/shared/ui';
 import { walletModel } from '@renderer/entities/wallet';
 import { cnTw } from '@renderer/shared/lib/utils';
+import type { ChainId, Chain } from '@renderer/shared/core';
 
 export const Navigation = () => {
   const activeWallet = useUnit(walletModel.$activeWallet);
@@ -19,7 +19,7 @@ export const Navigation = () => {
 
   const { getLiveAccountMultisigTxs } = useMultisigTx({});
 
-  const [chains, setChains] = useState<ChainsRecord>({});
+  const [chains, setChains] = useState<Record<ChainId, Chain>>({});
 
   useEffect(() => {
     const chains = chainsService.getChainsData();

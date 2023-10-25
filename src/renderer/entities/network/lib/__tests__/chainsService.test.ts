@@ -1,6 +1,12 @@
 import { chainsService } from '../chainsService';
 import type { HexString } from '@renderer/shared/core';
 
+jest.mock('@renderer/entities/walletConnect', () => ({
+  walletConnectModel: { events: {} },
+  DEFAULT_POLKADOT_METHODS: {},
+  getWalletConnectChains: jest.fn(),
+}));
+
 describe('service/chainsService', () => {
   test('should init', () => {
     expect(chainsService.sortChains).toBeDefined();
