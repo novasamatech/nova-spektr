@@ -12,7 +12,7 @@ type Props = {
   accountId: AccountId;
 };
 
-export const WalletRow = ({ wallet, className, iconSize = 16, addressPrefix, accountId, explorers }: Props) => {
+export const WalletCardSm = ({ wallet, className, iconSize = 16, addressPrefix, accountId, explorers }: Props) => {
   const address = toAddress(accountId, { prefix: addressPrefix });
   const popoverItems = useAddressInfo({ address, explorers });
 
@@ -20,12 +20,12 @@ export const WalletRow = ({ wallet, className, iconSize = 16, addressPrefix, acc
     <InfoPopover data={popoverItems} className="w-[230px]">
       <div
         className={cnTw(
-          'flex items-center max-w-full gap-x-2 px-2 py-[3px] cursor-pointer group hover:bg-action-background-hover hover:text-text-primary rounded',
+          'flex items-center max-w-full gap-x-2 px-2 py-[3px] cursor-pointer text-text-secondary group hover:bg-action-background-hover hover:text-text-primary rounded',
           className,
         )}
       >
         <WalletIcon type={wallet.type} size={iconSize} />
-        <FootnoteText className="text-text-secondary">{wallet.name}</FootnoteText>
+        <FootnoteText className="text-inherit inline w-max">{wallet.name}</FootnoteText>
         <Icon name="info" size={16} className="shrink-0 group-hover:text-icon-hover" />
       </div>
     </InfoPopover>

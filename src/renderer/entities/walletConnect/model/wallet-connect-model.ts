@@ -1,35 +1,28 @@
 import Client from '@walletconnect/sign-client';
 import { PairingTypes, SessionTypes } from '@walletconnect/types';
-import { createEffect, createEvent, createStore, forward, sample, scopeBind } from 'effector';
 import { getSdkError } from '@walletconnect/utils';
+import { createEffect, createEvent, createStore, forward, sample, scopeBind } from 'effector';
 import keyBy from 'lodash/keyBy';
 
 import { nonNullable } from '@renderer/shared/lib/utils';
-import {
-  ConnectProps,
-  DEFAULT_APP_METADATA,
-  DEFAULT_LOGGER,
-  DEFAULT_POLKADOT_EVENTS,
-  DEFAULT_POLKADOT_METHODS,
-  DEFAULT_PROJECT_ID,
-  DEFAULT_RELAY_URL,
-  DisconnectProps,
-  InitConnectProps,
-  WALLETCONNECT_CLIENT_ID,
-} from '../lib';
 import { Account, kernelModel } from '@renderer/shared/core';
 import { localStorageService } from '@renderer/shared/api/local-storage';
-import { walletModel } from '@renderer/entities/wallet/model/wallet-model';
 import { storageService } from '@renderer/shared/api/storage';
+import { walletModel } from '../../wallet';
+import {
+  WALLETCONNECT_CLIENT_ID,
+  DEFAULT_LOGGER,
+  DEFAULT_RELAY_URL,
+  DEFAULT_PROJECT_ID,
+  DEFAULT_APP_METADATA,
+  DEFAULT_POLKADOT_METHODS,
+  DEFAULT_POLKADOT_EVENTS,
+} from '../lib/constants';
 
-type InitConnectResult = {
-  uri: string | undefined;
-  approval: () => Promise<SessionTypes.Struct>;
-};
-
-type ConnectResult = {
-  pairings: PairingTypes.Struct[];
-  session: SessionTypes.Struct;
+type InitConnectParams = {
+  client: Client;
+  chains: string[];
+  pairing?: any;
 };
 
 type SessionTopicParams = {
@@ -117,6 +110,10 @@ const logClientIdFx = createEffect(async (client: Client) => {
   }
 });
 
+type SessionTopicUpdateParams = {
+  activeAccounts: Account[];
+  sessionTopic: string;
+};
 const sessionTopicUpdatedFx = createEffect(
   async ({ accounts, topic }: SessionTopicParams): Promise<Account[] | undefined> => {
     const updatedAccounts = accounts.map(({ signingExtras, ...rest }) => {
@@ -154,8 +151,12 @@ sample({
   target: [extendSessionsFx, subscribeToEventsFx, checkPersistedStateFx, logClientIdFx],
 });
 
+type InitConnectResult = {
+  uri: string | undefined;
+  approval: () => Promise<SessionTypes.Struct>;
+};
 const initConnectFx = createEffect(
-  async ({ client, chains, pairing }: InitConnectProps): Promise<InitConnectResult | undefined> => {
+  async ({ client, chains, pairing }: InitConnectParams): Promise<InitConnectResult | undefined> => {
     try {
       const optionalNamespaces = {
         polkadot: {
@@ -170,17 +171,23 @@ const initConnectFx = createEffect(
         optionalNamespaces,
       });
 
-      return {
-        uri,
-        approval,
-      };
+      return { uri, approval };
     } catch (e) {
       console.log(`Failed to init connection`, e);
     }
   },
 );
 
-const connectFx = createEffect(async ({ client, approval }: ConnectProps): Promise<ConnectResult | undefined> => {
+type ConnectParams = {
+  client: Client;
+  approval: () => Promise<any>;
+  onConnect?: () => void;
+};
+type ConnectResult = {
+  pairings: PairingTypes.Struct[];
+  session: SessionTypes.Struct;
+};
+const connectFx = createEffect(async ({ client, approval }: ConnectParams): Promise<ConnectResult | undefined> => {
   const session = await approval();
   console.log('Established session:', session);
 
@@ -190,7 +197,11 @@ const connectFx = createEffect(async ({ client, approval }: ConnectProps): Promi
   };
 });
 
-const disconnectFx = createEffect(async ({ client, session }: DisconnectProps) => {
+type DisconnectParams = {
+  client: Client;
+  session: SessionTypes.Struct;
+};
+const disconnectFx = createEffect(async ({ client, session }: DisconnectParams) => {
   try {
     await client.disconnect({
       topic: session.topic,

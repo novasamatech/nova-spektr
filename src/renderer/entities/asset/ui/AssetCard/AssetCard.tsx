@@ -65,10 +65,10 @@ export const AssetCard = ({ chainId, asset, balance, canMakeActions }: Props) =>
               <AssetFiatBalance amount={totalAmount(balance)} asset={asset} />
             </>
           ) : (
-            <>
+            <div className="flex flex-col gap-y-1 items-end">
               <Shimmering width={82} height={20} />
               {fiatFlag && <Shimmering width={56} height={18} />}
-            </>
+            </div>
           )}
         </div>
         {canMakeActions && (

@@ -5,19 +5,11 @@ import type { AccountId, ChainId, Account } from '@renderer/shared/core';
 import { Accordion, BaseModal, Button, Checkbox, FootnoteText, SearchInput } from '@renderer/shared/ui';
 import { useI18n } from '@renderer/app/providers';
 import { chainsService } from '@renderer/entities/network';
-import {
-  getMultishardStructure,
-  getSelectableShards,
-  searchShards,
-} from '@renderer/features/wallets/WalletSelect/common/utils';
-import {
-  ChainsRecord,
-  SelectableAccount,
-  SelectableShards,
-} from '@renderer/features/wallets/WalletSelect/common/types';
 import { SelectableShard } from '@renderer/entities/wallet';
 import { ChainTitle } from '@renderer/entities/chain';
 import { toAddress } from '@renderer/shared/lib/utils';
+import { SelectableShards, ChainsRecord, SelectableAccount } from '../../common/types';
+import { getMultishardStructure, searchShards, getSelectableShards } from '../../common/utils';
 
 type Props = {
   accounts: Account[];

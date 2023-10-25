@@ -174,9 +174,7 @@
     "addressPrefix": 42,
     "chainId": "0xe143f23803ac50e8f6f8e62695d1ce9e4e1d68aa36c1cd2cfd15340213f3423e",
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/chains/Westend_Testnet.svg",
-    "options": [
-      "testnet"
-    ],
+    "options": ["testnet"],
     "nodes": [
       {
         "url": "wss://rpc.ibp.network/westend",
@@ -246,10 +244,6 @@
       {
         "url": "wss://sys.dotters.network/statemine",
         "name": "Dotters Net node"
-      },
-      {
-        "url": "wss://statemine.api.onfinality.io/public-ws",
-        "name": "OnFinality node"
       },
       {
         "url": "wss://statemine-rpc.dwellir.com",
@@ -377,10 +371,6 @@
     "parentId": "0xb0a8d493285c2df73290dfb7e61f870f17b41801197a149ca93654499ea3dafe",
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/chains/Karura.svg",
     "nodes": [
-      {
-        "url": "wss://karura-rpc.dwellir.com",
-        "name": "Dwellir node"
-      },
       {
         "url": "wss://karura-rpc-0.aca-api.network",
         "name": "Acala Foundation 0 node"
@@ -2863,8 +2853,8 @@
         "name": "Airalab node"
       },
       {
-        "url": "wss://robonomics.leemo.me",
-        "name": "Leemo node"
+        "url": "wss://robonomics.0xsamsara.com",
+        "name": "Samsara node"
       }
     ],
     "assets": [
@@ -5206,7 +5196,7 @@
     }
   },
   {
-    "name": "GM",
+    "name": "GM PAUSED",
     "addressPrefix": 7013,
     "chainId": "0x19a3733beb9cb8a970a308d835599e9005e02dc007a35440e461a451466776f8",
     "parentId": "0xb0a8d493285c2df73290dfb7e61f870f17b41801197a149ca93654499ea3dafe",

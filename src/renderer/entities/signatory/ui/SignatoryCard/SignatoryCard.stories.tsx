@@ -13,6 +13,6 @@ const Template: ComponentStory<typeof SignatoryCard> = (args) => <SignatoryCard 
 
 export const Primary = Template.bind({});
 Primary.args = {
-  address: TEST_ADDRESS,
-  name: 'John Doe',
+  children: TEST_ADDRESS,
+  status: 'SIGNED',
 };
