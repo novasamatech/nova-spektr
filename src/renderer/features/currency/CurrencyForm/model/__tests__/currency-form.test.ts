@@ -3,6 +3,12 @@ import { fork, allSettled } from 'effector';
 import { currencyFormModel } from '../currency-form';
 import { currencyModel, priceProviderModel } from '@renderer/entities/price';
 
+jest.mock('@renderer/entities/walletConnect', () => ({
+  walletConnectModel: { events: {} },
+  DEFAULT_POLKADOT_METHODS: {},
+  getWalletConnectChains: jest.fn(),
+}));
+
 describe('features/currency/model/currency-form', () => {
   const config = [
     { id: 0, code: 'USD', popular: true, category: 'fiat' },
