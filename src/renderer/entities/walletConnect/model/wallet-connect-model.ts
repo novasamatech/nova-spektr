@@ -387,6 +387,7 @@ export const walletConnectModel = {
     connectionRejected,
     currentSessionTopicUpdated,
     sessionTopicUpdated,
+    sessionTopicUpdateDone: sessionTopicUpdatedFx.doneData,
     accountsUpdated,
     reset,
   },

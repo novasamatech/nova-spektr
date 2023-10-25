@@ -61,7 +61,7 @@ sample({
 
 sample({
   clock: combineEvents({
-    events: [reconnectStarted, walletConnectModel.events.connected],
+    events: [reconnectStarted, walletConnectModel.events.sessionTopicUpdateDone, walletConnectModel.events.connected],
   }),
   source: {
     newAccounts: walletConnectModel.$accounts,
