@@ -29,8 +29,7 @@ type SessionTopicParams = {
   accounts: Account[];
   topic: string;
 };
-
-const connect = createEvent<Omit<InitConnectProps, 'client'>>();
+const connect = createEvent<Omit<InitConnectParams, 'client'>>();
 const disconnectCurrentSessionStarted = createEvent();
 const disconnectStarted = createEvent<string>();
 const reset = createEvent();
@@ -110,10 +109,6 @@ const logClientIdFx = createEffect(async (client: Client) => {
   }
 });
 
-type SessionTopicUpdateParams = {
-  activeAccounts: Account[];
-  sessionTopic: string;
-};
 const sessionTopicUpdatedFx = createEffect(
   async ({ accounts, topic }: SessionTopicParams): Promise<Account[] | undefined> => {
     const updatedAccounts = accounts.map(({ signingExtras, ...rest }) => {
