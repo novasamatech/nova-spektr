@@ -15,7 +15,15 @@ import wallet_connect_confirm_webm from '@video/wallet_connect_confirm.webm';
 import { HexString } from '@renderer/shared/core';
 import { Animation } from '@renderer/shared/ui/Animation/Animation';
 
-export const WalletConnect = ({ api, validateBalance, onGoBack, accounts, transactions, onResult }: SigningProps) => {
+export const WalletConnect = ({
+  api,
+  validateBalance,
+  onGoBack,
+  accounts,
+  signatory,
+  transactions,
+  onResult,
+}: SigningProps) => {
   const { t } = useI18n();
   const { verifySignature, createPayload } = useTransaction();
   const [countdown, resetCountdown] = useCountdown(api);
@@ -35,7 +43,7 @@ export const WalletConnect = ({ api, validateBalance, onGoBack, accounts, transa
   const [validationError, setValidationError] = useState<ValidationErrors>();
 
   const transaction = transactions[0];
-  const account = accounts[0];
+  const account = signatory || accounts[0];
   const isCurrentSession = session && account && session.topic === account.signingExtras?.sessionTopic;
 
   useEffect(() => {

@@ -39,10 +39,14 @@ export const Confirmation = ({
 }: Props) => {
   const { t } = useI18n();
   const activeWallet = useUnit(walletModel.$activeWallet);
+  const wallets = useUnit(walletModel.$wallets);
   const [feeLoaded, setFeeLoaded] = useState(false);
 
   const isXcmTransfer = XcmTypes.includes(transaction?.type);
   const asset = xcmAsset && connection.assets.find((a) => a.assetId === xcmAsset.assetId);
+
+  const signatoryWallet = signatory && wallets.find((w) => w.id === signatory.walletId);
+  const walletType = signatoryWallet?.type || activeWallet?.type;
 
   return (
     <div className="flex flex-col items-center pt-4 gap-y-4 pb-4 pl-5 pr-3">
@@ -98,11 +102,7 @@ export const Confirmation = ({
           {t('operation.goBackButton')}
         </Button>
 
-        <SignButton
-          disabled={!feeLoaded}
-          type={activeWallet?.type || WalletType.SINGLE_PARITY_SIGNER}
-          onClick={onResult}
-        />
+        <SignButton disabled={!feeLoaded} type={walletType || WalletType.SINGLE_PARITY_SIGNER} onClick={onResult} />
       </div>
     </div>
   );

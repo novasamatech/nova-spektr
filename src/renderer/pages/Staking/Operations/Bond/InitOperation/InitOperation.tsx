@@ -18,6 +18,7 @@ import type {
   Address,
   ChainId,
   Balance as AccountBalance,
+  Wallet,
 } from '@renderer/shared/core';
 import {
   getStakeAccountOption,
@@ -102,10 +103,10 @@ const InitOperation = ({ api, chainId, accounts, asset, addressPrefix, onResult 
     return getStakeAccountOption(account, { asset, fee, amount, balance, addressPrefix });
   };
 
-  const getSignatoryDrowdownOption = (account: Account) => {
+  const getSignatoryDrowdownOption = (wallet: Wallet, account: Account) => {
     const balance = signatoriesBalances.find((b) => b.accountId === account.accountId);
 
-    return getSignatoryOption(account, { balance, asset, addressPrefix, fee, deposit });
+    return getSignatoryOption(wallet, account, { balance, asset, addressPrefix, fee, deposit });
   };
 
   useEffect(() => {
