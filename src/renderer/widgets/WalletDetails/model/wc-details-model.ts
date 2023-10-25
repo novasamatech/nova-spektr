@@ -1,11 +1,14 @@
 import { combine, createEvent, createStore, forward, sample } from 'effector';
+import { combineEvents } from 'patronum';
 
 import { accountUtils, walletModel } from '@renderer/entities/wallet';
-import { InitConnectProps, walletConnectModel } from '@renderer/entities/walletConnect';
+import { InitConnectProps, walletConnectUtils, walletConnectModel } from '@renderer/entities/walletConnect';
 import { ReconnectStep, ForgetStep } from '../lib/constants';
 import { walletProviderModel } from './wallet-provider-model';
 import { walletSelectModel } from '@renderer/features/wallets';
-import type { Wallet } from '@renderer/shared/core';
+import type { Wallet, WalletConnectAccount } from '@renderer/shared/core';
+import { chainsService } from '@renderer/entities/network';
+import { toAccountId } from '@renderer/shared/lib/utils';
 
 const reset = createEvent();
 const reconnectStarted = createEvent<Omit<InitConnectProps, 'client'>>();
@@ -17,18 +20,18 @@ const forgetModalClosed = createEvent();
 const $reconnectStep = createStore<ReconnectStep>(ReconnectStep.NOT_STARTED).reset(reset);
 const $forgetStep = createStore<ForgetStep>(ForgetStep.NOT_STARTED).reset(reset);
 
-const $connected = combine(
+const $isConnected = combine(
   {
     accounts: walletProviderModel.$accounts,
     client: walletConnectModel.$client,
   },
   ({ accounts, client }): boolean => {
     const account = accounts[0];
-    if (!client || !account || !accountUtils.isWalletConnectAccount(account)) return false;
+    if (!client || !account || !accountUtils.isWalletConnectAccount(account) || !account.signingExtras?.sessionTopic) {
+      return false;
+    }
 
-    const sessions = client.session.getAll() || [];
-
-    return sessions.some((session) => session.topic === account.signingExtras?.sessionTopic);
+    return walletConnectUtils.isConnected(account.signingExtras.sessionTopic, client);
   },
 );
 
@@ -44,7 +47,9 @@ forward({
 });
 
 sample({
-  clock: walletConnectModel.events.connected,
+  clock: combineEvents({
+    events: [reconnectStarted, walletConnectModel.events.connected],
+  }),
   source: {
     accounts: walletProviderModel.$accounts,
     session: walletConnectModel.$session,
@@ -55,7 +60,44 @@ sample({
 });
 
 sample({
-  clock: walletConnectModel.events.connectionRejected,
+  clock: combineEvents({
+    events: [reconnectStarted, walletConnectModel.events.sessionTopicUpdateDone, walletConnectModel.events.connected],
+  }),
+  source: {
+    newAccounts: walletConnectModel.$accounts,
+    accounts: walletProviderModel.$accounts,
+    wallet: walletSelectModel.$walletForDetails,
+  },
+  filter: ({ wallet }) => wallet !== null,
+  fn: ({ accounts, wallet, newAccounts }) => {
+    const oldAccount = accounts.find((a) => a.walletId === wallet!.id);
+    const { id, ...oldAccountParams } = oldAccount!;
+
+    const updatedAccounts = newAccounts.map((account) => {
+      const [_, chainId, address] = account.split(':');
+      const chain = chainsService.searchChain(chainId);
+      const accountId = toAccountId(address);
+
+      return {
+        ...oldAccountParams,
+        chainId: chain?.chainId,
+        accountId,
+      } as WalletConnectAccount;
+    });
+
+    return {
+      walletId: wallet!.id,
+      accounts,
+      newAccounts: updatedAccounts,
+    };
+  },
+  target: walletConnectModel.events.accountsUpdated,
+});
+
+sample({
+  clock: combineEvents({
+    events: [reconnectStarted, walletConnectModel.events.connectionRejected],
+  }),
   fn: () => ReconnectStep.REJECTED,
   target: $reconnectStep,
 });
@@ -107,7 +149,7 @@ forward({
 });
 
 export const wcDetailsModel = {
-  $connected,
+  $isConnected,
   $reconnectStep,
   $forgetStep,
   events: {

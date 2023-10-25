@@ -5,7 +5,7 @@ import { MultiSelectMultishardHeader } from './MultiSelectMultishardHeader';
 import { DropdownOption } from '@renderer/shared/ui/Dropdowns/common/types';
 import { MultisigOperationHeader } from './MultisigOperationHeader';
 import { OperationError, OperationErrorType } from '@renderer/features/operation/init/model';
-import type { Account, MultisigAccount, ChainId } from '@renderer/shared/core';
+import type { Account, MultisigAccount, ChainId, Wallet } from '@renderer/shared/core';
 import { walletModel, walletUtils } from '@renderer/entities/wallet';
 
 type Props = {
@@ -14,7 +14,7 @@ type Props = {
   isMultiselect?: boolean;
   errors?: OperationErrorType[];
   getAccountOption: (account: Account) => DropdownOption<Account>;
-  getSignatoryOption: (account: Account) => DropdownOption<Account>;
+  getSignatoryOption: (wallet: Wallet, account: Account) => DropdownOption<Account>;
   onSignatoryChange: (account: Account) => void;
 } & AccountSelectProps;
 
@@ -50,6 +50,7 @@ export const OperationHeader = ({
     <div className="flex flex-col gap-y-4">
       {isMultisig && (
         <MultisigOperationHeader
+          chainId={chainId}
           account={firstAccount as MultisigAccount}
           invalid={Boolean(multisigError || emptyError)}
           error={multisigError}

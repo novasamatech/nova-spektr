@@ -9,6 +9,7 @@ export const walletUtils = {
   isWatchOnly,
   isNovaWallet,
   isWalletConnect,
+  isWalletConnectFamily,
   isValidSignatory,
 };
 
@@ -55,4 +56,8 @@ function isNovaWallet(wallet?: Wallet | null): boolean {
 
 function isWalletConnect(wallet?: Wallet | null): boolean {
   return wallet?.type === WalletType.WALLET_CONNECT;
+}
+
+function isWalletConnectFamily(wallet?: Wallet | null): boolean {
+  return isNovaWallet(wallet) || isWalletConnect(wallet);
 }

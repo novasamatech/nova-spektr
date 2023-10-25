@@ -9,7 +9,7 @@ import ManageStep from './ManageStep/ManageStep';
 import novawallet_onboarding_tutorial from '@video/novawallet_onboarding_tutorial.mp4';
 import novawallet_onboarding_tutorial_webm from '@video/novawallet_onboarding_tutorial.webm';
 import { usePrevious } from '@renderer/shared/lib/hooks';
-import { getWalletConnectChains, walletConnectModel } from '@renderer/entities/walletConnect';
+import { walletConnectUtils, walletConnectModel } from '@renderer/entities/walletConnect';
 import { chainsService } from '@renderer/entities/network';
 import { wcOnboardingModel } from '@renderer/pages/Onboarding/WalletConnect/model/wc-onboarding-model';
 import { WCQRConfig, Step, EXPIRE_TIMEOUT } from './common/const';
@@ -79,7 +79,7 @@ export const WalletConnect = ({ isOpen, onClose, onComplete }: Props) => {
 
   useEffect(() => {
     if (client && isOpen) {
-      const chains = getWalletConnectChains(chainsService.getChainsData());
+      const chains = walletConnectUtils.getWalletConnectChains(chainsService.getChainsData());
       walletConnectModel.events.connect({ chains });
     }
   }, [client, isOpen]);

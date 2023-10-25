@@ -7,7 +7,9 @@ import { TEST_ADDRESS, TEST_CHAIN_ID } from '@renderer/shared/lib/utils';
 jest.mock('@renderer/entities/walletConnect', () => ({
   walletConnectModel: { events: {} },
   DEFAULT_POLKADOT_METHODS: {},
-  getWalletConnectChains: jest.fn(),
+  walletConnectUtils: {
+    getWalletConnectChains: jest.fn(),
+  },
 }));
 jest.mock('@renderer/pages/Onboarding/WalletConnect/model/wc-onboarding-model', () => ({
   wcOnboardingModel: { events: {} },
