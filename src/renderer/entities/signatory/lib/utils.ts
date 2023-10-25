@@ -7,16 +7,17 @@ export const singnatoryUtils = {
   getSignatoryWallet,
 };
 
-function getSignatoryWallet(accoutId: AccountId, accounts: Account[], wallets: Wallet[]): Wallet | undefined {
+function getSignatoryWallet(wallets: Wallet[], accounts: Account[], accoutId: AccountId): Wallet | undefined {
   const walletsMap = keyBy(wallets, 'id');
 
-  const signatoryAccount = accounts.find((a) => {
-    const wallet = walletsMap[a.walletId];
+  const signatoryAccount = accounts.find((account) => {
+    const accountIdMatch = accoutId === account.accountId;
+    const wallet = walletsMap[account.walletId];
 
-    return (
-      accoutId === a.accountId && wallet && (walletUtils.isValidSignatory(wallet) || walletUtils.isMultiShard(wallet))
-    );
+    if (!accountIdMatch || !wallet) return;
+
+    return walletUtils.isValidSignatory(wallet) || walletUtils.isMultiShard(wallet);
   });
 
-  return signatoryAccount && walletsMap[signatoryAccount?.walletId];
+  return signatoryAccount && walletsMap[signatoryAccount.walletId];
 }
