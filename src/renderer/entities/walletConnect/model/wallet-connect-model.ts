@@ -5,7 +5,7 @@ import { createEffect, createEvent, createStore, forward, sample, scopeBind } fr
 import keyBy from 'lodash/keyBy';
 
 import { nonNullable } from '@renderer/shared/lib/utils';
-import { Account, kernelModel } from '@renderer/shared/core';
+import { ID, Account, WalletConnectAccount, kernelModel } from '@renderer/shared/core';
 import { localStorageService } from '@renderer/shared/api/local-storage';
 import { storageService } from '@renderer/shared/api/storage';
 import { walletModel } from '../../wallet';
@@ -29,6 +29,12 @@ type SessionTopicParams = {
   accounts: Account[];
   topic: string;
 };
+
+type UpdateAccountsParams = {
+  walletId: ID;
+  newAccounts: WalletConnectAccount[];
+};
+
 const connect = createEvent<Omit<InitConnectParams, 'client'>>();
 const disconnectCurrentSessionStarted = createEvent();
 const disconnectStarted = createEvent<string>();
@@ -38,6 +44,7 @@ const connected = createEvent();
 const connectionRejected = createEvent<string>();
 const currentSessionTopicUpdated = createEvent<string>();
 const sessionTopicUpdated = createEvent<SessionTopicParams>();
+const accountsUpdated = createEvent<UpdateAccountsParams>();
 
 const $client = createStore<Client | null>(null).reset(reset);
 const $session = createStore<SessionTypes.Struct | null>(null).reset(reset);
@@ -133,6 +140,53 @@ const createClientFx = createEffect(async (): Promise<Client | undefined> => {
   } catch (e) {
     console.log(`Failed to create new Client`, e);
   }
+});
+
+const updateWalletConnectAccountsFx = createEffect(
+  async ({
+    walletId,
+    newAccounts,
+    accounts,
+  }: {
+    walletId: ID;
+    accounts: Account[];
+    newAccounts: WalletConnectAccount[];
+  }): Promise<WalletConnectAccount[] | undefined> => {
+    const oldAccountIds = accounts.filter((account) => account.walletId === walletId).map(({ id }) => id);
+
+    await storageService.accounts.deleteAll(oldAccountIds);
+
+    const dbAccounts = await storageService.accounts.createAll(newAccounts);
+
+    if (!dbAccounts) return undefined;
+
+    return dbAccounts as WalletConnectAccount[];
+  },
+);
+
+sample({
+  clock: accountsUpdated,
+  source: {
+    accounts: walletModel.$accounts,
+  },
+  fn: ({ accounts }, { newAccounts, walletId }) => ({
+    accounts,
+    newAccounts,
+    walletId,
+  }),
+  target: updateWalletConnectAccountsFx,
+});
+
+sample({
+  clock: updateWalletConnectAccountsFx.doneData,
+  source: {
+    accounts: walletModel.$accounts,
+  },
+  filter: (_, newAccounts) => Boolean(newAccounts?.length),
+  fn: ({ accounts }, newAccounts) => {
+    return accounts.filter((a) => a.walletId !== newAccounts![0].walletId).concat((newAccounts as Account[]) || []);
+  },
+  target: walletModel.$accounts,
 });
 
 forward({
@@ -340,6 +394,8 @@ export const walletConnectModel = {
     connectionRejected,
     currentSessionTopicUpdated,
     sessionTopicUpdated,
+    sessionTopicUpdateDone: sessionTopicUpdatedFx.doneData,
+    accountsUpdated,
     reset,
   },
 };

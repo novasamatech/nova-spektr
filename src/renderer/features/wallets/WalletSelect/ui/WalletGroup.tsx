@@ -5,6 +5,7 @@ import { WalletIcon, walletModel } from '@renderer/entities/wallet';
 import { cnTw } from '@renderer/shared/lib/utils';
 import { WalletFiatBalance } from './WalletFiatBalance';
 import { walletSelectModel } from '../model/wallet-select-model';
+import { WalletStatus } from './WalletStatus';
 
 export const GroupLabels: Record<WalletFamily, string> = {
   [WalletType.POLKADOT_VAULT]: 'wallets.paritySignerLabel',
@@ -12,8 +13,6 @@ export const GroupLabels: Record<WalletFamily, string> = {
   [WalletType.WALLET_CONNECT]: 'wallets.walletConnectLabel',
   [WalletType.NOVA_WALLET]: 'wallets.novaWalletLabel',
   [WalletType.WATCH_ONLY]: 'wallets.watchOnlyLabel',
-  [WalletType.NOVA_WALLET]: 'wallets.novaWalletLabel',
-  [WalletType.WALLET_CONNECT]: 'wallets.walletConnectLabel',
 };
 
 type Props = {
@@ -57,6 +56,8 @@ export const WalletGroup = ({ type, wallets }: Props) => {
                     <BodyText className="text-text-secondary max-w-[260px] truncate">{wallet.name}</BodyText>
                     <WalletFiatBalance walletId={wallet.id} className="text-help-text" />
                   </div>
+
+                  <WalletStatus wallet={wallet} />
                 </button>
                 <IconButton
                   className="absolute right-2 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 focus:opacity-100"

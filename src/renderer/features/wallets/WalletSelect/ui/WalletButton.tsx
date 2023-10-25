@@ -4,6 +4,7 @@ import type { Wallet } from '@renderer/shared/core';
 import { WalletFiatBalance } from './WalletFiatBalance';
 import { Icon, BodyText } from '@renderer/shared/ui';
 import { WalletIcon } from '@renderer/entities/wallet';
+import { WalletStatus } from './WalletStatus';
 
 type Props = {
   wallet: Wallet;
@@ -11,8 +12,10 @@ type Props = {
 export const WalletButton = ({ wallet }: Props) => {
   return (
     <Popover.Button className="border border-container-border bg-left-navigation-menu-background rounded-md w-full shadow-card-shadow">
-      <div className="flex items-center gap-x-2 px-3 py-2">
+      <div className="flex items-center gap-x-2 px-3 py-2 relative">
         <WalletIcon className="shrink-0" type={wallet.type} size={32} />
+
+        <WalletStatus wallet={wallet} className="absolute bottom-3 left-9" />
 
         <div className="flex flex-col gap-y-1 overflow-hidden">
           <BodyText className="truncate">{wallet.name}</BodyText>

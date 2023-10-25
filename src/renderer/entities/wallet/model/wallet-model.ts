@@ -7,9 +7,6 @@ import { storageService } from '@renderer/shared/api/storage';
 import { modelUtils } from '../lib/model-utils';
 import { accountUtils } from '../lib/account-utils';
 
-type WalletId = Wallet['id'];
-type NoIdWallet = NoID<Wallet>;
-
 const $wallets = createStore<Wallet[]>([]);
 const $activeWallet = $wallets.map((wallets) => wallets.find((w) => w.isActive));
 
@@ -27,7 +24,7 @@ const $activeAccounts = combine(
 );
 
 type CreateParams<T extends Account> = {
-  wallet: Omit<NoIdWallet, 'isActive'>;
+  wallet: Omit<NoID<Wallet>, 'isActive'>;
   accounts: Omit<NoID<T>, 'walletId'>[];
 };
 type MultisigUpdateParams = Partial<MultisigAccount> & { id: Account['id'] };
@@ -38,9 +35,9 @@ const singleshardCreated = createEvent<CreateParams<BaseAccount>>();
 const multisigCreated = createEvent<CreateParams<MultisigAccount>>();
 const walletConnectCreated = createEvent<CreateParams<WalletConnectAccount>>();
 
-const walletSelected = createEvent<WalletId>();
+const walletSelected = createEvent<ID>();
 const multisigAccountUpdated = createEvent<MultisigUpdateParams>();
-const walletRemoved = createEvent<WalletId>();
+const walletRemoved = createEvent<ID>();
 
 const fetchAllAccountsFx = createEffect((): Promise<Account[]> => {
   return storageService.accounts.readAll();
@@ -103,10 +100,10 @@ const multishardCreatedFx = createEffect(
 );
 
 type SelectParams = {
-  prevId?: WalletId;
-  nextId: WalletId;
+  prevId?: ID;
+  nextId: ID;
 };
-const walletSelectedFx = createEffect(async ({ prevId, nextId }: SelectParams): Promise<WalletId | undefined> => {
+const walletSelectedFx = createEffect(async ({ prevId, nextId }: SelectParams): Promise<ID | undefined> => {
   if (!prevId) {
     return storageService.wallets.update(nextId, { isActive: true });
   }
@@ -129,11 +126,11 @@ const multisigWalletUpdatedFx = createEffect(
 );
 
 type RemoveParams = {
-  walletId: WalletId;
+  walletId: ID;
   accountIds: ID[];
 };
 
-const removeWalletFx = createEffect(async ({ walletId, accountIds }: RemoveParams): Promise<WalletId> => {
+const removeWalletFx = createEffect(async ({ walletId, accountIds }: RemoveParams): Promise<ID> => {
   await Promise.all([storageService.accounts.deleteAll(accountIds), storageService.wallets.delete(walletId)]);
 
   return walletId;

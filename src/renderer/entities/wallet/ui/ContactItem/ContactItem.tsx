@@ -24,7 +24,7 @@ export const ContactItem = ({
   addressFont,
 }: Props) => {
   const address = toAddress(accountId, { prefix: addressPrefix });
-  const popoverItems = useAddressInfo({ address, explorers, addressPrefix });
+  const popoverItems = useAddressInfo({ address, explorers, addressPrefix, showMatrix: true });
 
   return (
     <div className={cnTw('flex items-center gap-x-2 w-full', className)}>

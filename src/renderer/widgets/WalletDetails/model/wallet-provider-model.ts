@@ -3,7 +3,6 @@ import { combine } from 'effector';
 import { accountUtils, walletModel } from '@renderer/entities/wallet';
 import { walletSelectModel } from '@renderer/features/wallets';
 import { dictionary, nonNullable } from '@renderer/shared/lib/utils';
-import { walletConnectModel } from '@renderer/entities/walletConnect';
 import type { MultishardMap } from '../lib/types';
 import type {
   Account,
@@ -102,22 +101,6 @@ const $signatoryWallets = combine(
   },
 );
 
-const $isConnected = combine(
-  {
-    accounts: $accounts,
-    client: walletConnectModel.$client,
-  },
-  ({ accounts, client }): boolean => {
-    const account = accounts[0];
-    if (!client || !account || !accountUtils.isWalletConnectAccount(account)) return false;
-
-    const sessions = client.session.getAll() || [];
-    const storedSession = sessions.find((s) => s.topic === account.signingExtras?.sessionTopic);
-
-    return Boolean(storedSession);
-  },
-);
-
 export const walletProviderModel = {
   $accounts,
   $singleShardAccount,
@@ -125,5 +108,4 @@ export const walletProviderModel = {
   $multisigAccount,
   $signatoryContacts,
   $signatoryWallets,
-  $isConnected,
 };
