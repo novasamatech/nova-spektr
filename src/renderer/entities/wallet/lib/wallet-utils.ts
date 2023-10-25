@@ -10,6 +10,7 @@ export const walletUtils = {
   isNovaWallet,
   isWalletConnect,
   isWalletConnectFamily,
+  isValidSignatory,
 };
 
 function isPolkadotVault(wallet?: Wallet | null): boolean {
@@ -37,6 +38,16 @@ function isMultisig(wallet?: Wallet | null): boolean {
 
 function isWatchOnly(wallet?: Wallet | null): boolean {
   return wallet?.type === WalletType.WATCH_ONLY;
+}
+
+function isValidSignatory(wallet?: Wallet | null) {
+  const VALID_SIGNATORY_WALLET_TYPES = [
+    WalletType.SINGLE_PARITY_SIGNER,
+    WalletType.WALLET_CONNECT,
+    WalletType.NOVA_WALLET,
+  ];
+
+  return wallet && VALID_SIGNATORY_WALLET_TYPES.includes(wallet.type);
 }
 
 function isNovaWallet(wallet?: Wallet | null): boolean {

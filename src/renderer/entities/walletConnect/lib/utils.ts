@@ -1,6 +1,6 @@
 import Client from '@walletconnect/sign-client';
 
-import { Chain } from '@renderer/shared/core';
+import type { Chain } from '@renderer/shared/core';
 
 export const walletConnectUtils = {
   getWalletConnectChains,

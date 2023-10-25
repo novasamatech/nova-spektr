@@ -8,8 +8,8 @@ import { NavItem, Props as NavItemProps } from './NavItem';
 import { chainsService } from '@renderer/entities/network';
 import { Paths } from '@renderer/shared/routes';
 import { walletModel } from '@renderer/entities/wallet';
-import { ChainId, Chain } from '@renderer/shared/core';
 import { BodyText } from '@renderer/shared/ui';
+import type { ChainId, Chain } from '@renderer/shared/core';
 
 export const Navigation = () => {
   const activeAccounts = useUnit(walletModel.$activeAccounts);

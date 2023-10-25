@@ -38,6 +38,7 @@ export const Confirmation = ({
   onBack,
 }: Props) => {
   const { t } = useI18n();
+
   const activeWallet = useUnit(walletModel.$activeWallet);
   const wallets = useUnit(walletModel.$wallets);
   const [feeLoaded, setFeeLoaded] = useState(false);
