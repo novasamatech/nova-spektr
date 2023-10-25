@@ -159,9 +159,9 @@ const updateWalletConnectAccountsFx = createEffect(
     accounts: Account[];
     newAccounts: WalletConnectAccount[];
   }): Promise<WalletConnectAccount[] | undefined> => {
-    const oldAccountIds = accounts.filter((account) => account.walletId === walletId);
+    const oldAccountIds = accounts.filter((account) => account.walletId === walletId).map(({ id }) => id);
 
-    await storageService.accounts.deleteAll(oldAccountIds.map(({ id }) => id));
+    await storageService.accounts.deleteAll(oldAccountIds);
 
     const dbAccounts = await storageService.accounts.createAll(newAccounts);
 

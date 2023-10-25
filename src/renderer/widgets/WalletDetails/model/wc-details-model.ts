@@ -73,20 +73,22 @@ sample({
     const oldAccount = accounts.find((a) => a.walletId === wallet!.id);
     const { id, ...oldAccountParams } = oldAccount!;
 
+    const updatedAccounts = newAccounts.map((account) => {
+      const [_, chainId, address] = account.split(':');
+      const chain = chainsService.searchChain(chainId);
+      const accountId = toAccountId(address);
+
+      return {
+        ...oldAccountParams,
+        chainId: chain?.chainId,
+        accountId,
+      } as WalletConnectAccount;
+    });
+
     return {
       walletId: wallet!.id,
       accounts,
-      newAccounts: newAccounts.map((account) => {
-        const [_, chainId, address] = account.split(':');
-        const chain = chainsService.searchChain(chainId);
-        const accountId = toAccountId(address);
-
-        return {
-          ...oldAccountParams,
-          chainId: chain?.chainId,
-          accountId,
-        } as WalletConnectAccount;
-      }),
+      newAccounts: updatedAccounts,
     };
   },
   target: walletConnectModel.events.accountsUpdated,
