@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react';
 
 import { Validator } from '@renderer/shared/core/types/validator';
-import ValidatorsModal from './ValidatorsModal';
+import { ValidatorsModal } from './ValidatorsModal';
 import type { Asset } from '@renderer/shared/core';
 
 jest.mock('@renderer/app/providers', () => ({
@@ -19,7 +19,7 @@ describe('pages/Staking/components/ValidatorsModal', () => {
     isOpen: true,
     amount: '1000000000000',
     asset: { symbol: 'DOT', precision: 10 } as Asset,
-    validators: [
+    selectedValidators: [
       {
         address: '12QkLhnKL5vXsa7e74CC45RUSqA5fRqc8rKHzXYZb82ppZap',
         identity: {
@@ -42,6 +42,7 @@ describe('pages/Staking/components/ValidatorsModal', () => {
         },
       },
     ] as Validator[],
+    notSelectedValidators: [],
     onClose: () => {},
   };
 
@@ -56,6 +57,6 @@ describe('pages/Staking/components/ValidatorsModal', () => {
     render(<ValidatorsModal {...defaultProps} />);
 
     const items = screen.getAllByTestId('validator');
-    expect(items).toHaveLength(defaultProps.validators.length);
+    expect(items).toHaveLength(defaultProps.selectedValidators.length);
   });
 });

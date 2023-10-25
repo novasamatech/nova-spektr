@@ -5,3 +5,4 @@ export * from './stakingRewardsService';
 export * from './validatorsService';
 export * from './common/types';
 export * from './common/constants';
+export { useValidatorsMap } from './useValidatorsMap';

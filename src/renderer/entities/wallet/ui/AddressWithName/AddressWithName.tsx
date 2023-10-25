@@ -28,10 +28,12 @@ export const AddressWithName = ({
   const addressContent = typeIsAdaptive ? (
     <Truncate className={cnTw(addressFont)} ellipsis="..." start={4} end={4} text={addressToShow} />
   ) : (
-    <p className={cnTw('inline-block break-all', addressFont)}>{addressToShow}</p>
+    <p className="inline-block break-all">{addressToShow}</p>
   );
 
-  const firstLine = <div className="text-body text-text-primary">{nameContent || addressContent}</div>;
+  const firstLine = (
+    <div className={cnTw('text-body text-text-primary', addressFont)}>{nameContent || addressContent}</div>
+  );
   const secondLine = nameContent && addressContent && (
     <div className="text-help-text text-text-tertiary">
       {canCopySubName ? (
@@ -57,6 +59,7 @@ export const AddressWithName = ({
       canCopy={canCopy}
       firstLine={firstLine}
       secondLine={secondLine}
+      className={className}
       {...props}
     />
   );

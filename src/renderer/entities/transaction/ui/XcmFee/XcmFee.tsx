@@ -4,7 +4,7 @@ import { ApiPromise } from '@polkadot/api';
 import { useUnit } from 'effector-react';
 
 import { AssetBalance } from '@renderer/entities/asset';
-import { Transaction } from '@renderer/entities/transaction';
+import { DecodedTransaction, Transaction } from '@renderer/entities/transaction';
 import { Shimmering } from '@renderer/shared/ui';
 import { estimateFee, XcmConfig } from '@renderer/shared/api/xcm';
 import { toLocalChainId } from '@renderer/shared/lib/utils';
@@ -17,7 +17,7 @@ type Props = {
   multiply?: number;
   asset: Asset;
   config: XcmConfig;
-  transaction?: Transaction;
+  transaction?: Transaction | DecodedTransaction;
   className?: string;
   onFeeChange?: (fee: string) => void;
   onFeeLoading?: (loading: boolean) => void;
