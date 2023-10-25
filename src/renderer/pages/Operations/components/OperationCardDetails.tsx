@@ -15,6 +15,7 @@ import { ChainTitle } from '@renderer/entities/chain';
 import type { Address, MultisigAccount, Validator } from '@renderer/shared/core';
 import { getTransactionFromMultisigTx } from '@renderer/entities/multisig';
 import { useValidatorsMap, ValidatorsModal } from '@renderer/entities/staking';
+import { singnatoryUtils } from '@renderer/entities/signatory';
 
 type Props = {
   tx: MultisigTransaction;
@@ -25,6 +26,8 @@ type Props = {
 export const OperationCardDetails = ({ tx, account, connection }: Props) => {
   const { t } = useI18n();
   const activeWallet = useUnit(walletModel.$activeWallet);
+  const wallets = useUnit(walletModel.$wallets);
+  const accounts = useUnit(walletModel.$accounts);
 
   const api = connection?.api;
   const chainId = connection?.chainId;
@@ -57,6 +60,8 @@ export const OperationCardDetails = ({ tx, account, connection }: Props) => {
     tx.transaction && getAssetById(tx.transaction.args.asset, chainsService.getChainById(tx.chainId)?.assets);
 
   const valueClass = 'text-text-secondary';
+  const depositorWallet =
+    depositorSignatory && singnatoryUtils.getSignatoryWallet(wallets, accounts, depositorSignatory.accountId);
 
   return (
     <dl className="flex flex-col gap-y-1 w-full">
@@ -95,10 +100,6 @@ export const OperationCardDetails = ({ tx, account, connection }: Props) => {
 
       {isXcmTransaction(tx.transaction) && (
         <>
-          <DetailRow label={t('operation.details.fromNetwork')} className={valueClass}>
-            <ChainTitle chainId={tx.chainId} fontClass={valueClass} />
-          </DetailRow>
-
           {account && (
             <DetailRow label={t('operation.details.sender')} className={valueClass}>
               <AddressWithExplorers
@@ -111,6 +112,10 @@ export const OperationCardDetails = ({ tx, account, connection }: Props) => {
               />
             </DetailRow>
           )}
+
+          <DetailRow label={t('operation.details.fromNetwork')} className={valueClass}>
+            <ChainTitle chainId={tx.chainId} fontClass={valueClass} />
+          </DetailRow>
 
           {transaction?.args.destinationChain && (
             <DetailRow label={t('operation.details.toNetwork')} className={valueClass}>
@@ -218,16 +223,25 @@ export const OperationCardDetails = ({ tx, account, connection }: Props) => {
 
           {depositorSignatory && (
             <DetailRow label={t('operation.details.depositor')} className={valueClass}>
-              <AddressWithExplorers
-                explorers={explorers}
-                accountId={depositorSignatory.accountId}
-                name={depositorSignatory.name}
-                addressFont={AddressStyle}
-                addressPrefix={addressPrefix}
-                showMatrix
-                wrapperClassName="-mr-2 min-w-min"
-                type="short"
-              />
+              {depositorWallet ? (
+                <WalletCardSm
+                  wallet={depositorWallet}
+                  accountId={depositorSignatory.accountId}
+                  addressPrefix={addressPrefix}
+                  explorers={explorers}
+                />
+              ) : (
+                <AddressWithExplorers
+                  explorers={explorers}
+                  accountId={depositorSignatory.accountId}
+                  name={depositorSignatory.name}
+                  addressFont={AddressStyle}
+                  addressPrefix={addressPrefix}
+                  showMatrix
+                  wrapperClassName="-mr-2 min-w-min"
+                  type="short"
+                />
+              )}
             </DetailRow>
           )}
 
