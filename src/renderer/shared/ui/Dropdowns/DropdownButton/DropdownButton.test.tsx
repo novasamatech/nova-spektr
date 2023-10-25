@@ -14,8 +14,8 @@ jest.mock('@renderer/pages/Onboarding/WalletConnect/model/wc-onboarding-model', 
 
 describe('ui/Dropdowns/DropdownButton', () => {
   const options: ButtonDropdownOption[] = [
-    { id: '0', title: 'label_0', iconName: 'globe', onClick: noop },
-    { id: '1', title: 'label_1', iconName: 'globe', onClick: noop },
+    { id: '0', title: 'label_0', icon: 'globe', onClick: noop },
+    { id: '1', title: 'label_1', icon: 'globe', onClick: noop },
   ];
 
   test('should render component', () => {
@@ -29,7 +29,7 @@ describe('ui/Dropdowns/DropdownButton', () => {
     const spySelected = jest.fn();
     const optionsExtended: ButtonDropdownOption[] = [
       ...options,
-      { id: '2', title: 'label_2', iconName: 'globe', onClick: spySelected },
+      { id: '2', title: 'label_2', icon: 'globe', onClick: spySelected },
     ];
 
     render(<DropdownButton options={optionsExtended} title="button" />);
