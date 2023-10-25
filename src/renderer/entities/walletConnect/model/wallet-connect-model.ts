@@ -17,7 +17,7 @@ import {
   InitConnectProps,
   WALLETCONNECT_CLIENT_ID,
 } from '../lib';
-import { Account, WalletConnectAccount, WalletId, kernelModel } from '@renderer/shared/core';
+import { Account, ID, WalletConnectAccount, kernelModel } from '@renderer/shared/core';
 import { localStorageService } from '@renderer/shared/api/local-storage';
 import { walletModel } from '@renderer/entities/wallet/model/wallet-model';
 import { storageService } from '@renderer/shared/api/storage';
@@ -38,7 +38,7 @@ type SessionTopicParams = {
 };
 
 type UpdateAccountsParams = {
-  walletId: WalletId;
+  walletId: ID;
   newAccounts: WalletConnectAccount[];
 };
 
@@ -155,7 +155,7 @@ const updateWalletConnectAccountsFx = createEffect(
     newAccounts,
     accounts,
   }: {
-    walletId: WalletId;
+    walletId: ID;
     accounts: Account[];
     newAccounts: WalletConnectAccount[];
   }): Promise<WalletConnectAccount[] | undefined> => {

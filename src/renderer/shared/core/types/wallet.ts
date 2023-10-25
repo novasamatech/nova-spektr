@@ -1,4 +1,4 @@
-import type { ID, NoID } from './general';
+import type { ID } from './general';
 
 export type Wallet = {
   id: ID;
@@ -7,9 +7,6 @@ export type Wallet = {
   isActive: boolean;
   signingType: SigningType;
 };
-
-export type WalletId = Wallet['id'];
-export type NoIdWallet = NoID<Wallet>;
 
 export const enum WalletType {
   WATCH_ONLY = 'wallet_wo',
