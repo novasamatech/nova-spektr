@@ -144,7 +144,9 @@ export const SelectSignatories = ({ isActive, wallets, accounts, contacts, onSel
 
   const WalletsTab = hasWallets ? (
     <div className="flex flex-col gap-2">
-      <FootnoteText className="text-text-tertiary px-2">{t('createMultisigAccount.availableLabel')}</FootnoteText>
+      {Boolean(disabledWallets) && (
+        <FootnoteText className="text-text-tertiary px-2">{t('createMultisigAccount.availableLabel')}</FootnoteText>
+      )}
 
       <ul className="gap-y-2">
         {availableWallets.map((wallet) => {
@@ -167,7 +169,7 @@ export const SelectSignatories = ({ isActive, wallets, accounts, contacts, onSel
         })}
       </ul>
 
-      {!!disabledWallets.length && (
+      {Boolean(disabledWallets.length) && (
         <FootnoteText className="text-text-tertiary px-2">{t('createMultisigAccount.disabledLabel')}</FootnoteText>
       )}
 
