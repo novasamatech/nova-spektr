@@ -7,7 +7,7 @@ import { ValidationErrors } from '@renderer/shared/lib/utils';
 import { useTransaction } from '@renderer/entities/transaction';
 import { useI18n } from '@renderer/app/providers';
 import { Button, ConfirmModal, Countdown, FootnoteText, SmallTitleText, StatusModal } from '@renderer/shared/ui';
-import { walletConnectModel, DEFAULT_POLKADOT_METHODS, getWalletConnectChains } from '@renderer/entities/walletConnect';
+import { walletConnectModel, DEFAULT_POLKADOT_METHODS, walletConnectUtils } from '@renderer/entities/walletConnect';
 import { chainsService } from '@renderer/entities/network';
 import { useCountdown, useToggle } from '@renderer/shared/lib/hooks';
 import wallet_connect_confirm from '@video/wallet_connect_confirm.mp4';
@@ -111,7 +111,7 @@ export const WalletConnect = ({ api, validateBalance, onGoBack, accounts, transa
     setIsReconnectingModalOpen(true);
 
     connect({
-      chains: getWalletConnectChains(chains),
+      chains: walletConnectUtils.getWalletConnectChains(chains),
       pairing: { topic: account.signingExtras?.pairingTopic },
     });
 

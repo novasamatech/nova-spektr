@@ -2,7 +2,7 @@ import { combine, createEvent, createStore, forward, sample } from 'effector';
 import { combineEvents } from 'patronum';
 
 import { accountUtils, walletModel } from '@renderer/entities/wallet';
-import { InitConnectProps, walletConnectModel } from '@renderer/entities/walletConnect';
+import { InitConnectProps, walletConnectUtils, walletConnectModel } from '@renderer/entities/walletConnect';
 import { ReconnectStep, ForgetStep } from '../lib/constants';
 import { walletProviderModel } from './wallet-provider-model';
 import { walletSelectModel } from '@renderer/features/wallets';
@@ -27,11 +27,11 @@ const $connected = combine(
   },
   ({ accounts, client }): boolean => {
     const account = accounts[0];
-    if (!client || !account || !accountUtils.isWalletConnectAccount(account)) return false;
+    if (!client || !account || !accountUtils.isWalletConnectAccount(account) || !account.signingExtras?.sessionTopic) {
+      return false;
+    }
 
-    const sessions = client.session.getAll() || [];
-
-    return sessions.some((session) => session.topic === account.signingExtras?.sessionTopic);
+    return walletConnectUtils.isConnected(account.signingExtras.sessionTopic, client);
   },
 );
 

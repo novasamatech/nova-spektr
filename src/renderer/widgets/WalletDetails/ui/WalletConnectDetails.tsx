@@ -8,7 +8,7 @@ import { useModalClose, useToggle } from '@renderer/shared/lib/hooks';
 import { MultiAccountsList, WalletIcon } from '@renderer/entities/wallet';
 import { useI18n } from '@renderer/app/providers';
 import { chainsService } from '@renderer/entities/network';
-import { getWalletConnectChains } from '@renderer/entities/walletConnect';
+import { walletConnectUtils } from '@renderer/entities/walletConnect';
 import type { Wallet, Chain, Account } from '@renderer/shared/core';
 import { wcDetailsModel } from '../model/wc-details-model';
 import { wcDetailsUtils, walletDetailsUtils } from '../lib/utils';
@@ -73,7 +73,7 @@ export const WalletConnectDetails = ({ wallet, accounts, isConnected, onClose }:
 
   const reconnect = () => {
     wcDetailsModel.events.reconnectStarted({
-      chains: getWalletConnectChains(chainsService.getChainsData()),
+      chains: walletConnectUtils.getWalletConnectChains(chainsService.getChainsData()),
       pairing: { topic: accounts[0].signingExtras?.pairingTopic },
     });
   };
