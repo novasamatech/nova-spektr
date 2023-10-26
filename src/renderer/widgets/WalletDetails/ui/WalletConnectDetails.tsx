@@ -74,6 +74,7 @@ export const WalletConnectDetails = ({ wallet, accounts, isConnected, onClose }:
     wcDetailsModel.events.reconnectStarted({
       chains: walletConnectUtils.getWalletConnectChains(chainsService.getChainsData()),
       pairing: { topic: accounts[0].signingExtras?.pairingTopic },
+      currentSession: accounts[0].signingExtras?.sessionTopic,
     });
   };
 
