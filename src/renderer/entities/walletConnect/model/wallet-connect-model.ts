@@ -18,12 +18,7 @@ import {
   DEFAULT_POLKADOT_METHODS,
   DEFAULT_POLKADOT_EVENTS,
 } from '../lib/constants';
-
-type InitConnectParams = {
-  client: Client;
-  chains: string[];
-  pairing?: any;
-};
+import { InitConnectParams } from '../lib/types';
 
 type SessionTopicParams = {
   accounts: Account[];
@@ -130,16 +125,12 @@ const sessionTopicUpdatedFx = createEffect(
 );
 
 const createClientFx = createEffect(async (): Promise<Client | undefined> => {
-  try {
-    return Client.init({
-      logger: DEFAULT_LOGGER,
-      relayUrl: DEFAULT_RELAY_URL,
-      projectId: DEFAULT_PROJECT_ID,
-      metadata: DEFAULT_APP_METADATA,
-    });
-  } catch (e) {
-    console.log(`Failed to create new Client`, e);
-  }
+  return Client.init({
+    logger: DEFAULT_LOGGER,
+    relayUrl: DEFAULT_RELAY_URL,
+    projectId: DEFAULT_PROJECT_ID,
+    metadata: DEFAULT_APP_METADATA,
+  });
 });
 
 const updateWalletConnectAccountsFx = createEffect(
@@ -250,15 +241,14 @@ type DisconnectParams = {
   client: Client;
   session: SessionTypes.Struct;
 };
+
 const disconnectFx = createEffect(async ({ client, session }: DisconnectParams) => {
-  try {
-    await client.disconnect({
-      topic: session.topic,
-      reason: getSdkError('USER_DISCONNECTED'),
-    });
-  } catch (error) {
-    return;
-  }
+  const reason = getSdkError('USER_DISCONNECTED');
+
+  await client.disconnect({
+    topic: session.topic,
+    reason,
+  });
 });
 
 forward({
@@ -271,6 +261,12 @@ sample({
   filter: (client) => nonNullable(client),
   fn: (client) => client!,
   target: $client,
+});
+
+sample({
+  clock: createClientFx.failData,
+  fn: (e) => console.log('Failed to create WalletConnect client', e),
+  target: createClientFx,
 });
 
 sample({
@@ -348,6 +344,8 @@ sample({
 });
 
 forward({ from: disconnectFx.done, to: reset });
+
+sample({ clock: disconnectFx.failData, fn: (e) => console.log('Failed to disconnect WalletConnect session', e) });
 
 sample({
   clock: currentSessionTopicUpdated,

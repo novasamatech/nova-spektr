@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useUnit } from 'effector-react';
 
 import { useI18n } from '@renderer/app/providers';
-import { BaseModal, Button, HeaderTitleText, SmallTitleText } from '@renderer/shared/ui';
+import { BaseModal, Button, HeaderTitleText, Loader, SmallTitleText } from '@renderer/shared/ui';
 import { Animation } from '@renderer/shared/ui/Animation/Animation';
 import ManageStep from './ManageStep/ManageStep';
 import novawallet_onboarding_tutorial from '@video/novawallet_onboarding_tutorial.mp4';
@@ -111,8 +111,12 @@ export const NovaWallet = ({ isOpen, onClose, onComplete }: Props) => {
             <HeaderTitleText className="mb-10">{t('onboarding.novaWallet.title')}</HeaderTitleText>
             <SmallTitleText className="mb-6">{t('onboarding.novaWallet.scanTitle')}</SmallTitleText>
 
-            <div className="flex flex-1 items-center justify-center">
-              <div ref={ref}></div>
+            <div className="flex flex-1 relative items-center justify-center">
+              <div className="z-0 absolute top-[50%] left-[50%] -translate-x-1/2 -translate-y-1/2">
+                <Loader color="primary" />
+              </div>
+
+              <div key="nova-wallet" className="z-10" ref={ref}></div>
             </div>
 
             <div className="flex justify-between items-end">
