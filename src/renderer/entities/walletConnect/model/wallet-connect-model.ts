@@ -43,7 +43,7 @@ const accountsUpdated = createEvent<UpdateAccountsParams>();
 
 const $client = createStore<Client | null>(null).reset(reset);
 const $session = createStore<SessionTypes.Struct | null>(null).reset(reset);
-const $uri = createStore<string>('').reset(reset);
+const $uri = createStore<string>('').reset(disconnectCurrentSessionStarted);
 const $accounts = createStore<string[]>([]).reset(reset);
 const $pairings = createStore<PairingTypes.Struct[]>([]).reset(reset);
 
