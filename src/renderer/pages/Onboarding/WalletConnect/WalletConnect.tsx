@@ -55,12 +55,7 @@ export const WalletConnect = ({ isOpen, onClose, onComplete }: Props) => {
   }, [uri]);
 
   useEffect(() => {
-    let timeout: any;
-    if (isOpen) {
-      wcOnboardingModel.events.startOnboarding();
-
-      timeout = setTimeout(onClose, EXPIRE_TIMEOUT);
-    }
+    const timeout = isOpen && setTimeout(handleClose, EXPIRE_TIMEOUT);
 
     return () => {
       timeout && clearTimeout(timeout);
@@ -73,7 +68,7 @@ export const WalletConnect = ({ isOpen, onClose, onComplete }: Props) => {
         title: t('onboarding.walletConnect.rejected'),
         content: <Animation variant="error" />,
       });
-      onClose();
+      handleClose();
     }
   }, [step]);
 
@@ -120,7 +115,7 @@ export const WalletConnect = ({ isOpen, onClose, onComplete }: Props) => {
             </div>
 
             <div className="flex justify-between items-end">
-              <Button variant="text" onClick={onClose}>
+              <Button variant="text" onClick={handleClose}>
                 {t('onboarding.backButton')}
               </Button>
             </div>
