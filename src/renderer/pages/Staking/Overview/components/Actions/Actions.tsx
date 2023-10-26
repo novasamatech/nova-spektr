@@ -178,7 +178,7 @@ export const Actions = ({ canInteract, stakes, isStakingLoading, onNavigate }: P
 
         acc.push({
           id: key,
-          iconName: option.icon,
+          icon: option.icon,
           //eslint-disable-next-line i18next/no-literal-string
           title: t(`staking.actions.${option.icon}Label`),
           onClick: () => onClickAction(typedKey, option.path),
