@@ -9,7 +9,15 @@ import { useValidators } from '@renderer/entities/staking';
 import { toAddress, nonNullable } from '@renderer/shared/lib/utils';
 import { OperationFooter, OperationHeader } from '@renderer/features/operation';
 import { OperationForm } from '../../components';
-import { Balance as AccountBalance, Account, Asset, MultisigAccount, ChainId, AccountId } from '@renderer/shared/core';
+import {
+  Balance as AccountBalance,
+  Account,
+  Asset,
+  MultisigAccount,
+  ChainId,
+  AccountId,
+  Wallet,
+} from '@renderer/shared/core';
 import {
   getSignatoryOption,
   getGeneralAccountOption,
@@ -107,10 +115,10 @@ const InitOperation = ({ api, chainId, accounts, asset, addressPrefix, onResult 
     return getGeneralAccountOption(account, { asset, fee, balance, addressPrefix });
   };
 
-  const getSignatoryDrowdownOption = (account: Account) => {
+  const getSignatoryDrowdownOption = (wallet: Wallet, account: Account) => {
     const balance = signatoriesBalances.find((b) => b.accountId === account.accountId);
 
-    return getSignatoryOption(account, { balance, asset, addressPrefix, fee, deposit });
+    return getSignatoryOption(wallet, account, { balance, asset, addressPrefix, fee, deposit });
   };
 
   const submitBond = (data: { amount: string; destination?: string; description?: string }) => {

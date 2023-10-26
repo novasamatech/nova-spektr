@@ -5,7 +5,15 @@ import { useUnit } from 'effector-react';
 import { useI18n } from '@renderer/app/providers';
 import { useBalance } from '@renderer/entities/asset';
 import { getOperationErrors, Transaction, TransactionType } from '@renderer/entities/transaction';
-import type { Asset, Account, Balance as AccountBalance, Address, ChainId, AccountId } from '@renderer/shared/core';
+import type {
+  Asset,
+  Account,
+  Balance as AccountBalance,
+  Address,
+  ChainId,
+  AccountId,
+  Wallet,
+} from '@renderer/shared/core';
 import { toAddress, nonNullable, TEST_ADDRESS } from '@renderer/shared/lib/utils';
 import { OperationFooter, OperationHeader } from '@renderer/features/operation';
 import { OperationForm } from '../../components';
@@ -99,10 +107,10 @@ const InitOperation = ({ api, chainId, accounts, addressPrefix, asset, onResult 
     return getGeneralAccountOption(account, { asset, fee, balance, addressPrefix });
   };
 
-  const getSignatoryDrowdownOption = (account: Account) => {
+  const getSignatoryDrowdownOption = (wallet: Wallet, account: Account) => {
     const balance = signatoriesBalances.find((b) => b.accountId === account.accountId);
 
-    return getSignatoryOption(account, { balance, asset, addressPrefix, fee, deposit });
+    return getSignatoryOption(wallet, account, { balance, asset, addressPrefix, fee, deposit });
   };
 
   const submitDestination = (data: { destination?: string; description?: string }) => {

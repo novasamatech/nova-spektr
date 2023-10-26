@@ -7,7 +7,7 @@ import { ValidationErrors } from '@renderer/shared/lib/utils';
 import { useTransaction } from '@renderer/entities/transaction';
 import { useI18n } from '@renderer/app/providers';
 import { Button, ConfirmModal, Countdown, FootnoteText, SmallTitleText, StatusModal } from '@renderer/shared/ui';
-import { walletConnectModel, DEFAULT_POLKADOT_METHODS, getWalletConnectChains } from '@renderer/entities/walletConnect';
+import { walletConnectModel, DEFAULT_POLKADOT_METHODS, walletConnectUtils } from '@renderer/entities/walletConnect';
 import { chainsService } from '@renderer/entities/network';
 import { useCountdown, useToggle } from '@renderer/shared/lib/hooks';
 import wallet_connect_confirm from '@video/wallet_connect_confirm.mp4';
@@ -15,15 +15,21 @@ import wallet_connect_confirm_webm from '@video/wallet_connect_confirm.webm';
 import { HexString } from '@renderer/shared/core';
 import { Animation } from '@renderer/shared/ui/Animation/Animation';
 
-export const WalletConnect = ({ api, validateBalance, onGoBack, accounts, transactions, onResult }: SigningProps) => {
+export const WalletConnect = ({
+  api,
+  validateBalance,
+  onGoBack,
+  accounts,
+  signatory,
+  transactions,
+  onResult,
+}: SigningProps) => {
   const { t } = useI18n();
   const { verifySignature, createPayload } = useTransaction();
   const [countdown, resetCountdown] = useCountdown(api);
 
   const session = useUnit(walletConnectModel.$session);
   const client = useUnit(walletConnectModel.$client);
-  const connect = useUnit(walletConnectModel.events.connect);
-  const sessionUpdated = useUnit(walletConnectModel.events.sessionUpdated);
 
   const chains = chainsService.getChainsData();
 
@@ -37,12 +43,11 @@ export const WalletConnect = ({ api, validateBalance, onGoBack, accounts, transa
   const [validationError, setValidationError] = useState<ValidationErrors>();
 
   const transaction = transactions[0];
-  const account = accounts[0];
+  const account = signatory || accounts[0];
+  const isCurrentSession = session && account && session.topic === account.signingExtras?.sessionTopic;
 
   useEffect(() => {
     if (txPayload || !client) return;
-
-    const isCurrentSession = session && account && session.topic === account.signingExtras?.sessionTopic;
 
     if (isCurrentSession) {
       setupTransaction().catch(() => console.warn('WalletConnect | setupTransaction() failed'));
@@ -52,7 +57,7 @@ export const WalletConnect = ({ api, validateBalance, onGoBack, accounts, transa
       const storedSession = sessions.find((s) => s.topic === account.signingExtras?.sessionTopic);
 
       if (storedSession) {
-        sessionUpdated(storedSession);
+        walletConnectModel.events.sessionUpdated(storedSession);
         setIsNeedUpdate(true);
 
         setupTransaction().catch(() => console.warn('WalletConnect | setupTransaction() failed'));
@@ -60,14 +65,14 @@ export const WalletConnect = ({ api, validateBalance, onGoBack, accounts, transa
         setIsReconnectModalOpen(true);
       }
     }
-  }, [transaction, api]);
+  }, [transaction, api, isCurrentSession]);
 
   useEffect(() => {
     if (isNeedUpdate) {
       setIsNeedUpdate(false);
 
       if (session?.topic) {
-        walletConnectModel.events.sessionTopicUpdated(session?.topic);
+        walletConnectModel.events.currentSessionTopicUpdated(session?.topic);
       }
     }
   }, [session]);
@@ -106,25 +111,14 @@ export const WalletConnect = ({ api, validateBalance, onGoBack, accounts, transa
     }
   };
 
-  const reconnect = async () => {
+  const reconnect = () => {
     setIsReconnectModalOpen(false);
     setIsReconnectingModalOpen(true);
 
-    connect({
-      chains: getWalletConnectChains(chains),
+    walletConnectModel.events.connect({
+      chains: walletConnectUtils.getWalletConnectChains(chains),
       pairing: { topic: account.signingExtras?.pairingTopic },
     });
-
-    setIsNeedUpdate(true);
-  };
-
-  const handleReconnect = () => {
-    reconnect()
-      .then(setupTransaction)
-      .catch(() => {
-        console.warn('WalletConnect | setupTransaction() failed');
-        toggleRejectedStatus();
-      });
   };
 
   const signTransaction = async () => {
@@ -245,7 +239,7 @@ export const WalletConnect = ({ api, validateBalance, onGoBack, accounts, transa
         confirmText={t('operation.walletConnect.reconnect.confirmButton')}
         cancelText={t('operation.walletConnect.reconnect.cancelButton')}
         onClose={onGoBack}
-        onConfirm={handleReconnect}
+        onConfirm={reconnect}
       >
         <SmallTitleText align="center">
           {t('operation.walletConnect.reconnect.title', {

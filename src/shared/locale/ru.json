@@ -1,7 +1,7 @@
 {
   "accountList": {
-    "addressColumn": "Address",
-    "networksColumn": "Networks { chains }"
+    "addressColumn": "Аккаунт",
+    "networksColumn": "Сеть { chains }"
   },
   "addressBook": {
     "contactList": {
@@ -878,6 +878,37 @@
     "sender": "Отправитель",
     "title": "Отправить",
     "wallet": "Кошелёк"
+  },
+  "walletDetails": {
+    "common": {
+      "cancelButton": "Cancel",
+      "forgetButton": "Забыть",
+      "removeButton": "Remove",
+      "removeMessage": "Are you sure you want to remove { walletName }?",
+      "removeTitle": "Remove wallet",
+      "removingWallet": "Removing wallet",
+      "renameButton": "Переименовать",
+      "title": "Детали кошелька",
+      "walletRemoved": "Wallet removed"
+    },
+    "multisig": {
+      "contactsGroup": "Контакты",
+      "networksTab": "Сети",
+      "signatoriesTab": "Подписанты",
+      "thresholdLabel": "Требуется подписей { min } из { max }",
+      "walletsGroup": "Мои кошельки"
+    },
+    "walletConnect": {
+      "abortRejectButton": "Close",
+      "connectedStatus": "Connected",
+      "disconnectedDescription": "Resume the connection to work with the WalletConnect",
+      "disconnectedStatus": "Not connected",
+      "disconnectedTitle": "Wallet not connected",
+      "reconnectButton": "Reconnect",
+      "refreshButton": "Refresh",
+      "rejectDescription": "The operation was successfully canceled",
+      "rejectTitle": "Rejected"
+    }
   },
   "wallets": {
     "addButtonTitle": "Добавить",

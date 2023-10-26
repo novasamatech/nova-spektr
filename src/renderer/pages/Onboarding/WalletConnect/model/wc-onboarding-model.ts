@@ -14,7 +14,7 @@ sample({
 });
 
 sample({
-  clock: walletConnectModel.events.rejectConnection,
+  clock: walletConnectModel.events.connectionRejected,
   fn: () => Step.REJECT,
   target: $step,
 });

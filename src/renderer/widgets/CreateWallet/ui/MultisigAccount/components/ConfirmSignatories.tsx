@@ -3,7 +3,7 @@ import { useI18n } from '@renderer/app/providers';
 import { FootnoteText, SmallTitleText } from '@renderer/shared/ui';
 import { ExtendedWallet, ExtendedContact } from '../common/types';
 import { WalletItem } from './WalletItem';
-import { ContactItem } from './ContactItem';
+import { ContactItem } from '@renderer/entities/wallet';
 import { WalletType } from '@renderer/shared/core';
 
 type Props = {

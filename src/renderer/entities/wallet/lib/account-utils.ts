@@ -10,6 +10,7 @@ import type {
   BaseAccount,
   ChainAccount,
   WalletConnectAccount,
+  Wallet,
 } from '@renderer/shared/core';
 
 export const accountUtils = {
@@ -19,6 +20,8 @@ export const accountUtils = {
   isChainIdMatch,
   isWalletConnectAccount,
   getMultisigAccountId,
+  getAllAccountIds,
+  getWalletAccounts,
 };
 
 function getMultisigAccountId(ids: AccountId[], threshold: Threshold): AccountId {
@@ -49,67 +52,22 @@ function isMultisigAccount(account: Pick<Account, 'type'>): account is MultisigA
   return account.type === AccountType.MULTISIG;
 }
 
-// function isWalletContact(account?: Account | MultisigAccount): boolean {
-//   if (!account) return false;
-//
-//   return account.signingType !== SigningType.WATCH_ONLY && !isMultisig(account);
-// }
-//
-// function isVaultAccount(account?: Account | MultisigAccount): boolean {
-//   if (!account) return false;
-//
-//   return account.signingType === SigningType.PARITY_SIGNER;
-// }
-//
-// function getActiveWalletType(activeAccounts?: Account[]): WalletType | null {
-//   if (!activeAccounts?.length) return null;
-//
-//   if (activeAccounts.length > 1) {
-//     return WalletType.MULTISHARD_PARITY_SIGNER;
-//   }
-//
-//   const account = activeAccounts[0];
-//   if (isMultisig(account)) {
-//     return WalletType.MULTISIG;
-//   }
-//
-//   if (account.signingType === SigningType.WATCH_ONLY) {
-//     return WalletType.WATCH_ONLY;
-//   }
-//
-//   if (account.signingType === SigningType.PARITY_SIGNER) {
-//     return WalletType.SINGLE_PARITY_SIGNER;
-//   }
-//
-//   return null;
-// }
+function getAllAccountIds(accounts: Account[], chainId: ChainId): AccountId[] {
+  const uniqIds = accounts.reduce<Set<AccountId>>((acc, account) => {
+    if (accountUtils.isChainIdMatch(account, chainId)) {
+      acc.add(account.accountId);
+    }
 
-// export function createMultisigAccount({
-//   name,
-//   signatories,
-//   threshold,
-//   matrixRoomId,
-//   creatorAccountId,
-//   isActive,
-// }: Pick<
-//   MultisigAccount,
-//   'name' | 'signatories' | 'threshold' | 'matrixRoomId' | 'creatorAccountId' | 'isActive'
-// >): MultisigAccount {
-//   const multisigAccountId = getMultisigAccountId(
-//     signatories.map((s) => s.accountId),
-//     threshold,
-//   );
-//
-//   return {
-//     accountId: multisigAccountId,
-//     cryptoType: CryptoType.SR25519,
-//     chainType: ChainType.SUBSTRATE,
-//     name,
-//     signatories,
-//     threshold,
-//     matrixRoomId,
-//     signingType: SigningType.MULTISIG,
-//     creatorAccountId,
-//     isActive,
-//   } as MultisigAccount;
-// }
+    if (accountUtils.isMultisigAccount(account)) {
+      account.signatories.forEach((signatory) => acc.add(signatory.accountId));
+    }
+
+    return acc;
+  }, new Set());
+
+  return Array.from(uniqIds);
+}
+
+function getWalletAccounts<T extends Account>(walletId: Wallet['id'], accounts: T[]): T[] {
+  return accounts.filter((account) => account.walletId === walletId);
+}

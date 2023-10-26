@@ -174,11 +174,11 @@ const WatchOnly = ({ isOpen, onClose, onComplete }: Props) => {
         </form>
       </div>
 
-      <div className="w-[472px] flex flex-col bg-input-background-disabled px-3 py-4 rounded-r-lg">
+      <div className="w-[472px] flex flex-col gap-y-6 bg-input-background-disabled py-4 rounded-r-lg">
         {accountId && accountId.length > 12 ? (
           <>
-            <SmallTitleText className="px-2 mt-[52px] mb-6">{t('onboarding.watchOnly.accountsTitle')}</SmallTitleText>
-            <AccountsList chains={chains} accountId={accountId} />
+            <SmallTitleText className="px-5 mt-[52px]">{t('onboarding.watchOnly.accountsTitle')}</SmallTitleText>
+            <AccountsList chains={chains} accountId={accountId} className="h-[440px]" />
           </>
         ) : (
           <EmptyState />

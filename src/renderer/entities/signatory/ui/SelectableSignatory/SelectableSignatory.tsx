@@ -33,7 +33,7 @@ export const SelectableSignatory = <T extends any>({
   const { getLiveBalance } = useBalance();
   const balance = getLiveBalance(toAccountId(address), chainId, asset.assetId.toString());
 
-  if (!signatoryWallet) return <></>;
+  if (!signatoryWallet) return null;
 
   return (
     <button

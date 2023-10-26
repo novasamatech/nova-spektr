@@ -8,7 +8,13 @@ import { ExplorerLink } from '@renderer/components/common';
 import { contactModel } from '../../contact/model/contact-model';
 import { walletModel } from '../model/wallet-model';
 
-export const useAddressInfo = (address: Address, explorers?: Explorer[], showMatrix = false): InfoSection[] => {
+type InfoProps = {
+  address: Address;
+  explorers?: Explorer[];
+  addressPrefix?: number;
+  showMatrix?: boolean;
+};
+export const useAddressInfo = ({ address, explorers = [], addressPrefix, showMatrix }: InfoProps): InfoSection[] => {
   const { matrix } = useMatrix();
   const contacts = useUnit(contactModel.$contacts);
   const accounts = useUnit(walletModel.$accounts);
@@ -28,11 +34,11 @@ export const useAddressInfo = (address: Address, explorers?: Explorer[], showMat
     });
   }
 
-  if (explorers && explorers.length > 0) {
+  if (explorers.length > 0) {
     popoverItems.push({
       items: explorers.map((explorer) => ({
         id: explorer.name,
-        value: <ExplorerLink explorer={explorer} address={address} />,
+        value: <ExplorerLink address={address} explorer={explorer} addressPrefix={addressPrefix} />,
       })),
     });
   }
