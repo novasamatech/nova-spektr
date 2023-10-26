@@ -4,6 +4,7 @@ import WatchOnlyOnboardingImg, {
 } from '@images/walletTypes/watchOnlyOnboardiing.svg';
 import MultisigImg, { ReactComponent as MultisigSvg } from '@images/walletTypes/multisig.svg';
 import VaultImg, { ReactComponent as VaultSvg } from '@images/walletTypes/vault.svg';
+import VaultOnboardingImg, { ReactComponent as VaultOnboardingSvg } from '@images/walletTypes/vaultOnboarding.svg';
 import NovaWalletImg, { ReactComponent as NovaWalletSvg } from '@images/walletTypes/novaWallet.svg';
 import LedgerOnboardingImg, { ReactComponent as LedgerOnboardingSvg } from '@images/walletTypes/ledgerOnboarding.svg';
 import WalletConnectImg, { ReactComponent as WalletConnectSvg } from '@images/walletTypes/walletConnect.svg';
@@ -20,6 +21,7 @@ const WalletTypeImages = {
   watchOnlyOnboarding: { svg: WatchOnlyOnboardingSvg, img: WatchOnlyOnboardingImg },
   multisig: { svg: MultisigSvg, img: MultisigImg },
   vault: { svg: VaultSvg, img: VaultImg },
+  vaultOnboarding: { svg: VaultOnboardingSvg, img: VaultOnboardingImg },
   novaWallet: { img: NovaWalletImg, svg: NovaWalletSvg },
   novaWalletOnboarding: { img: NovaWalletOnboardingImg, svg: NovaWalletOnboardingSvg },
   ledgerOnboarding: { img: LedgerOnboardingImg, svg: LedgerOnboardingSvg },

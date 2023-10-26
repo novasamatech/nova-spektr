@@ -2,7 +2,7 @@ import { combine, createEvent, createStore, forward, sample } from 'effector';
 import { combineEvents } from 'patronum';
 
 import { accountUtils, walletModel } from '@renderer/entities/wallet';
-import { InitConnectProps, walletConnectUtils, walletConnectModel } from '@renderer/entities/walletConnect';
+import { walletConnectUtils, walletConnectModel, InitConnectParams } from '@renderer/entities/walletConnect';
 import { ReconnectStep, ForgetStep } from '../lib/constants';
 import { walletProviderModel } from './wallet-provider-model';
 import { walletSelectModel } from '@renderer/features/wallets';
@@ -11,7 +11,7 @@ import { chainsService } from '@renderer/entities/network';
 import { toAccountId } from '@renderer/shared/lib/utils';
 
 const reset = createEvent();
-const reconnectStarted = createEvent<Omit<InitConnectProps, 'client'>>();
+const reconnectStarted = createEvent<Omit<InitConnectParams, 'client'> & { currentSession: string }>();
 const reconnectAborted = createEvent();
 const sessionTopicUpdated = createEvent();
 const forgetButtonClicked = createEvent();
