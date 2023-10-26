@@ -182,12 +182,7 @@ const RejectTx = ({ tx, account, connection }: Props) => {
       <BaseModal
         closeButton
         isOpen={activeStep !== Step.SUBMIT && isModalOpen}
-        title={
-          <OperationTitle
-            title={`${t('operation.cancelTitle')} ${t(transactionTitle, { asset: asset?.symbol })}`}
-            chainId={tx.chainId}
-          />
-        }
+        title={<OperationTitle title={t(transactionTitle, { asset: asset?.symbol })} chainId={tx.chainId} />}
         panelClass="w-[440px]"
         headerClass="py-3 px-5 max-w-[440px]"
         contentClass={activeStep === Step.SIGNING ? '' : undefined}

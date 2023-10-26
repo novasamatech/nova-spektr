@@ -3,8 +3,13 @@ import { ComponentProps } from 'react';
 import { useI18n } from '@renderer/app/providers';
 import { Icon, FootnoteText, Tooltip, DetailRow } from '@renderer/shared/ui';
 import { Deposit } from '../Deposit/Deposit';
+import { cnTw } from '@renderer/shared/lib/utils';
 
-export const DepositWithLabel = ({ ...depositProps }: ComponentProps<typeof Deposit>) => {
+type Props = {
+  wrapperClassName?: string;
+} & ComponentProps<typeof Deposit>;
+
+export const DepositWithLabel = ({ wrapperClassName, ...depositProps }: Props) => {
   const { t } = useI18n();
 
   return (
@@ -18,7 +23,7 @@ export const DepositWithLabel = ({ ...depositProps }: ComponentProps<typeof Depo
           </Tooltip>
         </>
       }
-      className="text-text-primary"
+      className={cnTw('text-text-primary', wrapperClassName)}
     >
       <Deposit {...depositProps} />
     </DetailRow>
