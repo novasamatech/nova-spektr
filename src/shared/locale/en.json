@@ -270,7 +270,7 @@
       "pairedDescription": "Paired",
       "rejected": "Pairing rejected",
       "scanTitle": "Scan with your mobile wallet",
-      "title": "Add wallet by Wallet Connect"
+      "title": "Add wallet by WalletConnect"
     },
     "walletNameExample": "Name examples: Main account, My validator, Dotsama crowdloans, etc",
     "walletNameLabel": "Wallet name",
@@ -915,7 +915,7 @@
     "addMultisig": "Multisig",
     "addNovaWallet": "Nova Wallet",
     "addPolkadotVault": "Polkadot Vault",
-    "addWalletConnect": "Wallet Connect",
+    "addWalletConnect": "WalletConnect",
     "addWatchOnly": "Watch-only",
     "multishardLabel": "Multishard",
     "multisigLabel": "Multisig",
@@ -924,7 +924,7 @@
     "searchPlaceholder": "Search",
     "shards": "Shards",
     "title": "Wallets",
-    "walletConnectLabel": "Wallet Connect",
+    "walletConnectLabel": "WalletConnect",
     "watchOnlyLabel": "Watch-only"
   },
   "welcome": {
