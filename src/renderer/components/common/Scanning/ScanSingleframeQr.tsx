@@ -6,7 +6,7 @@ import { useUnit } from 'effector-react';
 import { QrTxGenerator, QrGeneratorContainer } from '@renderer/components/common';
 import { useI18n } from '@renderer/app/providers';
 import { Transaction, useTransaction } from '@renderer/entities/transaction';
-import { WalletCardSm, walletModel } from '@renderer/entities/wallet';
+import { WalletCardSm, walletModel, walletUtils } from '@renderer/entities/wallet';
 import { Button, FootnoteText } from '@renderer/shared/ui';
 import type { ChainId, Account, Explorer } from '@renderer/shared/core';
 
@@ -39,7 +39,8 @@ const ScanSingleframeQr = ({
   const { createPayload } = useTransaction();
 
   const wallets = useUnit(walletModel.$wallets);
-  const signatoryWallet = wallets.find((w) => w.id === account?.walletId);
+  const activeWallet = useUnit(walletModel.$activeWallet);
+  const signatoryWallet = walletUtils.isMultisig(activeWallet) && wallets.find((w) => w.id === account?.walletId);
 
   const [txPayload, setTxPayload] = useState<Uint8Array>();
   const [unsignedTx, setUnsignedTx] = useState<UnsignedTransaction>();
