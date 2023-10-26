@@ -13,7 +13,7 @@ import { useNetworkContext } from '@renderer/app/providers';
 import { XcmTransferType } from '@renderer/shared/api/xcm';
 import { walletModel, accountUtils } from '@renderer/entities/wallet';
 import { AssetType } from '@renderer/shared/core';
-import type { ChainId, Asset, Explorer, Account, MultisigAccount, Chain } from '@renderer/shared/core';
+import type { ChainId, Asset, Explorer, Account, MultisigAccount, Chain, Wallet } from '@renderer/shared/core';
 
 type Props = {
   api: ApiPromise;
@@ -194,10 +194,10 @@ export const InitOperation = ({
     return getAccountOption(account, { addressPrefix, asset, amount, balance, nativeBalance, fee, deposit });
   };
 
-  const getSignatoryDrowdownOption = (account: Account) => {
+  const getSignatoryDrowdownOption = (wallet: Wallet, account: Account) => {
     const balance = signatoriesBalances.find((b) => b.accountId === account.accountId);
 
-    return getSignatoryOption(account, { addressPrefix, asset: nativeToken || asset, balance, fee, deposit });
+    return getSignatoryOption(wallet, account, { addressPrefix, asset: nativeToken || asset, balance, fee, deposit });
   };
 
   const changeAccount = (account: Account | MultisigAccount) => {

@@ -13,9 +13,9 @@ type Props = {
 const WalletIcon: Record<WalletType, IconNames> = {
   [WalletType.POLKADOT_VAULT]: 'vault',
   [WalletType.MULTISIG]: 'vault',
-  [WalletType.WATCH_ONLY]: 'watchOnlyOld',
+  [WalletType.WATCH_ONLY]: 'watchOnly',
   [WalletType.WALLET_CONNECT]: 'walletConnect',
-  [WalletType.NOVA_WALLET]: 'novaWalletOld',
+  [WalletType.NOVA_WALLET]: 'novaWallet',
   // legacy
   [WalletType.MULTISHARD_PARITY_SIGNER]: 'vault',
   [WalletType.SINGLE_PARITY_SIGNER]: 'vault',

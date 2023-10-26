@@ -86,6 +86,10 @@ class StorageService<T extends { id: K }, K extends IndexableType> {
   delete(id: K): Promise<void> {
     return this.dexieTable.delete(id);
   }
+
+  deleteAll(ids: K[]): Promise<void> {
+    return this.dexieTable.bulkDelete(ids);
+  }
 }
 
 export const storageService = {

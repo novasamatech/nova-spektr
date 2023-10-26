@@ -15,27 +15,27 @@ export const AccountsList = ({ accountId, chains, className }: Props) => {
   const { t } = useI18n();
 
   return (
-    <>
-      <div className="flex mx-3 py-4">
-        <FootnoteText className="w-[214px] text-text-tertiary">
+    <div className="flex flex-col">
+      <div className="flex items-center px-5 pb-2">
+        <FootnoteText className="flex-1 text-text-tertiary">
           {t('accountList.networksColumn', { chains: chains.length })}
         </FootnoteText>
-        <FootnoteText className="w-[214px] text-text-tertiary">{t('accountList.addressColumn')}</FootnoteText>
+        <FootnoteText className="flex-1 px-2 text-text-tertiary">{t('accountList.addressColumn')}</FootnoteText>
       </div>
 
-      <ul className={cnTw('flex flex-col z-0 divide-y divide-divider overflow-y-auto overflow-x-hidden', className)}>
+      <ul className={cnTw('flex flex-col px-5 divide-y divide-divider overflow-y-auto overflow-x-hidden', className)}>
         {chains.map((chain) => {
           const { chainId, addressPrefix, explorers } = chain;
 
           return (
-            <li key={chainId} className="flex items-center mx-3 py-4">
-              <ChainTitle className="w-[214px]" fontClass="text-text-primary" chain={chain} />
+            <li key={chainId} className="flex items-center py-4">
+              <ChainTitle className="flex-1" fontClass="text-text-primary" chain={chain} />
 
-              <div className="w-[214]">
+              <div className="flex-1 pl-2">
                 <AddressWithExplorers
                   type="adaptive"
                   position="right-0"
-                  className="w-[160px]"
+                  className="w-[166px]"
                   accountId={accountId}
                   addressPrefix={addressPrefix}
                   explorers={explorers}
@@ -45,6 +45,6 @@ export const AccountsList = ({ accountId, chains, className }: Props) => {
           );
         })}
       </ul>
-    </>
+    </div>
   );
 };

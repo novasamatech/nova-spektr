@@ -1,7 +1,7 @@
 {
   "accountList": {
-    "addressColumn": "Address",
-    "networksColumn": "Networks { chains }"
+    "addressColumn": "Account",
+    "networksColumn": "Network { chains }"
   },
   "addressBook": {
     "contactList": {
@@ -878,6 +878,37 @@
     "sender": "Sender",
     "title": "Send",
     "wallet": "Wallet"
+  },
+  "walletDetails": {
+    "common": {
+      "cancelButton": "Cancel",
+      "forgetButton": "Forget",
+      "removeButton": "Remove",
+      "removeMessage": "Are you sure you want to remove { walletName }?",
+      "removeTitle": "Remove wallet",
+      "removingWallet": "Removing wallet",
+      "renameButton": "Rename",
+      "title": "Wallet details",
+      "walletRemoved": "Wallet removed"
+    },
+    "multisig": {
+      "contactsGroup": "Contacts",
+      "networksTab": "Networks",
+      "signatoriesTab": "Signatories",
+      "thresholdLabel": "Threshold { min } out of { max }",
+      "walletsGroup": "Your wallets"
+    },
+    "walletConnect": {
+      "abortRejectButton": "Close",
+      "connectedStatus": "Connected",
+      "disconnectedDescription": "Resume the connection to work with the WalletConnect",
+      "disconnectedStatus": "Not connected",
+      "disconnectedTitle": "Wallet not connected",
+      "reconnectButton": "Reconnect",
+      "refreshButton": "Refresh",
+      "rejectDescription": "The operation was successfully canceled",
+      "rejectTitle": "Rejected"
+    }
   },
   "wallets": {
     "addButtonTitle": "Add",

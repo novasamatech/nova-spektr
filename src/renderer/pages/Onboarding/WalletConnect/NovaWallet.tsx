@@ -9,10 +9,10 @@ import ManageStep from './ManageStep/ManageStep';
 import novawallet_onboarding_tutorial from '@video/novawallet_onboarding_tutorial.mp4';
 import novawallet_onboarding_tutorial_webm from '@video/novawallet_onboarding_tutorial.webm';
 import { usePrevious } from '@renderer/shared/lib/hooks';
-import { getWalletConnectChains, walletConnectModel } from '@renderer/entities/walletConnect';
+import { walletConnectUtils, walletConnectModel } from '@renderer/entities/walletConnect';
 import { chainsService } from '@renderer/entities/network';
 import { wcOnboardingModel } from '@renderer/pages/Onboarding/WalletConnect/model/wc-onboarding-model';
-import { EXPIRE_TIMEOUT, NWQRConfig, Step } from './common/const';
+import { NWQRConfig, Step, EXPIRE_TIMEOUT } from './common/const';
 import { useStatusContext } from '@renderer/app/providers/context/StatusContext';
 import { WalletType } from '@renderer/shared/core';
 
@@ -27,20 +27,18 @@ const qrCode = new QRCodeStyling(NWQRConfig);
 
 export const NovaWallet = ({ isOpen, onClose, onComplete }: Props) => {
   const { t } = useI18n();
-  const { showStatus } = useStatusContext();
 
   const session = useUnit(walletConnectModel.$session);
   const client = useUnit(walletConnectModel.$client);
   const pairings = useUnit(walletConnectModel.$pairings);
   const uri = useUnit(walletConnectModel.$uri);
-  const connect = useUnit(walletConnectModel.events.connect);
-  const disconnect = useUnit(walletConnectModel.events.disconnect);
   const step = useUnit(wcOnboardingModel.$step);
-  const startOnboarding = useUnit(wcOnboardingModel.events.startOnboarding);
 
   const previousPairings = usePrevious(pairings);
 
   const [pairingTopic, setPairingTopic] = useState<string>();
+
+  const { showStatus } = useStatusContext();
 
   const ref = useRef(null);
 
@@ -48,7 +46,7 @@ export const NovaWallet = ({ isOpen, onClose, onComplete }: Props) => {
     if (ref.current) {
       qrCode.append(ref.current);
     }
-  }, []);
+  }, [ref.current]);
 
   useEffect(() => {
     qrCode.update({
@@ -59,7 +57,7 @@ export const NovaWallet = ({ isOpen, onClose, onComplete }: Props) => {
   useEffect(() => {
     let timeout: any;
     if (isOpen) {
-      startOnboarding();
+      wcOnboardingModel.events.startOnboarding();
 
       timeout = setTimeout(onClose, EXPIRE_TIMEOUT);
     }
@@ -81,8 +79,8 @@ export const NovaWallet = ({ isOpen, onClose, onComplete }: Props) => {
 
   useEffect(() => {
     if (client && isOpen) {
-      const chains = getWalletConnectChains(chainsService.getChainsData());
-      connect({ chains });
+      const chains = walletConnectUtils.getWalletConnectChains(chainsService.getChainsData());
+      walletConnectModel.events.connect({ chains });
     }
   }, [client, isOpen]);
 
@@ -94,13 +92,18 @@ export const NovaWallet = ({ isOpen, onClose, onComplete }: Props) => {
     }
   }, [pairings.length]);
 
+  const handleClose = () => {
+    walletConnectModel.events.disconnectCurrentSessionStarted();
+    onClose();
+  };
+
   return (
     <BaseModal
       closeButton
       isOpen={isOpen}
       contentClass="flex h-full"
       panelClass="w-[944px] h-[576px]"
-      onClose={onClose}
+      onClose={handleClose}
     >
       {step === Step.SCAN && qrCode && (
         <>
@@ -134,7 +137,7 @@ export const NovaWallet = ({ isOpen, onClose, onComplete }: Props) => {
           accounts={session.namespaces.polkadot.accounts}
           pairingTopic={pairingTopic}
           sessionTopic={session.topic}
-          onBack={disconnect}
+          onBack={walletConnectModel.events.disconnectCurrentSessionStarted}
           onComplete={onComplete}
         />
       )}

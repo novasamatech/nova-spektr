@@ -6,7 +6,7 @@ import { useUnit } from 'effector-react';
 import { useI18n } from '@renderer/app/providers';
 import { useBalance } from '@renderer/entities/asset';
 import { Transaction, TransactionType } from '@renderer/entities/transaction';
-import type { Account, Asset, Balance as AccountBalance, ChainId, AccountId } from '@renderer/shared/core';
+import type { Account, Asset, Balance as AccountBalance, ChainId, AccountId, Wallet } from '@renderer/shared/core';
 import { formatAmount, unlockingAmount, toAddress, nonNullable } from '@renderer/shared/lib/utils';
 import { StakingMap, useStakingData } from '@renderer/entities/staking';
 import { OperationError, OperationFooter, OperationHeader } from '@renderer/features/operation';
@@ -136,10 +136,10 @@ const InitOperation = ({ api, chainId, accounts, addressPrefix, asset, onResult 
     return getRestakeAccountOption(account, { balance, stake, asset, fee, addressPrefix, amount });
   };
 
-  const getSignatoryDrowdownOption = (account: Account) => {
+  const getSignatoryDrowdownOption = (wallet: Wallet, account: Account) => {
     const balance = signatoriesBalances.find((b) => b.accountId === account.accountId);
 
-    return getSignatoryOption(account, { balance, asset, addressPrefix, fee, deposit });
+    return getSignatoryOption(wallet, account, { balance, asset, addressPrefix, fee, deposit });
   };
 
   const submitRestake = (data: { amount: string; description?: string }) => {

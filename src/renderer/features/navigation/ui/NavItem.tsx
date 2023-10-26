@@ -32,7 +32,7 @@ export const NavItem = ({ title, link, icon, badge }: Props) => {
           <BodyText className={cnTw('ml-3', isActive ? 'text-text-primary' : 'text-text-secondary')}>
             {t(title)}
           </BodyText>
-          {!!badge && <BodyText className="ml-auto text-text-tertiary">{badge}</BodyText>}
+          {badge}
         </>
       )}
     </NavLink>

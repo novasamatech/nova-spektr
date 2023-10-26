@@ -8,7 +8,7 @@ import { chainsService } from '@renderer/entities/network';
 import { useI18n } from '@renderer/app/providers';
 import { ChainTitle } from '@renderer/entities/chain';
 import { AddressInfo, CompactSeedInfo, SeedInfo } from '@renderer/components/common/QrCode/common/types';
-import { toAccountId, toAddress, cnTw } from '@renderer/shared/lib/utils';
+import { toAccountId, toAddress, cnTw, RootExplorers } from '@renderer/shared/lib/utils';
 import { walletModel, AddressWithExplorers } from '@renderer/entities/wallet';
 import {
   Button,
@@ -20,13 +20,8 @@ import {
   FootnoteText,
   Icon,
 } from '@renderer/shared/ui';
-import type { Explorer, Chain, ChainId, HexString, ChainAccount, BaseAccount } from '@renderer/shared/core';
+import type { Chain, ChainId, HexString, ChainAccount, BaseAccount } from '@renderer/shared/core';
 import { CryptoType, ChainType, AccountType, WalletType, SigningType, ErrorType, KeyType } from '@renderer/shared/core';
-
-const RootExplorers: Explorer[] = [
-  { name: 'Subscan', account: 'https://subscan.io/account/{address}' },
-  { name: 'Sub.ID', account: 'https://sub.id/{address}' },
-];
 
 type WalletForm = {
   walletName: string;
@@ -170,7 +165,7 @@ export const ManageMultishard = ({ seedInfo, onBack, onComplete }: Props) => {
   };
 
   const createWallet: SubmitHandler<WalletForm> = async ({ walletName }) => {
-    const accountsToSave = accounts.reduce<(BaseAccount | ChainAccount)[]>((acc, account, index) => {
+    const accountsToSave = accounts.reduce<Array<BaseAccount | ChainAccount>>((acc, account, index) => {
       acc.push({
         name: accountNames[getAccountId(index)],
         accountId: toAccountId(account.address),

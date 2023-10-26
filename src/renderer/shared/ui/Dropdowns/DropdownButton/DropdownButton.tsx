@@ -1,6 +1,6 @@
 import cn from 'classnames';
 import { Menu } from '@headlessui/react';
-import { ComponentProps } from 'react';
+import { ComponentProps, ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 
 import { IconNames } from '@renderer/shared/ui/Icon/data';
@@ -12,7 +12,7 @@ type ButtonProps = ComponentProps<typeof Button>;
 type OptionBase = {
   id: string;
   title: string;
-  iconName: IconNames;
+  icon: IconNames | ReactNode;
 };
 
 type LinkOption = OptionBase & { to: string };
@@ -45,27 +45,36 @@ const DropdownButton = ({ options, title, disabled, className, ...buttonProps }:
             'bg-token-container-background shadow-card-shadow',
           )}
         >
-          {options.map((opt) => (
-            <Menu.Item
-              as="li"
-              key={opt.id}
-              className="rounded ui-active:bg-action-background-hover hover:bg-action-background-hover mb-0.5 last:mb-0"
-            >
-              {/* TODO maybe try to refactor to avoid duplicating option children */}
-              {/* FIXME: click from keyboard is ignored */}
-              {'to' in opt ? (
-                <Link to={opt.to} className="flex items-center gap-x-1.5 w-full p-2">
-                  <Icon name={opt.iconName} size={20} className="text-icon-accent" />
-                  <FootnoteText className="text-text-secondary">{opt.title}</FootnoteText>
-                </Link>
+          {options.map((opt) => {
+            const iconComponent =
+              typeof opt.icon === 'string' ? (
+                <Icon name={opt.icon as IconNames} size={20} className="text-icon-accent" />
               ) : (
-                <button className="flex items-center gap-x-1.5 w-full p-2" onClick={opt.onClick}>
-                  <Icon name={opt.iconName} size={20} className="text-icon-accent" />
-                  <FootnoteText className="text-text-secondary">{opt.title}</FootnoteText>
-                </button>
-              )}
-            </Menu.Item>
-          ))}
+                opt.icon
+              );
+
+            return (
+              <Menu.Item
+                as="li"
+                key={opt.id}
+                className="rounded ui-active:bg-action-background-hover hover:bg-action-background-hover mb-0.5 last:mb-0"
+              >
+                {/* TODO maybe try to refactor to avoid duplicating option children */}
+                {/* FIXME: click from keyboard is ignored */}
+                {'to' in opt ? (
+                  <Link to={opt.to} className="flex items-center gap-x-1.5 w-full p-2">
+                    {iconComponent}
+                    <FootnoteText className="text-text-secondary">{opt.title}</FootnoteText>
+                  </Link>
+                ) : (
+                  <button className="flex items-center gap-x-1.5 w-full p-2" onClick={opt.onClick}>
+                    {iconComponent}
+                    <FootnoteText className="text-text-secondary">{opt.title}</FootnoteText>
+                  </button>
+                )}
+              </Menu.Item>
+            );
+          })}
         </Menu.Items>
       </div>
     )}

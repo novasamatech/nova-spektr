@@ -15,8 +15,12 @@ export const SigningFlow: Record<SigningType, (props: SigningProps) => JSX.Eleme
 
 export const Signing = (props: SigningProps) => {
   const activeWallet = useUnit(walletModel.$activeWallet);
+  const wallets = useUnit(walletModel.$wallets);
 
-  if (!activeWallet) return null;
+  const signatoryWallet = wallets.find((w) => w.id === props.signatory?.walletId);
+  const wallet = signatoryWallet || activeWallet;
 
-  return SigningFlow[activeWallet.signingType](props);
+  if (!wallet) return null;
+
+  return SigningFlow[wallet.signingType](props);
 };
