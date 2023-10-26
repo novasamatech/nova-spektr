@@ -36,7 +36,6 @@ export const WalletGroup = ({ type, wallets }: Props) => {
         <ul>
           {wallets.map((wallet) => (
             <li key={wallet.id} className="mb-2">
-              {/* TODO: should become a part of WalletCard */}
               <div
                 className={cnTw(
                   'group relative flex items-center transition-colors',
@@ -48,13 +47,13 @@ export const WalletGroup = ({ type, wallets }: Props) => {
                   onClick={() => walletModel.events.walletSelected(wallet.id)}
                 >
                   {wallet.isActive ? (
-                    <Icon name="checkmark" className="text-icon-accent" size={20} />
+                    <Icon name="checkmark" className="text-icon-accent shrink-0" size={20} />
                   ) : (
-                    <div className="w-5 h-5 row-span-2" />
+                    <div className="w-5 h-5 row-span-2 shrink-0" />
                   )}
                   <div className="flex flex-col">
-                    <BodyText className="text-text-secondary max-w-[260px] truncate">{wallet.name}</BodyText>
-                    <WalletFiatBalance walletId={wallet.id} className="text-help-text" />
+                    <BodyText className="text-text-secondary max-w-[215px] truncate">{wallet.name}</BodyText>
+                    <WalletFiatBalance walletId={wallet.id} className="text-help-text max-w-[215px] truncate" />
                   </div>
 
                   <WalletStatus wallet={wallet} />
