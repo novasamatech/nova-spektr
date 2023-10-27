@@ -3,6 +3,7 @@ import { Options } from 'qr-code-styling';
 import WalletTypeImages from '@renderer/shared/ui/Icon/data/walletType';
 
 export const enum Step {
+  CLOSED,
   SCAN,
   MANAGE,
   REJECT,

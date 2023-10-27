@@ -55,6 +55,10 @@ export const NovaWallet = ({ isOpen, onClose, onComplete }: Props) => {
   }, [uri]);
 
   useEffect(() => {
+    if (isOpen) {
+      wcOnboardingModel.events.onboardingStarted();
+    }
+
     const timeout = isOpen && setTimeout(handleClose, EXPIRE_TIMEOUT);
 
     return () => {
