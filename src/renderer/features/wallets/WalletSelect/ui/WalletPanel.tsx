@@ -1,18 +1,29 @@
 import { Popover } from '@headlessui/react';
 import { useUnit } from 'effector-react';
-import { ReactNode } from 'react';
+import { ReactNode, useEffect, useState } from 'react';
 
 import { walletSelectModel } from '../model/wallet-select-model';
 import { SmallTitleText, SearchInput } from '@renderer/shared/ui';
 import { WalletFamily } from '@renderer/shared/core';
 import { useI18n } from '@renderer/app/providers';
 import { WalletGroup } from './WalletGroup';
+import { walletModel } from '@renderer/entities/wallet';
 
 type Props = {
   action?: ReactNode;
+  onClose: () => void;
 };
-export const WalletPanel = ({ action }: Props) => {
+export const WalletPanel = ({ action, onClose }: Props) => {
   const { t } = useI18n();
+
+  const activeWallet = useUnit(walletModel.$activeWallet);
+  const [initialWallet] = useState(activeWallet);
+
+  useEffect(() => {
+    if (activeWallet?.id !== initialWallet?.id) {
+      onClose();
+    }
+  }, [activeWallet]);
 
   const filteredWalletGroups = useUnit(walletSelectModel.$filteredWalletGroups);
 

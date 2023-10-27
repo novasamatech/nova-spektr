@@ -62,6 +62,11 @@ const Details = ({ tx, account, connection, signatory }: Props) => {
 
   const hasSender = isXcmTransaction(tx.transaction) || isTransferTransaction(tx.transaction);
 
+  const isDidverVisible =
+    (isXcmTransaction(tx.transaction) && transaction?.args.destinationChain) ||
+    transaction?.args.dest ||
+    transaction?.args.payee;
+
   return (
     <dl className="flex flex-col gap-y-4 w-full">
       {cancelDescription && (
@@ -138,7 +143,7 @@ const Details = ({ tx, account, connection, signatory }: Props) => {
         </>
       )}
 
-      <hr className="border-filter-border" />
+      {isDidverVisible && <hr className="border-filter-border" />}
 
       {isXcmTransaction(tx.transaction) && transaction?.args.destinationChain && (
         <DetailRow label={t('operation.details.toNetwork')}>
