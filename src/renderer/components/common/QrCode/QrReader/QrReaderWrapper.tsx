@@ -118,8 +118,6 @@ const QrReaderWrapper = ({ className, onResult, countdown, validationError, isMu
     onError,
   };
 
-  console.log('countdown', countdown);
-
   return (
     <div
       className={cnTw(
