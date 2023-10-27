@@ -44,10 +44,9 @@ export const OperationCardDetails = ({ tx, account, connection }: Props) => {
       tx.transaction.args.transactions.find((tx: Transaction) => tx.type === 'nominate')?.args?.targets) ||
     [];
 
-  const validators = transaction?.args.targets || startStakingValidators;
   const allValidators = Object.values(useValidatorsMap(api, chainId, connection && isLightClient(connection)));
   const selectedValidators: Validator[] =
-    transaction?.args.targets || allValidators.filter((v) => startStakingValidators.includes(v.address)) || [];
+    allValidators.filter((v) => (transaction?.args.targets || startStakingValidators).includes(v.address)) || [];
   const selectedValidatorsAddress = selectedValidators.map((validator) => validator.address);
   const notSelectedValidators = allValidators.filter((v) => !selectedValidatorsAddress.includes(v.address));
 
@@ -138,7 +137,7 @@ export const OperationCardDetails = ({ tx, account, connection }: Props) => {
         </DetailRow>
       )}
 
-      {Boolean(validators?.length) && defaultAsset && (
+      {Boolean(selectedValidators?.length) && defaultAsset && (
         <>
           <DetailRow label={t('operation.details.validators')} className={valueClass}>
             <button
@@ -147,7 +146,7 @@ export const OperationCardDetails = ({ tx, account, connection }: Props) => {
               onClick={toggleValidators}
             >
               <FootnoteText as="span" className="text-inherit">
-                {validators.length}
+                {selectedValidators.length}
               </FootnoteText>
               <Icon name="info" size={16} />
             </button>

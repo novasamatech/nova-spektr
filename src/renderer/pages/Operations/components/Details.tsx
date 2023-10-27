@@ -84,6 +84,17 @@ const Details = ({ tx, account, connection, signatory }: Props) => {
         </DetailRow>
       )}
 
+      {signatory && signatoryWallet && (
+        <DetailRow label={t('transfer.signatoryLabel')} className="text-text-secondary -mr-2">
+          <WalletCardSm
+            wallet={signatoryWallet}
+            accountId={signatory.accountId}
+            addressPrefix={addressPrefix}
+            explorers={explorers}
+          />
+        </DetailRow>
+      )}
+
       {account && (
         <DetailRow
           label={t(hasSender ? 'operation.details.sender' : 'operation.details.account')}
@@ -96,17 +107,6 @@ const Details = ({ tx, account, connection, signatory }: Props) => {
             accountId={account.accountId}
             addressPrefix={addressPrefix}
             wrapperClassName="-mr-2 min-w-min"
-          />
-        </DetailRow>
-      )}
-
-      {signatory && signatoryWallet && (
-        <DetailRow label={t('transfer.signatoryLabel')} className="text-text-secondary -mr-2">
-          <WalletCardSm
-            wallet={signatoryWallet}
-            accountId={signatory.accountId}
-            addressPrefix={addressPrefix}
-            explorers={explorers}
           />
         </DetailRow>
       )}
