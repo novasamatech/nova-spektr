@@ -95,15 +95,15 @@ sample({
 });
 
 sample({
-  clock: combineEvents({
-    events: [reconnectStarted, walletConnectModel.events.connectionRejected],
-  }),
+  clock: walletConnectModel.events.connectionRejected,
+  source: $reconnectStep,
+  filter: (step) => step === ReconnectStep.RECONNECTING,
   fn: () => ReconnectStep.REJECTED,
   target: $reconnectStep,
 });
 
 sample({
-  clock: [walletConnectModel.events.connected, reconnectAborted],
+  clock: [walletConnectModel.events.accountsUpdateDone, reconnectAborted],
   fn: () => ReconnectStep.NOT_STARTED,
   target: $reconnectStep,
 });
