@@ -11,7 +11,7 @@ export const Countdown = ({ countdown, className }: Props) => {
   const { t } = useI18n();
 
   return (
-    <div className={cnTw('flex items-center gap-x-2 mt-2 mb-6 z-1', className)}>
+    <div className={cnTw('flex items-center gap-x-2 mt-2 mb-6 z-[1]', className)}>
       <FootnoteText className="text-text-tertiary">{t('signing.qrCountdownTitle')}</FootnoteText>
       <CaptionText
         align="center"
