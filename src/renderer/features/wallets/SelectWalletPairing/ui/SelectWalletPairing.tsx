@@ -22,16 +22,16 @@ const getDropdownOptions = (t: TFunction): ButtonDropdownOption[] => {
       onClick: () => walletPairingModel.events.walletTypeSet(WalletType.MULTISIG),
     },
     {
-      id: 'walletConnect',
-      title: t('wallets.addWalletConnect'),
-      icon: <WalletIcon type={WalletType.WALLET_CONNECT} />,
-      onClick: () => walletPairingModel.events.walletTypeSet(WalletType.WALLET_CONNECT),
-    },
-    {
       id: 'novaWallet',
       title: t('wallets.addNovaWallet'),
       icon: <WalletIcon type={WalletType.NOVA_WALLET} />,
       onClick: () => walletPairingModel.events.walletTypeSet(WalletType.NOVA_WALLET),
+    },
+    {
+      id: 'walletConnect',
+      title: t('wallets.addWalletConnect'),
+      icon: <WalletIcon type={WalletType.WALLET_CONNECT} />,
+      onClick: () => walletPairingModel.events.walletTypeSet(WalletType.WALLET_CONNECT),
     },
     {
       id: 'watch-only',
