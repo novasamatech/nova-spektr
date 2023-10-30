@@ -206,7 +206,7 @@ export const WalletConnect = ({
         })}
       </SmallTitleText>
 
-      <Countdown countdown={countdown} />
+      <Countdown countdown={txPayload ? countdown : 0} />
 
       <div className="relative">
         <video className="object-contain h-[240px]" autoPlay loop>
