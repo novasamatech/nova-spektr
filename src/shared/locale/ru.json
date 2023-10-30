@@ -131,7 +131,15 @@
       "fileInputPlaceholder": "Select .yaml or .txt file on your computer",
       "downloadTemplateButton": "Download the template",
       "backButton": "Back",
-      "continueButton": "Continue"
+      "continueButton": "Continue",
+      "error": {
+        "invalidFile": "Incorrect file format",
+        "invalidPath_one": "Derivation path {invalidPath} is not valid, please check the file",
+        "invalidPath_other": "Derivation paths {invalidPath} are not valid, please check the file",
+        "invalidRoot": "The public key doesn’t match",
+        "invalidPasswordPath_one": "Password derivation path {invalidPath} is not allowed, please check the file",
+        "invalidPasswordPath_other": "Password derivation paths {invalidPath} are not allowed, please check the file"
+      }
     }
   },
   "fallbackScreen": {

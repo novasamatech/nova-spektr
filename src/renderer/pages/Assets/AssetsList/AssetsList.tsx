@@ -14,6 +14,7 @@ import type { Account, Chain } from '@renderer/shared/core';
 import { ConnectionType } from '@renderer/shared/core';
 import { walletModel, walletUtils } from '@renderer/entities/wallet';
 import { currencyModel, priceProviderModel } from '@renderer/entities/price';
+import { ImportKeysModal } from '@renderer/features/dynamicDerivations';
 // import { ImportKeysModal } from "@renderer/features/dynamicDerivations";
 
 export const AssetsList = () => {

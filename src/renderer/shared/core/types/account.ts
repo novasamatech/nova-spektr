@@ -10,8 +10,6 @@ type AbstractAccount = {
   type: AccountType;
 };
 
-type ExtractKeys = <T, K >
-
 export type BaseAccount = AbstractAccount & {
   accountId: AccountId;
   chainType: ChainType;
@@ -19,10 +17,10 @@ export type BaseAccount = AbstractAccount & {
   signingExtras?: Record<string, any>;
 };
 
-// export type ShardedAccount = BaseAccount & {
-//   keyType: KeyType;
-//   chainId: ChainId;
-// };
+export type ShardedAccount = BaseAccount & {
+  keyType: KeyType;
+  chainId: ChainId;
+};
 
 export type ChainAccount = BaseAccount & {
   baseId: BaseAccount['id'];
@@ -31,11 +29,11 @@ export type ChainAccount = BaseAccount & {
   derivationPath: string;
 };
 
-// export type ShardAccount = BaseAccount & {
-//   shardedId: BaseAccount['id'];
-//   chainId: ChainId;
-//   derivationPath: string;
-// };
+export type ShardAccount = BaseAccount & {
+  shardedId: BaseAccount['id'];
+  chainId: ChainId;
+  derivationPath: string;
+};
 
 export type MultisigAccount = BaseAccount & {
   signatories: Signatory[];
@@ -53,13 +51,13 @@ export type Account = BaseAccount | ChainAccount | MultisigAccount | WalletConne
 export const enum AccountType {
   BASE = 'base',
   CHAIN = 'chain',
-  // SHARDED = 'sharded',
-  // SHARD = 'shard',
+  SHARDED = 'sharded',
+  SHARD = 'shard',
   MULTISIG = 'multisig',
   WALLET_CONNECT = 'wallet_connect',
 }
 
-export const enum KeyType {
+export enum KeyType {
   MAIN = 'main',
   PUBLIC = 'public',
   HOT = 'hot',
