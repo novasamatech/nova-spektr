@@ -25,9 +25,9 @@ export const ConfirmSignatories = ({ isActive, wallets, contacts }: Props) => {
         <FootnoteText className="text-text-tertiary">
           {t('createMultisigAccount.walletsTab')} <span className="ml-2">{wallets.length}</span>
         </FootnoteText>
-        <ul className="gap-y-2">
+        <ul className="flex flex-col gap-y-2">
           {wallets.map(({ index, name, type }) => (
-            <li key={index} className="p-1 mb-0.5 last:mb-0 rounded-md hover:bg-action-background-hover">
+            <li key={index} className="py-1.5 px-1 rounded-md hover:bg-action-background-hover">
               <WalletItem name={name} type={type || WalletType.POLKADOT_VAULT} />
             </li>
           ))}
@@ -40,7 +40,7 @@ export const ConfirmSignatories = ({ isActive, wallets, contacts }: Props) => {
             </FootnoteText>
             <ul className="gap-y-2">
               {contacts.map(({ index, accountId, name }) => (
-                <li key={index} className="p-1 mb-0.5 last:mb-0 rounded-md hover:bg-action-background-hover">
+                <li key={index} className="p-1 rounded-md hover:bg-action-background-hover">
                   <ContactItem name={name} accountId={accountId} />
                 </li>
               ))}
