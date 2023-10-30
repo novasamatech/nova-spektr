@@ -148,7 +148,7 @@ export const SelectSignatories = ({ isActive, wallets, accounts, contacts, onSel
         <FootnoteText className="text-text-tertiary px-2">{t('createMultisigAccount.availableLabel')}</FootnoteText>
       )}
 
-      <ul className="gap-y-2">
+      <ul className="flex flex-col gap-y-2">
         {availableWallets.map((wallet) => {
           const disabled = isDisabledWallet(wallet);
 
