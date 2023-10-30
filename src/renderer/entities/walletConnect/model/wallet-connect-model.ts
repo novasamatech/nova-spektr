@@ -17,6 +17,7 @@ import {
   DEFAULT_APP_METADATA,
   DEFAULT_POLKADOT_METHODS,
   DEFAULT_POLKADOT_EVENTS,
+  EXTEND_PAIRING,
 } from '../lib/constants';
 import { InitConnectParams } from '../lib/types';
 
@@ -40,6 +41,7 @@ const connectionRejected = createEvent<string>();
 const currentSessionTopicUpdated = createEvent<string>();
 const sessionTopicUpdated = createEvent<SessionTopicParams>();
 const accountsUpdated = createEvent<UpdateAccountsParams>();
+const pairingRemoved = createEvent<string>();
 
 const $client = createStore<Client | null>(null).reset(reset);
 const $session = createStore<SessionTypes.Struct | null>(null).reset(reset);
@@ -52,6 +54,15 @@ const extendSessionsFx = createEffect((client: Client) => {
 
   sessions.forEach((s) => {
     client.extend({ topic: s.topic }).catch((e) => console.warn(e));
+  });
+
+  const pairings = client.pairing.getAll({ active: true });
+
+  pairings.forEach((p) => {
+    client.core.pairing.updateExpiry({
+      topic: p.topic,
+      expiry: EXTEND_PAIRING,
+    });
   });
 });
 
@@ -155,6 +166,12 @@ const updateWalletConnectAccountsFx = createEffect(
   },
 );
 
+const removePairingFx = createEffect(async ({ client, topic }: { client: Client; topic: string }): Promise<void> => {
+  const reason = getSdkError('USER_DISCONNECTED');
+
+  await client.pairing.delete(topic, reason);
+});
+
 sample({
   clock: accountsUpdated,
   source: {
@@ -249,6 +266,11 @@ const disconnectFx = createEffect(async ({ client, session }: DisconnectParams) 
     topic: session.topic,
     reason,
   });
+});
+
+forward({
+  from: disconnectFx.done,
+  to: createClientFx,
 });
 
 forward({
@@ -377,6 +399,17 @@ sample({
   target: connectionRejected,
 });
 
+sample({
+  clock: pairingRemoved,
+  source: { client: $client },
+  filter: ({ client }) => client !== null,
+  fn: ({ client }, topic) => ({
+    client: client!,
+    topic,
+  }),
+  target: removePairingFx,
+});
+
 export const walletConnectModel = {
   $client,
   $session,
@@ -395,6 +428,7 @@ export const walletConnectModel = {
     sessionTopicUpdateDone: sessionTopicUpdatedFx.doneData,
     accountsUpdated,
     accountsUpdateDone: updateWalletConnectAccountsFx.doneData,
+    pairingRemoved,
     reset,
   },
 };

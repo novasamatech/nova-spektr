@@ -12,9 +12,10 @@ import { usePrevious } from '@renderer/shared/lib/hooks';
 import { walletConnectUtils, walletConnectModel } from '@renderer/entities/walletConnect';
 import { chainsService } from '@renderer/entities/network';
 import { wcOnboardingModel } from '@renderer/pages/Onboarding/WalletConnect/model/wc-onboarding-model';
-import { WCQRConfig, Step, EXPIRE_TIMEOUT } from './common/const';
+import { WCQRConfig, Step, EXPIRE_TIMEOUT } from './lib/const';
 import { useStatusContext } from '@renderer/app/providers/context/StatusContext';
 import { WalletType } from '@renderer/shared/core';
+import { isNeedDisconnect } from './lib/utils';
 
 type Props = {
   isOpen: boolean;
@@ -92,7 +93,10 @@ export const WalletConnect = ({ isOpen, onClose, onComplete }: Props) => {
   }, [pairings.length]);
 
   const handleClose = () => {
-    walletConnectModel.events.disconnectCurrentSessionStarted();
+    if (isNeedDisconnect(step)) {
+      walletConnectModel.events.disconnectCurrentSessionStarted();
+    }
+
     onClose();
   };
 
