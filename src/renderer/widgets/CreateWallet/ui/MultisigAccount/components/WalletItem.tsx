@@ -1,3 +1,5 @@
+import { memo } from 'react';
+
 import { WalletIcon } from '@renderer/entities/wallet';
 import { WalletType } from '@renderer/shared/core';
 import { BodyText } from '@renderer/shared/ui';
@@ -8,7 +10,7 @@ type Props = {
 };
 
 // TODO: Rebuild with new components
-export const WalletItem = ({ name, type }: Props) => {
+export const WalletItem = memo(({ name, type }: Props) => {
   return (
     <div className="flex items-center gap-x-2 w-full">
       <WalletIcon type={type} />
@@ -20,4 +22,4 @@ export const WalletItem = ({ name, type }: Props) => {
       </div>
     </div>
   );
-};
+});
