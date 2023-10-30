@@ -1,5 +1,5 @@
 import { combine, createEvent, createStore, forward, sample } from 'effector';
-import { combineEvents } from 'patronum';
+import { combineEvents, spread } from 'patronum';
 
 import { accountUtils, walletModel } from '@renderer/entities/wallet';
 import { walletConnectUtils, walletConnectModel, InitConnectParams } from '@renderer/entities/walletConnect';
@@ -47,14 +47,14 @@ forward({
 });
 
 sample({
-  clock: combineEvents({
-    events: [reconnectStarted, walletConnectModel.events.connected],
-  }),
+  clock: walletConnectModel.events.connected,
   source: {
+    step: $reconnectStep,
     accounts: walletProviderModel.$accounts,
     session: walletConnectModel.$session,
   },
-  filter: ({ accounts, session }) => accounts.length > 0 && Boolean(session?.topic),
+  filter: ({ step, accounts, session }) =>
+    step === ReconnectStep.RECONNECTING && accounts.length > 0 && Boolean(session?.topic),
   fn: ({ accounts, session }) => ({ accounts, topic: session?.topic! }),
   target: walletConnectModel.events.sessionTopicUpdated,
 });
@@ -118,9 +118,17 @@ sample({
   fn: ({ wallet, accounts }) => {
     const account = accounts.find((a) => a.walletId === wallet!.id);
 
-    return account?.signingExtras?.sessionTopic;
+    return {
+      sessionTopic: account?.signingExtras?.sessionTopic,
+      pairingTopic: account?.signingExtras?.pairingTopic,
+    };
   },
-  target: walletConnectModel.events.disconnectStarted,
+  target: spread({
+    targets: {
+      sessionTopic: walletConnectModel.events.disconnectStarted,
+      pairingTopic: walletConnectModel.events.pairingRemoved,
+    },
+  }),
 });
 
 sample({
