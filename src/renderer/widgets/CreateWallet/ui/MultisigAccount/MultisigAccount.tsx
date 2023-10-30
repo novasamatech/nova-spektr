@@ -204,6 +204,7 @@ export const MultisigAccount = ({ isOpen, onClose, onComplete }: Props) => {
             setSignatoryContacts(contacts);
           }}
         />
+
         <ConfirmSignatories
           isActive={activeStep === Step.CONFIRMATION}
           wallets={signatoryWallets}
