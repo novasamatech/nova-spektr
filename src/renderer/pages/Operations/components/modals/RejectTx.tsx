@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { UnsignedTransaction } from '@substrate/txwrapper-polkadot';
 import { BN } from '@polkadot/util';
 import { useUnit } from 'effector-react';
+import keyBy from 'lodash/keyBy';
 
 import { BaseModal, Button } from '@renderer/shared/ui';
 import { useI18n } from '@renderer/app/providers';
@@ -44,8 +45,8 @@ const AllSteps = [Step.CONFIRMATION, Step.SIGNING, Step.SUBMIT];
 
 const RejectTx = ({ tx, account, connection }: Props) => {
   const { t } = useI18n();
-  const activeWallet = useUnit(walletModel.$activeWallet);
   const accounts = useUnit(walletModel.$accounts);
+  const wallets = keyBy(useUnit(walletModel.$wallets), 'id');
 
   const { getBalance } = useBalance();
   const { getTransactionFee } = useTransaction();
@@ -74,9 +75,10 @@ const RejectTx = ({ tx, account, connection }: Props) => {
 
   const signAccount = accounts.find((a) => {
     const isDepositor = a.accountId === tx.depositor;
-    const isWatchOnly = walletUtils.isWatchOnly(activeWallet);
+    const wallet = wallets[a.walletId];
+    const isWatchOnly = walletUtils.isWatchOnly(wallet);
 
-    return isDepositor && !isWatchOnly;
+    return isDepositor && wallet && !isWatchOnly;
   });
 
   const checkBalance = () =>
