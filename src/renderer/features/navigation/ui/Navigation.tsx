@@ -35,7 +35,7 @@ export const Navigation = () => {
       icon: 'operations',
       title: 'navigation.mstOperationLabel',
       link: Paths.OPERATIONS,
-      badge: <BodyText className="ml-auto text-text-tertiary">{txs.length}</BodyText>,
+      badge: <BodyText className="ml-auto text-text-tertiary">{txs.length > 0 && txs.length}</BodyText>,
     },
     { icon: 'addressBook', title: 'navigation.addressBookLabel', link: Paths.ADDRESS_BOOK },
   ];
