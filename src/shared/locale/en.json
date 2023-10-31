@@ -139,6 +139,17 @@
         "invalidRoot": "The public key doesn’t match",
         "invalidPasswordPath_one": "Password derivation path {invalidPath} is not allowed, please check the file",
         "invalidPasswordPath_other": "Password derivation paths {invalidPath} are not allowed, please check the file"
+      },
+      "report": {
+        "title": "Success",
+        "addedKeys_one": "{count} key added",
+        "addedKeys_other": "{count} keys added",
+        "updatedNetworks_one": "for {count} network.",
+        "updatedNetworks_other": "for {count} networks.",
+        "duplicatedKeys_one": "{count} derivation path is duplicated.",
+        "duplicatedKeys_other": "{count} derivation paths are duplicated.",
+        "networksIgnored_one": "{count} networks ignored with genesis hash:",
+        "networksIgnored_other": "{count} networks ignored with genesis hash:"
       }
     }
   },

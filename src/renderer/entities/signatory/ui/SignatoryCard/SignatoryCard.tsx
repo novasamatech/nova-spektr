@@ -6,8 +6,8 @@ import { cnTw } from '@renderer/shared/lib/utils';
 import type { Explorer } from '@renderer/shared/core';
 
 const IconProps = {
-  SIGNED: { className: 'group-hover:hidden text-text-positive', name: 'checkLineRedesign' },
-  CANCELLED: { className: 'group-hover:hidden text-text-negative', name: 'closeLineRedesign' },
+  SIGNED: { className: 'group-hover:hidden text-text-positive', name: 'checkmarkOutline' },
+  CANCELLED: { className: 'group-hover:hidden text-text-negative', name: 'closeOutline' },
 } as const;
 
 type Props = {

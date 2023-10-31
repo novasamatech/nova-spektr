@@ -3,8 +3,8 @@ import { Variant } from './types';
 import { AnimationNames, Props } from '@renderer/shared/ui/Animation/Animation';
 
 export const VariantIcons: Record<Variant, IconNames> = {
-  success: 'checkLineRedesign',
-  error: 'closeLineRedesign',
+  success: 'checkmarkOutline',
+  error: 'closeOutline',
   loading: 'loader',
 };
 

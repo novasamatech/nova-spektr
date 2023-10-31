@@ -19,7 +19,7 @@ const Alert = ({ title, variant = 'info', className, children, onClose }: PropsW
   return (
     <div className={cnTw('p-[15px] rounded-lg border', ViewStyle[variant])}>
       <div className="flex items-start gap-x-1.5">
-        <div className="flex flex-col gap-y-1 flex-1">
+        <div className="flex flex-col gap-y-1 flex-1 max-w-full">
           <div className="flex items-center gap-x-1.5">
             <Icon name={IconName[variant]} size={14} className={IconStyle[variant]} />
             <HeadlineText>{title}</HeadlineText>

@@ -1,4 +1,4 @@
-import { ChainId, HexString, KeyType, ObjectValues } from '@renderer/shared/core';
+import { ChainId, HexString, KeyType } from '@renderer/shared/core';
 import { ImportErrorsLabel } from './constants';
 
 type DerivationPropertyName = 'derivation_path' | 'type' | 'shaded';
@@ -11,7 +11,7 @@ export type ParsedImportFile = {
 };
 
 export type ImportError = {
-  error: ObjectValues<typeof ImportErrorsLabel>;
+  error: ImportErrorsLabel;
   tArgs?: any; // args for t()
 };
 
@@ -22,16 +22,19 @@ export type ImportedDerivation = {
   type?: string;
 };
 
-export type TypedImportedDerivation = Required<ImportedDerivation> & {
-  type?: KeyType;
+export type TypedImportedDerivation = {
+  derivationPath: string;
+  type: KeyType;
   chainId: ChainId;
   sharded?: number;
 };
 
 export class DerivationImportError extends Error {
   paths?: string[];
-  constructor(message: ObjectValues<typeof ImportErrorsLabel>, invalidPaths?: string[]) {
+  message: ImportErrorsLabel;
+  constructor(message: ImportErrorsLabel, invalidPaths?: string[]) {
     super(message);
+    this.message = message;
     this.paths = invalidPaths;
   }
 }

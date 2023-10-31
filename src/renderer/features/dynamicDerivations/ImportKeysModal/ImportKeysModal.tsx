@@ -1,17 +1,35 @@
 import { useUnit } from 'effector-react';
+import { useEffect } from 'react';
 
-import { BaseModal, Button, InfoLink, InputFile, InputHint } from '@renderer/shared/ui';
+import { Alert, BaseModal, Button, InfoLink, InputFile, InputHint } from '@renderer/shared/ui';
 import { useI18n } from '@renderer/app/providers';
-import { importKeysModel } from '@renderer/entities/dynamicDerivations';
+import { importKeysModel, TypedImportedDerivation } from '@renderer/entities/dynamicDerivations';
+import { AccountId } from '@renderer/shared/core';
+import { EXISTING_DERIVATIONS, ROOT_ACCOUNT_ID } from '@renderer/features/dynamicDerivations/ImportKeysModal/mock-data';
+import { cnTw } from "@renderer/shared/lib/utils";
 
 type Props = {
   isOpen: boolean;
+  rootAccountId: AccountId;
+  existingKeys: TypedImportedDerivation[];
   onClose: () => void;
 };
 
-export const ImportKeysModal = ({ isOpen, onClose }: Props) => {
+export const ImportKeysModal = ({
+  isOpen,
+  onClose,
+  rootAccountId = ROOT_ACCOUNT_ID,
+  existingKeys = EXISTING_DERIVATIONS,
+}: Props) => {
   const { t } = useI18n();
-  const error = useUnit(importKeysModel.$error);
+  const validationError = useUnit(importKeysModel.$validationError);
+  const successReport = useUnit(importKeysModel.$successReport);
+
+  useEffect(() => {
+    if (rootAccountId && existingKeys) {
+      importKeysModel.events.importStarted({ derivations: existingKeys, root: rootAccountId });
+    }
+  }, [rootAccountId, existingKeys]);
 
   const handleFileUpload = (file: File) => {
     const fileReader = new FileReader();
@@ -24,18 +42,51 @@ export const ImportKeysModal = ({ isOpen, onClose }: Props) => {
     fileReader.readAsText(file);
   };
 
+  const getReportText = () => {
+    if (!successReport) return;
+    const addedKeys = t('dynamicDerivations.importKeys.report.addedKeys', { count: successReport.addedKeys });
+    const updatedNetworks = t('dynamicDerivations.importKeys.report.updatedNetworks', {
+      count: successReport.updatedNetworks,
+    });
+    const duplicatedKeys = t('dynamicDerivations.importKeys.report.duplicatedKeys', {
+      count: successReport.duplicatedKeys,
+    });
+    const ignoreNetworks = t('dynamicDerivations.importKeys.report.networksIgnored', {
+      count: successReport.ignoredNetworks.length,
+    });
+
+    return `${addedKeys} ${updatedNetworks} ${successReport.duplicatedKeys && duplicatedKeys} ${
+      successReport.ignoredNetworks.length && ignoreNetworks
+    }`;
+  };
+
   return (
     <BaseModal isOpen={isOpen} title={t('dynamicDerivations.importKeys.modalTitle')} onClose={onClose}>
       <div className="flex flex-col gap-y-4 items-start">
-        <InputHint active variant="error">
-          {error?.error}
-        </InputHint>
         <InputFile
           placeholder={t('dynamicDerivations.importKeys.fileInputPlaceholder')}
           accept=".yaml"
-          className="w-full h-[126px]"
+          className={cnTw('w-full h-[126px]', validationError && 'mb-2', successReport && 'mb-4')}
+          invalid={Boolean(validationError?.error)}
           onChange={(file) => handleFileUpload(file)}
         />
+
+        {validationError && (
+          <InputHint active={Boolean(validationError)} variant="error" className="mt-2">
+            {t(validationError?.error, { ...validationError?.tArgs })}
+          </InputHint>
+        )}
+
+        {successReport && (
+          <Alert title={t('dynamicDerivations.importKeys.report.title')} variant="success">
+            <Alert.Item withDot={false}>{getReportText()}</Alert.Item>
+            {successReport.ignoredNetworks.map((chainId) => (
+              <Alert.Item className="break-all" key={chainId}>
+                {chainId}
+              </Alert.Item>
+            ))}
+          </Alert>
+        )}
 
         <InfoLink
           url="dd-template.yaml"

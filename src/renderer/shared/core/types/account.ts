@@ -59,7 +59,7 @@ export const enum AccountType {
 
 export enum KeyType {
   MAIN = 'main',
-  PUBLIC = 'public',
+  PUBLIC = 'pub',
   HOT = 'hot',
   GOVERNANCE = 'governance',
   STAKING = 'staking',
