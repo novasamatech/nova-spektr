@@ -5,9 +5,9 @@ import { Locale } from 'date-fns';
 import { enGB } from 'date-fns/locale';
 
 import { LanguageSwitcher } from '@shared/ui';
-import { LanguageItem, SupportedLocale } from '@renderer/services/translation/common/types';
-import { LanguageOptions } from '@renderer/services/translation/common/constants';
-import { useTranslationService } from '@renderer/services/translation/translationService';
+import { LanguageItem, SupportedLocale } from '@shared/api/translation/lib/types';
+import { LanguageOptions } from '@shared/api/translation/lib/constants';
+import { useTranslationService } from '@shared/api/translation/translationService';
 
 type Props = {
   className?: string;
