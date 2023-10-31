@@ -74,8 +74,7 @@ function validateDerivation(derivation: ImportedDerivation): boolean {
   const isShardedParamValid = !sharded || (!isNaN(sharded) && sharded <= 50 && sharded > 1);
   const isChainParamValid = derivation.chainId && chainsService.getChainById(derivation.chainId as ChainId);
   const isTypeParamValid = derivation.type && Object.values(KeyType).includes(derivation.type as KeyType);
-  const isShardedAllowedForType =
-    !sharded || (derivation.type !== KeyType.PUBLIC && derivation.type !== KeyType.GOVERNANCE);
+  const isShardedAllowedForType = !sharded || (derivation.type !== KeyType.PUBLIC && derivation.type !== KeyType.HOT);
 
   const isPathStartAndEndValid = /^(\/\/|\/)[^/].*[^/]$/.test(derivation.derivationPath);
   const hasPasswordPath = derivation.derivationPath.includes('///');
@@ -98,17 +97,19 @@ function mergeChainDerivations(
   let addedKeys = 0;
   let duplicatedKeys = 0;
   const newDerivations = importedDerivations.filter((d) => {
-    const alreadyExists = existingDerivations.find(
-      (ed) => ed.derivationPath === d.derivationPath && ((!d.sharded && !ed.sharded) || ed.sharded === d.sharded),
-    );
+    const duplicatePath = existingDerivations.find((ed) => ed.derivationPath === d.derivationPath);
 
-    if (!alreadyExists) {
-      addedKeys += d.sharded ? d.sharded : 1;
+    const isOnlyOneSharded =
+      [duplicatePath?.sharded, d.sharded].filter((sharded) => sharded === undefined).length === 1;
+    const isDerivationNew = !duplicatePath || isOnlyOneSharded;
+
+    if (isDerivationNew) {
+      addedKeys += d.sharded || 1;
     } else {
-      duplicatedKeys += alreadyExists.sharded || 1;
+      duplicatedKeys += duplicatePath.sharded || 1;
     }
 
-    return !alreadyExists;
+    return isDerivationNew;
   });
 
   const derivationsToReplace = importedDerivations.filter((d) => {
@@ -118,7 +119,6 @@ function mergeChainDerivations(
 
     if (hasDifferentShards && d.sharded && hasDifferentShards.sharded) {
       addedKeys += d.sharded - hasDifferentShards?.sharded;
-      duplicatedKeys += hasDifferentShards.sharded;
     }
 
     return hasDifferentShards;
@@ -127,9 +127,11 @@ function mergeChainDerivations(
   const result = [...existingDerivations, ...newDerivations];
   result.forEach((d) => {
     const replacementDerivation = derivationsToReplace.find(
-      (x) => x.derivationPath === d.derivationPath && Boolean(x.sharded),
+      (x) => x.derivationPath === d.derivationPath && Boolean(x.sharded) && Boolean(d.sharded),
     );
-    d.sharded = replacementDerivation?.sharded;
+    if (replacementDerivation) {
+      d.sharded = replacementDerivation?.sharded;
+    }
   });
 
   return { mergedDerivations: result, added: addedKeys, duplicated: duplicatedKeys };
