@@ -6,7 +6,7 @@ import { useI18n } from '@renderer/app/providers';
 import { importKeysModel, TypedImportedDerivation } from '@renderer/entities/dynamicDerivations';
 import { AccountId } from '@renderer/shared/core';
 import { EXISTING_DERIVATIONS, ROOT_ACCOUNT_ID } from '@renderer/features/dynamicDerivations/ImportKeysModal/mock-data';
-import { cnTw } from "@renderer/shared/lib/utils";
+import { cnTw } from '@renderer/shared/lib/utils';
 
 type Props = {
   isOpen: boolean;
@@ -55,9 +55,13 @@ export const ImportKeysModal = ({
       count: successReport.ignoredNetworks.length,
     });
 
-    return `${addedKeys} ${updatedNetworks} ${successReport.duplicatedKeys && duplicatedKeys} ${
-      successReport.ignoredNetworks.length && ignoreNetworks
+    return `${addedKeys} ${updatedNetworks} ${successReport.duplicatedKeys ? duplicatedKeys : ''} ${
+      successReport.ignoredNetworks.length ? ignoreNetworks : ''
     }`;
+  };
+
+  const handleContinue = () => {
+    // send merged keys to other model
   };
 
   return (
@@ -102,7 +106,9 @@ export const ImportKeysModal = ({
 
       <div className="flex items-center justify-between pt-3">
         <Button variant="text">{t('dynamicDerivations.importKeys.backButton')}</Button>
-        <Button disabled>{t('dynamicDerivations.importKeys.continueButton')}</Button>
+        <Button disabled={!validationError?.error && Boolean(successReport)} onClick={handleContinue}>
+          {t('dynamicDerivations.importKeys.continueButton')}
+        </Button>
       </div>
     </BaseModal>
   );
