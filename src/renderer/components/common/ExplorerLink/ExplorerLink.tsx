@@ -1,8 +1,8 @@
-import { cnTw, toAddress } from '@renderer/shared/lib/utils';
-import { Icon, FootnoteText } from '@renderer/shared/ui';
+import { cnTw, toAddress } from '@shared/lib/utils';
+import { Icon, FootnoteText } from '@shared/ui';
 import { DefaultExplorer, ExplorerIcons } from '@renderer/components/common/ExplorerLink/constants';
-import { useI18n } from '@renderer/app/providers';
-import type { AccountId, Address, HexString, Explorer } from '@renderer/shared/core';
+import { useI18n } from '@app/providers';
+import type { AccountId, Address, HexString, Explorer } from '@shared/core';
 
 const isExtrinsic = (props: WithAccount | WithExtrinsic): props is WithExtrinsic =>
   (props as WithExtrinsic).hash !== undefined;

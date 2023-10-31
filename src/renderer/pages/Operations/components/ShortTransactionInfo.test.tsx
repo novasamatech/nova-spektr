@@ -1,21 +1,21 @@
 import { act, render, screen } from '@testing-library/react';
 
 import { TransactionAmount } from './TransactionAmount';
-import { Transaction, TransactionType } from '@renderer/entities/transaction';
-import { TEST_ADDRESS, TEST_CHAIN_ID } from '@renderer/shared/lib/utils';
+import { Transaction, TransactionType } from '@entities/transaction';
+import { TEST_ADDRESS, TEST_CHAIN_ID } from '@shared/lib/utils';
 
-jest.mock('@renderer/entities/walletConnect', () => ({
+jest.mock('@entities/walletConnect', () => ({
   walletConnectModel: { events: {} },
   DEFAULT_POLKADOT_METHODS: {},
   walletConnectUtils: {
     getWalletConnectChains: jest.fn(),
   },
 }));
-jest.mock('@renderer/pages/Onboarding/WalletConnect/model/wc-onboarding-model', () => ({
+jest.mock('@pages/Onboarding/WalletConnect/model/wc-onboarding-model', () => ({
   wcOnboardingModel: { events: {} },
 }));
 
-jest.mock('@renderer/app/providers', () => ({
+jest.mock('@app/providers', () => ({
   useI18n: jest.fn().mockReturnValue({
     t: (key: string) => key,
   }),

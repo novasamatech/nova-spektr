@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { Locale } from 'date-fns';
 import { enGB } from 'date-fns/locale';
 
-import { LanguageSwitcher } from '@renderer/shared/ui';
+import { LanguageSwitcher } from '@shared/ui';
 import { LanguageItem, SupportedLocale } from '@renderer/services/translation/common/types';
 import { LanguageOptions } from '@renderer/services/translation/common/constants';
 import { useTranslationService } from '@renderer/services/translation/translationService';

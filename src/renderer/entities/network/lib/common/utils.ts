@@ -1,6 +1,6 @@
 import { ExtendedChain } from './types';
-import { ConnectionType } from '@renderer/shared/core';
-import type { ChainOptions } from '@renderer/shared/core';
+import { ConnectionType } from '@shared/core';
+import type { ChainOptions } from '@shared/core';
 
 export const isPolkadot = (chainName: string): boolean => {
   return chainName === 'Polkadot';

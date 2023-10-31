@@ -2,9 +2,9 @@ import { ApiPromise } from '@polkadot/api';
 import { useEffect, useState } from 'react';
 import { useUnit } from 'effector-react';
 
-import { useI18n } from '@renderer/app/providers';
-import { useBalance } from '@renderer/entities/asset';
-import { getOperationErrors, Transaction, TransactionType } from '@renderer/entities/transaction';
+import { useI18n } from '@app/providers';
+import { useBalance } from '@entities/asset';
+import { getOperationErrors, Transaction, TransactionType } from '@entities/transaction';
 import type {
   Asset,
   Account,
@@ -13,9 +13,9 @@ import type {
   ChainId,
   AccountId,
   Wallet,
-} from '@renderer/shared/core';
-import { toAddress, nonNullable, TEST_ADDRESS } from '@renderer/shared/lib/utils';
-import { OperationFooter, OperationHeader } from '@renderer/features/operation';
+} from '@shared/core';
+import { toAddress, nonNullable, TEST_ADDRESS } from '@shared/lib/utils';
+import { OperationFooter, OperationHeader } from '@features/operation';
 import { OperationForm } from '../../components';
 import {
   validateBalanceForFeeDeposit,
@@ -23,7 +23,7 @@ import {
   getGeneralAccountOption,
   getSignatoryOption,
 } from '../../common/utils';
-import { walletModel, walletUtils, accountUtils } from '@renderer/entities/wallet';
+import { walletModel, walletUtils, accountUtils } from '@entities/wallet';
 
 export type DestinationResult = {
   accounts: Account[];

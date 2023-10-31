@@ -1,7 +1,7 @@
-import { cnTw } from '@renderer/shared/lib/utils';
-import { Icon, BodyText, CaptionText, FootnoteText } from '@renderer/shared/ui';
-import { useI18n } from '@renderer/app/providers';
-import { IconNames } from '@renderer/shared/ui/Icon/data';
+import { cnTw } from '@shared/lib/utils';
+import { Icon, BodyText, CaptionText, FootnoteText } from '@shared/ui';
+import { useI18n } from '@app/providers';
+import { IconNames } from '@shared/ui/Icon/data';
 
 type Props = {
   title: string;

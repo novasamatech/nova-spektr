@@ -1,13 +1,13 @@
 import { useUnit } from 'effector-react';
 
-import { walletSelectModel } from '@renderer/features/wallets';
+import { walletSelectModel } from '@features/wallets';
 import { SimpleWalletDetails } from './SimpleWalletDetails';
 import { MultisigWalletDetails } from './MultisigWalletDetails';
 import { WalletConnectDetails } from './WalletConnectDetails';
 import { walletProviderModel } from '../model/wallet-provider-model';
 import { MultishardWalletDetails } from './MultishardWalletDetails';
-import { walletUtils } from '@renderer/entities/wallet';
-import type { Wallet } from '@renderer/shared/core';
+import { walletUtils } from '@entities/wallet';
+import type { Wallet } from '@shared/core';
 import { wcDetailsModel } from '../model/wc-details-model';
 
 type ModalProps = {

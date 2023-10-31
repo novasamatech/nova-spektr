@@ -1,16 +1,16 @@
 import { render, screen } from '@testing-library/react';
 
-import type { Asset, BaseAccount } from '@renderer/shared/core';
-import { ChainType, CryptoType, AccountType } from '@renderer/shared/core';
+import type { Asset, BaseAccount } from '@shared/core';
+import { ChainType, CryptoType, AccountType } from '@shared/core';
 import AccountsModal from './AccountsModal';
 
-jest.mock('@renderer/app/providers', () => ({
+jest.mock('@app/providers', () => ({
   useI18n: jest.fn().mockReturnValue({
     t: (key: string) => key,
   }),
 }));
 
-jest.mock('@renderer/entities/wallet', () => ({
+jest.mock('@entities/wallet', () => ({
   AddressWithExplorers: ({ address }: { address: string }) => <span data-testid="account">{address}</span>,
 }));
 

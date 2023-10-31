@@ -1,13 +1,13 @@
-import ArrowUpImg, { ReactComponent as ArrowUpSvg } from '@images/arrows/up.svg';
-import ArrowDownImg, { ReactComponent as ArrowDownSvg } from '@images/arrows/down.svg';
-import ArrowLeftImg, { ReactComponent as ArrowLeftSvg } from '@images/arrows/left.svg';
-import ArrowRightImg, { ReactComponent as ArrowRightSvg } from '@images/arrows/right.svg';
-import ArrowLeftCutoutImg, { ReactComponent as ArrowLeftCutoutSvg } from '@images/arrows/left-cutout.svg';
-import SendArrowImg, { ReactComponent as SendArrowSvg } from '@images/arrows/send-arrow.svg';
-import ReceiveArrowImg, { ReactComponent as ReceiveArrowSvg } from '@images/arrows/receive-arrow.svg';
-import CurveArrowImg, { ReactComponent as CurveArrowSvg } from '@images/arrows/arrow-curve-left-right.svg';
-import SwapArrowImg, { ReactComponent as SwapArrowSvg } from '@images/arrows/swap-arrow.svg';
-import CrossChainImg, { ReactComponent as CrossChainSvg } from '@images/arrows/cross-chain-arrow.svg';
+import ArrowUpImg, { ReactComponent as ArrowUpSvg } from '@shared/assets/images/arrows/up.svg';
+import ArrowDownImg, { ReactComponent as ArrowDownSvg } from '@shared/assets/images/arrows/down.svg';
+import ArrowLeftImg, { ReactComponent as ArrowLeftSvg } from '@shared/assets/images/arrows/left.svg';
+import ArrowRightImg, { ReactComponent as ArrowRightSvg } from '@shared/assets/images/arrows/right.svg';
+import ArrowLeftCutoutImg, { ReactComponent as ArrowLeftCutoutSvg } from '@shared/assets/images/arrows/left-cutout.svg';
+import SendArrowImg, { ReactComponent as SendArrowSvg } from '@shared/assets/images/arrows/send-arrow.svg';
+import ReceiveArrowImg, { ReactComponent as ReceiveArrowSvg } from '@shared/assets/images/arrows/receive-arrow.svg';
+import CurveArrowImg, { ReactComponent as CurveArrowSvg } from '@shared/assets/images/arrows/arrow-curve-left-right.svg';
+import SwapArrowImg, { ReactComponent as SwapArrowSvg } from '@shared/assets/images/arrows/swap-arrow.svg';
+import CrossChainImg, { ReactComponent as CrossChainSvg } from '@shared/assets/images/arrows/cross-chain-arrow.svg';
 
 const ArrowImages = {
   arrowUp: { svg: ArrowUpSvg, img: ArrowUpImg },

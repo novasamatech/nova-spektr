@@ -7,7 +7,7 @@ import { AccountId32 } from '@polkadot/types/interfaces';
 
 import { getValidatorsApy } from './apyCalculator';
 import { IValidatorsService, ValidatorMap } from './common/types';
-import type { Address, ChainId, EraIndex, Identity, SubIdentity, Validator } from '@renderer/shared/core';
+import type { Address, ChainId, EraIndex, Identity, SubIdentity, Validator } from '@shared/core';
 
 export const useValidators = (): IValidatorsService => {
   /**

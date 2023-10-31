@@ -1,23 +1,23 @@
 import { useUnit } from 'effector-react';
 
-import { useI18n } from '@renderer/app/providers';
-import { AddressWithExplorers, WalletCardSm, WalletIcon, walletModel } from '@renderer/entities/wallet';
-import { Icon, FootnoteText, DetailRow, CaptionText } from '@renderer/shared/ui';
-import { useToggle } from '@renderer/shared/lib/hooks';
+import { useI18n } from '@app/providers';
+import { AddressWithExplorers, WalletCardSm, WalletIcon, walletModel } from '@entities/wallet';
+import { Icon, FootnoteText, DetailRow, CaptionText } from '@shared/ui';
+import { useToggle } from '@shared/lib/hooks';
 import {
   MultisigTransaction,
   Transaction,
   isXcmTransaction,
   isTransferTransaction,
-} from '@renderer/entities/transaction';
-import { cnTw, getAssetById } from '@renderer/shared/lib/utils';
-import { chainsService, ExtendedChain, isLightClient } from '@renderer/entities/network';
+} from '@entities/transaction';
+import { cnTw, getAssetById } from '@shared/lib/utils';
+import { chainsService, ExtendedChain, isLightClient } from '@entities/network';
 import { AddressStyle, DescriptionBlockStyle, InteractionStyle } from '../common/constants';
-import { ChainTitle } from '@renderer/entities/chain';
-import { Account } from '@renderer/shared/core';
-import { getTransactionFromMultisigTx } from '@renderer/entities/multisig';
-import type { Address, MultisigAccount, Validator } from '@renderer/shared/core';
-import { useValidatorsMap, ValidatorsModal } from '@renderer/entities/staking';
+import { ChainTitle } from '@entities/chain';
+import { Account } from '@shared/core';
+import { getTransactionFromMultisigTx } from '@entities/multisig';
+import type { Address, MultisigAccount, Validator } from '@shared/core';
+import { useValidatorsMap, ValidatorsModal } from '@entities/staking';
 
 type Props = {
   tx: MultisigTransaction;

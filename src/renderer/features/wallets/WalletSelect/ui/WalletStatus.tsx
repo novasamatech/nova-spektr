@@ -1,9 +1,9 @@
 import { useUnit } from 'effector-react';
 
-import { walletModel, walletUtils } from '@renderer/entities/wallet';
-import { walletConnectUtils, walletConnectModel } from '@renderer/entities/walletConnect';
-import { Wallet } from '@renderer/shared/core';
-import { cnTw } from '@renderer/shared/lib/utils';
+import { walletModel, walletUtils } from '@entities/wallet';
+import { walletConnectUtils, walletConnectModel } from '@entities/walletConnect';
+import { Wallet } from '@shared/core';
+import { cnTw } from '@shared/lib/utils';
 
 type Props = {
   wallet: Wallet;

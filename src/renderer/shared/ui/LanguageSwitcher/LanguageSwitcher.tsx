@@ -1,6 +1,6 @@
 import { Listbox } from '@headlessui/react';
 
-import { cnTw } from '@renderer/shared/lib/utils';
+import { cnTw } from '@shared/lib/utils';
 import { LanguageItem, SupportedLocale } from '@renderer/services/translation/common/types';
 import Icon from '../Icon/Icon';
 

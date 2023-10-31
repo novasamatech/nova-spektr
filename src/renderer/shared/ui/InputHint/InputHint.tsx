@@ -1,6 +1,6 @@
-import { cnTw } from '@renderer/shared/lib/utils';
-import { TypographyProps } from '@renderer/shared/ui/Typography/common/types';
-import { HintVariant, HintStyles } from '@renderer/shared/ui/InputHint/contants';
+import { cnTw } from '@shared/lib/utils';
+import { TypographyProps } from '@shared/ui/Typography/common/types';
+import { HintVariant, HintStyles } from '@shared/ui/InputHint/contants';
 import { FootnoteText } from '../Typography';
 
 type Props = {

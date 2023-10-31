@@ -1,5 +1,5 @@
-import type { Wallet } from '@renderer/shared/core';
-import { WalletType } from '@renderer/shared/core';
+import type { Wallet } from '@shared/core';
+import { WalletType } from '@shared/core';
 
 export const walletUtils = {
   isPolkadotVault,

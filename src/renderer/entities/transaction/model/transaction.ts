@@ -7,7 +7,7 @@ import type {
   CallHash,
   PartialBy,
   Signatory,
-} from '@renderer/shared/core';
+} from '@shared/core';
 
 export const enum TransactionType {
   TRANSFER = 'transfer',

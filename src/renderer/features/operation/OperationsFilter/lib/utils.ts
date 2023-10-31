@@ -4,7 +4,7 @@ import {
   MultisigTxInitStatus,
   MultisigTxFinalStatus,
   TransactionType,
-} from '@renderer/entities/transaction/model/transaction';
+} from '@entities/transaction/model/transaction';
 import { UNKNOWN_TYPE } from './constants';
 
 export const getStatusOptions = (t: TFunction) => {

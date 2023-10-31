@@ -1,7 +1,7 @@
 import { u8aToHex } from '@polkadot/util';
 import { createKeyMulti } from '@polkadot/util-crypto';
 
-import { AccountType, ChainId } from '@renderer/shared/core';
+import { AccountType, ChainId } from '@shared/core';
 import type {
   AccountId,
   Threshold,
@@ -11,7 +11,7 @@ import type {
   ChainAccount,
   WalletConnectAccount,
   Wallet,
-} from '@renderer/shared/core';
+} from '@shared/core';
 
 export const accountUtils = {
   isBaseAccount,

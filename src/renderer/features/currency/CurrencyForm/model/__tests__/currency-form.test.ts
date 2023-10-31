@@ -1,9 +1,9 @@
 import { fork, allSettled } from 'effector';
 
 import { currencyFormModel } from '../currency-form';
-import { currencyModel, priceProviderModel } from '@renderer/entities/price';
+import { currencyModel, priceProviderModel } from '@entities/price';
 
-jest.mock('@renderer/entities/walletConnect', () => ({
+jest.mock('@entities/walletConnect', () => ({
   walletConnectModel: { events: {} },
   DEFAULT_POLKADOT_METHODS: {},
   getWalletConnectChains: jest.fn(),

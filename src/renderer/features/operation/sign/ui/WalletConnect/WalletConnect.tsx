@@ -2,18 +2,18 @@ import { useEffect, useState } from 'react';
 import { UnsignedTransaction } from '@substrate/txwrapper-polkadot';
 import { useUnit } from 'effector-react';
 
-import { SigningProps } from '@renderer/features/operation';
-import { ValidationErrors } from '@renderer/shared/lib/utils';
-import { useTransaction } from '@renderer/entities/transaction';
-import { useI18n } from '@renderer/app/providers';
-import { Button, ConfirmModal, Countdown, FootnoteText, SmallTitleText, StatusModal } from '@renderer/shared/ui';
-import { walletConnectModel, DEFAULT_POLKADOT_METHODS, walletConnectUtils } from '@renderer/entities/walletConnect';
-import { chainsService } from '@renderer/entities/network';
-import { useCountdown, useToggle } from '@renderer/shared/lib/hooks';
-import wallet_connect_confirm from '@video/wallet_connect_confirm.mp4';
-import wallet_connect_confirm_webm from '@video/wallet_connect_confirm.webm';
-import { HexString } from '@renderer/shared/core';
-import { Animation } from '@renderer/shared/ui/Animation/Animation';
+import { SigningProps } from '@features/operation';
+import { ValidationErrors } from '@shared/lib/utils';
+import { useTransaction } from '@entities/transaction';
+import { useI18n } from '@app/providers';
+import { Button, ConfirmModal, Countdown, FootnoteText, SmallTitleText, StatusModal } from '@shared/ui';
+import { walletConnectModel, DEFAULT_POLKADOT_METHODS, walletConnectUtils } from '@entities/walletConnect';
+import { chainsService } from '@entities/network';
+import { useCountdown, useToggle } from '@shared/lib/hooks';
+import wallet_connect_confirm from '@shared/assets/video/wallet_connect_confirm.mp4';
+import wallet_connect_confirm_webm from '@shared/assets/video/wallet_connect_confirm.webm';
+import { HexString } from '@shared/core';
+import { Animation } from '@shared/ui/Animation/Animation';
 
 export const WalletConnect = ({
   api,

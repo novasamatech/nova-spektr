@@ -1,12 +1,12 @@
 import { useEffect, useState } from 'react';
 import { useUnit } from 'effector-react';
 
-import { DropdownOption, DropdownResult } from '@renderer/shared/ui/Dropdowns/common/types';
-import { InputHint, Select } from '@renderer/shared/ui';
-import { useI18n } from '@renderer/app/providers';
-import { OperationErrorType } from '@renderer/features/operation/init/model';
-import type { Account, ChainId, MultisigAccount, Wallet } from '@renderer/shared/core';
-import { accountUtils, walletModel, walletUtils } from '@renderer/entities/wallet';
+import { DropdownOption, DropdownResult } from '@shared/ui/Dropdowns/common/types';
+import { InputHint, Select } from '@shared/ui';
+import { useI18n } from '@app/providers';
+import { OperationErrorType } from '@features/operation/init/model';
+import type { Account, ChainId, MultisigAccount, Wallet } from '@shared/core';
+import { accountUtils, walletModel, walletUtils } from '@entities/wallet';
 
 type Props = {
   chainId: ChainId;

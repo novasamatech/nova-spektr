@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react';
 
-import { InputHint, Select } from '@renderer/shared/ui';
-import { useI18n } from '@renderer/app/providers';
-import { DropdownOption, DropdownResult } from '@renderer/shared/ui/Dropdowns/common/types';
-import { OperationErrorType } from '@renderer/features/operation/init/model';
-import type { Account, MultisigAccount, ChainId } from '@renderer/shared/core';
-import { accountUtils } from '@renderer/entities/wallet';
+import { InputHint, Select } from '@shared/ui';
+import { useI18n } from '@app/providers';
+import { DropdownOption, DropdownResult } from '@shared/ui/Dropdowns/common/types';
+import { OperationErrorType } from '@features/operation/init/model';
+import type { Account, MultisigAccount, ChainId } from '@shared/core';
+import { accountUtils } from '@entities/wallet';
 
 type Props = {
   accounts: Account[];

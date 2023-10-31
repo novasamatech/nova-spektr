@@ -2,15 +2,15 @@ import { ApiPromise } from '@polkadot/api';
 import { Trans } from 'react-i18next';
 import { useUnit } from 'effector-react';
 
-import { useI18n } from '@renderer/app/providers';
-import { FootnoteText, Plate, Checkbox, InfoPopover, Tooltip, Icon, Shimmering, HelpText } from '@renderer/shared/ui';
+import { useI18n } from '@app/providers';
+import { FootnoteText, Plate, Checkbox, InfoPopover, Tooltip, Icon, Shimmering, HelpText } from '@shared/ui';
 import { ExplorerLink } from '@renderer/components/common';
 import { TimeToEra } from '../TimeToEra/TimeToEra';
-import { redeemableAmount } from '@renderer/shared/lib/utils';
-import { AccountAddress, walletModel, walletUtils } from '@renderer/entities/wallet';
-import { AssetBalance } from '@renderer/entities/asset';
-import type { Asset, Explorer, Address, EraIndex, Unlocking } from '@renderer/shared/core';
-import { AssetFiatBalance } from '@renderer/entities/price/ui/AssetFiatBalance';
+import { redeemableAmount } from '@shared/lib/utils';
+import { AccountAddress, walletModel, walletUtils } from '@entities/wallet';
+import { AssetBalance } from '@entities/asset';
+import type { Asset, Explorer, Address, EraIndex, Unlocking } from '@shared/core';
+import { AssetFiatBalance } from '@entities/price/ui/AssetFiatBalance';
 
 const getNextUnstakingEra = (unlocking: Unlocking[] = [], era?: number): EraIndex | undefined => {
   if (!era) return undefined;

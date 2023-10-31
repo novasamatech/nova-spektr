@@ -2,20 +2,20 @@ import { Outlet } from 'react-router-dom';
 import { useUnit } from 'effector-react';
 
 import { Header } from '@renderer/components/common';
-import { useI18n } from '@renderer/app/providers';
+import { useI18n } from '@app/providers';
 import {
   ContactFilter,
   CreateContactNavigation,
   EditContactNavigation,
   filterModel,
-} from '@renderer/features/contacts';
+} from '@features/contacts';
 import {
   ContactList,
   contactModel,
   ContactRow,
   EmptyContactList,
   EmptyFilteredContacts,
-} from '@renderer/entities/contact';
+} from '@entities/contact';
 
 export const Contacts = () => {
   const { t } = useI18n();

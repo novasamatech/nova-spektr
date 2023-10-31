@@ -1,8 +1,8 @@
-import { Accordion, CaptionText, BodyText, Icon, IconButton } from '@renderer/shared/ui';
-import { useI18n } from '@renderer/app/providers';
-import { Wallet, WalletFamily, WalletType } from '@renderer/shared/core';
-import { WalletIcon, walletModel } from '@renderer/entities/wallet';
-import { cnTw } from '@renderer/shared/lib/utils';
+import { Accordion, CaptionText, BodyText, Icon, IconButton } from '@shared/ui';
+import { useI18n } from '@app/providers';
+import { Wallet, WalletFamily, WalletType } from '@shared/core';
+import { WalletIcon, walletModel } from '@entities/wallet';
+import { cnTw } from '@shared/lib/utils';
 import { WalletFiatBalance } from './WalletFiatBalance';
 import { walletSelectModel } from '../model/wallet-select-model';
 import { WalletStatus } from './WalletStatus';

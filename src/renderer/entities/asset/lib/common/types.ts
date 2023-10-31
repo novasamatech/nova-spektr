@@ -1,6 +1,6 @@
-import { BalanceDS } from '@renderer/shared/api/storage/common/types';
-import { ExtendedChain } from '@renderer/entities/network/lib/common/types';
-import type { ChainId, AccountId, BalanceKey } from '@renderer/shared/core';
+import { BalanceDS } from '@shared/api/storage/common/types';
+import { ExtendedChain } from '@entities/network/lib/common/types';
+import type { ChainId, AccountId, BalanceKey } from '@shared/core';
 
 export interface IBalanceService {
   getBalance: (accountId: AccountId, chainId: ChainId, assetId: string) => Promise<BalanceDS | undefined>;

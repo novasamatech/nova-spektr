@@ -2,18 +2,18 @@ import { render, screen } from '@testing-library/react';
 
 import { Countdown } from './Countdown';
 
-jest.mock('@renderer/entities/walletConnect', () => ({
+jest.mock('@entities/walletConnect', () => ({
   walletConnectModel: { events: {} },
   DEFAULT_POLKADOT_METHODS: {},
   walletConnectUtils: {
     getWalletConnectChains: jest.fn(),
   },
 }));
-jest.mock('@renderer/pages/Onboarding/WalletConnect/model/wc-onboarding-model', () => ({
+jest.mock('@pages/Onboarding/WalletConnect/model/wc-onboarding-model', () => ({
   wcOnboardingModel: { events: {} },
 }));
 
-jest.mock('@renderer/app/providers', () => ({
+jest.mock('@app/providers', () => ({
   useI18n: jest.fn().mockReturnValue({
     t: (key: string) => key,
   }),

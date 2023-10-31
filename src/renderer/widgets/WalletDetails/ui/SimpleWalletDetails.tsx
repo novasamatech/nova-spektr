@@ -1,11 +1,11 @@
 import { useMemo } from 'react';
 
-import { BaseModal, BodyText } from '@renderer/shared/ui';
-import { useModalClose } from '@renderer/shared/lib/hooks';
-import { AccountsList, WalletIcon } from '@renderer/entities/wallet';
-import { chainsService } from '@renderer/entities/network';
-import { useI18n } from '@renderer/app/providers';
-import type { Wallet, BaseAccount } from '@renderer/shared/core';
+import { BaseModal, BodyText } from '@shared/ui';
+import { useModalClose } from '@shared/lib/hooks';
+import { AccountsList, WalletIcon } from '@entities/wallet';
+import { chainsService } from '@entities/network';
+import { useI18n } from '@app/providers';
+import type { Wallet, BaseAccount } from '@shared/core';
 
 type Props = {
   wallet: Wallet;

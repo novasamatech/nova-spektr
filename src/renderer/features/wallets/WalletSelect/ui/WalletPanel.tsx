@@ -3,11 +3,11 @@ import { useUnit } from 'effector-react';
 import { ReactNode, useEffect, useState } from 'react';
 
 import { walletSelectModel } from '../model/wallet-select-model';
-import { SmallTitleText, SearchInput } from '@renderer/shared/ui';
-import { WalletFamily } from '@renderer/shared/core';
-import { useI18n } from '@renderer/app/providers';
+import { SmallTitleText, SearchInput } from '@shared/ui';
+import { WalletFamily } from '@shared/core';
+import { useI18n } from '@app/providers';
 import { WalletGroup } from './WalletGroup';
-import { walletModel } from '@renderer/entities/wallet';
+import { walletModel } from '@entities/wallet';
 
 type Props = {
   action?: ReactNode;

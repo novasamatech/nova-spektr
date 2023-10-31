@@ -3,12 +3,12 @@ import { BrowserCodeReader, BrowserQRCodeReader, IScannerControls } from '@zxing
 import { useEffect, useRef } from 'react';
 import init from 'raptorq';
 
-import { cnTw } from '@renderer/shared/lib/utils';
-import { useI18n } from '@renderer/app/providers';
+import { cnTw } from '@shared/lib/utils';
+import { useI18n } from '@app/providers';
 import { ErrorFields } from '../common/constants';
 import { QR_READER_ERRORS } from '../common/errors';
 import { DecodeCallback, ErrorObject, QrError, VideoInput } from '../common/types';
-import type { HexString } from '@renderer/shared/core';
+import type { HexString } from '@shared/core';
 
 type Props = {
   size?: number;

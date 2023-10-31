@@ -3,13 +3,13 @@ import { Popover, Transition } from '@headlessui/react';
 import { ReactNode, useMemo } from 'react';
 import keyBy from 'lodash/keyBy';
 
-import { walletModel } from '@renderer/entities/wallet';
-import { Shimmering } from '@renderer/shared/ui';
+import { walletModel } from '@entities/wallet';
+import { Shimmering } from '@shared/ui';
 import { WalletPanel } from './WalletPanel';
 import { WalletButton } from './WalletButton';
-import { useBalance } from '@renderer/entities/asset';
-import { chainsService } from '@renderer/entities/network';
-import { walletSelectModel } from '@renderer/features/wallets/WalletSelect/model/wallet-select-model';
+import { useBalance } from '@entities/asset';
+import { chainsService } from '@entities/network';
+import { walletSelectModel } from '@features/wallets/WalletSelect/model/wallet-select-model';
 
 type Props = {
   action?: ReactNode;

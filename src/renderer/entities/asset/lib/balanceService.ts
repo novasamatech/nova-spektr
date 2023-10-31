@@ -6,16 +6,16 @@ import { Codec } from '@polkadot/types/types';
 import { Option } from '@polkadot/types';
 import isEqual from 'lodash/isEqual';
 
-import { ExtendedChain } from '@renderer/entities/network/lib/common/types';
-import { isLightClient } from '@renderer/entities/network/lib/common/utils';
+import { ExtendedChain } from '@entities/network/lib/common/types';
+import { isLightClient } from '@entities/network/lib/common/utils';
 import { validate } from '../../../services/dataVerification/dataVerification';
 import { storage, BalanceDS } from '../../../shared/api/storage';
 import { IBalanceService } from './common/types';
 import { VERIFY_TIMEOUT } from './common/constants';
 import { useSubscription } from '@renderer/services/subscription/subscriptionService';
-import { toAddress } from '@renderer/shared/lib/utils';
-import { AssetType } from '@renderer/shared/core';
-import type { ChainId, AccountId, Asset, OrmlExtras, StatemineExtras } from '@renderer/shared/core';
+import { toAddress } from '@shared/lib/utils';
+import { AssetType } from '@shared/core';
+import type { ChainId, AccountId, Asset, OrmlExtras, StatemineExtras } from '@shared/core';
 
 export const useBalance = (): IBalanceService => {
   const balanceStorage = storage.connectTo('balances');

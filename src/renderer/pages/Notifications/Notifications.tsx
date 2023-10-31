@@ -1,11 +1,11 @@
 import { groupBy } from 'lodash';
 import { format } from 'date-fns';
 
-import { useI18n } from '@renderer/app/providers';
+import { useI18n } from '@app/providers';
 import EmptyNotifications from './components/EmptyNotifications';
 import { sortByDate } from './common/utils';
-import { FootnoteText } from '@renderer/shared/ui';
-import { useNotification, NotificationRow } from '@renderer/entities/notification';
+import { FootnoteText } from '@shared/ui';
+import { useNotification, NotificationRow } from '@entities/notification';
 import { Header } from '@renderer/components/common';
 
 export const Notifications = () => {

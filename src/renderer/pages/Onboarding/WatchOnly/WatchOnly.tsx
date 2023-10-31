@@ -11,15 +11,15 @@ import {
   InputHint,
   HeaderTitleText,
   SmallTitleText,
-} from '@renderer/shared/ui';
-import { useI18n } from '@renderer/app/providers';
-import { chainsService } from '@renderer/entities/network';
-import { toAccountId, validateAddress, DEFAULT_TRANSITION } from '@renderer/shared/lib/utils';
+} from '@shared/ui';
+import { useI18n } from '@app/providers';
+import { chainsService } from '@entities/network';
+import { toAccountId, validateAddress, DEFAULT_TRANSITION } from '@shared/lib/utils';
 import EmptyState from './EmptyState';
-import { AccountsList, walletModel } from '@renderer/entities/wallet';
-import { useToggle } from '@renderer/shared/lib/hooks';
-import type { AccountId, Chain } from '@renderer/shared/core';
-import { ErrorType, CryptoType, ChainType, WalletType, SigningType, AccountType } from '@renderer/shared/core';
+import { AccountsList, walletModel } from '@entities/wallet';
+import { useToggle } from '@shared/lib/hooks';
+import type { AccountId, Chain } from '@shared/core';
+import { ErrorType, CryptoType, ChainType, WalletType, SigningType, AccountType } from '@shared/core';
 
 type WalletForm = {
   walletName: string;

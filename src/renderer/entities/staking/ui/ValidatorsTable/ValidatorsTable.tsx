@@ -1,9 +1,9 @@
-import { Asset, Explorer, Validator } from '@renderer/shared/core';
-import { cnTw, getComposedIdentity } from '@renderer/shared/lib/utils';
-import { BodyText, FootnoteText, HelpText, Icon, Identicon, InfoPopover } from '@renderer/shared/ui';
-import { AssetBalance } from '@renderer/entities/asset';
-import { AssetFiatBalance } from '@renderer/entities/price/ui/AssetFiatBalance';
-import { useI18n } from '@renderer/app/providers';
+import { Asset, Explorer, Validator } from '@shared/core';
+import { cnTw, getComposedIdentity } from '@shared/lib/utils';
+import { BodyText, FootnoteText, HelpText, Icon, Identicon, InfoPopover } from '@shared/ui';
+import { AssetBalance } from '@entities/asset';
+import { AssetFiatBalance } from '@entities/price/ui/AssetFiatBalance';
+import { useI18n } from '@app/providers';
 import { getExplorers } from '../../../../pages/Staking/Operations/common/utils';
 
 const TABLE_GRID_CELLS = 'grid-cols-[1fr,128px,128px,40px]';

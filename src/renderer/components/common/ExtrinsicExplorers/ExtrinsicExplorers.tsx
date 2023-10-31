@@ -1,6 +1,6 @@
-import { InfoPopover, Icon } from '@renderer/shared/ui';
+import { InfoPopover, Icon } from '@shared/ui';
 import useExtrinsicInfo from './useExtrinsicInfo';
-import type { HexString, Explorer } from '@renderer/shared/core';
+import type { HexString, Explorer } from '@shared/core';
 
 type Props = {
   hash: HexString;

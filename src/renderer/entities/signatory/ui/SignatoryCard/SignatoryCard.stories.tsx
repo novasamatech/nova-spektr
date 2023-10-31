@@ -1,7 +1,7 @@
 import { ComponentStory, ComponentMeta } from '@storybook/react';
 
 import { SignatoryCard } from './SignatoryCard';
-import { TEST_ADDRESS } from '@renderer/shared/lib/utils';
+import { TEST_ADDRESS } from '@shared/lib/utils';
 
 export default {
   title: 'Redesign/Signatory',

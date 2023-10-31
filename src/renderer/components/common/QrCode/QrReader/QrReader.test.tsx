@@ -21,7 +21,7 @@ jest.mock('@zxing/browser', () => ({
   })),
 }));
 
-jest.mock('@renderer/app/providers', () => ({
+jest.mock('@app/providers', () => ({
   useI18n: jest.fn().mockReturnValue({
     t: (key: string) => key,
   }),

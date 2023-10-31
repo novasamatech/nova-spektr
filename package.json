@@ -16,7 +16,7 @@
     "start:renderer:dev": "cross-env NODE_ENV=development CHAINS_FILE=chains-dev pnpm webpack:renderer:dev",
     "start:main": "cross-env NODE_ENV=staging pnpm r webpack:main:stage start:electron",
     "start:main:dev": "cross-env NODE_ENV=development pnpm r webpack:main:dev start:electron",
-    "watch": "nodemon --watch src/main --watch src/renderer/bridge --watch src/shared --ignore src/main/resources --ext \"*\" --exec",
+    "watch": "nodemon --watch src/main --watch src/renderer/bridge --watch src/main/shared --ignore src/main/resources --ext \\\"*\\\" --exec",
     "webpack:renderer:dev": "webpack serve --config webpack/webpack.renderer.dev.ts",
     "webpack:renderer:stage": "webpack serve --config webpack/webpack.renderer.stage.ts",
     "webpack:renderer:prod": "webpack --config webpack/webpack.renderer.prod.ts",
@@ -46,7 +46,7 @@
 
     "lint": "eslint . --ext=js,ts,tsx,json",
     "lint:fix": "pnpm lint --fix",
-    "lint:i18n-locale": "cross-env I18N=true eslint ./src/shared/locale/ --ext=json --plugin i18n-json",
+    "lint:i18n-locale": "cross-env I18N=true eslint src/renderer/services/translation/locale/ --ext=json --plugin i18n-json",
     "lint:i18n-fix": "cross-env I18N=true pnpm lint:i18n-locale --fix",
     "lint:i18n-tsx": "cross-env I18N=true eslint . --ext=tsx --ignore-pattern=**/*.test.* --ignore-pattern=**/*.stories.* --plugin i18next",
 

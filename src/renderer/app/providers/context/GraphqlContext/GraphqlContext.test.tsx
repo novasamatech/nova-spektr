@@ -2,9 +2,9 @@ import { act, render, renderHook, screen } from '@testing-library/react';
 
 import { GraphqlProvider, useGraphql } from './GraphqlContext';
 
-jest.mock('@renderer/shared/lib/hooks');
+jest.mock('@shared/lib/hooks');
 
-jest.mock('@renderer/entities/network', () => ({
+jest.mock('@entities/network', () => ({
   chainsService: {
     getStakingChainsData: jest
       .fn()
@@ -14,7 +14,7 @@ jest.mock('@renderer/entities/network', () => ({
   },
 }));
 
-jest.mock('@renderer/entities/settings', () => ({
+jest.mock('@entities/settings', () => ({
   useSettingsStorage: jest.fn().mockReturnValue({
     getStakingNetwork: jest.fn().mockReturnValue('0x123'),
   }),

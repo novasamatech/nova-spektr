@@ -4,9 +4,9 @@ import { SubmittableExtrinsic } from '@polkadot/api/types';
 import { HexString } from '@polkadot/util/types';
 import { Type } from '@polkadot/types';
 
-import { parseXcmPalletExtrinsic, parseXTokensExtrinsic, decodeXcm } from '@renderer/shared/api/xcm';
-import { DecodedTransaction, TransactionType } from '@renderer/entities/transaction/model/transaction';
-import type { Address, CallData, ChainId } from '@renderer/shared/core';
+import { parseXcmPalletExtrinsic, parseXTokensExtrinsic, decodeXcm } from '@shared/api/xcm';
+import { DecodedTransaction, TransactionType } from '@entities/transaction/model/transaction';
+import type { Address, CallData, ChainId } from '@shared/core';
 import { ICallDataDecoder } from './common/types';
 import {
   BOND_WITH_CONTROLLER_ARGS_AMOUNT,

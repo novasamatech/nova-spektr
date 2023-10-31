@@ -3,8 +3,8 @@ import { FormEvent, useEffect } from 'react';
 import { useForm } from 'effector-forms';
 
 import { createFormModel, Callbacks } from '../model/contact-form';
-import { Button, Icon, Identicon, Input, InputHint } from '@renderer/shared/ui';
-import { useI18n } from '@renderer/app/providers';
+import { Button, Icon, Identicon, Input, InputHint } from '@shared/ui';
+import { useI18n } from '@app/providers';
 
 type Props = Callbacks;
 export const CreateContactForm = ({ onSubmit }: Props) => {

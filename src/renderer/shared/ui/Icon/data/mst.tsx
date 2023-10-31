@@ -1,6 +1,6 @@
-import TransferImg, { ReactComponent as TransferSvg } from '@images/mst/transfer.svg';
-import StakingImg, { ReactComponent as StakingSvg } from '@images/mst/staking.svg';
-import UnknownImg, { ReactComponent as UnknownSvg } from '@images/mst/unknown.svg';
+import TransferImg, { ReactComponent as TransferSvg } from '@shared/assets/images/mst/transfer.svg';
+import StakingImg, { ReactComponent as StakingSvg } from '@shared/assets/images/mst/staking.svg';
+import UnknownImg, { ReactComponent as UnknownSvg } from '@shared/assets/images/mst/unknown.svg';
 
 const MstImages = {
   transferMst: { svg: TransferSvg, img: TransferImg },

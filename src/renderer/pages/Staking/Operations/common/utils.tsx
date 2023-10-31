@@ -2,9 +2,9 @@ import { BN } from '@polkadot/util';
 import cn from 'classnames';
 import { ReactNode } from 'react';
 
-import { AccountAddress, WalletIcon } from '@renderer/entities/wallet';
-import { DropdownOption } from '@renderer/shared/ui/Dropdowns/common/types';
-import { AssetBalance } from '@renderer/entities/asset';
+import { AccountAddress, WalletIcon } from '@entities/wallet';
+import { DropdownOption } from '@shared/ui/Dropdowns/common/types';
+import { AssetBalance } from '@entities/asset';
 import type {
   Address,
   Stake,
@@ -14,7 +14,7 @@ import type {
   Balance as AccountBalance,
   Wallet,
   WalletType,
-} from '@renderer/shared/core';
+} from '@shared/core';
 import {
   toAddress,
   stakeableAmount,
@@ -22,11 +22,11 @@ import {
   transferableAmount,
   unlockingAmount,
   redeemableAmount,
-} from '@renderer/shared/lib/utils';
-import { FootnoteText } from '@renderer/shared/ui';
-import { Explorer } from '@renderer/shared/core';
+} from '@shared/lib/utils';
+import { FootnoteText } from '@shared/ui';
+import { Explorer } from '@shared/core';
 import { ExplorerLink } from '@renderer/components/common';
-import { InfoSection } from '@renderer/shared/ui/Popovers/InfoPopover/InfoPopover';
+import { InfoSection } from '@shared/ui/Popovers/InfoPopover/InfoPopover';
 
 export const validateBalanceForFee = (balance: AccountBalance | string, fee: string): boolean => {
   const transferableBalance = typeof balance === 'string' ? balance : transferableAmount(balance);

@@ -4,12 +4,12 @@ import { Controller, SubmitHandler, useForm } from 'react-hook-form';
 import { u8aToHex } from '@polkadot/util';
 import { keyBy } from 'lodash';
 
-import { chainsService } from '@renderer/entities/network';
-import { useI18n } from '@renderer/app/providers';
-import { ChainTitle } from '@renderer/entities/chain';
+import { chainsService } from '@entities/network';
+import { useI18n } from '@app/providers';
+import { ChainTitle } from '@entities/chain';
 import { AddressInfo, CompactSeedInfo, SeedInfo } from '@renderer/components/common/QrCode/common/types';
-import { toAccountId, toAddress, cnTw, RootExplorers } from '@renderer/shared/lib/utils';
-import { walletModel, AddressWithExplorers } from '@renderer/entities/wallet';
+import { toAccountId, toAddress, cnTw, RootExplorers } from '@shared/lib/utils';
+import { walletModel, AddressWithExplorers } from '@entities/wallet';
 import {
   Button,
   Input,
@@ -19,9 +19,9 @@ import {
   IconButton,
   FootnoteText,
   Icon,
-} from '@renderer/shared/ui';
-import type { Chain, ChainId, HexString, ChainAccount, BaseAccount } from '@renderer/shared/core';
-import { CryptoType, ChainType, AccountType, WalletType, SigningType, ErrorType, KeyType } from '@renderer/shared/core';
+} from '@shared/ui';
+import type { Chain, ChainId, HexString, ChainAccount, BaseAccount } from '@shared/core';
+import { CryptoType, ChainType, AccountType, WalletType, SigningType, ErrorType, KeyType } from '@shared/core';
 
 type WalletForm = {
   walletName: string;

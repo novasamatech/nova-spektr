@@ -1,4 +1,4 @@
-src/shared/locale
+src/renderer/services/translation/locale
 node_modules/
 package.json
 coverage/

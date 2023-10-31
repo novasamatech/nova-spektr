@@ -2,12 +2,12 @@ import { ApiPromise } from '@polkadot/api';
 import { useEffect, useState } from 'react';
 import { useUnit } from 'effector-react';
 
-import { useI18n } from '@renderer/app/providers';
-import { useBalance } from '@renderer/entities/asset';
-import { getOperationErrors, Transaction, TransactionType } from '@renderer/entities/transaction';
-import { useValidators } from '@renderer/entities/staking';
-import { toAddress, nonNullable } from '@renderer/shared/lib/utils';
-import { OperationFooter, OperationHeader } from '@renderer/features/operation';
+import { useI18n } from '@app/providers';
+import { useBalance } from '@entities/asset';
+import { getOperationErrors, Transaction, TransactionType } from '@entities/transaction';
+import { useValidators } from '@entities/staking';
+import { toAddress, nonNullable } from '@shared/lib/utils';
+import { OperationFooter, OperationHeader } from '@features/operation';
 import { OperationForm } from '../../components';
 import {
   Balance as AccountBalance,
@@ -17,14 +17,14 @@ import {
   ChainId,
   AccountId,
   Wallet,
-} from '@renderer/shared/core';
+} from '@shared/core';
 import {
   getSignatoryOption,
   getGeneralAccountOption,
   validateBalanceForFee,
   validateBalanceForFeeDeposit,
 } from '../../common/utils';
-import { walletUtils, accountUtils, walletModel } from '@renderer/entities/wallet';
+import { walletUtils, accountUtils, walletModel } from '@entities/wallet';
 
 export type ValidatorsResult = {
   accounts: Account[];

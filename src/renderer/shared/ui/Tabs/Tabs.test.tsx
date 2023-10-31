@@ -4,14 +4,14 @@ import userEvent from '@testing-library/user-event';
 import { Tabs } from './Tabs';
 import { TabItem } from './common/types';
 
-jest.mock('@renderer/entities/walletConnect', () => ({
+jest.mock('@entities/walletConnect', () => ({
   walletConnectModel: { events: {} },
   DEFAULT_POLKADOT_METHODS: {},
   walletConnectUtils: {
     getWalletConnectChains: jest.fn(),
   },
 }));
-jest.mock('@renderer/pages/Onboarding/WalletConnect/model/wc-onboarding-model', () => ({
+jest.mock('@pages/Onboarding/WalletConnect/model/wc-onboarding-model', () => ({
   wcOnboardingModel: { events: {} },
 }));
 

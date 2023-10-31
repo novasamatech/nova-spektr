@@ -2,11 +2,11 @@ import { useUnit } from 'effector-react';
 
 import { SingleSelectMultishardHeader } from './SingleSelectMultishardHeader';
 import { MultiSelectMultishardHeader } from './MultiSelectMultishardHeader';
-import { DropdownOption } from '@renderer/shared/ui/Dropdowns/common/types';
+import { DropdownOption } from '@shared/ui/Dropdowns/common/types';
 import { MultisigOperationHeader } from './MultisigOperationHeader';
-import { OperationError, OperationErrorType } from '@renderer/features/operation/init/model';
-import type { Account, MultisigAccount, ChainId, Wallet } from '@renderer/shared/core';
-import { walletModel, walletUtils } from '@renderer/entities/wallet';
+import { OperationError, OperationErrorType } from '@features/operation/init/model';
+import type { Account, MultisigAccount, ChainId, Wallet } from '@shared/core';
+import { walletModel, walletUtils } from '@entities/wallet';
 
 type Props = {
   accounts: Account[] | [MultisigAccount];

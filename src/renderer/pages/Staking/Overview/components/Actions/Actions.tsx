@@ -1,15 +1,15 @@
 import { useState } from 'react';
 import { Trans } from 'react-i18next';
 
-import { useI18n } from '@renderer/app/providers';
-import { Paths } from '@renderer/shared/routes';
-import type { PathValue } from '@renderer/shared/routes';
-import { SmallTitleText, DropdownButton, Button, BaseModal, Icon } from '@renderer/shared/ui';
-import { toAccountId } from '@renderer/shared/lib/utils';
-import { useToggle } from '@renderer/shared/lib/hooks';
-import { ButtonDropdownOption } from '@renderer/shared/ui/types';
-import { IconNames } from '@renderer/shared/ui/Icon/data';
-import type { Address, Stake } from '@renderer/shared/core';
+import { useI18n } from '@app/providers';
+import { Paths } from '@shared/routes';
+import type { PathValue } from '@shared/routes';
+import { SmallTitleText, DropdownButton, Button, BaseModal, Icon } from '@shared/ui';
+import { toAccountId } from '@shared/lib/utils';
+import { useToggle } from '@shared/lib/hooks';
+import { ButtonDropdownOption } from '@shared/ui/types';
+import { IconNames } from '@shared/ui/Icon/data';
+import type { Address, Stake } from '@shared/core';
 
 const enum AccountTypes {
   STASH = 'stash',

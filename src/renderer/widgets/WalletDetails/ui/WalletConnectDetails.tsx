@@ -2,14 +2,14 @@ import { useEffect, useMemo } from 'react';
 import { useUnit } from 'effector-react';
 import keyBy from 'lodash/keyBy';
 
-import wallet_connect_reconnect_webm from '@video/wallet_connect_reconnect.webm';
-import wallet_connect_reconnect from '@video/wallet_connect_reconnect.mp4';
-import { useModalClose, useToggle } from '@renderer/shared/lib/hooks';
-import { MultiAccountsList, WalletIcon } from '@renderer/entities/wallet';
-import { useI18n } from '@renderer/app/providers';
-import { chainsService } from '@renderer/entities/network';
-import { walletConnectUtils } from '@renderer/entities/walletConnect';
-import type { Wallet, Chain, Account } from '@renderer/shared/core';
+import wallet_connect_reconnect_webm from '@shared/assets/video/wallet_connect_reconnect.webm';
+import wallet_connect_reconnect from '@shared/assets/video/wallet_connect_reconnect.mp4';
+import { useModalClose, useToggle } from '@shared/lib/hooks';
+import { MultiAccountsList, WalletIcon } from '@entities/wallet';
+import { useI18n } from '@app/providers';
+import { chainsService } from '@entities/network';
+import { walletConnectUtils } from '@entities/walletConnect';
+import type { Wallet, Chain, Account } from '@shared/core';
 import { wcDetailsModel } from '../model/wc-details-model';
 import { wcDetailsUtils, walletDetailsUtils } from '../lib/utils';
 import { ForgetStep } from '../lib/constants';
@@ -27,7 +27,7 @@ import {
   StatusLabel,
   SmallTitleText,
   StatusModal,
-} from '@renderer/shared/ui';
+} from '@shared/ui';
 
 type AccountItem = {
   accountId: `0x${string}`;

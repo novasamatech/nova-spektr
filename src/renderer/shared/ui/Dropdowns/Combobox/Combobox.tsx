@@ -1,10 +1,10 @@
 import { Fragment, useState } from 'react';
 import { Transition, Combobox as HeadlessCombobox } from '@headlessui/react';
 
-import { cnTw, includes } from '@renderer/shared/lib/utils';
-import { Props as InputProps } from '@renderer/shared/ui/Inputs/Input/Input';
+import { cnTw, includes } from '@shared/lib/utils';
+import { Props as InputProps } from '@shared/ui/Inputs/Input/Input';
 import { Position, ComboboxOption, Theme } from '../common/types';
-import { FootnoteText, Input } from '@renderer/shared/ui';
+import { FootnoteText, Input } from '@shared/ui';
 import {
   OptionsContainerStyle,
   OptionsContainerStyleTheme,

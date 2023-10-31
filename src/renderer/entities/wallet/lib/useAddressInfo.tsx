@@ -1,9 +1,9 @@
 import { useUnit } from 'effector-react';
 
-import { InfoSection } from '@renderer/shared/ui/Popovers/InfoPopover/InfoPopover';
-import type { Address, Explorer } from '@renderer/shared/core';
-import { useMatrix } from '@renderer/app/providers';
-import { toAccountId } from '@renderer/shared/lib/utils';
+import { InfoSection } from '@shared/ui/Popovers/InfoPopover/InfoPopover';
+import type { Address, Explorer } from '@shared/core';
+import { useMatrix } from '@app/providers';
+import { toAccountId } from '@shared/lib/utils';
 import { ExplorerLink } from '@renderer/components/common';
 import { contactModel } from '../../contact/model/contact-model';
 import { walletModel } from '../model/wallet-model';

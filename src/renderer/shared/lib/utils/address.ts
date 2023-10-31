@@ -1,14 +1,14 @@
 import { isHex, isU8a, u8aToHex, u8aToU8a } from '@polkadot/util';
 import { base58Decode, checkAddressChecksum, decodeAddress, encodeAddress } from '@polkadot/util-crypto';
 
-import { AccountId, Address } from '@renderer/shared/core';
+import { AccountId, Address } from '@shared/core';
 import {
   ADDRESS_ALLOWED_ENCODED_LENGTHS,
   PUBLIC_KEY_LENGTH,
   PUBLIC_KEY_LENGTH_BYTES,
   SS58_DEFAULT_PREFIX,
 } from './constants';
-import { truncate } from '@renderer/shared/lib/utils';
+import { truncate } from '@shared/lib/utils';
 
 /**
  * Format address or accountId with prefix and chunk size

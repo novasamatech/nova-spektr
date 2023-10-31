@@ -3,29 +3,29 @@ import { ApiPromise } from '@polkadot/api';
 import { PropsWithChildren, useState, useEffect } from 'react';
 import { useUnit } from 'effector-react';
 
-import { Icon, Button, FootnoteText, CaptionText, InputHint } from '@renderer/shared/ui';
-import { useI18n, useNetworkContext } from '@renderer/app/providers';
-import { useToggle } from '@renderer/shared/lib/hooks';
-import { Validator } from '@renderer/shared/core/types/validator';
-import { AddressWithExplorers, accountUtils, walletModel } from '@renderer/entities/wallet';
-import { AssetBalance } from '@renderer/entities/asset';
+import { Icon, Button, FootnoteText, CaptionText, InputHint } from '@shared/ui';
+import { useI18n, useNetworkContext } from '@app/providers';
+import { useToggle } from '@shared/lib/hooks';
+import { Validator } from '@shared/core/types/validator';
+import { AddressWithExplorers, accountUtils, walletModel } from '@entities/wallet';
+import { AssetBalance } from '@entities/asset';
 import {
   MultisigTxInitStatus,
   DepositWithLabel,
   Fee,
   useTransaction,
   Transaction,
-} from '@renderer/entities/transaction';
+} from '@entities/transaction';
 import AccountsModal from '../Modals/AccountsModal/AccountsModal';
 import { DestinationType } from '../../common/types';
-import { cnTw } from '@renderer/shared/lib/utils';
-import { useMultisigTx } from '@renderer/entities/multisig';
-import { RewardsDestination, WalletType } from '@renderer/shared/core';
-import type { Account, Asset, Explorer } from '@renderer/shared/core';
-import { AssetFiatBalance } from '@renderer/entities/price/ui/AssetFiatBalance';
-import { useValidatorsMap, ValidatorsModal } from '@renderer/entities/staking';
-import { isLightClient } from '@renderer/entities/network';
-import { SignButton } from '@renderer/entities/operation/ui/SignButton';
+import { cnTw } from '@shared/lib/utils';
+import { useMultisigTx } from '@entities/multisig';
+import { RewardsDestination, WalletType } from '@shared/core';
+import type { Account, Asset, Explorer } from '@shared/core';
+import { AssetFiatBalance } from '@entities/price/ui/AssetFiatBalance';
+import { useValidatorsMap, ValidatorsModal } from '@entities/staking';
+import { isLightClient } from '@entities/network';
+import { SignButton } from '@entities/operation/ui/SignButton';
 
 const ActionStyle = 'group hover:bg-action-background-hover px-2 py-1 rounded';
 

@@ -4,11 +4,11 @@ import { UnsignedTransaction } from '@substrate/txwrapper-polkadot';
 import { useUnit } from 'effector-react';
 
 import { QrTxGenerator, QrGeneratorContainer } from '@renderer/components/common';
-import { useI18n } from '@renderer/app/providers';
-import { Transaction, useTransaction } from '@renderer/entities/transaction';
-import { WalletCardSm, walletModel, walletUtils } from '@renderer/entities/wallet';
-import { Button, FootnoteText } from '@renderer/shared/ui';
-import type { ChainId, Account, Explorer } from '@renderer/shared/core';
+import { useI18n } from '@app/providers';
+import { Transaction, useTransaction } from '@entities/transaction';
+import { WalletCardSm, walletModel, walletUtils } from '@entities/wallet';
+import { Button, FootnoteText } from '@shared/ui';
+import type { ChainId, Account, Explorer } from '@shared/core';
 
 type Props = {
   api: ApiPromise;

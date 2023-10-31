@@ -1,7 +1,7 @@
 import { chainsService } from '../chainsService';
-import type { HexString } from '@renderer/shared/core';
+import type { HexString } from '@shared/core';
 
-jest.mock('@renderer/entities/walletConnect', () => ({
+jest.mock('@entities/walletConnect', () => ({
   walletConnectModel: { events: {} },
   DEFAULT_POLKADOT_METHODS: {},
   getWalletConnectChains: jest.fn(),

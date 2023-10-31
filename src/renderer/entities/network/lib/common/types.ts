@@ -2,8 +2,8 @@ import { ApiPromise } from '@polkadot/api';
 import { ProviderInterface } from '@polkadot/rpc-provider/types';
 import { UnsubscribePromise } from '@polkadot/api/types';
 
-import { ConnectionType } from '@renderer/shared/core';
-import type { Connection, Chain, ChainId, RpcNode, HexString } from '@renderer/shared/core';
+import { ConnectionType } from '@shared/core';
+import type { Connection, Chain, ChainId, RpcNode, HexString } from '@shared/core';
 
 // =====================================================
 // ================ Service interface ==================

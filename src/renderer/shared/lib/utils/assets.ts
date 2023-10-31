@@ -1,4 +1,4 @@
-import { Asset, AssetType, OrmlExtras, StatemineExtras, StakingType } from '@renderer/shared/core/types/asset';
+import { Asset, AssetType, OrmlExtras, StatemineExtras, StakingType } from '@shared/core/types/asset';
 
 /**
  * Get ID of the asset by type
