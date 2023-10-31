@@ -60,6 +60,7 @@ jobs:
 
   internal-release-build:
     runs-on: ${{ matrix.os }}
+    needs: internal-version-increment
     timeout-minutes: 60
 
     strategy:
