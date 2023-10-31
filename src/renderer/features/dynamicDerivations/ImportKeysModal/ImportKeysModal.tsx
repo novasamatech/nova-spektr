@@ -5,7 +5,6 @@ import { Alert, BaseModal, Button, InfoLink, InputFile, InputHint } from '@rende
 import { useI18n } from '@renderer/app/providers';
 import { importKeysModel, TypedImportedDerivation } from '@renderer/entities/dynamicDerivations';
 import { AccountId } from '@renderer/shared/core';
-import { EXISTING_DERIVATIONS, ROOT_ACCOUNT_ID } from '@renderer/features/dynamicDerivations/ImportKeysModal/mock-data';
 import { cnTw } from '@renderer/shared/lib/utils';
 
 type Props = {
@@ -15,12 +14,7 @@ type Props = {
   onClose: () => void;
 };
 
-export const ImportKeysModal = ({
-  isOpen,
-  onClose,
-  rootAccountId = ROOT_ACCOUNT_ID,
-  existingKeys = EXISTING_DERIVATIONS,
-}: Props) => {
+export const ImportKeysModal = ({ isOpen, onClose, rootAccountId, existingKeys }: Props) => {
   const { t } = useI18n();
   const validationError = useUnit(importKeysModel.$validationError);
   const successReport = useUnit(importKeysModel.$successReport);
