@@ -4,12 +4,7 @@ import { useI18n } from '@app/providers';
 import { AddressWithExplorers, WalletCardSm, WalletIcon, walletModel } from '@entities/wallet';
 import { Icon, FootnoteText, DetailRow, CaptionText } from '@shared/ui';
 import { useToggle } from '@shared/lib/hooks';
-import {
-  MultisigTransaction,
-  Transaction,
-  isXcmTransaction,
-  isTransferTransaction,
-} from '@entities/transaction';
+import { MultisigTransaction, Transaction, isXcmTransaction, isTransferTransaction } from '@entities/transaction';
 import { cnTw, getAssetById } from '@shared/lib/utils';
 import { chainsService, ExtendedChain, isLightClient } from '@entities/network';
 import { AddressStyle, DescriptionBlockStyle, InteractionStyle } from '../common/constants';

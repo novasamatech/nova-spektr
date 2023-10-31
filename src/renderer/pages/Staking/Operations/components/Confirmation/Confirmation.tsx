@@ -9,13 +9,7 @@ import { useToggle } from '@shared/lib/hooks';
 import { Validator } from '@shared/core/types/validator';
 import { AddressWithExplorers, accountUtils, walletModel } from '@entities/wallet';
 import { AssetBalance } from '@entities/asset';
-import {
-  MultisigTxInitStatus,
-  DepositWithLabel,
-  Fee,
-  useTransaction,
-  Transaction,
-} from '@entities/transaction';
+import { MultisigTxInitStatus, DepositWithLabel, Fee, useTransaction, Transaction } from '@entities/transaction';
 import AccountsModal from '../Modals/AccountsModal/AccountsModal';
 import { DestinationType } from '../../common/types';
 import { cnTw } from '@shared/lib/utils';

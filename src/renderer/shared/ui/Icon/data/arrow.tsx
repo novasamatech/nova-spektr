@@ -5,7 +5,9 @@ import ArrowRightImg, { ReactComponent as ArrowRightSvg } from '@shared/assets/i
 import ArrowLeftCutoutImg, { ReactComponent as ArrowLeftCutoutSvg } from '@shared/assets/images/arrows/left-cutout.svg';
 import SendArrowImg, { ReactComponent as SendArrowSvg } from '@shared/assets/images/arrows/send-arrow.svg';
 import ReceiveArrowImg, { ReactComponent as ReceiveArrowSvg } from '@shared/assets/images/arrows/receive-arrow.svg';
-import CurveArrowImg, { ReactComponent as CurveArrowSvg } from '@shared/assets/images/arrows/arrow-curve-left-right.svg';
+import CurveArrowImg, {
+  ReactComponent as CurveArrowSvg,
+} from '@shared/assets/images/arrows/arrow-curve-left-right.svg';
 import SwapArrowImg, { ReactComponent as SwapArrowSvg } from '@shared/assets/images/arrows/swap-arrow.svg';
 import CrossChainImg, { ReactComponent as CrossChainSvg } from '@shared/assets/images/arrows/cross-chain-arrow.svg';
 

@@ -11,16 +11,7 @@ import {
 } from '@entities/transaction/model/transaction';
 import { formatSectionAndMethod, toAddress } from '@shared/lib/utils';
 import { TransferTypes, XcmTypes } from '@entities/transaction';
-import type {
-  Account,
-  AccountId,
-  ChainId,
-  Contact,
-  Explorer,
-  HexString,
-  Signatory,
-  Wallet,
-} from '@shared/core';
+import type { Account, AccountId, ChainId, Contact, Explorer, HexString, Signatory, Wallet } from '@shared/core';
 
 export const TRANSACTION_UNKNOWN = 'operations.titles.unknown';
 

@@ -2,16 +2,7 @@ import cn from 'classnames';
 import { useEffect, useState } from 'react';
 import { Controller, SubmitHandler, useForm } from 'react-hook-form';
 
-import {
-  Icon,
-  Identicon,
-  BaseModal,
-  Button,
-  Input,
-  InputHint,
-  HeaderTitleText,
-  SmallTitleText,
-} from '@shared/ui';
+import { Icon, Identicon, BaseModal, Button, Input, InputHint, HeaderTitleText, SmallTitleText } from '@shared/ui';
 import { useI18n } from '@app/providers';
 import { chainsService } from '@entities/network';
 import { toAccountId, validateAddress, DEFAULT_TRANSITION } from '@shared/lib/utils';

@@ -2,8 +2,12 @@ import AssetImg, { ReactComponent as AssetSvg } from '@shared/assets/images/navi
 import OperationsImg, { ReactComponent as OperationsSvg } from '@shared/assets/images/navigation/operations-tab.svg';
 import SettingsImg, { ReactComponent as SettingsSvg } from '@shared/assets/images/navigation/settings-tab.svg';
 import StakingImg, { ReactComponent as StakingSvg } from '@shared/assets/images/navigation/staking-tab.svg';
-import AddressBookImg, { ReactComponent as AddressBookSvg } from '@shared/assets/images/navigation/address-book-tab.svg';
-import NotificationImg, { ReactComponent as NotificationSvg } from '@shared/assets/images/navigation/notifications-tab.svg';
+import AddressBookImg, {
+  ReactComponent as AddressBookSvg,
+} from '@shared/assets/images/navigation/address-book-tab.svg';
+import NotificationImg, {
+  ReactComponent as NotificationSvg,
+} from '@shared/assets/images/navigation/notifications-tab.svg';
 import CrowdloansImg, { ReactComponent as CrowdloansSvg } from '@shared/assets/images/navigation/crowdloans.svg';
 import DashboardImg, { ReactComponent as DashboardSvg } from '@shared/assets/images/navigation/dashboard.svg';
 import GovernanceImg, { ReactComponent as GovernanceSvg } from '@shared/assets/images/navigation/governance.svg';

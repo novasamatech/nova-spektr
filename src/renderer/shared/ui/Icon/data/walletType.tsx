@@ -4,10 +4,16 @@ import WatchOnlyOnboardingImg, {
 } from '@shared/assets/images/walletTypes/watchOnlyOnboardiing.svg';
 import MultisigImg, { ReactComponent as MultisigSvg } from '@shared/assets/images/walletTypes/multisig.svg';
 import VaultImg, { ReactComponent as VaultSvg } from '@shared/assets/images/walletTypes/vault.svg';
-import VaultOnboardingImg, { ReactComponent as VaultOnboardingSvg } from '@shared/assets/images/walletTypes/vaultOnboarding.svg';
+import VaultOnboardingImg, {
+  ReactComponent as VaultOnboardingSvg,
+} from '@shared/assets/images/walletTypes/vaultOnboarding.svg';
 import NovaWalletImg, { ReactComponent as NovaWalletSvg } from '@shared/assets/images/walletTypes/novaWallet.svg';
-import LedgerOnboardingImg, { ReactComponent as LedgerOnboardingSvg } from '@shared/assets/images/walletTypes/ledgerOnboarding.svg';
-import WalletConnectImg, { ReactComponent as WalletConnectSvg } from '@shared/assets/images/walletTypes/walletConnect.svg';
+import LedgerOnboardingImg, {
+  ReactComponent as LedgerOnboardingSvg,
+} from '@shared/assets/images/walletTypes/ledgerOnboarding.svg';
+import WalletConnectImg, {
+  ReactComponent as WalletConnectSvg,
+} from '@shared/assets/images/walletTypes/walletConnect.svg';
 import WalletConnectOnboardingImg, {
   ReactComponent as WalletConnectOnboardingSvg,
 } from '@shared/assets/images/walletTypes/walletConnectOnboarding.svg';

@@ -5,15 +5,7 @@ import { useUnit } from 'effector-react';
 import { useI18n } from '@app/providers';
 import { useBalance } from '@entities/asset';
 import { getOperationErrors, Transaction, TransactionType } from '@entities/transaction';
-import type {
-  Asset,
-  Account,
-  Balance as AccountBalance,
-  Address,
-  ChainId,
-  AccountId,
-  Wallet,
-} from '@shared/core';
+import type { Asset, Account, Balance as AccountBalance, Address, ChainId, AccountId, Wallet } from '@shared/core';
 import { toAddress, nonNullable, TEST_ADDRESS } from '@shared/lib/utils';
 import { OperationFooter, OperationHeader } from '@features/operation';
 import { OperationForm } from '../../components';

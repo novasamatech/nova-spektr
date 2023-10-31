@@ -4,15 +4,7 @@ import { accountUtils, walletModel } from '@entities/wallet';
 import { walletSelectModel } from '@features/wallets';
 import { dictionary, nonNullable } from '@shared/lib/utils';
 import type { MultishardMap } from '../lib/types';
-import type {
-  Account,
-  Signatory,
-  Wallet,
-  MultisigAccount,
-  BaseAccount,
-  ChainAccount,
-  ChainId,
-} from '@shared/core';
+import type { Account, Signatory, Wallet, MultisigAccount, BaseAccount, ChainAccount, ChainId } from '@shared/core';
 
 const $accounts = combine(
   {

@@ -10,16 +10,7 @@ import { ChainTitle } from '@entities/chain';
 import { AddressInfo, CompactSeedInfo, SeedInfo } from '@renderer/components/common/QrCode/common/types';
 import { toAccountId, toAddress, cnTw, RootExplorers } from '@shared/lib/utils';
 import { walletModel, AddressWithExplorers } from '@entities/wallet';
-import {
-  Button,
-  Input,
-  InputHint,
-  HeaderTitleText,
-  SmallTitleText,
-  IconButton,
-  FootnoteText,
-  Icon,
-} from '@shared/ui';
+import { Button, Input, InputHint, HeaderTitleText, SmallTitleText, IconButton, FootnoteText, Icon } from '@shared/ui';
 import type { Chain, ChainId, HexString, ChainAccount, BaseAccount } from '@shared/core';
 import { CryptoType, ChainType, AccountType, WalletType, SigningType, ErrorType, KeyType } from '@shared/core';
 

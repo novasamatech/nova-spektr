@@ -144,7 +144,7 @@ export const getUnsignedTransaction: Record<
       options,
     );
   },
-  [TransactionType.XCM_LIMITED_TRANSFER]: (transaction, info, options, api) => {
+  [TransactionType.XCM_LIMITED_TRANSFER]: (transaction, info, options) => {
     return xcmMethods.limitedReserveTransferAssets(
       'xcmPallet',
       {
@@ -158,7 +158,7 @@ export const getUnsignedTransaction: Record<
       options,
     );
   },
-  [TransactionType.XCM_TELEPORT]: (transaction, info, options, api) => {
+  [TransactionType.XCM_TELEPORT]: (transaction, info, options) => {
     return xcmMethods.limitedTeleportAssets(
       'xcmPallet',
       {
@@ -172,7 +172,7 @@ export const getUnsignedTransaction: Record<
       options,
     );
   },
-  [TransactionType.POLKADOT_XCM_LIMITED_TRANSFER]: (transaction, info, options, api) => {
+  [TransactionType.POLKADOT_XCM_LIMITED_TRANSFER]: (transaction, info, options) => {
     return xcmMethods.limitedReserveTransferAssets(
       'polkadotXcm',
       {
@@ -186,7 +186,7 @@ export const getUnsignedTransaction: Record<
       options,
     );
   },
-  [TransactionType.POLKADOT_XCM_TELEPORT]: (transaction, info, options, api) => {
+  [TransactionType.POLKADOT_XCM_TELEPORT]: (transaction, info, options) => {
     return xcmMethods.limitedTeleportAssets(
       'polkadotXcm',
       {
@@ -200,7 +200,7 @@ export const getUnsignedTransaction: Record<
       options,
     );
   },
-  [TransactionType.XTOKENS_TRANSFER_MULTIASSET]: (transaction, info, options, api) => {
+  [TransactionType.XTOKENS_TRANSFER_MULTIASSET]: (transaction, info, options) => {
     return xcmMethods.transferMultiAsset(
       {
         dest: transaction.args.xcmDest,

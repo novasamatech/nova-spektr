@@ -5,29 +5,43 @@ import QrSimpleImg, { ReactComponent as QrSimpleSvg } from '@shared/assets/image
 import QrCutoutImg, { ReactComponent as QrCutoutSvg } from '@shared/assets/images/functionals/qr-cutout.svg';
 import CloseCutoutImg, { ReactComponent as CloseCutoutSvg } from '@shared/assets/images/functionals/close-cutout.svg';
 import CloseImg, { ReactComponent as CloseSvg } from '@shared/assets/images/functionals/close.svg';
-import CheckCutoutImg, { ReactComponent as CheckCutoutSvg } from '@shared/assets/images/functionals/checkmark-cutout.svg';
+import CheckCutoutImg, {
+  ReactComponent as CheckCutoutSvg,
+} from '@shared/assets/images/functionals/checkmark-cutout.svg';
 import CheckImg, { ReactComponent as CheckSvg } from '@shared/assets/images/functionals/checkmark.svg';
 import CheckLineImg, { ReactComponent as CheckLineSvg } from '@shared/assets/images/functionals/checkmark-line.svg';
 import WarnCutoutImg, { ReactComponent as WarnCutoutSvg } from '@shared/assets/images/functionals/warning-cutout.svg';
-import DisableCutoutImg, { ReactComponent as DisableCutoutSvg } from '@shared/assets/images/functionals/disable-cutout.svg';
+import DisableCutoutImg, {
+  ReactComponent as DisableCutoutSvg,
+} from '@shared/assets/images/functionals/disable-cutout.svg';
 import DisableImg, { ReactComponent as DisableSvg } from '@shared/assets/images/functionals/disable.svg';
-import RemoveCutoutImg, { ReactComponent as RemoveCutoutSvg } from '@shared/assets/images/functionals/remove-cutout.svg';
+import RemoveCutoutImg, {
+  ReactComponent as RemoveCutoutSvg,
+} from '@shared/assets/images/functionals/remove-cutout.svg';
 import RemoveLineImg, { ReactComponent as RemoveLineSvg } from '@shared/assets/images/functionals/remove-line.svg';
 import RemoveImg, { ReactComponent as RemoveSvg } from '@shared/assets/images/functionals/remove.svg';
-import EmptyIdenticonImg, { ReactComponent as EmptyIdenticonSvg } from '@shared/assets/images/functionals/empty-identicon.svg';
+import EmptyIdenticonImg, {
+  ReactComponent as EmptyIdenticonSvg,
+} from '@shared/assets/images/functionals/empty-identicon.svg';
 import SearchImg, { ReactComponent as SearchSvg } from '@shared/assets/images/functionals/search.svg';
-import NetworkDuotoneImg, { ReactComponent as NetworkDuotoneSvg } from '@shared/assets/images/functionals/network-duotone.svg';
+import NetworkDuotoneImg, {
+  ReactComponent as NetworkDuotoneSvg,
+} from '@shared/assets/images/functionals/network-duotone.svg';
 import NetworkOnImg, { ReactComponent as NetworkOnSvg } from '@shared/assets/images/functionals/network-on.svg';
 import NetworkOffImg, { ReactComponent as NetworkOffSvg } from '@shared/assets/images/functionals/network-off.svg';
 import AddImg, { ReactComponent as AddSvg } from '@shared/assets/images/functionals/add.svg';
 import AddAddressImg, { ReactComponent as AddAddressSvg } from '@shared/assets/images/functionals/add-address.svg';
 import AddLineImg, { ReactComponent as AddLineSvg } from '@shared/assets/images/functionals/add-line.svg';
 import AddCutoutImg, { ReactComponent as AddCutoutSvg } from '@shared/assets/images/functionals/add-cutout.svg';
-import ClearOutlineImg, { ReactComponent as ClearOutlineSvg } from '@shared/assets/images/functionals/clear-outline.svg';
+import ClearOutlineImg, {
+  ReactComponent as ClearOutlineSvg,
+} from '@shared/assets/images/functionals/clear-outline.svg';
 import EditImg, { ReactComponent as EditSvg } from '@shared/assets/images/functionals/edit.svg';
 import DeleteImg, { ReactComponent as DeleteSvg } from '@shared/assets/images/functionals/delete.svg';
 import OptionsImg, { ReactComponent as OptionsSvg } from '@shared/assets/images/functionals/options.svg';
-import MultisigOutlineImg, { ReactComponent as MultisigOutlineSvg } from '@shared/assets/images/functionals/multisig-outline.svg';
+import MultisigOutlineImg, {
+  ReactComponent as MultisigOutlineSvg,
+} from '@shared/assets/images/functionals/multisig-outline.svg';
 import EyeSlashedImg, { ReactComponent as EyeSlashedSvg } from '@shared/assets/images/functionals/eye-slashed.svg';
 import EyeImg, { ReactComponent as EyeSvg } from '@shared/assets/images/functionals/eye.svg';
 import CheckLineRedesignImg, {
@@ -37,8 +51,12 @@ import CloseLineRedesignImg, {
   ReactComponent as CloseLineRedesignSvg,
 } from '@shared/assets/images/functionals/close-line-redesign.svg';
 import RefreshImg, { ReactComponent as RefreshSvg } from '@shared/assets/images/functionals/refresh.svg';
-import SettingsLiteImg, { ReactComponent as SettingsLiteSvg } from '@shared/assets/images/functionals/settings-lite.svg';
-import ViewValidatorsImg, { ReactComponent as ViewValidatorsSvg } from '@shared/assets/images/functionals/view-validators.svg';
+import SettingsLiteImg, {
+  ReactComponent as SettingsLiteSvg,
+} from '@shared/assets/images/functionals/settings-lite.svg';
+import ViewValidatorsImg, {
+  ReactComponent as ViewValidatorsSvg,
+} from '@shared/assets/images/functionals/view-validators.svg';
 import LinkImg, { ReactComponent as LinkSvg } from '@shared/assets/images/functionals/link.svg';
 import LockImg, { ReactComponent as LockSvg } from '@shared/assets/images/functionals/lock.svg';
 import MagicImg, { ReactComponent as MagicSvg } from '@shared/assets/images/functionals/magic.svg';

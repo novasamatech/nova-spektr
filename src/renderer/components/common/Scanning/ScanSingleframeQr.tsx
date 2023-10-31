@@ -8,14 +8,13 @@ import { useI18n } from '@app/providers';
 import { Transaction, useTransaction } from '@entities/transaction';
 import { WalletCardSm, walletModel, walletUtils } from '@entities/wallet';
 import { Button, FootnoteText } from '@shared/ui';
-import type { ChainId, Account, Explorer } from '@shared/core';
+import type { ChainId, Account } from '@shared/core';
 
 type Props = {
   api: ApiPromise;
   chainId: ChainId;
   transaction: Transaction;
   account?: Account;
-  explorers?: Explorer[];
   addressPrefix: number;
   countdown: number;
   onGoBack: () => void;
@@ -28,7 +27,6 @@ const ScanSingleframeQr = ({
   chainId,
   transaction,
   account,
-  explorers,
   addressPrefix,
   countdown,
   onGoBack,

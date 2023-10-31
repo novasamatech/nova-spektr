@@ -17,17 +17,13 @@ export const useMetadata = (): IMetadataService => {
   const getMetadata = async (chainId: ChainId): Promise<Metadata | undefined> => {
     const metadata = await getAllMetadata({ chainId });
 
-    if (metadata.length) {
-      const lastMetadata = metadata.reduce<Metadata>((acc, md) => {
-        if (md.version >= (acc.version || -1)) {
-          return md;
-        }
+    if (!metadata.length) return;
 
-        return acc;
-      }, {} as Metadata);
+    return metadata.reduce<Metadata>((acc, md) => {
+      if (md.version >= (acc.version || -1)) return md;
 
-      return lastMetadata;
-    }
+      return acc;
+    }, {} as Metadata);
   };
 
   const syncMetadata = async (api: ApiPromise): Promise<Metadata> => {

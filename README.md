@@ -1,6 +1,6 @@
-<p align="center">
+<div align="center">
   <img src="src/renderer/shared/assets/images/misc/logo.svg" width="160" alt="Nova Spektr logo">
-</p>
+</div>
 
 <div align="center">
 

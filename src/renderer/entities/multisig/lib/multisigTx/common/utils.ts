@@ -110,7 +110,7 @@ export const createEventsPayload = (
 
   const dateCreated = getCreatedDate(when.height.toNumber(), currentBlock, blockTime);
 
-  const events: MultisigEvent[] = approvals.map((a) => ({
+  return approvals.map((a) => ({
     txAccountId: tx.accountId,
     txChainId: tx.chainId,
     txCallHash: tx.callHash,
@@ -120,8 +120,6 @@ export const createEventsPayload = (
     accountId: account.signatories.find((s) => s.accountId === a.toHuman())?.accountId || a.toHex(),
     dateCreated: a.toHex() === depositor.toHex() ? dateCreated : undefined,
   }));
-
-  return events;
 };
 
 export const createTransactionPayload = (

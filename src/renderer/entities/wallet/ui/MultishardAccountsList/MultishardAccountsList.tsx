@@ -35,7 +35,7 @@ export const MultishardAccountsList = ({ accounts, chains, className }: Props) =
 
           <FootnoteText className="pl-10 text-text-tertiary">{t('accountList.addressColumn')}</FootnoteText>
 
-          {chains.map((chain, index) => {
+          {chains.map((chain) => {
             if (!chainMap[chain.chainId]) return;
 
             return (

@@ -9,15 +9,7 @@ import { useValidators } from '@entities/staking';
 import { toAddress, nonNullable } from '@shared/lib/utils';
 import { OperationFooter, OperationHeader } from '@features/operation';
 import { OperationForm } from '../../components';
-import {
-  Balance as AccountBalance,
-  Account,
-  Asset,
-  MultisigAccount,
-  ChainId,
-  AccountId,
-  Wallet,
-} from '@shared/core';
+import { Balance as AccountBalance, Account, Asset, MultisigAccount, ChainId, AccountId, Wallet } from '@shared/core';
 import {
   getSignatoryOption,
   getGeneralAccountOption,
