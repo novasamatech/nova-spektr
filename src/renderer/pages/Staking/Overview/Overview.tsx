@@ -4,8 +4,7 @@ import { useUnit } from 'effector-react';
 
 import { Header } from '@renderer/components/common';
 import { getRelaychainAsset, toAddress } from '@shared/lib/utils';
-import { createLink } from '@shared/routes';
-import type { PathValue } from '@shared/routes';
+import { createLink, type PathType } from '@shared/routes';
 import { useGraphql, useI18n, useNetworkContext } from '@app/providers';
 import { useToggle } from '@shared/lib/hooks';
 import { NominatorInfo } from '@pages/Staking/Overview/components/NominatorsList/NominatorsList';
@@ -196,7 +195,7 @@ export const Overview = () => {
     [[], []],
   );
 
-  const navigateToStake = (path: PathValue, addresses?: Address[]) => {
+  const navigateToStake = (path: PathType, addresses?: Address[]) => {
     if (addresses) {
       setSelectedNominators(addresses);
 

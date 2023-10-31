@@ -2,13 +2,12 @@ import { useState } from 'react';
 import { Trans } from 'react-i18next';
 
 import { useI18n } from '@app/providers';
-import { Paths } from '@shared/routes';
-import type { PathValue } from '@shared/routes';
 import { SmallTitleText, DropdownButton, Button, BaseModal, Icon } from '@shared/ui';
 import { toAccountId } from '@shared/lib/utils';
 import { useToggle } from '@shared/lib/hooks';
 import { ButtonDropdownOption } from '@shared/ui/types';
 import { IconNames } from '@shared/ui/Icon/data';
+import { Paths, type PathType } from '@shared/routes';
 import type { Address, Stake } from '@shared/core';
 
 const enum AccountTypes {
@@ -36,7 +35,7 @@ const ControllerActions: StakeActions[] = [
   StakeActions.DESTINATION,
 ];
 
-const OperationOptions: Record<StakeActions, { icon: IconNames; title: string; path: PathValue }> = {
+const OperationOptions: Record<StakeActions, { icon: IconNames; title: string; path: PathType }> = {
   [StakeActions.START_STAKING]: { icon: 'startStaking', title: 'staking.actions.startStakingLabel', path: Paths.BOND },
   [StakeActions.STAKE_MORE]: { icon: 'stakeMore', title: 'staking.actions.stakeMoreLabel', path: Paths.STAKE_MORE },
   [StakeActions.UNSTAKE]: { icon: 'unstake', title: 'staking.actions.unstakeLabel', path: Paths.UNSTAKE },
@@ -62,7 +61,7 @@ type Props = {
   canInteract: boolean;
   stakes: Stake[];
   isStakingLoading: boolean;
-  onNavigate: (path: PathValue, addresses?: Address[]) => void;
+  onNavigate: (path: PathType, addresses?: Address[]) => void;
 };
 
 export const Actions = ({ canInteract, stakes, isStakingLoading, onNavigate }: Props) => {
@@ -70,7 +69,7 @@ export const Actions = ({ canInteract, stakes, isStakingLoading, onNavigate }: P
   const [isDialogOpen, toggleIsDialogOpen] = useToggle();
 
   const [actionType, setActionType] = useState<StakeActions | null>(null);
-  const [actionPath, setActionPath] = useState<PathValue>();
+  const [actionPath, setActionPath] = useState<PathType>();
   const [warningMessage, setWarningMessage] = useState('');
 
   if (!canInteract) {
@@ -138,7 +137,7 @@ export const Actions = ({ canInteract, stakes, isStakingLoading, onNavigate }: P
     return stakes.filter(filterFn).map((s) => s.address);
   };
 
-  const onClickAction = (action: StakeActions, path: PathValue) => {
+  const onClickAction = (action: StakeActions, path: PathType) => {
     const incorrectType = getIncorrectAccountType(action);
 
     if (incorrectType) {
