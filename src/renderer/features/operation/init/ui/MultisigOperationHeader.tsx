@@ -39,6 +39,7 @@ export const MultisigOperationHeader = ({
     const signerOptions = wallets.reduce<DropdownOption<Account>[]>((acc, wallet) => {
       const isWatchOnly = walletUtils.isWatchOnly(wallet);
       const walletAccounts = accountUtils.getWalletAccounts(wallet.id, accounts);
+
       const signer = walletAccounts.find(
         (a) => signatoryIds.includes(a.accountId) && accountUtils.isChainIdMatch(a, chainId),
       );
@@ -54,7 +55,7 @@ export const MultisigOperationHeader = ({
 
     setSignatoryOptions(signerOptions);
     !activeSignatory && onChange({ id: signerOptions[0].id, value: signerOptions[0].value });
-  }, [accounts.length, getSignatoryOption, signatoryIds]);
+  }, [wallets.length, accounts.length, getSignatoryOption, signatoryIds.length]);
 
   const onChange = (signatory: DropdownResult<Account>) => {
     onSignatoryChange(signatory.value);

@@ -136,7 +136,7 @@ const InitOperation = ({ api, chainId, accounts, addressPrefix, asset, onResult 
     return getRestakeAccountOption(account, { balance, stake, asset, fee, addressPrefix, amount });
   };
 
-  const getSignatoryDrowdownOption = (wallet: Wallet, account: Account) => {
+  const getSignatoryDropdownOption = (wallet: Wallet, account: Account) => {
     const balance = signatoriesBalances.find((b) => b.accountId === account.accountId);
 
     return getSignatoryOption(wallet, account, { balance, asset, addressPrefix, fee, deposit });
@@ -214,7 +214,7 @@ const InitOperation = ({ api, chainId, accounts, addressPrefix, asset, onResult 
             accounts={accounts}
             isMultiselect
             errors={invalidDeposit || invalidFee || invalidBalance ? [OperationError.EMPTY_ERROR] : undefined}
-            getSignatoryOption={getSignatoryDrowdownOption}
+            getSignatoryOption={getSignatoryDropdownOption}
             getAccountOption={getAccountDropdownOption}
             onSignatoryChange={setActiveSignatory}
             onAccountChange={setActiveRestakeAccounts}
