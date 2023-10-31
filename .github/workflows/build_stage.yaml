@@ -4,7 +4,7 @@ name: Build and deploy
 
 on:
   pull_request:
-    types: [labeled]
+    # types: [labeled]
 
 
 env:
@@ -15,7 +15,7 @@ env:
 
 jobs:
   internal-version-increment:
-    if: ${{ github.event.label.name == 'internal-build' }}
+    # if: ${{ github.event.label.name == 'internal-build' }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
