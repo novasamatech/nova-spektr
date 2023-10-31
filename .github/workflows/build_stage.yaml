@@ -3,10 +3,9 @@
 name: Build and deploy
 
 on:
-  workflow_run:
-    workflows: ["Update internal app version"]
-    types:
-      - completed
+  pull_request:
+    types: [labeled]
+
 
 env:
   CSC_FOR_PULL_REQUEST: true
@@ -15,6 +14,50 @@ env:
   STORING_DAYS: 60
 
 jobs:
+  internal-version-increment:
+    if: ${{ github.event.label.name == 'internal-build' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Get version from package.json
+        id: pkg
+        run: echo "::set-output name=version::$(node -p "require('./package.json').version")"
+
+      - name: Update version from secret
+        id: update_version
+        run: |
+          PKG_VERSION=${{ steps.pkg.outputs.version }}
+          INTERNAL_BUILD_VERSION=${{ secrets.INTERNAL_BUILD_VERSION }}
+          if [[ $PKG_VERSION == "$INTERNAL_BUILD_VERSION"* ]]; then
+            # Increment the last number of INTERNAL_BUILD_VERSION
+            NEW_VERSION=$(echo $INTERNAL_BUILD_VERSION | awk 'BEGIN{FS=OFS="-"} {n=split($NF, a, "."); if(n>1) $NF=a[1]"."a[2]+1; else $NF++;} 1')
+          else
+            NEW_VERSION="${PKG_VERSION}-1"
+          fi
+          echo "::set-output name=new_version::$NEW_VERSION"
+        shell: bash
+
+      - name: Write app version to secrets
+        uses: hmanzur/actions-set-secret@v2.0.0
+        with:
+          name: 'INTERNAL_BUILD_VERSION'
+          value: ${{ steps.update_version.outputs.new_version }}
+          repository: novasamatech/nova-spektr
+          token: ${{ secrets.WRITE_SECRET_PAT }}
+
+      - name: Save nev version to artifacts
+        run: |
+          echo "${{ steps.update_version.outputs.new_version }}" > internal_version.txt
+
+      - name: Upload artifact with version
+        uses: actions/upload-artifact@v2
+        with:
+          name: internal-version
+          path: |
+            internal_version.txt
+
   internal-release-build:
     runs-on: ${{ matrix.os }}
     timeout-minutes: 60
@@ -27,6 +70,16 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
+      
+      - name: Download build artifacts
+        uses: actions/download-artifact@v2
+        with:
+          name: internal-version
+      
+      - name: Read internal-build version
+        id: internal-version
+        run: |
+          echo "::set-output name=version::$(cat internal_version.txt)"
 
       - name: ⚙️ Install dependencies
         uses: ./.github/workflows/install-pnpm
@@ -40,7 +93,7 @@ jobs:
         
       - name: Update package.json
         run: |
-          jq '.version = "${{ secrets.INTERNAL_BUILD_VERSION }}"' package.json > temp.json && mv temp.json package.json
+          jq '.version = "${{ steps.internal-version.outputs.version }}"' package.json > temp.json && mv temp.json package.json
         shell: bash
 
       - name: Build app
@@ -72,19 +125,6 @@ jobs:
         uses: actions/download-artifact@v2
         with:
           name: build-artifats
-      
-      - name: Download artifact
-        uses: dawidd6/action-download-artifact@v2
-        with:
-          workflow: ${{ github.event.workflow_run.workflow_id }}
-          workflow_conclusion: success
-          name: github-context
-
-      - name: Read PR number and head ref
-        id: github-context
-        run: |
-          echo "::set-output name=pr_number::$(cat pr.txt)"
-          echo "::set-output name=head_ref::$(cat head_ref.txt)"
   
       - name: Debug
         run: ls -la
@@ -114,8 +154,8 @@ jobs:
             artifact_pattern=${artifacts[$artifact_name]}
             for artifact in $artifact_pattern; do
               if [ -f "$artifact" ]; then
-                s3cmd put "$artifact" --acl-public "${{ env.S3_BUCKET }}/pr-${{ steps.github-context.outputs.pr_number }}/$artifact"
-                url=$(s3cmd signurl "${{ env.S3_BUCKET }}/pr-${{ steps.github-context.outputs.pr_number }}/$artifact" $(echo "`date +%s` + 3600 * 24 * ${{ env.STORING_DAYS }}" | bc))
+                s3cmd put "$artifact" --acl-public "${{ env.S3_BUCKET }}/pr-${{ github.event.pull_request.number }}/$artifact"
+                url=$(s3cmd signurl "${{ env.S3_BUCKET }}/pr-${{ github.event.pull_request.number }}/$artifact" $(echo "`date +%s` + 3600 * 24 * ${{ env.STORING_DAYS }}" | bc))
                 echo "::set-output name=$artifact_name::[$artifact]($url)"
               fi
             done
@@ -134,5 +174,5 @@ jobs:
               - MacOS: ${{ steps.interact_with_storage.outputs.macos_app }}
               - MacOS_arm: ${{ steps.interact_with_storage.outputs.macos_64_app }}
 
-              Branch: ${{ steps.github-context.outputs.head_ref }}
-              PR: https://github.com/${{ github.repository }}/pull/${{ steps.github-context.outputs.pr_number }}
+              Branch: ${{ github.head_ref }}
+              PR: https://github.com/${{ github.repository }}/pull/${{ github.event.pull_request.number }}
