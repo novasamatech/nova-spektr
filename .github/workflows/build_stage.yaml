@@ -1,10 +1,10 @@
 # build_stage.yaml
 ---
-name: Update internal app version
+name: Build and deploy
 
 on:
   workflow_run:
-    workflows: ["Build and Release"]
+    workflows: ["Update internal app version"]
     types:
       - completed
 
