@@ -4,15 +4,8 @@ import { ConnectionStatus, ConnectionType } from '@renderer/shared/core';
 import { ExtendedChain } from '@renderer/entities/network';
 import { NetworkList } from './NetworkList';
 
-jest.mock('@renderer/entities/walletConnect', () => ({
-  walletConnectModel: { events: {} },
-  DEFAULT_POLKADOT_METHODS: {},
-  walletConnectUtils: {
-    getWalletConnectChains: jest.fn(),
-  },
-}));
-jest.mock('@renderer/pages/Onboarding/WalletConnect/model/wc-onboarding-model', () => ({
-  wcOnboardingModel: { events: {} },
+jest.mock('@renderer/app/providers', () => ({
+  useMatrix: jest.fn(),
 }));
 
 describe('pages/Settings/Networks/NetworkList', () => {
