@@ -6,6 +6,8 @@ import { useI18n } from '@renderer/app/providers';
 import { importKeysModel, TypedImportedDerivation } from '@renderer/entities/dynamicDerivations';
 import { AccountId } from '@renderer/shared/core';
 import { cnTw } from '@renderer/shared/lib/utils';
+// @ts-ignore
+import templateFile from '@renderer/assets/files/dd-template.yaml';
 
 type Props = {
   isOpen: boolean;
@@ -87,7 +89,7 @@ export const ImportKeysModal = ({ isOpen, onClose, rootAccountId, existingKeys }
         )}
 
         <InfoLink
-          url="dd-template.yaml"
+          url={templateFile}
           className="gap-x-1 mt-2 px-3"
           iconName="import"
           iconPosition="right"
