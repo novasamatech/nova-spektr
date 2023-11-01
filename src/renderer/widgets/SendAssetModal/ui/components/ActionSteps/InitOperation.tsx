@@ -105,9 +105,12 @@ export const InitOperation = ({
   }, [availableDestinations.length]);
 
   useEffect(() => {
-    setActiveAccount(activeAccounts[0]);
-    onAccountChange(activeAccounts[0]);
-  }, [activeAccounts.length, activeAccounts[0]?.accountId]);
+    const chainAccount =
+      activeAccounts.find((account) => accountUtils.isChainIdMatch(account, chainId)) || activeAccounts[0];
+
+    setActiveAccount(chainAccount);
+    onAccountChange(chainAccount);
+  }, [accountIds.join('')]);
 
   useEffect(() => {
     if (!isMultisigAccount) {
