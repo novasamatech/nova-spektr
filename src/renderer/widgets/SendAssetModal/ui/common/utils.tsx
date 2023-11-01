@@ -1,13 +1,23 @@
 import { ReactNode } from 'react';
 import { BN } from '@polkadot/util';
 
-import { Account, MultisigAccount, AccountAddress } from '@renderer/entities/account';
-import { Address, ChainId } from '@renderer/domain/shared-kernel';
+import { AccountAddress, WalletIcon } from '@renderer/entities/wallet';
 import { DropdownOption } from '@renderer/shared/ui/Dropdowns/common/types';
 import { toAddress, cnTw, transferableAmount } from '@renderer/shared/lib/utils';
-import { Balance, Asset, AssetBalance } from '@renderer/entities/asset';
-import { Chain, ChainTitle } from '@renderer/entities/chain';
-import { HelpText } from '@renderer/shared/ui';
+import { AssetBalance } from '@renderer/entities/asset';
+import { ChainTitle } from '@renderer/entities/chain';
+import { FootnoteText, HelpText } from '@renderer/shared/ui';
+import type {
+  Asset,
+  Balance,
+  Address,
+  Account,
+  MultisigAccount,
+  Chain,
+  ChainId,
+  Wallet,
+  WalletType,
+} from '@renderer/shared/core';
 
 type Params = {
   asset: Asset;
@@ -34,6 +44,19 @@ const getElement = (address: Address, accountName: string, content?: ReactNode):
   );
 };
 
+const getWalletElement = (walletType: WalletType, walletName: string, content?: ReactNode): ReactNode => {
+  return (
+    <div className="flex justify-between items-center w-full">
+      <div className="flex gap-x-2 items-center">
+        <WalletIcon type={walletType} />
+
+        <FootnoteText className="text-text-secondary">{walletName}</FootnoteText>
+      </div>
+      {content}
+    </div>
+  );
+};
+
 const validateSignatoryBalance = (balance: string, fee: string, deposit: string): boolean => {
   return new BN(deposit).add(new BN(fee)).lte(new BN(balance));
 };
@@ -47,10 +70,10 @@ const validateAccountBalance = (balance: string, nativeBalance: string, amount: 
 };
 
 export const getSignatoryOption = (
+  wallet: Wallet,
   account: Account,
-  { balance, asset, addressPrefix, fee, deposit }: Params,
+  { balance, asset, fee, deposit }: Params,
 ): DropdownOption<Account> => {
-  const address = toAddress(account.accountId, { prefix: addressPrefix });
   const canValidateBalance = balance && fee && deposit;
 
   let balanceIsCorrect = true;
@@ -59,9 +82,9 @@ export const getSignatoryOption = (
   }
 
   const balanceContent = getBalance(transferableAmount(balance), asset, balanceIsCorrect);
-  const element = getElement(address, account.name, balanceContent);
+  const element = getWalletElement(wallet.type, wallet.name, balanceContent);
 
-  return { id: account.accountId + account.name, value: account, element };
+  return { id: wallet.id + account.accountId + account.name, value: account, element };
 };
 
 export const getAccountOption = <T extends Account | MultisigAccount>(

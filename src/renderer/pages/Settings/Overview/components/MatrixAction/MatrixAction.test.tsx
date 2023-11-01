@@ -2,7 +2,7 @@ import { render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 
 import { MatrixAction } from './MatrixAction';
-import { Paths } from '../../../../../app/providers/routes/paths';
+import { Paths } from '@renderer/shared/routes';
 
 jest.mock('@renderer/app/providers', () => ({
   useI18n: jest.fn().mockReturnValue({

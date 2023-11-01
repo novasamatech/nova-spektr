@@ -6,8 +6,8 @@ import { priceProviderModel } from '../model/price-provider-model';
 import { currencyModel } from '../model/currency-model';
 import { formatFiatBalance, ZERO_BALANCE } from '@renderer/shared/lib/utils';
 import { FiatBalance } from './FiatBalance';
-import { Asset } from '@renderer/entities/asset';
 import { useI18n } from '@renderer/app/providers';
+import type { Asset } from '@renderer/shared/core';
 
 type Props = {
   asset: Asset;

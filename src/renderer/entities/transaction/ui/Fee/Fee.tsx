@@ -3,9 +3,10 @@ import { BN } from '@polkadot/util';
 import { useEffect, useState, memo } from 'react';
 import { useUnit } from 'effector-react';
 
-import { Asset, AssetBalance } from '@renderer/entities/asset';
+import { AssetBalance } from '@renderer/entities/asset';
 import { Transaction, useTransaction } from '@renderer/entities/transaction';
 import { Shimmering } from '@renderer/shared/ui';
+import type { Asset } from '@renderer/shared/core';
 import { priceProviderModel } from '@renderer/entities/price';
 import { AssetFiatBalance } from '@renderer/entities/price/ui/AssetFiatBalance';
 

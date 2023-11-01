@@ -6,8 +6,8 @@ import { useI18n } from '@renderer/app/providers';
 import { cnTw } from '@renderer/shared/lib/utils';
 import PrivacyPolicy from './PrivacyPolicy';
 import { WelcomeCard } from './WelcomeCard';
-import { walletProviderModel } from '@renderer/widgets/CreateWallet';
-import { WalletType } from '@renderer/domain/shared-kernel';
+import { WalletType } from '@renderer/shared/core';
+import { walletPairingModel } from '@renderer/features/wallets';
 
 const LOGO_WIDTH = 232;
 const RIGHT_PADDING = 225;
@@ -38,39 +38,39 @@ export const Welcome = () => {
       <div className="w-[512px] flex flex-col p-10 h-full">
         <TitleText className="mb-8">{t('onboarding.welcome.title')}</TitleText>
 
+        {/* TODO: move Cards to WalletPairing feature */}
         <div className="flex flex-col gap-4">
           <WelcomeCard
             title={t('onboarding.welcome.polkadotVaultTitle')}
             description={t('onboarding.welcome.polkadotVaultDescription')}
-            iconName="vault"
-            onClick={() => walletProviderModel.events.walletTypeSet(WalletType.SINGLE_PARITY_SIGNER)}
+            iconName="vaultOnboarding"
+            onClick={() => walletPairingModel.events.walletTypeSet(WalletType.POLKADOT_VAULT)}
+          />
+
+          <WelcomeCard
+            title={t('onboarding.welcome.novaWalletTitle')}
+            description={t('onboarding.welcome.novaWalletDescription')}
+            iconName="novaWalletOnboarding"
+            onClick={() => walletPairingModel.events.walletTypeSet(WalletType.NOVA_WALLET)}
+          />
+
+          <WelcomeCard
+            title={t('onboarding.welcome.walletConnectTitle')}
+            description={t('onboarding.welcome.walletConnectDescription')}
+            iconName="walletConnectOnboarding"
+            onClick={() => walletPairingModel.events.walletTypeSet(WalletType.WALLET_CONNECT)}
           />
 
           <WelcomeCard
             title={t('onboarding.welcome.watchOnlyTitle')}
             description={t('onboarding.welcome.watchOnlyDescription')}
             iconName="watchOnlyOnboarding"
-            onClick={() => walletProviderModel.events.walletTypeSet(WalletType.WATCH_ONLY)}
+            onClick={() => walletPairingModel.events.walletTypeSet(WalletType.WATCH_ONLY)}
           />
-
-          <WelcomeCard
-            title={t('onboarding.welcome.novaWalletTitle')}
-            description={t('onboarding.welcome.novaWalletDescription')}
-            iconName="novaWallet"
-            disabled
-          />
-
           <WelcomeCard
             title={t('onboarding.welcome.ledgerTitle')}
             description={t('onboarding.welcome.ledgerDescription')}
-            iconName="ledger"
-            disabled
-          />
-
-          <WelcomeCard
-            title={t('onboarding.welcome.walletConnectTitle')}
-            description={t('onboarding.welcome.walletConnectDescription')}
-            iconName="walletConnect"
+            iconName="ledgerOnboarding"
             disabled
           />
         </div>

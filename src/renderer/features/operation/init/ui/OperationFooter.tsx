@@ -2,18 +2,18 @@ import { ApiPromise } from '@polkadot/api';
 
 import { Icon, FootnoteText, Tooltip } from '@renderer/shared/ui';
 import { useI18n } from '@renderer/app/providers';
-import { Asset } from '@renderer/entities/asset';
 import { Transaction, Deposit, Fee, XcmTypes } from '@renderer/entities/transaction';
-import { MultisigAccount, Account, isMultisig } from '@renderer/entities/account';
 import { XcmConfig } from '@renderer/shared/api/xcm';
 import { XcmFee } from '@renderer/entities/transaction/ui/XcmFee/XcmFee';
+import type { Asset, Account } from '@renderer/shared/core';
+import { accountUtils } from '@renderer/entities/wallet';
 
 type Props = {
   api: ApiPromise;
   reserveApi?: ApiPromise;
   asset: Asset;
   feeTx?: Transaction;
-  account: Account | MultisigAccount;
+  account: Account;
   totalAccounts: number;
   xcmConfig?: XcmConfig;
   xcmAsset?: Asset;
@@ -44,7 +44,7 @@ export const OperationFooter = ({
 
   return (
     <div className="flex flex-col gap-y-2">
-      {isMultisig(account) && (
+      {account && accountUtils.isMultisigAccount(account) && (
         <div className="flex justify-between items-center gap-x-2">
           <div className="flex items-center gap-x-1">
             <Icon className="text-text-tertiary" name="lock" size={12} />

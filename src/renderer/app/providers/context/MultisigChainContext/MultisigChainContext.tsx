@@ -1,17 +1,18 @@
 import { createContext, PropsWithChildren, useContext, useEffect } from 'react';
 import { VoidFn } from '@polkadot/api/types';
 import { Event } from '@polkadot/types/interfaces';
+import { useUnit } from 'effector-react';
 
 import { useChainSubscription } from '@renderer/entities/chain';
 import { useNetworkContext } from '../NetworkContext';
 import { useMultisigTx, useMultisigEvent } from '@renderer/entities/multisig';
-import { useAccount, MultisigAccount } from '@renderer/entities/account';
 import { MultisigTxFinalStatus, SigningStatus } from '@renderer/entities/transaction';
 import { toAddress, getCreatedDateFromApi } from '@renderer/shared/lib/utils';
-import { ChainId } from '@renderer/domain/shared-kernel';
 import { useDebounce, useTaskQueue } from '@renderer/shared/lib/hooks';
-import { ConnectionStatus } from '@renderer/domain/connection';
 import { Task } from '@renderer/shared/lib/hooks/useTaskQueue';
+import type { MultisigAccount, ChainId } from '@renderer/shared/core';
+import { ConnectionStatus } from '@renderer/shared/core';
+import { walletModel, accountUtils } from '@renderer/entities/wallet';
 
 type MultisigChainContextProps = {
   addTask: (task: Task) => void;
@@ -33,13 +34,15 @@ export const MultisigChainProvider = ({ children }: PropsWithChildren) => {
     updateCallData,
     updateCallDataFromChain,
   } = useMultisigTx({ addTask });
-  const { getActiveMultisigAccount } = useAccount();
+  const activeAccounts = useUnit(walletModel.$activeAccounts);
+
   const { updateEvent, getEvents, addEventWithQueue } = useMultisigEvent({ addTask });
 
   const { subscribeEvents } = useChainSubscription();
   const debouncedConnections = useDebounce(connections, 1000);
 
-  const account = getActiveMultisigAccount();
+  const activeAccount = activeAccounts.at(0);
+  const account = activeAccount && accountUtils.isMultisigAccount(activeAccount) ? activeAccount : undefined;
 
   const txs = getLiveAccountMultisigTxs(account?.accountId ? [account.accountId] : []);
 
