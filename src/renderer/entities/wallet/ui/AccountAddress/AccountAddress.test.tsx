@@ -3,15 +3,8 @@ import { render, screen } from '@testing-library/react';
 import { AccountAddress } from './AccountAddress';
 import { TEST_ACCOUNT_ID, TEST_ADDRESS } from '@renderer/shared/lib/utils';
 
-jest.mock('@renderer/entities/walletConnect', () => ({
-  walletConnectModel: { events: {} },
-  DEFAULT_POLKADOT_METHODS: {},
-  walletConnectUtils: {
-    getWalletConnectChains: jest.fn(),
-  },
-}));
-jest.mock('@renderer/pages/Onboarding/WalletConnect/model/wc-onboarding-model', () => ({
-  wcOnboardingModel: { events: {} },
+jest.mock('@renderer/app/providers', () => ({
+  useMatrix: jest.fn(),
 }));
 
 describe('ui/AccountAddress', () => {
