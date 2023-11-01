@@ -132,7 +132,7 @@ const RejectTx = ({ tx, account, connection }: Props) => {
 
     return {
       chainId: tx.chainId,
-      address: signer,
+      address: signerAddress,
       type: TransactionType.MULTISIG_CANCEL_AS_MULTI,
       args: {
         threshold: account.threshold,

@@ -5,3 +5,8 @@ export type InitConnectParams = {
   chains: string[];
   pairing?: any;
 };
+
+export type InitReconnectParams = {
+  chains: string[];
+  pairing: any;
+};

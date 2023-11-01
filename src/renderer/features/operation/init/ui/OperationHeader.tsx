@@ -4,7 +4,7 @@ import { SingleSelectMultishardHeader } from './SingleSelectMultishardHeader';
 import { MultiSelectMultishardHeader } from './MultiSelectMultishardHeader';
 import { DropdownOption } from '@renderer/shared/ui/Dropdowns/common/types';
 import { MultisigOperationHeader } from './MultisigOperationHeader';
-import { OperationError, OperationErrorType } from '@renderer/features/operation/init/model';
+import { OperationError, OperationErrorType } from '@renderer/entities/transaction';
 import type { Account, MultisigAccount, ChainId, Wallet } from '@renderer/shared/core';
 import { walletModel, walletUtils } from '@renderer/entities/wallet';
 
