@@ -7,7 +7,7 @@ import { chainsService } from '@renderer/entities/network';
 import { WalletConnectAccount } from '@renderer/shared/core';
 import { ReconnectStep } from '../lib/constants';
 import { walletModel } from '@renderer/entities/wallet';
-import { isConnectedStep, isReconnectingStep } from '../lib/utils';
+import { isConnectedStep, isReconnectingStep, isTopicExists } from '../lib/utils';
 import { signModel } from './sign-model';
 
 const reset = createEvent();
@@ -41,10 +41,8 @@ sample({
     step: $reconnectStep,
     session: walletConnectModel.$session,
   },
-  filter: ({ step, session }) => isReconnectingStep(step) || (isConnectedStep(step) && Boolean(session?.topic)),
-  fn: ({ session }) => {
-    return session?.topic!;
-  },
+  filter: ({ step, session }) => isReconnectingStep(step) || (isConnectedStep(step) && isTopicExists(session)),
+  fn: ({ session }) => session?.topic!,
   target: walletConnectModel.events.currentSessionTopicUpdated,
 });
 
@@ -85,7 +83,7 @@ sample({
 sample({
   clock: walletConnectModel.events.connectionRejected,
   source: $reconnectStep,
-  filter: (step) => step === ReconnectStep.RECONNECTING,
+  filter: isReconnectingStep,
   fn: () => ReconnectStep.REJECTED,
   target: $reconnectStep,
 });

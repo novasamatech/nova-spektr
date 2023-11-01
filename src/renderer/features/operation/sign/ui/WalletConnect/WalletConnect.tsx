@@ -17,6 +17,7 @@ import { Animation } from '@renderer/shared/ui/Animation/Animation';
 import { walletConnectSignModel } from '../../model/wallet-connect-sign-model';
 import { isConnectedStep, isReadyToReconnectStep, isReconnectingStep, isRejectedStep } from '../../lib/utils';
 import { signModel } from '../../model/sign-model';
+import { SignResponse } from '../../lib/types';
 
 export const WalletConnect = ({
   api,
@@ -112,10 +113,7 @@ export const WalletConnect = ({
         },
       };
 
-      const result = await client.request<{
-        payload: string;
-        signature: HexString;
-      }>(payload);
+      const result: SignResponse = await client.request(payload);
 
       if (result.signature) {
         handleSignature(result.signature);

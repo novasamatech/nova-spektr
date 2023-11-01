@@ -1,4 +1,4 @@
-export enum ReconnectStep {
+export const enum ReconnectStep {
   NOT_STARTED,
   READY_TO_RECONNECT,
   RECONNECTING,

@@ -5,5 +5,4 @@ export * from './common/types';
 export * from './common/constants';
 export * from './validateBalance';
 
-export { OperationError } from './common/errors';
-export type { OperationErrorType } from './common/errors';
+export { OperationError, type OperationErrorType } from './common/errors';
