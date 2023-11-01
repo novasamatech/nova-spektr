@@ -1,5 +1,6 @@
-import { createEvent, createStore, forward, sample } from 'effector';
+import { createEffect, createEvent, createStore, forward, sample } from 'effector';
 import { combineEvents } from 'patronum';
+import Client from '@walletconnect/sign-client';
 
 import { walletConnectModel, type InitReconnectParams } from '@renderer/entities/walletConnect';
 import { toAccountId } from '@renderer/shared/lib/utils';
@@ -9,14 +10,44 @@ import { ReconnectStep } from '../lib/constants';
 import { walletModel } from '@renderer/entities/wallet';
 import { isConnectedStep, isReconnectingStep, isTopicExists } from '../lib/utils';
 import { signModel } from './sign-model';
+import { SignResponse } from '../lib/types';
+
+type SignParams = {
+  client: Client;
+  payload: any;
+};
 
 const reset = createEvent();
 const reconnectModalShown = createEvent();
 const reconnectStarted = createEvent<InitReconnectParams>();
 const reconnectAborted = createEvent();
 const reconnectDone = createEvent();
+const signingStarted = createEvent<SignParams>();
 
 const $reconnectStep = createStore(ReconnectStep.NOT_STARTED).reset(reset);
+const $isSigningRejected = createStore(false).reset(reset);
+const $signature = createStore('').reset(reset);
+
+const signFx = createEffect(async ({ client, payload }: SignParams): Promise<SignResponse> => {
+  return client.request(payload);
+});
+
+forward({
+  from: signingStarted,
+  to: signFx,
+});
+
+sample({
+  clock: signFx.doneData,
+  fn: ({ signature }) => signature,
+  target: $signature,
+});
+
+sample({
+  clock: signFx.fail,
+  fn: () => true,
+  target: $isSigningRejected,
+});
 
 sample({
   clock: reconnectModalShown,
@@ -94,15 +125,17 @@ sample({
   target: $reconnectStep,
 });
 
-sample({
-  clock: [reconnectAborted, reconnectDone],
-  fn: () => ReconnectStep.NOT_STARTED,
-  target: $reconnectStep,
+forward({
+  from: [reconnectAborted, reconnectDone],
+  to: reset,
 });
 
 export const walletConnectSignModel = {
   $reconnectStep,
+  $isSigningRejected,
+  $signature,
   events: {
+    signingStarted,
     reset,
     reconnectModalShown,
     reconnectStarted,

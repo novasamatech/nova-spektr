@@ -17,7 +17,6 @@ import { Animation } from '@renderer/shared/ui/Animation/Animation';
 import { walletConnectSignModel } from '../../model/wallet-connect-sign-model';
 import { isConnectedStep, isReadyToReconnectStep, isReconnectingStep, isRejectedStep } from '../../lib/utils';
 import { signModel } from '../../model/sign-model';
-import { SignResponse } from '../../lib/types';
 
 export const WalletConnect = ({
   api,
@@ -35,6 +34,8 @@ export const WalletConnect = ({
   const session = useUnit(walletConnectModel.$session);
   const client = useUnit(walletConnectModel.$client);
   const reconnectStep = useUnit(walletConnectSignModel.$reconnectStep);
+  const isSigningRejected = useUnit(walletConnectSignModel.$isSigningRejected);
+  const signature = useUnit(walletConnectSignModel.$signature);
 
   const chains = chainsService.getChainsData();
 
@@ -74,6 +75,12 @@ export const WalletConnect = ({
     }
   }, [countdown]);
 
+  useEffect(() => {
+    if (signature) {
+      handleSignature(signature as HexString);
+    }
+  }, [signature]);
+
   const setupTransaction = async (): Promise<void> => {
     try {
       const { payload, unsigned } = await createPayload(transaction, api);
@@ -99,28 +106,20 @@ export const WalletConnect = ({
   const signTransaction = async () => {
     if (!api || !client || !session) return;
 
-    try {
-      const payload = {
-        // eslint-disable-next-line i18next/no-literal-string
-        chainId: `polkadot:${transaction.chainId.slice(2, 34)}`,
-        topic: session.topic,
-        request: {
-          method: DEFAULT_POLKADOT_METHODS.POLKADOT_SIGN_TRANSACTION,
-          params: {
-            address: transaction.address,
-            transactionPayload: unsignedTx,
-          },
+    const payload = {
+      // eslint-disable-next-line i18next/no-literal-string
+      chainId: `polkadot:${transaction.chainId.slice(2, 34)}`,
+      topic: session.topic,
+      request: {
+        method: DEFAULT_POLKADOT_METHODS.POLKADOT_SIGN_TRANSACTION,
+        params: {
+          address: transaction.address,
+          transactionPayload: unsignedTx,
         },
-      };
+      },
+    };
 
-      const result: SignResponse = await client.request(payload);
-
-      if (result.signature) {
-        handleSignature(result.signature);
-      }
-    } catch (e) {
-      console.warn(e);
-    }
+    walletConnectSignModel.events.signingStarted({ client, payload });
   };
 
   const handleSignature = async (signature: HexString) => {
@@ -161,7 +160,7 @@ export const WalletConnect = ({
       };
     }
 
-    if (isRejectedStep(reconnectStep)) {
+    if (isRejectedStep(reconnectStep) || isSigningRejected) {
       return {
         title: t('operation.walletConnect.rejected'),
         content: <Animation variant="error" />,
@@ -233,7 +232,12 @@ export const WalletConnect = ({
       </ConfirmModal>
 
       <StatusModal
-        isOpen={isReconnectingStep(reconnectStep) || isConnectedStep(reconnectStep) || isRejectedStep(reconnectStep)}
+        isOpen={
+          isReconnectingStep(reconnectStep) ||
+          isConnectedStep(reconnectStep) ||
+          isRejectedStep(reconnectStep) ||
+          isSigningRejected
+        }
         {...getStatusProps()}
       />
     </div>
