@@ -17,6 +17,7 @@ import { Animation } from '@renderer/shared/ui/Animation/Animation';
 import { walletConnectSignModel } from '../../model/wallet-connect-sign-model';
 import { isConnectedStep, isReadyToReconnectStep, isReconnectingStep, isRejectedStep } from '../../lib/utils';
 import { signModel } from '../../model/sign-model';
+import { walletModel } from '@renderer/entities/wallet';
 
 export const WalletConnect = ({
   api,
@@ -37,6 +38,7 @@ export const WalletConnect = ({
   const isSigningRejected = useUnit(walletConnectSignModel.$isSigningRejected);
   const signature = useUnit(walletConnectSignModel.$signature);
   const isStatusShown = useUnit(walletConnectSignModel.$isStatusShown);
+  const storedAccounts = useUnit(walletModel.$accounts);
 
   const chains = chainsService.getChainsData();
 
@@ -52,8 +54,9 @@ export const WalletConnect = ({
   useEffect(() => {
     if (txPayload || !client) return;
     const sessions = client.session.getAll();
+    const storedAccount = storedAccounts.find((a) => a.id === account.id);
 
-    const storedSession = sessions.find((s) => s.topic === account.signingExtras?.sessionTopic);
+    const storedSession = sessions.find((s) => s.topic === storedAccount?.signingExtras?.sessionTopic);
 
     if (storedSession) {
       walletConnectModel.events.sessionUpdated(storedSession);
