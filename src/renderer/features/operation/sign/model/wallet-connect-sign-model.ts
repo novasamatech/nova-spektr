@@ -1,6 +1,7 @@
-import { createEffect, createEvent, createStore, forward, sample } from 'effector';
+import { combine, createEffect, createEvent, createStore, forward, sample } from 'effector';
 import { combineEvents } from 'patronum';
 import Client from '@walletconnect/sign-client';
+import { EngineTypes } from '@walletconnect/types';
 
 import { walletConnectModel, type InitReconnectParams } from '@renderer/entities/walletConnect';
 import { toAccountId } from '@renderer/shared/lib/utils';
@@ -8,13 +9,13 @@ import { chainsService } from '@renderer/entities/network';
 import { WalletConnectAccount } from '@renderer/shared/core';
 import { ReconnectStep } from '../lib/constants';
 import { walletModel } from '@renderer/entities/wallet';
-import { isConnectedStep, isReconnectingStep, isTopicExists } from '../lib/utils';
+import { isConnectedStep, isReconnectingStep, isRejectedStep, isTopicExists } from '../lib/utils';
 import { signModel } from './sign-model';
 import { SignResponse } from '../lib/types';
 
 type SignParams = {
   client: Client;
-  payload: any;
+  payload: EngineTypes.RequestParams;
 };
 
 const reset = createEvent();
@@ -28,7 +29,22 @@ const $reconnectStep = createStore(ReconnectStep.NOT_STARTED).reset(reset);
 const $isSigningRejected = createStore(false).reset(reset);
 const $signature = createStore('').reset(reset);
 
-const signFx = createEffect(async ({ client, payload }: SignParams): Promise<SignResponse> => {
+const $isStatusShown = combine(
+  {
+    reconnectStep: $reconnectStep,
+    isSigningRejected: $isSigningRejected,
+  },
+  ({ reconnectStep, isSigningRejected }): boolean => {
+    return (
+      isReconnectingStep(reconnectStep) ||
+      isConnectedStep(reconnectStep) ||
+      isRejectedStep(reconnectStep) ||
+      isSigningRejected
+    );
+  },
+);
+
+const signFx = createEffect(({ client, payload }: SignParams): Promise<SignResponse> => {
   return client.request(payload);
 });
 
@@ -134,6 +150,7 @@ export const walletConnectSignModel = {
   $reconnectStep,
   $isSigningRejected,
   $signature,
+  $isStatusShown,
   events: {
     signingStarted,
     reset,

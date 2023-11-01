@@ -36,6 +36,7 @@ export const WalletConnect = ({
   const reconnectStep = useUnit(walletConnectSignModel.$reconnectStep);
   const isSigningRejected = useUnit(walletConnectSignModel.$isSigningRejected);
   const signature = useUnit(walletConnectSignModel.$signature);
+  const isStatusShown = useUnit(walletConnectSignModel.$isStatusShown);
 
   const chains = chainsService.getChainsData();
 
@@ -106,20 +107,21 @@ export const WalletConnect = ({
   const signTransaction = async () => {
     if (!api || !client || !session) return;
 
-    const payload = {
-      // eslint-disable-next-line i18next/no-literal-string
-      chainId: `polkadot:${transaction.chainId.slice(2, 34)}`,
-      topic: session.topic,
-      request: {
-        method: DEFAULT_POLKADOT_METHODS.POLKADOT_SIGN_TRANSACTION,
-        params: {
-          address: transaction.address,
-          transactionPayload: unsignedTx,
+    walletConnectSignModel.events.signingStarted({
+      client,
+      payload: {
+        // eslint-disable-next-line i18next/no-literal-string
+        chainId: `polkadot:${transaction.chainId.slice(2, 34)}`,
+        topic: session.topic,
+        request: {
+          method: DEFAULT_POLKADOT_METHODS.POLKADOT_SIGN_TRANSACTION,
+          params: {
+            address: transaction.address,
+            transactionPayload: unsignedTx,
+          },
         },
       },
-    };
-
-    walletConnectSignModel.events.signingStarted({ client, payload });
+    });
   };
 
   const handleSignature = async (signature: HexString) => {
@@ -231,15 +233,7 @@ export const WalletConnect = ({
         </FootnoteText>
       </ConfirmModal>
 
-      <StatusModal
-        isOpen={
-          isReconnectingStep(reconnectStep) ||
-          isConnectedStep(reconnectStep) ||
-          isRejectedStep(reconnectStep) ||
-          isSigningRejected
-        }
-        {...getStatusProps()}
-      />
+      <StatusModal isOpen={isStatusShown} {...getStatusProps()} />
     </div>
   );
 };
