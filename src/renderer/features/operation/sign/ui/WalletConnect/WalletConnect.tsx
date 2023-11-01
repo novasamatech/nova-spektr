@@ -162,12 +162,23 @@ export const WalletConnect = ({
       };
     }
 
-    if (isRejectedStep(reconnectStep) || isSigningRejected) {
+    if (isRejectedStep(reconnectStep)) {
       return {
         title: t('operation.walletConnect.rejected'),
         content: <Animation variant="error" />,
         onClose: () => {
           walletConnectSignModel.events.reconnectAborted();
+          onGoBack();
+        },
+      };
+    }
+
+    if (isSigningRejected) {
+      return {
+        title: t('operation.walletConnect.rejected'),
+        content: <Animation variant="error" />,
+        onClose: () => {
+          walletConnectSignModel.events.reset();
           onGoBack();
         },
       };
