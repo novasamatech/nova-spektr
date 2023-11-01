@@ -53,8 +53,9 @@ export const WalletConnect = ({
 
   useEffect(() => {
     if (txPayload || !client) return;
+
     const sessions = client.session.getAll();
-    const storedAccount = storedAccounts.find((a) => a.id === account.id);
+    const storedAccount = storedAccounts.find((a) => a.walletId === account.walletId);
 
     const storedSession = sessions.find((s) => s.topic === storedAccount?.signingExtras?.sessionTopic);
 
