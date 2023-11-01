@@ -1,15 +1,7 @@
 import { EventType, MatrixEvent, Room } from 'matrix-js-sdk';
 
-import {
-  HexString,
-  AccountId,
-  Timepoint,
-  Threshold,
-  CallHash,
-  CallData,
-  ChainId,
-} from '@renderer/domain/shared-kernel';
 import { MultisigTxStatus } from '@renderer/entities/transaction/model/transaction';
+import type { HexString, AccountId, Timepoint, Threshold, CallHash, CallData, ChainId } from '@renderer/shared/core';
 
 // =====================================================
 // ============ ISecureMessenger interface =============

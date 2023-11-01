@@ -3,6 +3,11 @@ import { UnsignedTransaction } from '@substrate/txwrapper-polkadot';
 import { useEffect, useState, ComponentProps } from 'react';
 
 import { useI18n, useMatrix, useMultisigChainContext } from '@renderer/app/providers';
+import { useMultisigTx, useMultisigEvent } from '@renderer/entities/multisig';
+import { toAccountId } from '@renderer/shared/lib/utils';
+import { useToggle } from '@renderer/shared/lib/hooks';
+import { Animation, Button, StatusModal } from '@renderer/shared/ui';
+import type { Account, HexString } from '@renderer/shared/core';
 import {
   MultisigEvent,
   MultisigTxFinalStatus,
@@ -12,16 +17,9 @@ import {
   MultisigTransaction,
   useTransaction,
   ExtrinsicResultParams,
-  OperationResult,
 } from '@renderer/entities/transaction';
-import { HexString } from '@renderer/domain/shared-kernel';
-import { Account } from '@renderer/entities/account';
-import { useMultisigTx, useMultisigEvent } from '@renderer/entities/multisig';
-import { toAccountId } from '@renderer/shared/lib/utils';
-import { useToggle } from '@renderer/shared/lib/hooks';
-import { Button } from '@renderer/shared/ui';
 
-type ResultProps = Pick<ComponentProps<typeof OperationResult>, 'title' | 'description' | 'variant'>;
+type ResultProps = Pick<ComponentProps<typeof StatusModal>, 'title' | 'content' | 'description'>;
 
 type Props = {
   api: ApiPromise;
@@ -148,13 +146,23 @@ export const Submit = ({
 
   const getResultProps = (): ResultProps => {
     if (inProgress) {
-      return { title: t(isReject ? 'operation.rejectInProgress' : 'operation.inProgress'), variant: 'loading' };
+      return {
+        title: t(isReject ? 'operation.rejectInProgress' : 'operation.inProgress'),
+        content: <Animation variant="loading" loop />,
+      };
     }
     if (successMessage) {
-      return { title: t(isReject ? 'operation.successRejectMessage' : 'operation.successMessage'), variant: 'success' };
+      return {
+        title: t(isReject ? 'operation.successRejectMessage' : 'operation.successMessage'),
+        content: <Animation variant="success" />,
+      };
     }
     if (errorMessage) {
-      return { title: t('operation.feeErrorTitle'), description: errorMessage, variant: 'error' };
+      return {
+        title: t('operation.feeErrorTitle'),
+        content: <Animation variant="error" />,
+        description: errorMessage,
+      };
     }
 
     return { title: '' };
@@ -166,12 +174,8 @@ export const Submit = ({
   };
 
   return (
-    <OperationResult
-      isOpen={Boolean(inProgress || errorMessage || successMessage)}
-      {...getResultProps()}
-      onClose={onClose}
-    >
+    <StatusModal isOpen={Boolean(inProgress || errorMessage || successMessage)} {...getResultProps()} onClose={onClose}>
       {errorMessage && <Button onClick={closeErrorMessage}>{t('operation.feeErrorButton')}</Button>}
-    </OperationResult>
+    </StatusModal>
   );
 };

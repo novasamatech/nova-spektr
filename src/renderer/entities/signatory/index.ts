@@ -1,2 +1,2 @@
 export * from './ui';
-export * from './model/signatory';
+export { singnatoryUtils } from './lib/utils';

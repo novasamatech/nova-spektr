@@ -1,5 +1,5 @@
-import { ChainId } from '@renderer/domain/shared-kernel';
 import { ChainTitle } from '@renderer/entities/chain';
+import type { ChainId } from '@renderer/shared/core';
 
 type Props = {
   title: string;

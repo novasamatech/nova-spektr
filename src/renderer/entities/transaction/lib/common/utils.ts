@@ -2,7 +2,14 @@ import { ApiPromise } from '@polkadot/api';
 import { SpRuntimeDispatchError } from '@polkadot/types/lookup';
 
 import { Transaction, DecodedTransaction } from '@renderer/entities/transaction/model/transaction';
-import { MAX_WEIGHT, OLD_MULTISIG_ARGS_AMOUNT, CONTROLLER_ARG_NAME, DEST_WEIGHT_ARG_NAME, XcmTypes } from './constants';
+import {
+  MAX_WEIGHT,
+  OLD_MULTISIG_ARGS_AMOUNT,
+  CONTROLLER_ARG_NAME,
+  DEST_WEIGHT_ARG_NAME,
+  XcmTypes,
+  TransferTypes,
+} from './constants';
 
 export const decodeDispatchError = (error: SpRuntimeDispatchError, api: ApiPromise): string => {
   let errorInfo = error.toString();
@@ -39,4 +46,10 @@ export const isXcmTransaction = (transaction?: Transaction | DecodedTransaction)
   if (!transaction?.type) return false;
 
   return XcmTypes.includes(transaction.type);
+};
+
+export const isTransferTransaction = (transaction?: Transaction | DecodedTransaction): boolean => {
+  if (!transaction?.type) return false;
+
+  return TransferTypes.includes(transaction.type);
 };

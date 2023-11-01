@@ -1,2 +1,2 @@
 export { ContactFilter } from './ui/ContactFilter';
-export * as filterModel from './model/contact-filter';
+export { filterModel } from './model/contact-filter';

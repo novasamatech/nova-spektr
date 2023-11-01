@@ -1,11 +1,19 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, Outlet } from 'react-router-dom';
+import { useUnit } from 'effector-react';
 
 import { Header } from '@renderer/components/common';
-import { Chain } from '@renderer/entities/chain';
 import { getRelaychainAsset, toAddress } from '@renderer/shared/lib/utils';
-import { useGraphql, useI18n, useNetworkContext, PathValue, createLink } from '@renderer/app/providers';
-import { ChainId, Address, SigningType } from '@renderer/domain/shared-kernel';
+import { createLink } from '@renderer/shared/routes';
+import type { PathValue } from '@renderer/shared/routes';
+import { useGraphql, useI18n, useNetworkContext } from '@renderer/app/providers';
+import { useToggle } from '@renderer/shared/lib/hooks';
+import { NominatorInfo } from '@renderer/pages/Staking/Overview/components/NominatorsList/NominatorsList';
+import { AboutStaking, NetworkInfo, NominatorsList, Actions, InactiveChain } from './components';
+import type { ChainId, Chain, Address, Account, Stake, Validator } from '@renderer/shared/core';
+import { ConnectionType, ConnectionStatus } from '@renderer/shared/core';
+import { accountUtils, walletModel, walletUtils } from '@renderer/entities/wallet';
+import { priceProviderModel } from '@renderer/entities/price';
 import {
   useEra,
   useStakingData,
@@ -13,32 +21,29 @@ import {
   ValidatorMap,
   useValidators,
   useStakingRewards,
-  Stake,
+  ValidatorsModal,
 } from '@renderer/entities/staking';
-import { useAccount } from '@renderer/entities/account';
-import { useToggle } from '@renderer/shared/lib/hooks';
-import { NominatorInfo } from '@renderer/pages/Staking/Overview/components/NominatorsList/NominatorsList';
-import { AccountDS } from '@renderer/shared/api/storage';
-import { ConnectionType, ConnectionStatus } from '@renderer/domain/connection';
-import { AboutStaking, NetworkInfo, NominatorsList, Actions, ValidatorsModal, InactiveChain } from './components';
-import { priceProviderModel } from '@renderer/entities/price';
 
 export const Overview = () => {
   const { t } = useI18n();
+  const activeWallet = useUnit(walletModel.$activeWallet);
+  const activeAccounts = useUnit(walletModel.$activeAccounts);
+
   const navigate = useNavigate();
   const { changeClient } = useGraphql();
   const { connections } = useNetworkContext();
 
   const { subscribeActiveEra } = useEra();
   const { subscribeStaking } = useStakingData();
-  const { getValidatorsList } = useValidators();
-  const { getActiveAccounts } = useAccount();
+  const { getValidatorsList, getNominators } = useValidators();
   const [isShowNominators, toggleNominators] = useToggle();
 
   const [chainEra, setChainEra] = useState<Record<ChainId, number | undefined>>({});
   const [staking, setStaking] = useState<StakingMap>({});
   const [isStakingLoading, setIsStakingLoading] = useState(true);
+
   const [validators, setValidators] = useState<ValidatorMap>({});
+  const [nominators, setNominators] = useState<Validator[]>([]);
 
   const [activeChain, setActiveChain] = useState<Chain>();
   const [networkIsActive, setNetworkIsActive] = useState(true);
@@ -52,18 +57,14 @@ export const Overview = () => {
   const addressPrefix = activeChain?.addressPrefix;
   const explorers = activeChain?.explorers;
 
-  const accounts = getActiveAccounts().reduce<AccountDS[]>((acc, a) => {
-    const derivationIsCorrect = a.rootId && a.derivationPath && a.chainId === chainId;
-
-    if (!a.rootId || derivationIsCorrect) {
-      acc.push(a);
+  const accounts = activeAccounts.reduce<Account[]>((acc, account) => {
+    if (accountUtils.isChainIdMatch(account, chainId)) {
+      acc.push(account);
     }
 
     return acc;
   }, []);
 
-  const signingType = accounts[0]?.signingType;
-  const rootAccountId = accounts[0]?.accountId;
   const addresses = accounts.map((a) => toAddress(a.accountId, { prefix: addressPrefix }));
 
   const { rewards, isRewardsLoading } = useStakingRewards(addresses);
@@ -105,18 +106,21 @@ export const Overview = () => {
       unsubEra?.();
       unsubStaking?.();
     };
-  }, [chainId, api, signingType, rootAccountId, addresses.length]);
+  }, [chainId, api, activeAccounts]);
 
   useEffect(() => {
-    const isMultiShard = signingType === SigningType.PARITY_SIGNER && addresses.length > 1;
-    const isSingleShard = signingType === SigningType.PARITY_SIGNER && addresses.length === 1;
+    const isMultisig = walletUtils.isMultisig(activeWallet);
+    const isSingleShard = walletUtils.isSingleShard(activeWallet);
+    const isSingleMultishard = walletUtils.isMultiShard(activeWallet) && addresses.length === 1;
+    const isNovaWallet = walletUtils.isNovaWallet(activeWallet);
+    const isWalletConnect = walletUtils.isWalletConnect(activeWallet);
 
-    if (signingType === SigningType.WATCH_ONLY || isMultiShard) {
-      setSelectedNominators([]);
-    } else if (signingType === SigningType.MULTISIG || isSingleShard) {
+    if (isMultisig || isSingleShard || isSingleMultishard || isNovaWallet || isWalletConnect) {
       setSelectedNominators([addresses[0]]);
+    } else {
+      setSelectedNominators([]);
     }
-  }, [chainId, signingType, rootAccountId, addresses.length]);
+  }, [chainId, activeWallet]);
 
   useEffect(() => {
     if (!chainId || !api?.isConnected) return;
@@ -126,6 +130,14 @@ export const Overview = () => {
 
     getValidatorsList(api, era).then(setValidators);
   }, [chainId, api, chainEra]);
+
+  useEffect(() => {
+    if (!api) return;
+
+    getNominators(api, selectedStash, isLightClient).then((nominators) => {
+      setNominators(Object.values(nominators));
+    });
+  }, [api, selectedStash]);
 
   const changeNetwork = (chain: Chain) => {
     if (chain.chainId === chainId) return;
@@ -149,8 +161,8 @@ export const Overview = () => {
 
     acc.push({
       address,
+      id: account.id,
       stash: staking[address]?.stash,
-      signingType: account.signingType,
       accountName: account.name,
       isSelected: selectedNominators.includes(address),
       totalStake: isStakingLoading ? undefined : staking[address]?.total || '0',
@@ -168,6 +180,22 @@ export const Overview = () => {
     return acc;
   }, []);
 
+  const [selectedValidators, notSelectedValidators] = nominators.reduce<[Validator[], Validator[]]>(
+    (acc, nominator) => {
+      if (validators[nominator.address]) {
+        acc[0].push({
+          ...nominator,
+          ...validators[nominator.address],
+        });
+      } else {
+        acc[1].push(nominator);
+      }
+
+      return acc;
+    },
+    [[], []],
+  );
+
   const navigateToStake = (path: PathValue, addresses?: Address[]) => {
     if (addresses) {
       setSelectedNominators(addresses);
@@ -175,7 +203,7 @@ export const Overview = () => {
       return;
     }
 
-    const accountsMap = accounts.reduce<Record<Address, string>>((acc, account) => {
+    const accountsMap = accounts.reduce<Record<Address, number>>((acc, account) => {
       if (account.id) {
         acc[toAddress(account.accountId, { prefix: addressPrefix })] = account.id;
       }
@@ -201,7 +229,7 @@ export const Overview = () => {
 
   return (
     <>
-      <div className="h-full flex flex-col items-start relative">
+      <div className="h-full flex flex-col">
         <Header title={t('staking.title')} />
 
         <div className="overflow-y-auto w-full h-full mt-6">
@@ -224,7 +252,7 @@ export const Overview = () => {
             {networkIsActive && accounts.length > 0 && (
               <>
                 <Actions
-                  canInteract={signingType !== SigningType.WATCH_ONLY}
+                  canInteract={!walletUtils.isWatchOnly(activeWallet)}
                   stakes={selectedStakes}
                   isStakingLoading={isStakingLoading}
                   onNavigate={navigateToStake}
@@ -249,13 +277,11 @@ export const Overview = () => {
       </div>
 
       <ValidatorsModal
-        api={api}
         asset={relaychainAsset}
-        stash={selectedStash}
-        validators={validators}
+        selectedValidators={selectedValidators}
+        notSelectedValidators={notSelectedValidators}
         explorers={explorers}
         isOpen={isShowNominators}
-        isLightClient={isLightClient}
         onClose={toggleNominators}
       />
 

@@ -1,5 +1,5 @@
 import { AssetRouteGuard } from '@renderer/features/assets';
-import { Paths } from '@renderer/app/providers';
+import { Paths } from '@renderer/shared/routes';
 import { SendAssetModal } from '@renderer/widgets';
 
 export const SendAsset = () => {

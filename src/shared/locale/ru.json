@@ -1,7 +1,7 @@
 {
   "accountList": {
-    "addressColumn": "Address",
-    "networksColumn": "Networks { chains }"
+    "addressColumn": "Аккаунт",
+    "networksColumn": "Сеть { chains }"
   },
   "addressBook": {
     "contactList": {
@@ -86,11 +86,17 @@
     "addContactsButton": "Добавить выбранные",
     "addSignatoryButton": "Добавить подписанта",
     "alertTitle": "Выберете кошелёк",
+    "availableLabel": "Available",
     "backButton": "Назад",
     "closeButton": "Закрыть",
     "contactsTab": "Контакты",
     "continueButton": "Продолжить",
     "create": "Создать",
+    "disabledError": {
+      "differentAccounts": "Wallets with different accounts for chains are not supported",
+      "unsupportedType": "This type of wallet is not yet supported for the Multisig wallet creation"
+    },
+    "disabledLabel": "Not supported",
     "errorMessage": "Что-то пошло не так",
     "multisigExistText": "Multisig аккаунт с выбранными подписантами и порогом уже существует",
     "multisigExistTitle": "Аккаунт уже существует",
@@ -180,7 +186,7 @@
   },
   "notifications": {
     "details": {
-      "newMultisigAccountDescription": "New multisig wallet added: <identicon /> {name}, with threshold { threshold } out of { signatories } signatories"
+      "newMultisigAccountDescription": "New multisig wallet added: <identicon />{name}, with threshold { threshold } out of { signatories } signatories"
     },
     "noNotificationsDescription": "There are no notifications yet",
     "title": "Notifications"
@@ -192,6 +198,10 @@
     "checkAccountsButton": "Ваши аккаунты",
     "confirmAccountsListButton": "Да, это мои аккаунты",
     "continueButton": "Continue",
+    "novaWallet": {
+      "scanTitle": "Scan with Nova Wallet",
+      "title": "Pair Nova Wallet"
+    },
     "paritySigner": {
       "accessDeniedDescription": "Убедитесь, что доступ к камере разрешен",
       "accessDeniedLabel": "Доступ запрещен!",
@@ -252,6 +262,16 @@
       "scanTitle": "Scan the account QR code",
       "title": "Add wallet by Polkadot Vault"
     },
+    "walletConnect": {
+      "accountsTitle": "Manage accounts",
+      "addressColumn": "Address",
+      "manageTitle": "Set up your wallet",
+      "nameColumn": "Account name",
+      "pairedDescription": "Paired",
+      "rejected": "Pairing rejected",
+      "scanTitle": "Scan with your mobile wallet",
+      "title": "Pair via WalletConnect"
+    },
     "walletNameExample": "Например: Основной аккаунт, My validator, Dotsama crowdloans, и т.д.",
     "walletNameLabel": "Название кошелька",
     "walletNamePlaceholder": "Введите название кошелька",
@@ -294,8 +314,10 @@
     "advanced": "Дополнительно",
     "approveButton": "Approve",
     "cancelTitle": "Отменить",
+    "contactSignatoriesTitle": "Contacts",
     "continueButton": "Продолжить",
     "details": {
+      "account": "Account",
       "amount": "количество",
       "callData": "Call Data",
       "callHash": "Call Hash",
@@ -336,7 +358,11 @@
     "selectAccount": "Select account",
     "selectSignatory": "Выберите подписанта",
     "selectSignatoryTitle": "Выберите подписанта",
-    "signButton": "Подписать в Polkadot Vault",
+    "sign": {
+      "novaWallet": "Sign with Nova Wallet",
+      "polkadotVault": "Sign with Polkadot Vault",
+      "walletConnect": "Sign with WalletConnect"
+    },
     "signatoriesTitle": "Подписи",
     "signing": "{ signed } из { threshold } подписали",
     "status": {
@@ -348,6 +374,22 @@
     },
     "successMessage": "Operation Approved",
     "successRejectMessage": "Операция Отменена",
+    "walletConnect": {
+      "defaultWalletName": "WalletConnect",
+      "expiredDescription": "The operation isn’t valid anymore",
+      "reconnect": {
+        "cancelButton": "Cancel",
+        "confirmButton": "Reconnect",
+        "connected": "Connected",
+        "description": "You need to reconnect to proceed with signing",
+        "reconnecting": "Waiting for Reconnect...",
+        "title": "{ walletName } is not connected"
+      },
+      "rejected": "Rejected",
+      "signTitle": "Confirm the operation on your { walletName } app",
+      "tryAgainButton": "Try again"
+    },
+    "walletSignatoriesTitle": "Your wallets",
     "xcmFee": "Cross-chain fee"
   },
   "operations": {
@@ -368,9 +410,11 @@
       "statusSummary": "Статусы операции"
     },
     "modalTitles": {
+      "approve": "Подтвердить",
       "destinationOn": "Установить кошелёк получения награды на",
       "nominateOn": "Смена валидаторов на",
       "redeemOn": "Забрать { asset } на",
+      "reject": "Отклонить",
       "restakeOn": "Рестейк { asset } на",
       "stakeMoreOn": "Стейкать ещё { asset } на",
       "startStakingOn": "Старт стейкинга { asset } на",
@@ -620,6 +664,7 @@
       "accountsTitle": "Выбранные аккаунты",
       "backButton": "Назад",
       "changeValidatorsTitle": "Смена валидаторов",
+      "electedValidators": "Elected",
       "errorModalDiscardButton": "Пропустить",
       "errorModalEditButton": "Редактировать",
       "errorModalSubtitle": "Вы можете пропустить эти транзакции",
@@ -634,10 +679,10 @@
       "hintTitle": "Узнайте больше о наградах",
       "hintUnstakePeriod": "Для вывода токенов нужно дождаться разблокировки",
       "hintWithdraw": "После разблокировки не забудбте забрать токены",
+      "notElectedValidators": "Not elected",
       "queueButton": "добавить в очередь",
       "restakeRewards": "Вложить награды",
       "rewardsDestinationLabel": "Выплата наград",
-      "signButton": "Подписать в Polkadot Vault",
       "signatoryLabel": "Подписант",
       "signer": "Подписант",
       "submittingOperation": "Подтверждение операции",
@@ -834,17 +879,52 @@
     "title": "Отправить",
     "wallet": "Кошелёк"
   },
+  "walletDetails": {
+    "common": {
+      "cancelButton": "Cancel",
+      "forgetButton": "Забыть",
+      "removeButton": "Remove",
+      "removeMessage": "Are you sure you want to remove { walletName }?",
+      "removeTitle": "Remove wallet",
+      "removingWallet": "Removing wallet",
+      "renameButton": "Переименовать",
+      "title": "Детали кошелька",
+      "walletRemoved": "Wallet removed"
+    },
+    "multisig": {
+      "contactsGroup": "Контакты",
+      "networksTab": "Сети",
+      "signatoriesTab": "Подписанты",
+      "thresholdLabel": "Требуется подписей { min } из { max }",
+      "walletsGroup": "Мои кошельки"
+    },
+    "walletConnect": {
+      "abortRejectButton": "Close",
+      "connectedStatus": "Connected",
+      "disconnectedDescription": "Resume the connection to work with the WalletConnect",
+      "disconnectedStatus": "Not connected",
+      "disconnectedTitle": "Wallet not connected",
+      "reconnectButton": "Reconnect",
+      "refreshButton": "Refresh",
+      "rejectDescription": "The operation was successfully canceled",
+      "rejectTitle": "Rejected"
+    }
+  },
   "wallets": {
     "addButtonTitle": "Добавить",
     "addMultisig": "Multisig",
+    "addNovaWallet": "Nova Wallet",
     "addPolkadotVault": "Polkadot Vault",
+    "addWalletConnect": "WalletConnect",
     "addWatchOnly": "Watch-only",
     "multishardLabel": "Multishard",
     "multisigLabel": "Multisig",
+    "novaWalletLabel": "Nova Wallet",
     "paritySignerLabel": "Polkadot Vault",
     "searchPlaceholder": "Поиск",
     "shards": "Shards",
     "title": "Кошельки",
+    "walletConnectLabel": "WalletConnect",
     "watchOnlyLabel": "Watch-only"
   },
   "welcome": {

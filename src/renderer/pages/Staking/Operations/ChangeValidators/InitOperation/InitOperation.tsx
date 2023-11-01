@@ -1,21 +1,30 @@
 import { ApiPromise } from '@polkadot/api';
 import { useEffect, useState } from 'react';
+import { useUnit } from 'effector-react';
 
 import { useI18n } from '@renderer/app/providers';
-import { Asset, Balance as AccountBalance, useBalance } from '@renderer/entities/asset';
-import { ChainId, AccountId } from '@renderer/domain/shared-kernel';
+import { useBalance } from '@renderer/entities/asset';
 import { getOperationErrors, Transaction, TransactionType } from '@renderer/entities/transaction';
-import { Account, isMultisig, MultisigAccount } from '@renderer/entities/account';
 import { useValidators } from '@renderer/entities/staking';
 import { toAddress, nonNullable } from '@renderer/shared/lib/utils';
 import { OperationFooter, OperationHeader } from '@renderer/features/operation';
 import { OperationForm } from '../../components';
+import {
+  Balance as AccountBalance,
+  Account,
+  Asset,
+  MultisigAccount,
+  ChainId,
+  AccountId,
+  Wallet,
+} from '@renderer/shared/core';
 import {
   getSignatoryOption,
   getGeneralAccountOption,
   validateBalanceForFee,
   validateBalanceForFeeDeposit,
 } from '../../common/utils';
+import { walletUtils, accountUtils, walletModel } from '@renderer/entities/wallet';
 
 export type ValidatorsResult = {
   accounts: Account[];
@@ -34,6 +43,8 @@ type Props = {
 
 const InitOperation = ({ api, chainId, accounts, asset, addressPrefix, onResult }: Props) => {
   const { t } = useI18n();
+  const activeWallet = useUnit(walletModel.$activeWallet);
+
   const { getMaxValidators } = useValidators();
   const { getLiveAssetBalances } = useBalance();
 
@@ -49,13 +60,14 @@ const InitOperation = ({ api, chainId, accounts, asset, addressPrefix, onResult 
   const [activeBalances, setActiveBalances] = useState<AccountBalance[]>([]);
 
   const firstAccount = activeValidatorsAccounts[0] || accounts[0];
-  const accountIsMultisig = isMultisig(firstAccount);
-  const formFields = accountIsMultisig ? [{ name: 'description' }] : [];
+  const isMultisigWallet = walletUtils.isMultisig(activeWallet);
+  const isMultisigAccount = firstAccount && accountUtils.isMultisigAccount(firstAccount);
+  const formFields = isMultisigWallet ? [{ name: 'description' }] : [];
 
   const accountIds = accounts.map((account) => account.accountId);
   const balances = getLiveAssetBalances(accountIds, chainId, asset.assetId.toString());
 
-  const signatoryIds = accountIsMultisig ? firstAccount.signatories.map((s) => s.accountId) : [];
+  const signatoryIds = isMultisigAccount ? firstAccount.signatories.map((s) => s.accountId) : [];
   const signatoriesBalances = getLiveAssetBalances(signatoryIds, chainId, asset.assetId.toString());
   const signerBalance = signatoriesBalances.find((b) => b.accountId === activeSignatory?.accountId);
 
@@ -75,10 +87,10 @@ const InitOperation = ({ api, chainId, accounts, asset, addressPrefix, onResult 
   }, [activeValidatorsAccounts.length, balances]);
 
   useEffect(() => {
-    if (accountIsMultisig) {
+    if (isMultisigWallet) {
       setActiveValidatorsAccounts(accounts);
     }
-  }, [accountIsMultisig, firstAccount?.accountId]);
+  }, [isMultisigWallet, firstAccount?.accountId]);
 
   useEffect(() => {
     const maxValidators = getMaxValidators(api);
@@ -103,10 +115,10 @@ const InitOperation = ({ api, chainId, accounts, asset, addressPrefix, onResult 
     return getGeneralAccountOption(account, { asset, fee, balance, addressPrefix });
   };
 
-  const getSignatoryDrowdownOption = (account: Account) => {
+  const getSignatoryDropdownOption = (wallet: Wallet, account: Account) => {
     const balance = signatoriesBalances.find((b) => b.accountId === account.accountId);
 
-    return getSignatoryOption(account, { balance, asset, addressPrefix, fee, deposit });
+    return getSignatoryOption(wallet, account, { balance, asset, addressPrefix, fee, deposit });
   };
 
   const submitBond = (data: { amount: string; destination?: string; description?: string }) => {
@@ -115,7 +127,7 @@ const InitOperation = ({ api, chainId, accounts, asset, addressPrefix, onResult 
 
     onResult({
       accounts: selectedAccounts,
-      ...(accountIsMultisig && {
+      ...(isMultisigWallet && {
         description: data.description || t('transactionMessage.nominate'),
         signer: activeSignatory,
       }),
@@ -123,7 +135,7 @@ const InitOperation = ({ api, chainId, accounts, asset, addressPrefix, onResult 
   };
 
   const validateFee = (): boolean => {
-    if (!accountIsMultisig) {
+    if (!isMultisigWallet) {
       return activeBalances.every((b) => validateBalanceForFee(b, fee));
     }
 
@@ -133,14 +145,14 @@ const InitOperation = ({ api, chainId, accounts, asset, addressPrefix, onResult 
   };
 
   const validateDeposit = (): boolean => {
-    if (!accountIsMultisig) return true;
+    if (!isMultisigWallet) return true;
     if (!signerBalance) return false;
 
     return validateBalanceForFeeDeposit(signerBalance, deposit, fee);
   };
 
   const getActiveAccounts = (): AccountId[] => {
-    if (!accountIsMultisig) return activeValidatorsAccounts.map((acc) => acc.accountId);
+    if (!isMultisigWallet) return activeValidatorsAccounts.map((acc) => acc.accountId);
 
     return activeSignatory ? [activeSignatory.accountId] : [];
   };
@@ -167,7 +179,7 @@ const InitOperation = ({ api, chainId, accounts, asset, addressPrefix, onResult 
             isMultiselect
             errors={errors}
             getAccountOption={getAccountDropdownOption}
-            getSignatoryOption={getSignatoryDrowdownOption}
+            getSignatoryOption={getSignatoryDropdownOption}
             onSignatoryChange={setActiveSignatory}
             onAccountChange={setActiveValidatorsAccounts}
           />

@@ -1,16 +1,14 @@
 import { act, render, screen } from '@testing-library/react';
 
 import { Matrix } from '@renderer/shared/api/matrix';
-import { ConnectionType } from '@renderer/domain/connection';
+import { ConnectionType } from '@renderer/shared/core';
 import { MatrixProvider } from './MatrixContext';
 
-jest.mock('@renderer/shared/api/matrix', () => ({ Matrix: jest.fn().mockReturnValue({}) }));
-
-jest.mock('@renderer/entities/account', () => ({
-  useAccount: jest.fn().mockReturnValue({
-    getAccounts: jest.fn().mockReturnValue([]),
-  }),
+jest.mock('@renderer/app/providers', () => ({
+  useMatrix: jest.fn(),
 }));
+
+jest.mock('@renderer/shared/api/matrix', () => ({ Matrix: jest.fn().mockReturnValue({}) }));
 
 jest.mock('@renderer/entities/multisig', () => ({
   useMultisigTx: jest.fn().mockReturnValue({
@@ -23,12 +21,6 @@ jest.mock('@renderer/entities/multisig', () => ({
     addEvent: jest.fn(),
     updateEvent: jest.fn(),
     getEvents: jest.fn().mockReturnValue([]),
-  }),
-}));
-
-jest.mock('@renderer/entities/contact', () => ({
-  useContact: jest.fn().mockReturnValue({
-    getContacts: jest.fn().mockReturnValue([]),
   }),
 }));
 

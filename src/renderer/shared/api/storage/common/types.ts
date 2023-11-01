@@ -1,12 +1,17 @@
 import { Table } from 'dexie';
 
-import { Balance, BalanceKey } from '@renderer/entities/asset/model/balance';
-import { Connection, ConnectionType } from '@renderer/domain/connection';
-import { AccountId, Address, CallHash, ChainId } from '@renderer/domain/shared-kernel';
-import { Wallet } from '@renderer/entities/wallet/model/wallet';
-import { Account, MultisigAccount } from '@renderer/entities/account/model/account';
+import { Connection, ConnectionType } from '@renderer/shared/core';
 import { Notification } from '@renderer/entities/notification/model/notification';
-import type { Contact } from '@renderer/entities/contact';
+import type {
+  Wallet,
+  Account,
+  Contact,
+  AccountId,
+  CallHash,
+  ChainId,
+  Balance,
+  BalanceKey,
+} from '@renderer/shared/core';
 import type { Metadata } from '@renderer/entities/network';
 import {
   MultisigEvent,
@@ -43,14 +48,6 @@ export interface IConnectionStorage {
   clearConnections: () => Promise<void>;
 }
 
-export interface IWalletStorage {
-  getWallet: (walletId: ID) => Promise<WalletDS | undefined>;
-  getWallets: <T extends Wallet>(where?: Partial<T>) => Promise<WalletDS[]>;
-  addWallet: (wallet: Wallet) => Promise<ID>;
-  updateWallet: (wallet: Wallet) => Promise<ID>;
-  deleteWallet: (walletId: ID) => Promise<void>;
-}
-
 export interface IMultisigEventStorage {
   getEvent: (eventId: ID) => Promise<MultisigEventDS | undefined>;
   getEvents: <T extends MultisigEvent>(where?: Partial<T>) => Promise<MultisigEventDS[]>;
@@ -58,23 +55,6 @@ export interface IMultisigEventStorage {
   addEvent: (event: MultisigEvent) => Promise<ID>;
   updateEvent: (event: MultisigEventDS) => Promise<ID>;
   deleteEvent: (eventId: ID) => Promise<void>;
-}
-
-export interface IAccountStorage {
-  getAccount: (accountId: ID) => Promise<AccountDS | undefined>;
-  getAccounts: <T extends Account>(where?: Partial<T>) => Promise<AccountDS[]>;
-  addAccount: <T extends Account>(account: T) => Promise<ID>;
-  updateAccount: <T extends Account>(account: T) => Promise<ID>;
-  updateAccounts: <T extends Account>(accounts: T[]) => Promise<ID>;
-  deleteAccount: (accountId: Address) => Promise<void>;
-}
-
-export interface IContactStorage {
-  getContact: (contactId: ID) => Promise<Contact | undefined>;
-  getContacts: <T extends Contact>(where?: Partial<T>) => Promise<Contact[]>;
-  addContact: (contact: Contact) => Promise<ID>;
-  updateContact: (contact: Contact) => Promise<ID>;
-  deleteContact: (contactId: ID) => Promise<void>;
 }
 
 export interface IMetadataStorage {
@@ -117,9 +97,6 @@ export interface INotificationStorage {
 export type DataStorage = {
   balances: IBalanceStorage;
   connections: IConnectionStorage;
-  wallets: IWalletStorage;
-  accounts: IAccountStorage;
-  contacts: IContactStorage;
   multisigTransactions: IMultisigTransactionStorage;
   multisigEvents: IMultisigEventStorage;
   notifications: INotificationStorage;
@@ -129,21 +106,18 @@ export type DataStorage = {
 export type ID = string;
 type WithID<T extends Object> = { id?: ID } & T;
 
-export type WalletDS = WithID<Wallet>;
-export type ContactDS = WithID<Contact>;
 export type BalanceDS = WithID<Balance>;
 export type ConnectionDS = WithID<Connection>;
-export type AccountDS = WithID<Account | MultisigAccount>;
 export type MultisigTransactionDS = WithID<MultisigTransaction>;
 export type MultisigEventDS = WithID<MultisigEvent>;
 export type NotificationDS = WithID<Notification>;
 export type MetadataDS = WithID<Metadata>;
 
-export type TWallet = Table<Wallet, ID>;
-export type TContact = Table<Contact, ID>;
+export type TWallet = Table<Wallet, Wallet['id']>;
+export type TContact = Table<Contact, Contact['id']>;
+export type TAccount = Table<Account, Account['id']>;
 export type TBalance = Table<Balance, ID[]>;
 export type TConnection = Table<Connection, ID>;
-export type TAccount = Table<Account | MultisigAccount, ID>;
 export type TMultisigTransaction = Table<MultisigTransaction, ID[]>;
 export type TMultisigEvent = Table<MultisigEvent, ID>;
 export type TNotification = Table<Notification, ID>;

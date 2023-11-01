@@ -1,11 +1,11 @@
 import { PropsWithChildren, ReactNode } from 'react';
-import cn from 'classnames';
 
 import { FootnoteText } from '@renderer/shared/ui';
+import { cnTw } from '@renderer/shared/lib/utils';
 
 type Props = {
   label: ReactNode;
-  className: string;
+  className?: string;
 };
 
 const DetailRow = ({ label, className, children }: PropsWithChildren<Props>) => (
@@ -15,15 +15,15 @@ const DetailRow = ({ label, className, children }: PropsWithChildren<Props>) => 
         {label}
       </FootnoteText>
     ) : (
-      <dt className={cn('flex items-center gap-1', className)}>{label}</dt>
+      <dt className={cnTw('flex items-center gap-1', className)}>{label}</dt>
     )}
 
     {typeof children === 'string' ? (
-      <FootnoteText as="dd" align="right" className={cn(className, 'justify-end py-[3px] px-2')}>
+      <FootnoteText as="dd" align="right" className={cnTw('justify-end py-[3px] px-2', className)}>
         {children}
       </FootnoteText>
     ) : (
-      <dd className={cn('flex items-center justify-end', className)}>{children}</dd>
+      <dd className={cnTw('flex items-center justify-end', className)}>{children}</dd>
     )}
   </div>
 );

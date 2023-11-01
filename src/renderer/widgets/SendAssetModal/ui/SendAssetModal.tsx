@@ -3,18 +3,18 @@ import { UnsignedTransaction } from '@substrate/txwrapper-polkadot';
 import { useStore, useGate } from 'effector-react';
 import { useNavigate } from 'react-router-dom';
 
-import { Paths, useI18n, useNetworkContext } from '@renderer/app/providers';
-import { HexString } from '@renderer/domain/shared-kernel';
+import { useI18n, useNetworkContext } from '@renderer/app/providers';
+import { Paths } from '@renderer/shared/routes';
 import { Transaction, useTransaction, validateBalance } from '@renderer/entities/transaction';
-import { Account, isMultisig, MultisigAccount } from '@renderer/entities/account';
 import { BaseModal, Button, Loader } from '@renderer/shared/ui';
 import { Confirmation, InitOperation, Submit } from './components/ActionSteps';
 import { Signing } from '@renderer/features/operation';
-import { Asset, useBalance } from '@renderer/entities/asset';
+import { useBalance } from '@renderer/entities/asset';
 import { OperationTitle } from '@renderer/components/common';
-import { Chain } from '@renderer/entities/chain';
 import { useToggle } from '@renderer/shared/lib/hooks';
 import * as sendAssetModel from '../model/send-asset';
+import type { Chain, Asset, Account, MultisigAccount, HexString } from '@renderer/shared/core';
+import { accountUtils } from '@renderer/entities/wallet';
 import { priceProviderModel } from '@renderer/entities/price';
 
 const enum Step {
@@ -66,6 +66,17 @@ export const SendAssetModal = ({ chain, asset }: Props) => {
     };
   }, []);
 
+  useEffect(() => {
+    if (signatory && account) {
+      setWrappers([
+        {
+          signatoryId: signatory.accountId,
+          account: account as MultisigAccount,
+        },
+      ]);
+    }
+  }, [account, signatory]);
+
   const onInitResult = (transferTx: Transaction, description?: string) => {
     setTxs([transferTx]);
     setDescription(description || '');
@@ -106,12 +117,6 @@ export const SendAssetModal = ({ chain, asset }: Props) => {
 
   const onSignatoryChange = (signatory: Account) => {
     setSignatory(signatory);
-    setWrappers([
-      {
-        signatoryId: signatory.accountId,
-        account: account as MultisigAccount,
-      },
-    ]);
   };
 
   const commonProps = { explorers, addressPrefix };
@@ -120,7 +125,7 @@ export const SendAssetModal = ({ chain, asset }: Props) => {
     return api ? (
       <Submit
         tx={transaction}
-        multisigTx={isMultisig(account) ? wrapTx(transaction, api, addressPrefix) : undefined}
+        multisigTx={accountUtils.isMultisigAccount(account) ? wrapTx(transaction, api, addressPrefix) : undefined}
         account={account}
         unsignedTx={unsignedTx}
         signature={signature}
@@ -143,7 +148,7 @@ export const SendAssetModal = ({ chain, asset }: Props) => {
       closeButton
       isOpen={isModalOpen}
       title={<OperationTitle title={`${t(operationTitle, { asset: asset.symbol })}`} chainId={chain.chainId} />}
-      contentClass={activeStep === Step.SIGNING ? '' : undefined}
+      contentClass=""
       panelClass="w-[440px]"
       headerClass="py-3 px-5 max-w-[440px]"
       onClose={closeSendModal}

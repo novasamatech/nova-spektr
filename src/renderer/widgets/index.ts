@@ -1,4 +1,5 @@
-export * from './ManageContactModal';
-export * from './ReceiveAssetModal';
-export * from './SendAssetModal';
-export * from './CurrencyModal';
+export { CreateContactModal, EditContactModal } from './ManageContactModal';
+export { ReceiveAssetModal } from './ReceiveAssetModal';
+export { SendAssetModal } from './SendAssetModal';
+export { CurrencyModal } from './CurrencyModal';
+export { MainLayout } from './Layout';

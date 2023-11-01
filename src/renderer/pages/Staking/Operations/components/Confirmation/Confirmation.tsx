@@ -1,15 +1,14 @@
 import { BN, BN_ZERO } from '@polkadot/util';
 import { ApiPromise } from '@polkadot/api';
 import { PropsWithChildren, useState, useEffect } from 'react';
+import { useUnit } from 'effector-react';
 
 import { Icon, Button, FootnoteText, CaptionText, InputHint } from '@renderer/shared/ui';
-import { useI18n } from '@renderer/app/providers';
+import { useI18n, useNetworkContext } from '@renderer/app/providers';
 import { useToggle } from '@renderer/shared/lib/hooks';
-import { RewardsDestination } from '@renderer/entities/staking';
-import { Validator } from '@renderer/domain/validator';
-import { Account, AddressWithExplorers, isMultisig } from '@renderer/entities/account';
-import { Asset, AssetBalance } from '@renderer/entities/asset';
-import { Explorer } from '@renderer/entities/chain';
+import { Validator } from '@renderer/shared/core/types/validator';
+import { AddressWithExplorers, accountUtils, walletModel } from '@renderer/entities/wallet';
+import { AssetBalance } from '@renderer/entities/asset';
 import {
   MultisigTxInitStatus,
   DepositWithLabel,
@@ -18,11 +17,15 @@ import {
   Transaction,
 } from '@renderer/entities/transaction';
 import AccountsModal from '../Modals/AccountsModal/AccountsModal';
-import ValidatorsModal from '../Modals/ValidatorsModal/ValidatorsModal';
 import { DestinationType } from '../../common/types';
 import { cnTw } from '@renderer/shared/lib/utils';
 import { useMultisigTx } from '@renderer/entities/multisig';
+import { RewardsDestination, WalletType } from '@renderer/shared/core';
+import type { Account, Asset, Explorer } from '@renderer/shared/core';
 import { AssetFiatBalance } from '@renderer/entities/price/ui/AssetFiatBalance';
+import { useValidatorsMap, ValidatorsModal } from '@renderer/entities/staking';
+import { isLightClient } from '@renderer/entities/network';
+import { SignButton } from '@renderer/entities/operation/ui/SignButton';
 
 const ActionStyle = 'group hover:bg-action-background-hover px-2 py-1 rounded';
 
@@ -61,6 +64,13 @@ export const Confirmation = ({
   const { t } = useI18n();
   const { getMultisigTxs } = useMultisigTx({});
   const { getTransactionHash } = useTransaction();
+  const { connections } = useNetworkContext();
+
+  const chainId = transaction.chainId;
+  const connection = connections[chainId];
+
+  const allValidators = Object.values(useValidatorsMap(api, chainId, connection && isLightClient(connection)));
+  const activeWallet = useUnit(walletModel.$activeWallet);
 
   const [isAccountsOpen, toggleAccounts] = useToggle();
   const [isValidatorsOpen, toggleValidators] = useToggle();
@@ -68,12 +78,16 @@ export const Confirmation = ({
   const [feeLoading, setFeeLoading] = useState(true);
   const [multisigTxExist, setMultisigTxExist] = useState(false);
 
+  const isMultisigAccount = accountUtils.isMultisigAccount(accounts[0]);
   const singleAccount = accounts.length === 1;
   const validatorsExist = validators && validators.length > 0;
   const totalAmount = amounts.reduce((acc, amount) => acc.add(new BN(amount)), BN_ZERO).toString();
 
+  const selectedValidatorsAddress = validators?.map((validator) => validator.address);
+  const notSelectedValidators = allValidators.filter((v) => !selectedValidatorsAddress?.includes(v.address));
+
   useEffect(() => {
-    if (!accounts.length && !isMultisig(accounts[0])) return;
+    if (!accounts.length && !isMultisigAccount) return;
 
     const { callHash } = getTransactionHash(transaction, api);
 
@@ -182,7 +196,9 @@ export const Confirmation = ({
             </>
           )}
 
-          {isMultisig(accounts[0]) && <DepositWithLabel api={api} asset={asset} threshold={accounts[0].threshold} />}
+          {accountUtils.isMultisigAccount(accounts[0]) && (
+            <DepositWithLabel api={api} asset={asset} threshold={accounts[0].threshold} />
+          )}
 
           <div className="flex justify-between items-center gap-x-2">
             <FootnoteText className="text-text-tertiary">
@@ -219,13 +235,11 @@ export const Confirmation = ({
           <Button variant="text" onClick={onGoBack}>
             {t('staking.confirmation.backButton')}
           </Button>
-          <Button
+          <SignButton
             disabled={feeLoading || multisigTxExist}
-            prefixElement={<Icon name="vault" size={14} />}
+            type={activeWallet?.type || WalletType.SINGLE_PARITY_SIGNER}
             onClick={onResult}
-          >
-            {t('staking.confirmation.signButton')}
-          </Button>
+          />
         </div>
       </div>
 
@@ -242,7 +256,9 @@ export const Confirmation = ({
       {validatorsExist && (
         <ValidatorsModal
           isOpen={isValidatorsOpen}
-          validators={validators}
+          asset={asset}
+          selectedValidators={validators}
+          notSelectedValidators={notSelectedValidators}
           explorers={explorers}
           onClose={toggleValidators}
         />

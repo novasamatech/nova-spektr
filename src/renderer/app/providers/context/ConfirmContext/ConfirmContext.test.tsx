@@ -4,6 +4,9 @@ import { useToggle } from '@renderer/shared/lib/hooks';
 import { ConfirmDialogProvider, useConfirmContext } from './ConfirmContext';
 
 jest.mock('@renderer/shared/lib/hooks');
+jest.mock('@renderer/app/providers', () => ({
+  useMatrix: jest.fn(),
+}));
 
 describe('context/ConfirmContext', () => {
   afterEach(() => {

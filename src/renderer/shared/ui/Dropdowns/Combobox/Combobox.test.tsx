@@ -2,6 +2,10 @@ import { render, screen } from '@testing-library/react';
 
 import Combobox from './Combobox';
 
+jest.mock('@renderer/app/providers', () => ({
+  useMatrix: jest.fn(),
+}));
+
 describe('ui/Combobox/Combobox', () => {
   const options = [
     { id: '0', element: 'label_0', value: '0' },
