@@ -85,12 +85,17 @@ forward({
 sample({
   clock: walletConnectModel.events.connected,
   source: {
+    signer: signModel.$signer,
+    accounts: walletModel.$accounts,
     step: $reconnectStep,
     session: walletConnectModel.$session,
   },
-  filter: ({ step, session }) => isReconnectingStep(step) || (isConnectedStep(step) && isTopicExists(session)),
-  fn: ({ session }) => session?.topic!,
-  target: walletConnectModel.events.currentSessionTopicUpdated,
+  filter: ({ step, session }) => (isReconnectingStep(step) || isConnectedStep(step)) && isTopicExists(session),
+  fn: ({ accounts, signer, session }) => ({
+    accounts: accounts.filter((a) => a.walletId === signer?.walletId),
+    topic: session?.topic!,
+  }),
+  target: walletConnectModel.events.sessionTopicUpdated,
 });
 
 sample({
@@ -104,7 +109,7 @@ sample({
   },
   filter: ({ signer }) => Boolean(signer?.walletId),
   fn: ({ signer, accounts, newAccounts }) => {
-    const { id, ...oldAccountParams } = signer!;
+    const { id, ...oldAccountParams } = accounts.find((a) => a.walletId === signer?.walletId!)!;
 
     const updatedAccounts = newAccounts.map((account) => {
       const [_, chainId, address] = account.split(':');
