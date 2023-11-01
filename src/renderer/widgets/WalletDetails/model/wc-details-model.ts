@@ -68,7 +68,7 @@ sample({
     accounts: walletProviderModel.$accounts,
     wallet: walletSelectModel.$walletForDetails,
   },
-  filter: ({ wallet }) => wallet !== null,
+  filter: ({ wallet }) => Boolean(wallet),
   fn: ({ accounts, wallet, newAccounts }) => {
     const oldAccount = accounts.find((a) => a.walletId === wallet!.id);
     const { id, ...oldAccountParams } = oldAccount!;
