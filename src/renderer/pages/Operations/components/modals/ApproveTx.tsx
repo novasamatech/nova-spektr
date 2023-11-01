@@ -144,7 +144,7 @@ const ApproveTx = ({ tx, account, connection }: Props) => {
 
     return {
       chainId: tx.chainId,
-      address: signer,
+      address: signerAddress,
       type: tx.callData ? TransactionType.MULTISIG_AS_MULTI : TransactionType.MULTISIG_APPROVE_AS_MULTI,
       args: {
         threshold: account.threshold,

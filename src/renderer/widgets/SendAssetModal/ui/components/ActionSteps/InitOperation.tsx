@@ -194,7 +194,7 @@ export const InitOperation = ({
     return getAccountOption(account, { addressPrefix, asset, amount, balance, nativeBalance, fee, deposit });
   };
 
-  const getSignatoryDrowdownOption = (wallet: Wallet, account: Account) => {
+  const getSignatoryDropdownOption = (wallet: Wallet, account: Account) => {
     const balance = signatoriesBalances.find((b) => b.accountId === account.accountId);
 
     return getSignatoryOption(wallet, account, { addressPrefix, asset: nativeToken || asset, balance, fee, deposit });
@@ -237,7 +237,7 @@ export const InitOperation = ({
           <OperationHeader
             chainId={chainId}
             accounts={activeAccounts}
-            getSignatoryOption={getSignatoryDrowdownOption}
+            getSignatoryOption={getSignatoryDropdownOption}
             getAccountOption={getAccountDropdownOption}
             onSignatoryChange={changeSignatory}
             onAccountChange={changeAccount}
