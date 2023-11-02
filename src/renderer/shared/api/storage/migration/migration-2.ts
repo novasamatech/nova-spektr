@@ -50,7 +50,7 @@ async function modifyExistingWallets(dbAccounts: any[], trans: Transaction): Pro
 }
 
 async function createMissingWallets(dbAccounts: any[], trans: Transaction): Promise<void> {
-  const { newWallets, multishardAccounts, otherAccounts } = dbAccounts.reduce(
+  const { newWallets, linkedAccounts } = dbAccounts.reduce(
     (acc, account) => {
       if (isWatchOnly(account) || isMultisig(account) || isSingleParitySigner(account)) {
         const walletType =
@@ -58,27 +58,22 @@ async function createMissingWallets(dbAccounts: any[], trans: Transaction): Prom
           (isMultisig(account) && WalletType.MULTISIG) ||
           (isSingleParitySigner(account) && WalletType.SINGLE_PARITY_SIGNER);
 
-        acc.otherAccounts.push(account);
+        acc.linkedAccounts.push(account);
         acc.newWallets.push({
           type: walletType,
           name: account.name,
           isActive: account.isActive,
           signingType: account.signingType,
         });
-      } else {
-        acc.multishardAccounts.push(account);
       }
 
       return acc;
     },
-    { newWallets: [], multishardAccounts: [], otherAccounts: [] },
+    { newWallets: [], linkedAccounts: [] },
   );
 
   const walletsIds = await trans.table('wallets').bulkAdd(newWallets, { allKeys: true });
-  const updatedMultishards = multishardAccounts.map((account: any) => {
-    return { ...account, type: getAccountType(account) };
-  });
-  const updatedOthers = otherAccounts.map((account: any, index: number) => {
+  const updatedLinked = linkedAccounts.map((account: any, index: number) => {
     return {
       ...account,
       walletId: walletsIds[index],
@@ -86,7 +81,7 @@ async function createMissingWallets(dbAccounts: any[], trans: Transaction): Prom
     };
   });
 
-  await trans.table('accounts').bulkPut(updatedOthers.concat(updatedMultishards));
+  await trans.table('accounts').bulkPut(updatedLinked);
 }
 
 async function modifyAccounts(trans: Transaction): Promise<void> {
@@ -99,6 +94,7 @@ async function modifyAccounts(trans: Transaction): Promise<void> {
         account.baseAccountId = account.rootId;
         account.type = AccountType.CHAIN;
       } else {
+        account.type = account.type || AccountType.BASE;
         delete account.chainId;
         delete account.derivationPath;
       }
