@@ -68,8 +68,8 @@ async function createMissingWallets(dbAccounts: any[], trans: Transaction): Prom
   const walletsIds = await trans.table('wallets').bulkAdd(newWallets, { allKeys: true });
   const updatedAccounts = accountsToUpdate.map((account: any, index: number) => {
     const accountType =
-      (!account.rootId && AccountType.BASE) ||
       (account.signingType === SigningType.MULTISIG && AccountType.MULTISIG) ||
+      (!account.rootId && AccountType.BASE) ||
       (account.chainId && AccountType.CHAIN);
 
     account.walletId = walletsIds[index];
