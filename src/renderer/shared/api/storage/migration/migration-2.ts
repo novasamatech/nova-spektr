@@ -91,7 +91,7 @@ async function modifyAccounts(trans: Transaction): Promise<void> {
     .modify((account) => {
       if (isChainAccount(account)) {
         account.keyType = KeyType.CUSTOM;
-        account.baseAccountId = account.rootId;
+        account.baseId = account.rootId;
         account.type = AccountType.CHAIN;
       } else {
         account.type = account.type || AccountType.BASE;
