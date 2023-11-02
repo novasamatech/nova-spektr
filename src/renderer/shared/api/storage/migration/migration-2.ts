@@ -21,6 +21,13 @@ const isWatchOnly = (account: any) => account.signingType === SigningType.WATCH_
 const isMultisig = (account: any) => account.signingType === SigningType.MULTISIG;
 const isSingleParitySigner = (account: any) => account.signingType === SigningType.PARITY_SIGNER && !account.walletId;
 const isChainAccount = (account: any) => account.signingType === SigningType.PARITY_SIGNER && account.chainId;
+const getAccountType = (account: any): AccountType => {
+  return (
+    (account.signingType === SigningType.MULTISIG && AccountType.MULTISIG) ||
+    (!account.rootId && AccountType.BASE) ||
+    (account.chainId && AccountType.CHAIN)
+  );
+};
 
 async function modifyExistingWallets(dbAccounts: any[], trans: Transaction): Promise<void> {
   const activeAccount = dbAccounts.find((account) => account.isActive);
@@ -43,7 +50,7 @@ async function modifyExistingWallets(dbAccounts: any[], trans: Transaction): Pro
 }
 
 async function createMissingWallets(dbAccounts: any[], trans: Transaction): Promise<void> {
-  const { newWallets, accountsToUpdate } = dbAccounts.reduce(
+  const { newWallets, multishardAccounts, otherAccounts } = dbAccounts.reduce(
     (acc, account) => {
       if (isWatchOnly(account) || isMultisig(account) || isSingleParitySigner(account)) {
         const walletType =
@@ -51,38 +58,35 @@ async function createMissingWallets(dbAccounts: any[], trans: Transaction): Prom
           (isMultisig(account) && WalletType.MULTISIG) ||
           (isSingleParitySigner(account) && WalletType.SINGLE_PARITY_SIGNER);
 
-        acc.accountsToUpdate.push(account);
+        acc.otherAccounts.push(account);
         acc.newWallets.push({
           type: walletType,
           name: account.name,
           isActive: account.isActive,
           signingType: account.signingType,
         });
+      } else {
+        multishardAccounts.push(account);
       }
 
       return acc;
     },
-    { newWallets: [], accountsToUpdate: [] },
+    { newWallets: [], multishardAccounts: [], otherAccounts: [] },
   );
 
   const walletsIds = await trans.table('wallets').bulkAdd(newWallets, { allKeys: true });
-  const updatedAccounts = accountsToUpdate.map((account: any, index: number) => {
-    const accountType =
-      (account.signingType === SigningType.MULTISIG && AccountType.MULTISIG) ||
-      (!account.rootId && AccountType.BASE) ||
-      (account.chainId && AccountType.CHAIN);
-
-    account.walletId = walletsIds[index];
-    account.type = accountType;
-
+  const updatedMultishards = multishardAccounts.map((account: any) => {
+    return { ...account, type: getAccountType(account) };
+  });
+  const updatedOthers = otherAccounts.map((account: any, index: number) => {
     return {
       ...account,
       walletId: walletsIds[index],
-      type: accountType,
+      type: getAccountType(account),
     };
   });
 
-  await trans.table('accounts').bulkPut(updatedAccounts);
+  await trans.table('accounts').bulkPut(updatedOthers.concat(updatedMultishards));
 }
 
 async function modifyAccounts(trans: Transaction): Promise<void> {
