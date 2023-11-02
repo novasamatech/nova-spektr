@@ -66,7 +66,7 @@ async function createMissingWallets(dbAccounts: any[], trans: Transaction): Prom
           signingType: account.signingType,
         });
       } else {
-        multishardAccounts.push(account);
+        acc.multishardAccounts.push(account);
       }
 
       return acc;
