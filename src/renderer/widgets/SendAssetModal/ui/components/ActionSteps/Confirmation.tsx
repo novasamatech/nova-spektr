@@ -47,7 +47,7 @@ export const Confirmation = ({
   const asset = xcmAsset && connection.assets.find((a) => a.assetId === xcmAsset.assetId);
 
   const signatoryWallet = signatory && wallets.find((w) => w.id === signatory.walletId);
-  const walletType = signatoryWallet?.type || activeWallet?.type;
+  const walletType = signatoryWallet?.type || activeWallet?.type || WalletType.POLKADOT_VAULT;
 
   return (
     <div className="flex flex-col items-center pt-4 gap-y-4 pb-4 pl-5 pr-3">
@@ -101,7 +101,7 @@ export const Confirmation = ({
           {t('operation.goBackButton')}
         </Button>
 
-        <SignButton disabled={!feeLoaded} type={walletType || WalletType.SINGLE_PARITY_SIGNER} onClick={onResult} />
+        <SignButton disabled={!feeLoaded} type={walletType} onClick={onResult} />
       </div>
     </div>
   );
