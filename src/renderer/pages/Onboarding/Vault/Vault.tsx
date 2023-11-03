@@ -1,17 +1,45 @@
 import { useEffect, useState } from 'react';
 
-import { SeedInfo } from '@renderer/components/common/QrCode/common/types';
+import { SeedInfo, SeedInfoExtended } from '@renderer/components/common/QrCode/common/types';
 import ScanStep from './ScanStep/ScanStep';
 import { ManageMultishard } from './ManageMultishard/ManageMultishard';
 import { ManageSingleshard } from './ManageSingleshard/ManageSingleshard';
+import { ManageDynamicDerivations } from './ManageDynamicDerivations/ManageDynamicDerivations';
 import { BaseModal } from '@renderer/shared/ui';
 import { DEFAULT_TRANSITION } from '@renderer/shared/lib/utils';
 import { useToggle } from '@renderer/shared/lib/hooks';
+import { VaultFeatureTitle } from '@renderer/components/common/QrCode/common/constants';
+
+const isDynamicDerivationSupport = (seedInfo: SeedInfoExtended): boolean => {
+  const dynamicDerivationsExist = seedInfo.features?.some(
+    (feature) => feature.VaultFeatures === VaultFeatureTitle.DYNAMIC_DERIVATIONS,
+  );
+
+  return Boolean(dynamicDerivationsExist);
+};
 
 const enum Step {
   SCAN,
   MANAGE,
 }
+
+const enum QrCodeType {
+  DYNAMIC_DERIVATIONS = 'DYNAMIC_DERIVATIONS',
+  MULTISHARD = 'MULTISHARD',
+  SINGLESHARD = 'SINGLESHARD',
+}
+
+type ManageProps = {
+  seedInfo: SeedInfo[];
+  onBack: () => void;
+  onComplete: () => void;
+};
+
+const ManageFlow: Record<QrCodeType, (props: ManageProps) => JSX.Element | null> = {
+  [QrCodeType.DYNAMIC_DERIVATIONS]: (props) => <ManageDynamicDerivations {...props} />,
+  [QrCodeType.MULTISHARD]: (props) => <ManageMultishard {...props} />,
+  [QrCodeType.SINGLESHARD]: (props) => <ManageSingleshard {...props} />,
+};
 
 type Props = {
   isOpen: boolean;
@@ -24,6 +52,7 @@ const Vault = ({ isOpen, onClose, onComplete }: Props) => {
 
   const [activeStep, setActiveStep] = useState<Step>(Step.SCAN);
   const [qrPayload, setQrPayload] = useState<SeedInfo[]>();
+  const [qrType, setQrType] = useState<QrCodeType>();
 
   useEffect(() => {
     if (isOpen) {
@@ -39,15 +68,32 @@ const Vault = ({ isOpen, onClose, onComplete }: Props) => {
     }
   }, [isOpen]);
 
+  useEffect(() => {
+    if (!qrPayload) return;
+
+    if (isDynamicDerivationSupport(qrPayload[0])) {
+      setQrType(QrCodeType.DYNAMIC_DERIVATIONS);
+
+      return;
+    }
+
+    if (
+      qrPayload?.length === 1 &&
+      ((qrPayload[0].derivedKeys.length === 0 && qrPayload[0].name === '') ||
+        qrPayload[0].derivedKeys.every((d) => !d.derivationPath))
+    ) {
+      setQrType(QrCodeType.SINGLESHARD);
+
+      return;
+    }
+
+    setQrType(QrCodeType.MULTISHARD);
+  }, [qrPayload]);
+
   const onReceiveQr = (payload: SeedInfo[]) => {
     setQrPayload(payload);
     setActiveStep(Step.MANAGE);
   };
-
-  const isPlainQr =
-    qrPayload?.length === 1 &&
-    ((qrPayload[0].derivedKeys.length === 0 && qrPayload[0].name === '') ||
-      qrPayload[0].derivedKeys.every((d) => !d.derivationPath));
 
   const closeVaultModal = (params?: { complete: boolean }) => {
     toggleIsModalOpen();
@@ -64,23 +110,14 @@ const Vault = ({ isOpen, onClose, onComplete }: Props) => {
       onClose={closeVaultModal}
     >
       {activeStep === Step.SCAN && <ScanStep onBack={closeVaultModal} onNextStep={onReceiveQr} />}
-      {activeStep === Step.MANAGE && qrPayload && (
-        <>
-          {isPlainQr ? (
-            <ManageSingleshard
-              seedInfo={qrPayload}
-              onBack={() => setActiveStep(Step.SCAN)}
-              onComplete={() => closeVaultModal({ complete: true })}
-            />
-          ) : (
-            <ManageMultishard
-              seedInfo={qrPayload}
-              onBack={() => setActiveStep(Step.SCAN)}
-              onComplete={() => closeVaultModal({ complete: true })}
-            />
-          )}
-        </>
-      )}
+      {activeStep === Step.MANAGE &&
+        qrPayload &&
+        qrType &&
+        ManageFlow[qrType]({
+          seedInfo: qrPayload,
+          onBack: () => setActiveStep(Step.SCAN),
+          onComplete: () => closeVaultModal({ complete: true }),
+        })}
     </BaseModal>
   );
 };

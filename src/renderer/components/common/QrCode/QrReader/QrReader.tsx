@@ -6,9 +6,17 @@ import { useEffect, useRef } from 'react';
 import { cnTw, validateSignerFormat } from '@renderer/shared/lib/utils';
 import { CryptoTypeString } from '@renderer/shared/core';
 import { useI18n } from '@renderer/app/providers';
-import { ErrorFields, EXPORT_ADDRESS, FRAME_KEY } from '../common/constants';
+import { ErrorFields, EXPORT_ADDRESS, FRAME_KEY, VaultFeature } from '../common/constants';
 import { QR_READER_ERRORS } from '../common/errors';
-import { DecodeCallback, ErrorObject, Progress, QrError, SeedInfo, VideoInput } from '../common/types';
+import {
+  DecodeCallback,
+  ErrorObject,
+  Progress,
+  QrError,
+  SeedInfo,
+  SeedInfoExtended,
+  VideoInput,
+} from '../common/types';
 import RaptorFrame from './RaptorFrame';
 
 const enum Status {
@@ -64,10 +72,18 @@ const QrReader = ({
     return typeof error === 'object' && ErrorFields.CODE in error && ErrorFields.MESSAGE in error;
   };
 
-  const makeResultPayload = <T extends string | SeedInfo[] | { addr: SeedInfo }>(data: T): SeedInfo[] => {
+  const makeResultPayload = <T extends string | SeedInfo[] | { addr: SeedInfo; features: VaultFeature[] }>(
+    data: T,
+  ): SeedInfoExtended[] => {
     if (Array.isArray(data)) return data;
 
-    if (typeof data !== 'string') return [data.addr];
+    if (typeof data !== 'string')
+      return [
+        {
+          ...data.addr,
+          features: data.features,
+        },
+      ];
 
     return [
       {
@@ -132,6 +148,7 @@ const QrReader = ({
       // decode the 1st frame --> it's a single frame QR
       const result = EXPORT_ADDRESS.decode(fountainResult.slice(3));
       isComplete.current = true;
+
       onResult?.(makeResultPayload(result.payload));
     } else {
       // if there is more than 1 frame --> proceed scanning and keep the progress
@@ -186,6 +203,7 @@ const QrReader = ({
 
       const result = EXPORT_ADDRESS.decode(fountainResult.slice(3));
       isComplete.current = true;
+
       onResult?.(makeResultPayload(result.payload));
       break;
     }
