@@ -88,7 +88,7 @@ export const Confirmation = ({
   const notSelectedValidators = allValidators.filter((v) => !selectedValidatorsAddress?.includes(v.address));
 
   const signerWallet = signer && wallets.find((w) => w.id === signer.walletId);
-  const walletType = signerWallet?.type || activeWallet?.type;
+  const walletType = signerWallet?.type || activeWallet?.type || WalletType.POLKADOT_VAULT;
 
   useEffect(() => {
     if (!accounts.length && !isMultisigAccount) return;
@@ -239,11 +239,7 @@ export const Confirmation = ({
           <Button variant="text" onClick={onGoBack}>
             {t('staking.confirmation.backButton')}
           </Button>
-          <SignButton
-            disabled={feeLoading || multisigTxExist}
-            type={walletType || WalletType.POLKADOT_VAULT}
-            onClick={onResult}
-          />
+          <SignButton disabled={feeLoading || multisigTxExist} type={walletType} onClick={onResult} />
         </div>
       </div>
 
