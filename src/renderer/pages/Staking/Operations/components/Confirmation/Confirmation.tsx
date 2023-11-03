@@ -71,6 +71,7 @@ export const Confirmation = ({
 
   const allValidators = Object.values(useValidatorsMap(api, chainId, connection && isLightClient(connection)));
   const activeWallet = useUnit(walletModel.$activeWallet);
+  const wallets = useUnit(walletModel.$wallets);
 
   const [isAccountsOpen, toggleAccounts] = useToggle();
   const [isValidatorsOpen, toggleValidators] = useToggle();
@@ -85,6 +86,9 @@ export const Confirmation = ({
 
   const selectedValidatorsAddress = validators?.map((validator) => validator.address);
   const notSelectedValidators = allValidators.filter((v) => !selectedValidatorsAddress?.includes(v.address));
+
+  const signerWallet = signer && wallets.find((w) => w.id === signer.walletId);
+  const walletType = signerWallet?.type || activeWallet?.type;
 
   useEffect(() => {
     if (!accounts.length && !isMultisigAccount) return;
@@ -237,7 +241,7 @@ export const Confirmation = ({
           </Button>
           <SignButton
             disabled={feeLoading || multisigTxExist}
-            type={activeWallet?.type || WalletType.SINGLE_PARITY_SIGNER}
+            type={walletType || WalletType.POLKADOT_VAULT}
             onClick={onResult}
           />
         </div>
