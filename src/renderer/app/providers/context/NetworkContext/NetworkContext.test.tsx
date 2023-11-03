@@ -119,7 +119,7 @@ describe('context/NetworkContext', () => {
     }));
 
     const scope = fork({
-      values: new Map().set(walletModel.$accounts, [
+      values: new Map().set(walletModel.$activeAccounts, [
         { name: 'Test Wallet', type: AccountType.BASE, accountId: TEST_ACCOUNT_ID },
       ]),
     });
