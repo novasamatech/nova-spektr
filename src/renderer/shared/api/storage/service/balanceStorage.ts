@@ -44,6 +44,10 @@ export const useBalanceStorage = (db: TBalance): IBalanceStorage => ({
     await db.update([balance.accountId, balance.chainId, balance.assetId], balance);
   },
 
+  insertBalances: async (balances: Balance[]): Promise<string[]> => {
+    return db.bulkPut(balances);
+  },
+
   setBalanceIsValid: ({ accountId, chainId, assetId }: BalanceKey, verified: boolean): Promise<number> => {
     return db.update([accountId, chainId, assetId], { verified });
   },

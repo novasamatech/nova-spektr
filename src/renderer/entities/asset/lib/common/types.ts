@@ -12,11 +12,7 @@ export interface IBalanceService {
   getBalances: (accountIds: AccountId[]) => Promise<BalanceDS[]>;
   getAllBalances: () => Promise<BalanceDS[]>;
   getLiveBalances: (accountIds: AccountId[]) => BalanceDS[];
-  subscribeBalances: (
-    chain: ExtendedChain,
-    parachain: ExtendedChain | undefined,
-    accountIds: AccountId[],
-  ) => Promise<any>;
+  subscribeBalances: (chain: ExtendedChain, accountIds: AccountId[], relaychain?: ExtendedChain) => Promise<any>;
   subscribeLockBalances: (chain: ExtendedChain, accountIds: AccountId[]) => Promise<any>;
   setBalanceIsValid: (balanceKey: BalanceKey, verified: boolean) => Promise<number>;
 }

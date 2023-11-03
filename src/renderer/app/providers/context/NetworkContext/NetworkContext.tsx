@@ -68,7 +68,7 @@ export const NetworkProvider = ({ children }: PropsWithChildren) => {
 
     const relaychain = chain.parentId && connections[chain.parentId];
 
-    subscribe(chain.chainId, subscribeBalances(chain, relaychain, accountIds));
+    subscribe(chain.chainId, subscribeBalances(chain, accountIds, relaychain));
     subscribe(chain.chainId, subscribeLockBalances(chain, accountIds));
   };
 
