@@ -5,12 +5,12 @@ import { groupBy } from 'lodash';
 import {
   DerivationImportError,
   ImportError,
-  importKeysUtils,
   ParsedImportFile,
   TypedImportedDerivation,
-} from '@renderer/entities/dynamicDerivations';
-import { ImportErrorsLabel } from '@renderer/entities/dynamicDerivations/lib/constants';
+  ImportErrorsLabel,
+} from '../lib/types';
 import { AccountId, ChainId, ObjectValues } from '@renderer/shared/core';
+import { importKeysUtils } from '../lib/import-keys-utils';
 
 type SampleFnError = { error: DerivationImportError };
 type ExistingDerivations = {

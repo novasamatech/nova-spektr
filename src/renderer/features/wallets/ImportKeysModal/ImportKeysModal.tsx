@@ -3,7 +3,7 @@ import { useEffect } from 'react';
 
 import { Alert, BaseModal, Button, InfoLink, InputFile, InputHint } from '@renderer/shared/ui';
 import { useI18n } from '@renderer/app/providers';
-import { importKeysModel, TypedImportedDerivation } from '@renderer/entities/dynamicDerivations';
+import { importKeysModel, TypedImportedDerivation } from '@renderer/entities/wallet';
 import { AccountId } from '@renderer/shared/core';
 import { cnTw } from '@renderer/shared/lib/utils';
 // @ts-ignore

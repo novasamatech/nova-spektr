@@ -1,87 +1,19 @@
-import { ChainId, KeyType } from '@renderer/shared/core';
-import { ImportedDerivation, importKeysUtils, TypedImportedDerivation } from '@renderer/entities/dynamicDerivations';
-
-const chainId: ChainId = '0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3';
-
-const invalidDerivations = {
-  passwordPath: {
-    derivationPath: '//polkadot///dsfsdf',
-    type: KeyType.MAIN,
-    chainId: chainId,
-  },
-  invalidPath: {
-    derivationPath: '//polkadot//staking/',
-    type: KeyType.MAIN,
-    chainId: chainId,
-  },
-  emptyPath: {
-    derivationPath: '',
-    type: KeyType.MAIN,
-    chainId: chainId,
-  },
-  tooManyShards: {
-    derivationPath: '//path',
-    type: KeyType.MAIN,
-    chainId: chainId,
-    sharded: '60',
-  },
-  wrongShardedType: {
-    derivationPath: '//path',
-    type: KeyType.HOT,
-    chainId: chainId,
-    sharded: '10',
-  },
-  wrongKeyType: {
-    derivationPath: '//path',
-    type: 'wrong_type',
-    chainId: chainId,
-  },
-};
-
-const validDerivations = [
-  {
-    derivationPath: '//polkadot',
-    type: KeyType.PUBLIC,
-    chainId: chainId,
-  },
-  {
-    derivationPath: '//staking',
-    type: KeyType.STAKING,
-    chainId: chainId,
-    sharded: '10',
-  },
-];
-
-const existingChainDerivations: TypedImportedDerivation[] = [
-  {
-    derivationPath: '//polkadot',
-    type: KeyType.MAIN,
-    chainId: chainId,
-  },
-  {
-    derivationPath: '//polkadot//staking//some_key',
-    type: KeyType.STAKING,
-    chainId: chainId,
-  },
-  {
-    derivationPath: '//polkadot//staking',
-    type: KeyType.STAKING,
-    chainId: chainId,
-    sharded: 10,
-  },
-];
+import { KeyType } from '@renderer/shared/core';
+import { importKeysUtils } from '../import-keys-utils';
+import { ImportedDerivation } from '../types';
+import { importKeysMocks } from './mocks/import-keys-utils.mock';
 
 describe('entities/dynamicDerivations/import-keys-utils', () => {
   describe('entities/dynamicDerivations/import-keys-utils/validateDerivation', () => {
     test.each([
-      [invalidDerivations.passwordPath, false],
-      [invalidDerivations.invalidPath, false],
-      [invalidDerivations.emptyPath, false],
-      [invalidDerivations.tooManyShards, false],
-      [invalidDerivations.wrongShardedType, false],
-      [invalidDerivations.wrongKeyType, false],
-      [validDerivations[0], true],
-      [validDerivations[1], true],
+      [importKeysMocks.invalidDerivations.passwordPath, false],
+      [importKeysMocks.invalidDerivations.invalidPath, false],
+      [importKeysMocks.invalidDerivations.emptyPath, false],
+      [importKeysMocks.invalidDerivations.tooManyShards, false],
+      [importKeysMocks.invalidDerivations.wrongShardedType, false],
+      [importKeysMocks.invalidDerivations.wrongKeyType, false],
+      [importKeysMocks.validDerivations[0], true],
+      [importKeysMocks.validDerivations[1], true],
     ])('should validate imported derivation', (derivation: ImportedDerivation, expected: boolean) => {
       expect(importKeysUtils.validateDerivation(derivation)).toEqual(expected);
     });
@@ -93,21 +25,21 @@ describe('entities/dynamicDerivations/import-keys-utils', () => {
         {
           derivationPath: '//polkadot//gov',
           type: KeyType.GOVERNANCE,
-          chainId: chainId,
+          chainId: importKeysMocks.chainId,
         },
         {
           derivationPath: '//polkadot//staking//some_other_key',
           type: KeyType.STAKING,
-          chainId: chainId,
+          chainId: importKeysMocks.chainId,
         },
       ];
       const { mergedDerivations, added, duplicated } = importKeysUtils.mergeChainDerivations(
-        existingChainDerivations,
+        importKeysMocks.existingChainDerivations,
         importedDerivations,
       );
 
       const allPaths = [
-        ...existingChainDerivations.map((d) => d.derivationPath),
+        ...importKeysMocks.existingChainDerivations.map((d) => d.derivationPath),
         ...importedDerivations.map((d) => d.derivationPath),
       ];
 
@@ -123,16 +55,16 @@ describe('entities/dynamicDerivations/import-keys-utils', () => {
         {
           derivationPath: '//polkadot//gov',
           type: KeyType.GOVERNANCE,
-          chainId: chainId,
+          chainId: importKeysMocks.chainId,
         },
         {
           derivationPath: '//polkadot',
           type: KeyType.MAIN,
-          chainId: chainId,
+          chainId: importKeysMocks.chainId,
         },
       ];
       const { mergedDerivations, added, duplicated } = importKeysUtils.mergeChainDerivations(
-        existingChainDerivations,
+        importKeysMocks.existingChainDerivations,
         importedDerivations,
       );
 
@@ -148,17 +80,17 @@ describe('entities/dynamicDerivations/import-keys-utils', () => {
         {
           derivationPath: '//polkadot//staking',
           type: KeyType.STAKING,
-          chainId: chainId,
+          chainId: importKeysMocks.chainId,
           sharded: 20,
         },
         {
           derivationPath: '//polkadot//some_path',
           type: KeyType.CUSTOM,
-          chainId: chainId,
+          chainId: importKeysMocks.chainId,
         },
       ];
       const { mergedDerivations, added, duplicated } = importKeysUtils.mergeChainDerivations(
-        existingChainDerivations,
+        importKeysMocks.existingChainDerivations,
         importedDerivations,
       );
 
