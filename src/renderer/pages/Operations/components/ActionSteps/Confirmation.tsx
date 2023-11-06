@@ -87,7 +87,7 @@ export const Confirmation = ({ tx, account, connection, signatory, feeTx, onSign
       </DetailRow>
 
       {isXcmTransaction(transaction) && xcmConfig && connection.api && (
-        <DetailRow label={t('operation.xcmFee')} className="text-text-primary pr-2">
+        <DetailRow label={t('operation.xcmFee')} className="text-text-primary">
           <XcmFee api={connection.api} transaction={transaction} asset={asset} config={xcmConfig} />
         </DetailRow>
       )}
