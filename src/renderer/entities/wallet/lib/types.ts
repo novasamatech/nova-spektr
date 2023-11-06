@@ -18,7 +18,7 @@ export enum ImportErrorsLabel {
 
 export type ImportError = {
   error: ImportErrorsLabel;
-  tArgs?: any; // args for t()
+  invalidPaths?: string[];
 };
 
 export type ImportedDerivation = {

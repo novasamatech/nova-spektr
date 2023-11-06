@@ -36,16 +36,15 @@ const importStarted = createEvent<ExistingDerivations>();
 
 const checkFileStructureFx = createEffect<string, ParsedImportFile, DerivationImportError>((fileContent: string) => {
   // using default core scheme converts 0x strings into numeric values
-  const res = parse(fileContent, { schema: 'failsafe' });
-  if (importKeysUtils.isFileStructureValid(res)) {
-    return res;
-  } else {
-    throw new DerivationImportError(ImportErrorsLabel.INVALID_FILE_STRUCTURE);
-  }
+  const structure = parse(fileContent, { schema: 'failsafe' });
+  if (importKeysUtils.isFileStructureValid(structure)) return structure;
+
+  throw new DerivationImportError(ImportErrorsLabel.INVALID_FILE_STRUCTURE);
 });
 
-const validateDerivationsFx = createEffect<ParsedImportFile, TypedImportedDerivation[], DerivationImportError>(
-  (result: ParsedImportFile) => {
+type ValidateDerivationsParams = { result: ParsedImportFile; existingDerivations: ExistingDerivations };
+const validateDerivationsFx = createEffect<ValidateDerivationsParams, TypedImportedDerivation[], DerivationImportError>(
+  ({ result, existingDerivations }) => {
     const parsed = importKeysUtils.getDerivationsFromFile(result);
     if (!parsed) {
       throw new DerivationImportError(ImportErrorsLabel.INVALID_FILE_STRUCTURE);
@@ -53,7 +52,7 @@ const validateDerivationsFx = createEffect<ParsedImportFile, TypedImportedDeriva
 
     const { derivations, root } = parsed;
 
-    if (root !== $existingDerivations.getState()?.root) {
+    if (root !== existingDerivations.root) {
       throw new DerivationImportError(ImportErrorsLabel.INVALID_ROOT);
     }
 
@@ -63,7 +62,7 @@ const validateDerivationsFx = createEffect<ParsedImportFile, TypedImportedDeriva
       if (!derivation.derivationPath) {
         throw new DerivationImportError(ImportErrorsLabel.INVALID_FILE_STRUCTURE);
       }
-      if (!importKeysUtils.validateDerivation(derivation)) {
+      if (!importKeysUtils.isDerivationValid(derivation)) {
         invalidPaths.push(derivation.derivationPath);
       }
     });
@@ -80,7 +79,8 @@ const validateDerivationsFx = createEffect<ParsedImportFile, TypedImportedDeriva
   },
 );
 
-const mergePathsFx = createEffect((imported: TypedImportedDerivation[]): MergeResult | undefined => {
+type MergePathsParams = { imported: TypedImportedDerivation[]; existing: ExistingDerivations };
+const mergePathsFx = createEffect<MergePathsParams, MergeResult | undefined>(({ imported, existing }) => {
   const mergeReport: KeysImportReport = {
     addedKeys: 0,
     updatedNetworks: 0,
@@ -89,7 +89,7 @@ const mergePathsFx = createEffect((imported: TypedImportedDerivation[]): MergeRe
   };
   const mergeResult: TypedImportedDerivation[] = [];
 
-  const existingDerivations = $existingDerivations.getState()?.derivations;
+  const existingDerivations = existing.derivations;
   if (!existingDerivations?.length) return;
 
   const existingByChain = groupBy(existingDerivations, 'chainId');
@@ -124,18 +124,30 @@ sample({
   target: $validationError,
 });
 
-forward({ from: checkFileStructureFx.doneData, to: validateDerivationsFx });
+sample({
+  clock: checkFileStructureFx.doneData,
+  source: $existingDerivations,
+  filter: (existingDerivations, result) => Boolean(existingDerivations),
+  fn: (existingDerivations, result) => ({ result, existingDerivations: existingDerivations! }),
+  target: validateDerivationsFx,
+});
 
 sample({
   source: validateDerivationsFx.fail,
   fn: ({ error }: SampleFnError) => ({
     error: error.message as ObjectValues<typeof ImportErrorsLabel>,
-    tArgs: { count: error.paths?.length, invalidPath: error.paths?.join(', ') },
+    invalidPaths: error.paths,
   }),
   target: $validationError,
 });
 
-forward({ from: validateDerivationsFx.doneData, to: mergePathsFx });
+sample({
+  clock: validateDerivationsFx.doneData,
+  source: $existingDerivations,
+  filter: (existingDerivations, importedDerivations) => Boolean(existingDerivations),
+  fn: (existingDerivations, importedDerivations) => ({ imported: importedDerivations, existing: existingDerivations! }),
+  target: mergePathsFx,
+});
 
 sample({
   source: mergePathsFx.doneData,

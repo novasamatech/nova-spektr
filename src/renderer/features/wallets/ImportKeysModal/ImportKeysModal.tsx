@@ -71,11 +71,15 @@ export const ImportKeysModal = ({ isOpen, onClose, rootAccountId, existingKeys }
           onChange={(file) => handleFileUpload(file)}
         />
 
-        {validationError && (
-          <InputHint active={Boolean(validationError)} variant="error" className="mt-2">
-            {t(validationError?.error, { ...validationError?.tArgs })}
-          </InputHint>
-        )}
+        <InputHint active={Boolean(validationError)} variant="error" className="mt-2">
+          {t(
+            validationError?.error || '',
+            validationError?.invalidPaths && {
+              count: validationError.invalidPaths.length,
+              invalidPath: validationError.invalidPaths.join(', '),
+            },
+          )}
+        </InputHint>
 
         {successReport && (
           <Alert title={t('dynamicDerivations.importKeys.report.title')} variant="success">

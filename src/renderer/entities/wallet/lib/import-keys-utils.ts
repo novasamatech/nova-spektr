@@ -7,7 +7,7 @@ const IMPORT_FILE_VERSION = '1';
 export const importKeysUtils = {
   isFileStructureValid,
   getDerivationsFromFile,
-  validateDerivation,
+  isDerivationValid,
   mergeChainDerivations,
 };
 
@@ -66,7 +66,7 @@ function getDerivationsFromFile(result: ParsedImportFile): FormattedResult | und
   };
 }
 
-function validateDerivation(derivation: ImportedDerivation): boolean {
+function isDerivationValid(derivation: ImportedDerivation): boolean {
   if (!derivation.derivationPath) return false;
 
   const sharded = derivation.sharded && parseInt(derivation.sharded);
@@ -130,7 +130,7 @@ function mergeChainDerivations(
       (x) => x.derivationPath === d.derivationPath && Boolean(x.sharded) && Boolean(d.sharded),
     );
     if (replacementDerivation) {
-      d.sharded = replacementDerivation?.sharded;
+      d.sharded = replacementDerivation.sharded;
     }
   });
 

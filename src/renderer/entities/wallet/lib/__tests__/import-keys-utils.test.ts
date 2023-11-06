@@ -15,7 +15,7 @@ describe('entities/dynamicDerivations/import-keys-utils', () => {
       [importKeysMocks.validDerivations[0], true],
       [importKeysMocks.validDerivations[1], true],
     ])('should validate imported derivation', (derivation: ImportedDerivation, expected: boolean) => {
-      expect(importKeysUtils.validateDerivation(derivation)).toEqual(expected);
+      expect(importKeysUtils.isDerivationValid(derivation)).toEqual(expected);
     });
   });
 
