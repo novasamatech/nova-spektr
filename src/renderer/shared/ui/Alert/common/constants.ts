@@ -12,7 +12,7 @@ export const ViewStyle: Record<Variant, string> = {
   info: 'bg-alert-background border-alert-border',
   warn: 'bg-alert-background-warning border-alert-border-warning',
   error: 'bg-alert-background-negative border-alert-border-negative',
-  success: 'bg-[rgba(1,_166,_62,_0.08)] border-icon-positive',
+  success: 'bg-alert-background-positive border-icon-positive',
 };
 
 export const IconStyle: Record<Variant, string> = {

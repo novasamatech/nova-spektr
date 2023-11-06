@@ -22,9 +22,7 @@ export const ImportKeysModal = ({ isOpen, onClose, rootAccountId, existingKeys }
   const successReport = useUnit(importKeysModel.$successReport);
 
   useEffect(() => {
-    if (rootAccountId && existingKeys) {
-      importKeysModel.events.importStarted({ derivations: existingKeys, root: rootAccountId });
-    }
+    importKeysModel.events.importStarted({ derivations: existingKeys, root: rootAccountId });
   }, [rootAccountId, existingKeys]);
 
   const handleFileUpload = (file: File) => {
@@ -68,7 +66,7 @@ export const ImportKeysModal = ({ isOpen, onClose, rootAccountId, existingKeys }
           accept=".yaml"
           className={cnTw('w-full h-[126px]', validationError && 'mb-2', successReport && 'mb-4')}
           invalid={Boolean(validationError?.error)}
-          onChange={(file) => handleFileUpload(file)}
+          onChange={handleFileUpload}
         />
 
         <InputHint active={Boolean(validationError)} variant="error" className="mt-2">
