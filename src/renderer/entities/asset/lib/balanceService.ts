@@ -4,6 +4,7 @@ import { BN, hexToU8a } from '@polkadot/util';
 import { ApiPromise } from '@polkadot/api';
 import { Codec } from '@polkadot/types/types';
 import { UnsubscribePromise } from '@polkadot/api/types';
+import { Mutex } from 'async-mutex';
 import noop from 'lodash/noop';
 
 import { ExtendedChain } from '@renderer/entities/network/lib/common/types';
@@ -12,9 +13,11 @@ import { BalanceDS, storage } from '../../../shared/api/storage';
 import { IBalanceService } from './common/types';
 import { VERIFY_TIMEOUT } from './common/constants';
 import { useSubscription } from '@renderer/services/subscription/subscriptionService';
-import { getAssetId, toAddress } from '@renderer/shared/lib/utils';
-import type { AccountId, Address, Asset, ChainId, OrmlExtras } from '@renderer/shared/core';
+import { getAssetId, toAddress, toAccountId } from '@renderer/shared/lib/utils';
 import { AssetType } from '@renderer/shared/core';
+import type { AccountId, Address, Asset, ChainId, OrmlExtras, Balance } from '@renderer/shared/core';
+
+const mutex = new Mutex();
 
 export const useBalance = (): IBalanceService => {
   const balanceStorage = storage.connectTo('balances');
@@ -102,6 +105,27 @@ export const useBalance = (): IBalanceService => {
     }
   };
 
+  const insertNewBalances = (accountIds: AccountId[], chainId: ChainId, values: Balance[]) => {
+    mutex
+      .runExclusive(async () => {
+        const balances = await getNetworkBalances(accountIds, chainId);
+
+        const balanceWithLock = values.map((balance: Balance) => {
+          const match = balances.find((b) => {
+            const isSameAccount = b.accountId === balance.accountId;
+            const isSameAssetId = b.assetId === balance.assetId;
+
+            return isSameAccount && isSameAssetId;
+          });
+
+          return match ? { ...match, ...balance } : balance;
+        });
+
+        await insertBalances(balanceWithLock);
+      })
+      .catch(() => console.log(`Error trying to update balance for ${chainId}`));
+  };
+
   const subscribeBalancesChange = (
     accountIds: AccountId[],
     chain: ExtendedChain,
@@ -150,7 +174,7 @@ export const useBalance = (): IBalanceService => {
         return acc;
       }, []);
 
-      insertBalances(newBalances);
+      insertNewBalances(accountIds, chain.chainId, newBalances);
     });
   };
 
@@ -161,7 +185,7 @@ export const useBalance = (): IBalanceService => {
     relaychain?: ExtendedChain,
   ): UnsubscribePromise => {
     const api = chain.api;
-    if (!api) return Promise.resolve(noop);
+    if (!api || !assets.length) return Promise.resolve(noop);
 
     const assetsMap = assets.reduce<[string, Address][]>((acc, asset) => {
       accountIds.forEach((accountId) => {
@@ -175,9 +199,9 @@ export const useBalance = (): IBalanceService => {
       const newBalances = data.reduce((acc, accountInfo, index) => {
         const free = accountInfo.isNone ? '0' : accountInfo.unwrap().balance.toString();
         acc.push({
-          accountId: accountIds[index],
+          accountId: toAccountId(assetsMap[index][1]),
           chainId: chain.chainId,
-          assetId: assetsMap[index][0].toString(),
+          assetId: assets[index].assetId.toString(),
           verified: true,
           frozen: (0).toString(),
           reserved: (0).toString(),
@@ -199,8 +223,27 @@ export const useBalance = (): IBalanceService => {
         return acc;
       }, []);
 
-      insertBalances(newBalances);
+      insertNewBalances(accountIds, chain.chainId, newBalances);
     });
+  };
+
+  const getOrmlAssetTuples = (
+    api: ApiPromise,
+    accountIds: AccountId[],
+    assets: Asset[],
+    addressPrefix: number,
+  ): [Address, Codec][] => {
+    return assets.reduce<[Address, Codec][]>((acc, asset) => {
+      const currencyIdType = (asset?.typeExtras as OrmlExtras).currencyIdType;
+      const ormlAssetId = (asset?.typeExtras as OrmlExtras).currencyIdScale;
+      const assetId = api.createType(currencyIdType, hexToU8a(ormlAssetId));
+
+      accountIds.forEach((accountId) => {
+        acc.push([toAddress(accountId, { prefix: addressPrefix }), assetId]);
+      });
+
+      return acc;
+    }, []);
   };
 
   const subscribeOrmlAssetsChange = (
@@ -210,28 +253,17 @@ export const useBalance = (): IBalanceService => {
     relaychain?: ExtendedChain,
   ): UnsubscribePromise => {
     const api = chain.api;
-    if (!api) return Promise.resolve(noop);
+    if (!api || !assets.length) return Promise.resolve(noop);
 
     const method = api.query.tokens ? api.query.tokens.accounts : api.query.currencies.accounts;
+    const assetsTuples = getOrmlAssetTuples(api, accountIds, assets, chain.addressPrefix);
 
-    const assetsMap = assets.reduce<[Codec, Address][]>((acc, asset) => {
-      const currencyIdType = (asset?.typeExtras as OrmlExtras).currencyIdType;
-      const ormlAssetId = (asset?.typeExtras as OrmlExtras).currencyIdScale;
-      const assetId = api.createType(currencyIdType, hexToU8a(ormlAssetId));
-
-      accountIds.forEach((accountId) => {
-        acc.push([assetId, toAddress(accountId, { prefix: chain.addressPrefix })]);
-      });
-
-      return acc;
-    }, []);
-
-    return method.multi(assetsMap, (data: any[]) => {
+    return method.multi(assetsTuples, (data: any[]) => {
       const newBalances = data.reduce((acc, accountInfo, index) => {
         acc.push({
-          accountId: accountIds[index],
+          accountId: toAccountId(assetsTuples[index][0]),
           chainId: chain.chainId,
-          assetId: assetsMap[index][0].toString(),
+          assetId: assets[index].assetId.toString(),
           verified: true,
           free: accountInfo.free.toString(),
           frozen: accountInfo.frozen.toString(),
@@ -253,7 +285,7 @@ export const useBalance = (): IBalanceService => {
         return acc;
       }, []);
 
-      insertBalances(newBalances);
+      insertNewBalances(accountIds, chain.chainId, newBalances);
     });
   };
 
@@ -284,7 +316,7 @@ export const useBalance = (): IBalanceService => {
         return acc;
       }, []);
 
-      insertBalances(newLocks);
+      insertNewBalances(accountIds, chain.chainId, newLocks);
     });
   };
 
@@ -294,23 +326,12 @@ export const useBalance = (): IBalanceService => {
     assets: Asset[],
   ): UnsubscribePromise => {
     const api = chain.api;
-    if (!api) return Promise.resolve(noop);
+    if (!api || !assets.length) return Promise.resolve(noop);
 
     const method = api.query.tokens ? api.query.tokens.locks : api.query.currencies.locks;
+    const assetsTuples = getOrmlAssetTuples(api, accountIds, assets, chain.addressPrefix);
 
-    const assetsMap = assets.reduce<[Codec, Address][]>((acc, asset) => {
-      const currencyIdType = (asset?.typeExtras as OrmlExtras).currencyIdType;
-      const ormlAssetId = (asset?.typeExtras as OrmlExtras).currencyIdScale;
-      const assetId = api.createType(currencyIdType, hexToU8a(ormlAssetId));
-
-      accountIds.forEach((accountId) => {
-        acc.push([assetId, toAddress(accountId, { prefix: chain.addressPrefix })]);
-      });
-
-      return acc;
-    }, []);
-
-    return method.multi(assetsMap, (data: any[]) => {
+    return method.multi(assetsTuples, (data: any[]) => {
       const newLocks = data.reduce((acc, balanceLock, index) => {
         const locked = balanceLock.map((lock: BalanceLock) => ({
           type: lock.id.toString(),
@@ -318,16 +339,16 @@ export const useBalance = (): IBalanceService => {
         }));
 
         acc.push({
-          accountId: accountIds[index],
+          accountId: toAccountId(assetsTuples[index][0]),
           chainId: chain.chainId,
-          assetId: assetsMap[index][0].toString(),
+          assetId: assets[index].assetId.toString(),
           locked,
         });
 
         return acc;
       }, []);
 
-      insertBalances(newLocks);
+      insertNewBalances(accountIds, chain.chainId, newLocks);
     });
   };
 
@@ -339,8 +360,8 @@ export const useBalance = (): IBalanceService => {
     const { native, statemine, orml } = chain.assets.reduce<Record<'native' | 'statemine' | 'orml', Asset[]>>(
       (acc, asset) => {
         if (!asset.type) acc.native.push(asset);
-        if (asset.type === AssetType.STATEMINE) acc.native.push(asset);
-        if (asset.type === AssetType.ORML) acc.native.push(asset);
+        if (asset.type === AssetType.STATEMINE) acc.statemine.push(asset);
+        if (asset.type === AssetType.ORML) acc.orml.push(asset);
 
         return acc;
       },
@@ -359,7 +380,7 @@ export const useBalance = (): IBalanceService => {
     const { native, orml } = chain.assets.reduce<Record<'native' | 'orml', Asset[]>>(
       (acc, asset) => {
         if (!asset.type) acc.native.push(asset);
-        if (asset.type === AssetType.ORML) acc.native.push(asset);
+        if (asset.type === AssetType.ORML) acc.orml.push(asset);
 
         return acc;
       },
