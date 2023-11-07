@@ -8,12 +8,15 @@ import AlertItem from './AlertItem';
 
 type Props = {
   title: string;
+  active: boolean;
   variant?: Variant;
   className?: string;
   onClose?: () => void;
 };
 
-const Alert = ({ title, variant = 'info', className, children, onClose }: PropsWithChildren<Props>) => {
+const Alert = ({ title, active, variant = 'info', className, children, onClose }: PropsWithChildren<Props>) => {
+  if (!active) return null;
+
   const isList = Children.toArray(children).length > 0;
 
   return (

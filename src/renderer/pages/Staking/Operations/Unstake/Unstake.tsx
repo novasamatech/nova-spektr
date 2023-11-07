@@ -198,17 +198,15 @@ export const Unstake = () => {
             onGoBack={goToPrevStep}
             {...explorersProps}
           >
-            {isAlertOpen && (
-              <Alert title={t('staking.confirmation.hintTitle')} onClose={toggleAlert}>
-                <Alert.Item>
-                  {t('staking.confirmation.hintUnstakePeriod')} {'('}
-                  <UnstakingDuration api={api} />
-                  {')'}
-                </Alert.Item>
-                <Alert.Item>{t('staking.confirmation.hintNoRewards')}</Alert.Item>
-                <Alert.Item>{t('staking.confirmation.hintWithdraw')}</Alert.Item>
-              </Alert>
-            )}
+            <Alert active={isAlertOpen} title={t('staking.confirmation.hintTitle')} onClose={toggleAlert}>
+              <Alert.Item>
+                {t('staking.confirmation.hintUnstakePeriod')} {'('}
+                <UnstakingDuration api={api} />
+                {')'}
+              </Alert.Item>
+              <Alert.Item>{t('staking.confirmation.hintNoRewards')}</Alert.Item>
+              <Alert.Item>{t('staking.confirmation.hintWithdraw')}</Alert.Item>
+            </Alert>
           </Confirmation>
         )}
         {activeStep === Step.SIGNING && (

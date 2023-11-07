@@ -14,9 +14,10 @@ type Props = {
   rootAccountId: AccountId;
   existingKeys: TypedImportedDerivation[];
   onClose: () => void;
+  onConfirm: () => void;
 };
 
-export const ImportKeysModal = ({ isOpen, onClose, rootAccountId, existingKeys }: Props) => {
+export const ImportKeysModal = ({ isOpen, rootAccountId, existingKeys, onClose, onConfirm }: Props) => {
   const { t } = useI18n();
   const validationError = useUnit(importKeysModel.$validationError);
   const successReport = useUnit(importKeysModel.$successReport);
@@ -56,6 +57,7 @@ export const ImportKeysModal = ({ isOpen, onClose, rootAccountId, existingKeys }
 
   const handleContinue = () => {
     // send merged keys to other model
+    onConfirm();
   };
 
   return (
@@ -79,16 +81,18 @@ export const ImportKeysModal = ({ isOpen, onClose, rootAccountId, existingKeys }
           )}
         </InputHint>
 
-        {successReport && (
-          <Alert title={t('dynamicDerivations.importKeys.report.title')} variant="success">
-            <Alert.Item withDot={false}>{getReportText()}</Alert.Item>
-            {successReport.ignoredNetworks.map((chainId) => (
-              <Alert.Item className="break-all" key={chainId}>
-                {chainId}
-              </Alert.Item>
-            ))}
-          </Alert>
-        )}
+        <Alert
+          active={Boolean(successReport)}
+          title={t('dynamicDerivations.importKeys.report.title')}
+          variant="success"
+        >
+          <Alert.Item withDot={false}>{getReportText()}</Alert.Item>
+          {(successReport?.ignoredNetworks || []).map((chainId) => (
+            <Alert.Item className="break-all" key={chainId}>
+              {chainId}
+            </Alert.Item>
+          ))}
+        </Alert>
 
         <InfoLink
           url={templateFile}

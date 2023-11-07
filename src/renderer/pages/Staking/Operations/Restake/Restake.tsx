@@ -191,11 +191,9 @@ export const Restake = () => {
             onGoBack={goToPrevStep}
             {...explorersProps}
           >
-            {isAlertOpen && (
-              <Alert title={t('staking.confirmation.hintTitle')} onClose={toggleAlert}>
-                <Alert.Item>{t('staking.confirmation.hintRestake')}</Alert.Item>
-              </Alert>
-            )}
+            <Alert active={isAlertOpen} title={t('staking.confirmation.hintTitle')} onClose={toggleAlert}>
+              <Alert.Item>{t('staking.confirmation.hintRestake')}</Alert.Item>
+            </Alert>
           </Confirmation>
         )}
         {activeStep === Step.SIGNING && (
