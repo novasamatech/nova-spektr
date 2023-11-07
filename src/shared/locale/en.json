@@ -470,6 +470,7 @@
       "switchLabel": "Show currency values",
       "unpopularFiatLabel": "Fiat currencies"
     },
+    "autoUpdate": "Enable auto update",
     "matrix": {
       "badCredentialsError": "Invalid username or password",
       "badServerError": "Server is not a correct matrix server",
