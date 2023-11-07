@@ -3,10 +3,19 @@ import { Trans } from 'react-i18next';
 import { useUnit } from 'effector-react';
 
 import { useI18n } from '@renderer/app/providers';
-import { FootnoteText, Plate, Checkbox, InfoPopover, Tooltip, Icon, Shimmering, HelpText } from '@renderer/shared/ui';
-import { ExplorerLink } from '@renderer/components/common';
+import {
+  FootnoteText,
+  Plate,
+  Checkbox,
+  InfoPopover,
+  Tooltip,
+  Icon,
+  Shimmering,
+  HelpText,
+  ExplorerLink,
+} from '@renderer/shared/ui';
 import { TimeToEra } from '../TimeToEra/TimeToEra';
-import { redeemableAmount } from '@renderer/shared/lib/utils';
+import { getAccountExplorer, redeemableAmount } from '@renderer/shared/lib/utils';
 import { AccountAddress, walletModel, walletUtils } from '@renderer/entities/wallet';
 import { AssetBalance } from '@renderer/entities/asset';
 import type { Asset, Explorer, Address, EraIndex, Unlocking } from '@renderer/shared/core';
@@ -65,7 +74,7 @@ export const NominatorsList = ({
   const getExplorers = (address: Address, stash?: Address, explorers: Explorer[] = []) => {
     const explorersContent = explorers.map((explorer) => ({
       id: explorer.name,
-      value: <ExplorerLink explorer={explorer} address={address} />,
+      value: <ExplorerLink name={explorer.name} href={getAccountExplorer(explorer, address)} />,
     }));
 
     if (!stash) return [{ items: explorersContent }];

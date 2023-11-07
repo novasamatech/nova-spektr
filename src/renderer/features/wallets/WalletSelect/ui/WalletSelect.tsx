@@ -44,7 +44,13 @@ export const WalletSelect = ({ action }: Props) => {
             leaveFrom="opacity-100 translate-y-0"
             leaveTo="opacity-0 translate-y-1"
           >
-            <WalletPanel action={action} onClose={close} />
+            <WalletPanel
+              action={action}
+              onClose={() => {
+                close();
+                walletSelectModel.events.clearData();
+              }}
+            />
           </Transition>
         </>
       )}

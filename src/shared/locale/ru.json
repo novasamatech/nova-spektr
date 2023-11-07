@@ -136,8 +136,10 @@
       "uploadButton": "Загрузить"
     },
     "explorers": {
+      "addressTitle": "Адрес",
       "explorerButton": "Открыть в { name }",
-      "explorerTitle": "Explorers"
+      "explorerTitle": "Explorers",
+      "matrixIdTitle": "Matrix ID"
     },
     "input": {
       "amountLabel": "Сумма",
@@ -917,7 +919,9 @@
     "addPolkadotVault": "Polkadot Vault",
     "addWalletConnect": "WalletConnect",
     "addWatchOnly": "Watch-only",
-    "multishardLabel": "Multishard",
+    "connectedLabel": "Connected",
+    "disconnectedLabel": "Отключен",
+    "multishardLabel": "Подключен",
     "multisigLabel": "Multisig",
     "novaWalletLabel": "Nova Wallet",
     "paritySignerLabel": "Polkadot Vault",

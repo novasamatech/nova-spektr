@@ -5,18 +5,17 @@ import keyBy from 'lodash/keyBy';
 import wallet_connect_reconnect_webm from '@video/wallet_connect_reconnect.webm';
 import wallet_connect_reconnect from '@video/wallet_connect_reconnect.mp4';
 import { useModalClose, useToggle } from '@renderer/shared/lib/hooks';
-import { MultiAccountsList, WalletIcon } from '@renderer/entities/wallet';
+import { MultiAccountsList, WalletCardLg } from '@renderer/entities/wallet';
 import { useI18n } from '@renderer/app/providers';
 import { chainsService } from '@renderer/entities/network';
 import { walletConnectUtils } from '@renderer/entities/walletConnect';
-import type { Wallet, Chain, Account } from '@renderer/shared/core';
+import type { Chain, Account, WalletConnectWallet } from '@renderer/shared/core';
 import { wcDetailsModel } from '../model/wc-details-model';
 import { wcDetailsUtils, walletDetailsUtils } from '../lib/utils';
 import { ForgetStep } from '../lib/constants';
 import {
   Animation,
   BaseModal,
-  BodyText,
   Button,
   ConfirmModal,
   FootnoteText,
@@ -24,7 +23,6 @@ import {
   Icon,
   IconButton,
   MenuPopover,
-  StatusLabel,
   SmallTitleText,
   StatusModal,
 } from '@renderer/shared/ui';
@@ -35,12 +33,11 @@ type AccountItem = {
 };
 
 type Props = {
-  wallet: Wallet;
+  wallet: WalletConnectWallet;
   accounts: Account[];
-  isConnected: boolean;
   onClose: () => void;
 };
-export const WalletConnectDetails = ({ wallet, accounts, isConnected, onClose }: Props) => {
+export const WalletConnectDetails = ({ wallet, accounts, onClose }: Props) => {
   const { t } = useI18n();
 
   const [isModalOpen, closeModal] = useModalClose(true, onClose);
@@ -129,28 +126,16 @@ export const WalletConnectDetails = ({ wallet, accounts, isConnected, onClose }:
       onClose={closeModal}
     >
       <div className="flex flex-col h-full w-full">
-        <div className="flex items-center justify-between gap-x-2 p-5 border-b border-divider">
-          <div className="flex items-center justify-between gap-x-2">
-            <WalletIcon type={wallet.type} size={32} />
-            <BodyText>{wallet.name}</BodyText>
-          </div>
-          <StatusLabel
-            variant={isConnected ? 'success' : 'waiting'}
-            title={t(
-              isConnected
-                ? 'walletDetails.walletConnect.connectedStatus'
-                : 'walletDetails.walletConnect.disconnectedStatus',
-            )}
-          />
+        <div className="py-5 px-5 border-b border-divider">
+          <WalletCardLg full wallet={wallet} />
         </div>
-
         <div className="px-3 flex-1">
           <>
-            {wcDetailsUtils.isNotStarted(reconnectStep, isConnected) && (
+            {wcDetailsUtils.isNotStarted(reconnectStep, wallet.isConnected) && (
               <MultiAccountsList accounts={accountsList} className="h-[404px]" />
             )}
 
-            {wcDetailsUtils.isReadyToReconnect(reconnectStep, isConnected) && (
+            {wcDetailsUtils.isReadyToReconnect(reconnectStep, wallet.isConnected) && (
               <div className="flex flex-col h-[454px] justify-center items-center">
                 <Icon name="document" size={64} className="mb-6" />
                 <SmallTitleText className="mb-2">{t('walletDetails.walletConnect.disconnectedTitle')}</SmallTitleText>

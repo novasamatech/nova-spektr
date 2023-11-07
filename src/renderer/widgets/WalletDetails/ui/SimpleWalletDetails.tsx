@@ -1,8 +1,8 @@
 import { useMemo } from 'react';
 
-import { BaseModal, BodyText } from '@renderer/shared/ui';
+import { BaseModal } from '@renderer/shared/ui';
 import { useModalClose } from '@renderer/shared/lib/hooks';
-import { AccountsList, WalletIcon } from '@renderer/entities/wallet';
+import { AccountsList, WalletCardLg } from '@renderer/entities/wallet';
 import { chainsService } from '@renderer/entities/network';
 import { useI18n } from '@renderer/app/providers';
 import type { Wallet, BaseAccount } from '@renderer/shared/core';
@@ -33,9 +33,8 @@ export const SimpleWalletDetails = ({ wallet, account, onClose }: Props) => {
       onClose={closeModal}
     >
       <div className="flex flex-col gap-y-4 w-full">
-        <div className="flex items-center gap-x-2 py-5 px-5 border-b border-divider">
-          <WalletIcon type={wallet.type} size={32} />
-          <BodyText>{wallet.name}</BodyText>
+        <div className="py-5 px-5 border-b border-divider">
+          <WalletCardLg wallet={wallet} />
         </div>
         <AccountsList accountId={account.accountId} chains={chains} className="h-[415px]" />
       </div>
