@@ -11,9 +11,10 @@ const TABLE_GRID_CELLS = 'grid-cols-[1fr,128px,128px,40px]';
 type TableProps = {
   validators: Validator[];
   children: (validtor: Validator, rowStyle: string) => JSX.Element;
+  listClassName?: string;
 };
 
-export const ValidatorsTable = ({ validators, children }: TableProps) => {
+export const ValidatorsTable = ({ validators, children, listClassName }: TableProps) => {
   const { t } = useI18n();
 
   const rowStyle = cnTw('grid items-center pl-5 pr-2 shrink-0 h-14 hover:bg-hover group', TABLE_GRID_CELLS);
@@ -28,7 +29,7 @@ export const ValidatorsTable = ({ validators, children }: TableProps) => {
         </FootnoteText>
       </div>
 
-      <ul className="flex flex-col [overflow-y:overlay] max-h-[448px]">
+      <ul className={cnTw('flex flex-col [overflow-y:overlay] max-h-[448px]', listClassName)}>
         {validators.map((validator) => children(validator, rowStyle))}
       </ul>
     </div>

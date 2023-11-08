@@ -62,7 +62,7 @@ const extendSessionsFx = createEffect((client: Client) => {
   pairings.forEach((p) => {
     client.core.pairing.updateExpiry({
       topic: p.topic,
-      expiry: EXTEND_PAIRING,
+      expiry: Math.round(Date.now() / 1000) + EXTEND_PAIRING,
     });
   });
 });
@@ -247,6 +247,7 @@ type ConnectResult = {
 };
 const connectFx = createEffect(async ({ client, approval }: ConnectParams): Promise<ConnectResult | undefined> => {
   const session = await approval();
+
   console.log('Established session:', session);
 
   return {
@@ -306,7 +307,7 @@ sample({
 sample({
   clock: initConnectFx.doneData,
   source: $client,
-  filter: (client, initData) => client !== null && initData?.approval !== null,
+  filter: (client, initData) => Boolean(client) && Boolean(initData?.approval),
   fn: ($client, initData) => ({
     client: $client!,
     approval: initData?.approval!,

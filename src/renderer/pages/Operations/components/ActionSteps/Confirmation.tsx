@@ -34,7 +34,9 @@ export const Confirmation = ({ tx, account, connection, signatory, feeTx, onSign
   const { t } = useI18n();
   const [isFeeLoaded, setIsFeeLoaded] = useState(false);
 
-  const activeWallet = useUnit(walletModel.$activeWallet);
+  const wallets = useUnit(walletModel.$wallets);
+  const wallet = wallets.find((w) => w.id === signatory?.walletId);
+
   const xcmConfig = useUnit(sendAssetModel.$finalConfig);
   const asset = getAssetById(tx.transaction?.args.assetId, connection.assets) || connection.assets[0];
 
@@ -85,7 +87,7 @@ export const Confirmation = ({ tx, account, connection, signatory, feeTx, onSign
       </DetailRow>
 
       {isXcmTransaction(transaction) && xcmConfig && connection.api && (
-        <DetailRow label={t('operation.xcmFee')} className="text-text-primary pr-2">
+        <DetailRow label={t('operation.xcmFee')} className="text-text-primary">
           <XcmFee api={connection.api} transaction={transaction} asset={asset} config={xcmConfig} />
         </DetailRow>
       )}
@@ -93,7 +95,7 @@ export const Confirmation = ({ tx, account, connection, signatory, feeTx, onSign
       <SignButton
         disabled={!isFeeLoaded}
         className="mt-3 ml-auto"
-        type={activeWallet?.type || WalletType.SINGLE_PARITY_SIGNER}
+        type={wallet?.type || WalletType.SINGLE_PARITY_SIGNER}
         onClick={onSign}
       />
     </div>
