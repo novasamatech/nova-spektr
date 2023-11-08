@@ -10,7 +10,7 @@ import { ValidatorMap } from '@renderer/entities/staking';
 import { toAddress, getRelaychainAsset, DEFAULT_TRANSITION } from '@renderer/shared/lib/utils';
 import { Confirmation, Submit, Validators, NoAsset } from '../components';
 import { useToggle } from '@renderer/shared/lib/hooks';
-import { BaseModal, Button, FootnoteText, LabelHelpBox, Loader, Popover } from '@renderer/shared/ui';
+import { BaseModal, Button, Loader } from '@renderer/shared/ui';
 import InitOperation, { ValidatorsResult } from './InitOperation/InitOperation';
 import { isLightClient } from '@renderer/entities/network';
 import { OperationTitle } from '@renderer/components/common';
@@ -18,6 +18,7 @@ import { Signing } from '@renderer/features/operation';
 import type { Account, ChainId, HexString, Address } from '@renderer/shared/core';
 import { walletUtils, walletModel } from '@renderer/entities/wallet';
 import { priceProviderModel } from '@renderer/entities/price';
+import { StakingPopover } from '../components/StakingPopover/StakingPopover';
 
 const enum Step {
   INIT,
@@ -211,22 +212,11 @@ export const ChangeValidators = () => {
             onGoBack={goToPrevStep}
             {...explorersProps}
           >
-            <Popover
-              contentClass="p-4"
-              offsetPx={1}
-              panelClass="w-[230px]"
-              content={
-                <section className="flex flex-col gap-y-2">
-                  <FootnoteText className="text-text-secondary">
-                    <ul className="flex flex-col gap-y-1 list-disc pl-5">
-                      <li>{t('staking.confirmation.hintNewValidators')}</li>
-                    </ul>
-                  </FootnoteText>
-                </section>
-              }
-            >
-              <LabelHelpBox>{t('staking.confirmation.hintTitle')}</LabelHelpBox>
-            </Popover>
+            <StakingPopover labelText={t('staking.confirmation.hintTitle')}>
+              <ul className="flex flex-col gap-y-1 list-disc pl-5">
+                <li>{t('staking.confirmation.hintNewValidators')}</li>
+              </ul>
+            </StakingPopover>
           </Confirmation>
         )}
         {activeStep === Step.SIGNING && (
