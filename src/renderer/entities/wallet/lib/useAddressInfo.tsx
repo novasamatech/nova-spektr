@@ -38,7 +38,9 @@ export const useAddressInfo = ({ address, explorers = [], addressPrefix, showMat
     popoverItems.push({
       items: explorers.map((explorer) => ({
         id: explorer.name,
-        value: <ExplorerLink name={explorer.name} href={getAccountExplorer(explorer, address, addressPrefix)} />,
+        value: (
+          <ExplorerLink name={explorer.name} href={getAccountExplorer(explorer, { value: address, addressPrefix })} />
+        ),
       })),
     });
   }

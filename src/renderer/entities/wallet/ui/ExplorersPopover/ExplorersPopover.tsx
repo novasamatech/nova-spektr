@@ -64,7 +64,7 @@ export const ExplorersPopover = ({ button, address, explorers, addressPrefix, ch
               <ExplorerLink
                 key={explorer.name}
                 name={explorer.name}
-                href={getAccountExplorer(explorer, formattedAddress, addressPrefix)}
+                href={getAccountExplorer(explorer, { address: formattedAddress })}
               />
             ))}
           </PopoverGroup>

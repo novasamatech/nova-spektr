@@ -239,7 +239,7 @@ export const getSignatoryOption = (
 export const getExplorers = (address: Address, explorers: Explorer[] = []): [InfoSection] => {
   const explorersContent = explorers.map((explorer) => ({
     id: explorer.name,
-    value: <ExplorerLink name={explorer.name} href={getAccountExplorer(explorer, address)} />,
+    value: <ExplorerLink name={explorer.name} href={getAccountExplorer(explorer, { address })} />,
   }));
 
   return [{ items: explorersContent }];

@@ -1,6 +1,6 @@
-import type { Address, ChainId, Explorer, HexString, AccountId } from '@renderer/shared/core';
-import { SS58_DEFAULT_PREFIX } from './constants';
+import type { ChainId, Explorer, HexString, Address, AccountId } from '@renderer/shared/core';
 import { toAddress } from './address';
+import { SS58_DEFAULT_PREFIX } from './constants';
 
 export const toLocalChainId = (chainId?: ChainId): string | undefined => {
   return chainId?.replace('0x', '');
@@ -13,16 +13,18 @@ export const toHexChainId = (chainId?: string): ChainId | undefined => {
 /**
  * Get block explorer URL by AccountId or Address
  * @param explorer explorer with links
- * @param address value of address or accountId
- * @param addressPrefix prefix of the network
+ * @param params address or accountId with addressPrefix
  * @return {String | undefined}
  */
-export const getAccountExplorer = (
-  explorer: Explorer,
-  address: Address | AccountId,
-  addressPrefix = SS58_DEFAULT_PREFIX,
-): string | undefined => {
-  return explorer.account?.replace('{address}', toAddress(address, { prefix: addressPrefix }));
+type WithAddress = { address: Address };
+type WithAccountId = { value: Address | AccountId; addressPrefix?: number };
+export const getAccountExplorer = (explorer: Explorer, params: WithAddress | WithAccountId): string | undefined => {
+  const replacer =
+    'value' in params
+      ? toAddress(params.value, { prefix: params.addressPrefix ?? SS58_DEFAULT_PREFIX })
+      : params.address;
+
+  return explorer.account?.replace('{address}', replacer);
 };
 
 /**

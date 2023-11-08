@@ -74,7 +74,7 @@ export const NominatorsList = ({
   const getExplorers = (address: Address, stash?: Address, explorers: Explorer[] = []) => {
     const explorersContent = explorers.map((explorer) => ({
       id: explorer.name,
-      value: <ExplorerLink name={explorer.name} href={getAccountExplorer(explorer, address)} />,
+      value: <ExplorerLink name={explorer.name} href={getAccountExplorer(explorer, { address })} />,
     }));
 
     if (!stash) return [{ items: explorersContent }];
