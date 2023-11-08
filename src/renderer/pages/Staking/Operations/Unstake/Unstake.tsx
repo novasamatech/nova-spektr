@@ -199,15 +199,13 @@ export const Unstake = () => {
             {...explorersProps}
           >
             <StakingPopover labelText={t('staking.confirmation.hintTitle')}>
-              <ul className="flex flex-col gap-y-1 list-disc pl-5">
-                <li>
-                  {t('staking.confirmation.hintUnstakePeriod')} {'('}
-                  <UnstakingDuration api={api} />
-                  {')'}
-                </li>
-                <li>{t('staking.confirmation.hintNoRewards')}</li>
-                <li>{t('staking.confirmation.hintWithdraw')}</li>
-              </ul>
+              <StakingPopover.Item>
+                {t('staking.confirmation.hintUnstakePeriod')} {' ('}
+                <UnstakingDuration api={api} />
+                {')'}
+              </StakingPopover.Item>
+              <StakingPopover.Item>{t('staking.confirmation.hintNoRewards')}</StakingPopover.Item>
+              <StakingPopover.Item>{t('staking.confirmation.hintWithdraw')}</StakingPopover.Item>
             </StakingPopover>
           </Confirmation>
         )}

@@ -213,9 +213,7 @@ export const ChangeValidators = () => {
             {...explorersProps}
           >
             <StakingPopover labelText={t('staking.confirmation.hintTitle')}>
-              <ul className="flex flex-col gap-y-1 list-disc pl-5">
-                <li>{t('staking.confirmation.hintNewValidators')}</li>
-              </ul>
+              <StakingPopover.Item>{t('staking.confirmation.hintNewValidators')}</StakingPopover.Item>
             </StakingPopover>
           </Confirmation>
         )}

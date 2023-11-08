@@ -25,7 +25,7 @@ import type { Account, Asset, Explorer } from '@renderer/shared/core';
 import { AssetFiatBalance } from '@renderer/entities/price/ui/AssetFiatBalance';
 import { SelectedValidatorsModal } from '../Modals/SelectedValidatorsModal/SelectedValidatorsModal';
 import { SignButton } from '@renderer/entities/operation/ui/SignButton';
-import { getIconName } from '@renderer/shared/lib/utils/transaction';
+import { getIconName } from '@renderer/entities/transaction/lib/transactionIcon';
 
 const ActionStyle = 'group hover:bg-action-background-hover px-2 py-1 rounded';
 
@@ -81,7 +81,6 @@ export const Confirmation = ({
 
   const signerWallet = signer && wallets.find((w) => w.id === signer.walletId);
   const walletType = signerWallet?.type || activeWallet?.type || WalletType.POLKADOT_VAULT;
-  const iconName = getIconName(transaction);
 
   useEffect(() => {
     if (!accounts.length && !isMultisigAccount) return;
@@ -105,7 +104,7 @@ export const Confirmation = ({
       <div className="w-[440px] px-5 py-4">
         <div className="flex flex-col items-center gap-y-3 mb-6">
           <div className="flex items-center justify-center w-15 h-15 box-content rounded-full border-2 border-icon-default">
-            <Icon className="text-icon-default" name={iconName} size={42} />
+            <Icon className="text-icon-default" name={getIconName(transaction)} size={42} />
           </div>
           {amounts.length > 0 && (
             <div className="flex flex-col gap-y-2 items-center mx-auto">

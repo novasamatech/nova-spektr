@@ -23,22 +23,20 @@ export const SelectedValidatorsModal = ({ isOpen, validators, explorers, onClose
       isOpen={isOpen}
       onClose={onClose}
     >
-      <div className="flex flex-col gap-y-2 mt-2">
-        <Accordion isDefaultOpen>
-          <Accordion.Content>
-            <ul className="flex flex-col [overflow-y:overlay]">
-              {validators.map((validator) => (
-                <li
-                  key={validator.address}
-                  className="grid items-center pl-5 pr-2 shrink-0 h-10 grid-cols-[1fr,40px] hover:bg-hover group"
-                >
-                  <ValidatorsTable.ShortRow validator={validator} explorers={explorers} />
-                </li>
-              ))}
-            </ul>
-          </Accordion.Content>
-        </Accordion>
-      </div>
+      <Accordion isDefaultOpen className="mt-2">
+        <Accordion.Content>
+          <ul className="flex flex-col [overflow-y:overlay]">
+            {validators.map((validator) => (
+              <li
+                key={validator.address}
+                className="grid items-center pl-5 pr-2 shrink-0 h-10 grid-cols-[1fr,40px] hover:bg-hover group"
+              >
+                <ValidatorsTable.ShortRow validator={validator} explorers={explorers} />
+              </li>
+            ))}
+          </ul>
+        </Accordion.Content>
+      </Accordion>
     </BaseModal>
   );
 };
