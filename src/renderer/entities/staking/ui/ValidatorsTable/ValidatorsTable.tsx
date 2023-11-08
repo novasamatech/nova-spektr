@@ -35,6 +35,11 @@ export const ValidatorsTable = ({ validators, children, listClassName }: TablePr
     </div>
   );
 };
+const InfoIcon = ({ validator, explorers }: { validator: Validator; explorers?: Explorer[] }) => (
+  <InfoPopover data={getExplorers(validator.address, explorers)} position="top-full right-0" buttonClassName="p-2">
+    <Icon name="info" size={16} className="mr-auto group-hover:text-icon-active" />
+  </InfoPopover>
+);
 
 type RowProps = {
   validator: Validator;
@@ -71,10 +76,27 @@ const ValidatorRow = ({ validator, explorers, asset }: RowProps) => (
         </>
       )}
     </div>
-    <InfoPopover data={getExplorers(validator.address, explorers)} position="top-full right-0" buttonClassName="p-2">
-      <Icon name="info" size={16} className="mr-auto group-hover:text-icon-active" />
-    </InfoPopover>
+
+    <InfoIcon validator={validator} explorers={explorers} />
+  </>
+);
+
+const ValidatorShortRow = ({ validator, explorers }: RowProps) => (
+  <>
+    <div className="flex gap-x-2 items-center mr-auto" data-testid="validator">
+      <Identicon address={validator.address} background={false} size={20} />
+      {validator.identity ? (
+        <div className="flex flex-col max-w-[276px]">
+          <BodyText className="text-text-secondary">{getComposedIdentity(validator.identity)}</BodyText>
+        </div>
+      ) : (
+        <BodyText className="text-text-secondary overflow-hidden overflow-ellipsis">{validator.address}</BodyText>
+      )}
+    </div>
+
+    <InfoIcon validator={validator} explorers={explorers} />
   </>
 );
 
 ValidatorsTable.Row = ValidatorRow;
+ValidatorsTable.ShortRow = ValidatorShortRow;

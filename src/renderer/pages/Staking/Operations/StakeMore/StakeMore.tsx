@@ -11,7 +11,7 @@ import { Confirmation, NoAsset, Submit } from '../components';
 import { DEFAULT_TRANSITION, getRelaychainAsset, toAddress } from '@renderer/shared/lib/utils';
 import { useToggle } from '@renderer/shared/lib/hooks';
 import type { Account, ChainId, HexString } from '@renderer/shared/core';
-import { Alert, BaseModal, Button, Loader } from '@renderer/shared/ui';
+import { BaseModal, Button, FootnoteText, LabelHelpBox, Loader, Popover } from '@renderer/shared/ui';
 import { OperationTitle } from '@renderer/components/common';
 import { Signing } from '@renderer/features/operation';
 import { walletModel, walletUtils } from '@renderer/entities/wallet';
@@ -36,7 +36,6 @@ export const StakeMore = () => {
   const params = useParams<{ chainId: ChainId }>();
 
   const [isStakeMoreModalOpen, toggleStakeMoreModal] = useToggle(true);
-  const [isAlertOpen, toggleAlert] = useToggle(true);
 
   const [activeStep, setActiveStep] = useState<Step>(Step.INIT);
 
@@ -191,11 +190,22 @@ export const StakeMore = () => {
             onGoBack={goToPrevStep}
             {...explorersProps}
           >
-            {isAlertOpen && (
-              <Alert title={t('staking.confirmation.hintTitle')} onClose={toggleAlert}>
-                <Alert.Item>{t('staking.confirmation.hintNewRewards')}</Alert.Item>
-              </Alert>
-            )}
+            <Popover
+              contentClass="p-4"
+              offsetPx={1}
+              panelClass="w-[230px]"
+              content={
+                <section className="flex flex-col gap-y-2">
+                  <FootnoteText className="text-text-secondary">
+                    <ul className="flex flex-col gap-y-1 list-disc pl-5">
+                      <li>{t('staking.confirmation.hintNewRewards')}</li>
+                    </ul>
+                  </FootnoteText>
+                </section>
+              }
+            >
+              <LabelHelpBox>{t('staking.confirmation.hintTitle')}</LabelHelpBox>
+            </Popover>
           </Confirmation>
         )}
         {activeStep === Step.SIGNING && (
