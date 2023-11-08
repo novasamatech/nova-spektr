@@ -192,9 +192,7 @@ export const StakeMore = () => {
             {...explorersProps}
           >
             <StakingPopover labelText={t('staking.confirmation.hintTitle')}>
-              <ul className="flex flex-col gap-y-1 list-disc pl-5">
-                <li>{t('staking.confirmation.hintNewRewards')}</li>
-              </ul>
+              <StakingPopover.Item>{t('staking.confirmation.hintNewRewards')}</StakingPopover.Item>
             </StakingPopover>
           </Confirmation>
         )}

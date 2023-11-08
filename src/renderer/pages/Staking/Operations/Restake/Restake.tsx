@@ -192,9 +192,7 @@ export const Restake = () => {
             {...explorersProps}
           >
             <StakingPopover labelText={t('staking.confirmation.hintTitle')}>
-              <ul className="flex flex-col gap-y-1 list-disc pl-5">
-                <li>{t('staking.confirmation.hintRestake')}</li>
-              </ul>
+              <StakingPopover.Item>{t('staking.confirmation.hintRestake')}</StakingPopover.Item>
             </StakingPopover>
           </Confirmation>
         )}

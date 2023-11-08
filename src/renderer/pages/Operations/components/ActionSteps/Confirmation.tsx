@@ -13,7 +13,7 @@ import { TransactionAmount } from '@renderer/pages/Operations/components/Transac
 import { DetailRow, FootnoteText, Icon } from '@renderer/shared/ui';
 import { ExtendedChain } from '@renderer/entities/network';
 import { useI18n } from '@renderer/app/providers';
-import { getIconName } from '@renderer/shared/lib/utils/transaction';
+import { getIconName } from '@renderer/entities/transaction/lib/transactionIcon';
 import { type Account, type MultisigAccount, WalletType } from '@renderer/shared/core';
 import Details from '../Details';
 import { getAssetById } from '@renderer/shared/lib/utils';
@@ -40,7 +40,6 @@ export const Confirmation = ({ tx, account, connection, signatory, feeTx, onSign
   const xcmConfig = useUnit(sendAssetModel.$finalConfig);
   const asset = getAssetById(tx.transaction?.args.assetId, connection.assets) || connection.assets[0];
 
-  const iconName = getIconName(tx.transaction);
   const transaction = getTransactionFromMultisigTx(tx);
 
   useEffect(() => {
@@ -51,7 +50,7 @@ export const Confirmation = ({ tx, account, connection, signatory, feeTx, onSign
     <div className="flex flex-col items-center gap-y-3">
       <div className="flex flex-col items-center gap-y-3 mb-6">
         <div className="flex items-center justify-center w-15 h-15 box-content rounded-full border-2 border-icon-default">
-          <Icon className="text-icon-default" name={iconName} size={42} />
+          <Icon className="text-icon-default" name={getIconName(tx.transaction)} size={42} />
         </div>
 
         {tx.transaction && <TransactionAmount tx={tx.transaction} />}

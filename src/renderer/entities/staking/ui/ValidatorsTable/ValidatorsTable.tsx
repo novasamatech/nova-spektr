@@ -83,7 +83,7 @@ const ValidatorRow = ({ validator, explorers, asset }: RowProps) => (
 
 const ValidatorShortRow = ({ validator, explorers }: RowProps) => (
   <>
-    <div className="flex gap-x-2 items-center mr-auto" data-testid="validator">
+    <div className="flex gap-x-2 items-center mr-auto">
       <Identicon address={validator.address} background={false} size={20} />
       {validator.identity ? (
         <div className="flex flex-col max-w-[276px]">
