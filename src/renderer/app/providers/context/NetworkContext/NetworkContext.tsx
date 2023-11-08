@@ -85,10 +85,6 @@ export const NetworkProvider = ({ children }: PropsWithChildren) => {
       return;
     }
 
-    connectedConnections.forEach((chain) => {
-      subscribeBalanceChanges(chain, accountUtils.getAllAccountIds(activeAccounts, chain.connection.chainId));
-    });
-
     // subscribe to new connections
     const newConnections = connectedConnections.filter((c) => !previousConnectedConnections?.includes(c));
 
