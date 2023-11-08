@@ -257,7 +257,6 @@ export const Bond = () => {
             addressPrefix={addressPrefix}
             signatory={signer}
             accounts={txAccounts}
-            explorers={explorers}
             transactions={multisigTx ? [multisigTx] : txs}
             onGoBack={() => setActiveStep(Step.CONFIRMATION)}
             onResult={onSignResult}
