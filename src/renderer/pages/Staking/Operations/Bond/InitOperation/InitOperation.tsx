@@ -3,10 +3,10 @@ import { BN } from '@polkadot/util';
 import { useEffect, useState } from 'react';
 import { useUnit } from 'effector-react';
 
-import { OperationError, OperationFooter, OperationHeader } from '@renderer/features/operation';
+import { OperationFooter, OperationHeader } from '@renderer/features/operation';
 import { useI18n } from '@renderer/app/providers';
 import { useBalance } from '@renderer/entities/asset';
-import { Transaction, TransactionType } from '@renderer/entities/transaction';
+import { Transaction, TransactionType, OperationError } from '@renderer/entities/transaction';
 import { formatAmount, stakeableAmount, toAddress, nonNullable, TEST_ADDRESS } from '@renderer/shared/lib/utils';
 import { useValidators } from '@renderer/entities/staking';
 import { OperationForm } from '../../components';
