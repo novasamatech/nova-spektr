@@ -3,7 +3,7 @@ import { BalanceLock } from '@polkadot/types/interfaces';
 import { BN, hexToU8a } from '@polkadot/util';
 import { ApiPromise } from '@polkadot/api';
 import { Codec } from '@polkadot/types/types';
-import { UnsubscribePromise } from '@polkadot/api/types';
+import { UnsubscribePromise, VoidFn } from '@polkadot/api/types';
 import { Mutex } from 'async-mutex';
 import noop from 'lodash/noop';
 
@@ -129,11 +129,11 @@ export const useBalance = (): IBalanceService => {
   const subscribeBalancesChange = (
     accountIds: AccountId[],
     chain: ExtendedChain,
-    assetId: number,
+    assetId?: number,
     relaychain?: ExtendedChain,
   ): UnsubscribePromise => {
     const api = chain.api;
-    if (!api) return Promise.resolve(noop);
+    if (!api || assetId === undefined) return Promise.resolve(noop);
 
     const addresses = accountIds.map((accountId) => toAddress(accountId, { prefix: chain.addressPrefix }));
 
@@ -292,10 +292,10 @@ export const useBalance = (): IBalanceService => {
   const subscribeLockBalanceChange = (
     accountIds: AccountId[],
     chain: ExtendedChain,
-    assetId: number,
+    assetId?: number,
   ): UnsubscribePromise => {
     const api = chain.api;
-    if (!api) return Promise.resolve(noop);
+    if (!api || assetId === undefined) return Promise.resolve(noop);
 
     const addresses = accountIds.map((accountId) => toAddress(accountId, { prefix: chain.addressPrefix }));
 
@@ -356,40 +356,44 @@ export const useBalance = (): IBalanceService => {
     chain: ExtendedChain,
     accountIds: AccountId[],
     relaychain?: ExtendedChain,
-  ): Promise<any> => {
-    const { native, statemine, orml } = chain.assets.reduce<Record<'native' | 'statemine' | 'orml', Asset[]>>(
+  ): Promise<VoidFn[]> => {
+    const { nativeAsset, statemineAssets, ormlAssets } = chain.assets.reduce<{
+      nativeAsset?: Asset;
+      statemineAssets: Asset[];
+      ormlAssets: Asset[];
+    }>(
       (acc, asset) => {
-        if (!asset.type) acc.native.push(asset);
-        if (asset.type === AssetType.STATEMINE) acc.statemine.push(asset);
-        if (asset.type === AssetType.ORML) acc.orml.push(asset);
+        if (!asset.type) acc.nativeAsset = asset;
+        if (asset.type === AssetType.STATEMINE) acc.statemineAssets.push(asset);
+        if (asset.type === AssetType.ORML) acc.ormlAssets.push(asset);
 
         return acc;
       },
-      { native: [], statemine: [], orml: [] },
+      { nativeAsset: undefined, statemineAssets: [], ormlAssets: [] },
     );
 
     return Promise.all([
-      ...native.map((asset) => subscribeBalancesChange(accountIds, chain, asset.assetId, relaychain)),
-      subscribeStatemineAssetsChange(accountIds, chain, statemine, relaychain),
-      subscribeOrmlAssetsChange(accountIds, chain, orml, relaychain),
+      subscribeBalancesChange(accountIds, chain, nativeAsset?.assetId, relaychain),
+      subscribeStatemineAssetsChange(accountIds, chain, statemineAssets, relaychain),
+      subscribeOrmlAssetsChange(accountIds, chain, ormlAssets, relaychain),
       () => validationSubscriptionService.unsubscribe(chain.chainId),
     ]);
   };
 
-  const subscribeLockBalances = (chain: ExtendedChain, accountIds: AccountId[]): Promise<any> => {
-    const { native, orml } = chain.assets.reduce<Record<'native' | 'orml', Asset[]>>(
+  const subscribeLockBalances = (chain: ExtendedChain, accountIds: AccountId[]): Promise<VoidFn[]> => {
+    const { nativeAsset, ormlAssets } = chain.assets.reduce<{ nativeAsset?: Asset; ormlAssets: Asset[] }>(
       (acc, asset) => {
-        if (!asset.type) acc.native.push(asset);
-        if (asset.type === AssetType.ORML) acc.orml.push(asset);
+        if (!asset.type) acc.nativeAsset = asset;
+        if (asset.type === AssetType.ORML) acc.ormlAssets.push(asset);
 
         return acc;
       },
-      { native: [], orml: [] },
+      { nativeAsset: undefined, ormlAssets: [] },
     );
 
     return Promise.all([
-      ...native.map((asset) => subscribeLockBalanceChange(accountIds, chain, asset.assetId)),
-      subscribeLockOrmlAssetChange(accountIds, chain, orml),
+      subscribeLockBalanceChange(accountIds, chain, nativeAsset?.assetId),
+      subscribeLockOrmlAssetChange(accountIds, chain, ormlAssets),
     ]);
   };
 

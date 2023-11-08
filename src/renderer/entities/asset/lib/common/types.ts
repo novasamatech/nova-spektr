@@ -1,3 +1,5 @@
+import { VoidFn } from '@polkadot/api/types';
+
 import { BalanceDS } from '@renderer/shared/api/storage/common/types';
 import { ExtendedChain } from '@renderer/entities/network/lib/common/types';
 import type { ChainId, AccountId, BalanceKey } from '@renderer/shared/core';
@@ -12,7 +14,7 @@ export interface IBalanceService {
   getBalances: (accountIds: AccountId[]) => Promise<BalanceDS[]>;
   getAllBalances: () => Promise<BalanceDS[]>;
   getLiveBalances: (accountIds: AccountId[]) => BalanceDS[];
-  subscribeBalances: (chain: ExtendedChain, accountIds: AccountId[], relaychain?: ExtendedChain) => Promise<any>;
-  subscribeLockBalances: (chain: ExtendedChain, accountIds: AccountId[]) => Promise<any>;
+  subscribeBalances: (chain: ExtendedChain, accountIds: AccountId[], relaychain?: ExtendedChain) => Promise<VoidFn[]>;
+  subscribeLockBalances: (chain: ExtendedChain, accountIds: AccountId[]) => Promise<VoidFn[]>;
   setBalanceIsValid: (balanceKey: BalanceKey, verified: boolean) => Promise<number>;
 }

@@ -25,15 +25,14 @@ const NetworkContext = createContext<NetworkContextProps>({} as NetworkContextPr
 export const NetworkProvider = ({ children }: PropsWithChildren) => {
   const activeAccounts = useUnit(walletModel.$activeAccounts);
 
-  const networkSubscriptions = useSubscription<ChainId>();
-  const { subscribe, unsubscribe, unsubscribeAll } = networkSubscriptions;
-  const { connections, setupConnections, connectToNetwork, connectWithAutoBalance, ...rest } =
-    useNetwork(networkSubscriptions);
+  const { subscribe, unsubscribe, unsubscribeAll } = useSubscription<ChainId>();
+  const { connections, setupConnections, connectToNetwork, connectWithAutoBalance, ...rest } = useNetwork();
   const { subscribeBalances, subscribeLockBalances } = useBalance();
 
   const [everyConnectionIsReady, setEveryConnectionIsReady] = useState(false);
 
-  const activeConnections = Object.values(connections).filter(
+  const connectionValues = Object.values(connections);
+  const activeConnections = connectionValues.filter(
     (c) => c.connection.connectionStatus === ConnectionStatus.CONNECTED,
   );
   const prevConnections = usePrevious(activeConnections);
@@ -45,7 +44,7 @@ export const NetworkProvider = ({ children }: PropsWithChildren) => {
   useEffect(() => {
     if (!everyConnectionIsReady) return;
 
-    const requestConnections = Object.values(connections).map(({ connection }) => {
+    const requestConnections = connectionValues.map(({ connection }) => {
       const { chainId, connectionType, activeNode } = connection;
 
       if (connectionType === ConnectionType.DISABLED) return;
@@ -59,7 +58,7 @@ export const NetworkProvider = ({ children }: PropsWithChildren) => {
     Promise.allSettled(requestConnections).catch(console.warn);
 
     return () => {
-      const requests = Object.values(connections).map((connection) => connection.disconnect || (() => {}));
+      const requests = connectionValues.map((connection) => connection.disconnect || (() => {}));
       Promise.allSettled(requests).catch((error) => console.warn('Disconnect all error ==> ', error));
     };
   }, [everyConnectionIsReady]);
@@ -69,17 +68,21 @@ export const NetworkProvider = ({ children }: PropsWithChildren) => {
 
     const relaychain = chain.parentId && connections[chain.parentId];
 
-    subscribe(chain.chainId, subscribeBalances(chain, accountIds, relaychain));
-    subscribe(chain.chainId, subscribeLockBalances(chain, accountIds));
+    Promise.all([subscribeBalances(chain, accountIds, relaychain), subscribeLockBalances(chain, accountIds)]).then(
+      ([unsubBalances, unsubLocks]) => {
+        subscribe(chain.chainId, unsubBalances);
+        subscribe(chain.chainId, unsubLocks);
+      },
+    );
   };
 
   // subscribe to active accounts
   useEffect(() => {
-    if (activeAccounts.length === 0) return;
-
-    activeConnections.forEach((chain) => {
-      subscribeBalanceChanges(chain, accountUtils.getAllAccountIds(activeAccounts, chain.connection.chainId));
-    });
+    if (activeAccounts.length > 0) {
+      activeConnections.forEach((chain) => {
+        subscribeBalanceChanges(chain, accountUtils.getAllAccountIds(activeAccounts, chain.connection.chainId));
+      });
+    }
 
     return () => {
       unsubscribeAll();
