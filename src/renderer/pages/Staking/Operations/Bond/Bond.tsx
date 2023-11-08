@@ -237,7 +237,8 @@ export const Bond = () => {
               <ul className="flex flex-col gap-y-1 list-disc pl-5">
                 <li>
                   {t('staking.confirmation.hintRewards')}
-                  {` (${t('time.hours_other', { count: eraLength })})`}
+                  {' ('}
+                  {t('time.hours_other', { count: eraLength })} {')'}
                 </li>
                 <li>
                   {t('staking.confirmation.hintUnstakePeriod')} {'('}
