@@ -13,6 +13,7 @@ export const useSubscription = <T extends string>(): ISubscriptionService<T> => 
 
   const unsubscribe = async (key: T): Promise<void> => {
     if (!subscriptions.current[key]) return;
+
     const promises = subscriptions.current[key].reduce<Promise<any>[]>((acc, fn) => {
       if (fn instanceof Promise) {
         acc.push(fn);
