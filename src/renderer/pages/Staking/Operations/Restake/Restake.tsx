@@ -11,7 +11,7 @@ import InitOperation, { RestakeResult } from './InitOperation/InitOperation';
 import { Confirmation, Submit, NoAsset } from '../components';
 import { getRelaychainAsset, toAddress, DEFAULT_TRANSITION } from '@renderer/shared/lib/utils';
 import { useToggle } from '@renderer/shared/lib/hooks';
-import { Alert, BaseModal, Button, Loader } from '@renderer/shared/ui';
+import { BaseModal, Button, FootnoteText, LabelHelpBox, Loader, Popover } from '@renderer/shared/ui';
 import { OperationTitle } from '@renderer/components/common';
 import { Signing } from '@renderer/features/operation';
 import type { Account } from '@renderer/shared/core';
@@ -37,7 +37,6 @@ export const Restake = () => {
   const params = useParams<{ chainId: ChainId }>();
 
   const [isRestakeModalOpen, toggleRestakeModal] = useToggle(true);
-  const [isAlertOpen, toggleAlert] = useToggle(true);
 
   const [activeStep, setActiveStep] = useState<Step>(Step.INIT);
 
@@ -191,11 +190,22 @@ export const Restake = () => {
             onGoBack={goToPrevStep}
             {...explorersProps}
           >
-            {isAlertOpen && (
-              <Alert title={t('staking.confirmation.hintTitle')} onClose={toggleAlert}>
-                <Alert.Item>{t('staking.confirmation.hintRestake')}</Alert.Item>
-              </Alert>
-            )}
+            <Popover
+              contentClass="p-4"
+              offsetPx={1}
+              panelClass="w-[230px]"
+              content={
+                <section className="flex flex-col gap-y-2">
+                  <FootnoteText className="text-text-secondary">
+                    <ul className="flex flex-col gap-y-1 list-disc pl-5">
+                      <li>{t('staking.confirmation.hintRestake')}</li>
+                    </ul>
+                  </FootnoteText>
+                </section>
+              }
+            >
+              <LabelHelpBox>{t('staking.confirmation.hintTitle')}</LabelHelpBox>
+            </Popover>
           </Confirmation>
         )}
         {activeStep === Step.SIGNING && (

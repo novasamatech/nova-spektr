@@ -10,7 +10,7 @@ import { ValidatorMap } from '@renderer/entities/staking';
 import { toAddress, getRelaychainAsset, DEFAULT_TRANSITION } from '@renderer/shared/lib/utils';
 import { Confirmation, Submit, Validators, NoAsset } from '../components';
 import { useToggle } from '@renderer/shared/lib/hooks';
-import { Alert, BaseModal, Button, Loader } from '@renderer/shared/ui';
+import { BaseModal, Button, FootnoteText, LabelHelpBox, Loader, Popover } from '@renderer/shared/ui';
 import InitOperation, { ValidatorsResult } from './InitOperation/InitOperation';
 import { isLightClient } from '@renderer/entities/network';
 import { OperationTitle } from '@renderer/components/common';
@@ -39,7 +39,6 @@ export const ChangeValidators = () => {
   const params = useParams<{ chainId: ChainId }>();
 
   const [isValidatorsModalOpen, toggleValidatorsModal] = useToggle(true);
-  const [isAlertOpen, toggleAlert] = useToggle(true);
 
   const [activeStep, setActiveStep] = useState<Step>(Step.INIT);
   const [validators, setValidators] = useState<ValidatorMap>({});
@@ -212,11 +211,22 @@ export const ChangeValidators = () => {
             onGoBack={goToPrevStep}
             {...explorersProps}
           >
-            {isAlertOpen && (
-              <Alert title={t('staking.confirmation.hintTitle')} onClose={toggleAlert}>
-                <Alert.Item>{t('staking.confirmation.hintNewValidators')}</Alert.Item>
-              </Alert>
-            )}
+            <Popover
+              contentClass="p-4"
+              offsetPx={1}
+              panelClass="w-[230px]"
+              content={
+                <section className="flex flex-col gap-y-2">
+                  <FootnoteText className="text-text-secondary">
+                    <ul className="flex flex-col gap-y-1 list-disc pl-5">
+                      <li>{t('staking.confirmation.hintNewValidators')}</li>
+                    </ul>
+                  </FootnoteText>
+                </section>
+              }
+            >
+              <LabelHelpBox>{t('staking.confirmation.hintTitle')}</LabelHelpBox>
+            </Popover>
           </Confirmation>
         )}
         {activeStep === Step.SIGNING && (

@@ -12,7 +12,7 @@ import { Confirmation, NoAsset, Submit, Validators } from '../components';
 import { useToggle } from '@renderer/shared/lib/hooks';
 import { RewardsDestination } from '@renderer/shared/core';
 import type { Account, Address, ChainId, HexString } from '@renderer/shared/core';
-import { Alert, BaseModal, Button, Loader } from '@renderer/shared/ui';
+import { BaseModal, Button, FootnoteText, LabelHelpBox, Loader, Popover } from '@renderer/shared/ui';
 import InitOperation, { BondResult } from './InitOperation/InitOperation';
 import { OperationTitle } from '@renderer/components/common';
 import { DestinationType } from '../common/types';
@@ -42,7 +42,6 @@ export const Bond = () => {
   const params = useParams<{ chainId: ChainId }>();
 
   const [isBondModalOpen, toggleBondModal] = useToggle(true);
-  const [isAlertOpen, toggleAlert] = useToggle(true);
 
   const [activeStep, setActiveStep] = useState<Step>(Step.INIT);
   const [validators, setValidators] = useState<ValidatorMap>({});
@@ -193,6 +192,7 @@ export const Bond = () => {
   const explorersProps = { explorers, addressPrefix, asset };
   const bondValues = new Array(txAccounts.length).fill(stakeAmount);
   const multisigTx = isMultisigWallet ? wrapTx(txs[0], api, addressPrefix) : undefined;
+  const eraLength = api.consts.staking.sessionsPerEra.toNumber();
 
   return (
     <>
@@ -232,18 +232,32 @@ export const Bond = () => {
             onGoBack={goToPrevStep}
             {...explorersProps}
           >
-            {isAlertOpen && (
-              <Alert title={t('staking.confirmation.hintTitle')} onClose={toggleAlert}>
-                <Alert.Item>{t('staking.confirmation.hintRewards')}</Alert.Item>
-                <Alert.Item>
-                  {t('staking.confirmation.hintUnstakePeriod')} {'('}
-                  <UnstakingDuration api={api} />
-                  {')'}
-                </Alert.Item>
-                <Alert.Item>{t('staking.confirmation.hintNoRewards')}</Alert.Item>
-                <Alert.Item>{t('staking.confirmation.hintWithdraw')}</Alert.Item>
-              </Alert>
-            )}
+            <Popover
+              contentClass="p-4"
+              offsetPx={1}
+              panelClass="w-[230px]"
+              content={
+                <section className="flex flex-col gap-y-2">
+                  <FootnoteText className="text-text-secondary">
+                    <ul className="flex flex-col gap-y-1 list-disc pl-5">
+                      <li>
+                        {t('staking.confirmation.hintRewards')}
+                        {` (${t('time.hours_other', { count: eraLength })})`}
+                      </li>
+                      <li>
+                        {t('staking.confirmation.hintUnstakePeriod')} {'('}
+                        <UnstakingDuration api={api} />
+                        {')'}
+                      </li>
+                      <li>{t('staking.confirmation.hintNoRewards')}</li>
+                      <li>{t('staking.confirmation.hintWithdraw')}</li>
+                    </ul>
+                  </FootnoteText>
+                </section>
+              }
+            >
+              <LabelHelpBox>{t('staking.confirmation.hintTitleStartStaking')}</LabelHelpBox>
+            </Popover>
           </Confirmation>
         )}
         {activeStep === Step.SIGNING && (

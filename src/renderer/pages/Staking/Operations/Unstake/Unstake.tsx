@@ -11,7 +11,7 @@ import InitOperation, { UnstakeResult } from './InitOperation/InitOperation';
 import { Confirmation, NoAsset, Submit } from '../components';
 import { DEFAULT_TRANSITION, getRelaychainAsset, toAddress } from '@renderer/shared/lib/utils';
 import { useToggle } from '@renderer/shared/lib/hooks';
-import { Alert, BaseModal, Button, Loader } from '@renderer/shared/ui';
+import { BaseModal, Button, FootnoteText, LabelHelpBox, Loader, Popover } from '@renderer/shared/ui';
 import { OperationTitle } from '@renderer/components/common';
 import { Signing } from '@renderer/features/operation';
 import type { Account, ChainId, HexString } from '@renderer/shared/core';
@@ -37,7 +37,6 @@ export const Unstake = () => {
   const params = useParams<{ chainId: ChainId }>();
 
   const [isUnstakeModalOpen, toggleUnstakeModal] = useToggle(true);
-  const [isAlertOpen, toggleAlert] = useToggle(true);
 
   const [activeStep, setActiveStep] = useState<Step>(Step.INIT);
 
@@ -198,17 +197,28 @@ export const Unstake = () => {
             onGoBack={goToPrevStep}
             {...explorersProps}
           >
-            {isAlertOpen && (
-              <Alert title={t('staking.confirmation.hintTitle')} onClose={toggleAlert}>
-                <Alert.Item>
-                  {t('staking.confirmation.hintUnstakePeriod')} {'('}
-                  <UnstakingDuration api={api} />
-                  {')'}
-                </Alert.Item>
-                <Alert.Item>{t('staking.confirmation.hintNoRewards')}</Alert.Item>
-                <Alert.Item>{t('staking.confirmation.hintWithdraw')}</Alert.Item>
-              </Alert>
-            )}
+            <Popover
+              contentClass="p-4"
+              offsetPx={1}
+              panelClass="w-[230px]"
+              content={
+                <section className="flex flex-col gap-y-2">
+                  <FootnoteText className="text-text-secondary">
+                    <ul className="flex flex-col gap-y-1 list-disc pl-5">
+                      <li>
+                        {t('staking.confirmation.hintUnstakePeriod')} {'('}
+                        <UnstakingDuration api={api} />
+                        {')'}
+                      </li>
+                      <li>{t('staking.confirmation.hintNoRewards')}</li>
+                      <li>{t('staking.confirmation.hintWithdraw')}</li>
+                    </ul>
+                  </FootnoteText>
+                </section>
+              }
+            >
+              <LabelHelpBox>{t('staking.confirmation.hintTitle')}</LabelHelpBox>
+            </Popover>
           </Confirmation>
         )}
         {activeStep === Step.SIGNING && (

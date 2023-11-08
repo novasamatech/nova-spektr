@@ -13,7 +13,7 @@ import { TransactionAmount } from '@renderer/pages/Operations/components/Transac
 import { DetailRow, FootnoteText, Icon } from '@renderer/shared/ui';
 import { ExtendedChain } from '@renderer/entities/network';
 import { useI18n } from '@renderer/app/providers';
-import { getIconName } from '../../common/utils';
+import { getIconName } from '@renderer/shared/lib/utils/transaction';
 import { type Account, type MultisigAccount, WalletType } from '@renderer/shared/core';
 import Details from '../Details';
 import { getAssetById } from '@renderer/shared/lib/utils';
