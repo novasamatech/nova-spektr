@@ -12,7 +12,7 @@ import { Confirmation, NoAsset, Submit, Validators } from '../components';
 import { useToggle } from '@renderer/shared/lib/hooks';
 import { RewardsDestination } from '@renderer/shared/core';
 import type { Account, Address, ChainId, HexString } from '@renderer/shared/core';
-import { BaseModal, Button, FootnoteText, LabelHelpBox, Loader, Popover } from '@renderer/shared/ui';
+import { BaseModal, Button, Loader } from '@renderer/shared/ui';
 import InitOperation, { BondResult } from './InitOperation/InitOperation';
 import { OperationTitle } from '@renderer/components/common';
 import { DestinationType } from '../common/types';
@@ -21,6 +21,7 @@ import { isLightClient } from '@renderer/entities/network';
 import { Signing } from '@renderer/features/operation';
 import { walletUtils, walletModel } from '@renderer/entities/wallet';
 import { priceProviderModel } from '@renderer/entities/price';
+import { StakingPopover } from '../components/StakingPopover/StakingPopover';
 
 const enum Step {
   INIT,
@@ -192,7 +193,7 @@ export const Bond = () => {
   const explorersProps = { explorers, addressPrefix, asset };
   const bondValues = new Array(txAccounts.length).fill(stakeAmount);
   const multisigTx = isMultisigWallet ? wrapTx(txs[0], api, addressPrefix) : undefined;
-  const eraLength = api.consts.staking.sessionsPerEra.toNumber();
+  const eraLength = api.consts?.staking?.sessionsPerEra.toNumber() || 0;
 
   return (
     <>
@@ -232,32 +233,21 @@ export const Bond = () => {
             onGoBack={goToPrevStep}
             {...explorersProps}
           >
-            <Popover
-              contentClass="p-4"
-              offsetPx={1}
-              panelClass="w-[230px]"
-              content={
-                <section className="flex flex-col gap-y-2">
-                  <FootnoteText className="text-text-secondary">
-                    <ul className="flex flex-col gap-y-1 list-disc pl-5">
-                      <li>
-                        {t('staking.confirmation.hintRewards')}
-                        {` (${t('time.hours_other', { count: eraLength })})`}
-                      </li>
-                      <li>
-                        {t('staking.confirmation.hintUnstakePeriod')} {'('}
-                        <UnstakingDuration api={api} />
-                        {')'}
-                      </li>
-                      <li>{t('staking.confirmation.hintNoRewards')}</li>
-                      <li>{t('staking.confirmation.hintWithdraw')}</li>
-                    </ul>
-                  </FootnoteText>
-                </section>
-              }
-            >
-              <LabelHelpBox>{t('staking.confirmation.hintTitleStartStaking')}</LabelHelpBox>
-            </Popover>
+            <StakingPopover labelText={t('staking.confirmation.hintTitleStartStaking')}>
+              <ul className="flex flex-col gap-y-1 list-disc pl-5">
+                <li>
+                  {t('staking.confirmation.hintRewards')}
+                  {` (${t('time.hours_other', { count: eraLength })})`}
+                </li>
+                <li>
+                  {t('staking.confirmation.hintUnstakePeriod')} {'('}
+                  <UnstakingDuration api={api} />
+                  {')'}
+                </li>
+                <li>{t('staking.confirmation.hintNoRewards')}</li>
+                <li>{t('staking.confirmation.hintWithdraw')}</li>
+              </ul>
+            </StakingPopover>
           </Confirmation>
         )}
         {activeStep === Step.SIGNING && (
@@ -267,6 +257,7 @@ export const Bond = () => {
             addressPrefix={addressPrefix}
             signatory={signer}
             accounts={txAccounts}
+            explorers={explorers}
             transactions={multisigTx ? [multisigTx] : txs}
             onGoBack={() => setActiveStep(Step.CONFIRMATION)}
             onResult={onSignResult}

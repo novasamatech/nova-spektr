@@ -11,11 +11,12 @@ import { Confirmation, NoAsset, Submit } from '../components';
 import { DEFAULT_TRANSITION, getRelaychainAsset, toAddress } from '@renderer/shared/lib/utils';
 import { useToggle } from '@renderer/shared/lib/hooks';
 import type { Account, ChainId, HexString } from '@renderer/shared/core';
-import { BaseModal, Button, FootnoteText, LabelHelpBox, Loader, Popover } from '@renderer/shared/ui';
+import { BaseModal, Button, Loader } from '@renderer/shared/ui';
 import { OperationTitle } from '@renderer/components/common';
 import { Signing } from '@renderer/features/operation';
 import { walletModel, walletUtils } from '@renderer/entities/wallet';
 import { priceProviderModel } from '@renderer/entities/price';
+import { StakingPopover } from '../components/StakingPopover/StakingPopover';
 
 const enum Step {
   INIT,
@@ -190,22 +191,11 @@ export const StakeMore = () => {
             onGoBack={goToPrevStep}
             {...explorersProps}
           >
-            <Popover
-              contentClass="p-4"
-              offsetPx={1}
-              panelClass="w-[230px]"
-              content={
-                <section className="flex flex-col gap-y-2">
-                  <FootnoteText className="text-text-secondary">
-                    <ul className="flex flex-col gap-y-1 list-disc pl-5">
-                      <li>{t('staking.confirmation.hintNewRewards')}</li>
-                    </ul>
-                  </FootnoteText>
-                </section>
-              }
-            >
-              <LabelHelpBox>{t('staking.confirmation.hintTitle')}</LabelHelpBox>
-            </Popover>
+            <StakingPopover labelText={t('staking.confirmation.hintTitle')}>
+              <ul className="flex flex-col gap-y-1 list-disc pl-5">
+                <li>{t('staking.confirmation.hintNewRewards')}</li>
+              </ul>
+            </StakingPopover>
           </Confirmation>
         )}
         {activeStep === Step.SIGNING && (
