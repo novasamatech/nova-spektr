@@ -16,6 +16,7 @@
     "start:renderer:dev": "cross-env NODE_ENV=development CHAINS_FILE=chains-dev pnpm webpack:renderer:dev",
     "start:main": "cross-env NODE_ENV=staging pnpm r webpack:main:stage start:electron",
     "start:main:dev": "cross-env NODE_ENV=development pnpm r webpack:main:dev start:electron",
+
     "watch": "nodemon --watch src/main --watch src/renderer/bridge --watch src/shared --ignore src/main/resources --ext \"*\" --exec",
     "webpack:renderer:dev": "webpack serve --config webpack/webpack.renderer.dev.ts",
     "webpack:renderer:stage": "webpack serve --config webpack/webpack.renderer.stage.ts",
@@ -25,6 +26,7 @@
     "webpack:main:stage": "webpack --config webpack/webpack.main.stage.ts",
     "webpack:main:prod": "webpack --config webpack/webpack.main.prod.ts",
     "webpack:main:prod:internal": "webpack --config webpack/webpack.main.prod.internal.ts",
+
     "build": "cross-env NODE_ENV=production CHAINS_FILE=chains pnpm r clean:prod webpack:renderer:prod webpack:main:prod",
     "build:stage": "cross-env NODE_ENV=staging FORCE_ELECTRON=true CHAINS_FILE=chains-dev pnpm r clean:prod webpack:renderer:prod:internal webpack:main:prod:internal",
     "postbuild": "node scripts/postbuild.js",
@@ -35,12 +37,14 @@
     "clean:prod": "rimraf release/dist",
     "stage:sequence": "pnpm r clean:build clean:prod build:stage postbuild:stage dist:stage",
     "prod:sequence": "pnpm run clean:build && pnpm run clean:prod && pnpm run build && pnpm run postbuild && pnpm run dist",
+
     "test": "jest --config=jest.config.ts --json --outputFile=jest-unit-results.json",
     "test:integration": "jest --config=tests/integrations/jest.config.ts --group=integration --json --outputFile=jest-results.json",
     "test:dataVerification": "jest --config=tests/integrations/jest.config.ts --group=dataVerification --json --outputFile=jest-results.json",
     "test:matrix": "jest --config=tests/integrations/jest.config.ts --group=matrix --json --outputFile=jest-results.json",
     "test:coverage": "jest --config=jest.config.ts --coverage --passWithNoTests | tee ./coverage.txt",
     "test:coverage-new-files": "jest --config=jest.config.ts --coverage --changedSince=dev | tee ./coverage.txt",
+
     "lint": "eslint . --ext=js,ts,tsx,json",
     "lint:fix": "pnpm lint --fix",
     "lint:i18n-locale": "cross-env I18N=true eslint ./src/shared/locale/ --ext=json --plugin i18n-json",
