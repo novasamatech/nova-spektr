@@ -1,21 +1,13 @@
 import { act, render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 
-import { ConnectionStatus } from '@renderer/domain/connection';
-import { TEST_ACCOUNT_ID } from '@renderer/shared/lib/utils';
+import { ConnectionStatus } from '@renderer/shared/core';
 import { Restake } from './Restake';
 
 jest.mock('react-router-dom', () => ({
   useSearchParams: jest.fn().mockReturnValue([new URLSearchParams('id=1,2,3')]),
   useParams: jest.fn().mockReturnValue({ chainId: '0x123' }),
   useNavigate: jest.fn(),
-}));
-
-jest.mock('@renderer/entities/account', () => ({
-  ...jest.requireActual('@renderer/entities/account'),
-  useAccount: jest.fn().mockReturnValue({
-    getActiveAccounts: () => [{ name: 'Test Wallet', accountId: TEST_ACCOUNT_ID }],
-  }),
 }));
 
 jest.mock('@renderer/app/providers', () => ({

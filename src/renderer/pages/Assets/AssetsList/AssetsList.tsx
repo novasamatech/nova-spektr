@@ -5,61 +5,58 @@ import { useUnit } from 'effector-react';
 import { BodyText, Button, Icon, SmallTitleText } from '@renderer/shared/ui';
 import { useI18n, useNetworkContext } from '@renderer/app/providers';
 import { useBalance } from '@renderer/entities/asset';
-import { Chain } from '@renderer/entities/chain';
-import { ConnectionType } from '@renderer/domain/connection';
-import { SigningType } from '@renderer/domain/shared-kernel';
 import { useToggle } from '@renderer/shared/lib/hooks';
 import { chainsService } from '@renderer/entities/network';
 import { useSettingsStorage } from '@renderer/entities/settings';
-import { Account, isMultisig, useAccount } from '@renderer/entities/account';
 import { AssetsFilters, NetworkAssets, SelectShardModal } from './components';
 import { Header } from '@renderer/components/common';
+import type { Account, Chain } from '@renderer/shared/core';
+import { ConnectionType } from '@renderer/shared/core';
+import { walletModel, walletUtils } from '@renderer/entities/wallet';
 import { currencyModel, priceProviderModel } from '@renderer/entities/price';
 
 export const AssetsList = () => {
   const { t } = useI18n();
-  const { connections } = useNetworkContext();
-  const { getActiveAccounts } = useAccount();
-  const { getLiveBalances } = useBalance();
-  const { setHideZeroBalance, getHideZeroBalance } = useSettingsStorage();
-
+  const activeWallet = useUnit(walletModel.$activeWallet);
+  const activeAccounts = useUnit(walletModel.$activeAccounts);
   const assetsPrices = useUnit(priceProviderModel.$assetsPrices);
   const fiatFlag = useUnit(priceProviderModel.$fiatFlag);
   const currency = useUnit(currencyModel.$activeCurrency);
+
+  const { connections } = useNetworkContext();
+
+  const { getLiveBalances } = useBalance();
+  const { setHideZeroBalance, getHideZeroBalance } = useSettingsStorage();
 
   const [isSelectShardsOpen, toggleSelectShardsOpen] = useToggle();
 
   const [query, setQuery] = useState('');
   const [sortedChains, setSortedChains] = useState<Chain[]>([]);
 
-  const [activeAccounts, setActiveAccounts] = useState<Account[]>([]);
+  const [activeShards, setActiveShards] = useState<Account[]>([]);
   const [hideZeroBalance, setHideZeroBalanceState] = useState(getHideZeroBalance());
 
-  const activeAccountsFromWallet = getActiveAccounts();
-  const balances = getLiveBalances(activeAccounts.map((a) => a.accountId));
+  const balances = getLiveBalances(activeShards.map((a) => a.accountId));
 
-  const isMultishard = activeAccountsFromWallet.length > 1;
-
-  const firstActiveAccount = activeAccountsFromWallet.length > 0 && activeAccountsFromWallet[0].accountId;
-  const activeWallet = activeAccountsFromWallet.length > 0 && activeAccountsFromWallet[0].walletId;
+  const isMultishard = walletUtils.isMultiShard(activeWallet);
+  const isMultisig = walletUtils.isMultisig(activeWallet);
 
   useEffect(() => {
     priceProviderModel.events.assetsPricesRequested({ includeRates: true });
   }, []);
 
   useEffect(() => {
-    updateAccounts(activeAccountsFromWallet);
-  }, [firstActiveAccount, activeWallet]);
+    updateAccounts(activeAccounts);
+  }, [activeAccounts]);
 
   const updateAccounts = (accounts: Account[]) => {
-    setActiveAccounts(accounts.length ? accounts : []);
+    setActiveShards(accounts.length > 0 ? accounts : []);
   };
 
   useEffect(() => {
     const filteredChains = Object.values(connections).filter((c) => {
       const isDisabled = c.connection.connectionType === ConnectionType.DISABLED;
-      const hasMultisigAccount = activeAccounts.some(isMultisig);
-      const hasMultiPallet = !hasMultisigAccount || c.connection.hasMultisigPallet !== false;
+      const hasMultiPallet = !isMultisig || c.connection.hasMultisigPallet !== false;
 
       return !isDisabled && hasMultiPallet;
     });
@@ -83,12 +80,6 @@ export const AssetsList = () => {
     return chain.assets.some((a) => a.symbol.toLowerCase() === query.toLowerCase());
   });
 
-  const checkCanMakeActions = (): boolean => {
-    return activeAccounts.some((account) =>
-      [SigningType.MULTISIG, SigningType.PARITY_SIGNER].includes(account.signingType),
-    );
-  };
-
   const handleShardSelect = (selectedAccounts?: Account[]) => {
     toggleSelectShardsOpen();
 
@@ -99,7 +90,7 @@ export const AssetsList = () => {
 
   return (
     <>
-      <section className="h-full flex flex-col items-start relative">
+      <section className="h-full flex flex-col">
         <Header title={t('balances.title')} titleClass="py-[3px]" headerClass="pt-4 pb-[15px]">
           <AssetsFilters
             searchQuery={query}
@@ -118,13 +109,13 @@ export const AssetsList = () => {
               className="outline-offset-reduced"
               onClick={toggleSelectShardsOpen}
             >
-              {activeAccounts.length} {t('balances.shards')}
+              {activeShards.length} {t('balances.shards')}
             </Button>
           </div>
         )}
 
         <div className="flex flex-col gap-y-4 w-full h-full overflow-y-scroll">
-          {activeAccounts.length > 0 && (
+          {activeShards.length > 0 && (
             <ul className="flex flex-col gap-y-4 items-center w-full py-4">
               {sortedChains.map((chain) => (
                 <NetworkAssets
@@ -133,8 +124,8 @@ export const AssetsList = () => {
                   searchSymbolOnly={searchSymbolOnly}
                   query={query.toLowerCase()}
                   chain={chain}
-                  accounts={activeAccounts}
-                  canMakeActions={checkCanMakeActions()}
+                  accounts={activeShards}
+                  canMakeActions={!walletUtils.isWatchOnly(activeWallet)}
                 />
               ))}
 
@@ -153,8 +144,8 @@ export const AssetsList = () => {
 
       {isMultishard && (
         <SelectShardModal
-          accounts={activeAccountsFromWallet}
-          activeAccounts={activeAccounts}
+          accounts={activeAccounts}
+          activeShards={activeShards}
           isOpen={isSelectShardsOpen}
           onClose={handleShardSelect}
         />

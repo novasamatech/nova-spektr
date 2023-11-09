@@ -1,19 +1,20 @@
-import { ChainId } from '@renderer/domain/shared-kernel';
-import { Account, isMultishard, isMultisig, MultisigAccount } from '@renderer/entities/account';
+import { useUnit } from 'effector-react';
+
 import { SingleSelectMultishardHeader } from './SingleSelectMultishardHeader';
 import { MultiSelectMultishardHeader } from './MultiSelectMultishardHeader';
 import { DropdownOption } from '@renderer/shared/ui/Dropdowns/common/types';
 import { MultisigOperationHeader } from './MultisigOperationHeader';
-import { OperationError, OperationErrorType } from '@renderer/features/operation/init/model';
+import { OperationError, OperationErrorType } from '@renderer/entities/transaction';
+import type { Account, MultisigAccount, ChainId, Wallet } from '@renderer/shared/core';
+import { walletModel, walletUtils } from '@renderer/entities/wallet';
 
 type Props = {
   accounts: Account[] | [MultisigAccount];
   chainId: ChainId;
   isMultiselect?: boolean;
-  invalid?: boolean;
   errors?: OperationErrorType[];
   getAccountOption: (account: Account) => DropdownOption<Account>;
-  getSignatoryOption: (account: Account) => DropdownOption<Account>;
+  getSignatoryOption: (wallet: Wallet, account: Account) => DropdownOption<Account>;
   onSignatoryChange: (account: Account) => void;
 } & AccountSelectProps;
 
@@ -28,7 +29,6 @@ export const OperationHeader = ({
   chainId,
   isMultiselect,
   accounts,
-  invalid,
   errors = [],
   getSignatoryOption,
   getAccountOption,
@@ -37,18 +37,21 @@ export const OperationHeader = ({
 }: Props) => {
   const firstAccount = accounts[0];
 
-  const accountIsMultisig = isMultisig(firstAccount);
-  const accountIsMultishard = isMultishard(firstAccount);
+  const activeWallet = useUnit(walletModel.$activeWallet);
 
-  const multisigError = (accountIsMultisig && errors.find((e) => e === OperationError.INVALID_DEPOSIT)) || undefined;
-  const multishardError = (accountIsMultishard && errors.find((e) => e === OperationError.INVALID_FEE)) || undefined;
+  const isMultisig = walletUtils.isMultisig(activeWallet);
+  const isMultishard = walletUtils.isMultiShard(activeWallet);
+
+  const multisigError = (isMultisig && errors.find((e) => e === OperationError.INVALID_DEPOSIT)) || undefined;
+  const multishardError = (isMultishard && errors.find((e) => e === OperationError.INVALID_FEE)) || undefined;
   const emptyError = errors.find((e) => e === OperationError.EMPTY_ERROR);
 
   return (
     <div className="flex flex-col gap-y-4">
-      {accountIsMultisig && (
+      {isMultisig && (
         <MultisigOperationHeader
-          account={firstAccount}
+          chainId={chainId}
+          account={firstAccount as MultisigAccount}
           invalid={Boolean(multisigError || emptyError)}
           error={multisigError}
           getSignatoryOption={getSignatoryOption}
@@ -56,7 +59,7 @@ export const OperationHeader = ({
         />
       )}
 
-      {accountIsMultishard &&
+      {isMultishard &&
         (isMultiselect ? (
           <SingleSelectMultishardHeader
             accounts={accounts}

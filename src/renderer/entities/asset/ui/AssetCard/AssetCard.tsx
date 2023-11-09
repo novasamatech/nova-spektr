@@ -3,13 +3,12 @@ import { Link } from 'react-router-dom';
 import { useUnit } from 'effector-react';
 
 import { BodyText, Icon, Shimmering } from '@renderer/shared/ui';
-import { Asset, AssetBalance, AssetDetails, AssetIcon, Balance } from '@renderer/entities/asset';
+import { AssetBalance, AssetDetails, AssetIcon } from '@renderer/entities/asset';
 import { useToggle } from '@renderer/shared/lib/hooks';
 import { cnTw, KeyboardKey, totalAmount, transferableAmount } from '@renderer/shared/lib/utils';
 import { useI18n } from '@renderer/app/providers';
-import { Paths } from '../../../../app/providers/routes/paths';
-import { createLink } from '../../../../app/providers/routes/utils';
-import { ChainId } from '@renderer/domain/shared-kernel';
+import { Paths, createLink } from '@renderer/shared/routes';
+import { ChainId, Asset, Balance } from '@renderer/shared/core';
 // TODO: Move it to another layer https://app.clickup.com/t/8692tr8x0
 import { TokenPrice } from '@renderer/entities/price/ui/TokenPrice';
 import { AssetFiatBalance } from '@renderer/entities/price/ui/AssetFiatBalance';
@@ -66,10 +65,10 @@ export const AssetCard = ({ chainId, asset, balance, canMakeActions }: Props) =>
               <AssetFiatBalance amount={totalAmount(balance)} asset={asset} />
             </>
           ) : (
-            <>
+            <div className="flex flex-col gap-y-1 items-end">
               <Shimmering width={82} height={20} />
               {fiatFlag && <Shimmering width={56} height={18} />}
-            </>
+            </div>
           )}
         </div>
         {canMakeActions && (

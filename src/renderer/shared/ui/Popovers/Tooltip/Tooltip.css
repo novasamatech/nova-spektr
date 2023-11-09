@@ -4,9 +4,18 @@
   width: 0;
   height: 0;
   position: absolute;
-  left: calc(50% - 6px);
   border-left: 6px solid transparent;
   border-right: 6px solid transparent;
+}
+
+.spektr-arrow__center::before {
+  left: calc(50% - 6px);
+}
+.spektr-arrow__start::before {
+  left: 12px;
+}
+.spektr-arrow__end::before {
+  right: 12px;
 }
 
 .spektr-arrow__up::before {

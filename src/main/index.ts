@@ -1,14 +1,24 @@
-import { app, dialog } from 'electron';
+import { app, dialog, ipcMain } from 'electron';
 import { autoUpdater } from 'electron-updater';
 import * as process from 'process';
+import Store from 'electron-store';
 
 import { MainWindow } from './main';
 import { makeAppWithSingleInstanceLock } from './factories/instance';
 import { makeAppSetup } from './factories/setup';
+import { ENABLE_AUTO_UPDATE } from '@shared/constants/common';
 
-// @ts-ignore
 const setupAutoUpdate = () => {
   if (process.env.BUILD_SOURCE !== 'github') return;
+
+  const store = new Store({ defaults: { [ENABLE_AUTO_UPDATE]: true } });
+
+  ipcMain.handle('getStoreValue', (event, key) => store.get(key));
+
+  ipcMain.handle('setStoreValue', (event, key, value) => store.set(key, value));
+
+  const isAutoUpdateOn = store.get(ENABLE_AUTO_UPDATE);
+  if (!isAutoUpdateOn) return;
 
   autoUpdater.autoRunAppAfterInstall = true;
   autoUpdater.autoInstallOnAppQuit = false;

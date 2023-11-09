@@ -35,9 +35,11 @@ const $unpopularFiatCurrencies = currencyModel.$currencyConfig.map((config) => {
 });
 
 const $isFormValid = combine(
-  $currencyForm.fields.currency.$isDirty,
-  $currencyForm.fields.fiatFlag.$isDirty,
-  (isCurrencyDirty, isFiatFlagDirty) => isFiatFlagDirty || isCurrencyDirty,
+  {
+    isCurrencyDirty: $currencyForm.fields.currency.$isDirty,
+    isFiatFlagDirty: $currencyForm.fields.fiatFlag.$isDirty,
+  },
+  ({ isCurrencyDirty, isFiatFlagDirty }) => isFiatFlagDirty || isCurrencyDirty,
 );
 
 type Params = {

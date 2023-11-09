@@ -19,7 +19,7 @@ export const Notifications = () => {
   );
 
   return (
-    <div className="h-full flex flex-col items-start relative">
+    <div className="h-full flex flex-col">
       <Header title={t('notifications.title')} />
 
       <div className="overflow-y-auto flex-1 mx-auto w-[736px] mt-4 flex flex-col gap-4">

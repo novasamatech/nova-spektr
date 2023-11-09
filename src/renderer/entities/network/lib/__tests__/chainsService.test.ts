@@ -1,5 +1,9 @@
-import { HexString } from '@renderer/domain/shared-kernel';
 import { chainsService } from '../chainsService';
+import type { HexString } from '@renderer/shared/core';
+
+jest.mock('@renderer/app/providers', () => ({
+  useMatrix: jest.fn(),
+}));
 
 describe('service/chainsService', () => {
   test('should init', () => {

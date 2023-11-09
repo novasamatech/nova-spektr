@@ -27,7 +27,7 @@ export const Contacts = () => {
 
   return (
     <>
-      <div className="h-full flex flex-col items-start relative">
+      <div className="h-full flex flex-col">
         <Header title={t('addressBook.title')} titleClass="py-[3px]" headerClass="pt-4 pb-[15px]">
           <div className="flex items-center gap-4">
             <ContactFilter />
@@ -45,7 +45,7 @@ export const Contacts = () => {
               <ContactList>
                 {contactsFiltered.map((contact) => (
                   <ContactRow key={contact.id} contact={contact}>
-                    <EditContactNavigation contactId={contact.id || '-1'} />
+                    <EditContactNavigation contactId={contact.id} />
                   </ContactRow>
                 ))}
               </ContactList>

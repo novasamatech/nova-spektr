@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react';
 import { groupBy } from 'lodash';
 import { format } from 'date-fns';
+import { useUnit } from 'effector-react';
 
 import { useI18n, useNetworkContext } from '@renderer/app/providers';
 import EmptyOperations from './components/EmptyState/EmptyOperations';
-import { useAccount, MultisigAccount } from '@renderer/entities/account';
 import Operation from './components/Operation';
 import { sortByDateDesc } from './common/utils';
 import { FootnoteText } from '@renderer/shared/ui';
@@ -13,16 +13,20 @@ import { useMultisigTx, useMultisigEvent } from '@renderer/entities/multisig';
 import { Header } from '@renderer/components/common';
 import { MultisigEvent, MultisigTransactionKey } from '@renderer/entities/transaction';
 import { OperationsFilter } from '@renderer/features/operation';
+import { walletModel, accountUtils } from '@renderer/entities/wallet';
 import { priceProviderModel } from '@renderer/entities/price';
 
 export const Operations = () => {
   const { t, dateLocale } = useI18n();
+  const activeAccounts = useUnit(walletModel.$activeAccounts);
+
   const { connections } = useNetworkContext();
-  const { getActiveMultisigAccount } = useAccount();
   const { getLiveAccountMultisigTxs } = useMultisigTx({});
   const { getLiveEventsByKeys } = useMultisigEvent({});
 
-  const account = getActiveMultisigAccount();
+  const activeAccount = activeAccounts.at(0);
+  const account = activeAccount && accountUtils.isMultisigAccount(activeAccount) ? activeAccount : undefined;
+
   const allTxs = getLiveAccountMultisigTxs(account?.accountId ? [account.accountId] : []);
 
   const [txs, setTxs] = useState<MultisigTransactionDS[]>([]);
@@ -58,7 +62,7 @@ export const Operations = () => {
 
   useEffect(() => {
     setFilteredTxs([]);
-  }, [account?.accountId]);
+  }, [activeAccount]);
 
   return (
     <div className="flex flex-col items-center relative h-full">
@@ -78,7 +82,7 @@ export const Operations = () => {
                     .sort((a, b) => (b.dateCreated || 0) - (a.dateCreated || 0))
                     .map((tx) => (
                       <li key={tx.dateCreated}>
-                        <Operation tx={tx} account={account as MultisigAccount} />
+                        <Operation tx={tx} account={account} />
                       </li>
                     ))}
                 </ul>
@@ -87,7 +91,7 @@ export const Operations = () => {
         </div>
       )}
 
-      {!filteredTxs.length && (
+      {filteredTxs.length === 0 && (
         <EmptyOperations multisigAccount={account} isEmptyFromFilters={txs.length !== filteredTxs.length} />
       )}
     </div>

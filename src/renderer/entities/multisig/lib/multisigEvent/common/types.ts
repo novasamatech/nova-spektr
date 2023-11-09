@@ -1,5 +1,5 @@
 import { ID, MultisigEventDS } from '@renderer/shared/api/storage';
-import { AccountId, CallHash, ChainId } from '@renderer/domain/shared-kernel';
+import { AccountId, CallHash, ChainId } from '@renderer/shared/core';
 import { MultisigEvent, MultisigTransactionKey, SigningStatus } from '@renderer/entities/transaction/model/transaction';
 
 export interface IMultisigEventService {

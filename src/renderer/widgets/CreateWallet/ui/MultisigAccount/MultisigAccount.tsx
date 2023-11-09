@@ -3,16 +3,16 @@ import { useStore } from 'effector-react';
 
 import { BaseModal, HeaderTitleText, StatusLabel, Button } from '@renderer/shared/ui';
 import { useI18n, useMatrix } from '@renderer/app/providers';
-import { useAccount, createMultisigAccount, Account, getMultisigAccountId } from '@renderer/entities/account';
 import { useToggle } from '@renderer/shared/lib/hooks';
 import { OperationResult } from '@renderer/entities/transaction';
-import { Wallet, useWallet } from '@renderer/entities/wallet';
 import { ExtendedContact, ExtendedWallet } from './common/types';
 import { SelectSignatories, ConfirmSignatories, WalletForm } from './components';
-import { AccountId } from '@renderer/domain/shared-kernel';
 import { contactModel } from '@renderer/entities/contact';
 import { DEFAULT_TRANSITION } from '@renderer/shared/lib/utils';
 import { MatrixLoginModal } from '@renderer/widgets/MatrixModal';
+import { walletModel, accountUtils } from '@renderer/entities/wallet';
+import type { AccountId } from '@renderer/shared/core';
+import { WalletType, SigningType, CryptoType, ChainType, AccountType } from '@renderer/shared/core';
 
 type OperationResultProps = Pick<ComponentProps<typeof OperationResult>, 'variant' | 'description'>;
 
@@ -29,9 +29,11 @@ type Props = {
 
 export const MultisigAccount = ({ isOpen, onClose, onComplete }: Props) => {
   const { t } = useI18n();
+  const wallets = useStore(walletModel.$wallets);
+  const accounts = useStore(walletModel.$accounts);
+  const contacts = useStore(contactModel.$contacts);
+
   const { matrix, isLoggedIn } = useMatrix();
-  const { getWallets } = useWallet();
-  const { getAccounts, addAccount, setActiveAccount } = useAccount();
 
   const [isLoading, toggleLoading] = useToggle();
   const [isModalOpen, toggleIsModalOpen] = useToggle(isOpen);
@@ -44,18 +46,7 @@ export const MultisigAccount = ({ isOpen, onClose, onComplete }: Props) => {
   const [signatoryWallets, setSignatoryWallets] = useState<ExtendedWallet[]>([]);
   const [signatoryContacts, setSignatoryContacts] = useState<ExtendedContact[]>([]);
 
-  const [wallets, setWallets] = useState<Wallet[]>([]);
-  const [accounts, setAccounts] = useState<Account[]>([]);
-
-  const contacts = useStore(contactModel.$contacts);
   const signatories = signatoryWallets.concat(signatoryContacts);
-
-  useEffect(() => {
-    if (!isOpen) return;
-
-    getAccounts().then(setAccounts);
-    getWallets().then(setWallets);
-  }, [isOpen]);
 
   useEffect(() => {
     if (isOpen && !isModalOpen) {
@@ -81,22 +72,20 @@ export const MultisigAccount = ({ isOpen, onClose, onComplete }: Props) => {
     setTimeout(params?.complete ? onComplete : onClose, DEFAULT_TRANSITION);
   };
 
-  const onCreateAccount = async (name: string, threshold: number, creatorId: AccountId): Promise<void> => {
+  const createWallet = async (name: string, threshold: number, creatorId: AccountId): Promise<void> => {
     setName(name);
     toggleLoading();
     toggleResultModal();
 
     try {
-      const multisigAccountId = getMultisigAccountId(
-        signatories.map((s) => s.accountId),
-        threshold,
-      );
+      const accountIds = signatories.map((s) => s.accountId);
+      const accountId = accountUtils.getMultisigAccountId(accountIds, threshold);
+      const roomId = matrix.joinedRooms(accountId)[0]?.roomId;
 
-      const roomId = matrix.joinedRooms(multisigAccountId)[0]?.roomId;
       if (roomId) {
-        await createFromExistingRoom(name, threshold, creatorId, roomId);
+        createFromExistingRoom({ name, accountId, threshold, creatorId, roomId });
       } else {
-        await createNewRoom(name, threshold, creatorId);
+        await createNewRoom({ name, accountId, threshold, creatorId });
       }
     } catch (error: any) {
       setError(error?.message || t('createMultisigAccount.errorMessage'));
@@ -106,47 +95,69 @@ export const MultisigAccount = ({ isOpen, onClose, onComplete }: Props) => {
     setTimeout(() => closeMultisigModal({ complete: true }), 2000);
   };
 
-  const createFromExistingRoom = async (
-    name: string,
-    threshold: number,
-    creatorId: AccountId,
-    matrixRoomId: string,
-  ): Promise<void> => {
-    console.log('Trying to create Multisig from existing room ', matrixRoomId);
+  type MultisigParams = {
+    name: string;
+    accountId: AccountId;
+    threshold: number;
+    creatorId: AccountId;
+    roomId: string;
+  };
+  const createFromExistingRoom = (params: MultisigParams) => {
+    console.log('Trying to create Multisig from existing room ', params.roomId);
 
-    const mstAccount = createMultisigAccount({
-      name,
-      signatories,
-      threshold,
-      matrixRoomId,
-      creatorAccountId: creatorId,
-      isActive: false,
+    walletModel.events.multisigCreated({
+      wallet: {
+        name: params.name,
+        type: WalletType.MULTISIG,
+        signingType: SigningType.MULTISIG,
+      },
+      accounts: [
+        {
+          signatories,
+          name: params.name.trim(),
+          accountId: params.accountId,
+          matrixRoomId: params.roomId,
+          threshold: params.threshold,
+          creatorAccountId: params.creatorId,
+          cryptoType: CryptoType.SR25519,
+          chainType: ChainType.SUBSTRATE,
+          type: AccountType.MULTISIG,
+        },
+      ],
     });
-
-    await addAccount(mstAccount).then(setActiveAccount);
   };
 
-  const createNewRoom = async (name: string, threshold: number, creatorId: AccountId): Promise<void> => {
+  const createNewRoom = async (params: Omit<MultisigParams, 'roomId'>): Promise<void> => {
     console.log('Trying to create new Multisig room');
 
-    const mstAccount = createMultisigAccount({
-      name,
-      signatories,
-      threshold,
-      matrixRoomId: '',
-      creatorAccountId: creatorId,
-      isActive: false,
-    });
-
     const matrixRoomId = await matrix.createRoom({
-      creatorAccountId: creatorId,
-      accountName: mstAccount.name,
-      accountId: mstAccount.accountId,
-      threshold: mstAccount.threshold,
+      creatorAccountId: params.creatorId,
+      accountName: params.name,
+      accountId: params.accountId,
+      threshold: params.threshold,
       signatories: signatories.map(({ accountId, matrixId }) => ({ accountId, matrixId })),
     });
 
-    await addAccount({ ...mstAccount, matrixRoomId }).then(setActiveAccount);
+    walletModel.events.multisigCreated({
+      wallet: {
+        name: params.name,
+        type: WalletType.MULTISIG,
+        signingType: SigningType.MULTISIG,
+      },
+      accounts: [
+        {
+          matrixRoomId,
+          signatories,
+          name: name.trim(),
+          accountId: params.accountId,
+          threshold: params.threshold,
+          creatorAccountId: params.creatorId,
+          cryptoType: CryptoType.SR25519,
+          chainType: ChainType.SUBSTRATE,
+          type: AccountType.MULTISIG,
+        },
+      ],
+    });
   };
 
   const getResultProps = (): OperationResultProps => {
@@ -176,13 +187,11 @@ export const MultisigAccount = ({ isOpen, onClose, onComplete }: Props) => {
       >
         <WalletForm
           isActive={activeStep === Step.INIT}
-          accounts={accounts}
-          wallets={wallets}
           signatories={signatories}
           isLoading={isLoading}
           onGoBack={goToPrevStep}
           onContinue={() => setActiveStep(Step.CONFIRMATION)}
-          onCreateAccount={onCreateAccount}
+          onSubmit={createWallet}
         />
 
         <SelectSignatories
@@ -195,6 +204,7 @@ export const MultisigAccount = ({ isOpen, onClose, onComplete }: Props) => {
             setSignatoryContacts(contacts);
           }}
         />
+
         <ConfirmSignatories
           isActive={activeStep === Step.CONFIRMATION}
           wallets={signatoryWallets}

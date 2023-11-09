@@ -2,6 +2,10 @@ import { act, render, screen } from '@testing-library/react';
 
 import RadioGroup from './RadioGroup';
 
+jest.mock('@renderer/app/providers', () => ({
+  useMatrix: jest.fn(),
+}));
+
 describe('ui/RadioGroup', () => {
   const options = [
     { id: '1', value: 1, title: 'Test 1' },

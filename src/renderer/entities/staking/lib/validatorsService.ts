@@ -5,11 +5,9 @@ import { Data, Option } from '@polkadot/types';
 import { PalletIdentityRegistration } from '@polkadot/types/lookup';
 import { AccountId32 } from '@polkadot/types/interfaces';
 
-import { Identity, SubIdentity } from '@renderer/domain/identity';
-import { Address, ChainId, EraIndex } from '@renderer/domain/shared-kernel';
-import { Validator } from '@renderer/domain/validator';
 import { getValidatorsApy } from './apyCalculator';
 import { IValidatorsService, ValidatorMap } from './common/types';
+import type { Address, ChainId, EraIndex, Identity, SubIdentity, Validator } from '@renderer/shared/core';
 
 export const useValidators = (): IValidatorsService => {
   /**

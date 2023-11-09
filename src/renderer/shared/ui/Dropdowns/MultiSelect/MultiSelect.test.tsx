@@ -2,6 +2,10 @@ import { act, render, screen } from '@testing-library/react';
 
 import MultiSelect from './MultiSelect';
 
+jest.mock('@renderer/app/providers', () => ({
+  useMatrix: jest.fn(),
+}));
+
 describe('ui/Dropdowns/MultiSelect', () => {
   const options = [
     { id: '0', element: 'label_0', value: '0' },

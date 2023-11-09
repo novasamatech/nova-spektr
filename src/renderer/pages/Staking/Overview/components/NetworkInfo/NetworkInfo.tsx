@@ -6,10 +6,11 @@ import { DropdownOption, DropdownResult } from '@renderer/shared/ui/types';
 import { getRelaychainAsset } from '@renderer/shared/lib/utils';
 import { chainsService } from '@renderer/entities/network';
 import { useSettingsStorage } from '@renderer/entities/settings';
-import { Chain, ChainTitle } from '@renderer/entities/chain';
+import { ChainTitle } from '@renderer/entities/chain';
 import { useToggle } from '@renderer/shared/lib/hooks';
 import { useI18n } from '@renderer/app/providers';
 import { AssetBalance } from '@renderer/entities/asset';
+import type { Chain } from '@renderer/shared/core';
 import { AssetFiatBalance } from '@renderer/entities/price/ui/AssetFiatBalance';
 
 const getTotal = (values: string[]): BN => {

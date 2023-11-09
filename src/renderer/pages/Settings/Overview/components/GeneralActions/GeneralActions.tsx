@@ -1,16 +1,29 @@
 import { Link } from 'react-router-dom';
 import { useUnit } from 'effector-react/effector-react.umd';
+import { useEffect, useState } from 'react';
 
-import { Icon, BodyText, Plate, FootnoteText, HelpText } from '@renderer/shared/ui';
-import { useI18n, Paths } from '@renderer/app/providers';
+import { Icon, BodyText, Plate, FootnoteText, HelpText, Switch } from '@renderer/shared/ui';
+import { useI18n } from '@renderer/app/providers';
+import { Paths } from '@renderer/shared/routes';
 import { cnTw } from '@renderer/shared/lib/utils';
 import { currencyModel, priceProviderModel } from '@renderer/entities/price';
+import { ENABLE_AUTO_UPDATE } from '@shared/constants/common';
 
 // TODO: Language switcher temporary removed
 export const GeneralActions = () => {
   const { t } = useI18n();
   const currency = useUnit(currencyModel.$activeCurrency);
   const fiatFlag = useUnit(priceProviderModel.$fiatFlag);
+  const [isAutoUpdateOn, setIsAutoUpdateOn] = useState(true);
+
+  useEffect(() => {
+    window.App.getStoreValue(ENABLE_AUTO_UPDATE).then((value) => setIsAutoUpdateOn(Boolean(value)));
+  }, []);
+
+  const handleAutoUpdateValueChange = (value: boolean) => {
+    window.App.setStoreValue(ENABLE_AUTO_UPDATE, value).then();
+    setIsAutoUpdateOn(value);
+  };
 
   // const localeOptions: DropdownOption[] = locales.map((option) => ({
   //   id: option.value,
@@ -75,6 +88,13 @@ export const GeneralActions = () => {
           <BodyText>{t('settings.currency.plateTitle')}</BodyText>
           {fiatFlag && <FootnoteText className="text-text-tertiary ml-auto">{currency?.code}</FootnoteText>}
         </Link>
+      </Plate>
+      <Plate className="p-0">
+        <div className="w-full flex items-center gap-x-2 p-3 rounded transition hover:shadow-card-shadow focus:shadow-card-shadow">
+          <Icon className="row-span-2" name="settings" size={36} />
+          <BodyText className="mr-auto">{t('settings.autoUpdate')}</BodyText>
+          <Switch checked={isAutoUpdateOn} onChange={handleAutoUpdateValueChange} />
+        </div>
       </Plate>
     </div>
   );
