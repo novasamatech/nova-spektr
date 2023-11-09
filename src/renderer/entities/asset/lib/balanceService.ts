@@ -8,12 +8,12 @@ import { Mutex } from 'async-mutex';
 import noop from 'lodash/noop';
 
 import { ExtendedChain } from '@renderer/entities/network/lib/common/types';
-import { validate } from '../../../services/dataVerification/dataVerification';
-import { BalanceDS, storage } from '../../../shared/api/storage';
+import { validate } from '@renderer/services/dataVerification/dataVerification';
 import { IBalanceService } from './common/types';
 import { VERIFY_TIMEOUT } from './common/constants';
 import { useSubscription } from '@renderer/services/subscription/subscriptionService';
-import { getAssetId, toAddress, toAccountId } from '@renderer/shared/lib/utils';
+import { getAssetId, toAddress } from '@renderer/shared/lib/utils';
+import { BalanceDS, storage } from '@renderer/shared/api/storage';
 import { AssetType } from '@renderer/shared/core';
 import type { AccountId, Address, Asset, ChainId, OrmlExtras, Balance } from '@renderer/shared/core';
 
@@ -198,10 +198,13 @@ export const useBalance = (): IBalanceService => {
     return api.query.assets.account.multi(assetsMap, (data: any[]) => {
       const newBalances = data.reduce((acc, accountInfo, index) => {
         const free = accountInfo.isNone ? '0' : accountInfo.unwrap().balance.toString();
+        const accountIndex = index % accountIds.length;
+        const assetIndex = Math.floor(index / accountIds.length);
+
         acc.push({
-          accountId: toAccountId(assetsMap[index][1]),
+          accountId: accountIds[accountIndex],
           chainId: chain.chainId,
-          assetId: assets[index].assetId.toString(),
+          assetId: assets[assetIndex].assetId.toString(),
           verified: true,
           frozen: (0).toString(),
           reserved: (0).toString(),
@@ -260,10 +263,13 @@ export const useBalance = (): IBalanceService => {
 
     return method.multi(assetsTuples, (data: any[]) => {
       const newBalances = data.reduce((acc, accountInfo, index) => {
+        const accountIndex = index % accountIds.length;
+        const assetIndex = Math.floor(index / accountIds.length);
+
         acc.push({
-          accountId: toAccountId(assetsTuples[index][0]),
+          accountId: accountIds[accountIndex],
           chainId: chain.chainId,
-          assetId: assets[index].assetId.toString(),
+          assetId: assets[assetIndex].assetId.toString(),
           verified: true,
           free: accountInfo.free.toString(),
           frozen: accountInfo.frozen.toString(),
@@ -333,15 +339,18 @@ export const useBalance = (): IBalanceService => {
 
     return method.multi(assetsTuples, (data: any[]) => {
       const newLocks = data.reduce((acc, balanceLock, index) => {
+        const accountIndex = index % accountIds.length;
+        const assetIndex = Math.floor(index / accountIds.length);
+
         const locked = balanceLock.map((lock: BalanceLock) => ({
           type: lock.id.toString(),
           amount: lock.amount.toString(),
         }));
 
         acc.push({
-          accountId: toAccountId(assetsTuples[index][0]),
+          accountId: accountIds[accountIndex],
           chainId: chain.chainId,
-          assetId: assets[index].assetId.toString(),
+          assetId: assets[assetIndex].assetId.toString(),
           locked,
         });
 
