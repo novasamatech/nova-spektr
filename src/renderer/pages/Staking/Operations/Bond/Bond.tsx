@@ -237,10 +237,11 @@ export const Bond = () => {
               <StakingPopover.Item>
                 {t('staking.confirmation.hintRewards')}
                 {' ('}
-                {t('time.hours_other', { count: eraLength })} {')'}
+                {t('time.hours_other', { count: eraLength })}
+                {')'}
               </StakingPopover.Item>
               <StakingPopover.Item>
-                {t('staking.confirmation.hintUnstakePeriod')} {' ('}
+                {t('staking.confirmation.hintUnstakePeriod')} {'('}
                 <UnstakingDuration api={api} />
                 {')'}
               </StakingPopover.Item>
