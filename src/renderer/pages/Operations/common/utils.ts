@@ -1,6 +1,5 @@
 import { TFunction } from 'react-i18next';
 
-import { IconNames } from '@renderer/shared/ui/Icon/data';
 import { accountUtils, walletUtils } from '@renderer/entities/wallet';
 import {
   DecodedTransaction,
@@ -85,33 +84,6 @@ const TransactionTitlesModal: Record<TransactionType, (crossChain: boolean) => s
   [TransactionType.BATCH_ALL]: () => 'operations.modalTitles.unknownOn',
 };
 
-const TransactionIcons: Record<TransactionType, IconNames> = {
-  // Transfer
-  [TransactionType.ASSET_TRANSFER]: 'transferMst',
-  [TransactionType.ORML_TRANSFER]: 'transferMst',
-  [TransactionType.TRANSFER]: 'transferMst',
-  [TransactionType.MULTISIG_AS_MULTI]: 'transferMst',
-  [TransactionType.MULTISIG_APPROVE_AS_MULTI]: 'transferMst',
-  [TransactionType.MULTISIG_CANCEL_AS_MULTI]: 'transferMst',
-  // XCM
-  [TransactionType.XCM_LIMITED_TRANSFER]: 'crossChain',
-  [TransactionType.XCM_TELEPORT]: 'crossChain',
-  [TransactionType.POLKADOT_XCM_LIMITED_TRANSFER]: 'crossChain',
-  [TransactionType.POLKADOT_XCM_TELEPORT]: 'crossChain',
-  [TransactionType.XTOKENS_TRANSFER_MULTIASSET]: 'crossChain',
-  // Staking
-  [TransactionType.BOND]: 'stakingMst',
-  [TransactionType.NOMINATE]: 'stakingMst',
-  [TransactionType.STAKE_MORE]: 'stakingMst',
-  [TransactionType.REDEEM]: 'stakingMst',
-  [TransactionType.RESTAKE]: 'stakingMst',
-  [TransactionType.DESTINATION]: 'stakingMst',
-  [TransactionType.UNSTAKE]: 'stakingMst',
-  // Technical
-  [TransactionType.CHILL]: 'stakingMst',
-  [TransactionType.BATCH_ALL]: 'unknownMst',
-};
-
 export const getTransactionTitle = (transaction?: Transaction | DecodedTransaction): string => {
   if (!transaction) return TRANSACTION_UNKNOWN;
 
@@ -160,16 +132,6 @@ export const getMultisigSignOperationTitle = (
   }
 
   return '';
-};
-
-export const getIconName = (transaction?: Transaction | DecodedTransaction): IconNames => {
-  if (!transaction?.type) return 'question';
-
-  if (transaction.type === TransactionType.BATCH_ALL) {
-    return getIconName(transaction?.args?.transactions?.[0]);
-  }
-
-  return TransactionIcons[transaction.type];
 };
 
 export const sortByDateDesc = <T>([dateA]: [string, T[]], [dateB]: [string, T[]]) =>
