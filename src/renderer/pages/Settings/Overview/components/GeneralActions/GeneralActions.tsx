@@ -15,14 +15,19 @@ export const GeneralActions = () => {
   const currency = useUnit(currencyModel.$activeCurrency);
   const fiatFlag = useUnit(priceProviderModel.$fiatFlag);
   const [isAutoUpdateOn, setIsAutoUpdateOn] = useState(true);
+  const isWebVersion = !window.App;
 
   useEffect(() => {
-    window.App.getStoreValue(ENABLE_AUTO_UPDATE).then((value) => setIsAutoUpdateOn(Boolean(value)));
+    if (!isWebVersion) {
+      window.App.getStoreValue(ENABLE_AUTO_UPDATE).then((value) => setIsAutoUpdateOn(Boolean(value)));
+    }
   }, []);
 
   const handleAutoUpdateValueChange = (value: boolean) => {
-    window.App.setStoreValue(ENABLE_AUTO_UPDATE, value).then();
-    setIsAutoUpdateOn(value);
+    if (window.App.setStoreValue) {
+      window.App.setStoreValue(ENABLE_AUTO_UPDATE, value).then();
+      setIsAutoUpdateOn(value);
+    }
   };
 
   // const localeOptions: DropdownOption[] = locales.map((option) => ({
@@ -89,13 +94,15 @@ export const GeneralActions = () => {
           {fiatFlag && <FootnoteText className="text-text-tertiary ml-auto">{currency?.code}</FootnoteText>}
         </Link>
       </Plate>
-      <Plate className="p-0">
-        <div className="w-full flex items-center gap-x-2 p-3 rounded transition hover:shadow-card-shadow focus:shadow-card-shadow">
-          <Icon className="row-span-2" name="settings" size={36} />
-          <BodyText className="mr-auto">{t('settings.autoUpdate')}</BodyText>
-          <Switch checked={isAutoUpdateOn} onChange={handleAutoUpdateValueChange} />
-        </div>
-      </Plate>
+      {!isWebVersion && (
+        <Plate className="p-0">
+          <div className="w-full flex items-center gap-x-2 p-3 rounded transition hover:shadow-card-shadow focus:shadow-card-shadow">
+            <Icon className="row-span-2" name="settings" size={36} />
+            <BodyText className="mr-auto">{t('settings.autoUpdate')}</BodyText>
+            <Switch checked={isAutoUpdateOn} onChange={handleAutoUpdateValueChange} />
+          </div>
+        </Plate>
+      )}
     </div>
   );
 };
