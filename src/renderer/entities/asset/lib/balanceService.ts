@@ -66,6 +66,10 @@ export const useBalance = (): IBalanceService => {
     return useLiveQuery(query, [accountIds.length, accountIds[0]], []);
   };
 
+  const getRepeatedIndex = (index: number, base: number): number => {
+    return Math.floor(index / base);
+  };
+
   const runValidation = async (
     relaychainApi: ApiPromise,
     parachainApi: ApiPromise,
@@ -199,7 +203,7 @@ export const useBalance = (): IBalanceService => {
       const newBalances = data.reduce((acc, accountInfo, index) => {
         const free = accountInfo.isNone ? '0' : accountInfo.unwrap().balance.toString();
         const accountIndex = index % accountIds.length;
-        const assetIndex = Math.floor(index / accountIds.length);
+        const assetIndex = getRepeatedIndex(index, accountIds.length);
 
         acc.push({
           accountId: accountIds[accountIndex],
@@ -264,7 +268,7 @@ export const useBalance = (): IBalanceService => {
     return method.multi(assetsTuples, (data: any[]) => {
       const newBalances = data.reduce((acc, accountInfo, index) => {
         const accountIndex = index % accountIds.length;
-        const assetIndex = Math.floor(index / accountIds.length);
+        const assetIndex = getRepeatedIndex(index, accountIds.length);
 
         acc.push({
           accountId: accountIds[accountIndex],
@@ -340,7 +344,7 @@ export const useBalance = (): IBalanceService => {
     return method.multi(assetsTuples, (data: any[]) => {
       const newLocks = data.reduce((acc, balanceLock, index) => {
         const accountIndex = index % accountIds.length;
-        const assetIndex = Math.floor(index / accountIds.length);
+        const assetIndex = getRepeatedIndex(index, accountIds.length);
 
         const locked = balanceLock.map((lock: BalanceLock) => ({
           type: lock.id.toString(),
