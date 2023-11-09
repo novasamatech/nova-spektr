@@ -6084,46 +6084,6 @@
     ]
   },
   {
-    "name": "3DPass",
-    "addressPrefix": 71,
-    "chainId": "0x6c5894837ad89b6d92b114a2fb3eafa8fe3d26a54848e3447015442cd6ef4e66",
-    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/chains/3DPass.svg",
-    "options": [
-      "multisig"
-    ],
-    "nodes": [
-      {
-        "url": "wss://rpc2.3dpass.org",
-        "name": "3DPass node"
-      }
-    ],
-    "assets": [
-      {
-        "assetId": 0,
-        "symbol": "P3D",
-        "precision": 12,
-        "priceId": "3dpass",
-        "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/3DPass_(P3D).svg",
-        "name": "3DPass"
-      }
-    ],
-    "explorers": [
-      {
-        "name": "3DPass explorer",
-        "extrinsic": "https://explorer.3dpass.org/extrinsic/{hash}",
-        "account": "https://explorer.3dpass.org/account/{address}"
-      }
-    ],
-    "externalApi": {
-      "history": [
-        {
-          "type": "subquery",
-          "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-3dpass"
-        }
-      ]
-    }
-  },
-  {
     "name": "Frequency",
     "addressPrefix": 90,
     "chainId": "0x4a587bf17a404e3572747add7aab7bbe56e805a5479c6c436f07f36fcc8d3ae1",
