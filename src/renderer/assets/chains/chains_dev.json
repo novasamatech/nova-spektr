@@ -2349,7 +2349,7 @@
         "typeExtras": {
           "assetId": "15"
         },
-        "name": "Should be included in scripts/data/assetsNameMap"
+        "name": "DAI on Karura"
       },
       {
         "assetId": 6,
@@ -2361,7 +2361,7 @@
         "typeExtras": {
           "assetId": "16"
         },
-        "name": "Should be included in scripts/data/assetsNameMap"
+        "name": "USDC on Karura"
       }
     ],
     "explorers": [
@@ -7595,7 +7595,7 @@
         "symbol": "VT",
         "precision": 18,
         "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Default_(VT).svg",
-        "name": "Should be included in scripts/data/assetsNameMap"
+        "name": "VT token"
       }
     ]
   },
@@ -7617,7 +7617,7 @@
         "symbol": "WATR",
         "precision": 18,
         "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Watr.svg",
-        "name": "Should be included in scripts/data/assetsNameMap"
+        "name": "WATR token"
       }
     ]
   },
@@ -7638,7 +7638,7 @@
         "symbol": "JOY",
         "precision": 10,
         "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/JOY.svg",
-        "name": "Should be included in scripts/data/assetsNameMap"
+        "name": "JOY token"
       }
     ],
     "explorers": [

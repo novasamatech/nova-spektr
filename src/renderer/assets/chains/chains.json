@@ -2033,7 +2033,7 @@
         "typeExtras": {
           "assetId": "15"
         },
-        "name": "Should be included in scripts/data/assetsNameMap"
+        "name": "DAI on Karura"
       },
       {
         "assetId": 6,
@@ -2045,7 +2045,7 @@
         "typeExtras": {
           "assetId": "16"
         },
-        "name": "Should be included in scripts/data/assetsNameMap"
+        "name": "USDC on Karura"
       }
     ],
     "explorers": [
