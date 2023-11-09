@@ -158,16 +158,18 @@ export const OperationForm = ({
 
   const submitDisabled = !isValid || !canSubmit || !validateDestination();
 
+  const formHeader =
+    typeof header === 'function'
+      ? header({
+          invalidBalance: errors.amount?.type === 'insufficientBalance',
+          invalidFee: errors.amount?.type === 'insufficientBalanceForFee',
+          invalidDeposit: errors.amount?.type === 'insufficientBalanceForDeposit',
+        })
+      : header;
+
   return (
     <form className="w-full" onSubmit={handleSubmit(submitForm)}>
-      {typeof header === 'function'
-        ? header({
-            invalidBalance: errors.amount?.type === 'insufficientBalance',
-            invalidFee: errors.amount?.type === 'insufficientBalanceForFee',
-            invalidDeposit: errors.amount?.type === 'insufficientBalanceForDeposit',
-          })
-        : header}
-
+      {formHeader}
       <div className="flex flex-col gap-y-5">
         {amountField && (
           <Controller
