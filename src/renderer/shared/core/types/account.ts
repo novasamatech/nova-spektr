@@ -17,10 +17,10 @@ export type BaseAccount = AbstractAccount & {
   signingExtras?: Record<string, any>;
 };
 
-// export type ShardedAccount = BaseAccount & {
-//   keyType: KeyType;
-//   chainId: ChainId;
-// };
+export type ShardedAccount = BaseAccount & {
+  keyType: KeyType;
+  chainId: ChainId;
+};
 
 export type ChainAccount = BaseAccount & {
   baseId: BaseAccount['id'];
@@ -29,11 +29,11 @@ export type ChainAccount = BaseAccount & {
   derivationPath: string;
 };
 
-// export type ShardAccount = BaseAccount & {
-//   shardedId: BaseAccount['id'];
-//   chainId: ChainId;
-//   derivationPath: string;
-// };
+export type ShardAccount = BaseAccount & {
+  shardedId: BaseAccount['id'];
+  chainId: ChainId;
+  derivationPath: string;
+};
 
 export type MultisigAccount = BaseAccount & {
   signatories: Signatory[];

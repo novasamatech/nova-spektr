@@ -6,7 +6,7 @@ import { useEffect, useRef } from 'react';
 import { cnTw, validateSignerFormat } from '@renderer/shared/lib/utils';
 import { CryptoTypeString } from '@renderer/shared/core';
 import { useI18n } from '@renderer/app/providers';
-import { ErrorFields, EXPORT_ADDRESS, FRAME_KEY } from '../common/constants';
+import { DD_EXPORT_ADDRESS, ErrorFields, EXPORT_ADDRESS, FRAME_KEY } from '../common/constants';
 import { QR_READER_ERRORS } from '../common/errors';
 import { DecodeCallback, ErrorObject, Progress, QrError, SeedInfo, VideoInput } from '../common/types';
 import RaptorFrame from './RaptorFrame';
@@ -22,6 +22,7 @@ type Props = {
   className?: string;
   bgVideo?: boolean;
   bgVideoClassName?: string;
+  wrapperClassName?: string;
   onStart?: () => void;
   onResult: (scanResult: SeedInfo[]) => void;
   onError?: (error: ErrorObject) => void;
@@ -35,6 +36,7 @@ const QrReader = ({
   className,
   bgVideo,
   bgVideoClassName,
+  wrapperClassName,
   onCameraList,
   onResult,
   onProgress,
@@ -184,7 +186,8 @@ const QrReader = ({
         continue;
       }
 
-      const result = EXPORT_ADDRESS.decode(fountainResult.slice(3));
+      // debugger;
+      const result = DD_EXPORT_ADDRESS.decode(fountainResult.slice(3));
       isComplete.current = true;
       onResult?.(makeResultPayload(result.payload));
       break;
@@ -225,6 +228,7 @@ const QrReader = ({
         }
       } catch (error) {
         if (!isQrErrorObject(error)) {
+          debugger;
           onError?.(QR_READER_ERRORS[QrError.DECODE_ERROR]);
         } else if ((error as ErrorObject).code === QrError.NOT_SAME_QR) {
           // Restart process for new QR
@@ -312,7 +316,12 @@ const QrReader = ({
 
   return (
     <>
-      <div className="absolute inset-0 z-10 w-full h-full flex items-center justify-center rounded-[1.75rem] overflow-hidden">
+      <div
+        className={cnTw(
+          'absolute inset-0 z-10 w-full h-full flex items-center justify-center rounded-[1.75rem] overflow-hidden',
+          wrapperClassName,
+        )}
+      >
         <div className=" w-[240px] h-[240px] rounded-[20px] overflow-hidden">
           <video
             muted

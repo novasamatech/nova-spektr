@@ -247,7 +247,8 @@
       "wrongQRCodeDescription": "The scanned QR code doesn't contain valid network address",
       "wrongQRCodeLabel": "Wrong QR code!",
       "yourAccountsDescription": "Following accounts have been successfully read from Polkadot Vault",
-      "yourAccountsLabel": "Here are your accounts"
+      "yourAccountsLabel": "Here are your accounts",
+      "generateAddressesModalTitle": "Generate accounts addresses"
     },
     "pasteButton": "Paste",
     "readAccountsLabel": "Following accounts have been successfully read",
