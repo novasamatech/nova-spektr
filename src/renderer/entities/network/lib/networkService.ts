@@ -183,7 +183,6 @@ export const useNetwork = (networkSubscription?: ISubscriptionService<ChainId>):
           activeNode: node,
           connectionType: type,
           connectionStatus: api ? ConnectionStatus.CONNECTED : ConnectionStatus.ERROR,
-          hasMultisigPallet: Boolean(api?.tx.multisig),
         },
         disconnectFromNetwork(chainId, provider, api),
         api,

@@ -5,7 +5,7 @@ import { BaseModal, FootnoteText, Tabs } from '@renderer/shared/ui';
 import { RootExplorers } from '@renderer/shared/lib/utils';
 import { useModalClose } from '@renderer/shared/lib/hooks';
 import { AccountsList, ContactItem, ExplorersPopover, WalletCardLg, WalletCardMd } from '@renderer/entities/wallet';
-import { chainsService } from '@renderer/entities/network';
+import { chainsService, isMultisigAvailable } from '@renderer/entities/network';
 import { useI18n, useMatrix } from '@renderer/app/providers';
 // TODO: think about combining balances and wallets
 import { WalletFiatBalance } from '@renderer/features/wallets/WalletSelect/ui/WalletFiatBalance';
@@ -24,7 +24,7 @@ export const MultisigWalletDetails = ({ wallet, account, signatoryWallets, signa
   const [isModalOpen, closeModal] = useModalClose(true, onClose);
 
   const chains = useMemo(() => {
-    const chains = chainsService.getChainsData();
+    const chains = chainsService.getChainsData().filter((chain) => isMultisigAvailable(chain.options));
 
     return chainsService.sortChains(chains);
   }, []);
@@ -50,7 +50,7 @@ export const MultisigWalletDetails = ({ wallet, account, signatoryWallets, signa
             {
               id: 1,
               title: t('walletDetails.multisig.networksTab'),
-              panel: <AccountsList accountId={account.accountId} chains={chains} className="h-[365px]" />,
+              panel: <AccountsList accountId={account.accountId} chains={chains} className="h-[355px]" />,
             },
             {
               id: 2,

@@ -35,7 +35,7 @@ export const MultishardWalletDetails = ({ wallet, accounts, onClose }: Props) =>
         <div className="py-5 px-5 border-b border-divider">
           <WalletCardLg wallet={wallet} />
         </div>
-        <MultishardAccountsList accounts={accounts} chains={chains} className="h-[457px]" />
+        <MultishardAccountsList accounts={accounts} chains={chains} className="h-[447px]" />
       </div>
     </BaseModal>
   );

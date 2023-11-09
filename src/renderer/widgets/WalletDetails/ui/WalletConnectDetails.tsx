@@ -132,7 +132,7 @@ export const WalletConnectDetails = ({ wallet, accounts, onClose }: Props) => {
         <div className="px-3 flex-1">
           <>
             {wcDetailsUtils.isNotStarted(reconnectStep, wallet.isConnected) && (
-              <MultiAccountsList accounts={accountsList} className="h-[404px]" />
+              <MultiAccountsList accounts={accountsList} className="h-[391px]" />
             )}
 
             {wcDetailsUtils.isReadyToReconnect(reconnectStep, wallet.isConnected) && (

@@ -36,7 +36,7 @@ export const SimpleWalletDetails = ({ wallet, account, onClose }: Props) => {
         <div className="py-5 px-5 border-b border-divider">
           <WalletCardLg wallet={wallet} />
         </div>
-        <AccountsList accountId={account.accountId} chains={chains} className="h-[415px]" />
+        <AccountsList accountId={account.accountId} chains={chains} className="h-[405px]" />
       </div>
     </BaseModal>
   );
