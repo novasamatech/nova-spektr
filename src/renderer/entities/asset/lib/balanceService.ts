@@ -187,7 +187,7 @@ export const useBalance = (): IBalanceService => {
     const api = chain.api;
     if (!api || !assets.length) return Promise.resolve(noop);
 
-    const assetsMap = assets.reduce<[string, Address][]>((acc, asset) => {
+    const assetsTuples = assets.reduce<[string, Address][]>((acc, asset) => {
       accountIds.forEach((accountId) => {
         acc.push([getAssetId(asset), toAddress(accountId, { prefix: chain.addressPrefix })]);
       });
@@ -195,7 +195,7 @@ export const useBalance = (): IBalanceService => {
       return acc;
     }, []);
 
-    return api.query.assets.account.multi(assetsMap, (data: any[]) => {
+    return api.query.assets.account.multi(assetsTuples, (data: any[]) => {
       const newBalances = data.reduce((acc, accountInfo, index) => {
         const free = accountInfo.isNone ? '0' : accountInfo.unwrap().balance.toString();
         const accountIndex = index % accountIds.length;
