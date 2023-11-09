@@ -21,6 +21,7 @@ const setupAutoUpdate = () => {
   if (!isAutoUpdateOn) return;
 
   autoUpdater.autoRunAppAfterInstall = true;
+  autoUpdater.autoInstallOnAppQuit = false;
 
   app.on('ready', () => {
     autoUpdater.checkForUpdates();
@@ -47,9 +48,9 @@ const setupAutoUpdate = () => {
         message: `A new version ${info.version} of Nova Spektr is ready to be installed.`,
         detail: info.releaseNotes?.toString().replaceAll(/<[a-zA-Z0-9/]*>/g, ''), // clear html tags from changelog
         type: 'question',
-        buttons: ['Install now', 'Install on next launch', 'Not now'],
+        buttons: ['Install now', 'Not now'],
         defaultId: 0,
-        cancelId: 2,
+        cancelId: 1,
       })
       .then((result) => {
         switch (result.response) {
@@ -57,9 +58,6 @@ const setupAutoUpdate = () => {
             autoUpdater.quitAndInstall();
             break;
           case 1:
-            autoUpdater.autoInstallOnAppQuit = true;
-            break;
-          case 2:
             autoUpdater.autoInstallOnAppQuit = false;
             break;
         }
