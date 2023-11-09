@@ -35,7 +35,7 @@ const AccountsModal = ({ isOpen, accounts, asset, chainId, explorers, addressPre
     >
       <ul className={cnTw('flex flex-col gap-y-3', accounts.length > 7 && 'max-h-[388px] overflow-y-auto')}>
         {accounts.map((account) => (
-          <li key={account.accountId}>
+          <li key={account.accountId} data-testid="account">
             <div className="flex items-center gap-x-2 p-2">
               <Identicon address={account.accountId} size={20} background={false} />
               <div className="flex flex-col max-w-[175px]">

@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/react';
 
-import type { Asset, BaseAccount } from '@renderer/shared/core';
+import type { Asset, BaseAccount, ChainId } from '@renderer/shared/core';
 import { ChainType, CryptoType, AccountType } from '@renderer/shared/core';
 import AccountsModal from './AccountsModal';
 
@@ -10,15 +10,19 @@ jest.mock('@renderer/app/providers', () => ({
   }),
 }));
 
-jest.mock('@renderer/entities/wallet', () => ({
-  AddressWithExplorers: ({ address }: { address: string }) => <span data-testid="account">{address}</span>,
+jest.mock('@renderer/entities/asset', () => ({
+  useBalance: jest.fn().mockReturnValue({
+    getLiveAssetBalances: jest.fn().mockReturnValue([]),
+  }),
+  AssetBalance: ({ value }: any) => <div>{value}</div>,
 }));
 
 describe('pages/Staking/components/AccountsModal', () => {
   const defaultProps = {
     isOpen: true,
     amounts: ['1000000000000', '2000000000000', '3000000000000'],
-    asset: { symbol: 'DOT', precision: 10 } as Asset,
+    asset: { symbol: 'DOT', precision: 10, assetId: 123 } as Asset,
+    chainId: '0xEGSgCCMmg5vePv611bmJpgdy7CaXaHayqPH8XwgD1jetWjN' as ChainId,
     accounts: [
       {
         id: 1,
