@@ -10,6 +10,7 @@ import type { Account, Asset, Balance as AccountBalance, ChainId, AccountId, Wal
 import { redeemableAmount, formatBalance, nonNullable, toAddress } from '@renderer/shared/lib/utils';
 import { StakingMap, useStakingData, useEra } from '@renderer/entities/staking';
 import { OperationFooter, OperationHeader } from '@renderer/features/operation';
+import { walletModel, walletUtils, accountUtils } from '@renderer/entities/wallet';
 import { OperationForm } from '../../components';
 import {
   getSignatoryOption,
@@ -17,7 +18,6 @@ import {
   validateBalanceForFeeDeposit,
   getRedeemAccountOption,
 } from '../../common/utils';
-import { walletModel, walletUtils, accountUtils } from '@renderer/entities/wallet';
 
 export type RedeemResult = {
   accounts: Account[];

@@ -1,4 +1,4 @@
-import { renderHook } from '@testing-library/react';
+import { renderHook, waitFor } from '@testing-library/react';
 
 import { useSubscription } from '../subscriptionService';
 
@@ -34,10 +34,12 @@ describe('service/subscription/subscriptionService', () => {
     subscribe(key, unsubscribePromise);
     expect(hasSubscription(key)).toBeDefined();
 
-    await unsubscribe(key);
+    unsubscribe(key);
 
     expect(spyUnsubscribe).toBeCalled();
-    expect(hasSubscription(key)).toEqual(false);
+    await waitFor(() => {
+      expect(hasSubscription(key)).toEqual(false);
+    });
   });
 
   test('should unsubscribe all', async () => {
@@ -56,11 +58,13 @@ describe('service/subscription/subscriptionService', () => {
       expect(hasSubscription(key)).toBeDefined();
     });
 
-    await unsubscribeAll();
+    unsubscribeAll();
 
     expect(spyUnsubscribe).toBeCalledTimes(3);
-    keys.forEach((key) => {
-      expect(hasSubscription(key)).toEqual(false);
+    await waitFor(() => {
+      keys.forEach((key) => {
+        expect(hasSubscription(key)).toEqual(false);
+      });
     });
   });
 });
