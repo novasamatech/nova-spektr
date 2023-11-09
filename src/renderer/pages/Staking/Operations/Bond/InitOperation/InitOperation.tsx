@@ -9,6 +9,7 @@ import { useBalance } from '@renderer/entities/asset';
 import { Transaction, TransactionType, OperationError } from '@renderer/entities/transaction';
 import { formatAmount, stakeableAmount, toAddress, nonNullable, TEST_ADDRESS } from '@renderer/shared/lib/utils';
 import { useValidators } from '@renderer/entities/staking';
+import { walletModel, walletUtils, accountUtils } from '@renderer/entities/wallet';
 import { OperationForm } from '../../components';
 import type {
   Account,
@@ -27,7 +28,6 @@ import {
   validateStake,
   getSignatoryOption,
 } from '../../common/utils';
-import { walletModel, walletUtils, accountUtils } from '@renderer/entities/wallet';
 
 export type BondResult = {
   amount: string;
