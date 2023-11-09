@@ -4,9 +4,9 @@
 
 export type ISubscriptionService<T extends string = string> = {
   hasSubscription: (key: T) => boolean;
-  subscribe: (key: T, unsubscribe: UnsubscribeType) => void;
-  unsubscribe: (key: T) => Promise<void>;
-  unsubscribeAll: () => Promise<void>;
+  subscribe: (key: T, unsubscribe: UnsubscribeType | UnsubscribeType[]) => void;
+  unsubscribe: (key: T) => void;
+  unsubscribeAll: () => void;
 };
 
 // =====================================================

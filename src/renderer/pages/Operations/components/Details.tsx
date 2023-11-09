@@ -52,7 +52,7 @@ const Details = ({ tx, account, connection, signatory }: Props) => {
     [];
 
   const selectedValidators: Validator[] =
-    transaction?.args.targets || allValidators.filter((v) => startStakingValidators.includes(v.address)) || [];
+    allValidators.filter((v) => (transaction?.args.targets || startStakingValidators).includes(v.address)) || [];
   const selectedValidatorsAddress = selectedValidators.map((validator) => validator.address);
   const notSelectedValidators = allValidators.filter((v) => !selectedValidatorsAddress.includes(v.address));
 
