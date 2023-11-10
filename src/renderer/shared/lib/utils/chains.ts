@@ -10,14 +10,14 @@ export const toHexChainId = (chainId?: string): ChainId | undefined => {
   return `0x${chainId?.replace('0x', '')}`;
 };
 
+type WithAddress = { address: Address };
+type WithAccountId = { value: Address | AccountId; addressPrefix?: number };
 /**
  * Get block explorer URL by AccountId or Address
  * @param explorer explorer with links
  * @param params address or accountId with addressPrefix
  * @return {String | undefined}
  */
-type WithAddress = { address: Address };
-type WithAccountId = { value: Address | AccountId; addressPrefix?: number };
 export const getAccountExplorer = (explorer: Explorer, params: WithAddress | WithAccountId): string | undefined => {
   const replacer =
     'value' in params
