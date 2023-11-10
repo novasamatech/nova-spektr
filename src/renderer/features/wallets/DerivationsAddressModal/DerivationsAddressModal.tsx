@@ -9,7 +9,7 @@ import { ShardAccount, ShardedAccount } from '@renderer/shared/core/types/accoun
 import { useI18n } from '@renderer/app/providers';
 import { TROUBLESHOOTING_URL } from '@renderer/components/common/QrCode/common/constants';
 import { DdKeyQrReader } from '@renderer/pages/Onboarding/Vault/DdKeyQrReader/DdKeyQrReader';
-import { TEST_ACCOUNT_ID, toAccountId, toAddress } from '@renderer/shared/lib/utils';
+import { toAccountId, toAddress } from '@renderer/shared/lib/utils';
 import { walletModel } from '@renderer/entities/wallet';
 import { DdAddressInfoDecoded, DynamicDerivationRequestInfo } from '@renderer/components/common/QrCode/common/types';
 
@@ -51,10 +51,6 @@ export const DerivationsAddressModal = ({ rootKey, accounts, onClose, isOpen, wa
   const { t } = useI18n();
   const [isScanStep, toggleIsScanStep] = useToggle(false);
   const derivations = createDerivations(accounts);
-  // const mockDerivations = [
-  //   { path: '//westend//0', chainId: '0xe143f23803ac50e8f6f8e62695d1ce9e4e1d68aa36c1cd2cfd15340213f3423e' as ChainId },
-  //   { path: '//westend//1', chainId: '0xe143f23803ac50e8f6f8e62695d1ce9e4e1d68aa36c1cd2cfd15340213f3423e' as ChainId },
-  // ];
 
   const handleScanResult = (result: DdAddressInfoDecoded[]) => {
     const derivationsByPath = keyBy(result, (d) => d.derivationPath + d.encryption);
@@ -68,7 +64,6 @@ export const DerivationsAddressModal = ({ rootKey, accounts, onClose, isOpen, wa
       if ('shards' in account) {
         return {
           ...account,
-          accountId: TEST_ACCOUNT_ID, // FIXME: check account id for sharded account
           shards: (account as ShardedAccountWithShards).shards.map((shard) => ({
             ...shard,
           })),
@@ -110,11 +105,7 @@ export const DerivationsAddressModal = ({ rootKey, accounts, onClose, isOpen, wa
       {!isScanStep && (
         <div className="flex flex-col items-center">
           <SmallTitleText className="mb-6">{t('signing.scanQrTitle')}</SmallTitleText>
-          <QrDerivationsGenerator
-            address={toAddress('0x427f8c7898a7c1ffe8ac3822d63579bf9ba263fe0d3197a1fcf3c63bb2539954')}
-            derivations={derivations}
-            size={240}
-          />
+          <QrDerivationsGenerator address={toAddress(rootKey.accountId)} derivations={derivations} size={240} />
           <InfoLink url={TROUBLESHOOTING_URL} className="mt-10.5 mb-8.5">
             {t('signing.troubleshootingLink')}
           </InfoLink>

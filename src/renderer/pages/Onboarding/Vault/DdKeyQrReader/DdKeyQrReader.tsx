@@ -4,16 +4,18 @@ import cn from 'classnames';
 import { useState } from 'react';
 
 import { QrReader } from '@renderer/components/common';
-import { ErrorObject, QrError, VideoInput } from '@renderer/components/common/QrCode/common/types';
+import {
+  DdAddressInfoDecoded,
+  DdSeedInfo,
+  ErrorObject,
+  QrError,
+  VideoInput,
+} from '@renderer/components/common/QrCode/common/types';
 import { Icon, Loader, Button, CaptionText, FootnoteText, Select, SmallTitleText } from '@renderer/shared/ui';
 import { DropdownOption, DropdownResult } from '@renderer/shared/ui/Dropdowns/common/types';
 import { useI18n } from '@renderer/app/providers';
 import { cnTw } from '@renderer/shared/lib/utils';
-import {
-  DdAddressInfoDecoded,
-  DdSeedInfo,
-  WhiteTextButtonStyle,
-} from '@renderer/components/common/QrCode/common/constants';
+import { WhiteTextButtonStyle } from '@renderer/components/common/QrCode/common/constants';
 
 const enum CameraState {
   ACTIVE,
@@ -205,7 +207,10 @@ export const DdKeyQrReader = ({ size = 300, className, onGoBack, onResult }: Pro
       )}
 
       <div className="flex flex-col gap-4">
-        <div className={cn('relative overflow-hidden', isCameraPending && 'hidden', className)} style={sizeStyle}>
+        <div
+          className={cn('relative overflow-hidden rounded-b-lg', isCameraPending && 'hidden', className)}
+          style={sizeStyle}
+        >
           <SmallTitleText
             as="h3"
             align="center"
