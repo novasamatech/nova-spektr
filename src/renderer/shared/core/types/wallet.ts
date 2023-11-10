@@ -1,12 +1,33 @@
 import type { ID } from './general';
 
-export type Wallet = {
+type AbstractWallet = {
   id: ID;
   name: string;
   type: WalletType;
   isActive: boolean;
   signingType: SigningType;
 };
+
+export type PolkadotVaultWallet = AbstractWallet;
+export type SingleShardWallet = AbstractWallet;
+export type MultiShardWallet = AbstractWallet;
+export type WatchOnlyWallet = AbstractWallet;
+export type MultisigWallet = AbstractWallet;
+
+export type WalletConnectWallet = AbstractWallet & {
+  isConnected: boolean;
+};
+
+export type NovaWalletWallet = WalletConnectWallet;
+
+export type Wallet =
+  | PolkadotVaultWallet
+  | SingleShardWallet
+  | MultiShardWallet
+  | WatchOnlyWallet
+  | MultisigWallet
+  | WalletConnectWallet
+  | NovaWalletWallet;
 
 export const enum WalletType {
   WATCH_ONLY = 'wallet_wo',

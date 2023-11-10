@@ -136,8 +136,10 @@
       "uploadButton": "Upload"
     },
     "explorers": {
+      "addressTitle": "Address",
       "explorerButton": "View on { name }",
-      "explorerTitle": "Explorers"
+      "explorerTitle": "Explorers",
+      "matrixIdTitle": "Matrix ID"
     },
     "input": {
       "amountLabel": "Amount",
@@ -918,6 +920,8 @@
     "addPolkadotVault": "Polkadot Vault",
     "addWalletConnect": "WalletConnect",
     "addWatchOnly": "Watch-only",
+    "connectedLabel": "Connected",
+    "disconnectedLabel": "Disconnected",
     "multishardLabel": "Multishard",
     "multisigLabel": "Multisig",
     "novaWalletLabel": "Nova Wallet",

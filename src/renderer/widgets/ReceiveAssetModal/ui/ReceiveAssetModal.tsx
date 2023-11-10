@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useUnit } from 'effector-react';
 
 import { OperationTitle, QrTextGenerator } from '@renderer/components/common';
-import { DefaultExplorer, ExplorerIcons } from '@renderer/components/common/ExplorerLink/constants';
+import { DefaultExplorer, ExplorerIcons } from '@renderer/shared/ui/ExplorerLink/constants';
 import { BaseModal, Button, FootnoteText, HelpText, Icon, Select } from '@renderer/shared/ui';
 import { DropdownOption, DropdownResult } from '@renderer/shared/ui/types';
 import { useI18n } from '@renderer/app/providers';

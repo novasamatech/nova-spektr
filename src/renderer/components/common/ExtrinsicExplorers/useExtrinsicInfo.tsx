@@ -1,6 +1,7 @@
 import { InfoSection } from '@renderer/shared/ui/Popovers/InfoPopover/InfoPopover';
-import { ExplorerLink } from '@renderer/components/common';
 import type { HexString, Explorer } from '@renderer/shared/core';
+import { ExplorerLink } from '@renderer/shared/ui';
+import { getExtrinsicExplorer } from '@renderer/shared/lib/utils';
 
 const useExtrinsicInfo = (hash: HexString, explorers?: Explorer[]): InfoSection[] => {
   if (!explorers || explorers.length === 0) return [];
@@ -11,7 +12,7 @@ const useExtrinsicInfo = (hash: HexString, explorers?: Explorer[]): InfoSection[
         .filter((explorer) => Boolean(explorer.extrinsic))
         .map((explorer) => ({
           id: explorer.name,
-          value: <ExplorerLink explorer={explorer} hash={hash} />,
+          value: <ExplorerLink name={explorer.name} href={getExtrinsicExplorer(explorer, hash)} />,
         })),
     },
   ];

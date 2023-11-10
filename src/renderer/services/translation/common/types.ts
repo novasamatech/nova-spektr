@@ -1,7 +1,7 @@
 import { InitOptions } from 'i18next';
 import { Locale } from 'date-fns';
 
-export type SupportedLocale = 'en' | 'ru' | 'hu';
+export type SupportedLocale = 'en';
 
 export type LanguageItem = {
   value: SupportedLocale;

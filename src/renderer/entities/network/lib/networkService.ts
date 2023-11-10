@@ -184,7 +184,6 @@ export const useNetwork = (): INetworkService => {
           activeNode: node,
           connectionType: type,
           connectionStatus: api ? ConnectionStatus.CONNECTED : ConnectionStatus.ERROR,
-          hasMultisigPallet: Boolean(api?.tx.multisig),
         },
         disconnectFromNetwork(chainId, provider, api),
         api,

@@ -9,7 +9,6 @@ export type Connection = {
   customNodes?: RpcNode[];
   activeNode?: RpcNode;
   disconnect?: () => void;
-  hasMultisigPallet?: boolean;
 };
 
 export const enum ConnectionType {
