@@ -1,7 +1,8 @@
+import BigNumber from 'bignumber.js';
+
 import { chainsService } from '../chainsService';
 import type { Chain, Balance, HexString } from '@renderer/shared/core';
 import { PriceObject } from '@renderer/shared/api/price-provider/common/types';
-import BigNumber from 'bignumber.js';
 
 export const chainMapping: { [key: string]: HexString } = {
   Polkadot: '0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3',
