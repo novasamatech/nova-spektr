@@ -16,6 +16,9 @@ import {
 } from '@renderer/shared/core';
 import { SeedInfo } from '@renderer/components/common/QrCode/common/types';
 import { toAccountId } from '@renderer/shared/lib/utils';
+import { chainsService } from '@renderer/entities/network';
+
+const chains = chainsService.getChainsData();
 
 const WALLET_NAME_MAX_LENGTH = 256;
 
@@ -60,7 +63,7 @@ sample({
 sample({
   clock: formInitiated,
   fn: ([seedInfo]: SeedInfo[]) => {
-    return seedInfo.derivedKeys.map((key) => ({
+    const derivedKeys = seedInfo.derivedKeys.map((key) => ({
       name: '',
       derivationPath: key.derivationPath || '',
       chainId: u8aToHex(key.genesisHash),
@@ -70,6 +73,28 @@ sample({
       type: AccountType.CHAIN,
       keyType: KeyType.CUSTOM,
     }));
+
+    const chainAccounts = chains.reduce((acc, chain) => {
+      if (!chain.specName) return acc;
+
+      const derivationPath = `//${chain.specName}`;
+
+      if (!derivedKeys.find((key) => key.derivationPath === derivationPath)) {
+        acc.push({
+          name: '',
+          derivationPath,
+          chainId: chain.chainId,
+          cryptoType: CryptoType.SR25519,
+          chainType: ChainType.SUBSTRATE,
+          type: AccountType.CHAIN,
+          keyType: KeyType.MAIN,
+        });
+      }
+
+      return acc;
+    }, [] as any[]);
+
+    return derivedKeys.concat(chainAccounts);
   },
   target: $accounts,
 });

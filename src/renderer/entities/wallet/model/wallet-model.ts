@@ -217,7 +217,7 @@ sample({
 });
 
 sample({
-  clock: [walletCreatedFx.doneData, multishardCreatedFx.doneData],
+  clock: [walletCreatedFx.doneData, multishardCreatedFx.doneData, polkadotVaultWalletCreatedFx.doneData],
   filter: (data) => Boolean(data),
   fn: (data) => data!.wallet.id,
   target: walletSelected,

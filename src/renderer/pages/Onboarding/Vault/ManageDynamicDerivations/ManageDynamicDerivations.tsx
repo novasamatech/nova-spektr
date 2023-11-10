@@ -5,11 +5,12 @@ import { useUnit } from 'effector-react';
 import keyBy from 'lodash/keyBy';
 import { Trans } from 'react-i18next';
 
-import { useI18n } from '@renderer/app/providers';
+import { useI18n, useStatusContext } from '@renderer/app/providers';
 import { ChainTitle } from '@renderer/entities/chain';
 import { SeedInfo } from '@renderer/components/common/QrCode/common/types';
 import { IS_WINDOWS, toAccountId, toAddress } from '@renderer/shared/lib/utils';
 import {
+  Animation,
   Button,
   Input,
   InputHint,
@@ -36,6 +37,7 @@ type Props = {
 export const ManageDynamicDerivations = ({ seedInfo, onBack, onComplete }: Props) => {
   const { t } = useI18n();
   const isAltPressed = useAltKeyPressed();
+  const { showStatus } = useStatusContext();
 
   const accounts = useUnit(manageDynamicDerivationsModel.$accounts);
   const isPending = useUnit(manageDynamicDerivationsModel.$submitPending);
@@ -63,6 +65,13 @@ export const ManageDynamicDerivations = ({ seedInfo, onBack, onComplete }: Props
 
   const submitForm = (event: FormEvent) => {
     event.preventDefault();
+
+    showStatus({
+      title: name?.value.trim(),
+      description: t('createMultisigAccount.successMessage'),
+      content: <Animation variant="success" />,
+    });
+
     submit();
   };
 
@@ -163,24 +172,31 @@ export const ManageDynamicDerivations = ({ seedInfo, onBack, onComplete }: Props
 
               if (!chainAccounts.length) return;
 
-              return (
-                <Accordion key={chainId} isDefaultOpen>
-                  <Accordion.Button buttonClass="mb-2 p-2">
-                    <div className="flex gap-2">
-                      <ChainTitle fontClass="text-text-primary" chainId={chainId as ChainId} />
-                      <FootnoteText className="text-text-tertiary">{chainAccounts.length}</FootnoteText>
-                    </div>
-                  </Accordion.Button>
-                  <Accordion.Content className="flex flex-col gap-2">
-                    {chainAccounts.map((account) => (
-                      <DerivedAccount
-                        key={account.accountId}
-                        keyType={account.keyType}
-                        derivationPath={account.derivationPath}
-                        showDerivationPath={isAltPressed}
-                      />
-                    ))}
-                  </Accordion.Content>
+              const accordionButton = (
+                <div className="flex gap-2">
+                  <ChainTitle fontClass="text-text-primary" chainId={chainId as ChainId} />
+                  <FootnoteText className="text-text-tertiary">{chainAccounts.length}</FootnoteText>
+                </div>
+              );
+
+              const accordionContent = chainAccounts.map((account) => (
+                <DerivedAccount
+                  key={account.accountId}
+                  keyType={account.keyType}
+                  derivationPath={account.derivationPath}
+                  showDerivationPath={isAltPressed}
+                />
+              ));
+
+              return isAltPressed ? (
+                <div key={chainId}>
+                  <div className="mb-2 p-2">{accordionButton}</div>
+                  <div className="flex flex-col gap-2">{accordionContent}</div>
+                </div>
+              ) : (
+                <Accordion key={chainId}>
+                  <Accordion.Button buttonClass="mb-2 p-2">{accordionButton}</Accordion.Button>
+                  <Accordion.Content className="flex flex-col gap-2">{accordionContent}</Accordion.Content>
                 </Accordion>
               );
             })}

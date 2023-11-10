@@ -4,6 +4,7 @@ import type { ChainId, HexString } from './general';
 export type Chain = {
   chainId: ChainId;
   parentId?: HexString;
+  specName?: string;
   name: string;
   assets: Asset[];
   nodes: RpcNode[];
