@@ -6,6 +6,7 @@ import { kernelModel, WalletConnectAccount } from '@renderer/shared/core';
 import { storageService } from '@renderer/shared/api/storage';
 import { modelUtils } from '../lib/model-utils';
 import { accountUtils } from '../lib/account-utils';
+import { ShardedAccountWithShards } from '@renderer/features/wallets/DerivationsAddressModal/DerivationsAddressModal';
 
 const $wallets = createStore<Wallet[]>([]);
 const $activeWallet = $wallets.map((wallets) => wallets.find((w) => w.isActive));
@@ -28,9 +29,15 @@ type CreateParams<T extends Account> = {
   accounts: Omit<NoID<T>, 'walletId'>[];
 };
 type MultisigUpdateParams = Partial<MultisigAccount> & { id: Account['id'] };
+type PolkadotVaultCreateParams = {
+  wallet: Omit<NoID<Wallet>, 'isActive'>;
+  accounts: Omit<NoID<ChainAccount | ShardedAccountWithShards>, 'walletId'>[];
+  root: Omit<NoID<BaseAccount>, 'walletId'>;
+};
 
 const watchOnlyCreated = createEvent<CreateParams<BaseAccount>>();
 const multishardCreated = createEvent<CreateParams<BaseAccount | ChainAccount>>();
+const polkadotVaultCreated = createEvent<PolkadotVaultCreateParams>();
 const singleshardCreated = createEvent<CreateParams<BaseAccount>>();
 const multisigCreated = createEvent<CreateParams<MultisigAccount>>();
 const walletConnectCreated = createEvent<CreateParams<WalletConnectAccount>>();
@@ -96,6 +103,52 @@ const multishardCreatedFx = createEffect(
     }
 
     return { wallet: dbWallet, accounts: multishardAccounts };
+  },
+);
+
+const polkadotVaultCreatedFx = createEffect(
+  async ({ wallet, accounts, root }: PolkadotVaultCreateParams): Promise<CreateResult | undefined> => {
+    const dbWallet = await storageService.wallets.create({ ...wallet, isActive: false });
+
+    if (!dbWallet) return undefined;
+
+    const dbAccounts = [];
+
+    const dbRootAccount = await storageService.accounts.create({ ...root, walletId: dbWallet.id });
+
+    if (!dbRootAccount) return undefined;
+
+    const chainAccounts = accounts
+      .filter((a) => !('shards' in a))
+      .map((a) => ({ ...a, baseId: dbRootAccount.id, walletId: dbWallet.id }));
+    const dbChainAccounts = await storageService.accounts.createAll(chainAccounts);
+    dbChainAccounts && dbAccounts.push(...dbChainAccounts);
+
+    const shardedAccounts = accounts.filter((a) => 'shards' in a) as ShardedAccountWithShards[];
+    for (const shardedAccount of shardedAccounts) {
+      const dbShardedAccount = await storageService.accounts.create({
+        walletId: dbWallet.id,
+        name: shardedAccount.name,
+        type: shardedAccount.type,
+        keyType: shardedAccount.keyType,
+        chainId: shardedAccount.chainId,
+      });
+
+      const shards = shardedAccount.shards.map((shard) => ({
+        ...shard,
+        walletId: dbWallet.id,
+        shardedId: dbShardedAccount?.id,
+      }));
+      const dbShards = await storageService.accounts.createAll(shards);
+      if (dbShards?.length && dbShardedAccount) {
+        dbAccounts.push(dbShardedAccount);
+        dbAccounts.push(...dbShards);
+      }
+    }
+
+    if (!dbAccounts) return undefined;
+
+    return { wallet: dbWallet, accounts: dbAccounts };
   },
 );
 
@@ -178,9 +231,10 @@ forward({
   to: walletCreatedFx,
 });
 forward({ from: multishardCreated, to: multishardCreatedFx });
+forward({ from: polkadotVaultCreated, to: polkadotVaultCreatedFx });
 
 sample({
-  clock: [walletCreatedFx.doneData, multishardCreatedFx.doneData],
+  clock: [walletCreatedFx.doneData, multishardCreatedFx.doneData, polkadotVaultCreatedFx.doneData],
   source: { wallets: $wallets, accounts: $accounts },
   filter: (_, data) => Boolean(data),
   fn: ({ wallets, accounts }, data) => {
@@ -257,6 +311,7 @@ export const walletModel = {
   events: {
     watchOnlyCreated,
     multishardCreated,
+    polkadotVaultCreated,
     singleshardCreated,
     multisigCreated,
     walletConnectCreated,

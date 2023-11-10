@@ -1,11 +1,12 @@
 import useGenerator from './common/useGenerator';
 import { DEFAULT_FRAME_DELAY } from './common/constants';
-import { Address, ChainId } from '@renderer/shared/core';
+import { Address } from '@renderer/shared/core';
 import { createDynamicDerivationPayload } from './common/utils';
+import { DerivationRequest } from '@renderer/components/common/QrCode/common/constants';
 
 type Props = {
   address: Address;
-  derivations: { path: string; chainId: ChainId }[];
+  derivations: DerivationRequest[];
   size?: number;
   bgColor?: string;
   skipEncoding?: boolean;

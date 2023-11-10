@@ -100,30 +100,38 @@ export const DYNAMIC_DERIVATIONS_REQUEST = taggedUnion('DynamicDerivationsReques
   ['V1', ['payload', DYNAMIC_DERIVATIONS_REQUEST_INFO]],
 ]);
 
-type DdSeedInfo = {
-  multisigner: MultiSigner;
+export type DdSeedInfo = {
+  multiSigner: MultiSigner;
   dynamicDerivations: DdAddressInfo[];
 };
 
-type DdAddressInfo = {
-  publicKey: string;
-  derivationPath: string | undefined;
+export type DdAddressInfo = {
+  publicKey: MultiSigner;
+  derivationPath: string;
+  encryption: CryptoType;
+};
+
+export type DdAddressInfoDecoded = {
+  publicKey: { MultiSigner: Exclude<CryptoTypeString, CryptoTypeString.ETHEREUM>; public: string };
+  derivationPath: string;
   encryption: CryptoType;
 };
 
 const DD_ADDRESS_INFO: Codec<DdAddressInfo> = object(
-  ['publicKey', str],
-  ['derivationPath', option(str)],
+  ['derivationPath', str],
   ['encryption', u8 as Codec<CryptoType>],
+  ['publicKey', MULTI_SIGNER],
 );
 
 const DD_SEED_INFO: Codec<DdSeedInfo> = object(
-  ['multisigner', MULTI_SIGNER],
+  ['multiSigner', MULTI_SIGNER],
   ['dynamicDerivations', array(DD_ADDRESS_INFO)],
 );
 
-const DD_RESPONSE_INFO = object(['addrs', array(DD_SEED_INFO)]);
+export const DD_EXPORT_ADDRESS = taggedUnion('DynamicDerivationsAddressResponse', [['V1', ['addr', DD_SEED_INFO]]]);
 
-export const DD_EXPORT_ADDRESS = taggedUnion('DynamicDerivationsAddressResponse', [
-  ['V1', ['payload', DD_RESPONSE_INFO]],
-]);
+export type DerivationRequest = {
+  derivationPath: string;
+  encryption: CryptoType;
+  genesisHash: ChainId;
+};

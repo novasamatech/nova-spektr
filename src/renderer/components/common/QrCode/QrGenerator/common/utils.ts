@@ -6,7 +6,7 @@ import { Encoder } from 'raptorq';
 import { Command, CRYPTO_SR25519, CRYPTO_STUB, FRAME_SIZE, SUBSTRATE_ID } from './constants';
 import type { ChainId } from '@renderer/shared/core';
 import { Address, CryptoType, CryptoTypeString } from '@renderer/shared/core';
-import { DYNAMIC_DERIVATIONS_REQUEST } from '@renderer/components/common/QrCode/common/constants';
+import { DerivationRequest, DYNAMIC_DERIVATIONS_REQUEST } from '@renderer/components/common/QrCode/common/constants';
 
 const MULTIPART = new Uint8Array([0]);
 
@@ -70,10 +70,7 @@ export const createFrames = (input: Uint8Array, encoder?: Encoder): Uint8Array[]
   );
 };
 
-export const createDynamicDerivationPayload = (
-  publicKey: Address,
-  derivations: { path: string; chainId: ChainId }[],
-) => {
+export const createDynamicDerivationPayload = (publicKey: Address, derivations: DerivationRequest[]) => {
   const dynamicDerivationsRequest = DYNAMIC_DERIVATIONS_REQUEST.encode({
     DynamicDerivationsRequest: 'V1',
     payload: {
@@ -82,7 +79,7 @@ export const createDynamicDerivationPayload = (
         public: decodeAddress(publicKey),
       },
       dynamicDerivations: derivations.map((d) => ({
-        derivationPath: d.path,
+        derivationPath: d.derivationPath,
         genesisHash: hexToU8a('0xe143f23803ac50e8f6f8e62695d1ce9e4e1d68aa36c1cd2cfd15340213f3423e'),
         encryption: CryptoType.SR25519,
       })),

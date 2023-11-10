@@ -4,12 +4,16 @@ import cn from 'classnames';
 import { useState } from 'react';
 
 import { QrReader } from '@renderer/components/common';
-import { ErrorObject, QrError, SeedInfo, VideoInput } from '@renderer/components/common/QrCode/common/types';
+import { ErrorObject, QrError, VideoInput } from '@renderer/components/common/QrCode/common/types';
 import { Icon, Loader, Button, CaptionText, FootnoteText, Select, SmallTitleText } from '@renderer/shared/ui';
 import { DropdownOption, DropdownResult } from '@renderer/shared/ui/Dropdowns/common/types';
 import { useI18n } from '@renderer/app/providers';
 import { cnTw } from '@renderer/shared/lib/utils';
-import { WhiteTextButtonStyle } from '@renderer/components/common/QrCode/common/constants';
+import {
+  DdAddressInfoDecoded,
+  DdSeedInfo,
+  WhiteTextButtonStyle,
+} from '@renderer/components/common/QrCode/common/constants';
 
 const enum CameraState {
   ACTIVE,
@@ -29,7 +33,7 @@ type Props = {
   size?: number | [number, number];
   className?: string;
   onGoBack: () => void;
-  onResult: (payload: SeedInfo[]) => void;
+  onResult: (payload: DdAddressInfoDecoded[]) => void;
 };
 
 export const DdKeyQrReader = ({ size = 300, className, onGoBack, onResult }: Props) => {
@@ -79,22 +83,35 @@ export const DdKeyQrReader = ({ size = 300, className, onGoBack, onResult }: Pro
     setProgress({ decoded: 0, total: 0 });
   };
 
-  const onScanResult = (qrPayload: SeedInfo[]) => {
+  const onScanResult = (qrPayload: DdSeedInfo[]) => {
     try {
+      const derivations: DdAddressInfoDecoded[] = [];
       qrPayload.forEach((qr) => {
         if (qr.multiSigner) {
           encodeAddress(qr.multiSigner.public);
         }
 
-        if (qr.derivedKeys.length === 0) return;
+        if (qr.dynamicDerivations.length === 0) return;
 
-        qr.derivedKeys.forEach(({ address }) =>
-          encodeAddress(isHex(address) ? hexToU8a(address) : decodeAddress(address)),
+        derivations.push(
+          ...qr.dynamicDerivations.map((d) => ({
+            ...d,
+            publicKey: {
+              MultiSigner: d.publicKey.MultiSigner,
+              public: encodeAddress(
+                isHex(d.publicKey.public) ? hexToU8a(d.publicKey.public) : decodeAddress(d.publicKey.public),
+              ),
+            },
+          })),
+        );
+
+        qr.dynamicDerivations.forEach(({ publicKey }) =>
+          encodeAddress(isHex(publicKey.public) ? hexToU8a(publicKey.public) : decodeAddress(publicKey.public)),
         );
       });
 
       setIsScanComplete(true);
-      setTimeout(() => onResult(qrPayload), RESULT_DELAY);
+      setTimeout(() => onResult(derivations), RESULT_DELAY);
     } catch (error) {
       setCameraState(CameraState.INVALID_ERROR);
       resetCamera();
@@ -199,13 +216,14 @@ export const DdKeyQrReader = ({ size = 300, className, onGoBack, onResult }: Pro
           <QrReader
             size={size}
             cameraId={activeCamera?.value}
+            isDynamicDerivations
             bgVideo
             className="relative top-[-24px] scale-y-[1.125] -scale-x-[1.125]"
             wrapperClassName="translate-y-[-84px]"
             onStart={() => setCameraState(CameraState.ACTIVE)}
             onCameraList={onCameraList}
             onProgress={setProgress}
-            onResult={onScanResult}
+            onResult={(result) => onScanResult(result as DdSeedInfo[])}
             onError={onError}
           />
 

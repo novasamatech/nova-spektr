@@ -6,7 +6,7 @@ import { useEffect, useRef } from 'react';
 import { cnTw, validateSignerFormat } from '@renderer/shared/lib/utils';
 import { CryptoTypeString } from '@renderer/shared/core';
 import { useI18n } from '@renderer/app/providers';
-import { DD_EXPORT_ADDRESS, ErrorFields, EXPORT_ADDRESS, FRAME_KEY } from '../common/constants';
+import { DD_EXPORT_ADDRESS, DdSeedInfo, ErrorFields, EXPORT_ADDRESS, FRAME_KEY } from '../common/constants';
 import { QR_READER_ERRORS } from '../common/errors';
 import { DecodeCallback, ErrorObject, Progress, QrError, SeedInfo, VideoInput } from '../common/types';
 import RaptorFrame from './RaptorFrame';
@@ -23,8 +23,9 @@ type Props = {
   bgVideo?: boolean;
   bgVideoClassName?: string;
   wrapperClassName?: string;
+  isDynamicDerivations?: boolean;
   onStart?: () => void;
-  onResult: (scanResult: SeedInfo[]) => void;
+  onResult: (scanResult: (SeedInfo | DdSeedInfo)[]) => void;
   onError?: (error: ErrorObject) => void;
   onProgress?: (progress: Progress) => void;
   onCameraList?: (cameras: VideoInput[]) => void;
@@ -34,6 +35,7 @@ const QrReader = ({
   size = 300,
   cameraId,
   className,
+  isDynamicDerivations,
   bgVideo,
   bgVideoClassName,
   wrapperClassName,
@@ -66,7 +68,9 @@ const QrReader = ({
     return typeof error === 'object' && ErrorFields.CODE in error && ErrorFields.MESSAGE in error;
   };
 
-  const makeResultPayload = <T extends string | SeedInfo[] | { addr: SeedInfo }>(data: T): SeedInfo[] => {
+  const makeResultPayload = <T extends string | SeedInfo[] | { addr: SeedInfo | DdSeedInfo }>(
+    data: T,
+  ): (SeedInfo | DdSeedInfo)[] => {
     if (Array.isArray(data)) return data;
 
     if (typeof data !== 'string') return [data.addr];
@@ -186,10 +190,14 @@ const QrReader = ({
         continue;
       }
 
-      // debugger;
-      const result = DD_EXPORT_ADDRESS.decode(fountainResult.slice(3));
+      if (isDynamicDerivations) {
+        const result = DD_EXPORT_ADDRESS.decode(fountainResult.slice(3));
+        onResult?.(makeResultPayload(result));
+      } else {
+        const result = EXPORT_ADDRESS.decode(fountainResult.slice(3));
+        onResult?.(makeResultPayload(result.payload));
+      }
       isComplete.current = true;
-      onResult?.(makeResultPayload(result.payload));
       break;
     }
   };
@@ -228,7 +236,6 @@ const QrReader = ({
         }
       } catch (error) {
         if (!isQrErrorObject(error)) {
-          debugger;
           onError?.(QR_READER_ERRORS[QrError.DECODE_ERROR]);
         } else if ((error as ErrorObject).code === QrError.NOT_SAME_QR) {
           // Restart process for new QR
