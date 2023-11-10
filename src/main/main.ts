@@ -22,7 +22,7 @@ log.transports.file.fileName = 'nova-spektr.log';
 log.transports.file.format = '{y}/{m}/{d} {h}:{i}:{s}.{ms} [{env}#{version}]-{processType} [{level}] > {text}';
 log.transports.file.level = 'info';
 log.transports.file.maxSize = 1048576 * 5; // 5 MB;
-// log.transports.file.archiveLogFn = rotateLogs;
+log.transports.file.archiveLogFn = rotateLogs;
 Object.assign(console, log.functions);
 log.errorHandler.startCatching({
   showDialog: false,
