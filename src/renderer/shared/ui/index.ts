@@ -13,6 +13,7 @@ import { StatusModal } from './Modals/StatusModal/StatusModal';
 import InfoPopover from './Popovers/InfoPopover/InfoPopover';
 import { Popover } from './Popovers/Popover/Popover';
 import InfoLink from './InfoLink/InfoLink';
+import { ExplorerLink } from './ExplorerLink/ExplorerLink';
 import Select from './Dropdowns/Select/Select';
 import Combobox from './Dropdowns/Combobox/Combobox';
 import RadioGroup from './RadioGroup/RadioGroup';
@@ -117,4 +118,5 @@ export {
   Truncate,
   MainLayout,
   Countdown,
+  ExplorerLink,
 };

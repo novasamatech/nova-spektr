@@ -1,31 +1,30 @@
 import { useMemo } from 'react';
 
-import { Wallet, MultisigAccount, Signatory } from '@renderer/shared/core';
-import { BaseModal, BodyText, Tabs, FootnoteText, Icon, InfoPopover } from '@renderer/shared/ui';
-import { RootExplorers, toAddress } from '@renderer/shared/lib/utils';
+import { MultisigAccount, Signatory, Wallet, AccountId } from '@renderer/shared/core';
+import { BaseModal, FootnoteText, Tabs } from '@renderer/shared/ui';
+import { RootExplorers } from '@renderer/shared/lib/utils';
 import { useModalClose } from '@renderer/shared/lib/hooks';
-import { AccountsList, WalletIcon, ContactItem, useAddressInfo } from '@renderer/entities/wallet';
-import { chainsService } from '@renderer/entities/network';
-import { useI18n } from '@renderer/app/providers';
+import { AccountsList, ContactItem, ExplorersPopover, WalletCardLg, WalletCardMd } from '@renderer/entities/wallet';
+import { chainsService, isMultisigAvailable } from '@renderer/entities/network';
+import { useI18n, useMatrix } from '@renderer/app/providers';
 // TODO: think about combining balances and wallets
 import { WalletFiatBalance } from '@renderer/features/wallets/WalletSelect/ui/WalletFiatBalance';
 
 type Props = {
   wallet: Wallet;
   account: MultisigAccount;
-  signatoryWallets: Wallet[];
+  signatoryWallets: [AccountId, Wallet][];
   signatoryContacts: Signatory[];
   onClose: () => void;
 };
 export const MultisigWalletDetails = ({ wallet, account, signatoryWallets, signatoryContacts, onClose }: Props) => {
   const { t } = useI18n();
-
-  const popoverItems = useAddressInfo({ address: toAddress(account.accountId), explorers: RootExplorers });
+  const { matrix, isLoggedIn } = useMatrix();
 
   const [isModalOpen, closeModal] = useModalClose(true, onClose);
 
   const chains = useMemo(() => {
-    const chains = chainsService.getChainsData();
+    const chains = chainsService.getChainsData().filter((chain) => isMultisigAvailable(chain.options));
 
     return chainsService.sortChains(chains);
   }, []);
@@ -40,9 +39,8 @@ export const MultisigWalletDetails = ({ wallet, account, signatoryWallets, signa
       onClose={closeModal}
     >
       <div className="flex flex-col w-full">
-        <div className="flex items-center gap-x-2 py-5 px-5 border-b border-divider">
-          <WalletIcon type={wallet.type} size={32} />
-          <BodyText>{wallet.name}</BodyText>
+        <div className="py-5 px-5 border-b border-divider">
+          <WalletCardLg wallet={wallet} />
         </div>
 
         <Tabs
@@ -52,7 +50,7 @@ export const MultisigWalletDetails = ({ wallet, account, signatoryWallets, signa
             {
               id: 1,
               title: t('walletDetails.multisig.networksTab'),
-              panel: <AccountsList accountId={account.accountId} chains={chains} className="h-[365px]" />,
+              panel: <AccountsList accountId={account.accountId} chains={chains} className="h-[355px]" />,
             },
             {
               id: 2,
@@ -68,24 +66,30 @@ export const MultisigWalletDetails = ({ wallet, account, signatoryWallets, signa
 
                   <div className="overflow-y-auto mt-4 h-[357px]">
                     {signatoryWallets.length > 0 && (
-                      <div className="flex flex-col gap-y-2 px-5">
-                        <FootnoteText className="text-text-tertiary">
+                      <div className="flex flex-col gap-y-2">
+                        <FootnoteText className="text-text-tertiary px-5">
                           {t('walletDetails.multisig.walletsGroup')}
                         </FootnoteText>
 
-                        <ul className="flex flex-col gap-y-2">
-                          {signatoryWallets.map((wallet) => (
+                        <ul className="flex flex-col gap-y-2 px-3">
+                          {signatoryWallets.map(([accountId, wallet]) => (
                             <li key={wallet.id} className="flex items-center gap-x-2 py-1.5">
-                              <WalletIcon className="shrink-0" type={wallet.type} size={20} />
-
-                              <div className="flex flex-col gap-y-1 overflow-hidden">
-                                <BodyText className="text-text-secondary truncate">{wallet.name}</BodyText>
-                                <WalletFiatBalance walletId={wallet.id} className="truncate" />
-                              </div>
-
-                              <InfoPopover data={popoverItems} containerClassName="ml-auto" position="right-0">
-                                <Icon name="info" size={16} className="hover:text-icon-hover" />
-                              </InfoPopover>
+                              <ExplorersPopover
+                                explorers={RootExplorers}
+                                address={accountId}
+                                button={
+                                  <WalletCardMd
+                                    wallet={wallet}
+                                    description={<WalletFiatBalance walletId={wallet.id} className="truncate" />}
+                                  />
+                                }
+                              >
+                                {isLoggedIn && (
+                                  <ExplorersPopover.Group title={t('general.explorers.matrixIdTitle')}>
+                                    <FootnoteText className="text-text-secondary">{matrix.userId}</FootnoteText>
+                                  </ExplorersPopover.Group>
+                                )}
+                              </ExplorersPopover>
                             </li>
                           ))}
                         </ul>
@@ -99,11 +103,11 @@ export const MultisigWalletDetails = ({ wallet, account, signatoryWallets, signa
                         </FootnoteText>
 
                         <ul className="flex flex-col gap-y-2">
-                          {signatoryContacts.map((sigmatory) => (
-                            <li key={sigmatory.accountId} className="flex items-center gap-x-2 py-1.5">
+                          {signatoryContacts.map((signatory) => (
+                            <li key={signatory.accountId} className="flex items-center gap-x-2 py-1.5">
                               <ContactItem
-                                name={sigmatory.name}
-                                accountId={sigmatory.accountId}
+                                name={signatory.name}
+                                accountId={signatory.accountId}
                                 explorers={RootExplorers}
                               />
                             </li>

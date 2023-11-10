@@ -1,21 +1,23 @@
-import { createStore, combine, createEvent, forward } from 'effector';
+import { createStore, combine, createEvent, forward, sample } from 'effector';
 import { createGate } from 'effector-react';
 import BigNumber from 'bignumber.js';
 
 import { includes, getRoundedValue, totalAmount } from '@renderer/shared/lib/utils';
 import { walletModel, walletUtils } from '@renderer/entities/wallet';
-import type { WalletFamily, Wallet, Balance, Chain, ChainId, AccountId } from '@renderer/shared/core';
-import { WalletType } from '@renderer/shared/core';
 import { currencyModel, priceProviderModel } from '@renderer/entities/price';
+import { WalletType } from '@renderer/shared/core';
+import type { WalletFamily, Wallet, Balance, Chain, ChainId, AccountId } from '@renderer/shared/core';
 
 const queryChanged = createEvent<string>();
 const walletForDetailsSet = createEvent<Wallet>();
 const walletForDetailsCleared = createEvent();
+const clearData = createEvent();
 
 const PropsGate = createGate<{ balances: Balance[]; chains: Record<ChainId, Chain> }>();
 
-const $filterQuery = createStore<string>('');
+const $filterQuery = createStore<string>('').reset(clearData);
 const $walletForDetails = createStore<Wallet | null>(null).reset(walletForDetailsCleared);
+const $isWalletChanged = createStore<boolean>(false).reset(clearData);
 
 const $filteredWalletGroups = combine(
   {
@@ -101,12 +103,21 @@ const $walletBalances = combine(
 forward({ from: queryChanged, to: $filterQuery });
 forward({ from: walletForDetailsSet, to: $walletForDetails });
 
+sample({
+  clock: walletModel.events.walletSelected,
+  source: walletModel.$activeWallet,
+  fn: (wallet, walletId) => walletId !== wallet?.id,
+  target: $isWalletChanged,
+});
+
 export const walletSelectModel = {
   $filteredWalletGroups,
   $walletBalances,
   $walletForDetails,
+  $isWalletChanged,
   PropsGate,
   events: {
+    clearData,
     queryChanged,
     walletForDetailsSet,
     walletForDetailsCleared,
