@@ -42,6 +42,11 @@ export type CompactSeedInfo = {
   derivedKeys: Record<ChainId, AddressInfo[]>;
 };
 
+export type DdSeedInfo = {
+  multiSigner: MultiSigner;
+  dynamicDerivations: DdAddressInfo[];
+};
+
 export type AddressInfo = {
   // TODO: Eth would have HexString
   address: Address;
@@ -50,7 +55,25 @@ export type AddressInfo = {
   genesisHash: Uint8Array;
 };
 
+export type DdAddressInfo = {
+  publicKey: MultiSigner;
+  derivationPath: string;
+  encryption: CryptoType;
+};
+
 export type ErrorObject = {
   code: QrError;
   message: string;
+};
+
+export type DdAddressInfoDecoded = {
+  publicKey: { MultiSigner: Exclude<CryptoTypeString, CryptoTypeString.ETHEREUM>; public: string };
+  derivationPath: string;
+  encryption: CryptoType;
+};
+
+export type DynamicDerivationRequestInfo = {
+  derivationPath: string;
+  encryption: CryptoType;
+  genesisHash: ChainId;
 };

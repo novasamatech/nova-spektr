@@ -6,9 +6,9 @@ import { useEffect, useRef } from 'react';
 import { cnTw, validateSignerFormat } from '@renderer/shared/lib/utils';
 import { CryptoTypeString } from '@renderer/shared/core';
 import { useI18n } from '@renderer/app/providers';
-import { DD_EXPORT_ADDRESS, DdSeedInfo, ErrorFields, EXPORT_ADDRESS, FRAME_KEY } from '../common/constants';
+import { DYNAMIC_DERIVATIONS_ADDRESS_RESPONSE, ErrorFields, EXPORT_ADDRESS, FRAME_KEY } from '../common/constants';
 import { QR_READER_ERRORS } from '../common/errors';
-import { DecodeCallback, ErrorObject, Progress, QrError, SeedInfo, VideoInput } from '../common/types';
+import { DdSeedInfo, DecodeCallback, ErrorObject, Progress, QrError, SeedInfo, VideoInput } from '../common/types';
 import RaptorFrame from './RaptorFrame';
 
 const enum Status {
@@ -191,7 +191,7 @@ const QrReader = ({
       }
 
       if (isDynamicDerivations) {
-        const result = DD_EXPORT_ADDRESS.decode(fountainResult.slice(3));
+        const result = DYNAMIC_DERIVATIONS_ADDRESS_RESPONSE.decode(fountainResult.slice(3));
         onResult?.(makeResultPayload(result));
       } else {
         const result = EXPORT_ADDRESS.decode(fountainResult.slice(3));

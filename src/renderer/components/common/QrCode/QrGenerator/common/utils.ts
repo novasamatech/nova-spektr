@@ -6,7 +6,8 @@ import { Encoder } from 'raptorq';
 import { Command, CRYPTO_SR25519, CRYPTO_STUB, FRAME_SIZE, SUBSTRATE_ID } from './constants';
 import type { ChainId } from '@renderer/shared/core';
 import { Address, CryptoType, CryptoTypeString } from '@renderer/shared/core';
-import { DerivationRequest, DYNAMIC_DERIVATIONS_REQUEST } from '@renderer/components/common/QrCode/common/constants';
+import { DYNAMIC_DERIVATIONS_REQUEST } from '@renderer/components/common/QrCode/common/constants';
+import { DynamicDerivationRequestInfo } from '../../common/types';
 
 const MULTIPART = new Uint8Array([0]);
 
@@ -70,7 +71,7 @@ export const createFrames = (input: Uint8Array, encoder?: Encoder): Uint8Array[]
   );
 };
 
-export const createDynamicDerivationPayload = (publicKey: Address, derivations: DerivationRequest[]) => {
+export const createDynamicDerivationPayload = (publicKey: Address, derivations: DynamicDerivationRequestInfo[]) => {
   const dynamicDerivationsRequest = DYNAMIC_DERIVATIONS_REQUEST.encode({
     DynamicDerivationsRequest: 'V1',
     payload: {

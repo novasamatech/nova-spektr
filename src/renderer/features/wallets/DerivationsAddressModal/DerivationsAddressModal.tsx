@@ -7,20 +7,17 @@ import { useToggle } from '@renderer/shared/lib/hooks';
 import { BaseAccount, ChainAccount, SigningType, WalletType } from '@renderer/shared/core';
 import { ShardAccount, ShardedAccount } from '@renderer/shared/core/types/account';
 import { useI18n } from '@renderer/app/providers';
-import {
-  DdAddressInfoDecoded,
-  DerivationRequest,
-  TROUBLESHOOTING_URL,
-} from '@renderer/components/common/QrCode/common/constants';
+import { TROUBLESHOOTING_URL } from '@renderer/components/common/QrCode/common/constants';
 import { DdKeyQrReader } from '@renderer/pages/Onboarding/Vault/DdKeyQrReader/DdKeyQrReader';
 import { TEST_ACCOUNT_ID, toAccountId, toAddress } from '@renderer/shared/lib/utils';
 import { walletModel } from '@renderer/entities/wallet';
+import { DdAddressInfoDecoded, DynamicDerivationRequestInfo } from '@renderer/components/common/QrCode/common/types';
 
 export type ShardedAccountWithShards = ShardedAccount & { shards: ShardAccount[] };
 type DerivationsAccounts = Omit<ShardedAccountWithShards | ChainAccount, 'accountId' | 'walletId' | 'id'>;
 
-const createDerivations = (accounts: DerivationsAccounts[]): DerivationRequest[] => {
-  return accounts.reduce<DerivationRequest[]>((acc, account) => {
+const createDerivations = (accounts: DerivationsAccounts[]): DynamicDerivationRequestInfo[] => {
+  return accounts.reduce<DynamicDerivationRequestInfo[]>((acc, account) => {
     if ('shards' in account) {
       acc.push(
         ...(account as ShardedAccountWithShards).shards.map((shard) => ({
