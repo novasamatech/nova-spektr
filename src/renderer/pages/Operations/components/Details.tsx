@@ -17,8 +17,7 @@ import { ChainTitle } from '@renderer/entities/chain';
 import { Account } from '@renderer/shared/core';
 import { getTransactionFromMultisigTx } from '@renderer/entities/multisig';
 import type { Address, MultisigAccount, Validator } from '@renderer/shared/core';
-import { useValidatorsMap } from '@renderer/entities/staking';
-import { SelectedValidatorsModal } from '@renderer/entities/staking/ui/SelectedValidatorsModal/SelectedValidatorsModal';
+import { useValidatorsMap, SelectedValidatorsModal } from '@renderer/entities/staking';
 
 type Props = {
   tx: MultisigTransaction;
