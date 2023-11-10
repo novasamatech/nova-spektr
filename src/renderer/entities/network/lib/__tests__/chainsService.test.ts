@@ -1,11 +1,19 @@
 import { chainsService } from '../chainsService';
-import type { HexString } from '@renderer/shared/core';
-
-jest.mock('@renderer/app/providers', () => ({
-  useMatrix: jest.fn(),
-}));
+import type { Chain } from '@renderer/shared/core';
+import { fakeBalance, getChain, fakePrice } from './TestHelpers';
 
 describe('service/chainsService', () => {
+  let polkadot: Chain = getChain('Polkadot');
+  let kusama: Chain = getChain('Kusama');
+  let threeDPass: Chain = getChain('3DPass');
+  let westend: Chain = getChain('Westend');
+  let acala: Chain = getChain('Acala');
+  let interlay: Chain = getChain('Interlay');
+  let bifrostKusama: Chain = getChain('Bifrost Kusama');
+  let litmus: Chain = getChain('Litmus');
+  let kusamaAssetHub: Chain = getChain('Kusama Asset Hub');
+  let polkadotAssetHub: Chain = getChain('Polkadot Asset Hub');
+
   test('should init', () => {
     expect(chainsService.sortChains).toBeDefined();
     expect(chainsService.sortChainsByBalance).toBeDefined();
@@ -13,114 +21,95 @@ describe('service/chainsService', () => {
     expect(chainsService.getStakingChainsData).toBeDefined();
   });
 
-  test('should sort chains', () => {
-    const polkadot = { name: 'Polkadot' };
-    const kusama = { name: 'Kusama' };
-    const threeDPass = { name: '3dPass' };
-    const testnet = { name: 'Westend', options: ['testnet'] };
-    const parachain = { name: 'Acala' };
-
-    const data = chainsService.sortChains([testnet, polkadot, threeDPass, parachain, kusama]);
-
-    expect(data).toEqual([polkadot, kusama, parachain, threeDPass, testnet]);
+  test.each([
+    [
+      'Polkadot => Kusama => Parachains => TestNets',
+      [westend, polkadot, threeDPass, acala, kusama],
+      [polkadot, kusama, acala, threeDPass, westend],
+    ],
+    ['Polkadot => Kusama => Testnets', [westend, kusama, polkadot], [polkadot, kusama, westend]],
+    ['Polkadot => Kusama => Parachains', [acala, kusama, polkadot], [polkadot, kusama, acala]],
+    ['Polkadot => Parachains', [polkadot, litmus, acala], [polkadot, acala, litmus]],
+    ['Acala => 3DPass', [threeDPass, acala], [acala, threeDPass]],
+  ])('should sort chains without prices - %s', (_, notSortedChains, expectedOrder) => {
+    const sortedChains = chainsService.sortChains(notSortedChains);
+    expect(sortedChains.map((chain) => chain.name)).toEqual(expectedOrder.map((chain) => chain.name));
   });
 
-  test('should sort chains with balances', () => {
-    const assets = [
-      {
-        assetId: 1,
-        priceId: '1',
-        name: '',
-        symbol: '',
-        precision: 0,
-        icon: '',
-      },
-      {
-        assetId: 2,
-        priceId: '2',
-        name: '',
-        symbol: '',
-        precision: 0,
-        icon: '',
-      },
-    ];
+  test.each([
+    [
+      'Polkadot 100$ => Kusama 10$',
+      [polkadot, kusama],
+      [fakeBalance(polkadot, 'DOT', '100'), fakeBalance(kusama, 'KSM', '10')],
+      fakePrice({ DOT: 1, KSM: 1 }, [polkadot, kusama]),
+      [polkadot, kusama],
+    ],
+    [
+      'Kusama 100$ => Polkadot 10$',
+      [polkadot, kusama],
+      [fakeBalance(polkadot, 'DOT', '10'), fakeBalance(kusama, 'KSM', '100')],
+      fakePrice({ DOT: 1, KSM: 1 }, [polkadot, kusama]),
+      [kusama, polkadot],
+    ],
+    [
+      'Kusama 10$ => Polkadot 10$',
+      [polkadot, kusama],
+      [fakeBalance(polkadot, 'DOT', '10'), fakeBalance(kusama, 'KSM', '10')],
+      fakePrice({ DOT: 1, KSM: 1 }, [polkadot, kusama]),
+      [kusama, polkadot],
+    ],
+  ])('Dotsama group with balances - %s', (_, notSortedChains, balances, prices, expectedOrder) => {
+    const sortedChains = chainsService.sortChainsByBalance(notSortedChains, balances, prices, 'usd');
 
-    const polkadot = {
-      name: 'Polkadot',
-      chainId: '0x00' as HexString,
-      assets,
-      nodes: [],
-      icon: '',
-      addressPrefix: 42,
-    };
-    const kusama = { name: 'Kusama', chainId: '0x01' as HexString, assets, nodes: [], icon: '', addressPrefix: 42 };
-    const threeDPass = { name: '3dPass', chainId: '0x02' as HexString, assets, nodes: [], icon: '', addressPrefix: 42 };
-    const testnet = {
-      name: 'Westend',
-      chainId: '0x03' as HexString,
-      assets,
-      nodes: [],
-      icon: '',
-      addressPrefix: 42,
-      options: ['testnet'],
-    };
-    const parachain = { name: 'Acala', chainId: '0x04' as HexString, assets, nodes: [], icon: '', addressPrefix: 42 };
+    expect(sortedChains.map((chain) => chain.name)).toEqual(expectedOrder.map((chain) => chain.name));
+  });
 
-    const balances = [
-      {
-        accountId: '0x00' as HexString,
-        chainId: '0x00' as HexString,
-        assetId: '1',
-        free: '2',
-      },
-      {
-        accountId: '0x00' as HexString,
-        chainId: '0x00' as HexString,
-        assetId: '2',
-        free: '2',
-      },
-      {
-        accountId: '0x00' as HexString,
-        chainId: '0x01' as HexString,
-        assetId: '2',
-        free: '2',
-      },
-      {
-        accountId: '0x00' as HexString,
-        chainId: '0x02' as HexString,
-        assetId: '2',
-        free: '2',
-      },
-      {
-        accountId: '0x00' as HexString,
-        chainId: '0x02' as HexString,
-        assetId: '2',
-        free: '1',
-      },
-    ];
+  test.each([
+    [
+      'Bifrost Kusama BNC 100$ => Interlay INTR 10$',
+      [interlay, bifrostKusama, threeDPass],
+      [fakeBalance(interlay, 'INTR', '100'), fakeBalance(bifrostKusama, 'BNC', '10')],
+      fakePrice({ INTR: 1, BNC: 1 }, [interlay, bifrostKusama]),
+      [bifrostKusama, interlay, threeDPass],
+    ],
+    [
+      'Interlay INTR 100$ => Bifrost Kusama BNC 10$',
+      [threeDPass, bifrostKusama, interlay],
+      [fakeBalance(interlay, 'INTR', '100'), fakeBalance(bifrostKusama, 'BNC', '10')],
+      fakePrice({ INTR: 1, BNC: 1 }, [interlay, bifrostKusama]),
+      [interlay, bifrostKusama, threeDPass],
+    ],
+    [
+      'Bifrost Kusama BNC 0.1$ => Interlay INTR 0.01$',
+      [threeDPass, interlay, bifrostKusama],
+      [fakeBalance(interlay, 'INTR', '1'), fakeBalance(bifrostKusama, 'BNC', '1')],
+      fakePrice({ INTR: 0.01, BNC: 0.1 }, [interlay, bifrostKusama]),
+      [bifrostKusama, interlay, threeDPass],
+    ],
+    [
+      'Bifrost Kusama BNC 0.1$ => Kusama Asset Hub KSM 0$',
+      [threeDPass, bifrostKusama, kusamaAssetHub],
+      [fakeBalance(kusamaAssetHub, 'KSM', '1'), fakeBalance(bifrostKusama, 'BNC', '1')],
+      fakePrice({ KSM: 0, BNC: 0.1 }, [kusamaAssetHub, bifrostKusama]),
+      [bifrostKusama, kusamaAssetHub, threeDPass],
+    ],
+    [
+      'Bifrost Kusama BNC 1$ => Polkadot Asset Hub DOT 0.1$',
+      [threeDPass, bifrostKusama, polkadotAssetHub],
+      [fakeBalance(polkadotAssetHub, 'DOT', '1'), fakeBalance(bifrostKusama, 'BNC', '1')],
+      fakePrice({ DOT: 0.1, BNC: 1 }, [polkadotAssetHub, bifrostKusama]),
+      [bifrostKusama, polkadotAssetHub, threeDPass],
+    ],
+    [
+      'Litmus LIT 1$ => Interlay INTR 0.1$ => Bifrost Kusama BNC 0.1$',
+      [litmus, interlay, bifrostKusama],
+      [fakeBalance(litmus, 'LIT', '1'), fakeBalance(interlay, 'INTR', '1'), fakeBalance(bifrostKusama, 'BNC', '1')],
+      fakePrice({ INTR: 0.1, BNC: 0.1, LIT: 1 }, [litmus, interlay, bifrostKusama]),
+      [litmus, interlay, bifrostKusama],
+    ],
+  ])('Parachain networks group with balances - %s', (_, notSortedChains, balances, prices, expectedOrder) => {
+    const sortedChains = chainsService.sortChainsByBalance(notSortedChains, balances, prices, 'usd');
 
-    const assetsPrices = {
-      '1': {
-        usd: {
-          price: 1,
-          change: 0,
-        },
-      },
-      '2': {
-        usd: {
-          price: 0.1,
-          change: 0,
-        },
-      },
-    };
-
-    const data = chainsService.sortChainsByBalance(
-      [testnet, polkadot, threeDPass, parachain, kusama],
-      balances,
-      assetsPrices,
-      'usd',
-    );
-
-    expect(data).toEqual([polkadot, threeDPass, kusama, parachain, testnet]);
+    expect(sortedChains.map((chain) => chain.name)).toEqual(expectedOrder.map((chain) => chain.name));
   });
 });
