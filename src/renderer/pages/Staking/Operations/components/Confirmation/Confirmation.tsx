@@ -7,7 +7,7 @@ import { Icon, Button, FootnoteText, CaptionText, InputHint, DetailRow } from '@
 import { useI18n } from '@renderer/app/providers';
 import { useToggle } from '@renderer/shared/lib/hooks';
 import { Validator } from '@renderer/shared/core/types/validator';
-import { AddressWithExplorers, WalletIcon, accountUtils, walletModel } from '@renderer/entities/wallet';
+import { AddressWithExplorers, WalletCardSm, WalletIcon, accountUtils, walletModel } from '@renderer/entities/wallet';
 import { AssetBalance } from '@renderer/entities/asset';
 import {
   MultisigTxInitStatus,
@@ -150,13 +150,13 @@ export const Confirmation = ({
             )}
           </DetailRow>
 
-          {signer && (
-            <DetailRow label={t('staking.confirmation.signatoryLabel')}>
-              <AddressWithExplorers
+          {signerWallet && (
+            <DetailRow className="flex gap-x-2" label={t('staking.confirmation.signatoryLabel')}>
+              <WalletCardSm
+                wallet={signerWallet}
                 accountId={signer.accountId}
-                name={signer.name}
-                explorers={explorers}
                 addressPrefix={addressPrefix}
+                explorers={explorers}
               />
             </DetailRow>
           )}
@@ -233,6 +233,7 @@ export const Confirmation = ({
         isOpen={isAccountsOpen}
         accounts={accounts}
         amounts={amounts}
+        chainId={transaction?.chainId}
         asset={asset}
         explorers={explorers}
         addressPrefix={addressPrefix}

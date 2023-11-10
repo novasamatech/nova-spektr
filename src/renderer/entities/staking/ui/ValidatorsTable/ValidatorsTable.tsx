@@ -1,6 +1,6 @@
 import { Asset, Explorer, Validator } from '@renderer/shared/core';
 import { cnTw, getComposedIdentity } from '@renderer/shared/lib/utils';
-import { BodyText, FootnoteText, HelpText, Icon, Identicon, InfoPopover } from '@renderer/shared/ui';
+import { BodyText, FootnoteText, HelpText, Icon, Identicon, InfoPopover, Truncate } from '@renderer/shared/ui';
 import { AssetBalance } from '@renderer/entities/asset';
 import { AssetFiatBalance } from '@renderer/entities/price/ui/AssetFiatBalance';
 import { useI18n } from '@renderer/app/providers';
@@ -86,10 +86,16 @@ const ValidatorShortRow = ({ validator, explorers }: RowProps) => (
     <div className="flex gap-x-2 items-center mr-auto">
       <Identicon address={validator.address} background={false} size={20} />
       <div className="flex flex-col max-w-[276px]">
-        {!validator.identity ? (
+        {validator.identity ? (
           <BodyText className="text-text-secondary">{getComposedIdentity(validator.identity)}</BodyText>
         ) : (
-          <BodyText className="text-text-secondary overflow-hidden text-ellipsis">{validator.address}</BodyText>
+          <Truncate
+            className="text-body text-text-secondary"
+            ellipsis="..."
+            start={4}
+            end={4}
+            text={validator.address}
+          />
         )}
       </div>
     </div>
