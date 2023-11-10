@@ -69,9 +69,11 @@ export const DerivedAccount = ({
       <Icon size={iconSize} name={KeyIcon[keyType]} className="shrink-0 text-text-secondary" />
 
       <BodyText className="text-text-secondary">{t(name)}</BodyText>
-      <FootnoteText className="flex-1 text-text-tertiary" align="right">
-        {showDerivationPath ? derivationPath : ''}
-      </FootnoteText>
+      {showDerivationPath && (
+        <FootnoteText className="flex-1 text-text-tertiary" align="right">
+          {derivationPath}
+        </FootnoteText>
+      )}
     </div>
   );
 
