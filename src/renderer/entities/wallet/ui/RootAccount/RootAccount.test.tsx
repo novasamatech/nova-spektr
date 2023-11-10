@@ -3,6 +3,12 @@ import { render, screen } from '@testing-library/react';
 import { RootAccount } from './RootAccount';
 import { TEST_ACCOUNT_ID } from '@renderer/shared/lib/utils';
 
+jest.mock('@renderer/app/providers', () => ({
+  useI18n: jest.fn().mockReturnValue({
+    t: (key: string) => key,
+  }),
+}));
+
 jest.mock('@renderer/entities/walletConnect', () => ({
   walletConnectModel: { events: {} },
   DEFAULT_POLKADOT_METHODS: {},
