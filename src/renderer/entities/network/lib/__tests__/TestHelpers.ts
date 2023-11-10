@@ -1,7 +1,5 @@
-import { HexString } from '@renderer/domain/shared-kernel';
 import { chainsService } from '../chainsService';
-import { Chain } from '@renderer/entities/chain';
-import { Balance } from '@renderer/entities/asset';
+import type { Chain, Balance, HexString } from '@renderer/shared/core';
 import { PriceObject } from '@renderer/shared/api/price-provider/common/types';
 import BigNumber from 'bignumber.js';
 

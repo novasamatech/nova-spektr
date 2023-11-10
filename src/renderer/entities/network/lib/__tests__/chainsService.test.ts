@@ -1,5 +1,5 @@
 import { chainsService } from '../chainsService';
-import { Chain } from '@renderer/entities/chain';
+import type { Chain } from '@renderer/shared/core';
 import { fakeBalance, getChain, fakePrice } from './TestHelpers';
 
 describe('service/chainsService', () => {
