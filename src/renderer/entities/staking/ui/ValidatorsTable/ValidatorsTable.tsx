@@ -85,11 +85,17 @@ const ValidatorShortRow = ({ validator, explorers }: RowProps) => (
   <>
     <div className="flex gap-x-2 items-center mr-auto">
       <Identicon address={validator.address} background={false} size={20} />
-      <div className="flex flex-col max-w-[276px] text-body text-text-secondary">
+      <div className="flex flex-col max-w-[276px]">
         {validator.identity ? (
           <BodyText className="text-text-secondary">{getComposedIdentity(validator.identity)}</BodyText>
         ) : (
-          <Truncate ellipsis="..." start={4} end={4} text={validator.address} />
+          <Truncate
+            className="text-body text-text-secondary"
+            ellipsis="..."
+            start={4}
+            end={4}
+            text={validator.address}
+          />
         )}
       </div>
     </div>
