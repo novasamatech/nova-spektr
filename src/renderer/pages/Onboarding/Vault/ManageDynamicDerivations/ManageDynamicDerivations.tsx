@@ -4,11 +4,12 @@ import { useForm } from 'effector-forms';
 import { useUnit } from 'effector-react';
 import keyBy from 'lodash/keyBy';
 import { Trans } from 'react-i18next';
+import { u8aToHex } from '@polkadot/util';
 
 import { useI18n, useStatusContext } from '@renderer/app/providers';
 import { ChainTitle } from '@renderer/entities/chain';
 import { SeedInfo } from '@renderer/components/common/QrCode/common/types';
-import { IS_WINDOWS, toAccountId, toAddress } from '@renderer/shared/lib/utils';
+import { IS_WINDOWS, toAddress } from '@renderer/shared/lib/utils';
 import {
   Animation,
   Button,
@@ -96,8 +97,9 @@ export const ManageDynamicDerivations = ({ seedInfo, onBack, onComplete }: Props
     </>
   );
 
-  const publicKey = toAddress(toAccountId(seedInfo[0]?.derivedKeys?.[0]?.address), { prefix: 1 });
-  const walletName = isAltPressed || !name?.value ? publicKey : name?.value;
+  const publicKey = u8aToHex(seedInfo[0]?.multiSigner.public);
+  const publicKeyAddress = toAddress(publicKey, { prefix: 1 });
+  const walletName = isAltPressed || !name?.value ? publicKeyAddress : name?.value;
 
   return (
     <>
@@ -159,9 +161,9 @@ export const ManageDynamicDerivations = ({ seedInfo, onBack, onComplete }: Props
           </HelpText>
         </div>
 
-        <div className="overflow-y-auto pl-3 pr-3.5">
+        <div className="overflow-y-auto h-[470px] pl-3 pr-3.5">
           <div className="flex items-center justify-between w-full gap-2">
-            <RootAccount name={walletName} accountId={toAccountId(seedInfo[0]?.derivedKeys?.[0]?.address)} />
+            <RootAccount name={walletName} accountId={publicKey} />
           </div>
 
           <div className="flex flex-col gap-2 ml-8">

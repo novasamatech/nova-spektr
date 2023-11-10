@@ -63,38 +63,42 @@ sample({
 sample({
   clock: formInitiated,
   fn: ([seedInfo]: SeedInfo[]) => {
-    const derivedKeys = seedInfo.derivedKeys.map((key) => ({
-      name: '',
-      derivationPath: key.derivationPath || '',
-      chainId: u8aToHex(key.genesisHash),
-      accountId: toAccountId(key.address),
-      cryptoType: CryptoType.SR25519,
-      chainType: ChainType.SUBSTRATE,
-      type: AccountType.CHAIN,
-      keyType: KeyType.CUSTOM,
-    }));
-
-    const chainAccounts = chains.reduce((acc, chain) => {
+    const accounts = chains.reduce((acc, chain) => {
       if (!chain.specName) return acc;
 
       const derivationPath = `//${chain.specName}`;
 
-      if (!derivedKeys.find((key) => key.derivationPath === derivationPath)) {
+      acc[derivationPath] = {
+        name: '',
+        derivationPath,
+        chainId: chain.chainId,
+        cryptoType: CryptoType.SR25519,
+        chainType: ChainType.SUBSTRATE,
+        type: AccountType.CHAIN,
+        keyType: KeyType.MAIN,
+      };
+
+      return acc;
+    }, {} as Record<string, any>);
+
+    const derivedAccounts = seedInfo.derivedKeys.reduce((acc, key) => {
+      if (!accounts[key.derivationPath || '']) {
         acc.push({
           name: '',
-          derivationPath,
-          chainId: chain.chainId,
+          derivationPath: key.derivationPath || '',
+          chainId: u8aToHex(key.genesisHash),
+          accountId: toAccountId(key.address),
           cryptoType: CryptoType.SR25519,
           chainType: ChainType.SUBSTRATE,
           type: AccountType.CHAIN,
-          keyType: KeyType.MAIN,
+          keyType: KeyType.CUSTOM,
         });
       }
 
       return acc;
     }, [] as any[]);
 
-    return derivedKeys.concat(chainAccounts);
+    return Object.values(accounts).concat(derivedAccounts);
   },
   target: $accounts,
 });
