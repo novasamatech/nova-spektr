@@ -20,7 +20,7 @@ jest.mock('@renderer/pages/Onboarding/WalletConnect/model/wc-onboarding-model', 
   wcOnboardingModel: { events: {} },
 }));
 
-describe('ui/RootAccount', () => {
+describe('ui/DerivedAccount', () => {
   test('should render component', () => {
     render(<DerivedAccount derivationPath={'//public'} showDerivationPath keyType={KeyType.CUSTOM} />);
 
