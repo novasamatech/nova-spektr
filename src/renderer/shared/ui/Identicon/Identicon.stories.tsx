@@ -1,6 +1,5 @@
 import { ComponentMeta, ComponentStory } from '@storybook/react';
 
-import { SigningType } from '@renderer/domain/shared-kernel';
 import { TEST_ADDRESS } from '@renderer/shared/lib/utils';
 import Identicon from './Identicon';
 
@@ -16,11 +15,4 @@ export const Primary = Template.bind({});
 Primary.args = {
   size: 50,
   address: TEST_ADDRESS,
-};
-
-export const WithSignBadge = Template.bind({});
-WithSignBadge.args = {
-  size: 50,
-  address: TEST_ADDRESS,
-  signType: SigningType.WATCH_ONLY,
 };

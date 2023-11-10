@@ -2,10 +2,10 @@ import { render, screen, act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
 
-import { ConnectionStatus, ConnectionType } from '@renderer/domain/connection';
 import Networks from './Networks';
 import { ExtendedChain } from '@renderer/entities/network';
 import { useNetworkContext } from '@renderer/app/providers';
+import { ConnectionStatus, ConnectionType } from '@renderer/shared/core';
 
 const confirmSpy = jest.fn();
 
@@ -46,12 +46,6 @@ jest.mock('@renderer/app/providers', () => ({
 jest.mock('@renderer/entities/asset', () => ({
   useBalance: jest.fn().mockReturnValue({
     setBalanceIsValid: jest.fn(),
-  }),
-}));
-
-jest.mock('@renderer/entities/account', () => ({
-  useAccount: jest.fn().mockReturnValue({
-    getAccounts: jest.fn().mockReturnValue([]),
   }),
 }));
 

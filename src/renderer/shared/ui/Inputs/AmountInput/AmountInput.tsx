@@ -1,21 +1,25 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useUnit } from 'effector-react';
 
-import { AssetBalance, AssetIcon, Asset } from '@renderer/entities/asset';
 import {
   cleanAmount,
   cnTw,
+  formatBalance,
+  formatFiatBalance,
   formatGroups,
+  getRoundedValue,
   toFixedNotation,
   validatePrecision,
   validateSymbols,
 } from '@renderer/shared/lib/utils';
+import { AssetBalance, AssetIcon } from '@renderer/entities/asset';
 import { useI18n } from '@renderer/app/providers';
 import { FootnoteText, HelpText, TitleText } from '../../Typography';
 import Input from '../Input/Input';
 import { IconButton } from '@renderer/shared/ui';
 import { useToggle } from '@renderer/shared/lib/hooks';
 import { currencyModel, useCurrencyRate } from '@renderer/entities/price';
+import type { Asset } from '@renderer/shared/core';
 
 type Props = {
   name?: string;
@@ -46,7 +50,8 @@ export const AmountInput = ({
   const rate = useCurrencyRate(asset.priceId, showCurrency);
   const activeCurrency = useUnit(currencyModel.$activeCurrency);
   const [currencyMode, toggleCurrencyMode] = useToggle(false);
-  const [internalValue, setInternalValue] = useState(value);
+  const [inputValue, setInputValue] = useState(value);
+  const [assetValue, setAssetValue] = useState(value);
 
   const handleChange = (amount: string) => {
     const cleanedAmount = cleanAmount(amount);
@@ -59,18 +64,40 @@ export const AmountInput = ({
       !currencyMode || (calculatedAssetValue && validatePrecision(calculatedAssetValue, asset.precision));
 
     if (isSymbolsValid && isAssetValueValid && isCurrencyValueValid) {
-      setInternalValue(cleanedAmount);
-      onChange?.(currencyMode && calculatedAssetValue ? calculatedAssetValue : cleanedAmount);
+      setInputValue(cleanedAmount);
+      const newAssetValue =
+        currencyMode && calculatedAssetValue ? getRoundedValue(calculatedAssetValue, 1, 0, 1) : cleanedAmount;
+      setAssetValue(newAssetValue);
+      onChange?.(newAssetValue);
     } else {
       onChange?.(value);
     }
   };
 
+  const currencyValue = rate ? toFixedNotation(Number(value ?? 0) * rate) : undefined;
+
   useEffect(() => {
-    if (currencyMode && rate) {
-      setInternalValue(toFixedNotation(Number(value) * rate || 0));
+    if (value) {
+      if (currencyMode) {
+        setInputValue(getRoundedValue(currencyValue, 1, 0));
+      } else {
+        handleChange(getRoundedValue(value || undefined, 1, 0, 1));
+      }
     }
   }, [currencyMode]);
+
+  useEffect(() => {
+    // handle value change from parent component
+    if (value !== assetValue) {
+      if (currencyMode) {
+        setInputValue(getRoundedValue(currencyValue, 1, 0));
+        setAssetValue(value);
+      } else {
+        setInputValue(value);
+        setAssetValue(value);
+      }
+    }
+  }, [value]);
 
   const getBalance = useCallback(() => {
     if (!balance) return;
@@ -131,6 +158,10 @@ export const AmountInput = ({
     </div>
   );
 
+  const { value: altValue, suffix: altValueSuffix } = currencyMode
+    ? formatBalance(value || undefined)
+    : formatFiatBalance(currencyValue);
+
   const suffixElement = showCurrency && rate && (
     <div className="flex items-center gap-x-2 absolute right-3 bottom-3">
       <IconButton
@@ -141,8 +172,8 @@ export const AmountInput = ({
       />
       <FootnoteText className="uppercase text-text-tertiary">
         {currencyMode
-          ? `${value ?? 0} ${asset.symbol}`
-          : `${activeCurrency?.symbol || activeCurrency?.code} ${toFixedNotation(Number(value ?? 0) * rate)}`}
+          ? `${altValue}${altValueSuffix} ${asset.symbol}`
+          : `${activeCurrency?.symbol || activeCurrency?.code} ${altValue}${altValueSuffix}`}
       </FootnoteText>
     </div>
   );
@@ -153,7 +184,7 @@ export const AmountInput = ({
       className={cnTw('text-right text-title font-manrope', activeCurrency && rate && 'mb-7')}
       wrapperClass="py-3 items-start"
       label={label}
-      value={formatGroups(currencyMode ? internalValue : value)}
+      value={formatGroups(inputValue)}
       placeholder={t('transfer.amountPlaceholder')}
       invalid={invalid}
       prefixElement={currencyMode ? currencyIcon : prefixElement}

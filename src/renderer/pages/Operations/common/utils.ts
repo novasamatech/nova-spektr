@@ -1,12 +1,25 @@
-import { IconNames } from '@renderer/shared/ui/Icon/data';
-import { Explorer } from '@renderer/entities/chain';
-import { AccountId, HexString } from '@renderer/domain/shared-kernel';
-import { DecodedTransaction, Transaction, TransactionType } from '@renderer/entities/transaction/model/transaction';
-import { toAddress, formatSectionAndMethod } from '@renderer/shared/lib/utils';
+import { TFunction } from 'react-i18next';
+
+import { accountUtils, walletUtils } from '@renderer/entities/wallet';
+import {
+  DecodedTransaction,
+  MultisigEvent,
+  MultisigTransaction,
+  Transaction,
+  TransactionType,
+} from '@renderer/entities/transaction/model/transaction';
+import { formatSectionAndMethod, toAddress } from '@renderer/shared/lib/utils';
 import { TransferTypes, XcmTypes } from '@renderer/entities/transaction';
-import { Account } from '@renderer/entities/account';
-import { Signatory } from '@renderer/entities/signatory';
-import type { Contact } from '@renderer/entities/contact';
+import type {
+  Account,
+  AccountId,
+  ChainId,
+  Contact,
+  Explorer,
+  HexString,
+  Signatory,
+  Wallet,
+} from '@renderer/shared/core';
 
 export const TRANSACTION_UNKNOWN = 'operations.titles.unknown';
 
@@ -71,33 +84,6 @@ const TransactionTitlesModal: Record<TransactionType, (crossChain: boolean) => s
   [TransactionType.BATCH_ALL]: () => 'operations.modalTitles.unknownOn',
 };
 
-const TransactionIcons: Record<TransactionType, IconNames> = {
-  // Transfer
-  [TransactionType.ASSET_TRANSFER]: 'transferMst',
-  [TransactionType.ORML_TRANSFER]: 'transferMst',
-  [TransactionType.TRANSFER]: 'transferMst',
-  [TransactionType.MULTISIG_AS_MULTI]: 'transferMst',
-  [TransactionType.MULTISIG_APPROVE_AS_MULTI]: 'transferMst',
-  [TransactionType.MULTISIG_CANCEL_AS_MULTI]: 'transferMst',
-  // XCM
-  [TransactionType.XCM_LIMITED_TRANSFER]: 'crossChain',
-  [TransactionType.XCM_TELEPORT]: 'crossChain',
-  [TransactionType.POLKADOT_XCM_LIMITED_TRANSFER]: 'crossChain',
-  [TransactionType.POLKADOT_XCM_TELEPORT]: 'crossChain',
-  [TransactionType.XTOKENS_TRANSFER_MULTIASSET]: 'crossChain',
-  // Staking
-  [TransactionType.BOND]: 'stakingMst',
-  [TransactionType.NOMINATE]: 'stakingMst',
-  [TransactionType.STAKE_MORE]: 'stakingMst',
-  [TransactionType.REDEEM]: 'stakingMst',
-  [TransactionType.RESTAKE]: 'stakingMst',
-  [TransactionType.DESTINATION]: 'stakingMst',
-  [TransactionType.UNSTAKE]: 'stakingMst',
-  // Technical
-  [TransactionType.CHILL]: 'stakingMst',
-  [TransactionType.BATCH_ALL]: 'unknownMst',
-};
-
 export const getTransactionTitle = (transaction?: Transaction | DecodedTransaction): string => {
   if (!transaction) return TRANSACTION_UNKNOWN;
 
@@ -129,14 +115,23 @@ export const getModalTransactionTitle = (
   return TransactionTitlesModal[transaction.type](crossChain);
 };
 
-export const getIconName = (transaction?: Transaction | DecodedTransaction): IconNames => {
-  if (!transaction?.type) return 'question';
+export const getMultisigSignOperationTitle = (
+  crossChain: boolean,
+  t: TFunction,
+  type?: TransactionType,
+  transaction?: MultisigTransaction,
+) => {
+  const innerTxTitle = getModalTransactionTitle(crossChain, transaction?.transaction);
 
-  if (transaction.type === TransactionType.BATCH_ALL) {
-    return getIconName(transaction?.args?.transactions?.[0]);
+  if (type === TransactionType.MULTISIG_AS_MULTI || type === TransactionType.MULTISIG_APPROVE_AS_MULTI) {
+    return `${t('operations.modalTitles.approve')} ${t(innerTxTitle)}`;
   }
 
-  return TransactionIcons[transaction.type];
+  if (type === TransactionType.MULTISIG_CANCEL_AS_MULTI) {
+    return `${t('operations.modalTitles.reject')} ${t(innerTxTitle)}`;
+  }
+
+  return '';
 };
 
 export const sortByDateDesc = <T>([dateA]: [string, T[]], [dateB]: [string, T[]]) =>
@@ -221,4 +216,38 @@ export const getSignatoryName = (
   if (fromAccount) return fromAccount;
 
   return toAddress(signatoryId, { chunk: 5, prefix: addressPrefix });
+};
+
+export const getSignatoryAccounts = (
+  accounts: Account[],
+  wallets: Wallet[],
+  events: MultisigEvent[],
+  signatories: Signatory[],
+  chainId: ChainId,
+): Account[] => {
+  const walletsMap = new Map(wallets.map((wallet) => [wallet.id, wallet]));
+
+  return signatories.reduce((acc: Account[], signatory) => {
+    const filteredAccounts = accounts.filter(
+      (a) => a.accountId === signatory.accountId && !events.some((e) => e.accountId === a.accountId),
+    );
+
+    const signatoryAccount = filteredAccounts.find((a) => {
+      const isChainMatch = accountUtils.isChainIdMatch(a, chainId);
+      const wallet = walletsMap.get(a.walletId);
+
+      return isChainMatch && walletUtils.isValidSignatory(wallet);
+    });
+
+    if (signatoryAccount) {
+      acc.push(signatoryAccount);
+    } else {
+      const legacySignatoryAccount = filteredAccounts.find(
+        (a) => accountUtils.isChainAccount(a) && a.chainId === chainId,
+      );
+      legacySignatoryAccount && acc.push(legacySignatoryAccount);
+    }
+
+    return acc;
+  }, []);
 };

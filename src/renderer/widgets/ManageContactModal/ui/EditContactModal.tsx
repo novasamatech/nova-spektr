@@ -2,10 +2,10 @@ import { useEffect } from 'react';
 
 import { useI18n } from '@renderer/app/providers';
 import { useToggle } from '@renderer/shared/lib/hooks';
-import { DEFAULT_TRANSITION } from '@renderer/shared/lib/utils';
 import { BaseModal } from '@renderer/shared/ui';
 import { EditContactForm } from '@renderer/features/contacts';
-import { Contact } from '@renderer/entities/contact';
+import { DEFAULT_TRANSITION } from '@renderer/shared/lib/utils';
+import type { Contact } from '@renderer/shared/core';
 
 type Props = {
   contact: Contact;

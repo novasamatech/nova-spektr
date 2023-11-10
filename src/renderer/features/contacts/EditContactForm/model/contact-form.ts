@@ -1,11 +1,11 @@
-import { attach, combine, createApi, createStore, forward, sample } from 'effector';
+import { attach, combine, createApi, createStore, sample } from 'effector';
 import { createForm } from 'effector-forms';
 import { not } from 'patronum';
 
-import { Contact, contactModel } from '@renderer/entities/contact';
+import { contactModel } from '@renderer/entities/contact';
+import { Contact } from '@renderer/shared/core';
 import { toAccountId, validateAddress } from '@renderer/shared/lib/utils';
 import { validateFullUserName } from '@renderer/shared/api/matrix';
-import { ContactDS } from '@renderer/shared/api/storage';
 
 export type Callbacks = {
   onSubmit: () => void;
@@ -16,12 +16,12 @@ const callbacksApi = createApi($callbacks, {
   callbacksChanged: (state, props: Callbacks) => ({ ...state, ...props }),
 });
 
-export const $contactToEdit = createStore<ContactDS | null>(null);
+const $contactToEdit = createStore<Contact | null>(null);
 const contactApi = createApi($contactToEdit, {
-  formInitiated: (state, props: ContactDS) => ({ ...state, ...props }),
+  formInitiated: (state, props: Contact) => ({ ...state, ...props }),
 });
 
-export const contactForm = createForm({
+const $contactForm = createForm({
   fields: {
     name: {
       init: '',
@@ -64,15 +64,15 @@ export const contactForm = createForm({
 
 sample({
   clock: contactApi.formInitiated,
-  filter: contactForm.$isDirty,
-  target: contactForm.reset,
+  filter: $contactForm.$isDirty,
+  target: $contactForm.reset,
 });
 
 sample({
   clock: contactApi.formInitiated,
-  filter: not(contactForm.$isDirty),
+  filter: not($contactForm.$isDirty),
   fn: ({ name, address, matrixId }) => ({ name, address, matrixId }),
-  target: contactForm.setForm,
+  target: $contactForm.setForm,
 });
 
 type SourceParams = {
@@ -104,33 +104,30 @@ function validateMatrixId(value: string): boolean {
   return validateFullUserName(value);
 }
 
-const editContactFx = attach({
-  effect: contactModel.effects.updateContactFx,
-  source: {
-    contactToEdit: $contactToEdit,
-    form: contactForm.$values,
+sample({
+  clock: $contactForm.formValidated,
+  source: $contactToEdit,
+  filter: (contactToEdit) => contactToEdit !== null,
+  fn: (contactToEdit, form) => {
+    return { ...form, id: contactToEdit!.id, accountId: toAccountId(form.address) };
   },
-  mapParams: (_, { contactToEdit, form }) => {
-    return { ...form, id: contactToEdit?.id, accountId: toAccountId(form.address) };
-  },
-});
-
-forward({
-  from: contactForm.formValidated,
-  to: editContactFx,
+  target: contactModel.effects.updateContactFx,
 });
 
 sample({
-  clock: editContactFx.doneData,
+  clock: contactModel.effects.updateContactFx,
   target: attach({
     source: $callbacks,
     effect: (state) => state?.onSubmit(),
   }),
 });
 
-export const $submitPending = editContactFx.pending;
-
-export const events = {
-  callbacksChanged: callbacksApi.callbacksChanged,
-  formInitiated: contactApi.formInitiated,
+export const editFormModel = {
+  $contactForm,
+  $contactToEdit,
+  $submitPending: contactModel.effects.updateContactFx.pending,
+  events: {
+    callbacksChanged: callbacksApi.callbacksChanged,
+    formInitiated: contactApi.formInitiated,
+  },
 };

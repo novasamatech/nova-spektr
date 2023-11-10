@@ -1,21 +1,24 @@
 import { UnsignedTransaction } from '@substrate/txwrapper-polkadot';
 import { useState, useEffect } from 'react';
 import { Navigate, useNavigate, useParams, useSearchParams } from 'react-router-dom';
+import { useUnit } from 'effector-react';
 
-import { useI18n, useNetworkContext, Paths } from '@renderer/app/providers';
-import { ChainId, HexString, Address } from '@renderer/domain/shared-kernel';
+import { useI18n, useNetworkContext } from '@renderer/app/providers';
+import { Paths } from '@renderer/shared/routes';
 import { Transaction, TransactionType, useTransaction } from '@renderer/entities/transaction';
-import { useAccount, Account, isMultisig } from '@renderer/entities/account';
 import { ValidatorMap } from '@renderer/entities/staking';
 import { toAddress, getRelaychainAsset, DEFAULT_TRANSITION } from '@renderer/shared/lib/utils';
 import { Confirmation, Submit, Validators, NoAsset } from '../components';
 import { useToggle } from '@renderer/shared/lib/hooks';
-import { Alert, BaseModal, Button, Loader } from '@renderer/shared/ui';
+import { BaseModal, Button, Loader } from '@renderer/shared/ui';
 import InitOperation, { ValidatorsResult } from './InitOperation/InitOperation';
 import { isLightClient } from '@renderer/entities/network';
 import { OperationTitle } from '@renderer/components/common';
 import { Signing } from '@renderer/features/operation';
+import type { Account, ChainId, HexString, Address } from '@renderer/shared/core';
+import { walletUtils, walletModel } from '@renderer/entities/wallet';
 import { priceProviderModel } from '@renderer/entities/price';
+import { StakingPopover } from '../components/StakingPopover/StakingPopover';
 
 const enum Step {
   INIT,
@@ -27,15 +30,16 @@ const enum Step {
 
 export const ChangeValidators = () => {
   const { t } = useI18n();
+  const activeWallet = useUnit(walletModel.$activeWallet);
+  const activeAccounts = useUnit(walletModel.$activeAccounts);
+
   const navigate = useNavigate();
-  const { getActiveAccounts } = useAccount();
   const { setTxs, txs, setWrappers, wrapTx, buildTransaction } = useTransaction();
   const { connections } = useNetworkContext();
   const [searchParams] = useSearchParams();
   const params = useParams<{ chainId: ChainId }>();
 
   const [isValidatorsModalOpen, toggleValidatorsModal] = useToggle(true);
-  const [isAlertOpen, toggleAlert] = useToggle(true);
 
   const [activeStep, setActiveStep] = useState<Step>(Step.INIT);
   const [validators, setValidators] = useState<ValidatorMap>({});
@@ -49,9 +53,10 @@ export const ChangeValidators = () => {
   const [signer, setSigner] = useState<Account>();
   const [signatures, setSignatures] = useState<HexString[]>([]);
 
+  const isMultisigWallet = walletUtils.isMultisig(activeWallet);
+
   const accountIds = searchParams.get('id')?.split(',') || [];
   const chainId = params.chainId || ('' as ChainId);
-  const activeAccounts = getActiveAccounts();
 
   useEffect(() => {
     priceProviderModel.events.assetsPricesRequested({ includeRates: true });
@@ -126,7 +131,7 @@ export const ChangeValidators = () => {
   }
 
   const onInitResult = ({ accounts, signer, description }: ValidatorsResult) => {
-    if (signer && isMultisig(accounts[0])) {
+    if (signer && isMultisigWallet) {
       setSigner(signer);
       setDescription(description || '');
     }
@@ -138,7 +143,7 @@ export const ChangeValidators = () => {
   const onSelectValidators = (validators: ValidatorMap) => {
     const transactions = getNominateTxs(Object.keys(validators));
 
-    if (signer && isMultisig(txAccounts[0])) {
+    if (signer && isMultisigWallet) {
       setWrappers([
         {
           signatoryId: signer.accountId,
@@ -167,7 +172,7 @@ export const ChangeValidators = () => {
   };
 
   const explorersProps = { explorers, addressPrefix, asset };
-  const multisigTx = isMultisig(txAccounts[0]) ? wrapTx(txs[0], api, addressPrefix) : undefined;
+  const multisigTx = isMultisigWallet ? wrapTx(txs[0], api, addressPrefix) : undefined;
 
   return (
     <>
@@ -207,11 +212,9 @@ export const ChangeValidators = () => {
             onGoBack={goToPrevStep}
             {...explorersProps}
           >
-            {isAlertOpen && (
-              <Alert title={t('staking.confirmation.hintTitle')} onClose={toggleAlert}>
-                <Alert.Item>{t('staking.confirmation.hintNewValidators')}</Alert.Item>
-              </Alert>
-            )}
+            <StakingPopover labelText={t('staking.confirmation.hintTitle')}>
+              <StakingPopover.Item>{t('staking.confirmation.hintNewValidators')}</StakingPopover.Item>
+            </StakingPopover>
           </Confirmation>
         )}
         {activeStep === Step.SIGNING && (

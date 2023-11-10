@@ -3,8 +3,8 @@ import { decodeAddress } from '@polkadot/util-crypto';
 import qrcode from 'qrcode-generator';
 import { Encoder } from 'raptorq';
 
-import { ChainId } from '@renderer/domain/shared-kernel';
 import { Command, CRYPTO_SR25519, CRYPTO_STUB, FRAME_SIZE, SUBSTRATE_ID } from './constants';
+import type { ChainId } from '@renderer/shared/core';
 
 const MULTIPART = new Uint8Array([0]);
 

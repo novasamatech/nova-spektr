@@ -1,3 +1,4 @@
+import { Animation } from './Animation/Animation';
 import Input from './Inputs/Input/Input';
 import Plate from './Plate/Plate';
 import { AmountInput } from './Inputs/AmountInput/AmountInput';
@@ -8,6 +9,7 @@ import ButtonLink from './Buttons/ButtonLink/ButtonLink';
 import ButtonBack from './Buttons/ButtonBack/ButtonBack';
 import BaseModal from './Modals/BaseModal/BaseModal';
 import ConfirmModal from './Modals/ConfirmModal/ConfirmModal';
+import { StatusModal } from './Modals/StatusModal/StatusModal';
 import InfoPopover from './Popovers/InfoPopover/InfoPopover';
 import { Popover } from './Popovers/Popover/Popover';
 import InfoLink from './InfoLink/InfoLink';
@@ -28,6 +30,7 @@ import StatusLabel from './StatusLabel/StatusLabel';
 import InputFile from './Inputs/InputFile/InputFile';
 import { Tooltip } from './Popovers/Tooltip/Tooltip';
 import { LabelHelpBox } from './LabelHelpbox/LabelHelpBox';
+import { MainLayout } from './Layouts/MainLayout/MainLayout';
 import { Tabs } from './Tabs/Tabs';
 import {
   LargeTitleText,
@@ -51,6 +54,7 @@ import Duration from './Duration/Duration';
 import Loader from './Loader/Loader';
 import DetailRow from './DetailRow/DetailRow';
 import { Truncate } from './Truncate/Truncate';
+import { Countdown } from './Countdown/Countdown';
 
 // FIXME: Animation component exported separately.
 // Adding them to this file causes to crash all tests which use anything from that file
@@ -58,6 +62,7 @@ import { Truncate } from './Truncate/Truncate';
 // https://stackoverflow.com/questions/49156356/why-does-jest-try-to-resolve-every-component-in-my-index-ts
 
 export {
+  Animation,
   Input,
   Plate,
   AmountInput,
@@ -70,6 +75,7 @@ export {
   IconButton,
   BaseModal,
   ConfirmModal,
+  StatusModal,
   InfoPopover,
   MenuPopover,
   Popover,
@@ -109,4 +115,6 @@ export {
   HelpText,
   DetailRow,
   Truncate,
+  MainLayout,
+  Countdown,
 };

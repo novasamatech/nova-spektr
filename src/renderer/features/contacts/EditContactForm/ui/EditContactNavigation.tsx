@@ -1,10 +1,11 @@
 import { useNavigate } from 'react-router-dom';
 
-import { createLink, Paths } from '@renderer/app/providers';
+import { Paths, createLink } from '@renderer/shared/routes';
 import { IconButton } from '@renderer/shared/ui';
+import { Contact } from '@renderer/shared/core';
 
 type Props = {
-  contactId: string;
+  contactId: Contact['id'];
 };
 export const EditContactNavigation = ({ contactId }: Props) => {
   const navigate = useNavigate();

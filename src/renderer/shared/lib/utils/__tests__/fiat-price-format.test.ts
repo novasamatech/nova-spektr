@@ -1,4 +1,4 @@
-import { formatFiatBalance, getRoundedFiatValue } from '../balance';
+import { formatFiatBalance, getRoundedValue } from '../balance';
 
 describe('shared/lib/utils/balance', () => {
   describe('formatFiatBalance', () => {
@@ -61,7 +61,7 @@ describe('shared/lib/utils/balance', () => {
     ])(
       'should calculate fiat value based on price and precision',
       (assetBalance: string, price: number, precision: number, expected: string) => {
-        const result = getRoundedFiatValue(assetBalance, price, precision);
+        const result = getRoundedValue(assetBalance, price, precision);
         expect(result.toString()).toEqual(expected);
       },
     );

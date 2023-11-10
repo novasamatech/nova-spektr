@@ -1,8 +1,8 @@
 import { ApiPromise } from '@polkadot/api';
 import { render, screen } from '@testing-library/react';
 
-import { Asset } from '@renderer/entities/asset';
 import { DepositWithLabel } from './DepositWithLabel';
+import type { Asset } from '@renderer/shared/core';
 
 jest.mock('@renderer/app/providers', () => ({
   useI18n: jest.fn().mockReturnValue({

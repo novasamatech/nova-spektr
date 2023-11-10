@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom';
 
 import { Icon, FootnoteText, Plate, BodyText, StatusLabel, HelpText } from '@renderer/shared/ui';
 import { useI18n, useMatrix } from '@renderer/app/providers';
-import { Paths } from '../../../../../app/providers/routes/paths';
+import { Paths } from '@renderer/shared/routes';
 import { cnTw } from '@renderer/shared/lib/utils';
 
 export const MatrixAction = () => {

@@ -7,8 +7,8 @@ import ScanMultiframeQr from '@renderer/components/common/Scanning/ScanMultifram
 import ScanSingleframeQr from '@renderer/components/common/Scanning/ScanSingleframeQr';
 import { ValidationErrors } from '@renderer/shared/lib/utils';
 import { useTransaction } from '@renderer/entities/transaction';
-import { HexString } from '@renderer/domain/shared-kernel';
 import QrReaderWrapper from '@renderer/components/common/QrCode/QrReader/QrReaderWrapper';
+import type { HexString } from '@renderer/shared/core';
 
 export const VaultSigning = ({
   chainId,

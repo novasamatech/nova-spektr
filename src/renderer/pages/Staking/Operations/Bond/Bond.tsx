@@ -1,23 +1,27 @@
 import { UnsignedTransaction } from '@substrate/txwrapper-polkadot';
 import { useEffect, useState } from 'react';
 import { Navigate, useNavigate, useParams, useSearchParams } from 'react-router-dom';
+import { useUnit } from 'effector-react';
 
 import { DEFAULT_TRANSITION, getRelaychainAsset, toAddress } from '@renderer/shared/lib/utils';
-import { RewardsDestination, ValidatorMap } from '@renderer/entities/staking';
-import { Paths, useI18n, useNetworkContext } from '@renderer/app/providers';
-import { Address, ChainId, HexString } from '@renderer/domain/shared-kernel';
+import { ValidatorMap } from '@renderer/entities/staking';
+import { useI18n, useNetworkContext } from '@renderer/app/providers';
+import { Paths } from '@renderer/shared/routes';
 import { Transaction, TransactionType, useTransaction } from '@renderer/entities/transaction';
 import { Confirmation, NoAsset, Submit, Validators } from '../components';
 import { useToggle } from '@renderer/shared/lib/hooks';
-import { Account, isMultisig, useAccount } from '@renderer/entities/account';
-import { Alert, BaseModal, Button, Loader } from '@renderer/shared/ui';
+import { RewardsDestination } from '@renderer/shared/core';
+import type { Account, Address, ChainId, HexString } from '@renderer/shared/core';
+import { BaseModal, Button, Loader } from '@renderer/shared/ui';
 import InitOperation, { BondResult } from './InitOperation/InitOperation';
 import { OperationTitle } from '@renderer/components/common';
 import { DestinationType } from '../common/types';
 import { UnstakingDuration } from '@renderer/pages/Staking/Overview/components';
 import { isLightClient } from '@renderer/entities/network';
 import { Signing } from '@renderer/features/operation';
+import { walletUtils, walletModel } from '@renderer/entities/wallet';
 import { priceProviderModel } from '@renderer/entities/price';
+import { StakingPopover } from '../components/StakingPopover/StakingPopover';
 
 const enum Step {
   INIT,
@@ -29,15 +33,16 @@ const enum Step {
 
 export const Bond = () => {
   const { t } = useI18n();
+  const activeWallet = useUnit(walletModel.$activeWallet);
+  const activeAccounts = useUnit(walletModel.$activeAccounts);
+
   const navigate = useNavigate();
   const { connections } = useNetworkContext();
-  const { getActiveAccounts } = useAccount();
   const { setTxs, txs, setWrappers, wrapTx, buildTransaction } = useTransaction();
   const [searchParams] = useSearchParams();
   const params = useParams<{ chainId: ChainId }>();
 
   const [isBondModalOpen, toggleBondModal] = useToggle(true);
-  const [isAlertOpen, toggleAlert] = useToggle(true);
 
   const [activeStep, setActiveStep] = useState<Step>(Step.INIT);
   const [validators, setValidators] = useState<ValidatorMap>({});
@@ -53,9 +58,10 @@ export const Bond = () => {
   const [signer, setSigner] = useState<Account>();
   const [signatures, setSignatures] = useState<HexString[]>([]);
 
+  const isMultisigWallet = walletUtils.isMultisig(activeWallet);
+
   const accountIds = searchParams.get('id')?.split(',') || [];
   const chainId = params.chainId || ('' as ChainId);
-  const activeAccounts = getActiveAccounts();
 
   useEffect(() => {
     priceProviderModel.events.assetsPricesRequested({ includeRates: true });
@@ -134,7 +140,7 @@ export const Bond = () => {
       ? { type: RewardsDestination.TRANSFERABLE, address: destination }
       : { type: RewardsDestination.RESTAKE };
 
-    if (signer && isMultisig(accounts[0])) {
+    if (signer && isMultisigWallet) {
       setSigner(signer);
       setDescription(description || '');
     }
@@ -148,7 +154,7 @@ export const Bond = () => {
   const onSelectValidators = (validators: ValidatorMap) => {
     const transactions = getBondTxs(Object.keys(validators));
 
-    if (signer && isMultisig(txAccounts[0])) {
+    if (signer && isMultisigWallet) {
       setWrappers([
         {
           signatoryId: signer.accountId,
@@ -186,7 +192,8 @@ export const Bond = () => {
 
   const explorersProps = { explorers, addressPrefix, asset };
   const bondValues = new Array(txAccounts.length).fill(stakeAmount);
-  const multisigTx = isMultisig(txAccounts[0]) ? wrapTx(txs[0], api, addressPrefix) : undefined;
+  const multisigTx = isMultisigWallet ? wrapTx(txs[0], api, addressPrefix) : undefined;
+  const eraLength = api.consts?.staking?.sessionsPerEra.toNumber() || 0;
 
   return (
     <>
@@ -226,18 +233,20 @@ export const Bond = () => {
             onGoBack={goToPrevStep}
             {...explorersProps}
           >
-            {isAlertOpen && (
-              <Alert title={t('staking.confirmation.hintTitle')} onClose={toggleAlert}>
-                <Alert.Item>{t('staking.confirmation.hintRewards')}</Alert.Item>
-                <Alert.Item>
-                  {t('staking.confirmation.hintUnstakePeriod')} {'('}
-                  <UnstakingDuration api={api} />
-                  {')'}
-                </Alert.Item>
-                <Alert.Item>{t('staking.confirmation.hintNoRewards')}</Alert.Item>
-                <Alert.Item>{t('staking.confirmation.hintWithdraw')}</Alert.Item>
-              </Alert>
-            )}
+            <StakingPopover labelText={t('staking.confirmation.hintTitleStartStaking')}>
+              <StakingPopover.Item>
+                {t('staking.confirmation.hintRewards')}
+                {' ('}
+                {t('time.hours_other', { count: eraLength })} {')'}
+              </StakingPopover.Item>
+              <StakingPopover.Item>
+                {t('staking.confirmation.hintUnstakePeriod')} {' ('}
+                <UnstakingDuration api={api} />
+                {')'}
+              </StakingPopover.Item>
+              <StakingPopover.Item>{t('staking.confirmation.hintNoRewards')}</StakingPopover.Item>
+              <StakingPopover.Item>{t('staking.confirmation.hintWithdraw')}</StakingPopover.Item>
+            </StakingPopover>
           </Confirmation>
         )}
         {activeStep === Step.SIGNING && (

@@ -2,7 +2,7 @@ import { ProviderInterface } from '@polkadot/rpc-provider/types';
 
 import { GET_METADATA_METHOD } from '../common/constants';
 import { Metadata } from '../common/types';
-import { ChainId } from '@renderer/domain/shared-kernel';
+import type { ChainId } from '@renderer/shared/core';
 
 export const createCachedProvider = (
   Provider: new (...args: any[]) => ProviderInterface,

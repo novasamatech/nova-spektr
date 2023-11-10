@@ -1,12 +1,12 @@
-import { useStore } from 'effector-react';
+import { useUnit } from 'effector-react';
 import { FormEvent, useEffect } from 'react';
 import { useForm } from 'effector-forms';
 
-import * as createFormModel from '../model/contact-form';
+import { createFormModel, Callbacks } from '../model/contact-form';
 import { Button, Icon, Identicon, Input, InputHint } from '@renderer/shared/ui';
 import { useI18n } from '@renderer/app/providers';
 
-type Props = createFormModel.Callbacks;
+type Props = Callbacks;
 export const CreateContactForm = ({ onSubmit }: Props) => {
   const { t } = useI18n();
 
@@ -14,9 +14,9 @@ export const CreateContactForm = ({ onSubmit }: Props) => {
     submit,
     isValid,
     fields: { name, address, matrixId },
-  } = useForm(createFormModel.contactForm);
+  } = useForm(createFormModel.$contactForm);
 
-  const pending = useStore(createFormModel.$submitPending);
+  const pending = useUnit(createFormModel.$submitPending);
 
   useEffect(() => {
     createFormModel.events.formInitiated();

@@ -1,14 +1,14 @@
 import { ApiPromise } from '@polkadot/api';
 import { useEffect, useState } from 'react';
 import { UnsignedTransaction } from '@substrate/txwrapper-polkadot';
+import { useUnit } from 'effector-react';
 
 import { QrTxGenerator, QrGeneratorContainer } from '@renderer/components/common';
 import { useI18n } from '@renderer/app/providers';
 import { Transaction, useTransaction } from '@renderer/entities/transaction';
-import { ChainId } from '@renderer/domain/shared-kernel';
-import { Explorer } from '@renderer/entities/chain';
-import { Account, AddressWithExplorers } from '@renderer/entities/account';
+import { WalletCardSm, walletModel, walletUtils } from '@renderer/entities/wallet';
 import { Button, FootnoteText } from '@renderer/shared/ui';
+import type { ChainId, Account, Explorer } from '@renderer/shared/core';
 
 type Props = {
   api: ApiPromise;
@@ -38,6 +38,10 @@ const ScanSingleframeQr = ({
   const { t } = useI18n();
   const { createPayload } = useTransaction();
 
+  const wallets = useUnit(walletModel.$wallets);
+  const activeWallet = useUnit(walletModel.$activeWallet);
+  const signatoryWallet = walletUtils.isMultisig(activeWallet) && wallets.find((w) => w.id === account?.walletId);
+
   const [txPayload, setTxPayload] = useState<Uint8Array>();
   const [unsignedTx, setUnsignedTx] = useState<UnsignedTransaction>();
 
@@ -64,16 +68,11 @@ const ScanSingleframeQr = ({
 
   return (
     <div className="flex flex-col items-center w-full">
-      <div className="flex items-center justify-center mb-2 mt-4.5 h-8 w-full">
-        {account && (
+      <div className="flex items-center justify-center mb-1 h-8 w-full">
+        {account && signatoryWallet && (
           <div className="flex h-full w-1/2 justify-center items-center gap-x-0.5 ">
             <FootnoteText className="text-text-secondary">{t('signing.signer')}</FootnoteText>
-            <AddressWithExplorers
-              accountId={account.accountId}
-              name={account.name}
-              explorers={explorers}
-              addressPrefix={addressPrefix}
-            />
+            <WalletCardSm wallet={signatoryWallet} accountId={account.accountId} addressPrefix={addressPrefix} />
           </div>
         )}
       </div>
