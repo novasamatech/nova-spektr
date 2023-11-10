@@ -2,9 +2,13 @@ import { BN } from '@polkadot/util';
 import { ApiPromise } from '@polkadot/api';
 
 import { IBalanceService } from '@renderer/entities/asset';
-import { ITransactionService, Transaction } from '@renderer/entities/transaction';
+import {
+  ITransactionService,
+  Transaction,
+  OperationError,
+  type OperationErrorType,
+} from '@renderer/entities/transaction';
 import { toAccountId, transferableAmount, ValidationErrors } from '@renderer/shared/lib/utils';
-import { OperationError, OperationErrorType } from '@renderer/features/operation';
 import type { Balance, ChainId, PartialBy } from '@renderer/shared/core';
 
 type Props = {

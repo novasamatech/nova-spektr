@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { UnsignedTransaction } from '@substrate/txwrapper-polkadot';
-import { useUnit } from 'effector-react';
+import { useGate, useUnit } from 'effector-react';
 
 import { SigningProps } from '@renderer/features/operation';
 import { ValidationErrors } from '@renderer/shared/lib/utils';
@@ -9,11 +9,15 @@ import { useI18n } from '@renderer/app/providers';
 import { Button, ConfirmModal, Countdown, FootnoteText, SmallTitleText, StatusModal } from '@renderer/shared/ui';
 import { walletConnectModel, DEFAULT_POLKADOT_METHODS, walletConnectUtils } from '@renderer/entities/walletConnect';
 import { chainsService } from '@renderer/entities/network';
-import { useCountdown, useToggle } from '@renderer/shared/lib/hooks';
+import { useCountdown } from '@renderer/shared/lib/hooks';
 import wallet_connect_confirm from '@video/wallet_connect_confirm.mp4';
 import wallet_connect_confirm_webm from '@video/wallet_connect_confirm.webm';
 import { HexString } from '@renderer/shared/core';
 import { Animation } from '@renderer/shared/ui/Animation/Animation';
+import { walletConnectSignModel } from '../../model/wallet-connect-sign-model';
+import { isConnectedStep, isReadyToReconnectStep, isReconnectingStep, isRejectedStep } from '../../lib/utils';
+import { signModel } from '../../model/sign-model';
+import { walletModel } from '@renderer/entities/wallet';
 
 export const WalletConnect = ({
   api,
@@ -30,52 +34,39 @@ export const WalletConnect = ({
 
   const session = useUnit(walletConnectModel.$session);
   const client = useUnit(walletConnectModel.$client);
+  const reconnectStep = useUnit(walletConnectSignModel.$reconnectStep);
+  const isSigningRejected = useUnit(walletConnectSignModel.$isSigningRejected);
+  const signature = useUnit(walletConnectSignModel.$signature);
+  const isStatusShown = useUnit(walletConnectSignModel.$isStatusShown);
+  const storedAccounts = useUnit(walletModel.$accounts);
 
   const chains = chainsService.getChainsData();
 
   const [txPayload, setTxPayload] = useState<Uint8Array>();
   const [unsignedTx, setUnsignedTx] = useState<UnsignedTransaction>();
-  const [isNeedUpdate, setIsNeedUpdate] = useState<boolean>(false);
-  const [isReconnectModalOpen, setIsReconnectModalOpen] = useState<boolean>(false);
-  const [isReconnectingModalOpen, setIsReconnectingModalOpen] = useState<boolean>(false);
-  const [isConnectedModalOpen, setIsConnectedModalOpen] = useState<boolean>(false);
-  const [isRejectedStatusOpen, toggleRejectedStatus] = useToggle();
   const [validationError, setValidationError] = useState<ValidationErrors>();
 
   const transaction = transactions[0];
   const account = signatory || accounts[0];
-  const isCurrentSession = session && account && session.topic === account.signingExtras?.sessionTopic;
+
+  useGate(signModel.SignerGate, account);
 
   useEffect(() => {
     if (txPayload || !client) return;
 
-    if (isCurrentSession) {
+    const sessions = client.session.getAll();
+    const storedAccount = storedAccounts.find((a) => a.walletId === account.walletId);
+
+    const storedSession = sessions.find((s) => s.topic === storedAccount?.signingExtras?.sessionTopic);
+
+    if (storedSession) {
+      walletConnectModel.events.sessionUpdated(storedSession);
+
       setupTransaction().catch(() => console.warn('WalletConnect | setupTransaction() failed'));
     } else {
-      const sessions = client.session.getAll();
-
-      const storedSession = sessions.find((s) => s.topic === account.signingExtras?.sessionTopic);
-
-      if (storedSession) {
-        walletConnectModel.events.sessionUpdated(storedSession);
-        setIsNeedUpdate(true);
-
-        setupTransaction().catch(() => console.warn('WalletConnect | setupTransaction() failed'));
-      } else {
-        setIsReconnectModalOpen(true);
-      }
+      walletConnectSignModel.events.reconnectModalShown();
     }
-  }, [transaction, api, isCurrentSession]);
-
-  useEffect(() => {
-    if (isNeedUpdate) {
-      setIsNeedUpdate(false);
-
-      if (session?.topic) {
-        walletConnectModel.events.currentSessionTopicUpdated(session?.topic);
-      }
-    }
-  }, [session]);
+  }, [transaction, api]);
 
   useEffect(() => {
     if (unsignedTx) {
@@ -84,17 +75,16 @@ export const WalletConnect = ({
   }, [unsignedTx]);
 
   useEffect(() => {
-    if (isReconnectingModalOpen && session?.topic === account.signingExtras?.sessionTopic) {
-      setIsReconnectingModalOpen(false);
-      setIsConnectedModalOpen(true);
-    }
-  }, [isReconnectingModalOpen]);
-
-  useEffect(() => {
     if (countdown <= 0) {
       setValidationError(ValidationErrors.EXPIRED);
     }
   }, [countdown]);
+
+  useEffect(() => {
+    if (signature) {
+      handleSignature(signature as HexString);
+    }
+  }, [signature]);
 
   const setupTransaction = async (): Promise<void> => {
     try {
@@ -112,10 +102,7 @@ export const WalletConnect = ({
   };
 
   const reconnect = () => {
-    setIsReconnectModalOpen(false);
-    setIsReconnectingModalOpen(true);
-
-    walletConnectModel.events.connect({
+    walletConnectSignModel.events.reconnectStarted({
       chains: walletConnectUtils.getWalletConnectChains(chains),
       pairing: { topic: account.signingExtras?.pairingTopic },
     });
@@ -124,11 +111,9 @@ export const WalletConnect = ({
   const signTransaction = async () => {
     if (!api || !client || !session) return;
 
-    try {
-      const result = await client.request<{
-        payload: string;
-        signature: HexString;
-      }>({
+    walletConnectSignModel.events.signingStarted({
+      client,
+      payload: {
         // eslint-disable-next-line i18next/no-literal-string
         chainId: `polkadot:${transaction.chainId.slice(2, 34)}`,
         topic: session.topic,
@@ -139,15 +124,8 @@ export const WalletConnect = ({
             transactionPayload: unsignedTx,
           },
         },
-      });
-
-      if (result.signature) {
-        handleSignature(result.signature);
-      }
-    } catch (e) {
-      console.warn(e);
-      toggleRejectedStatus();
-    }
+      },
+    });
   };
 
   const handleSignature = async (signature: HexString) => {
@@ -167,27 +145,46 @@ export const WalletConnect = ({
   const walletName = session?.peer.metadata.name || t('operation.walletConnect.defaultWalletName');
 
   const getStatusProps = () => {
-    if (isReconnectingModalOpen) {
+    if (isReconnectingStep(reconnectStep)) {
       return {
         title: t('operation.walletConnect.reconnect.reconnecting'),
         content: <Animation variant="loading" loop />,
-        onClose: onGoBack,
+        onClose: () => {
+          walletConnectSignModel.events.reconnectAborted(), onGoBack();
+        },
       };
     }
 
-    if (isConnectedModalOpen) {
+    if (isConnectedStep(reconnectStep)) {
       return {
         title: t('operation.walletConnect.reconnect.connected'),
         content: <Animation variant="success" />,
-        onClose: () => setIsConnectedModalOpen(false),
+        onClose: () => {
+          walletConnectSignModel.events.reconnectDone();
+          setupTransaction();
+        },
       };
     }
 
-    if (isRejectedStatusOpen) {
+    if (isRejectedStep(reconnectStep)) {
       return {
         title: t('operation.walletConnect.rejected'),
         content: <Animation variant="error" />,
-        onClose: onGoBack,
+        onClose: () => {
+          walletConnectSignModel.events.reconnectAborted();
+          onGoBack();
+        },
+      };
+    }
+
+    if (isSigningRejected) {
+      return {
+        title: t('operation.walletConnect.rejected'),
+        content: <Animation variant="error" />,
+        onClose: () => {
+          walletConnectSignModel.events.reset();
+          onGoBack();
+        },
       };
     }
 
@@ -235,7 +232,7 @@ export const WalletConnect = ({
 
       <ConfirmModal
         panelClass="w-[300px]"
-        isOpen={isReconnectModalOpen}
+        isOpen={isReadyToReconnectStep(reconnectStep)}
         confirmText={t('operation.walletConnect.reconnect.confirmButton')}
         cancelText={t('operation.walletConnect.reconnect.cancelButton')}
         onClose={onGoBack}
@@ -251,10 +248,7 @@ export const WalletConnect = ({
         </FootnoteText>
       </ConfirmModal>
 
-      <StatusModal
-        isOpen={isReconnectingModalOpen || isConnectedModalOpen || isRejectedStatusOpen}
-        {...getStatusProps()}
-      />
+      <StatusModal isOpen={isStatusShown} {...getStatusProps()} />
     </div>
   );
 };
