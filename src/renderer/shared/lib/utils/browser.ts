@@ -10,10 +10,12 @@ export const getOperatingSystem = (): string => {
 
   if (platform) return platform;
 
-  const appVersion = navigator.appVersion;
+  const appVersion = navigator.userAgent;
   if (appVersion.indexOf('Win') >= 0) return 'Windows';
   if (appVersion.indexOf('Mac') >= 0) return 'macOS';
   if (appVersion.indexOf('Linux') >= 0) return 'Linux';
 
   return 'Unknown';
 };
+
+export const isWindows = getOperatingSystem() === 'Windows';

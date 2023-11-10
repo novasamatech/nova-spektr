@@ -23,7 +23,7 @@ export type BaseAccount = AbstractAccount & {
 // };
 
 export type ChainAccount = BaseAccount & {
-  baseId: BaseAccount['id'];
+  baseId?: BaseAccount['id'];
   chainId: ChainId;
   keyType: KeyType;
   derivationPath: string;
