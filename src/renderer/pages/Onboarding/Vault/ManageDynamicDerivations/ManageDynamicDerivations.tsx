@@ -8,7 +8,7 @@ import { Trans } from 'react-i18next';
 import { useI18n } from '@renderer/app/providers';
 import { ChainTitle } from '@renderer/entities/chain';
 import { SeedInfo } from '@renderer/components/common/QrCode/common/types';
-import { IS_WINDOWS, toAccountId } from '@renderer/shared/lib/utils';
+import { IS_WINDOWS, toAccountId, toAddress } from '@renderer/shared/lib/utils';
 import {
   Button,
   Input,
@@ -35,8 +35,10 @@ type Props = {
 
 export const ManageDynamicDerivations = ({ seedInfo, onBack, onComplete }: Props) => {
   const { t } = useI18n();
+  const isAltPressed = useAltKeyPressed();
 
   const accounts = useUnit(manageDynamicDerivationsModel.$accounts);
+  const isPending = useUnit(manageDynamicDerivationsModel.$submitPending);
   const [chainsObject, setChainsObject] = useState<Record<ChainId, Chain>>({});
 
   const {
@@ -58,8 +60,6 @@ export const ManageDynamicDerivations = ({ seedInfo, onBack, onComplete }: Props
     const chainsMap = keyBy(chainsService.sortChains(chains), 'chainId');
     setChainsObject(chainsMap);
   }, []);
-
-  const isAltPressed = useAltKeyPressed();
 
   const submitForm = (event: FormEvent) => {
     event.preventDefault();
@@ -87,6 +87,9 @@ export const ManageDynamicDerivations = ({ seedInfo, onBack, onComplete }: Props
     </>
   );
 
+  const publicKey = toAddress(toAccountId(seedInfo[0]?.derivedKeys?.[0]?.address), { prefix: 1 });
+  const walletName = isAltPressed || !name?.value ? publicKey : name?.value;
+
   return (
     <>
       <div className="w-[472px] flex flex-col px-5 py-4 bg-white rounded-l-lg">
@@ -112,7 +115,7 @@ export const ManageDynamicDerivations = ({ seedInfo, onBack, onComplete }: Props
               {t('onboarding.backButton')}
             </Button>
 
-            <Button type="submit" disabled={!isValid}>
+            <Button type="submit" disabled={!isValid || isPending}>
               {t('onboarding.continueButton')}
             </Button>
           </div>
@@ -149,10 +152,7 @@ export const ManageDynamicDerivations = ({ seedInfo, onBack, onComplete }: Props
 
         <div className="overflow-y-auto pl-3 pr-3.5">
           <div className="flex items-center justify-between w-full gap-2">
-            <RootAccount
-              name={name?.value || seedInfo[0]?.derivedKeys?.[0]?.address}
-              accountId={toAccountId(seedInfo[0]?.derivedKeys?.[0]?.address)}
-            />
+            <RootAccount name={walletName} accountId={toAccountId(seedInfo[0]?.derivedKeys?.[0]?.address)} />
           </div>
 
           <div className="flex flex-col gap-2 ml-8">
