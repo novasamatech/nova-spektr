@@ -8,15 +8,7 @@ import { CryptoTypeString } from '@renderer/shared/core';
 import { useI18n } from '@renderer/app/providers';
 import { ErrorFields, EXPORT_ADDRESS, FRAME_KEY, VaultFeature } from '../common/constants';
 import { QR_READER_ERRORS } from '../common/errors';
-import {
-  DecodeCallback,
-  ErrorObject,
-  Progress,
-  QrError,
-  SeedInfo,
-  SeedInfoExtended,
-  VideoInput,
-} from '../common/types';
+import { DecodeCallback, ErrorObject, Progress, QrError, SeedInfo, VideoInput } from '../common/types';
 import RaptorFrame from './RaptorFrame';
 
 const enum Status {
@@ -74,7 +66,7 @@ const QrReader = ({
 
   const makeResultPayload = <T extends string | SeedInfo[] | { addr: SeedInfo; features: VaultFeature[] }>(
     data: T,
-  ): SeedInfoExtended[] => {
+  ): SeedInfo[] => {
     if (Array.isArray(data)) return data;
 
     if (typeof data !== 'string')

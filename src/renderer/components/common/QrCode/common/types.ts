@@ -36,9 +36,6 @@ export type SeedInfo = {
   name: string;
   multiSigner: MultiSigner;
   derivedKeys: AddressInfo[];
-};
-
-export type SeedInfoExtended = SeedInfo & {
   features?: VaultFeature[];
 };
 

@@ -22,6 +22,8 @@ export const SelectShardModal = ({ isOpen, activeShards, accounts, onClose }: Pr
   const { t } = useI18n();
 
   const [chains, setChains] = useState<ChainsRecord>({});
+  const [shards, setShards] = useState<SelectableShards>({ rootAccounts: [], amount: 0 });
+  const [query, setQuery] = useState('');
 
   useEffect(() => {
     const chains = chainsService.getChainsData();
@@ -35,9 +37,6 @@ export const SelectShardModal = ({ isOpen, activeShards, accounts, onClose }: Pr
     setShards(selectable);
     setQuery('');
   }, [accounts.length, activeShards.length]);
-
-  const [shards, setShards] = useState<SelectableShards>({ rootAccounts: [], amount: 0 });
-  const [query, setQuery] = useState('');
 
   const selectRoot = (value: boolean, accountId: AccountId) => {
     const root = shards.rootAccounts.find((r) => r.accountId === accountId);

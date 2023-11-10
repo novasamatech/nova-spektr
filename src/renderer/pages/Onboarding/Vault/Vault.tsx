@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 
-import { SeedInfo, SeedInfoExtended } from '@renderer/components/common/QrCode/common/types';
+import { SeedInfo } from '@renderer/components/common/QrCode/common/types';
 import ScanStep from './ScanStep/ScanStep';
 import { ManageMultishard } from './ManageMultishard/ManageMultishard';
 import { ManageSingleshard } from './ManageSingleshard/ManageSingleshard';
@@ -8,11 +8,11 @@ import { ManageDynamicDerivations } from './ManageDynamicDerivations/ManageDynam
 import { BaseModal } from '@renderer/shared/ui';
 import { DEFAULT_TRANSITION } from '@renderer/shared/lib/utils';
 import { useToggle } from '@renderer/shared/lib/hooks';
-import { VaultFeatureTitle } from '@renderer/components/common/QrCode/common/constants';
+import { VaultFeatures } from '@renderer/components/common/QrCode/common/constants';
 
-const isDynamicDerivationSupport = (seedInfo: SeedInfoExtended): boolean => {
+const isDynamicDerivationSupport = (seedInfo: SeedInfo): boolean => {
   const dynamicDerivationsExist = seedInfo.features?.some(
-    (feature) => feature.VaultFeatures === VaultFeatureTitle.DYNAMIC_DERIVATIONS,
+    (feature) => feature.VaultFeatures === VaultFeatures.DYNAMIC_DERIVATIONS,
   );
 
   return Boolean(dynamicDerivationsExist);
@@ -77,17 +77,12 @@ const Vault = ({ isOpen, onClose, onComplete }: Props) => {
       return;
     }
 
-    if (
+    const isPlainQr =
       qrPayload?.length === 1 &&
       ((qrPayload[0].derivedKeys.length === 0 && qrPayload[0].name === '') ||
-        qrPayload[0].derivedKeys.every((d) => !d.derivationPath))
-    ) {
-      setQrType(QrCodeType.SINGLESHARD);
+        qrPayload[0].derivedKeys.every((d) => !d.derivationPath));
 
-      return;
-    }
-
-    setQrType(QrCodeType.MULTISHARD);
+    setQrType(isPlainQr ? QrCodeType.SINGLESHARD : QrCodeType.MULTISHARD);
   }, [qrPayload]);
 
   const onReceiveQr = (payload: SeedInfo[]) => {

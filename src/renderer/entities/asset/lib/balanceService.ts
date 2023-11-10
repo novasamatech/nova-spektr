@@ -3,19 +3,21 @@ import { BalanceLock } from '@polkadot/types/interfaces';
 import { BN, hexToU8a } from '@polkadot/util';
 import { ApiPromise } from '@polkadot/api';
 import { Codec } from '@polkadot/types/types';
-import { Option } from '@polkadot/types';
-import isEqual from 'lodash/isEqual';
+import { UnsubscribePromise, VoidFn } from '@polkadot/api/types';
+import { Mutex } from 'async-mutex';
+import noop from 'lodash/noop';
 
 import { ExtendedChain } from '@renderer/entities/network/lib/common/types';
-import { isLightClient } from '@renderer/entities/network/lib/common/utils';
-import { validate } from '../../../services/dataVerification/dataVerification';
-import { storage, BalanceDS } from '../../../shared/api/storage';
+import { validate } from '@renderer/services/dataVerification/dataVerification';
 import { IBalanceService } from './common/types';
 import { VERIFY_TIMEOUT } from './common/constants';
 import { useSubscription } from '@renderer/services/subscription/subscriptionService';
-import { toAddress } from '@renderer/shared/lib/utils';
+import { getAssetId, toAddress } from '@renderer/shared/lib/utils';
+import { BalanceDS, storage } from '@renderer/shared/api/storage';
 import { AssetType } from '@renderer/shared/core';
-import type { ChainId, AccountId, Asset, OrmlExtras, StatemineExtras } from '@renderer/shared/core';
+import type { AccountId, Address, Asset, ChainId, OrmlExtras, Balance } from '@renderer/shared/core';
+
+const mutex = new Mutex();
 
 export const useBalance = (): IBalanceService => {
   const balanceStorage = storage.connectTo('balances');
@@ -27,14 +29,13 @@ export const useBalance = (): IBalanceService => {
   const validationSubscriptionService = useSubscription<ChainId>();
 
   const {
-    addBalance,
     getBalances,
     getAllBalances,
     getBalance,
     getNetworkBalances,
     getAssetBalances,
     setBalanceIsValid,
-    updateBalance,
+    insertBalances,
   } = balanceStorage;
 
   const getLiveBalance = (accountId: AccountId, chainId: ChainId, assetId: string): BalanceDS | undefined => {
@@ -63,6 +64,10 @@ export const useBalance = (): IBalanceService => {
     };
 
     return useLiveQuery(query, [accountIds.length, accountIds[0]], []);
+  };
+
+  const getRepeatedIndex = (index: number, base: number): number => {
+    return Math.floor(index / base);
   };
 
   const runValidation = async (
@@ -104,19 +109,40 @@ export const useBalance = (): IBalanceService => {
     }
   };
 
+  const insertNewBalances = (accountIds: AccountId[], chainId: ChainId, values: Balance[]) => {
+    mutex
+      .runExclusive(async () => {
+        const balances = await getNetworkBalances(accountIds, chainId);
+
+        const balanceWithLock = values.map((balance: Balance) => {
+          const match = balances.find((b) => {
+            const isSameAccount = b.accountId === balance.accountId;
+            const isSameAssetId = b.assetId === balance.assetId;
+
+            return isSameAccount && isSameAssetId;
+          });
+
+          return match ? { ...match, ...balance } : balance;
+        });
+
+        await insertBalances(balanceWithLock);
+      })
+      .catch(() => console.log(`Error trying to update balance for ${chainId}`));
+  };
+
   const subscribeBalancesChange = (
     accountIds: AccountId[],
     chain: ExtendedChain,
-    relaychain: ExtendedChain | undefined,
-    asset: Asset,
-  ) => {
+    assetId?: number,
+    relaychain?: ExtendedChain,
+  ): UnsubscribePromise => {
     const api = chain.api;
-    if (!api) return;
+    if (!api || assetId === undefined) return Promise.resolve(noop);
 
-    const addresses = accountIds.map((accointId) => toAddress(accointId, { prefix: chain.addressPrefix }));
+    const addresses = accountIds.map((accountId) => toAddress(accountId, { prefix: chain.addressPrefix }));
 
     return api.query.system.account.multi(addresses, (data: any[]) => {
-      data.forEach(async (accountInfo, i) => {
+      const newBalances = data.reduce((acc, accountInfo, index) => {
         let frozen: string;
 
         if (accountInfo.data.miscFrozen || accountInfo.data.feeFrozen) {
@@ -127,259 +153,261 @@ export const useBalance = (): IBalanceService => {
           frozen = new BN(accountInfo.data.frozen).toString();
         }
 
-        const balance = {
-          accountId: accountIds[i],
+        acc.push({
+          accountId: accountIds[index],
           chainId: chain.chainId,
-          assetId: asset.assetId.toString(),
+          assetId: assetId.toString(),
           verified: true,
           free: accountInfo.data.free.toString(),
-          frozen,
           reserved: accountInfo.data.reserved.toString(),
-        };
+          frozen,
+        });
 
-        const existingBalance = await balanceStorage.getBalance(balance.accountId, balance.chainId, balance.assetId);
-        if (!existingBalance) {
-          await addBalance(balance);
-        } else if (
-          balance.free !== existingBalance.free ||
-          balance.frozen !== existingBalance.frozen ||
-          balance.reserved !== existingBalance.reserved
-        ) {
-          await updateBalance(balance);
-        }
+        // if (relaychain?.api && isLightClient(relaychain)) {
+        //   const storageKey = api.query.system.account.key(addresses[i]);
+        //   runValidation(
+        //     relaychain.api,
+        //     api,
+        //     storageKey,
+        //     accountInfo,
+        //     () => setBalanceIsValid(balance, true),
+        //     () => setBalanceIsValid(balance, false),
+        //   );
+        // }
 
-        if (relaychain?.api && isLightClient(relaychain)) {
-          const storageKey = api.query.system.account.key(addresses[i]);
-          runValidation(
-            relaychain.api,
-            api,
-            storageKey,
-            accountInfo,
-            () => setBalanceIsValid(balance, true),
-            () => setBalanceIsValid(balance, false),
-          );
-        }
-      });
+        return acc;
+      }, []);
+
+      insertNewBalances(accountIds, chain.chainId, newBalances);
     });
   };
 
   const subscribeStatemineAssetsChange = (
     accountIds: AccountId[],
     chain: ExtendedChain,
-    relaychain: ExtendedChain | undefined,
-    asset: Asset,
-  ) => {
-    const statemineAssetId = (asset?.typeExtras as StatemineExtras).assetId;
+    assets: Asset[],
+    relaychain?: ExtendedChain,
+  ): UnsubscribePromise => {
     const api = chain.api;
-    if (!api) return;
+    if (!api || !assets.length) return Promise.resolve(noop);
 
-    const addresses = accountIds.map((accountId) => toAddress(accountId, { prefix: chain.addressPrefix }));
-
-    return api.query.assets.account.multi(
-      addresses.map((a) => [statemineAssetId, a]),
-      (data: any[]) => {
-        data.forEach(async (accountInfo: Option<any>, i) => {
-          try {
-            const free = accountInfo.isNone ? '0' : accountInfo.unwrap().balance.toString();
-            const balance = {
-              accountId: accountIds[i],
-              chainId: chain.chainId,
-              assetId: asset.assetId.toString(),
-              verified: true,
-              free: free.toString(),
-              frozen: (0).toString(),
-              reserved: (0).toString(),
-            };
-
-            const existingBalance = await balanceStorage.getBalance(
-              balance.accountId,
-              balance.chainId,
-              balance.assetId,
-            );
-            if (!existingBalance) {
-              await addBalance(balance);
-            } else if (balance.free !== existingBalance.free) {
-              await updateBalance(balance);
-            }
-
-            if (relaychain?.api && isLightClient(relaychain)) {
-              const storageKey = api.query.assets.account.key(statemineAssetId, addresses[i]);
-              runValidation(
-                relaychain.api,
-                api,
-                storageKey,
-                accountInfo,
-                () => setBalanceIsValid(balance, true),
-                () => setBalanceIsValid(balance, false),
-              );
-            }
-          } catch (e) {
-            console.warn(e);
-          }
-        });
-      },
-    );
-  };
-
-  const subscribeOrmlAssetsChange = async (
-    accountIds: AccountId[],
-    chain: ExtendedChain,
-    relaychain: ExtendedChain | undefined,
-    asset: Asset,
-  ) => {
-    const currencyIdType = (asset?.typeExtras as OrmlExtras).currencyIdType;
-    const ormlAssetId = (asset?.typeExtras as OrmlExtras).currencyIdScale;
-
-    const api = chain.api;
-    if (!api) return;
-
-    const assetId = api.createType(currencyIdType, hexToU8a(ormlAssetId));
-    const addresses = accountIds.map((accountId) => toAddress(accountId, { prefix: chain.addressPrefix }));
-    const method = api.query.tokens ? api.query.tokens.accounts : api.query.currencies.accounts;
-
-    return method.multi(
-      addresses.map((a) => [a, assetId]),
-      (data: any[]) => {
-        data.forEach(async (accountInfo: any, i) => {
-          const { free, reserved, frozen } = accountInfo;
-          const balance = {
-            accountId: accountIds[i],
-            chainId: chain.chainId,
-            assetId: asset.assetId.toString(),
-            verified: true,
-            free: free.toString(),
-            frozen: frozen.toString(),
-            reserved: reserved.toString(),
-          };
-
-          const existingBalance = await balanceStorage.getBalance(balance.accountId, balance.chainId, balance.assetId);
-          if (!existingBalance) {
-            await addBalance(balance);
-          } else if (
-            balance.free !== existingBalance.free ||
-            balance.frozen !== existingBalance.frozen ||
-            balance.reserved !== existingBalance.reserved
-          ) {
-            await updateBalance(balance);
-          }
-
-          if (relaychain?.api && isLightClient(relaychain)) {
-            const storageKey = method.key(addresses[i], ormlAssetId);
-            runValidation(
-              relaychain.api,
-              api,
-              storageKey,
-              accountInfo,
-              () => setBalanceIsValid(balance, true),
-              () => setBalanceIsValid(balance, false),
-            );
-          }
-        });
-      },
-    );
-  };
-
-  const subscribeLockBalanceChange = (accountIds: AccountId[], chain: ExtendedChain, asset: Asset) => {
-    const api = chain.api;
-    if (!api) return;
-
-    const addresses = accountIds.map((accountId) => toAddress(accountId, { prefix: chain.addressPrefix }));
-
-    return api.query.balances.locks.multi(addresses, (balanceLocks: any[]) => {
-      balanceLocks.forEach(async (balanceLock, i) => {
-        const balance = {
-          accountId: accountIds[i],
-          chainId: chain.chainId,
-          assetId: asset.assetId.toString(),
-          locked: [
-            ...balanceLock.map((lock: BalanceLock) => ({
-              type: lock.id.toString(),
-              amount: lock.amount.toString(),
-            })),
-          ],
-        };
-        const existingBalance = await balanceStorage.getBalance(balance.accountId, balance.chainId, balance.assetId);
-        if (!existingBalance) {
-          await addBalance(balance);
-        } else if (!isEqual(balance.locked, existingBalance.locked)) {
-          await updateBalance(balance);
-        }
+    const assetsTuples = assets.reduce<[string, Address][]>((acc, asset) => {
+      accountIds.forEach((accountId) => {
+        acc.push([getAssetId(asset), toAddress(accountId, { prefix: chain.addressPrefix })]);
       });
+
+      return acc;
+    }, []);
+
+    return api.query.assets.account.multi(assetsTuples, (data: any[]) => {
+      const newBalances = data.reduce((acc, accountInfo, index) => {
+        const free = accountInfo.isNone ? '0' : accountInfo.unwrap().balance.toString();
+        const accountIndex = index % accountIds.length;
+        const assetIndex = getRepeatedIndex(index, accountIds.length);
+
+        acc.push({
+          accountId: accountIds[accountIndex],
+          chainId: chain.chainId,
+          assetId: assets[assetIndex].assetId.toString(),
+          verified: true,
+          frozen: (0).toString(),
+          reserved: (0).toString(),
+          free,
+        });
+
+        // if (relaychain?.api && isLightClient(relaychain)) {
+        //   const storageKey = api.query.assets.account.key(statemineAssetId, addresses[i]);
+        //   runValidation(
+        //     relaychain.api,
+        //     api,
+        //     storageKey,
+        //     accountInfo,
+        //     () => setBalanceIsValid(balance, true),
+        //     () => setBalanceIsValid(balance, false),
+        //   );
+        // }
+
+        return acc;
+      }, []);
+
+      insertNewBalances(accountIds, chain.chainId, newBalances);
     });
   };
 
-  const subscribeLockOrmlAssetChange = async (accountIds: AccountId[], chain: ExtendedChain, asset: Asset) => {
-    const currencyIdType = (asset?.typeExtras as OrmlExtras).currencyIdType;
-    const ormlAssetId = (asset?.typeExtras as OrmlExtras).currencyIdScale;
+  const getOrmlAssetTuples = (
+    api: ApiPromise,
+    accountIds: AccountId[],
+    assets: Asset[],
+    addressPrefix: number,
+  ): [Address, Codec][] => {
+    return assets.reduce<[Address, Codec][]>((acc, asset) => {
+      const currencyIdType = (asset?.typeExtras as OrmlExtras).currencyIdType;
+      const ormlAssetId = (asset?.typeExtras as OrmlExtras).currencyIdScale;
+      const assetId = api.createType(currencyIdType, hexToU8a(ormlAssetId));
 
+      accountIds.forEach((accountId) => {
+        acc.push([toAddress(accountId, { prefix: addressPrefix }), assetId]);
+      });
+
+      return acc;
+    }, []);
+  };
+
+  const subscribeOrmlAssetsChange = (
+    accountIds: AccountId[],
+    chain: ExtendedChain,
+    assets: Asset[],
+    relaychain?: ExtendedChain,
+  ): UnsubscribePromise => {
     const api = chain.api;
-    if (!api) return;
+    if (!api || !assets.length) return Promise.resolve(noop);
 
-    const assetId = api.createType(currencyIdType, hexToU8a(ormlAssetId));
-    const addresses = accountIds.map((accountId) => toAddress(accountId, { prefix: chain.addressPrefix }));
-    const method = api.query.tokens ? api.query.tokens.locks : api.query.currencies.locks;
+    const method = api.query.tokens ? api.query.tokens.accounts : api.query.currencies.accounts;
+    const assetsTuples = getOrmlAssetTuples(api, accountIds, assets, chain.addressPrefix);
 
-    return method.multi(
-      addresses.map((a) => [a, assetId]),
-      (balanceLocks: any[]) => {
-        balanceLocks.forEach(async (balanceLock, i) => {
-          const balance = {
-            accountId: accountIds[i],
-            chainId: chain.chainId,
-            assetId: asset.assetId.toString(),
-            locked: [
-              ...balanceLock.map((lock: BalanceLock) => ({
-                type: lock.id.toString(),
-                amount: lock.amount.toString(),
-              })),
-            ],
-          };
+    return method.multi(assetsTuples, (data: any[]) => {
+      const newBalances = data.reduce((acc, accountInfo, index) => {
+        const accountIndex = index % accountIds.length;
+        const assetIndex = getRepeatedIndex(index, accountIds.length);
 
-          const existingBalance = await balanceStorage.getBalance(balance.accountId, balance.chainId, balance.assetId);
-          if (!existingBalance) {
-            await addBalance(balance);
-          } else if (!isEqual(balance.locked, existingBalance.locked)) {
-            await updateBalance(balance);
-          }
+        acc.push({
+          accountId: accountIds[accountIndex],
+          chainId: chain.chainId,
+          assetId: assets[assetIndex].assetId.toString(),
+          verified: true,
+          free: accountInfo.free.toString(),
+          frozen: accountInfo.frozen.toString(),
+          reserved: accountInfo.reserved.toString(),
         });
-      },
-    );
+
+        // if (relaychain?.api && isLightClient(relaychain)) {
+        //   const storageKey = method.key(addresses[i], ormlAssetId);
+        //   runValidation(
+        //     relaychain.api,
+        //     api,
+        //     storageKey,
+        //     accountInfo,
+        //     () => setBalanceIsValid(balance, true),
+        //     () => setBalanceIsValid(balance, false),
+        //   );
+        // }
+
+        return acc;
+      }, []);
+
+      insertNewBalances(accountIds, chain.chainId, newBalances);
+    });
+  };
+
+  const subscribeLockBalanceChange = (
+    accountIds: AccountId[],
+    chain: ExtendedChain,
+    assetId?: number,
+  ): UnsubscribePromise => {
+    const api = chain.api;
+    if (!api || assetId === undefined) return Promise.resolve(noop);
+
+    const addresses = accountIds.map((accountId) => toAddress(accountId, { prefix: chain.addressPrefix }));
+
+    return api.query.balances.locks.multi(addresses, (data: any[]) => {
+      const newLocks = data.reduce((acc, balanceLock, index) => {
+        const locked = balanceLock.map((lock: BalanceLock) => ({
+          type: lock.id.toString(),
+          amount: lock.amount.toString(),
+        }));
+
+        acc.push({
+          accountId: accountIds[index],
+          chainId: chain.chainId,
+          assetId: assetId.toString(),
+          locked,
+        });
+
+        return acc;
+      }, []);
+
+      insertNewBalances(accountIds, chain.chainId, newLocks);
+    });
+  };
+
+  const subscribeLockOrmlAssetChange = (
+    accountIds: AccountId[],
+    chain: ExtendedChain,
+    assets: Asset[],
+  ): UnsubscribePromise => {
+    const api = chain.api;
+    if (!api || !assets.length) return Promise.resolve(noop);
+
+    const method = api.query.tokens ? api.query.tokens.locks : api.query.currencies.locks;
+    const assetsTuples = getOrmlAssetTuples(api, accountIds, assets, chain.addressPrefix);
+
+    return method.multi(assetsTuples, (data: any[]) => {
+      const newLocks = data.reduce((acc, balanceLock, index) => {
+        const accountIndex = index % accountIds.length;
+        const assetIndex = getRepeatedIndex(index, accountIds.length);
+
+        const locked = balanceLock.map((lock: BalanceLock) => ({
+          type: lock.id.toString(),
+          amount: lock.amount.toString(),
+        }));
+
+        acc.push({
+          accountId: accountIds[accountIndex],
+          chainId: chain.chainId,
+          assetId: assets[assetIndex].assetId.toString(),
+          locked,
+        });
+
+        return acc;
+      }, []);
+
+      insertNewBalances(accountIds, chain.chainId, newLocks);
+    });
   };
 
   const subscribeBalances = (
     chain: ExtendedChain,
-    relaychain: ExtendedChain | undefined,
     accountIds: AccountId[],
-  ): Promise<any> => {
-    const unsubscribeBalances = chain.assets?.map((asset) => {
-      if (!asset.type) {
-        return subscribeBalancesChange(accountIds, chain, relaychain, asset);
-      }
+    relaychain?: ExtendedChain,
+  ): Promise<VoidFn[]> => {
+    const { nativeAsset, statemineAssets, ormlAssets } = chain.assets.reduce<{
+      nativeAsset?: Asset;
+      statemineAssets: Asset[];
+      ormlAssets: Asset[];
+    }>(
+      (acc, asset) => {
+        if (!asset.type) acc.nativeAsset = asset;
+        if (asset.type === AssetType.STATEMINE) acc.statemineAssets.push(asset);
+        if (asset.type === AssetType.ORML) acc.ormlAssets.push(asset);
 
-      if (asset.type === AssetType.STATEMINE) {
-        return subscribeStatemineAssetsChange(accountIds, chain, relaychain, asset);
-      }
+        return acc;
+      },
+      { nativeAsset: undefined, statemineAssets: [], ormlAssets: [] },
+    );
 
-      if (asset.type === AssetType.ORML) {
-        return subscribeOrmlAssetsChange(accountIds, chain, relaychain, asset);
-      }
-    });
-
-    return Promise.all([...unsubscribeBalances, () => validationSubscriptionService.unsubscribe(chain.chainId)]);
+    return Promise.all([
+      subscribeBalancesChange(accountIds, chain, nativeAsset?.assetId, relaychain),
+      subscribeStatemineAssetsChange(accountIds, chain, statemineAssets, relaychain),
+      subscribeOrmlAssetsChange(accountIds, chain, ormlAssets, relaychain),
+      () => validationSubscriptionService.unsubscribe(chain.chainId),
+    ]);
   };
 
-  const subscribeLockBalances = (chain: ExtendedChain, accountIds: AccountId[]): Promise<any> => {
-    const unsubscribe = chain.assets?.map((asset) => {
-      if (!asset.type) {
-        return subscribeLockBalanceChange(accountIds, chain, asset);
-      }
+  const subscribeLockBalances = (chain: ExtendedChain, accountIds: AccountId[]): Promise<VoidFn[]> => {
+    const { nativeAsset, ormlAssets } = chain.assets.reduce<{ nativeAsset?: Asset; ormlAssets: Asset[] }>(
+      (acc, asset) => {
+        if (!asset.type) acc.nativeAsset = asset;
+        if (asset.type === AssetType.ORML) acc.ormlAssets.push(asset);
 
-      if (asset.type === AssetType.ORML) {
-        return subscribeLockOrmlAssetChange(accountIds, chain, asset);
-      }
-    });
+        return acc;
+      },
+      { nativeAsset: undefined, ormlAssets: [] },
+    );
 
-    return Promise.all(unsubscribe.flat());
+    return Promise.all([
+      subscribeLockBalanceChange(accountIds, chain, nativeAsset?.assetId),
+      subscribeLockOrmlAssetChange(accountIds, chain, ormlAssets),
+    ]);
   };
 
   return {
