@@ -23,7 +23,7 @@ import { useMultisigTx } from '@renderer/entities/multisig';
 import { RewardsDestination, WalletType } from '@renderer/shared/core';
 import type { Account, Asset, Explorer } from '@renderer/shared/core';
 import { AssetFiatBalance } from '@renderer/entities/price/ui/AssetFiatBalance';
-import { SelectedValidatorsModal } from '../Modals/SelectedValidatorsModal/SelectedValidatorsModal';
+import { SelectedValidatorsModal } from '../../../../../entities/staking/ui/SelectedValidatorsModal/SelectedValidatorsModal';
 import { SignButton } from '@renderer/entities/operation/ui/SignButton';
 import { getIconName } from '@renderer/entities/transaction/lib/transactionIcon';
 
