@@ -5,12 +5,13 @@ import { useUnit } from 'effector-react';
 
 import { useI18n } from '@renderer/app/providers';
 import { useBalance } from '@renderer/entities/asset';
-import { Transaction, TransactionType } from '@renderer/entities/transaction';
+import { Transaction, TransactionType, OperationError } from '@renderer/entities/transaction';
 import type { Account, Asset, Balance as AccountBalance, ChainId, AccountId, Wallet } from '@renderer/shared/core';
 import { formatAmount, nonNullable, toAddress } from '@renderer/shared/lib/utils';
 import { StakingMap, useStakingData } from '@renderer/entities/staking';
 import { OperationForm } from '@renderer/pages/Staking/Operations/components';
-import { OperationError, OperationFooter, OperationHeader } from '@renderer/features/operation';
+import { OperationFooter, OperationHeader } from '@renderer/features/operation';
+import { walletUtils, accountUtils, walletModel } from '@renderer/entities/wallet';
 import {
   getUnstakeAccountOption,
   validateBalanceForFee,
@@ -18,7 +19,6 @@ import {
   validateBalanceForFeeDeposit,
   getSignatoryOption,
 } from '../../common/utils';
-import { walletUtils, accountUtils, walletModel } from '@renderer/entities/wallet';
 
 export type UnstakeResult = {
   accounts: Account[];

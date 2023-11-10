@@ -1,6 +1,6 @@
 import { Asset, Explorer, Validator } from '@renderer/shared/core';
 import { cnTw, getComposedIdentity } from '@renderer/shared/lib/utils';
-import { BodyText, FootnoteText, HelpText, Icon, Identicon, InfoPopover } from '@renderer/shared/ui';
+import { BodyText, FootnoteText, HelpText, Icon, Identicon, InfoPopover, Truncate } from '@renderer/shared/ui';
 import { AssetBalance } from '@renderer/entities/asset';
 import { AssetFiatBalance } from '@renderer/entities/price/ui/AssetFiatBalance';
 import { useI18n } from '@renderer/app/providers';
@@ -35,6 +35,11 @@ export const ValidatorsTable = ({ validators, children, listClassName }: TablePr
     </div>
   );
 };
+const InfoIcon = ({ validator, explorers }: { validator: Validator; explorers?: Explorer[] }) => (
+  <InfoPopover data={getExplorers(validator.address, explorers)} position="top-full right-0" buttonClassName="p-2">
+    <Icon name="info" size={16} className="mr-auto group-hover:text-icon-active" />
+  </InfoPopover>
+);
 
 type RowProps = {
   validator: Validator;
@@ -71,10 +76,33 @@ const ValidatorRow = ({ validator, explorers, asset }: RowProps) => (
         </>
       )}
     </div>
-    <InfoPopover data={getExplorers(validator.address, explorers)} position="top-full right-0" buttonClassName="p-2">
-      <Icon name="info" size={16} className="mr-auto group-hover:text-icon-active" />
-    </InfoPopover>
+
+    <InfoIcon validator={validator} explorers={explorers} />
+  </>
+);
+
+const ValidatorShortRow = ({ validator, explorers }: RowProps) => (
+  <>
+    <div className="flex gap-x-2 items-center mr-auto">
+      <Identicon address={validator.address} background={false} size={20} />
+      <div className="flex flex-col max-w-[276px]">
+        {validator.identity ? (
+          <BodyText className="text-text-secondary">{getComposedIdentity(validator.identity)}</BodyText>
+        ) : (
+          <Truncate
+            className="text-body text-text-secondary"
+            ellipsis="..."
+            start={4}
+            end={4}
+            text={validator.address}
+          />
+        )}
+      </div>
+    </div>
+
+    <InfoIcon validator={validator} explorers={explorers} />
   </>
 );
 
 ValidatorsTable.Row = ValidatorRow;
+ValidatorsTable.ShortRow = ValidatorShortRow;
