@@ -8,7 +8,7 @@ import { Trans } from 'react-i18next';
 import { useI18n } from '@renderer/app/providers';
 import { ChainTitle } from '@renderer/entities/chain';
 import { SeedInfo } from '@renderer/components/common/QrCode/common/types';
-import { IsWindows, toAccountId } from '@renderer/shared/lib/utils';
+import { IS_WINDOWS, toAccountId } from '@renderer/shared/lib/utils';
 import {
   Button,
   Input,
@@ -71,7 +71,7 @@ export const ManageDynamicDerivations = ({ seedInfo, onBack, onComplete }: Props
     onBack();
   };
 
-  const button = IsWindows ? (
+  const button = IS_WINDOWS ? (
     <>
       <HelpText as="span" className="text-text-tertiary">
         {t('onboarding.vault.hotkeyAlt')}
