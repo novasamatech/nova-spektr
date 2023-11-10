@@ -18,4 +18,4 @@ export const getOperatingSystem = (): string => {
   return 'Unknown';
 };
 
-export const isWindows = getOperatingSystem() === 'Windows';
+export const IsWindows = getOperatingSystem() === 'Windows';

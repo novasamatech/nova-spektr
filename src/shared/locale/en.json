@@ -956,7 +956,8 @@
     "welcomeToLabel": "Welcome to"
   },
   "info": {
-    "publicKeyTitle": "Public key"
+    "publicKeyTitle": "Public key",
+    "derivationPathTitle": "Derivation path "
   },
   "derivedAccount": {
     "hotTitle": "Hot wallet account",
