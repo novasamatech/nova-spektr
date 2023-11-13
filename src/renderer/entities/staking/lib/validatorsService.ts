@@ -8,6 +8,8 @@ import { AccountId32 } from '@polkadot/types/interfaces';
 import { getValidatorsApy } from './apyCalculator';
 import { IValidatorsService, ValidatorMap } from './common/types';
 import type { Address, ChainId, EraIndex, Identity, SubIdentity, Validator } from '@renderer/shared/core';
+import { isKusamaChainId } from '@renderer/entities/network';
+import { DEFAULT_MAX_NOMINATORS, KUSAMA_MAX_NOMINATORS } from './common/constants';
 
 export const useValidators = (): IValidatorsService => {
   /**
@@ -71,8 +73,18 @@ export const useValidators = (): IValidatorsService => {
     }, {});
   };
 
+  const getDefaultValidatorsAmount = (api: ApiPromise): number => {
+    if (isKusamaChainId(api.genesisHash.toHex())) return KUSAMA_MAX_NOMINATORS;
+
+    return DEFAULT_MAX_NOMINATORS;
+  };
+
   const getMaxValidators = (api: ApiPromise): number => {
-    return api.consts.staking.maxNominations.toNumber();
+    if (api.consts.staking.maxNominations) {
+      return api.consts.staking.maxNominations.toNumber();
+    } else {
+      return getDefaultValidatorsAmount(api);
+    }
   };
 
   const getIdentities = async (
