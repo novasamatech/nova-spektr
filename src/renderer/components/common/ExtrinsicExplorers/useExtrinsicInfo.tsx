@@ -1,6 +1,6 @@
 import { InfoSection } from '@shared/ui/Popovers/InfoPopover/InfoPopover';
-import type { HexString, Explorer } from '@renderer/shared/core';
-import { ExplorerLink } from '@renderer/shared/ui';
+import type { HexString, Explorer } from '@shared/core';
+import { ExplorerLink } from '@shared/ui';
 import { getExtrinsicExplorer } from '@shared/lib/utils';
 
 const useExtrinsicInfo = (hash: HexString, explorers?: Explorer[]): InfoSection[] => {

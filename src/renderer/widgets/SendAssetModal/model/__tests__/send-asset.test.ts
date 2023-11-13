@@ -8,7 +8,7 @@ jest.mock('@shared/api/xcm', () => ({
   ...jest.requireActual('@shared/api/xcm'),
 }));
 
-jest.mock('@renderer/app/providers', () => ({
+jest.mock('@app/providers', () => ({
   useMatrix: jest.fn(),
 }));
 

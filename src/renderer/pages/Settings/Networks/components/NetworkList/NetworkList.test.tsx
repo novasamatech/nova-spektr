@@ -4,7 +4,7 @@ import { ConnectionStatus, ConnectionType } from '@shared/core';
 import { ExtendedChain } from '@entities/network';
 import { NetworkList } from './NetworkList';
 
-jest.mock('@renderer/app/providers', () => ({
+jest.mock('@app/providers', () => ({
   useMatrix: jest.fn(),
 }));
 

@@ -3,7 +3,7 @@ import { fork, allSettled } from 'effector';
 import { currencyFormModel } from '../currency-form';
 import { currencyModel, priceProviderModel } from '@entities/price';
 
-jest.mock('@renderer/app/providers', () => ({
+jest.mock('@app/providers', () => ({
   useMatrix: jest.fn(),
 }));
 

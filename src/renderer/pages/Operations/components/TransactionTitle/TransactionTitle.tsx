@@ -5,7 +5,7 @@ import { useI18n } from '@app/providers';
 import { DecodedTransaction, Transaction } from '@entities/transaction';
 import { getTransactionTitle } from '../../common/utils';
 import { cnTw } from '@shared/lib/utils';
-import { getIconName } from '@renderer/entities/transaction/lib/transactionIcon';
+import { getIconName } from '@entities/transaction/lib/transactionIcon';
 
 type Props = {
   tx?: Transaction | DecodedTransaction;

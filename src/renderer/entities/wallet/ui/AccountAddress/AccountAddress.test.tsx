@@ -3,7 +3,7 @@ import { render, screen } from '@testing-library/react';
 import { AccountAddress } from './AccountAddress';
 import { TEST_ACCOUNT_ID, TEST_ADDRESS } from '@shared/lib/utils';
 
-jest.mock('@renderer/app/providers', () => ({
+jest.mock('@app/providers', () => ({
   useMatrix: jest.fn(),
 }));
 

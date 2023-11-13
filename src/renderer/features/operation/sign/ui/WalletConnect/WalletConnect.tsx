@@ -17,7 +17,7 @@ import { Animation } from '@shared/ui/Animation/Animation';
 import { walletConnectSignModel } from '../../model/wallet-connect-sign-model';
 import { isConnectedStep, isReadyToReconnectStep, isReconnectingStep, isRejectedStep } from '../../lib/utils';
 import { signModel } from '../../model/sign-model';
-import { walletModel } from '@renderer/entities/wallet';
+import { walletModel } from '@entities/wallet';
 
 export const WalletConnect = ({
   api,
@@ -150,7 +150,8 @@ export const WalletConnect = ({
         title: t('operation.walletConnect.reconnect.reconnecting'),
         content: <Animation variant="loading" loop />,
         onClose: () => {
-          walletConnectSignModel.events.reconnectAborted(), onGoBack();
+          walletConnectSignModel.events.reconnectAborted();
+          onGoBack();
         },
       };
     }

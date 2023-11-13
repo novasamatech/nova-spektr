@@ -4,7 +4,7 @@ import { Transaction, TransactionType } from '@entities/transaction';
 import { TEST_ADDRESS, TEST_CHAIN_ID } from '@shared/lib/utils';
 import { TransactionTitle } from './TransactionTitle';
 
-jest.mock('@renderer/app/providers', () => ({
+jest.mock('@app/providers', () => ({
   useMatrix: jest.fn(),
 }));
 

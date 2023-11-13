@@ -4,7 +4,7 @@ import { Matrix } from '@shared/api/matrix';
 import { ConnectionType } from '@shared/core';
 import { MatrixProvider } from './MatrixContext';
 
-jest.mock('@renderer/app/providers', () => ({
+jest.mock('@app/providers', () => ({
   useMatrix: jest.fn(),
 }));
 

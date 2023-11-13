@@ -1,5 +1,5 @@
-import { FootnoteText, Icon } from '@renderer/shared/ui';
-import { useI18n } from '@renderer/app/providers';
+import { FootnoteText, Icon } from '@shared/ui';
+import { useI18n } from '@app/providers';
 import { DefaultExplorer, ExplorerIcons } from './constants';
 
 type Props = {

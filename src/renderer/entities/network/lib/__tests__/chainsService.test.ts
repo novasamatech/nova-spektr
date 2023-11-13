@@ -1,7 +1,7 @@
 import { chainsService } from '../chainsService';
 import type { HexString } from '@shared/core';
 
-jest.mock('@renderer/app/providers', () => ({
+jest.mock('@app/providers', () => ({
   useMatrix: jest.fn(),
 }));
 

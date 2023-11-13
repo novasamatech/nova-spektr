@@ -6,7 +6,7 @@ import { priceProviderModel } from '../price-provider-model';
 import { PriceApiProvider } from '../../lib/types';
 import { currencyModel } from '../currency-model';
 
-jest.mock('@renderer/app/providers', () => ({
+jest.mock('@app/providers', () => ({
   useMatrix: jest.fn(),
 }));
 

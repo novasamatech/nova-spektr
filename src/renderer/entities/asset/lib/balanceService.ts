@@ -7,13 +7,13 @@ import { UnsubscribePromise, VoidFn } from '@polkadot/api/types';
 import { Mutex } from 'async-mutex';
 import noop from 'lodash/noop';
 
-import { ExtendedChain } from '@renderer/entities/network/lib/common/types';
+import { ExtendedChain } from '@entities/network/lib/common/types';
 import { validate } from '@renderer/services/dataVerification/dataVerification';
 import { IBalanceService } from './common/types';
 import { VERIFY_TIMEOUT } from './common/constants';
 import { useSubscription } from '@renderer/services/subscription/subscriptionService';
 import { getAssetId, toAddress } from '@shared/lib/utils';
-import { BalanceDS, storage } from '@renderer/shared/api/storage';
+import { BalanceDS, storage } from '@shared/api/storage';
 import { AssetType } from '@shared/core';
 import type { AccountId, Address, Asset, ChainId, OrmlExtras, Balance } from '@shared/core';
 

@@ -2,7 +2,7 @@ import { modelUtils } from '../model-utils';
 import { AccountType, ChainType, CryptoType, KeyType, BaseAccount, ChainAccount } from '@shared/core';
 import { TEST_ACCOUNT_ID, TEST_CHAIN_ID } from '@shared/lib/utils';
 
-jest.mock('@renderer/app/providers', () => ({
+jest.mock('@app/providers', () => ({
   useMatrix: jest.fn(),
 }));
 

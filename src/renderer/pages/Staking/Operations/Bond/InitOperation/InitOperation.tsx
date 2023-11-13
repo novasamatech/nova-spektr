@@ -9,7 +9,7 @@ import { useBalance } from '@entities/asset';
 import { Transaction, TransactionType, OperationError } from '@entities/transaction';
 import { formatAmount, stakeableAmount, toAddress, nonNullable, TEST_ADDRESS } from '@shared/lib/utils';
 import { useValidators } from '@entities/staking';
-import { walletModel, walletUtils, accountUtils } from '@renderer/entities/wallet';
+import { walletModel, walletUtils, accountUtils } from '@entities/wallet';
 import { OperationForm } from '../../components';
 import type {
   Account,

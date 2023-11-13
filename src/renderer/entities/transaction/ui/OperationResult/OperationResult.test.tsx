@@ -3,7 +3,7 @@ import noop from 'lodash/noop';
 
 import { OperationResult } from './OperationResult';
 
-jest.mock('@renderer/app/providers', () => ({
+jest.mock('@app/providers', () => ({
   useMatrix: jest.fn(),
 }));
 

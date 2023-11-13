@@ -3,7 +3,7 @@ import userEvent from '@testing-library/user-event';
 
 import { Tooltip } from './Tooltip';
 
-jest.mock('@renderer/app/providers', () => ({
+jest.mock('@app/providers', () => ({
   useMatrix: jest.fn(),
 }));
 

@@ -4,9 +4,9 @@ import { SingleSelectMultishardHeader } from './SingleSelectMultishardHeader';
 import { MultiSelectMultishardHeader } from './MultiSelectMultishardHeader';
 import { DropdownOption } from '@shared/ui/Dropdowns/common/types';
 import { MultisigOperationHeader } from './MultisigOperationHeader';
-import { OperationError, OperationErrorType } from '@renderer/entities/transaction';
-import type { Account, MultisigAccount, ChainId, Wallet } from '@renderer/shared/core';
-import { walletModel, walletUtils } from '@renderer/entities/wallet';
+import { OperationError, OperationErrorType } from '@entities/transaction';
+import { walletModel, walletUtils } from '@entities/wallet';
+import type { Account, MultisigAccount, ChainId, Wallet } from '@shared/core';
 
 type Props = {
   accounts: Account[] | [MultisigAccount];

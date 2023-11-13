@@ -6,7 +6,7 @@ import { useMatrix } from '@app/providers';
 import { getAccountExplorer, toAccountId } from '@shared/lib/utils';
 import { contactModel } from '../../contact/model/contact-model';
 import { walletModel } from '../model/wallet-model';
-import { ExplorerLink } from '@renderer/shared/ui';
+import { ExplorerLink } from '@shared/ui';
 
 type InfoProps = {
   address: Address;

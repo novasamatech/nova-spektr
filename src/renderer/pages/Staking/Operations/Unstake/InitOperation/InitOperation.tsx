@@ -11,7 +11,7 @@ import { formatAmount, nonNullable, toAddress } from '@shared/lib/utils';
 import { StakingMap, useStakingData } from '@entities/staking';
 import { OperationForm } from '@pages/Staking/Operations/components';
 import { OperationFooter, OperationHeader } from '@features/operation';
-import { walletUtils, accountUtils, walletModel } from '@renderer/entities/wallet';
+import { walletUtils, accountUtils, walletModel } from '@entities/wallet';
 import {
   getUnstakeAccountOption,
   validateBalanceForFee,

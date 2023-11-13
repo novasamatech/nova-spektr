@@ -9,7 +9,7 @@ import { AccountType, ConnectionStatus, ConnectionType } from '@shared/core';
 import { walletModel } from '@entities/wallet';
 import { TEST_ACCOUNT_ID } from '@shared/lib/utils';
 
-jest.mock('@renderer/app/providers', () => ({
+jest.mock('@app/providers', () => ({
   useMatrix: jest.fn(),
 }));
 

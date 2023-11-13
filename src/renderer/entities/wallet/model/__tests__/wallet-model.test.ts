@@ -5,7 +5,7 @@ import { walletMock } from './mocks/wallet-mock';
 import { kernelModel } from '@shared/core';
 import { storageService } from '@shared/api/storage';
 
-jest.mock('@renderer/app/providers', () => ({
+jest.mock('@app/providers', () => ({
   useMatrix: jest.fn(),
 }));
 
