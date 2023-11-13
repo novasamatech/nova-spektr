@@ -2349,7 +2349,7 @@
         "typeExtras": {
           "assetId": "15"
         },
-        "name": "DAI on Karura"
+        "name": "Should be included in scripts/data/assetsNameMap"
       },
       {
         "assetId": 6,
@@ -2361,7 +2361,7 @@
         "typeExtras": {
           "assetId": "16"
         },
-        "name": "USDC on Karura"
+        "name": "Should be included in scripts/data/assetsNameMap"
       }
     ],
     "explorers": [
@@ -6790,6 +6790,46 @@
     }
   },
   {
+    "name": "3DPass",
+    "addressPrefix": 71,
+    "chainId": "0x6c5894837ad89b6d92b114a2fb3eafa8fe3d26a54848e3447015442cd6ef4e66",
+    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/chains/3DPass.svg",
+    "options": [
+      "multisig"
+    ],
+    "nodes": [
+      {
+        "url": "wss://rpc2.3dpass.org",
+        "name": "3DPass node"
+      }
+    ],
+    "assets": [
+      {
+        "assetId": 0,
+        "symbol": "P3D",
+        "precision": 12,
+        "priceId": "3dpass",
+        "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/3DPass_(P3D).svg",
+        "name": "3DPass"
+      }
+    ],
+    "explorers": [
+      {
+        "name": "3DPass explorer",
+        "extrinsic": "https://explorer.3dpass.org/extrinsic/{hash}",
+        "account": "https://explorer.3dpass.org/account/{address}"
+      }
+    ],
+    "externalApi": {
+      "history": [
+        {
+          "type": "subquery",
+          "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-3dpass"
+        }
+      ]
+    }
+  },
+  {
     "name": "Ajuna",
     "addressPrefix": 1328,
     "chainId": "0xe358eb1d11b31255a286c12e44fe6780b7edb171d657905a97e39f71d9c6c3ee",
@@ -7555,7 +7595,7 @@
         "symbol": "VT",
         "precision": 18,
         "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Default_(VT).svg",
-        "name": "VT token"
+        "name": "Should be included in scripts/data/assetsNameMap"
       }
     ]
   },
@@ -7577,7 +7617,7 @@
         "symbol": "WATR",
         "precision": 18,
         "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Watr.svg",
-        "name": "WATR token"
+        "name": "Should be included in scripts/data/assetsNameMap"
       }
     ]
   },
@@ -7598,7 +7638,7 @@
         "symbol": "JOY",
         "precision": 10,
         "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/JOY.svg",
-        "name": "JOY token"
+        "name": "Should be included in scripts/data/assetsNameMap"
       }
     ],
     "explorers": [
