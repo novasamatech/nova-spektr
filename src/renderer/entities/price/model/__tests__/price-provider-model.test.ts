@@ -6,10 +6,8 @@ import { priceProviderModel } from '../price-provider-model';
 import { PriceApiProvider } from '../../lib/types';
 import { currencyModel } from '../currency-model';
 
-jest.mock('@entities/walletConnect', () => ({
-  walletConnectModel: { events: {} },
-  DEFAULT_POLKADOT_METHODS: {},
-  getWalletConnectChains: jest.fn(),
+jest.mock('@renderer/app/providers', () => ({
+  useMatrix: jest.fn(),
 }));
 
 describe('entities/price/model/price-provider-model', () => {

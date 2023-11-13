@@ -9,7 +9,7 @@ import { WalletPanel } from './WalletPanel';
 import { WalletButton } from './WalletButton';
 import { useBalance } from '@entities/asset';
 import { chainsService } from '@entities/network';
-import { walletSelectModel } from '@features/wallets/WalletSelect/model/wallet-select-model';
+import { walletSelectModel } from '../model/wallet-select-model';
 
 type Props = {
   action?: ReactNode;
@@ -31,6 +31,13 @@ export const WalletSelect = ({ action }: Props) => {
     return <Shimmering width={208} height={56} />;
   }
 
+  const hideWalletPanel = (close: () => void) => {
+    return () => {
+      close();
+      walletSelectModel.events.clearData();
+    };
+  };
+
   return (
     <Popover className="relative">
       {({ close }) => (
@@ -44,7 +51,7 @@ export const WalletSelect = ({ action }: Props) => {
             leaveFrom="opacity-100 translate-y-0"
             leaveTo="opacity-0 translate-y-1"
           >
-            <WalletPanel action={action} onClose={close} />
+            <WalletPanel action={action} onClose={hideWalletPanel(close)} />
           </Transition>
         </>
       )}

@@ -3,10 +3,8 @@ import { fork, allSettled } from 'effector';
 import { currencyFormModel } from '../currency-form';
 import { currencyModel, priceProviderModel } from '@entities/price';
 
-jest.mock('@entities/walletConnect', () => ({
-  walletConnectModel: { events: {} },
-  DEFAULT_POLKADOT_METHODS: {},
-  getWalletConnectChains: jest.fn(),
+jest.mock('@renderer/app/providers', () => ({
+  useMatrix: jest.fn(),
 }));
 
 describe('features/currency/model/currency-form', () => {

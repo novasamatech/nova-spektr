@@ -3,15 +3,8 @@ import { act, render, screen } from '@testing-library/react';
 import { ChainIcon } from './ChainIcon';
 import { TEST_CHAIN_ICON } from '@shared/lib/utils';
 
-jest.mock('@entities/walletConnect', () => ({
-  walletConnectModel: { events: {} },
-  DEFAULT_POLKADOT_METHODS: {},
-  walletConnectUtils: {
-    getWalletConnectChains: jest.fn(),
-  },
-}));
-jest.mock('@pages/Onboarding/WalletConnect/model/wc-onboarding-model', () => ({
-  wcOnboardingModel: { events: {} },
+jest.mock('@renderer/app/providers', () => ({
+  useMatrix: jest.fn(),
 }));
 
 describe('ui/ChainIcon', () => {

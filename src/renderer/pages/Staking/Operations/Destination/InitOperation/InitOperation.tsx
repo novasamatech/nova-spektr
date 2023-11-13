@@ -99,7 +99,7 @@ const InitOperation = ({ api, chainId, accounts, addressPrefix, asset, onResult 
     return getGeneralAccountOption(account, { asset, fee, balance, addressPrefix });
   };
 
-  const getSignatoryDrowdownOption = (wallet: Wallet, account: Account) => {
+  const getSignatoryDropdownOption = (wallet: Wallet, account: Account) => {
     const balance = signatoriesBalances.find((b) => b.accountId === account.accountId);
 
     return getSignatoryOption(wallet, account, { balance, asset, addressPrefix, fee, deposit });
@@ -167,7 +167,7 @@ const InitOperation = ({ api, chainId, accounts, addressPrefix, asset, onResult 
             isMultiselect
             errors={getOperationErrors(!isValidFee, !isValidDeposit)}
             getAccountOption={getAccountDropdownOption}
-            getSignatoryOption={getSignatoryDrowdownOption}
+            getSignatoryOption={getSignatoryDropdownOption}
             onSignatoryChange={setActiveSignatory}
             onAccountChange={setActiveDestAccounts}
           />

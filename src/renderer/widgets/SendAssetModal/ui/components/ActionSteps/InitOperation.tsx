@@ -105,9 +105,12 @@ export const InitOperation = ({
   }, [availableDestinations.length]);
 
   useEffect(() => {
-    setActiveAccount(activeAccounts[0]);
-    onAccountChange(activeAccounts[0]);
-  }, [activeAccounts.length, activeAccounts[0]?.accountId]);
+    const chainAccount =
+      activeAccounts.find((account) => accountUtils.isChainIdMatch(account, chainId)) || activeAccounts[0];
+
+    setActiveAccount(chainAccount);
+    onAccountChange(chainAccount);
+  }, [accountIds.join('')]);
 
   useEffect(() => {
     if (!isMultisigAccount) {
@@ -194,7 +197,7 @@ export const InitOperation = ({
     return getAccountOption(account, { addressPrefix, asset, amount, balance, nativeBalance, fee, deposit });
   };
 
-  const getSignatoryDrowdownOption = (wallet: Wallet, account: Account) => {
+  const getSignatoryDropdownOption = (wallet: Wallet, account: Account) => {
     const balance = signatoriesBalances.find((b) => b.accountId === account.accountId);
 
     return getSignatoryOption(wallet, account, { addressPrefix, asset: nativeToken || asset, balance, fee, deposit });
@@ -237,7 +240,7 @@ export const InitOperation = ({
           <OperationHeader
             chainId={chainId}
             accounts={activeAccounts}
-            getSignatoryOption={getSignatoryDrowdownOption}
+            getSignatoryOption={getSignatoryDropdownOption}
             getAccountOption={getAccountDropdownOption}
             onSignatoryChange={changeSignatory}
             onAccountChange={changeAccount}

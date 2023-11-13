@@ -5,12 +5,13 @@ import { useUnit } from 'effector-react';
 
 import { useI18n } from '@app/providers';
 import { useBalance } from '@entities/asset';
-import { Transaction, TransactionType } from '@entities/transaction';
+import { Transaction, TransactionType, OperationError } from '@entities/transaction';
 import type { Account, Asset, Balance as AccountBalance, ChainId, AccountId, Wallet } from '@shared/core';
 import { formatAmount, nonNullable, toAddress } from '@shared/lib/utils';
 import { StakingMap, useStakingData } from '@entities/staking';
 import { OperationForm } from '@pages/Staking/Operations/components';
-import { OperationError, OperationFooter, OperationHeader } from '@features/operation';
+import { OperationFooter, OperationHeader } from '@features/operation';
+import { walletUtils, accountUtils, walletModel } from '@renderer/entities/wallet';
 import {
   getUnstakeAccountOption,
   validateBalanceForFee,
@@ -18,7 +19,6 @@ import {
   validateBalanceForFeeDeposit,
   getSignatoryOption,
 } from '../../common/utils';
-import { walletUtils, accountUtils, walletModel } from '@entities/wallet';
 
 export type UnstakeResult = {
   accounts: Account[];
@@ -142,7 +142,7 @@ const InitOperation = ({ api, chainId, addressPrefix, accounts, asset, onResult 
     return getUnstakeAccountOption(account, { balance, stake, asset, addressPrefix, fee, amount });
   };
 
-  const getSignatoryDrowdownOption = (wallet: Wallet, account: Account) => {
+  const getSignatoryDropdownOption = (wallet: Wallet, account: Account) => {
     const balance = signatoriesBalances.find((b) => b.accountId === account.accountId);
 
     return getSignatoryOption(wallet, account, { balance, asset, addressPrefix, fee, deposit });
@@ -229,7 +229,7 @@ const InitOperation = ({ api, chainId, addressPrefix, accounts, asset, onResult 
             accounts={accounts}
             isMultiselect
             errors={invalidDeposit || invalidFee || invalidBalance ? [OperationError.EMPTY_ERROR] : undefined}
-            getSignatoryOption={getSignatoryDrowdownOption}
+            getSignatoryOption={getSignatoryDropdownOption}
             getAccountOption={getAccountDropdownOption}
             onSignatoryChange={setActiveSignatory}
             onAccountChange={setActiveUnstakeAccounts}

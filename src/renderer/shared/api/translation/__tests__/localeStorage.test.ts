@@ -3,7 +3,7 @@ import { useLocaleStorage } from '../localeStorage';
 describe('service/locale/storage', () => {
   test('should set and get current locale', () => {
     const { setLocale, getLocale } = useLocaleStorage();
-    const locale = 'ru';
+    const locale = 'en';
     setLocale(locale);
 
     expect(getLocale()).toEqual(locale);

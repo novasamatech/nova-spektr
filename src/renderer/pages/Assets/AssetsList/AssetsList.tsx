@@ -6,7 +6,7 @@ import { BodyText, Button, Icon, SmallTitleText } from '@shared/ui';
 import { useI18n, useNetworkContext } from '@app/providers';
 import { useBalance } from '@entities/asset';
 import { useToggle } from '@shared/lib/hooks';
-import { chainsService } from '@entities/network';
+import { chainsService, isMultisigAvailable } from '@entities/network';
 import { useSettingsStorage } from '@entities/settings';
 import { AssetsFilters, NetworkAssets, SelectShardModal } from './components';
 import { Header } from '@renderer/components/common';
@@ -56,7 +56,7 @@ export const AssetsList = () => {
   useEffect(() => {
     const filteredChains = Object.values(connections).filter((c) => {
       const isDisabled = c.connection.connectionType === ConnectionType.DISABLED;
-      const hasMultiPallet = !isMultisig || c.connection.hasMultisigPallet !== false;
+      const hasMultiPallet = !isMultisig || isMultisigAvailable(c.options);
 
       return !isDisabled && hasMultiPallet;
     });

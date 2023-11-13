@@ -23,15 +23,19 @@ type NetworkContextProps = {
 const NetworkContext = createContext<NetworkContextProps>({} as NetworkContextProps);
 
 export const NetworkProvider = ({ children }: PropsWithChildren) => {
-  const accounts = useUnit(walletModel.$accounts);
+  const activeAccounts = useUnit(walletModel.$activeAccounts);
 
-  const networkSubscriptions = useSubscription<ChainId>();
-  const { subscribe, unsubscribe, hasSubscription, unsubscribeAll } = networkSubscriptions;
-  const { connections, setupConnections, connectToNetwork, connectWithAutoBalance, ...rest } =
-    useNetwork(networkSubscriptions);
+  const { subscribe, unsubscribe, unsubscribeAll } = useSubscription<ChainId>();
+  const { connections, setupConnections, connectToNetwork, connectWithAutoBalance, ...rest } = useNetwork();
   const { subscribeBalances, subscribeLockBalances } = useBalance();
 
   const [everyConnectionIsReady, setEveryConnectionIsReady] = useState(false);
+
+  const connectionValues = Object.values(connections);
+  const activeConnections = connectionValues.filter(
+    (c) => c.connection.connectionStatus === ConnectionStatus.CONNECTED,
+  );
+  const prevConnections = usePrevious(activeConnections);
 
   useEffect(() => {
     setupConnections().then(() => setEveryConnectionIsReady(true));
@@ -40,7 +44,7 @@ export const NetworkProvider = ({ children }: PropsWithChildren) => {
   useEffect(() => {
     if (!everyConnectionIsReady) return;
 
-    const requestConnections = Object.values(connections).map(({ connection }) => {
+    const requestConnections = connectionValues.map(({ connection }) => {
       const { chainId, connectionType, activeNode } = connection;
 
       if (connectionType === ConnectionType.DISABLED) return;
@@ -54,54 +58,54 @@ export const NetworkProvider = ({ children }: PropsWithChildren) => {
     Promise.allSettled(requestConnections).catch(console.warn);
 
     return () => {
-      const requests = Object.values(connections).map((connection) => connection.disconnect || (() => {}));
+      const requests = connectionValues.map((connection) => connection.disconnect || (() => {}));
       Promise.allSettled(requests).catch((error) => console.warn('Disconnect all error ==> ', error));
     };
   }, [everyConnectionIsReady]);
 
-  const subscribeBalanceChanges = async (chain: ExtendedChain, accountIds: AccountId[]) => {
+  const subscribeBalanceChanges = (chain: ExtendedChain, accountIds: AccountId[]) => {
     if (!chain.api?.isConnected || !accountIds.length) return;
-
-    if (!hasSubscription(chain.chainId)) {
-      unsubscribe(chain.chainId);
-    }
 
     const relaychain = chain.parentId && connections[chain.parentId];
 
-    subscribe(chain.chainId, subscribeBalances(chain, relaychain, accountIds));
-    subscribe(chain.chainId, subscribeLockBalances(chain, accountIds));
+    Promise.all([subscribeBalances(chain, accountIds, relaychain), subscribeLockBalances(chain, accountIds)]).then(
+      ([unsubBalances, unsubLocks]) => {
+        subscribe(chain.chainId, unsubBalances);
+        subscribe(chain.chainId, unsubLocks);
+      },
+    );
   };
 
-  const connectedConnections = Object.values(connections).filter(
-    (c) => c.connection.connectionStatus === ConnectionStatus.CONNECTED,
-  );
-
-  const previousConnectedConnections = usePrevious(connectedConnections);
-
+  // subscribe to active accounts
   useEffect(() => {
-    if (accounts.length === 0) {
-      unsubscribeAll();
-
-      return;
+    if (activeAccounts.length > 0) {
+      activeConnections.forEach((chain) => {
+        subscribeBalanceChanges(chain, accountUtils.getAllAccountIds(activeAccounts, chain.connection.chainId));
+      });
     }
 
-    connectedConnections.forEach((chain) => {
-      subscribeBalanceChanges(chain, accountUtils.getAllAccountIds(accounts, chain.connection.chainId));
+    return () => {
+      unsubscribeAll();
+    };
+  }, [activeAccounts]);
+
+  // subscribe to new connections
+  useEffect(() => {
+    const newConnections = activeConnections.filter((c) => !prevConnections?.includes(c));
+
+    newConnections?.forEach((chain) => {
+      subscribeBalanceChanges(chain, accountUtils.getAllAccountIds(activeAccounts, chain.connection.chainId));
     });
+  }, [activeConnections.length]);
 
-    // subscribe to new connections
-    const newConnections = connectedConnections.filter((c) => !previousConnectedConnections?.includes(c));
+  // unsubscribe from removed connections
+  useEffect(() => {
+    const removedConnections = prevConnections?.filter((c) => !activeConnections.includes(c));
 
-    newConnections.forEach((chain) => {
-      subscribeBalanceChanges(chain, accountUtils.getAllAccountIds(accounts, chain.connection.chainId));
-    });
-
-    // unsubscribe from removed connections
-    const removedConnections = previousConnectedConnections?.filter((c) => !connectedConnections.includes(c));
     removedConnections?.forEach((chain) => {
       unsubscribe(chain.chainId);
     });
-  }, [connectedConnections.length, accounts]);
+  }, [activeConnections.length]);
 
   return (
     <NetworkContext.Provider value={{ connections, connectToNetwork, connectWithAutoBalance, ...rest }}>

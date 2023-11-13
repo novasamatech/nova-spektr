@@ -9,15 +9,8 @@ import { AccountType, ConnectionStatus, ConnectionType } from '@shared/core';
 import { walletModel } from '@entities/wallet';
 import { TEST_ACCOUNT_ID } from '@shared/lib/utils';
 
-jest.mock('@entities/walletConnect', () => ({
-  walletConnectModel: { events: {} },
-  DEFAULT_POLKADOT_METHODS: {},
-  walletConnectUtils: {
-    getWalletConnectChains: jest.fn(),
-  },
-}));
-jest.mock('@pages/Onboarding/WalletConnect/model/wc-onboarding-model', () => ({
-  wcOnboardingModel: { events: {} },
+jest.mock('@renderer/app/providers', () => ({
+  useMatrix: jest.fn(),
 }));
 
 jest.mock('@entities/network', () => ({
@@ -126,7 +119,7 @@ describe('context/NetworkContext', () => {
     }));
 
     const scope = fork({
-      values: new Map().set(walletModel.$accounts, [
+      values: new Map().set(walletModel.$activeAccounts, [
         { name: 'Test Wallet', type: AccountType.BASE, accountId: TEST_ACCOUNT_ID },
       ]),
     });

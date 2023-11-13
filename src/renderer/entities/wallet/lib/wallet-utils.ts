@@ -1,5 +1,14 @@
 import type { Wallet } from '@shared/core';
 import { WalletType } from '@shared/core';
+import {
+  PolkadotVaultWallet,
+  WalletConnectWallet,
+  MultisigWallet,
+  SingleShardWallet,
+  MultiShardWallet,
+  WatchOnlyWallet,
+  NovaWalletWallet,
+} from '@renderer/shared/core/types/wallet';
 
 export const walletUtils = {
   isPolkadotVault,
@@ -13,7 +22,7 @@ export const walletUtils = {
   isValidSignatory,
 };
 
-function isPolkadotVault(wallet?: Wallet | null): boolean {
+function isPolkadotVault(wallet?: Pick<Wallet, 'type'>): wallet is PolkadotVaultWallet {
   const isPolkadotVault = wallet?.type === WalletType.POLKADOT_VAULT;
   const isMultiShard = wallet?.type === WalletType.MULTISHARD_PARITY_SIGNER;
   const isSingleShard = wallet?.type === WalletType.SINGLE_PARITY_SIGNER;
@@ -21,43 +30,42 @@ function isPolkadotVault(wallet?: Wallet | null): boolean {
   return isPolkadotVault || isMultiShard || isSingleShard;
 }
 
-function isMultiShard(wallet?: Wallet | null): boolean {
+function isMultiShard(wallet?: Pick<Wallet, 'type'>): wallet is MultiShardWallet {
   const isPolkadotVault = wallet?.type === WalletType.POLKADOT_VAULT;
   const isMultiShard = wallet?.type === WalletType.MULTISHARD_PARITY_SIGNER;
 
   return isPolkadotVault || isMultiShard;
 }
 
-function isSingleShard(wallet?: Wallet | null): boolean {
+function isSingleShard(wallet?: Pick<Wallet, 'type'>): wallet is SingleShardWallet {
   return wallet?.type === WalletType.SINGLE_PARITY_SIGNER;
 }
 
-function isMultisig(wallet?: Wallet | null): boolean {
+function isMultisig(wallet?: Pick<Wallet, 'type'>): wallet is MultisigWallet {
   return wallet?.type === WalletType.MULTISIG;
 }
 
-function isWatchOnly(wallet?: Wallet | null): boolean {
+function isWatchOnly(wallet?: Pick<Wallet, 'type'>): wallet is WatchOnlyWallet {
   return wallet?.type === WalletType.WATCH_ONLY;
 }
 
-function isValidSignatory(wallet?: Wallet | null) {
-  const VALID_SIGNATORY_WALLET_TYPES = [
-    WalletType.SINGLE_PARITY_SIGNER,
-    WalletType.WALLET_CONNECT,
-    WalletType.NOVA_WALLET,
-  ];
-
-  return wallet && VALID_SIGNATORY_WALLET_TYPES.includes(wallet.type);
-}
-
-function isNovaWallet(wallet?: Wallet | null): boolean {
+function isNovaWallet(wallet?: Pick<Wallet, 'type'>): wallet is NovaWalletWallet {
   return wallet?.type === WalletType.NOVA_WALLET;
 }
 
-function isWalletConnect(wallet?: Wallet | null): boolean {
+function isWalletConnect(wallet?: Pick<Wallet, 'type'>): wallet is WalletConnectWallet {
   return wallet?.type === WalletType.WALLET_CONNECT;
 }
 
-function isWalletConnectFamily(wallet?: Wallet | null): boolean {
+function isWalletConnectFamily(wallet?: Pick<Wallet, 'type'>): wallet is WalletConnectWallet {
   return isNovaWallet(wallet) || isWalletConnect(wallet);
+}
+
+const VALID_SIGNATORY_WALLET_TYPES = [
+  WalletType.SINGLE_PARITY_SIGNER,
+  WalletType.WALLET_CONNECT,
+  WalletType.NOVA_WALLET,
+];
+function isValidSignatory(wallet?: Wallet): boolean {
+  return Boolean(wallet && VALID_SIGNATORY_WALLET_TYPES.includes(wallet.type));
 }

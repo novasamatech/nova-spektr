@@ -22,6 +22,7 @@ export interface IBalanceStorage {
   getAllBalances: () => Promise<BalanceDS[]>;
   addBalance: (balance: Balance) => Promise<void>;
   updateBalance: (balance: Balance) => Promise<void>;
+  insertBalances: (balances: Balance[]) => Promise<string[]>;
   setBalanceIsValid: (balanceKey: BalanceKey, verified: boolean) => Promise<number>;
 }
 

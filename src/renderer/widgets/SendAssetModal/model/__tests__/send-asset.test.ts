@@ -8,10 +8,8 @@ jest.mock('@shared/api/xcm', () => ({
   ...jest.requireActual('@shared/api/xcm'),
 }));
 
-jest.mock('@entities/walletConnect', () => ({
-  walletConnectModel: { events: {} },
-  DEFAULT_POLKADOT_METHODS: {},
-  getWalletConnectChains: jest.fn(),
+jest.mock('@renderer/app/providers', () => ({
+  useMatrix: jest.fn(),
 }));
 
 describe('widgets/SendAssetModal/model/send-asset', () => {

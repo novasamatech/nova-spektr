@@ -11,7 +11,6 @@ export const useTranslationService = (): ITranslationService => {
   const getConfig = (): InitOptions => ({
     resources: {
       [Locales.en]: { translation: LocaleFiles.en },
-      [Locales.ru]: { translation: LocaleFiles.ru },
     },
     lng: getLocale(),
     fallbackLng: Locales.en,

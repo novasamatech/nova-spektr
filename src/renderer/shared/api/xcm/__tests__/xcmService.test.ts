@@ -14,10 +14,8 @@ import {
   XCMPALLET_TRANSFER_HUB_ASTAR,
 } from './mock/xcmData';
 
-jest.mock('@entities/walletConnect', () => ({
-  walletConnectModel: { events: {} },
-  DEFAULT_POLKADOT_METHODS: {},
-  getWalletConnectChains: jest.fn(),
+jest.mock('@app/providers', () => ({
+  useMatrix: jest.fn(),
 }));
 
 describe('shared/api/xcm/xcmService', () => {

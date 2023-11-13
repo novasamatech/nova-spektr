@@ -11,11 +11,12 @@ import { Confirmation, NoAsset, Submit } from '../components';
 import { DEFAULT_TRANSITION, getRelaychainAsset, toAddress } from '@shared/lib/utils';
 import { useToggle } from '@shared/lib/hooks';
 import type { Account, ChainId, HexString } from '@shared/core';
-import { Alert, BaseModal, Button, Loader } from '@shared/ui';
+import { BaseModal, Button, Loader } from '@shared/ui';
 import { OperationTitle } from '@renderer/components/common';
 import { Signing } from '@features/operation';
 import { walletModel, walletUtils } from '@entities/wallet';
 import { priceProviderModel } from '@entities/price';
+import { StakingPopover } from '../components/StakingPopover/StakingPopover';
 
 const enum Step {
   INIT,
@@ -36,7 +37,6 @@ export const StakeMore = () => {
   const params = useParams<{ chainId: ChainId }>();
 
   const [isStakeMoreModalOpen, toggleStakeMoreModal] = useToggle(true);
-  const [isAlertOpen, toggleAlert] = useToggle(true);
 
   const [activeStep, setActiveStep] = useState<Step>(Step.INIT);
 
@@ -191,11 +191,9 @@ export const StakeMore = () => {
             onGoBack={goToPrevStep}
             {...explorersProps}
           >
-            {isAlertOpen && (
-              <Alert title={t('staking.confirmation.hintTitle')} onClose={toggleAlert}>
-                <Alert.Item>{t('staking.confirmation.hintNewRewards')}</Alert.Item>
-              </Alert>
-            )}
+            <StakingPopover labelText={t('staking.confirmation.hintTitle')}>
+              <StakingPopover.Item>{t('staking.confirmation.hintNewRewards')}</StakingPopover.Item>
+            </StakingPopover>
           </Confirmation>
         )}
         {activeStep === Step.SIGNING && (

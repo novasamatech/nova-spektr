@@ -14,6 +14,10 @@ export const isTestnet = (chainOptions?: ChainOptions[]): boolean => {
   return Boolean(chainOptions?.includes('testnet'));
 };
 
+export const isMultisigAvailable = (chainOptions?: ChainOptions[]): boolean => {
+  return Boolean(chainOptions?.includes('multisig'));
+};
+
 export const isNameWithNumber = (chainName: string): boolean => {
   return /^[0-9]+/.test(chainName);
 };

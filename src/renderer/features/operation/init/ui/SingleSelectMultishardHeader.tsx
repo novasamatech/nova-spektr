@@ -4,7 +4,7 @@ import type { Account, MultisigAccount } from '@shared/core';
 import { InputHint, MultiSelect } from '@shared/ui';
 import { useI18n } from '@app/providers';
 import { DropdownOption, DropdownResult } from '@shared/ui/Dropdowns/common/types';
-import { OperationErrorType } from '@features/operation/init/model';
+import { OperationErrorType } from '@entities/transaction';
 
 type Props = {
   accounts: Account[];

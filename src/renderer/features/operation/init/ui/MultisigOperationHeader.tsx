@@ -1,12 +1,12 @@
 import { useEffect, useState } from 'react';
 import { useUnit } from 'effector-react';
 
-import { DropdownOption, DropdownResult } from '@shared/ui/Dropdowns/common/types';
-import { InputHint, Select } from '@shared/ui';
-import { useI18n } from '@app/providers';
-import { OperationErrorType } from '@features/operation/init/model';
-import type { Account, ChainId, MultisigAccount, Wallet } from '@shared/core';
-import { accountUtils, walletModel, walletUtils } from '@entities/wallet';
+import { DropdownOption, DropdownResult } from '@renderer/shared/ui/Dropdowns/common/types';
+import { InputHint, Select } from '@renderer/shared/ui';
+import { useI18n } from '@renderer/app/providers';
+import { OperationErrorType } from '@renderer/entities/transaction';
+import type { Account, ChainId, MultisigAccount, Wallet } from '@renderer/shared/core';
+import { accountUtils, walletModel, walletUtils } from '@renderer/entities/wallet';
 
 type Props = {
   chainId: ChainId;
@@ -39,6 +39,7 @@ export const MultisigOperationHeader = ({
     const signerOptions = wallets.reduce<DropdownOption<Account>[]>((acc, wallet) => {
       const isWatchOnly = walletUtils.isWatchOnly(wallet);
       const walletAccounts = accountUtils.getWalletAccounts(wallet.id, accounts);
+
       const signer = walletAccounts.find(
         (a) => signatoryIds.includes(a.accountId) && accountUtils.isChainIdMatch(a, chainId),
       );
@@ -54,7 +55,7 @@ export const MultisigOperationHeader = ({
 
     setSignatoryOptions(signerOptions);
     !activeSignatory && onChange({ id: signerOptions[0].id, value: signerOptions[0].value });
-  }, [accounts.length, getSignatoryOption, signatoryIds]);
+  }, [wallets.length, accounts.length, getSignatoryOption, signatoryIds.length]);
 
   const onChange = (signatory: DropdownResult<Account>) => {
     onSignatoryChange(signatory.value);

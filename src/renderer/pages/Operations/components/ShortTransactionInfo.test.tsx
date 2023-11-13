@@ -4,15 +4,8 @@ import { TransactionAmount } from './TransactionAmount';
 import { Transaction, TransactionType } from '@entities/transaction';
 import { TEST_ADDRESS, TEST_CHAIN_ID } from '@shared/lib/utils';
 
-jest.mock('@entities/walletConnect', () => ({
-  walletConnectModel: { events: {} },
-  DEFAULT_POLKADOT_METHODS: {},
-  walletConnectUtils: {
-    getWalletConnectChains: jest.fn(),
-  },
-}));
-jest.mock('@pages/Onboarding/WalletConnect/model/wc-onboarding-model', () => ({
-  wcOnboardingModel: { events: {} },
+jest.mock('@renderer/app/providers', () => ({
+  useMatrix: jest.fn(),
 }));
 
 jest.mock('@app/providers', () => ({

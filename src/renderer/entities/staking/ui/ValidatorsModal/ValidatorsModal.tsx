@@ -28,7 +28,7 @@ export const ValidatorsModal = ({
     <BaseModal
       closeButton
       contentClass="pb-3 pt-2"
-      panelClass="w-[784px] max-h-[660px] overflow-hidden"
+      panelClass="w-[784px] max-h-[660px] overflow-x-hidden"
       title={t('staking.confirmation.validatorsTitle')}
       isOpen={isOpen}
       onClose={onClose}
@@ -42,7 +42,7 @@ export const ValidatorsModal = ({
             </SmallTitleText>
           </Accordion.Button>
           <Accordion.Content>
-            <ValidatorsTable validators={selectedValidators}>
+            <ValidatorsTable validators={selectedValidators} listClassName="max-h-none">
               {(validtor, rowStyle) => (
                 <li key={validtor.address} className={cnTw(rowStyle, 'hover:bg-hover group')}>
                   <ValidatorsTable.Row validator={validtor} asset={asset} explorers={explorers} />
@@ -60,7 +60,7 @@ export const ValidatorsModal = ({
             </SmallTitleText>
           </Accordion.Button>
           <Accordion.Content>
-            <ValidatorsTable validators={notSelectedValidators}>
+            <ValidatorsTable validators={notSelectedValidators} listClassName="max-h-none">
               {(validtor, rowStyle) => (
                 <li key={validtor.address} className={cnTw(rowStyle, 'hover:bg-hover group')}>
                   <ValidatorsTable.Row validator={validtor} asset={asset} explorers={explorers} />

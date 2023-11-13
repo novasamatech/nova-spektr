@@ -1,8 +1,7 @@
 import { BN, BN_TEN, BN_ZERO } from '@polkadot/util';
 import BigNumber from 'bignumber.js';
 
-import { Balance, LockTypes } from '@shared/core/types/balance';
-import { Unlocking } from '@shared/core/types/stake';
+import { type Balance, type Unlocking, LockTypes } from '@renderer/shared/core';
 import { ZERO_BALANCE } from './constants';
 
 const MAX_INTEGER = 15;

@@ -5,6 +5,9 @@ import { ReactNode } from 'react';
 import { AccountAddress, WalletIcon } from '@entities/wallet';
 import { DropdownOption } from '@shared/ui/Dropdowns/common/types';
 import { AssetBalance } from '@entities/asset';
+import { ExplorerLink, FootnoteText } from '@shared/ui';
+import { Explorer } from '@shared/core';
+import { InfoSection } from '@shared/ui/Popovers/InfoPopover/InfoPopover';
 import type {
   Address,
   Stake,
@@ -22,11 +25,8 @@ import {
   transferableAmount,
   unlockingAmount,
   redeemableAmount,
+  getAccountExplorer,
 } from '@shared/lib/utils';
-import { FootnoteText } from '@shared/ui';
-import { Explorer } from '@shared/core';
-import { ExplorerLink } from '@renderer/components/common';
-import { InfoSection } from '@shared/ui/Popovers/InfoPopover/InfoPopover';
 
 export const validateBalanceForFee = (balance: AccountBalance | string, fee: string): boolean => {
   const transferableBalance = typeof balance === 'string' ? balance : transferableAmount(balance);
@@ -239,7 +239,7 @@ export const getSignatoryOption = (
 export const getExplorers = (address: Address, explorers: Explorer[] = []): [InfoSection] => {
   const explorersContent = explorers.map((explorer) => ({
     id: explorer.name,
-    value: <ExplorerLink explorer={explorer} address={address} />,
+    value: <ExplorerLink name={explorer.name} href={getAccountExplorer(explorer, { address })} />,
   }));
 
   return [{ items: explorersContent }];
