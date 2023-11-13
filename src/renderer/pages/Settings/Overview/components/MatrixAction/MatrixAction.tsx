@@ -1,9 +1,9 @@
 import { Link } from 'react-router-dom';
 
-import { Icon, FootnoteText, Plate, BodyText, StatusLabel, HelpText } from '@renderer/shared/ui';
-import { useI18n, useMatrix } from '@renderer/app/providers';
-import { Paths } from '@renderer/shared/routes';
-import { cnTw } from '@renderer/shared/lib/utils';
+import { Icon, FootnoteText, Plate, BodyText, StatusLabel, HelpText } from '@shared/ui';
+import { useI18n, useMatrix } from '@app/providers';
+import { Paths } from '@shared/routes';
+import { cnTw } from '@shared/lib/utils';
 
 export const MatrixAction = () => {
   const { t } = useI18n();

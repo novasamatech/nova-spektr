@@ -1,9 +1,9 @@
-import { DecodedTransaction, Transaction } from '@renderer/entities/transaction';
-import { chainsService } from '@renderer/entities/network';
-import { AssetBalance } from '@renderer/entities/asset';
-import { cnTw, getAssetById } from '@renderer/shared/lib/utils';
+import { DecodedTransaction, Transaction } from '@entities/transaction';
+import { chainsService } from '@entities/network';
+import { AssetBalance } from '@entities/asset';
+import { cnTw, getAssetById } from '@shared/lib/utils';
 import { getTransactionAmount } from '../common/utils';
-import { AssetFiatBalance } from '@renderer/entities/price/ui/AssetFiatBalance';
+import { AssetFiatBalance } from '@entities/price/ui/AssetFiatBalance';
 
 type Props = {
   tx: Transaction | DecodedTransaction;

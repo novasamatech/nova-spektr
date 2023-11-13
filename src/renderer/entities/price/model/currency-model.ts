@@ -1,7 +1,7 @@
 import { createEvent, createStore, createEffect, forward, sample } from 'effector';
 
-import { kernelModel } from '@renderer/shared/core';
-import { CurrencyItem, fiatService } from '@renderer/shared/api/price-provider';
+import { kernelModel } from '@shared/core';
+import { CurrencyItem, fiatService } from '@shared/api/price-provider';
 import { DEFAULT_CURRENCY_CODE } from '../lib/constants';
 
 const $currencyConfig = createStore<CurrencyItem[]>([]);

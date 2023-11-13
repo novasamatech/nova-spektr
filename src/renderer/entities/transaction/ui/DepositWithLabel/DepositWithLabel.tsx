@@ -1,9 +1,9 @@
 import { ComponentProps } from 'react';
 
-import { useI18n } from '@renderer/app/providers';
-import { Icon, FootnoteText, Tooltip, DetailRow } from '@renderer/shared/ui';
+import { useI18n } from '@app/providers';
+import { Icon, FootnoteText, Tooltip, DetailRow } from '@shared/ui';
 import { Deposit } from '../Deposit/Deposit';
-import { cnTw } from '@renderer/shared/lib/utils';
+import { cnTw } from '@shared/lib/utils';
 
 type Props = {
   wrapperClassName?: string;

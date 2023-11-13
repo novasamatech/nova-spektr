@@ -1,13 +1,4 @@
-import type {
-  Address,
-  ChainId,
-  HexString,
-  AccountId,
-  CallData,
-  CallHash,
-  PartialBy,
-  Signatory,
-} from '@renderer/shared/core';
+import type { Address, ChainId, HexString, AccountId, CallData, CallHash, PartialBy, Signatory } from '@shared/core';
 
 export const enum TransactionType {
   TRANSFER = 'transfer',

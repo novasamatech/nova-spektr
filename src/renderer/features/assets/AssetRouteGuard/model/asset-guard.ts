@@ -1,8 +1,8 @@
 import { attach, createApi, createEffect, createEvent, createStore, sample } from 'effector';
 import { NavigateFunction } from 'react-router-dom';
 
-import { chainsService } from '@renderer/entities/network';
-import type { Asset, ChainId, Chain } from '@renderer/shared/core';
+import { chainsService } from '@entities/network';
+import type { Asset, ChainId, Chain } from '@shared/core';
 
 const validateUrlParams = createEvent<URLSearchParams>();
 const storeCleared = createEvent();

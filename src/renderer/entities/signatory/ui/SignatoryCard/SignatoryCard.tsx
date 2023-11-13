@@ -1,12 +1,12 @@
 import { PropsWithChildren } from 'react';
 
-import { getAddress } from '@renderer/entities/wallet';
-import { useAddressInfo } from '@renderer/entities/wallet/lib/useAddressInfo';
-import { InfoPopover, Icon } from '@renderer/shared/ui';
-import { SigningStatus } from '@renderer/entities/transaction';
-import { cnTw } from '@renderer/shared/lib/utils';
-import type { Explorer } from '@renderer/shared/core';
-import { AccountId } from '@renderer/shared/core';
+import { getAddress } from '@entities/wallet';
+import { useAddressInfo } from '@entities/wallet/lib/useAddressInfo';
+import { InfoPopover, Icon } from '@shared/ui';
+import { SigningStatus } from '@entities/transaction';
+import { cnTw } from '@shared/lib/utils';
+import type { Explorer } from '@shared/core';
+import { AccountId } from '@shared/core';
 
 const IconProps = {
   SIGNED: { className: 'group-hover:hidden text-text-positive', name: 'checkLineRedesign' },

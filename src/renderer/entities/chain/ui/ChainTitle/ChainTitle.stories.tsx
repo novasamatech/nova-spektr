@@ -1,7 +1,7 @@
 import { ComponentMeta, ComponentStory } from '@storybook/react';
 
 import { ChainTitle } from './ChainTitle';
-import { TEST_CHAIN_ID } from '@renderer/shared/lib/utils';
+import { TEST_CHAIN_ID } from '@shared/lib/utils';
 
 export default {
   title: 'Redesign/Chain',

@@ -1,7 +1,7 @@
-import { AccountId, Explorer, Wallet } from '@renderer/shared/core';
-import { useAddressInfo, WalletIcon } from '@renderer/entities/wallet';
-import { FootnoteText, Icon, InfoPopover } from '@renderer/shared/ui';
-import { cnTw, toAddress } from '@renderer/shared/lib/utils';
+import { AccountId, Explorer, Wallet } from '@shared/core';
+import { useAddressInfo, WalletIcon } from '@entities/wallet';
+import { FootnoteText, Icon, InfoPopover } from '@shared/ui';
+import { cnTw, toAddress } from '@shared/lib/utils';
 
 type Props = {
   wallet: Wallet;

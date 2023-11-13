@@ -1,4 +1,4 @@
-import { Explorer } from '@renderer/shared/ui/Icon/data/explorer';
+import { Explorer } from '@shared/ui/Icon/data/explorer';
 
 export const DefaultExplorer = 'default';
 

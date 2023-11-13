@@ -1,6 +1,5 @@
 import { app, dialog } from 'electron';
 import { autoUpdater } from 'electron-updater';
-import * as process from 'process';
 
 import { MainWindow } from './main';
 import { makeAppWithSingleInstanceLock } from './factories/instance';

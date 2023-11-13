@@ -14,7 +14,7 @@ import {
   XCMPALLET_TRANSFER_HUB_ASTAR,
 } from './mock/xcmData';
 
-jest.mock('@renderer/app/providers', () => ({
+jest.mock('@app/providers', () => ({
   useMatrix: jest.fn(),
 }));
 

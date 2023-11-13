@@ -1,6 +1,6 @@
-import { Connection, ConnectionType } from '@renderer/shared/core';
+import { Connection, ConnectionType } from '@shared/core';
 import { ConnectionDS, IConnectionStorage, TConnection, ID } from '../common/types';
-import type { ChainId } from '@renderer/shared/core';
+import type { ChainId } from '@shared/core';
 
 export const useConnectionStorage = (db: TConnection): IConnectionStorage => ({
   getConnection: (chainId: ChainId): Promise<ConnectionDS | undefined> => {

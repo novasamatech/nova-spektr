@@ -1,23 +1,10 @@
 import { Table } from 'dexie';
 
-import { Connection, ConnectionType } from '@renderer/shared/core';
-import { Notification } from '@renderer/entities/notification/model/notification';
-import type {
-  Wallet,
-  Account,
-  Contact,
-  AccountId,
-  CallHash,
-  ChainId,
-  Balance,
-  BalanceKey,
-} from '@renderer/shared/core';
-import type { Metadata } from '@renderer/entities/network';
-import {
-  MultisigEvent,
-  MultisigTransaction,
-  MultisigTransactionKey,
-} from '@renderer/entities/transaction/model/transaction';
+import { Connection, ConnectionType } from '@shared/core';
+import { Notification } from '@entities/notification/model/notification';
+import type { Wallet, Account, Contact, AccountId, CallHash, ChainId, Balance, BalanceKey } from '@shared/core';
+import type { Metadata } from '@entities/network';
+import { MultisigEvent, MultisigTransaction, MultisigTransactionKey } from '@entities/transaction/model/transaction';
 
 // =====================================================
 // ================ Storage interface ==================

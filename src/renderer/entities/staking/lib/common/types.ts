@@ -1,6 +1,6 @@
 import { ApiPromise } from '@polkadot/api';
 
-import type { Address, ChainId, EraIndex, Stake, Validator } from '@renderer/shared/core';
+import type { Address, ChainId, EraIndex, Stake, Validator } from '@shared/core';
 
 // =====================================================
 // ========== IStakingDataService interface ============

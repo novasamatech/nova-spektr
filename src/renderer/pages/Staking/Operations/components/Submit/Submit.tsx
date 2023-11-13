@@ -3,9 +3,9 @@ import { useEffect, useState, ComponentProps } from 'react';
 import { ApiPromise } from '@polkadot/api';
 import { useNavigate } from 'react-router-dom';
 
-import { useI18n, useMatrix, useMultisigChainContext } from '@renderer/app/providers';
-import { Paths } from '@renderer/shared/routes';
-import { HexString } from '@renderer/shared/core';
+import { useI18n, useMatrix, useMultisigChainContext } from '@app/providers';
+import { Paths } from '@shared/routes';
+import { HexString } from '@shared/core';
 import {
   useTransaction,
   ExtrinsicResultParams,
@@ -14,13 +14,13 @@ import {
   MultisigEvent,
   MultisigTransaction,
   MultisigTxInitStatus,
-} from '@renderer/entities/transaction';
-import { toAccountId, DEFAULT_TRANSITION } from '@renderer/shared/lib/utils';
-import { Button } from '@renderer/shared/ui';
-import { useToggle } from '@renderer/shared/lib/hooks';
-import { useMultisigTx, useMultisigEvent } from '@renderer/entities/multisig';
-import type { Account, MultisigAccount } from '@renderer/shared/core';
-import { accountUtils } from '@renderer/entities/wallet';
+} from '@entities/transaction';
+import { toAccountId, DEFAULT_TRANSITION } from '@shared/lib/utils';
+import { Button } from '@shared/ui';
+import { useToggle } from '@shared/lib/hooks';
+import { useMultisigTx, useMultisigEvent } from '@entities/multisig';
+import type { Account, MultisigAccount } from '@shared/core';
+import { accountUtils } from '@entities/wallet';
 
 type ResultProps = Pick<ComponentProps<typeof OperationResult>, 'title' | 'description' | 'variant'>;
 

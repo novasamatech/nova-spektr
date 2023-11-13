@@ -5,7 +5,7 @@ import { MatrixInfoPopover } from '../MatrixInfoPopover';
 
 jest.mock('react-i18next', () => ({ Trans: (props: any) => props.i18nKey }));
 
-jest.mock('@renderer/app/providers', () => ({
+jest.mock('@app/providers', () => ({
   useI18n: jest.fn().mockReturnValue({
     t: (key: string) => key,
   }),

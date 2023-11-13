@@ -2,14 +2,14 @@ import { useEffect, useState } from 'react';
 import { useUnit } from 'effector-react';
 
 import { OperationTitle, QrTextGenerator } from '@renderer/components/common';
-import { DefaultExplorer, ExplorerIcons } from '@renderer/shared/ui/ExplorerLink/constants';
-import { BaseModal, Button, FootnoteText, HelpText, Icon, Select } from '@renderer/shared/ui';
-import { DropdownOption, DropdownResult } from '@renderer/shared/ui/types';
-import { useI18n } from '@renderer/app/providers';
-import { copyToClipboard, DEFAULT_TRANSITION, toAddress, cnTw } from '@renderer/shared/lib/utils';
-import { AccountAddress, walletModel, walletUtils, accountUtils } from '@renderer/entities/wallet';
-import { useToggle } from '@renderer/shared/lib/hooks';
-import type { Chain, Asset } from '@renderer/shared/core';
+import { DefaultExplorer, ExplorerIcons } from '@shared/ui/ExplorerLink/constants';
+import { BaseModal, Button, FootnoteText, HelpText, Icon, Select } from '@shared/ui';
+import { DropdownOption, DropdownResult } from '@shared/ui/types';
+import { useI18n } from '@app/providers';
+import { copyToClipboard, DEFAULT_TRANSITION, toAddress, cnTw } from '@shared/lib/utils';
+import { AccountAddress, walletModel, walletUtils, accountUtils } from '@entities/wallet';
+import { useToggle } from '@shared/lib/hooks';
+import type { Chain, Asset } from '@shared/core';
 
 type Props = {
   chain: Chain;

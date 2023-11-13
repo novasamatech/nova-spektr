@@ -1,14 +1,14 @@
-import { Icon, Button, InfoLink, SmallTitleText } from '@renderer/shared/ui';
+import { Icon, Button, InfoLink, SmallTitleText } from '@shared/ui';
 import { OperationCardDetails } from './OperationCardDetails';
 import RejectTx from './modals/RejectTx';
 import ApproveTx from './modals/ApproveTx';
 import { getMultisigExtrinsicLink } from '../common/utils';
 import CallDataModal from './modals/CallDataModal';
-import { useMatrix, useNetworkContext, useI18n, useMultisigChainContext } from '@renderer/app/providers';
-import { useMultisigTx } from '@renderer/entities/multisig';
-import { useToggle } from '@renderer/shared/lib/hooks';
-import { MultisigTransactionDS } from '@renderer/shared/api/storage';
-import type { CallData, ChainId, MultisigAccount } from '@renderer/shared/core';
+import { useMatrix, useNetworkContext, useI18n, useMultisigChainContext } from '@app/providers';
+import { useMultisigTx } from '@entities/multisig';
+import { useToggle } from '@shared/lib/hooks';
+import { MultisigTransactionDS } from '@shared/api/storage';
+import type { CallData, ChainId, MultisigAccount } from '@shared/core';
 import { OperationSignatories } from './OperationSignatories';
 
 type Props = {

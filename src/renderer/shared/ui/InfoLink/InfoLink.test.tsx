@@ -2,7 +2,7 @@ import { render, screen } from '@testing-library/react';
 
 import InfoLink from './InfoLink';
 
-jest.mock('@renderer/app/providers', () => ({
+jest.mock('@app/providers', () => ({
   useMatrix: jest.fn(),
 }));
 

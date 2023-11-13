@@ -1,18 +1,18 @@
 import { act, render, screen } from '@testing-library/react';
 import noop from 'lodash/noop';
 
-import { ConnectionStatus, ConnectionType } from '@renderer/shared/core';
-import { ExtendedChain } from '@renderer/entities/network';
+import { ConnectionStatus, ConnectionType } from '@shared/core';
+import { ExtendedChain } from '@entities/network';
 import { NetworkSelector } from './NetworkSelector';
-import { useScrollTo } from '@renderer/shared/lib/hooks';
+import { useScrollTo } from '@shared/lib/hooks';
 
-jest.mock('@renderer/app/providers', () => ({
+jest.mock('@app/providers', () => ({
   useI18n: jest.fn().mockReturnValue({
     t: (key: string) => key,
   }),
 }));
 
-jest.mock('@renderer/shared/lib/hooks');
+jest.mock('@shared/lib/hooks');
 
 describe('pages/Settings/Networks/NetworkSelector', () => {
   beforeAll(() => {

@@ -1,16 +1,16 @@
 import { act, render, screen } from '@testing-library/react';
 
-import { TEST_ACCOUNT_ID } from '@renderer/shared/lib/utils';
-import chains from '@renderer/assets/chains/chains.json';
+import { TEST_ACCOUNT_ID } from '@shared/lib/utils';
+import chains from '@shared/config/chains/chains.json';
 import { NetworkAssets } from './NetworkAssets';
-import type { Account, Chain } from '@renderer/shared/core';
-import { ChainType, CryptoType, AccountType } from '@renderer/shared/core';
+import type { Account, Chain } from '@shared/core';
+import { ChainType, CryptoType, AccountType } from '@shared/core';
 
 const testChain = chains.find((chain) => chain.assets.length > 1) as Chain;
 const testAsset = testChain.assets[0];
 const testAsset2 = testChain.assets[1];
 
-jest.mock('@renderer/app/providers', () => ({
+jest.mock('@app/providers', () => ({
   useI18n: jest.fn().mockReturnValue({
     t: (key: string) => key,
   }),
@@ -34,7 +34,7 @@ const testBalances = [
   },
 ];
 
-jest.mock('@renderer/entities/asset', () => ({
+jest.mock('@entities/asset', () => ({
   useBalance: jest.fn().mockReturnValue({
     getLiveNetworkBalances: () => testBalances,
   }),

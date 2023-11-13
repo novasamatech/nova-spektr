@@ -1,13 +1,13 @@
-import AppleImg, { ReactComponent as AppleSvg } from '@images/social/apple.svg';
-import GoogleImg, { ReactComponent as GoogleSvg } from '@images/social/google.svg';
-import FacebookImg, { ReactComponent as FacebookSvg } from '@images/social/facebook.svg';
-import GithubImg, { ReactComponent as GithubSvg } from '@images/social/github.svg';
-import GitlabImg, { ReactComponent as GitlabSvg } from '@images/social/gitlab.svg';
-import MediumImg, { ReactComponent as MediumSvg } from '@images/social/medium.svg';
-import YoutubeImg, { ReactComponent as YoutubeSvg } from '@images/social/youtube.svg';
-import TwitterImg, { ReactComponent as TwitterSvg } from '@images/social/twitter.svg';
-import TelegramImg, { ReactComponent as TelegramSvg } from '@images/social/telegram.svg';
-import MatrixFullImg, { ReactComponent as MatrixFullSvg } from '@images/social/matrix-full.svg';
+import AppleImg, { ReactComponent as AppleSvg } from '@shared/assets/images/social/apple.svg';
+import GoogleImg, { ReactComponent as GoogleSvg } from '@shared/assets/images/social/google.svg';
+import FacebookImg, { ReactComponent as FacebookSvg } from '@shared/assets/images/social/facebook.svg';
+import GithubImg, { ReactComponent as GithubSvg } from '@shared/assets/images/social/github.svg';
+import GitlabImg, { ReactComponent as GitlabSvg } from '@shared/assets/images/social/gitlab.svg';
+import MediumImg, { ReactComponent as MediumSvg } from '@shared/assets/images/social/medium.svg';
+import YoutubeImg, { ReactComponent as YoutubeSvg } from '@shared/assets/images/social/youtube.svg';
+import TwitterImg, { ReactComponent as TwitterSvg } from '@shared/assets/images/social/twitter.svg';
+import TelegramImg, { ReactComponent as TelegramSvg } from '@shared/assets/images/social/telegram.svg';
+import MatrixFullImg, { ReactComponent as MatrixFullSvg } from '@shared/assets/images/social/matrix-full.svg';
 
 const SocialImages = {
   apple: { svg: AppleSvg, img: AppleImg },

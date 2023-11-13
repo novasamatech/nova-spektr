@@ -1,4 +1,4 @@
-import { TEST_ACCOUNT_ID, TEST_ADDRESS } from '@renderer/shared/lib/utils';
+import { TEST_ACCOUNT_ID, TEST_ADDRESS } from '@shared/lib/utils';
 import { toAddress, validateAddress } from '../address';
 
 describe('shared/lib/utils/address', () => {

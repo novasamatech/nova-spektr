@@ -2,19 +2,19 @@ import QRCodeStyling from 'qr-code-styling';
 import { useEffect, useRef, useState } from 'react';
 import { useUnit } from 'effector-react';
 
-import { useI18n } from '@renderer/app/providers';
-import { BaseModal, Button, HeaderTitleText, Loader, SmallTitleText } from '@renderer/shared/ui';
-import { Animation } from '@renderer/shared/ui/Animation/Animation';
+import { useI18n } from '@app/providers';
+import { BaseModal, Button, HeaderTitleText, Loader, SmallTitleText } from '@shared/ui';
+import { Animation } from '@shared/ui/Animation/Animation';
 import ManageStep from './ManageStep/ManageStep';
-import novawallet_onboarding_tutorial from '@video/novawallet_onboarding_tutorial.mp4';
-import novawallet_onboarding_tutorial_webm from '@video/novawallet_onboarding_tutorial.webm';
-import { usePrevious } from '@renderer/shared/lib/hooks';
-import { walletConnectUtils, walletConnectModel } from '@renderer/entities/walletConnect';
-import { chainsService } from '@renderer/entities/network';
-import { wcOnboardingModel } from '@renderer/pages/Onboarding/WalletConnect/model/wc-onboarding-model';
+import novawallet_onboarding_tutorial from '@shared/assets/video/novawallet_onboarding_tutorial.mp4';
+import novawallet_onboarding_tutorial_webm from '@shared/assets/video/novawallet_onboarding_tutorial.webm';
+import { usePrevious } from '@shared/lib/hooks';
+import { walletConnectUtils, walletConnectModel } from '@entities/walletConnect';
+import { chainsService } from '@entities/network';
+import { wcOnboardingModel } from '@pages/Onboarding/WalletConnect/model/wc-onboarding-model';
 import { WCQRConfig, Step, EXPIRE_TIMEOUT } from './lib/const';
-import { useStatusContext } from '@renderer/app/providers/context/StatusContext';
-import { WalletType } from '@renderer/shared/core';
+import { useStatusContext } from '@app/providers/context/StatusContext';
+import { WalletType } from '@shared/core';
 import { isNeedDisconnect } from './lib/utils';
 
 type Props = {

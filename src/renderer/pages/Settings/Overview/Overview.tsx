@@ -1,6 +1,6 @@
 import { Outlet } from 'react-router-dom';
 
-import { useI18n } from '@renderer/app/providers';
+import { useI18n } from '@app/providers';
 import { Header } from '@renderer/components/common';
 import { GeneralActions, MatrixAction, SocialLinks, Version } from './components';
 

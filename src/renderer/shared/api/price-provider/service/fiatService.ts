@@ -1,5 +1,5 @@
-import CURRENCY from '@renderer/assets/currency/currencies.json';
-import { localStorageService } from '@renderer/shared/api/local-storage';
+import CURRENCY from '@shared/config/currency/currencies.json';
+import { localStorageService } from '@shared/api/local-storage';
 import { CurrencyItem } from '../common/types';
 import { CURRENCY_CODE_KEY, FIAT_FLAG_KEY, PRICE_PROVIDER_KEY, ASSETS_PRICES_KEY } from '../common/constants';
 

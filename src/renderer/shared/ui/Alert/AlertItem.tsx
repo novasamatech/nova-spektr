@@ -1,6 +1,6 @@
 import { PropsWithChildren } from 'react';
 
-import { FootnoteText } from '@renderer/shared/ui';
+import { FootnoteText } from '@shared/ui';
 
 type Props = {
   withDot?: boolean;

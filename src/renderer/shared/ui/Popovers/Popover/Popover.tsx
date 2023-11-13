@@ -1,8 +1,8 @@
 import { Popover as Popup, Transition } from '@headlessui/react';
 import { AriaRole, Fragment, PropsWithChildren, ReactNode, useId, useRef, useState } from 'react';
 
-import { cnTw } from '@renderer/shared/lib/utils';
-import { useDebounce } from '@renderer/shared/lib/hooks';
+import { cnTw } from '@shared/lib/utils';
+import { useDebounce } from '@shared/lib/hooks';
 
 type Props = {
   content: ReactNode;

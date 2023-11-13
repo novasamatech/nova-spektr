@@ -1,8 +1,8 @@
-import { Accordion, BaseModal, SmallTitleText } from '@renderer/shared/ui';
-import { useI18n } from '@renderer/app/providers';
-import { Validator } from '@renderer/shared/core/types/validator';
-import { cnTw } from '@renderer/shared/lib/utils';
-import type { Asset, Explorer } from '@renderer/shared/core';
+import { Accordion, BaseModal, SmallTitleText } from '@shared/ui';
+import { useI18n } from '@app/providers';
+import { Validator } from '@shared/core/types/validator';
+import { cnTw } from '@shared/lib/utils';
+import type { Asset, Explorer } from '@shared/core';
 import { ValidatorsTable } from '../ValidatorsTable/ValidatorsTable';
 
 type Props = {

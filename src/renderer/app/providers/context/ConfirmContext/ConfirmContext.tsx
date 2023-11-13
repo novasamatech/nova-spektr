@@ -1,8 +1,8 @@
 import { createContext, PropsWithChildren, useCallback, useContext, useRef, useState, ReactNode } from 'react';
 
-import { ConfirmModal, SmallTitleText, FootnoteText } from '@renderer/shared/ui';
-import { DEFAULT_TRANSITION } from '@renderer/shared/lib/utils';
-import { useToggle } from '@renderer/shared/lib/hooks';
+import { ConfirmModal, SmallTitleText, FootnoteText } from '@shared/ui';
+import { DEFAULT_TRANSITION } from '@shared/lib/utils';
+import { useToggle } from '@shared/lib/hooks';
 
 export type ConfirmDialogProps = {
   title: string;

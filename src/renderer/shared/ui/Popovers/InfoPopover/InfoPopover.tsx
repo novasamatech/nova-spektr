@@ -1,9 +1,9 @@
 import { PropsWithChildren, ReactNode } from 'react';
 import { Menu } from '@headlessui/react';
 
-import { cnTw } from '@renderer/shared/lib/utils';
+import { cnTw } from '@shared/lib/utils';
 import MenuPopover, { Props as MenuPopoverProps } from '../MenuPopover/MenuPopover';
-import { FootnoteText } from '@renderer/shared/ui';
+import { FootnoteText } from '@shared/ui';
 
 type Props = {
   data: InfoSection[];

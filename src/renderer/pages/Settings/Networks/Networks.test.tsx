@@ -3,13 +3,13 @@ import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
 
 import Networks from './Networks';
-import { ExtendedChain } from '@renderer/entities/network';
-import { useNetworkContext } from '@renderer/app/providers';
-import { ConnectionStatus, ConnectionType } from '@renderer/shared/core';
+import { ExtendedChain } from '@entities/network';
+import { useNetworkContext } from '@app/providers';
+import { ConnectionStatus, ConnectionType } from '@shared/core';
 
 const confirmSpy = jest.fn();
 
-jest.mock('@renderer/app/providers', () => ({
+jest.mock('@app/providers', () => ({
   useNetworkContext: jest.fn(() => ({
     connections: {
       '0x111': {
@@ -43,7 +43,7 @@ jest.mock('@renderer/app/providers', () => ({
   })),
 }));
 
-jest.mock('@renderer/entities/asset', () => ({
+jest.mock('@entities/asset', () => ({
   useBalance: jest.fn().mockReturnValue({
     setBalanceIsValid: jest.fn(),
   }),

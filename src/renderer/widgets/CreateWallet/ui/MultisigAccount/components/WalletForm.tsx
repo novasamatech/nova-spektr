@@ -1,11 +1,11 @@
 import { Controller, useForm, SubmitHandler } from 'react-hook-form';
 import { useUnit } from 'effector-react';
 
-import { Alert, Button, Input, InputHint, Select, SmallTitleText } from '@renderer/shared/ui';
-import { useI18n, useMatrix } from '@renderer/app/providers';
-import { DropdownOption, DropdownResult } from '@renderer/shared/ui/Dropdowns/common/types';
-import type { AccountId, Signatory } from '@renderer/shared/core';
-import { accountUtils, walletModel, walletUtils } from '@renderer/entities/wallet';
+import { Alert, Button, Input, InputHint, Select, SmallTitleText } from '@shared/ui';
+import { useI18n, useMatrix } from '@app/providers';
+import { DropdownOption, DropdownResult } from '@shared/ui/Dropdowns/common/types';
+import type { AccountId, Signatory } from '@shared/core';
+import { accountUtils, walletModel, walletUtils } from '@entities/wallet';
 
 type MultisigAccountForm = {
   name: string;

@@ -1,9 +1,9 @@
 import { ApiPromise } from '@polkadot/api';
 import { UnsubscribePromise } from '@polkadot/api/types';
 
-import { storage } from '@renderer/shared/api/storage';
+import { storage } from '@shared/api/storage';
 import { IMetadataService, Metadata } from './common/types';
-import type { ChainId } from '@renderer/shared/core';
+import type { ChainId } from '@shared/core';
 
 export const useMetadata = (): IMetadataService => {
   const metadataStorage = storage.connectTo('metadata');
@@ -17,17 +17,13 @@ export const useMetadata = (): IMetadataService => {
   const getMetadata = async (chainId: ChainId): Promise<Metadata | undefined> => {
     const metadata = await getAllMetadata({ chainId });
 
-    if (metadata.length) {
-      const lastMetadata = metadata.reduce<Metadata>((acc, md) => {
-        if (md.version >= (acc.version || -1)) {
-          return md;
-        }
+    if (!metadata.length) return;
 
-        return acc;
-      }, {} as Metadata);
+    return metadata.reduce<Metadata>((acc, md) => {
+      if (md.version >= (acc.version || -1)) return md;
 
-      return lastMetadata;
-    }
+      return acc;
+    }, {} as Metadata);
   };
 
   const syncMetadata = async (api: ApiPromise): Promise<Metadata> => {

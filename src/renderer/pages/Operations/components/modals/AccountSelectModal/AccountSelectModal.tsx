@@ -1,8 +1,8 @@
-import { BaseModal } from '@renderer/shared/ui';
-import { useI18n } from '@renderer/app/providers';
+import { BaseModal } from '@shared/ui';
+import { useI18n } from '@app/providers';
 import { SelectableAccount } from './SelectableAccount';
-import { cnTw } from '@renderer/shared/lib/utils';
-import { Account, Chain } from '@renderer/shared/core';
+import { cnTw } from '@shared/lib/utils';
+import { Account, Chain } from '@shared/core';
 
 type Props = {
   isOpen: boolean;

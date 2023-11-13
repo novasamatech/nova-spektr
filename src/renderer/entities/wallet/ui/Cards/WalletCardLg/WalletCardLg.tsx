@@ -1,11 +1,11 @@
 import { ReactNode } from 'react';
 
-import { FootnoteText, StatusLabel } from '@renderer/shared/ui';
-import { cnTw } from '@renderer/shared/lib/utils';
-import type { Wallet } from '@renderer/shared/core';
+import { useI18n } from '@app/providers';
+import { FootnoteText, StatusLabel } from '@shared/ui';
+import { cnTw } from '@shared/lib/utils';
+import type { Wallet } from '@shared/core';
 import { WalletIcon } from '../../WalletIcon/WalletIcon';
 import { walletUtils } from '../../../lib/wallet-utils';
-import { useI18n } from '@renderer/app/providers';
 
 type Props = {
   wallet: Wallet;

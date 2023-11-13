@@ -3,14 +3,14 @@ import { useEffect, useState, memo } from 'react';
 import { ApiPromise } from '@polkadot/api';
 import { useUnit } from 'effector-react';
 
-import { AssetBalance } from '@renderer/entities/asset';
-import { DecodedTransaction, Transaction } from '@renderer/entities/transaction';
-import { Shimmering } from '@renderer/shared/ui';
-import { estimateFee, XcmConfig } from '@renderer/shared/api/xcm';
-import { toLocalChainId } from '@renderer/shared/lib/utils';
-import type { Asset } from '@renderer/shared/core';
-import { priceProviderModel } from '@renderer/entities/price';
-import { AssetFiatBalance } from '@renderer/entities/price/ui/AssetFiatBalance';
+import { AssetBalance } from '@entities/asset';
+import { DecodedTransaction, Transaction } from '@entities/transaction';
+import { Shimmering } from '@shared/ui';
+import { estimateFee, XcmConfig } from '@shared/api/xcm';
+import { toLocalChainId } from '@shared/lib/utils';
+import type { Asset } from '@shared/core';
+import { priceProviderModel } from '@entities/price';
+import { AssetFiatBalance } from '@entities/price/ui/AssetFiatBalance';
 
 type Props = {
   api?: ApiPromise;

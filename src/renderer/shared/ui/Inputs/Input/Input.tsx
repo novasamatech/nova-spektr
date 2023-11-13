@@ -1,6 +1,6 @@
 import { ReactNode, ComponentPropsWithoutRef, forwardRef, useId } from 'react';
 
-import { cnTw } from '@renderer/shared/lib/utils';
+import { cnTw } from '@shared/lib/utils';
 import { LabelText } from '../../Typography';
 import { HTMLInputProps } from '../common/types';
 import { CommonInputStyles, CommonInputStylesTheme } from '../common/styles';

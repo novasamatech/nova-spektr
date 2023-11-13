@@ -1,6 +1,6 @@
 import { createElement } from 'react';
 
-import { cnTw } from '@renderer/shared/lib/utils';
+import { cnTw } from '@shared/lib/utils';
 import { TypographyProps } from './types';
 
 const TextBase = ({ as = 'p', align = 'left', className, children }: TypographyProps) => {

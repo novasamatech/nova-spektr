@@ -1,18 +1,18 @@
 import { useState } from 'react';
 import { useUnit } from 'effector-react';
 
-import { Transaction, DepositWithLabel, Fee, XcmTypes } from '@renderer/entities/transaction';
-import { TransactionAmount } from '@renderer/pages/Operations/components/TransactionAmount';
-import { Button, DetailRow, FootnoteText, Icon } from '@renderer/shared/ui';
-import { ExtendedChain } from '@renderer/entities/network';
-import { useI18n } from '@renderer/app/providers';
-import { XcmFee } from '@renderer/entities/transaction/ui/XcmFee/XcmFee';
-import { AssetXCM, XcmConfig } from '@renderer/shared/api/xcm';
-import { SignButton } from '@renderer/entities/operation/ui/SignButton';
-import { WalletType } from '@renderer/shared/core';
-import type { Account, MultisigAccount } from '@renderer/shared/core';
+import { Transaction, DepositWithLabel, Fee, XcmTypes } from '@entities/transaction';
+import { TransactionAmount } from '@pages/Operations/components/TransactionAmount';
+import { Button, DetailRow, FootnoteText, Icon } from '@shared/ui';
+import { ExtendedChain } from '@entities/network';
+import { useI18n } from '@app/providers';
+import { XcmFee } from '@entities/transaction/ui/XcmFee/XcmFee';
+import { AssetXCM, XcmConfig } from '@shared/api/xcm';
+import { SignButton } from '@entities/operation/ui/SignButton';
+import { WalletType } from '@shared/core';
+import type { Account, MultisigAccount } from '@shared/core';
 import Details from '../Details';
-import { walletModel } from '@renderer/entities/wallet';
+import { walletModel } from '@entities/wallet';
 
 type Props = {
   transaction: Transaction;

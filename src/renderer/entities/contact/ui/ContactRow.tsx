@@ -1,8 +1,8 @@
 import { PropsWithChildren } from 'react';
 
-import { BodyText, IconButton, Identicon, Plate, Truncate } from '@renderer/shared/ui';
-import { copyToClipboard } from '@renderer/shared/lib/utils';
-import type { Contact } from '@renderer/shared/core';
+import { BodyText, IconButton, Identicon, Plate, Truncate } from '@shared/ui';
+import { copyToClipboard } from '@shared/lib/utils';
+import type { Contact } from '@shared/core';
 
 type Props = {
   contact: Contact;

@@ -1,5 +1,5 @@
 import AllIcons, { IconNames } from './data';
-import { cnTw } from '@renderer/shared/lib/utils';
+import { cnTw } from '@shared/lib/utils';
 
 type Props = {
   as?: 'img' | 'svg';

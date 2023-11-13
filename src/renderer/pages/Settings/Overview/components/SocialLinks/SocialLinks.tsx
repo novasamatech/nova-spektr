@@ -1,6 +1,6 @@
-import { Icon, FootnoteText, Plate, BodyText, HelpText } from '@renderer/shared/ui';
-import { useI18n } from '@renderer/app/providers';
-import { cnTw } from '@renderer/shared/lib/utils';
+import { Icon, FootnoteText, Plate, BodyText, HelpText } from '@shared/ui';
+import { useI18n } from '@app/providers';
+import { cnTw } from '@shared/lib/utils';
 
 const Links = [
   {

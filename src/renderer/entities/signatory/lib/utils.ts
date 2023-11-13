@@ -1,7 +1,7 @@
 import keyBy from 'lodash/keyBy';
 
-import { Account, AccountId, Wallet } from '@renderer/shared/core';
-import { walletUtils } from '@renderer/entities/wallet';
+import { Account, AccountId, Wallet } from '@shared/core';
+import { walletUtils } from '@entities/wallet';
 
 export const singnatoryUtils = {
   getSignatoryWallet,

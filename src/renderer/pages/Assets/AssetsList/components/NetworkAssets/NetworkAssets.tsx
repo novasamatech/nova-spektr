@@ -2,17 +2,17 @@ import { useEffect, useMemo, useState } from 'react';
 import { groupBy } from 'lodash';
 import { useUnit } from 'effector-react';
 
-import { Icon, CaptionText, Tooltip, Accordion } from '@renderer/shared/ui';
-import { useBalance, AssetCard } from '@renderer/entities/asset';
-import { ChainTitle } from '@renderer/entities/chain';
-import { ZERO_BALANCE, totalAmount, includes, cnTw } from '@renderer/shared/lib/utils';
-import { ExtendedChain } from '@renderer/entities/network';
-import { useI18n } from '@renderer/app/providers';
+import { Icon, CaptionText, Tooltip, Accordion } from '@shared/ui';
+import { useBalance, AssetCard } from '@entities/asset';
+import { ChainTitle } from '@entities/chain';
+import { ZERO_BALANCE, totalAmount, includes, cnTw } from '@shared/lib/utils';
+import { ExtendedChain } from '@entities/network';
+import { useI18n } from '@app/providers';
 import { balanceSorter, sumBalances } from '../../common/utils';
-import type { AccountId, Account, Chain, Asset, Balance } from '@renderer/shared/core';
-import { accountUtils } from '@renderer/entities/wallet';
+import type { AccountId, Account, Chain, Asset, Balance } from '@shared/core';
+import { accountUtils } from '@entities/wallet';
 import { NetworkFiatBalance } from '../NetworkFiatBalance/NetworkFiatBalance';
-import { currencyModel, priceProviderModel } from '@renderer/entities/price';
+import { currencyModel, priceProviderModel } from '@entities/price';
 
 type Props = {
   hideZeroBalance?: boolean;

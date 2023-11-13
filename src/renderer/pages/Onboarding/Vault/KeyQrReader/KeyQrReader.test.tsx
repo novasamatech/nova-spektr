@@ -6,13 +6,13 @@ import KeyQrReader from './KeyQrReader';
 
 jest.mock('@renderer/components/common');
 
-jest.mock('@renderer/app/providers', () => ({
+jest.mock('@app/providers', () => ({
   useI18n: jest.fn().mockReturnValue({
     t: (key: string) => key,
   }),
 }));
 
-jest.mock('@renderer/shared/ui', () => ({
+jest.mock('@shared/ui', () => ({
   Select: ({ options }: any) => options.map((o: any) => <span key="1">{o.element}</span>),
   Button: ({ children }: any) => <button type="button">{children}</button>,
   Loader: () => '',

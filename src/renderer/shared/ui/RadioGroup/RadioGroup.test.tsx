@@ -2,7 +2,7 @@ import { act, render, screen } from '@testing-library/react';
 
 import RadioGroup from './RadioGroup';
 
-jest.mock('@renderer/app/providers', () => ({
+jest.mock('@app/providers', () => ({
   useMatrix: jest.fn(),
 }));
 

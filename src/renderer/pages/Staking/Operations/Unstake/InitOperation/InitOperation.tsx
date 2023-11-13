@@ -3,15 +3,15 @@ import { BN } from '@polkadot/util';
 import { useEffect, useState } from 'react';
 import { useUnit } from 'effector-react';
 
-import { useI18n } from '@renderer/app/providers';
-import { useBalance } from '@renderer/entities/asset';
-import { Transaction, TransactionType, OperationError } from '@renderer/entities/transaction';
-import type { Account, Asset, Balance as AccountBalance, ChainId, AccountId, Wallet } from '@renderer/shared/core';
-import { formatAmount, nonNullable, toAddress } from '@renderer/shared/lib/utils';
-import { StakingMap, useStakingData } from '@renderer/entities/staking';
-import { OperationForm } from '@renderer/pages/Staking/Operations/components';
-import { OperationFooter, OperationHeader } from '@renderer/features/operation';
-import { walletUtils, accountUtils, walletModel } from '@renderer/entities/wallet';
+import { useI18n } from '@app/providers';
+import { useBalance } from '@entities/asset';
+import { Transaction, TransactionType, OperationError } from '@entities/transaction';
+import type { Account, Asset, Balance as AccountBalance, ChainId, AccountId, Wallet } from '@shared/core';
+import { formatAmount, nonNullable, toAddress } from '@shared/lib/utils';
+import { StakingMap, useStakingData } from '@entities/staking';
+import { OperationForm } from '@pages/Staking/Operations/components';
+import { OperationFooter, OperationHeader } from '@features/operation';
+import { walletUtils, accountUtils, walletModel } from '@entities/wallet';
 import {
   getUnstakeAccountOption,
   validateBalanceForFee,

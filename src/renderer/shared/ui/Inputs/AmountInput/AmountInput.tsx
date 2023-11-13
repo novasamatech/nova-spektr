@@ -11,15 +11,15 @@ import {
   toFixedNotation,
   validatePrecision,
   validateSymbols,
-} from '@renderer/shared/lib/utils';
-import { AssetBalance, AssetIcon } from '@renderer/entities/asset';
-import { useI18n } from '@renderer/app/providers';
+} from '@shared/lib/utils';
+import { AssetBalance, AssetIcon } from '@entities/asset';
+import { useI18n } from '@app/providers';
 import { FootnoteText, HelpText, TitleText } from '../../Typography';
 import Input from '../Input/Input';
-import { IconButton } from '@renderer/shared/ui';
-import { useToggle } from '@renderer/shared/lib/hooks';
-import { currencyModel, useCurrencyRate } from '@renderer/entities/price';
-import type { Asset } from '@renderer/shared/core';
+import { IconButton } from '@shared/ui';
+import { useToggle } from '@shared/lib/hooks';
+import { currencyModel, useCurrencyRate } from '@entities/price';
+import type { Asset } from '@shared/core';
 
 type Props = {
   name?: string;

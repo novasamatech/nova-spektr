@@ -1,6 +1,6 @@
-import { cnTw, toShortAddress, toAddress } from '@renderer/shared/lib/utils';
-import { Identicon, Truncate } from '@renderer/shared/ui';
-import type { AccountId, Address } from '@renderer/shared/core';
+import { cnTw, toShortAddress, toAddress } from '@shared/lib/utils';
+import { Identicon, Truncate } from '@shared/ui';
+import type { AccountId, Address } from '@shared/core';
 
 type AddressType = 'full' | 'short' | 'adaptive';
 

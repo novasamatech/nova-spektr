@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react';
 
-import { DEFAULT_TRANSITION } from '@renderer/shared/lib/utils';
+import { DEFAULT_TRANSITION } from '@shared/lib/utils';
 
 /**
  * Modal open-flag with delayed callback

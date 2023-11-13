@@ -2,14 +2,14 @@ import { useEffect, useState } from 'react';
 import { keyBy } from 'lodash';
 import { useUnit } from 'effector-react';
 
-import { useMultisigTx } from '@renderer/entities/multisig';
-import { MultisigTxInitStatus } from '@renderer/entities/transaction';
+import { useMultisigTx } from '@entities/multisig';
+import { MultisigTxInitStatus } from '@entities/transaction';
 import { NavItem, Props as NavItemProps } from './NavItem';
-import { chainsService } from '@renderer/entities/network';
-import { Paths } from '@renderer/shared/routes';
-import { walletModel } from '@renderer/entities/wallet';
-import { BodyText } from '@renderer/shared/ui';
-import type { ChainId, Chain } from '@renderer/shared/core';
+import { chainsService } from '@entities/network';
+import { Paths } from '@shared/routes';
+import { walletModel } from '@entities/wallet';
+import { BodyText } from '@shared/ui';
+import type { ChainId, Chain } from '@shared/core';
 
 export const Navigation = () => {
   const activeAccounts = useUnit(walletModel.$activeAccounts);

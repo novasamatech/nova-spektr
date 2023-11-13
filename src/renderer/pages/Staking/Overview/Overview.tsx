@@ -3,17 +3,16 @@ import { useNavigate, Outlet } from 'react-router-dom';
 import { useUnit } from 'effector-react';
 
 import { Header } from '@renderer/components/common';
-import { getRelaychainAsset, toAddress } from '@renderer/shared/lib/utils';
-import { createLink } from '@renderer/shared/routes';
-import type { PathValue } from '@renderer/shared/routes';
-import { useGraphql, useI18n, useNetworkContext } from '@renderer/app/providers';
-import { useToggle } from '@renderer/shared/lib/hooks';
-import { NominatorInfo } from '@renderer/pages/Staking/Overview/components/NominatorsList/NominatorsList';
+import { getRelaychainAsset, toAddress } from '@shared/lib/utils';
+import { createLink, type PathType } from '@shared/routes';
+import { useGraphql, useI18n, useNetworkContext } from '@app/providers';
+import { useToggle } from '@shared/lib/hooks';
+import { NominatorInfo } from '@pages/Staking/Overview/components/NominatorsList/NominatorsList';
 import { AboutStaking, NetworkInfo, NominatorsList, Actions, InactiveChain } from './components';
-import type { ChainId, Chain, Address, Account, Stake, Validator } from '@renderer/shared/core';
-import { ConnectionType, ConnectionStatus } from '@renderer/shared/core';
-import { accountUtils, walletModel, walletUtils } from '@renderer/entities/wallet';
-import { priceProviderModel } from '@renderer/entities/price';
+import type { ChainId, Chain, Address, Account, Stake, Validator } from '@shared/core';
+import { ConnectionType, ConnectionStatus } from '@shared/core';
+import { accountUtils, walletModel, walletUtils } from '@entities/wallet';
+import { priceProviderModel } from '@entities/price';
 import {
   useEra,
   useStakingData,
@@ -22,7 +21,7 @@ import {
   useValidators,
   useStakingRewards,
   ValidatorsModal,
-} from '@renderer/entities/staking';
+} from '@entities/staking';
 
 export const Overview = () => {
   const { t } = useI18n();
@@ -196,7 +195,7 @@ export const Overview = () => {
     [[], []],
   );
 
-  const navigateToStake = (path: PathValue, addresses?: Address[]) => {
+  const navigateToStake = (path: PathType, addresses?: Address[]) => {
     if (addresses) {
       setSelectedNominators(addresses);
 

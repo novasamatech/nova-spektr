@@ -1,10 +1,10 @@
 import { Popover, Transition } from '@headlessui/react';
 import { PropsWithChildren, ReactNode, MouseEvent, useRef } from 'react';
 
-import { cnTw, getAccountExplorer, toAddress, copyToClipboard } from '@renderer/shared/lib/utils';
-import type { Address, Explorer, AccountId } from '@renderer/shared/core';
-import { ExplorerLink, FootnoteText, IconButton } from '@renderer/shared/ui';
-import { useI18n } from '@renderer/app/providers';
+import { cnTw, getAccountExplorer, toAddress, copyToClipboard } from '@shared/lib/utils';
+import type { Address, Explorer, AccountId } from '@shared/core';
+import { ExplorerLink, FootnoteText, IconButton } from '@shared/ui';
+import { useI18n } from '@app/providers';
 
 type Props = {
   button: ReactNode;

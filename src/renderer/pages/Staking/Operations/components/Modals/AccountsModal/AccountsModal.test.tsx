@@ -1,16 +1,16 @@
 import { render, screen } from '@testing-library/react';
 
-import type { Asset, BaseAccount, ChainId } from '@renderer/shared/core';
-import { ChainType, CryptoType, AccountType } from '@renderer/shared/core';
+import type { Asset, BaseAccount, ChainId } from '@shared/core';
+import { ChainType, CryptoType, AccountType } from '@shared/core';
 import AccountsModal from './AccountsModal';
 
-jest.mock('@renderer/app/providers', () => ({
+jest.mock('@app/providers', () => ({
   useI18n: jest.fn().mockReturnValue({
     t: (key: string) => key,
   }),
 }));
 
-jest.mock('@renderer/entities/asset', () => ({
+jest.mock('@entities/asset', () => ({
   useBalance: jest.fn().mockReturnValue({
     getLiveAssetBalances: jest.fn().mockReturnValue([]),
   }),

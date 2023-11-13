@@ -1,5 +1,5 @@
-import { Icon, TitleText, BodyText, Button } from '@renderer/shared/ui';
-import { useI18n } from '@renderer/app/providers';
+import { Icon, TitleText, BodyText, Button } from '@shared/ui';
+import { useI18n } from '@app/providers';
 
 type Props = {
   chainName: string;

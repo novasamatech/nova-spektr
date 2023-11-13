@@ -2,12 +2,12 @@ import { act, render, screen } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
 import userEvent from '@testing-library/user-event';
 
-import chains from '@renderer/assets/chains/chains.json';
-import { TEST_ACCOUNT_ID } from '@renderer/shared/lib/utils';
+import chains from '@shared/config/chains/chains.json';
+import { TEST_ACCOUNT_ID } from '@shared/lib/utils';
 import { AssetCard } from './AssetCard';
-import type { Chain, Asset, Balance } from '@renderer/shared/core';
+import type { Chain, Asset, Balance } from '@shared/core';
 
-jest.mock('@renderer/app/providers', () => ({
+jest.mock('@app/providers', () => ({
   useI18n: jest.fn().mockReturnValue({
     t: (key: string) => key,
   }),

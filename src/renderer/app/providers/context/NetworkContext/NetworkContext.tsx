@@ -1,13 +1,13 @@
 import { useUnit } from 'effector-react';
 import { createContext, PropsWithChildren, useContext, useEffect, useState } from 'react';
 
-import { useBalance } from '@renderer/entities/asset';
-import { ConnectProps, ExtendedChain, RpcValidation, useNetwork } from '@renderer/entities/network';
+import { useBalance } from '@entities/asset';
+import { ConnectProps, ExtendedChain, RpcValidation, useNetwork } from '@entities/network';
 import { useSubscription } from '@renderer/services/subscription/subscriptionService';
-import { usePrevious } from '@renderer/shared/lib/hooks';
-import type { RpcNode, ChainId, AccountId } from '@renderer/shared/core';
-import { ConnectionStatus, ConnectionType } from '@renderer/shared/core';
-import { walletModel, accountUtils } from '@renderer/entities/wallet';
+import { usePrevious } from '@shared/lib/hooks';
+import type { RpcNode, ChainId, AccountId } from '@shared/core';
+import { ConnectionStatus, ConnectionType } from '@shared/core';
+import { walletModel, accountUtils } from '@entities/wallet';
 
 type NetworkContextProps = {
   connections: Record<ChainId, ExtendedChain>;

@@ -8,19 +8,19 @@ import {
   DepositWithLabel,
   isXcmTransaction,
   XcmFee,
-} from '@renderer/entities/transaction';
-import { TransactionAmount } from '@renderer/pages/Operations/components/TransactionAmount';
-import { DetailRow, FootnoteText, Icon } from '@renderer/shared/ui';
-import { ExtendedChain } from '@renderer/entities/network';
-import { useI18n } from '@renderer/app/providers';
-import { getIconName } from '@renderer/entities/transaction/lib/transactionIcon';
-import { type Account, type MultisigAccount, WalletType } from '@renderer/shared/core';
+} from '@entities/transaction';
+import { TransactionAmount } from '@pages/Operations/components/TransactionAmount';
+import { DetailRow, FootnoteText, Icon } from '@shared/ui';
+import { ExtendedChain } from '@entities/network';
+import { useI18n } from '@app/providers';
+import { getIconName } from '@entities/transaction/lib/transactionIcon';
+import { type Account, type MultisigAccount, WalletType } from '@shared/core';
 import Details from '../Details';
-import { getAssetById } from '@renderer/shared/lib/utils';
-import { getTransactionFromMultisigTx } from '@renderer/entities/multisig';
-import { sendAssetModel } from '@renderer/widgets/SendAssetModal';
-import { SignButton } from '@renderer/entities/operation/ui/SignButton';
-import { walletModel } from '@renderer/entities/wallet';
+import { getAssetById } from '@shared/lib/utils';
+import { getTransactionFromMultisigTx } from '@entities/multisig';
+import { sendAssetModel } from '@widgets/SendAssetModal';
+import { SignButton } from '@entities/operation/ui/SignButton';
+import { walletModel } from '@entities/wallet';
 
 type Props = {
   tx: MultisigTransaction;

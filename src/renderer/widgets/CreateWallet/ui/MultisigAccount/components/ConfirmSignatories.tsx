@@ -1,10 +1,10 @@
-import { cnTw } from '@renderer/shared/lib/utils';
-import { useI18n } from '@renderer/app/providers';
-import { FootnoteText, SmallTitleText } from '@renderer/shared/ui';
+import { cnTw } from '@shared/lib/utils';
+import { useI18n } from '@app/providers';
+import { FootnoteText, SmallTitleText } from '@shared/ui';
 import { ExtendedWallet, ExtendedContact } from '../common/types';
 import { WalletItem } from './WalletItem';
-import { ContactItem } from '@renderer/entities/wallet';
-import { WalletType } from '@renderer/shared/core';
+import { ContactItem } from '@entities/wallet';
+import { WalletType } from '@shared/core';
 
 type Props = {
   isActive: boolean;

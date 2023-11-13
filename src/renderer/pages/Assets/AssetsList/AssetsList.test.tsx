@@ -2,12 +2,12 @@ import { render, screen } from '@testing-library/react';
 import { fork } from 'effector';
 import { Provider } from 'effector-react';
 
-import { TEST_ACCOUNT_ID } from '@renderer/shared/lib/utils';
-import { ConnectionType } from '@renderer/shared/core';
+import { TEST_ACCOUNT_ID } from '@shared/lib/utils';
+import { ConnectionType } from '@shared/core';
 import { AssetsList } from './AssetsList';
-import { walletModel } from '@renderer/entities/wallet';
+import { walletModel } from '@entities/wallet';
 
-jest.mock('@renderer/app/providers', () => ({
+jest.mock('@app/providers', () => ({
   useI18n: jest.fn().mockReturnValue({
     t: (key: string) => key,
   }),
@@ -35,13 +35,13 @@ const CHAINS = [
   },
 ];
 
-jest.mock('@renderer/entities/network', () => ({
+jest.mock('@entities/network', () => ({
   chainsService: {
     sortChainsByBalance: () => CHAINS,
   },
 }));
 
-jest.mock('@renderer/entities/asset', () => ({
+jest.mock('@entities/asset', () => ({
   useBalance: jest.fn().mockReturnValue({
     getLiveBalances: jest.fn().mockReturnValue([]),
   }),

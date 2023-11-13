@@ -1,6 +1,6 @@
-import { useI18n } from '@renderer/app/providers';
-import { BodyText, Icon } from '@renderer/shared/ui';
-import { cnTw } from '@renderer/shared/lib/utils';
+import { useI18n } from '@app/providers';
+import { BodyText, Icon } from '@shared/ui';
+import { cnTw } from '@shared/lib/utils';
 
 type Props = {
   className?: string;

@@ -2,7 +2,7 @@ import { render, screen } from '@testing-library/react';
 
 import PopoverLink from './PopoverLink';
 
-jest.mock('@renderer/app/providers', () => ({
+jest.mock('@app/providers', () => ({
   useMatrix: jest.fn(),
 }));
 

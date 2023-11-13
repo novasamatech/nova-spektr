@@ -1,12 +1,12 @@
 import { ReactNode } from 'react';
 import { BN } from '@polkadot/util';
 
-import { AccountAddress, WalletIcon } from '@renderer/entities/wallet';
-import { DropdownOption } from '@renderer/shared/ui/Dropdowns/common/types';
-import { toAddress, cnTw, transferableAmount } from '@renderer/shared/lib/utils';
-import { AssetBalance } from '@renderer/entities/asset';
-import { ChainTitle } from '@renderer/entities/chain';
-import { FootnoteText, HelpText } from '@renderer/shared/ui';
+import { AccountAddress, WalletIcon } from '@entities/wallet';
+import { DropdownOption } from '@shared/ui/Dropdowns/common/types';
+import { toAddress, cnTw, transferableAmount } from '@shared/lib/utils';
+import { AssetBalance } from '@entities/asset';
+import { ChainTitle } from '@entities/chain';
+import { FootnoteText, HelpText } from '@shared/ui';
 import type {
   Asset,
   Balance,
@@ -17,7 +17,7 @@ import type {
   ChainId,
   Wallet,
   WalletType,
-} from '@renderer/shared/core';
+} from '@shared/core';
 
 type Params = {
   asset: Asset;

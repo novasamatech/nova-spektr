@@ -2,7 +2,7 @@ import { render, screen } from '@testing-library/react';
 
 import Button from './Button';
 
-jest.mock('@renderer/app/providers', () => ({
+jest.mock('@app/providers', () => ({
   useMatrix: jest.fn(),
 }));
 

@@ -1,7 +1,7 @@
 import { ApiPromise } from '@polkadot/api';
 
 import { IEraService } from './common/types';
-import type { EraIndex } from '@renderer/shared/core';
+import type { EraIndex } from '@shared/core';
 
 export const useEra = (): IEraService => {
   const subscribeActiveEra = (api: ApiPromise, callback: (era?: EraIndex) => void): Promise<() => void> => {

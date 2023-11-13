@@ -4,9 +4,9 @@ import { Weight } from '@polkadot/types/interfaces';
 import { SubmittableExtrinsic } from '@polkadot/api/types';
 import { AnyJson } from '@polkadot/types/types';
 
-import type { Address, CallData, HexString, Timepoint, Threshold, AccountId, ChainId } from '@renderer/shared/core';
-import { DecodedTransaction, Transaction, TransactionType } from '@renderer/entities/transaction/model/transaction';
-import { TxWrappers } from '@renderer/entities/transaction';
+import type { Address, CallData, HexString, Timepoint, Threshold, AccountId, ChainId } from '@shared/core';
+import { DecodedTransaction, Transaction, TransactionType } from '@entities/transaction/model/transaction';
+import { TxWrappers } from '@entities/transaction';
 
 // =====================================================
 // =========== ITransactionService interface ===========

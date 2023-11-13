@@ -2,18 +2,18 @@ import { ApiPromise } from '@polkadot/api';
 import { useEffect, useState } from 'react';
 import { useStore, useUnit } from 'effector-react';
 
-import { getAssetId, TEST_ACCOUNT_ID, toAddress, toHexChainId } from '@renderer/shared/lib/utils';
-import { useBalance } from '@renderer/entities/asset';
-import { Transaction, TransactionType, useTransaction } from '@renderer/entities/transaction';
+import { getAssetId, TEST_ACCOUNT_ID, toAddress, toHexChainId } from '@shared/lib/utils';
+import { useBalance } from '@entities/asset';
+import { Transaction, TransactionType, useTransaction } from '@entities/transaction';
 import { TransferForm, TransferFormData } from '../TransferForm';
 import { getAccountOption, getSignatoryOption } from '../../common/utils';
-import { OperationFooter, OperationHeader } from '@renderer/features/operation';
+import { OperationFooter, OperationHeader } from '@features/operation';
 import * as sendAssetModel from '../../../model/send-asset';
-import { useNetworkContext } from '@renderer/app/providers';
-import { XcmTransferType } from '@renderer/shared/api/xcm';
-import { walletModel, accountUtils } from '@renderer/entities/wallet';
-import { AssetType } from '@renderer/shared/core';
-import type { ChainId, Asset, Explorer, Account, MultisigAccount, Chain, Wallet } from '@renderer/shared/core';
+import { useNetworkContext } from '@app/providers';
+import { XcmTransferType } from '@shared/api/xcm';
+import { walletModel, accountUtils } from '@entities/wallet';
+import { AssetType } from '@shared/core';
+import type { ChainId, Asset, Explorer, Account, MultisigAccount, Chain, Wallet } from '@shared/core';
 
 type Props = {
   api: ApiPromise;

@@ -1,5 +1,5 @@
-import { cnTw, toShortAddress, copyToClipboard } from '@renderer/shared/lib/utils';
-import { IconButton, Truncate } from '@renderer/shared/ui';
+import { cnTw, toShortAddress, copyToClipboard } from '@shared/lib/utils';
+import { IconButton, Truncate } from '@shared/ui';
 import { AccountAddressProps, getAddress } from '../AccountAddress/AccountAddress';
 import { AddressWithTwoLines } from '../AddressWithTwoLines/AddressWithTwoLines';
 

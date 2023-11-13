@@ -1,7 +1,7 @@
 import { act, render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 
-import { ConnectionStatus } from '@renderer/shared/core';
+import { ConnectionStatus } from '@shared/core';
 import { Restake } from './Restake';
 
 jest.mock('react-router-dom', () => ({
@@ -10,7 +10,7 @@ jest.mock('react-router-dom', () => ({
   useNavigate: jest.fn(),
 }));
 
-jest.mock('@renderer/app/providers', () => ({
+jest.mock('@app/providers', () => ({
   useI18n: jest.fn().mockReturnValue({
     t: (key: string) => key,
   }),
@@ -37,7 +37,7 @@ jest.mock('@renderer/app/providers', () => ({
   })),
 }));
 
-jest.mock('@renderer/entities/staking', () => ({
+jest.mock('@entities/staking', () => ({
   useStakingData: jest.fn().mockReturnValue({
     subscribeStaking: jest.fn(),
   }),
@@ -60,7 +60,7 @@ jest.mock('../components/index', () => ({
   Submit: () => 'finish',
 }));
 
-jest.mock('@renderer/features/operation', () => ({
+jest.mock('@features/operation', () => ({
   Signing: ({ onResult }: any) => mockButton('to submit', onResult),
 }));
 

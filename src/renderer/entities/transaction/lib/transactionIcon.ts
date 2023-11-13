@@ -1,5 +1,5 @@
-import { DecodedTransaction, Transaction, TransactionType } from '@renderer/entities/transaction/model/transaction';
-import { IconNames } from '@renderer/shared/ui/Icon/data';
+import { DecodedTransaction, Transaction, TransactionType } from '@entities/transaction/model/transaction';
+import { IconNames } from '@shared/ui/Icon/data';
 
 const TransactionIcons: Record<TransactionType, IconNames> = {
   // Transfer

@@ -1,7 +1,7 @@
 import { ApiPromise } from '@polkadot/api';
 
 import { IStakingDataService, StakingMap } from './common/types';
-import type { Address, ChainId, EraIndex } from '@renderer/shared/core';
+import type { Address, ChainId, EraIndex } from '@shared/core';
 
 export const useStakingData = (): IStakingDataService => {
   const subscribeStaking = async (

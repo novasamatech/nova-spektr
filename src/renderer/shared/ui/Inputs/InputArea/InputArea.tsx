@@ -1,6 +1,6 @@
 import { ComponentPropsWithoutRef, forwardRef } from 'react';
 
-import { cnTw } from '@renderer/shared/lib/utils';
+import { cnTw } from '@shared/lib/utils';
 import { HTMLTextAreaProps } from '../common/types';
 import { CommonInputStyles, CommonInputStylesTheme } from '../common/styles';
 import { Theme } from '../../Dropdowns/common/types';

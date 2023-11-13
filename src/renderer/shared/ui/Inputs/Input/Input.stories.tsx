@@ -1,7 +1,7 @@
 import { ComponentMeta, ComponentStory } from '@storybook/react';
 
 import Input from './Input';
-import { Icon } from '@renderer/shared/ui';
+import { Icon } from '@shared/ui';
 
 export default {
   title: 'Redesign/Input',

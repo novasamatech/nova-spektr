@@ -1,4 +1,4 @@
-import { TransactionType } from '@renderer/entities/transaction/model/transaction';
+import { TransactionType } from '@entities/transaction/model/transaction';
 
 export const UNKNOWN_TYPE = 'UNKNOWN_TYPE';
 

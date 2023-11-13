@@ -1,12 +1,12 @@
 import { useEffect, useState } from 'react';
 import { Controller, SubmitHandler, useForm } from 'react-hook-form';
 
-import { BaseModal, Button, Input, InputHint, Alert } from '@renderer/shared/ui';
-import { useI18n, useNetworkContext } from '@renderer/app/providers';
-import { RpcValidation, ExtendedChain } from '@renderer/entities/network';
-import { validateWsAddress } from '@renderer/shared/lib/utils';
+import { BaseModal, Button, Input, InputHint, Alert } from '@shared/ui';
+import { useI18n, useNetworkContext } from '@app/providers';
+import { RpcValidation, ExtendedChain } from '@entities/network';
+import { validateWsAddress } from '@shared/lib/utils';
 import { OperationTitle } from '@renderer/components/common';
-import type { RpcNode } from '@renderer/shared/core';
+import type { RpcNode } from '@shared/core';
 
 const MODAL_ANIMATION = 300;
 

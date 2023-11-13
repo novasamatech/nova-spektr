@@ -1,9 +1,9 @@
 import { forwardRef } from 'react';
 import cn from 'classnames';
 
-import { Icon, IconButton, Input } from '@renderer/shared/ui';
+import { Icon, IconButton, Input } from '@shared/ui';
 import { Props as InputProps } from '../Input/Input';
-import { cnTw } from '@renderer/shared/lib/utils';
+import { cnTw } from '@shared/lib/utils';
 
 type Props = Omit<InputProps, 'prefixElement' | 'suffixElement'>;
 

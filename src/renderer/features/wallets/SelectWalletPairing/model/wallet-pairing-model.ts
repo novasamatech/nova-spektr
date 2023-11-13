@@ -1,6 +1,6 @@
 import { createStore, createEvent, forward } from 'effector';
 
-import { WalletFamily } from '@renderer/shared/core';
+import { WalletFamily } from '@shared/core';
 
 const walletTypeSet = createEvent<WalletFamily>();
 const walletTypeCleared = createEvent();

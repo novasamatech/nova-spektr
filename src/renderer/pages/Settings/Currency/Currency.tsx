@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 
-import { CurrencyModal } from '@renderer/widgets';
-import { Paths } from '@renderer/shared/routes';
+import { CurrencyModal } from '@widgets/CurrencyModal';
+import { Paths } from '@shared/routes';
 
 export const Currency = () => {
   const navigate = useNavigate();

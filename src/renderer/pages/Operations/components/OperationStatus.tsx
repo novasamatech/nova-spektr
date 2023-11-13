@@ -3,10 +3,10 @@ import {
   MultisigTxFinalStatus,
   MultisigTxInitStatus,
   MultisigTxStatus,
-} from '@renderer/entities/transaction';
-import { CaptionText } from '@renderer/shared/ui';
-import { useI18n } from '@renderer/app/providers';
-import { cnTw } from '@renderer/shared/lib/utils';
+} from '@entities/transaction';
+import { CaptionText } from '@shared/ui';
+import { useI18n } from '@app/providers';
+import { cnTw } from '@shared/lib/utils';
 
 const StatusTitle: Record<MultisigTxStatus, string> = {
   [MultisigTxInitStatus.SIGNING]: 'operation.status.signing',

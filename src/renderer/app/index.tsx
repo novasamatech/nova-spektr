@@ -2,7 +2,7 @@ import { createRoot } from 'react-dom/client';
 import { HashRouter as Router } from 'react-router-dom';
 import log from 'electron-log';
 
-import { kernelModel } from '@renderer/shared/core';
+import { kernelModel } from '@shared/core';
 import { App } from './App';
 
 import './i18n';

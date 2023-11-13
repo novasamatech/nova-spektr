@@ -1,10 +1,10 @@
 import { ElementType, useEffect, useState } from 'react';
 
-import { cnTw } from '@renderer/shared/lib/utils';
-import { chainsService } from '@renderer/entities/network';
-import { ChainIcon } from '@renderer/entities/chain';
-import TextBase from '@renderer/shared/ui/Typography/common/TextBase';
-import type { ChainId, Chain as ChainType } from '@renderer/shared/core';
+import { cnTw } from '@shared/lib/utils';
+import { chainsService } from '@entities/network';
+import { ChainIcon } from '@entities/chain';
+import TextBase from '@shared/ui/Typography/common/TextBase';
+import type { ChainId, Chain as ChainType } from '@shared/core';
 
 type WithChain = { chain: ChainType };
 type WithChainId = { chainId: ChainId };

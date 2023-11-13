@@ -1,6 +1,6 @@
 import { app, shell, Menu, MenuItem, MenuItemConstructorOptions } from 'electron';
 
-import { ENVIRONMENT, PLATFORM } from '@shared/constants';
+import { ENVIRONMENT, PLATFORM } from '../shared/constants';
 
 export function buildMenuTemplate(): Menu {
   const template: MenuItemConstructorOptions[] | MenuItem[] = [

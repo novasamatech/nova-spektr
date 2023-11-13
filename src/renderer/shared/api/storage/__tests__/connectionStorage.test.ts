@@ -1,6 +1,6 @@
-import { useConnectionStorage } from '@renderer/shared/api/storage/service/connectionStorage';
-import { ConnectionStatus, ConnectionType } from '@renderer/shared/core';
-import type { ChainId } from '@renderer/shared/core';
+import { useConnectionStorage } from '@shared/api/storage/service/connectionStorage';
+import { ConnectionStatus, ConnectionType } from '@shared/core';
+import type { ChainId } from '@shared/core';
 
 describe('service/storage/connectionStorage', () => {
   const setupDbMock = jest.fn((methodsToMock: any = {}) => {

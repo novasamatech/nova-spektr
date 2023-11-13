@@ -3,16 +3,16 @@ import { useState, useEffect, ReactNode } from 'react';
 import { Trans, TFunction } from 'react-i18next';
 import { useUnit } from 'effector-react';
 
-import { AmountInput, Button, Combobox, Identicon, Input, InputHint, RadioGroup } from '@renderer/shared/ui';
-import { useI18n } from '@renderer/app/providers';
-import { validateAddress } from '@renderer/shared/lib/utils';
-import { useBalance } from '@renderer/entities/asset';
-import { RadioOption } from '@renderer/shared/ui/RadioGroup/common/types';
-import { DropdownOption, ComboboxOption } from '@renderer/shared/ui/Dropdowns/common/types';
+import { AmountInput, Button, Combobox, Identicon, Input, InputHint, RadioGroup } from '@shared/ui';
+import { useI18n } from '@app/providers';
+import { validateAddress } from '@shared/lib/utils';
+import { useBalance } from '@entities/asset';
+import { RadioOption } from '@shared/ui/RadioGroup/common/types';
+import { DropdownOption, ComboboxOption } from '@shared/ui/Dropdowns/common/types';
 import { getPayoutAccountOption } from '../../common/utils';
-import type { Asset, Address, ChainId, AccountId } from '@renderer/shared/core';
-import { RewardsDestination } from '@renderer/shared/core';
-import { walletModel, accountUtils } from '@renderer/entities/wallet';
+import type { Asset, Address, ChainId, AccountId } from '@shared/core';
+import { RewardsDestination } from '@shared/core';
+import { walletModel, accountUtils } from '@entities/wallet';
 
 const getDestinations = (t: TFunction): RadioOption<RewardsDestination>[] => {
   const Options = [

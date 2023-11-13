@@ -1,8 +1,8 @@
-import { BaseModal } from '@renderer/shared/ui';
-import { useToggle } from '@renderer/shared/lib/hooks';
-import { useI18n } from '@renderer/app/providers';
-import { DEFAULT_TRANSITION } from '@renderer/shared/lib/utils';
-import { CurrencyForm } from '@renderer/features/currency';
+import { BaseModal } from '@shared/ui';
+import { useToggle } from '@shared/lib/hooks';
+import { useI18n } from '@app/providers';
+import { DEFAULT_TRANSITION } from '@shared/lib/utils';
+import { CurrencyForm } from '@features/currency';
 
 type Props = {
   onClose: () => void;

@@ -1,7 +1,7 @@
 import { ComponentMeta, ComponentStory } from '@storybook/react';
-import { enGB, ru } from 'date-fns/locale';
+import { enGB } from 'date-fns/locale';
 
-import { LanguageItem } from '@renderer/services/translation/common/types';
+import { LanguageItem } from '@shared/api/translation/lib/types';
 import LanguageSwitcher from './LanguageSwitcher';
 
 const languages: LanguageItem[] = [
@@ -10,12 +10,6 @@ const languages: LanguageItem[] = [
     label: 'English',
     shortLabel: 'EN',
     dateLocale: enGB,
-  },
-  {
-    value: 'ru',
-    label: 'Russian',
-    shortLabel: 'RU',
-    dateLocale: ru,
   },
 ];
 

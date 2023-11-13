@@ -7,12 +7,12 @@ import { useEffect, useState } from 'react';
 import { Command } from '@renderer/components/common/QrCode/QrGenerator/common/constants';
 import QrMultiframeGenerator from '@renderer/components/common/QrCode/QrGenerator/QrMultiframeTxGenerator';
 import { TRANSACTION_BULK } from '@renderer/components/common/QrCode/common/constants';
-import { useI18n } from '@renderer/app/providers';
-import { Transaction, useTransaction } from '@renderer/entities/transaction';
-import { toAddress } from '@renderer/shared/lib/utils';
-import { Button } from '@renderer/shared/ui';
+import { useI18n } from '@app/providers';
+import { Transaction, useTransaction } from '@entities/transaction';
+import { toAddress } from '@shared/lib/utils';
+import { Button } from '@shared/ui';
 import { QrGeneratorContainer } from '@renderer/components/common';
-import type { ChainId, Account } from '@renderer/shared/core';
+import type { ChainId, Account } from '@shared/core';
 import {
   createMultipleSignPayload,
   createSignPayload,

@@ -1,6 +1,6 @@
 import { ComponentMeta, ComponentStory } from '@storybook/react';
 
-import { Icon, Identicon } from '@renderer/shared/ui';
+import { Icon, Identicon } from '@shared/ui';
 import Combobox from './Combobox';
 
 export default {

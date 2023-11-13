@@ -48,7 +48,7 @@ ul:focus-visible {
 .logo-background {
   background-size: cover;
   background-position: center;
-  background-image: url('../assets/images/misc/bg.webp');
+  background-image: url('../shared/assets/images/misc/bg.webp');
   transform: scaleY(-1);
 }
 

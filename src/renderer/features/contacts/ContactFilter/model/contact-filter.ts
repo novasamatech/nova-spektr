@@ -1,7 +1,7 @@
 import { combine, createEvent, createStore, forward } from 'effector';
 
-import { includes } from '@renderer/shared/lib/utils';
-import { contactModel } from '@renderer/entities/contact';
+import { includes } from '@shared/lib/utils';
+import { contactModel } from '@entities/contact';
 
 const componentMounted = createEvent();
 

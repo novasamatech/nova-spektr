@@ -3,12 +3,12 @@ import { combineEvents } from 'patronum';
 import Client from '@walletconnect/sign-client';
 import { EngineTypes } from '@walletconnect/types';
 
-import { walletConnectModel, type InitReconnectParams } from '@renderer/entities/walletConnect';
-import { toAccountId } from '@renderer/shared/lib/utils';
-import { chainsService } from '@renderer/entities/network';
-import { WalletConnectAccount } from '@renderer/shared/core';
+import { walletConnectModel, type InitReconnectParams } from '@entities/walletConnect';
+import { toAccountId } from '@shared/lib/utils';
+import { chainsService } from '@entities/network';
+import { WalletConnectAccount } from '@shared/core';
 import { ReconnectStep } from '../lib/constants';
-import { walletModel } from '@renderer/entities/wallet';
+import { walletModel } from '@entities/wallet';
 import { isConnectedStep, isReconnectingStep, isRejectedStep, isTopicExists } from '../lib/utils';
 import { signModel } from './sign-model';
 import { SignResponse } from '../lib/types';

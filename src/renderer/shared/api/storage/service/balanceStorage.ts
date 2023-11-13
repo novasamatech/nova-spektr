@@ -1,5 +1,5 @@
-import { Balance, BalanceKey } from '@renderer/shared/core/types/balance';
-import { ChainId, AccountId } from '@renderer/shared/core';
+import { Balance, BalanceKey } from '@shared/core/types/balance';
+import { ChainId, AccountId } from '@shared/core';
 import { BalanceDS, IBalanceStorage, TBalance } from '../common/types';
 
 export const useBalanceStorage = (db: TBalance): IBalanceStorage => ({

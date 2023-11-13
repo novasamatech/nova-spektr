@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { ApiPromise } from '@polkadot/api';
 
 import { ValidatorMap, useEra, useValidators } from './';
-import { ChainId } from '@renderer/shared/core';
+import { ChainId } from '@shared/core';
 
 export const useValidatorsMap = (api?: ApiPromise, chainId?: ChainId, isLightClient?: boolean): ValidatorMap => {
   const { subscribeActiveEra } = useEra();

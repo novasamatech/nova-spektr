@@ -4,9 +4,9 @@ import { SubmittableExtrinsic } from '@polkadot/api/types';
 import { HexString } from '@polkadot/util/types';
 import { Type } from '@polkadot/types';
 
-import { parseXcmPalletExtrinsic, parseXTokensExtrinsic, decodeXcm } from '@renderer/shared/api/xcm';
-import { DecodedTransaction, TransactionType } from '@renderer/entities/transaction/model/transaction';
-import type { Address, CallData, ChainId } from '@renderer/shared/core';
+import { parseXcmPalletExtrinsic, parseXTokensExtrinsic, decodeXcm } from '@shared/api/xcm';
+import { DecodedTransaction, TransactionType } from '@entities/transaction/model/transaction';
+import type { Address, CallData, ChainId } from '@shared/core';
 import { ICallDataDecoder } from './common/types';
 import {
   BOND_WITH_CONTROLLER_ARGS_AMOUNT,
@@ -139,17 +139,17 @@ export const useCallDataDecoder = (): ICallDataDecoder => {
     TransactionType,
     (decoded: SubmittableExtrinsic<'promise'>, chainId: ChainId) => Record<string, any>
   > = {
-    [TransactionType.TRANSFER]: (decoded, chainId): Record<string, any> => {
+    [TransactionType.TRANSFER]: (decoded): Record<string, any> => {
       return { dest: decoded.args[0].toString(), value: decoded.args[1].toString() };
     },
-    [TransactionType.ASSET_TRANSFER]: (decoded, chainId): Record<string, any> => {
+    [TransactionType.ASSET_TRANSFER]: (decoded): Record<string, any> => {
       return {
         assetId: decoded.args[0].toString(),
         dest: decoded.args[1].toString(),
         value: decoded.args[2].toString(),
       };
     },
-    [TransactionType.ORML_TRANSFER]: (decoded, chainId): Record<string, any> => {
+    [TransactionType.ORML_TRANSFER]: (decoded): Record<string, any> => {
       return {
         dest: decoded.args[0].toString(),
         assetId: decoded.args[1].toString(),
@@ -200,7 +200,7 @@ export const useCallDataDecoder = (): ICallDataDecoder => {
 
       return decodeXcm(chainId, parsedData);
     },
-    [TransactionType.BOND]: (decoded, chainId): Record<string, any> => {
+    [TransactionType.BOND]: (decoded): Record<string, any> => {
       const args: Record<string, any> = {};
       let index = 0;
       if (decoded.args.length === BOND_WITH_CONTROLLER_ARGS_AMOUNT) {
@@ -219,25 +219,25 @@ export const useCallDataDecoder = (): ICallDataDecoder => {
 
       return args;
     },
-    [TransactionType.UNSTAKE]: (decoded, chainId): Record<string, any> => {
+    [TransactionType.UNSTAKE]: (decoded): Record<string, any> => {
       return { value: decoded.args[0].toString() };
     },
     [TransactionType.CHILL]: (): Record<string, any> => {
       return {};
     },
-    [TransactionType.RESTAKE]: (decoded, chainId): Record<string, any> => {
+    [TransactionType.RESTAKE]: (decoded): Record<string, any> => {
       return { value: decoded.args[0].toString() };
     },
     [TransactionType.REDEEM]: (): Record<string, any> => {
       return {};
     },
-    [TransactionType.NOMINATE]: (decoded, chainId): Record<string, any> => {
+    [TransactionType.NOMINATE]: (decoded): Record<string, any> => {
       return { targets: (decoded.args[0] as any).map((a: Type) => a.toString()) };
     },
-    [TransactionType.STAKE_MORE]: (decoded, chainId): Record<string, any> => {
+    [TransactionType.STAKE_MORE]: (decoded): Record<string, any> => {
       return { maxAdditional: decoded.args[0].toString() };
     },
-    [TransactionType.DESTINATION]: (decoded, chainId): Record<string, any> => {
+    [TransactionType.DESTINATION]: (decoded): Record<string, any> => {
       const args: Record<string, any> = {};
       try {
         args.payee = JSON.parse(decoded.args[0].toString());
@@ -248,10 +248,10 @@ export const useCallDataDecoder = (): ICallDataDecoder => {
 
       return args;
     },
-    [TransactionType.BATCH_ALL]: (decoded, chainId): Record<string, any> => {
+    [TransactionType.BATCH_ALL]: (decoded): Record<string, any> => {
       return { calls: decoded.args[0].toHex() };
     },
-    [TransactionType.MULTISIG_AS_MULTI]: (decoded, chainId): Record<string, any> => {
+    [TransactionType.MULTISIG_AS_MULTI]: (decoded): Record<string, any> => {
       if (decoded.args.length === OLD_MULTISIG_ARGS_AMOUNT) {
         return {
           threshold: decoded.args[0],
@@ -271,7 +271,7 @@ export const useCallDataDecoder = (): ICallDataDecoder => {
         maxWeight: decoded.args[4],
       };
     },
-    [TransactionType.MULTISIG_APPROVE_AS_MULTI]: (decoded, chainId): Record<string, any> => {
+    [TransactionType.MULTISIG_APPROVE_AS_MULTI]: (decoded): Record<string, any> => {
       return {
         threshold: decoded.args[0],
         otherSignatories: decoded.args[1],
@@ -280,7 +280,7 @@ export const useCallDataDecoder = (): ICallDataDecoder => {
         maxWeight: decoded.args[4],
       };
     },
-    [TransactionType.MULTISIG_CANCEL_AS_MULTI]: (decoded, chainId): Record<string, any> => {
+    [TransactionType.MULTISIG_CANCEL_AS_MULTI]: (decoded): Record<string, any> => {
       return {
         threshold: decoded.args[0],
         otherSignatories: decoded.args[1],

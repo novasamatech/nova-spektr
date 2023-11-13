@@ -2,12 +2,12 @@ import { ApiPromise } from '@polkadot/api';
 import { UnsignedTransaction } from '@substrate/txwrapper-polkadot';
 import { useEffect, useState, ComponentProps } from 'react';
 
-import { useI18n, useMatrix, useMultisigChainContext } from '@renderer/app/providers';
-import { useMultisigTx, useMultisigEvent } from '@renderer/entities/multisig';
-import { toAccountId } from '@renderer/shared/lib/utils';
-import { useToggle } from '@renderer/shared/lib/hooks';
-import { Animation, Button, StatusModal } from '@renderer/shared/ui';
-import type { Account, HexString } from '@renderer/shared/core';
+import { useI18n, useMatrix, useMultisigChainContext } from '@app/providers';
+import { useMultisigTx, useMultisigEvent } from '@entities/multisig';
+import { toAccountId } from '@shared/lib/utils';
+import { useToggle } from '@shared/lib/hooks';
+import { Animation, Button, StatusModal } from '@shared/ui';
+import type { Account, HexString } from '@shared/core';
 import {
   MultisigEvent,
   MultisigTxFinalStatus,
@@ -17,7 +17,7 @@ import {
   MultisigTransaction,
   useTransaction,
   ExtrinsicResultParams,
-} from '@renderer/entities/transaction';
+} from '@entities/transaction';
 
 type ResultProps = Pick<ComponentProps<typeof StatusModal>, 'title' | 'content' | 'description'>;
 

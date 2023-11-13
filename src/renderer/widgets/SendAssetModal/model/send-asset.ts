@@ -12,12 +12,12 @@ import {
   getVersionedAccountLocation,
   estimateRequiredDestWeight,
   getVersionedDestinationLocation,
-} from '@renderer/shared/api/xcm';
-import { xcmModel } from '@renderer/entities/xcm';
+} from '@shared/api/xcm';
+import { xcmModel } from '@entities/xcm';
 import { getParachainId } from '@renderer/services/dataVerification/dataVerification';
-import { ExtendedChain } from '@renderer/entities/network';
-import { toLocalChainId } from '@renderer/shared/lib/utils';
-import type { AccountId, Asset, Chain } from '@renderer/shared/core';
+import { ExtendedChain } from '@entities/network';
+import { toLocalChainId } from '@shared/lib/utils';
+import type { AccountId, Asset, Chain } from '@shared/core';
 
 const xcmConfigRequested = createEvent();
 const destinationChainSelected = createEvent<ExtendedChain>();

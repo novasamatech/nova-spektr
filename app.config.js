@@ -31,7 +31,7 @@ exports.APP_CONFIG = {
   FOLDERS: {
     ENTRY_POINTS: {
       MAIN: 'src/main/index.ts',
-      BRIDGE: 'src/shared/bridge.ts',
+      BRIDGE: 'src/main/shared/bridge.ts',
       RENDERER: 'src/renderer/app/index.tsx',
     },
 

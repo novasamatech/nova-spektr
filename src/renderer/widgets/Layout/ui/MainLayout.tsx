@@ -1,7 +1,7 @@
 import { Outlet } from 'react-router-dom';
 
-import { Navigation } from '@renderer/features/navigation';
-import { WalletSelect, SelectWalletPairing } from '@renderer/features/wallets';
+import { Navigation } from '@features/navigation';
+import { WalletSelect, SelectWalletPairing } from '@features/wallets';
 
 export const MainLayout = () => (
   <div className="flex h-screen">

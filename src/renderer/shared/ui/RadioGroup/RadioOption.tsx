@@ -1,9 +1,9 @@
 import { Fragment, PropsWithChildren } from 'react';
 import { RadioGroup as HeadlessRadioGroup } from '@headlessui/react';
 
-import { cnTw } from '@renderer/shared/lib/utils';
+import { cnTw } from '@shared/lib/utils';
 import { RadioOption } from './common/types';
-import { SmallTitleText } from '@renderer/shared/ui';
+import { SmallTitleText } from '@shared/ui';
 import './RadioGroup.css';
 
 type Props = {

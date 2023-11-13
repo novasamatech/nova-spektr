@@ -1,12 +1,12 @@
 import { TFunction } from 'react-i18next';
 
-import { ExtendedChain } from '@renderer/entities/network';
+import { ExtendedChain } from '@entities/network';
 import { NetworkSelector } from '../NetworkSelector/NetworkSelector';
-import { BodyText, StatusLabel, FootnoteText, HelpText } from '@renderer/shared/ui';
-import { useI18n } from '@renderer/app/providers';
-import { ChainIcon } from '@renderer/entities/chain';
-import { ConnectionStatus, ConnectionType } from '@renderer/shared/core';
-import type { RpcNode } from '@renderer/shared/core';
+import { BodyText, StatusLabel, FootnoteText, HelpText } from '@shared/ui';
+import { useI18n } from '@app/providers';
+import { ChainIcon } from '@entities/chain';
+import { ConnectionStatus, ConnectionType } from '@shared/core';
+import type { RpcNode } from '@shared/core';
 import './NetworkItem.css';
 
 const Status = {

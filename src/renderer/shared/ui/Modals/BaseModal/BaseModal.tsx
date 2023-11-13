@@ -1,9 +1,9 @@
 import { Fragment, PropsWithChildren, ReactNode } from 'react';
 import { Dialog, Transition } from '@headlessui/react';
 
-import { cnTw } from '@renderer/shared/lib/utils';
-import { ModalBackdrop, ModalTransition } from '@renderer/shared/ui/Modals/common';
-import { HeaderTitleText, IconButton } from '@renderer/shared/ui';
+import { cnTw } from '@shared/lib/utils';
+import { ModalBackdrop, ModalTransition } from '@shared/ui/Modals/common';
+import { HeaderTitleText, IconButton } from '@shared/ui';
 
 // HINT: There are no modals with description right now
 // HeadlessUI provides description and title with some a11y features

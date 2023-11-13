@@ -4,13 +4,13 @@ import { useEffect, useRef } from 'react';
 import { u8aToHex } from '@polkadot/util';
 
 import RaptorFrame from './RaptorFrame';
-import { cnTw } from '@renderer/shared/lib/utils';
-import { useI18n } from '@renderer/app/providers';
+import { cnTw } from '@shared/lib/utils';
+import { useI18n } from '@app/providers';
 import { QR_READER_ERRORS } from '../common/errors';
 import { ErrorFields, FRAME_KEY, SIGNED_TRANSACTION_BULK } from '../common/constants';
 import { DecodeCallback, ErrorObject, Progress, QrError, VideoInput } from '../common/types';
 import { CRYPTO_SR25519 } from '../QrGenerator/common/constants';
-import type { HexString } from '@renderer/shared/core';
+import type { HexString } from '@shared/core';
 
 const enum Status {
   'FIRST_FRAME',

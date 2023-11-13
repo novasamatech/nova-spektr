@@ -1,4 +1,4 @@
-import type { PathValue } from './paths';
+import type { PathType } from './paths';
 
 /**
  * Create route link with url parameters and query string
@@ -9,7 +9,7 @@ import type { PathValue } from './paths';
  */
 type Param = Record<string, string | number>;
 type Query = Record<string, (string | number)[]>;
-export const createLink = (path: PathValue, params: Param, query: Query = {}): string => {
+export const createLink = (path: PathType, params: Param, query: Query = {}): string => {
   const urlWithParams = Object.entries(params).reduce<string>((acc, [key, value]) => {
     return acc.replace(new RegExp(`:${key}`), value.toString());
   }, path);

@@ -3,14 +3,14 @@ import { BN } from '@polkadot/util';
 import { useEffect, useState } from 'react';
 import { useUnit } from 'effector-react';
 
-import { useI18n } from '@renderer/app/providers';
-import { useBalance } from '@renderer/entities/asset';
-import { Transaction, TransactionType, OperationError } from '@renderer/entities/transaction';
-import type { Account, Asset, Balance as AccountBalance, ChainId, AccountId, Wallet } from '@renderer/shared/core';
-import { formatAmount, unlockingAmount, toAddress, nonNullable } from '@renderer/shared/lib/utils';
-import { StakingMap, useStakingData } from '@renderer/entities/staking';
-import { OperationFooter, OperationHeader } from '@renderer/features/operation';
-import { walletModel, walletUtils, accountUtils } from '@renderer/entities/wallet';
+import { useI18n } from '@app/providers';
+import { useBalance } from '@entities/asset';
+import { Transaction, TransactionType, OperationError } from '@entities/transaction';
+import type { Account, Asset, Balance as AccountBalance, ChainId, AccountId, Wallet } from '@shared/core';
+import { formatAmount, unlockingAmount, toAddress, nonNullable } from '@shared/lib/utils';
+import { StakingMap, useStakingData } from '@entities/staking';
+import { OperationFooter, OperationHeader } from '@features/operation';
+import { walletModel, walletUtils, accountUtils } from '@entities/wallet';
 import { OperationForm } from '../../components';
 import {
   getRestakeAccountOption,

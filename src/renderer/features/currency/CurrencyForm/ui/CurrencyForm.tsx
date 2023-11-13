@@ -2,10 +2,10 @@ import { FormEvent, useEffect } from 'react';
 import { useForm } from 'effector-forms';
 import { useUnit } from 'effector-react';
 
-import { Switch, FootnoteText, HelpText, Button, Select } from '@renderer/shared/ui';
-import { useI18n } from '@renderer/app/providers';
-import { DropdownOption } from '@renderer/shared/ui/Dropdowns/common/types';
-import { CurrencyItem } from '@renderer/shared/api/price-provider';
+import { Switch, FootnoteText, HelpText, Button, Select } from '@shared/ui';
+import { useI18n } from '@app/providers';
+import { DropdownOption } from '@shared/ui/Dropdowns/common/types';
+import { CurrencyItem } from '@shared/api/price-provider';
 import { Callbacks, currencyFormModel } from '../model/currency-form';
 
 const getCurrencyOption = (currency: CurrencyItem): DropdownOption<CurrencyItem> => ({

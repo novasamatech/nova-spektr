@@ -1,9 +1,9 @@
 import { render, screen, act } from '@testing-library/react';
 
 import { Credentials } from '../Credentials';
-import { useMatrix } from '@renderer/app/providers';
+import { useMatrix } from '@app/providers';
 
-jest.mock('@renderer/app/providers', () => ({
+jest.mock('@app/providers', () => ({
   useI18n: jest.fn().mockReturnValue({
     t: (key: string) => key,
   }),

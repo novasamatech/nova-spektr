@@ -1,5 +1,5 @@
 import { Variant } from './types';
-import { IconNames } from '@renderer/shared/ui/Icon/data';
+import { IconNames } from '@shared/ui/Icon/data';
 
 export const IconName: Record<Variant, IconNames> = {
   info: 'info',

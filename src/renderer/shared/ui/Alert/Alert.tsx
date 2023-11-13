@@ -1,7 +1,7 @@
 import { PropsWithChildren, Children } from 'react';
 
-import { cnTw } from '@renderer/shared/lib/utils';
-import { IconButton, HeadlineText, Icon } from '@renderer/shared/ui';
+import { cnTw } from '@shared/lib/utils';
+import { IconButton, HeadlineText, Icon } from '@shared/ui';
 import { Variant } from './common/types';
 import { ViewStyle, IconStyle, IconName } from './common/constants';
 import AlertItem from './AlertItem';

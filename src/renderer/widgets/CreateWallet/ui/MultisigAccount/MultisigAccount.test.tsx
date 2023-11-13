@@ -3,11 +3,11 @@ import { fork } from 'effector';
 import noop from 'lodash/noop';
 import { Provider } from 'effector-react';
 
-import { contactModel } from '@renderer/entities/contact';
-import { walletModel } from '@renderer/entities/wallet';
+import { contactModel } from '@entities/contact';
+import { walletModel } from '@entities/wallet';
 import { MultisigAccount } from './MultisigAccount';
 
-jest.mock('@renderer/app/providers', () => ({
+jest.mock('@app/providers', () => ({
   useI18n: jest.fn().mockReturnValue({
     t: (key: string) => key,
   }),
@@ -20,17 +20,17 @@ jest.mock('@renderer/app/providers', () => ({
   }),
 }));
 
-jest.mock('@renderer/entities/network', () => ({
+jest.mock('@entities/network', () => ({
   chainsService: {
     getChainsData: jest.fn().mockResolvedValue([]),
   },
 }));
 
-jest.mock('@renderer/widgets/MatrixModal', () => ({
+jest.mock('@widgets/MatrixModal', () => ({
   MatrixLoginModal: () => <span>matrixModal</span>,
 }));
 
-jest.mock('@renderer/entities/transaction', () => ({
+jest.mock('@entities/transaction', () => ({
   OperationResult: () => <span>operationResult</span>,
 }));
 

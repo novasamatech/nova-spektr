@@ -3,7 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useStore } from 'effector-react';
 
 import * as editGuardModel from '../model/edit-guard';
-import type { Contact } from '@renderer/shared/core';
+import type { Contact } from '@shared/core';
 
 type Props = {
   redirectPath: string;

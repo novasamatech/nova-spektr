@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 
-import { SearchInput } from '@renderer/shared/ui';
-import { useI18n } from '@renderer/app/providers';
+import { SearchInput } from '@shared/ui';
+import { useI18n } from '@app/providers';
 import { filterModel } from '../model/contact-filter';
 
 export const ContactFilter = () => {

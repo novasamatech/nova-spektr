@@ -1,8 +1,8 @@
-import { InfoPopover, Icon } from '@renderer/shared/ui';
-import { cnTw } from '@renderer/shared/lib/utils';
+import { InfoPopover, Icon } from '@shared/ui';
+import { cnTw } from '@shared/lib/utils';
 import { AccountAddressProps, AccountAddress, getAddress } from '../AccountAddress/AccountAddress';
 import { useAddressInfo } from '../../lib/useAddressInfo';
-import type { Explorer } from '@renderer/shared/core';
+import type { Explorer } from '@shared/core';
 
 type Props = {
   showMatrix?: boolean;

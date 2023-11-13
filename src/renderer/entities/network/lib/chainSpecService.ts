@@ -2,7 +2,7 @@ import { WellKnownChain } from '@substrate/connect';
 
 import { Chains } from './common/constants';
 import { IChainSpecService } from './common/types';
-import type { ChainId } from '@renderer/shared/core';
+import type { ChainId } from '@shared/core';
 
 const KnownChains: Record<ChainId, WellKnownChain> = {
   [Chains.POLKADOT]: WellKnownChain.polkadot,

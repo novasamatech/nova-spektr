@@ -1,7 +1,7 @@
 import { createStore, createEvent, sample, createApi, createEffect, forward } from 'effector';
 import { NavigateFunction } from 'react-router-dom';
 
-import { walletPairingModel } from '@renderer/features/wallets';
+import { walletPairingModel } from '@features/wallets';
 
 const completed = createEvent();
 const rejected = createEvent();

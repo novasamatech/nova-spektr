@@ -1,25 +1,16 @@
 import { TFunction } from 'react-i18next';
 
-import { accountUtils, walletUtils } from '@renderer/entities/wallet';
+import { accountUtils, walletUtils } from '@entities/wallet';
+import { formatSectionAndMethod, toAddress } from '@shared/lib/utils';
+import { TransferTypes, XcmTypes } from '@entities/transaction';
+import type { Account, AccountId, ChainId, Contact, Explorer, HexString, Signatory, Wallet } from '@shared/core';
 import {
   DecodedTransaction,
   MultisigEvent,
   MultisigTransaction,
   Transaction,
   TransactionType,
-} from '@renderer/entities/transaction/model/transaction';
-import { formatSectionAndMethod, toAddress } from '@renderer/shared/lib/utils';
-import { TransferTypes, XcmTypes } from '@renderer/entities/transaction';
-import type {
-  Account,
-  AccountId,
-  ChainId,
-  Contact,
-  Explorer,
-  HexString,
-  Signatory,
-  Wallet,
-} from '@renderer/shared/core';
+} from '@entities/transaction/model/transaction';
 
 export const TRANSACTION_UNKNOWN = 'operations.titles.unknown';
 

@@ -1,6 +1,6 @@
-import { useI18n } from '@renderer/app/providers';
-import { cnTw, secondsToMinutes } from '@renderer/shared/lib/utils';
-import { CaptionText, FootnoteText } from '@renderer/shared/ui';
+import { useI18n } from '@app/providers';
+import { cnTw, secondsToMinutes } from '@shared/lib/utils';
+import { CaptionText, FootnoteText } from '@shared/ui';
 
 type Props = {
   countdown: number;

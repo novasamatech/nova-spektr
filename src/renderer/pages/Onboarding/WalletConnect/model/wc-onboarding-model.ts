@@ -1,6 +1,6 @@
 import { createEvent, createStore, sample } from 'effector';
 
-import { walletConnectModel } from '@renderer/entities/walletConnect';
+import { walletConnectModel } from '@entities/walletConnect';
 import { Step } from '../lib/const';
 
 const $step = createStore(Step.CLOSED).reset([walletConnectModel.events.disconnectCurrentSessionStarted]);

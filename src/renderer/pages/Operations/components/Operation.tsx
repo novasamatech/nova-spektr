@@ -1,19 +1,19 @@
 import { format } from 'date-fns';
 
-import { useI18n } from '@renderer/app/providers';
+import { useI18n } from '@app/providers';
 import { TransactionTitle } from './TransactionTitle/TransactionTitle';
-import { FootnoteText, Accordion } from '@renderer/shared/ui';
+import { FootnoteText, Accordion } from '@shared/ui';
 import OperationStatus from './OperationStatus';
 import OperationFullInfo from './OperationFullInfo';
-import { MultisigTransactionDS } from '@renderer/shared/api/storage';
-import { useMultisigEvent } from '@renderer/entities/multisig';
-import { ChainTitle, XcmChains } from '@renderer/entities/chain';
+import { MultisigTransactionDS } from '@shared/api/storage';
+import { useMultisigEvent } from '@entities/multisig';
+import { ChainTitle, XcmChains } from '@entities/chain';
 import { getTransactionAmount } from '../common/utils';
-import { isXcmTransaction } from '@renderer/entities/transaction';
-import type { MultisigAccount } from '@renderer/shared/core';
-import { chainsService } from '@renderer/entities/network';
-import { getAssetById } from '@renderer/shared/lib/utils';
-import { AssetBalance } from '@renderer/entities/asset';
+import { isXcmTransaction } from '@entities/transaction';
+import type { MultisigAccount } from '@shared/core';
+import { chainsService } from '@entities/network';
+import { getAssetById } from '@shared/lib/utils';
+import { AssetBalance } from '@entities/asset';
 
 type Props = {
   tx: MultisigTransactionDS;

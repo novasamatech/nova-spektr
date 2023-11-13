@@ -1,8 +1,8 @@
 import { useUnit } from 'effector-react';
 
-import { FootnoteText, Shimmering } from '@renderer/shared/ui';
+import { FootnoteText, Shimmering } from '@shared/ui';
 import { currencyModel } from '../model/currency-model';
-import { cnTw } from '@renderer/shared/lib/utils';
+import { cnTw } from '@shared/lib/utils';
 import { Price } from './Price';
 
 type Props = {

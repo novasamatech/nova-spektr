@@ -1,8 +1,8 @@
 import { useNavigate } from 'react-router-dom';
 
-import { Paths, createLink } from '@renderer/shared/routes';
-import { IconButton } from '@renderer/shared/ui';
-import { Contact } from '@renderer/shared/core';
+import { Paths, createLink } from '@shared/routes';
+import { IconButton } from '@shared/ui';
+import { Contact } from '@shared/core';
 
 type Props = {
   contactId: Contact['id'];

@@ -1,7 +1,7 @@
 import { IndexableType, Table } from 'dexie';
 
 import { dexieStorage } from './dexie';
-import type { NoID } from '@renderer/shared/core';
+import type { NoID } from '@shared/core';
 
 // TODO: think about throwing errors instead of returning value from catch
 class StorageService<T extends { id: K }, K extends IndexableType> {

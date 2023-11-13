@@ -1,11 +1,11 @@
 import { render, screen } from '@testing-library/react';
 import noop from 'lodash/noop';
 
-import { ExtendedChain } from '@renderer/entities/network';
+import { ExtendedChain } from '@entities/network';
 import { NetworkItem } from './NetworkItem';
-import { ConnectionStatus, ConnectionType } from '@renderer/shared/core';
+import { ConnectionStatus, ConnectionType } from '@shared/core';
 
-jest.mock('@renderer/app/providers', () => ({
+jest.mock('@app/providers', () => ({
   useI18n: jest.fn().mockReturnValue({
     t: (key: string) => key,
   }),

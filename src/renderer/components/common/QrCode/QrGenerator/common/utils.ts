@@ -4,7 +4,7 @@ import qrcode from 'qrcode-generator';
 import { Encoder } from 'raptorq';
 
 import { Command, CRYPTO_SR25519, CRYPTO_STUB, FRAME_SIZE, SUBSTRATE_ID } from './constants';
-import type { ChainId } from '@renderer/shared/core';
+import type { ChainId } from '@shared/core';
 
 const MULTIPART = new Uint8Array([0]);
 

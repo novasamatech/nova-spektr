@@ -3,16 +3,16 @@ import { VoidFn } from '@polkadot/api/types';
 import { Event } from '@polkadot/types/interfaces';
 import { useUnit } from 'effector-react';
 
-import { useChainSubscription } from '@renderer/entities/chain';
+import { useChainSubscription } from '@entities/chain';
 import { useNetworkContext } from '../NetworkContext';
-import { useMultisigTx, useMultisigEvent } from '@renderer/entities/multisig';
-import { MultisigTxFinalStatus, SigningStatus } from '@renderer/entities/transaction';
-import { toAddress, getCreatedDateFromApi } from '@renderer/shared/lib/utils';
-import { useDebounce, useTaskQueue } from '@renderer/shared/lib/hooks';
-import { Task } from '@renderer/shared/lib/hooks/useTaskQueue';
-import type { MultisigAccount, ChainId } from '@renderer/shared/core';
-import { ConnectionStatus } from '@renderer/shared/core';
-import { walletModel, accountUtils } from '@renderer/entities/wallet';
+import { useMultisigTx, useMultisigEvent } from '@entities/multisig';
+import { MultisigTxFinalStatus, SigningStatus } from '@entities/transaction';
+import { toAddress, getCreatedDateFromApi } from '@shared/lib/utils';
+import { useDebounce, useTaskQueue } from '@shared/lib/hooks';
+import { Task } from '@shared/lib/hooks/useTaskQueue';
+import type { MultisigAccount, ChainId } from '@shared/core';
+import { ConnectionStatus } from '@shared/core';
+import { walletModel, accountUtils } from '@entities/wallet';
 
 type MultisigChainContextProps = {
   addTask: (task: Task) => void;

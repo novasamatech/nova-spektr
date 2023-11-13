@@ -1,9 +1,9 @@
 import { PropsWithChildren } from 'react';
 
-import { Button, FootnoteText, InfoLink, SmallTitleText, Icon, Shimmering, Countdown } from '@renderer/shared/ui';
-import { useI18n } from '@renderer/app/providers';
+import { Button, FootnoteText, InfoLink, SmallTitleText, Icon, Shimmering, Countdown } from '@shared/ui';
+import { useI18n } from '@app/providers';
 import { getMetadataPortalMetadataUrl, TROUBLESHOOTING_URL } from '../common/constants';
-import type { ChainId } from '@renderer/shared/core';
+import type { ChainId } from '@shared/core';
 
 type Props = {
   countdown: number;

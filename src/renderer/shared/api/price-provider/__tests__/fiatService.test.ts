@@ -1,5 +1,5 @@
 import { fiatService } from '../service/fiatService';
-import { localStorageService } from '@renderer/shared/api/local-storage';
+import { localStorageService } from '@shared/api/local-storage';
 import { CURRENCY_CODE_KEY, FIAT_FLAG_KEY, PRICE_PROVIDER_KEY, ASSETS_PRICES_KEY } from '../common/constants';
 
 describe('shared/api/price-provider/services/fiatService', () => {

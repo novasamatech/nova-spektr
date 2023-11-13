@@ -1,8 +1,8 @@
 import { useEffect, useState, ReactNode } from 'react';
 
-import { ExtendedChain } from '@renderer/entities/network';
-import { CaptionText, Counter, Accordion } from '@renderer/shared/ui';
-import { ConnectionType, ConnectionStatus } from '@renderer/shared/core';
+import { ExtendedChain } from '@entities/network';
+import { CaptionText, Counter, Accordion } from '@shared/ui';
+import { ConnectionType, ConnectionStatus } from '@shared/core';
 
 type Props = {
   title: string;

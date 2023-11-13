@@ -2,17 +2,17 @@ import { format } from 'date-fns';
 import { TFunction, Trans } from 'react-i18next';
 import { useUnit } from 'effector-react';
 
-import { BodyText, FootnoteText, Identicon } from '@renderer/shared/ui';
+import { BodyText, FootnoteText, Identicon } from '@shared/ui';
 import {
   MultisigAccountInvitedNotification,
   MultisigNotification,
   MultisigNotificationType,
   Notification,
 } from '../../model/notification';
-import { useI18n } from '@renderer/app/providers';
-import { WalletIcon, walletModel } from '@renderer/entities/wallet';
-import { Wallet } from '@renderer/shared/core';
-import { toAddress } from '@renderer/shared/lib/utils';
+import { useI18n } from '@app/providers';
+import { WalletIcon, walletModel } from '@entities/wallet';
+import { Wallet } from '@shared/core';
+import { toAddress } from '@shared/lib/utils';
 
 const NotificationBody = {
   [MultisigNotificationType.ACCOUNT_INVITED]: (n: Notification, t: TFunction, wallet?: Wallet) => {

@@ -3,7 +3,7 @@ import { RadioGroup as HeadlessRadioGroup } from '@headlessui/react';
 
 import Option from './RadioOption';
 import { RadioOption, RadioResult } from './common/types';
-import { LabelText } from '@renderer/shared/ui';
+import { LabelText } from '@shared/ui';
 import './RadioGroup.css';
 
 type Props = {

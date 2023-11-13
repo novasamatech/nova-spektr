@@ -5,10 +5,10 @@ import windowStateKeeper from 'electron-window-state';
 import * as path from 'path';
 import * as fs from 'fs';
 
-import { ENVIRONMENT } from '@shared/constants';
-import { APP_CONFIG } from '../../app.config';
+import { APP_CONFIG } from '@/app.config';
+import { ENVIRONMENT } from './shared/constants';
 import { createWindow } from './factories/create';
-import { buildMenuTemplate } from '@main/vectormenu';
+import { buildMenuTemplate } from './factories/menu';
 
 const { MAIN, TITLE } = APP_CONFIG;
 const MAX_LOG_FILES_TO_KEEP = 10;

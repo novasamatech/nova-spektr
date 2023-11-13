@@ -2,8 +2,8 @@ import { Identicon as PolkadotIdenticon } from '@polkadot/react-identicon';
 import { IconTheme } from '@polkadot/react-identicon/types';
 import { useLayoutEffect, useRef, memo, SyntheticEvent } from 'react';
 
-import { cnTw, copyToClipboard } from '@renderer/shared/lib/utils';
-import { Address } from '@renderer/shared/core';
+import { cnTw, copyToClipboard } from '@shared/lib/utils';
+import { Address } from '@shared/core';
 import Icon from '../Icon/Icon';
 
 type Props = {
