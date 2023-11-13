@@ -3,9 +3,9 @@ import { useUnit } from 'effector-react';
 import { ReactNode, useEffect } from 'react';
 
 import { walletSelectModel } from '../model/wallet-select-model';
-import { SmallTitleText, SearchInput } from '@renderer/shared/ui';
-import { WalletFamily } from '@renderer/shared/core';
-import { useI18n } from '@renderer/app/providers';
+import { SmallTitleText, SearchInput } from '@shared/ui';
+import { WalletFamily } from '@shared/core';
+import { useI18n } from '@app/providers';
 import { WalletGroup } from './WalletGroup';
 
 type Props = {

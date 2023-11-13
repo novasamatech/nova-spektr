@@ -1,7 +1,7 @@
-import { Accordion, CaptionText, Icon } from '@renderer/shared/ui';
-import { useI18n } from '@renderer/app/providers';
-import { Wallet, WalletFamily, WalletType } from '@renderer/shared/core';
-import { WalletIcon, walletModel, WalletCardMd } from '@renderer/entities/wallet';
+import { Accordion, CaptionText, Icon } from '@shared/ui';
+import { useI18n } from '@app/providers';
+import { Wallet, WalletFamily, WalletType } from '@shared/core';
+import { WalletIcon, walletModel, WalletCardMd } from '@entities/wallet';
 import { WalletFiatBalance } from './WalletFiatBalance';
 import { walletSelectModel } from '../model/wallet-select-model';
 

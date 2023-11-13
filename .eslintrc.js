@@ -4,6 +4,7 @@ const path = require('path');
 const prettierConfig = fs.readFileSync('./.prettierrc', 'utf8');
 const prettierOptions = JSON.parse(prettierConfig);
 const checkI18n = process.env.I18N === 'true';
+const localePath = path.resolve('./src/renderer/shared/api/translation/locales/en.json');
 
 module.exports = {
   root: true,
@@ -41,11 +42,14 @@ module.exports = {
     'import/resolver': {
       alias: {
         map: [
-          ['@main', './src/main/'],
-          ['@shared', './src/shared/'],
+          ['@', './'],
           ['@renderer', './src/renderer/'],
-          ['@images', './src/renderer/assets/images/'],
-          ['@video', './src/renderer/assets/video/'],
+          ['@app', './src/renderer/app/'],
+          ['@pages', './src/renderer/pages/'],
+          ['@widgets', './src/renderer/widgets/'],
+          ['@features', './src/renderer/features/'],
+          ['@entities', './src/renderer/entities/'],
+          ['@shared', './src/renderer/shared/'],
         ],
         extensions: ['.js', '.jsx', '.ts', '.tsx', '.json'],
       },
@@ -82,8 +86,8 @@ module.exports = {
         unnamedComponents: 'arrow-function',
       },
     ],
-    'i18n-json/identical-keys': ['error', { filePath: path.resolve('./src/shared/locale/en.json') }],
-    'i18n-json/identical-placeholders': ['error', { filePath: path.resolve('./src/shared/locale/en.json') }],
+    'i18n-json/identical-keys': ['error', { filePath: localePath }],
+    'i18n-json/identical-placeholders': ['error', { filePath: localePath }],
     'i18next/no-literal-string': [
       checkI18n ? 'error' : 'off',
       {

@@ -1,8 +1,8 @@
 import { combine } from 'effector';
 
-import { accountUtils, walletModel } from '@renderer/entities/wallet';
-import { walletSelectModel } from '@renderer/features/wallets';
-import { dictionary } from '@renderer/shared/lib/utils';
+import { accountUtils, walletModel } from '@entities/wallet';
+import { walletSelectModel } from '@features/wallets';
+import { dictionary } from '@shared/lib/utils';
 import type { MultishardMap } from '../lib/types';
 import type {
   Account,
@@ -13,7 +13,7 @@ import type {
   ChainAccount,
   ChainId,
   AccountId,
-} from '@renderer/shared/core';
+} from '@shared/core';
 
 const $accounts = combine(
   {

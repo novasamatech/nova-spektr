@@ -4,9 +4,9 @@ import { SeedInfo } from '@renderer/components/common/QrCode/common/types';
 import ScanStep from './ScanStep/ScanStep';
 import { ManageMultishard } from './ManageMultishard/ManageMultishard';
 import { ManageSingleshard } from './ManageSingleshard/ManageSingleshard';
-import { BaseModal } from '@renderer/shared/ui';
-import { DEFAULT_TRANSITION } from '@renderer/shared/lib/utils';
-import { useToggle } from '@renderer/shared/lib/hooks';
+import { BaseModal } from '@shared/ui';
+import { DEFAULT_TRANSITION } from '@shared/lib/utils';
+import { useToggle } from '@shared/lib/hooks';
 
 const enum Step {
   SCAN,

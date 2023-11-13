@@ -1,8 +1,9 @@
 import { InitOptions } from 'i18next';
 
-import { LanguageOptions, LocaleFiles, Locales } from './common/constants';
-import { ITranslationService, LanguageItem } from './common/types';
+import { LanguageOptions, Locales } from './lib/constants';
+import { ITranslationService, LanguageItem } from './lib/types';
 import { useLocaleStorage } from './localeStorage';
+import { LocaleFiles } from './locales';
 
 export const useTranslationService = (): ITranslationService => {
   const { getLocale, setLocale } = useLocaleStorage();

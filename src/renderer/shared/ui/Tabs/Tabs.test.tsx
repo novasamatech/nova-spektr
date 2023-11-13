@@ -4,7 +4,7 @@ import userEvent from '@testing-library/user-event';
 import { Tabs } from './Tabs';
 import { TabItem } from './common/types';
 
-jest.mock('@renderer/app/providers', () => ({
+jest.mock('@app/providers', () => ({
   useMatrix: jest.fn(),
 }));
 

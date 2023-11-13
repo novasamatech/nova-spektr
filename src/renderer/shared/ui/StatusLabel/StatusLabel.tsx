@@ -1,8 +1,8 @@
 import { ReactNode } from 'react';
 
-import { cnTw } from '@renderer/shared/lib/utils';
-import { FootnoteText } from '@renderer/shared/ui';
-import { HelpText } from '@renderer/shared/ui/Typography';
+import { cnTw } from '@shared/lib/utils';
+import { FootnoteText } from '@shared/ui';
+import { HelpText } from '@shared/ui/Typography';
 import { DotStyles, TitleStyles } from './common/constants';
 import { Variant } from './common/types';
 

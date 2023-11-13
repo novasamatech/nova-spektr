@@ -1,4 +1,4 @@
-import { HexString } from '@renderer/shared/core';
+import type { HexString } from '@shared/core';
 
 export type SignResponse = {
   payload: string;

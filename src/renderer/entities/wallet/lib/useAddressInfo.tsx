@@ -1,12 +1,12 @@
 import { useUnit } from 'effector-react';
 
-import { InfoSection } from '@renderer/shared/ui/Popovers/InfoPopover/InfoPopover';
-import type { Address, Explorer } from '@renderer/shared/core';
-import { useMatrix } from '@renderer/app/providers';
-import { getAccountExplorer, toAccountId } from '@renderer/shared/lib/utils';
+import { InfoSection } from '@shared/ui/Popovers/InfoPopover/InfoPopover';
+import type { Address, Explorer } from '@shared/core';
+import { useMatrix } from '@app/providers';
+import { getAccountExplorer, toAccountId } from '@shared/lib/utils';
 import { contactModel } from '../../contact/model/contact-model';
 import { walletModel } from '../model/wallet-model';
-import { ExplorerLink } from '@renderer/shared/ui';
+import { ExplorerLink } from '@shared/ui';
 
 type InfoProps = {
   address: Address;

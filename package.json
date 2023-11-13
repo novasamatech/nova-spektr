@@ -47,7 +47,7 @@
 
     "lint": "eslint . --ext=js,ts,tsx,json",
     "lint:fix": "pnpm lint --fix",
-    "lint:i18n-locale": "cross-env I18N=true eslint ./src/shared/locale/ --ext=json --plugin i18n-json",
+    "lint:i18n-locale": "cross-env I18N=true eslint src/renderer/shared/api/translation/locales/ --ext=json --plugin i18n-json",
     "lint:i18n-fix": "cross-env I18N=true pnpm lint:i18n-locale --fix",
     "lint:i18n-tsx": "cross-env I18N=true eslint . --ext=tsx --ignore-pattern=**/*.test.* --ignore-pattern=**/*.stories.* --plugin i18next",
     "storybook": "start-storybook -p 6006",

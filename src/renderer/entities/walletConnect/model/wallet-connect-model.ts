@@ -4,10 +4,10 @@ import { getSdkError } from '@walletconnect/utils';
 import { createEffect, createEvent, createStore, forward, sample, scopeBind } from 'effector';
 import keyBy from 'lodash/keyBy';
 
-import { nonNullable } from '@renderer/shared/lib/utils';
-import { ID, Account, WalletConnectAccount, kernelModel } from '@renderer/shared/core';
-import { localStorageService } from '@renderer/shared/api/local-storage';
-import { storageService } from '@renderer/shared/api/storage';
+import { nonNullable } from '@shared/lib/utils';
+import { ID, Account, WalletConnectAccount, kernelModel } from '@shared/core';
+import { localStorageService } from '@shared/api/local-storage';
+import { storageService } from '@shared/api/storage';
 import { walletModel, walletUtils } from '../../wallet';
 import { InitConnectParams } from '../lib/types';
 import { walletConnectUtils } from '../lib/utils';

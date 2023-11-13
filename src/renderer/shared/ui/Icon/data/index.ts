@@ -10,7 +10,7 @@ import ArrowImages, { Arrow } from './arrow';
 import WalletTypeImages, { WalletImages } from './walletType';
 import StakingImages, { Staking } from './staking';
 import SocialImages, { Social } from './social';
-import MstImages, { Mst } from '@renderer/shared/ui/Icon/data/mst';
+import MstImages, { Mst } from '@shared/ui/Icon/data/mst';
 
 const AllIcons = {
   ...CurrencyImages,

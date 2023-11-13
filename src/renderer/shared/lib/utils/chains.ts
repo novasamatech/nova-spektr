@@ -1,4 +1,4 @@
-import type { ChainId, Explorer, HexString, Address, AccountId } from '@renderer/shared/core';
+import type { ChainId, Explorer, HexString, Address, AccountId } from '@shared/core';
 import { toAddress } from './address';
 import { SS58_DEFAULT_PREFIX } from './constants';
 

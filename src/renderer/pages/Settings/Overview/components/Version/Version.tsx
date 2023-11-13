@@ -1,5 +1,5 @@
-import { Icon, HelpText } from '@renderer/shared/ui';
-import { useI18n } from '@renderer/app/providers';
+import { Icon, HelpText } from '@shared/ui';
+import { useI18n } from '@app/providers';
 
 export const Version = () => {
   const { t } = useI18n();

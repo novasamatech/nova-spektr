@@ -1,6 +1,6 @@
-import { useI18n, useMatrix } from '@renderer/app/providers';
-import { useToggle } from '@renderer/shared/lib/hooks';
-import { Button, FootnoteText, StatusLabel } from '@renderer/shared/ui';
+import { useI18n, useMatrix } from '@app/providers';
+import { useToggle } from '@shared/lib/hooks';
+import { Button, FootnoteText, StatusLabel } from '@shared/ui';
 
 export const Credentials = () => {
   const { t } = useI18n();

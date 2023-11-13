@@ -1,8 +1,8 @@
-import { useI18n } from '@renderer/app/providers';
-import { BaseModal, BodyText, Icon, Identicon, InfoPopover, Truncate } from '@renderer/shared/ui';
-import { cnTw, stakeableAmount } from '@renderer/shared/lib/utils';
-import type { Account, Asset, ChainId, Explorer } from '@renderer/shared/core';
-import { AssetBalance, useBalance } from '@renderer/entities/asset';
+import { useI18n } from '@app/providers';
+import { BaseModal, BodyText, Icon, Identicon, InfoPopover, Truncate } from '@shared/ui';
+import { cnTw, stakeableAmount } from '@shared/lib/utils';
+import type { Account, Asset, ChainId, Explorer } from '@shared/core';
+import { AssetBalance, useBalance } from '@entities/asset';
 import { getExplorers } from '../../../common/utils';
 
 type Props = {

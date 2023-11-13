@@ -2,7 +2,7 @@ import { ApiPromise } from '@polkadot/api';
 import { AccountInfo } from '@polkadot/types/interfaces';
 import { Codec } from '@polkadot/types/types';
 
-import chains from '../../../src/renderer/assets/chains/chains.json';
+import chains from '../../../src/renderer/shared/config/chains/chains.json';
 import { validate } from '../../../src/renderer/services/dataVerification';
 import {
   getTestAccounts,

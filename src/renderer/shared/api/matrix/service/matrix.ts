@@ -49,7 +49,7 @@ import {
 } from '../common/types';
 import CredentialStorage from './credentialStorage';
 import SecretStorage from './secretStorage';
-import { nonNullable } from '@renderer/shared/lib/utils';
+import { nonNullable } from '@shared/lib/utils';
 
 global.Olm = Olm;
 logger.disableAll();

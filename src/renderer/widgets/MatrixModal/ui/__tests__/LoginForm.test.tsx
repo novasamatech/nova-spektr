@@ -5,7 +5,7 @@ import { LoginForm } from '../LoginForm';
 
 jest.mock('react-i18next', () => ({ Trans: (props: any) => props.i18nKey }));
 
-jest.mock('@renderer/app/providers', () => ({
+jest.mock('@app/providers', () => ({
   useMatrix: jest.fn().mockReturnValue({
     matrix: {
       setHomeserver: jest.fn(),

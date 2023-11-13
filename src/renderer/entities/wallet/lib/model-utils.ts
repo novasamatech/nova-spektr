@@ -1,5 +1,5 @@
-import { BaseAccount, ChainAccount } from '@renderer/shared/core';
-import { accountUtils } from '@renderer/entities/wallet';
+import { BaseAccount, ChainAccount } from '@shared/core';
+import { accountUtils } from '@entities/wallet';
 
 export const modelUtils = {
   groupAccounts,

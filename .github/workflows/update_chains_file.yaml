@@ -37,7 +37,7 @@ jobs:
       - name: ➡️ Make pull request
         uses: ./.github/workflows/make-pull-request
         with:
-          commit_path: src/renderer/assets/chains/*.json
+          commit_path: src/renderer/shared/config/chains/*.json
           commit_message: "ci: chains.json file"
           pr_title: "Update chains.json file"
           branch_name: update-chains-file

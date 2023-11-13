@@ -1,14 +1,14 @@
 import { useMemo } from 'react';
 
-import { MultisigAccount, Signatory, Wallet, AccountId } from '@renderer/shared/core';
-import { BaseModal, FootnoteText, Tabs } from '@renderer/shared/ui';
-import { RootExplorers } from '@renderer/shared/lib/utils';
-import { useModalClose } from '@renderer/shared/lib/hooks';
-import { AccountsList, ContactItem, ExplorersPopover, WalletCardLg, WalletCardMd } from '@renderer/entities/wallet';
-import { chainsService, isMultisigAvailable } from '@renderer/entities/network';
-import { useI18n, useMatrix } from '@renderer/app/providers';
+import { MultisigAccount, Signatory, Wallet, AccountId } from '@shared/core';
+import { BaseModal, FootnoteText, Tabs } from '@shared/ui';
+import { RootExplorers } from '@shared/lib/utils';
+import { useModalClose } from '@shared/lib/hooks';
+import { AccountsList, ContactItem, ExplorersPopover, WalletCardLg, WalletCardMd } from '@entities/wallet';
+import { chainsService, isMultisigAvailable } from '@entities/network';
+import { useI18n, useMatrix } from '@app/providers';
 // TODO: think about combining balances and wallets
-import { WalletFiatBalance } from '@renderer/features/wallets/WalletSelect/ui/WalletFiatBalance';
+import { WalletFiatBalance } from '@features/wallets/WalletSelect/ui/WalletFiatBalance';
 
 type Props = {
   wallet: Wallet;

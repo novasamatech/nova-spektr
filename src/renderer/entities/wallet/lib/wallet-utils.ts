@@ -1,6 +1,6 @@
-import type { Wallet } from '@renderer/shared/core';
-import { WalletType } from '@renderer/shared/core';
-import {
+import { WalletType } from '@shared/core';
+import type {
+  Wallet,
   PolkadotVaultWallet,
   WalletConnectWallet,
   MultisigWallet,
@@ -8,7 +8,7 @@ import {
   MultiShardWallet,
   WatchOnlyWallet,
   NovaWalletWallet,
-} from '@renderer/shared/core/types/wallet';
+} from '@shared/core';
 
 export const walletUtils = {
   isPolkadotVault,
