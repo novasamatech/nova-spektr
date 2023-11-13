@@ -19,7 +19,8 @@ export const WalletSelect = ({ action }: Props) => {
   const accounts = useUnit(walletModel.$accounts);
 
   const { getLiveBalances } = useBalance();
-  const balances = getLiveBalances(accounts.map((a) => a.accountId));
+  // TODO: remove filter when https://app.clickup.com/t/8692wtk68 will be merged
+  const balances = getLiveBalances(accounts.map((a) => a.accountId).filter(Boolean));
 
   const chainsMap = useMemo(() => {
     return keyBy(chainsService.getChainsData(), 'chainId');

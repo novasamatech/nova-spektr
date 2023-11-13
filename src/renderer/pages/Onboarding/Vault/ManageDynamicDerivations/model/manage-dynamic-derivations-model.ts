@@ -21,6 +21,7 @@ import { chainsService } from '@renderer/entities/network';
 const chains = chainsService.getChainsData();
 
 const WALLET_NAME_MAX_LENGTH = 256;
+const MAIN_ACCOUNT_NAME = 'Main';
 
 const validateMaxLength = (value: string) => value.length <= WALLET_NAME_MAX_LENGTH;
 
@@ -69,7 +70,7 @@ sample({
       const derivationPath = `//${chain.specName}`;
 
       acc[derivationPath] = {
-        name: '',
+        name: MAIN_ACCOUNT_NAME,
         derivationPath,
         chainId: chain.chainId,
         cryptoType: CryptoType.SR25519,
