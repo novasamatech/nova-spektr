@@ -16,6 +16,7 @@
     "start:renderer:dev": "cross-env NODE_ENV=development CHAINS_FILE=chains-dev pnpm webpack:renderer:dev",
     "start:main": "cross-env NODE_ENV=staging pnpm r webpack:main:stage start:electron",
     "start:main:dev": "cross-env NODE_ENV=development pnpm r webpack:main:dev start:electron",
+    "watch": "nodemon --watch src/main --ignore src/main/resources --ext \"*\" --exec",
 
     "webpack:renderer:dev": "webpack serve --config webpack/webpack.renderer.dev.ts",
     "webpack:renderer:stage": "webpack serve --config webpack/webpack.renderer.stage.ts",
