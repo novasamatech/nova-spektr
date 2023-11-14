@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { ErrorBoundary } from 'react-error-boundary';
 import { useNavigate, useRoutes } from 'react-router-dom';
 import { useUnit } from 'effector-react';
+import noop from 'lodash/noop';
 
 import { FallbackScreen } from '@renderer/components/common';
 import { CreateWalletProvider } from '@widgets/CreateWallet';
@@ -18,6 +19,7 @@ import {
   GraphqlProvider,
   MultisigChainProvider,
 } from './providers';
+import { KeyConstructor } from '@features/wallets';
 
 const SPLASH_SCREEN_DELAY = 450;
 
@@ -59,6 +61,7 @@ export const App = () => {
                 <StatusModalProvider>
                   <GraphqlProvider>
                     {getContent()}
+                    <KeyConstructor isOpen={true} onClose={noop} onConfirm={noop} />
                     <CreateWalletProvider />
                     <WalletDetailsProvider />
                   </GraphqlProvider>

@@ -137,7 +137,7 @@ export const WalletConnectDetails = ({ wallet, accounts, onClose }: Props) => {
 
             {wcDetailsUtils.isReadyToReconnect(reconnectStep, wallet.isConnected) && (
               <div className="flex flex-col h-[454px] justify-center items-center">
-                <Icon name="document" size={64} className="mb-6" />
+                <Icon name="document" size={64} className="mb-6 text-icon-default" />
                 <SmallTitleText className="mb-2">{t('walletDetails.walletConnect.disconnectedTitle')}</SmallTitleText>
                 <FootnoteText className="mb-4 text-text-tertiary">
                   {t('walletDetails.walletConnect.disconnectedDescription')}
