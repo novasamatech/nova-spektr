@@ -1,6 +1,6 @@
 import { BrowserWindow, BrowserWindowConstructorOptions, session } from 'electron';
 
-import { APP_CONFIG } from '@/app.config';
+import { APP_CONFIG } from '../../../app.config';
 import { ENVIRONMENT } from '../shared/constants';
 
 export function createWindow(settings: BrowserWindowConstructorOptions) {
