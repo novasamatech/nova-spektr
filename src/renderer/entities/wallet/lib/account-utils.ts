@@ -12,6 +12,7 @@ import type {
   WalletConnectAccount,
   Wallet,
 } from '@shared/core';
+import { ShardedAccount, ShardAccount } from '@shared/core/types/account';
 
 export const accountUtils = {
   isBaseAccount,
@@ -19,6 +20,8 @@ export const accountUtils = {
   isMultisigAccount,
   isChainIdMatch,
   isWalletConnectAccount,
+  isShardedAccount,
+  isShardAccount,
   getMultisigAccountId,
   getAllAccountIds,
   getWalletAccounts,
@@ -38,6 +41,14 @@ function isChainAccount(account: Pick<Account, 'type'>): account is ChainAccount
 
 function isWalletConnectAccount(account: Pick<Account, 'type'>): account is WalletConnectAccount {
   return account.type === AccountType.WALLET_CONNECT;
+}
+
+function isShardedAccount(account: Pick<Account, 'type'>): account is ShardedAccount {
+  return account.type === AccountType.SHARDED;
+}
+
+function isShardAccount(account: Pick<Account, 'type'>): account is ShardAccount {
+  return account.type === AccountType.SHARD;
 }
 
 function isChainIdMatch(account: Pick<Account, 'type'>, chainId: ChainId): boolean {
