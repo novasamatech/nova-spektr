@@ -70,6 +70,10 @@ export const WalletConnectDetails = ({ wallet, accounts, isConnected, onClose }:
     }, []);
   }, [accounts]);
 
+  const showReconnectConfirm = () => {
+    wcDetailsModel.events.confirmReconnectShown();
+  };
+
   const reconnect = () => {
     wcDetailsModel.events.reconnectStarted({
       chains: walletConnectUtils.getWalletConnectChains(chainsService.getChainsData()),
@@ -115,7 +119,7 @@ export const WalletConnectDetails = ({ wallet, accounts, isConnected, onClose }:
                   size="md"
                   className="text-text-secondary hover:text-text-secondary px-2"
                   prefixElement={<Icon name="refresh" size={20} className="text-icon-accent" />}
-                  onClick={reconnect}
+                  onClick={showReconnectConfirm}
                 >
                   {t('walletDetails.walletConnect.refreshButton')}
                 </Button>
@@ -158,7 +162,7 @@ export const WalletConnectDetails = ({ wallet, accounts, isConnected, onClose }:
                 <FootnoteText className="mb-4 text-text-tertiary">
                   {t('walletDetails.walletConnect.disconnectedDescription')}
                 </FootnoteText>
-                <Button onClick={reconnect}>{t('walletDetails.walletConnect.reconnectButton')}</Button>
+                <Button onClick={showReconnectConfirm}>{t('walletDetails.walletConnect.reconnectButton')}</Button>
               </div>
             )}
 
@@ -172,6 +176,22 @@ export const WalletConnectDetails = ({ wallet, accounts, isConnected, onClose }:
             )}
           </>
         </div>
+
+        <ConfirmModal
+          panelClass="w-[300px]"
+          isOpen={wcDetailsUtils.isConfirmation(reconnectStep)}
+          confirmText={t('walletDetails.walletConnect.confirmButton')}
+          cancelText={t('walletDetails.common.cancelButton')}
+          onConfirm={reconnect}
+          onClose={wcDetailsModel.events.reconnectAborted}
+        >
+          <SmallTitleText className="mb-2" align="center">
+            {t('walletDetails.walletConnect.reconnectConfirmTitle')}
+          </SmallTitleText>
+          <FootnoteText className="text-text-tertiary" align="center">
+            {t('walletDetails.walletConnect.reconnectConfirmDescription')}
+          </FootnoteText>
+        </ConfirmModal>
 
         <ConfirmModal
           panelClass="w-[300px]"

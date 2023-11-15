@@ -937,7 +937,10 @@
       "reconnectButton": "Reconnect",
       "refreshButton": "Refresh",
       "rejectDescription": "The operation was successfully canceled",
-      "rejectTitle": "Rejected"
+      "rejectTitle": "Rejected",
+      "confirmButton": "Yes, refresh",
+      "reconnectConfirmTitle": "Is a proper wallet selected?",
+      "reconnectConfirmDescription": "Make sure that corresponding wallet is selected in your wallet app connected via WalletConnect"
     }
   },
   "wallets": {

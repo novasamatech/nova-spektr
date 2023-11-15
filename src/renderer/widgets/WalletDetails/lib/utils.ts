@@ -5,6 +5,7 @@ export const wcDetailsUtils = {
   isReconnecting,
   isRejected,
   isReadyToReconnect,
+  isConfirmation,
 };
 
 export const walletDetailsUtils = {
@@ -12,7 +13,11 @@ export const walletDetailsUtils = {
 };
 
 function isNotStarted(step: ReconnectStep, connected: boolean): boolean {
-  return step === ReconnectStep.NOT_STARTED && connected;
+  return [ReconnectStep.NOT_STARTED, ReconnectStep.CONFIRMATION].includes(step) && connected;
+}
+
+function isConfirmation(step: ReconnectStep): boolean {
+  return step === ReconnectStep.CONFIRMATION;
 }
 
 function isReconnecting(step: ReconnectStep): boolean {

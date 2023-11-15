@@ -11,6 +11,7 @@ import { chainsService } from '@renderer/entities/network';
 import { toAccountId } from '@renderer/shared/lib/utils';
 
 const reset = createEvent();
+const confirmReconnectShown = createEvent();
 const reconnectStarted = createEvent<Omit<InitConnectParams, 'client'> & { currentSession: string }>();
 const reconnectAborted = createEvent();
 const sessionTopicUpdated = createEvent();
@@ -34,6 +35,12 @@ const $isConnected = combine(
     return walletConnectUtils.isConnected(account.signingExtras.sessionTopic, client);
   },
 );
+
+sample({
+  clock: confirmReconnectShown,
+  fn: () => ReconnectStep.CONFIRMATION,
+  target: $reconnectStep,
+});
 
 sample({
   clock: reconnectStarted,
@@ -162,6 +169,7 @@ export const wcDetailsModel = {
   $forgetStep,
   events: {
     reset,
+    confirmReconnectShown,
     reconnectStarted,
     reconnectAborted,
     sessionTopicUpdated,
