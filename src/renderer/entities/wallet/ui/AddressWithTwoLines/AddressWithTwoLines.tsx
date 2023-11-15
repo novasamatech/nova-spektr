@@ -1,10 +1,10 @@
 import { ReactNode } from 'react';
 
-import { cnTw } from '@renderer/shared/lib/utils';
-import { Identicon } from '@renderer/shared/ui';
-import { SigningType } from '@renderer/shared/core';
+import { cnTw } from '@shared/lib/utils';
+import { Identicon } from '@shared/ui';
+import { SigningType } from '@shared/core';
 import { getAddress } from '../AccountAddress/AccountAddress';
-import type { AccountId, Address } from '@renderer/shared/core';
+import type { AccountId, Address } from '@shared/core';
 
 type WithAccountId = {
   accountId: AccountId;

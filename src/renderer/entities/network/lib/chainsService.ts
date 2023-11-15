@@ -3,14 +3,14 @@ import concat from 'lodash/concat';
 import orderBy from 'lodash/orderBy';
 import BigNumber from 'bignumber.js';
 
-import chainsProd from '@renderer/assets/chains/chains.json';
-import chainsDev from '@renderer/assets/chains/chains_dev.json';
-import { getRelaychainAsset, nonNullable, totalAmount, ZERO_BALANCE } from '@renderer/shared/lib/utils';
+import chainsProd from '@shared/config/chains/chains.json';
+import chainsDev from '@shared/config/chains/chains_dev.json';
+import { getRelaychainAsset, nonNullable, totalAmount, ZERO_BALANCE } from '@shared/lib/utils';
 import { ChainLike } from './common/types';
 import { isKusama, isPolkadot, isTestnet, isNameWithNumber } from './common/utils';
-import type { Chain, ChainId, Balance } from '@renderer/shared/core';
-import { PriceObject } from '@renderer/shared/api/price-provider';
-import { sumBalances } from '@renderer/pages/Assets/AssetsList/common/utils';
+import type { Chain, ChainId, Balance } from '@shared/core';
+import { PriceObject } from '@shared/api/price-provider';
+import { sumBalances } from '@pages/Assets/AssetsList/common/utils';
 
 type ChainWithFiatBalance = Chain & {
   fiatBalance: string;
@@ -27,6 +27,7 @@ export const chainsService = {
   getStakingChainsData,
   sortChains,
   sortChainsByBalance,
+  searchChain,
 };
 
 function getChainsData(): Chain[] {
@@ -34,13 +35,19 @@ function getChainsData(): Chain[] {
 }
 
 function getChainById(chainId: ChainId): Chain | undefined {
-  const chainsData: Chain[] = CHAINS[process.env.CHAINS_FILE || 'chains'];
+  const chainsData = getChainsData();
 
   return chainsData.find((chain) => chain.chainId === chainId);
 }
 
+function searchChain(query: string): Chain | undefined {
+  const chainsData = getChainsData();
+
+  return chainsData.find((chain) => chain.chainId.includes(query));
+}
+
 function getStakingChainsData(): Chain[] {
-  const chainsData: Chain[] = CHAINS[process.env.CHAINS_FILE || 'chains'];
+  const chainsData = getChainsData();
 
   return chainsData.reduce<Chain[]>((acc, chain) => {
     if (getRelaychainAsset(chain.assets)) {

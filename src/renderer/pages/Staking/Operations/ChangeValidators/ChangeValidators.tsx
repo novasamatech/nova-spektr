@@ -3,21 +3,22 @@ import { useState, useEffect } from 'react';
 import { Navigate, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { useUnit } from 'effector-react';
 
-import { useI18n, useNetworkContext } from '@renderer/app/providers';
-import { Paths } from '@renderer/shared/routes';
-import { Transaction, TransactionType, useTransaction } from '@renderer/entities/transaction';
-import { ValidatorMap } from '@renderer/entities/staking';
-import { toAddress, getRelaychainAsset, DEFAULT_TRANSITION } from '@renderer/shared/lib/utils';
+import { useI18n, useNetworkContext } from '@app/providers';
+import { Paths } from '@shared/routes';
+import { Transaction, TransactionType, useTransaction } from '@entities/transaction';
+import { ValidatorMap } from '@entities/staking';
+import { toAddress, getRelaychainAsset, DEFAULT_TRANSITION } from '@shared/lib/utils';
 import { Confirmation, Submit, Validators, NoAsset } from '../components';
-import { useToggle } from '@renderer/shared/lib/hooks';
-import { Alert, BaseModal, Button, Loader } from '@renderer/shared/ui';
+import { useToggle } from '@shared/lib/hooks';
+import { BaseModal, Button, Loader } from '@shared/ui';
 import InitOperation, { ValidatorsResult } from './InitOperation/InitOperation';
-import { isLightClient } from '@renderer/entities/network';
+import { isLightClient } from '@entities/network';
 import { OperationTitle } from '@renderer/components/common';
-import { Signing } from '@renderer/features/operation';
-import type { Account, ChainId, HexString, Address } from '@renderer/shared/core';
-import { walletUtils, walletModel } from '@renderer/entities/wallet';
-import { priceProviderModel } from '@renderer/entities/price';
+import { Signing } from '@features/operation';
+import type { Account, ChainId, HexString, Address } from '@shared/core';
+import { walletUtils, walletModel } from '@entities/wallet';
+import { priceProviderModel } from '@entities/price';
+import { StakingPopover } from '../components/StakingPopover/StakingPopover';
 
 const enum Step {
   INIT,
@@ -39,7 +40,6 @@ export const ChangeValidators = () => {
   const params = useParams<{ chainId: ChainId }>();
 
   const [isValidatorsModalOpen, toggleValidatorsModal] = useToggle(true);
-  const [isAlertOpen, toggleAlert] = useToggle(true);
 
   const [activeStep, setActiveStep] = useState<Step>(Step.INIT);
   const [validators, setValidators] = useState<ValidatorMap>({});
@@ -212,9 +212,9 @@ export const ChangeValidators = () => {
             onGoBack={goToPrevStep}
             {...explorersProps}
           >
-            <Alert active={isAlertOpen} title={t('staking.confirmation.hintTitle')} onClose={toggleAlert}>
-              <Alert.Item>{t('staking.confirmation.hintNewValidators')}</Alert.Item>
-            </Alert>
+            <StakingPopover labelText={t('staking.confirmation.hintTitle')}>
+              <StakingPopover.Item>{t('staking.confirmation.hintNewValidators')}</StakingPopover.Item>
+            </StakingPopover>
           </Confirmation>
         )}
         {activeStep === Step.SIGNING && (

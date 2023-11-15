@@ -1,13 +1,12 @@
 import { useUnit } from 'effector-react';
 
-import { useI18n } from '@renderer/app/providers';
-import { AddressWithExplorers, WalletIcon, walletModel } from '@renderer/entities/wallet';
-import { ChainTitle } from '@renderer/entities/chain';
-import { ExtendedChain } from '@renderer/entities/network';
-import { Transaction } from '@renderer/entities/transaction';
-import { DetailRow, FootnoteText } from '@renderer/shared/ui';
-import type { Account, MultisigAccount } from '@renderer/shared/core';
-import { WalletRow } from '@renderer/entities/wallet/ui/WalletRow/WalletRow';
+import { useI18n } from '@app/providers';
+import { AddressWithExplorers, WalletCardSm, WalletIcon, walletModel } from '@entities/wallet';
+import { ChainTitle } from '@entities/chain';
+import { ExtendedChain } from '@entities/network';
+import { Transaction } from '@entities/transaction';
+import { DetailRow, FootnoteText } from '@shared/ui';
+import type { Account, MultisigAccount } from '@shared/core';
 
 const AddressStyle = 'text-footnote text-inherit';
 
@@ -51,7 +50,7 @@ const Details = ({ transaction, account, signatory, connection }: Props) => {
 
       {signatory && signatoryWallet && (
         <DetailRow label={t('transfer.signatoryLabel')}>
-          <WalletRow
+          <WalletCardSm
             wallet={signatoryWallet}
             accountId={signatory.accountId}
             addressPrefix={addressPrefix}

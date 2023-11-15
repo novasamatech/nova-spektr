@@ -1,26 +1,30 @@
 import { createStore, createEvent, forward, createEffect, sample, combine } from 'effector';
 import { spread } from 'patronum';
 
-import type { Wallet, NoID, Account, BaseAccount, ChainAccount, MultisigAccount } from '@renderer/shared/core';
-import { kernelModel, WalletConnectAccount } from '@renderer/shared/core';
-import { storageService } from '@renderer/shared/api/storage';
+import type { Wallet, NoID, Account, BaseAccount, ChainAccount, MultisigAccount, ID } from '@shared/core';
+import { kernelModel, WalletConnectAccount } from '@shared/core';
+import { storageService } from '@shared/api/storage';
 import { modelUtils } from '../lib/model-utils';
-
-type WalletId = Wallet['id'];
-type NoIdWallet = NoID<Wallet>;
+import { accountUtils } from '../lib/account-utils';
 
 const $wallets = createStore<Wallet[]>([]);
 const $activeWallet = $wallets.map((wallets) => wallets.find((w) => w.isActive));
 
 const $accounts = createStore<Account[]>([]);
-const $activeAccounts = combine($activeWallet, $accounts, (activeWallet, accounts) => {
-  if (!activeWallet) return [];
+const $activeAccounts = combine(
+  {
+    wallet: $activeWallet,
+    accounts: $accounts,
+  },
+  ({ wallet, accounts }) => {
+    if (!wallet) return [];
 
-  return accounts.filter((account) => account.walletId === activeWallet.id);
-});
+    return accounts.filter((account) => account.walletId === wallet.id);
+  },
+);
 
 type CreateParams<T extends Account> = {
-  wallet: Omit<NoIdWallet, 'isActive'>;
+  wallet: Omit<NoID<Wallet>, 'isActive'>;
   accounts: Omit<NoID<T>, 'walletId'>[];
 };
 type MultisigUpdateParams = Partial<MultisigAccount> & { id: Account['id'] };
@@ -31,8 +35,9 @@ const singleshardCreated = createEvent<CreateParams<BaseAccount>>();
 const multisigCreated = createEvent<CreateParams<MultisigAccount>>();
 const walletConnectCreated = createEvent<CreateParams<WalletConnectAccount>>();
 
-const walletSelected = createEvent<WalletId>();
+const walletSelected = createEvent<ID>();
 const multisigAccountUpdated = createEvent<MultisigUpdateParams>();
+const walletRemoved = createEvent<ID>();
 
 const fetchAllAccountsFx = createEffect((): Promise<Account[]> => {
   return storageService.accounts.readAll();
@@ -95,10 +100,10 @@ const multishardCreatedFx = createEffect(
 );
 
 type SelectParams = {
-  prevId?: WalletId;
-  nextId: WalletId;
+  prevId?: ID;
+  nextId: ID;
 };
-const walletSelectedFx = createEffect(async ({ prevId, nextId }: SelectParams): Promise<WalletId | undefined> => {
+const walletSelectedFx = createEffect(async ({ prevId, nextId }: SelectParams): Promise<ID | undefined> => {
   if (!prevId) {
     return storageService.wallets.update(nextId, { isActive: true });
   }
@@ -119,6 +124,17 @@ const multisigWalletUpdatedFx = createEffect(
     return id ? account : undefined;
   },
 );
+
+type RemoveParams = {
+  walletId: ID;
+  accountIds: ID[];
+};
+
+const removeWalletFx = createEffect(async ({ walletId, accountIds }: RemoveParams): Promise<ID> => {
+  await Promise.all([storageService.accounts.deleteAll(accountIds), storageService.wallets.delete(walletId)]);
+
+  return walletId;
+});
 
 forward({ from: kernelModel.events.appStarted, to: [fetchAllWalletsFx, fetchAllAccountsFx] });
 forward({ from: fetchAllWalletsFx.doneData, to: $wallets });
@@ -197,6 +213,41 @@ sample({
   target: $accounts,
 });
 
+sample({
+  clock: walletRemoved,
+  source: $accounts,
+  fn: (accounts, walletId) => ({
+    accountIds: accountUtils.getWalletAccounts(walletId, accounts).map((a) => a.id),
+    walletId,
+  }),
+  target: removeWalletFx,
+});
+
+sample({
+  clock: removeWalletFx.doneData,
+  source: { wallets: $wallets, accounts: $accounts },
+  fn: ({ accounts, wallets }, walletId) => ({
+    accounts: accounts.filter((a) => a.walletId !== walletId),
+    wallets: wallets.filter((w) => w.id !== walletId),
+  }),
+  target: spread({
+    targets: { wallets: $wallets, accounts: $accounts },
+  }),
+});
+
+sample({
+  clock: removeWalletFx.doneData,
+  source: {
+    activeWallet: $activeWallet,
+    wallets: $wallets,
+  },
+  filter: ({ activeWallet }, walletId) => activeWallet?.id === walletId,
+  fn: ({ wallets }) => ({
+    nextId: wallets[0].id,
+  }),
+  target: walletSelectedFx,
+});
+
 export const walletModel = {
   $wallets,
   $activeWallet,
@@ -211,5 +262,7 @@ export const walletModel = {
     walletConnectCreated,
     walletSelected,
     multisigAccountUpdated,
+    walletRemoved,
+    walletRemovedSuccess: removeWalletFx.done,
   },
 };

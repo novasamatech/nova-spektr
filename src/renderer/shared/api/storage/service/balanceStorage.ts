@@ -1,5 +1,5 @@
-import { Balance, BalanceKey } from '@renderer/shared/core/types/balance';
-import { ChainId, AccountId } from '@renderer/shared/core';
+import { Balance, BalanceKey } from '@shared/core/types/balance';
+import { ChainId, AccountId } from '@shared/core';
 import { BalanceDS, IBalanceStorage, TBalance } from '../common/types';
 
 export const useBalanceStorage = (db: TBalance): IBalanceStorage => ({
@@ -42,6 +42,10 @@ export const useBalanceStorage = (db: TBalance): IBalanceStorage => ({
 
   updateBalance: async (balance: Balance): Promise<void> => {
     await db.update([balance.accountId, balance.chainId, balance.assetId], balance);
+  },
+
+  insertBalances: (balances: Balance[]): Promise<string[]> => {
+    return db.bulkPut(balances);
   },
 
   setBalanceIsValid: ({ accountId, chainId, assetId }: BalanceKey, verified: boolean): Promise<number> => {

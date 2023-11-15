@@ -1,3 +1,4 @@
+import { Animation } from './Animation/Animation';
 import Input from './Inputs/Input/Input';
 import Plate from './Plate/Plate';
 import { AmountInput } from './Inputs/AmountInput/AmountInput';
@@ -12,6 +13,7 @@ import { StatusModal } from './Modals/StatusModal/StatusModal';
 import InfoPopover from './Popovers/InfoPopover/InfoPopover';
 import { Popover } from './Popovers/Popover/Popover';
 import InfoLink from './InfoLink/InfoLink';
+import { ExplorerLink } from './ExplorerLink/ExplorerLink';
 import Select from './Dropdowns/Select/Select';
 import Combobox from './Dropdowns/Combobox/Combobox';
 import RadioGroup from './RadioGroup/RadioGroup';
@@ -61,6 +63,7 @@ import { Countdown } from './Countdown/Countdown';
 // https://stackoverflow.com/questions/49156356/why-does-jest-try-to-resolve-every-component-in-my-index-ts
 
 export {
+  Animation,
   Input,
   Plate,
   AmountInput,
@@ -115,4 +118,5 @@ export {
   Truncate,
   MainLayout,
   Countdown,
+  ExplorerLink,
 };

@@ -1,7 +1,7 @@
 import { BrowserWindow, BrowserWindowConstructorOptions, session } from 'electron';
 
-import { ENVIRONMENT } from '@shared/constants';
 import { APP_CONFIG } from '../../../app.config';
+import { ENVIRONMENT } from '../shared/constants';
 
 export function createWindow(settings: BrowserWindowConstructorOptions) {
   const window = new BrowserWindow(settings);

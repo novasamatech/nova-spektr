@@ -2,21 +2,21 @@ import { ApiPromise } from '@polkadot/api';
 import { useEffect, useState } from 'react';
 import { useUnit } from 'effector-react';
 
-import { useI18n } from '@renderer/app/providers';
-import { useBalance } from '@renderer/entities/asset';
-import { getOperationErrors, Transaction, TransactionType } from '@renderer/entities/transaction';
-import { useValidators } from '@renderer/entities/staking';
-import { toAddress, nonNullable } from '@renderer/shared/lib/utils';
-import { OperationFooter, OperationHeader } from '@renderer/features/operation';
+import { useI18n } from '@app/providers';
+import { useBalance } from '@entities/asset';
+import { getOperationErrors, Transaction, TransactionType } from '@entities/transaction';
+import { useValidators } from '@entities/staking';
+import { toAddress, nonNullable } from '@shared/lib/utils';
+import { OperationFooter, OperationHeader } from '@features/operation';
 import { OperationForm } from '../../components';
-import { Balance as AccountBalance, Account, Asset, MultisigAccount, ChainId, AccountId } from '@renderer/shared/core';
+import { Balance as AccountBalance, Account, Asset, MultisigAccount, ChainId, AccountId, Wallet } from '@shared/core';
 import {
   getSignatoryOption,
   getGeneralAccountOption,
   validateBalanceForFee,
   validateBalanceForFeeDeposit,
 } from '../../common/utils';
-import { walletUtils, accountUtils, walletModel } from '@renderer/entities/wallet';
+import { walletUtils, accountUtils, walletModel } from '@entities/wallet';
 
 export type ValidatorsResult = {
   accounts: Account[];
@@ -107,10 +107,10 @@ const InitOperation = ({ api, chainId, accounts, asset, addressPrefix, onResult 
     return getGeneralAccountOption(account, { asset, fee, balance, addressPrefix });
   };
 
-  const getSignatoryDrowdownOption = (account: Account) => {
+  const getSignatoryDropdownOption = (wallet: Wallet, account: Account) => {
     const balance = signatoriesBalances.find((b) => b.accountId === account.accountId);
 
-    return getSignatoryOption(account, { balance, asset, addressPrefix, fee, deposit });
+    return getSignatoryOption(wallet, account, { balance, asset, addressPrefix, fee, deposit });
   };
 
   const submitBond = (data: { amount: string; destination?: string; description?: string }) => {
@@ -171,7 +171,7 @@ const InitOperation = ({ api, chainId, accounts, asset, addressPrefix, onResult 
             isMultiselect
             errors={errors}
             getAccountOption={getAccountDropdownOption}
-            getSignatoryOption={getSignatoryDrowdownOption}
+            getSignatoryOption={getSignatoryDropdownOption}
             onSignatoryChange={setActiveSignatory}
             onAccountChange={setActiveValidatorsAccounts}
           />

@@ -1,8 +1,8 @@
 import { Switch as HeadlessSwitch } from '@headlessui/react';
 import { PropsWithChildren } from 'react';
 
-import { cnTw } from '@renderer/shared/lib/utils';
-import { LabelText } from '@renderer/shared/ui';
+import { cnTw } from '@shared/lib/utils';
+import { LabelText } from '@shared/ui';
 
 interface Props {
   checked?: boolean;

@@ -1,13 +1,13 @@
 import { useStoreMap, useUnit } from 'effector-react';
 import BN from 'bignumber.js';
 
-import { Shimmering } from '@renderer/shared/ui';
+import { Shimmering } from '@shared/ui';
 import { priceProviderModel } from '../model/price-provider-model';
 import { currencyModel } from '../model/currency-model';
-import { formatFiatBalance, ZERO_BALANCE } from '@renderer/shared/lib/utils';
+import { formatFiatBalance, ZERO_BALANCE } from '@shared/lib/utils';
 import { FiatBalance } from './FiatBalance';
-import { useI18n } from '@renderer/app/providers';
-import type { Asset } from '@renderer/shared/core';
+import { useI18n } from '@app/providers';
+import type { Asset } from '@shared/core';
 
 type Props = {
   asset: Asset;

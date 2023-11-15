@@ -1,11 +1,11 @@
 import { useStoreMap, useUnit } from 'effector-react';
 
-import { FootnoteText, Shimmering } from '@renderer/shared/ui';
+import { FootnoteText, Shimmering } from '@shared/ui';
 import { priceProviderModel } from '../model/price-provider-model';
 import { currencyModel } from '../model/currency-model';
-import { formatFiatBalance, ZERO_BALANCE } from '@renderer/shared/lib/utils';
+import { formatFiatBalance, ZERO_BALANCE } from '@shared/lib/utils';
 import { FiatBalance } from './FiatBalance';
-import { useI18n } from '@renderer/app/providers';
+import { useI18n } from '@app/providers';
 
 type Props = {
   assetId?: string;

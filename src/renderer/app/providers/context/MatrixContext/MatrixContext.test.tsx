@@ -1,21 +1,16 @@
 import { act, render, screen } from '@testing-library/react';
 
-import { Matrix } from '@renderer/shared/api/matrix';
-import { ConnectionType } from '@renderer/shared/core';
+import { Matrix } from '@shared/api/matrix';
+import { ConnectionType } from '@shared/core';
 import { MatrixProvider } from './MatrixContext';
 
-jest.mock('@renderer/entities/walletConnect', () => ({
-  walletConnectModel: { events: {} },
-  DEFAULT_POLKADOT_METHODS: {},
-  getWalletConnectChains: jest.fn(),
-}));
-jest.mock('@renderer/pages/Onboarding/WalletConnect/model/wc-onboarding-model', () => ({
-  wcOnboardingModel: { events: {} },
+jest.mock('@app/providers', () => ({
+  useMatrix: jest.fn(),
 }));
 
-jest.mock('@renderer/shared/api/matrix', () => ({ Matrix: jest.fn().mockReturnValue({}) }));
+jest.mock('@shared/api/matrix', () => ({ Matrix: jest.fn().mockReturnValue({}) }));
 
-jest.mock('@renderer/entities/multisig', () => ({
+jest.mock('@entities/multisig', () => ({
   useMultisigTx: jest.fn().mockReturnValue({
     getMultisigTxs: jest.fn(),
     addMultisigTx: jest.fn(),
@@ -29,13 +24,13 @@ jest.mock('@renderer/entities/multisig', () => ({
   }),
 }));
 
-jest.mock('@renderer/entities/notification', () => ({
+jest.mock('@entities/notification', () => ({
   useNotification: jest.fn().mockReturnValue({
     addNotification: jest.fn(),
   }),
 }));
 
-jest.mock('@renderer/app/providers', () => ({
+jest.mock('@app/providers', () => ({
   useNetworkContext: jest.fn(() => ({
     connections: {
       '0x00': {

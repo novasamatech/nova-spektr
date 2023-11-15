@@ -11,6 +11,12 @@ export default {
   darkMode: 'class',
   theme: {
     extend: {
+      width: {
+        modal: '440px',
+      },
+      height: {
+        modal: '576px',
+      },
       fontFamily: {
         sans: ['Inter', ...defaultTheme.fontFamily.sans],
         manrope: ['Manrope', ...defaultTheme.fontFamily.sans],

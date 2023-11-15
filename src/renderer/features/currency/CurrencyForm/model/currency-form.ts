@@ -2,8 +2,8 @@ import { sample, createStore, createApi, attach, createEvent, combine } from 'ef
 import { createForm } from 'effector-forms';
 import { spread, combineEvents } from 'patronum';
 
-import { currencyModel, priceProviderModel } from '@renderer/entities/price';
-import { CurrencyItem } from '@renderer/shared/api/price-provider';
+import { currencyModel, priceProviderModel } from '@entities/price';
+import { CurrencyItem } from '@shared/api/price-provider';
 
 export type Callbacks = {
   onSubmit: () => void;
@@ -35,9 +35,11 @@ const $unpopularFiatCurrencies = currencyModel.$currencyConfig.map((config) => {
 });
 
 const $isFormValid = combine(
-  $currencyForm.fields.currency.$isDirty,
-  $currencyForm.fields.fiatFlag.$isDirty,
-  (isCurrencyDirty, isFiatFlagDirty) => isFiatFlagDirty || isCurrencyDirty,
+  {
+    isCurrencyDirty: $currencyForm.fields.currency.$isDirty,
+    isFiatFlagDirty: $currencyForm.fields.fiatFlag.$isDirty,
+  },
+  ({ isCurrencyDirty, isFiatFlagDirty }) => isFiatFlagDirty || isCurrencyDirty,
 );
 
 type Params = {

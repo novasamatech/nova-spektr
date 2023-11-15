@@ -2,18 +2,18 @@ import { ApiPromise } from '@polkadot/api';
 import { useEffect, useState } from 'react';
 import { useStore, useUnit } from 'effector-react';
 
-import { getAssetId, TEST_ACCOUNT_ID, toAddress, toHexChainId } from '@renderer/shared/lib/utils';
-import { useBalance } from '@renderer/entities/asset';
-import { Transaction, TransactionType, useTransaction } from '@renderer/entities/transaction';
+import { getAssetId, TEST_ACCOUNT_ID, toAddress, toHexChainId } from '@shared/lib/utils';
+import { useBalance } from '@entities/asset';
+import { Transaction, TransactionType, useTransaction } from '@entities/transaction';
 import { TransferForm, TransferFormData } from '../TransferForm';
 import { getAccountOption, getSignatoryOption } from '../../common/utils';
-import { OperationFooter, OperationHeader } from '@renderer/features/operation';
+import { OperationFooter, OperationHeader } from '@features/operation';
 import * as sendAssetModel from '../../../model/send-asset';
-import { useNetworkContext } from '@renderer/app/providers';
-import { XcmTransferType } from '@renderer/shared/api/xcm';
-import { walletModel, accountUtils } from '@renderer/entities/wallet';
-import { AssetType } from '@renderer/shared/core';
-import type { ChainId, Asset, Explorer, Account, MultisigAccount, Chain } from '@renderer/shared/core';
+import { useNetworkContext } from '@app/providers';
+import { XcmTransferType } from '@shared/api/xcm';
+import { walletModel, accountUtils } from '@entities/wallet';
+import { AssetType } from '@shared/core';
+import type { ChainId, Asset, Explorer, Account, MultisigAccount, Chain, Wallet } from '@shared/core';
 
 type Props = {
   api: ApiPromise;
@@ -105,9 +105,12 @@ export const InitOperation = ({
   }, [availableDestinations.length]);
 
   useEffect(() => {
-    setActiveAccount(activeAccounts[0]);
-    onAccountChange(activeAccounts[0]);
-  }, [activeAccounts.length, activeAccounts[0]?.accountId]);
+    const chainAccount =
+      activeAccounts.find((account) => accountUtils.isChainIdMatch(account, chainId)) || activeAccounts[0];
+
+    setActiveAccount(chainAccount);
+    onAccountChange(chainAccount);
+  }, [accountIds.join('')]);
 
   useEffect(() => {
     if (!isMultisigAccount) {
@@ -194,10 +197,10 @@ export const InitOperation = ({
     return getAccountOption(account, { addressPrefix, asset, amount, balance, nativeBalance, fee, deposit });
   };
 
-  const getSignatoryDrowdownOption = (account: Account) => {
+  const getSignatoryDropdownOption = (wallet: Wallet, account: Account) => {
     const balance = signatoriesBalances.find((b) => b.accountId === account.accountId);
 
-    return getSignatoryOption(account, { addressPrefix, asset: nativeToken || asset, balance, fee, deposit });
+    return getSignatoryOption(wallet, account, { addressPrefix, asset: nativeToken || asset, balance, fee, deposit });
   };
 
   const changeAccount = (account: Account | MultisigAccount) => {
@@ -237,7 +240,7 @@ export const InitOperation = ({
           <OperationHeader
             chainId={chainId}
             accounts={activeAccounts}
-            getSignatoryOption={getSignatoryDrowdownOption}
+            getSignatoryOption={getSignatoryDropdownOption}
             getAccountOption={getAccountDropdownOption}
             onSignatoryChange={changeSignatory}
             onAccountChange={changeAccount}

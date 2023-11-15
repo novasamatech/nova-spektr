@@ -1,7 +1,7 @@
-import { useI18n } from '@renderer/app/providers';
-import { WalletType } from '@renderer/shared/core';
-import { Button, Icon } from '@renderer/shared/ui';
-import { IconNames } from '@renderer/shared/ui/Icon/data';
+import { useI18n } from '@app/providers';
+import { WalletType } from '@shared/core';
+import { Button, Icon } from '@shared/ui';
+import { IconNames } from '@shared/ui/Icon/data';
 
 type Props = {
   type: WalletType;
@@ -22,8 +22,8 @@ const WalletIcon: Record<WalletType, IconNames> = {
 };
 
 const WalletText: Record<WalletType, string> = {
-  [WalletType.POLKADOT_VAULT]: 'operation.polkadotVault',
-  [WalletType.MULTISIG]: 'operation.polkadotVault',
+  [WalletType.POLKADOT_VAULT]: 'operation.sign.polkadotVault',
+  [WalletType.MULTISIG]: 'operation.sign.polkadotVault',
   [WalletType.WATCH_ONLY]: 'operation.sign.watchOnly',
   [WalletType.WALLET_CONNECT]: 'operation.sign.walletConnect',
   [WalletType.NOVA_WALLET]: 'operation.sign.novaWallet',

@@ -1,18 +1,18 @@
 import { useState } from 'react';
 import { useUnit } from 'effector-react';
 
-import { Transaction, DepositWithLabel, Fee, XcmTypes } from '@renderer/entities/transaction';
-import { TransactionAmount } from '@renderer/pages/Operations/components/TransactionAmount';
-import { Button, DetailRow, FootnoteText, Icon } from '@renderer/shared/ui';
-import { ExtendedChain } from '@renderer/entities/network';
-import { useI18n } from '@renderer/app/providers';
-import { XcmFee } from '@renderer/entities/transaction/ui/XcmFee/XcmFee';
-import { AssetXCM, XcmConfig } from '@renderer/shared/api/xcm';
-import { SignButton } from '@renderer/entities/operation/ui/SignButton';
-import { WalletType } from '@renderer/shared/core';
-import type { Account, MultisigAccount } from '@renderer/shared/core';
+import { Transaction, DepositWithLabel, Fee, XcmTypes } from '@entities/transaction';
+import { TransactionAmount } from '@pages/Operations/components/TransactionAmount';
+import { Button, DetailRow, FootnoteText, Icon } from '@shared/ui';
+import { ExtendedChain } from '@entities/network';
+import { useI18n } from '@app/providers';
+import { XcmFee } from '@entities/transaction/ui/XcmFee/XcmFee';
+import { AssetXCM, XcmConfig } from '@shared/api/xcm';
+import { SignButton } from '@entities/operation/ui/SignButton';
+import { WalletType } from '@shared/core';
+import type { Account, MultisigAccount } from '@shared/core';
 import Details from '../Details';
-import { walletModel } from '@renderer/entities/wallet';
+import { walletModel } from '@entities/wallet';
 
 type Props = {
   transaction: Transaction;
@@ -38,20 +38,23 @@ export const Confirmation = ({
   onBack,
 }: Props) => {
   const { t } = useI18n();
+
   const activeWallet = useUnit(walletModel.$activeWallet);
+  const wallets = useUnit(walletModel.$wallets);
   const [feeLoaded, setFeeLoaded] = useState(false);
 
   const isXcmTransfer = XcmTypes.includes(transaction?.type);
   const asset = xcmAsset && connection.assets.find((a) => a.assetId === xcmAsset.assetId);
 
+  const signatoryWallet = signatory && wallets.find((w) => w.id === signatory.walletId);
+  const walletType = signatoryWallet?.type || activeWallet?.type || WalletType.POLKADOT_VAULT;
+
   return (
     <div className="flex flex-col items-center pt-4 gap-y-4 pb-4 pl-5 pr-3">
       <div className="flex flex-col items-center gap-y-3 mb-2">
-        {isXcmTransfer && (
-          <div className="flex items-center justify-center shrink-0 w-15 h-15 box-border rounded-full border-[2.5px] border-icon-default">
-            <Icon name="crossChain" size={42} />
-          </div>
-        )}
+        <div className="flex items-center justify-center shrink-0 w-15 h-15 box-border rounded-full border-[2.5px] border-icon-default">
+          <Icon name={isXcmTransfer ? 'crossChain' : 'sendArrow'} size={42} />
+        </div>
 
         {transaction && <TransactionAmount tx={transaction} />}
 
@@ -63,6 +66,15 @@ export const Confirmation = ({
       </div>
 
       <Details transaction={transaction} account={account} signatory={signatory} connection={connection} />
+
+      {signatory && connection.api && (
+        <DepositWithLabel
+          api={connection.api}
+          asset={connection.assets[0]}
+          wrapperClassName="pr-2"
+          threshold={(account as MultisigAccount).threshold}
+        />
+      )}
 
       <DetailRow label={t('operation.networkFee')} className="text-text-primary pr-2">
         {connection.api && transaction && (
@@ -84,25 +96,12 @@ export const Confirmation = ({
         </DetailRow>
       )}
 
-      {signatory && connection.api && (
-        <DepositWithLabel
-          api={connection.api}
-          asset={connection.assets[0]}
-          className="pr-2"
-          threshold={(account as MultisigAccount).threshold}
-        />
-      )}
-
       <div className="flex w-full justify-between mt-3  pr-2">
         <Button variant="text" onClick={onBack}>
           {t('operation.goBackButton')}
         </Button>
 
-        <SignButton
-          disabled={!feeLoaded}
-          type={activeWallet?.type || WalletType.SINGLE_PARITY_SIGNER}
-          onClick={onResult}
-        />
+        <SignButton disabled={!feeLoaded} type={walletType} onClick={onResult} />
       </div>
     </div>
   );

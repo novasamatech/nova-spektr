@@ -1,16 +1,15 @@
 import { useEffect, useState } from 'react';
 
-import { cnTw, includes, toAddress } from '@renderer/shared/lib/utils';
-import { useI18n, useMatrix } from '@renderer/app/providers';
-import { useToggle } from '@renderer/shared/lib/hooks';
-import { Button, Checkbox, FootnoteText, Icon, SearchInput, SmallTitleText, Tabs, Tooltip } from '@renderer/shared/ui';
-import { TabItem } from '@renderer/shared/ui/types';
-import { CreateContactModal } from '@renderer/widgets';
+import { cnTw, includes, toAddress } from '@shared/lib/utils';
+import { useI18n, useMatrix } from '@app/providers';
+import { useToggle } from '@shared/lib/hooks';
+import { Button, Checkbox, FootnoteText, Icon, SearchInput, SmallTitleText, Tabs, Tooltip } from '@shared/ui';
+import { TabItem } from '@shared/ui/types';
+import { CreateContactModal } from '@widgets/ManageContactModal';
 import { ExtendedContact, ExtendedWallet } from '../common/types';
-import { EmptyContactList } from '@renderer/entities/contact';
-import { type Contact, type Wallet, type Account, type MultisigAccount, WalletType } from '@renderer/shared/core';
-import { walletUtils } from '@renderer/entities/wallet';
-import { ContactItem } from './ContactItem';
+import { EmptyContactList } from '@entities/contact';
+import { type Contact, type Wallet, type Account, type MultisigAccount, WalletType } from '@shared/core';
+import { walletUtils, ContactItem } from '@entities/wallet';
 import { WalletItem } from './WalletItem';
 
 const enum SignatoryTabs {
@@ -58,7 +57,8 @@ export const SelectSignatories = ({ isActive, wallets, accounts, contacts, onSel
 
         const accountId = walletAccounts[0].accountId;
         const isSameAccounts = walletAccounts.every((a) => a.accountId === accountId);
-        if (isSameAccounts && !walletUtils.isMultisig(wallet)) {
+
+        if (isSameAccounts && walletUtils.isValidSignatory(wallet)) {
           acc.available.push({
             ...wallet,
             index: index.toString(),
@@ -72,10 +72,7 @@ export const SelectSignatories = ({ isActive, wallets, accounts, contacts, onSel
 
         return acc;
       },
-      {
-        available: [],
-        disabled: [],
-      },
+      { available: [], disabled: [] },
     );
 
     setAvailableWallets(available);
@@ -147,21 +144,22 @@ export const SelectSignatories = ({ isActive, wallets, accounts, contacts, onSel
 
   const WalletsTab = hasWallets ? (
     <div className="flex flex-col gap-2">
-      <FootnoteText className="text-text-tertiary px-2">{t('createMultisigAccount.availableLabel')}</FootnoteText>
+      {Boolean(disabledWallets) && (
+        <FootnoteText className="text-text-tertiary px-2">{t('createMultisigAccount.availableLabel')}</FootnoteText>
+      )}
 
-      <ul className="gap-y-2">
+      <ul className="flex flex-col gap-y-2">
         {availableWallets.map((wallet) => {
           const disabled = isDisabledWallet(wallet);
 
           return (
             <li
               key={wallet.id + '_wallets'}
-              className={cnTw('py-1.5 rounded-md', !disabled && 'hover:bg-action-background-hover')}
+              className={cnTw('py-1.5 px-2 rounded-md', !disabled && 'hover:bg-action-background-hover')}
             >
               <Checkbox
                 checked={!!selectedWallets[wallet.id]}
                 disabled={disabled}
-                className="px-0.5"
                 onChange={() => selectWallet(wallet)}
               >
                 <WalletItem name={wallet.name} type={wallet.type || WalletType.POLKADOT_VAULT} />
@@ -171,20 +169,20 @@ export const SelectSignatories = ({ isActive, wallets, accounts, contacts, onSel
         })}
       </ul>
 
-      {!!disabledWallets.length && (
+      {Boolean(disabledWallets.length) && (
         <FootnoteText className="text-text-tertiary px-2">{t('createMultisigAccount.disabledLabel')}</FootnoteText>
       )}
 
       <ul className="gap-y-2">
         {disabledWallets.map(({ id, name, type }) => (
-          <li key={id + '_wallets'} className="p-1.5 rounded-md">
+          <li key={id + '_wallets'} className="py-1.5 px-2 rounded-md">
             <Tooltip
               position="start"
               offsetPx={-65}
               content={getDisabledMessage(type)}
               panelClass="left-0 -translate-x-2"
             >
-              <Checkbox className="px-0.5" disabled>
+              <Checkbox disabled>
                 <WalletItem name={name} type={type} />
               </Checkbox>
             </Tooltip>

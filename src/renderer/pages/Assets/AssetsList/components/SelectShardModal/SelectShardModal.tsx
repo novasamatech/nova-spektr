@@ -1,23 +1,15 @@
 import { useEffect, useState } from 'react';
 import { keyBy } from 'lodash';
 
-import type { AccountId, ChainId, Account } from '@renderer/shared/core';
-import { Accordion, BaseModal, Button, Checkbox, FootnoteText, SearchInput } from '@renderer/shared/ui';
-import { useI18n } from '@renderer/app/providers';
-import { chainsService } from '@renderer/entities/network';
-import {
-  getMultishardStructure,
-  getSelectableShards,
-  searchShards,
-} from '@renderer/features/wallets/WalletSelect/common/utils';
-import {
-  ChainsRecord,
-  SelectableAccount,
-  SelectableShards,
-} from '@renderer/features/wallets/WalletSelect/common/types';
-import { SelectableShard } from '@renderer/entities/wallet';
-import { ChainTitle } from '@renderer/entities/chain';
-import { toAddress } from '@renderer/shared/lib/utils';
+import type { AccountId, ChainId, Account } from '@shared/core';
+import { Accordion, BaseModal, Button, Checkbox, FootnoteText, SearchInput } from '@shared/ui';
+import { useI18n } from '@app/providers';
+import { chainsService } from '@entities/network';
+import { SelectableShard } from '@entities/wallet';
+import { ChainTitle } from '@entities/chain';
+import { toAddress } from '@shared/lib/utils';
+import { SelectableShards, ChainsRecord, SelectableAccount } from '../../common/types';
+import { getMultishardStructure, searchShards, getSelectableShards } from '../../common/utils';
 
 type Props = {
   accounts: Account[];
@@ -30,6 +22,8 @@ export const SelectShardModal = ({ isOpen, activeShards, accounts, onClose }: Pr
   const { t } = useI18n();
 
   const [chains, setChains] = useState<ChainsRecord>({});
+  const [shards, setShards] = useState<SelectableShards>({ rootAccounts: [], amount: 0 });
+  const [query, setQuery] = useState('');
 
   useEffect(() => {
     const chains = chainsService.getChainsData();
@@ -43,9 +37,6 @@ export const SelectShardModal = ({ isOpen, activeShards, accounts, onClose }: Pr
     setShards(selectable);
     setQuery('');
   }, [accounts.length, activeShards.length]);
-
-  const [shards, setShards] = useState<SelectableShards>({ rootAccounts: [], amount: 0 });
-  const [query, setQuery] = useState('');
 
   const selectRoot = (value: boolean, accountId: AccountId) => {
     const root = shards.rootAccounts.find((r) => r.accountId === accountId);

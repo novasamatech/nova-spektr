@@ -3,17 +3,16 @@ import { useNavigate, Outlet } from 'react-router-dom';
 import { useUnit } from 'effector-react';
 
 import { Header } from '@renderer/components/common';
-import { getRelaychainAsset, toAddress } from '@renderer/shared/lib/utils';
-import { createLink } from '@renderer/shared/routes';
-import type { PathValue } from '@renderer/shared/routes';
-import { useGraphql, useI18n, useNetworkContext } from '@renderer/app/providers';
-import { useToggle } from '@renderer/shared/lib/hooks';
-import { NominatorInfo } from '@renderer/pages/Staking/Overview/components/NominatorsList/NominatorsList';
-import { AboutStaking, NetworkInfo, NominatorsList, Actions, ValidatorsModal, InactiveChain } from './components';
-import type { ChainId, Chain, Address, Account, Stake } from '@renderer/shared/core';
-import { ConnectionType, ConnectionStatus } from '@renderer/shared/core';
-import { accountUtils, walletModel, walletUtils } from '@renderer/entities/wallet';
-import { priceProviderModel } from '@renderer/entities/price';
+import { getRelaychainAsset, toAddress } from '@shared/lib/utils';
+import { createLink, type PathType } from '@shared/routes';
+import { useGraphql, useI18n, useNetworkContext } from '@app/providers';
+import { useToggle } from '@shared/lib/hooks';
+import { NominatorInfo } from '@pages/Staking/Overview/components/NominatorsList/NominatorsList';
+import { AboutStaking, NetworkInfo, NominatorsList, Actions, InactiveChain } from './components';
+import type { ChainId, Chain, Address, Account, Stake, Validator } from '@shared/core';
+import { ConnectionType, ConnectionStatus } from '@shared/core';
+import { accountUtils, walletModel, walletUtils } from '@entities/wallet';
+import { priceProviderModel } from '@entities/price';
 import {
   useEra,
   useStakingData,
@@ -21,7 +20,8 @@ import {
   ValidatorMap,
   useValidators,
   useStakingRewards,
-} from '@renderer/entities/staking';
+  ValidatorsModal,
+} from '@entities/staking';
 
 export const Overview = () => {
   const { t } = useI18n();
@@ -34,13 +34,15 @@ export const Overview = () => {
 
   const { subscribeActiveEra } = useEra();
   const { subscribeStaking } = useStakingData();
-  const { getValidatorsList } = useValidators();
+  const { getValidatorsList, getNominators } = useValidators();
   const [isShowNominators, toggleNominators] = useToggle();
 
   const [chainEra, setChainEra] = useState<Record<ChainId, number | undefined>>({});
   const [staking, setStaking] = useState<StakingMap>({});
   const [isStakingLoading, setIsStakingLoading] = useState(true);
+
   const [validators, setValidators] = useState<ValidatorMap>({});
+  const [nominators, setNominators] = useState<Validator[]>([]);
 
   const [activeChain, setActiveChain] = useState<Chain>();
   const [networkIsActive, setNetworkIsActive] = useState(true);
@@ -128,6 +130,14 @@ export const Overview = () => {
     getValidatorsList(api, era).then(setValidators);
   }, [chainId, api, chainEra]);
 
+  useEffect(() => {
+    if (!api) return;
+
+    getNominators(api, selectedStash, isLightClient).then((nominators) => {
+      setNominators(Object.values(nominators));
+    });
+  }, [api, selectedStash]);
+
   const changeNetwork = (chain: Chain) => {
     if (chain.chainId === chainId) return;
 
@@ -169,7 +179,23 @@ export const Overview = () => {
     return acc;
   }, []);
 
-  const navigateToStake = (path: PathValue, addresses?: Address[]) => {
+  const [selectedValidators, notSelectedValidators] = nominators.reduce<[Validator[], Validator[]]>(
+    (acc, nominator) => {
+      if (validators[nominator.address]) {
+        acc[0].push({
+          ...nominator,
+          ...validators[nominator.address],
+        });
+      } else {
+        acc[1].push(nominator);
+      }
+
+      return acc;
+    },
+    [[], []],
+  );
+
+  const navigateToStake = (path: PathType, addresses?: Address[]) => {
     if (addresses) {
       setSelectedNominators(addresses);
 
@@ -202,7 +228,7 @@ export const Overview = () => {
 
   return (
     <>
-      <div className="h-full flex flex-col items-start relative">
+      <div className="h-full flex flex-col">
         <Header title={t('staking.title')} />
 
         <div className="overflow-y-auto w-full h-full mt-6">
@@ -250,13 +276,11 @@ export const Overview = () => {
       </div>
 
       <ValidatorsModal
-        api={api}
         asset={relaychainAsset}
-        stash={selectedStash}
-        validators={validators}
+        selectedValidators={selectedValidators}
+        notSelectedValidators={notSelectedValidators}
         explorers={explorers}
         isOpen={isShowNominators}
-        isLightClient={isLightClient}
         onClose={toggleNominators}
       />
 

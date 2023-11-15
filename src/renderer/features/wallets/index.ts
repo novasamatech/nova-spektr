@@ -1,3 +1,3 @@
-export { WalletMenu } from './WalletSelect/WalletMenu';
-export { WalletCard } from './WalletSelect/WalletCard';
+export { WalletSelect, walletSelectModel } from './WalletSelect';
+export { SelectWalletPairing, walletPairingModel } from './SelectWalletPairing';
 export { ImportKeysModal } from './ImportKeysModal/ImportKeysModal';

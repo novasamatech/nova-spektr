@@ -4,29 +4,15 @@ import { Controller, SubmitHandler, useForm } from 'react-hook-form';
 import { u8aToHex } from '@polkadot/util';
 import { keyBy } from 'lodash';
 
-import { chainsService } from '@renderer/entities/network';
-import { useI18n } from '@renderer/app/providers';
-import { ChainTitle } from '@renderer/entities/chain';
+import { chainsService } from '@entities/network';
+import { useI18n } from '@app/providers';
+import { ChainTitle } from '@entities/chain';
 import { AddressInfo, CompactSeedInfo, SeedInfo } from '@renderer/components/common/QrCode/common/types';
-import { toAccountId, toAddress, cnTw } from '@renderer/shared/lib/utils';
-import { walletModel, AddressWithExplorers } from '@renderer/entities/wallet';
-import {
-  Button,
-  Input,
-  InputHint,
-  HeaderTitleText,
-  SmallTitleText,
-  IconButton,
-  FootnoteText,
-  Icon,
-} from '@renderer/shared/ui';
-import type { Explorer, Chain, Account, ChainId, HexString, ChainAccount, BaseAccount } from '@renderer/shared/core';
-import { CryptoType, ChainType, AccountType, WalletType, SigningType, ErrorType, KeyType } from '@renderer/shared/core';
-
-const RootExplorers: Explorer[] = [
-  { name: 'Subscan', account: 'https://subscan.io/account/{address}' },
-  { name: 'Sub.ID', account: 'https://sub.id/{address}' },
-];
+import { toAccountId, toAddress, cnTw, RootExplorers } from '@shared/lib/utils';
+import { walletModel, AddressWithExplorers } from '@entities/wallet';
+import { Button, Input, InputHint, HeaderTitleText, SmallTitleText, IconButton, FootnoteText, Icon } from '@shared/ui';
+import type { Chain, ChainId, HexString, ChainAccount, BaseAccount } from '@shared/core';
+import { CryptoType, ChainType, AccountType, WalletType, SigningType, ErrorType, KeyType } from '@shared/core';
 
 type WalletForm = {
   walletName: string;
@@ -144,7 +130,11 @@ export const ManageMultishard = ({ seedInfo, onBack, onComplete }: Props) => {
     });
   };
 
-  const createDerivedAccounts = (derivedKeys: AddressInfo[], chainId: ChainId, accountIndex: number): Account[] => {
+  const createDerivedAccounts = (
+    derivedKeys: AddressInfo[],
+    chainId: ChainId,
+    accountIndex: number,
+  ): ChainAccount[] => {
     return derivedKeys.reduce<ChainAccount[]>((acc, derivedKey, index) => {
       const accountId = getAccountId(accountIndex, chainId, index);
 
@@ -166,7 +156,7 @@ export const ManageMultishard = ({ seedInfo, onBack, onComplete }: Props) => {
   };
 
   const createWallet: SubmitHandler<WalletForm> = async ({ walletName }) => {
-    const accountsToSave = accounts.reduce<Account[]>((acc, account, index) => {
+    const accountsToSave = accounts.reduce<Array<BaseAccount | ChainAccount>>((acc, account, index) => {
       acc.push({
         name: accountNames[getAccountId(index)],
         accountId: toAccountId(account.address),

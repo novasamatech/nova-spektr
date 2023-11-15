@@ -1,18 +1,18 @@
 import { ComponentProps, useState, useEffect } from 'react';
 import { useStore } from 'effector-react';
 
-import { BaseModal, HeaderTitleText, StatusLabel, Button } from '@renderer/shared/ui';
-import { useI18n, useMatrix } from '@renderer/app/providers';
-import { useToggle } from '@renderer/shared/lib/hooks';
-import { OperationResult } from '@renderer/entities/transaction';
+import { BaseModal, HeaderTitleText, StatusLabel, Button } from '@shared/ui';
+import { useI18n, useMatrix } from '@app/providers';
+import { useToggle } from '@shared/lib/hooks';
+import { OperationResult } from '@entities/transaction';
 import { ExtendedContact, ExtendedWallet } from './common/types';
 import { SelectSignatories, ConfirmSignatories, WalletForm } from './components';
-import { contactModel } from '@renderer/entities/contact';
-import { DEFAULT_TRANSITION } from '@renderer/shared/lib/utils';
-import { MatrixLoginModal } from '@renderer/widgets/MatrixModal';
-import { walletModel, accountUtils } from '@renderer/entities/wallet';
-import type { AccountId } from '@renderer/shared/core';
-import { WalletType, SigningType, CryptoType, ChainType, AccountType } from '@renderer/shared/core';
+import { contactModel } from '@entities/contact';
+import { DEFAULT_TRANSITION } from '@shared/lib/utils';
+import { MatrixLoginModal } from '@widgets/MatrixModal';
+import { walletModel, accountUtils } from '@entities/wallet';
+import type { AccountId } from '@shared/core';
+import { WalletType, SigningType, CryptoType, ChainType, AccountType } from '@shared/core';
 
 type OperationResultProps = Pick<ComponentProps<typeof OperationResult>, 'variant' | 'description'>;
 
@@ -204,6 +204,7 @@ export const MultisigAccount = ({ isOpen, onClose, onComplete }: Props) => {
             setSignatoryContacts(contacts);
           }}
         />
+
         <ConfirmSignatories
           isActive={activeStep === Step.CONFIRMATION}
           wallets={signatoryWallets}

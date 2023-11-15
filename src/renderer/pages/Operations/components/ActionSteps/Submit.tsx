@@ -2,12 +2,12 @@ import { ApiPromise } from '@polkadot/api';
 import { UnsignedTransaction } from '@substrate/txwrapper-polkadot';
 import { useEffect, useState, ComponentProps } from 'react';
 
-import { useI18n, useMatrix, useMultisigChainContext } from '@renderer/app/providers';
-import { useMultisigTx, useMultisigEvent } from '@renderer/entities/multisig';
-import { toAccountId } from '@renderer/shared/lib/utils';
-import { useToggle } from '@renderer/shared/lib/hooks';
-import { Button, StatusModal } from '@renderer/shared/ui';
-import type { Account, HexString } from '@renderer/shared/core';
+import { useI18n, useMatrix, useMultisigChainContext } from '@app/providers';
+import { useMultisigTx, useMultisigEvent } from '@entities/multisig';
+import { toAccountId } from '@shared/lib/utils';
+import { useToggle } from '@shared/lib/hooks';
+import { Animation, Button, StatusModal } from '@shared/ui';
+import type { Account, HexString } from '@shared/core';
 import {
   MultisigEvent,
   MultisigTxFinalStatus,
@@ -17,10 +17,9 @@ import {
   MultisigTransaction,
   useTransaction,
   ExtrinsicResultParams,
-  OperationResult,
-} from '@renderer/entities/transaction';
+} from '@entities/transaction';
 
-type ResultProps = Pick<ComponentProps<typeof OperationResult>, 'title' | 'description' | 'variant'>;
+type ResultProps = Pick<ComponentProps<typeof StatusModal>, 'title' | 'content' | 'description'>;
 
 type Props = {
   api: ApiPromise;
@@ -147,13 +146,23 @@ export const Submit = ({
 
   const getResultProps = (): ResultProps => {
     if (inProgress) {
-      return { title: t(isReject ? 'operation.rejectInProgress' : 'operation.inProgress'), variant: 'loading' };
+      return {
+        title: t(isReject ? 'operation.rejectInProgress' : 'operation.inProgress'),
+        content: <Animation variant="loading" loop />,
+      };
     }
     if (successMessage) {
-      return { title: t(isReject ? 'operation.successRejectMessage' : 'operation.successMessage'), variant: 'success' };
+      return {
+        title: t(isReject ? 'operation.successRejectMessage' : 'operation.successMessage'),
+        content: <Animation variant="success" />,
+      };
     }
     if (errorMessage) {
-      return { title: t('operation.feeErrorTitle'), description: errorMessage, variant: 'error' };
+      return {
+        title: t('operation.feeErrorTitle'),
+        content: <Animation variant="error" />,
+        description: errorMessage,
+      };
     }
 
     return { title: '' };

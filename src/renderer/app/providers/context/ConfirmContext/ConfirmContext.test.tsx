@@ -1,16 +1,11 @@
 import { act, render, renderHook, screen } from '@testing-library/react';
 
-import { useToggle } from '@renderer/shared/lib/hooks';
+import { useToggle } from '@shared/lib/hooks';
 import { ConfirmDialogProvider, useConfirmContext } from './ConfirmContext';
 
-jest.mock('@renderer/shared/lib/hooks');
-jest.mock('@renderer/entities/walletConnect', () => ({
-  walletConnectModel: { events: {} },
-  DEFAULT_POLKADOT_METHODS: {},
-  getWalletConnectChains: jest.fn(),
-}));
-jest.mock('@renderer/pages/Onboarding/WalletConnect/model/wc-onboarding-model', () => ({
-  wcOnboardingModel: { events: {} },
+jest.mock('@shared/lib/hooks');
+jest.mock('@app/providers', () => ({
+  useMatrix: jest.fn(),
 }));
 
 describe('context/ConfirmContext', () => {

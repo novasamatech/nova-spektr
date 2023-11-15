@@ -1,11 +1,10 @@
-import type { Wallet } from './wallet';
 import type { Signatory } from './signatory';
-import { ChainType, CryptoType } from './general';
 import type { AccountId, ChainId, Threshold, ID } from './general';
+import { ChainType, CryptoType } from './general';
 
 type AbstractAccount = {
   id: ID;
-  walletId: Wallet['id'];
+  walletId: ID;
   name: string;
   type: AccountType;
 };
@@ -23,14 +22,14 @@ export type ShardedAccount = AbstractAccount & {
 };
 
 export type ChainAccount = BaseAccount & {
-  baseId: BaseAccount['id'];
+  baseId: ID;
   chainId: ChainId;
   keyType: KeyType;
   derivationPath: string;
 };
 
 export type ShardAccount = BaseAccount & {
-  shardedId: BaseAccount['id'];
+  shardedId: ID;
   chainId: ChainId;
   derivationPath: string;
 };
@@ -46,7 +45,7 @@ export type WalletConnectAccount = Omit<BaseAccount, 'cryptoType'> & {
   chainId: ChainId;
 };
 
-export type Account = BaseAccount | ChainAccount | MultisigAccount | WalletConnectAccount;
+export type Account = BaseAccount | ChainAccount | MultisigAccount | WalletConnectAccount | ShardAccount;
 
 export const enum AccountType {
   BASE = 'base',

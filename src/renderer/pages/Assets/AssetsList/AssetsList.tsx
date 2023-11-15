@@ -2,18 +2,18 @@ import { useEffect, useState } from 'react';
 import { Outlet } from 'react-router-dom';
 import { useUnit } from 'effector-react';
 
-import { BodyText, Button, Icon, SmallTitleText } from '@renderer/shared/ui';
-import { useI18n, useNetworkContext } from '@renderer/app/providers';
-import { useBalance } from '@renderer/entities/asset';
-import { useToggle } from '@renderer/shared/lib/hooks';
-import { chainsService } from '@renderer/entities/network';
-import { useSettingsStorage } from '@renderer/entities/settings';
+import { BodyText, Button, Icon, SmallTitleText } from '@shared/ui';
+import { useI18n, useNetworkContext } from '@app/providers';
+import { useBalance } from '@entities/asset';
+import { useToggle } from '@shared/lib/hooks';
+import { chainsService, isMultisigAvailable } from '@entities/network';
+import { useSettingsStorage } from '@entities/settings';
 import { AssetsFilters, NetworkAssets, SelectShardModal } from './components';
 import { Header } from '@renderer/components/common';
-import type { Account, Chain } from '@renderer/shared/core';
-import { ConnectionType } from '@renderer/shared/core';
-import { walletModel, walletUtils } from '@renderer/entities/wallet';
-import { currencyModel, priceProviderModel } from '@renderer/entities/price';
+import type { Account, Chain } from '@shared/core';
+import { ConnectionType } from '@shared/core';
+import { walletModel, walletUtils } from '@entities/wallet';
+import { currencyModel, priceProviderModel } from '@entities/price';
 
 export const AssetsList = () => {
   const { t } = useI18n();
@@ -47,7 +47,7 @@ export const AssetsList = () => {
 
   useEffect(() => {
     updateAccounts(activeAccounts);
-  }, [activeAccounts.length]);
+  }, [activeAccounts]);
 
   const updateAccounts = (accounts: Account[]) => {
     setActiveShards(accounts.length > 0 ? accounts : []);
@@ -56,7 +56,7 @@ export const AssetsList = () => {
   useEffect(() => {
     const filteredChains = Object.values(connections).filter((c) => {
       const isDisabled = c.connection.connectionType === ConnectionType.DISABLED;
-      const hasMultiPallet = !isMultisig || c.connection.hasMultisigPallet !== false;
+      const hasMultiPallet = !isMultisig || isMultisigAvailable(c.options);
 
       return !isDisabled && hasMultiPallet;
     });
@@ -90,7 +90,7 @@ export const AssetsList = () => {
 
   return (
     <>
-      <section className="h-full flex flex-col items-start relative">
+      <section className="h-full flex flex-col">
         <Header title={t('balances.title')} titleClass="py-[3px]" headerClass="pt-4 pb-[15px]">
           <AssetsFilters
             searchQuery={query}

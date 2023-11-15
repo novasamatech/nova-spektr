@@ -1,16 +1,11 @@
 import { act, render, screen, waitFor } from '@testing-library/react';
 
-import { ConnectionStatus, ConnectionType } from '@renderer/shared/core';
-import { ExtendedChain } from '@renderer/entities/network';
+import { ConnectionStatus, ConnectionType } from '@shared/core';
+import { ExtendedChain } from '@entities/network';
 import { NetworkList } from './NetworkList';
 
-jest.mock('@renderer/entities/walletConnect', () => ({
-  walletConnectModel: { events: {} },
-  DEFAULT_POLKADOT_METHODS: {},
-  getWalletConnectChains: jest.fn(),
-}));
-jest.mock('@renderer/pages/Onboarding/WalletConnect/model/wc-onboarding-model', () => ({
-  wcOnboardingModel: { events: {} },
+jest.mock('@app/providers', () => ({
+  useMatrix: jest.fn(),
 }));
 
 describe('pages/Settings/Networks/NetworkList', () => {

@@ -1,10 +1,14 @@
 import { fork, allSettled } from 'effector';
 
-import { kernelModel } from '@renderer/shared/core';
-import { fiatService, PriceObject, coingekoService, CurrencyItem } from '@renderer/shared/api/price-provider';
+import { kernelModel } from '@shared/core';
+import { fiatService, PriceObject, coingekoService, CurrencyItem } from '@shared/api/price-provider';
 import { priceProviderModel } from '../price-provider-model';
 import { PriceApiProvider } from '../../lib/types';
 import { currencyModel } from '../currency-model';
+
+jest.mock('@app/providers', () => ({
+  useMatrix: jest.fn(),
+}));
 
 describe('entities/price/model/price-provider-model', () => {
   const prices: PriceObject = {

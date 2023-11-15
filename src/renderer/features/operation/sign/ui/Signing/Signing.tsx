@@ -3,8 +3,8 @@ import { useUnit } from 'effector-react';
 import { SigningProps } from '../../model';
 import { VaultSigning } from '../VaultSigning/VaultSigning';
 import { WalletConnect } from '../WalletConnect/WalletConnect';
-import { SigningType } from '@renderer/shared/core';
-import { walletModel } from '@renderer/entities/wallet';
+import { SigningType } from '@shared/core';
+import { walletModel } from '@entities/wallet';
 
 export const SigningFlow: Record<SigningType, (props: SigningProps) => JSX.Element | null> = {
   [SigningType.MULTISIG]: (props) => <VaultSigning {...props} />,
@@ -15,8 +15,12 @@ export const SigningFlow: Record<SigningType, (props: SigningProps) => JSX.Eleme
 
 export const Signing = (props: SigningProps) => {
   const activeWallet = useUnit(walletModel.$activeWallet);
+  const wallets = useUnit(walletModel.$wallets);
 
-  if (!activeWallet) return null;
+  const signatoryWallet = wallets.find((w) => w.id === props.signatory?.walletId);
+  const wallet = signatoryWallet || activeWallet;
 
-  return SigningFlow[activeWallet.signingType](props);
+  if (!wallet) return null;
+
+  return SigningFlow[wallet.signingType](props);
 };

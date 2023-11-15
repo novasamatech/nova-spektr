@@ -3,13 +3,13 @@ import { useEffect, useState } from 'react';
 import { Controller, useForm, SubmitHandler } from 'react-hook-form';
 import { u8aToHex } from '@polkadot/util';
 
-import { useI18n } from '@renderer/app/providers';
-import { chainsService } from '@renderer/entities/network';
-import { Button, Input, InputHint, HeaderTitleText, SmallTitleText } from '@renderer/shared/ui';
+import { useI18n } from '@app/providers';
+import { chainsService } from '@entities/network';
+import { Button, Input, InputHint, HeaderTitleText, SmallTitleText } from '@shared/ui';
 import { SeedInfo } from '@renderer/components/common/QrCode/common/types';
-import { AccountsList, walletModel } from '@renderer/entities/wallet';
-import type { Chain } from '@renderer/shared/core';
-import { SigningType, ErrorType, WalletType, CryptoType, ChainType, AccountType } from '@renderer/shared/core';
+import { AccountsList, walletModel } from '@entities/wallet';
+import type { Chain } from '@shared/core';
+import { SigningType, ErrorType, WalletType, CryptoType, ChainType, AccountType } from '@shared/core';
 
 type WalletForm = {
   walletName: string;
@@ -114,9 +114,9 @@ export const ManageSingleshard = ({ seedInfo, onBack, onComplete }: Props) => {
         </form>
       </div>
 
-      <div className="w-[472px] flex flex-col bg-input-background-disabled px-3 py-4 rounded-r-lg">
-        <SmallTitleText className="px-2 mt-[52px] mb-6">{t('onboarding.vault.accountsTitle')}</SmallTitleText>
-        <AccountsList chains={chains} accountId={accountId} />
+      <div className="w-[472px] flex flex-col gap-y-6 bg-input-background-disabled py-4 rounded-r-lg">
+        <SmallTitleText className="px-5 mt-[52px]">{t('onboarding.vault.accountsTitle')}</SmallTitleText>
+        <AccountsList chains={chains} accountId={accountId} className="h-[424px]" />
       </div>
     </>
   );

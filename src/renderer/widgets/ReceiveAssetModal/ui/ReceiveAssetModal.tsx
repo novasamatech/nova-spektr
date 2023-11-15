@@ -2,14 +2,14 @@ import { useEffect, useState } from 'react';
 import { useUnit } from 'effector-react';
 
 import { OperationTitle, QrTextGenerator } from '@renderer/components/common';
-import { DefaultExplorer, ExplorerIcons } from '@renderer/components/common/ExplorerLink/constants';
-import { BaseModal, Button, FootnoteText, HelpText, Icon, Select } from '@renderer/shared/ui';
-import { DropdownOption, DropdownResult } from '@renderer/shared/ui/types';
-import { useI18n } from '@renderer/app/providers';
-import { copyToClipboard, DEFAULT_TRANSITION, toAddress, cnTw } from '@renderer/shared/lib/utils';
-import { AccountAddress, walletModel, walletUtils, accountUtils } from '@renderer/entities/wallet';
-import { useToggle } from '@renderer/shared/lib/hooks';
-import type { Chain, Asset } from '@renderer/shared/core';
+import { DefaultExplorer, ExplorerIcons } from '@shared/ui/ExplorerLink/constants';
+import { BaseModal, Button, FootnoteText, HelpText, Icon, Select } from '@shared/ui';
+import { DropdownOption, DropdownResult } from '@shared/ui/types';
+import { useI18n } from '@app/providers';
+import { copyToClipboard, DEFAULT_TRANSITION, toAddress, cnTw } from '@shared/lib/utils';
+import { AccountAddress, walletModel, walletUtils, accountUtils } from '@entities/wallet';
+import { useToggle } from '@shared/lib/hooks';
+import type { Chain, Asset } from '@shared/core';
 
 type Props = {
   chain: Chain;
@@ -60,7 +60,7 @@ export const ReceiveAssetModal = ({ chain, asset, onClose }: Props) => {
     setTimeout(onClose, DEFAULT_TRANSITION);
   };
 
-  const hasShards = activeAccounts.length > 1;
+  const hasShards = walletUtils.isMultiShard(activeWallet) && activeAccounts.length > 1;
   const account = activeAccount ? activeAccounts[activeAccount.value] : undefined;
   const accountId = account?.accountId || '0x00';
   const prefix = chain.addressPrefix;
@@ -105,7 +105,12 @@ export const ReceiveAssetModal = ({ chain, asset, onClose }: Props) => {
         <ul className="flex gap-x-2 mb-4">
           {chain.explorers?.map(({ name, account }) => (
             <li aria-label={t('receive.explorerLinkLabel', { name })} key={name} className="flex">
-              <a href={account?.replace('{address}', address)} rel="noopener noreferrer" target="_blank">
+              <a
+                href={account?.replace('{address}', address)}
+                rel="noopener noreferrer"
+                target="_blank"
+                className="px-1.5 py-1"
+              >
                 <Icon size={16} as="img" name={ExplorerIcons[name] || ExplorerIcons[DefaultExplorer]} />
               </a>
             </li>
@@ -113,13 +118,8 @@ export const ReceiveAssetModal = ({ chain, asset, onClose }: Props) => {
         </ul>
       )}
 
-      <HelpText className="w-[240px] mb-2 break-all" align="center">
-        <AccountAddress
-          className="justify-center"
-          address={toAddress(accountId, { prefix })}
-          showIcon={false}
-          type="adaptive"
-        />
+      <HelpText className="w-[240px] text-text-secondary break-all mb-2" align="center">
+        {toAddress(accountId, { prefix })}
       </HelpText>
 
       <Button variant="text" size="sm" onClick={() => copyToClipboard(address)}>

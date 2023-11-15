@@ -1,6 +1,6 @@
-import { useI18n } from '@renderer/app/providers';
-import { cnTw, secondsToMinutes } from '@renderer/shared/lib/utils';
-import { CaptionText, FootnoteText } from '@renderer/shared/ui';
+import { useI18n } from '@app/providers';
+import { cnTw, secondsToMinutes } from '@shared/lib/utils';
+import { CaptionText, FootnoteText } from '@shared/ui';
 
 type Props = {
   countdown: number;
@@ -11,7 +11,7 @@ export const Countdown = ({ countdown, className }: Props) => {
   const { t } = useI18n();
 
   return (
-    <div className={cnTw('flex items-center gap-x-2 mt-2 mb-6', className)}>
+    <div className={cnTw('flex items-center gap-x-2 mt-2 mb-6 z-[1]', className)}>
       <FootnoteText className="text-text-tertiary">{t('signing.qrCountdownTitle')}</FootnoteText>
       <CaptionText
         align="center"

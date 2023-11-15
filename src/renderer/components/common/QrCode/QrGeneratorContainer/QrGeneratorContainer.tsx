@@ -1,9 +1,9 @@
 import { PropsWithChildren } from 'react';
 
-import { Button, FootnoteText, InfoLink, SmallTitleText, Icon, Shimmering, Countdown } from '@renderer/shared/ui';
-import { useI18n } from '@renderer/app/providers';
+import { Button, FootnoteText, InfoLink, SmallTitleText, Icon, Shimmering, Countdown } from '@shared/ui';
+import { useI18n } from '@app/providers';
 import { getMetadataPortalMetadataUrl, TROUBLESHOOTING_URL } from '../common/constants';
-import type { ChainId } from '@renderer/shared/core';
+import type { ChainId } from '@shared/core';
 
 type Props = {
   countdown: number;
@@ -18,7 +18,7 @@ const QrGeneratorContainer = ({ countdown, onQrReset, chainId, children }: Props
     <section className="flex flex-col items-center flex-1">
       <SmallTitleText>{t('signing.scanQrTitle')}</SmallTitleText>
 
-      <Countdown countdown={children ? countdown : 0} />
+      <Countdown countdown={children ? countdown : 0} className="mb-4" />
 
       <div className="w-[240px] h-[240px] relative flex flex-col items-center justify-center gap-y-4">
         {children &&
@@ -38,7 +38,7 @@ const QrGeneratorContainer = ({ countdown, onQrReset, chainId, children }: Props
         {!children && <Shimmering />}
       </div>
 
-      <div className="flex flex-row items-center gap-x-2 mt-2 mb-4.5 h-[78px]">
+      <div className="flex flex-row items-center gap-x-2 mt-6 mb-4 py-1">
         <InfoLink url={TROUBLESHOOTING_URL}>{t('signing.troubleshootingLink')}</InfoLink>
 
         <span className="border border-divider h-4"></span>

@@ -1,10 +1,10 @@
 import { render, screen, act } from '@testing-library/react';
 
-import { TEST_ACCOUNT_ID } from '@renderer/shared/lib/utils';
-import { ConnectionType } from '@renderer/shared/core';
+import { TEST_ACCOUNT_ID } from '@shared/lib/utils';
+import { ConnectionType } from '@shared/core';
 import { Operations } from './Operations';
 
-jest.mock('@renderer/app/providers', () => ({
+jest.mock('@app/providers', () => ({
   useI18n: jest.fn().mockReturnValue({
     t: (key: string) => key,
   }),
@@ -21,7 +21,7 @@ jest.mock('@renderer/app/providers', () => ({
   })),
 }));
 
-jest.mock('@renderer/entities/multisig', () => ({
+jest.mock('@entities/multisig', () => ({
   useMultisigTx: jest.fn().mockReturnValue({
     getLiveAccountMultisigTxs: () => [{ name: 'Test Wallet', accountId: TEST_ACCOUNT_ID, chainId: '0x00' }],
   }),
@@ -31,7 +31,7 @@ jest.mock('@renderer/entities/multisig', () => ({
 }));
 
 jest.mock('./components/Operation', () => () => 'Operation');
-jest.mock('@renderer/features/operation', () => ({
+jest.mock('@features/operation', () => ({
   OperationsFilter: () => 'filter',
 }));
 

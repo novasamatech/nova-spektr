@@ -3,14 +3,15 @@ import { BN } from '@polkadot/util';
 import { useEffect, useState } from 'react';
 import { useUnit } from 'effector-react';
 
-import { useI18n } from '@renderer/app/providers';
-import { useBalance } from '@renderer/entities/asset';
-import { Transaction, TransactionType } from '@renderer/entities/transaction';
-import type { Account, Asset, Balance as AccountBalance, ChainId, AccountId } from '@renderer/shared/core';
-import { formatAmount, nonNullable, toAddress } from '@renderer/shared/lib/utils';
-import { StakingMap, useStakingData } from '@renderer/entities/staking';
-import { OperationForm } from '@renderer/pages/Staking/Operations/components';
-import { OperationError, OperationFooter, OperationHeader } from '@renderer/features/operation';
+import { useI18n } from '@app/providers';
+import { useBalance } from '@entities/asset';
+import { Transaction, TransactionType, OperationError } from '@entities/transaction';
+import type { Account, Asset, Balance as AccountBalance, ChainId, AccountId, Wallet } from '@shared/core';
+import { formatAmount, nonNullable, toAddress } from '@shared/lib/utils';
+import { StakingMap, useStakingData } from '@entities/staking';
+import { OperationForm } from '@pages/Staking/Operations/components';
+import { OperationFooter, OperationHeader } from '@features/operation';
+import { walletUtils, accountUtils, walletModel } from '@entities/wallet';
 import {
   getUnstakeAccountOption,
   validateBalanceForFee,
@@ -18,7 +19,6 @@ import {
   validateBalanceForFeeDeposit,
   getSignatoryOption,
 } from '../../common/utils';
-import { walletUtils, accountUtils, walletModel } from '@renderer/entities/wallet';
 
 export type UnstakeResult = {
   accounts: Account[];
@@ -142,10 +142,10 @@ const InitOperation = ({ api, chainId, addressPrefix, accounts, asset, onResult 
     return getUnstakeAccountOption(account, { balance, stake, asset, addressPrefix, fee, amount });
   };
 
-  const getSignatoryDrowdownOption = (account: Account) => {
+  const getSignatoryDropdownOption = (wallet: Wallet, account: Account) => {
     const balance = signatoriesBalances.find((b) => b.accountId === account.accountId);
 
-    return getSignatoryOption(account, { balance, asset, addressPrefix, fee, deposit });
+    return getSignatoryOption(wallet, account, { balance, asset, addressPrefix, fee, deposit });
   };
 
   const submitUnstake = (data: { amount: string; description?: string }) => {
@@ -229,7 +229,7 @@ const InitOperation = ({ api, chainId, addressPrefix, accounts, asset, onResult 
             accounts={accounts}
             isMultiselect
             errors={invalidDeposit || invalidFee || invalidBalance ? [OperationError.EMPTY_ERROR] : undefined}
-            getSignatoryOption={getSignatoryDrowdownOption}
+            getSignatoryOption={getSignatoryDropdownOption}
             getAccountOption={getAccountDropdownOption}
             onSignatoryChange={setActiveSignatory}
             onAccountChange={setActiveUnstakeAccounts}

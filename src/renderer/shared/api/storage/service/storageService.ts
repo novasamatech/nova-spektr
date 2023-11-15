@@ -1,7 +1,7 @@
 import { IndexableType, Table } from 'dexie';
 
 import { dexieStorage } from './dexie';
-import type { NoID } from '@renderer/shared/core';
+import type { NoID } from '@shared/core';
 
 // TODO: think about throwing errors instead of returning value from catch
 class StorageService<T extends { id: K }, K extends IndexableType> {
@@ -85,6 +85,10 @@ class StorageService<T extends { id: K }, K extends IndexableType> {
 
   delete(id: K): Promise<void> {
     return this.dexieTable.delete(id);
+  }
+
+  deleteAll(ids: K[]): Promise<void> {
+    return this.dexieTable.bulkDelete(ids);
   }
 }
 

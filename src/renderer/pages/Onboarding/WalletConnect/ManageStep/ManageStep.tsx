@@ -2,7 +2,7 @@ import cn from 'classnames';
 import { useEffect, useState } from 'react';
 import { Controller, useForm, SubmitHandler } from 'react-hook-form';
 
-import { useI18n, useStatusContext } from '@renderer/app/providers';
+import { useI18n, useStatusContext } from '@app/providers';
 import {
   AccountId,
   Chain,
@@ -13,12 +13,12 @@ import {
   WalletType,
   AccountType,
   WalletConnectAccount,
-} from '@renderer/shared/core';
-import { Button, Input, InputHint, HeaderTitleText, SmallTitleText, Icon } from '@renderer/shared/ui';
-import { toAccountId } from '@renderer/shared/lib/utils';
-import { chainsService } from '@renderer/entities/network';
-import { IconNames } from '@renderer/shared/ui/Icon/data';
-import { MultiAccountsList, walletModel } from '@renderer/entities/wallet';
+} from '@shared/core';
+import { Button, Input, InputHint, HeaderTitleText, SmallTitleText, Icon } from '@shared/ui';
+import { toAccountId } from '@shared/lib/utils';
+import { chainsService } from '@entities/network';
+import { IconNames } from '@shared/ui/Icon/data';
+import { MultiAccountsList, walletModel } from '@entities/wallet';
 
 const WalletLogo: Record<WalletTypeName, IconNames> = {
   [WalletType.WALLET_CONNECT]: 'walletConnectOnboarding',
@@ -186,9 +186,9 @@ const ManageStep = ({ accounts, type, pairingTopic, sessionTopic, onBack, onComp
         </form>
       </div>
 
-      <div className="w-[472px] flex flex-col bg-input-background-disabled px-3 py-4 rounded-r-lg">
-        <SmallTitleText className="px-2 mt-[52px] mb-6">{t('onboarding.vault.accountsTitle')}</SmallTitleText>
-        <MultiAccountsList accounts={accountsList} />
+      <div className="w-[472px] flex flex-col gap-y-6 bg-input-background-disabled py-4 rounded-r-lg">
+        <SmallTitleText className="px-5 mt-[52px]">{t('onboarding.vault.accountsTitle')}</SmallTitleText>
+        <MultiAccountsList accounts={accountsList} className="h-[416px]" />
       </div>
     </>
   );

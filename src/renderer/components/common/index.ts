@@ -5,7 +5,6 @@ import QrTextGenerator from './QrCode/QrGenerator/QrTextGenerator';
 import QrTxGenerator from './QrCode/QrGenerator/QrTxGenerator';
 import Message from './Message/Message';
 import Header from './Header/Header';
-import ExplorerLink from './ExplorerLink/ExplorerLink';
 import QrGeneratorContainer from './QrCode/QrGeneratorContainer/QrGeneratorContainer';
 import ExtrinsicExplorers from './ExtrinsicExplorers/ExtrinsicExplorers';
 import { OperationTitle } from './OperationTitle/OperationTitle';
@@ -24,7 +23,6 @@ export {
   QrTxGenerator,
   Message,
   Header,
-  ExplorerLink,
   ExtrinsicExplorers,
   OperationTitle,
 };

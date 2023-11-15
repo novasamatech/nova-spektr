@@ -1,8 +1,8 @@
 import { createContext, PropsWithChildren, useCallback, useContext, useRef, useState, ReactNode } from 'react';
 
-import { StatusModal } from '@renderer/shared/ui';
-import { DEFAULT_TRANSITION } from '@renderer/shared/lib/utils';
-import { useToggle } from '@renderer/shared/lib/hooks';
+import { StatusModal } from '@shared/ui';
+import { DEFAULT_TRANSITION } from '@shared/lib/utils';
+import { useToggle } from '@shared/lib/hooks';
 
 export type StatusModalProps = {
   title: string;

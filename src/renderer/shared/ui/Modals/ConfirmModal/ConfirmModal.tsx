@@ -1,8 +1,9 @@
 import { PropsWithChildren } from 'react';
 
-import { cnTw } from '@renderer/shared/lib/utils';
-import { Button } from '@renderer/shared/ui';
+import { cnTw } from '@shared/lib/utils';
+import { Button } from '@shared/ui';
 import BaseModal from '../BaseModal/BaseModal';
+import { Pallet } from '../../Buttons/common/types';
 
 type Props = {
   isOpen: boolean;
@@ -10,6 +11,7 @@ type Props = {
   panelClass?: string;
   confirmText?: string;
   cancelText?: string;
+  confirmPallet?: Pallet;
   onClose: () => void;
   onConfirm: () => void;
 };
@@ -21,6 +23,7 @@ const ConfirmModal = ({
   panelClass,
   confirmText,
   cancelText,
+  confirmPallet,
   onClose,
   onConfirm,
 }: PropsWithChildren<Props>) => (
@@ -33,7 +36,7 @@ const ConfirmModal = ({
         </Button>
       )}
       {confirmText && (
-        <Button className="flex-1" variant="fill" size="sm" onClick={onConfirm}>
+        <Button className="flex-1" variant="fill" size="sm" pallet={confirmPallet} onClick={onConfirm}>
           {confirmText}
         </Button>
       )}

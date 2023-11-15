@@ -3,19 +3,19 @@ import { UnsignedTransaction } from '@substrate/txwrapper-polkadot';
 import { useStore, useGate } from 'effector-react';
 import { useNavigate } from 'react-router-dom';
 
-import { useI18n, useNetworkContext } from '@renderer/app/providers';
-import { Paths } from '@renderer/shared/routes';
-import { Transaction, useTransaction, validateBalance } from '@renderer/entities/transaction';
-import { BaseModal, Button, Loader } from '@renderer/shared/ui';
+import { useI18n, useNetworkContext } from '@app/providers';
+import { Paths } from '@shared/routes';
+import { Transaction, useTransaction, validateBalance } from '@entities/transaction';
+import { BaseModal, Button, Loader } from '@shared/ui';
 import { Confirmation, InitOperation, Submit } from './components/ActionSteps';
-import { Signing } from '@renderer/features/operation';
-import { useBalance } from '@renderer/entities/asset';
+import { Signing } from '@features/operation';
+import { useBalance } from '@entities/asset';
 import { OperationTitle } from '@renderer/components/common';
-import { useToggle } from '@renderer/shared/lib/hooks';
+import { useToggle } from '@shared/lib/hooks';
 import * as sendAssetModel from '../model/send-asset';
-import type { Chain, Asset, Account, MultisigAccount, HexString } from '@renderer/shared/core';
-import { accountUtils } from '@renderer/entities/wallet';
-import { priceProviderModel } from '@renderer/entities/price';
+import type { Chain, Asset, Account, MultisigAccount, HexString } from '@shared/core';
+import { accountUtils } from '@entities/wallet';
+import { priceProviderModel } from '@entities/price';
 
 const enum Step {
   INIT,
@@ -66,6 +66,17 @@ export const SendAssetModal = ({ chain, asset }: Props) => {
     };
   }, []);
 
+  useEffect(() => {
+    if (signatory && account) {
+      setWrappers([
+        {
+          signatoryId: signatory.accountId,
+          account: account as MultisigAccount,
+        },
+      ]);
+    }
+  }, [account, signatory]);
+
   const onInitResult = (transferTx: Transaction, description?: string) => {
     setTxs([transferTx]);
     setDescription(description || '');
@@ -106,12 +117,6 @@ export const SendAssetModal = ({ chain, asset }: Props) => {
 
   const onSignatoryChange = (signatory: Account) => {
     setSignatory(signatory);
-    setWrappers([
-      {
-        signatoryId: signatory.accountId,
-        account: account as MultisigAccount,
-      },
-    ]);
   };
 
   const commonProps = { explorers, addressPrefix };

@@ -2,17 +2,17 @@ import { KeyboardEvent } from 'react';
 import { Link } from 'react-router-dom';
 import { useUnit } from 'effector-react';
 
-import { BodyText, Icon, Shimmering } from '@renderer/shared/ui';
-import { AssetBalance, AssetDetails, AssetIcon } from '@renderer/entities/asset';
-import { useToggle } from '@renderer/shared/lib/hooks';
-import { cnTw, KeyboardKey, totalAmount, transferableAmount } from '@renderer/shared/lib/utils';
-import { useI18n } from '@renderer/app/providers';
-import { Paths, createLink } from '@renderer/shared/routes';
-import { ChainId, Asset, Balance } from '@renderer/shared/core';
+import { BodyText, Icon, Shimmering } from '@shared/ui';
+import { AssetBalance, AssetDetails, AssetIcon } from '@entities/asset';
+import { useToggle } from '@shared/lib/hooks';
+import { cnTw, KeyboardKey, totalAmount, transferableAmount } from '@shared/lib/utils';
+import { useI18n } from '@app/providers';
+import { Paths, createLink } from '@shared/routes';
+import { ChainId, Asset, Balance } from '@shared/core';
 // TODO: Move it to another layer https://app.clickup.com/t/8692tr8x0
-import { TokenPrice } from '@renderer/entities/price/ui/TokenPrice';
-import { AssetFiatBalance } from '@renderer/entities/price/ui/AssetFiatBalance';
-import { priceProviderModel } from '@renderer/entities/price';
+import { TokenPrice } from '@entities/price/ui/TokenPrice';
+import { AssetFiatBalance } from '@entities/price/ui/AssetFiatBalance';
+import { priceProviderModel } from '@entities/price';
 
 type Props = {
   chainId: ChainId;
@@ -65,10 +65,10 @@ export const AssetCard = ({ chainId, asset, balance, canMakeActions }: Props) =>
               <AssetFiatBalance amount={totalAmount(balance)} asset={asset} />
             </>
           ) : (
-            <>
+            <div className="flex flex-col gap-y-1 items-end">
               <Shimmering width={82} height={20} />
               {fiatFlag && <Shimmering width={56} height={18} />}
-            </>
+            </div>
           )}
         </div>
         {canMakeActions && (

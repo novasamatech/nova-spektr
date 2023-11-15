@@ -4,10 +4,11 @@ import { useNavigate, useRoutes } from 'react-router-dom';
 import { useUnit } from 'effector-react';
 
 import { FallbackScreen } from '@renderer/components/common';
-import { CreateWalletProvider } from '@renderer/widgets/CreateWallet';
-import { walletModel } from '@renderer/entities/wallet';
-import { ROUTES_CONFIG } from '@renderer/pages';
-import { Paths } from '@renderer/shared/routes';
+import { CreateWalletProvider } from '@widgets/CreateWallet';
+import { WalletDetailsProvider } from '@widgets/WalletDetails';
+import { walletModel } from '@entities/wallet';
+import { ROUTES_CONFIG } from '@pages/index';
+import { Paths } from '@shared/routes';
 import {
   ConfirmDialogProvider,
   StatusModalProvider,
@@ -38,7 +39,7 @@ export const App = () => {
 
     const path = wallets.length > 0 ? Paths.ASSETS : Paths.ONBOARDING;
     navigate(path, { replace: true });
-  }, [isLoadingWallets, wallets]);
+  }, [isLoadingWallets, wallets.length]);
 
   const getContent = () => {
     if (splashScreenLoading || isLoadingWallets) return null;
@@ -59,6 +60,7 @@ export const App = () => {
                   <GraphqlProvider>
                     {getContent()}
                     <CreateWalletProvider />
+                    <WalletDetailsProvider />
                   </GraphqlProvider>
                 </StatusModalProvider>
               </ConfirmDialogProvider>

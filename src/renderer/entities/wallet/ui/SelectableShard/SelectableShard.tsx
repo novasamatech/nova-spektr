@@ -1,6 +1,6 @@
-import { cnTw } from '@renderer/shared/lib/utils';
-import { BodyText, Checkbox, HelpText, Icon, Identicon, InfoPopover, Truncate } from '@renderer/shared/ui';
-import { Address, Explorer } from '@renderer/shared/core';
+import { cnTw } from '@shared/lib/utils';
+import { BodyText, Checkbox, HelpText, Icon, Identicon, InfoPopover, Truncate } from '@shared/ui';
+import { Address, Explorer } from '@shared/core';
 import { useAddressInfo } from '../../lib/useAddressInfo';
 
 type Props = {
@@ -24,7 +24,7 @@ export const SelectableShard = ({
   explorers,
   onChange,
 }: Props) => {
-  const popoverItems = useAddressInfo(address, explorers, false);
+  const popoverItems = useAddressInfo({ address, explorers });
 
   return (
     <Checkbox

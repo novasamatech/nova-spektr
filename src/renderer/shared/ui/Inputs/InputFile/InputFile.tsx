@@ -1,8 +1,8 @@
 import { useState, ChangeEvent, ComponentPropsWithoutRef, forwardRef } from 'react';
 
-import { cnTw } from '@renderer/shared/lib/utils';
+import { cnTw } from '@shared/lib/utils';
 import { HTMLInputFileProps } from '../common/types';
-import TextBase from '@renderer/shared/ui/Typography/common/TextBase';
+import TextBase from '@shared/ui/Typography/common/TextBase';
 import Icon from '../../Icon/Icon';
 import { FootnoteText } from '../../Typography';
 

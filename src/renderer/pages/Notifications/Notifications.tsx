@@ -1,11 +1,11 @@
 import { groupBy } from 'lodash';
 import { format } from 'date-fns';
 
-import { useI18n } from '@renderer/app/providers';
+import { useI18n } from '@app/providers';
 import EmptyNotifications from './components/EmptyNotifications';
 import { sortByDate } from './common/utils';
-import { FootnoteText } from '@renderer/shared/ui';
-import { useNotification, NotificationRow } from '@renderer/entities/notification';
+import { FootnoteText } from '@shared/ui';
+import { useNotification, NotificationRow } from '@entities/notification';
 import { Header } from '@renderer/components/common';
 
 export const Notifications = () => {
@@ -19,7 +19,7 @@ export const Notifications = () => {
   );
 
   return (
-    <div className="h-full flex flex-col items-start relative">
+    <div className="h-full flex flex-col">
       <Header title={t('notifications.title')} />
 
       <div className="overflow-y-auto flex-1 mx-auto w-[736px] mt-4 flex flex-col gap-4">

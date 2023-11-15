@@ -3,12 +3,13 @@ import { BN } from '@polkadot/util';
 import { useEffect, useState } from 'react';
 import { useUnit } from 'effector-react';
 
-import { OperationError, OperationFooter, OperationHeader } from '@renderer/features/operation';
-import { useI18n } from '@renderer/app/providers';
-import { useBalance } from '@renderer/entities/asset';
-import { Transaction, TransactionType } from '@renderer/entities/transaction';
-import { formatAmount, stakeableAmount, toAddress, nonNullable, TEST_ADDRESS } from '@renderer/shared/lib/utils';
-import { useValidators } from '@renderer/entities/staking';
+import { OperationFooter, OperationHeader } from '@features/operation';
+import { useI18n } from '@app/providers';
+import { useBalance } from '@entities/asset';
+import { Transaction, TransactionType, OperationError } from '@entities/transaction';
+import { formatAmount, stakeableAmount, toAddress, nonNullable, TEST_ADDRESS } from '@shared/lib/utils';
+import { useValidators } from '@entities/staking';
+import { walletModel, walletUtils, accountUtils } from '@entities/wallet';
 import { OperationForm } from '../../components';
 import type {
   Account,
@@ -18,7 +19,8 @@ import type {
   Address,
   ChainId,
   Balance as AccountBalance,
-} from '@renderer/shared/core';
+  Wallet,
+} from '@shared/core';
 import {
   getStakeAccountOption,
   validateBalanceForFee,
@@ -26,7 +28,6 @@ import {
   validateStake,
   getSignatoryOption,
 } from '../../common/utils';
-import { walletModel, walletUtils, accountUtils } from '@renderer/entities/wallet';
 
 export type BondResult = {
   amount: string;
@@ -102,10 +103,10 @@ const InitOperation = ({ api, chainId, accounts, asset, addressPrefix, onResult 
     return getStakeAccountOption(account, { asset, fee, amount, balance, addressPrefix });
   };
 
-  const getSignatoryDrowdownOption = (account: Account) => {
+  const getSignatoryDropdownOption = (wallet: Wallet, account: Account) => {
     const balance = signatoriesBalances.find((b) => b.accountId === account.accountId);
 
-    return getSignatoryOption(account, { balance, asset, addressPrefix, fee, deposit });
+    return getSignatoryOption(wallet, account, { balance, asset, addressPrefix, fee, deposit });
   };
 
   useEffect(() => {
@@ -236,7 +237,7 @@ const InitOperation = ({ api, chainId, accounts, asset, addressPrefix, onResult 
             accounts={accounts}
             isMultiselect
             errors={invalidDeposit || invalidFee || invalidBalance ? [OperationError.EMPTY_ERROR] : undefined}
-            getSignatoryOption={getSignatoryDrowdownOption}
+            getSignatoryOption={getSignatoryDropdownOption}
             getAccountOption={getAccountDropdownOption}
             onSignatoryChange={setActiveSignatory}
             onAccountChange={setActiveStakeAccounts}

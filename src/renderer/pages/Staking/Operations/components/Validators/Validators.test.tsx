@@ -3,31 +3,34 @@ import { act, render, screen } from '@testing-library/react';
 import noop from 'lodash/noop';
 
 import { Validators } from './Validators';
-import type { Asset } from '@renderer/shared/core';
+import type { Asset } from '@shared/core';
+
+const validatorsMap = {
+  '5C556QTtg1bJ43GDSgeowa3Ark6aeSHGTac1b2rKSXtgmSmW': {
+    address: '5C556QTtg1bJ43GDSgeowa3Ark6aeSHGTac1b2rKSXtgmSmW',
+    totalStake: '84293898648764293',
+    ownStake: '27425315022592146',
+    blocked: false,
+  },
+};
 
 jest.mock('@renderer/components/common');
 
-jest.mock('@renderer/app/providers', () => ({
+jest.mock('@app/providers', () => ({
   useI18n: jest.fn().mockReturnValue({
     t: (key: string) => key,
   }),
 }));
 
-jest.mock('@renderer/entities/staking', () => ({
+jest.mock('@entities/staking', () => ({
+  ...jest.requireActual('@entities/staking'),
   useValidators: jest.fn().mockReturnValue({
     getMaxValidators: jest.fn().mockReturnValue(6),
-    getValidatorsWithInfo: jest.fn().mockResolvedValue({
-      '5C556QTtg1bJ43GDSgeowa3Ark6aeSHGTac1b2rKSXtgmSmW': {
-        address: '5C556QTtg1bJ43GDSgeowa3Ark6aeSHGTac1b2rKSXtgmSmW',
-        totalStake: '84293898648764293',
-        ownStake: '27425315022592146',
-        blocked: false,
-      },
-    }),
   }),
   useEra: jest.fn().mockReturnValue({
     subscribeActiveEra: jest.fn().mockImplementation((api: any, eraCallback: any) => eraCallback(1)),
   }),
+  useValidatorsMap: jest.fn().mockImplementation(() => validatorsMap),
 }));
 
 describe('pages/Staking/components/Validators', () => {
@@ -38,6 +41,12 @@ describe('pages/Staking/components/Validators', () => {
     precision: 12,
     staking: 'relaychain',
   } as Asset;
+
+  beforeEach(() => {
+    jest.mock('@entities/staking', () => ({
+      useValidatorsMap: jest.fn().mockResolvedValue(validatorsMap),
+    }));
+  });
 
   afterEach(() => {
     jest.clearAllMocks();
