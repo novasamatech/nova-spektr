@@ -97,6 +97,7 @@ export const WalletConnectDetails = ({ wallet, accounts, isConnected, onClose }:
             position="top-full right-0"
             buttonClassName="rounded-full"
             offsetPx={0}
+            closeOnClick
             content={
               <>
                 <Button

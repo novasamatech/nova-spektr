@@ -271,6 +271,7 @@
     "readyToUseLabel": "Your wallet is ready to use!",
     "vault": {
       "accountsTitle": "Manage accounts",
+      "accountTitle": "Account",
       "addMoreKeysButton": "Add more keys",
       "addressColumn": "Address",
       "altHint": "Hold <button /> to see the details",

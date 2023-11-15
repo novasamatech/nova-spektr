@@ -1,10 +1,11 @@
 import cn from 'classnames';
-import { FormEvent, useEffect, useState } from 'react';
+import { FormEvent, Fragment, useEffect, useState } from 'react';
 import { useForm } from 'effector-forms';
 import { useUnit } from 'effector-react';
 import keyBy from 'lodash/keyBy';
 import { Trans } from 'react-i18next';
 import { u8aToHex } from '@polkadot/util';
+import { Transition } from '@headlessui/react';
 
 import { useI18n, useStatusContext } from '@renderer/app/providers';
 import { ChainTitle } from '@renderer/entities/chain';
@@ -162,11 +163,13 @@ export const ManageDynamicDerivations = ({ seedInfo, onBack, onComplete }: Props
         </div>
 
         <div className="overflow-y-auto h-[470px] pl-3 pr-3.5">
-          <div className="flex items-center justify-between w-full gap-2">
+          <div className="flex items-center justify-between w-full gap-2 pb-4">
             <RootAccount name={walletName} accountId={publicKey} />
           </div>
 
-          <div className="flex flex-col gap-2 ml-8">
+          <FootnoteText className="text-text-tertiary ml-9 pl-2">{t('onboarding.vault.accountTitle')}</FootnoteText>
+
+          <div className="flex flex-col gap-2 divide-y ml-9">
             {Object.entries(chainsObject).map(([chainId]) => {
               const chainAccounts = accounts.filter(
                 (account) => (account as ChainAccount).chainId === chainId,
@@ -190,15 +193,27 @@ export const ManageDynamicDerivations = ({ seedInfo, onBack, onComplete }: Props
                 />
               ));
 
-              return isAltPressed ? (
-                <div key={chainId}>
-                  <div className="mb-2 p-2">{accordionButton}</div>
-                  <div className="flex flex-col gap-2">{accordionContent}</div>
-                </div>
-              ) : (
-                <Accordion key={chainId}>
+              return (
+                <Accordion key={chainId} className="pt-2">
                   <Accordion.Button buttonClass="mb-2 p-2">{accordionButton}</Accordion.Button>
-                  <Accordion.Content className="flex flex-col gap-2">{accordionContent}</Accordion.Content>
+
+                  <Transition
+                    appear
+                    show={isAltPressed}
+                    as={Fragment}
+                    enter="transition-opacity duration-50"
+                    enterFrom="opacity-0"
+                    enterTo="opacity-100"
+                    leave="transition-opacity duration-50"
+                    leaveFrom="opacity-100"
+                    leaveTo="opacity-0"
+                  >
+                    <div className="flex flex-col gap-2">{accordionContent}</div>
+                  </Transition>
+
+                  {!isAltPressed && (
+                    <Accordion.Content className="flex flex-col gap-2">{accordionContent}</Accordion.Content>
+                  )}
                 </Accordion>
               );
             })}
