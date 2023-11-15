@@ -17,7 +17,7 @@ export type BaseAccount = AbstractAccount & {
   signingExtras?: Record<string, any>;
 };
 
-export type ShardedAccount = BaseAccount & {
+export type ShardedAccount = AbstractAccount & {
   keyType: KeyType;
   chainId: ChainId;
 };

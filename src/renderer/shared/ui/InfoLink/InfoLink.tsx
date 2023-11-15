@@ -4,8 +4,6 @@ import { cnTw } from '@renderer/shared/lib/utils';
 import { IconNames } from '@renderer/shared/ui/Icon/data';
 import { Icon } from '@renderer/shared/ui';
 
-type AnchorProps = { download?: boolean };
-
 type Props = {
   url: string;
   iconName?: IconNames;
@@ -13,7 +11,8 @@ type Props = {
   iconPosition?: 'left' | 'right';
   className?: string;
   tabIndex?: number;
-} & AnchorProps;
+  download?: boolean;
+};
 
 const InfoLink = ({
   url,

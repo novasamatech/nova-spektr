@@ -16,16 +16,18 @@ function isFileStructureValid(result: any): result is ParsedImportFile {
   const hasPublicKey = Object.keys(result).every((key) => key.startsWith('0x') || key === 'version');
 
   const genesisHashes = Object.values(result).filter((x) => typeof x === 'object') as ImportFileChain[];
-  const hasGenesisHash = Object.values(genesisHashes).every((hash) =>
-    Object.keys(hash).every((key) => key.startsWith('0x')),
-  );
-  const hasKeys = Object.values(genesisHashes).every((hash: ImportFileChain) =>
-    Object.values(hash).every(
-      (v) => Array.isArray(v) && v.every((keyObj) => 'key' in keyObj && Array.isArray(keyObj.key)),
-    ),
-  );
 
-  return isVersionValid && hasPublicKey && hasGenesisHash && hasKeys;
+  const hasChainsAndKeys = Object.values(genesisHashes).every((hash: ImportFileChain) => {
+    Object.entries(hash).every(([key, value]) => {
+      const isChainValid = key.startsWith('0x');
+      const hasChainKeys =
+        Array.isArray(value) && value.every((keyObj) => 'key' in keyObj && Array.isArray(keyObj.key));
+
+      return isChainValid && hasChainKeys;
+    });
+  });
+
+  return isVersionValid && hasPublicKey && hasChainsAndKeys;
 }
 
 type FormattedResult = { derivations: ImportedDerivation[]; root: AccountId };
@@ -36,7 +38,7 @@ function getDerivationsFromFile(result: ParsedImportFile): FormattedResult | und
   const chains = result[rootAccountId as AccountId];
   const derivations: ImportedDerivation[] = [];
 
-  for (const [key, value] of Object.entries(chains)) {
+  Object.entries(chains).forEach(([key, value]) => {
     const chainDerivations = (value as ImportFileKey[]).map((keyObject) => {
       const derivation = keyObject.key.reduce((acc, keyProperty) => {
         const [propertyName, propertyValue] = Object.entries(keyProperty)[0];
@@ -58,7 +60,7 @@ function getDerivationsFromFile(result: ParsedImportFile): FormattedResult | und
     });
 
     derivations.push(...chainDerivations);
-  }
+  });
 
   return {
     derivations,

@@ -32,7 +32,7 @@ const $mergedKeys = createStore<TypedImportedDerivation[]>([]);
 const $existingDerivations = createStore<ExistingDerivations | null>(null);
 
 const fileUploaded = createEvent<string>();
-const importStarted = createEvent<ExistingDerivations>();
+const resetValues = createEvent<ExistingDerivations>();
 
 const checkFileStructureFx = createEffect<string, ParsedImportFile, DerivationImportError>((fileContent: string) => {
   // using default core scheme converts 0x strings into numeric values
@@ -114,7 +114,7 @@ const mergePathsFx = createEffect<MergePathsParams, MergeResult | undefined>(({ 
   return { derivations: mergeResult, report: mergeReport };
 });
 
-forward({ from: importStarted, to: $existingDerivations });
+forward({ from: resetValues, to: $existingDerivations });
 
 forward({ from: fileUploaded, to: checkFileStructureFx });
 
@@ -167,6 +167,6 @@ export const importKeysModel = {
   $mergedKeys,
   events: {
     fileUploaded,
-    importStarted,
+    resetValues,
   },
 };

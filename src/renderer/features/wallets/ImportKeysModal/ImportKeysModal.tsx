@@ -23,8 +23,10 @@ export const ImportKeysModal = ({ isOpen, rootAccountId, existingKeys, onClose, 
   const successReport = useUnit(importKeysModel.$successReport);
 
   useEffect(() => {
-    importKeysModel.events.importStarted({ derivations: existingKeys, root: rootAccountId });
-  }, [rootAccountId, existingKeys]);
+    if (isOpen) {
+      importKeysModel.events.resetValues({ derivations: existingKeys, root: rootAccountId });
+    }
+  }, [isOpen]);
 
   const handleFileUpload = (file: File) => {
     const fileReader = new FileReader();
@@ -100,7 +102,6 @@ export const ImportKeysModal = ({ isOpen, rootAccountId, existingKeys, onClose, 
           iconName="import"
           iconPosition="right"
           download
-          target="_self"
         >
           {t('dynamicDerivations.importKeys.downloadTemplateButton')}
         </InfoLink>
