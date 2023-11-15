@@ -1,6 +1,6 @@
 import { ImportedDerivation, ImportFileChain, ImportFileKey, ParsedImportFile, TypedImportedDerivation } from './types';
-import { AccountId, ChainId, KeyType } from '@renderer/shared/core';
-import { chainsService } from '@renderer/entities/network';
+import { AccountId, ChainId, KeyType } from '@shared/core';
+import { chainsService } from '@entities/network';
 
 const IMPORT_FILE_VERSION = '1';
 

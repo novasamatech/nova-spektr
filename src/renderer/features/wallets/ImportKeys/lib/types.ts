@@ -34,13 +34,3 @@ export type TypedImportedDerivation = {
   chainId: ChainId;
   sharded?: number;
 };
-
-export class DerivationImportError extends Error {
-  paths?: string[];
-  message: ImportErrorsLabel;
-  constructor(message: ImportErrorsLabel, invalidPaths?: string[]) {
-    super(message);
-    this.message = message;
-    this.paths = invalidPaths;
-  }
-}

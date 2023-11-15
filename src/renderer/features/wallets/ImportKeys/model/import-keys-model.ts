@@ -2,14 +2,9 @@ import { createEffect, createEvent, createStore, forward, sample } from 'effecto
 import { parse } from 'yaml';
 import { groupBy } from 'lodash';
 
-import {
-  DerivationImportError,
-  ImportError,
-  ParsedImportFile,
-  TypedImportedDerivation,
-  ImportErrorsLabel,
-} from '../lib/types';
-import { AccountId, ChainId, ObjectValues } from '@renderer/shared/core';
+import { ImportError, ParsedImportFile, TypedImportedDerivation, ImportErrorsLabel } from '../lib/types';
+import { DerivationImportError } from '../lib/derivation-import-error';
+import { AccountId, ChainId, ObjectValues } from '@shared/core';
 import { importKeysUtils } from '../lib/import-keys-utils';
 
 type SampleFnError = { error: DerivationImportError };

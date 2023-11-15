@@ -1,7 +1,7 @@
-import { KeyType } from '@renderer/shared/core';
-import { importKeysUtils } from '../import-keys-utils';
-import { ImportedDerivation } from '../types';
-import { importKeysMocks } from './mocks/import-keys-utils.mock';
+import { KeyType } from '@shared/core';
+import { importKeysUtils } from '@features/wallets/ImportKeys/lib/import-keys-utils';
+import { ImportedDerivation } from '@entities/wallet/lib/types';
+import { importKeysMocks } from '../mocks/import-keys-utils.mock';
 
 describe('entities/dynamicDerivations/import-keys-utils', () => {
   describe('entities/dynamicDerivations/import-keys-utils/validateDerivation', () => {

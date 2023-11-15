@@ -1,5 +1,5 @@
-import { TypedImportedDerivation } from '@renderer/entities/dynamicDerivations';
-import { KeyType } from '@renderer/shared/core';
+import { TypedImportedDerivation } from '@/src/renderer/entities/wallet';
+import { KeyType } from '@shared/core';
 
 export const EXISTING_DERIVATIONS: TypedImportedDerivation[] = [
   {

@@ -1,13 +1,14 @@
 import { useUnit } from 'effector-react';
 import { useEffect } from 'react';
 
-import { Alert, BaseModal, Button, InfoLink, InputFile, InputHint } from '@renderer/shared/ui';
-import { useI18n } from '@renderer/app/providers';
-import { importKeysModel, TypedImportedDerivation } from '@renderer/entities/wallet';
-import { AccountId } from '@renderer/shared/core';
-import { cnTw } from '@renderer/shared/lib/utils';
+import { Alert, BaseModal, Button, InfoLink, InputFile, InputHint } from '@shared/ui';
+import { useI18n } from '@app/providers';
+import { AccountId } from '@shared/core';
+import { cnTw } from '@shared/lib/utils';
 // @ts-ignore
 import templateFile from '@shared/assets/files/dd-template.yaml';
+import { importKeysModel } from '../model/import-keys-model';
+import { TypedImportedDerivation } from '../lib/types';
 
 type Props = {
   isOpen: boolean;
@@ -96,13 +97,7 @@ export const ImportKeysModal = ({ isOpen, rootAccountId, existingKeys, onClose, 
           ))}
         </Alert>
 
-        <InfoLink
-          url={templateFile}
-          className="gap-x-1 mt-2 px-3"
-          iconName="import"
-          iconPosition="right"
-          download
-        >
+        <InfoLink url={templateFile} className="gap-x-1 mt-2 px-3" iconName="import" iconPosition="right" download>
           {t('dynamicDerivations.importKeys.downloadTemplateButton')}
         </InfoLink>
       </div>
