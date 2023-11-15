@@ -6,19 +6,18 @@ import Store from 'electron-store';
 import { MainWindow } from './main';
 import { makeAppWithSingleInstanceLock } from './factories/instance';
 import { makeAppSetup } from './factories/setup';
-import { ENABLE_AUTO_UPDATE } from '@shared/constants/common';
+import { AUTO_UPDATE_ENABLED } from '@shared/constants/common';
 
 const setupAutoUpdate = () => {
   if (process.env.BUILD_SOURCE !== 'github') return;
 
-  const store = new Store({ defaults: { [ENABLE_AUTO_UPDATE]: true } });
+  const store = new Store({ defaults: { [AUTO_UPDATE_ENABLED]: true } });
 
   ipcMain.handle('getStoreValue', (event, key) => store.get(key));
 
   ipcMain.handle('setStoreValue', (event, key, value) => store.set(key, value));
 
-  const isAutoUpdateOn = store.get(ENABLE_AUTO_UPDATE);
-  if (!isAutoUpdateOn) return;
+  if (!store.get(AUTO_UPDATE_ENABLED)) return;
 
   autoUpdater.autoRunAppAfterInstall = true;
   autoUpdater.autoInstallOnAppQuit = false;

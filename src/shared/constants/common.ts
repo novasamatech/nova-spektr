@@ -1,2 +1,2 @@
 export const DEFAULT = 'default';
-export const ENABLE_AUTO_UPDATE = 'autoUpdate';
+export const AUTO_UPDATE_ENABLED = 'autoUpdate';

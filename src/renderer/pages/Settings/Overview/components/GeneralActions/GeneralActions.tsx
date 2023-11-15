@@ -7,7 +7,7 @@ import { useI18n } from '@renderer/app/providers';
 import { Paths } from '@renderer/shared/routes';
 import { cnTw } from '@renderer/shared/lib/utils';
 import { currencyModel, priceProviderModel } from '@renderer/entities/price';
-import { ENABLE_AUTO_UPDATE } from '@shared/constants/common';
+import { AUTO_UPDATE_ENABLED } from '@shared/constants/common';
 
 // TODO: Language switcher temporary removed
 export const GeneralActions = () => {
@@ -15,19 +15,16 @@ export const GeneralActions = () => {
   const currency = useUnit(currencyModel.$activeCurrency);
   const fiatFlag = useUnit(priceProviderModel.$fiatFlag);
   const [isAutoUpdateOn, setIsAutoUpdateOn] = useState(true);
-  const isWebVersion = !window.App;
+  const isWebVersion = !window.App?.getStoreValue;
 
   useEffect(() => {
     if (!isWebVersion) {
-      window.App.getStoreValue(ENABLE_AUTO_UPDATE).then((value) => setIsAutoUpdateOn(Boolean(value)));
+      window.App.getStoreValue(AUTO_UPDATE_ENABLED).then(setIsAutoUpdateOn);
     }
   }, []);
 
   const handleAutoUpdateValueChange = (value: boolean) => {
-    if (window.App.setStoreValue) {
-      window.App.setStoreValue(ENABLE_AUTO_UPDATE, value).then();
-      setIsAutoUpdateOn(value);
-    }
+    window.App.setStoreValue(AUTO_UPDATE_ENABLED, value).then(() => setIsAutoUpdateOn(value));
   };
 
   // const localeOptions: DropdownOption[] = locales.map((option) => ({
