@@ -15,10 +15,10 @@ export const GeneralActions = () => {
   const currency = useUnit(currencyModel.$activeCurrency);
   const fiatFlag = useUnit(priceProviderModel.$fiatFlag);
   const [isAutoUpdateOn, setIsAutoUpdateOn] = useState(true);
-  const isWebVersion = !window.App?.getStoreValue;
+  const isAutoUpdateSupported = window.App && window.App.isAutoUpdateSupported;
 
   useEffect(() => {
-    if (!isWebVersion) {
+    if (isAutoUpdateSupported) {
       window.App.getStoreValue(AUTO_UPDATE_ENABLED).then(setIsAutoUpdateOn);
     }
   }, []);
@@ -91,7 +91,7 @@ export const GeneralActions = () => {
           {fiatFlag && <FootnoteText className="text-text-tertiary ml-auto">{currency?.code}</FootnoteText>}
         </Link>
       </Plate>
-      {!isWebVersion && (
+      {isAutoUpdateSupported && (
         <Plate className="p-0">
           <div className="w-full flex items-center gap-x-2 p-3 rounded transition hover:shadow-card-shadow focus:shadow-card-shadow">
             <Icon className="row-span-2" name="settings" size={36} />
