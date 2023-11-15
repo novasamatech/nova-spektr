@@ -13,7 +13,10 @@ export const importKeysUtils = {
 
 function isFileStructureValid(result: any): result is ParsedImportFile {
   const isVersionValid = 'version' in result && result.version === IMPORT_FILE_VERSION;
+  if (!isVersionValid) return false;
+
   const hasPublicKey = Object.keys(result).every((key) => key.startsWith('0x') || key === 'version');
+  if (!hasPublicKey) return false;
 
   const genesisHashes = Object.values(result).filter((x) => typeof x === 'object') as ImportFileChain[];
 
@@ -27,15 +30,15 @@ function isFileStructureValid(result: any): result is ParsedImportFile {
     });
   });
 
-  return isVersionValid && hasPublicKey && hasChainsAndKeys;
+  return hasChainsAndKeys;
 }
 
 type FormattedResult = { derivations: ImportedDerivation[]; root: AccountId };
-function getDerivationsFromFile(result: ParsedImportFile): FormattedResult | undefined {
-  const rootAccountId = Object.keys(result).find((key) => key !== 'version');
+function getDerivationsFromFile(fileContent: ParsedImportFile): FormattedResult | undefined {
+  const rootAccountId = Object.keys(fileContent).find((key) => key !== 'version');
   if (!rootAccountId) return;
 
-  const chains = result[rootAccountId as AccountId];
+  const chains = fileContent[rootAccountId as AccountId];
   const derivations: ImportedDerivation[] = [];
 
   Object.entries(chains).forEach(([key, value]) => {

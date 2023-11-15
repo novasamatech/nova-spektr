@@ -9,15 +9,15 @@ export type ParsedImportFile = {
   version: number;
 };
 
-export enum ImportErrorsLabel {
+export enum ValidationErrorsLabel {
   INVALID_FILE_STRUCTURE = 'dynamicDerivations.importKeys.error.invalidFile',
   INVALID_ROOT = 'dynamicDerivations.importKeys.error.invalidRoot',
   PASSWORD_PATH = 'dynamicDerivations.importKeys.error.invalidPasswordPath',
   INVALID_PATH = 'dynamicDerivations.importKeys.error.invalidPath',
 }
 
-export type ImportError = {
-  error: ImportErrorsLabel;
+export type ValidationError = {
+  error: ValidationErrorsLabel;
   invalidPaths?: string[];
 };
 

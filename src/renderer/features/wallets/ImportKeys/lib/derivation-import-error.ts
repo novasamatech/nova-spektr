@@ -1,9 +1,9 @@
-import { ImportErrorsLabel } from '../lib/types';
+import { ValidationErrorsLabel } from '../lib/types';
 
 export class DerivationImportError extends Error {
   paths?: string[];
-  message: ImportErrorsLabel;
-  constructor(message: ImportErrorsLabel, invalidPaths?: string[]) {
+  message: ValidationErrorsLabel;
+  constructor(message: ValidationErrorsLabel, invalidPaths?: string[]) {
     super(message);
     this.message = message;
     this.paths = invalidPaths;

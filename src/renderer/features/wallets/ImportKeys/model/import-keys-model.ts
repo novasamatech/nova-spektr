@@ -2,7 +2,7 @@ import { createEffect, createEvent, createStore, forward, sample } from 'effecto
 import { parse } from 'yaml';
 import { groupBy } from 'lodash';
 
-import { ImportError, ParsedImportFile, TypedImportedDerivation, ImportErrorsLabel } from '../lib/types';
+import { ValidationError, ParsedImportFile, TypedImportedDerivation, ValidationErrorsLabel } from '../lib/types';
 import { DerivationImportError } from '../lib/derivation-import-error';
 import { AccountId, ChainId, ObjectValues } from '@shared/core';
 import { importKeysUtils } from '../lib/import-keys-utils';
@@ -12,15 +12,15 @@ type ExistingDerivations = {
   root: AccountId;
   derivations: TypedImportedDerivation[];
 };
-type KeysImportReport = {
+type Report = {
   addedKeys: number;
   updatedNetworks: number;
   duplicatedKeys: number;
   ignoredNetworks: ChainId[];
 };
 
-const $validationError = createStore<ImportError | null>(null);
-const $successReport = createStore<KeysImportReport | null>(null);
+const $validationError = createStore<ValidationError | null>(null);
+const $report = createStore<Report | null>(null);
 const $mergedKeys = createStore<TypedImportedDerivation[]>([]);
 
 const $existingDerivations = createStore<ExistingDerivations | null>(null);
@@ -33,26 +33,26 @@ const parseFileContentFx = createEffect<string, ParsedImportFile, DerivationImpo
   const structure = parse(fileContent, { schema: 'failsafe' });
   if (importKeysUtils.isFileStructureValid(structure)) return structure;
 
-  throw new DerivationImportError(ImportErrorsLabel.INVALID_FILE_STRUCTURE);
+  throw new DerivationImportError(ValidationErrorsLabel.INVALID_FILE_STRUCTURE);
 });
 
-type ValidateDerivationsParams = { result: ParsedImportFile; existingDerivations: ExistingDerivations };
+type ValidateDerivationsParams = { fileContent: ParsedImportFile; existingDerivations: ExistingDerivations };
 const validateDerivationsFx = createEffect<ValidateDerivationsParams, TypedImportedDerivation[], DerivationImportError>(
-  ({ result, existingDerivations }) => {
-    const parsed = importKeysUtils.getDerivationsFromFile(result);
+  ({ fileContent, existingDerivations }) => {
+    const parsed = importKeysUtils.getDerivationsFromFile(fileContent);
     if (!parsed) {
-      throw new DerivationImportError(ImportErrorsLabel.INVALID_FILE_STRUCTURE);
+      throw new DerivationImportError(ValidationErrorsLabel.INVALID_FILE_STRUCTURE);
     }
 
     const { derivations, root } = parsed;
 
     if (root !== existingDerivations.root) {
-      throw new DerivationImportError(ImportErrorsLabel.INVALID_ROOT);
+      throw new DerivationImportError(ValidationErrorsLabel.INVALID_ROOT);
     }
 
     const invalidPaths = derivations.reduce<string[]>((acc, derivation) => {
       if (!derivation.derivationPath) {
-        throw new DerivationImportError(ImportErrorsLabel.INVALID_FILE_STRUCTURE);
+        throw new DerivationImportError(ValidationErrorsLabel.INVALID_FILE_STRUCTURE);
       }
       if (!importKeysUtils.isDerivationValid(derivation)) {
         acc.push(derivation.derivationPath);
@@ -64,53 +64,55 @@ const validateDerivationsFx = createEffect<ValidateDerivationsParams, TypedImpor
     if (!invalidPaths.length) return derivations as TypedImportedDerivation[];
 
     if (invalidPaths.every((p) => p.includes('///'))) {
-      throw new DerivationImportError(ImportErrorsLabel.PASSWORD_PATH, invalidPaths);
+      throw new DerivationImportError(ValidationErrorsLabel.PASSWORD_PATH, invalidPaths);
     } else {
-      throw new DerivationImportError(ImportErrorsLabel.INVALID_PATH, invalidPaths);
+      throw new DerivationImportError(ValidationErrorsLabel.INVALID_PATH, invalidPaths);
     }
   },
 );
 
 type MergeResult = {
   derivations: TypedImportedDerivation[];
-  report: KeysImportReport;
+  report: Report;
 };
 type MergePathsParams = {
   imported: TypedImportedDerivation[];
   existing: ExistingDerivations;
 };
-const mergePathsFx = createEffect<MergePathsParams, MergeResult | undefined>(({ imported, existing }) => {
-  const mergeReport: KeysImportReport = {
-    addedKeys: 0,
-    updatedNetworks: 0,
-    duplicatedKeys: 0,
-    ignoredNetworks: [],
-  };
-  const mergeResult: TypedImportedDerivation[] = [];
-
+const mergePathsFx = createEffect<MergePathsParams, MergeResult>(({ imported, existing }) => {
   const existingDerivations = existing.derivations;
-  if (!existingDerivations?.length) return;
 
   const existingByChain = groupBy(existingDerivations, 'chainId');
   const importedByChain = groupBy(imported, 'chainId');
 
-  for (const [chain, derivations] of Object.entries(importedByChain)) {
-    const existingChainDerivations = existingByChain[chain];
-    const { mergedDerivations, added, duplicated } = importKeysUtils.mergeChainDerivations(
-      existingChainDerivations,
-      derivations,
-    );
+  return Object.entries(importedByChain).reduce<{ derivations: TypedImportedDerivation[]; report: Report }>(
+    (acc, [chain, derivations]) => {
+      const existingChainDerivations = existingByChain[chain];
+      const { mergedDerivations, added, duplicated } = importKeysUtils.mergeChainDerivations(
+        existingChainDerivations,
+        derivations,
+      );
 
-    mergeResult.push(...mergedDerivations);
-    mergeReport.addedKeys += added;
-    mergeReport.duplicatedKeys += duplicated;
+      acc.derivations.push(...mergedDerivations);
+      acc.report.addedKeys += added;
+      acc.report.duplicatedKeys += duplicated;
 
-    if (added) {
-      mergeReport.updatedNetworks++;
-    }
-  }
+      if (added) {
+        acc.report.updatedNetworks++;
+      }
 
-  return { derivations: mergeResult, report: mergeReport };
+      return acc;
+    },
+    {
+      derivations: [],
+      report: {
+        addedKeys: 0,
+        updatedNetworks: 0,
+        duplicatedKeys: 0,
+        ignoredNetworks: [],
+      },
+    },
+  );
 });
 
 forward({ from: resetValues, to: $existingDerivations });
@@ -126,15 +128,15 @@ sample({
 sample({
   clock: parseFileContentFx.doneData,
   source: $existingDerivations,
-  filter: (existingDerivations, result) => Boolean(existingDerivations),
-  fn: (existingDerivations, result) => ({ result, existingDerivations: existingDerivations! }),
+  filter: (existingDerivations, fileContent) => Boolean(fileContent),
+  fn: (existingDerivations, fileContent) => ({ fileContent, existingDerivations: existingDerivations! }),
   target: validateDerivationsFx,
 });
 
 sample({
   source: validateDerivationsFx.fail,
   fn: ({ error }: SampleFnError) => ({
-    error: error.message as ObjectValues<typeof ImportErrorsLabel>,
+    error: error.message as ObjectValues<typeof ValidationErrorsLabel>,
     invalidPaths: error.paths,
   }),
   target: $validationError,
@@ -150,19 +152,19 @@ sample({
 
 sample({
   source: mergePathsFx.doneData,
-  fn: (result) => result?.derivations || [],
+  fn: (result) => result.derivations,
   target: $mergedKeys,
 });
 
 sample({
   source: mergePathsFx.doneData,
-  fn: (result) => result?.report || null,
-  target: $successReport,
+  fn: (result) => result.report,
+  target: $report,
 });
 
 export const importKeysModel = {
   $validationError,
-  $successReport,
+  $successReport: $report,
   $mergedKeys,
   events: {
     fileUploaded,
