@@ -1,5 +1,4 @@
-import UploadFileImg, { ReactComponent as UploadFileSvg } from '@shared/assets/images/functionals/updload-file.svg';
-
+import UploadFileImg, { ReactComponent as UploadFileSvg } from '@shared/assets/images/functionals/upload-file.svg';
 import CheckmarkOutlineImg, {
   ReactComponent as CheckmarkOutlineSvg,
 } from '@shared/assets/images/functionals/checkmark-outline.svg';

@@ -7,7 +7,7 @@ import { importKeysModel, TypedImportedDerivation } from '@renderer/entities/wal
 import { AccountId } from '@renderer/shared/core';
 import { cnTw } from '@renderer/shared/lib/utils';
 // @ts-ignore
-import templateFile from '@renderer/assets/files/dd-template.yaml';
+import templateFile from '@shared/assets/files/dd-template.yaml';
 
 type Props = {
   isOpen: boolean;
