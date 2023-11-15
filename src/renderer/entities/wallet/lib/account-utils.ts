@@ -12,6 +12,8 @@ import type {
   ChainAccount,
   WalletConnectAccount,
   Wallet,
+  ShardedAccount,
+  ShardAccount,
 } from '@shared/core';
 
 export const accountUtils = {
