@@ -96,21 +96,19 @@ export const DdKeyQrReader = ({ size = 300, className, onGoBack, onResult }: Pro
 
         if (qr.dynamicDerivations.length === 0) return;
 
-        derivations.push(
-          ...qr.dynamicDerivations.map((d) => ({
-            ...d,
-            publicKey: {
-              MultiSigner: d.publicKey.MultiSigner,
-              public: encodeAddress(
-                isHex(d.publicKey.public) ? hexToU8a(d.publicKey.public) : decodeAddress(d.publicKey.public),
-              ),
-            },
-          })),
-        );
+        const derivationsAddressInfo = qr.dynamicDerivations.map((addressInfo) => ({
+          ...addressInfo,
+          publicKey: {
+            MultiSigner: addressInfo.publicKey.MultiSigner,
+            public: encodeAddress(
+              isHex(addressInfo.publicKey.public)
+                ? hexToU8a(addressInfo.publicKey.public)
+                : decodeAddress(addressInfo.publicKey.public),
+            ),
+          },
+        }));
 
-        qr.dynamicDerivations.forEach(({ publicKey }) =>
-          encodeAddress(isHex(publicKey.public) ? hexToU8a(publicKey.public) : decodeAddress(publicKey.public)),
-        );
+        derivations.push(...derivationsAddressInfo);
       });
 
       setIsScanComplete(true);

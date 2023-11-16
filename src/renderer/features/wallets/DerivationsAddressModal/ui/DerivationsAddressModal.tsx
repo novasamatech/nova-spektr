@@ -6,12 +6,12 @@ import { useToggle } from '@renderer/shared/lib/hooks';
 import { BaseAccount, SigningType, WalletType } from '@renderer/shared/core';
 import { useI18n } from '@renderer/app/providers';
 import { TROUBLESHOOTING_URL } from '@renderer/components/common/QrCode/common/constants';
-import { DdKeyQrReader } from '@renderer/pages/Onboarding/Vault/DdKeyQrReader/DdKeyQrReader';
 import { toAddress } from '@renderer/shared/lib/utils';
 import { walletModel } from '@renderer/entities/wallet';
 import { DdAddressInfoDecoded } from '@renderer/components/common/QrCode/common/types';
-import { derivationAddressUtils, DerivationsAccounts } from './lib/utils';
+import { derivationAddressUtils, DerivationsAccounts } from '../lib/utils';
 import { QrDerivationsGenerator } from '@renderer/components/common/QrCode/QrGenerator/QrDerivationsGenerator';
+import { DdKeyQrReader } from './DdKeyQrReader/DdKeyQrReader';
 
 type Props = {
   walletName: string;
