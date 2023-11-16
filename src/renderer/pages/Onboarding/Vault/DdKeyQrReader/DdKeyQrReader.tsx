@@ -90,6 +90,7 @@ export const DdKeyQrReader = ({ size = 300, className, onGoBack, onResult }: Pro
       const derivations: DdAddressInfoDecoded[] = [];
       qrPayload.forEach((qr) => {
         if (qr.multiSigner) {
+          // Run encodeAddress to check we got valid address for public key
           encodeAddress(qr.multiSigner.public);
         }
 

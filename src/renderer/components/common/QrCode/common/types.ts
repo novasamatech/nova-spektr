@@ -25,15 +25,14 @@ export type Progress = {
   total: number;
 };
 
-// Public root key
-export type MultiSigner = {
+export type MultiSigner<T extends string | Uint8Array> = {
   MultiSigner: Exclude<CryptoTypeString, CryptoTypeString.ETHEREUM>;
-  public: Uint8Array;
+  public: T;
 };
 
 export type SeedInfo = {
   name: string;
-  multiSigner: MultiSigner;
+  multiSigner: MultiSigner<Uint8Array>;
   derivedKeys: AddressInfo[];
 };
 
@@ -43,7 +42,7 @@ export type CompactSeedInfo = {
 };
 
 export type DdSeedInfo = {
-  multiSigner: MultiSigner;
+  multiSigner: MultiSigner<Uint8Array>;
   dynamicDerivations: DdAddressInfo[];
 };
 
@@ -56,7 +55,7 @@ export type AddressInfo = {
 };
 
 export type DdAddressInfo = {
-  publicKey: MultiSigner;
+  publicKey: MultiSigner<Uint8Array>;
   derivationPath: string;
   encryption: CryptoType;
 };
@@ -67,7 +66,7 @@ export type ErrorObject = {
 };
 
 export type DdAddressInfoDecoded = {
-  publicKey: { MultiSigner: Exclude<CryptoTypeString, CryptoTypeString.ETHEREUM>; public: string };
+  publicKey: MultiSigner<string>;
   derivationPath: string;
   encryption: CryptoType;
 };

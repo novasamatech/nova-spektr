@@ -14,7 +14,6 @@ import type { Account, Chain } from '@renderer/shared/core';
 import { ConnectionType } from '@renderer/shared/core';
 import { walletModel, walletUtils } from '@renderer/entities/wallet';
 import { currencyModel, priceProviderModel } from '@renderer/entities/price';
-import { DerivationsAddressModal } from '@renderer/features/wallets';
 
 export const AssetsList = () => {
   const { t } = useI18n();
@@ -151,8 +150,6 @@ export const AssetsList = () => {
           onClose={handleShardSelect}
         />
       )}
-
-      <DerivationsAddressModal />
 
       <Outlet />
     </>

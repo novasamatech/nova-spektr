@@ -16,6 +16,8 @@ const enum Status {
   'NEXT_FRAME',
 }
 
+type ScanResult = string | SeedInfo[] | { addr: SeedInfo | DdSeedInfo };
+
 type Props = {
   size?: number | [number, number];
   cameraId?: string;
@@ -68,9 +70,7 @@ const QrReader = ({
     return typeof error === 'object' && ErrorFields.CODE in error && ErrorFields.MESSAGE in error;
   };
 
-  const makeResultPayload = <T extends string | SeedInfo[] | { addr: SeedInfo | DdSeedInfo }>(
-    data: T,
-  ): (SeedInfo | DdSeedInfo)[] => {
+  const makeResultPayload = <T extends ScanResult>(data: T): (SeedInfo | DdSeedInfo)[] => {
     if (Array.isArray(data)) return data;
 
     if (typeof data !== 'string') return [data.addr];
@@ -190,13 +190,14 @@ const QrReader = ({
         continue;
       }
 
+      let result: ScanResult;
       if (isDynamicDerivations) {
-        const result = DYNAMIC_DERIVATIONS_ADDRESS_RESPONSE.decode(fountainResult.slice(3));
-        onResult?.(makeResultPayload(result));
+        result = DYNAMIC_DERIVATIONS_ADDRESS_RESPONSE.decode(fountainResult.slice(3));
       } else {
-        const result = EXPORT_ADDRESS.decode(fountainResult.slice(3));
-        onResult?.(makeResultPayload(result.payload));
+        result = EXPORT_ADDRESS.decode(fountainResult.slice(3)).payload;
       }
+
+      onResult?.(makeResultPayload(result));
       isComplete.current = true;
       break;
     }

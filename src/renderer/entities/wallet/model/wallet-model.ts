@@ -7,6 +7,7 @@ import { storageService } from '@renderer/shared/api/storage';
 import { modelUtils } from '../lib/model-utils';
 import { accountUtils } from '../lib/account-utils';
 import { ShardedAccountWithShards } from '@renderer/features/wallets/DerivationsAddressModal/DerivationsAddressModal';
+import { ShardedAccount } from '@renderer/shared/core/types/account';
 
 const $wallets = createStore<Wallet[]>([]);
 const $activeWallet = $wallets.map((wallets) => wallets.find((w) => w.isActive));
@@ -132,7 +133,7 @@ const polkadotVaultCreatedFx = createEffect(
         type: shardedAccount.type,
         keyType: shardedAccount.keyType,
         chainId: shardedAccount.chainId,
-      });
+      } as ShardedAccount);
 
       const shards = shardedAccount.shards.map((shard) => ({
         ...shard,
@@ -249,7 +250,7 @@ sample({
 });
 
 sample({
-  clock: [walletCreatedFx.doneData, multishardCreatedFx.doneData],
+  clock: [walletCreatedFx.doneData, multishardCreatedFx.doneData, polkadotVaultCreatedFx.doneData],
   filter: (data) => Boolean(data),
   fn: (data) => data!.wallet.id,
   target: walletSelected,

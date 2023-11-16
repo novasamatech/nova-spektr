@@ -12,6 +12,7 @@ import type {
   WalletConnectAccount,
   Wallet,
 } from '@renderer/shared/core';
+import { ShardedAccountWithShards } from '@renderer/shared/core/types/account';
 
 export const accountUtils = {
   isBaseAccount,
@@ -19,6 +20,7 @@ export const accountUtils = {
   isMultisigAccount,
   isChainIdMatch,
   isWalletConnectAccount,
+  isAccountWithShards,
   getMultisigAccountId,
   getAllAccountIds,
   getWalletAccounts,
@@ -70,4 +72,10 @@ function getAllAccountIds(accounts: Account[], chainId: ChainId): AccountId[] {
 
 function getWalletAccounts<T extends Account>(walletId: Wallet['id'], accounts: T[]): T[] {
   return accounts.filter((account) => account.walletId === walletId);
+}
+
+function isAccountWithShards(
+  account: Partial<ShardedAccountWithShards | Account>,
+): account is ShardedAccountWithShards {
+  return 'shards' in account;
 }

@@ -18,6 +18,7 @@ export type BaseAccount = AbstractAccount & {
 };
 
 export type ShardedAccount = AbstractAccount & {
+  accountId: '';
   keyType: KeyType;
   chainId: ChainId;
 };
@@ -34,6 +35,8 @@ export type ShardAccount = BaseAccount & {
   chainId: ChainId;
   derivationPath: string;
 };
+
+export type ShardedAccountWithShards = ShardedAccount & { shards: ShardAccount[] };
 
 export type MultisigAccount = BaseAccount & {
   signatories: Signatory[];

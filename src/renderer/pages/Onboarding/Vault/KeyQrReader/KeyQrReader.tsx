@@ -5,7 +5,7 @@ import { useState } from 'react';
 
 import { QrReader } from '@renderer/components/common';
 import { ErrorObject, QrError, SeedInfo, VideoInput } from '@renderer/components/common/QrCode/common/types';
-import { Icon, Loader, Button, CaptionText, FootnoteText, Select } from '@renderer/shared/ui';
+import { Button, CaptionText, FootnoteText, Icon, Loader, Select } from '@renderer/shared/ui';
 import { DropdownOption, DropdownResult } from '@renderer/shared/ui/Dropdowns/common/types';
 import { useI18n } from '@renderer/app/providers';
 import { cnTw } from '@renderer/shared/lib/utils';
@@ -192,7 +192,7 @@ const KeyQrReader = ({ size = 300, className, onResult }: Props) => {
             onStart={() => setCameraState(CameraState.ACTIVE)}
             onCameraList={onCameraList}
             onProgress={setProgress}
-            onResult={onScanResult}
+            onResult={(result) => onScanResult(result as SeedInfo[])}
             onError={onError}
           />
 
