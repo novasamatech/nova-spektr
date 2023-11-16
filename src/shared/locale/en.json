@@ -270,8 +270,8 @@
     "readAccountsParitySignerLabel": "Following accounts have been successfully read from Polkadot Vault",
     "readyToUseLabel": "Your wallet is ready to use!",
     "vault": {
-      "accountsTitle": "Manage accounts",
       "accountTitle": "Account",
+      "accountsTitle": "Manage accounts",
       "addMoreKeysButton": "Add more keys",
       "addressColumn": "Address",
       "altHint": "Hold <button /> to see the details",
@@ -930,17 +930,17 @@
     },
     "walletConnect": {
       "abortRejectButton": "Close",
+      "confirmButton": "Yes, refresh",
       "connectedStatus": "Connected",
       "disconnectedDescription": "Resume the connection to work with the WalletConnect",
       "disconnectedStatus": "Not connected",
       "disconnectedTitle": "Wallet not connected",
       "reconnectButton": "Reconnect",
+      "reconnectConfirmDescription": "Make sure that corresponding wallet is selected in your wallet app connected via WalletConnect",
+      "reconnectConfirmTitle": "Is a proper wallet selected?",
       "refreshButton": "Refresh",
       "rejectDescription": "The operation was successfully canceled",
-      "rejectTitle": "Rejected",
-      "confirmButton": "Yes, refresh",
-      "reconnectConfirmTitle": "Is a proper wallet selected?",
-      "reconnectConfirmDescription": "Make sure that corresponding wallet is selected in your wallet app connected via WalletConnect"
+      "rejectTitle": "Rejected"
     }
   },
   "wallets": {
