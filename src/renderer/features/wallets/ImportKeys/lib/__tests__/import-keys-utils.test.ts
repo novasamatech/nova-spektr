@@ -1,21 +1,11 @@
 import { KeyType } from '@shared/core';
-import { importKeysUtils } from '@features/wallets/ImportKeys/lib/import-keys-utils';
-import { ImportedDerivation } from '@entities/wallet/lib/types';
+import { importKeysUtils } from '../import-keys-utils';
 import { importKeysMocks } from '../mocks/import-keys-utils.mock';
 
 describe('entities/dynamicDerivations/import-keys-utils', () => {
   describe('entities/dynamicDerivations/import-keys-utils/validateDerivation', () => {
-    test.each([
-      [importKeysMocks.invalidDerivations.passwordPath, false],
-      [importKeysMocks.invalidDerivations.invalidPath, false],
-      [importKeysMocks.invalidDerivations.emptyPath, false],
-      [importKeysMocks.invalidDerivations.tooManyShards, false],
-      [importKeysMocks.invalidDerivations.wrongShardedType, false],
-      [importKeysMocks.invalidDerivations.wrongKeyType, false],
-      [importKeysMocks.validDerivations[0], true],
-      [importKeysMocks.validDerivations[1], true],
-    ])('should validate imported derivation', (derivation: ImportedDerivation, expected: boolean) => {
-      expect(importKeysUtils.isDerivationValid(derivation)).toEqual(expected);
+    test.each(importKeysMocks.validationTestData)('should validation import $testName', ({ derivation, isValid }) => {
+      expect(importKeysUtils.isDerivationValid(derivation)).toEqual(isValid);
     });
   });
 
