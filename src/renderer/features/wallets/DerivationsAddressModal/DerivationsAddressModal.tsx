@@ -2,7 +2,6 @@ import keyBy from 'lodash/keyBy';
 import { Dictionary } from 'lodash';
 
 import { BaseModal, Button, InfoLink, SmallTitleText } from '@renderer/shared/ui';
-import QrDerivationsGenerator from '@renderer/components/common/QrCode/QrGenerator/QrDerivationsGenerator';
 import { useToggle } from '@renderer/shared/lib/hooks';
 import { BaseAccount, SigningType, WalletType } from '@renderer/shared/core';
 import { useI18n } from '@renderer/app/providers';
@@ -12,6 +11,7 @@ import { toAddress } from '@renderer/shared/lib/utils';
 import { walletModel } from '@renderer/entities/wallet';
 import { DdAddressInfoDecoded } from '@renderer/components/common/QrCode/common/types';
 import { derivationAddressUtils, DerivationsAccounts } from './lib/utils';
+import { QrDerivationsGenerator } from '@renderer/components/common/QrCode/QrGenerator/QrDerivationsGenerator';
 
 type Props = {
   walletName: string;
@@ -55,7 +55,9 @@ export const DerivationsAddressModal = ({ rootKey, accounts, onClose, isOpen, wa
       title={t('onboarding.paritySigner.generateAddressesModalTitle')}
       onClose={onClose}
     >
-      {!isScanStep && (
+      {isScanStep ? (
+        <DdKeyQrReader size={[440, 524]} onResult={handleScanResult} onGoBack={toggleIsScanStep} />
+      ) : (
         <div className="flex flex-col items-center">
           <SmallTitleText className="mb-6">{t('signing.scanQrTitle')}</SmallTitleText>
           <QrDerivationsGenerator address={toAddress(rootKey.accountId)} derivations={derivations} size={240} />
@@ -71,7 +73,6 @@ export const DerivationsAddressModal = ({ rootKey, accounts, onClose, isOpen, wa
           </div>
         </div>
       )}
-      {isScanStep && <DdKeyQrReader size={[440, 524]} onResult={handleScanResult} onGoBack={toggleIsScanStep} />}
     </BaseModal>
   );
 };

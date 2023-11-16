@@ -27,7 +27,7 @@ type Props = {
   wrapperClassName?: string;
   isDynamicDerivations?: boolean;
   onStart?: () => void;
-  onResult: (scanResult: (SeedInfo | DdSeedInfo)[]) => void;
+  onResult: (scanResult: Array<SeedInfo | DdSeedInfo>) => void;
   onError?: (error: ErrorObject) => void;
   onProgress?: (progress: Progress) => void;
   onCameraList?: (cameras: VideoInput[]) => void;
@@ -70,7 +70,7 @@ const QrReader = ({
     return typeof error === 'object' && ErrorFields.CODE in error && ErrorFields.MESSAGE in error;
   };
 
-  const makeResultPayload = <T extends ScanResult>(data: T): (SeedInfo | DdSeedInfo)[] => {
+  const makeResultPayload = <T extends ScanResult>(data: T): Array<SeedInfo | DdSeedInfo> => {
     if (Array.isArray(data)) return data;
 
     if (typeof data !== 'string') return [data.addr];

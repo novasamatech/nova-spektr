@@ -45,14 +45,14 @@ function createDerivedAccounts(
           ...shard,
         })),
       };
-    } else {
-      return {
-        ...account,
-        accountId: toAccountId(
-          derivedKeys[(account as ChainAccount).derivationPath + (account as ChainAccount).cryptoType].publicKey
-            .public,
-        ),
-      };
     }
+
+    return {
+      ...account,
+      accountId: toAccountId(
+        derivedKeys[(account as ChainAccount).derivationPath + (account as ChainAccount).cryptoType].publicKey
+          .public,
+      ),
+    };g
   });
 }

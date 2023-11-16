@@ -30,5 +30,3 @@ export const QrDerivationsGenerator = ({
 
   return <div style={{ width: size, height: size }} dangerouslySetInnerHTML={{ __html: image }} />;
 };
-
-export default QrDerivationsGenerator;

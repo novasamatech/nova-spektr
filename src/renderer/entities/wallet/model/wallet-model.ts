@@ -31,10 +31,8 @@ type CreateParams<T extends Account> = {
 };
 type MultisigUpdateParams = Partial<MultisigAccount> & { id: Account['id'] };
 type PolkadotVaultCreateParams = {
-  wallet: Omit<NoID<Wallet>, 'isActive'>;
-  accounts: Omit<NoID<ChainAccount | ShardedAccountWithShards>, 'walletId'>[];
   root: Omit<NoID<BaseAccount>, 'walletId'>;
-};
+} & CreateParams<ChainAccount | ShardedAccountWithShards>;
 
 const watchOnlyCreated = createEvent<CreateParams<BaseAccount>>();
 const multishardCreated = createEvent<CreateParams<BaseAccount | ChainAccount>>();
@@ -142,12 +140,11 @@ const polkadotVaultCreatedFx = createEffect(
       }));
       const dbShards = await storageService.accounts.createAll(shards);
       if (dbShards?.length && dbShardedAccount) {
-        dbAccounts.push(dbShardedAccount);
-        dbAccounts.push(...dbShards);
+        dbAccounts.push(dbShardedAccount, ...dbShards);
       }
     }
 
-    if (!dbAccounts) return undefined;
+    if (!dbAccounts.length) return undefined;
 
     return { wallet: dbWallet, accounts: dbAccounts };
   },
