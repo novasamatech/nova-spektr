@@ -4,7 +4,7 @@ import { importKeysMocks } from '../mocks/import-keys-utils.mock';
 
 describe('entities/dynamicDerivations/import-keys-utils', () => {
   describe('entities/dynamicDerivations/import-keys-utils/validateDerivation', () => {
-    test.each(importKeysMocks.validationTestData)('should validation import $testName', ({ derivation, isValid }) => {
+    test.each(importKeysMocks.validationTestData)('$testName', ({ derivation, isValid }) => {
       expect(importKeysUtils.isDerivationValid(derivation)).toEqual(isValid);
     });
   });
