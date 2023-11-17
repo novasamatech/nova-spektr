@@ -1,9 +1,9 @@
 import { act, render, screen } from '@testing-library/react';
 
 import { ChainIcon } from './ChainIcon';
-import { TEST_CHAIN_ICON } from '@renderer/shared/lib/utils';
+import { TEST_CHAIN_ICON } from '@shared/lib/utils';
 
-jest.mock('@renderer/app/providers', () => ({
+jest.mock('@app/providers', () => ({
   useMatrix: jest.fn(),
 }));
 

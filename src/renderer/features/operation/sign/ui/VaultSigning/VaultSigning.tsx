@@ -1,14 +1,14 @@
 import { useEffect, useState } from 'react';
 import { UnsignedTransaction } from '@substrate/txwrapper-polkadot';
 
-import { SigningProps } from '@renderer/features/operation';
-import { useCountdown } from '@renderer/shared/lib/hooks';
+import { SigningProps } from '@features/operation';
+import { useCountdown } from '@shared/lib/hooks';
 import ScanMultiframeQr from '@renderer/components/common/Scanning/ScanMultiframeQr';
 import ScanSingleframeQr from '@renderer/components/common/Scanning/ScanSingleframeQr';
-import { ValidationErrors } from '@renderer/shared/lib/utils';
-import { useTransaction } from '@renderer/entities/transaction';
+import { ValidationErrors } from '@shared/lib/utils';
+import { useTransaction } from '@entities/transaction';
 import QrReaderWrapper from '@renderer/components/common/QrCode/QrReader/QrReaderWrapper';
-import type { HexString } from '@renderer/shared/core';
+import type { HexString } from '@shared/core';
 
 export const VaultSigning = ({
   chainId,

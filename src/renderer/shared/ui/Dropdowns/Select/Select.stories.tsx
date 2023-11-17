@@ -1,6 +1,6 @@
 import { ComponentMeta, ComponentStory } from '@storybook/react';
 
-import { Identicon } from '@renderer/shared/ui';
+import { Identicon } from '@shared/ui';
 import Select from './Select';
 
 export default {

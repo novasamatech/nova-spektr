@@ -2,10 +2,10 @@ import { fork, allSettled } from 'effector';
 
 import { walletModel } from '../wallet-model';
 import { walletMock } from './mocks/wallet-mock';
-import { kernelModel } from '@renderer/shared/core';
-import { storageService } from '@renderer/shared/api/storage';
+import { kernelModel } from '@shared/core';
+import { storageService } from '@shared/api/storage';
 
-jest.mock('@renderer/app/providers', () => ({
+jest.mock('@app/providers', () => ({
   useMatrix: jest.fn(),
 }));
 

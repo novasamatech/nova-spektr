@@ -1,7 +1,7 @@
 import { app, BrowserWindow } from 'electron';
 import installExtension, { REACT_DEVELOPER_TOOLS } from 'electron-devtools-installer';
 
-import { PLATFORM, ENVIRONMENT } from '@shared/constants';
+import { PLATFORM, ENVIRONMENT } from '../shared/constants';
 
 export async function makeAppSetup(createWindow: () => Promise<BrowserWindow>) {
   let window = await createWindow();

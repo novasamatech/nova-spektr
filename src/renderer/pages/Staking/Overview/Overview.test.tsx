@@ -1,12 +1,12 @@
 import { act, render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 
-import { useNetworkContext } from '@renderer/app/providers';
+import { useNetworkContext } from '@app/providers';
 import { Overview } from './Overview';
-import type { Chain } from '@renderer/shared/core';
-import { ConnectionType } from '@renderer/shared/core';
+import type { Chain } from '@shared/core';
+import { ConnectionType } from '@shared/core';
 
-jest.mock('@renderer/app/providers', () => ({
+jest.mock('@app/providers', () => ({
   useI18n: jest.fn().mockReturnValue({
     t: (key: string) => key,
   }),
@@ -18,7 +18,7 @@ jest.mock('@renderer/app/providers', () => ({
   })),
 }));
 
-jest.mock('@renderer/entities/network', () => ({
+jest.mock('@entities/network', () => ({
   chainsService: {
     sortChains: (value: Chain[]) => value,
     getChainsData: jest.fn().mockResolvedValue([
@@ -32,7 +32,7 @@ jest.mock('@renderer/entities/network', () => ({
   },
 }));
 
-jest.mock('@renderer/entities/staking', () => ({
+jest.mock('@entities/staking', () => ({
   useValidators: jest.fn().mockReturnValue({
     getValidatorsWithInfo: jest.fn(),
   }),

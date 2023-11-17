@@ -1,14 +1,14 @@
-import { combine, createEvent, createStore, forward, sample } from 'effector';
+import { createEvent, createStore, forward, sample } from 'effector';
 import { combineEvents, spread } from 'patronum';
 
-import { accountUtils, walletModel } from '@renderer/entities/wallet';
-import { walletConnectUtils, walletConnectModel, InitConnectParams } from '@renderer/entities/walletConnect';
+import { walletModel } from '@entities/wallet';
+import { walletConnectModel, InitConnectParams } from '@entities/walletConnect';
 import { ReconnectStep, ForgetStep } from '../lib/constants';
 import { walletProviderModel } from './wallet-provider-model';
-import { walletSelectModel } from '@renderer/features/wallets';
-import type { Wallet, WalletConnectAccount } from '@renderer/shared/core';
-import { chainsService } from '@renderer/entities/network';
-import { toAccountId } from '@renderer/shared/lib/utils';
+import { walletSelectModel } from '@features/wallets';
+import type { Wallet, WalletConnectAccount } from '@shared/core';
+import { chainsService } from '@entities/network';
+import { toAccountId } from '@shared/lib/utils';
 
 const reset = createEvent();
 const reconnectStarted = createEvent<Omit<InitConnectParams, 'client'> & { currentSession: string }>();
@@ -19,21 +19,6 @@ const forgetModalClosed = createEvent();
 
 const $reconnectStep = createStore<ReconnectStep>(ReconnectStep.NOT_STARTED).reset(reset);
 const $forgetStep = createStore<ForgetStep>(ForgetStep.NOT_STARTED).reset(reset);
-
-const $isConnected = combine(
-  {
-    accounts: walletProviderModel.$accounts,
-    client: walletConnectModel.$client,
-  },
-  ({ accounts, client }): boolean => {
-    const account = accounts[0];
-    if (!client || !account || !accountUtils.isWalletConnectAccount(account) || !account.signingExtras?.sessionTopic) {
-      return false;
-    }
-
-    return walletConnectUtils.isConnected(account.signingExtras.sessionTopic, client);
-  },
-);
 
 sample({
   clock: reconnectStarted,
@@ -157,7 +142,6 @@ forward({
 });
 
 export const wcDetailsModel = {
-  $isConnected,
   $reconnectStep,
   $forgetStep,
   events: {

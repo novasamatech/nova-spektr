@@ -1,8 +1,8 @@
 import { useNavigate } from 'react-router-dom';
 
-import { useI18n } from '@renderer/app/providers';
-import { Paths } from '@renderer/shared/routes';
-import { Button } from '@renderer/shared/ui';
+import { useI18n } from '@app/providers';
+import { Paths } from '@shared/routes';
+import { Button } from '@shared/ui';
 
 export const CreateContactNavigation = () => {
   const { t } = useI18n();

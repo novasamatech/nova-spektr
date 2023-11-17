@@ -1,12 +1,12 @@
 import { ApiPromise } from '@polkadot/api';
 
-import { Icon, FootnoteText, Tooltip } from '@renderer/shared/ui';
-import { useI18n } from '@renderer/app/providers';
-import { Transaction, Deposit, Fee, XcmTypes } from '@renderer/entities/transaction';
-import { XcmConfig } from '@renderer/shared/api/xcm';
-import { XcmFee } from '@renderer/entities/transaction/ui/XcmFee/XcmFee';
-import type { Asset, Account } from '@renderer/shared/core';
-import { accountUtils } from '@renderer/entities/wallet';
+import { Icon, FootnoteText, Tooltip } from '@shared/ui';
+import { useI18n } from '@app/providers';
+import { Transaction, Deposit, Fee, XcmTypes } from '@entities/transaction';
+import { XcmConfig } from '@shared/api/xcm';
+import { XcmFee } from '@entities/transaction/ui/XcmFee/XcmFee';
+import type { Asset, Account } from '@shared/core';
+import { accountUtils } from '@entities/wallet';
 
 type Props = {
   api: ApiPromise;

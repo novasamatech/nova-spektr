@@ -1,21 +1,21 @@
 import cn from 'classnames';
 import { useUnit } from 'effector-react';
 
-import { useI18n } from '@renderer/app/providers';
-import { AddressWithExplorers, WalletCardSm, walletModel } from '@renderer/entities/wallet';
-import { Icon, Button, FootnoteText, DetailRow } from '@renderer/shared/ui';
-import { copyToClipboard, truncate, cnTw, getAssetById } from '@renderer/shared/lib/utils';
-import { useToggle } from '@renderer/shared/lib/hooks';
-import { chainsService, ExtendedChain, isLightClient } from '@renderer/entities/network';
-import { MultisigTransaction, Transaction, isXcmTransaction } from '@renderer/entities/transaction';
+import { useI18n } from '@app/providers';
+import { AddressWithExplorers, WalletCardSm, walletModel } from '@entities/wallet';
+import { Icon, Button, FootnoteText, DetailRow } from '@shared/ui';
+import { copyToClipboard, truncate, cnTw, getAssetById } from '@shared/lib/utils';
+import { useToggle } from '@shared/lib/hooks';
+import { chainsService, ExtendedChain, isLightClient } from '@entities/network';
+import { MultisigTransaction, Transaction, isXcmTransaction } from '@entities/transaction';
 import { AddressStyle, DescriptionBlockStyle, InteractionStyle } from '../common/constants';
 import { getMultisigExtrinsicLink } from '../common/utils';
-import { AssetBalance } from '@renderer/entities/asset';
-import { ChainTitle } from '@renderer/entities/chain';
-import type { Address, MultisigAccount, Validator } from '@renderer/shared/core';
-import { getTransactionFromMultisigTx } from '@renderer/entities/multisig';
-import { useValidatorsMap, ValidatorsModal } from '@renderer/entities/staking';
-import { singnatoryUtils } from '@renderer/entities/signatory';
+import { AssetBalance } from '@entities/asset';
+import { ChainTitle } from '@entities/chain';
+import type { Address, MultisigAccount, Validator } from '@shared/core';
+import { getTransactionFromMultisigTx } from '@entities/multisig';
+import { useValidatorsMap, ValidatorsModal } from '@entities/staking';
+import { singnatoryUtils } from '@entities/signatory';
 
 type Props = {
   tx: MultisigTransaction;

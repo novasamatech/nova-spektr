@@ -1,13 +1,13 @@
 import { useLayoutEffect, useRef, useState } from 'react';
 import { throttle } from 'lodash';
 
-import { Icon, TitleText } from '@renderer/shared/ui';
-import { useI18n } from '@renderer/app/providers';
-import { cnTw } from '@renderer/shared/lib/utils';
+import { Icon, TitleText } from '@shared/ui';
+import { useI18n } from '@app/providers';
+import { cnTw } from '@shared/lib/utils';
 import PrivacyPolicy from './PrivacyPolicy';
 import { WelcomeCard } from './WelcomeCard';
-import { WalletType } from '@renderer/shared/core';
-import { walletPairingModel } from '@renderer/features/wallets';
+import { WalletType } from '@shared/core';
+import { walletPairingModel } from '@features/wallets';
 
 const LOGO_WIDTH = 232;
 const RIGHT_PADDING = 225;

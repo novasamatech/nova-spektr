@@ -1,13 +1,13 @@
 import { useEffect, useState } from 'react';
 import { keyBy } from 'lodash';
 
-import type { AccountId, ChainId, Account } from '@renderer/shared/core';
-import { Accordion, BaseModal, Button, Checkbox, FootnoteText, SearchInput } from '@renderer/shared/ui';
-import { useI18n } from '@renderer/app/providers';
-import { chainsService } from '@renderer/entities/network';
-import { SelectableShard } from '@renderer/entities/wallet';
-import { ChainTitle } from '@renderer/entities/chain';
-import { toAddress } from '@renderer/shared/lib/utils';
+import type { AccountId, ChainId, Account } from '@shared/core';
+import { Accordion, BaseModal, Button, Checkbox, FootnoteText, SearchInput } from '@shared/ui';
+import { useI18n } from '@app/providers';
+import { chainsService } from '@entities/network';
+import { SelectableShard } from '@entities/wallet';
+import { ChainTitle } from '@entities/chain';
+import { toAddress } from '@shared/lib/utils';
 import { SelectableShards, ChainsRecord, SelectableAccount } from '../../common/types';
 import { getMultishardStructure, searchShards, getSelectableShards } from '../../common/utils';
 

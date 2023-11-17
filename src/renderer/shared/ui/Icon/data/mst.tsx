@@ -1,12 +1,18 @@
-import TransferImg, { ReactComponent as TransferSvg } from '@images/mst/transfer.svg';
-import UnknownImg, { ReactComponent as UnknownSvg } from '@images/mst/unknown.svg';
-import RedeemImg, { ReactComponent as RedeemSvg } from '@images/mst/redeem-mst.svg';
-import UnstakeImg, { ReactComponent as UnstakeSvg } from '@images/mst/unstake-mst.svg';
-import DestinationImg, { ReactComponent as DestinationSvg } from '@images/mst/rewards-destination-mst.svg';
-import StakeMoreImg, { ReactComponent as StakeMoreSvg } from '@images/mst/stake-more-mst.svg';
-import StartStakingImg, { ReactComponent as StartStakingSvg } from '@images/mst/staking.svg';
-import ChangeValidatorsImg, { ReactComponent as ChangeValidatorsSvg } from '@images/mst/change-validators-mst.svg';
-import ReturnToStakeImg, { ReactComponent as ReturnToStakeSvg } from '@images/mst/return-to-stake-mst.svg';
+import TransferImg, { ReactComponent as TransferSvg } from '@shared/assets/images/mst/transfer.svg';
+import UnknownImg, { ReactComponent as UnknownSvg } from '@shared/assets/images/mst/unknown.svg';
+import RedeemImg, { ReactComponent as RedeemSvg } from '@shared/assets/images/mst/redeem-mst.svg';
+import UnstakeImg, { ReactComponent as UnstakeSvg } from '@shared/assets/images/mst/unstake-mst.svg';
+import DestinationImg, {
+  ReactComponent as DestinationSvg,
+} from '@shared/assets/images/mst/rewards-destination-mst.svg';
+import StakeMoreImg, { ReactComponent as StakeMoreSvg } from '@shared/assets/images/mst/stake-more-mst.svg';
+import StartStakingImg, { ReactComponent as StartStakingSvg } from '@shared/assets/images/mst/staking.svg';
+import ChangeValidatorsImg, {
+  ReactComponent as ChangeValidatorsSvg,
+} from '@shared/assets/images/mst/change-validators-mst.svg';
+import ReturnToStakeImg, {
+  ReactComponent as ReturnToStakeSvg,
+} from '@shared/assets/images/mst/return-to-stake-mst.svg';
 
 const MstImages = {
   transferMst: { svg: TransferSvg, img: TransferImg },

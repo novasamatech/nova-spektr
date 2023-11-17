@@ -3,11 +3,11 @@ import { ReactNode, useEffect, useState } from 'react';
 import { Controller, SubmitHandler, useForm } from 'react-hook-form';
 import { Trans } from 'react-i18next';
 
-import { AmountInput, Button, Icon, Identicon, Input, InputHint, Select } from '@renderer/shared/ui';
-import { useI18n, useNetworkContext } from '@renderer/app/providers';
-import { useBalance } from '@renderer/entities/asset';
-import { MultisigTxInitStatus } from '@renderer/entities/transaction';
-import { useMultisigTx } from '@renderer/entities/multisig';
+import { AmountInput, Button, Icon, Identicon, Input, InputHint, Select } from '@shared/ui';
+import { useI18n, useNetworkContext } from '@app/providers';
+import { useBalance } from '@entities/asset';
+import { MultisigTxInitStatus } from '@entities/transaction';
+import { useMultisigTx } from '@entities/multisig';
 import {
   SS58_DEFAULT_PREFIX,
   formatAmount,
@@ -15,13 +15,13 @@ import {
   toAddress,
   transferableAmount,
   validateAddress,
-} from '@renderer/shared/lib/utils';
+} from '@shared/lib/utils';
 import { getChainOption, getPlaceholder } from '../common/utils';
-import { DropdownOption, DropdownResult } from '@renderer/shared/ui/types';
-import AccountSelectModal from '@renderer/pages/Operations/components/modals/AccountSelectModal/AccountSelectModal';
-import type { Chain, Account, MultisigAccount, Asset, Address, ChainId, HexString } from '@renderer/shared/core';
+import { DropdownOption, DropdownResult } from '@shared/ui/types';
+import AccountSelectModal from '@pages/Operations/components/modals/AccountSelectModal/AccountSelectModal';
+import type { Chain, Account, MultisigAccount, Asset, Address, ChainId, HexString } from '@shared/core';
 import * as sendAssetModel from '../../model/send-asset';
-import { accountUtils } from '@renderer/entities/wallet';
+import { accountUtils } from '@entities/wallet';
 
 const DESCRIPTION_MAX_LENGTH = 120;
 

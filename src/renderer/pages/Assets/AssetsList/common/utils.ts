@@ -2,11 +2,11 @@ import { BN } from '@polkadot/util';
 import BigNumber from 'bignumber.js';
 import { groupBy } from 'lodash';
 
-import { Decimal, totalAmount, isStringsMatchQuery } from '@renderer/shared/lib/utils';
-import { PriceObject } from '@renderer/shared/api/price-provider';
-import { accountUtils } from '@renderer/entities/wallet';
+import { Decimal, totalAmount, isStringsMatchQuery } from '@shared/lib/utils';
+import { PriceObject } from '@shared/api/price-provider';
+import { accountUtils } from '@entities/wallet';
 import { RootAccount, SelectableShards, ChainsRecord, ChainWithAccounts, MultishardStructure } from '../common/types';
-import type { Asset, Balance, BaseAccount, ChainAccount, Account } from '@renderer/shared/core';
+import type { Asset, Balance, BaseAccount, ChainAccount, Account } from '@shared/core';
 
 export const sumBalances = (firstBalance: Balance, secondBalance?: Balance): Balance => {
   if (!secondBalance) return firstBalance;

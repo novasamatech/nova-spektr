@@ -1,4 +1,4 @@
-import type { Chain, ChainId, BaseAccount, ChainAccount } from '@renderer/shared/core';
+import type { Chain, ChainId, BaseAccount, ChainAccount } from '@shared/core';
 
 export type ChainWithAccounts = Chain & { accounts: ChainAccount[] };
 export type RootAccount = BaseAccount & { chains: ChainWithAccounts[]; amount: number };

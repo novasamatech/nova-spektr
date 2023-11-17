@@ -1,3 +1,5 @@
+import type { ObjectValues } from '../core';
+
 export const Paths = {
   ROOT: '/',
 
@@ -35,4 +37,4 @@ export const Paths = {
   VALIDATORS: '/staking/validators/:chainId',
 } as const;
 
-export type PathValue = (typeof Paths)[keyof typeof Paths];
+export type PathType = ObjectValues<typeof Paths>;

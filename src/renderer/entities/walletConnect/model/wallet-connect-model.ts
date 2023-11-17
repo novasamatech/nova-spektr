@@ -4,11 +4,13 @@ import { getSdkError } from '@walletconnect/utils';
 import { createEffect, createEvent, createStore, forward, sample, scopeBind } from 'effector';
 import keyBy from 'lodash/keyBy';
 
-import { nonNullable } from '@renderer/shared/lib/utils';
-import { ID, Account, WalletConnectAccount, kernelModel } from '@renderer/shared/core';
-import { localStorageService } from '@renderer/shared/api/local-storage';
-import { storageService } from '@renderer/shared/api/storage';
-import { walletModel } from '../../wallet';
+import { nonNullable } from '@shared/lib/utils';
+import { ID, Account, WalletConnectAccount, kernelModel } from '@shared/core';
+import { localStorageService } from '@shared/api/local-storage';
+import { storageService } from '@shared/api/storage';
+import { walletModel, walletUtils } from '../../wallet';
+import { InitConnectParams } from '../lib/types';
+import { walletConnectUtils } from '../lib/utils';
 import {
   WALLETCONNECT_CLIENT_ID,
   DEFAULT_LOGGER,
@@ -19,7 +21,6 @@ import {
   DEFAULT_POLKADOT_EVENTS,
   EXTEND_PAIRING,
 } from '../lib/constants';
-import { InitConnectParams } from '../lib/types';
 
 type SessionTopicParams = {
   accounts: Account[];
@@ -409,6 +410,25 @@ sample({
     topic,
   }),
   target: removePairingFx,
+});
+
+sample({
+  clock: $client,
+  source: {
+    wallets: walletModel.$wallets,
+    accounts: walletModel.$accounts,
+  },
+  filter: (_, client) => Boolean(client),
+  fn: ({ wallets, accounts }, client) => {
+    return wallets.map((wallet) => {
+      if (walletUtils.isWalletConnectFamily(wallet)) {
+        wallet.isConnected = walletConnectUtils.isConnectedByAccounts(client!, wallet, accounts);
+      }
+
+      return wallet;
+    }, []);
+  },
+  target: walletModel.$wallets,
 });
 
 export const walletConnectModel = {
