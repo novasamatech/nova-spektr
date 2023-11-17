@@ -6,14 +6,6 @@ import { ConnectionType } from '@shared/core';
 import type { Connection, Chain, ChainId, RpcNode, HexString } from '@shared/core';
 
 // =====================================================
-// ================ Service interface ==================
-// =====================================================
-
-export interface INetworkService {
-  connect: (props: ConnectProps) => Promise<void>;
-}
-
-// =====================================================
 // ======================= General =====================
 // =====================================================
 
