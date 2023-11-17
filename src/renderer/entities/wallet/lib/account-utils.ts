@@ -11,7 +11,6 @@ import type {
   ChainAccount,
   WalletConnectAccount,
   Wallet,
-  ShardedAccount,
   ShardAccount,
 } from '@shared/core';
 
@@ -21,8 +20,8 @@ export const accountUtils = {
   isMultisigAccount,
   isChainIdMatch,
   isWalletConnectAccount,
-  isShardedAccount,
   isShardAccount,
+  getAccountsWithGroupedShards,
   getMultisigAccountId,
   getAllAccountIds,
   getWalletAccounts,
@@ -42,10 +41,6 @@ function isChainAccount(account: Pick<Account, 'type'>): account is ChainAccount
 
 function isWalletConnectAccount(account: Pick<Account, 'type'>): account is WalletConnectAccount {
   return account.type === AccountType.WALLET_CONNECT;
-}
-
-function isShardedAccount(account: Pick<Account, 'type'>): account is ShardedAccount {
-  return account.type === AccountType.SHARDED;
 }
 
 function isShardAccount(account: Pick<Account, 'type'>): account is ShardAccount {
@@ -82,4 +77,26 @@ function getAllAccountIds(accounts: Account[], chainId: ChainId): AccountId[] {
 
 function getWalletAccounts<T extends Account>(walletId: Wallet['id'], accounts: T[]): T[] {
   return accounts.filter((account) => account.walletId === walletId);
+}
+
+function getAccountsWithGroupedShards<T extends Account>(accounts: T[]): Array<T | Array<T>> {
+  const shardsIndexes: Record<ShardAccount['group'], number> = {};
+
+  return accounts.reduce<Array<T | Array<T>>>((acc, account, index) => {
+    if (!accountUtils.isShardAccount(account)) {
+      acc.push(account);
+
+      return acc;
+    }
+
+    const existingGroupIndex = shardsIndexes[account.group];
+    if (existingGroupIndex !== undefined) {
+      (acc[existingGroupIndex] as Array<T>).push(account);
+    } else {
+      acc.push([account]);
+      shardsIndexes[account.group] = index;
+    }
+
+    return acc;
+  }, []);
 }
