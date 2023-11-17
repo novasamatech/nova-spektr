@@ -36,7 +36,14 @@ const SEED_INFO: Codec<SeedInfo> = object(
   ['derivedKeys', array(ADDRESS_INFO)],
 );
 
-const FEATURE = taggedUnion('VaultFeatures', [['BulkOperations'], ['DynamicDerivations']]);
+export const enum VaultFeatures {
+  BULK_OPERATIONS = 'BulkOperations',
+  DYNAMIC_DERIVATIONS = 'DynamicDerivations',
+}
+
+export type VaultFeature = Record<'VaultFeatures', VaultFeatures>;
+
+const FEATURE = taggedUnion('VaultFeatures', [[VaultFeatures.BULK_OPERATIONS], [VaultFeatures.DYNAMIC_DERIVATIONS]]);
 
 // Export address format for decoding; Rust enum is a tagged union
 export const EXPORT_ADDRESS = taggedUnion('ExportAddrs', [
