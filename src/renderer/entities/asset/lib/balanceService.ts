@@ -7,7 +7,7 @@ import { UnsubscribePromise, VoidFn } from '@polkadot/api/types';
 import { Mutex } from 'async-mutex';
 import noop from 'lodash/noop';
 
-import { ExtendedChain } from '@entities/network/lib/common/types';
+import { ExtendedChain } from '@entities/oldNetwork/lib/common/types';
 import { validate } from '@renderer/services/dataVerification/dataVerification';
 import { IBalanceService } from './common/types';
 import { VERIFY_TIMEOUT } from './common/constants';

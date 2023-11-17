@@ -1,7 +1,7 @@
 import { VoidFn } from '@polkadot/api/types';
 
 import { BalanceDS } from '@shared/api/storage/common/types';
-import { ExtendedChain } from '@entities/network/lib/common/types';
+import { ExtendedChain } from '@entities/oldNetwork/lib/common/types';
 import type { ChainId, AccountId, BalanceKey } from '@shared/core';
 
 export interface IBalanceService {

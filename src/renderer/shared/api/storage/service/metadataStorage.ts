@@ -1,4 +1,4 @@
-import type { Metadata } from '@entities/network';
+import type { Metadata } from '@entities/oldNetwork';
 import { ID, IMetadataStorage, MetadataDS, TMetadata } from '../common/types';
 import { ChainId } from '@shared/core';
 

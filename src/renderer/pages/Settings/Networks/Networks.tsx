@@ -8,7 +8,7 @@ import { useI18n, useNetworkContext, useConfirmContext } from '@app/providers';
 import { Paths } from '@shared/routes';
 import { BaseModal, SearchInput, BodyText, InfoLink, Icon } from '@shared/ui';
 import { useToggle } from '@shared/lib/hooks';
-import { ExtendedChain, chainsService } from '@entities/network';
+import { ExtendedChain, chainsService } from '@entities/oldNetwork';
 import { includes, DEFAULT_TRANSITION } from '@shared/lib/utils';
 import { NetworkList, NetworkItem, CustomRpcModal } from './components';
 import { useBalance } from '@entities/asset';

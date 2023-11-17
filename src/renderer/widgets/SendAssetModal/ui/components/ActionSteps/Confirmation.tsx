@@ -4,7 +4,7 @@ import { useUnit } from 'effector-react';
 import { Transaction, DepositWithLabel, Fee, XcmTypes } from '@entities/transaction';
 import { TransactionAmount } from '@pages/Operations/components/TransactionAmount';
 import { Button, DetailRow, FootnoteText, Icon } from '@shared/ui';
-import { ExtendedChain } from '@entities/network';
+import { ExtendedChain } from '@entities/oldNetwork';
 import { useI18n } from '@app/providers';
 import { XcmFee } from '@entities/transaction/ui/XcmFee/XcmFee';
 import { AssetXCM, XcmConfig } from '@shared/api/xcm';

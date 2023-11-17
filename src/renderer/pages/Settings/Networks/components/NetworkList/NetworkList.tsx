@@ -1,6 +1,6 @@
 import { useEffect, useState, ReactNode } from 'react';
 
-import { ExtendedChain } from '@entities/network';
+import { ExtendedChain } from '@entities/oldNetwork';
 import { CaptionText, Counter, Accordion } from '@shared/ui';
 import { ConnectionType, ConnectionStatus } from '@shared/core';
 

@@ -17,7 +17,7 @@ import InitOperation, { BondResult } from './InitOperation/InitOperation';
 import { OperationTitle } from '@renderer/components/common';
 import { DestinationType } from '../common/types';
 import { UnstakingDuration } from '@pages/Staking/Overview/components';
-import { isLightClient } from '@entities/network';
+import { isLightClient } from '@entities/oldNetwork';
 import { Signing } from '@features/operation';
 import { walletUtils, walletModel } from '@entities/wallet';
 import { priceProviderModel } from '@entities/price';

@@ -4,7 +4,7 @@ import { isHex, hexToU8a, bnMin, BN_TWO, BN } from '@polkadot/util';
 import { blake2AsHex } from '@polkadot/util-crypto';
 
 import { Address, CallData, CallHash } from '@shared/core';
-import { DEFAULT_TIME, ONE_DAY, THRESHOLD } from '@entities/network/lib/common/constants';
+import { DEFAULT_TIME, ONE_DAY, THRESHOLD } from '@entities/oldNetwork/lib/common/constants';
 
 const V3_LABEL = 'V3';
 const UNUSED_LABEL = 'unused';

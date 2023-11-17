@@ -15,7 +15,7 @@ import {
 } from '@shared/api/xcm';
 import { xcmModel } from '@entities/xcm';
 import { getParachainId } from '@renderer/services/dataVerification/dataVerification';
-import { ExtendedChain } from '@entities/network';
+import { ExtendedChain } from '@entities/oldNetwork';
 import { toLocalChainId } from '@shared/lib/utils';
 import type { AccountId, Asset, Chain } from '@shared/core';
 

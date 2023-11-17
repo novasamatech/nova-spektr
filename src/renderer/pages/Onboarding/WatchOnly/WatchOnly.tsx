@@ -4,7 +4,7 @@ import { Controller, SubmitHandler, useForm } from 'react-hook-form';
 
 import { Icon, Identicon, BaseModal, Button, Input, InputHint, HeaderTitleText, SmallTitleText } from '@shared/ui';
 import { useI18n } from '@app/providers';
-import { chainsService } from '@entities/network';
+import { chainsService } from '@entities/oldNetwork';
 import { toAccountId, validateAddress, DEFAULT_TRANSITION } from '@shared/lib/utils';
 import EmptyState from './EmptyState';
 import { AccountsList, walletModel } from '@entities/wallet';

@@ -9,21 +9,8 @@ import type { Connection, Chain, ChainId, RpcNode, HexString } from '@shared/cor
 // ================ Service interface ==================
 // =====================================================
 
-export interface IChainSpecService {
-  getLightClientChains: () => ChainId[];
-  getKnownChain: (chainId: ChainId) => string | undefined;
-}
-
 export interface INetworkService {
-  connections: ConnectionsMap;
-  setupConnections: () => Promise<void>;
-  addRpcNode: (chainId: ChainId, rpcNode: RpcNode) => Promise<void>;
-  updateRpcNode: (chainId: ChainId, oldNode: RpcNode, newNode: RpcNode) => Promise<void>;
-  removeRpcNode: (chainId: ChainId, rpcNode: RpcNode) => Promise<void>;
-  validateRpcNode: (chainId: ChainId, rpcUrl: string) => Promise<RpcValidation>;
-  connectToNetwork: (props: ConnectProps) => Promise<void>;
-  connectWithAutoBalance: (chainId: ChainId, attempt: number) => Promise<void>;
-  getParachains: (chainId: ChainId) => ExtendedChain[];
+  connect: (props: ConnectProps) => Promise<void>;
 }
 
 // =====================================================
@@ -74,4 +61,9 @@ export interface IMetadataService {
    * Subscribe to subscribeRuntimeVersion and trigger syncMetadata if it will be changed
    */
   subscribeMetadata: (api: ApiPromise) => UnsubscribePromise;
+}
+
+export const enum ProviderType {
+  WEB_SOCKET = 'ws',
+  LIGHT_CLIENT = 'sc',
 }

@@ -35,7 +35,7 @@ const CHAINS = [
   },
 ];
 
-jest.mock('@entities/network', () => ({
+jest.mock('@entities/oldNetwork', () => ({
   chainsService: {
     sortChainsByBalance: () => CHAINS,
   },

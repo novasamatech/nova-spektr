@@ -5,7 +5,7 @@ import { BaseModal, FootnoteText, Tabs } from '@shared/ui';
 import { RootExplorers } from '@shared/lib/utils';
 import { useModalClose } from '@shared/lib/hooks';
 import { AccountsList, ContactItem, ExplorersPopover, WalletCardLg, WalletCardMd } from '@entities/wallet';
-import { chainsService, isMultisigAvailable } from '@entities/network';
+import { chainsService, isMultisigAvailable } from '@entities/oldNetwork';
 import { useI18n, useMatrix } from '@app/providers';
 // TODO: think about combining balances and wallets
 import { WalletFiatBalance } from '@features/wallets/WalletSelect/ui/WalletFiatBalance';

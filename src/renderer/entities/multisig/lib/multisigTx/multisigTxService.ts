@@ -17,7 +17,7 @@ import {
   createNewEventsPayload,
   updateOldEventsPayload,
 } from './common/utils';
-import { chainsService } from '../../../network/lib/chainsService';
+import { chainsService } from '../../../oldNetwork/lib/chainsService';
 import { useTransaction } from '../../../transaction/lib/transactionService';
 import { toAddress, getCurrentBlockNumber, getExpectedBlockTime } from '@shared/lib/utils';
 import { useMultisigEvent } from '../multisigEvent/multisigEventService';

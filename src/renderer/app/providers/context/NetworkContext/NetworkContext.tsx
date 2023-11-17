@@ -2,12 +2,13 @@ import { useUnit } from 'effector-react';
 import { createContext, PropsWithChildren, useContext, useEffect, useState } from 'react';
 
 import { useBalance } from '@entities/asset';
-import { ConnectProps, ExtendedChain, RpcValidation, useNetwork } from '@entities/network';
+import { ConnectProps, ExtendedChain, RpcValidation, useNetwork } from '@entities/oldNetwork';
 import { useSubscription } from '@renderer/services/subscription/subscriptionService';
 import { usePrevious } from '@shared/lib/hooks';
 import type { RpcNode, ChainId, AccountId } from '@shared/core';
 import { ConnectionStatus, ConnectionType } from '@shared/core';
 import { walletModel, accountUtils } from '@entities/wallet';
+import { networkModel } from '@entities/network';
 
 type NetworkContextProps = {
   connections: Record<ChainId, ExtendedChain>;
@@ -25,6 +26,16 @@ const NetworkContext = createContext<NetworkContextProps>({} as NetworkContextPr
 export const NetworkProvider = ({ children }: PropsWithChildren) => {
   const activeAccounts = useUnit(walletModel.$activeAccounts);
 
+  const networkStatuses = useUnit(networkModel.$networkStatuses);
+
+  // Test new networks
+  useEffect(() => {
+    console.log(
+      'connected chains',
+      Object.values(networkStatuses).filter((s) => s === 'CONNECTED'),
+    );
+  }, [networkStatuses]);
+
   const { subscribe, unsubscribe, unsubscribeAll } = useSubscription<ChainId>();
   const { connections, setupConnections, connectToNetwork, connectWithAutoBalance, ...rest } = useNetwork();
   const { subscribeBalances, subscribeLockBalances } = useBalance();
@@ -38,7 +49,7 @@ export const NetworkProvider = ({ children }: PropsWithChildren) => {
   const prevConnections = usePrevious(activeConnections);
 
   useEffect(() => {
-    setupConnections().then(() => setEveryConnectionIsReady(true));
+    // setupConnections().then(() => setEveryConnectionIsReady(true));
   }, []);
 
   useEffect(() => {

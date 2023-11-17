@@ -12,7 +12,7 @@ import { Confirmation, Submit, Validators, NoAsset } from '../components';
 import { useToggle } from '@shared/lib/hooks';
 import { BaseModal, Button, Loader } from '@shared/ui';
 import InitOperation, { ValidatorsResult } from './InitOperation/InitOperation';
-import { isLightClient } from '@entities/network';
+import { isLightClient } from '@entities/oldNetwork';
 import { OperationTitle } from '@renderer/components/common';
 import { Signing } from '@features/operation';
 import type { Account, ChainId, HexString, Address } from '@shared/core';

@@ -1,4 +1,4 @@
-import { Chains } from '@entities/network/lib/common/constants';
+import { Chains } from '@entities/oldNetwork/lib/common/constants';
 import { useChainSpec } from '../chainSpecService';
 
 jest.mock('@polkadot/rpc-provider/substrate-connect', () => ({

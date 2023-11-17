@@ -6,7 +6,7 @@ import { BodyText, Button, Icon, SmallTitleText } from '@shared/ui';
 import { useI18n, useNetworkContext } from '@app/providers';
 import { useBalance } from '@entities/asset';
 import { useToggle } from '@shared/lib/hooks';
-import { chainsService, isMultisigAvailable } from '@entities/network';
+import { chainsService, isMultisigAvailable } from '@entities/oldNetwork';
 import { useSettingsStorage } from '@entities/settings';
 import { AssetsFilters, NetworkAssets, SelectShardModal } from './components';
 import { Header } from '@renderer/components/common';

@@ -3,7 +3,7 @@ import { fork } from 'effector';
 import { Provider } from 'effector-react';
 
 import { useBalance } from '@entities/asset';
-import { useNetwork } from '@entities/network';
+import { useNetwork } from '@entities/oldNetwork';
 import { NetworkProvider, useNetworkContext } from './NetworkContext';
 import { AccountType, ConnectionStatus, ConnectionType } from '@shared/core';
 import { walletModel } from '@entities/wallet';
@@ -13,7 +13,7 @@ jest.mock('@app/providers', () => ({
   useMatrix: jest.fn(),
 }));
 
-jest.mock('@entities/network', () => ({
+jest.mock('@entities/oldNetwork', () => ({
   useNetwork: jest.fn().mockReturnValue({
     connections: {},
     setupConnections: jest.fn().mockResolvedValue({}),

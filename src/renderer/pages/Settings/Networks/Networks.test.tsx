@@ -3,7 +3,7 @@ import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
 
 import Networks from './Networks';
-import { ExtendedChain } from '@entities/network';
+import { ExtendedChain } from '@entities/oldNetwork';
 import { useNetworkContext } from '@app/providers';
 import { ConnectionStatus, ConnectionType } from '@shared/core';
 

@@ -11,7 +11,7 @@ import {
 } from '@entities/transaction';
 import { TransactionAmount } from '@pages/Operations/components/TransactionAmount';
 import { DetailRow, FootnoteText, Icon } from '@shared/ui';
-import { ExtendedChain } from '@entities/network';
+import { ExtendedChain } from '@entities/oldNetwork';
 import { useI18n } from '@app/providers';
 import { getIconName } from '@entities/transaction/lib/transactionIcon';
 import { type Account, type MultisigAccount, WalletType } from '@shared/core';

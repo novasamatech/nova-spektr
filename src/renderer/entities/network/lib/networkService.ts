@@ -1,388 +1,115 @@
 import { ApiPromise, ScProvider, WsProvider } from '@polkadot/api';
-import * as Sc from '@substrate/connect';
 import { ProviderInterface } from '@polkadot/rpc-provider/types';
-import keyBy from 'lodash/keyBy';
-import { useRef, useState } from 'react';
+import * as Sc from '@substrate/connect';
+import { noop } from '@polkadot/util';
 
-import { storage } from '@shared/api/storage';
-import { useSubscription } from '../../../services/subscription/subscriptionService';
-import { useChainSpec } from './chainSpecService';
-import { chainsService } from './chainsService';
-import { useMetadata } from './metadataService';
-import { AUTO_BALANCE_TIMEOUT, MAX_ATTEMPTS, PROGRESSION_BASE } from './common/constants';
-import { ConnectionsMap, ConnectProps, INetworkService, RpcValidation } from './common/types';
+import { UniversalProvider } from './provider/UniversalProvider';
+import { ChainId } from '@shared/core';
 import { createCachedProvider } from './provider/CachedProvider';
-import { ConnectionType, ConnectionStatus } from '@shared/core';
-import type { ChainId, Chain, Connection, RpcNode } from '@shared/core';
+import { Metadata } from './common/types';
+import { chainSpecService } from './chainSpecService';
 
-export const useNetwork = (): INetworkService => {
-  const chains = useRef<Record<ChainId, Chain>>({});
-  const [connections, setConnections] = useState<ConnectionsMap>({});
+export const networkService = {
+  createProvider,
+  createApi,
+  connect,
+  disconnect,
+};
 
-  const { subscribe, unsubscribe } = useSubscription<ChainId>();
-  const { getKnownChain, getLightClientChains } = useChainSpec();
-  const { subscribeMetadata, getMetadata } = useMetadata();
+async function createApi(
+  provider: ProviderInterface,
+  onConnected?: () => void,
+  onDisconnected?: () => void,
+  onError?: () => void,
+) {
+  const api = await ApiPromise.create({ provider, throwOnConnect: true, throwOnUnknown: true });
 
-  const connectionStorage = storage.connectTo('connections');
+  api.on('connected', onConnected || noop);
+  api.on('disconnected', onDisconnected || noop);
+  api.on('error', onError || noop);
 
-  if (!connectionStorage) {
-    throw new Error('=== 🔴 Connections storage in not defined 🔴 ===');
+  return api;
+}
+
+function createProvider(
+  chainId: ChainId,
+  nodes: string[],
+  getMetadata: (chainId: ChainId) => Promise<Metadata | undefined>,
+  onConnected?: (value?: any) => void,
+  onDisconnected?: (value?: any) => void,
+  onError?: (value?: any) => void,
+): UniversalProvider {
+  let provider;
+
+  try {
+    const scProvider = createSubstrateProvider(chainId, getMetadata);
+    const wsProvider = createWebsocketProvider(nodes, chainId, getMetadata);
+
+    provider = new UniversalProvider(wsProvider, scProvider);
+  } catch (e) {
+    console.warn(e);
+    const wsProvider = createWebsocketProvider(nodes, chainId, getMetadata);
+
+    provider = new UniversalProvider(wsProvider);
   }
 
-  const { getConnections, getConnection, addConnections, clearConnections, updateConnection } = connectionStorage;
-
-  const updateConnectionState = (
-    chainId: ChainId,
-    updates: Partial<Connection>,
-    disconnect?: (switchNetwork: boolean) => Promise<void>,
-    api?: ApiPromise,
-  ) => {
-    setConnections((currentConnections) => {
-      const currentConnection = currentConnections[chainId];
-      const { api: currentApi, disconnect: currentDisconnect, ...rest } = currentConnection || chains.current[chainId];
-
-      // TODO: not a good solution, but here we got the most fresh connection
-      updateConnection({ ...currentConnection.connection, ...updates }).catch(console.warn);
-      const updatedConnections = {
-        ...rest,
-        connection: { ...currentConnection.connection, ...updates },
-        api: api || currentApi,
-        disconnect: disconnect || currentDisconnect,
-      };
-
-      return {
-        ...currentConnections,
-        [chainId]: updatedConnections,
-      };
-    });
-  };
-
-  const disconnectFromNetwork =
-    (chainId: ChainId, provider?: ProviderInterface, api?: ApiPromise, timeoutId?: any) =>
-    async (switchNetwork: boolean): Promise<void> => {
-      if (!switchNetwork) {
-        const connection = connections[chainId];
-        if (!connection) return;
-
-        updateConnectionState(chainId, {
-          activeNode: undefined,
-          connectionType: ConnectionType.DISABLED,
-          connectionStatus: ConnectionStatus.NONE,
-        });
-      }
-
-      unsubscribe(chainId);
-
-      if (timeoutId) clearTimeout(timeoutId);
-
-      try {
-        await api?.disconnect();
-      } catch (e) {
-        console.warn(e);
-      }
-
-      try {
-        await provider?.disconnect();
-      } catch (e) {
-        console.warn(e);
-      }
-    };
-
-  const getNewConnections = async (): Promise<Connection[]> => {
-    const currentConnections = await getConnections();
-    const connectionData = keyBy(currentConnections, 'chainId');
-    const lightClientChains = getLightClientChains();
-
-    const updatedActiveNode = (chainId: ChainId, connection: Connection, defaultNode: RpcNode): RpcNode | undefined => {
-      const { activeNode, connectionType } = connection;
-      if (!activeNode) return undefined;
-
-      const [insideCustomNodes, insideChainNodes] = [connection.customNodes || [], chains.current[chainId].nodes].map(
-        (nodeGroup) => nodeGroup.find((node) => node.name === activeNode.name && node.url === activeNode.url),
-      );
-
-      if (!insideCustomNodes && !insideChainNodes) {
-        return connectionType === ConnectionType.RPC_NODE ? defaultNode : undefined;
-      }
-
-      return activeNode;
-    };
-
-    return Object.values(chains.current).reduce<Connection[]>((acc, { chainId, nodes }) => {
-      if (connectionData[chainId]) {
-        acc.push({
-          ...connectionData[chainId],
-          activeNode: updatedActiveNode(chainId, connectionData[chainId], nodes[0]),
-          connectionStatus: ConnectionStatus.NONE,
-        });
-      } else {
-        const connectionType = ConnectionType.AUTO_BALANCE;
-        //TODO uncomment when improve light client performance
-        //const connectionType = getKnownChain(chainId) ? ConnectionType.LIGHT_CLIENT : ConnectionType.AUTO_BALANCE;
-        const activeNode = connectionType === ConnectionType.AUTO_BALANCE ? nodes[0] : undefined;
-
-        acc.push({
-          chainId,
-          connectionType,
-          activeNode,
-          canUseLightClient: lightClientChains.includes(chainId),
-          connectionStatus: ConnectionStatus.NONE,
-        });
-      }
-
-      return acc;
-    }, []);
-  };
-
-  const getExtendConnections = async (): Promise<ConnectionsMap> => {
-    const currentConnections = await getConnections();
-    const connectionData = keyBy(currentConnections, 'chainId');
-
-    return Object.values(chains.current).reduce<ConnectionsMap>((acc, chain) => {
-      acc[chain.chainId] = {
-        ...chains.current[chain.chainId],
-        connection: connectionData[chain.chainId],
-      };
-
-      return acc;
-    }, {});
-  };
-
-  const createSubstrateProvider = (chainId: ChainId): ProviderInterface | undefined => {
-    const knownChainId = getKnownChain(chainId);
-
-    if (knownChainId) {
-      const CachedScProvider = createCachedProvider(ScProvider, chainId, getMetadata);
-
-      return new CachedScProvider(Sc, knownChainId);
-    } else {
-      throw new Error('Parachains do not support Substrate Connect yet');
-    }
-  };
-
-  const createWebsocketProvider = (rpcUrl: string, chainId: ChainId): ProviderInterface => {
-    // TODO: handle limited retries provider = new WsProvider(node.address, 5000, {1}, 11000);
-    const CachedWsProvider = createCachedProvider(WsProvider, chainId, getMetadata);
-
-    return new CachedWsProvider(rpcUrl, 2000);
-  };
-
-  const subscribeConnected = (chainId: ChainId, provider: ProviderInterface, type: ConnectionType, node?: RpcNode) => {
-    const handler = async () => {
-      console.info('🟢 connected ==> ', chainId);
-
-      const api = await ApiPromise.create({ provider, throwOnConnect: true, throwOnUnknown: true });
-      if (!api) await provider.disconnect();
-
-      if (api) {
-        subscribe(chainId, subscribeMetadata(api));
-      }
-
-      updateConnectionState(
-        chainId,
-        {
-          activeNode: node,
-          connectionType: type,
-          connectionStatus: api ? ConnectionStatus.CONNECTED : ConnectionStatus.ERROR,
-        },
-        disconnectFromNetwork(chainId, provider, api),
-        api,
-      );
-    };
-
-    provider.on('connected', handler);
-  };
-
-  const subscribeDisconnected = (chainId: ChainId, provider: ProviderInterface) => {
-    const handler = async () => {
-      console.info('🔶 disconnected ==> ', chainId);
-    };
-
-    provider.on('disconnected', handler);
-  };
-
-  const subscribeError = (chainId: ChainId, provider: ProviderInterface, onError?: () => void) => {
-    const handler = () => {
-      console.info('🔴 error ==> ', chainId);
-
-      updateConnectionState(chainId, {
-        connectionStatus: ConnectionStatus.ERROR,
-      });
-
-      onError?.();
-    };
-
-    provider.on('error', handler);
-  };
-
-  const connectWithAutoBalance = async (chainId: ChainId, attempt = 0): Promise<void> => {
-    if (Number.isNaN(attempt)) attempt = 0;
-
-    const currentTimeout = AUTO_BALANCE_TIMEOUT * (PROGRESSION_BASE ^ attempt % MAX_ATTEMPTS);
-
-    const timeoutId = setTimeout(async () => {
-      const currentConnection = await getConnection(chainId);
-
-      if (!currentConnection) return;
-
-      if (attempt !== 0 && currentConnection.connectionType === ConnectionType.DISABLED) return;
-
-      const nodes = [...connections[chainId].nodes, ...(connections[chainId].connection.customNodes || [])];
-
-      const node = nodes[Math.floor(attempt / MAX_ATTEMPTS) % nodes.length];
-
-      connectToNetwork({ chainId, type: ConnectionType.AUTO_BALANCE, node, attempt, timeoutId });
-    }, currentTimeout);
-  };
-
-  const connectToNetwork = async (props: ConnectProps): Promise<void> => {
-    const { chainId, type, node, timeoutId } = props;
-    const connection = connections[chainId];
-    if (!connection || type === ConnectionType.DISABLED) return;
-
-    updateConnectionState(chainId, {
-      activeNode: node,
-      connectionType: type,
-      connectionStatus: ConnectionStatus.CONNECTING,
-    });
-
-    const provider: { instance?: ProviderInterface; isScProvider: boolean } = {
-      instance: undefined,
-      isScProvider: type === ConnectionType.LIGHT_CLIENT,
-    };
-
-    if (type === ConnectionType.LIGHT_CLIENT) {
-      provider.instance = createSubstrateProvider(chainId);
-    } else if ([ConnectionType.RPC_NODE, ConnectionType.AUTO_BALANCE].includes(type) && node) {
-      provider.instance = createWebsocketProvider(node.url, chainId);
-    }
-
-    setConnections((currentConnections) => ({
-      ...currentConnections,
-      [connection.chainId]: {
-        ...currentConnections[chainId],
-        disconnect: disconnectFromNetwork(chainId, provider.instance, undefined, timeoutId),
-      },
-    }));
-
-    let autoBalanceStarted = false;
-    const onAutoBalanceError = async () => {
-      const { attempt, timeoutId } = props;
-      if (autoBalanceStarted || type !== ConnectionType.AUTO_BALANCE) return;
-      autoBalanceStarted = true;
-
-      await disconnectFromNetwork(chainId, provider.instance, undefined, timeoutId)(true);
-      await connectWithAutoBalance(chainId, attempt! + 1);
-    };
-
-    if (provider.instance) {
-      if (provider.isScProvider) {
-        await provider.instance.connect();
-      }
-
-      subscribeConnected(chainId, provider.instance, type, node);
-      subscribeDisconnected(chainId, provider.instance);
-      subscribeError(chainId, provider.instance, onAutoBalanceError);
-    } else {
-      updateConnectionState(chainId, {
-        activeNode: node,
-        connectionType: type,
-        connectionStatus: ConnectionStatus.ERROR,
-      });
-    }
-  };
-
-  const validateRpcNode = (chainId: ChainId, rpcUrl: string): Promise<RpcValidation> => {
-    return new Promise((resolve) => {
-      const CachedWsProvider = createCachedProvider(WsProvider, chainId, getMetadata);
-
-      const provider = new CachedWsProvider(rpcUrl);
-
-      provider.on('connected', async () => {
-        let isNetworkMatch = false;
-        try {
-          const api = await ApiPromise.create({ provider, throwOnConnect: true, throwOnUnknown: true });
-          isNetworkMatch = chainId === api.genesisHash.toHex();
-
-          api.disconnect().catch(console.warn);
-        } catch (error) {
-          console.warn(error);
-        }
-        provider.disconnect().catch(console.warn);
-        resolve(isNetworkMatch ? RpcValidation.VALID : RpcValidation.WRONG_NETWORK);
-      });
-
-      provider.on('error', async () => {
-        try {
-          await provider.disconnect();
-        } catch (error) {
-          console.warn(error);
-        }
-        resolve(RpcValidation.INVALID);
-      });
-    });
-  };
-
-  const addRpcNode = async (chainId: ChainId, rpcNode: RpcNode): Promise<void> => {
-    const connection = connections[chainId];
-    if (!connection) return;
-
-    await updateConnectionState(chainId, {
-      customNodes: (connection.connection.customNodes || []).concat(rpcNode),
-    });
-  };
-
-  const updateRpcNode = async (chainId: ChainId, oldNode: RpcNode, newRpc: RpcNode): Promise<void> => {
-    const connection = connections[chainId];
-    if (!connection) return;
-
-    await updateConnectionState(chainId, {
-      customNodes: (connection.connection.customNodes || []).map((node) => {
-        if (node.url === oldNode.url && node.name === oldNode.name) return newRpc;
-
-        return node;
-      }),
-    });
-  };
-
-  const removeRpcNode = async (chainId: ChainId, rpcNode: RpcNode): Promise<void> => {
-    const connection = connections[chainId];
-    if (!connection) return;
-
-    await updateConnectionState(chainId, {
-      customNodes: (connection.connection.customNodes || []).filter((node) => node.url !== rpcNode.url),
-    });
-  };
-
-  const setupConnections = async (): Promise<void> => {
-    try {
-      const chainsData = chainsService.getChainsData();
-      chains.current = keyBy(chainsService.sortChains(chainsData), 'chainId');
-
-      const newConnections = await getNewConnections();
-      await clearConnections();
-      await addConnections(newConnections);
-
-      const connectionsMap = await getExtendConnections();
-      setConnections(connectionsMap);
-    } catch (error) {
-      console.error(error);
-    }
-  };
-
-  const getParachains = (chainId: ChainId) => {
-    return Object.values(connections).filter((c) => c.parentId === chainId);
-  };
-
-  return {
-    connections,
-    setupConnections,
-    connectToNetwork,
-    connectWithAutoBalance,
-    addRpcNode,
-    updateRpcNode,
-    removeRpcNode,
-    validateRpcNode,
-    getParachains,
-  };
+  provider.on('connected', onConnected || noop);
+  provider.on('disconnected', onDisconnected || noop);
+  provider.on('error', onError || noop);
+
+  return provider;
+}
+
+const createSubstrateProvider = (
+  chainId: ChainId,
+  getMetadata: (chainId: ChainId) => Promise<Metadata | undefined>,
+): ProviderInterface => {
+  const knownChainId = chainSpecService.getKnownChain(chainId);
+
+  if (knownChainId) {
+    const CachedScProvider = createCachedProvider(ScProvider, chainId, getMetadata);
+
+    return new CachedScProvider(Sc, knownChainId);
+  } else {
+    throw new Error('Parachains do not support Substrate Connect yet');
+  }
 };
+
+const createWebsocketProvider = (
+  rpcUrls: string[],
+  chainId: ChainId,
+  getMetadata: (chainId: ChainId) => Promise<Metadata | undefined>,
+): ProviderInterface => {
+  // TODO: handle limited retries provider = new WsProvider(node.address, 5000, {1}, 11000);
+  const CachedWsProvider = createCachedProvider(WsProvider, chainId, getMetadata);
+
+  return new CachedWsProvider(rpcUrls, 2000);
+};
+
+async function disconnect(provider?: ProviderInterface, api?: ApiPromise) {
+  try {
+    await api?.disconnect();
+  } catch (e) {
+    console.warn(e);
+  }
+
+  try {
+    await provider?.disconnect();
+  } catch (e) {
+    console.warn(e);
+  }
+}
+
+async function connect(provider?: ProviderInterface, api?: ApiPromise) {
+  try {
+    await provider?.connect();
+  } catch (e) {
+    console.warn(e);
+  }
+
+  try {
+    await api?.connect();
+  } catch (e) {
+    console.warn(e);
+  }
+}

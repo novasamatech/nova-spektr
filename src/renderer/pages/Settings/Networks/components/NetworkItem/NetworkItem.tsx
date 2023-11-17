@@ -1,6 +1,6 @@
 import { TFunction } from 'react-i18next';
 
-import { ExtendedChain } from '@entities/network';
+import { ExtendedChain } from '@entities/oldNetwork';
 import { NetworkSelector } from '../NetworkSelector/NetworkSelector';
 import { BodyText, StatusLabel, FootnoteText, HelpText } from '@shared/ui';
 import { useI18n } from '@app/providers';

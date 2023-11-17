@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import noop from 'lodash/noop';
 
-import { ExtendedChain } from '@entities/network';
+import { ExtendedChain } from '@entities/oldNetwork';
 import { NetworkItem } from './NetworkItem';
 import { ConnectionStatus, ConnectionType } from '@shared/core';
 

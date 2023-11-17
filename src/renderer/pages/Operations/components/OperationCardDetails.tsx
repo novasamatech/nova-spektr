@@ -6,7 +6,7 @@ import { AddressWithExplorers, WalletCardSm, walletModel } from '@entities/walle
 import { Icon, Button, FootnoteText, DetailRow } from '@shared/ui';
 import { copyToClipboard, truncate, cnTw, getAssetById } from '@shared/lib/utils';
 import { useToggle } from '@shared/lib/hooks';
-import { chainsService, ExtendedChain, isLightClient } from '@entities/network';
+import { chainsService, ExtendedChain, isLightClient } from '@entities/oldNetwork';
 import { MultisigTransaction, Transaction, isXcmTransaction } from '@entities/transaction';
 import { AddressStyle, DescriptionBlockStyle, InteractionStyle } from '../common/constants';
 import { getMultisigExtrinsicLink } from '../common/utils';

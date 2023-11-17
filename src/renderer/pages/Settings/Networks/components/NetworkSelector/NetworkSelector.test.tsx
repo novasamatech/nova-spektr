@@ -2,7 +2,7 @@ import { act, render, screen } from '@testing-library/react';
 import noop from 'lodash/noop';
 
 import { ConnectionStatus, ConnectionType } from '@shared/core';
-import { ExtendedChain } from '@entities/network';
+import { ExtendedChain } from '@entities/oldNetwork';
 import { NetworkSelector } from './NetworkSelector';
 import { useScrollTo } from '@shared/lib/hooks';
 

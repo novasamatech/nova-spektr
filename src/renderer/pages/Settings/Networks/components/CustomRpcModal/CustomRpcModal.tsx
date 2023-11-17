@@ -3,7 +3,7 @@ import { Controller, SubmitHandler, useForm } from 'react-hook-form';
 
 import { BaseModal, Button, Input, InputHint, Alert } from '@shared/ui';
 import { useI18n, useNetworkContext } from '@app/providers';
-import { RpcValidation, ExtendedChain } from '@entities/network';
+import { RpcValidation, ExtendedChain } from '@entities/oldNetwork';
 import { validateWsAddress } from '@shared/lib/utils';
 import { OperationTitle } from '@renderer/components/common';
 import type { RpcNode } from '@shared/core';

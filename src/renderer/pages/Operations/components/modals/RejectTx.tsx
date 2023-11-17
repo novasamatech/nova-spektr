@@ -8,7 +8,7 @@ import { BaseModal, Button } from '@shared/ui';
 import { useI18n } from '@app/providers';
 import { MultisigTransactionDS } from '@shared/api/storage';
 import { useToggle } from '@shared/lib/hooks';
-import { ExtendedChain } from '@entities/network';
+import { ExtendedChain } from '@entities/oldNetwork';
 import { toAddress, transferableAmount, getAssetById } from '@shared/lib/utils';
 import { getMultisigSignOperationTitle } from '../../common/utils';
 import { useBalance } from '@entities/asset';

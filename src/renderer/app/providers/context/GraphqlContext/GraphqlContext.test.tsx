@@ -4,7 +4,7 @@ import { GraphqlProvider, useGraphql } from './GraphqlContext';
 
 jest.mock('@shared/lib/hooks');
 
-jest.mock('@entities/network', () => ({
+jest.mock('@entities/oldNetwork', () => ({
   chainsService: {
     getStakingChainsData: jest
       .fn()

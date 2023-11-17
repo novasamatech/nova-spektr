@@ -4,7 +4,7 @@ import { Controller, SubmitHandler, useForm } from 'react-hook-form';
 import { u8aToHex } from '@polkadot/util';
 import { keyBy } from 'lodash';
 
-import { chainsService } from '@entities/network';
+import { chainsService } from '@entities/oldNetwork';
 import { useI18n } from '@app/providers';
 import { ChainTitle } from '@entities/chain';
 import { AddressInfo, CompactSeedInfo, SeedInfo } from '@renderer/components/common/QrCode/common/types';

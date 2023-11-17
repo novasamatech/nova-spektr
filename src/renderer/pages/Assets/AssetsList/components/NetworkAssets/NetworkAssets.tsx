@@ -6,7 +6,7 @@ import { Icon, CaptionText, Tooltip, Accordion } from '@shared/ui';
 import { useBalance, AssetCard } from '@entities/asset';
 import { ChainTitle } from '@entities/chain';
 import { ZERO_BALANCE, totalAmount, includes, cnTw } from '@shared/lib/utils';
-import { ExtendedChain } from '@entities/network';
+import { ExtendedChain } from '@entities/oldNetwork';
 import { useI18n } from '@app/providers';
 import { balanceSorter, sumBalances } from '../../common/utils';
 import type { AccountId, Account, Chain, Asset, Balance } from '@shared/core';

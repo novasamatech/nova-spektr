@@ -2,6 +2,7 @@ import sortBy from 'lodash/sortBy';
 import concat from 'lodash/concat';
 import orderBy from 'lodash/orderBy';
 import BigNumber from 'bignumber.js';
+import keyBy from 'lodash/keyBy';
 
 import chainsProd from '@shared/config/chains/chains.json';
 import chainsDev from '@shared/config/chains/chains_dev.json';
@@ -23,6 +24,7 @@ const CHAINS: Record<string, any> = {
 
 export const chainsService = {
   getChainsData,
+  getChainsMap,
   getChainById,
   getStakingChainsData,
   sortChains,
@@ -32,6 +34,12 @@ export const chainsService = {
 
 function getChainsData(): Chain[] {
   return CHAINS[process.env.CHAINS_FILE || 'chains'];
+}
+
+function getChainsMap(): Record<ChainId, Chain> {
+  const chainsData = getChainsData();
+
+  return keyBy(chainsData, 'chainId');
 }
 
 function getChainById(chainId: ChainId): Chain | undefined {

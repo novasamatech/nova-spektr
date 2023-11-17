@@ -18,7 +18,7 @@ jest.mock('@app/providers', () => ({
   })),
 }));
 
-jest.mock('@entities/network', () => ({
+jest.mock('@entities/oldNetwork', () => ({
   chainsService: {
     sortChains: (value: Chain[]) => value,
     getChainsData: jest.fn().mockResolvedValue([
