@@ -49,7 +49,7 @@ export const NetworkProvider = ({ children }: PropsWithChildren) => {
   const prevConnections = usePrevious(activeConnections);
 
   useEffect(() => {
-    // setupConnections().then(() => setEveryConnectionIsReady(true));
+    setupConnections().then(() => setEveryConnectionIsReady(true));
   }, []);
 
   useEffect(() => {
