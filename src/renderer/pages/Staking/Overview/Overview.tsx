@@ -160,9 +160,8 @@ export const Overview = () => {
 
     acc.push({
       address,
-      id: account.id,
+      account,
       stash: staking[address]?.stash,
-      accountName: account.name,
       isSelected: selectedNominators.includes(address),
       totalStake: isStakingLoading ? undefined : staking[address]?.total || '0',
       totalReward: isRewardsLoading ? undefined : rewards[address],
@@ -218,8 +217,10 @@ export const Overview = () => {
   const totalStakes = Object.values(staking).map((stake) => stake?.total || '0');
   const relaychainAsset = getRelaychainAsset(activeChain?.assets);
 
-  const toggleSelectedNominators = (address: Address) => {
-    if (selectedNominators.includes(address)) {
+  const toggleSelectedNominators = (address: Address, isAllSelected?: boolean) => {
+    const select = isAllSelected === undefined ? selectedNominators.includes(address) : !isAllSelected;
+
+    if (select) {
       setSelectedNominators((value) => value.filter((a) => a !== address));
     } else {
       setSelectedNominators((value) => value.concat(address));

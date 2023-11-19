@@ -11,9 +11,8 @@ import type {
   ChainAccount,
   WalletConnectAccount,
   Wallet,
-  ShardedAccount,
-  ShardAccount,
-} from '@shared/core';
+} from '@renderer/shared/core';
+import { ShardAccount } from '@renderer/shared/core/types/account';
 
 export const accountUtils = {
   isBaseAccount,
@@ -21,7 +20,6 @@ export const accountUtils = {
   isMultisigAccount,
   isChainIdMatch,
   isWalletConnectAccount,
-  isShardedAccount,
   isShardAccount,
   getMultisigAccountId,
   getAllAccountIds,
@@ -44,10 +42,6 @@ function isWalletConnectAccount(account: Pick<Account, 'type'>): account is Wall
   return account.type === AccountType.WALLET_CONNECT;
 }
 
-function isShardedAccount(account: Pick<Account, 'type'>): account is ShardedAccount {
-  return account.type === AccountType.SHARDED;
-}
-
 function isShardAccount(account: Pick<Account, 'type'>): account is ShardAccount {
   return account.type === AccountType.SHARD;
 }
@@ -57,9 +51,11 @@ function isChainIdMatch(account: Pick<Account, 'type'>, chainId: ChainId): boole
 
   const chainAccountMatch = isChainAccount(account) && account.chainId === chainId;
   const walletConnectAccountMatch = isWalletConnectAccount(account) && account.chainId === chainId;
+  const shardAccountMatch = isShardAccount(account) && account.chainId === chainId;
 
-  return chainAccountMatch || walletConnectAccountMatch;
+  return chainAccountMatch || walletConnectAccountMatch || shardAccountMatch;
 }
+
 function isMultisigAccount(account: Pick<Account, 'type'>): account is MultisigAccount {
   return account.type === AccountType.MULTISIG;
 }
