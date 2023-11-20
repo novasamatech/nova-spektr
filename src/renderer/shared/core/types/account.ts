@@ -51,7 +51,7 @@ export const enum AccountType {
   WALLET_CONNECT = 'wallet_connect',
 }
 
-export const enum KeyType {
+export enum KeyType {
   MAIN = 'main',
   PUBLIC = 'pub',
   HOT = 'hot',

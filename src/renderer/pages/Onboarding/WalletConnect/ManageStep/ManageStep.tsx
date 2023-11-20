@@ -123,7 +123,7 @@ const ManageStep = ({ accounts, type, pairingTopic, sessionTopic, onBack, onComp
         <div className="flex justify-center items-center h-20 gap-1">
           <Icon name="logo" size={56} />
           <div className="w-3 h-0 border-[1.5px] rounded border-text-positive"></div>
-          <Icon name="checkLineRedesign" className="text-text-positive" size={18} />
+          <Icon name="checkmarkOutline" className="text-text-positive" size={18} />
           <div className="w-3 h-0 border-[1.5px] rounded border-text-positive"></div>
           <Icon name={WalletLogo[type]} size={56} />
         </div>

@@ -137,6 +137,34 @@
   "dropdown": {
     "chooseOptionLabel": "Choose an option"
   },
+  "dynamicDerivations": {
+    "importKeys": {
+      "backButton": "Back",
+      "continueButton": "Continue",
+      "downloadTemplateButton": "Download the template",
+      "error": {
+        "invalidFile": "Incorrect file format",
+        "invalidPasswordPath_one": "Password derivation path {invalidPath} is not allowed, please check the file",
+        "invalidPasswordPath_other": "Password derivation paths {invalidPath} are not allowed, please check the file",
+        "invalidPath_one": "Derivation path {invalidPath} is not valid, please check the file",
+        "invalidPath_other": "Derivation paths {invalidPath} are not valid, please check the file",
+        "invalidRoot": "The public key doesn’t match"
+      },
+      "fileInputPlaceholder": "Select .yaml or .txt file on your computer",
+      "modalTitle": "Import keys",
+      "report": {
+        "addedKeys_one": "{count} key added",
+        "addedKeys_other": "{count} keys added",
+        "duplicatedKeys_one": "{count} derivation path is duplicated.",
+        "duplicatedKeys_other": "{count} derivation paths are duplicated.",
+        "networksIgnored_one": "{count} networks ignored with genesis hash:",
+        "networksIgnored_other": "{count} networks ignored with genesis hash:",
+        "title": "Success",
+        "updatedNetworks_one": "for {count} network.",
+        "updatedNetworks_other": "for {count} networks."
+      }
+    }
+  },
   "fallbackScreen": {
     "message": "Sorry, something went wrong",
     "omniLogoAlt": "Nova Spektr logo",

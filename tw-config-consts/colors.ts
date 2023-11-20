@@ -92,6 +92,7 @@ export default {
   'alert-background': 'var(--alert-background)',
   'alert-background-warning': 'var(--alert-background-warning)',
   'alert-background-negative': 'var(--alert-background-negative)',
+  'alert-background-positive': 'var(--alert-background-positive)',
   'label-background-green': 'var(--label-background-green)',
   'label-background-red': 'var(--label-background-red)',
   'label-background-gray': 'var(--label-background-gray)',
