@@ -9,7 +9,6 @@ import { cnTw } from '@shared/lib/utils';
 import templateFile from '@shared/assets/files/dd-template.yaml';
 import { importKeysModel } from '../model/import-keys-model';
 import { TypedImportedDerivation } from '../lib/types';
-import { EXISTING_DERIVATIONS, ROOT_ACCOUNT_ID } from '@features/wallets/ImportKeys/ui/mocks/mock-data';
 
 type Props = {
   isOpen: boolean;
@@ -19,13 +18,7 @@ type Props = {
   onConfirm: () => void;
 };
 
-export const ImportKeysModal = ({
-  isOpen,
-  rootAccountId = ROOT_ACCOUNT_ID,
-  existingKeys = EXISTING_DERIVATIONS,
-  onClose,
-  onConfirm,
-}: Props) => {
+export const ImportKeysModal = ({ isOpen, rootAccountId, existingKeys, onClose, onConfirm }: Props) => {
   const { t } = useI18n();
   const validationError = useUnit(importKeysModel.$validationError);
   const successReport = useUnit(importKeysModel.$successReport);

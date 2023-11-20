@@ -14,7 +14,6 @@ import type { Account, Chain } from '@shared/core';
 import { ConnectionType } from '@shared/core';
 import { walletModel, walletUtils } from '@entities/wallet';
 import { currencyModel, priceProviderModel } from '@entities/price';
-import { ImportKeysModal } from "@features/wallets";
 
 export const AssetsList = () => {
   const { t } = useI18n();
@@ -153,8 +152,6 @@ export const AssetsList = () => {
       )}
 
       <Outlet />
-
-      <ImportKeysModal isOpen />
     </>
   );
 };
