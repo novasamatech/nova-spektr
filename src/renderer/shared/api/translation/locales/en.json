@@ -122,6 +122,18 @@
     "walletNameLabel": "Wallet name",
     "walletsTab": "Your wallets"
   },
+  "derivedAccount": {
+    "customShardedTitle": "Custom sharded key",
+    "customTitle": "Custom key",
+    "governanceShardedTitle": "Governance sharded",
+    "governanceTitle": "Governance account",
+    "hotTitle": "Hot wallet account",
+    "mainShardedTitle": "Main sharded",
+    "mainTitle": "Main",
+    "publicTitle": "Public account",
+    "stakingShardedTitle": "Staking sharded",
+    "stakingTitle": "Staking account"
+  },
   "dropdown": {
     "chooseOptionLabel": "Choose an option"
   },
@@ -152,6 +164,10 @@
     "title": {
       "appName": "Nova Spektr"
     }
+  },
+  "info": {
+    "derivationPathTitle": "Derivation path ",
+    "publicKeyTitle": "Public key"
   },
   "log": {
     "cancelledMessage": "rejected this operation",
@@ -256,13 +272,26 @@
     "readAccountsParitySignerLabel": "Following accounts have been successfully read from Polkadot Vault",
     "readyToUseLabel": "Your wallet is ready to use!",
     "vault": {
+      "accountTitle": "Account",
       "accountsTitle": "Manage accounts",
+      "addMoreKeysButton": "Add more keys",
       "addressColumn": "Address",
+      "altHint": "Hold <button /> to see the details",
       "fillNamesButton": "Autofill account names",
+      "hotkeyAlt": "Alt",
+      "hotkeyOption": "Option",
+      "importButton": "Import",
+      "info": {
+        "accountsDescription": "Your accounts will be derived from the Vault and key derivation path. For each network a separate derivation path is used",
+        "accountsTitle": "Where are my accounts?",
+        "vaultDescription": "Vault is the root key in the key hierarchy. It’s a key that is derived from the seed phrase without a derivation path",
+        "vaultTitle": "What is the Vault?"
+      },
       "manageTitle": "Set up your wallet",
       "nameColumn": "Account name",
       "scanTitle": "Scan the account QR code",
-      "title": "Add wallet by Polkadot Vault"
+      "title": "Add wallet by Polkadot Vault",
+      "vaultTitle": "Vault"
     },
     "walletConnect": {
       "accountsTitle": "Manage accounts",
@@ -903,11 +932,14 @@
     },
     "walletConnect": {
       "abortRejectButton": "Close",
+      "confirmButton": "Yes, refresh",
       "connectedStatus": "Connected",
       "disconnectedDescription": "Resume the connection to work with the WalletConnect",
       "disconnectedStatus": "Not connected",
       "disconnectedTitle": "Wallet not connected",
       "reconnectButton": "Reconnect",
+      "reconnectConfirmDescription": "Make sure that corresponding wallet is selected in your wallet app connected via WalletConnect",
+      "reconnectConfirmTitle": "Is a proper wallet selected?",
       "refreshButton": "Refresh",
       "rejectDescription": "The operation was successfully canceled",
       "rejectTitle": "Rejected"

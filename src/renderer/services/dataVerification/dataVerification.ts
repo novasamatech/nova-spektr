@@ -117,6 +117,8 @@ export const validate = async (
   value: Codec,
 ): Promise<boolean> => {
   const blockHash = value.createdAtHash;
+  // TODO: get block number instead of block
+  // TODO: Aggregate run validation to decrease rpc calls
   const block = await parachainApi.rpc.chain.getBlock(blockHash);
   let blockNumber = new BN(0);
 
