@@ -64,7 +64,7 @@ sample({
 sample({
   clock: formInitiated,
   fn: ([seedInfo]: SeedInfo[]) => {
-    const accounts = chains.reduce((acc, chain) => {
+    const accounts = chains.reduce<Record<string, any>>((acc, chain) => {
       if (!chain.specName) return acc;
 
       const derivationPath = `//${chain.specName}`;
@@ -80,10 +80,10 @@ sample({
       };
 
       return acc;
-    }, {} as Record<string, any>);
+    }, {});
 
-    const derivedAccounts = seedInfo.derivedKeys.reduce((acc, key) => {
-      if (!accounts[key.derivationPath || '']) {
+    const derivedAccounts = seedInfo.derivedKeys.reduce<any[]>((acc, key) => {
+      if (key.derivationPath && !accounts[key.derivationPath]) {
         acc.push({
           name: '',
           derivationPath: key.derivationPath || '',
@@ -97,7 +97,7 @@ sample({
       }
 
       return acc;
-    }, [] as any[]);
+    }, []);
 
     return Object.values(accounts).concat(derivedAccounts);
   },

@@ -7,4 +7,3 @@ export { useScrollTo } from './useScrollTo';
 export { useTaskQueue } from './useTaskQueue';
 export { useModalClose } from './useModalClose';
 export { useAltKeyPressed } from './useAltKeyPressed';
-export { useKeyPressed } from './useKeyPressed';

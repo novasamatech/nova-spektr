@@ -65,3 +65,5 @@ export const enum KeyType {
   STAKING = 'staking',
   CUSTOM = 'custom',
 }
+
+export type ShardedKeyType = KeyType.CUSTOM | KeyType.GOVERNANCE | KeyType.MAIN | KeyType.STAKING;

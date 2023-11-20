@@ -4,14 +4,15 @@ import { IconNames } from '@renderer/shared/ui/Icon/data';
 import { KeyType } from '@renderer/shared/core';
 import { useI18n } from '@renderer/app/providers';
 import { useDerivedInfo } from '../../lib/useDerivedInfo';
+import { ShardedKeyType } from '@renderer/shared/core/types/account';
 
 const KeyIcon: Record<KeyType, IconNames> = {
-  [KeyType.CUSTOM]: 'ddCustom',
-  [KeyType.GOVERNANCE]: 'ddGovernance',
-  [KeyType.HOT]: 'ddHot',
-  [KeyType.MAIN]: 'ddMain',
-  [KeyType.PUBLIC]: 'ddPublic',
-  [KeyType.STAKING]: 'ddStaking',
+  [KeyType.CUSTOM]: 'keyCustom',
+  [KeyType.GOVERNANCE]: 'keyGovernance',
+  [KeyType.HOT]: 'keyHot',
+  [KeyType.MAIN]: 'keyMain',
+  [KeyType.PUBLIC]: 'keyPublic',
+  [KeyType.STAKING]: 'keyStaking',
 };
 
 const KeyTitle: Record<KeyType, string> = {
@@ -22,8 +23,6 @@ const KeyTitle: Record<KeyType, string> = {
   [KeyType.PUBLIC]: 'derivedAccount.publicTitle',
   [KeyType.STAKING]: 'derivedAccount.stakingTitle',
 };
-
-type ShardedKeyType = KeyType.CUSTOM | KeyType.GOVERNANCE | KeyType.MAIN | KeyType.STAKING;
 
 const KeyShardedTitle: Record<ShardedKeyType, string> = {
   [KeyType.CUSTOM]: 'derivedAccount.customShardedTitle',
@@ -56,7 +55,7 @@ export const DerivedAccount = ({
       ? KeyShardedTitle[keyType as ShardedKeyType]
       : KeyTitle[keyType];
 
-  const popoverItems = derivationPath && useDerivedInfo({ derivationPath });
+  const popoverItems = useDerivedInfo({ derivationPath: derivationPath || '' });
 
   const BodyComponent = (
     <div
@@ -77,7 +76,7 @@ export const DerivedAccount = ({
     </div>
   );
 
-  return popoverItems ? (
+  return derivationPath ? (
     <InfoPopover
       data={popoverItems}
       position="right-0 top-full"
