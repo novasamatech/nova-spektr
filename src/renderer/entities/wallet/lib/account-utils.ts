@@ -79,22 +79,24 @@ function getWalletAccounts<T extends Account>(walletId: Wallet['id'], accounts: 
   return accounts.filter((account) => account.walletId === walletId);
 }
 
-function getAccountsWithGroupedShards<T extends Account>(accounts: T[]): Array<T | Array<T>> {
-  const shardsIndexes: Record<ShardAccount['group'], number> = {};
+function getAccountsWithGroupedShards(
+  accounts: Array<ChainAccount | ShardAccount>,
+): Array<ChainAccount | ShardAccount[]> {
+  const shardsIndexes: Record<ShardAccount['groupId'], number> = {};
 
-  return accounts.reduce<Array<T | Array<T>>>((acc, account, index) => {
+  return accounts.reduce<Array<ChainAccount | ShardAccount[]>>((acc, account) => {
     if (!accountUtils.isShardAccount(account)) {
       acc.push(account);
 
       return acc;
     }
 
-    const existingGroupIndex = shardsIndexes[account.group];
+    const existingGroupIndex = shardsIndexes[account.groupId];
     if (existingGroupIndex !== undefined) {
-      (acc[existingGroupIndex] as Array<T>).push(account);
+      (acc[existingGroupIndex] as ShardAccount[]).push(account);
     } else {
       acc.push([account]);
-      shardsIndexes[account.group] = index;
+      shardsIndexes[account.groupId] = acc.length - 1;
     }
 
     return acc;

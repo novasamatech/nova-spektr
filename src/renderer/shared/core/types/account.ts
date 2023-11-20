@@ -24,7 +24,8 @@ export type ChainAccount = BaseAccount & {
 };
 
 export type ShardAccount = BaseAccount & {
-  group: ID;
+  groupId: string;
+  keyType: KeyType;
   chainId: ChainId;
   derivationPath: string;
 };
