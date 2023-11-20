@@ -15,7 +15,7 @@ describe('ui/SignatoryCard', () => {
       </SignatoryCard>,
     );
 
-    const successIcon = screen.getByTestId('checkLineRedesign-svg');
+    const successIcon = screen.getByTestId('checkmarkOutline-svg');
 
     expect(successIcon).toHaveClass('text-text-positive');
   });
