@@ -21,7 +21,7 @@ export const KeyConstructor = ({ isOpen, onClose, onConfirm }: Props) => {
       <div className="px-5 pt-4 pb-6 border-b border-divider">
         <KeyForm />
       </div>
-      <div className="flex-1">
+      <div className="flex-1 mt-4 overflow-y-auto">
         <KeysList />
       </div>
       <div className="flex justify-between pt-3 px-5 pb-4">

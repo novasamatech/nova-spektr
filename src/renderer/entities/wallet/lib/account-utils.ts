@@ -1,10 +1,10 @@
 import { u8aToHex } from '@polkadot/util';
 import { createKeyMulti } from '@polkadot/util-crypto';
 
-import { AccountType, ChainId } from '@shared/core';
-import { ShardedAccount, ShardAccount } from '@shared/core/types/account';
+import { AccountType } from '@shared/core';
 import type {
   AccountId,
+  ChainId,
   Threshold,
   MultisigAccount,
   Account,
@@ -12,7 +12,6 @@ import type {
   ChainAccount,
   WalletConnectAccount,
   Wallet,
-  ShardedAccount,
   ShardAccount,
 } from '@shared/core';
 
@@ -22,7 +21,6 @@ export const accountUtils = {
   isMultisigAccount,
   isChainIdMatch,
   isWalletConnectAccount,
-  isShardedAccount,
   isShardAccount,
   getMultisigAccountId,
   getAllAccountIds,
@@ -43,10 +41,6 @@ function isChainAccount(account: Pick<Account, 'type'>): account is ChainAccount
 
 function isWalletConnectAccount(account: Pick<Account, 'type'>): account is WalletConnectAccount {
   return account.type === AccountType.WALLET_CONNECT;
-}
-
-function isShardedAccount(account: Pick<Account, 'type'>): account is ShardedAccount {
-  return account.type === AccountType.SHARDED;
 }
 
 function isShardAccount(account: Pick<Account, 'type'>): account is ShardAccount {
