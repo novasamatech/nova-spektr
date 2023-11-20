@@ -1,6 +1,6 @@
 import { AccountType, ChainAccount, ChainType, CryptoType, KeyType, ShardAccount } from '@shared/core';
 import { TEST_ACCOUNT_ID, TEST_CHAIN_ID } from '@shared/lib/utils';
-import { accountUtils } from "@entities/wallet";
+import { accountUtils } from '@entities/wallet';
 
 const accounts: Array<ChainAccount | ShardAccount> = [
   {
@@ -98,7 +98,7 @@ const accounts: Array<ChainAccount | ShardAccount> = [
 
 describe('entities/wallet/lib', () => {
   test('entities/wallet/lib/account-utils', () => {
-    const groupedAccount = accountUtils.getAccountsWithGroupedShards(accounts);
+    const groupedAccount = accountUtils.getAccountsAndShardGroups(accounts);
 
     const chainAccounts = [accounts[0], accounts[1]];
     const shardsGroup1 = [accounts[2], accounts[3]];

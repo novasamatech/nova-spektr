@@ -21,7 +21,7 @@ export const accountUtils = {
   isChainIdMatch,
   isWalletConnectAccount,
   isShardAccount,
-  getAccountsWithGroupedShards,
+  getAccountsAndShardGroups,
   getMultisigAccountId,
   getAllAccountIds,
   getWalletAccounts,
@@ -79,9 +79,7 @@ function getWalletAccounts<T extends Account>(walletId: Wallet['id'], accounts: 
   return accounts.filter((account) => account.walletId === walletId);
 }
 
-function getAccountsWithGroupedShards(
-  accounts: Array<ChainAccount | ShardAccount>,
-): Array<ChainAccount | ShardAccount[]> {
+function getAccountsAndShardGroups(accounts: Array<ChainAccount | ShardAccount>): Array<ChainAccount | ShardAccount[]> {
   const shardsIndexes: Record<ShardAccount['groupId'], number> = {};
 
   return accounts.reduce<Array<ChainAccount | ShardAccount[]>>((acc, account) => {
