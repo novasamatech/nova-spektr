@@ -16,11 +16,6 @@ export type BaseAccount = AbstractAccount & {
   signingExtras?: Record<string, any>;
 };
 
-export type ShardedAccount = AbstractAccount & {
-  keyType: KeyType;
-  chainId: ChainId;
-};
-
 export type ChainAccount = BaseAccount & {
   baseId: ID;
   chainId: ChainId;
@@ -29,7 +24,8 @@ export type ChainAccount = BaseAccount & {
 };
 
 export type ShardAccount = BaseAccount & {
-  shardedId: ID;
+  groupId: string;
+  keyType: KeyType;
   chainId: ChainId;
   derivationPath: string;
 };
@@ -50,7 +46,6 @@ export type Account = BaseAccount | ChainAccount | MultisigAccount | WalletConne
 export const enum AccountType {
   BASE = 'base',
   CHAIN = 'chain',
-  SHARDED = 'sharded',
   SHARD = 'shard',
   MULTISIG = 'multisig',
   WALLET_CONNECT = 'wallet_connect',
