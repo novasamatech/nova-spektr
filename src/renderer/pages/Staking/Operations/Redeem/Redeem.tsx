@@ -3,20 +3,20 @@ import { useEffect, useState } from 'react';
 import { Navigate, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { useUnit } from 'effector-react';
 
-import { useI18n, useNetworkContext } from '@renderer/app/providers';
-import { Paths } from '@renderer/shared/routes';
-import { ChainId, HexString } from '@renderer/shared/core';
-import { Transaction, TransactionType, useTransaction } from '@renderer/entities/transaction';
-import type { Account } from '@renderer/shared/core';
+import { useI18n, useNetworkContext } from '@app/providers';
+import { Paths } from '@shared/routes';
+import { ChainId, HexString } from '@shared/core';
+import { Transaction, TransactionType, useTransaction } from '@entities/transaction';
+import type { Account } from '@shared/core';
 import InitOperation, { RedeemResult } from './InitOperation/InitOperation';
 import { Confirmation, Submit, NoAsset } from '../components';
-import { getRelaychainAsset, toAddress, DEFAULT_TRANSITION } from '@renderer/shared/lib/utils';
-import { useToggle } from '@renderer/shared/lib/hooks';
+import { getRelaychainAsset, toAddress, DEFAULT_TRANSITION } from '@shared/lib/utils';
+import { useToggle } from '@shared/lib/hooks';
 import { OperationTitle } from '@renderer/components/common';
-import { BaseModal, Button, Loader } from '@renderer/shared/ui';
-import { Signing } from '@renderer/features/operation';
-import { walletModel, walletUtils } from '@renderer/entities/wallet';
-import { priceProviderModel } from '@renderer/entities/price';
+import { BaseModal, Button, Loader } from '@shared/ui';
+import { Signing } from '@features/operation';
+import { walletModel, walletUtils } from '@entities/wallet';
+import { priceProviderModel } from '@entities/price';
 
 const enum Step {
   INIT,

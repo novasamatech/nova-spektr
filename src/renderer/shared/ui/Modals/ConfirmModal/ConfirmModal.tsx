@@ -1,7 +1,7 @@
 import { PropsWithChildren } from 'react';
 
-import { cnTw } from '@renderer/shared/lib/utils';
-import { Button } from '@renderer/shared/ui';
+import { cnTw } from '@shared/lib/utils';
+import { Button } from '@shared/ui';
 import BaseModal from '../BaseModal/BaseModal';
 import { Pallet } from '../../Buttons/common/types';
 

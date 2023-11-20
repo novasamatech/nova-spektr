@@ -1,10 +1,10 @@
 import { useUnit } from 'effector-react';
 
-import { WalletIcon, walletModel } from '@renderer/entities/wallet';
-import { BodyText, Icon } from '@renderer/shared/ui';
-import { cnTw, toAccountId, toAddress, transferableAmount } from '@renderer/shared/lib/utils';
-import { AssetBalance, useBalance } from '@renderer/entities/asset';
-import type { AccountId, Asset, ChainId } from '@renderer/shared/core';
+import { WalletIcon, walletModel } from '@entities/wallet';
+import { BodyText, Icon } from '@shared/ui';
+import { cnTw, toAccountId, toAddress, transferableAmount } from '@shared/lib/utils';
+import { AssetBalance, useBalance } from '@entities/asset';
+import type { AccountId, Asset, ChainId } from '@shared/core';
 
 type Props<T extends any> = {
   value: T;

@@ -1,9 +1,9 @@
 import { forwardRef } from 'react';
 
 import Input, { Props as InputProps } from '../Input/Input';
-import Icon from '@renderer/shared/ui/Icon/Icon';
-import { useI18n } from '@renderer/app/providers';
-import { useToggle } from '@renderer/shared/lib/hooks';
+import Icon from '@shared/ui/Icon/Icon';
+import { useI18n } from '@app/providers';
+import { useToggle } from '@shared/lib/hooks';
 
 type Props = Omit<InputProps, 'type' | 'suffixElement'>;
 

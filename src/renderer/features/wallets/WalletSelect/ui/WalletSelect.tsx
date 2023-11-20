@@ -3,13 +3,13 @@ import { Popover, Transition } from '@headlessui/react';
 import { ReactNode, useMemo } from 'react';
 import keyBy from 'lodash/keyBy';
 
-import { walletModel } from '@renderer/entities/wallet';
-import { Shimmering } from '@renderer/shared/ui';
+import { walletModel } from '@entities/wallet';
+import { Shimmering } from '@shared/ui';
 import { WalletPanel } from './WalletPanel';
 import { WalletButton } from './WalletButton';
-import { useBalance } from '@renderer/entities/asset';
-import { chainsService } from '@renderer/entities/network';
-import { walletSelectModel } from '@renderer/features/wallets/WalletSelect/model/wallet-select-model';
+import { useBalance } from '@entities/asset';
+import { chainsService } from '@entities/network';
+import { walletSelectModel } from '../model/wallet-select-model';
 
 type Props = {
   action?: ReactNode;
@@ -32,6 +32,13 @@ export const WalletSelect = ({ action }: Props) => {
     return <Shimmering width={208} height={56} />;
   }
 
+  const hideWalletPanel = (close: () => void) => {
+    return () => {
+      close();
+      walletSelectModel.events.clearData();
+    };
+  };
+
   return (
     <Popover className="relative">
       {({ close }) => (
@@ -45,7 +52,7 @@ export const WalletSelect = ({ action }: Props) => {
             leaveFrom="opacity-100 translate-y-0"
             leaveTo="opacity-0 translate-y-1"
           >
-            <WalletPanel action={action} onClose={close} />
+            <WalletPanel action={action} onClose={hideWalletPanel(close)} />
           </Transition>
         </>
       )}

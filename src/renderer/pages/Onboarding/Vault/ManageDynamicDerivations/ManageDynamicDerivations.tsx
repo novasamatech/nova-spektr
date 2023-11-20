@@ -7,10 +7,10 @@ import { Trans } from 'react-i18next';
 import { u8aToHex } from '@polkadot/util';
 import { Transition } from '@headlessui/react';
 
-import { useI18n, useStatusContext } from '@renderer/app/providers';
-import { ChainTitle } from '@renderer/entities/chain';
+import { useI18n, useStatusContext } from '@app/providers';
+import { ChainTitle } from '@entities/chain';
 import { SeedInfo } from '@renderer/components/common/QrCode/common/types';
-import { IS_WINDOWS, toAddress } from '@renderer/shared/lib/utils';
+import { IS_WINDOWS, toAddress } from '@shared/lib/utils';
 import {
   Animation,
   Button,
@@ -22,13 +22,13 @@ import {
   Accordion,
   FootnoteText,
   Icon,
-} from '@renderer/shared/ui';
-import type { Chain, ChainAccount, ChainId } from '@renderer/shared/core';
+} from '@shared/ui';
+import type { Chain, ChainAccount, ChainId } from '@shared/core';
 import { VaultInfoPopover } from './VaultInfoPopover';
-import { useAltKeyPressed } from '@renderer/shared/lib/hooks';
+import { useAltKeyPressed } from '@shared/lib/hooks';
 import { manageDynamicDerivationsModel } from './model/manage-dynamic-derivations-model';
-import { chainsService } from '@renderer/entities/network';
-import { DerivedAccount, RootAccount } from '@renderer/entities/wallet';
+import { chainsService } from '@entities/network';
+import { DerivedAccount, RootAccount } from '@entities/wallet';
 
 type Props = {
   seedInfo: SeedInfo[];

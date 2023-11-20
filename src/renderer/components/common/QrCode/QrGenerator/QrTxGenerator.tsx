@@ -1,7 +1,7 @@
 import useGenerator from './common/useGenerator';
 import { Command, DEFAULT_FRAME_DELAY } from './common/constants';
 import { createSubstrateSignPayload } from './common/utils';
-import type { ChainId } from '@renderer/shared/core';
+import type { ChainId } from '@shared/core';
 
 type Props = {
   size?: number;

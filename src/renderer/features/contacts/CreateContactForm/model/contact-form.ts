@@ -1,10 +1,10 @@
 import { attach, createApi, createStore, forward, sample } from 'effector';
 import { createForm } from 'effector-forms';
 
-import { contactModel } from '@renderer/entities/contact';
-import { toAccountId, validateAddress } from '@renderer/shared/lib/utils';
-import { validateFullUserName } from '@renderer/shared/api/matrix';
-import type { Contact } from '@renderer/shared/core';
+import { contactModel } from '@entities/contact';
+import { toAccountId, validateAddress } from '@shared/lib/utils';
+import { validateFullUserName } from '@shared/api/matrix';
+import type { Contact } from '@shared/core';
 
 export type Callbacks = {
   onSubmit: () => void;

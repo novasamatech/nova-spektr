@@ -1,11 +1,11 @@
 import { useEffect } from 'react';
 
-import { useI18n } from '@renderer/app/providers';
-import { BaseModal } from '@renderer/shared/ui';
+import { useI18n } from '@app/providers';
+import { BaseModal } from '@shared/ui';
 import { MatrixInfoPopover } from './MatrixInfoPopover';
 import { LoginForm } from './LoginForm';
-import { useToggle } from '@renderer/shared/lib/hooks';
-import { DEFAULT_TRANSITION } from '@renderer/shared/lib/utils';
+import { useToggle } from '@shared/lib/hooks';
+import { DEFAULT_TRANSITION } from '@shared/lib/utils';
 
 type Props = {
   isOpen?: boolean;

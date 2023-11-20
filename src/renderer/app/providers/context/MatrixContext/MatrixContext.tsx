@@ -1,13 +1,13 @@
 import { createContext, PropsWithChildren, useContext, useEffect, useRef, useState } from 'react';
 import { useUnit } from 'effector-react';
 
-import { getCreatedDateFromApi, toAddress, validateCallData } from '@renderer/shared/lib/utils';
-import { useMultisigEvent, useMultisigTx } from '@renderer/entities/multisig';
-import { MultisigNotificationType, useNotification } from '@renderer/entities/notification';
-import { useMultisigChainContext } from '@renderer/app/providers';
+import { getCreatedDateFromApi, toAddress, validateCallData } from '@shared/lib/utils';
+import { useMultisigEvent, useMultisigTx } from '@entities/multisig';
+import { MultisigNotificationType, useNotification } from '@entities/notification';
+import { useMultisigChainContext } from '@app/providers';
 import { useNetworkContext } from '../NetworkContext';
-import { contactModel } from '@renderer/entities/contact';
-import type { Signatory, MultisigAccount, AccountId, Address, CallHash, ChainId } from '@renderer/shared/core';
+import { contactModel } from '@entities/contact';
+import type { Signatory, MultisigAccount, AccountId, Address, CallHash, ChainId } from '@shared/core';
 import {
   ApprovePayload,
   BaseMultisigPayload,
@@ -19,7 +19,7 @@ import {
   MultisigPayload,
   SpektrExtras,
   UpdatePayload,
-} from '@renderer/shared/api/matrix';
+} from '@shared/api/matrix';
 import {
   MultisigEvent,
   MultisigTransaction,
@@ -28,9 +28,9 @@ import {
   MultisigTxStatus,
   SigningStatus,
   useTransaction,
-} from '@renderer/entities/transaction';
-import { walletModel, accountUtils } from '@renderer/entities/wallet';
-import { WalletType, SigningType, CryptoType, ChainType, AccountType } from '@renderer/shared/core';
+} from '@entities/transaction';
+import { walletModel, accountUtils } from '@entities/wallet';
+import { WalletType, SigningType, CryptoType, ChainType, AccountType } from '@shared/core';
 
 type MatrixContextProps = {
   matrix: ISecureMessenger;

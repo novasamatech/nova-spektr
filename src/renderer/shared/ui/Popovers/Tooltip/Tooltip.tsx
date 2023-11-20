@@ -1,7 +1,7 @@
 import { ComponentProps } from 'react';
 
-import { Popover } from '@renderer/shared/ui';
-import { cnTw } from '@renderer/shared/lib/utils';
+import { Popover } from '@shared/ui';
+import { cnTw } from '@shared/lib/utils';
 import { HelpText } from '../../Typography';
 import './Tooltip.css';
 

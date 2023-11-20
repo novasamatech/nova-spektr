@@ -1,6 +1,6 @@
 import { ComponentMeta, ComponentStory } from '@storybook/react';
 
-import { TEST_ADDRESS } from '@renderer/shared/lib/utils';
+import { TEST_ADDRESS } from '@shared/lib/utils';
 import Identicon from './Identicon';
 
 export default {

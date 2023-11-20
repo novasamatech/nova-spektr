@@ -1,17 +1,17 @@
-import LoaderImg, { ReactComponent as LoaderSvg } from '@images/aesthetics/loader.svg';
-import LanguageImg, { ReactComponent as LanguageSvg } from '@images/aesthetics/language.svg';
-import ShieldImg, { ReactComponent as ShieldSvg } from '@images/aesthetics/shield.svg';
-import GlobeImg, { ReactComponent as GlobeSvg } from '@images/aesthetics/globe.svg';
-import SortImg, { ReactComponent as SortSvg } from '@images/aesthetics/sort.svg';
-import ClockImg, { ReactComponent as ClockSvg } from '@images/aesthetics/clock.svg';
-import InfoImg, { ReactComponent as InfoSvg } from '@images/aesthetics/info.svg';
-import WarnImg, { ReactComponent as WarnSvg } from '@images/aesthetics/warning.svg';
-import ChatImg, { ReactComponent as ChatSvg } from '@images/aesthetics/chat.svg';
-import ChatRedesignImg, { ReactComponent as ChatRedesignSvg } from '@images/aesthetics/chat-redesign.svg';
-import BellImg, { ReactComponent as BellSvg } from '@images/aesthetics/bell.svg';
-import QuestionImg, { ReactComponent as QuestionSvg } from '@images/aesthetics/question.svg';
-import HotkeyAltImg, { ReactComponent as HotkeyAltSvg } from '@images/aesthetics/hotkey-alt.svg';
-import HotkeyOptionImg, { ReactComponent as HotkeyOptionSvg } from '@images/aesthetics/hotkey-option.svg';
+import LoaderImg, { ReactComponent as LoaderSvg } from '@shared/assets/images/aesthetics/loader.svg';
+import LanguageImg, { ReactComponent as LanguageSvg } from '@shared/assets/images/aesthetics/language.svg';
+import ShieldImg, { ReactComponent as ShieldSvg } from '@shared/assets/images/aesthetics/shield.svg';
+import GlobeImg, { ReactComponent as GlobeSvg } from '@shared/assets/images/aesthetics/globe.svg';
+import SortImg, { ReactComponent as SortSvg } from '@shared/assets/images/aesthetics/sort.svg';
+import ClockImg, { ReactComponent as ClockSvg } from '@shared/assets/images/aesthetics/clock.svg';
+import InfoImg, { ReactComponent as InfoSvg } from '@shared/assets/images/aesthetics/info.svg';
+import WarnImg, { ReactComponent as WarnSvg } from '@shared/assets/images/aesthetics/warning.svg';
+import ChatImg, { ReactComponent as ChatSvg } from '@shared/assets/images/aesthetics/chat.svg';
+import ChatRedesignImg, { ReactComponent as ChatRedesignSvg } from '@shared/assets/images/aesthetics/chat-redesign.svg';
+import BellImg, { ReactComponent as BellSvg } from '@shared/assets/images/aesthetics/bell.svg';
+import QuestionImg, { ReactComponent as QuestionSvg } from '@shared/assets/images/aesthetics/question.svg';
+import HotkeyAltImg, { ReactComponent as HotkeyAltSvg } from '@shared/assets/images/aesthetics/hotkey-alt.svg';
+import HotkeyOptionImg, { ReactComponent as HotkeyOptionSvg } from '@shared/assets/images/aesthetics/hotkey-option.svg';
 
 const AestheticImages = {
   loader: { svg: LoaderSvg, img: LoaderImg },

@@ -4,22 +4,22 @@ import { BN } from '@polkadot/util';
 import { useUnit } from 'effector-react';
 import keyBy from 'lodash/keyBy';
 
-import { BaseModal, Button } from '@renderer/shared/ui';
-import { useI18n } from '@renderer/app/providers';
-import { MultisigTransactionDS } from '@renderer/shared/api/storage';
-import { useToggle } from '@renderer/shared/lib/hooks';
-import { ExtendedChain } from '@renderer/entities/network';
-import { toAddress, transferableAmount, getAssetById } from '@renderer/shared/lib/utils';
+import { BaseModal, Button } from '@shared/ui';
+import { useI18n } from '@app/providers';
+import { MultisigTransactionDS } from '@shared/api/storage';
+import { useToggle } from '@shared/lib/hooks';
+import { ExtendedChain } from '@entities/network';
+import { toAddress, transferableAmount, getAssetById } from '@shared/lib/utils';
 import { getMultisigSignOperationTitle } from '../../common/utils';
-import { useBalance } from '@renderer/entities/asset';
+import { useBalance } from '@entities/asset';
 import RejectReasonModal from './RejectReasonModal';
 import { Submit } from '../ActionSteps/Submit';
 import { Confirmation } from '../ActionSteps/Confirmation';
-import { Signing } from '@renderer/features/operation';
+import { Signing } from '@features/operation';
 import { OperationTitle } from '@renderer/components/common';
-import { walletModel, walletUtils } from '@renderer/entities/wallet';
-import { priceProviderModel } from '@renderer/entities/price';
-import type { Address, HexString, Timepoint, MultisigAccount, Account } from '@renderer/shared/core';
+import { walletModel, walletUtils } from '@entities/wallet';
+import { priceProviderModel } from '@entities/price';
+import type { Address, HexString, Timepoint, MultisigAccount, Account } from '@shared/core';
 import {
   Transaction,
   TransactionType,
@@ -27,7 +27,7 @@ import {
   OperationResult,
   validateBalance,
   isXcmTransaction,
-} from '@renderer/entities/transaction';
+} from '@entities/transaction';
 
 type Props = {
   tx: MultisigTransactionDS;

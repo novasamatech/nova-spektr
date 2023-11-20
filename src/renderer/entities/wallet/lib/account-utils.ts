@@ -1,7 +1,7 @@
 import { u8aToHex } from '@polkadot/util';
 import { createKeyMulti } from '@polkadot/util-crypto';
 
-import { AccountType, ChainId } from '@renderer/shared/core';
+import { AccountType, ChainId } from '@shared/core';
 import type {
   AccountId,
   Threshold,
@@ -11,7 +11,8 @@ import type {
   ChainAccount,
   WalletConnectAccount,
   Wallet,
-} from '@renderer/shared/core';
+  ShardAccount,
+} from '@shared/core';
 
 export const accountUtils = {
   isBaseAccount,
@@ -19,6 +20,8 @@ export const accountUtils = {
   isMultisigAccount,
   isChainIdMatch,
   isWalletConnectAccount,
+  isShardAccount,
+  getAccountsAndShardGroups,
   getMultisigAccountId,
   getAllAccountIds,
   getWalletAccounts,
@@ -38,6 +41,10 @@ function isChainAccount(account: Pick<Account, 'type'>): account is ChainAccount
 
 function isWalletConnectAccount(account: Pick<Account, 'type'>): account is WalletConnectAccount {
   return account.type === AccountType.WALLET_CONNECT;
+}
+
+function isShardAccount(account: Pick<Account, 'type'>): account is ShardAccount {
+  return account.type === AccountType.SHARD;
 }
 
 function isChainIdMatch(account: Pick<Account, 'type'>, chainId: ChainId): boolean {
@@ -70,4 +77,26 @@ function getAllAccountIds(accounts: Account[], chainId: ChainId): AccountId[] {
 
 function getWalletAccounts<T extends Account>(walletId: Wallet['id'], accounts: T[]): T[] {
   return accounts.filter((account) => account.walletId === walletId);
+}
+
+function getAccountsAndShardGroups(accounts: Array<ChainAccount | ShardAccount>): Array<ChainAccount | ShardAccount[]> {
+  const shardsIndexes: Record<ShardAccount['groupId'], number> = {};
+
+  return accounts.reduce<Array<ChainAccount | ShardAccount[]>>((acc, account) => {
+    if (!accountUtils.isShardAccount(account)) {
+      acc.push(account);
+
+      return acc;
+    }
+
+    const existingGroupIndex = shardsIndexes[account.groupId];
+    if (existingGroupIndex !== undefined) {
+      (acc[existingGroupIndex] as ShardAccount[]).push(account);
+    } else {
+      acc.push([account]);
+      shardsIndexes[account.groupId] = acc.length - 1;
+    }
+
+    return acc;
+  }, []);
 }

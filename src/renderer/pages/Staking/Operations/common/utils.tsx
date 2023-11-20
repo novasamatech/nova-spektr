@@ -2,9 +2,12 @@ import { BN } from '@polkadot/util';
 import cn from 'classnames';
 import { ReactNode } from 'react';
 
-import { AccountAddress, WalletIcon } from '@renderer/entities/wallet';
-import { DropdownOption } from '@renderer/shared/ui/Dropdowns/common/types';
-import { AssetBalance } from '@renderer/entities/asset';
+import { AccountAddress, WalletIcon } from '@entities/wallet';
+import { DropdownOption } from '@shared/ui/Dropdowns/common/types';
+import { AssetBalance } from '@entities/asset';
+import { ExplorerLink, FootnoteText } from '@shared/ui';
+import { Explorer } from '@shared/core';
+import { InfoSection } from '@shared/ui/Popovers/InfoPopover/InfoPopover';
 import type {
   Address,
   Stake,
@@ -14,7 +17,7 @@ import type {
   Balance as AccountBalance,
   Wallet,
   WalletType,
-} from '@renderer/shared/core';
+} from '@shared/core';
 import {
   toAddress,
   stakeableAmount,
@@ -22,11 +25,8 @@ import {
   transferableAmount,
   unlockingAmount,
   redeemableAmount,
-} from '@renderer/shared/lib/utils';
-import { FootnoteText } from '@renderer/shared/ui';
-import { Explorer } from '@renderer/shared/core';
-import { ExplorerLink } from '@renderer/components/common';
-import { InfoSection } from '@renderer/shared/ui/Popovers/InfoPopover/InfoPopover';
+  getAccountExplorer,
+} from '@shared/lib/utils';
 
 export const validateBalanceForFee = (balance: AccountBalance | string, fee: string): boolean => {
   const transferableBalance = typeof balance === 'string' ? balance : transferableAmount(balance);
@@ -239,7 +239,7 @@ export const getSignatoryOption = (
 export const getExplorers = (address: Address, explorers: Explorer[] = []): [InfoSection] => {
   const explorersContent = explorers.map((explorer) => ({
     id: explorer.name,
-    value: <ExplorerLink explorer={explorer} address={address} />,
+    value: <ExplorerLink name={explorer.name} href={getAccountExplorer(explorer, { address })} />,
   }));
 
   return [{ items: explorersContent }];

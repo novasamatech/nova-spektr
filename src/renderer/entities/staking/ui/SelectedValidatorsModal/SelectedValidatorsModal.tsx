@@ -1,8 +1,8 @@
-import { BaseModal } from '@renderer/shared/ui';
-import { useI18n } from '@renderer/app/providers';
-import { Validator } from '@renderer/shared/core/types/validator';
-import type { Explorer } from '@renderer/shared/core';
-import { ValidatorsTable } from '@renderer/entities/staking/ui';
+import { BaseModal } from '@shared/ui';
+import { useI18n } from '@app/providers';
+import { Validator } from '@shared/core/types/validator';
+import type { Explorer } from '@shared/core';
+import { ValidatorsTable } from '@entities/staking/ui';
 
 type Props = {
   isOpen: boolean;
