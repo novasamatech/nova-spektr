@@ -21,7 +21,7 @@ function isFileStructureValid(result: any): result is ParsedImportFile {
   const genesisHashes = Object.values(result).filter((x) => typeof x === 'object') as ImportFileChain[];
 
   const hasChainsAndKeys = Object.values(genesisHashes).every((hash: ImportFileChain) => {
-    Object.entries(hash).every(([key, value]) => {
+    return Object.entries(hash).every(([key, value]) => {
       const isChainValid = key.startsWith('0x');
       const hasChainKeys =
         Array.isArray(value) && value.every((keyObj) => 'key' in keyObj && Array.isArray(keyObj.key));

@@ -9,6 +9,7 @@ import { cnTw } from '@shared/lib/utils';
 import templateFile from '@shared/assets/files/dd-template.yaml';
 import { importKeysModel } from '../model/import-keys-model';
 import { TypedImportedDerivation } from '../lib/types';
+import { EXISTING_DERIVATIONS, ROOT_ACCOUNT_ID } from '@features/wallets/ImportKeys/ui/mocks/mock-data';
 
 type Props = {
   isOpen: boolean;
@@ -18,7 +19,13 @@ type Props = {
   onConfirm: () => void;
 };
 
-export const ImportKeysModal = ({ isOpen, rootAccountId, existingKeys, onClose, onConfirm }: Props) => {
+export const ImportKeysModal = ({
+  isOpen,
+  rootAccountId = ROOT_ACCOUNT_ID,
+  existingKeys = EXISTING_DERIVATIONS,
+  onClose,
+  onConfirm,
+}: Props) => {
   const { t } = useI18n();
   const validationError = useUnit(importKeysModel.$validationError);
   const successReport = useUnit(importKeysModel.$successReport);
@@ -31,11 +38,16 @@ export const ImportKeysModal = ({ isOpen, rootAccountId, existingKeys, onClose, 
 
   const handleFileUpload = (file: File) => {
     const fileReader = new FileReader();
-    fileReader.onloadend = (e) => {
-      if (e.target?.result) {
-        importKeysModel.events.fileUploaded(e.target['result'] as string);
-      }
-    };
+
+    fileReader.addEventListener(
+      'loadend',
+      (e) => {
+        if (e.target?.result) {
+          importKeysModel.events.fileUploaded(e.target['result'] as string);
+        }
+      },
+      { once: true },
+    );
 
     fileReader.readAsText(file);
   };
@@ -68,7 +80,7 @@ export const ImportKeysModal = ({ isOpen, rootAccountId, existingKeys, onClose, 
       <div className="flex flex-col gap-y-4 items-start">
         <InputFile
           placeholder={t('dynamicDerivations.importKeys.fileInputPlaceholder')}
-          accept=".yaml"
+          accept=".yaml,.txt"
           className={cnTw('w-full h-[126px]', validationError && 'mb-2', successReport && 'mb-4')}
           invalid={Boolean(validationError?.error)}
           onChange={handleFileUpload}
@@ -104,7 +116,7 @@ export const ImportKeysModal = ({ isOpen, rootAccountId, existingKeys, onClose, 
 
       <div className="flex items-center justify-between pt-3">
         <Button variant="text">{t('dynamicDerivations.importKeys.backButton')}</Button>
-        <Button disabled={!validationError?.error && Boolean(successReport)} onClick={handleContinue}>
+        <Button disabled={Boolean(validationError?.error) || !successReport} onClick={handleContinue}>
           {t('dynamicDerivations.importKeys.continueButton')}
         </Button>
       </div>

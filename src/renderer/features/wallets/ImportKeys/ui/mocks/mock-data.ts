@@ -1,6 +1,7 @@
-import { TypedImportedDerivation } from '@/src/renderer/entities/wallet';
 import { KeyType } from '@shared/core';
+import { TypedImportedDerivation } from '../../lib/types';
 
+// TODO removed when all derivations features merged and tested
 export const EXISTING_DERIVATIONS: TypedImportedDerivation[] = [
   {
     chainId: '0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3',
