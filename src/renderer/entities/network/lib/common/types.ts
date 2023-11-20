@@ -1,5 +1,5 @@
 import { ApiPromise } from '@polkadot/api';
-import { ProviderInterface } from '@polkadot/rpc-provider/types';
+import { ProviderInterface, ProviderInterfaceCallback } from '@polkadot/rpc-provider/types';
 import { UnsubscribePromise } from '@polkadot/api/types';
 
 import { ConnectionType } from '@shared/core';
@@ -59,3 +59,10 @@ export const enum ProviderType {
   WEB_SOCKET = 'ws',
   LIGHT_CLIENT = 'sc',
 }
+
+export type Subscription = {
+  type: string;
+  method: string;
+  params: unknown[];
+  cb: ProviderInterfaceCallback;
+};
