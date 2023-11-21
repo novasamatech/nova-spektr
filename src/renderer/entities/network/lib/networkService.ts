@@ -41,14 +41,14 @@ function createProvider(
 ): UniversalProvider {
   let provider;
 
+  const wsProvider = createWebsocketProvider(nodes, chainId, getMetadata);
+
   try {
     const scProvider = createSubstrateProvider(chainId, getMetadata);
-    const wsProvider = createWebsocketProvider(nodes, chainId, getMetadata);
 
     provider = new UniversalProvider(wsProvider, scProvider);
   } catch (e) {
     console.warn(e);
-    const wsProvider = createWebsocketProvider(nodes, chainId, getMetadata);
 
     provider = new UniversalProvider(wsProvider);
   }
@@ -70,9 +70,9 @@ const createSubstrateProvider = (
     const CachedScProvider = createCachedProvider(ScProvider, chainId, getMetadata);
 
     return new CachedScProvider(Sc, knownChainId);
-  } else {
-    throw new Error('Parachains do not support Substrate Connect yet');
   }
+
+  throw new Error('Parachains do not support Substrate Connect yet');
 };
 
 const createWebsocketProvider = (
@@ -80,35 +80,34 @@ const createWebsocketProvider = (
   chainId: ChainId,
   getMetadata: (chainId: ChainId) => Promise<Metadata | undefined>,
 ): ProviderInterface => {
-  // TODO: handle limited retries provider = new WsProvider(node.address, 5000, {1}, 11000);
   const CachedWsProvider = createCachedProvider(WsProvider, chainId, getMetadata);
 
   return new CachedWsProvider(rpcUrls, 2000);
 };
 
-async function disconnect(provider?: ProviderInterface, api?: ApiPromise) {
+async function disconnect(provider: ProviderInterface, api: ApiPromise) {
   try {
-    await api?.disconnect();
+    await api.disconnect();
   } catch (e) {
     console.warn(e);
   }
 
   try {
-    await provider?.disconnect();
+    await provider.disconnect();
   } catch (e) {
     console.warn(e);
   }
 }
 
-async function connect(provider?: ProviderInterface, api?: ApiPromise) {
+async function connect(provider: ProviderInterface, api: ApiPromise) {
   try {
-    await provider?.connect();
+    await provider.connect();
   } catch (e) {
     console.warn(e);
   }
 
   try {
-    await api?.connect();
+    await api.connect();
   } catch (e) {
     console.warn(e);
   }

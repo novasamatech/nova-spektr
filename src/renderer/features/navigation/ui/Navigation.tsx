@@ -9,14 +9,14 @@ import { chainsService } from '@entities/oldNetwork';
 import { Paths } from '@shared/routes';
 import { walletModel } from '@entities/wallet';
 import { BodyText } from '@shared/ui';
-import type { ChainId, Chain } from '@shared/core';
+import { ChainMap } from '@entities/network';
 
 export const Navigation = () => {
   const activeAccounts = useUnit(walletModel.$activeAccounts);
 
   const { getLiveAccountMultisigTxs } = useMultisigTx({});
 
-  const [chains, setChains] = useState<Record<ChainId, Chain>>({});
+  const [chains, setChains] = useState<ChainMap>({});
 
   useEffect(() => {
     const chains = chainsService.getChainsData();

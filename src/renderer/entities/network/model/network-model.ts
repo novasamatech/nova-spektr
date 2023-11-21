@@ -31,13 +31,13 @@ const $providers = createStore({} as Record<ChainId, UniversalProvider>);
 const $apis = createStore({} as Record<ChainId, ApiPromise>);
 const $networkStatuses = createStore(defaultStatuses);
 
-const initConnection = createEvent<ChainId>();
-const networkConnectStarted = createEvent<ChainId>();
-const networkDisconnectStarted = createEvent<ChainId>();
+const chainStarted = createEvent<ChainId>();
+const connectStarted = createEvent<ChainId>();
+const disconnectStarted = createEvent<ChainId>();
 
-const networkConnected = createEvent<ChainId>();
-const networkDisconnected = createEvent<ChainId>();
-const networkError = createEvent<ChainId>();
+const connected = createEvent<ChainId>();
+const disconnected = createEvent<ChainId>();
+const failed = createEvent<ChainId>();
 
 type ProviderTypeSwitchedParams = {
   chainId: ChainId;
@@ -46,8 +46,8 @@ type ProviderTypeSwitchedParams = {
 const providerTypeSwitched = createEvent<ProviderTypeSwitchedParams>();
 
 sample({
+  clock: connected,
   source: $networkStatuses,
-  clock: networkConnected,
   filter: (statuses, chainId) => statuses[chainId] !== NetworkStatus.CONNECTED,
   fn: (statuses, chainId) => ({
     ...statuses,
@@ -57,8 +57,8 @@ sample({
 });
 
 sample({
+  clock: disconnected,
   source: $networkStatuses,
-  clock: networkDisconnected,
   filter: (statuses, chainId) => statuses[chainId] !== NetworkStatus.DISCONNECTED,
   fn: (statuses, chainId) => ({
     ...statuses,
@@ -67,21 +67,9 @@ sample({
   target: $networkStatuses,
 });
 
-// Trigger update object twice (error -> disconnected)
-// sample({
-//   source: $networkStatuses,
-//   clock: networkError,
-//   filter: (statuses, chainId) => statuses[chainId] !== NetworkStatus.ERROR,
-//   fn: (statuses, chainId) => ({
-//     ...statuses,
-//     [chainId]: NetworkStatus.ERROR,
-//   }),
-//   target: $networkStatuses,
-// });
-
-const initConnectionsFx = createEffect(async () => {
+const initConnectionsFx = createEffect(() => {
   Object.values(chains).forEach(({ chainId }) => {
-    initConnection(chainId);
+    chainStarted(chainId);
   });
 });
 
@@ -102,17 +90,17 @@ const createProviderFx = createEffect(({ chainId, nodes }: CreateProviderParams)
     () => {
       console.info('🟢 provider connected ==> ', chainId);
 
-      networkConnected(chainId);
+      connected(chainId);
     },
     () => {
       console.info('🔶 provider disconnected ==> ', chainId);
 
-      networkDisconnected(chainId);
+      disconnected(chainId);
     },
     () => {
       console.info('🔴 provider error ==> ', chainId);
 
-      networkError(chainId);
+      failed(chainId);
     },
   );
 
@@ -125,9 +113,7 @@ type CreateApiParams = {
 };
 const createApiFx = createEffect(async ({ chainId, provider }: CreateApiParams): Promise<ApiPromise | undefined> => {
   try {
-    const api = await networkService.createApi(provider);
-
-    return api;
+    return networkService.createApi(provider);
   } catch (e) {
     console.log('error during create api', e);
   }
@@ -136,12 +122,9 @@ const createApiFx = createEffect(async ({ chainId, provider }: CreateApiParams):
 type ConnectParams = {
   provider: UniversalProvider;
   api: ApiPromise;
-  chainId: ChainId;
 };
-const connectFx = createEffect(async ({ provider, api, chainId }: ConnectParams): Promise<ChainId> => {
+const connectFx = createEffect(async ({ provider, api }: ConnectParams): Promise<void> => {
   await networkService.connect(provider, api);
-
-  return chainId;
 });
 
 type DisconnectParams = {
@@ -161,7 +144,7 @@ forward({
 });
 
 sample({
-  clock: initConnection,
+  clock: chainStarted,
   fn: (chainId: ChainId) => ({
     chainId,
     nodes: chains[chainId].nodes.map((node) => node.url),
@@ -170,12 +153,13 @@ sample({
 });
 
 sample({
-  source: $providers,
   clock: createProviderFx.done,
+  source: $providers,
   fn: (providers, { params, result: provider }) => ({
     ...providers,
     [params.chainId]: provider,
   }),
+  target: $providers,
 });
 
 sample({
@@ -188,8 +172,8 @@ sample({
 });
 
 sample({
-  source: $apis,
   clock: createApiFx.doneData,
+  source: $apis,
   filter: (api) => Boolean(api),
   fn: (apis, api) => ({
     ...apis,
@@ -200,18 +184,17 @@ sample({
 
 sample({
   source: { providers: $providers, apis: $apis },
-  clock: networkConnectStarted,
+  clock: connectStarted,
   fn: ({ providers, apis }, chainId) => ({
     provider: providers[chainId],
     api: apis[chainId],
-    chainId: chainId,
   }),
   target: connectFx,
 });
 
 sample({
+  clock: disconnectStarted,
   source: { providers: $providers, apis: $apis },
-  clock: networkDisconnectStarted,
   filter: ({ providers, apis }, chainId) => Boolean(providers[chainId] && apis[chainId]),
   fn: ({ providers, apis }, chainId) => ({
     provider: providers[chainId],
@@ -228,8 +211,8 @@ const switchProviderTypeFx = createEffect(
 );
 
 sample({
-  source: $providers,
   clock: providerTypeSwitched,
+  source: $providers,
   fn: (providers, { chainId, type }) => ({
     provider: providers[chainId],
     type,
@@ -242,9 +225,9 @@ export const networkModel = {
   $apis,
   $networkStatuses,
   events: {
-    initConnection,
+    chainStarted,
     providerTypeSwitched,
-    networkConnectStarted,
-    networkDisconnectStarted,
+    connectStarted,
+    disconnectStarted,
   },
 };

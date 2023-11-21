@@ -1,4 +1,4 @@
-import { ExtendedChain } from './types';
+import { ChainMap, ExtendedChain } from './types';
 import { ConnectionType } from '@renderer/shared/core';
 import type { Chain, ChainId, ChainOptions } from '@renderer/shared/core';
 
@@ -30,6 +30,6 @@ export const isLightClient = (chain: ExtendedChain): boolean => {
   return chain.connection.connectionType === ConnectionType.LIGHT_CLIENT;
 };
 
-export const getParachains = (connections: Record<ChainId, Chain>, chainId: ChainId) => {
-  return Object.values(connections).filter((c) => c.parentId === chainId);
+export const getParachains = (chainMap: ChainMap, chainId: ChainId): Chain[] => {
+  return Object.values(chainMap).filter((c) => c.parentId === chainId);
 };

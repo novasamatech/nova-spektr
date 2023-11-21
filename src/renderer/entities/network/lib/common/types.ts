@@ -66,3 +66,5 @@ export type Subscription = {
   params: unknown[];
   cb: ProviderInterfaceCallback;
 };
+
+export type ChainMap = Record<ChainId, Chain>;

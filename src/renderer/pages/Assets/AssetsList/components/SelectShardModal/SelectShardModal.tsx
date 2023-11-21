@@ -8,8 +8,9 @@ import { chainsService } from '@entities/oldNetwork';
 import { SelectableShard } from '@entities/wallet';
 import { ChainTitle } from '@entities/chain';
 import { toAddress } from '@shared/lib/utils';
-import { SelectableShards, ChainsRecord, SelectableAccount } from '../../common/types';
+import { SelectableShards, SelectableAccount } from '../../common/types';
 import { getMultishardStructure, searchShards, getSelectableShards } from '../../common/utils';
+import { ChainMap } from '@entities/network';
 
 type Props = {
   accounts: Account[];
@@ -21,7 +22,7 @@ type Props = {
 export const SelectShardModal = ({ isOpen, activeShards, accounts, onClose }: Props) => {
   const { t } = useI18n();
 
-  const [chains, setChains] = useState<ChainsRecord>({});
+  const [chains, setChains] = useState<ChainMap>({});
   const [shards, setShards] = useState<SelectableShards>({ rootAccounts: [], amount: 0 });
   const [query, setQuery] = useState('');
 

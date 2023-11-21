@@ -7,7 +7,7 @@ import keyBy from 'lodash/keyBy';
 import chainsProd from '@shared/config/chains/chains.json';
 import chainsDev from '@shared/config/chains/chains_dev.json';
 import { getRelaychainAsset, nonNullable, totalAmount, ZERO_BALANCE } from '@shared/lib/utils';
-import { ChainLike } from './common/types';
+import { ChainLike, ChainMap } from './common/types';
 import { isKusama, isPolkadot, isTestnet, isNameWithNumber } from './common/utils';
 import type { Chain, ChainId, Balance } from '@shared/core';
 import { PriceObject } from '@shared/api/price-provider';
@@ -36,7 +36,7 @@ function getChainsData(): Chain[] {
   return CHAINS[process.env.CHAINS_FILE || 'chains'];
 }
 
-function getChainsMap(): Record<ChainId, Chain> {
+function getChainsMap(): ChainMap {
   const chainsData = getChainsData();
 
   return keyBy(chainsData, 'chainId');

@@ -5,8 +5,9 @@ import { groupBy } from 'lodash';
 import { Decimal, totalAmount, isStringsMatchQuery } from '@shared/lib/utils';
 import { PriceObject } from '@shared/api/price-provider';
 import { accountUtils } from '@entities/wallet';
-import { RootAccount, SelectableShards, ChainsRecord, ChainWithAccounts, MultishardStructure } from '../common/types';
+import { RootAccount, SelectableShards, ChainWithAccounts, MultishardStructure } from '../common/types';
 import type { Asset, Balance, BaseAccount, ChainAccount, Account } from '@shared/core';
+import { ChainMap } from '@entities/network';
 
 export const sumBalances = (firstBalance: Balance, secondBalance?: Balance): Balance => {
   if (!secondBalance) return firstBalance;
@@ -74,7 +75,7 @@ export const balanceSorter = (
   return first.name.localeCompare(second.name);
 };
 
-const getBaseAccountGroup = (base: BaseAccount, accounts: ChainAccount[], chains: ChainsRecord): RootAccount => {
+const getBaseAccountGroup = (base: BaseAccount, accounts: ChainAccount[], chains: ChainMap): RootAccount => {
   const accountsByChain = groupBy(accounts, ({ chainId }) => chainId);
 
   // iterate by chain and not the account to preserve chains order (if sorted)
@@ -96,7 +97,7 @@ const getBaseAccountGroup = (base: BaseAccount, accounts: ChainAccount[], chains
   };
 };
 
-export const getMultishardStructure = (accounts: Account[], chains: ChainsRecord): MultishardStructure => {
+export const getMultishardStructure = (accounts: Account[], chains: ChainMap): MultishardStructure => {
   const chainAccounts = accounts.filter(accountUtils.isChainAccount);
 
   const rootAccounts = accounts.reduce<RootAccount[]>((acc, account) => {
