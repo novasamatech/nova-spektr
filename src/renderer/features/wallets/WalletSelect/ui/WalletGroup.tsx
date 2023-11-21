@@ -1,11 +1,9 @@
-import { Accordion, CaptionText, BodyText, Icon, IconButton } from '@renderer/shared/ui';
-import { useI18n } from '@renderer/app/providers';
-import { Wallet, WalletFamily, WalletType } from '@renderer/shared/core';
-import { WalletIcon, walletModel } from '@renderer/entities/wallet';
-import { cnTw } from '@renderer/shared/lib/utils';
+import { Accordion, CaptionText, Icon } from '@shared/ui';
+import { useI18n } from '@app/providers';
+import { Wallet, WalletFamily, WalletType } from '@shared/core';
+import { WalletIcon, walletModel, WalletCardMd } from '@entities/wallet';
 import { WalletFiatBalance } from './WalletFiatBalance';
 import { walletSelectModel } from '../model/wallet-select-model';
-import { WalletStatus } from './WalletStatus';
 
 export const GroupLabels: Record<WalletFamily, string> = {
   [WalletType.POLKADOT_VAULT]: 'wallets.paritySignerLabel',
@@ -36,34 +34,22 @@ export const WalletGroup = ({ type, wallets }: Props) => {
         <ul>
           {wallets.map((wallet) => (
             <li key={wallet.id} className="mb-2">
-              <div
-                className={cnTw(
-                  'group relative flex items-center transition-colors',
-                  'hover:bg-action-background-hover focus-within:bg-action-background-hover',
-                )}
-              >
-                <button
-                  className="w-full flex gap-x-2 items-center py-1.5 px-2 rounded"
-                  onClick={() => walletModel.events.walletSelected(wallet.id)}
-                >
-                  {wallet.isActive ? (
+              <WalletCardMd
+                hideIcon
+                wallet={wallet}
+                description={
+                  <WalletFiatBalance walletId={wallet.id} className="text-help-text max-w-[215px] truncate" />
+                }
+                prefix={
+                  wallet.isActive ? (
                     <Icon name="checkmark" className="text-icon-accent shrink-0" size={20} />
                   ) : (
                     <div className="w-5 h-5 row-span-2 shrink-0" />
-                  )}
-                  <div className="flex flex-col">
-                    <BodyText className="text-text-secondary max-w-[215px] truncate">{wallet.name}</BodyText>
-                    <WalletFiatBalance walletId={wallet.id} className="text-help-text max-w-[215px] truncate" />
-                  </div>
-
-                  <WalletStatus wallet={wallet} />
-                </button>
-                <IconButton
-                  className="absolute right-2 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 focus:opacity-100"
-                  name="info"
-                  onClick={() => walletSelectModel.events.walletForDetailsSet(wallet)}
-                />
-              </div>
+                  )
+                }
+                onClick={() => walletModel.events.walletSelected(wallet.id)}
+                onInfoClick={() => walletSelectModel.events.walletForDetailsSet(wallet)}
+              />
             </li>
           ))}
         </ul>

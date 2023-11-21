@@ -5,10 +5,10 @@ import { fork } from 'effector';
 import { Provider } from 'effector-react';
 
 import { OperationHeader } from '../OperationHeader';
-import { TEST_ACCOUNT_ID, TEST_ADDRESS, TEST_CHAIN_ID } from '@renderer/shared/lib/utils';
-import type { Account, AccountId, MultisigAccount } from '@renderer/shared/core';
-import { CryptoType, ChainType, AccountType, WalletType, SigningType } from '@renderer/shared/core';
-import { walletModel } from '@renderer/entities/wallet';
+import { TEST_ACCOUNT_ID, TEST_ADDRESS, TEST_CHAIN_ID } from '@shared/lib/utils';
+import type { Account, AccountId, MultisigAccount, Wallet } from '@shared/core';
+import { CryptoType, ChainType, AccountType, WalletType, SigningType } from '@shared/core';
+import { walletModel } from '@entities/wallet';
 
 const accountProps = {
   id: 1,
@@ -26,10 +26,14 @@ const SIGNATORY_ACCOUNT = {
 const props: Omit<ComponentProps<typeof OperationHeader>, 'accounts' | 'onSignatoryChange' | 'onAccountChange'> = {
   chainId: TEST_CHAIN_ID,
   getAccountOption: (account: Account) => ({ id: account.accountId, value: account, element: account.name }),
-  getSignatoryOption: (account: Account) => ({ id: account.accountId, value: account, element: account.name }),
+  getSignatoryOption: (_: Wallet, account: Account) => ({
+    id: account.accountId,
+    value: account,
+    element: account.name,
+  }),
 };
 
-jest.mock('@renderer/app/providers', () => ({
+jest.mock('@app/providers', () => ({
   useI18n: jest.fn().mockReturnValue({
     t: (key: string) => key,
   }),

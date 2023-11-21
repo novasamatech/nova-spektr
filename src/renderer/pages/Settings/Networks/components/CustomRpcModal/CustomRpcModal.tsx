@@ -1,12 +1,12 @@
 import { useEffect, useState } from 'react';
 import { Controller, SubmitHandler, useForm } from 'react-hook-form';
 
-import { BaseModal, Button, Input, InputHint, Alert } from '@renderer/shared/ui';
-import { useI18n, useNetworkContext } from '@renderer/app/providers';
-import { RpcValidation, ExtendedChain } from '@renderer/entities/network';
-import { validateWsAddress } from '@renderer/shared/lib/utils';
+import { BaseModal, Button, Input, InputHint, Alert } from '@shared/ui';
+import { useI18n, useNetworkContext } from '@app/providers';
+import { RpcValidation, ExtendedChain } from '@entities/network';
+import { validateWsAddress } from '@shared/lib/utils';
 import { OperationTitle } from '@renderer/components/common';
-import type { RpcNode } from '@renderer/shared/core';
+import type { RpcNode } from '@shared/core';
 
 const MODAL_ANIMATION = 300;
 
@@ -205,10 +205,16 @@ export const CustomRpcModal = ({ network, node, isOpen, onClose }: Props) => {
             </InputHint>
           </div>
 
-          {formState === FormState.INVALID && <Alert title={t('settings.networks.addressNoConnect')} variant="error" />}
-          {formState === FormState.WRONG_NETWORK && (
-            <Alert title={t('settings.networks.addressWrongNetwork', { networkName: network.name })} variant="error" />
-          )}
+          <Alert
+            active={formState === FormState.INVALID}
+            title={t('settings.networks.addressNoConnect')}
+            variant="error"
+          />
+          <Alert
+            active={formState === FormState.WRONG_NETWORK}
+            title={t('settings.networks.addressWrongNetwork', { networkName: network.name })}
+            variant="error"
+          />
         </div>
 
         <div className="flex justify-end mt-7 w-full">

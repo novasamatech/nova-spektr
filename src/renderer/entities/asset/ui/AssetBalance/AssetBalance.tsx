@@ -1,7 +1,7 @@
-import { cnTw, formatBalance } from '@renderer/shared/lib/utils';
-import { AssetIcon } from '@renderer/entities/asset';
-import { useI18n } from '@renderer/app/providers';
-import type { Asset } from '@renderer/shared/core';
+import { cnTw, formatBalance } from '@shared/lib/utils';
+import { AssetIcon } from '@entities/asset';
+import { useI18n } from '@app/providers';
+import type { Asset } from '@shared/core';
 
 type Props = {
   value: string;

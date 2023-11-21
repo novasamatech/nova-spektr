@@ -1,7 +1,7 @@
-import { WalletType } from '@renderer/shared/core';
-import { Icon } from '@renderer/shared/ui';
-import { cnTw } from '@renderer/shared/lib/utils';
-import { IconNames } from '@renderer/shared/ui/Icon/data';
+import { WalletType } from '@shared/core';
+import { Icon } from '@shared/ui';
+import { cnTw } from '@shared/lib/utils';
+import { IconNames } from '@shared/ui/Icon/data';
 
 const WalletIconNames: Record<WalletType, IconNames> = {
   [WalletType.POLKADOT_VAULT]: 'vault',

@@ -1,8 +1,8 @@
 import { useState, ChangeEvent, ComponentPropsWithoutRef, forwardRef } from 'react';
 
-import { cnTw } from '@renderer/shared/lib/utils';
+import { cnTw } from '@shared/lib/utils';
 import { HTMLInputFileProps } from '../common/types';
-import TextBase from '@renderer/shared/ui/Typography/common/TextBase';
+import TextBase from '@shared/ui/Typography/common/TextBase';
 import Icon from '../../Icon/Icon';
 import { FootnoteText } from '../../Typography';
 
@@ -19,7 +19,12 @@ const InputFile = forwardRef<HTMLInputElement, Props>(
       const files = event.target.files;
 
       if (!files || !files.length) return;
-      if (files[0].type !== props.accept) return;
+
+      const fileName = files[0].name;
+      const fileFormat = fileName.slice(fileName.lastIndexOf('.'), fileName.length);
+      const acceptedFormats = props.accept?.split(',');
+
+      if (acceptedFormats && !(acceptedFormats.includes(files[0].type) || acceptedFormats.includes(fileFormat))) return;
 
       onChange?.(files[0]);
       setFileName(files[0].name);

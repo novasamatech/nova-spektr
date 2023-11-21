@@ -1,7 +1,7 @@
 import { PropsWithChildren } from 'react';
 
-import { StatusModal } from '@renderer/shared/ui';
-import { Animation } from '@renderer/shared/ui/Animation/Animation';
+import { StatusModal } from '@shared/ui';
+import { Animation } from '@shared/ui/Animation/Animation';
 import { VariantAnimationProps } from './common/constants';
 import { Variant } from './common/types';
 

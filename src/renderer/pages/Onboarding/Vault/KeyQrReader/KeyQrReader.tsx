@@ -5,10 +5,10 @@ import { useState } from 'react';
 
 import { QrReader } from '@renderer/components/common';
 import { ErrorObject, QrError, SeedInfo, VideoInput } from '@renderer/components/common/QrCode/common/types';
-import { Button, CaptionText, FootnoteText, Icon, Loader, Select } from '@renderer/shared/ui';
-import { DropdownOption, DropdownResult } from '@renderer/shared/ui/Dropdowns/common/types';
-import { useI18n } from '@renderer/app/providers';
-import { cnTw } from '@renderer/shared/lib/utils';
+import { Icon, Loader, Button, CaptionText, FootnoteText, Select } from '@shared/ui';
+import { DropdownOption, DropdownResult } from '@shared/ui/Dropdowns/common/types';
+import { useI18n } from '@app/providers';
+import { cnTw } from '@shared/lib/utils';
 
 const enum CameraState {
   ACTIVE,

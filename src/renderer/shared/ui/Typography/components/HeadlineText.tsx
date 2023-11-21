@@ -1,4 +1,4 @@
-import { cnTw } from '@renderer/shared/lib/utils';
+import { cnTw } from '@shared/lib/utils';
 import { TypographyProps } from '../common/types';
 import TextBase from '../common/TextBase';
 

@@ -1,9 +1,9 @@
 import { PropsWithChildren, ReactNode } from 'react';
 import { Menu } from '@headlessui/react';
 
-import { cnTw } from '@renderer/shared/lib/utils';
+import { cnTw } from '@shared/lib/utils';
 import MenuPopover, { Props as MenuPopoverProps } from '../MenuPopover/MenuPopover';
-import { FootnoteText } from '@renderer/shared/ui';
+import { FootnoteText } from '@shared/ui';
 
 type Props = {
   data: InfoSection[];
@@ -19,7 +19,14 @@ export type InfoSection = {
   items: MenuItem[];
 };
 
-const InfoPopover = ({ data, className, children, ...popoverProps }: PropsWithChildren<Props>) => {
+const InfoPopover = ({
+  data,
+  className,
+  buttonClassName,
+  containerClassName,
+  children,
+  ...popoverProps
+}: PropsWithChildren<Props>) => {
   const popoverContent = data.map((section, index) => (
     <div key={index} className="pb-3 mb-3 border-b border-divider last:pb-0 last:mb-0 last:border-b-0">
       {section.title && (
@@ -47,8 +54,8 @@ const InfoPopover = ({ data, className, children, ...popoverProps }: PropsWithCh
 
   return (
     <MenuPopover
-      buttonClassName="max-w-full"
-      containerClassName="max-w-full"
+      buttonClassName={cnTw('max-w-full', buttonClassName)}
+      containerClassName={cnTw('max-w-full', containerClassName)}
       content={popoverContent}
       className={cnTw('min-w-[220px]', className)}
       {...popoverProps}

@@ -4,17 +4,17 @@ import { Trans } from 'react-i18next';
 import uniqBy from 'lodash/uniqBy';
 import { useUnit } from 'effector-react';
 
-import { useI18n, useNetworkContext, useConfirmContext } from '@renderer/app/providers';
-import { Paths } from '@renderer/shared/routes';
-import { BaseModal, SearchInput, BodyText, InfoLink, Icon } from '@renderer/shared/ui';
-import { useToggle } from '@renderer/shared/lib/hooks';
-import { ExtendedChain, chainsService } from '@renderer/entities/network';
-import { includes, DEFAULT_TRANSITION } from '@renderer/shared/lib/utils';
+import { useI18n, useNetworkContext, useConfirmContext } from '@app/providers';
+import { Paths } from '@shared/routes';
+import { BaseModal, SearchInput, BodyText, InfoLink, Icon } from '@shared/ui';
+import { useToggle } from '@shared/lib/hooks';
+import { ExtendedChain, chainsService } from '@entities/network';
+import { includes, DEFAULT_TRANSITION } from '@shared/lib/utils';
 import { NetworkList, NetworkItem, CustomRpcModal } from './components';
-import { useBalance } from '@renderer/entities/asset';
-import type { RpcNode, ChainId } from '@renderer/shared/core';
-import { ConnectionType, ConnectionStatus } from '@renderer/shared/core';
-import { walletModel } from '@renderer/entities/wallet';
+import { useBalance } from '@entities/asset';
+import type { RpcNode, ChainId } from '@shared/core';
+import { ConnectionType, ConnectionStatus } from '@shared/core';
+import { walletModel } from '@entities/wallet';
 
 const MAX_LIGHT_CLIENTS = 3;
 
@@ -76,7 +76,7 @@ export const Networks = () => {
   };
 
   const confirmDisableLightClient = (name: string): Promise<boolean> => {
-    const verify = <InfoLink url={DATA_VERIFICATION} showIcon={false} />;
+    const verify = <InfoLink url={DATA_VERIFICATION} />;
 
     return confirm({
       title: t('settings.networks.confirmModal.disableLightTitle'),

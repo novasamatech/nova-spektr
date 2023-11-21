@@ -2,20 +2,12 @@ import { ApiPromise } from '@polkadot/api';
 import { useEffect, useState } from 'react';
 import { useUnit } from 'effector-react';
 
-import { useI18n } from '@renderer/app/providers';
-import { useBalance } from '@renderer/entities/asset';
-import { getOperationErrors, Transaction, TransactionType } from '@renderer/entities/transaction';
-import type {
-  Asset,
-  Account,
-  Balance as AccountBalance,
-  Address,
-  ChainId,
-  AccountId,
-  Wallet,
-} from '@renderer/shared/core';
-import { toAddress, nonNullable, TEST_ADDRESS } from '@renderer/shared/lib/utils';
-import { OperationFooter, OperationHeader } from '@renderer/features/operation';
+import { useI18n } from '@app/providers';
+import { useBalance } from '@entities/asset';
+import { getOperationErrors, Transaction, TransactionType } from '@entities/transaction';
+import type { Asset, Account, Balance as AccountBalance, Address, ChainId, AccountId, Wallet } from '@shared/core';
+import { toAddress, nonNullable, TEST_ADDRESS } from '@shared/lib/utils';
+import { OperationFooter, OperationHeader } from '@features/operation';
 import { OperationForm } from '../../components';
 import {
   validateBalanceForFeeDeposit,
@@ -23,7 +15,7 @@ import {
   getGeneralAccountOption,
   getSignatoryOption,
 } from '../../common/utils';
-import { walletModel, walletUtils, accountUtils } from '@renderer/entities/wallet';
+import { walletModel, walletUtils, accountUtils } from '@entities/wallet';
 
 export type DestinationResult = {
   accounts: Account[];
@@ -107,7 +99,7 @@ const InitOperation = ({ api, chainId, accounts, addressPrefix, asset, onResult 
     return getGeneralAccountOption(account, { asset, fee, balance, addressPrefix });
   };
 
-  const getSignatoryDrowdownOption = (wallet: Wallet, account: Account) => {
+  const getSignatoryDropdownOption = (wallet: Wallet, account: Account) => {
     const balance = signatoriesBalances.find((b) => b.accountId === account.accountId);
 
     return getSignatoryOption(wallet, account, { balance, asset, addressPrefix, fee, deposit });
@@ -175,7 +167,7 @@ const InitOperation = ({ api, chainId, accounts, addressPrefix, asset, onResult 
             isMultiselect
             errors={getOperationErrors(!isValidFee, !isValidDeposit)}
             getAccountOption={getAccountDropdownOption}
-            getSignatoryOption={getSignatoryDrowdownOption}
+            getSignatoryOption={getSignatoryDropdownOption}
             onSignatoryChange={setActiveSignatory}
             onAccountChange={setActiveDestAccounts}
           />

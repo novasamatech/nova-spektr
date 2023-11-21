@@ -4,11 +4,13 @@ import { getSdkError } from '@walletconnect/utils';
 import { createEffect, createEvent, createStore, forward, sample, scopeBind } from 'effector';
 import keyBy from 'lodash/keyBy';
 
-import { nonNullable } from '@renderer/shared/lib/utils';
-import { ID, Account, WalletConnectAccount, kernelModel } from '@renderer/shared/core';
-import { localStorageService } from '@renderer/shared/api/local-storage';
-import { storageService } from '@renderer/shared/api/storage';
-import { walletModel } from '../../wallet';
+import { nonNullable } from '@shared/lib/utils';
+import { ID, Account, WalletConnectAccount, kernelModel } from '@shared/core';
+import { localStorageService } from '@shared/api/local-storage';
+import { storageService } from '@shared/api/storage';
+import { walletModel, walletUtils } from '../../wallet';
+import { InitConnectParams } from '../lib/types';
+import { walletConnectUtils } from '../lib/utils';
 import {
   WALLETCONNECT_CLIENT_ID,
   DEFAULT_LOGGER,
@@ -19,7 +21,6 @@ import {
   DEFAULT_POLKADOT_EVENTS,
   EXTEND_PAIRING,
 } from '../lib/constants';
-import { InitConnectParams } from '../lib/types';
 
 type SessionTopicParams = {
   accounts: Account[];
@@ -61,7 +62,7 @@ const extendSessionsFx = createEffect((client: Client) => {
   pairings.forEach((p) => {
     client.core.pairing.updateExpiry({
       topic: p.topic,
-      expiry: EXTEND_PAIRING,
+      expiry: Math.round(Date.now() / 1000) + EXTEND_PAIRING,
     });
   });
 });
@@ -246,6 +247,7 @@ type ConnectResult = {
 };
 const connectFx = createEffect(async ({ client, approval }: ConnectParams): Promise<ConnectResult | undefined> => {
   const session = await approval();
+
   console.log('Established session:', session);
 
   return {
@@ -305,7 +307,7 @@ sample({
 sample({
   clock: initConnectFx.doneData,
   source: $client,
-  filter: (client, initData) => client !== null && initData?.approval !== null,
+  filter: (client, initData) => Boolean(client) && Boolean(initData?.approval),
   fn: ($client, initData) => ({
     client: $client!,
     approval: initData?.approval!,
@@ -408,6 +410,25 @@ sample({
     topic,
   }),
   target: removePairingFx,
+});
+
+sample({
+  clock: $client,
+  source: {
+    wallets: walletModel.$wallets,
+    accounts: walletModel.$accounts,
+  },
+  filter: (_, client) => Boolean(client),
+  fn: ({ wallets, accounts }, client) => {
+    return wallets.map((wallet) => {
+      if (walletUtils.isWalletConnectFamily(wallet)) {
+        wallet.isConnected = walletConnectUtils.isConnectedByAccounts(client!, wallet, accounts);
+      }
+
+      return wallet;
+    }, []);
+  },
+  target: walletModel.$wallets,
 });
 
 export const walletConnectModel = {

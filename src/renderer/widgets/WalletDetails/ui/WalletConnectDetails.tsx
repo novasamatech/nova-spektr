@@ -2,21 +2,20 @@ import { useEffect, useMemo } from 'react';
 import { useUnit } from 'effector-react';
 import keyBy from 'lodash/keyBy';
 
-import wallet_connect_reconnect_webm from '@video/wallet_connect_reconnect.webm';
-import wallet_connect_reconnect from '@video/wallet_connect_reconnect.mp4';
-import { useModalClose, useToggle } from '@renderer/shared/lib/hooks';
-import { MultiAccountsList, WalletIcon } from '@renderer/entities/wallet';
-import { useI18n } from '@renderer/app/providers';
-import { chainsService } from '@renderer/entities/network';
-import { walletConnectUtils } from '@renderer/entities/walletConnect';
-import type { Wallet, Chain, Account } from '@renderer/shared/core';
+import wallet_connect_reconnect_webm from '@shared/assets/video/wallet_connect_reconnect.webm';
+import wallet_connect_reconnect from '@shared/assets/video/wallet_connect_reconnect.mp4';
+import { useModalClose, useToggle } from '@shared/lib/hooks';
+import { MultiAccountsList, WalletCardLg } from '@entities/wallet';
+import { useI18n } from '@app/providers';
+import { chainsService } from '@entities/network';
+import { walletConnectUtils } from '@entities/walletConnect';
+import type { Chain, Account, WalletConnectWallet } from '@shared/core';
 import { wcDetailsModel } from '../model/wc-details-model';
 import { wcDetailsUtils, walletDetailsUtils } from '../lib/utils';
 import { ForgetStep } from '../lib/constants';
 import {
   Animation,
   BaseModal,
-  BodyText,
   Button,
   ConfirmModal,
   FootnoteText,
@@ -24,10 +23,9 @@ import {
   Icon,
   IconButton,
   MenuPopover,
-  StatusLabel,
   SmallTitleText,
   StatusModal,
-} from '@renderer/shared/ui';
+} from '@shared/ui';
 
 type AccountItem = {
   accountId: `0x${string}`;
@@ -35,12 +33,11 @@ type AccountItem = {
 };
 
 type Props = {
-  wallet: Wallet;
+  wallet: WalletConnectWallet;
   accounts: Account[];
-  isConnected: boolean;
   onClose: () => void;
 };
-export const WalletConnectDetails = ({ wallet, accounts, isConnected, onClose }: Props) => {
+export const WalletConnectDetails = ({ wallet, accounts, onClose }: Props) => {
   const { t } = useI18n();
 
   const [isModalOpen, closeModal] = useModalClose(true, onClose);
@@ -70,6 +67,10 @@ export const WalletConnectDetails = ({ wallet, accounts, isConnected, onClose }:
     }, []);
   }, [accounts]);
 
+  const showReconnectConfirm = () => {
+    wcDetailsModel.events.confirmReconnectShown();
+  };
+
   const reconnect = () => {
     wcDetailsModel.events.reconnectStarted({
       chains: walletConnectUtils.getWalletConnectChains(chainsService.getChainsData()),
@@ -97,6 +98,7 @@ export const WalletConnectDetails = ({ wallet, accounts, isConnected, onClose }:
             position="top-full right-0"
             buttonClassName="rounded-full"
             offsetPx={0}
+            closeOnClick
             content={
               <>
                 <Button
@@ -114,7 +116,7 @@ export const WalletConnectDetails = ({ wallet, accounts, isConnected, onClose }:
                   size="md"
                   className="text-text-secondary hover:text-text-secondary px-2"
                   prefixElement={<Icon name="refresh" size={20} className="text-icon-accent" />}
-                  onClick={reconnect}
+                  onClick={showReconnectConfirm}
                 >
                   {t('walletDetails.walletConnect.refreshButton')}
                 </Button>
@@ -129,35 +131,23 @@ export const WalletConnectDetails = ({ wallet, accounts, isConnected, onClose }:
       onClose={closeModal}
     >
       <div className="flex flex-col h-full w-full">
-        <div className="flex items-center justify-between gap-x-2 p-5 border-b border-divider">
-          <div className="flex items-center justify-between gap-x-2">
-            <WalletIcon type={wallet.type} size={32} />
-            <BodyText>{wallet.name}</BodyText>
-          </div>
-          <StatusLabel
-            variant={isConnected ? 'success' : 'waiting'}
-            title={t(
-              isConnected
-                ? 'walletDetails.walletConnect.connectedStatus'
-                : 'walletDetails.walletConnect.disconnectedStatus',
-            )}
-          />
+        <div className="py-5 px-5 border-b border-divider">
+          <WalletCardLg full wallet={wallet} />
         </div>
-
         <div className="px-3 flex-1">
           <>
-            {wcDetailsUtils.isNotStarted(reconnectStep, isConnected) && (
-              <MultiAccountsList accounts={accountsList} className="h-[404px]" />
+            {wcDetailsUtils.isNotStarted(reconnectStep, wallet.isConnected) && (
+              <MultiAccountsList accounts={accountsList} className="h-[391px]" />
             )}
 
-            {wcDetailsUtils.isReadyToReconnect(reconnectStep, isConnected) && (
+            {wcDetailsUtils.isReadyToReconnect(reconnectStep, wallet.isConnected) && (
               <div className="flex flex-col h-[454px] justify-center items-center">
                 <Icon name="document" size={64} className="mb-6" />
                 <SmallTitleText className="mb-2">{t('walletDetails.walletConnect.disconnectedTitle')}</SmallTitleText>
                 <FootnoteText className="mb-4 text-text-tertiary">
                   {t('walletDetails.walletConnect.disconnectedDescription')}
                 </FootnoteText>
-                <Button onClick={reconnect}>{t('walletDetails.walletConnect.reconnectButton')}</Button>
+                <Button onClick={showReconnectConfirm}>{t('walletDetails.walletConnect.reconnectButton')}</Button>
               </div>
             )}
 
@@ -171,6 +161,22 @@ export const WalletConnectDetails = ({ wallet, accounts, isConnected, onClose }:
             )}
           </>
         </div>
+
+        <ConfirmModal
+          panelClass="w-[300px]"
+          isOpen={wcDetailsUtils.isConfirmation(reconnectStep)}
+          confirmText={t('walletDetails.walletConnect.confirmButton')}
+          cancelText={t('walletDetails.common.cancelButton')}
+          onConfirm={reconnect}
+          onClose={wcDetailsModel.events.reconnectAborted}
+        >
+          <SmallTitleText className="mb-2" align="center">
+            {t('walletDetails.walletConnect.reconnectConfirmTitle')}
+          </SmallTitleText>
+          <FootnoteText className="text-text-tertiary" align="center">
+            {t('walletDetails.walletConnect.reconnectConfirmDescription')}
+          </FootnoteText>
+        </ConfirmModal>
 
         <ConfirmModal
           panelClass="w-[300px]"

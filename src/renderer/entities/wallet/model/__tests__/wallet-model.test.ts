@@ -2,18 +2,11 @@ import { fork, allSettled } from 'effector';
 
 import { walletModel } from '../wallet-model';
 import { walletMock } from './mocks/wallet-mock';
-import { kernelModel } from '@renderer/shared/core';
-import { storageService } from '@renderer/shared/api/storage';
+import { kernelModel } from '@shared/core';
+import { storageService } from '@shared/api/storage';
 
-jest.mock('@renderer/entities/walletConnect', () => ({
-  walletConnectModel: { events: {} },
-  DEFAULT_POLKADOT_METHODS: {},
-  walletConnectUtils: {
-    getWalletConnectChains: jest.fn(),
-  },
-}));
-jest.mock('@renderer/pages/Onboarding/WalletConnect/model/wc-onboarding-model', () => ({
-  wcOnboardingModel: { events: {} },
+jest.mock('@app/providers', () => ({
+  useMatrix: jest.fn(),
 }));
 
 describe('entities/wallet/model/wallet-model', () => {

@@ -4,21 +4,22 @@ import { ProviderInterface } from '@polkadot/rpc-provider/types';
 import keyBy from 'lodash/keyBy';
 import { useRef, useState } from 'react';
 
-import { storage } from '@renderer/shared/api/storage';
-import { ISubscriptionService } from '../../../services/subscription/common/types';
+import { storage } from '@shared/api/storage';
+import { useSubscription } from '../../../services/subscription/subscriptionService';
 import { useChainSpec } from './chainSpecService';
 import { chainsService } from './chainsService';
 import { useMetadata } from './metadataService';
 import { AUTO_BALANCE_TIMEOUT, MAX_ATTEMPTS, PROGRESSION_BASE } from './common/constants';
 import { ConnectionsMap, ConnectProps, INetworkService, RpcValidation } from './common/types';
 import { createCachedProvider } from './provider/CachedProvider';
-import { ConnectionType, ConnectionStatus } from '@renderer/shared/core';
-import type { ChainId, Chain, Connection, RpcNode } from '@renderer/shared/core';
+import { ConnectionType, ConnectionStatus } from '@shared/core';
+import type { ChainId, Chain, Connection, RpcNode } from '@shared/core';
 
-export const useNetwork = (networkSubscription?: ISubscriptionService<ChainId>): INetworkService => {
+export const useNetwork = (): INetworkService => {
   const chains = useRef<Record<ChainId, Chain>>({});
   const [connections, setConnections] = useState<ConnectionsMap>({});
 
+  const { subscribe, unsubscribe } = useSubscription<ChainId>();
   const { getKnownChain, getLightClientChains } = useChainSpec();
   const { subscribeMetadata, getMetadata } = useMetadata();
 
@@ -70,7 +71,7 @@ export const useNetwork = (networkSubscription?: ISubscriptionService<ChainId>):
         });
       }
 
-      await networkSubscription?.unsubscribe(chainId);
+      unsubscribe(chainId);
 
       if (timeoutId) clearTimeout(timeoutId);
 
@@ -174,7 +175,7 @@ export const useNetwork = (networkSubscription?: ISubscriptionService<ChainId>):
       if (!api) await provider.disconnect();
 
       if (api) {
-        networkSubscription?.subscribe(chainId, subscribeMetadata(api));
+        subscribe(chainId, subscribeMetadata(api));
       }
 
       updateConnectionState(
@@ -183,7 +184,6 @@ export const useNetwork = (networkSubscription?: ISubscriptionService<ChainId>):
           activeNode: node,
           connectionType: type,
           connectionStatus: api ? ConnectionStatus.CONNECTED : ConnectionStatus.ERROR,
-          hasMultisigPallet: Boolean(api?.tx.multisig),
         },
         disconnectFromNetwork(chainId, provider, api),
         api,

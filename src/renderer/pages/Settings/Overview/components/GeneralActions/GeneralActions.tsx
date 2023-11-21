@@ -1,11 +1,11 @@
 import { Link } from 'react-router-dom';
 import { useUnit } from 'effector-react/effector-react.umd';
 
-import { Icon, BodyText, Plate, FootnoteText, HelpText } from '@renderer/shared/ui';
-import { useI18n } from '@renderer/app/providers';
-import { Paths } from '@renderer/shared/routes';
-import { cnTw } from '@renderer/shared/lib/utils';
-import { currencyModel, priceProviderModel } from '@renderer/entities/price';
+import { Icon, BodyText, Plate, FootnoteText, HelpText } from '@shared/ui';
+import { useI18n } from '@app/providers';
+import { Paths } from '@shared/routes';
+import { cnTw } from '@shared/lib/utils';
+import { currencyModel, priceProviderModel } from '@entities/price';
 
 // TODO: Language switcher temporary removed
 export const GeneralActions = () => {

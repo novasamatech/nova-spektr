@@ -2,32 +2,25 @@ import { act, render, renderHook, screen, waitFor } from '@testing-library/react
 import { fork } from 'effector';
 import { Provider } from 'effector-react';
 
-import { useBalance } from '@renderer/entities/asset';
-import { useNetwork } from '@renderer/entities/network';
+import { useBalance } from '@entities/asset';
+import { useNetwork } from '@entities/network';
 import { NetworkProvider, useNetworkContext } from './NetworkContext';
-import { AccountType, ConnectionStatus, ConnectionType } from '@renderer/shared/core';
-import { walletModel } from '@renderer/entities/wallet';
-import { TEST_ACCOUNT_ID } from '@renderer/shared/lib/utils';
+import { AccountType, ConnectionStatus, ConnectionType } from '@shared/core';
+import { walletModel } from '@entities/wallet';
+import { TEST_ACCOUNT_ID } from '@shared/lib/utils';
 
-jest.mock('@renderer/entities/walletConnect', () => ({
-  walletConnectModel: { events: {} },
-  DEFAULT_POLKADOT_METHODS: {},
-  walletConnectUtils: {
-    getWalletConnectChains: jest.fn(),
-  },
-}));
-jest.mock('@renderer/pages/Onboarding/WalletConnect/model/wc-onboarding-model', () => ({
-  wcOnboardingModel: { events: {} },
+jest.mock('@app/providers', () => ({
+  useMatrix: jest.fn(),
 }));
 
-jest.mock('@renderer/entities/network', () => ({
+jest.mock('@entities/network', () => ({
   useNetwork: jest.fn().mockReturnValue({
     connections: {},
     setupConnections: jest.fn().mockResolvedValue({}),
   }),
 }));
 
-jest.mock('@renderer/entities/asset', () => ({
+jest.mock('@entities/asset', () => ({
   useBalance: jest.fn().mockReturnValue({
     subscribeBalances: jest.fn(),
     subscribeLockBalances: jest.fn(),
@@ -126,7 +119,7 @@ describe('context/NetworkContext', () => {
     }));
 
     const scope = fork({
-      values: new Map().set(walletModel.$accounts, [
+      values: new Map().set(walletModel.$activeAccounts, [
         { name: 'Test Wallet', type: AccountType.BASE, accountId: TEST_ACCOUNT_ID },
       ]),
     });

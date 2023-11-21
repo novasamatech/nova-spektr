@@ -1,11 +1,17 @@
-import RedeemImg, { ReactComponent as RedeemSvg } from '@images/staking/redeem.svg';
-import ChangeValidatorsImg, { ReactComponent as ChangeValidatorsSvg } from '@images/staking/change-validators.svg';
-import SetValidatorsImg, { ReactComponent as SetValidatorsSvg } from '@images/staking/set-validators.svg';
-import ReturnToStakeImg, { ReactComponent as ReturnToStakeSvg } from '@images/staking/return-to-stake.svg';
-import UnstakeImg, { ReactComponent as UnstakeSvg } from '@images/staking/unstake.svg';
-import DestinationImg, { ReactComponent as DestinationSvg } from '@images/staking/rewards-destination.svg';
-import StakeMoreImg, { ReactComponent as StakeMoreSvg } from '@images/staking/stake-more.svg';
-import StartStakingImg, { ReactComponent as StartStakingSvg } from '@images/staking/start-staking.svg';
+import RedeemImg, { ReactComponent as RedeemSvg } from '@shared/assets/images/staking/redeem.svg';
+import ChangeValidatorsImg, {
+  ReactComponent as ChangeValidatorsSvg,
+} from '@shared/assets/images/staking/change-validators.svg';
+import SetValidatorsImg, { ReactComponent as SetValidatorsSvg } from '@shared/assets/images/staking/set-validators.svg';
+import ReturnToStakeImg, {
+  ReactComponent as ReturnToStakeSvg,
+} from '@shared/assets/images/staking/return-to-stake.svg';
+import UnstakeImg, { ReactComponent as UnstakeSvg } from '@shared/assets/images/staking/unstake.svg';
+import DestinationImg, {
+  ReactComponent as DestinationSvg,
+} from '@shared/assets/images/staking/rewards-destination.svg';
+import StakeMoreImg, { ReactComponent as StakeMoreSvg } from '@shared/assets/images/staking/stake-more.svg';
+import StartStakingImg, { ReactComponent as StartStakingSvg } from '@shared/assets/images/staking/start-staking.svg';
 
 const StakingImages = {
   redeem: { svg: RedeemSvg, img: RedeemImg },

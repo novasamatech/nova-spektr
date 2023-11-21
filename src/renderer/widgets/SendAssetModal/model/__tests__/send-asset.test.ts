@@ -1,17 +1,15 @@
 import { fork, allSettled } from 'effector';
 
 import * as sendAssetModel from '../../model/send-asset';
-import * as service from '@renderer/shared/api/xcm';
+import * as service from '@shared/api/xcm';
 
-jest.mock('@renderer/shared/api/xcm', () => ({
+jest.mock('@shared/api/xcm', () => ({
   __esModule: true,
-  ...jest.requireActual('@renderer/shared/api/xcm'),
+  ...jest.requireActual('@shared/api/xcm'),
 }));
 
-jest.mock('@renderer/entities/walletConnect', () => ({
-  walletConnectModel: { events: {} },
-  DEFAULT_POLKADOT_METHODS: {},
-  getWalletConnectChains: jest.fn(),
+jest.mock('@app/providers', () => ({
+  useMatrix: jest.fn(),
 }));
 
 describe('widgets/SendAssetModal/model/send-asset', () => {

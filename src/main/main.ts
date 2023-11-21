@@ -1,14 +1,13 @@
-import { join } from 'path';
-import { BrowserWindow, shell, Menu } from 'electron';
+import { join, parse } from 'path';
+import { readdirSync, rmSync, renameSync } from 'fs';
+import { BrowserWindow, Menu, shell } from 'electron';
 import log, { LogFile } from 'electron-log';
 import windowStateKeeper from 'electron-window-state';
-import * as path from 'path';
-import * as fs from 'fs';
 
-import { ENVIRONMENT } from '@shared/constants';
 import { APP_CONFIG } from '../../app.config';
+import { ENVIRONMENT } from './shared/constants';
 import { createWindow } from './factories/create';
-import { buildMenuTemplate } from '@main/vectormenu';
+import { buildMenuTemplate } from './factories/menu';
 
 const { MAIN, TITLE } = APP_CONFIG;
 const MAX_LOG_FILES_TO_KEEP = 10;
@@ -56,9 +55,10 @@ export async function MainWindow() {
   ENVIRONMENT.IS_DEV && window.webContents.openDevTools({ mode: 'bottom' });
 
   // Open urls in the user's browser
-  window.webContents.on('new-window', (event, url) => {
-    event.preventDefault();
-    shell.openExternal(url);
+  window.webContents.setWindowOpenHandler((details) => {
+    shell.openExternal(details.url);
+
+    return { action: 'deny' };
   });
 
   window.on('close', () => {
@@ -78,22 +78,20 @@ export async function MainWindow() {
   return window;
 }
 
-function rotateLogs(oldLogFile: LogFile): void {
+function rotateLogs(oldLogFile: LogFile) {
   const file = oldLogFile.toString();
-  const info = path.parse(file);
-  const files = fs.readdirSync(info.dir);
+  const info = parse(file);
+  const files = readdirSync(info.dir);
+
   if (files.length > MAX_LOG_FILES_TO_KEEP) {
     const filesToDelete = files.sort().slice(0, files.length - MAX_LOG_FILES_TO_KEEP);
-    for (const fileToDelete of filesToDelete) {
-      const filePath = path.join(info.dir, fileToDelete);
-      fs.rmSync(filePath);
-    }
+    filesToDelete.forEach((fileToDelete) => rmSync(join(info.dir, fileToDelete)));
   }
   try {
     const date = new Date().toISOString();
-    let newFileName = path.join(info.dir, info.name + '.' + date + info.ext);
-    fs.renameSync(file, newFileName);
-  } catch (e) {
-    console.warn('Could not rotate log', e);
+    let newFileName = join(info.dir, info.name + '.' + date + info.ext);
+    renameSync(file, newFileName);
+  } catch (error) {
+    console.warn('Could not rotate log', error);
   }
 }

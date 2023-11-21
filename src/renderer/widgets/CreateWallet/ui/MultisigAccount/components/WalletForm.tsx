@@ -1,11 +1,11 @@
 import { Controller, useForm, SubmitHandler } from 'react-hook-form';
 import { useUnit } from 'effector-react';
 
-import { Alert, Button, Input, InputHint, Select, SmallTitleText } from '@renderer/shared/ui';
-import { useI18n, useMatrix } from '@renderer/app/providers';
-import { DropdownOption, DropdownResult } from '@renderer/shared/ui/Dropdowns/common/types';
-import type { AccountId, Signatory } from '@renderer/shared/core';
-import { accountUtils, walletModel, walletUtils } from '@renderer/entities/wallet';
+import { Alert, Button, Input, InputHint, Select, SmallTitleText } from '@shared/ui';
+import { useI18n, useMatrix } from '@app/providers';
+import { DropdownOption, DropdownResult } from '@shared/ui/Dropdowns/common/types';
+import type { AccountId, Signatory } from '@shared/core';
+import { accountUtils, walletModel, walletUtils } from '@entities/wallet';
 
 type MultisigAccountForm = {
   name: string;
@@ -131,23 +131,21 @@ export const WalletForm = ({ signatories, onContinue, isActive, isLoading, onGoB
           </InputHint>
         </div>
 
-        {Boolean(signatories.length) && !hasOwnSignatory && (
-          <Alert title={t('createMultisigAccount.walletAlertTitle')} variant="warn">
-            <Alert.Item withDot={false}>{t('createMultisigAccount.walletAlertText')}</Alert.Item>
-          </Alert>
-        )}
+        <Alert
+          active={Boolean(signatories.length) && !hasOwnSignatory}
+          title={t('createMultisigAccount.walletAlertTitle')}
+          variant="warn"
+        >
+          <Alert.Item withDot={false}>{t('createMultisigAccount.walletAlertText')}</Alert.Item>
+        </Alert>
 
-        {accountAlreadyExists && (
-          <Alert title={t('createMultisigAccount.multisigExistTitle')} variant="warn">
-            <Alert.Item withDot={false}>{t('createMultisigAccount.multisigExistText')}</Alert.Item>
-          </Alert>
-        )}
+        <Alert active={accountAlreadyExists} title={t('createMultisigAccount.multisigExistTitle')} variant="warn">
+          <Alert.Item withDot={false}>{t('createMultisigAccount.multisigExistText')}</Alert.Item>
+        </Alert>
 
-        {hasNoAccounts && (
-          <Alert title={t('createMultisigAccount.walletAlertTitle')} variant="warn">
-            <Alert.Item withDot={false}>{t('createMultisigAccount.accountsAlertText')}</Alert.Item>
-          </Alert>
-        )}
+        <Alert active={hasNoAccounts} title={t('createMultisigAccount.walletAlertTitle')} variant="warn">
+          <Alert.Item withDot={false}>{t('createMultisigAccount.accountsAlertText')}</Alert.Item>
+        </Alert>
 
         <div className="flex justify-between items-center mt-auto">
           <Button variant="text" onClick={onGoBack}>

@@ -9,8 +9,8 @@ import {
   CryptoType,
   KeyType,
   AccountId,
-} from '@renderer/shared/core';
-import { TEST_ACCOUNT_ID, TEST_CHAIN_ID } from '@renderer/shared/lib/utils';
+} from '@shared/core';
+import { TEST_ACCOUNT_ID, TEST_CHAIN_ID } from '@shared/lib/utils';
 
 function getWallets(activeId: ID): Wallet[] {
   return [

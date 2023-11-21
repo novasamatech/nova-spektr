@@ -1,10 +1,11 @@
 import { ReactNode } from 'react';
+import { IconTheme } from '@polkadot/react-identicon/types';
 
-import { cnTw } from '@renderer/shared/lib/utils';
-import { Identicon } from '@renderer/shared/ui';
-import { SigningType } from '@renderer/shared/core';
+import { cnTw } from '@shared/lib/utils';
+import { Identicon } from '@shared/ui';
+import { SigningType } from '@shared/core';
 import { getAddress } from '../AccountAddress/AccountAddress';
-import type { AccountId, Address } from '@renderer/shared/core';
+import type { AccountId, Address } from '@shared/core';
 
 type WithAccountId = {
   accountId: AccountId;
@@ -23,6 +24,7 @@ type Props = {
   showIcon?: boolean;
   firstLine: ReactNode;
   secondLine: ReactNode;
+  iconTheme?: IconTheme;
 } & (WithAccountId | WithAddress);
 
 export const AddressWithTwoLines = ({
@@ -33,11 +35,14 @@ export const AddressWithTwoLines = ({
   showIcon,
   firstLine,
   secondLine,
+  iconTheme,
   ...props
 }: Props) => {
   return (
     <div className={cnTw('flex items-center gap-x-2', className)}>
-      {showIcon && <Identicon address={getAddress(props)} size={size} background={false} canCopy={canCopy} />}
+      {showIcon && (
+        <Identicon theme={iconTheme} address={getAddress(props)} size={size} background={false} canCopy={canCopy} />
+      )}
       <div className="truncate">
         {firstLine}
         {secondLine}

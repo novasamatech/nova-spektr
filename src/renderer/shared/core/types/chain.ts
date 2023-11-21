@@ -4,6 +4,7 @@ import type { ChainId, HexString } from './general';
 export type Chain = {
   chainId: ChainId;
   parentId?: HexString;
+  specName?: string;
   name: string;
   assets: Asset[];
   nodes: RpcNode[];
@@ -14,7 +15,7 @@ export type Chain = {
   options?: ChainOptions[];
 };
 
-export type ChainOptions = 'testnet' | 'crowdloans';
+export type ChainOptions = 'testnet' | 'crowdloans' | 'multisig';
 
 export type RpcNode = {
   url: string;

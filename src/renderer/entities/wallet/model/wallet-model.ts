@@ -1,9 +1,9 @@
 import { createStore, createEvent, forward, createEffect, sample, combine } from 'effector';
 import { spread } from 'patronum';
 
-import type { Wallet, NoID, Account, BaseAccount, ChainAccount, MultisigAccount, ID } from '@renderer/shared/core';
-import { kernelModel, WalletConnectAccount } from '@renderer/shared/core';
-import { storageService } from '@renderer/shared/api/storage';
+import type { Wallet, NoID, Account, BaseAccount, ChainAccount, MultisigAccount, ID } from '@shared/core';
+import { kernelModel, WalletConnectAccount } from '@shared/core';
+import { storageService } from '@shared/api/storage';
 import { modelUtils } from '../lib/model-utils';
 import { accountUtils } from '../lib/account-utils';
 import { ShardedAccount, ShardedAccountWithShards } from '@renderer/shared/core/types/account';
@@ -39,6 +39,7 @@ const polkadotVaultCreated = createEvent<PolkadotVaultCreateParams>();
 const singleshardCreated = createEvent<CreateParams<BaseAccount>>();
 const multisigCreated = createEvent<CreateParams<MultisigAccount>>();
 const walletConnectCreated = createEvent<CreateParams<WalletConnectAccount>>();
+const polkadotVaultWalletCreated = createEvent<CreateParams<BaseAccount>>();
 
 const walletSelected = createEvent<ID>();
 const multisigAccountUpdated = createEvent<MultisigUpdateParams>();
@@ -106,6 +107,9 @@ const multishardCreatedFx = createEffect(
 
 const polkadotVaultCreatedFx = createEffect(
   async ({ wallet, accounts, root }: PolkadotVaultCreateParams): Promise<CreateResult | undefined> => {
+// // May be extended with sharded accounts when it will be implemented
+// const polkadotVaultWalletCreatedFx = createEffect(
+//   async ({ wallet, accounts }: CreateParams<BaseAccount | ChainAccount>): Promise<CreateResult | undefined> => {
     const dbWallet = await storageService.wallets.create({ ...wallet, isActive: false });
 
     if (!dbWallet) return undefined;
@@ -307,6 +311,9 @@ export const walletModel = {
   $accounts,
   $activeAccounts,
   $isLoadingWallets: fetchAllWalletsFx.pending,
+  effects: {
+    polkadotVaultCreatedFx,
+  },
   events: {
     watchOnlyCreated,
     multishardCreated,
@@ -314,6 +321,7 @@ export const walletModel = {
     singleshardCreated,
     multisigCreated,
     walletConnectCreated,
+    polkadotVaultWalletCreated,
     walletSelected,
     multisigAccountUpdated,
     walletRemoved,

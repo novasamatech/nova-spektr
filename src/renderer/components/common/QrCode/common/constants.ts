@@ -1,8 +1,8 @@
 import { array, Codec, object, option, sizedUint8Array, str, taggedUnion, u8, uint8Array } from 'parity-scale-codec';
 
 import { AddressInfo, DdAddressInfo, DdSeedInfo, SeedInfo } from './types';
-import { CryptoType, CryptoTypeString } from '@renderer/shared/core';
-import type { ChainId } from '@renderer/shared/core';
+import { CryptoType, CryptoTypeString } from '@shared/core';
+import type { ChainId } from '@shared/core';
 
 export const FRAME_KEY = 2;
 
@@ -36,7 +36,14 @@ const SEED_INFO: Codec<SeedInfo> = object(
   ['derivedKeys', array(ADDRESS_INFO)],
 );
 
-const FEATURE = taggedUnion('VaultFeatures', [['BulkOperations'], ['DynamicDerivations']]);
+export const enum VaultFeatures {
+  BULK_OPERATIONS = 'BulkOperations',
+  DYNAMIC_DERIVATIONS = 'DynamicDerivations',
+}
+
+export type VaultFeature = Record<'VaultFeatures', VaultFeatures>;
+
+const FEATURE = taggedUnion('VaultFeatures', [[VaultFeatures.BULK_OPERATIONS], [VaultFeatures.DYNAMIC_DERIVATIONS]]);
 
 // Export address format for decoding; Rust enum is a tagged union
 export const EXPORT_ADDRESS = taggedUnion('ExportAddrs', [

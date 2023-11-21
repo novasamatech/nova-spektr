@@ -3,7 +3,7 @@ import BigNumber from 'bignumber.js';
 
 import { ApyValidator } from './common/types';
 import { DECAY_RATE, INTEREST_IDEAL, MINIMUM_INFLATION, STAKED_PORTION_IDEAL } from './common/constants';
-import type { Address } from '@renderer/shared/core';
+import type { Address } from '@shared/core';
 
 const calculateYearlyInflation = (stakedPortion: number): number => {
   let calculatedInflation;

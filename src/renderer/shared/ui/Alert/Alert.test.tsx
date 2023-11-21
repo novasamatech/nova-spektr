@@ -3,21 +3,14 @@ import noop from 'lodash/noop';
 
 import Alert from './Alert';
 
-jest.mock('@renderer/entities/walletConnect', () => ({
-  walletConnectModel: { events: {} },
-  DEFAULT_POLKADOT_METHODS: {},
-  walletConnectUtils: {
-    getWalletConnectChains: jest.fn(),
-  },
-}));
-jest.mock('@renderer/pages/Onboarding/WalletConnect/model/wc-onboarding-model', () => ({
-  wcOnboardingModel: { events: {} },
+jest.mock('@app/providers', () => ({
+  useMatrix: jest.fn(),
 }));
 
 describe('ui/Alert', () => {
   test('should render title and items', () => {
     render(
-      <Alert title="My title">
+      <Alert title="My title" active>
         <Alert.Item>item one</Alert.Item>
         <Alert.Item>item two</Alert.Item>
         <Alert.Item>item three</Alert.Item>
@@ -32,7 +25,7 @@ describe('ui/Alert', () => {
 
   test('should render close button', () => {
     render(
-      <Alert title="My title" onClose={noop}>
+      <Alert title="My title" active onClose={noop}>
         <Alert.Item>item one</Alert.Item>
       </Alert>,
     );
