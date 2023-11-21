@@ -17,7 +17,7 @@ export type BaseAccount = AbstractAccount & {
 };
 
 export type ChainAccount = BaseAccount & {
-  baseId: ID;
+  baseId?: ID;
   chainId: ChainId;
   keyType: KeyType;
   derivationPath: string;
@@ -51,7 +51,7 @@ export const enum AccountType {
   WALLET_CONNECT = 'wallet_connect',
 }
 
-export const enum KeyType {
+export enum KeyType {
   MAIN = 'main',
   PUBLIC = 'pub',
   HOT = 'hot',
@@ -59,3 +59,5 @@ export const enum KeyType {
   STAKING = 'staking',
   CUSTOM = 'custom',
 }
+
+export type ShardedKeyType = KeyType.CUSTOM | KeyType.GOVERNANCE | KeyType.MAIN | KeyType.STAKING;

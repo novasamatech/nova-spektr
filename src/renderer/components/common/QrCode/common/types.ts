@@ -2,6 +2,7 @@
 import { DecodeContinuouslyCallback } from '@zxing/browser/esm/common/DecodeContinuouslyCallback';
 
 import type { Address, CryptoType, CryptoTypeString, ChainId } from '@shared/core';
+import type { VaultFeature } from './constants';
 
 export const enum QrError {
   USER_DENY,
@@ -35,6 +36,7 @@ export type SeedInfo = {
   name: string;
   multiSigner: MultiSigner;
   derivedKeys: AddressInfo[];
+  features?: VaultFeature[];
 };
 
 export type CompactSeedInfo = {

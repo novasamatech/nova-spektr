@@ -11,5 +11,7 @@ export { SelectableShard } from './SelectableShard/SelectableShard';
 export { MultiAccountsList } from './MultiAccountsList/MultiAccountsList';
 export { MultishardAccountsList } from './MultishardAccountsList/MultishardAccountsList';
 export { ContactItem } from './ContactItem/ContactItem';
+export { RootAccount } from './RootAccount/RootAccount';
+export { DerivedAccount } from './DerivedAccount/DerivedAccount';
 export { ExplorersPopover } from './ExplorersPopover/ExplorersPopover';
 export type { AccountAddressProps } from './AccountAddress/AccountAddress';

@@ -8,18 +8,21 @@ import AlertItem from './AlertItem';
 
 type Props = {
   title: string;
+  active: boolean;
   variant?: Variant;
   className?: string;
   onClose?: () => void;
 };
 
-const Alert = ({ title, variant = 'info', className, children, onClose }: PropsWithChildren<Props>) => {
+const Alert = ({ title, active, variant = 'info', className, children, onClose }: PropsWithChildren<Props>) => {
+  if (!active) return null;
+
   const isList = Children.toArray(children).length > 0;
 
   return (
     <div className={cnTw('p-[15px] rounded-lg border', ViewStyle[variant])}>
       <div className="flex items-start gap-x-1.5">
-        <div className="flex flex-col gap-y-1 flex-1">
+        <div className="flex flex-col gap-y-1 flex-1 max-w-full">
           <div className="flex items-center gap-x-1.5">
             <Icon name={IconName[variant]} size={14} className={IconStyle[variant]} />
             <HeadlineText>{title}</HeadlineText>

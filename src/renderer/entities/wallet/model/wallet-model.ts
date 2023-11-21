@@ -34,6 +34,7 @@ const multishardCreated = createEvent<CreateParams<BaseAccount | ChainAccount>>(
 const singleshardCreated = createEvent<CreateParams<BaseAccount>>();
 const multisigCreated = createEvent<CreateParams<MultisigAccount>>();
 const walletConnectCreated = createEvent<CreateParams<WalletConnectAccount>>();
+const polkadotVaultWalletCreated = createEvent<CreateParams<BaseAccount>>();
 
 const walletSelected = createEvent<ID>();
 const multisigAccountUpdated = createEvent<MultisigUpdateParams>();
@@ -98,6 +99,27 @@ const multishardCreatedFx = createEffect(
     return { wallet: dbWallet, accounts: multishardAccounts };
   },
 );
+
+// May be extended with sharded accounts when it will be implemented
+const polkadotVaultWalletCreatedFx = createEffect(
+  async ({ wallet, accounts }: CreateParams<BaseAccount | ChainAccount>): Promise<CreateResult | undefined> => {
+    const dbWallet = await storageService.wallets.create({ ...wallet, isActive: false });
+
+    if (!dbWallet) return undefined;
+
+    const accountsPayload = accounts.map((account) => ({ ...account, walletId: dbWallet.id }));
+    const dbAccounts = await storageService.accounts.createAll(accountsPayload);
+
+    if (!dbAccounts) return undefined;
+
+    return { wallet: dbWallet, accounts: dbAccounts };
+  },
+);
+
+forward({
+  from: polkadotVaultWalletCreated,
+  to: polkadotVaultWalletCreatedFx,
+});
 
 type SelectParams = {
   prevId?: ID;
@@ -180,7 +202,7 @@ forward({
 forward({ from: multishardCreated, to: multishardCreatedFx });
 
 sample({
-  clock: [walletCreatedFx.doneData, multishardCreatedFx.doneData],
+  clock: [walletCreatedFx.doneData, multishardCreatedFx.doneData, polkadotVaultWalletCreatedFx.doneData],
   source: { wallets: $wallets, accounts: $accounts },
   filter: (_, data) => Boolean(data),
   fn: ({ wallets, accounts }, data) => {
@@ -195,7 +217,7 @@ sample({
 });
 
 sample({
-  clock: [walletCreatedFx.doneData, multishardCreatedFx.doneData],
+  clock: [walletCreatedFx.doneData, multishardCreatedFx.doneData, polkadotVaultWalletCreatedFx.doneData],
   filter: (data) => Boolean(data),
   fn: (data) => data!.wallet.id,
   target: walletSelected,
@@ -254,12 +276,16 @@ export const walletModel = {
   $accounts,
   $activeAccounts,
   $isLoadingWallets: fetchAllWalletsFx.pending,
+  effects: {
+    polkadotVaultWalletCreatedFx,
+  },
   events: {
     watchOnlyCreated,
     multishardCreated,
     singleshardCreated,
     multisigCreated,
     walletConnectCreated,
+    polkadotVaultWalletCreated,
     walletSelected,
     multisigAccountUpdated,
     walletRemoved,

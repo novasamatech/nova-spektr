@@ -76,7 +76,7 @@ export const Networks = () => {
   };
 
   const confirmDisableLightClient = (name: string): Promise<boolean> => {
-    const verify = <InfoLink url={DATA_VERIFICATION} showIcon={false} />;
+    const verify = <InfoLink url={DATA_VERIFICATION} />;
 
     return confirm({
       title: t('settings.networks.confirmModal.disableLightTitle'),

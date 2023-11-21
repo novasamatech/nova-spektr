@@ -22,10 +22,10 @@ export const accountUtils = {
   isChainIdMatch,
   isWalletConnectAccount,
   isShardAccount,
+  getAccountsAndShardGroups,
   getMultisigAccountId,
   getAllAccountIds,
   getWalletAccounts,
-  getAccountsAndShardGroups,
   getDerivationPath,
 };
 
@@ -78,9 +78,9 @@ function getAllAccountIds(accounts: Account[], chainId: ChainId): AccountId[] {
 }
 
 function getAccountsAndShardGroups(accounts: Array<ChainAccount | ShardAccount>): Array<ChainAccount | ShardAccount[]> {
-  const shardsIndexes: Record<string, number> = {};
+  const shardsIndexes: Record<ShardAccount['groupId'], number> = {};
 
-  return accounts.reduce<Array<ChainAccount | ShardAccount[]>>((acc, account, index) => {
+  return accounts.reduce<Array<ChainAccount | ShardAccount[]>>((acc, account) => {
     if (!accountUtils.isShardAccount(account)) {
       acc.push(account);
 
@@ -91,8 +91,8 @@ function getAccountsAndShardGroups(accounts: Array<ChainAccount | ShardAccount>)
     if (existingGroupIndex !== undefined) {
       (acc[existingGroupIndex] as ShardAccount[]).push(account);
     } else {
-      shardsIndexes[account.groupId] = index;
       acc.push([account]);
+      shardsIndexes[account.groupId] = acc.length - 1;
     }
 
     return acc;
