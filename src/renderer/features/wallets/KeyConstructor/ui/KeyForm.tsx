@@ -1,4 +1,4 @@
-import { FormEvent, useMemo, useEffect } from 'react';
+import { FormEvent, useMemo, useEffect, useRef } from 'react';
 import { useForm } from 'effector-forms';
 import { useUnit } from 'effector-react';
 
@@ -9,6 +9,8 @@ import { chainsService } from '@entities/network';
 import { KeyType } from '@shared/core';
 
 export const KeyForm = () => {
+  const networkRef = useRef<HTMLButtonElement>(null);
+
   const {
     submit,
     isValid,
@@ -19,6 +21,10 @@ export const KeyForm = () => {
 
   useEffect(() => {
     constructorModel.events.formInitiated();
+
+    if (networkRef.current) {
+      constructorModel.events.focusableSet(networkRef.current);
+    }
   }, []);
 
   const networks = useMemo(() => {
@@ -73,6 +79,7 @@ export const KeyForm = () => {
     <form onSubmit={submitForm}>
       <div className="flex items-start gap-x-6 mb-4">
         <Select
+          ref={networkRef}
           className="w-[228px]"
           label="Network"
           placeholder="Select network"

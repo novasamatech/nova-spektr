@@ -1,5 +1,5 @@
 import { createForm } from 'effector-forms';
-import { createStore, createEvent, sample, combine, forward } from 'effector';
+import { createStore, createEvent, sample, combine, forward, createEffect } from 'effector';
 
 import type { ChainAccount, ShardAccount, Chain } from '@shared/core';
 import { KeyType, AccountType, CryptoType, ChainType } from '@shared/core';
@@ -8,49 +8,70 @@ import { accountUtils } from '@entities/wallet';
 
 const chains = chainsService.getChainsData({ sort: true });
 
-const MOCKS = accountUtils.getAccountsAndShardGroups([
-  {
-    name: 'DOT key',
-    chainId: '0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3',
-    keyType: KeyType.STAKING,
-    type: AccountType.CHAIN,
-    cryptoType: CryptoType.SR25519,
-    chainType: ChainType.SUBSTRATE,
-    derivationPath: '//polkadot//staking',
-  },
-  {
-    name: 'DOT key',
-    chainId: '0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3',
-    keyType: KeyType.HOT,
-    type: AccountType.CHAIN,
-    cryptoType: CryptoType.SR25519,
-    chainType: ChainType.SUBSTRATE,
-    derivationPath: '//polkadot//hot',
-  },
-  {
-    name: 'DOT key',
-    groupId: 'shard_1',
-    chainId: '0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3',
-    chainType: ChainType.SUBSTRATE,
-    cryptoType: CryptoType.SR25519,
-    keyType: KeyType.PUBLIC,
-    type: AccountType.SHARD,
-    derivationPath: '//polkadot//hot//0',
-  },
-  {
-    name: 'DOT key',
-    groupId: 'shard_1',
-    chainId: '0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3',
-    chainType: ChainType.SUBSTRATE,
-    cryptoType: CryptoType.SR25519,
-    keyType: KeyType.PUBLIC,
-    type: AccountType.SHARD,
-    derivationPath: '//polkadot//hot//1',
-  },
-] as any[]);
+const MOCKS = accountUtils
+  .getAccountsAndShardGroups([
+    {
+      name: 'DOT key',
+      keyType: KeyType.MAIN,
+      chainId: '0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3',
+      type: AccountType.CHAIN,
+      cryptoType: CryptoType.SR25519,
+      chainType: ChainType.SUBSTRATE,
+      derivationPath: '//polkadot//MAIN',
+    },
+    {
+      name: 'DOT key',
+      keyType: KeyType.STAKING,
+      chainId: '0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3',
+      type: AccountType.CHAIN,
+      cryptoType: CryptoType.SR25519,
+      chainType: ChainType.SUBSTRATE,
+      derivationPath: '//polkadot//staking',
+    },
+    {
+      name: 'DOT key',
+      keyType: KeyType.HOT,
+      chainId: '0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3',
+      type: AccountType.CHAIN,
+      cryptoType: CryptoType.SR25519,
+      chainType: ChainType.SUBSTRATE,
+      derivationPath: '//polkadot//hot',
+    },
+    {
+      name: 'DOT key',
+      groupId: 'shard_1',
+      chainId: '0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3',
+      chainType: ChainType.SUBSTRATE,
+      cryptoType: CryptoType.SR25519,
+      keyType: KeyType.PUBLIC,
+      type: AccountType.SHARD,
+      derivationPath: '//polkadot//hot//0',
+    },
+    {
+      name: 'DOT key',
+      groupId: 'shard_1',
+      chainId: '0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3',
+      chainType: ChainType.SUBSTRATE,
+      cryptoType: CryptoType.SR25519,
+      keyType: KeyType.PUBLIC,
+      type: AccountType.SHARD,
+      derivationPath: '//polkadot//hot//1',
+    },
+  ] as any[])
+  .filter((k) => Array.isArray(k) || k.keyType !== KeyType.MAIN);
+
+// TODO: filter MAIN keys
 const $keys = createStore<Array<ChainAccount | ShardAccount>>(MOCKS as Array<ChainAccount | ShardAccount>);
 
-const $constructorForm = createForm({
+type FormValues = {
+  network: Chain;
+  keyType: KeyType;
+  isSharded: boolean;
+  shards: string;
+  keyName: string;
+  derivationPath: string;
+};
+const $constructorForm = createForm<FormValues>({
   fields: {
     network: {
       init: {} as Chain,
@@ -112,8 +133,42 @@ const $derivationEnabled = combine($constructorForm.fields.keyType.$value, (keyT
   return keyType === KeyType.CUSTOM;
 });
 
+const $elementToFocus = createStore<HTMLButtonElement | null>(null);
+
 const keyRemoved = createEvent<number>();
 const formInitiated = createEvent();
+const focusableSet = createEvent<HTMLButtonElement>();
+
+const focusElementFx = createEffect((element: HTMLButtonElement) => {
+  element.focus();
+});
+
+const addNewKeyFx = createEffect((formValues: FormValues): ChainAccount | ShardAccount[] => {
+  const base = {
+    name: formValues.keyName,
+    keyType: formValues.keyType,
+    chainId: formValues.network.chainId,
+    type: AccountType.CHAIN,
+    cryptoType: CryptoType.SR25519,
+    chainType: ChainType.SUBSTRATE,
+    derivationPath: formValues.derivationPath,
+  };
+
+  if (!formValues.isSharded) return base as ChainAccount;
+
+  const groupId = crypto.randomUUID();
+
+  return Array.from({ length: Number(formValues.shards) }, (_, index) => {
+    return {
+      ...base,
+      groupId,
+      type: AccountType.SHARD,
+      derivationPath: `${formValues.derivationPath}//${index}`,
+    } as ShardAccount;
+  });
+});
+
+forward({ from: focusableSet, to: $elementToFocus });
 
 sample({
   clock: formInitiated,
@@ -130,7 +185,26 @@ sample({
 
 forward({
   from: $constructorForm.formValidated,
+  to: addNewKeyFx,
+});
+
+forward({
+  from: $constructorForm.formValidated,
   to: [$constructorForm.reset, formInitiated],
+});
+
+sample({
+  clock: addNewKeyFx.doneData,
+  source: $keys,
+  fn: (keys, newKeys) => keys.concat(newKeys),
+  target: $keys,
+});
+
+sample({
+  clock: $constructorForm.formValidated,
+  source: $elementToFocus,
+  filter: (element): element is HTMLButtonElement => Boolean(element),
+  target: focusElementFx,
 });
 
 sample({
@@ -144,7 +218,7 @@ sample({
 });
 
 sample({
-  clock: $constructorForm.fields.keyType.$value,
+  clock: $constructorForm.fields.keyType.onChange,
   source: $constructorForm.fields.network.$value,
   fn: (chain, keyType) => {
     return keyType === KeyType.CUSTOM ? '' : `//${chain.name.toLowerCase()}//${keyType}`;
@@ -158,6 +232,7 @@ export const constructorModel = {
   $constructorForm,
   events: {
     keyRemoved,
+    focusableSet,
     formInitiated,
   },
 };
