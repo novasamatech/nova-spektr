@@ -14,6 +14,7 @@ export class UniversalProvider implements ProviderInterface {
   private provider: ProviderInterface;
 
   private subscriptions = new Map<number | string, Subscription>();
+  private subscriptionIds = new Map<number | string, number | string>();
 
   constructor(wsProvider: ProviderInterface, scProvider?: ProviderInterface) {
     this.wsProvider = wsProvider;
@@ -35,7 +36,14 @@ export class UniversalProvider implements ProviderInterface {
 
     this.provider = newProvider;
 
-    await Promise.all(subscriptions.map(({ type, method, params, cb }) => this.subscribe(type, method, params, cb)));
+    for (let oldId in subscriptions) {
+      const sub = this.subscriptions.get(oldId);
+      if (!sub) return;
+
+      const newId = await this.subscribe(sub.type, sub.method, sub.params, sub.cb);
+
+      this.subscriptionIds.set(oldId, newId);
+    }
   }
 
   get hasSubscriptions() {
@@ -88,8 +96,9 @@ export class UniversalProvider implements ProviderInterface {
   }
 
   public unsubscribe(type: string, method: string, id: number | string): Promise<boolean> {
-    this.subscriptions.delete(id);
+    const subId = this.subscriptionIds.get(id) || id;
+    this.subscriptions.delete(subId);
 
-    return this.provider.unsubscribe(type, method, id);
+    return this.provider.unsubscribe(type, method, subId);
   }
 }
