@@ -183,8 +183,8 @@ sample({
 });
 
 sample({
-  source: { providers: $providers, apis: $apis },
   clock: connectStarted,
+  source: { providers: $providers, apis: $apis },
   fn: ({ providers, apis }, chainId) => ({
     provider: providers[chainId],
     api: apis[chainId],
