@@ -6,3 +6,4 @@ export { useCountdown } from './useCountdown';
 export { useScrollTo } from './useScrollTo';
 export { useTaskQueue } from './useTaskQueue';
 export { useModalClose } from './useModalClose';
+export { useAltKeyPressed } from './useAltKeyPressed';

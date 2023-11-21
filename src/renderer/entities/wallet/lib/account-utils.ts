@@ -11,8 +11,8 @@ import type {
   ChainAccount,
   WalletConnectAccount,
   Wallet,
-} from '@renderer/shared/core';
-import { ShardAccount } from '@renderer/shared/core/types/account';
+  ShardAccount,
+} from '@shared/core';
 
 export const accountUtils = {
   isBaseAccount,
@@ -21,6 +21,7 @@ export const accountUtils = {
   isChainIdMatch,
   isWalletConnectAccount,
   isShardAccount,
+  getAccountsAndShardGroups,
   getMultisigAccountId,
   getAllAccountIds,
   getWalletAccounts,
@@ -78,4 +79,26 @@ function getAllAccountIds(accounts: Account[], chainId: ChainId): AccountId[] {
 
 function getWalletAccounts<T extends Account>(walletId: Wallet['id'], accounts: T[]): T[] {
   return accounts.filter((account) => account.walletId === walletId);
+}
+
+function getAccountsAndShardGroups(accounts: Array<ChainAccount | ShardAccount>): Array<ChainAccount | ShardAccount[]> {
+  const shardsIndexes: Record<ShardAccount['groupId'], number> = {};
+
+  return accounts.reduce<Array<ChainAccount | ShardAccount[]>>((acc, account) => {
+    if (!accountUtils.isShardAccount(account)) {
+      acc.push(account);
+
+      return acc;
+    }
+
+    const existingGroupIndex = shardsIndexes[account.groupId];
+    if (existingGroupIndex !== undefined) {
+      (acc[existingGroupIndex] as ShardAccount[]).push(account);
+    } else {
+      acc.push([account]);
+      shardsIndexes[account.groupId] = acc.length - 1;
+    }
+
+    return acc;
+  }, []);
 }
