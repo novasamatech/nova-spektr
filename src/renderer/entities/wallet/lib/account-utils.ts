@@ -25,6 +25,8 @@ export const accountUtils = {
   getMultisigAccountId,
   getAllAccountIds,
   getWalletAccounts,
+  getAccountsAndShardGroups,
+  getDerivationPath,
 };
 
 function getMultisigAccountId(ids: AccountId[], threshold: Threshold): AccountId {
@@ -75,6 +77,36 @@ function getAllAccountIds(accounts: Account[], chainId: ChainId): AccountId[] {
   return Array.from(uniqIds);
 }
 
+function getAccountsAndShardGroups(accounts: Array<ChainAccount | ShardAccount>): Array<ChainAccount | ShardAccount[]> {
+  const shardsIndexes: Record<string, number> = {};
+
+  return accounts.reduce<Array<ChainAccount | ShardAccount[]>>((acc, account, index) => {
+    if (!accountUtils.isShardAccount(account)) {
+      acc.push(account);
+
+      return acc;
+    }
+
+    const existingGroupIndex = shardsIndexes[account.groupId];
+    if (existingGroupIndex !== undefined) {
+      (acc[existingGroupIndex] as ShardAccount[]).push(account);
+    } else {
+      shardsIndexes[account.groupId] = index;
+      acc.push([account]);
+    }
+
+    return acc;
+  }, []);
+}
+
 function getWalletAccounts<T extends Account>(walletId: Wallet['id'], accounts: T[]): T[] {
   return accounts.filter((account) => account.walletId === walletId);
+}
+
+function getDerivationPath(data: ChainAccount | ShardAccount | ChainAccount[] | ShardAccount[]): string {
+  if (!Array.isArray(data)) return data.derivationPath;
+
+  const [empty, network, keyType] = data[0].derivationPath.split('//');
+
+  return [empty, network, keyType, `0..${data.length - 1}`].join('//');
 }

@@ -1,13 +1,14 @@
 import { createForm } from 'effector-forms';
-import { createStore, createEvent, sample, combine } from 'effector';
+import { createStore, createEvent, sample, combine, forward } from 'effector';
 
 import type { ChainAccount, ShardAccount, Chain } from '@shared/core';
 import { KeyType, AccountType, CryptoType, ChainType } from '@shared/core';
 import { chainsService } from '@entities/network';
+import { accountUtils } from '@entities/wallet';
 
-// type KeyAccount = ChainAccount | ShardAccount;
+const chains = chainsService.getChainsData({ sort: true });
 
-const MOCKS = [
+const MOCKS = accountUtils.getAccountsAndShardGroups([
   {
     name: 'DOT key',
     chainId: '0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3',
@@ -16,7 +17,7 @@ const MOCKS = [
     cryptoType: CryptoType.SR25519,
     chainType: ChainType.SUBSTRATE,
     derivationPath: '//polkadot//staking',
-  } as Omit<ChainAccount, 'walletId' | 'id' | 'accountId' | 'baseId'>,
+  },
   {
     name: 'DOT key',
     chainId: '0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3',
@@ -25,7 +26,7 @@ const MOCKS = [
     cryptoType: CryptoType.SR25519,
     chainType: ChainType.SUBSTRATE,
     derivationPath: '//polkadot//hot',
-  } as Omit<ChainAccount, 'walletId' | 'id' | 'accountId' | 'baseId'>,
+  },
   {
     name: 'DOT key',
     groupId: 'shard_1',
@@ -35,7 +36,7 @@ const MOCKS = [
     keyType: KeyType.PUBLIC,
     type: AccountType.SHARD,
     derivationPath: '//polkadot//hot//0',
-  } as Omit<ShardAccount, 'walletId' | 'id' | 'accountId'>,
+  },
   {
     name: 'DOT key',
     groupId: 'shard_1',
@@ -44,10 +45,10 @@ const MOCKS = [
     cryptoType: CryptoType.SR25519,
     keyType: KeyType.PUBLIC,
     type: AccountType.SHARD,
-    derivationPath: '//polkadot//hot//0',
-  } as Omit<ShardAccount, 'walletId' | 'id' | 'accountId'>,
-];
-const $keys = createStore<any[]>(MOCKS);
+    derivationPath: '//polkadot//hot//1',
+  },
+] as any[]);
+const $keys = createStore<Array<ChainAccount | ShardAccount>>(MOCKS as Array<ChainAccount | ShardAccount>);
 
 const $constructorForm = createForm({
   fields: {
@@ -56,7 +57,7 @@ const $constructorForm = createForm({
     },
     keyType: {
       init: '' as KeyType,
-      rules: [{ name: 'required', errorText: 'error keytype', validator: Boolean }],
+      rules: [{ name: 'required', errorText: 'Please select key type', validator: Boolean }],
     },
     isSharded: {
       init: false,
@@ -64,9 +65,26 @@ const $constructorForm = createForm({
     shards: {
       init: '',
       rules: [
-        { name: 'required', errorText: 'Enter number', validator: Boolean },
-        { name: 'max', errorText: 'Max 50', validator: validateMaxShardsAmount },
-        { name: 'min', errorText: 'Min 2', validator: validateMinShardsAmount },
+        {
+          name: 'required',
+          errorText: 'Enter number',
+          validator: (value, { isSharded }): boolean => !isSharded || Boolean(value),
+        },
+        {
+          name: 'NaN',
+          errorText: 'Not a number',
+          validator: (value, { isSharded }): boolean => !isSharded || !Number.isNaN(Number(value)),
+        },
+        {
+          name: 'max',
+          errorText: 'Max 50',
+          validator: (value, { isSharded }): boolean => !isSharded || Number(value) <= 50,
+        },
+        {
+          name: 'min',
+          errorText: 'Min 2',
+          validator: (value, { isSharded }): boolean => !isSharded || Number(value) >= 2,
+        },
       ],
     },
     keyName: {
@@ -76,7 +94,11 @@ const $constructorForm = createForm({
     derivationPath: {
       init: '',
       rules: [
-        { name: 'required', errorText: 'Please enter derivation path', validator: Boolean },
+        {
+          name: 'required',
+          errorText: 'Please enter derivation path',
+          validator: (value, { keyType }): boolean => keyType !== KeyType.CUSTOM || Boolean(value),
+        },
         // { name: 'password', errorText: 'Password derivation path is not allowed', validator: Boolean },
         // { name: 'format', errorText: 'Wrong derivation path format', validator: Boolean },
         // { name: 'duplicate', errorText: 'Duplicated derivation path', validator: Boolean },
@@ -86,13 +108,6 @@ const $constructorForm = createForm({
   validateOn: ['submit'],
 });
 
-function validateMaxShardsAmount(value: string): boolean {
-  return !value || Number(value) <= 50;
-}
-function validateMinShardsAmount(value: string): boolean {
-  return !value || Number(value) >= 2;
-}
-
 const $derivationEnabled = combine($constructorForm.fields.keyType.$value, (keyType) => {
   return keyType === KeyType.CUSTOM;
 });
@@ -100,23 +115,22 @@ const $derivationEnabled = combine($constructorForm.fields.keyType.$value, (keyT
 const keyRemoved = createEvent<number>();
 const formInitiated = createEvent();
 
-// forward({ from: $constructorForm.formValidated, to: $constructorForm.reset });
-
 sample({
   clock: formInitiated,
-  fn: () => {
-    const chains = chainsService.getChainsData();
-
-    return {
-      network: chainsService.sortChains(chains)[0],
-      keyType: '' as KeyType,
-      isSharded: false,
-      shards: '',
-      keyName: '',
-      derivationPath: '',
-    };
-  },
+  fn: () => ({
+    network: chains[0],
+    keyType: '' as KeyType,
+    isSharded: false,
+    shards: '',
+    keyName: '',
+    derivationPath: '',
+  }),
   target: $constructorForm.setInitialForm,
+});
+
+forward({
+  from: $constructorForm.formValidated,
+  to: [$constructorForm.reset, formInitiated],
 });
 
 sample({
@@ -133,9 +147,9 @@ sample({
   clock: $constructorForm.fields.keyType.$value,
   source: $constructorForm.fields.network.$value,
   fn: (chain, keyType) => {
-    return `//${chain.name.toLowerCase()}//${keyType}`;
+    return keyType === KeyType.CUSTOM ? '' : `//${chain.name.toLowerCase()}//${keyType}`;
   },
-  target: $constructorForm.fields.derivationPath.onChange,
+  target: $constructorForm.fields.derivationPath.$value,
 });
 
 export const constructorModel = {
@@ -144,5 +158,6 @@ export const constructorModel = {
   $constructorForm,
   events: {
     keyRemoved,
+    formInitiated,
   },
 };

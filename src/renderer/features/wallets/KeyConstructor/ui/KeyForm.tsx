@@ -1,4 +1,4 @@
-import { FormEvent, useMemo } from 'react';
+import { FormEvent, useMemo, useEffect } from 'react';
 import { useForm } from 'effector-forms';
 import { useUnit } from 'effector-react';
 
@@ -14,19 +14,22 @@ export const KeyForm = () => {
     isValid,
     fields: { network, keyType, isSharded, shards, keyName, derivationPath },
   } = useForm(constructorModel.$constructorForm);
+
   const derivationEnabled = useUnit(constructorModel.$derivationEnabled);
 
-  const networks = useMemo(() => {
-    const chains = chainsService.getChainsData();
+  useEffect(() => {
+    constructorModel.events.formInitiated();
+  }, []);
 
-    return chainsService.sortChains(chains).map((chain) => ({
+  const networks = useMemo(() => {
+    return chainsService.getChainsData({ sort: true }).map((chain) => ({
       id: chain.chainId,
       value: chain,
       element: (
         <ChainTitle
-          key={chain.chainId}
           className="overflow-hidden"
           fontClass="text-text-primary truncate"
+          key={chain.chainId}
           chain={chain}
         />
       ),
@@ -34,24 +37,28 @@ export const KeyForm = () => {
   }, []);
 
   const keyTypes = [
-    { id: '0', value: KeyType.HOT, element: <FootnoteText className="text-text-secondary">Hot account</FootnoteText> },
+    {
+      id: KeyType.HOT,
+      value: KeyType.HOT,
+      element: <FootnoteText className="text-text-secondary">Hot account</FootnoteText>,
+    },
     {
       id: KeyType.PUBLIC,
       value: KeyType.PUBLIC,
       element: <FootnoteText className="text-text-secondary">Public account</FootnoteText>,
     },
     {
-      id: KeyType.PUBLIC,
+      id: KeyType.STAKING,
       value: KeyType.STAKING,
       element: <FootnoteText className="text-text-secondary">Staking account</FootnoteText>,
     },
     {
-      id: KeyType.PUBLIC,
+      id: KeyType.GOVERNANCE,
       value: KeyType.GOVERNANCE,
       element: <FootnoteText className="text-text-secondary">Governance account</FootnoteText>,
     },
     {
-      id: KeyType.PUBLIC,
+      id: KeyType.CUSTOM,
       value: KeyType.CUSTOM,
       element: <FootnoteText className="text-text-secondary">Custom key</FootnoteText>,
     },
@@ -64,7 +71,7 @@ export const KeyForm = () => {
 
   return (
     <form onSubmit={submitForm}>
-      <div className="flex items-end gap-x-6 mb-4">
+      <div className="flex items-start gap-x-6 mb-4">
         <Select
           className="w-[228px]"
           label="Network"
@@ -78,6 +85,7 @@ export const KeyForm = () => {
             className="w-[256px]"
             label="Type of key"
             placeholder="Select"
+            invalid={keyType?.hasError()}
             selectedId={keyType?.value}
             options={keyTypes}
             onChange={({ value }) => keyType?.onChange(value)}
@@ -86,7 +94,7 @@ export const KeyForm = () => {
             {keyType?.errorText()}
           </InputHint>
         </div>
-        <div className="flex items-center gap-x-1 py-2">
+        <div className="flex items-center gap-x-1 py-2 mt-6.5">
           <Checkbox checked={isSharded?.value} onChange={({ target }) => isSharded?.onChange(target.checked)}>
             <FootnoteText className="text-text-secondary">Sharded</FootnoteText>
           </Checkbox>
@@ -97,6 +105,7 @@ export const KeyForm = () => {
             wrapperClass="w-20"
             label="Shards to add"
             placeholder="2 - 50"
+            invalid={shards?.hasError()}
             disabled={!isSharded?.value}
             value={shards?.value}
             onChange={shards?.onChange}
@@ -106,12 +115,13 @@ export const KeyForm = () => {
           </InputHint>
         </div>
       </div>
-      <div className="flex items-end gap-x-6">
+      <div className="flex items-start gap-x-6">
         <div className="flex flex-col gap-y-2">
           <Input
             wrapperClass="w-[228px]"
             label="Key display name"
             placeholder="Choose name"
+            invalid={keyName?.hasError()}
             value={keyName?.value}
             onChange={keyName?.onChange}
           />
@@ -124,6 +134,7 @@ export const KeyForm = () => {
             wrapperClass="w-[354px]"
             label="Derivation path"
             placeholder="Derivation path"
+            invalid={derivationPath?.hasError()}
             value={derivationPath?.value}
             disabled={!derivationEnabled}
             onChange={derivationPath?.onChange}
@@ -133,7 +144,7 @@ export const KeyForm = () => {
           </InputHint>
         </div>
 
-        <Button className="my-1" type="submit" pallet="secondary" size="sm" disabled={!isValid}>
+        <Button className="mb-1 mt-7.5" type="submit" pallet="secondary" size="sm" disabled={!isValid}>
           Add new key
         </Button>
       </div>

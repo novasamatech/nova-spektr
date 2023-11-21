@@ -6,6 +6,7 @@ import { constructorModel } from '../model/constructor-model';
 import { chainsService } from '@entities/network';
 import { dictionary } from '@shared/lib/utils';
 import { ChainIcon } from '@entities/chain';
+import { accountUtils } from '@entities/wallet';
 
 export const KeysList = () => {
   const keys = useUnit(constructorModel.$keys);
@@ -33,20 +34,28 @@ export const KeysList = () => {
         <HelpText className="text-text-tertiary">Keys</HelpText>
       </div>
       <ul className="flex flex-col gap-y-2">
-        {keys.map((key, index) => (
-          <li key={key.name} className="flex items-center gap-x-2.5 py-1.5 pl-2">
-            <ChainIcon className="my-4.5 mx-6" src={chains[key.chainId].icon} name={chains[key.chainId].name} />
-            <div className="flex flex-col gap-y-1 py-1.5">
-              <FootnoteText className="text-text-primary">{key.name}</FootnoteText>
-              <FootnoteText className="text-text-secondary">{key.derivationPath}</FootnoteText>
-            </div>
-            <IconButton
-              name="delete"
-              className="shrink-0 w-max ml-auto mr-8 hover:text-text-negative focus:text-text-negative"
-              onClick={() => constructorModel.events.keyRemoved(index)}
-            />
-          </li>
-        ))}
+        {keys.map((key, index) => {
+          const keyData = Array.isArray(key) ? key[0] : key;
+
+          return (
+            <li key={keyData.name} className="flex items-center gap-x-2.5 py-1.5 pl-2">
+              <ChainIcon
+                className="my-4.5 mx-6"
+                src={chains[keyData.chainId].icon}
+                name={chains[keyData.chainId].name}
+              />
+              <div className="flex flex-col gap-y-1 py-1.5">
+                <FootnoteText className="text-text-primary">{keyData.name}</FootnoteText>
+                <FootnoteText className="text-text-secondary">{accountUtils.getDerivationPath(key)}</FootnoteText>
+              </div>
+              <IconButton
+                name="delete"
+                className="shrink-0 w-max ml-auto mr-8 hover:text-text-negative focus:text-text-negative"
+                onClick={() => constructorModel.events.keyRemoved(index)}
+              />
+            </li>
+          );
+        })}
       </ul>
     </div>
   );
