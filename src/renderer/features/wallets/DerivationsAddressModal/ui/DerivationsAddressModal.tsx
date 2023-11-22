@@ -3,7 +3,7 @@ import { Dictionary } from 'lodash';
 
 import { BaseModal, Button, InfoLink, SmallTitleText } from '@renderer/shared/ui';
 import { useToggle } from '@renderer/shared/lib/hooks';
-import { BaseAccount, SigningType, WalletType } from '@renderer/shared/core';
+import { AccountId, AccountType, ChainType, CryptoType, SigningType, WalletType } from '@renderer/shared/core';
 import { useI18n } from '@renderer/app/providers';
 import { TROUBLESHOOTING_URL } from '@renderer/components/common/QrCode/common/constants';
 import { toAddress } from '@renderer/shared/lib/utils';
@@ -15,7 +15,7 @@ import { DdKeyQrReader } from './DdKeyQrReader/DdKeyQrReader';
 
 type Props = {
   walletName: string;
-  rootKey: Omit<BaseAccount, 'walletId' | 'id'>;
+  rootKey: AccountId;
   accounts: DerivationsAccounts[];
   isOpen: boolean;
   onComplete: () => void;
@@ -42,10 +42,14 @@ export const DerivationsAddressModal = ({ rootKey, accounts, onClose, isOpen, wa
         signingType: SigningType.POLKADOT_VAULT,
       },
       accounts: accountsToSave,
-      root: rootKey,
+      root: {
+        name: '',
+        accountId: rootKey,
+        cryptoType: CryptoType.SR25519,
+        chainType: ChainType.SUBSTRATE,
+        type: AccountType.BASE,
+      },
     });
-
-    onComplete();
   };
 
   return (
@@ -60,7 +64,7 @@ export const DerivationsAddressModal = ({ rootKey, accounts, onClose, isOpen, wa
       ) : (
         <div className="flex flex-col items-center">
           <SmallTitleText className="mb-6">{t('signing.scanQrTitle')}</SmallTitleText>
-          <QrDerivationsGenerator address={toAddress(rootKey.accountId)} derivations={derivations} size={240} />
+          <QrDerivationsGenerator address={toAddress(rootKey)} derivations={derivations} size={240} />
           <InfoLink url={TROUBLESHOOTING_URL} className="mt-10.5 mb-8.5">
             {t('signing.troubleshootingLink')}
           </InfoLink>

@@ -1,12 +1,11 @@
-import { createStore, createEvent, forward, createEffect, sample, combine } from 'effector';
+import { combine, createEffect, createEvent, createStore, forward, sample } from 'effector';
 import { spread } from 'patronum';
 
-import type { Wallet, NoID, Account, BaseAccount, ChainAccount, MultisigAccount, ID } from '@shared/core';
-import { kernelModel, WalletConnectAccount } from '@shared/core';
+import type { Account, BaseAccount, ChainAccount, ID, MultisigAccount, NoID, ShardAccount, Wallet } from '@shared/core';
+import { kernelModel, WalletConnectAccount, } from '@shared/core';
 import { storageService } from '@shared/api/storage';
 import { modelUtils } from '../lib/model-utils';
 import { accountUtils } from '../lib/account-utils';
-import { ShardedAccount, ShardedAccountWithShards } from '@renderer/shared/core/types/account';
 
 const $wallets = createStore<Wallet[]>([]);
 const $activeWallet = $wallets.map((wallets) => wallets.find((w) => w.isActive));
@@ -31,7 +30,7 @@ type CreateParams<T extends Account> = {
 type MultisigUpdateParams = Partial<MultisigAccount> & { id: Account['id'] };
 type PolkadotVaultCreateParams = {
   root: Omit<NoID<BaseAccount>, 'walletId'>;
-} & CreateParams<ChainAccount | ShardedAccountWithShards>;
+} & CreateParams<ChainAccount | ShardAccount>;
 
 const watchOnlyCreated = createEvent<CreateParams<BaseAccount>>();
 const multishardCreated = createEvent<CreateParams<BaseAccount | ChainAccount>>();
@@ -107,51 +106,31 @@ const multishardCreatedFx = createEffect(
 
 const polkadotVaultCreatedFx = createEffect(
   async ({ wallet, accounts, root }: PolkadotVaultCreateParams): Promise<CreateResult | undefined> => {
-// // May be extended with sharded accounts when it will be implemented
-// const polkadotVaultWalletCreatedFx = createEffect(
-//   async ({ wallet, accounts }: CreateParams<BaseAccount | ChainAccount>): Promise<CreateResult | undefined> => {
     const dbWallet = await storageService.wallets.create({ ...wallet, isActive: false });
 
     if (!dbWallet) return undefined;
-
-    const dbAccounts = [];
 
     const dbRootAccount = await storageService.accounts.create({ ...root, walletId: dbWallet.id });
 
     if (!dbRootAccount) return undefined;
 
-    for (const account of accounts) {
-      if (accountUtils.isAccountWithShards(account)) {
-        const dbShardedAccount = await storageService.accounts.create({
-          walletId: dbWallet.id,
-          name: account.name,
-          type: account.type,
-          keyType: account.keyType,
-          chainId: account.chainId,
-        } as ShardedAccount);
-
-        const shards = account.shards.map((shard) => ({
-          ...shard,
-          walletId: dbWallet.id,
-          shardedId: dbShardedAccount?.id,
-        }));
-        const dbShards = await storageService.accounts.createAll(shards);
-        if (dbShards?.length && dbShardedAccount) {
-          dbAccounts.push(dbShardedAccount, ...dbShards);
-        }
-      } else {
-        const dbChainAccount = await storageService.accounts.create({
-          ...account,
-          baseId: dbRootAccount.id,
-          walletId: dbWallet.id,
-        } as ChainAccount);
-        dbChainAccount && dbAccounts.push(dbChainAccount);
+    const accountToCreate = accounts.map((account) => {
+      if ('groupId' in account) {
+        return { ...account, walletId: dbWallet.id } as ShardAccount;
       }
-    }
 
-    if (!dbAccounts.length) return undefined;
+      return {
+        ...account,
+        baseId: dbRootAccount.id,
+        walletId: dbWallet.id,
+      } as ChainAccount;
+    });
 
-    return { wallet: dbWallet, accounts: dbAccounts };
+    const dbAccounts = await storageService.accounts.createAll(accountToCreate);
+
+    if (!dbAccounts?.length) return undefined;
+
+    return { wallet: dbWallet, accounts: [dbRootAccount, ...dbAccounts] };
   },
 );
 

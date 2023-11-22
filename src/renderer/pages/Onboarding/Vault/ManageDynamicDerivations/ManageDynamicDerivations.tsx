@@ -11,8 +11,8 @@ import { useI18n, useStatusContext } from '@app/providers';
 import { ChainTitle } from '@entities/chain';
 import { SeedInfo } from '@renderer/components/common/QrCode/common/types';
 import { IS_WINDOWS, toAddress } from '@shared/lib/utils';
+import { Animation } from '@shared/ui/Animation/Animation';
 import {
-  Animation,
   Button,
   Input,
   InputHint,
@@ -25,10 +25,11 @@ import {
 } from '@shared/ui';
 import type { Chain, ChainAccount, ChainId } from '@shared/core';
 import { VaultInfoPopover } from './VaultInfoPopover';
-import { useAltKeyPressed } from '@shared/lib/hooks';
+import { useAltKeyPressed, useToggle } from '@shared/lib/hooks';
 import { manageDynamicDerivationsModel } from './model/manage-dynamic-derivations-model';
 import { chainsService } from '@entities/network';
 import { DerivedAccount, RootAccount } from '@entities/wallet';
+import { DerivationsAddressModal } from '@features/wallets';
 
 type Props = {
   seedInfo: SeedInfo[];
@@ -42,7 +43,7 @@ export const ManageDynamicDerivations = ({ seedInfo, onBack, onComplete }: Props
   const { showStatus } = useStatusContext();
 
   const accounts = useUnit(manageDynamicDerivationsModel.$accounts);
-  const isPending = useUnit(manageDynamicDerivationsModel.$submitPending);
+  const [isAddressModalOpen, toggleIsAddressModalOpen] = useToggle();
   const [chainsObject, setChainsObject] = useState<Record<ChainId, Chain>>({});
 
   const {
@@ -68,13 +69,17 @@ export const ManageDynamicDerivations = ({ seedInfo, onBack, onComplete }: Props
   const submitForm = (event: FormEvent) => {
     event.preventDefault();
 
+    submit();
+    toggleIsAddressModalOpen();
+  };
+
+  const handleSuccess = () => {
+    onComplete();
     showStatus({
       title: name?.value.trim(),
       description: t('createMultisigAccount.successMessage'),
       content: <Animation variant="success" />,
     });
-
-    submit();
   };
 
   const goBack = () => {
@@ -127,7 +132,7 @@ export const ManageDynamicDerivations = ({ seedInfo, onBack, onComplete }: Props
               {t('onboarding.backButton')}
             </Button>
 
-            <Button type="submit" disabled={!isValid || isPending}>
+            <Button type="submit" disabled={!isValid}>
               {t('onboarding.continueButton')}
             </Button>
           </div>
@@ -220,6 +225,15 @@ export const ManageDynamicDerivations = ({ seedInfo, onBack, onComplete }: Props
           </div>
         </div>
       </div>
+
+      <DerivationsAddressModal
+        walletName={walletName}
+        rootKey={publicKey}
+        accounts={accounts}
+        isOpen={isAddressModalOpen}
+        onComplete={handleSuccess}
+        onClose={toggleIsAddressModalOpen}
+      />
     </>
   );
 };

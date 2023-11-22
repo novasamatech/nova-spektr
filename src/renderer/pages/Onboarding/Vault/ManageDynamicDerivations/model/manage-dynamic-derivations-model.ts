@@ -1,22 +1,12 @@
-import { attach, createApi, createEvent, createStore, forward, sample } from 'effector';
+import { attach, createApi, createEvent, createStore, sample } from 'effector';
 import { createForm } from 'effector-forms';
 import { u8aToHex } from '@polkadot/util';
 
-import { walletModel } from '@renderer/entities/wallet';
-import {
-  AccountType,
-  BaseAccount,
-  ChainAccount,
-  ChainType,
-  CryptoType,
-  KeyType,
-  NoID,
-  SigningType,
-  WalletType,
-} from '@renderer/shared/core';
+import { AccountType, ChainAccount, ChainType, CryptoType, KeyType, NoID, ShardAccount } from '@renderer/shared/core';
 import { SeedInfo } from '@renderer/components/common/QrCode/common/types';
 import { toAccountId } from '@renderer/shared/lib/utils';
 import { chainsService } from '@renderer/entities/network';
+import { walletModel } from '@/src/renderer/entities/wallet';
 
 const chains = chainsService.getChainsData();
 
@@ -30,7 +20,7 @@ export type Callbacks = {
 };
 
 const $callbacks = createStore<Callbacks | null>(null);
-const $accounts = createStore<Omit<NoID<BaseAccount | ChainAccount>, 'walletId'>[]>([]);
+const $accounts = createStore<Omit<NoID<ShardAccount | ChainAccount>, 'walletId'>[]>([]);
 
 const callbacksApi = createApi($callbacks, {
   callbacksChanged: (state, props: Callbacks) => ({ ...state, ...props }),
@@ -104,31 +94,8 @@ sample({
   target: $accounts,
 });
 
-const createWalletFx = attach({
-  effect: walletModel.effects.polkadotVaultCreatedFx,
-  source: {
-    walletForm: $walletForm.$values,
-    accounts: $accounts,
-  },
-  mapParams: (_, { walletForm, accounts }) => {
-    return {
-      wallet: {
-        name: walletForm.name.trim(),
-        type: WalletType.POLKADOT_VAULT,
-        signingType: SigningType.PARITY_SIGNER,
-      },
-      accounts,
-    };
-  },
-});
-
-forward({
-  from: $walletForm.formValidated,
-  to: createWalletFx,
-});
-
 sample({
-  clock: createWalletFx.doneData,
+  clock: walletModel.effects.polkadotVaultCreatedFx.doneData,
   target: attach({
     source: $callbacks,
     effect: (state) => state?.onSubmit(),
@@ -138,7 +105,7 @@ sample({
 export const manageDynamicDerivationsModel = {
   $walletForm,
   $accounts,
-  $submitPending: createWalletFx.pending,
+  $submitPending: false,
   events: {
     callbacksChanged: callbacksApi.callbacksChanged,
     formInitiated,
