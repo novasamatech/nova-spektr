@@ -1,5 +1,5 @@
 import type { Signatory } from './signatory';
-import type { AccountId, ChainId, Threshold, ID } from './general';
+import type { AccountId, ChainId, Threshold, ID, NoID } from './general';
 import { ChainType, CryptoType } from './general';
 
 type AbstractAccount = {
@@ -42,6 +42,8 @@ export type WalletConnectAccount = Omit<BaseAccount, 'cryptoType'> & {
 };
 
 export type Account = BaseAccount | ChainAccount | MultisigAccount | WalletConnectAccount | ShardAccount;
+
+export type RawAccount<T extends Account> = Omit<NoID<T>, 'accountId' | 'walletId' | 'baseId'>;
 
 export const enum AccountType {
   BASE = 'base',

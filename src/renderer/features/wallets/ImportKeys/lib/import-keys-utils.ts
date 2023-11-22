@@ -1,6 +1,19 @@
+import { groupBy } from 'lodash';
+import { v4 as uuidv4 } from 'uuid';
+
 import { ImportedDerivation, ImportFileChain, ImportFileKey, ParsedImportFile, TypedImportedDerivation } from './types';
-import { AccountId, ChainId, KeyType } from '@shared/core';
+import {
+  AccountId,
+  AccountType,
+  ChainAccount,
+  ChainId,
+  ChainType,
+  CryptoType,
+  KeyType,
+  ShardAccount,
+} from '@shared/core';
 import { chainsService } from '@entities/network';
+import { RawAccount } from '@/src/renderer/shared/core/types/account';
 
 const IMPORT_FILE_VERSION = '1';
 
@@ -96,48 +109,63 @@ function isDerivationValid(derivation: ImportedDerivation): boolean {
 }
 
 function mergeChainDerivations(
-  existingDerivations: TypedImportedDerivation[],
+  existingDerivations: RawAccount<ShardAccount | ChainAccount>[],
   importedDerivations: TypedImportedDerivation[],
 ) {
   let addedKeys = 0;
   let duplicatedKeys = 0;
+  const existingDerivationsByPath = groupBy(existingDerivations, 'derivationPath');
+
   const newDerivations = importedDerivations.filter((d) => {
-    const duplicatePath = existingDerivations.find((ed) => ed.derivationPath === d.derivationPath);
+    const duplicatedDerivation = existingDerivationsByPath[d.derivationPath];
 
-    const isOnlyOneSharded =
-      [duplicatePath?.sharded, d.sharded].filter((sharded) => sharded === undefined).length === 1;
-    const isDerivationNew = !duplicatePath || isOnlyOneSharded;
-
-    if (isDerivationNew) {
-      addedKeys += d.sharded || 1;
+    if (duplicatedDerivation) {
+      duplicatedKeys++;
     } else {
-      duplicatedKeys += duplicatePath.sharded || 1;
+      addedKeys += d.sharded || 1;
     }
 
-    return isDerivationNew;
+    return !duplicatedDerivation;
   });
 
-  const derivationsToReplace = importedDerivations.filter((d) => {
-    const hasDifferentShards = existingDerivations.find(
-      (ed) => ed.derivationPath === d.derivationPath && ed.sharded && d.sharded && d.sharded > ed.sharded,
-    );
+  const shards = existingDerivations.filter((d) => d.type === AccountType.SHARD) as RawAccount<ShardAccount>[];
+  const shardsByPath = groupBy(shards, (d) => d.derivationPath.slice(0, d.derivationPath.lastIndexOf('//')));
 
-    if (hasDifferentShards && d.sharded && hasDifferentShards.sharded) {
-      addedKeys += d.sharded - hasDifferentShards?.sharded;
+  const newDerivationsAccounts = newDerivations.reduce<RawAccount<ShardAccount | ChainAccount>[]>((acc, d) => {
+    if (!d.sharded) {
+      acc.push({
+        name: '', // TODO add name after KEY_NAMES merged
+        derivationPath: d.derivationPath,
+        chainId: existingDerivations[0].chainId,
+        cryptoType: CryptoType.SR25519,
+        chainType: ChainType.SUBSTRATE,
+        type: AccountType.CHAIN,
+        keyType: d.type,
+      });
+
+      return acc;
     }
 
-    return hasDifferentShards;
-  });
+    const shardedPath = d.derivationPath.slice(0, d.derivationPath.lastIndexOf('//'));
+    const groupId = shardsByPath[shardedPath]?.length ? shardsByPath[shardedPath][0].groupId : uuidv4();
 
-  const result = [...existingDerivations, ...newDerivations];
-  result.forEach((d) => {
-    const replacementDerivation = derivationsToReplace.find(
-      (x) => x.derivationPath === d.derivationPath && Boolean(x.sharded) && Boolean(d.sharded),
-    );
-    if (replacementDerivation) {
-      d.sharded = replacementDerivation.sharded;
+    for (let i = 0; i++; i < d.sharded) {
+      acc.push({
+        name: '', // TODO add name after KEY_NAMES merged
+        derivationPath: d.derivationPath + '//' + i,
+        chainId: existingDerivations[0].chainId,
+        cryptoType: CryptoType.SR25519,
+        chainType: ChainType.SUBSTRATE,
+        type: AccountType.SHARD,
+        keyType: d.type,
+        groupId,
+      } as ShardAccount);
     }
-  });
+
+    return acc;
+  }, []);
+
+  const result = [...existingDerivations, ...newDerivationsAccounts];
 
   return { mergedDerivations: result, added: addedKeys, duplicated: duplicatedKeys };
 }

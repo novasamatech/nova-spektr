@@ -23,13 +23,14 @@ import {
   FootnoteText,
   Icon,
 } from '@shared/ui';
-import type { Chain, ChainAccount, ChainId } from '@shared/core';
+import type { Chain, ChainAccount, ChainId, ShardAccount } from '@shared/core';
 import { VaultInfoPopover } from './VaultInfoPopover';
 import { useAltKeyPressed, useToggle } from '@shared/lib/hooks';
 import { manageDynamicDerivationsModel } from './model/manage-dynamic-derivations-model';
 import { chainsService } from '@entities/network';
 import { DerivedAccount, RootAccount } from '@entities/wallet';
-import { DerivationsAddressModal } from '@features/wallets';
+import { DerivationsAddressModal, ImportKeysModal } from '@features/wallets';
+import { RawAccount } from '@shared/core/types/account';
 
 type Props = {
   seedInfo: SeedInfo[];
@@ -44,6 +45,7 @@ export const ManageDynamicDerivations = ({ seedInfo, onBack, onComplete }: Props
 
   const accounts = useUnit(manageDynamicDerivationsModel.$accounts);
   const [isAddressModalOpen, toggleIsAddressModalOpen] = useToggle();
+  const [isImportModalOpen, toggleIsImportModalOpen] = useToggle();
   const [chainsObject, setChainsObject] = useState<Record<ChainId, Chain>>({});
 
   const {
@@ -80,6 +82,11 @@ export const ManageDynamicDerivations = ({ seedInfo, onBack, onComplete }: Props
       description: t('createMultisigAccount.successMessage'),
       content: <Animation variant="success" />,
     });
+  };
+
+  const handleImport = (mergedKeys: RawAccount<ShardAccount | ChainAccount>[]) => {
+    manageDynamicDerivationsModel.events.derivationsImported(mergedKeys);
+    toggleIsImportModalOpen();
   };
 
   const goBack = () => {
@@ -149,7 +156,7 @@ export const ManageDynamicDerivations = ({ seedInfo, onBack, onComplete }: Props
             <Button size="sm" pallet="secondary" onClick={() => {}}>
               {t('onboarding.vault.addMoreKeysButton')}
             </Button>
-            <Button size="sm" pallet="secondary" onClick={() => {}}>
+            <Button size="sm" pallet="secondary" onClick={toggleIsImportModalOpen}>
               {t('onboarding.vault.importButton')}
             </Button>
           </div>
@@ -227,12 +234,20 @@ export const ManageDynamicDerivations = ({ seedInfo, onBack, onComplete }: Props
       </div>
 
       <DerivationsAddressModal
+        isOpen={isAddressModalOpen}
         walletName={walletName}
         rootKey={publicKey}
         accounts={accounts}
-        isOpen={isAddressModalOpen}
         onComplete={handleSuccess}
         onClose={toggleIsAddressModalOpen}
+      />
+
+      <ImportKeysModal
+        isOpen={isImportModalOpen}
+        rootAccountId={publicKey}
+        existingKeys={accounts}
+        onClose={toggleIsImportModalOpen}
+        onConfirm={handleImport}
       />
     </>
   );

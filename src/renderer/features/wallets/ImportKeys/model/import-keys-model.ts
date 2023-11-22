@@ -4,13 +4,14 @@ import { groupBy } from 'lodash';
 
 import { ValidationError, ParsedImportFile, TypedImportedDerivation, ValidationErrorsLabel } from '../lib/types';
 import { DerivationImportError } from '../lib/derivation-import-error';
-import { AccountId, ChainId, ObjectValues } from '@shared/core';
+import { AccountId, ChainAccount, ChainId, ObjectValues, ShardAccount } from '@shared/core';
 import { importKeysUtils } from '../lib/import-keys-utils';
+import { RawAccount } from '@shared/core/types/account';
 
 type SampleFnError = { error: DerivationImportError };
 type ExistingDerivations = {
   root: AccountId;
-  derivations: TypedImportedDerivation[];
+  derivations: RawAccount<ShardAccount | ChainAccount>[];
 };
 type Report = {
   addedKeys: number;
@@ -21,7 +22,7 @@ type Report = {
 
 const $validationError = createStore<ValidationError | null>(null);
 const $report = createStore<Report | null>(null);
-const $mergedKeys = createStore<TypedImportedDerivation[]>([]);
+const $mergedKeys = createStore<RawAccount<ShardAccount | ChainAccount>[]>([]);
 
 const $existingDerivations = createStore<ExistingDerivations | null>(null);
 
@@ -76,7 +77,7 @@ const validateDerivationsFx = createEffect<ValidateDerivationsParams, TypedImpor
 );
 
 type MergeResult = {
-  derivations: TypedImportedDerivation[];
+  derivations: RawAccount<ShardAccount | ChainAccount>[];
   report: Report;
 };
 type MergePathsParams = {
@@ -89,7 +90,7 @@ const mergePathsFx = createEffect<MergePathsParams, MergeResult>(({ imported, ex
   const existingByChain = groupBy(existingDerivations, 'chainId');
   const importedByChain = groupBy(imported, 'chainId');
 
-  return Object.entries(importedByChain).reduce<{ derivations: TypedImportedDerivation[]; report: Report }>(
+  return Object.entries(importedByChain).reduce<MergeResult>(
     (acc, [chain, derivations]) => {
       const existingChainDerivations = existingByChain[chain];
       const { mergedDerivations, added, duplicated } = importKeysUtils.mergeChainDerivations(

@@ -3,24 +3,25 @@ import { useEffect } from 'react';
 
 import { Alert, BaseModal, Button, InfoLink, InputFile, InputHint } from '@shared/ui';
 import { useI18n } from '@app/providers';
-import { AccountId } from '@shared/core';
+import { AccountId, ChainAccount, ShardAccount } from '@shared/core';
 import { cnTw } from '@shared/lib/utils';
 // @ts-ignore
 import templateFile from '@shared/assets/files/dd-template.yaml';
 import { importKeysModel } from '../model/import-keys-model';
-import { TypedImportedDerivation } from '../lib/types';
+import { RawAccount } from '@shared/core/types/account';
 
 type Props = {
   isOpen: boolean;
   rootAccountId: AccountId;
-  existingKeys: TypedImportedDerivation[];
+  existingKeys: RawAccount<ShardAccount | ChainAccount>[];
   onClose: () => void;
-  onConfirm: () => void;
+  onConfirm: (mergedKeys: RawAccount<ShardAccount | ChainAccount>[]) => void;
 };
 
 export const ImportKeysModal = ({ isOpen, rootAccountId, existingKeys, onClose, onConfirm }: Props) => {
   const { t } = useI18n();
   const validationError = useUnit(importKeysModel.$validationError);
+  const mergedKeys = useUnit(importKeysModel.$mergedKeys);
   const successReport = useUnit(importKeysModel.$successReport);
 
   useEffect(() => {
@@ -64,8 +65,7 @@ export const ImportKeysModal = ({ isOpen, rootAccountId, existingKeys, onClose, 
   };
 
   const handleContinue = () => {
-    // send merged keys to other model
-    onConfirm();
+    onConfirm(mergedKeys);
   };
 
   return (
