@@ -89,6 +89,7 @@ const mergePathsFx = createEffect<MergePathsParams, MergeResult>(({ imported, ex
 
   const existingByChain = groupBy(existingDerivations, 'chainId');
   const importedByChain = groupBy(imported, 'chainId');
+  const unaffectedDerivations = existingDerivations.filter((d) => !importedByChain[d.chainId]);
 
   return Object.entries(importedByChain).reduce<MergeResult>(
     (acc, [chain, derivations]) => {
@@ -109,7 +110,7 @@ const mergePathsFx = createEffect<MergePathsParams, MergeResult>(({ imported, ex
       return acc;
     },
     {
-      derivations: [],
+      derivations: unaffectedDerivations,
       report: {
         addedKeys: 0,
         updatedNetworks: 0,

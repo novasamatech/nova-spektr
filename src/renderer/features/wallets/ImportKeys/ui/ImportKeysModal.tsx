@@ -108,7 +108,9 @@ export const ImportKeysModal = ({ isOpen, rootAccountId, existingKeys, onClose, 
       </div>
 
       <div className="flex items-center justify-between pt-3">
-        <Button variant="text">{t('dynamicDerivations.importKeys.backButton')}</Button>
+        <Button variant="text" onClick={onClose}>
+          {t('dynamicDerivations.importKeys.backButton')}
+        </Button>
         <Button disabled={Boolean(validationError?.error) || !successReport} onClick={handleContinue}>
           {t('dynamicDerivations.importKeys.continueButton')}
         </Button>

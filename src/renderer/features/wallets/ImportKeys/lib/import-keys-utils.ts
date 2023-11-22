@@ -122,7 +122,7 @@ function mergeChainDerivations(
     if (duplicatedDerivation) {
       duplicatedKeys++;
     } else {
-      addedKeys += d.sharded || 1;
+      addedKeys += Number(d.sharded) || 1;
     }
 
     return !duplicatedDerivation;
@@ -149,7 +149,7 @@ function mergeChainDerivations(
     const shardedPath = d.derivationPath.slice(0, d.derivationPath.lastIndexOf('//'));
     const groupId = shardsByPath[shardedPath]?.length ? shardsByPath[shardedPath][0].groupId : uuidv4();
 
-    for (let i = 0; i++; i < d.sharded) {
+    for (let i = 0; i < Number(d.sharded); i++) {
       acc.push({
         name: '', // TODO add name after KEY_NAMES merged
         derivationPath: d.derivationPath + '//' + i,
