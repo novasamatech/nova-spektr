@@ -73,7 +73,7 @@ export const ImportKeysModal = ({ isOpen, rootAccountId, existingKeys, onClose, 
       <div className="flex flex-col gap-y-4 items-start">
         <InputFile
           placeholder={t('dynamicDerivations.importKeys.fileInputPlaceholder')}
-          accept=".yaml,.txt"
+          accept=".yaml"
           className={cnTw('w-full h-[126px]', validationError && 'mb-2', successReport && 'mb-4')}
           invalid={Boolean(validationError?.error)}
           onChange={handleFileUpload}
