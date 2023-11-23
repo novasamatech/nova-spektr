@@ -130,7 +130,7 @@ export const ShardedList = ({
                   <FootnoteText className="text-text-secondary first-letter:uppercase truncate">
                     {/* names in shard accounts will be the same within one group */}
                     {/* eslint-disable-next-line i18next/no-literal-string */}
-                    {t('staking.overview.stakingShards', { type: shardsStake[0].account.name })}:
+                    {t('staking.overview.stakingShards', { type: shardsStake[0].account.name })}
                   </FootnoteText>
                   <Tooltip
                     content={
