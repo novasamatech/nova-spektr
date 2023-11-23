@@ -8,14 +8,14 @@ import { cnTw } from '@shared/lib/utils';
 // @ts-ignore
 import templateFile from '@shared/assets/files/dd-template.yaml';
 import { importKeysModel } from '../model/import-keys-model';
-import { RawAccount } from '@shared/core/types/account';
+import { DraftAccount } from '@shared/core/types/account';
 
 type Props = {
   isOpen: boolean;
   rootAccountId: AccountId;
-  existingKeys: RawAccount<ShardAccount | ChainAccount>[];
+  existingKeys: DraftAccount<ShardAccount | ChainAccount>[];
   onClose: () => void;
-  onConfirm: (mergedKeys: RawAccount<ShardAccount | ChainAccount>[]) => void;
+  onConfirm: (mergedKeys: DraftAccount<ShardAccount | ChainAccount>[]) => void;
 };
 
 export const ImportKeysModal = ({ isOpen, rootAccountId, existingKeys, onClose, onConfirm }: Props) => {

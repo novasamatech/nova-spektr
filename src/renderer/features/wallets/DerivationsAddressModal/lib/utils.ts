@@ -26,7 +26,7 @@ function createDerivedAccounts(
   return accounts.map((account) => {
     return {
       ...account,
-      accountId: toAccountId(derivedKeys[account.derivationPath + account.cryptoType].publicKey.public),
+      accountId: toAccountId(derivedKeys[`${account.derivationPath}${account.cryptoType}`].publicKey.public),
     };
   });
 }

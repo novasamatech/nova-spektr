@@ -6,8 +6,8 @@ import { useToggle } from '@renderer/shared/lib/hooks';
 import { AccountId, AccountType, ChainType, CryptoType, SigningType, WalletType } from '@renderer/shared/core';
 import { useI18n } from '@renderer/app/providers';
 import { TROUBLESHOOTING_URL } from '@renderer/components/common/QrCode/common/constants';
-import { toAddress } from '@renderer/shared/lib/utils';
-import { walletModel } from '@renderer/entities/wallet';
+import { toAddress } from '@shared/lib/utils';
+import { walletModel } from '@entities/wallet';
 import { DdAddressInfoDecoded } from '@renderer/components/common/QrCode/common/types';
 import { derivationAddressUtils, DerivationsAccounts } from '../lib/utils';
 import { QrDerivationsGenerator } from '@renderer/components/common/QrCode/QrGenerator/QrDerivationsGenerator';
@@ -28,7 +28,7 @@ export const DerivationsAddressModal = ({ rootKey, accounts, onClose, isOpen, wa
   const derivations = derivationAddressUtils.createDerivationsRequest(accounts);
 
   const handleScanResult = (result: DdAddressInfoDecoded[]) => {
-    const derivationsByPath = keyBy(result, (d) => d.derivationPath + d.encryption);
+    const derivationsByPath = keyBy(result, (d) => `${d.derivationPath}${d.encryption}`);
     createWallet(derivationsByPath);
   };
 

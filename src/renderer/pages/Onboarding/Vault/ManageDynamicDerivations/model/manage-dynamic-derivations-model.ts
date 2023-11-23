@@ -7,7 +7,7 @@ import { SeedInfo } from '@renderer/components/common/QrCode/common/types';
 import { toAccountId } from '@renderer/shared/lib/utils';
 import { chainsService } from '@renderer/entities/network';
 import { walletModel } from '@/src/renderer/entities/wallet';
-import { RawAccount } from '@shared/core/types/account';
+import { DraftAccount } from '@shared/core/types/account';
 
 const chains = chainsService.getChainsData();
 
@@ -21,14 +21,14 @@ export type Callbacks = {
 };
 
 const $callbacks = createStore<Callbacks | null>(null);
-const $accounts = createStore<RawAccount<ShardAccount | ChainAccount>[]>([]);
+const $accounts = createStore<DraftAccount<ShardAccount | ChainAccount>[]>([]);
 
 const callbacksApi = createApi($callbacks, {
   callbacksChanged: (state, props: Callbacks) => ({ ...state, ...props }),
 });
 
 const formInitiated = createEvent<SeedInfo[]>();
-const derivationsImported = createEvent<RawAccount<ShardAccount | ChainAccount>[]>();
+const derivationsImported = createEvent<DraftAccount<ShardAccount | ChainAccount>[]>();
 
 const $walletForm = createForm({
   fields: {
@@ -112,7 +112,6 @@ forward({
 export const manageDynamicDerivationsModel = {
   $walletForm,
   $accounts,
-  $submitPending: false,
   events: {
     callbacksChanged: callbacksApi.callbacksChanged,
     formInitiated,

@@ -43,7 +43,7 @@ export type WalletConnectAccount = Omit<BaseAccount, 'cryptoType'> & {
 
 export type Account = BaseAccount | ChainAccount | MultisigAccount | WalletConnectAccount | ShardAccount;
 
-export type RawAccount<T extends Account> = Omit<NoID<T>, 'accountId' | 'walletId' | 'baseId'>;
+export type DraftAccount<T extends Account> = Omit<NoID<T>, 'accountId' | 'walletId' | 'baseId'>;
 
 export const enum AccountType {
   BASE = 'base',

@@ -30,7 +30,7 @@ import { manageDynamicDerivationsModel } from './model/manage-dynamic-derivation
 import { chainsService } from '@entities/network';
 import { DerivedAccount, RootAccount } from '@entities/wallet';
 import { DerivationsAddressModal, ImportKeysModal } from '@features/wallets';
-import { RawAccount } from '@shared/core/types/account';
+import { DraftAccount } from '@shared/core/types/account';
 
 type Props = {
   seedInfo: SeedInfo[];
@@ -84,7 +84,7 @@ export const ManageDynamicDerivations = ({ seedInfo, onBack, onComplete }: Props
     });
   };
 
-  const handleImport = (mergedKeys: RawAccount<ShardAccount | ChainAccount>[]) => {
+  const handleImport = (mergedKeys: DraftAccount<ShardAccount | ChainAccount>[]) => {
     manageDynamicDerivationsModel.events.derivationsImported(mergedKeys);
     toggleIsImportModalOpen();
   };

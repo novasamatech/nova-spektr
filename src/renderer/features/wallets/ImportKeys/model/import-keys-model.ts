@@ -6,12 +6,12 @@ import { ValidationError, ParsedImportFile, TypedImportedDerivation, ValidationE
 import { DerivationImportError } from '../lib/derivation-import-error';
 import { AccountId, ChainAccount, ChainId, ObjectValues, ShardAccount } from '@shared/core';
 import { importKeysUtils } from '../lib/import-keys-utils';
-import { RawAccount } from '@shared/core/types/account';
+import { DraftAccount } from '@shared/core/types/account';
 
 type SampleFnError = { error: DerivationImportError };
 type ExistingDerivations = {
   root: AccountId;
-  derivations: RawAccount<ShardAccount | ChainAccount>[];
+  derivations: DraftAccount<ShardAccount | ChainAccount>[];
 };
 type Report = {
   addedKeys: number;
@@ -22,7 +22,7 @@ type Report = {
 
 const $validationError = createStore<ValidationError | null>(null);
 const $report = createStore<Report | null>(null);
-const $mergedKeys = createStore<RawAccount<ShardAccount | ChainAccount>[]>([]);
+const $mergedKeys = createStore<DraftAccount<ShardAccount | ChainAccount>[]>([]);
 
 const $existingDerivations = createStore<ExistingDerivations | null>(null);
 
@@ -77,7 +77,7 @@ const validateDerivationsFx = createEffect<ValidateDerivationsParams, TypedImpor
 );
 
 type MergeResult = {
-  derivations: RawAccount<ShardAccount | ChainAccount>[];
+  derivations: DraftAccount<ShardAccount | ChainAccount>[];
   report: Report;
 };
 type MergePathsParams = {
@@ -89,7 +89,7 @@ const mergePathsFx = createEffect<MergePathsParams, MergeResult>(({ imported, ex
 
   const existingByChain = groupBy(existingDerivations, 'chainId');
   const importedByChain = groupBy(imported, 'chainId');
-  const unaffectedDerivations = existingDerivations.filter((d) => !importedByChain[d.chainId]);
+  const untouchedDerivations = existingDerivations.filter((d) => !importedByChain[d.chainId]);
 
   return Object.entries(importedByChain).reduce<MergeResult>(
     (acc, [chain, derivations]) => {
@@ -110,7 +110,7 @@ const mergePathsFx = createEffect<MergePathsParams, MergeResult>(({ imported, ex
       return acc;
     },
     {
-      derivations: unaffectedDerivations,
+      derivations: untouchedDerivations,
       report: {
         addedKeys: 0,
         updatedNetworks: 0,

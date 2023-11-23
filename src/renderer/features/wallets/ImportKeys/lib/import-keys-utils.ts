@@ -1,5 +1,4 @@
 import { groupBy } from 'lodash';
-import { v4 as uuidv4 } from 'uuid';
 
 import { ImportedDerivation, ImportFileChain, ImportFileKey, ParsedImportFile, TypedImportedDerivation } from './types';
 import {
@@ -9,11 +8,11 @@ import {
   ChainId,
   ChainType,
   CryptoType,
+  DraftAccount,
   KeyType,
   ShardAccount,
 } from '@shared/core';
 import { chainsService } from '@entities/network';
-import { RawAccount } from '@/src/renderer/shared/core/types/account';
 
 const IMPORT_FILE_VERSION = '1';
 
@@ -109,7 +108,7 @@ function isDerivationValid(derivation: ImportedDerivation): boolean {
 }
 
 function mergeChainDerivations(
-  existingDerivations: RawAccount<ShardAccount | ChainAccount>[],
+  existingDerivations: DraftAccount<ShardAccount | ChainAccount>[],
   importedDerivations: TypedImportedDerivation[],
 ) {
   let addedKeys = 0;
@@ -128,10 +127,10 @@ function mergeChainDerivations(
     return !duplicatedDerivation;
   });
 
-  const shards = existingDerivations.filter((d) => d.type === AccountType.SHARD) as RawAccount<ShardAccount>[];
+  const shards = existingDerivations.filter((d) => d.type === AccountType.SHARD) as DraftAccount<ShardAccount>[];
   const shardsByPath = groupBy(shards, (d) => d.derivationPath.slice(0, d.derivationPath.lastIndexOf('//')));
 
-  const newDerivationsAccounts = newDerivations.reduce<RawAccount<ShardAccount | ChainAccount>[]>((acc, d) => {
+  const newDerivationsAccounts = newDerivations.reduce<DraftAccount<ShardAccount | ChainAccount>[]>((acc, d) => {
     if (!d.sharded) {
       acc.push({
         name: '', // TODO add name after KEY_NAMES merged
@@ -147,7 +146,7 @@ function mergeChainDerivations(
     }
 
     const shardedPath = d.derivationPath.slice(0, d.derivationPath.lastIndexOf('//'));
-    const groupId = shardsByPath[shardedPath]?.length ? shardsByPath[shardedPath][0].groupId : uuidv4();
+    const groupId = shardsByPath[shardedPath]?.length ? shardsByPath[shardedPath][0].groupId : crypto.randomUUID();
 
     for (let i = 0; i < Number(d.sharded); i++) {
       acc.push({
@@ -165,7 +164,9 @@ function mergeChainDerivations(
     return acc;
   }, []);
 
-  const result = [...existingDerivations, ...newDerivationsAccounts];
-
-  return { mergedDerivations: result, added: addedKeys, duplicated: duplicatedKeys };
+  return {
+    mergedDerivations: [...existingDerivations, ...newDerivationsAccounts],
+    added: addedKeys,
+    duplicated: duplicatedKeys,
+  };
 }

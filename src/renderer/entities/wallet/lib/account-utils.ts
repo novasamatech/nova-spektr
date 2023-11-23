@@ -20,7 +20,6 @@ export const accountUtils = {
   isMultisigAccount,
   isChainIdMatch,
   isWalletConnectAccount,
-  isAccountWithShards,
   isShardAccount,
   getAccountsAndShardGroups,
   getMultisigAccountId,
@@ -80,11 +79,6 @@ function getWalletAccounts<T extends Account>(walletId: Wallet['id'], accounts: 
   return accounts.filter((account) => account.walletId === walletId);
 }
 
-function isAccountWithShards(
-  account: Partial<ShardedAccountWithShards | Account>,
-): account is ShardedAccountWithShards {
-  return 'shards' in account;
-}
 function getAccountsAndShardGroups(accounts: Array<ChainAccount | ShardAccount>): Array<ChainAccount | ShardAccount[]> {
   const shardsIndexes: Record<ShardAccount['groupId'], number> = {};
 
