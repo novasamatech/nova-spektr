@@ -8,7 +8,7 @@ import { DerivationImportError } from '../lib/derivation-import-error';
 import { AccountId, ChainAccount, ChainId, ObjectValues, ShardAccount } from '@shared/core';
 import { importKeysUtils } from '../lib/import-keys-utils';
 import { DraftAccount } from '@shared/core/types/account';
-import { toAccountId } from "@shared/lib/utils";
+import { toAccountId } from '@shared/lib/utils';
 
 type SampleFnError = { error: DerivationImportError };
 type ExistingDerivations = {

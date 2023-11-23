@@ -2,7 +2,7 @@ import { combine, createEffect, createEvent, createStore, forward, sample } from
 import { spread } from 'patronum';
 
 import type { Account, BaseAccount, ChainAccount, ID, MultisigAccount, NoID, ShardAccount, Wallet } from '@shared/core';
-import { kernelModel, WalletConnectAccount, } from '@shared/core';
+import { kernelModel, WalletConnectAccount } from '@shared/core';
 import { storageService } from '@shared/api/storage';
 import { modelUtils } from '../lib/model-utils';
 import { accountUtils } from '../lib/account-utils';
