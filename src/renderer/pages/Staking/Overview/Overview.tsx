@@ -242,9 +242,9 @@ export const Overview = () => {
   const relaychainAsset = getRelaychainAsset(activeChain?.assets);
 
   const toggleSelectedNominators = (address: Address, isAllSelected?: boolean) => {
-    const select = isAllSelected === undefined ? selectedNominators.includes(address) : !isAllSelected;
+    const isSelected = isAllSelected === undefined ? selectedNominators.includes(address) : !isAllSelected;
 
-    if (select) {
+    if (isSelected) {
       setSelectedNominators((value) => value.filter((a) => a !== address));
     } else {
       setSelectedNominators((value) => value.concat(address));
