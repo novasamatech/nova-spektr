@@ -1,12 +1,14 @@
 import { createEffect, createEvent, createStore, forward, sample } from 'effector';
 import { parse } from 'yaml';
 import { groupBy } from 'lodash';
+import { reset } from 'patronum';
 
 import { ValidationError, ParsedImportFile, TypedImportedDerivation, ValidationErrorsLabel } from '../lib/types';
 import { DerivationImportError } from '../lib/derivation-import-error';
 import { AccountId, ChainAccount, ChainId, ObjectValues, ShardAccount } from '@shared/core';
 import { importKeysUtils } from '../lib/import-keys-utils';
 import { DraftAccount } from '@shared/core/types/account';
+import { toAccountId } from "@shared/lib/utils";
 
 type SampleFnError = { error: DerivationImportError };
 type ExistingDerivations = {
@@ -50,8 +52,9 @@ const validateDerivationsFx = createEffect<ValidateDerivationsParams, TypedImpor
     }
 
     const { derivations, root } = parsed;
+    const rootAccountId = root.startsWith('0x') ? root : toAccountId(root);
 
-    if (root !== existingDerivations.root) {
+    if (rootAccountId !== existingDerivations.root) {
       throw new DerivationImportError(ValidationErrorsLabel.INVALID_ROOT);
     }
 
@@ -119,6 +122,11 @@ const mergePathsFx = createEffect<MergePathsParams, MergeResult>(({ imported, ex
       },
     },
   );
+});
+
+reset({
+  clock: resetValues,
+  target: [$validationError, $mergedKeys, $report],
 });
 
 forward({ from: resetValues, to: $existingDerivations });

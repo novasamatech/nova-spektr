@@ -4,6 +4,7 @@ import { ImportedDerivation, ImportFileChain, ImportFileKey, ParsedImportFile, T
 import {
   AccountId,
   AccountType,
+  Address,
   ChainAccount,
   ChainId,
   ChainType,
@@ -13,6 +14,7 @@ import {
   ShardAccount,
 } from '@shared/core';
 import { chainsService } from '@entities/network';
+import { toAccountId } from '@shared/lib/utils';
 
 const IMPORT_FILE_VERSION = '1';
 
@@ -27,7 +29,9 @@ function isFileStructureValid(result: any): result is ParsedImportFile {
   const isVersionValid = 'version' in result && result.version === IMPORT_FILE_VERSION;
   if (!isVersionValid) return false;
 
-  const hasPublicKey = Object.keys(result).every((key) => key.startsWith('0x') || key === 'version');
+  const hasPublicKey = Object.keys(result).every(
+    (key) => key.startsWith('0x') || toAccountId(key) !== '0x00' || key === 'version',
+  );
   if (!hasPublicKey) return false;
 
   const genesisHashes = Object.values(result).filter((x) => typeof x === 'object') as ImportFileChain[];
@@ -45,7 +49,7 @@ function isFileStructureValid(result: any): result is ParsedImportFile {
   return hasChainsAndKeys;
 }
 
-type FormattedResult = { derivations: ImportedDerivation[]; root: AccountId };
+type FormattedResult = { derivations: ImportedDerivation[]; root: AccountId | Address };
 function getDerivationsFromFile(fileContent: ParsedImportFile): FormattedResult | undefined {
   const rootAccountId = Object.keys(fileContent).find((key) => key !== 'version');
   if (!rootAccountId) return;
@@ -79,7 +83,7 @@ function getDerivationsFromFile(fileContent: ParsedImportFile): FormattedResult 
 
   return {
     derivations,
-    root: rootAccountId as AccountId,
+    root: rootAccountId,
   };
 }
 
