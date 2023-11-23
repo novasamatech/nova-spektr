@@ -1,17 +1,16 @@
 import { ReactNode } from 'react';
 import { useUnit } from 'effector-react';
 
-import { useI18n } from '@renderer/app/providers';
-import type { Asset, Explorer, Address } from '@renderer/shared/core';
-import { FootnoteText, Plate, Checkbox, InfoPopover, Icon, Shimmering, ExplorerLink } from '@renderer/shared/ui';
-import { walletModel, walletUtils } from '@renderer/entities/wallet';
-import { AssetBalance } from '@renderer/entities/asset';
-import { AssetFiatBalance } from '@renderer/entities/price/ui/AssetFiatBalance';
-import { NominatorInfo } from '../NominatorsList';
-import { getAccountExplorer } from '@/src/renderer/shared/lib/utils';
+import { useI18n } from '@app/providers';
+import type { Asset, Explorer, Address, NominatorInfo } from '@shared/core';
+import { FootnoteText, Plate, Checkbox, InfoPopover, Icon, Shimmering, ExplorerLink } from '@shared/ui';
+import { walletModel, walletUtils } from '@entities/wallet';
+import { AssetBalance } from '@entities/asset';
+import { AssetFiatBalance } from '@entities/price/ui/AssetFiatBalance';
+import { getAccountExplorer } from '@shared/lib/utils';
 
 type Props = {
-  nominators: NominatorInfo[];
+  nominatorsLength: number;
   asset?: Asset;
   explorers?: Explorer[];
   isStakingLoading: boolean;
@@ -22,7 +21,7 @@ type Props = {
 };
 
 export const NominatorsItem = ({
-  nominators,
+  nominatorsLength,
   asset,
   explorers,
   stake,
@@ -60,23 +59,23 @@ export const NominatorsItem = ({
   };
 
   return (
-    <Plate className="grid grid-cols-[226px,104px,104px,40px] items-center gap-x-6 ml-3">
-      {!walletUtils.isWatchOnly(activeWallet) && nominators.length > 1 ? (
+    <Plate className="grid grid-cols-[1fr,104px,104px,20px] items-center gap-x-6">
+      {!walletUtils.isWatchOnly(activeWallet) && nominatorsLength > 1 ? (
         <Checkbox
           disabled={isStakingLoading}
           checked={stake.isSelected}
           onChange={(event) => onToggleNominator(stake.address, event.target?.checked)}
         >
-          {content}
+          <div className="grid grid-cols-[minmax(10px,1fr),auto] max-w-[207px]">{content}</div>
         </Checkbox>
       ) : (
-        <div className="flex items-center gap-x-2">{content}</div>
+        <div className="grid grid-cols-[minmax(10px,1fr),auto] items-center gap-x-2 max-w-[222px]">{content}</div>
       )}
       <div className="justify-self-end flex flex-col items-end">
         {!stake.totalStake || !asset ? (
           <>
-            <Shimmering width={82} height={20} />
-            <Shimmering width={56} height={18} />
+            <Shimmering width={82} height={15} />
+            <Shimmering width={56} height={10} />
           </>
         ) : (
           <>
@@ -88,8 +87,8 @@ export const NominatorsItem = ({
       <div className="justify-self-end flex flex-col items-end">
         {!stake.totalReward || !asset ? (
           <>
-            <Shimmering width={82} height={20} />
-            <Shimmering width={56} height={18} />
+            <Shimmering width={82} height={15} />
+            <Shimmering width={56} height={10} />
           </>
         ) : (
           <>
@@ -99,7 +98,7 @@ export const NominatorsItem = ({
         )}
       </div>
       <InfoPopover data={getExplorers(stake.address, stake.stash, explorers)} position="top-full right-0">
-        <Icon name="info" size={14} />
+        <Icon name="info" size={16} />
       </InfoPopover>
     </Plate>
   );

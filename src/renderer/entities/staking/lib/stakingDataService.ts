@@ -1,7 +1,8 @@
 import { ApiPromise } from '@polkadot/api';
 
 import { IStakingDataService, StakingMap } from './common/types';
-import type { Address, ChainId, EraIndex } from '@shared/core';
+import type { Address, ChainId, EraIndex, Unlocking } from '@shared/core';
+import { redeemableAmount } from '@shared/lib/utils';
 
 export const useStakingData = (): IStakingDataService => {
   const subscribeStaking = async (
@@ -108,10 +109,25 @@ export const useStakingData = (): IStakingDataService => {
     }
   };
 
+  const getNextUnstakingEra = (unlocking: Unlocking[] = [], era?: number): EraIndex | undefined => {
+    if (!era) return undefined;
+    const unlockingMatch = unlocking.find((u) => Number(u.era) > era);
+
+    return unlockingMatch ? Number(unlockingMatch.era) : undefined;
+  };
+
+  const hasRedeem = (unlocking: Unlocking[] = [], era?: number): boolean => {
+    if (!era || unlocking.length === 0) return false;
+
+    return Boolean(redeemableAmount(unlocking, era));
+  };
+
   return {
     subscribeStaking,
     getMinNominatorBond,
     getUnbondingPeriod,
     getTotalStaked,
+    getNextUnstakingEra,
+    hasRedeem,
   };
 };

@@ -1,3 +1,4 @@
+import { Account } from './account';
 import type { Address, ChainId } from './general';
 
 export type Stake = {
@@ -19,3 +20,13 @@ export const enum RewardsDestination {
   RESTAKE = 'restake',
   TRANSFERABLE = 'transferable',
 }
+
+export type NominatorInfo<T = Account> = {
+  address: Address;
+  isSelected: boolean;
+  stash?: Address;
+  account: T;
+  totalReward?: string;
+  totalStake?: string;
+  unlocking?: Unlocking[];
+};

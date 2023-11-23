@@ -7,7 +7,6 @@ import type {
   Threshold,
   MultisigAccount,
   Account,
-  BaseAccount,
   ChainAccount,
   WalletConnectAccount,
   Wallet,
@@ -22,6 +21,7 @@ export const accountUtils = {
   isWalletConnectAccount,
   isShardAccount,
   getAccountsAndShardGroups,
+  isAccountWithShards,
   getMultisigAccountId,
   getAllAccountIds,
   getWalletAccounts,
@@ -31,7 +31,7 @@ function getMultisigAccountId(ids: AccountId[], threshold: Threshold): AccountId
   return u8aToHex(createKeyMulti(ids, threshold));
 }
 
-function isBaseAccount(account: Pick<Account, 'type'>): account is BaseAccount {
+function isBaseAccount(account: Pick<Account, 'type'>): boolean {
   return account.type === AccountType.BASE;
 }
 
@@ -45,6 +45,10 @@ function isWalletConnectAccount(account: Pick<Account, 'type'>): account is Wall
 
 function isShardAccount(account: Pick<Account, 'type'>): account is ShardAccount {
   return account.type === AccountType.SHARD;
+}
+
+function isAccountWithShards(accounts: Pick<Account, 'type'> | ShardAccount[]): boolean {
+  return Array.isArray(accounts) && accounts[0].type === AccountType.SHARD;
 }
 
 function isChainIdMatch(account: Pick<Account, 'type'>, chainId: ChainId): boolean {
@@ -81,12 +85,16 @@ function getWalletAccounts<T extends Account>(walletId: Wallet['id'], accounts: 
   return accounts.filter((account) => account.walletId === walletId);
 }
 
-function getAccountsAndShardGroups(accounts: Array<ChainAccount | ShardAccount>): Array<ChainAccount | ShardAccount[]> {
+function getAccountsAndShardGroups(accounts: Account[]): Array<ChainAccount | ShardAccount[]> {
   const shardsIndexes: Record<ShardAccount['groupId'], number> = {};
 
   return accounts.reduce<Array<ChainAccount | ShardAccount[]>>((acc, account) => {
+    if (accountUtils.isBaseAccount(account)) {
+      return acc;
+    }
+
     if (!accountUtils.isShardAccount(account)) {
-      acc.push(account);
+      acc.push(account as ChainAccount);
 
       return acc;
     }

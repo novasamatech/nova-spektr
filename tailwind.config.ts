@@ -32,6 +32,7 @@ export default {
         'knob-shadow': 'var(--knob-shadow)',
         'input-active-shadow': 'var(--input-active-shadow)',
         'card-shadow-level2': 'var(--card-shadow-level2)',
+        shards: '0px 3px 1px 0px rgba(69, 69, 137, 0.04)',
       },
       colors: {
         primary: '#567CDC',

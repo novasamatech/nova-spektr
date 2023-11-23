@@ -1,6 +1,6 @@
 import { ApiPromise } from '@polkadot/api';
 
-import type { Address, ChainId, EraIndex, Stake, Validator } from '@shared/core';
+import type { Address, ChainId, EraIndex, Stake, Unlocking, Validator } from '@shared/core';
 
 // =====================================================
 // ========== IStakingDataService interface ============
@@ -16,6 +16,8 @@ export interface IStakingDataService {
   getMinNominatorBond: (api: ApiPromise) => Promise<string>;
   getUnbondingPeriod: (api: ApiPromise) => string;
   getTotalStaked: (api: ApiPromise, era: EraIndex) => Promise<string>;
+  getNextUnstakingEra: (unlocking: Unlocking[] | undefined, era?: number) => EraIndex | undefined;
+  hasRedeem: (unlocking: Unlocking[] | undefined, era?: number) => boolean;
 }
 
 // =====================================================

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useNavigate, Outlet } from 'react-router-dom';
 import { useUnit } from 'effector-react';
 
@@ -7,9 +7,8 @@ import { getRelaychainAsset, toAddress } from '@shared/lib/utils';
 import { createLink, type PathType } from '@shared/routes';
 import { useGraphql, useI18n, useNetworkContext } from '@app/providers';
 import { useToggle } from '@shared/lib/hooks';
-import { NominatorInfo } from '@pages/Staking/Overview/components/NominatorsList/NominatorsList';
 import { AboutStaking, NetworkInfo, NominatorsList, Actions, InactiveChain } from './components';
-import type { ChainId, Chain, Address, Account, Stake, Validator } from '@shared/core';
+import type { ChainId, Chain, Address, Account, Stake, Validator, ShardAccount, NominatorInfo } from '@shared/core';
 import { ConnectionType, ConnectionStatus } from '@shared/core';
 import { accountUtils, walletModel, walletUtils } from '@entities/wallet';
 import { priceProviderModel } from '@entities/price';
@@ -155,21 +154,46 @@ export const Overview = () => {
     toggleNominators();
   };
 
-  const nominatorsInfo = accounts.reduce<NominatorInfo[]>((acc, account) => {
-    const address = toAddress(account.accountId, { prefix: addressPrefix });
+  const structuredAccounts = walletUtils.isPolkadotVault(activeWallet)
+    ? accountUtils.getAccountsAndShardGroups(accounts)
+    : accounts;
 
-    acc.push({
-      address,
-      account,
-      stash: staking[address]?.stash,
-      isSelected: selectedNominators.includes(address),
-      totalStake: isStakingLoading ? undefined : staking[address]?.total || '0',
-      totalReward: isRewardsLoading ? undefined : rewards[address],
-      unlocking: staking[address]?.unlocking,
-    });
+  const nominatorsInfo = useMemo(
+    () =>
+      structuredAccounts.reduce<(NominatorInfo<ShardAccount>[] | NominatorInfo)[]>((acc, account) => {
+        if (accountUtils.isAccountWithShards(account)) {
+          const shardGroup = (account as ShardAccount[]).map((shard) => {
+            const address = toAddress(shard.accountId, { prefix: addressPrefix });
 
-    return acc;
-  }, []);
+            return {
+              address,
+              account: shard,
+              stash: staking[address]?.stash,
+              isSelected: selectedNominators.includes(address),
+              totalStake: isStakingLoading ? undefined : staking[address]?.total || '0',
+              totalReward: isRewardsLoading ? undefined : rewards[address],
+              unlocking: staking[address]?.unlocking,
+            };
+          });
+
+          acc.push(shardGroup);
+        } else {
+          const address = toAddress((account as Account).accountId, { prefix: addressPrefix });
+          acc.push({
+            address,
+            account: account as Account,
+            stash: staking[address]?.stash,
+            isSelected: selectedNominators.includes(address),
+            totalStake: isStakingLoading ? undefined : staking[address]?.total || '0',
+            totalReward: isRewardsLoading ? undefined : rewards[address],
+            unlocking: staking[address]?.unlocking,
+          });
+        }
+
+        return acc;
+      }, []),
+    [accounts, addressPrefix, isStakingLoading, isRewardsLoading, staking, selectedNominators],
+  );
 
   const selectedStakes = selectedNominators.reduce<Stake[]>((acc, address) => {
     const stake = staking[address];
