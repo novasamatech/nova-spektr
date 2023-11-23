@@ -54,9 +54,9 @@ Detailed changelog with releases description is located in the [changelog file](
 
 ## Requirements
 
-Minimum version of `Node.js` is `v16.x`.
+Minimum version of `Node.js` is `v18.x`.
 
-Minimum version of `pnpm` is `v7.x`.
+Minimum version of `pnpm` is `v8.x`.
 
 ## Install dependencies
 
