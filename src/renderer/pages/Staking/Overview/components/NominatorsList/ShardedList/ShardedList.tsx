@@ -1,6 +1,7 @@
 import { Fragment, ReactNode, useEffect, useMemo, useState } from 'react';
 import { ApiPromise } from '@polkadot/api';
 import { Transition } from '@headlessui/react';
+import { Trans } from 'react-i18next';
 
 import { useI18n } from '@app/providers';
 import type { Asset, Explorer, Address, NominatorInfo } from '@shared/core';
@@ -132,19 +133,24 @@ export const ShardedList = ({
                     {t('staking.overview.stakingShards', { type: shardsStake[0].account.name })}:
                   </FootnoteText>
                   <Tooltip
-                    content={t('staking.tooltips.redeemAndUnstake', {
-                      countUnstake: unstakingShards,
-                      countWithdraw: withdrawnShards,
-                    })}
-                    offsetPx={90}
+                    content={
+                      <Trans
+                        t={t}
+                        i18nKey="staking.tooltips.redeemAndUnstake"
+                        values={{ countUnstake: unstakingShards, countWithdraw: withdrawnShards }}
+                      />
+                    }
+                    offsetPx={-60}
                     pointer="down"
                   >
-                    {unstakingShards && (
-                      <span className={cnTw('min-w-[9px] h-[9px] rounded-full', DotStyles.staking)} />
-                    )}
-                    {withdrawnShards && (
-                      <span className={cnTw('min-w-[9px] h-[9px] rounded-full', DotStyles.success)} />
-                    )}
+                    <div className="flex items-center gap-x-1">
+                      {Boolean(unstakingShards) && (
+                        <span className={cnTw('min-w-[9px] h-[9px] rounded-full', DotStyles.staking)} />
+                      )}
+                      {Boolean(withdrawnShards) && (
+                        <span className={cnTw('min-w-[9px] min-h-[9px] rounded-full', DotStyles.success)} />
+                      )}
+                    </div>
                   </Tooltip>
                 </div>
                 <div className="justify-self-end flex flex-col items-end">

@@ -827,7 +827,7 @@
     "title": "Staking",
     "tooltips": {
       "depositDescription": "The deposit stays locked on the depositor’s account until the multisig operation is executed or rejected",
-      "redeemAndUnstake": "Unstake - {countUnstake} account <br /> Withdraw - {countWithdraw} account",
+      "redeemAndUnstake": "Unstake - {countUnstake} account<br />Withdraw - {countWithdraw} account",
       "redeemDescription": "Your tokens are ready to be withdrawn",
       "redeemTitle": "Withdraw",
       "unstakeDescription": "Your tokens are being unstaked<br />at the moment",
