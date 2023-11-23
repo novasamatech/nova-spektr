@@ -1,14 +1,36 @@
+import { useUnit } from 'effector-react';
+
 import { BaseModal, Button } from '@shared/ui';
 import { KeyForm } from './KeyForm';
 import { KeysList } from './KeysList';
+import { WarningModal } from './WarningModal';
+import { constructorModel } from '../model/constructor-model';
+import { useToggle } from '@shared/lib/hooks';
+import { ChainAccount, ShardAccount } from '@shared/core';
 
 type Props = {
   isOpen: boolean;
   onClose: () => void;
-  onConfirm: () => void;
+  onConfirm: (keys: Array<ChainAccount | ShardAccount[]>) => void;
 };
 
 export const KeyConstructor = ({ isOpen, onClose, onConfirm }: Props) => {
+  const [isWarningOpen, toggleWarningOpen] = useToggle();
+
+  const hasChanged = useUnit(constructorModel.$hasChanged);
+  const keys = useUnit(constructorModel.$keys);
+
+  const closeConstructor = () => {
+    if (!hasChanged) onClose();
+
+    toggleWarningOpen();
+  };
+
+  const confirmConstructor = () => {
+    toggleWarningOpen();
+    onConfirm(keys);
+  };
+
   return (
     <BaseModal
       closeButton
@@ -25,11 +47,13 @@ export const KeyConstructor = ({ isOpen, onClose, onConfirm }: Props) => {
         <KeysList />
       </div>
       <div className="flex justify-between pt-3 px-5 pb-4">
-        <Button variant="text" onClick={() => console.log('BACK')}>
+        <Button variant="text" onClick={closeConstructor}>
           Back
         </Button>
-        <Button onClick={() => console.log('SAVE')}>Save</Button>
+        <Button onClick={() => onConfirm(keys)}>Save</Button>
       </div>
+
+      <WarningModal isOpen={isWarningOpen} onClose={toggleWarningOpen} onConfirm={confirmConstructor} />
     </BaseModal>
   );
 };

@@ -5,7 +5,6 @@ import { spread } from 'patronum';
 import type { ChainAccount, ShardAccount, Chain } from '@shared/core';
 import { KeyType, AccountType, CryptoType, ChainType } from '@shared/core';
 import { chainsService } from '@entities/network';
-import { accountUtils } from '@entities/wallet';
 import { validateDerivation } from '@shared/lib/utils';
 
 const KEY_NAMES = {
@@ -19,60 +18,7 @@ const KEY_NAMES = {
 
 const chains = chainsService.getChainsData({ sort: true });
 
-const MOCKS = accountUtils
-  .getAccountsAndShardGroups([
-    {
-      name: 'DOT key',
-      keyType: KeyType.MAIN,
-      chainId: '0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3',
-      type: AccountType.CHAIN,
-      cryptoType: CryptoType.SR25519,
-      chainType: ChainType.SUBSTRATE,
-      derivationPath: '//polkadot//main',
-    },
-    {
-      name: 'DOT key',
-      keyType: KeyType.STAKING,
-      chainId: '0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3',
-      type: AccountType.CHAIN,
-      cryptoType: CryptoType.SR25519,
-      chainType: ChainType.SUBSTRATE,
-      derivationPath: '//polkadot//staking',
-    },
-    {
-      name: 'DOT key',
-      keyType: KeyType.HOT,
-      chainId: '0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3',
-      type: AccountType.CHAIN,
-      cryptoType: CryptoType.SR25519,
-      chainType: ChainType.SUBSTRATE,
-      derivationPath: '//polkadot//hot',
-    },
-    {
-      name: 'DOT key',
-      groupId: 'shard_1',
-      chainId: '0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3',
-      chainType: ChainType.SUBSTRATE,
-      cryptoType: CryptoType.SR25519,
-      keyType: KeyType.PUBLIC,
-      type: AccountType.SHARD,
-      derivationPath: '//polkadot//hot//0',
-    },
-    {
-      name: 'DOT key',
-      groupId: 'shard_1',
-      chainId: '0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3',
-      chainType: ChainType.SUBSTRATE,
-      cryptoType: CryptoType.SR25519,
-      keyType: KeyType.PUBLIC,
-      type: AccountType.SHARD,
-      derivationPath: '//polkadot//hot//1',
-    },
-  ] as any[])
-  .filter((k) => Array.isArray(k) || k.keyType !== KeyType.MAIN);
-
-// TODO: filter MAIN keys
-const $keys = createStore<Array<ChainAccount | ShardAccount[]>>(MOCKS);
+const $keys = createStore<Array<ChainAccount | ShardAccount[]>>([]);
 
 type FormValues = {
   network: Chain;
@@ -141,12 +87,27 @@ const $constructorForm = createForm<FormValues>({
           errorText: 'Wrong derivation path format',
           validator: validateDerivation,
         },
-        // { name: 'duplicate', errorText: 'Duplicated derivation path', validator: Boolean },
+        {
+          name: 'duplicate',
+          source: $keys,
+          errorText: 'Duplicated derivation path',
+          validator: (value, _, keys: Array<ChainAccount | ShardAccount[]>): boolean => {
+            return keys.every((key) => {
+              const keyToCheck = Array.isArray(key) ? key[0] : key;
+
+              return !keyToCheck.derivationPath.includes(value);
+            });
+          },
+        },
       ],
     },
   },
   validateOn: ['submit'],
 });
+
+const $hasChanged = createStore<boolean>(false);
+
+const $elementToFocus = createStore<HTMLButtonElement | null>(null);
 
 const $shardedEnabled = combine($constructorForm.fields.keyType.$value, (keyType) => {
   return [KeyType.MAIN, KeyType.STAKING, KeyType.GOVERNANCE, KeyType.CUSTOM].includes(keyType);
@@ -156,11 +117,9 @@ const $derivationEnabled = combine($constructorForm.fields.keyType.$value, (keyT
   return keyType === KeyType.CUSTOM;
 });
 
-const $elementToFocus = createStore<HTMLButtonElement | null>(null);
-
-const keyRemoved = createEvent<number>();
 const formInitiated = createEvent();
 const focusableSet = createEvent<HTMLButtonElement>();
+const keyRemoved = createEvent<number>();
 
 const focusElementFx = createEffect((element: HTMLButtonElement) => {
   element.focus();
@@ -181,29 +140,43 @@ const addNewKeyFx = createEffect((formValues: FormValues): ChainAccount | ShardA
 
   const groupId = crypto.randomUUID();
 
-  return Array.from({ length: Number(formValues.shards) }, (_, index) => {
-    return {
-      ...base,
-      groupId,
-      type: AccountType.SHARD,
-      derivationPath: `${formValues.derivationPath}//${index}`,
-    } as ShardAccount;
-  });
+  return Array.from(
+    { length: Number(formValues.shards) },
+    (_, index) =>
+      ({
+        ...base,
+        groupId,
+        type: AccountType.SHARD,
+        derivationPath: `${formValues.derivationPath}//${index}`,
+      } as ShardAccount),
+  );
+});
+
+sample({
+  clock: formInitiated,
+  fn: () => chains[0],
+  target: $constructorForm.fields.network.$value,
 });
 
 forward({ from: focusableSet, to: $elementToFocus });
 
+forward({ from: $constructorForm.formValidated, to: addNewKeyFx });
+forward({ from: $constructorForm.formValidated, to: [$constructorForm.reset, formInitiated] });
+
 sample({
-  clock: formInitiated,
-  fn: () => ({
-    network: chains[0],
-    keyType: '' as KeyType,
-    isSharded: false,
-    shards: '',
-    keyName: '',
-    derivationPath: '',
-  }),
-  target: $constructorForm.setInitialForm,
+  clock: $constructorForm.formValidated,
+  source: $elementToFocus,
+  filter: (element): element is HTMLButtonElement => Boolean(element),
+  target: focusElementFx,
+});
+
+sample({
+  clock: addNewKeyFx.doneData,
+  source: $keys,
+  fn: (keys, newKeys) => {
+    return keys.concat(Array.isArray(newKeys) ? [newKeys] : newKeys);
+  },
+  target: $keys,
 });
 
 sample({
@@ -216,34 +189,6 @@ sample({
       shards: $constructorForm.fields.shards.$value,
     },
   }),
-});
-
-forward({
-  from: $constructorForm.formValidated,
-  to: addNewKeyFx,
-});
-
-forward({
-  from: $constructorForm.formValidated,
-  to: [$constructorForm.reset, formInitiated],
-});
-
-sample({
-  clock: addNewKeyFx.doneData,
-  source: $keys,
-  fn: (keys, newKeys) => {
-    const keysToInsert = Array.isArray(newKeys) ? [newKeys] : newKeys;
-
-    return keys.concat(keysToInsert);
-  },
-  target: $keys,
-});
-
-sample({
-  clock: $constructorForm.formValidated,
-  source: $elementToFocus,
-  filter: (element): element is HTMLButtonElement => Boolean(element),
-  target: focusElementFx,
 });
 
 sample({
@@ -266,18 +211,29 @@ sample({
   }),
 });
 
+forward({
+  from: $constructorForm.fields.keyType.onChange,
+  to: $constructorForm.fields.derivationPath.resetErrors,
+});
+
 sample({
   clock: keyRemoved,
   source: $keys,
   fn: (keys, indexToRemove) => {
-    // TODO: handle ShardedAccounts + Shards
     return keys.filter((_, index) => index !== indexToRemove);
   },
   target: $keys,
 });
 
+sample({
+  clock: [keyRemoved, $constructorForm.formValidated],
+  fn: () => true,
+  target: $hasChanged,
+});
+
 export const constructorModel = {
   $keys,
+  $hasChanged,
   $shardedEnabled,
   $derivationEnabled,
   $constructorForm,
