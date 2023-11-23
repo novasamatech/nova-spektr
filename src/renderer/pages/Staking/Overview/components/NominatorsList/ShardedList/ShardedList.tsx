@@ -138,10 +138,10 @@ export const ShardedList = ({
                     offsetPx={90}
                     pointer="down"
                   >
-                    {!unstakingShards && (
+                    {unstakingShards && (
                       <span className={cnTw('min-w-[9px] h-[9px] rounded-full', DotStyles.staking)} />
                     )}
-                    {!withdrawnShards && (
+                    {withdrawnShards && (
                       <span className={cnTw('min-w-[9px] h-[9px] rounded-full', DotStyles.success)} />
                     )}
                   </Tooltip>
