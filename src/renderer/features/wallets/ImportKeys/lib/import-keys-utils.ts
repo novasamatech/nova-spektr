@@ -117,56 +117,60 @@ function mergeChainDerivations(
 ) {
   let addedKeys = 0;
   let duplicatedKeys = 0;
-  const existingDerivationsByPath = groupBy(existingDerivations, 'derivationPath');
 
-  const newDerivations = importedDerivations.filter((d) => {
+  const existingDerivationsByPath = groupBy(existingDerivations, 'derivationPath');
+  const shards = existingDerivations.filter((d) => d.type === AccountType.SHARD) as DraftAccount<ShardAccount>[];
+  const shardsByPath = groupBy(shards, (d) => d.derivationPath.slice(0, d.derivationPath.lastIndexOf('//')));
+
+  const importedDerivationsAccounts = importedDerivations.reduce<DraftAccount<ShardAccount | ChainAccount>[]>(
+    (acc, d) => {
+      if (!d.sharded) {
+        acc.push({
+          name: '', // TODO add name after KEY_NAMES merged
+          derivationPath: d.derivationPath,
+          chainId: existingDerivations[0].chainId,
+          cryptoType: CryptoType.SR25519,
+          chainType: ChainType.SUBSTRATE,
+          type: AccountType.CHAIN,
+          keyType: d.type,
+        });
+
+        return acc;
+      }
+
+      const groupId = shardsByPath[d.derivationPath]?.length
+        ? shardsByPath[d.derivationPath][0].groupId
+        : crypto.randomUUID();
+
+      for (let i = 0; i < Number(d.sharded); i++) {
+        acc.push({
+          name: '', // TODO add name after KEY_NAMES merged
+          derivationPath: d.derivationPath + '//' + i,
+          chainId: existingDerivations[0].chainId,
+          cryptoType: CryptoType.SR25519,
+          chainType: ChainType.SUBSTRATE,
+          type: AccountType.SHARD,
+          keyType: d.type,
+          groupId,
+        } as ShardAccount);
+      }
+
+      return acc;
+    },
+    [],
+  );
+
+  const newDerivationsAccounts = importedDerivationsAccounts.filter((d) => {
     const duplicatedDerivation = existingDerivationsByPath[d.derivationPath];
 
     if (duplicatedDerivation) {
       duplicatedKeys++;
     } else {
-      addedKeys += Number(d.sharded) || 1;
+      addedKeys++;
     }
 
     return !duplicatedDerivation;
   });
-
-  const shards = existingDerivations.filter((d) => d.type === AccountType.SHARD) as DraftAccount<ShardAccount>[];
-  const shardsByPath = groupBy(shards, (d) => d.derivationPath.slice(0, d.derivationPath.lastIndexOf('//')));
-
-  const newDerivationsAccounts = newDerivations.reduce<DraftAccount<ShardAccount | ChainAccount>[]>((acc, d) => {
-    if (!d.sharded) {
-      acc.push({
-        name: '', // TODO add name after KEY_NAMES merged
-        derivationPath: d.derivationPath,
-        chainId: existingDerivations[0].chainId,
-        cryptoType: CryptoType.SR25519,
-        chainType: ChainType.SUBSTRATE,
-        type: AccountType.CHAIN,
-        keyType: d.type,
-      });
-
-      return acc;
-    }
-
-    const shardedPath = d.derivationPath.slice(0, d.derivationPath.lastIndexOf('//'));
-    const groupId = shardsByPath[shardedPath]?.length ? shardsByPath[shardedPath][0].groupId : crypto.randomUUID();
-
-    for (let i = 0; i < Number(d.sharded); i++) {
-      acc.push({
-        name: '', // TODO add name after KEY_NAMES merged
-        derivationPath: d.derivationPath + '//' + i,
-        chainId: existingDerivations[0].chainId,
-        cryptoType: CryptoType.SR25519,
-        chainType: ChainType.SUBSTRATE,
-        type: AccountType.SHARD,
-        keyType: d.type,
-        groupId,
-      } as ShardAccount);
-    }
-
-    return acc;
-  }, []);
 
   return {
     mergedDerivations: [...existingDerivations, ...newDerivationsAccounts],

@@ -1,6 +1,12 @@
-import { KeyType } from '@shared/core';
+import { webcrypto } from 'node:crypto';
+
+import { AccountType, DraftAccount, KeyType, ShardAccount } from '@shared/core';
 import { importKeysUtils } from '../import-keys-utils';
 import { importKeysMocks } from '../mocks/import-keys-utils.mock';
+
+Object.defineProperty(global.self, 'crypto', {
+  value: webcrypto,
+});
 
 describe('entities/dynamicDerivations/import-keys-utils', () => {
   describe('entities/dynamicDerivations/import-keys-utils/validateDerivation', () => {
@@ -71,7 +77,7 @@ describe('entities/dynamicDerivations/import-keys-utils', () => {
           derivationPath: '//polkadot//staking',
           type: KeyType.STAKING,
           chainId: importKeysMocks.chainId,
-          sharded: 20,
+          sharded: '20',
         },
         {
           derivationPath: '//polkadot//some_path',
@@ -84,12 +90,15 @@ describe('entities/dynamicDerivations/import-keys-utils', () => {
         importedDerivations,
       );
 
-      const shardedDerivations = mergedDerivations.filter((d) => d.sharded);
+      console.log(mergedDerivations);
 
-      expect(shardedDerivations.length).toEqual(1);
-      expect(shardedDerivations[0].sharded).toEqual(20);
+      const shardedDerivations = mergedDerivations.filter((d) => d.type === AccountType.SHARD);
+      const newStakingShard = mergedDerivations.find((d) => d.derivationPath === '//polkadot//staking//19');
+
+      expect(shardedDerivations.length).toEqual(20);
       expect(added).toEqual(11);
       expect(duplicated).toEqual(10);
+      expect((newStakingShard as DraftAccount<ShardAccount>)?.groupId).toEqual(importKeysMocks.existingShardsGroupId);
     });
   });
 });

@@ -4,9 +4,9 @@ import { u8aToHex } from '@polkadot/util';
 
 import { AccountType, ChainAccount, ChainType, CryptoType, KeyType, ShardAccount } from '@renderer/shared/core';
 import { SeedInfo } from '@renderer/components/common/QrCode/common/types';
-import { toAccountId } from '@renderer/shared/lib/utils';
-import { chainsService } from '@renderer/entities/network';
-import { walletModel } from '@/src/renderer/entities/wallet';
+import { toAccountId } from '@shared/lib/utils';
+import { chainsService } from '@entities/network';
+import { walletModel } from '@entities/wallet';
 import { DraftAccount } from '@shared/core/types/account';
 
 const chains = chainsService.getChainsData();

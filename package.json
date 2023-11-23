@@ -153,7 +153,6 @@
     "@types/react-lottie": "^1.2.6",
     "@types/request": "^2.48.8",
     "@types/testing-library__jest-dom": "^5.14.5",
-    "@types/uuid": "^9.0.7",
     "@typescript-eslint/eslint-plugin": "^5.30.4",
     "@typescript-eslint/parser": "^5.30.4",
     "autoprefixer": "^10.4.13",
