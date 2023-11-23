@@ -38,7 +38,7 @@ export const KeysList = () => {
           const keyData = Array.isArray(key) ? key[0] : key;
 
           return (
-            <li key={keyData.name} className="flex items-center gap-x-2.5 py-1.5 pl-2">
+            <li key={keyData.id || keyData.derivationPath} className="flex items-center gap-x-2.5 py-1.5 pl-2">
               <ChainIcon
                 className="my-4.5 mx-6"
                 src={chains[keyData.chainId].icon}

@@ -17,6 +17,7 @@ export const KeyForm = () => {
     fields: { network, keyType, isSharded, shards, keyName, derivationPath },
   } = useForm(constructorModel.$constructorForm);
 
+  const shardedEnabled = useUnit(constructorModel.$shardedEnabled);
   const derivationEnabled = useUnit(constructorModel.$derivationEnabled);
 
   useEffect(() => {
@@ -102,7 +103,11 @@ export const KeyForm = () => {
           </InputHint>
         </div>
         <div className="flex items-center gap-x-1 py-2 mt-6.5">
-          <Checkbox checked={isSharded?.value} onChange={({ target }) => isSharded?.onChange(target.checked)}>
+          <Checkbox
+            disabled={!shardedEnabled}
+            checked={isSharded?.value}
+            onChange={({ target }) => isSharded?.onChange(target.checked)}
+          >
             <FootnoteText className="text-text-secondary">Sharded</FootnoteText>
           </Checkbox>
           <Icon name="info" size={16} />
@@ -113,7 +118,7 @@ export const KeyForm = () => {
             label="Shards to add"
             placeholder="2 - 50"
             invalid={shards?.hasError()}
-            disabled={!isSharded?.value}
+            disabled={!shardedEnabled || !isSharded?.value}
             value={shards?.value}
             onChange={shards?.onChange}
           />

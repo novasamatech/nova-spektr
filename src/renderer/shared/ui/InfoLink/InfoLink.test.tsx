@@ -9,7 +9,7 @@ jest.mock('@app/providers', () => ({
 describe('pages/Settings/InfoLink', () => {
   test('should render component', () => {
     render(
-      <InfoLink url="https://test.com" iconName="globe" showIcon>
+      <InfoLink url="https://test.com" iconName="globe">
         My link
       </InfoLink>,
     );
