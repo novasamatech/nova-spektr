@@ -1,5 +1,4 @@
 import { Fragment, ReactNode, useEffect, useMemo, useState } from 'react';
-import { ApiPromise } from '@polkadot/api';
 import { Transition } from '@headlessui/react';
 import { Trans } from 'react-i18next';
 
@@ -18,7 +17,6 @@ type NominatorInfoWithShard = NominatorInfo<ShardAccount>;
 
 type Props = {
   shardsStake: NominatorInfoWithShard[];
-  api?: ApiPromise;
   era?: number;
   asset?: Asset;
   explorers?: Explorer[];
@@ -30,7 +28,6 @@ type Props = {
 
 export const ShardedList = ({
   shardsStake,
-  api,
   era,
   asset,
   explorers,

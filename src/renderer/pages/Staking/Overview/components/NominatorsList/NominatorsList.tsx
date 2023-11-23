@@ -94,9 +94,9 @@ export const NominatorsList = ({
             <ShardedList
               isStakingLoading={isStakingLoading}
               shardsStake={stake}
-              api={api}
               era={era}
               asset={asset}
+              explorers={explorers}
               getContent={getContent}
               onToggleNominator={onToggleNominator}
               onCheckValidators={onCheckValidators}
