@@ -796,10 +796,10 @@
       "searchPlaceholder": "Search by account name",
       "stakeTableHeader": "Staked",
       "stakingAssetLabel": "Staking <strong>{ asset }</strong> on",
+      "stakingShards": "{ type } sharded",
       "totalRewardsLabel": "Total rewards",
       "totalStakedLabel": "Total staked",
-      "viewValidatorsOption": "View validators",
-      "stakingShards": "{ type } sharded"
+      "viewValidatorsOption": "View validators"
     },
     "redeem": {
       "availablePlaceholder": "Available",
@@ -827,11 +827,11 @@
     "title": "Staking",
     "tooltips": {
       "depositDescription": "The deposit stays locked on the depositor’s account until the multisig operation is executed or rejected",
+      "redeemAndUnstake": "Unstake - {countUnstake} account <br /> Withdraw - {countWithdraw} account",
       "redeemDescription": "Your tokens are ready to be withdrawn",
       "redeemTitle": "Withdraw",
       "unstakeDescription": "Your tokens are being unstaked<br />at the moment",
-      "unstakeTitle": "Unstaking",
-      "redeemAndUnstake": "Unstake - {countUnstake} account <br /> Withdraw - {countWithdraw} account"
+      "unstakeTitle": "Unstaking"
     },
     "unstake": {
       "confirmUnstakeSubtitle": "Confirmation",
