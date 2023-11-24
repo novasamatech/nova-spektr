@@ -154,7 +154,7 @@ const addNewKeyFx = createEffect((formValues: FormValues): ChainAccount | ShardA
 
 sample({
   clock: formInitiated,
-  target: [$keys, formStarted],
+  target: [$keys, $constructorForm.reset, formStarted],
 });
 
 sample({
