@@ -2,41 +2,36 @@ import { attach, createApi, createEvent, createStore, forward, sample } from 'ef
 import { createForm } from 'effector-forms';
 import { u8aToHex } from '@polkadot/util';
 
-import { walletModel } from '@renderer/entities/wallet';
+import { SeedInfo } from '@renderer/components/common/QrCode/common/types';
+import { toAccountId } from '@shared/lib/utils';
+import { chainsService } from '@entities/network';
+import { walletModel } from '@entities/wallet';
 import {
   AccountType,
-  BaseAccount,
   ChainAccount,
   ChainType,
   CryptoType,
   KeyType,
-  NoID,
   SigningType,
   WalletType,
-} from '@renderer/shared/core';
-import { SeedInfo } from '@renderer/components/common/QrCode/common/types';
-import { toAccountId } from '@renderer/shared/lib/utils';
-import { chainsService } from '@renderer/entities/network';
+  ShardAccount,
+} from '@shared/core';
 
 const chains = chainsService.getChainsData();
 
 const WALLET_NAME_MAX_LENGTH = 256;
 const MAIN_ACCOUNT_NAME = 'Main';
 
-const validateMaxLength = (value: string) => value.length <= WALLET_NAME_MAX_LENGTH;
-
 export type Callbacks = {
   onSubmit: () => void;
 };
 
 const $callbacks = createStore<Callbacks | null>(null);
-const $accounts = createStore<Omit<NoID<BaseAccount | ChainAccount>, 'walletId'>[]>([]);
+const $accounts = createStore<Array<ChainAccount | ShardAccount[]>>([]);
 
 const callbacksApi = createApi($callbacks, {
   callbacksChanged: (state, props: Callbacks) => ({ ...state, ...props }),
 });
-
-const formInitiated = createEvent<SeedInfo[]>();
 
 const $walletForm = createForm({
   fields: {
@@ -47,13 +42,16 @@ const $walletForm = createForm({
         {
           name: 'maxLength',
           errorText: 'onboarding.watchOnly.walletNameMaxLenError',
-          validator: validateMaxLength,
+          validator: (value): boolean => value.length <= WALLET_NAME_MAX_LENGTH,
         },
       ],
     },
   },
   validateOn: ['change', 'submit'],
 });
+
+const formInitiated = createEvent<SeedInfo[]>();
+const keysAdded = createEvent<Array<ChainAccount | ShardAccount[]>>();
 
 sample({
   clock: formInitiated,
@@ -104,22 +102,22 @@ sample({
   target: $accounts,
 });
 
+forward({ from: keysAdded, to: $accounts });
+
 const createWalletFx = attach({
   effect: walletModel.effects.polkadotVaultWalletCreatedFx,
   source: {
-    walletForm: $walletForm.$values,
     accounts: $accounts,
+    walletForm: $walletForm.$values,
   },
-  mapParams: (_, { walletForm, accounts }) => {
-    return {
-      wallet: {
-        name: walletForm.name.trim(),
-        type: WalletType.POLKADOT_VAULT,
-        signingType: SigningType.PARITY_SIGNER,
-      },
-      accounts,
-    };
-  },
+  mapParams: (_, { walletForm, accounts }) => ({
+    accounts: accounts as any[],
+    wallet: {
+      name: walletForm.name.trim(),
+      type: WalletType.POLKADOT_VAULT,
+      signingType: SigningType.PARITY_SIGNER,
+    },
+  }),
 });
 
 forward({
@@ -142,5 +140,6 @@ export const manageDynamicDerivationsModel = {
   events: {
     callbacksChanged: callbacksApi.callbacksChanged,
     formInitiated,
+    keysAdded,
   },
 };

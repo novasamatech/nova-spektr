@@ -54,12 +54,12 @@ const $constructorForm = createForm<FormValues>({
           validator: (value, { isSharded }): boolean => !isSharded || !Number.isNaN(Number(value)),
         },
         {
-          name: 'max',
+          name: 'maxAmount',
           errorText: 'Max 50',
           validator: (value, { isSharded }): boolean => !isSharded || Number(value) <= 50,
         },
         {
-          name: 'min',
+          name: 'minAmount',
           errorText: 'Min 2',
           validator: (value, { isSharded }): boolean => !isSharded || Number(value) >= 2,
         },
@@ -78,17 +78,17 @@ const $constructorForm = createForm<FormValues>({
           validator: (value, { keyType }): boolean => keyType !== KeyType.CUSTOM || Boolean(value),
         },
         {
-          name: 'password',
+          name: 'hasPassword',
           errorText: 'Password derivation path is not allowed',
           validator: (value): boolean => !/\/\/\//g.test(value),
         },
         {
-          name: 'format',
+          name: 'badFormat',
           errorText: 'Wrong derivation path format',
           validator: validateDerivation,
         },
         {
-          name: 'duplicate',
+          name: 'duplicated',
           source: $keys,
           errorText: 'Duplicated derivation path',
           validator: (value, _, keys: Array<ChainAccount | ShardAccount[]>): boolean => {
@@ -106,7 +106,6 @@ const $constructorForm = createForm<FormValues>({
 });
 
 const $hasChanged = createStore<boolean>(false);
-
 const $elementToFocus = createStore<HTMLButtonElement | null>(null);
 
 const $shardedEnabled = combine($constructorForm.fields.keyType.$value, (keyType) => {
@@ -117,7 +116,8 @@ const $derivationEnabled = combine($constructorForm.fields.keyType.$value, (keyT
   return keyType === KeyType.CUSTOM;
 });
 
-const formInitiated = createEvent();
+const formInitiated = createEvent<Array<ChainAccount | ShardAccount[]>>();
+const formStarted = createEvent();
 const focusableSet = createEvent<HTMLButtonElement>();
 const keyRemoved = createEvent<number>();
 
@@ -154,14 +154,21 @@ const addNewKeyFx = createEffect((formValues: FormValues): ChainAccount | ShardA
 
 sample({
   clock: formInitiated,
+  target: [$keys, formStarted],
+});
+
+sample({
+  clock: formStarted,
   fn: () => chains[0],
   target: $constructorForm.fields.network.$value,
 });
 
 forward({ from: focusableSet, to: $elementToFocus });
 
-forward({ from: $constructorForm.formValidated, to: addNewKeyFx });
-forward({ from: $constructorForm.formValidated, to: [$constructorForm.reset, formInitiated] });
+sample({
+  clock: $constructorForm.formValidated,
+  target: [addNewKeyFx, $constructorForm.reset, formStarted],
+});
 
 sample({
   clock: $constructorForm.formValidated,
@@ -195,12 +202,11 @@ sample({
   clock: $constructorForm.fields.keyType.onChange,
   source: $constructorForm.fields.network.$value,
   fn: (chain, keyType) => {
-    const network = `//${chain.specName}`;
     const type = keyType === KeyType.MAIN ? '' : `//${keyType}`;
 
     return {
       keyName: KEY_NAMES[keyType],
-      derivationPath: `${network}${type}`,
+      derivationPath: `//${chain.specName}${type}`,
     };
   },
   target: spread({
@@ -238,8 +244,9 @@ export const constructorModel = {
   $derivationEnabled,
   $constructorForm,
   events: {
+    formInitiated,
+    formStarted,
     keyRemoved,
     focusableSet,
-    formInitiated,
   },
 };

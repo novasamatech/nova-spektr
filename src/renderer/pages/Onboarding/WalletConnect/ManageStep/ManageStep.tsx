@@ -58,8 +58,7 @@ const ManageStep = ({ accounts, type, pairingTopic, sessionTopic, onBack, onComp
   });
 
   useEffect(() => {
-    const chains = chainsService.getChainsData();
-    setChains(chainsService.sortChains(chains));
+    setChains(chainsService.getChainsData({ sort: true }));
   }, []);
 
   useEffect(() => {

@@ -1,4 +1,4 @@
-import { PropsWithChildren } from 'react';
+import { PropsWithChildren, forwardRef } from 'react';
 import { Disclosure, Transition } from '@headlessui/react';
 
 import { Icon } from '@shared/ui';
@@ -20,30 +20,37 @@ const Accordion = ({ className, isDefaultOpen, children }: PropsWithChildren<Pro
 type ButtonProps = {
   buttonClass?: string;
   iconWrapper?: string;
+  onClick?: () => void;
 };
 
-const Button = ({ buttonClass, iconWrapper, children }: PropsWithChildren<ButtonProps>) => {
-  return (
-    <Disclosure.Button className={cnTw('group flex items-center justify-between w-full gap-x-2', buttonClass)}>
-      {({ open }) => (
-        <>
-          {children}
-          <div className={cnTw('shrink-0', iconWrapper)}>
-            <Icon
-              name={open ? 'up' : 'down'}
-              size={16}
-              className={cnTw(
-                'cursor-pointer rounded-full transition-colors',
-                'group-hover:text-icon-hover group-hover:bg-hover',
-                'group-focus-visible:text-icon-hover group-focus-visible:bg-hover',
-              )}
-            />
-          </div>
-        </>
-      )}
-    </Disclosure.Button>
-  );
-};
+const Button = forwardRef<HTMLButtonElement, PropsWithChildren<ButtonProps>>(
+  ({ buttonClass, iconWrapper, onClick, children }, ref) => {
+    return (
+      <Disclosure.Button
+        ref={ref}
+        className={cnTw('group flex items-center justify-between w-full gap-x-2', buttonClass)}
+        onClick={onClick}
+      >
+        {({ open }) => (
+          <>
+            {children}
+            <div className={cnTw('shrink-0', iconWrapper)}>
+              <Icon
+                name={open ? 'up' : 'down'}
+                size={16}
+                className={cnTw(
+                  'cursor-pointer rounded-full transition-colors',
+                  'group-hover:text-icon-hover group-hover:bg-hover',
+                  'group-focus-visible:text-icon-hover group-focus-visible:bg-hover',
+                )}
+              />
+            </div>
+          </>
+        )}
+      </Disclosure.Button>
+    );
+  },
+);
 
 type ContentProps = {
   className?: string;

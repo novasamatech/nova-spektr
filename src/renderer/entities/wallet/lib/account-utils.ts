@@ -53,9 +53,10 @@ function isChainIdMatch(account: Pick<Account, 'type'>, chainId: ChainId): boole
   if (isBaseAccount(account) || isMultisigAccount(account)) return true;
 
   const chainAccountMatch = isChainAccount(account) && account.chainId === chainId;
+  const shardAccountMatch = isShardAccount(account) && account.chainId === chainId;
   const walletConnectAccountMatch = isWalletConnectAccount(account) && account.chainId === chainId;
 
-  return chainAccountMatch || walletConnectAccountMatch;
+  return chainAccountMatch || shardAccountMatch || walletConnectAccountMatch;
 }
 function isMultisigAccount(account: Pick<Account, 'type'>): account is MultisigAccount {
   return account.type === AccountType.MULTISIG;

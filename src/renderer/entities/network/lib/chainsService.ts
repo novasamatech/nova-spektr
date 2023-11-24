@@ -30,10 +30,10 @@ export const chainsService = {
   searchChain,
 };
 
-function getChainsData({ sort } = { sort: false }): Chain[] {
+function getChainsData(params = { sort: false }): Chain[] {
   const chains = CHAINS[process.env.CHAINS_FILE || 'chains'];
 
-  return sort ? sortChains(chains) : chains;
+  return params.sort ? sortChains(chains) : chains;
 }
 
 function getChainById(chainId: ChainId): Chain | undefined {

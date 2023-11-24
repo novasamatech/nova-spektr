@@ -1,16 +1,22 @@
 import cn from 'classnames';
-import { FormEvent, Fragment, useEffect, useState } from 'react';
+import { FormEvent, useEffect, useState, useRef } from 'react';
 import { useForm } from 'effector-forms';
 import { useUnit } from 'effector-react';
-import keyBy from 'lodash/keyBy';
 import { Trans } from 'react-i18next';
 import { u8aToHex } from '@polkadot/util';
-import { Transition } from '@headlessui/react';
 
 import { useI18n, useStatusContext } from '@app/providers';
-import { ChainTitle } from '@entities/chain';
 import { SeedInfo } from '@renderer/components/common/QrCode/common/types';
 import { IS_WINDOWS, toAddress } from '@shared/lib/utils';
+import type { ChainAccount, ChainId, ShardAccount } from '@shared/core';
+import { VaultInfoPopover } from './VaultInfoPopover';
+import { useAltKeyPressed, useToggle } from '@shared/lib/hooks';
+import { manageDynamicDerivationsModel } from './model/manage-dynamic-derivations-model';
+import { chainsService } from '@entities/network';
+import { RootAccount, accountUtils } from '@entities/wallet';
+import { KeyConstructor } from '@features/wallets';
+import { ChainTitle } from '@entities/chain';
+import { DerivedAccount } from './DerivedAccount';
 import {
   Animation,
   Button,
@@ -19,16 +25,10 @@ import {
   HeaderTitleText,
   SmallTitleText,
   HelpText,
-  Accordion,
   FootnoteText,
   Icon,
+  Accordion,
 } from '@shared/ui';
-import type { Chain, ChainAccount, ChainId } from '@shared/core';
-import { VaultInfoPopover } from './VaultInfoPopover';
-import { useAltKeyPressed } from '@shared/lib/hooks';
-import { manageDynamicDerivationsModel } from './model/manage-dynamic-derivations-model';
-import { chainsService } from '@entities/network';
-import { DerivedAccount, RootAccount } from '@entities/wallet';
 
 type Props = {
   seedInfo: SeedInfo[];
@@ -38,12 +38,17 @@ type Props = {
 
 export const ManageDynamicDerivations = ({ seedInfo, onBack, onComplete }: Props) => {
   const { t } = useI18n();
-  const isAltPressed = useAltKeyPressed();
   const { showStatus } = useStatusContext();
+  const isAltPressed = useAltKeyPressed();
+
+  const accordions = useRef<Record<string, { el: null | HTMLButtonElement; isOpen: boolean }>>({});
 
   const accounts = useUnit(manageDynamicDerivationsModel.$accounts);
   const isPending = useUnit(manageDynamicDerivationsModel.$submitPending);
-  const [chainsObject, setChainsObject] = useState<Record<ChainId, Chain>>({});
+
+  const [isConstructorModalOpen, toggleConstructorModal] = useToggle();
+  const [chainsIds, setChainsIds] = useState<ChainId[]>([]);
+  const [chainElements, setChainElements] = useState<[string, Array<ChainAccount | ShardAccount[]>][]>([]);
 
   const {
     submit,
@@ -60,10 +65,36 @@ export const ManageDynamicDerivations = ({ seedInfo, onBack, onComplete }: Props
   }, [onComplete]);
 
   useEffect(() => {
-    const chains = chainsService.getChainsData();
-    const chainsMap = keyBy(chainsService.sortChains(chains), 'chainId');
-    setChainsObject(chainsMap);
+    const chainIds = chainsService.getChainsData({ sort: true }).map((chain) => chain.chainId);
+    setChainsIds(chainIds);
   }, []);
+
+  useEffect(() => {
+    if (chainsIds.length === 0) return;
+
+    const chainsMap = chainsIds.reduce<Record<ChainId, Array<ChainAccount | ShardAccount[]>>>((acc, chainId) => {
+      return { ...acc, [chainId]: [] };
+    }, {});
+
+    accounts.forEach((account) => {
+      const chainId = Array.isArray(account) ? account[0].chainId : account.chainId;
+
+      chainsMap[chainId].push(account);
+    });
+
+    setChainElements(Object.entries(chainsMap));
+  }, [accounts, chainsIds.length]);
+
+  useEffect(() => {
+    Object.values(accordions.current).forEach((item) => {
+      const toOpen = isAltPressed && !item.isOpen;
+      const toClose = !isAltPressed && item.isOpen;
+
+      if (toOpen || toClose) {
+        item.el?.click();
+      }
+    });
+  }, [isAltPressed]);
 
   const submitForm = (event: FormEvent) => {
     event.preventDefault();
@@ -75,6 +106,11 @@ export const ManageDynamicDerivations = ({ seedInfo, onBack, onComplete }: Props
     });
 
     submit();
+  };
+
+  const handleConstructorKeys = (keys: Array<ChainAccount | ShardAccount[]>) => {
+    manageDynamicDerivationsModel.events.keysAdded(keys);
+    toggleConstructorModal();
   };
 
   const goBack = () => {
@@ -134,14 +170,14 @@ export const ManageDynamicDerivations = ({ seedInfo, onBack, onComplete }: Props
         </form>
       </div>
 
-      <div className="w-[472px] flex flex-col bg-input-background-disabled py-4 rounded-r-lg">
+      <div className="w-[472px] flex flex-col bg-input-background-disabled pt-4 rounded-r-lg">
         <div className="flex items-center justify-between px-5 mt-[52px] mb-6">
           <div className="flex items-center gap-x-1.5">
             <SmallTitleText>{t('onboarding.vault.vaultTitle')}</SmallTitleText>
             <VaultInfoPopover />
           </div>
           <div className="flex items-center gap-4">
-            <Button size="sm" pallet="secondary" onClick={() => {}}>
+            <Button size="sm" pallet="secondary" onClick={toggleConstructorModal}>
               {t('onboarding.vault.addMoreKeysButton')}
             </Button>
             <Button size="sm" pallet="secondary" onClick={() => {}}>
@@ -150,15 +186,9 @@ export const ManageDynamicDerivations = ({ seedInfo, onBack, onComplete }: Props
           </div>
         </div>
 
-        <div className="pl-5 mb-6 ">
+        <div className="pl-5 mb-6">
           <HelpText className="flex items-center gap-1 text-text-tertiary">
-            <Trans
-              t={t}
-              i18nKey="onboarding.vault.altHint"
-              components={{
-                button,
-              }}
-            />
+            <Trans t={t} i18nKey="onboarding.vault.altHint" components={{ button }} />
           </HelpText>
         </div>
 
@@ -170,56 +200,43 @@ export const ManageDynamicDerivations = ({ seedInfo, onBack, onComplete }: Props
           <FootnoteText className="text-text-tertiary ml-9 pl-2">{t('onboarding.vault.accountTitle')}</FootnoteText>
 
           <div className="flex flex-col gap-2 divide-y ml-9">
-            {Object.entries(chainsObject).map(([chainId]) => {
-              const chainAccounts = accounts.filter(
-                (account) => (account as ChainAccount).chainId === chainId,
-              ) as ChainAccount[];
-
-              if (!chainAccounts.length) return;
-
-              const accordionButton = (
-                <div className="flex gap-2">
-                  <ChainTitle fontClass="text-text-primary" chainId={chainId as ChainId} />
-                  <FootnoteText className="text-text-tertiary">{chainAccounts.length}</FootnoteText>
-                </div>
-              );
-
-              const accordionContent = chainAccounts.map((account) => (
-                <DerivedAccount
-                  key={account.accountId}
-                  keyType={account.keyType}
-                  derivationPath={account.derivationPath}
-                  showDerivationPath={isAltPressed}
-                />
-              ));
+            {chainElements.map(([chainId, chainAccounts]) => {
+              if (chainAccounts.length === 0) return;
 
               return (
                 <Accordion key={chainId} className="pt-2">
-                  <Accordion.Button buttonClass="mb-2 p-2">{accordionButton}</Accordion.Button>
-
-                  <Transition
-                    appear
-                    show={isAltPressed}
-                    as={Fragment}
-                    enter="transition-opacity duration-50"
-                    enterFrom="opacity-0"
-                    enterTo="opacity-100"
-                    leave="transition-opacity duration-50"
-                    leaveFrom="opacity-100"
-                    leaveTo="opacity-0"
+                  <Accordion.Button
+                    ref={(el) => (accordions.current[chainId] = { el, isOpen: false })}
+                    buttonClass="mb-2 p-2"
+                    onClick={() => (accordions.current[chainId].isOpen = !accordions.current[chainId].isOpen)}
                   >
-                    <div className="flex flex-col gap-2">{accordionContent}</div>
-                  </Transition>
-
-                  {!isAltPressed && (
-                    <Accordion.Content className="flex flex-col gap-2">{accordionContent}</Accordion.Content>
-                  )}
+                    <div className="flex gap-2">
+                      <ChainTitle fontClass="text-text-primary" chainId={chainId as ChainId} />
+                      <FootnoteText className="text-text-tertiary">{chainAccounts.length}</FootnoteText>
+                    </div>
+                  </Accordion.Button>
+                  <Accordion.Content className="flex flex-col gap-2">
+                    {chainAccounts.map((account, index) => (
+                      <DerivedAccount
+                        key={accountUtils.getDerivationPath(account)}
+                        showDerivationPath={isAltPressed}
+                        account={account}
+                      />
+                    ))}
+                  </Accordion.Content>
                 </Accordion>
               );
             })}
           </div>
         </div>
       </div>
+
+      <KeyConstructor
+        existingKeys={accounts}
+        isOpen={isConstructorModalOpen}
+        onClose={toggleConstructorModal}
+        onConfirm={handleConstructorKeys}
+      />
     </>
   );
 };

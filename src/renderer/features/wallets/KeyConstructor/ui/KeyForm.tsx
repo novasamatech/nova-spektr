@@ -3,7 +3,8 @@ import { useForm } from 'effector-forms';
 import { useUnit } from 'effector-react';
 
 import { constructorModel } from '../model/constructor-model';
-import { Button, Input, Checkbox, FootnoteText, Icon, Select, InputHint } from '@shared/ui';
+import { Button, Input, Checkbox, FootnoteText, Select, InputHint } from '@shared/ui';
+import { ShardInfoPopover } from './ShardInfoPopover';
 import { ChainTitle } from '@entities/chain';
 import { chainsService } from '@entities/network';
 import { KeyType } from '@shared/core';
@@ -21,11 +22,9 @@ export const KeyForm = () => {
   const derivationEnabled = useUnit(constructorModel.$derivationEnabled);
 
   useEffect(() => {
-    constructorModel.events.formInitiated();
+    if (!networkRef.current) return;
 
-    if (networkRef.current) {
-      constructorModel.events.focusableSet(networkRef.current);
-    }
+    constructorModel.events.focusableSet(networkRef.current);
   }, []);
 
   const networks = useMemo(() => {
@@ -110,7 +109,7 @@ export const KeyForm = () => {
           >
             <FootnoteText className="text-text-secondary">Sharded</FootnoteText>
           </Checkbox>
-          <Icon name="info" size={16} />
+          <ShardInfoPopover />
         </div>
         <div className="flex flex-col gap-y-2">
           <Input

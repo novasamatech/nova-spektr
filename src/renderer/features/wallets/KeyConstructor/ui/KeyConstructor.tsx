@@ -1,4 +1,5 @@
 import { useUnit } from 'effector-react';
+import { useEffect } from 'react';
 
 import { BaseModal, Button } from '@shared/ui';
 import { KeyForm } from './KeyForm';
@@ -9,16 +10,21 @@ import { useToggle } from '@shared/lib/hooks';
 import { ChainAccount, ShardAccount } from '@shared/core';
 
 type Props = {
+  existingKeys: Array<ChainAccount | ShardAccount[]>;
   isOpen: boolean;
   onClose: () => void;
   onConfirm: (keys: Array<ChainAccount | ShardAccount[]>) => void;
 };
 
-export const KeyConstructor = ({ isOpen, onClose, onConfirm }: Props) => {
+export const KeyConstructor = ({ existingKeys, isOpen, onClose, onConfirm }: Props) => {
   const [isWarningOpen, toggleWarningOpen] = useToggle();
 
   const hasChanged = useUnit(constructorModel.$hasChanged);
   const keys = useUnit(constructorModel.$keys);
+
+  useEffect(() => {
+    constructorModel.events.formInitiated(existingKeys);
+  }, [isOpen]);
 
   const closeConstructor = () => {
     if (!hasChanged) onClose();
@@ -38,7 +44,7 @@ export const KeyConstructor = ({ isOpen, onClose, onConfirm }: Props) => {
       panelClass="w-[784px] h-[678px]"
       title="Add keys for My Novasama vault"
       isOpen={isOpen}
-      onClose={onClose}
+      onClose={closeConstructor}
     >
       <div className="px-5 pt-4 pb-6 border-b border-divider">
         <KeyForm />

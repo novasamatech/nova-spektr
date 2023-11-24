@@ -7,6 +7,7 @@ import { chainsService } from '@entities/network';
 import { dictionary } from '@shared/lib/utils';
 import { ChainIcon } from '@entities/chain';
 import { accountUtils } from '@entities/wallet';
+import { KeyType } from '@shared/core';
 
 export const KeysList = () => {
   const keys = useUnit(constructorModel.$keys);
@@ -36,6 +37,8 @@ export const KeysList = () => {
       <ul className="flex flex-col gap-y-2">
         {keys.map((key, index) => {
           const keyData = Array.isArray(key) ? key[0] : key;
+
+          if (keyData.keyType === KeyType.MAIN) return;
 
           return (
             <li key={keyData.id || keyData.derivationPath} className="flex items-center gap-x-2.5 py-1.5 pl-2">

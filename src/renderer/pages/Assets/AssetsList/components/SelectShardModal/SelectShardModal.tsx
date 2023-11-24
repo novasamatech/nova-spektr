@@ -26,8 +26,8 @@ export const SelectShardModal = ({ isOpen, activeShards, accounts, onClose }: Pr
   const [query, setQuery] = useState('');
 
   useEffect(() => {
-    const chains = chainsService.getChainsData();
-    const chainsById = keyBy(chainsService.sortChains(chains), 'chainId');
+    const chains = chainsService.getChainsData({ sort: true });
+    const chainsById = keyBy(chains, 'chainId');
     const activeIds = activeShards.map((shard) => shard.id);
 
     const multishard = getMultishardStructure(accounts, chainsById);

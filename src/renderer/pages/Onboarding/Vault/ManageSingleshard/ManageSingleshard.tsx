@@ -38,9 +38,7 @@ export const ManageSingleshard = ({ seedInfo, onBack, onComplete }: Props) => {
   });
 
   useEffect(() => {
-    const chains = chainsService.getChainsData();
-
-    setChains(chainsService.sortChains(chains));
+    setChains(chainsService.getChainsData({ sort: true }));
   }, []);
 
   const createWallet: SubmitHandler<WalletForm> = async ({ walletName }) => {
