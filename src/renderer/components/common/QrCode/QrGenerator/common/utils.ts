@@ -74,9 +74,12 @@ export const createFrames = (input: Uint8Array, encoder?: Encoder): Uint8Array[]
 export const cryptoTypeToMultisignerIndex = (cryptoType: CryptoType): number => {
   // CryptoType enum indexes are different from MULTI_SIGNER taggedUnion order of fields
   // MULTI_SIGNER can't be changed and changing CryptoType would require DB migration
-  return { [CryptoType.ED25519]: 0, [CryptoType.SR25519]: 1, [CryptoType.ECDSA]: 2, [CryptoType.ETHEREUM]: -1 }[
-    cryptoType
-  ];
+  return {
+    [CryptoType.ED25519]: 0,
+    [CryptoType.SR25519]: 1,
+    [CryptoType.ECDSA]: 2,
+    [CryptoType.ETHEREUM]: -1,
+  }[cryptoType];
 };
 
 export const createDynamicDerivationPayload = (publicKey: Address, derivations: DynamicDerivationRequestInfo[]) => {
