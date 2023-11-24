@@ -139,7 +139,7 @@ export const SelectShardModal = ({ isOpen, activeShards, accounts, onClose }: Pr
           <li key={root.id}>
             <SelectableShard
               name={root.name}
-              address={toAddress(root.accountId)}
+              address={toAddress(root.accountId, { prefix: 1 })}
               checked={root.isSelected}
               semiChecked={root.selectedAmount > 0}
               onChange={(checked) => selectRoot(checked, root.accountId)}

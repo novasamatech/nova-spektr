@@ -55,7 +55,7 @@ export const DerivationsAddressModal = ({ rootKey, accounts, onClose, isOpen, wa
   return (
     <BaseModal
       isOpen={isOpen}
-      contentClass={isScanStep ? undefined : 'px-5 py-4'}
+      contentClass={isScanStep ? 'p-0' : 'px-5 py-4'}
       title={t('onboarding.paritySigner.generateAddressesModalTitle')}
       onClose={onClose}
     >
@@ -64,7 +64,7 @@ export const DerivationsAddressModal = ({ rootKey, accounts, onClose, isOpen, wa
       ) : (
         <div className="flex flex-col items-center">
           <SmallTitleText className="mb-6">{t('signing.scanQrTitle')}</SmallTitleText>
-          <QrDerivationsGenerator address={toAddress(rootKey)} derivations={derivations} size={240} />
+          <QrDerivationsGenerator address={toAddress(rootKey, { prefix: 1 })} derivations={derivations} size={240} />
           <InfoLink url={TROUBLESHOOTING_URL} className="mt-10.5 mb-8.5">
             {t('signing.troubleshootingLink')}
           </InfoLink>
