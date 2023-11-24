@@ -1,6 +1,6 @@
 import { array, Codec, object, option, sizedUint8Array, str, taggedUnion, u8, uint8Array } from 'parity-scale-codec';
 
-import { AddressInfo, SeedInfo } from './types';
+import { AddressInfo, DdAddressInfo, DdSeedInfo, SeedInfo } from './types';
 import { CryptoType, CryptoTypeString } from '@shared/core';
 import type { ChainId } from '@shared/core';
 
@@ -91,3 +91,33 @@ export const CameraErrorText = {
 
 export const WhiteTextButtonStyle =
   'text-white-button-background-default hover:text-white-button-background-hover active:text-white-button-background-active disabled:text-white-button-background-disabled';
+
+const DYNAMIC_DERIVATION_REQUEST_INFO = object(
+  ['derivationPath', str],
+  ['encryption', u8 as Codec<CryptoType>],
+  ['genesisHash', sizedUint8Array(32)],
+);
+
+const DYNAMIC_DERIVATIONS_REQUEST_INFO = object(
+  ['multisigner', MULTI_SIGNER],
+  ['dynamicDerivations', array(DYNAMIC_DERIVATION_REQUEST_INFO)],
+);
+
+export const DYNAMIC_DERIVATIONS_REQUEST = taggedUnion('DynamicDerivationsRequest', [
+  ['V1', ['payload', DYNAMIC_DERIVATIONS_REQUEST_INFO]],
+]);
+
+const DYNAMIC_DERIVATION_RESPONSE_INFO: Codec<DdAddressInfo> = object(
+  ['derivationPath', str],
+  ['encryption', u8 as Codec<CryptoType>],
+  ['publicKey', MULTI_SIGNER],
+);
+
+const DYNAMIC_DERIVATIONS_RESPONSE_INFO: Codec<DdSeedInfo> = object(
+  ['multiSigner', MULTI_SIGNER],
+  ['dynamicDerivations', array(DYNAMIC_DERIVATION_RESPONSE_INFO)],
+);
+
+export const DYNAMIC_DERIVATIONS_ADDRESS_RESPONSE = taggedUnion('DynamicDerivationsAddressResponse', [
+  ['V1', ['addr', DYNAMIC_DERIVATIONS_RESPONSE_INFO]],
+]);

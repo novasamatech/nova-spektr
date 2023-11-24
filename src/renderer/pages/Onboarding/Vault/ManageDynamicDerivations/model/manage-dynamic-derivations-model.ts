@@ -2,20 +2,12 @@ import { attach, createApi, createEvent, createStore, forward, sample } from 'ef
 import { createForm } from 'effector-forms';
 import { u8aToHex } from '@polkadot/util';
 
+import { AccountType, ChainAccount, ChainType, CryptoType, KeyType, ShardAccount } from '@renderer/shared/core';
 import { SeedInfo } from '@renderer/components/common/QrCode/common/types';
 import { toAccountId } from '@shared/lib/utils';
 import { chainsService } from '@entities/network';
 import { walletModel } from '@entities/wallet';
-import {
-  AccountType,
-  ChainAccount,
-  ChainType,
-  CryptoType,
-  KeyType,
-  SigningType,
-  WalletType,
-  ShardAccount,
-} from '@shared/core';
+import { DraftAccount } from '@shared/core/types/account';
 
 const chains = chainsService.getChainsData();
 
@@ -27,11 +19,14 @@ export type Callbacks = {
 };
 
 const $callbacks = createStore<Callbacks | null>(null);
-const $accounts = createStore<Array<ChainAccount | ShardAccount[]>>([]);
+const $accounts = createStore<DraftAccount<ShardAccount | ChainAccount>[]>([]);
 
 const callbacksApi = createApi($callbacks, {
   callbacksChanged: (state, props: Callbacks) => ({ ...state, ...props }),
 });
+
+const formInitiated = createEvent<SeedInfo[]>();
+const derivationsImported = createEvent<DraftAccount<ShardAccount | ChainAccount>[]>();
 
 const $walletForm = createForm({
   fields: {
@@ -126,20 +121,25 @@ forward({
 });
 
 sample({
-  clock: createWalletFx.doneData,
+  clock: walletModel.effects.polkadotVaultCreatedFx.doneData,
   target: attach({
     source: $callbacks,
     effect: (state) => state?.onSubmit(),
   }),
 });
 
+forward({
+  from: derivationsImported,
+  to: $accounts,
+});
+
 export const manageDynamicDerivationsModel = {
   $walletForm,
   $accounts,
-  $submitPending: createWalletFx.pending,
   events: {
     callbacksChanged: callbacksApi.callbacksChanged,
     formInitiated,
     keysAdded,
+    derivationsImported,
   },
 };

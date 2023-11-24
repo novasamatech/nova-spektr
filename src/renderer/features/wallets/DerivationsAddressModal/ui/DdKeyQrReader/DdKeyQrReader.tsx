@@ -4,11 +4,18 @@ import cn from 'classnames';
 import { useState } from 'react';
 
 import { QrReader } from '@renderer/components/common';
-import { ErrorObject, QrError, SeedInfo, VideoInput } from '@renderer/components/common/QrCode/common/types';
-import { Icon, Loader, Button, CaptionText, FootnoteText, Select } from '@shared/ui';
-import { DropdownOption, DropdownResult } from '@shared/ui/Dropdowns/common/types';
-import { useI18n } from '@app/providers';
-import { cnTw } from '@shared/lib/utils';
+import {
+  DdAddressInfoDecoded,
+  DdSeedInfo,
+  ErrorObject,
+  QrError,
+  VideoInput,
+} from '@renderer/components/common/QrCode/common/types';
+import { Icon, Loader, Button, CaptionText, FootnoteText, Select, SmallTitleText } from '@renderer/shared/ui';
+import { DropdownOption, DropdownResult } from '@renderer/shared/ui/Dropdowns/common/types';
+import { useI18n } from '@renderer/app/providers';
+import { cnTw } from '@renderer/shared/lib/utils';
+import { WhiteTextButtonStyle } from '@renderer/components/common/QrCode/common/constants';
 
 const enum CameraState {
   ACTIVE,
@@ -20,15 +27,18 @@ const enum CameraState {
   DENY_ERROR,
 }
 
+const CameraAccessErrors = [CameraState.UNKNOWN_ERROR, CameraState.DENY_ERROR, CameraState.DECODE_ERROR];
+
 const RESULT_DELAY = 250;
 
 type Props = {
   size?: number | [number, number];
   className?: string;
-  onResult: (payload: SeedInfo[]) => void;
+  onGoBack: () => void;
+  onResult: (payload: DdAddressInfoDecoded[]) => void;
 };
 
-const KeyQrReader = ({ size = 300, className, onResult }: Props) => {
+export const DdKeyQrReader = ({ size = 300, className, onGoBack, onResult }: Props) => {
   const { t } = useI18n();
 
   const [cameraState, setCameraState] = useState<CameraState>(CameraState.LOADING);
@@ -39,6 +49,7 @@ const KeyQrReader = ({ size = 300, className, onResult }: Props) => {
   const [{ decoded, total }, setProgress] = useState({ decoded: 0, total: 0 });
 
   const isCameraPending = CameraState.LOADING === cameraState;
+  const isCameraOn = !isCameraPending && !CameraAccessErrors.includes(cameraState);
 
   const isCameraError = [
     CameraState.UNKNOWN_ERROR,
@@ -74,22 +85,34 @@ const KeyQrReader = ({ size = 300, className, onResult }: Props) => {
     setProgress({ decoded: 0, total: 0 });
   };
 
-  const onScanResult = (qrPayload: SeedInfo[]) => {
+  const onScanResult = (qrPayload: DdSeedInfo[]) => {
     try {
+      const derivations: DdAddressInfoDecoded[] = [];
       qrPayload.forEach((qr) => {
         if (qr.multiSigner) {
+          // Run encodeAddress to check we got valid address for public key
           encodeAddress(qr.multiSigner.public);
         }
 
-        if (qr.derivedKeys.length === 0) return;
+        if (qr.dynamicDerivations.length === 0) return;
 
-        qr.derivedKeys.forEach(({ address }) =>
-          encodeAddress(isHex(address) ? hexToU8a(address) : decodeAddress(address)),
-        );
+        const derivationsAddressInfo = qr.dynamicDerivations.map((addressInfo) => ({
+          ...addressInfo,
+          publicKey: {
+            MultiSigner: addressInfo.publicKey.MultiSigner,
+            public: encodeAddress(
+              isHex(addressInfo.publicKey.public)
+                ? hexToU8a(addressInfo.publicKey.public)
+                : decodeAddress(addressInfo.publicKey.public),
+            ),
+          },
+        }));
+
+        derivations.push(...derivationsAddressInfo);
       });
 
       setIsScanComplete(true);
-      setTimeout(() => onResult(qrPayload), RESULT_DELAY);
+      setTimeout(() => onResult(derivations), RESULT_DELAY);
     } catch (error) {
       setCameraState(CameraState.INVALID_ERROR);
       resetCamera();
@@ -183,20 +206,45 @@ const KeyQrReader = ({ size = 300, className, onResult }: Props) => {
       )}
 
       <div className="flex flex-col gap-4">
-        <div className={cn('relative overflow-hidden', isCameraPending && 'hidden', className)} style={sizeStyle}>
+        <div
+          className={cn('relative overflow-hidden rounded-b-lg', isCameraPending && 'hidden', className)}
+          style={sizeStyle}
+        >
+          <SmallTitleText
+            as="h3"
+            align="center"
+            className={cnTw('absolute w-full mt-4 z-10', isCameraOn && 'text-white')}
+          >
+            {t('onboarding.vault.scanTitle')}
+          </SmallTitleText>
           <QrReader
             size={size}
             cameraId={activeCamera?.value}
-            bgVideo={true}
+            isDynamicDerivations
+            bgVideo
             className="relative top-[-24px] scale-y-[1.125] -scale-x-[1.125]"
+            wrapperClassName="translate-y-[-84px]"
             onStart={() => setCameraState(CameraState.ACTIVE)}
             onCameraList={onCameraList}
             onProgress={setProgress}
-            onResult={(result) => onScanResult(result as SeedInfo[])}
+            onResult={(result) => onScanResult(result as DdSeedInfo[])}
             onError={onError}
           />
 
-          <div className="absolute inset-0 flex items-center justify-center w-full h-full">
+          <div className="h-8.5 w-full flex justify-center z-10 absolute bottom-[138px]">
+            {availableCameras && availableCameras.length > 1 && (
+              <Select
+                theme="dark"
+                placeholder={t('onboarding.paritySigner.selectCameraLabel')}
+                selectedId={activeCamera?.id}
+                options={availableCameras}
+                className="w-[208px]"
+                onChange={setActiveCamera}
+              />
+            )}
+          </div>
+
+          <div className="absolute inset-0 flex justify-center w-full h-full mt-[58px]">
             {isScanComplete ? (
               <>
                 <div className="backdrop-blur-sm rounded-2lg after:absolute after:inset-0 after:bg-white/50" />
@@ -206,34 +254,30 @@ const KeyQrReader = ({ size = 300, className, onResult }: Props) => {
               <Icon name="qrFrame" size={240} className="text-white z-20" />
             )}
           </div>
-        </div>
 
-        {availableCameras.length > 1 && (
-          <Select
-            placeholder={t('onboarding.paritySigner.selectCameraLabel')}
-            selectedId={activeCamera?.id}
-            options={availableCameras}
-            onChange={setActiveCamera}
-          />
-        )}
-
-        {total > 1 && (
-          <div className="flex items-center justify-center gap-2">
-            <FootnoteText className="text-text-tertiary">{t('qrReader.parsingLabel')}</FootnoteText>
-            <CaptionText
-              className={cnTw(
-                'text-white uppercase bg-label-background-gray px-2 py-1 rounded-full',
-                total === decoded && 'bg-label-background-green',
-              )}
-              data-testid="progress"
+          <footer className="flex w-full justify-between items-center h-[66px] px-5 z-10 absolute bottom-0">
+            <Button
+              variant="text"
+              className={cn('h-6.5 px-4', isCameraOn ? WhiteTextButtonStyle : '')}
+              onClick={onGoBack}
             >
-              {t('qrReader.parsingProgress', { decoded, total })}
-            </CaptionText>
-          </div>
-        )}
+              {t('operation.goBackButton')}
+            </Button>
+
+            {total > 1 && (
+              <div className="flex items-center gap-x-2 z-10 p-1.5 pl-3 rounded-2xl bg-black-background">
+                <FootnoteText className="text-text-tertiary">{t('signing.parsingLabel')}</FootnoteText>
+                <CaptionText
+                  as="span"
+                  className="bg-label-background-gray text-white uppercase px-2 py-1 rounded-[26px]"
+                >
+                  {t('signing.parsingCount', { current: decoded, total: total })}
+                </CaptionText>
+              </div>
+            )}
+          </footer>
+        </div>
       </div>
     </>
   );
 };
-
-export default KeyQrReader;

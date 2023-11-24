@@ -1,5 +1,14 @@
-import { ChainId, KeyType } from '@shared/core';
-import { ImportedDerivation, TypedImportedDerivation } from '../types';
+import {
+  AccountType,
+  ChainAccount,
+  ChainId,
+  ChainType,
+  CryptoType,
+  DraftAccount,
+  KeyType,
+  ShardAccount,
+} from '@shared/core';
+import { ImportedDerivation } from '../types';
 
 const chainId: ChainId = '0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3';
 
@@ -58,23 +67,38 @@ const validDerivations = [
   },
 ];
 
-const existingChainDerivations: TypedImportedDerivation[] = [
+const existingShardsGroupId = '1';
+const existingShards: DraftAccount<ShardAccount>[] = [...Array(10).keys()].map((index) => ({
+  groupId: existingShardsGroupId,
+  name: '',
+  chainType: ChainType.SUBSTRATE,
+  cryptoType: CryptoType.SR25519,
+  derivationPath: `//polkadot//staking//${index}`,
+  type: AccountType.SHARD,
+  keyType: KeyType.STAKING,
+  chainId: chainId,
+}));
+
+const existingChainDerivations: DraftAccount<ShardAccount | ChainAccount>[] = [
   {
+    name: '',
+    chainType: ChainType.SUBSTRATE,
+    cryptoType: CryptoType.SR25519,
     derivationPath: '//polkadot',
-    type: KeyType.MAIN,
+    type: AccountType.CHAIN,
+    keyType: KeyType.MAIN,
     chainId: chainId,
   },
   {
+    name: '',
+    chainType: ChainType.SUBSTRATE,
+    cryptoType: CryptoType.SR25519,
     derivationPath: '//polkadot//staking//some_key',
-    type: KeyType.STAKING,
+    type: AccountType.CHAIN,
+    keyType: KeyType.STAKING,
     chainId: chainId,
   },
-  {
-    derivationPath: '//polkadot//staking',
-    type: KeyType.STAKING,
-    chainId: chainId,
-    sharded: 10,
-  },
+  ...existingShards,
 ];
 
 type ValidationTestData = {
@@ -137,4 +161,5 @@ export const importKeysMocks = {
   validDerivations,
   existingChainDerivations,
   validationTestData,
+  existingShardsGroupId,
 };

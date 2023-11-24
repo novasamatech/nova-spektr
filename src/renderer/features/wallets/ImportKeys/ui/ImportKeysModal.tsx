@@ -3,24 +3,25 @@ import { useEffect } from 'react';
 
 import { Alert, BaseModal, Button, InfoLink, InputFile, InputHint } from '@shared/ui';
 import { useI18n } from '@app/providers';
-import { AccountId } from '@shared/core';
+import { AccountId, ChainAccount, ShardAccount } from '@shared/core';
 import { cnTw } from '@shared/lib/utils';
 // @ts-ignore
 import templateFile from '@shared/assets/files/dd-template.yaml';
 import { importKeysModel } from '../model/import-keys-model';
-import { TypedImportedDerivation } from '../lib/types';
+import { DraftAccount } from '@shared/core';
 
 type Props = {
   isOpen: boolean;
   rootAccountId: AccountId;
-  existingKeys: TypedImportedDerivation[];
+  existingKeys: DraftAccount<ShardAccount | ChainAccount>[];
   onClose: () => void;
-  onConfirm: () => void;
+  onConfirm: (mergedKeys: DraftAccount<ShardAccount | ChainAccount>[]) => void;
 };
 
 export const ImportKeysModal = ({ isOpen, rootAccountId, existingKeys, onClose, onConfirm }: Props) => {
   const { t } = useI18n();
   const validationError = useUnit(importKeysModel.$validationError);
+  const mergedKeys = useUnit(importKeysModel.$mergedKeys);
   const successReport = useUnit(importKeysModel.$successReport);
 
   useEffect(() => {
@@ -63,17 +64,12 @@ export const ImportKeysModal = ({ isOpen, rootAccountId, existingKeys, onClose, 
     }`;
   };
 
-  const handleContinue = () => {
-    // send merged keys to other model
-    onConfirm();
-  };
-
   return (
     <BaseModal isOpen={isOpen} title={t('dynamicDerivations.importKeys.modalTitle')} onClose={onClose}>
       <div className="flex flex-col gap-y-4 items-start">
         <InputFile
           placeholder={t('dynamicDerivations.importKeys.fileInputPlaceholder')}
-          accept=".yaml,.txt"
+          accept=".yaml"
           className={cnTw('w-full h-[126px]', validationError && 'mb-2', successReport && 'mb-4')}
           invalid={Boolean(validationError?.error)}
           onChange={handleFileUpload}
@@ -108,8 +104,10 @@ export const ImportKeysModal = ({ isOpen, rootAccountId, existingKeys, onClose, 
       </div>
 
       <div className="flex items-center justify-between pt-3">
-        <Button variant="text">{t('dynamicDerivations.importKeys.backButton')}</Button>
-        <Button disabled={Boolean(validationError?.error) || !successReport} onClick={handleContinue}>
+        <Button variant="text" onClick={onClose}>
+          {t('dynamicDerivations.importKeys.backButton')}
+        </Button>
+        <Button disabled={Boolean(validationError?.error) || !successReport} onClick={() => onConfirm(mergedKeys)}>
           {t('dynamicDerivations.importKeys.continueButton')}
         </Button>
       </div>

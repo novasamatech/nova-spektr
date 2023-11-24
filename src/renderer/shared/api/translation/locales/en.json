@@ -180,7 +180,7 @@
         "invalidPath_other": "Derivation paths {invalidPath} are not valid, please check the file",
         "invalidRoot": "The public key doesn’t match"
       },
-      "fileInputPlaceholder": "Select .yaml or .txt file on your computer",
+      "fileInputPlaceholder": "Select .yaml file on your computer",
       "modalTitle": "Import keys",
       "report": {
         "addedKeys_one": "{count} key added",
@@ -297,6 +297,7 @@
       "decodeErrorLabel": "Recognition error!",
       "derivedLabel": "Derived accounts on",
       "existingAccountDescription": "This account already exists",
+      "generateAddressesModalTitle": "Generate accounts addresses",
       "invalidAccountTitle": "The <strong>address</strong> is not a valid polkadot address!",
       "invalidAccountsTitle": "These <strong>accounts</strong> are not valid!",
       "multipleCamerasLabel": "There are multiple cameras!",

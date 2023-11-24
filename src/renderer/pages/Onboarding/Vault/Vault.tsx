@@ -70,18 +70,22 @@ export const Vault = ({ isOpen, onClose, onComplete }: Props) => {
   useEffect(() => {
     if (!qrPayload) return;
 
-    if (isDynamicDerivationSupport(qrPayload[0])) {
+    const withoutDerivedKeys = qrPayload[0].derivedKeys.length === 0;
+
+    if (isDynamicDerivationSupport(qrPayload[0]) && withoutDerivedKeys) {
       setQrType(QrCodeType.POLKADOT_VAULT);
 
       return;
     }
 
-    const isPlainQr =
-      qrPayload?.length === 1 &&
-      ((qrPayload[0].derivedKeys.length === 0 && qrPayload[0].name === '') ||
-        qrPayload[0].derivedKeys.every((d) => !d.derivationPath));
+    const isEmptyName = qrPayload[0].name === '';
+    const withoutDerivationPaths = qrPayload[0].derivedKeys.every((d) => !d.derivationPath);
+    const isSingleQr = qrPayload.length === 1;
+    const isPlainQr = withoutDerivedKeys && isEmptyName;
 
-    setQrType(isPlainQr ? QrCodeType.SINGLESHARD : QrCodeType.MULTISHARD);
+    const isSingleshard = isSingleQr && (isPlainQr || withoutDerivationPaths);
+
+    setQrType(isSingleshard ? QrCodeType.SINGLESHARD : QrCodeType.MULTISHARD);
   }, [qrPayload]);
 
   const onReceiveQr = (payload: SeedInfo[]) => {
