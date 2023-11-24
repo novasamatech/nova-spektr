@@ -71,18 +71,26 @@ export const createFrames = (input: Uint8Array, encoder?: Encoder): Uint8Array[]
   );
 };
 
+export const cryptoTypeToMultisignerIndex = (cryptoType: CryptoType): number => {
+  // CryptoType enum indexes are different from MULTI_SIGNER taggedUnion order of fields
+  // MULTI_SIGNER can't be changed and changing CryptoType would require DB migration
+  return { [CryptoType.ED25519]: 0, [CryptoType.SR25519]: 1, [CryptoType.ECDSA]: 2, [CryptoType.ETHEREUM]: -1 }[
+    cryptoType
+  ];
+};
+
 export const createDynamicDerivationPayload = (publicKey: Address, derivations: DynamicDerivationRequestInfo[]) => {
   const dynamicDerivationsRequest = DYNAMIC_DERIVATIONS_REQUEST.encode({
     DynamicDerivationsRequest: 'V1',
     payload: {
       multisigner: {
         MultiSigner: CryptoTypeString.SR25519,
-        public: decodeAddress(publicKey),
+        public: decodeAddress(publicKey, false, 1),
       },
       dynamicDerivations: derivations.map((d) => ({
         derivationPath: d.derivationPath,
         genesisHash: hexToU8a(d.genesisHash),
-        encryption: CryptoType.SR25519,
+        encryption: cryptoTypeToMultisignerIndex(CryptoType.SR25519),
       })),
     },
   });
