@@ -14,22 +14,6 @@ const KeyIcon: Record<KeyType, IconNames> = {
   [KeyType.STAKING]: 'keyStaking',
 };
 
-// const KeyTitle: Record<KeyType, string> = {
-//   [KeyType.CUSTOM]: 'derivedAccount.customTitle',
-//   [KeyType.GOVERNANCE]: 'derivedAccount.governanceTitle',
-//   [KeyType.HOT]: 'derivedAccount.hotTitle',
-//   [KeyType.MAIN]: 'derivedAccount.mainTitle',
-//   [KeyType.PUBLIC]: 'derivedAccount.publicTitle',
-//   [KeyType.STAKING]: 'derivedAccount.stakingTitle',
-// };
-//
-// const KeyShardedTitle: Record<ShardedKeyType, string> = {
-//   [KeyType.CUSTOM]: 'derivedAccount.customShardedTitle',
-//   [KeyType.GOVERNANCE]: 'derivedAccount.governanceShardedTitle',
-//   [KeyType.MAIN]: 'derivedAccount.mainShardedTitle',
-//   [KeyType.STAKING]: 'derivedAccount.stakingShardedTitle',
-// };
-
 type Props = {
   account: ChainAccount | ShardAccount[];
   showDerivationPath?: boolean;

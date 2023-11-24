@@ -114,7 +114,6 @@ export const ManageDynamicDerivations = ({ seedInfo, onBack, onComplete }: Props
   };
 
   const goBack = () => {
-    // reset();
     onBack();
   };
 
@@ -216,7 +215,7 @@ export const ManageDynamicDerivations = ({ seedInfo, onBack, onComplete }: Props
                     </div>
                   </Accordion.Button>
                   <Accordion.Content className="flex flex-col gap-2">
-                    {chainAccounts.map((account, index) => (
+                    {chainAccounts.map((account) => (
                       <DerivedAccount
                         key={accountUtils.getDerivationPath(account)}
                         showDerivationPath={isAltPressed}
@@ -232,6 +231,7 @@ export const ManageDynamicDerivations = ({ seedInfo, onBack, onComplete }: Props
       </div>
 
       <KeyConstructor
+        title={name?.value}
         existingKeys={accounts}
         isOpen={isConstructorModalOpen}
         onClose={toggleConstructorModal}

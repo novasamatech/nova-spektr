@@ -18,6 +18,11 @@ const KEY_NAMES = {
 
 const chains = chainsService.getChainsData({ sort: true });
 
+const formInitiated = createEvent<Array<ChainAccount | ShardAccount[]>>();
+const formStarted = createEvent();
+const focusableSet = createEvent<HTMLButtonElement>();
+const keyRemoved = createEvent<number>();
+
 const $keys = createStore<Array<ChainAccount | ShardAccount[]>>([]);
 
 type FormValues = {
@@ -45,52 +50,52 @@ const $constructorForm = createForm<FormValues>({
       rules: [
         {
           name: 'required',
-          errorText: 'Enter number',
+          errorText: 'dynamicDerivations.constructor.numberRequiredError',
           validator: (value, { isSharded }): boolean => !isSharded || Boolean(value),
         },
         {
           name: 'NaN',
-          errorText: 'Not a number',
+          errorText: 'dynamicDerivations.constructor.notNumberError',
           validator: (value, { isSharded }): boolean => !isSharded || !Number.isNaN(Number(value)),
         },
         {
           name: 'maxAmount',
-          errorText: 'Max 50',
+          errorText: 'dynamicDerivations.constructor.maxShardsError',
           validator: (value, { isSharded }): boolean => !isSharded || Number(value) <= 50,
         },
         {
           name: 'minAmount',
-          errorText: 'Min 2',
+          errorText: 'dynamicDerivations.constructor.minShardsError',
           validator: (value, { isSharded }): boolean => !isSharded || Number(value) >= 2,
         },
       ],
     },
     keyName: {
       init: '',
-      rules: [{ name: 'required', errorText: 'Please enter key display name', validator: Boolean }],
+      rules: [{ name: 'required', errorText: 'dynamicDerivations.constructor.displayNameError', validator: Boolean }],
     },
     derivationPath: {
       init: '',
       rules: [
         {
           name: 'required',
-          errorText: 'Please enter derivation path',
+          errorText: 'dynamicDerivations.constructor.requiredDerivationError',
           validator: (value, { keyType }): boolean => keyType !== KeyType.CUSTOM || Boolean(value),
         },
         {
           name: 'hasPassword',
-          errorText: 'Password derivation path is not allowed',
+          errorText: 'dynamicDerivations.constructor.passwordDerivationError',
           validator: (value): boolean => !/\/\/\//g.test(value),
         },
         {
           name: 'badFormat',
-          errorText: 'Wrong derivation path format',
+          errorText: 'dynamicDerivations.constructor.wrongDerivationError',
           validator: validateDerivation,
         },
         {
           name: 'duplicated',
           source: $keys,
-          errorText: 'Duplicated derivation path',
+          errorText: 'dynamicDerivations.constructor.duplicateDerivationError',
           validator: (value, _, keys: Array<ChainAccount | ShardAccount[]>): boolean => {
             return keys.every((key) => {
               const keyToCheck = Array.isArray(key) ? key[0] : key;
@@ -105,7 +110,7 @@ const $constructorForm = createForm<FormValues>({
   validateOn: ['submit'],
 });
 
-const $hasChanged = createStore<boolean>(false);
+const $hasChanged = createStore<boolean>(false).reset(formStarted);
 const $elementToFocus = createStore<HTMLButtonElement | null>(null);
 
 const $shardedEnabled = combine($constructorForm.fields.keyType.$value, (keyType) => {
@@ -115,11 +120,6 @@ const $shardedEnabled = combine($constructorForm.fields.keyType.$value, (keyType
 const $derivationEnabled = combine($constructorForm.fields.keyType.$value, (keyType) => {
   return keyType === KeyType.CUSTOM;
 });
-
-const formInitiated = createEvent<Array<ChainAccount | ShardAccount[]>>();
-const formStarted = createEvent();
-const focusableSet = createEvent<HTMLButtonElement>();
-const keyRemoved = createEvent<number>();
 
 const focusElementFx = createEffect((element: HTMLButtonElement) => {
   element.focus();
@@ -245,7 +245,6 @@ export const constructorModel = {
   $constructorForm,
   events: {
     formInitiated,
-    formStarted,
     keyRemoved,
     focusableSet,
   },

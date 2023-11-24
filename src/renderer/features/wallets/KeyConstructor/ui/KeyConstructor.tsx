@@ -1,23 +1,25 @@
 import { useUnit } from 'effector-react';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
 import { BaseModal, Button } from '@shared/ui';
 import { KeyForm } from './KeyForm';
 import { KeysList } from './KeysList';
 import { WarningModal } from './WarningModal';
 import { constructorModel } from '../model/constructor-model';
-import { useToggle } from '@shared/lib/hooks';
 import { ChainAccount, ShardAccount } from '@shared/core';
+import { useI18n } from '@app/providers';
 
 type Props = {
+  title: string;
   existingKeys: Array<ChainAccount | ShardAccount[]>;
   isOpen: boolean;
   onClose: () => void;
   onConfirm: (keys: Array<ChainAccount | ShardAccount[]>) => void;
 };
 
-export const KeyConstructor = ({ existingKeys, isOpen, onClose, onConfirm }: Props) => {
-  const [isWarningOpen, toggleWarningOpen] = useToggle();
+export const KeyConstructor = ({ title, existingKeys, isOpen, onClose, onConfirm }: Props) => {
+  const { t } = useI18n();
+  const [isWarningOpen, setIsWarningOpen] = useState(false);
 
   const hasChanged = useUnit(constructorModel.$hasChanged);
   const keys = useUnit(constructorModel.$keys);
@@ -27,14 +29,16 @@ export const KeyConstructor = ({ existingKeys, isOpen, onClose, onConfirm }: Pro
   }, [isOpen]);
 
   const closeConstructor = () => {
-    if (!hasChanged) onClose();
-
-    toggleWarningOpen();
+    if (hasChanged) {
+      setIsWarningOpen(true);
+    } else {
+      onClose();
+    }
   };
 
   const confirmConstructor = () => {
-    toggleWarningOpen();
-    onConfirm(keys);
+    setIsWarningOpen(false);
+    onClose();
   };
 
   return (
@@ -42,7 +46,7 @@ export const KeyConstructor = ({ existingKeys, isOpen, onClose, onConfirm }: Pro
       closeButton
       contentClass="flex flex-col h-[calc(100%-46px)]"
       panelClass="w-[784px] h-[678px]"
-      title="Add keys for My Novasama vault"
+      title={t('dynamicDerivations.constructor.title', { title })}
       isOpen={isOpen}
       onClose={closeConstructor}
     >
@@ -54,12 +58,12 @@ export const KeyConstructor = ({ existingKeys, isOpen, onClose, onConfirm }: Pro
       </div>
       <div className="flex justify-between pt-3 px-5 pb-4">
         <Button variant="text" onClick={closeConstructor}>
-          Back
+          {t('dynamicDerivations.constructor.backButton')}
         </Button>
-        <Button onClick={() => onConfirm(keys)}>Save</Button>
+        <Button onClick={() => onConfirm(keys)}>{t('dynamicDerivations.constructor.saveButton')}</Button>
       </div>
 
-      <WarningModal isOpen={isWarningOpen} onClose={toggleWarningOpen} onConfirm={confirmConstructor} />
+      <WarningModal isOpen={isWarningOpen} onClose={() => setIsWarningOpen(false)} onConfirm={confirmConstructor} />
     </BaseModal>
   );
 };

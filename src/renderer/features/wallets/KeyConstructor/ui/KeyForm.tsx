@@ -8,8 +8,10 @@ import { ShardInfoPopover } from './ShardInfoPopover';
 import { ChainTitle } from '@entities/chain';
 import { chainsService } from '@entities/network';
 import { KeyType } from '@shared/core';
+import { useI18n } from '@app/providers';
 
 export const KeyForm = () => {
+  const { t } = useI18n();
   const networkRef = useRef<HTMLButtonElement>(null);
 
   const {
@@ -46,27 +48,41 @@ export const KeyForm = () => {
     {
       id: KeyType.HOT,
       value: KeyType.HOT,
-      element: <FootnoteText className="text-text-secondary">Hot account</FootnoteText>,
+      element: (
+        <FootnoteText className="text-text-secondary">{t('dynamicDerivations.constructor.keyTypeHot')}</FootnoteText>
+      ),
     },
     {
       id: KeyType.PUBLIC,
       value: KeyType.PUBLIC,
-      element: <FootnoteText className="text-text-secondary">Public account</FootnoteText>,
+      element: (
+        <FootnoteText className="text-text-secondary">{t('dynamicDerivations.constructor.keyTypePublic')}</FootnoteText>
+      ),
     },
     {
       id: KeyType.STAKING,
       value: KeyType.STAKING,
-      element: <FootnoteText className="text-text-secondary">Staking account</FootnoteText>,
+      element: (
+        <FootnoteText className="text-text-secondary">
+          {t('dynamicDerivations.constructor.keyTypeStaking')}
+        </FootnoteText>
+      ),
     },
     {
       id: KeyType.GOVERNANCE,
       value: KeyType.GOVERNANCE,
-      element: <FootnoteText className="text-text-secondary">Governance account</FootnoteText>,
+      element: (
+        <FootnoteText className="text-text-secondary">
+          {t('dynamicDerivations.constructor.keyTypeGovernance')}
+        </FootnoteText>
+      ),
     },
     {
       id: KeyType.CUSTOM,
       value: KeyType.CUSTOM,
-      element: <FootnoteText className="text-text-secondary">Custom key</FootnoteText>,
+      element: (
+        <FootnoteText className="text-text-secondary">{t('dynamicDerivations.constructor.keyTypeCustom')}</FootnoteText>
+      ),
     },
   ];
 
@@ -81,8 +97,8 @@ export const KeyForm = () => {
         <Select
           ref={networkRef}
           className="w-[228px]"
-          label="Network"
-          placeholder="Select network"
+          label={t('dynamicDerivations.constructor.networkLabel')}
+          placeholder={t('dynamicDerivations.constructor.networkPlaceholder')}
           selectedId={network?.value?.chainId}
           options={networks}
           onChange={({ value }) => network?.onChange(value)}
@@ -90,15 +106,15 @@ export const KeyForm = () => {
         <div className="flex flex-col gap-y-2">
           <Select
             className="w-[256px]"
-            label="Type of key"
-            placeholder="Select"
+            label={t('dynamicDerivations.constructor.keyTypeLabel')}
+            placeholder={t('dynamicDerivations.constructor.keyTypePlaceholder')}
             invalid={keyType?.hasError()}
             selectedId={keyType?.value}
             options={keyTypes}
             onChange={({ value }) => keyType?.onChange(value)}
           />
           <InputHint variant="error" active={keyType?.hasError()}>
-            {keyType?.errorText()}
+            {t(keyType?.errorText())}
           </InputHint>
         </div>
         <div className="flex items-center gap-x-1 py-2 mt-6.5">
@@ -107,22 +123,22 @@ export const KeyForm = () => {
             checked={isSharded?.value}
             onChange={({ target }) => isSharded?.onChange(target.checked)}
           >
-            <FootnoteText className="text-text-secondary">Sharded</FootnoteText>
+            {t('dynamicDerivations.constructor.shardedLabel')}
           </Checkbox>
           <ShardInfoPopover />
         </div>
         <div className="flex flex-col gap-y-2">
           <Input
             wrapperClass="w-20"
-            label="Shards to add"
-            placeholder="2 - 50"
+            label={t('dynamicDerivations.constructor.shardsLabel')}
+            placeholder={t('dynamicDerivations.constructor.shardsPlaceholder')}
             invalid={shards?.hasError()}
             disabled={!shardedEnabled || !isSharded?.value}
             value={shards?.value}
             onChange={shards?.onChange}
           />
           <InputHint variant="error" active={shards?.hasError()}>
-            {shards?.errorText()}
+            {t(shards?.errorText())}
           </InputHint>
         </div>
       </div>
@@ -130,33 +146,33 @@ export const KeyForm = () => {
         <div className="flex flex-col gap-y-2">
           <Input
             wrapperClass="w-[228px]"
-            label="Key display name"
-            placeholder="Choose name"
+            label={t('dynamicDerivations.constructor.keyNameLabel')}
+            placeholder={t('dynamicDerivations.constructor.keyNamePlaceholder')}
             invalid={keyName?.hasError()}
             value={keyName?.value}
             onChange={keyName?.onChange}
           />
           <InputHint variant="error" active={keyName?.hasError()}>
-            {keyName?.errorText()}
+            {t(keyName?.errorText())}
           </InputHint>
         </div>
         <div className="flex flex-col gap-y-2">
           <Input
             wrapperClass="w-[354px]"
-            label="Derivation path"
-            placeholder="Derivation path"
+            label={t('dynamicDerivations.constructor.derivationLabel')}
+            placeholder={t('dynamicDerivations.constructor.derivationPlaceholder')}
             invalid={derivationPath?.hasError()}
             value={derivationPath?.value}
             disabled={!derivationEnabled}
             onChange={derivationPath?.onChange}
           />
           <InputHint variant="error" active={derivationPath?.hasError()}>
-            {derivationPath?.errorText()}
+            {t(derivationPath?.errorText())}
           </InputHint>
         </div>
 
         <Button className="mb-1 mt-7.5" type="submit" pallet="secondary" size="sm" disabled={!isValid}>
-          Add new key
+          {t('dynamicDerivations.constructor.newKeyButton')}
         </Button>
       </div>
     </form>
