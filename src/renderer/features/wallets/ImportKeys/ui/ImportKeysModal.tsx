@@ -8,7 +8,7 @@ import { cnTw } from '@shared/lib/utils';
 // @ts-ignore
 import templateFile from '@shared/assets/files/dd-template.yaml';
 import { importKeysModel } from '../model/import-keys-model';
-import { DraftAccount } from '@shared/core/types/account';
+import { DraftAccount } from '@shared/core';
 
 type Props = {
   isOpen: boolean;
@@ -64,10 +64,6 @@ export const ImportKeysModal = ({ isOpen, rootAccountId, existingKeys, onClose, 
     }`;
   };
 
-  const handleContinue = () => {
-    onConfirm(mergedKeys);
-  };
-
   return (
     <BaseModal isOpen={isOpen} title={t('dynamicDerivations.importKeys.modalTitle')} onClose={onClose}>
       <div className="flex flex-col gap-y-4 items-start">
@@ -111,7 +107,7 @@ export const ImportKeysModal = ({ isOpen, rootAccountId, existingKeys, onClose, 
         <Button variant="text" onClick={onClose}>
           {t('dynamicDerivations.importKeys.backButton')}
         </Button>
-        <Button disabled={Boolean(validationError?.error) || !successReport} onClick={handleContinue}>
+        <Button disabled={Boolean(validationError?.error) || !successReport} onClick={() => onConfirm(mergedKeys)}>
           {t('dynamicDerivations.importKeys.continueButton')}
         </Button>
       </div>
