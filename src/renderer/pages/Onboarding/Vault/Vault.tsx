@@ -81,10 +81,12 @@ const Vault = ({ isOpen, onClose, onComplete }: Props) => {
 
     const isEmptyName = qrPayload[0].name === '';
     const withoutDerivationPaths = qrPayload[0].derivedKeys.every((d) => !d.derivationPath);
+    const isSingleQr = qrPayload.length === 1;
+    const isPlainQr = withoutDerivedKeys && isEmptyName;
 
-    const isPlainQr = qrPayload?.length === 1 && ((withoutDerivedKeys && isEmptyName) || withoutDerivationPaths);
+    const isSingleshard = isSingleQr && (isPlainQr || withoutDerivationPaths);
 
-    setQrType(isPlainQr ? QrCodeType.SINGLESHARD : QrCodeType.MULTISHARD);
+    setQrType(isSingleshard ? QrCodeType.SINGLESHARD : QrCodeType.MULTISHARD);
   }, [qrPayload]);
 
   const onReceiveQr = (payload: SeedInfo[]) => {
