@@ -13,5 +13,5 @@
     - key:
         - derivation_path: "//kusama//staking"
         - type: "staking"
-        - shaded: 50
+        - sharded: 50
 version: 1
