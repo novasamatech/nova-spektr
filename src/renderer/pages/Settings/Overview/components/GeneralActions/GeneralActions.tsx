@@ -96,7 +96,12 @@ export const GeneralActions = () => {
           <div className="w-full flex items-center gap-x-2 p-3 rounded transition hover:shadow-card-shadow focus:shadow-card-shadow">
             <Icon className="row-span-2" name="settings" size={36} />
             <BodyText className="mr-auto">{t('settings.autoUpdate')}</BodyText>
-            <Switch checked={isAutoUpdateOn} onChange={handleAutoUpdateValueChange} />
+            <Switch
+              checked={isAutoUpdateOn}
+              knobClassName="transition-none"
+              switchClassName="transition-none"
+              onChange={handleAutoUpdateValueChange}
+            />
           </div>
         </Plate>
       )}

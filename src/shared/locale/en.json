@@ -470,7 +470,7 @@
       "switchLabel": "Show currency values",
       "unpopularFiatLabel": "Fiat currencies"
     },
-    "autoUpdate": "Enable auto update",
+    "autoUpdate": "Spektr auto updates",
     "matrix": {
       "badCredentialsError": "Invalid username or password",
       "badServerError": "Server is not a correct matrix server",

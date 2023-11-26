@@ -9,6 +9,8 @@ interface Props {
   defaultChecked?: boolean;
   disabled?: boolean;
   className?: string;
+  knobClassName?: string;
+  switchClassName?: string;
   labelPosition?: 'left' | 'right';
   onChange?: (checked: boolean) => void;
 }
@@ -18,6 +20,8 @@ const Switch = ({
   defaultChecked,
   disabled,
   className,
+  knobClassName,
+  switchClassName,
   onChange,
   children,
   labelPosition = 'left',
@@ -41,13 +45,15 @@ const Switch = ({
             : 'bg-switch-background-inactive border border-container-border',
           disabled && 'opacity-50',
           'relative inline-flex w-7.5 items-center rounded-full transform transition p-[1px]',
+          switchClassName,
         )}
         onChange={onChange}
       >
         <span
           className={cnTw(
-            'inline-block h-3.5 w-3.5 rounded-full bg-knob-background transition shadow-knob-shadow',
+            'inline-block h-3.5 w-3.5 rounded-full bg-knob-background transition-none shadow-knob-shadow',
             checked || defaultChecked ? 'translate-x-[12px]' : '',
+            knobClassName,
           )}
         />
       </HeadlessSwitch>
