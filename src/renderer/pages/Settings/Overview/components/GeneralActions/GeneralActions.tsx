@@ -7,7 +7,6 @@ import { useI18n } from '@app/providers';
 import { Paths } from '@shared/routes';
 import { cnTw } from '@shared/lib/utils';
 import { currencyModel, priceProviderModel } from '@entities/price';
-import { AUTO_UPDATE_ENABLED } from '@/src/shared/constants/common';
 
 // TODO: Language switcher temporary removed
 export const GeneralActions = () => {
@@ -19,12 +18,12 @@ export const GeneralActions = () => {
 
   useEffect(() => {
     if (isAutoUpdateSupported) {
-      window.App.getStoreValue(AUTO_UPDATE_ENABLED).then(setIsAutoUpdateOn);
+      window.App.getIsAutoUpdateEnabled().then(setIsAutoUpdateOn);
     }
   }, []);
 
   const handleAutoUpdateValueChange = (value: boolean) => {
-    window.App.setStoreValue(AUTO_UPDATE_ENABLED, value).then(() => setIsAutoUpdateOn(value));
+    window.App.setIsAutoUpdateEnabled(value).then(() => setIsAutoUpdateOn(value));
   };
 
   // const localeOptions: DropdownOption[] = locales.map((option) => ({

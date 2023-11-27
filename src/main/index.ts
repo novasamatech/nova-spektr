@@ -5,8 +5,8 @@ import Store from 'electron-store';
 import { MainWindow } from './main';
 import { makeAppWithSingleInstanceLock } from './factories/instance';
 import { makeAppSetup } from './factories/setup';
-import { checkAutoUpdateSupported } from '@/src/shared/lib/utils';
-import { AUTO_UPDATE_ENABLED } from '@/src/shared/constants/common';
+import { checkAutoUpdateSupported } from './shared/lib/utils';
+import { AUTO_UPDATE_ENABLED } from './shared/constants';
 
 const setupAutoUpdate = () => {
   const isAutoUpdateSupported = checkAutoUpdateSupported();
