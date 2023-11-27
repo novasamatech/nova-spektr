@@ -1,7 +1,7 @@
 import { contextBridge, ipcRenderer } from 'electron';
 import process from 'process';
 
-import { checkAutoUpdateSupported } from '@shared/lib/utils';
+import { checkAutoUpdateSupported } from '@/src/shared/lib/utils';
 
 declare global {
   interface Window {

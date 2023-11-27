@@ -1,13 +1,13 @@
 import { Link } from 'react-router-dom';
 import { useUnit } from 'effector-react/effector-react.umd';
 import { useEffect, useState } from 'react';
-import { AUTO_UPDATE_ENABLED } from '@shared/constants/common';
 
-import { Icon, BodyText, Plate, FootnoteText, HelpText } from '@shared/ui';
+import { Icon, BodyText, Plate, FootnoteText, HelpText, Switch } from '@shared/ui';
 import { useI18n } from '@app/providers';
 import { Paths } from '@shared/routes';
 import { cnTw } from '@shared/lib/utils';
 import { currencyModel, priceProviderModel } from '@entities/price';
+import { AUTO_UPDATE_ENABLED } from '@/src/shared/constants/common';
 
 // TODO: Language switcher temporary removed
 export const GeneralActions = () => {
