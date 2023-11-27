@@ -1,5 +1,3 @@
-import process from 'process';
-
 export const checkAutoUpdateSupported = (): boolean => {
   const supportedBuildSources = ['github'];
 
