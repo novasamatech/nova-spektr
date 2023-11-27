@@ -6,7 +6,7 @@ import { BodyText, Button, Icon, SmallTitleText } from '@shared/ui';
 import { useI18n, useNetworkContext } from '@app/providers';
 import { useBalance } from '@entities/asset';
 import { useToggle } from '@shared/lib/hooks';
-import { chainsService, isMultisigAvailable } from '@entities/oldNetwork';
+import { Chains, chainsService, isMultisigAvailable } from '@entities/oldNetwork';
 import { useSettingsStorage } from '@entities/settings';
 import { AssetsFilters, NetworkAssets, SelectShardModal } from './components';
 import { Header } from '@renderer/components/common';
@@ -14,6 +14,7 @@ import type { Account, Chain } from '@shared/core';
 import { ConnectionType } from '@shared/core';
 import { walletModel, walletUtils } from '@entities/wallet';
 import { currencyModel, priceProviderModel } from '@entities/price';
+import { ProviderType, networkModel } from '@/src/renderer/entities/network';
 
 export const AssetsList = () => {
   const { t } = useI18n();
@@ -99,6 +100,15 @@ export const AssetsList = () => {
             onZeroBalancesChange={updateHideZeroBalance}
           />
         </Header>
+
+        {/* Test button */}
+        <Button
+          onClick={() =>
+            networkModel.events.providerTypeSwitched({ chainId: Chains.KUSAMA, type: ProviderType.LIGHT_CLIENT })
+          }
+        >
+          Reconnect
+        </Button>
 
         {isMultishard && (
           <div className="w-[546px] mx-auto flex items-center mt-4">

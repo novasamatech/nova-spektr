@@ -50,7 +50,9 @@ function createProvider(
   } catch (e) {
     console.warn(e);
 
-    provider = new UniversalProvider(wsProvider);
+    const wsProvider2 = createWebsocketProvider(nodes, chainId, getMetadata);
+
+    provider = new UniversalProvider(wsProvider, wsProvider2);
   }
 
   provider.on('connected', onConnected || noop);
@@ -80,9 +82,10 @@ const createWebsocketProvider = (
   chainId: ChainId,
   getMetadata: (chainId: ChainId) => Promise<Metadata | undefined>,
 ): ProviderInterface => {
-  const CachedWsProvider = createCachedProvider(WsProvider, chainId, getMetadata);
+  // Doesn't work with empty getMetadata
+  // const CachedWsProvider = createCachedProvider(WsProvider, chainId, getMetadata);
 
-  return new CachedWsProvider(rpcUrls, 2000);
+  return new WsProvider(rpcUrls, 2000);
 };
 
 async function disconnect(provider: ProviderInterface, api: ApiPromise) {

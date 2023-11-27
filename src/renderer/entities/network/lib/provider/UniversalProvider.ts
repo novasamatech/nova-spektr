@@ -35,23 +35,19 @@ export class UniversalProvider implements ProviderInterface {
       providerType === ProviderType.WEB_SOCKET || !this.scProvider ? this.wsProvider : this.scProvider;
 
     if (oldProvider === newProvider) return;
-    const subscriptions = [...this.subscriptions.values()];
 
-    this.onHandlers.forEach((cb, type) => newProvider.on(type, cb));
+    this.onHandlers.forEach((callback, type) => newProvider.on(type, callback));
 
-    await newProvider.connect();
+    // await oldProvider.disconnect();
 
     this.provider = newProvider;
 
-    await oldProvider.disconnect();
+    // await newProvider.connect();
 
-    for (let oldId in subscriptions) {
-      const sub = this.subscriptions.get(oldId);
-      if (!sub) return;
-
+    for (const [oldId, sub] of this.subscriptions) {
       const newId = await this.subscribe(sub.type, sub.method, sub.params, sub.cb);
-
       this.subscriptionIds.set(oldId, newId);
+      this.unsubscribe(sub.type, sub.method, oldId);
     }
   }
 

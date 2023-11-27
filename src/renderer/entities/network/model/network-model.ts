@@ -205,8 +205,14 @@ sample({
 });
 
 const switchProviderTypeFx = createEffect(
-  async ({ provider, type }: { provider: UniversalProvider; type: ProviderType }) => {
+  async ({ chainId, provider, type }: { chainId: ChainId; provider: UniversalProvider; type: ProviderType }) => {
     await provider.setProviderType(type);
+  },
+);
+
+const apiReconnectFx = createEffect(
+  async ({ provider, api }: { provider: UniversalProvider; api: ApiPromise }): Promise<void> => {
+    await networkService.connect(provider, api);
   },
 );
 
@@ -216,8 +222,19 @@ sample({
   fn: (providers, { chainId, type }) => ({
     provider: providers[chainId],
     type,
+    chainId,
   }),
   target: switchProviderTypeFx,
+});
+
+sample({
+  clock: switchProviderTypeFx.done,
+  source: { apis: $apis },
+  fn: ({ apis }, { params: { provider, chainId } }) => ({
+    provider,
+    api: apis[chainId],
+  }),
+  target: apiReconnectFx,
 });
 
 export const networkModel = {

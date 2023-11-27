@@ -2,7 +2,7 @@ import { useUnit } from 'effector-react';
 import { createContext, PropsWithChildren, useContext, useEffect, useState } from 'react';
 
 import { useBalance } from '@entities/asset';
-import { ConnectProps, ExtendedChain, RpcValidation, useNetwork } from '@entities/oldNetwork';
+import { Chains, ConnectProps, ExtendedChain, RpcValidation, useNetwork } from '@entities/oldNetwork';
 import { useSubscription } from '@renderer/services/subscription/subscriptionService';
 import { usePrevious } from '@shared/lib/hooks';
 import type { RpcNode, ChainId, AccountId } from '@shared/core';
@@ -30,10 +30,7 @@ export const NetworkProvider = ({ children }: PropsWithChildren) => {
 
   // Test new networks
   useEffect(() => {
-    console.log(
-      'connected chains',
-      Object.values(networkStatuses).filter((s) => s === 'CONNECTED'),
-    );
+    console.log('connected chains', networkStatuses[Chains.KUSAMA]);
   }, [networkStatuses]);
 
   const { subscribe, unsubscribe, unsubscribeAll } = useSubscription<ChainId>();
@@ -49,7 +46,7 @@ export const NetworkProvider = ({ children }: PropsWithChildren) => {
   const prevConnections = usePrevious(activeConnections);
 
   useEffect(() => {
-    setupConnections().then(() => setEveryConnectionIsReady(true));
+    // setupConnections().then(() => setEveryConnectionIsReady(true));
   }, []);
 
   useEffect(() => {
