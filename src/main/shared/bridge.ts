@@ -1,5 +1,4 @@
 import { contextBridge, ipcRenderer } from 'electron';
-import process from 'process';
 
 import { checkAutoUpdateSupported } from '@/src/shared/lib/utils';
 

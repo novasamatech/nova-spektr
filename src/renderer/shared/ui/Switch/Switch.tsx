@@ -51,7 +51,7 @@ const Switch = ({
       >
         <span
           className={cnTw(
-            'inline-block h-3.5 w-3.5 rounded-full bg-knob-background transition-none shadow-knob-shadow',
+            'inline-block h-3.5 w-3.5 rounded-full bg-knob-background transition shadow-knob-shadow',
             checked || defaultChecked ? 'translate-x-[12px]' : '',
             knobClassName,
           )}
