@@ -27,6 +27,7 @@ export type {
   MultisigAccount,
   WalletConnectAccount,
   ShardAccount,
+  DraftAccount,
 } from './types/account';
 
 export { AssetType, StakingType } from './types/asset';

@@ -11,8 +11,8 @@ import { useI18n, useStatusContext } from '@app/providers';
 import { ChainTitle } from '@entities/chain';
 import { SeedInfo } from '@renderer/components/common/QrCode/common/types';
 import { IS_WINDOWS, toAddress } from '@shared/lib/utils';
+import { Animation } from '@shared/ui/Animation/Animation';
 import {
-  Animation,
   Button,
   Input,
   InputHint,
@@ -23,12 +23,14 @@ import {
   FootnoteText,
   Icon,
 } from '@shared/ui';
-import type { Chain, ChainAccount, ChainId } from '@shared/core';
+import type { Chain, ChainAccount, ChainId, ShardAccount } from '@shared/core';
 import { VaultInfoPopover } from './VaultInfoPopover';
-import { useAltKeyPressed } from '@shared/lib/hooks';
+import { useAltKeyPressed, useToggle } from '@shared/lib/hooks';
 import { manageDynamicDerivationsModel } from './model/manage-dynamic-derivations-model';
 import { chainsService } from '@entities/network';
 import { DerivedAccount, RootAccount } from '@entities/wallet';
+import { DerivationsAddressModal, ImportKeysModal } from '@features/wallets';
+import { DraftAccount } from '@shared/core/types/account';
 
 type Props = {
   seedInfo: SeedInfo[];
@@ -42,7 +44,8 @@ export const ManageDynamicDerivations = ({ seedInfo, onBack, onComplete }: Props
   const { showStatus } = useStatusContext();
 
   const accounts = useUnit(manageDynamicDerivationsModel.$accounts);
-  const isPending = useUnit(manageDynamicDerivationsModel.$submitPending);
+  const [isAddressModalOpen, toggleIsAddressModalOpen] = useToggle();
+  const [isImportModalOpen, toggleIsImportModalOpen] = useToggle();
   const [chainsObject, setChainsObject] = useState<Record<ChainId, Chain>>({});
 
   const {
@@ -68,13 +71,22 @@ export const ManageDynamicDerivations = ({ seedInfo, onBack, onComplete }: Props
   const submitForm = (event: FormEvent) => {
     event.preventDefault();
 
+    submit();
+    toggleIsAddressModalOpen();
+  };
+
+  const handleSuccess = () => {
+    onComplete();
     showStatus({
       title: name?.value.trim(),
       description: t('createMultisigAccount.successMessage'),
       content: <Animation variant="success" />,
     });
+  };
 
-    submit();
+  const handleImport = (mergedKeys: DraftAccount<ShardAccount | ChainAccount>[]) => {
+    manageDynamicDerivationsModel.events.derivationsImported(mergedKeys);
+    toggleIsImportModalOpen();
   };
 
   const goBack = () => {
@@ -127,7 +139,7 @@ export const ManageDynamicDerivations = ({ seedInfo, onBack, onComplete }: Props
               {t('onboarding.backButton')}
             </Button>
 
-            <Button type="submit" disabled={!isValid || isPending}>
+            <Button type="submit" disabled={!isValid}>
               {t('onboarding.continueButton')}
             </Button>
           </div>
@@ -144,7 +156,7 @@ export const ManageDynamicDerivations = ({ seedInfo, onBack, onComplete }: Props
             <Button size="sm" pallet="secondary" onClick={() => {}}>
               {t('onboarding.vault.addMoreKeysButton')}
             </Button>
-            <Button size="sm" pallet="secondary" onClick={() => {}}>
+            <Button size="sm" pallet="secondary" onClick={toggleIsImportModalOpen}>
               {t('onboarding.vault.importButton')}
             </Button>
           </div>
@@ -220,6 +232,23 @@ export const ManageDynamicDerivations = ({ seedInfo, onBack, onComplete }: Props
           </div>
         </div>
       </div>
+
+      <DerivationsAddressModal
+        isOpen={isAddressModalOpen}
+        walletName={walletName}
+        rootKey={publicKey}
+        accounts={accounts}
+        onComplete={handleSuccess}
+        onClose={toggleIsAddressModalOpen}
+      />
+
+      <ImportKeysModal
+        isOpen={isImportModalOpen}
+        rootAccountId={publicKey}
+        existingKeys={accounts}
+        onClose={toggleIsImportModalOpen}
+        onConfirm={handleImport}
+      />
     </>
   );
 };

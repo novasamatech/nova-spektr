@@ -1,6 +1,20 @@
+import { groupBy } from 'lodash';
+
 import { ImportedDerivation, ImportFileChain, ImportFileKey, ParsedImportFile, TypedImportedDerivation } from './types';
-import { AccountId, ChainId, KeyType } from '@shared/core';
+import {
+  AccountId,
+  AccountType,
+  Address,
+  ChainAccount,
+  ChainId,
+  ChainType,
+  CryptoType,
+  DraftAccount,
+  KeyType,
+  ShardAccount,
+} from '@shared/core';
 import { chainsService } from '@entities/network';
+import { toAccountId } from '@shared/lib/utils';
 
 const IMPORT_FILE_VERSION = '1';
 
@@ -15,7 +29,9 @@ function isFileStructureValid(result: any): result is ParsedImportFile {
   const isVersionValid = 'version' in result && result.version === IMPORT_FILE_VERSION;
   if (!isVersionValid) return false;
 
-  const hasPublicKey = Object.keys(result).every((key) => key.startsWith('0x') || key === 'version');
+  const hasPublicKey = Object.keys(result).every(
+    (key) => key.startsWith('0x') || toAccountId(key) !== '0x00' || key === 'version',
+  );
   if (!hasPublicKey) return false;
 
   const genesisHashes = Object.values(result).filter((x) => typeof x === 'object') as ImportFileChain[];
@@ -33,7 +49,7 @@ function isFileStructureValid(result: any): result is ParsedImportFile {
   return hasChainsAndKeys;
 }
 
-type FormattedResult = { derivations: ImportedDerivation[]; root: AccountId };
+type FormattedResult = { derivations: ImportedDerivation[]; root: AccountId | Address };
 function getDerivationsFromFile(fileContent: ParsedImportFile): FormattedResult | undefined {
   const rootAccountId = Object.keys(fileContent).find((key) => key !== 'version');
   if (!rootAccountId) return;
@@ -67,7 +83,7 @@ function getDerivationsFromFile(fileContent: ParsedImportFile): FormattedResult 
 
   return {
     derivations,
-    root: rootAccountId as AccountId,
+    root: rootAccountId,
   };
 }
 
@@ -96,48 +112,69 @@ function isDerivationValid(derivation: ImportedDerivation): boolean {
 }
 
 function mergeChainDerivations(
-  existingDerivations: TypedImportedDerivation[],
+  existingDerivations: DraftAccount<ShardAccount | ChainAccount>[],
   importedDerivations: TypedImportedDerivation[],
 ) {
   let addedKeys = 0;
   let duplicatedKeys = 0;
-  const newDerivations = importedDerivations.filter((d) => {
-    const duplicatePath = existingDerivations.find((ed) => ed.derivationPath === d.derivationPath);
 
-    const isOnlyOneSharded =
-      [duplicatePath?.sharded, d.sharded].filter((sharded) => sharded === undefined).length === 1;
-    const isDerivationNew = !duplicatePath || isOnlyOneSharded;
+  const existingDerivationsByPath = groupBy(existingDerivations, 'derivationPath');
+  const shards = existingDerivations.filter((d) => d.type === AccountType.SHARD) as DraftAccount<ShardAccount>[];
+  const shardsByPath = groupBy(shards, (d) => d.derivationPath.slice(0, d.derivationPath.lastIndexOf('//')));
 
-    if (isDerivationNew) {
-      addedKeys += d.sharded || 1;
+  const importedDerivationsAccounts = importedDerivations.reduce<DraftAccount<ShardAccount | ChainAccount>[]>(
+    (acc, d) => {
+      if (!d.sharded) {
+        acc.push({
+          name: '', // TODO add name after KEY_NAMES merged
+          derivationPath: d.derivationPath,
+          chainId: existingDerivations[0].chainId,
+          cryptoType: CryptoType.SR25519,
+          chainType: ChainType.SUBSTRATE,
+          type: AccountType.CHAIN,
+          keyType: d.type,
+        });
+
+        return acc;
+      }
+
+      const groupId = shardsByPath[d.derivationPath]?.length
+        ? shardsByPath[d.derivationPath][0].groupId
+        : crypto.randomUUID();
+
+      for (let i = 0; i < Number(d.sharded); i++) {
+        acc.push({
+          name: '', // TODO add name after KEY_NAMES merged
+          derivationPath: d.derivationPath + '//' + i,
+          chainId: existingDerivations[0].chainId,
+          cryptoType: CryptoType.SR25519,
+          chainType: ChainType.SUBSTRATE,
+          type: AccountType.SHARD,
+          keyType: d.type,
+          groupId,
+        } as ShardAccount);
+      }
+
+      return acc;
+    },
+    [],
+  );
+
+  const newDerivationsAccounts = importedDerivationsAccounts.filter((d) => {
+    const duplicatedDerivation = existingDerivationsByPath[d.derivationPath];
+
+    if (duplicatedDerivation) {
+      duplicatedKeys++;
     } else {
-      duplicatedKeys += duplicatePath.sharded || 1;
+      addedKeys++;
     }
 
-    return isDerivationNew;
+    return !duplicatedDerivation;
   });
 
-  const derivationsToReplace = importedDerivations.filter((d) => {
-    const hasDifferentShards = existingDerivations.find(
-      (ed) => ed.derivationPath === d.derivationPath && ed.sharded && d.sharded && d.sharded > ed.sharded,
-    );
-
-    if (hasDifferentShards && d.sharded && hasDifferentShards.sharded) {
-      addedKeys += d.sharded - hasDifferentShards?.sharded;
-    }
-
-    return hasDifferentShards;
-  });
-
-  const result = [...existingDerivations, ...newDerivations];
-  result.forEach((d) => {
-    const replacementDerivation = derivationsToReplace.find(
-      (x) => x.derivationPath === d.derivationPath && Boolean(x.sharded) && Boolean(d.sharded),
-    );
-    if (replacementDerivation) {
-      d.sharded = replacementDerivation.sharded;
-    }
-  });
-
-  return { mergedDerivations: result, added: addedKeys, duplicated: duplicatedKeys };
+  return {
+    mergedDerivations: [...existingDerivations, ...newDerivationsAccounts],
+    added: addedKeys,
+    duplicated: duplicatedKeys,
+  };
 }
