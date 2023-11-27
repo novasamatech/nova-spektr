@@ -100,6 +100,7 @@ function isDerivationValid(derivation: ImportedDerivation): boolean {
   const isPathStartAndEndValid = /^(\/\/|\/)[^/].*[^/]$/.test(derivation.derivationPath);
   const hasPasswordPath = derivation.derivationPath.includes('///');
   const isPathValid = isPathStartAndEndValid && !hasPasswordPath;
+  const isNameValid = derivation.type !== KeyType.CUSTOM || derivation.name;
 
   return Boolean(
     isChainParamValid &&
@@ -107,7 +108,8 @@ function isDerivationValid(derivation: ImportedDerivation): boolean {
       isTypeParamValid &&
       isChainParamValid &&
       isPathValid &&
-      isShardedAllowedForType,
+      isShardedAllowedForType &&
+      isNameValid,
   );
 }
 

@@ -51,6 +51,11 @@ const invalidDerivations = {
     type: 'wrong_type',
     chainId: chainId,
   },
+  missingName: {
+    derivationPath: '//path',
+    type: 'custom',
+    chainId: chainId,
+  },
 };
 
 const validDerivations = [
@@ -141,6 +146,11 @@ const validationTestData: ValidationTestData[] = [
   {
     testName: 'Key type should match KeyType enum values',
     derivation: invalidDerivations.passwordPath,
+    isValid: false,
+  },
+  {
+    testName: 'Name is required for derivation with type custom',
+    derivation: invalidDerivations.missingName,
     isValid: false,
   },
   {
