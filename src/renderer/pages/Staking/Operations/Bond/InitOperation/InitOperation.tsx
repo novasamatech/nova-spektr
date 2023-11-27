@@ -3,12 +3,13 @@ import { BN } from '@polkadot/util';
 import { useEffect, useState } from 'react';
 import { useUnit } from 'effector-react';
 
-import { OperationError, OperationFooter, OperationHeader } from '@renderer/features/operation';
-import { useI18n } from '@renderer/app/providers';
-import { useBalance } from '@renderer/entities/asset';
-import { Transaction, TransactionType } from '@renderer/entities/transaction';
-import { formatAmount, stakeableAmount, toAddress, nonNullable, TEST_ADDRESS } from '@renderer/shared/lib/utils';
-import { useValidators } from '@renderer/entities/staking';
+import { OperationFooter, OperationHeader } from '@features/operation';
+import { useI18n } from '@app/providers';
+import { useBalance } from '@entities/asset';
+import { Transaction, TransactionType, OperationError } from '@entities/transaction';
+import { formatAmount, stakeableAmount, toAddress, nonNullable, TEST_ADDRESS } from '@shared/lib/utils';
+import { useValidators } from '@entities/staking';
+import { walletModel, walletUtils, accountUtils } from '@entities/wallet';
 import { OperationForm } from '../../components';
 import type {
   Account,
@@ -19,7 +20,7 @@ import type {
   ChainId,
   Balance as AccountBalance,
   Wallet,
-} from '@renderer/shared/core';
+} from '@shared/core';
 import {
   getStakeAccountOption,
   validateBalanceForFee,
@@ -27,7 +28,6 @@ import {
   validateStake,
   getSignatoryOption,
 } from '../../common/utils';
-import { walletModel, walletUtils, accountUtils } from '@renderer/entities/wallet';
 
 export type BondResult = {
   amount: string;

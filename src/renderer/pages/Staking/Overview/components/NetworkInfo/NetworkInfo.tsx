@@ -1,17 +1,17 @@
 import { PropsWithChildren, useEffect, useState } from 'react';
 import { BN, BN_ZERO } from '@polkadot/util';
 
-import { Select, FootnoteText, Plate, IconButton, Shimmering } from '@renderer/shared/ui';
-import { DropdownOption, DropdownResult } from '@renderer/shared/ui/types';
-import { getRelaychainAsset } from '@renderer/shared/lib/utils';
-import { chainsService } from '@renderer/entities/network';
-import { useSettingsStorage } from '@renderer/entities/settings';
-import { ChainTitle } from '@renderer/entities/chain';
-import { useToggle } from '@renderer/shared/lib/hooks';
-import { useI18n } from '@renderer/app/providers';
-import { AssetBalance } from '@renderer/entities/asset';
-import type { Chain } from '@renderer/shared/core';
-import { AssetFiatBalance } from '@renderer/entities/price/ui/AssetFiatBalance';
+import { Select, FootnoteText, Plate, IconButton, Shimmering } from '@shared/ui';
+import { DropdownOption, DropdownResult } from '@shared/ui/types';
+import { getRelaychainAsset } from '@shared/lib/utils';
+import { chainsService } from '@entities/network';
+import { useSettingsStorage } from '@entities/settings';
+import { ChainTitle } from '@entities/chain';
+import { useToggle } from '@shared/lib/hooks';
+import { useI18n } from '@app/providers';
+import { AssetBalance } from '@entities/asset';
+import type { Chain } from '@shared/core';
+import { AssetFiatBalance } from '@entities/price/ui/AssetFiatBalance';
 
 const getTotal = (values: string[]): BN => {
   return values.reduce((acc, value) => acc.add(new BN(value || 0)), BN_ZERO);
@@ -112,7 +112,7 @@ export const NetworkInfo = ({
           ) : (
             <div key={title} className="text-left">
               <FootnoteText className="text-text-secondary">{title}</FootnoteText>
-              <AssetBalance value={amount.toString()} asset={asset} className="text-small-title" />
+              <AssetBalance value={amount.toString()} asset={asset} className="text-small-title font-manrope" />
               <AssetFiatBalance amount={amount.toString()} asset={asset} />
             </div>
           ),

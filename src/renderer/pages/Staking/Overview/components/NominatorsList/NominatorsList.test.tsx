@@ -3,7 +3,7 @@ import noop from 'lodash/noop';
 
 import { NominatorsList } from './NominatorsList';
 
-jest.mock('@renderer/app/providers', () => ({
+jest.mock('@app/providers', () => ({
   useI18n: jest.fn().mockReturnValue({
     t: (key: string) => key,
   }),

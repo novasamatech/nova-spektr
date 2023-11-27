@@ -3,13 +3,13 @@ import { useEffect, useState } from 'react';
 import { Controller, useForm, SubmitHandler } from 'react-hook-form';
 import { u8aToHex } from '@polkadot/util';
 
-import { useI18n } from '@renderer/app/providers';
-import { chainsService } from '@renderer/entities/network';
-import { Button, Input, InputHint, HeaderTitleText, SmallTitleText } from '@renderer/shared/ui';
+import { useI18n } from '@app/providers';
+import { chainsService } from '@entities/network';
+import { Button, Input, InputHint, HeaderTitleText, SmallTitleText } from '@shared/ui';
 import { SeedInfo } from '@renderer/components/common/QrCode/common/types';
-import { AccountsList, walletModel } from '@renderer/entities/wallet';
-import type { Chain } from '@renderer/shared/core';
-import { SigningType, ErrorType, WalletType, CryptoType, ChainType, AccountType } from '@renderer/shared/core';
+import { AccountsList, walletModel } from '@entities/wallet';
+import type { Chain } from '@shared/core';
+import { SigningType, ErrorType, WalletType, CryptoType, ChainType, AccountType } from '@shared/core';
 
 type WalletForm = {
   walletName: string;

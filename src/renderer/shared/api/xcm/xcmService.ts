@@ -3,11 +3,11 @@ import { ApiPromise } from '@polkadot/api';
 import get from 'lodash/get';
 
 import { XCM_URL, XCM_KEY } from './common/constants';
-import { getTypeVersion, toLocalChainId, getAssetId, TEST_ACCOUNT_ID } from '@renderer/shared/lib/utils';
-import { XcmPalletTransferArgs, XTokenPalletTransferArgs } from '@renderer/entities/transaction';
-import { chainsService } from '@renderer/entities/network';
+import { getTypeVersion, toLocalChainId, getAssetId, TEST_ACCOUNT_ID } from '@shared/lib/utils';
+import { XcmPalletTransferArgs, XTokenPalletTransferArgs } from '@entities/transaction';
+import { chainsService } from '@entities/network';
 import { toRawString } from './common/utils';
-import type { AccountId, ChainId, Chain, HexString } from '@renderer/shared/core';
+import type { AccountId, ChainId, Chain, HexString } from '@shared/core';
 import {
   XcmConfig,
   AssetLocation,

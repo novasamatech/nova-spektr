@@ -1,11 +1,11 @@
 import { render, screen, act } from '@testing-library/react';
 import noop from 'lodash/noop';
 
-import { TEST_ADDRESS } from '@renderer/shared/lib/utils';
+import { TEST_ADDRESS } from '@shared/lib/utils';
 import { Actions } from './Actions';
-import type { Stake } from '@renderer/shared/core';
+import type { Stake } from '@shared/core';
 
-jest.mock('@renderer/app/providers', () => ({
+jest.mock('@app/providers', () => ({
   useI18n: jest.fn().mockReturnValue({
     t: (key: string) => key,
   }),

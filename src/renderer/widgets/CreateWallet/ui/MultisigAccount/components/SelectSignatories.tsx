@@ -1,15 +1,15 @@
 import { useEffect, useState } from 'react';
 
-import { cnTw, includes, toAddress } from '@renderer/shared/lib/utils';
-import { useI18n, useMatrix } from '@renderer/app/providers';
-import { useToggle } from '@renderer/shared/lib/hooks';
-import { Button, Checkbox, FootnoteText, Icon, SearchInput, SmallTitleText, Tabs, Tooltip } from '@renderer/shared/ui';
-import { TabItem } from '@renderer/shared/ui/types';
-import { CreateContactModal } from '@renderer/widgets';
+import { cnTw, includes, toAddress } from '@shared/lib/utils';
+import { useI18n, useMatrix } from '@app/providers';
+import { useToggle } from '@shared/lib/hooks';
+import { Button, Checkbox, FootnoteText, Icon, SearchInput, SmallTitleText, Tabs, Tooltip } from '@shared/ui';
+import { TabItem } from '@shared/ui/types';
+import { CreateContactModal } from '@widgets/ManageContactModal';
 import { ExtendedContact, ExtendedWallet } from '../common/types';
-import { EmptyContactList } from '@renderer/entities/contact';
-import { type Contact, type Wallet, type Account, type MultisigAccount, WalletType } from '@renderer/shared/core';
-import { walletUtils, ContactItem } from '@renderer/entities/wallet';
+import { EmptyContactList } from '@entities/contact';
+import { type Contact, type Wallet, type Account, type MultisigAccount, WalletType } from '@shared/core';
+import { walletUtils, ContactItem } from '@entities/wallet';
 import { WalletItem } from './WalletItem';
 
 const enum SignatoryTabs {

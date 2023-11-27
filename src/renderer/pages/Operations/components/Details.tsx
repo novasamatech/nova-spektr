@@ -1,23 +1,18 @@
 import { useUnit } from 'effector-react';
 
-import { useI18n } from '@renderer/app/providers';
-import { AddressWithExplorers, WalletCardSm, WalletIcon, walletModel } from '@renderer/entities/wallet';
-import { Icon, FootnoteText, DetailRow, CaptionText } from '@renderer/shared/ui';
-import { useToggle } from '@renderer/shared/lib/hooks';
-import {
-  MultisigTransaction,
-  Transaction,
-  isXcmTransaction,
-  isTransferTransaction,
-} from '@renderer/entities/transaction';
-import { cnTw, getAssetById } from '@renderer/shared/lib/utils';
-import { chainsService, ExtendedChain, isLightClient } from '@renderer/entities/network';
+import { useI18n } from '@app/providers';
+import { AddressWithExplorers, WalletCardSm, WalletIcon, walletModel } from '@entities/wallet';
+import { Icon, FootnoteText, DetailRow, CaptionText } from '@shared/ui';
+import { useToggle } from '@shared/lib/hooks';
+import { MultisigTransaction, Transaction, isXcmTransaction, isTransferTransaction } from '@entities/transaction';
+import { cnTw } from '@shared/lib/utils';
+import { ExtendedChain, isLightClient } from '@entities/network';
 import { AddressStyle, DescriptionBlockStyle, InteractionStyle } from '../common/constants';
-import { ChainTitle } from '@renderer/entities/chain';
-import { Account } from '@renderer/shared/core';
-import { getTransactionFromMultisigTx } from '@renderer/entities/multisig';
-import type { Address, MultisigAccount, Validator } from '@renderer/shared/core';
-import { useValidatorsMap, ValidatorsModal } from '@renderer/entities/staking';
+import { ChainTitle } from '@entities/chain';
+import { Account } from '@shared/core';
+import { getTransactionFromMultisigTx } from '@entities/multisig';
+import type { Address, MultisigAccount, Validator } from '@shared/core';
+import { useValidatorsMap, SelectedValidatorsModal } from '@entities/staking';
 
 type Props = {
   tx: MultisigTransaction;
@@ -39,8 +34,6 @@ const Details = ({ tx, account, connection, signatory }: Props) => {
   const allValidators = Object.values(useValidatorsMap(api, chainId, connection && isLightClient(connection)));
 
   const [isValidatorsOpen, toggleValidators] = useToggle();
-  const asset =
-    tx.transaction && getAssetById(tx.transaction.args.asset, chainsService.getChainById(tx.chainId)?.assets);
 
   const cancelDescription = tx.cancelDescription;
 
@@ -53,8 +46,6 @@ const Details = ({ tx, account, connection, signatory }: Props) => {
 
   const selectedValidators: Validator[] =
     allValidators.filter((v) => (transaction?.args.targets || startStakingValidators).includes(v.address)) || [];
-  const selectedValidatorsAddress = selectedValidators.map((validator) => validator.address);
-  const notSelectedValidators = allValidators.filter((v) => !selectedValidatorsAddress.includes(v.address));
 
   const defaultAsset = connection?.assets[0];
   const addressPrefix = connection?.addressPrefix;
@@ -132,12 +123,10 @@ const Details = ({ tx, account, connection, signatory }: Props) => {
               <Icon name="info" size={16} />
             </button>
           </DetailRow>
-          <ValidatorsModal
+          <SelectedValidatorsModal
             isOpen={isValidatorsOpen}
-            asset={asset}
-            selectedValidators={selectedValidators}
-            notSelectedValidators={notSelectedValidators}
-            explorers={connection?.explorers}
+            validators={selectedValidators}
+            explorers={explorers}
             onClose={toggleValidators}
           />
         </>
