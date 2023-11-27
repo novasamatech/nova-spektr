@@ -1,7 +1,10 @@
+import { useUnit } from 'effector-react';
+
 import useGenerator from './common/useGenerator';
-import { Command, DEFAULT_FRAME_DELAY } from './common/constants';
+import { DEFAULT_FRAME_DELAY } from './common/constants';
 import { createSubstrateSignPayload } from './common/utils';
 import type { ChainId } from '@shared/core';
+import { walletModel } from '@entities/wallet';
 
 type Props = {
   size?: number;
@@ -9,22 +12,29 @@ type Props = {
   skipEncoding?: boolean;
   delay?: number;
   address: string;
-  cmd: Command;
   payload: Uint8Array | string;
   genesisHash: Uint8Array | ChainId;
+  derivationPath?: string;
 };
 
 export const QrTxGenerator = ({
   address,
-  cmd,
   genesisHash,
   payload,
   size,
   skipEncoding = false,
   bgColor = 'none',
   delay = DEFAULT_FRAME_DELAY,
+  derivationPath,
 }: Props) => {
-  const signPayload = createSubstrateSignPayload(address, cmd, payload, genesisHash);
+  const activeWallet = useUnit(walletModel.$activeWallet);
+  const signPayload = createSubstrateSignPayload(
+    address,
+    payload,
+    genesisHash,
+    activeWallet?.signingType,
+    derivationPath,
+  );
 
   const image = useGenerator(signPayload, skipEncoding, delay, bgColor);
 

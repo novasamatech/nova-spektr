@@ -1,18 +1,18 @@
 import { u8aToHex } from '@polkadot/util';
 import { createKeyMulti } from '@polkadot/util-crypto';
 
-import { AccountType, ChainId } from '@shared/core';
 import type {
-  AccountId,
-  Threshold,
-  MultisigAccount,
   Account,
+  AccountId,
   BaseAccount,
   ChainAccount,
-  WalletConnectAccount,
-  Wallet,
+  MultisigAccount,
   ShardAccount,
+  Threshold,
+  Wallet,
+  WalletConnectAccount,
 } from '@shared/core';
+import { AccountType, ChainId } from '@shared/core';
 
 export const accountUtils = {
   isBaseAccount,
@@ -25,6 +25,7 @@ export const accountUtils = {
   getMultisigAccountId,
   getAllAccountIds,
   getWalletAccounts,
+  getBaseAccount,
 };
 
 function getMultisigAccountId(ids: AccountId[], threshold: Threshold): AccountId {
@@ -99,4 +100,8 @@ function getAccountsAndShardGroups(accounts: Array<ChainAccount | ShardAccount>)
 
     return acc;
   }, []);
+}
+
+function getBaseAccount<T extends Account>(accounts: T[]): BaseAccount | undefined {
+  return accounts.find((a) => a.type === AccountType.BASE) as BaseAccount;
 }
