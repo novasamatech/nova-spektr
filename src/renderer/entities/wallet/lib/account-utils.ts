@@ -11,6 +11,7 @@ import type {
   WalletConnectAccount,
   Wallet,
   ShardAccount,
+  BaseAccount,
 } from '@shared/core';
 
 export const accountUtils = {
@@ -31,7 +32,7 @@ function getMultisigAccountId(ids: AccountId[], threshold: Threshold): AccountId
   return u8aToHex(createKeyMulti(ids, threshold));
 }
 
-function isBaseAccount(account: Pick<Account, 'type'>): boolean {
+function isBaseAccount(account: Pick<Account, 'type'>): account is BaseAccount {
   return account.type === AccountType.BASE;
 }
 

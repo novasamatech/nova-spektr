@@ -13,5 +13,5 @@ export const TitleStyles: Record<Variant, string> = {
   success: 'text-text-positive',
   warn: 'text-text-warning',
   error: 'text-text-negative',
-  staking: 'bg-icon-accent',
+  staking: 'text-tab-text-accent',
 };

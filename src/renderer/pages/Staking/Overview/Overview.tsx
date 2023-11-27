@@ -108,12 +108,11 @@ export const Overview = () => {
 
   useEffect(() => {
     const isMultisig = walletUtils.isMultisig(activeWallet);
-    const isSingleShard = walletUtils.isSingleShard(activeWallet);
-    const isSingleMultishard = walletUtils.isMultiShard(activeWallet) && addresses.length === 1;
     const isNovaWallet = walletUtils.isNovaWallet(activeWallet);
     const isWalletConnect = walletUtils.isWalletConnect(activeWallet);
+    const isPolkadotVault = walletUtils.isPolkadotVault(activeWallet);
 
-    if (isMultisig || isSingleShard || isSingleMultishard || isNovaWallet || isWalletConnect) {
+    if (isMultisig || isNovaWallet || isWalletConnect || isPolkadotVault) {
       setSelectedNominators([addresses[0]]);
     } else {
       setSelectedNominators([]);
@@ -289,6 +288,7 @@ export const Overview = () => {
                   asset={relaychainAsset}
                   explorers={activeChain?.explorers}
                   isStakingLoading={isStakingLoading}
+                  addressPrefix={addressPrefix}
                   onCheckValidators={openSelectedValidators}
                   onToggleNominator={toggleSelectedNominators}
                 />

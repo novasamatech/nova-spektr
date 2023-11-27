@@ -6,7 +6,7 @@ import { cnTw } from '@shared/lib/utils';
 import { FootnoteText, Tooltip, Icon, HelpText } from '@shared/ui';
 import type { Asset, Explorer, Address, Account, NominatorInfo, ShardAccount } from '@shared/core';
 import { useStakingData } from '@entities/staking';
-import { AccountAddress, AddressWithName } from '@entities/wallet';
+import { AccountAddress, AddressWithName, accountUtils } from '@entities/wallet';
 import { NominatorsItem } from './NominatorItem/NominatorItem';
 import { ShardedList } from './ShardedList/ShardedList';
 import { TimeToEra } from '../TimeToEra/TimeToEra';
@@ -18,6 +18,7 @@ type Props = {
   asset?: Asset;
   explorers?: Explorer[];
   isStakingLoading: boolean;
+  addressPrefix?: number;
   onCheckValidators: (stash?: Address) => void;
   onToggleNominator: (nominator: Address, value?: boolean) => void;
 };
@@ -29,26 +30,33 @@ export const NominatorsList = ({
   asset,
   explorers,
   isStakingLoading,
+  addressPrefix,
   onCheckValidators,
   onToggleNominator,
 }: Props) => {
   const { t } = useI18n();
   const { getNextUnstakingEra, hasRedeem } = useStakingData();
 
-  const getUnstakeBadge = (stake: NominatorInfo) =>
-    getNextUnstakingEra(stake.unlocking, era) && (
+  const getUnstakeBadge = (stake: NominatorInfo) => {
+    const nextUnstakingEra = getNextUnstakingEra(stake.unlocking, era);
+    if (!nextUnstakingEra) return;
+
+    return (
       <Tooltip offsetPx={-65} content={<Trans t={t} i18nKey="staking.tooltips.unstakeDescription" />}>
         <div className="flex gap-x-1 items-center rounded-md bg-badge-background px-2 py-0.5">
           <Icon name="unstake" className="text-icon-accent" size={14} />
           <HelpText className="text-icon-accent">
-            <TimeToEra className="my-1" api={api} era={getNextUnstakingEra(stake.unlocking, era)} />
+            <TimeToEra className="my-1" api={api} era={nextUnstakingEra} />
           </HelpText>
         </div>
       </Tooltip>
     );
+  };
 
-  const getRedeemBadge = (stake: NominatorInfo) =>
-    hasRedeem(stake.unlocking, era) && (
+  const getRedeemBadge = (stake: NominatorInfo) => {
+    if (!hasRedeem(stake.unlocking, era)) return;
+
+    return (
       <Tooltip offsetPx={-65} content={<Trans t={t} i18nKey="staking.tooltips.redeemDescription" />}>
         <div className="flex gap-x-1 items-center rounded-md bg-positive-background text-text-positive px-2 py-0.5">
           <Icon name="redeem" className="text-text-positive" size={14} />
@@ -56,10 +64,11 @@ export const NominatorsList = ({
         </div>
       </Tooltip>
     );
+  };
 
   const getContent = (stake: NominatorInfo) => (
     <>
-      {(stake.account as Account).type === 'shard' ? (
+      {accountUtils.isShardAccount(stake.account) ? (
         <AccountAddress addressFont="text-body" address={stake.address} />
       ) : (
         <AddressWithName
@@ -74,7 +83,7 @@ export const NominatorsList = ({
     </>
   );
 
-  const isShards = nominators.some((stake) => Array.isArray(stake));
+  const hasShards = nominators.some(Array.isArray);
 
   return (
     <div className="flex flex-col gap-y-2">
@@ -91,18 +100,21 @@ export const NominatorsList = ({
       <ul className="flex flex-col gap-y-2">
         {nominators.map((stake) => {
           return Array.isArray(stake) ? (
-            <ShardedList
-              isStakingLoading={isStakingLoading}
-              shardsStake={stake}
-              era={era}
-              asset={asset}
-              explorers={explorers}
-              getContent={getContent}
-              onToggleNominator={onToggleNominator}
-              onCheckValidators={onCheckValidators}
-            />
+            <li key={stake[0].account.groupId}>
+              <ShardedList
+                isStakingLoading={isStakingLoading}
+                shardsStake={stake}
+                era={era}
+                asset={asset}
+                explorers={explorers}
+                addressPrefix={addressPrefix}
+                getContent={getContent}
+                onToggleNominator={onToggleNominator}
+                onCheckValidators={onCheckValidators}
+              />
+            </li>
           ) : (
-            <li key={(stake.account as Account).id} className={cnTw(isShards && '[&>*:first-child]:pl-9')}>
+            <li key={(stake.account as Account).id} className={cnTw(hasShards && '[&>*:first-child]:pl-9')}>
               <NominatorsItem
                 isStakingLoading={isStakingLoading}
                 content={getContent(stake)}
@@ -110,6 +122,7 @@ export const NominatorsList = ({
                 nominatorsLength={nominators.length}
                 asset={asset}
                 explorers={explorers}
+                addressPrefix={addressPrefix}
                 onToggleNominator={onToggleNominator}
                 onCheckValidators={onCheckValidators}
               />

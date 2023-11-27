@@ -3,11 +3,10 @@ import { useUnit } from 'effector-react';
 
 import { useI18n } from '@app/providers';
 import type { Asset, Explorer, Address, NominatorInfo } from '@shared/core';
-import { FootnoteText, Plate, Checkbox, InfoPopover, Icon, Shimmering, ExplorerLink } from '@shared/ui';
-import { walletModel, walletUtils } from '@entities/wallet';
+import { FootnoteText, Plate, Checkbox, Icon, Shimmering } from '@shared/ui';
+import { ExplorersPopover, walletModel, walletUtils } from '@entities/wallet';
 import { AssetBalance } from '@entities/asset';
 import { AssetFiatBalance } from '@entities/price/ui/AssetFiatBalance';
-import { getAccountExplorer } from '@shared/lib/utils';
 
 type Props = {
   nominatorsLength: number;
@@ -16,6 +15,7 @@ type Props = {
   isStakingLoading: boolean;
   stake: NominatorInfo;
   content: ReactNode;
+  addressPrefix?: number;
   onToggleNominator: (nominator: Address, boolean: boolean) => void;
   onCheckValidators: (stash?: Address) => void;
 };
@@ -23,10 +23,11 @@ type Props = {
 export const NominatorsItem = ({
   nominatorsLength,
   asset,
-  explorers,
+  explorers = [],
   stake,
   content,
   isStakingLoading,
+  addressPrefix,
   onToggleNominator,
   onCheckValidators,
 }: Props) => {
@@ -34,29 +35,18 @@ export const NominatorsItem = ({
 
   const activeWallet = useUnit(walletModel.$activeWallet);
 
-  const getExplorers = (address: Address, stash?: Address, explorers: Explorer[] = []) => {
-    const explorersContent = explorers.map((explorer) => ({
-      id: explorer.name,
-      value: <ExplorerLink name={explorer.name} href={getAccountExplorer(explorer, { address })} />,
-    }));
-
-    if (!stash) return [{ items: explorersContent }];
-
-    const validatorsButton = (
-      <button
-        type="button"
-        className="flex items-center gap-x-2 px-2 w-full h-full"
-        onClick={() => onCheckValidators(stash)}
-      >
-        <Icon name="viewValidators" size={16} />
-        <FootnoteText as="span" className="text-text-primary">
-          {t('staking.overview.viewValidatorsOption')}
-        </FootnoteText>
-      </button>
-    );
-
-    return [{ items: [{ id: '0', value: validatorsButton }] }, { items: explorersContent }];
-  };
+  const validatorsButton = (
+    <button
+      type="button"
+      className="flex items-center gap-x-2 px-2 w-full h-full"
+      onClick={() => onCheckValidators(stake.stash)}
+    >
+      <Icon name="viewValidators" size={16} />
+      <FootnoteText as="span" className="text-text-primary">
+        {t('staking.overview.viewValidatorsOption')}
+      </FootnoteText>
+    </button>
+  );
 
   return (
     <Plate className="grid grid-cols-[1fr,104px,104px,20px] items-center gap-x-6">
@@ -97,9 +87,14 @@ export const NominatorsItem = ({
           </>
         )}
       </div>
-      <InfoPopover data={getExplorers(stake.address, stake.stash, explorers)} position="top-full right-0">
-        <Icon name="info" size={16} />
-      </InfoPopover>
+      <ExplorersPopover
+        button={<Icon name="info" size={16} />}
+        address={stake.address}
+        addressPrefix={addressPrefix}
+        explorers={explorers}
+      >
+        {stake.stash && validatorsButton}
+      </ExplorersPopover>
     </Plate>
   );
 };

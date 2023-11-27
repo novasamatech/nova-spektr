@@ -16,8 +16,8 @@ export interface IStakingDataService {
   getMinNominatorBond: (api: ApiPromise) => Promise<string>;
   getUnbondingPeriod: (api: ApiPromise) => string;
   getTotalStaked: (api: ApiPromise, era: EraIndex) => Promise<string>;
-  getNextUnstakingEra: (unlocking: Unlocking[] | undefined, era?: number) => EraIndex | undefined;
-  hasRedeem: (unlocking: Unlocking[] | undefined, era?: number) => boolean;
+  getNextUnstakingEra: (unlocking?: Unlocking[], era?: number) => EraIndex | undefined;
+  hasRedeem: (unlocking?: Unlocking[], era?: number) => boolean;
 }
 
 // =====================================================
