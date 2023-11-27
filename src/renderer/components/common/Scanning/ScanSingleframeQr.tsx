@@ -6,10 +6,9 @@ import { useUnit } from 'effector-react';
 import { QrGeneratorContainer, QrTxGenerator } from '@renderer/components/common';
 import { useI18n } from '@app/providers';
 import { Transaction, useTransaction } from '@entities/transaction';
-import { WalletCardSm, walletModel, walletUtils } from '@entities/wallet';
+import { accountUtils, WalletCardSm, walletModel, walletUtils } from '@entities/wallet';
 import { Button, FootnoteText } from '@shared/ui';
 import type { Account, ChainAccount, ChainId, ShardAccount } from '@shared/core';
-import { AccountType } from '@shared/core';
 import { toAddress } from '@shared/lib/utils';
 
 type Props = {
@@ -39,8 +38,8 @@ const ScanSingleframeQr = ({
   const { createPayload } = useTransaction();
 
   const wallets = useUnit(walletModel.$wallets);
-  const activeAccountss = useUnit(walletModel.$activeAccounts);
-  const rootAccount = activeAccountss.find((a) => a.type === AccountType.BASE);
+  const activeAccounts = useUnit(walletModel.$activeAccounts);
+  const rootAccount = accountUtils.getBaseAccount(activeAccounts);
   const activeWallet = useUnit(walletModel.$activeWallet);
   const signatoryWallet = walletUtils.isMultisig(activeWallet) && wallets.find((w) => w.id === account?.walletId);
 

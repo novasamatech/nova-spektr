@@ -6,7 +6,7 @@ import { str } from 'parity-scale-codec';
 
 import { Command, CRYPTO_SR25519, CRYPTO_STUB, FRAME_SIZE, SUBSTRATE_ID } from './constants';
 import type { ChainId } from '@renderer/shared/core';
-import { Address, CryptoType, CryptoTypeString, WalletType } from '@renderer/shared/core';
+import { Address, CryptoType, CryptoTypeString, SigningType } from '@renderer/shared/core';
 import { DynamicDerivationRequestInfo } from '../../common/types';
 import { DYNAMIC_DERIVATIONS_REQUEST } from '../../common/constants';
 
@@ -37,21 +37,23 @@ export const createSubstrateSignPayload = (
   address: string,
   payload: string | Uint8Array,
   genesisHash: ChainId | Uint8Array,
-  walletType?: WalletType,
+  signingType?: SigningType,
   derivationPath?: string,
 ): Uint8Array => {
-  return walletType === WalletType.POLKADOT_VAULT
-    ? u8aConcat(
-        SUBSTRATE_ID,
-        createDynamicDerivationsSignPayload(
-          address,
-          Command.DynamicDerivationsTransaction,
-          payload,
-          genesisHash,
-          derivationPath || '',
-        ),
-      )
-    : u8aConcat(SUBSTRATE_ID, createSignPayload(address, Command.Transaction, payload, genesisHash));
+  if (signingType !== SigningType.POLKADOT_VAULT) {
+    return u8aConcat(SUBSTRATE_ID, createSignPayload(address, Command.Transaction, payload, genesisHash));
+  }
+
+  return u8aConcat(
+    SUBSTRATE_ID,
+    createDynamicDerivationsSignPayload(
+      address,
+      Command.DynamicDerivationsTransaction,
+      payload,
+      genesisHash,
+      derivationPath || '',
+    ),
+  );
 };
 
 export const createSignPayload = (
