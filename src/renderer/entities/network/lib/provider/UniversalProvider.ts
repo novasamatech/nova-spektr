@@ -16,11 +16,17 @@ export class UniversalProvider implements ProviderInterface {
   private subscriptions = new Map<number | string, Subscription>();
   private subscriptionIds = new Map<number | string, number | string>();
 
+  private onHandlers = new Map<ProviderInterfaceEmitted, ProviderInterfaceEmitCb>();
+
   constructor(wsProvider: ProviderInterface, scProvider?: ProviderInterface) {
     this.wsProvider = wsProvider;
     this.scProvider = scProvider;
 
     this.provider = wsProvider;
+
+    scProvider?.disconnect();
+
+    return this;
   }
 
   public async setProviderType(providerType: ProviderType) {
@@ -31,10 +37,13 @@ export class UniversalProvider implements ProviderInterface {
     if (oldProvider === newProvider) return;
     const subscriptions = [...this.subscriptions.values()];
 
-    await oldProvider.disconnect();
+    this.onHandlers.forEach((cb, type) => newProvider.on(type, cb));
+
     await newProvider.connect();
 
     this.provider = newProvider;
+
+    await oldProvider.disconnect();
 
     for (let oldId in subscriptions) {
       const sub = this.subscriptions.get(oldId);
@@ -75,6 +84,8 @@ export class UniversalProvider implements ProviderInterface {
   }
 
   public on(type: ProviderInterfaceEmitted, sub: ProviderInterfaceEmitCb): () => void {
+    this.onHandlers.set(type, sub);
+
     return this.provider.on(type, sub);
   }
 
