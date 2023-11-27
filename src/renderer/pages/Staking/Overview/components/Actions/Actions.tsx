@@ -208,7 +208,7 @@ export const Actions = ({ canInteract, stakes, isStakingLoading, onNavigate }: P
         {/*  onChange={setActiveFilters}*/}
         {/*/>*/}
         <DropdownButton
-          className="min-w-[228px]"
+          className="min-w-[228px] h-8.5"
           title={getActionButtonText()}
           disabled={isStakingLoading || noStakes || wrongOverlaps}
           options={getAvailableButtonOptions()}
