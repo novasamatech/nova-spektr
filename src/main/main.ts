@@ -4,7 +4,7 @@ import { BrowserWindow, Menu, shell } from 'electron';
 import log, { LogFile } from 'electron-log';
 import windowStateKeeper from 'electron-window-state';
 
-import { APP_CONFIG } from '@/app.config';
+import { APP_CONFIG } from '../../app.config';
 import { ENVIRONMENT } from './shared/constants';
 import { createWindow } from './factories/create';
 import { buildMenuTemplate } from './factories/menu';
