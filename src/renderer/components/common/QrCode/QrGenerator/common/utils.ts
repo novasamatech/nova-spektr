@@ -2,10 +2,11 @@ import { hexToU8a, u8aConcat, u8aToU8a } from '@polkadot/util';
 import { decodeAddress } from '@polkadot/util-crypto';
 import qrcode from 'qrcode-generator';
 import { Encoder } from 'raptorq';
+import { str } from 'parity-scale-codec';
 
 import { Command, CRYPTO_SR25519, CRYPTO_STUB, FRAME_SIZE, SUBSTRATE_ID } from './constants';
 import type { ChainId } from '@renderer/shared/core';
-import { Address, CryptoType, CryptoTypeString } from '@renderer/shared/core';
+import { Address, CryptoType, CryptoTypeString, WalletType } from '@renderer/shared/core';
 import { DynamicDerivationRequestInfo } from '../../common/types';
 import { DYNAMIC_DERIVATIONS_REQUEST } from '../../common/constants';
 
@@ -34,10 +35,24 @@ export const encodeNumber = (value: number): Uint8Array => new Uint8Array([value
 
 export const createSubstrateSignPayload = (
   address: string,
-  cmd: number,
   payload: string | Uint8Array,
   genesisHash: ChainId | Uint8Array,
-): Uint8Array => u8aConcat(SUBSTRATE_ID, createSignPayload(address, cmd, payload, genesisHash));
+  walletType?: WalletType,
+  derivationPath?: string,
+): Uint8Array => {
+  return walletType === WalletType.POLKADOT_VAULT
+    ? u8aConcat(
+        SUBSTRATE_ID,
+        createDynamicDerivationsSignPayload(
+          address,
+          Command.DynamicDerivationsTransaction,
+          payload,
+          genesisHash,
+          derivationPath || '',
+        ),
+      )
+    : u8aConcat(SUBSTRATE_ID, createSignPayload(address, Command.Transaction, payload, genesisHash));
+};
 
 export const createSignPayload = (
   address: string,
@@ -46,6 +61,22 @@ export const createSignPayload = (
   genesisHash: ChainId | Uint8Array,
 ): Uint8Array =>
   u8aConcat(CRYPTO_SR25519, new Uint8Array([cmd]), decodeAddress(address), u8aToU8a(payload), u8aToU8a(genesisHash));
+
+export const createDynamicDerivationsSignPayload = (
+  address: string,
+  cmd: number,
+  payload: string | Uint8Array,
+  genesisHash: ChainId | Uint8Array,
+  derivationPath: string,
+) =>
+  u8aConcat(
+    CRYPTO_SR25519,
+    new Uint8Array([cmd]),
+    decodeAddress(address),
+    str.encode(derivationPath),
+    u8aToU8a(payload),
+    u8aToU8a(genesisHash),
+  );
 
 export const createMultipleSignPayload = (transactions: Uint8Array): Uint8Array => {
   return u8aConcat(SUBSTRATE_ID, CRYPTO_STUB, new Uint8Array([Command.MultipleTransactions]), transactions);
