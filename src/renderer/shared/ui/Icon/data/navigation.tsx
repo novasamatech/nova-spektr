@@ -17,6 +17,7 @@ import TransferImg, { ReactComponent as TransferSvg } from '@shared/assets/image
 import HelpImg, { ReactComponent as HelpSvg } from '@shared/assets/images/navigation/help.svg';
 import NetworkImg, { ReactComponent as NetworkSvg } from '@shared/assets/images/functionals/network.svg';
 import MatrixImg, { ReactComponent as MatrixSvg } from '@shared/assets/images/social/matrix.svg';
+import UpdateImg, { ReactComponent as UpdateSvg } from '@shared/assets/images/navigation/update.svg';
 
 const NavigationImages = {
   asset: { svg: AssetSvg, img: AssetImg },
@@ -34,6 +35,7 @@ const NavigationImages = {
   notification: { svg: NotificationSvg, img: NotificationImg },
   network: { svg: NetworkSvg, img: NetworkImg },
   matrix: { svg: MatrixSvg, img: MatrixImg },
+  update: { svg: UpdateSvg, img: UpdateImg },
 } as const;
 
 export type Navigation = keyof typeof NavigationImages;
