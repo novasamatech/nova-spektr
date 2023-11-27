@@ -461,6 +461,7 @@
     "title": "Receive {asset} on"
   },
   "settings": {
+    "autoUpdate": "Spektr auto updates",
     "currency": {
       "cryptocurrenciesLabel": "Cryptocurrencies",
       "modalTitle": "Currency",
@@ -472,7 +473,6 @@
       "switchLabel": "Show currency values",
       "unpopularFiatLabel": "Fiat currencies"
     },
-    "autoUpdate": "Spektr auto updates",
     "matrix": {
       "badCredentialsError": "Invalid username or password",
       "badServerError": "Server is not a correct matrix server",
