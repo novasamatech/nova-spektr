@@ -3,11 +3,10 @@ import { ProviderInterface } from '@polkadot/rpc-provider/types';
 import * as Sc from '@substrate/connect';
 import { noop } from '@polkadot/util';
 
-import { UniversalProvider } from './provider/UniversalProvider';
 import { ChainId } from '@shared/core';
-import { createCachedProvider } from './provider/CachedProvider';
 import { Metadata } from './common/types';
 import { chainSpecService } from './chainSpecService';
+import { UniversalProvider } from './provider/UniversalProvider';
 
 export const networkService = {
   createProvider,
@@ -18,11 +17,21 @@ export const networkService = {
 
 async function createApi(
   provider: ProviderInterface,
+  metadata?: Metadata,
   onConnected?: () => void,
   onDisconnected?: () => void,
   onError?: () => void,
 ) {
-  const api = await ApiPromise.create({ provider, throwOnConnect: true, throwOnUnknown: true });
+  const api = await ApiPromise.create({
+    provider,
+    throwOnConnect: true,
+    throwOnUnknown: true,
+    metadata: metadata?.metadata
+      ? {
+          [metadata.version.toString()]: metadata.metadata,
+        }
+      : undefined,
+  });
 
   api.on('connected', onConnected || noop);
   api.on('disconnected', onDisconnected || noop);
@@ -34,23 +43,22 @@ async function createApi(
 function createProvider(
   chainId: ChainId,
   nodes: string[],
-  getMetadata: (chainId: ChainId) => Promise<Metadata | undefined>,
   onConnected?: (value?: any) => void,
   onDisconnected?: (value?: any) => void,
   onError?: (value?: any) => void,
 ): UniversalProvider {
   let provider;
 
-  const wsProvider = createWebsocketProvider(nodes, chainId, getMetadata);
+  const wsProvider = createWebsocketProvider(nodes);
 
   try {
-    const scProvider = createSubstrateProvider(chainId, getMetadata);
+    const scProvider = createSubstrateProvider(chainId);
 
     provider = new UniversalProvider(wsProvider, scProvider);
   } catch (e) {
     console.warn(e);
 
-    const wsProvider2 = createWebsocketProvider(nodes, chainId, getMetadata);
+    const wsProvider2 = createWebsocketProvider(nodes);
 
     provider = new UniversalProvider(wsProvider, wsProvider2);
   }
@@ -62,29 +70,17 @@ function createProvider(
   return provider;
 }
 
-const createSubstrateProvider = (
-  chainId: ChainId,
-  getMetadata: (chainId: ChainId) => Promise<Metadata | undefined>,
-): ProviderInterface => {
+const createSubstrateProvider = (chainId: ChainId): ProviderInterface => {
   const knownChainId = chainSpecService.getKnownChain(chainId);
 
   if (knownChainId) {
-    const CachedScProvider = createCachedProvider(ScProvider, chainId, getMetadata);
-
-    return new CachedScProvider(Sc, knownChainId);
+    return new ScProvider(Sc, knownChainId);
   }
 
   throw new Error('Parachains do not support Substrate Connect yet');
 };
 
-const createWebsocketProvider = (
-  rpcUrls: string[],
-  chainId: ChainId,
-  getMetadata: (chainId: ChainId) => Promise<Metadata | undefined>,
-): ProviderInterface => {
-  // Doesn't work with empty getMetadata
-  // const CachedWsProvider = createCachedProvider(WsProvider, chainId, getMetadata);
-
+const createWebsocketProvider = (rpcUrls: string[]): ProviderInterface => {
   return new WsProvider(rpcUrls, 2000);
 };
 

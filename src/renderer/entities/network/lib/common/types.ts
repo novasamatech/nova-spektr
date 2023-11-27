@@ -4,6 +4,7 @@ import { UnsubscribePromise } from '@polkadot/api/types';
 
 import { ConnectionType } from '@shared/core';
 import type { Connection, Chain, ChainId, RpcNode, HexString } from '@shared/core';
+import { ConnectionDS, MetadataDS } from '@shared/api/storage';
 
 // =====================================================
 // ======================= General =====================
@@ -52,7 +53,16 @@ export interface IMetadataService {
   /**
    * Subscribe to subscribeRuntimeVersion and trigger syncMetadata if it will be changed
    */
-  subscribeMetadata: (api: ApiPromise) => UnsubscribePromise;
+  subscribeMetadata: (api: ApiPromise, cb?: () => void) => UnsubscribePromise;
+  getAllMetadata: <T extends Metadata>(where?: Partial<T>) => Promise<MetadataDS[]>;
+  addMetadata: (metadata: Metadata) => Promise<string[]>;
+  updateMetadata: (metadata: Metadata) => Promise<string[]>;
+}
+
+export interface IConnectionService {
+  getConnections: () => Promise<ConnectionDS[]>;
+  addConnection: (connection: Connection) => Promise<string | string[]>;
+  updateConnection: (connection: Connection) => Promise<string>;
 }
 
 export const enum ProviderType {

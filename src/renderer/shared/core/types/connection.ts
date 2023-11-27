@@ -1,7 +1,8 @@
 import type { RpcNode } from './chain';
-import type { ChainId } from './general';
+import type { ChainId, ID } from './general';
 
 export type Connection = {
+  id: ID;
   chainId: ChainId;
   canUseLightClient?: boolean;
   connectionType: ConnectionType;
