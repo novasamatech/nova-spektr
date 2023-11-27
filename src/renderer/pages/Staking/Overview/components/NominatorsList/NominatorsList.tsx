@@ -138,7 +138,7 @@ export const NominatorsList = ({
 
           return (
             <li key={stake.id}>
-              <Plate className="grid grid-cols-[226px,104px,104px,40px] items-center gap-x-6">
+              <Plate className="grid grid-cols-[226px,104px,104px,40px] items-center gap-x-6 py-0 h-11">
                 {!walletUtils.isWatchOnly(activeWallet) && nominators.length > 1 ? (
                   <Checkbox
                     disabled={isStakingLoading}

@@ -4,6 +4,11 @@
 @tailwind components;
 @tailwind utilities;
 
+body {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
 /* Scrollbar for Firefox */
 * {
   scrollbar-width: thin;

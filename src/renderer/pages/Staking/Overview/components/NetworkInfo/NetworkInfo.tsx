@@ -112,7 +112,7 @@ export const NetworkInfo = ({
           ) : (
             <div key={title} className="text-left">
               <FootnoteText className="text-text-secondary">{title}</FootnoteText>
-              <AssetBalance value={amount.toString()} asset={asset} className="text-small-title" />
+              <AssetBalance value={amount.toString()} asset={asset} className="text-small-title font-manrope" />
               <AssetFiatBalance amount={amount.toString()} asset={asset} />
             </div>
           ),
