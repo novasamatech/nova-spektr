@@ -124,13 +124,21 @@ const logClientIdFx = createEffect(async (client: Client) => {
 });
 
 const sessionTopicUpdatedFx = createEffect(
-  async ({ accounts, topic }: SessionTopicParams): Promise<Account[] | undefined> => {
+  async ({ accounts, topic, client }: SessionTopicParams & { client: Client }): Promise<Account[] | undefined> => {
+    const oldSessionTopic = accounts[0]?.signingExtras?.sessionTopic;
+
+    const oldSession = client.session.get(oldSessionTopic);
+
     const updatedAccounts = accounts.map(({ signingExtras, ...rest }) => {
       const newSigningExtras = { ...signingExtras, sessionTopic: topic };
 
       return { ...rest, signingExtras: newSigningExtras } as Account;
     });
     const updated = await storageService.accounts.updateAll(updatedAccounts);
+
+    if (oldSession) {
+      await disconnectFx({ client, session: oldSession });
+    }
 
     return updated && updatedAccounts;
   },
@@ -270,6 +278,12 @@ const disconnectFx = createEffect(async ({ client, session }: DisconnectParams) 
   });
 });
 
+const removeSessionFx = createEffect(async ({ client, session }: { client: Client; session: SessionTypes.Struct }) => {
+  const reason = getSdkError('USER_DISCONNECTED');
+
+  await client.session.delete(session.topic, reason);
+});
+
 forward({
   from: disconnectFx.done,
   to: createClientFx,
@@ -367,18 +381,29 @@ sample({
   target: disconnectFx,
 });
 
-forward({ from: disconnectFx.done, to: reset });
-
+sample({ clock: disconnectFx.done, fn: ({ params }) => params, target: removeSessionFx });
 sample({ clock: disconnectFx.failData, fn: (e) => console.log('Failed to disconnect WalletConnect session', e) });
 
 sample({
   clock: currentSessionTopicUpdated,
-  source: walletModel.$activeAccounts,
-  fn: (accounts, topic) => ({ accounts, topic }),
+  source: {
+    client: $client,
+    accounts: walletModel.$activeAccounts,
+  },
+  filter: ({ client }) => Boolean(client),
+  fn: ({ accounts, client }, topic) => ({ client: client!, accounts, topic }),
   target: sessionTopicUpdatedFx,
 });
 
-forward({ from: sessionTopicUpdated, to: sessionTopicUpdatedFx });
+sample({
+  clock: sessionTopicUpdated,
+  source: {
+    client: $client,
+  },
+  filter: ({ client }) => Boolean(client),
+  fn: ({ client }, params) => ({ client: client!, ...params }),
+  target: sessionTopicUpdatedFx,
+});
 
 sample({
   clock: sessionTopicUpdatedFx.doneData,
