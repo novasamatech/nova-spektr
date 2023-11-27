@@ -3,7 +3,7 @@ import { groupBy } from 'lodash';
 import { useUnit } from 'effector-react';
 
 import { Icon, CaptionText, Tooltip, Accordion } from '@shared/ui';
-import { useBalance, AssetCard } from '@entities/asset';
+import { AssetCard } from '@entities/asset';
 import { ChainTitle } from '@entities/chain';
 import { ZERO_BALANCE, totalAmount, includes, cnTw } from '@shared/lib/utils';
 import { ExtendedChain } from '@entities/oldNetwork';
@@ -13,6 +13,7 @@ import type { AccountId, Account, Chain, Asset, Balance } from '@shared/core';
 import { accountUtils } from '@entities/wallet';
 import { NetworkFiatBalance } from '../NetworkFiatBalance/NetworkFiatBalance';
 import { currencyModel, priceProviderModel } from '@entities/price';
+import { balanceModel } from '@/src/renderer/entities/network/model/balance-model';
 
 type Props = {
   hideZeroBalance?: boolean;
@@ -25,11 +26,11 @@ type Props = {
 
 export const NetworkAssets = ({ query, hideZeroBalance, chain, accounts, searchSymbolOnly, canMakeActions }: Props) => {
   const { t } = useI18n();
-  const { getLiveNetworkBalances } = useBalance();
 
   const assetsPrices = useUnit(priceProviderModel.$assetsPrices);
   const fiatFlag = useUnit(priceProviderModel.$fiatFlag);
   const currency = useUnit(currencyModel.$activeCurrency);
+  const balances = useUnit(balanceModel.$balances);
 
   const [filteredAssets, setFilteredAssets] = useState<Asset[]>([]);
   const [balancesObject, setBalancesObject] = useState<Record<string, Balance>>({});
@@ -46,21 +47,23 @@ export const NetworkAssets = ({ query, hideZeroBalance, chain, accounts, searchS
     }, []);
   }, [chain.chainId, selectedAccountIds]);
 
-  const balances = getLiveNetworkBalances(accountIds, chain.chainId);
-
   useEffect(() => {
+    const chainBalances = balances.filter((b) => b.chainId === chain.chainId && accountIds.includes(b.accountId));
     const accountsAmount = new Set(accountIds).size;
 
-    const groupedBalances = Object.values(groupBy(balances, 'assetId'));
-    const newBalancesObject = groupedBalances.reduce<Record<string, Balance>>((acc, balances) => {
-      if (balances.length === accountsAmount) {
-        acc[balances[0].assetId] = balances.reduce<Balance>((acc, balance) => {
-          return sumBalances(balance, acc);
+    const groupedBalances = Object.values(groupBy(chainBalances, 'assetId'));
+
+    const newBalancesObject = groupedBalances.reduce<Record<string, Balance>>((acc, accountBalances) => {
+      if (accountBalances.length === accountsAmount) {
+        acc[accountBalances[0].assetId] = accountBalances.reduce<Balance>((balancesAcc, balance) => {
+          return sumBalances(balance, balancesAcc);
         }, {} as Balance);
       }
 
       return acc;
     }, {});
+
+    console.log('xcm');
 
     setBalancesObject(newBalancesObject);
   }, [balances, accountIds.join('')]);
@@ -122,13 +125,14 @@ export const NetworkAssets = ({ query, hideZeroBalance, chain, accounts, searchS
         <Accordion.Content className="mt-1">
           <ul className="flex flex-col gap-y-1.5">
             {filteredAssets.map((asset) => (
-              <AssetCard
-                key={asset.assetId}
-                chainId={chain.chainId}
-                asset={asset}
-                balance={balancesObject[asset.assetId.toString()]}
-                canMakeActions={canMakeActions}
-              />
+              <li key={asset.assetId}>
+                <AssetCard
+                  chainId={chain.chainId}
+                  asset={asset}
+                  balance={balancesObject[asset.assetId.toString()]}
+                  canMakeActions={canMakeActions}
+                />
+              </li>
             ))}
           </ul>
         </Accordion.Content>

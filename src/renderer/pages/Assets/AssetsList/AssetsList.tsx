@@ -3,8 +3,7 @@ import { Outlet } from 'react-router-dom';
 import { useUnit } from 'effector-react';
 
 import { BodyText, Button, Icon, SmallTitleText } from '@shared/ui';
-import { useI18n, useNetworkContext } from '@app/providers';
-import { useBalance } from '@entities/asset';
+import { useI18n } from '@app/providers';
 import { useToggle } from '@shared/lib/hooks';
 import { Chains, chainsService, isMultisigAvailable } from '@entities/oldNetwork';
 import { useSettingsStorage } from '@entities/settings';
@@ -14,7 +13,8 @@ import type { Account, Chain } from '@shared/core';
 import { ConnectionType } from '@shared/core';
 import { walletModel, walletUtils } from '@entities/wallet';
 import { currencyModel, priceProviderModel } from '@entities/price';
-import { ProviderType, networkModel } from '@/src/renderer/entities/network';
+import { ProviderType, connectionModel, networkModel } from '@entities/network';
+import { balanceModel } from '@entities/network/model/balance-model';
 
 export const AssetsList = () => {
   const { t } = useI18n();
@@ -23,10 +23,10 @@ export const AssetsList = () => {
   const assetsPrices = useUnit(priceProviderModel.$assetsPrices);
   const fiatFlag = useUnit(priceProviderModel.$fiatFlag);
   const currency = useUnit(currencyModel.$activeCurrency);
+  const connections = useUnit(connectionModel.$connections);
+  const chains = useUnit(networkModel.$chains);
+  const balances = useUnit(balanceModel.$balances);
 
-  const { connections } = useNetworkContext();
-
-  const { getLiveBalances } = useBalance();
   const { setHideZeroBalance, getHideZeroBalance } = useSettingsStorage();
 
   const [isSelectShardsOpen, toggleSelectShardsOpen] = useToggle();
@@ -36,8 +36,6 @@ export const AssetsList = () => {
 
   const [activeShards, setActiveShards] = useState<Account[]>([]);
   const [hideZeroBalance, setHideZeroBalanceState] = useState(getHideZeroBalance());
-
-  const balances = getLiveBalances(activeShards.map((a) => a.accountId));
 
   const isMultishard = walletUtils.isMultiShard(activeWallet);
   const isMultisig = walletUtils.isMultisig(activeWallet);
@@ -55,8 +53,8 @@ export const AssetsList = () => {
   };
 
   useEffect(() => {
-    const filteredChains = Object.values(connections).filter((c) => {
-      const isDisabled = c.connection.connectionType === ConnectionType.DISABLED;
+    const filteredChains = Object.values(chains).filter((c) => {
+      const isDisabled = connections[c.chainId]?.connectionType === ConnectionType.DISABLED;
       const hasMultiPallet = !isMultisig || isMultisigAvailable(c.options);
 
       return !isDisabled && hasMultiPallet;
