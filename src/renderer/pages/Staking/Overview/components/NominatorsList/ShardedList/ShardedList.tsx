@@ -95,12 +95,12 @@ export const ShardedList = ({
 
   const { totalReward, totalStake } = shards.reduce(
     (acc, shard) => {
-      `${+acc.totalReward + +(shard.totalReward || 0)}`;
-      `${+acc.totalStake + +(shard.totalStake || 0)}`;
+      acc.totalReward += Number(shard.totalReward) || 0;
+      acc.totalStake += Number(shard.totalStake) || 0;
 
       return acc;
     },
-    { totalReward: '0', totalStake: '0' },
+    { totalReward: 0, totalStake: 0 },
   );
 
   return (
@@ -142,7 +142,7 @@ export const ShardedList = ({
                 </Tooltip>
               </div>
               <div className="justify-self-end flex flex-col items-end">
-                {!totalStake || !asset ? (
+                {Boolean(!totalStake) || !asset ? (
                   <>
                     <Shimmering width={82} height={15} />
                     <Shimmering width={56} height={10} />
@@ -155,7 +155,7 @@ export const ShardedList = ({
                 )}
               </div>
               <div className="justify-self-end flex flex-col items-end">
-                {!totalReward || !asset ? (
+                {Boolean(!totalReward) || !asset ? (
                   <>
                     <Shimmering width={82} height={15} />
                     <Shimmering width={56} height={10} />

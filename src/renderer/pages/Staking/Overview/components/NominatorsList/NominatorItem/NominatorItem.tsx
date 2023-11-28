@@ -35,19 +35,6 @@ export const NominatorsItem = ({
 
   const activeWallet = useUnit(walletModel.$activeWallet);
 
-  const validatorsButton = (
-    <button
-      type="button"
-      className="flex items-center gap-x-2 px-2 w-full h-full"
-      onClick={() => onCheckValidators(stake.stash)}
-    >
-      <Icon name="viewValidators" size={16} />
-      <FootnoteText as="span" className="text-text-primary">
-        {t('staking.overview.viewValidatorsOption')}
-      </FootnoteText>
-    </button>
-  );
-
   return (
     <Plate className="grid grid-cols-[1fr,104px,104px,20px] items-center gap-x-6">
       {!walletUtils.isWatchOnly(activeWallet) && nominatorsLength > 1 ? (
@@ -93,7 +80,18 @@ export const NominatorsItem = ({
         addressPrefix={addressPrefix}
         explorers={explorers}
       >
-        {stake.stash && validatorsButton}
+        {stake.stash && (
+          <button
+            type="button"
+            className="flex items-center gap-x-2 px-2 w-full h-full"
+            onClick={() => onCheckValidators(stake.stash)}
+          >
+            <Icon name="viewValidators" size={16} />
+            <FootnoteText as="span" className="text-text-primary">
+              {t('staking.overview.viewValidatorsOption')}
+            </FootnoteText>
+          </button>
+        )}
       </ExplorersPopover>
     </Plate>
   );
