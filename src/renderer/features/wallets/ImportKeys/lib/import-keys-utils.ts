@@ -3,6 +3,7 @@ import { TFunction } from 'react-i18next';
 
 import {
   DerivationValidationError,
+  DerivationWithPath,
   ImportedDerivation,
   ImportFileChain,
   ImportFileKey,
@@ -32,6 +33,7 @@ export const importKeysUtils = {
   isFileStructureValid,
   getDerivationsFromFile,
   getDerivationError,
+  shouldIgnoreDerivation,
   mergeChainDerivations,
   getErrorsText,
 };
@@ -98,22 +100,24 @@ function getDerivationsFromFile(fileContent: ParsedImportFile): FormattedResult 
   };
 }
 
-function getDerivationError(derivation: ImportedDerivation): DerivationValidationError[] | undefined {
-  if (!derivation.derivationPath) return [DerivationValidationError.GENERAL_ERROR];
+function shouldIgnoreDerivation(derivation: ImportedDerivation): boolean {
+  if (!derivation.derivationPath) return true;
 
+  const isChainParamValid = derivation.chainId && chainsService.getChainById(derivation.chainId as ChainId);
+  const isTypeParamValid = derivation.type && Object.values(KeyType).includes(derivation.type as KeyType);
+  const isShardedAllowedForType =
+    !derivation.sharded || (derivation.type !== KeyType.PUBLIC && derivation.type !== KeyType.HOT);
+
+  return !(isChainParamValid && isTypeParamValid && isShardedAllowedForType);
+}
+
+function getDerivationError(derivation: DerivationWithPath): DerivationValidationError[] | undefined {
   const errors: DerivationValidationError[] = [];
 
   const sharded = derivation.sharded && parseInt(derivation.sharded);
 
   const isShardedParamValid = !sharded || (!isNaN(sharded) && sharded <= 50 && sharded > 1);
   if (!isShardedParamValid) errors.push(DerivationValidationError.WRONG_SHARDS_NUMBER);
-
-  const isChainParamValid = derivation.chainId && chainsService.getChainById(derivation.chainId as ChainId);
-  const isTypeParamValid = derivation.type && Object.values(KeyType).includes(derivation.type as KeyType);
-  const isShardedAllowedForType = !sharded || (derivation.type !== KeyType.PUBLIC && derivation.type !== KeyType.HOT);
-  if (!(isChainParamValid && isTypeParamValid && isShardedAllowedForType)) {
-    errors.push(DerivationValidationError.GENERAL_ERROR);
-  }
 
   const isPathStartAndEndValid = /^(\/\/|\/)[^/].*[^/]$/.test(derivation.derivationPath);
   if (!isPathStartAndEndValid) errors.push(DerivationValidationError.INVALID_PATH);
@@ -200,7 +204,6 @@ const DERIVATION_ERROR_LABEL = {
   [DerivationValidationError.PASSWORD_PATH]: 'dynamicDerivations.importKeys.error.invalidPasswordPath',
   [DerivationValidationError.MISSING_NAME]: 'dynamicDerivations.importKeys.error.missingName',
   [DerivationValidationError.WRONG_SHARDS_NUMBER]: 'dynamicDerivations.importKeys.error.wrongShardsNumber',
-  [DerivationValidationError.GENERAL_ERROR]: 'dynamicDerivations.importKeys.error.generalError',
 };
 
 function getErrorsText(t: TFunction, error: ValidationError, details?: ErrorDetails) {

@@ -5,6 +5,7 @@ import { reset } from 'patronum';
 
 import {
   DerivationValidationError,
+  DerivationWithPath,
   ParsedImportFile,
   PATH_ERRORS,
   TypedImportedDerivation,
@@ -65,12 +66,10 @@ const validateDerivationsFx = createEffect<ValidateDerivationsParams, TypedImpor
       throw new DerivationImportError(ValidationError.INVALID_ROOT);
     }
 
-    const errorsDetails = derivations.reduce<ErrorDetails>(
-      (acc, derivation) => {
-        if (!derivation.derivationPath) {
-          throw new DerivationImportError(ValidationError.INVALID_FILE_STRUCTURE);
-        }
+    const filteredDerivations = derivations.filter(importKeysUtils.shouldIgnoreDerivation) as DerivationWithPath[];
 
+    const errorsDetails = filteredDerivations.reduce<ErrorDetails>(
+      (acc, derivation) => {
         const errors = importKeysUtils.getDerivationError(derivation);
         if (!errors) return acc;
 
@@ -88,14 +87,13 @@ const validateDerivationsFx = createEffect<ValidateDerivationsParams, TypedImpor
       {
         [DerivationValidationError.INVALID_PATH]: [],
         [DerivationValidationError.PASSWORD_PATH]: [],
-        [DerivationValidationError.GENERAL_ERROR]: [],
         [DerivationValidationError.MISSING_NAME]: [],
         [DerivationValidationError.WRONG_SHARDS_NUMBER]: [],
       },
     );
 
     if (Object.values(errorsDetails).every((details) => !details.length))
-      return derivations as TypedImportedDerivation[];
+      return filteredDerivations as TypedImportedDerivation[];
 
     throw new DerivationImportError(ValidationError.DERIVATIONS_ERROR, errorsDetails);
   },

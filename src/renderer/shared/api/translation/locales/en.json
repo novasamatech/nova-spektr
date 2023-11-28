@@ -143,8 +143,6 @@
       "continueButton": "Continue",
       "downloadTemplateButton": "Download the template",
       "error": {
-        "generalError_one": "Derivation {invalidValues} is not valid, please check the file.",
-        "generalError_other": "Derivations {invalidValues} are not valid, please check the file.",
         "invalidFile": "Incorrect file format",
         "invalidPasswordPath_one": "Password derivation path {invalidValues} is not allowed, please check the file.",
         "invalidPasswordPath_other": "Password derivation paths {invalidValues} are not allowed, please check the file.",

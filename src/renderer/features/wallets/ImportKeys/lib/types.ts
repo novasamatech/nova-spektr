@@ -20,17 +20,13 @@ export enum DerivationValidationError {
   MISSING_NAME = 'MISSING_NAME',
   WRONG_SHARDS_NUMBER = 'WRONG_SHARDS_NUMBER',
   PASSWORD_PATH = 'PASSWORD_PATH',
-  GENERAL_ERROR = 'GENERAL_ERROR',
 }
 
 export const PATH_ERRORS = [
   DerivationValidationError.INVALID_PATH,
   DerivationValidationError.PASSWORD_PATH,
   DerivationValidationError.MISSING_NAME,
-  DerivationValidationError.GENERAL_ERROR,
 ];
-
-// export enum
 
 export type ImportedDerivation = {
   derivationPath?: string;
@@ -39,6 +35,8 @@ export type ImportedDerivation = {
   name?: string;
   type?: string;
 };
+
+export type DerivationWithPath = ImportedDerivation & Required<Pick<ImportedDerivation, 'derivationPath'>>;
 
 export type TypedImportedDerivation = {
   derivationPath: string;
