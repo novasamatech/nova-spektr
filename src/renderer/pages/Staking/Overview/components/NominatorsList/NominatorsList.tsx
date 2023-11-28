@@ -12,12 +12,12 @@ import { ShardedList } from './ShardedList/ShardedList';
 import { TimeToEra } from '../TimeToEra/TimeToEra';
 
 type Props = {
+  nominators: (NominatorInfo<ShardAccount>[] | NominatorInfo)[];
+  isStakingLoading: boolean;
   api?: ApiPromise;
   era?: number;
-  nominators: (NominatorInfo<ShardAccount>[] | NominatorInfo)[];
   asset?: Asset;
   explorers?: Explorer[];
-  isStakingLoading: boolean;
   addressPrefix?: number;
   onCheckValidators: (stash?: Address) => void;
   onToggleNominator: (nominator: Address, value?: boolean) => void;

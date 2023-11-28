@@ -4,10 +4,8 @@ import { Trans } from 'react-i18next';
 
 import { useI18n } from '@app/providers';
 import type { Asset, Explorer, Address, NominatorInfo } from '@shared/core';
-import { cnTw } from '@shared/lib/utils';
 import { FootnoteText, Checkbox, Accordion, Shimmering, Plate, Tooltip } from '@shared/ui';
 import { ShardAccount } from '@shared/core/types/account';
-import { DotStyles } from '@shared/ui/StatusLabel/common/constants';
 import { AssetBalance } from '@entities/asset';
 import { AssetFiatBalance } from '@entities/price/ui/AssetFiatBalance';
 import { useStakingData } from '@entities/staking';
@@ -17,10 +15,10 @@ type NominatorInfoWithShard = NominatorInfo<ShardAccount>;
 
 type Props = {
   shardsStake: NominatorInfoWithShard[];
+  isStakingLoading: boolean;
   era?: number;
   asset?: Asset;
   explorers?: Explorer[];
-  isStakingLoading: boolean;
   addressPrefix?: number;
   onCheckValidators: (stash?: Address) => void;
   onToggleNominator: (nominator: Address, value?: boolean) => void;
@@ -138,12 +136,8 @@ export const ShardedList = ({
                   pointer="down"
                 >
                   <div className="flex items-center gap-x-1">
-                    {Boolean(unstakingShards) && (
-                      <span className={cnTw('w-1.5 h-1.5 rounded-full', DotStyles.staking)} />
-                    )}
-                    {Boolean(withdrawnShards) && (
-                      <span className={cnTw('w-1.5 h-1.5 rounded-full', DotStyles.success)} />
-                    )}
+                    {Boolean(unstakingShards) && <span className="w-1.5 h-1.5 rounded-full bg-icon-accent" />}
+                    {Boolean(withdrawnShards) && <span className="w-1.5 h-1.5 rounded-full bg-icon-positive" />}
                   </div>
                 </Tooltip>
               </div>

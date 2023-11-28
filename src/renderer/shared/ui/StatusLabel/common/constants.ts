@@ -5,7 +5,6 @@ export const DotStyles: Record<Variant, string> = {
   success: 'bg-icon-positive',
   warn: 'bg-icon-warning',
   error: 'bg-icon-negative',
-  staking: 'bg-icon-accent',
 };
 
 export const TitleStyles: Record<Variant, string> = {
@@ -13,5 +12,4 @@ export const TitleStyles: Record<Variant, string> = {
   success: 'text-text-positive',
   warn: 'text-text-warning',
   error: 'text-text-negative',
-  staking: 'text-tab-text-accent',
 };
