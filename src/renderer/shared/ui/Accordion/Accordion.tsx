@@ -3,6 +3,7 @@ import { Disclosure, Transition } from '@headlessui/react';
 
 import { Icon } from '@shared/ui';
 import { cnTw } from '@shared/lib/utils';
+import { IconNames } from '../Icon/data';
 
 type Props = {
   className?: string;
@@ -20,11 +21,13 @@ const Accordion = ({ className, isDefaultOpen, children }: PropsWithChildren<Pro
 type ButtonProps = {
   buttonClass?: string;
   iconWrapper?: string;
+  iconOpened?: IconNames;
+  iconClosed?: IconNames;
   onClick?: () => void;
 };
 
 const Button = forwardRef<HTMLButtonElement, PropsWithChildren<ButtonProps>>(
-  ({ buttonClass, iconWrapper, onClick, children }, ref) => {
+  ({ buttonClass, iconWrapper, children, iconOpened, iconClosed, onClick }, ref) => {
     return (
       <Disclosure.Button
         ref={ref}
@@ -36,7 +39,7 @@ const Button = forwardRef<HTMLButtonElement, PropsWithChildren<ButtonProps>>(
             {children}
             <div className={cnTw('shrink-0', iconWrapper)}>
               <Icon
-                name={open ? 'up' : 'down'}
+                name={open ? iconOpened || 'up' : iconClosed || 'down'}
                 size={16}
                 className={cnTw(
                   'cursor-pointer rounded-full transition-colors',

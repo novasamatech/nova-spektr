@@ -23,6 +23,7 @@ export const accountUtils = {
   isWalletConnectAccount,
   isShardAccount,
   getAccountsAndShardGroups,
+  isAccountWithShards,
   getMultisigAccountId,
   getAllAccountIds,
   getWalletAccounts,
@@ -50,6 +51,10 @@ function isShardAccount(account: Pick<Account, 'type'>): account is ShardAccount
   return account.type === AccountType.SHARD;
 }
 
+function isAccountWithShards(accounts: Pick<Account, 'type'> | ShardAccount[]): boolean {
+  return Array.isArray(accounts) && accounts[0].type === AccountType.SHARD;
+}
+
 function isChainIdMatch(account: Pick<Account, 'type'>, chainId: ChainId): boolean {
   if (isBaseAccount(account) || isMultisigAccount(account)) return true;
 
@@ -57,8 +62,9 @@ function isChainIdMatch(account: Pick<Account, 'type'>, chainId: ChainId): boole
   const shardAccountMatch = isShardAccount(account) && account.chainId === chainId;
   const walletConnectAccountMatch = isWalletConnectAccount(account) && account.chainId === chainId;
 
-  return chainAccountMatch || shardAccountMatch || walletConnectAccountMatch;
+  return chainAccountMatch || walletConnectAccountMatch || shardAccountMatch;
 }
+
 function isMultisigAccount(account: Pick<Account, 'type'>): account is MultisigAccount {
   return account.type === AccountType.MULTISIG;
 }
@@ -79,12 +85,16 @@ function getAllAccountIds(accounts: Account[], chainId: ChainId): AccountId[] {
   return Array.from(uniqIds);
 }
 
-function getAccountsAndShardGroups(accounts: Array<ChainAccount | ShardAccount>): Array<ChainAccount | ShardAccount[]> {
+function getAccountsAndShardGroups(accounts: Account[]): Array<ChainAccount | ShardAccount[]> {
   const shardsIndexes: Record<ShardAccount['groupId'], number> = {};
 
   return accounts.reduce<Array<ChainAccount | ShardAccount[]>>((acc, account) => {
+    if (accountUtils.isBaseAccount(account)) {
+      return acc;
+    }
+
     if (!accountUtils.isShardAccount(account)) {
-      acc.push(account);
+      acc.push(account as ChainAccount);
 
       return acc;
     }
