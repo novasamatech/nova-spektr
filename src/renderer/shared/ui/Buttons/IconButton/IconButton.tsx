@@ -1,5 +1,4 @@
 import { ComponentProps, MouseEvent } from 'react';
-import cn from 'classnames';
 
 import { cnTw } from '@shared/lib/utils';
 import Icon from '@shared/ui/Icon/Icon';
@@ -12,8 +11,8 @@ type Props = {
   onClick?: (event: MouseEvent<HTMLButtonElement>) => void;
 } & IconProps;
 
-export const IconButtonStyle = cn(
-  'relative w-max justify-center rounded-full outline-offset-1 text-icon-default ',
+export const IconButtonStyle = cnTw(
+  'relative w-max justify-center rounded-full outline-offset-1 text-icon-default transition-colors',
   'hover:text-icon-hover hover:bg-hover active:bg-hover active:text-tab-icon-active',
   'focus:text-icon-hover focus:bg-hover',
 );

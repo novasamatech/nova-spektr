@@ -24,9 +24,7 @@ export const MultisigWalletDetails = ({ wallet, account, signatoryWallets, signa
   const [isModalOpen, closeModal] = useModalClose(true, onClose);
 
   const chains = useMemo(() => {
-    const chains = chainsService.getChainsData().filter((chain) => isMultisigAvailable(chain.options));
-
-    return chainsService.sortChains(chains);
+    return chainsService.getChainsData({ sort: true }).filter((chain) => isMultisigAvailable(chain.options));
   }, []);
 
   return (

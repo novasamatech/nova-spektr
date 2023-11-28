@@ -19,7 +19,7 @@ export const MultishardWalletDetails = ({ wallet, accounts, onClose }: Props) =>
   const [isModalOpen, closeModal] = useModalClose(true, onClose);
 
   const chains = useMemo(() => {
-    return chainsService.sortChains(chainsService.getChainsData());
+    return chainsService.getChainsData({ sort: true });
   }, []);
 
   return (

@@ -24,9 +24,9 @@ const enum Step {
 }
 
 const enum QrCodeType {
-  DYNAMIC_DERIVATIONS = 'DYNAMIC_DERIVATIONS',
-  MULTISHARD = 'MULTISHARD',
   SINGLESHARD = 'SINGLESHARD',
+  MULTISHARD = 'MULTISHARD',
+  POLKADOT_VAULT = 'POLKADOT_VAULT',
 }
 
 type ManageProps = {
@@ -36,9 +36,9 @@ type ManageProps = {
 };
 
 const ManageFlow: Record<QrCodeType, (props: ManageProps) => JSX.Element | null> = {
-  [QrCodeType.DYNAMIC_DERIVATIONS]: (props) => <ManageDynamicDerivations {...props} />,
-  [QrCodeType.MULTISHARD]: (props) => <ManageMultishard {...props} />,
   [QrCodeType.SINGLESHARD]: (props) => <ManageSingleshard {...props} />,
+  [QrCodeType.MULTISHARD]: (props) => <ManageMultishard {...props} />,
+  [QrCodeType.POLKADOT_VAULT]: (props) => <ManageDynamicDerivations {...props} />,
 };
 
 type Props = {
@@ -46,8 +46,7 @@ type Props = {
   onClose: () => void;
   onComplete: () => void;
 };
-
-const Vault = ({ isOpen, onClose, onComplete }: Props) => {
+export const Vault = ({ isOpen, onClose, onComplete }: Props) => {
   const [isModalOpen, toggleIsModalOpen] = useToggle(isOpen);
 
   const [activeStep, setActiveStep] = useState<Step>(Step.SCAN);
@@ -74,7 +73,7 @@ const Vault = ({ isOpen, onClose, onComplete }: Props) => {
     const withoutDerivedKeys = qrPayload[0].derivedKeys.length === 0;
 
     if (isDynamicDerivationSupport(qrPayload[0]) && withoutDerivedKeys) {
-      setQrType(QrCodeType.DYNAMIC_DERIVATIONS);
+      setQrType(QrCodeType.POLKADOT_VAULT);
 
       return;
     }
@@ -120,5 +119,3 @@ const Vault = ({ isOpen, onClose, onComplete }: Props) => {
     </BaseModal>
   );
 };
-
-export default Vault;

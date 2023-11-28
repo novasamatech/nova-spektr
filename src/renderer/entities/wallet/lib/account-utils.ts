@@ -1,18 +1,19 @@
 import { u8aToHex } from '@polkadot/util';
 import { createKeyMulti } from '@polkadot/util-crypto';
 
+import { AccountType } from '@shared/core';
 import type {
-  Account,
   AccountId,
+  ChainId,
+  Threshold,
+  MultisigAccount,
+  Account,
   BaseAccount,
   ChainAccount,
-  MultisigAccount,
   ShardAccount,
-  Threshold,
   Wallet,
   WalletConnectAccount,
 } from '@shared/core';
-import { AccountType, ChainId } from '@shared/core';
 
 export const accountUtils = {
   isBaseAccount,
@@ -27,6 +28,7 @@ export const accountUtils = {
   getAllAccountIds,
   getWalletAccounts,
   getBaseAccount,
+  getDerivationPath,
 };
 
 function getMultisigAccountId(ids: AccountId[], threshold: Threshold): AccountId {
@@ -57,8 +59,8 @@ function isChainIdMatch(account: Pick<Account, 'type'>, chainId: ChainId): boole
   if (isBaseAccount(account) || isMultisigAccount(account)) return true;
 
   const chainAccountMatch = isChainAccount(account) && account.chainId === chainId;
-  const walletConnectAccountMatch = isWalletConnectAccount(account) && account.chainId === chainId;
   const shardAccountMatch = isShardAccount(account) && account.chainId === chainId;
+  const walletConnectAccountMatch = isWalletConnectAccount(account) && account.chainId === chainId;
 
   return chainAccountMatch || walletConnectAccountMatch || shardAccountMatch;
 }
@@ -81,10 +83,6 @@ function getAllAccountIds(accounts: Account[], chainId: ChainId): AccountId[] {
   }, new Set());
 
   return Array.from(uniqIds);
-}
-
-function getWalletAccounts<T extends Account>(walletId: Wallet['id'], accounts: T[]): T[] {
-  return accounts.filter((account) => account.walletId === walletId);
 }
 
 function getAccountsAndShardGroups(accounts: Account[]): Array<ChainAccount | ShardAccount[]> {
@@ -115,4 +113,15 @@ function getAccountsAndShardGroups(accounts: Account[]): Array<ChainAccount | Sh
 
 function getBaseAccount<T extends Account>(accounts: T[]): BaseAccount | undefined {
   return accounts.find((a) => a.type === AccountType.BASE) as BaseAccount;
+}
+
+function getWalletAccounts<T extends Account>(walletId: Wallet['id'], accounts: T[]): T[] {
+  return accounts.filter((account) => account.walletId === walletId);
+}
+
+type DerivationPathLike = Pick<ChainAccount, 'derivationPath'>;
+function getDerivationPath(data: DerivationPathLike | DerivationPathLike[]): string {
+  if (!Array.isArray(data)) return data.derivationPath;
+
+  return data[0].derivationPath.replace(/\d+$/, `0..${data.length - 1}`);
 }
