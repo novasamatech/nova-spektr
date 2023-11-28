@@ -24,7 +24,6 @@ export class MockDataBuilder {
   private accountIdCounter = 1;
   private walletIdCounter = 1;
 
-
   buildAccount(
     isActive: boolean,
     isMain: boolean,
