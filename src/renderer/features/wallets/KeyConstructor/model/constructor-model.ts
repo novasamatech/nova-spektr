@@ -2,23 +2,33 @@ import { createForm } from 'effector-forms';
 import { createStore, createEvent, sample, combine, forward, createEffect } from 'effector';
 import { spread } from 'patronum';
 
-import type { ChainAccount, ShardAccount, Chain } from '@shared/core';
-import { KeyType, AccountType, CryptoType, ChainType } from '@shared/core';
 import { chainsService } from '@entities/network';
-import { validateDerivation } from '@shared/lib/utils';
+import { KeyType, AccountType, CryptoType, ChainType, DraftAccount } from '@shared/core';
+import { validateDerivation, derivationHasPassword } from '@shared/lib/utils';
+import type { ChainAccount, ShardAccount, Chain } from '@shared/core';
+import { accountUtils } from '@entities/wallet';
 
 const KEY_NAMES = {
   [KeyType.MAIN]: 'Main',
-  [KeyType.HOT]: 'Hot account',
+  [KeyType.HOT]: 'Hot wallet account',
   [KeyType.PUBLIC]: 'Pub account',
   [KeyType.STAKING]: 'Staking',
   [KeyType.GOVERNANCE]: 'Governance',
   [KeyType.CUSTOM]: '',
 };
 
+const SHARDED_KEY_NAMES = {
+  [KeyType.MAIN]: 'Main sharded',
+  [KeyType.HOT]: '',
+  [KeyType.PUBLIC]: '',
+  [KeyType.STAKING]: 'Staking sharded',
+  [KeyType.GOVERNANCE]: 'Governance sharded',
+  [KeyType.CUSTOM]: '',
+};
+
 const chains = chainsService.getChainsData({ sort: true });
 
-const formInitiated = createEvent<Array<ChainAccount | ShardAccount[]>>();
+const formInitiated = createEvent<DraftAccount<ChainAccount | ShardAccount>[]>();
 const formStarted = createEvent();
 const focusableSet = createEvent<HTMLButtonElement>();
 const keyRemoved = createEvent<number>();
@@ -85,7 +95,7 @@ const $constructorForm = createForm<FormValues>({
         {
           name: 'hasPassword',
           errorText: 'dynamicDerivations.constructor.passwordDerivationError',
-          validator: (value): boolean => !/\/\/\//g.test(value),
+          validator: (value): boolean => !derivationHasPassword(value),
         },
         {
           name: 'badFormat',
@@ -154,8 +164,13 @@ const addNewKeyFx = createEffect((formValues: FormValues): ChainAccount | ShardA
 
 sample({
   clock: formInitiated,
-  target: [$keys, $constructorForm.reset, formStarted],
+  fn: (keys) => {
+    return accountUtils.getAccountsAndShardGroups(keys as Array<ChainAccount | ShardAccount>);
+  },
+  target: $keys,
 });
+
+forward({ from: formInitiated, to: [$constructorForm.reset, formStarted] });
 
 sample({
   clock: formStarted,
@@ -200,12 +215,15 @@ sample({
 
 sample({
   clock: $constructorForm.fields.keyType.onChange,
-  source: $constructorForm.fields.network.$value,
-  fn: (chain, keyType) => {
+  source: {
+    chain: $constructorForm.fields.network.$value,
+    isSharded: $constructorForm.fields.isSharded.$value,
+  },
+  fn: ({ chain, isSharded }, keyType) => {
     const type = keyType === KeyType.MAIN ? '' : `//${keyType}`;
 
     return {
-      keyName: KEY_NAMES[keyType],
+      keyName: isSharded ? KEY_NAMES[keyType] : SHARDED_KEY_NAMES[keyType],
       derivationPath: `//${chain.specName}${type}`,
     };
   },

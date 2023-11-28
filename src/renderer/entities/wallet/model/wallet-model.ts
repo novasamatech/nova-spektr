@@ -38,7 +38,6 @@ const polkadotVaultCreated = createEvent<PolkadotVaultCreateParams>();
 const singleshardCreated = createEvent<CreateParams<BaseAccount>>();
 const multisigCreated = createEvent<CreateParams<MultisigAccount>>();
 const walletConnectCreated = createEvent<CreateParams<WalletConnectAccount>>();
-const polkadotVaultWalletCreated = createEvent<CreateParams<BaseAccount>>();
 
 const walletSelected = createEvent<ID>();
 const multisigAccountUpdated = createEvent<MultisigUpdateParams>();
@@ -290,9 +289,6 @@ export const walletModel = {
   $accounts,
   $activeAccounts,
   $isLoadingWallets: fetchAllWalletsFx.pending,
-  effects: {
-    polkadotVaultCreatedFx,
-  },
   events: {
     watchOnlyCreated,
     multishardCreated,
@@ -300,10 +296,12 @@ export const walletModel = {
     singleshardCreated,
     multisigCreated,
     walletConnectCreated,
-    polkadotVaultWalletCreated,
     walletSelected,
     multisigAccountUpdated,
     walletRemoved,
     walletRemovedSuccess: removeWalletFx.done,
+  },
+  watch: {
+    polkadotVaultCreatedDone: polkadotVaultCreatedFx.doneData,
   },
 };

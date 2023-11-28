@@ -7,14 +7,14 @@ import { u8aToHex } from '@polkadot/util';
 
 import { useI18n, useStatusContext } from '@app/providers';
 import { SeedInfo } from '@renderer/components/common/QrCode/common/types';
-import { IS_WINDOWS, toAddress } from '@shared/lib/utils';
-import type { ChainAccount, ChainId, ShardAccount } from '@shared/core';
+import { IS_WINDOWS, toAddress, dictionary } from '@shared/lib/utils';
+import type { ChainAccount, ChainId, ShardAccount, DraftAccount } from '@shared/core';
 import { VaultInfoPopover } from './VaultInfoPopover';
 import { useAltKeyPressed, useToggle } from '@shared/lib/hooks';
 import { manageDynamicDerivationsModel } from './model/manage-dynamic-derivations-model';
 import { chainsService } from '@entities/network';
 import { RootAccount, accountUtils } from '@entities/wallet';
-import { KeyConstructor } from '@features/wallets';
+import { KeyConstructor, DerivationsAddressModal, ImportKeysModal } from '@features/wallets';
 import { ChainTitle } from '@entities/chain';
 import { DerivedAccount } from './DerivedAccount';
 import { Animation } from '@shared/ui/Animation/Animation';
@@ -29,14 +29,6 @@ import {
   Icon,
   Accordion,
 } from '@shared/ui';
-import type { Chain, ChainAccount, ChainId, ShardAccount } from '@shared/core';
-import { VaultInfoPopover } from './VaultInfoPopover';
-import { useAltKeyPressed, useToggle } from '@shared/lib/hooks';
-import { manageDynamicDerivationsModel } from './model/manage-dynamic-derivations-model';
-import { chainsService } from '@entities/network';
-import { DerivedAccount, RootAccount } from '@entities/wallet';
-import { DerivationsAddressModal, ImportKeysModal } from '@features/wallets';
-import { DraftAccount } from '@shared/core/types/account';
 
 type Props = {
   seedInfo: SeedInfo[];
@@ -52,11 +44,11 @@ export const ManageDynamicDerivations = ({ seedInfo, onBack, onComplete }: Props
   const accordions = useRef<Record<string, { el: null | HTMLButtonElement; isOpen: boolean }>>({});
 
   const accounts = useUnit(manageDynamicDerivationsModel.$accounts);
+  const accountsGroups = useUnit(manageDynamicDerivationsModel.$accountsGroups);
   const [isAddressModalOpen, toggleIsAddressModalOpen] = useToggle();
   const [isImportModalOpen, toggleIsImportModalOpen] = useToggle();
 
   const [isConstructorModalOpen, toggleConstructorModal] = useToggle();
-  const [chainsIds, setChainsIds] = useState<ChainId[]>([]);
   const [chainElements, setChainElements] = useState<[string, Array<ChainAccount | ShardAccount[]>][]>([]);
 
   const {
@@ -74,25 +66,17 @@ export const ManageDynamicDerivations = ({ seedInfo, onBack, onComplete }: Props
   }, [onComplete]);
 
   useEffect(() => {
-    const chainIds = chainsService.getChainsData({ sort: true }).map((chain) => chain.chainId);
-    setChainsIds(chainIds);
-  }, []);
+    const chains = chainsService.getChainsData({ sort: true });
+    const chainsMap = dictionary(chains, 'chainId', () => []);
 
-  useEffect(() => {
-    if (chainsIds.length === 0) return;
-
-    const chainsMap = chainsIds.reduce<Record<ChainId, Array<ChainAccount | ShardAccount[]>>>((acc, chainId) => {
-      return { ...acc, [chainId]: [] };
-    }, {});
-
-    accounts.forEach((account) => {
+    accountsGroups.forEach((account) => {
       const chainId = Array.isArray(account) ? account[0].chainId : account.chainId;
 
       chainsMap[chainId].push(account);
     });
 
     setChainElements(Object.entries(chainsMap));
-  }, [accounts, chainsIds.length]);
+  }, [accountsGroups]);
 
   useEffect(() => {
     Object.values(accordions.current).forEach((item) => {
@@ -121,18 +105,14 @@ export const ManageDynamicDerivations = ({ seedInfo, onBack, onComplete }: Props
     });
   };
 
-  const handleImport = (mergedKeys: DraftAccount<ShardAccount | ChainAccount>[]) => {
+  const handleImportKeys = (mergedKeys: DraftAccount<ShardAccount | ChainAccount>[]) => {
     manageDynamicDerivationsModel.events.derivationsImported(mergedKeys);
     toggleIsImportModalOpen();
   };
 
-  const handleConstructorKeys = (keys: Array<ChainAccount | ShardAccount[]>) => {
+  const handleConstructorKeys = (keys: DraftAccount<ChainAccount | ShardAccount>[]) => {
     manageDynamicDerivationsModel.events.keysAdded(keys);
     toggleConstructorModal();
-  };
-
-  const goBack = () => {
-    onBack();
   };
 
   const button = IS_WINDOWS ? (
@@ -151,7 +131,7 @@ export const ManageDynamicDerivations = ({ seedInfo, onBack, onComplete }: Props
     </>
   );
 
-  const publicKey = u8aToHex(seedInfo[0]?.multiSigner.public);
+  const publicKey = u8aToHex(seedInfo[0].multiSigner.public);
   const publicKeyAddress = toAddress(publicKey, { prefix: 1 });
   const walletName = isAltPressed || !name?.value ? publicKeyAddress : name?.value;
 
@@ -176,7 +156,7 @@ export const ManageDynamicDerivations = ({ seedInfo, onBack, onComplete }: Props
           </InputHint>
 
           <div className="flex flex-1 justify-between items-end">
-            <Button variant="text" onClick={goBack}>
+            <Button variant="text" onClick={onBack}>
               {t('onboarding.backButton')}
             </Button>
 
@@ -270,7 +250,7 @@ export const ManageDynamicDerivations = ({ seedInfo, onBack, onComplete }: Props
         rootAccountId={publicKey}
         existingKeys={accounts}
         onClose={toggleIsImportModalOpen}
-        onConfirm={handleImport}
+        onConfirm={handleImportKeys}
       />
     </>
   );

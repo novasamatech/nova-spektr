@@ -16,28 +16,26 @@ describe('features/wallet/model/constructor-model', () => {
       chainType: ChainType.SUBSTRATE,
       derivationPath: '//polkadot//MAIN',
     },
-    [
-      {
-        name: 'Shard_1 DOT key',
-        groupId: 'shard_1',
-        chainId: '0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3',
-        chainType: ChainType.SUBSTRATE,
-        cryptoType: CryptoType.SR25519,
-        keyType: KeyType.PUBLIC,
-        type: AccountType.SHARD,
-        derivationPath: '//polkadot//hot//0',
-      },
-      {
-        name: 'Shard_2 DOT key',
-        groupId: 'shard_1',
-        chainId: '0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3',
-        chainType: ChainType.SUBSTRATE,
-        cryptoType: CryptoType.SR25519,
-        keyType: KeyType.PUBLIC,
-        type: AccountType.SHARD,
-        derivationPath: '//polkadot//hot//1',
-      },
-    ],
+    {
+      name: 'Shard_1 DOT key',
+      groupId: 'shard_1',
+      chainId: '0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3',
+      chainType: ChainType.SUBSTRATE,
+      cryptoType: CryptoType.SR25519,
+      keyType: KeyType.PUBLIC,
+      type: AccountType.SHARD,
+      derivationPath: '//polkadot//hot//0',
+    },
+    {
+      name: 'Shard_2 DOT key',
+      groupId: 'shard_1',
+      chainId: '0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3',
+      chainType: ChainType.SUBSTRATE,
+      cryptoType: CryptoType.SR25519,
+      keyType: KeyType.PUBLIC,
+      type: AccountType.SHARD,
+      derivationPath: '//polkadot//hot//1',
+    },
   ];
 
   afterEach(() => {
@@ -49,9 +47,9 @@ describe('features/wallet/model/constructor-model', () => {
 
     await allSettled(constructorModel.events.formInitiated, {
       scope,
-      params: defaultKeys as Array<ChainAccount | ShardAccount[]>,
+      params: defaultKeys as Array<ChainAccount | ShardAccount>,
     });
-    expect(scope.getState(constructorModel.$keys)).toEqual(defaultKeys);
+    expect(scope.getState(constructorModel.$keys)).toEqual([defaultKeys[0], [defaultKeys[1], defaultKeys[2]]]);
   });
 
   test('should set Polkadot as default network', async () => {
@@ -72,7 +70,7 @@ describe('features/wallet/model/constructor-model', () => {
     await allSettled(constructorModel.$constructorForm.submit, { scope });
     expect(scope.getState(constructorModel.$keys)).toEqual([
       {
-        name: 'Governance',
+        name: 'Governance sharded',
         keyType: KeyType.GOVERNANCE,
         chainId: TEST_CHAIN_ID,
         type: AccountType.CHAIN,

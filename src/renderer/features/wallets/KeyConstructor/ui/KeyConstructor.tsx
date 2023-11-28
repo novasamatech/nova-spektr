@@ -6,18 +6,18 @@ import { KeyForm } from './KeyForm';
 import { KeysList } from './KeysList';
 import { WarningModal } from './WarningModal';
 import { constructorModel } from '../model/constructor-model';
-import { ChainAccount, ShardAccount } from '@shared/core';
+import { ChainAccount, ShardAccount, DraftAccount } from '@shared/core';
 import { useI18n } from '@app/providers';
 
 type Props = {
   title: string;
-  existingKeys: Array<ChainAccount | ShardAccount[]>;
   isOpen: boolean;
+  existingKeys: DraftAccount<ChainAccount | ShardAccount>[];
+  onConfirm: (keys: DraftAccount<ChainAccount | ShardAccount>[]) => void;
   onClose: () => void;
-  onConfirm: (keys: Array<ChainAccount | ShardAccount[]>) => void;
 };
 
-export const KeyConstructor = ({ title, existingKeys, isOpen, onClose, onConfirm }: Props) => {
+export const KeyConstructor = ({ title, isOpen, existingKeys, onConfirm, onClose }: Props) => {
   const { t } = useI18n();
   const [isWarningOpen, setIsWarningOpen] = useState(false);
 
@@ -60,7 +60,7 @@ export const KeyConstructor = ({ title, existingKeys, isOpen, onClose, onConfirm
         <Button variant="text" onClick={closeConstructor}>
           {t('dynamicDerivations.constructor.backButton')}
         </Button>
-        <Button onClick={() => onConfirm(keys)}>{t('dynamicDerivations.constructor.saveButton')}</Button>
+        <Button onClick={() => onConfirm(keys.flat())}>{t('dynamicDerivations.constructor.saveButton')}</Button>
       </div>
 
       <WarningModal isOpen={isWarningOpen} onClose={() => setIsWarningOpen(false)} onConfirm={confirmConstructor} />
