@@ -16,6 +16,7 @@ describe('pages/Settings/Networks/NetworkList', () => {
       assets: [],
       explorers: [],
       name: 'My test chain',
+      specName: 'my_test_chain',
       nodes: [],
       chainId: '0x123',
       icon: 'test_icon.svg',

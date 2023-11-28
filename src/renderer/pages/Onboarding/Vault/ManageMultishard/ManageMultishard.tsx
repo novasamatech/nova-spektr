@@ -43,8 +43,8 @@ export const ManageMultishard = ({ seedInfo, onBack, onComplete }: Props) => {
   const [accounts, setAccounts] = useState<CompactSeedInfo[]>([]);
 
   useEffect(() => {
-    const chains = chainsService.getChainsData();
-    const chainsMap = keyBy(chainsService.sortChains(chains), 'chainId');
+    const chains = chainsService.getChainsData({ sort: true });
+    const chainsMap = keyBy(chains, 'chainId');
     setChainsObject(chainsMap);
 
     const filteredQrData = seedInfo.map((data) => filterByExistingChains(data, chainsMap));

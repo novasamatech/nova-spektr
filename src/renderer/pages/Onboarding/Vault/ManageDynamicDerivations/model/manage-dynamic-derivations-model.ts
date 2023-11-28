@@ -1,34 +1,37 @@
-import { attach, createApi, createEvent, createStore, forward, sample } from 'effector';
+import { attach, createApi, createEvent, createStore, forward, sample, combine } from 'effector';
 import { createForm } from 'effector-forms';
 import { u8aToHex } from '@polkadot/util';
 
-import { AccountType, ChainAccount, ChainType, CryptoType, KeyType, ShardAccount } from '@renderer/shared/core';
 import { SeedInfo } from '@renderer/components/common/QrCode/common/types';
 import { toAccountId } from '@shared/lib/utils';
 import { chainsService } from '@entities/network';
-import { walletModel } from '@entities/wallet';
-import { DraftAccount } from '@shared/core/types/account';
+import { walletModel, accountUtils } from '@entities/wallet';
+import { AccountType, ChainType, CryptoType, KeyType } from '@shared/core';
+import type { ChainAccount, ShardAccount, DraftAccount } from '@shared/core';
 
 const chains = chainsService.getChainsData();
 
 const WALLET_NAME_MAX_LENGTH = 256;
 const MAIN_ACCOUNT_NAME = 'Main';
 
-const validateMaxLength = (value: string) => value.length <= WALLET_NAME_MAX_LENGTH;
-
 export type Callbacks = {
   onSubmit: () => void;
 };
 
 const $callbacks = createStore<Callbacks | null>(null);
-const $accounts = createStore<DraftAccount<ShardAccount | ChainAccount>[]>([]);
+const $accounts = createStore<DraftAccount<ChainAccount | ShardAccount>[]>([]);
+
+const $accountsGroups = combine($accounts, (accounts): Array<ChainAccount | ShardAccount[]> => {
+  return accountUtils.getAccountsAndShardGroups(accounts as Array<ChainAccount | ShardAccount>);
+});
 
 const callbacksApi = createApi($callbacks, {
   callbacksChanged: (state, props: Callbacks) => ({ ...state, ...props }),
 });
 
 const formInitiated = createEvent<SeedInfo[]>();
-const derivationsImported = createEvent<DraftAccount<ShardAccount | ChainAccount>[]>();
+const keysAdded = createEvent<DraftAccount<ChainAccount | ShardAccount>[]>();
+const derivationsImported = createEvent<DraftAccount<ChainAccount | ShardAccount>[]>();
 
 const $walletForm = createForm({
   fields: {
@@ -39,7 +42,7 @@ const $walletForm = createForm({
         {
           name: 'maxLength',
           errorText: 'onboarding.watchOnly.walletNameMaxLenError',
-          validator: validateMaxLength,
+          validator: (value): boolean => value.length <= WALLET_NAME_MAX_LENGTH,
         },
       ],
     },
@@ -97,24 +100,25 @@ sample({
 });
 
 sample({
-  clock: walletModel.effects.polkadotVaultCreatedFx.doneData,
+  clock: walletModel.watch.polkadotVaultCreatedDone,
   target: attach({
     source: $callbacks,
     effect: (state) => state?.onSubmit(),
   }),
 });
 
-forward({
-  from: derivationsImported,
-  to: $accounts,
-});
+forward({ from: keysAdded, to: $accounts });
+
+forward({ from: derivationsImported, to: $accounts });
 
 export const manageDynamicDerivationsModel = {
   $walletForm,
   $accounts,
+  $accountsGroups,
   events: {
     callbacksChanged: callbacksApi.callbacksChanged,
     formInitiated,
+    keysAdded,
     derivationsImported,
   },
 };

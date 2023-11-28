@@ -11,7 +11,6 @@ export const useDerivedInfo = ({ derivationPath }: InfoProps): InfoSection[] => 
     title: t('info.derivationPathTitle'),
     items: [{ id: derivationPath, value: derivationPath }],
   };
-  const popoverItems = [infoSection];
 
-  return popoverItems;
+  return [infoSection];
 };

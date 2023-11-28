@@ -36,7 +36,7 @@ function isFileStructureValid(result: any): result is ParsedImportFile {
 
   const genesisHashes = Object.values(result).filter((x) => typeof x === 'object') as ImportFileChain[];
 
-  const hasChainsAndKeys = Object.values(genesisHashes).every((hash: ImportFileChain) => {
+  return Object.values(genesisHashes).every((hash: ImportFileChain) => {
     return Object.entries(hash).every(([key, value]) => {
       const isChainValid = key.startsWith('0x');
       const hasChainKeys =
@@ -45,8 +45,6 @@ function isFileStructureValid(result: any): result is ParsedImportFile {
       return isChainValid && hasChainKeys;
     });
   });
-
-  return hasChainsAndKeys;
 }
 
 type FormattedResult = { derivations: ImportedDerivation[]; root: AccountId | Address };

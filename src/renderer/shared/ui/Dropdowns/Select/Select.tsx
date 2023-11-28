@@ -1,5 +1,5 @@
 import { Listbox, Transition } from '@headlessui/react';
-import { Fragment, useId } from 'react';
+import { Fragment, useId, forwardRef } from 'react';
 
 import { cnTw } from '@shared/lib/utils';
 import { Icon, FootnoteText, LabelText } from '@shared/ui';
@@ -17,7 +17,7 @@ import {
   ViewClass,
 } from '../common/constants';
 
-type Props<T> = {
+type Props<T extends any = any> = {
   className?: string;
   placeholder: string;
   label?: string;
@@ -31,98 +31,112 @@ type Props<T> = {
   onChange: (data: DropdownResult<T>) => void;
 };
 
-const Select = <T extends any>({
-  className,
-  placeholder,
-  label,
-  disabled,
-  invalid,
-  selectedId,
-  options,
-  onChange,
-  position = 'down',
-  tabIndex,
-  theme = 'light',
-}: Props<T>) => {
-  const id = useId();
-  const selectedOption = options.find((option) => option.id === selectedId);
+const Select = forwardRef<HTMLButtonElement, Props>(
+  (
+    {
+      className,
+      placeholder,
+      label,
+      disabled,
+      invalid,
+      selectedId,
+      options,
+      onChange,
+      position = 'down',
+      tabIndex,
+      theme = 'light',
+    },
+    ref,
+  ) => {
+    const id = useId();
+    const selectedOption = options.find((option) => option.id === selectedId);
 
-  const selectElement = (
-    <Listbox disabled={disabled} value={selectedOption || {}} onChange={onChange}>
-      {({ open }) => (
-        <div className={cnTw('relative', className)}>
-          <Listbox.Button
-            id={id}
-            tabIndex={tabIndex}
-            className={cnTw(
-              open && SelectButtonStyle[theme].open,
-              !open && !invalid && SelectButtonStyle[theme].closed,
-              invalid && SelectButtonStyle[theme].invalid,
-              SelectButtonStyle[theme].disabled,
-              CommonInputStyles,
-              CommonInputStylesTheme[theme],
-              'w-full flex items-center gap-x-2 justify-between pr-2',
-            )}
-          >
-            {selectedOption && !open ? (
-              typeof selectedOption.element === 'string' ? (
-                <FootnoteText as="span" className={cnTw('truncate', ButtonTextFilledStyle[theme])}>
-                  {selectedOption.element}
-                </FootnoteText>
-              ) : (
-                selectedOption.element
-              )
-            ) : (
-              <FootnoteText as="span" className={ButtonTextEmptyStyle[theme]}>
-                {placeholder}
-              </FootnoteText>
-            )}
-            <Icon name={open ? 'up' : 'down'} size={16} />
-          </Listbox.Button>
-
-          <Transition as={Fragment} leave="transition ease-in duration-100" leaveFrom="opacity-100" leaveTo="opacity-0">
-            <Listbox.Options
+    const selectElement = (
+      <Listbox disabled={disabled} value={selectedOption || {}} onChange={onChange}>
+        {({ open }) => (
+          <div className={cnTw('relative', className)}>
+            <Listbox.Button
+              ref={ref}
+              id={id}
+              tabIndex={tabIndex}
               className={cnTw(
-                OptionsContainerStyle,
-                OptionsContainerStyleTheme[theme],
-                position !== 'auto' && ViewClass[position],
+                open && SelectButtonStyle[theme].open,
+                !open && !invalid && SelectButtonStyle[theme].closed,
+                invalid && SelectButtonStyle[theme].invalid,
+                SelectButtonStyle[theme].disabled,
+                CommonInputStyles,
+                CommonInputStylesTheme[theme],
+                'w-full flex items-center gap-x-2 justify-between pr-2',
               )}
             >
-              {options.map(({ id, value, element, disabled }) => (
-                <Listbox.Option
-                  key={id}
-                  value={{ id, value }}
-                  disabled={disabled}
-                  className={({ active }) =>
-                    cnTw(OptionStyle, disabled ? 'cursor-default' : OptionStyleTheme[theme](active, id === selectedId))
-                  }
-                >
-                  {['string', 'number'].includes(typeof element) ? (
-                    <FootnoteText className={OptionTextStyle[theme]}>{element}</FootnoteText>
-                  ) : (
-                    element
-                  )}
-                </Listbox.Option>
-              ))}
-            </Listbox.Options>
-          </Transition>
-        </div>
-      )}
-    </Listbox>
-  );
+              {selectedOption && !open ? (
+                typeof selectedOption.element === 'string' ? (
+                  <FootnoteText as="span" className={cnTw('truncate', ButtonTextFilledStyle[theme])}>
+                    {selectedOption.element}
+                  </FootnoteText>
+                ) : (
+                  selectedOption.element
+                )
+              ) : (
+                <FootnoteText as="span" className={ButtonTextEmptyStyle[theme]}>
+                  {placeholder}
+                </FootnoteText>
+              )}
+              <Icon name={open ? 'up' : 'down'} size={16} />
+            </Listbox.Button>
 
-  if (!label) {
-    return selectElement;
-  }
+            <Transition
+              as={Fragment}
+              leave="transition ease-in duration-100"
+              leaveFrom="opacity-100"
+              leaveTo="opacity-0"
+            >
+              <Listbox.Options
+                className={cnTw(
+                  OptionsContainerStyle,
+                  OptionsContainerStyleTheme[theme],
+                  position !== 'auto' && ViewClass[position],
+                )}
+              >
+                {options.map(({ id, value, element, disabled }) => (
+                  <Listbox.Option
+                    key={id}
+                    value={{ id, value }}
+                    disabled={disabled}
+                    className={({ active }) =>
+                      cnTw(
+                        OptionStyle,
+                        disabled ? 'cursor-default' : OptionStyleTheme[theme](active, id === selectedId),
+                      )
+                    }
+                  >
+                    {['string', 'number'].includes(typeof element) ? (
+                      <FootnoteText className={OptionTextStyle[theme]}>{element}</FootnoteText>
+                    ) : (
+                      element
+                    )}
+                  </Listbox.Option>
+                ))}
+              </Listbox.Options>
+            </Transition>
+          </div>
+        )}
+      </Listbox>
+    );
 
-  return (
-    <div className="flex flex-col gap-2">
-      <LabelText className="cursor-pointer text-text-tertiary font-medium" htmlFor={id}>
-        {label}
-      </LabelText>
-      {selectElement}
-    </div>
-  );
-};
+    if (!label) {
+      return selectElement;
+    }
+
+    return (
+      <div className="flex flex-col gap-2">
+        <LabelText className="cursor-pointer text-text-tertiary font-medium" htmlFor={id}>
+          {label}
+        </LabelText>
+        {selectElement}
+      </div>
+    );
+  },
+);
 
 export default Select;

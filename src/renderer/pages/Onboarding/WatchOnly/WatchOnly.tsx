@@ -57,9 +57,7 @@ const WatchOnly = ({ isOpen, onClose, onComplete }: Props) => {
   }, [address]);
 
   useEffect(() => {
-    const chains = chainsService.getChainsData();
-
-    setChains(chainsService.sortChains(chains));
+    setChains(chainsService.getChainsData({ sort: true }));
   }, []);
 
   const createWallet: SubmitHandler<WalletForm> = async ({ walletName, address }) => {

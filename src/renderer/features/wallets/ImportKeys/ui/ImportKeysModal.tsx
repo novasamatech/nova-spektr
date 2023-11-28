@@ -1,24 +1,23 @@
 import { useUnit } from 'effector-react';
 import { useEffect } from 'react';
 
-import { Alert, BaseModal, Button, InfoLink, InputFile, InputHint } from '@shared/ui';
-import { useI18n } from '@app/providers';
-import { AccountId, ChainAccount, ShardAccount } from '@shared/core';
-import { cnTw } from '@shared/lib/utils';
 // @ts-ignore
 import templateFile from '@shared/assets/files/dd-template.yaml';
+import { Alert, BaseModal, Button, InfoLink, InputFile, InputHint } from '@shared/ui';
+import type { AccountId, ChainAccount, ShardAccount, DraftAccount } from '@shared/core';
+import { useI18n } from '@app/providers';
+import { cnTw } from '@shared/lib/utils';
 import { importKeysModel } from '../model/import-keys-model';
-import { DraftAccount } from '@shared/core';
 
 type Props = {
   isOpen: boolean;
   rootAccountId: AccountId;
-  existingKeys: DraftAccount<ShardAccount | ChainAccount>[];
+  existingKeys: DraftAccount<ChainAccount | ShardAccount>[];
+  onConfirm: (mergedKeys: DraftAccount<ChainAccount | ShardAccount>[]) => void;
   onClose: () => void;
-  onConfirm: (mergedKeys: DraftAccount<ShardAccount | ChainAccount>[]) => void;
 };
 
-export const ImportKeysModal = ({ isOpen, rootAccountId, existingKeys, onClose, onConfirm }: Props) => {
+export const ImportKeysModal = ({ isOpen, rootAccountId, existingKeys, onConfirm, onClose }: Props) => {
   const { t } = useI18n();
   const validationError = useUnit(importKeysModel.$validationError);
   const mergedKeys = useUnit(importKeysModel.$mergedKeys);

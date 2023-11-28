@@ -19,9 +19,7 @@ export const Navigation = () => {
   const [chains, setChains] = useState<Record<ChainId, Chain>>({});
 
   useEffect(() => {
-    const chains = chainsService.getChainsData();
-
-    setChains(keyBy(chains, 'chainId'));
+    setChains(keyBy(chainsService.getChainsData(), 'chainId'));
   }, []);
 
   const txs = getLiveAccountMultisigTxs(activeAccounts.map((a) => a.accountId)).filter(

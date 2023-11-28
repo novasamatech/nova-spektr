@@ -356,8 +356,8 @@ export const useNetwork = (): INetworkService => {
 
   const setupConnections = async (): Promise<void> => {
     try {
-      const chainsData = chainsService.getChainsData();
-      chains.current = keyBy(chainsService.sortChains(chainsData), 'chainId');
+      const chainsData = chainsService.getChainsData({ sort: true });
+      chains.current = keyBy(chainsData, 'chainId');
 
       const newConnections = await getNewConnections();
       await clearConnections();

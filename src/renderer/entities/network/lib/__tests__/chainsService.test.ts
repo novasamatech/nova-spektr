@@ -1,5 +1,5 @@
 import { chainsService } from '../chainsService';
-import type { HexString } from '@shared/core';
+import type { HexString, Chain } from '@shared/core';
 
 jest.mock('@app/providers', () => ({
   useMatrix: jest.fn(),
@@ -47,24 +47,35 @@ describe('service/chainsService', () => {
 
     const polkadot = {
       name: 'Polkadot',
+      specName: 'polkadot',
       chainId: '0x00' as HexString,
       assets,
-      nodes: [],
-      icon: '',
-      addressPrefix: 42,
-    };
-    const kusama = { name: 'Kusama', chainId: '0x01' as HexString, assets, nodes: [], icon: '', addressPrefix: 42 };
-    const threeDPass = { name: '3dPass', chainId: '0x02' as HexString, assets, nodes: [], icon: '', addressPrefix: 42 };
+    } as Chain;
+    const kusama = {
+      name: 'Kusama',
+      specName: 'kusama',
+      chainId: '0x01' as HexString,
+      assets,
+    } as Chain;
+    const threeDPass = {
+      name: '3dPass',
+      specName: '3dpass',
+      chainId: '0x02' as HexString,
+      assets,
+    } as Chain;
     const testnet = {
       name: 'Westend',
+      specName: 'westend',
       chainId: '0x03' as HexString,
       assets,
-      nodes: [],
-      icon: '',
-      addressPrefix: 42,
       options: ['testnet'],
-    };
-    const parachain = { name: 'Acala', chainId: '0x04' as HexString, assets, nodes: [], icon: '', addressPrefix: 42 };
+    } as Chain;
+    const parachain = {
+      name: 'Acala',
+      specName: 'acala',
+      chainId: '0x04' as HexString,
+      assets,
+    } as Chain;
 
     const balances = [
       {

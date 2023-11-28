@@ -3,12 +3,11 @@ import { parse } from 'yaml';
 import { groupBy } from 'lodash';
 import { reset } from 'patronum';
 
+import type { AccountId, ChainAccount, ChainId, ObjectValues, ShardAccount, DraftAccount } from '@shared/core';
+import { toAccountId } from '@shared/lib/utils';
 import { ValidationError, ParsedImportFile, TypedImportedDerivation, ValidationErrorsLabel } from '../lib/types';
 import { DerivationImportError } from '../lib/derivation-import-error';
-import { AccountId, ChainAccount, ChainId, ObjectValues, ShardAccount } from '@shared/core';
 import { importKeysUtils } from '../lib/import-keys-utils';
-import { DraftAccount } from '@shared/core/types/account';
-import { toAccountId } from '@shared/lib/utils';
 
 type SampleFnError = { error: DerivationImportError };
 type ExistingDerivations = {

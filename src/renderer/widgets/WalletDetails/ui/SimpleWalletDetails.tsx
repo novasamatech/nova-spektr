@@ -18,9 +18,7 @@ export const SimpleWalletDetails = ({ wallet, account, onClose }: Props) => {
   const [isModalOpen, closeModal] = useModalClose(true, onClose);
 
   const chains = useMemo(() => {
-    const chains = chainsService.getChainsData();
-
-    return chainsService.sortChains(chains);
+    return chainsService.getChainsData({ sort: true });
   }, []);
 
   return (
