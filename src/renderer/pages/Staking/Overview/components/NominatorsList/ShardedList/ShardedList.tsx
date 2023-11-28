@@ -109,7 +109,7 @@ export const ShardedList = ({
     <Plate className="p-0 shadow-shards border-b-4 border-double">
       <Accordion className="w-auto">
         <div className="hover:bg-action-background-hover flex px-3 py-2 border-b border-divider">
-          <Accordion.Button buttonClass="ml-auto w-auto" iconOpened="dropdownDown" iconClosed="dropdownRight" />
+          <Accordion.Button buttonClass="ml-auto w-auto" iconOpened="shelfDown" iconClosed="shelfRight" />
           <Checkbox
             checked={selectedShards === shards.length}
             className="p-2 w-full"
