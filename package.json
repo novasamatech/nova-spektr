@@ -40,6 +40,7 @@
 
     "test": "jest --config=jest.config.ts --json --outputFile=jest-unit-results.json",
     "test:integration": "jest --config=tests/integrations/jest.config.ts --group=integration --json --outputFile=jest-results.json",
+    "test:migration": "jest --config=tests/integrations/jest.config.ts --group=migrations --json --outputFile=jest-results.json",
     "test:dataVerification": "jest --config=tests/integrations/jest.config.ts --group=dataVerification --json --outputFile=jest-results.json",
     "test:matrix": "jest --config=tests/integrations/jest.config.ts --group=matrix --json --outputFile=jest-results.json",
     "test:coverage": "jest --config=jest.config.ts --coverage --passWithNoTests | tee ./coverage.txt",
