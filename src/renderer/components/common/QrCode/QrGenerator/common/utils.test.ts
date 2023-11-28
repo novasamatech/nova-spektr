@@ -36,7 +36,6 @@ describe('QrCode/QrGenerator/utils', () => {
       createFrames(
         createSubstrateSignPayload(
           '5HbgaJEuVN5qGbkhgtuDQANivSWwHXWsC2erP1SQUXgciTVq',
-          0,
           '0x12345678',
           '0xb0a8d493285c2df73290dfb7e61f870f17b41801197a149ca93654499ea3dafe',
         ),

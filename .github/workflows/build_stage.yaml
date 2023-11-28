@@ -4,7 +4,7 @@ name: Build and deploy
 
 on:
   pull_request:
-    types: [labeled]
+
 
 
 env:
@@ -15,7 +15,7 @@ env:
 
 jobs:
   internal-version-increment:
-    if: ${{ github.event.label.name == 'internal-build' }}
+    # if: ${{ github.event.label.name == 'internal-build' }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -40,13 +40,13 @@ jobs:
           echo "::set-output name=new_version::$NEW_VERSION"
         shell: bash
 
-      - name: Write app version to secrets
-        uses: hmanzur/actions-set-secret@v2.0.0
-        with:
-          name: 'INTERNAL_BUILD_VERSION'
-          value: ${{ steps.update_version.outputs.new_version }}
-          repository: novasamatech/nova-spektr
-          token: ${{ secrets.WRITE_SECRET_PAT }}
+      # - name: Write app version to secrets
+      #   uses: hmanzur/actions-set-secret@v2.0.0
+      #   with:
+      #     name: 'INTERNAL_BUILD_VERSION'
+      #     value: ${{ steps.update_version.outputs.new_version }}
+      #     repository: novasamatech/nova-spektr
+      #     token: ${{ secrets.WRITE_SECRET_PAT }}
 
       - name: Save nev version to artifacts
         run: |

@@ -13,5 +13,6 @@ export const enum Command {
   Transaction = 0x00,
   Message = 0x03,
   MultipleTransactions = 0x04,
+  DynamicDerivationsTransaction = 0x05,
   DynamicDerivationsRequestV1 = 0xdf,
 }
