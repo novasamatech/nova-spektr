@@ -12,9 +12,8 @@ import {
   ValidationError,
 } from '../lib/types';
 import { DerivationImportError, ErrorDetails } from '../lib/derivation-import-error';
-import { AccountId, ChainAccount, ChainId, ShardAccount } from '@shared/core';
+import { AccountId, ChainAccount, ChainId, DraftAccount, ShardAccount } from '@shared/core';
 import { importKeysUtils } from '../lib/import-keys-utils';
-import { DraftAccount } from '@shared/core/types/account';
 import { toAccountId } from '@shared/lib/utils';
 
 type SampleFnError = { error: DerivationImportError };

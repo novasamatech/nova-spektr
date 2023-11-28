@@ -96,8 +96,8 @@ const accounts: Array<ChainAccount | ShardAccount> = [
   },
 ];
 
-describe('entities/wallet/lib', () => {
-  test('entities/wallet/lib/account-utils', () => {
+describe('entities/wallet/lib/account-utils#getAccountsAndShardGroups', () => {
+  test('should construct groups', () => {
     const groupedAccount = accountUtils.getAccountsAndShardGroups(accounts);
 
     const chainAccounts = [accounts[0], accounts[1]];
@@ -109,4 +109,36 @@ describe('entities/wallet/lib', () => {
     expect(groupedAccount[2]).toEqual(shardsGroup1);
     expect(groupedAccount[3]).toEqual(shardsGroup2);
   });
+});
+
+describe('entities/wallet/lib/account-utils#getDerivationPath', () => {
+  // Array<[argument, result]>
+  const cases_1: [{ derivationPath: string }, string][] = [
+    [{ derivationPath: '//westend' }, '//westend'],
+    [{ derivationPath: '//westend//staking' }, '//westend//staking'],
+  ];
+
+  // Array<[argument, result]>
+  const cases_2: [{ derivationPath: string }[], string][] = [
+    [
+      [{ derivationPath: '//westend//custom//0' }, { derivationPath: '//westend//custom//1' }],
+      '//westend//custom//0..1',
+    ],
+    [
+      [{ derivationPath: '//westend//custom/hey22-1/0' }, { derivationPath: '//westend//custom/hey22-1/1' }],
+      '//westend//custom/hey22-1/0..1',
+    ],
+    [
+      [{ derivationPath: '//westend//custom/hey-hey//0' }, { derivationPath: '//westend//custom/hey-hey//1' }],
+      '//westend//custom/hey-hey//0..1',
+    ],
+  ];
+
+  test.each([...cases_1, ...cases_2])(
+    'should construct derivationPath for ChainAccount',
+    (firstArg, expectedResult) => {
+      const derivationPath = accountUtils.getDerivationPath(firstArg);
+      expect(derivationPath).toEqual(expectedResult);
+    },
+  );
 });

@@ -38,9 +38,7 @@ export const QrTxGenerator = ({
 
   const image = useGenerator(signPayload, skipEncoding, delay, bgColor);
 
-  if (!signPayload || !image) {
-    return null;
-  }
+  if (!signPayload || !image) return null;
 
   return <div style={{ width: size, height: size }} dangerouslySetInnerHTML={{ __html: image }} />;
 };

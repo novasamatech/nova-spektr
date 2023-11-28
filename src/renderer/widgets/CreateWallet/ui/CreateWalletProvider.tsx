@@ -3,7 +3,7 @@ import { useUnit } from 'effector-react';
 import { useNavigate } from 'react-router-dom';
 
 import WatchOnly from '@pages/Onboarding/WatchOnly/WatchOnly';
-import Vault from '@pages/Onboarding/Vault/Vault';
+import { Vault } from '@pages/Onboarding/Vault/Vault';
 import { NovaWallet } from '@pages/Onboarding/WalletConnect/NovaWallet';
 import { WalletConnect } from '@pages/Onboarding/WalletConnect/WalletConnect';
 import { MultisigAccount } from './MultisigAccount/MultisigAccount';
