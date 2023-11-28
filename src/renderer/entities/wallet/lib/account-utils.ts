@@ -109,10 +109,9 @@ function getWalletAccounts<T extends Account>(walletId: Wallet['id'], accounts: 
   return accounts.filter((account) => account.walletId === walletId);
 }
 
-function getDerivationPath(data: ChainAccount | ShardAccount | ChainAccount[] | ShardAccount[]): string {
+type DerivationPathLike = Pick<ChainAccount, 'derivationPath'>;
+function getDerivationPath(data: DerivationPathLike | DerivationPathLike[]): string {
   if (!Array.isArray(data)) return data.derivationPath;
 
-  const [empty, network, keyType] = data[0].derivationPath.split('//');
-
-  return [empty, network, keyType, `0..${data.length - 1}`].join('//');
+  return data[0].derivationPath.replace(/\d+$/, `0..${data.length - 1}`);
 }

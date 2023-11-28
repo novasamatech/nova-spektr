@@ -23,7 +23,11 @@ export const ShardInfoPopover = () => {
           </section>
 
           <section className="flex flex-col gap-y-2">
-            <InfoLink url="https://google.com" iconName="link" iconPosition="right">
+            <InfoLink
+              url="https://docs.novaspektr.io/staking/multishard-relay-chain-nominating"
+              iconName="link"
+              iconPosition="right"
+            >
               {t('dynamicDerivations.constructor.shardInfoLink')}
             </InfoLink>
           </section>

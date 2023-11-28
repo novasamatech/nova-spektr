@@ -214,6 +214,18 @@ sample({
 });
 
 sample({
+  clock: $constructorForm.fields.network.onChange,
+  source: $constructorForm.fields.keyType.$value,
+  filter: (keyType) => Boolean(keyType),
+  fn: (keyType, chain) => {
+    const type = keyType === KeyType.MAIN ? '' : `//${keyType}`;
+
+    return `//${chain.specName}${type}`;
+  },
+  target: $constructorForm.fields.derivationPath.$value,
+});
+
+sample({
   clock: $constructorForm.fields.keyType.onChange,
   source: {
     chain: $constructorForm.fields.network.$value,
