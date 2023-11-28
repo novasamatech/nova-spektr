@@ -2,11 +2,12 @@ import { ReactNode } from 'react';
 import { useUnit } from 'effector-react';
 
 import { useI18n } from '@app/providers';
-import type { Asset, Explorer, Address, NominatorInfo } from '@shared/core';
+import type { Asset, Explorer, Address } from '@shared/core';
 import { FootnoteText, Plate, Checkbox, Icon, Shimmering } from '@shared/ui';
 import { ExplorersPopover, walletModel, walletUtils } from '@entities/wallet';
 import { AssetBalance } from '@entities/asset';
 import { AssetFiatBalance } from '@entities/price/ui/AssetFiatBalance';
+import { NominatorInfo } from '../../../common/types';
 
 type Props = {
   nominatorsLength: number;

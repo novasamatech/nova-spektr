@@ -3,13 +3,14 @@ import { Transition } from '@headlessui/react';
 import { Trans } from 'react-i18next';
 
 import { useI18n } from '@app/providers';
-import type { Asset, Explorer, Address, NominatorInfo } from '@shared/core';
+import type { Asset, Explorer, Address } from '@shared/core';
 import { FootnoteText, Checkbox, Accordion, Shimmering, Plate, Tooltip } from '@shared/ui';
 import { ShardAccount } from '@shared/core/types/account';
 import { AssetBalance } from '@entities/asset';
 import { AssetFiatBalance } from '@entities/price/ui/AssetFiatBalance';
 import { useStakingData } from '@entities/staking';
 import { NominatorsItem } from '../NominatorItem/NominatorItem';
+import { NominatorInfo } from '../../../common/types';
 
 type NominatorInfoWithShard = NominatorInfo<ShardAccount>;
 
