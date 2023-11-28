@@ -25,11 +25,13 @@ export type ImportedDerivation = {
   derivationPath?: string;
   chainId?: string;
   sharded?: string;
+  name?: string;
   type?: string;
 };
 
 export type TypedImportedDerivation = {
   derivationPath: string;
+  name?: string;
   type: KeyType;
   chainId: ChainId;
   sharded?: string;
