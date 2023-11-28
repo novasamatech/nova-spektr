@@ -142,18 +142,19 @@ export const ManageDynamicDerivations = ({ seedInfo, onBack, onComplete }: Props
         <SmallTitleText className="mb-6">{t('onboarding.vault.manageTitle')}</SmallTitleText>
 
         <form className="flex flex-col h-full" onSubmit={submitForm}>
-          <Input
-            wrapperClass={cn('flex items-center')}
-            label={t('onboarding.walletNameLabel')}
-            placeholder={t('onboarding.walletNamePlaceholder')}
-            invalid={name?.hasError()}
-            value={name?.value}
-            onChange={name?.onChange}
-          />
-
-          <InputHint variant="error" active={name?.hasError()}>
-            {t(name?.errorText())}
-          </InputHint>
+          <div className="flex flex-col gap-y-2">
+            <Input
+              wrapperClass={cn('flex items-center')}
+              label={t('onboarding.walletNameLabel')}
+              placeholder={t('onboarding.walletNamePlaceholder')}
+              invalid={name?.hasError()}
+              value={name?.value}
+              onChange={name?.onChange}
+            />
+            <InputHint variant="error" active={name?.hasError()}>
+              {t(name?.errorText())}
+            </InputHint>
+          </div>
 
           <div className="flex flex-1 justify-between items-end">
             <Button variant="text" onClick={onBack}>

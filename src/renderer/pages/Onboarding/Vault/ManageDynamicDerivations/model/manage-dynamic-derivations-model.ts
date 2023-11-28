@@ -6,17 +6,8 @@ import { SeedInfo } from '@renderer/components/common/QrCode/common/types';
 import { toAccountId } from '@shared/lib/utils';
 import { chainsService } from '@entities/network';
 import { walletModel, accountUtils } from '@entities/wallet';
-import {
-  AccountType,
-  ChainAccount,
-  ChainType,
-  CryptoType,
-  KeyType,
-  ShardAccount,
-  WalletType,
-  SigningType,
-  DraftAccount,
-} from '@shared/core';
+import { AccountType, ChainType, CryptoType, KeyType } from '@shared/core';
+import type { ChainAccount, ShardAccount, DraftAccount } from '@shared/core';
 
 const chains = chainsService.getChainsData();
 
@@ -106,21 +97,6 @@ sample({
     return Object.values(accounts).concat(derivedAccounts);
   },
   target: $accounts,
-});
-
-sample({
-  clock: $walletForm.formValidated,
-  source: $accounts,
-  fn: (accounts, form) => ({
-    root: {} as any,
-    accounts: accounts as any[],
-    wallet: {
-      name: form.name.trim(),
-      type: WalletType.POLKADOT_VAULT,
-      signingType: SigningType.PARITY_SIGNER,
-    },
-  }),
-  target: walletModel.events.polkadotVaultCreated,
 });
 
 sample({

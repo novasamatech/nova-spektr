@@ -15,11 +15,17 @@ export const KeysList = () => {
 
   const keys = useUnit(constructorModel.$keys);
 
+  const filteredKeys = keys.filter((key) => {
+    const keyData = Array.isArray(key) ? key[0] : key;
+
+    return keyData.keyType !== KeyType.MAIN;
+  });
+
   const chains = useMemo(() => {
     return dictionary(chainsService.getChainsData(), 'chainId');
   }, []);
 
-  if (keys.length === 0) {
+  if (filteredKeys.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center h-full">
         <Icon name="document" size={64} className="text-icon-default mb-6" />
@@ -38,10 +44,8 @@ export const KeysList = () => {
         <HelpText className="text-text-tertiary">{t('dynamicDerivations.constructor.listKeysLabel')}</HelpText>
       </div>
       <ul className="flex flex-col gap-y-2">
-        {keys.map((key, index) => {
+        {filteredKeys.map((key, index) => {
           const keyData = Array.isArray(key) ? key[0] : key;
-
-          if (keyData.keyType === KeyType.MAIN) return;
 
           return (
             <li key={keyData.id || keyData.derivationPath} className="flex items-center gap-x-2.5 py-1.5 pl-2">

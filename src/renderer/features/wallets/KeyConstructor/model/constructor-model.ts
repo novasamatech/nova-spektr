@@ -223,7 +223,7 @@ sample({
     const type = keyType === KeyType.MAIN ? '' : `//${keyType}`;
 
     return {
-      keyName: isSharded ? KEY_NAMES[keyType] : SHARDED_KEY_NAMES[keyType],
+      keyName: isSharded ? SHARDED_KEY_NAMES[keyType] : KEY_NAMES[keyType],
       derivationPath: `//${chain.specName}${type}`,
     };
   },
@@ -238,6 +238,15 @@ sample({
 forward({
   from: $constructorForm.fields.keyType.onChange,
   to: $constructorForm.fields.derivationPath.resetErrors,
+});
+
+sample({
+  clock: $constructorForm.fields.isSharded.onChange,
+  source: $constructorForm.fields.keyType.$value,
+  fn: (keyType, isSharded) => {
+    return isSharded ? SHARDED_KEY_NAMES[keyType] : KEY_NAMES[keyType];
+  },
+  target: $constructorForm.fields.keyName.$value,
 });
 
 sample({
