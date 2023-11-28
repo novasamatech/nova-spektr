@@ -1,11 +1,9 @@
 name: Integration test
 
 on:
-  workflow_dispatch:
-  push:
+  pull_request:
     branches:
-      - 'main'
-      - 'dev'
+      - main
 
 jobs:
   integration_test_run:
@@ -19,7 +17,7 @@ jobs:
         uses: ./.github/workflows/install-pnpm
 
       - name: 🧪 Run tests
-        uses: ./.github/workflows/integration-test
+        uses: pnpm test:migration
 
       - name: 📄 Post results
         if: always()
