@@ -139,10 +139,10 @@ export const ShardedList = ({
                 >
                   <div className="flex items-center gap-x-1">
                     {Boolean(unstakingShards) && (
-                      <span className={cnTw('min-w-[9px] h-[9px] rounded-full', DotStyles.staking)} />
+                      <span className={cnTw('w-1.5 h-1.5 rounded-full', DotStyles.staking)} />
                     )}
                     {Boolean(withdrawnShards) && (
-                      <span className={cnTw('min-w-[9px] min-h-[9px] rounded-full', DotStyles.success)} />
+                      <span className={cnTw('w-1.5 h-1.5 rounded-full', DotStyles.success)} />
                     )}
                   </div>
                 </Tooltip>
