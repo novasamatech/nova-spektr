@@ -59,6 +59,22 @@ describe('features/wallet/model/constructor-model', () => {
     expect(scope.getState(constructorModel.$constructorForm.fields.network.$value)).toEqual(chains[0]);
   });
 
+  test('should have visible keys', async () => {
+    const scope = fork({
+      values: new Map().set(constructorModel.$keys, defaultKeys),
+    });
+
+    expect(scope.getState(constructorModel.$hasKeys)).toEqual(true);
+  });
+
+  test('should not have visible keys', async () => {
+    const scope = fork({
+      values: new Map().set(constructorModel.$keys, defaultKeys.slice(0, 1)),
+    });
+
+    expect(scope.getState(constructorModel.$hasKeys)).toEqual(false);
+  });
+
   test('should add new key on form submit', async () => {
     const scope = fork();
 
@@ -79,6 +95,18 @@ describe('features/wallet/model/constructor-model', () => {
         derivationPath: '//polkadot//governance',
       },
     ]);
+  });
+
+  test('should remove key', async () => {
+    const scope = fork();
+
+    await allSettled(constructorModel.events.formInitiated, {
+      scope,
+      params: defaultKeys as Array<ChainAccount | ShardAccount>,
+    });
+
+    await allSettled(constructorModel.events.keyRemoved, { scope, params: 1 });
+    expect(scope.getState(constructorModel.$keys)).toEqual([defaultKeys[0]]);
   });
 
   test('should add new sharded key on form submit', async () => {
