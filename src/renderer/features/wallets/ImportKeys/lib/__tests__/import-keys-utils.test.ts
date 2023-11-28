@@ -11,7 +11,7 @@ Object.defineProperty(global.self, 'crypto', {
 describe('entities/dynamicDerivations/import-keys-utils', () => {
   describe('entities/dynamicDerivations/import-keys-utils/validateDerivation', () => {
     test.each(importKeysMocks.validationTestData)('$testName', ({ derivation, isValid }) => {
-      expect(importKeysUtils.isDerivationValid(derivation)).toEqual(isValid);
+      expect(!importKeysUtils.getDerivationError(derivation)).toEqual(isValid);
     });
   });
 

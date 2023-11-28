@@ -9,17 +9,28 @@ export type ParsedImportFile = {
   version: number;
 };
 
-export enum ValidationErrorsLabel {
-  INVALID_FILE_STRUCTURE = 'dynamicDerivations.importKeys.error.invalidFile',
-  INVALID_ROOT = 'dynamicDerivations.importKeys.error.invalidRoot',
-  PASSWORD_PATH = 'dynamicDerivations.importKeys.error.invalidPasswordPath',
-  INVALID_PATH = 'dynamicDerivations.importKeys.error.invalidPath',
+export enum ValidationError {
+  INVALID_FILE_STRUCTURE,
+  INVALID_ROOT,
+  DERIVATIONS_ERROR,
 }
 
-export type ValidationError = {
-  error: ValidationErrorsLabel;
-  invalidPaths?: string[];
-};
+export enum DerivationValidationError {
+  INVALID_PATH = 'INVALID_PATH',
+  MISSING_NAME = 'MISSING_NAME',
+  WRONG_SHARDS_NUMBER = 'WRONG_SHARDS_NUMBER',
+  PASSWORD_PATH = 'PASSWORD_PATH',
+  GENERAL_ERROR = 'GENERAL_ERROR',
+}
+
+export const PATH_ERRORS = [
+  DerivationValidationError.INVALID_PATH,
+  DerivationValidationError.PASSWORD_PATH,
+  DerivationValidationError.MISSING_NAME,
+  DerivationValidationError.GENERAL_ERROR,
+];
+
+// export enum
 
 export type ImportedDerivation = {
   derivationPath?: string;

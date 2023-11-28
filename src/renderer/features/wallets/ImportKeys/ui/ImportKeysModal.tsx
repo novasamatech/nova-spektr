@@ -9,6 +9,7 @@ import { cnTw } from '@shared/lib/utils';
 import templateFile from '@shared/assets/files/dd-template.yaml';
 import { importKeysModel } from '../model/import-keys-model';
 import { DraftAccount } from '@shared/core';
+import { importKeysUtils } from "@features/wallets/ImportKeys/lib/import-keys-utils";
 
 type Props = {
   isOpen: boolean;
@@ -76,13 +77,7 @@ export const ImportKeysModal = ({ isOpen, rootAccountId, existingKeys, onClose, 
         />
 
         <InputHint active={Boolean(validationError)} variant="error" className="mt-2">
-          {t(
-            validationError?.error || '',
-            validationError?.invalidPaths && {
-              count: validationError.invalidPaths.length,
-              invalidPath: validationError.invalidPaths.join(', '),
-            },
-          )}
+          {validationError && importKeysUtils.getErrorsText(t, validationError.error, validationError.details)}
         </InputHint>
 
         <Alert

@@ -3,9 +3,15 @@ import { parse } from 'yaml';
 import { groupBy } from 'lodash';
 import { reset } from 'patronum';
 
-import { ValidationError, ParsedImportFile, TypedImportedDerivation, ValidationErrorsLabel } from '../lib/types';
-import { DerivationImportError } from '../lib/derivation-import-error';
-import { AccountId, ChainAccount, ChainId, ObjectValues, ShardAccount } from '@shared/core';
+import {
+  DerivationValidationError,
+  ParsedImportFile,
+  PATH_ERRORS,
+  TypedImportedDerivation,
+  ValidationError,
+} from '../lib/types';
+import { DerivationImportError, ErrorDetails } from '../lib/derivation-import-error';
+import { AccountId, ChainAccount, ChainId, ShardAccount } from '@shared/core';
 import { importKeysUtils } from '../lib/import-keys-utils';
 import { DraftAccount } from '@shared/core/types/account';
 import { toAccountId } from '@shared/lib/utils';
@@ -21,8 +27,9 @@ type Report = {
   duplicatedKeys: number;
   ignoredNetworks: ChainId[];
 };
+type ErrorsWithDetails = { error: ValidationError; details?: ErrorDetails };
 
-const $validationError = createStore<ValidationError | null>(null);
+const $validationError = createStore<ErrorsWithDetails | null>(null);
 const $report = createStore<Report | null>(null);
 const $mergedKeys = createStore<DraftAccount<ShardAccount | ChainAccount>[]>([]);
 
@@ -37,9 +44,9 @@ const parseFileContentFx = createEffect<string, ParsedImportFile, DerivationImpo
     const structure = parse(fileContent, { schema: 'failsafe' });
     if (importKeysUtils.isFileStructureValid(structure)) return structure;
 
-    throw new DerivationImportError(ValidationErrorsLabel.INVALID_FILE_STRUCTURE);
+    throw new DerivationImportError(ValidationError.INVALID_FILE_STRUCTURE);
   } catch {
-    throw new DerivationImportError(ValidationErrorsLabel.INVALID_FILE_STRUCTURE);
+    throw new DerivationImportError(ValidationError.INVALID_FILE_STRUCTURE);
   }
 });
 
@@ -48,34 +55,49 @@ const validateDerivationsFx = createEffect<ValidateDerivationsParams, TypedImpor
   ({ fileContent, existingDerivations }) => {
     const parsed = importKeysUtils.getDerivationsFromFile(fileContent);
     if (!parsed) {
-      throw new DerivationImportError(ValidationErrorsLabel.INVALID_FILE_STRUCTURE);
+      throw new DerivationImportError(ValidationError.INVALID_FILE_STRUCTURE);
     }
 
     const { derivations, root } = parsed;
     const rootAccountId = root.startsWith('0x') ? root : toAccountId(root);
 
     if (rootAccountId !== existingDerivations.root) {
-      throw new DerivationImportError(ValidationErrorsLabel.INVALID_ROOT);
+      throw new DerivationImportError(ValidationError.INVALID_ROOT);
     }
 
-    const invalidPaths = derivations.reduce<string[]>((acc, derivation) => {
-      if (!derivation.derivationPath) {
-        throw new DerivationImportError(ValidationErrorsLabel.INVALID_FILE_STRUCTURE);
-      }
-      if (!importKeysUtils.isDerivationValid(derivation)) {
-        acc.push(derivation.derivationPath);
-      }
+    const errorsDetails = derivations.reduce<ErrorDetails>(
+      (acc, derivation) => {
+        if (!derivation.derivationPath) {
+          throw new DerivationImportError(ValidationError.INVALID_FILE_STRUCTURE);
+        }
 
-      return acc;
-    }, []);
+        const errors = importKeysUtils.getDerivationError(derivation);
+        if (!errors) return acc;
 
-    if (!invalidPaths.length) return derivations as TypedImportedDerivation[];
+        errors.forEach((err) => {
+          if (PATH_ERRORS.includes(err)) {
+            acc[err].push(derivation.derivationPath!);
+          }
+          if (err === DerivationValidationError.WRONG_SHARDS_NUMBER) {
+            acc[err].push(derivation.sharded || '');
+          }
+        });
 
-    if (invalidPaths.every((p) => p.includes('///'))) {
-      throw new DerivationImportError(ValidationErrorsLabel.PASSWORD_PATH, invalidPaths);
-    } else {
-      throw new DerivationImportError(ValidationErrorsLabel.INVALID_PATH, invalidPaths);
-    }
+        return acc;
+      },
+      {
+        [DerivationValidationError.INVALID_PATH]: [],
+        [DerivationValidationError.PASSWORD_PATH]: [],
+        [DerivationValidationError.GENERAL_ERROR]: [],
+        [DerivationValidationError.MISSING_NAME]: [],
+        [DerivationValidationError.WRONG_SHARDS_NUMBER]: [],
+      },
+    );
+
+    if (Object.values(errorsDetails).every((details) => !details.length))
+      return derivations as TypedImportedDerivation[];
+
+    throw new DerivationImportError(ValidationError.DERIVATIONS_ERROR, errorsDetails);
   },
 );
 
@@ -135,7 +157,7 @@ forward({ from: fileUploaded, to: parseFileContentFx });
 
 sample({
   source: parseFileContentFx.fail,
-  fn: ({ error }: SampleFnError) => ({ error: error.message }),
+  fn: ({ error }: SampleFnError) => ({ error: error.error }),
   target: $validationError,
 });
 
@@ -150,8 +172,8 @@ sample({
 sample({
   source: validateDerivationsFx.fail,
   fn: ({ error }: SampleFnError) => ({
-    error: error.message as ObjectValues<typeof ValidationErrorsLabel>,
-    invalidPaths: error.paths,
+    error: error.error,
+    details: error.errorDetails,
   }),
   target: $validationError,
 });
