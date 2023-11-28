@@ -1,4 +1,4 @@
-import { KeyType } from "@shared/core";
+import { KeyType } from '@shared/core';
 
 export const KEY_NAMES = {
   [KeyType.MAIN]: 'Main',
