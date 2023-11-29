@@ -143,7 +143,7 @@ export const ShardedList = ({
                 </Tooltip>
               </div>
               <div className="justify-self-end flex flex-col items-end">
-                {Boolean(!totalStake) || !asset ? (
+                {!shardsStake[0]?.totalStake || !asset ? (
                   <>
                     <Shimmering width={82} height={15} />
                     <Shimmering width={56} height={10} />
@@ -156,7 +156,7 @@ export const ShardedList = ({
                 )}
               </div>
               <div className="justify-self-end flex flex-col items-end">
-                {Boolean(!totalReward) || !asset ? (
+                {!shardsStake[0]?.totalReward || !asset ? (
                   <>
                     <Shimmering width={82} height={15} />
                     <Shimmering width={56} height={10} />
