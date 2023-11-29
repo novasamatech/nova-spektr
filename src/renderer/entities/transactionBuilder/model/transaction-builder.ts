@@ -6,9 +6,9 @@ import {BaseTxInfo, OptionsWithMeta, UnsignedTransaction} from "@substrate/txwra
 
 export interface TransactionBuilder {
 
-  api: ApiPromise
+  readonly api: ApiPromise
 
-  effectiveCallBuilder: CallBuilder
+  effectiveCallBuilder(): CallBuilder
 
   visit(visitor: TransactionVisitor): void
 
@@ -22,9 +22,13 @@ export interface TransactionBuilder {
 
 export interface CallBuilder {
 
+  readonly currentCalls: CallBuilding[]
+
   addCall(call: CallBuilding): void
 
   setCall(call: CallBuilding): void
+
+  initFrom(callBuilder: CallBuilder): void
 
   resetCalls(): void
 }
@@ -46,6 +50,8 @@ export interface MultisigVisit {
   knownSignatories: AccountInWallet[]
 
   threshold: number
+
+  updateSelectedSignatory(newSignatory: AccountInWallet): void
 }
 
 export interface CompoundWalletVisit {
@@ -53,4 +59,6 @@ export interface CompoundWalletVisit {
   childrenAccounts: Account[]
 
   wallet: Wallet
+
+  updateSelectedShard(shard: Account): void
 }

@@ -10,19 +10,21 @@ import {SubmittableExtrinsic} from "@polkadot/api/types";
 
 export class LeafTransactionBuilder implements TransactionBuilder, CallBuilder {
 
-  effectiveCallBuilder: CallBuilder;
-  #calls: CallBuilding[]
+  currentCalls: CallBuilding[]
 
   api: ApiPromise
 
   readonly accountInWallet: AccountInWallet
 
   constructor(api: ApiPromise, accountInWallet: AccountInWallet) {
-    this.effectiveCallBuilder = this
-    this.#calls = []
+    this.currentCalls = []
     this.api = api
 
     this.accountInWallet = accountInWallet
+  }
+
+  effectiveCallBuilder(): CallBuilder {
+    return this
   }
 
   visit(_: TransactionVisitor): void {
@@ -30,19 +32,23 @@ export class LeafTransactionBuilder implements TransactionBuilder, CallBuilder {
   }
 
   addCall(call: CallBuilding): void {
-    this.#calls.push(call)
+    this.currentCalls.push(call)
   }
 
   resetCalls(): void {
-    this.#calls = []
+    this.currentCalls = []
   }
 
   setCall(call: CallBuilding): void {
-    this.#calls = [call]
+    this.currentCalls = [call]
+  }
+
+  initFrom(callBuilder: CallBuilder): void {
+    this.currentCalls = callBuilder.currentCalls
   }
 
   async unsignedTransaction(options: OptionsWithMeta, info: BaseTxInfo): Promise<UnsignedTransaction> {
-    const nestedUnsignedTxs = this.#calls.map(call => call.signing(info, options))
+    const nestedUnsignedTxs = this.currentCalls.map(call => call.signing(info, options))
 
     if (nestedUnsignedTxs.length == 0) throw new Error("Cannot sign empty transaction")
 
@@ -58,7 +64,7 @@ export class LeafTransactionBuilder implements TransactionBuilder, CallBuilder {
   }
 
   async submittableExtrinsic(): Promise<SubmittableExtrinsic<"promise"> | null> {
-    const feeCalls = this.#calls.map(call => call.fee)
+    const feeCalls = this.currentCalls.map(call => call.fee)
 
     if (feeCalls.length == 0) return null
 
@@ -71,4 +77,5 @@ export class LeafTransactionBuilder implements TransactionBuilder, CallBuilder {
 
     return maybeWrappedInBatch
   }
+
 }

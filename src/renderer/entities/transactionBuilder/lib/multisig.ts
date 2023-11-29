@@ -9,12 +9,12 @@ import {BaseTxInfo, methods, OptionsWithMeta, UnsignedTransaction} from "@substr
 import {SubmittableExtrinsic} from "@polkadot/api/types";
 import {isOldMultisigPallet} from "@entities/transaction";
 import {AccountId} from "@shared/core";
+import {NestedTransactionBuilderFactory} from "@entities/transactionBuilder/lib/factory";
 
 export class MultisigTransactionBuilder implements TransactionBuilder {
 
   #inner: TransactionBuilder
-
-  readonly effectiveCallBuilder: CallBuilder
+  readonly #innerFactory: NestedTransactionBuilderFactory
 
   readonly knownSignatoryAccounts: AccountInWallet[]
   #selectedSignatory: AccountInWallet
@@ -29,9 +29,10 @@ export class MultisigTransactionBuilder implements TransactionBuilder {
     threshold: number,
     signatories: AccountId[],
     knownSignatoryAccounts: AccountInWallet[],
-    innerFactory: (signatory: AccountInWallet) => TransactionBuilder,
+    innerFactory: NestedTransactionBuilderFactory,
   ) {
     this.knownSignatoryAccounts = knownSignatoryAccounts
+    this.#innerFactory = innerFactory
 
     this.threshold = threshold
     this.signatories = signatories
@@ -44,26 +45,29 @@ export class MultisigTransactionBuilder implements TransactionBuilder {
     }
     this.#selectedSignatory = knownSignatoryAccounts[0]
     this.#inner = innerFactory(this.#selectedSignatory)
+  }
 
-    this.effectiveCallBuilder = this.#inner.effectiveCallBuilder
+  effectiveCallBuilder(): CallBuilder {
+    return this.#inner.effectiveCallBuilder()
   }
 
   visit(visitor: TransactionVisitor): void {
     visitor.visitMultisig({
       knownSignatories: this.knownSignatoryAccounts,
-      threshold: this.threshold
+      threshold: this.threshold,
+      updateSelectedSignatory: this.updateSelectedSignatory,
     })
 
     this.#inner.visit(visitor)
   }
 
   async submittableExtrinsic(): Promise<SubmittableExtrinsic<"promise"> | null> {
-    const innerInfo = await this.innerInfo()
+    const innerInfo = await this.#innerInfo()
     if (innerInfo == null) return null
 
     const {innerCall, innerWeight} = innerInfo
 
-    const otherSignatories = this.otherSignatories()
+    const otherSignatories = this.#otherSignatories()
     const maybeTimepoint = null
 
     return isOldMultisigPallet(this.api) ?
@@ -73,7 +77,7 @@ export class MultisigTransactionBuilder implements TransactionBuilder {
   }
 
   async unsignedTransaction(options: OptionsWithMeta, info: BaseTxInfo): Promise<UnsignedTransaction> {
-    const innerInfo = await this.innerInfo()
+    const innerInfo = await this.#innerInfo()
     if (innerInfo == null) throw new Error("Multisig cannot sign empty nested tx")
 
     const {innerWeight} = innerInfo
@@ -84,7 +88,7 @@ export class MultisigTransactionBuilder implements TransactionBuilder {
     return methods.multisig.asMulti(
       {
         threshold: this.threshold,
-        otherSignatories: this.otherSignatories(),
+        otherSignatories: this.#otherSignatories(),
         maybeTimepoint: maybeTimepoint,
         maxWeight: innerWeight,
         storeCall: false,
@@ -95,7 +99,17 @@ export class MultisigTransactionBuilder implements TransactionBuilder {
     )
   }
 
-  async innerInfo(): Promise<{ innerCall: SubmittableExtrinsic<"promise">, innerWeight: any } | null> {
+  updateSelectedSignatory(signatory: AccountInWallet) {
+    if (signatory === this.#selectedSignatory) return
+
+    const currentCallBuilder = this.effectiveCallBuilder()
+
+    this.#selectedSignatory = signatory
+    this.#inner = this.#innerFactory(signatory)
+    this.#inner.effectiveCallBuilder().initFrom(currentCallBuilder)
+  }
+
+  async #innerInfo(): Promise<{ innerCall: SubmittableExtrinsic<"promise">, innerWeight: any } | null> {
     const innerCall = await this.#inner.submittableExtrinsic()
     if (innerCall == null) return null
 
@@ -105,7 +119,7 @@ export class MultisigTransactionBuilder implements TransactionBuilder {
     return {innerCall, innerWeight}
   }
 
-  otherSignatories(): AccountId[] {
+  #otherSignatories(): AccountId[] {
     return this.signatories
       .filter((signatory) => signatory != this.#selectedSignatory.account.accountId)
       .sort()

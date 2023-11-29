@@ -9,6 +9,8 @@ import {groupBy} from "lodash";
 import {CompoundWalletTransactionBuilder} from "@entities/transactionBuilder/lib/compound-wallet";
 import {ApiPromise} from "@polkadot/api";
 
+export type NestedTransactionBuilderFactory = (shard: AccountInWallet) => TransactionBuilder
+
 export function createTransactionBuilder(
   activeWallet: Wallet,
   activeAccounts: Account[],
@@ -20,7 +22,7 @@ export function createTransactionBuilder(
   const walletsById = keyBy(allWallets, 'id')
   const accountsByAccountId = groupBy(allAccounts, "accountId")
 
-  const createInner = (accountInWallet: AccountInWallet) => {
+  const createInner: NestedTransactionBuilderFactory = (accountInWallet: AccountInWallet) => {
     const wallet = accountInWallet.wallet
 
     switch (walletUtils.getWalletFamily(wallet)) {
