@@ -3,7 +3,7 @@ import { useUnit } from 'effector-react';
 import { useI18n } from '@app/providers';
 import { AddressWithExplorers, WalletCardSm, WalletIcon, walletModel } from '@entities/wallet';
 import { ChainTitle } from '@entities/chain';
-import { ExtendedChain } from '@entities/oldNetwork';
+import { ExtendedChain } from '@entities/network';
 import { Transaction } from '@entities/transaction';
 import { DetailRow, FootnoteText } from '@shared/ui';
 import type { Account, MultisigAccount } from '@shared/core';

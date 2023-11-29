@@ -1,6 +1,6 @@
-import { ChainMap, ExtendedChain } from './types';
+import { ChainMap } from './types';
 import { ConnectionType } from '@renderer/shared/core';
-import type { Chain, ChainId, ChainOptions } from '@renderer/shared/core';
+import type { Chain, ChainId, ChainOptions, Connection } from '@renderer/shared/core';
 
 export const isPolkadot = (chainName: string): boolean => {
   return chainName === 'Polkadot';
@@ -26,8 +26,8 @@ export const isNameWithNumber = (chainName: string): boolean => {
   return /^[0-9]+/.test(chainName);
 };
 
-export const isLightClient = (chain: ExtendedChain): boolean => {
-  return chain.connection.connectionType === ConnectionType.LIGHT_CLIENT;
+export const isLightClient = (connection: Connection): boolean => {
+  return connection.connectionType === ConnectionType.LIGHT_CLIENT;
 };
 
 export const getParachains = (chainMap: ChainMap, chainId: ChainId): Chain[] => {

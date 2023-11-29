@@ -369,8 +369,6 @@ sample({
 
 forward({ from: disconnectFx.done, to: reset });
 
-sample({ clock: disconnectFx.failData, fn: (e) => console.log('Failed to disconnect WalletConnect session', e) });
-
 sample({
   clock: currentSessionTopicUpdated,
   source: walletModel.$activeAccounts,

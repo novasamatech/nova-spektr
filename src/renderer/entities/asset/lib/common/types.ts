@@ -1,8 +1,8 @@
 import { VoidFn } from '@polkadot/api/types';
 
 import { BalanceDS } from '@shared/api/storage/common/types';
-import { ExtendedChain } from '@entities/oldNetwork/lib/common/types';
 import type { ChainId, AccountId, BalanceKey } from '@shared/core';
+import { ExtendedChain } from '@entities/network';
 
 export interface IBalanceService {
   getBalance: (accountId: AccountId, chainId: ChainId, assetId: string) => Promise<BalanceDS | undefined>;

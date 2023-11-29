@@ -3,7 +3,7 @@ import { format } from 'date-fns';
 import { useUnit } from 'effector-react';
 
 import { useI18n } from '@app/providers';
-import { chainsService, ExtendedChain } from '@entities/oldNetwork';
+import { chainsService, ExtendedChain } from '@entities/network';
 import { MultisigEvent, SigningStatus } from '@entities/transaction/model/transaction';
 import { TransactionTitle } from './TransactionTitle/TransactionTitle';
 import OperationStatus from './OperationStatus';

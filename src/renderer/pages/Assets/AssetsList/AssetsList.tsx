@@ -5,7 +5,7 @@ import { useUnit } from 'effector-react';
 import { BodyText, Button, Icon, SmallTitleText } from '@shared/ui';
 import { useI18n } from '@app/providers';
 import { useToggle } from '@shared/lib/hooks';
-import { Chains, chainsService, isMultisigAvailable } from '@entities/oldNetwork';
+import { chainsService, isMultisigAvailable, networkModel } from '@entities/network';
 import { useSettingsStorage } from '@entities/settings';
 import { AssetsFilters, NetworkAssets, SelectShardModal } from './components';
 import { Header } from '@renderer/components/common';
@@ -13,7 +13,6 @@ import type { Account, Chain } from '@shared/core';
 import { ConnectionType } from '@shared/core';
 import { walletModel, walletUtils } from '@entities/wallet';
 import { currencyModel, priceProviderModel } from '@entities/price';
-import { ProviderType, connectionModel, networkModel } from '@entities/network';
 import { balanceModel } from '@entities/network/model/balance-model';
 
 export const AssetsList = () => {
@@ -23,7 +22,7 @@ export const AssetsList = () => {
   const assetsPrices = useUnit(priceProviderModel.$assetsPrices);
   const fiatFlag = useUnit(priceProviderModel.$fiatFlag);
   const currency = useUnit(currencyModel.$activeCurrency);
-  const connections = useUnit(connectionModel.$connections);
+  const connections = useUnit(networkModel.$connections);
   const chains = useUnit(networkModel.$chains);
   const balances = useUnit(balanceModel.$balances);
 
@@ -98,15 +97,6 @@ export const AssetsList = () => {
             onZeroBalancesChange={updateHideZeroBalance}
           />
         </Header>
-
-        {/* Test button */}
-        <Button
-          onClick={() =>
-            networkModel.events.providerTypeSwitched({ chainId: Chains.KUSAMA, type: ProviderType.LIGHT_CLIENT })
-          }
-        >
-          Reconnect
-        </Button>
 
         {isMultishard && (
           <div className="w-[546px] mx-auto flex items-center mt-4">

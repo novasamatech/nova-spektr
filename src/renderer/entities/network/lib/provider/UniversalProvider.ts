@@ -11,12 +11,19 @@ export class UniversalProvider implements ProviderInterface {
   private wsProvider: ProviderInterface;
   private scProvider?: ProviderInterface;
 
+  // Add functions to add/delete nodes
   private provider: ProviderInterface;
 
   private subscriptions = new Map<number | string, Subscription>();
   private subscriptionIds = new Map<number | string, number | string>();
 
-  private onHandlers = new Map<ProviderInterfaceEmitted, ProviderInterfaceEmitCb>();
+  private onHandlers = new Map<
+    ProviderInterfaceEmitted,
+    {
+      callback: ProviderInterfaceEmitCb;
+      unsubscribe: () => void;
+    }
+  >();
 
   constructor(wsProvider: ProviderInterface, scProvider?: ProviderInterface) {
     this.wsProvider = wsProvider;
@@ -36,13 +43,17 @@ export class UniversalProvider implements ProviderInterface {
 
     if (oldProvider === newProvider) return;
 
-    this.onHandlers.forEach((callback, type) => newProvider.on(type, callback));
+    console.log('onHandlers', this.onHandlers.keys());
 
-    // await oldProvider.disconnect();
+    // REmove handlers from old provider
+    this.onHandlers.forEach(({ callback }, type) => newProvider.on(type, callback));
+
+    // TODO: Auto-connect disabled on disconnect
+    await oldProvider.disconnect();
 
     this.provider = newProvider;
 
-    // await newProvider.connect();
+    await newProvider.connect();
 
     for (const [oldId, sub] of this.subscriptions) {
       const newId = await this.subscribe(sub.type, sub.method, sub.params, sub.cb);
@@ -80,9 +91,14 @@ export class UniversalProvider implements ProviderInterface {
   }
 
   public on(type: ProviderInterfaceEmitted, sub: ProviderInterfaceEmitCb): () => void {
-    this.onHandlers.set(type, sub);
+    const unsubscribe = this.provider.on(type, sub);
 
-    return this.provider.on(type, sub);
+    this.onHandlers.set(type, {
+      callback: sub,
+      unsubscribe,
+    });
+
+    return unsubscribe;
   }
 
   public send<T = any>(method: string, params: unknown[], isCacheable?: boolean): Promise<T> {
@@ -97,7 +113,9 @@ export class UniversalProvider implements ProviderInterface {
   ): Promise<number | string> {
     const id = await this.provider.subscribe(type, method, params, cb);
 
-    this.subscriptions.set(id, { type, method, params, cb });
+    if (!type.startsWith('author_')) {
+      this.subscriptions.set(id, { type, method, params, cb });
+    }
 
     return id;
   }

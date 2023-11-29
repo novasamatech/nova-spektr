@@ -3,7 +3,7 @@ import { UnsignedTransaction } from '@substrate/txwrapper-polkadot';
 import { useStore, useGate } from 'effector-react';
 import { useNavigate } from 'react-router-dom';
 
-import { useI18n, useNetworkContext } from '@app/providers';
+import { useI18n } from '@app/providers';
 import { Paths } from '@shared/routes';
 import { Transaction, useTransaction, validateBalance } from '@entities/transaction';
 import { BaseModal, Button, Loader } from '@shared/ui';
@@ -16,6 +16,7 @@ import * as sendAssetModel from '../model/send-asset';
 import type { Chain, Asset, Account, MultisigAccount, HexString } from '@shared/core';
 import { accountUtils } from '@entities/wallet';
 import { priceProviderModel } from '@entities/price';
+import { useNetworkData } from '@entities/network';
 
 const enum Step {
   INIT,
@@ -32,10 +33,10 @@ type Props = {
 export const SendAssetModal = ({ chain, asset }: Props) => {
   const { t } = useI18n();
   const navigate = useNavigate();
+  const { api, chain: chainData, extendedChain } = useNetworkData(chain.chainId);
 
   const { getBalance } = useBalance();
   const { getTransactionFee, setTxs, txs, setWrappers, wrapTx } = useTransaction();
-  const { connections } = useNetworkContext();
   const config = useStore(sendAssetModel.$finalConfig);
   const xcmAsset = useStore(sendAssetModel.$xcmAsset);
   const destinationChain = useStore(sendAssetModel.$destinationChain);
@@ -48,9 +49,7 @@ export const SendAssetModal = ({ chain, asset }: Props) => {
   const [unsignedTx, setUnsignedTx] = useState<UnsignedTransaction>({} as UnsignedTransaction);
   const [signature, setSignature] = useState<HexString>('0x0');
 
-  const connection = connections[chain.chainId];
-
-  const { api, assets, addressPrefix, explorers } = connection;
+  const { assets, addressPrefix, explorers } = chainData;
 
   useEffect(() => {
     priceProviderModel.events.assetsPricesRequested({ includeRates: true });
@@ -141,7 +140,8 @@ export const SendAssetModal = ({ chain, asset }: Props) => {
     );
   }
 
-  const operationTitle = destinationChain?.chainId !== chain.chainId ? 'transfer.xcmTitle' : 'transfer.title';
+  const operationTitle =
+    destinationChain && destinationChain !== chain.chainId ? 'transfer.xcmTitle' : 'transfer.title';
 
   return (
     <BaseModal
@@ -185,7 +185,7 @@ export const SendAssetModal = ({ chain, asset }: Props) => {
               description={description}
               account={account}
               signatory={signatory}
-              connection={connection}
+              connection={extendedChain}
               onBack={() => setActiveStep(Step.INIT)}
               onResult={onConfirmResult}
             />

@@ -6,7 +6,7 @@ import { AddressWithName, WalletIcon, walletModel } from '@entities/wallet';
 import { getSignatoryName } from '@pages/Operations/common/utils';
 import { AccountId, MultisigAccount, Signatory, Wallet } from '@shared/core';
 import { MultisigEvent, MultisigTransaction, SigningStatus } from '@entities/transaction';
-import { ExtendedChain } from '@entities/oldNetwork';
+import { ExtendedChain } from '@entities/network';
 import { useI18n } from '@app/providers';
 import { useToggle } from '@shared/lib/hooks';
 import { nonNullable } from '@shared/lib/utils';

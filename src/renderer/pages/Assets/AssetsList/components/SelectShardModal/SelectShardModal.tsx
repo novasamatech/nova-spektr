@@ -4,13 +4,12 @@ import { keyBy } from 'lodash';
 import type { AccountId, ChainId, Account } from '@shared/core';
 import { Accordion, BaseModal, Button, Checkbox, FootnoteText, SearchInput } from '@shared/ui';
 import { useI18n } from '@app/providers';
-import { chainsService } from '@entities/oldNetwork';
+import { chainsService, ChainMap } from '@entities/network';
 import { SelectableShard } from '@entities/wallet';
 import { ChainTitle } from '@entities/chain';
 import { toAddress } from '@shared/lib/utils';
 import { SelectableShards, SelectableAccount } from '../../common/types';
 import { getMultishardStructure, searchShards, getSelectableShards } from '../../common/utils';
-import { ChainMap } from '@entities/network';
 
 type Props = {
   accounts: Account[];

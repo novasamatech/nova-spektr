@@ -1,7 +1,7 @@
 import { act, render, screen, waitFor } from '@testing-library/react';
 
 import { ConnectionStatus, ConnectionType } from '@shared/core';
-import { ExtendedChain } from '@entities/oldNetwork';
+import { ExtendedChain } from '@entities/network';
 import { NetworkList } from './NetworkList';
 
 jest.mock('@app/providers', () => ({

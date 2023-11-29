@@ -5,7 +5,7 @@ import { useUnit } from 'effector-react';
 import { Header } from '@renderer/components/common';
 import { getRelaychainAsset, toAddress } from '@shared/lib/utils';
 import { createLink, type PathType } from '@shared/routes';
-import { useGraphql, useI18n, useNetworkContext } from '@app/providers';
+import { useGraphql, useI18n } from '@app/providers';
 import { useToggle } from '@shared/lib/hooks';
 import { NominatorInfo } from '@pages/Staking/Overview/components/NominatorsList/NominatorsList';
 import { AboutStaking, NetworkInfo, NominatorsList, Actions, InactiveChain } from './components';
@@ -22,6 +22,7 @@ import {
   useStakingRewards,
   ValidatorsModal,
 } from '@entities/staking';
+import { useNetworkData } from '@entities/network';
 
 export const Overview = () => {
   const { t } = useI18n();
@@ -30,7 +31,6 @@ export const Overview = () => {
 
   const navigate = useNavigate();
   const { changeClient } = useGraphql();
-  const { connections } = useNetworkContext();
 
   const { subscribeActiveEra } = useEra();
   const { subscribeStaking } = useStakingData();
@@ -51,8 +51,9 @@ export const Overview = () => {
   const [selectedStash, setSelectedStash] = useState<Address>('');
 
   const chainId = (activeChain?.chainId || '') as ChainId;
-  const api = connections[chainId]?.api;
-  const connection = connections[chainId]?.connection;
+
+  const { api, connection, connectionStatus } = useNetworkData(chainId);
+
   const addressPrefix = activeChain?.addressPrefix;
   const explorers = activeChain?.explorers;
 
@@ -78,7 +79,7 @@ export const Overview = () => {
     if (!connection) return;
 
     const isDisabled = connection.connectionType === ConnectionType.DISABLED;
-    const isError = connection.connectionStatus === ConnectionStatus.ERROR;
+    const isError = connectionStatus === ConnectionStatus.ERROR;
 
     setNetworkIsActive(!isDisabled && !isError);
   }, [chainId, connection]);

@@ -7,7 +7,7 @@ import wallet_connect_reconnect from '@shared/assets/video/wallet_connect_reconn
 import { useModalClose, useToggle } from '@shared/lib/hooks';
 import { MultiAccountsList, WalletCardLg } from '@entities/wallet';
 import { useI18n } from '@app/providers';
-import { chainsService } from '@entities/oldNetwork';
+import { chainsService } from '@entities/network';
 import { walletConnectUtils } from '@entities/walletConnect';
 import type { Chain, Account, WalletConnectWallet } from '@shared/core';
 import { wcDetailsModel } from '../model/wc-details-model';

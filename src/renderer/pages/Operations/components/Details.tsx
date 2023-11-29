@@ -6,7 +6,7 @@ import { Icon, FootnoteText, DetailRow, CaptionText } from '@shared/ui';
 import { useToggle } from '@shared/lib/hooks';
 import { MultisigTransaction, Transaction, isXcmTransaction, isTransferTransaction } from '@entities/transaction';
 import { cnTw } from '@shared/lib/utils';
-import { ExtendedChain, isLightClient } from '@entities/oldNetwork';
+import { ExtendedChain, isLightClient } from '@entities/network';
 import { AddressStyle, DescriptionBlockStyle, InteractionStyle } from '../common/constants';
 import { ChainTitle } from '@entities/chain';
 import { Account } from '@shared/core';

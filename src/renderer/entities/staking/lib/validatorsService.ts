@@ -7,7 +7,7 @@ import { AccountId32 } from '@polkadot/types/interfaces';
 
 import { getValidatorsApy } from './apyCalculator';
 import type { Address, ChainId, EraIndex, Identity, SubIdentity, Validator } from '@shared/core';
-import { isKusamaChainId } from '@entities/oldNetwork';
+import { isKusamaChainId } from '@entities/network';
 import { DEFAULT_MAX_NOMINATORS, KUSAMA_MAX_NOMINATORS } from './common/constants';
 import { IValidatorsService, ValidatorMap } from './common/types';
 
