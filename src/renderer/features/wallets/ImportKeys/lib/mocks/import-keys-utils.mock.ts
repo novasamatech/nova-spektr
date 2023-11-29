@@ -8,7 +8,7 @@ import {
   KeyType,
   ShardAccount,
 } from '@shared/core';
-import { ImportedDerivation } from '../types';
+import { DerivationWithPath } from '../types';
 
 const chainId: ChainId = '0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3';
 
@@ -40,6 +40,14 @@ const invalidDerivations = {
     chainId: chainId,
     sharded: '1',
   },
+  missingName: {
+    derivationPath: '//path',
+    type: 'custom',
+    chainId: chainId,
+  },
+};
+
+const ignoredDerivations = {
   wrongShardedType: {
     derivationPath: '//path',
     type: KeyType.HOT,
@@ -51,10 +59,10 @@ const invalidDerivations = {
     type: 'wrong_type',
     chainId: chainId,
   },
-  missingName: {
+  wrongChainId: {
     derivationPath: '//path',
-    type: 'custom',
-    chainId: chainId,
+    type: KeyType.HOT,
+    chainId: '0',
   },
 };
 
@@ -108,7 +116,7 @@ const existingChainDerivations: DraftAccount<ShardAccount | ChainAccount>[] = [
 
 type ValidationTestData = {
   testName: string;
-  derivation: ImportedDerivation;
+  derivation: DerivationWithPath;
   isValid: boolean;
 };
 
@@ -139,16 +147,6 @@ const validationTestData: ValidationTestData[] = [
     isValid: false,
   },
   {
-    testName: 'Sharded derivation should not be allowed for hot and public key',
-    derivation: invalidDerivations.wrongShardedType,
-    isValid: false,
-  },
-  {
-    testName: 'Key type should match KeyType enum values',
-    derivation: invalidDerivations.passwordPath,
-    isValid: false,
-  },
-  {
     testName: 'Name is required for derivation with type custom',
     derivation: invalidDerivations.missingName,
     isValid: false,
@@ -165,6 +163,29 @@ const validationTestData: ValidationTestData[] = [
   },
 ];
 
+const shouldIgnoreDerivationTestData = [
+  {
+    testName: 'Sharded derivation should not be allowed for hot and public key',
+    derivation: ignoredDerivations.wrongShardedType,
+    shouldIgnore: true,
+  },
+  {
+    testName: 'Key type should match KeyType enum values',
+    derivation: ignoredDerivations.wrongKeyType,
+    shouldIgnore: true,
+  },
+  {
+    testName: 'Chain id should be in list of supported chains',
+    derivation: ignoredDerivations.wrongKeyType,
+    shouldIgnore: true,
+  },
+  {
+    testName: 'Should not ignore valid derivation',
+    derivation: validDerivations[0],
+    shouldIgnore: false,
+  },
+];
+
 export const importKeysMocks = {
   chainId,
   invalidDerivations,
@@ -172,4 +193,5 @@ export const importKeysMocks = {
   existingChainDerivations,
   validationTestData,
   existingShardsGroupId,
+  shouldIgnoreDerivationTestData,
 };

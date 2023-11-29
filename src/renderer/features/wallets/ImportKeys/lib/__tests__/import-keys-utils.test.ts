@@ -15,6 +15,12 @@ describe('entities/dynamicDerivations/import-keys-utils', () => {
     });
   });
 
+  describe('entities/dynamicDerivations/import-keys-utils/shouldIgnoreDerivation', () => {
+    test.each(importKeysMocks.shouldIgnoreDerivationTestData)('$testName', ({ derivation, shouldIgnore }) => {
+      expect(importKeysUtils.shouldIgnoreDerivation(derivation)).toEqual(shouldIgnore);
+    });
+  });
+
   describe('entities/dynamicDerivations/import-keys-utils/mergeChainDerivations', () => {
     test('should add new derivations', () => {
       const importedDerivations = [
