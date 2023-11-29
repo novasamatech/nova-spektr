@@ -3,7 +3,6 @@ import {TransactionBuilder} from "@entities/transactionBuilder/model/transaction
 import {AccountInWallet} from "@shared/core/types/wallet";
 import keyBy from 'lodash/keyBy';
 import {walletUtils} from "@entities/wallet";
-import {Exception} from "@zxing/library";
 import {LeafTransactionBuilder} from "@entities/transactionBuilder/lib/leaf";
 import {MultisigTransactionBuilder} from "@entities/transactionBuilder/lib/multisig";
 import {groupBy} from "lodash";
@@ -40,7 +39,7 @@ export function createTransactionBuilder(
         )
 
       case WalletType.WATCH_ONLY:
-        throw new Exception("Signing with Watch only is not allowed")
+        throw new Error("Signing with Watch only is not allowed")
 
       case WalletType.WALLET_CONNECT:
       case WalletType.NOVA_WALLET:

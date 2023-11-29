@@ -7,7 +7,6 @@ import {AccountInWallet} from "@shared/core/types/wallet";
 import {ApiPromise} from "@polkadot/api";
 import {BaseTxInfo, methods, OptionsWithMeta, UnsignedTransaction} from "@substrate/txwrapper-polkadot";
 import {SubmittableExtrinsic} from "@polkadot/api/types";
-import {Exception} from "@zxing/library";
 
 export class LeafTransactionBuilder implements TransactionBuilder, CallBuilder {
 
@@ -45,7 +44,7 @@ export class LeafTransactionBuilder implements TransactionBuilder, CallBuilder {
   async unsignedTransaction(options: OptionsWithMeta, info: BaseTxInfo): Promise<UnsignedTransaction> {
     const nestedUnsignedTxs = this.#calls.map(call => call.signing(info, options))
 
-    if (nestedUnsignedTxs.length == 0) throw new Exception("Cannot sign empty transaction")
+    if (nestedUnsignedTxs.length == 0) throw new Error("Cannot sign empty transaction")
 
     let maybeWrappedInBatch: UnsignedTransaction
     if (nestedUnsignedTxs.length > 1) {

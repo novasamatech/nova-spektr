@@ -5,7 +5,6 @@ import {
 } from "@entities/transactionBuilder/model/transaction-builder";
 import {AccountInWallet, Wallet} from "@shared/core/types/wallet";
 import {Account} from "@shared/core";
-import {Exception} from "@zxing/library";
 import {ApiPromise} from "@polkadot/api";
 import {BaseTxInfo, OptionsWithMeta, UnsignedTransaction} from "@substrate/txwrapper-polkadot";
 import {SubmittableExtrinsic} from "@polkadot/api/types";
@@ -31,7 +30,7 @@ export class CompoundWalletTransactionBuilder implements TransactionBuilder {
     this.shards = shards
     this.api = api
 
-    if (shards.length == 0) throw new Exception("Empty shard list")
+    if (shards.length == 0) throw new Error("Empty shard list")
 
     const firstAccountInWallet: AccountInWallet = {
       wallet: wallet,

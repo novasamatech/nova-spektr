@@ -4,7 +4,6 @@ import {
   TransactionVisitor
 } from "@entities/transactionBuilder/model/transaction-builder";
 import {AccountInWallet} from "@shared/core/types/wallet";
-import {Exception} from "@zxing/library";
 import {ApiPromise} from "@polkadot/api";
 import {BaseTxInfo, methods, OptionsWithMeta, UnsignedTransaction} from "@substrate/txwrapper-polkadot";
 import {SubmittableExtrinsic} from "@polkadot/api/types";
@@ -41,7 +40,7 @@ export class MultisigTransactionBuilder implements TransactionBuilder {
 
     if (knownSignatoryAccounts.length == 0) {
       // TODO maybe handle it gracefully?
-      throw new Exception("No known signatories found")
+      throw new Error("No known signatories found")
     }
     this.#selectedSignatory = knownSignatoryAccounts[0]
     this.#inner = innerFactory(this.#selectedSignatory)
@@ -75,7 +74,7 @@ export class MultisigTransactionBuilder implements TransactionBuilder {
 
   async unsignedTransaction(options: OptionsWithMeta, info: BaseTxInfo): Promise<UnsignedTransaction> {
     const innerInfo = await this.innerInfo()
-    if (innerInfo == null) throw new Exception("Multisig cannot sign empty nested tx")
+    if (innerInfo == null) throw new Error("Multisig cannot sign empty nested tx")
 
     const {innerWeight} = innerInfo
     const maybeTimepoint = null

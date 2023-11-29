@@ -9,7 +9,6 @@ import type {
   WatchOnlyWallet,
   NovaWalletWallet,
 } from '@shared/core';
-import {Exception} from "@zxing/library";
 
 export const walletUtils = {
   isPolkadotVault,
@@ -66,7 +65,7 @@ function getWalletFamily(wallet: Pick<Wallet, 'type'>): WalletFamily {
   if (isWalletConnect(wallet)) return  WalletType.WALLET_CONNECT;
   if (isNovaWallet(wallet)) return  WalletType.NOVA_WALLET;
 
-  throw new Exception("Cannot determine wallet family for" + wallet.type)
+  throw new Error("Cannot determine wallet family for" + wallet.type)
 }
 
 function isWalletConnectFamily(wallet?: Pick<Wallet, 'type'>): wallet is WalletConnectWallet {
