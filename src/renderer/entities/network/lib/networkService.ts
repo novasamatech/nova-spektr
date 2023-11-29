@@ -4,7 +4,7 @@ import * as Sc from '@substrate/connect';
 import { noop } from '@polkadot/util';
 
 import { ChainId } from '@shared/core';
-import { Metadata, ProviderType, RpcValidation } from './common/types';
+import { ProviderType, RpcValidation } from './common/types';
 import { chainSpecService } from './chainSpecService';
 import { useMetadata } from './metadataService';
 import { createCachedProvider } from './provider/CachedProvider';
@@ -21,7 +21,6 @@ export const networkService = {
 
 async function createApi(
   provider: ProviderInterface,
-  metadata?: Metadata,
   onConnected?: () => void,
   onDisconnected?: () => void,
   onError?: () => void,
@@ -30,11 +29,6 @@ async function createApi(
     provider,
     throwOnConnect: true,
     throwOnUnknown: true,
-    metadata: metadata?.metadata
-      ? {
-          [metadata.version.toString()]: metadata.metadata,
-        }
-      : undefined,
   });
 
   api.on('connected', onConnected || noop);

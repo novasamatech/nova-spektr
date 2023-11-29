@@ -1,4 +1,4 @@
-import { act, render, screen, waitFor } from '@testing-library/react';
+import { act, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
 import { RpcValidation, ExtendedChain, networkService, networkModel } from '@entities/network';
@@ -71,6 +71,8 @@ describe('pages/Settings/Networks/CustomRpcModal', () => {
   });
 
   test('should disable submit button during submission', async () => {
+    jest.spyOn(networkService, 'validateRpcNode').mockRejectedValue(new Error('error'));
+
     await renderAndFillTheForm();
 
     const button = screen.getByRole('button', { name: 'settings.networks.addNodeButton' });
@@ -78,9 +80,7 @@ describe('pages/Settings/Networks/CustomRpcModal', () => {
 
     await act(async () => button.click());
 
-    waitFor(() => {
-      expect(button).toBeDisabled();
-    });
+    expect(button).toBeDisabled();
   });
 
   test('should call validateRpcNode', async () => {
