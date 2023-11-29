@@ -12,8 +12,8 @@ import {ApiPromise} from "@polkadot/api";
 export type NestedTransactionBuilderFactory = (shard: AccountInWallet) => TransactionBuilder
 
 export function createTransactionBuilder(
-  activeWallet: Wallet,
-  activeAccounts: Account[],
+  selectedWallet: Wallet,
+  selectedAccounts: Account[],
   allWallets: Wallet[],
   allAccounts: Account[],
   api: ApiPromise
@@ -50,10 +50,10 @@ export function createTransactionBuilder(
     }
   }
 
-  if (activeAccounts.length > 1) {
-    return new CompoundWalletTransactionBuilder(api, activeWallet, activeAccounts, createInner)
+  if (selectedAccounts.length > 1) {
+    return new CompoundWalletTransactionBuilder(api, selectedWallet, selectedAccounts)
   } else {
-    return createInner({ wallet: activeWallet, account: activeAccounts[0] })
+    return createInner({ wallet: selectedWallet, account: selectedAccounts[0] })
   }
 }
 

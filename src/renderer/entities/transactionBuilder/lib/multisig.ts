@@ -51,14 +51,18 @@ export class MultisigTransactionBuilder implements TransactionBuilder {
     return this.#inner.effectiveCallBuilder()
   }
 
-  visit(visitor: TransactionVisitor): void {
+  visitAll(visitor: TransactionVisitor): void {
+    this.visitSelf(visitor)
+
+    this.#inner.visitAll(visitor)
+  }
+
+  visitSelf(visitor: TransactionVisitor) {
     visitor.visitMultisig({
       knownSignatories: this.knownSignatoryAccounts,
       threshold: this.threshold,
       updateSelectedSignatory: this.updateSelectedSignatory,
     })
-
-    this.#inner.visit(visitor)
   }
 
   async submittableExtrinsic(): Promise<SubmittableExtrinsic<"promise"> | null> {

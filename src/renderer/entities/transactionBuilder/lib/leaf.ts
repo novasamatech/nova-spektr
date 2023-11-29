@@ -27,8 +27,12 @@ export class LeafTransactionBuilder implements TransactionBuilder, CallBuilder {
     return this
   }
 
-  visit(_: TransactionVisitor): void {
-    // nothing interesting to visit in the leaf
+  visitAll(visitor: TransactionVisitor): void {
+    this.visitSelf(visitor)
+  }
+
+  visitSelf(visitor: TransactionVisitor) {
+    visitor.visitLeaf({ account: this.accountInWallet })
   }
 
   addCall(call: CallBuilding): void {

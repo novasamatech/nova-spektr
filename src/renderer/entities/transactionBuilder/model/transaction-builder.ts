@@ -10,7 +10,9 @@ export interface TransactionBuilder {
 
   effectiveCallBuilder(): CallBuilder
 
-  visit(visitor: TransactionVisitor): void
+  visitAll(visitor: TransactionVisitor): void
+
+  visitSelf(visitor: TransactionVisitor): void
 
   submittableExtrinsic(): Promise<SubmittableExtrinsic<'promise'> | null>
 
@@ -43,6 +45,8 @@ export interface TransactionVisitor {
   visitMultisig(visit: MultisigVisit): void
 
   visitCompoundWallet(visit: CompoundWalletVisit): void
+
+  visitLeaf(visit: LeafVisit): void
 }
 
 export interface MultisigVisit {
@@ -56,9 +60,16 @@ export interface MultisigVisit {
 
 export interface CompoundWalletVisit {
 
-  childrenAccounts: Account[]
+  allChildrenAccounts: Account[]
+
+  selectedChildrenAccounts: Account[]
 
   wallet: Wallet
 
-  updateSelectedShard(shard: Account): void
+  updateSelectedChildren(selectedChildren: Account[]): void
+}
+
+export interface LeafVisit {
+
+  account: AccountInWallet
 }

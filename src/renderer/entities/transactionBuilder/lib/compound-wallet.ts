@@ -8,54 +8,57 @@ import {Account} from "@shared/core";
 import {ApiPromise} from "@polkadot/api";
 import {BaseTxInfo, OptionsWithMeta, UnsignedTransaction} from "@substrate/txwrapper-polkadot";
 import {SubmittableExtrinsic} from "@polkadot/api/types";
-import {NestedTransactionBuilderFactory} from "@entities/transactionBuilder/lib/factory";
+import {LeafTransactionBuilder} from "@entities/transactionBuilder/lib/leaf";
 
 export class CompoundWalletTransactionBuilder implements TransactionBuilder {
 
   readonly wallet: Wallet
-  readonly shards: Account[]
+  readonly allChildrenAccounts: Account[]
 
-  #selectedShard: Account
+  #selectedSChildrenAccounts: Account[]
 
   readonly api: ApiPromise
 
   #inner: TransactionBuilder
-  readonly #innerFactory: NestedTransactionBuilderFactory
 
   constructor(
     api: ApiPromise,
     wallet: Wallet,
-    shards: Account[],
-    innerFactory: NestedTransactionBuilderFactory
+    childrenAccounts: Account[],
   ) {
     this.wallet = wallet
-    this.shards = shards
+    this.allChildrenAccounts = childrenAccounts
     this.api = api
-    this.#innerFactory = innerFactory
 
-    if (shards.length == 0) throw new Error("Empty shard list")
+    if (childrenAccounts.length == 0) throw new Error("Empty children accounts list")
 
-    const firstShard = shards[0]
-    const firstAccountInWallet: AccountInWallet = {
+    const firstChild = childrenAccounts[0]
+    const firstChildInWallet: AccountInWallet = {
       wallet: wallet,
-      account: firstShard
+      account: firstChild
     }
-    this.#selectedShard = firstShard
-    this.#inner = this.#innerFactory(firstAccountInWallet)
+    this.#selectedSChildrenAccounts = [firstChild]
+    // We cannot have complex structure for wallets with multiple accounts per chain
+    this.#inner = new LeafTransactionBuilder(api, firstChildInWallet)
   }
 
   effectiveCallBuilder(): CallBuilder {
     return this.#inner.effectiveCallBuilder()
   }
 
-  visit(visitor: TransactionVisitor): void {
+  visitAll(visitor: TransactionVisitor): void {
+    this.visitSelf(visitor)
+
+    this.#inner.visitAll(visitor)
+  }
+
+  visitSelf(visitor: TransactionVisitor) {
     visitor.visitCompoundWallet({
       wallet: this.wallet,
-      childrenAccounts: this.shards,
-      updateSelectedShard: this.updateSelectedShard,
+      allChildrenAccounts: this.allChildrenAccounts,
+      selectedChildrenAccounts: this.#selectedSChildrenAccounts,
+      updateSelectedChildren: this.#updateSelectedSChildren,
     })
-
-    this.#inner.visit(visitor)
   }
 
   unsignedTransaction(options: OptionsWithMeta, info: BaseTxInfo): Promise<UnsignedTransaction> {
@@ -66,17 +69,8 @@ export class CompoundWalletTransactionBuilder implements TransactionBuilder {
     return this.#inner.submittableExtrinsic()
   }
 
-  updateSelectedShard(shard: Account) {
-    if (shard === this.#selectedShard) return
-
-    const currentCallBuilder = this.effectiveCallBuilder()
-    const newAccountInWallet: AccountInWallet = {
-      wallet: this.wallet,
-      account: shard
-    }
-
-    this.#selectedShard = shard
-    this.#inner = this.#innerFactory(newAccountInWallet)
-    this.#inner.effectiveCallBuilder().initFrom(currentCallBuilder)
+  #updateSelectedSChildren(selectedChildren: Account[]) {
+    // No need to re-create `inner` since it is the leaf and won't change anyway
+    this.#selectedSChildrenAccounts = selectedChildren
   }
 }
