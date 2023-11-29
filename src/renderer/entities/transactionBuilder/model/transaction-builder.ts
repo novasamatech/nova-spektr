@@ -1,10 +1,12 @@
-import {Account, Wallet} from "@shared/core";
+import {Account, Chain, Wallet} from "@shared/core";
 import {AccountInWallet} from "@shared/core/types/wallet";
 import {ApiPromise} from "@polkadot/api";
 import {SubmittableExtrinsic} from "@polkadot/api/types";
 import {BaseTxInfo, OptionsWithMeta, UnsignedTransaction} from "@substrate/txwrapper-polkadot";
 
 export interface TransactionBuilder {
+
+  readonly chain: Chain
 
   readonly api: ApiPromise
 
@@ -42,11 +44,11 @@ export type CallBuilding = {
 
 export interface TransactionVisitor {
 
-  visitMultisig(visit: MultisigVisit): void
+  visitMultisig?(visit: MultisigVisit): void
 
-  visitCompoundWallet(visit: CompoundWalletVisit): void
+  visitCompoundWallet?(visit: CompoundWalletVisit): void
 
-  visitLeaf(visit: LeafVisit): void
+  visitLeaf?(visit: LeafVisit): void
 }
 
 export interface MultisigVisit {
@@ -54,6 +56,8 @@ export interface MultisigVisit {
   knownSignatories: AccountInWallet[]
 
   threshold: number
+
+  selectedSignatory: AccountInWallet
 
   updateSelectedSignatory(newSignatory: AccountInWallet): void
 }

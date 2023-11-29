@@ -51,16 +51,19 @@ export class MultisigTransactionBuilder implements TransactionBuilder {
     return this.#inner.effectiveCallBuilder()
   }
 
-  visitAll(visitor: TransactionVisitor): void {
+  visitAll(visitor: Partial<TransactionVisitor>): void {
     this.visitSelf(visitor)
 
     this.#inner.visitAll(visitor)
   }
 
-  visitSelf(visitor: TransactionVisitor) {
+  visitSelf(visitor: Partial<TransactionVisitor>) {
+    if (visitor.visitMultisig == undefined) return
+
     visitor.visitMultisig({
       knownSignatories: this.knownSignatoryAccounts,
       threshold: this.threshold,
+      selectedSignatory: this.#selectedSignatory,
       updateSelectedSignatory: this.updateSelectedSignatory,
     })
   }

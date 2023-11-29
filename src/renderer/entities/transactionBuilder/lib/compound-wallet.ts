@@ -53,6 +53,8 @@ export class CompoundWalletTransactionBuilder implements TransactionBuilder {
   }
 
   visitSelf(visitor: TransactionVisitor) {
+    if (visitor.visitCompoundWallet == undefined) return
+
     visitor.visitCompoundWallet({
       wallet: this.wallet,
       allChildrenAccounts: this.allChildrenAccounts,

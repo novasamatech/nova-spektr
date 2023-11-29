@@ -32,6 +32,8 @@ export class LeafTransactionBuilder implements TransactionBuilder, CallBuilder {
   }
 
   visitSelf(visitor: TransactionVisitor) {
+    if (visitor.visitLeaf == undefined) return
+
     visitor.visitLeaf({ account: this.accountInWallet })
   }
 

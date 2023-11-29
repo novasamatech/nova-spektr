@@ -63,3 +63,15 @@ export type AccountInWallet = {
   wallet: Wallet
   account: Account
 }
+
+export type AccountsInWallet = {
+  wallet: Wallet
+  accounts: Account[]
+}
+
+export function asMany(accountInWallet: AccountInWallet): AccountsInWallet {
+  return {
+    wallet: accountInWallet.wallet,
+    accounts: [accountInWallet.account]
+  }
+}
