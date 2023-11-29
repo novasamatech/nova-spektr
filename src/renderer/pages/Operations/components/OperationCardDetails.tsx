@@ -6,7 +6,7 @@ import { AddressWithExplorers, WalletCardSm, walletModel } from '@entities/walle
 import { Icon, Button, FootnoteText, DetailRow } from '@shared/ui';
 import { copyToClipboard, truncate, cnTw, getAssetById } from '@shared/lib/utils';
 import { useToggle } from '@shared/lib/hooks';
-import { chainsService, ExtendedChain, isLightClient } from '@entities/oldNetwork';
+import { chainsService, ExtendedChain, isLightClient } from '@entities/network';
 import { MultisigTransaction, Transaction, isXcmTransaction } from '@entities/transaction';
 import { AddressStyle, DescriptionBlockStyle, InteractionStyle } from '../common/constants';
 import { getMultisigExtrinsicLink } from '../common/utils';
@@ -44,7 +44,9 @@ export const OperationCardDetails = ({ tx, account, connection }: Props) => {
       tx.transaction.args.transactions.find((tx: Transaction) => tx.type === 'nominate')?.args?.targets) ||
     [];
 
-  const allValidators = Object.values(useValidatorsMap(api, chainId, connection && isLightClient(connection)));
+  const allValidators = Object.values(
+    useValidatorsMap(api, chainId, connection && isLightClient(connection.connection)),
+  );
   const selectedValidators: Validator[] =
     allValidators.filter((v) => (transaction?.args.targets || startStakingValidators).includes(v.address)) || [];
   const selectedValidatorsAddress = selectedValidators.map((validator) => validator.address);

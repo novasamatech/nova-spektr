@@ -5,7 +5,7 @@ import { useUnit } from 'effector-react';
 import { useMultisigTx } from '@entities/multisig';
 import { MultisigTxInitStatus } from '@entities/transaction';
 import { NavItem, Props as NavItemProps } from './NavItem';
-import { chainsService } from '@entities/oldNetwork';
+import { chainsService } from '@entities/network';
 import { Paths } from '@shared/routes';
 import { walletModel } from '@entities/wallet';
 import { BodyText } from '@shared/ui';

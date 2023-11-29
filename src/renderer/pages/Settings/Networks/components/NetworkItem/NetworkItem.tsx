@@ -1,6 +1,6 @@
 import { TFunction } from 'react-i18next';
 
-import { ExtendedChain } from '@entities/oldNetwork';
+import { ExtendedChain } from '@entities/network';
 import { NetworkSelector } from '../NetworkSelector/NetworkSelector';
 import { BodyText, StatusLabel, FootnoteText, HelpText } from '@shared/ui';
 import { useI18n } from '@app/providers';
@@ -10,7 +10,7 @@ import type { RpcNode } from '@shared/core';
 import './NetworkItem.css';
 
 const Status = {
-  [ConnectionStatus.CONNECTING]: {
+  connecting: {
     variant: 'waiting',
     title: (t: TFunction) => (
       <div className="spektr-waiting">
@@ -18,11 +18,11 @@ const Status = {
       </div>
     ),
   },
-  [ConnectionStatus.CONNECTED]: {
+  connected: {
     variant: 'success',
     title: (t: TFunction) => t('settings.networks.connectedStatusLabel'),
   },
-  [ConnectionStatus.ERROR]: { variant: 'error', title: (t: TFunction) => t('settings.networks.errorStatusLabel') },
+  error: { variant: 'error', title: (t: TFunction) => t('settings.networks.errorStatusLabel') },
 } as const;
 
 type Props = {
@@ -42,10 +42,12 @@ export const NetworkItem = ({
 }: Props) => {
   const { t } = useI18n();
 
-  const { icon, name, connection } = networkItem;
-  const { connectionType, connectionStatus, activeNode } = connection;
+  const { icon, name, connection, connectionStatus } = networkItem;
+  const { connectionType, activeNode } = connection;
 
-  const networkIsActive = connectionType !== ConnectionType.DISABLED && connectionStatus !== ConnectionStatus.NONE;
+  const networkIsActive = connectionType !== ConnectionType.DISABLED;
+  const isConnected = connectionStatus === ConnectionStatus.CONNECTED;
+  const status = isConnected ? 'connected' : networkIsActive && !isConnected ? 'connecting' : 'error';
 
   return (
     <div className="flex items-center py-3">
@@ -55,11 +57,7 @@ export const NetworkItem = ({
         {networkIsActive && activeNode && <HelpText className="text-text-tertiary truncate">{activeNode.url}</HelpText>}
       </div>
       {networkIsActive && (
-        <StatusLabel
-          title={Status[connectionStatus].title(t)}
-          variant={Status[connectionStatus].variant}
-          className="mr-8.5"
-        />
+        <StatusLabel title={Status[status].title(t)} variant={Status[status].variant} className="mr-8.5" />
       )}
       <NetworkSelector
         networkItem={networkItem}

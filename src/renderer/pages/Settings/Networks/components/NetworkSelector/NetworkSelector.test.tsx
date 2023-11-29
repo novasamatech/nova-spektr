@@ -2,7 +2,7 @@ import { act, render, screen } from '@testing-library/react';
 import noop from 'lodash/noop';
 
 import { ConnectionStatus, ConnectionType } from '@shared/core';
-import { ExtendedChain } from '@entities/oldNetwork';
+import { ExtendedChain } from '@entities/network';
 import { NetworkSelector } from './NetworkSelector';
 import { useScrollTo } from '@shared/lib/hooks';
 
@@ -29,10 +29,11 @@ describe('pages/Settings/Networks/NetworkSelector', () => {
       { url: 'wss://westend-rpc.polkadot.io', name: 'Parity node' },
       { url: 'wss://westend.api.onfinality.io/public-ws', name: 'OnFinality node' },
     ],
+    connectionStatus: ConnectionStatus.DISCONNECTED,
     connection: {
+      id: 0,
       chainId: '0x123',
       canUseLightClient: false,
-      connectionStatus: ConnectionStatus.NONE,
       connectionType: ConnectionType.DISABLED,
     },
   };
@@ -47,9 +48,9 @@ describe('pages/Settings/Networks/NetworkSelector', () => {
 
   const connectedNetwork: ExtendedChain = {
     ...defaultNetwork,
+    connectionStatus: ConnectionStatus.CONNECTED,
     connection: {
       ...defaultNetwork.connection,
-      connectionStatus: ConnectionStatus.CONNECTED,
       connectionType: ConnectionType.RPC_NODE,
       activeNode: { url: 'wss://westend-rpc.polkadot.io', name: 'Parity node' },
     },

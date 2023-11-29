@@ -4,7 +4,7 @@ import { keyBy } from 'lodash';
 import type { AccountId, ChainId, Account } from '@shared/core';
 import { Accordion, BaseModal, Button, Checkbox, FootnoteText, SearchInput } from '@shared/ui';
 import { useI18n } from '@app/providers';
-import { chainsService } from '@entities/oldNetwork';
+import { chainsService } from '@entities/network';
 import { SelectableShard } from '@entities/wallet';
 import { ChainTitle } from '@entities/chain';
 import { toAddress } from '@shared/lib/utils';

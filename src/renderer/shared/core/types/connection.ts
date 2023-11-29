@@ -6,7 +6,6 @@ export type Connection = {
   chainId: ChainId;
   canUseLightClient?: boolean;
   connectionType: ConnectionType;
-  connectionStatus: ConnectionStatus;
   customNodes?: RpcNode[];
   activeNode?: RpcNode;
   disconnect?: () => void;
@@ -20,8 +19,7 @@ export const enum ConnectionType {
 }
 
 export const enum ConnectionStatus {
-  NONE = 'NONE',
+  DISCONNECTED = 'DISCONNECTED',
   CONNECTED = 'CONNECTED',
-  CONNECTING = 'CONNECTING',
   ERROR = 'ERROR',
 }

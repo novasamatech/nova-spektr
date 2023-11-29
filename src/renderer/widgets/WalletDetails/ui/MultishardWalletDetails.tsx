@@ -3,7 +3,7 @@ import { useMemo } from 'react';
 import { BaseModal } from '@shared/ui';
 import { useModalClose } from '@shared/lib/hooks';
 import { MultishardAccountsList, WalletCardLg } from '@entities/wallet';
-import { chainsService } from '@entities/oldNetwork';
+import { chainsService } from '@entities/network';
 import { useI18n } from '@app/providers';
 import type { Wallet } from '@shared/core';
 import type { MultishardMap } from '../lib/types';

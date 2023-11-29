@@ -2,8 +2,8 @@ import { useEffect, useState } from 'react';
 import { Controller, SubmitHandler, useForm } from 'react-hook-form';
 
 import { BaseModal, Button, Input, InputHint, Alert } from '@shared/ui';
-import { useI18n, useNetworkContext } from '@app/providers';
-import { RpcValidation, ExtendedChain } from '@entities/oldNetwork';
+import { useI18n } from '@app/providers';
+import { networkModel, networkService, RpcValidation, ExtendedChain } from '@entities/network';
 import { validateWsAddress } from '@shared/lib/utils';
 import { OperationTitle } from '@renderer/components/common';
 import type { RpcNode } from '@shared/core';
@@ -32,7 +32,6 @@ type Props = {
 
 export const CustomRpcModal = ({ network, node, isOpen, onClose }: Props) => {
   const { t } = useI18n();
-  const { validateRpcNode, addRpcNode, updateRpcNode } = useNetworkContext();
 
   const [formState, setFormState] = useState<FormState>(FormState.INIT);
 
@@ -107,7 +106,7 @@ export const CustomRpcModal = ({ network, node, isOpen, onClose }: Props) => {
 
     try {
       setFormState(FormState.LOADING);
-      const result = await validateRpcNode(network.chainId, formData.url);
+      const result = await networkService.validateRpcNode(network.chainId, formData.url);
 
       const options = {
         [RpcValidation.INVALID]: () => setFormState(FormState.INVALID),
@@ -123,9 +122,16 @@ export const CustomRpcModal = ({ network, node, isOpen, onClose }: Props) => {
   const saveRpcNode = async (formData: CustomRpcForm): Promise<void> => {
     try {
       if (node) {
-        await updateRpcNode(network.chainId, node, formData);
+        networkModel.events.rpcNodeUpdated({
+          chainId: network.chainId,
+          oldNode: node,
+          rpcNode: formData,
+        });
       } else {
-        await addRpcNode(network.chainId, formData);
+        networkModel.events.rpcNodeAdded({
+          chainId: network.chainId,
+          rpcNode: formData,
+        });
       }
     } catch (error) {
       console.warn(error);

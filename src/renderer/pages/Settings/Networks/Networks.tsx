@@ -4,17 +4,17 @@ import { Trans } from 'react-i18next';
 import uniqBy from 'lodash/uniqBy';
 import { useUnit } from 'effector-react';
 
-import { useI18n, useNetworkContext, useConfirmContext } from '@app/providers';
+import { useI18n, useConfirmContext } from '@app/providers';
 import { Paths } from '@shared/routes';
 import { BaseModal, SearchInput, BodyText, InfoLink, Icon } from '@shared/ui';
 import { useToggle } from '@shared/lib/hooks';
-import { ExtendedChain, chainsService } from '@entities/oldNetwork';
 import { includes, DEFAULT_TRANSITION } from '@shared/lib/utils';
 import { NetworkList, NetworkItem, CustomRpcModal } from './components';
 import { useBalance } from '@entities/asset';
 import type { RpcNode, ChainId } from '@shared/core';
-import { ConnectionType, ConnectionStatus } from '@shared/core';
+import { ConnectionType } from '@shared/core';
 import { walletModel } from '@entities/wallet';
+import { getParachains, networkModel, ExtendedChain, chainsService } from '@entities/network';
 
 const MAX_LIGHT_CLIENTS = 3;
 
@@ -26,8 +26,11 @@ export const Networks = () => {
 
   const navigate = useNavigate();
   const { confirm } = useConfirmContext();
-  const { connections, connectToNetwork, connectWithAutoBalance, removeRpcNode, getParachains } = useNetworkContext();
   const { setBalanceIsValid } = useBalance();
+
+  const connections = useUnit(networkModel.$connections);
+  const chains = useUnit(networkModel.$chains);
+  const connectionStatuses = useUnit(networkModel.$connectionStatuses);
 
   const [isCustomRpcOpen, toggleCustomRpc] = useToggle();
   const [isNetworksModalOpen, toggleNetworksModal] = useToggle(true);
@@ -41,15 +44,21 @@ export const Networks = () => {
     setTimeout(() => navigate(Paths.SETTINGS), DEFAULT_TRANSITION);
   };
 
-  const { inactive, active } = Object.values(connections).reduce<Record<'inactive' | 'active', ExtendedChain[]>>(
-    (acc, c) => {
-      if (!includes(c.name, query)) return acc;
+  const { inactive, active } = Object.values(chains).reduce<Record<'inactive' | 'active', ExtendedChain[]>>(
+    (acc, chain) => {
+      if (!includes(chain.name, query)) return acc;
 
-      if (c.connection.connectionType === ConnectionType.DISABLED) {
-        acc.inactive.push(c);
-      }
-      if (c.connection.connectionStatus !== ConnectionStatus.NONE) {
-        acc.active.push(c);
+      const connection = connections[chain.chainId];
+      const extendedChain = {
+        ...chain,
+        connection,
+        connectionStatus: connectionStatuses[chain.chainId],
+      };
+
+      if (connection?.connectionType === ConnectionType.DISABLED) {
+        acc.inactive.push(extendedChain);
+      } else {
+        acc.active.push(extendedChain);
       }
 
       return acc;
@@ -108,14 +117,17 @@ export const Networks = () => {
       if (!proceed) return;
 
       try {
-        await removeRpcNode(chainId, node);
+        await networkModel.events.rpcNodeRemoved({
+          chainId,
+          rpcNode: node,
+        });
       } catch (error) {
         console.warn(error);
       }
     };
   };
 
-  const disableNetwork = ({ disconnect, connection, name }: ExtendedChain) => {
+  const disableNetwork = ({ connection, name }: ExtendedChain) => {
     return async (): Promise<void> => {
       let proceed = false;
       if (connection.connectionType === ConnectionType.LIGHT_CLIENT) {
@@ -130,7 +142,7 @@ export const Networks = () => {
       if (!proceed) return;
 
       try {
-        await disconnect?.(false);
+        networkModel.events.disconnectStarted(connection.chainId);
       } catch (error) {
         console.warn(error);
       }
@@ -138,7 +150,7 @@ export const Networks = () => {
   };
 
   const resetBalanceValidation = async (relaychainId: ChainId) => {
-    const parachains = getParachains(relaychainId);
+    const parachains = getParachains(chains, relaychainId);
     const uniqAccounts = uniqBy(accounts, 'accountId');
 
     parachains.forEach(({ chainId, assets }) => {
@@ -151,7 +163,7 @@ export const Networks = () => {
     });
   };
 
-  const connectToNode = ({ chainId, connection, disconnect, name }: ExtendedChain) => {
+  const connectToNode = ({ chainId, connection, name }: ExtendedChain) => {
     return async (type: ConnectionType, node?: RpcNode): Promise<void> => {
       if (connection.connectionType === ConnectionType.LIGHT_CLIENT) {
         const proceed = await confirmDisableLightClient(name);
@@ -162,7 +174,7 @@ export const Networks = () => {
 
       if (type === ConnectionType.LIGHT_CLIENT) {
         const lightClientsAmount = Object.values(connections).filter(
-          ({ connection }) => connection.connectionType === ConnectionType.LIGHT_CLIENT,
+          (connection) => connection.connectionType === ConnectionType.LIGHT_CLIENT,
         ).length;
 
         if (lightClientsAmount >= MAX_LIGHT_CLIENTS) {
@@ -172,20 +184,18 @@ export const Networks = () => {
       }
 
       try {
-        await disconnect?.(true);
-
         // Let unsubscribe from previous Provider, microtask first - macrotask second
         if (type === ConnectionType.LIGHT_CLIENT) {
           setTimeout(() => {
-            connectToNetwork({ chainId, type: ConnectionType.LIGHT_CLIENT });
+            networkModel.events.lightClientSelected(chainId);
           });
         } else if (type === ConnectionType.AUTO_BALANCE) {
           setTimeout(() => {
-            connectWithAutoBalance(chainId, 0);
+            networkModel.events.autoBalanceSelected(chainId);
           });
         } else if (node) {
           setTimeout(() => {
-            connectToNetwork({ chainId, type: ConnectionType.RPC_NODE, node });
+            networkModel.events.singleNodeSelected({ chainId, node });
           });
         }
       } catch (error) {
@@ -205,16 +215,9 @@ export const Networks = () => {
     toggleCustomRpc();
 
     if (node && network && network.connection.activeNode === nodeToEdit) {
-      try {
-        await network.disconnect?.(true);
-
-        // Let unsubscribe from previous Provider, microtask first - macrotask second
-        setTimeout(() => {
-          connectToNetwork({ chainId: network.chainId, type: ConnectionType.RPC_NODE, node });
-        });
-      } catch (error) {
-        console.warn(error);
-      }
+      networkModel.events.rpcNodeUpdated({ chainId: network.chainId, oldNode: nodeToEdit, rpcNode: node });
+    } else if (node && network) {
+      networkModel.events.rpcNodeAdded({ chainId: network.chainId, rpcNode: node });
     }
 
     setTimeout(() => {

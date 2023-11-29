@@ -3,10 +3,10 @@ import { Outlet } from 'react-router-dom';
 import { useUnit } from 'effector-react';
 
 import { BodyText, Button, Icon, SmallTitleText } from '@shared/ui';
-import { useI18n, useNetworkContext } from '@app/providers';
+import { useI18n } from '@app/providers';
 import { useBalance } from '@entities/asset';
 import { useToggle } from '@shared/lib/hooks';
-import { Chains, chainsService, isMultisigAvailable } from '@entities/oldNetwork';
+import { chainsService, isMultisigAvailable } from '@entities/network';
 import { useSettingsStorage } from '@entities/settings';
 import { AssetsFilters, NetworkAssets, SelectShardModal } from './components';
 import { Header } from '@renderer/components/common';
@@ -14,7 +14,7 @@ import type { Account, Chain } from '@shared/core';
 import { ConnectionType } from '@shared/core';
 import { walletModel, walletUtils } from '@entities/wallet';
 import { currencyModel, priceProviderModel } from '@entities/price';
-import { ProviderType, networkModel } from '@/src/renderer/entities/network';
+import { networkModel } from '@entities/network';
 
 export const AssetsList = () => {
   const { t } = useI18n();
@@ -23,8 +23,8 @@ export const AssetsList = () => {
   const assetsPrices = useUnit(priceProviderModel.$assetsPrices);
   const fiatFlag = useUnit(priceProviderModel.$fiatFlag);
   const currency = useUnit(currencyModel.$activeCurrency);
-
-  const { connections } = useNetworkContext();
+  const chains = useUnit(networkModel.$chains);
+  const connections = useUnit(networkModel.$connections);
 
   const { getLiveBalances } = useBalance();
   const { setHideZeroBalance, getHideZeroBalance } = useSettingsStorage();
@@ -55,8 +55,8 @@ export const AssetsList = () => {
   };
 
   useEffect(() => {
-    const filteredChains = Object.values(connections).filter((c) => {
-      const isDisabled = c.connection.connectionType === ConnectionType.DISABLED;
+    const filteredChains = Object.values(chains).filter((c) => {
+      const isDisabled = connections[c.chainId]?.connectionType === ConnectionType.DISABLED;
       const hasMultiPallet = !isMultisig || isMultisigAvailable(c.options);
 
       return !isDisabled && hasMultiPallet;
@@ -100,15 +100,6 @@ export const AssetsList = () => {
             onZeroBalancesChange={updateHideZeroBalance}
           />
         </Header>
-
-        {/* Test button */}
-        <Button
-          onClick={() =>
-            networkModel.events.providerTypeSwitched({ chainId: Chains.KUSAMA, type: ProviderType.LIGHT_CLIENT })
-          }
-        >
-          Reconnect
-        </Button>
 
         {isMultishard && (
           <div className="w-[546px] mx-auto flex items-center mt-4">

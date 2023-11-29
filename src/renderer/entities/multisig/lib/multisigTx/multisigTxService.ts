@@ -6,7 +6,7 @@ import {
   MultisigTxFinalStatus,
   MultisigTxInitStatus,
 } from '@entities/transaction/model/transaction';
-import { storage, MultisigTransactionDS } from '../../../../shared/api/storage';
+import { storage, MultisigTransactionDS } from '@shared/api/storage';
 import { DEFAULT_BLOCK_HASH, MULTISIG_EXTRINSIC_CALL_INDEX, QUERY_INTERVAL } from './common/consts';
 import { IMultisigTxService } from './common/types';
 import {
@@ -17,12 +17,12 @@ import {
   createNewEventsPayload,
   updateOldEventsPayload,
 } from './common/utils';
-import { chainsService } from '../../../oldNetwork/lib/chainsService';
-import { useTransaction } from '../../../transaction/lib/transactionService';
+import { useTransaction } from '@entities/transaction/lib/transactionService';
 import { toAddress, getCurrentBlockNumber, getExpectedBlockTime } from '@shared/lib/utils';
 import { useMultisigEvent } from '../multisigEvent/multisigEventService';
 import { Task } from '@shared/lib/hooks/useTaskQueue';
 import type { CallData, AccountId, MultisigAccount } from '@shared/core';
+import { chainsService } from '@entities/network';
 
 type Props = {
   addTask?: (task: Task) => void;

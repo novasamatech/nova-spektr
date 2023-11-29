@@ -3,7 +3,7 @@ import { ProviderInterface, ProviderInterfaceCallback } from '@polkadot/rpc-prov
 import { UnsubscribePromise } from '@polkadot/api/types';
 
 import { ConnectionType } from '@shared/core';
-import type { Connection, Chain, ChainId, RpcNode, HexString } from '@shared/core';
+import type { Connection, Chain, ChainId, RpcNode, HexString, ConnectionStatus } from '@shared/core';
 import { ConnectionDS, MetadataDS } from '@shared/api/storage';
 
 // =====================================================
@@ -20,6 +20,7 @@ export const enum RpcValidation {
 
 export type ExtendedChain = Chain & {
   connection: Connection;
+  connectionStatus: ConnectionStatus;
   api?: ApiPromise;
   provider?: ProviderInterface;
   disconnect?: (switchNetwork: boolean) => Promise<void>;

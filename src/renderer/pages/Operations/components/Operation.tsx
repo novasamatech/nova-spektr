@@ -11,7 +11,7 @@ import { ChainTitle, XcmChains } from '@entities/chain';
 import { getTransactionAmount } from '../common/utils';
 import { isXcmTransaction } from '@entities/transaction';
 import type { MultisigAccount } from '@shared/core';
-import { chainsService } from '@entities/oldNetwork';
+import { chainsService } from '@entities/network';
 import { getAssetById } from '@shared/lib/utils';
 import { AssetBalance } from '@entities/asset';
 

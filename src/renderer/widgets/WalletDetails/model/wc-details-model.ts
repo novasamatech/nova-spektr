@@ -7,7 +7,7 @@ import { ReconnectStep, ForgetStep } from '../lib/constants';
 import { walletProviderModel } from './wallet-provider-model';
 import { walletSelectModel } from '@features/wallets';
 import type { Wallet, WalletConnectAccount } from '@shared/core';
-import { chainsService } from '@entities/oldNetwork';
+import { chainsService } from '@entities/network';
 import { toAccountId } from '@shared/lib/utils';
 
 const reset = createEvent();

@@ -4,7 +4,7 @@ import { Controller, useForm, SubmitHandler } from 'react-hook-form';
 import { u8aToHex } from '@polkadot/util';
 
 import { useI18n } from '@app/providers';
-import { chainsService } from '@entities/oldNetwork';
+import { chainsService } from '@entities/network';
 import { Button, Input, InputHint, HeaderTitleText, SmallTitleText } from '@shared/ui';
 import { SeedInfo } from '@renderer/components/common/QrCode/common/types';
 import { AccountsList, walletModel } from '@entities/wallet';

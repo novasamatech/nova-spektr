@@ -8,7 +8,7 @@ import { Shimmering } from '@shared/ui';
 import { WalletPanel } from './WalletPanel';
 import { WalletButton } from './WalletButton';
 import { useBalance } from '@entities/asset';
-import { chainsService } from '@entities/oldNetwork';
+import { chainsService } from '@entities/network';
 import { walletSelectModel } from '../model/wallet-select-model';
 
 type Props = {

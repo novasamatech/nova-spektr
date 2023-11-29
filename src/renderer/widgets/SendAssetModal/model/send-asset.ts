@@ -15,18 +15,18 @@ import {
 } from '@shared/api/xcm';
 import { xcmModel } from '@entities/xcm';
 import { getParachainId } from '@renderer/services/dataVerification/dataVerification';
-import { ExtendedChain } from '@entities/oldNetwork';
 import { toLocalChainId } from '@shared/lib/utils';
-import type { AccountId, Asset, Chain } from '@shared/core';
+import type { AccountId, Asset, Chain, ChainId } from '@shared/core';
+import { networkModel } from '@entities/network';
 
 const xcmConfigRequested = createEvent();
-const destinationChainSelected = createEvent<ExtendedChain>();
+const destinationChainSelected = createEvent<ChainId>();
 const accountIdSelected = createEvent<AccountId>();
 const amountChanged = createEvent<string>();
 const xcmFeeChanged = createEvent<string>();
 const storeCleared = createEvent();
 
-export const $destinationChain = createStore<ExtendedChain | null>(null).reset(storeCleared);
+export const $destinationChain = createStore<ChainId | null>(null).reset(storeCleared);
 export const $finalConfig = createStore<XcmConfig | null>(null);
 export const $xcmTransfer = createStore<XcmTransfer | null>(null).reset(storeCleared);
 export const $xcmAsset = createStore<AssetXCM | null>(null).reset(storeCleared);
@@ -90,8 +90,11 @@ sample({
 
 sample({
   clock: destinationChainSelected,
-  filter: (chain: ExtendedChain): chain is ExtendedChain & { api: ApiPromise } => Boolean(chain.api),
-  fn: ({ api }) => api,
+  source: {
+    apis: networkModel.$apis,
+  },
+  filter: ({ apis }, chainId): boolean => Boolean(apis[chainId]),
+  fn: ({ apis }, chainId) => apis[chainId],
   target: getParaIdFx,
 });
 
@@ -119,13 +122,13 @@ sample({
 
 sample({
   source: {
-    destinationChain: $destinationChain,
+    chainId: $destinationChain,
     xcmAsset: $xcmAsset,
   },
-  fn: ({ xcmAsset, destinationChain }) => {
-    if (!xcmAsset || !destinationChain) return null;
+  fn: ({ xcmAsset, chainId }) => {
+    if (!xcmAsset || !chainId) return null;
 
-    const destinationChainId = toLocalChainId(destinationChain.chainId);
+    const destinationChainId = toLocalChainId(chainId);
     const configXcmTransfer = xcmAsset?.xcmTransfers.find((t) => t.destination.chainId === destinationChainId);
 
     return configXcmTransfer || null;
