@@ -31,6 +31,7 @@ export const NetworkList = ({ title, isDefaultOpen, query, networkList, children
 
       if (network.connectionStatus === ConnectionStatus.CONNECTED) acc.success += 1;
       if (network.connectionStatus === ConnectionStatus.DISCONNECTED) acc.connecting += 1;
+      if (network.connectionStatus === ConnectionStatus.ERROR) acc.error += 1;
 
       return acc;
     },
