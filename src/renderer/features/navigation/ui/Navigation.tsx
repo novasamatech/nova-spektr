@@ -5,11 +5,10 @@ import { useUnit } from 'effector-react';
 import { useMultisigTx } from '@entities/multisig';
 import { MultisigTxInitStatus } from '@entities/transaction';
 import { NavItem, Props as NavItemProps } from './NavItem';
-import { chainsService } from '@entities/network';
+import { chainsService, ChainMap } from '@entities/network';
 import { Paths } from '@shared/routes';
 import { walletModel } from '@entities/wallet';
 import { BodyText } from '@shared/ui';
-import { ChainMap } from '@entities/network';
 
 export const Navigation = () => {
   const activeAccounts = useUnit(walletModel.$activeAccounts);

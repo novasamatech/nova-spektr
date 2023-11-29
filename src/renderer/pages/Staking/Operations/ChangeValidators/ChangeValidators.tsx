@@ -12,14 +12,13 @@ import { Confirmation, Submit, Validators, NoAsset } from '../components';
 import { useToggle } from '@shared/lib/hooks';
 import { BaseModal, Button, Loader } from '@shared/ui';
 import InitOperation, { ValidatorsResult } from './InitOperation/InitOperation';
-import { isLightClient } from '@entities/network';
+import { isLightClient, useNetworkData } from '@entities/network';
 import { OperationTitle } from '@renderer/components/common';
 import { Signing } from '@features/operation';
 import type { Account, ChainId, HexString, Address } from '@shared/core';
 import { walletUtils, walletModel } from '@entities/wallet';
 import { priceProviderModel } from '@entities/price';
 import { StakingPopover } from '../components/StakingPopover/StakingPopover';
-import { useNetworkData } from '@entities/network';
 
 const enum Step {
   INIT,

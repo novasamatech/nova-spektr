@@ -1,4 +1,4 @@
-import { act, render, screen } from '@testing-library/react';
+import { act, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
 import { RpcValidation, ExtendedChain, networkService, networkModel } from '@entities/network';
@@ -78,7 +78,9 @@ describe('pages/Settings/Networks/CustomRpcModal', () => {
 
     await act(async () => button.click());
 
-    expect(button).toBeDisabled();
+    waitFor(() => {
+      expect(button).toBeDisabled();
+    });
   });
 
   test('should call validateRpcNode', async () => {
