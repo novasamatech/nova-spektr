@@ -8,62 +8,65 @@ import {ApiPromise} from "@polkadot/api";
 import {BaseTxInfo, methods, OptionsWithMeta, UnsignedTransaction} from "@substrate/txwrapper-polkadot";
 import {SubmittableExtrinsic} from "@polkadot/api/types";
 import {isOldMultisigPallet} from "@entities/transaction";
-import {AccountId} from "@shared/core";
+import {AccountId, Chain} from "@shared/core";
 import {NestedTransactionBuilderFactory} from "@entities/transactionBuilder/lib/factory";
 
 export class MultisigTransactionBuilder implements TransactionBuilder {
 
-  #inner: TransactionBuilder
-  readonly #innerFactory: NestedTransactionBuilderFactory
-
   readonly knownSignatoryAccounts: AccountInWallet[]
-  #selectedSignatory: AccountInWallet
 
   readonly signatories: AccountId[]
   readonly threshold: number
 
   readonly api: ApiPromise
+  readonly chain: Chain
+
+  private selectedSignatory: AccountInWallet
+  private innerBuilder: TransactionBuilder
+  private readonly innerFactory: NestedTransactionBuilderFactory
 
   constructor(
     api: ApiPromise,
+    chain: Chain,
     threshold: number,
     signatories: AccountId[],
     knownSignatoryAccounts: AccountInWallet[],
     innerFactory: NestedTransactionBuilderFactory,
   ) {
     this.knownSignatoryAccounts = knownSignatoryAccounts
-    this.#innerFactory = innerFactory
+    this.innerFactory = innerFactory
 
     this.threshold = threshold
     this.signatories = signatories
 
     this.api = api
+    this.chain = chain
 
     if (knownSignatoryAccounts.length == 0) {
       // TODO maybe handle it gracefully?
       throw new Error("No known signatories found")
     }
-    this.#selectedSignatory = knownSignatoryAccounts[0]
-    this.#inner = innerFactory(this.#selectedSignatory)
+    this.selectedSignatory = knownSignatoryAccounts[0]
+    this.innerBuilder = innerFactory(this.selectedSignatory)
   }
 
   effectiveCallBuilder(): CallBuilder {
-    return this.#inner.effectiveCallBuilder()
+    return this.innerBuilder.effectiveCallBuilder()
   }
 
-  visitAll(visitor: Partial<TransactionVisitor>): void {
+  visitAll(visitor: TransactionVisitor): void {
     this.visitSelf(visitor)
 
-    this.#inner.visitAll(visitor)
+    this.innerBuilder.visitAll(visitor)
   }
 
-  visitSelf(visitor: Partial<TransactionVisitor>) {
+  visitSelf(visitor: TransactionVisitor) {
     if (visitor.visitMultisig == undefined) return
 
     visitor.visitMultisig({
       knownSignatories: this.knownSignatoryAccounts,
       threshold: this.threshold,
-      selectedSignatory: this.#selectedSignatory,
+      selectedSignatory: this.selectedSignatory,
       updateSelectedSignatory: this.updateSelectedSignatory,
     })
   }
@@ -90,7 +93,7 @@ export class MultisigTransactionBuilder implements TransactionBuilder {
     const {innerWeight} = innerInfo
     const maybeTimepoint = null
 
-    const innerUnsignedTx = await this.#inner.unsignedTransaction(options, info)
+    const innerUnsignedTx = await this.innerBuilder.unsignedTransaction(options, info)
 
     return methods.multisig.asMulti(
       {
@@ -107,20 +110,20 @@ export class MultisigTransactionBuilder implements TransactionBuilder {
   }
 
   updateSelectedSignatory(signatory: AccountInWallet) {
-    if (signatory === this.#selectedSignatory) return
+    if (signatory === this.selectedSignatory) return
 
     const currentCallBuilder = this.effectiveCallBuilder()
 
-    this.#selectedSignatory = signatory
-    this.#inner = this.#innerFactory(signatory)
-    this.#inner.effectiveCallBuilder().initFrom(currentCallBuilder)
+    this.selectedSignatory = signatory
+    this.innerBuilder = this.innerFactory(signatory)
+    this.innerBuilder.effectiveCallBuilder().initFrom(currentCallBuilder)
   }
 
   async #innerInfo(): Promise<{ innerCall: SubmittableExtrinsic<"promise">, innerWeight: any } | null> {
-    const innerCall = await this.#inner.submittableExtrinsic()
+    const innerCall = await this.innerBuilder.submittableExtrinsic()
     if (innerCall == null) return null
 
-    const paymentInfo = await innerCall.paymentInfo(this.#selectedSignatory.account.accountId)
+    const paymentInfo = await innerCall.paymentInfo(this.selectedSignatory.account.accountId)
     const innerWeight = paymentInfo.weight
 
     return {innerCall, innerWeight}
@@ -128,7 +131,7 @@ export class MultisigTransactionBuilder implements TransactionBuilder {
 
   #otherSignatories(): AccountId[] {
     return this.signatories
-      .filter((signatory) => signatory != this.#selectedSignatory.account.accountId)
+      .filter((signatory) => signatory != this.selectedSignatory.account.accountId)
       .sort()
   }
 }

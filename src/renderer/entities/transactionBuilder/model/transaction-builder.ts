@@ -38,8 +38,8 @@ export interface CallBuilder {
 }
 
 export type CallBuilding = {
-  fee: SubmittableExtrinsic<any>
-  signing: (info: BaseTxInfo, options: OptionsWithMeta) => UnsignedTransaction
+  viaApi: SubmittableExtrinsic<any>
+  viaTxWrapper: (info: BaseTxInfo, options: OptionsWithMeta) => UnsignedTransaction
 }
 
 export interface TransactionVisitor {

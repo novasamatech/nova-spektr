@@ -1,4 +1,4 @@
-import {Account, AccountId, MultisigAccount, Wallet, WalletType} from "@shared/core";
+import {Account, AccountId, Chain, MultisigAccount, Wallet, WalletType} from "@shared/core";
 import {TransactionBuilder} from "@entities/transactionBuilder/model/transaction-builder";
 import {AccountInWallet} from "@shared/core/types/wallet";
 import keyBy from 'lodash/keyBy';
@@ -16,6 +16,7 @@ export function createTransactionBuilder(
   selectedAccounts: Account[],
   allWallets: Wallet[],
   allAccounts: Account[],
+  chain: Chain,
   api: ApiPromise
 ): TransactionBuilder {
 
@@ -34,6 +35,7 @@ export function createTransactionBuilder(
 
         return new MultisigTransactionBuilder(
           api,
+          chain,
           multisigAccount.threshold,
           multisigAccount.signatories.map((signatory) => signatory.accountId),
           matchingAccounts,
@@ -46,12 +48,12 @@ export function createTransactionBuilder(
       case WalletType.WALLET_CONNECT:
       case WalletType.NOVA_WALLET:
       case WalletType.POLKADOT_VAULT:
-        return new LeafTransactionBuilder(api, accountInWallet)
+        return new LeafTransactionBuilder(api, accountInWallet, chain)
     }
   }
 
   if (selectedAccounts.length > 1) {
-    return new CompoundWalletTransactionBuilder(api, selectedWallet, selectedAccounts)
+    return new CompoundWalletTransactionBuilder(api, chain, selectedWallet, selectedAccounts)
   } else {
     return createInner({ wallet: selectedWallet, account: selectedAccounts[0] })
   }

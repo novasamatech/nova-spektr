@@ -7,18 +7,26 @@ import {AccountInWallet} from "@shared/core/types/wallet";
 import {ApiPromise} from "@polkadot/api";
 import {BaseTxInfo, methods, OptionsWithMeta, UnsignedTransaction} from "@substrate/txwrapper-polkadot";
 import {SubmittableExtrinsic} from "@polkadot/api/types";
+import {Chain} from "@shared/core";
 
 export class LeafTransactionBuilder implements TransactionBuilder, CallBuilder {
 
   currentCalls: CallBuilding[]
 
-  api: ApiPromise
+  readonly api: ApiPromise
+  readonly chain: Chain
 
   readonly accountInWallet: AccountInWallet
 
-  constructor(api: ApiPromise, accountInWallet: AccountInWallet) {
+  constructor(
+    api: ApiPromise,
+    accountInWallet: AccountInWallet,
+    chain: Chain,
+  ) {
     this.currentCalls = []
+
     this.api = api
+    this.chain = chain
 
     this.accountInWallet = accountInWallet
   }
@@ -34,7 +42,7 @@ export class LeafTransactionBuilder implements TransactionBuilder, CallBuilder {
   visitSelf(visitor: TransactionVisitor) {
     if (visitor.visitLeaf == undefined) return
 
-    visitor.visitLeaf({ account: this.accountInWallet })
+    visitor.visitLeaf({account: this.accountInWallet})
   }
 
   addCall(call: CallBuilding): void {
@@ -54,14 +62,14 @@ export class LeafTransactionBuilder implements TransactionBuilder, CallBuilder {
   }
 
   async unsignedTransaction(options: OptionsWithMeta, info: BaseTxInfo): Promise<UnsignedTransaction> {
-    const nestedUnsignedTxs = this.currentCalls.map(call => call.signing(info, options))
+    const nestedUnsignedTxs = this.currentCalls.map(call => call.viaTxWrapper(info, options))
 
     if (nestedUnsignedTxs.length == 0) throw new Error("Cannot sign empty transaction")
 
     let maybeWrappedInBatch: UnsignedTransaction
     if (nestedUnsignedTxs.length > 1) {
       const innerMethods = nestedUnsignedTxs.map((nestedUnsignedTx) => nestedUnsignedTx.method)
-      maybeWrappedInBatch = methods.utility.batch({calls: innerMethods,}, info, options)
+      maybeWrappedInBatch = methods.utility.batchAll({calls: innerMethods,}, info, options)
     } else {
       maybeWrappedInBatch = nestedUnsignedTxs[0]
     }
@@ -70,15 +78,15 @@ export class LeafTransactionBuilder implements TransactionBuilder, CallBuilder {
   }
 
   async submittableExtrinsic(): Promise<SubmittableExtrinsic<"promise"> | null> {
-    const feeCalls = this.currentCalls.map(call => call.fee)
+    const viaApiCalls = this.currentCalls.map(call => call.viaApi)
 
-    if (feeCalls.length == 0) return null
+    if (viaApiCalls.length == 0) return null
 
     let maybeWrappedInBatch: SubmittableExtrinsic<"promise">
-    if (feeCalls.length > 1) {
-      maybeWrappedInBatch = this.api.tx.utility.batch(feeCalls)
+    if (viaApiCalls.length > 1) {
+      maybeWrappedInBatch = this.api.tx.utility.batchAll(viaApiCalls)
     } else {
-      maybeWrappedInBatch = feeCalls[0]
+      maybeWrappedInBatch = viaApiCalls[0]
     }
 
     return maybeWrappedInBatch
