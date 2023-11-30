@@ -10,12 +10,14 @@ import { accountUtils, WalletCardSm, walletModel, walletUtils } from '@entities/
 import { Button, FootnoteText } from '@shared/ui';
 import type { Account, ChainAccount, ChainId, ShardAccount } from '@shared/core';
 import { toAddress } from '@shared/lib/utils';
+import { SigningType } from '@shared/core';
 
 type Props = {
   api: ApiPromise;
   chainId: ChainId;
   transaction: Transaction;
   account?: Account;
+  signingType: SigningType;
   addressPrefix: number;
   countdown: number;
   onGoBack: () => void;
@@ -28,6 +30,7 @@ const ScanSingleframeQr = ({
   chainId,
   transaction,
   account,
+  signingType,
   addressPrefix,
   countdown,
   onGoBack,
@@ -87,6 +90,7 @@ const ScanSingleframeQr = ({
         {txPayload && (
           <QrTxGenerator
             payload={txPayload}
+            signingType={signingType}
             address={address}
             genesisHash={chainId}
             derivationPath={(account as ChainAccount | ShardAccount).derivationPath}

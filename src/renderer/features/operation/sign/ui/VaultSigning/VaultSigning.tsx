@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import { UnsignedTransaction } from '@substrate/txwrapper-polkadot';
 
-import { SigningProps } from '@features/operation';
 import { useCountdown } from '@shared/lib/hooks';
 import ScanMultiframeQr from '@renderer/components/common/Scanning/ScanMultiframeQr';
 import ScanSingleframeQr from '@renderer/components/common/Scanning/ScanSingleframeQr';
@@ -9,18 +8,20 @@ import { ValidationErrors } from '@shared/lib/utils';
 import { useTransaction } from '@entities/transaction';
 import QrReaderWrapper from '@renderer/components/common/QrCode/QrReader/QrReaderWrapper';
 import type { HexString } from '@shared/core';
+import type { InnerSigningProps } from '../../model/types';
 
 export const VaultSigning = ({
   chainId,
   api,
   addressPrefix,
   validateBalance,
-  onGoBack,
   accounts,
+  signingType,
   signatory,
   transactions,
+  onGoBack,
   onResult,
-}: SigningProps) => {
+}: InnerSigningProps) => {
   const { verifySignature } = useTransaction();
 
   const [countdown, resetCountdown] = useCountdown(api);
@@ -98,6 +99,7 @@ export const VaultSigning = ({
             addressPrefix={addressPrefix}
             countdown={countdown}
             account={signatory || accounts[0]}
+            signingType={signingType}
             transaction={transactions[0]}
             chainId={chainId}
             onGoBack={onGoBack}

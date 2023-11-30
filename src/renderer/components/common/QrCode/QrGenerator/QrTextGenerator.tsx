@@ -22,9 +22,7 @@ const QrTextGenerator = ({
 }: Props) => {
   const image = useGenerator(stringToU8a(payload), skipEncoding, delay, bgColor);
 
-  if (!payload || !image) {
-    return null;
-  }
+  if (!payload || !image) return null;
 
   return (
     <div style={{ width: size, height: size }} className={className} dangerouslySetInnerHTML={{ __html: image }} />

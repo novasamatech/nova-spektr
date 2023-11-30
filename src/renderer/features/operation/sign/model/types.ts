@@ -4,6 +4,7 @@ import { UnsignedTransaction } from '@substrate/txwrapper-polkadot';
 import { Transaction } from '@entities/transaction';
 import { ValidationErrors } from '@shared/lib/utils';
 import type { Account, ChainId, HexString } from '@shared/core';
+import { SigningType } from '@shared/core';
 
 export type SigningProps = {
   chainId: ChainId;
@@ -12,7 +13,9 @@ export type SigningProps = {
   accounts: Account[];
   signatory?: Account;
   transactions: Transaction[];
-  onGoBack: () => void;
   validateBalance?: () => Promise<ValidationErrors | undefined>;
+  onGoBack: () => void;
   onResult: (signatures: HexString[], unsignedTxs: UnsignedTransaction[]) => void;
 };
+
+export type InnerSigningProps = SigningProps & { signingType: SigningType };
