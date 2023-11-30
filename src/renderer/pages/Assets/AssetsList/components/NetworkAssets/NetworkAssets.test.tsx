@@ -54,15 +54,6 @@ const accounts = [
 ] as Account[];
 
 describe('pages/Assets/NetworkAssets', () => {
-  // (useBalanceService as jest.Mock).mockReturnValue({
-  //   insertBalances: jest.fn(),
-  //   getAllBalances: jest.fn(),
-  //   getBalance: jest.fn(),
-  //   getBalances: jest.fn(),
-  //   subscribeBalances: jest.fn(),
-  //   subscribeLockBalances: jest.fn(),
-  // });
-
   const scope = fork({
     values: new Map().set(balanceModel.$balances, testBalances),
   });

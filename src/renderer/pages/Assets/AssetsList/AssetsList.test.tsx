@@ -55,15 +55,6 @@ jest.mock('./components/NetworkAssets/NetworkAssets', () => ({
 }));
 
 describe('pages/Assets/AssetsList', () => {
-  // (useBalanceService as jest.Mock).mockReturnValue({
-  //   insertBalances: jest.fn(),
-  //   getAllBalances: jest.fn(),
-  //   getBalance: jest.fn(),
-  //   getBalances: jest.fn(),
-  //   subscribeBalances: jest.fn(),
-  //   subscribeLockBalances: jest.fn(),
-  // });
-
   const scope = fork({
     values: new Map()
       .set(walletModel.$activeAccounts, [{ name: 'Test Wallet', accountId: TEST_ACCOUNT_ID }])
