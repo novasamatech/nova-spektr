@@ -1,4 +1,4 @@
-import { WalletType } from '@shared/core';
+import {WalletFamily, WalletType} from '@shared/core';
 import type {
   Wallet,
   PolkadotVaultWallet,
@@ -20,6 +20,7 @@ export const walletUtils = {
   isWalletConnect,
   isWalletConnectFamily,
   isValidSignatory,
+  getWalletFamily
 };
 
 function isPolkadotVault(wallet?: Pick<Wallet, 'type'>): wallet is PolkadotVaultWallet {
@@ -55,6 +56,16 @@ function isNovaWallet(wallet?: Pick<Wallet, 'type'>): wallet is NovaWalletWallet
 
 function isWalletConnect(wallet?: Pick<Wallet, 'type'>): wallet is WalletConnectWallet {
   return wallet?.type === WalletType.WALLET_CONNECT;
+}
+
+function getWalletFamily(wallet: Pick<Wallet, 'type'>): WalletFamily {
+  if (isPolkadotVault(wallet)) return WalletType.POLKADOT_VAULT;
+  if (isMultisig(wallet)) return  WalletType.MULTISIG;
+  if (isWatchOnly(wallet)) return  WalletType.WATCH_ONLY;
+  if (isWalletConnect(wallet)) return  WalletType.WALLET_CONNECT;
+  if (isNovaWallet(wallet)) return  WalletType.NOVA_WALLET;
+
+  throw new Error("Cannot determine wallet family for" + wallet.type)
 }
 
 function isWalletConnectFamily(wallet?: Pick<Wallet, 'type'>): wallet is WalletConnectWallet {

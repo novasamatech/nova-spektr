@@ -1,4 +1,5 @@
 import type { ID } from './general';
+import {Account} from "@shared/core";
 
 type AbstractWallet = {
   id: ID;
@@ -55,4 +56,22 @@ export const enum SigningType {
   // POLKADOT_VAULT = 'signing_pv',
   WALLET_CONNECT = 'signing_wc',
   // NOVA_WALLET = 'signing_nw',
+}
+
+
+export type AccountInWallet = {
+  wallet: Wallet
+  account: Account
+}
+
+export type AccountsInWallet = {
+  wallet: Wallet
+  accounts: Account[]
+}
+
+export function asMany(accountInWallet: AccountInWallet): AccountsInWallet {
+  return {
+    wallet: accountInWallet.wallet,
+    accounts: [accountInWallet.account]
+  }
 }

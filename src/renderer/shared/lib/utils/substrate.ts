@@ -1,10 +1,10 @@
-import { ApiPromise } from '@polkadot/api';
-import { BaseTxInfo, getRegistry, GetRegistryOpts, OptionsWithMeta, TypeRegistry } from '@substrate/txwrapper-polkadot';
-import { isHex, hexToU8a, bnMin, BN_TWO, BN } from '@polkadot/util';
-import { blake2AsHex } from '@polkadot/util-crypto';
+import {ApiPromise} from '@polkadot/api';
+import {BaseTxInfo, getRegistry, GetRegistryOpts, OptionsWithMeta, TypeRegistry} from '@substrate/txwrapper-polkadot';
+import {isHex, hexToU8a, bnMin, BN_TWO, BN} from '@polkadot/util';
+import {blake2AsHex} from '@polkadot/util-crypto';
 
-import { Address, CallData, CallHash } from '@shared/core';
-import { DEFAULT_TIME, ONE_DAY, THRESHOLD } from '@entities/network/lib/common/constants';
+import {Address, CallData, CallHash} from '@shared/core';
+import {DEFAULT_TIME, ONE_DAY, THRESHOLD} from '@entities/network/lib/common/constants';
 
 const V3_LABEL = 'V3';
 const UNUSED_LABEL = 'unused';
@@ -18,7 +18,7 @@ export const createTxMetadata = async (
   accountId: Address,
   api: ApiPromise,
 ): Promise<{ registry: TypeRegistry; options: OptionsWithMeta; info: BaseTxInfo }> => {
-  const [{ block }, blockHash, genesisHash, metadataRpc, nonce, { specVersion, transactionVersion, specName }] =
+  const [{block}, blockHash, genesisHash, metadataRpc, nonce, {specVersion, transactionVersion, specName}] =
     await Promise.all([
       api.rpc.chain.getBlock(),
       api.rpc.chain.getBlockHash(),
@@ -54,7 +54,55 @@ export const createTxMetadata = async (
     signedExtensions: registry.signedExtensions,
   };
 
-  return { options, info, registry };
+  return {options, info, registry};
+};
+
+export type TxMetadata = { registry: TypeRegistry; options: OptionsWithMeta; info: BaseTxInfo }
+
+export const createTxMetadatas = async (
+  addresses: Address[],
+  api: ApiPromise,
+): Promise<TxMetadata[]> => {
+  const [{block}, blockHash, genesisHash, metadataRpc, {specVersion, transactionVersion, specName}] =
+    await Promise.all([
+      api.rpc.chain.getBlock(),
+      api.rpc.chain.getBlockHash(),
+      api.rpc.chain.getBlockHash(0),
+      api.rpc.state.getMetadata(),
+      api.rpc.state.getRuntimeVersion(),
+    ]);
+
+  const nonces = await Promise.all(addresses.map((address) => api.rpc.system.accountNextIndex(address)))
+
+  const registry = getRegistry({
+    chainName: specName.toString() as GetRegistryOpts['specName'],
+    specName: specName.toString() as GetRegistryOpts['specName'],
+    specVersion: specVersion.toNumber(),
+    metadataRpc: metadataRpc.toHex(),
+  });
+
+  const options: OptionsWithMeta = {
+    metadataRpc: metadataRpc.toHex(),
+    registry,
+    signedExtensions: registry.signedExtensions,
+  };
+
+  return addresses.map((address, index) => {
+    const baseTxInfo: BaseTxInfo = {
+      address: address,
+      blockHash: blockHash.toString(),
+      blockNumber: block.header.number.toNumber(),
+      genesisHash: genesisHash.toString(),
+      metadataRpc: metadataRpc.toHex(),
+      nonce: nonces[index].toNumber(),
+      specVersion: specVersion.toNumber(),
+      transactionVersion: transactionVersion.toNumber(),
+      eraPeriod: 64,
+      tip: 0,
+    }
+
+    return { registry, options, info: baseTxInfo }
+  })
 };
 
 /**
@@ -71,7 +119,7 @@ export const validateCallData = <T extends string = CallData, K extends string =
 };
 
 export const getCurrentBlockNumber = async (api: ApiPromise): Promise<number> => {
-  const { block } = await api.rpc.chain.getBlock();
+  const {block} = await api.rpc.chain.getBlock();
 
   return block.header.number.toNumber();
 };

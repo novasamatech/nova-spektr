@@ -34,69 +34,69 @@ export const Restake = () => {
   const navigate = useNavigate();
   const { connections } = useNetworkContext();
   const { setTxs, txs, setWrappers, wrapTx, buildTransaction } = useTransaction();
-  const [searchParams] = useSearchParams();
-  const params = useParams<{ chainId: ChainId }>();
+        const [searchParams] = useSearchParams();
+        const params = useParams<{ chainId: ChainId }>();
 
-  const [isRestakeModalOpen, toggleRestakeModal] = useToggle(true);
+        const [isRestakeModalOpen, toggleRestakeModal] = useToggle(true);
 
-  const [activeStep, setActiveStep] = useState<Step>(Step.INIT);
+        const [activeStep, setActiveStep] = useState<Step>(Step.INIT);
 
-  const [restakeAmount, setRestakeAmount] = useState('');
-  const [description, setDescription] = useState('');
+        const [restakeAmount, setRestakeAmount] = useState('');
+        const [description, setDescription] = useState('');
 
-  const [unsignedTransactions, setUnsignedTransactions] = useState<UnsignedTransaction[]>([]);
+        const [unsignedTransactions, setUnsignedTransactions] = useState<UnsignedTransaction[]>([]);
 
-  const [accounts, setAccounts] = useState<Account[]>([]);
-  const [txAccounts, setTxAccounts] = useState<Account[]>([]);
-  const [signer, setSigner] = useState<Account>();
-  const [signatures, setSignatures] = useState<HexString[]>([]);
+        const [accounts, setAccounts] = useState<Account[]>([]);
+        const [txAccounts, setTxAccounts] = useState<Account[]>([]);
+        const [signer, setSigner] = useState<Account>();
+          const [signatures, setSignatures] = useState<HexString[]>([]);
 
-  const isMultisigWallet = walletUtils.isMultisig(activeWallet);
+          const isMultisigWallet = walletUtils.isMultisig(activeWallet);
 
-  const accountIds = searchParams.get('id')?.split(',') || [];
-  const chainId = params.chainId || ('' as ChainId);
+          const accountIds = searchParams.get('id')?.split(',') || [];
+          const chainId = params.chainId || ('' as ChainId);
 
-  useEffect(() => {
-    priceProviderModel.events.assetsPricesRequested({ includeRates: true });
-  }, []);
+          useEffect(() => {
+            priceProviderModel.events.assetsPricesRequested({ includeRates: true });
+          }, []);
 
-  useEffect(() => {
-    if (!activeAccounts.length || !accountIds.length) return;
+          useEffect(() => {
+            if (!activeAccounts.length || !accountIds.length) return;
 
-    const accounts = activeAccounts.filter((a) => a.id && accountIds.includes(a.id.toString()));
-    setAccounts(accounts);
-  }, [activeAccounts.length]);
+            const accounts = activeAccounts.filter((a) => a.id && accountIds.includes(a.id.toString()));
+            setAccounts(accounts);
+          }, [activeAccounts.length]);
 
-  const connection = connections[chainId];
+          const connection = connections[chainId];
 
-  if (!connection || accountIds.length === 0) {
-    return <Navigate replace to={Paths.STAKING} />;
-  }
+          if (!connection || accountIds.length === 0) {
+            return <Navigate replace to={Paths.STAKING} />;
+        }
 
-  const { api, explorers, addressPrefix, assets, name } = connections[chainId];
-  const asset = getRelaychainAsset(assets);
+        const { api, explorers, addressPrefix, assets, name } = connections[chainId];
+        const asset = getRelaychainAsset(assets);
 
-  const goToPrevStep = () => {
-    if (activeStep === Step.INIT) {
-      navigate(Paths.STAKING);
-    } else {
-      setActiveStep((prev) => prev - 1);
-    }
-  };
+        const goToPrevStep = () => {
+          if (activeStep === Step.INIT) {
+          navigate(Paths.STAKING);
+        } else {
+          setActiveStep((prev) => prev - 1);
+        }
+        };
 
-  const closeRestakeModal = () => {
-    toggleRestakeModal();
-    setTimeout(() => navigate(Paths.STAKING), DEFAULT_TRANSITION);
-  };
+        const closeRestakeModal = () => {
+          toggleRestakeModal();
+          setTimeout(() => navigate(Paths.STAKING), DEFAULT_TRANSITION);
+        };
 
-  if (!api?.isConnected) {
-    return (
-      <BaseModal
-        closeButton
-        contentClass=""
-        panelClass="w-max"
-        headerClass="py-3 px-5 max-w-[440px]"
-        isOpen={isRestakeModalOpen}
+        if (!api?.isConnected) {
+          return (
+          <BaseModal
+          closeButton
+          contentClass=""
+          panelClass="w-max"
+          headerClass="py-3 px-5 max-w-[440px]"
+          isOpen={isRestakeModalOpen}
         title={<OperationTitle title={t('staking.restake.title')} chainId={chainId} />}
         onClose={closeRestakeModal}
       >
@@ -107,97 +107,97 @@ export const Restake = () => {
           </Button>
         </div>
       </BaseModal>
-    );
+      );
+      }
+
+      if (!asset) {
+                    return (
+                    <BaseModal
+                    closeButton
+                    contentClass=""
+                    headerClass="py-3 px-5 max-w-[440px]"
+                    panelClass="w-max"
+                    isOpen={isRestakeModalOpen}
+                  title={<OperationTitle title={t('staking.restake.title')} chainId={chainId} />}
+                  onClose={closeRestakeModal}
+      >
+    <div className="w-[440px] px-5 py-20">
+      <NoAsset chainName={name} isOpen={isRestakeModalOpen} onClose={closeRestakeModal} />
+    </div>
+    </BaseModal>
+  );
+}
+
+const onInitResult = ({ accounts, amount, signer, description }: RestakeResult) => {
+  const transactions = getRestakeTxs(accounts, amount);
+
+  if (signer && isMultisigWallet) {
+    setWrappers([
+      {
+        signatoryId: signer.accountId,
+        account: accounts[0],
+      },
+    ]);
+    setSigner(signer);
+    setDescription(description || '');
   }
 
-  if (!asset) {
-    return (
-      <BaseModal
-        closeButton
-        contentClass=""
-        headerClass="py-3 px-5 max-w-[440px]"
-        panelClass="w-max"
-        isOpen={isRestakeModalOpen}
-        title={<OperationTitle title={t('staking.restake.title')} chainId={chainId} />}
-        onClose={closeRestakeModal}
-      >
-        <div className="w-[440px] px-5 py-20">
-          <NoAsset chainName={name} isOpen={isRestakeModalOpen} onClose={closeRestakeModal} />
-        </div>
-      </BaseModal>
-    );
-  }
+  setTxs(transactions);
+  setTxAccounts(accounts);
+  setRestakeAmount(amount);
+  setActiveStep(Step.CONFIRMATION);
+};
 
-  const onInitResult = ({ accounts, amount, signer, description }: RestakeResult) => {
-    const transactions = getRestakeTxs(accounts, amount);
+const getRestakeTxs = (accounts: Account[], amount: string): Transaction[] => {
+  return accounts.map(({ accountId }) =>
+    buildTransaction(TransactionType.RESTAKE, toAddress(accountId, { prefix: addressPrefix }), chainId, {
+      value: amount,
+    }),
+  );
+};
 
-    if (signer && isMultisigWallet) {
-      setWrappers([
-        {
-          signatoryId: signer.accountId,
-          account: accounts[0],
-        },
-      ]);
-      setSigner(signer);
-      setDescription(description || '');
-    }
+const onSignResult = (signatures: HexString[], unsigned: UnsignedTransaction[]) => {
+  setUnsignedTransactions(unsigned);
+  setSignatures(signatures);
+  setActiveStep(Step.SUBMIT);
+};
 
-    setTxs(transactions);
-    setTxAccounts(accounts);
-    setRestakeAmount(amount);
-    setActiveStep(Step.CONFIRMATION);
-  };
+const explorersProps = { explorers, addressPrefix, asset };
+const restakeValues = new Array(accounts.length).fill(restakeAmount);
+const multisigTx = isMultisigWallet ? wrapTx(txs[0], api, addressPrefix) : undefined;
 
-  const getRestakeTxs = (accounts: Account[], amount: string): Transaction[] => {
-    return accounts.map(({ accountId }) =>
-      buildTransaction(TransactionType.RESTAKE, toAddress(accountId, { prefix: addressPrefix }), chainId, {
-        value: amount,
-      }),
-    );
-  };
-
-  const onSignResult = (signatures: HexString[], unsigned: UnsignedTransaction[]) => {
-    setUnsignedTransactions(unsigned);
-    setSignatures(signatures);
-    setActiveStep(Step.SUBMIT);
-  };
-
-  const explorersProps = { explorers, addressPrefix, asset };
-  const restakeValues = new Array(accounts.length).fill(restakeAmount);
-  const multisigTx = isMultisigWallet ? wrapTx(txs[0], api, addressPrefix) : undefined;
-
-  return (
-    <>
-      <BaseModal
-        closeButton
-        contentClass=""
-        headerClass="py-3 px-5 max-w-[440px]"
-        panelClass="w-max"
-        isOpen={activeStep !== Step.SUBMIT && isRestakeModalOpen}
-        title={<OperationTitle title={t('staking.restake.title')} chainId={chainId} />}
-        onClose={closeRestakeModal}
-      >
-        {activeStep === Step.INIT && (
-          <InitOperation api={api} chainId={chainId} accounts={accounts} onResult={onInitResult} {...explorersProps} />
-        )}
-        {activeStep === Step.CONFIRMATION && (
-          <Confirmation
-            api={api}
-            accounts={txAccounts}
-            signer={signer}
-            amounts={restakeValues}
-            transaction={txs[0]}
-            onResult={() => setActiveStep(Step.SIGNING)}
-            onGoBack={goToPrevStep}
-            {...explorersProps}
-          >
-            <StakingPopover labelText={t('staking.confirmation.hintTitle')}>
-              <StakingPopover.Item>{t('staking.confirmation.hintRestake')}</StakingPopover.Item>
-            </StakingPopover>
-          </Confirmation>
-        )}
-        {activeStep === Step.SIGNING && (
-          <Signing
+return (
+  <>
+    <BaseModal
+      closeButton
+      contentClass=""
+      headerClass="py-3 px-5 max-w-[440px]"
+      panelClass="w-max"
+      isOpen={activeStep !== Step.SUBMIT && isRestakeModalOpen}
+      title={<OperationTitle title={t('staking.restake.title')} chainId={chainId} />}
+      onClose={closeRestakeModal}
+    >
+      {activeStep === Step.INIT && (
+        <InitOperation api={api} chainId={chainId} accounts={accounts} onResult={onInitResult} {...explorersProps} />
+      )}
+      {activeStep === Step.CONFIRMATION && (
+        <Confirmation
+          api={api}
+          accounts={txAccounts}
+          signer={signer}
+          amounts={restakeValues}
+          transaction={txs[0]}
+          onResult={() => setActiveStep(Step.SIGNING)}
+          onGoBack={goToPrevStep}
+          {...explorersProps}
+        >
+          <StakingPopover labelText={t('staking.confirmation.hintTitle')}>
+            <StakingPopover.Item>{t('staking.confirmation.hintRestake')}</StakingPopover.Item>
+          </StakingPopover>
+        </Confirmation>
+      )}
+      {activeStep === Step.SIGNING && (
+        <Signing
             chainId={chainId}
             api={api}
             addressPrefix={addressPrefix}
