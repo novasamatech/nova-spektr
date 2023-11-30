@@ -13,7 +13,8 @@ import type { Account, Chain } from '@shared/core';
 import { ConnectionType } from '@shared/core';
 import { walletModel, walletUtils } from '@entities/wallet';
 import { currencyModel, priceProviderModel } from '@entities/price';
-import { balanceModel } from '@entities/network/model/balance-model';
+import { balanceModel } from '@entities/balance';
+import { balanceSubscriptionModel } from '@features/balances';
 
 export const AssetsList = () => {
   const { t } = useI18n();
@@ -25,6 +26,11 @@ export const AssetsList = () => {
   const connections = useUnit(networkModel.$connections);
   const chains = useUnit(networkModel.$chains);
   const balances = useUnit(balanceModel.$balances);
+  const subscriptions = useUnit(balanceSubscriptionModel.$subscriptions);
+
+  useEffect(() => {
+    console.log('active balance subscriptions', Object.keys(subscriptions).length);
+  }, [subscriptions]);
 
   const { setHideZeroBalance, getHideZeroBalance } = useSettingsStorage();
 

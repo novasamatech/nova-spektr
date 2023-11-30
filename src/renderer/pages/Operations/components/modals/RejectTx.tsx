@@ -11,7 +11,6 @@ import { useToggle } from '@shared/lib/hooks';
 import { ExtendedChain } from '@entities/network';
 import { toAddress, transferableAmount, getAssetById } from '@shared/lib/utils';
 import { getMultisigSignOperationTitle } from '../../common/utils';
-import { useBalance } from '@entities/asset';
 import RejectReasonModal from './RejectReasonModal';
 import { Submit } from '../ActionSteps/Submit';
 import { Confirmation } from '../ActionSteps/Confirmation';
@@ -28,6 +27,7 @@ import {
   validateBalance,
   isXcmTransaction,
 } from '@entities/transaction';
+import { balanceModel, getBalance, getBalanceWrapped } from '@entities/balance';
 
 type Props = {
   tx: MultisigTransactionDS;
@@ -48,7 +48,8 @@ const RejectTx = ({ tx, account, connection }: Props) => {
   const accounts = useUnit(walletModel.$accounts);
   const wallets = keyBy(useUnit(walletModel.$wallets), 'id');
 
-  const { getBalance } = useBalance();
+  const balances = useUnit(balanceModel.$balances);
+
   const { getTransactionFee } = useTransaction();
 
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -87,7 +88,7 @@ const RejectTx = ({ tx, account, connection }: Props) => {
       chainId: tx.chainId,
       transaction: rejectTx,
       assetId: nativeAsset.assetId.toString(),
-      getBalance,
+      getBalance: getBalanceWrapped(balances),
       getTransactionFee,
     });
 
@@ -150,7 +151,7 @@ const RejectTx = ({ tx, account, connection }: Props) => {
     if (!connection.api || !rejectTx || !signAccount.accountId || !nativeAsset) return false;
 
     const fee = await getTransactionFee(rejectTx, connection.api);
-    const balance = await getBalance(signAccount.accountId, connection.chainId, nativeAsset.assetId.toString());
+    const balance = getBalance(balances, signAccount.accountId, connection.chainId, nativeAsset.assetId.toString());
 
     if (!balance) return false;
 

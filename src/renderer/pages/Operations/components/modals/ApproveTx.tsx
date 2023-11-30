@@ -11,7 +11,6 @@ import { useToggle } from '@shared/lib/hooks';
 import { ExtendedChain } from '@entities/network';
 import { TEST_ADDRESS, toAddress, transferableAmount, getAssetById } from '@shared/lib/utils';
 import { getMultisigSignOperationTitle, getSignatoryAccounts } from '../../common/utils';
-import { useBalance } from '@entities/asset';
 import { Submit } from '../ActionSteps/Submit';
 import { Confirmation } from '../ActionSteps/Confirmation';
 import { SignatorySelectModal } from './SignatorySelectModal';
@@ -31,6 +30,7 @@ import {
   useTransaction,
   validateBalance,
 } from '@entities/transaction';
+import { balanceModel, getBalance, getBalanceWrapped } from '@entities/balance';
 
 type Props = {
   tx: MultisigTransactionDS;
@@ -50,8 +50,8 @@ const ApproveTx = ({ tx, account, connection }: Props) => {
   const { t } = useI18n();
   const wallets = useUnit(walletModel.$wallets);
   const accounts = useUnit(walletModel.$accounts);
+  const balances = useUnit(balanceModel.$balances);
 
-  const { getBalance } = useBalance();
   const { getTransactionFee, getExtrinsicWeight, getTxWeight } = useTransaction();
   const { getTxFromCallData } = useCallDataDecoder();
   const { getLiveTxEvents } = useMultisigEvent({});
@@ -106,7 +106,7 @@ const ApproveTx = ({ tx, account, connection }: Props) => {
       }
     }
 
-    setTxWeight(weight);
+    setTxWeight(weight as Weight);
   };
 
   useEffect(() => {
@@ -164,7 +164,7 @@ const ApproveTx = ({ tx, account, connection }: Props) => {
     if (!connection.api || !feeTx || !signAccount.accountId || !nativeAsset) return false;
 
     const fee = await getTransactionFee(feeTx, connection.api);
-    const balance = await getBalance(signAccount.accountId, connection.chainId, nativeAsset.assetId.toString());
+    const balance = getBalance(balances, signAccount.accountId, connection.chainId, nativeAsset.assetId.toString());
 
     if (!balance) return false;
 
@@ -199,7 +199,7 @@ const ApproveTx = ({ tx, account, connection }: Props) => {
       chainId: tx.chainId,
       transaction: approveTx,
       assetId: nativeAsset.assetId.toString(),
-      getBalance,
+      getBalance: getBalanceWrapped(balances),
       getTransactionFee,
     });
 

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { UnsignedTransaction } from '@substrate/txwrapper-polkadot';
-import { useStore, useGate } from 'effector-react';
+import { useStore, useGate, useUnit } from 'effector-react';
 import { useNavigate } from 'react-router-dom';
 
 import { useI18n } from '@app/providers';
@@ -9,7 +9,6 @@ import { Transaction, useTransaction, validateBalance } from '@entities/transact
 import { BaseModal, Button, Loader } from '@shared/ui';
 import { Confirmation, InitOperation, Submit } from './components/ActionSteps';
 import { Signing } from '@features/operation';
-import { useBalance } from '@entities/asset';
 import { OperationTitle } from '@renderer/components/common';
 import { useToggle } from '@shared/lib/hooks';
 import * as sendAssetModel from '../model/send-asset';
@@ -17,6 +16,7 @@ import type { Chain, Asset, Account, MultisigAccount, HexString } from '@shared/
 import { accountUtils } from '@entities/wallet';
 import { priceProviderModel } from '@entities/price';
 import { useNetworkData } from '@entities/network';
+import { balanceModel, getBalanceWrapped } from '@entities/balance';
 
 const enum Step {
   INIT,
@@ -34,8 +34,8 @@ export const SendAssetModal = ({ chain, asset }: Props) => {
   const { t } = useI18n();
   const navigate = useNavigate();
   const { api, chain: chainData, extendedChain } = useNetworkData(chain.chainId);
+  const balances = useUnit(balanceModel.$balances);
 
-  const { getBalance } = useBalance();
   const { getTransactionFee, setTxs, txs, setWrappers, wrapTx } = useTransaction();
   const config = useStore(sendAssetModel.$finalConfig);
   const xcmAsset = useStore(sendAssetModel.$xcmAsset);
@@ -90,7 +90,7 @@ export const SendAssetModal = ({ chain, asset }: Props) => {
       transaction: api && wrapTx(transaction, api, addressPrefix),
       chainId: chain.chainId,
       assetId: asset.assetId.toString(),
-      getBalance,
+      getBalance: getBalanceWrapped(balances),
       getTransactionFee: (transaction, api) => getTransactionFee(transaction, api),
     });
 

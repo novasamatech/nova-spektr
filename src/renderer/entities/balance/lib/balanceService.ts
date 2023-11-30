@@ -11,7 +11,7 @@ import { storage } from '@shared/api/storage';
 import { AssetType } from '@shared/core';
 import type { AccountId, Address, Asset, OrmlExtras, Balance, Chain } from '@shared/core';
 
-export const useBalance = (): IBalanceService => {
+export const useBalanceService = (): IBalanceService => {
   const balanceStorage = storage.connectTo('balances');
 
   if (!balanceStorage) {

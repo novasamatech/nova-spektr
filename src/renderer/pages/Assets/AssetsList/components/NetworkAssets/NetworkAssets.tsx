@@ -13,7 +13,7 @@ import type { AccountId, Account, Chain, Asset, Balance } from '@shared/core';
 import { accountUtils } from '@entities/wallet';
 import { NetworkFiatBalance } from '../NetworkFiatBalance/NetworkFiatBalance';
 import { currencyModel, priceProviderModel } from '@entities/price';
-import { balanceModel } from '@/src/renderer/entities/network/model/balance-model';
+import { balanceModel } from '@entities/balance';
 
 type Props = {
   hideZeroBalance?: boolean;
@@ -62,8 +62,6 @@ export const NetworkAssets = ({ query, hideZeroBalance, chain, accounts, searchS
 
       return acc;
     }, {});
-
-    console.log('xcm');
 
     setBalancesObject(newBalancesObject);
   }, [balances, accountIds.join('')]);

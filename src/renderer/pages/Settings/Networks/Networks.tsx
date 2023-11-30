@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Trans } from 'react-i18next';
-import uniqBy from 'lodash/uniqBy';
 import { useUnit } from 'effector-react';
 
 import { useI18n, useConfirmContext } from '@app/providers';
@@ -10,11 +9,9 @@ import { BaseModal, SearchInput, BodyText, InfoLink, Icon } from '@shared/ui';
 import { useToggle } from '@shared/lib/hooks';
 import { includes, DEFAULT_TRANSITION } from '@shared/lib/utils';
 import { NetworkList, NetworkItem, CustomRpcModal } from './components';
-import { useBalance } from '@entities/asset';
 import type { RpcNode, ChainId } from '@shared/core';
 import { ConnectionType } from '@shared/core';
-import { walletModel } from '@entities/wallet';
-import { getParachains, networkModel, ExtendedChain, chainsService } from '@entities/network';
+import { networkModel, ExtendedChain, chainsService } from '@entities/network';
 
 const MAX_LIGHT_CLIENTS = 3;
 
@@ -22,11 +19,9 @@ const DATA_VERIFICATION = 'https://docs.novaspektr.io/network-management/light-c
 
 export const Networks = () => {
   const { t } = useI18n();
-  const accounts = useUnit(walletModel.$accounts);
 
   const navigate = useNavigate();
   const { confirm } = useConfirmContext();
-  const { setBalanceIsValid } = useBalance();
 
   const connections = useUnit(networkModel.$connections);
   const chains = useUnit(networkModel.$chains);
@@ -132,10 +127,6 @@ export const Networks = () => {
       let proceed = false;
       if (connection.connectionType === ConnectionType.LIGHT_CLIENT) {
         proceed = await confirmDisableLightClient(name);
-
-        if (proceed) {
-          resetBalanceValidation(connection.chainId);
-        }
       } else if ([ConnectionType.RPC_NODE, ConnectionType.AUTO_BALANCE].includes(connection.connectionType)) {
         proceed = await confirmDisableNetwork(name);
       }
@@ -149,27 +140,11 @@ export const Networks = () => {
     };
   };
 
-  const resetBalanceValidation = async (relaychainId: ChainId) => {
-    const parachains = getParachains(chains, relaychainId);
-    const uniqAccounts = uniqBy(accounts, 'accountId');
-
-    parachains.forEach(({ chainId, assets }) => {
-      uniqAccounts.forEach(({ accountId }) => {
-        assets.forEach(({ assetId }) => {
-          // TODO: Use bulkUpdate when dexie 4.0 will be released
-          setBalanceIsValid({ chainId, accountId, assetId: assetId.toString() }, true);
-        });
-      });
-    });
-  };
-
   const connectToNode = ({ chainId, connection, name }: ExtendedChain) => {
     return async (type: ConnectionType, node?: RpcNode): Promise<void> => {
       if (connection.connectionType === ConnectionType.LIGHT_CLIENT) {
         const proceed = await confirmDisableLightClient(name);
         if (!proceed) return;
-
-        resetBalanceValidation(connection.chainId);
       }
 
       if (type === ConnectionType.LIGHT_CLIENT) {
