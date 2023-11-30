@@ -8,7 +8,7 @@ import { createLink, type PathType } from '@shared/routes';
 import { useGraphql, useI18n, useNetworkContext } from '@app/providers';
 import { useToggle } from '@shared/lib/hooks';
 import { AboutStaking, NetworkInfo, NominatorsList, Actions, InactiveChain } from './components';
-import type { ChainId, Chain, Address, Account, Stake, Validator, ShardAccount } from '@shared/core';
+import type { ChainId, Chain, Address, Account, Stake, Validator, ShardAccount, ChainAccount } from '@shared/core';
 import { ConnectionType, ConnectionStatus } from '@shared/core';
 import { accountUtils, walletModel, walletUtils } from '@entities/wallet';
 import { priceProviderModel } from '@entities/price';
@@ -57,8 +57,9 @@ export const Overview = () => {
   const explorers = activeChain?.explorers;
 
   const accounts = activeAccounts.reduce<Account[]>((acc, account) => {
+    if (walletUtils.isPolkadotVault(activeWallet) && accountUtils.isBaseAccount(account)) return acc;
+
     if (accountUtils.isChainIdMatch(account, chainId)) {
-      if (accountUtils.isBaseAccount(account) && walletUtils.isPolkadotVault(activeWallet)) return acc;
       acc.push(account);
     }
 
@@ -112,7 +113,7 @@ export const Overview = () => {
     const isMultisig = walletUtils.isMultisig(activeWallet);
     const isNovaWallet = walletUtils.isNovaWallet(activeWallet);
     const isWalletConnect = walletUtils.isWalletConnect(activeWallet);
-    const isPolkadotVault = walletUtils.isPolkadotVault(activeWallet);
+    const isPolkadotVault = walletUtils.isPolkadotVaultGroup(activeWallet);
 
     if (isMultisig || isNovaWallet || isWalletConnect || (isPolkadotVault && addresses.length === 1)) {
       setSelectedNominators([addresses[0]]);
@@ -155,46 +156,40 @@ export const Overview = () => {
     toggleNominators();
   };
 
-  const structuredAccounts = walletUtils.isPolkadotVault(activeWallet)
-    ? accountUtils.getAccountsAndShardGroups(accounts)
-    : accounts;
+  const groupedAccounts = useMemo((): Array<Account | ChainAccount | ShardAccount[]> => {
+    if (walletUtils.isPolkadotVault(activeWallet)) return accounts;
 
-  const nominatorsInfo = useMemo(
-    () =>
-      structuredAccounts.reduce<(NominatorInfo<ShardAccount>[] | NominatorInfo)[]>((acc, account) => {
-        if (accountUtils.isAccountWithShards(account)) {
-          const shardGroup = (account as ShardAccount[]).map((shard) => {
-            const address = toAddress(shard.accountId, { prefix: addressPrefix });
+    return accountUtils.getAccountsAndShardGroups(accounts);
+  }, [accounts, activeWallet]);
 
-            return {
-              address,
-              account: shard,
-              stash: staking[address]?.stash,
-              isSelected: selectedNominators.includes(address),
-              totalStake: isStakingLoading ? undefined : staking[address]?.total || '0',
-              totalReward: isRewardsLoading ? undefined : rewards[address],
-              unlocking: staking[address]?.unlocking,
-            };
-          });
+  const nominatorsInfo = useMemo(() => {
+    const getInfo = <T extends Account | ShardAccount>(address: Address, account: T): NominatorInfo<T> => ({
+      address,
+      account,
+      stash: staking[address]?.stash,
+      isSelected: selectedNominators.includes(address),
+      totalStake: isStakingLoading ? undefined : staking[address]?.total || '0',
+      totalReward: isRewardsLoading ? undefined : rewards[address],
+      unlocking: staking[address]?.unlocking,
+    });
 
-          acc.push(shardGroup);
-        } else {
-          const address = toAddress((account as Account).accountId, { prefix: addressPrefix });
-          acc.push({
-            address,
-            account: account as Account,
-            stash: staking[address]?.stash,
-            isSelected: selectedNominators.includes(address),
-            totalStake: isStakingLoading ? undefined : staking[address]?.total || '0',
-            totalReward: isRewardsLoading ? undefined : rewards[address],
-            unlocking: staking[address]?.unlocking,
-          });
-        }
+    return groupedAccounts.reduce<Array<NominatorInfo<Account> | NominatorInfo<ShardAccount>[]>>((acc, account) => {
+      if (accountUtils.isAccountWithShards(account)) {
+        const shardsGroup = account.map((shard) => {
+          const address = toAddress(shard.accountId, { prefix: addressPrefix });
 
-        return acc;
-      }, []),
-    [accounts, addressPrefix, isStakingLoading, isRewardsLoading, staking, selectedNominators],
-  );
+          return getInfo(address, shard);
+        });
+
+        acc.push(shardsGroup);
+      } else {
+        const address = toAddress(account.accountId, { prefix: addressPrefix });
+        acc.push(getInfo(address, account));
+      }
+
+      return acc;
+    }, []);
+  }, [groupedAccounts, addressPrefix, isStakingLoading, isRewardsLoading, staking, selectedNominators]);
 
   const selectedStakes = selectedNominators.reduce<Stake[]>((acc, address) => {
     const stake = staking[address];

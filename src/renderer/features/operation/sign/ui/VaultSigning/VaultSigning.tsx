@@ -1,14 +1,17 @@
 import { useEffect, useState } from 'react';
 import { UnsignedTransaction } from '@substrate/txwrapper-polkadot';
+import { useUnit } from 'effector-react';
 
 import { useCountdown } from '@shared/lib/hooks';
 import ScanMultiframeQr from '@renderer/components/common/Scanning/ScanMultiframeQr';
 import ScanSingleframeQr from '@renderer/components/common/Scanning/ScanSingleframeQr';
-import { ValidationErrors } from '@shared/lib/utils';
-import { useTransaction } from '@entities/transaction';
 import QrReaderWrapper from '@renderer/components/common/QrCode/QrReader/QrReaderWrapper';
+import { ValidationErrors, toAddress } from '@shared/lib/utils';
+import { useTransaction } from '@entities/transaction';
+import { walletModel, walletUtils, accountUtils } from '@entities/wallet';
 import type { HexString } from '@shared/core';
 import type { InnerSigningProps } from '../../model/types';
+import { Address } from '@shared/core';
 
 export const VaultSigning = ({
   chainId,
@@ -16,12 +19,14 @@ export const VaultSigning = ({
   addressPrefix,
   validateBalance,
   accounts,
-  signingType,
+  wallet,
   signatory,
   transactions,
   onGoBack,
   onResult,
 }: InnerSigningProps) => {
+  const allAccounts = useUnit(walletModel.$accounts);
+
   const { verifySignature } = useTransaction();
 
   const [countdown, resetCountdown] = useCountdown(api);
@@ -70,6 +75,14 @@ export const VaultSigning = ({
     }
   };
 
+  const getSignerAddress = (): Address => {
+    if (!walletUtils.isPolkadotVault(wallet)) return transactions[0].address;
+
+    const root = accountUtils.getBaseAccount(allAccounts, wallet.id);
+
+    return root ? toAddress(root.accountId, { prefix: 1 }) : transactions[0].address;
+  };
+
   const scanAgain = () => {
     setUnsignedTxs([]);
     setTxPayloads([]);
@@ -80,12 +93,12 @@ export const VaultSigning = ({
       <div className="w-[440px] px-5 py-4">
         {isMultiframe ? (
           <ScanMultiframeQr
+            chainId={chainId}
             api={api}
             addressPrefix={addressPrefix}
             countdown={countdown}
             accounts={accounts}
             transactions={transactions}
-            chainId={chainId}
             onGoBack={onGoBack}
             onResetCountdown={resetCountdown}
             onResult={(unsignedTx, payloads) => {
@@ -95,13 +108,14 @@ export const VaultSigning = ({
           />
         ) : (
           <ScanSingleframeQr
+            chainId={chainId}
             api={api}
+            address={getSignerAddress()}
             addressPrefix={addressPrefix}
             countdown={countdown}
             account={signatory || accounts[0]}
-            signingType={signingType}
+            signerWallet={wallet}
             transaction={transactions[0]}
-            chainId={chainId}
             onGoBack={onGoBack}
             onResetCountdown={resetCountdown}
             onResult={(unsignedTx, payload) => {

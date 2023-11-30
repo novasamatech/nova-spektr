@@ -23,5 +23,5 @@ export const Signing = (props: SigningProps) => {
 
   if (!wallet) return null;
 
-  return SigningFlow[wallet.signingType]({ ...props, signingType: wallet.signingType });
+  return SigningFlow[wallet.signingType]({ ...props, wallet });
 };
