@@ -1004,6 +1004,9 @@
       "refreshButton": "Refresh",
       "rejectDescription": "The operation was successfully canceled",
       "rejectTitle": "Rejected"
+    },
+    "vault": {
+      "export": "Export keyset"
     }
   },
   "wallets": {

@@ -23,6 +23,7 @@ import MultiSelect from './Dropdowns/MultiSelect/MultiSelect';
 import MenuPopover from './Popovers/MenuPopover/MenuPopover';
 import IconButton from './Buttons/IconButton/IconButton';
 import DropdownButton from './Dropdowns/DropdownButton/DropdownButton';
+import { DropdownIconButton } from './Dropdowns/DropdownIconButton/DropdownIconButton';
 import SearchInput from './Inputs/SearchInput/SearchInput';
 import Accordion from './Accordion/Accordion';
 import Alert from './Alert/Alert';
@@ -119,4 +120,5 @@ export {
   MainLayout,
   Countdown,
   ExplorerLink,
+  DropdownIconButton,
 };
