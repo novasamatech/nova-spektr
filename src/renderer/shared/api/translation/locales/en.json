@@ -991,6 +991,9 @@
       "thresholdLabel": "Threshold { min } out of { max }",
       "walletsGroup": "Your wallets"
     },
+    "vault": {
+      "export": "Export keyset"
+    },
     "walletConnect": {
       "abortRejectButton": "Close",
       "confirmButton": "Yes, refresh",
@@ -1004,9 +1007,6 @@
       "refreshButton": "Refresh",
       "rejectDescription": "The operation was successfully canceled",
       "rejectTitle": "Rejected"
-    },
-    "vault": {
-      "export": "Export keyset"
     }
   },
   "wallets": {

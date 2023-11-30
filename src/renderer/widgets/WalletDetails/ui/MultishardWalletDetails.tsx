@@ -25,7 +25,7 @@ export const MultishardWalletDetails = ({ wallet, accounts, onClose }: Props) =>
 
   const title = (
     <div className="flex justify-between">
-      <span>{t('walletDetails.common.title')}</span>
+      <span className="my-1">{t('walletDetails.common.title')}</span>
       <MultishardDetailsActions wallet={wallet} accounts={accounts} />
     </div>
   );

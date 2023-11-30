@@ -21,9 +21,10 @@ export type IconButtonDropdownOption = LinkOption | ButtonOption;
 
 type Props = {
   options: IconButtonDropdownOption[];
-} & Omit<IconButtonProps, 'children' | 'suffixElement' | 'onClick'>;
+  menuClassName: string;
+} & Omit<IconButtonProps, 'onClick'>;
 
-export const DropdownIconButton = ({ options, disabled, className, ...buttonProps }: Props) => (
+export const DropdownIconButton = ({ options, disabled, menuClassName, ...buttonProps }: Props) => (
   <Menu>
     {({ open }) => (
       <div className={cn('relative', open && 'z-10')}>
@@ -33,6 +34,7 @@ export const DropdownIconButton = ({ options, disabled, className, ...buttonProp
           className={cn(
             'w-full p-1 mt-1 z-10 absolute rounded border border-token-container-border min-w-max',
             'bg-token-container-background shadow-card-shadow',
+            menuClassName,
           )}
         >
           {options.map((opt) => {
