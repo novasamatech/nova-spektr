@@ -11,7 +11,6 @@ function getExportStructure(
   rootAccountId: AccountId,
   accounts: Array<ChainAccount | ShardAccount>,
 ): DynamicDerivationsExport {
-  console.log(accounts);
   const groupedAccounts = accountUtils.getAccountsAndShardGroups(accounts);
 
   const accountByChain = groupedAccounts.reduce<Record<ChainId, ExportedDerivation[]>>((acc, account) => {

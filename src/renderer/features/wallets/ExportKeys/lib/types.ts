@@ -10,6 +10,5 @@ export type ExportedDerivation = {
 };
 
 export type DynamicDerivationsExport = {
-  version: '1';
-  [root: string]: Record<ChainId, ExportedDerivation[]>;
+  [root: string]: Record<ChainId, ExportedDerivation[]> | '1';
 };
