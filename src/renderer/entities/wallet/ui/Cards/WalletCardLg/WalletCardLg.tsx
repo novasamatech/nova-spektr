@@ -17,7 +17,7 @@ type Props = {
 export const WalletCardLg = ({ wallet, description, full, className }: Props) => {
   const { t } = useI18n();
 
-  const isWalletConnect = walletUtils.isWalletConnectFamily(wallet);
+  const isWalletConnect = walletUtils.isWalletConnectGroup(wallet);
 
   return (
     <div className={cnTw('flex items-center gap-x-2 h-10.5', className)}>

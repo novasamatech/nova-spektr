@@ -48,6 +48,10 @@ export type WalletFamily =
   | WalletType.WALLET_CONNECT
   | WalletType.NOVA_WALLET;
 
+export type WalletConnectGroup = WalletConnectWallet | NovaWalletWallet;
+
+export type PolkadotVaultGroup = PolkadotVaultWallet | SingleShardWallet | MultiShardWallet;
+
 export const enum SigningType {
   WATCH_ONLY = 'signing_wo',
   PARITY_SIGNER = 'signing_ps',

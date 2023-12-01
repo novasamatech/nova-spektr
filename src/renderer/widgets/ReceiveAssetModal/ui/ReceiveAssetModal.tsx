@@ -60,7 +60,7 @@ export const ReceiveAssetModal = ({ chain, asset, onClose }: Props) => {
     setTimeout(onClose, DEFAULT_TRANSITION);
   };
 
-  const hasShards = walletUtils.isMultiShard(activeWallet) && activeAccounts.length > 1;
+  const isVault = walletUtils.isPolkadotVault(activeWallet) || walletUtils.isMultiShard(activeWallet);
   const account = activeAccount ? activeAccounts[activeAccount.value] : undefined;
   const accountId = account?.accountId || '0x00';
   const prefix = chain.addressPrefix;
@@ -78,7 +78,7 @@ export const ReceiveAssetModal = ({ chain, asset, onClose }: Props) => {
       closeButton
       onClose={closeReceiveModal}
     >
-      {hasShards && (
+      {isVault && activeAccounts.length > 1 && (
         <Select
           placeholder={t('receive.selectWalletPlaceholder')}
           className="w-full mb-6"

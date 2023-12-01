@@ -3,6 +3,7 @@ import { createKeyMulti } from '@polkadot/util-crypto';
 
 import { AccountType } from '@shared/core';
 import type {
+  ID,
   AccountId,
   ChainId,
   Threshold,
@@ -51,8 +52,8 @@ function isShardAccount(account: Pick<Account, 'type'>): account is ShardAccount
   return account.type === AccountType.SHARD;
 }
 
-function isAccountWithShards(accounts: Pick<Account, 'type'> | ShardAccount[]): boolean {
-  return Array.isArray(accounts) && accounts[0].type === AccountType.SHARD;
+function isAccountWithShards(accounts: Pick<Account, 'type'> | ShardAccount[]): accounts is ShardAccount[] {
+  return Array.isArray(accounts) && isShardAccount(accounts[0]);
 }
 
 function isChainIdMatch(account: Pick<Account, 'type'>, chainId: ChainId): boolean {
@@ -111,8 +112,12 @@ function getAccountsAndShardGroups(accounts: Account[]): Array<ChainAccount | Sh
   }, []);
 }
 
-function getBaseAccount<T extends Account>(accounts: T[]): BaseAccount | undefined {
-  return accounts.find((a) => a.type === AccountType.BASE) as BaseAccount;
+function getBaseAccount(accounts: Account[], walletId?: ID): BaseAccount | undefined {
+  return accounts.find((a) => {
+    const walletMatch = !walletId || walletId === a.walletId;
+
+    return walletMatch && isBaseAccount(a);
+  }) as BaseAccount;
 }
 
 function getWalletAccounts<T extends Account>(walletId: Wallet['id'], accounts: T[]): T[] {
