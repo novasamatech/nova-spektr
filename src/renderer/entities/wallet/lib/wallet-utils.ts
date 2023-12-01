@@ -67,5 +67,7 @@ const VALID_SIGNATORY_WALLET_TYPES = [
   WalletType.NOVA_WALLET,
 ];
 function isValidSignatory(wallet?: Wallet): boolean {
-  return Boolean(wallet && VALID_SIGNATORY_WALLET_TYPES.includes(wallet.type));
+  if (!wallet) return false;
+
+  return VALID_SIGNATORY_WALLET_TYPES.includes(wallet.type);
 }
