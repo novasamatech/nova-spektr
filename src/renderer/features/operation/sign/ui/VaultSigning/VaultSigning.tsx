@@ -9,9 +9,8 @@ import QrReaderWrapper from '@renderer/components/common/QrCode/QrReader/QrReade
 import { ValidationErrors, toAddress } from '@shared/lib/utils';
 import { useTransaction } from '@entities/transaction';
 import { walletModel, walletUtils, accountUtils } from '@entities/wallet';
-import type { HexString } from '@shared/core';
+import type { HexString, Address } from '@shared/core';
 import type { InnerSigningProps } from '../../model/types';
-import { Address } from '@shared/core';
 
 export const VaultSigning = ({
   chainId,

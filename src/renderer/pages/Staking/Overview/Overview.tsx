@@ -157,7 +157,7 @@ export const Overview = () => {
   };
 
   const groupedAccounts = useMemo((): Array<Account | ChainAccount | ShardAccount[]> => {
-    if (walletUtils.isPolkadotVault(activeWallet)) return accounts;
+    if (!walletUtils.isPolkadotVault(activeWallet)) return accounts;
 
     return accountUtils.getAccountsAndShardGroups(accounts);
   }, [accounts, activeWallet]);
