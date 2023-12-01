@@ -22,12 +22,6 @@ export enum DerivationValidationError {
   PASSWORD_PATH = 'PASSWORD_PATH',
 }
 
-export const PATH_ERRORS = [
-  DerivationValidationError.INVALID_PATH,
-  DerivationValidationError.PASSWORD_PATH,
-  DerivationValidationError.MISSING_NAME,
-];
-
 export type ImportedDerivation = {
   derivationPath?: string;
   chainId?: string;

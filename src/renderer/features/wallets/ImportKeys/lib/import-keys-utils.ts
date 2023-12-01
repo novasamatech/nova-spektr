@@ -25,7 +25,7 @@ import {
 } from '@shared/core';
 import { chainsService } from '@entities/network';
 import { toAccountId } from '@shared/lib/utils';
-import { ErrorDetails } from '@features/wallets/ImportKeys/lib/derivation-import-error';
+import { ErrorDetails } from './derivation-import-error';
 
 const IMPORT_FILE_VERSION = '1';
 
@@ -106,7 +106,7 @@ function shouldIgnoreDerivation(derivation: ImportedDerivation): boolean {
   const isShardedAllowedForType =
     !derivation.sharded || (derivation.type !== KeyType.PUBLIC && derivation.type !== KeyType.HOT);
 
-  return !(isChainParamValid && isTypeParamValid && isShardedAllowedForType);
+  return !isChainParamValid || !isTypeParamValid || !isShardedAllowedForType;
 }
 
 function getDerivationError(derivation: DerivationWithPath): DerivationValidationError[] | undefined {
@@ -204,25 +204,24 @@ const DERIVATION_ERROR_LABEL = {
   [DerivationValidationError.WRONG_SHARDS_NUMBER]: 'dynamicDerivations.importKeys.error.wrongShardsNumber',
 };
 
-function getErrorsText(t: TFunction, error: ValidationError, details?: ErrorDetails) {
-  switch (error) {
-    case ValidationError.INVALID_FILE_STRUCTURE:
-      return t('dynamicDerivations.importKeys.error.invalidFile');
-    case ValidationError.INVALID_ROOT:
-      return t('dynamicDerivations.importKeys.error.invalidRoot');
-    case ValidationError.DERIVATIONS_ERROR:
-      if (!details) return '';
-
-      return Object.keys(details).reduce<string>((acc, error) => {
-        const invalidValues = details[error as DerivationValidationError];
-        if (!invalidValues.length) return acc;
-
-        const errorText = t(DERIVATION_ERROR_LABEL[error as DerivationValidationError], {
-          count: invalidValues.length,
-          invalidValues: invalidValues.join(', '),
-        });
-
-        return `${acc}${errorText} `;
-      }, '');
+function getErrorsText(t: TFunction, error: ValidationError, details?: ErrorDetails): string {
+  if (error === ValidationError.INVALID_FILE_STRUCTURE) {
+    return t('dynamicDerivations.importKeys.error.invalidFile');
   }
+  if (error === ValidationError.INVALID_ROOT) {
+    return t('dynamicDerivations.importKeys.error.invalidRoot');
+  }
+
+  if (error !== ValidationError.DERIVATIONS_ERROR || !details) return '';
+
+  return Object.keys(details).reduce<string>((acc, error) => {
+    const invalidValues = details[error as DerivationValidationError];
+    if (!invalidValues.length) return acc;
+    const errorText = t(DERIVATION_ERROR_LABEL[error as DerivationValidationError], {
+      count: invalidValues.length,
+      invalidValues: invalidValues.join(', '),
+    });
+
+    return `${acc}${errorText} `;
+  }, '');
 }

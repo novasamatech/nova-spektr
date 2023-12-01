@@ -7,7 +7,6 @@ import {
   DerivationValidationError,
   DerivationWithPath,
   ParsedImportFile,
-  PATH_ERRORS,
   TypedImportedDerivation,
   ValidationError,
 } from '../lib/types';
@@ -15,6 +14,7 @@ import { DerivationImportError, ErrorDetails } from '../lib/derivation-import-er
 import { AccountId, ChainAccount, ChainId, DraftAccount, ShardAccount } from '@shared/core';
 import { importKeysUtils } from '../lib/import-keys-utils';
 import { toAccountId } from '@shared/lib/utils';
+import { PATH_ERRORS } from '../lib/constants';
 
 type SampleFnError = { error: DerivationImportError };
 type ExistingDerivations = {
@@ -91,8 +91,9 @@ const validateDerivationsFx = createEffect<ValidateDerivationsParams, TypedImpor
       },
     );
 
-    if (Object.values(errorsDetails).every((details) => !details.length))
+    if (Object.values(errorsDetails).every((details) => !details.length)) {
       return filteredDerivations as TypedImportedDerivation[];
+    }
 
     throw new DerivationImportError(ValidationError.DERIVATIONS_ERROR, errorsDetails);
   },
