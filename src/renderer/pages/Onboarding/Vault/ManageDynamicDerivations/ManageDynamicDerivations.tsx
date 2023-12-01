@@ -7,10 +7,10 @@ import { u8aToHex } from '@polkadot/util';
 
 import { useI18n, useStatusContext } from '@app/providers';
 import { SeedInfo } from '@renderer/components/common/QrCode/common/types';
-import { IS_WINDOWS, toAddress, dictionary } from '@shared/lib/utils';
+import { toAddress, dictionary, IS_MAC } from '@shared/lib/utils';
 import type { ChainAccount, ChainId, ShardAccount, DraftAccount } from '@shared/core';
 import { VaultInfoPopover } from './VaultInfoPopover';
-import { useAltKeyPressed, useToggle } from '@shared/lib/hooks';
+import { useAltOrCtrlKeyPressed, useToggle } from '@shared/lib/hooks';
 import { manageDynamicDerivationsModel } from './model/manage-dynamic-derivations-model';
 import { chainsService } from '@entities/network';
 import { RootAccount, accountUtils } from '@entities/wallet';
@@ -39,7 +39,7 @@ type Props = {
 export const ManageDynamicDerivations = ({ seedInfo, onBack, onComplete }: Props) => {
   const { t } = useI18n();
   const { showStatus } = useStatusContext();
-  const isAltPressed = useAltKeyPressed();
+  const isAltPressed = useAltOrCtrlKeyPressed();
 
   const accordions = useRef<Record<string, { el: null | HTMLButtonElement; isOpen: boolean }>>({});
 
@@ -115,19 +115,20 @@ export const ManageDynamicDerivations = ({ seedInfo, onBack, onComplete }: Props
     toggleConstructorModal();
   };
 
-  const button = IS_WINDOWS ? (
-    <>
-      <HelpText as="span" className="text-text-tertiary">
-        {t('onboarding.vault.hotkeyAlt')}
-      </HelpText>
-      <Icon name="hotkeyAlt" />
-    </>
-  ) : (
+  const button = IS_MAC ? (
     <>
       <HelpText as="span" className="text-text-tertiary">
         {t('onboarding.vault.hotkeyOption')}
       </HelpText>
       <Icon name="hotkeyOption" />
+    </>
+  ) : (
+    <>
+      <HelpText as="span" className="text-text-tertiary">
+        {t('onboarding.vault.hotkeyCtrl')}
+      </HelpText>
+      {/* TODO: update to ctrl Icon when ready */}
+      <Icon name="hotkeyAlt" />
     </>
   );
 

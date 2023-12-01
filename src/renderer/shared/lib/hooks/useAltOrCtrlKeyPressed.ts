@@ -1,21 +1,23 @@
 import { useEffect, useState } from 'react';
 
+import { IS_MAC } from '@shared/lib/utils';
+
 /**
- * Returns a boolean indicating whether the alt key is currently pressed.
+ * Returns a boolean indicating whether the alt key (for macOS) or control key (for Windows and Linux) is currently pressed.
  *
  * @return {boolean} A boolean indicating whether the alt key is currently pressed.
  */
-export const useAltKeyPressed = (): boolean => {
+export const useAltOrCtrlKeyPressed = (): boolean => {
   const [keyPressed, setKeyPressed] = useState<boolean>(false);
 
-  const downHandler = ({ altKey }: KeyboardEvent) => {
-    if (altKey) {
+  const downHandler = ({ altKey, ctrlKey }: KeyboardEvent) => {
+    if (IS_MAC ? altKey : ctrlKey) {
       setKeyPressed(true);
     }
   };
 
-  const upHandler = ({ altKey }: KeyboardEvent) => {
-    if (!altKey) setKeyPressed(false);
+  const upHandler = ({ altKey, ctrlKey }: KeyboardEvent) => {
+    if (IS_MAC ? !altKey : !ctrlKey) setKeyPressed(false);
   };
 
   useEffect(() => {
