@@ -28,6 +28,7 @@ export const QrTxGenerator = ({
   derivationPath,
 }: Props) => {
   const activeWallet = useUnit(walletModel.$activeWallet);
+
   const signPayload = createSubstrateSignPayload(
     address,
     payload,

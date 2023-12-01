@@ -7,16 +7,14 @@ import { u8aToHex } from '@polkadot/util';
 
 import { useI18n, useStatusContext } from '@app/providers';
 import { SeedInfo } from '@renderer/components/common/QrCode/common/types';
-import { IS_WINDOWS, toAddress, dictionary } from '@shared/lib/utils';
-import type { ChainAccount, ChainId, ShardAccount, DraftAccount } from '@shared/core';
+import { IS_WINDOWS, toAddress, dictionary, copyToClipboard } from '@shared/lib/utils';
+import type { ChainAccount, ShardAccount, DraftAccount, ChainId } from '@shared/core';
 import { VaultInfoPopover } from './VaultInfoPopover';
 import { useAltKeyPressed, useToggle } from '@shared/lib/hooks';
 import { manageDynamicDerivationsModel } from './model/manage-dynamic-derivations-model';
 import { chainsService } from '@entities/network';
-import { RootAccount, accountUtils } from '@entities/wallet';
+import { RootAccountLg, accountUtils } from '@entities/wallet';
 import { KeyConstructor, DerivationsAddressModal, ImportKeysModal } from '@features/wallets';
-import { ChainTitle } from '@entities/chain';
-import { DerivedAccount } from './DerivedAccount';
 import { Animation } from '@shared/ui/Animation/Animation';
 import {
   Button,
@@ -27,8 +25,12 @@ import {
   HelpText,
   FootnoteText,
   Icon,
+  ContextMenu,
+  IconButton,
   Accordion,
 } from '@shared/ui';
+import { ChainTitle } from '@entities/chain';
+import { DerivedAccount } from './DerivedAccount';
 
 type Props = {
   seedInfo: SeedInfo[];
@@ -192,7 +194,14 @@ export const ManageDynamicDerivations = ({ seedInfo, onBack, onComplete }: Props
 
         <div className="overflow-y-auto h-[470px] pl-3 pr-3.5">
           <div className="flex items-center justify-between w-full gap-2 pb-4">
-            <RootAccount name={walletName} accountId={publicKey} />
+            <ContextMenu button={<RootAccountLg name={walletName} accountId={publicKey} />}>
+              <ContextMenu.Group title="Public key">
+                <div className="flex items-center gap-x-2">
+                  <FootnoteText className="text-text-secondary break-all">{publicKey}</FootnoteText>
+                  <IconButton className="shrink-0" name="copy" size={20} onClick={() => copyToClipboard(publicKey)} />
+                </div>
+              </ContextMenu.Group>
+            </ContextMenu>
           </div>
 
           <FootnoteText className="text-text-tertiary ml-9 pl-2">{t('onboarding.vault.accountTitle')}</FootnoteText>

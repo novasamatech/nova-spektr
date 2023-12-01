@@ -1,5 +1,5 @@
 import { AccountId, Explorer, Wallet } from '@shared/core';
-import { useAddressInfo, WalletIcon } from '@entities/wallet';
+import { useAddressInfo, WalletIcon } from '../../index';
 import { FootnoteText, Icon, InfoPopover } from '@shared/ui';
 import { cnTw, toAddress } from '@shared/lib/utils';
 

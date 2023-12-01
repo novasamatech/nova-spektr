@@ -8,10 +8,11 @@ import { createLink, type PathType } from '@shared/routes';
 import { useGraphql, useI18n, useNetworkContext } from '@app/providers';
 import { useToggle } from '@shared/lib/hooks';
 import { AboutStaking, NetworkInfo, NominatorsList, Actions, InactiveChain } from './components';
-import type { ChainId, Chain, Address, Account, Stake, Validator, ShardAccount, NominatorInfo } from '@shared/core';
+import type { ChainId, Chain, Address, Account, Stake, Validator, ShardAccount } from '@shared/core';
 import { ConnectionType, ConnectionStatus } from '@shared/core';
 import { accountUtils, walletModel, walletUtils } from '@entities/wallet';
 import { priceProviderModel } from '@entities/price';
+import { NominatorInfo } from './common/types';
 import {
   useEra,
   useStakingData,
@@ -157,42 +158,40 @@ export const Overview = () => {
     ? accountUtils.getAccountsAndShardGroups(accounts)
     : accounts;
 
-  const nominatorsInfo = useMemo(
-    () =>
-      structuredAccounts.reduce<(NominatorInfo<ShardAccount>[] | NominatorInfo)[]>((acc, account) => {
-        if (accountUtils.isAccountWithShards(account)) {
-          const shardGroup = (account as ShardAccount[]).map((shard) => {
-            const address = toAddress(shard.accountId, { prefix: addressPrefix });
+  const nominatorsInfo = useMemo(() => {
+    return structuredAccounts.reduce<(NominatorInfo<ShardAccount>[] | NominatorInfo)[]>((acc, account) => {
+      if (accountUtils.isAccountWithShards(account)) {
+        const shardGroup = (account as ShardAccount[]).map((shard) => {
+          const address = toAddress(shard.accountId, { prefix: addressPrefix });
 
-            return {
-              address,
-              account: shard,
-              stash: staking[address]?.stash,
-              isSelected: selectedNominators.includes(address),
-              totalStake: isStakingLoading ? undefined : staking[address]?.total || '0',
-              totalReward: isRewardsLoading ? undefined : rewards[address],
-              unlocking: staking[address]?.unlocking,
-            };
-          });
-
-          acc.push(shardGroup);
-        } else {
-          const address = toAddress((account as Account).accountId, { prefix: addressPrefix });
-          acc.push({
+          return {
             address,
-            account: account as Account,
+            account: shard,
             stash: staking[address]?.stash,
             isSelected: selectedNominators.includes(address),
             totalStake: isStakingLoading ? undefined : staking[address]?.total || '0',
             totalReward: isRewardsLoading ? undefined : rewards[address],
             unlocking: staking[address]?.unlocking,
-          });
-        }
+          };
+        });
 
-        return acc;
-      }, []),
-    [accounts, addressPrefix, isStakingLoading, isRewardsLoading, staking, selectedNominators],
-  );
+        acc.push(shardGroup);
+      } else {
+        const address = toAddress((account as Account).accountId, { prefix: addressPrefix });
+        acc.push({
+          address,
+          account: account as Account,
+          stash: staking[address]?.stash,
+          isSelected: selectedNominators.includes(address),
+          totalStake: isStakingLoading ? undefined : staking[address]?.total || '0',
+          totalReward: isRewardsLoading ? undefined : rewards[address],
+          unlocking: staking[address]?.unlocking,
+        });
+      }
+
+      return acc;
+    }, []);
+  }, [accounts, addressPrefix, isStakingLoading, isRewardsLoading, staking, selectedNominators]);
 
   const selectedStakes = selectedNominators.reduce<Stake[]>((acc, address) => {
     const stake = staking[address];

@@ -3,7 +3,7 @@ import { combine } from 'effector';
 import { accountUtils, walletModel } from '@entities/wallet';
 import { walletSelectModel } from '@features/wallets';
 import { dictionary } from '@shared/lib/utils';
-import type { MultishardMap } from '../lib/types';
+import type { MultishardMap, VaultMap } from '../lib/types';
 import type {
   Account,
   Signatory,
@@ -72,6 +72,38 @@ const $multisigAccount = combine(
   },
 );
 
+type VaultAccounts = {
+  root: BaseAccount;
+  accountsMap: VaultMap;
+};
+const $vaultAccounts = combine(
+  {
+    details: walletSelectModel.$walletForDetails,
+    accounts: $accounts,
+  },
+  ({ details, accounts }): VaultAccounts | undefined => {
+    if (!details) return undefined;
+
+    const root = accountUtils.getBaseAccount(accounts, details.id);
+    const accountGroups = accountUtils.getAccountsAndShardGroups(accounts);
+
+    const accountsMap = accountGroups.reduce<VaultMap>((acc, account) => {
+      const accountToInsert = accountUtils.isAccountWithShards(account) ? account[0] : account;
+
+      const chainId = accountToInsert.chainId;
+      if (acc[chainId]) {
+        acc[chainId].push(account);
+      } else {
+        acc[chainId] = [account];
+      }
+
+      return acc;
+    }, {});
+
+    return { root: root as BaseAccount, accountsMap };
+  },
+);
+
 const $signatoryContacts = combine(
   {
     account: $accounts.map((accounts) => accounts[0]),
@@ -114,6 +146,7 @@ export const walletProviderModel = {
   $singleShardAccount,
   $multiShardAccounts,
   $multisigAccount,
+  $vaultAccounts,
   $signatoryContacts,
   $signatoryWallets,
 };

@@ -23,18 +23,20 @@ export const walletUtils = {
 };
 
 function isPolkadotVault(wallet?: Pick<Wallet, 'type'>): wallet is PolkadotVaultWallet {
-  const isPolkadotVault = wallet?.type === WalletType.POLKADOT_VAULT;
-  const isMultiShard = wallet?.type === WalletType.MULTISHARD_PARITY_SIGNER;
-  const isSingleShard = wallet?.type === WalletType.SINGLE_PARITY_SIGNER;
+  // const isPolkadotVault = wallet?.type === WalletType.POLKADOT_VAULT;
+  // const isMultiShard = wallet?.type === WalletType.MULTISHARD_PARITY_SIGNER;
+  // const isSingleShard = wallet?.type === WalletType.SINGLE_PARITY_SIGNER;
 
-  return isPolkadotVault || isMultiShard || isSingleShard;
+  return wallet?.type === WalletType.POLKADOT_VAULT;
+  // return isPolkadotVault || isMultiShard || isSingleShard;
 }
 
 function isMultiShard(wallet?: Pick<Wallet, 'type'>): wallet is MultiShardWallet {
-  const isPolkadotVault = wallet?.type === WalletType.POLKADOT_VAULT;
-  const isMultiShard = wallet?.type === WalletType.MULTISHARD_PARITY_SIGNER;
+  // const isPolkadotVault = wallet?.type === WalletType.POLKADOT_VAULT;
+  // const isMultiShard = wallet?.type === WalletType.MULTISHARD_PARITY_SIGNER;
 
-  return isPolkadotVault || isMultiShard;
+  return wallet?.type === WalletType.MULTISHARD_PARITY_SIGNER;
+  // return isPolkadotVault || isMultiShard;
 }
 
 function isSingleShard(wallet?: Pick<Wallet, 'type'>): wallet is SingleShardWallet {
