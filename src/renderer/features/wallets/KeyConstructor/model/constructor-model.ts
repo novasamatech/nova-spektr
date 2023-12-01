@@ -6,25 +6,7 @@ import { chainsService } from '@entities/network';
 import { KeyType, AccountType, CryptoType, ChainType, DraftAccount } from '@shared/core';
 import { validateDerivation, derivationHasPassword } from '@shared/lib/utils';
 import type { ChainAccount, ShardAccount, Chain } from '@shared/core';
-import { accountUtils } from '@entities/wallet';
-
-const KEY_NAMES = {
-  [KeyType.MAIN]: 'Main',
-  [KeyType.HOT]: 'Hot wallet account',
-  [KeyType.PUBLIC]: 'Pub account',
-  [KeyType.STAKING]: 'Staking',
-  [KeyType.GOVERNANCE]: 'Governance',
-  [KeyType.CUSTOM]: '',
-};
-
-const SHARDED_KEY_NAMES = {
-  [KeyType.MAIN]: 'Main sharded',
-  [KeyType.HOT]: '',
-  [KeyType.PUBLIC]: '',
-  [KeyType.STAKING]: 'Staking sharded',
-  [KeyType.GOVERNANCE]: 'Governance sharded',
-  [KeyType.CUSTOM]: '',
-};
+import { accountUtils, KEY_NAMES, SHARDED_KEY_NAMES } from '@entities/wallet';
 
 const chains = chainsService.getChainsData({ sort: true });
 
