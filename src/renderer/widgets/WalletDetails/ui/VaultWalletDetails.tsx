@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 
-import { BaseModal, ContextMenu, FootnoteText, IconButton } from '@shared/ui';
+import { BaseModal, ContextMenu, IconButton, HelpText } from '@shared/ui';
 import { useModalClose } from '@shared/lib/hooks';
 import { RootAccountLg, WalletCardLg, VaultAccountsList } from '@entities/wallet';
 import { chainsService } from '@entities/network';
@@ -21,7 +21,6 @@ export const VaultWalletDetails = ({ wallet, root, accountsMap, onClose }: Props
   const { t } = useI18n();
 
   const [isModalOpen, closeModal] = useModalClose(true, onClose);
-  // const [isShardsModalOpen, closeModal] = useModalClose(true, onClose);
 
   const chains = useMemo(() => {
     return chainsService.getChainsData({ sort: true });
@@ -45,7 +44,7 @@ export const VaultWalletDetails = ({ wallet, root, accountsMap, onClose }: Props
           <ContextMenu button={<RootAccountLg name={wallet.name} accountId={root.accountId} />}>
             <ContextMenu.Group title="Public key">
               <div className="flex items-center gap-x-2">
-                <FootnoteText className="text-text-secondary break-all">{root.accountId}</FootnoteText>
+                <HelpText className="text-text-secondary break-all">{root.accountId}</HelpText>
                 <IconButton
                   className="shrink-0"
                   name="copy"

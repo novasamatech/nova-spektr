@@ -30,7 +30,10 @@ export const RootAccountMd = ({ name, accountId, className, onClick, onInfoClick
         className,
       )}
     >
-      <button className="flex items-center gap-x-2 w-full py-1.5 px-2 rounded" onClick={handleClick(onClick)}>
+      <button
+        className="flex items-center gap-x-2 w-full py-1.5 px-2 rounded overflow-hidden"
+        onClick={handleClick(onClick)}
+      >
         <Identicon
           theme="jdenticon"
           background={false}
@@ -38,7 +41,7 @@ export const RootAccountMd = ({ name, accountId, className, onClick, onInfoClick
           address={toAddress(accountId, { prefix: SS58_PUBLIC_KEY_PREFIX })}
           size={20}
         />
-        <BodyText className="text-text-secondary flex-1">{name}</BodyText>
+        <BodyText className="text-text-secondary truncate pr-5">{name}</BodyText>
       </button>
 
       <IconButton name="info" className="absolute right-2 mx-1.5" onClick={onInfoClick} />

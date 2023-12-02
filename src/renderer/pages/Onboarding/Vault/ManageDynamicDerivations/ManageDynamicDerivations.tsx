@@ -13,9 +13,10 @@ import { VaultInfoPopover } from './VaultInfoPopover';
 import { useAltKeyPressed, useToggle } from '@shared/lib/hooks';
 import { manageDynamicDerivationsModel } from './model/manage-dynamic-derivations-model';
 import { chainsService } from '@entities/network';
-import { RootAccountLg, accountUtils } from '@entities/wallet';
+import { RootAccountLg, accountUtils, DerivedAccount } from '@entities/wallet';
 import { KeyConstructor, DerivationsAddressModal, ImportKeysModal } from '@features/wallets';
 import { Animation } from '@shared/ui/Animation/Animation';
+import { ChainTitle } from '@entities/chain';
 import {
   Button,
   Input,
@@ -29,8 +30,6 @@ import {
   IconButton,
   Accordion,
 } from '@shared/ui';
-import { ChainTitle } from '@entities/chain';
-import { DerivedAccount } from './DerivedAccount';
 
 type Props = {
   seedInfo: SeedInfo[];
@@ -170,7 +169,7 @@ export const ManageDynamicDerivations = ({ seedInfo, onBack, onComplete }: Props
         </form>
       </div>
 
-      <div className="w-[472px] flex flex-col bg-input-background-disabled pt-4 rounded-r-lg">
+      <div className="w-[472px] flex flex-col pt-4 rounded-r-lg border-l border-divider">
         <div className="flex items-center justify-between px-5 mt-[52px] mb-6">
           <div className="flex items-center gap-x-1.5">
             <SmallTitleText>{t('onboarding.vault.vaultTitle')}</SmallTitleText>
@@ -197,7 +196,7 @@ export const ManageDynamicDerivations = ({ seedInfo, onBack, onComplete }: Props
             <ContextMenu button={<RootAccountLg name={walletName} accountId={publicKey} />}>
               <ContextMenu.Group title="Public key">
                 <div className="flex items-center gap-x-2">
-                  <FootnoteText className="text-text-secondary break-all">{publicKey}</FootnoteText>
+                  <HelpText className="text-text-secondary break-all">{publicKey}</HelpText>
                   <IconButton className="shrink-0" name="copy" size={20} onClick={() => copyToClipboard(publicKey)} />
                 </div>
               </ContextMenu.Group>
@@ -217,18 +216,31 @@ export const ManageDynamicDerivations = ({ seedInfo, onBack, onComplete }: Props
                     buttonClass="mb-2 p-2"
                     onClick={() => (accordions.current[chainId].isOpen = !accordions.current[chainId].isOpen)}
                   >
-                    <div className="flex gap-2">
+                    <div className="flex gap-x-2">
                       <ChainTitle fontClass="text-text-primary" chainId={chainId as ChainId} />
                       <FootnoteText className="text-text-tertiary">{chainAccounts.length}</FootnoteText>
                     </div>
                   </Accordion.Button>
-                  <Accordion.Content className="flex flex-col gap-2">
+                  <Accordion.Content as="ul">
                     {chainAccounts.map((account) => (
-                      <DerivedAccount
-                        key={accountUtils.getDerivationPath(account)}
-                        showDerivationPath={isAltPressed}
-                        account={account}
-                      />
+                      <li className="mb-2 last:mb-0" key={accountUtils.getDerivationPath(account)}>
+                        <ContextMenu
+                          button={
+                            <DerivedAccount
+                              key={accountUtils.getDerivationPath(account)}
+                              account={account}
+                              showInfoButton={false}
+                              showSuffix={isAltPressed}
+                            />
+                          }
+                        >
+                          <ContextMenu.Group title="Derivation path">
+                            <HelpText className="text-text-secondary break-all">
+                              {accountUtils.getDerivationPath(account)}
+                            </HelpText>
+                          </ContextMenu.Group>
+                        </ContextMenu>
+                      </li>
                     ))}
                   </Accordion.Content>
                 </Accordion>

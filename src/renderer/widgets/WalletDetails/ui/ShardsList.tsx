@@ -1,6 +1,6 @@
 import { useUnit } from 'effector-react';
 
-import { BaseModal, FootnoteText, IconButton } from '@shared/ui';
+import { BaseModal, IconButton, HelpText } from '@shared/ui';
 import { useModalClose } from '@shared/lib/hooks';
 import { ExplorersPopover, AccountAddress, accountUtils } from '@entities/wallet';
 import { vaultDetailsModel } from '../model/vault-details-model';
@@ -31,11 +31,12 @@ export const ShardsList = () => {
                 // TODO: use special Address component when it comes out similar to WalletCardMd
                 <div
                   className={cnTw(
-                    'group flex items-center w-full justify-between gap-x-1 px-2 py-1.5 rounded transition-colors cursor-pointer',
+                    'group flex items-center justify-between gap-x-1 w-full px-2 py-1.5 rounded transition-colors cursor-pointer',
                     'hover:bg-action-background-hover focus-within:bg-action-background-hover',
                   )}
                 >
                   <AccountAddress
+                    className="w-[370px]"
                     size={20}
                     type="adaptive"
                     accountId={shard.accountId}
@@ -44,7 +45,7 @@ export const ShardsList = () => {
                   <IconButton
                     name="info"
                     className={cnTw(
-                      'absolute right-2 opacity-0 transition-opacity',
+                      'shrink-0 opacity-0 transition-opacity',
                       'group-hover:opacity-100 group-focus-within:opacity-100 focus:opacity-100',
                     )}
                   />
@@ -55,9 +56,7 @@ export const ShardsList = () => {
               explorers={chain.explorers || []}
             >
               <ExplorersPopover.Group title="Derivation path">
-                <FootnoteText className="text-text-secondary break-all">
-                  {accountUtils.getDerivationPath(shard)}
-                </FootnoteText>
+                <HelpText className="text-text-secondary break-all">{accountUtils.getDerivationPath(shard)}</HelpText>
               </ExplorersPopover.Group>
             </ExplorersPopover>
           </li>

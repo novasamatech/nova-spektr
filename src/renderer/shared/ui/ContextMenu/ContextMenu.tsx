@@ -1,7 +1,7 @@
 import { Popover, Transition } from '@headlessui/react';
-import { PropsWithChildren, ReactNode, MouseEvent, useRef } from 'react';
+import { PropsWithChildren, ReactNode, MouseEvent, useRef, Fragment, KeyboardEvent } from 'react';
 
-import { cnTw } from '@shared/lib/utils';
+import { cnTw, KeyboardKey } from '@shared/lib/utils';
 import { FootnoteText } from '../Typography';
 
 type Props = {
@@ -13,15 +13,27 @@ export const ContextMenu = ({ button, children }: PropsWithChildren<Props>) => {
 
   const onButtonClick = (e: MouseEvent<HTMLDivElement>) => {
     e.stopPropagation();
-    setTimeout(() => popoverRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' }));
+    setTimeout(() => {
+      popoverRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }, 70);
+  };
+
+  const onKeyUp = (e: KeyboardEvent<HTMLDivElement>) => {
+    if (e.code === KeyboardKey.SPACE || e.code === KeyboardKey.ENTER) {
+      e.stopPropagation();
+      setTimeout(() => {
+        popoverRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }, 70);
+    }
   };
 
   return (
     <Popover className="relative w-full">
-      <Popover.Button as="div" onClick={onButtonClick}>
+      <Popover.Button as="div" onClick={onButtonClick} onKeyUp={onKeyUp}>
         {button}
       </Popover.Button>
       <Transition
+        as={Fragment}
         enter="transition ease-out duration-200"
         enterFrom="opacity-0 translate-y-1"
         enterTo="opacity-100 translate-y-0"
@@ -32,7 +44,7 @@ export const ContextMenu = ({ button, children }: PropsWithChildren<Props>) => {
         <Popover.Panel
           ref={popoverRef}
           className={cnTw(
-            'absolute right-0 z-10 -mt-3 py-4 px-3 rounded-md w-[230px]',
+            'absolute right-0 z-10 -mt-3 py-4 px-2.5 rounded-md w-[230px]',
             'bg-token-container-background border border-token-container-border shadow-card-shadow',
           )}
         >
@@ -51,8 +63,8 @@ const ContextGroup = ({ title, active = true, children }: PropsWithChildren<Grou
   if (!active) return null;
 
   return (
-    <div className="pb-3 mb-3 border-b border-divider last:pb-0 last:mb-0 last:border-b-0">
-      {title && <FootnoteText className="text-text-tertiary pb-2">{title}</FootnoteText>}
+    <div className="pb-2 mb-2 border-b border-divider last:pb-0 last:mb-0 last:border-b-0">
+      {title && <FootnoteText className="text-text-tertiary pb-[2px]">{title}</FootnoteText>}
       {children}
     </div>
   );

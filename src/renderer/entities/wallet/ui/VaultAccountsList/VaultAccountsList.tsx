@@ -1,7 +1,7 @@
 import { cnTw } from '@shared/lib/utils';
 import { DerivedAccount, accountUtils, ExplorersPopover } from '@entities/wallet';
 import { useI18n } from '@app/providers';
-import { FootnoteText, Accordion } from '@shared/ui';
+import { FootnoteText, Accordion, HelpText } from '@shared/ui';
 import { ChainTitle } from '@entities/chain';
 import type { Chain, ChainId, ChainAccount, ShardAccount } from '@shared/core';
 
@@ -17,15 +17,18 @@ export const VaultAccountsList = ({ chains, accountsMap, className, onShardClick
 
   return (
     <div className={cnTw('flex flex-col overflow-y-auto', className)}>
-      <FootnoteText className="pl-10 text-text-tertiary">{t('accountList.addressColumn')}</FootnoteText>
+      <FootnoteText className="pl-15 text-text-tertiary">{t('accountList.addressColumn')}</FootnoteText>
 
       {chains.map((chain) => {
         if (!accountsMap[chain.chainId]) return;
 
         return (
-          <Accordion key={chain.chainId} isDefaultOpen className="pl-10">
-            <Accordion.Button buttonClass="py-2">
-              <ChainTitle fontClass="text-text-primary" chain={chain} />
+          <Accordion key={chain.chainId} isDefaultOpen className="pl-13 pr-1">
+            <Accordion.Button buttonClass="p-2">
+              <div className="flex gap-x-2">
+                <ChainTitle fontClass="text-text-primary" chain={chain} />
+                <FootnoteText className="text-text-tertiary">{accountsMap[chain.chainId].length}</FootnoteText>
+              </div>
             </Accordion.Button>
             <Accordion.Content as="ul">
               {accountsMap[chain.chainId].map((account) => {
@@ -36,18 +39,20 @@ export const VaultAccountsList = ({ chains, accountsMap, className, onShardClick
                     <ExplorersPopover
                       address={isSharded ? account[0].accountId : account.accountId}
                       explorers={chain.explorers || []}
+                      addressPrefix={chain.addressPrefix}
                       button={
                         <DerivedAccount
                           account={account}
                           addressPrefix={chain.addressPrefix}
+                          showInfoButton={false}
                           onClick={isSharded ? () => onShardClick?.(account) : undefined}
                         />
                       }
                     >
                       <ExplorersPopover.Group title="Derivation path">
-                        <FootnoteText className="text-text-secondary break-all">
+                        <HelpText className="text-text-secondary break-all">
                           {accountUtils.getDerivationPath(account)}
-                        </FootnoteText>
+                        </HelpText>
                       </ExplorersPopover.Group>
                     </ExplorersPopover>
                   </li>

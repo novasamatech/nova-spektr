@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 
 import { MultisigAccount, Signatory, Wallet, AccountId } from '@shared/core';
-import { BaseModal, FootnoteText, Tabs } from '@shared/ui';
+import { BaseModal, FootnoteText, Tabs, HelpText } from '@shared/ui';
 import { RootExplorers } from '@shared/lib/utils';
 import { useModalClose } from '@shared/lib/hooks';
 import { AccountsList, ContactItem, ExplorersPopover, WalletCardLg, WalletCardMd } from '@entities/wallet';
@@ -84,7 +84,7 @@ export const MultisigWalletDetails = ({ wallet, account, signatoryWallets, signa
                               >
                                 {isLoggedIn && (
                                   <ExplorersPopover.Group title={t('general.explorers.matrixIdTitle')}>
-                                    <FootnoteText className="text-text-secondary">{matrix.userId}</FootnoteText>
+                                    <HelpText className="text-text-secondary">{matrix.userId}</HelpText>
                                   </ExplorersPopover.Group>
                                 )}
                               </ExplorersPopover>

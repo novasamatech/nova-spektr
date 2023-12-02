@@ -1,9 +1,10 @@
 import { MouseEvent } from 'react';
 
-import { BodyText, Identicon, IconButton, CaptionText, Icon, HelpText } from '@shared/ui';
+import { BodyText, Identicon, IconButton, CaptionText, Icon, HelpText, FootnoteText } from '@shared/ui';
 import { cnTw, toAddress, SS58_PUBLIC_KEY_PREFIX } from '@shared/lib/utils';
 import { IconNames } from '@shared/ui/Icon/data';
-import { KeyType, ShardAccount, ChainAccount } from '@shared/core';
+import type { ShardAccount, ChainAccount } from '@shared/core';
+import { KeyType } from '@shared/core';
 import { accountUtils } from '../../lib/account-utils';
 
 const KeyIcon: Record<KeyType, IconNames> = {
@@ -18,6 +19,8 @@ const KeyIcon: Record<KeyType, IconNames> = {
 type Props = {
   account: ChainAccount | ShardAccount[];
   addressPrefix?: number;
+  showInfoButton?: boolean;
+  showSuffix?: boolean;
   className?: string;
   onClick?: () => void;
   onInfoClick?: () => void;
@@ -26,6 +29,8 @@ type Props = {
 export const DerivedAccount = ({
   account,
   addressPrefix = SS58_PUBLIC_KEY_PREFIX,
+  showInfoButton = true,
+  showSuffix,
   className,
   onClick,
   onInfoClick,
@@ -75,42 +80,53 @@ export const DerivedAccount = ({
         )}
 
         {chainWithoutAccountId && (
-          <div className="w-7.5">
-            <Icon size={20} name={KeyIcon[account.keyType]} className="mx-auto text-text-secondary" />
+          <div className="flex items-center w-7.5 h-5">
+            <Icon size={30} name={KeyIcon[account.keyType]} className="mx-auto text-text-secondary" />
           </div>
         )}
 
-        <div className="flex flex-col">
+        <div className="flex flex-col overflow-hidden pr-5">
           <BodyText
             className={cnTw(
-              'flex-1 text-text-secondary transition-colors',
+              'text-text-secondary truncate transition-colors',
               'group-hover:text-text-primary group-focus-within:text-text-primary',
             )}
           >
             {isShardedAccount ? account[0].name : account.name}
           </BodyText>
           {chainWithAccountId && (
-            <HelpText className="text-text-tertiary">
+            <HelpText className="text-text-tertiary truncate">
               {toAddress(account.accountId, { prefix: addressPrefix })}
             </HelpText>
           )}
         </div>
       </button>
 
-      <IconButton
-        className={cnTw(
-          'absolute right-2 opacity-0 transition-opacity',
-          'group-hover:opacity-100 group-focus-within:opacity-100 focus:opacity-100',
+      <div className="absolute right-2 flex items-center">
+        {showInfoButton && (
+          <IconButton
+            className={cnTw(
+              'absolute right-0 opacity-0 transition-opacity',
+              'group-hover:opacity-100 group-focus-within:opacity-100 focus:opacity-100',
+              showSuffix && 'hidden',
+            )}
+            name="info"
+            onClick={onInfoClick}
+          />
         )}
-        name="info"
-        onClick={onInfoClick}
-      />
-      {/*<FootnoteText*/}
-      {/*  align="right"*/}
-      {/*  className={cnTw('flex-1 text-text-tertiary transition-opacity opacity-0', showDerivationPath && 'opacity-100')}*/}
-      {/*>*/}
-      {/*  {accountUtils.getDerivationPath(account)}*/}
-      {/*</FootnoteText>*/}
+
+        <div
+          className={cnTw(
+            'absolute right-0 pl-2 transition-all opacity-0 bg-white',
+            'group-hover:bg-[#f4f4f8] group-focus:bg-[#f4f4f8]',
+            showSuffix && 'opacity-100',
+          )}
+        >
+          <FootnoteText align="right" className="text-text-tertiary ">
+            {accountUtils.getDerivationPath(account)}
+          </FootnoteText>
+        </div>
+      </div>
     </div>
   );
 };
