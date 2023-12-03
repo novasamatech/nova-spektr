@@ -20,7 +20,8 @@ export const WalletCardSm = ({ wallet, className, iconSize = 16, addressPrefix, 
     <InfoPopover data={popoverItems} className="w-[230px]">
       <div
         className={cnTw(
-          'flex items-center max-w-full gap-x-2 px-2 py-[3px] cursor-pointer text-text-secondary group hover:bg-action-background-hover hover:text-text-primary rounded',
+          'group flex items-center gap-x-2 max-w-full px-2 py-[3px] cursor-pointer text-text-secondary rounded',
+          'hover:bg-action-background-hover hover:text-text-primary',
           className,
         )}
       >
