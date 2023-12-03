@@ -1,6 +1,7 @@
 import { stringToU8a, u8aToHex } from '@polkadot/util';
 
 import { createFrames, createSignPayload, encodeNumber, getSvgString, createSubstrateSignPayload } from './utils';
+import { SigningType } from '@shared/core';
 
 describe('QrCode/QrGenerator/utils', () => {
   test('should encodes 1 correctly', () => {
@@ -38,6 +39,7 @@ describe('QrCode/QrGenerator/utils', () => {
           '5HbgaJEuVN5qGbkhgtuDQANivSWwHXWsC2erP1SQUXgciTVq',
           '0x12345678',
           '0xb0a8d493285c2df73290dfb7e61f870f17b41801197a149ca93654499ea3dafe',
+          SigningType.PARITY_SIGNER,
         ),
       ).map((u8a): string => u8aToHex(u8a)),
     ).toEqual([

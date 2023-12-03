@@ -16,6 +16,8 @@ export type {
   WalletConnectWallet,
   NovaWalletWallet,
   WalletFamily,
+  PolkadotVaultGroup,
+  WalletConnectGroup,
 } from './types/wallet';
 export { WalletType, SigningType } from './types/wallet';
 

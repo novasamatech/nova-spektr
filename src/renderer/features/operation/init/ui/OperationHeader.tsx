@@ -40,7 +40,7 @@ export const OperationHeader = ({
   const activeWallet = useUnit(walletModel.$activeWallet);
 
   const isMultisig = walletUtils.isMultisig(activeWallet);
-  const isMultishard = walletUtils.isMultiShard(activeWallet);
+  const isMultishard = walletUtils.isPolkadotVault(activeWallet) || walletUtils.isMultiShard(activeWallet);
 
   const multisigError = (isMultisig && errors.find((e) => e === OperationError.INVALID_DEPOSIT)) || undefined;
   const multishardError = (isMultishard && errors.find((e) => e === OperationError.INVALID_FEE)) || undefined;

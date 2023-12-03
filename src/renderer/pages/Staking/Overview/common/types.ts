@@ -1,6 +1,6 @@
-import { Account, Address, Unlocking } from '@/src/renderer/shared/core';
+import type { Account, Address, Unlocking } from '@shared/core';
 
-export type NominatorInfo<T = Account> = {
+export type NominatorInfo<T extends Account> = {
   address: Address;
   isSelected: boolean;
   stash?: Address;

@@ -15,6 +15,7 @@ import {
 } from '@shared/core';
 import { chainsService } from '@entities/network';
 import { toAccountId } from '@shared/lib/utils';
+import { KEY_NAMES, SHARDED_KEY_NAMES } from '@entities/wallet';
 
 const IMPORT_FILE_VERSION = '1';
 
@@ -124,7 +125,7 @@ function mergeChainDerivations(
     (acc, d) => {
       if (!d.sharded) {
         acc.push({
-          name: '', // TODO add name after KEY_NAMES merged
+          name: d.name || KEY_NAMES[d.type],
           derivationPath: d.derivationPath,
           chainId: existingDerivations[0].chainId,
           cryptoType: CryptoType.SR25519,
@@ -142,7 +143,7 @@ function mergeChainDerivations(
 
       for (let i = 0; i < Number(d.sharded); i++) {
         acc.push({
-          name: '', // TODO add name after KEY_NAMES merged
+          name: d.name || SHARDED_KEY_NAMES[d.type],
           derivationPath: d.derivationPath + '//' + i,
           chainId: existingDerivations[0].chainId,
           cryptoType: CryptoType.SR25519,

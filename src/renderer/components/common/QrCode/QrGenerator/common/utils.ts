@@ -37,7 +37,7 @@ export const createSubstrateSignPayload = (
   address: string,
   payload: string | Uint8Array,
   genesisHash: ChainId | Uint8Array,
-  signingType?: SigningType,
+  signingType: SigningType,
   derivationPath?: string,
 ): Uint8Array => {
   if (signingType === SigningType.POLKADOT_VAULT) {

@@ -17,7 +17,7 @@ type Props = {
 };
 
 export const WalletCardMd = ({ wallet, description, prefix, hideIcon, className, onClick, onInfoClick }: Props) => {
-  const isWalletConnect = walletUtils.isWalletConnectFamily(wallet);
+  const isWalletConnect = walletUtils.isWalletConnectGroup(wallet);
 
   const handleClick = (fn?: () => void) => {
     return (event: MouseEvent<HTMLButtonElement>) => {
