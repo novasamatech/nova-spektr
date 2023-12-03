@@ -42,7 +42,7 @@ export const VaultWalletDetails = ({ wallet, root, accountsMap, onClose }: Props
 
         <div className="px-5 py-4">
           <ContextMenu button={<RootAccountLg name={wallet.name} accountId={root.accountId} />}>
-            <ContextMenu.Group title="Public key">
+            <ContextMenu.Group title={t('walletDetails.vault.publicKey')}>
               <div className="flex items-center gap-x-2">
                 <HelpText className="text-text-secondary break-all">{root.accountId}</HelpText>
                 <IconButton

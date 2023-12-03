@@ -5,9 +5,10 @@ import { useModalClose } from '@shared/lib/hooks';
 import { ExplorersPopover, AccountAddress, accountUtils } from '@entities/wallet';
 import { vaultDetailsModel } from '../model/vault-details-model';
 import { cnTw } from '@shared/lib/utils';
+import { useI18n } from '@app/providers';
 
 export const ShardsList = () => {
-  // const { t } = useI18n();
+  const { t } = useI18n();
 
   const shards = useUnit(vaultDetailsModel.$shards);
   const chain = useUnit(vaultDetailsModel.$chain);
@@ -19,7 +20,7 @@ export const ShardsList = () => {
       closeButton
       contentClass=""
       panelClass="h-modal"
-      title="Shards"
+      title={t('walletDetails.vault.shardsTitle')}
       isOpen={isModalOpen}
       onClose={closeModal}
     >
@@ -55,7 +56,7 @@ export const ShardsList = () => {
               addressPrefix={chain.addressPrefix}
               explorers={chain.explorers || []}
             >
-              <ExplorersPopover.Group title="Derivation path">
+              <ExplorersPopover.Group title={t('walletDetails.vault.derivationPath')}>
                 <HelpText className="text-text-secondary break-all">{accountUtils.getDerivationPath(shard)}</HelpText>
               </ExplorersPopover.Group>
             </ExplorersPopover>

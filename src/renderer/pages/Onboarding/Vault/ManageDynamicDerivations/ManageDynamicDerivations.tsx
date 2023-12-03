@@ -234,7 +234,7 @@ export const ManageDynamicDerivations = ({ seedInfo, onBack, onComplete }: Props
                             />
                           }
                         >
-                          <ContextMenu.Group title="Derivation path">
+                          <ContextMenu.Group title={t('onboarding.vault.derivationPath')}>
                             <HelpText className="text-text-secondary break-all">
                               {accountUtils.getDerivationPath(account)}
                             </HelpText>
