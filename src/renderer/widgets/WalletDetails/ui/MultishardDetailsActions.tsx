@@ -31,9 +31,11 @@ export const MultishardDetailsActions = ({ wallet, accounts }: Props) => {
       });
       const blob = new Blob([fileData], { type: 'text/plain' });
 
+      const fileName = wallet.name + (rootsAndAccounts.length > 1 ? ' ' + index : '');
+
       return {
         url: URL.createObjectURL(blob),
-        fileName: `${wallet.name}${rootsAndAccounts.length > 1 ? ' ' + index : ''}.yaml`,
+        fileName: `${fileName}.yaml`,
       };
     });
 
