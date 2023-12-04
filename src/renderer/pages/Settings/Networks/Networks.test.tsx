@@ -232,7 +232,7 @@ describe('pages/Settings/Networks', () => {
     expect(confirmSpy).toBeCalled();
   });
 
-  // TODO: Revert when custom nodes will be fixed
+  // TODO: Revert when custom nodes editing in UI will be fixed
   // test.only('should reconnect after edit custom node', async () => {
   //   const spyConnect = jest.fn();
 

@@ -54,7 +54,7 @@ export interface IMetadataService {
   /**
    * Subscribe to subscribeRuntimeVersion and trigger syncMetadata if it will be changed
    */
-  subscribeMetadata: (api: ApiPromise, cb?: () => void) => UnsubscribePromise;
+  subscribeMetadata: (api: ApiPromise, callback?: () => void) => UnsubscribePromise;
   getAllMetadata: <T extends Metadata>(where?: Partial<T>) => Promise<MetadataDS[]>;
   addMetadata: (metadata: Metadata) => Promise<string[]>;
   updateMetadata: (metadata: Metadata) => Promise<string[]>;

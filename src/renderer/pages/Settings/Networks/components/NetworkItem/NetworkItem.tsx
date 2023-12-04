@@ -47,7 +47,9 @@ export const NetworkItem = ({
 
   const networkIsActive = connectionType !== ConnectionType.DISABLED;
   const isConnected = connectionStatus === ConnectionStatus.CONNECTED;
-  const status = isConnected ? 'connected' : networkIsActive && !isConnected ? 'connecting' : 'error';
+  const isError = connectionStatus === ConnectionStatus.CONNECTED;
+
+  const status = isConnected ? 'connected' : networkIsActive && isError ? 'error' : 'connecting';
 
   return (
     <div className="flex items-center py-3">

@@ -38,8 +38,8 @@ export const useMetadata = (): IMetadataService => {
     return newMetadata;
   };
 
-  const subscribeMetadata = (api: ApiPromise, cb?: () => void): UnsubscribePromise => {
-    return api.rpc.state.subscribeRuntimeVersion(() => cb?.());
+  const subscribeMetadata = (api: ApiPromise, callback?: () => void): UnsubscribePromise => {
+    return api.rpc.state.subscribeRuntimeVersion(() => callback?.());
   };
 
   return {

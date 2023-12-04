@@ -65,23 +65,23 @@ function createProvider(
   return provider;
 }
 
-const createSubstrateProvider = (chainId: ChainId): ProviderInterface | undefined => {
+function createSubstrateProvider(chainId: ChainId): ProviderInterface | undefined {
   const knownChainId = chainSpecService.getKnownChain(chainId);
 
   if (knownChainId) {
     const CachedScProvider = createCachedProvider(ScProvider, chainId, metadataService.getMetadata);
 
     return new CachedScProvider(Sc, knownChainId);
-  } else {
-    throw new Error('Parachains do not support Substrate Connect yet');
   }
-};
 
-const createWebsocketProvider = (nodes: string[], chainId: ChainId): ProviderInterface => {
+  throw new Error('Parachains do not support Substrate Connect yet');
+}
+
+function createWebsocketProvider(nodes: string[], chainId: ChainId): ProviderInterface {
   const CachedWsProvider = createCachedProvider(WsProvider, chainId, metadataService.getMetadata);
 
   return new CachedWsProvider(nodes, 2000);
-};
+}
 
 async function disconnect(provider: ProviderInterface, api: ApiPromise) {
   try {

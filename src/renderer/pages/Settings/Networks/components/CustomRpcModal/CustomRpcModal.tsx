@@ -120,21 +120,17 @@ export const CustomRpcModal = ({ network, node, isOpen, onClose }: Props) => {
   };
 
   const saveRpcNode = async (formData: CustomRpcForm): Promise<void> => {
-    try {
-      if (node) {
-        networkModel.events.rpcNodeUpdated({
-          chainId: network.chainId,
-          oldNode: node,
-          rpcNode: formData,
-        });
-      } else {
-        networkModel.events.rpcNodeAdded({
-          chainId: network.chainId,
-          rpcNode: formData,
-        });
-      }
-    } catch (error) {
-      console.warn(error);
+    if (node) {
+      networkModel.events.rpcNodeUpdated({
+        chainId: network.chainId,
+        oldNode: node,
+        rpcNode: formData,
+      });
+    } else {
+      networkModel.events.rpcNodeAdded({
+        chainId: network.chainId,
+        rpcNode: formData,
+      });
     }
   };
 

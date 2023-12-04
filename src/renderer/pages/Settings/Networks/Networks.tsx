@@ -112,10 +112,7 @@ export const Networks = () => {
       if (!proceed) return;
 
       try {
-        await networkModel.events.rpcNodeRemoved({
-          chainId,
-          rpcNode: node,
-        });
+        await networkModel.events.rpcNodeRemoved({ chainId, rpcNode: node });
       } catch (error) {
         console.warn(error);
       }
@@ -132,11 +129,7 @@ export const Networks = () => {
       }
       if (!proceed) return;
 
-      try {
-        networkModel.events.disconnectStarted(connection.chainId);
-      } catch (error) {
-        console.warn(error);
-      }
+      networkModel.events.disconnectStarted(connection.chainId);
     };
   };
 

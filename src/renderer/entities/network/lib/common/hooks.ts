@@ -1,10 +1,19 @@
 import { useUnit } from 'effector-react';
+import { ApiPromise } from '@polkadot/api';
 
-import { ChainId } from '@shared/core';
+import { Chain, ChainId, Connection, ConnectionStatus } from '@shared/core';
 import { networkModel } from '../../model/network-model';
 import { ExtendedChain } from './types';
 
-export const useNetworkData = (chainId: ChainId) => {
+type NetworkData = {
+  api: ApiPromise;
+  chain: Chain;
+  connectionStatus: ConnectionStatus;
+  connection: Connection;
+  extendedChain: ExtendedChain;
+};
+
+export const useNetworkData = (chainId: ChainId): NetworkData => {
   const apis = useUnit(networkModel.$apis);
   const chains = useUnit(networkModel.$chains);
   const connectionStatuses = useUnit(networkModel.$connectionStatuses);
