@@ -90,11 +90,9 @@ sample({
 
 sample({
   clock: destinationChainSelected,
-  source: {
-    apis: networkModel.$apis,
-  },
-  filter: ({ apis }, chainId): boolean => Boolean(apis[chainId]),
-  fn: ({ apis }, chainId) => apis[chainId],
+  source: networkModel.$apis,
+  filter: (apis, chainId): boolean => Boolean(apis[chainId]),
+  fn: (apis, chainId) => apis[chainId],
   target: getParaIdFx,
 });
 
