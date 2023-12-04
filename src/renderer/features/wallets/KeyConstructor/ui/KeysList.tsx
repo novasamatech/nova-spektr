@@ -45,19 +45,21 @@ export const KeysList = () => {
           if (keyData.keyType === KeyType.MAIN) return;
 
           return (
-            <li key={keyData.id || keyData.derivationPath} className="flex items-center gap-x-2.5 py-1.5 pl-2">
+            <li key={keyData.id || keyData.derivationPath} className="flex items-center gap-x-3 py-1.5 pl-2">
               <ChainIcon
                 className="my-4.5 mx-6"
                 src={chains[keyData.chainId].icon}
                 name={chains[keyData.chainId].name}
               />
-              <div className="flex flex-col gap-y-1 py-1.5">
-                <FootnoteText className="text-text-primary">{keyData.name}</FootnoteText>
-                <FootnoteText className="text-text-secondary">{accountUtils.getDerivationPath(key)}</FootnoteText>
+              <div className="flex-1 flex flex-col gap-y-1 py-1.5 overflow-hidden">
+                <FootnoteText className="text-text-primary truncate">{keyData.name}</FootnoteText>
+                <FootnoteText className="text-text-secondary truncate">
+                  {accountUtils.getDerivationPath(key)}
+                </FootnoteText>
               </div>
               <IconButton
                 name="delete"
-                className="shrink-0 w-max ml-auto mr-8 hover:text-text-negative focus:text-text-negative"
+                className="shrink-0 w-max ml-2 mr-9 hover:text-text-negative focus:text-text-negative"
                 onClick={() => constructorModel.events.keyRemoved(index)}
               />
             </li>

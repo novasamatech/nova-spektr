@@ -10,7 +10,7 @@ jest.mock('@renderer/app/providers', () => ({
   useMatrix: jest.fn(),
 }));
 
-describe('pages/Onboarding/Vault/ManageDynamicDerivations/model/manage-dynamic-derivations-model.ts', () => {
+describe('pages/Onboarding/Vault/ManageDynamicDerivations/model/manage-dynamic-derivations-model', () => {
   afterEach(() => {
     jest.clearAllMocks();
   });
@@ -45,10 +45,10 @@ describe('pages/Onboarding/Vault/ManageDynamicDerivations/model/manage-dynamic-d
     };
 
     expect(scope.getState(manageDynamicDerivationsModel.$walletForm.$values)).toEqual({ name: 'test' });
-    expect(scope.getState(manageDynamicDerivationsModel.$accounts).length).toBeGreaterThan(0);
+    expect(scope.getState(manageDynamicDerivationsModel.$keys).length).toBeGreaterThan(0);
     expect(
       scope
-        .getState(manageDynamicDerivationsModel.$accounts)
+        .getState(manageDynamicDerivationsModel.$keys)
         .find((account) => (account as ChainAccount).chainId === POLKADOT_CHAIN_ID),
     ).toEqual(MAIN_POLKAODT_ACCOUNT);
   });
@@ -91,7 +91,7 @@ describe('pages/Onboarding/Vault/ManageDynamicDerivations/model/manage-dynamic-d
 
     expect(
       scope
-        .getState(manageDynamicDerivationsModel.$accounts)
+        .getState(manageDynamicDerivationsModel.$keys)
         .find((account) => (account as ChainAccount).derivationPath === '//polkadot/custom'),
     ).toEqual(MAIN_POLKAODT_ACCOUNT);
   });
