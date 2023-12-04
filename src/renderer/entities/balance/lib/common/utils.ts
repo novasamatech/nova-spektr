@@ -32,3 +32,7 @@ export const getNetworkBalances = (balances: Balance[], accountIds: AccountId[],
 export const getBalances = (balances: Balance[], accountIds: AccountId[]): Balance[] => {
   return balances.filter((balance) => accountIds.includes(balance.accountId));
 };
+
+export const getRepeatedIndex = (index: number, base: number): number => {
+  return Math.floor(index / base);
+};

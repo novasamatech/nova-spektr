@@ -5,9 +5,8 @@ import { VoidFn } from '@polkadot/api/types';
 import { AccountId, Chain, ChainId, ConnectionStatus } from '@shared/core';
 import { walletModel } from '@entities/wallet';
 import { networkModel } from '@entities/network';
-import { balanceModel, useBalanceService } from '@entities/balance';
-
-const balanceService = useBalanceService();
+import { balanceModel } from '@entities/balance';
+import { balanceSubscriptionService } from '@/src/renderer/entities/balance/lib/balanceSubscriptionService';
 
 type SubscriptionObject = {
   accounts: AccountId[];
@@ -51,12 +50,12 @@ const createSubscriptionsBalancesFx = createEffect(
         newSubscriptions[chainId as ChainId] = {
           accounts: accountIds,
           subscription: Promise.all([
-            balanceService.subscribeBalances(chain, api, accountIds, (balances) => {
+            balanceSubscriptionService.subscribeBalances(chain, api, accountIds, (balances) => {
               balances.forEach((balance) => {
                 balanceModel.events.balanceUpdated(balance);
               });
             }),
-            balanceService.subscribeLockBalances(chain, api, accountIds, (balances) => {
+            balanceSubscriptionService.subscribeLockBalances(chain, api, accountIds, (balances) => {
               balances.forEach((balance) => {
                 balanceModel.events.balanceUpdated(balance);
               });
