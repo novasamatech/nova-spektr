@@ -9,7 +9,7 @@ export type ParsedImportFile = {
   version: number;
 };
 
-export enum ValidationError {
+export const enum ValidationError {
   INVALID_FILE_STRUCTURE,
   INVALID_ROOT,
   DERIVATIONS_ERROR,
