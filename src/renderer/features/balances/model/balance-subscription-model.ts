@@ -5,8 +5,7 @@ import { VoidFn } from '@polkadot/api/types';
 import { AccountId, Chain, ChainId, ConnectionStatus } from '@shared/core';
 import { walletModel } from '@entities/wallet';
 import { networkModel } from '@entities/network';
-import { balanceModel } from '@entities/balance';
-import { balanceSubscriptionService } from '@/src/renderer/entities/balance/lib/balanceSubscriptionService';
+import { balanceModel, balanceSubscriptionService } from '@entities/balance';
 
 type SubscriptionObject = {
   accounts: AccountId[];

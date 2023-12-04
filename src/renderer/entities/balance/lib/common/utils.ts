@@ -1,4 +1,4 @@
-import { OmitFirstArg } from '@/src/renderer/shared/lib/types/utiltyTypes';
+import { OmitFirstArg } from '@shared/lib/types/utilityTypes';
 import { AccountId, Balance, ChainId } from '@shared/core';
 
 export const getAssetBalances = (
