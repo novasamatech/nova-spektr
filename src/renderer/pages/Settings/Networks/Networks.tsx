@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Trans } from 'react-i18next';
 import uniqBy from 'lodash/uniqBy';
+import partition from 'lodash/partition';
 import { useUnit } from 'effector-react';
 
 import { useI18n, useConfirmContext } from '@app/providers';
@@ -44,26 +45,24 @@ export const Networks = () => {
     setTimeout(() => navigate(Paths.SETTINGS), DEFAULT_TRANSITION);
   };
 
-  const { inactive, active } = Object.values(chains).reduce<Record<'inactive' | 'active', ExtendedChain[]>>(
-    (acc, chain) => {
-      if (!includes(chain.name, query)) return acc;
+  const extendedChains = Object.values(chains).reduce<ExtendedChain[]>((acc, chain) => {
+    if (!includes(chain.name, query)) return acc;
 
-      const connection = connections[chain.chainId];
-      const extendedChain = {
-        ...chain,
-        connection,
-        connectionStatus: connectionStatuses[chain.chainId],
-      };
+    const connection = connections[chain.chainId];
+    const extendedChain = {
+      ...chain,
+      connection,
+      connectionStatus: connectionStatuses[chain.chainId],
+    };
 
-      if (connection?.connectionType === ConnectionType.DISABLED) {
-        acc.inactive.push(extendedChain);
-      } else {
-        acc.active.push(extendedChain);
-      }
+    acc.push(extendedChain);
 
-      return acc;
-    },
-    { inactive: [], active: [] },
+    return acc;
+  }, []);
+
+  const [inactive, active] = partition(
+    extendedChains,
+    ({ connection }) => connection.connectionType === ConnectionType.DISABLED,
   );
 
   const confirmRemoveCustomNode = (name: string): Promise<boolean> => {
