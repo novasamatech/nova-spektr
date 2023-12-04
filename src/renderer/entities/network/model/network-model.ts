@@ -127,11 +127,7 @@ sample({
 sample({
   clock: failed,
   source: $connectionStatuses,
-  filter: (statuses, chainId) => {
-    console.log('xcmFailed', chainId);
-
-    return statuses[chainId] !== ConnectionStatus.ERROR;
-  },
+  filter: (statuses, chainId) => statuses[chainId] !== ConnectionStatus.ERROR,
   fn: (statuses, chainId) => ({
     ...statuses,
     [chainId]: ConnectionStatus.ERROR,
@@ -477,6 +473,7 @@ sample({
     providers: $providers,
     apis: $apis,
   },
+  filter: (_, connection) => connection.connectionType !== ConnectionType.DISABLED,
   fn: ({ providers, apis }, connection) => ({
     provider: providers[connection.chainId],
     api: apis[connection.chainId],
