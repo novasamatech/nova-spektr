@@ -337,7 +337,7 @@
       "addressColumn": "Address",
       "altHint": "Hold <button /> to see the details",
       "fillNamesButton": "Autofill account names",
-      "hotkeyAlt": "Alt",
+      "hotkeyCtrl": "Ctrl",
       "hotkeyOption": "Option",
       "importButton": "Import",
       "info": {
