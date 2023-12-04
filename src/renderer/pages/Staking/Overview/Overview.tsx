@@ -8,8 +8,18 @@ import { createLink, type PathType } from '@shared/routes';
 import { useGraphql, useI18n, useNetworkContext } from '@app/providers';
 import { useToggle } from '@shared/lib/hooks';
 import { AboutStaking, NetworkInfo, NominatorsList, Actions, InactiveChain } from './components';
-import type { ChainId, Chain, Address, Account, Stake, Validator, ShardAccount, ChainAccount } from '@shared/core';
-import { ConnectionType, ConnectionStatus } from '@shared/core';
+import {
+  ChainId,
+  Chain,
+  Address,
+  Account,
+  Stake,
+  Validator,
+  ShardAccount,
+  ChainAccount,
+  ConnectionType,
+  ConnectionStatus,
+} from '@shared/core';
 import { accountUtils, walletModel, walletUtils } from '@entities/wallet';
 import { priceProviderModel } from '@entities/price';
 import {
@@ -57,7 +67,8 @@ export const Overview = () => {
   const explorers = activeChain?.explorers;
 
   const accounts = activeAccounts.reduce<Account[]>((acc, account) => {
-    if (walletUtils.isPolkadotVault(activeWallet) && accountUtils.isBaseAccount(account)) return acc;
+    if (activeAccounts.length > 1 && walletUtils.isPolkadotVault(activeWallet) && accountUtils.isBaseAccount(account))
+      return acc;
 
     if (accountUtils.isChainIdMatch(account, chainId)) {
       acc.push(account);
