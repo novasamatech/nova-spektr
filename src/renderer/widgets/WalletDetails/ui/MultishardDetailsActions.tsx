@@ -24,10 +24,17 @@ export const MultishardDetailsActions = ({ wallet, accounts }: Props) => {
         return acc;
       }, []);
       const exportStructure = exportKeysUtils.getExportStructure(root.accountId, accountsFlat);
-      const fileData = stringify(exportStructure, { schema: 'failsafe' });
+      const fileData = stringify(exportStructure, {
+        schema: 'failsafe',
+        defaultStringType: 'QUOTE_DOUBLE',
+        defaultKeyType: 'PLAIN',
+      });
       const blob = new Blob([fileData], { type: 'text/plain' });
 
-      return { url: URL.createObjectURL(blob), fileName: `${wallet.name} ${index}` };
+      return {
+        url: URL.createObjectURL(blob),
+        fileName: `${wallet.name}${rootsAndAccounts.length > 1 ? ' ' + index : ''}.yaml`,
+      };
     });
 
     downloadFiles(downloadData);

@@ -24,6 +24,7 @@ export const importKeysUtils = {
   getDerivationsFromFile,
   isDerivationValid,
   mergeChainDerivations,
+  renameDerivationPathKey,
 };
 
 function isFileStructureValid(result: any): result is ParsedImportFile {
@@ -40,8 +41,7 @@ function isFileStructureValid(result: any): result is ParsedImportFile {
   return Object.values(genesisHashes).every((hash: ImportFileChain) => {
     return Object.entries(hash).every(([key, value]) => {
       const isChainValid = key.startsWith('0x');
-      const hasChainKeys =
-        Array.isArray(value) && value.every((keyObj) => 'key' in keyObj && Array.isArray(keyObj.key));
+      const hasChainKeys = Array.isArray(value) && value.every((keyObj) => 'key' in keyObj);
 
       return isChainValid && hasChainKeys;
     });
@@ -57,25 +57,10 @@ function getDerivationsFromFile(fileContent: ParsedImportFile): FormattedResult 
   const derivations: ImportedDerivation[] = [];
 
   Object.entries(chains).forEach(([key, value]) => {
-    const chainDerivations = (value as ImportFileKey[]).map((keyObject) => {
-      const derivation = keyObject.key.reduce((acc, keyProperty) => {
-        const [propertyName, propertyValue] = Object.entries(keyProperty)[0];
-        if (propertyName === 'derivation_path') {
-          // @ts-ignore
-          acc['derivationPath'] = propertyValue;
-        } else {
-          // @ts-ignore
-          acc[propertyName] = propertyValue;
-        }
-
-        return acc;
-      }, {});
-
-      // @ts-ignore
-      derivation['chainId'] = key;
-
-      return derivation;
-    });
+    const chainDerivations = (value as ImportFileKey[]).map((keyObject) => ({
+      ...keyObject.key,
+      chainId: key,
+    }));
 
     derivations.push(...chainDerivations);
   });
@@ -176,4 +161,15 @@ function mergeChainDerivations(
     added: addedKeys,
     duplicated: duplicatedKeys,
   };
+}
+
+function renameDerivationPathKey(key: unknown, value: unknown) {
+  if (key === 'derivation_path') {
+    // @ts-ignore
+    this.derivationPath = value;
+    // when reviewer function returns undefined property deleted from the object
+    // so old key 'derivation_path' is deleted and 'derivationPath' added
+  } else {
+    return value;
+  }
 }

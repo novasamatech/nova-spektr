@@ -1,8 +1,6 @@
 import { ChainId, HexString, KeyType } from '@renderer/shared/core';
 
-type DerivationPropertyName = 'derivation_path' | 'type' | 'sharded';
-type KeyProperties = { [key in DerivationPropertyName]: string | number };
-export type ImportFileKey = { key: KeyProperties[] };
+export type ImportFileKey = { key: Omit<ImportedDerivation, 'chainId'> };
 export type ImportFileChain = { [key: HexString]: ImportFileKey[] };
 export type ParsedImportFile = {
   [key: HexString]: ImportFileChain;

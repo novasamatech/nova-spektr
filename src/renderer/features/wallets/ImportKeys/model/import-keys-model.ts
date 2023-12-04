@@ -33,7 +33,7 @@ const resetValues = createEvent<ExistingDerivations>();
 const parseFileContentFx = createEffect<string, ParsedImportFile, DerivationImportError>((fileContent: string) => {
   try {
     // using default core scheme converts 0x strings into numeric values
-    const structure = parse(fileContent, { schema: 'failsafe' });
+    const structure = parse(fileContent, importKeysUtils.renameDerivationPathKey, { schema: 'failsafe' });
     if (importKeysUtils.isFileStructureValid(structure)) return structure;
 
     throw new DerivationImportError(ValidationErrorsLabel.INVALID_FILE_STRUCTURE);

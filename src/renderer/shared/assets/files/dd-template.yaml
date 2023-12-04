@@ -1,17 +1,17 @@
 0x387aed21a43ed189c8f0d14aab6f05f715f1adfe670efa6090208ddd4efe991f: #vault public address
   0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3: #polkadot genesis hash
     - key:
-        - derivation_path:  "//polkadot"
-        - type: "main"
+        derivation_path:  "//polkadot"
+        type: "main"
     - key:
-        - derivation_path: "//polkadot//pub"
-        - type: "pub"
+        derivation_path: "//polkadot//pub"
+        type: "pub"
   0xb0a8d493285c2df73290dfb7e61f870f17b41801197a149ca93654499ea3dafe: #kusama genesis hash
     - key:
-        - derivation_path: "//kusama"
-        - type: "main"
+        derivation_path: "//kusama"
+        type: "main"
     - key:
-        - derivation_path: "//kusama//staking"
-        - type: "staking"
-        - sharded: 50
+        derivation_path: "//kusama//staking"
+        type: "staking"
+        sharded: 50
 version: 1
