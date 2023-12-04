@@ -15,7 +15,7 @@ export const enum ValidationError {
   DERIVATIONS_ERROR,
 }
 
-export enum DerivationValidationError {
+export const enum DerivationValidationError {
   INVALID_PATH = 'INVALID_PATH',
   MISSING_NAME = 'MISSING_NAME',
   WRONG_SHARDS_NUMBER = 'WRONG_SHARDS_NUMBER',
