@@ -270,7 +270,7 @@ sample({
 sample({
   clock: createApiFx.doneData,
   source: $apis,
-  filter: (_, api) => api !== undefined,
+  filter: (_, api) => Boolean(api),
   fn: (apis, api) => ({
     ...apis,
     [api!.genesisHash.toHex()]: api!,
