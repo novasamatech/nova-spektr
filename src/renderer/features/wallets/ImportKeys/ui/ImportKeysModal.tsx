@@ -8,6 +8,7 @@ import type { AccountId, ChainAccount, ShardAccount, DraftAccount } from '@share
 import { useI18n } from '@app/providers';
 import { cnTw } from '@shared/lib/utils';
 import { importKeysModel } from '../model/import-keys-model';
+import { importKeysUtils } from '../lib/import-keys-utils';
 
 type Props = {
   isOpen: boolean;
@@ -75,13 +76,7 @@ export const ImportKeysModal = ({ isOpen, rootAccountId, existingKeys, onConfirm
         />
 
         <InputHint active={Boolean(validationError)} variant="error" className="mt-2">
-          {t(
-            validationError?.error || '',
-            validationError?.invalidPaths && {
-              count: validationError.invalidPaths.length,
-              invalidPath: validationError.invalidPaths.join(', '),
-            },
-          )}
+          {validationError && importKeysUtils.getErrorsText(t, validationError.error, validationError.details)}
         </InputHint>
 
         <Alert
