@@ -158,10 +158,8 @@ type ReconnectParams = {
   api: ApiPromise;
   chainId: ChainId;
 };
-const reconnectFx = createEffect(async ({ provider, api, chainId }: ReconnectParams): Promise<void> => {
-  await disconnectFx({ provider, api });
-
-  chainStarted(chainId);
+const reconnectFx = createEffect(async ({ provider, api }: ReconnectParams): Promise<void> => {
+  return disconnectFx({ provider, api });
 });
 
 type CreateProviderParams = {
@@ -485,6 +483,12 @@ sample({
     chainId: connection.chainId,
   }),
   target: reconnectFx,
+});
+
+sample({
+  clock: reconnectFx.done,
+  fn: ({ params: { chainId } }) => chainId,
+  target: chainStarted,
 });
 
 sample({
