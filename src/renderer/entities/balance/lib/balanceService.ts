@@ -28,10 +28,10 @@ export const useBalanceService = (): IBalanceService => {
     accountIds: AccountId[],
     chain: Chain,
     api: ApiPromise,
-    assetId?: number,
-    cb?: (newBalances: Balance[]) => void,
+    assetId: number | undefined,
+    callback: (newBalances: Balance[]) => void,
   ): UnsubscribePromise => {
-    if (!api || assetId === undefined) return Promise.resolve(noop);
+    if (assetId === undefined) return Promise.resolve(noop);
 
     const addresses = accountIds.map((accountId) => toAddress(accountId, { prefix: chain.addressPrefix }));
 
@@ -60,7 +60,7 @@ export const useBalanceService = (): IBalanceService => {
         return acc;
       }, []);
 
-      cb?.(newBalances);
+      callback(newBalances);
     });
   };
 
@@ -69,9 +69,9 @@ export const useBalanceService = (): IBalanceService => {
     chain: Chain,
     api: ApiPromise,
     assets: Asset[],
-    cb?: (newBalances: Balance[]) => void,
+    callback: (newBalances: Balance[]) => void,
   ): UnsubscribePromise => {
-    if (!api || !assets.length) return Promise.resolve(noop);
+    if (!api || !assets.length || !api.query.assets) return Promise.resolve(noop);
 
     const assetsTuples = assets.reduce<[string, Address][]>((acc, asset) => {
       accountIds.forEach((accountId) => {
@@ -81,7 +81,7 @@ export const useBalanceService = (): IBalanceService => {
       return acc;
     }, []);
 
-    return api.query.assets?.account.multi(assetsTuples, (data: any[]) => {
+    return api.query.assets.account.multi(assetsTuples, (data: any[]) => {
       const newBalances = data.reduce((acc, accountInfo, index) => {
         const free = accountInfo.isNone ? '0' : accountInfo.unwrap().balance.toString();
         const accountIndex = index % accountIds.length;
@@ -100,7 +100,7 @@ export const useBalanceService = (): IBalanceService => {
         return acc;
       }, []);
 
-      cb?.(newBalances);
+      callback(newBalances);
     });
   };
 
@@ -128,7 +128,7 @@ export const useBalanceService = (): IBalanceService => {
     chain: Chain,
     api: ApiPromise,
     assets: Asset[],
-    cb?: (newBalances: Balance[]) => void,
+    callback: (newBalances: Balance[]) => void,
   ): UnsubscribePromise => {
     if (!api || !assets.length) return Promise.resolve(noop);
 
@@ -154,7 +154,7 @@ export const useBalanceService = (): IBalanceService => {
         return acc;
       }, []);
 
-      cb?.(newBalances);
+      callback(newBalances);
     });
   };
 
@@ -162,7 +162,7 @@ export const useBalanceService = (): IBalanceService => {
     chain: Chain,
     api: ApiPromise,
     accountIds: AccountId[],
-    cb?: (newBalances: Balance[]) => void,
+    callback: (newBalances: Balance[]) => void,
   ): Promise<VoidFn[]> => {
     const { nativeAsset, statemineAssets, ormlAssets } = chain.assets.reduce<{
       nativeAsset?: Asset;
@@ -180,9 +180,9 @@ export const useBalanceService = (): IBalanceService => {
     );
 
     return Promise.all([
-      subscribeBalancesChange(accountIds, chain, api, nativeAsset?.assetId, cb),
-      subscribeStatemineAssetsChange(accountIds, chain, api, statemineAssets, cb),
-      subscribeOrmlAssetsChange(accountIds, chain, api, ormlAssets, cb),
+      subscribeBalancesChange(accountIds, chain, api, nativeAsset?.assetId || undefined, callback),
+      subscribeStatemineAssetsChange(accountIds, chain, api, statemineAssets, callback),
+      subscribeOrmlAssetsChange(accountIds, chain, api, ormlAssets, callback),
     ]);
   };
 

@@ -14,25 +14,25 @@ type SubscriptionObject = {
   subscription: Promise<[VoidFn[], VoidFn[]]>;
 };
 
-type BalanceUnsubs = Record<ChainId, SubscriptionObject>;
+type BalanceSubscribeMap = Record<ChainId, SubscriptionObject>;
 
-const $subscriptions = createStore<BalanceUnsubs>({});
+const $subscriptions = createStore<BalanceSubscribeMap>({});
 
 type SubscribeBalanceType = {
   chains: Record<ChainId, Chain>;
   apis: Record<ChainId, ApiPromise>;
   statuses: Record<ChainId, ConnectionStatus>;
-  subscriptions: BalanceUnsubs;
+  subscriptions: BalanceSubscribeMap;
   accountIds: AccountId[];
 };
 const createSubscriptionsBalancesFx = createEffect(
-  async ({
+  ({
     chains,
     apis,
     statuses,
     subscriptions,
     accountIds,
-  }: SubscribeBalanceType): Promise<Record<ChainId, SubscriptionObject>> => {
+  }: SubscribeBalanceType): Record<ChainId, SubscriptionObject> => {
     const newSubscriptions = {} as Record<ChainId, SubscriptionObject>;
 
     Object.entries(apis).forEach(async ([chainId, api]) => {
@@ -97,35 +97,9 @@ sample({
 });
 
 sample({
-  clock: [networkModel.$connectionStatuses, walletModel.$activeAccounts],
-  source: {
-    apis: networkModel.$apis,
-    chains: networkModel.$chains,
-    subscriptions: $subscriptions,
-    accounts: walletModel.$activeAccounts,
-    statuses: networkModel.$connectionStatuses,
-  },
-  fn: ({ statuses, apis, chains, subscriptions, accounts }) => ({
-    apis,
-    chains,
-    statuses,
-    subscriptions,
-    accountIds: [...new Set(accounts.map((account) => account.accountId))],
-  }),
-  target: createSubscriptionsBalancesFx,
-});
-
-sample({
   clock: createSubscriptionsBalancesFx.doneData,
-  source: {
-    subscriptions: $subscriptions,
-  },
-  fn: ({ subscriptions }, newSubscriptions) => {
-    return {
-      ...subscriptions,
-      ...newSubscriptions,
-    };
-  },
+  source: $subscriptions,
+  fn: (subscriptions, newSubscriptions) => ({ ...subscriptions, ...newSubscriptions }),
   target: $subscriptions,
 });
 

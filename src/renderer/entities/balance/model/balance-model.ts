@@ -3,6 +3,7 @@ import { throttle } from 'patronum';
 
 import { Balance, kernelModel } from '@shared/core';
 import { useBalanceService } from '../lib/balanceService';
+import { splice } from '@shared/lib/utils';
 
 const balanceService = useBalanceService();
 
@@ -14,7 +15,7 @@ const insertBalancesFx = createEffect(async (balances: Balance[]): Promise<void>
   await balanceService.insertBalances(balances);
 });
 
-const populateBalancesFx = createEffect(async (): Promise<Balance[]> => {
+const populateBalancesFx = createEffect((): Promise<Balance[]> => {
   return balanceService.getAllBalances();
 });
 
@@ -46,16 +47,11 @@ sample({
       return isSameAccount && isSameAssetId && isSameChainId;
     });
 
-    if (oldBalanceIndex !== -1) {
-      balances[oldBalanceIndex] = {
-        ...balances[oldBalanceIndex],
-        ...newBalance,
-      };
-    } else {
-      balances.push(newBalance);
+    if (oldBalanceIndex === -1) {
+      return balances.concat(newBalance);
     }
 
-    return [...balances];
+    return splice(balances, { ...balances[oldBalanceIndex], ...newBalance }, oldBalanceIndex);
   },
   target: $balances,
 });

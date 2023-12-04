@@ -13,12 +13,12 @@ export interface IBalanceService {
     chain: Chain,
     api: ApiPromise,
     accountIds: AccountId[],
-    cb?: (newBalances: Balance[]) => void,
+    callback: (newBalances: Balance[]) => void,
   ) => Promise<VoidFn[]>;
   subscribeLockBalances: (
     chain: Chain,
     api: ApiPromise,
     accountIds: AccountId[],
-    cb?: (newBalances: Balance[]) => void,
+    callback: (newBalances: Balance[]) => void,
   ) => Promise<VoidFn[]>;
 }
