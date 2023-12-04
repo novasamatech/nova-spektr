@@ -1,4 +1,4 @@
-import { groupBy } from 'lodash';
+import { groupBy, unionBy } from 'lodash';
 import { TFunction } from 'react-i18next';
 
 import {
@@ -179,7 +179,10 @@ function mergeChainDerivations(
     [],
   );
 
-  const newDerivationsAccounts = importedDerivationsAccounts.filter((d) => {
+  const uniqueDerivations = unionBy(importedDerivationsAccounts, 'derivationPath');
+  duplicatedKeys += importedDerivationsAccounts.length - uniqueDerivations.length;
+
+  const newDerivationsAccounts = uniqueDerivations.filter((d) => {
     const duplicatedDerivation = existingDerivationsByPath[d.derivationPath];
 
     if (duplicatedDerivation) {
