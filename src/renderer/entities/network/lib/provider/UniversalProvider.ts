@@ -11,7 +11,7 @@ export class UniversalProvider implements ProviderInterface {
   private wsProvider: ProviderInterface;
   private scProvider?: ProviderInterface;
 
-  // Add functions to add/delete nodes
+  // TODO: Add functions to add/delete nodes
   private provider: ProviderInterface;
 
   private subscriptions = new Map<number | string, Subscription>();
@@ -45,10 +45,10 @@ export class UniversalProvider implements ProviderInterface {
 
     console.log('onHandlers', this.onHandlers.keys());
 
-    // REmove handlers from old provider
+    // TODO: Remove handlers from old provider
     this.onHandlers.forEach(({ callback }, type) => newProvider.on(type, callback));
 
-    // TODO: Auto-connect disabled on disconnect
+    // TODO: Disconnect disable auto-connect in WsProvider, find way to restart it on reconnect.
     await oldProvider.disconnect();
 
     this.provider = newProvider;
@@ -79,6 +79,7 @@ export class UniversalProvider implements ProviderInterface {
   }
 
   public clone(): ProviderInterface {
+    // TODO: Return self instance
     return this.provider.clone();
   }
 
