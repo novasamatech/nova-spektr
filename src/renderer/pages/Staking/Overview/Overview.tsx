@@ -66,15 +66,14 @@ export const Overview = () => {
   const addressPrefix = activeChain?.addressPrefix;
   const explorers = activeChain?.explorers;
 
-  const accounts = activeAccounts.reduce<Account[]>((acc, account) => {
-    if (activeAccounts.length > 1 && walletUtils.isPolkadotVault(activeWallet) && accountUtils.isBaseAccount(account))
-      return acc;
+  const accounts = activeAccounts.filter((account) => {
+    const isBaseAccount = accountUtils.isBaseAccount(account);
+    const isPolkadotVault = walletUtils.isPolkadotVault(activeWallet);
+    const hasManyAccounts = activeAccounts.length > 1;
 
-    if (accountUtils.isChainIdMatch(account, chainId)) {
-      acc.push(account);
-    }
+    if (isPolkadotVault && isBaseAccount && hasManyAccounts) return false;
 
-    return acc;
+    return accountUtils.isChainIdMatch(account, chainId);
   }, []);
 
   const addresses = accounts.map((a) => toAddress(a.accountId, { prefix: addressPrefix }));
