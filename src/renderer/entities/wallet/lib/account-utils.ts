@@ -90,9 +90,7 @@ function getAccountsAndShardGroups(accounts: Account[]): Array<ChainAccount | Sh
   const shardsIndexes: Record<ShardAccount['groupId'], number> = {};
 
   return accounts.reduce<Array<ChainAccount | ShardAccount[]>>((acc, account) => {
-    if (accountUtils.isBaseAccount(account)) {
-      return acc;
-    }
+    if (accountUtils.isBaseAccount(account)) return acc;
 
     if (!accountUtils.isShardAccount(account)) {
       acc.push(account as ChainAccount);

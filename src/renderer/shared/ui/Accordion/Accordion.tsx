@@ -1,4 +1,4 @@
-import { PropsWithChildren, forwardRef } from 'react';
+import { PropsWithChildren, forwardRef, ElementType } from 'react';
 import { Disclosure, Transition } from '@headlessui/react';
 
 import { Icon } from '@shared/ui';
@@ -56,10 +56,11 @@ const Button = forwardRef<HTMLButtonElement, PropsWithChildren<ButtonProps>>(
 );
 
 type ContentProps = {
+  as?: ElementType;
   className?: string;
 };
 
-const Content = ({ children, className }: PropsWithChildren<ContentProps>) => {
+const Content = ({ as = 'div', className, children }: PropsWithChildren<ContentProps>) => {
   return (
     <Transition
       enter="ease-out duration-300"
@@ -69,7 +70,9 @@ const Content = ({ children, className }: PropsWithChildren<ContentProps>) => {
       leaveFrom="opacity-100"
       leaveTo="opacity-0"
     >
-      <Disclosure.Panel className={className}>{children}</Disclosure.Panel>
+      <Disclosure.Panel as={as} className={className}>
+        {children}
+      </Disclosure.Panel>
     </Transition>
   );
 };

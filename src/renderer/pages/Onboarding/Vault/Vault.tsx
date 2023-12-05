@@ -4,7 +4,7 @@ import { SeedInfo } from '@renderer/components/common/QrCode/common/types';
 import ScanStep from './ScanStep/ScanStep';
 import { ManageMultishard } from './ManageMultishard/ManageMultishard';
 import { ManageSingleshard } from './ManageSingleshard/ManageSingleshard';
-import { ManageDynamicDerivations } from './ManageDynamicDerivations/ManageDynamicDerivations';
+import { ManageVault } from './ManageVault/ManageVault';
 import { BaseModal } from '@shared/ui';
 import { DEFAULT_TRANSITION } from '@shared/lib/utils';
 import { useToggle } from '@shared/lib/hooks';
@@ -38,7 +38,7 @@ type ManageProps = {
 const ManageFlow: Record<QrCodeType, (props: ManageProps) => JSX.Element | null> = {
   [QrCodeType.SINGLESHARD]: (props) => <ManageSingleshard {...props} />,
   [QrCodeType.MULTISHARD]: (props) => <ManageMultishard {...props} />,
-  [QrCodeType.POLKADOT_VAULT]: (props) => <ManageDynamicDerivations {...props} />,
+  [QrCodeType.POLKADOT_VAULT]: (props) => <ManageVault {...props} />,
 };
 
 type Props = {

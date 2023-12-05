@@ -18,6 +18,7 @@ import Select from './Dropdowns/Select/Select';
 import Combobox from './Dropdowns/Combobox/Combobox';
 import RadioGroup from './RadioGroup/RadioGroup';
 import PopoverLink from './PopoverLink/PopoverLink';
+import { ContextMenu } from './ContextMenu/ContextMenu';
 import Checkbox from './Checkbox/Checkbox';
 import MultiSelect from './Dropdowns/MultiSelect/MultiSelect';
 import MenuPopover from './Popovers/MenuPopover/MenuPopover';
@@ -80,6 +81,7 @@ export {
   InfoPopover,
   MenuPopover,
   Popover,
+  ContextMenu,
   InfoLink,
   LargeTitleText,
   TitleText,

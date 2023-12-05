@@ -22,6 +22,7 @@ export const TEST_CHAIN_ICON =
   'https://raw.githubusercontent.com/nova-wallet/nova-spektr-utils/main/icons/v1/assets/white/Polkadot_(DOT).svg';
 
 export const enum KeyboardKey {
+  SPACE = 'Space',
   ENTER = 'Enter',
 }
 

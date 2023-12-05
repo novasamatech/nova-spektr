@@ -340,6 +340,7 @@
       "addMoreKeysButton": "Add more keys",
       "addressColumn": "Address",
       "altHint": "Hold <button /> to see the details",
+      "derivationPath": "Derivation path",
       "editKeysButton": "Edit keys",
       "fillNamesButton": "Autofill account names",
       "hotkeyCtrl": "Ctrl",
@@ -995,6 +996,11 @@
       "signatoriesTab": "Signatories",
       "thresholdLabel": "Threshold { min } out of { max }",
       "walletsGroup": "Your wallets"
+    },
+    "vault": {
+      "derivationPath": "Derivation path",
+      "networksTab": "Networks",
+      "shardsTitle": "Shards"
     },
     "walletConnect": {
       "abortRejectButton": "Close",

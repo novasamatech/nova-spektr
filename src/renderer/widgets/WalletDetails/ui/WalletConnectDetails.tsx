@@ -52,7 +52,7 @@ export const WalletConnectDetails = ({ wallet, accounts, onClose }: Props) => {
 
   // TODO: Rework with https://app.clickup.com/t/8692ykm3y
   const accountsList = useMemo(() => {
-    const sortedChains = chainsService.sortChains(chainsService.getChainsData());
+    const sortedChains = chainsService.getChainsData({ sort: true });
 
     const accountsMap = keyBy(accounts, 'chainId');
 

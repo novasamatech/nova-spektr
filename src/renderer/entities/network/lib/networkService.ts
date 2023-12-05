@@ -117,8 +117,8 @@ export const useNetwork = (): INetworkService => {
         });
       } else {
         const connectionType = ConnectionType.AUTO_BALANCE;
-        //TODO uncomment when improve light client performance
-        //const connectionType = getKnownChain(chainId) ? ConnectionType.LIGHT_CLIENT : ConnectionType.AUTO_BALANCE;
+        // TODO: uncomment when improve light client performance
+        // const connectionType = getKnownChain(chainId) ? ConnectionType.LIGHT_CLIENT : ConnectionType.AUTO_BALANCE;
         const activeNode = connectionType === ConnectionType.AUTO_BALANCE ? nodes[0] : undefined;
 
         acc.push({
