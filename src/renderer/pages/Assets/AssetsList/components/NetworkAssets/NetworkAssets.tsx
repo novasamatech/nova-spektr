@@ -14,7 +14,7 @@ import { accountUtils } from '@entities/wallet';
 import { NetworkFiatBalance } from '../NetworkFiatBalance/NetworkFiatBalance';
 import { currencyModel, priceProviderModel } from '@entities/price';
 import { balanceModel } from '@entities/balance';
-import { useThrottle } from '@/src/renderer/shared/lib/hooks';
+import { useThrottle } from '@shared/lib/hooks';
 
 type Props = {
   hideZeroBalance?: boolean;
