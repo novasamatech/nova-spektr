@@ -12,6 +12,7 @@ import type { ChainId, Chain, Address, Account, Stake, Validator, ShardAccount, 
 import { ConnectionType, ConnectionStatus } from '@shared/core';
 import { accountUtils, walletModel, walletUtils } from '@entities/wallet';
 import { priceProviderModel } from '@entities/price';
+import { NominatorInfo } from './common/types';
 import {
   useEra,
   useStakingData,
@@ -21,7 +22,6 @@ import {
   useStakingRewards,
   ValidatorsModal,
 } from '@entities/staking';
-import { NominatorInfo } from './common/types';
 
 export const Overview = () => {
   const { t } = useI18n();

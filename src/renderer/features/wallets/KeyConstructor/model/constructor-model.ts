@@ -105,15 +105,15 @@ const $constructorForm = createForm<FormValues>({
 const $hasChanged = createStore<boolean>(false).reset(formStarted);
 const $elementToFocus = createStore<HTMLButtonElement | null>(null);
 
-const $shardedEnabled = combine($constructorForm.fields.keyType.$value, (keyType) => {
+const $isKeyTypeSharded = combine($constructorForm.fields.keyType.$value, (keyType): boolean => {
   return [KeyType.MAIN, KeyType.STAKING, KeyType.GOVERNANCE, KeyType.CUSTOM].includes(keyType);
 });
 
-const $derivationEnabled = combine($constructorForm.fields.keyType.$value, (keyType) => {
+const $derivationEnabled = combine($constructorForm.fields.keyType.$value, (keyType): boolean => {
   return keyType === KeyType.CUSTOM;
 });
 
-const $hasKeys = combine($keys, (keys) => {
+const $hasKeys = combine($keys, (keys): boolean => {
   return keys.some((key) => {
     const keyData = Array.isArray(key) ? key[0] : key;
 
@@ -165,14 +165,20 @@ forward({ from: formInitiated, to: [$constructorForm.reset, formStarted] });
 sample({
   clock: formStarted,
   fn: () => chains[0],
-  target: $constructorForm.fields.network.$value,
+  target: $constructorForm.fields.network.onChange,
 });
 
 forward({ from: focusableSet, to: $elementToFocus });
 
 sample({
   clock: $constructorForm.formValidated,
-  target: [addNewKeyFx, $constructorForm.reset, formStarted],
+  target: [addNewKeyFx, $constructorForm.reset],
+});
+
+sample({
+  clock: $constructorForm.formValidated,
+  fn: ({ network }) => network,
+  target: $constructorForm.fields.network.onChange,
 });
 
 sample({
@@ -192,15 +198,20 @@ sample({
 });
 
 sample({
-  clock: $shardedEnabled,
-  filter: (shardedEnabled) => !shardedEnabled,
+  clock: $isKeyTypeSharded,
   fn: () => ({ isSharded: false, shards: '' }),
   target: spread({
     targets: {
-      isSharded: $constructorForm.fields.isSharded.$value,
-      shards: $constructorForm.fields.shards.$value,
+      isSharded: $constructorForm.fields.isSharded.onChange,
+      shards: $constructorForm.fields.shards.onChange,
     },
   }),
+});
+
+sample({
+  clock: $constructorForm.fields.isSharded.onChange,
+  filter: (isSharded) => !isSharded,
+  target: [$constructorForm.fields.shards.reset],
 });
 
 sample({
@@ -212,7 +223,7 @@ sample({
 
     return `//${chain.specName}${type}`;
   },
-  target: $constructorForm.fields.derivationPath.$value,
+  target: $constructorForm.fields.derivationPath.onChange,
 });
 
 sample({
@@ -231,8 +242,8 @@ sample({
   },
   target: spread({
     targets: {
-      keyName: $constructorForm.fields.keyName.$value,
-      derivationPath: $constructorForm.fields.derivationPath.$value,
+      keyName: $constructorForm.fields.keyName.onChange,
+      derivationPath: $constructorForm.fields.derivationPath.onChange,
     },
   }),
 });
@@ -248,7 +259,7 @@ sample({
   fn: (keyType, isSharded) => {
     return isSharded ? SHARDED_KEY_NAMES[keyType] : KEY_NAMES[keyType];
   },
-  target: $constructorForm.fields.keyName.$value,
+  target: $constructorForm.fields.keyName.onChange,
 });
 
 sample({
@@ -270,7 +281,7 @@ export const constructorModel = {
   $keys,
   $hasKeys,
   $hasChanged,
-  $shardedEnabled,
+  $isKeyTypeSharded,
   $derivationEnabled,
   $constructorForm,
   events: {

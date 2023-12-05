@@ -340,6 +340,7 @@
       "addMoreKeysButton": "Add more keys",
       "addressColumn": "Address",
       "altHint": "Hold <button /> to see the details",
+      "editKeysButton": "Edit keys",
       "fillNamesButton": "Autofill account names",
       "hotkeyCtrl": "Ctrl",
       "hotkeyOption": "Option",

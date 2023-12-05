@@ -1,4 +1,4 @@
-import { fork, allSettled } from 'effector';
+import { fork, allSettled, Scope } from 'effector';
 
 import chains from '@shared/config/chains/chains.json';
 import { constructorModel } from '../constructor-model';
@@ -38,6 +38,30 @@ describe('features/wallet/model/constructor-model', () => {
     },
   ];
 
+  const submitForm = async (scope: Scope, form?: any): Promise<void> => {
+    await allSettled(constructorModel.$constructorForm.fields.network.onChange, {
+      scope,
+      params: form?.network ?? ({ chainId: TEST_CHAIN_ID, specName: 'polkadot' } as unknown),
+    });
+    await allSettled(constructorModel.$constructorForm.fields.keyType.onChange, {
+      scope,
+      params: form?.keyType ?? KeyType.GOVERNANCE,
+    });
+    await allSettled(constructorModel.$constructorForm.fields.isSharded.onChange, {
+      scope,
+      params: form?.isSharded ?? false,
+    });
+    await allSettled(constructorModel.$constructorForm.fields.shards.onChange, {
+      scope,
+      params: form?.shards,
+    });
+    await allSettled(constructorModel.$constructorForm.fields.keyName.onChange, {
+      scope,
+      params: form?.keyName,
+    });
+    await allSettled(constructorModel.$constructorForm.submit, { scope });
+  };
+
   afterEach(() => {
     jest.restoreAllMocks();
   });
@@ -49,6 +73,7 @@ describe('features/wallet/model/constructor-model', () => {
       scope,
       params: defaultKeys as Array<ChainAccount | ShardAccount>,
     });
+
     expect(scope.getState(constructorModel.$keys)).toEqual([defaultKeys[0], [defaultKeys[1], defaultKeys[2]]]);
   });
 
@@ -56,6 +81,7 @@ describe('features/wallet/model/constructor-model', () => {
     const scope = fork();
 
     await allSettled(constructorModel.events.formInitiated, { scope, params: [] });
+
     expect(scope.getState(constructorModel.$constructorForm.fields.network.$value)).toEqual(chains[0]);
   });
 
@@ -75,15 +101,31 @@ describe('features/wallet/model/constructor-model', () => {
     expect(scope.getState(constructorModel.$hasKeys)).toEqual(false);
   });
 
+  test('should set focus after submit', async () => {
+    const scope = fork();
+    const element = document.createElement('button');
+    document.body.appendChild(element);
+
+    await allSettled(constructorModel.events.focusableSet, { scope, params: element });
+    await submitForm(scope);
+
+    expect(element).toHaveFocus();
+  });
+
+  test('should not reset network on form submit', async () => {
+    const scope = fork();
+    const network = { chainId: TEST_CHAIN_ID, specName: 'acala' } as unknown;
+
+    await submitForm(scope, { network });
+
+    expect(scope.getState(constructorModel.$constructorForm.fields.network.$value)).toEqual(network);
+  });
+
   test('should add new key on form submit', async () => {
     const scope = fork();
 
-    await allSettled(constructorModel.$constructorForm.fields.network.onChange, {
-      scope,
-      params: { chainId: TEST_CHAIN_ID, specName: 'polkadot' } as unknown,
-    });
-    await allSettled(constructorModel.$constructorForm.fields.keyType.onChange, { scope, params: KeyType.GOVERNANCE });
-    await allSettled(constructorModel.$constructorForm.submit, { scope });
+    await submitForm(scope);
+
     expect(scope.getState(constructorModel.$keys)).toEqual([
       {
         name: 'Governance',
@@ -104,23 +146,20 @@ describe('features/wallet/model/constructor-model', () => {
       scope,
       params: defaultKeys as Array<ChainAccount | ShardAccount>,
     });
-
     await allSettled(constructorModel.events.keyRemoved, { scope, params: 1 });
+
     expect(scope.getState(constructorModel.$keys)).toEqual([defaultKeys[0]]);
   });
 
   test('should add new sharded key on form submit', async () => {
     const scope = fork();
 
-    await allSettled(constructorModel.$constructorForm.fields.network.onChange, {
-      scope,
-      params: { chainId: TEST_CHAIN_ID, specName: 'polkadot' } as unknown,
+    await submitForm(scope, {
+      keyType: KeyType.CUSTOM,
+      isSharded: true,
+      shards: '4',
+      keyName: 'My custom key',
     });
-    await allSettled(constructorModel.$constructorForm.fields.keyType.onChange, { scope, params: KeyType.CUSTOM });
-    await allSettled(constructorModel.$constructorForm.fields.isSharded.onChange, { scope, params: true });
-    await allSettled(constructorModel.$constructorForm.fields.shards.onChange, { scope, params: '4' });
-    await allSettled(constructorModel.$constructorForm.fields.keyName.onChange, { scope, params: 'My custom key' });
-    await allSettled(constructorModel.$constructorForm.submit, { scope });
 
     const keys = scope.getState(constructorModel.$keys) as ShardAccount[][];
     expect(keys[0]).toHaveLength(4);

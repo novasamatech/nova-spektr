@@ -43,11 +43,12 @@ export const ManageDynamicDerivations = ({ seedInfo, onBack, onComplete }: Props
 
   const accordions = useRef<Record<string, { el: null | HTMLButtonElement; isOpen: boolean }>>({});
 
-  const accounts = useUnit(manageDynamicDerivationsModel.$accounts);
-  const accountsGroups = useUnit(manageDynamicDerivationsModel.$accountsGroups);
+  const keys = useUnit(manageDynamicDerivationsModel.$keys);
+  const keysGroups = useUnit(manageDynamicDerivationsModel.$keysGroups);
+  const hasKeys = useUnit(manageDynamicDerivationsModel.$hasKeys);
+
   const [isAddressModalOpen, toggleIsAddressModalOpen] = useToggle();
   const [isImportModalOpen, toggleIsImportModalOpen] = useToggle();
-
   const [isConstructorModalOpen, toggleConstructorModal] = useToggle();
   const [chainElements, setChainElements] = useState<[string, Array<ChainAccount | ShardAccount[]>][]>([]);
 
@@ -69,14 +70,14 @@ export const ManageDynamicDerivations = ({ seedInfo, onBack, onComplete }: Props
     const chains = chainsService.getChainsData({ sort: true });
     const chainsMap = dictionary(chains, 'chainId', () => []);
 
-    accountsGroups.forEach((account) => {
+    keysGroups.forEach((account) => {
       const chainId = Array.isArray(account) ? account[0].chainId : account.chainId;
 
       chainsMap[chainId].push(account);
     });
 
     setChainElements(Object.entries(chainsMap));
-  }, [accountsGroups]);
+  }, [keysGroups]);
 
   useEffect(() => {
     Object.values(accordions.current).forEach((item) => {
@@ -177,7 +178,7 @@ export const ManageDynamicDerivations = ({ seedInfo, onBack, onComplete }: Props
           </div>
           <div className="flex items-center gap-4">
             <Button size="sm" pallet="secondary" onClick={toggleConstructorModal}>
-              {t('onboarding.vault.addMoreKeysButton')}
+              {hasKeys ? t('onboarding.vault.editKeysButton') : t('onboarding.vault.addMoreKeysButton')}
             </Button>
             <Button size="sm" pallet="secondary" onClick={toggleIsImportModalOpen}>
               {t('onboarding.vault.importButton')}
@@ -232,7 +233,7 @@ export const ManageDynamicDerivations = ({ seedInfo, onBack, onComplete }: Props
 
       <KeyConstructor
         title={name?.value}
-        existingKeys={accounts}
+        existingKeys={keys}
         isOpen={isConstructorModalOpen}
         onClose={toggleConstructorModal}
         onConfirm={handleConstructorKeys}
@@ -242,7 +243,7 @@ export const ManageDynamicDerivations = ({ seedInfo, onBack, onComplete }: Props
         isOpen={isAddressModalOpen}
         walletName={walletName}
         rootKey={publicKey}
-        accounts={accounts}
+        keys={keys}
         onComplete={handleSuccess}
         onClose={toggleIsAddressModalOpen}
       />
@@ -250,7 +251,7 @@ export const ManageDynamicDerivations = ({ seedInfo, onBack, onComplete }: Props
       <ImportKeysModal
         isOpen={isImportModalOpen}
         rootAccountId={publicKey}
-        existingKeys={accounts}
+        existingKeys={keys}
         onClose={toggleIsImportModalOpen}
         onConfirm={handleImportKeys}
       />
