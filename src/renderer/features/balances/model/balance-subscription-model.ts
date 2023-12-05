@@ -77,6 +77,10 @@ type UnsubscribeParams = {
   subscription: SubscriptionObject;
 };
 const unsubscribeBalancesFx = createEffect(async ({ subscription }: UnsubscribeParams) => {
+  if (!subscription) {
+    return;
+  }
+
   const [balanceUnsubs, lockUnsubs] = await subscription.subscription;
 
   balanceUnsubs.forEach((fn) => fn());
@@ -109,16 +113,17 @@ sample({
   target: $subscriptions,
 });
 
-sample({
-  clock: unsubscribeBalancesFx.finally,
-  source: $subscriptions,
-  fn: (subscriptions, { params: { chainId } }) => {
-    const { [chainId]: _, ...newSubscriptions } = subscriptions;
+// sample({
+//   clock: unsubscribeBalancesFx.finally,
+//   source: $subscriptions,
+//   filter: (subscriptions, { params: { chainId } }) => Boolean(subscriptions[chainId]),
+//   fn: (subscriptions, { params: { chainId } }) => {
+//     const { [chainId]: _, ...newSubscriptions } = subscriptions;
 
-    return newSubscriptions;
-  },
-  target: $subscriptions,
-});
+//     return newSubscriptions;
+//   },
+//   target: $subscriptions,
+// });
 
 export const balanceSubscriptionModel = {
   $subscriptions,

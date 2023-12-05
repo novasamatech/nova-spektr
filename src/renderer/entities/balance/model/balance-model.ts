@@ -51,7 +51,9 @@ sample({
       return balances.concat(newBalance);
     }
 
-    return splice(balances, { ...balances[oldBalanceIndex], ...newBalance }, oldBalanceIndex);
+    const updatedBalance = { ...balances[oldBalanceIndex], ...newBalance };
+
+    return splice(balances, updatedBalance, oldBalanceIndex);
   },
   target: $balances,
 });

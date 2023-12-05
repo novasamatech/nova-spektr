@@ -170,7 +170,7 @@ function subscribeBalances(
   );
 
   return Promise.all([
-    subscribeBalancesChange(accountIds, chain, api, nativeAsset?.assetId || undefined, callback),
+    subscribeBalancesChange(accountIds, chain, api, nativeAsset?.assetId ?? undefined, callback),
     subscribeStatemineAssetsChange(accountIds, chain, api, statemineAssets, callback),
     subscribeOrmlAssetsChange(accountIds, chain, api, ormlAssets, callback),
   ]);

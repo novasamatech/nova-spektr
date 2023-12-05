@@ -14,6 +14,7 @@ import { accountUtils } from '@entities/wallet';
 import { NetworkFiatBalance } from '../NetworkFiatBalance/NetworkFiatBalance';
 import { currencyModel, priceProviderModel } from '@entities/price';
 import { balanceModel } from '@entities/balance';
+import { useThrottle } from '@/src/renderer/shared/lib/hooks';
 
 type Props = {
   hideZeroBalance?: boolean;
@@ -34,6 +35,8 @@ export const NetworkAssets = ({ query, hideZeroBalance, chain, accounts, searchS
 
   const [filteredAssets, setFilteredAssets] = useState<Asset[]>([]);
   const [balancesObject, setBalancesObject] = useState<Record<string, Balance>>({});
+
+  const throttledBalances = useThrottle(balances, 1000);
 
   const selectedAccountIds = accounts.map((a) => a.accountId).join('');
 
@@ -64,7 +67,7 @@ export const NetworkAssets = ({ query, hideZeroBalance, chain, accounts, searchS
     }, {});
 
     setBalancesObject(newBalancesObject);
-  }, [balances, accountIds.join('')]);
+  }, [throttledBalances, accountIds.join('')]);
 
   useEffect(() => {
     const filteredAssets = chain.assets.filter((asset) => {
@@ -92,7 +95,7 @@ export const NetworkAssets = ({ query, hideZeroBalance, chain, accounts, searchS
     return null;
   }
 
-  const hasFailedVerification = balances?.some((b) => !b.verified);
+  const hasFailedVerification = balances?.some((b) => b.verified !== undefined && !b.verified);
 
   return (
     <li className="w-[546px]">
