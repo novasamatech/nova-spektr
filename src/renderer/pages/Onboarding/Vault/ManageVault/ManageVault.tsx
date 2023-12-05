@@ -7,11 +7,11 @@ import { u8aToHex } from '@polkadot/util';
 
 import { useI18n, useStatusContext } from '@app/providers';
 import { SeedInfo } from '@renderer/components/common/QrCode/common/types';
-import { toAddress, dictionary, IS_MAC } from '@shared/lib/utils';
+import { toAddress, dictionary, IS_MAC, copyToClipboard } from '@shared/lib/utils';
 import type { ChainAccount, ChainId, ShardAccount, DraftAccount } from '@shared/core';
 import { VaultInfoPopover } from './VaultInfoPopover';
 import { useAltOrCtrlKeyPressed, useToggle } from '@shared/lib/hooks';
-import { manageDynamicDerivationsModel } from './model/manage-dynamic-derivations-model';
+import { manageVaultModel } from './model/manage-vault-model';
 import { chainsService } from '@entities/network';
 import { RootAccountLg, accountUtils, DerivedAccount } from '@entities/wallet';
 import { KeyConstructor, DerivationsAddressModal, ImportKeysModal } from '@features/wallets';
@@ -37,16 +37,16 @@ type Props = {
   onComplete: () => void;
 };
 
-export const ManageDynamicDerivations = ({ seedInfo, onBack, onComplete }: Props) => {
+export const ManageVault = ({ seedInfo, onBack, onComplete }: Props) => {
   const { t } = useI18n();
   const { showStatus } = useStatusContext();
   const isAltPressed = useAltOrCtrlKeyPressed();
 
   const accordions = useRef<Record<string, { el: null | HTMLButtonElement; isOpen: boolean }>>({});
 
-  const keys = useUnit(manageDynamicDerivationsModel.$keys);
-  const keysGroups = useUnit(manageDynamicDerivationsModel.$keysGroups);
-  const hasKeys = useUnit(manageDynamicDerivationsModel.$hasKeys);
+  const keys = useUnit(manageVaultModel.$keys);
+  const keysGroups = useUnit(manageVaultModel.$keysGroups);
+  const hasKeys = useUnit(manageVaultModel.$hasKeys);
 
   const [isAddressModalOpen, toggleIsAddressModalOpen] = useToggle();
   const [isImportModalOpen, toggleIsImportModalOpen] = useToggle();
@@ -57,14 +57,14 @@ export const ManageDynamicDerivations = ({ seedInfo, onBack, onComplete }: Props
     submit,
     isValid,
     fields: { name },
-  } = useForm(manageDynamicDerivationsModel.$walletForm);
+  } = useForm(manageVaultModel.$walletForm);
 
   useEffect(() => {
-    manageDynamicDerivationsModel.events.formInitiated(seedInfo);
+    manageVaultModel.events.formInitiated(seedInfo);
   }, [seedInfo]);
 
   useEffect(() => {
-    manageDynamicDerivationsModel.events.callbacksChanged({ onSubmit: onComplete });
+    manageVaultModel.events.callbacksChanged({ onSubmit: onComplete });
   }, [onComplete]);
 
   useEffect(() => {
@@ -108,12 +108,12 @@ export const ManageDynamicDerivations = ({ seedInfo, onBack, onComplete }: Props
   };
 
   const handleImportKeys = (mergedKeys: DraftAccount<ShardAccount | ChainAccount>[]) => {
-    manageDynamicDerivationsModel.events.derivationsImported(mergedKeys);
+    manageVaultModel.events.derivationsImported(mergedKeys);
     toggleIsImportModalOpen();
   };
 
   const handleConstructorKeys = (keys: DraftAccount<ChainAccount | ShardAccount>[]) => {
-    manageDynamicDerivationsModel.events.keysAdded(keys);
+    manageVaultModel.events.keysAdded(keys);
     toggleConstructorModal();
   };
 

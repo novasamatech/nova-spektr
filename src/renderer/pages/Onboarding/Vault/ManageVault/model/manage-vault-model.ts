@@ -119,7 +119,7 @@ forward({ from: keysAdded, to: $keys });
 
 forward({ from: derivationsImported, to: $keys });
 
-export const manageDynamicDerivationsModel = {
+export const manageVaultModel = {
   $walletForm,
   $keys,
   $keysGroups,
