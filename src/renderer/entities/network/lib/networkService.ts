@@ -83,15 +83,9 @@ function createWebsocketProvider(nodes: string[], chainId: ChainId): ProviderInt
   return new CachedWsProvider(nodes, 2000);
 }
 
-async function disconnect(provider: ProviderInterface, api: ApiPromise) {
+async function disconnect(api: ApiPromise) {
   try {
     await api.disconnect();
-  } catch (e) {
-    console.warn(e);
-  }
-
-  try {
-    await provider.disconnect();
   } catch (e) {
     console.warn(e);
   }

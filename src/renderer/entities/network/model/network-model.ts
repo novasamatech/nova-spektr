@@ -142,20 +142,18 @@ const initConnectionsFx = createEffect(async () => {
 });
 
 type DisconnectParams = {
-  provider: ProviderInterface;
   api: ApiPromise;
 };
-const disconnectFx = createEffect(async ({ provider, api }: DisconnectParams): Promise<void> => {
-  await networkService.disconnect(provider, api);
+const disconnectFx = createEffect(async ({ api }: DisconnectParams): Promise<void> => {
+  await networkService.disconnect(api);
 });
 
 type ReconnectParams = {
-  provider: ProviderInterface;
   api: ApiPromise;
   chainId: ChainId;
 };
-const reconnectFx = createEffect(async ({ provider, api }: ReconnectParams): Promise<void> => {
-  return disconnectFx({ provider, api });
+const reconnectFx = createEffect(async ({ api }: ReconnectParams): Promise<void> => {
+  return disconnectFx({ api });
 });
 
 type CreateProviderParams = {
@@ -500,10 +498,9 @@ sample({
 
 sample({
   clock: disconnectStarted,
-  source: { providers: $providers, apis: $apis },
-  filter: ({ providers, apis }, chainId) => Boolean(providers[chainId] && apis[chainId]),
-  fn: ({ providers, apis }, chainId) => ({
-    provider: providers[chainId],
+  source: { apis: $apis },
+  filter: ({ apis }, chainId) => Boolean(apis[chainId]),
+  fn: ({ apis }, chainId) => ({
     api: apis[chainId],
     chainId: chainId,
   }),
