@@ -28,37 +28,55 @@ const createSubscriptionsBalancesFx = createEffect(
     const newSubscriptions = {} as Record<ChainId, SubscriptionObject>;
 
     Object.entries(apis).forEach(async ([chainId, api]) => {
-      const oldSubscription = subscriptions[chainId as ChainId];
       const networkConnected = statuses[chainId as ChainId] === ConnectionStatus.CONNECTED;
-      const sameAccounts = oldSubscription?.accounts.join(',') === accountIds.join(',');
-      const shouldResubscribe = networkConnected && oldSubscription && !sameAccounts;
+      const oldSubscription = subscriptions[chainId as ChainId];
 
-      if ((!oldSubscription && networkConnected) || shouldResubscribe) {
-        if (shouldResubscribe) {
-          await unsubscribeBalancesFx(oldSubscription);
+      if (!networkConnected) {
+        await unsubscribeBalancesFx({
+          chainId: chainId as ChainId,
+          subscription: oldSubscription,
+        });
+
+        return;
+      }
+
+      if (oldSubscription) {
+        const sameAccounts = oldSubscription?.accounts.join(',') === accountIds.join(',');
+
+        if (sameAccounts) {
+          return;
         }
 
-        const chain = chains[chainId as ChainId];
-
-        const balanceSubs = balanceSubscriptionService.subscribeBalances(chain, api, accountIds, (balances) => {
-          balances.forEach((balance) => balanceModel.events.balanceUpdated(balance));
+        await unsubscribeBalancesFx({
+          chainId: chainId as ChainId,
+          subscription: oldSubscription,
         });
-        const locksSubs = balanceSubscriptionService.subscribeLockBalances(chain, api, accountIds, (balances) => {
-          balances.forEach((balance) => balanceModel.events.balanceUpdated(balance));
-        });
-
-        newSubscriptions[chainId as ChainId] = {
-          accounts: accountIds,
-          subscription: Promise.all([balanceSubs, locksSubs]),
-        };
       }
+
+      const chain = chains[chainId as ChainId];
+
+      const balanceSubs = balanceSubscriptionService.subscribeBalances(chain, api, accountIds, (balances) => {
+        balances.forEach((balance) => balanceModel.events.balanceUpdated(balance));
+      });
+      const locksSubs = balanceSubscriptionService.subscribeLockBalances(chain, api, accountIds, (balances) => {
+        balances.forEach((balance) => balanceModel.events.balanceUpdated(balance));
+      });
+
+      newSubscriptions[chainId as ChainId] = {
+        accounts: accountIds,
+        subscription: Promise.all([balanceSubs, locksSubs]),
+      };
     });
 
     return newSubscriptions;
   },
 );
 
-const unsubscribeBalancesFx = createEffect(async (subscription: SubscriptionObject) => {
+type UnsubscribeParams = {
+  chainId: ChainId;
+  subscription: SubscriptionObject;
+};
+const unsubscribeBalancesFx = createEffect(async ({ subscription }: UnsubscribeParams) => {
   const [balanceUnsubs, lockUnsubs] = await subscription.subscription;
 
   balanceUnsubs.forEach((fn) => fn());
@@ -88,6 +106,17 @@ sample({
   clock: createSubscriptionsBalancesFx.doneData,
   source: $subscriptions,
   fn: (subscriptions, newSubscriptions) => ({ ...subscriptions, ...newSubscriptions }),
+  target: $subscriptions,
+});
+
+sample({
+  clock: unsubscribeBalancesFx.finally,
+  source: $subscriptions,
+  fn: (subscriptions, { params: { chainId } }) => {
+    const { [chainId]: _, ...newSubscriptions } = subscriptions;
+
+    return newSubscriptions;
+  },
   target: $subscriptions,
 });
 
