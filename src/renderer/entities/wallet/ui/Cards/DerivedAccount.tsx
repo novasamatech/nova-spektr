@@ -118,7 +118,7 @@ export const DerivedAccount = ({
         <div
           className={cnTw(
             'absolute right-0 pl-2 transition-all opacity-0 bg-white',
-            'group-hover:bg-[#f4f4f8] group-focus:bg-[#f4f4f8]',
+            'group-hover:bg-background-suffix-hover group-focus:bg-background-suffix-hover',
             showSuffix && 'opacity-100',
           )}
         >

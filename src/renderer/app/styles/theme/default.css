@@ -100,6 +100,7 @@
   --background-dark: #262626;
   --background-item-hover: #4e4e57;
   --background-item-selected: #6e6e78;
+  --background-suffix-hover: #f4f4f8;
 
   /* SHADOW */
   --card-shadow: 0px 3px 4px rgba(69, 69, 137, 0.04), inset 0px -0.5px 0px rgba(69, 69, 137, 0.12);

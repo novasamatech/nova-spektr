@@ -101,4 +101,5 @@ export default {
   'background-dark': 'var(--background-dark)',
   'background-item-hover': 'var(--background-item-hover)',
   'background-item-selected': 'var(--background-item-selected)',
+  'background-suffix-hover': 'var(--background-suffix-hover)',
 };

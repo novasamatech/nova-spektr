@@ -1,4 +1,4 @@
-import { createStore, createEvent, forward, createEffect, sample } from 'effector';
+import { createStore, createEvent, createEffect, sample } from 'effector';
 
 import type { ShardAccount, Chain, ChainId } from '@shared/core';
 import { chainsService } from '@entities/network';
@@ -6,14 +6,17 @@ import { chainsService } from '@entities/network';
 const shardsSelected = createEvent<ShardAccount[]>();
 const shardsCleared = createEvent();
 
+const $shards = createStore<ShardAccount[]>([]).reset(shardsCleared);
+const $chain = createStore<Chain>({} as Chain).reset(shardsCleared);
+
 const chainSetFx = createEffect((chainId: ChainId): Chain | undefined => {
   return chainsService.getChainById(chainId);
 });
 
-const $shards = createStore<ShardAccount[]>([]).reset(shardsCleared);
-const $chain = createStore<Chain>({} as Chain).reset(shardsCleared);
-
-forward({ from: shardsSelected, to: $shards });
+sample({
+  clock: shardsSelected,
+  target: $shards,
+});
 
 sample({
   clock: $shards,

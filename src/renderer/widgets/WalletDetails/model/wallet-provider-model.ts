@@ -3,17 +3,9 @@ import { combine } from 'effector';
 import { accountUtils, walletModel } from '@entities/wallet';
 import { walletSelectModel } from '@features/wallets';
 import { dictionary } from '@shared/lib/utils';
+import { walletDetailsUtils } from '../lib/utils';
 import type { MultishardMap, VaultMap } from '../lib/types';
-import type {
-  Account,
-  Signatory,
-  Wallet,
-  MultisigAccount,
-  BaseAccount,
-  ChainAccount,
-  ChainId,
-  AccountId,
-} from '@shared/core';
+import type { Account, Signatory, Wallet, MultisigAccount, BaseAccount, AccountId } from '@shared/core';
 
 const $accounts = combine(
   {
@@ -36,26 +28,7 @@ const $singleShardAccount = combine(walletModel.$accounts, (accounts): BaseAccou
 const $multiShardAccounts = combine($accounts, (accounts): MultishardMap => {
   if (accounts.length === 0) return new Map();
 
-  return accounts.reduce<Map<BaseAccount, Record<ChainId, ChainAccount[]>>>((acc, account) => {
-    if (accountUtils.isBaseAccount(account)) {
-      acc.set(account, {});
-    }
-
-    if (accountUtils.isChainAccount(account)) {
-      for (const [baseAccount, chainMap] of acc.entries()) {
-        if (baseAccount.id !== account.baseId) continue;
-
-        if (chainMap[account.chainId]) {
-          chainMap[account.chainId].push(account);
-        } else {
-          chainMap[account.chainId] = [account];
-        }
-        break;
-      }
-    }
-
-    return acc;
-  }, new Map());
+  return walletDetailsUtils.getMultishardMap(accounts);
 });
 
 const $multisigAccount = combine(
@@ -85,22 +58,12 @@ const $vaultAccounts = combine(
     if (!details) return undefined;
 
     const root = accountUtils.getBaseAccount(accounts, details.id);
-    const accountGroups = accountUtils.getAccountsAndShardGroups(accounts);
+    if (!root) return undefined;
 
-    const accountsMap = accountGroups.reduce<VaultMap>((acc, account) => {
-      const accountToInsert = accountUtils.isAccountWithShards(account) ? account[0] : account;
-
-      const chainId = accountToInsert.chainId;
-      if (acc[chainId]) {
-        acc[chainId].push(account);
-      } else {
-        acc[chainId] = [account];
-      }
-
-      return acc;
-    }, {});
-
-    return { root: root as BaseAccount, accountsMap };
+    return {
+      root,
+      accountsMap: walletDetailsUtils.getVaultAccountsMap(accounts),
+    };
   },
 );
 
