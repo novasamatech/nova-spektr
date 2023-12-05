@@ -14,7 +14,7 @@ export type Chain = {
   options?: ChainOptions[];
 };
 
-export type ChainOptions = 'testnet' | 'crowdloans' | 'multisig';
+export type ChainOptions = 'testnet' | 'crowdloans' | 'multisig' | 'regular_proxy';
 
 export type RpcNode = {
   url: string;

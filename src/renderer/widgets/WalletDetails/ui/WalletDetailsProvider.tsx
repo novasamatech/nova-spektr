@@ -1,4 +1,5 @@
 import { useUnit } from 'effector-react';
+import { useEffect } from 'react';
 
 import { walletSelectModel } from '@features/wallets';
 import { SimpleWalletDetails } from './SimpleWalletDetails';
@@ -7,6 +8,7 @@ import { WalletConnectDetails } from './WalletConnectDetails';
 import { walletProviderModel } from '../model/wallet-provider-model';
 import { MultishardWalletDetails } from './MultishardWalletDetails';
 import { walletUtils } from '@entities/wallet';
+import { proxiesModel } from '@/src/renderer/features/proxies/model/proxies-model';
 
 export const WalletDetailsProvider = () => {
   const wallet = useUnit(walletSelectModel.$walletForDetails);
@@ -16,6 +18,11 @@ export const WalletDetailsProvider = () => {
   const multisigAccount = useUnit(walletProviderModel.$multisigAccount);
   const contacts = useUnit(walletProviderModel.$signatoryContacts);
   const signatoryWallets = useUnit(walletProviderModel.$signatoryWallets);
+  const proxies = useUnit(proxiesModel.$proxies);
+
+  useEffect(() => {
+    console.log('proxies', proxies);
+  }, [proxies]);
 
   if (!wallet) return null;
 

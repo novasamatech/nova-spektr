@@ -52,6 +52,7 @@ const sharedConfig: Configuration = {
           },
         ],
       },
+
       {
         test: /\.svg$/,
         use: [
