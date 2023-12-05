@@ -16,7 +16,7 @@ import type { Chain, Asset, Account, MultisigAccount, HexString } from '@shared/
 import { accountUtils } from '@entities/wallet';
 import { priceProviderModel } from '@entities/price';
 import { useNetworkData } from '@entities/network';
-import { balanceModel, getBalanceWrapped } from '@entities/balance';
+import { balanceModel, balanceUtils } from '@entities/balance';
 
 const enum Step {
   INIT,
@@ -90,7 +90,7 @@ export const SendAssetModal = ({ chain, asset }: Props) => {
       transaction: api && wrapTx(transaction, api, addressPrefix),
       chainId: chain.chainId,
       assetId: asset.assetId.toString(),
-      getBalance: getBalanceWrapped(balances),
+      getBalance: balanceUtils.getBalanceWrapped(balances),
       getTransactionFee: (transaction, api) => getTransactionFee(transaction, api),
     });
 

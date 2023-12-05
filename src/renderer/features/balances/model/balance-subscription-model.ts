@@ -16,7 +16,7 @@ type BalanceSubscribeMap = Record<ChainId, SubscriptionObject>;
 
 const $subscriptions = createStore<BalanceSubscribeMap>({});
 
-type SubscribeBalanceType = {
+type SubscribeParams = {
   chains: Record<ChainId, Chain>;
   apis: Record<ChainId, ApiPromise>;
   statuses: Record<ChainId, ConnectionStatus>;
@@ -24,13 +24,7 @@ type SubscribeBalanceType = {
   accountIds: AccountId[];
 };
 const createSubscriptionsBalancesFx = createEffect(
-  ({
-    chains,
-    apis,
-    statuses,
-    subscriptions,
-    accountIds,
-  }: SubscribeBalanceType): Record<ChainId, SubscriptionObject> => {
+  ({ chains, apis, statuses, subscriptions, accountIds }: SubscribeParams): Record<ChainId, SubscriptionObject> => {
     const newSubscriptions = {} as Record<ChainId, SubscriptionObject>;
 
     Object.entries(apis).forEach(async ([chainId, api]) => {
@@ -46,20 +40,16 @@ const createSubscriptionsBalancesFx = createEffect(
 
         const chain = chains[chainId as ChainId];
 
+        const balanceSubs = balanceSubscriptionService.subscribeBalances(chain, api, accountIds, (balances) => {
+          balances.forEach((balance) => balanceModel.events.balanceUpdated(balance));
+        });
+        const locksSubs = balanceSubscriptionService.subscribeLockBalances(chain, api, accountIds, (balances) => {
+          balances.forEach((balance) => balanceModel.events.balanceUpdated(balance));
+        });
+
         newSubscriptions[chainId as ChainId] = {
           accounts: accountIds,
-          subscription: Promise.all([
-            balanceSubscriptionService.subscribeBalances(chain, api, accountIds, (balances) => {
-              balances.forEach((balance) => {
-                balanceModel.events.balanceUpdated(balance);
-              });
-            }),
-            balanceSubscriptionService.subscribeLockBalances(chain, api, accountIds, (balances) => {
-              balances.forEach((balance) => {
-                balanceModel.events.balanceUpdated(balance);
-              });
-            }),
-          ]),
+          subscription: Promise.all([balanceSubs, locksSubs]),
         };
       }
     });

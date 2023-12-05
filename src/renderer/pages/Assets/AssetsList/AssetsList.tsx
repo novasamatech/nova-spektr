@@ -26,11 +26,9 @@ export const AssetsList = () => {
   const connections = useUnit(networkModel.$connections);
   const chains = useUnit(networkModel.$chains);
   const balances = useUnit(balanceModel.$balances);
-  const subscriptions = useUnit(balanceSubscriptionModel.$subscriptions);
 
-  useEffect(() => {
-    console.log('active balance subscriptions', Object.keys(subscriptions).length);
-  }, [subscriptions]);
+  // DON'T REMOVE: need to have subscriptions
+  const subscriptions = useUnit(balanceSubscriptionModel.$subscriptions);
 
   const { setHideZeroBalance, getHideZeroBalance } = useSettingsStorage();
 

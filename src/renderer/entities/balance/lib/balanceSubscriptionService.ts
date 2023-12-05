@@ -5,10 +5,9 @@ import { UnsubscribePromise, VoidFn } from '@polkadot/api/types';
 import noop from 'lodash/noop';
 import { BalanceLock } from '@polkadot/types/interfaces';
 
-import { getAssetId, toAddress } from '@shared/lib/utils';
+import { getAssetId, getRepeatedIndex, toAddress } from '@shared/lib/utils';
 import { AssetType } from '@shared/core';
 import type { AccountId, Address, Asset, OrmlExtras, Balance, Chain } from '@shared/core';
-import { getRepeatedIndex } from './common/utils';
 
 export const balanceSubscriptionService = {
   subscribeBalances,
@@ -181,8 +180,8 @@ function subscribeLockBalanceChange(
   chain: Chain,
   api: ApiPromise,
   accountIds: AccountId[],
-  assetId?: number,
-  cb?: (newLocks: Balance[]) => void,
+  assetId: number | undefined,
+  callback: (newLocks: Balance[]) => void,
 ): UnsubscribePromise {
   if (!api || assetId === undefined) return Promise.resolve(noop);
 
@@ -205,7 +204,7 @@ function subscribeLockBalanceChange(
       return acc;
     }, []);
 
-    cb?.(newLocks);
+    callback(newLocks);
   });
 }
 
@@ -214,7 +213,7 @@ function subscribeLockOrmlAssetChange(
   api: ApiPromise,
   accountIds: AccountId[],
   assets: Asset[],
-  cb?: (newLocks: Balance[]) => void,
+  callback: (newLocks: Balance[]) => void,
 ): UnsubscribePromise {
   if (!api || !assets.length) return Promise.resolve(noop);
 
@@ -241,7 +240,7 @@ function subscribeLockOrmlAssetChange(
       return acc;
     }, []);
 
-    cb?.(newLocks);
+    callback(newLocks);
   });
 }
 
@@ -249,7 +248,7 @@ function subscribeLockBalances(
   chain: Chain,
   api: ApiPromise,
   accountIds: AccountId[],
-  cb?: (newLocks: Balance[]) => void,
+  callback: (newLocks: Balance[]) => void,
 ): Promise<VoidFn[]> {
   const { nativeAsset, ormlAssets } = chain.assets.reduce<{ nativeAsset?: Asset; ormlAssets: Asset[] }>(
     (acc, asset) => {
@@ -262,7 +261,7 @@ function subscribeLockBalances(
   );
 
   return Promise.all([
-    subscribeLockBalanceChange(chain, api, accountIds, nativeAsset?.assetId, cb),
-    subscribeLockOrmlAssetChange(chain, api, accountIds, ormlAssets, cb),
+    subscribeLockBalanceChange(chain, api, accountIds, nativeAsset?.assetId, callback),
+    subscribeLockOrmlAssetChange(chain, api, accountIds, ormlAssets, callback),
   ]);
 }
