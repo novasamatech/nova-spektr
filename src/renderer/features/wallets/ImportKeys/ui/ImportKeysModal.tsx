@@ -1,8 +1,6 @@
 import { useUnit } from 'effector-react';
 import { useEffect } from 'react';
 
-// @ts-ignore
-import templateFile from '@shared/assets/files/dd-template.yaml';
 import { Alert, BaseModal, Button, InfoLink, InputFile, InputHint } from '@shared/ui';
 import type { AccountId, ChainAccount, ShardAccount, DraftAccount } from '@shared/core';
 import { useI18n } from '@app/providers';
@@ -92,7 +90,12 @@ export const ImportKeysModal = ({ isOpen, rootAccountId, existingKeys, onConfirm
           ))}
         </Alert>
 
-        <InfoLink url={templateFile} className="gap-x-1 mt-2 px-3" iconName="import" iconPosition="right" download>
+        <InfoLink
+          url="https://github.com/novasamatech/nova-spektr-utils/blob/main/templates/dd-template.yaml"
+          className="gap-x-1 mt-2 px-3"
+          iconName="import"
+          iconPosition="right"
+        >
           {t('dynamicDerivations.importKeys.downloadTemplateButton')}
         </InfoLink>
       </div>
