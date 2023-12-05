@@ -16,7 +16,7 @@ function initConnection(chain: Chain) {
     }
 
     try {
-      // TODO: Add connection support to use light clients and single selected node
+      // TODO: (current task) Provide connection to use light clients and single selected or custom nodes
       let provider = new WsProvider(chain.nodes.map((node) => node.url));
 
       if (!provider) {
