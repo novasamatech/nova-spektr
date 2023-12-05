@@ -16,16 +16,16 @@ import { DdKeyQrReader } from './DdKeyQrReader/DdKeyQrReader';
 type Props = {
   walletName: string;
   rootKey: AccountId;
-  accounts: DerivationsAccounts[];
+  keys: DerivationsAccounts[];
   isOpen: boolean;
   onComplete: () => void;
   onClose: () => void;
 };
 
-export const DerivationsAddressModal = ({ rootKey, accounts, onClose, isOpen, walletName, onComplete }: Props) => {
+export const DerivationsAddressModal = ({ rootKey, keys, onClose, isOpen, walletName, onComplete }: Props) => {
   const { t } = useI18n();
+
   const [isScanStep, toggleIsScanStep] = useToggle(false);
-  const derivations = derivationAddressUtils.createDerivationsRequest(accounts);
 
   const handleScanResult = (result: DdAddressInfoDecoded[]) => {
     const derivationsByPath = keyBy(result, (d) => `${d.derivationPath}${d.encryption}`);
@@ -33,7 +33,7 @@ export const DerivationsAddressModal = ({ rootKey, accounts, onClose, isOpen, wa
   };
 
   const createWallet = (derivedKeys: Dictionary<DdAddressInfoDecoded>) => {
-    const accountsToSave = derivationAddressUtils.createDerivedAccounts(derivedKeys, accounts);
+    const accountsToSave = derivationAddressUtils.createDerivedAccounts(derivedKeys, keys);
 
     walletModel.events.polkadotVaultCreated({
       wallet: {
@@ -64,7 +64,11 @@ export const DerivationsAddressModal = ({ rootKey, accounts, onClose, isOpen, wa
       ) : (
         <div className="flex flex-col items-center">
           <SmallTitleText className="mb-6">{t('signing.scanQrTitle')}</SmallTitleText>
-          <QrDerivationsGenerator address={toAddress(rootKey, { prefix: 1 })} derivations={derivations} size={240} />
+          <QrDerivationsGenerator
+            size={240}
+            address={toAddress(rootKey, { prefix: 1 })}
+            derivations={derivationAddressUtils.createDerivationsRequest(keys)}
+          />
           <InfoLink url={TROUBLESHOOTING_URL} className="mt-10.5 mb-8.5">
             {t('signing.troubleshootingLink')}
           </InfoLink>

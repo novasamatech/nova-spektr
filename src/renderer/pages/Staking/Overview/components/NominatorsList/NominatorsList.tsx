@@ -13,7 +13,7 @@ import { TimeToEra } from '../TimeToEra/TimeToEra';
 import { NominatorInfo } from '../../common/types';
 
 type Props = {
-  nominators: (NominatorInfo<ShardAccount>[] | NominatorInfo)[];
+  nominators: Array<NominatorInfo<Account> | NominatorInfo<ShardAccount>[]>;
   isStakingLoading: boolean;
   api?: ApiPromise;
   era?: number;
@@ -38,7 +38,7 @@ export const NominatorsList = ({
   const { t } = useI18n();
   const { getNextUnstakingEra, hasRedeem } = useStakingData();
 
-  const getUnstakeBadge = (stake: NominatorInfo) => {
+  const getUnstakeBadge = (stake: NominatorInfo<Account>) => {
     const nextUnstakingEra = getNextUnstakingEra(stake.unlocking, era);
     if (!nextUnstakingEra) return;
 
@@ -54,7 +54,7 @@ export const NominatorsList = ({
     );
   };
 
-  const getRedeemBadge = (stake: NominatorInfo) => {
+  const getRedeemBadge = (stake: NominatorInfo<Account>) => {
     if (!hasRedeem(stake.unlocking, era)) return;
 
     return (
@@ -67,7 +67,7 @@ export const NominatorsList = ({
     );
   };
 
-  const getContent = (stake: NominatorInfo) => (
+  const getContent = (stake: NominatorInfo<Account>) => (
     <>
       {accountUtils.isShardAccount(stake.account) ? (
         <AccountAddress addressFont="text-body" address={stake.address} />

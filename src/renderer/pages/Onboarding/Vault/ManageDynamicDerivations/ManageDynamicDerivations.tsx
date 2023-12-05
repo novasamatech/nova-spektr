@@ -7,10 +7,10 @@ import { u8aToHex } from '@polkadot/util';
 
 import { useI18n, useStatusContext } from '@app/providers';
 import { SeedInfo } from '@renderer/components/common/QrCode/common/types';
-import { IS_WINDOWS, toAddress, dictionary, copyToClipboard } from '@shared/lib/utils';
-import type { ChainAccount, ShardAccount, DraftAccount, ChainId } from '@shared/core';
+import { toAddress, dictionary, IS_MAC } from '@shared/lib/utils';
+import type { ChainAccount, ChainId, ShardAccount, DraftAccount } from '@shared/core';
 import { VaultInfoPopover } from './VaultInfoPopover';
-import { useAltKeyPressed, useToggle } from '@shared/lib/hooks';
+import { useAltOrCtrlKeyPressed, useToggle } from '@shared/lib/hooks';
 import { manageDynamicDerivationsModel } from './model/manage-dynamic-derivations-model';
 import { chainsService } from '@entities/network';
 import { RootAccountLg, accountUtils, DerivedAccount } from '@entities/wallet';
@@ -40,15 +40,16 @@ type Props = {
 export const ManageDynamicDerivations = ({ seedInfo, onBack, onComplete }: Props) => {
   const { t } = useI18n();
   const { showStatus } = useStatusContext();
-  const isAltPressed = useAltKeyPressed();
+  const isAltPressed = useAltOrCtrlKeyPressed();
 
   const accordions = useRef<Record<string, { el: null | HTMLButtonElement; isOpen: boolean }>>({});
 
-  const accounts = useUnit(manageDynamicDerivationsModel.$accounts);
-  const accountsGroups = useUnit(manageDynamicDerivationsModel.$accountsGroups);
+  const keys = useUnit(manageDynamicDerivationsModel.$keys);
+  const keysGroups = useUnit(manageDynamicDerivationsModel.$keysGroups);
+  const hasKeys = useUnit(manageDynamicDerivationsModel.$hasKeys);
+
   const [isAddressModalOpen, toggleIsAddressModalOpen] = useToggle();
   const [isImportModalOpen, toggleIsImportModalOpen] = useToggle();
-
   const [isConstructorModalOpen, toggleConstructorModal] = useToggle();
   const [chainElements, setChainElements] = useState<[string, Array<ChainAccount | ShardAccount[]>][]>([]);
 
@@ -70,14 +71,14 @@ export const ManageDynamicDerivations = ({ seedInfo, onBack, onComplete }: Props
     const chains = chainsService.getChainsData({ sort: true });
     const chainsMap = dictionary(chains, 'chainId', () => []);
 
-    accountsGroups.forEach((account) => {
+    keysGroups.forEach((account) => {
       const chainId = Array.isArray(account) ? account[0].chainId : account.chainId;
 
       chainsMap[chainId].push(account);
     });
 
     setChainElements(Object.entries(chainsMap));
-  }, [accountsGroups]);
+  }, [keysGroups]);
 
   useEffect(() => {
     Object.values(accordions.current).forEach((item) => {
@@ -116,19 +117,20 @@ export const ManageDynamicDerivations = ({ seedInfo, onBack, onComplete }: Props
     toggleConstructorModal();
   };
 
-  const button = IS_WINDOWS ? (
-    <>
-      <HelpText as="span" className="text-text-tertiary">
-        {t('onboarding.vault.hotkeyAlt')}
-      </HelpText>
-      <Icon name="hotkeyAlt" />
-    </>
-  ) : (
+  const button = IS_MAC ? (
     <>
       <HelpText as="span" className="text-text-tertiary">
         {t('onboarding.vault.hotkeyOption')}
       </HelpText>
       <Icon name="hotkeyOption" />
+    </>
+  ) : (
+    <>
+      <HelpText as="span" className="text-text-tertiary">
+        {t('onboarding.vault.hotkeyCtrl')}
+      </HelpText>
+      {/* TODO: update to ctrl Icon when ready */}
+      <Icon name="hotkeyAlt" />
     </>
   );
 
@@ -177,7 +179,7 @@ export const ManageDynamicDerivations = ({ seedInfo, onBack, onComplete }: Props
           </div>
           <div className="flex items-center gap-4">
             <Button size="sm" pallet="secondary" onClick={toggleConstructorModal}>
-              {t('onboarding.vault.addMoreKeysButton')}
+              {hasKeys ? t('onboarding.vault.editKeysButton') : t('onboarding.vault.addMoreKeysButton')}
             </Button>
             <Button size="sm" pallet="secondary" onClick={toggleIsImportModalOpen}>
               {t('onboarding.vault.importButton')}
@@ -252,7 +254,7 @@ export const ManageDynamicDerivations = ({ seedInfo, onBack, onComplete }: Props
 
       <KeyConstructor
         title={name?.value}
-        existingKeys={accounts}
+        existingKeys={keys}
         isOpen={isConstructorModalOpen}
         onClose={toggleConstructorModal}
         onConfirm={handleConstructorKeys}
@@ -262,7 +264,7 @@ export const ManageDynamicDerivations = ({ seedInfo, onBack, onComplete }: Props
         isOpen={isAddressModalOpen}
         walletName={walletName}
         rootKey={publicKey}
-        accounts={accounts}
+        keys={keys}
         onComplete={handleSuccess}
         onClose={toggleIsAddressModalOpen}
       />
@@ -270,7 +272,7 @@ export const ManageDynamicDerivations = ({ seedInfo, onBack, onComplete }: Props
       <ImportKeysModal
         isOpen={isImportModalOpen}
         rootAccountId={publicKey}
-        existingKeys={accounts}
+        existingKeys={keys}
         onClose={toggleIsImportModalOpen}
         onConfirm={handleImportKeys}
       />

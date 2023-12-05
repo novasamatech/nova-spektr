@@ -1,11 +1,13 @@
-import { ValidationErrorsLabel } from '../lib/types';
+import { DerivationValidationError, ValidationError } from '../lib/types';
+
+export type ErrorDetails = Record<DerivationValidationError, string[]>;
 
 export class DerivationImportError extends Error {
-  paths?: string[];
-  message: ValidationErrorsLabel;
-  constructor(message: ValidationErrorsLabel, invalidPaths?: string[]) {
-    super(message);
-    this.message = message;
-    this.paths = invalidPaths;
+  error: ValidationError;
+  errorDetails?: ErrorDetails;
+  constructor(error: ValidationError, errorDetails?: ErrorDetails) {
+    super();
+    this.error = error;
+    this.errorDetails = errorDetails;
   }
 }
