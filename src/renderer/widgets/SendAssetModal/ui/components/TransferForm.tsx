@@ -22,7 +22,7 @@ import AccountSelectModal from '@pages/Operations/components/modals/AccountSelec
 import type { Chain, Account, MultisigAccount, Asset, Address, ChainId, HexString } from '@shared/core';
 import * as sendAssetModel from '../../model/send-asset';
 import { accountUtils } from '@entities/wallet';
-import { balanceModel, getBalance } from '@entities/balance';
+import { balanceModel, balanceUtils } from '@entities/balance';
 
 const DESCRIPTION_MAX_LENGTH = 120;
 
@@ -153,11 +153,11 @@ export const TransferForm = ({
   ) => {
     const accountId = toAccountId(address);
 
-    const balance = getBalance(balances, accountId, chain.chainId, asset.assetId.toString());
+    const balance = balanceUtils.getBalance(balances, accountId, chain.chainId, asset.assetId.toString());
     callbackBalance(balance ? transferableAmount(balance) : '0');
 
     if (asset.assetId !== 0) {
-      const nativeBalance = getBalance(balances, accountId, chain.chainId, '0');
+      const nativeBalance = balanceUtils.getBalance(balances, accountId, chain.chainId, '0');
       callbackNativeToken(nativeBalance ? transferableAmount(nativeBalance) : '0');
     }
   };

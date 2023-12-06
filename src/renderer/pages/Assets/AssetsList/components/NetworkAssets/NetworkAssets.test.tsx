@@ -19,6 +19,11 @@ jest.mock('@app/providers', () => ({
   }),
 }));
 
+jest.mock('@shared/lib/hooks', () => ({
+  ...jest.requireActual('@shared/lib/hooks'),
+  useThrottle: jest.fn().mockImplementation((value: any) => value),
+}));
+
 const testBalances = [
   {
     assetId: testAsset.assetId.toString(),
@@ -33,7 +38,7 @@ const testBalances = [
     accountId: TEST_ACCOUNT_ID,
     free: '1000000000000',
     frozen: [{ type: 'test', amount: '1' }],
-    // verified: false,
+    verified: false,
   },
 ];
 

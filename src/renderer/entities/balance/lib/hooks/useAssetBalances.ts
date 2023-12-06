@@ -2,6 +2,7 @@ import { useUnit } from 'effector-react';
 
 import { AccountId, Balance, ChainId } from '@shared/core';
 import { balanceModel } from '../../model/balance-model';
+import { balanceUtils } from '../common/utils';
 
 type Props = {
   chainId: ChainId;
@@ -11,7 +12,5 @@ type Props = {
 export const useAssetBalances = ({ chainId, accountIds, assetId }: Props): Balance[] => {
   const balances = useUnit(balanceModel.$balances);
 
-  return balances.filter(
-    (balance) => accountIds.includes(balance.accountId) && balance.chainId === chainId && balance.assetId === assetId,
-  );
+  return balanceUtils.getAssetBalances(balances, accountIds, chainId, assetId);
 };

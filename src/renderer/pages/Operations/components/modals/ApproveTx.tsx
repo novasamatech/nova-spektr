@@ -30,7 +30,7 @@ import {
   useTransaction,
   validateBalance,
 } from '@entities/transaction';
-import { balanceModel, getBalance, getBalanceWrapped } from '@entities/balance';
+import { balanceModel, balanceUtils } from '@entities/balance';
 
 type Props = {
   tx: MultisigTransactionDS;
@@ -164,7 +164,12 @@ const ApproveTx = ({ tx, account, connection }: Props) => {
     if (!connection.api || !feeTx || !signAccount.accountId || !nativeAsset) return false;
 
     const fee = await getTransactionFee(feeTx, connection.api);
-    const balance = getBalance(balances, signAccount.accountId, connection.chainId, nativeAsset.assetId.toString());
+    const balance = balanceUtils.getBalance(
+      balances,
+      signAccount.accountId,
+      connection.chainId,
+      nativeAsset.assetId.toString(),
+    );
 
     if (!balance) return false;
 
@@ -199,7 +204,7 @@ const ApproveTx = ({ tx, account, connection }: Props) => {
       chainId: tx.chainId,
       transaction: approveTx,
       assetId: nativeAsset.assetId.toString(),
-      getBalance: getBalanceWrapped(balances),
+      getBalance: balanceUtils.getBalanceWrapped(balances),
       getTransactionFee,
     });
 

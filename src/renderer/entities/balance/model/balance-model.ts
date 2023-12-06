@@ -4,6 +4,7 @@ import { throttle } from 'patronum';
 import { Balance, kernelModel } from '@shared/core';
 import { useBalanceService } from '../lib/balanceService';
 import { splice } from '@shared/lib/utils';
+import { SAVE_TIMEOUT } from '../lib';
 
 const balanceService = useBalanceService();
 
@@ -31,7 +32,7 @@ sample({
 
 throttle({
   source: $balances,
-  timeout: 5000,
+  timeout: SAVE_TIMEOUT,
   target: insertBalancesFx,
 });
 
@@ -51,7 +52,9 @@ sample({
       return balances.concat(newBalance);
     }
 
-    return splice(balances, { ...balances[oldBalanceIndex], ...newBalance }, oldBalanceIndex);
+    const updatedBalance = { ...balances[oldBalanceIndex], ...newBalance };
+
+    return splice(balances, updatedBalance, oldBalanceIndex);
   },
   target: $balances,
 });

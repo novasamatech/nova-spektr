@@ -27,7 +27,7 @@ import {
   validateBalance,
   isXcmTransaction,
 } from '@entities/transaction';
-import { balanceModel, getBalance, getBalanceWrapped } from '@entities/balance';
+import { balanceModel, balanceUtils } from '@entities/balance';
 
 type Props = {
   tx: MultisigTransactionDS;
@@ -88,7 +88,7 @@ const RejectTx = ({ tx, account, connection }: Props) => {
       chainId: tx.chainId,
       transaction: rejectTx,
       assetId: nativeAsset.assetId.toString(),
-      getBalance: getBalanceWrapped(balances),
+      getBalance: balanceUtils.getBalanceWrapped(balances),
       getTransactionFee,
     });
 
@@ -151,7 +151,12 @@ const RejectTx = ({ tx, account, connection }: Props) => {
     if (!connection.api || !rejectTx || !signAccount.accountId || !nativeAsset) return false;
 
     const fee = await getTransactionFee(rejectTx, connection.api);
-    const balance = getBalance(balances, signAccount.accountId, connection.chainId, nativeAsset.assetId.toString());
+    const balance = balanceUtils.getBalance(
+      balances,
+      signAccount.accountId,
+      connection.chainId,
+      nativeAsset.assetId.toString(),
+    );
 
     if (!balance) return false;
 

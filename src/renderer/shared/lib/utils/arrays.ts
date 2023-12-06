@@ -36,3 +36,7 @@ export function dictionary<T extends Record<K, PropertyKey>, K extends KeysOfTyp
     return acc;
   }, {} as Record<T[K], any>);
 }
+
+export function getRepeatedIndex(index: number, base: number): number {
+  return Math.floor(index / base);
+}
