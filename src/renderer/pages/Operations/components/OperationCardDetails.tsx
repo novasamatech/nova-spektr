@@ -30,7 +30,6 @@ export const OperationCardDetails = ({ tx, account, connection }: Props) => {
   const accounts = useUnit(walletModel.$accounts);
 
   const api = connection?.api;
-  const chainId = connection?.chainId;
 
   const [isAdvancedShown, toggleAdvanced] = useToggle();
   const [isValidatorsOpen, toggleValidators] = useToggle();
@@ -44,7 +43,7 @@ export const OperationCardDetails = ({ tx, account, connection }: Props) => {
       tx.transaction.args.transactions.find((tx: Transaction) => tx.type === 'nominate')?.args?.targets) ||
     [];
 
-  const allValidators = Object.values(useValidatorsMap(api, chainId, connection && isLightClient(connection)));
+  const allValidators = Object.values(useValidatorsMap(api, connection && isLightClient(connection)));
   const selectedValidators: Validator[] =
     allValidators.filter((v) => (transaction?.args.targets || startStakingValidators).includes(v.address)) || [];
   const selectedValidatorsAddress = selectedValidators.map((validator) => validator.address);

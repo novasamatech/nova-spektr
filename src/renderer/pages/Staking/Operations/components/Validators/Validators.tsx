@@ -4,7 +4,7 @@ import { mapValues } from 'lodash';
 
 import { Icon, Shimmering, Loader, BodyText, Button, SearchInput, SmallTitleText, Checkbox } from '@shared/ui';
 import { useI18n } from '@app/providers';
-import { ValidatorMap, useValidators, useValidatorsMap, ValidatorsTable } from '@entities/staking';
+import { ValidatorMap, validatorsService, useValidatorsMap, ValidatorsTable } from '@entities/staking';
 import { includes, cnTw } from '@shared/lib/utils';
 import type { Asset, Explorer, Address, ChainId } from '@shared/core';
 
@@ -19,10 +19,9 @@ type Props = {
   onResult: (validators: ValidatorMap) => void;
 };
 
-export const Validators = ({ api, chainId, asset, explorers, isLightClient, onGoBack, onResult }: Props) => {
+export const Validators = ({ api, asset, explorers, isLightClient, onGoBack, onResult }: Props) => {
   const { t } = useI18n();
-  const { getMaxValidators } = useValidators();
-  const validators = useValidatorsMap(api, chainId, isLightClient);
+  const validators = useValidatorsMap(api, isLightClient);
 
   const [isValidatorsLoading, setIsValidatorsLoading] = useState(true);
 
@@ -32,7 +31,7 @@ export const Validators = ({ api, chainId, asset, explorers, isLightClient, onGo
 
   useEffect(() => {
     if (Object.values(validators).length) {
-      setMaxValidators(getMaxValidators(api));
+      setMaxValidators(validatorsService.getMaxValidators(api));
       setIsValidatorsLoading(false);
       setSelectedValidators(mapValues(validators, () => false));
     }

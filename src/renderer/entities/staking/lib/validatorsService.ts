@@ -5,268 +5,308 @@ import { Data, Option } from '@polkadot/types';
 import { PalletIdentityRegistration } from '@polkadot/types/lookup';
 import { AccountId32 } from '@polkadot/types/interfaces';
 
-import { getValidatorsApy } from './apyCalculator';
-import type { Address, ChainId, EraIndex, Identity, SubIdentity, Validator } from '@shared/core';
+import type { Address, EraIndex, Identity, SubIdentity, Validator } from '@shared/core';
 import { isKusamaChainId } from '@entities/network';
 import { DEFAULT_MAX_NOMINATORS, KUSAMA_MAX_NOMINATORS } from './common/constants';
-import { IValidatorsService, ValidatorMap } from './common/types';
+import { ValidatorMap } from './common/types';
 
-export const useValidators = (): IValidatorsService => {
-  /**
-   * Get simple validators list
-   */
-  const getValidatorsList = async (api: ApiPromise, era: EraIndex): Promise<ValidatorMap> => {
-    const [stake, prefs] = await Promise.all([getValidatorsStake(api, era), getValidatorsPrefs(api, era)]);
+export const validatorsService = {
+  getValidatorsWithInfo,
+  getValidatorsList,
+  getMaxValidators,
+  getNominators,
+};
 
-    return merge(stake, prefs);
-  };
+/**
+ * Get simple validators list
+ */
+async function getValidatorsList(api: ApiPromise, era: EraIndex): Promise<ValidatorMap> {
+  const validatorsStakeFn = isOldRuntimeForValidators(api) ? getValidatorsStake : getValidatorsStake_NEW;
 
-  /**
-   * Get validators with their identity, apy and slashing spans
-   */
-  const getValidatorsWithInfo = async (
-    chainId: ChainId,
-    api: ApiPromise,
-    era: EraIndex,
-    isLightClient?: boolean,
-  ): Promise<ValidatorMap> => {
-    const [stake, prefs] = await Promise.all([getValidatorsStake(api, era), getValidatorsPrefs(api, era)]);
+  const [stake, prefs] = await Promise.all([validatorsStakeFn(api, era), getValidatorsPrefs(api, era)]);
 
-    const mergedValidators = merge(stake, prefs);
+  return merge(stake, prefs);
+}
 
-    const [identity, apy, slashes] = await Promise.all([
-      getIdentities(api, Object.keys(mergedValidators), isLightClient),
-      getApy(api, Object.values(mergedValidators)),
-      getSlashingSpans(api, Object.keys(stake), era, isLightClient),
-    ]);
+/**
+ * Get validators with identity, apy and slashing spans
+ */
+async function getValidatorsWithInfo(api: ApiPromise, era: EraIndex, isLightClient?: boolean): Promise<ValidatorMap> {
+  const validatorsStakeFn = isOldRuntimeForValidators(api) ? getValidatorsStake : getValidatorsStake_NEW;
 
-    return merge(mergedValidators, apy, identity, slashes);
-  };
+  const [stake, prefs] = await Promise.all([validatorsStakeFn(api, era), getValidatorsPrefs(api, era)]);
 
-  const getValidatorsStake = async (api: ApiPromise, era: EraIndex): Promise<ValidatorMap> => {
-    // HINT: uncomment if we need full lit of nominators (even those who doesn't get rewards)
-    // const data = await api.query.staking.erasStakers.entries(era);
-    const data = await api.query.staking.erasStakersClipped.entries(era);
-    const maxNominatorRewarded = getMaxNominatorRewarded(api);
+  const mergedValidators = merge(stake, prefs);
 
-    return data.reduce((acc, [storageKey, type]) => {
-      const address = storageKey.args[1].toString();
-      const totalStake = type.total.toString();
-      const oversubscribed = type.others.length >= maxNominatorRewarded;
-      const nominators = type.others.map((n) => ({ who: n.who.toString(), value: n.value.toString() }));
+  const [identity, slashes] = await Promise.all([
+    getIdentities(api, Object.keys(mergedValidators), isLightClient),
+    getSlashingSpans(api, Object.keys(stake), era, isLightClient),
+    // getApy(api, Object.values(mergedValidators)),
+  ]);
 
-      const payload = { totalStake, address, oversubscribed, nominators, ownStake: type.own.toString() };
+  return merge(mergedValidators, identity, slashes);
+}
 
-      return { ...acc, [address]: payload };
-    }, {});
-  };
+async function getValidatorsStake(api: ApiPromise, era: EraIndex): Promise<ValidatorMap> {
+  // HINT: uncomment if we need full list of nominators (even those who doesn't get rewards)
+  // const data = await api.query.staking.erasStakers.entries(era);
+  const data = await api.query.staking.erasStakersClipped.entries(era);
+  const maxNominatorRewarded = getMaxNominatorRewarded(api);
 
-  const getValidatorsPrefs = async (api: ApiPromise, era: EraIndex): Promise<ValidatorMap> => {
-    const data = await api.query.staking.erasValidatorPrefs.entries(era);
+  return data.reduce((acc, [storageKey, type]) => {
+    const address = storageKey.args[1].toString();
+    const totalStake = type.total.toString();
+    const oversubscribed = type.others.length >= maxNominatorRewarded;
+    const nominators = type.others.map((n) => ({ who: n.who.toString(), value: n.value.toString() }));
 
-    return data.reduce((acc, [storageKey, type]) => {
-      const address = storageKey.args[1].toString();
-      const commission = parseFloat(type.commission.toHuman() as string);
-      const payload = { address, commission, blocked: type.blocked.toHuman() };
+    const payload = { totalStake, address, oversubscribed, nominators, ownStake: type.own.toString() };
 
-      return { ...acc, [address]: payload };
-    }, {});
-  };
+    return { ...acc, [address]: payload };
+  }, {});
+}
 
-  const getDefaultValidatorsAmount = (api: ApiPromise): number => {
-    if (isKusamaChainId(api.genesisHash.toHex())) return KUSAMA_MAX_NOMINATORS;
+type ValidatorStake = Pick<Validator, 'address' | 'totalStake' | 'oversubscribed' | 'ownStake' | 'nominators'>;
+async function getValidatorsStake_NEW(api: ApiPromise, era: EraIndex): Promise<Record<Address, ValidatorStake>> {
+  // HINT: to get full list of nominators uncomment code below to paginate for each validator
+  const data = await api.query.staking.erasStakersOverview.entries(era);
 
-    return DEFAULT_MAX_NOMINATORS;
-  };
+  return data.reduce<Record<Address, ValidatorStake>>((acc, [storageKey, type]) => {
+    const address = storageKey.args[1].toString();
 
-  const getMaxValidators = (api: ApiPromise): number => {
-    if (api.consts.staking.maxNominations) {
-      return api.consts.staking.maxNominations.toNumber();
-    } else {
-      return getDefaultValidatorsAmount(api);
-    }
-  };
+    // const pageCount = type.value.pageCount.toNumber();
+    // const pagedRequests = Array.from({ length: pageCount }, (_, index) => [era, address, index]);
+    // acc.requests.push(api.query.staking.erasStakersPaged.multi(pagedRequests));
 
-  const getIdentities = async (
-    api: ApiPromise,
-    addresses: Address[],
-    isLightClient?: boolean,
-  ): Promise<Record<Address, Identity>> => {
-    const subIdentities = await getSubIdentities(api, addresses, isLightClient);
-    const parentIdentities = await getParentIdentities(api, subIdentities, isLightClient);
+    acc[address] = {
+      address,
+      // @ts-ignore
+      totalStake: type.value.total.toString(),
+      oversubscribed: false,
+      // @ts-ignore
+      ownStake: type.value.own.toString(),
+      nominators: [],
+    };
 
-    return addresses.reduce((acc, address) => {
-      return { ...acc, [address]: { identity: parentIdentities[address] } };
-    }, {});
-  };
+    return acc;
+  }, {});
 
-  const getSubIdentities = async (
-    api: ApiPromise,
-    addresses: Address[],
-    isLightClient?: boolean,
-  ): Promise<SubIdentity[]> => {
-    if (isLightClient) {
-      const wrappedIdentities = await api.query.identity.superOf.entries();
+  // const nominatorsPages = await Promise.all(requests);
+  // return stakes.reduce<Record<Address, ValidatorStake>>((acc, stake, index) => {
+  //   const nominators = nominatorsPages[index].flatMap((pages) => {
+  //     return pages.value.others.map((page: any) => ({ who: page.who.toString(), value: page.value.toString() }));
+  //   });
+  //
+  //   acc[stake.address] = { ...stake, nominators };
+  //
+  //   return acc;
+  // }, {});
+}
 
-      const subIdentities = wrappedIdentities.reduce<Record<Address, [AccountId32, Data]>>(
-        (acc, [storageKey, wrappedIdentity]) => {
-          acc[storageKey.args[0].toString()] = wrappedIdentity.unwrap();
+async function getValidatorsPrefs(api: ApiPromise, era: EraIndex): Promise<ValidatorMap> {
+  const data = await api.query.staking.erasValidatorPrefs.entries(era);
 
-          return acc;
-        },
-        {},
-      );
+  return data.reduce((acc, [storageKey, type]) => {
+    const address = storageKey.args[1].toString();
+    const commission = parseFloat(type.commission.toHuman() as string);
+    const payload = { address, commission, blocked: type.blocked.toHuman() };
 
-      return addresses.reduce<SubIdentity[]>((acc, subAddress) => {
-        const payload = { sub: subAddress, parent: subAddress, subName: '' };
+    return { ...acc, [address]: payload };
+  }, {});
+}
 
-        if (subIdentities[subAddress]) {
-          const rawData = subIdentities[subAddress];
-          payload.parent = rawData[0].toHuman();
-          payload.subName = rawData[1].isRaw ? u8aToString(rawData[1].asRaw) : rawData[1].value.toString();
-        }
+function getDefaultValidatorsAmount(api: ApiPromise): number {
+  if (isKusamaChainId(api.genesisHash.toHex())) return KUSAMA_MAX_NOMINATORS;
 
-        return acc.concat(payload);
-      }, []);
-    }
+  return DEFAULT_MAX_NOMINATORS;
+}
 
-    const subIdentities = await api.query.identity.superOf.multi(addresses);
+function getMaxValidators(api: ApiPromise): number {
+  if (api.consts.staking.maxNominations) {
+    // @ts-ignore
+    return api.consts.staking.maxNominations.toNumber();
+  }
 
-    return subIdentities.reduce<SubIdentity[]>((acc, identity, index) => {
-      const payload = { sub: addresses[index], parent: addresses[index], subName: '' };
-      if (!identity.isNone) {
-        const [address, rawData] = identity.unwrap();
-        payload.parent = address.toHuman();
-        payload.subName = rawData.isRaw ? u8aToString(rawData.asRaw) : rawData.value.toString();
+  return getDefaultValidatorsAmount(api);
+}
+
+async function getIdentities(
+  api: ApiPromise,
+  addresses: Address[],
+  isLightClient?: boolean,
+): Promise<Record<Address, Identity>> {
+  const subIdentities = await getSubIdentities(api, addresses, isLightClient);
+  const parentIdentities = await getParentIdentities(api, subIdentities, isLightClient);
+
+  return addresses.reduce((acc, address) => {
+    return { ...acc, [address]: { identity: parentIdentities[address] } };
+  }, {});
+}
+
+async function getSubIdentities(
+  api: ApiPromise,
+  addresses: Address[],
+  isLightClient?: boolean,
+): Promise<SubIdentity[]> {
+  if (isLightClient) {
+    const wrappedIdentities = await api.query.identity.superOf.entries();
+
+    const subIdentities = wrappedIdentities.reduce<Record<Address, [AccountId32, Data]>>(
+      (acc, [storageKey, wrappedIdentity]) => {
+        acc[storageKey.args[0].toString()] = wrappedIdentity.unwrap();
+
+        return acc;
+      },
+      {},
+    );
+
+    return addresses.reduce<SubIdentity[]>((acc, subAddress) => {
+      const payload = { sub: subAddress, parent: subAddress, subName: '' };
+
+      if (subIdentities[subAddress]) {
+        const rawData = subIdentities[subAddress];
+        payload.parent = rawData[0].toHuman();
+        payload.subName = rawData[1].isRaw ? u8aToString(rawData[1].asRaw) : rawData[1].value.toString();
       }
 
       return acc.concat(payload);
     }, []);
-  };
+  }
 
-  const getParentIdentities = async (
-    api: ApiPromise,
-    subIdentities: SubIdentity[],
-    isLightClient?: boolean,
-  ): Promise<Record<Address, Identity>> => {
-    let parentIdentities;
+  const subIdentities = await api.query.identity.superOf.multi(addresses);
 
-    if (isLightClient) {
-      const wrappedIdentities = await api.query.identity.identityOf.entries();
-
-      const identities = wrappedIdentities.reduce<Record<Address, Option<PalletIdentityRegistration>>>(
-        (acc, [storageKey, identity]) => {
-          const address = storageKey.args[0].toString();
-          acc[address] = identity;
-
-          return acc;
-        },
-        {},
-      );
-
-      parentIdentities = subIdentities.map((identity) => identities[identity.parent]);
-    } else {
-      const identityAddresses = subIdentities.map((identity) => identity.parent);
-      parentIdentities = await api.query.identity.identityOf.multi(identityAddresses);
+  return subIdentities.reduce<SubIdentity[]>((acc, identity, index) => {
+    const payload = { sub: addresses[index], parent: addresses[index], subName: '' };
+    if (!identity.isNone) {
+      const [address, rawData] = identity.unwrap();
+      payload.parent = address.toHuman();
+      payload.subName = rawData.isRaw ? u8aToString(rawData.asRaw) : rawData.value.toString();
     }
 
-    return parentIdentities.reduce<Record<Address, Identity>>((acc, identity, index) => {
-      if (!identity || identity.isNone) return acc;
+    return acc.concat(payload);
+  }, []);
+}
 
-      const { parent, sub, subName } = subIdentities[index];
-      const { info } = identity.unwrap(); // { judgements, info }
-      const { display, web, riot, email, twitter } = info;
+async function getParentIdentities(
+  api: ApiPromise,
+  subIdentities: SubIdentity[],
+  isLightClient?: boolean,
+): Promise<Record<Address, Identity>> {
+  let parentIdentities;
 
-      const payload: Identity = {
-        subName,
-        email: email.isRaw ? u8aToString(email.asRaw) : email.value.toString(),
-        riot: riot.isRaw ? u8aToString(riot.asRaw) : riot.value.toString(),
-        twitter: twitter.isRaw ? u8aToString(twitter.asRaw) : twitter.value.toString(),
-        website: web.isRaw ? u8aToString(web.asRaw) : web.value.toString(),
-        parent: {
-          address: parent,
-          name: display.isRaw ? u8aToString(display.asRaw) : display.value.toString(),
-        },
-      };
+  if (isLightClient) {
+    const wrappedIdentities = await api.query.identity.identityOf.entries();
 
-      return { ...acc, [sub]: payload };
-    }, {});
-  };
-
-  const getApy = async (api: ApiPromise, validators: Validator[]): Promise<Record<Address, { apy: number }>> => {
-    const apy = await getValidatorsApy(api, validators);
-
-    return Object.entries(apy).reduce((acc, [address, apy]) => {
-      return { ...acc, [address]: { apy } };
-    }, {});
-  };
-
-  const getNominators = async (api: ApiPromise, stash: Address, isLightClient?: boolean): Promise<ValidatorMap> => {
-    try {
-      const data = await api.query.staking.nominators(stash);
-
-      if (data.isNone) return {};
-
-      const nominatorsUnwraped = data.unwrap();
-
-      const nominators = nominatorsUnwraped.targets.toArray().reduce<ValidatorMap>((acc, nominator) => {
-        const address = nominator.toString();
-        acc[address] = { address } as Validator;
+    const identities = wrappedIdentities.reduce<Record<Address, Option<PalletIdentityRegistration>>>(
+      (acc, [storageKey, identity]) => {
+        const address = storageKey.args[0].toString();
+        acc[address] = identity;
 
         return acc;
-      }, {});
+      },
+      {},
+    );
 
-      const identities = await getIdentities(api, Object.keys(nominators), isLightClient);
+    parentIdentities = subIdentities.map((identity) => identities[identity.parent]);
+  } else {
+    const identityAddresses = subIdentities.map((identity) => identity.parent);
+    parentIdentities = await api.query.identity.identityOf.multi(identityAddresses);
+  }
 
-      return merge(nominators, identities);
-    } catch (error) {
-      console.warn(error);
+  return parentIdentities.reduce<Record<Address, Identity>>((acc, identity, index) => {
+    if (!identity || identity.isNone) return acc;
 
-      return {};
-    }
-  };
+    const { parent, sub, subName } = subIdentities[index];
+    const { info } = identity.unwrap(); // { judgements, info }
+    const { display, web, riot, email, twitter } = info;
 
-  const getMaxNominatorRewarded = (api: ApiPromise): number => {
-    return api.consts.staking.maxNominatorRewardedPerValidator.toNumber();
-  };
+    const payload: Identity = {
+      subName,
+      email: email.isRaw ? u8aToString(email.asRaw) : email.value.toString(),
+      riot: riot.isRaw ? u8aToString(riot.asRaw) : riot.value.toString(),
+      twitter: twitter.isRaw ? u8aToString(twitter.asRaw) : twitter.value.toString(),
+      website: web.isRaw ? u8aToString(web.asRaw) : web.value.toString(),
+      parent: {
+        address: parent,
+        name: display.isRaw ? u8aToString(display.asRaw) : display.value.toString(),
+      },
+    };
 
-  const getSlashDeferDuration = (api: ApiPromise): number => {
-    return api.consts.staking.slashDeferDuration.toNumber();
-  };
+    return { ...acc, [sub]: payload };
+  }, {});
+}
 
-  const getSlashingSpans = async (
-    api: ApiPromise,
-    addresses: Address[],
-    era: EraIndex,
-    isLightClient?: boolean,
-  ): Promise<Record<Address, { slashed: boolean }>> => {
-    const slashDeferDuration = getSlashDeferDuration(api);
-    let slashingSpans;
+// Don't show APY in UI right now
+// async function getApy(api: ApiPromise, validators: Validator[]): Promise<Record<Address, { apy: number }>> {
+//   const apy = await getValidatorsApy(api, validators);
+//
+//   return Object.entries(apy).reduce((acc, [address, apy]) => {
+//     return { ...acc, [address]: { apy } };
+//   }, {});
+// }
 
-    if (isLightClient) {
-      const slashingSpansWrapped = await api.query.staking.slashingSpans.entries();
-      slashingSpans = slashingSpansWrapped
-        .filter(([storageKey]) => addresses.includes(storageKey.args[0].toString()))
-        .map((spanWrapped) => spanWrapped[1]);
-    } else {
-      slashingSpans = await api.query.staking.slashingSpans.multi(addresses);
-    }
+async function getNominators(api: ApiPromise, stash: Address, isLightClient?: boolean): Promise<ValidatorMap> {
+  try {
+    const data = await api.query.staking.nominators(stash);
 
-    return slashingSpans.reduce((acc, span, index) => {
-      let validatorIsSlashed = false;
-      if (!span.isNone) {
-        const { lastNonzeroSlash } = span.unwrap();
-        validatorIsSlashed = era - lastNonzeroSlash.toNumber() < slashDeferDuration;
-      }
+    if (data.isNone) return {};
 
-      return { ...acc, [addresses[index]]: { slashed: validatorIsSlashed } };
+    const nominatorsUnwraped = data.unwrap();
+
+    const nominators = nominatorsUnwraped.targets.toArray().reduce<ValidatorMap>((acc, nominator) => {
+      const address = nominator.toString();
+      acc[address] = { address } as Validator;
+
+      return acc;
     }, {});
-  };
 
-  return {
-    getValidatorsWithInfo,
-    getValidatorsList,
-    getMaxValidators,
-    getNominators,
-  };
-};
+    const identities = await getIdentities(api, Object.keys(nominators), isLightClient);
+
+    return merge(nominators, identities);
+  } catch (error) {
+    console.warn(error);
+
+    return {};
+  }
+}
+
+// TODO: remove after DOT/KSM updates their runtime
+function isOldRuntimeForValidators(api: ApiPromise): boolean {
+  return Boolean(api.consts.staking.maxNominatorRewardedPerValidator);
+}
+
+function getMaxNominatorRewarded(api: ApiPromise): number {
+  return api.consts.staking.maxNominatorRewardedPerValidator.toNumber();
+}
+
+function getSlashDeferDuration(api: ApiPromise): number {
+  return api.consts.staking.slashDeferDuration.toNumber();
+}
+
+async function getSlashingSpans(
+  api: ApiPromise,
+  addresses: Address[],
+  era: EraIndex,
+  isLightClient?: boolean,
+): Promise<Record<Address, { slashed: boolean }>> {
+  const slashDeferDuration = getSlashDeferDuration(api);
+  let slashingSpans;
+
+  if (isLightClient) {
+    const slashingSpansWrapped = await api.query.staking.slashingSpans.entries();
+    slashingSpans = slashingSpansWrapped
+      .filter(([storageKey]) => addresses.includes(storageKey.args[0].toString()))
+      .map((spanWrapped) => spanWrapped[1]);
+  } else {
+    slashingSpans = await api.query.staking.slashingSpans.multi(addresses);
+  }
+
+  return slashingSpans.reduce((acc, span, index) => {
+    let validatorIsSlashed = false;
+    if (!span.isNone) {
+      const { lastNonzeroSlash } = span.unwrap();
+      validatorIsSlashed = era - lastNonzeroSlash.toNumber() < slashDeferDuration;
+    }
+
+    return { ...acc, [addresses[index]]: { slashed: validatorIsSlashed } };
+  }, {});
+}
