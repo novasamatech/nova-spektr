@@ -129,8 +129,7 @@ export const ManageVault = ({ seedInfo, onBack, onComplete }: Props) => {
       <HelpText as="span" className="text-text-tertiary">
         {t('onboarding.vault.hotkeyCtrl')}
       </HelpText>
-      {/* TODO: update to ctrl Icon when ready */}
-      <Icon name="hotkeyAlt" />
+      <Icon name="hotkeyCtrl" />
     </>
   );
 
