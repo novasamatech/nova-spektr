@@ -4,7 +4,8 @@ import { createEndpoint } from '@remote-ui/rpc';
 import { AccountId, Chain, ChainId, kernelModel } from '@shared/core';
 import { ProxiedAccount, ProxyStore } from '../common/types';
 import { networkModel } from '@/src/renderer/entities/network';
-import { isRegularProxy } from '../common/utils';
+import { getAccountsProxy, isRegularProxy } from '../common/utils';
+import { walletModel } from '@/src/renderer/entities/wallet';
 
 // @ts-ignore
 const worker = new Worker(new URL('@features/proxies/workers/proxy-worker', import.meta.url));
@@ -14,6 +15,7 @@ const endpoint = createEndpoint(worker, {
 });
 
 const $proxies = createStore<ProxyStore>({});
+const $accountProxies = createStore<ProxyStore>({});
 
 const connected = createEvent<ChainId>();
 
@@ -66,6 +68,14 @@ sample({
   target: disconnectFx,
 });
 
+sample({
+  clock: $proxies,
+  source: walletModel.$accounts,
+  fn: (accounts, proxies) => getAccountsProxy(accounts, proxies),
+  target: $accountProxies,
+});
+
 export const proxiesModel = {
   $proxies,
+  $accountProxies,
 };

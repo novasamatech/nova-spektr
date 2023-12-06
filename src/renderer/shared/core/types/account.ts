@@ -55,6 +55,7 @@ export const enum AccountType {
   // SHARD = 'shard',
   MULTISIG = 'multisig',
   WALLET_CONNECT = 'wallet_connect',
+  REGULAR_PROXY = 'regular_proxy',
 }
 
 export const enum KeyType {

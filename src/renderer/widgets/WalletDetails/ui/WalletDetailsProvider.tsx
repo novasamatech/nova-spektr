@@ -18,11 +18,12 @@ export const WalletDetailsProvider = () => {
   const multisigAccount = useUnit(walletProviderModel.$multisigAccount);
   const contacts = useUnit(walletProviderModel.$signatoryContacts);
   const signatoryWallets = useUnit(walletProviderModel.$signatoryWallets);
-  const proxies = useUnit(proxiesModel.$proxies);
+  // const proxies = useUnit(proxiesModel.$proxies);
+  const accountProxies = useUnit(proxiesModel.$accountProxies);
 
   useEffect(() => {
-    console.log('proxies', proxies);
-  }, [proxies]);
+    console.log('proxies', accountProxies);
+  }, [accountProxies]);
 
   if (!wallet) return null;
 

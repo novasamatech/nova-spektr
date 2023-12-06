@@ -62,11 +62,11 @@ async function getProxies(chainId: ChainId) {
     const keys = await api.query.proxy.proxies.keys();
 
     await Promise.all(
-      keys.map(async (keyOld) => {
+      keys.map(async (key) => {
         try {
-          const proxyData = (await api.rpc.state.queryStorageAt([keyOld])) as any;
+          const proxyData = (await api.rpc.state.queryStorageAt([key])) as any;
 
-          const proxyAccountId = keyOld.args[0].toHex();
+          const proxyAccountId = key.args[0].toHex();
           const accounts = proxyData[0][0].toHuman();
           const deposit = proxyData[0][1].toNumber();
 
