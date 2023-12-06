@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { UnsignedTransaction } from '@substrate/txwrapper-polkadot';
-import { useStore, useGate } from 'effector-react';
+import { useStore, useGate, useUnit } from 'effector-react';
 import { useNavigate } from 'react-router-dom';
 
 import { useI18n, useNetworkContext } from '@app/providers';
@@ -14,7 +14,7 @@ import { OperationTitle } from '@renderer/components/common';
 import { useToggle } from '@shared/lib/hooks';
 import * as sendAssetModel from '../model/send-asset';
 import type { Chain, Asset, Account, MultisigAccount, HexString } from '@shared/core';
-import { accountUtils } from '@entities/wallet';
+import { accountUtils, walletModel, walletUtils } from '@entities/wallet';
 import { priceProviderModel } from '@entities/price';
 
 const enum Step {
@@ -36,6 +36,7 @@ export const SendAssetModal = ({ chain, asset }: Props) => {
   const { getBalance } = useBalance();
   const { getTransactionFee, setTxs, txs, setWrappers, wrapTx } = useTransaction();
   const { connections } = useNetworkContext();
+  const activeWallet = useUnit(walletModel.$activeWallet);
   const config = useStore(sendAssetModel.$finalConfig);
   const xcmAsset = useStore(sendAssetModel.$xcmAsset);
   const destinationChain = useStore(sendAssetModel.$destinationChain);
@@ -55,6 +56,12 @@ export const SendAssetModal = ({ chain, asset }: Props) => {
   useEffect(() => {
     priceProviderModel.events.assetsPricesRequested({ includeRates: true });
   }, []);
+
+  useEffect(() => {
+    if (isModalOpen && walletUtils.isWatchOnly(activeWallet)) {
+      toggleIsModalOpen();
+    }
+  }, [activeWallet]);
 
   useGate(sendAssetModel.PropsGate, { chain, asset, api });
 

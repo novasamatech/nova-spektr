@@ -20,10 +20,9 @@ type Props = {
   query?: string;
   chain: Chain | ExtendedChain;
   accounts: Account[];
-  canMakeActions?: boolean;
 };
 
-export const NetworkAssets = ({ query, hideZeroBalance, chain, accounts, searchSymbolOnly, canMakeActions }: Props) => {
+export const NetworkAssets = ({ query, hideZeroBalance, chain, accounts, searchSymbolOnly }: Props) => {
   const { t } = useI18n();
   const { getLiveNetworkBalances } = useBalance();
 
@@ -127,7 +126,6 @@ export const NetworkAssets = ({ query, hideZeroBalance, chain, accounts, searchS
                 chainId={chain.chainId}
                 asset={asset}
                 balance={balancesObject[asset.assetId.toString()]}
-                canMakeActions={canMakeActions}
               />
             ))}
           </ul>
