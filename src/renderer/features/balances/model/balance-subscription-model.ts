@@ -113,18 +113,6 @@ sample({
   target: $subscriptions,
 });
 
-// sample({
-//   clock: unsubscribeBalancesFx.finally,
-//   source: $subscriptions,
-//   filter: (subscriptions, { params: { chainId } }) => Boolean(subscriptions[chainId]),
-//   fn: (subscriptions, { params: { chainId } }) => {
-//     const { [chainId]: _, ...newSubscriptions } = subscriptions;
-
-//     return newSubscriptions;
-//   },
-//   target: $subscriptions,
-// });
-
 export const balanceSubscriptionModel = {
   $subscriptions,
 };
