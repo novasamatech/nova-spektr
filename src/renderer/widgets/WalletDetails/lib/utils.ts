@@ -1,7 +1,10 @@
+import { stringify } from 'yaml';
+
 import { ForgetStep, ReconnectStep } from './constants';
 import { VaultMap, MultishardMap } from './types';
 import { accountUtils } from '@entities/wallet';
-import { Account, BaseAccount, ChainId, ChainAccount } from '@shared/core';
+import { Account, BaseAccount, ChainId, ChainAccount, Wallet } from '@shared/core';
+import { downloadFiles, exportKeysUtils } from '@features/wallets/ExportKeys';
 
 export const wcDetailsUtils = {
   isNotStarted,
@@ -15,6 +18,7 @@ export const walletDetailsUtils = {
   isForgetModalOpen,
   getVaultAccountsMap,
   getMultishardMap,
+  exportMultishardWallet,
 };
 
 function isNotStarted(step: ReconnectStep, connected: boolean): boolean {
@@ -79,4 +83,33 @@ function getMultishardMap(accounts: Account[]): MultishardMap {
 
     return acc;
   }, new Map());
+}
+
+function exportMultishardWallet(wallet: Wallet, accounts: MultishardMap) {
+  const rootsAndAccounts = Array.from(accounts, ([root, accounts]) => ({ root, accounts }));
+  const downloadData = rootsAndAccounts.map(({ root, accounts }, index) => {
+    const accountsFlat = Object.values(accounts).reduce((acc, chainAccounts) => {
+      acc.push(...chainAccounts);
+
+      return acc;
+    }, []);
+    const exportStructure = exportKeysUtils.getExportStructure(root.accountId, accountsFlat);
+    const fileData = stringify(exportStructure, {
+      schema: 'failsafe',
+      defaultStringType: 'QUOTE_DOUBLE',
+      defaultKeyType: 'PLAIN',
+    });
+    const blob = new Blob([fileData], { type: 'text/plain' });
+
+    const fileName = wallet.name + (rootsAndAccounts.length > 1 ? ' ' + index : '') + '.yaml';
+
+    return {
+      blob,
+      fileName,
+    };
+  });
+
+  console.log(downloadData);
+
+  downloadFiles(downloadData);
 }
