@@ -35,30 +35,19 @@ export const useMetadata = (): IMetadataService => {
       chainId: api.genesisHash.toHex(),
     };
 
-    await updateMetadata(newMetadata);
-
     return newMetadata;
   };
 
-  const subscribeMetadata = (api: ApiPromise): UnsubscribePromise => {
-    return api.rpc.state.subscribeRuntimeVersion(async (version) => {
-      const chainId = api.genesisHash.toHex();
-      const oldMetadata = await getMetadata(chainId);
-
-      if (!oldMetadata || version.specVersion.toNumber() > oldMetadata.version) {
-        await addMetadata({
-          version: version.specVersion.toNumber(),
-          chainId,
-        });
-
-        syncMetadata(api);
-      }
-    });
+  const subscribeMetadata = (api: ApiPromise, callback?: () => void): UnsubscribePromise => {
+    return api.rpc.state.subscribeRuntimeVersion(() => callback?.());
   };
 
   return {
     getMetadata,
     syncMetadata,
     subscribeMetadata,
+    getAllMetadata,
+    addMetadata,
+    updateMetadata,
   };
 };

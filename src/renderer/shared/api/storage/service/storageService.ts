@@ -96,4 +96,5 @@ export const storageService = {
   wallets: new StorageService(dexieStorage.wallets),
   accounts: new StorageService(dexieStorage.accounts),
   contacts: new StorageService(dexieStorage.contacts),
+  connections: new StorageService(dexieStorage.connections),
 };

@@ -26,9 +26,11 @@ module.exports = {
     'plugin:jest-dom/recommended',
     'plugin:i18n-json/recommended',
     'plugin:i18next/recommended',
+    'plugin:effector/recommended',
+    'plugin:effector/scope',
     'prettier',
   ],
-  plugins: ['@typescript-eslint', 'prettier', 'import', 'unused-imports', 'jest-dom', 'json'],
+  plugins: ['effector', '@typescript-eslint', 'prettier', 'import', 'unused-imports', 'jest-dom', 'json'],
   parserOptions: {
     ecmaVersion: 2021,
     sourceType: 'module',

@@ -9,11 +9,11 @@ import { TransferForm, TransferFormData } from '../TransferForm';
 import { getAccountOption, getSignatoryOption } from '../../common/utils';
 import { OperationFooter, OperationHeader } from '@features/operation';
 import * as sendAssetModel from '../../../model/send-asset';
-import { useNetworkContext } from '@app/providers';
 import { XcmTransferType } from '@shared/api/xcm';
 import { walletModel, accountUtils } from '@entities/wallet';
 import { AssetType } from '@shared/core';
 import type { ChainId, Asset, Explorer, Account, MultisigAccount, Chain, Wallet } from '@shared/core';
+import { networkModel } from '@entities/network';
 
 type Props = {
   api: ApiPromise;
@@ -45,9 +45,11 @@ export const InitOperation = ({
 }: Props) => {
   const { buildTransaction, getTransactionHash } = useTransaction();
   const { getLiveAssetBalances } = useBalance();
-  const { connections } = useNetworkContext();
 
   const activeAccounts = useUnit(walletModel.$activeAccounts);
+  const chains = useUnit(networkModel.$chains);
+  const connections = useUnit(networkModel.$connections);
+  const apis = useUnit(networkModel.$apis);
 
   const availableDestinations = useStore(sendAssetModel.$destinations);
   const config = useStore(sendAssetModel.$finalConfig);
@@ -90,10 +92,11 @@ export const InitOperation = ({
     const options = [...availableDestinations].reduce<Chain[]>((acc, destination) => {
       // eslint-disable-next-line i18next/no-literal-string
       const chainId = `0x${destination.destination.chainId}` as ChainId;
+      const chain = chains[chainId];
       const connection = connections[chainId];
 
-      if (connection && connection.connection.connectionType !== 'DISABLED') {
-        acc.push(connection);
+      if (chain && connection.connectionType !== 'DISABLED') {
+        acc.push(chain);
       }
 
       return acc;
@@ -101,7 +104,7 @@ export const InitOperation = ({
 
     if (!options.length) return;
 
-    setDestinations([connections[chainId], ...options]);
+    setDestinations([chains[chainId], ...options]);
   }, [availableDestinations.length]);
 
   useEffect(() => {
@@ -215,12 +218,12 @@ export const InitOperation = ({
 
   const reserveChainId =
     reserveAsset && config && toHexChainId(config.assetsLocation[reserveAsset.assetLocation].chainId);
-  const reserveApi = reserveChainId && connections[reserveChainId]?.api;
+  const reserveApi = reserveChainId && apis[reserveChainId];
 
   return (
     <div className="flex flex-col gap-y-4 pb-4 px-5">
       <TransferForm
-        chain={connections[chainId]}
+        chain={chains[chainId]}
         network={network}
         accounts={activeAccounts}
         account={activeAccount}

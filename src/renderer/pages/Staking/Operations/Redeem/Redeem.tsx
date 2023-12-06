@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import { Navigate, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { useUnit } from 'effector-react';
 
-import { useI18n, useNetworkContext } from '@app/providers';
+import { useI18n } from '@app/providers';
 import { Paths } from '@shared/routes';
 import { ChainId, HexString } from '@shared/core';
 import { Transaction, TransactionType, useTransaction } from '@entities/transaction';
@@ -17,6 +17,7 @@ import { BaseModal, Button, Loader } from '@shared/ui';
 import { Signing } from '@features/operation';
 import { walletModel, walletUtils } from '@entities/wallet';
 import { priceProviderModel } from '@entities/price';
+import { useNetworkData } from '@entities/network';
 
 const enum Step {
   INIT,
@@ -32,9 +33,10 @@ export const Redeem = () => {
 
   const navigate = useNavigate();
   const { setTxs, txs, setWrappers, wrapTx, buildTransaction } = useTransaction();
-  const { connections } = useNetworkContext();
   const [searchParams] = useSearchParams();
   const params = useParams<{ chainId: ChainId }>();
+
+  const { api, chain } = useNetworkData(params.chainId || ('' as ChainId));
 
   const [isRedeemModalOpen, toggleRedeemModal] = useToggle(true);
 
@@ -59,7 +61,7 @@ export const Redeem = () => {
     return <Navigate replace to={Paths.STAKING} />;
   }
 
-  const { api, explorers, addressPrefix, assets, name } = connections[chainId];
+  const { explorers, addressPrefix, assets, name } = chain;
   const asset = getRelaychainAsset(assets);
 
   useEffect(() => {

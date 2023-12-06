@@ -3,10 +3,10 @@ import { Outlet } from 'react-router-dom';
 import { useUnit } from 'effector-react';
 
 import { BodyText, Button, Icon, SmallTitleText } from '@shared/ui';
-import { useI18n, useNetworkContext } from '@app/providers';
+import { useI18n } from '@app/providers';
 import { useBalance } from '@entities/asset';
 import { useToggle } from '@shared/lib/hooks';
-import { chainsService, isMultisigAvailable } from '@entities/network';
+import { chainsService, isMultisigAvailable, networkModel } from '@entities/network';
 import { useSettingsStorage } from '@entities/settings';
 import { AssetsFilters, NetworkAssets, SelectShardModal } from './components';
 import { Header } from '@renderer/components/common';
@@ -22,8 +22,8 @@ export const AssetsList = () => {
   const assetsPrices = useUnit(priceProviderModel.$assetsPrices);
   const fiatFlag = useUnit(priceProviderModel.$fiatFlag);
   const currency = useUnit(currencyModel.$activeCurrency);
-
-  const { connections } = useNetworkContext();
+  const chains = useUnit(networkModel.$chains);
+  const connections = useUnit(networkModel.$connections);
 
   const { getLiveBalances } = useBalance();
   const { setHideZeroBalance, getHideZeroBalance } = useSettingsStorage();
@@ -54,8 +54,8 @@ export const AssetsList = () => {
   };
 
   useEffect(() => {
-    const filteredChains = Object.values(connections).filter((c) => {
-      const isDisabled = c.connection.connectionType === ConnectionType.DISABLED;
+    const filteredChains = Object.values(chains).filter((c) => {
+      const isDisabled = connections[c.chainId]?.connectionType === ConnectionType.DISABLED;
       const hasMultiPallet = !isMultisig || isMultisigAvailable(c.options);
 
       return !isDisabled && hasMultiPallet;

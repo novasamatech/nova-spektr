@@ -4,7 +4,7 @@ import { Controller, SubmitHandler, useForm } from 'react-hook-form';
 import { Trans } from 'react-i18next';
 
 import { AmountInput, Button, Icon, Identicon, Input, InputHint, Select } from '@shared/ui';
-import { useI18n, useNetworkContext } from '@app/providers';
+import { useI18n } from '@app/providers';
 import { useBalance } from '@entities/asset';
 import { MultisigTxInitStatus } from '@entities/transaction';
 import { useMultisigTx } from '@entities/multisig';
@@ -79,7 +79,6 @@ export const TransferForm = ({
   const { t } = useI18n();
   const { getBalance } = useBalance();
   const { getMultisigTxs } = useMultisigTx({});
-  const { connections } = useNetworkContext();
 
   const [accountBalance, setAccountBalance] = useState('');
   const [signerBalance, setSignerBalance] = useState('');
@@ -130,7 +129,7 @@ export const TransferForm = ({
 
   useEffect(() => {
     if (destinationChain) {
-      sendAssetModel.events.destinationChainSelected(connections[destinationChain.value]);
+      sendAssetModel.events.destinationChainSelected(destinationChain.value);
     }
   }, [destinationChain]);
 

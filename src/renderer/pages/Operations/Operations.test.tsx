@@ -1,24 +1,15 @@
 import { render, screen, act } from '@testing-library/react';
+import { fork } from 'effector';
+import { Provider } from 'effector-react';
 
 import { TEST_ACCOUNT_ID } from '@shared/lib/utils';
-import { ConnectionType } from '@shared/core';
 import { Operations } from './Operations';
+import { networkModel } from '@entities/network';
 
 jest.mock('@app/providers', () => ({
   useI18n: jest.fn().mockReturnValue({
     t: (key: string) => key,
   }),
-  useNetworkContext: jest.fn(() => ({
-    connections: {
-      '0x00': {
-        chainId: '1',
-        assets: [{ assetId: '1', symbol: '1' }],
-        connection: {
-          connectionType: ConnectionType.RPC_NODE,
-        },
-      },
-    },
-  })),
 }));
 
 jest.mock('@entities/multisig', () => ({
@@ -37,8 +28,20 @@ jest.mock('@features/operation', () => ({
 
 describe('pages/Operations', () => {
   test('should render component', async () => {
+    const scope = fork({
+      values: new Map().set(networkModel.$chains, {
+        '0x00': {
+          name: 'Westend',
+        },
+      }),
+    });
+
     await act(async () => {
-      render(<Operations />);
+      render(
+        <Provider value={scope}>
+          <Operations />
+        </Provider>,
+      );
     });
 
     const title = screen.getByText('operations.title');

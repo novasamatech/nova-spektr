@@ -105,7 +105,8 @@ export type TWallet = Table<Wallet, Wallet['id']>;
 export type TContact = Table<Contact, Contact['id']>;
 export type TAccount = Table<Account, Account['id']>;
 export type TBalance = Table<Balance, ID[]>;
-export type TConnection = Table<Connection, ID>;
+export type TConnection = Table<Connection, Connection['id']>;
+
 export type TMultisigTransaction = Table<MultisigTransaction, ID[]>;
 export type TMultisigEvent = Table<MultisigEvent, ID>;
 export type TNotification = Table<Notification, ID>;

@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { Navigate, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { useUnit } from 'effector-react';
 
-import { useI18n, useNetworkContext } from '@app/providers';
+import { useI18n } from '@app/providers';
 import { Paths } from '@shared/routes';
 import { Transaction, TransactionType, useTransaction } from '@entities/transaction';
 import { ValidatorMap } from '@entities/staking';
@@ -12,7 +12,7 @@ import { Confirmation, Submit, Validators, NoAsset } from '../components';
 import { useToggle } from '@shared/lib/hooks';
 import { BaseModal, Button, Loader } from '@shared/ui';
 import InitOperation, { ValidatorsResult } from './InitOperation/InitOperation';
-import { isLightClient } from '@entities/network';
+import { isLightClient, useNetworkData } from '@entities/network';
 import { OperationTitle } from '@renderer/components/common';
 import { Signing } from '@features/operation';
 import type { Account, ChainId, HexString, Address } from '@shared/core';
@@ -35,9 +35,10 @@ export const ChangeValidators = () => {
 
   const navigate = useNavigate();
   const { setTxs, txs, setWrappers, wrapTx, buildTransaction } = useTransaction();
-  const { connections } = useNetworkContext();
   const [searchParams] = useSearchParams();
   const params = useParams<{ chainId: ChainId }>();
+
+  const { api, chain, connection } = useNetworkData(params.chainId || ('' as ChainId));
 
   const [isValidatorsModalOpen, toggleValidatorsModal] = useToggle(true);
 
@@ -69,13 +70,11 @@ export const ChangeValidators = () => {
     setAccounts(accounts);
   }, [activeAccounts.length]);
 
-  const connection = connections[chainId];
-
-  if (!connection || accountIds.length === 0) {
+  if (!api || accountIds.length === 0) {
     return <Navigate replace to={Paths.STAKING} />;
   }
 
-  const { api, explorers, addressPrefix, assets, name } = connections[chainId];
+  const { explorers, addressPrefix, assets, name } = chain;
   const asset = getRelaychainAsset(assets);
 
   const goToPrevStep = () => {
