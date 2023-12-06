@@ -51,5 +51,5 @@ export const MultishardDetailsActions = ({ wallet, accounts }: Props) => {
     },
   ];
 
-  return <DropdownIconButton options={options} name="more" className="mt-2" menuClassName="right-0" />;
+  return <DropdownIconButton options={options} name="more" className="mt-2" optionsClassName="right-0" />;
 };

@@ -1,14 +1,15 @@
 import { act, render, screen, within } from '@testing-library/react';
 import noop from 'lodash/noop';
 
-import DropdownButton, { ButtonDropdownOption } from './DropdownButton';
+import { DropdownButton } from './DropdownButton';
+import { DropdownOption } from '../common/types';
 
 jest.mock('@app/providers', () => ({
   useMatrix: jest.fn(),
 }));
 
 describe('ui/Dropdowns/DropdownButton', () => {
-  const options: ButtonDropdownOption[] = [
+  const options: DropdownOption[] = [
     { id: '0', title: 'label_0', icon: 'globe', onClick: noop },
     { id: '1', title: 'label_1', icon: 'globe', onClick: noop },
   ];
@@ -22,7 +23,7 @@ describe('ui/Dropdowns/DropdownButton', () => {
 
   test('should call onSelected', async () => {
     const spySelected = jest.fn();
-    const optionsExtended: ButtonDropdownOption[] = [
+    const optionsExtended: DropdownOption[] = [
       ...options,
       { id: '2', title: 'label_2', icon: 'globe', onClick: spySelected },
     ];

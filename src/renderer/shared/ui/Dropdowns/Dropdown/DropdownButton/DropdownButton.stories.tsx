@@ -1,6 +1,7 @@
 import { ComponentMeta, ComponentStory } from '@storybook/react';
 
-import DropdownButton, { ButtonDropdownOption } from './DropdownButton';
+import { DropdownOption } from '../common/types';
+import { DropdownButton } from './DropdownButton';
 
 export default {
   title: 'Redesign/Dropdown Button',
@@ -17,7 +18,7 @@ export default {
 
 const Template: ComponentStory<typeof DropdownButton> = (args) => <DropdownButton {...args} />;
 
-const options: ButtonDropdownOption[] = [
+const options: DropdownOption[] = [
   { id: 'button1', title: 'Button Option 1', icon: 'globe', onClick: () => alert('click1') },
   { id: 'button2', title: 'Button Option 2', icon: 'arrowUp', onClick: () => alert('click2') },
 ];
