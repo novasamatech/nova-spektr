@@ -7,9 +7,9 @@ import { walletModel } from '@entities/wallet';
 import { Shimmering } from '@shared/ui';
 import { WalletPanel } from './WalletPanel';
 import { WalletButton } from './WalletButton';
-import { useBalance } from '@entities/asset';
 import { chainsService } from '@entities/network';
 import { walletSelectModel } from '../model/wallet-select-model';
+import { useAccountsBalances } from '@entities/balance';
 
 type Props = {
   action?: ReactNode;
@@ -18,8 +18,9 @@ export const WalletSelect = ({ action }: Props) => {
   const activeWallet = useUnit(walletModel.$activeWallet);
   const accounts = useUnit(walletModel.$accounts);
 
-  const { getLiveBalances } = useBalance();
-  const balances = getLiveBalances(accounts.map((a) => a.accountId));
+  const balances = useAccountsBalances({
+    accountIds: accounts.map((a) => a.accountId),
+  });
 
   const chainsMap = useMemo(() => {
     return keyBy(chainsService.getChainsData(), 'chainId');

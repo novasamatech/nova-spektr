@@ -3,7 +3,6 @@ import { useEffect, useState } from 'react';
 import { useStore, useUnit } from 'effector-react';
 
 import { getAssetId, TEST_ACCOUNT_ID, toAddress, toHexChainId } from '@shared/lib/utils';
-import { useBalance } from '@entities/asset';
 import { Transaction, TransactionType, useTransaction } from '@entities/transaction';
 import { TransferForm, TransferFormData } from '../TransferForm';
 import { getAccountOption, getSignatoryOption } from '../../common/utils';
@@ -14,6 +13,7 @@ import { walletModel, accountUtils } from '@entities/wallet';
 import { AssetType } from '@shared/core';
 import type { ChainId, Asset, Explorer, Account, MultisigAccount, Chain, Wallet } from '@shared/core';
 import { networkModel } from '@entities/network';
+import { useAssetBalances } from '@entities/balance';
 
 type Props = {
   api: ApiPromise;
@@ -44,7 +44,6 @@ export const InitOperation = ({
   onSignatoryChange,
 }: Props) => {
   const { buildTransaction, getTransactionHash } = useTransaction();
-  const { getLiveAssetBalances } = useBalance();
 
   const activeAccounts = useUnit(walletModel.$activeAccounts);
   const chains = useUnit(networkModel.$chains);
@@ -71,16 +70,24 @@ export const InitOperation = ({
   const [activeSignatory, setActiveSignatory] = useState<Account>();
 
   const accountIds = activeAccounts.map((account) => account.accountId);
-  const balances = getLiveAssetBalances(accountIds, chainId, asset?.assetId.toString() || '');
-  const nativeBalances = getLiveAssetBalances(accountIds, chainId, nativeToken?.assetId.toString() || '');
+  const balances = useAssetBalances({
+    accountIds,
+    chainId,
+    assetId: asset.assetId.toString(),
+  });
+  const nativeBalances = useAssetBalances({
+    accountIds,
+    chainId,
+    assetId: nativeToken?.assetId.toString() || '',
+  });
 
   const isMultisigAccount = activeAccount && accountUtils.isMultisigAccount(activeAccount);
   const signatoryIds = isMultisigAccount ? activeAccount.signatories.map((s) => s.accountId) : [];
-  const signatoriesBalances = getLiveAssetBalances(
-    signatoryIds,
+  const signatoriesBalances = useAssetBalances({
+    accountIds: signatoryIds,
     chainId,
-    nativeToken?.assetId.toString() || asset?.assetId.toString() || '',
-  );
+    assetId: nativeToken?.assetId.toString() || asset?.assetId.toString() || '',
+  });
 
   const amount = formData?.amount || '0';
   const isXcmTransfer = formData?.destinationChain?.value !== chainId && !!xcmTransfer;

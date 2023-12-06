@@ -17,6 +17,10 @@ jest.mock('@entities/asset', () => ({
   AssetBalance: ({ value }: any) => <div>{value}</div>,
 }));
 
+jest.mock('@entities/balance', () => ({
+  useAssetBalances: jest.fn().mockReturnValue([]),
+}));
+
 describe('pages/Staking/components/AccountsModal', () => {
   const defaultProps = {
     isOpen: true,

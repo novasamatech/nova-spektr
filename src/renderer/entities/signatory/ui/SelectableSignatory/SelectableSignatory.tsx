@@ -3,8 +3,10 @@ import { useUnit } from 'effector-react';
 import { WalletIcon, walletModel } from '@entities/wallet';
 import { BodyText, Icon } from '@shared/ui';
 import { cnTw, toAccountId, toAddress, transferableAmount } from '@shared/lib/utils';
-import { AssetBalance, useBalance } from '@entities/asset';
 import type { AccountId, Asset, ChainId } from '@shared/core';
+// TODO: Fix layers
+import { AssetBalance } from '@entities/asset';
+import { useBalance } from '@entities/balance';
 
 type Props<T extends any> = {
   value: T;
@@ -30,8 +32,11 @@ export const SelectableSignatory = <T extends any>({
 
   const address = toAddress(accountId, { prefix: addressPrefix });
 
-  const { getLiveBalance } = useBalance();
-  const balance = getLiveBalance(toAccountId(address), chainId, asset.assetId.toString());
+  const balance = useBalance({
+    accountId: toAccountId(address),
+    chainId,
+    assetId: asset.assetId.toString(),
+  });
 
   if (!signatoryWallet) return null;
 

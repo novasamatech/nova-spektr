@@ -4,7 +4,6 @@ import { useUnit } from 'effector-react';
 
 import { BodyText, Button, Icon, SmallTitleText } from '@shared/ui';
 import { useI18n } from '@app/providers';
-import { useBalance } from '@entities/asset';
 import { useToggle } from '@shared/lib/hooks';
 import { chainsService, isMultisigAvailable, networkModel } from '@entities/network';
 import { useSettingsStorage } from '@entities/settings';
@@ -14,6 +13,8 @@ import type { Account, Chain } from '@shared/core';
 import { ConnectionType } from '@shared/core';
 import { walletModel, walletUtils } from '@entities/wallet';
 import { currencyModel, priceProviderModel } from '@entities/price';
+import { balanceModel } from '@entities/balance';
+import { balanceSubscriptionModel } from '@features/balances';
 
 export const AssetsList = () => {
   const { t } = useI18n();
@@ -22,10 +23,13 @@ export const AssetsList = () => {
   const assetsPrices = useUnit(priceProviderModel.$assetsPrices);
   const fiatFlag = useUnit(priceProviderModel.$fiatFlag);
   const currency = useUnit(currencyModel.$activeCurrency);
-  const chains = useUnit(networkModel.$chains);
   const connections = useUnit(networkModel.$connections);
+  const chains = useUnit(networkModel.$chains);
+  const balances = useUnit(balanceModel.$balances);
 
-  const { getLiveBalances } = useBalance();
+  // DON'T REMOVE: need to have subscriptions (find way to run effector model without it)
+  const subscriptions = useUnit(balanceSubscriptionModel.$subscriptions);
+
   const { setHideZeroBalance, getHideZeroBalance } = useSettingsStorage();
 
   const [isSelectShardsOpen, toggleSelectShardsOpen] = useToggle();
@@ -35,8 +39,6 @@ export const AssetsList = () => {
 
   const [activeShards, setActiveShards] = useState<Account[]>([]);
   const [hideZeroBalance, setHideZeroBalanceState] = useState(getHideZeroBalance());
-
-  const balances = getLiveBalances(activeShards.map((a) => a.accountId));
 
   const isMultishard = walletUtils.isMultiShard(activeWallet);
   const isMultisig = walletUtils.isMultisig(activeWallet);

@@ -3,7 +3,6 @@ import { useEffect, useState } from 'react';
 import { useUnit } from 'effector-react';
 
 import { useI18n } from '@app/providers';
-import { useBalance } from '@entities/asset';
 import { getOperationErrors, Transaction, TransactionType } from '@entities/transaction';
 import type { Asset, Account, Balance as AccountBalance, Address, ChainId, AccountId, Wallet } from '@shared/core';
 import { toAddress, nonNullable, TEST_ADDRESS } from '@shared/lib/utils';
@@ -16,6 +15,7 @@ import {
   getSignatoryOption,
 } from '../../common/utils';
 import { walletModel, walletUtils, accountUtils } from '@entities/wallet';
+import { useAssetBalances } from '@entities/balance';
 
 export type DestinationResult = {
   accounts: Account[];
@@ -37,8 +37,6 @@ const InitOperation = ({ api, chainId, accounts, addressPrefix, asset, onResult 
   const { t } = useI18n();
   const activeWallet = useUnit(walletModel.$activeWallet);
 
-  const { getLiveAssetBalances } = useBalance();
-
   const [fee, setFee] = useState('');
   const [feeLoading, setFeeLoading] = useState(true);
   const [deposit, setDeposit] = useState('');
@@ -55,10 +53,19 @@ const InitOperation = ({ api, chainId, accounts, addressPrefix, asset, onResult 
   const formFields = isMultisigWallet ? [{ name: 'destination' }, { name: 'description' }] : [{ name: 'destination' }];
 
   const accountIds = accounts.map((account) => account.accountId);
-  const balances = getLiveAssetBalances(accountIds, chainId, asset.assetId.toString());
+  const balances = useAssetBalances({
+    accountIds,
+    chainId,
+    assetId: asset.assetId.toString(),
+  });
 
   const signatoryIds = isMultisigAccount ? firstAccount.signatories.map((s) => s.accountId) : [];
-  const signatoriesBalances = getLiveAssetBalances(signatoryIds, chainId, asset.assetId.toString());
+  const signatoriesBalances = useAssetBalances({
+    accountIds: signatoryIds,
+    chainId,
+    assetId: asset.assetId.toString(),
+  });
+
   const signerBalance = signatoriesBalances.find((b) => b.accountId === activeSignatory?.accountId);
 
   useEffect(() => {
