@@ -7,17 +7,18 @@ export type ParsedImportFile = {
   version: number;
 };
 
-export enum ValidationErrorsLabel {
-  INVALID_FILE_STRUCTURE = 'dynamicDerivations.importKeys.error.invalidFile',
-  INVALID_ROOT = 'dynamicDerivations.importKeys.error.invalidRoot',
-  PASSWORD_PATH = 'dynamicDerivations.importKeys.error.invalidPasswordPath',
-  INVALID_PATH = 'dynamicDerivations.importKeys.error.invalidPath',
+export const enum ValidationError {
+  INVALID_FILE_STRUCTURE,
+  INVALID_ROOT,
+  DERIVATIONS_ERROR,
 }
 
-export type ValidationError = {
-  error: ValidationErrorsLabel;
-  invalidPaths?: string[];
-};
+export const enum DerivationValidationError {
+  INVALID_PATH = 'INVALID_PATH',
+  MISSING_NAME = 'MISSING_NAME',
+  WRONG_SHARDS_NUMBER = 'WRONG_SHARDS_NUMBER',
+  PASSWORD_PATH = 'PASSWORD_PATH',
+}
 
 export type ImportedDerivation = {
   derivationPath?: string;
@@ -26,6 +27,8 @@ export type ImportedDerivation = {
   name?: string;
   type?: string;
 };
+
+export type DerivationWithPath = ImportedDerivation & Required<Pick<ImportedDerivation, 'derivationPath'>>;
 
 export type TypedImportedDerivation = {
   derivationPath: string;

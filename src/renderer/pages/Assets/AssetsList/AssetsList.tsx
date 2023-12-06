@@ -38,8 +38,8 @@ export const AssetsList = () => {
 
   const balances = getLiveBalances(activeShards.map((a) => a.accountId));
 
-  const isMultishard = walletUtils.isMultiShard(activeWallet);
   const isMultisig = walletUtils.isMultisig(activeWallet);
+  const isMultishard = walletUtils.isPolkadotVault(activeWallet) || walletUtils.isMultiShard(activeWallet);
 
   useEffect(() => {
     priceProviderModel.events.assetsPricesRequested({ includeRates: true });

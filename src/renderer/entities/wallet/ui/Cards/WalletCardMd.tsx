@@ -3,8 +3,8 @@ import { ReactNode, MouseEvent } from 'react';
 import type { Wallet } from '@shared/core';
 import { FootnoteText, IconButton } from '@shared/ui';
 import { cnTw } from '@shared/lib/utils';
-import { WalletIcon } from '../../WalletIcon/WalletIcon';
-import { walletUtils } from '../../../lib/wallet-utils';
+import { WalletIcon } from '../WalletIcon/WalletIcon';
+import { walletUtils } from '../../lib/wallet-utils';
 
 type Props = {
   wallet: Wallet;
@@ -17,7 +17,7 @@ type Props = {
 };
 
 export const WalletCardMd = ({ wallet, description, prefix, hideIcon, className, onClick, onInfoClick }: Props) => {
-  const isWalletConnect = walletUtils.isWalletConnectFamily(wallet);
+  const isWalletConnect = walletUtils.isWalletConnectGroup(wallet);
 
   const handleClick = (fn?: () => void) => {
     return (event: MouseEvent<HTMLButtonElement>) => {

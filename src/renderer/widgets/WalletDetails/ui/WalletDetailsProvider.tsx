@@ -4,8 +4,9 @@ import { walletSelectModel } from '@features/wallets';
 import { SimpleWalletDetails } from './SimpleWalletDetails';
 import { MultisigWalletDetails } from './MultisigWalletDetails';
 import { WalletConnectDetails } from './WalletConnectDetails';
-import { walletProviderModel } from '../model/wallet-provider-model';
 import { MultishardWalletDetails } from './MultishardWalletDetails';
+import { VaultWalletDetails } from './VaultWalletDetails';
+import { walletProviderModel } from '../model/wallet-provider-model';
 import { walletUtils } from '@entities/wallet';
 
 export const WalletDetailsProvider = () => {
@@ -15,6 +16,7 @@ export const WalletDetailsProvider = () => {
   const multiShardAccounts = useUnit(walletProviderModel.$multiShardAccounts);
   const multisigAccount = useUnit(walletProviderModel.$multisigAccount);
   const contacts = useUnit(walletProviderModel.$signatoryContacts);
+  const vaultAccounts = useUnit(walletProviderModel.$vaultAccounts);
   const signatoryWallets = useUnit(walletProviderModel.$signatoryWallets);
 
   if (!wallet) return null;
@@ -61,5 +63,16 @@ export const WalletDetailsProvider = () => {
     );
   }
 
-  return <></>; // HINT: Only Polkadot Vault left
+  if (walletUtils.isPolkadotVault(wallet) && vaultAccounts) {
+    return (
+      <VaultWalletDetails
+        wallet={wallet}
+        root={vaultAccounts.root}
+        accountsMap={vaultAccounts.accountsMap}
+        onClose={walletSelectModel.events.walletForDetailsCleared}
+      />
+    );
+  }
+
+  return null;
 };

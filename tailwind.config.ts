@@ -87,6 +87,7 @@ export default {
         10.5: '2.625rem',
         11.5: '2.875rem',
         12.5: '3.125rem',
+        13: '3.25rem',
         15: '3.75rem',
       },
       fontSize: fontSizes,

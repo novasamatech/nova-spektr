@@ -4,8 +4,8 @@ import { useI18n } from '@app/providers';
 import { FootnoteText, StatusLabel } from '@shared/ui';
 import { cnTw } from '@shared/lib/utils';
 import type { Wallet } from '@shared/core';
-import { WalletIcon } from '../../WalletIcon/WalletIcon';
-import { walletUtils } from '../../../lib/wallet-utils';
+import { WalletIcon } from '../WalletIcon/WalletIcon';
+import { walletUtils } from '../../lib/wallet-utils';
 
 type Props = {
   wallet: Wallet;
@@ -17,7 +17,7 @@ type Props = {
 export const WalletCardLg = ({ wallet, description, full, className }: Props) => {
   const { t } = useI18n();
 
-  const isWalletConnect = walletUtils.isWalletConnectFamily(wallet);
+  const isWalletConnect = walletUtils.isWalletConnectGroup(wallet);
 
   return (
     <div className={cnTw('flex items-center gap-x-2 h-10.5', className)}>

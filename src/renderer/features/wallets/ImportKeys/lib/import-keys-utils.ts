@@ -1,6 +1,16 @@
-import { groupBy } from 'lodash';
+import { groupBy, unionBy } from 'lodash';
+import { TFunction } from 'react-i18next';
 
-import { ImportedDerivation, ImportFileChain, ImportFileKey, ParsedImportFile, TypedImportedDerivation } from './types';
+import {
+  DerivationValidationError,
+  DerivationWithPath,
+  ImportedDerivation,
+  ImportFileChain,
+  ImportFileKey,
+  ParsedImportFile,
+  TypedImportedDerivation,
+  ValidationError,
+} from './types';
 import {
   AccountId,
   AccountType,
@@ -15,6 +25,7 @@ import {
 } from '@shared/core';
 import { chainsService } from '@entities/network';
 import { toAccountId } from '@shared/lib/utils';
+import { ErrorDetails } from './derivation-import-error';
 import { KEY_NAMES, SHARDED_KEY_NAMES } from '@entities/wallet';
 
 const IMPORT_FILE_VERSION = '1';
@@ -22,9 +33,11 @@ const IMPORT_FILE_VERSION = '1';
 export const importKeysUtils = {
   isFileStructureValid,
   getDerivationsFromFile,
-  isDerivationValid,
+  getDerivationError,
+  shouldIgnoreDerivation,
   mergeChainDerivations,
   renameDerivationPathKey,
+  getErrorsText,
 };
 
 function isFileStructureValid(result: any): result is ParsedImportFile {
@@ -71,28 +84,37 @@ function getDerivationsFromFile(fileContent: ParsedImportFile): FormattedResult 
   };
 }
 
-function isDerivationValid(derivation: ImportedDerivation): boolean {
-  if (!derivation.derivationPath) return false;
+function shouldIgnoreDerivation(derivation: ImportedDerivation): boolean {
+  if (!derivation.derivationPath) return true;
+
+  const AllKeyTypes = [KeyType.MAIN, KeyType.PUBLIC, KeyType.HOT, KeyType.GOVERNANCE, KeyType.STAKING, KeyType.CUSTOM];
+
+  const isChainParamValid = derivation.chainId && chainsService.getChainById(derivation.chainId as ChainId);
+  const isTypeParamValid = derivation.type && Object.values(AllKeyTypes).includes(derivation.type as KeyType);
+  const isShardedAllowedForType =
+    !derivation.sharded || (derivation.type !== KeyType.PUBLIC && derivation.type !== KeyType.HOT);
+
+  return !isChainParamValid || !isTypeParamValid || !isShardedAllowedForType;
+}
+
+function getDerivationError(derivation: DerivationWithPath): DerivationValidationError[] | undefined {
+  const errors: DerivationValidationError[] = [];
 
   const sharded = derivation.sharded && parseInt(derivation.sharded);
 
   const isShardedParamValid = !sharded || (!isNaN(sharded) && sharded <= 50 && sharded > 1);
-  const isChainParamValid = derivation.chainId && chainsService.getChainById(derivation.chainId as ChainId);
-  const isTypeParamValid = derivation.type && Object.values(KeyType).includes(derivation.type as KeyType);
-  const isShardedAllowedForType = !sharded || (derivation.type !== KeyType.PUBLIC && derivation.type !== KeyType.HOT);
+  if (!isShardedParamValid) errors.push(DerivationValidationError.WRONG_SHARDS_NUMBER);
 
   const isPathStartAndEndValid = /^(\/\/|\/)[^/].*[^/]$/.test(derivation.derivationPath);
-  const hasPasswordPath = derivation.derivationPath.includes('///');
-  const isPathValid = isPathStartAndEndValid && !hasPasswordPath;
+  if (!isPathStartAndEndValid) errors.push(DerivationValidationError.INVALID_PATH);
 
-  return Boolean(
-    isChainParamValid &&
-      isShardedParamValid &&
-      isTypeParamValid &&
-      isChainParamValid &&
-      isPathValid &&
-      isShardedAllowedForType,
-  );
+  const hasPasswordPath = derivation.derivationPath.includes('///');
+  if (hasPasswordPath) errors.push(DerivationValidationError.PASSWORD_PATH);
+
+  const isNameValid = derivation.type !== KeyType.CUSTOM || derivation.name;
+  if (!isNameValid) errors.push(DerivationValidationError.MISSING_NAME);
+
+  if (errors.length) return errors;
 }
 
 function mergeChainDerivations(
@@ -144,7 +166,10 @@ function mergeChainDerivations(
     [],
   );
 
-  const newDerivationsAccounts = importedDerivationsAccounts.filter((d) => {
+  const uniqueDerivations = unionBy(importedDerivationsAccounts, 'derivationPath');
+  duplicatedKeys += importedDerivationsAccounts.length - uniqueDerivations.length;
+
+  const newDerivationsAccounts = uniqueDerivations.filter((d) => {
     const duplicatedDerivation = existingDerivationsByPath[d.derivationPath];
 
     if (duplicatedDerivation) {
@@ -172,4 +197,33 @@ function renameDerivationPathKey(key: unknown, value: unknown) {
   } else {
     return value;
   }
+}
+
+const DERIVATION_ERROR_LABEL = {
+  [DerivationValidationError.INVALID_PATH]: 'dynamicDerivations.importKeys.error.invalidPath',
+  [DerivationValidationError.PASSWORD_PATH]: 'dynamicDerivations.importKeys.error.invalidPasswordPath',
+  [DerivationValidationError.MISSING_NAME]: 'dynamicDerivations.importKeys.error.missingName',
+  [DerivationValidationError.WRONG_SHARDS_NUMBER]: 'dynamicDerivations.importKeys.error.wrongShardsNumber',
+};
+
+function getErrorsText(t: TFunction, error: ValidationError, details?: ErrorDetails): string {
+  if (error === ValidationError.INVALID_FILE_STRUCTURE) {
+    return t('dynamicDerivations.importKeys.error.invalidFile');
+  }
+  if (error === ValidationError.INVALID_ROOT) {
+    return t('dynamicDerivations.importKeys.error.invalidRoot');
+  }
+
+  if (error !== ValidationError.DERIVATIONS_ERROR || !details) return '';
+
+  return Object.keys(details).reduce<string>((acc, error) => {
+    const invalidValues = details[error as DerivationValidationError];
+    if (!invalidValues.length) return acc;
+    const errorText = t(DERIVATION_ERROR_LABEL[error as DerivationValidationError], {
+      count: invalidValues.length,
+      invalidValues: invalidValues.join(', '),
+    });
+
+    return `${acc}${errorText} `;
+  }, '');
 }

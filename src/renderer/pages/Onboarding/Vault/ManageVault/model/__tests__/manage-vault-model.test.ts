@@ -1,7 +1,7 @@
 import { fork, allSettled } from 'effector';
 import { hexToU8a } from '@polkadot/util';
 
-import { manageDynamicDerivationsModel } from '../manage-dynamic-derivations-model';
+import { manageVaultModel } from '../manage-vault-model';
 import { SeedInfo } from '@renderer/components/common/QrCode/common/types';
 import { ChainAccount } from '@renderer/shared/core';
 import { TEST_ACCOUNT_ID, TEST_ADDRESS, TEST_HASH } from '@renderer/shared/lib/utils';
@@ -10,7 +10,7 @@ jest.mock('@renderer/app/providers', () => ({
   useMatrix: jest.fn(),
 }));
 
-describe('pages/Onboarding/Vault/ManageDynamicDerivations/model/manage-dynamic-derivations-model.ts', () => {
+describe('pages/Onboarding/Vault/ManageVault/model/manage-dynamic-derivations-model', () => {
   afterEach(() => {
     jest.clearAllMocks();
   });
@@ -18,7 +18,7 @@ describe('pages/Onboarding/Vault/ManageDynamicDerivations/model/manage-dynamic-d
   test('should set default wallet name, and accounts on for formInitiated', async () => {
     const scope = fork();
 
-    await allSettled(manageDynamicDerivationsModel.events.formInitiated, {
+    await allSettled(manageVaultModel.events.formInitiated, {
       scope,
       params: [
         {
@@ -44,19 +44,17 @@ describe('pages/Onboarding/Vault/ManageDynamicDerivations/model/manage-dynamic-d
       type: 'chain',
     };
 
-    expect(scope.getState(manageDynamicDerivationsModel.$walletForm.$values)).toEqual({ name: 'test' });
-    expect(scope.getState(manageDynamicDerivationsModel.$accounts).length).toBeGreaterThan(0);
+    expect(scope.getState(manageVaultModel.$walletForm.$values)).toEqual({ name: 'test' });
+    expect(scope.getState(manageVaultModel.$keys).length).toBeGreaterThan(0);
     expect(
-      scope
-        .getState(manageDynamicDerivationsModel.$accounts)
-        .find((account) => (account as ChainAccount).chainId === POLKADOT_CHAIN_ID),
+      scope.getState(manageVaultModel.$keys).find((account) => (account as ChainAccount).chainId === POLKADOT_CHAIN_ID),
     ).toEqual(MAIN_POLKAODT_ACCOUNT);
   });
 
   test('should set default wallet name, and accounts on for formInitiated with derived keys', async () => {
     const scope = fork();
 
-    await allSettled(manageDynamicDerivationsModel.events.formInitiated, {
+    await allSettled(manageVaultModel.events.formInitiated, {
       scope,
       params: [
         {
@@ -91,7 +89,7 @@ describe('pages/Onboarding/Vault/ManageDynamicDerivations/model/manage-dynamic-d
 
     expect(
       scope
-        .getState(manageDynamicDerivationsModel.$accounts)
+        .getState(manageVaultModel.$keys)
         .find((account) => (account as ChainAccount).derivationPath === '//polkadot/custom'),
     ).toEqual(MAIN_POLKAODT_ACCOUNT);
   });

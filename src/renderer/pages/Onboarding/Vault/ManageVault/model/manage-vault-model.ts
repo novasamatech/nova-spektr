@@ -19,9 +19,9 @@ export type Callbacks = {
 };
 
 const $callbacks = createStore<Callbacks | null>(null);
-const $accounts = createStore<DraftAccount<ChainAccount | ShardAccount>[]>([]);
+const $keys = createStore<DraftAccount<ChainAccount | ShardAccount>[]>([]);
 
-const $accountsGroups = combine($accounts, (accounts): Array<ChainAccount | ShardAccount[]> => {
+const $keysGroups = combine($keys, (accounts): Array<ChainAccount | ShardAccount[]> => {
   return accountUtils.getAccountsAndShardGroups(accounts as Array<ChainAccount | ShardAccount>);
 });
 
@@ -48,6 +48,14 @@ const $walletForm = createForm({
     },
   },
   validateOn: ['change', 'submit'],
+});
+
+const $hasKeys = combine($keys, (keys): boolean => {
+  return keys.some((key) => {
+    const keyData = Array.isArray(key) ? key[0] : key;
+
+    return keyData.keyType !== KeyType.MAIN;
+  });
 });
 
 sample({
@@ -96,7 +104,7 @@ sample({
 
     return Object.values(accounts).concat(derivedAccounts);
   },
-  target: $accounts,
+  target: $keys,
 });
 
 sample({
@@ -107,14 +115,15 @@ sample({
   }),
 });
 
-forward({ from: keysAdded, to: $accounts });
+forward({ from: keysAdded, to: $keys });
 
-forward({ from: derivationsImported, to: $accounts });
+forward({ from: derivationsImported, to: $keys });
 
-export const manageDynamicDerivationsModel = {
+export const manageVaultModel = {
   $walletForm,
-  $accounts,
-  $accountsGroups,
+  $keys,
+  $keysGroups,
+  $hasKeys,
   events: {
     callbacksChanged: callbacksApi.callbacksChanged,
     formInitiated,

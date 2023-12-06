@@ -421,7 +421,7 @@ sample({
   filter: (_, client) => Boolean(client),
   fn: ({ wallets, accounts }, client) => {
     return wallets.map((wallet) => {
-      if (walletUtils.isWalletConnectFamily(wallet)) {
+      if (walletUtils.isWalletConnectGroup(wallet)) {
         wallet.isConnected = walletConnectUtils.isConnectedByAccounts(client!, wallet, accounts);
       }
 

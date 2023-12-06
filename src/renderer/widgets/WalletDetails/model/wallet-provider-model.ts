@@ -3,17 +3,9 @@ import { combine } from 'effector';
 import { accountUtils, walletModel } from '@entities/wallet';
 import { walletSelectModel } from '@features/wallets';
 import { dictionary } from '@shared/lib/utils';
-import type { MultishardMap } from '../lib/types';
-import type {
-  Account,
-  Signatory,
-  Wallet,
-  MultisigAccount,
-  BaseAccount,
-  ChainAccount,
-  ChainId,
-  AccountId,
-} from '@shared/core';
+import { walletDetailsUtils } from '../lib/utils';
+import type { MultishardMap, VaultMap } from '../lib/types';
+import type { Account, Signatory, Wallet, MultisigAccount, BaseAccount, AccountId } from '@shared/core';
 
 const $accounts = combine(
   {
@@ -36,26 +28,7 @@ const $singleShardAccount = combine(walletModel.$accounts, (accounts): BaseAccou
 const $multiShardAccounts = combine($accounts, (accounts): MultishardMap => {
   if (accounts.length === 0) return new Map();
 
-  return accounts.reduce<Map<BaseAccount, Record<ChainId, ChainAccount[]>>>((acc, account) => {
-    if (accountUtils.isBaseAccount(account)) {
-      acc.set(account, {});
-    }
-
-    if (accountUtils.isChainAccount(account)) {
-      for (const [baseAccount, chainMap] of acc.entries()) {
-        if (baseAccount.id !== account.baseId) continue;
-
-        if (chainMap[account.chainId]) {
-          chainMap[account.chainId].push(account);
-        } else {
-          chainMap[account.chainId] = [account];
-        }
-        break;
-      }
-    }
-
-    return acc;
-  }, new Map());
+  return walletDetailsUtils.getMultishardMap(accounts);
 });
 
 const $multisigAccount = combine(
@@ -69,6 +42,28 @@ const $multisigAccount = combine(
     const match = accounts.find((account) => account.walletId === details.id);
 
     return match && accountUtils.isMultisigAccount(match) ? match : undefined;
+  },
+);
+
+type VaultAccounts = {
+  root: BaseAccount;
+  accountsMap: VaultMap;
+};
+const $vaultAccounts = combine(
+  {
+    details: walletSelectModel.$walletForDetails,
+    accounts: $accounts,
+  },
+  ({ details, accounts }): VaultAccounts | undefined => {
+    if (!details) return undefined;
+
+    const root = accountUtils.getBaseAccount(accounts, details.id);
+    if (!root) return undefined;
+
+    return {
+      root,
+      accountsMap: walletDetailsUtils.getVaultAccountsMap(accounts),
+    };
   },
 );
 
@@ -114,6 +109,7 @@ export const walletProviderModel = {
   $singleShardAccount,
   $multiShardAccounts,
   $multisigAccount,
+  $vaultAccounts,
   $signatoryContacts,
   $signatoryWallets,
 };

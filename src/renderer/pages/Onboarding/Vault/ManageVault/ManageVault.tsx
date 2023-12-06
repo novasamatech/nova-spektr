@@ -7,17 +7,16 @@ import { u8aToHex } from '@polkadot/util';
 
 import { useI18n, useStatusContext } from '@app/providers';
 import { SeedInfo } from '@renderer/components/common/QrCode/common/types';
-import { IS_WINDOWS, toAddress, dictionary } from '@shared/lib/utils';
+import { toAddress, dictionary, IS_MAC, copyToClipboard } from '@shared/lib/utils';
 import type { ChainAccount, ChainId, ShardAccount, DraftAccount } from '@shared/core';
 import { VaultInfoPopover } from './VaultInfoPopover';
-import { useAltKeyPressed, useToggle } from '@shared/lib/hooks';
-import { manageDynamicDerivationsModel } from './model/manage-dynamic-derivations-model';
+import { useAltOrCtrlKeyPressed, useToggle } from '@shared/lib/hooks';
+import { manageVaultModel } from './model/manage-vault-model';
 import { chainsService } from '@entities/network';
-import { RootAccount, accountUtils } from '@entities/wallet';
+import { RootAccountLg, accountUtils, DerivedAccount } from '@entities/wallet';
 import { KeyConstructor, DerivationsAddressModal, ImportKeysModal } from '@features/wallets';
-import { ChainTitle } from '@entities/chain';
-import { DerivedAccount } from './DerivedAccount';
 import { Animation } from '@shared/ui/Animation/Animation';
+import { ChainTitle } from '@entities/chain';
 import {
   Button,
   Input,
@@ -27,6 +26,8 @@ import {
   HelpText,
   FootnoteText,
   Icon,
+  ContextMenu,
+  IconButton,
   Accordion,
 } from '@shared/ui';
 
@@ -36,18 +37,19 @@ type Props = {
   onComplete: () => void;
 };
 
-export const ManageDynamicDerivations = ({ seedInfo, onBack, onComplete }: Props) => {
+export const ManageVault = ({ seedInfo, onBack, onComplete }: Props) => {
   const { t } = useI18n();
   const { showStatus } = useStatusContext();
-  const isAltPressed = useAltKeyPressed();
+  const isAltPressed = useAltOrCtrlKeyPressed();
 
   const accordions = useRef<Record<string, { el: null | HTMLButtonElement; isOpen: boolean }>>({});
 
-  const accounts = useUnit(manageDynamicDerivationsModel.$accounts);
-  const accountsGroups = useUnit(manageDynamicDerivationsModel.$accountsGroups);
+  const keys = useUnit(manageVaultModel.$keys);
+  const keysGroups = useUnit(manageVaultModel.$keysGroups);
+  const hasKeys = useUnit(manageVaultModel.$hasKeys);
+
   const [isAddressModalOpen, toggleIsAddressModalOpen] = useToggle();
   const [isImportModalOpen, toggleIsImportModalOpen] = useToggle();
-
   const [isConstructorModalOpen, toggleConstructorModal] = useToggle();
   const [chainElements, setChainElements] = useState<[string, Array<ChainAccount | ShardAccount[]>][]>([]);
 
@@ -55,28 +57,28 @@ export const ManageDynamicDerivations = ({ seedInfo, onBack, onComplete }: Props
     submit,
     isValid,
     fields: { name },
-  } = useForm(manageDynamicDerivationsModel.$walletForm);
+  } = useForm(manageVaultModel.$walletForm);
 
   useEffect(() => {
-    manageDynamicDerivationsModel.events.formInitiated(seedInfo);
+    manageVaultModel.events.formInitiated(seedInfo);
   }, [seedInfo]);
 
   useEffect(() => {
-    manageDynamicDerivationsModel.events.callbacksChanged({ onSubmit: onComplete });
+    manageVaultModel.events.callbacksChanged({ onSubmit: onComplete });
   }, [onComplete]);
 
   useEffect(() => {
     const chains = chainsService.getChainsData({ sort: true });
     const chainsMap = dictionary(chains, 'chainId', () => []);
 
-    accountsGroups.forEach((account) => {
+    keysGroups.forEach((account) => {
       const chainId = Array.isArray(account) ? account[0].chainId : account.chainId;
 
       chainsMap[chainId].push(account);
     });
 
     setChainElements(Object.entries(chainsMap));
-  }, [accountsGroups]);
+  }, [keysGroups]);
 
   useEffect(() => {
     Object.values(accordions.current).forEach((item) => {
@@ -106,28 +108,29 @@ export const ManageDynamicDerivations = ({ seedInfo, onBack, onComplete }: Props
   };
 
   const handleImportKeys = (mergedKeys: DraftAccount<ShardAccount | ChainAccount>[]) => {
-    manageDynamicDerivationsModel.events.derivationsImported(mergedKeys);
+    manageVaultModel.events.derivationsImported(mergedKeys);
     toggleIsImportModalOpen();
   };
 
   const handleConstructorKeys = (keys: DraftAccount<ChainAccount | ShardAccount>[]) => {
-    manageDynamicDerivationsModel.events.keysAdded(keys);
+    manageVaultModel.events.keysAdded(keys);
     toggleConstructorModal();
   };
 
-  const button = IS_WINDOWS ? (
-    <>
-      <HelpText as="span" className="text-text-tertiary">
-        {t('onboarding.vault.hotkeyAlt')}
-      </HelpText>
-      <Icon name="hotkeyAlt" />
-    </>
-  ) : (
+  const button = IS_MAC ? (
     <>
       <HelpText as="span" className="text-text-tertiary">
         {t('onboarding.vault.hotkeyOption')}
       </HelpText>
       <Icon name="hotkeyOption" />
+    </>
+  ) : (
+    <>
+      <HelpText as="span" className="text-text-tertiary">
+        {t('onboarding.vault.hotkeyCtrl')}
+      </HelpText>
+      {/* TODO: update to ctrl Icon when ready */}
+      <Icon name="hotkeyAlt" />
     </>
   );
 
@@ -168,7 +171,7 @@ export const ManageDynamicDerivations = ({ seedInfo, onBack, onComplete }: Props
         </form>
       </div>
 
-      <div className="w-[472px] flex flex-col bg-input-background-disabled pt-4 rounded-r-lg">
+      <div className="w-[472px] flex flex-col pt-4 rounded-r-lg border-l border-divider">
         <div className="flex items-center justify-between px-5 mt-[52px] mb-6">
           <div className="flex items-center gap-x-1.5">
             <SmallTitleText>{t('onboarding.vault.vaultTitle')}</SmallTitleText>
@@ -176,7 +179,7 @@ export const ManageDynamicDerivations = ({ seedInfo, onBack, onComplete }: Props
           </div>
           <div className="flex items-center gap-4">
             <Button size="sm" pallet="secondary" onClick={toggleConstructorModal}>
-              {t('onboarding.vault.addMoreKeysButton')}
+              {hasKeys ? t('onboarding.vault.editKeysButton') : t('onboarding.vault.addMoreKeysButton')}
             </Button>
             <Button size="sm" pallet="secondary" onClick={toggleIsImportModalOpen}>
               {t('onboarding.vault.importButton')}
@@ -192,7 +195,14 @@ export const ManageDynamicDerivations = ({ seedInfo, onBack, onComplete }: Props
 
         <div className="overflow-y-auto h-[470px] pl-3 pr-3.5">
           <div className="flex items-center justify-between w-full gap-2 pb-4">
-            <RootAccount name={walletName} accountId={publicKey} />
+            <ContextMenu button={<RootAccountLg name={walletName} accountId={publicKey} />}>
+              <ContextMenu.Group title="Public key">
+                <div className="flex items-center gap-x-2">
+                  <HelpText className="text-text-secondary break-all">{publicKey}</HelpText>
+                  <IconButton className="shrink-0" name="copy" size={20} onClick={() => copyToClipboard(publicKey)} />
+                </div>
+              </ContextMenu.Group>
+            </ContextMenu>
           </div>
 
           <FootnoteText className="text-text-tertiary ml-9 pl-2">{t('onboarding.vault.accountTitle')}</FootnoteText>
@@ -208,18 +218,31 @@ export const ManageDynamicDerivations = ({ seedInfo, onBack, onComplete }: Props
                     buttonClass="mb-2 p-2"
                     onClick={() => (accordions.current[chainId].isOpen = !accordions.current[chainId].isOpen)}
                   >
-                    <div className="flex gap-2">
+                    <div className="flex gap-x-2">
                       <ChainTitle fontClass="text-text-primary" chainId={chainId as ChainId} />
                       <FootnoteText className="text-text-tertiary">{chainAccounts.length}</FootnoteText>
                     </div>
                   </Accordion.Button>
-                  <Accordion.Content className="flex flex-col gap-2">
+                  <Accordion.Content as="ul">
                     {chainAccounts.map((account) => (
-                      <DerivedAccount
-                        key={accountUtils.getDerivationPath(account)}
-                        showDerivationPath={isAltPressed}
-                        account={account}
-                      />
+                      <li className="mb-2 last:mb-0" key={accountUtils.getDerivationPath(account)}>
+                        <ContextMenu
+                          button={
+                            <DerivedAccount
+                              key={accountUtils.getDerivationPath(account)}
+                              account={account}
+                              showInfoButton={false}
+                              showSuffix={isAltPressed}
+                            />
+                          }
+                        >
+                          <ContextMenu.Group title={t('onboarding.vault.derivationPath')}>
+                            <HelpText className="text-text-secondary break-all">
+                              {accountUtils.getDerivationPath(account)}
+                            </HelpText>
+                          </ContextMenu.Group>
+                        </ContextMenu>
+                      </li>
                     ))}
                   </Accordion.Content>
                 </Accordion>
@@ -231,7 +254,7 @@ export const ManageDynamicDerivations = ({ seedInfo, onBack, onComplete }: Props
 
       <KeyConstructor
         title={name?.value}
-        existingKeys={accounts}
+        existingKeys={keys}
         isOpen={isConstructorModalOpen}
         onClose={toggleConstructorModal}
         onConfirm={handleConstructorKeys}
@@ -241,7 +264,7 @@ export const ManageDynamicDerivations = ({ seedInfo, onBack, onComplete }: Props
         isOpen={isAddressModalOpen}
         walletName={walletName}
         rootKey={publicKey}
-        accounts={accounts}
+        keys={keys}
         onComplete={handleSuccess}
         onClose={toggleIsAddressModalOpen}
       />
@@ -249,7 +272,7 @@ export const ManageDynamicDerivations = ({ seedInfo, onBack, onComplete }: Props
       <ImportKeysModal
         isOpen={isImportModalOpen}
         rootAccountId={publicKey}
-        existingKeys={accounts}
+        existingKeys={keys}
         onClose={toggleIsImportModalOpen}
         onConfirm={handleImportKeys}
       />
