@@ -7,6 +7,7 @@ import { useI18n } from '@app/providers';
 import { cnTw } from '@shared/lib/utils';
 import { importKeysModel } from '../model/import-keys-model';
 import { importKeysUtils } from '../lib/import-keys-utils';
+import { TEMPLATE_GITHUB_LINK } from '@features/wallets/ImportKeys/lib/constants';
 
 type Props = {
   isOpen: boolean;
@@ -90,12 +91,7 @@ export const ImportKeysModal = ({ isOpen, rootAccountId, existingKeys, onConfirm
           ))}
         </Alert>
 
-        <InfoLink
-          url="https://github.com/novasamatech/nova-spektr-utils/blob/main/templates/dd-template.yaml"
-          className="gap-x-1 mt-2 px-3"
-          iconName="import"
-          iconPosition="right"
-        >
+        <InfoLink url={TEMPLATE_GITHUB_LINK} className="gap-x-1 mt-2 px-3" iconName="import" iconPosition="right">
           {t('dynamicDerivations.importKeys.downloadTemplateButton')}
         </InfoLink>
       </div>
