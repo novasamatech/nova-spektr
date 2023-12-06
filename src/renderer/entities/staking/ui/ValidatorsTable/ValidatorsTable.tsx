@@ -72,7 +72,7 @@ const ValidatorRow = ({ validator, explorers = [], asset }: RowProps) => (
       )}
     </div>
 
-    <ExplorersPopover button={<IconButton name="info" size={16} />} address={validator.address} explorers={explorers} />
+    <ExplorersPopover button={<IconButton name="info" />} address={validator.address} explorers={explorers} />
   </>
 );
 
@@ -95,7 +95,7 @@ const ValidatorShortRow = ({ validator, explorers = [] }: RowProps) => (
       </div>
     </div>
 
-    <ExplorersPopover button={<IconButton name="info" size={16} />} address={validator.address} explorers={explorers} />
+    <ExplorersPopover button={<IconButton name="info" />} address={validator.address} explorers={explorers} />
   </>
 );
 
