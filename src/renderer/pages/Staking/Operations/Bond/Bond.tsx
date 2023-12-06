@@ -5,7 +5,7 @@ import { useUnit } from 'effector-react';
 
 import { DEFAULT_TRANSITION, getRelaychainAsset, toAddress } from '@shared/lib/utils';
 import { ValidatorMap } from '@entities/staking';
-import { useI18n, useNetworkContext } from '@app/providers';
+import { useI18n } from '@app/providers';
 import { Paths } from '@shared/routes';
 import { Transaction, TransactionType, useTransaction } from '@entities/transaction';
 import { Confirmation, NoAsset, Submit, Validators } from '../components';
@@ -17,7 +17,7 @@ import InitOperation, { BondResult } from './InitOperation/InitOperation';
 import { OperationTitle } from '@renderer/components/common';
 import { DestinationType } from '../common/types';
 import { UnstakingDuration } from '@pages/Staking/Overview/components';
-import { isLightClient } from '@entities/network';
+import { useNetworkData, isLightClient } from '@entities/network';
 import { Signing } from '@features/operation';
 import { walletUtils, walletModel } from '@entities/wallet';
 import { priceProviderModel } from '@entities/price';
@@ -37,10 +37,11 @@ export const Bond = () => {
   const activeAccounts = useUnit(walletModel.$activeAccounts);
 
   const navigate = useNavigate();
-  const { connections } = useNetworkContext();
   const { setTxs, txs, setWrappers, wrapTx, buildTransaction } = useTransaction();
   const [searchParams] = useSearchParams();
   const params = useParams<{ chainId: ChainId }>();
+
+  const { api, chain, connection } = useNetworkData(params.chainId || ('' as ChainId));
 
   const [isBondModalOpen, toggleBondModal] = useToggle(true);
 
@@ -74,13 +75,11 @@ export const Bond = () => {
     setAccounts(accounts);
   }, [activeAccounts.length, activeAccounts.length && activeAccounts[0].accountId]);
 
-  const connection = connections[chainId];
-
-  if (!connection || accountIds.length === 0) {
+  if (!api || accountIds.length === 0) {
     return <Navigate replace to={Paths.STAKING} />;
   }
 
-  const { api, explorers, addressPrefix, assets, name } = connections[chainId];
+  const { explorers, addressPrefix, assets, name } = chain;
   const asset = getRelaychainAsset(assets);
 
   const goToPrevStep = () => {

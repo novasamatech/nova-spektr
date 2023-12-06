@@ -1,19 +1,13 @@
 import { act, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
-import { RpcValidation, ExtendedChain } from '@entities/network';
-import { useNetworkContext } from '@app/providers';
+import { RpcValidation, ExtendedChain, networkService, networkModel } from '@entities/network';
 import { CustomRpcModal } from './CustomRpcModal';
 
 jest.mock('@app/providers', () => ({
   useI18n: jest.fn().mockReturnValue({
     t: (key: string) => key,
   }),
-  useNetworkContext: jest.fn(() => ({
-    validateRpcNode: jest.fn(),
-    addRpcNode: jest.fn(),
-    updateRpcNode: jest.fn(),
-  })),
 }));
 
 describe('pages/Settings/Networks/CustomRpcModal', () => {
@@ -77,6 +71,8 @@ describe('pages/Settings/Networks/CustomRpcModal', () => {
   });
 
   test('should disable submit button during submission', async () => {
+    jest.spyOn(networkService, 'validateRpcNode').mockRejectedValue(new Error('error'));
+
     await renderAndFillTheForm();
 
     const button = screen.getByRole('button', { name: 'settings.networks.addNodeButton' });
@@ -90,9 +86,7 @@ describe('pages/Settings/Networks/CustomRpcModal', () => {
   test('should call validateRpcNode', async () => {
     const spyValidateRpc = jest.fn().mockResolvedValue(RpcValidation.VALID);
 
-    (useNetworkContext as jest.Mock).mockImplementation(() => ({
-      validateRpcNode: spyValidateRpc,
-    }));
+    jest.spyOn(networkService, 'validateRpcNode').mockImplementation(spyValidateRpc);
 
     const { url } = await renderAndFillTheForm();
 
@@ -105,10 +99,8 @@ describe('pages/Settings/Networks/CustomRpcModal', () => {
   test('should call addRpcNode', async () => {
     const spyAddRpcNode = jest.fn();
 
-    (useNetworkContext as jest.Mock).mockImplementation(() => ({
-      validateRpcNode: jest.fn().mockResolvedValue(RpcValidation.VALID),
-      addRpcNode: spyAddRpcNode,
-    }));
+    jest.spyOn(networkService, 'validateRpcNode').mockResolvedValue(RpcValidation.VALID);
+    jest.spyOn(networkModel.events, 'rpcNodeAdded').mockImplementation(spyAddRpcNode);
 
     const { name, url } = await renderAndFillTheForm();
 
@@ -116,7 +108,10 @@ describe('pages/Settings/Networks/CustomRpcModal', () => {
     await act(async () => button.click());
     await act(async () => button.click());
 
-    expect(spyAddRpcNode).toBeCalledWith(defaultProps.network.chainId, { name, url: url });
+    expect(spyAddRpcNode).toBeCalledWith({
+      chainId: defaultProps.network.chainId,
+      rpcNode: { name, url: url },
+    });
   });
 
   test('should show error for existing address', async () => {
@@ -136,10 +131,8 @@ describe('pages/Settings/Networks/CustomRpcModal', () => {
     const node = { name: 'edit_node', url: 'wss://localhost:5000' };
     const spyUpdateRpcNode = jest.fn();
 
-    (useNetworkContext as jest.Mock).mockImplementation(() => ({
-      validateRpcNode: jest.fn().mockResolvedValue(RpcValidation.VALID),
-      updateRpcNode: spyUpdateRpcNode,
-    }));
+    jest.spyOn(networkService, 'validateRpcNode').mockResolvedValue(RpcValidation.VALID);
+    jest.spyOn(networkModel.events, 'rpcNodeUpdated').mockImplementation(spyUpdateRpcNode);
 
     await act(async () => {
       render(<CustomRpcModal {...defaultProps} node={node} />);
@@ -152,9 +145,13 @@ describe('pages/Settings/Networks/CustomRpcModal', () => {
     await act(async () => button.click());
     await act(async () => button.click());
 
-    expect(spyUpdateRpcNode).toBeCalledWith(defaultProps.network.chainId, node, {
-      name: node.name,
-      url: node.url + '/api',
+    expect(spyUpdateRpcNode).toBeCalledWith({
+      chainId: defaultProps.network.chainId,
+      oldNode: node,
+      rpcNode: {
+        name: node.name,
+        url: node.url + '/api',
+      },
     });
   });
 });

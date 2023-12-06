@@ -1,30 +1,10 @@
 import { ApiPromise } from '@polkadot/api';
-import { ProviderInterface } from '@polkadot/rpc-provider/types';
+import { ProviderInterface, ProviderInterfaceCallback } from '@polkadot/rpc-provider/types';
 import { UnsubscribePromise } from '@polkadot/api/types';
 
 import { ConnectionType } from '@shared/core';
-import type { Connection, Chain, ChainId, RpcNode, HexString } from '@shared/core';
-
-// =====================================================
-// ================ Service interface ==================
-// =====================================================
-
-export interface IChainSpecService {
-  getLightClientChains: () => ChainId[];
-  getKnownChain: (chainId: ChainId) => string | undefined;
-}
-
-export interface INetworkService {
-  connections: ConnectionsMap;
-  setupConnections: () => Promise<void>;
-  addRpcNode: (chainId: ChainId, rpcNode: RpcNode) => Promise<void>;
-  updateRpcNode: (chainId: ChainId, oldNode: RpcNode, newNode: RpcNode) => Promise<void>;
-  removeRpcNode: (chainId: ChainId, rpcNode: RpcNode) => Promise<void>;
-  validateRpcNode: (chainId: ChainId, rpcUrl: string) => Promise<RpcValidation>;
-  connectToNetwork: (props: ConnectProps) => Promise<void>;
-  connectWithAutoBalance: (chainId: ChainId, attempt: number) => Promise<void>;
-  getParachains: (chainId: ChainId) => ExtendedChain[];
-}
+import type { Connection, Chain, ChainId, RpcNode, HexString, ConnectionStatus } from '@shared/core';
+import { ConnectionDS, MetadataDS } from '@shared/api/storage';
 
 // =====================================================
 // ======================= General =====================
@@ -40,6 +20,7 @@ export const enum RpcValidation {
 
 export type ExtendedChain = Chain & {
   connection: Connection;
+  connectionStatus: ConnectionStatus;
   api?: ApiPromise;
   provider?: ProviderInterface;
   disconnect?: (switchNetwork: boolean) => Promise<void>;
@@ -73,5 +54,28 @@ export interface IMetadataService {
   /**
    * Subscribe to subscribeRuntimeVersion and trigger syncMetadata if it will be changed
    */
-  subscribeMetadata: (api: ApiPromise) => UnsubscribePromise;
+  subscribeMetadata: (api: ApiPromise, callback?: () => void) => UnsubscribePromise;
+  getAllMetadata: <T extends Metadata>(where?: Partial<T>) => Promise<MetadataDS[]>;
+  addMetadata: (metadata: Metadata) => Promise<string[]>;
+  updateMetadata: (metadata: Metadata) => Promise<string[]>;
 }
+
+export interface IConnectionService {
+  getConnections: () => Promise<ConnectionDS[]>;
+  addConnection: (connection: Connection) => Promise<string | string[]>;
+  updateConnection: (connection: Connection) => Promise<string>;
+}
+
+export const enum ProviderType {
+  WEB_SOCKET = 'ws',
+  LIGHT_CLIENT = 'sc',
+}
+
+export type Subscription = {
+  type: string;
+  method: string;
+  params: unknown[];
+  cb: ProviderInterfaceCallback;
+};
+
+export type ChainMap = Record<ChainId, Chain>;

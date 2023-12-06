@@ -19,6 +19,7 @@ jest.mock('@app/providers', () => ({
 
 jest.mock('@shared/lib/utils', () => ({
   ...jest.requireActual('@shared/lib/utils'),
+  cnTw: (...classes: string[]) => classes.join(' '),
   getOperatingSystem: jest.fn().mockReturnValue('macOS'),
 }));
 

@@ -4,7 +4,7 @@ import { Navigate, useNavigate, useParams, useSearchParams } from 'react-router-
 import { useUnit } from 'effector-react';
 
 import { toAddress, getRelaychainAsset, DEFAULT_TRANSITION } from '@shared/lib/utils';
-import { useI18n, useNetworkContext } from '@app/providers';
+import { useI18n } from '@app/providers';
 import { Paths } from '@shared/routes';
 import { Transaction, TransactionType, useTransaction } from '@entities/transaction';
 import { Confirmation, Submit, NoAsset } from '../components';
@@ -18,6 +18,7 @@ import { RewardsDestination } from '@shared/core';
 import type { Account, Address, ChainId, HexString } from '@shared/core';
 import { walletModel, walletUtils } from '@entities/wallet';
 import { priceProviderModel } from '@entities/price';
+import { useNetworkData } from '@entities/network';
 
 const enum Step {
   INIT,
@@ -32,10 +33,11 @@ export const Destination = () => {
   const activeAccounts = useUnit(walletModel.$activeAccounts);
 
   const navigate = useNavigate();
-  const { connections } = useNetworkContext();
   const { setTxs, txs, setWrappers, wrapTx, buildTransaction } = useTransaction();
   const [searchParams] = useSearchParams();
   const params = useParams<{ chainId: ChainId }>();
+
+  const { api, chain } = useNetworkData(params.chainId || ('' as ChainId));
 
   const [isDestModalOpen, toggleDestModal] = useToggle(true);
 
@@ -67,13 +69,11 @@ export const Destination = () => {
     setAccounts(accounts);
   }, [activeAccounts.length]);
 
-  const connection = connections[chainId];
-
-  if (!connection || accountIds.length === 0) {
+  if (!api || accountIds.length === 0) {
     return <Navigate replace to={Paths.STAKING} />;
   }
 
-  const { api, explorers, addressPrefix, assets, name } = connections[chainId];
+  const { explorers, addressPrefix, assets, name } = chain;
   const asset = getRelaychainAsset(assets);
 
   const goToPrevStep = () => {

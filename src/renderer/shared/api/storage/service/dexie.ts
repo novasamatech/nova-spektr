@@ -108,4 +108,5 @@ export const dexieStorage = {
   wallets: dexie.wallets,
   accounts: dexie.accounts,
   contacts: dexie.contacts,
+  connections: dexie.connections,
 };
