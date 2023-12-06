@@ -24,6 +24,7 @@ export const useNetworkData = (chainId: ChainId): NetworkData => {
     chain: chains[chainId],
     connectionStatus: connectionStatuses[chainId],
     connection: connections[chainId],
+    // TODO: Try to remove all extendedChain usage in future
     extendedChain: {
       ...chains[chainId],
       connection: connections[chainId],

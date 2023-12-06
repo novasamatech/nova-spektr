@@ -50,12 +50,6 @@ jest.mock('@entities/network', () => ({
   },
 }));
 
-jest.mock('@entities/asset', () => ({
-  useBalance: jest.fn().mockReturnValue({
-    getLiveBalances: jest.fn().mockReturnValue([]),
-  }),
-}));
-
 jest.mock('./components/NetworkAssets/NetworkAssets', () => ({
   NetworkAssets: () => <span>NetworkAssets</span>,
 }));
