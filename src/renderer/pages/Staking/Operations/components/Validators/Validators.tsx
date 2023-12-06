@@ -98,16 +98,15 @@ export const Validators = ({ api, asset, explorers, isLightClient, onGoBack, onR
 
       {!isValidatorsLoading && validatorList.length > 0 && (
         <ValidatorsTable validators={validatorList}>
-          {(validtor, rowStyle) => (
-            <li key={validtor.address} className="pl-5 hover:bg-hover group">
+          {(validator, rowStyle) => (
+            <li key={validator.address} className="pl-5 hover:bg-hover group">
               <Checkbox
-                checked={selectedValidators[validtor.address]}
-                disabled={validtor.blocked}
-                className="overflow-hidden"
-                onChange={() => toggleSelectedValidators(validtor.address)}
+                checked={selectedValidators[validator.address]}
+                disabled={validator.blocked}
+                onChange={() => toggleSelectedValidators(validator.address)}
               >
-                <div className={cnTw(rowStyle, 'pl-0 hover:bg-transparent flex-1 overflow-hidden')}>
-                  <ValidatorsTable.Row validator={validtor} asset={asset} explorers={explorers} />
+                <div className={cnTw(rowStyle, 'pl-0 hover:bg-transparent flex-1')}>
+                  <ValidatorsTable.Row validator={validator} asset={asset} explorers={explorers} />
                 </div>
               </Checkbox>
             </li>
