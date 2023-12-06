@@ -10,8 +10,8 @@ type DropdownOptionsProps = ComponentProps<typeof DropdownOptions>;
 
 type Props = Omit<IconButtonProps, 'onClick'> & DropdownOptionsProps;
 
-export const DropdownIconButton = ({ options, disabled, className, optionsClassName, ...buttonProps }: Props) => {
-  const ButtonEl = () => <Menu.Button as={IconButton} disabled={disabled} {...buttonProps} />;
+export const DropdownIconButton = ({ options, optionsClassName, ...buttonProps }: Props) => {
+  const ButtonEl = () => <Menu.Button as={IconButton} {...buttonProps} />;
 
   return <Dropdown button={ButtonEl} options={options} optionsClassName={optionsClassName} />;
 };

@@ -14,11 +14,10 @@ type Props = {
 } & Omit<ButtonProps, 'children' | 'suffixElement' | 'onClick'> &
   DropdownOptionsProps;
 
-export const DropdownButton = ({ options, title, disabled, className, optionsClassName, ...buttonProps }: Props) => {
+export const DropdownButton = ({ options, title, className, optionsClassName, ...buttonProps }: Props) => {
   const ButtonEl = (open: boolean) => (
     <Menu.Button
       as={Button}
-      disabled={disabled}
       suffixElement={<Icon name={open ? 'up' : 'down'} size={16} className="text-inherit" />}
       className={cnTw('justify-center', className)}
       {...buttonProps}
