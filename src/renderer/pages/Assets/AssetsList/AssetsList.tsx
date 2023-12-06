@@ -27,7 +27,7 @@ export const AssetsList = () => {
   const chains = useUnit(networkModel.$chains);
   const balances = useUnit(balanceModel.$balances);
 
-  // DON'T REMOVE: need to have subscriptions
+  // DON'T REMOVE: need to have subscriptions (find way to run effector model without it)
   const subscriptions = useUnit(balanceSubscriptionModel.$subscriptions);
 
   const { setHideZeroBalance, getHideZeroBalance } = useSettingsStorage();
