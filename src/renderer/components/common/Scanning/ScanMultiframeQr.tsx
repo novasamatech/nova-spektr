@@ -4,7 +4,6 @@ import { UnsignedTransaction } from '@substrate/txwrapper-polkadot';
 import init, { Encoder } from 'raptorq';
 import { useEffect, useState } from 'react';
 
-import { Command } from '@renderer/components/common/QrCode/QrGenerator/common/constants';
 import QrMultiframeGenerator from '@renderer/components/common/QrCode/QrGenerator/QrMultiframeTxGenerator';
 import { TRANSACTION_BULK } from '@renderer/components/common/QrCode/common/constants';
 import { useI18n } from '@app/providers';
@@ -15,9 +14,8 @@ import { QrGeneratorContainer } from '@renderer/components/common';
 import type { Account, ChainId, ShardAccount } from '@shared/core';
 import { SigningType, Wallet } from '@shared/core';
 import {
-  createDynamicDerivationsSignPayload,
   createMultipleSignPayload,
-  createSignPayload,
+  createSubstrateSignPayload,
 } from '@renderer/components/common/QrCode/QrGenerator/common/utils';
 
 type Props = {
@@ -68,16 +66,13 @@ const ScanMultiframeQr = ({
       return (async () => {
         const { payload, unsigned } = await createPayload(transactions[index], api);
 
-        const signPayload =
-          signerWallet.signingType === SigningType.POLKADOT_VAULT
-            ? createDynamicDerivationsSignPayload(
-                rootAddress!,
-                Command.DynamicDerivationsTransaction,
-                payload,
-                chainId,
-                (account as ShardAccount).derivationPath,
-              )
-            : createSignPayload(address, Command.Transaction, payload, chainId);
+        const signPayload = createSubstrateSignPayload(
+          signerWallet.signingType === SigningType.POLKADOT_VAULT ? rootAddress! : address,
+          payload,
+          chainId,
+          signerWallet.signingType,
+          (account as ShardAccount).derivationPath,
+        );
 
         return {
           unsigned,

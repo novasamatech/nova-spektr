@@ -41,19 +41,16 @@ export const createSubstrateSignPayload = (
   derivationPath?: string,
 ): Uint8Array => {
   if (signingType === SigningType.POLKADOT_VAULT) {
-    return u8aConcat(
-      SUBSTRATE_ID,
-      createDynamicDerivationsSignPayload(
-        address,
-        Command.DynamicDerivationsTransaction,
-        payload,
-        genesisHash,
-        derivationPath || '',
-      ),
+    return createDynamicDerivationsSignPayload(
+      address,
+      Command.DynamicDerivationsTransaction,
+      payload,
+      genesisHash,
+      derivationPath || '',
     );
   }
 
-  return u8aConcat(SUBSTRATE_ID, createSignPayload(address, Command.Transaction, payload, genesisHash));
+  return createSignPayload(address, Command.Transaction, payload, genesisHash);
 };
 
 export const createSignPayload = (
