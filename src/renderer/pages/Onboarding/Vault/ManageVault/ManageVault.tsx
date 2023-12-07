@@ -197,8 +197,13 @@ export const ManageVault = ({ seedInfo, onBack, onComplete }: Props) => {
             <ContextMenu button={<RootAccountLg name={walletName} accountId={publicKey} />}>
               <ContextMenu.Group title="Public key">
                 <div className="flex items-center gap-x-2">
-                  <HelpText className="text-text-secondary break-all">{publicKey}</HelpText>
-                  <IconButton className="shrink-0" name="copy" size={20} onClick={() => copyToClipboard(publicKey)} />
+                  <HelpText className="text-text-secondary break-all">{publicKeyAddress}</HelpText>
+                  <IconButton
+                    className="shrink-0"
+                    name="copy"
+                    size={20}
+                    onClick={() => copyToClipboard(publicKeyAddress)}
+                  />
                 </div>
               </ContextMenu.Group>
             </ContextMenu>

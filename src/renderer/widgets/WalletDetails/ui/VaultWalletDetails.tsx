@@ -6,7 +6,7 @@ import { RootAccountLg, WalletCardLg, VaultAccountsList } from '@entities/wallet
 import { chainsService } from '@entities/network';
 import { useI18n } from '@app/providers';
 import type { Wallet, BaseAccount } from '@shared/core';
-import { copyToClipboard } from '@shared/lib/utils';
+import { copyToClipboard, toAddress } from '@shared/lib/utils';
 import { VaultMap } from '../lib/types';
 import { ShardsList } from './ShardsList';
 import { vaultDetailsModel } from '../model/vault-details-model';
@@ -44,7 +44,9 @@ export const VaultWalletDetails = ({ wallet, root, accountsMap, onClose }: Props
           <ContextMenu button={<RootAccountLg name={wallet.name} accountId={root.accountId} />}>
             <ContextMenu.Group title={t('walletDetails.vault.publicKey')}>
               <div className="flex items-center gap-x-2">
-                <HelpText className="text-text-secondary break-all">{root.accountId}</HelpText>
+                <HelpText className="text-text-secondary break-all">
+                  {toAddress(root.accountId, { prefix: 1 })}
+                </HelpText>
                 <IconButton
                   className="shrink-0"
                   name="copy"

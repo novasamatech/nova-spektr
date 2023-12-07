@@ -1000,6 +1000,7 @@
       "derivationPath": "Derivation path",
       "export": "Export keyset",
       "networksTab": "Networks",
+      "publicKey": "Public Key",
       "shardsTitle": "Shards"
     },
     "walletConnect": {
