@@ -42,9 +42,14 @@ export const ExplorersPopover = ({ button, address, explorers, addressPrefix, ch
 
 type GroupProps = {
   title?: string;
+  active?: boolean;
 };
-const PopoverGroup = ({ title, children }: PropsWithChildren<GroupProps>) => {
-  return <ContextMenu.Group title={title}>{children}</ContextMenu.Group>;
+const PopoverGroup = ({ title, active = true, children }: PropsWithChildren<GroupProps>) => {
+  return (
+    <ContextMenu.Group active={active} title={title}>
+      {children}
+    </ContextMenu.Group>
+  );
 };
 
 ExplorersPopover.Group = PopoverGroup;

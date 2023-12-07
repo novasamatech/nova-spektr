@@ -3,11 +3,12 @@ import { useUnit } from 'effector-react';
 
 import { useI18n } from '@app/providers';
 import type { Asset, Explorer, Address, Account } from '@shared/core';
-import { FootnoteText, Plate, Checkbox, Icon, Shimmering } from '@shared/ui';
+import { FootnoteText, Plate, Checkbox, Icon, Shimmering, IconButton } from '@shared/ui';
 import { ExplorersPopover, walletModel, walletUtils } from '@entities/wallet';
 import { AssetBalance } from '@entities/asset';
 import { AssetFiatBalance } from '@entities/price/ui/AssetFiatBalance';
 import { NominatorInfo } from '../../../common/types';
+import { cnTw } from '@shared/lib/utils';
 
 type Props = {
   nominatorsLength: number;
@@ -76,15 +77,18 @@ export const NominatorsItem = ({
         )}
       </div>
       <ExplorersPopover
-        button={<Icon name="info" size={16} />}
+        button={<IconButton name="info" />}
         address={stake.address}
         addressPrefix={addressPrefix}
         explorers={explorers}
       >
-        {stake.stash && (
+        <ExplorersPopover.Group active={Boolean(stake.stash)}>
           <button
             type="button"
-            className="flex items-center gap-x-2 px-2 w-full h-full"
+            className={cnTw(
+              'flex items-center gap-x-2 px-2 py-1 w-full h-full rounded-md transition-colors',
+              'hover:bg-action-background-hover focus:bg-action-background-hover',
+            )}
             onClick={() => onCheckValidators(stake.stash)}
           >
             <Icon name="viewValidators" size={16} />
@@ -92,7 +96,7 @@ export const NominatorsItem = ({
               {t('staking.overview.viewValidatorsOption')}
             </FootnoteText>
           </button>
-        )}
+        </ExplorersPopover.Group>
       </ExplorersPopover>
     </Plate>
   );

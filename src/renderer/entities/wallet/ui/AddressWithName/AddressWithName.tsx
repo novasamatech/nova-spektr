@@ -40,12 +40,7 @@ export const AddressWithName = ({
       {canCopySubName ? (
         <div className="flex items-center gap-1">
           {addressContent}
-          <IconButton
-            name="copy"
-            size={16}
-            className="text-text-tertiary p-0"
-            onClick={() => copyToClipboard(currentAddress)}
-          />
+          <IconButton name="copy" className="text-text-tertiary p-0" onClick={() => copyToClipboard(currentAddress)} />
         </div>
       ) : (
         addressContent

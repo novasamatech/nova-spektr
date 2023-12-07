@@ -28,7 +28,7 @@ import {
   useStakingData,
   StakingMap,
   ValidatorMap,
-  useValidators,
+  validatorsService,
   useStakingRewards,
   ValidatorsModal,
 } from '@entities/staking';
@@ -44,7 +44,6 @@ export const Overview = () => {
 
   const { subscribeActiveEra } = useEra();
   const { subscribeStaking } = useStakingData();
-  const { getValidatorsList, getNominators } = useValidators();
   const [isShowNominators, toggleNominators] = useToggle();
 
   const [chainEra, setChainEra] = useState<Record<ChainId, number | undefined>>({});
@@ -138,13 +137,13 @@ export const Overview = () => {
     const era = chainEra[chainId];
     if (!era) return;
 
-    getValidatorsList(api, era).then(setValidators);
+    validatorsService.getValidatorsList(api, era).then(setValidators);
   }, [chainId, api, chainEra]);
 
   useEffect(() => {
     if (!api) return;
 
-    getNominators(api, selectedStash, isLightClient).then((nominators) => {
+    validatorsService.getNominators(api, selectedStash, isLightClient).then((nominators) => {
       setNominators(Object.values(nominators));
     });
   }, [api, selectedStash]);
