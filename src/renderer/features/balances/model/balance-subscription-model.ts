@@ -9,7 +9,7 @@ import { balanceModel, balanceSubscriptionService } from '@entities/balance';
 
 type SubscriptionObject = {
   accounts: AccountId[];
-  subscription: Promise<[VoidFn[], VoidFn[]]>;
+  subscription: [Promise<VoidFn[]>, Promise<VoidFn[]>];
 };
 
 type BalanceSubscribeMap = Record<ChainId, SubscriptionObject>;
@@ -64,7 +64,7 @@ const createSubscriptionsBalancesFx = createEffect(
 
       newSubscriptions[chainId as ChainId] = {
         accounts: accountIds,
-        subscription: Promise.all([balanceSubs, locksSubs]),
+        subscription: [balanceSubs, locksSubs],
       };
     });
 
@@ -81,7 +81,7 @@ const unsubscribeBalancesFx = createEffect(async ({ subscription }: UnsubscribeP
     return;
   }
 
-  const [balanceUnsubs, lockUnsubs] = await subscription.subscription;
+  const [balanceUnsubs, lockUnsubs] = await Promise.all(subscription.subscription);
 
   balanceUnsubs.forEach((fn) => fn());
   lockUnsubs.forEach((fn) => fn());
