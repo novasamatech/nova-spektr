@@ -12,8 +12,10 @@ import { Transaction, useTransaction } from '@entities/transaction';
 import { toAddress } from '@shared/lib/utils';
 import { Button } from '@shared/ui';
 import { QrGeneratorContainer } from '@renderer/components/common';
-import type { ChainId, Account } from '@shared/core';
+import type { Account, ChainId, ShardAccount } from '@shared/core';
+import { SigningType, Wallet } from '@shared/core';
 import {
+  createDynamicDerivationsSignPayload,
   createMultipleSignPayload,
   createSignPayload,
 } from '@renderer/components/common/QrCode/QrGenerator/common/utils';
@@ -25,6 +27,7 @@ type Props = {
   addressPrefix: number;
   transactions: Transaction[];
   countdown: number;
+  signerWallet: Wallet;
   onGoBack: () => void;
   onResetCountdown: () => void;
   onResult: (unsigned: UnsignedTransaction[], txPayloads: Uint8Array[]) => void;
@@ -37,6 +40,7 @@ const ScanMultiframeQr = ({
   addressPrefix,
   transactions,
   countdown,
+  signerWallet,
   onGoBack,
   onResetCountdown,
   onResult,
@@ -62,9 +66,20 @@ const ScanMultiframeQr = ({
       return (async () => {
         const { payload, unsigned } = await createPayload(transactions[index], api);
 
+        const signPayload =
+          signerWallet.signingType === SigningType.POLKADOT_VAULT
+            ? createDynamicDerivationsSignPayload(
+                address,
+                Command.DynamicDerivationsTransaction,
+                payload,
+                chainId,
+                (account as ShardAccount).derivationPath,
+              )
+            : createSignPayload(address, Command.Transaction, payload, chainId);
+
         return {
           unsigned,
-          signPayload: createSignPayload(address, Command.Transaction, payload, chainId),
+          signPayload,
           transactionData: transactions[index],
         };
       })();

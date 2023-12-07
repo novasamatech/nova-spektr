@@ -97,6 +97,7 @@ export const VaultSigning = ({
             addressPrefix={addressPrefix}
             countdown={countdown}
             accounts={accounts}
+            signerWallet={wallet}
             transactions={transactions}
             onGoBack={onGoBack}
             onResetCountdown={resetCountdown}
