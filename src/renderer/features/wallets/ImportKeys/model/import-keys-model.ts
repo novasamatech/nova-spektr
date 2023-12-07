@@ -40,11 +40,8 @@ const resetValues = createEvent<ExistingDerivations>();
 
 const parseFileContentFx = createEffect<string, ParsedImportFile, DerivationImportError>((fileContent: string) => {
   try {
-    const reviver = (key: unknown, value: unknown) =>
-      importKeysUtils.renameKeyReviver(key, value, 'derivation_path', 'derivationPath');
-
     // using default core scheme converts 0x strings into numeric values
-    const structure = parse(fileContent, reviver, { schema: 'failsafe' });
+    const structure = parse(fileContent, importKeysUtils.renameDerivationPathKeyReviver, { schema: 'failsafe' });
     if (importKeysUtils.isFileStructureValid(structure)) return structure;
 
     throw new DerivationImportError(ValidationError.INVALID_FILE_STRUCTURE);
@@ -62,6 +59,7 @@ const validateDerivationsFx = createEffect<ValidateDerivationsParams, TypedImpor
     }
 
     const { derivations, root } = parsed;
+    console.log('derivations', derivations);
     const rootAccountId = root.startsWith('0x') ? root : toAccountId(root);
 
     if (rootAccountId !== existingDerivations.root) {
@@ -113,6 +111,8 @@ type MergePathsParams = {
   existing: ExistingDerivations;
 };
 const mergePathsFx = createEffect<MergePathsParams, MergeResult>(({ imported, existing }) => {
+  console.log('existing', existing);
+  console.log('imported', imported);
   const existingDerivations = existing.derivations;
 
   const existingByChain = groupBy(existingDerivations, 'chainId');

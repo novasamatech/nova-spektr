@@ -5,7 +5,7 @@ export type ExportedDerivation = {
     derivation_path: string;
     type: DdKeyType;
     name?: string;
-    sharded?: number;
+    sharded?: string;
   };
 };
 
