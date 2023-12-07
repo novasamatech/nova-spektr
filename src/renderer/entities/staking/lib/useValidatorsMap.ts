@@ -1,12 +1,10 @@
 import { useEffect, useState } from 'react';
 import { ApiPromise } from '@polkadot/api';
 
-import { ValidatorMap, useEra, useValidators } from './';
-import { ChainId } from '@shared/core';
+import { ValidatorMap, useEra, validatorsService } from './';
 
-export const useValidatorsMap = (api?: ApiPromise, chainId?: ChainId, isLightClient?: boolean): ValidatorMap => {
+export const useValidatorsMap = (api?: ApiPromise, isLightClient?: boolean): ValidatorMap => {
   const { subscribeActiveEra } = useEra();
-  const { getValidatorsWithInfo } = useValidators();
 
   const [era, setEra] = useState<number>();
   const [validators, setValidators] = useState<ValidatorMap>({});
@@ -24,9 +22,9 @@ export const useValidatorsMap = (api?: ApiPromise, chainId?: ChainId, isLightCli
   }, []);
 
   useEffect(() => {
-    if (!era || !chainId || !api) return;
+    if (!era || !api) return;
 
-    getValidatorsWithInfo(chainId, api, era, isLightClient).then(setValidators);
+    validatorsService.getValidatorsWithInfo(api, era, isLightClient).then(setValidators);
   }, [era]);
 
   return validators;

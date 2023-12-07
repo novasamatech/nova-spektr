@@ -33,22 +33,6 @@ export interface IStakingRewardsService {
 // ========== IValidatorsService interface =============
 // =====================================================
 
-export interface IValidatorsService {
-  getValidatorsWithInfo: (
-    chainId: ChainId,
-    api: ApiPromise,
-    era: EraIndex,
-    isLightClient?: boolean,
-  ) => Promise<ValidatorMap>;
-  getValidatorsList: (api: ApiPromise, era: EraIndex) => Promise<ValidatorMap>;
-  getMaxValidators: (api: ApiPromise) => number;
-  getNominators: (api: ApiPromise, stash: Address, isLightClient?: boolean) => Promise<ValidatorMap>;
-}
-
-// =====================================================
-// ========== IValidatorsService interface =============
-// =====================================================
-
 export interface IEraService {
   subscribeActiveEra: (api: ApiPromise, callback: (era?: EraIndex) => void) => Promise<() => void>;
   getTimeToEra: (api: ApiPromise, era?: EraIndex) => Promise<number>;

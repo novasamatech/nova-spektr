@@ -125,7 +125,6 @@ export const AssetsList = () => {
                   query={query.toLowerCase()}
                   chain={chain}
                   accounts={activeShards}
-                  canMakeActions={!walletUtils.isWatchOnly(activeWallet)}
                 />
               ))}
 

@@ -29,9 +29,8 @@ const Details = ({ tx, account, connection, signatory }: Props) => {
   const signatoryWallet = wallets.find((w) => w.id === signatory?.walletId);
 
   const api = connection?.api;
-  const chainId = connection?.chainId;
 
-  const allValidators = Object.values(useValidatorsMap(api, chainId, connection && isLightClient(connection)));
+  const allValidators = Object.values(useValidatorsMap(api, connection && isLightClient(connection)));
 
   const [isValidatorsOpen, toggleValidators] = useToggle();
 
