@@ -1,26 +1,45 @@
 import { createEndpoint } from '@remote-ui/rpc';
-import { WsProvider } from '@polkadot/rpc-provider';
+import { ScProvider, WsProvider } from '@polkadot/rpc-provider';
 import { ApiPromise } from '@polkadot/api';
 import isEqual from 'lodash/isEqual';
+import { ProviderInterface } from '@polkadot/rpc-provider/types';
+import * as Sc from '@substrate/connect';
 
-import { Account, AccountId, Chain, ChainId } from '@shared/core';
+import { Account, AccountId, Chain, ChainId, Connection, ConnectionType } from '@shared/core';
 import { InitConnectionsResult } from '../common/consts';
 import { ProxyAccount } from '../common/types';
-import { isEqualProxies, toProxyAccount } from '../common/utils';
+import { proxieWorkerUtils } from '../common/utils';
 
 const state = {
   apis: {} as Record<ChainId, ApiPromise>,
 };
 
-function initConnection(chain: Chain) {
+function initConnection(chain: Chain, connection: Connection) {
   return new Promise((resolve) => {
     if (!chain) {
       return;
     }
 
     try {
-      // TODO: (current task) Provide connection to use light clients and single selected or custom nodes
-      let provider = new WsProvider(chain.nodes.map((node) => node.url));
+      let provider: ProviderInterface | undefined;
+
+      if (!connection || connection.connectionType === ConnectionType.AUTO_BALANCE) {
+        provider = new WsProvider(chain.nodes.concat(connection?.customNodes || []).map((node) => node.url));
+      } else if (connection.connectionType === ConnectionType.RPC_NODE) {
+        provider = new WsProvider([connection.activeNode?.url || '']);
+      } else if (connection.connectionType === ConnectionType.LIGHT_CLIENT) {
+        try {
+          const knownChainId = proxieWorkerUtils.getKnownChain(chain.chainId);
+
+          if (knownChainId) {
+            provider = new ScProvider(Sc, knownChainId);
+          }
+        } catch (e) {
+          console.log('light client not connected', e);
+        }
+      }
+
+      console.log('xcm', provider);
 
       if (!provider) {
         return;
@@ -76,7 +95,7 @@ async function getProxies(chainId: ChainId, accounts: Record<AccountId, Account>
           const proxyData = (await api.rpc.state.queryStorageAt([key])) as any;
 
           const proxiedAccountId = key.args[0].toHex();
-          const proxyAccountList = proxyData[0][0].toHuman().map(toProxyAccount);
+          const proxyAccountList = proxyData[0][0].toHuman().map(proxieWorkerUtils.toProxyAccount);
 
           proxyAccountList.forEach((a: ProxyAccount) => {
             const newProxy = {
@@ -86,7 +105,7 @@ async function getProxies(chainId: ChainId, accounts: Record<AccountId, Account>
 
             const linkedAccount = accounts[a.accountId] || accounts[proxiedAccountId];
 
-            const alreadyExists = [...proxies].some((oldProxy) => isEqualProxies(oldProxy, newProxy));
+            const alreadyExists = [...proxies].some((oldProxy) => proxieWorkerUtils.isEqualProxies(oldProxy, newProxy));
 
             if (linkedAccount && !alreadyExists) {
               proxiesToAdd.push(newProxy);

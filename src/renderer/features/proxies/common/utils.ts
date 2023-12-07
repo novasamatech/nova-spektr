@@ -1,8 +1,17 @@
 import { u8aToHex } from '@polkadot/util';
 import { decodeAddress } from '@polkadot/util-crypto';
+import { WellKnownChain } from '@substrate/connect';
 
-import { AccountId, Chain } from '@shared/core';
+import { AccountId, Chain, ChainId } from '@shared/core';
 import { ProxyAccount } from './types';
+
+export const proxieWorkerUtils = {
+  toAccountId,
+  isRegularProxy,
+  toProxyAccount,
+  isEqualProxies,
+  getKnownChain,
+};
 
 /**
  * Try to get account id of the address
@@ -10,17 +19,19 @@ import { ProxyAccount } from './types';
  * @param address account's address
  * @return {String}
  */
-export const toAccountId = (address: string): AccountId => {
+export function toAccountId(address: string): AccountId {
   try {
     return u8aToHex(decodeAddress(address));
   } catch {
     return '0x00';
   }
-};
+}
 
-export const isRegularProxy = (chain: Chain) => chain.options?.includes('regular_proxy');
+function isRegularProxy(chain: Chain) {
+  return chain.options?.includes('regular_proxy');
+}
 
-export const toProxyAccount = (account: any): ProxyAccount => {
+function toProxyAccount(account: any): ProxyAccount {
   const proxyAccount = {
     accountId: toAccountId(account?.delegate),
     proxyType: account.proxyType,
@@ -28,13 +39,27 @@ export const toProxyAccount = (account: any): ProxyAccount => {
   };
 
   return proxyAccount;
-};
+}
 
-export const isEqualProxies = (oldProxy: ProxyAccount, newProxy: ProxyAccount) => {
+function isEqualProxies(oldProxy: ProxyAccount, newProxy: ProxyAccount) {
   return (
     oldProxy.accountId === newProxy.accountId &&
     oldProxy.proxiedAccountId === newProxy.proxiedAccountId &&
     oldProxy.proxyType === newProxy.proxyType &&
     oldProxy.delay === newProxy.delay
   );
+}
+
+const enum Chains {
+  POLKADOT = '0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3',
+  KUSAMA = '0xb0a8d493285c2df73290dfb7e61f870f17b41801197a149ca93654499ea3dafe',
+}
+
+const KnownChains: Record<ChainId, WellKnownChain> = {
+  [Chains.POLKADOT]: WellKnownChain.polkadot,
+  [Chains.KUSAMA]: WellKnownChain.ksmcc3,
 };
+
+function getKnownChain(chainId: ChainId): WellKnownChain | undefined {
+  return KnownChains[chainId];
+}
