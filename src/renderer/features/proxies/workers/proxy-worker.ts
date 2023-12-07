@@ -103,15 +103,14 @@ async function getProxies(chainId: ChainId, accounts: Record<AccountId, Account>
               ...a,
             };
 
-            const linkedAccount = accounts[a.accountId] || accounts[proxiedAccountId];
-
+            const hasProxyOrProxiedAccount = accounts[a.accountId] || accounts[proxiedAccountId];
             const alreadyExists = [...proxies].some((oldProxy) => proxieWorkerUtils.isEqualProxies(oldProxy, newProxy));
 
-            if (linkedAccount && !alreadyExists) {
+            if (hasProxyOrProxiedAccount && !alreadyExists) {
               proxiesToAdd.push(newProxy);
             }
 
-            if (linkedAccount) {
+            if (hasProxyOrProxiedAccount) {
               existedProxies.push(newProxy);
             }
           });
