@@ -1,10 +1,11 @@
 import { createEffect, createEvent, createStore, sample, scopeBind } from 'effector';
 import { createEndpoint } from '@remote-ui/rpc';
+import { keyBy } from 'lodash';
 
-import { AccountId, Chain, ChainId, kernelModel } from '@shared/core';
-import { ProxiedAccount, ProxyStore } from '../common/types';
+import { Account, Chain, ChainAccount, ChainId, kernelModel } from '@shared/core';
+import { ProxyAccount, ProxyStore } from '../common/types';
 import { networkModel } from '@/src/renderer/entities/network';
-import { getAccountsProxy, isRegularProxy } from '../common/utils';
+import { isEqualProxies, isRegularProxy } from '../common/utils';
 import { walletModel } from '@/src/renderer/entities/wallet';
 
 // @ts-ignore
@@ -29,13 +30,23 @@ const startChainsFx = createEffect((chains: Chain[]) => {
   });
 });
 
-const getProxiesFx = createEffect(async (chainId: ChainId): Promise<ProxyStore> => {
-  const proxies = (await endpoint.call.getProxies(chainId)) as Array<[AccountId, ProxiedAccount]>;
-
-  const proxiesObject = Object.fromEntries(proxies);
+type GetProxiesParams = {
+  chainId: ChainId;
+  accounts: Account[];
+  proxies: ProxyAccount[];
+};
+const getProxiesFx = createEffect(async ({ chainId, accounts, proxies }: GetProxiesParams): Promise<ProxyStore> => {
+  const { proxiesToAdd, proxiesToRemove } = (await endpoint.call.getProxies(
+    chainId,
+    keyBy(accounts, 'accountId'),
+    proxies,
+  )) as {
+    proxiesToAdd: ProxyAccount[];
+    proxiesToRemove: ProxyAccount[];
+  };
 
   return {
-    [chainId]: proxiesObject,
+    [chainId]: proxies.filter((p) => proxiesToRemove.some((pr) => isEqualProxies(pr, p))).concat(proxiesToAdd),
   };
 });
 
@@ -52,6 +63,12 @@ sample({
 
 sample({
   clock: connected,
+  source: walletModel.$accounts,
+  fn: (accounts, chainId) => ({
+    chainId,
+    accounts: accounts.filter((a) => !(a as ChainAccount).chainId || (a as ChainAccount).chainId === chainId),
+    proxies: [],
+  }),
   target: getProxiesFx,
 });
 
@@ -64,15 +81,8 @@ sample({
 
 sample({
   clock: getProxiesFx.done,
-  fn: ({ params: chainId }) => chainId,
+  fn: ({ params: { chainId } }) => chainId,
   target: disconnectFx,
-});
-
-sample({
-  clock: $proxies,
-  source: walletModel.$accounts,
-  fn: (accounts, proxies) => getAccountsProxy(accounts, proxies),
-  target: $accountProxies,
 });
 
 export const proxiesModel = {

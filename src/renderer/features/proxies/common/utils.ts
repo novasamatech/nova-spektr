@@ -1,27 +1,40 @@
-import { Account, Chain, ChainId } from '@shared/core';
-import { ProxyStore } from './types';
+import { u8aToHex } from '@polkadot/util';
+import { decodeAddress } from '@polkadot/util-crypto';
+
+import { AccountId, Chain } from '@shared/core';
+import { ProxyAccount } from './types';
+
+/**
+ * Try to get account id of the address
+ * WARNING! Duplication for worker
+ * @param address account's address
+ * @return {String}
+ */
+export const toAccountId = (address: string): AccountId => {
+  try {
+    return u8aToHex(decodeAddress(address));
+  } catch {
+    return '0x00';
+  }
+};
 
 export const isRegularProxy = (chain: Chain) => chain.options?.includes('regular_proxy');
 
-export const getAccountsProxy = (accounts: Account[], proxies: ProxyStore) => {
-  const proxyAccounts = accounts.reduce<ProxyStore>((acc, account) => {
-    Object.entries(proxies).forEach(([chainId, chainProxies]) => {
-      const typedChainId = chainId as ChainId;
+export const toProxyAccount = (account: any): ProxyAccount => {
+  const proxyAccount = {
+    accountId: toAccountId(account?.delegate),
+    proxyType: account.proxyType,
+    delay: Number(account.delay),
+  };
 
-      if (chainProxies[account.accountId]) {
-        if (!acc[typedChainId]) {
-          acc[typedChainId] = {};
-        }
+  return proxyAccount;
+};
 
-        acc[typedChainId] = {
-          ...acc[typedChainId],
-          [account.accountId]: chainProxies[account.accountId],
-        };
-      }
-    });
-
-    return acc;
-  }, {});
-
-  return proxyAccounts;
+export const isEqualProxies = (oldProxy: ProxyAccount, newProxy: ProxyAccount) => {
+  return (
+    oldProxy.accountId === newProxy.accountId &&
+    oldProxy.proxiedAccountId === newProxy.proxiedAccountId &&
+    oldProxy.proxyType === newProxy.proxyType &&
+    oldProxy.delay === newProxy.delay
+  );
 };

@@ -1,9 +1,12 @@
 import { createEndpoint } from '@remote-ui/rpc';
 import { WsProvider } from '@polkadot/rpc-provider';
 import { ApiPromise } from '@polkadot/api';
+import isEqual from 'lodash/isEqual';
 
-import { Chain, ChainId } from '@shared/core';
+import { Account, AccountId, Chain, ChainId } from '@shared/core';
 import { InitConnectionsResult } from '../common/consts';
+import { ProxyAccount } from '../common/types';
+import { isEqualProxies, toProxyAccount } from '../common/utils';
 
 const state = {
   apis: {} as Record<ChainId, ApiPromise>,
@@ -52,11 +55,17 @@ async function disconnect(chainId: ChainId) {
   }
 }
 
-async function getProxies(chainId: ChainId) {
+async function getProxies(chainId: ChainId, accounts: Record<AccountId, Account>, proxies: ProxyAccount[]) {
   const api = state.apis[chainId];
-  const result = new Map();
+  const proxiesToAdd = [] as ProxyAccount[];
+  const existedProxies = [] as ProxyAccount[];
 
-  if (!api || !api.query.proxy) return result;
+  if (!api || !api.query.proxy) {
+    return {
+      proxiesToAdd: [],
+      proxiesToRemove: [],
+    };
+  }
 
   try {
     const keys = await api.query.proxy.proxies.keys();
@@ -66,13 +75,26 @@ async function getProxies(chainId: ChainId) {
         try {
           const proxyData = (await api.rpc.state.queryStorageAt([key])) as any;
 
-          const proxyAccountId = key.args[0].toHex();
-          const accounts = proxyData[0][0].toHuman();
-          const deposit = proxyData[0][1].toNumber();
+          const proxiedAccountId = key.args[0].toHex();
+          const proxyAccountList = proxyData[0][0].toHuman().map(toProxyAccount);
 
-          result.set(proxyAccountId, {
-            deposit,
-            accounts,
+          proxyAccountList.forEach((a: ProxyAccount) => {
+            const newProxy = {
+              proxiedAccountId: proxiedAccountId,
+              ...a,
+            };
+
+            const linkedAccount = accounts[a.accountId] || accounts[proxiedAccountId];
+
+            const alreadyExists = [...proxies].some((oldProxy) => isEqualProxies(oldProxy, newProxy));
+
+            if (linkedAccount && !alreadyExists) {
+              proxiesToAdd.push(newProxy);
+            }
+
+            if (linkedAccount) {
+              existedProxies.push(newProxy);
+            }
           });
         } catch (e) {
           console.log('proxy error', e);
@@ -83,7 +105,10 @@ async function getProxies(chainId: ChainId) {
     console.log(e);
   }
 
-  return Array.from(result.entries());
+  return {
+    proxiesToAdd,
+    proxiesToRemove: proxies.filter((p) => !existedProxies.some((ep) => isEqual(p, ep))),
+  };
 }
 
 // @ts-ignore

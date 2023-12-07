@@ -9,14 +9,10 @@ export type GetProxyCommand = {
 };
 
 export type ProxyAccount = {
-  delegate: string;
+  proxiedAccountId?: AccountId;
+  accountId: AccountId;
   proxyType: string;
   delay: number;
 };
 
-export type ProxiedAccount = {
-  accounts: ProxyAccount[];
-  deposit: string;
-};
-
-export type ProxyStore = Record<ChainId, Record<AccountId, ProxiedAccount>>;
+export type ProxyStore = Record<ChainId, ProxyAccount[]>;

@@ -18,12 +18,8 @@ export const WalletDetailsProvider = () => {
   const multisigAccount = useUnit(walletProviderModel.$multisigAccount);
   const contacts = useUnit(walletProviderModel.$signatoryContacts);
   const signatoryWallets = useUnit(walletProviderModel.$signatoryWallets);
-  // const proxies = useUnit(proxiesModel.$proxies);
-  const accountProxies = useUnit(proxiesModel.$accountProxies);
-
-  useEffect(() => {
-    console.log('proxies', accountProxies);
-  }, [accountProxies]);
+  // TODO: Remove when proxies will be used in UI
+  const proxies = useUnit(proxiesModel.$proxies);
 
   if (!wallet) return null;
 
