@@ -2,7 +2,7 @@ import { ApiPromise } from '@polkadot/api';
 
 import { IStakingDataService, StakingMap } from './common/types';
 import type { Address, ChainId, EraIndex, Unlocking } from '@shared/core';
-import { redeemableAmount } from '@shared/lib/utils';
+import { redeemableAmount, ZERO_BALANCE } from '@shared/lib/utils';
 
 export const useStakingData = (): IStakingDataService => {
   const subscribeStaking = async (
@@ -119,7 +119,7 @@ export const useStakingData = (): IStakingDataService => {
   const hasRedeem = (unlocking: Unlocking[] = [], era?: number): boolean => {
     if (!era || unlocking.length === 0) return false;
 
-    return Boolean(redeemableAmount(unlocking, era));
+    return redeemableAmount(unlocking, era) !== ZERO_BALANCE;
   };
 
   return {

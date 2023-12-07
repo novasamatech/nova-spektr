@@ -1,5 +1,4 @@
-import { Fragment, ReactNode, useEffect, useState } from 'react';
-import { Transition } from '@headlessui/react';
+import { ReactNode } from 'react';
 import { Trans } from 'react-i18next';
 
 import { useI18n } from '@app/providers';
@@ -12,10 +11,8 @@ import { useStakingData } from '@entities/staking';
 import { NominatorsItem } from '../NominatorItem/NominatorItem';
 import { NominatorInfo } from '../../../common/types';
 
-type NominatorInfoWithShard = NominatorInfo<ShardAccount>;
-
 type Props = {
-  shardsStake: NominatorInfoWithShard[];
+  shardsStake: NominatorInfo<ShardAccount>[];
   isStakingLoading: boolean;
   era?: number;
   asset?: Asset;
@@ -23,7 +20,7 @@ type Props = {
   addressPrefix?: number;
   onCheckValidators: (stash?: Address) => void;
   onToggleNominator: (nominator: Address, value?: boolean) => void;
-  getContent: (stake: NominatorInfoWithShard) => ReactNode;
+  getContent: (stake: NominatorInfo<ShardAccount>) => ReactNode;
 };
 
 export const ShardedList = ({
@@ -37,91 +34,44 @@ export const ShardedList = ({
   onToggleNominator,
   getContent,
 }: Props) => {
+  const { t } = useI18n();
   const { getNextUnstakingEra, hasRedeem } = useStakingData();
 
-  const { t } = useI18n();
-  const [shards, setShards] = useState<NominatorInfoWithShard[]>(shardsStake);
-  const [selectedShards, setSelectedShards] = useState<number>(0);
-  const [withdrawnShards, setWithdrawnShards] = useState<number>(0);
-  const [unstakingShards, setUnstakingShards] = useState<number>(0);
-
-  useEffect(() => {
-    setShards(shardsStake);
-  }, [shardsStake]);
-
-  const selectAllShards = (value: boolean) => {
-    const allShards = shards.map((shard) => {
-      onToggleNominator(shard.address, value);
-
-      return { ...shard, isSelected: value };
-    });
-    setSelectedShards(value ? shards.length : 0);
-
-    setShards(allShards);
+  const selectAllShards = (isChecked: boolean) => {
+    shardsStake.forEach((shard) => onToggleNominator(shard.address, isChecked));
   };
 
-  const selectShard = (nominator: string, isChecked: boolean) => {
-    setSelectedShards((prev) => (isChecked ? prev + 1 : prev - 1));
-    onToggleNominator(nominator);
-  };
-
-  const getShards = (shardsStake: NominatorInfoWithShard[]) => {
-    if (!shards.length) return;
-
-    return shards.map((shard: NominatorInfoWithShard) => {
-      if (hasRedeem(shard.unlocking, era)) {
-        setWithdrawnShards((prev) => prev + 1);
-      }
-      if (getNextUnstakingEra(shard.unlocking, era)) {
-        setUnstakingShards((prev) => prev + 1);
-      }
-
-      return (
-        <li key={shard.account.id}>
-          <NominatorsItem
-            isStakingLoading={isStakingLoading}
-            content={getContent(shard)}
-            stake={shard}
-            nominatorsLength={shardsStake.length}
-            asset={asset}
-            explorers={explorers}
-            addressPrefix={addressPrefix}
-            onToggleNominator={selectShard}
-            onCheckValidators={onCheckValidators}
-          />
-        </li>
-      );
-    });
-  };
-
-  const { totalReward, totalStake } = shards.reduce(
+  const shardsStats = shardsStake.reduce(
     (acc, shard) => {
+      if (getNextUnstakingEra(shard.unlocking, era)) acc.unstaking++;
+      if (hasRedeem(shard.unlocking, era)) acc.withdraw++;
+      if (shard.isSelected) acc.selected++;
+
       acc.totalReward += Number(shard.totalReward) || 0;
       acc.totalStake += Number(shard.totalStake) || 0;
 
       return acc;
     },
-    { totalReward: 0, totalStake: 0 },
+    { withdraw: 0, unstaking: 0, totalReward: 0, totalStake: 0, selected: 0 },
   );
 
   return (
     <Plate className="p-0 shadow-shards border-b-4 border-double">
       <Accordion className="w-auto">
-        <div className="hover:bg-action-background-hover flex px-3 py-2 border-b border-divider">
+        <div className="flex px-3 py-2 border-b border-divider rounded-md transition-colors hover:bg-action-background-hover">
           <Accordion.Button buttonClass="ml-auto w-auto" iconOpened="shelfDown" iconClosed="shelfRight" />
           <Checkbox
-            checked={selectedShards === shards.length}
             className="p-2 w-full"
-            semiChecked={selectedShards > 0 && selectedShards < shards.length}
+            checked={shardsStats.selected === shardsStake.length}
+            semiChecked={shardsStats.selected > 0 && shardsStats.selected < shardsStake.length}
             onChange={(event) => selectAllShards(event.target?.checked)}
           >
             <div className="grid grid-cols-[174px,104px,104px] items-center gap-x-6">
               <div className="flex items-center gap-x-2">
-                <FootnoteText className="text-text-secondary h-[20px] rounded-full py-px px-2 bg-input-background-disabled">
-                  {shards.length}
+                <FootnoteText className="text-text-secondary h-5 rounded-full py-px px-2 bg-input-background-disabled">
+                  {shardsStake.length}
                 </FootnoteText>
                 <FootnoteText className="text-text-secondary first-letter:uppercase truncate">
-                  {/* names in shard accounts will be the same within one group */}
                   {shardsStake[0].account.name}
                 </FootnoteText>
                 <Tooltip
@@ -129,15 +79,15 @@ export const ShardedList = ({
                     <Trans
                       t={t}
                       i18nKey="staking.tooltips.redeemAndUnstake"
-                      values={{ countUnstake: unstakingShards, countWithdraw: withdrawnShards }}
+                      values={{ countUnstake: shardsStats.unstaking, countWithdraw: shardsStats.withdraw }}
                     />
                   }
                   offsetPx={-60}
                   pointer="down"
                 >
                   <div className="flex items-center gap-x-1">
-                    {Boolean(unstakingShards) && <span className="w-1.5 h-1.5 rounded-full bg-icon-accent" />}
-                    {Boolean(withdrawnShards) && <span className="w-1.5 h-1.5 rounded-full bg-icon-positive" />}
+                    {Boolean(shardsStats.unstaking) && <span className="w-1.5 h-1.5 rounded-full bg-icon-accent" />}
+                    {Boolean(shardsStats.withdraw) && <span className="w-1.5 h-1.5 rounded-full bg-icon-positive" />}
                   </div>
                 </Tooltip>
               </div>
@@ -149,8 +99,8 @@ export const ShardedList = ({
                   </>
                 ) : (
                   <>
-                    <AssetBalance value={totalStake.toString()} asset={asset} />
-                    <AssetFiatBalance amount={totalStake.toString()} asset={asset} />
+                    <AssetBalance value={shardsStats.totalStake.toString()} asset={asset} />
+                    <AssetFiatBalance amount={shardsStats.totalStake.toString()} asset={asset} />
                   </>
                 )}
               </div>
@@ -162,8 +112,8 @@ export const ShardedList = ({
                   </>
                 ) : (
                   <>
-                    <AssetBalance value={totalReward.toString()} asset={asset} />
-                    <AssetFiatBalance amount={totalReward.toString()} asset={asset} />
+                    <AssetBalance value={shardsStats.totalReward.toString()} asset={asset} />
+                    <AssetFiatBalance amount={shardsStats.totalReward.toString()} asset={asset} />
                   </>
                 )}
               </div>
@@ -172,18 +122,23 @@ export const ShardedList = ({
         </div>
 
         <Accordion.Content>
-          <Transition
-            as={Fragment}
-            enter="transition ease-out duration-100"
-            enterFrom="opacity-0"
-            enterTo="opacity-100"
-            leave="transition ease-in duration-100"
-            leaveFrom="opacity-100"
-            leaveTo="opacity-0"
-          >
-            {/* shards accounts */}
-            <ul className="pl-6">{getShards(shardsStake)}</ul>
-          </Transition>
+          <ul className="pl-6">
+            {shardsStake.map((shard) => (
+              <li key={shard.account.id}>
+                <NominatorsItem
+                  isStakingLoading={isStakingLoading}
+                  content={getContent(shard)}
+                  stake={shard}
+                  nominatorsLength={shardsStake.length}
+                  asset={asset}
+                  explorers={explorers}
+                  addressPrefix={addressPrefix}
+                  onToggleNominator={onToggleNominator}
+                  onCheckValidators={onCheckValidators}
+                />
+              </li>
+            ))}
+          </ul>
         </Accordion.Content>
       </Accordion>
     </Plate>
