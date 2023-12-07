@@ -13,7 +13,6 @@ module.exports = {
     app: FOLDERS.DEV_BUILD,
     output: FOLDERS.PROD_BUILD,
   },
-
   mac: {
     category: 'public.app-category.finance',
     hardenedRuntime: true,
