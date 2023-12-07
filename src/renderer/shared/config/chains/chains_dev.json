@@ -6407,8 +6407,8 @@
         "priceId": "polkadot",
         "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Polkadot_(DOT).svg",
         "typeExtras": {
-          "currencyIdScale": "0x0100",
-          "currencyIdType": "PendulumRuntimeCurrencyCurrencyId",
+          "currencyIdScale": "0x040000000000000000",
+          "currencyIdType": "SpacewalkPrimitivesCurrencyId",
           "existentialDeposit": "1000",
           "transfersEnabled": true
         },
@@ -6422,8 +6422,8 @@
         "priceId": "tether",
         "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/USDT.svg",
         "typeExtras": {
-          "currencyIdScale": "0x0101",
-          "currencyIdType": "PendulumRuntimeCurrencyCurrencyId",
+          "currencyIdScale": "0x040100000000000000",
+          "currencyIdType": "SpacewalkPrimitivesCurrencyId",
           "existentialDeposit": "1000",
           "transfersEnabled": true
         },
