@@ -25,6 +25,7 @@ type Props = {
   chainId: ChainId;
   accounts: Account[];
   addressPrefix: number;
+  rootAddress?: string;
   transactions: Transaction[];
   countdown: number;
   signerWallet: Wallet;
@@ -38,6 +39,7 @@ const ScanMultiframeQr = ({
   chainId,
   accounts,
   addressPrefix,
+  rootAddress,
   transactions,
   countdown,
   signerWallet,
@@ -69,7 +71,7 @@ const ScanMultiframeQr = ({
         const signPayload =
           signerWallet.signingType === SigningType.POLKADOT_VAULT
             ? createDynamicDerivationsSignPayload(
-                address,
+                rootAddress!,
                 Command.DynamicDerivationsTransaction,
                 payload,
                 chainId,

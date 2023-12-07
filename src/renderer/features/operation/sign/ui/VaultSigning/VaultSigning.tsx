@@ -97,6 +97,7 @@ export const VaultSigning = ({
             addressPrefix={addressPrefix}
             countdown={countdown}
             accounts={accounts}
+            rootAddress={walletUtils.isPolkadotVault(wallet) ? getSignerAddress() : undefined}
             signerWallet={wallet}
             transactions={transactions}
             onGoBack={onGoBack}
