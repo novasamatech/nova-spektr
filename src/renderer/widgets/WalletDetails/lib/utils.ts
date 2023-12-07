@@ -120,7 +120,6 @@ function exportVaultWallet(wallet: Wallet, root: BaseAccount, accounts: VaultMap
     return acc;
   }, []);
   const exportStructure = exportKeysUtils.getExportStructure(root.accountId, accountsFlat);
-  console.log('exportStructure', exportStructure)
   const fileData = stringify(exportStructure, {
     schema: 'failsafe',
     defaultStringType: 'QUOTE_DOUBLE',
