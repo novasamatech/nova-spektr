@@ -997,8 +997,8 @@
       "walletsGroup": "Your wallets"
     },
     "vault": {
-      "export": "Export keyset",
       "derivationPath": "Derivation path",
+      "export": "Export keyset",
       "networksTab": "Networks",
       "shardsTitle": "Shards"
     },
