@@ -100,21 +100,25 @@ export const NominatorsList = ({
 
       <ul className="flex flex-col gap-y-2">
         {nominators.map((stake) => {
-          return Array.isArray(stake) ? (
-            <li key={stake[0].account.groupId}>
-              <ShardedList
-                isStakingLoading={isStakingLoading}
-                shardsStake={stake}
-                era={era}
-                asset={asset}
-                explorers={explorers}
-                addressPrefix={addressPrefix}
-                getContent={getContent}
-                onToggleNominator={onToggleNominator}
-                onCheckValidators={onCheckValidators}
-              />
-            </li>
-          ) : (
+          if (Array.isArray(stake)) {
+            return (
+              <li key={stake[0].account.groupId}>
+                <ShardedList
+                  isStakingLoading={isStakingLoading}
+                  shardsStake={stake}
+                  era={era}
+                  asset={asset}
+                  explorers={explorers}
+                  addressPrefix={addressPrefix}
+                  getContent={getContent}
+                  onToggleNominator={onToggleNominator}
+                  onCheckValidators={onCheckValidators}
+                />
+              </li>
+            );
+          }
+
+          return (
             <li key={(stake.account as Account).id} className={cnTw(hasShards && '[&>*:first-child]:pl-9')}>
               <NominatorsItem
                 isStakingLoading={isStakingLoading}

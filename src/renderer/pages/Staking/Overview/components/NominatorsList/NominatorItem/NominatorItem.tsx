@@ -50,7 +50,7 @@ export const NominatorsItem = ({
       ) : (
         <div className="grid grid-cols-[minmax(10px,1fr),auto] items-center gap-x-2 max-w-[222px]">{content}</div>
       )}
-      <div className="justify-self-end flex flex-col items-end">
+      <div className="justify-self-end flex flex-col items-end gap-y-0.5">
         {!stake.totalStake || !asset ? (
           <>
             <Shimmering width={82} height={15} />
@@ -63,7 +63,7 @@ export const NominatorsItem = ({
           </>
         )}
       </div>
-      <div className="justify-self-end flex flex-col items-end">
+      <div className="justify-self-end flex flex-col items-end gap-y-0.5">
         {!stake.totalReward || !asset ? (
           <>
             <Shimmering width={82} height={15} />
