@@ -1,2 +1,2 @@
 export * from './common/consts';
-export * from './workers/getProxies';
+export * from './workers/proxy-worker';

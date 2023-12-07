@@ -1,5 +1,4 @@
 import { useUnit } from 'effector-react';
-import { useEffect } from 'react';
 
 import { walletSelectModel } from '@features/wallets';
 import { SimpleWalletDetails } from './SimpleWalletDetails';
