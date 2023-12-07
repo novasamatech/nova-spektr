@@ -833,7 +833,6 @@
       "searchPlaceholder": "Search by account name",
       "stakeTableHeader": "Staked",
       "stakingAssetLabel": "Staking <strong>{ asset }</strong> on",
-      "stakingShards": "{ type } sharded",
       "totalRewardsLabel": "Total rewards",
       "totalStakedLabel": "Total staked",
       "viewValidatorsOption": "View validators"
