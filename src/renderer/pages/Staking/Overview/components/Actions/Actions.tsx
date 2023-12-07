@@ -5,7 +5,7 @@ import { useI18n } from '@app/providers';
 import { SmallTitleText, DropdownButton, Button, BaseModal, Icon } from '@shared/ui';
 import { toAccountId } from '@shared/lib/utils';
 import { useToggle } from '@shared/lib/hooks';
-import { DropdownOption } from '@shared/ui/types';
+import { ButtonDropdownOption } from '@shared/ui/types';
 import { IconNames } from '@shared/ui/Icon/data';
 import { Paths, type PathType } from '@shared/routes';
 import type { Address, Stake } from '@shared/core';
@@ -167,10 +167,10 @@ export const Actions = ({ canInteract, stakes, isStakingLoading, onNavigate }: P
     }
   };
 
-  const getAvailableButtonOptions = (): DropdownOption[] => {
+  const getAvailableButtonOptions = (): ButtonDropdownOption[] => {
     if (noStakes || wrongOverlaps) return [];
 
-    return Object.entries(actionsSummary).reduce<DropdownOption[]>((acc, [key, value]) => {
+    return Object.entries(actionsSummary).reduce<ButtonDropdownOption[]>((acc, [key, value]) => {
       if (stakes.length === value) {
         const typedKey = key as StakeActions;
         const option = OperationOptions[typedKey];
