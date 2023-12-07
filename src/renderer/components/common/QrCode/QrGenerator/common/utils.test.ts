@@ -1,7 +1,9 @@
 import { stringToU8a, u8aToHex } from '@polkadot/util';
+import { u8aConcat } from '@polkadot/util/u8a/concat';
 
 import { createFrames, createSignPayload, encodeNumber, getSvgString, createSubstrateSignPayload } from './utils';
 import { SigningType } from '@shared/core';
+import { SUBSTRATE_ID } from '@renderer/components/common/QrCode/QrGenerator/common/constants';
 
 describe('QrCode/QrGenerator/utils', () => {
   test('should encodes 1 correctly', () => {
@@ -35,11 +37,14 @@ describe('QrCode/QrGenerator/utils', () => {
   test('should encodes frames properly', () => {
     expect(
       createFrames(
-        createSubstrateSignPayload(
-          '5HbgaJEuVN5qGbkhgtuDQANivSWwHXWsC2erP1SQUXgciTVq',
-          '0x12345678',
-          '0xb0a8d493285c2df73290dfb7e61f870f17b41801197a149ca93654499ea3dafe',
-          SigningType.PARITY_SIGNER,
+        u8aConcat(
+          SUBSTRATE_ID,
+          createSubstrateSignPayload(
+            '5HbgaJEuVN5qGbkhgtuDQANivSWwHXWsC2erP1SQUXgciTVq',
+            '0x12345678',
+            '0xb0a8d493285c2df73290dfb7e61f870f17b41801197a149ca93654499ea3dafe',
+            SigningType.PARITY_SIGNER,
+          ),
         ),
       ).map((u8a): string => u8aToHex(u8a)),
     ).toEqual([
