@@ -21,9 +21,7 @@ export const validatorsService = {
  * Get simple validators list
  */
 async function getValidatorsList(api: ApiPromise, era: EraIndex): Promise<ValidatorMap> {
-  const validatorsStakeFn = isOldRuntimeForValidators(api) ? getValidatorsStake : getValidatorsStake_NEW;
-
-  const [stake, prefs] = await Promise.all([validatorsStakeFn(api, era), getValidatorsPrefs(api, era)]);
+  const [stake, prefs] = await Promise.all([getValidatorFunction(api)(era), getValidatorsPrefs(api, era)]);
 
   return merge(stake, prefs);
 }
@@ -32,9 +30,7 @@ async function getValidatorsList(api: ApiPromise, era: EraIndex): Promise<Valida
  * Get validators with identity, apy and slashing spans
  */
 async function getValidatorsWithInfo(api: ApiPromise, era: EraIndex, isLightClient?: boolean): Promise<ValidatorMap> {
-  const validatorsStakeFn = isOldRuntimeForValidators(api) ? getValidatorsStake : getValidatorsStake_NEW;
-
-  const [stake, prefs] = await Promise.all([validatorsStakeFn(api, era), getValidatorsPrefs(api, era)]);
+  const [stake, prefs] = await Promise.all([getValidatorFunction(api)(era), getValidatorsPrefs(api, era)]);
 
   const mergedValidators = merge(stake, prefs);
 
@@ -47,7 +43,17 @@ async function getValidatorsWithInfo(api: ApiPromise, era: EraIndex, isLightClie
   return merge(mergedValidators, identity, slashes);
 }
 
-async function getValidatorsStake(api: ApiPromise, era: EraIndex): Promise<ValidatorMap> {
+function getValidatorFunction(api: ApiPromise): Function {
+  return isOldRuntimeForValidators(api)
+    ? (era: EraIndex) => getValidatorsStake_OLD(api, era)
+    : (era: EraIndex) => getValidatorsStake(api, era);
+}
+
+/**
+ * Gets Validators information including nominators that will receive rewards (runtime pre1_4_0)
+ * @deprecated Will become deprecated after runtime upgrade for DOT/KSM
+ */
+async function getValidatorsStake_OLD(api: ApiPromise, era: EraIndex): Promise<ValidatorMap> {
   // HINT: uncomment if we need full list of nominators (even those who doesn't get rewards)
   // const data = await api.query.staking.erasStakers.entries(era);
   const data = await api.query.staking.erasStakersClipped.entries(era);
@@ -66,7 +72,7 @@ async function getValidatorsStake(api: ApiPromise, era: EraIndex): Promise<Valid
 }
 
 type ValidatorStake = Pick<Validator, 'address' | 'totalStake' | 'oversubscribed' | 'ownStake' | 'nominators'>;
-async function getValidatorsStake_NEW(api: ApiPromise, era: EraIndex): Promise<Record<Address, ValidatorStake>> {
+async function getValidatorsStake(api: ApiPromise, era: EraIndex): Promise<Record<Address, ValidatorStake>> {
   // HINT: to get full list of nominators uncomment code below to paginate for each validator
   const data = await api.query.staking.erasStakersOverview.entries(era);
 
