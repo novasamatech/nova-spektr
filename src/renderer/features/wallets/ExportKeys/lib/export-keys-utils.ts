@@ -9,11 +9,9 @@ export const exportKeysUtils = {
 
 function getExportStructure(
   rootAccountId: AccountId,
-  accounts: Array<ChainAccount | ShardAccount>,
+  accounts: Array<ChainAccount | ShardAccount[]>,
 ): DynamicDerivationsExport {
-  const groupedAccounts = accountUtils.getAccountsAndShardGroups(accounts);
-
-  const accountsByChain = groupedAccounts.reduce<Record<ChainId, ExportedDerivation[]>>((acc, account) => {
+  const accountsByChain = accounts.reduce<Record<ChainId, ExportedDerivation[]>>((acc, account) => {
     const chainId = Array.isArray(account) ? account[0].chainId : account.chainId;
     if (acc[chainId]) {
       acc[chainId].push(accountToDerivationExport(account));
@@ -39,7 +37,7 @@ function accountToDerivationExport(account: ChainAccount | ShardAccount[]): Expo
       derivation_path: derivationPath,
       type: data.keyType,
       name: data.name,
-      ...(isSharded && { sharded: account.length }),
+      ...(isSharded && { sharded: account.length.toString() }),
     },
   };
 }

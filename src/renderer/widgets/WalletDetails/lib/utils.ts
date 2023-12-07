@@ -3,7 +3,7 @@ import { stringify } from 'yaml';
 import { ForgetStep, ReconnectStep } from './constants';
 import { VaultMap, MultishardMap } from './types';
 import { accountUtils } from '@entities/wallet';
-import { Account, BaseAccount, ChainId, ChainAccount, Wallet } from '@shared/core';
+import { Account, BaseAccount, ChainId, ChainAccount, Wallet, ShardAccount } from '@shared/core';
 import { downloadFiles, exportKeysUtils } from '@features/wallets/ExportKeys';
 
 export const wcDetailsUtils = {
@@ -19,6 +19,7 @@ export const walletDetailsUtils = {
   getVaultAccountsMap,
   getMultishardMap,
   exportMultishardWallet,
+  exportVaultWallet,
 };
 
 function isNotStarted(step: ReconnectStep, connected: boolean): boolean {
@@ -109,7 +110,29 @@ function exportMultishardWallet(wallet: Wallet, accounts: MultishardMap) {
     };
   });
 
-  console.log(downloadData);
-
   downloadFiles(downloadData);
+}
+
+function exportVaultWallet(wallet: Wallet, root: BaseAccount, accounts: VaultMap) {
+  const accountsFlat: Array<ChainAccount | ShardAccount[]> = Object.values(accounts).reduce((acc, chainAccounts) => {
+    acc.push(...chainAccounts);
+
+    return acc;
+  }, []);
+  const exportStructure = exportKeysUtils.getExportStructure(root.accountId, accountsFlat);
+  const fileData = stringify(exportStructure, {
+    schema: 'failsafe',
+    defaultStringType: 'QUOTE_DOUBLE',
+    defaultKeyType: 'PLAIN',
+  });
+  const blob = new Blob([fileData], { type: 'text/plain' });
+
+  const fileName = `${wallet.name}.yaml`;
+
+  downloadFiles([
+    {
+      blob,
+      fileName,
+    },
+  ]);
 }

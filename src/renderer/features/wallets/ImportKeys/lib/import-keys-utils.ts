@@ -36,7 +36,7 @@ export const importKeysUtils = {
   getDerivationError,
   shouldIgnoreDerivation,
   mergeChainDerivations,
-  renameKeyReviver,
+  renameDerivationPathKeyReviver,
   getErrorsText,
 };
 
@@ -188,10 +188,10 @@ function mergeChainDerivations(
   };
 }
 
-function renameKeyReviver(key: unknown, value: unknown, renameFrom: string, renameTo: string) {
-  if (key === renameFrom) {
+function renameDerivationPathKeyReviver(key: unknown, value: unknown) {
+  if (key === 'derivation_path') {
     // @ts-ignore
-    this[renameTo] = value;
+    this['derivationPath'] = value;
     // when reviewer function returns undefined property deleted from the object
     // so old key 'derivation_path' is deleted and 'derivationPath' added
   } else {

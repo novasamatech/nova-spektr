@@ -10,6 +10,7 @@ import { copyToClipboard, toAddress } from '@shared/lib/utils';
 import { VaultMap } from '../lib/types';
 import { ShardsList } from './ShardsList';
 import { vaultDetailsModel } from '../model/vault-details-model';
+import { VaultDetailsActions } from '@widgets/WalletDetails/ui/VaultDetailsActions';
 
 type Props = {
   wallet: Wallet;
@@ -26,15 +27,15 @@ export const VaultWalletDetails = ({ wallet, root, accountsMap, onClose }: Props
     return chainsService.getChainsData({ sort: true });
   }, []);
 
+  const title = (
+    <div className="flex justify-between">
+      <span className="my-1">{t('walletDetails.common.title')}</span>
+      <VaultDetailsActions wallet={wallet} accountsMap={accountsMap} root={root} />
+    </div>
+  );
+
   return (
-    <BaseModal
-      closeButton
-      contentClass=""
-      panelClass="h-modal"
-      title={t('walletDetails.common.title')}
-      isOpen={isModalOpen}
-      onClose={closeModal}
-    >
+    <BaseModal closeButton contentClass="" panelClass="h-modal" title={title} isOpen={isModalOpen} onClose={closeModal}>
       <div className="flex flex-col w-full">
         <div className="py-5 px-5 border-b border-divider">
           <WalletCardLg wallet={wallet} />
