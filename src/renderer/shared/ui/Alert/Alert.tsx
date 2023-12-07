@@ -20,7 +20,7 @@ const Alert = ({ title, active, variant = 'info', className, children, onClose }
   const isList = Children.toArray(children).length > 0;
 
   return (
-    <div className={cnTw('p-[15px] rounded-lg border', ViewStyle[variant])}>
+    <div className={cnTw('p-[15px] rounded-lg border w-full', ViewStyle[variant])}>
       <div className="flex items-start gap-x-1.5">
         <div className="flex flex-col gap-y-1 flex-1 max-w-full">
           <div className="flex items-center gap-x-1.5">
