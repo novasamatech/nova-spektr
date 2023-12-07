@@ -2,7 +2,7 @@ import { act, render, screen, within } from '@testing-library/react';
 import noop from 'lodash/noop';
 
 import { DropdownButton } from './DropdownButton';
-import { DropdownOption } from '../common/types';
+import { DropdownOption } from '../Dropdown/common/types';
 
 jest.mock('@app/providers', () => ({
   useMatrix: jest.fn(),
