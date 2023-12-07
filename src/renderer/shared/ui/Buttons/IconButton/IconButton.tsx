@@ -8,6 +8,7 @@ type IconProps = ComponentProps<typeof Icon>;
 
 type Props = {
   ariaLabel?: string;
+  disabled?: boolean;
   onClick?: (event: MouseEvent<HTMLButtonElement>) => void;
 } & IconProps;
 
@@ -17,11 +18,12 @@ export const IconButtonStyle = cnTw(
   'focus:text-icon-hover focus:bg-hover',
 );
 
-const IconButton = ({ onClick, size = 16, className, ariaLabel, ...iconProps }: Props) => (
+const IconButton = ({ onClick, size = 16, disabled, className, ariaLabel, ...iconProps }: Props) => (
   <button
     type="button"
     className={cnTw('spektr-icon-button', IconButtonStyle, className)}
     aria-label={ariaLabel}
+    disabled={disabled}
     onClick={onClick}
   >
     <Icon size={size} className="text-inherit" {...iconProps} />

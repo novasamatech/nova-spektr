@@ -998,6 +998,7 @@
     },
     "vault": {
       "derivationPath": "Derivation path",
+      "export": "Export keyset",
       "networksTab": "Networks",
       "shardsTitle": "Shards"
     },

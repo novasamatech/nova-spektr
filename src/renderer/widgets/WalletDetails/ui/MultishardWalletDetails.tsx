@@ -7,6 +7,7 @@ import { chainsService } from '@entities/network';
 import { useI18n } from '@app/providers';
 import type { Wallet } from '@shared/core';
 import type { MultishardMap } from '../lib/types';
+import { MultishardDetailsActions } from './MultishardDetailsActions';
 
 type Props = {
   wallet: Wallet;
@@ -22,15 +23,15 @@ export const MultishardWalletDetails = ({ wallet, accounts, onClose }: Props) =>
     return chainsService.getChainsData({ sort: true });
   }, []);
 
+  const title = (
+    <div className="flex justify-between">
+      <span className="my-1">{t('walletDetails.common.title')}</span>
+      <MultishardDetailsActions wallet={wallet} accounts={accounts} />
+    </div>
+  );
+
   return (
-    <BaseModal
-      closeButton
-      contentClass=""
-      panelClass="h-modal"
-      title={t('walletDetails.common.title')}
-      isOpen={isModalOpen}
-      onClose={closeModal}
-    >
+    <BaseModal closeButton contentClass="" panelClass="h-modal" title={title} isOpen={isModalOpen} onClose={closeModal}>
       <div className="flex flex-col w-full">
         <div className="py-5 px-5 border-b border-divider">
           <WalletCardLg wallet={wallet} />

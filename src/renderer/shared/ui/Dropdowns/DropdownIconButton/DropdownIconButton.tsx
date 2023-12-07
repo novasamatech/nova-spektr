@@ -4,10 +4,9 @@ import { ComponentProps, ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 
 import { IconNames } from '@shared/ui/Icon/data';
-import { Button, FootnoteText, Icon } from '@shared/ui';
-import { cnTw } from '@shared/lib/utils';
+import { FootnoteText, Icon, IconButton } from '@shared/ui';
 
-type ButtonProps = ComponentProps<typeof Button>;
+type IconButtonProps = ComponentProps<typeof IconButton>;
 
 type OptionBase = {
   id: string;
@@ -16,33 +15,26 @@ type OptionBase = {
 };
 
 type LinkOption = OptionBase & { to: string };
-type ButtonOption = OptionBase & { onClick: ButtonProps['onClick'] };
+type ButtonOption = OptionBase & { onClick: IconButtonProps['onClick'] };
 
-export type ButtonDropdownOption = LinkOption | ButtonOption;
+export type IconButtonDropdownOption = LinkOption | ButtonOption;
 
 type Props = {
-  title: string;
-  options: ButtonDropdownOption[];
-} & Omit<ButtonProps, 'children' | 'suffixElement' | 'onClick'>;
+  options: IconButtonDropdownOption[];
+  optionsClassName?: string;
+} & Omit<IconButtonProps, 'onClick'>;
 
-export const DropdownButton = ({ options, title, disabled, className, ...buttonProps }: Props) => (
+export const DropdownIconButton = ({ options, disabled, optionsClassName, ...buttonProps }: Props) => (
   <Menu>
     {({ open }) => (
       <div className={cn('relative', open && 'z-10')}>
-        <Menu.Button
-          as={Button}
-          disabled={disabled}
-          suffixElement={<Icon name={open ? 'up' : 'down'} size={16} className="text-inherit" />}
-          className={cnTw('justify-center', className)}
-          {...buttonProps}
-        >
-          {title}
-        </Menu.Button>
+        <Menu.Button as={IconButton} disabled={disabled} {...buttonProps} />
         <Menu.Items
           as="ul"
           className={cn(
-            'w-full p-1 mt-1 z-10 absolute rounded border border-token-container-border',
+            'w-full p-1 mt-1 z-10 absolute rounded border border-token-container-border min-w-max',
             'bg-token-container-background shadow-card-shadow',
+            optionsClassName,
           )}
         >
           {options.map((opt) => {
