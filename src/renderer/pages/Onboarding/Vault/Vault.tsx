@@ -101,7 +101,6 @@ export const Vault = ({ isOpen, onClose, onComplete }: Props) => {
 
   return (
     <BaseModal
-      closeButton
       isOpen={isModalOpen}
       contentClass="flex h-full"
       panelClass="w-[944px] h-[576px]"

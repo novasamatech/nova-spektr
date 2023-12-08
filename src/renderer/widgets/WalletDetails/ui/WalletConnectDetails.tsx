@@ -19,12 +19,10 @@ import {
   Button,
   ConfirmModal,
   FootnoteText,
-  HeaderTitleText,
   Icon,
-  IconButton,
-  MenuPopover,
   SmallTitleText,
   StatusModal,
+  DropdownIconButton,
 } from '@shared/ui';
 
 type AccountItem = {
@@ -84,49 +82,28 @@ export const WalletConnectDetails = ({ wallet, accounts, onClose }: Props) => {
     toggleConfirmForget();
   };
 
+  const options = [
+    {
+      id: 'delete',
+      icon: 'delete',
+      title: t('walletDetails.common.forgetButton'),
+      onClick: toggleConfirmForget,
+    },
+    {
+      id: 'refresh',
+      icon: 'refresh',
+      title: t('walletDetails.walletConnect.refreshButton'),
+      onClick: showReconnectConfirm,
+    },
+  ];
+
   return (
     <BaseModal
       closeButton
       contentClass=""
       panelClass="h-modal"
-      title={
-        <div className="flex items-center">
-          <HeaderTitleText className="flex-1 truncate">{t('walletDetails.common.title')}</HeaderTitleText>
-
-          <MenuPopover
-            className="w-[98px] p-0"
-            position="top-full right-0"
-            buttonClassName="rounded-full"
-            offsetPx={0}
-            closeOnClick
-            content={
-              <>
-                <Button
-                  variant="text"
-                  size="md"
-                  className="text-text-secondary hover:text-text-secondary px-2"
-                  prefixElement={<Icon name="delete" size={20} className="text-icon-accent" />}
-                  onClick={toggleConfirmForget}
-                >
-                  {t('walletDetails.common.forgetButton')}
-                </Button>
-
-                <Button
-                  variant="text"
-                  size="md"
-                  className="text-text-secondary hover:text-text-secondary px-2"
-                  prefixElement={<Icon name="refresh" size={20} className="text-icon-accent" />}
-                  onClick={showReconnectConfirm}
-                >
-                  {t('walletDetails.walletConnect.refreshButton')}
-                </Button>
-              </>
-            }
-          >
-            <IconButton name="options" className="p-1.5" />
-          </MenuPopover>
-        </div>
-      }
+      title={t('walletDetails.common.title')}
+      actionButton={<DropdownIconButton className="m-1.5" name="more" options={options} optionsClassName="right-0" />}
       isOpen={isModalOpen}
       onClose={closeModal}
     >

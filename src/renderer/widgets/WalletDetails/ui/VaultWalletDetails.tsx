@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 
-import { BaseModal, ContextMenu, IconButton, HelpText } from '@shared/ui';
+import { BaseModal, ContextMenu, IconButton, HelpText, DropdownIconButton } from '@shared/ui';
 import { useModalClose } from '@shared/lib/hooks';
 import { RootAccountLg, WalletCardLg, VaultAccountsList } from '@entities/wallet';
 import { chainsService } from '@entities/network';
@@ -10,7 +10,7 @@ import { copyToClipboard, toAddress } from '@shared/lib/utils';
 import { VaultMap } from '../lib/types';
 import { ShardsList } from './ShardsList';
 import { vaultDetailsModel } from '../model/vault-details-model';
-import { VaultDetailsActions } from '@widgets/WalletDetails/ui/VaultDetailsActions';
+import { walletDetailsUtils } from '../lib/utils';
 
 type Props = {
   wallet: Wallet;
@@ -27,17 +27,27 @@ export const VaultWalletDetails = ({ wallet, root, accountsMap, onClose }: Props
     return chainsService.getChainsData({ sort: true });
   }, []);
 
-  const title = (
-    <div className="flex justify-between">
-      <span className="my-1">{t('walletDetails.common.title')}</span>
-      <VaultDetailsActions wallet={wallet} accountsMap={accountsMap} root={root} />
-    </div>
-  );
+  const options = [
+    {
+      id: 'export',
+      icon: 'export',
+      title: t('walletDetails.vault.export'),
+      onClick: () => walletDetailsUtils.exportVaultWallet(wallet, root, accountsMap),
+    },
+  ];
 
   return (
-    <BaseModal closeButton contentClass="" panelClass="h-modal" title={title} isOpen={isModalOpen} onClose={closeModal}>
+    <BaseModal
+      closeButton
+      contentClass=""
+      panelClass="h-modal"
+      title={t('walletDetails.common.title')}
+      actionButton={<DropdownIconButton className="m-1.5" name="more" options={options} optionsClassName="right-0" />}
+      isOpen={isModalOpen}
+      onClose={closeModal}
+    >
       <div className="flex flex-col w-full">
-        <div className="py-5 px-5 border-b border-divider">
+        <div className="py-6 px-5 border-b border-divider">
           <WalletCardLg wallet={wallet} />
         </div>
 
@@ -60,7 +70,7 @@ export const VaultWalletDetails = ({ wallet, root, accountsMap, onClose }: Props
         </div>
 
         <VaultAccountsList
-          className="h-[381px]"
+          className="h-[377px]"
           chains={chains}
           accountsMap={accountsMap}
           onShardClick={vaultDetailsModel.events.shardsSelected}
