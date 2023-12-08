@@ -1,12 +1,14 @@
 import { ApiPromise } from '@polkadot/api';
-import { combine, createEffect, createStore, sample } from 'effector';
+import { combine, createEffect, createStore, sample, scopeBind } from 'effector';
 import { VoidFn } from '@polkadot/api/types';
 import { throttle } from 'patronum';
+import keyBy from 'lodash/keyBy';
 
 import { Account, AccountId, Balance, Chain, ChainId, ConnectionStatus } from '@shared/core';
 import { accountUtils, walletModel } from '@entities/wallet';
 import { networkModel } from '@entities/network';
 import { balanceModel, balanceSubscriptionService, useBalanceService } from '@entities/balance';
+import { SUBSCRIPTION_DELAY } from '../common/constants';
 
 const balanceService = useBalanceService();
 
@@ -18,6 +20,7 @@ type SubscriptionObject = {
 type BalanceSubscribeMap = Record<ChainId, SubscriptionObject>;
 
 const $subscriptions = createStore<BalanceSubscribeMap>({});
+const $subscriptionAccounts = createStore<Account[]>([]);
 
 type SubscribeParams = {
   chains: Record<ChainId, Chain>;
@@ -26,6 +29,7 @@ type SubscribeParams = {
   subscriptions: BalanceSubscribeMap;
   accounts: Account[];
 };
+// TODO: Revisit this effect https://app.clickup.com/t/86939u5ut
 const createSubscriptionsBalancesFx = createEffect(
   async ({
     chains,
@@ -34,6 +38,8 @@ const createSubscriptionsBalancesFx = createEffect(
     subscriptions,
     accounts,
   }: SubscribeParams): Promise<Record<ChainId, SubscriptionObject>> => {
+    const bindedBalanceUpdate = scopeBind(balanceModel.events.balanceUpdated, { safe: true });
+
     const newSubscriptions = {} as Record<ChainId, SubscriptionObject>;
 
     await Promise.all(
@@ -75,10 +81,10 @@ const createSubscriptionsBalancesFx = createEffect(
           const chain = chains[chainId as ChainId];
 
           const balanceSubs = balanceSubscriptionService.subscribeBalances(chain, api, accountIds, (balances) => {
-            balances.forEach((balance) => balanceModel.events.balanceUpdated(balance));
+            balances.forEach((balance) => bindedBalanceUpdate(balance));
           });
           const locksSubs = balanceSubscriptionService.subscribeLockBalances(chain, api, accountIds, (balances) => {
-            balances.forEach((balance) => balanceModel.events.balanceUpdated(balance));
+            balances.forEach((balance) => bindedBalanceUpdate(balance));
           });
 
           newSubscriptions[chainId as ChainId] = {
@@ -117,6 +123,31 @@ const populateBalancesFx = createEffect((accounts: AccountId[]): Promise<Balance
 
 sample({
   clock: walletModel.$activeAccounts,
+  source: walletModel.$accounts,
+  fn: (accounts, activeAccounts) => {
+    const subscriptionAccounts = [...activeAccounts];
+
+    const accountsMap = keyBy(accounts, 'accountId');
+
+    activeAccounts.forEach((account) => {
+      if (accountUtils.isMultisigAccount(account)) {
+        account.signatories.forEach((signatory) => {
+          if (accountsMap[signatory.accountId]) {
+            subscriptionAccounts.push(accountsMap[signatory.accountId]);
+          }
+        });
+      }
+
+      // TODO: Add same for proxied accounts https://app.clickup.com/t/86934k047
+    });
+
+    return subscriptionAccounts;
+  },
+  target: $subscriptionAccounts,
+});
+
+sample({
+  clock: $subscriptionAccounts,
   fn: (accounts) => accounts.map((account) => account.accountId),
   target: populateBalancesFx,
 });
@@ -128,14 +159,14 @@ sample({
 
 sample({
   clock: throttle({
-    source: combine([networkModel.$connectionStatuses, walletModel.$activeAccounts]),
-    timeout: 500,
+    source: combine([networkModel.$connectionStatuses, $subscriptionAccounts]),
+    timeout: SUBSCRIPTION_DELAY,
   }),
   source: {
     apis: networkModel.$apis,
     chains: networkModel.$chains,
     subscriptions: $subscriptions,
-    accounts: walletModel.$activeAccounts,
+    accounts: $subscriptionAccounts,
     statuses: networkModel.$connectionStatuses,
   },
   target: createSubscriptionsBalancesFx,

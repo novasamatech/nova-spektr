@@ -327,25 +327,16 @@ sample({
   fn: (chains, connections) => {
     const connectionsMap = keyBy(connections, 'chainId');
 
-    const newConnections = Object.entries(chains).map(([chainId, chain]) => {
-      const connection = connectionsMap[chainId];
+    return Object.entries(chains).reduce<Record<ChainId, Connection>>((acc, [chainId, chain]) => {
+      acc[chain.chainId] = connectionsMap[chainId] || {
+        chainId: chain.chainId,
+        canUseLightClient: false,
+        connectionType: ConnectionType.AUTO_BALANCE,
+        customNodes: [],
+      };
 
-      if (connection) {
-        return [chainId, connection];
-      }
-
-      return [
-        chainId,
-        {
-          chainId: chain.chainId,
-          canUseLightClient: false,
-          connectionType: ConnectionType.AUTO_BALANCE,
-          customNodes: [],
-        },
-      ];
-    });
-
-    return Object.fromEntries(newConnections);
+      return acc;
+    }, {});
   },
   target: $connections,
 });
