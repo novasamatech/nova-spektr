@@ -47,15 +47,13 @@ export const BaseModal = ({
             >
               {headerExist && (
                 <header className={cnTw('flex items-center justify-between', headerClass)}>
-                  {title && (
-                    <Dialog.Title className="text-text-primary font-bold">
-                      {typeof title === 'string' ? (
-                        <HeaderTitleText className="truncate py-1">{title}</HeaderTitleText>
-                      ) : (
-                        title
-                      )}
+                  {title && typeof title === 'string' && (
+                    <Dialog.Title as={HeaderTitleText} className="text-text-primary font-bold truncate py-1">
+                      {title}
                     </Dialog.Title>
                   )}
+
+                  {title && typeof title !== 'string' && title}
                   <div className="flex items-center gap-x-4 h-7.5">
                     {actionButton}
                     {closeButton && <IconButton name="close" size={20} className="m-1" onClick={() => onClose()} />}
