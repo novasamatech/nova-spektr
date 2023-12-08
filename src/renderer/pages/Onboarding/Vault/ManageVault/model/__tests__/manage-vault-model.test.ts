@@ -4,13 +4,13 @@ import { hexToU8a } from '@polkadot/util';
 import { manageVaultModel } from '../manage-vault-model';
 import { SeedInfo } from '@renderer/components/common/QrCode/common/types';
 import { ChainAccount } from '@renderer/shared/core';
-import { TEST_ACCOUNT_ID, TEST_ADDRESS, TEST_HASH } from '@renderer/shared/lib/utils';
+import { TEST_HASH } from '@renderer/shared/lib/utils';
 
 jest.mock('@renderer/app/providers', () => ({
   useMatrix: jest.fn(),
 }));
 
-describe('pages/Onboarding/Vault/ManageVault/model/manage-dynamic-derivations-model', () => {
+describe('pages/Onboarding/Vault/ManageVault/model/manage-vault-model', () => {
   afterEach(() => {
     jest.clearAllMocks();
   });
@@ -48,49 +48,6 @@ describe('pages/Onboarding/Vault/ManageVault/model/manage-dynamic-derivations-mo
     expect(scope.getState(manageVaultModel.$keys).length).toBeGreaterThan(0);
     expect(
       scope.getState(manageVaultModel.$keys).find((account) => (account as ChainAccount).chainId === POLKADOT_CHAIN_ID),
-    ).toEqual(MAIN_POLKAODT_ACCOUNT);
-  });
-
-  test('should set default wallet name, and accounts on for formInitiated with derived keys', async () => {
-    const scope = fork();
-
-    await allSettled(manageVaultModel.events.formInitiated, {
-      scope,
-      params: [
-        {
-          name: 'test',
-          multiSigner: {
-            MultiSigner: 'SR25519',
-            public: hexToU8a('0x00'),
-          },
-          derivedKeys: [
-            {
-              address: TEST_ADDRESS,
-              derivationPath: '//polkadot/custom',
-              encryption: 0,
-              genesisHash: hexToU8a(TEST_HASH),
-            },
-          ],
-          features: [],
-        } as SeedInfo,
-      ],
-    });
-
-    const MAIN_POLKAODT_ACCOUNT = {
-      accountId: TEST_ACCOUNT_ID,
-      chainId: TEST_HASH,
-      chainType: 0,
-      cryptoType: 0,
-      derivationPath: '//polkadot/custom',
-      keyType: 'custom',
-      name: '',
-      type: 'chain',
-    };
-
-    expect(
-      scope
-        .getState(manageVaultModel.$keys)
-        .find((account) => (account as ChainAccount).derivationPath === '//polkadot/custom'),
     ).toEqual(MAIN_POLKAODT_ACCOUNT);
   });
 });

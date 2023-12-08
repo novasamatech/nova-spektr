@@ -3,14 +3,13 @@ import { createForm } from 'effector-forms';
 
 import { SeedInfo } from '@renderer/components/common/QrCode/common/types';
 import { chainsService } from '@entities/network';
-import { walletModel, accountUtils } from '@entities/wallet';
+import { walletModel, accountUtils, KEY_NAMES } from '@entities/wallet';
 import { AccountType, ChainType, CryptoType, KeyType } from '@shared/core';
 import type { ChainAccount, ShardAccount, DraftAccount } from '@shared/core';
 
 const chains = chainsService.getChainsData();
 
 const WALLET_NAME_MAX_LENGTH = 256;
-const MAIN_ACCOUNT_NAME = 'Main';
 
 export type Callbacks = {
   onSubmit: () => void;
@@ -70,7 +69,7 @@ sample({
 
       acc.push({
         chainId: chain.chainId,
-        name: MAIN_ACCOUNT_NAME,
+        name: KEY_NAMES[KeyType.MAIN],
         derivationPath: `//${chain.specName}`,
         cryptoType: CryptoType.SR25519,
         chainType: ChainType.SUBSTRATE,
