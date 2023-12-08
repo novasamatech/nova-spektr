@@ -97,7 +97,7 @@ export const Redeem = () => {
         closeButton
         contentClass=""
         panelClass="w-max"
-        headerClass="py-3 pl-5 pr-3 max-w-[440px]"
+        headerClass="py-3 pl-5 pr-3"
         isOpen={isRedeemModalOpen}
         title={<OperationTitle title={t('staking.redeem.title')} chainId={chainId} />}
         onClose={closeRedeemModal}
@@ -117,7 +117,7 @@ export const Redeem = () => {
       <BaseModal
         closeButton
         contentClass=""
-        headerClass="py-3 pl-5 pr-3 max-w-[440px]"
+        headerClass="py-3 pl-5 pr-3"
         panelClass="w-max"
         isOpen={isRedeemModalOpen}
         title={<OperationTitle title={t('staking.redeem.title')} chainId={chainId} />}
@@ -172,7 +172,7 @@ export const Redeem = () => {
       <BaseModal
         closeButton
         contentClass=""
-        headerClass="py-3 pl-5 pr-3 max-w-[440px]"
+        headerClass="py-3 pl-5 pr-3"
         panelClass="w-max"
         isOpen={activeStep !== Step.SUBMIT && isRedeemModalOpen}
         title={<OperationTitle title={t('staking.redeem.title', { asset: asset.symbol })} chainId={chainId} />}

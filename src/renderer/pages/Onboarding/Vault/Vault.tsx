@@ -32,6 +32,7 @@ const enum QrCodeType {
 type ManageProps = {
   seedInfo: SeedInfo[];
   onBack: () => void;
+  onClose: () => void;
   onComplete: () => void;
 };
 
@@ -113,6 +114,7 @@ export const Vault = ({ isOpen, onClose, onComplete }: Props) => {
         ManageFlow[qrType]({
           seedInfo: qrPayload,
           onBack: () => setActiveStep(Step.SCAN),
+          onClose: closeVaultModal,
           onComplete: () => closeVaultModal({ complete: true }),
         })}
     </BaseModal>

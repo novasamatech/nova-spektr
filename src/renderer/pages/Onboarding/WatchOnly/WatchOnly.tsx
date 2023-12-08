@@ -2,7 +2,6 @@ import cn from 'classnames';
 import { useEffect, useState } from 'react';
 import { Controller, SubmitHandler, useForm } from 'react-hook-form';
 
-import { Icon, Identicon, BaseModal, Button, Input, InputHint, HeaderTitleText, SmallTitleText } from '@shared/ui';
 import { useI18n } from '@app/providers';
 import { chainsService } from '@entities/network';
 import { toAccountId, validateAddress, DEFAULT_TRANSITION } from '@shared/lib/utils';
@@ -11,6 +10,17 @@ import { AccountsList, walletModel } from '@entities/wallet';
 import { useToggle } from '@shared/lib/hooks';
 import type { AccountId, Chain } from '@shared/core';
 import { ErrorType, CryptoType, ChainType, WalletType, SigningType, AccountType } from '@shared/core';
+import {
+  Icon,
+  Identicon,
+  BaseModal,
+  Button,
+  Input,
+  InputHint,
+  HeaderTitleText,
+  SmallTitleText,
+  IconButton,
+} from '@shared/ui';
 
 type WalletForm = {
   walletName: string;
@@ -157,7 +167,9 @@ const WatchOnly = ({ isOpen, onClose, onComplete }: Props) => {
         </form>
       </div>
 
-      <div className="w-[472px] flex flex-col gap-y-6 bg-input-background-disabled py-4 rounded-r-lg">
+      <div className="relative w-[472px] flex flex-col gap-y-6 bg-input-background-disabled py-4 rounded-r-lg">
+        <IconButton name="close" size={20} className="absolute right-3 top-3 m-1" onClick={() => closeWowModal()} />
+
         {accountId && accountId.length > 12 ? (
           <>
             <SmallTitleText className="px-5 mt-[52px]">{t('onboarding.watchOnly.accountsTitle')}</SmallTitleText>

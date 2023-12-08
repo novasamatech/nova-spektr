@@ -5,7 +5,7 @@ import { useUnit } from 'effector-react';
 import { useI18n } from '@app/providers';
 import { BaseModal, Button, HeaderTitleText, Loader, SmallTitleText } from '@shared/ui';
 import { Animation } from '@shared/ui/Animation/Animation';
-import ManageStep from './ManageStep/ManageStep';
+import { ManageStep } from './ManageStep';
 import novawallet_onboarding_tutorial from '@shared/assets/video/novawallet_onboarding_tutorial.mp4';
 import novawallet_onboarding_tutorial_webm from '@shared/assets/video/novawallet_onboarding_tutorial.webm';
 import { usePrevious } from '@shared/lib/hooks';

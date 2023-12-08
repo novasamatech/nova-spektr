@@ -37,7 +37,7 @@ export const MultisigWalletDetails = ({ wallet, account, signatoryWallets, signa
       onClose={closeModal}
     >
       <div className="flex flex-col w-full">
-        <div className="py-5 px-5 border-b border-divider">
+        <div className="py-6 px-5 border-b border-divider">
           <WalletCardLg wallet={wallet} />
         </div>
 

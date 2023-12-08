@@ -93,7 +93,7 @@ export const StakeMore = () => {
       <BaseModal
         closeButton
         contentClass=""
-        headerClass="py-3 pl-5 pr-3 max-w-[440px]"
+        headerClass="py-3 pl-5 pr-3"
         panelClass="w-max"
         isOpen={isStakeMoreModalOpen}
         title={<OperationTitle title={t('staking.stakeMore.title')} chainId={chainId} />}
@@ -115,7 +115,7 @@ export const StakeMore = () => {
         closeButton
         contentClass=""
         panelClass="w-max"
-        headerClass="py-3 pl-5 pr-3 max-w-[440px]"
+        headerClass="py-3 pl-5 pr-3"
         isOpen={isStakeMoreModalOpen}
         title={<OperationTitle title={t('staking.stakeMore.title')} chainId={chainId} />}
         onClose={closeStakeMoreModal}
@@ -170,7 +170,7 @@ export const StakeMore = () => {
       <BaseModal
         closeButton
         contentClass=""
-        headerClass="py-3 pl-5 pr-3 max-w-[440px]"
+        headerClass="py-3 pl-5 pr-3"
         panelClass="w-max"
         isOpen={activeStep !== Step.SUBMIT && isStakeMoreModalOpen}
         title={<OperationTitle title={t('staking.stakeMore.title', { asset: asset.symbol })} chainId={chainId} />}

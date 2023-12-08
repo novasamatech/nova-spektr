@@ -141,7 +141,7 @@ export const CustomRpcModal = ({ network, node, isOpen, onClose }: Props) => {
     <BaseModal
       closeButton
       title={<OperationTitle title={modalTitle} chainId={network.chainId} />}
-      headerClass="py-3 pl-5 pr-3 max-w-[440px]"
+      headerClass="py-3 pl-5 pr-3"
       isOpen={isOpen}
       onClose={onClose}
     >

@@ -108,13 +108,13 @@ export const WalletConnectDetails = ({ wallet, accounts, onClose }: Props) => {
       onClose={closeModal}
     >
       <div className="flex flex-col h-full w-full">
-        <div className="py-5 px-5 border-b border-divider">
+        <div className="py-6 px-5 border-b border-divider">
           <WalletCardLg full wallet={wallet} />
         </div>
         <div className="px-3 flex-1">
           <>
             {wcDetailsUtils.isNotStarted(reconnectStep, wallet.isConnected) && (
-              <MultiAccountsList accounts={accountsList} className="h-[391px]" />
+              <MultiAccountsList accounts={accountsList} className="h-[393px]" />
             )}
 
             {wcDetailsUtils.isReadyToReconnect(reconnectStep, wallet.isConnected) && (

@@ -34,10 +34,11 @@ import {
 type Props = {
   seedInfo: SeedInfo[];
   onBack: () => void;
+  onClose: () => void;
   onComplete: () => void;
 };
 
-export const ManageVault = ({ seedInfo, onBack, onComplete }: Props) => {
+export const ManageVault = ({ seedInfo, onBack, onClose, onComplete }: Props) => {
   const { t } = useI18n();
   const { showStatus } = useStatusContext();
   const isAltPressed = useAltOrCtrlKeyPressed();
@@ -170,7 +171,9 @@ export const ManageVault = ({ seedInfo, onBack, onComplete }: Props) => {
         </form>
       </div>
 
-      <div className="w-[472px] flex flex-col pt-4 rounded-r-lg border-l border-divider">
+      <div className="relative w-[472px] flex flex-col pt-4 rounded-r-lg border-l border-divider">
+        <IconButton name="close" size={20} className="absolute right-3 top-3 m-1" onClick={() => onClose()} />
+
         <div className="flex items-center justify-between px-5 mt-[52px] mb-6">
           <div className="flex items-center gap-x-1.5">
             <SmallTitleText>{t('onboarding.vault.vaultTitle')}</SmallTitleText>

@@ -94,7 +94,7 @@ export const Unstake = () => {
       <BaseModal
         closeButton
         contentClass=""
-        headerClass="py-3 pl-5 pr-3 max-w-[440px]"
+        headerClass="py-3 pl-5 pr-3"
         panelClass="w-max"
         isOpen={isUnstakeModalOpen}
         title={<OperationTitle title={t('staking.unstake.title')} chainId={chainId} />}
@@ -115,7 +115,7 @@ export const Unstake = () => {
       <BaseModal
         closeButton
         contentClass=""
-        headerClass="py-3 pl-5 pr-3 max-w-[440px]"
+        headerClass="py-3 pl-5 pr-3"
         panelClass="w-max"
         isOpen={isUnstakeModalOpen}
         title={<OperationTitle title={t('staking.unstake.title')} chainId={chainId} />}
@@ -178,7 +178,7 @@ export const Unstake = () => {
         closeButton
         contentClass=""
         panelClass="w-max"
-        headerClass="py-3 pl-5 pr-3 max-w-[440px]"
+        headerClass="py-3 pl-5 pr-3"
         isOpen={activeStep !== Step.SUBMIT && isUnstakeModalOpen}
         title={<OperationTitle title={t('staking.unstake.title', { asset: asset.symbol })} chainId={chainId} />}
         onClose={closeUnstakeModal}
