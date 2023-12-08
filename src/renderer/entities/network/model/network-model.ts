@@ -323,7 +323,30 @@ sample({
 
 sample({
   clock: populateConnectionsFx.doneData,
-  fn: (connections) => keyBy(connections, 'chainId'),
+  source: $chains,
+  fn: (chains, connections) => {
+    const connectionsMap = keyBy(connections, 'chainId');
+
+    const newConnections = Object.entries(chains).map(([chainId, chain]) => {
+      const connection = connectionsMap[chainId];
+
+      if (connection) {
+        return [chainId, connection];
+      }
+
+      return [
+        chainId,
+        {
+          chainId: chain.chainId,
+          canUseLightClient: false,
+          connectionType: ConnectionType.AUTO_BALANCE,
+          customNodes: [],
+        },
+      ];
+    });
+
+    return Object.fromEntries(newConnections);
+  },
   target: $connections,
 });
 
@@ -440,6 +463,7 @@ sample({
   fn: (connections, chainId) => ({
     ...connections[chainId],
     connectionType: ConnectionType.LIGHT_CLIENT,
+    activeNode: undefined,
   }),
   target: updateConnectionFx,
 });
@@ -450,6 +474,7 @@ sample({
   fn: (connections, chainId) => ({
     ...connections[chainId],
     connectionType: ConnectionType.AUTO_BALANCE,
+    activeNode: undefined,
   }),
   target: updateConnectionFx,
 });

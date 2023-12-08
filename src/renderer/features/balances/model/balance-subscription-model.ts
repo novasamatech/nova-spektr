@@ -1,15 +1,18 @@
 import { ApiPromise } from '@polkadot/api';
-import { createEffect, createStore, sample } from 'effector';
+import { combine, createEffect, createStore, sample } from 'effector';
 import { VoidFn } from '@polkadot/api/types';
+import { throttle } from 'patronum';
 
-import { AccountId, Chain, ChainId, ConnectionStatus } from '@shared/core';
-import { walletModel } from '@entities/wallet';
+import { Account, AccountId, Balance, Chain, ChainId, ConnectionStatus } from '@shared/core';
+import { accountUtils, walletModel } from '@entities/wallet';
 import { networkModel } from '@entities/network';
-import { balanceModel, balanceSubscriptionService } from '@entities/balance';
+import { balanceModel, balanceSubscriptionService, useBalanceService } from '@entities/balance';
+
+const balanceService = useBalanceService();
 
 type SubscriptionObject = {
   accounts: AccountId[];
-  subscription: Promise<[VoidFn[], VoidFn[]]>;
+  subscription: [Promise<VoidFn[]>, Promise<VoidFn[]>];
 };
 
 type BalanceSubscribeMap = Record<ChainId, SubscriptionObject>;
@@ -21,52 +24,73 @@ type SubscribeParams = {
   apis: Record<ChainId, ApiPromise>;
   statuses: Record<ChainId, ConnectionStatus>;
   subscriptions: BalanceSubscribeMap;
-  accountIds: AccountId[];
+  accounts: Account[];
 };
 const createSubscriptionsBalancesFx = createEffect(
-  ({ chains, apis, statuses, subscriptions, accountIds }: SubscribeParams): Record<ChainId, SubscriptionObject> => {
+  async ({
+    chains,
+    apis,
+    statuses,
+    subscriptions,
+    accounts,
+  }: SubscribeParams): Promise<Record<ChainId, SubscriptionObject>> => {
     const newSubscriptions = {} as Record<ChainId, SubscriptionObject>;
 
-    Object.entries(apis).forEach(async ([chainId, api]) => {
-      const networkConnected = statuses[chainId as ChainId] === ConnectionStatus.CONNECTED;
-      const oldSubscription = subscriptions[chainId as ChainId];
+    await Promise.all(
+      Object.entries(apis).map(async ([chainId, api]) => {
+        try {
+          const accountIds = [
+            ...new Set(
+              accounts
+                .filter((a) => accountUtils.isChainIdMatch(a, chainId as ChainId))
+                .map((account) => account.accountId),
+            ),
+          ];
 
-      if (!networkConnected) {
-        await unsubscribeBalancesFx({
-          chainId: chainId as ChainId,
-          subscription: oldSubscription,
-        });
+          const networkConnected = statuses[chainId as ChainId] === ConnectionStatus.CONNECTED;
+          const oldSubscription = subscriptions[chainId as ChainId];
 
-        return;
-      }
+          if (!networkConnected) {
+            await unsubscribeBalancesFx({
+              chainId: chainId as ChainId,
+              subscription: oldSubscription,
+            });
 
-      if (oldSubscription) {
-        const sameAccounts = oldSubscription?.accounts.join(',') === accountIds.join(',');
+            return;
+          }
 
-        if (sameAccounts) {
-          return;
+          if (oldSubscription) {
+            const sameAccounts = oldSubscription?.accounts.join(',') === accountIds.join(',');
+
+            if (sameAccounts) {
+              return;
+            }
+
+            await unsubscribeBalancesFx({
+              chainId: chainId as ChainId,
+              subscription: oldSubscription,
+            });
+          }
+
+          const chain = chains[chainId as ChainId];
+
+          const balanceSubs = balanceSubscriptionService.subscribeBalances(chain, api, accountIds, (balances) => {
+            balances.forEach((balance) => balanceModel.events.balanceUpdated(balance));
+          });
+          const locksSubs = balanceSubscriptionService.subscribeLockBalances(chain, api, accountIds, (balances) => {
+            balances.forEach((balance) => balanceModel.events.balanceUpdated(balance));
+          });
+
+          newSubscriptions[chainId as ChainId] = {
+            accounts: accountIds,
+            subscription: [balanceSubs, locksSubs],
+          };
+        } catch (e) {
+          // TODO: Can't subscribe to Rococo Asset Hub testnet
+          console.log('ERROR: cannot subscribe to balance for', chainId, e);
         }
-
-        await unsubscribeBalancesFx({
-          chainId: chainId as ChainId,
-          subscription: oldSubscription,
-        });
-      }
-
-      const chain = chains[chainId as ChainId];
-
-      const balanceSubs = balanceSubscriptionService.subscribeBalances(chain, api, accountIds, (balances) => {
-        balances.forEach((balance) => balanceModel.events.balanceUpdated(balance));
-      });
-      const locksSubs = balanceSubscriptionService.subscribeLockBalances(chain, api, accountIds, (balances) => {
-        balances.forEach((balance) => balanceModel.events.balanceUpdated(balance));
-      });
-
-      newSubscriptions[chainId as ChainId] = {
-        accounts: accountIds,
-        subscription: Promise.all([balanceSubs, locksSubs]),
-      };
-    });
+      }),
+    );
 
     return newSubscriptions;
   },
@@ -81,14 +105,32 @@ const unsubscribeBalancesFx = createEffect(async ({ subscription }: UnsubscribeP
     return;
   }
 
-  const [balanceUnsubs, lockUnsubs] = await subscription.subscription;
+  const [balanceUnsubs, lockUnsubs] = await Promise.all(subscription.subscription);
 
   balanceUnsubs.forEach((fn) => fn());
   lockUnsubs.forEach((fn) => fn());
 });
 
+const populateBalancesFx = createEffect((accounts: AccountId[]): Promise<Balance[]> => {
+  return balanceService.getBalances(accounts);
+});
+
 sample({
-  clock: [networkModel.$connectionStatuses, walletModel.$activeAccounts],
+  clock: walletModel.$activeAccounts,
+  fn: (accounts) => accounts.map((account) => account.accountId),
+  target: populateBalancesFx,
+});
+
+sample({
+  clock: populateBalancesFx.doneData,
+  target: balanceModel.$balances,
+});
+
+sample({
+  clock: throttle({
+    source: combine([networkModel.$connectionStatuses, walletModel.$activeAccounts]),
+    timeout: 500,
+  }),
   source: {
     apis: networkModel.$apis,
     chains: networkModel.$chains,
@@ -96,13 +138,6 @@ sample({
     accounts: walletModel.$activeAccounts,
     statuses: networkModel.$connectionStatuses,
   },
-  fn: ({ statuses, apis, chains, subscriptions, accounts }) => ({
-    apis,
-    chains,
-    statuses,
-    subscriptions,
-    accountIds: [...new Set(accounts.map((account) => account.accountId))],
-  }),
   target: createSubscriptionsBalancesFx,
 });
 
