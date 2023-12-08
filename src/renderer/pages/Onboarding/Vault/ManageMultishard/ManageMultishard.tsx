@@ -21,10 +21,11 @@ type WalletForm = {
 type Props = {
   seedInfo: SeedInfo[];
   onBack: () => void;
+  onClose: () => void;
   onComplete: () => void;
 };
 
-export const ManageMultishard = ({ seedInfo, onBack, onComplete }: Props) => {
+export const ManageMultishard = ({ seedInfo, onBack, onClose, onComplete }: Props) => {
   const { t } = useI18n();
 
   const {
@@ -234,7 +235,9 @@ export const ManageMultishard = ({ seedInfo, onBack, onComplete }: Props) => {
         </form>
       </div>
 
-      <div className="w-[472px] flex flex-col bg-input-background-disabled py-4 rounded-r-lg">
+      <div className="relative w-[472px] flex flex-col bg-input-background-disabled py-4 rounded-r-lg">
+        <IconButton name="close" size={20} className="absolute right-3 top-3 m-1" onClick={() => onClose()} />
+
         <div className="flex items-center justify-between px-5 mt-[52px] mb-6">
           <SmallTitleText>{t('onboarding.vault.accountsTitle')}</SmallTitleText>
 

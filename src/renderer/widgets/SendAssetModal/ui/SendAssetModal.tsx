@@ -157,7 +157,7 @@ export const SendAssetModal = ({ chain, asset }: Props) => {
       title={<OperationTitle title={`${t(operationTitle, { asset: asset.symbol })}`} chainId={chain.chainId} />}
       contentClass=""
       panelClass="w-[440px]"
-      headerClass="py-3 px-5 max-w-[440px]"
+      headerClass="py-3 pl-5 pr-3"
       onClose={closeSendModal}
     >
       {!api?.isConnected ? (

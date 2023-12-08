@@ -226,7 +226,7 @@ const ApproveTx = ({ tx, account, connection }: Props) => {
         isOpen={activeStep !== Step.SUBMIT && isModalOpen}
         title={<OperationTitle title={t(transactionTitle, { asset: asset?.symbol })} chainId={tx.chainId} />}
         contentClass={activeStep === Step.SIGNING ? '' : undefined}
-        headerClass="py-3 px-5 max-w-[440px]"
+        headerClass="py-3 pl-5 pr-3"
         panelClass="w-[440px]"
         onClose={handleClose}
       >

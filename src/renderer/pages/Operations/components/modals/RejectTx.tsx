@@ -186,7 +186,7 @@ const RejectTx = ({ tx, account, connection }: Props) => {
         isOpen={activeStep !== Step.SUBMIT && isModalOpen}
         title={<OperationTitle title={t(transactionTitle, { asset: asset?.symbol })} chainId={tx.chainId} />}
         panelClass="w-[440px]"
-        headerClass="py-3 px-5 max-w-[440px]"
+        headerClass="py-3 pl-5 pr-3"
         contentClass={activeStep === Step.SIGNING ? '' : undefined}
         onClose={handleClose}
       >

@@ -9,20 +9,18 @@ import type { Account, Signatory, Wallet, MultisigAccount, BaseAccount, AccountI
 
 const $accounts = combine(
   {
-    details: walletSelectModel.$walletForDetails,
     accounts: walletModel.$accounts,
+    details: walletSelectModel.$walletForDetails,
   },
   ({ details, accounts }): Account[] => {
     if (!details) return [];
 
-    return accounts.filter((account) => account.walletId === details.id);
+    return accountUtils.getWalletAccounts(details.id, accounts);
   },
 );
 
-const $singleShardAccount = combine(walletModel.$accounts, (accounts): BaseAccount | undefined => {
-  const account = accounts[0];
-
-  return account && accountUtils.isBaseAccount(account) ? account : undefined;
+const $singleShardAccount = combine($accounts, (accounts): BaseAccount | undefined => {
+  return accountUtils.getBaseAccount(accounts);
 });
 
 const $multiShardAccounts = combine($accounts, (accounts): MultishardMap => {
@@ -33,8 +31,8 @@ const $multiShardAccounts = combine($accounts, (accounts): MultishardMap => {
 
 const $multisigAccount = combine(
   {
-    details: walletSelectModel.$walletForDetails,
     accounts: walletModel.$accounts,
+    details: walletSelectModel.$walletForDetails,
   },
   ({ details, accounts }): MultisigAccount | undefined => {
     if (!details) return undefined;
@@ -51,8 +49,8 @@ type VaultAccounts = {
 };
 const $vaultAccounts = combine(
   {
-    details: walletSelectModel.$walletForDetails,
     accounts: $accounts,
+    details: walletSelectModel.$walletForDetails,
   },
   ({ details, accounts }): VaultAccounts | undefined => {
     if (!details) return undefined;

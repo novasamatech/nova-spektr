@@ -12,7 +12,6 @@ import type {
   BaseAccount,
   ChainAccount,
   ShardAccount,
-  Wallet,
   WalletConnectAccount,
 } from '@shared/core';
 
@@ -118,7 +117,7 @@ function getBaseAccount(accounts: Account[], walletId?: ID): BaseAccount | undef
   }) as BaseAccount;
 }
 
-function getWalletAccounts<T extends Account>(walletId: Wallet['id'], accounts: T[]): T[] {
+function getWalletAccounts<T extends Account>(walletId: ID, accounts: T[]): T[] {
   return accounts.filter((account) => account.walletId === walletId);
 }
 

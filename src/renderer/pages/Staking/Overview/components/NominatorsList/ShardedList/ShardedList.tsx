@@ -91,7 +91,7 @@ export const ShardedList = ({
                   </div>
                 </Tooltip>
               </div>
-              <div className="justify-self-end flex flex-col items-end">
+              <div className="justify-self-end flex flex-col items-end gap-y-0.5">
                 {!shardsStake[0]?.totalStake || !asset ? (
                   <>
                     <Shimmering width={82} height={15} />
@@ -104,7 +104,7 @@ export const ShardedList = ({
                   </>
                 )}
               </div>
-              <div className="justify-self-end flex flex-col items-end">
+              <div className="justify-self-end flex flex-col items-end gap-y-0.5">
                 {!shardsStake[0]?.totalReward || !asset ? (
                   <>
                     <Shimmering width={82} height={15} />
