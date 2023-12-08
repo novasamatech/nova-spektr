@@ -9,16 +9,12 @@ import { SAVE_TIMEOUT } from '../lib';
 
 const balanceService = useBalanceService();
 
-// const newBalanceFound = createEvent<Balance>();
 const balanceUpdated = createEvent<Balance>();
 
 const $balances = createStore<Balance[]>([]);
-// const $balancesToUpdate = createStore<Balance[]>([]);
 
 const insertBalancesFx = createEffect(async (balances: Balance[]): Promise<void> => {
-  console.time('balance');
   await balanceService.insertBalances(balances);
-  console.timeEnd('balance');
 });
 
 throttle({
