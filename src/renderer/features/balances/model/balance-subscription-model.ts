@@ -42,61 +42,62 @@ const createSubscriptionsBalancesFx = createEffect(
 
     const newSubscriptions = {} as Record<ChainId, SubscriptionObject>;
 
-    await Promise.all(
-      Object.entries(apis).map(async ([chainId, api]) => {
-        try {
-          const accountIds = [
-            ...new Set(
-              accounts
-                .filter((a) => accountUtils.isChainIdMatch(a, chainId as ChainId))
-                .map((account) => account.accountId),
-            ),
-          ];
+    const balanceSubscriptions = Object.entries(apis).map(async ([chainId, api]) => {
+      const accountIds = [
+        ...new Set(
+          accounts
+            .filter((a) => accountUtils.isChainIdMatch(a, chainId as ChainId))
+            .map((account) => account.accountId),
+        ),
+      ];
 
-          const networkConnected = statuses[chainId as ChainId] === ConnectionStatus.CONNECTED;
-          const oldSubscription = subscriptions[chainId as ChainId];
+      const networkConnected = statuses[chainId as ChainId] === ConnectionStatus.CONNECTED;
+      const oldSubscription = subscriptions[chainId as ChainId];
 
-          if (!networkConnected) {
-            await unsubscribeBalancesFx({
-              chainId: chainId as ChainId,
-              subscription: oldSubscription,
-            });
+      if (!networkConnected) {
+        await unsubscribeBalancesFx({
+          chainId: chainId as ChainId,
+          subscription: oldSubscription,
+        });
 
-            return;
-          }
+        return;
+      }
 
-          if (oldSubscription) {
-            const sameAccounts = oldSubscription?.accounts.join(',') === accountIds.join(',');
+      if (oldSubscription) {
+        const sameAccounts = oldSubscription?.accounts.join(',') === accountIds.join(',');
 
-            if (sameAccounts) {
-              return;
-            }
-
-            await unsubscribeBalancesFx({
-              chainId: chainId as ChainId,
-              subscription: oldSubscription,
-            });
-          }
-
-          const chain = chains[chainId as ChainId];
-
-          const balanceSubs = balanceSubscriptionService.subscribeBalances(chain, api, accountIds, (balances) => {
-            balances.forEach((balance) => bindedBalanceUpdate(balance));
-          });
-          const locksSubs = balanceSubscriptionService.subscribeLockBalances(chain, api, accountIds, (balances) => {
-            balances.forEach((balance) => bindedBalanceUpdate(balance));
-          });
-
-          newSubscriptions[chainId as ChainId] = {
-            accounts: accountIds,
-            subscription: [balanceSubs, locksSubs],
-          };
-        } catch (e) {
-          // TODO: Can't subscribe to Rococo Asset Hub testnet
-          console.log('ERROR: cannot subscribe to balance for', chainId, e);
+        if (sameAccounts) {
+          return;
         }
-      }),
-    );
+
+        await unsubscribeBalancesFx({
+          chainId: chainId as ChainId,
+          subscription: oldSubscription,
+        });
+      }
+
+      const chain = chains[chainId as ChainId];
+
+      try {
+        const balanceSubs = balanceSubscriptionService.subscribeBalances(chain, api, accountIds, (balances) => {
+          balances.forEach((balance) => bindedBalanceUpdate(balance));
+        });
+        const locksSubs = balanceSubscriptionService.subscribeLockBalances(chain, api, accountIds, (balances) => {
+          balances.forEach((balance) => bindedBalanceUpdate(balance));
+        });
+
+        newSubscriptions[chainId as ChainId] = {
+          accounts: accountIds,
+          subscription: [balanceSubs, locksSubs],
+        };
+      } catch (e) {
+        // TODO: Can't subscribe to Rococo Asset Hub testnet
+        console.log('ERROR: cannot subscribe to balance for', chainId, e);
+      }
+    });
+
+    // Wait unsubscribe if needed
+    await Promise.all(balanceSubscriptions);
 
     return newSubscriptions;
   },
