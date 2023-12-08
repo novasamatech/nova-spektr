@@ -1,18 +1,15 @@
 import { attach, createApi, createEvent, createStore, forward, sample, combine } from 'effector';
 import { createForm } from 'effector-forms';
-import { u8aToHex } from '@polkadot/util';
 
 import { SeedInfo } from '@renderer/components/common/QrCode/common/types';
-import { toAccountId } from '@shared/lib/utils';
 import { chainsService } from '@entities/network';
-import { walletModel, accountUtils } from '@entities/wallet';
+import { walletModel, accountUtils, KEY_NAMES } from '@entities/wallet';
 import { AccountType, ChainType, CryptoType, KeyType } from '@shared/core';
 import type { ChainAccount, ShardAccount, DraftAccount } from '@shared/core';
 
 const chains = chainsService.getChainsData();
 
 const WALLET_NAME_MAX_LENGTH = 256;
-const MAIN_ACCOUNT_NAME = 'Main';
 
 export type Callbacks = {
   onSubmit: () => void;
@@ -66,43 +63,22 @@ sample({
 
 sample({
   clock: formInitiated,
-  fn: ([seedInfo]: SeedInfo[]) => {
-    const accounts = chains.reduce<Record<string, any>>((acc, chain) => {
+  fn: () => {
+    return chains.reduce<DraftAccount<ChainAccount | ShardAccount>[]>((acc, chain) => {
       if (!chain.specName) return acc;
 
-      const derivationPath = `//${chain.specName}`;
-
-      acc[derivationPath] = {
-        name: MAIN_ACCOUNT_NAME,
-        derivationPath,
+      acc.push({
         chainId: chain.chainId,
+        name: KEY_NAMES[KeyType.MAIN],
+        derivationPath: `//${chain.specName}`,
         cryptoType: CryptoType.SR25519,
         chainType: ChainType.SUBSTRATE,
         type: AccountType.CHAIN,
         keyType: KeyType.MAIN,
-      };
-
-      return acc;
-    }, {});
-
-    const derivedAccounts = seedInfo.derivedKeys.reduce<any[]>((acc, key) => {
-      if (key.derivationPath && !accounts[key.derivationPath]) {
-        acc.push({
-          name: '',
-          derivationPath: key.derivationPath || '',
-          chainId: u8aToHex(key.genesisHash),
-          accountId: toAccountId(key.address),
-          cryptoType: CryptoType.SR25519,
-          chainType: ChainType.SUBSTRATE,
-          type: AccountType.CHAIN,
-          keyType: KeyType.CUSTOM,
-        });
-      }
+      });
 
       return acc;
     }, []);
-
-    return Object.values(accounts).concat(derivedAccounts);
   },
   target: $keys,
 });
