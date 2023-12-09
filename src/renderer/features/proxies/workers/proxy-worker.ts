@@ -5,10 +5,18 @@ import isEqual from 'lodash/isEqual';
 import { ProviderInterface } from '@polkadot/rpc-provider/types';
 import * as Sc from '@substrate/connect';
 
-import { Account, AccountId, Chain, ChainId, Connection, ConnectionType } from '@shared/core';
+import {
+  Account,
+  AccountId,
+  Chain,
+  ChainId,
+  Connection,
+  ConnectionType,
+  PartialProxyAccount,
+  ProxyAccount,
+} from '@shared/core';
 import { InitConnectionsResult } from '../common/consts';
-import { ProxyAccount } from '../common/types';
-import { proxieWorkerUtils } from '../common/utils';
+import { proxyWorkerUtils } from '../common/utils';
 
 const state = {
   apis: {} as Record<ChainId, ApiPromise>,
@@ -29,7 +37,7 @@ function initConnection(chain: Chain, connection: Connection) {
         provider = new WsProvider([connection.activeNode?.url || '']);
       } else if (connection.connectionType === ConnectionType.LIGHT_CLIENT) {
         try {
-          const knownChainId = proxieWorkerUtils.getKnownChain(chain.chainId);
+          const knownChainId = proxyWorkerUtils.getKnownChain(chain.chainId);
 
           if (knownChainId) {
             provider = new ScProvider(Sc, knownChainId);
@@ -38,8 +46,6 @@ function initConnection(chain: Chain, connection: Connection) {
           console.log('light client not connected', e);
         }
       }
-
-      console.log('xcm', provider);
 
       if (!provider) {
         return;
@@ -95,16 +101,17 @@ async function getProxies(chainId: ChainId, accounts: Record<AccountId, Account>
           const proxyData = (await api.rpc.state.queryStorageAt([key])) as any;
 
           const proxiedAccountId = key.args[0].toHex();
-          const proxyAccountList = proxyData[0][0].toHuman().map(proxieWorkerUtils.toProxyAccount);
+          const proxyAccountList = proxyData[0][0].toHuman().map(proxyWorkerUtils.toProxyAccount);
 
-          proxyAccountList.forEach((a: ProxyAccount) => {
+          proxyAccountList.forEach((a: PartialProxyAccount) => {
             const newProxy = {
-              proxiedAccountId: proxiedAccountId,
+              accountId: proxiedAccountId,
+              chainId,
               ...a,
             };
 
-            const hasProxyOrProxiedAccount = accounts[a.accountId] || accounts[proxiedAccountId];
-            const alreadyExists = [...proxies].some((oldProxy) => proxieWorkerUtils.isEqualProxies(oldProxy, newProxy));
+            const hasProxyOrProxiedAccount = accounts[newProxy.accountId] || accounts[newProxy.proxyAccountId];
+            const alreadyExists = [...proxies].some((oldProxy) => proxyWorkerUtils.isSameProxies(oldProxy, newProxy));
 
             if (hasProxyOrProxiedAccount && !alreadyExists) {
               proxiesToAdd.push(newProxy);
@@ -129,7 +136,15 @@ async function getProxies(chainId: ChainId, accounts: Record<AccountId, Account>
   };
 }
 
+function getConnectionStatus(chainId: ChainId): boolean {
+  const api = state.apis[chainId];
+
+  return Boolean(api?.isConnected);
+}
+
 // @ts-ignore
 const endpoint = createEndpoint(self);
 
-endpoint.expose({ initConnection, getProxies, disconnect });
+endpoint.expose({ initConnection, getProxies, getConnectionStatus, disconnect });
+
+console.log('proxy worker started successfully');

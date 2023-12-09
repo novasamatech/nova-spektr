@@ -2,14 +2,13 @@ import { u8aToHex } from '@polkadot/util';
 import { decodeAddress } from '@polkadot/util-crypto';
 import { WellKnownChain } from '@substrate/connect';
 
-import { AccountId, Chain, ChainId } from '@shared/core';
-import { ProxyAccount } from './types';
+import { AccountId, Chain, ChainId, PartialProxyAccount, ProxyAccount } from '@shared/core';
 
-export const proxieWorkerUtils = {
+export const proxyWorkerUtils = {
   toAccountId,
   isRegularProxy,
   toProxyAccount,
-  isEqualProxies,
+  isSameProxies,
   getKnownChain,
 };
 
@@ -31,9 +30,9 @@ function isRegularProxy(chain: Chain) {
   return chain.options?.includes('regular_proxy');
 }
 
-function toProxyAccount(account: any): ProxyAccount {
+function toProxyAccount(account: any): PartialProxyAccount {
   const proxyAccount = {
-    accountId: toAccountId(account?.delegate),
+    proxyAccountId: toAccountId(account?.delegate),
     proxyType: account.proxyType,
     delay: Number(account.delay),
   };
@@ -41,10 +40,11 @@ function toProxyAccount(account: any): ProxyAccount {
   return proxyAccount;
 }
 
-function isEqualProxies(oldProxy: ProxyAccount, newProxy: ProxyAccount) {
+function isSameProxies(oldProxy: ProxyAccount, newProxy: ProxyAccount) {
   return (
     oldProxy.accountId === newProxy.accountId &&
-    oldProxy.proxiedAccountId === newProxy.proxiedAccountId &&
+    oldProxy.proxyAccountId === newProxy.proxyAccountId &&
+    oldProxy.chainId === newProxy.chainId &&
     oldProxy.proxyType === newProxy.proxyType &&
     oldProxy.delay === newProxy.delay
   );

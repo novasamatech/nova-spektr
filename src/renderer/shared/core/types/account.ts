@@ -46,7 +46,12 @@ export type WalletConnectAccount = Omit<BaseAccount, 'cryptoType'> & {
   chainId: ChainId;
 };
 
-export type Account = BaseAccount | ChainAccount | MultisigAccount | WalletConnectAccount;
+export type RegularProxyAccount = BaseAccount & {
+  chainId: ChainId;
+  proxiedAccountId: AccountId;
+};
+
+export type Account = BaseAccount | ChainAccount | MultisigAccount | WalletConnectAccount | RegularProxyAccount;
 
 export const enum AccountType {
   BASE = 'base',

@@ -11,6 +11,7 @@ import type {
   ChainAccount,
   WalletConnectAccount,
   Wallet,
+  RegularProxyAccount,
 } from '@shared/core';
 
 export const accountUtils = {
@@ -19,6 +20,7 @@ export const accountUtils = {
   isMultisigAccount,
   isChainIdMatch,
   isWalletConnectAccount,
+  isRegularProxyAccount,
   getMultisigAccountId,
   getAllAccountIds,
   getWalletAccounts,
@@ -50,6 +52,10 @@ function isChainIdMatch(account: Pick<Account, 'type'>, chainId: ChainId): boole
 }
 function isMultisigAccount(account: Pick<Account, 'type'>): account is MultisigAccount {
   return account.type === AccountType.MULTISIG;
+}
+
+function isRegularProxyAccount(account: Pick<Account, 'type'>): account is RegularProxyAccount {
+  return account.type === AccountType.REGULAR_PROXY;
 }
 
 function getAllAccountIds(accounts: Account[], chainId: ChainId): AccountId[] {

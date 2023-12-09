@@ -20,7 +20,14 @@ export type {
 export { WalletType, SigningType } from './types/wallet';
 
 export { AccountType, KeyType } from './types/account';
-export type { Account, BaseAccount, ChainAccount, MultisigAccount, WalletConnectAccount } from './types/account';
+export type {
+  Account,
+  BaseAccount,
+  ChainAccount,
+  MultisigAccount,
+  WalletConnectAccount,
+  RegularProxyAccount,
+} from './types/account';
 
 export { AssetType, StakingType } from './types/asset';
 export type { Asset, OrmlExtras, StatemineExtras } from './types/asset';
@@ -39,3 +46,5 @@ export type { Validator } from './types/validator';
 
 export { RewardsDestination } from './types/stake';
 export type { Stake, Unlocking } from './types/stake';
+
+export type { ProxyAccount, PartialProxyAccount, ProxyType } from './types/proxy';

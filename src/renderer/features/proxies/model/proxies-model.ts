@@ -1,13 +1,13 @@
-import { createEffect, createEvent, createStore, sample, scopeBind } from 'effector';
+import { createEffect, createEvent, sample, scopeBind } from 'effector';
 import { createEndpoint } from '@remote-ui/rpc';
 import { keyBy } from 'lodash';
-import { once } from 'patronum';
+import { once, spread } from 'patronum';
 
-import { Account, Chain, ChainAccount, ChainId, Connection } from '@shared/core';
-import { ProxyAccount, ProxyStore } from '../common/types';
-import { networkModel } from '@/src/renderer/entities/network';
-import { proxieWorkerUtils } from '../common/utils';
-import { walletModel } from '@/src/renderer/entities/wallet';
+import { Account, Chain, ChainId, Connection, ProxyAccount } from '@shared/core';
+import { networkModel } from '@entities/network';
+import { proxyWorkerUtils } from '../common/utils';
+import { accountUtils, walletModel } from '@entities/wallet';
+import { proxyModel } from '@entities/proxy';
 
 // @ts-ignore
 const worker = new Worker(new URL('@features/proxies/workers/proxy-worker', import.meta.url));
@@ -15,9 +15,6 @@ const worker = new Worker(new URL('@features/proxies/workers/proxy-worker', impo
 const endpoint = createEndpoint(worker, {
   callable: ['initConnection', 'getProxies', 'disconnect'],
 });
-
-const $proxies = createStore<ProxyStore>({});
-const $accountProxies = createStore<ProxyStore>({});
 
 const connected = createEvent<ChainId>();
 
@@ -40,21 +37,12 @@ type GetProxiesParams = {
   accounts: Account[];
   proxies: ProxyAccount[];
 };
-const getProxiesFx = createEffect(async ({ chainId, accounts, proxies }: GetProxiesParams): Promise<ProxyStore> => {
-  const { proxiesToAdd, proxiesToRemove } = (await endpoint.call.getProxies(
-    chainId,
-    keyBy(accounts, 'accountId'),
-    proxies,
-  )) as {
-    proxiesToAdd: ProxyAccount[];
-    proxiesToRemove: ProxyAccount[];
-  };
-
-  return {
-    [chainId]: proxies
-      .filter((p) => proxiesToRemove.some((pr) => proxieWorkerUtils.isEqualProxies(pr, p)))
-      .concat(proxiesToAdd),
-  };
+type GetProxiesResult = {
+  proxiesToAdd: ProxyAccount[];
+  proxiesToRemove: ProxyAccount[];
+};
+const getProxiesFx = createEffect(({ chainId, accounts, proxies }: GetProxiesParams): Promise<GetProxiesResult> => {
+  return endpoint.call.getProxies(chainId, keyBy(accounts, 'accountId'), proxies) as Promise<GetProxiesResult>;
 });
 
 const disconnectFx = createEffect((chainId: ChainId): Promise<unknown> => {
@@ -65,7 +53,7 @@ sample({
   clock: once(networkModel.$connections),
   source: { connections: networkModel.$connections, chains: networkModel.$chains },
   fn: ({ connections, chains }) => ({
-    chains: Object.values(chains).filter(proxieWorkerUtils.isRegularProxy),
+    chains: Object.values(chains).filter(proxyWorkerUtils.isRegularProxy),
     connections,
   }),
   target: startChainsFx,
@@ -76,17 +64,18 @@ sample({
   source: walletModel.$accounts,
   fn: (accounts, chainId) => ({
     chainId,
-    accounts: accounts.filter((a) => !(a as ChainAccount).chainId || (a as ChainAccount).chainId === chainId),
+    accounts: accounts.filter((a) => accountUtils.isChainIdMatch(a, chainId)),
     proxies: [],
   }),
   target: getProxiesFx,
 });
 
-sample({
-  clock: getProxiesFx.doneData,
-  source: $proxies,
-  fn: (oldProxies, newProxies) => ({ ...oldProxies, ...newProxies }),
-  target: $proxies,
+spread({
+  source: getProxiesFx.doneData,
+  targets: {
+    proxiesToAdd: proxyModel.events.proxiesAdded,
+    proxiesToRemove: proxyModel.events.proxiesRemoved,
+  },
 });
 
 sample({
@@ -95,7 +84,4 @@ sample({
   target: disconnectFx,
 });
 
-export const proxiesModel = {
-  $proxies,
-  $accountProxies,
-};
+export const proxiesModel = {};
