@@ -28,6 +28,7 @@ import {
   validateStake,
   getSignatoryOption,
 } from '../../common/utils';
+import { useAssetBalances } from '@entities/balance';
 
 export type BondResult = {
   amount: string;
