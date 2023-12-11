@@ -1,74 +1,94 @@
-import cn from 'classnames';
-import { Menu } from '@headlessui/react';
-import { ComponentProps, ReactNode } from 'react';
-import { Link } from 'react-router-dom';
+import { Menu, Transition } from '@headlessui/react';
+import { ComponentProps, PropsWithChildren, Fragment } from 'react';
 
-import { IconNames } from '@shared/ui/Icon/data';
-import { FootnoteText, Icon, IconButton } from '@shared/ui';
+import { IconButton } from '../../Buttons/IconButton/IconButton';
+import { cnTw } from '@shared/lib/utils';
+import { Icon, FootnoteText } from '../../index';
+import { IconNames } from '../../Icon/data';
 
 type IconButtonProps = ComponentProps<typeof IconButton>;
 
-type OptionBase = {
-  id: string;
-  title: string;
-  icon: IconNames | ReactNode;
+type RootProps = {
+  className?: string;
+} & Omit<IconButtonProps, 'onClick'>;
+const DropdownIconButtonRoot = ({ disabled, className, children, ...buttonProps }: PropsWithChildren<RootProps>) => {
+  return (
+    <Menu>
+      {({ open }) => (
+        <div className={cnTw('relative', open && 'z-10')}>
+          <Menu.Button as="div" className={className}>
+            <IconButton disabled={disabled} {...buttonProps} />
+          </Menu.Button>
+          {children}
+        </div>
+      )}
+    </Menu>
+  );
 };
 
-type LinkOption = OptionBase & { to: string };
-type ButtonOption = OptionBase & { onClick: IconButtonProps['onClick'] };
+type ItemsProps = {
+  className?: boolean;
+};
+const DropdownItems = ({ className, children }: PropsWithChildren<ItemsProps>) => {
+  return (
+    <Transition
+      as={Fragment}
+      enter="transition ease-out duration-100"
+      enterFrom="transform opacity-0 scale-95"
+      enterTo="transform opacity-100 scale-100"
+      leave="transition ease-in duration-75"
+      leaveFrom="transform opacity-100 scale-100"
+      leaveTo="transform opacity-0 scale-95"
+    >
+      <Menu.Items
+        as="ul"
+        className={cnTw(
+          'min-w-max w-full absolute right-0 z-10 p-1 mt-1 rounded border border-token-container-border',
+          'bg-token-container-background shadow-card-shadow',
+          className,
+        )}
+      >
+        {children}
+      </Menu.Items>
+    </Transition>
+  );
+};
 
-export type IconButtonDropdownOption = LinkOption | ButtonOption;
+type ItemProps = {
+  className?: string;
+};
+const DropdownItem = ({ className, children }: PropsWithChildren<ItemProps>) => {
+  return (
+    <Menu.Item
+      as="li"
+      className={cnTw(
+        'rounded ui-active:bg-action-background-hover hover:bg-action-background-hover mb-0.5 last:mb-0',
+        className,
+      )}
+    >
+      {children}
+    </Menu.Item>
+  );
+};
 
-type Props = {
-  options: IconButtonDropdownOption[];
-  optionsClassName?: string;
-} & Omit<IconButtonProps, 'onClick'>;
+type OptionProps = {
+  option: {
+    icon: IconNames;
+    title: string;
+    onClick: () => void;
+  };
+};
+const DropdownOption = ({ option }: OptionProps) => {
+  return (
+    <button className="flex items-center gap-x-1.5 w-full p-2" onClick={option.onClick}>
+      <Icon name={option.icon} size={20} className="text-icon-accent" />
+      <FootnoteText className="text-text-secondary">{option.title}</FootnoteText>
+    </button>
+  );
+};
 
-export const DropdownIconButton = ({ options, disabled, optionsClassName, ...buttonProps }: Props) => (
-  <Menu>
-    {({ open }) => (
-      <div className={cn('relative', open && 'z-10')}>
-        <Menu.Button as={IconButton} disabled={disabled} {...buttonProps} />
-        <Menu.Items
-          as="ul"
-          className={cn(
-            'w-full p-1 mt-1 z-10 absolute rounded border border-token-container-border min-w-max',
-            'bg-token-container-background shadow-card-shadow',
-            optionsClassName,
-          )}
-        >
-          {options.map((opt) => {
-            const iconComponent =
-              typeof opt.icon === 'string' ? (
-                <Icon name={opt.icon as IconNames} size={20} className="text-icon-accent" />
-              ) : (
-                opt.icon
-              );
-
-            return (
-              <Menu.Item
-                as="li"
-                key={opt.id}
-                className="rounded ui-active:bg-action-background-hover hover:bg-action-background-hover mb-0.5 last:mb-0"
-              >
-                {/* TODO maybe try to refactor to avoid duplicating option children */}
-                {/* FIXME: click from keyboard is ignored */}
-                {'to' in opt ? (
-                  <Link to={opt.to} className="flex items-center gap-x-1.5 w-full p-2">
-                    {iconComponent}
-                    <FootnoteText className="text-text-secondary">{opt.title}</FootnoteText>
-                  </Link>
-                ) : (
-                  <button className="flex items-center gap-x-1.5 w-full p-2" onClick={opt.onClick}>
-                    {iconComponent}
-                    <FootnoteText className="text-text-secondary">{opt.title}</FootnoteText>
-                  </button>
-                )}
-              </Menu.Item>
-            );
-          })}
-        </Menu.Items>
-      </div>
-    )}
-  </Menu>
-);
+export const DropdownIconButton = Object.assign(DropdownIconButtonRoot, {
+  Items: DropdownItems,
+  Item: DropdownItem,
+  Option: DropdownOption,
+});

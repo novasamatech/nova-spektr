@@ -12,7 +12,7 @@ type Props = {
   addressPrefix?: number;
 };
 
-export const ExplorersPopover = ({ button, address, explorers, addressPrefix, children }: PropsWithChildren<Props>) => {
+const ExplorersPopoverRoot = ({ button, address, explorers, addressPrefix, children }: PropsWithChildren<Props>) => {
   const { t } = useI18n();
 
   const formattedAddress = toAddress(address, { prefix: addressPrefix });
@@ -52,4 +52,6 @@ const PopoverGroup = ({ title, active = true, children }: PropsWithChildren<Grou
   );
 };
 
-ExplorersPopover.Group = PopoverGroup;
+export const ExplorersPopover = Object.assign(ExplorersPopoverRoot, {
+  Group: PopoverGroup,
+});
