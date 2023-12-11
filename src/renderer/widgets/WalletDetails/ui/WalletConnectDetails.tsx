@@ -24,6 +24,7 @@ import {
   StatusModal,
   DropdownIconButton,
 } from '@shared/ui';
+import { IconNames } from '@shared/ui/Icon/data';
 
 type AccountItem = {
   accountId: `0x${string}`;
@@ -82,20 +83,34 @@ export const WalletConnectDetails = ({ wallet, accounts, onClose }: Props) => {
     toggleConfirmForget();
   };
 
-  const options = [
+  const Options = [
     {
-      id: 'delete',
       icon: 'delete',
       title: t('walletDetails.common.forgetButton'),
       onClick: toggleConfirmForget,
     },
     {
-      id: 'refresh',
       icon: 'refresh',
       title: t('walletDetails.walletConnect.refreshButton'),
       onClick: showReconnectConfirm,
     },
   ];
+
+  const ActionButton = (
+    <DropdownIconButton>
+      <DropdownIconButton.Button className="m-1.5" name="more" />
+      <DropdownIconButton.Items>
+        {Options.map((option) => (
+          <DropdownIconButton.Item key={option.icon}>
+            <button className="flex items-center gap-x-1.5 w-full p-2" onClick={option.onClick}>
+              <Icon name={option.icon as IconNames} size={20} className="text-icon-accent" />
+              <FootnoteText className="text-text-secondary">{option.title}</FootnoteText>
+            </button>
+          </DropdownIconButton.Item>
+        ))}
+      </DropdownIconButton.Items>
+    </DropdownIconButton>
+  );
 
   return (
     <BaseModal
@@ -103,7 +118,7 @@ export const WalletConnectDetails = ({ wallet, accounts, onClose }: Props) => {
       contentClass=""
       panelClass="h-modal"
       title={t('walletDetails.common.title')}
-      actionButton={<DropdownIconButton className="m-1.5" name="more" options={options} optionsClassName="right-0" />}
+      actionButton={ActionButton}
       isOpen={isModalOpen}
       onClose={closeModal}
     >

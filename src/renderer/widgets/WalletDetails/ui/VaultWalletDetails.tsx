@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 
-import { BaseModal, ContextMenu, IconButton, HelpText, DropdownIconButton } from '@shared/ui';
+import { BaseModal, ContextMenu, IconButton, HelpText, DropdownIconButton, FootnoteText, Icon } from '@shared/ui';
 import { useModalClose } from '@shared/lib/hooks';
 import { RootAccountLg, WalletCardLg, VaultAccountsList } from '@entities/wallet';
 import { chainsService } from '@entities/network';
@@ -11,6 +11,7 @@ import { VaultMap } from '../lib/types';
 import { ShardsList } from './ShardsList';
 import { vaultDetailsModel } from '../model/vault-details-model';
 import { walletDetailsUtils } from '../lib/utils';
+import { IconNames } from '@shared/ui/Icon/data';
 
 type Props = {
   wallet: Wallet;
@@ -29,12 +30,27 @@ export const VaultWalletDetails = ({ wallet, root, accountsMap, onClose }: Props
 
   const options = [
     {
-      id: 'export',
       icon: 'export',
       title: t('walletDetails.vault.export'),
       onClick: () => walletDetailsUtils.exportVaultWallet(wallet, root, accountsMap),
     },
   ];
+
+  const ActionButton = (
+    <DropdownIconButton>
+      <DropdownIconButton.Button className="m-1.5" name="more" />
+      <DropdownIconButton.Items>
+        {options.map((option) => (
+          <DropdownIconButton.Item key={option.icon}>
+            <button className="flex items-center gap-x-1.5 w-full p-2" onClick={option.onClick}>
+              <Icon name={option.icon as IconNames} size={20} className="text-icon-accent" />
+              <FootnoteText className="text-text-secondary">{option.title}</FootnoteText>
+            </button>
+          </DropdownIconButton.Item>
+        ))}
+      </DropdownIconButton.Items>
+    </DropdownIconButton>
+  );
 
   return (
     <BaseModal
@@ -42,9 +58,10 @@ export const VaultWalletDetails = ({ wallet, root, accountsMap, onClose }: Props
       contentClass=""
       panelClass="h-modal"
       title={t('walletDetails.common.title')}
-      actionButton={<DropdownIconButton className="m-1.5" name="more" options={options} optionsClassName="right-0" />}
+      actionButton={ActionButton}
       isOpen={isModalOpen}
       onClose={closeModal}
+      // optionsClassName="right-0"
     >
       <div className="flex flex-col w-full">
         <div className="py-6 px-5 border-b border-divider">

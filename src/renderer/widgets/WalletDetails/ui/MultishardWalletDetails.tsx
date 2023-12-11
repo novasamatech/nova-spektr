@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 
-import { BaseModal, DropdownIconButton } from '@shared/ui';
+import { BaseModal, DropdownIconButton, Icon, FootnoteText } from '@shared/ui';
 import { useModalClose } from '@shared/lib/hooks';
 import { MultishardAccountsList, WalletCardLg } from '@entities/wallet';
 import { chainsService } from '@entities/network';
@@ -8,6 +8,7 @@ import { useI18n } from '@app/providers';
 import type { Wallet } from '@shared/core';
 import type { MultishardMap } from '../lib/types';
 import { walletDetailsUtils } from '../lib/utils';
+import { IconNames } from '@shared/ui/Icon/data';
 
 type Props = {
   wallet: Wallet;
@@ -23,14 +24,29 @@ export const MultishardWalletDetails = ({ wallet, accounts, onClose }: Props) =>
     return chainsService.getChainsData({ sort: true });
   }, []);
 
-  const options = [
+  const Options = [
     {
-      id: 'export',
       icon: 'export',
       title: t('walletDetails.vault.export'),
       onClick: () => walletDetailsUtils.exportMultishardWallet(wallet, accounts),
     },
   ];
+
+  const ActionButton = (
+    <DropdownIconButton>
+      <DropdownIconButton.Button className="m-1.5" name="more" />
+      <DropdownIconButton.Items>
+        {Options.map((option) => (
+          <DropdownIconButton.Item key={option.icon}>
+            <button className="flex items-center gap-x-1.5 w-full p-2" onClick={option.onClick}>
+              <Icon name={option.icon as IconNames} size={20} className="text-icon-accent" />
+              <FootnoteText className="text-text-secondary">{option.title}</FootnoteText>
+            </button>
+          </DropdownIconButton.Item>
+        ))}
+      </DropdownIconButton.Items>
+    </DropdownIconButton>
+  );
 
   return (
     <BaseModal
@@ -38,7 +54,7 @@ export const MultishardWalletDetails = ({ wallet, accounts, onClose }: Props) =>
       contentClass=""
       panelClass="h-modal"
       title={t('walletDetails.common.title')}
-      actionButton={<DropdownIconButton className="m-1.5" name="more" options={options} optionsClassName="right-0" />}
+      actionButton={ActionButton}
       isOpen={isModalOpen}
       onClose={closeModal}
     >
