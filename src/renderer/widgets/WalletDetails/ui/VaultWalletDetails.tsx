@@ -1,17 +1,17 @@
 import { useMemo } from 'react';
 
-import { BaseModal, ContextMenu, IconButton, HelpText, DropdownIconButton, FootnoteText, Icon } from '@shared/ui';
+import { BaseModal, ContextMenu, IconButton, HelpText, DropdownIconButton } from '@shared/ui';
 import { useModalClose } from '@shared/lib/hooks';
 import { RootAccountLg, WalletCardLg, VaultAccountsList } from '@entities/wallet';
 import { chainsService } from '@entities/network';
 import { useI18n } from '@app/providers';
 import type { Wallet, BaseAccount } from '@shared/core';
 import { copyToClipboard, toAddress } from '@shared/lib/utils';
+import { IconNames } from '@shared/ui/Icon/data';
 import { VaultMap } from '../lib/types';
 import { ShardsList } from './ShardsList';
 import { vaultDetailsModel } from '../model/vault-details-model';
 import { walletDetailsUtils } from '../lib/utils';
-import { IconNames } from '@shared/ui/Icon/data';
 
 type Props = {
   wallet: Wallet;
@@ -30,7 +30,7 @@ export const VaultWalletDetails = ({ wallet, root, accountsMap, onClose }: Props
 
   const options = [
     {
-      icon: 'export',
+      icon: 'export' as IconNames,
       title: t('walletDetails.vault.export'),
       onClick: () => walletDetailsUtils.exportVaultWallet(wallet, root, accountsMap),
     },
@@ -41,10 +41,7 @@ export const VaultWalletDetails = ({ wallet, root, accountsMap, onClose }: Props
       <DropdownIconButton.Items>
         {options.map((option) => (
           <DropdownIconButton.Item key={option.icon}>
-            <button className="flex items-center gap-x-1.5 w-full p-2" onClick={option.onClick}>
-              <Icon name={option.icon as IconNames} size={20} className="text-icon-accent" />
-              <FootnoteText className="text-text-secondary">{option.title}</FootnoteText>
-            </button>
+            <DropdownIconButton.Option option={option} />
           </DropdownIconButton.Item>
         ))}
       </DropdownIconButton.Items>
