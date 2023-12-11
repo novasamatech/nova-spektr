@@ -16,11 +16,21 @@ export type {
   WalletConnectWallet,
   NovaWalletWallet,
   WalletFamily,
+  PolkadotVaultGroup,
+  WalletConnectGroup,
 } from './types/wallet';
 export { WalletType, SigningType } from './types/wallet';
 
 export { AccountType, KeyType } from './types/account';
-export type { Account, BaseAccount, ChainAccount, MultisigAccount, WalletConnectAccount } from './types/account';
+export type {
+  Account,
+  BaseAccount,
+  ChainAccount,
+  MultisigAccount,
+  WalletConnectAccount,
+  ShardAccount,
+  DraftAccount,
+} from './types/account';
 
 export { AssetType, StakingType } from './types/asset';
 export type { Asset, OrmlExtras, StatemineExtras } from './types/asset';

@@ -1,6 +1,6 @@
 import { ComponentMeta, ComponentStory } from '@storybook/react';
 
-import DropdownButton, { ButtonDropdownOption } from './DropdownButton';
+import { DropdownButton, ButtonDropdownOption } from './DropdownButton';
 
 export default {
   title: 'Redesign/Dropdown Button',

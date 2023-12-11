@@ -27,7 +27,8 @@ export const AssetsList = () => {
   const chains = useUnit(networkModel.$chains);
   const balances = useUnit(balanceModel.$balances);
 
-  // DON'T REMOVE: need to have subscriptions (find way to run effector model without it)
+  // TODO: need to have subscriptions (find way to run effector model without it)
+  // @ts-ignore
   const subscriptions = useUnit(balanceSubscriptionModel.$subscriptions);
 
   const { setHideZeroBalance, getHideZeroBalance } = useSettingsStorage();
@@ -40,8 +41,8 @@ export const AssetsList = () => {
   const [activeShards, setActiveShards] = useState<Account[]>([]);
   const [hideZeroBalance, setHideZeroBalanceState] = useState(getHideZeroBalance());
 
-  const isMultishard = walletUtils.isMultiShard(activeWallet);
   const isMultisig = walletUtils.isMultisig(activeWallet);
+  const isMultishard = walletUtils.isPolkadotVault(activeWallet) || walletUtils.isMultiShard(activeWallet);
 
   useEffect(() => {
     priceProviderModel.events.assetsPricesRequested({ includeRates: true });
@@ -127,7 +128,6 @@ export const AssetsList = () => {
                   query={query.toLowerCase()}
                   chain={chain}
                   accounts={activeShards}
-                  canMakeActions={!walletUtils.isWatchOnly(activeWallet)}
                 />
               ))}
 

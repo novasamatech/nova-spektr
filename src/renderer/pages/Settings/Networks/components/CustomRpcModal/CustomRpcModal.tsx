@@ -143,7 +143,7 @@ export const CustomRpcModal = ({ network, node, isOpen, onClose }: Props) => {
     <BaseModal
       closeButton
       title={<OperationTitle title={modalTitle} chainId={network.chainId} />}
-      headerClass="py-3 px-5 max-w-[440px]"
+      headerClass="py-3 pl-5 pr-3"
       isOpen={isOpen}
       onClose={onClose}
     >
@@ -207,10 +207,16 @@ export const CustomRpcModal = ({ network, node, isOpen, onClose }: Props) => {
             </InputHint>
           </div>
 
-          {formState === FormState.INVALID && <Alert title={t('settings.networks.addressNoConnect')} variant="error" />}
-          {formState === FormState.WRONG_NETWORK && (
-            <Alert title={t('settings.networks.addressWrongNetwork', { networkName: network.name })} variant="error" />
-          )}
+          <Alert
+            active={formState === FormState.INVALID}
+            title={t('settings.networks.addressNoConnect')}
+            variant="error"
+          />
+          <Alert
+            active={formState === FormState.WRONG_NETWORK}
+            title={t('settings.networks.addressWrongNetwork', { networkName: network.name })}
+            variant="error"
+          />
         </div>
 
         <div className="flex justify-end mt-7 w-full">

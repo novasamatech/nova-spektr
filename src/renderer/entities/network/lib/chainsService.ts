@@ -32,8 +32,10 @@ export const chainsService = {
   searchChain,
 };
 
-function getChainsData(): Chain[] {
-  return CHAINS[process.env.CHAINS_FILE || 'chains'];
+function getChainsData(params = { sort: false }): Chain[] {
+  const chains = CHAINS[process.env.CHAINS_FILE || 'chains'];
+
+  return params.sort ? sortChains(chains) : chains;
 }
 
 function getChainsMap(): ChainMap {

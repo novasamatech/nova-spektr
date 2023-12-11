@@ -1,6 +1,6 @@
 import { ApiPromise } from '@polkadot/api';
 
-import type { Address, ChainId, EraIndex, Stake, Validator } from '@shared/core';
+import type { Address, ChainId, EraIndex, Stake, Unlocking, Validator } from '@shared/core';
 
 // =====================================================
 // ========== IStakingDataService interface ============
@@ -16,6 +16,8 @@ export interface IStakingDataService {
   getMinNominatorBond: (api: ApiPromise) => Promise<string>;
   getUnbondingPeriod: (api: ApiPromise) => string;
   getTotalStaked: (api: ApiPromise, era: EraIndex) => Promise<string>;
+  getNextUnstakingEra: (unlocking?: Unlocking[], era?: number) => EraIndex | undefined;
+  hasRedeem: (unlocking?: Unlocking[], era?: number) => boolean;
 }
 
 // =====================================================
@@ -25,22 +27,6 @@ export interface IStakingDataService {
 export interface IStakingRewardsService {
   rewards: RewardsMap;
   isRewardsLoading: boolean;
-}
-
-// =====================================================
-// ========== IValidatorsService interface =============
-// =====================================================
-
-export interface IValidatorsService {
-  getValidatorsWithInfo: (
-    chainId: ChainId,
-    api: ApiPromise,
-    era: EraIndex,
-    isLightClient?: boolean,
-  ) => Promise<ValidatorMap>;
-  getValidatorsList: (api: ApiPromise, era: EraIndex) => Promise<ValidatorMap>;
-  getMaxValidators: (api: ApiPromise) => number;
-  getNominators: (api: ApiPromise, stash: Address, isLightClient?: boolean) => Promise<ValidatorMap>;
 }
 
 // =====================================================

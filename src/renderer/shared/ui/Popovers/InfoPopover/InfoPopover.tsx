@@ -19,7 +19,14 @@ export type InfoSection = {
   items: MenuItem[];
 };
 
-const InfoPopover = ({ data, className, children, ...popoverProps }: PropsWithChildren<Props>) => {
+const InfoPopover = ({
+  data,
+  className,
+  buttonClassName,
+  containerClassName,
+  children,
+  ...popoverProps
+}: PropsWithChildren<Props>) => {
   const popoverContent = data.map((section, index) => (
     <div key={index} className="pb-3 mb-3 border-b border-divider last:pb-0 last:mb-0 last:border-b-0">
       {section.title && (
@@ -36,8 +43,7 @@ const InfoPopover = ({ data, className, children, ...popoverProps }: PropsWithCh
             </li>
           ) : (
             <Menu.Item key={id} as="li">
-              {/* // TODO check out why headless ui menu item type dont support className */}
-              <div className="rounded-md text-shade-100 ui-active:bg-action-background-hover h-8 w-full">{value}</div>
+              <div className="rounded-md text-shade-100 h-8 w-full">{value}</div>
             </Menu.Item>
           ),
         )}
@@ -47,8 +53,8 @@ const InfoPopover = ({ data, className, children, ...popoverProps }: PropsWithCh
 
   return (
     <MenuPopover
-      buttonClassName="max-w-full"
-      containerClassName="max-w-full"
+      buttonClassName={cnTw('max-w-full', buttonClassName)}
+      containerClassName={cnTw('max-w-full', containerClassName)}
       content={popoverContent}
       className={cnTw('min-w-[220px]', className)}
       {...popoverProps}

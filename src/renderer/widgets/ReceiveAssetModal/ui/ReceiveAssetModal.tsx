@@ -28,25 +28,35 @@ export const ReceiveAssetModal = ({ chain, asset, onClose }: Props) => {
   const [activeAccountsOptions, setActiveAccountsOptions] = useState<DropdownOption<number>[]>([]);
 
   useEffect(() => {
+    if (walletUtils.isWatchOnly(activeWallet)) return;
+
     const accounts = activeAccounts.reduce<DropdownOption[]>((acc, account, index) => {
-      const isWatchOnly = walletUtils.isWatchOnly(activeWallet);
+      const isBaseAccount = accountUtils.isBaseAccount(account);
+      const isPolkadotVault = walletUtils.isPolkadotVault(activeWallet);
       const isChainMatch = accountUtils.isChainIdMatch(account, chain.chainId);
 
-      if (isWatchOnly || !isChainMatch) return acc;
+      if (isPolkadotVault && isBaseAccount) return acc;
 
-      const element = (
-        <AccountAddress
-          type="short"
-          accountId={account.accountId}
-          addressPrefix={chain.addressPrefix}
-          name={account.name}
-          size={20}
-          canCopy={false}
-          showIcon
-        />
-      );
+      if (isChainMatch) {
+        const accountName = accountUtils.isShardAccount(account) ? undefined : account.name;
 
-      return acc.concat({ id: index.toString(), value: index, element });
+        const element = (
+          <AccountAddress
+            type="adaptive"
+            className="max-w-[365px]"
+            accountId={account.accountId}
+            addressPrefix={chain.addressPrefix}
+            name={accountName}
+            size={20}
+            canCopy={false}
+            showIcon
+          />
+        );
+
+        acc.push({ id: index.toString(), value: index, element });
+      }
+
+      return acc;
     }, []);
 
     if (accounts.length === 0) return;
@@ -60,7 +70,7 @@ export const ReceiveAssetModal = ({ chain, asset, onClose }: Props) => {
     setTimeout(onClose, DEFAULT_TRANSITION);
   };
 
-  const hasShards = walletUtils.isMultiShard(activeWallet) && activeAccounts.length > 1;
+  const isVault = walletUtils.isPolkadotVault(activeWallet) || walletUtils.isMultiShard(activeWallet);
   const account = activeAccount ? activeAccounts[activeAccount.value] : undefined;
   const accountId = account?.accountId || '0x00';
   const prefix = chain.addressPrefix;
@@ -74,11 +84,11 @@ export const ReceiveAssetModal = ({ chain, asset, onClose }: Props) => {
       isOpen={isModalOpen}
       title={<OperationTitle title={t('receive.title', { asset: asset.symbol })} chainId={chain.chainId} />}
       contentClass="pb-6 px-4 pt-4 flex flex-col items-center"
-      headerClass="py-3 px-5 max-w-[440px]"
+      headerClass="py-3 pl-5 pr-3"
       closeButton
       onClose={closeReceiveModal}
     >
-      {hasShards && (
+      {isVault && activeAccounts.length > 1 && (
         <Select
           placeholder={t('receive.selectWalletPlaceholder')}
           className="w-full mb-6"

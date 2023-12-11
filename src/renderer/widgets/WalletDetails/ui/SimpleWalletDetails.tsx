@@ -18,9 +18,7 @@ export const SimpleWalletDetails = ({ wallet, account, onClose }: Props) => {
   const [isModalOpen, closeModal] = useModalClose(true, onClose);
 
   const chains = useMemo(() => {
-    const chains = chainsService.getChainsData();
-
-    return chainsService.sortChains(chains);
+    return chainsService.getChainsData({ sort: true });
   }, []);
 
   return (
@@ -33,10 +31,10 @@ export const SimpleWalletDetails = ({ wallet, account, onClose }: Props) => {
       onClose={closeModal}
     >
       <div className="flex flex-col gap-y-4 w-full">
-        <div className="py-5 px-5 border-b border-divider">
+        <div className="py-6 px-5 border-b border-divider">
           <WalletCardLg wallet={wallet} />
         </div>
-        <AccountsList accountId={account.accountId} chains={chains} className="h-[405px]" />
+        <AccountsList accountId={account.accountId} chains={chains} className="h-[401px]" />
       </div>
     </BaseModal>
   );
