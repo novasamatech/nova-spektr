@@ -13,8 +13,8 @@ import type { Chain, Account, WalletConnectWallet } from '@shared/core';
 import { wcDetailsModel } from '../model/wc-details-model';
 import { wcDetailsUtils, walletDetailsUtils } from '../lib/utils';
 import { ForgetStep } from '../lib/constants';
+import { Animation } from '@shared/ui/Animation/Animation';
 import {
-  Animation,
   BaseModal,
   Button,
   ConfirmModal,
