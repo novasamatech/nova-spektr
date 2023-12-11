@@ -97,8 +97,7 @@ export const WalletConnectDetails = ({ wallet, accounts, onClose }: Props) => {
   ];
 
   const ActionButton = (
-    <DropdownIconButton>
-      <DropdownIconButton.Button className="m-1.5" name="more" />
+    <DropdownIconButton name="more">
       <DropdownIconButton.Items>
         {Options.map((option) => (
           <DropdownIconButton.Item key={option.icon}>

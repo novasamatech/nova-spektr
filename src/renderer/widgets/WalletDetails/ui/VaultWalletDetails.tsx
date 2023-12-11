@@ -37,8 +37,7 @@ export const VaultWalletDetails = ({ wallet, root, accountsMap, onClose }: Props
   ];
 
   const ActionButton = (
-    <DropdownIconButton>
-      <DropdownIconButton.Button className="m-1.5" name="more" />
+    <DropdownIconButton name="more">
       <DropdownIconButton.Items>
         {options.map((option) => (
           <DropdownIconButton.Item key={option.icon}>
@@ -61,7 +60,6 @@ export const VaultWalletDetails = ({ wallet, root, accountsMap, onClose }: Props
       actionButton={ActionButton}
       isOpen={isModalOpen}
       onClose={closeModal}
-      // optionsClassName="right-0"
     >
       <div className="flex flex-col w-full">
         <div className="py-6 px-5 border-b border-divider">

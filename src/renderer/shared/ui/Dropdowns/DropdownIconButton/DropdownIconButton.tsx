@@ -1,23 +1,28 @@
 import { Menu, Transition } from '@headlessui/react';
-import { ComponentProps, PropsWithChildren, Fragment, forwardRef } from 'react';
+import { ComponentProps, PropsWithChildren, Fragment } from 'react';
 
 import { IconButton } from '../../Buttons/IconButton/IconButton';
 import { cnTw } from '@shared/lib/utils';
 
 type IconButtonProps = ComponentProps<typeof IconButton>;
 
-const DropdownIconButtonRoot = ({ children }: PropsWithChildren) => (
-  <Menu>{({ open }) => <div className={cnTw('relative', open && 'z-10')}>{children}</div>}</Menu>
-);
-
-type ButtonProps = {
-  disabled?: boolean;
+type RootProps = {
+  className?: string;
 } & Omit<IconButtonProps, 'onClick'>;
-const DropdownButton = forwardRef<HTMLButtonElement, PropsWithChildren<ButtonProps>>(
-  ({ disabled, children, ...buttonProps }, ref) => {
-    return <Menu.Button as={IconButton} ref={ref} disabled={disabled} {...buttonProps} />;
-  },
-);
+const DropdownIconButtonRoot = ({ disabled, className, children, ...buttonProps }: PropsWithChildren<RootProps>) => {
+  return (
+    <Menu>
+      {({ open }) => (
+        <div className={cnTw('relative', open && 'z-10')}>
+          <Menu.Button as="div" className={className}>
+            <IconButton disabled={disabled} {...buttonProps} />
+          </Menu.Button>
+          {children}
+        </div>
+      )}
+    </Menu>
+  );
+};
 
 type ItemsProps = {
   className?: boolean;
@@ -65,7 +70,6 @@ const DropdownItem = ({ className, children }: PropsWithChildren<ItemProps>) => 
 };
 
 export const DropdownIconButton = Object.assign(DropdownIconButtonRoot, {
-  Button: DropdownButton,
   Items: DropdownItems,
   Item: DropdownItem,
 });
