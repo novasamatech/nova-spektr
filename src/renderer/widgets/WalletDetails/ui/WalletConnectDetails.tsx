@@ -14,6 +14,7 @@ import { wcDetailsModel } from '../model/wc-details-model';
 import { wcDetailsUtils, walletDetailsUtils } from '../lib/utils';
 import { ForgetStep } from '../lib/constants';
 import { Animation } from '@shared/ui/Animation/Animation';
+import { IconNames } from '@shared/ui/Icon/data';
 import {
   BaseModal,
   Button,
@@ -24,7 +25,6 @@ import {
   StatusModal,
   DropdownIconButton,
 } from '@shared/ui';
-import { IconNames } from '@shared/ui/Icon/data';
 
 type AccountItem = {
   accountId: `0x${string}`;
