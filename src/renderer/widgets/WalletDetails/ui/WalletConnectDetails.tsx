@@ -85,12 +85,12 @@ export const WalletConnectDetails = ({ wallet, accounts, onClose }: Props) => {
 
   const Options = [
     {
-      icon: 'delete',
+      icon: 'delete' as IconNames,
       title: t('walletDetails.common.forgetButton'),
       onClick: toggleConfirmForget,
     },
     {
-      icon: 'refresh',
+      icon: 'refresh' as IconNames,
       title: t('walletDetails.walletConnect.refreshButton'),
       onClick: showReconnectConfirm,
     },
@@ -101,10 +101,7 @@ export const WalletConnectDetails = ({ wallet, accounts, onClose }: Props) => {
       <DropdownIconButton.Items>
         {Options.map((option) => (
           <DropdownIconButton.Item key={option.icon}>
-            <button className="flex items-center gap-x-1.5 w-full p-2" onClick={option.onClick}>
-              <Icon name={option.icon as IconNames} size={20} className="text-icon-accent" />
-              <FootnoteText className="text-text-secondary">{option.title}</FootnoteText>
-            </button>
+            <DropdownIconButton.Option option={option} />
           </DropdownIconButton.Item>
         ))}
       </DropdownIconButton.Items>

@@ -2,6 +2,8 @@ import { Menu, Transition } from '@headlessui/react';
 import { ComponentProps, PropsWithChildren, Fragment } from 'react';
 
 import { IconButton } from '../../Buttons/IconButton/IconButton';
+import { Icon, FootnoteText } from '../../index';
+import { IconNames } from '../../Icon/data';
 import { cnTw } from '@shared/lib/utils';
 
 type IconButtonProps = ComponentProps<typeof IconButton>;
@@ -69,7 +71,24 @@ const DropdownItem = ({ className, children }: PropsWithChildren<ItemProps>) => 
   );
 };
 
+type OptionProps = {
+  option: {
+    icon: IconNames;
+    title: string;
+    onClick: () => void;
+  };
+};
+const DropdownOption = ({ option }: OptionProps) => {
+  return (
+    <button className="flex items-center gap-x-1.5 w-full p-2" onClick={option.onClick}>
+      <Icon name={option.icon} size={20} className="text-icon-accent" />
+      <FootnoteText className="text-text-secondary">{option.title}</FootnoteText>
+    </button>
+  );
+};
+
 export const DropdownIconButton = Object.assign(DropdownIconButtonRoot, {
   Items: DropdownItems,
   Item: DropdownItem,
+  Option: DropdownOption,
 });
