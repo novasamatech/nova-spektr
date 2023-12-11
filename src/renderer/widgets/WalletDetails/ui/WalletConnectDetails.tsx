@@ -14,6 +14,7 @@ import { wcDetailsModel } from '../model/wc-details-model';
 import { wcDetailsUtils, walletDetailsUtils } from '../lib/utils';
 import { ForgetStep } from '../lib/constants';
 import { Animation } from '@shared/ui/Animation/Animation';
+import { IconNames } from '@shared/ui/Icon/data';
 import {
   BaseModal,
   Button,
@@ -82,20 +83,30 @@ export const WalletConnectDetails = ({ wallet, accounts, onClose }: Props) => {
     toggleConfirmForget();
   };
 
-  const options = [
+  const Options = [
     {
-      id: 'delete',
-      icon: 'delete',
+      icon: 'delete' as IconNames,
       title: t('walletDetails.common.forgetButton'),
       onClick: toggleConfirmForget,
     },
     {
-      id: 'refresh',
-      icon: 'refresh',
+      icon: 'refresh' as IconNames,
       title: t('walletDetails.walletConnect.refreshButton'),
       onClick: showReconnectConfirm,
     },
   ];
+
+  const ActionButton = (
+    <DropdownIconButton name="more">
+      <DropdownIconButton.Items>
+        {Options.map((option) => (
+          <DropdownIconButton.Item key={option.icon}>
+            <DropdownIconButton.Option option={option} />
+          </DropdownIconButton.Item>
+        ))}
+      </DropdownIconButton.Items>
+    </DropdownIconButton>
+  );
 
   return (
     <BaseModal
@@ -103,7 +114,7 @@ export const WalletConnectDetails = ({ wallet, accounts, onClose }: Props) => {
       contentClass=""
       panelClass="h-modal"
       title={t('walletDetails.common.title')}
-      actionButton={<DropdownIconButton className="m-1.5" name="more" options={options} optionsClassName="right-0" />}
+      actionButton={ActionButton}
       isOpen={isModalOpen}
       onClose={closeModal}
     >

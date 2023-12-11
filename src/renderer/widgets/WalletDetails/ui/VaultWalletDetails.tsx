@@ -7,6 +7,7 @@ import { chainsService } from '@entities/network';
 import { useI18n } from '@app/providers';
 import type { Wallet, BaseAccount } from '@shared/core';
 import { copyToClipboard, toAddress } from '@shared/lib/utils';
+import { IconNames } from '@shared/ui/Icon/data';
 import { VaultMap } from '../lib/types';
 import { ShardsList } from './ShardsList';
 import { vaultDetailsModel } from '../model/vault-details-model';
@@ -29,12 +30,23 @@ export const VaultWalletDetails = ({ wallet, root, accountsMap, onClose }: Props
 
   const options = [
     {
-      id: 'export',
-      icon: 'export',
+      icon: 'export' as IconNames,
       title: t('walletDetails.vault.export'),
       onClick: () => walletDetailsUtils.exportVaultWallet(wallet, root, accountsMap),
     },
   ];
+
+  const ActionButton = (
+    <DropdownIconButton name="more">
+      <DropdownIconButton.Items>
+        {options.map((option) => (
+          <DropdownIconButton.Item key={option.icon}>
+            <DropdownIconButton.Option option={option} />
+          </DropdownIconButton.Item>
+        ))}
+      </DropdownIconButton.Items>
+    </DropdownIconButton>
+  );
 
   return (
     <BaseModal
@@ -42,7 +54,7 @@ export const VaultWalletDetails = ({ wallet, root, accountsMap, onClose }: Props
       contentClass=""
       panelClass="h-modal"
       title={t('walletDetails.common.title')}
-      actionButton={<DropdownIconButton className="m-1.5" name="more" options={options} optionsClassName="right-0" />}
+      actionButton={ActionButton}
       isOpen={isModalOpen}
       onClose={closeModal}
     >

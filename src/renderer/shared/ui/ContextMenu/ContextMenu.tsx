@@ -8,7 +8,7 @@ type Props = {
   button: ReactNode;
 };
 
-export const ContextMenu = ({ button, children }: PropsWithChildren<Props>) => {
+const ContextMenuRoot = ({ button, children }: PropsWithChildren<Props>) => {
   const popoverRef = useRef<HTMLDivElement>(null);
 
   const onButtonClick = (e: MouseEvent<HTMLDivElement>) => {
@@ -70,4 +70,6 @@ const ContextGroup = ({ title, active = true, children }: PropsWithChildren<Grou
   );
 };
 
-ContextMenu.Group = ContextGroup;
+export const ContextMenu = Object.assign(ContextMenuRoot, {
+  Group: ContextGroup,
+});
