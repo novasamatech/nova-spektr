@@ -1,9 +1,9 @@
-import { useMemo } from 'react';
+import { useUnit } from 'effector-react';
 
 import { BaseModal, DropdownIconButton, Icon, FootnoteText } from '@shared/ui';
 import { useModalClose } from '@shared/lib/hooks';
 import { MultishardAccountsList, WalletCardLg } from '@entities/wallet';
-import { chainsService } from '@entities/network';
+import { networkModel } from '@entities/network';
 import { useI18n } from '@app/providers';
 import type { Wallet } from '@shared/core';
 import type { MultishardMap } from '../lib/types';
@@ -20,9 +20,7 @@ export const MultishardWalletDetails = ({ wallet, accounts, onClose }: Props) =>
 
   const [isModalOpen, closeModal] = useModalClose(true, onClose);
 
-  const chains = useMemo(() => {
-    return chainsService.getChainsData({ sort: true });
-  }, []);
+  const chains = useUnit(networkModel.$chains);
 
   const Options = [
     {
@@ -61,7 +59,7 @@ export const MultishardWalletDetails = ({ wallet, accounts, onClose }: Props) =>
         <div className="py-6 px-5 border-b border-divider">
           <WalletCardLg wallet={wallet} />
         </div>
-        <MultishardAccountsList accounts={accounts} chains={chains} className="h-[443px]" />
+        <MultishardAccountsList accounts={accounts} chains={Object.values(chains)} className="h-[443px]" />
       </div>
     </BaseModal>
   );

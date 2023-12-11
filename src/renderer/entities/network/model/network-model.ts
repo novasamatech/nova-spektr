@@ -9,7 +9,7 @@ import { Chain, ChainId, Connection, ConnectionStatus, ConnectionType, RpcNode, 
 import { useMetadata } from '../lib/metadataService';
 import { storageService } from '@shared/api/storage';
 
-const chains = chainsService.getChainsMap();
+const chains = chainsService.getChainsMap({ sort: true });
 
 const defaultStatuses = Object.values(chains).reduce((acc, chain) => {
   acc[chain.chainId] = ConnectionStatus.DISCONNECTED;

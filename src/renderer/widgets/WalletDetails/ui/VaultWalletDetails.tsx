@@ -1,9 +1,9 @@
-import { useMemo } from 'react';
+import { useUnit } from 'effector-react';
 
 import { BaseModal, ContextMenu, IconButton, HelpText, DropdownIconButton, FootnoteText, Icon } from '@shared/ui';
 import { useModalClose } from '@shared/lib/hooks';
 import { RootAccountLg, WalletCardLg, VaultAccountsList } from '@entities/wallet';
-import { chainsService } from '@entities/network';
+import { networkModel } from '@entities/network';
 import { useI18n } from '@app/providers';
 import type { Wallet, BaseAccount } from '@shared/core';
 import { copyToClipboard, toAddress } from '@shared/lib/utils';
@@ -22,11 +22,9 @@ type Props = {
 export const VaultWalletDetails = ({ wallet, root, accountsMap, onClose }: Props) => {
   const { t } = useI18n();
 
-  const [isModalOpen, closeModal] = useModalClose(true, onClose);
+  const chains = useUnit(networkModel.$chains);
 
-  const chains = useMemo(() => {
-    return chainsService.getChainsData({ sort: true });
-  }, []);
+  const [isModalOpen, closeModal] = useModalClose(true, onClose);
 
   const options = [
     {
@@ -86,7 +84,7 @@ export const VaultWalletDetails = ({ wallet, root, accountsMap, onClose }: Props
 
         <VaultAccountsList
           className="h-[377px]"
-          chains={chains}
+          chains={Object.values(chains)}
           accountsMap={accountsMap}
           onShardClick={vaultDetailsModel.events.shardsSelected}
         />

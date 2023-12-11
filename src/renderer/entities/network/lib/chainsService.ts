@@ -2,11 +2,10 @@ import sortBy from 'lodash/sortBy';
 import concat from 'lodash/concat';
 import orderBy from 'lodash/orderBy';
 import BigNumber from 'bignumber.js';
-import keyBy from 'lodash/keyBy';
 
 import chainsProd from '@shared/config/chains/chains.json';
 import chainsDev from '@shared/config/chains/chains_dev.json';
-import { getRelaychainAsset, nonNullable, totalAmount, ZERO_BALANCE } from '@shared/lib/utils';
+import { getRelaychainAsset, nonNullable, totalAmount, ZERO_BALANCE, dictionary } from '@shared/lib/utils';
 import { ChainLike, ChainMap } from './common/types';
 import { isKusama, isPolkadot, isTestnet, isNameWithNumber } from './common/utils';
 import type { Chain, ChainId, Balance } from '@shared/core';
@@ -38,28 +37,20 @@ function getChainsData(params = { sort: false }): Chain[] {
   return params.sort ? sortChains(chains) : chains;
 }
 
-function getChainsMap(): ChainMap {
-  const chainsData = getChainsData();
-
-  return keyBy(chainsData, 'chainId');
+function getChainsMap(params = { sort: false }): ChainMap {
+  return dictionary(getChainsData(params), 'chainId');
 }
 
-function getChainById(chainId: ChainId): Chain | undefined {
-  const chainsData = getChainsData();
-
-  return chainsData.find((chain) => chain.chainId === chainId);
+function getChainById(chainId: ChainId, params = { sort: false }): Chain | undefined {
+  return getChainsData(params).find((chain) => chain.chainId === chainId);
 }
 
-function searchChain(query: string): Chain | undefined {
-  const chainsData = getChainsData();
-
-  return chainsData.find((chain) => chain.chainId.includes(query));
+function searchChain(query: string, params = { sort: false }): Chain | undefined {
+  return getChainsData(params).find((chain) => chain.chainId.includes(query));
 }
 
-function getStakingChainsData(): Chain[] {
-  const chainsData = getChainsData();
-
-  return chainsData.reduce<Chain[]>((acc, chain) => {
+function getStakingChainsData(params = { sort: false }): Chain[] {
+  return getChainsData(params).reduce<Chain[]>((acc, chain) => {
     if (getRelaychainAsset(chain.assets)) {
       acc.push(chain);
     }

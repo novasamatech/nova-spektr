@@ -9,7 +9,7 @@ import { MultiAccountsList, WalletCardLg } from '@entities/wallet';
 import { useI18n } from '@app/providers';
 import { chainsService } from '@entities/network';
 import { walletConnectUtils } from '@entities/walletConnect';
-import type { Chain, Account, WalletConnectWallet } from '@shared/core';
+import type { Chain, Account, WalletConnectWallet, AccountId } from '@shared/core';
 import { wcDetailsModel } from '../model/wc-details-model';
 import { wcDetailsUtils, walletDetailsUtils } from '../lib/utils';
 import { ForgetStep } from '../lib/constants';
@@ -27,7 +27,7 @@ import {
 } from '@shared/ui';
 
 type AccountItem = {
-  accountId: `0x${string}`;
+  accountId: AccountId;
   chain: Chain;
 };
 

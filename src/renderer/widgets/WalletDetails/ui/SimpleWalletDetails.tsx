@@ -1,9 +1,9 @@
-import { useMemo } from 'react';
+import { useUnit } from 'effector-react';
 
 import { BaseModal } from '@shared/ui';
 import { useModalClose } from '@shared/lib/hooks';
 import { AccountsList, WalletCardLg } from '@entities/wallet';
-import { chainsService } from '@entities/network';
+import { networkModel } from '@entities/network';
 import { useI18n } from '@app/providers';
 import type { Wallet, BaseAccount } from '@shared/core';
 
@@ -15,11 +15,9 @@ type Props = {
 export const SimpleWalletDetails = ({ wallet, account, onClose }: Props) => {
   const { t } = useI18n();
 
-  const [isModalOpen, closeModal] = useModalClose(true, onClose);
+  const chains = useUnit(networkModel.$chains);
 
-  const chains = useMemo(() => {
-    return chainsService.getChainsData({ sort: true });
-  }, []);
+  const [isModalOpen, closeModal] = useModalClose(true, onClose);
 
   return (
     <BaseModal
@@ -34,7 +32,7 @@ export const SimpleWalletDetails = ({ wallet, account, onClose }: Props) => {
         <div className="py-6 px-5 border-b border-divider">
           <WalletCardLg wallet={wallet} />
         </div>
-        <AccountsList accountId={account.accountId} chains={chains} className="h-[401px]" />
+        <AccountsList accountId={account.accountId} chains={Object.values(chains)} className="h-[401px]" />
       </div>
     </BaseModal>
   );
