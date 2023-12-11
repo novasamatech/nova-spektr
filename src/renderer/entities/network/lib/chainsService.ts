@@ -44,12 +44,6 @@ function getChainsMap(): ChainMap {
   return keyBy(chainsData, 'chainId');
 }
 
-function getChainsMap(): ChainMap {
-  const chainsData = getChainsData();
-
-  return keyBy(chainsData, 'chainId');
-}
-
 function getChainById(chainId: ChainId): Chain | undefined {
   const chainsData = getChainsData();
 

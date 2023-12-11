@@ -1,6 +1,6 @@
 import { ComponentMeta, ComponentStory } from '@storybook/react';
 
-import IconButton from './IconButton';
+import { IconButton } from './IconButton';
 
 export default {
   title: 'Redesign/Icon Button',
