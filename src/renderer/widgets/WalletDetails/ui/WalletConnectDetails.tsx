@@ -16,6 +16,7 @@ import { ForgetStep } from '../lib/constants';
 import { Animation } from '@shared/ui/Animation/Animation';
 import { BaseModal, Button, ConfirmModal, FootnoteText, Icon, SmallTitleText, StatusModal } from '@shared/ui';
 import { GeneralWalletActions } from './WalletActions/GeneralWalletActions';
+import { IconNames } from '@shared/ui/Icon/data';
 
 type AccountItem = {
   accountId: `0x${string}`;
@@ -76,14 +77,12 @@ export const WalletConnectDetails = ({ wallet, accounts, onClose }: Props) => {
 
   const options = [
     {
-      id: 'delete',
-      icon: 'delete',
+      icon: 'delete' as IconNames,
       title: t('walletDetails.common.forgetButton'),
       onClick: toggleConfirmForget,
     },
     {
-      id: 'refresh',
-      icon: 'refresh',
+      icon: 'refresh' as IconNames,
       title: t('walletDetails.walletConnect.refreshButton'),
       onClick: showReconnectConfirm,
     },

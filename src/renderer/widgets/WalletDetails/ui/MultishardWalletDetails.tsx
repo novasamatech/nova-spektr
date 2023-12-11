@@ -6,6 +6,7 @@ import { MultishardAccountsList, WalletCardLg } from '@entities/wallet';
 import { chainsService } from '@entities/network';
 import { useI18n } from '@app/providers';
 import type { Wallet } from '@shared/core';
+import { IconNames } from '@shared/ui/Icon/data';
 import type { MultishardMap } from '../lib/types';
 import { walletDetailsUtils } from '../lib/utils';
 import { GeneralWalletActions } from './WalletActions/GeneralWalletActions';
@@ -26,8 +27,7 @@ export const MultishardWalletDetails = ({ wallet, accounts, onClose }: Props) =>
 
   const options = [
     {
-      id: 'export',
-      icon: 'export',
+      icon: 'export' as IconNames,
       title: t('walletDetails.vault.export'),
       onClick: () => walletDetailsUtils.exportMultishardWallet(wallet, accounts),
     },

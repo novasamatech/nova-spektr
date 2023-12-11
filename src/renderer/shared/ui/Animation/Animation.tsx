@@ -3,7 +3,7 @@ import { useLottie } from 'lottie-react';
 
 import { Images } from './common/constants';
 
-export type Props = {
+type Props = {
   variant: keyof typeof Images;
   width?: number;
   height?: number;
