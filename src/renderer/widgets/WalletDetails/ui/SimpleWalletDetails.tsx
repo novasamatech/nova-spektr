@@ -6,6 +6,7 @@ import { AccountsList, WalletCardLg } from '@entities/wallet';
 import { chainsService } from '@entities/network';
 import { useI18n } from '@app/providers';
 import type { Wallet, BaseAccount } from '@shared/core';
+import { GeneralWalletActions } from './WalletActions/GeneralWalletActions';
 
 type Props = {
   wallet: Wallet;
@@ -27,6 +28,7 @@ export const SimpleWalletDetails = ({ wallet, account, onClose }: Props) => {
       contentClass=""
       panelClass="h-modal"
       title={t('walletDetails.common.title')}
+      actionButton={<GeneralWalletActions wallet={wallet} />}
       isOpen={isModalOpen}
       onClose={closeModal}
     >

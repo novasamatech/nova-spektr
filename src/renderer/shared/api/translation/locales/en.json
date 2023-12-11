@@ -987,8 +987,13 @@
       "removeTitle": "Remove wallet",
       "removingWallet": "Removing wallet",
       "renameButton": "Rename",
+      "renameTitle": "Rename wallet",
       "title": "Wallet details",
-      "walletRemoved": "Wallet removed"
+      "walletRemoved": "Wallet removed",
+      "nameRequiredError": "Name is required",
+      "nameExistsError": "This wallet name already exists",
+      "renameSaveButton": "Save",
+      "renameLabel": "Name"
     },
     "multisig": {
       "contactsGroup": "Contacts",

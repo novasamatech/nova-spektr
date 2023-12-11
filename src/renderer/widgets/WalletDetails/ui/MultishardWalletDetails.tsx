@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 
-import { BaseModal, DropdownIconButton } from '@shared/ui';
+import { BaseModal } from '@shared/ui';
 import { useModalClose } from '@shared/lib/hooks';
 import { MultishardAccountsList, WalletCardLg } from '@entities/wallet';
 import { chainsService } from '@entities/network';
@@ -8,6 +8,7 @@ import { useI18n } from '@app/providers';
 import type { Wallet } from '@shared/core';
 import type { MultishardMap } from '../lib/types';
 import { walletDetailsUtils } from '../lib/utils';
+import { GeneralWalletActions } from './WalletActions/GeneralWalletActions';
 
 type Props = {
   wallet: Wallet;
@@ -38,7 +39,7 @@ export const MultishardWalletDetails = ({ wallet, accounts, onClose }: Props) =>
       contentClass=""
       panelClass="h-modal"
       title={t('walletDetails.common.title')}
-      actionButton={<DropdownIconButton className="m-1.5" name="more" options={options} optionsClassName="right-0" />}
+      actionButton={<GeneralWalletActions wallet={wallet} extraActions={options} />}
       isOpen={isModalOpen}
       onClose={closeModal}
     >

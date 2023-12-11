@@ -133,6 +133,12 @@ const polkadotVaultCreatedFx = createEffect(
   },
 );
 
+const updateWalletFx = createEffect(async ({ id, ...rest }: Wallet): Promise<Wallet> => {
+  await storageService.wallets.update(id, rest);
+
+  return { id, ...rest };
+});
+
 type SelectParams = {
   prevId?: ID;
   nextId: ID;
@@ -259,6 +265,13 @@ sample({
 });
 
 sample({
+  clock: updateWalletFx.doneData,
+  source: $wallets,
+  fn: (wallets, updatedWallet) => [...wallets.filter((w) => w.id !== updatedWallet.id), updatedWallet],
+  target: $wallets,
+});
+
+sample({
   clock: removeWalletFx.doneData,
   source: { wallets: $wallets, accounts: $accounts },
   fn: ({ accounts, wallets }, walletId) => ({
@@ -300,6 +313,9 @@ export const walletModel = {
     multisigAccountUpdated,
     walletRemoved,
     walletRemovedSuccess: removeWalletFx.done,
+  },
+  effects: {
+    updateWalletFx,
   },
   watch: {
     polkadotVaultCreatedDone: polkadotVaultCreatedFx.doneData,

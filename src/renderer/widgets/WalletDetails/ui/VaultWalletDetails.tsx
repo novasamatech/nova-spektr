@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 
-import { BaseModal, ContextMenu, IconButton, HelpText, DropdownIconButton } from '@shared/ui';
+import { BaseModal, ContextMenu, IconButton, HelpText } from '@shared/ui';
 import { useModalClose } from '@shared/lib/hooks';
 import { RootAccountLg, WalletCardLg, VaultAccountsList } from '@entities/wallet';
 import { chainsService } from '@entities/network';
@@ -11,6 +11,7 @@ import { VaultMap } from '../lib/types';
 import { ShardsList } from './ShardsList';
 import { vaultDetailsModel } from '../model/vault-details-model';
 import { walletDetailsUtils } from '../lib/utils';
+import { GeneralWalletActions } from './WalletActions/GeneralWalletActions';
 
 type Props = {
   wallet: Wallet;
@@ -42,7 +43,7 @@ export const VaultWalletDetails = ({ wallet, root, accountsMap, onClose }: Props
       contentClass=""
       panelClass="h-modal"
       title={t('walletDetails.common.title')}
-      actionButton={<DropdownIconButton className="m-1.5" name="more" options={options} optionsClassName="right-0" />}
+      actionButton={<GeneralWalletActions wallet={wallet} extraActions={options} />}
       isOpen={isModalOpen}
       onClose={closeModal}
     >

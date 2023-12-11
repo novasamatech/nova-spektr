@@ -9,6 +9,7 @@ import { chainsService, isMultisigAvailable } from '@entities/network';
 import { useI18n, useMatrix } from '@app/providers';
 // TODO: think about combining balances and wallets
 import { WalletFiatBalance } from '@features/wallets/WalletSelect/ui/WalletFiatBalance';
+import { GeneralWalletActions } from './WalletActions/GeneralWalletActions';
 
 type Props = {
   wallet: Wallet;
@@ -33,6 +34,7 @@ export const MultisigWalletDetails = ({ wallet, account, signatoryWallets, signa
       contentClass=""
       panelClass="h-modal"
       title={t('walletDetails.common.title')}
+      actionButton={<GeneralWalletActions wallet={wallet} />}
       isOpen={isModalOpen}
       onClose={closeModal}
     >

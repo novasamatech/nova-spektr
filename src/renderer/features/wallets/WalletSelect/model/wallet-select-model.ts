@@ -103,6 +103,7 @@ const $walletBalances = combine(
 
 forward({ from: queryChanged, to: $filterQuery });
 forward({ from: walletForDetailsSet, to: $walletForDetails });
+forward({ from: walletModel.effects.updateWalletFx, to: $walletForDetails });
 
 sample({
   clock: walletModel.events.walletSelected,

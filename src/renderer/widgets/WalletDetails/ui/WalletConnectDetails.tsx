@@ -14,16 +14,8 @@ import { wcDetailsModel } from '../model/wc-details-model';
 import { wcDetailsUtils, walletDetailsUtils } from '../lib/utils';
 import { ForgetStep } from '../lib/constants';
 import { Animation } from '@shared/ui/Animation/Animation';
-import {
-  BaseModal,
-  Button,
-  ConfirmModal,
-  FootnoteText,
-  Icon,
-  SmallTitleText,
-  StatusModal,
-  DropdownIconButton,
-} from '@shared/ui';
+import { BaseModal, Button, ConfirmModal, FootnoteText, Icon, SmallTitleText, StatusModal } from '@shared/ui';
+import { GeneralWalletActions } from './WalletActions/GeneralWalletActions';
 
 type AccountItem = {
   accountId: `0x${string}`;
@@ -103,7 +95,7 @@ export const WalletConnectDetails = ({ wallet, accounts, onClose }: Props) => {
       contentClass=""
       panelClass="h-modal"
       title={t('walletDetails.common.title')}
-      actionButton={<DropdownIconButton className="m-1.5" name="more" options={options} optionsClassName="right-0" />}
+      actionButton={<GeneralWalletActions wallet={wallet} extraActions={options} />}
       isOpen={isModalOpen}
       onClose={closeModal}
     >
