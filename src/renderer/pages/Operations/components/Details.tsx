@@ -23,9 +23,10 @@ type Props = {
 
 const Details = ({ tx, account, extendedChain, signatory }: Props) => {
   const { t } = useI18n();
-  const activeWallet = useUnit(walletModel.$activeWallet);
 
+  const activeWallet = useUnit(walletModel.$activeWallet);
   const wallets = useUnit(walletModel.$wallets);
+
   const signatoryWallet = wallets.find((w) => w.id === signatory?.walletId);
 
   const api = extendedChain?.api;

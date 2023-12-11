@@ -123,11 +123,7 @@ export const NetworkAssets = ({ query, hideZeroBalance, chain, accounts, searchS
           <ul className="flex flex-col gap-y-1.5">
             {filteredAssets.map((asset) => (
               <li key={asset.assetId}>
-                <AssetCard
-                  chainId={chain.chainId}
-                  asset={asset}
-                  balance={balancesObject[asset.assetId.toString()]}
-                />
+                <AssetCard chainId={chain.chainId} asset={asset} balance={balancesObject[asset.assetId.toString()]} />
               </li>
             ))}
           </ul>
