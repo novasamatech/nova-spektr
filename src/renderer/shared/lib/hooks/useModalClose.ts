@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 
 import { DEFAULT_TRANSITION } from '@shared/lib/utils';
 
@@ -15,6 +15,12 @@ export function useModalClose(
   delay = DEFAULT_TRANSITION,
 ): [boolean, () => void] {
   const [isOpen, setIsOpen] = useState(initialValue);
+
+  useEffect(() => {
+    if (isOpen === initialValue) return;
+
+    setIsOpen(initialValue);
+  }, [initialValue]);
 
   const closeModal = useCallback(() => {
     setIsOpen(false);

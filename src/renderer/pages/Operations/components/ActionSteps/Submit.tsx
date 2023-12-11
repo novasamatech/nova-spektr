@@ -6,7 +6,8 @@ import { useI18n, useMatrix, useMultisigChainContext } from '@app/providers';
 import { useMultisigTx, useMultisigEvent } from '@entities/multisig';
 import { toAccountId } from '@shared/lib/utils';
 import { useToggle } from '@shared/lib/hooks';
-import { Animation, Button, StatusModal } from '@shared/ui';
+import { Button, StatusModal } from '@shared/ui';
+import { Animation } from '@shared/ui/Animation/Animation';
 import type { Account, HexString } from '@shared/core';
 import {
   MultisigEvent,

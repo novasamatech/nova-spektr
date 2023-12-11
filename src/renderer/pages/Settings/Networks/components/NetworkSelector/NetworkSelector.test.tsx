@@ -21,6 +21,7 @@ describe('pages/Settings/Networks/NetworkSelector', () => {
 
   const defaultNetwork: ExtendedChain = {
     addressPrefix: 0,
+    specName: 'my_chain',
     assets: [],
     chainId: '0x123',
     icon: '',

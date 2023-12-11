@@ -13,17 +13,18 @@ import { ChainId, Asset, Balance } from '@shared/core';
 import { TokenPrice } from '@entities/price/ui/TokenPrice';
 import { AssetFiatBalance } from '@entities/price/ui/AssetFiatBalance';
 import { priceProviderModel } from '@entities/price';
+import { walletModel, walletUtils } from '@entities/wallet';
 
 type Props = {
   chainId: ChainId;
   asset: Asset;
   balance?: Balance;
-  canMakeActions?: boolean;
 };
 
-export const AssetCard = ({ chainId, asset, balance, canMakeActions }: Props) => {
+export const AssetCard = ({ chainId, asset, balance }: Props) => {
   const { t } = useI18n();
   const fiatFlag = useUnit(priceProviderModel.$fiatFlag);
+  const activeWallet = useUnit(walletModel.$activeWallet);
 
   const [isExpanded, toggleExpanded] = useToggle();
 
@@ -71,7 +72,7 @@ export const AssetCard = ({ chainId, asset, balance, canMakeActions }: Props) =>
             </div>
           )}
         </div>
-        {canMakeActions && (
+        {!walletUtils.isWatchOnly(activeWallet) && (
           <div className="flex gap-x-2 ml-3">
             <Link
               to={createLink(Paths.SEND_ASSET, {}, { chainId: [chainId], assetId: [asset.assetId] })}

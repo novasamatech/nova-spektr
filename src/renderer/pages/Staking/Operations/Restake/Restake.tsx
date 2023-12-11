@@ -95,7 +95,7 @@ export const Restake = () => {
         closeButton
         contentClass=""
         panelClass="w-max"
-        headerClass="py-3 px-5 max-w-[440px]"
+        headerClass="py-3 pl-5 pr-3"
         isOpen={isRestakeModalOpen}
         title={<OperationTitle title={t('staking.restake.title')} chainId={chainId} />}
         onClose={closeRestakeModal}
@@ -115,7 +115,7 @@ export const Restake = () => {
       <BaseModal
         closeButton
         contentClass=""
-        headerClass="py-3 px-5 max-w-[440px]"
+        headerClass="py-3 pl-5 pr-3"
         panelClass="w-max"
         isOpen={isRestakeModalOpen}
         title={<OperationTitle title={t('staking.restake.title')} chainId={chainId} />}
@@ -171,7 +171,7 @@ export const Restake = () => {
       <BaseModal
         closeButton
         contentClass=""
-        headerClass="py-3 px-5 max-w-[440px]"
+        headerClass="py-3 pl-5 pr-3"
         panelClass="w-max"
         isOpen={activeStep !== Step.SUBMIT && isRestakeModalOpen}
         title={<OperationTitle title={t('staking.restake.title')} chainId={chainId} />}

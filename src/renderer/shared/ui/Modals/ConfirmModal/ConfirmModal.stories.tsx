@@ -1,6 +1,6 @@
 import { ComponentMeta, ComponentStory } from '@storybook/react';
 
-import ConfirmModal from './ConfirmModal';
+import { ConfirmModal } from './ConfirmModal';
 
 export default {
   title: 'ConfirmModal',

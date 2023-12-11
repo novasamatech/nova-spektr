@@ -167,7 +167,6 @@ export const AmountInput = ({
       <IconButton
         name="swapArrow"
         alt={t(currencyMode ? 'transfer.swapToCryptoModeAlt' : 'transfer.swapToCurrencyModeAlt')}
-        size={16}
         onClick={toggleCurrencyMode}
       />
       <FootnoteText className="uppercase text-text-tertiary">

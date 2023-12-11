@@ -62,7 +62,7 @@ export const Confirmation = ({ tx, account, connection, signatory, feeTx, onSign
         )}
       </div>
 
-      <Details tx={tx} account={account} connection={connection} signatory={signatory} />
+      <Details tx={tx} account={account} extendedChain={connection} signatory={signatory} />
 
       {signatory && connection?.api && (
         <DepositWithLabel

@@ -14,7 +14,6 @@ export const WithIcon = Template.bind({});
 WithIcon.args = {
   url: 'https://test.com',
   children: 'This is my link',
-  showIcon: true,
   iconName: 'globe',
 };
 

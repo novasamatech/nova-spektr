@@ -1,2 +1,1 @@
-export * from './ui/Signing/Signing';
-export * from './model';
+export { Signing } from './ui/Signing/Signing';

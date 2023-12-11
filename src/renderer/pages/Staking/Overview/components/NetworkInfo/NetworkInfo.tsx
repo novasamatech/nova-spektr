@@ -41,8 +41,8 @@ export const NetworkInfo = ({
   const [activeNetwork, setActiveNetwork] = useState<DropdownResult<Chain>>();
 
   useEffect(() => {
-    const chains = chainsService.getChainsData();
-    const relaychains = chainsService.sortChains(chains).reduce<DropdownOption<Chain>[]>((acc, chain) => {
+    const chains = chainsService.getChainsData({ sort: true });
+    const relaychains = chains.reduce<DropdownOption<Chain>[]>((acc, chain) => {
       const { chainId, assets } = chain;
 
       if (getRelaychainAsset(assets)) {

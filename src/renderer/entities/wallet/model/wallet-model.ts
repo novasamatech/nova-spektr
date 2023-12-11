@@ -1,7 +1,7 @@
-import { createStore, createEvent, forward, createEffect, sample, combine } from 'effector';
+import { combine, createEffect, createEvent, createStore, forward, sample } from 'effector';
 import { spread } from 'patronum';
 
-import type { Wallet, NoID, Account, BaseAccount, ChainAccount, MultisigAccount, ID } from '@shared/core';
+import type { Account, BaseAccount, ChainAccount, ID, MultisigAccount, NoID, ShardAccount, Wallet } from '@shared/core';
 import { kernelModel, WalletConnectAccount } from '@shared/core';
 import { storageService } from '@shared/api/storage';
 import { modelUtils } from '../lib/model-utils';
@@ -28,9 +28,13 @@ type CreateParams<T extends Account> = {
   accounts: Omit<NoID<T>, 'walletId'>[];
 };
 type MultisigUpdateParams = Partial<MultisigAccount> & { id: Account['id'] };
+type PolkadotVaultCreateParams = {
+  root: Omit<NoID<BaseAccount>, 'walletId'>;
+} & CreateParams<ChainAccount | ShardAccount>;
 
 const watchOnlyCreated = createEvent<CreateParams<BaseAccount>>();
 const multishardCreated = createEvent<CreateParams<BaseAccount | ChainAccount>>();
+const polkadotVaultCreated = createEvent<PolkadotVaultCreateParams>();
 const singleshardCreated = createEvent<CreateParams<BaseAccount>>();
 const multisigCreated = createEvent<CreateParams<MultisigAccount>>();
 const walletConnectCreated = createEvent<CreateParams<WalletConnectAccount>>();
@@ -96,6 +100,36 @@ const multishardCreatedFx = createEffect(
     }
 
     return { wallet: dbWallet, accounts: multishardAccounts };
+  },
+);
+
+const polkadotVaultCreatedFx = createEffect(
+  async ({ wallet, accounts, root }: PolkadotVaultCreateParams): Promise<CreateResult | undefined> => {
+    const dbWallet = await storageService.wallets.create({ ...wallet, isActive: false });
+
+    if (!dbWallet) return undefined;
+
+    const dbRootAccount = await storageService.accounts.create({ ...root, walletId: dbWallet.id });
+
+    if (!dbRootAccount) return undefined;
+
+    const accountToCreate = accounts.map((account) => {
+      if ('groupId' in account) {
+        return { ...account, walletId: dbWallet.id } as ShardAccount;
+      }
+
+      return {
+        ...account,
+        baseId: dbRootAccount.id,
+        walletId: dbWallet.id,
+      } as ChainAccount;
+    });
+
+    const dbAccounts = await storageService.accounts.createAll(accountToCreate);
+
+    if (!dbAccounts?.length) return undefined;
+
+    return { wallet: dbWallet, accounts: [dbRootAccount, ...dbAccounts] };
   },
 );
 
@@ -178,9 +212,10 @@ forward({
   to: walletCreatedFx,
 });
 forward({ from: multishardCreated, to: multishardCreatedFx });
+forward({ from: polkadotVaultCreated, to: polkadotVaultCreatedFx });
 
 sample({
-  clock: [walletCreatedFx.doneData, multishardCreatedFx.doneData],
+  clock: [walletCreatedFx.doneData, multishardCreatedFx.doneData, polkadotVaultCreatedFx.doneData],
   source: { wallets: $wallets, accounts: $accounts },
   filter: (_, data) => Boolean(data),
   fn: ({ wallets, accounts }, data) => {
@@ -195,7 +230,7 @@ sample({
 });
 
 sample({
-  clock: [walletCreatedFx.doneData, multishardCreatedFx.doneData],
+  clock: [walletCreatedFx.doneData, multishardCreatedFx.doneData, polkadotVaultCreatedFx.doneData],
   filter: (data) => Boolean(data),
   fn: (data) => data!.wallet.id,
   target: walletSelected,
@@ -257,6 +292,7 @@ export const walletModel = {
   events: {
     watchOnlyCreated,
     multishardCreated,
+    polkadotVaultCreated,
     singleshardCreated,
     multisigCreated,
     walletConnectCreated,
@@ -264,5 +300,8 @@ export const walletModel = {
     multisigAccountUpdated,
     walletRemoved,
     walletRemovedSuccess: removeWalletFx.done,
+  },
+  watch: {
+    polkadotVaultCreatedDone: polkadotVaultCreatedFx.doneData,
   },
 };

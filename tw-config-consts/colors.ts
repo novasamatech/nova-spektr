@@ -92,6 +92,7 @@ export default {
   'alert-background': 'var(--alert-background)',
   'alert-background-warning': 'var(--alert-background-warning)',
   'alert-background-negative': 'var(--alert-background-negative)',
+  'alert-background-positive': 'var(--alert-background-positive)',
   'label-background-green': 'var(--label-background-green)',
   'label-background-red': 'var(--label-background-red)',
   'label-background-gray': 'var(--label-background-gray)',
@@ -100,4 +101,5 @@ export default {
   'background-dark': 'var(--background-dark)',
   'background-item-hover': 'var(--background-item-hover)',
   'background-item-selected': 'var(--background-item-selected)',
+  'background-suffix-hover': 'var(--background-suffix-hover)',
 };

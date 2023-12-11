@@ -43,8 +43,8 @@ const accounts = [
   },
 ];
 
-describe('entities/wallet/lib', () => {
-  test('entities/wallet/lib/model-utils', () => {
+describe('entities/wallet/lib/model-utils#groupAccounts', () => {
+  test('should create groups of base & chains accounts', () => {
     const { base, chains } = modelUtils.groupAccounts(accounts as (BaseAccount | ChainAccount)[]);
 
     expect(base).toEqual([accounts[0], accounts[3]]);

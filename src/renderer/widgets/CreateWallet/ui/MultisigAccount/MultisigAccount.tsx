@@ -1,7 +1,7 @@
 import { ComponentProps, useState, useEffect } from 'react';
 import { useStore } from 'effector-react';
 
-import { BaseModal, HeaderTitleText, StatusLabel, Button } from '@shared/ui';
+import { BaseModal, HeaderTitleText, StatusLabel, Button, IconButton } from '@shared/ui';
 import { useI18n, useMatrix } from '@app/providers';
 import { useToggle } from '@shared/lib/hooks';
 import { OperationResult } from '@entities/transaction';
@@ -168,7 +168,7 @@ export const MultisigAccount = ({ isOpen, onClose, onComplete }: Props) => {
   };
 
   const modalTitle = (
-    <div className="flex justify-between items-center px-5 py-3 w-[472px] bg-white rounded-tl-lg">
+    <div className="flex justify-between items-center px-5 py-3 w-[464px] bg-white rounded-tl-lg">
       <HeaderTitleText className="py-[3px]">{t('createMultisigAccount.title')}</HeaderTitleText>
       {isLoggedIn && <StatusLabel title={matrix.userId || ''} variant="success" />}
     </div>
@@ -177,7 +177,6 @@ export const MultisigAccount = ({ isOpen, onClose, onComplete }: Props) => {
   return (
     <>
       <BaseModal
-        closeButton
         title={modalTitle}
         isOpen={isModalOpen && !isResultModalOpen}
         headerClass="bg-input-background-disabled"
@@ -194,22 +193,31 @@ export const MultisigAccount = ({ isOpen, onClose, onComplete }: Props) => {
           onSubmit={createWallet}
         />
 
-        <SelectSignatories
-          isActive={activeStep === Step.INIT}
-          wallets={wallets}
-          accounts={accounts}
-          contacts={contacts}
-          onSelect={(wallets, contacts) => {
-            setSignatoryWallets(wallets);
-            setSignatoryContacts(contacts);
-          }}
-        />
+        <section className="relative flex flex-col px-5 py-4 flex-1 bg-input-background-disabled h-full">
+          <IconButton
+            name="close"
+            size={20}
+            className="absolute right-3 -top-10 m-1"
+            onClick={() => closeMultisigModal()}
+          />
 
-        <ConfirmSignatories
-          isActive={activeStep === Step.CONFIRMATION}
-          wallets={signatoryWallets}
-          contacts={signatoryContacts}
-        />
+          <SelectSignatories
+            isActive={activeStep === Step.INIT}
+            wallets={wallets}
+            accounts={accounts}
+            contacts={contacts}
+            onSelect={(wallets, contacts) => {
+              setSignatoryWallets(wallets);
+              setSignatoryContacts(contacts);
+            }}
+          />
+
+          <ConfirmSignatories
+            isActive={activeStep === Step.CONFIRMATION}
+            wallets={signatoryWallets}
+            contacts={signatoryContacts}
+          />
+        </section>
 
         <MatrixLoginModal isOpen={!isLoggedIn} zIndex="z-60" onClose={closeMultisigModal} />
       </BaseModal>

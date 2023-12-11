@@ -41,7 +41,10 @@ export const MultishardAccountsList = ({ accounts, chains, className }: Props) =
             return (
               <Accordion key={chain.chainId} isDefaultOpen className="pl-10">
                 <Accordion.Button buttonClass="py-2">
-                  <ChainTitle fontClass="text-text-primary" chain={chain} />
+                  <div className="flex gap-x-2">
+                    <ChainTitle fontClass="text-text-primary" chain={chain} />
+                    <FootnoteText className="text-text-tertiary">{chainMap[chain.chainId].length}</FootnoteText>
+                  </div>
                 </Accordion.Button>
                 <Accordion.Content>
                   {chainMap[chain.chainId].map((account) => (

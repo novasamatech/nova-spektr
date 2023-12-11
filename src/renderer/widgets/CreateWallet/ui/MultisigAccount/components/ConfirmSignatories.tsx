@@ -16,9 +16,7 @@ export const ConfirmSignatories = ({ isActive, wallets, contacts }: Props) => {
   const { t } = useI18n();
 
   return (
-    <section
-      className={cnTw('flex flex-col px-5 py-4 flex-1 bg-input-background-disabled h-full', !isActive && 'hidden')}
-    >
+    <div className={cnTw(!isActive && 'hidden')}>
       <SmallTitleText className="py-2 mb-4">{t('createMultisigAccount.selectedSignatoriesTitle')}</SmallTitleText>
 
       <div className="flex flex-col gap-y-2 flex-1 overflow-y-auto">
@@ -48,6 +46,6 @@ export const ConfirmSignatories = ({ isActive, wallets, contacts }: Props) => {
           </>
         )}
       </div>
-    </section>
+    </div>
   );
 };

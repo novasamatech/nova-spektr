@@ -192,7 +192,7 @@ const KeyQrReader = ({ size = 300, className, onResult }: Props) => {
             onStart={() => setCameraState(CameraState.ACTIVE)}
             onCameraList={onCameraList}
             onProgress={setProgress}
-            onResult={onScanResult}
+            onResult={(result) => onScanResult(result as SeedInfo[])}
             onError={onError}
           />
 

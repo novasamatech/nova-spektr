@@ -74,7 +74,7 @@ const OperationFullInfo = ({ tx, account }: Props) => {
           )}
         </div>
 
-        <OperationCardDetails tx={tx} account={account} connection={extendedChain} />
+        <OperationCardDetails tx={tx} account={account} extendedChain={extendedChain} />
 
         <div className="flex items-center mt-3">
           {account && connection && <RejectTx tx={tx} account={account} connection={extendedChain} />}

@@ -10,10 +10,6 @@ jest.mock('@app/providers', () => ({
   }),
 }));
 
-jest.mock('@entities/wallet', () => ({
-  AddressWithExplorers: ({ address }: { address: string }) => <span data-testid="validator">{address}</span>,
-}));
-
 describe('pages/Staking/components/ValidatorsModal', () => {
   const defaultProps = {
     isOpen: true,
@@ -46,17 +42,17 @@ describe('pages/Staking/components/ValidatorsModal', () => {
     onClose: () => {},
   };
 
-  test('should render component', () => {
+  test('should render component', async () => {
     render(<ValidatorsModal {...defaultProps} />);
 
-    const title = screen.getByText('staking.confirmation.validatorsTitle');
+    const title = await screen.findByText('staking.confirmation.validatorsTitle');
     expect(title).toBeInTheDocument();
   });
 
-  test('should render all validators', () => {
+  test('should render all validators', async () => {
     render(<ValidatorsModal {...defaultProps} />);
 
-    const items = screen.getAllByTestId('validator');
+    const items = await screen.findAllByTestId('validator');
     expect(items).toHaveLength(defaultProps.selectedValidators.length);
   });
 });

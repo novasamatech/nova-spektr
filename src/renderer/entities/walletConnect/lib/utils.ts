@@ -20,7 +20,7 @@ function isConnected(client: Client, sessionTopic: string): boolean {
 }
 
 function isConnectedByAccounts(client: Client, wallet: Wallet, accounts: Account[]): boolean {
-  if (!walletUtils.isWalletConnectFamily(wallet)) return false;
+  if (!walletUtils.isWalletConnectGroup(wallet)) return false;
 
   const account = accounts.find((a) => a.walletId === wallet.id);
 

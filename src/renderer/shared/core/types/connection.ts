@@ -8,7 +8,6 @@ export type Connection = {
   connectionType: ConnectionType;
   customNodes?: RpcNode[];
   activeNode?: RpcNode;
-  disconnect?: () => void;
 };
 
 export const enum ConnectionType {

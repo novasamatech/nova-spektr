@@ -91,8 +91,11 @@ const sharedConfig: Configuration = {
         },
       },
       {
-        test: /\.(mp4|webm)$/,
+        test: /\.(mp4|webm|yaml)$/,
         loader: 'file-loader',
+        options: {
+          name: '[path][name].[ext]',
+        },
       },
     ],
   },

@@ -1,3 +1,7 @@
+import UploadFileImg, { ReactComponent as UploadFileSvg } from '@shared/assets/images/functionals/upload-file.svg';
+import CheckmarkOutlineImg, {
+  ReactComponent as CheckmarkOutlineSvg,
+} from '@shared/assets/images/functionals/checkmark-outline.svg';
 import CopyImg, { ReactComponent as CopySvg } from '@shared/assets/images/functionals/copy.svg';
 import QrImg, { ReactComponent as QrSvg } from '@shared/assets/images/functionals/qr.svg';
 import QrLineImg, { ReactComponent as QrLineSvg } from '@shared/assets/images/functionals/qr-line.svg';
@@ -9,7 +13,6 @@ import CheckCutoutImg, {
   ReactComponent as CheckCutoutSvg,
 } from '@shared/assets/images/functionals/checkmark-cutout.svg';
 import CheckImg, { ReactComponent as CheckSvg } from '@shared/assets/images/functionals/checkmark.svg';
-import CheckLineImg, { ReactComponent as CheckLineSvg } from '@shared/assets/images/functionals/checkmark-line.svg';
 import WarnCutoutImg, { ReactComponent as WarnCutoutSvg } from '@shared/assets/images/functionals/warning-cutout.svg';
 import DisableCutoutImg, {
   ReactComponent as DisableCutoutSvg,
@@ -44,12 +47,9 @@ import MultisigOutlineImg, {
 } from '@shared/assets/images/functionals/multisig-outline.svg';
 import EyeSlashedImg, { ReactComponent as EyeSlashedSvg } from '@shared/assets/images/functionals/eye-slashed.svg';
 import EyeImg, { ReactComponent as EyeSvg } from '@shared/assets/images/functionals/eye.svg';
-import CheckLineRedesignImg, {
-  ReactComponent as CheckLineRedesignSvg,
-} from '@shared/assets/images/functionals/checkmark-line-redesign.svg';
-import CloseLineRedesignImg, {
-  ReactComponent as CloseLineRedesignSvg,
-} from '@shared/assets/images/functionals/close-line-redesign.svg';
+import CloseOutlineImg, {
+  ReactComponent as CloseOutlineSvg,
+} from '@shared/assets/images/functionals/close-outline.svg';
 import RefreshImg, { ReactComponent as RefreshSvg } from '@shared/assets/images/functionals/refresh.svg';
 import SettingsLiteImg, {
   ReactComponent as SettingsLiteSvg,
@@ -61,8 +61,10 @@ import LinkImg, { ReactComponent as LinkSvg } from '@shared/assets/images/functi
 import LockImg, { ReactComponent as LockSvg } from '@shared/assets/images/functionals/lock.svg';
 import MagicImg, { ReactComponent as MagicSvg } from '@shared/assets/images/functionals/magic.svg';
 import QuestionImg, { ReactComponent as QuestionSvg } from '@shared/assets/images/functionals/question.svg';
-import UploadFileImg, { ReactComponent as UploadFileSvg } from '@shared/assets/images/functionals/upload-file.svg';
 import CurrencyImg, { ReactComponent as CurrencySvg } from '@shared/assets/images/functionals/currency.svg';
+import ImportImg, { ReactComponent as ImportSvg } from '@shared/assets/images/functionals/import.svg';
+import ExportImg, { ReactComponent as ExportSvg } from '@shared/assets/images/functionals/export.svg';
+import MoreImg, { ReactComponent as MoreSvg } from '@shared/assets/images/functionals/more.svg';
 
 const FunctionalImages = {
   copy: { svg: CopySvg, img: CopyImg },
@@ -74,7 +76,6 @@ const FunctionalImages = {
   close: { svg: CloseSvg, img: CloseImg },
   checkmarkCutout: { svg: CheckCutoutSvg, img: CheckCutoutImg },
   checkmark: { svg: CheckSvg, img: CheckImg },
-  checkmarkLine: { svg: CheckLineSvg, img: CheckLineImg },
   currency: { svg: CurrencySvg, img: CurrencyImg },
   warnCutout: { svg: WarnCutoutSvg, img: WarnCutoutImg },
   disableCutout: { svg: DisableCutoutSvg, img: DisableCutoutImg },
@@ -98,8 +99,8 @@ const FunctionalImages = {
   multisigOutline: { svg: MultisigOutlineSvg, img: MultisigOutlineImg },
   eyeSlashed: { svg: EyeSlashedSvg, img: EyeSlashedImg },
   eye: { svg: EyeSvg, img: EyeImg },
-  checkLineRedesign: { svg: CheckLineRedesignSvg, img: CheckLineRedesignImg },
-  closeLineRedesign: { svg: CloseLineRedesignSvg, img: CloseLineRedesignImg },
+  checkmarkOutline: { svg: CheckmarkOutlineSvg, img: CheckmarkOutlineImg },
+  closeOutline: { svg: CloseOutlineSvg, img: CloseOutlineImg },
   refresh: { svg: RefreshSvg, img: RefreshImg },
   settingsLite: { svg: SettingsLiteSvg, img: SettingsLiteImg },
   viewValidators: { svg: ViewValidatorsSvg, img: ViewValidatorsImg },
@@ -108,6 +109,9 @@ const FunctionalImages = {
   magic: { img: MagicImg, svg: MagicSvg },
   questionOutline: { img: QuestionImg, svg: QuestionSvg },
   uploadFile: { img: UploadFileImg, svg: UploadFileSvg },
+  import: { img: ImportImg, svg: ImportSvg },
+  export: { img: ExportImg, svg: ExportSvg },
+  more: { img: MoreImg, svg: MoreSvg },
 } as const;
 
 export type Functional = keyof typeof FunctionalImages;

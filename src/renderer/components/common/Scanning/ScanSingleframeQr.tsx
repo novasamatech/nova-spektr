@@ -1,20 +1,21 @@
 import { ApiPromise } from '@polkadot/api';
 import { useEffect, useState } from 'react';
 import { UnsignedTransaction } from '@substrate/txwrapper-polkadot';
-import { useUnit } from 'effector-react';
 
-import { QrTxGenerator, QrGeneratorContainer } from '@renderer/components/common';
+import { QrGeneratorContainer, QrTxGenerator } from '@renderer/components/common';
 import { useI18n } from '@app/providers';
 import { Transaction, useTransaction } from '@entities/transaction';
-import { WalletCardSm, walletModel, walletUtils } from '@entities/wallet';
 import { Button, FootnoteText } from '@shared/ui';
-import type { ChainId, Account } from '@shared/core';
+import { WalletCardSm } from '@entities/wallet';
+import type { Account, ChainAccount, ChainId, ShardAccount, Wallet, Address } from '@shared/core';
 
 type Props = {
   api: ApiPromise;
   chainId: ChainId;
+  address: Address;
   transaction: Transaction;
   account?: Account;
+  signerWallet: Wallet;
   addressPrefix: number;
   countdown: number;
   onGoBack: () => void;
@@ -26,7 +27,9 @@ const ScanSingleframeQr = ({
   api,
   chainId,
   transaction,
+  address,
   account,
+  signerWallet,
   addressPrefix,
   countdown,
   onGoBack,
@@ -35,10 +38,6 @@ const ScanSingleframeQr = ({
 }: Props) => {
   const { t } = useI18n();
   const { createPayload } = useTransaction();
-
-  const wallets = useUnit(walletModel.$wallets);
-  const activeWallet = useUnit(walletModel.$activeWallet);
-  const signatoryWallet = walletUtils.isMultisig(activeWallet) && wallets.find((w) => w.id === account?.walletId);
 
   const [txPayload, setTxPayload] = useState<Uint8Array>();
   const [unsignedTx, setUnsignedTx] = useState<UnsignedTransaction>();
@@ -67,17 +66,23 @@ const ScanSingleframeQr = ({
   return (
     <div className="flex flex-col items-center w-full">
       <div className="flex items-center justify-center mb-1 h-8 w-full">
-        {account && signatoryWallet && (
+        {account && (
           <div className="flex h-full w-1/2 justify-center items-center gap-x-0.5 ">
             <FootnoteText className="text-text-secondary">{t('signing.signer')}</FootnoteText>
-            <WalletCardSm wallet={signatoryWallet} accountId={account.accountId} addressPrefix={addressPrefix} />
+            <WalletCardSm wallet={signerWallet} accountId={account.accountId} addressPrefix={addressPrefix} />
           </div>
         )}
       </div>
 
       <QrGeneratorContainer countdown={countdown} chainId={chainId} onQrReset={setupTransaction}>
         {txPayload && (
-          <QrTxGenerator cmd={0} payload={txPayload} address={transaction?.address} genesisHash={chainId} />
+          <QrTxGenerator
+            payload={txPayload}
+            signingType={signerWallet.signingType}
+            address={address}
+            genesisHash={chainId}
+            derivationPath={(account as ChainAccount | ShardAccount).derivationPath}
+          />
         )}
       </QrGeneratorContainer>
 

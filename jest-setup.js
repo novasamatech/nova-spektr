@@ -12,4 +12,10 @@ global.ResizeObserver = jest.fn().mockImplementation(() => ({
   unobserve: jest.fn(),
 }));
 
+Object.defineProperty(global, 'crypto', {
+  value: {
+    randomUUID: () => '42',
+  },
+});
+
 global.TextDecoder = TextDecoder;

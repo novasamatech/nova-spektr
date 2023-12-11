@@ -4,19 +4,19 @@ import { useUnit } from 'effector-react';
 
 import { useI18n } from '@app/providers';
 import { getOperationErrors, Transaction, TransactionType } from '@entities/transaction';
-import { useValidators } from '@entities/staking';
+import { validatorsService } from '@entities/staking';
 import { toAddress, nonNullable } from '@shared/lib/utils';
 import { OperationFooter, OperationHeader } from '@features/operation';
 import { OperationForm } from '../../components';
 import { Balance as AccountBalance, Account, Asset, MultisigAccount, ChainId, AccountId, Wallet } from '@shared/core';
+import { walletUtils, accountUtils, walletModel } from '@entities/wallet';
+import { useAssetBalances } from '@entities/balance';
 import {
   getSignatoryOption,
   getGeneralAccountOption,
   validateBalanceForFee,
   validateBalanceForFeeDeposit,
 } from '../../common/utils';
-import { walletUtils, accountUtils, walletModel } from '@entities/wallet';
-import { useAssetBalances } from '@entities/balance';
 
 export type ValidatorsResult = {
   accounts: Account[];
@@ -36,8 +36,6 @@ type Props = {
 const InitOperation = ({ api, chainId, accounts, asset, addressPrefix, onResult }: Props) => {
   const { t } = useI18n();
   const activeWallet = useUnit(walletModel.$activeWallet);
-
-  const { getMaxValidators } = useValidators();
 
   const [fee, setFee] = useState('');
   const [feeLoading, setFeeLoading] = useState(true);
@@ -92,7 +90,7 @@ const InitOperation = ({ api, chainId, accounts, asset, addressPrefix, onResult 
   }, [isMultisigWallet, firstAccount?.accountId]);
 
   useEffect(() => {
-    const maxValidators = getMaxValidators(api);
+    const maxValidators = validatorsService.getMaxValidators(api);
 
     const bondPayload = activeValidatorsAccounts.map(({ accountId }) => {
       const address = toAddress(accountId, { prefix: addressPrefix });

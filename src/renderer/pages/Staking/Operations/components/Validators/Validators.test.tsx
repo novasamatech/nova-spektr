@@ -24,9 +24,9 @@ jest.mock('@app/providers', () => ({
 
 jest.mock('@entities/staking', () => ({
   ...jest.requireActual('@entities/staking'),
-  useValidators: jest.fn().mockReturnValue({
+  validatorsService: {
     getMaxValidators: jest.fn().mockReturnValue(6),
-  }),
+  },
   useEra: jest.fn().mockReturnValue({
     subscribeActiveEra: jest.fn().mockImplementation((api: any, eraCallback: any) => eraCallback(1)),
   }),

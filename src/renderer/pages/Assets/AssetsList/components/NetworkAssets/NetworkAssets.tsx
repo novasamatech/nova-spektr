@@ -22,10 +22,9 @@ type Props = {
   query?: string;
   chain: Chain | ExtendedChain;
   accounts: Account[];
-  canMakeActions?: boolean;
 };
 
-export const NetworkAssets = ({ query, hideZeroBalance, chain, accounts, searchSymbolOnly, canMakeActions }: Props) => {
+export const NetworkAssets = ({ query, hideZeroBalance, chain, accounts, searchSymbolOnly }: Props) => {
   const { t } = useI18n();
 
   const assetsPrices = useUnit(priceProviderModel.$assetsPrices);
@@ -124,12 +123,7 @@ export const NetworkAssets = ({ query, hideZeroBalance, chain, accounts, searchS
           <ul className="flex flex-col gap-y-1.5">
             {filteredAssets.map((asset) => (
               <li key={asset.assetId}>
-                <AssetCard
-                  chainId={chain.chainId}
-                  asset={asset}
-                  balance={balancesObject[asset.assetId.toString()]}
-                  canMakeActions={canMakeActions}
-                />
+                <AssetCard chainId={chain.chainId} asset={asset} balance={balancesObject[asset.assetId.toString()]} />
               </li>
             ))}
           </ul>

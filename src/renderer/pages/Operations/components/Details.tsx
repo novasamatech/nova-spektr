@@ -18,24 +18,29 @@ type Props = {
   tx: MultisigTransaction;
   account?: MultisigAccount;
   signatory?: Account;
-  connection?: ExtendedChain;
+  extendedChain?: ExtendedChain;
 };
 
-const Details = ({ tx, account, connection, signatory }: Props) => {
+const Details = ({ tx, account, extendedChain, signatory }: Props) => {
   const { t } = useI18n();
-  const activeWallet = useUnit(walletModel.$activeWallet);
 
+  const activeWallet = useUnit(walletModel.$activeWallet);
   const wallets = useUnit(walletModel.$wallets);
+
   const signatoryWallet = wallets.find((w) => w.id === signatory?.walletId);
 
-  const api = connection?.api;
-  const chainId = connection?.chainId;
+  const api = extendedChain?.api;
+  const connection = extendedChain?.connection;
+  const defaultAsset = extendedChain?.assets[0];
+  const addressPrefix = extendedChain?.addressPrefix;
+  const explorers = extendedChain?.explorers;
 
-  const allValidators = Object.values(useValidatorsMap(api, chainId, connection && isLightClient(connection)));
+  const validatorsMap = useValidatorsMap(api, connection && isLightClient(connection));
 
   const [isValidatorsOpen, toggleValidators] = useToggle();
 
   const cancelDescription = tx.cancelDescription;
+  const allValidators = Object.values(validatorsMap);
 
   const transaction = getTransactionFromMultisigTx(tx);
 
@@ -46,10 +51,6 @@ const Details = ({ tx, account, connection, signatory }: Props) => {
 
   const selectedValidators: Validator[] =
     allValidators.filter((v) => (transaction?.args.targets || startStakingValidators).includes(v.address)) || [];
-
-  const defaultAsset = connection?.assets[0];
-  const addressPrefix = connection?.addressPrefix;
-  const explorers = connection?.explorers;
 
   const hasSender = isXcmTransaction(tx.transaction) || isTransferTransaction(tx.transaction);
 

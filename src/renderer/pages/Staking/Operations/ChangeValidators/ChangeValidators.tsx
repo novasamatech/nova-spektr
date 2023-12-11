@@ -95,7 +95,7 @@ export const ChangeValidators = () => {
       <BaseModal
         closeButton
         contentClass=""
-        headerClass="py-3 px-5 max-w-[440px]"
+        headerClass="py-3 pl-5 pr-3"
         panelClass="w-max"
         isOpen={isValidatorsModalOpen}
         title={<OperationTitle title={t('staking.validators.title')} chainId={chainId} />}
@@ -116,7 +116,7 @@ export const ChangeValidators = () => {
       <BaseModal
         closeButton
         contentClass=""
-        headerClass="py-3 px-5 max-w-[440px]"
+        headerClass="py-3 pl-5 pr-3"
         panelClass="w-max"
         isOpen={isValidatorsModalOpen}
         title={<OperationTitle title={t('staking.validators.title')} chainId={chainId} />}
@@ -179,7 +179,7 @@ export const ChangeValidators = () => {
         closeButton
         contentClass=""
         panelClass="w-max"
-        headerClass="py-3 px-5 max-w-[440px]"
+        headerClass="py-3 pl-5 pr-3"
         isOpen={activeStep !== Step.SUBMIT && isValidatorsModalOpen}
         title={<OperationTitle title={t('staking.validators.title')} chainId={chainId} />}
         onClose={closeValidatorsModal}

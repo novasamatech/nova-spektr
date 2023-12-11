@@ -13,7 +13,7 @@ import { OperationTitle } from '@renderer/components/common';
 import { useToggle } from '@shared/lib/hooks';
 import * as sendAssetModel from '../model/send-asset';
 import type { Chain, Asset, Account, MultisigAccount, HexString } from '@shared/core';
-import { accountUtils } from '@entities/wallet';
+import { accountUtils, walletModel, walletUtils } from '@entities/wallet';
 import { priceProviderModel } from '@entities/price';
 import { useNetworkData } from '@entities/network';
 import { balanceModel, balanceUtils } from '@entities/balance';
@@ -34,7 +34,9 @@ export const SendAssetModal = ({ chain, asset }: Props) => {
   const { t } = useI18n();
   const navigate = useNavigate();
   const { api, chain: chainData, extendedChain } = useNetworkData(chain.chainId);
+
   const balances = useUnit(balanceModel.$balances);
+  const activeWallet = useUnit(walletModel.$activeWallet);
 
   const { getTransactionFee, setTxs, txs, setWrappers, wrapTx } = useTransaction();
   const config = useStore(sendAssetModel.$finalConfig);
@@ -54,6 +56,12 @@ export const SendAssetModal = ({ chain, asset }: Props) => {
   useEffect(() => {
     priceProviderModel.events.assetsPricesRequested({ includeRates: true });
   }, []);
+
+  useEffect(() => {
+    if (isModalOpen && walletUtils.isWatchOnly(activeWallet)) {
+      toggleIsModalOpen();
+    }
+  }, [activeWallet]);
 
   useGate(sendAssetModel.PropsGate, { chain, asset, api });
 
@@ -150,7 +158,7 @@ export const SendAssetModal = ({ chain, asset }: Props) => {
       title={<OperationTitle title={`${t(operationTitle, { asset: asset.symbol })}`} chainId={chain.chainId} />}
       contentClass=""
       panelClass="w-[440px]"
-      headerClass="py-3 px-5 max-w-[440px]"
+      headerClass="py-3 pl-5 pr-3"
       onClose={closeSendModal}
     >
       {!api?.isConnected ? (

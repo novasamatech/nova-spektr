@@ -100,7 +100,7 @@ export const Bond = () => {
       <BaseModal
         closeButton
         contentClass=""
-        headerClass="py-3 px-5 max-w-[440px]"
+        headerClass="py-3 pl-5 pr-3"
         panelClass="w-max"
         isOpen={isBondModalOpen}
         title={<OperationTitle title={t('staking.bond.title')} chainId={chainId} />}
@@ -121,7 +121,7 @@ export const Bond = () => {
       <BaseModal
         closeButton
         contentClass=""
-        headerClass="py-3 px-5 max-w-[440px]"
+        headerClass="py-3 pl-5 pr-3"
         panelClass="w-max"
         isOpen={isBondModalOpen}
         title={<OperationTitle title={t('staking.bond.title')} chainId={chainId} />}
@@ -200,7 +200,7 @@ export const Bond = () => {
         closeButton
         contentClass=""
         panelClass="w-max"
-        headerClass="py-3 px-5 max-w-[440px]"
+        headerClass="py-3 pl-5 pr-3"
         isOpen={activeStep !== Step.SUBMIT && isBondModalOpen}
         title={<OperationTitle title={t('staking.bond.title', { asset: asset.symbol })} chainId={chainId} />}
         onClose={closeBondModal}

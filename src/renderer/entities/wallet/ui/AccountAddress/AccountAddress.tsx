@@ -17,6 +17,7 @@ export type AccountAddressProps = {
   className?: string;
   type?: AddressType;
   addressFont?: string;
+  nameFont?: string;
   name?: string;
   size?: number;
   symbols?: number;

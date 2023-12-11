@@ -28,7 +28,8 @@ const $filteredWalletGroups = combine(
     return wallets.reduce<Record<WalletFamily, Wallet[]>>(
       (acc, wallet) => {
         let groupIndex: WalletFamily | undefined;
-        if (walletUtils.isPolkadotVault(wallet)) groupIndex = WalletType.POLKADOT_VAULT;
+
+        if (walletUtils.isPolkadotVaultGroup(wallet)) groupIndex = WalletType.POLKADOT_VAULT;
         if (walletUtils.isMultisig(wallet)) groupIndex = WalletType.MULTISIG;
         if (walletUtils.isWatchOnly(wallet)) groupIndex = WalletType.WATCH_ONLY;
         if (walletUtils.isWalletConnect(wallet)) groupIndex = WalletType.WALLET_CONNECT;

@@ -69,12 +69,12 @@
     "@matrix-org/olm": "https://gitlab.matrix.org/api/v4/projects/27/packages/npm/@matrix-org/olm/-/@matrix-org/olm-3.2.12.tgz",
     "@polkadot/api": "^10.11.1",
     "@polkadot/keyring": "^12.6.1",
-    "@polkadot/react-identicon": "^3.4.1",
+    "@polkadot/react-identicon": "^3.6.4",
     "@polkadot/rpc-provider": "^10.11.1",
     "@polkadot/types": "^10.11.1",
     "@polkadot/util": "^12.6.1",
     "@polkadot/util-crypto": "^12.6.1",
-    "@substrate/connect": "^0.7.35",
+    "@substrate/connect": "^0.8.1",
     "@substrate/txwrapper-orml": "^7.1.1",
     "@substrate/txwrapper-polkadot": "^7.1.1",
     "@walletconnect/core": "^2.10.4",
@@ -119,8 +119,9 @@
     "styled-components": "^5.3.6",
     "swiper": "^8.3.2",
     "tailwind-merge": "^1.12.0",
-    "tailwindcss": "^3.3.2",
-    "units-css": "^0.4.0"
+    "tailwindcss": "^3.3.5",
+    "units-css": "^0.4.0",
+    "yaml": "^2.3.3"
   },
   "devDependencies": {
     "@babel/core": "^7.18.6",

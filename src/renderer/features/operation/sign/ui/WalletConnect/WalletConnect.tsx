@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react';
 import { UnsignedTransaction } from '@substrate/txwrapper-polkadot';
 import { useGate, useUnit } from 'effector-react';
 
-import { SigningProps } from '@features/operation';
 import { ValidationErrors } from '@shared/lib/utils';
 import { useTransaction } from '@entities/transaction';
 import { useI18n } from '@app/providers';
@@ -16,18 +15,19 @@ import { HexString } from '@shared/core';
 import { Animation } from '@shared/ui/Animation/Animation';
 import { walletConnectSignModel } from '../../model/wallet-connect-sign-model';
 import { isConnectedStep, isReadyToReconnectStep, isReconnectingStep, isRejectedStep } from '../../lib/utils';
-import { signModel } from '../../model/sign-model';
 import { walletModel } from '@entities/wallet';
+import { signModel } from '../../model/sign-model';
+import type { InnerSigningProps } from '../../model/types';
 
 export const WalletConnect = ({
   api,
   validateBalance,
-  onGoBack,
   accounts,
   signatory,
   transactions,
+  onGoBack,
   onResult,
-}: SigningProps) => {
+}: InnerSigningProps) => {
   const { t } = useI18n();
   const { verifySignature, createPayload } = useTransaction();
   const [countdown, resetCountdown] = useCountdown(api);

@@ -1,8 +1,9 @@
-import { PropsWithChildren } from 'react';
+import { PropsWithChildren, forwardRef, ElementType } from 'react';
 import { Disclosure, Transition } from '@headlessui/react';
 
 import { Icon } from '@shared/ui';
 import { cnTw } from '@shared/lib/utils';
+import { IconNames } from '../Icon/data';
 
 type Props = {
   className?: string;
@@ -20,36 +21,46 @@ const Accordion = ({ className, isDefaultOpen, children }: PropsWithChildren<Pro
 type ButtonProps = {
   buttonClass?: string;
   iconWrapper?: string;
+  iconOpened?: IconNames;
+  iconClosed?: IconNames;
+  onClick?: () => void;
 };
 
-const Button = ({ buttonClass, iconWrapper, children }: PropsWithChildren<ButtonProps>) => {
-  return (
-    <Disclosure.Button className={cnTw('group flex items-center justify-between w-full gap-x-2', buttonClass)}>
-      {({ open }) => (
-        <>
-          {children}
-          <div className={cnTw('shrink-0', iconWrapper)}>
-            <Icon
-              name={open ? 'up' : 'down'}
-              size={16}
-              className={cnTw(
-                'cursor-pointer rounded-full transition-colors',
-                'group-hover:text-icon-hover group-hover:bg-hover',
-                'group-focus-visible:text-icon-hover group-focus-visible:bg-hover',
-              )}
-            />
-          </div>
-        </>
-      )}
-    </Disclosure.Button>
-  );
-};
+const Button = forwardRef<HTMLButtonElement, PropsWithChildren<ButtonProps>>(
+  ({ buttonClass, iconWrapper, children, iconOpened, iconClosed, onClick }, ref) => {
+    return (
+      <Disclosure.Button
+        ref={ref}
+        className={cnTw('group flex items-center justify-between w-full gap-x-2', buttonClass)}
+        onClick={onClick}
+      >
+        {({ open }) => (
+          <>
+            {children}
+            <div className={cnTw('shrink-0', iconWrapper)}>
+              <Icon
+                name={open ? iconOpened || 'up' : iconClosed || 'down'}
+                size={16}
+                className={cnTw(
+                  'cursor-pointer rounded-full transition-colors',
+                  'group-hover:text-icon-hover group-hover:bg-hover',
+                  'group-focus-visible:text-icon-hover group-focus-visible:bg-hover',
+                )}
+              />
+            </div>
+          </>
+        )}
+      </Disclosure.Button>
+    );
+  },
+);
 
 type ContentProps = {
+  as?: ElementType;
   className?: string;
 };
 
-const Content = ({ children, className }: PropsWithChildren<ContentProps>) => {
+const Content = ({ as = 'div', className, children }: PropsWithChildren<ContentProps>) => {
   return (
     <Transition
       enter="ease-out duration-300"
@@ -59,7 +70,9 @@ const Content = ({ children, className }: PropsWithChildren<ContentProps>) => {
       leaveFrom="opacity-100"
       leaveTo="opacity-0"
     >
-      <Disclosure.Panel className={className}>{children}</Disclosure.Panel>
+      <Disclosure.Panel as={as} className={className}>
+        {children}
+      </Disclosure.Panel>
     </Transition>
   );
 };

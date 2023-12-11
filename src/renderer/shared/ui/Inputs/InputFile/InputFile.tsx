@@ -19,7 +19,12 @@ const InputFile = forwardRef<HTMLInputElement, Props>(
       const files = event.target.files;
 
       if (!files || !files.length) return;
-      if (files[0].type !== props.accept) return;
+
+      const fileName = files[0].name;
+      const fileFormat = fileName.slice(fileName.lastIndexOf('.'), fileName.length);
+      const acceptedFormats = props.accept?.split(',');
+
+      if (acceptedFormats && !(acceptedFormats.includes(files[0].type) || acceptedFormats.includes(fileFormat))) return;
 
       onChange?.(files[0]);
       setFileName(files[0].name);
