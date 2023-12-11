@@ -555,6 +555,7 @@
     "title": "Receive {asset} on"
   },
   "settings": {
+    "autoUpdate": "Spektr auto updates",
     "currency": {
       "cryptocurrenciesLabel": "Cryptocurrencies",
       "modalTitle": "Currency",

@@ -4,14 +4,14 @@ import { Controller, SubmitHandler, useForm } from 'react-hook-form';
 import { u8aToHex } from '@polkadot/util';
 import { keyBy } from 'lodash';
 
-import { chainsService } from '@entities/network';
+import { chainsService, ChainMap } from '@entities/network';
 import { useI18n } from '@app/providers';
 import { ChainTitle } from '@entities/chain';
 import { AddressInfo, CompactSeedInfo, SeedInfo } from '@renderer/components/common/QrCode/common/types';
 import { toAccountId, toAddress, cnTw, RootExplorers } from '@shared/lib/utils';
 import { walletModel, AddressWithExplorers } from '@entities/wallet';
 import { Button, Input, InputHint, HeaderTitleText, SmallTitleText, IconButton, FootnoteText, Icon } from '@shared/ui';
-import type { Chain, ChainId, HexString, ChainAccount, BaseAccount } from '@shared/core';
+import type { ChainId, HexString, ChainAccount, BaseAccount } from '@shared/core';
 import { CryptoType, ChainType, AccountType, WalletType, SigningType, ErrorType, KeyType } from '@shared/core';
 
 type WalletForm = {
@@ -38,7 +38,7 @@ export const ManageMultishard = ({ seedInfo, onBack, onClose, onComplete }: Prop
     defaultValues: { walletName: '' },
   });
 
-  const [chainsObject, setChainsObject] = useState<Record<ChainId, Chain>>({});
+  const [chainsObject, setChainsObject] = useState<ChainMap>({});
   const [inactiveAccounts, setInactiveAccounts] = useState<Record<string, boolean>>({});
   const [accountNames, setAccountNames] = useState<Record<string, string>>({});
   const [accounts, setAccounts] = useState<CompactSeedInfo[]>([]);
@@ -55,7 +55,7 @@ export const ManageMultishard = ({ seedInfo, onBack, onClose, onComplete }: Prop
     setAccounts(filteredQrData.map(formatAccount));
   }, []);
 
-  const filterByExistingChains = (seedInfo: SeedInfo, chainsMap: Record<ChainId, Chain>): SeedInfo => {
+  const filterByExistingChains = (seedInfo: SeedInfo, chainsMap: ChainMap): SeedInfo => {
     const derivedKeysForChsains = seedInfo.derivedKeys.filter((key) => Boolean(chainsMap[u8aToHex(key.genesisHash)]));
 
     return { ...seedInfo, derivedKeys: derivedKeysForChsains };

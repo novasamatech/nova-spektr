@@ -7,3 +7,4 @@ export { useScrollTo } from './useScrollTo';
 export { useTaskQueue } from './useTaskQueue';
 export { useModalClose } from './useModalClose';
 export { useAltOrCtrlKeyPressed } from './useAltOrCtrlKeyPressed';
+export { useThrottle } from './useThrottle';

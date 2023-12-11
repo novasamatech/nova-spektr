@@ -4,11 +4,11 @@ import { keyBy } from 'lodash';
 import type { AccountId, ChainId, Account } from '@shared/core';
 import { Accordion, BaseModal, Button, Checkbox, FootnoteText, SearchInput } from '@shared/ui';
 import { useI18n } from '@app/providers';
-import { chainsService } from '@entities/network';
+import { chainsService, ChainMap } from '@entities/network';
 import { SelectableShard } from '@entities/wallet';
 import { ChainTitle } from '@entities/chain';
 import { toAddress } from '@shared/lib/utils';
-import { SelectableShards, ChainsRecord, SelectableAccount } from '../../common/types';
+import { SelectableShards, SelectableAccount } from '../../common/types';
 import { getMultishardStructure, searchShards, getSelectableShards } from '../../common/utils';
 
 type Props = {
@@ -21,7 +21,7 @@ type Props = {
 export const SelectShardModal = ({ isOpen, activeShards, accounts, onClose }: Props) => {
   const { t } = useI18n();
 
-  const [chains, setChains] = useState<ChainsRecord>({});
+  const [chains, setChains] = useState<ChainMap>({});
   const [shards, setShards] = useState<SelectableShards>({ rootAccounts: [], amount: 0 });
   const [query, setQuery] = useState('');
 

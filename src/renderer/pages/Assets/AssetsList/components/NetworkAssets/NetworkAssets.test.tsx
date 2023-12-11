@@ -1,10 +1,13 @@
 import { act, render, screen } from '@testing-library/react';
+import { Provider } from 'effector-react';
+import { fork } from 'effector';
 
 import { TEST_ACCOUNT_ID } from '@shared/lib/utils';
 import chains from '@shared/config/chains/chains.json';
 import { NetworkAssets } from './NetworkAssets';
 import type { Account, Chain } from '@shared/core';
 import { ChainType, CryptoType, AccountType } from '@shared/core';
+import { balanceModel } from '@entities/balance';
 
 const testChain = chains.find((chain) => chain.assets.length > 1) as Chain;
 const testAsset = testChain.assets[0];
@@ -14,6 +17,11 @@ jest.mock('@app/providers', () => ({
   useI18n: jest.fn().mockReturnValue({
     t: (key: string) => key,
   }),
+}));
+
+jest.mock('@shared/lib/hooks', () => ({
+  ...jest.requireActual('@shared/lib/hooks'),
+  useThrottle: jest.fn().mockImplementation((value: any) => value),
 }));
 
 const testBalances = [
@@ -30,14 +38,11 @@ const testBalances = [
     accountId: TEST_ACCOUNT_ID,
     free: '1000000000000',
     frozen: [{ type: 'test', amount: '1' }],
-    // verified: false,
+    verified: false,
   },
 ];
 
 jest.mock('@entities/asset', () => ({
-  useBalance: jest.fn().mockReturnValue({
-    getLiveNetworkBalances: () => testBalances,
-  }),
   AssetCard: ({ asset }: any) => <span data-testid="AssetCard">{asset.name}</span>,
 }));
 
@@ -54,22 +59,38 @@ const accounts = [
 ] as Account[];
 
 describe('pages/Assets/NetworkAssets', () => {
+  const scope = fork({
+    values: new Map().set(balanceModel.$balances, testBalances),
+  });
+
   test('should render component', () => {
-    render(<NetworkAssets chain={testChain} accounts={accounts} />);
+    render(
+      <Provider value={scope}>
+        <NetworkAssets chain={testChain} accounts={accounts} />
+      </Provider>,
+    );
 
     const text = screen.getByText(testChain.name);
     expect(text).toBeInTheDocument();
   });
 
   test('should render assets', () => {
-    render(<NetworkAssets chain={testChain} accounts={accounts} />);
+    render(
+      <Provider value={scope}>
+        <NetworkAssets chain={testChain} accounts={accounts} />
+      </Provider>,
+    );
 
     const balances = screen.getAllByTestId('AssetCard');
     expect(balances).toHaveLength(7);
   });
 
   test('should hide assets', async () => {
-    render(<NetworkAssets chain={testChain} accounts={accounts} />);
+    render(
+      <Provider value={scope}>
+        <NetworkAssets chain={testChain} accounts={accounts} />
+      </Provider>,
+    );
 
     const balancesBefore = screen.getAllByTestId('AssetCard');
     expect(balancesBefore).toHaveLength(7);
@@ -82,14 +103,22 @@ describe('pages/Assets/NetworkAssets', () => {
   });
 
   test('should show unverified badge', () => {
-    render(<NetworkAssets chain={testChain} accounts={accounts} />);
+    render(
+      <Provider value={scope}>
+        <NetworkAssets chain={testChain} accounts={accounts} />
+      </Provider>,
+    );
 
     const unverifiedBadge = screen.getByText('balances.verificationFailedLabel');
     expect(unverifiedBadge).toBeInTheDocument();
   });
 
   test('should sort assets by balance and name', () => {
-    render(<NetworkAssets chain={testChain} accounts={accounts} />);
+    render(
+      <Provider value={scope}>
+        <NetworkAssets chain={testChain} accounts={accounts} />
+      </Provider>,
+    );
 
     const assetsNames = screen.getAllByTestId('AssetCard').map((element) => element.firstChild);
 

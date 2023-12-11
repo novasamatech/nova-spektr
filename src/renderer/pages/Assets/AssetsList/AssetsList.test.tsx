@@ -6,17 +6,12 @@ import { TEST_ACCOUNT_ID } from '@shared/lib/utils';
 import { ConnectionType } from '@shared/core';
 import { AssetsList } from './AssetsList';
 import { walletModel } from '@entities/wallet';
+import { networkModel } from '@entities/network';
 
 jest.mock('@app/providers', () => ({
   useI18n: jest.fn().mockReturnValue({
     t: (key: string) => key,
   }),
-  useNetworkContext: jest.fn(() => ({
-    connections: {
-      '0x00': CHAINS[0],
-      '0x01': CHAINS[1],
-    },
-  })),
 }));
 
 const CHAINS = [
@@ -36,24 +31,37 @@ const CHAINS = [
 ];
 
 jest.mock('@entities/network', () => ({
+  ...jest.requireActual('@entities/network'),
   chainsService: {
+    getChainById: jest.fn().mockReturnValue({
+      name: 'Westend',
+      chainId: '0xe143f23803ac50e8f6f8e62695d1ce9e4e1d68aa36c1cd2cfd15340213f3423e',
+      assets: [
+        {
+          assetId: 0,
+          symbol: 'WND',
+          precision: 10,
+          staking: 'relaychain',
+          name: 'Westend',
+        },
+      ],
+    }),
     sortChainsByBalance: () => CHAINS,
   },
-}));
-
-jest.mock('@entities/asset', () => ({
-  useBalance: jest.fn().mockReturnValue({
-    getLiveBalances: jest.fn().mockReturnValue([]),
-  }),
 }));
 
 jest.mock('./components/NetworkAssets/NetworkAssets', () => ({
   NetworkAssets: () => <span>NetworkAssets</span>,
 }));
 
-describe('pages/Assets/Assets', () => {
+describe('pages/Assets/AssetsList', () => {
   const scope = fork({
-    values: new Map().set(walletModel.$activeAccounts, [{ name: 'Test Wallet', accountId: TEST_ACCOUNT_ID }]),
+    values: new Map()
+      .set(walletModel.$activeAccounts, [{ name: 'Test Wallet', accountId: TEST_ACCOUNT_ID }])
+      .set(networkModel.$chains, {
+        '0x00': CHAINS[0],
+        '0x01': CHAINS[1],
+      }),
   });
 
   const renderComponent = () => {

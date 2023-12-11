@@ -1,11 +1,11 @@
 import type { RpcNode } from './chain';
-import type { ChainId } from './general';
+import type { ChainId, ID } from './general';
 
 export type Connection = {
+  id: ID;
   chainId: ChainId;
   canUseLightClient?: boolean;
   connectionType: ConnectionType;
-  connectionStatus: ConnectionStatus;
   customNodes?: RpcNode[];
   activeNode?: RpcNode;
   disconnect?: () => void;
@@ -19,8 +19,7 @@ export const enum ConnectionType {
 }
 
 export const enum ConnectionStatus {
-  NONE = 'NONE',
+  DISCONNECTED = 'DISCONNECTED',
   CONNECTED = 'CONNECTED',
-  CONNECTING = 'CONNECTING',
   ERROR = 'ERROR',
 }

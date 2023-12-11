@@ -2,10 +2,10 @@ import { BN } from '@polkadot/util';
 import { ReactNode, useEffect, useState } from 'react';
 import { Controller, SubmitHandler, useForm } from 'react-hook-form';
 import { Trans } from 'react-i18next';
+import { useUnit } from 'effector-react';
 
 import { AmountInput, Button, Icon, Identicon, Input, InputHint, Select } from '@shared/ui';
-import { useI18n, useNetworkContext } from '@app/providers';
-import { useBalance } from '@entities/asset';
+import { useI18n } from '@app/providers';
 import { MultisigTxInitStatus } from '@entities/transaction';
 import { useMultisigTx } from '@entities/multisig';
 import {
@@ -22,6 +22,7 @@ import AccountSelectModal from '@pages/Operations/components/modals/AccountSelec
 import type { Chain, Account, MultisigAccount, Asset, Address, ChainId, HexString } from '@shared/core';
 import * as sendAssetModel from '../../model/send-asset';
 import { accountUtils } from '@entities/wallet';
+import { balanceModel, balanceUtils } from '@entities/balance';
 
 const DESCRIPTION_MAX_LENGTH = 120;
 
@@ -77,9 +78,8 @@ export const TransferForm = ({
   xcmFee,
 }: Props) => {
   const { t } = useI18n();
-  const { getBalance } = useBalance();
   const { getMultisigTxs } = useMultisigTx({});
-  const { connections } = useNetworkContext();
+  const balances = useUnit(balanceModel.$balances);
 
   const [accountBalance, setAccountBalance] = useState('');
   const [signerBalance, setSignerBalance] = useState('');
@@ -130,7 +130,7 @@ export const TransferForm = ({
 
   useEffect(() => {
     if (destinationChain) {
-      sendAssetModel.events.destinationChainSelected(connections[destinationChain.value]);
+      sendAssetModel.events.destinationChainSelected(destinationChain.value);
     }
   }, [destinationChain]);
 
@@ -153,14 +153,12 @@ export const TransferForm = ({
   ) => {
     const accountId = toAccountId(address);
 
-    getBalance(accountId, chain.chainId, asset.assetId.toString()).then((balance) => {
-      callbackBalance(balance ? transferableAmount(balance) : '0');
-    });
+    const balance = balanceUtils.getBalance(balances, accountId, chain.chainId, asset.assetId.toString());
+    callbackBalance(balance ? transferableAmount(balance) : '0');
 
     if (asset.assetId !== 0) {
-      getBalance(accountId, chain.chainId, '0').then((balance) => {
-        callbackNativeToken(balance ? transferableAmount(balance) : '0');
-      });
+      const nativeBalance = balanceUtils.getBalance(balances, accountId, chain.chainId, '0');
+      callbackNativeToken(nativeBalance ? transferableAmount(nativeBalance) : '0');
     }
   };
 
