@@ -982,18 +982,18 @@
     "common": {
       "cancelButton": "Cancel",
       "forgetButton": "Forget",
+      "nameExistsError": "This wallet name already exists",
+      "nameRequiredError": "Name is required",
       "removeButton": "Remove",
       "removeMessage": "Are you sure you want to remove { walletName }?",
       "removeTitle": "Remove wallet",
       "removingWallet": "Removing wallet",
       "renameButton": "Rename",
+      "renameLabel": "Name",
+      "renameSaveButton": "Save",
       "renameTitle": "Rename wallet",
       "title": "Wallet details",
-      "walletRemoved": "Wallet removed",
-      "nameRequiredError": "Name is required",
-      "nameExistsError": "This wallet name already exists",
-      "renameSaveButton": "Save",
-      "renameLabel": "Name"
+      "walletRemoved": "Wallet removed"
     },
     "multisig": {
       "contactsGroup": "Contacts",
