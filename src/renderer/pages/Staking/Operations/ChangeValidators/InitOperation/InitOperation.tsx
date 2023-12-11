@@ -3,20 +3,20 @@ import { useEffect, useState } from 'react';
 import { useUnit } from 'effector-react';
 
 import { useI18n } from '@app/providers';
-import { useBalance } from '@entities/asset';
 import { getOperationErrors, Transaction, TransactionType } from '@entities/transaction';
 import { validatorsService } from '@entities/staking';
 import { toAddress, nonNullable } from '@shared/lib/utils';
 import { OperationFooter, OperationHeader } from '@features/operation';
 import { OperationForm } from '../../components';
 import { Balance as AccountBalance, Account, Asset, MultisigAccount, ChainId, AccountId, Wallet } from '@shared/core';
+import { walletUtils, accountUtils, walletModel } from '@entities/wallet';
+import { useAssetBalances } from '@entities/balance';
 import {
   getSignatoryOption,
   getGeneralAccountOption,
   validateBalanceForFee,
   validateBalanceForFeeDeposit,
 } from '../../common/utils';
-import { walletUtils, accountUtils, walletModel } from '@entities/wallet';
 
 export type ValidatorsResult = {
   accounts: Account[];
@@ -37,8 +37,6 @@ const InitOperation = ({ api, chainId, accounts, asset, addressPrefix, onResult 
   const { t } = useI18n();
   const activeWallet = useUnit(walletModel.$activeWallet);
 
-  const { getLiveAssetBalances } = useBalance();
-
   const [fee, setFee] = useState('');
   const [feeLoading, setFeeLoading] = useState(true);
   const [deposit, setDeposit] = useState('');
@@ -56,10 +54,18 @@ const InitOperation = ({ api, chainId, accounts, asset, addressPrefix, onResult 
   const formFields = isMultisigWallet ? [{ name: 'description' }] : [];
 
   const accountIds = accounts.map((account) => account.accountId);
-  const balances = getLiveAssetBalances(accountIds, chainId, asset.assetId.toString());
+  const balances = useAssetBalances({
+    chainId,
+    accountIds,
+    assetId: asset.assetId.toString(),
+  });
 
   const signatoryIds = isMultisigAccount ? firstAccount.signatories.map((s) => s.accountId) : [];
-  const signatoriesBalances = getLiveAssetBalances(signatoryIds, chainId, asset.assetId.toString());
+  const signatoriesBalances = useAssetBalances({
+    chainId,
+    accountIds: signatoryIds,
+    assetId: asset.assetId.toString(),
+  });
   const signerBalance = signatoriesBalances.find((b) => b.accountId === activeSignatory?.accountId);
 
   useEffect(() => {

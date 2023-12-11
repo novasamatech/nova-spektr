@@ -2,8 +2,9 @@ import { useI18n } from '@app/providers';
 import { BaseModal, BodyText, Icon, Identicon, InfoPopover, Truncate } from '@shared/ui';
 import { cnTw, stakeableAmount } from '@shared/lib/utils';
 import type { Account, Asset, ChainId, Explorer } from '@shared/core';
-import { AssetBalance, useBalance } from '@entities/asset';
+import { AssetBalance } from '@entities/asset';
 import { getExplorers } from '../../../common/utils';
+import { useAssetBalances } from '@entities/balance';
 
 type Props = {
   isOpen: boolean;
@@ -18,9 +19,12 @@ type Props = {
 
 const AccountsModal = ({ isOpen, accounts, asset, chainId, explorers, addressPrefix, onClose }: Props) => {
   const { t } = useI18n();
-  const { getLiveAssetBalances } = useBalance();
   const accountIds = accounts.map((account) => account.accountId);
-  const balances = getLiveAssetBalances(accountIds, chainId, asset.assetId.toString());
+  const balances = useAssetBalances({
+    accountIds,
+    chainId,
+    assetId: asset.assetId.toString(),
+  });
 
   const findBalance = (accountId: string): string => stakeableAmount(balances.find((b) => b.accountId === accountId));
 

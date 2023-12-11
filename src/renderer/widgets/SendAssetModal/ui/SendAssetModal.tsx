@@ -3,19 +3,20 @@ import { UnsignedTransaction } from '@substrate/txwrapper-polkadot';
 import { useStore, useGate, useUnit } from 'effector-react';
 import { useNavigate } from 'react-router-dom';
 
-import { useI18n, useNetworkContext } from '@app/providers';
+import { useI18n } from '@app/providers';
 import { Paths } from '@shared/routes';
 import { Transaction, useTransaction, validateBalance } from '@entities/transaction';
 import { BaseModal, Button, Loader } from '@shared/ui';
 import { Confirmation, InitOperation, Submit } from './components/ActionSteps';
 import { Signing } from '@features/operation';
-import { useBalance } from '@entities/asset';
 import { OperationTitle } from '@renderer/components/common';
 import { useToggle } from '@shared/lib/hooks';
 import * as sendAssetModel from '../model/send-asset';
 import type { Chain, Asset, Account, MultisigAccount, HexString } from '@shared/core';
 import { accountUtils, walletModel, walletUtils } from '@entities/wallet';
 import { priceProviderModel } from '@entities/price';
+import { useNetworkData } from '@entities/network';
+import { balanceModel, balanceUtils } from '@entities/balance';
 
 const enum Step {
   INIT,
@@ -32,11 +33,12 @@ type Props = {
 export const SendAssetModal = ({ chain, asset }: Props) => {
   const { t } = useI18n();
   const navigate = useNavigate();
+  const { api, chain: chainData, extendedChain } = useNetworkData(chain.chainId);
 
-  const { getBalance } = useBalance();
-  const { getTransactionFee, setTxs, txs, setWrappers, wrapTx } = useTransaction();
-  const { connections } = useNetworkContext();
+  const balances = useUnit(balanceModel.$balances);
   const activeWallet = useUnit(walletModel.$activeWallet);
+
+  const { getTransactionFee, setTxs, txs, setWrappers, wrapTx } = useTransaction();
   const config = useStore(sendAssetModel.$finalConfig);
   const xcmAsset = useStore(sendAssetModel.$xcmAsset);
   const destinationChain = useStore(sendAssetModel.$destinationChain);
@@ -49,9 +51,7 @@ export const SendAssetModal = ({ chain, asset }: Props) => {
   const [unsignedTx, setUnsignedTx] = useState<UnsignedTransaction>({} as UnsignedTransaction);
   const [signature, setSignature] = useState<HexString>('0x0');
 
-  const connection = connections[chain.chainId];
-
-  const { api, assets, addressPrefix, explorers } = connection;
+  const { assets, addressPrefix, explorers } = chainData;
 
   useEffect(() => {
     priceProviderModel.events.assetsPricesRequested({ includeRates: true });
@@ -98,7 +98,7 @@ export const SendAssetModal = ({ chain, asset }: Props) => {
       transaction: api && wrapTx(transaction, api, addressPrefix),
       chainId: chain.chainId,
       assetId: asset.assetId.toString(),
-      getBalance,
+      getBalance: balanceUtils.getBalanceWrapped(balances),
       getTransactionFee: (transaction, api) => getTransactionFee(transaction, api),
     });
 
@@ -148,7 +148,8 @@ export const SendAssetModal = ({ chain, asset }: Props) => {
     );
   }
 
-  const operationTitle = destinationChain?.chainId !== chain.chainId ? 'transfer.xcmTitle' : 'transfer.title';
+  const operationTitle =
+    destinationChain && destinationChain !== chain.chainId ? 'transfer.xcmTitle' : 'transfer.title';
 
   return (
     <BaseModal
@@ -192,7 +193,7 @@ export const SendAssetModal = ({ chain, asset }: Props) => {
               description={description}
               account={account}
               signatory={signatory}
-              connection={connection}
+              connection={extendedChain}
               onBack={() => setActiveStep(Step.INIT)}
               onResult={onConfirmResult}
             />

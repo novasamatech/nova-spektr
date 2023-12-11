@@ -1,7 +1,6 @@
 import { act, render, screen } from '@testing-library/react';
 
 import { Matrix } from '@shared/api/matrix';
-import { ConnectionType } from '@shared/core';
 import { MatrixProvider } from './MatrixContext';
 
 jest.mock('@app/providers', () => ({
@@ -31,17 +30,6 @@ jest.mock('@entities/notification', () => ({
 }));
 
 jest.mock('@app/providers', () => ({
-  useNetworkContext: jest.fn(() => ({
-    connections: {
-      '0x00': {
-        chainId: '1',
-        assets: [{ assetId: '1', symbol: '1' }],
-        connection: {
-          connectionType: ConnectionType.RPC_NODE,
-        },
-      },
-    },
-  })),
   useMultisigChainContext: jest.fn(() => ({
     addTask: () => undefined,
   })),

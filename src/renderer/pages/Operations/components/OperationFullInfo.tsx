@@ -4,12 +4,13 @@ import RejectTx from './modals/RejectTx';
 import ApproveTx from './modals/ApproveTx';
 import { getMultisigExtrinsicLink } from '../common/utils';
 import CallDataModal from './modals/CallDataModal';
-import { useMatrix, useNetworkContext, useI18n, useMultisigChainContext } from '@app/providers';
+import { useMatrix, useI18n, useMultisigChainContext } from '@app/providers';
 import { useMultisigTx } from '@entities/multisig';
 import { useToggle } from '@shared/lib/hooks';
 import { MultisigTransactionDS } from '@shared/api/storage';
-import type { CallData, ChainId, MultisigAccount } from '@shared/core';
+import type { CallData, MultisigAccount } from '@shared/core';
 import { OperationSignatories } from './OperationSignatories';
+import { useNetworkData } from '@entities/network';
 
 type Props = {
   tx: MultisigTransactionDS;
@@ -18,6 +19,7 @@ type Props = {
 
 const OperationFullInfo = ({ tx, account }: Props) => {
   const { t } = useI18n();
+  const { api, chain, connection, extendedChain } = useNetworkData(tx.chainId);
 
   const callData = tx.callData;
 
@@ -25,16 +27,12 @@ const OperationFullInfo = ({ tx, account }: Props) => {
 
   const { addTask } = useMultisigChainContext();
   const { updateCallData } = useMultisigTx({ addTask });
-  const { connections } = useNetworkContext();
-  const connection = connections[tx?.chainId as ChainId];
 
   const [isCallDataModalOpen, toggleCallDataModal] = useToggle();
 
-  const explorerLink = getMultisigExtrinsicLink(tx.callHash, tx.indexCreated, tx.blockCreated, connection?.explorers);
+  const explorerLink = getMultisigExtrinsicLink(tx.callHash, tx.indexCreated, tx.blockCreated, chain?.explorers);
 
   const setupCallData = async (callData: CallData) => {
-    const api = connection.api;
-
     if (!api || !tx) return;
 
     updateCallData(api, tx, callData as CallData);
@@ -76,15 +74,15 @@ const OperationFullInfo = ({ tx, account }: Props) => {
           )}
         </div>
 
-        <OperationCardDetails tx={tx} account={account} connection={connection} />
+        <OperationCardDetails tx={tx} account={account} extendedChain={extendedChain} />
 
         <div className="flex items-center mt-3">
-          {account && connection && <RejectTx tx={tx} account={account} connection={connection} />}
-          {account && connection && <ApproveTx tx={tx} account={account} connection={connection} />}
+          {account && connection && <RejectTx tx={tx} account={account} connection={extendedChain} />}
+          {account && connection && <ApproveTx tx={tx} account={account} connection={extendedChain} />}
         </div>
       </div>
 
-      {account && <OperationSignatories tx={tx} connection={connection} account={account} />}
+      {account && <OperationSignatories tx={tx} connection={extendedChain} account={account} />}
 
       <CallDataModal isOpen={isCallDataModalOpen} tx={tx} onSubmit={setupCallData} onClose={toggleCallDataModal} />
     </div>

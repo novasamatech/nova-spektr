@@ -20,16 +20,20 @@ import { singnatoryUtils } from '@entities/signatory';
 type Props = {
   tx: MultisigTransaction;
   account?: MultisigAccount;
-  connection?: ExtendedChain;
+  extendedChain?: ExtendedChain;
 };
 
-export const OperationCardDetails = ({ tx, account, connection }: Props) => {
+export const OperationCardDetails = ({ tx, account, extendedChain }: Props) => {
   const { t } = useI18n();
   const activeWallet = useUnit(walletModel.$activeWallet);
   const wallets = useUnit(walletModel.$wallets);
   const accounts = useUnit(walletModel.$accounts);
 
-  const api = connection?.api;
+  const api = extendedChain?.api;
+  const defaultAsset = extendedChain?.assets[0];
+  const addressPrefix = extendedChain?.addressPrefix;
+  const explorers = extendedChain?.explorers;
+  const connection = extendedChain?.connection;
 
   const [isAdvancedShown, toggleAdvanced] = useToggle();
   const [isValidatorsOpen, toggleValidators] = useToggle();
@@ -37,21 +41,20 @@ export const OperationCardDetails = ({ tx, account, connection }: Props) => {
   const { indexCreated, blockCreated, deposit, depositor, callHash, callData, description, cancelDescription } = tx;
 
   const transaction = getTransactionFromMultisigTx(tx);
+  const validatorsMap = useValidatorsMap(api, connection && isLightClient(connection));
+
+  const allValidators = Object.values(validatorsMap);
 
   const startStakingValidators: Address[] =
     (tx.transaction?.type === 'batchAll' &&
       tx.transaction.args.transactions.find((tx: Transaction) => tx.type === 'nominate')?.args?.targets) ||
     [];
 
-  const allValidators = Object.values(useValidatorsMap(api, connection && isLightClient(connection)));
   const selectedValidators: Validator[] =
     allValidators.filter((v) => (transaction?.args.targets || startStakingValidators).includes(v.address)) || [];
   const selectedValidatorsAddress = selectedValidators.map((validator) => validator.address);
   const notSelectedValidators = allValidators.filter((v) => !selectedValidatorsAddress.includes(v.address));
 
-  const defaultAsset = connection?.assets[0];
-  const addressPrefix = connection?.addressPrefix;
-  const explorers = connection?.explorers;
   const depositorSignatory = account?.signatories.find((s) => s.accountId === depositor);
   const extrinsicLink = getMultisigExtrinsicLink(callHash, indexCreated, blockCreated, explorers);
   const validatorsAsset =
@@ -155,7 +158,7 @@ export const OperationCardDetails = ({ tx, account, connection }: Props) => {
             asset={validatorsAsset}
             selectedValidators={selectedValidators}
             notSelectedValidators={notSelectedValidators}
-            explorers={connection?.explorers}
+            explorers={extendedChain?.explorers}
             onClose={toggleValidators}
           />
         </>

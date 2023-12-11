@@ -20,10 +20,11 @@ describe('pages/Settings/Networks/NetworkList', () => {
       nodes: [],
       chainId: '0x123',
       icon: 'test_icon.svg',
+      connectionStatus: ConnectionStatus.CONNECTED,
       connection: {
+        id: 1,
         chainId: '0x123',
         connectionType: ConnectionType.RPC_NODE,
-        connectionStatus: ConnectionStatus.CONNECTED,
         activeNode: { name: 'test node', url: 'wss://test.com' },
       },
     },

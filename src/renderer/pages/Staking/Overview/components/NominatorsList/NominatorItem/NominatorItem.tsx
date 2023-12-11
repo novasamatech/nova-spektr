@@ -7,8 +7,8 @@ import { FootnoteText, Plate, Checkbox, Icon, Shimmering, IconButton } from '@sh
 import { ExplorersPopover, walletModel, walletUtils } from '@entities/wallet';
 import { AssetBalance } from '@entities/asset';
 import { AssetFiatBalance } from '@entities/price/ui/AssetFiatBalance';
-import { NominatorInfo } from '../../../common/types';
 import { cnTw } from '@shared/lib/utils';
+import { NominatorInfo } from '../../../common/types';
 
 type Props = {
   nominatorsLength: number;

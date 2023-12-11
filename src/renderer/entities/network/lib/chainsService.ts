@@ -2,11 +2,12 @@ import sortBy from 'lodash/sortBy';
 import concat from 'lodash/concat';
 import orderBy from 'lodash/orderBy';
 import BigNumber from 'bignumber.js';
+import keyBy from 'lodash/keyBy';
 
 import chainsProd from '@shared/config/chains/chains.json';
 import chainsDev from '@shared/config/chains/chains_dev.json';
 import { getRelaychainAsset, nonNullable, totalAmount, ZERO_BALANCE } from '@shared/lib/utils';
-import { ChainLike } from './common/types';
+import { ChainLike, ChainMap } from './common/types';
 import { isKusama, isPolkadot, isTestnet, isNameWithNumber } from './common/utils';
 import type { Chain, ChainId, Balance } from '@shared/core';
 import { PriceObject } from '@shared/api/price-provider';
@@ -23,6 +24,7 @@ const CHAINS: Record<string, any> = {
 
 export const chainsService = {
   getChainsData,
+  getChainsMap,
   getChainById,
   getStakingChainsData,
   sortChains,
@@ -34,6 +36,12 @@ function getChainsData(params = { sort: false }): Chain[] {
   const chains = CHAINS[process.env.CHAINS_FILE || 'chains'];
 
   return params.sort ? sortChains(chains) : chains;
+}
+
+function getChainsMap(): ChainMap {
+  const chainsData = getChainsData();
+
+  return keyBy(chainsData, 'chainId');
 }
 
 function getChainById(chainId: ChainId): Chain | undefined {

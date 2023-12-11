@@ -3,7 +3,7 @@ import { groupBy } from 'lodash';
 import { useUnit } from 'effector-react';
 
 import { Icon, CaptionText, Tooltip, Accordion } from '@shared/ui';
-import { useBalance, AssetCard } from '@entities/asset';
+import { AssetCard } from '@entities/asset';
 import { ChainTitle } from '@entities/chain';
 import { ZERO_BALANCE, totalAmount, includes, cnTw } from '@shared/lib/utils';
 import { ExtendedChain } from '@entities/network';
@@ -13,6 +13,8 @@ import type { AccountId, Account, Chain, Asset, Balance } from '@shared/core';
 import { accountUtils } from '@entities/wallet';
 import { NetworkFiatBalance } from '../NetworkFiatBalance/NetworkFiatBalance';
 import { currencyModel, priceProviderModel } from '@entities/price';
+import { balanceModel } from '@entities/balance';
+import { useThrottle } from '@shared/lib/hooks';
 
 type Props = {
   hideZeroBalance?: boolean;
@@ -24,14 +26,16 @@ type Props = {
 
 export const NetworkAssets = ({ query, hideZeroBalance, chain, accounts, searchSymbolOnly }: Props) => {
   const { t } = useI18n();
-  const { getLiveNetworkBalances } = useBalance();
 
   const assetsPrices = useUnit(priceProviderModel.$assetsPrices);
   const fiatFlag = useUnit(priceProviderModel.$fiatFlag);
   const currency = useUnit(currencyModel.$activeCurrency);
+  const balances = useUnit(balanceModel.$balances);
 
   const [filteredAssets, setFilteredAssets] = useState<Asset[]>([]);
   const [balancesObject, setBalancesObject] = useState<Record<string, Balance>>({});
+
+  const throttledBalances = useThrottle(balances, 1000);
 
   const selectedAccountIds = accounts.map((a) => a.accountId).join('');
 
@@ -45,24 +49,21 @@ export const NetworkAssets = ({ query, hideZeroBalance, chain, accounts, searchS
     }, []);
   }, [chain.chainId, selectedAccountIds]);
 
-  const balances = getLiveNetworkBalances(accountIds, chain.chainId);
-
   useEffect(() => {
-    const accountsAmount = new Set(accountIds).size;
+    const chainBalances = balances.filter((b) => b.chainId === chain.chainId && accountIds.includes(b.accountId));
 
-    const groupedBalances = Object.values(groupBy(balances, 'assetId'));
-    const newBalancesObject = groupedBalances.reduce<Record<string, Balance>>((acc, balances) => {
-      if (balances.length === accountsAmount) {
-        acc[balances[0].assetId] = balances.reduce<Balance>((acc, balance) => {
-          return sumBalances(balance, acc);
-        }, {} as Balance);
-      }
+    const groupedBalances = Object.values(groupBy(chainBalances, 'assetId'));
+
+    const newBalancesObject = groupedBalances.reduce<Record<string, Balance>>((acc, accountBalances) => {
+      acc[accountBalances[0].assetId] = accountBalances.reduce<Balance>((balancesAcc, balance) => {
+        return sumBalances(balance, balancesAcc);
+      }, {} as Balance);
 
       return acc;
     }, {});
 
     setBalancesObject(newBalancesObject);
-  }, [balances, accountIds.join('')]);
+  }, [throttledBalances, accountIds.join('')]);
 
   useEffect(() => {
     const filteredAssets = chain.assets.filter((asset) => {
@@ -90,7 +91,7 @@ export const NetworkAssets = ({ query, hideZeroBalance, chain, accounts, searchS
     return null;
   }
 
-  const hasFailedVerification = balances?.some((b) => !b.verified);
+  const hasFailedVerification = balances?.some((b) => b.verified !== undefined && !b.verified);
 
   return (
     <li className="w-[546px]">
@@ -121,12 +122,9 @@ export const NetworkAssets = ({ query, hideZeroBalance, chain, accounts, searchS
         <Accordion.Content className="mt-1">
           <ul className="flex flex-col gap-y-1.5">
             {filteredAssets.map((asset) => (
-              <AssetCard
-                key={asset.assetId}
-                chainId={chain.chainId}
-                asset={asset}
-                balance={balancesObject[asset.assetId.toString()]}
-              />
+              <li key={asset.assetId}>
+                <AssetCard chainId={chain.chainId} asset={asset} balance={balancesObject[asset.assetId.toString()]} />
+              </li>
             ))}
           </ul>
         </Accordion.Content>

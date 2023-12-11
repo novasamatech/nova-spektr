@@ -5,18 +5,17 @@ import { useUnit } from 'effector-react';
 import { useMultisigTx } from '@entities/multisig';
 import { MultisigTxInitStatus } from '@entities/transaction';
 import { NavItem, Props as NavItemProps } from './NavItem';
-import { chainsService } from '@entities/network';
+import { chainsService, ChainMap } from '@entities/network';
 import { Paths } from '@shared/routes';
 import { walletModel } from '@entities/wallet';
 import { BodyText } from '@shared/ui';
-import type { ChainId, Chain } from '@shared/core';
 
 export const Navigation = () => {
   const activeAccounts = useUnit(walletModel.$activeAccounts);
 
   const { getLiveAccountMultisigTxs } = useMultisigTx({});
 
-  const [chains, setChains] = useState<Record<ChainId, Chain>>({});
+  const [chains, setChains] = useState<ChainMap>({});
 
   useEffect(() => {
     setChains(keyBy(chainsService.getChainsData(), 'chainId'));
