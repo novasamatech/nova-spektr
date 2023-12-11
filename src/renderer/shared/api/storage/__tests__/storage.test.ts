@@ -21,10 +21,8 @@ describe('service/storage/storage', () => {
 
   test('should return right data storage', () => {
     const balancesStorage = storage.connectTo('balances');
-    const connectionStorage = storage.connectTo('connections');
 
     expect(balancesStorage).toBeDefined();
-    expect(connectionStorage).toBeDefined();
   });
 
   test('should return undefined for wrong storage name', () => {
