@@ -113,8 +113,12 @@ export const ManageVault = ({ seedInfo, onBack, onClose, onComplete }: Props) =>
     toggleIsImportModalOpen();
   };
 
-  const handleConstructorKeys = (keys: DraftAccount<ChainAccount | ShardAccount>[]) => {
-    manageVaultModel.events.keysAdded(keys);
+  const handleConstructorKeys = (
+    keysToAdd: DraftAccount<ChainAccount | ShardAccount>[],
+    keysToRemove: DraftAccount<ChainAccount | ShardAccount>[],
+  ) => {
+    manageVaultModel.events.keysRemoved(keysToRemove);
+    manageVaultModel.events.keysAdded(keysToAdd);
     toggleConstructorModal();
   };
 
@@ -260,20 +264,11 @@ export const ManageVault = ({ seedInfo, onBack, onClose, onComplete }: Props) =>
       </div>
 
       <KeyConstructor
+        isOpen={isConstructorModalOpen}
         title={name?.value}
         existingKeys={keys}
-        isOpen={isConstructorModalOpen}
         onClose={toggleConstructorModal}
         onConfirm={handleConstructorKeys}
-      />
-
-      <DerivationsAddressModal
-        isOpen={isAddressModalOpen}
-        walletName={walletName}
-        rootKey={publicKey}
-        keys={keys}
-        onComplete={handleSuccess}
-        onClose={toggleIsAddressModalOpen}
       />
 
       <ImportKeysModal
@@ -282,6 +277,15 @@ export const ManageVault = ({ seedInfo, onBack, onClose, onComplete }: Props) =>
         existingKeys={keys}
         onClose={toggleIsImportModalOpen}
         onConfirm={handleImportKeys}
+      />
+
+      <DerivationsAddressModal
+        isOpen={isAddressModalOpen}
+        walletName={walletName}
+        rootAccountId={publicKey}
+        keys={keys}
+        onClose={toggleIsAddressModalOpen}
+        onComplete={handleSuccess}
       />
     </>
   );

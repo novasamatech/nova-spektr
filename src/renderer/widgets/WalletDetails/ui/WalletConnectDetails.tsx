@@ -40,7 +40,7 @@ export const WalletConnectDetails = ({ wallet, accounts, onClose }: Props) => {
   const { t } = useI18n();
 
   const [isModalOpen, closeModal] = useModalClose(true, onClose);
-  const [isConfirmForgetOpen, toggleConfirmForget] = useToggle(false);
+  const [isConfirmForgetOpen, toggleConfirmForget] = useToggle();
 
   const reconnectStep = useUnit(wcDetailsModel.$reconnectStep);
   const forgetStep = useUnit(wcDetailsModel.$forgetStep);

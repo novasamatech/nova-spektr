@@ -1,11 +1,9 @@
-import sortBy from 'lodash/sortBy';
-import concat from 'lodash/concat';
-import orderBy from 'lodash/orderBy';
+import { keyBy, orderBy, concat, sortBy } from 'lodash';
 import BigNumber from 'bignumber.js';
 
 import chainsProd from '@shared/config/chains/chains.json';
 import chainsDev from '@shared/config/chains/chains_dev.json';
-import { getRelaychainAsset, nonNullable, totalAmount, ZERO_BALANCE, dictionary } from '@shared/lib/utils';
+import { getRelaychainAsset, nonNullable, totalAmount, ZERO_BALANCE } from '@shared/lib/utils';
 import { ChainLike, ChainMap } from './common/types';
 import { isKusama, isPolkadot, isTestnet, isNameWithNumber } from './common/utils';
 import type { Chain, ChainId, Balance } from '@shared/core';
@@ -38,15 +36,15 @@ function getChainsData(params = { sort: false }): Chain[] {
 }
 
 function getChainsMap(params = { sort: false }): ChainMap {
-  return dictionary(getChainsData(params), 'chainId');
+  return keyBy(getChainsData(params), 'chainId');
 }
 
-function getChainById(chainId: ChainId, params = { sort: false }): Chain | undefined {
-  return getChainsData(params).find((chain) => chain.chainId === chainId);
+function getChainById(chainId: ChainId): Chain | undefined {
+  return getChainsData().find((chain) => chain.chainId === chainId);
 }
 
-function searchChain(query: string, params = { sort: false }): Chain | undefined {
-  return getChainsData(params).find((chain) => chain.chainId.includes(query));
+function searchChain(query: string): Chain | undefined {
+  return getChainsData().find((chain) => chain.chainId.includes(query));
 }
 
 function getStakingChainsData(params = { sort: false }): Chain[] {

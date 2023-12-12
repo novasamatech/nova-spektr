@@ -13,18 +13,24 @@ type Props = {
   title: string;
   isOpen: boolean;
   existingKeys: DraftAccount<ChainAccount | ShardAccount>[];
-  onConfirm: (keys: DraftAccount<ChainAccount | ShardAccount>[]) => void;
   onClose: () => void;
+  onConfirm: (
+    keysToAdd: DraftAccount<ChainAccount | ShardAccount>[],
+    keysToRemove: DraftAccount<ChainAccount | ShardAccount>[],
+  ) => void;
 };
 
-export const KeyConstructor = ({ title, isOpen, existingKeys, onConfirm, onClose }: Props) => {
+export const KeyConstructor = ({ title, isOpen, existingKeys, onClose, onConfirm }: Props) => {
   const { t } = useI18n();
   const [isWarningOpen, setIsWarningOpen] = useState(false);
 
   const hasChanged = useUnit(constructorModel.$hasChanged);
-  const keys = useUnit(constructorModel.$keys);
+  const keysToAdd = useUnit(constructorModel.$keysToAdd);
+  const keysToRemove = useUnit(constructorModel.$keysToRemove);
 
   useEffect(() => {
+    if (!isOpen) return;
+
     constructorModel.events.formInitiated(existingKeys);
   }, [isOpen]);
 
@@ -60,7 +66,9 @@ export const KeyConstructor = ({ title, isOpen, existingKeys, onConfirm, onClose
         <Button variant="text" onClick={closeConstructor}>
           {t('dynamicDerivations.constructor.backButton')}
         </Button>
-        <Button onClick={() => onConfirm(keys.flat())}>{t('dynamicDerivations.constructor.saveButton')}</Button>
+        <Button onClick={() => onConfirm(keysToAdd.flat(), keysToRemove.flat())}>
+          {t('dynamicDerivations.constructor.saveButton')}
+        </Button>
       </div>
 
       <WarningModal isOpen={isWarningOpen} onClose={() => setIsWarningOpen(false)} onConfirm={confirmConstructor} />

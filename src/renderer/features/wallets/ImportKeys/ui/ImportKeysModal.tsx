@@ -24,9 +24,9 @@ export const ImportKeysModal = ({ isOpen, rootAccountId, existingKeys, onConfirm
   const successReport = useUnit(importKeysModel.$successReport);
 
   useEffect(() => {
-    if (isOpen) {
-      importKeysModel.events.resetValues({ derivations: existingKeys, root: rootAccountId });
-    }
+    if (!isOpen) return;
+
+    importKeysModel.events.resetValues({ derivations: existingKeys, root: rootAccountId });
   }, [isOpen]);
 
   const handleFileUpload = (file: File) => {
@@ -47,6 +47,7 @@ export const ImportKeysModal = ({ isOpen, rootAccountId, existingKeys, onConfirm
 
   const getReportText = () => {
     if (!successReport) return;
+
     const addedKeys = t('dynamicDerivations.importKeys.report.addedKeys', { count: successReport.addedKeys });
     const updatedNetworks = t('dynamicDerivations.importKeys.report.updatedNetworks', {
       count: successReport.updatedNetworks,

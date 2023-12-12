@@ -1,21 +1,32 @@
 import { createForm } from 'effector-forms';
-import { createStore, createEvent, sample, combine, forward, createEffect } from 'effector';
+import { createStore, createEvent, sample, combine, createEffect } from 'effector';
 import { spread } from 'patronum';
 
-import { chainsService } from '@entities/network';
+import { networkModel } from '@entities/network';
+import type { ChainAccount, ShardAccount, Chain } from '@shared/core';
 import { KeyType, AccountType, CryptoType, ChainType, DraftAccount } from '@shared/core';
 import { validateDerivation, derivationHasPassword } from '@shared/lib/utils';
-import type { ChainAccount, ShardAccount, Chain } from '@shared/core';
 import { accountUtils, KEY_NAMES, SHARDED_KEY_NAMES } from '@entities/wallet';
-
-const chains = chainsService.getChainsData({ sort: true });
 
 const formInitiated = createEvent<DraftAccount<ChainAccount | ShardAccount>[]>();
 const formStarted = createEvent();
 const focusableSet = createEvent<HTMLButtonElement>();
 const keyRemoved = createEvent<number>();
 
-const $keys = createStore<Array<ChainAccount | ShardAccount[]>>([]);
+const $existingKeys = createStore<Array<ChainAccount | ShardAccount[]>>([]);
+const $keysToAdd = createStore<Array<ChainAccount | ShardAccount[]>>([]).reset(formStarted);
+const $keysToRemove = createStore<Array<ChainAccount | ShardAccount[]>>([]).reset(formStarted);
+
+const $keys = combine(
+  {
+    existingKeys: $existingKeys,
+    keysToAdd: $keysToAdd,
+    keysToRemove: $keysToRemove,
+  },
+  ({ existingKeys, keysToAdd, keysToRemove }) => {
+    return existingKeys.filter((key) => !keysToRemove.includes(key)).concat(keysToAdd);
+  },
+);
 
 type FormValues = {
   network: Chain;
@@ -157,18 +168,25 @@ sample({
   fn: (keys) => {
     return accountUtils.getAccountsAndShardGroups(keys as Array<ChainAccount | ShardAccount>);
   },
-  target: $keys,
+  target: $existingKeys,
 });
 
-forward({ from: formInitiated, to: [$constructorForm.reset, formStarted] });
+sample({
+  clock: formInitiated,
+  target: [$constructorForm.reset, formStarted],
+});
 
 sample({
   clock: formStarted,
-  fn: () => chains[0],
+  source: networkModel.$chains,
+  fn: (chains) => Object.values(chains)[0],
   target: $constructorForm.fields.network.onChange,
 });
 
-forward({ from: focusableSet, to: $elementToFocus });
+sample({
+  clock: focusableSet,
+  target: $elementToFocus,
+});
 
 sample({
   clock: $constructorForm.formValidated,
@@ -190,11 +208,11 @@ sample({
 
 sample({
   clock: addNewKeyFx.doneData,
-  source: $keys,
+  source: $keysToAdd,
   fn: (keys, newKeys) => {
-    return keys.concat(Array.isArray(newKeys) ? [newKeys] : newKeys);
+    return keys.concat(accountUtils.isAccountWithShards(newKeys) ? [newKeys] : newKeys);
   },
-  target: $keys,
+  target: $keysToAdd,
 });
 
 sample({
@@ -248,9 +266,9 @@ sample({
   }),
 });
 
-forward({
-  from: $constructorForm.fields.keyType.onChange,
-  to: $constructorForm.fields.derivationPath.resetErrors,
+sample({
+  clock: $constructorForm.fields.keyType.onChange,
+  target: $constructorForm.fields.derivationPath.resetErrors,
 });
 
 sample({
@@ -264,11 +282,30 @@ sample({
 
 sample({
   clock: keyRemoved,
-  source: $keys,
-  fn: (keys, indexToRemove) => {
-    return keys.filter((_, index) => index !== indexToRemove);
+  source: {
+    keys: $keys,
+    keysToAdd: $keysToAdd,
+    keysToRemove: $keysToRemove,
+    existingKeys: $existingKeys,
   },
-  target: $keys,
+  filter: ({ keys }, indexToRemove) => Boolean(keys[indexToRemove]),
+  fn: (keysTypes, indexToRemove) => {
+    const { keys, keysToAdd, keysToRemove, existingKeys } = keysTypes;
+
+    const keyMatch = keys[indexToRemove];
+    const isExistingKey = existingKeys.includes(keyMatch);
+
+    return {
+      keysToAdd: isExistingKey ? keysToAdd : keysToAdd.filter((key) => key !== keyMatch),
+      keysToRemove: isExistingKey ? [...keysToRemove, keyMatch] : keysToRemove,
+    };
+  },
+  target: spread({
+    targets: {
+      keysToAdd: $keysToAdd,
+      keysToRemove: $keysToRemove,
+    },
+  }),
 });
 
 sample({
@@ -279,6 +316,8 @@ sample({
 
 export const constructorModel = {
   $keys,
+  $keysToAdd,
+  $keysToRemove,
   $hasKeys,
   $hasChanged,
   $isKeyTypeSharded,

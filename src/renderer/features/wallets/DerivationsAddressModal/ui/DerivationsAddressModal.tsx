@@ -3,29 +3,39 @@ import { Dictionary } from 'lodash';
 
 import { BaseModal, Button, InfoLink, SmallTitleText } from '@renderer/shared/ui';
 import { useToggle } from '@renderer/shared/lib/hooks';
-import { AccountId, AccountType, ChainType, CryptoType, SigningType, WalletType } from '@renderer/shared/core';
 import { useI18n } from '@renderer/app/providers';
 import { TROUBLESHOOTING_URL } from '@renderer/components/common/QrCode/common/constants';
 import { toAddress } from '@shared/lib/utils';
 import { walletModel } from '@entities/wallet';
 import { DdAddressInfoDecoded } from '@renderer/components/common/QrCode/common/types';
-import { derivationAddressUtils, DerivationsAccounts } from '../lib/utils';
+import { derivationAddressUtils } from '../lib/utils';
 import { QrDerivationsGenerator } from '@renderer/components/common/QrCode/QrGenerator/QrDerivationsGenerator';
-import { DdKeyQrReader } from './DdKeyQrReader/DdKeyQrReader';
+import { DdKeyQrReader } from './DdKeyQrReader';
+import {
+  AccountId,
+  AccountType,
+  ChainType,
+  CryptoType,
+  SigningType,
+  WalletType,
+  DraftAccount,
+  ShardAccount,
+  ChainAccount,
+} from '@renderer/shared/core';
 
 type Props = {
-  walletName: string;
-  rootKey: AccountId;
-  keys: DerivationsAccounts[];
   isOpen: boolean;
-  onComplete: () => void;
+  walletName: string;
+  rootAccountId: AccountId;
+  keys: DraftAccount<ShardAccount | ChainAccount>[];
+  onComplete: (accounts: Array<ChainAccount | ShardAccount>) => void;
   onClose: () => void;
 };
 
-export const DerivationsAddressModal = ({ rootKey, keys, onClose, isOpen, walletName, onComplete }: Props) => {
+export const DerivationsAddressModal = ({ isOpen, rootAccountId, keys, walletName, onClose, onComplete }: Props) => {
   const { t } = useI18n();
 
-  const [isScanStep, toggleIsScanStep] = useToggle(false);
+  const [isScanStep, toggleIsScanStep] = useToggle();
 
   const handleScanResult = (result: DdAddressInfoDecoded[]) => {
     const derivationsByPath = keyBy(result, (d) => `${d.derivationPath}${d.encryption}`);
@@ -35,6 +45,7 @@ export const DerivationsAddressModal = ({ rootKey, keys, onClose, isOpen, wallet
   const createWallet = (derivedKeys: Dictionary<DdAddressInfoDecoded>) => {
     const accountsToSave = derivationAddressUtils.createDerivedAccounts(derivedKeys, keys);
 
+    // TODO: call onComplete
     walletModel.events.polkadotVaultCreated({
       wallet: {
         name: walletName.trim(),
@@ -44,7 +55,7 @@ export const DerivationsAddressModal = ({ rootKey, keys, onClose, isOpen, wallet
       accounts: accountsToSave,
       root: {
         name: '',
-        accountId: rootKey,
+        accountId: rootAccountId,
         cryptoType: CryptoType.SR25519,
         chainType: ChainType.SUBSTRATE,
         type: AccountType.BASE,
@@ -66,7 +77,7 @@ export const DerivationsAddressModal = ({ rootKey, keys, onClose, isOpen, wallet
           <SmallTitleText className="mb-6">{t('signing.scanQrTitle')}</SmallTitleText>
           <QrDerivationsGenerator
             size={240}
-            address={toAddress(rootKey, { prefix: 1 })}
+            address={toAddress(rootAccountId, { prefix: 1 })}
             derivations={derivationAddressUtils.createDerivationsRequest(keys)}
           />
           <InfoLink url={TROUBLESHOOTING_URL} className="mt-10.5 mb-8.5">

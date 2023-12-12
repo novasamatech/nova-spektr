@@ -999,7 +999,9 @@
     },
     "vault": {
       "derivationPath": "Derivation path",
+      "editKeys": "Edit keys",
       "export": "Export keyset",
+      "import": "Import keyset",
       "networksTab": "Networks",
       "publicKey": "Public Key",
       "shardsTitle": "Shards"

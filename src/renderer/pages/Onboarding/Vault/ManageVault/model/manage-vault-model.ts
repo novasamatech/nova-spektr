@@ -6,6 +6,7 @@ import { chainsService } from '@entities/network';
 import { walletModel, accountUtils, KEY_NAMES } from '@entities/wallet';
 import { AccountType, ChainType, CryptoType, KeyType } from '@shared/core';
 import type { ChainAccount, ShardAccount, DraftAccount } from '@shared/core';
+import { dictionary } from '@shared/lib/utils';
 
 const chains = chainsService.getChainsData();
 
@@ -27,6 +28,7 @@ const callbacksApi = createApi($callbacks, {
 });
 
 const formInitiated = createEvent<SeedInfo[]>();
+const keysRemoved = createEvent<DraftAccount<ChainAccount | ShardAccount>[]>();
 const keysAdded = createEvent<DraftAccount<ChainAccount | ShardAccount>[]>();
 const derivationsImported = createEvent<DraftAccount<ChainAccount | ShardAccount>[]>();
 
@@ -91,7 +93,25 @@ sample({
   }),
 });
 
-forward({ from: keysAdded, to: $keys });
+sample({
+  clock: keysRemoved,
+  source: $keys,
+  filter: (_, keysToAdd) => keysToAdd.length > 0,
+  fn: (existingKeys, keysToRemove) => {
+    const derivationsMap = dictionary(keysToRemove, 'derivationPath', () => true);
+
+    return existingKeys.filter((key) => !derivationsMap[key.derivationPath]);
+  },
+  target: $keys,
+});
+
+sample({
+  clock: keysAdded,
+  source: $keys,
+  filter: (_, keysToAdd) => keysToAdd.length > 0,
+  fn: (existingKeys, keysToAdd) => existingKeys.concat(keysToAdd),
+  target: $keys,
+});
 
 forward({ from: derivationsImported, to: $keys });
 
@@ -103,6 +123,7 @@ export const manageVaultModel = {
   events: {
     callbacksChanged: callbacksApi.callbacksChanged,
     formInitiated,
+    keysRemoved,
     keysAdded,
     derivationsImported,
   },
