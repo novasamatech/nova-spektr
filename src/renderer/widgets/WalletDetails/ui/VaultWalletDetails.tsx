@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 
-import { BaseModal, ContextMenu, IconButton, HelpText } from '@shared/ui';
-import { useModalClose } from '@shared/lib/hooks';
+import { BaseModal, ContextMenu, IconButton, HelpText, DropdownIconButton } from '@shared/ui';
+import { useModalClose, useToggle } from '@shared/lib/hooks';
 import { RootAccountLg, WalletCardLg, VaultAccountsList } from '@entities/wallet';
 import { chainsService } from '@entities/network';
 import { useI18n } from '@app/providers';
@@ -12,7 +12,7 @@ import { VaultMap } from '../lib/types';
 import { ShardsList } from './ShardsList';
 import { vaultDetailsModel } from '../model/vault-details-model';
 import { walletDetailsUtils } from '../lib/utils';
-import { GeneralWalletActions } from './WalletActions/GeneralWalletActions';
+import { RenameWalletModal } from './WalletActions/RenameWalletModal';
 
 type Props = {
   wallet: Wallet;
@@ -24,18 +24,42 @@ export const VaultWalletDetails = ({ wallet, root, accountsMap, onClose }: Props
   const { t } = useI18n();
 
   const [isModalOpen, closeModal] = useModalClose(true, onClose);
+  const [isRenameModalOpen, toggleIsRenameModalOpen] = useToggle();
+  console.log('isRenameModalOpen', isRenameModalOpen);
 
   const chains = useMemo(() => {
     return chainsService.getChainsData({ sort: true });
   }, []);
 
-  const options = [
+  const Options = [
+    {
+      icon: 'rename' as IconNames,
+      title: t('walletDetails.common.renameButton'),
+      onClick: toggleIsRenameModalOpen,
+    },
     {
       icon: 'export' as IconNames,
       title: t('walletDetails.vault.export'),
       onClick: () => walletDetailsUtils.exportVaultWallet(wallet, root, accountsMap),
     },
+    // {
+    //   icon: 'forget',
+    //   title: t('walletDetails.common.forgetButton'),
+    //   onClick: () => {},
+    // },
   ];
+
+  const ActionButton = (
+    <DropdownIconButton name="more">
+      <DropdownIconButton.Items>
+        {Options.map((option) => (
+          <DropdownIconButton.Item key={option.icon}>
+            <DropdownIconButton.Option option={option} />
+          </DropdownIconButton.Item>
+        ))}
+      </DropdownIconButton.Items>
+    </DropdownIconButton>
+  );
 
   return (
     <BaseModal
@@ -43,7 +67,7 @@ export const VaultWalletDetails = ({ wallet, root, accountsMap, onClose }: Props
       contentClass=""
       panelClass="h-modal"
       title={t('walletDetails.common.title')}
-      actionButton={<GeneralWalletActions wallet={wallet} extraActions={options} />}
+      actionButton={ActionButton}
       isOpen={isModalOpen}
       onClose={closeModal}
     >
@@ -79,6 +103,8 @@ export const VaultWalletDetails = ({ wallet, root, accountsMap, onClose }: Props
       </div>
 
       <ShardsList />
+
+      <RenameWalletModal wallet={wallet} isOpen={isRenameModalOpen} onClose={toggleIsRenameModalOpen} />
     </BaseModal>
   );
 };

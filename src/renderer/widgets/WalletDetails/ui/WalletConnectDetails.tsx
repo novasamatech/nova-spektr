@@ -14,9 +14,18 @@ import { wcDetailsModel } from '../model/wc-details-model';
 import { wcDetailsUtils, walletDetailsUtils } from '../lib/utils';
 import { ForgetStep } from '../lib/constants';
 import { Animation } from '@shared/ui/Animation/Animation';
-import { BaseModal, Button, ConfirmModal, FootnoteText, Icon, SmallTitleText, StatusModal } from '@shared/ui';
-import { GeneralWalletActions } from './WalletActions/GeneralWalletActions';
+import {
+  BaseModal,
+  Button,
+  ConfirmModal,
+  DropdownIconButton,
+  FootnoteText,
+  Icon,
+  SmallTitleText,
+  StatusModal,
+} from '@shared/ui';
 import { IconNames } from '@shared/ui/Icon/data';
+import { RenameWalletModal } from './WalletActions/RenameWalletModal';
 
 type AccountItem = {
   accountId: `0x${string}`;
@@ -33,6 +42,7 @@ export const WalletConnectDetails = ({ wallet, accounts, onClose }: Props) => {
 
   const [isModalOpen, closeModal] = useModalClose(true, onClose);
   const [isConfirmForgetOpen, toggleConfirmForget] = useToggle(false);
+  const [isRenameModalOpen, toggleIsRenameModalOpen] = useToggle();
 
   const reconnectStep = useUnit(wcDetailsModel.$reconnectStep);
   const forgetStep = useUnit(wcDetailsModel.$forgetStep);
@@ -75,7 +85,12 @@ export const WalletConnectDetails = ({ wallet, accounts, onClose }: Props) => {
     toggleConfirmForget();
   };
 
-  const options = [
+  const Options = [
+    {
+      icon: 'rename' as IconNames,
+      title: t('walletDetails.common.renameButton'),
+      onClick: toggleIsRenameModalOpen,
+    },
     {
       icon: 'delete' as IconNames,
       title: t('walletDetails.common.forgetButton'),
@@ -88,13 +103,25 @@ export const WalletConnectDetails = ({ wallet, accounts, onClose }: Props) => {
     },
   ];
 
+  const ActionButton = (
+    <DropdownIconButton name="more">
+      <DropdownIconButton.Items>
+        {Options.map((option) => (
+          <DropdownIconButton.Item key={option.icon}>
+            <DropdownIconButton.Option option={option} />
+          </DropdownIconButton.Item>
+        ))}
+      </DropdownIconButton.Items>
+    </DropdownIconButton>
+  );
+
   return (
     <BaseModal
       closeButton
       contentClass=""
       panelClass="h-modal"
       title={t('walletDetails.common.title')}
-      actionButton={<GeneralWalletActions wallet={wallet} extraActions={options} />}
+      actionButton={ActionButton}
       isOpen={isModalOpen}
       onClose={closeModal}
     >
@@ -192,6 +219,8 @@ export const WalletConnectDetails = ({ wallet, accounts, onClose }: Props) => {
           </Button>
         </StatusModal>
       </div>
+
+      <RenameWalletModal wallet={wallet} isOpen={isRenameModalOpen} onClose={toggleIsRenameModalOpen} />
     </BaseModal>
   );
 };
