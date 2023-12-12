@@ -47,8 +47,6 @@ export const OperationHeader = ({
   const multishardError = (isMultishard && errors.find((e) => e === OperationError.INVALID_FEE)) || undefined;
   const emptyError = errors.find((e) => e === OperationError.EMPTY_ERROR);
 
-  console.log('accounts', accounts);
-
   const availableShards =
     walletUtils.isPolkadotVault(activeWallet) && accounts.length > 1
       ? accounts.filter((a) => a.type !== AccountType.BASE)
