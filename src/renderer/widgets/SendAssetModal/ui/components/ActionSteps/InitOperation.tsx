@@ -9,7 +9,7 @@ import { getAccountOption, getSignatoryOption } from '../../common/utils';
 import { OperationFooter, OperationHeader } from '@features/operation';
 import * as sendAssetModel from '../../../model/send-asset';
 import { XcmTransferType } from '@shared/api/xcm';
-import { walletModel, accountUtils } from '@entities/wallet';
+import { walletModel, accountUtils, walletUtils } from '@entities/wallet';
 import { AssetType } from '@shared/core';
 import type { ChainId, Asset, Explorer, Account, MultisigAccount, Chain, Wallet } from '@shared/core';
 import { networkModel } from '@entities/network';
@@ -46,6 +46,7 @@ export const InitOperation = ({
   const { buildTransaction, getTransactionHash } = useTransaction();
 
   const activeAccounts = useUnit(walletModel.$activeAccounts);
+  const activeWallet = useUnit(walletModel.$activeWallet);
   const chains = useUnit(networkModel.$chains);
   const connections = useUnit(networkModel.$connections);
   const apis = useUnit(networkModel.$apis);
@@ -204,7 +205,16 @@ export const InitOperation = ({
     const balance = balances.find((b) => b.accountId === account.accountId);
     const nativeBalance = nativeBalances.find((b) => b.accountId === account.accountId);
 
-    return getAccountOption(account, { addressPrefix, asset, amount, balance, nativeBalance, fee, deposit });
+    return getAccountOption(account, {
+      addressPrefix,
+      asset,
+      amount,
+      balance,
+      nativeBalance,
+      fee,
+      deposit,
+      isPolkadotVault: walletUtils.isPolkadotVault(activeWallet),
+    });
   };
 
   const getSignatoryDropdownOption = (wallet: Wallet, account: Account) => {
