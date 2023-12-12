@@ -37,7 +37,7 @@ const $walletForm = createForm({
       ],
     },
   },
-  validateOn: ['change', 'submit'],
+  validateOn: ['submit'],
 });
 
 sample({

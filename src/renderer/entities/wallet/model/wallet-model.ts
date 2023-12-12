@@ -6,6 +6,7 @@ import { kernelModel, WalletConnectAccount } from '@shared/core';
 import { storageService } from '@shared/api/storage';
 import { modelUtils } from '../lib/model-utils';
 import { accountUtils } from '../lib/account-utils';
+import { splice } from '@shared/lib/utils';
 
 const $wallets = createStore<Wallet[]>([]);
 const $activeWallet = $wallets.map((wallets) => wallets.find((w) => w.isActive));
@@ -267,7 +268,11 @@ sample({
 sample({
   clock: updateWalletFx.doneData,
   source: $wallets,
-  fn: (wallets, updatedWallet) => [...wallets.filter((w) => w.id !== updatedWallet.id), updatedWallet],
+  fn: (wallets, updatedWallet) => {
+    const updatedWalletIndex = wallets.findIndex((w) => w.id === updatedWallet.id);
+
+    return splice(wallets, updatedWallet, updatedWalletIndex);
+  },
   target: $wallets,
 });
 
