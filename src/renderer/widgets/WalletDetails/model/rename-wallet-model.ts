@@ -79,11 +79,11 @@ sample({
       signingType: walletToEdit!.signingType,
     };
   },
-  target: walletModel.effects.updateWalletFx,
+  target: walletModel.events.walletRenamed,
 });
 
 sample({
-  clock: walletModel.effects.updateWalletFx,
+  clock: walletModel.events.walletRenamed,
   target: attach({
     source: $callbacks,
     effect: (state) => state?.onSubmit(),
@@ -93,7 +93,6 @@ sample({
 export const renameWalletModel = {
   $walletForm,
   $walletToEdit,
-  $submitPending: walletModel.effects.updateWalletFx.pending,
   events: {
     callbacksChanged: callbacksApi.callbacksChanged,
     formInitiated: walletApi.formInitiated,

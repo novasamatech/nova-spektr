@@ -43,6 +43,7 @@ const walletConnectCreated = createEvent<CreateParams<WalletConnectAccount>>();
 const walletSelected = createEvent<ID>();
 const multisigAccountUpdated = createEvent<MultisigUpdateParams>();
 const walletRemoved = createEvent<ID>();
+const walletRenamed = createEvent<Wallet>();
 
 const fetchAllAccountsFx = createEffect((): Promise<Account[]> => {
   return storageService.accounts.readAll();
@@ -265,6 +266,8 @@ sample({
   target: removeWalletFx,
 });
 
+forward({ from: walletRenamed, to: updateWalletFx });
+
 sample({
   clock: updateWalletFx.doneData,
   source: $wallets,
@@ -317,10 +320,9 @@ export const walletModel = {
     walletSelected,
     multisigAccountUpdated,
     walletRemoved,
+    walletRenamed,
+    walletRenamedSuccess: updateWalletFx.doneData,
     walletRemovedSuccess: removeWalletFx.done,
-  },
-  effects: {
-    updateWalletFx,
   },
   watch: {
     polkadotVaultCreatedDone: polkadotVaultCreatedFx.doneData,

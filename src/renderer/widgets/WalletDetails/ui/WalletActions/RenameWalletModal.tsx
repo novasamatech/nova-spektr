@@ -1,5 +1,4 @@
 import { useForm } from 'effector-forms';
-import { useUnit } from 'effector-react';
 import { FormEvent, useEffect } from 'react';
 
 import { Wallet } from '@shared/core';
@@ -21,8 +20,6 @@ export const RenameWalletModal = ({ wallet, isOpen, onClose }: Props) => {
     isValid,
     fields: { name },
   } = useForm(renameWalletModel.$walletForm);
-
-  const pending = useUnit(renameWalletModel.$submitPending);
 
   useEffect(() => {
     renameWalletModel.events.formInitiated(wallet);
@@ -55,7 +52,7 @@ export const RenameWalletModal = ({ wallet, isOpen, onClose }: Props) => {
           </InputHint>
         </div>
 
-        <Button className="ml-auto" type="submit" disabled={!isValid || pending} isLoading={pending}>
+        <Button className="ml-auto" type="submit" disabled={!isValid}>
           {t('walletDetails.common.renameSaveButton')}
         </Button>
       </form>
