@@ -7,7 +7,7 @@ import { useI18n } from '@app/providers';
 import { useToggle } from '@shared/lib/hooks';
 import { chainsService, isMultisigAvailable, networkModel } from '@entities/network';
 import { useSettingsStorage } from '@entities/settings';
-import { AssetsFilters, NetworkAssets, SelectShardModal } from './components';
+import { AssetsFilters, NetworkAssets } from './components';
 import { Header } from '@renderer/components/common';
 import type { Account, Chain } from '@shared/core';
 import { ConnectionType } from '@shared/core';
@@ -15,6 +15,7 @@ import { walletModel, walletUtils } from '@entities/wallet';
 import { currencyModel, priceProviderModel } from '@entities/price';
 import { balanceModel } from '@entities/balance';
 import { balanceSubscriptionModel } from '@features/balances';
+import { SelectShardModal } from '@features/wallets/SelectShards';
 
 export const AssetsList = () => {
   const { t } = useI18n();
