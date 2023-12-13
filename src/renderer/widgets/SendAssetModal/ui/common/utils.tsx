@@ -3,18 +3,18 @@ import { BN } from '@polkadot/util';
 
 import { AccountAddress, WalletIcon } from '@entities/wallet';
 import { DropdownOption } from '@shared/ui/Dropdowns/common/types';
-import { toAddress, cnTw, transferableAmount } from '@shared/lib/utils';
+import { cnTw, toAddress, transferableAmount } from '@shared/lib/utils';
 import { AssetBalance } from '@entities/asset';
 import { ChainTitle } from '@entities/chain';
 import { FootnoteText, HelpText } from '@shared/ui';
 import type {
+  Account,
+  Address,
   Asset,
   Balance,
-  Address,
-  Account,
-  MultisigAccount,
   Chain,
   ChainId,
+  MultisigAccount,
   Wallet,
   WalletType,
 } from '@shared/core';
@@ -27,6 +27,7 @@ type Params = {
   amount?: string;
   balance?: Balance;
   nativeBalance?: Balance;
+  hideName?: boolean;
 };
 
 const getBalance = (balance: string, asset: Asset, isCorrect = true): ReactNode => {
@@ -35,7 +36,7 @@ const getBalance = (balance: string, asset: Asset, isCorrect = true): ReactNode 
   return <AssetBalance className={cnTw(!isCorrect && 'text-text-negative')} value={balance} asset={asset} />;
 };
 
-const getElement = (address: Address, accountName: string, content?: ReactNode): ReactNode => {
+const getElement = (address: Address, accountName?: string, content?: ReactNode): ReactNode => {
   return (
     <div className="flex justify-between w-full">
       <AccountAddress size={20} type="short" address={address} name={accountName} canCopy={false} />
@@ -89,7 +90,7 @@ export const getSignatoryOption = (
 
 export const getAccountOption = <T extends Account | MultisigAccount>(
   account: T,
-  { balance, asset, fee, addressPrefix, amount, nativeBalance }: Params,
+  { balance, asset, fee, addressPrefix, amount, nativeBalance, hideName }: Params,
 ): DropdownOption<T> => {
   const address = toAddress(account.accountId, { prefix: addressPrefix });
   const canValidateBalance = balance && fee && amount;
@@ -105,7 +106,7 @@ export const getAccountOption = <T extends Account | MultisigAccount>(
   }
 
   const balanceContent = getBalance(transferableAmount(balance), asset, balanceIsCorrect);
-  const element = getElement(address, account.name, balanceContent);
+  const element = getElement(address, hideName ? undefined : account.name, balanceContent);
 
   return { id: account.accountId + account.name, value: account, element };
 };
