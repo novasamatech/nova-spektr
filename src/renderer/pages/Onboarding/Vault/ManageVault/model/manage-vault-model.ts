@@ -1,4 +1,4 @@
-import { attach, createApi, createEvent, createStore, sample, combine, createEffect } from 'effector';
+import { createApi, createEvent, createStore, sample, combine, createEffect, attach } from 'effector';
 import { createForm } from 'effector-forms';
 import { spread } from 'patronum';
 

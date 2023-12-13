@@ -41,6 +41,8 @@ import {
   Accordion,
 } from '@shared/ui';
 
+const STATUS_DELAY = 1500;
+
 type Props = {
   seedInfo: SeedInfo[];
   onBack: () => void;
@@ -134,9 +136,8 @@ export const ManageVault = ({ seedInfo, onBack, onClose, onComplete }: Props) =>
       title: name?.value.trim(),
       description: t('createMultisigAccount.successMessage'),
       content: <Animation variant="success" />,
+      closeTimer: STATUS_DELAY,
     });
-
-    onComplete();
   };
 
   const handleImportKeys = (keys: DraftAccount<ShardAccount | ChainAccount>[]) => {
