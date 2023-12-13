@@ -30,7 +30,7 @@ describe('entities/wallet/model/wallet-model', () => {
     jest.spyOn(storageService.wallets, 'update').mockResolvedValue(updatedWallet.id);
 
     const scope = fork({
-      values: new Map().set(walletModel.$wallets, [walletMock.wallet1]),
+      values: new Map().set(walletModel.$wallets, [walletMock.wallet1, walletMock.wallet2]),
     });
 
     await allSettled(renameWalletModel.events.formInitiated, { scope, params: walletMock.wallet1 });
