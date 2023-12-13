@@ -25,7 +25,7 @@ import {
   StatusModal,
 } from '@shared/ui';
 import { IconNames } from '@shared/ui/Icon/data';
-import { RenameWalletModal } from './WalletActions/RenameWalletModal';
+import { RenameWalletModal } from '@features/wallets/RenameWallet';
 
 type AccountItem = {
   accountId: `0x${string}`;

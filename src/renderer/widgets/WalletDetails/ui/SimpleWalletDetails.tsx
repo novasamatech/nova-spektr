@@ -7,7 +7,7 @@ import { chainsService } from '@entities/network';
 import { useI18n } from '@app/providers';
 import type { Wallet, BaseAccount } from '@shared/core';
 import { IconNames } from '@shared/ui/Icon/data';
-import { RenameWalletModal } from './WalletActions/RenameWalletModal';
+import { RenameWalletModal } from '@features/wallets/RenameWallet';
 
 type Props = {
   wallet: Wallet;

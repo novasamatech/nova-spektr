@@ -1,9 +1,11 @@
-import { attach, combine, createApi, createStore, sample } from 'effector';
+import { attach, combine, createApi, createEffect, createStore, sample } from 'effector';
 import { createForm } from 'effector-forms';
 import { not } from 'patronum';
 
 import { Wallet } from '@shared/core';
 import { walletModel } from '@entities/wallet';
+import { storageService } from '@shared/api/storage';
+import { splice } from '@shared/lib/utils';
 
 export type Callbacks = {
   onSubmit: () => void;
@@ -38,6 +40,12 @@ const $walletForm = createForm({
     },
   },
   validateOn: ['submit'],
+});
+
+const renameWalletFx = createEffect(async ({ id, ...rest }: Wallet): Promise<Wallet> => {
+  await storageService.wallets.update(id, rest);
+
+  return { id, ...rest };
 });
 
 sample({
@@ -79,11 +87,22 @@ sample({
       signingType: walletToEdit!.signingType,
     };
   },
-  target: walletModel.events.walletRenamed,
+  target: renameWalletFx,
 });
 
 sample({
-  clock: walletModel.events.walletRenamed,
+  clock: renameWalletFx.doneData,
+  source: walletModel.$wallets,
+  fn: (wallets, updatedWallet) => {
+    const updatedWalletIndex = wallets.findIndex((w) => w.id === updatedWallet.id);
+
+    return splice(wallets, updatedWallet, updatedWalletIndex);
+  },
+  target: walletModel.$wallets,
+});
+
+sample({
+  clock: renameWalletFx.doneData,
   target: attach({
     source: $callbacks,
     effect: (state) => state?.onSubmit(),
@@ -96,5 +115,6 @@ export const renameWalletModel = {
   events: {
     callbacksChanged: callbacksApi.callbacksChanged,
     formInitiated: walletApi.formInitiated,
+    walletRenamedSuccess: renameWalletFx.doneData,
   },
 };

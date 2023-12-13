@@ -9,7 +9,7 @@ import type { Wallet } from '@shared/core';
 import { IconNames } from '@shared/ui/Icon/data';
 import type { MultishardMap } from '../lib/types';
 import { walletDetailsUtils } from '../lib/utils';
-import { RenameWalletModal } from './WalletActions/RenameWalletModal';
+import { RenameWalletModal } from '@features/wallets/RenameWallet';
 
 type Props = {
   wallet: Wallet;

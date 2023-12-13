@@ -6,7 +6,6 @@ import { kernelModel, WalletConnectAccount } from '@shared/core';
 import { storageService } from '@shared/api/storage';
 import { modelUtils } from '../lib/model-utils';
 import { accountUtils } from '../lib/account-utils';
-import { splice } from '@shared/lib/utils';
 
 const $wallets = createStore<Wallet[]>([]);
 const $activeWallet = $wallets.map((wallets) => wallets.find((w) => w.isActive));
@@ -43,7 +42,6 @@ const walletConnectCreated = createEvent<CreateParams<WalletConnectAccount>>();
 const walletSelected = createEvent<ID>();
 const multisigAccountUpdated = createEvent<MultisigUpdateParams>();
 const walletRemoved = createEvent<ID>();
-const walletRenamed = createEvent<Wallet>();
 
 const fetchAllAccountsFx = createEffect((): Promise<Account[]> => {
   return storageService.accounts.readAll();
@@ -134,12 +132,6 @@ const polkadotVaultCreatedFx = createEffect(
     return { wallet: dbWallet, accounts: [dbRootAccount, ...dbAccounts] };
   },
 );
-
-const updateWalletFx = createEffect(async ({ id, ...rest }: Wallet): Promise<Wallet> => {
-  await storageService.wallets.update(id, rest);
-
-  return { id, ...rest };
-});
 
 type SelectParams = {
   prevId?: ID;
@@ -266,19 +258,6 @@ sample({
   target: removeWalletFx,
 });
 
-forward({ from: walletRenamed, to: updateWalletFx });
-
-sample({
-  clock: updateWalletFx.doneData,
-  source: $wallets,
-  fn: (wallets, updatedWallet) => {
-    const updatedWalletIndex = wallets.findIndex((w) => w.id === updatedWallet.id);
-
-    return splice(wallets, updatedWallet, updatedWalletIndex);
-  },
-  target: $wallets,
-});
-
 sample({
   clock: removeWalletFx.doneData,
   source: { wallets: $wallets, accounts: $accounts },
@@ -320,8 +299,6 @@ export const walletModel = {
     walletSelected,
     multisigAccountUpdated,
     walletRemoved,
-    walletRenamed,
-    walletRenamedSuccess: updateWalletFx.doneData,
     walletRemovedSuccess: removeWalletFx.done,
   },
   watch: {
