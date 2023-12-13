@@ -18,7 +18,6 @@ import type {
   Wallet,
   WalletType,
 } from '@shared/core';
-import { AccountType } from "@shared/core";
 
 type Params = {
   asset: Asset;
@@ -28,7 +27,7 @@ type Params = {
   amount?: string;
   balance?: Balance;
   nativeBalance?: Balance;
-  isPolkadotVault?: boolean;
+  hideName?: boolean;
 };
 
 const getBalance = (balance: string, asset: Asset, isCorrect = true): ReactNode => {
@@ -91,7 +90,7 @@ export const getSignatoryOption = (
 
 export const getAccountOption = <T extends Account | MultisigAccount>(
   account: T,
-  { balance, asset, fee, addressPrefix, amount, nativeBalance, isPolkadotVault }: Params,
+  { balance, asset, fee, addressPrefix, amount, nativeBalance, hideName }: Params,
 ): DropdownOption<T> => {
   const address = toAddress(account.accountId, { prefix: addressPrefix });
   const canValidateBalance = balance && fee && amount;
@@ -106,10 +105,8 @@ export const getAccountOption = <T extends Account | MultisigAccount>(
     );
   }
 
-  const isPolkadotVaultShard = isPolkadotVault && account.type === AccountType.SHARD;
-
   const balanceContent = getBalance(transferableAmount(balance), asset, balanceIsCorrect);
-  const element = getElement(address, isPolkadotVaultShard ? undefined : account.name, balanceContent);
+  const element = getElement(address, hideName ? undefined : account.name, balanceContent);
 
   return { id: account.accountId + account.name, value: account, element };
 };

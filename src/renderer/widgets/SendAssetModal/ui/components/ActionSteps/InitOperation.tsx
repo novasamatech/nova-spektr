@@ -204,6 +204,7 @@ export const InitOperation = ({
   const getAccountDropdownOption = (account: Account) => {
     const balance = balances.find((b) => b.accountId === account.accountId);
     const nativeBalance = nativeBalances.find((b) => b.accountId === account.accountId);
+    const hideName = walletUtils.isPolkadotVault(activeWallet) && accountUtils.isShardAccount(account);
 
     return getAccountOption(account, {
       addressPrefix,
@@ -213,7 +214,7 @@ export const InitOperation = ({
       nativeBalance,
       fee,
       deposit,
-      isPolkadotVault: walletUtils.isPolkadotVault(activeWallet),
+      hideName,
     });
   };
 
