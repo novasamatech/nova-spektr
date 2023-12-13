@@ -65,6 +65,8 @@ import CurrencyImg, { ReactComponent as CurrencySvg } from '@shared/assets/image
 import ImportImg, { ReactComponent as ImportSvg } from '@shared/assets/images/functionals/import.svg';
 import ExportImg, { ReactComponent as ExportSvg } from '@shared/assets/images/functionals/export.svg';
 import MoreImg, { ReactComponent as MoreSvg } from '@shared/assets/images/functionals/more.svg';
+import RenameImg, { ReactComponent as RenameSvg } from '@shared/assets/images/functionals/rename.svg';
+import ForgetImg, { ReactComponent as ForgetSvg } from '@shared/assets/images/functionals/forget.svg';
 
 const FunctionalImages = {
   copy: { svg: CopySvg, img: CopyImg },
@@ -112,6 +114,8 @@ const FunctionalImages = {
   import: { img: ImportImg, svg: ImportSvg },
   export: { img: ExportImg, svg: ExportSvg },
   more: { img: MoreImg, svg: MoreSvg },
+  rename: { img: RenameImg, svg: RenameSvg },
+  forget: { img: ForgetImg, svg: ForgetSvg },
 } as const;
 
 export type Functional = keyof typeof FunctionalImages;

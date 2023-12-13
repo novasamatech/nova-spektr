@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 
 import { BaseModal, DropdownIconButton } from '@shared/ui';
-import { useModalClose } from '@shared/lib/hooks';
+import { useModalClose, useToggle } from '@shared/lib/hooks';
 import { MultishardAccountsList, WalletCardLg } from '@entities/wallet';
 import { chainsService } from '@entities/network';
 import { useI18n } from '@app/providers';
@@ -9,6 +9,7 @@ import type { Wallet } from '@shared/core';
 import { IconNames } from '@shared/ui/Icon/data';
 import type { MultishardMap } from '../lib/types';
 import { walletDetailsUtils } from '../lib/utils';
+import { RenameWalletModal } from '@features/wallets/RenameWallet';
 
 type Props = {
   wallet: Wallet;
@@ -19,6 +20,7 @@ export const MultishardWalletDetails = ({ wallet, accounts, onClose }: Props) =>
   const { t } = useI18n();
 
   const [isModalOpen, closeModal] = useModalClose(true, onClose);
+  const [isRenameModalOpen, toggleIsRenameModalOpen] = useToggle();
 
   const chains = useMemo(() => {
     return chainsService.getChainsData({ sort: true });
@@ -26,10 +28,20 @@ export const MultishardWalletDetails = ({ wallet, accounts, onClose }: Props) =>
 
   const Options = [
     {
+      icon: 'rename' as IconNames,
+      title: t('walletDetails.common.renameButton'),
+      onClick: toggleIsRenameModalOpen,
+    },
+    {
       icon: 'export' as IconNames,
       title: t('walletDetails.vault.export'),
       onClick: () => walletDetailsUtils.exportMultishardWallet(wallet, accounts),
     },
+    // {
+    //   icon: 'forget',
+    //   title: t('walletDetails.common.forgetButton'),
+    //   onClick: () => {},
+    // },
   ];
 
   const ActionButton = (
@@ -60,6 +72,7 @@ export const MultishardWalletDetails = ({ wallet, accounts, onClose }: Props) =>
         </div>
         <MultishardAccountsList accounts={accounts} chains={chains} className="h-[443px]" />
       </div>
+      <RenameWalletModal wallet={wallet} isOpen={isRenameModalOpen} onClose={toggleIsRenameModalOpen} />
     </BaseModal>
   );
 };
