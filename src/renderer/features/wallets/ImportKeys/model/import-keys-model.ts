@@ -39,15 +39,16 @@ const fileUploaded = createEvent<string>();
 const resetValues = createEvent<ExistingDerivations>();
 
 const parseFileContentFx = createEffect<string, ParsedImportFile, DerivationImportError>((fileContent: string) => {
+  let structure: unknown;
   try {
     // using default core scheme converts 0x strings into numeric values
-    const structure = parse(fileContent, importKeysUtils.renameDerivationPathKeyReviver, { schema: 'failsafe' });
-    if (importKeysUtils.isFileStructureValid(structure)) return structure;
-
-    throw new DerivationImportError(ValidationError.INVALID_FILE_STRUCTURE);
+    structure = parse(fileContent, importKeysUtils.renameDerivationPathKeyReviver, { schema: 'failsafe' });
   } catch {
     throw new DerivationImportError(ValidationError.INVALID_FILE_STRUCTURE);
   }
+  if (importKeysUtils.isFileStructureValid(structure)) return structure;
+
+  throw new DerivationImportError(ValidationError.INVALID_FILE_STRUCTURE);
 });
 
 type ValidateDerivationsParams = { fileContent: ParsedImportFile; existingDerivations: ExistingDerivations };

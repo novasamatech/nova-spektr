@@ -15,8 +15,8 @@ type Props = {
   existingKeys: DraftAccount<ChainAccount | ShardAccount>[];
   onClose: () => void;
   onConfirm: (
-    keysToAdd: DraftAccount<ChainAccount | ShardAccount>[],
-    keysToRemove: DraftAccount<ChainAccount | ShardAccount>[],
+    keysToAdd: Array<ChainAccount | ShardAccount[]>,
+    keysToRemove: Array<ChainAccount | ShardAccount[]>,
   ) => void;
 };
 
@@ -31,7 +31,7 @@ export const KeyConstructor = ({ title, isOpen, existingKeys, onClose, onConfirm
   useEffect(() => {
     if (!isOpen) return;
 
-    constructorModel.events.formInitiated(existingKeys);
+    constructorModel.events.formInitiated(existingKeys as Array<ChainAccount | ShardAccount>);
   }, [isOpen]);
 
   const closeConstructor = () => {
@@ -66,7 +66,7 @@ export const KeyConstructor = ({ title, isOpen, existingKeys, onClose, onConfirm
         <Button variant="text" onClick={closeConstructor}>
           {t('dynamicDerivations.constructor.backButton')}
         </Button>
-        <Button onClick={() => onConfirm(keysToAdd.flat(), keysToRemove.flat())}>
+        <Button onClick={() => onConfirm(keysToAdd, keysToRemove)}>
           {t('dynamicDerivations.constructor.saveButton')}
         </Button>
       </div>

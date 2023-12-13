@@ -1,12 +1,23 @@
-import { attach, createApi, createEvent, createStore, forward, sample, combine } from 'effector';
+import { attach, createApi, createEvent, createStore, sample, combine, createEffect } from 'effector';
 import { createForm } from 'effector-forms';
+import { spread } from 'patronum';
 
 import { SeedInfo } from '@renderer/components/common/QrCode/common/types';
 import { chainsService } from '@entities/network';
-import { walletModel, accountUtils, KEY_NAMES } from '@entities/wallet';
-import { AccountType, ChainType, CryptoType, KeyType } from '@shared/core';
+import { accountUtils, KEY_NAMES, walletModel } from '@entities/wallet';
+import {
+  AccountType,
+  ChainType,
+  CryptoType,
+  KeyType,
+  type BaseAccount,
+  type Wallet,
+  Account,
+  type NoID,
+} from '@shared/core';
 import type { ChainAccount, ShardAccount, DraftAccount } from '@shared/core';
 import { dictionary } from '@shared/lib/utils';
+import { storageService } from '@shared/api/storage';
 
 const chains = chainsService.getChainsData();
 
@@ -16,21 +27,36 @@ export type Callbacks = {
   onSubmit: () => void;
 };
 
+type VaultCreateParams = {
+  root: Omit<NoID<BaseAccount>, 'walletId'>;
+  wallet: Omit<NoID<Wallet>, 'isActive'>;
+  accounts: DraftAccount<ChainAccount | ShardAccount>[];
+};
+
+const formInitiated = createEvent<SeedInfo[]>();
+const keysRemoved = createEvent<DraftAccount<ChainAccount | ShardAccount>[]>();
+const keysAdded = createEvent<DraftAccount<ChainAccount | ShardAccount>[]>();
+const derivationsImported = createEvent<DraftAccount<ChainAccount | ShardAccount>[]>();
+const vaultCreated = createEvent<VaultCreateParams>();
+
 const $callbacks = createStore<Callbacks | null>(null);
+const callbacksApi = createApi($callbacks, {
+  callbacksChanged: (state, props: Callbacks) => ({ ...state, ...props }),
+});
+
 const $keys = createStore<DraftAccount<ChainAccount | ShardAccount>[]>([]);
 
 const $keysGroups = combine($keys, (accounts): Array<ChainAccount | ShardAccount[]> => {
   return accountUtils.getAccountsAndShardGroups(accounts as Array<ChainAccount | ShardAccount>);
 });
 
-const callbacksApi = createApi($callbacks, {
-  callbacksChanged: (state, props: Callbacks) => ({ ...state, ...props }),
-});
+const $hasKeys = combine($keys, (keys): boolean => {
+  return keys.some((key) => {
+    const keyData = Array.isArray(key) ? key[0] : key;
 
-const formInitiated = createEvent<SeedInfo[]>();
-const keysRemoved = createEvent<DraftAccount<ChainAccount | ShardAccount>[]>();
-const keysAdded = createEvent<DraftAccount<ChainAccount | ShardAccount>[]>();
-const derivationsImported = createEvent<DraftAccount<ChainAccount | ShardAccount>[]>();
+    return keyData.keyType !== KeyType.MAIN;
+  });
+});
 
 const $walletForm = createForm({
   fields: {
@@ -46,16 +72,36 @@ const $walletForm = createForm({
       ],
     },
   },
-  validateOn: ['change', 'submit'],
+  validateOn: ['submit'],
 });
 
-const $hasKeys = combine($keys, (keys): boolean => {
-  return keys.some((key) => {
-    const keyData = Array.isArray(key) ? key[0] : key;
+type CreateResult = {
+  wallet: Wallet;
+  accounts: Account[];
+};
+const createVaultFx = createEffect(
+  async ({ wallet, accounts, root }: VaultCreateParams): Promise<CreateResult | undefined> => {
+    const dbWallet = await storageService.wallets.create({ ...wallet, isActive: false });
 
-    return keyData.keyType !== KeyType.MAIN;
-  });
-});
+    if (!dbWallet) return undefined;
+
+    const dbRootAccount = await storageService.accounts.create({ ...root, walletId: dbWallet.id });
+
+    if (!dbRootAccount) return undefined;
+
+    const accountToCreate = accounts.map((account) => ({
+      ...account,
+      walletId: dbWallet.id,
+      ...(accountUtils.isShardAccount(account) && { baseId: dbRootAccount.id }),
+    }));
+
+    const dbAccounts = await storageService.accounts.createAll(accountToCreate as Account[]);
+
+    if (!dbAccounts || dbAccounts.length === 0) return undefined;
+
+    return { wallet: dbWallet, accounts: dbAccounts.concat(dbAccounts) };
+  },
+);
 
 sample({
   clock: formInitiated,
@@ -86,14 +132,6 @@ sample({
 });
 
 sample({
-  clock: walletModel.watch.polkadotVaultCreatedDone,
-  target: attach({
-    source: $callbacks,
-    effect: (state) => state?.onSubmit(),
-  }),
-});
-
-sample({
   clock: keysRemoved,
   source: $keys,
   filter: (_, keysToAdd) => keysToAdd.length > 0,
@@ -113,7 +151,38 @@ sample({
   target: $keys,
 });
 
-forward({ from: derivationsImported, to: $keys });
+sample({ clock: derivationsImported, target: $keys });
+
+sample({ clock: vaultCreated, target: createVaultFx });
+
+// TODO: should use factory
+sample({
+  clock: createVaultFx.doneData,
+  source: { wallets: walletModel.$wallets, accounts: walletModel.$accounts },
+  filter: (_, data) => Boolean(data),
+  fn: ({ wallets, accounts }, data) => ({
+    wallets: wallets.concat(data!.wallet),
+    accounts: accounts.concat(data!.accounts),
+  }),
+  target: spread({
+    targets: { wallets: walletModel.$wallets, accounts: walletModel.$accounts },
+  }),
+});
+
+sample({
+  clock: createVaultFx.doneData,
+  filter: (data: CreateResult | undefined): data is CreateResult => Boolean(data),
+  fn: (data) => data.wallet.id,
+  target: walletModel.events.walletSelected,
+});
+
+sample({
+  clock: createVaultFx.doneData,
+  target: attach({
+    source: $callbacks,
+    effect: (state) => state?.onSubmit(),
+  }),
+});
 
 export const manageVaultModel = {
   $walletForm,
@@ -126,5 +195,6 @@ export const manageVaultModel = {
     keysRemoved,
     keysAdded,
     derivationsImported,
+    vaultCreated,
   },
 };

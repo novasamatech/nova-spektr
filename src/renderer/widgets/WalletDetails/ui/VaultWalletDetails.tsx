@@ -6,7 +6,7 @@ import { useModalClose, useToggle } from '@shared/lib/hooks';
 import { RootAccountLg, WalletCardLg, VaultAccountsList } from '@entities/wallet';
 import { networkModel } from '@entities/network';
 import { useI18n } from '@app/providers';
-import type { Wallet, BaseAccount, DraftAccount, ChainAccount, ShardAccount } from '@shared/core';
+import type { Wallet, BaseAccount, ChainAccount, ShardAccount } from '@shared/core';
 import { copyToClipboard, toAddress } from '@shared/lib/utils';
 import { IconNames } from '@shared/ui/Icon/data';
 import { VaultMap } from '../lib/types';
@@ -27,27 +27,34 @@ export const VaultWalletDetails = ({ wallet, root, accountsMap, onClose }: Props
   const chains = useUnit(networkModel.$chains);
 
   const [isModalOpen, closeModal] = useModalClose(true, onClose);
-  const [newKeys, setNewKeys] = useState<DraftAccount<ChainAccount | ShardAccount>[]>([]);
+  const [newKeys, setNewKeys] = useState<Array<ChainAccount | ShardAccount>>([]);
 
   const [isConstructorModalOpen, toggleConstructorModal] = useToggle();
   const [isImportModalOpen, toggleImportModal] = useToggle();
   const [isScanModalOpen, toggleScanModal] = useToggle();
 
-  const updateKeys = (
-    keysToAdd: DraftAccount<ChainAccount | ShardAccount>[],
-    keysToRemove: DraftAccount<ChainAccount | ShardAccount>[],
+  const handleConstructorKeys = (
+    keysToAdd: Array<ChainAccount | ShardAccount[]>,
+    keysToRemove: Array<ChainAccount | ShardAccount[]>,
   ) => {
     toggleConstructorModal();
 
     if (keysToRemove.length > 0) {
-      // @ts-ignore
-      vaultDetailsModel.events.keysRemoved(keysToRemove);
+      vaultDetailsModel.events.keysRemoved(keysToRemove.flat());
     }
 
     if (keysToAdd.length > 0) {
-      setNewKeys(keysToAdd);
+      setNewKeys(keysToAdd.flat());
       toggleScanModal();
     }
+  };
+
+  const handleImportedKeys = () => {
+    console.log(1);
+  };
+
+  const handleVaultKeys = () => {
+    console.log(2);
   };
 
   const options = [
@@ -127,14 +134,14 @@ export const VaultWalletDetails = ({ wallet, root, accountsMap, onClose }: Props
         isOpen={isConstructorModalOpen}
         title={wallet.name}
         existingKeys={Object.values(accountsMap).flat(2)}
-        onConfirm={updateKeys}
+        onConfirm={handleConstructorKeys}
         onClose={toggleConstructorModal}
       />
       <ImportKeysModal
         isOpen={isImportModalOpen}
         rootAccountId={root.accountId}
         existingKeys={Object.values(accountsMap).flat(2)}
-        onConfirm={toggleImportModal}
+        onConfirm={handleImportedKeys}
         onClose={toggleImportModal}
       />
       <DerivationsAddressModal
@@ -143,7 +150,7 @@ export const VaultWalletDetails = ({ wallet, root, accountsMap, onClose }: Props
         rootAccountId={root.accountId}
         keys={newKeys}
         onClose={toggleScanModal}
-        onComplete={vaultDetailsModel.events.keysAdded}
+        onComplete={handleVaultKeys}
       />
     </BaseModal>
   );

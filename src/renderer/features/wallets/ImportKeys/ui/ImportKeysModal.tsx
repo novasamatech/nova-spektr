@@ -30,19 +30,7 @@ export const ImportKeysModal = ({ isOpen, rootAccountId, existingKeys, onConfirm
   }, [isOpen]);
 
   const handleFileUpload = (file: File) => {
-    const fileReader = new FileReader();
-
-    fileReader.addEventListener(
-      'loadend',
-      (e) => {
-        if (e.target?.result) {
-          importKeysModel.events.fileUploaded(e.target['result'] as string);
-        }
-      },
-      { once: true },
-    );
-
-    fileReader.readAsText(file);
+    file.text().then(importKeysModel.events.fileUploaded);
   };
 
   const getReportText = () => {

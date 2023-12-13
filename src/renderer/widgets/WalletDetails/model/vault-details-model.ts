@@ -1,6 +1,6 @@
 import { createStore, createEvent, createEffect, sample } from 'effector';
 
-import type { ShardAccount, Chain, ChainId, ChainAccount, DraftAccount, ID } from '@shared/core';
+import type { ShardAccount, Chain, ChainId, ChainAccount, ID } from '@shared/core';
 import { chainsService } from '@entities/network';
 import { storageService } from '@shared/api/storage';
 import { walletModel } from '@entities/wallet';
@@ -8,7 +8,7 @@ import { walletModel } from '@entities/wallet';
 const shardsSelected = createEvent<ShardAccount[]>();
 const shardsCleared = createEvent();
 const keysRemoved = createEvent<Array<ChainAccount | ShardAccount>>();
-const keysAdded = createEvent<DraftAccount<ChainAccount | ShardAccount>[]>();
+const keysAdded = createEvent<Array<ChainAccount | ShardAccount>>();
 
 const $shards = createStore<ShardAccount[]>([]).reset(shardsCleared);
 const $chain = createStore<Chain>({} as Chain).reset(shardsCleared);

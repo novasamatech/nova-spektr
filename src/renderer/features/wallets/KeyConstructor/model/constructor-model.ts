@@ -4,11 +4,11 @@ import { spread } from 'patronum';
 
 import { networkModel } from '@entities/network';
 import type { ChainAccount, ShardAccount, Chain } from '@shared/core';
-import { KeyType, AccountType, CryptoType, ChainType, DraftAccount } from '@shared/core';
+import { KeyType, AccountType, CryptoType, ChainType } from '@shared/core';
 import { validateDerivation, derivationHasPassword } from '@shared/lib/utils';
 import { accountUtils, KEY_NAMES, SHARDED_KEY_NAMES } from '@entities/wallet';
 
-const formInitiated = createEvent<DraftAccount<ChainAccount | ShardAccount>[]>();
+const formInitiated = createEvent<Array<ChainAccount | ShardAccount>>();
 const formStarted = createEvent();
 const focusableSet = createEvent<HTMLButtonElement>();
 const keyRemoved = createEvent<number>();

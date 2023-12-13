@@ -1,5 +1,3 @@
-import { Dictionary } from 'lodash';
-
 import type { ChainAccount, ShardAccount, DraftAccount } from '@shared/core';
 import { DdAddressInfoDecoded, DynamicDerivationRequestInfo } from '@renderer/components/common/QrCode/common/types';
 import { cryptoTypeToMultisignerIndex } from '@renderer/components/common/QrCode/QrGenerator/common/utils';
@@ -11,7 +9,7 @@ export const derivationAddressUtils = {
 };
 
 function createDerivationsRequest(
-  accounts: DraftAccount<ShardAccount | ChainAccount>[],
+  accounts: DraftAccount<ChainAccount | ShardAccount>[],
 ): DynamicDerivationRequestInfo[] {
   return accounts.map((account) => ({
     derivationPath: account.derivationPath,
@@ -21,9 +19,9 @@ function createDerivationsRequest(
 }
 
 function createDerivedAccounts(
-  derivedKeys: Dictionary<DdAddressInfoDecoded>,
+  derivedKeys: Record<string, DdAddressInfoDecoded>,
   accounts: DraftAccount<ShardAccount | ChainAccount>[],
-): Omit<ChainAccount | ShardAccount, 'walletId' | 'id'>[] {
+): DraftAccount<ChainAccount | ShardAccount>[] {
   return accounts.map((account) => {
     const derivationPath = `${account.derivationPath}${cryptoTypeToMultisignerIndex(account.cryptoType)}`;
 

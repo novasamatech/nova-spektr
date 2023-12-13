@@ -8,7 +8,18 @@ import { u8aToHex } from '@polkadot/util';
 import { useI18n, useStatusContext } from '@app/providers';
 import { SeedInfo } from '@renderer/components/common/QrCode/common/types';
 import { toAddress, dictionary, IS_MAC, copyToClipboard } from '@shared/lib/utils';
-import type { ChainAccount, ChainId, ShardAccount, DraftAccount } from '@shared/core';
+import {
+  ChainAccount,
+  ChainId,
+  ShardAccount,
+  DraftAccount,
+  WalletType,
+  SigningType,
+  CryptoType,
+  ChainType,
+  AccountType,
+  AccountId,
+} from '@shared/core';
 import { VaultInfoPopover } from './VaultInfoPopover';
 import { useAltOrCtrlKeyPressed, useToggle } from '@shared/lib/hooks';
 import { manageVaultModel } from './model/manage-vault-model';
@@ -99,7 +110,23 @@ export const ManageVault = ({ seedInfo, onBack, onClose, onComplete }: Props) =>
     toggleIsAddressModalOpen();
   };
 
-  const handleSuccess = () => {
+  const handleCreateVault = (rootAccountId: AccountId, accounts: DraftAccount<ChainAccount | ShardAccount>[]) => {
+    manageVaultModel.events.vaultCreated({
+      wallet: {
+        name: walletName.trim(),
+        type: WalletType.POLKADOT_VAULT,
+        signingType: SigningType.POLKADOT_VAULT,
+      },
+      root: {
+        name: '',
+        accountId: rootAccountId,
+        cryptoType: CryptoType.SR25519,
+        chainType: ChainType.SUBSTRATE,
+        type: AccountType.BASE,
+      },
+      accounts,
+    });
+
     onComplete();
     showStatus({
       title: name?.value.trim(),
@@ -114,11 +141,11 @@ export const ManageVault = ({ seedInfo, onBack, onClose, onComplete }: Props) =>
   };
 
   const handleConstructorKeys = (
-    keysToAdd: DraftAccount<ChainAccount | ShardAccount>[],
-    keysToRemove: DraftAccount<ChainAccount | ShardAccount>[],
+    keysToAdd: Array<ChainAccount | ShardAccount[]>,
+    keysToRemove: Array<ChainAccount | ShardAccount[]>,
   ) => {
-    manageVaultModel.events.keysRemoved(keysToRemove);
-    manageVaultModel.events.keysAdded(keysToAdd);
+    manageVaultModel.events.keysRemoved(keysToRemove.flat());
+    manageVaultModel.events.keysAdded(keysToAdd.flat());
     toggleConstructorModal();
   };
 
@@ -285,7 +312,7 @@ export const ManageVault = ({ seedInfo, onBack, onClose, onComplete }: Props) =>
         rootAccountId={publicKey}
         keys={keys}
         onClose={toggleIsAddressModalOpen}
-        onComplete={handleSuccess}
+        onComplete={handleCreateVault}
       />
     </>
   );

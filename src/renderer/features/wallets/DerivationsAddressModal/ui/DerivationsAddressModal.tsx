@@ -1,34 +1,22 @@
 import keyBy from 'lodash/keyBy';
-import { Dictionary } from 'lodash';
 
 import { BaseModal, Button, InfoLink, SmallTitleText } from '@renderer/shared/ui';
 import { useToggle } from '@renderer/shared/lib/hooks';
 import { useI18n } from '@renderer/app/providers';
 import { TROUBLESHOOTING_URL } from '@renderer/components/common/QrCode/common/constants';
 import { toAddress } from '@shared/lib/utils';
-import { walletModel } from '@entities/wallet';
 import { DdAddressInfoDecoded } from '@renderer/components/common/QrCode/common/types';
 import { derivationAddressUtils } from '../lib/utils';
 import { QrDerivationsGenerator } from '@renderer/components/common/QrCode/QrGenerator/QrDerivationsGenerator';
 import { DdKeyQrReader } from './DdKeyQrReader';
-import {
-  AccountId,
-  AccountType,
-  ChainType,
-  CryptoType,
-  SigningType,
-  WalletType,
-  DraftAccount,
-  ShardAccount,
-  ChainAccount,
-} from '@renderer/shared/core';
+import type { AccountId, DraftAccount, ShardAccount, ChainAccount } from '@shared/core';
 
 type Props = {
   isOpen: boolean;
   walletName: string;
   rootAccountId: AccountId;
   keys: DraftAccount<ShardAccount | ChainAccount>[];
-  onComplete: (accounts: Array<ChainAccount | ShardAccount>) => void;
+  onComplete: (rootAccountId: AccountId, accounts: DraftAccount<ChainAccount | ShardAccount>[]) => void;
   onClose: () => void;
 };
 
@@ -38,29 +26,9 @@ export const DerivationsAddressModal = ({ isOpen, rootAccountId, keys, walletNam
   const [isScanStep, toggleIsScanStep] = useToggle();
 
   const handleScanResult = (result: DdAddressInfoDecoded[]) => {
-    const derivationsByPath = keyBy(result, (d) => `${d.derivationPath}${d.encryption}`);
-    createWallet(derivationsByPath);
-  };
+    const derivedKeys = keyBy(result, (d) => `${d.derivationPath}${d.encryption}`);
 
-  const createWallet = (derivedKeys: Dictionary<DdAddressInfoDecoded>) => {
-    const accountsToSave = derivationAddressUtils.createDerivedAccounts(derivedKeys, keys);
-
-    // TODO: call onComplete
-    walletModel.events.polkadotVaultCreated({
-      wallet: {
-        name: walletName.trim(),
-        type: WalletType.POLKADOT_VAULT,
-        signingType: SigningType.POLKADOT_VAULT,
-      },
-      accounts: accountsToSave,
-      root: {
-        name: '',
-        accountId: rootAccountId,
-        cryptoType: CryptoType.SR25519,
-        chainType: ChainType.SUBSTRATE,
-        type: AccountType.BASE,
-      },
-    });
+    onComplete(rootAccountId, derivationAddressUtils.createDerivedAccounts(derivedKeys, keys));
   };
 
   return (
