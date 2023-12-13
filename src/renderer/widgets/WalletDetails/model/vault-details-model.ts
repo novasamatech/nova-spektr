@@ -1,14 +1,21 @@
 import { createStore, createEvent, createEffect, sample } from 'effector';
 
-import type { ShardAccount, Chain, ChainId, ChainAccount, ID } from '@shared/core';
 import { chainsService } from '@entities/network';
 import { storageService } from '@shared/api/storage';
-import { walletModel } from '@entities/wallet';
+import { walletModel, accountUtils } from '@entities/wallet';
+import type { ShardAccount, Chain, ChainId, ChainAccount, ID, DraftAccount, Account, AccountId } from '@shared/core';
+
+type AccountsCreatedParams = {
+  walletId: ID;
+  rootAccountId: AccountId;
+  accounts: DraftAccount<ChainAccount | ShardAccount>[];
+};
 
 const shardsSelected = createEvent<ShardAccount[]>();
 const shardsCleared = createEvent();
 const keysRemoved = createEvent<Array<ChainAccount | ShardAccount>>();
 const keysAdded = createEvent<Array<ChainAccount | ShardAccount>>();
+const accountsCreated = createEvent<AccountsCreatedParams>();
 
 const $shards = createStore<ShardAccount[]>([]).reset(shardsCleared);
 const $chain = createStore<Chain>({} as Chain).reset(shardsCleared);
@@ -20,6 +27,18 @@ const chainSetFx = createEffect((chainId: ChainId): Chain | undefined => {
 const removeKeysFx = createEffect((ids: ID[]): Promise<ID[] | undefined> => {
   return storageService.accounts.deleteAll(ids);
 });
+
+const createAccountsFx = createEffect(
+  async ({ walletId, rootAccountId, accounts }: AccountsCreatedParams): Promise<Account[] | undefined> => {
+    const accountsToCreate = accounts.map((account) => ({
+      ...account,
+      ...(accountUtils.isChainAccount(account) && { baseId: rootAccountId }),
+      walletId,
+    }));
+
+    return storageService.accounts.createAll(accountsToCreate as Account[]);
+  },
+);
 
 sample({
   clock: shardsSelected,
@@ -58,6 +77,16 @@ sample({
   target: walletModel.$accounts,
 });
 
+sample({ clock: accountsCreated, target: createAccountsFx });
+
+sample({
+  clock: createAccountsFx.doneData,
+  source: walletModel.$accounts,
+  filter: (_, newAccounts) => Boolean(newAccounts),
+  fn: (accounts, newAccounts) => accounts.concat(newAccounts!),
+  target: walletModel.$accounts,
+});
+
 export const vaultDetailsModel = {
   $shards,
   $chain,
@@ -66,5 +95,6 @@ export const vaultDetailsModel = {
     shardsCleared,
     keysRemoved,
     keysAdded,
+    accountsCreated,
   },
 };

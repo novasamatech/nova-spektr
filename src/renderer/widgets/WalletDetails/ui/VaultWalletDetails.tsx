@@ -6,7 +6,7 @@ import { useModalClose, useToggle } from '@shared/lib/hooks';
 import { RootAccountLg, WalletCardLg, VaultAccountsList } from '@entities/wallet';
 import { networkModel } from '@entities/network';
 import { useI18n } from '@app/providers';
-import type { Wallet, BaseAccount, ChainAccount, ShardAccount } from '@shared/core';
+import type { Wallet, BaseAccount, ChainAccount, ShardAccount, DraftAccount } from '@shared/core';
 import { copyToClipboard, toAddress } from '@shared/lib/utils';
 import { IconNames } from '@shared/ui/Icon/data';
 import { VaultMap } from '../lib/types';
@@ -27,7 +27,7 @@ export const VaultWalletDetails = ({ wallet, root, accountsMap, onClose }: Props
   const chains = useUnit(networkModel.$chains);
 
   const [isModalOpen, closeModal] = useModalClose(true, onClose);
-  const [newKeys, setNewKeys] = useState<Array<ChainAccount | ShardAccount>>([]);
+  const [newKeys, setNewKeys] = useState<DraftAccount<ChainAccount | ShardAccount>[]>([]);
 
   const [isConstructorModalOpen, toggleConstructorModal] = useToggle();
   const [isImportModalOpen, toggleImportModal] = useToggle();
@@ -49,12 +49,18 @@ export const VaultWalletDetails = ({ wallet, root, accountsMap, onClose }: Props
     }
   };
 
-  const handleImportedKeys = () => {
-    console.log(1);
+  const handleImportedKeys = (keys: DraftAccount<ChainAccount | ShardAccount>[]) => {
+    toggleImportModal();
+    setNewKeys(keys);
+    toggleScanModal();
   };
 
-  const handleVaultKeys = () => {
-    console.log(2);
+  const handleVaultKeys = (accounts: DraftAccount<ChainAccount | ShardAccount>[]) => {
+    vaultDetailsModel.events.accountsCreated({
+      walletId: wallet.id,
+      rootAccountId: root.accountId,
+      accounts,
+    });
   };
 
   const options = [
@@ -146,7 +152,6 @@ export const VaultWalletDetails = ({ wallet, root, accountsMap, onClose }: Props
       />
       <DerivationsAddressModal
         isOpen={isScanModalOpen}
-        walletName={wallet.name}
         rootAccountId={root.accountId}
         keys={newKeys}
         onClose={toggleScanModal}

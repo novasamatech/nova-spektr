@@ -13,14 +13,13 @@ import type { AccountId, DraftAccount, ShardAccount, ChainAccount } from '@share
 
 type Props = {
   isOpen: boolean;
-  walletName: string;
   rootAccountId: AccountId;
   keys: DraftAccount<ShardAccount | ChainAccount>[];
-  onComplete: (rootAccountId: AccountId, accounts: DraftAccount<ChainAccount | ShardAccount>[]) => void;
+  onComplete: (accounts: DraftAccount<ChainAccount | ShardAccount>[]) => void;
   onClose: () => void;
 };
 
-export const DerivationsAddressModal = ({ isOpen, rootAccountId, keys, walletName, onClose, onComplete }: Props) => {
+export const DerivationsAddressModal = ({ isOpen, rootAccountId, keys, onClose, onComplete }: Props) => {
   const { t } = useI18n();
 
   const [isScanStep, toggleIsScanStep] = useToggle();
@@ -28,7 +27,7 @@ export const DerivationsAddressModal = ({ isOpen, rootAccountId, keys, walletNam
   const handleScanResult = (result: DdAddressInfoDecoded[]) => {
     const derivedKeys = keyBy(result, (d) => `${d.derivationPath}${d.encryption}`);
 
-    onComplete(rootAccountId, derivationAddressUtils.createDerivedAccounts(derivedKeys, keys));
+    onComplete(derivationAddressUtils.createDerivedAccounts(derivedKeys, keys));
   };
 
   return (

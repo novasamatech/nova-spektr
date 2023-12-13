@@ -89,17 +89,17 @@ const createVaultFx = createEffect(
 
     if (!dbRootAccount) return undefined;
 
-    const accountToCreate = accounts.map((account) => ({
+    const accountsToCreate = accounts.map((account) => ({
       ...account,
+      ...(accountUtils.isChainAccount(account) && { baseId: dbRootAccount.id }),
       walletId: dbWallet.id,
-      ...(accountUtils.isShardAccount(account) && { baseId: dbRootAccount.id }),
     }));
 
-    const dbAccounts = await storageService.accounts.createAll(accountToCreate as Account[]);
+    const dbAccounts = await storageService.accounts.createAll(accountsToCreate as Account[]);
 
     if (!dbAccounts || dbAccounts.length === 0) return undefined;
 
-    return { wallet: dbWallet, accounts: dbAccounts.concat(dbAccounts) };
+    return { wallet: dbWallet, accounts: [dbRootAccount, ...dbAccounts] };
   },
 );
 

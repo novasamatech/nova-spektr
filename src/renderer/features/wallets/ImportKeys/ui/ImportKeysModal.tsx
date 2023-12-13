@@ -13,7 +13,7 @@ type Props = {
   isOpen: boolean;
   rootAccountId: AccountId;
   existingKeys: DraftAccount<ChainAccount | ShardAccount>[];
-  onConfirm: (mergedKeys: DraftAccount<ChainAccount | ShardAccount>[]) => void;
+  onConfirm: (keys: DraftAccount<ChainAccount | ShardAccount>[]) => void;
   onClose: () => void;
 };
 
@@ -26,7 +26,10 @@ export const ImportKeysModal = ({ isOpen, rootAccountId, existingKeys, onConfirm
   useEffect(() => {
     if (!isOpen) return;
 
-    importKeysModel.events.resetValues({ derivations: existingKeys, root: rootAccountId });
+    importKeysModel.events.resetValues({
+      root: rootAccountId,
+      derivations: existingKeys,
+    });
   }, [isOpen]);
 
   const handleFileUpload = (file: File) => {

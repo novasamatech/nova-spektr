@@ -18,7 +18,6 @@ import {
   CryptoType,
   ChainType,
   AccountType,
-  AccountId,
 } from '@shared/core';
 import { VaultInfoPopover } from './VaultInfoPopover';
 import { useAltOrCtrlKeyPressed, useToggle } from '@shared/lib/hooks';
@@ -71,6 +70,10 @@ export const ManageVault = ({ seedInfo, onBack, onClose, onComplete }: Props) =>
     fields: { name },
   } = useForm(manageVaultModel.$walletForm);
 
+  const publicKey = u8aToHex(seedInfo[0].multiSigner.public);
+  const publicKeyAddress = toAddress(publicKey, { prefix: 1 });
+  const walletName = isAltPressed || !name?.value ? publicKeyAddress : name?.value;
+
   useEffect(() => {
     manageVaultModel.events.formInitiated(seedInfo);
   }, [seedInfo]);
@@ -110,7 +113,7 @@ export const ManageVault = ({ seedInfo, onBack, onClose, onComplete }: Props) =>
     toggleIsAddressModalOpen();
   };
 
-  const handleCreateVault = (rootAccountId: AccountId, accounts: DraftAccount<ChainAccount | ShardAccount>[]) => {
+  const handleCreateVault = (accounts: DraftAccount<ChainAccount | ShardAccount>[]) => {
     manageVaultModel.events.vaultCreated({
       wallet: {
         name: walletName.trim(),
@@ -119,7 +122,7 @@ export const ManageVault = ({ seedInfo, onBack, onClose, onComplete }: Props) =>
       },
       root: {
         name: '',
-        accountId: rootAccountId,
+        accountId: publicKey,
         cryptoType: CryptoType.SR25519,
         chainType: ChainType.SUBSTRATE,
         type: AccountType.BASE,
@@ -127,16 +130,17 @@ export const ManageVault = ({ seedInfo, onBack, onClose, onComplete }: Props) =>
       accounts,
     });
 
-    onComplete();
     showStatus({
       title: name?.value.trim(),
       description: t('createMultisigAccount.successMessage'),
       content: <Animation variant="success" />,
     });
+
+    onComplete();
   };
 
-  const handleImportKeys = (mergedKeys: DraftAccount<ShardAccount | ChainAccount>[]) => {
-    manageVaultModel.events.derivationsImported(mergedKeys);
+  const handleImportKeys = (keys: DraftAccount<ShardAccount | ChainAccount>[]) => {
+    manageVaultModel.events.derivationsImported(keys);
     toggleIsImportModalOpen();
   };
 
@@ -164,10 +168,6 @@ export const ManageVault = ({ seedInfo, onBack, onClose, onComplete }: Props) =>
       <Icon name="hotkeyCtrl" />
     </>
   );
-
-  const publicKey = u8aToHex(seedInfo[0].multiSigner.public);
-  const publicKeyAddress = toAddress(publicKey, { prefix: 1 });
-  const walletName = isAltPressed || !name?.value ? publicKeyAddress : name?.value;
 
   return (
     <>
@@ -308,7 +308,6 @@ export const ManageVault = ({ seedInfo, onBack, onClose, onComplete }: Props) =>
 
       <DerivationsAddressModal
         isOpen={isAddressModalOpen}
-        walletName={walletName}
         rootAccountId={publicKey}
         keys={keys}
         onClose={toggleIsAddressModalOpen}
