@@ -5,8 +5,8 @@ import { MultiSelectMultishardHeader } from './MultiSelectMultishardHeader';
 import { DropdownOption } from '@shared/ui/Dropdowns/common/types';
 import { MultisigOperationHeader } from './MultisigOperationHeader';
 import { OperationError, OperationErrorType } from '@entities/transaction';
-import { walletModel, walletUtils } from '@entities/wallet';
-import type { Account, MultisigAccount, ChainId, Wallet } from '@shared/core';
+import { accountUtils, walletModel, walletUtils } from '@entities/wallet';
+import type { Account, ChainId, MultisigAccount, Wallet } from '@shared/core';
 
 type Props = {
   accounts: Account[] | [MultisigAccount];
@@ -46,6 +46,10 @@ export const OperationHeader = ({
   const multishardError = (isMultishard && errors.find((e) => e === OperationError.INVALID_FEE)) || undefined;
   const emptyError = errors.find((e) => e === OperationError.EMPTY_ERROR);
 
+  const availableShards = walletUtils.isPolkadotVault(activeWallet)
+    ? accounts.filter((a) => !accountUtils.isBaseAccount(a))
+    : accounts;
+
   return (
     <div className="flex flex-col gap-y-4">
       {isMultisig && (
@@ -62,7 +66,7 @@ export const OperationHeader = ({
       {isMultishard &&
         (isMultiselect ? (
           <SingleSelectMultishardHeader
-            accounts={accounts}
+            accounts={availableShards}
             invalid={Boolean(multishardError || emptyError)}
             error={multishardError}
             getAccountOption={getAccountOption}
@@ -70,7 +74,7 @@ export const OperationHeader = ({
           />
         ) : (
           <MultiSelectMultishardHeader
-            accounts={accounts}
+            accounts={availableShards}
             invalid={Boolean(multishardError || emptyError)}
             error={multishardError}
             chainId={chainId}
