@@ -179,24 +179,6 @@ forward({ from: multishardCreated, to: multishardCreatedFx });
 
 sample({
   clock: [walletCreatedFx.doneData, multishardCreatedFx.doneData],
-  source: {
-    wallets: $wallets,
-    accounts: $accounts,
-  },
-  filter: (_, data) => Boolean(data),
-  fn: ({ wallets, accounts }, data) => {
-    return {
-      wallets: wallets.concat(data!.wallet),
-      accounts: accounts.concat(data!.accounts),
-    };
-  },
-  target: spread({
-    targets: { wallets: $wallets, accounts: $accounts },
-  }),
-});
-
-sample({
-  clock: [walletCreatedFx.doneData, multishardCreatedFx.doneData],
   source: { wallets: $wallets, accounts: $accounts },
   filter: (_, data) => Boolean(data),
   fn: ({ wallets, accounts }, data) => ({
