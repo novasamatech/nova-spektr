@@ -62,10 +62,6 @@ describe('features/wallet/model/constructor-model', () => {
     await allSettled(constructorModel.$constructorForm.submit, { scope });
   };
 
-  afterEach(() => {
-    jest.restoreAllMocks();
-  });
-
   test('should assign existing keys', async () => {
     const scope = fork();
 
@@ -101,6 +97,32 @@ describe('features/wallet/model/constructor-model', () => {
     expect(scope.getState(constructorModel.$hasKeys)).toEqual(false);
   });
 
+  test('should mark existing key for removal', async () => {
+    const scope = fork();
+
+    await allSettled(constructorModel.events.formInitiated, {
+      scope,
+      params: defaultKeys as Array<ChainAccount | ShardAccount>,
+    });
+    await allSettled(constructorModel.events.keyRemoved, { scope, params: 1 });
+
+    expect(scope.getState(constructorModel.$keysToRemove)).toEqual([[defaultKeys[1], defaultKeys[2]]]);
+  });
+
+  test('should not mark newly added key for removal', async () => {
+    const scope = fork();
+
+    await allSettled(constructorModel.events.formInitiated, {
+      scope,
+      params: [defaultKeys[0]] as ChainAccount[],
+    });
+
+    await submitForm(scope);
+    await allSettled(constructorModel.events.keyRemoved, { scope, params: 1 });
+
+    expect(scope.getState(constructorModel.$keysToRemove)).toEqual([]);
+  });
+
   test('should set focus after submit', async () => {
     const scope = fork();
     const element = document.createElement('button');
@@ -126,7 +148,7 @@ describe('features/wallet/model/constructor-model', () => {
 
     await submitForm(scope);
 
-    expect(scope.getState(constructorModel.$keys)).toEqual([
+    expect(scope.getState(constructorModel.$keysToAdd)).toEqual([
       {
         name: 'Governance',
         keyType: KeyType.GOVERNANCE,
@@ -137,18 +159,6 @@ describe('features/wallet/model/constructor-model', () => {
         derivationPath: '//polkadot//governance',
       },
     ]);
-  });
-
-  test('should remove key', async () => {
-    const scope = fork();
-
-    await allSettled(constructorModel.events.formInitiated, {
-      scope,
-      params: defaultKeys as Array<ChainAccount | ShardAccount>,
-    });
-    await allSettled(constructorModel.events.keyRemoved, { scope, params: 1 });
-
-    expect(scope.getState(constructorModel.$keys)).toEqual([defaultKeys[0]]);
   });
 
   test('should add new sharded key on form submit', async () => {

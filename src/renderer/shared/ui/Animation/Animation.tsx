@@ -12,7 +12,7 @@ type Props = {
   className?: string;
 };
 
-export const Animation = ({ variant, width = 80, height = 80, loop, autoplay = true, className }: Props) => {
+export const Animation = ({ variant, width = 80, height = 80, loop = false, autoplay = true, className }: Props) => {
   const [animation, setAnimation] = useState();
 
   const defaultOptions = {

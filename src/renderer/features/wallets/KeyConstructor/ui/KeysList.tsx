@@ -1,10 +1,8 @@
 import { useUnit } from 'effector-react';
-import { useMemo } from 'react';
 
 import { HelpText, IconButton, FootnoteText, SmallTitleText, Icon } from '@shared/ui';
 import { constructorModel } from '../model/constructor-model';
-import { chainsService } from '@entities/network';
-import { dictionary } from '@shared/lib/utils';
+import { networkModel } from '@entities/network';
 import { ChainIcon } from '@entities/chain';
 import { accountUtils } from '@entities/wallet';
 import { KeyType } from '@shared/core';
@@ -15,10 +13,7 @@ export const KeysList = () => {
 
   const keys = useUnit(constructorModel.$keys);
   const hasKeys = useUnit(constructorModel.$hasKeys);
-
-  const chains = useMemo(() => {
-    return dictionary(chainsService.getChainsData(), 'chainId');
-  }, []);
+  const chains = useUnit(networkModel.$chains);
 
   if (!hasKeys) {
     return (
@@ -40,7 +35,7 @@ export const KeysList = () => {
       </div>
       <ul className="flex flex-col gap-y-2">
         {keys.map((key, index) => {
-          const keyData = Array.isArray(key) ? key[0] : key;
+          const keyData = accountUtils.isAccountWithShards(key) ? key[0] : key;
 
           if (keyData.keyType === KeyType.MAIN) return;
 

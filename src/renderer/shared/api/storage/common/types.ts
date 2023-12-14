@@ -93,7 +93,6 @@ export type ID = string;
 type WithID<T extends Object> = { id?: ID } & T;
 
 export type BalanceDS = WithID<Balance>;
-export type ConnectionDS = WithID<Connection>;
 export type MultisigTransactionDS = WithID<MultisigTransaction>;
 export type MultisigEventDS = WithID<MultisigEvent>;
 export type NotificationDS = WithID<Notification>;

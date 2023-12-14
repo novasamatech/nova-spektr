@@ -1,15 +1,15 @@
-import { useMemo } from 'react';
+import { useUnit } from 'effector-react';
 
 import { BaseModal, DropdownIconButton } from '@shared/ui';
 import { useModalClose, useToggle } from '@shared/lib/hooks';
 import { MultishardAccountsList, WalletCardLg } from '@entities/wallet';
-import { chainsService } from '@entities/network';
+import { networkModel } from '@entities/network';
 import { useI18n } from '@app/providers';
 import type { Wallet } from '@shared/core';
-import { IconNames } from '@shared/ui/Icon/data';
 import type { MultishardMap } from '../lib/types';
 import { walletDetailsUtils } from '../lib/utils';
 import { RenameWalletModal } from '@features/wallets/RenameWallet';
+import { IconNames } from '@shared/ui/Icon/data';
 
 type Props = {
   wallet: Wallet;
@@ -22,9 +22,7 @@ export const MultishardWalletDetails = ({ wallet, accounts, onClose }: Props) =>
   const [isModalOpen, closeModal] = useModalClose(true, onClose);
   const [isRenameModalOpen, toggleIsRenameModalOpen] = useToggle();
 
-  const chains = useMemo(() => {
-    return chainsService.getChainsData({ sort: true });
-  }, []);
+  const chains = useUnit(networkModel.$chains);
 
   const Options = [
     {
@@ -70,8 +68,9 @@ export const MultishardWalletDetails = ({ wallet, accounts, onClose }: Props) =>
         <div className="py-6 px-5 border-b border-divider">
           <WalletCardLg wallet={wallet} />
         </div>
-        <MultishardAccountsList accounts={accounts} chains={chains} className="h-[443px]" />
+        <MultishardAccountsList accounts={accounts} chains={Object.values(chains)} className="h-[443px]" />
       </div>
+
       <RenameWalletModal wallet={wallet} isOpen={isRenameModalOpen} onClose={toggleIsRenameModalOpen} />
     </BaseModal>
   );
