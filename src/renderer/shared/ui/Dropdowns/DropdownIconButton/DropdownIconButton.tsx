@@ -3,7 +3,7 @@ import { ComponentProps, PropsWithChildren, Fragment } from 'react';
 
 import { IconButton } from '../../Buttons/IconButton/IconButton';
 import { Icon, FootnoteText } from '../../index';
-import { IconNames } from '../../Icon/data';
+import { DropdownIconButtonOption } from '../common/types';
 import { cnTw } from '@shared/lib/utils';
 
 type IconButtonProps = ComponentProps<typeof IconButton>;
@@ -72,11 +72,7 @@ const DropdownItem = ({ className, children }: PropsWithChildren<ItemProps>) => 
 };
 
 type OptionProps = {
-  option: {
-    icon: IconNames;
-    title: string;
-    onClick: () => void;
-  };
+  option: DropdownIconButtonOption;
 };
 const DropdownOption = ({ option }: OptionProps) => {
   return (

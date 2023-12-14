@@ -4,9 +4,10 @@ import BigNumber from 'bignumber.js';
 
 import { includes, getRoundedValue, totalAmount } from '@shared/lib/utils';
 import { walletModel, walletUtils } from '@entities/wallet';
-import type { WalletFamily, Wallet, Balance, Chain, ChainId, AccountId } from '@shared/core';
 import { currencyModel, priceProviderModel } from '@entities/price';
+import type { WalletFamily, Wallet, Balance, Chain, ChainId, AccountId } from '@shared/core';
 import { WalletType } from '@shared/core';
+import { renameWalletModel } from '@features/wallets/RenameWallet';
 
 const queryChanged = createEvent<string>();
 const walletForDetailsSet = createEvent<Wallet>();
@@ -103,6 +104,7 @@ const $walletBalances = combine(
 
 forward({ from: queryChanged, to: $filterQuery });
 forward({ from: walletForDetailsSet, to: $walletForDetails });
+forward({ from: renameWalletModel.events.walletRenamedSuccess, to: $walletForDetails });
 
 sample({
   clock: walletModel.events.walletSelected,

@@ -1,14 +1,14 @@
 import { useUnit } from 'effector-react';
 
 import { BaseModal, DropdownIconButton } from '@shared/ui';
-import { useModalClose } from '@shared/lib/hooks';
+import { useModalClose, useToggle } from '@shared/lib/hooks';
 import { MultishardAccountsList, WalletCardLg } from '@entities/wallet';
 import { networkModel } from '@entities/network';
 import { useI18n } from '@app/providers';
 import type { Wallet } from '@shared/core';
 import type { MultishardMap } from '../lib/types';
 import { walletDetailsUtils } from '../lib/utils';
-import { IconNames } from '@shared/ui/Icon/data';
+import { RenameWalletModal } from '@features/wallets/RenameWallet';
 
 type Props = {
   wallet: Wallet;
@@ -19,15 +19,26 @@ export const MultishardWalletDetails = ({ wallet, accounts, onClose }: Props) =>
   const { t } = useI18n();
 
   const [isModalOpen, closeModal] = useModalClose(true, onClose);
+  const [isRenameModalOpen, toggleIsRenameModalOpen] = useToggle();
 
   const chains = useUnit(networkModel.$chains);
 
   const Options = [
     {
+      icon: 'rename' as IconNames,
+      title: t('walletDetails.common.renameButton'),
+      onClick: toggleIsRenameModalOpen,
+    },
+    {
       icon: 'export' as IconNames,
       title: t('walletDetails.vault.export'),
       onClick: () => walletDetailsUtils.exportMultishardWallet(wallet, accounts),
     },
+    // {
+    //   icon: 'forget',
+    //   title: t('walletDetails.common.forgetButton'),
+    //   onClick: () => {},
+    // },
   ];
 
   const ActionButton = (
@@ -58,6 +69,8 @@ export const MultishardWalletDetails = ({ wallet, accounts, onClose }: Props) =>
         </div>
         <MultishardAccountsList accounts={accounts} chains={Object.values(chains)} className="h-[443px]" />
       </div>
+
+      <RenameWalletModal wallet={wallet} isOpen={isRenameModalOpen} onClose={toggleIsRenameModalOpen} />
     </BaseModal>
   );
 };

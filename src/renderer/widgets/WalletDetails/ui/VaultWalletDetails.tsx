@@ -14,6 +14,7 @@ import { ShardsList } from './ShardsList';
 import { vaultDetailsModel } from '../model/vault-details-model';
 import { walletDetailsUtils } from '../lib/utils';
 import { KeyConstructor, ImportKeysModal, DerivationsAddressModal } from '@features/wallets';
+import { RenameWalletModal } from '@features/wallets/RenameWallet';
 
 type Props = {
   wallet: Wallet;
@@ -29,6 +30,7 @@ export const VaultWalletDetails = ({ wallet, root, accountsMap, onClose }: Props
   const [isModalOpen, closeModal] = useModalClose(true, onClose);
   const [newKeys, setNewKeys] = useState<DraftAccount<ChainAccount>[]>([]);
 
+  const [isRenameModalOpen, toggleIsRenameModalOpen] = useToggle();
   const [isConstructorModalOpen, toggleConstructorModal] = useToggle();
   const [isImportModalOpen, toggleImportModal] = useToggle();
   const [isScanModalOpen, toggleScanModal] = useToggle();
@@ -71,7 +73,12 @@ export const VaultWalletDetails = ({ wallet, root, accountsMap, onClose }: Props
     toggleScanModal();
   };
 
-  const options = [
+  const Options = [
+    {
+      icon: 'rename' as IconNames,
+      title: t('walletDetails.common.renameButton'),
+      onClick: toggleIsRenameModalOpen,
+    },
     {
       icon: 'editKeys' as IconNames,
       title: t('walletDetails.vault.editKeys'),
@@ -87,12 +94,17 @@ export const VaultWalletDetails = ({ wallet, root, accountsMap, onClose }: Props
       title: t('walletDetails.vault.export'),
       onClick: () => walletDetailsUtils.exportVaultWallet(wallet, root, accountsMap),
     },
+    // {
+    //   icon: 'forget',
+    //   title: t('walletDetails.common.forgetButton'),
+    //   onClick: () => {},
+    // },
   ];
 
   const ActionButton = (
     <DropdownIconButton name="more">
       <DropdownIconButton.Items>
-        {options.map((option) => (
+        {Options.map((option) => (
           <DropdownIconButton.Item key={option.icon}>
             <DropdownIconButton.Option option={option} />
           </DropdownIconButton.Item>
@@ -144,6 +156,7 @@ export const VaultWalletDetails = ({ wallet, root, accountsMap, onClose }: Props
 
       <ShardsList />
 
+      <RenameWalletModal wallet={wallet} isOpen={isRenameModalOpen} onClose={toggleIsRenameModalOpen} />
       <KeyConstructor
         isOpen={isConstructorModalOpen}
         title={wallet.name}

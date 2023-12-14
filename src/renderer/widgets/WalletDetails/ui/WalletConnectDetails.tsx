@@ -15,15 +15,16 @@ import { wcDetailsUtils, walletDetailsUtils } from '../lib/utils';
 import { ForgetStep } from '../lib/constants';
 import { Animation } from '@shared/ui/Animation/Animation';
 import { IconNames } from '@shared/ui/Icon/data';
+import { RenameWalletModal } from '@features/wallets/RenameWallet';
 import {
   BaseModal,
   Button,
   ConfirmModal,
+  DropdownIconButton,
   FootnoteText,
   Icon,
   SmallTitleText,
   StatusModal,
-  DropdownIconButton,
 } from '@shared/ui';
 
 type AccountItem = {
@@ -41,6 +42,7 @@ export const WalletConnectDetails = ({ wallet, accounts, onClose }: Props) => {
 
   const [isModalOpen, closeModal] = useModalClose(true, onClose);
   const [isConfirmForgetOpen, toggleConfirmForget] = useToggle();
+  const [isRenameModalOpen, toggleIsRenameModalOpen] = useToggle();
 
   const reconnectStep = useUnit(wcDetailsModel.$reconnectStep);
   const forgetStep = useUnit(wcDetailsModel.$forgetStep);
@@ -84,6 +86,11 @@ export const WalletConnectDetails = ({ wallet, accounts, onClose }: Props) => {
   };
 
   const Options = [
+    {
+      icon: 'rename' as IconNames,
+      title: t('walletDetails.common.renameButton'),
+      onClick: toggleIsRenameModalOpen,
+    },
     {
       icon: 'delete' as IconNames,
       title: t('walletDetails.common.forgetButton'),
@@ -212,6 +219,8 @@ export const WalletConnectDetails = ({ wallet, accounts, onClose }: Props) => {
           </Button>
         </StatusModal>
       </div>
+
+      <RenameWalletModal wallet={wallet} isOpen={isRenameModalOpen} onClose={toggleIsRenameModalOpen} />
     </BaseModal>
   );
 };
