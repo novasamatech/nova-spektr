@@ -104,7 +104,7 @@ describe('entities/wallet/model/wallet-model', () => {
     const removedAccounts = walletMock.accounts.filter((a) => a.walletId === removedWallet.id);
 
     jest.spyOn(storageService.wallets, 'delete').mockResolvedValue(1);
-    const deleteAccountsSpy = jest.spyOn(storageService.accounts, 'deleteAll').mockResolvedValue([1,2,3]);
+    const deleteAccountsSpy = jest.spyOn(storageService.accounts, 'deleteAll').mockResolvedValue([1, 2, 3]);
 
     const scope = fork({
       values: new Map().set(walletModel.$wallets, wallets).set(walletModel.$accounts, walletMock.accounts),
