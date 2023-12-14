@@ -26,7 +26,7 @@ export const WalletDetailsProvider = () => {
       <SimpleWalletDetails
         wallet={wallet}
         account={singleShardAccount}
-        onClose={walletSelectModel.events.walletForDetailsCleared}
+        onClose={walletSelectModel.events.walletIdCleared}
       />
     );
   }
@@ -36,7 +36,7 @@ export const WalletDetailsProvider = () => {
       <MultishardWalletDetails
         wallet={wallet}
         accounts={multiShardAccounts}
-        onClose={walletSelectModel.events.walletForDetailsCleared}
+        onClose={walletSelectModel.events.walletIdCleared}
       />
     );
   }
@@ -48,18 +48,14 @@ export const WalletDetailsProvider = () => {
         account={multisigAccount}
         signatoryWallets={signatoryWallets}
         signatoryContacts={contacts}
-        onClose={walletSelectModel.events.walletForDetailsCleared}
+        onClose={walletSelectModel.events.walletIdCleared}
       />
     );
   }
 
   if (walletUtils.isWalletConnect(wallet) || walletUtils.isNovaWallet(wallet)) {
     return (
-      <WalletConnectDetails
-        wallet={wallet}
-        accounts={accounts}
-        onClose={walletSelectModel.events.walletForDetailsCleared}
-      />
+      <WalletConnectDetails wallet={wallet} accounts={accounts} onClose={walletSelectModel.events.walletIdCleared} />
     );
   }
 
@@ -69,7 +65,7 @@ export const WalletDetailsProvider = () => {
         wallet={wallet}
         root={vaultAccounts.root}
         accountsMap={vaultAccounts.accountsMap}
-        onClose={walletSelectModel.events.walletForDetailsCleared}
+        onClose={walletSelectModel.events.walletIdCleared}
       />
     );
   }

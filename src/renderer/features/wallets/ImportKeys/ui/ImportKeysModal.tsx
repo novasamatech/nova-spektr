@@ -13,40 +13,33 @@ type Props = {
   isOpen: boolean;
   rootAccountId: AccountId;
   existingKeys: DraftAccount<ChainAccount | ShardAccount>[];
-  onConfirm: (mergedKeys: DraftAccount<ChainAccount | ShardAccount>[]) => void;
+  onConfirm: (keys: DraftAccount<ChainAccount | ShardAccount>[]) => void;
   onClose: () => void;
 };
 
 export const ImportKeysModal = ({ isOpen, rootAccountId, existingKeys, onConfirm, onClose }: Props) => {
   const { t } = useI18n();
+
   const validationError = useUnit(importKeysModel.$validationError);
   const mergedKeys = useUnit(importKeysModel.$mergedKeys);
   const successReport = useUnit(importKeysModel.$successReport);
 
   useEffect(() => {
-    if (isOpen) {
-      importKeysModel.events.resetValues({ derivations: existingKeys, root: rootAccountId });
-    }
+    if (!isOpen) return;
+
+    importKeysModel.events.resetValues({
+      root: rootAccountId,
+      derivations: existingKeys,
+    });
   }, [isOpen]);
 
   const handleFileUpload = (file: File) => {
-    const fileReader = new FileReader();
-
-    fileReader.addEventListener(
-      'loadend',
-      (e) => {
-        if (e.target?.result) {
-          importKeysModel.events.fileUploaded(e.target['result'] as string);
-        }
-      },
-      { once: true },
-    );
-
-    fileReader.readAsText(file);
+    file.text().then(importKeysModel.events.fileUploaded);
   };
 
   const getReportText = () => {
     if (!successReport) return;
+
     const addedKeys = t('dynamicDerivations.importKeys.report.addedKeys', { count: successReport.addedKeys });
     const updatedNetworks = t('dynamicDerivations.importKeys.report.updatedNetworks', {
       count: successReport.updatedNetworks,

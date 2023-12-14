@@ -1,4 +1,4 @@
-import { WalletType } from '@shared/core';
+import { WalletType, ID } from '@shared/core';
 import type {
   Wallet,
   PolkadotVaultWallet,
@@ -23,6 +23,7 @@ export const walletUtils = {
   isWalletConnectGroup,
   isPolkadotVaultGroup,
   isValidSignatory,
+  getWalletById,
 };
 
 function isPolkadotVault(wallet?: Pick<Wallet, 'type'>): wallet is PolkadotVaultWallet {
@@ -70,4 +71,8 @@ function isValidSignatory(wallet?: Wallet): boolean {
   if (!wallet) return false;
 
   return VALID_SIGNATORY_WALLET_TYPES.includes(wallet.type);
+}
+
+function getWalletById(wallets: Wallet[], id: ID): Wallet | undefined {
+  return wallets.find((wallet) => wallet.id === id);
 }

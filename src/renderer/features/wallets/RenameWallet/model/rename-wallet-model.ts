@@ -78,15 +78,7 @@ sample({
   clock: $walletForm.formValidated,
   source: $walletToEdit,
   filter: (walletToEdit) => walletToEdit !== null,
-  fn: (walletToEdit, form) => {
-    return {
-      ...form,
-      id: walletToEdit!.id,
-      type: walletToEdit!.type,
-      isActive: walletToEdit!.isActive,
-      signingType: walletToEdit!.signingType,
-    };
-  },
+  fn: (walletToEdit, form) => ({ ...walletToEdit!, name: form.name }),
   target: renameWalletFx,
 });
 
@@ -115,6 +107,5 @@ export const renameWalletModel = {
   events: {
     callbacksChanged: callbacksApi.callbacksChanged,
     formInitiated: walletApi.formInitiated,
-    walletRenamedSuccess: renameWalletFx.doneData,
   },
 };

@@ -2,9 +2,9 @@ import { createRoot } from 'react-dom/client';
 import { HashRouter as Router } from 'react-router-dom';
 import log from 'electron-log';
 
-import { kernelModel } from '@shared/core';
 import { App } from './App';
-
+import { kernelModel } from '@shared/core';
+import { networkModel } from '@entities/network';
 import './i18n';
 import './index.css';
 import './styles/theme/default.css';
@@ -28,6 +28,7 @@ if (!container) {
 }
 
 kernelModel.events.appStarted();
+networkModel.events.networkStarted();
 
 createRoot(container).render(
   <Router>

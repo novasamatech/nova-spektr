@@ -1,9 +1,9 @@
-import { useMemo } from 'react';
+import { useUnit } from 'effector-react';
 
 import { BaseModal, DropdownIconButton } from '@shared/ui';
 import { useModalClose, useToggle } from '@shared/lib/hooks';
 import { AccountsList, WalletCardLg } from '@entities/wallet';
-import { chainsService } from '@entities/network';
+import { networkModel } from '@entities/network';
 import { useI18n } from '@app/providers';
 import type { Wallet, BaseAccount } from '@shared/core';
 import { IconNames } from '@shared/ui/Icon/data';
@@ -17,12 +17,10 @@ type Props = {
 export const SimpleWalletDetails = ({ wallet, account, onClose }: Props) => {
   const { t } = useI18n();
 
+  const chains = useUnit(networkModel.$chains);
+
   const [isModalOpen, closeModal] = useModalClose(true, onClose);
   const [isRenameModalOpen, toggleIsRenameModalOpen] = useToggle();
-
-  const chains = useMemo(() => {
-    return chainsService.getChainsData({ sort: true });
-  }, []);
 
   const Options = [
     {
@@ -63,7 +61,7 @@ export const SimpleWalletDetails = ({ wallet, account, onClose }: Props) => {
         <div className="py-6 px-5 border-b border-divider">
           <WalletCardLg wallet={wallet} />
         </div>
-        <AccountsList accountId={account.accountId} chains={chains} className="h-[401px]" />
+        <AccountsList accountId={account.accountId} chains={Object.values(chains)} className="h-[401px]" />
       </div>
 
       <RenameWalletModal wallet={wallet} isOpen={isRenameModalOpen} onClose={toggleIsRenameModalOpen} />

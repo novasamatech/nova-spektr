@@ -145,7 +145,7 @@ sample({
 
 forward({
   from: forgetModalClosed,
-  to: walletSelectModel.events.walletForDetailsCleared,
+  to: walletSelectModel.events.walletIdCleared,
 });
 
 export const wcDetailsModel = {

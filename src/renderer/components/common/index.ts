@@ -3,7 +3,6 @@ import QrReader from './QrCode/QrReader/QrReader';
 import QrSignatureReader from './QrCode/QrReader/QrSignatureReader';
 import QrTextGenerator from './QrCode/QrGenerator/QrTextGenerator';
 import { QrTxGenerator } from './QrCode/QrGenerator/QrTxGenerator';
-import Message from './Message/Message';
 import Header from './Header/Header';
 import QrGeneratorContainer from './QrCode/QrGeneratorContainer/QrGeneratorContainer';
 import ExtrinsicExplorers from './ExtrinsicExplorers/ExtrinsicExplorers';
@@ -21,7 +20,6 @@ export {
   QrTextGenerator,
   QrGeneratorContainer,
   QrTxGenerator,
-  Message,
   Header,
   ExtrinsicExplorers,
   OperationTitle,

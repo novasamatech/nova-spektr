@@ -3,7 +3,7 @@ import { stringify } from 'yaml';
 import { ForgetStep, ReconnectStep } from './constants';
 import { VaultMap, MultishardMap } from './types';
 import { accountUtils } from '@entities/wallet';
-import { Account, BaseAccount, ChainId, ChainAccount, Wallet, ShardAccount } from '@shared/core';
+import { Account, BaseAccount, ChainId, ChainAccount, Wallet, ShardAccount, KeyType } from '@shared/core';
 import { downloadFiles, exportKeysUtils } from '@features/wallets/ExportKeys';
 
 export const wcDetailsUtils = {
@@ -20,6 +20,7 @@ export const walletDetailsUtils = {
   getMultishardMap,
   exportMultishardWallet,
   exportVaultWallet,
+  getMainAccounts,
 };
 
 function isNotStarted(step: ReconnectStep, connected: boolean): boolean {
@@ -89,24 +90,18 @@ function getMultishardMap(accounts: Account[]): MultishardMap {
 function exportMultishardWallet(wallet: Wallet, accounts: MultishardMap) {
   const rootsAndAccounts = Array.from(accounts, ([root, accounts]) => ({ root, accounts }));
   const downloadData = rootsAndAccounts.map(({ root, accounts }, index) => {
-    const accountsFlat = Object.values(accounts).reduce((acc, chainAccounts) => {
-      acc.push(...chainAccounts);
-
-      return acc;
-    }, []);
+    const accountsFlat = Object.values(accounts).flat();
     const exportStructure = exportKeysUtils.getExportStructure(root.accountId, accountsFlat);
+
     const fileData = stringify(exportStructure, {
       schema: 'failsafe',
       defaultStringType: 'QUOTE_DOUBLE',
       defaultKeyType: 'PLAIN',
     });
-    const blob = new Blob([fileData], { type: 'text/plain' });
-
-    const fileName = wallet.name + (rootsAndAccounts.length > 1 ? ' ' + index : '') + '.yaml';
 
     return {
-      blob,
-      fileName,
+      blob: new Blob([fileData], { type: 'text/plain' }),
+      fileName: wallet.name + (rootsAndAccounts.length > 1 ? ` ${index}` : '') + '.yaml',
     };
   });
 
@@ -114,25 +109,25 @@ function exportMultishardWallet(wallet: Wallet, accounts: MultishardMap) {
 }
 
 function exportVaultWallet(wallet: Wallet, root: BaseAccount, accounts: VaultMap) {
-  const accountsFlat: Array<ChainAccount | ShardAccount[]> = Object.values(accounts).reduce((acc, chainAccounts) => {
-    acc.push(...chainAccounts);
-
-    return acc;
-  }, []);
+  const accountsFlat = Object.values(accounts).flat();
   const exportStructure = exportKeysUtils.getExportStructure(root.accountId, accountsFlat);
+
   const fileData = stringify(exportStructure, {
     schema: 'failsafe',
     defaultStringType: 'QUOTE_DOUBLE',
     defaultKeyType: 'PLAIN',
   });
-  const blob = new Blob([fileData], { type: 'text/plain' });
-
-  const fileName = `${wallet.name}.yaml`;
 
   downloadFiles([
     {
-      blob,
-      fileName,
+      blob: new Blob([fileData], { type: 'text/plain' }),
+      fileName: `${wallet.name}.yaml`,
     },
   ]);
+}
+
+function getMainAccounts(accounts: Array<ChainAccount | ShardAccount[]>): ChainAccount[] {
+  return accounts.filter((account) => {
+    return !accountUtils.isAccountWithShards(account) && account.keyType === KeyType.MAIN;
+  }) as ChainAccount[];
 }

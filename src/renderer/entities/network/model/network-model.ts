@@ -5,11 +5,11 @@ import { UnsubscribePromise } from '@polkadot/api/types';
 import { cloneDeep, keyBy } from 'lodash';
 
 import { Metadata, ProviderType, chainsService, networkService } from '../lib';
-import { Chain, ChainId, Connection, ConnectionStatus, ConnectionType, RpcNode, kernelModel } from '@shared/core';
+import { Chain, ChainId, Connection, ConnectionStatus, ConnectionType, RpcNode } from '@shared/core';
 import { useMetadata } from '../lib/metadataService';
 import { storageService } from '@shared/api/storage';
 
-const chains = chainsService.getChainsMap();
+const chains = chainsService.getChainsMap({ sort: true });
 
 const defaultStatuses = Object.values(chains).reduce((acc, chain) => {
   acc[chain.chainId] = ConnectionStatus.DISCONNECTED;
@@ -19,14 +19,7 @@ const defaultStatuses = Object.values(chains).reduce((acc, chain) => {
 
 const metadataStorage = useMetadata();
 
-const $providers = createStore<Record<ChainId, ProviderInterface>>({});
-const $apis = createStore<Record<ChainId, ApiPromise>>({});
-const $connectionStatuses = createStore(defaultStatuses);
-const $chains = createStore<Record<ChainId, Chain>>(chains);
-const $connections = createStore<Record<ChainId, Connection>>({});
-
-const $metadataSubscriptions = createStore<Record<ChainId, UnsubscribePromise>>({});
-
+const networkStarted = createEvent();
 const chainStarted = createEvent<ChainId>();
 const disconnectStarted = createEvent<ChainId>();
 
@@ -55,6 +48,14 @@ type ProviderTypeSwitchedParams = {
   type: ProviderType;
 };
 const providerTypeSwitched = createEvent<ProviderTypeSwitchedParams>();
+
+const $providers = createStore<Record<ChainId, ProviderInterface>>({});
+const $apis = createStore<Record<ChainId, ApiPromise>>({});
+const $connectionStatuses = createStore(defaultStatuses);
+const $chains = createStore<Record<ChainId, Chain>>(chains);
+const $connections = createStore<Record<ChainId, Connection>>({});
+
+const $metadataSubscriptions = createStore<Record<ChainId, UnsubscribePromise>>({});
 
 const populateConnectionsFx = createEffect((): Promise<Connection[]> => {
   return storageService.connections.readAll();
@@ -376,10 +377,7 @@ sample({
   target: $connections,
 });
 
-forward({
-  from: kernelModel.events.appStarted,
-  to: populateConnectionsFx,
-});
+sample({ clock: networkStarted, target: populateConnectionsFx });
 
 sample({
   clock: rpcNodeAdded,
@@ -529,6 +527,8 @@ export const networkModel = {
   $connectionStatuses,
   $connections,
   events: {
+    networkStarted,
+
     chainStarted,
     providerTypeSwitched,
     disconnectStarted,

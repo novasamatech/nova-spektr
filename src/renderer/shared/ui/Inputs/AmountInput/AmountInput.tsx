@@ -49,7 +49,7 @@ export const AmountInput = ({
   const { t } = useI18n();
   const rate = useCurrencyRate(asset.priceId, showCurrency);
   const activeCurrency = useUnit(currencyModel.$activeCurrency);
-  const [currencyMode, toggleCurrencyMode] = useToggle(false);
+  const [currencyMode, toggleCurrencyMode] = useToggle();
   const [inputValue, setInputValue] = useState(value);
   const [assetValue, setAssetValue] = useState(value);
 

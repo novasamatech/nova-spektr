@@ -1,9 +1,13 @@
 import { hexToU8a, isHex } from '@polkadot/util';
 import { decodeAddress, encodeAddress } from '@polkadot/util-crypto';
-import cn from 'classnames';
 import { useState } from 'react';
 
 import { QrReader } from '@renderer/components/common';
+import { Icon, Loader, Button, CaptionText, FootnoteText, Select, SmallTitleText } from '@shared/ui';
+import { DropdownOption, DropdownResult } from '@shared/ui/Dropdowns/common/types';
+import { useI18n } from '@app/providers';
+import { cnTw } from '@shared/lib/utils';
+import { WhiteTextButtonStyle } from '@renderer/components/common/QrCode/common/constants';
 import {
   DdAddressInfoDecoded,
   DdSeedInfo,
@@ -11,11 +15,6 @@ import {
   QrError,
   VideoInput,
 } from '@renderer/components/common/QrCode/common/types';
-import { Icon, Loader, Button, CaptionText, FootnoteText, Select, SmallTitleText } from '@renderer/shared/ui';
-import { DropdownOption, DropdownResult } from '@renderer/shared/ui/Dropdowns/common/types';
-import { useI18n } from '@renderer/app/providers';
-import { cnTw } from '@renderer/shared/lib/utils';
-import { WhiteTextButtonStyle } from '@renderer/components/common/QrCode/common/constants';
 
 const enum CameraState {
   ACTIVE,
@@ -207,7 +206,7 @@ export const DdKeyQrReader = ({ size = 300, className, onGoBack, onResult }: Pro
 
       <div className="flex flex-col gap-4">
         <div
-          className={cn('relative overflow-hidden rounded-b-lg', isCameraPending && 'hidden', className)}
+          className={cnTw('relative overflow-hidden rounded-b-lg', isCameraPending && 'hidden', className)}
           style={sizeStyle}
         >
           <SmallTitleText
@@ -258,7 +257,7 @@ export const DdKeyQrReader = ({ size = 300, className, onGoBack, onResult }: Pro
           <footer className="flex w-full justify-between items-center h-[66px] px-5 z-10 absolute bottom-0">
             <Button
               variant="text"
-              className={cn('h-6.5 px-4', isCameraOn ? WhiteTextButtonStyle : '')}
+              className={cnTw('h-6.5 px-4', isCameraOn ? WhiteTextButtonStyle : '')}
               onClick={onGoBack}
             >
               {t('operation.goBackButton')}

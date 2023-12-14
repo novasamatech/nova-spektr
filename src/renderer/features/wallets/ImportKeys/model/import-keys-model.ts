@@ -39,15 +39,16 @@ const fileUploaded = createEvent<string>();
 const resetValues = createEvent<ExistingDerivations>();
 
 const parseFileContentFx = createEffect<string, ParsedImportFile, DerivationImportError>((fileContent: string) => {
+  let structure: unknown;
   try {
     // using default core scheme converts 0x strings into numeric values
-    const structure = parse(fileContent, importKeysUtils.renameDerivationPathKeyReviver, { schema: 'failsafe' });
-    if (importKeysUtils.isFileStructureValid(structure)) return structure;
-
-    throw new DerivationImportError(ValidationError.INVALID_FILE_STRUCTURE);
+    structure = parse(fileContent, importKeysUtils.renameDerivationPathKeyReviver, { schema: 'failsafe' });
   } catch {
     throw new DerivationImportError(ValidationError.INVALID_FILE_STRUCTURE);
   }
+  if (importKeysUtils.isFileStructureValid(structure)) return structure;
+
+  throw new DerivationImportError(ValidationError.INVALID_FILE_STRUCTURE);
 });
 
 type ValidateDerivationsParams = { fileContent: ParsedImportFile; existingDerivations: ExistingDerivations };
@@ -59,7 +60,6 @@ const validateDerivationsFx = createEffect<ValidateDerivationsParams, TypedImpor
     }
 
     const { derivations, root } = parsed;
-    console.log('derivations', derivations);
     const rootAccountId = root.startsWith('0x') ? root : toAccountId(root);
 
     if (rootAccountId !== existingDerivations.root) {
@@ -111,8 +111,6 @@ type MergePathsParams = {
   existing: ExistingDerivations;
 };
 const mergePathsFx = createEffect<MergePathsParams, MergeResult>(({ imported, existing }) => {
-  console.log('existing', existing);
-  console.log('imported', imported);
   const existingDerivations = existing.derivations;
 
   const existingByChain = groupBy(existingDerivations, 'chainId');
@@ -123,6 +121,7 @@ const mergePathsFx = createEffect<MergePathsParams, MergeResult>(({ imported, ex
     (acc, [chain, derivations]) => {
       const existingChainDerivations = existingByChain[chain];
       if (!existingChainDerivations) return acc;
+
       const { mergedDerivations, added, duplicated } = importKeysUtils.mergeChainDerivations(
         existingChainDerivations,
         derivations,
