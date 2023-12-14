@@ -3,7 +3,7 @@ import { stringify } from 'yaml';
 import { ForgetStep, ReconnectStep } from './constants';
 import { VaultMap, MultishardMap } from './types';
 import { accountUtils } from '@entities/wallet';
-import { Account, BaseAccount, ChainId, ChainAccount, Wallet } from '@shared/core';
+import { Account, BaseAccount, ChainId, ChainAccount, Wallet, ShardAccount, KeyType } from '@shared/core';
 import { downloadFiles, exportKeysUtils } from '@features/wallets/ExportKeys';
 
 export const wcDetailsUtils = {
@@ -20,6 +20,7 @@ export const walletDetailsUtils = {
   getMultishardMap,
   exportMultishardWallet,
   exportVaultWallet,
+  getMainAccounts,
 };
 
 function isNotStarted(step: ReconnectStep, connected: boolean): boolean {
@@ -123,4 +124,10 @@ function exportVaultWallet(wallet: Wallet, root: BaseAccount, accounts: VaultMap
       fileName: `${wallet.name}.yaml`,
     },
   ]);
+}
+
+function getMainAccounts(accounts: Array<ChainAccount | ShardAccount[]>): ChainAccount[] {
+  return accounts.filter((account) => {
+    return !accountUtils.isAccountWithShards(account) && account.keyType === KeyType.MAIN;
+  }) as ChainAccount[];
 }

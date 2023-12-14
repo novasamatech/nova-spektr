@@ -6,7 +6,7 @@ import { useModalClose, useToggle } from '@shared/lib/hooks';
 import { RootAccountLg, WalletCardLg, VaultAccountsList } from '@entities/wallet';
 import { networkModel } from '@entities/network';
 import { useI18n } from '@app/providers';
-import type { Wallet, BaseAccount, ChainAccount, ShardAccount, DraftAccount } from '@shared/core';
+import { Wallet, BaseAccount, ChainAccount, ShardAccount, DraftAccount } from '@shared/core';
 import { copyToClipboard, toAddress } from '@shared/lib/utils';
 import { IconNames } from '@shared/ui/Icon/data';
 import { VaultMap } from '../lib/types';
@@ -27,7 +27,7 @@ export const VaultWalletDetails = ({ wallet, root, accountsMap, onClose }: Props
   const chains = useUnit(networkModel.$chains);
 
   const [isModalOpen, closeModal] = useModalClose(true, onClose);
-  const [newKeys, setNewKeys] = useState<DraftAccount<ChainAccount | ShardAccount>[]>([]);
+  const [newKeys, setNewKeys] = useState<DraftAccount<ChainAccount>[]>([]);
 
   const [isConstructorModalOpen, toggleConstructorModal] = useToggle();
   const [isImportModalOpen, toggleImportModal] = useToggle();
@@ -44,14 +44,20 @@ export const VaultWalletDetails = ({ wallet, root, accountsMap, onClose }: Props
     }
 
     if (keysToAdd.length > 0) {
-      setNewKeys(keysToAdd.flat());
+      const vaultAccounts = Object.values(accountsMap).flat();
+      const mainAccounts = walletDetailsUtils.getMainAccounts(vaultAccounts);
+
+      setNewKeys([...mainAccounts, ...keysToAdd.flat()]);
       toggleScanModal();
     }
   };
 
   const handleImportedKeys = (keys: DraftAccount<ChainAccount | ShardAccount>[]) => {
     toggleImportModal();
-    setNewKeys(keys);
+    const vaultAccounts = Object.values(accountsMap).flat();
+    const mainAccounts = walletDetailsUtils.getMainAccounts(vaultAccounts);
+
+    setNewKeys([...mainAccounts, ...keys]);
     toggleScanModal();
   };
 
@@ -61,6 +67,7 @@ export const VaultWalletDetails = ({ wallet, root, accountsMap, onClose }: Props
       rootAccountId: root.accountId,
       accounts,
     });
+    toggleScanModal();
   };
 
   const options = [
@@ -146,7 +153,7 @@ export const VaultWalletDetails = ({ wallet, root, accountsMap, onClose }: Props
       <ImportKeysModal
         isOpen={isImportModalOpen}
         rootAccountId={root.accountId}
-        existingKeys={Object.values(accountsMap).flat(2)}
+        existingKeys={newKeys}
         onConfirm={handleImportedKeys}
         onClose={toggleImportModal}
       />

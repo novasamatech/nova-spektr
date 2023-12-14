@@ -131,6 +131,7 @@ export const ManageVault = ({ seedInfo, onBack, onClose, onComplete }: Props) =>
       },
       accounts,
     });
+    toggleIsAddressModalOpen();
 
     showStatus({
       title: name?.value.trim(),
@@ -310,7 +311,7 @@ export const ManageVault = ({ seedInfo, onBack, onClose, onComplete }: Props) =>
       <DerivationsAddressModal
         isOpen={isAddressModalOpen}
         rootAccountId={publicKey}
-        keys={keys}
+        keys={keys as Array<ShardAccount | ChainAccount>}
         onClose={toggleIsAddressModalOpen}
         onComplete={handleCreateVault}
       />

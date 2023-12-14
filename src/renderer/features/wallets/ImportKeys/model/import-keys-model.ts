@@ -60,7 +60,6 @@ const validateDerivationsFx = createEffect<ValidateDerivationsParams, TypedImpor
     }
 
     const { derivations, root } = parsed;
-    console.log('derivations', derivations);
     const rootAccountId = root.startsWith('0x') ? root : toAccountId(root);
 
     if (rootAccountId !== existingDerivations.root) {
@@ -112,8 +111,6 @@ type MergePathsParams = {
   existing: ExistingDerivations;
 };
 const mergePathsFx = createEffect<MergePathsParams, MergeResult>(({ imported, existing }) => {
-  console.log('existing', existing);
-  console.log('imported', imported);
   const existingDerivations = existing.derivations;
 
   const existingByChain = groupBy(existingDerivations, 'chainId');
@@ -124,6 +121,7 @@ const mergePathsFx = createEffect<MergePathsParams, MergeResult>(({ imported, ex
     (acc, [chain, derivations]) => {
       const existingChainDerivations = existingByChain[chain];
       if (!existingChainDerivations) return acc;
+
       const { mergedDerivations, added, duplicated } = importKeysUtils.mergeChainDerivations(
         existingChainDerivations,
         derivations,

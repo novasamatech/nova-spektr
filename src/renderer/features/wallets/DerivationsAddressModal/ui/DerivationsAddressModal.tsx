@@ -1,7 +1,7 @@
 import keyBy from 'lodash/keyBy';
+import { useState, useEffect } from 'react';
 
 import { BaseModal, Button, InfoLink, SmallTitleText } from '@renderer/shared/ui';
-import { useToggle } from '@renderer/shared/lib/hooks';
 import { useI18n } from '@renderer/app/providers';
 import { TROUBLESHOOTING_URL } from '@renderer/components/common/QrCode/common/constants';
 import { toAddress } from '@shared/lib/utils';
@@ -9,7 +9,12 @@ import { DdAddressInfoDecoded } from '@renderer/components/common/QrCode/common/
 import { derivationAddressUtils } from '../lib/utils';
 import { QrDerivationsGenerator } from '@renderer/components/common/QrCode/QrGenerator/QrDerivationsGenerator';
 import { DdKeyQrReader } from './DdKeyQrReader';
-import type { AccountId, DraftAccount, ShardAccount, ChainAccount } from '@shared/core';
+import type { AccountId, DraftAccount, ShardAccount, ChainAccount, Account } from '@shared/core';
+
+const enum Step {
+  GENERATE_QR,
+  READ_QR,
+}
 
 type Props = {
   isOpen: boolean;
@@ -18,28 +23,33 @@ type Props = {
   onComplete: (accounts: DraftAccount<ChainAccount | ShardAccount>[]) => void;
   onClose: () => void;
 };
-
 export const DerivationsAddressModal = ({ isOpen, rootAccountId, keys, onClose, onComplete }: Props) => {
   const { t } = useI18n();
 
-  const [isScanStep, toggleIsScanStep] = useToggle();
+  const [step, setStep] = useState<Step>(Step.GENERATE_QR);
+
+  useEffect(() => {
+    if (isOpen) {
+      setStep(Step.GENERATE_QR);
+    }
+  }, [isOpen]);
 
   const handleScanResult = (result: DdAddressInfoDecoded[]) => {
     const derivedKeys = keyBy(result, (d) => `${d.derivationPath}${d.encryption}`);
+    const accounts = derivationAddressUtils.createDerivedAccounts(derivedKeys, keys);
+    const newAccounts = accounts.filter((account) => !(account as Account).id);
 
-    onComplete(derivationAddressUtils.createDerivedAccounts(derivedKeys, keys));
+    onComplete(newAccounts);
   };
 
   return (
     <BaseModal
       isOpen={isOpen}
-      contentClass={isScanStep ? 'p-0' : 'px-5 py-4'}
+      contentClass={step === Step.GENERATE_QR ? 'px-5 py-4' : 'p-0'}
       title={t('onboarding.paritySigner.generateAddressesModalTitle')}
       onClose={onClose}
     >
-      {isScanStep ? (
-        <DdKeyQrReader size={[440, 524]} onResult={handleScanResult} onGoBack={toggleIsScanStep} />
-      ) : (
+      {step === Step.GENERATE_QR && (
         <div className="flex flex-col items-center">
           <SmallTitleText className="mb-6">{t('signing.scanQrTitle')}</SmallTitleText>
           <QrDerivationsGenerator
@@ -55,9 +65,13 @@ export const DerivationsAddressModal = ({ isOpen, rootAccountId, keys, onClose, 
               {t('operation.goBackButton')}
             </Button>
 
-            <Button onClick={toggleIsScanStep}>{t('signing.continueButton')}</Button>
+            <Button onClick={() => setStep(Step.READ_QR)}>{t('signing.continueButton')}</Button>
           </div>
         </div>
+      )}
+
+      {step === Step.READ_QR && (
+        <DdKeyQrReader size={[440, 524]} onResult={handleScanResult} onGoBack={() => setStep(Step.GENERATE_QR)} />
       )}
     </BaseModal>
   );
