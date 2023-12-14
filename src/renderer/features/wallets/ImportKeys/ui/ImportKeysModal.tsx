@@ -19,6 +19,7 @@ type Props = {
 
 export const ImportKeysModal = ({ isOpen, rootAccountId, existingKeys, onConfirm, onClose }: Props) => {
   const { t } = useI18n();
+
   const validationError = useUnit(importKeysModel.$validationError);
   const mergedKeys = useUnit(importKeysModel.$mergedKeys);
   const successReport = useUnit(importKeysModel.$successReport);

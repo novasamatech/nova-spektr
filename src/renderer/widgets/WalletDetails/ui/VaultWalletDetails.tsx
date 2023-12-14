@@ -6,7 +6,7 @@ import { useModalClose, useToggle } from '@shared/lib/hooks';
 import { RootAccountLg, WalletCardLg, VaultAccountsList } from '@entities/wallet';
 import { networkModel } from '@entities/network';
 import { useI18n } from '@app/providers';
-import { Wallet, BaseAccount, ChainAccount, ShardAccount, DraftAccount } from '@shared/core';
+import { Wallet, BaseAccount, ChainAccount, ShardAccount, DraftAccount, KeyType, Account } from '@shared/core';
 import { copyToClipboard, toAddress } from '@shared/lib/utils';
 import { IconNames } from '@shared/ui/Icon/data';
 import { VaultMap } from '../lib/types';
@@ -54,10 +54,11 @@ export const VaultWalletDetails = ({ wallet, root, accountsMap, onClose }: Props
 
   const handleImportedKeys = (keys: DraftAccount<ChainAccount | ShardAccount>[]) => {
     toggleImportModal();
-    const vaultAccounts = Object.values(accountsMap).flat();
-    const mainAccounts = walletDetailsUtils.getMainAccounts(vaultAccounts);
+    const newKeys = keys.filter((key) => {
+      return key.keyType === KeyType.MAIN || !(key as Account).accountId;
+    });
 
-    setNewKeys([...mainAccounts, ...keys]);
+    setNewKeys(newKeys);
     toggleScanModal();
   };
 
@@ -153,7 +154,7 @@ export const VaultWalletDetails = ({ wallet, root, accountsMap, onClose }: Props
       <ImportKeysModal
         isOpen={isImportModalOpen}
         rootAccountId={root.accountId}
-        existingKeys={newKeys}
+        existingKeys={Object.values(accountsMap).flat(2)}
         onConfirm={handleImportedKeys}
         onClose={toggleImportModal}
       />
