@@ -40,6 +40,7 @@ export const SelectableShard = ({
       checked={checked}
       className={cnTw(
         'flex items-center gap-x-2 px-2 py-1.5 hover:bg-action-background-hover group rounded',
+        keyType && 'gap-x-3',
         className,
       )}
       semiChecked={semiChecked}
@@ -48,7 +49,7 @@ export const SelectableShard = ({
       <div className="relative">
         <Identicon address={address} size={20} background={false} canCopy={false} theme={identicon} />
         {keyType && (
-          <div className="absolute p-1 border border-container-border top-0 right-[-50%] rounded-full bg-white">
+          <div className="absolute p-[3px] border border-container-border top-0 right-[-50%] rounded-full bg-white">
             <Icon name={KeyIcon[keyType] as IconNames} size={12} />
           </div>
         )}
@@ -61,6 +62,7 @@ export const SelectableShard = ({
           ) : (
             <HelpText className="text-text-tertiary">{address}</HelpText>
           ))}
+        {!name && <Truncate text={address} className="text-text-primary text-body-text" />}
       </div>
       <InfoPopover data={popoverItems} className="w-[230px]" position="right-0 top-full">
         <Icon name="info" size={16} className="shrink-0 group-hover:text-icon-hover" />
