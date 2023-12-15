@@ -21,7 +21,7 @@ export type SelectedData = {
 
 // represents account selection
 // key - account id + name
-export type SelectedAccounts = Record<`${AccountId}_${string}`, boolean>;
+export type SelectedAccounts = Record<AccountId, boolean>;
 
 // root metadata
 export type RootData = Record<AccountId, SelectedData>;

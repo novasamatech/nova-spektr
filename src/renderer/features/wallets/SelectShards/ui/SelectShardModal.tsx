@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { keyBy } from 'lodash';
 import { useUnit } from 'effector-react';
 
-import type { Account } from '@shared/core';
+import type { Account, AccountId } from '@shared/core';
 import { Accordion, BaseModal, Button, CaptionText, Checkbox, FootnoteText, SearchInput } from '@shared/ui';
 import { useI18n } from '@app/providers';
 import { ChainMap, chainsService } from '@entities/network';
@@ -44,7 +44,16 @@ export const SelectShardModal = ({ isOpen, activeShards, accounts, onClose }: Pr
   }, [accounts.length, activeShards.length]);
 
   const handleSubmit = () => {
-    // Object.entries(selectedAccounts)
+    if (!selectedAccounts) return;
+    const selectedAccountsIds = Object.entries(selectedAccounts).reduce<AccountId[]>((acc, [accountId, checked]) => {
+      if (checked) {
+        acc.push(accountId as AccountId);
+      }
+
+      return acc;
+    }, []);
+
+    onClose(accounts.filter((a) => selectedAccountsIds.includes(a.accountId)));
   };
 
   if (!(shards && rootData && chainData && selectedAccounts)) return;
@@ -171,7 +180,7 @@ export const SelectShardModal = ({ isOpen, activeShards, accounts, onClose }: Pr
                                         address={toAddress(shard.accountId, {
                                           prefix: chains[shard.chainId]?.addressPrefix,
                                         })}
-                                        checked={selectedAccounts![`${shard.accountId}_${shard.name}`]}
+                                        checked={selectedAccounts![shard.accountId]}
                                         explorers={chains[shard.chainId]?.explorers}
                                         onChange={(checked) =>
                                           selectShardsModel.events.accountToggled({
@@ -198,7 +207,7 @@ export const SelectShardModal = ({ isOpen, activeShards, accounts, onClose }: Pr
                                       prefix: chains[account.chainId]?.addressPrefix,
                                     })}
                                     keyType={isPolkadotVault ? account.keyType : undefined}
-                                    checked={selectedAccounts![`${account.accountId}_${account.name}`]}
+                                    checked={selectedAccounts![account.accountId]}
                                     explorers={chains[account.chainId]?.explorers}
                                     onChange={(checked) =>
                                       selectShardsModel.events.accountToggled({

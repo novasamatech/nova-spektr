@@ -61,7 +61,7 @@ function getSelectedAccounts(accounts: Account[], activeAccounts: Account[]): Se
 
   return accounts.reduce((acc, a) => {
     // @ts-ignore
-    acc[`${a.accountId}_${a.name}`] = activeAccountsIds.includes(a.accountId);
+    acc[a.accountId] = activeAccountsIds.includes(a.accountId);
 
     return acc;
   }, {});

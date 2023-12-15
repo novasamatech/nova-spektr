@@ -90,7 +90,7 @@ sample({
   source: $selectedAccounts,
   fn: (selectedAccounts, { value, account }) => {
     if (!selectedAccounts) return null;
-    selectedAccounts[`${account.accountId}_${account.name}`] = value;
+    selectedAccounts[account.accountId] = value;
 
     return { ...selectedAccounts };
   },
@@ -151,9 +151,9 @@ sample({
     if (!selectedAccounts) return null;
     chainAccounts.forEach((a) => {
       if (Array.isArray(a)) {
-        a.forEach((shard) => (selectedAccounts[`${shard.accountId}_${shard.name}`] = value));
+        a.forEach((shard) => (selectedAccounts[shard.accountId] = value));
       } else {
-        selectedAccounts[`${a.accountId}_${a.name}`] = value;
+        selectedAccounts[a.accountId] = value;
       }
     });
 
@@ -220,9 +220,9 @@ sample({
     chainsWithAccounts.forEach(([_, chainAccounts]) => {
       chainAccounts.forEach((a) => {
         if (Array.isArray(a)) {
-          a.forEach((shard) => (selectedAccounts[`${shard.accountId}_${shard.name}`] = value));
+          a.forEach((shard) => (selectedAccounts[shard.accountId] = value));
         } else {
-          selectedAccounts[`${a.accountId}_${a.name}`] = value;
+          selectedAccounts[a.accountId] = value;
         }
       });
     });
