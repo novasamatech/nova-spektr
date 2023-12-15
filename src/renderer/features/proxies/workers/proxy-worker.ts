@@ -15,7 +15,7 @@ import {
   PartialProxyAccount,
   ProxyAccount,
 } from '@shared/core';
-import { InitConnectionsResult } from '../lib/consts';
+import { InitConnectionsResult } from '../lib/constants';
 import { proxyWorkerUtils } from '../lib/utils';
 
 const state = {
@@ -53,13 +53,7 @@ function initConnection(chain: Chain, connection: Connection) {
       }
 
       provider.on('connected', async () => {
-        const api = await ApiPromise.create({
-          provider,
-          throwOnConnect: true,
-          throwOnUnknown: true,
-        });
-
-        state.apis[chain.chainId] = api;
+        state.apis[chain.chainId] = await ApiPromise.create({ provider, throwOnConnect: true, throwOnUnknown: true });
 
         resolve(InitConnectionsResult.SUCCESS);
 
@@ -84,7 +78,7 @@ async function disconnect(chainId: ChainId) {
 async function getProxies(chainId: ChainId, accounts: Record<AccountId, Account>, proxies: ProxyAccount[]) {
   const api = state.apis[chainId];
   const proxiesToAdd = [] as PartialProxyAccount[];
-  const existedProxies = [] as PartialProxyAccount[];
+  const existingProxies = [] as PartialProxyAccount[];
 
   if (!api || !api.query.proxy) {
     return {
@@ -121,7 +115,7 @@ async function getProxies(chainId: ChainId, accounts: Record<AccountId, Account>
             }
 
             if (hasProxyOrProxiedAccount) {
-              existedProxies.push(newProxy);
+              existingProxies.push(newProxy);
             }
           });
         } catch (e) {
@@ -135,7 +129,9 @@ async function getProxies(chainId: ChainId, accounts: Record<AccountId, Account>
 
   return {
     proxiesToAdd,
-    proxiesToRemove: proxies.filter((p) => !existedProxies.some((ep) => isEqual(p, ep))),
+    proxiesToRemove: proxies.filter((p) => !existingProxies.some((ep) => isEqual(p, ep))),
+    // TODO: proxieds To Add: proxies.filter((p) => !existingProxies.some((ep) => isEqual(p, ep))),
+    // TODO: proxieds To Remove: proxies.filter((p) => !existingProxies.some((ep) => isEqual(p, ep))),
   };
 }
 

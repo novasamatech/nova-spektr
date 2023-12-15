@@ -28,7 +28,7 @@ export type {
   ChainAccount,
   MultisigAccount,
   WalletConnectAccount,
-  RegularProxyAccount,
+  ProxiedAccount,
   ShardAccount,
   DraftAccount,
 } from './types/account';
