@@ -2,9 +2,8 @@ import { ApiPromise } from '@polkadot/api';
 import { ProviderInterface, ProviderInterfaceCallback } from '@polkadot/rpc-provider/types';
 import { UnsubscribePromise } from '@polkadot/api/types';
 
-import { ConnectionType } from '@shared/core';
-import type { Connection, Chain, ChainId, RpcNode, HexString, ConnectionStatus } from '@shared/core';
-import { ConnectionDS, MetadataDS } from '@shared/api/storage';
+import type { Connection, Chain, ChainId, HexString, ConnectionStatus } from '@shared/core';
+import { MetadataDS } from '@shared/api/storage';
 
 // =====================================================
 // ======================= General =====================
@@ -24,16 +23,6 @@ export type ExtendedChain = Chain & {
   api?: ApiPromise;
   provider?: ProviderInterface;
   disconnect?: (switchNetwork: boolean) => Promise<void>;
-};
-
-export type ConnectionsMap = Record<ChainId, ExtendedChain>;
-
-export type ConnectProps = {
-  chainId: ChainId;
-  type: ConnectionType;
-  node?: RpcNode;
-  attempt?: number;
-  timeoutId?: any;
 };
 
 export type Metadata = {
@@ -58,12 +47,6 @@ export interface IMetadataService {
   getAllMetadata: <T extends Metadata>(where?: Partial<T>) => Promise<MetadataDS[]>;
   addMetadata: (metadata: Metadata) => Promise<string[]>;
   updateMetadata: (metadata: Metadata) => Promise<string[]>;
-}
-
-export interface IConnectionService {
-  getConnections: () => Promise<ConnectionDS[]>;
-  addConnection: (connection: Connection) => Promise<string | string[]>;
-  updateConnection: (connection: Connection) => Promise<string>;
 }
 
 export const enum ProviderType {

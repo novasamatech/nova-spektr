@@ -2,9 +2,9 @@ import { Menu, Transition } from '@headlessui/react';
 import { ComponentProps, PropsWithChildren, Fragment } from 'react';
 
 import { IconButton } from '../../Buttons/IconButton/IconButton';
-import { cnTw } from '@shared/lib/utils';
 import { Icon, FootnoteText } from '../../index';
 import { DropdownIconButtonOption } from '../common/types';
+import { cnTw } from '@shared/lib/utils';
 
 type IconButtonProps = ComponentProps<typeof IconButton>;
 

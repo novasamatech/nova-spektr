@@ -9,11 +9,13 @@ import { MultiAccountsList, WalletCardLg } from '@entities/wallet';
 import { useI18n } from '@app/providers';
 import { chainsService } from '@entities/network';
 import { walletConnectUtils } from '@entities/walletConnect';
-import type { Chain, Account, WalletConnectWallet } from '@shared/core';
+import type { Chain, Account, WalletConnectWallet, AccountId } from '@shared/core';
 import { wcDetailsModel } from '../model/wc-details-model';
 import { wcDetailsUtils, walletDetailsUtils } from '../lib/utils';
 import { ForgetStep } from '../lib/constants';
 import { Animation } from '@shared/ui/Animation/Animation';
+import { IconNames } from '@shared/ui/Icon/data';
+import { RenameWalletModal } from '@features/wallets/RenameWallet';
 import {
   BaseModal,
   Button,
@@ -24,11 +26,9 @@ import {
   SmallTitleText,
   StatusModal,
 } from '@shared/ui';
-import { IconNames } from '@shared/ui/Icon/data';
-import { RenameWalletModal } from '@features/wallets/RenameWallet';
 
 type AccountItem = {
-  accountId: `0x${string}`;
+  accountId: AccountId;
   chain: Chain;
 };
 
@@ -41,7 +41,7 @@ export const WalletConnectDetails = ({ wallet, accounts, onClose }: Props) => {
   const { t } = useI18n();
 
   const [isModalOpen, closeModal] = useModalClose(true, onClose);
-  const [isConfirmForgetOpen, toggleConfirmForget] = useToggle(false);
+  const [isConfirmForgetOpen, toggleConfirmForget] = useToggle();
   const [isRenameModalOpen, toggleIsRenameModalOpen] = useToggle();
 
   const reconnectStep = useUnit(wcDetailsModel.$reconnectStep);

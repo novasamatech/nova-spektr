@@ -1,24 +1,35 @@
-import { createStore, combine, createEvent, forward, sample } from 'effector';
+import { createStore, combine, createEvent, sample } from 'effector';
 import { createGate } from 'effector-react';
 import BigNumber from 'bignumber.js';
 
 import { includes, getRoundedValue, totalAmount } from '@shared/lib/utils';
 import { walletModel, walletUtils } from '@entities/wallet';
-import type { WalletFamily, Wallet, Balance, Chain, ChainId, AccountId } from '@shared/core';
-import { WalletType } from '@shared/core';
 import { currencyModel, priceProviderModel } from '@entities/price';
-import { renameWalletModel } from '@features/wallets/RenameWallet';
+import type { WalletFamily, Wallet, Balance, Chain, ChainId, AccountId, ID } from '@shared/core';
+import { WalletType } from '@shared/core';
 
-const queryChanged = createEvent<string>();
-const walletForDetailsSet = createEvent<Wallet>();
-const walletForDetailsCleared = createEvent();
+const walletIdSet = createEvent<ID>();
+const walletIdCleared = createEvent();
 const clearData = createEvent();
+const queryChanged = createEvent<string>();
 
 const PropsGate = createGate<{ balances: Balance[]; chains: Record<ChainId, Chain> }>();
 
+const $walletId = createStore<ID | null>(null).reset(walletIdCleared);
 const $filterQuery = createStore<string>('').reset(clearData);
-const $walletForDetails = createStore<Wallet | null>(null).reset(walletForDetailsCleared);
 const $isWalletChanged = createStore<boolean>(false).reset(clearData);
+
+const $walletForDetails = combine(
+  {
+    wallets: walletModel.$wallets,
+    walletId: $walletId,
+  },
+  ({ wallets, walletId }): Wallet | null => {
+    if (!walletId) return null;
+
+    return walletUtils.getWalletById(wallets, walletId) ?? null;
+  },
+);
 
 const $filteredWalletGroups = combine(
   {
@@ -102,9 +113,9 @@ const $walletBalances = combine(
   },
 );
 
-forward({ from: queryChanged, to: $filterQuery });
-forward({ from: walletForDetailsSet, to: $walletForDetails });
-forward({ from: renameWalletModel.events.walletRenamedSuccess, to: $walletForDetails });
+sample({ clock: queryChanged, target: $filterQuery });
+
+sample({ clock: walletIdSet, target: $walletId });
 
 sample({
   clock: walletModel.events.walletSelected,
@@ -122,7 +133,7 @@ export const walletSelectModel = {
   events: {
     clearData,
     queryChanged,
-    walletForDetailsSet,
-    walletForDetailsCleared,
+    walletIdSet,
+    walletIdCleared,
   },
 };
