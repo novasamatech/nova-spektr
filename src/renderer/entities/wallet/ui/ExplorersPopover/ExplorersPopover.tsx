@@ -12,7 +12,13 @@ type Props = {
   addressPrefix?: number;
 };
 
-const ExplorersPopoverRoot = ({ button, address, explorers = [], addressPrefix, children }: PropsWithChildren<Props>) => {
+const ExplorersPopoverRoot = ({
+  button,
+  address,
+  explorers = [],
+  addressPrefix,
+  children,
+}: PropsWithChildren<Props>) => {
   const { t } = useI18n();
 
   const formattedAddress = toAddress(address, { prefix: addressPrefix });
