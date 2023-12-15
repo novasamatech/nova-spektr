@@ -167,7 +167,8 @@ sample({
   source: $chainData,
   fn: (chainData, { value, chainId, rootId }) => {
     if (!chainData) return null;
-    chainData[`${rootId}_${chainId}`].checked = value ? chainData[`${rootId}_${chainId}`].total : 0;
+    const currentChain = chainData[`${rootId}_${chainId}`];
+    currentChain.checked = value ? currentChain.total : 0;
 
     return { ...chainData };
   },
@@ -206,7 +207,7 @@ sample({
 
     return { ...shardedData };
   },
-  target: $chainData,
+  target: $shardedData,
 });
 
 // todo ROOT SELECTED
@@ -220,9 +221,9 @@ sample({
     chainsWithAccounts.forEach(([_, chainAccounts]) => {
       chainAccounts.forEach((a) => {
         if (Array.isArray(a)) {
-          a.forEach((shard) => (selectedAccounts[shard.accountId] = value));
+          a.forEach((shard) => (newSelectedAccounts[shard.accountId] = value));
         } else {
-          selectedAccounts[a.accountId] = value;
+          newSelectedAccounts[a.accountId] = value;
         }
       });
     });
