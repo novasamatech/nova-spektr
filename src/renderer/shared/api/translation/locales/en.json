@@ -72,6 +72,7 @@
     "shards": "shards",
     "shardsModalButton": "Continue",
     "shardsModalTitle": "Your shards",
+    "shardsModalTitlePv": "Your accounts",
     "shardsTitle": "Your assets on:",
     "title": "Assets",
     "verificationFailedLabel": "verification failed",

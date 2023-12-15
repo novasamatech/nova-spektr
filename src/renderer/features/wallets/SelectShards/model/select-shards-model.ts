@@ -1,147 +1,296 @@
-import { combine, createEvent, createStore, sample, createEffect, forward } from 'effector';
+import { combine, createEvent, createStore, sample, forward } from 'effector';
 
-import { SelectableAccount, SelectableShards } from '../lib/types';
-import { selectShardsUtils } from '@features/wallets/SelectShards/lib/utils';
-import { AccountId, ChainId } from '@shared/core';
+import { Account, AccountId, ChainAccount, ChainId, ShardAccount } from '@shared/core';
+import { ChainData, ChainWithAccounts, RootData, SelectedAccounts, ShardedData } from '../lib/types';
+import { selectShardsUtils } from '../lib/utils';
 
-const shardSelectorOpened = createEvent<SelectableShards | null>();
+const $selectedAccounts = createStore<SelectedAccounts | null>(null);
+const $rootData = createStore<RootData | null>(null);
+const $chainData = createStore<ChainData | null>(null);
+const $shardedData = createStore<ShardedData | null>(null);
 
-const $shards = createStore<SelectableShards | null>(null);
-const $query = createStore<string>('').reset(shardSelectorOpened);
+type AccountToggledParams = {
+  value: boolean;
+  account: Account;
+  chainId: ChainId;
+  rootId: AccountId;
+  shardGroupId?: string;
+};
+const accountToggled = createEvent<AccountToggledParams>();
 
-const $searchedShards = combine(
-  {
-    shards: $shards,
-    query: $query,
-  },
-  ({ shards, query }) => {
-    if (!shards) return null;
+type ChainToggledParams = {
+  value: boolean;
+  chainId: ChainId;
+  rootId: AccountId;
+  chainAccounts: Array<ChainAccount | ShardAccount[]>;
+};
+const chainToggled = createEvent<ChainToggledParams>();
 
-    return selectShardsUtils.searchShards(shards, query);
-  },
+type RootToggledParams = {
+  value: boolean;
+  rootId: AccountId;
+  chainsWithAccounts: ChainWithAccounts[];
+};
+const rootToggled = createEvent<RootToggledParams>();
+
+// const shardSelectorOpened = createEvent<SelectableShards | null>();
+
+// const $shards = createStore<SelectableShards | null>(null);
+const $query = createStore<string>('');
+const searchChanged = createEvent<string>();
+
+const $allShardsChecked = $selectedAccounts.map(
+  (selectedAccounts) => !!selectedAccounts && Object.values(selectedAccounts).every((v) => v),
 );
-const $allShardsChecked = $searchedShards.map(
-  (shards) => !!shards && shards.rootAccounts.every((r) => r.isSelected && r.chains.every((c) => c.isSelected)),
-);
-
 const $allShardsSemiChecked = combine(
   {
     allShardsChecked: $allShardsChecked,
-    searchedShards: $searchedShards,
+    selectedAccounts: $selectedAccounts,
   },
-  ({ allShardsChecked, searchedShards }) =>
-    !allShardsChecked &&
-    !!searchedShards &&
-    searchedShards.rootAccounts.some((r) => r.isSelected || r.selectedAmount > 0),
+  ({ allShardsChecked, selectedAccounts }) =>
+    !allShardsChecked && !!selectedAccounts && Object.values(selectedAccounts).some((v) => v),
 );
 
-type RootSelectedParams = {
-  value: boolean;
-  accountId: AccountId;
+type SelectorOpenedParams = {
+  accounts: Account[];
+  activeAccounts: Account[];
 };
-type ChainSelectedParams = {
-  value: boolean;
-  chainId: ChainId;
-  accountId: AccountId;
-};
-type AccountSelectedParams = {
-  value: boolean;
-  account: SelectableAccount;
-};
-const rootSelected = createEvent<RootSelectedParams>();
-const chainSelected = createEvent<ChainSelectedParams>();
-const accountSelected = createEvent<AccountSelectedParams>();
-const searchChanged = createEvent<string>();
-
-type Shards = {
-  shards: SelectableShards | null;
-};
-const selectRootFx = createEffect(
-  ({ value, accountId, shards }: RootSelectedParams & Shards): SelectableShards | null => {
-    const root = shards?.rootAccounts.find((r) => r.accountId === accountId);
-    if (!root) return null;
-
-    root.isSelected = value;
-    root.selectedAmount = value ? root.chains.length : 0;
-    root.chains.forEach((c) => {
-      c.isSelected = value;
-      c.selectedAmount = value ? c.accounts.length : 0;
-      c.accounts.forEach((a) => (a.isSelected = value));
-    });
-
-    return shards;
-  },
-);
-
-const selectChainFx = createEffect(
-  ({ value, chainId, accountId, shards }: ChainSelectedParams & Shards): SelectableShards | null => {
-    const root = shards?.rootAccounts.find((r) => r.accountId === accountId);
-    const chain = root?.chains.find((c) => c.chainId === chainId);
-    if (!root || !chain) return null;
-
-    chain.isSelected = value;
-    chain.accounts.forEach((a) => (a.isSelected = value));
-    chain.selectedAmount = value ? chain.accounts.length : 0;
-
-    root.selectedAmount = root.chains.reduce((acc, chain) => acc + chain.selectedAmount, 0);
-
-    return shards;
-  },
-);
-
-const selectAccountFx = createEffect(
-  ({ value, account, shards }: AccountSelectedParams & Shards): SelectableShards | null => {
-    const root = shards?.rootAccounts.find((root) => root.id === account.baseId);
-    const chain = root?.chains.find((chain) => chain.chainId === account.chainId);
-
-    if (!root || !chain) return null;
-    account.isSelected = value;
-
-    const selectedAccounts = chain.accounts.filter((a) => a.isSelected);
-    chain.isSelected = selectedAccounts.length === chain.accounts.length;
-    chain.selectedAmount = selectedAccounts.length;
-
-    root.selectedAmount = root.chains.reduce((acc, c) => acc + c.selectedAmount, 0);
-
-    return shards;
-  },
-);
-
-sample({
-  clock: rootSelected,
-  source: $shards,
-  fn: (shards, rootSelectedParams) => ({ shards, ...rootSelectedParams }),
-  target: selectRootFx,
-});
-
-sample({
-  clock: chainSelected,
-  source: $shards,
-  fn: (shards, chainSelectedParams) => ({ shards, ...chainSelectedParams }),
-  target: selectChainFx,
-});
-
-sample({
-  clock: accountSelected,
-  source: $shards,
-  fn: (shards, accountSelectedParams) => ({ shards, ...accountSelectedParams }),
-  target: selectAccountFx,
-});
-
-forward({ from: shardSelectorOpened, to: $shards });
+const selectorOpened = createEvent<SelectorOpenedParams>();
 
 forward({ from: searchChanged, to: $query });
 
+sample({
+  clock: selectorOpened,
+  fn: ({ accounts, activeAccounts }) => selectShardsUtils.getSelectedAccounts(accounts, activeAccounts),
+  target: $selectedAccounts,
+});
+
+sample({
+  clock: selectorOpened,
+  fn: ({ accounts, activeAccounts }) => selectShardsUtils.getChainsData(accounts, activeAccounts),
+  target: $chainData,
+});
+
+sample({
+  clock: selectorOpened,
+  fn: ({ accounts, activeAccounts }) => selectShardsUtils.getRootData(accounts, activeAccounts),
+  target: $rootData,
+});
+
+sample({
+  clock: selectorOpened,
+  fn: ({ accounts, activeAccounts }) => selectShardsUtils.getShardedData(accounts, activeAccounts),
+  target: $shardedData,
+});
+
+// todo ACCOUNT SELECTED
+
+sample({
+  clock: accountToggled,
+  source: $selectedAccounts,
+  fn: (selectedAccounts, { value, account }) => {
+    if (!selectedAccounts) return null;
+    selectedAccounts[`${account.accountId}_${account.name}`] = value;
+
+    return { ...selectedAccounts };
+  },
+  target: $selectedAccounts,
+});
+
+sample({
+  clock: accountToggled,
+  source: $chainData,
+  fn: (chainData, { value, rootId, chainId }) => {
+    if (!chainData) return null;
+    const currentChain = chainData[`${rootId}_${chainId}`];
+    value ? currentChain.checked++ : currentChain.checked--;
+
+    return { ...chainData };
+  },
+  target: $chainData,
+});
+
+sample({
+  clock: accountToggled,
+  source: combine({
+    chainData: $chainData,
+    rootData: $rootData,
+  }),
+  fn: ({ chainData, rootData }, { value, rootId, chainId }) => {
+    if (!chainData || !rootData) return null;
+    const currentChain = { ...chainData[`${rootId}_${chainId}`] };
+
+    const currentRoot = rootData[rootId];
+    value ? (currentRoot.checked += currentChain.total) : (currentRoot.checked -= currentChain.total);
+
+    return { ...rootData };
+  },
+  target: $rootData,
+});
+
+sample({
+  clock: accountToggled,
+  source: $shardedData,
+  filter: (_, { shardGroupId }) => Boolean(shardGroupId),
+  fn: (shardedData, { value, shardGroupId, chainId, account }) => {
+    if (!shardedData) return null;
+    const currentSharded = shardedData[`${chainId}_${shardGroupId}`];
+    value ? currentSharded.checked++ : currentSharded.checked--;
+
+    return { ...shardedData };
+  },
+  target: $chainData,
+});
+
+// todo CHAIN SELECTED
+
+sample({
+  clock: chainToggled,
+  source: $selectedAccounts,
+  fn: (selectedAccounts, { value, chainAccounts }) => {
+    if (!selectedAccounts) return null;
+    chainAccounts.forEach((a) => {
+      if (Array.isArray(a)) {
+        a.forEach((shard) => (selectedAccounts[`${shard.accountId}_${shard.name}`] = value));
+      } else {
+        selectedAccounts[`${a.accountId}_${a.name}`] = value;
+      }
+    });
+
+    return { ...selectedAccounts };
+  },
+  target: $selectedAccounts,
+});
+
+sample({
+  clock: chainToggled,
+  source: $chainData,
+  fn: (chainData, { value, chainId, rootId }) => {
+    if (!chainData) return null;
+    chainData[`${rootId}_${chainId}`].checked = value ? chainData[`${rootId}_${chainId}`].total : 0;
+
+    return { ...chainData };
+  },
+  target: $chainData,
+});
+
+sample({
+  clock: chainToggled,
+  source: combine({
+    chainData: $chainData,
+    rootData: $rootData,
+  }),
+  fn: ({ rootData, chainData }, { value, chainId, rootId }) => {
+    if (!rootData || !chainData) return null;
+    const currentChain = { ...chainData[`${rootId}_${chainId}`] };
+
+    const currentRoot = rootData[rootId];
+    value ? (currentRoot.checked += currentChain.total) : (currentRoot.checked -= currentChain.total);
+
+    return { ...rootData };
+  },
+  target: $rootData,
+});
+
+sample({
+  clock: chainToggled,
+  source: $shardedData,
+  fn: (shardedData, { value, chainId }) => {
+    if (!shardedData) return null;
+    for (let shardedDataKey in shardedData) {
+      if (shardedDataKey.includes(chainId)) {
+        // @ts-ignore
+        shardedData[shardedDataKey].checked = value ? shardedData[shardedDataKey].total : 0;
+      }
+    }
+
+    return { ...shardedData };
+  },
+  target: $chainData,
+});
+
+// todo ROOT SELECTED
+
+sample({
+  clock: rootToggled,
+  source: $selectedAccounts,
+  fn: (selectedAccounts, { value, chainsWithAccounts }) => {
+    if (!selectedAccounts) return null;
+    const newSelectedAccounts = { ...selectedAccounts };
+    chainsWithAccounts.forEach(([_, chainAccounts]) => {
+      chainAccounts.forEach((a) => {
+        if (Array.isArray(a)) {
+          a.forEach((shard) => (selectedAccounts[`${shard.accountId}_${shard.name}`] = value));
+        } else {
+          selectedAccounts[`${a.accountId}_${a.name}`] = value;
+        }
+      });
+    });
+
+    return newSelectedAccounts;
+  },
+  target: $selectedAccounts,
+});
+
+sample({
+  clock: rootToggled,
+  source: $shardedData,
+  fn: (shardedData, { value, chainsWithAccounts }) => {
+    if (!shardedData) return null;
+    chainsWithAccounts.forEach(([chain]) => {
+      for (let shardedDataKey in shardedData) {
+        if (shardedDataKey.includes(chain.chainId)) {
+          // @ts-ignore
+          shardedData[shardedDataKey].checked = value ? shardedData[shardedDataKey].total : 0;
+        }
+      }
+    });
+
+    return { ...shardedData };
+  },
+  target: $shardedData,
+});
+
+sample({
+  clock: rootToggled,
+  source: $chainData,
+  fn: (chainData, { value, rootId, chainsWithAccounts }) => {
+    if (!chainData) return null;
+    const newChainData = { ...chainData };
+    chainsWithAccounts.forEach(([chain, chainAccounts]) => {
+      newChainData[`${rootId}_${chain.chainId}`].checked = value ? newChainData[`${rootId}_${chain.chainId}`].total : 0;
+    });
+
+    return newChainData;
+  },
+  target: $chainData,
+});
+
+sample({
+  clock: rootToggled,
+  source: $rootData,
+  fn: (rootData, { value, rootId }) => {
+    if (!rootData) return null;
+    const newRootData = { ...rootData };
+    newRootData[rootId].checked = value ? newRootData[rootId].total : 0;
+
+    return newRootData;
+  },
+  target: $rootData,
+});
+
 export const selectShardsModel = {
-  $searchedShards,
-  $allShardsChecked,
-  $allShardsSemiChecked,
+  $selectedAccounts,
+  $rootData,
+  $chainData,
   $query,
+  $allShardsSemiChecked,
+  $allShardsChecked,
   events: {
+    accountToggled,
     searchChanged,
-    shardSelectorOpened,
-    rootSelected,
-    chainSelected,
-    accountSelected,
+    selectorOpened,
+    chainToggled,
+    rootToggled,
   },
 };

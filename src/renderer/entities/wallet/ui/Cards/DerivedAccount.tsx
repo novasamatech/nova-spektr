@@ -7,7 +7,7 @@ import type { ShardAccount, ChainAccount } from '@shared/core';
 import { KeyType } from '@shared/core';
 import { accountUtils } from '../../lib/account-utils';
 
-const KeyIcon: Record<KeyType, IconNames> = {
+export const KeyIcon: Record<KeyType, IconNames> = {
   [KeyType.CUSTOM]: 'keyCustom',
   [KeyType.GOVERNANCE]: 'keyGovernance',
   [KeyType.HOT]: 'keyHot',
