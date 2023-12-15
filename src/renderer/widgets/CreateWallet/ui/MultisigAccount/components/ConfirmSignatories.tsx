@@ -1,9 +1,9 @@
-import { cnTw } from '@shared/lib/utils';
+import { cnTw, RootExplorers } from '@shared/lib/utils';
 import { useI18n } from '@app/providers';
-import { FootnoteText, SmallTitleText } from '@shared/ui';
+import { FootnoteText, SmallTitleText, HelpText } from '@shared/ui';
 import { ExtendedWallet, ExtendedContact } from '../common/types';
 import { WalletItem } from './WalletItem';
-import { ContactItem } from '@entities/wallet';
+import { ContactItem, ExplorersPopover } from '@entities/wallet';
 import { WalletType } from '@shared/core';
 
 type Props = {
@@ -37,9 +37,17 @@ export const ConfirmSignatories = ({ isActive, wallets, contacts }: Props) => {
               {t('createMultisigAccount.contactsTab')} <span className="ml-2">{contacts.length}</span>
             </FootnoteText>
             <ul className="gap-y-2">
-              {contacts.map(({ index, accountId, name }) => (
+              {contacts.map(({ index, accountId, name, matrixId }) => (
                 <li key={index} className="p-1 rounded-md hover:bg-action-background-hover">
-                  <ContactItem name={name} accountId={accountId} />
+                  <ExplorersPopover
+                    address={accountId}
+                    explorers={RootExplorers}
+                    button={<ContactItem name={name} address={accountId} />}
+                  >
+                    <ExplorersPopover.Group active={Boolean(matrixId)} title={t('general.explorers.matrixIdTitle')}>
+                      <HelpText className="text-text-secondary break-all">{matrixId}</HelpText>
+                    </ExplorersPopover.Group>
+                  </ExplorersPopover>
                 </li>
               ))}
             </ul>

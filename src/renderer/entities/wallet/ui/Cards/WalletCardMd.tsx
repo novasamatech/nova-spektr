@@ -41,7 +41,14 @@ export const WalletCardMd = ({ wallet, description, prefix, hideIcon, className,
 
         {!hideIcon && <WalletIcon type={wallet.type} size={20} />}
         <div className="flex flex-col">
-          <FootnoteText className="text-text-primary">{wallet.name}</FootnoteText>
+          <FootnoteText
+            className={cnTw(
+              'text-text-secondary transition-colors',
+              'group-hover:text-text-primary group-focus:text-text-primary',
+            )}
+          >
+            {wallet.name}
+          </FootnoteText>
           {typeof description === 'string' ? (
             <FootnoteText className="text-text-tertiary">{description}</FootnoteText>
           ) : (

@@ -8,11 +8,11 @@ import { useI18n } from '@app/providers';
 type Props = {
   button: ReactNode;
   address: Address | AccountId;
-  explorers: Explorer[];
+  explorers?: Explorer[];
   addressPrefix?: number;
 };
 
-const ExplorersPopoverRoot = ({ button, address, explorers, addressPrefix, children }: PropsWithChildren<Props>) => {
+const ExplorersPopoverRoot = ({ button, address, explorers = [], addressPrefix, children }: PropsWithChildren<Props>) => {
   const { t } = useI18n();
 
   const formattedAddress = toAddress(address, { prefix: addressPrefix });
