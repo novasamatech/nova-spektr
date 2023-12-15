@@ -31,13 +31,11 @@ function isRegularProxy(chain: Chain) {
 }
 
 function toProxyAccount(account: any): PartialProxyAccount {
-  const proxyAccount = {
+  return {
     proxyAccountId: toAccountId(account?.delegate),
     proxyType: account.proxyType,
     delay: Number(account.delay),
   };
-
-  return proxyAccount;
 }
 
 function isSameProxies(oldProxy: ProxyAccount, newProxy: ProxyAccount) {

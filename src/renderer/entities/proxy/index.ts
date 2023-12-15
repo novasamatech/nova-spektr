@@ -1,2 +1,2 @@
 export { proxyModel } from './model/proxy-model';
-export * from './common/constants';
+export * from './lib/constants';

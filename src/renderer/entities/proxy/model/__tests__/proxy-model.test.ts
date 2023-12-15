@@ -1,6 +1,6 @@
 import { fork, allSettled } from 'effector';
 
-import { proxyStorage } from '@shared/api/storage';
+import { storageService } from '@shared/api/storage';
 import { proxyModel } from '../proxy-model';
 import { HexString, ProxyAccount } from '@shared/core';
 
@@ -18,13 +18,11 @@ const proxyMock = {
 
 describe('entities/proxy/model/proxy-model', () => {
   afterEach(() => {
-    jest.clearAllMocks();
+    jest.restoreAllMocks();
   });
 
   test('should add proxy ', async () => {
-    jest.spyOn(proxyStorage, 'readAll').mockResolvedValue([]);
-    jest.spyOn(proxyStorage, 'createAll').mockResolvedValue([]);
-    jest.spyOn(proxyStorage, 'deleteAll').mockResolvedValue();
+    jest.spyOn(storageService.proxies, 'createAll').mockResolvedValue([]);
 
     const scope = fork();
 
@@ -36,9 +34,7 @@ describe('entities/proxy/model/proxy-model', () => {
   });
 
   test('should remove proxy ', async () => {
-    jest.spyOn(proxyStorage, 'readAll').mockResolvedValue([proxyMock]);
-    jest.spyOn(proxyStorage, 'createAll').mockResolvedValue([]);
-    jest.spyOn(proxyStorage, 'deleteAll').mockResolvedValue();
+    jest.spyOn(storageService.proxies, 'deleteAll').mockResolvedValue([1]);
 
     const scope = fork();
 

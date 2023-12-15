@@ -1,4 +1,4 @@
-import { ProxyAccount } from '@shared/core';
+import type { ProxyAccount } from '@shared/core';
 
 export const proxyUtils = {
   isSameProxies,

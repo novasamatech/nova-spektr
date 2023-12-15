@@ -1,25 +1,25 @@
 import { createEffect, createEvent, createStore, sample } from 'effector';
 
-import { proxyStorage } from '@shared/api/storage';
-import { ProxyStore } from '../common/constants';
-import { ProxyAccount } from '@shared/core';
-import { proxyUtils } from '../common/utils';
+import { ProxyStore } from '../lib/constants';
+import { proxyUtils } from '../lib/utils';
+import type { ProxyAccount } from '@shared/core';
+import { storageService } from '@shared/api/storage';
 
 const $proxies = createStore<ProxyStore>({});
 
 const proxiesAdded = createEvent<ProxyAccount[]>();
 const proxiesRemoved = createEvent<ProxyAccount[]>();
 
-const populateProxiesFx = createEffect(() => {
-  return proxyStorage.readAll();
+const populateProxiesFx = createEffect((): Promise<ProxyAccount[]> => {
+  return storageService.proxies.readAll();
 });
 
-const insertProxiesFx = createEffect((proxies: ProxyAccount[]) => {
-  return proxyStorage.createAll(proxies);
+const addProxiesFx = createEffect((proxies: ProxyAccount[]): Promise<ProxyAccount[] | undefined> => {
+  return storageService.proxies.createAll(proxies);
 });
 
 const removeProxiesFx = createEffect((proxies: ProxyAccount[]) => {
-  return proxyStorage.deleteAll(proxies);
+  return storageService.proxies.deleteAll([1,2,3]);
 });
 
 sample({
@@ -40,10 +40,7 @@ sample({
   target: $proxies,
 });
 
-sample({
-  clock: proxiesAdded,
-  target: insertProxiesFx,
-});
+sample({ clock: proxiesAdded, target: addProxiesFx });
 
 sample({
   clock: proxiesRemoved,
@@ -54,13 +51,10 @@ sample({
       proxies,
     );
   },
-  target: $proxies,
+  target: $proxies, // TODO: update $proxies after effect
 });
 
-sample({
-  clock: proxiesRemoved,
-  target: removeProxiesFx,
-});
+sample({ clock: proxiesRemoved, target: removeProxiesFx });
 
 export const proxyModel = {
   $proxies,

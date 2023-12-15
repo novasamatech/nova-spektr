@@ -1,20 +1,7 @@
 import { Table } from 'dexie';
 
-import { Connection, ConnectionType } from '@shared/core';
 import { Notification } from '@entities/notification/model/notification';
-import type {
-  Wallet,
-  Account,
-  Contact,
-  AccountId,
-  CallHash,
-  ChainId,
-  Balance,
-  BalanceKey,
-  ProxyAccount,
-} from '@shared/core';
 import type { Metadata } from '@entities/network';
-import { Notification } from '@entities/notification/model/notification';
 import { MultisigEvent, MultisigTransaction, MultisigTransactionKey } from '@entities/transaction/model/transaction';
 import type {
   Wallet,
@@ -25,6 +12,7 @@ import type {
   ChainId,
   Balance,
   BalanceKey,
+  ProxyAccount,
   Connection,
 } from '@shared/core';
 
@@ -90,12 +78,6 @@ export interface INotificationStorage {
   addNotification: (notification: Notification) => Promise<ID>;
 }
 
-export interface IProxyStorage {
-  readAll: () => Promise<ProxyAccount[]>;
-  createAll: (proxies: ProxyAccount[]) => Promise<string[]>;
-  deleteAll: (proxies: ProxyAccount[]) => Promise<void>;
-}
-
 // =====================================================
 // ================== Storage Schemes ==================
 // =====================================================
@@ -122,8 +104,7 @@ export type TContact = Table<Contact, Contact['id']>;
 export type TAccount = Table<Account, Account['id']>;
 export type TBalance = Table<Balance, ID[]>;
 export type TConnection = Table<Connection, Connection['id']>;
-export type TProxy = Table<ProxyAccount, string[]>;
-
+export type TProxy = Table<ProxyAccount, number>;
 export type TMultisigTransaction = Table<MultisigTransaction, ID[]>;
 export type TMultisigEvent = Table<MultisigEvent, ID>;
 export type TNotification = Table<Notification, ID>;

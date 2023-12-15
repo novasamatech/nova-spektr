@@ -13,7 +13,6 @@ import type {
   ChainAccount,
   ShardAccount,
   WalletConnectAccount,
-  Wallet,
   RegularProxyAccount,
 } from '@shared/core';
 

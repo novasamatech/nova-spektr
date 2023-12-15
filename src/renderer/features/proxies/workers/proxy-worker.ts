@@ -15,8 +15,8 @@ import {
   PartialProxyAccount,
   ProxyAccount,
 } from '@shared/core';
-import { InitConnectionsResult } from '../common/consts';
-import { proxyWorkerUtils } from '../common/utils';
+import { InitConnectionsResult } from '../lib/consts';
+import { proxyWorkerUtils } from '../lib/utils';
 
 const state = {
   apis: {} as Record<ChainId, ApiPromise>,
@@ -40,6 +40,7 @@ function initConnection(chain: Chain, connection: Connection) {
           const knownChainId = proxyWorkerUtils.getKnownChain(chain.chainId);
 
           if (knownChainId) {
+            // @ts-ignore
             provider = new ScProvider(Sc, knownChainId);
           }
         } catch (e) {
@@ -82,8 +83,8 @@ async function disconnect(chainId: ChainId) {
 
 async function getProxies(chainId: ChainId, accounts: Record<AccountId, Account>, proxies: ProxyAccount[]) {
   const api = state.apis[chainId];
-  const proxiesToAdd = [] as ProxyAccount[];
-  const existedProxies = [] as ProxyAccount[];
+  const proxiesToAdd = [] as PartialProxyAccount[];
+  const existedProxies = [] as PartialProxyAccount[];
 
   if (!api || !api.query.proxy) {
     return {
@@ -111,7 +112,9 @@ async function getProxies(chainId: ChainId, accounts: Record<AccountId, Account>
             };
 
             const hasProxyOrProxiedAccount = accounts[newProxy.accountId] || accounts[newProxy.proxyAccountId];
-            const alreadyExists = [...proxies].some((oldProxy) => proxyWorkerUtils.isSameProxies(oldProxy, newProxy));
+            const alreadyExists = [...proxies].some((oldProxy) =>
+              proxyWorkerUtils.isSameProxies(oldProxy, newProxy as ProxyAccount),
+            );
 
             if (hasProxyOrProxiedAccount && !alreadyExists) {
               proxiesToAdd.push(newProxy);

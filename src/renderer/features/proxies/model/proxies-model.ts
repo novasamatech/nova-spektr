@@ -5,7 +5,7 @@ import { once, spread } from 'patronum';
 
 import { Account, Chain, ChainId, Connection, ProxyAccount } from '@shared/core';
 import { networkModel } from '@entities/network';
-import { proxyWorkerUtils } from '../common/utils';
+import { proxyWorkerUtils } from '../lib/utils';
 import { accountUtils, walletModel } from '@entities/wallet';
 import { proxyModel } from '@entities/proxy';
 
