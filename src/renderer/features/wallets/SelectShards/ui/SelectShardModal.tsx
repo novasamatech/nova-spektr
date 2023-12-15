@@ -6,12 +6,13 @@ import type { Account, AccountId } from '@shared/core';
 import { Accordion, BaseModal, Button, CaptionText, Checkbox, FootnoteText, SearchInput } from '@shared/ui';
 import { useI18n } from '@app/providers';
 import { ChainMap, chainsService } from '@entities/network';
-import { SelectableShard, SHARDED_KEY_NAMES, walletModel, walletUtils } from '@entities/wallet';
+import { accountUtils, SelectableShard, SHARDED_KEY_NAMES, walletModel, walletUtils } from '@entities/wallet';
 import { ChainTitle } from '@entities/chain';
-import { toAddress } from '@shared/lib/utils';
+import { isStringsMatchQuery, toAddress } from '@shared/lib/utils';
 import { selectShardsUtils } from '../lib/utils';
 import { selectShardsModel } from '@features/wallets/SelectShards/model/select-shards-model';
 import { ShardsTree } from '@features/wallets/SelectShards/lib/types';
+import { useDebounce } from '@shared/lib/hooks';
 
 type Props = {
   accounts: Account[];
@@ -42,6 +43,26 @@ export const SelectShardModal = ({ isOpen, activeShards, accounts, onClose }: Pr
     setShards(selectShardsUtils.getShardsTreeStructure(accounts, chainsById));
     selectShardsModel.events.selectorOpened({ accounts, activeAccounts: activeShards });
   }, [accounts.length, activeShards.length]);
+
+  const xQuery = useDebounce(query, 200);
+
+  useEffect(() => {
+    if (!chains) {
+      return;
+    }
+    const filteredAccounts = accounts.filter((account) => {
+      if (accountUtils.isBaseAccount(account)) return true;
+
+      if (!chains[account.chainId]) return false;
+      const address = toAddress(account.accountId, { prefix: chains[account.chainId].addressPrefix });
+
+      return isStringsMatchQuery(xQuery, [account.name, address]);
+    });
+    const shardsStruct = selectShardsUtils.getShardsTreeStructure(filteredAccounts, chains);
+
+    setShards(shardsStruct);
+    selectShardsModel.events.selectorOpened({ accounts, activeAccounts: activeShards });
+  }, [chains, accounts.length, activeShards.length, xQuery]);
 
   const handleSubmit = () => {
     if (!selectedAccounts) return;
