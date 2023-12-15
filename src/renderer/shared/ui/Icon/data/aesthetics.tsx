@@ -10,6 +10,8 @@ import ChatImg, { ReactComponent as ChatSvg } from '@shared/assets/images/aesthe
 import ChatRedesignImg, { ReactComponent as ChatRedesignSvg } from '@shared/assets/images/aesthetics/chat-redesign.svg';
 import BellImg, { ReactComponent as BellSvg } from '@shared/assets/images/aesthetics/bell.svg';
 import QuestionImg, { ReactComponent as QuestionSvg } from '@shared/assets/images/aesthetics/question.svg';
+import HotkeyCtrlImg, { ReactComponent as HotkeyCtrlSvg } from '@shared/assets/images/aesthetics/hotkey-ctrl.svg';
+import HotkeyOptionImg, { ReactComponent as HotkeyOptionSvg } from '@shared/assets/images/aesthetics/hotkey-option.svg';
 
 const AestheticImages = {
   loader: { svg: LoaderSvg, img: LoaderImg },
@@ -24,6 +26,8 @@ const AestheticImages = {
   bell: { svg: BellSvg, img: BellImg },
   question: { svg: QuestionSvg, img: QuestionImg },
   chatRedesign: { svg: ChatRedesignSvg, img: ChatRedesignImg },
+  hotkeyCtrl: { svg: HotkeyCtrlSvg, img: HotkeyCtrlImg },
+  hotkeyOption: { svg: HotkeyOptionSvg, img: HotkeyOptionImg },
 } as const;
 
 export type Aesthetic = keyof typeof AestheticImages;

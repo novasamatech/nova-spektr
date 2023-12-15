@@ -61,7 +61,7 @@ function subscribeStatemineAssetsChange(
   assets: Asset[],
   callback: (newBalances: Balance[]) => void,
 ): UnsubscribePromise {
-  if (!api || !assets.length || !api.query.assets) return Promise.resolve(noop);
+  if (!api || !assets.length || !accountIds.length || !api.query.assets) return Promise.resolve(noop);
 
   const assetsTuples = assets.reduce<[string, Address][]>((acc, asset) => {
     accountIds.forEach((accountId) => {

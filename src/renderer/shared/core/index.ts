@@ -16,6 +16,8 @@ export type {
   WalletConnectWallet,
   NovaWalletWallet,
   WalletFamily,
+  PolkadotVaultGroup,
+  WalletConnectGroup,
 } from './types/wallet';
 export { WalletType, SigningType } from './types/wallet';
 
@@ -27,6 +29,8 @@ export type {
   MultisigAccount,
   WalletConnectAccount,
   RegularProxyAccount,
+  ShardAccount,
+  DraftAccount,
 } from './types/account';
 
 export { AssetType, StakingType } from './types/asset';

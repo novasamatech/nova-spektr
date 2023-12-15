@@ -5,8 +5,9 @@ import { walletSelectModel } from '@features/wallets';
 import { SimpleWalletDetails } from './SimpleWalletDetails';
 import { MultisigWalletDetails } from './MultisigWalletDetails';
 import { WalletConnectDetails } from './WalletConnectDetails';
-import { walletProviderModel } from '../model/wallet-provider-model';
 import { MultishardWalletDetails } from './MultishardWalletDetails';
+import { VaultWalletDetails } from './VaultWalletDetails';
+import { walletProviderModel } from '../model/wallet-provider-model';
 import { walletUtils } from '@entities/wallet';
 import { proxyModel } from '@entities/proxy';
 // TODO: Remove when proxies will be used in UI
@@ -19,6 +20,7 @@ export const WalletDetailsProvider = () => {
   const multiShardAccounts = useUnit(walletProviderModel.$multiShardAccounts);
   const multisigAccount = useUnit(walletProviderModel.$multisigAccount);
   const contacts = useUnit(walletProviderModel.$signatoryContacts);
+  const vaultAccounts = useUnit(walletProviderModel.$vaultAccounts);
   const signatoryWallets = useUnit(walletProviderModel.$signatoryWallets);
   // TODO: Remove when proxies will be used in UI
   const proxies = useUnit(proxyModel.$proxies);
@@ -35,7 +37,7 @@ export const WalletDetailsProvider = () => {
       <SimpleWalletDetails
         wallet={wallet}
         account={singleShardAccount}
-        onClose={walletSelectModel.events.walletForDetailsCleared}
+        onClose={walletSelectModel.events.walletIdCleared}
       />
     );
   }
@@ -45,7 +47,7 @@ export const WalletDetailsProvider = () => {
       <MultishardWalletDetails
         wallet={wallet}
         accounts={multiShardAccounts}
-        onClose={walletSelectModel.events.walletForDetailsCleared}
+        onClose={walletSelectModel.events.walletIdCleared}
       />
     );
   }
@@ -57,20 +59,27 @@ export const WalletDetailsProvider = () => {
         account={multisigAccount}
         signatoryWallets={signatoryWallets}
         signatoryContacts={contacts}
-        onClose={walletSelectModel.events.walletForDetailsCleared}
+        onClose={walletSelectModel.events.walletIdCleared}
       />
     );
   }
 
   if (walletUtils.isWalletConnect(wallet) || walletUtils.isNovaWallet(wallet)) {
     return (
-      <WalletConnectDetails
+      <WalletConnectDetails wallet={wallet} accounts={accounts} onClose={walletSelectModel.events.walletIdCleared} />
+    );
+  }
+
+  if (walletUtils.isPolkadotVault(wallet) && vaultAccounts) {
+    return (
+      <VaultWalletDetails
         wallet={wallet}
-        accounts={accounts}
-        onClose={walletSelectModel.events.walletForDetailsCleared}
+        root={vaultAccounts.root}
+        accountsMap={vaultAccounts.accountsMap}
+        onClose={walletSelectModel.events.walletIdCleared}
       />
     );
   }
 
-  return <></>; // HINT: Only Polkadot Vault left
+  return null;
 };

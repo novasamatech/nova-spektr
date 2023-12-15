@@ -1,4 +1,4 @@
-import { WalletType } from '@shared/core';
+import { WalletType, ID } from '@shared/core';
 import type {
   Wallet,
   PolkadotVaultWallet,
@@ -8,6 +8,8 @@ import type {
   MultiShardWallet,
   WatchOnlyWallet,
   NovaWalletWallet,
+  PolkadotVaultGroup,
+  WalletConnectGroup,
 } from '@shared/core';
 
 export const walletUtils = {
@@ -18,23 +20,18 @@ export const walletUtils = {
   isWatchOnly,
   isNovaWallet,
   isWalletConnect,
-  isWalletConnectFamily,
+  isWalletConnectGroup,
+  isPolkadotVaultGroup,
   isValidSignatory,
+  getWalletById,
 };
 
 function isPolkadotVault(wallet?: Pick<Wallet, 'type'>): wallet is PolkadotVaultWallet {
-  const isPolkadotVault = wallet?.type === WalletType.POLKADOT_VAULT;
-  const isMultiShard = wallet?.type === WalletType.MULTISHARD_PARITY_SIGNER;
-  const isSingleShard = wallet?.type === WalletType.SINGLE_PARITY_SIGNER;
-
-  return isPolkadotVault || isMultiShard || isSingleShard;
+  return wallet?.type === WalletType.POLKADOT_VAULT;
 }
 
 function isMultiShard(wallet?: Pick<Wallet, 'type'>): wallet is MultiShardWallet {
-  const isPolkadotVault = wallet?.type === WalletType.POLKADOT_VAULT;
-  const isMultiShard = wallet?.type === WalletType.MULTISHARD_PARITY_SIGNER;
-
-  return isPolkadotVault || isMultiShard;
+  return wallet?.type === WalletType.MULTISHARD_PARITY_SIGNER;
 }
 
 function isSingleShard(wallet?: Pick<Wallet, 'type'>): wallet is SingleShardWallet {
@@ -57,7 +54,11 @@ function isWalletConnect(wallet?: Pick<Wallet, 'type'>): wallet is WalletConnect
   return wallet?.type === WalletType.WALLET_CONNECT;
 }
 
-function isWalletConnectFamily(wallet?: Pick<Wallet, 'type'>): wallet is WalletConnectWallet {
+function isPolkadotVaultGroup(wallet?: Pick<Wallet, 'type'>): wallet is PolkadotVaultGroup {
+  return isPolkadotVault(wallet) || isMultiShard(wallet) || isSingleShard(wallet);
+}
+
+function isWalletConnectGroup(wallet?: Pick<Wallet, 'type'>): wallet is WalletConnectGroup {
   return isNovaWallet(wallet) || isWalletConnect(wallet);
 }
 
@@ -67,5 +68,11 @@ const VALID_SIGNATORY_WALLET_TYPES = [
   WalletType.NOVA_WALLET,
 ];
 function isValidSignatory(wallet?: Wallet): boolean {
-  return Boolean(wallet && VALID_SIGNATORY_WALLET_TYPES.includes(wallet.type));
+  if (!wallet) return false;
+
+  return VALID_SIGNATORY_WALLET_TYPES.includes(wallet.type);
+}
+
+function getWalletById(wallets: Wallet[], id: ID): Wallet | undefined {
+  return wallets.find((wallet) => wallet.id === id);
 }

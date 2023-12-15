@@ -1,7 +1,7 @@
-import { createStore, createEvent, forward, createEffect, sample, combine } from 'effector';
+import { combine, createEffect, createEvent, createStore, forward, sample } from 'effector';
 import { spread } from 'patronum';
 
-import type { Wallet, NoID, Account, BaseAccount, ChainAccount, MultisigAccount, ID } from '@shared/core';
+import type { Account, BaseAccount, ChainAccount, ID, MultisigAccount, NoID, Wallet } from '@shared/core';
 import { kernelModel, WalletConnectAccount } from '@shared/core';
 import { storageService } from '@shared/api/storage';
 import { modelUtils } from '../lib/model-utils';
@@ -51,7 +51,6 @@ type CreateResult = {
   wallet: Wallet;
   accounts: Account[];
 };
-
 const walletCreatedFx = createEffect(
   async ({ wallet, accounts }: CreateParams<BaseAccount | WalletConnectAccount>): Promise<CreateResult | undefined> => {
     const dbWallet = await storageService.wallets.create({ ...wallet, isActive: false });
@@ -129,7 +128,6 @@ type RemoveParams = {
   walletId: ID;
   accountIds: ID[];
 };
-
 const removeWalletFx = createEffect(async ({ walletId, accountIds }: RemoveParams): Promise<ID> => {
   await Promise.all([storageService.accounts.deleteAll(accountIds), storageService.wallets.delete(walletId)]);
 
@@ -183,12 +181,10 @@ sample({
   clock: [walletCreatedFx.doneData, multishardCreatedFx.doneData],
   source: { wallets: $wallets, accounts: $accounts },
   filter: (_, data) => Boolean(data),
-  fn: ({ wallets, accounts }, data) => {
-    return {
-      wallets: wallets.concat(data!.wallet),
-      accounts: accounts.concat(data!.accounts),
-    };
-  },
+  fn: ({ wallets, accounts }, data) => ({
+    wallets: wallets.concat(data!.wallet),
+    accounts: accounts.concat(data!.accounts),
+  }),
   target: spread({
     targets: { wallets: $wallets, accounts: $accounts },
   }),
@@ -196,8 +192,8 @@ sample({
 
 sample({
   clock: [walletCreatedFx.doneData, multishardCreatedFx.doneData],
-  filter: (data) => Boolean(data),
-  fn: (data) => data!.wallet.id,
+  filter: (data: CreateResult | undefined): data is CreateResult => Boolean(data),
+  fn: (data) => data.wallet.id,
   target: walletSelected,
 });
 

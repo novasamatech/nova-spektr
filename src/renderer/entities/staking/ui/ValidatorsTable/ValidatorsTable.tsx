@@ -1,20 +1,20 @@
 import { Asset, Explorer, Validator } from '@shared/core';
 import { cnTw, getComposedIdentity } from '@shared/lib/utils';
-import { BodyText, FootnoteText, HelpText, Icon, Identicon, InfoPopover, Truncate } from '@shared/ui';
+import { BodyText, FootnoteText, HelpText, Identicon, Truncate, IconButton } from '@shared/ui';
 import { AssetBalance } from '@entities/asset';
 import { AssetFiatBalance } from '@entities/price/ui/AssetFiatBalance';
+import { ExplorersPopover } from '@entities/wallet';
 import { useI18n } from '@app/providers';
-import { getExplorers } from '../../../../pages/Staking/Operations/common/utils';
 
 const TABLE_GRID_CELLS = 'grid-cols-[1fr,128px,128px,40px]';
 
 type TableProps = {
   validators: Validator[];
-  children: (validtor: Validator, rowStyle: string) => JSX.Element;
+  children: (validator: Validator, rowStyle: string) => JSX.Element;
   listClassName?: string;
 };
 
-export const ValidatorsTable = ({ validators, children, listClassName }: TableProps) => {
+const ValidatorsTableRoot = ({ validators, children, listClassName }: TableProps) => {
   const { t } = useI18n();
 
   const rowStyle = cnTw('grid items-center pl-5 pr-2 shrink-0 h-14 hover:bg-hover group', TABLE_GRID_CELLS);
@@ -29,17 +29,12 @@ export const ValidatorsTable = ({ validators, children, listClassName }: TablePr
         </FootnoteText>
       </div>
 
-      <ul className={cnTw('flex flex-col [overflow-y:overlay] max-h-[448px]', listClassName)}>
+      <ul className={cnTw('flex flex-col max-h-[448px] overflow-y-auto', listClassName)}>
         {validators.map((validator) => children(validator, rowStyle))}
       </ul>
     </div>
   );
 };
-const InfoIcon = ({ validator, explorers }: { validator: Validator; explorers?: Explorer[] }) => (
-  <InfoPopover data={getExplorers(validator.address, explorers)} position="top-full right-0" buttonClassName="p-2">
-    <Icon name="info" size={16} className="mr-auto group-hover:text-icon-active" />
-  </InfoPopover>
-);
 
 type RowProps = {
   validator: Validator;
@@ -47,7 +42,7 @@ type RowProps = {
   explorers?: Explorer[];
 };
 
-const ValidatorRow = ({ validator, explorers, asset }: RowProps) => (
+const ValidatorRow = ({ validator, explorers = [], asset }: RowProps) => (
   <>
     <div className="flex gap-x-2 items-center mr-auto" data-testid="validator">
       <Identicon address={validator.address} background={false} size={20} />
@@ -77,11 +72,11 @@ const ValidatorRow = ({ validator, explorers, asset }: RowProps) => (
       )}
     </div>
 
-    <InfoIcon validator={validator} explorers={explorers} />
+    <ExplorersPopover button={<IconButton name="info" />} address={validator.address} explorers={explorers} />
   </>
 );
 
-const ValidatorShortRow = ({ validator, explorers }: RowProps) => (
+const ValidatorShortRow = ({ validator, explorers = [] }: RowProps) => (
   <>
     <div className="flex gap-x-2 items-center mr-auto">
       <Identicon address={validator.address} background={false} size={20} />
@@ -100,9 +95,11 @@ const ValidatorShortRow = ({ validator, explorers }: RowProps) => (
       </div>
     </div>
 
-    <InfoIcon validator={validator} explorers={explorers} />
+    <ExplorersPopover button={<IconButton name="info" />} address={validator.address} explorers={explorers} />
   </>
 );
 
-ValidatorsTable.Row = ValidatorRow;
-ValidatorsTable.ShortRow = ValidatorShortRow;
+export const ValidatorsTable = Object.assign(ValidatorsTableRoot, {
+  Row: ValidatorRow,
+  ShortRow: ValidatorShortRow,
+});

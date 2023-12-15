@@ -9,26 +9,26 @@ import { MultiAccountsList, WalletCardLg } from '@entities/wallet';
 import { useI18n } from '@app/providers';
 import { chainsService } from '@entities/network';
 import { walletConnectUtils } from '@entities/walletConnect';
-import type { Chain, Account, WalletConnectWallet } from '@shared/core';
+import type { Chain, Account, WalletConnectWallet, AccountId } from '@shared/core';
 import { wcDetailsModel } from '../model/wc-details-model';
 import { wcDetailsUtils, walletDetailsUtils } from '../lib/utils';
 import { ForgetStep } from '../lib/constants';
+import { Animation } from '@shared/ui/Animation/Animation';
+import { IconNames } from '@shared/ui/Icon/data';
+import { RenameWalletModal } from '@features/wallets/RenameWallet';
 import {
-  Animation,
   BaseModal,
   Button,
   ConfirmModal,
+  DropdownIconButton,
   FootnoteText,
-  HeaderTitleText,
   Icon,
-  IconButton,
-  MenuPopover,
   SmallTitleText,
   StatusModal,
 } from '@shared/ui';
 
 type AccountItem = {
-  accountId: `0x${string}`;
+  accountId: AccountId;
   chain: Chain;
 };
 
@@ -41,7 +41,8 @@ export const WalletConnectDetails = ({ wallet, accounts, onClose }: Props) => {
   const { t } = useI18n();
 
   const [isModalOpen, closeModal] = useModalClose(true, onClose);
-  const [isConfirmForgetOpen, toggleConfirmForget] = useToggle(false);
+  const [isConfirmForgetOpen, toggleConfirmForget] = useToggle();
+  const [isRenameModalOpen, toggleIsRenameModalOpen] = useToggle();
 
   const reconnectStep = useUnit(wcDetailsModel.$reconnectStep);
   const forgetStep = useUnit(wcDetailsModel.$forgetStep);
@@ -52,7 +53,7 @@ export const WalletConnectDetails = ({ wallet, accounts, onClose }: Props) => {
 
   // TODO: Rework with https://app.clickup.com/t/8692ykm3y
   const accountsList = useMemo(() => {
-    const sortedChains = chainsService.sortChains(chainsService.getChainsData());
+    const sortedChains = chainsService.getChainsData({ sort: true });
 
     const accountsMap = keyBy(accounts, 'chainId');
 
@@ -67,6 +68,10 @@ export const WalletConnectDetails = ({ wallet, accounts, onClose }: Props) => {
     }, []);
   }, [accounts]);
 
+  const showReconnectConfirm = () => {
+    wcDetailsModel.events.confirmReconnectShown();
+  };
+
   const reconnect = () => {
     wcDetailsModel.events.reconnectStarted({
       chains: walletConnectUtils.getWalletConnectChains(chainsService.getChainsData()),
@@ -80,69 +85,64 @@ export const WalletConnectDetails = ({ wallet, accounts, onClose }: Props) => {
     toggleConfirmForget();
   };
 
+  const Options = [
+    {
+      icon: 'rename' as IconNames,
+      title: t('walletDetails.common.renameButton'),
+      onClick: toggleIsRenameModalOpen,
+    },
+    {
+      icon: 'delete' as IconNames,
+      title: t('walletDetails.common.forgetButton'),
+      onClick: toggleConfirmForget,
+    },
+    {
+      icon: 'refresh' as IconNames,
+      title: t('walletDetails.walletConnect.refreshButton'),
+      onClick: showReconnectConfirm,
+    },
+  ];
+
+  const ActionButton = (
+    <DropdownIconButton name="more">
+      <DropdownIconButton.Items>
+        {Options.map((option) => (
+          <DropdownIconButton.Item key={option.icon}>
+            <DropdownIconButton.Option option={option} />
+          </DropdownIconButton.Item>
+        ))}
+      </DropdownIconButton.Items>
+    </DropdownIconButton>
+  );
+
   return (
     <BaseModal
       closeButton
       contentClass=""
       panelClass="h-modal"
-      title={
-        <div className="flex items-center">
-          <HeaderTitleText className="flex-1 truncate">{t('walletDetails.common.title')}</HeaderTitleText>
-
-          <MenuPopover
-            className="w-[98px] p-0"
-            position="top-full right-0"
-            buttonClassName="rounded-full"
-            offsetPx={0}
-            content={
-              <>
-                <Button
-                  variant="text"
-                  size="md"
-                  className="text-text-secondary hover:text-text-secondary px-2"
-                  prefixElement={<Icon name="delete" size={20} className="text-icon-accent" />}
-                  onClick={toggleConfirmForget}
-                >
-                  {t('walletDetails.common.forgetButton')}
-                </Button>
-
-                <Button
-                  variant="text"
-                  size="md"
-                  className="text-text-secondary hover:text-text-secondary px-2"
-                  prefixElement={<Icon name="refresh" size={20} className="text-icon-accent" />}
-                  onClick={reconnect}
-                >
-                  {t('walletDetails.walletConnect.refreshButton')}
-                </Button>
-              </>
-            }
-          >
-            <IconButton name="options" className="p-1.5" />
-          </MenuPopover>
-        </div>
-      }
+      title={t('walletDetails.common.title')}
+      actionButton={ActionButton}
       isOpen={isModalOpen}
       onClose={closeModal}
     >
       <div className="flex flex-col h-full w-full">
-        <div className="py-5 px-5 border-b border-divider">
+        <div className="py-6 px-5 border-b border-divider">
           <WalletCardLg full wallet={wallet} />
         </div>
         <div className="px-3 flex-1">
           <>
             {wcDetailsUtils.isNotStarted(reconnectStep, wallet.isConnected) && (
-              <MultiAccountsList accounts={accountsList} className="h-[391px]" />
+              <MultiAccountsList accounts={accountsList} className="h-[393px]" />
             )}
 
             {wcDetailsUtils.isReadyToReconnect(reconnectStep, wallet.isConnected) && (
               <div className="flex flex-col h-[454px] justify-center items-center">
-                <Icon name="document" size={64} className="mb-6" />
+                <Icon name="document" size={64} className="mb-6 text-icon-default" />
                 <SmallTitleText className="mb-2">{t('walletDetails.walletConnect.disconnectedTitle')}</SmallTitleText>
                 <FootnoteText className="mb-4 text-text-tertiary">
                   {t('walletDetails.walletConnect.disconnectedDescription')}
                 </FootnoteText>
-                <Button onClick={reconnect}>{t('walletDetails.walletConnect.reconnectButton')}</Button>
+                <Button onClick={showReconnectConfirm}>{t('walletDetails.walletConnect.reconnectButton')}</Button>
               </div>
             )}
 
@@ -156,6 +156,22 @@ export const WalletConnectDetails = ({ wallet, accounts, onClose }: Props) => {
             )}
           </>
         </div>
+
+        <ConfirmModal
+          panelClass="w-[300px]"
+          isOpen={wcDetailsUtils.isConfirmation(reconnectStep)}
+          confirmText={t('walletDetails.walletConnect.confirmButton')}
+          cancelText={t('walletDetails.common.cancelButton')}
+          onConfirm={reconnect}
+          onClose={wcDetailsModel.events.reconnectAborted}
+        >
+          <SmallTitleText className="mb-2" align="center">
+            {t('walletDetails.walletConnect.reconnectConfirmTitle')}
+          </SmallTitleText>
+          <FootnoteText className="text-text-tertiary" align="center">
+            {t('walletDetails.walletConnect.reconnectConfirmDescription')}
+          </FootnoteText>
+        </ConfirmModal>
 
         <ConfirmModal
           panelClass="w-[300px]"
@@ -203,6 +219,8 @@ export const WalletConnectDetails = ({ wallet, accounts, onClose }: Props) => {
           </Button>
         </StatusModal>
       </div>
+
+      <RenameWalletModal wallet={wallet} isOpen={isRenameModalOpen} onClose={toggleIsRenameModalOpen} />
     </BaseModal>
   );
 };

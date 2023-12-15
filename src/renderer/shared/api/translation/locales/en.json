@@ -125,6 +125,80 @@
   "dropdown": {
     "chooseOptionLabel": "Choose an option"
   },
+  "dynamicDerivations": {
+    "constructor": {
+      "backButton": "Back",
+      "derivationLabel": "Derivation path",
+      "derivationPlaceholder": "Derivation path",
+      "displayNameError": "Please enter key display name",
+      "duplicateDerivationError": "Duplicated derivation path",
+      "emptyListDescription": "Use form at the top to add derivation paths",
+      "emptyListTitle": "No data available",
+      "keyNameLabel": "Key display name",
+      "keyNamePlaceholder": "Choose name",
+      "keyTypeCustom": "Custom key",
+      "keyTypeGovernance": "Governance account",
+      "keyTypeHot": "Hot account",
+      "keyTypeLabel": "Type of key",
+      "keyTypePlaceholder": "Select",
+      "keyTypePublic": "Public account",
+      "keyTypeStaking": "Staking account",
+      "listKeysLabel": "Keys",
+      "listNetworkLabel": "Network",
+      "maxShardsError": "Max 50",
+      "minShardsError": "Min 2",
+      "networkLabel": "Network",
+      "networkPlaceholder": "Select network",
+      "newKeyButton": "Add new key",
+      "notNumberError": "Not a number",
+      "numberRequiredError": "Enter number",
+      "passwordDerivationError": "Password derivation path is not allowed",
+      "requiredDerivationError": "Please enter derivation path",
+      "saveButton": "Save",
+      "shardInfoLink": "Multishard operations wiki",
+      "shardInfoOne": "Sharding creates a set of different keys (shards) that are independent from each other but associated with each other in the Nova Spektr application for some operations.",
+      "shardInfoTwo": "A sharded account consists of multiple keys (shards) numbered from 0 to the total number of shards minus 1. Each shard is created with a hard derivation path (//0, //1, //2, ..., //N-1).",
+      "shardedLabel": "Sharded",
+      "shardsLabel": "Shards to add",
+      "shardsPlaceholder": "2 - 50",
+      "title": "Add keys for { title }",
+      "warnModalCancelButton": "Cancel",
+      "warnModalDescription": "Applied changes will not be saved. Are you sure?",
+      "warnModalLeaveButton": "Leave form",
+      "warnModalTitle": "Leave form without changes?",
+      "wrongDerivationError": "Wrong derivation path format"
+    },
+    "importKeys": {
+      "backButton": "Back",
+      "continueButton": "Continue",
+      "downloadTemplateButton": "Download the template",
+      "error": {
+        "invalidFile": "Incorrect file format",
+        "invalidPasswordPath_one": "Password derivation path {invalidValues} is not allowed, please check the file.",
+        "invalidPasswordPath_other": "Password derivation paths {invalidValues} are not allowed, please check the file.",
+        "invalidPath_one": "Derivation path {invalidValues} is not valid, please check the file.",
+        "invalidPath_other": "Derivation paths {invalidValues} are not valid, please check the file.",
+        "invalidRoot": "The public key doesn’t match.",
+        "missingName_one": "Name is not specified for the key with {invalidValues}, please check the file.",
+        "missingName_other": "Name is not specified for the keys with {invalidValues}, please check the file.",
+        "wrongShardsNumber_one": "Number of shards {invalidValues} is not valid, please check the file.",
+        "wrongShardsNumber_other": "Numbers of shards {invalidValues} are not valid, please check the file."
+      },
+      "fileInputPlaceholder": "Select .yaml file on your computer",
+      "modalTitle": "Import keys",
+      "report": {
+        "addedKeys_one": "{count} key added",
+        "addedKeys_other": "{count} keys added",
+        "duplicatedKeys_one": "{count} derivation path is duplicated.",
+        "duplicatedKeys_other": "{count} derivation paths are duplicated.",
+        "networksIgnored_one": "{count} networks ignored with genesis hash:",
+        "networksIgnored_other": "{count} networks ignored with genesis hash:",
+        "title": "Success",
+        "updatedNetworks_one": "for {count} network.",
+        "updatedNetworks_other": "for {count} networks."
+      }
+    }
+  },
   "fallbackScreen": {
     "message": "Sorry, something went wrong",
     "omniLogoAlt": "Nova Spektr logo",
@@ -152,6 +226,10 @@
     "title": {
       "appName": "Nova Spektr"
     }
+  },
+  "info": {
+    "derivationPathTitle": "Derivation path ",
+    "publicKeyTitle": "Public key"
   },
   "log": {
     "cancelledMessage": "rejected this operation",
@@ -223,6 +301,7 @@
       "decodeErrorLabel": "Recognition error!",
       "derivedLabel": "Derived accounts on",
       "existingAccountDescription": "This account already exists",
+      "generateAddressesModalTitle": "Generate accounts addresses",
       "invalidAccountTitle": "The <strong>address</strong> is not a valid polkadot address!",
       "invalidAccountsTitle": "These <strong>accounts</strong> are not valid!",
       "multipleCamerasLabel": "There are multiple cameras!",
@@ -256,13 +335,28 @@
     "readAccountsParitySignerLabel": "Following accounts have been successfully read from Polkadot Vault",
     "readyToUseLabel": "Your wallet is ready to use!",
     "vault": {
+      "accountTitle": "Account",
       "accountsTitle": "Manage accounts",
+      "addMoreKeysButton": "Add more keys",
       "addressColumn": "Address",
+      "altHint": "Hold <button /> to see the details",
+      "derivationPath": "Derivation path",
+      "editKeysButton": "Edit keys",
       "fillNamesButton": "Autofill account names",
+      "hotkeyCtrl": "Ctrl",
+      "hotkeyOption": "Option",
+      "importButton": "Import",
+      "info": {
+        "accountsDescription": "Your accounts will be derived from the Vault and key derivation path. For each network a separate derivation path is used",
+        "accountsTitle": "Where are my accounts?",
+        "vaultDescription": "Vault is the root key in the key hierarchy. It’s a key that is derived from the seed phrase without a derivation path",
+        "vaultTitle": "What is the Vault?"
+      },
       "manageTitle": "Set up your wallet",
       "nameColumn": "Account name",
       "scanTitle": "Scan the account QR code",
-      "title": "Add wallet by Polkadot Vault"
+      "title": "Add wallet by Polkadot Vault",
+      "vaultTitle": "Vault"
     },
     "walletConnect": {
       "accountsTitle": "Manage accounts",
@@ -770,6 +864,7 @@
     "title": "Staking",
     "tooltips": {
       "depositDescription": "The deposit stays locked on the depositor’s account until the multisig operation is executed or rejected",
+      "redeemAndUnstake": "Unstake - {countUnstake} account<br />Withdraw - {countWithdraw} account",
       "redeemDescription": "Your tokens are ready to be withdrawn",
       "redeemTitle": "Withdraw",
       "unstakeDescription": "Your tokens are being unstaked<br />at the moment",
@@ -887,11 +982,16 @@
     "common": {
       "cancelButton": "Cancel",
       "forgetButton": "Forget",
+      "nameExistsError": "This wallet name already exists",
+      "nameRequiredError": "Name is required",
       "removeButton": "Remove",
       "removeMessage": "Are you sure you want to remove { walletName }?",
       "removeTitle": "Remove wallet",
       "removingWallet": "Removing wallet",
       "renameButton": "Rename",
+      "renameLabel": "Name",
+      "renameSaveButton": "Save",
+      "renameTitle": "Rename wallet",
       "title": "Wallet details",
       "walletRemoved": "Wallet removed"
     },
@@ -902,13 +1002,25 @@
       "thresholdLabel": "Threshold { min } out of { max }",
       "walletsGroup": "Your wallets"
     },
+    "vault": {
+      "derivationPath": "Derivation path",
+      "editKeys": "Edit keys",
+      "export": "Export keyset",
+      "import": "Import keyset",
+      "networksTab": "Networks",
+      "publicKey": "Public Key",
+      "shardsTitle": "Shards"
+    },
     "walletConnect": {
       "abortRejectButton": "Close",
+      "confirmButton": "Yes, refresh",
       "connectedStatus": "Connected",
       "disconnectedDescription": "Resume the connection to work with the WalletConnect",
       "disconnectedStatus": "Not connected",
       "disconnectedTitle": "Wallet not connected",
       "reconnectButton": "Reconnect",
+      "reconnectConfirmDescription": "Make sure that corresponding wallet is selected in your wallet app connected via WalletConnect",
+      "reconnectConfirmTitle": "Is a proper wallet selected?",
       "refreshButton": "Refresh",
       "rejectDescription": "The operation was successfully canceled",
       "rejectTitle": "Rejected"

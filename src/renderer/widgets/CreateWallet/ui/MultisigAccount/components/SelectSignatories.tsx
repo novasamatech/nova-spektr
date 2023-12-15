@@ -128,7 +128,7 @@ export const SelectSignatories = ({ isActive, wallets, accounts, contacts, onSel
   });
 
   const getDisabledMessage = (type: WalletType) => {
-    const UnsupportedTypes = [WalletType.MULTISIG, WalletType.POLKADOT_VAULT];
+    const UnsupportedTypes = [WalletType.WATCH_ONLY, WalletType.MULTISIG];
     if (UnsupportedTypes.includes(type)) {
       return t('createMultisigAccount.disabledError.unsupportedType');
     }
@@ -270,9 +270,7 @@ export const SelectSignatories = ({ isActive, wallets, accounts, contacts, onSel
 
   return (
     <>
-      <section
-        className={cnTw('flex flex-col px-3 py-4 flex-1 bg-input-background-disabled h-full', !isActive && 'hidden')}
-      >
+      <div className={cnTw(!isActive && 'hidden')}>
         <SmallTitleText className="py-2 px-2 mb-4">{t('createMultisigAccount.signatoryTitle')}</SmallTitleText>
 
         <Tabs
@@ -282,7 +280,7 @@ export const SelectSignatories = ({ isActive, wallets, accounts, contacts, onSel
           tabClassName="flex-inline"
           tabsClassName="mx-2"
         />
-      </section>
+      </div>
 
       <CreateContactModal isOpen={isContactModalOpen} onClose={toggleContactModalOpen} />
     </>

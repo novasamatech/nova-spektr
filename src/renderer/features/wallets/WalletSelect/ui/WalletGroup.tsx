@@ -48,7 +48,7 @@ export const WalletGroup = ({ type, wallets }: Props) => {
                   )
                 }
                 onClick={() => walletModel.events.walletSelected(wallet.id)}
-                onInfoClick={() => walletSelectModel.events.walletForDetailsSet(wallet)}
+                onInfoClick={() => walletSelectModel.events.walletIdSet(wallet.id)}
               />
             </li>
           ))}

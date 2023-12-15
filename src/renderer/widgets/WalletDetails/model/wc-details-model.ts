@@ -11,6 +11,7 @@ import { chainsService } from '@entities/network';
 import { toAccountId } from '@shared/lib/utils';
 
 const reset = createEvent();
+const confirmReconnectShown = createEvent();
 const reconnectStarted = createEvent<Omit<InitConnectParams, 'client'> & { currentSession: string }>();
 const reconnectAborted = createEvent();
 const sessionTopicUpdated = createEvent();
@@ -19,6 +20,12 @@ const forgetModalClosed = createEvent();
 
 const $reconnectStep = createStore<ReconnectStep>(ReconnectStep.NOT_STARTED).reset(reset);
 const $forgetStep = createStore<ForgetStep>(ForgetStep.NOT_STARTED).reset(reset);
+
+sample({
+  clock: confirmReconnectShown,
+  fn: () => ReconnectStep.CONFIRMATION,
+  target: $reconnectStep,
+});
 
 sample({
   clock: reconnectStarted,
@@ -138,7 +145,7 @@ sample({
 
 forward({
   from: forgetModalClosed,
-  to: walletSelectModel.events.walletForDetailsCleared,
+  to: walletSelectModel.events.walletIdCleared,
 });
 
 export const wcDetailsModel = {
@@ -146,6 +153,7 @@ export const wcDetailsModel = {
   $forgetStep,
   events: {
     reset,
+    confirmReconnectShown,
     reconnectStarted,
     reconnectAborted,
     sessionTopicUpdated,

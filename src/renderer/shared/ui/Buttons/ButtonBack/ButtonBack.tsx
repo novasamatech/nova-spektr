@@ -1,7 +1,7 @@
 import { PropsWithChildren } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-import IconButton from '@shared/ui/Buttons/IconButton/IconButton';
+import { IconButton } from '../IconButton/IconButton';
 
 type Props = {
   path?: string;

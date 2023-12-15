@@ -1,12 +1,10 @@
 import { useEffect, useState } from 'react';
 import { useLottie } from 'lottie-react';
 
-import Animations from './Data';
+import { Images } from './common/constants';
 
-export type AnimationNames = keyof typeof Animations;
-
-export type Props = {
-  variant: AnimationNames;
+type Props = {
+  variant: keyof typeof Images;
   width?: number;
   height?: number;
   loop?: boolean;
@@ -26,12 +24,12 @@ export const Animation = ({ variant, width = 80, height = 80, loop = false, auto
     },
   };
 
-  const { View } = useLottie(defaultOptions, { width: width, height: height });
+  const { View } = useLottie(defaultOptions, { width, height });
 
   useEffect(() => {
-    // using same animation repeatedly without deep clone lead to memory leak
+    // HINT: using same animation repeatedly without deep clone leads to memory leak
     // https://github.com/airbnb/lottie-web/issues/1159
-    setAnimation(JSON.parse(JSON.stringify(Animations[variant])));
+    setAnimation(JSON.parse(JSON.stringify(Images[variant])));
   }, [variant]);
 
   return <div className={className}>{View}</div>;

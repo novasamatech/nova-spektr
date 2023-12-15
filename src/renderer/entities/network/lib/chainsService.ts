@@ -1,8 +1,5 @@
-import sortBy from 'lodash/sortBy';
-import concat from 'lodash/concat';
-import orderBy from 'lodash/orderBy';
+import { keyBy, orderBy, concat, sortBy } from 'lodash';
 import BigNumber from 'bignumber.js';
-import keyBy from 'lodash/keyBy';
 
 import chainsProd from '@shared/config/chains/chains.json';
 import chainsDev from '@shared/config/chains/chains_dev.json';
@@ -32,32 +29,26 @@ export const chainsService = {
   searchChain,
 };
 
-function getChainsData(): Chain[] {
-  return CHAINS[process.env.CHAINS_FILE || 'chains'];
+function getChainsData(params = { sort: false }): Chain[] {
+  const chains = CHAINS[process.env.CHAINS_FILE || 'chains'];
+
+  return params.sort ? sortChains(chains) : chains;
 }
 
-function getChainsMap(): ChainMap {
-  const chainsData = getChainsData();
-
-  return keyBy(chainsData, 'chainId');
+function getChainsMap(params = { sort: false }): ChainMap {
+  return keyBy(getChainsData(params), 'chainId');
 }
 
 function getChainById(chainId: ChainId): Chain | undefined {
-  const chainsData = getChainsData();
-
-  return chainsData.find((chain) => chain.chainId === chainId);
+  return getChainsData().find((chain) => chain.chainId === chainId);
 }
 
 function searchChain(query: string): Chain | undefined {
-  const chainsData = getChainsData();
-
-  return chainsData.find((chain) => chain.chainId.includes(query));
+  return getChainsData().find((chain) => chain.chainId.includes(query));
 }
 
-function getStakingChainsData(): Chain[] {
-  const chainsData = getChainsData();
-
-  return chainsData.reduce<Chain[]>((acc, chain) => {
+function getStakingChainsData(params = { sort: false }): Chain[] {
+  return getChainsData(params).reduce<Chain[]>((acc, chain) => {
     if (getRelaychainAsset(chain.assets)) {
       acc.push(chain);
     }

@@ -1,0 +1,1 @@
+export const SUBSCRIPTION_DELAY = 1000;

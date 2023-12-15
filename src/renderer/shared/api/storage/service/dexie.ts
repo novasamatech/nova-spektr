@@ -1,5 +1,11 @@
 import Dexie from 'dexie';
 
+import { useBalanceStorage } from './balanceStorage';
+import { useTransactionStorage } from './transactionStorage';
+import { useNotificationStorage } from './notificationStorage';
+import { useMultisigEventStorage } from './multisigEventStorage';
+import { useMetadataStorage } from './metadataStorage';
+import { migrateEvents, migrateWallets } from '../migration';
 import {
   DataStorage,
   IStorage,
@@ -14,13 +20,6 @@ import {
   TMetadata,
   TProxy,
 } from '../common/types';
-import { useBalanceStorage } from './balanceStorage';
-import { useConnectionStorage } from './connectionStorage';
-import { useTransactionStorage } from './transactionStorage';
-import { useNotificationStorage } from './notificationStorage';
-import { useMultisigEventStorage } from './multisigEventStorage';
-import { useMetadataStorage } from './metadataStorage';
-import { migrateEvents, migrateWallets } from '../migration';
 
 class DexieStorage extends Dexie {
   connections: TConnection;
@@ -89,8 +88,6 @@ class StorageFactory implements IStorage {
 
   public connectTo<T extends keyof DataStorage>(name: T): DataStorage[T] | undefined {
     switch (name) {
-      case 'connections':
-        return useConnectionStorage(this.dexieDB.connections) as DataStorage[T];
       case 'balances':
         return useBalanceStorage(this.dexieDB.balances) as DataStorage[T];
       case 'multisigTransactions':
