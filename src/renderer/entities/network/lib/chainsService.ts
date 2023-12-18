@@ -8,7 +8,7 @@ import { ChainLike, ChainMap } from './common/types';
 import { isKusama, isPolkadot, isTestnet, isNameWithNumber } from './common/utils';
 import type { Chain, ChainId, Balance } from '@shared/core';
 import { PriceObject } from '@shared/api/price-provider';
-import { sumBalances } from '@pages/Assets/AssetsList/common/utils';
+import { sumBalances } from '@pages/Assets/Assets/common/utils';
 
 type ChainWithFiatBalance = Chain & {
   fiatBalance: string;

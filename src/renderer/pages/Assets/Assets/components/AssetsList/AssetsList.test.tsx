@@ -54,7 +54,7 @@ jest.mock('./components/NetworkAssets/NetworkAssets', () => ({
   NetworkAssets: () => <span>NetworkAssets</span>,
 }));
 
-describe('pages/Assets/AssetsList', () => {
+describe('pages/Assets/Assets', () => {
   const scope = fork({
     values: new Map()
       .set(walletModel.$activeAccounts, [{ name: 'Test Wallet', accountId: TEST_ACCOUNT_ID }])

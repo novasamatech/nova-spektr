@@ -5,6 +5,8 @@ import log from 'electron-log';
 import { App } from './App';
 import { kernelModel } from '@shared/core';
 import { networkModel } from '@entities/network';
+import { balanceSubscriptionModel } from '@features/balances';
+import { assetsModel } from '@pages/Assets/Assets/model/assets-model';
 import './i18n';
 import './index.css';
 import './styles/theme/default.css';
@@ -14,7 +16,7 @@ log.variables.env = process.env.NODE_ENV;
 log.transports.console.format = '{y}/{m}/{d} {h}:{i}:{s}.{ms} [{env}#{version}]-{processType} [{level}] > {text}';
 log.transports.console.useStyles = true;
 
-Object.assign(console, log.functions);
+// Object.assign(console, log.functions);
 log.errorHandler.startCatching({
   showDialog: false,
   onError({ createIssue, error, processType, versions }) {
@@ -29,6 +31,8 @@ if (!container) {
 
 kernelModel.events.appStarted();
 networkModel.events.networkStarted();
+balanceSubscriptionModel.events.balancesSubscribed();
+assetsModel.events.assetsStarted();
 
 createRoot(container).render(
   <Router>

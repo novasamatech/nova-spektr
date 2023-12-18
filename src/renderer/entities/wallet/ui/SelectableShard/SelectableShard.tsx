@@ -1,7 +1,6 @@
 import { cnTw } from '@shared/lib/utils';
-import { BodyText, Checkbox, HelpText, Icon, Identicon, InfoPopover, Truncate } from '@shared/ui';
+import { BodyText, Checkbox, HelpText, Icon, Identicon, Truncate } from '@shared/ui';
 import { Address, Explorer } from '@shared/core';
-import { useAddressInfo } from '../../lib/useAddressInfo';
 
 type Props = {
   name: string;
@@ -24,8 +23,6 @@ export const SelectableShard = ({
   explorers,
   onChange,
 }: Props) => {
-  const popoverItems = useAddressInfo({ address, explorers });
-
   return (
     <Checkbox
       checked={checked}
@@ -45,9 +42,8 @@ export const SelectableShard = ({
           <HelpText className="text-text-tertiary">{address}</HelpText>
         )}
       </div>
-      <InfoPopover data={popoverItems} className="w-[230px]" position="right-0 top-full">
-        <Icon name="info" size={16} className="shrink-0 group-hover:text-icon-hover" />
-      </InfoPopover>
+
+      <Icon name="info" size={16} className="shrink-0 group-hover:text-icon-hover" />
     </Checkbox>
   );
 };

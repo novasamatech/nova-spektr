@@ -9,23 +9,25 @@ import { ZERO_BALANCE, totalAmount, includes, cnTw } from '@shared/lib/utils';
 import { ExtendedChain } from '@entities/network';
 import { useI18n } from '@app/providers';
 import { balanceSorter, sumBalances } from '../../common/utils';
-import type { AccountId, Account, Chain, Asset, Balance } from '@shared/core';
+import type { AccountId, Chain, Asset, Balance, Account } from '@shared/core';
 import { accountUtils } from '@entities/wallet';
 import { NetworkFiatBalance } from '../NetworkFiatBalance/NetworkFiatBalance';
 import { currencyModel, priceProviderModel } from '@entities/price';
 import { balanceModel } from '@entities/balance';
 import { useThrottle } from '@shared/lib/hooks';
+import { assetsModel } from '../../model/assets-model';
 
 type Props = {
-  hideZeroBalance?: boolean;
   searchSymbolOnly?: boolean;
-  query?: string;
   chain: Chain | ExtendedChain;
   accounts: Account[];
 };
 
-export const NetworkAssets = ({ query, hideZeroBalance, chain, accounts, searchSymbolOnly }: Props) => {
+export const NetworkAssets = ({ chain, accounts, searchSymbolOnly }: Props) => {
   const { t } = useI18n();
+
+  const query = useUnit(assetsModel.$query);
+  const hideZeroBalances = useUnit(assetsModel.$hideZeroBalances);
 
   const assetsPrices = useUnit(priceProviderModel.$assetsPrices);
   const fiatFlag = useUnit(priceProviderModel.$fiatFlag);
@@ -77,7 +79,7 @@ export const NetworkAssets = ({ query, hideZeroBalance, chain, accounts, searchS
 
       const balance = balancesObject[asset.assetId];
 
-      return !hideZeroBalance || balance?.verified === false || totalAmount(balance) !== ZERO_BALANCE;
+      return !hideZeroBalances || balance?.verified === false || totalAmount(balance) !== ZERO_BALANCE;
     });
 
     filteredAssets.sort((a, b) =>
@@ -85,7 +87,7 @@ export const NetworkAssets = ({ query, hideZeroBalance, chain, accounts, searchS
     );
 
     setFilteredAssets(filteredAssets);
-  }, [balancesObject, query, hideZeroBalance]);
+  }, [balancesObject, query, hideZeroBalances]);
 
   if (filteredAssets.length === 0) {
     return null;
@@ -94,41 +96,39 @@ export const NetworkAssets = ({ query, hideZeroBalance, chain, accounts, searchS
   const hasFailedVerification = balances?.some((b) => b.verified !== undefined && !b.verified);
 
   return (
-    <li className="w-[546px]">
-      <Accordion isDefaultOpen>
-        <Accordion.Button
-          buttonClass={cnTw(
-            'sticky top-0 z-10 bg-background-default px-2 py-1.5',
-            'transition-colors rounded hover:bg-block-background-hover focus-visible:bg-block-background-hover',
-          )}
-        >
-          <div className="flex items-center justify-between gap-x-2 w-full">
-            <div className="flex items-center gap-x-2">
-              <ChainTitle chain={chain} fontClass="text-caption uppercase" as="h2" iconSize={20} />
+    <Accordion isDefaultOpen>
+      <Accordion.Button
+        buttonClass={cnTw(
+          'sticky top-0 z-10 bg-background-default px-2 py-1.5',
+          'transition-colors rounded hover:bg-block-background-hover focus-visible:bg-block-background-hover',
+        )}
+      >
+        <div className="flex items-center justify-between gap-x-2 w-full">
+          <div className="flex items-center gap-x-2">
+            <ChainTitle chain={chain} fontClass="text-caption uppercase" as="h2" iconSize={20} />
 
-              {hasFailedVerification && (
-                <div className="flex items-center gap-x-2 text-text-warning">
-                  {/* FIXME: tooltip not visible when first displayed network invalid. For now just render it below icon */}
-                  <Tooltip content={t('balances.verificationTooltip')} pointer="up">
-                    <Icon name="warn" className="cursor-pointer" size={16} />
-                  </Tooltip>
-                  <CaptionText className="uppercase text-inherit">{t('balances.verificationFailedLabel')}</CaptionText>
-                </div>
-              )}
-            </div>
-            <NetworkFiatBalance balances={balancesObject} assets={filteredAssets} />
+            {hasFailedVerification && (
+              <div className="flex items-center gap-x-2 text-text-warning">
+                {/* FIXME: tooltip not visible when first displayed network invalid. For now just render it below icon */}
+                <Tooltip content={t('balances.verificationTooltip')} pointer="up">
+                  <Icon name="warn" className="cursor-pointer" size={16} />
+                </Tooltip>
+                <CaptionText className="uppercase text-inherit">{t('balances.verificationFailedLabel')}</CaptionText>
+              </div>
+            )}
           </div>
-        </Accordion.Button>
-        <Accordion.Content className="mt-1">
-          <ul className="flex flex-col gap-y-1.5">
-            {filteredAssets.map((asset) => (
-              <li key={asset.assetId}>
-                <AssetCard chainId={chain.chainId} asset={asset} balance={balancesObject[asset.assetId.toString()]} />
-              </li>
-            ))}
-          </ul>
-        </Accordion.Content>
-      </Accordion>
-    </li>
+          <NetworkFiatBalance balances={balancesObject} assets={filteredAssets} />
+        </div>
+      </Accordion.Button>
+      <Accordion.Content className="mt-1">
+        <ul className="flex flex-col gap-y-1.5">
+          {filteredAssets.map((asset) => (
+            <li key={asset.assetId}>
+              <AssetCard chainId={chain.chainId} asset={asset} balance={balancesObject[asset.assetId.toString()]} />
+            </li>
+          ))}
+        </ul>
+      </Accordion.Content>
+    </Accordion>
   );
 };
