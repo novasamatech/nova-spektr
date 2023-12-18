@@ -4,6 +4,7 @@ import type { AccountId, ChainId, Account, BaseAccount, ChainAccount, ShardAccou
 import { walletModel, walletUtils } from '@entities/wallet';
 import { networkModel } from '@entities/network';
 import { shardsUtils } from '../lib/shards-utils';
+import { RootTuple } from '../lib/types';
 
 export type Callbacks = {
   onConfirm: (shards: Account[]) => void;
@@ -37,9 +38,6 @@ const $totalSelected = createStore<number>(0);
 
 sample({ clock: queryChanged, target: $query });
 
-// TODO: update wallet struct on queryChanged
-// sample({ clock: queryChanged, target: $query });
-
 const $isAccessDenied = combine(walletModel.$activeWallet, (wallet): boolean => {
   return !walletUtils.isPolkadotVault(wallet) && !walletUtils.isMultiShard(wallet);
 });
@@ -62,7 +60,7 @@ const $walletStructure = combine(
     accounts: $filteredAccounts,
     chains: networkModel.$chains,
   },
-  ({ proceed, wallet, accounts, chains }) => {
+  ({ proceed, wallet, accounts, chains }): RootTuple[] => {
     if (!proceed || !wallet) return [];
 
     const chainsMap = shardsUtils.getChainsAccountsMap(chains);
