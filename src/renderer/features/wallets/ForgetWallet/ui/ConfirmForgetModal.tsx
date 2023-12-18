@@ -27,12 +27,6 @@ export const ConfirmForgetModal = ({ wallet, isOpen, onClose, onForget }: Props)
       return;
     }
 
-    if (walletUtils.isWalletConnect(wallet)) {
-      forgetWalletModel.events.forgetWalletConnectWallet(wallet);
-
-      return;
-    }
-
     forgetWalletModel.events.forgetSimpleWallet(wallet);
   };
 
