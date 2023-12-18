@@ -99,7 +99,7 @@ export const VaultWalletDetails = ({ wallet, root, accountsMap, onClose }: Props
     {
       icon: 'forget' as IconNames,
       title: t('walletDetails.common.forgetButton'),
-      onClick: () => toggleConfirmForget,
+      onClick: toggleConfirmForget,
     },
   ];
 
