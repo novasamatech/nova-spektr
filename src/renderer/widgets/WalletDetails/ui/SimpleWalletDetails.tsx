@@ -5,9 +5,10 @@ import { useModalClose, useToggle } from '@shared/lib/hooks';
 import { AccountsList, WalletCardLg } from '@entities/wallet';
 import { networkModel } from '@entities/network';
 import { useI18n } from '@app/providers';
-import type { Wallet, BaseAccount } from '@shared/core';
+import type { BaseAccount, Wallet } from '@shared/core';
 import { IconNames } from '@shared/ui/Icon/data';
 import { RenameWalletModal } from '@features/wallets/RenameWallet';
+import { ConfirmForgetModal } from '@features/wallets/ForgetWallet';
 
 type Props = {
   wallet: Wallet;
@@ -21,6 +22,7 @@ export const SimpleWalletDetails = ({ wallet, account, onClose }: Props) => {
 
   const [isModalOpen, closeModal] = useModalClose(true, onClose);
   const [isRenameModalOpen, toggleIsRenameModalOpen] = useToggle();
+  const [isConfirmForgetOpen, toggleConfirmForget] = useToggle();
 
   const Options = [
     {
@@ -28,11 +30,11 @@ export const SimpleWalletDetails = ({ wallet, account, onClose }: Props) => {
       title: t('walletDetails.common.renameButton'),
       onClick: toggleIsRenameModalOpen,
     },
-    // {
-    //   icon: 'forget',
-    //   title: t('walletDetails.common.forgetButton'),
-    //   onClick: () => {},
-    // },
+    {
+      icon: 'forget' as IconNames,
+      title: t('walletDetails.common.forgetButton'),
+      onClick: toggleConfirmForget,
+    },
   ];
 
   const ActionButton = (
@@ -65,6 +67,13 @@ export const SimpleWalletDetails = ({ wallet, account, onClose }: Props) => {
       </div>
 
       <RenameWalletModal wallet={wallet} isOpen={isRenameModalOpen} onClose={toggleIsRenameModalOpen} />
+
+      <ConfirmForgetModal
+        wallet={wallet}
+        isOpen={isConfirmForgetOpen}
+        onClose={toggleConfirmForget}
+        onForget={onClose}
+      />
     </BaseModal>
   );
 };
