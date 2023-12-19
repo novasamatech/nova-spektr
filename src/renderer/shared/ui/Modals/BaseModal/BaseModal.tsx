@@ -54,7 +54,7 @@ export const BaseModal = ({
                   )}
 
                   {title && typeof title !== 'string' && title}
-                  <div className="flex items-center gap-x-4 h-7.5 z-20">
+                  <div className="flex items-center gap-x-4 h-7.5">
                     {actionButton}
                     {closeButton && <IconButton name="close" size={20} className="m-1" onClick={() => onClose()} />}
                   </div>
