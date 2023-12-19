@@ -2,9 +2,9 @@ import { Outlet } from 'react-router-dom';
 
 import { useI18n } from '@app/providers';
 import { Header } from '@renderer/components/common';
-import { ShardSelectorModal, ShardSelectorButton } from '@features/wallets';
-import { assetsModel } from './model/assets-model';
+import { ShardSelectorButton, ShardSelectorModal } from '@features/wallets';
 import { AssetsFilters, AssetsList } from './components';
+import { assetsModel } from './model/assets-model';
 
 export const Assets = () => {
   const { t } = useI18n();
@@ -16,6 +16,7 @@ export const Assets = () => {
           <AssetsFilters />
         </Header>
         <ShardSelectorButton />
+
         <AssetsList />
       </section>
 

@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { useUnit } from 'effector-react';
 
 import { SmallTitleText, Button, Icon } from '@shared/ui';
@@ -9,6 +10,14 @@ export const ShardSelectorButton = () => {
 
   const isAccessDenied = useUnit(shardsModel.$isAccessDenied);
   const totalSelected = useUnit(shardsModel.$totalSelected);
+
+  useEffect(() => {
+    shardsModel.events.structureRequested(true);
+
+    return () => {
+      shardsModel.events.structureRequested(false);
+    };
+  }, []);
 
   if (isAccessDenied) return null;
 

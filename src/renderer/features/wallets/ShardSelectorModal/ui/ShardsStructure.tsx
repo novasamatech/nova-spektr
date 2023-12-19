@@ -3,7 +3,7 @@ import { useUnit } from 'effector-react';
 import { Accordion, Checkbox, FootnoteText } from '@shared/ui';
 import { accountUtils, walletModel, walletUtils } from '@entities/wallet';
 import { ChainTitle } from '@entities/chain';
-import { toAddress } from '@shared/lib/utils';
+import { RootExplorers } from '@shared/lib/utils';
 import { shardsModel } from '../model/shards-model';
 import { networkModel } from '@entities/network';
 import { useI18n } from '@app/providers';
@@ -38,8 +38,9 @@ export const ShardsStructure = () => {
       {shardsStructure.map(([root, chainTuple]) => (
         <li key={root.id}>
           <SelectableShard
-            name={root.name}
-            address={toAddress(root.accountId, { prefix: 1 })}
+            account={root}
+            addressPrefix={1}
+            explorers={RootExplorers}
             checked={selectorUtils.isChecked(selectedStructure[root.id])}
             semiChecked={selectorUtils.isSemiChecked(selectedStructure[root.id])}
             onChange={(value) => shardsModel.events.rootToggled({ root: root.id, value })}
@@ -84,9 +85,9 @@ export const ShardsStructure = () => {
                         <li key={account.id} className="ml-6">
                           <SelectableShard
                             truncate
-                            name={account.name}
-                            address={toAddress(account.accountId, { prefix: chain.addressPrefix })}
+                            account={account}
                             checked={selectedStructure[root.id][chainId].accounts[account.accountId]}
+                            addressPrefix={chain.addressPrefix}
                             explorers={chain.explorers}
                             onChange={(value) =>
                               shardsModel.events.accountToggled({

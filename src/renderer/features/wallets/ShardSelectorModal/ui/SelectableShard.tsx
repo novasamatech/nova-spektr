@@ -1,41 +1,41 @@
-import { cnTw } from '@shared/lib/utils';
-import { BodyText, Checkbox, HelpText, Icon, Identicon, Truncate } from '@shared/ui';
-import { Address, Explorer } from '@shared/core';
+import { cnTw, toAddress } from '@shared/lib/utils';
+import { BodyText, Checkbox, HelpText, Identicon, Truncate, IconButton } from '@shared/ui';
+import { ChainAccount, ShardAccount, Explorer, BaseAccount } from '@shared/core';
+import { ExplorersPopover, accountUtils } from '@entities/wallet';
+import { useI18n } from '@app/providers';
 
 type Props = {
-  name: string;
-  className?: string;
-  address: Address;
+  account: BaseAccount | ChainAccount | ShardAccount;
+  addressPrefix?: number;
+  explorers?: Explorer[];
   checked: boolean;
   truncate?: boolean;
   semiChecked?: boolean;
-  explorers?: Explorer[];
+  className?: string;
   onChange: (value: boolean) => void;
 };
 
 export const SelectableShard = ({
-  className,
-  name,
-  address,
-  semiChecked,
-  checked,
-  truncate,
+  account,
+  addressPrefix,
   explorers,
+  checked,
+  semiChecked,
+  truncate,
+  className,
   onChange,
 }: Props) => {
-  return (
-    <Checkbox
-      className={cnTw(
-        'flex items-center gap-x-2 px-2 py-1.5 hover:bg-action-background-hover group rounded',
-        className,
-      )}
-      checked={checked}
-      semiChecked={semiChecked}
-      onChange={(event) => onChange(event.target?.checked)}
-    >
+  const { t } = useI18n();
+
+  const isChain = accountUtils.isChainAccount(account);
+  const isShard = accountUtils.isShardAccount(account);
+  const address = toAddress(account.accountId, { prefix: addressPrefix });
+
+  const content = (
+    <div className="flex items-center gap-x-2">
       <Identicon address={address} size={20} background={false} canCopy={false} />
       <div className="truncate mr-auto">
-        <BodyText>{name}</BodyText>
+        {account.name && !isShard && <BodyText>{account.name}</BodyText>}
         {truncate ? (
           <Truncate text={address} className="text-text-tertiary text-help-text" />
         ) : (
@@ -43,7 +43,24 @@ export const SelectableShard = ({
         )}
       </div>
 
-      <Icon name="info" size={16} className="shrink-0 group-hover:text-icon-hover" />
-    </Checkbox>
+      <IconButton name="info" size={16} className="shrink-0 group-hover:text-icon-hover" />
+    </div>
+  );
+
+  return (
+    <div
+      className={cnTw(
+        'group flex gap-x-1 px-2 py-1.5 rounded transition-colors cursor-pointer',
+        'hover:bg-action-background-hover focus-within:bg-action-background-hover',
+        className,
+      )}
+    >
+      <Checkbox checked={checked} semiChecked={semiChecked} onChange={(event) => onChange(event.target.checked)} />
+      <ExplorersPopover button={content} address={address} explorers={explorers}>
+        <ExplorersPopover.Group active={isShard || isChain} title={t('walletDetails.vault.derivationPath')}>
+          <HelpText className="text-text-secondary break-all">{isShard && account.derivationPath}</HelpText>
+        </ExplorersPopover.Group>
+      </ExplorersPopover>
+    </div>
   );
 };

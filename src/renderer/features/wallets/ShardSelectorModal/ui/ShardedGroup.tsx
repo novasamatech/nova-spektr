@@ -2,7 +2,6 @@ import { useUnit } from 'effector-react';
 
 import { Accordion, Checkbox, CaptionText, FootnoteText } from '@shared/ui';
 import { ShardAccount, Chain, ID } from '@shared/core';
-import { toAddress } from '@shared/lib/utils';
 import { shardsModel } from '../model/shards-model';
 import { selectorUtils } from '../lib/selector-utils';
 import { SelectableShard } from './SelectableShard';
@@ -18,7 +17,7 @@ export const ShardedGroup = ({ rootId, accounts, chain }: Props) => {
   const shardedGroup = selectedStructure[rootId][chain.chainId].sharded[accounts[0].groupId];
 
   return (
-    <Accordion isDefaultOpen className="ml-6 w-auto rounded">
+    <Accordion className="ml-6 w-auto rounded">
       <div className="hover:bg-action-background-hover flex">
         <Checkbox
           className="p-2 w-full"
@@ -43,8 +42,8 @@ export const ShardedGroup = ({ rootId, accounts, chain }: Props) => {
           <li key={shard.accountId} className="ml-6">
             <SelectableShard
               truncate
-              name=""
-              address={toAddress(shard.accountId, { prefix: chain.addressPrefix })}
+              account={shard}
+              addressPrefix={chain.addressPrefix}
               explorers={chain.explorers}
               checked={shardedGroup[shard.accountId]}
               onChange={(checked) =>

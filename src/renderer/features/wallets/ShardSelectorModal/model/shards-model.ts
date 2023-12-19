@@ -1,4 +1,4 @@
-import { createStore, createEvent, sample, combine, createApi, attach } from 'effector';
+import { createStore, createEvent, sample, combine, createApi, attach, merge } from 'effector';
 
 import type { Account, BaseAccount, ChainAccount, ShardAccount } from '@shared/core';
 import { walletModel, walletUtils } from '@entities/wallet';
@@ -26,7 +26,9 @@ const callbacksApi = createApi($callbacks, {
 
 const queryChanged = createEvent<string>();
 const modalToggled = createEvent();
+const shardsCanceled = createEvent();
 const shardsConfirmed = createEvent();
+const structureRequested = createEvent<boolean>();
 
 const allToggled = createEvent<boolean>();
 const rootToggled = createEvent<RootToggleParams>();
@@ -37,6 +39,7 @@ const shardToggled = createEvent<ShardToggleParams>();
 
 const $query = createStore<string>('');
 const $isModalOpen = createStore<boolean>(false);
+const $canGetStructure = createStore<boolean>(false);
 const $selectedStructure = createStore<SelectedStruct>({});
 
 sample({ clock: queryChanged, target: $query });
@@ -52,13 +55,15 @@ const $filteredAccounts = combine(
     chains: networkModel.$chains,
   },
   ({ query, accounts, chains }): Account[] => {
+    if (!query) return accounts;
+
     return shardsUtils.getFilteredAccounts(accounts, chains, query);
   },
 );
 
 const $shardsStructure = combine(
   {
-    proceed: $isModalOpen,
+    proceed: $canGetStructure,
     wallet: walletModel.$activeWallet,
     accounts: $filteredAccounts,
     chains: networkModel.$chains,
@@ -68,9 +73,35 @@ const $shardsStructure = combine(
 
     const chainsMap = shardsUtils.getChainsMap(chains);
 
-    return walletUtils.isPolkadotVault(wallet)
-      ? shardsUtils.getStructForVault(accounts as Array<BaseAccount | ChainAccount | ShardAccount>, chainsMap)
-      : shardsUtils.getStructForMultishard(accounts as Array<BaseAccount | ChainAccount>, chainsMap);
+    if (walletUtils.isPolkadotVault(wallet)) {
+      return shardsUtils.getStructForVault(accounts as Array<BaseAccount | ChainAccount | ShardAccount>, chainsMap);
+    }
+    if (walletUtils.isMultiShard(wallet)) {
+      return shardsUtils.getStructForMultishard(accounts as Array<BaseAccount | ChainAccount>, chainsMap);
+    }
+
+    return [];
+  },
+);
+
+const $initSelectedStructure = combine(
+  {
+    proceed: $canGetStructure,
+    wallet: walletModel.$activeWallet,
+    accounts: walletModel.$activeAccounts,
+    chains: networkModel.$chains,
+  },
+  ({ proceed, wallet, accounts, chains }): SelectedStruct => {
+    if (!proceed || !wallet) return {};
+
+    if (walletUtils.isPolkadotVault(wallet)) {
+      return shardsUtils.getVaultChainsCounter(chains, accounts as Array<BaseAccount | ChainAccount | ShardAccount>);
+    }
+    if (walletUtils.isMultiShard(wallet)) {
+      return shardsUtils.getMultishardtChainsCounter(chains, accounts as Array<BaseAccount | ChainAccount>);
+    }
+
+    return {};
   },
 );
 
@@ -97,39 +128,46 @@ const $isAllSemiChecked = combine($selectedStructure, (struct): boolean => {
 });
 
 sample({
-  clock: modalToggled,
+  clock: [modalToggled, shardsConfirmed],
   source: $isModalOpen,
   fn: (isOpen) => !isOpen,
   target: $isModalOpen,
 });
 
 sample({
-  clock: modalToggled,
-  source: {
-    isModalOpen: $isModalOpen,
-    accounts: walletModel.$activeAccounts,
-    wallet: walletModel.$activeWallet,
-    chains: networkModel.$chains,
-  },
-  filter: ({ isModalOpen }) => isModalOpen,
-  fn: ({ chains, wallet, accounts }) => {
-    return walletUtils.isPolkadotVault(wallet)
-      ? shardsUtils.getVaultChainsCounter(chains, accounts as Array<BaseAccount | ChainAccount | ShardAccount>)
-      : shardsUtils.getMultishardtChainsCounter(chains, accounts as Array<BaseAccount | ChainAccount>);
-  },
-  target: $selectedStructure,
+  clock: shardsCanceled,
+  fn: () => false,
+  target: $isModalOpen,
 });
 
 sample({
+  clock: modalToggled,
+  fn: () => '',
+  target: $query,
+});
+
+type ConfirmParams = {
+  struct: SelectedStruct;
+  accounts: Account[];
+};
+sample({
   clock: shardsConfirmed,
-  source: walletModel.$activeAccounts,
+  source: {
+    struct: $selectedStructure,
+    accounts: walletModel.$activeAccounts,
+  },
   target: attach({
     source: $callbacks,
-    effect: (state, accounts: Account[]) => {
-      console.log('CHECK');
-      state?.onConfirm(accounts);
+    effect: (state, { struct, accounts }: ConfirmParams) => {
+      state?.onConfirm(shardsUtils.getSelectedShards(struct, accounts));
     },
   }),
+});
+
+sample({
+  clock: merge([$initSelectedStructure, shardsCanceled]),
+  source: $initSelectedStructure,
+  target: $selectedStructure,
 });
 
 sample({
@@ -174,6 +212,11 @@ sample({
   target: $selectedStructure,
 });
 
+sample({
+  clock: structureRequested,
+  target: $canGetStructure,
+});
+
 export const shardsModel = {
   $query,
   $isAccessDenied,
@@ -192,7 +235,9 @@ export const shardsModel = {
     shardedToggled,
     shardToggled,
     accountToggled,
+    shardsCanceled,
     shardsConfirmed,
+    structureRequested,
     callbacksChanged: callbacksApi.callbacksChanged,
   },
 };

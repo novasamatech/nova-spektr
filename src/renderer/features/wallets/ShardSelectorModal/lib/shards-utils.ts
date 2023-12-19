@@ -1,6 +1,6 @@
 import { set } from 'lodash';
 
-import type { Account, Chain, ChainId, BaseAccount, ChainAccount, ShardAccount, ID } from '@shared/core';
+import type { Account, Chain, ChainId, BaseAccount, ChainAccount, ShardAccount, ID, AccountId } from '@shared/core';
 import { accountUtils } from '@entities/wallet';
 import { toAddress, isStringsMatchQuery } from '@shared/lib/utils';
 import { RootTuple, ChainsMap, ChainTuple, SelectedStruct } from './types';
@@ -12,6 +12,7 @@ export const shardsUtils = {
   getStructForMultishard,
   getVaultChainsCounter,
   getMultishardtChainsCounter,
+  getSelectedShards,
 };
 
 function getFilteredAccounts(accounts: Account[], chains: Record<ChainId, Chain>, query: string): Account[] {
@@ -201,4 +202,23 @@ function getStructForMultishard<T>(accounts: Array<BaseAccount | ChainAccount>, 
   });
 
   return [...roots.entries()];
+}
+
+function getSelectedShards(struct: SelectedStruct, accounts: Account[]): Account[] {
+  const selectedMap = Object.values(struct).reduce<Record<AccountId, boolean>>((acc, chainMap) => {
+    const { total, checked, ...chains } = chainMap;
+    Object.values(chains).forEach((chain) => {
+      const { accounts, sharded = {} } = chain;
+      Object.assign(acc, accounts);
+
+      Object.values(sharded).forEach((shard) => {
+        const { total, checked, ...shards } = shard;
+        Object.assign(acc, shards);
+      });
+    });
+
+    return acc;
+  }, {});
+
+  return accounts.filter((account) => selectedMap[account.accountId]);
 }
