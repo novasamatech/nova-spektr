@@ -10,6 +10,7 @@ import { useI18n } from '@app/providers';
 import { ShardedGroup } from './ShardedGroup';
 import { SelectableShard } from './SelectableShard';
 import { selectorUtils } from '../lib/selector-utils';
+import type { ID, ChainId, AccountId } from '@shared/core';
 
 export const ShardsStructure = () => {
   const { t } = useI18n();
@@ -20,6 +21,14 @@ export const ShardsStructure = () => {
   const selectedStructure = useUnit(shardsModel.$selectedStructure);
   const isAllChecked = useUnit(shardsModel.$isAllChecked);
   const isAllSemiChecked = useUnit(shardsModel.$isAllSemiChecked);
+
+  const toggleChain = (root: ID, chainId: ChainId, value: boolean) => {
+    shardsModel.events.chainToggled({ root, chainId, value });
+  };
+
+  const toggleAccount = (root: ID, chainId: ChainId, accountId: AccountId, value: boolean) => {
+    shardsModel.events.accountToggled({ root, chainId, accountId, value });
+  };
 
   return (
     <ul className="overflow-y-scroll max-h-[470px] pr-3">
@@ -55,13 +64,7 @@ export const ShardsStructure = () => {
                       checked={selectorUtils.isChecked(selectedStructure[root.id][chainId])}
                       semiChecked={selectorUtils.isSemiChecked(selectedStructure[root.id][chainId])}
                       className="p-2 w-full"
-                      onChange={(value) =>
-                        shardsModel.events.chainToggled({
-                          root: root.id,
-                          chainId,
-                          value: value.target.checked,
-                        })
-                      }
+                      onChange={(value) => toggleChain(root.id, chainId, value.target.checked)}
                     >
                       <ChainTitle chain={chains[chainId]} fontClass="text-text-primary" />
                       <FootnoteText className="text-text-tertiary">
@@ -72,12 +75,14 @@ export const ShardsStructure = () => {
                   </div>
                   <Accordion.Content as="ul">
                     {accounts.map((account) => {
-                      const isSharded = accountUtils.isAccountWithShards(account);
-
-                      const chain = chains[chainId];
-                      if (isSharded) {
+                      if (accountUtils.isAccountWithShards(account)) {
                         return (
-                          <ShardedGroup key={account[0].groupId} rootId={root.id} accounts={account} chain={chain} />
+                          <ShardedGroup
+                            key={account[0].groupId}
+                            rootId={root.id}
+                            accounts={account}
+                            chain={chains[chainId]}
+                          />
                         );
                       }
 
@@ -88,16 +93,9 @@ export const ShardsStructure = () => {
                             className="w-[270px]"
                             account={account}
                             checked={selectedStructure[root.id][chainId].accounts[account.accountId]}
-                            addressPrefix={chain.addressPrefix}
-                            explorers={chain.explorers}
-                            onChange={(value) =>
-                              shardsModel.events.accountToggled({
-                                root: root.id,
-                                chainId: chain.chainId,
-                                accountId: account.accountId,
-                                value,
-                              })
-                            }
+                            addressPrefix={chains[chainId].addressPrefix}
+                            explorers={chains[chainId].explorers}
+                            onChange={(value) => toggleAccount(root.id, chainId, account.accountId, value)}
                           />
                         </li>
                       );

@@ -1,3 +1,4 @@
+import { ChangeEvent } from 'react';
 import { useUnit } from 'effector-react';
 
 import { Accordion, Checkbox, CaptionText, FootnoteText } from '@shared/ui';
@@ -16,6 +17,25 @@ export const ShardedGroup = ({ rootId, accounts, chain }: Props) => {
 
   const shardedGroup = selectedStructure[rootId][chain.chainId].sharded[accounts[0].groupId];
 
+  const toggleSharded = (event: ChangeEvent<HTMLInputElement>) => {
+    shardsModel.events.shardedToggled({
+      root: rootId,
+      chainId: chain.chainId,
+      groupId: accounts[0].groupId,
+      value: event.target.checked,
+    })
+  };
+
+  const toggleShard = (shard: ShardAccount, value: boolean) => {
+    shardsModel.events.shardToggled({
+      root: rootId,
+      chainId: chain.chainId,
+      groupId: shard.groupId,
+      accountId: shard.accountId,
+      value,
+    })
+  };
+
   return (
     <Accordion className="ml-6 w-auto rounded">
       <div className="flex rounded hover:bg-action-background-hover">
@@ -23,14 +43,7 @@ export const ShardedGroup = ({ rootId, accounts, chain }: Props) => {
           className="p-2 w-full"
           checked={selectorUtils.isChecked(shardedGroup)}
           semiChecked={selectorUtils.isSemiChecked(shardedGroup)}
-          onChange={(event) =>
-            shardsModel.events.shardedToggled({
-              root: rootId,
-              chainId: chain.chainId,
-              groupId: accounts[0].groupId,
-              value: event.target.checked,
-            })
-          }
+          onChange={toggleSharded}
         >
           <div className="flex items-center justify-center w-7.5 h-5 rounded-2lg bg-input-background-disabled">
             <CaptionText className="text-text-secondary">{accounts.length}</CaptionText>
@@ -50,15 +63,7 @@ export const ShardedGroup = ({ rootId, accounts, chain }: Props) => {
               addressPrefix={chain.addressPrefix}
               explorers={chain.explorers}
               checked={shardedGroup[shard.accountId]}
-              onChange={(checked) =>
-                shardsModel.events.shardToggled({
-                  root: rootId,
-                  chainId: chain.chainId,
-                  groupId: shard.groupId,
-                  accountId: shard.accountId,
-                  value: checked,
-                })
-              }
+              onChange={(value) => toggleShard(shard, value)}
             />
           </li>
         ))}
