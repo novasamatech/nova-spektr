@@ -1,8 +1,9 @@
 import { BN } from '@polkadot/util';
 import cn from 'classnames';
 import { ReactNode } from 'react';
+import { keyBy } from 'lodash';
 
-import { AccountAddress, WalletIcon } from '@entities/wallet';
+import { AccountAddress, accountUtils, WalletIcon, walletUtils } from '@entities/wallet';
 import { DropdownOption } from '@shared/ui/Dropdowns/common/types';
 import { AssetBalance } from '@entities/asset';
 import { ExplorerLink, FootnoteText } from '@shared/ui';
@@ -243,4 +244,10 @@ export const getExplorers = (address: Address, explorers: Explorer[] = []): [Inf
   }));
 
   return [{ items: explorersContent }];
+};
+
+export const filterPvRootAccounts = (accounts: Account[], wallets: Wallet[]) => {
+  const walletById = keyBy(wallets, 'id');
+
+  return accounts.filter((a) => !accountUtils.isBaseAccount(a) || !walletUtils.isPolkadotVault(walletById[a.walletId]));
 };
