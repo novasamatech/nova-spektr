@@ -27,6 +27,7 @@ const multishardWallet: MultiShardWallet = {
 
 const vaultAccounts = [
   {
+    id: 2,
     name: 'Shard_1 WND key',
     groupId: 'shard_1',
     type: AccountType.SHARD,
@@ -35,6 +36,7 @@ const vaultAccounts = [
     derivationPath: '//westend//hot//0',
   },
   {
+    id: 3,
     name: 'Shard_2 WND key',
     groupId: 'shard_1',
     type: AccountType.SHARD,
@@ -43,6 +45,7 @@ const vaultAccounts = [
     derivationPath: '//westend//hot//1',
   },
   {
+    id: 4,
     name: 'Main KSM key',
     type: AccountType.CHAIN,
     accountId: '0x04b42c45250880695e6cec68c5adce35a0e2ec60ed46b77b734ad6020b991658',
@@ -50,6 +53,7 @@ const vaultAccounts = [
     derivationPath: '//kusama//pub',
   },
   {
+    id: 5,
     name: 'Main DOT key',
     type: AccountType.CHAIN,
     accountId: '0x661127faa225949b1c1a48f834f43fa626c9f58fa0c7e522551d4b9616e18c37',
@@ -57,6 +61,7 @@ const vaultAccounts = [
     derivationPath: '//polkadot//main',
   },
   {
+    id: 1,
     name: 'My ROOT',
     type: AccountType.BASE,
     accountId: '0xc6332dd72fc6d33bf202a531e66cfaf46e6161640f91864f23f82b31b38c5f11',
@@ -65,6 +70,7 @@ const vaultAccounts = [
 
 const multishardAccounts = [
   {
+    id: 2,
     baseId: 1,
     name: 'Main KSM key',
     type: AccountType.CHAIN,
@@ -73,6 +79,7 @@ const multishardAccounts = [
     derivationPath: '//kusama//pub',
   },
   {
+    id: 3,
     baseId: 1,
     name: 'Main DOT key',
     type: AccountType.CHAIN,
@@ -87,7 +94,8 @@ const multishardAccounts = [
     accountId: '0xc6332dd72fc6d33bf202a531e66cfaf46e6161640f91864f23f82b31b38c5f11',
   },
   {
-    baseId: 2,
+    id: 5,
+    baseId: 4,
     name: 'Second WND key',
     type: AccountType.CHAIN,
     accountId: '0xa8ceab88b82d857d3e64a8d67db0d3e476054a42572522ae359b962b2818305f',
@@ -95,7 +103,8 @@ const multishardAccounts = [
     derivationPath: '//westend//pub',
   },
   {
-    baseId: 2,
+    id: 6,
+    baseId: 4,
     name: 'Second ACA key',
     type: AccountType.CHAIN,
     accountId: '0x04b42c45250880695e6cec68c5adce35a0e2ec60ed46b77b734ad6020b991658',
@@ -103,7 +112,7 @@ const multishardAccounts = [
     derivationPath: '//acala//main',
   },
   {
-    id: 2,
+    id: 4,
     name: 'My Second ROOT',
     type: AccountType.BASE,
     accountId: '0x5a920a698b26cc691faf5ee41b454581348f8a68cce99c84c7fb82ce87605340',

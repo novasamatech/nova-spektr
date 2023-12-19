@@ -1,4 +1,4 @@
-import { fork } from 'effector';
+import { fork, allSettled } from 'effector';
 
 import { walletModel } from '@entities/wallet';
 import { shardsModel } from '../shards-model';
@@ -10,11 +10,10 @@ describe('features/wallet/model/shards-model', () => {
     const { vaultWallet, vaultAccounts } = shardsMock;
 
     const scope = fork({
-      values: new Map()
-        .set(shardsModel.$isModalOpen, true)
-        .set(walletModel.$activeWallet, vaultWallet)
-        .set(walletModel.$activeAccounts, vaultAccounts),
+      values: new Map().set(walletModel.$activeWallet, vaultWallet).set(walletModel.$activeAccounts, vaultAccounts),
     });
+
+    await allSettled(shardsModel.events.structureRequested, { scope, params: true });
 
     const root = vaultAccounts[4];
     const shards = [(vaultAccounts[0] as ShardAccount).chainId, [[vaultAccounts[0], vaultAccounts[1]]]];
@@ -35,6 +34,8 @@ describe('features/wallet/model/shards-model', () => {
         .set(walletModel.$activeWallet, multishardWallet)
         .set(walletModel.$activeAccounts, multishardAccounts),
     });
+
+    await allSettled(shardsModel.events.structureRequested, { scope, params: true });
 
     const root_1 = multishardAccounts[2];
     const accounts_1_1 = [(multishardAccounts[1] as ChainAccount).chainId, [multishardAccounts[1]]];

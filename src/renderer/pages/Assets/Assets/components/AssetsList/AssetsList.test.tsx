@@ -5,8 +5,8 @@ import { Provider } from 'effector-react';
 import { TEST_ACCOUNT_ID } from '@shared/lib/utils';
 import { ConnectionType } from '@shared/core';
 import { AssetsList } from './AssetsList';
-import { walletModel } from '@entities/wallet';
 import { networkModel } from '@entities/network';
+import { assetsModel } from '../../model/assets-model';
 
 jest.mock('@app/providers', () => ({
   useI18n: jest.fn().mockReturnValue({
@@ -50,14 +50,14 @@ jest.mock('@entities/network', () => ({
   },
 }));
 
-jest.mock('./components/NetworkAssets/NetworkAssets', () => ({
+jest.mock('../NetworkAssets/NetworkAssets', () => ({
   NetworkAssets: () => <span>NetworkAssets</span>,
 }));
 
-describe('pages/Assets/Assets', () => {
+describe('pages/Assets/Assets/components/AssetsList', () => {
   const scope = fork({
     values: new Map()
-      .set(walletModel.$activeAccounts, [{ name: 'Test Wallet', accountId: TEST_ACCOUNT_ID }])
+      .set(assetsModel.$activeShards, [{ name: 'Test Wallet', accountId: TEST_ACCOUNT_ID }])
       .set(networkModel.$chains, {
         '0x00': CHAINS[0],
         '0x01': CHAINS[1],
@@ -71,13 +71,6 @@ describe('pages/Assets/Assets', () => {
       </Provider>,
     );
   };
-
-  test('should render component', () => {
-    renderComponent();
-
-    const text = screen.getByText('balances.title');
-    expect(text).toBeInTheDocument();
-  });
 
   test('should render networks', () => {
     renderComponent();

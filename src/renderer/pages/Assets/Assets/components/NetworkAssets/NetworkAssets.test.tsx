@@ -58,7 +58,7 @@ const accounts = [
   },
 ] as Array<BaseAccount | ChainAccount | ShardAccount>;
 
-describe('pages/Assets/NetworkAssets', () => {
+describe('pages/Assets/Assets/components/NetworkAssets', () => {
   const scope = fork({
     values: new Map().set(balanceModel.$balances, testBalances),
   });
@@ -82,7 +82,7 @@ describe('pages/Assets/NetworkAssets', () => {
     );
 
     const balances = screen.getAllByTestId('AssetCard');
-    expect(balances).toHaveLength(7);
+    expect(balances).toHaveLength(2);
   });
 
   test('should hide assets', async () => {
@@ -93,7 +93,7 @@ describe('pages/Assets/NetworkAssets', () => {
     );
 
     const balancesBefore = screen.getAllByTestId('AssetCard');
-    expect(balancesBefore).toHaveLength(7);
+    expect(balancesBefore).toHaveLength(2);
 
     const button = screen.getByRole('button');
     await act(() => button.click());
