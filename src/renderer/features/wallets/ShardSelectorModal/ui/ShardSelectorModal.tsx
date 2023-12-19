@@ -23,7 +23,7 @@ export const ShardSelectorModal = ({ onConfirm }: Callbacks) => {
     <BaseModal
       closeButton
       isOpen={isModalOpen}
-      title={t('balances.shardsModalTitle')}
+      title={t('balances.accountsModalTitle')}
       contentClass="pl-3 pr-0 py-4"
       headerClass="px-5 py-4"
       onClose={shardsModel.events.shardsConfirmed}
