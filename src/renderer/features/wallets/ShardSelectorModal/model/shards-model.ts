@@ -1,16 +1,16 @@
 import { createStore, createEvent, sample, combine, createApi, attach } from 'effector';
 
-import type { AccountId, ChainId, Account, BaseAccount, ChainAccount, ShardAccount } from '@shared/core';
+import type { AccountId, ChainId, Account, BaseAccount, ChainAccount, ShardAccount, ID } from '@shared/core';
 import { walletModel, walletUtils } from '@entities/wallet';
 import { networkModel } from '@entities/network';
 import { shardsUtils } from '../lib/shards-utils';
-import { RootTuple } from '../lib/types';
+import { RootTuple, SelectedStruct } from '../lib/types';
 
 export type Callbacks = {
   onConfirm: (shards: Account[]) => void;
 };
 
-type RootToggleParams = { rootAccountId: AccountId; value: boolean };
+type RootToggleParams = { root: ID; value: boolean };
 type ChainToggleParams = RootToggleParams & { chainId: ChainId };
 type AccountToggleParams = ChainToggleParams & { accountId: AccountId };
 type ShardedToggleParams = ChainToggleParams & { index: number };
@@ -33,8 +33,7 @@ const shardToggled = createEvent<ShardToggleParams>();
 
 const $query = createStore<string>('');
 const $isModalOpen = createStore<boolean>(false);
-const $selectedStructure = createStore<any>({});
-const $totalSelected = createStore<number>(0);
+const $selectedStructure = createStore<SelectedStruct>({});
 
 sample({ clock: queryChanged, target: $query });
 
@@ -71,11 +70,34 @@ const $walletStructure = combine(
   },
 );
 
+const $totalSelected = combine($selectedStructure, (selectedStructure): number => {
+  return Object.values(selectedStructure).reduce((acc, rootData) => {
+    return acc + rootData.checked;
+  }, 0);
+});
+
 sample({
   clock: modalToggled,
   source: $isModalOpen,
   fn: (isOpen) => !isOpen,
   target: $isModalOpen,
+});
+
+sample({
+  clock: modalToggled,
+  source: {
+    isModalOpen: $isModalOpen,
+    accounts: walletModel.$activeAccounts,
+    wallet: walletModel.$activeWallet,
+    chains: networkModel.$chains,
+  },
+  filter: ({ isModalOpen }) => isModalOpen,
+  fn: ({ chains, wallet, accounts }) => {
+    return walletUtils.isPolkadotVault(wallet)
+      ? shardsUtils.getVaultChainsCounter(chains, accounts as Array<BaseAccount | ChainAccount | ShardAccount>)
+      : shardsUtils.getMultishardtChainsCounter(chains, accounts as Array<BaseAccount | ChainAccount>);
+  },
+  target: $selectedStructure,
 });
 
 sample({
@@ -88,6 +110,74 @@ sample({
       state?.onConfirm(accounts);
     },
   }),
+});
+
+// sample({
+//   clock: rootToggled,
+//   source: $selectedStructure,
+//   fn: () => {
+//     console.log('123');
+//   },
+//   target: $selectedStructure,
+// });
+//
+sample({
+  clock: chainToggled,
+  source: $selectedStructure,
+  fn: (struct, { root, chainId, value }) => {
+    Object.keys(struct[root][chainId].accounts).forEach((accountId) => {
+      struct[root][chainId].accounts[accountId as AccountId] = value;
+    });
+
+    // TODO: must be tested
+    Object.entries(struct[root][chainId].sharded).forEach(([key, group]) => {
+      const { total, checked, ...rest } = group;
+      group.checked = value ? total : 0;
+
+      Object.keys(rest).forEach((accountId) => {
+        group[accountId as AccountId] = value;
+      });
+    });
+
+    struct[root].checked += value
+      ? struct[root][chainId].total - struct[root][chainId].checked
+      : -1 * struct[root][chainId].checked;
+    struct[root][chainId].checked = value ? struct[root][chainId].total : 0;
+
+    return { ...struct };
+  },
+  target: $selectedStructure,
+});
+//
+// sample({
+//   clock: shardedToggled,
+//   source: $selectedStructure,
+//   fn: () => {
+//     console.log('123');
+//   },
+//   target: $selectedStructure,
+// });
+//
+// sample({
+//   clock: shardToggled,
+//   source: $selectedStructure,
+//   fn: () => {
+//     console.log('123');
+//   },
+//   target: $selectedStructure,
+// });
+
+sample({
+  clock: accountToggled,
+  source: $selectedStructure,
+  fn: (struct, { root, chainId, accountId, value }) => {
+    struct[root][chainId].accounts[accountId] = value;
+    struct[root][chainId].checked += value ? 1 : -1;
+    struct[root].checked += value ? 1 : -1;
+
+    return { ...struct };
+  },
+  target: $selectedStructure,
 });
 
 export const shardsModel = {

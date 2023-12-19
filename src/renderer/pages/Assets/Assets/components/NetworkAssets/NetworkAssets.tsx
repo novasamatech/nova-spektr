@@ -89,46 +89,46 @@ export const NetworkAssets = ({ chain, accounts, searchSymbolOnly }: Props) => {
     setFilteredAssets(filteredAssets);
   }, [balancesObject, query, hideZeroBalances]);
 
-  if (filteredAssets.length === 0) {
-    return null;
-  }
+  if (filteredAssets.length === 0) return null;
 
   const hasFailedVerification = balances?.some((b) => b.verified !== undefined && !b.verified);
 
   return (
-    <Accordion isDefaultOpen>
-      <Accordion.Button
-        buttonClass={cnTw(
-          'sticky top-0 z-10 bg-background-default px-2 py-1.5',
-          'transition-colors rounded hover:bg-block-background-hover focus-visible:bg-block-background-hover',
-        )}
-      >
-        <div className="flex items-center justify-between gap-x-2 w-full">
-          <div className="flex items-center gap-x-2">
-            <ChainTitle chain={chain} fontClass="text-caption uppercase" as="h2" iconSize={20} />
+    <li className="w-[546px]">
+      <Accordion isDefaultOpen>
+        <Accordion.Button
+          buttonClass={cnTw(
+            'sticky top-0 z-10 bg-background-default px-2 py-1.5',
+            'transition-colors rounded hover:bg-block-background-hover focus-visible:bg-block-background-hover',
+          )}
+        >
+          <div className="flex items-center justify-between gap-x-2 w-full">
+            <div className="flex items-center gap-x-2">
+              <ChainTitle chain={chain} fontClass="text-caption uppercase" as="h2" iconSize={20} />
 
-            {hasFailedVerification && (
-              <div className="flex items-center gap-x-2 text-text-warning">
-                {/* FIXME: tooltip not visible when first displayed network invalid. For now just render it below icon */}
-                <Tooltip content={t('balances.verificationTooltip')} pointer="up">
-                  <Icon name="warn" className="cursor-pointer" size={16} />
-                </Tooltip>
-                <CaptionText className="uppercase text-inherit">{t('balances.verificationFailedLabel')}</CaptionText>
-              </div>
-            )}
+              {hasFailedVerification && (
+                <div className="flex items-center gap-x-2 text-text-warning">
+                  {/* FIXME: tooltip not visible when first displayed network invalid. For now just render it below icon */}
+                  <Tooltip content={t('balances.verificationTooltip')} pointer="up">
+                    <Icon name="warn" className="cursor-pointer" size={16} />
+                  </Tooltip>
+                  <CaptionText className="uppercase text-inherit">{t('balances.verificationFailedLabel')}</CaptionText>
+                </div>
+              )}
+            </div>
+            <NetworkFiatBalance balances={balancesObject} assets={filteredAssets} />
           </div>
-          <NetworkFiatBalance balances={balancesObject} assets={filteredAssets} />
-        </div>
-      </Accordion.Button>
-      <Accordion.Content className="mt-1">
-        <ul className="flex flex-col gap-y-1.5">
-          {filteredAssets.map((asset) => (
-            <li key={asset.assetId}>
-              <AssetCard chainId={chain.chainId} asset={asset} balance={balancesObject[asset.assetId.toString()]} />
-            </li>
-          ))}
-        </ul>
-      </Accordion.Content>
-    </Accordion>
+        </Accordion.Button>
+        <Accordion.Content className="mt-1">
+          <ul className="flex flex-col gap-y-1.5">
+            {filteredAssets.map((asset) => (
+              <li key={asset.assetId}>
+                <AssetCard chainId={chain.chainId} asset={asset} balance={balancesObject[asset.assetId.toString()]} />
+              </li>
+            ))}
+          </ul>
+        </Accordion.Content>
+      </Accordion>
+    </li>
   );
 };

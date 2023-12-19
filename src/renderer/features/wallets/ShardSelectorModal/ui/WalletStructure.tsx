@@ -6,14 +6,14 @@ import { ChainTitle } from '@entities/chain';
 import { toAddress } from '@shared/lib/utils';
 import { shardsModel } from '../model/shards-model';
 import { networkModel } from '@entities/network';
+import { shardsUtils } from '../lib/shards-utils';
 
 export const WalletStructure = () => {
   // const { t } = useI18n();
 
   const chains = useUnit(networkModel.$chains);
   const walletStructure = useUnit(shardsModel.$walletStructure);
-
-  // const selectedStructure = useUnit(shardsModel.$selectedStructure);
+  const selectedStructure = useUnit(shardsModel.$selectedStructure);
 
   // useEffect(() => {
   //
@@ -38,28 +38,23 @@ export const WalletStructure = () => {
           <SelectableShard
             name={root.name}
             address={toAddress(root.accountId, { prefix: 1 })}
-            checked={true}
-            // checked={root.isSelected}
-            semiChecked={false}
-            // semiChecked={root.selectedAmount > 0}
-            onChange={(value) => shardsModel.events.rootToggled({ rootAccountId: root.accountId, value })}
+            checked={shardsUtils.isChecked(selectedStructure[root.id])}
+            semiChecked={shardsUtils.isSemiChecked(selectedStructure[root.id])}
+            onChange={(value) => shardsModel.events.rootToggled({ root: root.id, value })}
           />
 
-          {/* select all chain accounts */}
           <ul>
             {chainTuple.map(([chainId, accounts]) => (
               <li key={chainId}>
                 <Accordion isDefaultOpen className="ml-6 w-auto rounded">
                   <div className="hover:bg-action-background-hover flex">
                     <Checkbox
-                      // checked={chain.isSelected}
-                      checked={true}
+                      checked={shardsUtils.isChecked(selectedStructure[root.id][chainId])}
+                      semiChecked={shardsUtils.isSemiChecked(selectedStructure[root.id][chainId])}
                       className="p-2 w-full"
-                      // semiChecked={chain.selectedAmount > 0 && chain.selectedAmount < chain.accounts.length}
-                      semiChecked={false}
                       onChange={(value) =>
                         shardsModel.events.chainToggled({
-                          rootAccountId: root.accountId,
+                          root: root.id,
                           chainId,
                           value: value.target.checked,
                         })
@@ -67,13 +62,12 @@ export const WalletStructure = () => {
                     >
                       <ChainTitle chain={chains[chainId]} fontClass="text-text-primary" />
                       <FootnoteText className="text-text-tertiary">
-                        X / Y{/*{chain.selectedAmount}/{chain.accounts.length}*/}
+                        {selectedStructure[root.id][chainId].checked} / {selectedStructure[root.id][chainId].total}
                       </FootnoteText>
                     </Checkbox>
                     <Accordion.Button buttonClass="ml-auto w-auto p-2" />
                   </div>
                   <Accordion.Content>
-                    {/* chains accounts */}
                     <ul>
                       {accounts.map((account) => {
                         const isSharded = accountUtils.isAccountWithShards(account);
@@ -88,12 +82,11 @@ export const WalletStructure = () => {
                               className="ml-6"
                               name={account.name}
                               address={toAddress(account.accountId, { prefix: chain.addressPrefix })}
-                              checked={true}
-                              // checked={account.isSelected}
+                              checked={selectedStructure[root.id][chainId].accounts[account.accountId]}
                               explorers={chain.explorers}
                               onChange={(value) =>
                                 shardsModel.events.accountToggled({
-                                  rootAccountId: root.accountId,
+                                  root: root.id,
                                   chainId: chain.chainId,
                                   accountId: account.accountId,
                                   value,

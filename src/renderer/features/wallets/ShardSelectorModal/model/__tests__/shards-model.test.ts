@@ -47,4 +47,26 @@ describe('features/wallet/model/shards-model', () => {
 
     expect(scope.getState(shardsModel.$walletStructure)).toEqual(tuples);
   });
+
+  // test('should create $walletStructure for multishardAccounts with sorted chains', async () => {
+  //   const { multishardWallet, multishardAccounts } = shardsMock;
+  //
+  //   const scope = fork({
+  //     values: new Map()
+  //       .set(walletModel.$activeWallet, multishardWallet)
+  //       .set(walletModel.$activeAccounts, multishardAccounts),
+  //   });
+  //
+  //   await allSettled(shardsModel.events.accountToggled, {
+  //     scope,
+  //     params: {
+  //       root: 1,
+  //       chainId: '0x00',
+  //       accountId: '0x00',
+  //       value: true,
+  //     },
+  //   });
+  //
+  //   expect(scope.getState(shardsModel.$selectedStructure)).toEqual({});
+  // });
 });
