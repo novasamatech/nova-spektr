@@ -981,12 +981,14 @@
   "walletDetails": {
     "common": {
       "cancelButton": "Cancel",
-      "forgetButton": "Forget",
+      "forgetButton": "Remove",
       "nameExistsError": "This wallet name already exists",
       "nameRequiredError": "Name is required",
       "removeButton": "Remove",
       "removeMessage": "Are you sure you want to remove { walletName }?",
       "removeTitle": "Remove wallet",
+      "removeWalletDesc": "Are you sure you want to remove {walletName}?",
+      "removeWalletTitle": "Remove wallet",
       "removingWallet": "Removing wallet",
       "renameButton": "Rename",
       "renameLabel": "Name",
