@@ -29,6 +29,7 @@ export const SelectableShard = ({
 
   const isChain = accountUtils.isChainAccount(account);
   const isShard = accountUtils.isShardAccount(account);
+  const isSharded = isShard || isChain;
   const address = toAddress(account.accountId, { prefix: addressPrefix });
 
   const content = (
@@ -56,8 +57,8 @@ export const SelectableShard = ({
     >
       <Checkbox checked={checked} semiChecked={semiChecked} onChange={(event) => onChange(event.target.checked)} />
       <ExplorersPopover button={content} address={address} explorers={explorers}>
-        <ExplorersPopover.Group active={isShard || isChain} title={t('walletDetails.vault.derivationPath')}>
-          <HelpText className="text-text-secondary break-all">{isShard && account.derivationPath}</HelpText>
+        <ExplorersPopover.Group active={isSharded} title={t('walletDetails.vault.derivationPath')}>
+          <HelpText className="text-text-secondary break-all">{isSharded && account.derivationPath}</HelpText>
         </ExplorersPopover.Group>
       </ExplorersPopover>
     </div>
