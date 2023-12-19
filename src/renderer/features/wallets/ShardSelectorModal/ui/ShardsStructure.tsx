@@ -39,7 +39,7 @@ export const ShardsStructure = () => {
             semiChecked={isAllSemiChecked}
             onChange={(event) => shardsModel.events.allToggled(event.target.checked)}
           >
-            {t('balances.allShards')}
+            {t('balances.allAccounts')}
           </Checkbox>
         </li>
       )}

@@ -23,14 +23,14 @@ export const ShardSelectorButton = () => {
 
   return (
     <div className="w-[546px] mx-auto flex items-center mt-4">
-      <SmallTitleText as="h3">{t('balances.shardsTitle')} </SmallTitleText>
+      <SmallTitleText as="h3">{t('balances.assetsOnLabel')} </SmallTitleText>
       <Button
         variant="text"
         suffixElement={<Icon name="edit" size={16} className="text-icon-accent" />}
         className="outline-offset-reduced"
         onClick={() => shardsModel.events.modalToggled()}
       >
-        {totalSelected} {t('balances.shards')}
+        {t('balances.selectedAccounts', { amount: totalSelected })}
       </Button>
     </div>
   );
