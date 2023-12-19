@@ -4,7 +4,6 @@ import { Wallet } from '@shared/core';
 import { ConfirmModal, FootnoteText, SmallTitleText } from '@shared/ui';
 import { useI18n } from '@app/providers';
 import { forgetWalletModel } from '../model/forget-wallet-model';
-import { walletUtils } from '@entities/wallet';
 
 type Props = {
   wallet: Wallet;
@@ -20,16 +19,6 @@ export const ConfirmForgetModal = ({ wallet, isOpen, onClose, onForget }: Props)
     forgetWalletModel.events.callbacksChanged({ onDeleteFinished: onForget });
   }, [onForget]);
 
-  const confirmForgetWallet = () => {
-    if (walletUtils.isMultisig(wallet)) {
-      forgetWalletModel.events.forgetMultisigWallet(wallet);
-
-      return;
-    }
-
-    forgetWalletModel.events.forgetSimpleWallet(wallet);
-  };
-
   return (
     <ConfirmModal
       isOpen={isOpen}
@@ -38,7 +27,7 @@ export const ConfirmForgetModal = ({ wallet, isOpen, onClose, onForget }: Props)
       confirmPallet="error"
       panelClass="w-[240px]"
       onClose={onClose}
-      onConfirm={confirmForgetWallet}
+      onConfirm={() => forgetWalletModel.events.forgetWallet(wallet)}
     >
       <SmallTitleText align="center" className="mb-2">
         {t('walletDetails.common.removeWalletTitle')}

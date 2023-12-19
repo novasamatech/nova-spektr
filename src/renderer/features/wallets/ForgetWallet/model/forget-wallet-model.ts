@@ -1,7 +1,7 @@
 import { createEvent, sample, createEffect, createStore, createApi, attach } from 'effector';
 
 import { Account, MultisigAccount, MultisigWallet, Wallet } from '@shared/core';
-import { walletModel } from '@entities/wallet';
+import { walletModel, walletUtils } from '@entities/wallet';
 import { useBalanceService } from '@entities/balance';
 import { useForgetMultisig } from '@entities/multisig';
 
@@ -17,8 +17,7 @@ const callbacksApi = createApi($callbacks, {
   callbacksChanged: (state, props: Callbacks) => ({ ...state, ...props }),
 });
 
-const forgetSimpleWallet = createEvent<Wallet>();
-const forgetMultisigWallet = createEvent<MultisigWallet>();
+const forgetWallet = createEvent<Wallet>();
 
 type DeleteWalletBalancesParams = {
   accounts: Account[];
@@ -48,8 +47,9 @@ const deleteMultisigBalancesAndOperationsFx = createEffect(
 );
 
 sample({
-  clock: forgetSimpleWallet,
+  clock: forgetWallet,
   source: walletModel.$accounts,
+  filter: (_, wallet) => !walletUtils.isMultisig(wallet),
   fn: (accounts, wallet) => {
     return { accounts: accounts.filter((a) => a.walletId === wallet.id) };
   },
@@ -57,8 +57,9 @@ sample({
 });
 
 sample({
-  clock: forgetMultisigWallet,
+  clock: forgetWallet,
   source: walletModel.$accounts,
+  filter: (_, wallet) => walletUtils.isMultisig(wallet),
   fn: (accounts, wallet) => {
     return { wallet, account: accounts.find((a) => a.walletId === wallet.id) as MultisigAccount };
   },
@@ -66,7 +67,7 @@ sample({
 });
 
 sample({
-  clock: [forgetSimpleWallet, forgetMultisigWallet],
+  clock: forgetWallet,
   fn: (wallet) => wallet.id,
   target: walletModel.events.walletRemoved,
 });
@@ -81,8 +82,7 @@ sample({
 
 export const forgetWalletModel = {
   events: {
-    forgetSimpleWallet,
-    forgetMultisigWallet,
+    forgetWallet,
     callbacksChanged: callbacksApi.callbacksChanged,
   },
 };
