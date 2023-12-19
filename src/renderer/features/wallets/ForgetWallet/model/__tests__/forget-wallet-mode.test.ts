@@ -27,7 +27,7 @@ describe('features/ForgetModel', () => {
     const scope = fork({});
 
     await allSettled(forgetWalletModel.events.callbacksChanged, { scope, params: { onDeleteFinished: spyCallback } });
-    await allSettled(forgetWalletModel.events.forgetSimpleWallet, { scope, params: wallet });
+    await allSettled(forgetWalletModel.events.forgetWallet, { scope, params: wallet });
 
     expect(spyCallback).toBeCalled();
   });
