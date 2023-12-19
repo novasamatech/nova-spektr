@@ -7,17 +7,16 @@ import { toAddress } from '@shared/lib/utils';
 import { shardsModel } from '../model/shards-model';
 import { networkModel } from '@entities/network';
 import { shardsUtils } from '../lib/shards-utils';
+import { useI18n } from '@app/providers';
+import { ShardedGroup } from './ShardedGroup';
 
 export const WalletStructure = () => {
-  // const { t } = useI18n();
+  const { t } = useI18n();
 
   const chains = useUnit(networkModel.$chains);
   const walletStructure = useUnit(shardsModel.$walletStructure);
   const selectedStructure = useUnit(shardsModel.$selectedStructure);
 
-  // useEffect(() => {
-  //
-  // }, []);
   console.log(121212);
 
   return (
@@ -72,8 +71,8 @@ export const WalletStructure = () => {
                       {accounts.map((account) => {
                         const isSharded = accountUtils.isAccountWithShards(account);
 
-                        if (isSharded) return <div key={account[0].id}>SHARDED</div>;
                         const chain = chains[chainId];
+                        if (isSharded) return <ShardedGroup rootId={root.id} accounts={account} chain={chain} />;
 
                         return (
                           <li key={account.id}>

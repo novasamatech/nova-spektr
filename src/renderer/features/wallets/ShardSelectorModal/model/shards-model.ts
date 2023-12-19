@@ -13,7 +13,7 @@ export type Callbacks = {
 type RootToggleParams = { root: ID; value: boolean };
 type ChainToggleParams = RootToggleParams & { chainId: ChainId };
 type AccountToggleParams = ChainToggleParams & { accountId: AccountId };
-type ShardedToggleParams = ChainToggleParams & { index: number };
+type ShardedToggleParams = ChainToggleParams & { groupId: string };
 type ShardToggleParams = ShardedToggleParams & { accountId: AccountId };
 
 const $callbacks = createStore<Callbacks | null>(null);
@@ -112,25 +112,46 @@ sample({
   }),
 });
 
-// sample({
-//   clock: rootToggled,
-//   source: $selectedStructure,
-//   fn: () => {
-//     console.log('123');
-//   },
-//   target: $selectedStructure,
-// });
-//
+sample({
+  clock: rootToggled,
+  source: $selectedStructure,
+  fn: (struct, { root, value }) => {
+    const { checked, total, ...chains } = struct[root];
+    struct[root].checked = value ? total : 0;
+
+    Object.values(chains).forEach((chains) => {
+      const { accounts, sharded } = chains;
+      chains.checked = value ? chains.total : 0;
+
+      Object.keys(accounts).forEach((accountId) => {
+        accounts[accountId as AccountId] = value;
+      });
+
+      Object.values(sharded).forEach((group) => {
+        const { total, checked, ...rest } = group;
+        group.checked = value ? total : 0;
+
+        Object.keys(rest).forEach((accountId) => {
+          group[accountId as AccountId] = value;
+        });
+      });
+    });
+
+    return { ...struct };
+  },
+  target: $selectedStructure,
+});
+
 sample({
   clock: chainToggled,
   source: $selectedStructure,
   fn: (struct, { root, chainId, value }) => {
-    Object.keys(struct[root][chainId].accounts).forEach((accountId) => {
-      struct[root][chainId].accounts[accountId as AccountId] = value;
+    const chain = struct[root][chainId];
+    Object.keys(chain.accounts).forEach((accountId) => {
+      chain.accounts[accountId as AccountId] = value;
     });
 
-    // TODO: must be tested
-    Object.entries(struct[root][chainId].sharded).forEach(([key, group]) => {
+    Object.values(chain.sharded).forEach((group) => {
       const { total, checked, ...rest } = group;
       group.checked = value ? total : 0;
 
@@ -139,33 +160,51 @@ sample({
       });
     });
 
-    struct[root].checked += value
-      ? struct[root][chainId].total - struct[root][chainId].checked
-      : -1 * struct[root][chainId].checked;
-    struct[root][chainId].checked = value ? struct[root][chainId].total : 0;
+    struct[root].checked += value ? chain.total - chain.checked : -1 * chain.checked;
+    chain.checked = value ? chain.total : 0;
 
     return { ...struct };
   },
   target: $selectedStructure,
 });
-//
-// sample({
-//   clock: shardedToggled,
-//   source: $selectedStructure,
-//   fn: () => {
-//     console.log('123');
-//   },
-//   target: $selectedStructure,
-// });
-//
-// sample({
-//   clock: shardToggled,
-//   source: $selectedStructure,
-//   fn: () => {
-//     console.log('123');
-//   },
-//   target: $selectedStructure,
-// });
+
+sample({
+  clock: shardedToggled,
+  source: $selectedStructure,
+  fn: (struct, { root, chainId, groupId, value }) => {
+    const shardedGroup = struct[root][chainId].sharded[groupId];
+
+    const { total, checked, ...shards } = shardedGroup;
+    Object.keys(shards).forEach((accountId) => {
+      shardedGroup[accountId as AccountId] = value;
+    });
+
+    const addition = value ? total - checked : -1 * checked;
+    struct[root].checked += addition;
+    struct[root][chainId].checked += addition;
+    shardedGroup.checked = value ? total : 0;
+
+    return { ...struct };
+  },
+  target: $selectedStructure,
+});
+
+sample({
+  clock: shardToggled,
+  source: $selectedStructure,
+  fn: (struct, { root, chainId, groupId, accountId, value }) => {
+    const addition = value ? 1 : -1;
+    const chain = struct[root][chainId];
+
+    chain.sharded[groupId][accountId] = value;
+    chain.sharded[groupId].checked += addition;
+    chain.checked += addition;
+    struct[root].checked += addition;
+
+    return { ...struct };
+  },
+  target: $selectedStructure,
+});
 
 sample({
   clock: accountToggled,
