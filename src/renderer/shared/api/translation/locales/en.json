@@ -987,15 +987,15 @@
       "removeButton": "Remove",
       "removeMessage": "Are you sure you want to remove { walletName }?",
       "removeTitle": "Remove wallet",
-      "removeWalletDesc": "Are you sure you want to remove {walletName}?",
-      "removeWalletTitle": "Remove wallet",
       "removingWallet": "Removing wallet",
       "renameButton": "Rename",
       "renameLabel": "Name",
       "renameSaveButton": "Save",
       "renameTitle": "Rename wallet",
       "title": "Wallet details",
-      "walletRemoved": "Wallet removed"
+      "walletRemoved": "Wallet removed",
+      "removeWalletTitle": "Remove wallet",
+      "removeWalletDesc": "Are you sure you want to remove {walletName}?"
     },
     "multisig": {
       "contactsGroup": "Contacts",
