@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 
 import { Wallet } from '@shared/core';
-import { ConfirmModal, FootnoteText, HeaderTitleText } from '@shared/ui';
+import { ConfirmModal, FootnoteText, SmallTitleText } from '@shared/ui';
 import { useI18n } from '@app/providers';
 import { forgetWalletModel } from '../model/forget-wallet-model';
 import { walletUtils } from '@entities/wallet';
@@ -40,9 +40,9 @@ export const ConfirmForgetModal = ({ wallet, isOpen, onClose, onForget }: Props)
       onClose={onClose}
       onConfirm={confirmForgetWallet}
     >
-      <HeaderTitleText align="center" className="mb-2">
+      <SmallTitleText align="center" className="mb-2">
         {t('walletDetails.common.removeWalletTitle')}
-      </HeaderTitleText>
+      </SmallTitleText>
       <FootnoteText className="text-text-tertiary" align="center">
         {t('walletDetails.common.removeWalletDesc', { walletName: wallet.name })}
       </FootnoteText>

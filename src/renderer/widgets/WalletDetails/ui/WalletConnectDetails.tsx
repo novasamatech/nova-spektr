@@ -26,7 +26,6 @@ import {
   SmallTitleText,
   StatusModal,
 } from '@shared/ui';
-import { ConfirmForgetModal } from '@features/wallets/ForgetWallet';
 
 type AccountItem = {
   accountId: AccountId;
@@ -175,7 +174,7 @@ export const WalletConnectDetails = ({ wallet, accounts, onClose }: Props) => {
         </ConfirmModal>
 
         <ConfirmModal
-          panelClass="w-[300px]"
+          panelClass="w-[240px]"
           isOpen={isConfirmForgetOpen}
           confirmText={t('walletDetails.common.removeButton')}
           cancelText={t('walletDetails.common.cancelButton')}
@@ -222,12 +221,6 @@ export const WalletConnectDetails = ({ wallet, accounts, onClose }: Props) => {
       </div>
 
       <RenameWalletModal wallet={wallet} isOpen={isRenameModalOpen} onClose={toggleIsRenameModalOpen} />
-      <ConfirmForgetModal
-        wallet={wallet}
-        isOpen={isConfirmForgetOpen}
-        onClose={toggleConfirmForget}
-        onForget={onClose}
-      />
     </BaseModal>
   );
 };
