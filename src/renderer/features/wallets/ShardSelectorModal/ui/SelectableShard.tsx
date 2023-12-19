@@ -25,11 +25,11 @@ export const SelectableShard = ({
 }: Props) => {
   return (
     <Checkbox
-      checked={checked}
       className={cnTw(
         'flex items-center gap-x-2 px-2 py-1.5 hover:bg-action-background-hover group rounded',
         className,
       )}
+      checked={checked}
       semiChecked={semiChecked}
       onChange={(event) => onChange(event.target?.checked)}
     >

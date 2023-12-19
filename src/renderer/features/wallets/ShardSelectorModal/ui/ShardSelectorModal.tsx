@@ -3,7 +3,7 @@ import { useEffect } from 'react';
 
 import { BaseModal, Button } from '@shared/ui';
 import { ShardSearch } from './ShardSearch';
-import { WalletStructure } from './WalletStructure';
+import { ShardsStructure } from './ShardsStructure';
 import { shardsModel, Callbacks } from '../model/shards-model';
 import { useI18n } from '@app/providers';
 
@@ -29,7 +29,7 @@ export const ShardSelectorModal = ({ onConfirm }: Callbacks) => {
       onClose={shardsModel.events.modalToggled}
     >
       <ShardSearch />
-      <WalletStructure />
+      <ShardsStructure />
 
       <Button className="ml-auto mt-7 mr-5" onClick={() => shardsModel.events.shardsConfirmed()}>
         {t('balances.saveShardsButton')}

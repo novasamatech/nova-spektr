@@ -10,7 +10,10 @@ describe('features/wallet/model/shards-model', () => {
     const { vaultWallet, vaultAccounts } = shardsMock;
 
     const scope = fork({
-      values: new Map().set(walletModel.$activeWallet, vaultWallet).set(walletModel.$activeAccounts, vaultAccounts),
+      values: new Map()
+        .set(shardsModel.$isModalOpen, true)
+        .set(walletModel.$activeWallet, vaultWallet)
+        .set(walletModel.$activeAccounts, vaultAccounts),
     });
 
     const root = vaultAccounts[4];
@@ -20,7 +23,7 @@ describe('features/wallet/model/shards-model', () => {
 
     const tuples = [[root, [accounts_1, accounts_2, shards]]];
 
-    expect(scope.getState(shardsModel.$walletStructure)).toEqual(tuples);
+    expect(scope.getState(shardsModel.$shardsStructure)).toEqual(tuples);
   });
 
   test('should create $walletStructure for multishardAccounts with sorted chains', async () => {
@@ -28,6 +31,7 @@ describe('features/wallet/model/shards-model', () => {
 
     const scope = fork({
       values: new Map()
+        .set(shardsModel.$isModalOpen, true)
         .set(walletModel.$activeWallet, multishardWallet)
         .set(walletModel.$activeAccounts, multishardAccounts),
     });
@@ -45,28 +49,6 @@ describe('features/wallet/model/shards-model', () => {
       [root_2, [accounts_2_1, accounts_2_2]],
     ];
 
-    expect(scope.getState(shardsModel.$walletStructure)).toEqual(tuples);
+    expect(scope.getState(shardsModel.$shardsStructure)).toEqual(tuples);
   });
-
-  // test('should create $walletStructure for multishardAccounts with sorted chains', async () => {
-  //   const { multishardWallet, multishardAccounts } = shardsMock;
-  //
-  //   const scope = fork({
-  //     values: new Map()
-  //       .set(walletModel.$activeWallet, multishardWallet)
-  //       .set(walletModel.$activeAccounts, multishardAccounts),
-  //   });
-  //
-  //   await allSettled(shardsModel.events.accountToggled, {
-  //     scope,
-  //     params: {
-  //       root: 1,
-  //       chainId: '0x00',
-  //       accountId: '0x00',
-  //       value: true,
-  //     },
-  //   });
-  //
-  //   expect(scope.getState(shardsModel.$selectedStructure)).toEqual({});
-  // });
 });

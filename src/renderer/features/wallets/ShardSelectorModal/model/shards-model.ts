@@ -1,20 +1,23 @@
 import { createStore, createEvent, sample, combine, createApi, attach } from 'effector';
 
-import type { AccountId, ChainId, Account, BaseAccount, ChainAccount, ShardAccount, ID } from '@shared/core';
+import type { Account, BaseAccount, ChainAccount, ShardAccount } from '@shared/core';
 import { walletModel, walletUtils } from '@entities/wallet';
 import { networkModel } from '@entities/network';
 import { shardsUtils } from '../lib/shards-utils';
-import { RootTuple, SelectedStruct } from '../lib/types';
+import { selectorUtils } from '../lib/selector-utils';
+import {
+  RootTuple,
+  SelectedStruct,
+  RootToggleParams,
+  ChainToggleParams,
+  AccountToggleParams,
+  ShardedToggleParams,
+  ShardToggleParams,
+} from '../lib/types';
 
 export type Callbacks = {
   onConfirm: (shards: Account[]) => void;
 };
-
-type RootToggleParams = { root: ID; value: boolean };
-type ChainToggleParams = RootToggleParams & { chainId: ChainId };
-type AccountToggleParams = ChainToggleParams & { accountId: AccountId };
-type ShardedToggleParams = ChainToggleParams & { groupId: string };
-type ShardToggleParams = ShardedToggleParams & { accountId: AccountId };
 
 const $callbacks = createStore<Callbacks | null>(null);
 const callbacksApi = createApi($callbacks, {
@@ -25,6 +28,7 @@ const queryChanged = createEvent<string>();
 const modalToggled = createEvent();
 const shardsConfirmed = createEvent();
 
+const allToggled = createEvent<boolean>();
 const rootToggled = createEvent<RootToggleParams>();
 const chainToggled = createEvent<ChainToggleParams>();
 const accountToggled = createEvent<AccountToggleParams>();
@@ -52,7 +56,7 @@ const $filteredAccounts = combine(
   },
 );
 
-const $walletStructure = combine(
+const $shardsStructure = combine(
   {
     proceed: $isModalOpen,
     wallet: walletModel.$activeWallet,
@@ -62,7 +66,7 @@ const $walletStructure = combine(
   ({ proceed, wallet, accounts, chains }): RootTuple[] => {
     if (!proceed || !wallet) return [];
 
-    const chainsMap = shardsUtils.getChainsAccountsMap(chains);
+    const chainsMap = shardsUtils.getChainsMap(chains);
 
     return walletUtils.isPolkadotVault(wallet)
       ? shardsUtils.getStructForVault(accounts as Array<BaseAccount | ChainAccount | ShardAccount>, chainsMap)
@@ -74,6 +78,22 @@ const $totalSelected = combine($selectedStructure, (selectedStructure): number =
   return Object.values(selectedStructure).reduce((acc, rootData) => {
     return acc + rootData.checked;
   }, 0);
+});
+
+const $isAllChecked = combine($selectedStructure, (struct): boolean => {
+  return Object.keys(struct).every((root) => {
+    const { checked, total } = struct[Number(root)];
+
+    return checked === total;
+  });
+});
+
+const $isAllSemiChecked = combine($selectedStructure, (struct): boolean => {
+  return Object.keys(struct).every((root) => {
+    const { checked, total } = struct[Number(root)];
+
+    return checked > 0 && checked !== total;
+  });
 });
 
 sample({
@@ -113,109 +133,44 @@ sample({
 });
 
 sample({
+  clock: allToggled,
+  source: $selectedStructure,
+  fn: (struct, params) => selectorUtils.getSelectedAll(struct, params),
+  target: $selectedStructure,
+});
+
+sample({
   clock: rootToggled,
   source: $selectedStructure,
-  fn: (struct, { root, value }) => {
-    const { checked, total, ...chains } = struct[root];
-    struct[root].checked = value ? total : 0;
-
-    Object.values(chains).forEach((chains) => {
-      const { accounts, sharded } = chains;
-      chains.checked = value ? chains.total : 0;
-
-      Object.keys(accounts).forEach((accountId) => {
-        accounts[accountId as AccountId] = value;
-      });
-
-      Object.values(sharded).forEach((group) => {
-        const { total, checked, ...rest } = group;
-        group.checked = value ? total : 0;
-
-        Object.keys(rest).forEach((accountId) => {
-          group[accountId as AccountId] = value;
-        });
-      });
-    });
-
-    return { ...struct };
-  },
+  fn: (struct, params) => selectorUtils.getSelectedRoot(struct, params),
   target: $selectedStructure,
 });
 
 sample({
   clock: chainToggled,
   source: $selectedStructure,
-  fn: (struct, { root, chainId, value }) => {
-    const chain = struct[root][chainId];
-    Object.keys(chain.accounts).forEach((accountId) => {
-      chain.accounts[accountId as AccountId] = value;
-    });
-
-    Object.values(chain.sharded).forEach((group) => {
-      const { total, checked, ...rest } = group;
-      group.checked = value ? total : 0;
-
-      Object.keys(rest).forEach((accountId) => {
-        group[accountId as AccountId] = value;
-      });
-    });
-
-    struct[root].checked += value ? chain.total - chain.checked : -1 * chain.checked;
-    chain.checked = value ? chain.total : 0;
-
-    return { ...struct };
-  },
+  fn: (struct, params) => selectorUtils.getSelectedChain(struct, params),
   target: $selectedStructure,
 });
 
 sample({
   clock: shardedToggled,
   source: $selectedStructure,
-  fn: (struct, { root, chainId, groupId, value }) => {
-    const shardedGroup = struct[root][chainId].sharded[groupId];
-
-    const { total, checked, ...shards } = shardedGroup;
-    Object.keys(shards).forEach((accountId) => {
-      shardedGroup[accountId as AccountId] = value;
-    });
-
-    const addition = value ? total - checked : -1 * checked;
-    struct[root].checked += addition;
-    struct[root][chainId].checked += addition;
-    shardedGroup.checked = value ? total : 0;
-
-    return { ...struct };
-  },
+  fn: (struct, params) => selectorUtils.getSelectedSharded(struct, params),
   target: $selectedStructure,
 });
 
 sample({
   clock: shardToggled,
   source: $selectedStructure,
-  fn: (struct, { root, chainId, groupId, accountId, value }) => {
-    const addition = value ? 1 : -1;
-    const chain = struct[root][chainId];
-
-    chain.sharded[groupId][accountId] = value;
-    chain.sharded[groupId].checked += addition;
-    chain.checked += addition;
-    struct[root].checked += addition;
-
-    return { ...struct };
-  },
+  fn: (struct, params) => selectorUtils.getSelectedShard(struct, params),
   target: $selectedStructure,
 });
 
 sample({
   clock: accountToggled,
   source: $selectedStructure,
-  fn: (struct, { root, chainId, accountId, value }) => {
-    struct[root][chainId].accounts[accountId] = value;
-    struct[root][chainId].checked += value ? 1 : -1;
-    struct[root].checked += value ? 1 : -1;
-
-    return { ...struct };
-  },
+  fn: (struct, params) => selectorUtils.getSelectedAccount(struct, params),
   target: $selectedStructure,
 });
 
@@ -223,12 +178,15 @@ export const shardsModel = {
   $query,
   $isAccessDenied,
   $isModalOpen,
-  $walletStructure,
+  $shardsStructure,
   $selectedStructure,
   $totalSelected,
+  $isAllChecked,
+  $isAllSemiChecked,
   events: {
     modalToggled,
     queryChanged,
+    allToggled,
     rootToggled,
     chainToggled,
     shardedToggled,

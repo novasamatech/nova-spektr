@@ -3,18 +3,15 @@ import { set } from 'lodash';
 import type { Account, Chain, ChainId, BaseAccount, ChainAccount, ShardAccount, ID } from '@shared/core';
 import { accountUtils } from '@entities/wallet';
 import { toAddress, isStringsMatchQuery } from '@shared/lib/utils';
-import { RootTuple, ChainsMap, ChainTuple, CheckedCounter, SelectedStruct } from './types';
+import { RootTuple, ChainsMap, ChainTuple, SelectedStruct } from './types';
 
 export const shardsUtils = {
   getFilteredAccounts,
-  getChainsAccountsMap: getChainsMap,
+  getChainsMap,
   getStructForVault,
   getStructForMultishard,
   getVaultChainsCounter,
   getMultishardtChainsCounter,
-  isChecked,
-  isUnchecked,
-  isSemiChecked,
 };
 
 function getFilteredAccounts(accounts: Account[], chains: Record<ChainId, Chain>, query: string): Account[] {
@@ -204,16 +201,4 @@ function getStructForMultishard<T>(accounts: Array<BaseAccount | ChainAccount>, 
   });
 
   return [...roots.entries()];
-}
-
-function isChecked(object: CheckedCounter): boolean {
-  return object.checked === object.total;
-}
-
-function isUnchecked(object: CheckedCounter): boolean {
-  return object.total === 0;
-}
-
-function isSemiChecked(object: CheckedCounter): boolean {
-  return object.checked > 0 && object.checked !== object.total;
 }
