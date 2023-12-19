@@ -26,7 +26,7 @@ export const ShardSelectorModal = ({ onConfirm }: Callbacks) => {
       title={t('balances.shardsModalTitle')}
       contentClass="pl-3 pr-0 py-4"
       headerClass="px-5 py-4"
-      onClose={shardsModel.events.shardsCanceled}
+      onClose={shardsModel.events.shardsConfirmed}
     >
       <ShardSearch />
       <ShardsStructure />

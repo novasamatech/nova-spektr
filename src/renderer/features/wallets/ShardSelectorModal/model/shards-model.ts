@@ -1,4 +1,5 @@
-import { createStore, createEvent, sample, combine, createApi, attach, merge } from 'effector';
+import { createStore, createEvent, sample, combine, createApi, attach } from 'effector';
+import { cloneDeep } from 'lodash';
 
 import type { Account, BaseAccount, ChainAccount, ShardAccount } from '@shared/core';
 import { walletModel, walletUtils } from '@entities/wallet';
@@ -26,7 +27,6 @@ const callbacksApi = createApi($callbacks, {
 
 const queryChanged = createEvent<string>();
 const modalToggled = createEvent();
-const shardsCanceled = createEvent();
 const shardsConfirmed = createEvent();
 const structureRequested = createEvent<boolean>();
 
@@ -135,12 +135,6 @@ sample({
 });
 
 sample({
-  clock: shardsCanceled,
-  fn: () => false,
-  target: $isModalOpen,
-});
-
-sample({
   clock: modalToggled,
   fn: () => '',
   target: $query,
@@ -165,8 +159,8 @@ sample({
 });
 
 sample({
-  clock: merge([$initSelectedStructure, shardsCanceled]),
   source: $initSelectedStructure,
+  fn: (struct) => cloneDeep(struct),
   target: $selectedStructure,
 });
 
@@ -235,7 +229,6 @@ export const shardsModel = {
     shardedToggled,
     shardToggled,
     accountToggled,
-    shardsCanceled,
     shardsConfirmed,
     structureRequested,
     callbacksChanged: callbacksApi.callbacksChanged,

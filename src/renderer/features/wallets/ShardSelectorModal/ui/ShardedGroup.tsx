@@ -18,7 +18,7 @@ export const ShardedGroup = ({ rootId, accounts, chain }: Props) => {
 
   return (
     <Accordion className="ml-6 w-auto rounded">
-      <div className="hover:bg-action-background-hover flex">
+      <div className="flex rounded hover:bg-action-background-hover">
         <Checkbox
           className="p-2 w-full"
           checked={selectorUtils.isChecked(shardedGroup)}
@@ -32,9 +32,12 @@ export const ShardedGroup = ({ rootId, accounts, chain }: Props) => {
             })
           }
         >
-          <CaptionText className="text-text-secondary py-1 px-2 bg-input-background">{accounts.length}</CaptionText>
+          <div className="flex items-center justify-center w-7.5 h-5 rounded-2lg bg-input-background-disabled">
+            <CaptionText className="text-text-secondary">{accounts.length}</CaptionText>
+          </div>
           <FootnoteText className="text-text-tertiary">{accounts[0].name}</FootnoteText>
         </Checkbox>
+
         <Accordion.Button buttonClass="ml-auto w-auto p-2" />
       </div>
       <Accordion.Content as="ul">
@@ -42,6 +45,7 @@ export const ShardedGroup = ({ rootId, accounts, chain }: Props) => {
           <li key={shard.accountId} className="ml-6">
             <SelectableShard
               truncate
+              className="w-[240px]"
               account={shard}
               addressPrefix={chain.addressPrefix}
               explorers={chain.explorers}

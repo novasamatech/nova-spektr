@@ -85,6 +85,7 @@ export const ShardsStructure = () => {
                         <li key={account.id} className="ml-6">
                           <SelectableShard
                             truncate
+                            className="w-[270px]"
                             account={account}
                             checked={selectedStructure[root.id][chainId].accounts[account.accountId]}
                             addressPrefix={chain.addressPrefix}

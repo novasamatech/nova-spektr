@@ -34,7 +34,7 @@ export const SelectableShard = ({
   const content = (
     <div className="flex items-center gap-x-2">
       <Identicon address={address} size={20} background={false} canCopy={false} />
-      <div className="truncate mr-auto">
+      <div className={cnTw('truncate mr-auto', className)}>
         {account.name && !isShard && <BodyText>{account.name}</BodyText>}
         {truncate ? (
           <Truncate text={address} className="text-text-tertiary text-help-text" />
@@ -52,7 +52,6 @@ export const SelectableShard = ({
       className={cnTw(
         'group flex gap-x-1 px-2 py-1.5 rounded transition-colors cursor-pointer',
         'hover:bg-action-background-hover focus-within:bg-action-background-hover',
-        className,
       )}
     >
       <Checkbox checked={checked} semiChecked={semiChecked} onChange={(event) => onChange(event.target.checked)} />
