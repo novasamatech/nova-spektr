@@ -9,23 +9,25 @@ import { ZERO_BALANCE, totalAmount, includes, cnTw } from '@shared/lib/utils';
 import { ExtendedChain } from '@entities/network';
 import { useI18n } from '@app/providers';
 import { balanceSorter, sumBalances } from '../../common/utils';
-import type { AccountId, Account, Chain, Asset, Balance } from '@shared/core';
+import type { AccountId, Chain, Asset, Balance, Account } from '@shared/core';
 import { accountUtils } from '@entities/wallet';
 import { NetworkFiatBalance } from '../NetworkFiatBalance/NetworkFiatBalance';
 import { currencyModel, priceProviderModel } from '@entities/price';
 import { balanceModel } from '@entities/balance';
 import { useThrottle } from '@shared/lib/hooks';
+import { assetsModel } from '../../model/assets-model';
 
 type Props = {
-  hideZeroBalance?: boolean;
   searchSymbolOnly?: boolean;
-  query?: string;
   chain: Chain | ExtendedChain;
   accounts: Account[];
 };
 
-export const NetworkAssets = ({ query, hideZeroBalance, chain, accounts, searchSymbolOnly }: Props) => {
+export const NetworkAssets = ({ chain, accounts, searchSymbolOnly }: Props) => {
   const { t } = useI18n();
+
+  const query = useUnit(assetsModel.$query);
+  const hideZeroBalances = useUnit(assetsModel.$hideZeroBalances);
 
   const assetsPrices = useUnit(priceProviderModel.$assetsPrices);
   const fiatFlag = useUnit(priceProviderModel.$fiatFlag);
@@ -77,7 +79,7 @@ export const NetworkAssets = ({ query, hideZeroBalance, chain, accounts, searchS
 
       const balance = balancesObject[asset.assetId];
 
-      return !hideZeroBalance || balance?.verified === false || totalAmount(balance) !== ZERO_BALANCE;
+      return !hideZeroBalances || balance?.verified === false || totalAmount(balance) !== ZERO_BALANCE;
     });
 
     filteredAssets.sort((a, b) =>
@@ -85,11 +87,9 @@ export const NetworkAssets = ({ query, hideZeroBalance, chain, accounts, searchS
     );
 
     setFilteredAssets(filteredAssets);
-  }, [balancesObject, query, hideZeroBalance]);
+  }, [balancesObject, query, hideZeroBalances]);
 
-  if (filteredAssets.length === 0) {
-    return null;
-  }
+  if (filteredAssets.length === 0) return null;
 
   const hasFailedVerification = balances?.some((b) => b.verified !== undefined && !b.verified);
 

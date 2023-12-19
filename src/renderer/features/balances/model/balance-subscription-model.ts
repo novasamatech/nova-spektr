@@ -1,5 +1,5 @@
 import { ApiPromise } from '@polkadot/api';
-import { combine, createEffect, createStore, sample, scopeBind } from 'effector';
+import { combine, createEffect, createStore, sample, scopeBind, createEvent } from 'effector';
 import { VoidFn } from '@polkadot/api/types';
 import { throttle } from 'patronum';
 import keyBy from 'lodash/keyBy';
@@ -18,6 +18,8 @@ type SubscriptionObject = {
 };
 
 type BalanceSubscribeMap = Record<ChainId, SubscriptionObject>;
+
+const balancesSubscribed = createEvent();
 
 const $subscriptions = createStore<BalanceSubscribeMap>({});
 const $subscriptionAccounts = createStore<Account[]>([]);
@@ -182,4 +184,7 @@ sample({
 
 export const balanceSubscriptionModel = {
   $subscriptions,
+  events: {
+    balancesSubscribed,
+  },
 };
