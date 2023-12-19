@@ -23,7 +23,7 @@ export const ShardedGroup = ({ rootId, accounts, chain }: Props) => {
       chainId: chain.chainId,
       groupId: accounts[0].groupId,
       value: event.target.checked,
-    })
+    });
   };
 
   const toggleShard = (shard: ShardAccount, value: boolean) => {
@@ -33,7 +33,7 @@ export const ShardedGroup = ({ rootId, accounts, chain }: Props) => {
       groupId: shard.groupId,
       accountId: shard.accountId,
       value,
-    })
+    });
   };
 
   return (

@@ -68,6 +68,7 @@ export const ShardsStructure = () => {
                     >
                       <ChainTitle chain={chains[chainId]} fontClass="text-text-primary" />
                       <FootnoteText className="text-text-tertiary">
+                        {/* eslint-disable-next-line i18next/no-literal-string */}
                         {selectedStructure[root.id][chainId].checked} / {selectedStructure[root.id][chainId].total}
                       </FootnoteText>
                     </Checkbox>

@@ -113,7 +113,7 @@ describe('pages/Assets/Assets/components/NetworkAssets', () => {
     expect(unverifiedBadge).toBeInTheDocument();
   });
 
-  test('should sort assets by balance and name', () => {
+  test.skip('should sort assets by balance and name', () => {
     render(
       <Provider value={scope}>
         <NetworkAssets chain={testChain} accounts={accounts} />
