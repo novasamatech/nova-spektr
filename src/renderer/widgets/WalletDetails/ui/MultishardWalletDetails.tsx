@@ -10,7 +10,6 @@ import type { MultishardMap } from '../lib/types';
 import { walletDetailsUtils } from '../lib/utils';
 import { RenameWalletModal } from '@features/wallets/RenameWallet';
 import { IconNames } from '@shared/ui/Icon/data';
-import { ConfirmForgetModal } from '@features/wallets/ForgetWallet';
 
 type Props = {
   wallet: Wallet;
@@ -22,7 +21,6 @@ export const MultishardWalletDetails = ({ wallet, accounts, onClose }: Props) =>
 
   const [isModalOpen, closeModal] = useModalClose(true, onClose);
   const [isRenameModalOpen, toggleIsRenameModalOpen] = useToggle();
-  const [isConfirmForgetOpen, toggleConfirmForget] = useToggle();
 
   const chains = useUnit(networkModel.$chains);
 
@@ -37,11 +35,11 @@ export const MultishardWalletDetails = ({ wallet, accounts, onClose }: Props) =>
       title: t('walletDetails.vault.export'),
       onClick: () => walletDetailsUtils.exportMultishardWallet(wallet, accounts),
     },
-    {
-      icon: 'forget' as IconNames,
-      title: t('walletDetails.common.forgetButton'),
-      onClick: toggleConfirmForget,
-    },
+    // {
+    //   icon: 'forget',
+    //   title: t('walletDetails.common.forgetButton'),
+    //   onClick: () => {},
+    // },
   ];
 
   const ActionButton = (
@@ -74,13 +72,6 @@ export const MultishardWalletDetails = ({ wallet, accounts, onClose }: Props) =>
       </div>
 
       <RenameWalletModal wallet={wallet} isOpen={isRenameModalOpen} onClose={toggleIsRenameModalOpen} />
-
-      <ConfirmForgetModal
-        wallet={wallet}
-        isOpen={isConfirmForgetOpen}
-        onClose={toggleConfirmForget}
-        onForget={onClose}
-      />
     </BaseModal>
   );
 };

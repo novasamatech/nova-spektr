@@ -27,13 +27,7 @@ export const ConfirmModal = ({
   onClose,
   onConfirm,
 }: PropsWithChildren<Props>) => (
-  <BaseModal
-    isOpen={isOpen}
-    panelClass={panelClass}
-    contentClass={cnTw('p-4', contentClass)}
-    zIndex="z-[60]"
-    onClose={onClose}
-  >
+  <BaseModal isOpen={isOpen} panelClass={panelClass} contentClass={cnTw('p-4', contentClass)} onClose={onClose}>
     {children}
     <div className="flex gap-x-3 mt-4">
       {cancelText && (

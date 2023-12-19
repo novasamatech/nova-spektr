@@ -6,5 +6,4 @@ export interface IBalanceService {
   getBalances: (accountIds: AccountId[]) => Promise<BalanceDS[]>;
   getAllBalances: () => Promise<BalanceDS[]>;
   insertBalances: (balances: Balance[]) => Promise<string[]>;
-  deleteBalances: (accountIds: AccountId[]) => Promise<number>;
 }

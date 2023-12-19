@@ -981,7 +981,7 @@
   "walletDetails": {
     "common": {
       "cancelButton": "Cancel",
-      "forgetButton": "Remove",
+      "forgetButton": "Forget",
       "nameExistsError": "This wallet name already exists",
       "nameRequiredError": "Name is required",
       "removeButton": "Remove",
@@ -993,9 +993,7 @@
       "renameSaveButton": "Save",
       "renameTitle": "Rename wallet",
       "title": "Wallet details",
-      "walletRemoved": "Wallet removed",
-      "removeWalletTitle": "Remove wallet",
-      "removeWalletDesc": "Are you sure you want to remove {walletName}?"
+      "walletRemoved": "Wallet removed"
     },
     "multisig": {
       "contactsGroup": "Contacts",

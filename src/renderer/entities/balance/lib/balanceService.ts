@@ -8,13 +8,12 @@ export const useBalanceService = (): IBalanceService => {
     throw new Error('=== 🔴 Balances storage in not defined 🔴 ===');
   }
 
-  const { getBalances, getAllBalances, getBalance, insertBalances, deleteBalances } = balanceStorage;
+  const { getBalances, getAllBalances, getBalance, insertBalances } = balanceStorage;
 
   return {
     getAllBalances,
     getBalances,
     getBalance,
     insertBalances,
-    deleteBalances,
   };
 };

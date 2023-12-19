@@ -15,7 +15,6 @@ import { vaultDetailsModel } from '../model/vault-details-model';
 import { walletDetailsUtils } from '../lib/utils';
 import { KeyConstructor, ImportKeysModal, DerivationsAddressModal } from '@features/wallets';
 import { RenameWalletModal } from '@features/wallets/RenameWallet';
-import { ConfirmForgetModal } from '@features/wallets/ForgetWallet';
 
 type Props = {
   wallet: Wallet;
@@ -35,7 +34,6 @@ export const VaultWalletDetails = ({ wallet, root, accountsMap, onClose }: Props
   const [isConstructorModalOpen, toggleConstructorModal] = useToggle();
   const [isImportModalOpen, toggleImportModal] = useToggle();
   const [isScanModalOpen, toggleScanModal] = useToggle();
-  const [isConfirmForgetOpen, toggleConfirmForget] = useToggle();
 
   const handleConstructorKeys = (
     keysToAdd: Array<ChainAccount | ShardAccount[]>,
@@ -96,11 +94,11 @@ export const VaultWalletDetails = ({ wallet, root, accountsMap, onClose }: Props
       title: t('walletDetails.vault.export'),
       onClick: () => walletDetailsUtils.exportVaultWallet(wallet, root, accountsMap),
     },
-    {
-      icon: 'forget' as IconNames,
-      title: t('walletDetails.common.forgetButton'),
-      onClick: () => toggleConfirmForget,
-    },
+    // {
+    //   icon: 'forget',
+    //   title: t('walletDetails.common.forgetButton'),
+    //   onClick: () => {},
+    // },
   ];
 
   const ActionButton = (
@@ -179,13 +177,6 @@ export const VaultWalletDetails = ({ wallet, root, accountsMap, onClose }: Props
         keys={newKeys}
         onClose={toggleScanModal}
         onComplete={handleVaultKeys}
-      />
-
-      <ConfirmForgetModal
-        wallet={wallet}
-        isOpen={isConfirmForgetOpen}
-        onClose={toggleConfirmForget}
-        onForget={onClose}
       />
     </BaseModal>
   );

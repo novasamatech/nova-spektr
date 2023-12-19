@@ -51,8 +51,4 @@ export const useBalanceStorage = (db: TBalance): IBalanceStorage => ({
   setBalanceIsValid: ({ accountId, chainId, assetId }: BalanceKey, verified: boolean): Promise<number> => {
     return db.update([accountId, chainId, assetId], { verified });
   },
-
-  deleteBalances: (accountIds: AccountId[]): Promise<number> => {
-    return db.where('accountId').anyOf(accountIds).delete();
-  },
 });
