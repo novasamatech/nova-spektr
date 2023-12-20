@@ -1,9 +1,10 @@
 import { cnTw, toAddress, toShortAddress } from '@shared/lib/utils';
-import { BodyText, HelpText, Identicon, Truncate } from '@shared/ui';
+import { BodyText, DropdownIconButton, HelpText, Identicon, Truncate } from '@shared/ui';
 import { AccountId } from '@shared/core';
 import { ProxyType } from '../../lib/types';
 import { ProxyTypeName } from '@entities/proxy/lib/constants';
 import { useI18n } from '@app/providers';
+import { DropdownIconButtonOption } from "@shared/ui/types";
 
 type Props = {
   className?: string;
@@ -13,6 +14,7 @@ type Props = {
   accountId: AccountId;
   addressPrefix?: number;
   proxyType: ProxyType;
+  actions?: DropdownIconButtonOption[];
 };
 
 export const ProxyAccount = ({
@@ -23,6 +25,7 @@ export const ProxyAccount = ({
   accountId,
   addressPrefix,
   proxyType,
+  actions,
 }: Props) => {
   const { t } = useI18n();
   const address = toAddress(accountId, { prefix: addressPrefix });
@@ -33,6 +36,18 @@ export const ProxyAccount = ({
     <Truncate className="text-inherit" ellipsis="..." start={4} end={4} text={addressToShow} />
   ) : (
     addressToShow
+  );
+
+  const ActionButton = actions && (
+    <DropdownIconButton name="more">
+      <DropdownIconButton.Items>
+        {actions.map((option) => (
+          <DropdownIconButton.Item key={option.icon}>
+            <DropdownIconButton.Option option={option} />
+          </DropdownIconButton.Item>
+        ))}
+      </DropdownIconButton.Items>
+    </DropdownIconButton>
   );
 
   return (
@@ -46,6 +61,7 @@ export const ProxyAccount = ({
           <HelpText className="text-tab-text-accent">{t(ProxyTypeName[proxyType])}</HelpText>
         </div>
       </div>
+      {actions && ActionButton}
     </div>
   );
 };
