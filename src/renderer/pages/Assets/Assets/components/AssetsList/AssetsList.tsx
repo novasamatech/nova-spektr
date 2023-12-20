@@ -33,8 +33,11 @@ export const AssetsList = () => {
 
   useEffect(() => {
     assetsModel.events.activeShardsSet(activeAccounts);
-    priceProviderModel.events.assetsPricesRequested({ includeRates: true });
   }, [activeWallet]);
+
+  useEffect(() => {
+    priceProviderModel.events.assetsPricesRequested({ includeRates: true });
+  }, []);
 
   useEffect(() => {
     const isMultisig = walletUtils.isMultisig(activeWallet);
