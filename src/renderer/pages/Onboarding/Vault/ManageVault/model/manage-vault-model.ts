@@ -5,17 +5,8 @@ import { spread } from 'patronum';
 import { SeedInfo } from '@renderer/components/common/QrCode/common/types';
 import { chainsService } from '@entities/network';
 import { accountUtils, KEY_NAMES, walletModel } from '@entities/wallet';
-import {
-  AccountType,
-  ChainType,
-  CryptoType,
-  KeyType,
-  type BaseAccount,
-  type Wallet,
-  Account,
-  type NoID,
-} from '@shared/core';
-import type { ChainAccount, ShardAccount, DraftAccount } from '@shared/core';
+import type { ChainAccount, ShardAccount, DraftAccount, BaseAccount, Wallet, Account, NoID } from '@shared/core';
+import { AccountType, ChainType, CryptoType, KeyType } from '@shared/core';
 import { dictionary } from '@shared/lib/utils';
 import { storageService } from '@shared/api/storage';
 

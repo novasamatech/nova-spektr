@@ -1,7 +1,7 @@
 import { createStore, createEvent, sample, combine, createApi, attach } from 'effector';
 import { cloneDeep } from 'lodash';
 
-import type { Account, BaseAccount, ChainAccount, ShardAccount } from '@shared/core';
+import type { Account } from '@shared/core';
 import { walletModel, walletUtils } from '@entities/wallet';
 import { networkModel } from '@entities/network';
 import { shardsUtils } from '../lib/shards-utils';
@@ -55,8 +55,6 @@ const $filteredAccounts = combine(
     chains: networkModel.$chains,
   },
   ({ query, accounts, chains }): Account[] => {
-    if (!query) return accounts;
-
     return shardsUtils.getFilteredAccounts(accounts, chains, query);
   },
 );
@@ -74,10 +72,10 @@ const $shardsStructure = combine(
     const chainsMap = shardsUtils.getChainsMap(chains);
 
     if (walletUtils.isPolkadotVault(wallet)) {
-      return shardsUtils.getStructForVault(accounts as Array<BaseAccount | ChainAccount | ShardAccount>, chainsMap);
+      return shardsUtils.getStructForVault(accounts, chainsMap);
     }
     if (walletUtils.isMultiShard(wallet)) {
-      return shardsUtils.getStructForMultishard(accounts as Array<BaseAccount | ChainAccount>, chainsMap);
+      return shardsUtils.getStructForMultishard(accounts, chainsMap);
     }
 
     return [];
@@ -94,11 +92,13 @@ const $initSelectedStructure = combine(
   ({ proceed, wallet, accounts, chains }): SelectedStruct => {
     if (!proceed || !wallet) return {};
 
+    const filteredAccounts = shardsUtils.getFilteredAccounts(accounts, chains);
+
     if (walletUtils.isPolkadotVault(wallet)) {
-      return shardsUtils.getVaultChainsCounter(chains, accounts as Array<BaseAccount | ChainAccount | ShardAccount>);
+      return shardsUtils.getVaultChainsCounter(chains, filteredAccounts);
     }
     if (walletUtils.isMultiShard(wallet)) {
-      return shardsUtils.getMultishardtChainsCounter(chains, accounts as Array<BaseAccount | ChainAccount>);
+      return shardsUtils.getMultishardtChainsCounter(chains, filteredAccounts);
     }
 
     return {};
