@@ -4,7 +4,7 @@ import { AccountId } from '@shared/core';
 import { ProxyType } from '../../lib/types';
 import { ProxyTypeName } from '@entities/proxy/lib/constants';
 import { useI18n } from '@app/providers';
-import { DropdownIconButtonOption } from "@shared/ui/types";
+import { DropdownIconButtonOption } from '@shared/ui/types';
 
 type Props = {
   className?: string;
