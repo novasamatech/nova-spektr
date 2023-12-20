@@ -30,7 +30,6 @@ describe('features/wallet/model/shards-model', () => {
 
     const scope = fork({
       values: new Map()
-        .set(shardsModel.$isModalOpen, true)
         .set(walletModel.$activeWallet, multishardWallet)
         .set(walletModel.$activeAccounts, multishardAccounts),
     });
@@ -52,4 +51,18 @@ describe('features/wallet/model/shards-model', () => {
 
     expect(scope.getState(shardsModel.$shardsStructure)).toEqual(tuples);
   });
+
+  // test('should fill $selectedStructure for multishardWallet', async () => {
+  //   const { multishardWallet, multishardAccounts } = shardsMock;
+  //
+  //   const scope = fork({
+  //     values: new Map()
+  //       .set(walletModel.$activeWallet, multishardWallet)
+  //       .set(walletModel.$activeAccounts, multishardAccounts),
+  //   });
+  //
+  //   await allSettled(shardsModel.events.structureRequested, { scope, params: true });
+  //
+  //   expect(scope.getState(shardsModel.$selectedStructure)).toEqual({});
+  // });
 });

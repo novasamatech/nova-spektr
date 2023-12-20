@@ -3,9 +3,8 @@ import { throttle } from 'patronum';
 import { isEqual } from 'lodash';
 
 import { Balance } from '@shared/core';
-import { useBalanceService } from '../lib/balanceService';
 import { ZERO_BALANCE, splice } from '@shared/lib/utils';
-import { SAVE_TIMEOUT } from '../lib';
+import { useBalanceService, SAVE_TIMEOUT } from '../lib';
 
 const balanceService = useBalanceService();
 
@@ -47,15 +46,11 @@ sample({
       return isSameAccount && isSameAssetId && isSameChainId;
     });
 
-    if (oldBalanceIndex === -1) {
-      return balances.concat(newBalance);
-    }
+    if (oldBalanceIndex === -1) return balances.concat(newBalance);
 
     const updatedBalance = { ...balances[oldBalanceIndex], ...newBalance };
 
-    if (isEqual(updatedBalance, balances[oldBalanceIndex])) {
-      return balances;
-    }
+    if (isEqual(updatedBalance, balances[oldBalanceIndex])) return balances;
 
     return splice(balances, updatedBalance, oldBalanceIndex);
   },

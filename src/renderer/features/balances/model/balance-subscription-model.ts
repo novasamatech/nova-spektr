@@ -40,7 +40,7 @@ const createSubscriptionsBalancesFx = createEffect(
     subscriptions,
     accounts,
   }: SubscribeParams): Promise<Record<ChainId, SubscriptionObject>> => {
-    const bindedBalanceUpdate = scopeBind(balanceModel.events.balanceUpdated, { safe: true });
+    const boundBalanceUpdate = scopeBind(balanceModel.events.balanceUpdated, { safe: true });
 
     const newSubscriptions = {} as Record<ChainId, SubscriptionObject>;
 
@@ -82,10 +82,10 @@ const createSubscriptionsBalancesFx = createEffect(
 
       try {
         const balanceSubs = balanceSubscriptionService.subscribeBalances(chain, api, accountIds, (balances) => {
-          balances.forEach((balance) => bindedBalanceUpdate(balance));
+          balances.forEach((balance) => boundBalanceUpdate(balance));
         });
         const locksSubs = balanceSubscriptionService.subscribeLockBalances(chain, api, accountIds, (balances) => {
-          balances.forEach((balance) => bindedBalanceUpdate(balance));
+          balances.forEach((balance) => boundBalanceUpdate(balance));
         });
 
         newSubscriptions[chainId as ChainId] = {
