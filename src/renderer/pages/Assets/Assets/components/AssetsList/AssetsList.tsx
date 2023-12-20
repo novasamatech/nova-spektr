@@ -52,7 +52,7 @@ export const AssetsList = () => {
     );
 
     setSortedChains(sortedChains);
-  }, [balances, assetsPrices]);
+  }, []);
 
   const searchSymbolOnly = sortedChains.some((chain) => {
     return chain.assets.some((asset) => includes(asset.symbol, query));

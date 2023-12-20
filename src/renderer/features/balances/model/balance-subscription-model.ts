@@ -152,7 +152,7 @@ sample({
 
 sample({
   clock: populateBalancesFx.doneData,
-  target: balanceModel.$balances,
+  target: balanceModel.$balancesBuffer,
 });
 
 sample({

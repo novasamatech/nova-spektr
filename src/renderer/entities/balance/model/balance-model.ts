@@ -17,7 +17,7 @@ const insertBalancesFx = createEffect(async (balances: Balance[]): Promise<void>
 });
 
 throttle({
-  source: $balances,
+  source: $balancesBuffer,
   timeout: SAVE_TIMEOUT,
   target: insertBalancesFx,
 });
