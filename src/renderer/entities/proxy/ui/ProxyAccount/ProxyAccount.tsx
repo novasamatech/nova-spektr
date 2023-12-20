@@ -39,7 +39,7 @@ export const ProxyAccount = ({
   );
 
   const ActionButton = actions && (
-    <DropdownIconButton name="more">
+    <DropdownIconButton name="more" className="ml-2">
       <DropdownIconButton.Items>
         {actions.map((option) => (
           <DropdownIconButton.Item key={option.icon}>
