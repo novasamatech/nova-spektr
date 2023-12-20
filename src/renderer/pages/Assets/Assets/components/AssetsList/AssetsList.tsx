@@ -20,7 +20,6 @@ export const AssetsList = () => {
   const activeShards = useUnit(assetsModel.$activeShards);
 
   const activeWallet = useUnit(walletModel.$activeWallet);
-  const activeAccounts = useUnit(walletModel.$activeAccounts);
   const balances = useUnit(balanceModel.$balances);
 
   const assetsPrices = useUnit(priceProviderModel.$assetsPrices);
@@ -30,10 +29,6 @@ export const AssetsList = () => {
   const chains = useUnit(networkModel.$chains);
 
   const [sortedChains, setSortedChains] = useState<Chain[]>([]);
-
-  useEffect(() => {
-    assetsModel.events.activeShardsSet(activeAccounts);
-  }, [activeWallet]);
 
   useEffect(() => {
     priceProviderModel.events.assetsPricesRequested({ includeRates: true });

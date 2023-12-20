@@ -3,6 +3,7 @@ import { createEvent, createEffect, createStore, sample } from 'effector';
 import { localStorageService } from '@shared/api/local-storage';
 import { HIDE_ZERO_BALANCES } from '../common/constants';
 import { Account } from '@shared/core';
+import { walletModel } from '@entities/wallet';
 
 const assetsStarted = createEvent();
 const queryChanged = createEvent<string>();
@@ -42,7 +43,7 @@ sample({
 });
 
 sample({
-  clock: activeShardsSet,
+  clock: [activeShardsSet, walletModel.$activeAccounts],
   target: $activeShards,
 });
 

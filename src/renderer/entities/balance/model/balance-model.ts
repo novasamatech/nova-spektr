@@ -3,13 +3,14 @@ import { throttle } from 'patronum';
 import { keyBy } from 'lodash';
 
 import { Balance } from '@shared/core';
-import { useBalanceService, SAVE_TIMEOUT } from '../lib';
+import { useBalanceService, SAVE_TIMEOUT, BUFFER_DELAY } from '../lib';
 
 const balanceService = useBalanceService();
 
 const balancesUpdated = createEvent<Balance[]>();
 
 const $balances = createStore<Balance[]>([]);
+const $balancesBuffer = createStore<Balance[]>([]);
 
 const insertBalancesFx = createEffect(async (balances: Balance[]): Promise<void> => {
   await balanceService.insertBalances(balances);
@@ -23,7 +24,7 @@ throttle({
 
 sample({
   clock: balancesUpdated,
-  source: $balances,
+  source: $balancesBuffer,
   fn: (balances, newBalances) => {
     const newBalancesMap = keyBy(newBalances, (b) => `${b.chainId}_${b.assetId}_${b.accountId}`);
 
@@ -45,11 +46,18 @@ sample({
 
     return updatedBalances.concat(Object.values(newBalancesMap));
   },
+  target: $balancesBuffer,
+});
+
+throttle({
+  source: $balancesBuffer,
+  timeout: BUFFER_DELAY,
   target: $balances,
 });
 
 export const balanceModel = {
   $balances,
+  $balancesBuffer,
   events: {
     balancesUpdated,
   },
