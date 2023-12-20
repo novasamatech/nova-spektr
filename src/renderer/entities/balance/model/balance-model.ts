@@ -1,14 +1,13 @@
 import { createEffect, createEvent, createStore, sample } from 'effector';
 import { throttle } from 'patronum';
-import { isEqual } from 'lodash';
+import { keyBy } from 'lodash';
 
 import { Balance } from '@shared/core';
-import { splice } from '@shared/lib/utils';
 import { useBalanceService, SAVE_TIMEOUT } from '../lib';
 
 const balanceService = useBalanceService();
 
-const balanceUpdated = createEvent<Balance>();
+const balancesUpdated = createEvent<Balance[]>();
 
 const $balances = createStore<Balance[]>([]);
 
@@ -23,24 +22,28 @@ throttle({
 });
 
 sample({
-  clock: balanceUpdated,
+  clock: balancesUpdated,
   source: $balances,
-  fn: (balances, newBalance) => {
-    const oldBalanceIndex = balances.findIndex((balance) => {
-      const isSameAccount = balance.accountId === newBalance.accountId;
-      const isSameAssetId = balance.assetId === newBalance.assetId;
-      const isSameChainId = balance.chainId === newBalance.chainId;
+  fn: (balances, newBalances) => {
+    const newBalancesMap = keyBy(newBalances, (b) => `${b.chainId}_${b.assetId}_${b.accountId}`);
 
-      return isSameAccount && isSameAssetId && isSameChainId;
+    const updatedBalances = balances.map((balance) => {
+      const { chainId, assetId, accountId } = balance;
+      const newBalance = newBalancesMap[`${chainId}_${assetId}_${accountId}`];
+
+      if (newBalance) {
+        balance.free = newBalance?.free || balance.free;
+        balance.frozen = newBalance?.frozen || balance.frozen;
+        balance.reserved = newBalance?.reserved || balance.reserved;
+        balance.locked = newBalance?.locked || balance.locked;
+
+        delete newBalancesMap[`${chainId}_${assetId}_${accountId}`];
+      }
+
+      return balance;
     });
 
-    if (oldBalanceIndex === -1) return balances.concat(newBalance);
-
-    const updatedBalance = { ...balances[oldBalanceIndex], ...newBalance };
-
-    if (isEqual(updatedBalance, balances[oldBalanceIndex])) return balances;
-
-    return splice(balances, updatedBalance, oldBalanceIndex);
+    return updatedBalances.concat(Object.values(newBalancesMap));
   },
   target: $balances,
 });
@@ -48,6 +51,6 @@ sample({
 export const balanceModel = {
   $balances,
   events: {
-    balanceUpdated,
+    balancesUpdated,
   },
 };
