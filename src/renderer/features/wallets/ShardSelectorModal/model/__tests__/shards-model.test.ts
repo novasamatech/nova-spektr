@@ -30,7 +30,6 @@ describe('features/wallet/model/shards-model', () => {
 
     const scope = fork({
       values: new Map()
-        .set(shardsModel.$isModalOpen, true)
         .set(walletModel.$activeWallet, multishardWallet)
         .set(walletModel.$activeAccounts, multishardAccounts),
     });
