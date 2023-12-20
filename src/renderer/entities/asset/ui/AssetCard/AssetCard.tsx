@@ -23,6 +23,7 @@ type Props = {
 
 export const AssetCard = ({ chainId, asset, balance }: Props) => {
   const { t } = useI18n();
+
   const fiatFlag = useUnit(priceProviderModel.$fiatFlag);
   const activeWallet = useUnit(walletModel.$activeWallet);
 
