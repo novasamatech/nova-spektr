@@ -540,6 +540,18 @@
     "withCode": "{ amount } { code }",
     "withSymbol": "{ symbol }{ amount }"
   },
+  "proxy": {
+    "names": {
+      "any": "All operations",
+      "auction": "Auction operations",
+      "cancelProxy": "Cancel operations",
+      "governance": "Governance operations",
+      "identityJudgement": "Judgement operations",
+      "nominationPools": "Nominations operations",
+      "nonTransfer": "NonTransfer operations",
+      "staking": "Staking operations"
+    }
+  },
   "qrReader": {
     "parsingLabel": "Parsing data",
     "parsingProgress": "{decoded} of {total}",
