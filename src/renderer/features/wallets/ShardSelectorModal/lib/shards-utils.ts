@@ -84,8 +84,8 @@ function getMultishardtChainsCounter(chains: Record<ChainId, Chain>, accounts: A
     (acc, account) => {
       if (accountUtils.isBaseAccount(account)) {
         acc.roots[account.id] = getChainCounter(chains);
-        acc.roots[account.id].checked = accounts.length;
-        acc.roots[account.id].total = accounts.length;
+        acc.roots[account.id].checked = 0;
+        acc.roots[account.id].total = 0;
       } else {
         acc.shards.push(account as ChainAccount);
       }
@@ -96,9 +96,12 @@ function getMultishardtChainsCounter(chains: Record<ChainId, Chain>, accounts: A
   );
 
   shards.forEach((shard) => {
-    roots[shard.baseId!][shard.chainId].checked += 1;
-    roots[shard.baseId!][shard.chainId].total += 1;
-    roots[shard.baseId!][shard.chainId].accounts[shard.accountId] = true;
+    const root = roots[shard.baseId!];
+    root.checked += 1;
+    root.total += 1;
+    root[shard.chainId].checked += 1;
+    root[shard.chainId].total += 1;
+    root[shard.chainId].accounts[shard.accountId] = true;
   });
 
   return roots;

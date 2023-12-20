@@ -119,12 +119,18 @@ const $isAllChecked = combine($selectedStructure, (struct): boolean => {
   });
 });
 
-const $isAllSemiChecked = combine($selectedStructure, (struct): boolean => {
-  return Object.keys(struct).every((root) => {
-    const { checked, total } = struct[Number(root)];
+const $isAllSemiChecked = combine($selectedStructure, (selectedStructure): boolean => {
+  const { checked, total } = Object.values(selectedStructure).reduce<Record<'checked' | 'total', number>>(
+    (acc, rootData) => {
+      acc.checked += rootData.checked;
+      acc.total += rootData.total;
 
-    return checked > 0 && checked !== total;
-  });
+      return acc;
+    },
+    { checked: 0, total: 0 },
+  );
+
+  return checked > 0 && checked !== total;
 });
 
 sample({
