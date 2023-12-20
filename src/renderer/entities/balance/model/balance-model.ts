@@ -3,7 +3,7 @@ import { throttle } from 'patronum';
 import { isEqual } from 'lodash';
 
 import { Balance } from '@shared/core';
-import { ZERO_BALANCE, splice } from '@shared/lib/utils';
+import { splice } from '@shared/lib/utils';
 import { useBalanceService, SAVE_TIMEOUT } from '../lib';
 
 const balanceService = useBalanceService();
@@ -25,18 +25,6 @@ throttle({
 sample({
   clock: balanceUpdated,
   source: $balances,
-  filter: (_, newBalance) => {
-    if (
-      (!newBalance.free || newBalance.free === ZERO_BALANCE) &&
-      (!newBalance.reserved || newBalance.reserved === ZERO_BALANCE) &&
-      (!newBalance.frozen || newBalance.frozen === ZERO_BALANCE) &&
-      (!newBalance.locked || newBalance.locked.length === 0)
-    ) {
-      return false;
-    }
-
-    return true;
-  },
   fn: (balances, newBalance) => {
     const oldBalanceIndex = balances.findIndex((balance) => {
       const isSameAccount = balance.accountId === newBalance.accountId;
