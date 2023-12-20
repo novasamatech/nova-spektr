@@ -33,6 +33,9 @@ export const AssetsList = () => {
 
   useEffect(() => {
     assetsModel.events.activeShardsSet(activeAccounts);
+  }, [activeWallet]);
+
+  useEffect(() => {
     priceProviderModel.events.assetsPricesRequested({ includeRates: true });
   }, []);
 
