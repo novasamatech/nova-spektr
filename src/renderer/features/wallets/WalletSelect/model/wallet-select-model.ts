@@ -2,7 +2,7 @@ import { createStore, combine, createEvent, sample } from 'effector';
 import BigNumber from 'bignumber.js';
 
 import { includes, getRoundedValue, totalAmount, dictionary } from '@shared/lib/utils';
-import { walletModel, walletUtils } from '@entities/wallet';
+import { walletModel, walletUtils, accountUtils } from '@entities/wallet';
 import { currencyModel, priceProviderModel } from '@entities/price';
 import type { WalletFamily, Wallet, ID } from '@shared/core';
 import { WalletType } from '@shared/core';
@@ -77,10 +77,13 @@ const $walletBalance = combine(
 
     if (!wallet || !prices || !balances || !currency?.coingeckoId) return new BigNumber(0);
 
-    const accountMap = dictionary(accounts, 'accountId', () => true);
+    const isPolkadotVault = walletUtils.isPolkadotVault(wallet);
+    const accountMap = dictionary(accounts, 'accountId');
 
     return balances.reduce<BigNumber>((acc, balance) => {
-      if (!accountMap[balance.accountId]) return acc;
+      const account = accountMap[balance.accountId];
+      if (!account) return acc;
+      if (accountUtils.isBaseAccount(account) && isPolkadotVault) return acc;
 
       const asset = chains[balance.chainId]?.assets?.find((asset) => asset.assetId.toString() === balance.assetId);
 
