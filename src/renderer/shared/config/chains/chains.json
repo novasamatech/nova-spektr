@@ -3015,16 +3015,16 @@
     ],
     "nodes": [
       {
-        "url": "wss://sys.ibp.network/statemint",
-        "name": "IBP network node"
+        "url": "wss://statemint-rpc.dwellir.com",
+        "name": "Dwellir node"
       },
       {
         "url": "wss://sys.dotters.network/statemint",
         "name": "Dotters Net node"
       },
       {
-        "url": "wss://statemint-rpc.dwellir.com",
-        "name": "Dwellir node"
+        "url": "wss://sys.ibp.network/statemint",
+        "name": "IBP network node"
       },
       {
         "url": "wss://statemint.api.onfinality.io/public-ws",
@@ -6366,16 +6366,16 @@
     ],
     "nodes": [
       {
+        "url": "wss://dot-rpc.stakeworld.io/bridgehub",
+        "name": "Stakeworld node"
+      },
+      {
         "url": "wss://sys.ibp.network/bridgehub-polkadot",
         "name": "IBP network node"
       },
       {
         "url": "wss://sys.dotters.network/bridgehub-polkadot",
         "name": "Dotters Net node"
-      },
-      {
-        "url": "wss://dot-rpc.stakeworld.io/bridgehub",
-        "name": "Stakeworld node"
       }
     ],
     "assets": [
