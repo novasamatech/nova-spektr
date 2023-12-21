@@ -101,7 +101,7 @@ const $walletBalances = combine(
           acc.result[walletId] = balance;
         } else if (!acc.temp[walletId][accountId]) {
           acc.temp[walletId][accountId] = true;
-          acc.result[walletId].plus(balance);
+          acc.result[walletId] = acc.result[walletId].plus(balance);
         }
 
         return acc;

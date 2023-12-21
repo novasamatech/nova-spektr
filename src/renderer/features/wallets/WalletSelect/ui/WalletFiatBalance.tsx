@@ -24,9 +24,7 @@ export const WalletFiatBalance = ({ walletId, className }: Props) => {
   const fiatFlag = useUnit(priceProviderModel.$fiatFlag);
   const walletBalances = useUnit(walletSelectModel.$walletBalances);
 
-  if (!fiatFlag) {
-    return null;
-  }
+  if (!fiatFlag) return null;
 
   if (!walletBalances[walletId]) {
     return <Shimmering width={56} height={18} />;

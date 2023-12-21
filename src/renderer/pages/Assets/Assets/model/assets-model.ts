@@ -1,9 +1,9 @@
 import { createEvent, createEffect, createStore, sample } from 'effector';
 
 import { localStorageService } from '@shared/api/local-storage';
-import { HIDE_ZERO_BALANCES } from '../common/constants';
+import { walletModel, accountUtils, walletUtils } from '@entities/wallet';
 import { Account } from '@shared/core';
-import { walletModel } from '@entities/wallet';
+import { HIDE_ZERO_BALANCES } from '../common/constants';
 
 const assetsStarted = createEvent();
 const queryChanged = createEvent<string>();
@@ -44,6 +44,14 @@ sample({
 
 sample({
   clock: [activeShardsSet, walletModel.$activeAccounts],
+  source: walletModel.$activeWallet,
+  fn: (wallet, accounts) => {
+    if (!walletUtils.isPolkadotVault(wallet)) return accounts;
+
+    return accounts.filter((account) => {
+      return !accountUtils.isBaseAccount(account) && account;
+    });
+  },
   target: $activeShards,
 });
 

@@ -9,18 +9,14 @@ import { WalletPanel } from './WalletPanel';
 import { WalletButton } from './WalletButton';
 import { chainsService } from '@entities/network';
 import { walletSelectModel } from '../model/wallet-select-model';
-import { useAccountsBalances } from '@entities/balance';
+import { balanceModel } from '@entities/balance';
 
 type Props = {
   action?: ReactNode;
 };
 export const WalletSelect = ({ action }: Props) => {
   const activeWallet = useUnit(walletModel.$activeWallet);
-  const accounts = useUnit(walletModel.$accounts);
-
-  const balances = useAccountsBalances({
-    accountIds: accounts.map((a) => a.accountId),
-  });
+  const balances = useUnit(balanceModel.$balances);
 
   const chainsMap = useMemo(() => {
     return keyBy(chainsService.getChainsData(), 'chainId');

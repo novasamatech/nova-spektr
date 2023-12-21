@@ -90,8 +90,6 @@ function sortChainsByBalance(
   assetPrices: PriceObject | null,
   currency?: string,
 ): Chain[] {
-  return chains
-
   const chainsWithFiatBalance = [] as ChainWithFiatBalance[];
 
   const relaychains = { withBalance: [], noBalance: [] };
