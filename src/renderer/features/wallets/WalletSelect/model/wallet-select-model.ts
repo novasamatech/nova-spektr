@@ -1,10 +1,10 @@
 import { createStore, combine, createEvent, sample } from 'effector';
 import BigNumber from 'bignumber.js';
 
-import { includes, getRoundedValue, totalAmount } from '@shared/lib/utils';
-import { walletModel, walletUtils, accountUtils } from '@entities/wallet';
+import { includes, getRoundedValue, totalAmount, dictionary } from '@shared/lib/utils';
+import { walletModel, walletUtils } from '@entities/wallet';
 import { currencyModel, priceProviderModel } from '@entities/price';
-import type { WalletFamily, Wallet, AccountId, ID, ChainId } from '@shared/core';
+import type { WalletFamily, Wallet, ID } from '@shared/core';
 import { WalletType } from '@shared/core';
 import { networkModel } from '@entities/network';
 import { balanceModel } from '@entities/balance';
@@ -77,48 +77,22 @@ const $walletBalance = combine(
 
     if (!wallet || !prices || !balances || !currency?.coingeckoId) return new BigNumber(0);
 
-    const accountsBalancesMap = balances.reduce<Record<AccountId, { [chainId: ChainId]: BigNumber }>>(
-      (acc, balance) => {
-        const asset = chains[balance.chainId]?.assets?.find((asset) => asset.assetId.toString() === balance.assetId);
+    const accountMap = dictionary(accounts, 'accountId', () => true);
 
-        if (!asset?.priceId || !prices[asset.priceId]) return acc;
+    return balances.reduce<BigNumber>((acc, balance) => {
+      if (!accountMap[balance.accountId]) return acc;
 
-        const price = prices[asset.priceId][currency.coingeckoId];
-        if (price) {
-          const fiatBalance = getRoundedValue(totalAmount(balance), price.price, asset.precision);
-          const newBalance = new BigNumber(fiatBalance);
+      const asset = chains[balance.chainId]?.assets?.find((asset) => asset.assetId.toString() === balance.assetId);
 
-          const existingAccount = acc[balance.accountId];
-          if (existingAccount) {
-            existingAccount[balance.chainId] = existingAccount[balance.chainId]?.plus(newBalance) || newBalance;
-          } else {
-            acc[balance.accountId] = { [balance.chainId]: newBalance };
-          }
-        }
+      if (!asset?.priceId || !prices[asset.priceId]) return acc;
 
-        return acc;
-      },
-      {},
-    );
-
-    const isPolkadotVault = walletUtils.isPolkadotVault(wallet);
-
-    return accounts.reduce((acc, account) => {
-      const accountMap = accountsBalancesMap[account.accountId];
-      const skipBaseAccount = isPolkadotVault && accountUtils.isBaseAccount(account);
-
-      if (skipBaseAccount || !accountMap) return acc;
-
-      if (accountUtils.isBaseAccount(account)) {
-        const totalBalance =
-          Object.values(accountMap).reduce((acc, b) => {
-            return acc.plus(b);
-          }, new BigNumber(0)) || new BigNumber(0);
-
-        return acc.plus(totalBalance);
+      const price = prices[asset.priceId][currency.coingeckoId];
+      if (price) {
+        const fiatBalance = getRoundedValue(totalAmount(balance), price.price, asset.precision);
+        acc = acc.plus(new BigNumber(fiatBalance));
       }
 
-      return acc.plus(accountMap[account.chainId] || new BigNumber(0));
+      return acc;
     }, new BigNumber(0));
   },
 );

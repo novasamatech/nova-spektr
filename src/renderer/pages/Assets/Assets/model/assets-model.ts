@@ -12,7 +12,7 @@ const hideZeroBalancesChanged = createEvent<boolean>();
 
 const $query = createStore<string>('');
 const $activeShards = createStore<Account[]>([]);
-const $hideZeroBalances = createStore<boolean>(true);
+const $hideZeroBalances = createStore<boolean>(false);
 
 const getHideZeroBalancesFx = createEffect((): boolean => {
   return localStorageService.getFromStorage(HIDE_ZERO_BALANCES, true);
