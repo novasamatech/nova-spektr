@@ -10,12 +10,20 @@
     ],
     "nodes": [
       {
-        "url": "wss://1rpc.io/dot",
-        "name": "Automata 1RPC node"
+        "url": "wss://polkadot.public.curie.radiumblock.co/ws",
+        "name": "Radium node"
+      },
+      {
+        "url": "wss://dot-rpc.stakeworld.io",
+        "name": "Stakeworld node"
       },
       {
         "url": "wss://polkadot-rpc.dwellir.com",
         "name": "Dwellir node"
+      },
+      {
+        "url": "wss://1rpc.io/dot",
+        "name": "Automata 1RPC node"
       },
       {
         "url": "wss://rpc-polkadot.luckyfriday.io",
@@ -28,10 +36,6 @@
       {
         "url": "wss://rpc.dotters.network/polkadot",
         "name": "Dotters Net node"
-      },
-      {
-        "url": "wss://polkadot.api.onfinality.io/public-ws",
-        "name": "OnFinality node"
       }
     ],
     "assets": [
@@ -242,16 +246,16 @@
     ],
     "nodes": [
       {
+        "url": "wss://statemine-rpc.dwellir.com",
+        "name": "Dwellir node"
+      },
+      {
         "url": "wss://sys.ibp.network/statemine",
         "name": "IBP network node"
       },
       {
         "url": "wss://sys.dotters.network/statemine",
         "name": "Dotters Net node"
-      },
-      {
-        "url": "wss://statemine-rpc.dwellir.com",
-        "name": "Dwellir node"
       }
     ],
     "assets": [
@@ -3011,16 +3015,16 @@
     ],
     "nodes": [
       {
-        "url": "wss://sys.ibp.network/statemint",
-        "name": "IBP network node"
+        "url": "wss://statemint-rpc.dwellir.com",
+        "name": "Dwellir node"
       },
       {
         "url": "wss://sys.dotters.network/statemint",
         "name": "Dotters Net node"
       },
       {
-        "url": "wss://statemint-rpc.dwellir.com",
-        "name": "Dwellir node"
+        "url": "wss://sys.ibp.network/statemint",
+        "name": "IBP network node"
       },
       {
         "url": "wss://statemint.api.onfinality.io/public-ws",
@@ -5296,6 +5300,7 @@
         "symbol": "MGX",
         "precision": 18,
         "type": "orml",
+        "priceId": "mangata-x",
         "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Mangata_X_(MGX).svg",
         "typeExtras": {
           "currencyIdScale": "0x00000000",
@@ -6361,16 +6366,16 @@
     ],
     "nodes": [
       {
+        "url": "wss://dot-rpc.stakeworld.io/bridgehub",
+        "name": "Stakeworld node"
+      },
+      {
         "url": "wss://sys.ibp.network/bridgehub-polkadot",
         "name": "IBP network node"
       },
       {
         "url": "wss://sys.dotters.network/bridgehub-polkadot",
         "name": "Dotters Net node"
-      },
-      {
-        "url": "wss://dot-rpc.stakeworld.io/bridgehub",
-        "name": "Stakeworld node"
       }
     ],
     "assets": [
@@ -6404,16 +6409,16 @@
     ],
     "nodes": [
       {
+        "url": "wss://ksm-rpc.stakeworld.io/bridgehub",
+        "name": "Stakeworld node"
+      },
+      {
         "url": "wss://sys.ibp.network/bridgehub-kusama",
         "name": "IBP network node"
       },
       {
         "url": "wss://sys.dotters.network/bridgehub-kusama",
         "name": "Dotters Net node"
-      },
-      {
-        "url": "wss://ksm-rpc.stakeworld.io/bridgehub",
-        "name": "Stakeworld node"
       }
     ],
     "assets": [
