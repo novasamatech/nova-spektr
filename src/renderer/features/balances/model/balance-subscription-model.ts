@@ -105,9 +105,7 @@ type UnsubscribeParams = {
   subscription: SubscriptionObject;
 };
 const unsubscribeBalancesFx = createEffect(async ({ subscription }: UnsubscribeParams) => {
-  if (!subscription) {
-    return;
-  }
+  if (!subscription) return;
 
   const [balanceUnsubs, lockUnsubs] = await Promise.all(subscription.subscription);
 
@@ -152,12 +150,7 @@ sample({
 
 sample({
   clock: populateBalancesFx.doneData,
-  fn: (balances) => {
-    console.log('=== DB - ', balances.length);
-
-    return balances;
-  },
-  target: [balanceModel.$balances, balanceModel.$balancesBuffer],
+  target: balanceModel.$balancesBuffer,
 });
 
 sample({
@@ -171,11 +164,6 @@ sample({
     subscriptions: $subscriptions,
     accounts: $subscriptionAccounts,
     statuses: networkModel.$connectionStatuses,
-  },
-  fn: (params) => {
-    console.log('=== createSubscriptionsBalancesFx');
-
-    return params;
   },
   target: createSubscriptionsBalancesFx,
 });
