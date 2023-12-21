@@ -1,9 +1,9 @@
 import { render, screen } from '@testing-library/react';
 
 import { AddressWithName } from './AddressWithName';
-import { TEST_ACCOUNT_ID, TEST_ADDRESS } from '@renderer/shared/lib/utils';
+import { TEST_ACCOUNT_ID, TEST_ADDRESS } from '@shared/lib/utils';
 
-jest.mock('@renderer/app/providers', () => ({
+jest.mock('@app/providers', () => ({
   useMatrix: jest.fn(),
 }));
 

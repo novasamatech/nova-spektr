@@ -1,16 +1,14 @@
-import sortBy from 'lodash/sortBy';
-import concat from 'lodash/concat';
-import orderBy from 'lodash/orderBy';
+import { keyBy, orderBy, concat, sortBy } from 'lodash';
 import BigNumber from 'bignumber.js';
 
-import chainsProd from '@renderer/assets/chains/chains.json';
-import chainsDev from '@renderer/assets/chains/chains_dev.json';
-import { getRelaychainAsset, nonNullable, totalAmount, ZERO_BALANCE } from '@renderer/shared/lib/utils';
-import { ChainLike } from './common/types';
+import chainsProd from '@shared/config/chains/chains.json';
+import chainsDev from '@shared/config/chains/chains_dev.json';
+import { getRelaychainAsset, nonNullable, totalAmount, ZERO_BALANCE } from '@shared/lib/utils';
+import { ChainLike, ChainMap } from './common/types';
 import { isKusama, isPolkadot, isTestnet, isNameWithNumber } from './common/utils';
-import type { Chain, ChainId, Balance } from '@renderer/shared/core';
-import { PriceObject } from '@renderer/shared/api/price-provider';
-import { sumBalances } from '@renderer/pages/Assets/AssetsList/common/utils';
+import type { Chain, ChainId, Balance } from '@shared/core';
+import { PriceObject } from '@shared/api/price-provider';
+import { sumBalances } from '@pages/Assets/Assets/common/utils';
 
 type ChainWithFiatBalance = Chain & {
   fiatBalance: string;
@@ -23,6 +21,7 @@ const CHAINS: Record<string, any> = {
 
 export const chainsService = {
   getChainsData,
+  getChainsMap,
   getChainById,
   getStakingChainsData,
   sortChains,
@@ -30,26 +29,26 @@ export const chainsService = {
   searchChain,
 };
 
-function getChainsData(): Chain[] {
-  return CHAINS[process.env.CHAINS_FILE || 'chains'];
+function getChainsData(params = { sort: false }): Chain[] {
+  const chains = CHAINS[process.env.CHAINS_FILE || 'chains'];
+
+  return params.sort ? sortChains(chains) : chains;
+}
+
+function getChainsMap(params = { sort: false }): ChainMap {
+  return keyBy(getChainsData(params), 'chainId');
 }
 
 function getChainById(chainId: ChainId): Chain | undefined {
-  const chainsData = getChainsData();
-
-  return chainsData.find((chain) => chain.chainId === chainId);
+  return getChainsData().find((chain) => chain.chainId === chainId);
 }
 
 function searchChain(query: string): Chain | undefined {
-  const chainsData = getChainsData();
-
-  return chainsData.find((chain) => chain.chainId.includes(query));
+  return getChainsData().find((chain) => chain.chainId.includes(query));
 }
 
-function getStakingChainsData(): Chain[] {
-  const chainsData = getChainsData();
-
-  return chainsData.reduce<Chain[]>((acc, chain) => {
+function getStakingChainsData(params = { sort: false }): Chain[] {
+  return getChainsData(params).reduce<Chain[]>((acc, chain) => {
     if (getRelaychainAsset(chain.assets)) {
       acc.push(chain);
     }

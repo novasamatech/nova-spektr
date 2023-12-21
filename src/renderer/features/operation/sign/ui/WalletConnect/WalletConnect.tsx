@@ -2,32 +2,32 @@ import { useEffect, useState } from 'react';
 import { UnsignedTransaction } from '@substrate/txwrapper-polkadot';
 import { useGate, useUnit } from 'effector-react';
 
-import { SigningProps } from '@renderer/features/operation';
-import { ValidationErrors } from '@renderer/shared/lib/utils';
-import { useTransaction } from '@renderer/entities/transaction';
-import { useI18n } from '@renderer/app/providers';
-import { Button, ConfirmModal, Countdown, FootnoteText, SmallTitleText, StatusModal } from '@renderer/shared/ui';
-import { walletConnectModel, DEFAULT_POLKADOT_METHODS, walletConnectUtils } from '@renderer/entities/walletConnect';
-import { chainsService } from '@renderer/entities/network';
-import { useCountdown } from '@renderer/shared/lib/hooks';
-import wallet_connect_confirm from '@video/wallet_connect_confirm.mp4';
-import wallet_connect_confirm_webm from '@video/wallet_connect_confirm.webm';
-import { HexString } from '@renderer/shared/core';
-import { Animation } from '@renderer/shared/ui/Animation/Animation';
+import { ValidationErrors } from '@shared/lib/utils';
+import { useTransaction } from '@entities/transaction';
+import { useI18n } from '@app/providers';
+import { Button, ConfirmModal, Countdown, FootnoteText, SmallTitleText, StatusModal } from '@shared/ui';
+import { walletConnectModel, DEFAULT_POLKADOT_METHODS, walletConnectUtils } from '@entities/walletConnect';
+import { chainsService } from '@entities/network';
+import { useCountdown } from '@shared/lib/hooks';
+import wallet_connect_confirm from '@shared/assets/video/wallet_connect_confirm.mp4';
+import wallet_connect_confirm_webm from '@shared/assets/video/wallet_connect_confirm.webm';
+import { HexString } from '@shared/core';
+import { Animation } from '@shared/ui/Animation/Animation';
 import { walletConnectSignModel } from '../../model/wallet-connect-sign-model';
 import { isConnectedStep, isReadyToReconnectStep, isReconnectingStep, isRejectedStep } from '../../lib/utils';
+import { walletModel } from '@entities/wallet';
 import { signModel } from '../../model/sign-model';
-import { walletModel } from '@renderer/entities/wallet';
+import type { InnerSigningProps } from '../../model/types';
 
 export const WalletConnect = ({
   api,
   validateBalance,
-  onGoBack,
   accounts,
   signatory,
   transactions,
+  onGoBack,
   onResult,
-}: SigningProps) => {
+}: InnerSigningProps) => {
   const { t } = useI18n();
   const { verifySignature, createPayload } = useTransaction();
   const [countdown, resetCountdown] = useCountdown(api);
@@ -150,7 +150,8 @@ export const WalletConnect = ({
         title: t('operation.walletConnect.reconnect.reconnecting'),
         content: <Animation variant="loading" loop />,
         onClose: () => {
-          walletConnectSignModel.events.reconnectAborted(), onGoBack();
+          walletConnectSignModel.events.reconnectAborted();
+          onGoBack();
         },
       };
     }

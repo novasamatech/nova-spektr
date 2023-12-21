@@ -2,20 +2,20 @@ import { groupBy } from 'lodash';
 import { format } from 'date-fns';
 import { useUnit } from 'effector-react';
 
-import { useI18n } from '@renderer/app/providers';
-import { chainsService, ExtendedChain } from '@renderer/entities/network';
-import { MultisigEvent, SigningStatus } from '@renderer/entities/transaction/model/transaction';
+import { useI18n } from '@app/providers';
+import { chainsService, ExtendedChain } from '@entities/network';
+import { MultisigEvent, SigningStatus } from '@entities/transaction/model/transaction';
 import { TransactionTitle } from './TransactionTitle/TransactionTitle';
 import OperationStatus from './OperationStatus';
 import { getSignatoryName, getTransactionAmount, sortByDateAsc } from '../common/utils';
-import { BaseModal, BodyText, FootnoteText, Identicon } from '@renderer/shared/ui';
-import { getAssetById, SS58_DEFAULT_PREFIX, toAddress } from '@renderer/shared/lib/utils';
+import { BaseModal, BodyText, FootnoteText, Identicon } from '@shared/ui';
+import { getAssetById, SS58_DEFAULT_PREFIX, toAddress } from '@shared/lib/utils';
 import { ExtrinsicExplorers } from '@renderer/components/common';
-import { useMultisigEvent } from '@renderer/entities/multisig';
-import { MultisigTransactionDS } from '@renderer/shared/api/storage';
-import { AssetBalance } from '@renderer/entities/asset';
-import type { Account, Contact, MultisigAccount, Wallet, AccountId } from '@renderer/shared/core';
-import { WalletIcon, walletModel, walletUtils } from '@renderer/entities/wallet';
+import { useMultisigEvent } from '@entities/multisig';
+import { MultisigTransactionDS } from '@shared/api/storage';
+import { AssetBalance } from '@entities/asset';
+import type { Account, Contact, MultisigAccount, Wallet, AccountId, ID } from '@shared/core';
+import { WalletIcon, walletModel, walletUtils } from '@entities/wallet';
 
 type Props = {
   tx: MultisigTransactionDS;
@@ -35,12 +35,15 @@ const EventMessage: Partial<Record<SigningStatus | 'INITIATED', string>> = {
   ERROR_CANCELLED: 'log.errorCancelledMessage',
 } as const;
 
-type WalletsMap = Record<Wallet['id'], Wallet>;
+type WalletsMap = Record<ID, Wallet>;
 
 const getFilteredWalletsMap = (wallets: Wallet[]): WalletsMap => {
   return wallets.reduce<WalletsMap>((acc, wallet) => {
-    // 2nd condition for legacy multisig
-    if (walletUtils.isValidSignatory(wallet) || walletUtils.isMultiShard(wallet)) {
+    if (
+      walletUtils.isValidSignatory(wallet) ||
+      walletUtils.isPolkadotVault(wallet) ||
+      walletUtils.isMultiShard(wallet)
+    ) {
       acc[wallet.id] = wallet;
     }
 

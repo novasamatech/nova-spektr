@@ -1,9 +1,9 @@
 import { Navigate, RouteObject } from 'react-router-dom';
 
-import { MainLayout } from '@renderer/widgets';
-import { Paths } from '@renderer/shared/routes';
+import { MainLayout } from '@widgets/Layout';
+import { Paths } from '@shared/routes';
 import { Onboarding } from './Onboarding';
-import { AssetsList, ReceiveAsset, SendAsset } from './Assets';
+import { Assets, ReceiveAsset, SendAsset } from './Assets';
 import { Operations } from './Operations/Operations';
 import { Notifications } from './Notifications/Notifications';
 import { Contacts, CreateContact, EditContact } from './AddressBook';
@@ -30,7 +30,7 @@ export const ROUTES_CONFIG: RouteObject[] = [
       { index: true, element: <Navigate to={Paths.ASSETS} replace /> },
       {
         path: Paths.ASSETS,
-        element: <AssetsList />,
+        element: <Assets />,
         children: [
           { path: Paths.SEND_ASSET, element: <SendAsset /> },
           { path: Paths.RECEIVE_ASSET, element: <ReceiveAsset /> },

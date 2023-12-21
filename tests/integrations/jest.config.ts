@@ -36,13 +36,16 @@ const config: Config = {
   transform: {
     '^.+\\.(t|j)sx?$': ['@swc/jest', swcConfig],
     '^(?!.*\\.(js|jsx|mjs|cjs|ts|tsx|css|json)$)': '<rootDir>../../scripts/fileTransform.js',
+    '^.+\\.mjs$': 'babel-jest',
   },
+  transformIgnorePatterns: ['node_modules/(?!(dexie)/)'],
   moduleNameMapper: {
     '\\.(css|less|scss|sass)$': 'identity-obj-proxy',
     '^@main(.*)$': '<rootDir>../../src/main/$1',
-    '^@shared(.*)$': '<rootDir>../../src/shared/$1',
+    '^@shared(.*)$': '<rootDir>../../src/renderer/shared/$1',
     '^@renderer(.*)$': '<rootDir>../../src/renderer/$1',
     '^@images(.*)$': '<rootDir>../../src/renderer/assets/images/$1',
+    '^dexie$': '<rootDir>../../node_modules/dexie/dist/dexie.js',
   },
   runner: 'groups',
   reporters: ['default'],

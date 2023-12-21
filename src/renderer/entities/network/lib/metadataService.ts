@@ -1,9 +1,9 @@
 import { ApiPromise } from '@polkadot/api';
 import { UnsubscribePromise } from '@polkadot/api/types';
 
-import { storage } from '@renderer/shared/api/storage';
+import { storage } from '@shared/api/storage';
 import { IMetadataService, Metadata } from './common/types';
-import type { ChainId } from '@renderer/shared/core';
+import type { ChainId } from '@shared/core';
 
 export const useMetadata = (): IMetadataService => {
   const metadataStorage = storage.connectTo('metadata');
@@ -17,17 +17,13 @@ export const useMetadata = (): IMetadataService => {
   const getMetadata = async (chainId: ChainId): Promise<Metadata | undefined> => {
     const metadata = await getAllMetadata({ chainId });
 
-    if (metadata.length) {
-      const lastMetadata = metadata.reduce<Metadata>((acc, md) => {
-        if (md.version >= (acc.version || -1)) {
-          return md;
-        }
+    if (!metadata.length) return;
 
-        return acc;
-      }, {} as Metadata);
+    return metadata.reduce<Metadata>((acc, md) => {
+      if (md.version >= (acc.version || -1)) return md;
 
-      return lastMetadata;
-    }
+      return acc;
+    }, {} as Metadata);
   };
 
   const syncMetadata = async (api: ApiPromise): Promise<Metadata> => {
@@ -39,30 +35,19 @@ export const useMetadata = (): IMetadataService => {
       chainId: api.genesisHash.toHex(),
     };
 
-    await updateMetadata(newMetadata);
-
     return newMetadata;
   };
 
-  const subscribeMetadata = (api: ApiPromise): UnsubscribePromise => {
-    return api.rpc.state.subscribeRuntimeVersion(async (version) => {
-      const chainId = api.genesisHash.toHex();
-      const oldMetadata = await getMetadata(chainId);
-
-      if (!oldMetadata || version.specVersion.toNumber() > oldMetadata.version) {
-        await addMetadata({
-          version: version.specVersion.toNumber(),
-          chainId,
-        });
-
-        syncMetadata(api);
-      }
-    });
+  const subscribeMetadata = (api: ApiPromise, callback?: () => void): UnsubscribePromise => {
+    return api.rpc.state.subscribeRuntimeVersion(() => callback?.());
   };
 
   return {
     getMetadata,
     syncMetadata,
     subscribeMetadata,
+    getAllMetadata,
+    addMetadata,
+    updateMetadata,
   };
 };

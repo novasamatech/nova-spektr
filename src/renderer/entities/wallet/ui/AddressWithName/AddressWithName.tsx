@@ -1,5 +1,5 @@
-import { cnTw, toShortAddress, copyToClipboard } from '@renderer/shared/lib/utils';
-import { IconButton, Truncate } from '@renderer/shared/ui';
+import { cnTw, toShortAddress, copyToClipboard } from '@shared/lib/utils';
+import { IconButton, Truncate } from '@shared/ui';
 import { AccountAddressProps, getAddress } from '../AccountAddress/AccountAddress';
 import { AddressWithTwoLines } from '../AddressWithTwoLines/AddressWithTwoLines';
 
@@ -13,6 +13,7 @@ export const AddressWithName = ({
   name,
   size = 16,
   addressFont,
+  nameFont,
   type = 'full',
   canCopy = true,
   showIcon = true,
@@ -23,7 +24,7 @@ export const AddressWithName = ({
   const typeIsAdaptive = type === 'adaptive';
   const addressToShow = type === 'short' ? toShortAddress(currentAddress, symbols) : currentAddress;
 
-  const nameContent = name && <p className={cnTw('truncate', addressFont)}>{name}</p>;
+  const nameContent = name && <p className={cnTw('truncate', addressFont, nameFont)}>{name}</p>;
 
   const addressContent = typeIsAdaptive ? (
     <Truncate className={cnTw(addressFont)} ellipsis="..." start={4} end={4} text={addressToShow} />
@@ -39,12 +40,7 @@ export const AddressWithName = ({
       {canCopySubName ? (
         <div className="flex items-center gap-1">
           {addressContent}
-          <IconButton
-            name="copy"
-            size={16}
-            className="text-text-tertiary p-0"
-            onClick={() => copyToClipboard(currentAddress)}
-          />
+          <IconButton name="copy" className="text-text-tertiary p-0" onClick={() => copyToClipboard(currentAddress)} />
         </div>
       ) : (
         addressContent

@@ -1,6 +1,6 @@
 import { ComponentMeta, ComponentStory } from '@storybook/react';
 
-import BaseModal from './BaseModal';
+import { BaseModal } from './BaseModal';
 
 export default {
   title: 'Redesign/Base Modal',

@@ -3,7 +3,7 @@ import { act, render, screen } from '@testing-library/react';
 import noop from 'lodash/noop';
 
 import { Validators } from './Validators';
-import type { Asset } from '@renderer/shared/core';
+import type { Asset } from '@shared/core';
 
 const validatorsMap = {
   '5C556QTtg1bJ43GDSgeowa3Ark6aeSHGTac1b2rKSXtgmSmW': {
@@ -16,17 +16,17 @@ const validatorsMap = {
 
 jest.mock('@renderer/components/common');
 
-jest.mock('@renderer/app/providers', () => ({
+jest.mock('@app/providers', () => ({
   useI18n: jest.fn().mockReturnValue({
     t: (key: string) => key,
   }),
 }));
 
-jest.mock('@renderer/entities/staking', () => ({
-  ...jest.requireActual('@renderer/entities/staking'),
-  useValidators: jest.fn().mockReturnValue({
+jest.mock('@entities/staking', () => ({
+  ...jest.requireActual('@entities/staking'),
+  validatorsService: {
     getMaxValidators: jest.fn().mockReturnValue(6),
-  }),
+  },
   useEra: jest.fn().mockReturnValue({
     subscribeActiveEra: jest.fn().mockImplementation((api: any, eraCallback: any) => eraCallback(1)),
   }),
@@ -43,7 +43,7 @@ describe('pages/Staking/components/Validators', () => {
   } as Asset;
 
   beforeEach(() => {
-    jest.mock('@renderer/entities/staking', () => ({
+    jest.mock('@entities/staking', () => ({
       useValidatorsMap: jest.fn().mockResolvedValue(validatorsMap),
     }));
   });

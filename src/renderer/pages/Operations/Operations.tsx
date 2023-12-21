@@ -3,24 +3,25 @@ import { groupBy } from 'lodash';
 import { format } from 'date-fns';
 import { useUnit } from 'effector-react';
 
-import { useI18n, useNetworkContext } from '@renderer/app/providers';
+import { useI18n } from '@app/providers';
 import EmptyOperations from './components/EmptyState/EmptyOperations';
 import Operation from './components/Operation';
 import { sortByDateDesc } from './common/utils';
-import { FootnoteText } from '@renderer/shared/ui';
-import { MultisigTransactionDS } from '@renderer/shared/api/storage';
-import { useMultisigTx, useMultisigEvent } from '@renderer/entities/multisig';
+import { FootnoteText } from '@shared/ui';
+import { MultisigTransactionDS } from '@shared/api/storage';
+import { useMultisigTx, useMultisigEvent } from '@entities/multisig';
 import { Header } from '@renderer/components/common';
-import { MultisigEvent, MultisigTransactionKey } from '@renderer/entities/transaction';
-import { OperationsFilter } from '@renderer/features/operation';
-import { walletModel, accountUtils } from '@renderer/entities/wallet';
-import { priceProviderModel } from '@renderer/entities/price';
+import { MultisigEvent, MultisigTransactionKey } from '@entities/transaction';
+import { OperationsFilter } from '@features/operation';
+import { walletModel, accountUtils } from '@entities/wallet';
+import { priceProviderModel } from '@entities/price';
+import { networkModel } from '@entities/network';
 
 export const Operations = () => {
   const { t, dateLocale } = useI18n();
   const activeAccounts = useUnit(walletModel.$activeAccounts);
+  const chains = useUnit(networkModel.$chains);
 
-  const { connections } = useNetworkContext();
   const { getLiveAccountMultisigTxs } = useMultisigTx({});
   const { getLiveEventsByKeys } = useMultisigEvent({});
 
@@ -57,7 +58,7 @@ export const Operations = () => {
   }, []);
 
   useEffect(() => {
-    setTxs(allTxs.filter((tx) => connections[tx.chainId]));
+    setTxs(allTxs.filter((tx) => chains[tx.chainId]));
   }, [allTxs.length]);
 
   useEffect(() => {

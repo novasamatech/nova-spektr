@@ -1,9 +1,9 @@
 import { act, render, screen, within } from '@testing-library/react';
 import noop from 'lodash/noop';
 
-import DropdownButton, { ButtonDropdownOption } from './DropdownButton';
+import { DropdownButton, ButtonDropdownOption } from './DropdownButton';
 
-jest.mock('@renderer/app/providers', () => ({
+jest.mock('@app/providers', () => ({
   useMatrix: jest.fn(),
 }));
 

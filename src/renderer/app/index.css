@@ -4,6 +4,11 @@
 @tailwind components;
 @tailwind utilities;
 
+body {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
 /* Scrollbar for Firefox */
 * {
   scrollbar-width: thin;
@@ -48,7 +53,7 @@ ul:focus-visible {
 .logo-background {
   background-size: cover;
   background-position: center;
-  background-image: url('../assets/images/misc/bg.webp');
+  background-image: url('../shared/assets/images/misc/bg.webp');
   transform: scaleY(-1);
 }
 

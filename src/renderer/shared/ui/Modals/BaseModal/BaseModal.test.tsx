@@ -1,8 +1,8 @@
 import { render, screen } from '@testing-library/react';
 
-import BaseModal from './BaseModal';
+import { BaseModal } from './BaseModal';
 
-jest.mock('@renderer/app/providers', () => ({
+jest.mock('@app/providers', () => ({
   useMatrix: jest.fn(),
 }));
 

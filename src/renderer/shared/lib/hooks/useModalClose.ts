@@ -1,6 +1,6 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 
-import { DEFAULT_TRANSITION } from '@renderer/shared/lib/utils';
+import { DEFAULT_TRANSITION } from '@shared/lib/utils';
 
 /**
  * Modal open-flag with delayed callback
@@ -15,6 +15,12 @@ export function useModalClose(
   delay = DEFAULT_TRANSITION,
 ): [boolean, () => void] {
   const [isOpen, setIsOpen] = useState(initialValue);
+
+  useEffect(() => {
+    if (isOpen === initialValue) return;
+
+    setIsOpen(initialValue);
+  }, [initialValue]);
 
   const closeModal = useCallback(() => {
     setIsOpen(false);

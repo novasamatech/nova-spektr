@@ -1,19 +1,19 @@
 import { useEffect, useState } from 'react';
 import { useUnit } from 'effector-react';
 
-import { BodyText, Button, CaptionText, FootnoteText, Icon, SmallTitleText } from '@renderer/shared/ui';
-import { AddressWithName, WalletIcon, walletModel } from '@renderer/entities/wallet';
-import { getSignatoryName } from '@renderer/pages/Operations/common/utils';
-import { AccountId, MultisigAccount, Signatory, Wallet } from '@renderer/shared/core';
-import { MultisigEvent, MultisigTransaction, SigningStatus } from '@renderer/entities/transaction';
-import { ExtendedChain } from '@renderer/entities/network';
-import { useI18n } from '@renderer/app/providers';
-import { useToggle } from '@renderer/shared/lib/hooks';
-import { nonNullable } from '@renderer/shared/lib/utils';
-import { contactModel } from '@renderer/entities/contact';
+import { BodyText, Button, CaptionText, FootnoteText, Icon, SmallTitleText } from '@shared/ui';
+import { AddressWithName, WalletIcon, walletModel } from '@entities/wallet';
+import { getSignatoryName } from '@pages/Operations/common/utils';
+import { AccountId, MultisigAccount, Signatory, Wallet } from '@shared/core';
+import { MultisigEvent, MultisigTransaction, SigningStatus } from '@entities/transaction';
+import { ExtendedChain } from '@entities/network';
+import { useI18n } from '@app/providers';
+import { useToggle } from '@shared/lib/hooks';
+import { nonNullable } from '@shared/lib/utils';
+import { contactModel } from '@entities/contact';
 import LogModal from './LogModal';
-import { useMultisigEvent } from '@renderer/entities/multisig';
-import { SignatoryCard, singnatoryUtils } from '@renderer/entities/signatory';
+import { useMultisigEvent } from '@entities/multisig';
+import { SignatoryCard, singnatoryUtils } from '@entities/signatory';
 
 type WalletSignatory = Signatory & { wallet: Wallet };
 

@@ -1,7 +1,7 @@
 import { IndexableType, Table } from 'dexie';
 
 import { dexieStorage } from './dexie';
-import type { NoID } from '@renderer/shared/core';
+import type { NoID } from '@shared/core';
 
 // TODO: think about throwing errors instead of returning value from catch
 class StorageService<T extends { id: K }, K extends IndexableType> {
@@ -83,12 +83,28 @@ class StorageService<T extends { id: K }, K extends IndexableType> {
     }
   }
 
-  delete(id: K): Promise<void> {
-    return this.dexieTable.delete(id);
+  async delete(id: K): Promise<K | undefined> {
+    try {
+      await this.dexieTable.delete(id);
+
+      return id;
+    } catch (error) {
+      console.log('Error deleting object - ', error);
+
+      return Promise.resolve(undefined);
+    }
   }
 
-  deleteAll(ids: K[]): Promise<void> {
-    return this.dexieTable.bulkDelete(ids);
+  async deleteAll(ids: K[]): Promise<K[] | undefined> {
+    try {
+      await this.dexieTable.bulkDelete(ids);
+
+      return ids;
+    } catch (error) {
+      console.log('Error deleting objects - ', error);
+
+      return Promise.resolve(undefined);
+    }
   }
 }
 
@@ -96,4 +112,5 @@ export const storageService = {
   wallets: new StorageService(dexieStorage.wallets),
   accounts: new StorageService(dexieStorage.accounts),
   contacts: new StorageService(dexieStorage.contacts),
+  connections: new StorageService(dexieStorage.connections),
 };

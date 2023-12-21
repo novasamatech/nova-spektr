@@ -3,11 +3,11 @@ import noop from 'lodash/noop';
 
 import { OperationResult } from './OperationResult';
 
-jest.mock('@renderer/app/providers', () => ({
+jest.mock('@app/providers', () => ({
   useMatrix: jest.fn(),
 }));
 
-jest.mock('@renderer/shared/ui/Animation/Animation', () => ({
+jest.mock('@shared/ui/Animation/Animation', () => ({
   Animation: () => <span>animation</span>,
 }));
 

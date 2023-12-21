@@ -1,13 +1,14 @@
 import { createContext, PropsWithChildren, useCallback, useContext, useRef, useState, ReactNode } from 'react';
 
-import { StatusModal } from '@renderer/shared/ui';
-import { DEFAULT_TRANSITION } from '@renderer/shared/lib/utils';
-import { useToggle } from '@renderer/shared/lib/hooks';
+import { StatusModal } from '@shared/ui';
+import { DEFAULT_TRANSITION } from '@shared/lib/utils';
+import { useToggle } from '@shared/lib/hooks';
 
 export type StatusModalProps = {
   title: string;
   description?: string;
   content?: ReactNode;
+  closeTimer?: number;
 };
 
 type StatusContextProps = {
@@ -36,10 +37,12 @@ export const StatusModalProvider = ({ children }: PropsWithChildren) => {
       fn.current = () => {
         toggleDialog();
         resolve();
-        setTimeout(() => {
-          setDialogState(defaultState);
-        }, DEFAULT_TRANSITION);
+        setTimeout(() => setDialogState(defaultState), DEFAULT_TRANSITION);
       };
+
+      if (data.closeTimer && data.closeTimer > 0) {
+        setTimeout(fn.current, data.closeTimer);
+      }
     });
   }, []);
 
@@ -53,7 +56,7 @@ export const StatusModalProvider = ({ children }: PropsWithChildren) => {
         description={dialogState.description}
         content={dialogState.content}
         onClose={() => fn.current?.()}
-      ></StatusModal>
+      />
     </StatusDialog.Provider>
   );
 };

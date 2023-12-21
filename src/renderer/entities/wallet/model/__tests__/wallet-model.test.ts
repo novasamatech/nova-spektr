@@ -2,10 +2,10 @@ import { fork, allSettled } from 'effector';
 
 import { walletModel } from '../wallet-model';
 import { walletMock } from './mocks/wallet-mock';
-import { kernelModel } from '@renderer/shared/core';
-import { storageService } from '@renderer/shared/api/storage';
+import { kernelModel } from '@shared/core';
+import { storageService } from '@shared/api/storage';
 
-jest.mock('@renderer/app/providers', () => ({
+jest.mock('@app/providers', () => ({
   useMatrix: jest.fn(),
 }));
 
@@ -103,8 +103,8 @@ describe('entities/wallet/model/wallet-model', () => {
     const newAccounts = walletMock.accounts.filter((a) => a.walletId !== removedWallet.id);
     const removedAccounts = walletMock.accounts.filter((a) => a.walletId === removedWallet.id);
 
-    jest.spyOn(storageService.wallets, 'delete').mockResolvedValue();
-    const deleteAccountsSpy = jest.spyOn(storageService.accounts, 'deleteAll').mockResolvedValue();
+    jest.spyOn(storageService.wallets, 'delete').mockResolvedValue(1);
+    const deleteAccountsSpy = jest.spyOn(storageService.accounts, 'deleteAll').mockResolvedValue([1, 2, 3]);
 
     const scope = fork({
       values: new Map().set(walletModel.$wallets, wallets).set(walletModel.$accounts, walletMock.accounts),

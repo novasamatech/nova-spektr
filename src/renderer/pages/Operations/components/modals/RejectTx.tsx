@@ -4,22 +4,21 @@ import { BN } from '@polkadot/util';
 import { useUnit } from 'effector-react';
 import keyBy from 'lodash/keyBy';
 
-import { BaseModal, Button } from '@renderer/shared/ui';
-import { useI18n } from '@renderer/app/providers';
-import { MultisigTransactionDS } from '@renderer/shared/api/storage';
-import { useToggle } from '@renderer/shared/lib/hooks';
-import { ExtendedChain } from '@renderer/entities/network';
-import { toAddress, transferableAmount, getAssetById } from '@renderer/shared/lib/utils';
+import { BaseModal, Button } from '@shared/ui';
+import { useI18n } from '@app/providers';
+import { MultisigTransactionDS } from '@shared/api/storage';
+import { useToggle } from '@shared/lib/hooks';
+import { ExtendedChain } from '@entities/network';
+import { toAddress, transferableAmount, getAssetById } from '@shared/lib/utils';
 import { getMultisigSignOperationTitle } from '../../common/utils';
-import { useBalance } from '@renderer/entities/asset';
 import RejectReasonModal from './RejectReasonModal';
 import { Submit } from '../ActionSteps/Submit';
 import { Confirmation } from '../ActionSteps/Confirmation';
-import { Signing } from '@renderer/features/operation';
+import { Signing } from '@features/operation';
 import { OperationTitle } from '@renderer/components/common';
-import { walletModel, walletUtils } from '@renderer/entities/wallet';
-import { priceProviderModel } from '@renderer/entities/price';
-import type { Address, HexString, Timepoint, MultisigAccount, Account } from '@renderer/shared/core';
+import { walletModel, walletUtils } from '@entities/wallet';
+import { priceProviderModel } from '@entities/price';
+import type { Address, HexString, Timepoint, MultisigAccount, Account } from '@shared/core';
 import {
   Transaction,
   TransactionType,
@@ -27,7 +26,8 @@ import {
   OperationResult,
   validateBalance,
   isXcmTransaction,
-} from '@renderer/entities/transaction';
+} from '@entities/transaction';
+import { balanceModel, balanceUtils } from '@entities/balance';
 
 type Props = {
   tx: MultisigTransactionDS;
@@ -48,7 +48,8 @@ const RejectTx = ({ tx, account, connection }: Props) => {
   const accounts = useUnit(walletModel.$accounts);
   const wallets = keyBy(useUnit(walletModel.$wallets), 'id');
 
-  const { getBalance } = useBalance();
+  const balances = useUnit(balanceModel.$balances);
+
   const { getTransactionFee } = useTransaction();
 
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -87,7 +88,7 @@ const RejectTx = ({ tx, account, connection }: Props) => {
       chainId: tx.chainId,
       transaction: rejectTx,
       assetId: nativeAsset.assetId.toString(),
-      getBalance,
+      getBalance: balanceUtils.getBalanceWrapped(balances),
       getTransactionFee,
     });
 
@@ -150,7 +151,12 @@ const RejectTx = ({ tx, account, connection }: Props) => {
     if (!connection.api || !rejectTx || !signAccount.accountId || !nativeAsset) return false;
 
     const fee = await getTransactionFee(rejectTx, connection.api);
-    const balance = await getBalance(signAccount.accountId, connection.chainId, nativeAsset.assetId.toString());
+    const balance = balanceUtils.getBalance(
+      balances,
+      signAccount.accountId,
+      connection.chainId,
+      nativeAsset.assetId.toString(),
+    );
 
     if (!balance) return false;
 
@@ -186,7 +192,7 @@ const RejectTx = ({ tx, account, connection }: Props) => {
         isOpen={activeStep !== Step.SUBMIT && isModalOpen}
         title={<OperationTitle title={t(transactionTitle, { asset: asset?.symbol })} chainId={tx.chainId} />}
         panelClass="w-[440px]"
-        headerClass="py-3 px-5 max-w-[440px]"
+        headerClass="py-3 pl-5 pr-3"
         contentClass={activeStep === Step.SIGNING ? '' : undefined}
         onClose={handleClose}
       >

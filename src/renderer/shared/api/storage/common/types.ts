@@ -1,7 +1,8 @@
 import { Table } from 'dexie';
 
-import { Connection, ConnectionType } from '@renderer/shared/core';
-import { Notification } from '@renderer/entities/notification/model/notification';
+import type { Metadata } from '@entities/network';
+import { Notification } from '@entities/notification/model/notification';
+import { MultisigEvent, MultisigTransaction, MultisigTransactionKey } from '@entities/transaction/model/transaction';
 import type {
   Wallet,
   Account,
@@ -11,13 +12,8 @@ import type {
   ChainId,
   Balance,
   BalanceKey,
-} from '@renderer/shared/core';
-import type { Metadata } from '@renderer/entities/network';
-import {
-  MultisigEvent,
-  MultisigTransaction,
-  MultisigTransactionKey,
-} from '@renderer/entities/transaction/model/transaction';
+  Connection,
+} from '@shared/core';
 
 // =====================================================
 // ================ Storage interface ==================
@@ -37,16 +33,6 @@ export interface IBalanceStorage {
   updateBalance: (balance: Balance) => Promise<void>;
   insertBalances: (balances: Balance[]) => Promise<string[]>;
   setBalanceIsValid: (balanceKey: BalanceKey, verified: boolean) => Promise<number>;
-}
-
-export interface IConnectionStorage {
-  getConnection: (chainId: ChainId) => Promise<ConnectionDS | undefined>;
-  getConnections: () => Promise<ConnectionDS[]>;
-  addConnection: (connection: Connection) => Promise<ID | ID[]>;
-  addConnections: (connections: Connection[]) => Promise<ID>;
-  updateConnection: (connection: Connection) => Promise<number>;
-  changeConnectionType: (connection: Connection, type: ConnectionType) => Promise<number>;
-  clearConnections: () => Promise<void>;
 }
 
 export interface IMultisigEventStorage {
@@ -97,7 +83,6 @@ export interface INotificationStorage {
 
 export type DataStorage = {
   balances: IBalanceStorage;
-  connections: IConnectionStorage;
   multisigTransactions: IMultisigTransactionStorage;
   multisigEvents: IMultisigEventStorage;
   notifications: INotificationStorage;
@@ -108,7 +93,6 @@ export type ID = string;
 type WithID<T extends Object> = { id?: ID } & T;
 
 export type BalanceDS = WithID<Balance>;
-export type ConnectionDS = WithID<Connection>;
 export type MultisigTransactionDS = WithID<MultisigTransaction>;
 export type MultisigEventDS = WithID<MultisigEvent>;
 export type NotificationDS = WithID<Notification>;
@@ -118,7 +102,8 @@ export type TWallet = Table<Wallet, Wallet['id']>;
 export type TContact = Table<Contact, Contact['id']>;
 export type TAccount = Table<Account, Account['id']>;
 export type TBalance = Table<Balance, ID[]>;
-export type TConnection = Table<Connection, ID>;
+export type TConnection = Table<Connection, Connection['id']>;
+
 export type TMultisigTransaction = Table<MultisigTransaction, ID[]>;
 export type TMultisigEvent = Table<MultisigEvent, ID>;
 export type TNotification = Table<Notification, ID>;

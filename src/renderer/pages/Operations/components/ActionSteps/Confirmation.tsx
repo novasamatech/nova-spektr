@@ -8,19 +8,19 @@ import {
   DepositWithLabel,
   isXcmTransaction,
   XcmFee,
-} from '@renderer/entities/transaction';
-import { TransactionAmount } from '@renderer/pages/Operations/components/TransactionAmount';
-import { DetailRow, FootnoteText, Icon } from '@renderer/shared/ui';
-import { ExtendedChain } from '@renderer/entities/network';
-import { useI18n } from '@renderer/app/providers';
-import { getIconName } from '../../common/utils';
-import { type Account, type MultisigAccount, WalletType } from '@renderer/shared/core';
+} from '@entities/transaction';
+import { TransactionAmount } from '@pages/Operations/components/TransactionAmount';
+import { DetailRow, FootnoteText, Icon } from '@shared/ui';
+import { ExtendedChain } from '@entities/network';
+import { useI18n } from '@app/providers';
+import { getIconName } from '@entities/transaction/lib/transactionIcon';
+import { type Account, type MultisigAccount, WalletType } from '@shared/core';
 import Details from '../Details';
-import { getAssetById } from '@renderer/shared/lib/utils';
-import { getTransactionFromMultisigTx } from '@renderer/entities/multisig';
-import { sendAssetModel } from '@renderer/widgets/SendAssetModal';
-import { SignButton } from '@renderer/entities/operation/ui/SignButton';
-import { walletModel } from '@renderer/entities/wallet';
+import { getAssetById } from '@shared/lib/utils';
+import { getTransactionFromMultisigTx } from '@entities/multisig';
+import { sendAssetModel } from '@widgets/SendAssetModal';
+import { SignButton } from '@entities/operation/ui/SignButton';
+import { walletModel } from '@entities/wallet';
 
 type Props = {
   tx: MultisigTransaction;
@@ -40,7 +40,6 @@ export const Confirmation = ({ tx, account, connection, signatory, feeTx, onSign
   const xcmConfig = useUnit(sendAssetModel.$finalConfig);
   const asset = getAssetById(tx.transaction?.args.assetId, connection.assets) || connection.assets[0];
 
-  const iconName = getIconName(tx.transaction);
   const transaction = getTransactionFromMultisigTx(tx);
 
   useEffect(() => {
@@ -51,7 +50,7 @@ export const Confirmation = ({ tx, account, connection, signatory, feeTx, onSign
     <div className="flex flex-col items-center gap-y-3">
       <div className="flex flex-col items-center gap-y-3 mb-6">
         <div className="flex items-center justify-center w-15 h-15 box-content rounded-full border-2 border-icon-default">
-          <Icon className="text-icon-default" name={iconName} size={42} />
+          <Icon className="text-icon-default" name={getIconName(tx.transaction)} size={42} />
         </div>
 
         {tx.transaction && <TransactionAmount tx={tx.transaction} />}
@@ -63,7 +62,7 @@ export const Confirmation = ({ tx, account, connection, signatory, feeTx, onSign
         )}
       </div>
 
-      <Details tx={tx} account={account} connection={connection} signatory={signatory} />
+      <Details tx={tx} account={account} extendedChain={connection} signatory={signatory} />
 
       {signatory && connection?.api && (
         <DepositWithLabel

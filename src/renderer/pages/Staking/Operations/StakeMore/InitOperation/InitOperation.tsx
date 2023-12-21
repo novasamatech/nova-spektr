@@ -3,21 +3,12 @@ import { BN } from '@polkadot/util';
 import { useEffect, useState } from 'react';
 import { useUnit } from 'effector-react';
 
-import { useI18n } from '@renderer/app/providers';
-import { useBalance } from '@renderer/entities/asset';
-import { Transaction, TransactionType, OperationError } from '@renderer/entities/transaction';
-import { formatAmount, stakeableAmount, nonNullable, toAddress } from '@renderer/shared/lib/utils';
+import { useI18n } from '@app/providers';
+import { Transaction, TransactionType, OperationError } from '@entities/transaction';
+import { formatAmount, stakeableAmount, nonNullable, toAddress } from '@shared/lib/utils';
 import { OperationFooter, OperationHeader } from '@renderer/features/operation';
-import { walletUtils, accountUtils, walletModel } from '@renderer/entities/wallet';
-import type {
-  Account,
-  Asset,
-  Balance as AccountBalance,
-  ChainId,
-  AccountId,
-  Balance,
-  Wallet,
-} from '@renderer/shared/core';
+import { walletUtils, accountUtils, walletModel } from '@entities/wallet';
+import type { Account, Asset, Balance as AccountBalance, ChainId, AccountId, Balance, Wallet } from '@shared/core';
 import { OperationForm } from '../../components';
 import {
   getStakeAccountOption,
@@ -26,6 +17,7 @@ import {
   validateBalanceForFeeDeposit,
   getSignatoryOption,
 } from '../../common/utils';
+import { useAssetBalances } from '@entities/balance';
 
 export type StakeMoreResult = {
   accounts: Account[];
@@ -47,8 +39,6 @@ const InitOperation = ({ api, chainId, accounts, addressPrefix, asset, onResult 
   const { t } = useI18n();
   const activeWallet = useUnit(walletModel.$activeWallet);
 
-  const { getLiveAssetBalances } = useBalance();
-
   const [fee, setFee] = useState('');
   const [feeLoading, setFeeLoading] = useState(true);
   const [deposit, setDeposit] = useState('');
@@ -68,10 +58,18 @@ const InitOperation = ({ api, chainId, accounts, addressPrefix, asset, onResult 
   const formFields = isMultisigWallet ? [{ name: 'amount' }, { name: 'description' }] : [{ name: 'amount' }];
 
   const accountIds = accounts.map((account) => account.accountId);
-  const balances = getLiveAssetBalances(accountIds, chainId, asset.assetId.toString());
+  const balances = useAssetBalances({
+    accountIds,
+    chainId,
+    assetId: asset.assetId.toString(),
+  });
 
   const signatoryIds = isMultisigAccount ? firstAccount.signatories.map((s) => s.accountId) : [];
-  const signatoriesBalances = getLiveAssetBalances(signatoryIds, chainId, asset.assetId.toString());
+  const signatoriesBalances = useAssetBalances({
+    accountIds: signatoryIds,
+    chainId,
+    assetId: asset.assetId.toString(),
+  });
   const signerBalance = signatoriesBalances.find((b) => b.accountId === activeSignatory?.accountId);
 
   useEffect(() => {

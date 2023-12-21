@@ -1,24 +1,32 @@
 import { render, screen } from '@testing-library/react';
 
-import type { Asset, BaseAccount } from '@renderer/shared/core';
-import { ChainType, CryptoType, AccountType } from '@renderer/shared/core';
+import type { Asset, BaseAccount, ChainId } from '@shared/core';
+import { ChainType, CryptoType, AccountType } from '@shared/core';
 import AccountsModal from './AccountsModal';
 
-jest.mock('@renderer/app/providers', () => ({
+jest.mock('@app/providers', () => ({
   useI18n: jest.fn().mockReturnValue({
     t: (key: string) => key,
   }),
 }));
 
-jest.mock('@renderer/entities/wallet', () => ({
-  AddressWithExplorers: ({ address }: { address: string }) => <span data-testid="account">{address}</span>,
+jest.mock('@entities/asset', () => ({
+  useBalance: jest.fn().mockReturnValue({
+    getLiveAssetBalances: jest.fn().mockReturnValue([]),
+  }),
+  AssetBalance: ({ value }: any) => <div>{value}</div>,
+}));
+
+jest.mock('@entities/balance', () => ({
+  useAssetBalances: jest.fn().mockReturnValue([]),
 }));
 
 describe('pages/Staking/components/AccountsModal', () => {
   const defaultProps = {
     isOpen: true,
     amounts: ['1000000000000', '2000000000000', '3000000000000'],
-    asset: { symbol: 'DOT', precision: 10 } as Asset,
+    asset: { symbol: 'DOT', precision: 10, assetId: 123 } as Asset,
+    chainId: '0xEGSgCCMmg5vePv611bmJpgdy7CaXaHayqPH8XwgD1jetWjN' as ChainId,
     accounts: [
       {
         id: 1,

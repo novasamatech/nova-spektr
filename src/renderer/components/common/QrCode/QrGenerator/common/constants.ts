@@ -10,7 +10,9 @@ export const DEFAULT_FRAME_DELAY = 50;
 export const TIMER_INC = 1;
 
 export const enum Command {
-  Transaction = 0,
-  Message = 3,
-  MultipleTransactions = 4,
+  Transaction = 0x00,
+  Message = 0x03,
+  MultipleTransactions = 0x04,
+  DynamicDerivationsTransaction = 0x05,
+  DynamicDerivationsRequestV1 = 0xdf,
 }

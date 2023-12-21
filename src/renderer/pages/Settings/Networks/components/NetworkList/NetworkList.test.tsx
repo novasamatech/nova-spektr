@@ -1,10 +1,10 @@
 import { act, render, screen, waitFor } from '@testing-library/react';
 
-import { ConnectionStatus, ConnectionType } from '@renderer/shared/core';
-import { ExtendedChain } from '@renderer/entities/network';
+import { ConnectionStatus, ConnectionType } from '@shared/core';
+import { ExtendedChain } from '@entities/network';
 import { NetworkList } from './NetworkList';
 
-jest.mock('@renderer/app/providers', () => ({
+jest.mock('@app/providers', () => ({
   useMatrix: jest.fn(),
 }));
 
@@ -16,13 +16,15 @@ describe('pages/Settings/Networks/NetworkList', () => {
       assets: [],
       explorers: [],
       name: 'My test chain',
+      specName: 'my_test_chain',
       nodes: [],
       chainId: '0x123',
       icon: 'test_icon.svg',
+      connectionStatus: ConnectionStatus.CONNECTED,
       connection: {
+        id: 1,
         chainId: '0x123',
         connectionType: ConnectionType.RPC_NODE,
-        connectionStatus: ConnectionStatus.CONNECTED,
         activeNode: { name: 'test node', url: 'wss://test.com' },
       },
     },

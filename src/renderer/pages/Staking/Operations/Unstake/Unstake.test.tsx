@@ -1,7 +1,6 @@
 import { act, render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 
-import { ConnectionStatus } from '@renderer/shared/core';
 import { Unstake } from './Unstake';
 
 jest.mock('react-router-dom', () => ({
@@ -10,31 +9,10 @@ jest.mock('react-router-dom', () => ({
   useNavigate: jest.fn(),
 }));
 
-jest.mock('@renderer/app/providers', () => ({
+jest.mock('@app/providers', () => ({
   useI18n: jest.fn().mockReturnValue({
     t: (key: string) => key,
   }),
-  useNetworkContext: jest.fn(() => ({
-    connections: {
-      '0x123': {
-        name: 'Westend',
-        api: { isConnected: true },
-        assets: [
-          {
-            assetId: 0,
-            symbol: 'WND',
-            precision: 10,
-            staking: 'relaychain',
-            name: 'Westend',
-          },
-        ],
-        connection: {
-          chainId: '0x123',
-          connectionStatus: ConnectionStatus.CONNECTED,
-        },
-      },
-    },
-  })),
 }));
 
 const mockButton = (text: string, callback: () => void) => (
@@ -54,8 +32,43 @@ jest.mock('../components/index', () => ({
   Submit: () => 'finish',
 }));
 
-jest.mock('@renderer/features/operation', () => ({
+jest.mock('@features/operation', () => ({
   Signing: ({ onResult }: any) => mockButton('to submit', onResult),
+}));
+
+jest.mock('@entities/network', () => ({
+  ...jest.requireActual('@entities/network'),
+  chainsService: {
+    getChainById: jest.fn().mockReturnValue({
+      name: 'Westend',
+      chainId: '0xe143f23803ac50e8f6f8e62695d1ce9e4e1d68aa36c1cd2cfd15340213f3423e',
+      assets: [
+        {
+          assetId: 0,
+          symbol: 'WND',
+          precision: 10,
+          staking: 'relaychain',
+          name: 'Westend',
+        },
+      ],
+    }),
+  },
+
+  useNetworkData: jest.fn().mockReturnValue({
+    chain: {
+      name: 'Westend',
+      assets: [
+        {
+          assetId: 0,
+          symbol: 'WND',
+          precision: 10,
+          staking: 'relaychain',
+          name: 'Westend',
+        },
+      ],
+    },
+    api: { isConnected: true },
+  }),
 }));
 
 describe('pages/Staking/Unstake', () => {

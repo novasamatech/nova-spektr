@@ -1,28 +1,38 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useNavigate, Outlet } from 'react-router-dom';
 import { useUnit } from 'effector-react';
 
 import { Header } from '@renderer/components/common';
-import { getRelaychainAsset, toAddress } from '@renderer/shared/lib/utils';
-import { createLink } from '@renderer/shared/routes';
-import type { PathValue } from '@renderer/shared/routes';
-import { useGraphql, useI18n, useNetworkContext } from '@renderer/app/providers';
-import { useToggle } from '@renderer/shared/lib/hooks';
-import { NominatorInfo } from '@renderer/pages/Staking/Overview/components/NominatorsList/NominatorsList';
+import { getRelaychainAsset, toAddress } from '@shared/lib/utils';
+import { createLink, type PathType } from '@shared/routes';
+import { useGraphql, useI18n } from '@app/providers';
+import { useToggle } from '@shared/lib/hooks';
 import { AboutStaking, NetworkInfo, NominatorsList, Actions, InactiveChain } from './components';
-import type { ChainId, Chain, Address, Account, Stake, Validator } from '@renderer/shared/core';
-import { ConnectionType, ConnectionStatus } from '@renderer/shared/core';
-import { accountUtils, walletModel, walletUtils } from '@renderer/entities/wallet';
-import { priceProviderModel } from '@renderer/entities/price';
+import {
+  ChainId,
+  Chain,
+  Address,
+  Account,
+  Stake,
+  Validator,
+  ShardAccount,
+  ChainAccount,
+  ConnectionType,
+  ConnectionStatus,
+} from '@shared/core';
+import { accountUtils, walletModel, walletUtils } from '@entities/wallet';
+import { priceProviderModel } from '@entities/price';
+import { NominatorInfo } from './common/types';
 import {
   useEra,
   useStakingData,
   StakingMap,
   ValidatorMap,
-  useValidators,
+  validatorsService,
   useStakingRewards,
   ValidatorsModal,
-} from '@renderer/entities/staking';
+} from '@entities/staking';
+import { useNetworkData } from '@entities/network';
 
 export const Overview = () => {
   const { t } = useI18n();
@@ -31,11 +41,9 @@ export const Overview = () => {
 
   const navigate = useNavigate();
   const { changeClient } = useGraphql();
-  const { connections } = useNetworkContext();
 
   const { subscribeActiveEra } = useEra();
   const { subscribeStaking } = useStakingData();
-  const { getValidatorsList, getNominators } = useValidators();
   const [isShowNominators, toggleNominators] = useToggle();
 
   const [chainEra, setChainEra] = useState<Record<ChainId, number | undefined>>({});
@@ -52,17 +60,20 @@ export const Overview = () => {
   const [selectedStash, setSelectedStash] = useState<Address>('');
 
   const chainId = (activeChain?.chainId || '') as ChainId;
-  const api = connections[chainId]?.api;
-  const connection = connections[chainId]?.connection;
+
+  const { api, connection, connectionStatus } = useNetworkData(chainId);
+
   const addressPrefix = activeChain?.addressPrefix;
   const explorers = activeChain?.explorers;
 
-  const accounts = activeAccounts.reduce<Account[]>((acc, account) => {
-    if (accountUtils.isChainIdMatch(account, chainId)) {
-      acc.push(account);
-    }
+  const accounts = activeAccounts.filter((account) => {
+    const isBaseAccount = accountUtils.isBaseAccount(account);
+    const isPolkadotVault = walletUtils.isPolkadotVault(activeWallet);
+    const hasManyAccounts = activeAccounts.length > 1;
 
-    return acc;
+    if (isPolkadotVault && isBaseAccount && hasManyAccounts) return false;
+
+    return accountUtils.isChainIdMatch(account, chainId);
   }, []);
 
   const addresses = accounts.map((a) => toAddress(a.accountId, { prefix: addressPrefix }));
@@ -79,7 +90,7 @@ export const Overview = () => {
     if (!connection) return;
 
     const isDisabled = connection.connectionType === ConnectionType.DISABLED;
-    const isError = connection.connectionStatus === ConnectionStatus.ERROR;
+    const isError = connectionStatus === ConnectionStatus.ERROR;
 
     setNetworkIsActive(!isDisabled && !isError);
   }, [chainId, connection]);
@@ -110,12 +121,11 @@ export const Overview = () => {
 
   useEffect(() => {
     const isMultisig = walletUtils.isMultisig(activeWallet);
-    const isSingleShard = walletUtils.isSingleShard(activeWallet);
-    const isSingleMultishard = walletUtils.isMultiShard(activeWallet) && addresses.length === 1;
     const isNovaWallet = walletUtils.isNovaWallet(activeWallet);
     const isWalletConnect = walletUtils.isWalletConnect(activeWallet);
+    const isPolkadotVault = walletUtils.isPolkadotVaultGroup(activeWallet);
 
-    if (isMultisig || isSingleShard || isSingleMultishard || isNovaWallet || isWalletConnect) {
+    if (isMultisig || isNovaWallet || isWalletConnect || (isPolkadotVault && addresses.length === 1)) {
       setSelectedNominators([addresses[0]]);
     } else {
       setSelectedNominators([]);
@@ -128,13 +138,13 @@ export const Overview = () => {
     const era = chainEra[chainId];
     if (!era) return;
 
-    getValidatorsList(api, era).then(setValidators);
+    validatorsService.getValidatorsList(api, era).then(setValidators);
   }, [chainId, api, chainEra]);
 
   useEffect(() => {
     if (!api) return;
 
-    getNominators(api, selectedStash, isLightClient).then((nominators) => {
+    validatorsService.getNominators(api, selectedStash, isLightClient).then((nominators) => {
       setNominators(Object.values(nominators));
     });
   }, [api, selectedStash]);
@@ -156,22 +166,40 @@ export const Overview = () => {
     toggleNominators();
   };
 
-  const nominatorsInfo = accounts.reduce<NominatorInfo[]>((acc, account) => {
-    const address = toAddress(account.accountId, { prefix: addressPrefix });
+  const groupedAccounts = useMemo((): Array<Account | ChainAccount | ShardAccount[]> => {
+    if (!walletUtils.isPolkadotVault(activeWallet)) return accounts;
 
-    acc.push({
+    return accountUtils.getAccountsAndShardGroups(accounts);
+  }, [accounts, activeWallet]);
+
+  const nominatorsInfo = useMemo(() => {
+    const getInfo = <T extends Account | ShardAccount>(address: Address, account: T): NominatorInfo<T> => ({
       address,
-      id: account.id,
+      account,
       stash: staking[address]?.stash,
-      accountName: account.name,
       isSelected: selectedNominators.includes(address),
       totalStake: isStakingLoading ? undefined : staking[address]?.total || '0',
       totalReward: isRewardsLoading ? undefined : rewards[address],
       unlocking: staking[address]?.unlocking,
     });
 
-    return acc;
-  }, []);
+    return groupedAccounts.reduce<Array<NominatorInfo<Account> | NominatorInfo<ShardAccount>[]>>((acc, account) => {
+      if (accountUtils.isAccountWithShards(account)) {
+        const shardsGroup = account.map((shard) => {
+          const address = toAddress(shard.accountId, { prefix: addressPrefix });
+
+          return getInfo(address, shard);
+        });
+
+        acc.push(shardsGroup);
+      } else {
+        const address = toAddress(account.accountId, { prefix: addressPrefix });
+        acc.push(getInfo(address, account));
+      }
+
+      return acc;
+    }, []);
+  }, [groupedAccounts, addressPrefix, isStakingLoading, isRewardsLoading, staking, selectedNominators]);
 
   const selectedStakes = selectedNominators.reduce<Stake[]>((acc, address) => {
     const stake = staking[address];
@@ -196,7 +224,7 @@ export const Overview = () => {
     [[], []],
   );
 
-  const navigateToStake = (path: PathValue, addresses?: Address[]) => {
+  const navigateToStake = (path: PathType, addresses?: Address[]) => {
     if (addresses) {
       setSelectedNominators(addresses);
 
@@ -219,8 +247,10 @@ export const Overview = () => {
   const totalStakes = Object.values(staking).map((stake) => stake?.total || '0');
   const relaychainAsset = getRelaychainAsset(activeChain?.assets);
 
-  const toggleSelectedNominators = (address: Address) => {
-    if (selectedNominators.includes(address)) {
+  const toggleSelectedNominators = (address: Address, isAllSelected?: boolean) => {
+    const isSelected = isAllSelected === undefined ? selectedNominators.includes(address) : !isAllSelected;
+
+    if (isSelected) {
       setSelectedNominators((value) => value.filter((a) => a !== address));
     } else {
       setSelectedNominators((value) => value.concat(address));
@@ -265,6 +295,7 @@ export const Overview = () => {
                   asset={relaychainAsset}
                   explorers={activeChain?.explorers}
                   isStakingLoading={isStakingLoading}
+                  addressPrefix={addressPrefix}
                   onCheckValidators={openSelectedValidators}
                   onToggleNominator={toggleSelectedNominators}
                 />

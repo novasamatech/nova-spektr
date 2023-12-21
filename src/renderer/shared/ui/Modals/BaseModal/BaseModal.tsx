@@ -1,12 +1,10 @@
 import { Fragment, PropsWithChildren, ReactNode } from 'react';
 import { Dialog, Transition } from '@headlessui/react';
 
-import { cnTw } from '@renderer/shared/lib/utils';
-import { ModalBackdrop, ModalTransition } from '@renderer/shared/ui/Modals/common';
-import { HeaderTitleText, IconButton } from '@renderer/shared/ui';
-
-// HINT: There are no modals with description right now
-// HeadlessUI provides description and title with some a11y features
+import { cnTw } from '@shared/lib/utils';
+import { ModalTransition } from '../common/ModalTransition';
+import { ModalBackdrop } from '../common/ModalBackdrop';
+import { HeaderTitleText, IconButton } from '@shared/ui';
 
 type Props = {
   isOpen: boolean;
@@ -20,18 +18,20 @@ type Props = {
   onClose: () => void;
 };
 
-const BaseModal = ({
+export const BaseModal = ({
   isOpen,
   title,
   zIndex = 'z-50',
   contentClass = 'pb-4 px-5',
-  headerClass = 'py-3 px-5',
+  headerClass = 'pl-5 pr-3 pt-3',
   actionButton,
   closeButton,
   panelClass,
   children,
   onClose,
 }: PropsWithChildren<Props>) => {
+  const headerExist = title || actionButton || closeButton;
+
   return (
     <Transition appear show={isOpen} as={Fragment}>
       <Dialog as="div" className={cnTw('relative', zIndex)} onClose={() => onClose()}>
@@ -39,29 +39,26 @@ const BaseModal = ({
 
         <div className="fixed inset-0 overflow-hidden flex min-h-full items-center justify-center p-4">
           <ModalTransition>
-            {/* TODO add proper colors for titles and bg */}
             <Dialog.Panel
               className={cnTw(
                 'transform rounded-lg bg-white text-left align-middle shadow-modal transition-all w-[440px]',
                 panelClass,
               )}
             >
-              {title && (
-                <Dialog.Title
-                  as="header"
-                  className={cnTw('text-text-primary font-bold', headerClass, closeButton && 'pr-12')}
-                >
-                  {typeof title === 'string' ? <HeaderTitleText className="truncate">{title}</HeaderTitleText> : title}
-                </Dialog.Title>
-              )}
+              {headerExist && (
+                <header className={cnTw('flex items-center justify-between', headerClass)}>
+                  {title && typeof title === 'string' && (
+                    <Dialog.Title as={HeaderTitleText} className="text-text-primary font-bold truncate py-1">
+                      {title}
+                    </Dialog.Title>
+                  )}
 
-              {closeButton && (
-                <IconButton
-                  name="close"
-                  size={20}
-                  className="absolute top-[18px] right-[14px] z-10"
-                  onClick={() => onClose()}
-                />
+                  {title && typeof title !== 'string' && title}
+                  <div className="flex items-center gap-x-4 h-7.5">
+                    {actionButton}
+                    {closeButton && <IconButton name="close" size={20} className="m-1" onClick={() => onClose()} />}
+                  </div>
+                </header>
               )}
 
               <section className={contentClass}>{children}</section>
@@ -72,5 +69,3 @@ const BaseModal = ({
     </Transition>
   );
 };
-
-export default BaseModal;

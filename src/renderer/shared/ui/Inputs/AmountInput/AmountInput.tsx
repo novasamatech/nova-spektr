@@ -11,15 +11,15 @@ import {
   toFixedNotation,
   validatePrecision,
   validateSymbols,
-} from '@renderer/shared/lib/utils';
-import { AssetBalance, AssetIcon } from '@renderer/entities/asset';
-import { useI18n } from '@renderer/app/providers';
+} from '@shared/lib/utils';
+import { AssetBalance, AssetIcon } from '@entities/asset';
+import { useI18n } from '@app/providers';
 import { FootnoteText, HelpText, TitleText } from '../../Typography';
 import Input from '../Input/Input';
-import { IconButton } from '@renderer/shared/ui';
-import { useToggle } from '@renderer/shared/lib/hooks';
-import { currencyModel, useCurrencyRate } from '@renderer/entities/price';
-import type { Asset } from '@renderer/shared/core';
+import { IconButton } from '@shared/ui';
+import { useToggle } from '@shared/lib/hooks';
+import { currencyModel, useCurrencyRate } from '@entities/price';
+import type { Asset } from '@shared/core';
 
 type Props = {
   name?: string;
@@ -49,7 +49,7 @@ export const AmountInput = ({
   const { t } = useI18n();
   const rate = useCurrencyRate(asset.priceId, showCurrency);
   const activeCurrency = useUnit(currencyModel.$activeCurrency);
-  const [currencyMode, toggleCurrencyMode] = useToggle(false);
+  const [currencyMode, toggleCurrencyMode] = useToggle();
   const [inputValue, setInputValue] = useState(value);
   const [assetValue, setAssetValue] = useState(value);
 
@@ -167,7 +167,6 @@ export const AmountInput = ({
       <IconButton
         name="swapArrow"
         alt={t(currencyMode ? 'transfer.swapToCryptoModeAlt' : 'transfer.swapToCurrencyModeAlt')}
-        size={16}
         onClick={toggleCurrencyMode}
       />
       <FootnoteText className="uppercase text-text-tertiary">

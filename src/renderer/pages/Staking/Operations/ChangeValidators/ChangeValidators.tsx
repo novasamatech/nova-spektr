@@ -3,21 +3,22 @@ import { useState, useEffect } from 'react';
 import { Navigate, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { useUnit } from 'effector-react';
 
-import { useI18n, useNetworkContext } from '@renderer/app/providers';
-import { Paths } from '@renderer/shared/routes';
-import { Transaction, TransactionType, useTransaction } from '@renderer/entities/transaction';
-import { ValidatorMap } from '@renderer/entities/staking';
-import { toAddress, getRelaychainAsset, DEFAULT_TRANSITION } from '@renderer/shared/lib/utils';
+import { useI18n } from '@app/providers';
+import { Paths } from '@shared/routes';
+import { Transaction, TransactionType, useTransaction } from '@entities/transaction';
+import { ValidatorMap } from '@entities/staking';
+import { toAddress, getRelaychainAsset, DEFAULT_TRANSITION } from '@shared/lib/utils';
 import { Confirmation, Submit, Validators, NoAsset } from '../components';
-import { useToggle } from '@renderer/shared/lib/hooks';
-import { Alert, BaseModal, Button, Loader } from '@renderer/shared/ui';
+import { useToggle } from '@shared/lib/hooks';
+import { BaseModal, Button, Loader } from '@shared/ui';
 import InitOperation, { ValidatorsResult } from './InitOperation/InitOperation';
-import { isLightClient } from '@renderer/entities/network';
+import { isLightClient, useNetworkData } from '@entities/network';
 import { OperationTitle } from '@renderer/components/common';
-import { Signing } from '@renderer/features/operation';
-import type { Account, ChainId, HexString, Address } from '@renderer/shared/core';
-import { walletUtils, walletModel } from '@renderer/entities/wallet';
-import { priceProviderModel } from '@renderer/entities/price';
+import { Signing } from '@features/operation';
+import type { Account, ChainId, HexString, Address } from '@shared/core';
+import { walletUtils, walletModel } from '@entities/wallet';
+import { priceProviderModel } from '@entities/price';
+import { StakingPopover } from '../components/StakingPopover/StakingPopover';
 
 const enum Step {
   INIT,
@@ -34,12 +35,12 @@ export const ChangeValidators = () => {
 
   const navigate = useNavigate();
   const { setTxs, txs, setWrappers, wrapTx, buildTransaction } = useTransaction();
-  const { connections } = useNetworkContext();
   const [searchParams] = useSearchParams();
   const params = useParams<{ chainId: ChainId }>();
 
+  const { api, chain, connection } = useNetworkData(params.chainId || ('' as ChainId));
+
   const [isValidatorsModalOpen, toggleValidatorsModal] = useToggle(true);
-  const [isAlertOpen, toggleAlert] = useToggle(true);
 
   const [activeStep, setActiveStep] = useState<Step>(Step.INIT);
   const [validators, setValidators] = useState<ValidatorMap>({});
@@ -69,13 +70,11 @@ export const ChangeValidators = () => {
     setAccounts(accounts);
   }, [activeAccounts.length]);
 
-  const connection = connections[chainId];
-
-  if (!connection || accountIds.length === 0) {
+  if (!api || accountIds.length === 0) {
     return <Navigate replace to={Paths.STAKING} />;
   }
 
-  const { api, explorers, addressPrefix, assets, name } = connections[chainId];
+  const { explorers, addressPrefix, assets, name } = chain;
   const asset = getRelaychainAsset(assets);
 
   const goToPrevStep = () => {
@@ -96,7 +95,7 @@ export const ChangeValidators = () => {
       <BaseModal
         closeButton
         contentClass=""
-        headerClass="py-3 px-5 max-w-[440px]"
+        headerClass="py-3 pl-5 pr-3"
         panelClass="w-max"
         isOpen={isValidatorsModalOpen}
         title={<OperationTitle title={t('staking.validators.title')} chainId={chainId} />}
@@ -117,7 +116,7 @@ export const ChangeValidators = () => {
       <BaseModal
         closeButton
         contentClass=""
-        headerClass="py-3 px-5 max-w-[440px]"
+        headerClass="py-3 pl-5 pr-3"
         panelClass="w-max"
         isOpen={isValidatorsModalOpen}
         title={<OperationTitle title={t('staking.validators.title')} chainId={chainId} />}
@@ -180,7 +179,7 @@ export const ChangeValidators = () => {
         closeButton
         contentClass=""
         panelClass="w-max"
-        headerClass="py-3 px-5 max-w-[440px]"
+        headerClass="py-3 pl-5 pr-3"
         isOpen={activeStep !== Step.SUBMIT && isValidatorsModalOpen}
         title={<OperationTitle title={t('staking.validators.title')} chainId={chainId} />}
         onClose={closeValidatorsModal}
@@ -212,11 +211,9 @@ export const ChangeValidators = () => {
             onGoBack={goToPrevStep}
             {...explorersProps}
           >
-            {isAlertOpen && (
-              <Alert title={t('staking.confirmation.hintTitle')} onClose={toggleAlert}>
-                <Alert.Item>{t('staking.confirmation.hintNewValidators')}</Alert.Item>
-              </Alert>
-            )}
+            <StakingPopover labelText={t('staking.confirmation.hintTitle')}>
+              <StakingPopover.Item>{t('staking.confirmation.hintNewValidators')}</StakingPopover.Item>
+            </StakingPopover>
           </Confirmation>
         )}
         {activeStep === Step.SIGNING && (

@@ -1,9 +1,9 @@
 import { render, screen } from '@testing-library/react';
 import noop from 'lodash/noop';
 
-import ConfirmModal from './ConfirmModal';
+import { ConfirmModal } from './ConfirmModal';
 
-jest.mock('@renderer/app/providers', () => ({
+jest.mock('@app/providers', () => ({
   useMatrix: jest.fn(),
 }));
 

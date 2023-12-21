@@ -1,8 +1,8 @@
 import { fork, allSettled } from 'effector';
 
-import { kernelModel } from '@renderer/shared/core';
+import { kernelModel } from '@shared/core';
 import { currencyModel } from '../currency-model';
-import { fiatService, CurrencyItem } from '@renderer/shared/api/price-provider';
+import { fiatService, CurrencyItem } from '@shared/api/price-provider';
 
 describe('entities/price/model/currency-model', () => {
   const config: CurrencyItem[] = [
@@ -55,7 +55,6 @@ describe('entities/price/model/currency-model', () => {
     const scope = fork();
     await allSettled(kernelModel.events.appStarted, { scope });
     await allSettled(currencyModel.events.currencyChanged, { scope, params: 1 });
-
     expect(scope.getState(currencyModel.$activeCurrency)).toEqual(config[0]);
   });
 });

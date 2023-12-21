@@ -1,5 +1,6 @@
-import { ChainTitle } from '@renderer/entities/chain';
-import type { ChainId } from '@renderer/shared/core';
+import { ChainTitle } from '@entities/chain';
+import { HeaderTitleText } from '@shared/ui';
+import type { ChainId } from '@shared/core';
 
 type Props = {
   title: string;
@@ -10,7 +11,7 @@ const ChainFontStyle = 'font-manrope text-header-title text-text-primary truncat
 
 export const OperationTitle = ({ title, chainId }: Props) => (
   <div className="flex items-center h-7 whitespace-nowrap">
-    {title}
+    <HeaderTitleText>{title}</HeaderTitleText>
     <ChainTitle className="ml-1.5 gap-x-1.5 overflow-hidden" chainId={chainId} fontClass={ChainFontStyle} />
   </div>
 );

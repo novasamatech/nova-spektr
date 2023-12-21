@@ -1,15 +1,15 @@
 import { useEffect, useState } from 'react';
 
-import { cnTw, includes, toAddress } from '@renderer/shared/lib/utils';
-import { useI18n, useMatrix } from '@renderer/app/providers';
-import { useToggle } from '@renderer/shared/lib/hooks';
-import { Button, Checkbox, FootnoteText, Icon, SearchInput, SmallTitleText, Tabs, Tooltip } from '@renderer/shared/ui';
-import { TabItem } from '@renderer/shared/ui/types';
-import { CreateContactModal } from '@renderer/widgets';
+import { cnTw, includes, toAddress } from '@shared/lib/utils';
+import { useI18n, useMatrix } from '@app/providers';
+import { useToggle } from '@shared/lib/hooks';
+import { Button, Checkbox, FootnoteText, Icon, SearchInput, SmallTitleText, Tabs, Tooltip } from '@shared/ui';
+import { TabItem } from '@shared/ui/types';
+import { CreateContactModal } from '@widgets/ManageContactModal';
 import { ExtendedContact, ExtendedWallet } from '../common/types';
-import { EmptyContactList } from '@renderer/entities/contact';
-import { type Contact, type Wallet, type Account, type MultisigAccount, WalletType } from '@renderer/shared/core';
-import { walletUtils, ContactItem } from '@renderer/entities/wallet';
+import { EmptyContactList } from '@entities/contact';
+import { type Contact, type Wallet, type Account, type MultisigAccount, WalletType } from '@shared/core';
+import { walletUtils, ContactItem } from '@entities/wallet';
 import { WalletItem } from './WalletItem';
 
 const enum SignatoryTabs {
@@ -128,7 +128,7 @@ export const SelectSignatories = ({ isActive, wallets, accounts, contacts, onSel
   });
 
   const getDisabledMessage = (type: WalletType) => {
-    const UnsupportedTypes = [WalletType.MULTISIG, WalletType.POLKADOT_VAULT];
+    const UnsupportedTypes = [WalletType.WATCH_ONLY, WalletType.MULTISIG];
     if (UnsupportedTypes.includes(type)) {
       return t('createMultisigAccount.disabledError.unsupportedType');
     }
@@ -270,9 +270,7 @@ export const SelectSignatories = ({ isActive, wallets, accounts, contacts, onSel
 
   return (
     <>
-      <section
-        className={cnTw('flex flex-col px-3 py-4 flex-1 bg-input-background-disabled h-full', !isActive && 'hidden')}
-      >
+      <div className={cnTw(!isActive && 'hidden')}>
         <SmallTitleText className="py-2 px-2 mb-4">{t('createMultisigAccount.signatoryTitle')}</SmallTitleText>
 
         <Tabs
@@ -282,7 +280,7 @@ export const SelectSignatories = ({ isActive, wallets, accounts, contacts, onSel
           tabClassName="flex-inline"
           tabsClassName="mx-2"
         />
-      </section>
+      </div>
 
       <CreateContactModal isOpen={isContactModalOpen} onClose={toggleContactModalOpen} />
     </>

@@ -1,7 +1,7 @@
 import { ChangeEvent, PropsWithChildren } from 'react';
 
-import { LabelText } from '@renderer/shared/ui';
-import { cnTw } from '@renderer/shared/lib/utils';
+import { LabelText } from '@shared/ui';
+import { cnTw } from '@shared/lib/utils';
 import './Checkbox.css';
 
 type Props = {

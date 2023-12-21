@@ -1,18 +1,18 @@
 import { ComponentProps, useState, useEffect } from 'react';
 import { useStore } from 'effector-react';
 
-import { BaseModal, HeaderTitleText, StatusLabel, Button } from '@renderer/shared/ui';
-import { useI18n, useMatrix } from '@renderer/app/providers';
-import { useToggle } from '@renderer/shared/lib/hooks';
-import { OperationResult } from '@renderer/entities/transaction';
+import { BaseModal, HeaderTitleText, StatusLabel, Button, IconButton } from '@shared/ui';
+import { useI18n, useMatrix } from '@app/providers';
+import { useToggle } from '@shared/lib/hooks';
+import { OperationResult } from '@entities/transaction';
 import { ExtendedContact, ExtendedWallet } from './common/types';
 import { SelectSignatories, ConfirmSignatories, WalletForm } from './components';
-import { contactModel } from '@renderer/entities/contact';
-import { DEFAULT_TRANSITION } from '@renderer/shared/lib/utils';
-import { MatrixLoginModal } from '@renderer/widgets/MatrixModal';
-import { walletModel, accountUtils } from '@renderer/entities/wallet';
-import type { AccountId } from '@renderer/shared/core';
-import { WalletType, SigningType, CryptoType, ChainType, AccountType } from '@renderer/shared/core';
+import { contactModel } from '@entities/contact';
+import { DEFAULT_TRANSITION } from '@shared/lib/utils';
+import { MatrixLoginModal } from '@widgets/MatrixModal';
+import { walletModel, accountUtils } from '@entities/wallet';
+import type { AccountId } from '@shared/core';
+import { WalletType, SigningType, CryptoType, ChainType, AccountType } from '@shared/core';
 
 type OperationResultProps = Pick<ComponentProps<typeof OperationResult>, 'variant' | 'description'>;
 
@@ -168,7 +168,7 @@ export const MultisigAccount = ({ isOpen, onClose, onComplete }: Props) => {
   };
 
   const modalTitle = (
-    <div className="flex justify-between items-center px-5 py-3 w-[472px] bg-white rounded-tl-lg">
+    <div className="flex justify-between items-center px-5 py-3 w-[464px] bg-white rounded-tl-lg">
       <HeaderTitleText className="py-[3px]">{t('createMultisigAccount.title')}</HeaderTitleText>
       {isLoggedIn && <StatusLabel title={matrix.userId || ''} variant="success" />}
     </div>
@@ -177,7 +177,6 @@ export const MultisigAccount = ({ isOpen, onClose, onComplete }: Props) => {
   return (
     <>
       <BaseModal
-        closeButton
         title={modalTitle}
         isOpen={isModalOpen && !isResultModalOpen}
         headerClass="bg-input-background-disabled"
@@ -194,22 +193,31 @@ export const MultisigAccount = ({ isOpen, onClose, onComplete }: Props) => {
           onSubmit={createWallet}
         />
 
-        <SelectSignatories
-          isActive={activeStep === Step.INIT}
-          wallets={wallets}
-          accounts={accounts}
-          contacts={contacts}
-          onSelect={(wallets, contacts) => {
-            setSignatoryWallets(wallets);
-            setSignatoryContacts(contacts);
-          }}
-        />
+        <section className="relative flex flex-col px-5 py-4 flex-1 bg-input-background-disabled h-full">
+          <IconButton
+            name="close"
+            size={20}
+            className="absolute right-3 -top-10 m-1"
+            onClick={() => closeMultisigModal()}
+          />
 
-        <ConfirmSignatories
-          isActive={activeStep === Step.CONFIRMATION}
-          wallets={signatoryWallets}
-          contacts={signatoryContacts}
-        />
+          <SelectSignatories
+            isActive={activeStep === Step.INIT}
+            wallets={wallets}
+            accounts={accounts}
+            contacts={contacts}
+            onSelect={(wallets, contacts) => {
+              setSignatoryWallets(wallets);
+              setSignatoryContacts(contacts);
+            }}
+          />
+
+          <ConfirmSignatories
+            isActive={activeStep === Step.CONFIRMATION}
+            wallets={signatoryWallets}
+            contacts={signatoryContacts}
+          />
+        </section>
 
         <MatrixLoginModal isOpen={!isLoggedIn} zIndex="z-60" onClose={closeMultisigModal} />
       </BaseModal>

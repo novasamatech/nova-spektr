@@ -1,5 +1,5 @@
-import { Icon, BodyText } from '@renderer/shared/ui';
-import { useI18n } from '@renderer/app/providers';
+import { Icon, BodyText } from '@shared/ui';
+import { useI18n } from '@app/providers';
 
 const EmptyState = () => {
   const { t } = useI18n();

@@ -1,8 +1,8 @@
 import { modelUtils } from '../model-utils';
-import { AccountType, ChainType, CryptoType, KeyType, BaseAccount, ChainAccount } from '@renderer/shared/core';
-import { TEST_ACCOUNT_ID, TEST_CHAIN_ID } from '@renderer/shared/lib/utils';
+import { AccountType, ChainType, CryptoType, KeyType, BaseAccount, ChainAccount } from '@shared/core';
+import { TEST_ACCOUNT_ID, TEST_CHAIN_ID } from '@shared/lib/utils';
 
-jest.mock('@renderer/app/providers', () => ({
+jest.mock('@app/providers', () => ({
   useMatrix: jest.fn(),
 }));
 
@@ -43,8 +43,8 @@ const accounts = [
   },
 ];
 
-describe('entities/wallet/lib', () => {
-  test('entities/wallet/lib/model-utils', () => {
+describe('entities/wallet/lib/model-utils#groupAccounts', () => {
+  test('should create groups of base & chains accounts', () => {
     const { base, chains } = modelUtils.groupAccounts(accounts as (BaseAccount | ChainAccount)[]);
 
     expect(base).toEqual([accounts[0], accounts[3]]);

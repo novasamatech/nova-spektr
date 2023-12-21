@@ -3,20 +3,22 @@ import { useEffect, useState } from 'react';
 import { Navigate, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { useUnit } from 'effector-react';
 
-import { UnstakingDuration } from '@renderer/pages/Staking/Overview/components';
-import { Paths } from '@renderer/shared/routes';
-import { useI18n, useNetworkContext } from '@renderer/app/providers';
-import { Transaction, TransactionType, useTransaction } from '@renderer/entities/transaction';
+import { UnstakingDuration } from '@pages/Staking/Overview/components';
+import { Paths } from '@shared/routes';
+import { useI18n } from '@app/providers';
+import { Transaction, TransactionType, useTransaction } from '@entities/transaction';
 import InitOperation, { UnstakeResult } from './InitOperation/InitOperation';
 import { Confirmation, NoAsset, Submit } from '../components';
-import { DEFAULT_TRANSITION, getRelaychainAsset, toAddress } from '@renderer/shared/lib/utils';
-import { useToggle } from '@renderer/shared/lib/hooks';
-import { Alert, BaseModal, Button, Loader } from '@renderer/shared/ui';
+import { DEFAULT_TRANSITION, getRelaychainAsset, toAddress } from '@shared/lib/utils';
+import { useToggle } from '@shared/lib/hooks';
+import { BaseModal, Button, Loader } from '@shared/ui';
 import { OperationTitle } from '@renderer/components/common';
-import { Signing } from '@renderer/features/operation';
-import type { Account, ChainId, HexString } from '@renderer/shared/core';
-import { walletModel, walletUtils } from '@renderer/entities/wallet';
-import { priceProviderModel } from '@renderer/entities/price';
+import { Signing } from '@features/operation';
+import type { Account, ChainId, HexString } from '@shared/core';
+import { walletModel, walletUtils } from '@entities/wallet';
+import { priceProviderModel } from '@entities/price';
+import { StakingPopover } from '../components/StakingPopover/StakingPopover';
+import { useNetworkData } from '@entities/network';
 
 const enum Step {
   INIT,
@@ -32,12 +34,12 @@ export const Unstake = () => {
 
   const navigate = useNavigate();
   const { setTxs, txs, setWrappers, wrapTx, buildTransaction } = useTransaction();
-  const { connections } = useNetworkContext();
   const [searchParams] = useSearchParams();
   const params = useParams<{ chainId: ChainId }>();
 
+  const { api, chain } = useNetworkData(params.chainId || ('' as ChainId));
+
   const [isUnstakeModalOpen, toggleUnstakeModal] = useToggle(true);
-  const [isAlertOpen, toggleAlert] = useToggle(true);
 
   const [activeStep, setActiveStep] = useState<Step>(Step.INIT);
 
@@ -67,13 +69,11 @@ export const Unstake = () => {
     setAccounts(accounts);
   }, [activeAccounts.length]);
 
-  const connection = connections[chainId];
-
-  if (!connection || accountIds.length === 0) {
+  if (!api || accountIds.length === 0) {
     return <Navigate replace to={Paths.STAKING} />;
   }
 
-  const { api, explorers, addressPrefix, assets, name } = connections[chainId];
+  const { explorers, addressPrefix, assets, name } = chain;
   const asset = getRelaychainAsset(assets);
 
   const goToPrevStep = () => {
@@ -94,7 +94,7 @@ export const Unstake = () => {
       <BaseModal
         closeButton
         contentClass=""
-        headerClass="py-3 px-5 max-w-[440px]"
+        headerClass="py-3 pl-5 pr-3"
         panelClass="w-max"
         isOpen={isUnstakeModalOpen}
         title={<OperationTitle title={t('staking.unstake.title')} chainId={chainId} />}
@@ -115,7 +115,7 @@ export const Unstake = () => {
       <BaseModal
         closeButton
         contentClass=""
-        headerClass="py-3 px-5 max-w-[440px]"
+        headerClass="py-3 pl-5 pr-3"
         panelClass="w-max"
         isOpen={isUnstakeModalOpen}
         title={<OperationTitle title={t('staking.unstake.title')} chainId={chainId} />}
@@ -178,7 +178,7 @@ export const Unstake = () => {
         closeButton
         contentClass=""
         panelClass="w-max"
-        headerClass="py-3 px-5 max-w-[440px]"
+        headerClass="py-3 pl-5 pr-3"
         isOpen={activeStep !== Step.SUBMIT && isUnstakeModalOpen}
         title={<OperationTitle title={t('staking.unstake.title', { asset: asset.symbol })} chainId={chainId} />}
         onClose={closeUnstakeModal}
@@ -198,17 +198,15 @@ export const Unstake = () => {
             onGoBack={goToPrevStep}
             {...explorersProps}
           >
-            {isAlertOpen && (
-              <Alert title={t('staking.confirmation.hintTitle')} onClose={toggleAlert}>
-                <Alert.Item>
-                  {t('staking.confirmation.hintUnstakePeriod')} {'('}
-                  <UnstakingDuration api={api} />
-                  {')'}
-                </Alert.Item>
-                <Alert.Item>{t('staking.confirmation.hintNoRewards')}</Alert.Item>
-                <Alert.Item>{t('staking.confirmation.hintWithdraw')}</Alert.Item>
-              </Alert>
-            )}
+            <StakingPopover labelText={t('staking.confirmation.hintTitle')}>
+              <StakingPopover.Item>
+                {t('staking.confirmation.hintUnstakePeriod')} {' ('}
+                <UnstakingDuration api={api} />
+                {')'}
+              </StakingPopover.Item>
+              <StakingPopover.Item>{t('staking.confirmation.hintNoRewards')}</StakingPopover.Item>
+              <StakingPopover.Item>{t('staking.confirmation.hintWithdraw')}</StakingPopover.Item>
+            </StakingPopover>
           </Confirmation>
         )}
         {activeStep === Step.SIGNING && (

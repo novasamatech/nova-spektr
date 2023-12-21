@@ -4,17 +4,16 @@ import { useNavigate, useRoutes } from 'react-router-dom';
 import { useUnit } from 'effector-react';
 
 import { FallbackScreen } from '@renderer/components/common';
-import { CreateWalletProvider } from '@renderer/widgets/CreateWallet';
-import { WalletDetailsProvider } from '@renderer/widgets/WalletDetails';
-import { walletModel } from '@renderer/entities/wallet';
-import { ROUTES_CONFIG } from '@renderer/pages';
-import { Paths } from '@renderer/shared/routes';
+import { CreateWalletProvider } from '@widgets/CreateWallet';
+import { WalletDetailsProvider } from '@widgets/WalletDetails';
+import { walletModel } from '@entities/wallet';
+import { ROUTES_CONFIG } from '@pages/index';
+import { Paths } from '@shared/routes';
 import {
   ConfirmDialogProvider,
   StatusModalProvider,
   I18Provider,
   MatrixProvider,
-  NetworkProvider,
   GraphqlProvider,
   MultisigChainProvider,
 } from './providers';
@@ -52,21 +51,19 @@ export const App = () => {
   return (
     <I18Provider>
       <ErrorBoundary FallbackComponent={FallbackScreen} onError={console.error}>
-        <NetworkProvider>
-          <MultisigChainProvider>
-            <MatrixProvider>
-              <ConfirmDialogProvider>
-                <StatusModalProvider>
-                  <GraphqlProvider>
-                    {getContent()}
-                    <CreateWalletProvider />
-                    <WalletDetailsProvider />
-                  </GraphqlProvider>
-                </StatusModalProvider>
-              </ConfirmDialogProvider>
-            </MatrixProvider>
-          </MultisigChainProvider>
-        </NetworkProvider>
+        <MultisigChainProvider>
+          <MatrixProvider>
+            <ConfirmDialogProvider>
+              <StatusModalProvider>
+                <GraphqlProvider>
+                  {getContent()}
+                  <CreateWalletProvider />
+                  <WalletDetailsProvider />
+                </GraphqlProvider>
+              </StatusModalProvider>
+            </ConfirmDialogProvider>
+          </MatrixProvider>
+        </MultisigChainProvider>
       </ErrorBoundary>
     </I18Provider>
   );

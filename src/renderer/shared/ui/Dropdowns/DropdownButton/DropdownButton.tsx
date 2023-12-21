@@ -3,9 +3,9 @@ import { Menu } from '@headlessui/react';
 import { ComponentProps, ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 
-import { IconNames } from '@renderer/shared/ui/Icon/data';
-import { Button, FootnoteText, Icon } from '@renderer/shared/ui';
-import { cnTw } from '@renderer/shared/lib/utils';
+import { IconNames } from '@shared/ui/Icon/data';
+import { Button, FootnoteText, Icon } from '@shared/ui';
+import { cnTw } from '@shared/lib/utils';
 
 type ButtonProps = ComponentProps<typeof Button>;
 
@@ -25,7 +25,7 @@ type Props = {
   options: ButtonDropdownOption[];
 } & Omit<ButtonProps, 'children' | 'suffixElement' | 'onClick'>;
 
-const DropdownButton = ({ options, title, disabled, className, ...buttonProps }: Props) => (
+export const DropdownButton = ({ options, title, disabled, className, ...buttonProps }: Props) => (
   <Menu>
     {({ open }) => (
       <div className={cn('relative', open && 'z-10')}>
@@ -80,5 +80,3 @@ const DropdownButton = ({ options, title, disabled, className, ...buttonProps }:
     )}
   </Menu>
 );
-
-export default DropdownButton;

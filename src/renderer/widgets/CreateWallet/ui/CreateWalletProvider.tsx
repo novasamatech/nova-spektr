@@ -2,14 +2,14 @@ import { useEffect } from 'react';
 import { useUnit } from 'effector-react';
 import { useNavigate } from 'react-router-dom';
 
-import WatchOnly from '@renderer/pages/Onboarding/WatchOnly/WatchOnly';
-import Vault from '@renderer/pages/Onboarding/Vault/Vault';
-import { NovaWallet } from '@renderer/pages/Onboarding/WalletConnect/NovaWallet';
-import { WalletConnect } from '@renderer/pages/Onboarding/WalletConnect/WalletConnect';
+import WatchOnly from '@pages/Onboarding/WatchOnly/WatchOnly';
+import { Vault } from '@pages/Onboarding/Vault/Vault';
+import { NovaWallet } from '@pages/Onboarding/WalletConnect/NovaWallet';
+import { WalletConnect } from '@pages/Onboarding/WalletConnect/WalletConnect';
 import { MultisigAccount } from './MultisigAccount/MultisigAccount';
-import { WalletType, WalletFamily } from '@renderer/shared/core';
-import { walletPairingModel } from '@renderer/features/wallets';
-import { Paths } from '@renderer/shared/routes';
+import { WalletType, WalletFamily } from '@shared/core';
+import { walletPairingModel } from '@features/wallets';
+import { Paths } from '@shared/routes';
 import { walletProviderModel } from '../model/wallet-provider-model';
 
 // TODO: Break down WatchOnly / Vault / CreateMultisig to widgets

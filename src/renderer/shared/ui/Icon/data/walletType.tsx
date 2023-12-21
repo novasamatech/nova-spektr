@@ -1,19 +1,25 @@
-import WatchOnlyImg, { ReactComponent as WatchOnlySvg } from '@images/walletTypes/watchOnly.svg';
+import WatchOnlyImg, { ReactComponent as WatchOnlySvg } from '@shared/assets/images/walletTypes/watchOnly.svg';
 import WatchOnlyOnboardingImg, {
   ReactComponent as WatchOnlyOnboardingSvg,
-} from '@images/walletTypes/watchOnlyOnboardiing.svg';
-import MultisigImg, { ReactComponent as MultisigSvg } from '@images/walletTypes/multisig.svg';
-import VaultImg, { ReactComponent as VaultSvg } from '@images/walletTypes/vault.svg';
-import VaultOnboardingImg, { ReactComponent as VaultOnboardingSvg } from '@images/walletTypes/vaultOnboarding.svg';
-import NovaWalletImg, { ReactComponent as NovaWalletSvg } from '@images/walletTypes/novaWallet.svg';
-import LedgerOnboardingImg, { ReactComponent as LedgerOnboardingSvg } from '@images/walletTypes/ledgerOnboarding.svg';
-import WalletConnectImg, { ReactComponent as WalletConnectSvg } from '@images/walletTypes/walletConnect.svg';
+} from '@shared/assets/images/walletTypes/watchOnlyOnboardiing.svg';
+import MultisigImg, { ReactComponent as MultisigSvg } from '@shared/assets/images/walletTypes/multisig.svg';
+import VaultImg, { ReactComponent as VaultSvg } from '@shared/assets/images/walletTypes/vault.svg';
+import VaultOnboardingImg, {
+  ReactComponent as VaultOnboardingSvg,
+} from '@shared/assets/images/walletTypes/vaultOnboarding.svg';
+import NovaWalletImg, { ReactComponent as NovaWalletSvg } from '@shared/assets/images/walletTypes/novaWallet.svg';
+import LedgerOnboardingImg, {
+  ReactComponent as LedgerOnboardingSvg,
+} from '@shared/assets/images/walletTypes/ledgerOnboarding.svg';
+import WalletConnectImg, {
+  ReactComponent as WalletConnectSvg,
+} from '@shared/assets/images/walletTypes/walletConnect.svg';
 import WalletConnectOnboardingImg, {
   ReactComponent as WalletConnectOnboardingSvg,
-} from '@images/walletTypes/walletConnectOnboarding.svg';
+} from '@shared/assets/images/walletTypes/walletConnectOnboarding.svg';
 import NovaWalletOnboardingImg, {
   ReactComponent as NovaWalletOnboardingSvg,
-} from '@images/walletTypes/novaWalletOnboarding.svg';
+} from '@shared/assets/images/walletTypes/novaWalletOnboarding.svg';
 
 // TODO: Remove old wallet images after left menu styles updated
 const WalletTypeImages = {

@@ -2,11 +2,11 @@ import { ApiPromise } from '@polkadot/api';
 import { useEffect, useState } from 'react';
 import { mapValues } from 'lodash';
 
-import { Icon, Shimmering, Loader, BodyText, Button, SearchInput, SmallTitleText, Checkbox } from '@renderer/shared/ui';
-import { useI18n } from '@renderer/app/providers';
-import { ValidatorMap, useValidators, useValidatorsMap, ValidatorsTable } from '@renderer/entities/staking';
-import { includes, cnTw } from '@renderer/shared/lib/utils';
-import type { Asset, Explorer, Address, ChainId } from '@renderer/shared/core';
+import { Icon, Shimmering, Loader, BodyText, Button, SearchInput, SmallTitleText, Checkbox } from '@shared/ui';
+import { useI18n } from '@app/providers';
+import { ValidatorMap, validatorsService, useValidatorsMap, ValidatorsTable } from '@entities/staking';
+import { includes, cnTw } from '@shared/lib/utils';
+import type { Asset, Explorer, Address, ChainId } from '@shared/core';
 
 type Props = {
   api: ApiPromise;
@@ -19,10 +19,9 @@ type Props = {
   onResult: (validators: ValidatorMap) => void;
 };
 
-export const Validators = ({ api, chainId, asset, explorers, isLightClient, onGoBack, onResult }: Props) => {
+export const Validators = ({ api, asset, explorers, isLightClient, onGoBack, onResult }: Props) => {
   const { t } = useI18n();
-  const { getMaxValidators } = useValidators();
-  const validators = useValidatorsMap(api, chainId, isLightClient);
+  const validators = useValidatorsMap(api, isLightClient);
 
   const [isValidatorsLoading, setIsValidatorsLoading] = useState(true);
 
@@ -32,7 +31,7 @@ export const Validators = ({ api, chainId, asset, explorers, isLightClient, onGo
 
   useEffect(() => {
     if (Object.values(validators).length) {
-      setMaxValidators(getMaxValidators(api));
+      setMaxValidators(validatorsService.getMaxValidators(api));
       setIsValidatorsLoading(false);
       setSelectedValidators(mapValues(validators, () => false));
     }
@@ -99,16 +98,15 @@ export const Validators = ({ api, chainId, asset, explorers, isLightClient, onGo
 
       {!isValidatorsLoading && validatorList.length > 0 && (
         <ValidatorsTable validators={validatorList}>
-          {(validtor, rowStyle) => (
-            <li key={validtor.address} className="pl-5 hover:bg-hover group">
+          {(validator, rowStyle) => (
+            <li key={validator.address} className="pl-5 hover:bg-hover group">
               <Checkbox
-                checked={selectedValidators[validtor.address]}
-                disabled={validtor.blocked}
-                className="overflow-hidden"
-                onChange={() => toggleSelectedValidators(validtor.address)}
+                checked={selectedValidators[validator.address]}
+                disabled={validator.blocked}
+                onChange={() => toggleSelectedValidators(validator.address)}
               >
-                <div className={cnTw(rowStyle, 'pl-0 hover:bg-transparent flex-1 overflow-hidden')}>
-                  <ValidatorsTable.Row validator={validtor} asset={asset} explorers={explorers} />
+                <div className={cnTw(rowStyle, 'pl-0 hover:bg-transparent flex-1')}>
+                  <ValidatorsTable.Row validator={validator} asset={asset} explorers={explorers} />
                 </div>
               </Checkbox>
             </li>

@@ -1,48 +1,46 @@
 import { useUnit } from 'effector-react';
 
-import { useI18n } from '@renderer/app/providers';
-import { AddressWithExplorers, WalletCardSm, WalletIcon, walletModel } from '@renderer/entities/wallet';
-import { Icon, FootnoteText, DetailRow, CaptionText } from '@renderer/shared/ui';
-import { useToggle } from '@renderer/shared/lib/hooks';
-import {
-  MultisigTransaction,
-  Transaction,
-  isXcmTransaction,
-  isTransferTransaction,
-} from '@renderer/entities/transaction';
-import { cnTw, getAssetById } from '@renderer/shared/lib/utils';
-import { chainsService, ExtendedChain, isLightClient } from '@renderer/entities/network';
+import { useI18n } from '@app/providers';
+import { AddressWithExplorers, WalletCardSm, WalletIcon, walletModel } from '@entities/wallet';
+import { Icon, FootnoteText, DetailRow, CaptionText } from '@shared/ui';
+import { useToggle } from '@shared/lib/hooks';
+import { MultisigTransaction, Transaction, isXcmTransaction, isTransferTransaction } from '@entities/transaction';
+import { cnTw } from '@shared/lib/utils';
+import { ExtendedChain, isLightClient } from '@entities/network';
 import { AddressStyle, DescriptionBlockStyle, InteractionStyle } from '../common/constants';
-import { ChainTitle } from '@renderer/entities/chain';
-import { Account } from '@renderer/shared/core';
-import { getTransactionFromMultisigTx } from '@renderer/entities/multisig';
-import type { Address, MultisigAccount, Validator } from '@renderer/shared/core';
-import { useValidatorsMap, ValidatorsModal } from '@renderer/entities/staking';
+import { ChainTitle } from '@entities/chain';
+import { Account } from '@shared/core';
+import { getTransactionFromMultisigTx } from '@entities/multisig';
+import type { Address, MultisigAccount, Validator } from '@shared/core';
+import { useValidatorsMap, SelectedValidatorsModal } from '@entities/staking';
 
 type Props = {
   tx: MultisigTransaction;
   account?: MultisigAccount;
   signatory?: Account;
-  connection?: ExtendedChain;
+  extendedChain?: ExtendedChain;
 };
 
-const Details = ({ tx, account, connection, signatory }: Props) => {
+const Details = ({ tx, account, extendedChain, signatory }: Props) => {
   const { t } = useI18n();
-  const activeWallet = useUnit(walletModel.$activeWallet);
 
+  const activeWallet = useUnit(walletModel.$activeWallet);
   const wallets = useUnit(walletModel.$wallets);
+
   const signatoryWallet = wallets.find((w) => w.id === signatory?.walletId);
 
-  const api = connection?.api;
-  const chainId = connection?.chainId;
+  const api = extendedChain?.api;
+  const connection = extendedChain?.connection;
+  const defaultAsset = extendedChain?.assets[0];
+  const addressPrefix = extendedChain?.addressPrefix;
+  const explorers = extendedChain?.explorers;
 
-  const allValidators = Object.values(useValidatorsMap(api, chainId, connection && isLightClient(connection)));
+  const validatorsMap = useValidatorsMap(api, connection && isLightClient(connection));
 
   const [isValidatorsOpen, toggleValidators] = useToggle();
-  const asset =
-    tx.transaction && getAssetById(tx.transaction.args.asset, chainsService.getChainById(tx.chainId)?.assets);
 
   const cancelDescription = tx.cancelDescription;
+  const allValidators = Object.values(validatorsMap);
 
   const transaction = getTransactionFromMultisigTx(tx);
 
@@ -53,12 +51,6 @@ const Details = ({ tx, account, connection, signatory }: Props) => {
 
   const selectedValidators: Validator[] =
     allValidators.filter((v) => (transaction?.args.targets || startStakingValidators).includes(v.address)) || [];
-  const selectedValidatorsAddress = selectedValidators.map((validator) => validator.address);
-  const notSelectedValidators = allValidators.filter((v) => !selectedValidatorsAddress.includes(v.address));
-
-  const defaultAsset = connection?.assets[0];
-  const addressPrefix = connection?.addressPrefix;
-  const explorers = connection?.explorers;
 
   const hasSender = isXcmTransaction(tx.transaction) || isTransferTransaction(tx.transaction);
 
@@ -132,12 +124,10 @@ const Details = ({ tx, account, connection, signatory }: Props) => {
               <Icon name="info" size={16} />
             </button>
           </DetailRow>
-          <ValidatorsModal
+          <SelectedValidatorsModal
             isOpen={isValidatorsOpen}
-            asset={asset}
-            selectedValidators={selectedValidators}
-            notSelectedValidators={notSelectedValidators}
-            explorers={connection?.explorers}
+            validators={selectedValidators}
+            explorers={explorers}
             onClose={toggleValidators}
           />
         </>

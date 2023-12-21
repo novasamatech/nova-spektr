@@ -1,36 +1,39 @@
 import cn from 'classnames';
 import { useUnit } from 'effector-react';
 
-import { useI18n } from '@renderer/app/providers';
-import { AddressWithExplorers, WalletCardSm, walletModel } from '@renderer/entities/wallet';
-import { Icon, Button, FootnoteText, DetailRow } from '@renderer/shared/ui';
-import { copyToClipboard, truncate, cnTw, getAssetById } from '@renderer/shared/lib/utils';
-import { useToggle } from '@renderer/shared/lib/hooks';
-import { chainsService, ExtendedChain, isLightClient } from '@renderer/entities/network';
-import { MultisigTransaction, Transaction, isXcmTransaction } from '@renderer/entities/transaction';
+import { useI18n } from '@app/providers';
+import { AddressWithExplorers, WalletCardSm, walletModel } from '@entities/wallet';
+import { Icon, Button, FootnoteText, DetailRow } from '@shared/ui';
+import { copyToClipboard, truncate, cnTw, getAssetById } from '@shared/lib/utils';
+import { useToggle } from '@shared/lib/hooks';
+import { chainsService, ExtendedChain, isLightClient } from '@entities/network';
+import { MultisigTransaction, Transaction, isXcmTransaction } from '@entities/transaction';
 import { AddressStyle, DescriptionBlockStyle, InteractionStyle } from '../common/constants';
 import { getMultisigExtrinsicLink } from '../common/utils';
-import { AssetBalance } from '@renderer/entities/asset';
-import { ChainTitle } from '@renderer/entities/chain';
-import type { Address, MultisigAccount, Validator } from '@renderer/shared/core';
-import { getTransactionFromMultisigTx } from '@renderer/entities/multisig';
-import { useValidatorsMap, ValidatorsModal } from '@renderer/entities/staking';
-import { singnatoryUtils } from '@renderer/entities/signatory';
+import { AssetBalance } from '@entities/asset';
+import { ChainTitle } from '@entities/chain';
+import type { Address, MultisigAccount, Validator } from '@shared/core';
+import { getTransactionFromMultisigTx } from '@entities/multisig';
+import { useValidatorsMap, ValidatorsModal } from '@entities/staking';
+import { singnatoryUtils } from '@entities/signatory';
 
 type Props = {
   tx: MultisigTransaction;
   account?: MultisigAccount;
-  connection?: ExtendedChain;
+  extendedChain?: ExtendedChain;
 };
 
-export const OperationCardDetails = ({ tx, account, connection }: Props) => {
+export const OperationCardDetails = ({ tx, account, extendedChain }: Props) => {
   const { t } = useI18n();
   const activeWallet = useUnit(walletModel.$activeWallet);
   const wallets = useUnit(walletModel.$wallets);
   const accounts = useUnit(walletModel.$accounts);
 
-  const api = connection?.api;
-  const chainId = connection?.chainId;
+  const api = extendedChain?.api;
+  const defaultAsset = extendedChain?.assets[0];
+  const addressPrefix = extendedChain?.addressPrefix;
+  const explorers = extendedChain?.explorers;
+  const connection = extendedChain?.connection;
 
   const [isAdvancedShown, toggleAdvanced] = useToggle();
   const [isValidatorsOpen, toggleValidators] = useToggle();
@@ -38,21 +41,20 @@ export const OperationCardDetails = ({ tx, account, connection }: Props) => {
   const { indexCreated, blockCreated, deposit, depositor, callHash, callData, description, cancelDescription } = tx;
 
   const transaction = getTransactionFromMultisigTx(tx);
+  const validatorsMap = useValidatorsMap(api, connection && isLightClient(connection));
+
+  const allValidators = Object.values(validatorsMap);
 
   const startStakingValidators: Address[] =
     (tx.transaction?.type === 'batchAll' &&
       tx.transaction.args.transactions.find((tx: Transaction) => tx.type === 'nominate')?.args?.targets) ||
     [];
 
-  const allValidators = Object.values(useValidatorsMap(api, chainId, connection && isLightClient(connection)));
   const selectedValidators: Validator[] =
     allValidators.filter((v) => (transaction?.args.targets || startStakingValidators).includes(v.address)) || [];
   const selectedValidatorsAddress = selectedValidators.map((validator) => validator.address);
   const notSelectedValidators = allValidators.filter((v) => !selectedValidatorsAddress.includes(v.address));
 
-  const defaultAsset = connection?.assets[0];
-  const addressPrefix = connection?.addressPrefix;
-  const explorers = connection?.explorers;
   const depositorSignatory = account?.signatories.find((s) => s.accountId === depositor);
   const extrinsicLink = getMultisigExtrinsicLink(callHash, indexCreated, blockCreated, explorers);
   const validatorsAsset =
@@ -156,7 +158,7 @@ export const OperationCardDetails = ({ tx, account, connection }: Props) => {
             asset={validatorsAsset}
             selectedValidators={selectedValidators}
             notSelectedValidators={notSelectedValidators}
-            explorers={connection?.explorers}
+            explorers={extendedChain?.explorers}
             onClose={toggleValidators}
           />
         </>

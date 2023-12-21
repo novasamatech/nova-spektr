@@ -2,12 +2,12 @@ import { act, render, screen } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
 import userEvent from '@testing-library/user-event';
 
-import chains from '@renderer/assets/chains/chains.json';
-import { TEST_ACCOUNT_ID } from '@renderer/shared/lib/utils';
+import chains from '@shared/config/chains/chains.json';
+import { TEST_ACCOUNT_ID } from '@shared/lib/utils';
 import { AssetCard } from './AssetCard';
-import type { Chain, Asset, Balance } from '@renderer/shared/core';
+import type { Chain, Asset, Balance } from '@shared/core';
 
-jest.mock('@renderer/app/providers', () => ({
+jest.mock('@app/providers', () => ({
   useI18n: jest.fn().mockReturnValue({
     t: (key: string) => key,
   }),
@@ -28,20 +28,16 @@ const defaultProps = {
   } as Balance,
 };
 
-const renderAssetCard = (canMakeActions = false) => {
-  render(<AssetCard {...defaultProps} canMakeActions={canMakeActions} />, { wrapper: BrowserRouter });
-};
-
 describe('pages/Assets/AssetCard', () => {
   test('should render component', () => {
-    renderAssetCard();
+    render(<AssetCard {...defaultProps} />, { wrapper: BrowserRouter });
 
     const chainName = screen.getByText(testChain.name);
     expect(chainName).toBeInTheDocument();
   });
 
   test('should show expanded row', async () => {
-    renderAssetCard();
+    render(<AssetCard {...defaultProps} />, { wrapper: BrowserRouter });
 
     const textHidden = screen.queryByText('assetBalance.transferable');
     expect(textHidden).not.toBeInTheDocument();
@@ -53,7 +49,7 @@ describe('pages/Assets/AssetCard', () => {
   });
 
   test('should hide action buttons', () => {
-    renderAssetCard();
+    render(<AssetCard {...defaultProps} />, { wrapper: BrowserRouter });
 
     const buttons = screen.getAllByRole('button');
     expect(buttons.length).toEqual(1);
@@ -61,7 +57,7 @@ describe('pages/Assets/AssetCard', () => {
 
   test('should navigate to receive asset modal', () => {
     window.history.pushState({}, '', '/assets');
-    renderAssetCard(true);
+    render(<AssetCard {...defaultProps} />, { wrapper: BrowserRouter });
     expect(window.location.href).toEqual('http://localhost/assets');
 
     const link = screen.getAllByRole('link')[1];

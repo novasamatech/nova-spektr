@@ -3,14 +3,13 @@ import { BN, BN_ZERO } from '@polkadot/util';
 import { useEffect, useState } from 'react';
 import { useUnit } from 'effector-react';
 
-import { useI18n } from '@renderer/app/providers';
-import { useBalance } from '@renderer/entities/asset';
-import { Transaction, TransactionType, OperationError } from '@renderer/entities/transaction';
-import type { Account, Asset, Balance as AccountBalance, ChainId, AccountId, Wallet } from '@renderer/shared/core';
-import { redeemableAmount, formatBalance, nonNullable, toAddress } from '@renderer/shared/lib/utils';
-import { StakingMap, useStakingData, useEra } from '@renderer/entities/staking';
-import { OperationFooter, OperationHeader } from '@renderer/features/operation';
-import { walletModel, walletUtils, accountUtils } from '@renderer/entities/wallet';
+import { useI18n } from '@app/providers';
+import { Transaction, TransactionType, OperationError } from '@entities/transaction';
+import type { Account, Asset, Balance as AccountBalance, ChainId, AccountId, Wallet } from '@shared/core';
+import { redeemableAmount, formatBalance, nonNullable, toAddress } from '@shared/lib/utils';
+import { StakingMap, useStakingData, useEra } from '@entities/staking';
+import { OperationFooter, OperationHeader } from '@features/operation';
+import { walletModel, walletUtils, accountUtils } from '@entities/wallet';
 import { OperationForm } from '../../components';
 import {
   getSignatoryOption,
@@ -18,6 +17,7 @@ import {
   validateBalanceForFeeDeposit,
   getRedeemAccountOption,
 } from '../../common/utils';
+import { useAssetBalances } from '@entities/balance';
 
 export type RedeemResult = {
   accounts: Account[];
@@ -39,7 +39,6 @@ const InitOperation = ({ api, chainId, accounts, addressPrefix, asset, onResult 
   const { t } = useI18n();
   const activeWallet = useUnit(walletModel.$activeWallet);
 
-  const { getLiveAssetBalances } = useBalance();
   const { subscribeStaking } = useStakingData();
   const { subscribeActiveEra } = useEra();
 
@@ -68,10 +67,19 @@ const InitOperation = ({ api, chainId, accounts, addressPrefix, asset, onResult 
     : [{ name: 'amount', value: redeemBalance.value, disabled: true }];
 
   const accountIds = accounts.map((account) => account.accountId);
-  const balances = getLiveAssetBalances(accountIds, chainId, asset.assetId.toString());
+  const balances = useAssetBalances({
+    accountIds,
+    chainId,
+    assetId: asset.assetId.toString(),
+  });
 
   const signatoryIds = isMultisigAccount ? firstAccount.signatories.map((s) => s.accountId) : [];
-  const signatoriesBalances = getLiveAssetBalances(signatoryIds, chainId, asset.assetId.toString());
+  const signatoriesBalances = useAssetBalances({
+    accountIds: signatoryIds,
+    chainId,
+    assetId: asset.assetId.toString(),
+  });
+
   const signerBalance = signatoriesBalances.find((b) => b.accountId === activeSignatory?.accountId);
 
   useEffect(() => {

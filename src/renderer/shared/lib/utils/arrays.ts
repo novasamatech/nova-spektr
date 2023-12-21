@@ -8,7 +8,7 @@ import type { KeysOfType } from '../../core/types/utility';
  * @return {Array}
  */
 export function splice<T extends any>(collection: T[], item: T, position: number): T[] {
-  return [...collection.slice(0, position), item, ...collection.slice(position + 1)];
+  return collection.slice(0, position).concat(item, collection.slice(position + 1));
 }
 
 /**
@@ -35,4 +35,8 @@ export function dictionary<T extends Record<K, PropertyKey>, K extends KeysOfTyp
 
     return acc;
   }, {} as Record<T[K], any>);
+}
+
+export function getRepeatedIndex(index: number, base: number): number {
+  return Math.floor(index / base);
 }

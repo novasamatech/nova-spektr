@@ -2,7 +2,7 @@ import { act, render, screen } from '@testing-library/react';
 
 import InfoPopover, { InfoSection } from './InfoPopover';
 
-jest.mock('@renderer/app/providers', () => ({
+jest.mock('@app/providers', () => ({
   useMatrix: jest.fn(),
 }));
 

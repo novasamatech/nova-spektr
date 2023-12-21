@@ -1,7 +1,7 @@
 import { Trans } from 'react-i18next';
 
-import { FootnoteText, InfoLink, LabelHelpBox, Popover, SmallTitleText } from '@renderer/shared/ui';
-import { useI18n } from '@renderer/app/providers';
+import { FootnoteText, InfoLink, LabelHelpBox, Popover, SmallTitleText } from '@shared/ui';
+import { useI18n } from '@app/providers';
 
 const MATRIX = 'https://matrix.org/';
 const SMP = 'https://docs.novaspektr.io/multisig-accounts/spektr-matrix-protocol';
@@ -12,8 +12,8 @@ const linkClass = 'text-footnote text-tab-text-accent';
 export const MatrixInfoPopover = () => {
   const { t } = useI18n();
 
-  const matrix = <InfoLink url={MATRIX} showIcon={false} className={linkClass} />;
-  const smp = <InfoLink url={SMP} showIcon={false} className={linkClass} />;
+  const matrix = <InfoLink url={MATRIX} className={linkClass} />;
+  const smp = <InfoLink url={SMP} className={linkClass} />;
 
   return (
     <Popover

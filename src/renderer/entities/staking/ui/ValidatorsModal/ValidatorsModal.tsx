@@ -1,8 +1,8 @@
-import { Accordion, BaseModal, SmallTitleText } from '@renderer/shared/ui';
-import { useI18n } from '@renderer/app/providers';
-import { Validator } from '@renderer/shared/core/types/validator';
-import { cnTw } from '@renderer/shared/lib/utils';
-import type { Asset, Explorer } from '@renderer/shared/core';
+import { Accordion, BaseModal, SmallTitleText } from '@shared/ui';
+import { useI18n } from '@app/providers';
+import { Validator } from '@shared/core/types/validator';
+import { cnTw } from '@shared/lib/utils';
+import type { Asset, Explorer } from '@shared/core';
 import { ValidatorsTable } from '../ValidatorsTable/ValidatorsTable';
 
 type Props = {
@@ -38,14 +38,14 @@ export const ValidatorsModal = ({
           <Accordion.Button buttonClass="px-5 py-[5px]">
             <SmallTitleText className="flex">
               {t('staking.confirmation.electedValidators')}&nbsp;
-              <p className="text-text-tertiary">({selectedValidators.length})</p>
+              <span className="text-text-tertiary">({selectedValidators.length})</span>
             </SmallTitleText>
           </Accordion.Button>
           <Accordion.Content>
             <ValidatorsTable validators={selectedValidators} listClassName="max-h-none">
-              {(validtor, rowStyle) => (
-                <li key={validtor.address} className={cnTw(rowStyle, 'hover:bg-hover group')}>
-                  <ValidatorsTable.Row validator={validtor} asset={asset} explorers={explorers} />
+              {(validator, rowStyle) => (
+                <li key={validator.address} className={cnTw(rowStyle, 'hover:bg-hover group')}>
+                  <ValidatorsTable.Row validator={validator} asset={asset} explorers={explorers} />
                 </li>
               )}
             </ValidatorsTable>
@@ -56,14 +56,14 @@ export const ValidatorsModal = ({
           <Accordion.Button buttonClass="px-5 py-[5px]">
             <SmallTitleText className="flex">
               {t('staking.confirmation.notElectedValidators')}&nbsp;
-              <p className="text-text-tertiary">({notSelectedValidators.length})</p>
+              <span className="text-text-tertiary">({notSelectedValidators.length})</span>
             </SmallTitleText>
           </Accordion.Button>
           <Accordion.Content>
             <ValidatorsTable validators={notSelectedValidators} listClassName="max-h-none">
-              {(validtor, rowStyle) => (
-                <li key={validtor.address} className={cnTw(rowStyle, 'hover:bg-hover group')}>
-                  <ValidatorsTable.Row validator={validtor} asset={asset} explorers={explorers} />
+              {(validator, rowStyle) => (
+                <li key={validator.address} className={cnTw(rowStyle, 'hover:bg-hover group')}>
+                  <ValidatorsTable.Row validator={validator} asset={asset} explorers={explorers} />
                 </li>
               )}
             </ValidatorsTable>

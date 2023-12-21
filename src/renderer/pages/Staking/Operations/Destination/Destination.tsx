@@ -3,21 +3,22 @@ import { useState, useEffect } from 'react';
 import { Navigate, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { useUnit } from 'effector-react';
 
-import { toAddress, getRelaychainAsset, DEFAULT_TRANSITION } from '@renderer/shared/lib/utils';
-import { useI18n, useNetworkContext } from '@renderer/app/providers';
-import { Paths } from '@renderer/shared/routes';
-import { Transaction, TransactionType, useTransaction } from '@renderer/entities/transaction';
+import { toAddress, getRelaychainAsset, DEFAULT_TRANSITION } from '@shared/lib/utils';
+import { useI18n } from '@app/providers';
+import { Paths } from '@shared/routes';
+import { Transaction, TransactionType, useTransaction } from '@entities/transaction';
 import { Confirmation, Submit, NoAsset } from '../components';
 import InitOperation, { DestinationResult } from './InitOperation/InitOperation';
-import { useToggle } from '@renderer/shared/lib/hooks';
+import { useToggle } from '@shared/lib/hooks';
 import { DestinationType } from '../common/types';
-import { BaseModal, Button, Loader } from '@renderer/shared/ui';
+import { BaseModal, Button, Loader } from '@shared/ui';
 import { OperationTitle } from '@renderer/components/common';
-import { Signing } from '@renderer/features/operation';
-import { RewardsDestination } from '@renderer/shared/core';
-import type { Account, Address, ChainId, HexString } from '@renderer/shared/core';
-import { walletModel, walletUtils } from '@renderer/entities/wallet';
-import { priceProviderModel } from '@renderer/entities/price';
+import { Signing } from '@features/operation';
+import { RewardsDestination } from '@shared/core';
+import type { Account, Address, ChainId, HexString } from '@shared/core';
+import { walletModel, walletUtils } from '@entities/wallet';
+import { priceProviderModel } from '@entities/price';
+import { useNetworkData } from '@entities/network';
 
 const enum Step {
   INIT,
@@ -32,10 +33,11 @@ export const Destination = () => {
   const activeAccounts = useUnit(walletModel.$activeAccounts);
 
   const navigate = useNavigate();
-  const { connections } = useNetworkContext();
   const { setTxs, txs, setWrappers, wrapTx, buildTransaction } = useTransaction();
   const [searchParams] = useSearchParams();
   const params = useParams<{ chainId: ChainId }>();
+
+  const { api, chain } = useNetworkData(params.chainId || ('' as ChainId));
 
   const [isDestModalOpen, toggleDestModal] = useToggle(true);
 
@@ -67,13 +69,11 @@ export const Destination = () => {
     setAccounts(accounts);
   }, [activeAccounts.length]);
 
-  const connection = connections[chainId];
-
-  if (!connection || accountIds.length === 0) {
+  if (!api || accountIds.length === 0) {
     return <Navigate replace to={Paths.STAKING} />;
   }
 
-  const { api, explorers, addressPrefix, assets, name } = connections[chainId];
+  const { explorers, addressPrefix, assets, name } = chain;
   const asset = getRelaychainAsset(assets);
 
   const goToPrevStep = () => {
@@ -94,7 +94,7 @@ export const Destination = () => {
       <BaseModal
         closeButton
         contentClass=""
-        headerClass="py-3 px-5 max-w-[440px]"
+        headerClass="py-3 pl-5 pr-3"
         panelClass="w-max"
         isOpen={isDestModalOpen}
         title={<OperationTitle title={t('staking.destination.title')} chainId={chainId} />}
@@ -116,7 +116,7 @@ export const Destination = () => {
         closeButton
         contentClass=""
         panelClass="w-max"
-        headerClass="py-3 px-5 max-w-[440px]"
+        headerClass="py-3 pl-5 pr-3"
         isOpen={isDestModalOpen}
         title={<OperationTitle title={t('staking.destination.title')} chainId={chainId} />}
         onClose={closeDestinationModal}
@@ -176,7 +176,7 @@ export const Destination = () => {
       <BaseModal
         closeButton
         contentClass=""
-        headerClass="py-3 px-5 max-w-[440px]"
+        headerClass="py-3 pl-5 pr-3"
         panelClass="w-max"
         isOpen={activeStep !== Step.SUBMIT && isDestModalOpen}
         title={<OperationTitle title={t('staking.destination.title')} chainId={chainId} />}

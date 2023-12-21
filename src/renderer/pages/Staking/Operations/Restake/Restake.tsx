@@ -3,20 +3,22 @@ import { useEffect, useState } from 'react';
 import { Navigate, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { useUnit } from 'effector-react';
 
-import { useI18n, useNetworkContext } from '@renderer/app/providers';
-import { Paths } from '@renderer/shared/routes';
-import { ChainId, HexString } from '@renderer/shared/core';
-import { Transaction, TransactionType, useTransaction } from '@renderer/entities/transaction';
+import { useI18n } from '@app/providers';
+import { Paths } from '@shared/routes';
+import { ChainId, HexString } from '@shared/core';
+import { Transaction, TransactionType, useTransaction } from '@entities/transaction';
 import InitOperation, { RestakeResult } from './InitOperation/InitOperation';
 import { Confirmation, Submit, NoAsset } from '../components';
-import { getRelaychainAsset, toAddress, DEFAULT_TRANSITION } from '@renderer/shared/lib/utils';
-import { useToggle } from '@renderer/shared/lib/hooks';
-import { Alert, BaseModal, Button, Loader } from '@renderer/shared/ui';
+import { getRelaychainAsset, toAddress, DEFAULT_TRANSITION } from '@shared/lib/utils';
+import { useToggle } from '@shared/lib/hooks';
+import { BaseModal, Button, Loader } from '@shared/ui';
 import { OperationTitle } from '@renderer/components/common';
-import { Signing } from '@renderer/features/operation';
-import type { Account } from '@renderer/shared/core';
-import { walletModel, walletUtils } from '@renderer/entities/wallet';
-import { priceProviderModel } from '@renderer/entities/price';
+import { Signing } from '@features/operation';
+import type { Account } from '@shared/core';
+import { walletModel, walletUtils } from '@entities/wallet';
+import { priceProviderModel } from '@entities/price';
+import { StakingPopover } from '../components/StakingPopover/StakingPopover';
+import { useNetworkData } from '@entities/network';
 
 const enum Step {
   INIT,
@@ -31,13 +33,13 @@ export const Restake = () => {
   const activeAccounts = useUnit(walletModel.$activeAccounts);
 
   const navigate = useNavigate();
-  const { connections } = useNetworkContext();
   const { setTxs, txs, setWrappers, wrapTx, buildTransaction } = useTransaction();
   const [searchParams] = useSearchParams();
   const params = useParams<{ chainId: ChainId }>();
 
+  const { api, chain } = useNetworkData(params.chainId || ('' as ChainId));
+
   const [isRestakeModalOpen, toggleRestakeModal] = useToggle(true);
-  const [isAlertOpen, toggleAlert] = useToggle(true);
 
   const [activeStep, setActiveStep] = useState<Step>(Step.INIT);
 
@@ -67,13 +69,11 @@ export const Restake = () => {
     setAccounts(accounts);
   }, [activeAccounts.length]);
 
-  const connection = connections[chainId];
-
-  if (!connection || accountIds.length === 0) {
+  if (!api || accountIds.length === 0) {
     return <Navigate replace to={Paths.STAKING} />;
   }
 
-  const { api, explorers, addressPrefix, assets, name } = connections[chainId];
+  const { explorers, addressPrefix, assets, name } = chain;
   const asset = getRelaychainAsset(assets);
 
   const goToPrevStep = () => {
@@ -95,7 +95,7 @@ export const Restake = () => {
         closeButton
         contentClass=""
         panelClass="w-max"
-        headerClass="py-3 px-5 max-w-[440px]"
+        headerClass="py-3 pl-5 pr-3"
         isOpen={isRestakeModalOpen}
         title={<OperationTitle title={t('staking.restake.title')} chainId={chainId} />}
         onClose={closeRestakeModal}
@@ -115,7 +115,7 @@ export const Restake = () => {
       <BaseModal
         closeButton
         contentClass=""
-        headerClass="py-3 px-5 max-w-[440px]"
+        headerClass="py-3 pl-5 pr-3"
         panelClass="w-max"
         isOpen={isRestakeModalOpen}
         title={<OperationTitle title={t('staking.restake.title')} chainId={chainId} />}
@@ -171,7 +171,7 @@ export const Restake = () => {
       <BaseModal
         closeButton
         contentClass=""
-        headerClass="py-3 px-5 max-w-[440px]"
+        headerClass="py-3 pl-5 pr-3"
         panelClass="w-max"
         isOpen={activeStep !== Step.SUBMIT && isRestakeModalOpen}
         title={<OperationTitle title={t('staking.restake.title')} chainId={chainId} />}
@@ -191,11 +191,9 @@ export const Restake = () => {
             onGoBack={goToPrevStep}
             {...explorersProps}
           >
-            {isAlertOpen && (
-              <Alert title={t('staking.confirmation.hintTitle')} onClose={toggleAlert}>
-                <Alert.Item>{t('staking.confirmation.hintRestake')}</Alert.Item>
-              </Alert>
-            )}
+            <StakingPopover labelText={t('staking.confirmation.hintTitle')}>
+              <StakingPopover.Item>{t('staking.confirmation.hintRestake')}</StakingPopover.Item>
+            </StakingPopover>
           </Confirmation>
         )}
         {activeStep === Step.SIGNING && (

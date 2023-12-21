@@ -4,23 +4,22 @@ import { Weight } from '@polkadot/types/interfaces';
 import { BN } from '@polkadot/util';
 import { useUnit } from 'effector-react';
 
-import { BaseModal, Button } from '@renderer/shared/ui';
-import { useI18n } from '@renderer/app/providers';
-import { MultisigTransactionDS } from '@renderer/shared/api/storage';
-import { useToggle } from '@renderer/shared/lib/hooks';
-import { ExtendedChain } from '@renderer/entities/network';
-import { TEST_ADDRESS, toAddress, transferableAmount, getAssetById } from '@renderer/shared/lib/utils';
+import { BaseModal, Button } from '@shared/ui';
+import { useI18n } from '@app/providers';
+import { MultisigTransactionDS } from '@shared/api/storage';
+import { useToggle } from '@shared/lib/hooks';
+import { ExtendedChain } from '@entities/network';
+import { TEST_ADDRESS, toAddress, transferableAmount, getAssetById } from '@shared/lib/utils';
 import { getMultisigSignOperationTitle, getSignatoryAccounts } from '../../common/utils';
-import { useBalance } from '@renderer/entities/asset';
 import { Submit } from '../ActionSteps/Submit';
 import { Confirmation } from '../ActionSteps/Confirmation';
 import { SignatorySelectModal } from './SignatorySelectModal';
-import { useMultisigEvent } from '@renderer/entities/multisig';
-import { Signing } from '@renderer/features/operation';
+import { useMultisigEvent } from '@entities/multisig';
+import { Signing } from '@features/operation';
 import { OperationTitle } from '@renderer/components/common';
-import { walletModel } from '@renderer/entities/wallet';
-import { priceProviderModel } from '@renderer/entities/price';
-import type { Address, HexString, Timepoint, MultisigAccount, Account } from '@renderer/shared/core';
+import { walletModel } from '@entities/wallet';
+import { priceProviderModel } from '@entities/price';
+import type { Address, HexString, Timepoint, MultisigAccount, Account } from '@shared/core';
 import {
   isXcmTransaction,
   MAX_WEIGHT,
@@ -30,7 +29,8 @@ import {
   useCallDataDecoder,
   useTransaction,
   validateBalance,
-} from '@renderer/entities/transaction';
+} from '@entities/transaction';
+import { balanceModel, balanceUtils } from '@entities/balance';
 
 type Props = {
   tx: MultisigTransactionDS;
@@ -50,8 +50,8 @@ const ApproveTx = ({ tx, account, connection }: Props) => {
   const { t } = useI18n();
   const wallets = useUnit(walletModel.$wallets);
   const accounts = useUnit(walletModel.$accounts);
+  const balances = useUnit(balanceModel.$balances);
 
-  const { getBalance } = useBalance();
   const { getTransactionFee, getExtrinsicWeight, getTxWeight } = useTransaction();
   const { getTxFromCallData } = useCallDataDecoder();
   const { getLiveTxEvents } = useMultisigEvent({});
@@ -106,7 +106,7 @@ const ApproveTx = ({ tx, account, connection }: Props) => {
       }
     }
 
-    setTxWeight(weight);
+    setTxWeight(weight as Weight);
   };
 
   useEffect(() => {
@@ -164,7 +164,12 @@ const ApproveTx = ({ tx, account, connection }: Props) => {
     if (!connection.api || !feeTx || !signAccount.accountId || !nativeAsset) return false;
 
     const fee = await getTransactionFee(feeTx, connection.api);
-    const balance = await getBalance(signAccount.accountId, connection.chainId, nativeAsset.assetId.toString());
+    const balance = balanceUtils.getBalance(
+      balances,
+      signAccount.accountId,
+      connection.chainId,
+      nativeAsset.assetId.toString(),
+    );
 
     if (!balance) return false;
 
@@ -199,7 +204,7 @@ const ApproveTx = ({ tx, account, connection }: Props) => {
       chainId: tx.chainId,
       transaction: approveTx,
       assetId: nativeAsset.assetId.toString(),
-      getBalance,
+      getBalance: balanceUtils.getBalanceWrapped(balances),
       getTransactionFee,
     });
 
@@ -226,7 +231,7 @@ const ApproveTx = ({ tx, account, connection }: Props) => {
         isOpen={activeStep !== Step.SUBMIT && isModalOpen}
         title={<OperationTitle title={t(transactionTitle, { asset: asset?.symbol })} chainId={tx.chainId} />}
         contentClass={activeStep === Step.SIGNING ? '' : undefined}
-        headerClass="py-3 px-5 max-w-[440px]"
+        headerClass="py-3 pl-5 pr-3"
         panelClass="w-[440px]"
         onClose={handleClose}
       >

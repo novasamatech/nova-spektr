@@ -1,17 +1,13 @@
 import { render, screen } from '@testing-library/react';
 
-import { Validator } from '@renderer/shared/core/types/validator';
+import { Validator } from '@shared/core/types/validator';
 import { ValidatorsModal } from './ValidatorsModal';
-import type { Asset } from '@renderer/shared/core';
+import type { Asset } from '@shared/core';
 
-jest.mock('@renderer/app/providers', () => ({
+jest.mock('@app/providers', () => ({
   useI18n: jest.fn().mockReturnValue({
     t: (key: string) => key,
   }),
-}));
-
-jest.mock('@renderer/entities/wallet', () => ({
-  AddressWithExplorers: ({ address }: { address: string }) => <span data-testid="validator">{address}</span>,
 }));
 
 describe('pages/Staking/components/ValidatorsModal', () => {
@@ -46,17 +42,17 @@ describe('pages/Staking/components/ValidatorsModal', () => {
     onClose: () => {},
   };
 
-  test('should render component', () => {
+  test('should render component', async () => {
     render(<ValidatorsModal {...defaultProps} />);
 
-    const title = screen.getByText('staking.confirmation.validatorsTitle');
+    const title = await screen.findByText('staking.confirmation.validatorsTitle');
     expect(title).toBeInTheDocument();
   });
 
-  test('should render all validators', () => {
+  test('should render all validators', async () => {
     render(<ValidatorsModal {...defaultProps} />);
 
-    const items = screen.getAllByTestId('validator');
+    const items = await screen.findAllByTestId('validator');
     expect(items).toHaveLength(defaultProps.selectedValidators.length);
   });
 });

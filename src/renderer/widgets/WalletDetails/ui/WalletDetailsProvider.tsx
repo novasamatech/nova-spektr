@@ -1,19 +1,14 @@
 import { useUnit } from 'effector-react';
 
-import { walletSelectModel } from '@renderer/features/wallets';
+import { walletSelectModel } from '@features/wallets';
 import { SimpleWalletDetails } from './SimpleWalletDetails';
 import { MultisigWalletDetails } from './MultisigWalletDetails';
 import { WalletConnectDetails } from './WalletConnectDetails';
-import { walletProviderModel } from '../model/wallet-provider-model';
 import { MultishardWalletDetails } from './MultishardWalletDetails';
-import { walletUtils } from '@renderer/entities/wallet';
-import type { Wallet } from '@renderer/shared/core';
-import { wcDetailsModel } from '../model/wc-details-model';
+import { VaultWalletDetails } from './VaultWalletDetails';
+import { walletProviderModel } from '../model/wallet-provider-model';
+import { walletUtils } from '@entities/wallet';
 
-type ModalProps = {
-  wallet: Wallet;
-  onClose: () => void;
-};
 export const WalletDetailsProvider = () => {
   const wallet = useUnit(walletSelectModel.$walletForDetails);
   const accounts = useUnit(walletProviderModel.$accounts);
@@ -21,38 +16,59 @@ export const WalletDetailsProvider = () => {
   const multiShardAccounts = useUnit(walletProviderModel.$multiShardAccounts);
   const multisigAccount = useUnit(walletProviderModel.$multisigAccount);
   const contacts = useUnit(walletProviderModel.$signatoryContacts);
-  const isConnected = useUnit(wcDetailsModel.$isConnected);
+  const vaultAccounts = useUnit(walletProviderModel.$vaultAccounts);
   const signatoryWallets = useUnit(walletProviderModel.$signatoryWallets);
 
   if (!wallet) return null;
 
-  const commonProps: ModalProps = {
-    wallet,
-    onClose: walletSelectModel.events.walletForDetailsCleared,
-  };
-
   if ((walletUtils.isWatchOnly(wallet) || walletUtils.isSingleShard(wallet)) && singleShardAccount) {
-    return <SimpleWalletDetails account={singleShardAccount} {...commonProps} />;
+    return (
+      <SimpleWalletDetails
+        wallet={wallet}
+        account={singleShardAccount}
+        onClose={walletSelectModel.events.walletIdCleared}
+      />
+    );
   }
 
   if (walletUtils.isMultiShard(wallet) && multiShardAccounts.size > 0) {
-    return <MultishardWalletDetails accounts={multiShardAccounts} {...commonProps} />;
+    return (
+      <MultishardWalletDetails
+        wallet={wallet}
+        accounts={multiShardAccounts}
+        onClose={walletSelectModel.events.walletIdCleared}
+      />
+    );
   }
 
   if (walletUtils.isMultisig(wallet) && multisigAccount) {
     return (
       <MultisigWalletDetails
+        wallet={wallet}
         account={multisigAccount}
         signatoryWallets={signatoryWallets}
         signatoryContacts={contacts}
-        {...commonProps}
+        onClose={walletSelectModel.events.walletIdCleared}
       />
     );
   }
 
   if (walletUtils.isWalletConnect(wallet) || walletUtils.isNovaWallet(wallet)) {
-    return <WalletConnectDetails accounts={accounts} isConnected={isConnected} {...commonProps} />;
+    return (
+      <WalletConnectDetails wallet={wallet} accounts={accounts} onClose={walletSelectModel.events.walletIdCleared} />
+    );
   }
 
-  return <></>; // HINT: Only Polkadot Vault left
+  if (walletUtils.isPolkadotVault(wallet) && vaultAccounts) {
+    return (
+      <VaultWalletDetails
+        wallet={wallet}
+        root={vaultAccounts.root}
+        accountsMap={vaultAccounts.accountsMap}
+        onClose={walletSelectModel.events.walletIdCleared}
+      />
+    );
+  }
+
+  return null;
 };

@@ -1,6 +1,6 @@
-import { ID, MultisigEventDS } from '@renderer/shared/api/storage';
-import { AccountId, CallHash, ChainId } from '@renderer/shared/core';
-import { MultisigEvent, MultisigTransactionKey, SigningStatus } from '@renderer/entities/transaction/model/transaction';
+import { ID, MultisigEventDS } from '@shared/api/storage';
+import { AccountId, CallHash, ChainId } from '@shared/core';
+import { MultisigEvent, MultisigTransactionKey, SigningStatus } from '@entities/transaction/model/transaction';
 
 export interface IMultisigEventService {
   getEvent: (eventId: ID) => Promise<MultisigEventDS | undefined>;

@@ -2,6 +2,14 @@ import cn from 'classnames';
 import { useEffect, useState } from 'react';
 import { Controller, SubmitHandler, useForm } from 'react-hook-form';
 
+import { useI18n } from '@app/providers';
+import { chainsService } from '@entities/network';
+import { toAccountId, validateAddress, DEFAULT_TRANSITION } from '@shared/lib/utils';
+import EmptyState from './EmptyState';
+import { AccountsList, walletModel } from '@entities/wallet';
+import { useToggle } from '@shared/lib/hooks';
+import type { AccountId, Chain } from '@shared/core';
+import { ErrorType, CryptoType, ChainType, WalletType, SigningType, AccountType } from '@shared/core';
 import {
   Icon,
   Identicon,
@@ -11,15 +19,8 @@ import {
   InputHint,
   HeaderTitleText,
   SmallTitleText,
-} from '@renderer/shared/ui';
-import { useI18n } from '@renderer/app/providers';
-import { chainsService } from '@renderer/entities/network';
-import { toAccountId, validateAddress, DEFAULT_TRANSITION } from '@renderer/shared/lib/utils';
-import EmptyState from './EmptyState';
-import { AccountsList, walletModel } from '@renderer/entities/wallet';
-import { useToggle } from '@renderer/shared/lib/hooks';
-import type { AccountId, Chain } from '@renderer/shared/core';
-import { ErrorType, CryptoType, ChainType, WalletType, SigningType, AccountType } from '@renderer/shared/core';
+  IconButton,
+} from '@shared/ui';
 
 type WalletForm = {
   walletName: string;
@@ -66,9 +67,7 @@ const WatchOnly = ({ isOpen, onClose, onComplete }: Props) => {
   }, [address]);
 
   useEffect(() => {
-    const chains = chainsService.getChainsData();
-
-    setChains(chainsService.sortChains(chains));
+    setChains(chainsService.getChainsData({ sort: true }));
   }, []);
 
   const createWallet: SubmitHandler<WalletForm> = async ({ walletName, address }) => {
@@ -99,13 +98,7 @@ const WatchOnly = ({ isOpen, onClose, onComplete }: Props) => {
   };
 
   return (
-    <BaseModal
-      contentClass="flex h-full"
-      panelClass="w-[944px] h-[576px]"
-      isOpen={isModalOpen}
-      closeButton
-      onClose={closeWowModal}
-    >
+    <BaseModal contentClass="flex h-full" panelClass="w-[944px] h-[576px]" isOpen={isModalOpen} onClose={closeWowModal}>
       <div className="w-[472px] flex flex-col px-5 py-4 bg-white rounded-l-lg">
         <HeaderTitleText className="mb-10">{t('onboarding.watchOnly.title')}</HeaderTitleText>
         <SmallTitleText className="mb-6">{t('onboarding.watchOnly.manageTitle')}</SmallTitleText>
@@ -174,7 +167,9 @@ const WatchOnly = ({ isOpen, onClose, onComplete }: Props) => {
         </form>
       </div>
 
-      <div className="w-[472px] flex flex-col gap-y-6 bg-input-background-disabled py-4 rounded-r-lg">
+      <div className="relative w-[472px] flex flex-col gap-y-6 bg-input-background-disabled py-4 rounded-r-lg">
+        <IconButton name="close" size={20} className="absolute right-3 top-3 m-1" onClick={() => closeWowModal()} />
+
         {accountId && accountId.length > 12 ? (
           <>
             <SmallTitleText className="px-5 mt-[52px]">{t('onboarding.watchOnly.accountsTitle')}</SmallTitleText>

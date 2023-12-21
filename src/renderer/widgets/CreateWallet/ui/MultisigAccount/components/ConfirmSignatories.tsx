@@ -1,10 +1,10 @@
-import { cnTw } from '@renderer/shared/lib/utils';
-import { useI18n } from '@renderer/app/providers';
-import { FootnoteText, SmallTitleText } from '@renderer/shared/ui';
+import { cnTw } from '@shared/lib/utils';
+import { useI18n } from '@app/providers';
+import { FootnoteText, SmallTitleText } from '@shared/ui';
 import { ExtendedWallet, ExtendedContact } from '../common/types';
 import { WalletItem } from './WalletItem';
-import { ContactItem } from '@renderer/entities/wallet';
-import { WalletType } from '@renderer/shared/core';
+import { ContactItem } from '@entities/wallet';
+import { WalletType } from '@shared/core';
 
 type Props = {
   isActive: boolean;
@@ -16,9 +16,7 @@ export const ConfirmSignatories = ({ isActive, wallets, contacts }: Props) => {
   const { t } = useI18n();
 
   return (
-    <section
-      className={cnTw('flex flex-col px-5 py-4 flex-1 bg-input-background-disabled h-full', !isActive && 'hidden')}
-    >
+    <div className={cnTw(!isActive && 'hidden')}>
       <SmallTitleText className="py-2 mb-4">{t('createMultisigAccount.selectedSignatoriesTitle')}</SmallTitleText>
 
       <div className="flex flex-col gap-y-2 flex-1 overflow-y-auto">
@@ -48,6 +46,6 @@ export const ConfirmSignatories = ({ isActive, wallets, contacts }: Props) => {
           </>
         )}
       </div>
-    </section>
+    </div>
   );
 };

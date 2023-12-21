@@ -1,11 +1,11 @@
 import { useMemo } from 'react';
 
-import { RootExplorers, cnTw } from '@renderer/shared/lib/utils';
-import { ContactItem } from '@renderer/entities/wallet';
-import { useI18n } from '@renderer/app/providers';
-import { FootnoteText, Accordion } from '@renderer/shared/ui';
-import type { Chain, ChainAccount, ChainId, BaseAccount } from '@renderer/shared/core';
-import { ChainTitle } from '@renderer/entities/chain';
+import { RootExplorers, cnTw } from '@shared/lib/utils';
+import { ContactItem } from '@entities/wallet';
+import { useI18n } from '@app/providers';
+import { FootnoteText, Accordion } from '@shared/ui';
+import type { Chain, ChainAccount, ChainId, BaseAccount } from '@shared/core';
+import { ChainTitle } from '@entities/chain';
 
 type Props = {
   accounts: Map<BaseAccount, Record<ChainId, ChainAccount[]>>;
@@ -35,13 +35,16 @@ export const MultishardAccountsList = ({ accounts, chains, className }: Props) =
 
           <FootnoteText className="pl-10 text-text-tertiary">{t('accountList.addressColumn')}</FootnoteText>
 
-          {chains.map((chain, index) => {
+          {chains.map((chain) => {
             if (!chainMap[chain.chainId]) return;
 
             return (
               <Accordion key={chain.chainId} isDefaultOpen className="pl-10">
                 <Accordion.Button buttonClass="py-2">
-                  <ChainTitle fontClass="text-text-primary" chain={chain} />
+                  <div className="flex gap-x-2">
+                    <ChainTitle fontClass="text-text-primary" chain={chain} />
+                    <FootnoteText className="text-text-tertiary">{chainMap[chain.chainId].length}</FootnoteText>
+                  </div>
                 </Accordion.Button>
                 <Accordion.Content>
                   {chainMap[chain.chainId].map((account) => (

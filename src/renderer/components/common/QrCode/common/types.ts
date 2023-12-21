@@ -1,7 +1,8 @@
 // eslint-disable-next-line import/named
 import { DecodeContinuouslyCallback } from '@zxing/browser/esm/common/DecodeContinuouslyCallback';
 
-import type { Address, CryptoType, CryptoTypeString, ChainId } from '@renderer/shared/core';
+import type { Address, CryptoType, CryptoTypeString, ChainId } from '@shared/core';
+import type { VaultFeature } from './constants';
 
 export const enum QrError {
   USER_DENY,
@@ -25,21 +26,26 @@ export type Progress = {
   total: number;
 };
 
-// Public root key
-export type MultiSigner = {
+export type MultiSigner<T extends string | Uint8Array> = {
   MultiSigner: Exclude<CryptoTypeString, CryptoTypeString.ETHEREUM>;
-  public: Uint8Array;
+  public: T;
 };
 
 export type SeedInfo = {
   name: string;
-  multiSigner: MultiSigner;
+  multiSigner: MultiSigner<Uint8Array>;
   derivedKeys: AddressInfo[];
+  features?: VaultFeature[];
 };
 
 export type CompactSeedInfo = {
   address: Address;
   derivedKeys: Record<ChainId, AddressInfo[]>;
+};
+
+export type DdSeedInfo = {
+  multiSigner: MultiSigner<Uint8Array>;
+  dynamicDerivations: DdAddressInfo[];
 };
 
 export type AddressInfo = {
@@ -50,7 +56,25 @@ export type AddressInfo = {
   genesisHash: Uint8Array;
 };
 
+export type DdAddressInfo = {
+  publicKey: MultiSigner<Uint8Array>;
+  derivationPath: string;
+  encryption: CryptoType;
+};
+
 export type ErrorObject = {
   code: QrError;
   message: string;
+};
+
+export type DdAddressInfoDecoded = {
+  publicKey: MultiSigner<string>;
+  derivationPath: string;
+  encryption: CryptoType;
+};
+
+export type DynamicDerivationRequestInfo = {
+  derivationPath: string;
+  encryption: CryptoType;
+  genesisHash: ChainId;
 };

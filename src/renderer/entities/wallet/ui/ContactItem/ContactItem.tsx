@@ -1,7 +1,7 @@
-import { useAddressInfo } from '@renderer/entities/wallet/lib/useAddressInfo';
-import { cnTw, toAddress } from '@renderer/shared/lib/utils';
-import { Icon, Identicon, BodyText, InfoPopover, HelpText } from '@renderer/shared/ui';
-import type { Explorer, AccountId } from '@renderer/shared/core';
+import { useAddressInfo } from '@entities/wallet/lib/useAddressInfo';
+import { cnTw, toAddress } from '@shared/lib/utils';
+import { Icon, Identicon, BodyText, InfoPopover, HelpText } from '@shared/ui';
+import type { Explorer, AccountId } from '@shared/core';
 
 type Props = {
   name?: string;

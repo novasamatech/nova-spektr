@@ -3,12 +3,18 @@ import { BrowserCodeReader, BrowserQRCodeReader, IScannerControls } from '@zxing
 import init, { Decoder, EncodingPacket } from 'raptorq';
 import { useEffect, useRef } from 'react';
 
-import { cnTw, validateSignerFormat } from '@renderer/shared/lib/utils';
-import { CryptoTypeString } from '@renderer/shared/core';
-import { useI18n } from '@renderer/app/providers';
-import { ErrorFields, EXPORT_ADDRESS, FRAME_KEY } from '../common/constants';
+import { cnTw, validateSignerFormat } from '@shared/lib/utils';
+import { CryptoTypeString } from '@shared/core';
+import { useI18n } from '@app/providers';
+import {
+  DYNAMIC_DERIVATIONS_ADDRESS_RESPONSE,
+  ErrorFields,
+  EXPORT_ADDRESS,
+  FRAME_KEY,
+  VaultFeature,
+} from '../common/constants';
 import { QR_READER_ERRORS } from '../common/errors';
-import { DecodeCallback, ErrorObject, Progress, QrError, SeedInfo, VideoInput } from '../common/types';
+import { DdSeedInfo, DecodeCallback, ErrorObject, Progress, QrError, SeedInfo, VideoInput } from '../common/types';
 import RaptorFrame from './RaptorFrame';
 
 const enum Status {
@@ -16,14 +22,19 @@ const enum Status {
   'NEXT_FRAME',
 }
 
+type WithFeatures = { features: VaultFeature[] };
+type ScanResult = string | SeedInfo[] | ({ addr: SeedInfo } & WithFeatures) | { addr: DdSeedInfo };
+
 type Props = {
   size?: number | [number, number];
   cameraId?: string;
   className?: string;
   bgVideo?: boolean;
   bgVideoClassName?: string;
+  wrapperClassName?: string;
+  isDynamicDerivations?: boolean;
   onStart?: () => void;
-  onResult: (scanResult: SeedInfo[]) => void;
+  onResult: (scanResult: Array<SeedInfo | DdSeedInfo>) => void;
   onError?: (error: ErrorObject) => void;
   onProgress?: (progress: Progress) => void;
   onCameraList?: (cameras: VideoInput[]) => void;
@@ -33,8 +44,10 @@ const QrReader = ({
   size = 300,
   cameraId,
   className,
+  isDynamicDerivations,
   bgVideo,
   bgVideoClassName,
+  wrapperClassName,
   onCameraList,
   onResult,
   onProgress,
@@ -64,10 +77,17 @@ const QrReader = ({
     return typeof error === 'object' && ErrorFields.CODE in error && ErrorFields.MESSAGE in error;
   };
 
-  const makeResultPayload = <T extends string | SeedInfo[] | { addr: SeedInfo }>(data: T): SeedInfo[] => {
+  const makeResultPayload = <T extends ScanResult>(data: T): Array<SeedInfo | DdSeedInfo> => {
     if (Array.isArray(data)) return data;
 
-    if (typeof data !== 'string') return [data.addr];
+    if (typeof data !== 'string') {
+      const payload = { ...data.addr };
+      if ('features' in (data as WithFeatures)) {
+        (payload as SeedInfo).features = (data as WithFeatures).features;
+      }
+
+      return [payload];
+    }
 
     return [
       {
@@ -132,6 +152,7 @@ const QrReader = ({
       // decode the 1st frame --> it's a single frame QR
       const result = EXPORT_ADDRESS.decode(fountainResult.slice(3));
       isComplete.current = true;
+
       onResult?.(makeResultPayload(result.payload));
     } else {
       // if there is more than 1 frame --> proceed scanning and keep the progress
@@ -184,9 +205,15 @@ const QrReader = ({
         continue;
       }
 
-      const result = EXPORT_ADDRESS.decode(fountainResult.slice(3));
+      let result: ScanResult;
+      if (isDynamicDerivations) {
+        result = DYNAMIC_DERIVATIONS_ADDRESS_RESPONSE.decode(fountainResult.slice(3));
+      } else {
+        result = EXPORT_ADDRESS.decode(fountainResult.slice(3)).payload;
+      }
+
+      onResult?.(makeResultPayload(result));
       isComplete.current = true;
-      onResult?.(makeResultPayload(result.payload));
       break;
     }
   };
@@ -312,7 +339,12 @@ const QrReader = ({
 
   return (
     <>
-      <div className="absolute inset-0 z-10 w-full h-full flex items-center justify-center rounded-[1.75rem] overflow-hidden">
+      <div
+        className={cnTw(
+          'absolute inset-0 z-10 w-full h-full flex items-center justify-center rounded-[1.75rem] overflow-hidden',
+          wrapperClassName,
+        )}
+      >
         <div className=" w-[240px] h-[240px] rounded-[20px] overflow-hidden">
           <video
             muted

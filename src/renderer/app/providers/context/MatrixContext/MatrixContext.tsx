@@ -1,13 +1,12 @@
 import { createContext, PropsWithChildren, useContext, useEffect, useRef, useState } from 'react';
 import { useUnit } from 'effector-react';
 
-import { getCreatedDateFromApi, toAddress, validateCallData } from '@renderer/shared/lib/utils';
-import { useMultisigEvent, useMultisigTx } from '@renderer/entities/multisig';
-import { MultisigNotificationType, useNotification } from '@renderer/entities/notification';
-import { useMultisigChainContext } from '@renderer/app/providers';
-import { useNetworkContext } from '../NetworkContext';
-import { contactModel } from '@renderer/entities/contact';
-import type { Signatory, MultisigAccount, AccountId, Address, CallHash, ChainId } from '@renderer/shared/core';
+import { getCreatedDateFromApi, toAddress, validateCallData } from '@shared/lib/utils';
+import { useMultisigEvent, useMultisigTx } from '@entities/multisig';
+import { MultisigNotificationType, useNotification } from '@entities/notification';
+import { useMultisigChainContext } from '@app/providers';
+import { contactModel } from '@entities/contact';
+import type { Signatory, MultisigAccount, AccountId, Address, CallHash, ChainId } from '@shared/core';
 import {
   ApprovePayload,
   BaseMultisigPayload,
@@ -19,7 +18,7 @@ import {
   MultisigPayload,
   SpektrExtras,
   UpdatePayload,
-} from '@renderer/shared/api/matrix';
+} from '@shared/api/matrix';
 import {
   MultisigEvent,
   MultisigTransaction,
@@ -28,9 +27,10 @@ import {
   MultisigTxStatus,
   SigningStatus,
   useTransaction,
-} from '@renderer/entities/transaction';
-import { walletModel, accountUtils } from '@renderer/entities/wallet';
-import { WalletType, SigningType, CryptoType, ChainType, AccountType } from '@renderer/shared/core';
+} from '@entities/transaction';
+import { walletModel, accountUtils } from '@entities/wallet';
+import { WalletType, SigningType, CryptoType, ChainType, AccountType } from '@shared/core';
+import { networkModel } from '@entities/network';
 
 type MatrixContextProps = {
   matrix: ISecureMessenger;
@@ -42,23 +42,24 @@ const MatrixContext = createContext<MatrixContextProps>({} as MatrixContextProps
 export const MatrixProvider = ({ children }: PropsWithChildren) => {
   const contacts = useUnit(contactModel.$contacts);
   const accounts = useUnit(walletModel.$accounts);
+  const chains = useUnit(networkModel.$chains);
+  const apis = useUnit(networkModel.$apis);
 
   const { addTask } = useMultisigChainContext();
   const { getMultisigTx, addMultisigTx, updateMultisigTx, updateCallData } = useMultisigTx({ addTask });
   const { decodeCallData } = useTransaction();
-  const { connections } = useNetworkContext();
   const { addNotification } = useNotification();
   const { addEventWithQueue, updateEvent, getEvents } = useMultisigEvent({ addTask });
 
-  const connectionsRef = useRef(connections);
+  const apisRef = useRef(apis);
   const { current: matrix } = useRef<ISecureMessenger>(new Matrix());
 
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   // HOOK: correct connections for update multisig tx
   useEffect(() => {
-    connectionsRef.current = connections;
-  }, [connections]);
+    apisRef.current = apis;
+  }, [apis]);
 
   const onSyncProgress = () => {
     if (!isLoggedIn) {
@@ -258,7 +259,7 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
   ): Promise<MultisigEvent> => {
     const callOutcome = (payload as FinalApprovePayload).callOutcome;
 
-    const api = connectionsRef.current[payload.chainId]?.api;
+    const api = apisRef.current[payload.chainId];
     const dateCreated = api ? await getCreatedDateFromApi(payload.extrinsicTimepoint.height, api) : Date.now();
 
     return {
@@ -284,7 +285,8 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
     txStatus: MultisigTxStatus,
   ): Promise<void> => {
     const descriptionField = txStatus === MultisigTxFinalStatus.CANCELLED ? 'cancelDescription' : 'description';
-    const { api, addressPrefix } = connectionsRef.current[payload.chainId];
+    const api = apisRef.current[payload.chainId];
+    const addressPrefix = chains[payload.chainId]?.addressPrefix;
     const dateCreated = api && (await getCreatedDateFromApi(payload.callTimepoint.height, api));
 
     if (!api) {
@@ -315,7 +317,7 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
   const handleUpdateEvent = async ({ callData }: UpdatePayload, tx?: MultisigTransaction): Promise<void> => {
     if (!tx) return;
     console.log(`Start update call data for tx ${tx.callHash}`);
-    const api = connectionsRef.current[tx.chainId]?.api;
+    const api = apisRef.current[tx.chainId];
 
     if (!api || !callData || callData === tx.callData) return;
     console.log(`Updating call data for tx ${tx.callHash}`);
@@ -458,13 +460,16 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
 
     if (payload.callData && !tx.callData) {
       console.log(`Update call data for tx ${payload.callHash}`);
-      const { api, addressPrefix } = connectionsRef.current[payload.chainId];
+      const api = apisRef.current[payload.chainId];
+      const addressPrefix = chains[payload.chainId]?.addressPrefix;
+
       if (!api) {
         console.warn(`No api found for ${payload.chainId} can't decode call data for ${payload.callHash}`);
       }
       if (!addressPrefix) {
         console.warn(`No addressPrefix found for ${payload.chainId} can't decode call data for ${payload.callHash}`);
       }
+
       const transaction =
         api &&
         payload.callData &&

@@ -3,16 +3,16 @@ import { useState, useEffect, ReactNode } from 'react';
 import { Trans, TFunction } from 'react-i18next';
 import { useUnit } from 'effector-react';
 
-import { AmountInput, Button, Combobox, Identicon, Input, InputHint, RadioGroup } from '@renderer/shared/ui';
-import { useI18n } from '@renderer/app/providers';
-import { validateAddress } from '@renderer/shared/lib/utils';
-import { useBalance } from '@renderer/entities/asset';
-import { RadioOption } from '@renderer/shared/ui/RadioGroup/common/types';
-import { DropdownOption, ComboboxOption } from '@renderer/shared/ui/Dropdowns/common/types';
+import { AmountInput, Button, Combobox, Identicon, Input, InputHint, RadioGroup } from '@shared/ui';
+import { useI18n } from '@app/providers';
+import { validateAddress } from '@shared/lib/utils';
+import { RadioOption } from '@shared/ui/RadioGroup/common/types';
+import { DropdownOption, ComboboxOption } from '@shared/ui/Dropdowns/common/types';
 import { getPayoutAccountOption } from '../../common/utils';
-import type { Asset, Address, ChainId, AccountId } from '@renderer/shared/core';
-import { RewardsDestination } from '@renderer/shared/core';
-import { walletModel, accountUtils } from '@renderer/entities/wallet';
+import type { Asset, Address, ChainId, AccountId } from '@shared/core';
+import { RewardsDestination } from '@shared/core';
+import { walletModel, accountUtils } from '@entities/wallet';
+import { useAssetBalances } from '@entities/balance';
 
 const getDestinations = (t: TFunction): RadioOption<RewardsDestination>[] => {
   const Options = [
@@ -81,8 +81,6 @@ export const OperationForm = ({
   const { t } = useI18n();
   const dbAccounts = useUnit(walletModel.$accounts);
 
-  const { getLiveAssetBalances } = useBalance();
-
   const destinations = getDestinations(t);
 
   const [activePayout, setActivePayout] = useState<Address>('');
@@ -90,7 +88,11 @@ export const OperationForm = ({
 
   const destAccounts = dbAccounts.filter((a) => accountUtils.isChainIdMatch(a, chainId));
   const payoutIds = destAccounts.map((a) => a.accountId);
-  const balances = getLiveAssetBalances(payoutIds, chainId, asset.assetId.toString());
+  const balances = useAssetBalances({
+    accountIds: payoutIds,
+    chainId,
+    assetId: asset.assetId.toString(),
+  });
 
   const amountField = fields.find((f) => f.name === 'amount');
   const destinationField = fields.find((f) => f.name === 'destination');
@@ -158,16 +160,18 @@ export const OperationForm = ({
 
   const submitDisabled = !isValid || !canSubmit || !validateDestination();
 
+  const formHeader =
+    typeof header === 'function'
+      ? header({
+          invalidBalance: errors.amount?.type === 'insufficientBalance',
+          invalidFee: errors.amount?.type === 'insufficientBalanceForFee',
+          invalidDeposit: errors.amount?.type === 'insufficientBalanceForDeposit',
+        })
+      : header;
+
   return (
     <form className="w-full" onSubmit={handleSubmit(submitForm)}>
-      {typeof header === 'function'
-        ? header({
-            invalidBalance: errors.amount?.type === 'insufficientBalance',
-            invalidFee: errors.amount?.type === 'insufficientBalanceForFee',
-            invalidDeposit: errors.amount?.type === 'insufficientBalanceForDeposit',
-          })
-        : header}
-
+      {formHeader}
       <div className="flex flex-col gap-y-5">
         {amountField && (
           <Controller

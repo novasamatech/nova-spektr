@@ -3,20 +3,21 @@ import { useEffect, useState } from 'react';
 import { Navigate, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { useUnit } from 'effector-react';
 
-import { useI18n, useNetworkContext } from '@renderer/app/providers';
-import { Paths } from '@renderer/shared/routes';
-import { ChainId, HexString } from '@renderer/shared/core';
-import { Transaction, TransactionType, useTransaction } from '@renderer/entities/transaction';
-import type { Account } from '@renderer/shared/core';
+import { useI18n } from '@app/providers';
+import { Paths } from '@shared/routes';
+import { ChainId, HexString } from '@shared/core';
+import { Transaction, TransactionType, useTransaction } from '@entities/transaction';
+import type { Account } from '@shared/core';
 import InitOperation, { RedeemResult } from './InitOperation/InitOperation';
 import { Confirmation, Submit, NoAsset } from '../components';
-import { getRelaychainAsset, toAddress, DEFAULT_TRANSITION } from '@renderer/shared/lib/utils';
-import { useToggle } from '@renderer/shared/lib/hooks';
+import { getRelaychainAsset, toAddress, DEFAULT_TRANSITION } from '@shared/lib/utils';
+import { useToggle } from '@shared/lib/hooks';
 import { OperationTitle } from '@renderer/components/common';
-import { BaseModal, Button, Loader } from '@renderer/shared/ui';
-import { Signing } from '@renderer/features/operation';
-import { walletModel, walletUtils } from '@renderer/entities/wallet';
-import { priceProviderModel } from '@renderer/entities/price';
+import { BaseModal, Button, Loader } from '@shared/ui';
+import { Signing } from '@features/operation';
+import { walletModel, walletUtils } from '@entities/wallet';
+import { priceProviderModel } from '@entities/price';
+import { useNetworkData } from '@entities/network';
 
 const enum Step {
   INIT,
@@ -32,9 +33,10 @@ export const Redeem = () => {
 
   const navigate = useNavigate();
   const { setTxs, txs, setWrappers, wrapTx, buildTransaction } = useTransaction();
-  const { connections } = useNetworkContext();
   const [searchParams] = useSearchParams();
   const params = useParams<{ chainId: ChainId }>();
+
+  const { api, chain } = useNetworkData(params.chainId || ('' as ChainId));
 
   const [isRedeemModalOpen, toggleRedeemModal] = useToggle(true);
 
@@ -59,7 +61,7 @@ export const Redeem = () => {
     return <Navigate replace to={Paths.STAKING} />;
   }
 
-  const { api, explorers, addressPrefix, assets, name } = connections[chainId];
+  const { explorers, addressPrefix, assets, name } = chain;
   const asset = getRelaychainAsset(assets);
 
   useEffect(() => {
@@ -97,7 +99,7 @@ export const Redeem = () => {
         closeButton
         contentClass=""
         panelClass="w-max"
-        headerClass="py-3 px-5 max-w-[440px]"
+        headerClass="py-3 pl-5 pr-3"
         isOpen={isRedeemModalOpen}
         title={<OperationTitle title={t('staking.redeem.title')} chainId={chainId} />}
         onClose={closeRedeemModal}
@@ -117,7 +119,7 @@ export const Redeem = () => {
       <BaseModal
         closeButton
         contentClass=""
-        headerClass="py-3 px-5 max-w-[440px]"
+        headerClass="py-3 pl-5 pr-3"
         panelClass="w-max"
         isOpen={isRedeemModalOpen}
         title={<OperationTitle title={t('staking.redeem.title')} chainId={chainId} />}
@@ -172,7 +174,7 @@ export const Redeem = () => {
       <BaseModal
         closeButton
         contentClass=""
-        headerClass="py-3 px-5 max-w-[440px]"
+        headerClass="py-3 pl-5 pr-3"
         panelClass="w-max"
         isOpen={activeStep !== Step.SUBMIT && isRedeemModalOpen}
         title={<OperationTitle title={t('staking.redeem.title', { asset: asset.symbol })} chainId={chainId} />}
