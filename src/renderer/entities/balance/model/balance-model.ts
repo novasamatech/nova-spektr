@@ -20,6 +20,8 @@ sample({
   clock: balancesUpdated,
   source: $balancesBuffer,
   fn: (balances, newBalances) => {
+    console.log('UPDATE - ', balances.length);
+
     const newBalancesMap = keyBy(newBalances, (b) => `${b.chainId}_${b.assetId}_${b.accountId}`);
 
     const updatedBalances = balances.map((balance) => {
