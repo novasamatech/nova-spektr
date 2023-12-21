@@ -326,16 +326,16 @@
     ],
     "nodes": [
       {
+        "url": "wss://statemine-rpc.dwellir.com",
+        "name": "Dwellir node"
+      },
+      {
         "url": "wss://sys.ibp.network/statemine",
         "name": "IBP network node"
       },
       {
         "url": "wss://sys.dotters.network/statemine",
         "name": "Dotters Net node"
-      },
-      {
-        "url": "wss://statemine-rpc.dwellir.com",
-        "name": "Dwellir node"
       }
     ],
     "assets": [
@@ -3382,16 +3382,16 @@
     ],
     "nodes": [
       {
-        "url": "wss://sys.ibp.network/statemint",
-        "name": "IBP network node"
+        "url": "wss://statemint-rpc.dwellir.com",
+        "name": "Dwellir node"
       },
       {
         "url": "wss://sys.dotters.network/statemint",
         "name": "Dotters Net node"
       },
       {
-        "url": "wss://statemint-rpc.dwellir.com",
-        "name": "Dwellir node"
+        "url": "wss://sys.ibp.network/statemint",
+        "name": "IBP network node"
       },
       {
         "url": "wss://statemint.api.onfinality.io/public-ws",
@@ -7055,16 +7055,16 @@
     ],
     "nodes": [
       {
+        "url": "wss://dot-rpc.stakeworld.io/bridgehub",
+        "name": "Stakeworld node"
+      },
+      {
         "url": "wss://sys.ibp.network/bridgehub-polkadot",
         "name": "IBP network node"
       },
       {
         "url": "wss://sys.dotters.network/bridgehub-polkadot",
         "name": "Dotters Net node"
-      },
-      {
-        "url": "wss://dot-rpc.stakeworld.io/bridgehub",
-        "name": "Stakeworld node"
       }
     ],
     "assets": [
@@ -7098,16 +7098,16 @@
     ],
     "nodes": [
       {
+        "url": "wss://ksm-rpc.stakeworld.io/bridgehub",
+        "name": "Stakeworld node"
+      },
+      {
         "url": "wss://sys.ibp.network/bridgehub-kusama",
         "name": "IBP network node"
       },
       {
         "url": "wss://sys.dotters.network/bridgehub-kusama",
         "name": "Dotters Net node"
-      },
-      {
-        "url": "wss://ksm-rpc.stakeworld.io/bridgehub",
-        "name": "Stakeworld node"
       }
     ],
     "assets": [
