@@ -10,12 +10,20 @@
     ],
     "nodes": [
       {
-        "url": "wss://1rpc.io/dot",
-        "name": "Automata 1RPC node"
+        "url": "wss://polkadot.public.curie.radiumblock.co/ws",
+        "name": "Radium node"
+      },
+      {
+        "url": "wss://dot-rpc.stakeworld.io",
+        "name": "Stakeworld node"
       },
       {
         "url": "wss://polkadot-rpc.dwellir.com",
         "name": "Dwellir node"
+      },
+      {
+        "url": "wss://1rpc.io/dot",
+        "name": "Automata 1RPC node"
       },
       {
         "url": "wss://rpc-polkadot.luckyfriday.io",
@@ -28,10 +36,6 @@
       {
         "url": "wss://rpc.dotters.network/polkadot",
         "name": "Dotters Net node"
-      },
-      {
-        "url": "wss://polkadot.api.onfinality.io/public-ws",
-        "name": "OnFinality node"
       }
     ],
     "assets": [
@@ -5457,6 +5461,7 @@
         "symbol": "MGX",
         "precision": 18,
         "type": "orml",
+        "priceId": "mangata-x",
         "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Mangata_X_(MGX).svg",
         "typeExtras": {
           "currencyIdScale": "0x00000000",
