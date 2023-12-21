@@ -10,3 +10,14 @@ export const ProxyTypeName: Record<ProxyType, string> = {
   [ProxyType.IdentityJudgement]: 'proxy.names.identityJudgement',
   [ProxyType.NominationPools]: 'proxy.names.nominationPools',
 };
+
+export const ProxyTypeOperations: Record<ProxyType, string> = {
+  [ProxyType.Any]: 'proxy.operations.any',
+  [ProxyType.NonTransfer]: 'proxy.operations.nonTransfer',
+  [ProxyType.Staking]: 'proxy.operations.staking',
+  [ProxyType.Auction]: 'proxy.operations.auction',
+  [ProxyType.CancelProxy]: 'proxy.operations.cancelProxy',
+  [ProxyType.Governance]: 'proxy.operations.governance',
+  [ProxyType.IdentityJudgement]: 'proxy.operations.identityJudgement',
+  [ProxyType.NominationPools]: 'proxy.operations.nominationPools',
+};

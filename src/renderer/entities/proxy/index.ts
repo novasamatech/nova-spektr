@@ -1,3 +1,3 @@
 export { ProxyAccount } from './ui/ProxyAccount/ProxyAccount';
-export { ProxyTypeName } from './lib/constants';
+export { ProxyTypeName, ProxyTypeOperations } from './lib/constants';
 export { ProxyType } from './lib/types';

@@ -35,6 +35,7 @@ export const enum WalletType {
   MULTISIG = 'wallet_ms',
   WALLET_CONNECT = 'wallet_wc',
   NOVA_WALLET = 'wallet_nw',
+  // PROXY = 'wallet_prx',
 
   // Legacy
   MULTISHARD_PARITY_SIGNER = 'wallet_mps',

@@ -1,12 +1,24 @@
-import type { ObjectValues, AccountId, CallHash, ChainId, Timepoint } from '@shared/core';
+import type { AccountId, CallHash, ChainId, Timepoint } from '@shared/core';
+import { ProxyType } from '@entities/proxy';
 
-export const MultisigNotificationType = {
-  ACCOUNT_INVITED: 'MultisigAccountInvitedNotification',
-  MST_CREATED: 'MultisigCreatedNotification',
-  MST_APPROVED: 'MultisigApprovedNotification',
-  MST_EXECUTED: 'MultisigExecutedNotification',
-  MST_CANCELLED: 'MultisigCancelledNotification',
-} as const;
+export enum MultisigNotificationType {
+  ACCOUNT_INVITED = 'MultisigAccountInvitedNotification',
+  MST_CREATED = 'MultisigCreatedNotification',
+  MST_APPROVED = 'MultisigApprovedNotification',
+  MST_EXECUTED = 'MultisigExecutedNotification',
+  MST_CANCELLED = 'MultisigCancelledNotification',
+}
+
+export enum ProxyNotificationType {
+  PROXY_CREATED = 'ProxyCreatedNotification',
+}
+
+export type ProxyCreatedNotification = {
+  proxyAccountId: AccountId;
+  proxiedAccountId: AccountId;
+  proxyType: ProxyType;
+  chainId: ChainId;
+};
 
 export type MultisigAccountInvitedNotification = {
   signatories: AccountId[];
@@ -26,8 +38,13 @@ export type MultisigNotification = {
   smpRoomId: string;
 } & (MultisigAccountInvitedNotification | MultisigOperationNotification);
 
-export type Notification = {
+type NotificationBase = {
   read: boolean;
   dateCreated: number;
-  type: ObjectValues<typeof MultisigNotificationType>;
-} & MultisigNotification;
+};
+
+export type Notification = NotificationBase &
+  (
+    | ({ type: MultisigNotificationType } & MultisigNotification)
+    | ({ type: ProxyNotificationType } & ProxyCreatedNotification)
+  );
