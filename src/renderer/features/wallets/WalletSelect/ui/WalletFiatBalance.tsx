@@ -6,15 +6,16 @@ import { FiatBalance } from '@entities/price/ui/FiatBalance';
 import { useI18n } from '@app/providers';
 import { Shimmering } from '@shared/ui';
 import { priceProviderModel } from '@entities/price';
-import type { Wallet } from '@shared/core';
+import type { ID } from '@shared/core';
 import { walletSelectModel } from '../model/wallet-select-model';
+import { walletModel } from '@entities/wallet';
 
 BigNumber.config({
   ROUNDING_MODE: BigNumber.ROUND_DOWN,
 });
 
 type Props = {
-  walletId: Wallet['id'];
+  walletId: ID;
   className?: string;
 };
 
@@ -22,15 +23,16 @@ export const WalletFiatBalance = ({ walletId, className }: Props) => {
   const { t } = useI18n();
 
   const fiatFlag = useUnit(priceProviderModel.$fiatFlag);
-  const walletBalances = useUnit(walletSelectModel.$walletBalances);
+  const walletBalances = useUnit(walletSelectModel.$walletBalance);
+  const activeWallet = useUnit(walletModel.$activeWallet);
 
-  if (!fiatFlag) return null;
+  if (!fiatFlag || walletId !== activeWallet?.id) return null;
 
-  if (!walletBalances[walletId]) {
+  if (!walletBalances) {
     return <Shimmering width={56} height={18} />;
   }
 
-  const { value: formattedValue, suffix } = formatFiatBalance(walletBalances[walletId].toString());
+  const { value: formattedValue, suffix } = formatFiatBalance(walletBalances.toString());
 
   const balanceValue = t('assetBalance.number', { value: formattedValue });
 

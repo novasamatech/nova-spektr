@@ -16,12 +16,6 @@ const insertBalancesFx = createEffect(async (balances: Balance[]): Promise<void>
   await balanceService.insertBalances(balances);
 });
 
-throttle({
-  source: $balancesBuffer,
-  timeout: SAVE_TIMEOUT,
-  target: insertBalancesFx,
-});
-
 sample({
   clock: balancesUpdated,
   source: $balancesBuffer,
@@ -47,6 +41,12 @@ sample({
     return updatedBalances.concat(Object.values(newBalancesMap));
   },
   target: $balancesBuffer,
+});
+
+throttle({
+  source: $balancesBuffer,
+  timeout: SAVE_TIMEOUT,
+  target: insertBalancesFx,
 });
 
 throttle({

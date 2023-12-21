@@ -1,28 +1,18 @@
-import { useUnit, useGate } from 'effector-react';
+import { useUnit } from 'effector-react';
 import { Popover, Transition } from '@headlessui/react';
-import { ReactNode, useMemo } from 'react';
-import keyBy from 'lodash/keyBy';
+import { ReactNode } from 'react';
 
 import { walletModel } from '@entities/wallet';
 import { Shimmering } from '@shared/ui';
 import { WalletPanel } from './WalletPanel';
 import { WalletButton } from './WalletButton';
-import { chainsService } from '@entities/network';
 import { walletSelectModel } from '../model/wallet-select-model';
-import { balanceModel } from '@entities/balance';
 
 type Props = {
   action?: ReactNode;
 };
 export const WalletSelect = ({ action }: Props) => {
   const activeWallet = useUnit(walletModel.$activeWallet);
-  const balances = useUnit(balanceModel.$balances);
-
-  const chainsMap = useMemo(() => {
-    return keyBy(chainsService.getChainsData(), 'chainId');
-  }, []);
-
-  useGate(walletSelectModel.PropsGate, { balances, chains: chainsMap });
 
   if (!activeWallet) {
     return <Shimmering width={208} height={56} />;
