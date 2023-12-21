@@ -14,7 +14,6 @@ import { accountUtils } from '@entities/wallet';
 import { NetworkFiatBalance } from '../NetworkFiatBalance/NetworkFiatBalance';
 import { currencyModel, priceProviderModel } from '@entities/price';
 import { balanceModel } from '@entities/balance';
-import { useThrottle } from '@shared/lib/hooks';
 import { assetsModel } from '../../model/assets-model';
 
 type Props = {
@@ -36,8 +35,6 @@ export const NetworkAssets = ({ chain, accounts, searchSymbolOnly }: Props) => {
 
   const [filteredAssets, setFilteredAssets] = useState<Asset[]>([]);
   const [balancesObject, setBalancesObject] = useState<Record<string, Balance>>({});
-
-  const throttledBalances = useThrottle(balances, 1000);
 
   const selectedAccountIds = accounts.map((a) => a.accountId).join('');
 
@@ -65,7 +62,7 @@ export const NetworkAssets = ({ chain, accounts, searchSymbolOnly }: Props) => {
     }, {});
 
     setBalancesObject(newBalancesObject);
-  }, [throttledBalances, accountIds.join('')]);
+  }, [balances, accountIds.join('')]);
 
   useEffect(() => {
     const filteredAssets = chain.assets.filter((asset) => {

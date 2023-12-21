@@ -10,6 +10,10 @@
     ],
     "nodes": [
       {
+        "url": "wss://1rpc.io/dot",
+        "name": "Automata 1RPC node"
+      },
+      {
         "url": "wss://polkadot-rpc.dwellir.com",
         "name": "Dwellir node"
       },
@@ -24,10 +28,6 @@
       {
         "url": "wss://rpc.dotters.network/polkadot",
         "name": "Dotters Net node"
-      },
-      {
-        "url": "wss://1rpc.io/dot",
-        "name": "Automata 1RPC node"
       },
       {
         "url": "wss://polkadot.api.onfinality.io/public-ws",
