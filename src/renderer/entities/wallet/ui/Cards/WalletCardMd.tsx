@@ -41,18 +41,23 @@ export const WalletCardMd = ({ wallet, description, prefix, hideIcon, className,
 
         {!hideIcon && <WalletIcon type={wallet.type} size={20} />}
         <div className="flex flex-col">
-          <FootnoteText className="text-text-primary">{wallet.name}</FootnoteText>
+          <div className="flex items-center gap-x-2">
+            <FootnoteText className="text-text-primary">{wallet.name}</FootnoteText>
+            {isWalletConnect && (
+              <span
+                className={cnTw(
+                  'h-1.5 w-1.5 rounded-full',
+                  wallet.isConnected ? 'bg-icon-positive' : 'bg-icon-default',
+                )}
+              />
+            )}
+          </div>
           {typeof description === 'string' ? (
             <FootnoteText className="text-text-tertiary">{description}</FootnoteText>
           ) : (
             description
           )}
         </div>
-        {isWalletConnect && (
-          <span
-            className={cnTw('h-1.5 w-1.5 rounded-full', wallet.isConnected ? 'bg-icon-positive' : 'bg-icon-default')}
-          />
-        )}
       </button>
 
       <IconButton
