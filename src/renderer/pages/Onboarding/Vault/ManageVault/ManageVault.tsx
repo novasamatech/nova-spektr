@@ -38,7 +38,7 @@ import {
   Icon,
   ContextMenu,
   IconButton,
-  Accordion,
+  Token,
 } from '@shared/ui';
 
 const STATUS_DELAY = 1500;
@@ -55,7 +55,7 @@ export const ManageVault = ({ seedInfo, onBack, onClose, onComplete }: Props) =>
   const { showStatus } = useStatusContext();
   const isAltPressed = useAltOrCtrlKeyPressed();
 
-  const accordions = useRef<Record<string, { el: null | HTMLButtonElement; isOpen: boolean }>>({});
+  const Tokens = useRef<Record<string, { el: null | HTMLButtonElement; isOpen: boolean }>>({});
 
   const keys = useUnit(manageVaultModel.$keys);
   const keysGroups = useUnit(manageVaultModel.$keysGroups);
@@ -98,7 +98,7 @@ export const ManageVault = ({ seedInfo, onBack, onClose, onComplete }: Props) =>
   }, [keysGroups]);
 
   useEffect(() => {
-    Object.values(accordions.current).forEach((item) => {
+    Object.values(Tokens.current).forEach((item) => {
       const toOpen = isAltPressed && !item.isOpen;
       const toClose = !isAltPressed && item.isOpen;
 
@@ -252,18 +252,18 @@ export const ManageVault = ({ seedInfo, onBack, onClose, onComplete }: Props) =>
               if (chainAccounts.length === 0) return;
 
               return (
-                <Accordion key={chainId} className="pt-2">
-                  <Accordion.Button
-                    ref={(el) => (accordions.current[chainId] = { el, isOpen: false })}
-                    buttonClass="mb-2 p-2"
-                    onClick={() => (accordions.current[chainId].isOpen = !accordions.current[chainId].isOpen)}
+                <Token key={chainId} className="pt-2">
+                  <Token.Button
+                    ref={(el) => (Tokens.current[chainId] = { el, isOpen: false })}
+                    buttonClass="mb-2"
+                    onClick={() => (Tokens.current[chainId].isOpen = !Tokens.current[chainId].isOpen)}
                   >
                     <div className="flex gap-x-2">
                       <ChainTitle fontClass="text-text-primary" chainId={chainId as ChainId} />
                       <FootnoteText className="text-text-tertiary">{chainAccounts.length}</FootnoteText>
                     </div>
-                  </Accordion.Button>
-                  <Accordion.Content as="ul">
+                  </Token.Button>
+                  <Token.Content as="ul">
                     {chainAccounts.map((account) => (
                       <li className="mb-2 last:mb-0" key={accountUtils.getDerivationPath(account)}>
                         <ContextMenu
@@ -284,8 +284,8 @@ export const ManageVault = ({ seedInfo, onBack, onClose, onComplete }: Props) =>
                         </ContextMenu>
                       </li>
                     ))}
-                  </Accordion.Content>
-                </Accordion>
+                  </Token.Content>
+                </Token>
               );
             })}
           </div>

@@ -1,7 +1,7 @@
 import { cnTw } from '@shared/lib/utils';
 import { DerivedAccount, accountUtils, ExplorersPopover } from '@entities/wallet';
 import { useI18n } from '@app/providers';
-import { FootnoteText, Accordion, HelpText } from '@shared/ui';
+import { FootnoteText, Token, HelpText } from '@shared/ui';
 import { ChainTitle } from '@entities/chain';
 import type { Chain, ChainId, ChainAccount, ShardAccount } from '@shared/core';
 
@@ -23,14 +23,14 @@ export const VaultAccountsList = ({ chains, accountsMap, className, onShardClick
         if (!accountsMap[chain.chainId]) return;
 
         return (
-          <Accordion key={chain.chainId} isDefaultOpen className="pl-13 pr-1">
-            <Accordion.Button buttonClass="p-2">
+          <Token key={chain.chainId} isDefaultOpen className="pl-13 pr-1">
+            <Token.Button>
               <div className="flex gap-x-2">
                 <ChainTitle fontClass="text-text-primary" chain={chain} />
                 <FootnoteText className="text-text-tertiary">{accountsMap[chain.chainId].length}</FootnoteText>
               </div>
-            </Accordion.Button>
-            <Accordion.Content as="ul">
+            </Token.Button>
+            <Token.Content as="ul">
               {accountsMap[chain.chainId].map((account) => {
                 const isSharded = accountUtils.isAccountWithShards(account);
 
@@ -60,8 +60,8 @@ export const VaultAccountsList = ({ chains, accountsMap, className, onShardClick
               })}
 
               <hr className="border-divider my-1 w-full" />
-            </Accordion.Content>
-          </Accordion>
+            </Token.Content>
+          </Token>
         );
       })}
     </div>

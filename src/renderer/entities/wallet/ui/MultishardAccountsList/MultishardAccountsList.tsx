@@ -3,7 +3,7 @@ import { useMemo } from 'react';
 import { RootExplorers, cnTw } from '@shared/lib/utils';
 import { ContactItem } from '@entities/wallet';
 import { useI18n } from '@app/providers';
-import { FootnoteText, Accordion } from '@shared/ui';
+import { FootnoteText, Token } from '@shared/ui';
 import type { Chain, ChainAccount, ChainId, BaseAccount } from '@shared/core';
 import { ChainTitle } from '@entities/chain';
 
@@ -39,14 +39,14 @@ export const MultishardAccountsList = ({ accounts, chains, className }: Props) =
             if (!chainMap[chain.chainId]) return;
 
             return (
-              <Accordion key={chain.chainId} isDefaultOpen className="pl-10">
-                <Accordion.Button buttonClass="py-2">
+              <Token key={chain.chainId} isDefaultOpen className="pl-10">
+                <Token.Button buttonClass="px-0">
                   <div className="flex gap-x-2">
                     <ChainTitle fontClass="text-text-primary" chain={chain} />
                     <FootnoteText className="text-text-tertiary">{chainMap[chain.chainId].length}</FootnoteText>
                   </div>
-                </Accordion.Button>
-                <Accordion.Content>
+                </Token.Button>
+                <Token.Content>
                   {chainMap[chain.chainId].map((account) => (
                     <div key={account.id} className="flex items-center py-1.5 mb-2">
                       <ContactItem
@@ -60,8 +60,8 @@ export const MultishardAccountsList = ({ accounts, chains, className }: Props) =
                   ))}
 
                   <hr className="border-divider my-1 w-full" />
-                </Accordion.Content>
-              </Accordion>
+                </Token.Content>
+              </Token>
             );
           })}
         </div>

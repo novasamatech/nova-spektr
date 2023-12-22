@@ -29,6 +29,7 @@ import Shimmering from './Shimmering/Shimmering';
 import Duration from './Duration/Duration';
 import Loader from './Loader/Loader';
 import DetailRow from './DetailRow/DetailRow';
+import Token from './Token/Token';
 export { AmountInput } from './Inputs/AmountInput/AmountInput';
 export { BaseModal } from './Modals/BaseModal/BaseModal';
 export { ConfirmModal } from './Modals/ConfirmModal/ConfirmModal';
@@ -94,4 +95,5 @@ export {
   Duration,
   Loader,
   DetailRow,
+  Token,
 };

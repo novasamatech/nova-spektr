@@ -1,7 +1,7 @@
 import { ChangeEvent } from 'react';
 import { useUnit } from 'effector-react';
 
-import { Accordion, Checkbox, CaptionText, FootnoteText } from '@shared/ui';
+import { Token, Checkbox, CaptionText, FootnoteText } from '@shared/ui';
 import { ShardAccount, Chain, ID } from '@shared/core';
 import { shardsModel } from '../model/shards-model';
 import { selectorUtils } from '../lib/selector-utils';
@@ -37,7 +37,7 @@ export const ShardedGroup = ({ rootId, accounts, chain }: Props) => {
   };
 
   return (
-    <Accordion className="ml-6 w-auto rounded">
+    <Token className="ml-6 w-auto rounded">
       <div className="flex rounded hover:bg-action-background-hover">
         <Checkbox
           className="p-2 w-full"
@@ -51,9 +51,9 @@ export const ShardedGroup = ({ rootId, accounts, chain }: Props) => {
           <FootnoteText className="text-text-tertiary">{accounts[0].name}</FootnoteText>
         </Checkbox>
 
-        <Accordion.Button buttonClass="ml-auto w-auto p-2" />
+        <Token.Button buttonClass="ml-auto w-auto" />
       </div>
-      <Accordion.Content as="ul">
+      <Token.Content as="ul">
         {accounts.map((shard) => (
           <li key={shard.accountId} className="ml-6">
             <SelectableShard
@@ -67,7 +67,7 @@ export const ShardedGroup = ({ rootId, accounts, chain }: Props) => {
             />
           </li>
         ))}
-      </Accordion.Content>
-    </Accordion>
+      </Token.Content>
+    </Token>
   );
 };

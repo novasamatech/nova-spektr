@@ -1,6 +1,6 @@
 import { useUnit } from 'effector-react';
 
-import { Accordion, Checkbox, FootnoteText } from '@shared/ui';
+import { Token, Checkbox, FootnoteText } from '@shared/ui';
 import { accountUtils, walletModel, walletUtils } from '@entities/wallet';
 import { ChainTitle } from '@entities/chain';
 import { RootExplorers } from '@shared/lib/utils';
@@ -58,7 +58,7 @@ export const ShardsStructure = () => {
           <ul>
             {chainTuple.map(([chainId, accounts]) => (
               <li key={chainId}>
-                <Accordion isDefaultOpen className="ml-6 w-auto rounded">
+                <Token isDefaultOpen className="ml-6 w-auto rounded">
                   <div className="hover:bg-action-background-hover flex">
                     <Checkbox
                       checked={selectorUtils.isChecked(selectedStructure[root.id][chainId])}
@@ -72,9 +72,9 @@ export const ShardsStructure = () => {
                         {selectedStructure[root.id][chainId].checked} / {selectedStructure[root.id][chainId].total}
                       </FootnoteText>
                     </Checkbox>
-                    <Accordion.Button buttonClass="ml-auto w-auto p-2" />
+                    <Token.Button buttonClass="ml-auto w-auto" />
                   </div>
-                  <Accordion.Content as="ul">
+                  <Token.Content as="ul">
                     {accounts.map((account) => {
                       if (accountUtils.isAccountWithShards(account)) {
                         return (
@@ -101,8 +101,8 @@ export const ShardsStructure = () => {
                         </li>
                       );
                     })}
-                  </Accordion.Content>
-                </Accordion>
+                  </Token.Content>
+                </Token>
               </li>
             ))}
           </ul>
