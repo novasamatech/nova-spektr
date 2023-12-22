@@ -26,7 +26,7 @@ export const WalletPanel = ({ action, onClose }: Props) => {
 
   return (
     <Popover.Panel className="absolute mt-2 z-10 rounded-md bg-token-container-background border border-token-container-border shadow-card-shadow overflow-hidden">
-      <section className="relative max-h-[700px] w-[290px] bg-card-background flex flex-col">
+      <section className="relative max-h-[700px] w-[300px] bg-card-background flex flex-col">
         <header className="px-5 py-3 flex items-center justify-between border-b border-divider">
           <SmallTitleText>{t('wallets.title')}</SmallTitleText>
           {action}
