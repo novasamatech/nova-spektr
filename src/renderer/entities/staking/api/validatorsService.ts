@@ -6,9 +6,9 @@ import { PalletIdentityRegistration } from '@polkadot/types/lookup';
 import { AccountId32 } from '@polkadot/types/interfaces';
 
 import type { Address, EraIndex, Identity, SubIdentity, Validator } from '@shared/core';
-import { isKusamaChainId } from '@entities/network';
-import { DEFAULT_MAX_NOMINATORS, KUSAMA_MAX_NOMINATORS } from './common/constants';
-import { ValidatorMap } from './common/types';
+import { isKusamaChainId } from '../../network';
+import { DEFAULT_MAX_NOMINATORS, KUSAMA_MAX_NOMINATORS } from '../lib/constants';
+import { ValidatorMap } from '../lib/types';
 
 export const validatorsService = {
   getValidatorsWithInfo,

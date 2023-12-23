@@ -1,6 +1,6 @@
 import { ApiPromise } from '@polkadot/api';
 
-import { IEraService } from './common/types';
+import { IEraService } from '../lib/types';
 import type { EraIndex } from '@shared/core';
 
 export const useEra = (): IEraService => {
