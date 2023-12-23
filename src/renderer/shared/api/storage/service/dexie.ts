@@ -18,7 +18,7 @@ import {
   TNotification,
   TMultisigEvent,
   TMetadata,
-} from '../common/types';
+} from '../lib/types';
 
 class DexieStorage extends Dexie {
   connections: TConnection;

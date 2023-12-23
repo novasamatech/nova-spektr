@@ -1,8 +1,8 @@
 import { hexToU8a } from '@polkadot/util';
 
-import { verify } from '../dataVerification';
+import { verify } from '../service/verificationService';
 
-describe('service/dataVerification', () => {
+describe('service/chain-verification', () => {
   test('should check value', () => {
     const proof = [
       '0x7f1c016193b40c7ef516a7b0c49b37a2e4485f31d7848a3f4540dac93d8c056e7cb18b534fbab0c8367a81e1b85e464a41010000000000000000010000000000000096c98c02000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
