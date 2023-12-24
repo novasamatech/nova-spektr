@@ -4,8 +4,6 @@ import { act, render, screen } from '@testing-library/react';
 import { Deposit } from './Deposit';
 import type { Asset } from '@shared/core';
 
-jest.mock('@renderer/components/common');
-
 jest.mock('@app/providers', () => ({
   useI18n: jest.fn().mockReturnValue({
     t: (key: string) => key,
@@ -23,7 +21,7 @@ jest.mock('@entities/asset', () => ({
   AssetBalance: ({ value }: any) => <div>{value}</div>,
 }));
 
-describe('components/common/Deposit', () => {
+describe('entities/transaction/ui/Deposit', () => {
   test('should render component', async () => {
     const asset = { symbol: 'DOT', precision: 10 } as Asset;
 

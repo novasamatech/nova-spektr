@@ -224,7 +224,6 @@ const KeyQrReader = ({ size = 300, className, onResult }: Props) => {
                 'text-white uppercase bg-label-background-gray px-2 py-1 rounded-full',
                 total === decoded && 'bg-label-background-green',
               )}
-              data-testid="progress"
             >
               {t('qrReader.parsingProgress', { decoded, total })}
             </CaptionText>
