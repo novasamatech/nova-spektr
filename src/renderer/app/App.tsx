@@ -3,12 +3,12 @@ import { ErrorBoundary } from 'react-error-boundary';
 import { useNavigate, useRoutes } from 'react-router-dom';
 import { useUnit } from 'effector-react';
 
-import { FallbackScreen } from '@renderer/components/common';
 import { CreateWalletProvider } from '@widgets/CreateWallet';
 import { WalletDetailsProvider } from '@widgets/WalletDetails';
 import { walletModel } from '@entities/wallet';
 import { ROUTES_CONFIG } from '@pages/index';
 import { Paths } from '@shared/routes';
+import { FallbackScreen } from '@shared/ui';
 import {
   ConfirmDialogProvider,
   StatusModalProvider,

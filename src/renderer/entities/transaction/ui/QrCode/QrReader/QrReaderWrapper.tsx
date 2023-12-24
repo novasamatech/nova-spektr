@@ -5,11 +5,11 @@ import { cnTw, ValidationErrors } from '@shared/lib/utils';
 import { Shimmering, Button, CaptionText, FootnoteText, Select, SmallTitleText, Countdown } from '@shared/ui';
 import { DropdownOption, DropdownResult } from '@shared/ui/Dropdowns/common/types';
 import { useI18n } from '@app/providers';
-import SignatureReaderError from './SignatureReaderError';
-import QrMultiframeSignatureReader from './QrMultiframeSignatureReader';
+import { SignatureReaderError } from './SignatureReaderError';
+import { QrMultiframeSignatureReader } from './QrMultiframeSignatureReader';
 import { CameraError, CameraAccessErrors, WhiteTextButtonStyle } from '../common/constants';
 import { ErrorObject, Progress, QrError, VideoInput } from '../common/types';
-import QrSignatureReader from './QrSignatureReader';
+import { QrSignatureReader } from './QrSignatureReader';
 import type { HexString } from '@shared/core';
 import './style.css';
 
@@ -33,7 +33,7 @@ type Props = {
   isMultiFrame?: boolean;
 };
 
-const QrReaderWrapper = ({ className, onResult, countdown, validationError, isMultiFrame, onGoBack }: Props) => {
+export const QrReaderWrapper = ({ className, onResult, countdown, validationError, isMultiFrame, onGoBack }: Props) => {
   const { t } = useI18n();
 
   const [isLoading, setIsLoading] = useState(true);
@@ -203,5 +203,3 @@ const QrReaderWrapper = ({ className, onResult, countdown, validationError, isMu
     </div>
   );
 };
-
-export default QrReaderWrapper;

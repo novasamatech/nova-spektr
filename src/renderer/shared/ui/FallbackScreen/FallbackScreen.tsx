@@ -1,7 +1,7 @@
 import { Icon, BodyText, Button } from '@shared/ui';
 import { useI18n } from '@app/providers';
 
-const FallbackScreen = () => {
+export const FallbackScreen = () => {
   const { t } = useI18n();
 
   return (
@@ -12,5 +12,3 @@ const FallbackScreen = () => {
     </main>
   );
 };
-
-export default FallbackScreen;

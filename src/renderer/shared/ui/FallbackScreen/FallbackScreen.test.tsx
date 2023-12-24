@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 
-import FallbackScreen from './FallbackScreen';
+import { FallbackScreen } from './FallbackScreen';
 
 jest.mock('@app/providers', () => ({
   useI18n: jest.fn().mockReturnValue({

@@ -1,8 +1,7 @@
 import { act, render, screen, waitFor } from '@testing-library/react';
 
-import { QrReader } from '@renderer/components/common';
-import { QrError } from '@renderer/components/common/QrCode/common/types';
 import KeyQrReader from './KeyQrReader';
+import { QrError, QrReader } from '@entities/transaction';
 
 jest.mock('@renderer/components/common');
 

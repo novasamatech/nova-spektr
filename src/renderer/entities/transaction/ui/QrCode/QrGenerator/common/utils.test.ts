@@ -3,7 +3,7 @@ import { u8aConcat } from '@polkadot/util/u8a/concat';
 
 import { createFrames, createSignPayload, encodeNumber, getSvgString, createSubstrateSignPayload } from './utils';
 import { SigningType } from '@shared/core';
-import { SUBSTRATE_ID } from '@renderer/components/common/QrCode/QrGenerator/common/constants';
+import { SUBSTRATE_ID } from './constants';
 
 describe('QrCode/QrGenerator/utils', () => {
   test('should encodes 1 correctly', () => {

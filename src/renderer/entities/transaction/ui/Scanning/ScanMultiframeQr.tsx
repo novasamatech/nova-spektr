@@ -4,19 +4,16 @@ import { UnsignedTransaction } from '@substrate/txwrapper-polkadot';
 import init, { Encoder } from 'raptorq';
 import { useEffect, useState } from 'react';
 
-import QrMultiframeGenerator from '@renderer/components/common/QrCode/QrGenerator/QrMultiframeTxGenerator';
-import { TRANSACTION_BULK } from '@renderer/components/common/QrCode/common/constants';
 import { useI18n } from '@app/providers';
 import { Transaction, useTransaction } from '@entities/transaction';
 import { toAddress } from '@shared/lib/utils';
 import { Button } from '@shared/ui';
-import { QrGeneratorContainer } from '@renderer/components/common';
 import type { Account, ChainId, ShardAccount } from '@shared/core';
 import { SigningType, Wallet } from '@shared/core';
-import {
-  createMultipleSignPayload,
-  createSubstrateSignPayload,
-} from '@renderer/components/common/QrCode/QrGenerator/common/utils';
+import { createSubstrateSignPayload, createMultipleSignPayload } from '../QrCode/QrGenerator/common/utils';
+import { TRANSACTION_BULK } from '../QrCode/common/constants';
+import { QrMultiframeGenerator } from '../QrCode/QrGenerator/QrMultiframeTxGenerator';
+import { QrGeneratorContainer } from '../QrCode/QrGeneratorContainer/QrGeneratorContainer';
 
 type Props = {
   api: ApiPromise;
@@ -32,7 +29,7 @@ type Props = {
   onResult: (unsigned: UnsignedTransaction[], txPayloads: Uint8Array[]) => void;
 };
 
-const ScanMultiframeQr = ({
+export const ScanMultiframeQr = ({
   api,
   chainId,
   accounts,
@@ -122,5 +119,3 @@ const ScanMultiframeQr = ({
     </div>
   );
 };
-
-export default ScanMultiframeQr;

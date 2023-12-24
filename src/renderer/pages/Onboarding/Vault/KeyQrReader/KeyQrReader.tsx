@@ -3,12 +3,11 @@ import { decodeAddress, encodeAddress } from '@polkadot/util-crypto';
 import cn from 'classnames';
 import { useState } from 'react';
 
-import { QrReader } from '@renderer/components/common';
-import { ErrorObject, QrError, SeedInfo, VideoInput } from '@renderer/components/common/QrCode/common/types';
 import { Icon, Loader, Button, CaptionText, FootnoteText, Select } from '@shared/ui';
 import { DropdownOption, DropdownResult } from '@shared/ui/Dropdowns/common/types';
 import { useI18n } from '@app/providers';
 import { cnTw } from '@shared/lib/utils';
+import { SeedInfo, VideoInput, ErrorObject, QrError, QrReader } from '@entities/transaction';
 
 const enum CameraState {
   ACTIVE,

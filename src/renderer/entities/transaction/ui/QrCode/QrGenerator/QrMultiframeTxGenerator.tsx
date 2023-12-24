@@ -12,7 +12,7 @@ type Props = {
   encoder: Encoder;
 };
 
-const QrMultiframeGenerator = ({
+export const QrMultiframeGenerator = ({
   payload,
   size,
   skipEncoding = false,
@@ -28,5 +28,3 @@ const QrMultiframeGenerator = ({
 
   return <div style={{ width: size, height: size }} dangerouslySetInnerHTML={{ __html: image }} />;
 };
-
-export default QrMultiframeGenerator;

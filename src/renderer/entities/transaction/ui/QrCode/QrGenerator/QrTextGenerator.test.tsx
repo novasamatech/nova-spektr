@@ -1,6 +1,6 @@
 import { render } from '@testing-library/react';
 
-import QrTextGenerator from './QrTextGenerator';
+import { QrTextGenerator } from './QrTextGenerator';
 
 describe('components/common/QrTextGenerator', () => {
   test('should render text qr', () => {

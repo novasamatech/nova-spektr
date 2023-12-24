@@ -40,7 +40,7 @@ type Props = {
   onCameraList?: (cameras: VideoInput[]) => void;
 };
 
-const QrReader = ({
+export const QrReader = ({
   size = 300,
   cameraId,
   className,
@@ -375,5 +375,3 @@ const QrReader = ({
     </>
   );
 };
-
-export default QrReader;

@@ -30,7 +30,7 @@ type Props = {
   onCameraList?: (cameras: VideoInput[]) => void;
 };
 
-const QrMultiframeSignatureReader = ({
+export const QrMultiframeSignatureReader = ({
   size = 300,
   cameraId,
   className,
@@ -322,5 +322,3 @@ const QrMultiframeSignatureReader = ({
     </>
   );
 };
-
-export default QrMultiframeSignatureReader;

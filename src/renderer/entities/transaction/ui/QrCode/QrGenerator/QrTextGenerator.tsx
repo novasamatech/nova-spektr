@@ -12,7 +12,7 @@ type Props = {
   className?: string;
 };
 
-const QrTextGenerator = ({
+export const QrTextGenerator = ({
   payload,
   size,
   skipEncoding = false,
@@ -28,5 +28,3 @@ const QrTextGenerator = ({
     <div style={{ width: size, height: size }} className={className} dangerouslySetInnerHTML={{ __html: image }} />
   );
 };
-
-export default QrTextGenerator;

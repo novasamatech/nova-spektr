@@ -2,12 +2,14 @@ import { ApiPromise } from '@polkadot/api';
 import { useEffect, useState } from 'react';
 import { UnsignedTransaction } from '@substrate/txwrapper-polkadot';
 
-import { QrGeneratorContainer, QrTxGenerator } from '@renderer/components/common';
 import { useI18n } from '@app/providers';
-import { Transaction, useTransaction } from '@entities/transaction';
 import { Button, FootnoteText } from '@shared/ui';
-import { WalletCardSm } from '@entities/wallet';
+import { WalletCardSm } from '@entities/wallet'; // TODO: cross import
 import type { Account, ChainAccount, ChainId, ShardAccount, Wallet, Address } from '@shared/core';
+import { QrGeneratorContainer } from '../QrCode/QrGeneratorContainer/QrGeneratorContainer';
+import { QrTxGenerator } from '../QrCode/QrGenerator/QrTxGenerator';
+import { Transaction } from '../../model/transaction';
+import { useTransaction } from '../../lib';
 
 type Props = {
   api: ApiPromise;
@@ -23,7 +25,7 @@ type Props = {
   onResult: (unsignedTx: UnsignedTransaction, txPayload: Uint8Array) => void;
 };
 
-const ScanSingleframeQr = ({
+export const ScanSingleframeQr = ({
   api,
   chainId,
   transaction,
@@ -98,5 +100,3 @@ const ScanSingleframeQr = ({
     </div>
   );
 };
-
-export default ScanSingleframeQr;

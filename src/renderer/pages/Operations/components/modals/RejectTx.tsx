@@ -19,6 +19,7 @@ import { OperationTitle } from '@renderer/components/common';
 import { walletModel, walletUtils } from '@entities/wallet';
 import { priceProviderModel } from '@entities/price';
 import type { Address, HexString, Timepoint, MultisigAccount, Account } from '@shared/core';
+import { balanceModel, balanceUtils } from '@entities/balance';
 import {
   Transaction,
   TransactionType,
@@ -27,7 +28,6 @@ import {
   validateBalance,
   isXcmTransaction,
 } from '@entities/transaction';
-import { balanceModel, balanceUtils } from '@entities/balance';
 
 type Props = {
   tx: MultisigTransactionDS;

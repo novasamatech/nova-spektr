@@ -1,9 +1,9 @@
 import { PropsWithChildren } from 'react';
 
-import { Button, FootnoteText, InfoLink, SmallTitleText, Icon, Shimmering, Countdown } from '@shared/ui';
 import { useI18n } from '@app/providers';
-import { getMetadataPortalMetadataUrl, TROUBLESHOOTING_URL } from '../common/constants';
 import type { ChainId } from '@shared/core';
+import { Button, FootnoteText, InfoLink, SmallTitleText, Icon, Shimmering, Countdown } from '@shared/ui';
+import { getMetadataPortalMetadataUrl, TROUBLESHOOTING_URL } from '../common/constants';
 
 type Props = {
   countdown: number;
@@ -11,7 +11,7 @@ type Props = {
   chainId: ChainId;
 };
 
-const QrGeneratorContainer = ({ countdown, onQrReset, chainId, children }: PropsWithChildren<Props>) => {
+export const QrGeneratorContainer = ({ countdown, onQrReset, chainId, children }: PropsWithChildren<Props>) => {
   const { t } = useI18n();
 
   return (
@@ -48,5 +48,3 @@ const QrGeneratorContainer = ({ countdown, onQrReset, chainId, children }: Props
     </section>
   );
 };
-
-export default QrGeneratorContainer;
