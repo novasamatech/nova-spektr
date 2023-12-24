@@ -1,4 +1,4 @@
-import { ChainTitle } from '@entities/chain';
+import { ChainTitle } from '../ChainTitle/ChainTitle';
 import { HeaderTitleText } from '@shared/ui';
 import type { ChainId } from '@shared/core';
 

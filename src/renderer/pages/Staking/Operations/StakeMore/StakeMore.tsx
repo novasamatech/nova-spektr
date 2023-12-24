@@ -12,7 +12,7 @@ import { DEFAULT_TRANSITION, getRelaychainAsset, toAddress } from '@shared/lib/u
 import { useToggle } from '@shared/lib/hooks';
 import type { Account, ChainId, HexString } from '@shared/core';
 import { BaseModal, Button, Loader } from '@shared/ui';
-import { OperationTitle } from '@renderer/components/common';
+import { OperationTitle } from '@entities/chain';
 import { Signing } from '@features/operation';
 import { walletModel, walletUtils } from '@entities/wallet';
 import { priceProviderModel } from '@entities/price';

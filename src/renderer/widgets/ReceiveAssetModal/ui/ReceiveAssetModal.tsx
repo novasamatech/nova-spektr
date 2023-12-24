@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useUnit } from 'effector-react';
 
-import { OperationTitle } from '@renderer/components/common';
+import { OperationTitle } from '@entities/chain';
 import { DefaultExplorer, ExplorerIcons } from '@shared/ui/ExplorerLink/constants';
 import { BaseModal, Button, FootnoteText, HelpText, Icon, Select } from '@shared/ui';
 import { DropdownOption, DropdownResult } from '@shared/ui/types';
