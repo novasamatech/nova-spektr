@@ -44,7 +44,15 @@ type GetProxiesResult = {
   proxiesToRemove: ProxyAccount[];
 };
 const getProxiesFx = createEffect(({ chainId, accounts, proxies }: GetProxiesParams): Promise<GetProxiesResult> => {
-  return endpoint.call.getProxies(chainId, keyBy(accounts, 'accountId'), proxies) as Promise<GetProxiesResult>;
+  return endpoint.call.getProxies(
+    chainId,
+    keyBy(
+      accounts.filter((a) => !accountUtils.isProxiedAccount(a)),
+      'accountId',
+    ),
+    keyBy(accounts.filter(accountUtils.isProxiedAccount), 'accountId'),
+    proxies,
+  ) as Promise<GetProxiesResult>;
 });
 
 const disconnectFx = createEffect((chainId: ChainId): Promise<unknown> => {
