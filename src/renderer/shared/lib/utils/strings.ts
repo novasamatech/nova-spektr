@@ -52,10 +52,10 @@ export const getComposedIdentity = (identity?: Identity): string => {
   return identity.subName ? `${identity.parent.name}/${identity.subName}` : identity.parent.name;
 };
 
-export const includes = (value?: string, searchString?: string): boolean => {
+export const includes = (value?: string, searchString = ''): boolean => {
   if (!value) return false;
 
-  return value.toLowerCase().includes((searchString || '').toLowerCase());
+  return value.toLowerCase().includes(searchString.toLowerCase());
 };
 
 /**

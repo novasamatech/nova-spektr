@@ -64,15 +64,15 @@
     "transferable": "Transferable"
   },
   "balances": {
-    "allShards": "All shards",
+    "accountsModalTitle": "Your accounts",
+    "allAccounts": "All accounts",
+    "assetsOnLabel": "Your assets on:",
     "emptyStateDescription": "Update the search or cancel filtering",
     "emptyStateLabel": "Nothing was found",
     "hideZeroBalancesLabel": "Hide zero balances",
+    "saveShardsButton": "Continue",
     "searchPlaceholder": "Search",
-    "shards": "shards",
-    "shardsModalButton": "Continue",
-    "shardsModalTitle": "Your shards",
-    "shardsTitle": "Your assets on:",
+    "selectedAccounts": "{ amount } accounts",
     "title": "Assets",
     "verificationFailedLabel": "verification failed",
     "verificationTooltip": "The balance may be wrong or outdated, please check your network connection"

@@ -92,7 +92,7 @@ function getAllAccountIds(accounts: Account[], chainId: ChainId): AccountId[] {
 }
 
 function getAccountsAndShardGroups(accounts: Account[]): Array<ChainAccount | ShardAccount[]> {
-  const shardsIndexes: Record<ShardAccount['groupId'], number> = {};
+  const shardsIndexes: Record<string, number> = {};
 
   return accounts.reduce<Array<ChainAccount | ShardAccount[]>>((acc, account) => {
     if (accountUtils.isBaseAccount(account)) return acc;
