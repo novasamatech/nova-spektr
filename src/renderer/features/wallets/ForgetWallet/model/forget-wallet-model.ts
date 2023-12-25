@@ -1,6 +1,6 @@
-import { createEvent, sample, createEffect, createStore, createApi, attach } from 'effector';
+import { createEvent, sample, createEffect, createStore, createApi, attach, split } from 'effector';
 
-import { Account, MultisigAccount, MultisigWallet, Wallet } from '@shared/core';
+import { AccountId, MultisigAccount, Wallet, WalletType } from '@shared/core';
 import { walletModel, walletUtils } from '@entities/wallet';
 import { useBalanceService } from '@entities/balance';
 import { useForgetMultisig } from '@entities/multisig';
@@ -18,52 +18,56 @@ const callbacksApi = createApi($callbacks, {
 });
 
 const forgetWallet = createEvent<Wallet>();
+const forgetSimpleWallet = createEvent<Wallet>();
+const forgetMultisigWallet = createEvent<Wallet>();
 
-type DeleteWalletBalancesParams = {
-  accounts: Account[];
-};
-
-const deleteWalletBalancesFx = createEffect(async ({ accounts }: DeleteWalletBalancesParams): Promise<void> => {
+const deleteWalletBalancesFx = createEffect(async (accountsIds: AccountId[]): Promise<void> => {
   try {
-    await balanceService.deleteBalances(accounts.map((a) => a.accountId));
+    await balanceService.deleteBalances(accountsIds);
   } catch (e) {
     console.error(`Error while deleting wallet balances`, e);
   }
 });
 
-type ForgetMultisigWalletParams = {
-  wallet: MultisigWallet;
-  account: MultisigAccount;
-};
+const deleteMultisigOperationsFx = createEffect(async (account: MultisigAccount): Promise<void> => {
+  try {
+    await deleteMultisigTxs(account.accountId);
+  } catch (e) {
+    console.error(`Error while deleting multisig wallet with id ${account.walletId}`, e);
+  }
+});
 
-const deleteMultisigBalancesAndOperationsFx = createEffect(
-  async ({ wallet, account }: ForgetMultisigWalletParams): Promise<void> => {
-    try {
-      await Promise.all([balanceService.deleteBalances([account.accountId]), deleteMultisigTxs(account.accountId)]);
-    } catch (e) {
-      console.error(`Error while deleting multisig wallet ${wallet.name}`, e);
-    }
+const SIMPLE_WALLETS = [
+  WalletType.WATCH_ONLY,
+  WalletType.POLKADOT_VAULT,
+  WalletType.SINGLE_PARITY_SIGNER,
+  WalletType.MULTISHARD_PARITY_SIGNER,
+];
+
+split({
+  source: forgetWallet,
+  match: {
+    simpleWallet: (wallet: Wallet) => SIMPLE_WALLETS.includes(wallet.type),
+    multisigWallet: (wallet: Wallet) => walletUtils.isMultisig(wallet),
   },
-);
+  cases: {
+    simpleWallet: forgetSimpleWallet,
+    multisigWallet: forgetMultisigWallet,
+  },
+});
 
 sample({
-  clock: forgetWallet,
+  clock: [forgetSimpleWallet, forgetMultisigWallet],
   source: walletModel.$accounts,
-  filter: (_, wallet) => !walletUtils.isMultisig(wallet),
-  fn: (accounts, wallet) => {
-    return { accounts: accounts.filter((a) => a.walletId === wallet.id) };
-  },
+  fn: (accounts, wallet) => accounts.filter((a) => a.walletId === wallet.id).map((a) => a.accountId),
   target: deleteWalletBalancesFx,
 });
 
 sample({
-  clock: forgetWallet,
+  clock: forgetMultisigWallet,
   source: walletModel.$accounts,
-  filter: (_, wallet) => walletUtils.isMultisig(wallet),
-  fn: (accounts, wallet) => {
-    return { wallet, account: accounts.find((a) => a.walletId === wallet.id) as MultisigAccount };
-  },
-  target: deleteMultisigBalancesAndOperationsFx,
+  fn: (accounts, wallet) => accounts.find((a) => a.walletId === wallet.id) as MultisigAccount,
+  target: deleteMultisigOperationsFx,
 });
 
 sample({
@@ -73,7 +77,7 @@ sample({
 });
 
 sample({
-  clock: [walletModel.events.walletRemovedSuccess],
+  clock: walletModel.events.walletRemovedSuccess,
   target: attach({
     source: $callbacks,
     effect: (state) => state?.onDeleteFinished(),

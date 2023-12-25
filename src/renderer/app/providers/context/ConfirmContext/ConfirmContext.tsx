@@ -3,7 +3,8 @@ import { createContext, PropsWithChildren, useCallback, useContext, useRef, useS
 import { ConfirmModal, SmallTitleText, FootnoteText } from '@shared/ui';
 import { DEFAULT_TRANSITION } from '@shared/lib/utils';
 import { useToggle } from '@shared/lib/hooks';
-import { Pallet } from '@shared/ui/Buttons/common/types';
+
+type Pallet = 'primary' | 'secondary' | 'error';
 
 export type ConfirmDialogProps = {
   title: string;

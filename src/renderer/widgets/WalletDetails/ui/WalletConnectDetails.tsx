@@ -191,7 +191,7 @@ export const WalletConnectDetails = ({ wallet, accounts, onClose }: Props) => {
         </ConfirmModal>
 
         <StatusModal
-          isOpen={walletDetailsUtils.isConfirmForgetOpen(forgetStep)}
+          isOpen={walletDetailsUtils.isForgetModalOpen(forgetStep)}
           title={t(
             forgetStep === ForgetStep.FORGETTING
               ? 'walletDetails.common.removingWallet'

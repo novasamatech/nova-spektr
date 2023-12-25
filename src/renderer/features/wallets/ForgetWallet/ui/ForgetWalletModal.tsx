@@ -12,7 +12,7 @@ type Props = {
   onForget: () => void;
 };
 
-export const ConfirmForgetModal = ({ wallet, isOpen, onClose, onForget }: Props) => {
+export const ForgetWalletModal = ({ wallet, isOpen, onClose, onForget }: Props) => {
   const { t } = useI18n();
 
   useEffect(() => {

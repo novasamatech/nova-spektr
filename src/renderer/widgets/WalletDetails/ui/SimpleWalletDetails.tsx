@@ -8,7 +8,7 @@ import { useI18n } from '@app/providers';
 import type { BaseAccount, Wallet } from '@shared/core';
 import { IconNames } from '@shared/ui/Icon/data';
 import { RenameWalletModal } from '@features/wallets/RenameWallet';
-import { ConfirmForgetModal } from '@features/wallets/ForgetWallet';
+import { ForgetWalletModal } from '@features/wallets/ForgetWallet';
 
 type Props = {
   wallet: Wallet;
@@ -68,7 +68,7 @@ export const SimpleWalletDetails = ({ wallet, account, onClose }: Props) => {
 
       <RenameWalletModal wallet={wallet} isOpen={isRenameModalOpen} onClose={toggleIsRenameModalOpen} />
 
-      <ConfirmForgetModal
+      <ForgetWalletModal
         wallet={wallet}
         isOpen={isConfirmForgetOpen}
         onClose={toggleConfirmForget}

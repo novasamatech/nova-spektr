@@ -1,1 +1,1 @@
-export { ConfirmForgetModal } from './ui/ConfirmForgetModal';
+export { ForgetWalletModal } from './ui/ForgetWalletModal';

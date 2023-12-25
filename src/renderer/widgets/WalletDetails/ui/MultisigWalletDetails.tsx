@@ -11,7 +11,7 @@ import { useI18n, useMatrix } from '@app/providers';
 import { WalletFiatBalance } from '@features/wallets/WalletSelect/ui/WalletFiatBalance';
 import { IconNames } from '@shared/ui/Icon/data';
 import { RenameWalletModal } from '@features/wallets/RenameWallet';
-import { ConfirmForgetModal } from '@features/wallets/ForgetWallet';
+import { ForgetWalletModal } from '@features/wallets/ForgetWallet';
 
 type Props = {
   wallet: Wallet;
@@ -154,7 +154,7 @@ export const MultisigWalletDetails = ({ wallet, account, signatoryWallets, signa
 
       <RenameWalletModal wallet={wallet} isOpen={isRenameModalOpen} onClose={toggleIsRenameModalOpen} />
 
-      <ConfirmForgetModal
+      <ForgetWalletModal
         wallet={wallet}
         isOpen={isConfirmForgetOpen}
         onClose={toggleConfirmForget}

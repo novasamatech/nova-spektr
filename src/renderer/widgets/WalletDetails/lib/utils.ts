@@ -15,7 +15,7 @@ export const wcDetailsUtils = {
 };
 
 export const walletDetailsUtils = {
-  isConfirmForgetOpen,
+  isForgetModalOpen,
   getVaultAccountsMap,
   getMultishardMap,
   exportMultishardWallet,
@@ -43,7 +43,7 @@ function isReadyToReconnect(step: ReconnectStep, connected: boolean): boolean {
   return isRejected(step) || (step === ReconnectStep.NOT_STARTED && !connected);
 }
 
-function isConfirmForgetOpen(step: ForgetStep): boolean {
+function isForgetModalOpen(step: ForgetStep): boolean {
   return [ForgetStep.FORGETTING, ForgetStep.SUCCESS].includes(step);
 }
 

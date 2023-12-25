@@ -15,7 +15,7 @@ import { vaultDetailsModel } from '../model/vault-details-model';
 import { walletDetailsUtils } from '../lib/utils';
 import { KeyConstructor, ImportKeysModal, DerivationsAddressModal } from '@features/wallets';
 import { RenameWalletModal } from '@features/wallets/RenameWallet';
-import { ConfirmForgetModal } from '@features/wallets/ForgetWallet';
+import { ForgetWalletModal } from '@features/wallets/ForgetWallet';
 
 type Props = {
   wallet: Wallet;
@@ -181,7 +181,7 @@ export const VaultWalletDetails = ({ wallet, root, accountsMap, onClose }: Props
         onComplete={handleVaultKeys}
       />
 
-      <ConfirmForgetModal
+      <ForgetWalletModal
         wallet={wallet}
         isOpen={isConfirmForgetOpen}
         onClose={toggleConfirmForget}

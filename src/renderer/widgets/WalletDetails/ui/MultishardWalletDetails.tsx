@@ -10,7 +10,7 @@ import type { MultishardMap } from '../lib/types';
 import { walletDetailsUtils } from '../lib/utils';
 import { RenameWalletModal } from '@features/wallets/RenameWallet';
 import { IconNames } from '@shared/ui/Icon/data';
-import { ConfirmForgetModal } from '@features/wallets/ForgetWallet';
+import { ForgetWalletModal } from '@features/wallets/ForgetWallet';
 
 type Props = {
   wallet: Wallet;
@@ -75,7 +75,7 @@ export const MultishardWalletDetails = ({ wallet, accounts, onClose }: Props) =>
 
       <RenameWalletModal wallet={wallet} isOpen={isRenameModalOpen} onClose={toggleIsRenameModalOpen} />
 
-      <ConfirmForgetModal
+      <ForgetWalletModal
         wallet={wallet}
         isOpen={isConfirmForgetOpen}
         onClose={toggleConfirmForget}

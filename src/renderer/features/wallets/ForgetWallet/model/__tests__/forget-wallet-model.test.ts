@@ -9,10 +9,6 @@ jest.mock('@entities/balance', () => ({
   }),
 }));
 
-jest.mock('@app/providers', () => ({
-  useMatrix: jest.fn(),
-}));
-
 const wallet = {
   id: 2,
   name: 'My second wallet',
