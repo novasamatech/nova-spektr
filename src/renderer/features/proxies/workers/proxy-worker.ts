@@ -16,15 +16,12 @@ import {
   AccountId,
 } from '@shared/core';
 import { InitConnectionsResult } from '../lib/constants';
-import { proxyWorkerUtils, toAccountId } from '../lib/utils';
+import { proxyWorkerUtils } from '../lib/utils';
 import { ProxyVariant } from '@/src/renderer/shared/core/types/proxy';
-import { accountUtils } from '@/src/renderer/entities/wallet';
 
 const state = {
   apis: {} as Record<ChainId, ApiPromise>,
 };
-
-console.log('xcm');
 
 function initConnection(chain: Chain, connection: Connection) {
   return new Promise((resolve) => {
@@ -81,8 +78,6 @@ type PartialProxiedAccount = Pick<
 >;
 
 async function getProxies(chainId: ChainId, accounts: Record<AccountId, Account>, proxies: ProxyAccount[]) {
-  console.log('xcmStart2');
-
   const api = state.apis[chainId];
   if (!api || !api.query.proxy) {
     return { proxiesToAdd: [], proxiesToRemove: [] };
@@ -113,7 +108,7 @@ async function getProxies(chainId: ChainId, accounts: Record<AccountId, Account>
           const newProxy: ProxyAccount = {
             chainId,
             proxiedAccountId,
-            accountId: toAccountId(account?.delegate),
+            accountId: proxyWorkerUtils.toAccountId(account?.delegate),
             proxyType: account.proxyType,
             delay: Number(account.delay),
           };
@@ -173,7 +168,7 @@ async function getProxies(chainId: ChainId, accounts: Record<AccountId, Account>
 
   const proxiesToRemove = proxies.filter((p) => !existingProxies.some((ep) => isEqual(p, ep)));
   const proxidesToRemove = Object.values(accounts)
-    .filter(accountUtils.isProxiedAccount)
+    .filter(proxyWorkerUtils.isProxiedAccount)
     .filter(
       (p) =>
         !existingProxides.some(
