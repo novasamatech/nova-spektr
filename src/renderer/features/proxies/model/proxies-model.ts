@@ -3,7 +3,7 @@ import { createEndpoint } from '@remote-ui/rpc';
 import { keyBy } from 'lodash';
 import { once, spread } from 'patronum';
 
-import { Account, Chain, ChainId, Connection, ConnectionType, ProxyAccount } from '@shared/core';
+import { Account, Chain, ChainId, Connection, ProxyAccount } from '@shared/core';
 import { isDisabled, networkModel } from '@entities/network';
 import { proxyWorkerUtils } from '../lib/utils';
 import { accountUtils, walletModel } from '@entities/wallet';
