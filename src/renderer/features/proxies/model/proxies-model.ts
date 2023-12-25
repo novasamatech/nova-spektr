@@ -3,8 +3,8 @@ import { createEndpoint } from '@remote-ui/rpc';
 import { keyBy } from 'lodash';
 import { once, spread } from 'patronum';
 
-import { Account, Chain, ChainId, Connection, ProxyAccount } from '@shared/core';
-import { networkModel } from '@entities/network';
+import { Account, Chain, ChainId, Connection, ConnectionType, ProxyAccount } from '@shared/core';
+import { isDisabled, networkModel } from '@entities/network';
 import { proxyWorkerUtils } from '../lib/utils';
 import { accountUtils, walletModel } from '@entities/wallet';
 import { proxyModel } from '@entities/proxy';
@@ -26,6 +26,8 @@ const startChainsFx = createEffect(({ chains, connections }: StartChainsProps) =
   const bindedConnected = scopeBind(connected, { safe: true });
 
   chains.forEach((chain) => {
+    if (isDisabled(connections[chain.chainId])) return;
+
     endpoint.call.initConnection(chain, connections[chain.chainId]).then(() => {
       bindedConnected(chain.chainId);
     });
@@ -51,7 +53,10 @@ const disconnectFx = createEffect((chainId: ChainId): Promise<unknown> => {
 
 sample({
   clock: once(networkModel.$connections),
-  source: { connections: networkModel.$connections, chains: networkModel.$chains },
+  source: {
+    connections: networkModel.$connections,
+    chains: networkModel.$chains,
+  },
   fn: ({ connections, chains }) => ({
     chains: Object.values(chains).filter(proxyWorkerUtils.isRegularProxy),
     connections,
