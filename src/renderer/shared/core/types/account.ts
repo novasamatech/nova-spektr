@@ -1,7 +1,7 @@
 import type { Signatory } from './signatory';
 import type { AccountId, ChainId, Threshold, ID, NoID } from './general';
 import { ChainType, CryptoType } from './general';
-import { ProxyType } from './proxy';
+import { ProxyType, ProxyVariant } from './proxy';
 
 type AbstractAccount = {
   id: ID;
@@ -47,6 +47,7 @@ export type ProxiedAccount = BaseAccount & {
   chainId: ChainId;
   delay: number;
   proxyType: ProxyType;
+  proxyVariant: ProxyVariant;
 };
 
 export type Account = BaseAccount | ChainAccount | MultisigAccount | WalletConnectAccount | ProxiedAccount;

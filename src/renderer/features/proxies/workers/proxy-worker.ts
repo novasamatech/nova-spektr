@@ -6,17 +6,19 @@ import { ProviderInterface } from '@polkadot/rpc-provider/types';
 import * as Sc from '@substrate/connect';
 
 import {
-  Account,
-  AccountId,
   Chain,
   ChainId,
   Connection,
   ConnectionType,
   PartialProxyAccount,
   ProxyAccount,
+  ChainType,
+  ProxiedAccount,
+  Account,
+  AccountId,
 } from '@shared/core';
 import { InitConnectionsResult } from '../lib/constants';
-import { proxyWorkerUtils } from '../lib/utils';
+import { proxyWorkerUtils, toAccountId } from '../lib/utils';
 
 const state = {
   apis: {} as Record<ChainId, ApiPromise>,
@@ -24,9 +26,7 @@ const state = {
 
 function initConnection(chain: Chain, connection: Connection) {
   return new Promise((resolve) => {
-    if (!chain) {
-      return;
-    }
+    if (!chain) return;
 
     try {
       let provider: ProviderInterface | undefined;
@@ -48,9 +48,7 @@ function initConnection(chain: Chain, connection: Connection) {
         }
       }
 
-      if (!provider) {
-        return;
-      }
+      if (!provider) return;
 
       provider.on('connected', async () => {
         state.apis[chain.chainId] = await ApiPromise.create({ provider, throwOnConnect: true, throwOnUnknown: true });
@@ -77,39 +75,66 @@ async function disconnect(chainId: ChainId) {
 
 async function getProxies(chainId: ChainId, accounts: Record<AccountId, Account>, proxies: ProxyAccount[]) {
   const api = state.apis[chainId];
-  const proxiesToAdd = [] as PartialProxyAccount[];
-  const existingProxies = [] as PartialProxyAccount[];
-
   if (!api || !api.query.proxy) {
-    return {
-      proxiesToAdd: [],
-      proxiesToRemove: [],
-    };
+    return { proxiesToAdd: [], proxiesToRemove: [] };
   }
+
+  // const existingProxies = [] as ProxyAccount[];
+  const proxiesToAdd = [] as ProxyAccount[];
+  const proxidesToAdd = [] as ProxiedAccount[];
+  const proxiesToRemove = [] as ProxiedAccount[];
+  const proxidesToRemove = [] as ProxiedAccount[];
 
   try {
     const keys = await api.query.proxy.proxies.keys();
 
-    await Promise.all(
-      keys.map(async (key) => {
-        try {
-          const proxyData = (await api.rpc.state.queryStorageAt([key])) as any;
+    const proxiesRequests = keys.map(async (key) => {
+      try {
+        const proxyData = (await api.rpc.state.queryStorageAt([key])) as any;
 
-          const proxiedAccountId = key.args[0].toHex();
-          const proxyAccountList = proxyData[0][0].toHuman().map(proxyWorkerUtils.toProxyAccount);
+        const proxiedAccountId = key.args[0].toHex();
+        // const doesProxiedExist = proxieds.some((oldProxied) => oldProxied.accountId === proxiedAccountId);
+        // if (!doesProxiedExist) {
+        //   proxidesToRemove.push();
+        // }
 
-          proxyAccountList.forEach((a: PartialProxyAccount) => {
-            const newProxy = {
-              accountId: proxiedAccountId,
-              chainId,
-              ...a,
-            };
+        proxyData[0][0].toHuman().forEach((account: any) => {
+          const newProxy: ProxyAccount = {
+            chainId,
+            proxiedAccountId,
+            accountId: toAccountId(account?.delegate),
+            proxyType: account.proxyType,
+            delay: Number(account.delay),
+          };
 
-            const hasProxyOrProxiedAccount = accounts[newProxy.accountId] || accounts[newProxy.proxyAccountId];
-            const alreadyExists = [...proxies].some((oldProxy) =>
-              proxyWorkerUtils.isSameProxies(oldProxy, newProxy as ProxyAccount),
-            );
+          const hasProxyOrProxiedAccount = accounts[newProxy.accountId] || accounts[proxiedAccountId];
 
+
+
+          // if equals then skip
+          // if proxied is same
+          const doesProxyExist = proxies.some((oldProxy) => proxyWorkerUtils.isSameProxies(oldProxy, newProxy));
+
+          if (!doesProxyExist) {
+
+          }
+          proxiesToAdd.push(newProxy);
+
+
+
+
+
+          proxidesToAdd.push();
+          proxiesToRemove.push();
+          proxidesToRemove.push();
+
+
+
+          // const doesProxyExist = proxies.some((oldProxy) => proxyWorkerUtils.isSameProxies(oldProxy, newProxy));
+
+          if (accounts[newProxy.accountId]) {
+            // for proxy accs
+            const alreadyExists = [...proxies].some((oldProxy) => proxyWorkerUtils.isSameProxies(oldProxy, newProxy));
             if (hasProxyOrProxiedAccount && !alreadyExists) {
               proxiesToAdd.push(newProxy);
             }
@@ -117,21 +142,27 @@ async function getProxies(chainId: ChainId, accounts: Record<AccountId, Account>
             if (hasProxyOrProxiedAccount) {
               existingProxies.push(newProxy);
             }
-          });
-        } catch (e) {
-          console.log('proxy error', e);
-        }
-      }),
-    );
+          } else if (accounts[newProxy.proxiedAccountId]) {
+            // for proxied
+          }
+
+        });
+      } catch (e) {
+        console.log('proxy error', e);
+      }
+    });
+
+    await Promise.all(proxiesRequests);
   } catch (e) {
     console.log(e);
   }
 
   return {
     proxiesToAdd,
-    proxiesToRemove: proxies.filter((p) => !existingProxies.some((ep) => isEqual(p, ep))),
-    // TODO: proxieds To Add: proxies.filter((p) => !existingProxies.some((ep) => isEqual(p, ep))),
-    // TODO: proxieds To Remove: proxies.filter((p) => !existingProxies.some((ep) => isEqual(p, ep))),
+    proxiesToRemove,
+    // proxiesToRemove: proxies.filter((p) => !existingProxies.some((ep) => isEqual(p, ep))),
+    proxidesToAdd,
+    proxidesToRemove,
   };
 }
 

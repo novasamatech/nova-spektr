@@ -1,4 +1,20 @@
-import { AccountId, ID, NoID } from './general';
+import { AccountId, NoID, ChainType, ID, ChainId } from './general';
+
+export type ProxyChainGroup = {
+  id: ID;
+  walletId: ID;
+  proxiedAccountId: AccountId;
+  chainId: ChainId;
+  totalDeposit: number;
+};
+
+export type ProxyAccount = {
+  accountId: AccountId;
+  proxiedAccountId: AccountId;
+  chainId: string;
+  proxyType: ProxyType;
+  delay: number;
+};
 
 export const enum ProxyType {
   ANY = 'Any',
@@ -11,13 +27,9 @@ export const enum ProxyType {
   NOMINATION_POOLS = 'NominationPools',
 }
 
-export type ProxyAccount = {
-  id: ID;
-  accountId: AccountId;
-  proxyAccountId: AccountId;
-  chainId: string;
-  proxyType: ProxyType;
-  delay: number;
-};
+export const enum ProxyVariant {
+  PURE = 'pure',
+  REGULAR = 'regular',
+}
 
-export type PartialProxyAccount = Omit<NoID<ProxyAccount>, 'accountId' | 'chainId'>;
+export type PartialProxyAccount = Omit<ProxyAccount, 'chainId'>;
