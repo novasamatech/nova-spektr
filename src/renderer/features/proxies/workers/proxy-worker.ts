@@ -14,6 +14,7 @@ import {
   ProxiedAccount,
   Account,
   AccountId,
+  NoID,
 } from '@shared/core';
 import { InitConnectionsResult } from '../lib/constants';
 import { proxyWorkerUtils } from '../lib/utils';
@@ -83,8 +84,8 @@ async function getProxies(chainId: ChainId, accounts: Record<AccountId, Account>
     return { proxiesToAdd: [], proxiesToRemove: [] };
   }
 
-  const existingProxies = [] as ProxyAccount[];
-  const proxiesToAdd = [] as ProxyAccount[];
+  const existingProxies = [] as NoID<ProxyAccount>[];
+  const proxiesToAdd = [] as NoID<ProxyAccount>[];
 
   const existingProxides = [] as PartialProxiedAccount[];
   const proxidesToAdd = [] as PartialProxiedAccount[];
@@ -105,7 +106,7 @@ async function getProxies(chainId: ChainId, accounts: Record<AccountId, Account>
         // }
 
         proxyData[0][0].toHuman().forEach((account: any) => {
-          const newProxy: ProxyAccount = {
+          const newProxy: NoID<ProxyAccount> = {
             chainId,
             proxiedAccountId,
             accountId: proxyWorkerUtils.toAccountId(account?.delegate),
@@ -139,7 +140,7 @@ async function getProxies(chainId: ChainId, accounts: Record<AccountId, Account>
               ...newProxy,
               proxyAccountId: newProxy.accountId,
               accountId: newProxy.proxiedAccountId,
-              proxyVariant: ProxyVariant.REGULAR,
+              proxyVariant: ProxyVariant.NONE,
             } as PartialProxiedAccount;
 
             if (!doesProxyExist) {

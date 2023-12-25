@@ -9,6 +9,7 @@ export type ProxyChainGroup = {
 };
 
 export type ProxyAccount = {
+  id: ID;
   accountId: AccountId;
   proxiedAccountId: AccountId;
   chainId: string;
@@ -28,6 +29,7 @@ export const enum ProxyType {
 }
 
 export const enum ProxyVariant {
+  NONE = 'none',
   PURE = 'pure',
   REGULAR = 'regular',
 }

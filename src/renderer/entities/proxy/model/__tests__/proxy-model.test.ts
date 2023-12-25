@@ -9,9 +9,10 @@ jest.mock('@app/providers', () => ({
 }));
 
 const proxyMock = {
+  id: 0,
   chainId: '0x00' as HexString,
   accountId: '0x00' as HexString,
-  proxyAccountId: '0x01' as HexString,
+  proxiedAccountId: '0x01' as HexString,
   proxyType: 'Any',
   delay: 0,
 } as ProxyAccount;

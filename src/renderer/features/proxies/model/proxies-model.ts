@@ -41,19 +41,9 @@ type GetProxiesResult = {
   proxiesToAdd: ProxyAccount[];
   proxiesToRemove: ProxyAccount[];
 };
-const getProxiesFx = createEffect(
-  async ({ chainId, accounts, proxies }: GetProxiesParams): Promise<GetProxiesResult> => {
-    const result = (await endpoint.call.getProxies(
-      chainId,
-      keyBy(accounts, 'accountId'),
-      proxies,
-    )) as Promise<GetProxiesResult>;
-
-    console.log('xcm', result);
-
-    return result;
-  },
-);
+const getProxiesFx = createEffect(({ chainId, accounts, proxies }: GetProxiesParams): Promise<GetProxiesResult> => {
+  return endpoint.call.getProxies(chainId, keyBy(accounts, 'accountId'), proxies) as Promise<GetProxiesResult>;
+});
 
 const disconnectFx = createEffect((chainId: ChainId): Promise<unknown> => {
   return endpoint.call.disconnect(chainId);

@@ -19,7 +19,7 @@ const addProxiesFx = createEffect((proxies: ProxyAccount[]): Promise<ProxyAccoun
 });
 
 const removeProxiesFx = createEffect((proxies: ProxyAccount[]) => {
-  return storageService.proxies.deleteAll([1, 2, 3]);
+  return storageService.proxies.deleteAll(proxies.map((p) => p.id));
 });
 
 sample({
