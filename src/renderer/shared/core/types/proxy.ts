@@ -1,4 +1,4 @@
-import { AccountId, NoID, ChainType, ID, ChainId } from './general';
+import { AccountId, ID, ChainId } from './general';
 
 export type ProxyChainGroup = {
   id: ID;

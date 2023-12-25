@@ -22,7 +22,7 @@ export const accountUtils = {
   isMultisigAccount,
   isChainIdMatch,
   isWalletConnectAccount,
-  isRegularProxyAccount,
+  isProxiedAccount,
   isShardAccount,
   getAccountsAndShardGroups,
   isAccountWithShards,
@@ -71,7 +71,7 @@ function isMultisigAccount(account: Pick<Account, 'type'>): account is MultisigA
   return account.type === AccountType.MULTISIG;
 }
 
-function isRegularProxyAccount(account: Pick<Account, 'type'>): account is ProxiedAccount {
+function isProxiedAccount(account: Pick<Account, 'type'>): account is ProxiedAccount {
   return account.type === AccountType.PROXIED;
 }
 

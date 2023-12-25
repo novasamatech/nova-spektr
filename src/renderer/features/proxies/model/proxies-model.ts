@@ -25,8 +25,12 @@ type StartChainsProps = {
 const startChainsFx = createEffect(({ chains, connections }: StartChainsProps) => {
   const bindedConnected = scopeBind(connected, { safe: true });
 
+  console.log('xcmStart3');
+
   chains.forEach((chain) => {
     endpoint.call.initConnection(chain, connections[chain.chainId]).then(() => {
+      console.log('xcmStart4', chain.chainId);
+
       bindedConnected(chain.chainId);
     });
   });
@@ -42,7 +46,13 @@ type GetProxiesResult = {
   proxiesToRemove: ProxyAccount[];
 };
 const getProxiesFx = createEffect(({ chainId, accounts, proxies }: GetProxiesParams): Promise<GetProxiesResult> => {
-  return endpoint.call.getProxies(chainId, keyBy(accounts, 'accountId'), proxies) as Promise<GetProxiesResult>;
+  console.log('xcmStart');
+
+  const result = endpoint.call.getProxies(chainId, keyBy(accounts, 'accountId'), proxies) as Promise<GetProxiesResult>;
+
+  console.log('xcm', result);
+
+  return result;
 });
 
 const disconnectFx = createEffect((chainId: ChainId): Promise<unknown> => {
