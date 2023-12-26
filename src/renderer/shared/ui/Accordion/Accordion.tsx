@@ -31,7 +31,10 @@ const Button = forwardRef<HTMLButtonElement, PropsWithChildren<ButtonProps>>(
     return (
       <Disclosure.Button
         ref={ref}
-        className={cnTw('group flex items-center justify-between w-full gap-x-2', buttonClass)}
+        className={cnTw(
+          'group flex items-center justify-between w-full gap-x-2 hover:bg-action-background-hover rounded',
+          buttonClass,
+        )}
         onClick={onClick}
       >
         {({ open }) => (
@@ -43,8 +46,8 @@ const Button = forwardRef<HTMLButtonElement, PropsWithChildren<ButtonProps>>(
                 size={16}
                 className={cnTw(
                   'cursor-pointer rounded-full transition-colors',
-                  'group-hover:text-icon-hover group-hover:bg-hover',
-                  'group-focus-visible:text-icon-hover group-focus-visible:bg-hover',
+                  'group-hover:text-icon-hover',
+                  'group-focus-visible:text-icon-hover',
                 )}
               />
             </div>
