@@ -29,7 +29,7 @@ export const MultishardAccountsList = ({ accounts, chains, className }: Props) =
             explorers={RootExplorers}
             button={
               <ContactItem
-                className="sticky top-0 bg-white z-10 py-4"
+                className="bg-white py-4"
                 size={28}
                 name={baseAccount.name}
                 address={baseAccount.accountId}
