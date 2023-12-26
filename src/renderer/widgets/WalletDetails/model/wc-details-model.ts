@@ -15,7 +15,7 @@ const confirmReconnectShown = createEvent();
 const reconnectStarted = createEvent<Omit<InitConnectParams, 'client'> & { currentSession: string }>();
 const reconnectAborted = createEvent();
 const sessionTopicUpdated = createEvent();
-const forgetButtonClicked = createEvent();
+const forgetButtonClicked = createEvent<Wallet>();
 const forgetModalClosed = createEvent();
 
 const $reconnectStep = createStore<ReconnectStep>(ReconnectStep.NOT_STARTED).reset(reset);
