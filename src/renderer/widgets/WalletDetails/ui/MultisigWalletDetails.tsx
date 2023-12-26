@@ -11,6 +11,7 @@ import { useI18n, useMatrix } from '@app/providers';
 import { WalletFiatBalance } from '@features/wallets/WalletSelect/ui/WalletFiatBalance';
 import { IconNames } from '@shared/ui/Icon/data';
 import { RenameWalletModal } from '@features/wallets/RenameWallet';
+import { ForgetWalletModal } from '@features/wallets/ForgetWallet';
 
 type Props = {
   wallet: Wallet;
@@ -25,6 +26,7 @@ export const MultisigWalletDetails = ({ wallet, account, signatoryWallets, signa
 
   const [isModalOpen, closeModal] = useModalClose(true, onClose);
   const [isRenameModalOpen, toggleIsRenameModalOpen] = useToggle();
+  const [isConfirmForgetOpen, toggleConfirmForget] = useToggle();
 
   const chains = useMemo(() => {
     return chainsService.getChainsData({ sort: true }).filter((chain) => isMultisigAvailable(chain.options));
@@ -36,11 +38,11 @@ export const MultisigWalletDetails = ({ wallet, account, signatoryWallets, signa
       title: t('walletDetails.common.renameButton'),
       onClick: toggleIsRenameModalOpen,
     },
-    // {
-    //   icon: 'forget',
-    //   title: t('walletDetails.common.forgetButton'),
-    //   onClick: () => {},
-    // },
+    {
+      icon: 'forget' as IconNames,
+      title: t('walletDetails.common.forgetButton'),
+      onClick: toggleConfirmForget,
+    },
   ];
 
   const ActionButton = (
@@ -95,15 +97,15 @@ export const MultisigWalletDetails = ({ wallet, account, signatoryWallets, signa
                     {signatoryWallets.length > 0 && (
                       <div className="flex flex-col gap-y-2">
                         <FootnoteText className="text-text-tertiary px-5">
-                          {t('walletDetails.multisig.walletsGroup')}
+                          {t('walletDetails.multisig.walletsGroup')} {signatoryWallets.length}
                         </FootnoteText>
 
                         <ul className="flex flex-col gap-y-2 px-3">
                           {signatoryWallets.map(([accountId, wallet]) => (
                             <li key={wallet.id} className="flex items-center gap-x-2 py-1.5">
                               <ExplorersPopover
-                                explorers={RootExplorers}
                                 address={accountId}
+                                explorers={RootExplorers}
                                 button={
                                   <WalletCardMd
                                     wallet={wallet}
@@ -111,11 +113,12 @@ export const MultisigWalletDetails = ({ wallet, account, signatoryWallets, signa
                                   />
                                 }
                               >
-                                {isLoggedIn && (
-                                  <ExplorersPopover.Group title={t('general.explorers.matrixIdTitle')}>
-                                    <HelpText className="text-text-secondary">{matrix.userId}</HelpText>
-                                  </ExplorersPopover.Group>
-                                )}
+                                <ExplorersPopover.Group
+                                  active={isLoggedIn}
+                                  title={t('general.explorers.matrixIdTitle')}
+                                >
+                                  <HelpText className="text-text-secondary">{matrix.userId}</HelpText>
+                                </ExplorersPopover.Group>
                               </ExplorersPopover>
                             </li>
                           ))}
@@ -126,17 +129,24 @@ export const MultisigWalletDetails = ({ wallet, account, signatoryWallets, signa
                     {signatoryContacts.length > 0 && (
                       <div className="flex flex-col gap-y-2 mt-4 px-5">
                         <FootnoteText className="text-text-tertiary">
-                          {t('walletDetails.multisig.contactsGroup')}
+                          {t('walletDetails.multisig.contactsGroup')} {signatoryContacts.length}
                         </FootnoteText>
 
                         <ul className="flex flex-col gap-y-2">
                           {signatoryContacts.map((signatory) => (
                             <li key={signatory.accountId} className="flex items-center gap-x-2 py-1.5">
-                              <ContactItem
-                                name={signatory.name}
-                                accountId={signatory.accountId}
+                              <ExplorersPopover
+                                address={signatory.accountId}
                                 explorers={RootExplorers}
-                              />
+                                button={<ContactItem name={signatory.name} address={signatory.accountId} />}
+                              >
+                                <ExplorersPopover.Group
+                                  active={Boolean(signatory.matrixId)}
+                                  title={t('general.explorers.matrixIdTitle')}
+                                >
+                                  <HelpText className="text-text-secondary break-all">{signatory.matrixId}</HelpText>
+                                </ExplorersPopover.Group>
+                              </ExplorersPopover>
                             </li>
                           ))}
                         </ul>
@@ -151,6 +161,13 @@ export const MultisigWalletDetails = ({ wallet, account, signatoryWallets, signa
       </div>
 
       <RenameWalletModal wallet={wallet} isOpen={isRenameModalOpen} onClose={toggleIsRenameModalOpen} />
+
+      <ForgetWalletModal
+        wallet={wallet}
+        isOpen={isConfirmForgetOpen}
+        onClose={toggleConfirmForget}
+        onForget={onClose}
+      />
     </BaseModal>
   );
 };

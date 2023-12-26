@@ -10,12 +10,12 @@
     ],
     "nodes": [
       {
-        "url": "wss://polkadot.public.curie.radiumblock.co/ws",
-        "name": "Radium node"
-      },
-      {
         "url": "wss://dot-rpc.stakeworld.io",
         "name": "Stakeworld node"
+      },
+      {
+        "url": "wss://polkadot.public.curie.radiumblock.co/ws",
+        "name": "Radium node"
       },
       {
         "url": "wss://polkadot-rpc.dwellir.com",
@@ -326,16 +326,16 @@
     ],
     "nodes": [
       {
-        "url": "wss://statemine-rpc.dwellir.com",
-        "name": "Dwellir node"
-      },
-      {
         "url": "wss://sys.ibp.network/statemine",
         "name": "IBP network node"
       },
       {
         "url": "wss://sys.dotters.network/statemine",
         "name": "Dotters Net node"
+      },
+      {
+        "url": "wss://statemine-rpc.dwellir.com",
+        "name": "Dwellir node"
       }
     ],
     "assets": [
@@ -3382,16 +3382,16 @@
     ],
     "nodes": [
       {
-        "url": "wss://statemint-rpc.dwellir.com",
-        "name": "Dwellir node"
+        "url": "wss://sys.ibp.network/statemint",
+        "name": "IBP network node"
       },
       {
         "url": "wss://sys.dotters.network/statemint",
         "name": "Dotters Net node"
       },
       {
-        "url": "wss://sys.ibp.network/statemint",
-        "name": "IBP network node"
+        "url": "wss://statemint-rpc.dwellir.com",
+        "name": "Dwellir node"
       },
       {
         "url": "wss://statemint.api.onfinality.io/public-ws",
@@ -6336,7 +6336,7 @@
         "precision": 18,
         "priceId": "fusotao",
         "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Bittensor_(TAO).svg",
-        "name": "Fusotao token"
+        "name": "TAO"
       }
     ],
     "explorers": [
@@ -6541,12 +6541,12 @@
     }
   },
   {
-    "name": "Crust",
+    "name": "Crust Polkadot Parachain",
     "specName": "polkadot-crust-parachain",
     "addressPrefix": 88,
     "chainId": "0x4319cc49ee79495b57a1fec4d2bd43f59052dcc690276de566c2691d6df4f7b8",
     "parentId": "0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3",
-    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/chains/Crust.svg",
+    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/chains/Crust_Parachain.svg",
     "options": [
       "multisig"
     ],
@@ -6826,7 +6826,7 @@
         "precision": 9,
         "priceId": "bittensor",
         "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Bittensor_(TAO).svg",
-        "name": "Fusotao token"
+        "name": "TAO"
       }
     ],
     "explorers": [
@@ -7055,16 +7055,16 @@
     ],
     "nodes": [
       {
-        "url": "wss://dot-rpc.stakeworld.io/bridgehub",
-        "name": "Stakeworld node"
-      },
-      {
         "url": "wss://sys.ibp.network/bridgehub-polkadot",
         "name": "IBP network node"
       },
       {
         "url": "wss://sys.dotters.network/bridgehub-polkadot",
         "name": "Dotters Net node"
+      },
+      {
+        "url": "wss://dot-rpc.stakeworld.io/bridgehub",
+        "name": "Stakeworld node"
       }
     ],
     "assets": [
@@ -7098,16 +7098,16 @@
     ],
     "nodes": [
       {
-        "url": "wss://ksm-rpc.stakeworld.io/bridgehub",
-        "name": "Stakeworld node"
-      },
-      {
         "url": "wss://sys.ibp.network/bridgehub-kusama",
         "name": "IBP network node"
       },
       {
         "url": "wss://sys.dotters.network/bridgehub-kusama",
         "name": "Dotters Net node"
+      },
+      {
+        "url": "wss://ksm-rpc.stakeworld.io/bridgehub",
+        "name": "Stakeworld node"
       }
     ],
     "assets": [
@@ -7772,6 +7772,79 @@
         "extrinsic": "https://dock.subscan.io/extrinsic/{hash}",
         "account": "https://dock.subscan.io/account/{address}",
         "multisig": "https://dock.subscan.io/multisig_extrinsic/{index}?call_hash={callHash}"
+      }
+    ]
+  },
+  {
+    "name": "Polimec",
+    "specName": "polimec-mainnet",
+    "addressPrefix": 41,
+    "chainId": "0x7eb9354488318e7549c722669dcbdcdc526f1fef1420e7944667212f3601fdbd",
+    "parentId": "0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3",
+    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/chains/Polimec.svg",
+    "nodes": [
+      {
+        "url": "wss://rpc.polimec.org",
+        "name": "Polimec node"
+      }
+    ],
+    "assets": [
+      {
+        "assetId": 0,
+        "symbol": "PLMC",
+        "precision": 10,
+        "priceId": "polimec",
+        "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/PLMC.svg",
+        "name": "Polimec token"
+      }
+    ]
+  },
+  {
+    "name": "Energy Web X",
+    "specName": "ewx-parachain",
+    "addressPrefix": 42,
+    "chainId": "0x5a51e04b88a4784d205091aa7bada002f3e5da3045e5b05655ee4db2589c33b5",
+    "parentId": "0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3",
+    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/chains/Energy_Web_X.svg",
+    "nodes": [
+      {
+        "url": "wss://public-rpc.mainnet.energywebx.com/",
+        "name": "Energywebx node"
+      }
+    ],
+    "assets": [
+      {
+        "assetId": 0,
+        "symbol": "EWT",
+        "precision": 18,
+        "priceId": "energy-web-token",
+        "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Energy_Web_(EWT).svg",
+        "name": "Energy Web token"
+      }
+    ]
+  },
+  {
+    "name": "Energy Web X Rococo",
+    "specName": "ewx-parachain",
+    "addressPrefix": 42,
+    "chainId": "0xac123be800b7c9a3e3449bb70edd8e3d9008d27826381451eebf94bce1db1fbe",
+    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/chains/Energy_Web_Testnet.svg",
+    "options": [
+      "testnet"
+    ],
+    "nodes": [
+      {
+        "url": "wss://public-rpc.testnet.energywebx.com",
+        "name": "Energy Web X Rococo node"
+      }
+    ],
+    "assets": [
+      {
+        "assetId": 0,
+        "symbol": "VT",
+        "precision": 18,
+        "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Default_(VT).svg",
+        "name": "VT token"
       }
     ]
   }
