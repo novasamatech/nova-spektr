@@ -108,12 +108,12 @@ const walletSelectedFx = createEffect(async ({ prevId, nextId }: SelectParams): 
   }
 
   // TODO: consider using Dexie transaction() | Task --> https://app.clickup.com/t/8692uyemn
-  const [prevWallet, nextWallet] = await Promise.all([
+  const [, nextWallet] = await Promise.all([
     storageService.wallets.update(prevId, { isActive: false }),
     storageService.wallets.update(nextId, { isActive: true }),
   ]);
 
-  return prevWallet && nextWallet ? nextId : undefined;
+  return nextWallet ? nextId : undefined;
 });
 
 const multisigWalletUpdatedFx = createEffect(
