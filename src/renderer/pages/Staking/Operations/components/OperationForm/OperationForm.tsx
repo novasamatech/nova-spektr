@@ -8,7 +8,7 @@ import { useI18n } from '@app/providers';
 import { validateAddress } from '@shared/lib/utils';
 import { RadioOption } from '@shared/ui/RadioGroup/common/types';
 import { DropdownOption, ComboboxOption } from '@shared/ui/Dropdowns/common/types';
-import { getPayoutAccountOption } from '../../common/utils';
+import { getDestinationAccounts, getPayoutAccountOption } from '../../common/utils';
 import type { Asset, Address, ChainId, AccountId } from '@shared/core';
 import { RewardsDestination } from '@shared/core';
 import { walletModel, accountUtils } from '@entities/wallet';
@@ -80,13 +80,14 @@ export const OperationForm = ({
 }: Props) => {
   const { t } = useI18n();
   const dbAccounts = useUnit(walletModel.$accounts);
+  const dbWallets = useUnit(walletModel.$wallets);
 
   const destinations = getDestinations(t);
 
   const [activePayout, setActivePayout] = useState<Address>('');
   const [payoutAccounts, setPayoutAccounts] = useState<ComboboxOption<Address>[]>([]);
 
-  const destAccounts = dbAccounts.filter((a) => accountUtils.isChainIdMatch(a, chainId));
+  const destAccounts = getDestinationAccounts(dbAccounts, dbWallets, chainId);
   const payoutIds = destAccounts.map((a) => a.accountId);
   const balances = useAssetBalances({
     accountIds: payoutIds,
