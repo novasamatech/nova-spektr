@@ -52,6 +52,7 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
   const { addEventWithQueue, updateEvent, getEvents } = useMultisigEvent({ addTask });
 
   const apisRef = useRef(apis);
+  const accountsRef = useRef(accounts);
   const { current: matrix } = useRef<ISecureMessenger>(new Matrix());
 
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -60,6 +61,11 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
   useEffect(() => {
     apisRef.current = apis;
   }, [apis]);
+
+  // HOOK: correct accounts for update multisig tx
+  useEffect(() => {
+    accountsRef.current = accounts;
+  }, [accounts]);
 
   const onSyncProgress = () => {
     if (!isLoggedIn) {
@@ -211,8 +217,7 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
 
     if (!validateMatrixEvent(content, extras)) return;
 
-    const multisigAccount = accounts.find((a) => a.accountId === extras.mstAccount.accountId);
-
+    const multisigAccount = accountsRef.current.find((a) => a.accountId === extras.mstAccount.accountId);
     if (!multisigAccount || !accountUtils.isMultisigAccount(multisigAccount)) return;
 
     const multisigTx = await getMultisigTx(
@@ -222,6 +227,7 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
       content.callTimepoint.height,
       content.callTimepoint.index,
     );
+
     if (matrix.isUpdateEvent(type, content)) {
       await handleUpdateEvent(content, multisigTx);
     }
