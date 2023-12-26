@@ -52,4 +52,8 @@ export const useTransactionStorage = (db: TMultisigTransaction): IMultisigTransa
     //@ts-ignore
     return db.delete([accountId, chainId, callHash, blockCreated, indexCreated]);
   },
+
+  deleteMultisigTxs: (accountId: AccountId): Promise<number> => {
+    return db.where('accountId').equals(accountId).delete();
+  },
 });

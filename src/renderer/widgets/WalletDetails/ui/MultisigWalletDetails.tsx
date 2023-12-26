@@ -11,6 +11,7 @@ import { useI18n, useMatrix } from '@app/providers';
 import { WalletFiatBalance } from '@features/wallets/WalletSelect/ui/WalletFiatBalance';
 import { IconNames } from '@shared/ui/Icon/data';
 import { RenameWalletModal } from '@features/wallets/RenameWallet';
+import { ForgetWalletModal } from '@features/wallets/ForgetWallet';
 
 type Props = {
   wallet: Wallet;
@@ -25,6 +26,7 @@ export const MultisigWalletDetails = ({ wallet, account, signatoryWallets, signa
 
   const [isModalOpen, closeModal] = useModalClose(true, onClose);
   const [isRenameModalOpen, toggleIsRenameModalOpen] = useToggle();
+  const [isConfirmForgetOpen, toggleConfirmForget] = useToggle();
 
   const chains = useMemo(() => {
     return chainsService.getChainsData({ sort: true }).filter((chain) => isMultisigAvailable(chain.options));
@@ -36,11 +38,11 @@ export const MultisigWalletDetails = ({ wallet, account, signatoryWallets, signa
       title: t('walletDetails.common.renameButton'),
       onClick: toggleIsRenameModalOpen,
     },
-    // {
-    //   icon: 'forget',
-    //   title: t('walletDetails.common.forgetButton'),
-    //   onClick: () => {},
-    // },
+    {
+      icon: 'forget' as IconNames,
+      title: t('walletDetails.common.forgetButton'),
+      onClick: toggleConfirmForget,
+    },
   ];
 
   const ActionButton = (
@@ -159,6 +161,13 @@ export const MultisigWalletDetails = ({ wallet, account, signatoryWallets, signa
       </div>
 
       <RenameWalletModal wallet={wallet} isOpen={isRenameModalOpen} onClose={toggleIsRenameModalOpen} />
+
+      <ForgetWalletModal
+        wallet={wallet}
+        isOpen={isConfirmForgetOpen}
+        onClose={toggleConfirmForget}
+        onForget={onClose}
+      />
     </BaseModal>
   );
 };

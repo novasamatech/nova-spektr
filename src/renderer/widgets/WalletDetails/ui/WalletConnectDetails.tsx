@@ -174,7 +174,7 @@ export const WalletConnectDetails = ({ wallet, accounts, onClose }: Props) => {
         </ConfirmModal>
 
         <ConfirmModal
-          panelClass="w-[300px]"
+          panelClass="w-[240px]"
           isOpen={isConfirmForgetOpen}
           confirmText={t('walletDetails.common.removeButton')}
           cancelText={t('walletDetails.common.cancelButton')}
