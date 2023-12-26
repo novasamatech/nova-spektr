@@ -5,7 +5,7 @@ import { fork } from 'effector';
 import { TEST_ACCOUNT_ID } from '@shared/lib/utils';
 import chains from '@shared/config/chains/chains.json';
 import { NetworkAssets } from './NetworkAssets';
-import type { Account, Chain } from '@shared/core';
+import type { Chain, BaseAccount, ChainAccount, ShardAccount } from '@shared/core';
 import { ChainType, CryptoType, AccountType } from '@shared/core';
 import { balanceModel } from '@entities/balance';
 
@@ -56,69 +56,59 @@ const accounts = [
     cryptoType: CryptoType.SR25519,
     chainType: ChainType.SUBSTRATE,
   },
-] as Account[];
+] as Array<BaseAccount | ChainAccount | ShardAccount>;
 
-describe('pages/Assets/NetworkAssets', () => {
+describe('pages/Assets/Assets/components/NetworkAssets', () => {
   const scope = fork({
     values: new Map().set(balanceModel.$balances, testBalances),
   });
 
-  test('should render component', () => {
-    render(
-      <Provider value={scope}>
-        <NetworkAssets chain={testChain} accounts={accounts} />
-      </Provider>,
-    );
+  const renderNetworkAssets = async () => {
+    await act(async () => {
+      render(
+        <Provider value={scope}>
+          <NetworkAssets chain={testChain} accounts={accounts} />
+        </Provider>,
+      );
+    });
+  };
+
+  test('should render component', async () => {
+    await renderNetworkAssets();
 
     const text = screen.getByText(testChain.name);
     expect(text).toBeInTheDocument();
   });
 
-  test('should render assets', () => {
-    render(
-      <Provider value={scope}>
-        <NetworkAssets chain={testChain} accounts={accounts} />
-      </Provider>,
-    );
+  test('should render assets', async () => {
+    await renderNetworkAssets();
 
     const balances = screen.getAllByTestId('AssetCard');
     expect(balances).toHaveLength(7);
   });
 
   test('should hide assets', async () => {
-    render(
-      <Provider value={scope}>
-        <NetworkAssets chain={testChain} accounts={accounts} />
-      </Provider>,
-    );
+    await renderNetworkAssets();
 
     const balancesBefore = screen.getAllByTestId('AssetCard');
     expect(balancesBefore).toHaveLength(7);
 
     const button = screen.getByRole('button');
-    await act(() => button.click());
+    act(() => button.click());
 
     const balancesAfter = screen.queryByTestId('AssetCard');
     expect(balancesAfter).not.toBeInTheDocument();
   });
 
-  test('should show unverified badge', () => {
-    render(
-      <Provider value={scope}>
-        <NetworkAssets chain={testChain} accounts={accounts} />
-      </Provider>,
-    );
+  test('should show unverified badge', async () => {
+    await renderNetworkAssets();
 
     const unverifiedBadge = screen.getByText('balances.verificationFailedLabel');
     expect(unverifiedBadge).toBeInTheDocument();
   });
 
-  test('should sort assets by balance and name', () => {
-    render(
-      <Provider value={scope}>
-        <NetworkAssets chain={testChain} accounts={accounts} />
-      </Provider>,
-    );
+  test('should sort assets by balance and name', async () => {
+    await renderNetworkAssets();
 
     const assetsNames = screen.getAllByTestId('AssetCard').map((element) => element.firstChild);
 
