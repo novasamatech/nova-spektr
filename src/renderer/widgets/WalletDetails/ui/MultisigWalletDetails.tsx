@@ -95,15 +95,15 @@ export const MultisigWalletDetails = ({ wallet, account, signatoryWallets, signa
                     {signatoryWallets.length > 0 && (
                       <div className="flex flex-col gap-y-2">
                         <FootnoteText className="text-text-tertiary px-5">
-                          {t('walletDetails.multisig.walletsGroup')}
+                          {t('walletDetails.multisig.walletsGroup')} {signatoryWallets.length}
                         </FootnoteText>
 
                         <ul className="flex flex-col gap-y-2 px-3">
                           {signatoryWallets.map(([accountId, wallet]) => (
                             <li key={wallet.id} className="flex items-center gap-x-2 py-1.5">
                               <ExplorersPopover
-                                explorers={RootExplorers}
                                 address={accountId}
+                                explorers={RootExplorers}
                                 button={
                                   <WalletCardMd
                                     wallet={wallet}
@@ -111,11 +111,12 @@ export const MultisigWalletDetails = ({ wallet, account, signatoryWallets, signa
                                   />
                                 }
                               >
-                                {isLoggedIn && (
-                                  <ExplorersPopover.Group title={t('general.explorers.matrixIdTitle')}>
-                                    <HelpText className="text-text-secondary">{matrix.userId}</HelpText>
-                                  </ExplorersPopover.Group>
-                                )}
+                                <ExplorersPopover.Group
+                                  active={isLoggedIn}
+                                  title={t('general.explorers.matrixIdTitle')}
+                                >
+                                  <HelpText className="text-text-secondary">{matrix.userId}</HelpText>
+                                </ExplorersPopover.Group>
                               </ExplorersPopover>
                             </li>
                           ))}
@@ -126,17 +127,24 @@ export const MultisigWalletDetails = ({ wallet, account, signatoryWallets, signa
                     {signatoryContacts.length > 0 && (
                       <div className="flex flex-col gap-y-2 mt-4 px-5">
                         <FootnoteText className="text-text-tertiary">
-                          {t('walletDetails.multisig.contactsGroup')}
+                          {t('walletDetails.multisig.contactsGroup')} {signatoryContacts.length}
                         </FootnoteText>
 
                         <ul className="flex flex-col gap-y-2">
                           {signatoryContacts.map((signatory) => (
                             <li key={signatory.accountId} className="flex items-center gap-x-2 py-1.5">
-                              <ContactItem
-                                name={signatory.name}
-                                accountId={signatory.accountId}
+                              <ExplorersPopover
+                                address={signatory.accountId}
                                 explorers={RootExplorers}
-                              />
+                                button={<ContactItem name={signatory.name} address={signatory.accountId} />}
+                              >
+                                <ExplorersPopover.Group
+                                  active={Boolean(signatory.matrixId)}
+                                  title={t('general.explorers.matrixIdTitle')}
+                                >
+                                  <HelpText className="text-text-secondary break-all">{signatory.matrixId}</HelpText>
+                                </ExplorersPopover.Group>
+                              </ExplorersPopover>
                             </li>
                           ))}
                         </ul>
