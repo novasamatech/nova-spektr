@@ -1,45 +1,45 @@
-import { useAddressInfo } from '@entities/wallet/lib/useAddressInfo';
+import { MouseEvent } from 'react';
+
 import { cnTw, toAddress } from '@shared/lib/utils';
-import { Icon, Identicon, BodyText, InfoPopover, HelpText } from '@shared/ui';
-import type { Explorer, AccountId } from '@shared/core';
+import { Identicon, BodyText, HelpText, IconButton } from '@shared/ui';
+import type { Address, AccountId } from '@shared/core';
 
 type Props = {
   name?: string;
-  size?: number;
-  accountId: AccountId;
-  explorers?: Explorer[];
+  address: Address | AccountId;
   addressPrefix?: number;
-  disabled?: boolean;
+  size?: number;
   className?: string;
-  addressFont?: string;
+  onInfoClick?: () => void;
 };
-export const ContactItem = ({
-  accountId,
-  name,
-  size = 20,
-  explorers = [],
-  addressPrefix,
-  disabled,
-  className,
-  addressFont,
-}: Props) => {
-  const address = toAddress(accountId, { prefix: addressPrefix });
-  const popoverItems = useAddressInfo({ address, explorers, addressPrefix, showMatrix: true });
+export const ContactItem = ({ name, address, addressPrefix, size = 20, className, onInfoClick }: Props) => {
+  const formattedAddress = toAddress(address, { prefix: addressPrefix });
+
+  const handleClick = (event: MouseEvent<HTMLDivElement>) => {
+    event.stopPropagation();
+  };
 
   return (
-    <div className={cnTw('flex items-center gap-x-2 w-full', className)}>
-      <Identicon address={address} size={size} background={false} className={cnTw(disabled && 'opacity-60')} />
+    <div className={cnTw('group flex items-center gap-x-2 w-full', className)}>
+      <div className="flex items-center gap-x-2 w-full py-[3px] overflow-hidden" onClick={handleClick}>
+        <Identicon address={formattedAddress} size={size} background={false} />
 
-      <div className="flex flex-col max-w-[348px]">
-        {name && (
-          <BodyText className={cnTw('tracking-tight', addressFont, disabled && 'text-text-secondary')}>{name}</BodyText>
-        )}
-        <HelpText className="text-text-tertiary truncate">{address}</HelpText>
+        <div className="flex flex-col">
+          {name && (
+            <BodyText
+              className={cnTw(
+                'text-text-secondary truncate transition-colors',
+                'group-hover:text-text-primary group-focus:text-text-primary',
+              )}
+            >
+              {name}
+            </BodyText>
+          )}
+          <HelpText className="text-text-tertiary truncate">{formattedAddress}</HelpText>
+        </div>
       </div>
 
-      <InfoPopover data={popoverItems} containerClassName="ml-auto" position="right-0">
-        <Icon name="info" size={16} className="hover:text-icon-hover" />
-      </InfoPopover>
+      <IconButton name="info" className="mx-1.5" onClick={onInfoClick} />
     </div>
   );
 };

@@ -49,7 +49,7 @@ export const VaultAccountsList = ({ chains, accountsMap, className, onShardClick
                         />
                       }
                     >
-                      <ExplorersPopover.Group title={t('walletDetails.vault.derivationPath')}>
+                      <ExplorersPopover.Group title={t('general.explorers.derivationTitle')}>
                         <HelpText className="text-text-secondary break-all">
                           {accountUtils.getDerivationPath(account)}
                         </HelpText>

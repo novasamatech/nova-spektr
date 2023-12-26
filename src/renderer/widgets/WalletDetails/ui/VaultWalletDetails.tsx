@@ -130,7 +130,7 @@ export const VaultWalletDetails = ({ wallet, root, accountsMap, onClose }: Props
 
         <div className="px-5 py-4">
           <ContextMenu button={<RootAccountLg name={wallet.name} accountId={root.accountId} />}>
-            <ContextMenu.Group title={t('walletDetails.vault.publicKey')}>
+            <ContextMenu.Group title={t('general.explorers.publicKeyTitle')}>
               <div className="flex items-center gap-x-2">
                 <HelpText className="text-text-secondary break-all">
                   {toAddress(root.accountId, { prefix: 1 })}

@@ -211,9 +211,11 @@
     },
     "explorers": {
       "addressTitle": "Address",
+      "derivationTitle": "Derivation path",
       "explorerButton": "View on { name }",
       "explorerTitle": "Explorers",
-      "matrixIdTitle": "Matrix ID"
+      "matrixIdTitle": "Matrix ID",
+      "publicKeyTitle": "Public key"
     },
     "input": {
       "amountLabel": "Amount",
@@ -226,10 +228,6 @@
     "title": {
       "appName": "Nova Spektr"
     }
-  },
-  "info": {
-    "derivationPathTitle": "Derivation path ",
-    "publicKeyTitle": "Public key"
   },
   "log": {
     "cancelledMessage": "rejected this operation",
@@ -1003,12 +1001,10 @@
       "walletsGroup": "Your wallets"
     },
     "vault": {
-      "derivationPath": "Derivation path",
       "editKeys": "Edit keys",
       "export": "Export keyset",
       "import": "Import keyset",
       "networksTab": "Networks",
-      "publicKey": "Public Key",
       "shardsTitle": "Shards"
     },
     "walletConnect": {

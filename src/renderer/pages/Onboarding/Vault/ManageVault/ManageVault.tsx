@@ -276,7 +276,7 @@ export const ManageVault = ({ seedInfo, onBack, onClose, onComplete }: Props) =>
                             />
                           }
                         >
-                          <ContextMenu.Group title={t('onboarding.vault.derivationPath')}>
+                          <ContextMenu.Group title={t('general.explorers.derivationTitle')}>
                             <HelpText className="text-text-secondary break-all">
                               {accountUtils.getDerivationPath(account)}
                             </HelpText>
