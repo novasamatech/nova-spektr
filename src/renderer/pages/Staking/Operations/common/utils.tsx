@@ -1,13 +1,12 @@
 import { BN } from '@polkadot/util';
 import cn from 'classnames';
 import { ReactNode } from 'react';
-import { keyBy } from 'lodash';
 
 import { AccountAddress, accountUtils, WalletIcon, walletUtils } from '@entities/wallet';
 import { DropdownOption } from '@shared/ui/Dropdowns/common/types';
 import { AssetBalance } from '@entities/asset';
 import { ExplorerLink, FootnoteText } from '@shared/ui';
-import { Explorer } from '@shared/core';
+import { ChainId, Explorer } from '@shared/core';
 import { InfoSection } from '@shared/ui/Popovers/InfoPopover/InfoPopover';
 import type {
   Address,
@@ -27,6 +26,7 @@ import {
   unlockingAmount,
   redeemableAmount,
   getAccountExplorer,
+  dictionary,
 } from '@shared/lib/utils';
 
 export const validateBalanceForFee = (balance: AccountBalance | string, fee: string): boolean => {
@@ -246,8 +246,10 @@ export const getExplorers = (address: Address, explorers: Explorer[] = []): [Inf
   return [{ items: explorersContent }];
 };
 
-export const filterPvRootAccounts = (accounts: Account[], wallets: Wallet[]) => {
-  const walletById = keyBy(wallets, 'id');
+export const getDestinationAccounts = (accounts: Account[], wallets: Wallet[], chainId: ChainId) => {
+  const walletsMap = dictionary(wallets, 'id', walletUtils.isPolkadotVault);
 
-  return accounts.filter((a) => !accountUtils.isBaseAccount(a) || !walletUtils.isPolkadotVault(walletById[a.walletId]));
+  return accounts.filter(
+    (a) => (!accountUtils.isBaseAccount(a) || !walletsMap[a.walletId]) && accountUtils.isChainIdMatch(a, chainId),
+  );
 };
