@@ -4,7 +4,6 @@ import { AccountId, MultisigAccount, Wallet } from '@shared/core';
 import { accountUtils, walletModel, walletUtils } from '@entities/wallet';
 import { useBalanceService } from '@entities/balance';
 import { useForgetMultisig } from '@entities/multisig';
-import { wcDetailsModel } from "@widgets/WalletDetails/model/wc-details-model";
 
 const balanceService = useBalanceService();
 const { deleteMultisigTxs } = useForgetMultisig();
@@ -50,7 +49,7 @@ split({
 });
 
 sample({
-  clock: [forgetSimpleWallet, forgetMultisigWallet, wcDetailsModel.events.forgetButtonClicked],
+  clock: [forgetSimpleWallet, forgetMultisigWallet],
   source: walletModel.$accounts,
   fn: (accounts, wallet) => accountUtils.getWalletAccounts(wallet.id, accounts).map((a) => a.accountId),
   target: deleteWalletBalancesFx,
