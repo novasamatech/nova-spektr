@@ -8,6 +8,7 @@ import { modelUtils } from '../lib/model-utils';
 import { accountUtils } from '../lib/account-utils';
 
 const $wallets = createStore<Wallet[]>([]);
+console.log($wallets.getState());
 const $activeWallet = $wallets.map((wallets) => wallets.find((w) => w.isActive));
 
 const $accounts = createStore<Account[]>([]);
@@ -108,12 +109,12 @@ const walletSelectedFx = createEffect(async ({ prevId, nextId }: SelectParams): 
   }
 
   // TODO: consider using Dexie transaction() | Task --> https://app.clickup.com/t/8692uyemn
-  const [prevWallet, nextWallet] = await Promise.all([
+  const [, nextWallet] = await Promise.all([
     storageService.wallets.update(prevId, { isActive: false }),
     storageService.wallets.update(nextId, { isActive: true }),
   ]);
 
-  return prevWallet && nextWallet ? nextId : undefined;
+  return nextWallet ? nextId : undefined;
 });
 
 const multisigWalletUpdatedFx = createEffect(
