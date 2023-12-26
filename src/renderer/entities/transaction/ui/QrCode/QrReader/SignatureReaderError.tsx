@@ -1,6 +1,6 @@
 import { Button, FootnoteText } from '@shared/ui';
 import { useI18n } from '@app/providers';
-import { CameraError, CameraErrorText } from '../common/constants';
+import { CameraError, CameraErrorText, CameraAccessErrors } from '../common/constants';
 
 type Props = {
   error?: CameraError;
@@ -10,8 +10,6 @@ type Props = {
 
 export const SignatureReaderError = ({ error, onTryAgain, isCameraOn }: Props) => {
   const { t } = useI18n();
-  const showTryAgainButton =
-    error && [CameraError.UNKNOWN_ERROR, CameraError.DENY_ERROR, CameraError.DECODE_ERROR].includes(error);
 
   if (!error) return null;
 
@@ -22,7 +20,7 @@ export const SignatureReaderError = ({ error, onTryAgain, isCameraOn }: Props) =
         <br />
         {t(CameraErrorText[error].description)}
       </FootnoteText>
-      {showTryAgainButton && (
+      {CameraAccessErrors.includes(error) && (
         <Button size="sm" onClick={onTryAgain}>
           {t('onboarding.paritySigner.tryAgainButton')}
         </Button>
