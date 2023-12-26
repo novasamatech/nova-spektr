@@ -8,7 +8,6 @@ import { modelUtils } from '../lib/model-utils';
 import { accountUtils } from '../lib/account-utils';
 
 const $wallets = createStore<Wallet[]>([]);
-console.log($wallets.getState());
 const $activeWallet = $wallets.map((wallets) => wallets.find((w) => w.isActive));
 
 const $accounts = createStore<Account[]>([]);
