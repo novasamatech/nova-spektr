@@ -1,7 +1,7 @@
 import { createEvent, sample, createEffect, createStore, createApi, attach, split } from 'effector';
 
-import { AccountId, MultisigAccount, Wallet, WalletType } from '@shared/core';
-import { walletModel, walletUtils } from '@entities/wallet';
+import { AccountId, MultisigAccount, Wallet } from '@shared/core';
+import { accountUtils, walletModel, walletUtils } from '@entities/wallet';
 import { useBalanceService } from '@entities/balance';
 import { useForgetMultisig } from '@entities/multisig';
 
@@ -37,29 +37,21 @@ const deleteMultisigOperationsFx = createEffect(async (account: MultisigAccount)
   }
 });
 
-const SIMPLE_WALLETS = [
-  WalletType.WATCH_ONLY,
-  WalletType.POLKADOT_VAULT,
-  WalletType.SINGLE_PARITY_SIGNER,
-  WalletType.MULTISHARD_PARITY_SIGNER,
-];
-
 split({
   source: forgetWallet,
   match: {
-    simpleWallet: (wallet: Wallet) => SIMPLE_WALLETS.includes(wallet.type),
     multisigWallet: (wallet: Wallet) => walletUtils.isMultisig(wallet),
   },
   cases: {
-    simpleWallet: forgetSimpleWallet,
     multisigWallet: forgetMultisigWallet,
+    __: forgetSimpleWallet,
   },
 });
 
 sample({
   clock: [forgetSimpleWallet, forgetMultisigWallet],
   source: walletModel.$accounts,
-  fn: (accounts, wallet) => accounts.filter((a) => a.walletId === wallet.id).map((a) => a.accountId),
+  fn: (accounts, wallet) => accountUtils.getWalletAccounts(wallet.id, accounts).map((a) => a.accountId),
   target: deleteWalletBalancesFx,
 });
 
