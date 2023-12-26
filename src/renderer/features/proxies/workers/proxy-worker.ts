@@ -54,8 +54,6 @@ function initConnection(chain: Chain, connection: Connection) {
         state.apis[chain.chainId] = await ApiPromise.create({ provider, throwOnConnect: true, throwOnUnknown: true });
 
         resolve(InitConnectionsResult.SUCCESS);
-
-        return;
       });
     } catch (e) {
       console.log(e);
@@ -82,7 +80,7 @@ type PartialProxiedAccount = Pick<
 async function getProxies(
   chainId: ChainId,
   accounts: Record<AccountId, Account>,
-  proxiedAccounts: Record<AccountId, ProxiedAccount>,
+  proxides: Record<AccountId, ProxiedAccount>,
   proxies: ProxyAccount[],
 ) {
   const api = state.apis[chainId];
@@ -118,23 +116,18 @@ async function getProxies(
           };
 
           const needToAddProxyAccount = accounts[proxiedAccountId];
-          const doesProxyExist = proxies.some((oldProxy) => proxyWorkerUtils.isSameProxies(oldProxy, newProxy));
+          const doesProxyExist = proxies.some((oldProxy) => proxyWorkerUtils.isSameProxy(oldProxy, newProxy));
 
           if (needToAddProxyAccount) {
             if (!doesProxyExist) {
               proxiesToAdd.push(newProxy);
             }
 
-            deposits[proxiedAccountId] = {
-              ...deposits[proxiedAccountId],
-              [chainId]: proxyData[0][1].toHuman(),
-            };
-
             existingProxies.push(newProxy);
           }
 
           const needToAddProxiedAccount = accounts[newProxy.accountId];
-          const doesProxiedAccountExist = proxiedAccounts[newProxy.proxiedAccountId];
+          const doesProxiedAccountExist = proxides[newProxy.proxiedAccountId];
 
           if (needToAddProxiedAccount) {
             const proxiedAccount = {
@@ -148,12 +141,14 @@ async function getProxies(
               proxidesToAdd.push(proxiedAccount);
             }
 
+            existingProxiedAccounts.push(proxiedAccount);
+          }
+
+          if (needToAddProxyAccount || needToAddProxiedAccount) {
             deposits[proxiedAccountId] = {
               ...deposits[proxiedAccountId],
               [chainId]: proxyData[0][1].toHuman(),
             };
-
-            existingProxiedAccounts.push(proxiedAccount);
           }
         });
       } catch (e) {

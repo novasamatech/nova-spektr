@@ -7,7 +7,7 @@ import { AccountId, Chain, ChainId, ProxyAccount, AccountType, Account, ProxiedA
 export const proxyWorkerUtils = {
   toAccountId,
   isRegularProxy,
-  isSameProxies,
+  isSameProxy,
   getKnownChain,
   isProxiedAccount,
 };
@@ -26,11 +26,11 @@ export function toAccountId(address: string): AccountId {
   }
 }
 
-function isRegularProxy(chain: Chain) {
-  return chain.options?.includes('regular_proxy');
+function isRegularProxy(chain: Chain): boolean {
+  return Boolean(chain.options?.includes('regular_proxy'));
 }
 
-function isSameProxies(oldProxy: NoID<ProxyAccount>, newProxy: NoID<ProxyAccount>): boolean {
+function isSameProxy(oldProxy: NoID<ProxyAccount>, newProxy: NoID<ProxyAccount>): boolean {
   return (
     oldProxy.accountId === newProxy.accountId &&
     oldProxy.proxiedAccountId === newProxy.proxiedAccountId &&

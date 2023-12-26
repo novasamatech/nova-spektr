@@ -47,7 +47,7 @@ sample({
   source: $proxies,
   fn: (proxies, proxiesToRemove) => {
     return proxiesToRemove.reduce<ProxyStore>(
-      (acc, p) => ({ ...acc, [p.accountId]: acc[p.accountId].filter((pr) => !proxyUtils.isSameProxies(pr, p)) }),
+      (acc, p) => ({ ...acc, [p.accountId]: acc[p.accountId].filter((pr) => !proxyUtils.isSameProxy(pr, p)) }),
       proxies,
     );
   },
