@@ -11,6 +11,7 @@ const WalletIconNames: Record<WalletType, IconNames> = {
   [WalletType.MULTISHARD_PARITY_SIGNER]: 'vault',
   [WalletType.WALLET_CONNECT]: 'walletConnect',
   [WalletType.NOVA_WALLET]: 'novaWallet',
+  [WalletType.PROXIED]: 'novaWallet',
 };
 
 const WalletIconBg: Record<WalletType, string> = {
@@ -21,6 +22,7 @@ const WalletIconBg: Record<WalletType, string> = {
   [WalletType.MULTISHARD_PARITY_SIGNER]: 'bg-[#EC007D]',
   [WalletType.WALLET_CONNECT]: 'bg-[#3396FF]',
   [WalletType.NOVA_WALLET]: '',
+  [WalletType.PROXIED]: '',
 };
 
 type Props = {

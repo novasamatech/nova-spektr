@@ -18,6 +18,7 @@ import {
   TNotification,
   TMultisigEvent,
   TMetadata,
+  TProxy,
 } from '../common/types';
 
 class DexieStorage extends Dexie {
@@ -30,6 +31,7 @@ class DexieStorage extends Dexie {
   multisigEvents: TMultisigEvent;
   notifications: TNotification;
   metadata: TMetadata;
+  proxies: TProxy;
 
   constructor() {
     super('spektr');
@@ -60,6 +62,10 @@ class DexieStorage extends Dexie {
       })
       .upgrade(migrateWallets);
 
+    this.version(20).stores({
+      proxies: '++id',
+    });
+
     this.connections = this.table('connections');
     this.balances = this.table('balances');
     this.wallets = this.table('wallets');
@@ -69,6 +75,7 @@ class DexieStorage extends Dexie {
     this.multisigEvents = this.table('multisigEvents');
     this.notifications = this.table('notifications');
     this.metadata = this.table('metadata');
+    this.proxies = this.table('proxies');
   }
 }
 
@@ -106,4 +113,5 @@ export const dexieStorage = {
   accounts: dexie.accounts,
   contacts: dexie.contacts,
   connections: dexie.connections,
+  proxies: dexie.proxies,
 };

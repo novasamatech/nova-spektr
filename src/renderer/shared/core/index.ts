@@ -28,6 +28,7 @@ export type {
   ChainAccount,
   MultisigAccount,
   WalletConnectAccount,
+  ProxiedAccount,
   ShardAccount,
   DraftAccount,
 } from './types/account';
@@ -49,3 +50,5 @@ export type { Validator } from './types/validator';
 
 export { RewardsDestination } from './types/stake';
 export type { Stake, Unlocking } from './types/stake';
+
+export type { ProxyAccount, PartialProxyAccount, ProxyType } from './types/proxy';

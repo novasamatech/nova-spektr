@@ -16,6 +16,7 @@ const WalletIcon: Record<WalletType, IconNames> = {
   [WalletType.WATCH_ONLY]: 'watchOnly',
   [WalletType.WALLET_CONNECT]: 'walletConnect',
   [WalletType.NOVA_WALLET]: 'novaWallet',
+  [WalletType.PROXIED]: 'novaWallet',
   // legacy
   [WalletType.MULTISHARD_PARITY_SIGNER]: 'vault',
   [WalletType.SINGLE_PARITY_SIGNER]: 'vault',
@@ -27,6 +28,7 @@ const WalletText: Record<WalletType, string> = {
   [WalletType.WATCH_ONLY]: 'operation.sign.watchOnly',
   [WalletType.WALLET_CONNECT]: 'operation.sign.walletConnect',
   [WalletType.NOVA_WALLET]: 'operation.sign.novaWallet',
+  [WalletType.PROXIED]: 'operation.sign.novaWallet',
   // legacy
   [WalletType.MULTISHARD_PARITY_SIGNER]: 'operation.sign.polkadotVault',
   [WalletType.SINGLE_PARITY_SIGNER]: 'operation.sign.polkadotVault',

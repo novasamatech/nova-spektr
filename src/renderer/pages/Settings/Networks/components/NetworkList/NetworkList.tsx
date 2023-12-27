@@ -1,8 +1,8 @@
 import { useEffect, useState, ReactNode } from 'react';
 
-import { ExtendedChain } from '@entities/network';
+import { ExtendedChain, isDisabled } from '@entities/network';
 import { CaptionText, Counter, Accordion } from '@shared/ui';
-import { ConnectionType, ConnectionStatus } from '@shared/core';
+import { ConnectionStatus } from '@shared/core';
 
 type Props = {
   title: string;
@@ -27,7 +27,7 @@ export const NetworkList = ({ title, isDefaultOpen, query, networkList, children
 
   const { success, connecting, error } = networkList.reduce(
     (acc, network) => {
-      if (network.connection.connectionType === ConnectionType.DISABLED) return acc;
+      if (isDisabled(network.connection)) return acc;
 
       if (network.connectionStatus === ConnectionStatus.CONNECTED) acc.success += 1;
       if (network.connectionStatus === ConnectionStatus.DISCONNECTED) acc.connecting += 1;

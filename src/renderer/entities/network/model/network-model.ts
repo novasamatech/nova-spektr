@@ -4,7 +4,7 @@ import { ProviderInterface } from '@polkadot/rpc-provider/types';
 import { UnsubscribePromise } from '@polkadot/api/types';
 import { cloneDeep, keyBy } from 'lodash';
 
-import { Metadata, ProviderType, chainsService, networkService } from '../lib';
+import { Metadata, ProviderType, chainsService, isDisabled, networkService } from '../lib';
 import { Chain, ChainId, Connection, ConnectionStatus, ConnectionType, RpcNode } from '@shared/core';
 import { useMetadata } from '../lib/metadataService';
 import { storageService } from '@shared/api/storage';
@@ -219,7 +219,7 @@ sample({
     chains: $chains,
   },
   filter: ({ connections }, chainId) => {
-    return !connections[chainId] || connections[chainId].connectionType !== ConnectionType.DISABLED;
+    return !connections[chainId] || isDisabled(connections[chainId]);
   },
   fn: ({ connections, chains }, chainId) => {
     const connection = connections[chainId];
@@ -485,7 +485,7 @@ sample({
     providers: $providers,
     apis: $apis,
   },
-  filter: (_, connection) => connection.connectionType !== ConnectionType.DISABLED,
+  filter: (_, connection) => isDisabled(connection),
   fn: ({ providers, apis }, connection) => ({
     provider: providers[connection.chainId],
     api: apis[connection.chainId],

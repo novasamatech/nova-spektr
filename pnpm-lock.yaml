@@ -31,6 +31,9 @@ dependencies:
   '@polkadot/util-crypto':
     specifier: ^12.6.1
     version: 12.6.1(@polkadot/util@12.6.1)
+  '@remote-ui/rpc':
+    specifier: ^1.4.4
+    version: 1.4.4
   '@substrate/connect':
     specifier: ^0.8.1
     version: 0.8.1
@@ -3749,6 +3752,10 @@ packages:
   /@remix-run/router@1.0.5:
     resolution: {integrity: sha512-my0Mycd+jruq/1lQuO5LBB6WTlL/e8DTCYWp44DfMTDcXz8DcTlgF0ISaLsGewt+ctHN+yA8xMq3q/N7uWJPug==}
     engines: {node: '>=14'}
+    dev: false
+
+  /@remote-ui/rpc@1.4.4:
+    resolution: {integrity: sha512-3XVzEZSTxAw6c8ryDmds36M7QWWJW8Q7mxz+xInqkbrpOeSc6m1plGfNRFlbyaTq0puyH07dLjpsnl+HmWIacw==}
     dev: false
 
   /@scure/base@1.1.3:

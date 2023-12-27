@@ -1,6 +1,7 @@
 import type { Signatory } from './signatory';
 import type { AccountId, ChainId, Threshold, ID, NoID } from './general';
 import { ChainType, CryptoType } from './general';
+import { ProxyType, ProxyVariant } from './proxy';
 
 type AbstractAccount = {
   id: ID;
@@ -41,7 +42,15 @@ export type WalletConnectAccount = Omit<BaseAccount, 'cryptoType'> & {
   chainId: ChainId;
 };
 
-export type Account = BaseAccount | ChainAccount | MultisigAccount | WalletConnectAccount | ShardAccount;
+export type ProxiedAccount = BaseAccount & {
+  proxyAccountId: AccountId;
+  chainId: ChainId;
+  delay: number;
+  proxyType: ProxyType;
+  proxyVariant: ProxyVariant;
+};
+
+export type Account = BaseAccount | ChainAccount | MultisigAccount | WalletConnectAccount | ProxiedAccount;
 
 export type DraftAccount<T extends Account> = Omit<NoID<T>, 'accountId' | 'walletId' | 'baseId'>;
 
@@ -51,6 +60,7 @@ export const enum AccountType {
   SHARD = 'shard',
   MULTISIG = 'multisig',
   WALLET_CONNECT = 'wallet_connect',
+  PROXIED = 'proxied',
 }
 
 export const enum KeyType {
@@ -61,5 +71,3 @@ export const enum KeyType {
   STAKING = 'staking',
   CUSTOM = 'custom',
 }
-
-export type ShardedKeyType = KeyType.CUSTOM | KeyType.GOVERNANCE | KeyType.MAIN | KeyType.STAKING;

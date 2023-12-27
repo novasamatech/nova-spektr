@@ -35,6 +35,7 @@ export async function MainWindow() {
     defaultWidth: MAIN.WINDOW.WIDTH,
     defaultHeight: MAIN.WINDOW.HEIGHT,
   });
+
   const window = createWindow({
     title: TITLE,
     x: mainWindowState.x,
@@ -49,6 +50,7 @@ export async function MainWindow() {
 
     webPreferences: {
       preload: join(__dirname, 'bridge.js'),
+      nodeIntegrationInWorker: true,
     },
   });
 
