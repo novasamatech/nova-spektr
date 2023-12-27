@@ -1,4 +1,4 @@
-import { createStore, createEffect, createEvent, sample, forward, attach } from 'effector';
+import { createStore, createEffect, createEvent, sample, attach } from 'effector';
 import { ApiPromise } from '@polkadot/api';
 import { BN } from '@polkadot/util';
 import { createGate } from 'effector-react';
@@ -64,11 +64,14 @@ const getParaIdFx = createEffect(async (api: ApiPromise): Promise<number | null>
   }
 });
 
-forward({ from: PropsGate.state, to: $xcmProps });
+sample({
+  clock: PropsGate.state,
+  target: $xcmProps,
+});
 
-forward({
-  from: xcmConfigRequested,
-  to: [getConfigFx, fetchConfigFx],
+sample({
+  clock: xcmConfigRequested,
+  target: [getConfigFx, fetchConfigFx],
 });
 
 sample({
@@ -95,9 +98,9 @@ sample({
   target: getParaIdFx,
 });
 
-forward({
-  from: getParaIdFx.doneData,
-  to: $destinationParaId,
+sample({
+  clock: getParaIdFx.doneData,
+  target: $destinationParaId,
 });
 
 sample({
@@ -152,9 +155,9 @@ sample({
   target: $txDest,
 });
 
-forward({
-  from: accountIdSelected,
-  to: $accountId,
+sample({
+  clock: accountIdSelected,
+  target: $accountId,
 });
 
 sample({
@@ -167,9 +170,9 @@ sample({
   target: $txBeneficiary,
 });
 
-forward({
-  from: xcmFeeChanged,
-  to: $xcmFee,
+sample({
+  clock: xcmFeeChanged,
+  target: $xcmFee,
 });
 
 sample({
@@ -218,19 +221,19 @@ sample({
   target: calculateFinalConfigFx,
 });
 
-forward({
-  from: amountChanged,
-  to: $amount,
+sample({
+  clock: amountChanged,
+  target: $amount,
 });
 
-forward({
-  from: fetchConfigFx.doneData,
-  to: [saveConfigFx, calculateFinalConfigFx],
+sample({
+  clock: fetchConfigFx.doneData,
+  target: [saveConfigFx, calculateFinalConfigFx],
 });
 
-forward({
-  from: calculateFinalConfigFx.doneData,
-  to: $finalConfig,
+sample({
+  clock: calculateFinalConfigFx.doneData,
+  target: $finalConfig,
 });
 
 export const events = {
