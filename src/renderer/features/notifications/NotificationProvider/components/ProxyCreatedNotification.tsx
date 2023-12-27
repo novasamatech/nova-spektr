@@ -26,6 +26,8 @@ export const ProxyCreatedNotification = ({ notification }: Props) => {
   const proxiedAccount = accounts.find((a) => a.accountId === typedNotification.proxiedAccountId);
   const proxiedWallet = wallets.find((w) => w.id === proxiedAccount?.walletId);
 
+  if (!proxiedWallet) return <></>;
+
   const identicon = (
     <Identicon
       className="mx-1"
@@ -38,7 +40,7 @@ export const ProxyCreatedNotification = ({ notification }: Props) => {
 
   const chain = <ChainTitle chainId={typedNotification.chainId} fontClass="text-text-primary text-body" />;
 
-  const walletIcon = <WalletIcon size={16} type={proxiedWallet?.type!} className="mx-1" />;
+  const walletIcon = <WalletIcon size={16} type={proxiedWallet.type} className="mx-1" />;
 
   return (
     <div className="flex gap-x-2">
