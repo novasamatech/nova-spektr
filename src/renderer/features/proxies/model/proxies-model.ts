@@ -75,8 +75,9 @@ const disconnectFx = createEffect((chainId: ChainId): Promise<unknown> => {
 
 const createProxiedesFx = createEffect((proxiedes: PartialProxiedAccount[]): void => {
   proxiedes.forEach((proxied) => {
+    const walletName = proxyUtils.getProxiedName(proxied);
     const wallet = {
-      name: proxyUtils.getProxiedName(proxied),
+      name: walletName,
       type: WalletType.PROXIED,
       signingType: SigningType.WATCH_ONLY,
     } as Wallet;
@@ -84,6 +85,7 @@ const createProxiedesFx = createEffect((proxiedes: PartialProxiedAccount[]): voi
     const accounts = [
       {
         ...proxied,
+        name: walletName,
         // TODO: use chain data, when ethereum chains support
         type: AccountType.PROXIED,
         chainType: ChainType.SUBSTRATE,

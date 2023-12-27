@@ -16,6 +16,7 @@ function isSameProxy(oldProxy: ProxyAccount, newProxy: ProxyAccount) {
   );
 }
 
+// TODO: Add i18n for wallet name
 function getProxiedName(proxiedAccount: Pick<ProxiedAccount, 'accountId' | 'proxyType'>): string {
   return `${proxiedAccount.proxyType} for ${toShortAddress(proxiedAccount.accountId)}`;
 }
