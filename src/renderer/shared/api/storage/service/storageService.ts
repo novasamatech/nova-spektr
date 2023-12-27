@@ -113,4 +113,5 @@ export const storageService = {
   accounts: new StorageService(dexieStorage.accounts),
   contacts: new StorageService(dexieStorage.contacts),
   connections: new StorageService(dexieStorage.connections),
+  proxies: new StorageService(dexieStorage.proxies),
 };

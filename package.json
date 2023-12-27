@@ -74,6 +74,7 @@
     "@polkadot/types": "^10.11.1",
     "@polkadot/util": "^12.6.1",
     "@polkadot/util-crypto": "^12.6.1",
+    "@remote-ui/rpc": "^1.4.4",
     "@substrate/connect": "^0.8.1",
     "@substrate/txwrapper-orml": "^7.1.1",
     "@substrate/txwrapper-polkadot": "^7.1.1",

@@ -33,3 +33,7 @@ export const isLightClient = (connection: Connection): boolean => {
 export const getParachains = (chainMap: ChainMap, chainId: ChainId): Chain[] => {
   return Object.values(chainMap).filter((c) => c.parentId === chainId);
 };
+
+export const isDisabled = (connection: Connection): boolean => {
+  return connection.connectionType === ConnectionType.DISABLED;
+};

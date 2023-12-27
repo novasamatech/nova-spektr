@@ -1,7 +1,7 @@
 import { Table } from 'dexie';
 
-import type { Metadata } from '@entities/network';
 import { Notification } from '@entities/notification/model/notification';
+import type { Metadata } from '@entities/network';
 import { MultisigEvent, MultisigTransaction, MultisigTransactionKey } from '@entities/transaction/model/transaction';
 import type {
   Wallet,
@@ -12,6 +12,7 @@ import type {
   ChainId,
   Balance,
   BalanceKey,
+  ProxyAccount,
   Connection,
 } from '@shared/core';
 
@@ -105,7 +106,7 @@ export type TContact = Table<Contact, Contact['id']>;
 export type TAccount = Table<Account, Account['id']>;
 export type TBalance = Table<Balance, ID[]>;
 export type TConnection = Table<Connection, Connection['id']>;
-
+export type TProxy = Table<ProxyAccount, number>;
 export type TMultisigTransaction = Table<MultisigTransaction, ID[]>;
 export type TMultisigEvent = Table<MultisigEvent, ID>;
 export type TNotification = Table<Notification, ID>;
