@@ -34,6 +34,7 @@ export interface IBalanceStorage {
   updateBalance: (balance: Balance) => Promise<void>;
   insertBalances: (balances: Balance[]) => Promise<string[]>;
   setBalanceIsValid: (balanceKey: BalanceKey, verified: boolean) => Promise<number>;
+  deleteBalances: (accountIds: AccountId[]) => Promise<number>;
 }
 
 export interface IMultisigEventStorage {
@@ -72,6 +73,7 @@ export interface IMultisigTransactionStorage {
     blockCreated: number,
     indexCreated: number,
   ) => Promise<void>;
+  deleteMultisigTxs: (accountId: AccountId) => Promise<number>;
 }
 export interface INotificationStorage {
   getNotifications: <T extends Notification>(where?: Partial<T>) => Promise<NotificationDS[]>;

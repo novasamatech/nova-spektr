@@ -15,6 +15,7 @@ import { vaultDetailsModel } from '../model/vault-details-model';
 import { walletDetailsUtils } from '../lib/utils';
 import { KeyConstructor, ImportKeysModal, DerivationsAddressModal } from '@features/wallets';
 import { RenameWalletModal } from '@features/wallets/RenameWallet';
+import { ForgetWalletModal } from '@features/wallets/ForgetWallet';
 
 type Props = {
   wallet: Wallet;
@@ -34,6 +35,7 @@ export const VaultWalletDetails = ({ wallet, root, accountsMap, onClose }: Props
   const [isConstructorModalOpen, toggleConstructorModal] = useToggle();
   const [isImportModalOpen, toggleImportModal] = useToggle();
   const [isScanModalOpen, toggleScanModal] = useToggle();
+  const [isConfirmForgetOpen, toggleConfirmForget] = useToggle();
 
   const handleConstructorKeys = (
     keysToAdd: Array<ChainAccount | ShardAccount[]>,
@@ -94,11 +96,11 @@ export const VaultWalletDetails = ({ wallet, root, accountsMap, onClose }: Props
       title: t('walletDetails.vault.export'),
       onClick: () => walletDetailsUtils.exportVaultWallet(wallet, root, accountsMap),
     },
-    // {
-    //   icon: 'forget',
-    //   title: t('walletDetails.common.forgetButton'),
-    //   onClick: () => {},
-    // },
+    {
+      icon: 'forget' as IconNames,
+      title: t('walletDetails.common.forgetButton'),
+      onClick: toggleConfirmForget,
+    },
   ];
 
   const ActionButton = (
@@ -130,7 +132,7 @@ export const VaultWalletDetails = ({ wallet, root, accountsMap, onClose }: Props
 
         <div className="px-5 py-4">
           <ContextMenu button={<RootAccountLg name={wallet.name} accountId={root.accountId} />}>
-            <ContextMenu.Group title={t('walletDetails.vault.publicKey')}>
+            <ContextMenu.Group title={t('general.explorers.publicKeyTitle')}>
               <div className="flex items-center gap-x-2">
                 <HelpText className="text-text-secondary break-all">
                   {toAddress(root.accountId, { prefix: 1 })}
@@ -177,6 +179,13 @@ export const VaultWalletDetails = ({ wallet, root, accountsMap, onClose }: Props
         keys={newKeys}
         onClose={toggleScanModal}
         onComplete={handleVaultKeys}
+      />
+
+      <ForgetWalletModal
+        wallet={wallet}
+        isOpen={isConfirmForgetOpen}
+        onClose={toggleConfirmForget}
+        onForget={onClose}
       />
     </BaseModal>
   );
