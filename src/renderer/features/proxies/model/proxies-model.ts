@@ -119,7 +119,7 @@ sample({
   fn: ({ accounts, proxies }, chainId) => ({
     chainId,
     accounts: accounts.filter((a) => accountUtils.isChainIdMatch(a, chainId)),
-    proxies: Object.values(proxies),
+    proxies: Object.values(proxies).flat(),
   }),
   target: getProxiesFx,
 });
