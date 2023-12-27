@@ -1,23 +1,23 @@
 import { ProxyType } from './types';
 
 export const ProxyTypeName: Record<ProxyType, string> = {
-  [ProxyType.Any]: 'proxy.names.any',
-  [ProxyType.NonTransfer]: 'proxy.names.nonTransfer',
-  [ProxyType.Staking]: 'proxy.names.staking',
-  [ProxyType.Auction]: 'proxy.names.auction',
-  [ProxyType.CancelProxy]: 'proxy.names.cancelProxy',
-  [ProxyType.Governance]: 'proxy.names.governance',
-  [ProxyType.IdentityJudgement]: 'proxy.names.identityJudgement',
-  [ProxyType.NominationPools]: 'proxy.names.nominationPools',
+  [ProxyType.ANY]: 'proxy.names.any',
+  [ProxyType.NON_TRANSFER]: 'proxy.names.nonTransfer',
+  [ProxyType.STAKING]: 'proxy.names.staking',
+  [ProxyType.AUCTION]: 'proxy.names.auction',
+  [ProxyType.CANCEL_PROXY]: 'proxy.names.cancelProxy',
+  [ProxyType.GOVERNANCE]: 'proxy.names.governance',
+  [ProxyType.IDENTITY_JUDGEMENT]: 'proxy.names.identityJudgement',
+  [ProxyType.NOMINATION_POOLS]: 'proxy.names.nominationPools',
 };
 
 export const ProxyTypeOperations: Record<ProxyType, string> = {
-  [ProxyType.Any]: 'proxy.operations.any',
-  [ProxyType.NonTransfer]: 'proxy.operations.nonTransfer',
-  [ProxyType.Staking]: 'proxy.operations.staking',
-  [ProxyType.Auction]: 'proxy.operations.auction',
-  [ProxyType.CancelProxy]: 'proxy.operations.cancelProxy',
-  [ProxyType.Governance]: 'proxy.operations.governance',
-  [ProxyType.IdentityJudgement]: 'proxy.operations.identityJudgement',
-  [ProxyType.NominationPools]: 'proxy.operations.nominationPools',
+  [ProxyType.ANY]: 'proxy.operations.any',
+  [ProxyType.NON_TRANSFER]: 'proxy.operations.nonTransfer',
+  [ProxyType.STAKING]: 'proxy.operations.staking',
+  [ProxyType.AUCTION]: 'proxy.operations.auction',
+  [ProxyType.CANCEL_PROXY]: 'proxy.operations.cancelProxy',
+  [ProxyType.GOVERNANCE]: 'proxy.operations.governance',
+  [ProxyType.IDENTITY_JUDGEMENT]: 'proxy.operations.identityJudgement',
+  [ProxyType.NOMINATION_POOLS]: 'proxy.operations.nominationPools',
 };

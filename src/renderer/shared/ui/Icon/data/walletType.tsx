@@ -33,7 +33,7 @@ const WalletTypeImages = {
   ledgerOnboarding: { img: LedgerOnboardingImg, svg: LedgerOnboardingSvg },
   walletConnect: { img: WalletConnectImg, svg: WalletConnectSvg },
   walletConnectOnboarding: { img: WalletConnectOnboardingImg, svg: WalletConnectOnboardingSvg },
-  proxy: { svg: ProxySvg, img: ProxyImg },
+  proxied: { svg: ProxySvg, img: ProxyImg },
 } as const;
 
 export type WalletImages = keyof typeof WalletTypeImages;
