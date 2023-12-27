@@ -2,7 +2,7 @@ import { createEffect, createEvent, createStore, sample } from 'effector';
 
 import { ProxyStore } from '../lib/constants';
 import { proxyUtils } from '../lib/utils';
-import type { ProxyAccount } from '@shared/core';
+import { kernelModel, type ProxyAccount } from '@shared/core';
 import { storageService } from '@shared/api/storage';
 
 const $proxies = createStore<ProxyStore>({});
@@ -23,6 +23,11 @@ const removeProxiesFx = createEffect((proxies: ProxyAccount[]) => {
 });
 
 sample({
+  clock: kernelModel.events.appStarted,
+  target: populateProxiesFx,
+});
+
+sample({
   clock: populateProxiesFx.doneData,
   fn: (proxies) => proxies.reduce<ProxyStore>((acc, p) => ({ ...acc, [p.accountId]: p }), {}),
   target: $proxies,
@@ -31,6 +36,7 @@ sample({
 sample({
   clock: proxiesAdded,
   source: $proxies,
+  filter: (_, proxiesToAdd) => proxiesToAdd.length > 0,
   fn: (proxies, proxiesToAdd) => {
     return proxiesToAdd.reduce<ProxyStore>(
       (acc, p) => ({ ...acc, [p.accountId]: [...(acc[p.accountId] || []), p] }),
@@ -45,6 +51,7 @@ sample({ clock: proxiesAdded, target: addProxiesFx });
 sample({
   clock: proxiesRemoved,
   source: $proxies,
+  filter: (_, proxiesToRemove) => proxiesToRemove.length > 0,
   fn: (proxies, proxiesToRemove) => {
     return proxiesToRemove.reduce<ProxyStore>(
       (acc, p) => ({ ...acc, [p.accountId]: acc[p.accountId].filter((pr) => !proxyUtils.isSameProxy(pr, p)) }),

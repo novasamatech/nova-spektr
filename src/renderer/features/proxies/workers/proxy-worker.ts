@@ -15,10 +15,11 @@ import {
   Account,
   AccountId,
   NoID,
+  PartialProxiedAccount,
+  ProxyVariant,
 } from '@shared/core';
 import { InitConnectionsResult } from '../lib/constants';
 import { proxyWorkerUtils } from '../lib/utils';
-import { ProxyVariant } from '@/src/renderer/shared/core/types/proxy';
 
 const state = {
   apis: {} as Record<ChainId, ApiPromise>,
@@ -71,16 +72,11 @@ async function disconnect(chainId: ChainId) {
   }
 }
 
-type PartialProxiedAccount = Pick<
-  ProxiedAccount,
-  'chainId' | 'proxyAccountId' | 'accountId' | 'delay' | 'proxyType' | 'proxyVariant'
->;
-
 // TODO: Refactor this code
 async function getProxies(
   chainId: ChainId,
   accounts: Record<AccountId, Account>,
-  proxides: Record<AccountId, ProxiedAccount>,
+  proxides: ProxiedAccount[],
   proxies: ProxyAccount[],
 ) {
   const api = state.apis[chainId];
@@ -127,7 +123,6 @@ async function getProxies(
           }
 
           const needToAddProxiedAccount = accounts[newProxy.accountId];
-          const doesProxiedAccountExist = proxides[newProxy.proxiedAccountId];
 
           if (needToAddProxiedAccount) {
             const proxiedAccount = {
@@ -136,6 +131,10 @@ async function getProxies(
               accountId: newProxy.proxiedAccountId,
               proxyVariant: ProxyVariant.NONE,
             } as PartialProxiedAccount;
+
+            const doesProxiedAccountExist = proxides.some((oldProxy) =>
+              proxyWorkerUtils.isSameProxied(oldProxy, proxiedAccount),
+            );
 
             if (!doesProxiedAccountExist) {
               proxidesToAdd.push(proxiedAccount);
@@ -161,7 +160,7 @@ async function getProxies(
     console.log(e);
   }
 
-  const proxiesToRemove = proxies.filter((p) => !existingProxies.some((ep) => isEqual(p, ep)));
+  const proxiesToRemove = proxies.filter((p) => existingProxies.some((ep) => isEqual(p, ep)));
   const proxidesToRemove = Object.values(accounts)
     .filter(proxyWorkerUtils.isProxiedAccount)
     .filter(

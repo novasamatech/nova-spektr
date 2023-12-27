@@ -1,11 +1,21 @@
 import { combine, createEffect, createEvent, createStore, forward, sample } from 'effector';
 import { spread } from 'patronum';
 
-import type { Account, BaseAccount, ChainAccount, ID, MultisigAccount, NoID, Wallet } from '@shared/core';
+import type {
+  Account,
+  BaseAccount,
+  ChainAccount,
+  ID,
+  MultisigAccount,
+  NoID,
+  ProxiedAccount,
+  Wallet,
+} from '@shared/core';
 import { kernelModel, WalletConnectAccount } from '@shared/core';
 import { storageService } from '@shared/api/storage';
 import { modelUtils } from '../lib/model-utils';
 import { accountUtils } from '../lib/account-utils';
+import { walletUtils } from '../lib/wallet-utils';
 
 const $wallets = createStore<Wallet[]>([]);
 const $activeWallet = $wallets.map((wallets) => wallets.find((w) => w.isActive));
@@ -34,6 +44,7 @@ const multishardCreated = createEvent<CreateParams<BaseAccount | ChainAccount>>(
 const singleshardCreated = createEvent<CreateParams<BaseAccount>>();
 const multisigCreated = createEvent<CreateParams<MultisigAccount>>();
 const walletConnectCreated = createEvent<CreateParams<WalletConnectAccount>>();
+const proxiedCreated = createEvent<CreateParams<ProxiedAccount>>();
 
 const walletSelected = createEvent<ID>();
 const multisigAccountUpdated = createEvent<MultisigUpdateParams>();
@@ -52,7 +63,10 @@ type CreateResult = {
   accounts: Account[];
 };
 const walletCreatedFx = createEffect(
-  async ({ wallet, accounts }: CreateParams<BaseAccount | WalletConnectAccount>): Promise<CreateResult | undefined> => {
+  async ({
+    wallet,
+    accounts,
+  }: CreateParams<BaseAccount | WalletConnectAccount | ProxiedAccount>): Promise<CreateResult | undefined> => {
     const dbWallet = await storageService.wallets.create({ ...wallet, isActive: false });
 
     if (!dbWallet) return undefined;
@@ -172,7 +186,7 @@ forward({
 });
 
 forward({
-  from: [watchOnlyCreated, multisigCreated, singleshardCreated],
+  from: [watchOnlyCreated, multisigCreated, singleshardCreated, proxiedCreated],
   to: walletCreatedFx,
 });
 forward({ from: multishardCreated, to: multishardCreatedFx });
@@ -192,7 +206,9 @@ sample({
 
 sample({
   clock: [walletCreatedFx.doneData, multishardCreatedFx.doneData],
-  filter: (data: CreateResult | undefined): data is CreateResult => Boolean(data),
+  filter: (data: CreateResult | undefined): data is CreateResult => {
+    return Boolean(data) && !walletUtils.isProxied(data?.wallet);
+  },
   fn: (data) => data.wallet.id,
   target: walletSelected,
 });
@@ -256,6 +272,7 @@ export const walletModel = {
     singleshardCreated,
     multisigCreated,
     walletConnectCreated,
+    proxiedCreated,
     walletSelected,
     multisigAccountUpdated,
     walletRemoved,
