@@ -1,5 +1,5 @@
 import { ProxyType } from './types';
-import { AccountId, ProxyAccount } from "@shared/core";
+import { AccountId, ProxyAccount } from '@shared/core';
 
 export const ProxyTypeName: Record<ProxyType, string> = {
   [ProxyType.ANY]: 'proxy.names.any',
