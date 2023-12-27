@@ -56,7 +56,7 @@ export const ShardsList = () => {
               addressPrefix={chain.addressPrefix}
               explorers={chain.explorers || []}
             >
-              <ExplorersPopover.Group title={t('walletDetails.vault.derivationPath')}>
+              <ExplorersPopover.Group title={t('general.explorers.derivationTitle')}>
                 <HelpText className="text-text-secondary break-all">{accountUtils.getDerivationPath(shard)}</HelpText>
               </ExplorersPopover.Group>
             </ExplorersPopover>

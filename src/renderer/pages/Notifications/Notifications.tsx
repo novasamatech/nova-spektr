@@ -4,9 +4,8 @@ import { format } from 'date-fns';
 import { useI18n } from '@app/providers';
 import EmptyNotifications from './components/EmptyNotifications';
 import { sortByDate } from './common/utils';
-import { FootnoteText } from '@shared/ui';
+import { FootnoteText, Header } from '@shared/ui';
 import { useNotification } from '@entities/notification';
-import { Header } from '@renderer/components/common';
 import { NotificationRow } from './components/NotificationRow';
 
 export const Notifications = () => {

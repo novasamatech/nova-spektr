@@ -1,5 +1,5 @@
 import { MultisigTransaction } from '@entities/transaction/model/transaction';
-import { MultisigTransactionDS, IMultisigTransactionStorage, TMultisigTransaction } from '../common/types';
+import { MultisigTransactionDS, IMultisigTransactionStorage, TMultisigTransaction } from '../lib/types';
 import { AccountId, CallHash, ChainId } from '@shared/core';
 
 export const useTransactionStorage = (db: TMultisigTransaction): IMultisigTransactionStorage => ({
@@ -51,5 +51,9 @@ export const useTransactionStorage = (db: TMultisigTransaction): IMultisigTransa
   ): Promise<void> => {
     //@ts-ignore
     return db.delete([accountId, chainId, callHash, blockCreated, indexCreated]);
+  },
+
+  deleteMultisigTxs: (accountId: AccountId): Promise<number> => {
+    return db.where('accountId').equals(accountId).delete();
   },
 });

@@ -1,5 +1,5 @@
 import { ApiPromise } from '@polkadot/api';
-import { combine, createEffect, createStore, sample, scopeBind, createEvent } from 'effector';
+import { createEffect, createStore, sample, scopeBind, createEvent, combine, restore } from 'effector';
 import { VoidFn } from '@polkadot/api/types';
 import { throttle } from 'patronum';
 import keyBy from 'lodash/keyBy';
@@ -40,19 +40,20 @@ const createSubscriptionsBalancesFx = createEffect(
     subscriptions,
     accounts,
   }: SubscribeParams): Promise<Record<ChainId, SubscriptionObject>> => {
-    const bindedBalanceUpdate = scopeBind(balanceModel.events.balanceUpdated, { safe: true });
+    const boundUpdate = scopeBind(balanceModel.events.balancesUpdated, { safe: true });
 
     const newSubscriptions = {} as Record<ChainId, SubscriptionObject>;
 
     const balanceSubscriptions = Object.entries(apis).map(async ([chainId, api]) => {
-      const accountIds = [
-        ...new Set(
-          accounts
-            .filter((a) => accountUtils.isChainIdMatch(a, chainId as ChainId))
-            .map((account) => account.accountId),
-        ),
-      ];
+      const accountIds = accounts.reduce<Record<AccountId, boolean>>((acc, account) => {
+        if (accountUtils.isChainIdMatch(account, chainId as ChainId)) {
+          acc[account.accountId] = true;
+        }
 
+        return acc;
+      }, {});
+
+      const uniqAccountIds = Object.keys(accountIds) as AccountId[];
       const networkConnected = statuses[chainId as ChainId] === ConnectionStatus.CONNECTED;
       const oldSubscription = subscriptions[chainId as ChainId];
 
@@ -66,11 +67,9 @@ const createSubscriptionsBalancesFx = createEffect(
       }
 
       if (oldSubscription) {
-        const sameAccounts = oldSubscription?.accounts.join(',') === accountIds.join(',');
+        const sameAccounts = oldSubscription?.accounts.join(',') === uniqAccountIds.join(',');
 
-        if (sameAccounts) {
-          return;
-        }
+        if (sameAccounts) return;
 
         await unsubscribeBalancesFx({
           chainId: chainId as ChainId,
@@ -81,15 +80,11 @@ const createSubscriptionsBalancesFx = createEffect(
       const chain = chains[chainId as ChainId];
 
       try {
-        const balanceSubs = balanceSubscriptionService.subscribeBalances(chain, api, accountIds, (balances) => {
-          balances.forEach((balance) => bindedBalanceUpdate(balance));
-        });
-        const locksSubs = balanceSubscriptionService.subscribeLockBalances(chain, api, accountIds, (balances) => {
-          balances.forEach((balance) => bindedBalanceUpdate(balance));
-        });
+        const balanceSubs = balanceSubscriptionService.subscribeBalances(chain, api, uniqAccountIds, boundUpdate);
+        const locksSubs = balanceSubscriptionService.subscribeLockBalances(chain, api, uniqAccountIds, boundUpdate);
 
         newSubscriptions[chainId as ChainId] = {
-          accounts: accountIds,
+          accounts: uniqAccountIds,
           subscription: [balanceSubs, locksSubs],
         };
       } catch (e) {
@@ -110,9 +105,7 @@ type UnsubscribeParams = {
   subscription: SubscriptionObject;
 };
 const unsubscribeBalancesFx = createEffect(async ({ subscription }: UnsubscribeParams) => {
-  if (!subscription) {
-    return;
-  }
+  if (!subscription) return;
 
   const [balanceUnsubs, lockUnsubs] = await Promise.all(subscription.subscription);
 
@@ -157,12 +150,12 @@ sample({
 
 sample({
   clock: populateBalancesFx.doneData,
-  target: balanceModel.$balances,
+  target: balanceModel.$balancesBuffer,
 });
 
 sample({
   clock: throttle({
-    source: combine([networkModel.$connectionStatuses, $subscriptionAccounts]),
+    source: combine([restore(populateBalancesFx.doneData, null), networkModel.$connectionStatuses]),
     timeout: SUBSCRIPTION_DELAY,
   }),
   source: {

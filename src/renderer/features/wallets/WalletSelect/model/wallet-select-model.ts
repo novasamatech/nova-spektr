@@ -1,19 +1,18 @@
 import { createStore, combine, createEvent, sample } from 'effector';
-import { createGate } from 'effector-react';
 import BigNumber from 'bignumber.js';
 
-import { includes, getRoundedValue, totalAmount } from '@shared/lib/utils';
-import { walletModel, walletUtils } from '@entities/wallet';
+import { includes, getRoundedValue, totalAmount, dictionary } from '@shared/lib/utils';
+import { walletModel, walletUtils, accountUtils } from '@entities/wallet';
 import { currencyModel, priceProviderModel } from '@entities/price';
-import type { WalletFamily, Wallet, Balance, Chain, ChainId, AccountId, ID } from '@shared/core';
+import type { WalletFamily, Wallet, ID } from '@shared/core';
 import { WalletType } from '@shared/core';
+import { networkModel } from '@entities/network';
+import { balanceModel } from '@entities/balance';
 
 const walletIdSet = createEvent<ID>();
 const walletIdCleared = createEvent();
 const clearData = createEvent();
 const queryChanged = createEvent<string>();
-
-const PropsGate = createGate<{ balances: Balance[]; chains: Record<ChainId, Chain> }>();
 
 const $walletId = createStore<ID | null>(null).reset(walletIdCleared);
 const $filterQuery = createStore<string>('').reset(clearData);
@@ -64,52 +63,40 @@ const $filteredWalletGroups = combine(
   },
 );
 
-type WalletsBalances = Record<Wallet['id'], BigNumber>;
-const $walletBalances = combine(
+const $walletBalance = combine(
   {
-    accounts: walletModel.$accounts,
+    wallet: walletModel.$activeWallet,
+    accounts: walletModel.$activeAccounts,
+    chains: networkModel.$chains,
+    balances: balanceModel.$balances,
     currency: currencyModel.$activeCurrency,
     prices: priceProviderModel.$assetsPrices,
-    gate: PropsGate.state,
   },
-  ({ accounts, currency, prices, gate }): WalletsBalances => {
-    if (!currency?.coingeckoId || !prices || !gate.balances) return {};
+  (params): BigNumber => {
+    const { wallet, accounts, chains, balances, prices, currency } = params;
 
-    const accountsBalancesMap = gate.balances.reduce<Record<AccountId, BigNumber>>((acc, balance) => {
-      const asset = gate.chains[balance.chainId]?.assets?.find((asset) => asset.assetId.toString() === balance.assetId);
+    if (!wallet || !prices || !balances || !currency?.coingeckoId) return new BigNumber(0);
+
+    const isPolkadotVault = walletUtils.isPolkadotVault(wallet);
+    const accountMap = dictionary(accounts, 'accountId');
+
+    return balances.reduce<BigNumber>((acc, balance) => {
+      const account = accountMap[balance.accountId];
+      if (!account) return acc;
+      if (accountUtils.isBaseAccount(account) && isPolkadotVault) return acc;
+
+      const asset = chains[balance.chainId]?.assets?.find((asset) => asset.assetId.toString() === balance.assetId);
 
       if (!asset?.priceId || !prices[asset.priceId]) return acc;
 
       const price = prices[asset.priceId][currency.coingeckoId];
       if (price) {
         const fiatBalance = getRoundedValue(totalAmount(balance), price.price, asset.precision);
-        const newBalance = new BigNumber(fiatBalance);
-        acc[balance.accountId] = acc[balance.accountId]?.plus(newBalance) || newBalance;
+        acc = acc.plus(new BigNumber(fiatBalance));
       }
 
       return acc;
-    }, {});
-
-    // skip repeated accounts and sum balances in a single array traversal
-    const { result } = accounts.reduce(
-      (acc, account) => {
-        const { accountId, walletId } = account;
-        const balance = accountsBalancesMap[accountId] || new BigNumber(0);
-
-        if (!acc.temp[walletId]) {
-          acc.temp[walletId] = { [accountId]: true };
-          acc.result[walletId] = balance;
-        } else if (!acc.temp[walletId][accountId]) {
-          acc.temp[walletId][accountId] = true;
-          acc.result[walletId].plus(balance);
-        }
-
-        return acc;
-      },
-      { temp: {} as Record<Wallet['id'], Record<AccountId, boolean>>, result: {} as WalletsBalances },
-    );
-
-    return result;
+    }, new BigNumber(0));
   },
 );
 
@@ -126,10 +113,9 @@ sample({
 
 export const walletSelectModel = {
   $filteredWalletGroups,
-  $walletBalances,
+  $walletBalance,
   $walletForDetails,
   $isWalletChanged,
-  PropsGate,
   events: {
     clearData,
     queryChanged,

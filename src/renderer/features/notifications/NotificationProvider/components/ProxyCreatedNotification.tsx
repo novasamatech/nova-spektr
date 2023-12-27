@@ -7,7 +7,8 @@ import { BodyText, Identicon } from '@shared/ui';
 import { useI18n } from '@app/providers';
 import { toAddress } from '@shared/lib/utils';
 import { ChainTitle } from '@entities/chain';
-import { ProxyTypeOperations } from '@entities/proxy';
+import { ProxyTypeOperation } from '@entities/proxy';
+import { WalletType } from '@shared/core';
 
 type Props = {
   notification: Notification;
@@ -41,7 +42,7 @@ export const ProxyCreatedNotification = ({ notification }: Props) => {
 
   return (
     <div className="flex gap-x-2">
-      {/*<WalletIcon type={WalletType.PROXY} />*/}
+      <WalletIcon type={WalletType.PROXIED} />
       <div className="flex flex-col gap-y-2">
         <BodyText>{t('notifications.details.proxyCreatedTitle')}</BodyText>
         <BodyText className="inline-flex items-center">
@@ -61,7 +62,7 @@ export const ProxyCreatedNotification = ({ notification }: Props) => {
             i18nKey="notifications.details.proxyCreatedDetails"
             values={{
               name: proxiedWallet?.name,
-              operations: t(ProxyTypeOperations[typedNotification.proxyType]),
+              operations: t(ProxyTypeOperation[typedNotification.proxyType]),
             }}
             components={{ chain, walletIcon }}
           />

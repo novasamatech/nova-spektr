@@ -6,10 +6,10 @@ import { u8aToHex } from '@polkadot/util';
 import { useI18n } from '@app/providers';
 import { chainsService } from '@entities/network';
 import { Button, Input, InputHint, HeaderTitleText, SmallTitleText, IconButton } from '@shared/ui';
-import { SeedInfo } from '@renderer/components/common/QrCode/common/types';
 import { AccountsList, walletModel } from '@entities/wallet';
 import type { Chain } from '@shared/core';
 import { SigningType, ErrorType, WalletType, CryptoType, ChainType, AccountType } from '@shared/core';
+import { SeedInfo } from '@entities/transaction';
 
 type WalletForm = {
   walletName: string;

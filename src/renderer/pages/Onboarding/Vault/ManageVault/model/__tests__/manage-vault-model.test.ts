@@ -2,9 +2,9 @@ import { fork, allSettled } from 'effector';
 import { hexToU8a } from '@polkadot/util';
 
 import { manageVaultModel } from '../manage-vault-model';
-import { SeedInfo } from '@renderer/components/common/QrCode/common/types';
 import { ChainAccount, KeyType, AccountType, CryptoType, ChainType } from '@renderer/shared/core';
 import { TEST_HASH } from '@renderer/shared/lib/utils';
+import { SeedInfo } from '@entities/transaction';
 
 jest.mock('@renderer/app/providers', () => ({
   useMatrix: jest.fn(),

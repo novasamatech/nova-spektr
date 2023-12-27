@@ -1,4 +1,5 @@
 import { ProxyType } from './types';
+import { AccountId, ProxyAccount } from "@shared/core";
 
 export const ProxyTypeName: Record<ProxyType, string> = {
   [ProxyType.ANY]: 'proxy.names.any',
@@ -11,7 +12,7 @@ export const ProxyTypeName: Record<ProxyType, string> = {
   [ProxyType.NOMINATION_POOLS]: 'proxy.names.nominationPools',
 };
 
-export const ProxyTypeOperations: Record<ProxyType, string> = {
+export const ProxyTypeOperation: Record<ProxyType, string> = {
   [ProxyType.ANY]: 'proxy.operations.any',
   [ProxyType.NON_TRANSFER]: 'proxy.operations.nonTransfer',
   [ProxyType.STAKING]: 'proxy.operations.staking',
@@ -21,3 +22,5 @@ export const ProxyTypeOperations: Record<ProxyType, string> = {
   [ProxyType.IDENTITY_JUDGEMENT]: 'proxy.operations.identityJudgement',
   [ProxyType.NOMINATION_POOLS]: 'proxy.operations.nominationPools',
 };
+
+export type ProxyStore = Record<AccountId, ProxyAccount[]>;

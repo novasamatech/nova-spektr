@@ -2,16 +2,16 @@ import { useEffect, useState } from 'react';
 import { useUnit } from 'effector-react';
 
 import { useI18n } from '@app/providers';
-import { chainsService, isMultisigAvailable, networkModel } from '@entities/network';
+import { isMultisigAvailable, networkModel, chainsService } from '@entities/network';
 import type { Chain } from '@shared/core';
 import { ConnectionType } from '@shared/core';
 import { walletModel, walletUtils } from '@entities/wallet';
-import { currencyModel, priceProviderModel } from '@entities/price';
-import { balanceModel } from '@entities/balance';
+import { priceProviderModel, currencyModel } from '@entities/price';
 import { includes } from '@shared/lib/utils';
 import { Icon, BodyText } from '@shared/ui';
 import { NetworkAssets } from '../NetworkAssets/NetworkAssets';
 import { assetsModel } from '../../model/assets-model';
+import { balanceModel } from '@entities/balance';
 
 export const AssetsList = () => {
   const { t } = useI18n();
@@ -20,7 +20,6 @@ export const AssetsList = () => {
   const activeShards = useUnit(assetsModel.$activeShards);
 
   const activeWallet = useUnit(walletModel.$activeWallet);
-  const activeAccounts = useUnit(walletModel.$activeAccounts);
   const balances = useUnit(balanceModel.$balances);
 
   const assetsPrices = useUnit(priceProviderModel.$assetsPrices);
@@ -32,7 +31,6 @@ export const AssetsList = () => {
   const [sortedChains, setSortedChains] = useState<Chain[]>([]);
 
   useEffect(() => {
-    assetsModel.events.activeShardsSet(activeAccounts);
     priceProviderModel.events.assetsPricesRequested({ includeRates: true });
   }, []);
 

@@ -1,15 +1,15 @@
 import { useEffect, useState } from 'react';
 
-import { cnTw, includes, toAddress } from '@shared/lib/utils';
+import { cnTw, includes, toAddress, RootExplorers } from '@shared/lib/utils';
 import { useI18n, useMatrix } from '@app/providers';
 import { useToggle } from '@shared/lib/hooks';
-import { Button, Checkbox, FootnoteText, Icon, SearchInput, SmallTitleText, Tabs, Tooltip } from '@shared/ui';
+import { Button, Checkbox, FootnoteText, Icon, SearchInput, SmallTitleText, Tabs, Tooltip, HelpText } from '@shared/ui';
 import { TabItem } from '@shared/ui/types';
 import { CreateContactModal } from '@widgets/ManageContactModal';
 import { ExtendedContact, ExtendedWallet } from '../common/types';
 import { EmptyContactList } from '@entities/contact';
 import { type Contact, type Wallet, type Account, type MultisigAccount, WalletType } from '@shared/core';
-import { walletUtils, ContactItem } from '@entities/wallet';
+import { walletUtils, ContactItem, ExplorersPopover } from '@entities/wallet';
 import { WalletItem } from './WalletItem';
 
 const enum SignatoryTabs {
@@ -221,11 +221,22 @@ export const SelectSignatories = ({ isActive, wallets, accounts, contacts, onSel
                 className={cnTw('py-1.5 px-2 rounded-md', !disabled && 'hover:bg-action-background-hover')}
               >
                 <Checkbox
-                  checked={!!selectedContacts[contact.index] || false}
+                  checked={Boolean(selectedContacts[contact.index]) || false}
                   disabled={disabled}
                   onChange={() => selectContact(contact)}
                 >
-                  <ContactItem disabled={disabled} name={contact.name} accountId={contact.accountId} />
+                  <ExplorersPopover
+                    address={contact.accountId}
+                    explorers={RootExplorers}
+                    button={<ContactItem name={contact.name} address={contact.accountId} />}
+                  >
+                    <ExplorersPopover.Group
+                      active={Boolean(contact.matrixId)}
+                      title={t('general.explorers.matrixIdTitle')}
+                    >
+                      <HelpText className="text-text-secondary break-all">{contact.matrixId}</HelpText>
+                    </ExplorersPopover.Group>
+                  </ExplorersPopover>
                 </Checkbox>
               </li>
             );

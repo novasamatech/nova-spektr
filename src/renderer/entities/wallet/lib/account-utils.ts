@@ -13,6 +13,7 @@ import type {
   ChainAccount,
   ShardAccount,
   WalletConnectAccount,
+  ProxiedAccount,
 } from '@shared/core';
 
 export const accountUtils = {
@@ -21,6 +22,7 @@ export const accountUtils = {
   isMultisigAccount,
   isChainIdMatch,
   isWalletConnectAccount,
+  isProxiedAccount,
   isShardAccount,
   getAccountsAndShardGroups,
   isAccountWithShards,
@@ -67,6 +69,10 @@ function isChainIdMatch(account: Pick<Account, 'type'>, chainId: ChainId): boole
 
 function isMultisigAccount(account: Pick<Account, 'type'>): account is MultisigAccount {
   return account.type === AccountType.MULTISIG;
+}
+
+function isProxiedAccount(account: Pick<Account, 'type'>): account is ProxiedAccount {
+  return account.type === AccountType.PROXIED;
 }
 
 function getAllAccountIds(accounts: Account[], chainId: ChainId): AccountId[] {

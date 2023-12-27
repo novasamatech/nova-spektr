@@ -81,29 +81,30 @@ export const Submit = ({
 
           if (isReject) {
             updatedTx.status = MultisigTxFinalStatus.CANCELLED;
+            updatedTx.cancelDescription = rejectReason;
           }
+
+          await updateMultisigTx(updatedTx);
+
+          const eventStatus: SigningStatus = isReject ? 'CANCELLED' : 'SIGNED';
+          const event: MultisigEvent = {
+            txAccountId: multisigTx.accountId,
+            txChainId: multisigTx.chainId,
+            txCallHash: multisigTx.callHash,
+            txBlock: multisigTx.blockCreated,
+            txIndex: multisigTx.indexCreated,
+            status: eventStatus,
+            accountId: account.accountId,
+            extrinsicHash: typedParams.extrinsicHash,
+            eventBlock: typedParams.timepoint.height,
+            eventIndex: typedParams.timepoint.index,
+            dateCreated: Date.now(),
+          };
+
+          await addEventWithQueue(event);
 
           if (matrix.userIsLoggedIn) {
             sendMultisigEvent(updatedTx, typedParams, rejectReason);
-          } else {
-            await updateMultisigTx(updatedTx);
-
-            const eventStatus: SigningStatus = isReject ? 'CANCELLED' : 'SIGNED';
-            const event: MultisigEvent = {
-              txAccountId: multisigTx.accountId,
-              txChainId: multisigTx.chainId,
-              txCallHash: multisigTx.callHash,
-              txBlock: multisigTx.blockCreated,
-              txIndex: multisigTx.indexCreated,
-              status: eventStatus,
-              accountId: account.accountId,
-              extrinsicHash: typedParams.extrinsicHash,
-              eventBlock: typedParams.timepoint.height,
-              eventIndex: typedParams.timepoint.index,
-              dateCreated: Date.now(),
-            };
-
-            await addEventWithQueue(event);
           }
         }
 

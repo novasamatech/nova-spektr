@@ -35,7 +35,7 @@ export const enum WalletType {
   MULTISIG = 'wallet_ms',
   WALLET_CONNECT = 'wallet_wc',
   NOVA_WALLET = 'wallet_nw',
-  // PROXIED = 'wallet_pxd',
+  PROXIED = 'wallet_pxd',
 
   // Legacy
   MULTISHARD_PARITY_SIGNER = 'wallet_mps',
@@ -59,5 +59,4 @@ export const enum SigningType {
   MULTISIG = 'signing_ms',
   POLKADOT_VAULT = 'signing_pv',
   WALLET_CONNECT = 'signing_wc',
-  // NOVA_WALLET = 'signing_nw',
 }
