@@ -1,7 +1,7 @@
 import { Outlet } from 'react-router-dom';
 import { useUnit } from 'effector-react';
 
-import { Header } from '@renderer/components/common';
+import { Header } from '@shared/ui';
 import { useI18n } from '@app/providers';
 import { ContactFilter, CreateContactNavigation, EditContactNavigation, filterModel } from '@features/contacts';
 import { ContactList, contactModel, ContactRow, EmptyContactList, EmptyFilteredContacts } from '@entities/contact';

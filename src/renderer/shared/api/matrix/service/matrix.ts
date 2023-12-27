@@ -24,8 +24,11 @@ import { SyncState } from 'matrix-js-sdk/lib/sync';
 import { logger } from 'matrix-js-sdk/lib/logger';
 import noop from 'lodash/noop';
 
-import { BASE_MATRIX_URL, KEY_FILE_MAX_SIZE, ROOM_CRYPTO_CONFIG, WELL_KNOWN_SERVERS } from '../common/constants';
-import MATRIX_ERRORS from '../common/errors';
+import { BASE_MATRIX_URL, KEY_FILE_MAX_SIZE, ROOM_CRYPTO_CONFIG, WELL_KNOWN_SERVERS } from '../lib/constants';
+import MATRIX_ERRORS from '../lib/errors';
+import CredentialStorage from './credentialStorage';
+import SecretStorage from './secretStorage';
+import { nonNullable } from '@shared/lib/utils';
 import {
   ApprovePayload,
   BaseMultisigPayload,
@@ -46,10 +49,7 @@ import {
   SpektrExtras,
   SpektrMultisigEvent,
   UpdatePayload,
-} from '../common/types';
-import CredentialStorage from './credentialStorage';
-import SecretStorage from './secretStorage';
-import { nonNullable } from '@shared/lib/utils';
+} from '../lib/types';
 
 global.Olm = Olm;
 logger.disableAll();

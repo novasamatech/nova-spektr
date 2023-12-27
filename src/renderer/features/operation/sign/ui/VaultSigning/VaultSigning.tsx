@@ -3,11 +3,8 @@ import { UnsignedTransaction } from '@substrate/txwrapper-polkadot';
 import { useUnit } from 'effector-react';
 
 import { useCountdown } from '@shared/lib/hooks';
-import ScanMultiframeQr from '@renderer/components/common/Scanning/ScanMultiframeQr';
-import ScanSingleframeQr from '@renderer/components/common/Scanning/ScanSingleframeQr';
-import QrReaderWrapper from '@renderer/components/common/QrCode/QrReader/QrReaderWrapper';
 import { ValidationErrors, toAddress } from '@shared/lib/utils';
-import { useTransaction } from '@entities/transaction';
+import { useTransaction, ScanMultiframeQr, ScanSingleframeQr, QrReaderWrapper } from '@entities/transaction';
 import { walletModel, walletUtils, accountUtils } from '@entities/wallet';
 import type { HexString, Address } from '@shared/core';
 import type { InnerSigningProps } from '../../model/types';
