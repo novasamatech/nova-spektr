@@ -1,4 +1,4 @@
-import { createEffect, createEvent, createStore, forward, sample, scopeBind } from 'effector';
+import { createEffect, createEvent, createStore, sample, scopeBind } from 'effector';
 import { ApiPromise } from '@polkadot/api';
 import { ProviderInterface } from '@polkadot/rpc-provider/types';
 import { UnsubscribePromise } from '@polkadot/api/types';
@@ -207,9 +207,9 @@ const createApiFx = createEffect(async ({ chainId, provider }: CreateApiParams):
   }
 });
 
-forward({
-  from: populateConnectionsFx.done,
-  to: initConnectionsFx,
+sample({
+  clock: populateConnectionsFx.done,
+  target: initConnectionsFx,
 });
 
 sample({

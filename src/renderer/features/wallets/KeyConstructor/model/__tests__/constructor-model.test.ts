@@ -81,17 +81,17 @@ describe('features/wallet/model/constructor-model', () => {
     expect(scope.getState(constructorModel.$constructorForm.fields.network.$value)).toEqual(chains[0]);
   });
 
-  test('should have visible keys', async () => {
+  test('should have visible keys', () => {
     const scope = fork({
-      values: new Map().set(constructorModel.$keys, defaultKeys),
+      values: new Map().set(constructorModel.$keysToAdd, defaultKeys),
     });
 
     expect(scope.getState(constructorModel.$hasKeys)).toEqual(true);
   });
 
-  test('should not have visible keys', async () => {
+  test('should not have visible keys', () => {
     const scope = fork({
-      values: new Map().set(constructorModel.$keys, defaultKeys.slice(0, 1)),
+      values: new Map().set(constructorModel.$keysToAdd, defaultKeys.slice(0, 1)),
     });
 
     expect(scope.getState(constructorModel.$hasKeys)).toEqual(false);

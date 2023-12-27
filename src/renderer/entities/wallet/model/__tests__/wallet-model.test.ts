@@ -32,18 +32,14 @@ describe('entities/wallet/model/wallet-model', () => {
     expect(scope.getState(walletModel.$activeAccounts)).toEqual([acc1, acc2]);
   });
 
-  test('should set $activeWallet, $activeAccounts on walletSelected', async () => {
+  test('should update $activeWallet, $activeAccounts on walletSelected', async () => {
     const prevWallets = walletMock.getWallets(1);
-    const [acc1, acc2, acc3, acc4] = walletMock.accounts;
+    const [, , acc3, acc4] = walletMock.accounts;
 
     jest.spyOn(storageService.wallets, 'update').mockResolvedValue(2);
 
     const scope = fork({
-      values: new Map()
-        .set(walletModel.$wallets, prevWallets)
-        .set(walletModel.$activeWallet, prevWallets[0])
-        .set(walletModel.$accounts, walletMock.accounts)
-        .set(walletModel.$activeAccounts, [acc1, acc2]),
+      values: new Map().set(walletModel.$wallets, prevWallets).set(walletModel.$accounts, walletMock.accounts),
     });
 
     const nextWallets = walletMock.getWallets(2);

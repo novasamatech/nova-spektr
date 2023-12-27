@@ -1,4 +1,4 @@
-import { createStore, createEvent, sample, createApi, createEffect, forward } from 'effector';
+import { createStore, createEvent, sample, createApi, createEffect } from 'effector';
 import { NavigateFunction } from 'react-router-dom';
 
 import { walletPairingModel } from '@features/wallets';
@@ -26,7 +26,10 @@ sample({
   target: navigateFx,
 });
 
-forward({ from: navigateFx.doneData, to: walletPairingModel.events.walletTypeCleared });
+sample({
+  clock: navigateFx.doneData,
+  target: walletPairingModel.events.walletTypeCleared,
+});
 
 export const walletProviderModel = {
   events: {
