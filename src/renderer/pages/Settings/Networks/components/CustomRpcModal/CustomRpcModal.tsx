@@ -5,7 +5,7 @@ import { BaseModal, Button, Input, InputHint, Alert } from '@shared/ui';
 import { useI18n } from '@app/providers';
 import { networkModel, networkService, RpcValidation, ExtendedChain } from '@entities/network';
 import { validateWsAddress } from '@shared/lib/utils';
-import { OperationTitle } from '@renderer/components/common';
+import { OperationTitle } from '@entities/chain';
 import type { RpcNode } from '@shared/core';
 
 const MODAL_ANIMATION = 300;

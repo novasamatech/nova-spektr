@@ -12,7 +12,7 @@ import InitOperation, { RedeemResult } from './InitOperation/InitOperation';
 import { Confirmation, Submit, NoAsset } from '../components';
 import { getRelaychainAsset, toAddress, DEFAULT_TRANSITION } from '@shared/lib/utils';
 import { useToggle } from '@shared/lib/hooks';
-import { OperationTitle } from '@renderer/components/common';
+import { OperationTitle } from '@entities/chain';
 import { BaseModal, Button, Loader } from '@shared/ui';
 import { Signing } from '@features/operation';
 import { walletModel, walletUtils } from '@entities/wallet';

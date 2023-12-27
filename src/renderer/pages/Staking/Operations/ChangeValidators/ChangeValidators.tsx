@@ -13,7 +13,7 @@ import { useToggle } from '@shared/lib/hooks';
 import { BaseModal, Button, Loader } from '@shared/ui';
 import InitOperation, { ValidatorsResult } from './InitOperation/InitOperation';
 import { isLightClient, useNetworkData } from '@entities/network';
-import { OperationTitle } from '@renderer/components/common';
+import { OperationTitle } from '@entities/chain';
 import { Signing } from '@features/operation';
 import type { Account, ChainId, HexString, Address } from '@shared/core';
 import { walletUtils, walletModel } from '@entities/wallet';

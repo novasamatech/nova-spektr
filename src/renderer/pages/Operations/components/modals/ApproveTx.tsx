@@ -16,10 +16,11 @@ import { Confirmation } from '../ActionSteps/Confirmation';
 import { SignatorySelectModal } from './SignatorySelectModal';
 import { useMultisigEvent } from '@entities/multisig';
 import { Signing } from '@features/operation';
-import { OperationTitle } from '@renderer/components/common';
 import { walletModel } from '@entities/wallet';
 import { priceProviderModel } from '@entities/price';
 import type { Address, HexString, Timepoint, MultisigAccount, Account } from '@shared/core';
+import { balanceModel, balanceUtils } from '@entities/balance';
+import { OperationTitle } from '@entities/chain';
 import {
   isXcmTransaction,
   MAX_WEIGHT,
@@ -30,7 +31,6 @@ import {
   useTransaction,
   validateBalance,
 } from '@entities/transaction';
-import { balanceModel, balanceUtils } from '@entities/balance';
 
 type Props = {
   tx: MultisigTransactionDS;

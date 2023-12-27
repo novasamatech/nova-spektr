@@ -14,7 +14,7 @@ import { RewardsDestination } from '@shared/core';
 import type { Account, Address, ChainId, HexString } from '@shared/core';
 import { BaseModal, Button, Loader } from '@shared/ui';
 import InitOperation, { BondResult } from './InitOperation/InitOperation';
-import { OperationTitle } from '@renderer/components/common';
+import { OperationTitle } from '@entities/chain';
 import { DestinationType } from '../common/types';
 import { UnstakingDuration } from '@pages/Staking/Overview/components';
 import { useNetworkData, isLightClient } from '@entities/network';

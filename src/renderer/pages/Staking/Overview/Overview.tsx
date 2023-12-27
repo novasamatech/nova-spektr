@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { useNavigate, Outlet } from 'react-router-dom';
 import { useUnit } from 'effector-react';
 
-import { Header } from '@renderer/components/common';
+import { Header } from '@shared/ui';
 import { getRelaychainAsset, toAddress } from '@shared/lib/utils';
 import { createLink, type PathType } from '@shared/routes';
 import { useGraphql, useI18n } from '@app/providers';

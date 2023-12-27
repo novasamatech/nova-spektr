@@ -14,8 +14,7 @@ import {
   getVersionedDestinationLocation,
 } from '@shared/api/xcm';
 import { xcmModel } from '@entities/xcm';
-import { getParachainId } from '@renderer/services/dataVerification/dataVerification';
-import { toLocalChainId } from '@shared/lib/utils';
+import { toLocalChainId, getParachainId } from '@shared/lib/utils';
 import type { AccountId, Asset, Chain, ChainId } from '@shared/core';
 import { networkModel } from '@entities/network';
 

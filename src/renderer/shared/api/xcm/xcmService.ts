@@ -2,11 +2,11 @@ import { BN, BN_TEN, BN_ZERO } from '@polkadot/util';
 import { ApiPromise } from '@polkadot/api';
 import get from 'lodash/get';
 
-import { XCM_URL, XCM_KEY } from './common/constants';
+import { XCM_URL, XCM_KEY } from './lib/constants';
 import { getTypeVersion, toLocalChainId, getAssetId, TEST_ACCOUNT_ID } from '@shared/lib/utils';
 import { XcmPalletTransferArgs, XTokenPalletTransferArgs } from '@entities/transaction';
 import { chainsService } from '@entities/network';
-import { toRawString } from './common/utils';
+import { toRawString } from './lib/utils';
 import type { AccountId, ChainId, Chain, HexString } from '@shared/core';
 import {
   XcmConfig,
@@ -20,7 +20,7 @@ import {
   XcmTransfer,
   PathType,
   Action,
-} from './common/types';
+} from './lib/types';
 
 export const fetchXcmConfig = async (): Promise<XcmConfig> => {
   const response = await fetch(XCM_URL, { cache: 'default' });

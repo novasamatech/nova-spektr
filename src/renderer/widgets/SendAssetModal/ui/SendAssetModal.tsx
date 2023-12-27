@@ -9,7 +9,7 @@ import { Transaction, useTransaction, validateBalance } from '@entities/transact
 import { BaseModal, Button, Loader } from '@shared/ui';
 import { Confirmation, InitOperation, Submit } from './components/ActionSteps';
 import { Signing } from '@features/operation';
-import { OperationTitle } from '@renderer/components/common';
+import { OperationTitle } from '@entities/chain';
 import { useToggle } from '@shared/lib/hooks';
 import * as sendAssetModel from '../model/send-asset';
 import type { Chain, Asset, Account, MultisigAccount, HexString } from '@shared/core';

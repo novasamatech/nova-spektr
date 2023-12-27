@@ -3,7 +3,7 @@ import { AccountInfo } from '@polkadot/types/interfaces';
 import { Codec } from '@polkadot/types/types';
 
 import chains from '../../../src/renderer/shared/config/chains/chains.json';
-import { validate } from '../../../src/renderer/services/dataVerification';
+import { validate } from '../../../src/renderer/shared/api/chain-verification';
 import {
   getTestAccounts,
   TestAccountsURL,
@@ -19,7 +19,7 @@ const [_, polkadotParachains, kusamaParachains, polkadot, kusama] = prepareTestD
  * Data Verification integration tests
  *
  * @group integration
- * @group dataVerification/base
+ * @group chain-verification/base
  */
 
 describe('Verification function can verify parachains', () => {

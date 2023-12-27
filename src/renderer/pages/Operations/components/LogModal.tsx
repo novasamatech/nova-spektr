@@ -8,9 +8,8 @@ import { MultisigEvent, SigningStatus } from '@entities/transaction/model/transa
 import { TransactionTitle } from './TransactionTitle/TransactionTitle';
 import OperationStatus from './OperationStatus';
 import { getSignatoryName, getTransactionAmount, sortByDateAsc } from '../common/utils';
-import { BaseModal, BodyText, FootnoteText, Identicon } from '@shared/ui';
-import { getAssetById, SS58_DEFAULT_PREFIX, toAddress } from '@shared/lib/utils';
-import { ExtrinsicExplorers } from '@renderer/components/common';
+import { BaseModal, BodyText, FootnoteText, Identicon, ContextMenu, ExplorerLink, IconButton } from '@shared/ui';
+import { getAssetById, SS58_DEFAULT_PREFIX, toAddress, getExtrinsicExplorer } from '@shared/lib/utils';
 import { useMultisigEvent } from '@entities/multisig';
 import { MultisigTransactionDS } from '@shared/api/storage';
 import { AssetBalance } from '@entities/asset';
@@ -152,8 +151,22 @@ const LogModal = ({ isOpen, onClose, tx, account, connection, contacts, accounts
                           <BodyText className="text-text-tertiary ml-auto">
                             {event.dateCreated && format(new Date(event.dateCreated), 'p', { locale: dateLocale })}
                           </BodyText>
+
                           {event.extrinsicHash && connection?.explorers && (
-                            <ExtrinsicExplorers hash={event.extrinsicHash} explorers={connection.explorers} />
+                            <ContextMenu button={<IconButton name="info" size={16} />}>
+                              <ContextMenu.Group>
+                                <ul className="flex flex-col gap-y-2">
+                                  {connection.explorers.map((explorer) => (
+                                    <li key={explorer.name}>
+                                      <ExplorerLink
+                                        name={explorer.name}
+                                        href={getExtrinsicExplorer(explorer, event.extrinsicHash!)}
+                                      />
+                                    </li>
+                                  ))}
+                                </ul>
+                              </ContextMenu.Group>
+                            </ContextMenu>
                           )}
                         </div>
 
