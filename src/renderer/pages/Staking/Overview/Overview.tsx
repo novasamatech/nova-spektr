@@ -32,7 +32,7 @@ import {
   useStakingRewards,
   ValidatorsModal,
 } from '@entities/staking';
-import { useNetworkData } from '@entities/network';
+import { isDisabled as isNetworkDisabled, useNetworkData } from '@entities/network';
 
 export const Overview = () => {
   const { t } = useI18n();
@@ -89,7 +89,7 @@ export const Overview = () => {
   useEffect(() => {
     if (!connection) return;
 
-    const isDisabled = connection.connectionType === ConnectionType.DISABLED;
+    const isDisabled = isNetworkDisabled(connection);
     const isError = connectionStatus === ConnectionStatus.ERROR;
 
     setNetworkIsActive(!isDisabled && !isError);

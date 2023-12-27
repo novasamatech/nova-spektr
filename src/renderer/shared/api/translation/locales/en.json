@@ -211,9 +211,11 @@
     },
     "explorers": {
       "addressTitle": "Address",
+      "derivationTitle": "Derivation path",
       "explorerButton": "View on { name }",
       "explorerTitle": "Explorers",
-      "matrixIdTitle": "Matrix ID"
+      "matrixIdTitle": "Matrix ID",
+      "publicKeyTitle": "Public key"
     },
     "input": {
       "amountLabel": "Amount",
@@ -226,10 +228,6 @@
     "title": {
       "appName": "Nova Spektr"
     }
-  },
-  "info": {
-    "derivationPathTitle": "Derivation path ",
-    "publicKeyTitle": "Public key"
   },
   "log": {
     "cancelledMessage": "rejected this operation",
@@ -539,6 +537,18 @@
   "price": {
     "withCode": "{ amount } { code }",
     "withSymbol": "{ symbol }{ amount }"
+  },
+  "proxy": {
+    "names": {
+      "any": "All operations",
+      "auction": "Auction operations",
+      "cancelProxy": "Cancel operations",
+      "governance": "Governance operations",
+      "identityJudgement": "Judgement operations",
+      "nominationPools": "Nominations operations",
+      "nonTransfer": "NonTransfer operations",
+      "staking": "Staking operations"
+    }
   },
   "qrReader": {
     "parsingLabel": "Parsing data",
@@ -981,12 +991,14 @@
   "walletDetails": {
     "common": {
       "cancelButton": "Cancel",
-      "forgetButton": "Forget",
+      "forgetButton": "Remove",
       "nameExistsError": "This wallet name already exists",
       "nameRequiredError": "Name is required",
       "removeButton": "Remove",
       "removeMessage": "Are you sure you want to remove { walletName }?",
       "removeTitle": "Remove wallet",
+      "removeWalletDesc": "Are you sure you want to remove {walletName}?",
+      "removeWalletTitle": "Remove wallet",
       "removingWallet": "Removing wallet",
       "renameButton": "Rename",
       "renameLabel": "Name",
@@ -1003,12 +1015,10 @@
       "walletsGroup": "Your wallets"
     },
     "vault": {
-      "derivationPath": "Derivation path",
       "editKeys": "Edit keys",
       "export": "Export keyset",
       "import": "Import keyset",
       "networksTab": "Networks",
-      "publicKey": "Public Key",
       "shardsTitle": "Shards"
     },
     "walletConnect": {
