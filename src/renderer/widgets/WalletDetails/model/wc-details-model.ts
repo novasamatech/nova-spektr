@@ -1,4 +1,4 @@
-import { createEffect, createEvent, createStore, forward, sample } from 'effector';
+import { createEffect, createEvent, createStore, sample } from 'effector';
 import { combineEvents, spread } from 'patronum';
 
 import { accountUtils, walletModel } from '@entities/wallet';
@@ -52,9 +52,9 @@ sample({
   target: $reconnectStep,
 });
 
-forward({
-  from: reconnectStarted,
-  to: walletConnectModel.events.connect,
+sample({
+  clock: reconnectStarted,
+  target: walletConnectModel.events.connect,
 });
 
 sample({
@@ -162,9 +162,9 @@ sample({
   target: $forgetStep,
 });
 
-forward({
-  from: forgetModalClosed,
-  to: walletSelectModel.events.walletIdCleared,
+sample({
+  clock: forgetModalClosed,
+  target: walletSelectModel.events.walletIdCleared,
 });
 
 export const wcDetailsModel = {

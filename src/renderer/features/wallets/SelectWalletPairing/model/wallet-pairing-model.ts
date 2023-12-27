@@ -1,4 +1,4 @@
-import { createStore, createEvent, forward } from 'effector';
+import { createStore, createEvent, sample } from 'effector';
 
 import { WalletFamily } from '@shared/core';
 
@@ -7,7 +7,10 @@ const walletTypeCleared = createEvent();
 
 const $walletType = createStore<WalletFamily | null>(null).reset(walletTypeCleared);
 
-forward({ from: walletTypeSet, to: $walletType });
+sample({
+  clock: walletTypeSet,
+  target: $walletType,
+});
 
 export const walletPairingModel = {
   $walletType,
