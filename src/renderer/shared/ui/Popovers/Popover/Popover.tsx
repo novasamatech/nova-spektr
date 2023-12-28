@@ -4,23 +4,7 @@ import { createPortal } from 'react-dom';
 
 import { cnTw } from '@shared/lib/utils';
 import { useDebounce } from '@shared/lib/hooks';
-
-const findScrollContainer = (element: HTMLElement | null) => {
-  if (!element) {
-    return undefined;
-  }
-
-  let parent = element.parentElement;
-  while (parent) {
-    const { overflow } = window.getComputedStyle(parent);
-    if (overflow.split(' ').every((o) => o === 'auto' || o === 'scroll')) {
-      return parent;
-    }
-    parent = parent.parentElement;
-  }
-
-  return document.documentElement;
-};
+import { popoverUtils } from '../common/utils';
 
 type Props = {
   content: ReactNode;
@@ -53,22 +37,20 @@ export const Popover = ({
   };
 
   useEffect(() => {
-    function blockScroll(e: Event) {
-      console.log('inside block scroll');
-      console.log(e);
-      e.preventDefault();
-    }
-
-    const scrollableParent = findScrollContainer(ref.current);
-    scrollableParent?.onscroll = (e) => console.log(e);
+    const scrollableParent = popoverUtils.findScrollContainer(ref.current);
 
     if (debouncedIsOpen) {
-      // scrollableParent?.addEventListener('scroll', blockScroll);
+      scrollableParent?.addEventListener('wheel', popoverUtils.blockScroll);
+      scrollableParent?.addEventListener('touchmove', popoverUtils.blockScroll);
     } else {
-      // scrollableParent?.removeEventListener('scroll', blockScroll);
+      scrollableParent?.removeEventListener('wheel', popoverUtils.blockScroll);
+      scrollableParent?.removeEventListener('touchmove', popoverUtils.blockScroll);
     }
 
-    // return scrollableParent?.removeEventListener('scroll', blockScroll);
+    return () => {
+      scrollableParent?.removeEventListener('wheel', popoverUtils.blockScroll);
+      scrollableParent?.removeEventListener('touchmove', popoverUtils.blockScroll);
+    };
   }, [debouncedIsOpen, ref.current]);
 
   return (
