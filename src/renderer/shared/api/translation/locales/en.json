@@ -548,7 +548,9 @@
       "nominationPools": "Nominations operations",
       "nonTransfer": "NonTransfer operations",
       "staking": "Staking operations"
-    }
+    },
+    "tooltipPart1": "Proxied wallets are wallet which have set one of your accounts in Nova Spektr as delegated authority (Proxies).",
+    "tooltipPart2": "This means that you can control certain functions of these wallets based on the access type granted to you by the proxied wallet."
   },
   "qrReader": {
     "parsingLabel": "Parsing data",
@@ -1053,7 +1055,8 @@
     "shards": "Shards",
     "title": "Wallets",
     "walletConnectLabel": "WalletConnect",
-    "watchOnlyLabel": "Watch-only"
+    "watchOnlyLabel": "Watch-only",
+    "proxiedLabel": "Delegated to you (Proxied)"
   },
   "welcome": {
     "addLedgerButton": "Coming soon",

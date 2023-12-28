@@ -45,6 +45,7 @@ const $filteredWalletGroups = combine(
         if (walletUtils.isWatchOnly(wallet)) groupIndex = WalletType.WATCH_ONLY;
         if (walletUtils.isWalletConnect(wallet)) groupIndex = WalletType.WALLET_CONNECT;
         if (walletUtils.isNovaWallet(wallet)) groupIndex = WalletType.NOVA_WALLET;
+        if (walletUtils.isProxiedWallet(wallet)) groupIndex = WalletType.PROXIED;
 
         if (groupIndex && includes(wallet.name, query)) {
           acc[groupIndex].push(wallet);
@@ -58,6 +59,7 @@ const $filteredWalletGroups = combine(
         [WalletType.NOVA_WALLET]: [],
         [WalletType.WALLET_CONNECT]: [],
         [WalletType.WATCH_ONLY]: [],
+        [WalletType.PROXIED]: [],
       },
     );
   },

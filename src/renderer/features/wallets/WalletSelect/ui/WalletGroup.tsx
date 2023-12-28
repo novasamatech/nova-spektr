@@ -1,9 +1,10 @@
 import { Accordion, CaptionText, Icon } from '@shared/ui';
 import { useI18n } from '@app/providers';
 import { Wallet, WalletFamily, WalletType } from '@shared/core';
-import { WalletIcon, walletModel, WalletCardMd } from '@entities/wallet';
+import { WalletCardMd, WalletIcon, walletModel } from '@entities/wallet';
 import { WalletFiatBalance } from './WalletFiatBalance';
 import { walletSelectModel } from '../model/wallet-select-model';
+import { ProxiedTooltip } from './ProxiedTooltip';
 
 export const GroupLabels: Record<WalletFamily, string> = {
   [WalletType.POLKADOT_VAULT]: 'wallets.paritySignerLabel',
@@ -11,6 +12,7 @@ export const GroupLabels: Record<WalletFamily, string> = {
   [WalletType.WALLET_CONNECT]: 'wallets.walletConnectLabel',
   [WalletType.NOVA_WALLET]: 'wallets.novaWalletLabel',
   [WalletType.WATCH_ONLY]: 'wallets.watchOnlyLabel',
+  [WalletType.PROXIED]: 'wallets.proxiedLabel',
 };
 
 type Props = {
@@ -28,6 +30,7 @@ export const WalletGroup = ({ type, wallets }: Props) => {
           <WalletIcon type={type} />
           <CaptionText className="text-text-secondary  font-semibold uppercase">{t(GroupLabels[type])}</CaptionText>
           <CaptionText className="text-text-tertiary font-semibold">{wallets.length}</CaptionText>
+          {type === WalletType.PROXIED && <ProxiedTooltip />}
         </div>
       </Accordion.Button>
       <Accordion.Content>
