@@ -1,5 +1,5 @@
-import { Notification } from '@entities/notification/model/notification';
-import { ID, INotificationStorage, NotificationDS, TNotification } from '../common/types';
+import { Notification } from '@entities/notification';
+import { ID, INotificationStorage, NotificationDS, TNotification } from '../lib/types';
 
 export const useNotificationStorage = (db: TNotification): INotificationStorage => ({
   getNotifications: <T extends Notification>(where?: Partial<T>): Promise<NotificationDS[]> => {

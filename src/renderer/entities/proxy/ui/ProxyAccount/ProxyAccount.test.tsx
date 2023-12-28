@@ -12,14 +12,14 @@ jest.mock('@app/providers', () => ({
 
 describe('ui/AccountAddress', () => {
   test('should render component', () => {
-    render(<ProxyAccount accountId={TEST_ACCOUNT_ID} addressPrefix={0} proxyType={ProxyType.Staking} />);
+    render(<ProxyAccount accountId={TEST_ACCOUNT_ID} addressPrefix={0} proxyType={ProxyType.STAKING} />);
 
     const addressValue = screen.getByText(TEST_ADDRESS);
     expect(addressValue).toBeInTheDocument();
   });
 
   test('should render short component', () => {
-    render(<ProxyAccount type="short" accountId={TEST_ACCOUNT_ID} addressPrefix={0} proxyType={ProxyType.Staking} />);
+    render(<ProxyAccount type="short" accountId={TEST_ACCOUNT_ID} addressPrefix={0} proxyType={ProxyType.STAKING} />);
 
     const shortAddress = TEST_ADDRESS.slice(0, 8) + '...' + TEST_ADDRESS.slice(TEST_ADDRESS.length - 8);
 

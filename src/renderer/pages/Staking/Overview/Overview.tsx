@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { useNavigate, Outlet } from 'react-router-dom';
 import { useUnit } from 'effector-react';
 
-import { Header } from '@renderer/components/common';
+import { Header } from '@shared/ui';
 import { getRelaychainAsset, toAddress } from '@shared/lib/utils';
 import { createLink, type PathType } from '@shared/routes';
 import { useGraphql, useI18n } from '@app/providers';
@@ -32,7 +32,7 @@ import {
   useStakingRewards,
   ValidatorsModal,
 } from '@entities/staking';
-import { useNetworkData } from '@entities/network';
+import { isDisabled as isNetworkDisabled, useNetworkData } from '@entities/network';
 
 export const Overview = () => {
   const { t } = useI18n();
@@ -89,7 +89,7 @@ export const Overview = () => {
   useEffect(() => {
     if (!connection) return;
 
-    const isDisabled = connection.connectionType === ConnectionType.DISABLED;
+    const isDisabled = isNetworkDisabled(connection);
     const isError = connectionStatus === ConnectionStatus.ERROR;
 
     setNetworkIsActive(!isDisabled && !isError);

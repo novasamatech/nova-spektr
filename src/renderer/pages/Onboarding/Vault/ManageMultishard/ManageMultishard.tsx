@@ -7,12 +7,12 @@ import { keyBy } from 'lodash';
 import { chainsService, ChainMap } from '@entities/network';
 import { useI18n } from '@app/providers';
 import { ChainTitle } from '@entities/chain';
-import { AddressInfo, CompactSeedInfo, SeedInfo } from '@renderer/components/common/QrCode/common/types';
 import { toAccountId, toAddress, cnTw, RootExplorers } from '@shared/lib/utils';
 import { walletModel, AddressWithExplorers } from '@entities/wallet';
 import { Button, Input, InputHint, HeaderTitleText, SmallTitleText, IconButton, FootnoteText, Icon } from '@shared/ui';
 import type { ChainId, HexString, ChainAccount, BaseAccount } from '@shared/core';
 import { CryptoType, ChainType, AccountType, WalletType, SigningType, ErrorType, KeyType } from '@shared/core';
+import { SeedInfo, CompactSeedInfo, AddressInfo } from '@entities/transaction';
 
 type WalletForm = {
   walletName: string;

@@ -1,4 +1,4 @@
-import { combine, createEffect, createEvent, createStore, forward, sample } from 'effector';
+import { combine, createEffect, createEvent, createStore, sample } from 'effector';
 import { spread } from 'patronum';
 
 import type { Account, BaseAccount, ChainAccount, ID, MultisigAccount, NoID, Wallet } from '@shared/core';
@@ -8,7 +8,13 @@ import { modelUtils } from '../lib/model-utils';
 import { accountUtils } from '../lib/account-utils';
 
 const $wallets = createStore<Wallet[]>([]);
-const $activeWallet = $wallets.map((wallets) => wallets.find((w) => w.isActive));
+const $activeWallet = combine(
+  $wallets,
+  (wallets): Wallet | undefined => {
+    return wallets.find((wallet) => wallet.isActive);
+  },
+  { skipVoid: false },
+);
 
 const $accounts = createStore<Account[]>([]);
 const $activeAccounts = combine(
@@ -16,7 +22,7 @@ const $activeAccounts = combine(
     wallet: $activeWallet,
     accounts: $accounts,
   },
-  ({ wallet, accounts }) => {
+  ({ wallet, accounts }): Account[] => {
     if (!wallet) return [];
 
     return accounts.filter((account) => account.walletId === wallet.id);
@@ -108,12 +114,12 @@ const walletSelectedFx = createEffect(async ({ prevId, nextId }: SelectParams): 
   }
 
   // TODO: consider using Dexie transaction() | Task --> https://app.clickup.com/t/8692uyemn
-  const [prevWallet, nextWallet] = await Promise.all([
+  const [, nextWallet] = await Promise.all([
     storageService.wallets.update(prevId, { isActive: false }),
     storageService.wallets.update(nextId, { isActive: true }),
   ]);
 
-  return prevWallet && nextWallet ? nextId : undefined;
+  return nextWallet ? nextId : undefined;
 });
 
 const multisigWalletUpdatedFx = createEffect(
@@ -134,9 +140,18 @@ const removeWalletFx = createEffect(async ({ walletId, accountIds }: RemoveParam
   return walletId;
 });
 
-forward({ from: kernelModel.events.appStarted, to: [fetchAllWalletsFx, fetchAllAccountsFx] });
-forward({ from: fetchAllWalletsFx.doneData, to: $wallets });
-forward({ from: fetchAllAccountsFx.doneData, to: $accounts });
+sample({
+  clock: kernelModel.events.appStarted,
+  target: [fetchAllWalletsFx, fetchAllAccountsFx],
+});
+sample({
+  clock: fetchAllWalletsFx.doneData,
+  target: $wallets,
+});
+sample({
+  clock: fetchAllAccountsFx.doneData,
+  target: $accounts,
+});
 
 sample({
   clock: fetchAllWalletsFx.doneData,
@@ -166,16 +181,19 @@ sample({
   target: $wallets,
 });
 
-forward({
-  from: walletConnectCreated,
-  to: walletCreatedFx,
+sample({
+  clock: walletConnectCreated,
+  target: walletCreatedFx,
 });
 
-forward({
-  from: [watchOnlyCreated, multisigCreated, singleshardCreated],
-  to: walletCreatedFx,
+sample({
+  clock: [watchOnlyCreated, multisigCreated, singleshardCreated],
+  target: walletCreatedFx,
 });
-forward({ from: multishardCreated, to: multishardCreatedFx });
+sample({
+  clock: multishardCreated,
+  target: multishardCreatedFx,
+});
 
 sample({
   clock: [walletCreatedFx.doneData, multishardCreatedFx.doneData],
@@ -197,7 +215,10 @@ sample({
   target: walletSelected,
 });
 
-forward({ from: multisigAccountUpdated, to: multisigWalletUpdatedFx });
+sample({
+  clock: multisigAccountUpdated,
+  target: multisigWalletUpdatedFx,
+});
 
 sample({
   clock: multisigWalletUpdatedFx.doneData,

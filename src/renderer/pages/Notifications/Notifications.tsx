@@ -4,9 +4,9 @@ import { format } from 'date-fns';
 import { useI18n } from '@app/providers';
 import EmptyNotifications from './components/EmptyNotifications';
 import { sortByDate } from './common/utils';
-import { FootnoteText } from '@shared/ui';
-import { useNotification, NotificationRow } from '@entities/notification';
-import { Header } from '@renderer/components/common';
+import { FootnoteText, Header } from '@shared/ui';
+import { useNotification } from '@entities/notification';
+import { NotificationRow } from './components/NotificationRow';
 
 export const Notifications = () => {
   const { t, dateLocale } = useI18n();

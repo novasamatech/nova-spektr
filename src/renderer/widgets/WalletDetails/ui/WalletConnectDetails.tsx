@@ -81,7 +81,7 @@ export const WalletConnectDetails = ({ wallet, accounts, onClose }: Props) => {
   };
 
   const handleForgetWallet = () => {
-    wcDetailsModel.events.forgetButtonClicked();
+    wcDetailsModel.events.forgetButtonClicked(wallet);
     toggleConfirmForget();
   };
 

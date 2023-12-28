@@ -1,4 +1,4 @@
-import { XCM_KEY } from '../common/constants';
+import { XCM_KEY } from '../lib/constants';
 import {
   estimateFeeFromConfig,
   getXcmConfig,
