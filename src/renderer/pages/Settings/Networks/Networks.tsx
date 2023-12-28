@@ -202,7 +202,7 @@ export const Networks = () => {
       >
         <SearchInput wrapperClass="mx-5" placeholder="Search" value={query} onChange={setQuery} />
 
-        <div className="flex flex-col gap-y-4 px-5 pb-4 pt-1 mt-5 h-[454px] overflow-y-auto">
+        <div className="flex flex-col gap-y-4 px-3 pb-4 pt-1 mt-5 h-[454px] overflow-y-auto">
           <NetworkList
             isDefaultOpen={false}
             query={query}
@@ -238,7 +238,7 @@ export const Networks = () => {
           </NetworkList>
 
           {!inactive.length && !active.length && (
-            <div className="flex flex-col items-center mx-auto pt-12 pb-15">
+            <div className="flex flex-col items-center mx-auto pt-12 pb-15 px-2">
               <Icon as="img" name="emptyList" alt={t('settings.networks.emptyStateLabel')} size={178} />
               <BodyText className="w-52 text-center text-text-tertiary">
                 {t('settings.networks.emptyStateLabel')}
