@@ -3,7 +3,7 @@ import { spread } from 'patronum';
 
 import type { Account, BaseAccount, ChainAccount, ID, MultisigAccount, NoID, Wallet } from '@shared/core';
 import { kernelModel, WalletConnectAccount } from '@shared/core';
-import { storageService } from '@shared/api/storage';
+import { storageService, dexie } from '@shared/api/storage';
 import { modelUtils } from '../lib/model-utils';
 import { accountUtils } from '../lib/account-utils';
 
@@ -58,17 +58,14 @@ type CreateResult = {
   accounts: Account[];
 };
 const walletCreatedFx = createEffect(
-  async ({ wallet, accounts }: CreateParams<BaseAccount | WalletConnectAccount>): Promise<CreateResult | undefined> => {
-    const dbWallet = await storageService.wallets.create({ ...wallet, isActive: false });
+  ({ wallet, accounts }: CreateParams<BaseAccount | WalletConnectAccount>): Promise<CreateResult> => {
+    return dexie.transaction('rw', ['wallets', 'accounts'], async () => {
+      const dbWallet = await storageService.wallets.create({ ...wallet, isActive: false });
+      const accountsPayload = accounts.map((account) => ({ ...account, walletId: dbWallet.id }));
+      const dbAccounts = await storageService.accounts.createAll(accountsPayload);
 
-    if (!dbWallet) return undefined;
-
-    const accountsPayload = accounts.map((account) => ({ ...account, walletId: dbWallet.id }));
-    const dbAccounts = await storageService.accounts.createAll(accountsPayload);
-
-    if (!dbAccounts) return undefined;
-
-    return { wallet: dbWallet, accounts: dbAccounts };
+      return { wallet: dbWallet, accounts: dbAccounts };
+    });
   },
 );
 
@@ -213,6 +210,10 @@ sample({
   filter: (data: CreateResult | undefined): data is CreateResult => Boolean(data),
   fn: (data) => data.wallet.id,
   target: walletSelected,
+});
+
+walletCreatedFx.failData.watch((error) => {
+  console.log(error.message);
 });
 
 sample({

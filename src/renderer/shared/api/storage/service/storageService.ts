@@ -1,7 +1,7 @@
 import { IndexableType, Table } from 'dexie';
 
-import { dexieStorage } from './dexie';
 import type { NoID } from '@shared/core';
+import { dexie } from './dexie';
 
 // TODO: think about throwing errors instead of returning value from catch
 class StorageService<T extends { id: K }, K extends IndexableType> {
@@ -11,30 +11,16 @@ class StorageService<T extends { id: K }, K extends IndexableType> {
     this.dexieTable = table;
   }
 
-  async create(item: NoID<T, K>): Promise<T | undefined> {
-    try {
-      const id = await this.dexieTable.add(item as T);
-      if (!id) return undefined;
+  async create(item: NoID<T, K>): Promise<T> {
+    const id = await this.dexieTable.add(item as T);
 
-      return { id, ...item } as T;
-    } catch (error) {
-      console.log('Error creating object - ', error);
-
-      return undefined;
-    }
+    return { id, ...item } as T;
   }
 
-  async createAll(items: NoID<T, K>[]): Promise<T[] | undefined> {
-    try {
-      const ids = await this.dexieTable.bulkAdd(items as T[], { allKeys: true });
-      if (!ids) return undefined;
+  async createAll(items: NoID<T, K>[]): Promise<T[]> {
+    const ids = await this.dexieTable.bulkAdd(items as T[], { allKeys: true });
 
-      return items.map((item, index) => ({ id: ids[index], ...item })) as T[];
-    } catch (error) {
-      console.log('Error creating object - ', error);
-
-      return undefined;
-    }
+    return items.map((item, index) => ({ id: ids[index], ...item })) as T[];
   }
 
   read(id: K): Promise<T | undefined> {
@@ -109,9 +95,9 @@ class StorageService<T extends { id: K }, K extends IndexableType> {
 }
 
 export const storageService = {
-  wallets: new StorageService(dexieStorage.wallets),
-  accounts: new StorageService(dexieStorage.accounts),
-  contacts: new StorageService(dexieStorage.contacts),
-  connections: new StorageService(dexieStorage.connections),
-  proxies: new StorageService(dexieStorage.proxies),
+  wallets: new StorageService(dexie.wallets),
+  accounts: new StorageService(dexie.accounts),
+  contacts: new StorageService(dexie.contacts),
+  connections: new StorageService(dexie.connections),
+  proxies: new StorageService(dexie.proxies),
 };

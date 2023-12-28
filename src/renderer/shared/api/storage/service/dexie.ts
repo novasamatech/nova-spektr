@@ -104,14 +104,6 @@ class StorageFactory implements IStorage {
   }
 }
 
-const dexie = new DexieStorage();
+export const dexie = new DexieStorage();
 
 export const storage = new StorageFactory(dexie);
-
-export const dexieStorage = {
-  wallets: dexie.wallets,
-  accounts: dexie.accounts,
-  contacts: dexie.contacts,
-  connections: dexie.connections,
-  proxies: dexie.proxies,
-};
