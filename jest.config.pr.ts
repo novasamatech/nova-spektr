@@ -6,6 +6,7 @@ const config: Config = {
   testPathIgnorePatterns: [
     '<rootDir>/src/renderer/entities/.*/ui',
     '<rootDir>/src/renderer/features/.*/ui',
+    '<rootDir>/tests/'
   ],
 };
 
