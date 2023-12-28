@@ -1,6 +1,6 @@
 import { Table } from 'dexie';
 
-import { Notification } from '@entities/notification/model/notification';
+import { Notification } from '@entities/notification';
 import type { Metadata } from '@entities/network';
 import { MultisigEvent, MultisigTransaction, MultisigTransactionKey } from '@entities/transaction/model/transaction';
 import type {

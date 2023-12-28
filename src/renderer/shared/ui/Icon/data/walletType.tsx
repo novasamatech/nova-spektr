@@ -20,8 +20,8 @@ import WalletConnectOnboardingImg, {
 import NovaWalletOnboardingImg, {
   ReactComponent as NovaWalletOnboardingSvg,
 } from '@shared/assets/images/walletTypes/novaWalletOnboarding.svg';
+import ProxyImg, { ReactComponent as ProxySvg } from '@shared/assets/images/walletTypes/proxy.svg';
 
-// TODO: Remove old wallet images after left menu styles updated
 const WalletTypeImages = {
   watchOnly: { svg: WatchOnlySvg, img: WatchOnlyImg },
   watchOnlyOnboarding: { svg: WatchOnlyOnboardingSvg, img: WatchOnlyOnboardingImg },
@@ -33,6 +33,7 @@ const WalletTypeImages = {
   ledgerOnboarding: { img: LedgerOnboardingImg, svg: LedgerOnboardingSvg },
   walletConnect: { img: WalletConnectImg, svg: WalletConnectSvg },
   walletConnectOnboarding: { img: WalletConnectOnboardingImg, svg: WalletConnectOnboardingSvg },
+  proxied: { svg: ProxySvg, img: ProxyImg },
 } as const;
 
 export type WalletImages = keyof typeof WalletTypeImages;
