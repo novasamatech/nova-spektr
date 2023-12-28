@@ -37,3 +37,7 @@ export const getParachains = (chainMap: ChainMap, chainId: ChainId): Chain[] => 
 export const isDisabled = (connection: Connection): boolean => {
   return connection.connectionType === ConnectionType.DISABLED;
 };
+
+export const isEnabled = (connection: Connection): boolean => {
+  return !isDisabled(connection);
+};
