@@ -22,6 +22,7 @@ import { isDisabled, networkModel } from '@entities/network';
 import { proxyWorkerUtils } from '../lib/utils';
 import { accountUtils, walletModel } from '@entities/wallet';
 import { proxyModel, proxyUtils } from '@entities/proxy';
+import { balanceModel } from '@/src/renderer/entities/balance';
 
 // @ts-ignore
 const worker = new Worker(new URL('@features/proxies/workers/proxy-worker', import.meta.url));
@@ -31,7 +32,7 @@ const endpoint = createEndpoint(worker, {
 });
 
 const connected = createEvent<ChainId>();
-const proxiedesRemoved = createEvent<PartialProxiedAccount[]>();
+const proxidesRemoved = createEvent<ProxiedAccount[]>();
 
 type StartChainsProps = {
   chains: Chain[];
@@ -134,13 +135,25 @@ spread({
     proxiesToAdd: proxyModel.events.proxiesAdded,
     proxiesToRemove: proxyModel.events.proxiesRemoved,
     proxiedesToAdd: createProxiedesFx,
-    proxiedesToRemove: proxiedesRemoved,
+    proxiedesToRemove: proxidesRemoved,
   },
 });
 
 sample({
   clock: createProxiedesFx.doneData,
   target: walletModel.events.proxiedesCreated,
+});
+
+sample({
+  clock: proxidesRemoved,
+  fn: (proxiedes) => proxiedes.map((p) => p.walletId),
+  target: walletModel.events.walletsRemoved,
+});
+
+sample({
+  clock: proxidesRemoved,
+  fn: (proxiedes) => proxiedes.map((p) => p.accountId),
+  target: balanceModel.events.accountsBalancesRemoved,
 });
 
 sample({

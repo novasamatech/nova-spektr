@@ -55,6 +55,7 @@ const proxiedesCreated = createEvent<CreateParams<ProxiedAccount>[]>();
 const walletSelected = createEvent<ID>();
 const multisigAccountUpdated = createEvent<MultisigUpdateParams>();
 const walletRemoved = createEvent<ID>();
+const walletsRemoved = createEvent<ID[]>();
 
 const fetchAllAccountsFx = createEffect((): Promise<Account[]> => {
   return storageService.accounts.readAll();
@@ -159,6 +160,10 @@ const removeWalletFx = createEffect(async ({ walletId, accountIds }: RemoveParam
   await Promise.all([storageService.accounts.deleteAll(accountIds), storageService.wallets.delete(walletId)]);
 
   return walletId;
+});
+
+const removeWalletsFx = createEffect(async (wallets: RemoveParams[]): Promise<ID[]> => {
+  return Promise.all(wallets.map((w) => removeWalletFx(w)));
 });
 
 sample({
@@ -269,6 +274,17 @@ sample({
 });
 
 sample({
+  clock: walletsRemoved,
+  source: $accounts,
+  fn: (accounts, walletIds) =>
+    walletIds.map((walletId) => ({
+      accountIds: accountUtils.getWalletAccounts(walletId, accounts).map((a) => a.id),
+      walletId,
+    })),
+  target: removeWalletsFx,
+});
+
+sample({
   clock: removeWalletFx.doneData,
   source: { wallets: $wallets, accounts: $accounts },
   fn: ({ accounts, wallets }, walletId) => ({
@@ -310,5 +326,6 @@ export const walletModel = {
     multisigAccountUpdated,
     walletRemoved,
     walletRemovedSuccess: removeWalletFx.done,
+    walletsRemoved,
   },
 };
