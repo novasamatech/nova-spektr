@@ -264,7 +264,11 @@
   },
   "notifications": {
     "details": {
-      "newMultisigAccountDescription": "New multisig wallet added:<identicon />{name}, with threshold { threshold } out of { signatories } signatories"
+      "newMultisigAccountDescription": "<strong>{name}</strong> with threshold { threshold } out of { signatories } signatories",
+      "newMultisigAccountTitle": "New multisig wallet added",
+      "proxyCreatedDetails": "<chain /> is now available for your <walletIcon /> {name} to control {operations}",
+      "proxyCreatedTitle": "New delegated authority wallet added",
+      "proxyCreatedWallet": "<strong>{name}</strong>  with <identicon />{address}"
     },
     "noNotificationsDescription": "You don't have notifications yet",
     "title": "Notifications"
@@ -548,6 +552,16 @@
       "nominationPools": "Nominations operations",
       "nonTransfer": "NonTransfer operations",
       "staking": "Staking operations"
+    },
+    "operations": {
+      "any": "all operations",
+      "auction": "auction operations",
+      "cancelProxy": "cancel operations",
+      "governance": "governance operations",
+      "identityJudgement": "judgement operations",
+      "nominationPools": "nominations operations",
+      "nonTransfer": "nonTransfer operations",
+      "staking": "staking operations"
     },
     "tooltipPart1": "Proxied wallets are wallet which have set one of your accounts in Nova Spektr as delegated authority (Proxies).",
     "tooltipPart2": "This means that you can control certain functions of these wallets based on the access type granted to you by the proxied wallet."
