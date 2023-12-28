@@ -72,34 +72,34 @@ const disconnectFx = createEffect((chainId: ChainId): Promise<unknown> => {
   return endpoint.call.disconnect(chainId);
 });
 
-const createProxiedesFx = createEffect((proxiedes: PartialProxiedAccount[]): void => {
-  const newWallets = proxiedes.map((proxied) => {
-    const walletName = proxyUtils.getProxiedName(proxied);
-    const wallet = {
-      name: walletName,
-      type: WalletType.PROXIED,
-      signingType: SigningType.WATCH_ONLY,
-    } as Wallet;
-
-    const accounts = [
-      {
-        ...proxied,
+const createProxiedesFx = createEffect(
+  (proxiedes: PartialProxiedAccount[]): { wallet: Wallet; accounts: ProxiedAccount[] }[] => {
+    return proxiedes.map((proxied) => {
+      const walletName = proxyUtils.getProxiedName(proxied);
+      const wallet = {
         name: walletName,
-        // TODO: use chain data, when ethereum chains support
-        type: AccountType.PROXIED,
-        chainType: ChainType.SUBSTRATE,
-        cryptoType: CryptoType.SR25519,
-      } as ProxiedAccount,
-    ];
+        type: WalletType.PROXIED,
+        signingType: SigningType.WATCH_ONLY,
+      } as Wallet;
 
-    return {
-      wallet,
-      accounts,
-    };
-  });
+      const accounts = [
+        {
+          ...proxied,
+          name: walletName,
+          type: AccountType.PROXIED,
+          // TODO: use chain data, when ethereum chains support
+          chainType: ChainType.SUBSTRATE,
+          cryptoType: CryptoType.SR25519,
+        } as ProxiedAccount,
+      ];
 
-  walletModel.events.proxiedesCreated(newWallets);
-});
+      return {
+        wallet,
+        accounts,
+      };
+    });
+  },
+);
 
 sample({
   clock: once(networkModel.$connections),
@@ -136,6 +136,11 @@ spread({
     proxiedesToAdd: createProxiedesFx,
     proxiedesToRemove: proxiedesRemoved,
   },
+});
+
+sample({
+  clock: createProxiedesFx.doneData,
+  target: walletModel.events.proxiedesCreated,
 });
 
 sample({

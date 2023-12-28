@@ -2,11 +2,12 @@ import { createEffect, createEvent, createStore, sample } from 'effector';
 
 import { ProxyStore } from '../lib/constants';
 import { proxyUtils } from '../lib/utils';
-import { kernelModel, type ProxyAccount } from '@shared/core';
+import { type ProxyAccount } from '@shared/core';
 import { storageService } from '@shared/api/storage';
 
 const $proxies = createStore<ProxyStore>({});
 
+const proxyStarted = createEvent();
 const proxiesAdded = createEvent<ProxyAccount[]>();
 const proxiesRemoved = createEvent<ProxyAccount[]>();
 
@@ -23,7 +24,7 @@ const removeProxiesFx = createEffect((proxies: ProxyAccount[]) => {
 });
 
 sample({
-  clock: kernelModel.events.appStarted,
+  clock: proxyStarted,
   target: populateProxiesFx,
 });
 
@@ -66,6 +67,7 @@ sample({ clock: proxiesRemoved, target: removeProxiesFx });
 export const proxyModel = {
   $proxies,
   events: {
+    proxyStarted,
     proxiesAdded,
     proxiesRemoved,
   },
