@@ -29,6 +29,8 @@ import Shimmering from './Shimmering/Shimmering';
 import Duration from './Duration/Duration';
 import Loader from './Loader/Loader';
 import DetailRow from './DetailRow/DetailRow';
+export { FallbackScreen } from './FallbackScreen/FallbackScreen';
+export { Header } from './Header/Header';
 export { AmountInput } from './Inputs/AmountInput/AmountInput';
 export { BaseModal } from './Modals/BaseModal/BaseModal';
 export { ConfirmModal } from './Modals/ConfirmModal/ConfirmModal';

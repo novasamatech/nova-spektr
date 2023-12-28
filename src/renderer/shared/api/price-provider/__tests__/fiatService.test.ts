@@ -1,6 +1,6 @@
 import { fiatService } from '../service/fiatService';
 import { localStorageService } from '@shared/api/local-storage';
-import { CURRENCY_CODE_KEY, FIAT_FLAG_KEY, PRICE_PROVIDER_KEY, ASSETS_PRICES_KEY } from '../common/constants';
+import { CURRENCY_CODE_KEY, FIAT_FLAG_KEY, PRICE_PROVIDER_KEY, ASSETS_PRICES_KEY } from '../lib/constants';
 
 describe('shared/api/price-provider/services/fiatService', () => {
   const spyGetFn = (value: any) => jest.spyOn(localStorageService, 'getFromStorage').mockReturnValue(value);

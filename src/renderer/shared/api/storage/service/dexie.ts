@@ -19,7 +19,7 @@ import {
   TMultisigEvent,
   TMetadata,
   TProxy,
-} from '../common/types';
+} from '../lib/types';
 
 class DexieStorage extends Dexie {
   connections: TConnection;

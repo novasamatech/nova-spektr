@@ -1,16 +1,15 @@
 import { act, render, screen, waitFor } from '@testing-library/react';
 
-import { QrReader } from '@renderer/components/common';
-import { QrError } from '@renderer/components/common/QrCode/common/types';
 import KeyQrReader from './KeyQrReader';
-
-jest.mock('@renderer/components/common');
+import { QrError, QrReader } from '@entities/transaction';
 
 jest.mock('@app/providers', () => ({
   useI18n: jest.fn().mockReturnValue({
     t: (key: string) => key,
   }),
 }));
+
+jest.mock('@entities/transaction');
 
 jest.mock('@shared/ui', () => ({
   Select: ({ options }: any) => options.map((o: any) => <span key="1">{o.element}</span>),
@@ -80,22 +79,6 @@ describe('pages/Onboarding/Vault/KeyQrReader', () => {
         const checkmarkAfter = screen.getByTestId('checkmarkCutout-svg');
         expect(checkmarkAfter).toBeInTheDocument();
       });
-    });
-
-    test('should render decoded progress', () => {
-      (QrReader as jest.Mock).mockImplementation(({ onProgress }: any) => (
-        <button type="button" onClick={() => onProgress({ decoded: 3, total: 4 })}>
-          qrReader
-        </button>
-      ));
-
-      render(<KeyQrReader onResult={() => {}} />);
-
-      const qrButton = screen.getByRole('button');
-      act(() => qrButton.click());
-
-      // const progress = screen.getByTestId('progress');
-      // expect(progress).toHaveTextContent('3 / 4');
     });
   });
 

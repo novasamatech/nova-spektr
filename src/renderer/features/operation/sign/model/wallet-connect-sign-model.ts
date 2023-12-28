@@ -1,4 +1,4 @@
-import { combine, createEffect, createEvent, createStore, forward, sample } from 'effector';
+import { combine, createEffect, createEvent, createStore, sample } from 'effector';
 import { combineEvents } from 'patronum';
 import Client from '@walletconnect/sign-client';
 import { EngineTypes } from '@walletconnect/types';
@@ -48,9 +48,9 @@ const signFx = createEffect(({ client, payload }: SignParams): Promise<SignRespo
   return client.request(payload);
 });
 
-forward({
-  from: signingStarted,
-  to: signFx,
+sample({
+  clock: signingStarted,
+  target: signFx,
 });
 
 sample({
@@ -77,9 +77,9 @@ sample({
   target: $reconnectStep,
 });
 
-forward({
-  from: reconnectStarted,
-  to: walletConnectModel.events.connect,
+sample({
+  clock: reconnectStarted,
+  target: walletConnectModel.events.connect,
 });
 
 sample({
@@ -146,9 +146,9 @@ sample({
   target: $reconnectStep,
 });
 
-forward({
-  from: [reconnectAborted, reconnectDone],
-  to: reset,
+sample({
+  clock: [reconnectAborted, reconnectDone],
+  target: reset,
 });
 
 export const walletConnectSignModel = {

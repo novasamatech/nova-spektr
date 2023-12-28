@@ -1,4 +1,4 @@
-import { combine, createEffect, createEvent, createStore, forward, sample } from 'effector';
+import { combine, createEffect, createEvent, createStore, sample } from 'effector';
 import { spread } from 'patronum';
 
 import type {
@@ -18,7 +18,13 @@ import { accountUtils } from '../lib/account-utils';
 import { walletUtils } from '../lib/wallet-utils';
 
 const $wallets = createStore<Wallet[]>([]);
-const $activeWallet = $wallets.map((wallets) => wallets.find((w) => w.isActive));
+const $activeWallet = combine(
+  $wallets,
+  (wallets): Wallet | undefined => {
+    return wallets.find((wallet) => wallet.isActive);
+  },
+  { skipVoid: false },
+);
 
 const $accounts = createStore<Account[]>([]);
 const $activeAccounts = combine(
@@ -26,7 +32,7 @@ const $activeAccounts = combine(
     wallet: $activeWallet,
     accounts: $accounts,
   },
-  ({ wallet, accounts }) => {
+  ({ wallet, accounts }): Account[] => {
     if (!wallet) return [];
 
     return accounts.filter((account) => account.walletId === wallet.id);
@@ -154,9 +160,18 @@ const removeWalletFx = createEffect(async ({ walletId, accountIds }: RemoveParam
   return walletId;
 });
 
-forward({ from: kernelModel.events.appStarted, to: [fetchAllWalletsFx, fetchAllAccountsFx] });
-forward({ from: fetchAllWalletsFx.doneData, to: $wallets });
-forward({ from: fetchAllAccountsFx.doneData, to: $accounts });
+sample({
+  clock: kernelModel.events.appStarted,
+  target: [fetchAllWalletsFx, fetchAllAccountsFx],
+});
+sample({
+  clock: fetchAllWalletsFx.doneData,
+  target: $wallets,
+});
+sample({
+  clock: fetchAllAccountsFx.doneData,
+  target: $accounts,
+});
 
 sample({
   clock: fetchAllWalletsFx.doneData,
@@ -186,16 +201,19 @@ sample({
   target: $wallets,
 });
 
-forward({
-  from: walletConnectCreated,
-  to: walletCreatedFx,
+sample({
+  clock: walletConnectCreated,
+  target: walletCreatedFx,
 });
 
-forward({
-  from: [watchOnlyCreated, multisigCreated, singleshardCreated],
-  to: walletCreatedFx,
+sample({
+  clock: [watchOnlyCreated, multisigCreated, singleshardCreated],
+  target: walletCreatedFx,
 });
-forward({ from: multishardCreated, to: multishardCreatedFx });
+sample({
+  clock: multishardCreated,
+  target: multishardCreatedFx,
+});
 
 sample({
   clock: proxiedesCreated,
@@ -224,7 +242,10 @@ sample({
   target: walletSelected,
 });
 
-forward({ from: multisigAccountUpdated, to: multisigWalletUpdatedFx });
+sample({
+  clock: multisigAccountUpdated,
+  target: multisigWalletUpdatedFx,
+});
 
 sample({
   clock: multisigWalletUpdatedFx.doneData,
