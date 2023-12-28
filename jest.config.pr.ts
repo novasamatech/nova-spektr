@@ -1,4 +1,5 @@
 import type { Config } from 'jest';
+
 import baseConfig from './jest.config.ts'; // import your existing config
 
 const config: Config = {
@@ -6,7 +7,7 @@ const config: Config = {
   testPathIgnorePatterns: [
     '<rootDir>/src/renderer/entities/.*/ui',
     '<rootDir>/src/renderer/features/.*/ui',
-    '<rootDir>/tests/'
+    '<rootDir>/tests/',
   ],
 };
 
