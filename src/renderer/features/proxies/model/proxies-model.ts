@@ -21,8 +21,7 @@ import {
 import { isDisabled, networkModel } from '@entities/network';
 import { proxyWorkerUtils } from '../lib/utils';
 import { accountUtils, walletModel } from '@entities/wallet';
-import { proxyModel } from '@entities/proxy';
-import { proxyUtils } from '@/src/renderer/entities/proxy/lib/utils';
+import { proxyModel, proxyUtils } from '@entities/proxy';
 
 // @ts-ignore
 const worker = new Worker(new URL('@features/proxies/workers/proxy-worker', import.meta.url));
@@ -32,7 +31,7 @@ const endpoint = createEndpoint(worker, {
 });
 
 const connected = createEvent<ChainId>();
-const proxidesRemoved = createEvent<PartialProxiedAccount[]>();
+const proxiedesRemoved = createEvent<PartialProxiedAccount[]>();
 
 type StartChainsProps = {
   chains: Chain[];
@@ -60,13 +59,13 @@ type GetProxiesResult = {
   proxiesToRemove: ProxyAccount[];
 };
 const getProxiesFx = createEffect(({ chainId, accounts, proxies }: GetProxiesParams): Promise<GetProxiesResult> => {
-  const proxides = accounts.filter((a) => accountUtils.isProxiedAccount(a));
+  const proxiedes = accounts.filter((a) => accountUtils.isProxiedAccount(a));
   const nonProxiedAccounts = keyBy(
     accounts.filter((a) => !accountUtils.isProxiedAccount(a)),
     'accountId',
   );
 
-  return endpoint.call.getProxies(chainId, nonProxiedAccounts, proxides, proxies) as Promise<GetProxiesResult>;
+  return endpoint.call.getProxies(chainId, nonProxiedAccounts, proxiedes, proxies) as Promise<GetProxiesResult>;
 });
 
 const disconnectFx = createEffect((chainId: ChainId): Promise<unknown> => {
@@ -74,7 +73,7 @@ const disconnectFx = createEffect((chainId: ChainId): Promise<unknown> => {
 });
 
 const createProxiedesFx = createEffect((proxiedes: PartialProxiedAccount[]): void => {
-  proxiedes.forEach((proxied) => {
+  const newWallets = proxiedes.map((proxied) => {
     const walletName = proxyUtils.getProxiedName(proxied);
     const wallet = {
       name: walletName,
@@ -93,11 +92,13 @@ const createProxiedesFx = createEffect((proxiedes: PartialProxiedAccount[]): voi
       } as ProxiedAccount,
     ];
 
-    walletModel.events.proxiedCreated({
+    return {
       wallet,
       accounts,
-    });
+    };
   });
+
+  walletModel.events.proxiedesCreated(newWallets);
 });
 
 sample({
@@ -115,7 +116,10 @@ sample({
 
 sample({
   clock: connected,
-  source: { accounts: walletModel.$accounts, proxies: proxyModel.$proxies },
+  source: {
+    accounts: walletModel.$accounts,
+    proxies: proxyModel.$proxies,
+  },
   fn: ({ accounts, proxies }, chainId) => ({
     chainId,
     accounts: accounts.filter((a) => accountUtils.isChainIdMatch(a, chainId)),
@@ -129,8 +133,8 @@ spread({
   targets: {
     proxiesToAdd: proxyModel.events.proxiesAdded,
     proxiesToRemove: proxyModel.events.proxiesRemoved,
-    proxidesToAdd: createProxiedesFx,
-    proxidesToRemove: proxidesRemoved,
+    proxiedesToAdd: createProxiedesFx,
+    proxiedesToRemove: proxiedesRemoved,
   },
 });
 
