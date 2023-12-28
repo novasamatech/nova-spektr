@@ -15,13 +15,13 @@ const Template: ComponentStory<typeof ProxyAccount> = (args) => <ProxyAccount {.
 export const Primary = Template.bind({});
 Primary.args = {
   accountId: TEST_ACCOUNT_ID,
-  proxyType: ProxyType.Staking,
+  proxyType: ProxyType.STAKING,
 };
 
 export const WithName = Template.bind({});
 WithName.args = {
   accountId: TEST_ACCOUNT_ID,
-  proxyType: ProxyType.Any,
+  proxyType: ProxyType.ANY,
   name: 'Some account',
   type: 'full',
 };

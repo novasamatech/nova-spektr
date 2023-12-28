@@ -1,8 +1,7 @@
 import { useLiveQuery } from 'dexie-react-hooks';
 
 import { storage, NotificationDS } from '@shared/api/storage';
-import { INotificationService } from './common/types';
-import { Notification } from '@entities/notification/model/notification';
+import { INotificationService, Notification } from './common/types';
 
 export const useNotification = (): INotificationService => {
   const notificationStorage = storage.connectTo('notifications');
