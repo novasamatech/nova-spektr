@@ -19,7 +19,7 @@ const Template: ComponentStory<typeof DropdownButton> = (args) => <DropdownButto
 
 const options: ButtonDropdownOption[] = [
   { id: 'button1', title: 'Button Option 1', icon: 'globe', onClick: () => alert('click1') },
-  { id: 'button2', title: 'Button Option 2', icon: 'arrowUp', onClick: () => alert('click2') },
+  { id: 'button2', title: 'Button Option 2', icon: 'up', onClick: () => alert('click2') },
 ];
 
 export const Primary = Template.bind({});
