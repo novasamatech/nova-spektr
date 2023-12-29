@@ -1,19 +1,20 @@
 import { MultisigNotificationType, Notification, ProxyNotificationType } from '@entities/notification';
-import { MultisigInvitedNotification } from './components/MultisigInvitedNotification';
-import { ProxyCreatedNotification } from './components/ProxyCreatedNotification';
+import { MultisigInvitedNotification } from './ui/MultisigInvitedNotification';
+import { ProxyCreatedNotification } from './ui/ProxyCreatedNotification';
 
 type Props = {
   notification: Notification;
 };
 
-export const NotificationProvider = ({ notification }: Props) =>
-  ({
+export const NotificationProvider = ({ notification }: Props) => {
+  return {
     [MultisigNotificationType.ACCOUNT_INVITED]: (n: Notification) => <MultisigInvitedNotification notification={n} />,
-    [MultisigNotificationType.MST_CREATED]: () => <></>,
-    [MultisigNotificationType.MST_APPROVED]: () => <></>,
-    [MultisigNotificationType.MST_EXECUTED]: () => <></>,
-    [MultisigNotificationType.MST_CANCELLED]: () => <></>,
+    [MultisigNotificationType.MST_CREATED]: () => null,
+    [MultisigNotificationType.MST_APPROVED]: () => null,
+    [MultisigNotificationType.MST_EXECUTED]: () => null,
+    [MultisigNotificationType.MST_CANCELLED]: () => null,
     [ProxyNotificationType.PROXY_CREATED]: (n: Notification) => (
       <ProxyCreatedNotification notification={notification} />
     ),
-  }[notification.type](notification));
+  }[notification.type](notification);
+};

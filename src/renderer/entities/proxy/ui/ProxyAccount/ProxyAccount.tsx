@@ -1,10 +1,9 @@
 import { cnTw, toAddress, toShortAddress } from '@shared/lib/utils';
 import { BodyText, DropdownIconButton, HelpText, Identicon, Truncate } from '@shared/ui';
-import { AccountId } from '@shared/core';
-import { ProxyType } from '../../lib/types';
-import { ProxyTypeName } from '@entities/proxy/lib/constants';
+import { AccountId, ProxyType } from '@shared/core';
 import { useI18n } from '@app/providers';
 import { DropdownIconButtonOption } from '@shared/ui/types';
+import { ProxyTypeName } from '../../lib/constants';
 
 type Props = {
   className?: string;
@@ -38,18 +37,6 @@ export const ProxyAccount = ({
     addressToShow
   );
 
-  const ActionButton = actions && (
-    <DropdownIconButton name="more" className="ml-2">
-      <DropdownIconButton.Items>
-        {actions.map((option) => (
-          <DropdownIconButton.Item key={option.icon}>
-            <DropdownIconButton.Option option={option} />
-          </DropdownIconButton.Item>
-        ))}
-      </DropdownIconButton.Items>
-    </DropdownIconButton>
-  );
-
   return (
     <div className={cnTw('flex items-center gap-x-2', className)}>
       <Identicon className="inline-block" address={address} size={20} background={false} canCopy={canCopy} />
@@ -61,7 +48,17 @@ export const ProxyAccount = ({
           <HelpText className="text-tab-text-accent">{t(ProxyTypeName[proxyType])}</HelpText>
         </div>
       </div>
-      {ActionButton}
+      {actions && (
+        <DropdownIconButton name="more" className="ml-2">
+          <DropdownIconButton.Items>
+            {actions.map((option) => (
+              <DropdownIconButton.Item key={option.icon}>
+                <DropdownIconButton.Option option={option} />
+              </DropdownIconButton.Item>
+            ))}
+          </DropdownIconButton.Items>
+        </DropdownIconButton>
+      )}
     </div>
   );
 };

@@ -1,6 +1,6 @@
 import { createEffect, createEvent, createStore, sample } from 'effector';
 
-import { ProxyStore } from '../lib/constants';
+import { ProxyStore } from '../lib/types';
 import { proxyUtils } from '../lib/utils';
 import type { ProxyAccount } from '@shared/core';
 import { storageService } from '@shared/api/storage';

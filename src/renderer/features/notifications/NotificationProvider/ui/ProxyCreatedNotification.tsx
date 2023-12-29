@@ -7,8 +7,8 @@ import { BodyText, Identicon } from '@shared/ui';
 import { useI18n } from '@app/providers';
 import { toAddress } from '@shared/lib/utils';
 import { ChainTitle } from '@entities/chain';
-import { ProxyTypeOperation } from '@entities/proxy';
 import { WalletType } from '@shared/core';
+import { ProxyTypeOperation } from '../lib/constants';
 
 type Props = {
   notification: Notification;
@@ -26,7 +26,7 @@ export const ProxyCreatedNotification = ({ notification }: Props) => {
   const proxiedAccount = accounts.find((a) => a.accountId === typedNotification.proxiedAccountId);
   const proxiedWallet = wallets.find((w) => w.id === proxiedAccount?.walletId);
 
-  if (!proxiedWallet) return <></>;
+  if (!proxiedWallet) return null;
 
   const identicon = (
     <Identicon

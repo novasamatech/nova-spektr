@@ -1,6 +1,6 @@
 import { ID, NotificationDS } from '@shared/api/storage';
 import type { AccountId, CallHash, ChainId, Timepoint } from '@shared/core';
-import { ProxyType } from '@entities/proxy';
+import { ProxyType } from '@shared/core';
 
 export interface INotificationService {
   getNotifications: <T extends Notification>(where?: Partial<T>) => Promise<NotificationDS[]>;
