@@ -50,7 +50,7 @@ const multishardCreated = createEvent<CreateParams<BaseAccount | ChainAccount>>(
 const singleshardCreated = createEvent<CreateParams<BaseAccount>>();
 const multisigCreated = createEvent<CreateParams<MultisigAccount>>();
 const walletConnectCreated = createEvent<CreateParams<WalletConnectAccount>>();
-const proxiedesCreated = createEvent<CreateParams<ProxiedAccount>[]>();
+const proxiedWalletsCreated = createEvent<CreateParams<ProxiedAccount>[]>();
 
 const walletSelected = createEvent<ID>();
 const multisigAccountUpdated = createEvent<MultisigUpdateParams>();
@@ -120,9 +120,9 @@ const multishardCreatedFx = createEffect(
 );
 
 // TODO: Move wallet creation to it's own feature
-const proxiedesCreatedFx = createEffect(
-  async (proxiedes: CreateParams<ProxiedAccount>[]): Promise<(CreateResult | undefined)[]> => {
-    return Promise.all(proxiedes.map((p) => walletCreatedFx(p)));
+const proxiedWalletsCreatedFx = createEffect(
+  async (proxiedWallets: CreateParams<ProxiedAccount>[]): Promise<(CreateResult | undefined)[]> => {
+    return Promise.all(proxiedWallets.map((p) => walletCreatedFx(p)));
   },
 );
 
@@ -222,8 +222,8 @@ sample({
 });
 
 sample({
-  clock: proxiedesCreated,
-  target: proxiedesCreatedFx,
+  clock: proxiedWalletsCreated,
+  target: proxiedWalletsCreatedFx,
 });
 
 sample({
@@ -321,7 +321,7 @@ export const walletModel = {
     singleshardCreated,
     multisigCreated,
     walletConnectCreated,
-    proxiedesCreated,
+    proxiedWalletsCreated,
     walletSelected,
     multisigAccountUpdated,
     walletRemoved,
