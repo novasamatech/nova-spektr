@@ -22,7 +22,7 @@ import { isDisabled, networkModel } from '@entities/network';
 import { proxyWorkerUtils } from '../lib/utils';
 import { accountUtils, walletModel } from '@entities/wallet';
 import { proxyModel, proxyUtils } from '@entities/proxy';
-import { balanceModel } from '@/src/renderer/entities/balance';
+import { balanceModel } from '@entities/balance';
 
 // @ts-ignore
 const worker = new Worker(new URL('@features/proxies/workers/proxy-worker', import.meta.url));
