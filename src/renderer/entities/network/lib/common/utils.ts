@@ -39,5 +39,5 @@ export const isDisabled = (connection: Connection): boolean => {
 };
 
 export const isEnabled = (connection: Connection): boolean => {
-  return !isDisabled(connection);
+  return connection.connectionType !== ConnectionType.DISABLED;
 };
