@@ -162,7 +162,7 @@ const removeWalletFx = createEffect(async ({ walletId, accountIds }: RemoveParam
   return walletId;
 });
 
-const removeWalletsFx = createEffect(async (wallets: RemoveParams[]): Promise<ID[]> => {
+const removeWalletsFx = createEffect((wallets: RemoveParams[]): Promise<ID[]> => {
   return Promise.all(wallets.map((w) => removeWalletFx(w)));
 });
 
