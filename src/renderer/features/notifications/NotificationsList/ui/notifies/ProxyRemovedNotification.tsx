@@ -13,7 +13,7 @@ type Props = {
   notification: ProxyAction;
 };
 
-export const ProxyCreatedNotification = ({ notification }: Props) => {
+export const ProxyRemovedNotification = ({ notification }: Props) => {
   const { t } = useI18n();
 
   const wallets = useUnit(walletModel.$wallets);

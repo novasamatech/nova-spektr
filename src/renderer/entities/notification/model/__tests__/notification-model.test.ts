@@ -13,12 +13,12 @@ const notifications = [
   },
 ] as Notification[];
 
-const newNotification = {
+const newNotifications = [{
   id: 2,
   read: true,
   dateCreated: Date.now(),
   type: NotificationType.MULTISIG_INVITE,
-} as Notification;
+}] as Notification[];
 
 describe('entities/notification/model/notification-model', () => {
   afterEach(() => {
@@ -38,16 +38,16 @@ describe('entities/notification/model/notification-model', () => {
     expect(scope.getState(notificationModel.$notifications)).toEqual(notifications);
   });
 
-  test('should add new notification on notificationAdded', async () => {
-    const spyCreate = jest.spyOn(storageService.notifications, 'create').mockResolvedValue(newNotification);
+  test('should add new notification on notificationsAdded', async () => {
+    const spyCreate = jest.spyOn(storageService.notifications, 'createAll').mockResolvedValue(newNotifications);
 
     const scope = fork({
       values: new Map().set(notificationModel.$notifications, []),
     });
 
-    await allSettled(notificationModel.events.notificationAdded, { scope, params: newNotification });
+    await allSettled(notificationModel.events.notificationsAdded, { scope, params: newNotifications });
 
     expect(spyCreate).toHaveBeenCalled();
-    expect(scope.getState(notificationModel.$notifications)).toEqual([newNotification]);
+    expect(scope.getState(notificationModel.$notifications)).toEqual(newNotifications);
   });
 });

@@ -9,6 +9,7 @@ export const enum NotificationType {
   MULTISIG_CANCELLED = 'MultisigCancelledNotification',
 
   PROXY_CREATED = 'ProxyCreatedNotification',
+  PROXY_REMOVED = 'ProxyRemovedNotification',
 }
 
 type BaseNotification = {
@@ -36,11 +37,11 @@ export type MultisigOperation = MultisigBaseNotification & {
   chainId: ChainId;
 };
 
-export type ProxyCreated = BaseNotification & {
+export type ProxyAction = BaseNotification & {
   proxyAccountId: AccountId;
   proxiedAccountId: AccountId;
   proxyType: ProxyType;
   chainId: ChainId;
 };
 
-export type Notification = MultisigInvite | MultisigOperation | ProxyCreated;
+export type Notification = MultisigInvite | MultisigOperation | ProxyAction;

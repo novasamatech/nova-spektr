@@ -6,17 +6,16 @@ import { useI18n } from '@app/providers';
 import { MultisigInviteNotification } from './notifies/MultisigInviteNotification';
 import { ProxyCreatedNotification } from './notifies/ProxyCreatedNotification';
 import { NotificationType } from '@shared/core';
-import type { Notification, MultisigInvite, ProxyCreated } from '@shared/core';
+import type { Notification, MultisigInvite, ProxyAction } from '@shared/core';
 
-const Notifications: Record<NotificationType, (notify: Notification) => ReactNode> = {
-  [NotificationType.MULTISIG_INVITE]: (notify) => (
-    <MultisigInviteNotification notification={notify as MultisigInvite} />
-  ),
+const Notifications: Record<NotificationType, (n: Notification) => ReactNode> = {
+  [NotificationType.MULTISIG_INVITE]: (n) => <MultisigInviteNotification notification={n as MultisigInvite} />,
   [NotificationType.MULTISIG_CREATED]: () => null,
   [NotificationType.MULTISIG_APPROVED]: () => null,
   [NotificationType.MULTISIG_CANCELLED]: () => null,
   [NotificationType.MULTISIG_EXECUTED]: () => null,
-  [NotificationType.PROXY_CREATED]: (notify) => <ProxyCreatedNotification notification={notify as ProxyCreated} />,
+  [NotificationType.PROXY_CREATED]: (n) => <ProxyCreatedNotification notification={n as ProxyAction} />,
+  [NotificationType.PROXY_REMOVED]: (n) => <ProxyCreatedNotification notification={n as ProxyAction} />,
 };
 
 type Props = {

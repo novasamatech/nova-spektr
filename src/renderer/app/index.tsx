@@ -5,6 +5,7 @@ import log from 'electron-log';
 import { App } from './App';
 import { kernelModel } from '@shared/core';
 import { networkModel } from '@entities/network';
+import { notificationModel } from '@entities/notification';
 import { balanceSubscriptionModel } from '@features/balances';
 import { assetsModel } from '@pages/Assets/Assets/model/assets-model';
 import './i18n';
@@ -33,6 +34,7 @@ kernelModel.events.appStarted();
 networkModel.events.networkStarted();
 balanceSubscriptionModel.events.balancesSubscribed();
 assetsModel.events.assetsStarted();
+notificationModel.events.notificationsStarted();
 
 createRoot(container).render(
   <Router>

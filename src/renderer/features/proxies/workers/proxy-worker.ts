@@ -61,14 +61,12 @@ function initConnection(chain: Chain, connection: Connection) {
   });
 }
 
-async function disconnect(chainId: ChainId) {
+async function disconnect(chainId: ChainId): Promise<void> {
   const api = state.apis[chainId];
 
-  if (!api) return;
+  if (!api?.isConnected) return;
 
-  if (api.isConnected) {
-    await api.disconnect();
-  }
+  await api.disconnect();
 }
 
 type PartialProxiedAccount = Pick<

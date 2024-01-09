@@ -12,7 +12,7 @@ export type ProxyAccount = {
   id: ID;
   accountId: AccountId;
   proxiedAccountId: AccountId;
-  chainId: string;
+  chainId: ChainId;
   proxyType: ProxyType;
   delay: number;
 };

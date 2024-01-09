@@ -2,7 +2,17 @@ import { u8aToHex } from '@polkadot/util';
 import { decodeAddress } from '@polkadot/util-crypto';
 import { WellKnownChain } from '@substrate/connect';
 
-import { AccountId, Chain, ChainId, ProxyAccount, AccountType, Account, ProxiedAccount, NoID } from '@shared/core';
+import {
+  AccountId,
+  Chain,
+  ChainId,
+  ProxyAccount,
+  AccountType,
+  Account,
+  ProxiedAccount,
+  NoID,
+  ProxyAction, NotificationType,
+} from '@shared/core';
 
 export const proxyWorkerUtils = {
   toAccountId,
@@ -10,6 +20,7 @@ export const proxyWorkerUtils = {
   isSameProxy,
   getKnownChain,
   isProxiedAccount,
+  getNotification,
 };
 
 /**
@@ -56,4 +67,16 @@ function getKnownChain(chainId: ChainId): WellKnownChain | undefined {
 
 function isProxiedAccount(account: Pick<Account, 'type'>): account is ProxiedAccount {
   return account.type === AccountType.PROXIED;
+}
+
+function getNotification(proxy: ProxyAccount, type: NotificationType): NoID<ProxyAction> {
+  return {
+    chainId: proxy.chainId,
+    dateCreated: Date.now(),
+    proxiedAccountId: proxy.proxiedAccountId,
+    proxyAccountId: proxy.accountId,
+    proxyType: proxy.proxyType,
+    read: false,
+    type,
+  };
 }
