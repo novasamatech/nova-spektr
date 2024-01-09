@@ -190,11 +190,11 @@ export const InitOperation = ({
   };
 
   const getXcmTransferType = (type: XcmTransferType): TransactionType => {
-    if (type === 'xtokens') {
+    if (type === XcmTransferType.XTOKENS) {
       return TransactionType.XTOKENS_TRANSFER_MULTIASSET;
     }
 
-    if (type === 'xcmpallet-teleport') {
+    if (type === XcmTransferType.XCMPALLET_TELEPORT) {
       return api.tx.xcmPallet ? TransactionType.XCM_TELEPORT : TransactionType.POLKADOT_XCM_TELEPORT;
     }
 
