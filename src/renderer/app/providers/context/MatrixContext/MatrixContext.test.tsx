@@ -23,12 +23,6 @@ jest.mock('@entities/multisig', () => ({
   }),
 }));
 
-jest.mock('@entities/notification', () => ({
-  useNotification: jest.fn().mockReturnValue({
-    addNotification: jest.fn(),
-  }),
-}));
-
 jest.mock('@app/providers', () => ({
   useMultisigChainContext: jest.fn(() => ({
     addTask: () => undefined,

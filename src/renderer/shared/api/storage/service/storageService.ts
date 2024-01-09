@@ -114,4 +114,5 @@ export const storageService = {
   contacts: new StorageService(dexieStorage.contacts),
   connections: new StorageService(dexieStorage.connections),
   proxies: new StorageService(dexieStorage.proxies),
+  notifications: new StorageService(dexieStorage.notifications),
 };

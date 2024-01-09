@@ -163,9 +163,9 @@ type CreateProviderParams = {
   providerType: ProviderType;
 };
 const createProviderFx = createEffect(({ chainId, providerType, nodes }: CreateProviderParams): ProviderInterface => {
-  const bindedConnected = scopeBind(connected, { safe: true });
-  const bindedDisconnected = scopeBind(disconnected, { safe: true });
-  const bindedFailed = scopeBind(failed, { safe: true });
+  const boundConnected = scopeBind(connected, { safe: true });
+  const boundDisconnected = scopeBind(disconnected, { safe: true });
+  const boundFailed = scopeBind(failed, { safe: true });
 
   return networkService.createProvider(
     chainId,
@@ -174,17 +174,17 @@ const createProviderFx = createEffect(({ chainId, providerType, nodes }: CreateP
     () => {
       console.info('🟢 provider connected ==> ', chainId);
 
-      bindedConnected(chainId);
+      boundConnected(chainId);
     },
     () => {
       console.info('🔶 provider disconnected ==> ', chainId);
 
-      bindedDisconnected(chainId);
+      boundDisconnected(chainId);
     },
     () => {
       console.info('🔴 provider error ==> ', chainId);
 
-      bindedFailed(chainId);
+      boundFailed(chainId);
     },
   );
 });
@@ -215,8 +215,8 @@ sample({
 sample({
   clock: chainStarted,
   source: {
-    connections: $connections,
     chains: $chains,
+    connections: $connections,
   },
   filter: ({ connections }, chainId) => {
     return !connections[chainId] || isDisabled(connections[chainId]);

@@ -3,10 +3,27 @@ import { useUnit } from 'effector-react';
 
 import { getCreatedDateFromApi, toAddress, validateCallData } from '@shared/lib/utils';
 import { useMultisigEvent, useMultisigTx } from '@entities/multisig';
-import { MultisigNotificationType, useNotification } from '@entities/notification';
 import { useMultisigChainContext } from '@app/providers';
 import { contactModel } from '@entities/contact';
-import type { Signatory, MultisigAccount, AccountId, Address, CallHash, ChainId } from '@shared/core';
+import { walletModel, accountUtils } from '@entities/wallet';
+import { networkModel } from '@entities/network';
+import { notificationModel } from '@entities/notification';
+import {
+  Signatory,
+  MultisigAccount,
+  AccountId,
+  Address,
+  CallHash,
+  ChainId,
+  NotificationType,
+  WalletType,
+  SigningType,
+  CryptoType,
+  ChainType,
+  AccountType,
+  MultisigInvite,
+  NoID,
+} from '@shared/core';
 import {
   ApprovePayload,
   BaseMultisigPayload,
@@ -28,9 +45,6 @@ import {
   SigningStatus,
   useTransaction,
 } from '@entities/transaction';
-import { walletModel, accountUtils } from '@entities/wallet';
-import { WalletType, SigningType, CryptoType, ChainType, AccountType } from '@shared/core';
-import { networkModel } from '@entities/network';
 
 type MatrixContextProps = {
   matrix: ISecureMessenger;
@@ -48,7 +62,6 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
   const { addTask } = useMultisigChainContext();
   const { getMultisigTx, addMultisigTx, updateMultisigTx, updateCallData } = useMultisigTx({ addTask });
   const { decodeCallData } = useTransaction();
-  const { addNotification } = useNotification();
   const { addEventWithQueue, updateEvent, getEvents } = useMultisigEvent({ addTask });
 
   const apisRef = useRef(apis);
@@ -100,7 +113,8 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
         console.log(`No multisig account ${accountId} found. Joining room and adding wallet`);
 
         await joinRoom(roomId, content);
-        await addNotification({
+
+        notificationModel.events.notificationAdded({
           smpRoomId: roomId,
           multisigAccountId: accountId,
           multisigAccountName: accountName,
@@ -109,8 +123,8 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
           originatorAccountId: creatorAccountId,
           read: true,
           dateCreated: Date.now(),
-          type: MultisigNotificationType.ACCOUNT_INVITED,
-        });
+          type: NotificationType.MULTISIG_INVITE,
+        } as NoID<MultisigInvite>);
       } else {
         console.log(`Multisig account ${accountId} already exists. Trying to change room to ${roomId}`);
         await changeRoom(roomId, mstAccount, content, creatorAccountId);
