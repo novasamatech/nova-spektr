@@ -67,7 +67,11 @@ export type XcmTransfer = {
   };
 };
 
-export type XcmTransferType = 'xtokens' | 'xcmpallet' | 'xcmpallet-teleport';
+export const enum XcmTransferType {
+  XTOKENS = 'xtokens',
+  XCMPALLET = 'xcmpallet',
+  XCMPALLET_TELEPORT = 'xcmpallet-teleport',
+}
 export type PathType = 'absolute' | 'relative' | 'concrete';
 
 export const enum Action {

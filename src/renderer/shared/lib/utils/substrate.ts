@@ -4,9 +4,8 @@ import { isHex, hexToU8a, bnMin, BN_TWO, BN } from '@polkadot/util';
 import { blake2AsHex } from '@polkadot/util-crypto';
 
 import { Address, CallData, CallHash, XcmPallets } from '@shared/core';
-// TODO: Incorrect import
-import { DEFAULT_TIME, ONE_DAY, THRESHOLD } from '@entities/network';
 import { XcmTransferType } from '../../api/xcm';
+import { DEFAULT_TIME, ONE_DAY, THRESHOLD } from './constants';
 
 const V3_LABEL = 'V3';
 const UNUSED_LABEL = 'unused';
@@ -145,17 +144,17 @@ export const getPalletAndCallByXcmTransferType = (
   api: ApiPromise,
   transferType: XcmTransferType,
 ): { pallet: XcmPallets; call: string } => {
-  if (transferType === 'xtokens') {
-    return { pallet: 'xTokens', call: 'transferMultiasset' };
+  if (transferType === XcmTransferType.XTOKENS) {
+    return { pallet: XcmPallets.XTOKENS, call: 'transferMultiasset' };
   }
 
-  const pallet = api.tx.xcmPallet ? 'xcmPallet' : 'polkadotXcm';
+  const pallet = api.tx.xcmPallet ? XcmPallets.XCM_PALLET : XcmPallets.POLKADOT_XCM;
 
-  if (transferType === 'xcmpallet') {
+  if (transferType === XcmTransferType.XCMPALLET) {
     return { pallet, call: 'limitedReserveTransferAssets' };
   }
 
-  if (transferType === 'xcmpallet-teleport') {
+  if (transferType === XcmTransferType.XCMPALLET_TELEPORT) {
     return { pallet, call: 'limitedTeleportAssets' };
   }
 

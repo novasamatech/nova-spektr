@@ -12,6 +12,7 @@ import {
   getVersionedAccountLocation,
   estimateRequiredDestWeight,
   getVersionedDestinationLocation,
+  XcmTransferType,
 } from '@shared/api/xcm';
 import { xcmModel } from '@entities/xcm';
 import { getParachainId } from '@renderer/services/dataVerification/dataVerification';
@@ -145,7 +146,7 @@ sample({
     if (!xcmTransfer || !chain || !api) return null;
 
     return (
-      (xcmTransfer.type === 'xtokens' && accountId
+      (xcmTransfer.type === XcmTransferType.XTOKENS && accountId
         ? getVersionedDestinationLocation(api, xcmTransfer.type, chain, paraId || undefined, accountId)
         : getVersionedDestinationLocation(api, xcmTransfer.type, chain, paraId || undefined)) || null
     );
@@ -206,7 +207,7 @@ sample({
     if (!api || !xcmAsset || !config || !xcmTransfer) return null;
 
     const resultAmount = new BN(amount || 0).add(new BN(xcmFee || 0));
-    const isArray = xcmTransfer.type !== 'xtokens';
+    const isArray = xcmTransfer.type !== XcmTransferType.XTOKENS;
 
     return getAssetLocation(api, xcmTransfer.type, xcmAsset, config.assetsLocation, resultAmount, isArray) || null;
   },
