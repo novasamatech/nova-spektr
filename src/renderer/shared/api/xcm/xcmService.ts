@@ -3,7 +3,7 @@ import { ApiPromise } from '@polkadot/api';
 import get from 'lodash/get';
 
 import { XCM_URL, XCM_KEY } from './lib/constants';
-import { getTypeVersion, toLocalChainId, getAssetId, TEST_ACCOUNT_ID } from '@shared/lib/utils';
+import { getTypeVersion, toLocalChainId, getTypeName, getAssetId, TEST_ACCOUNT_ID } from '@shared/lib/utils';
 import { XcmPalletTransferArgs, XTokenPalletTransferArgs } from '@entities/transaction';
 import { chainsService } from '@entities/network';
 import { toRawString } from './lib/utils';
@@ -20,6 +20,7 @@ import {
   XcmTransfer,
   PathType,
   Action,
+  XcmTransferType,
 } from './lib/types';
 
 export const fetchXcmConfig = async (): Promise<XcmConfig> => {
@@ -199,6 +200,7 @@ export const createJunctionFromObject = (data: {}) => {
 
 export const getAssetLocation = (
   api: ApiPromise,
+  transferType: XcmTransferType,
   asset: AssetXCM,
   assets: Record<AssetName, AssetLocation>,
   amount: BN,
@@ -212,7 +214,8 @@ export const getAssetLocation = (
 
   const location = PathMap[asset.assetLocationPath.type]();
 
-  const assetVersionType = getTypeVersion(api, isArray ? 'XcmVersionedMultiAssets' : 'XcmVersionedMultiAsset');
+  const type = getTypeName(api, transferType, isArray ? 'assets' : 'asset');
+  const assetVersionType = getTypeVersion(api, type || '');
   const assetObject = {
     id: {
       Concrete: location,
@@ -260,12 +263,14 @@ const getConcreteAssetLocation = (assetLocation?: LocalMultiLocation): Object | 
 
 export const getVersionedDestinationLocation = (
   api: ApiPromise,
+  transferType: XcmTransferType,
   originChain: Pick<Chain, 'parentId'>,
   destinationParaId?: number,
   accountId?: AccountId,
 ): Object | undefined => {
   const location = getDestinationLocation(originChain, destinationParaId, accountId);
-  const version = getTypeVersion(api, 'XcmVersionedMultiLocation');
+  const type = getTypeName(api, transferType, 'dest');
+  const version = getTypeVersion(api, type || '');
 
   if (!version) return location;
 
@@ -294,9 +299,14 @@ export const getDestinationLocation = (
   return undefined;
 };
 
-export const getVersionedAccountLocation = (api: ApiPromise, accountId?: AccountId): Object | undefined => {
+export const getVersionedAccountLocation = (
+  api: ApiPromise,
+  transferType: XcmTransferType,
+  accountId?: AccountId,
+): Object | undefined => {
   const location = getAccountLocation(accountId);
-  const version = getTypeVersion(api, 'XcmVersionedMultiLocation');
+  const type = getTypeName(api, transferType, 'dest');
+  const version = getTypeVersion(api, type || '');
 
   if (!version) return location;
 

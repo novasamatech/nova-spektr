@@ -4,8 +4,9 @@ import { isHex, hexToU8a, bnMin, BN_TWO, BN } from '@polkadot/util';
 import { blake2AsHex } from '@polkadot/util-crypto';
 import { u32 } from '@polkadot/types';
 
-import { Address, CallData, CallHash } from '@shared/core';
-import { DEFAULT_TIME, ONE_DAY, THRESHOLD } from '@entities/network';
+import { Address, CallData, CallHash, XcmPallets } from '@shared/core';
+import { XcmTransferType } from '../../api/xcm';
+import { DEFAULT_TIME, ONE_DAY, THRESHOLD } from './constants';
 
 const V3_LABEL = 'V3';
 const UNUSED_LABEL = 'unused';
@@ -134,4 +135,36 @@ export const getTypeVersion = (api: ApiPromise, typeName: string): string => {
 export const getTypeVersions = (api: ApiPromise, typeName: string): string[] => {
   // @ts-ignore
   return api.createType(typeName).defKeys;
+};
+
+export const getTypeName = (api: ApiPromise, transferType: XcmTransferType, paramName: string): string | undefined => {
+  const { pallet, call } = getPalletAndCallByXcmTransferType(api, transferType);
+
+  const param = api.tx[pallet][call].meta.args.find((n) => n.name.toString() === paramName);
+
+  if (param) {
+    return param.type.toString();
+  }
+};
+
+export const getPalletAndCallByXcmTransferType = (
+  api: ApiPromise,
+  transferType: XcmTransferType,
+): { pallet: XcmPallets; call: string } => {
+  if (transferType === XcmTransferType.XTOKENS) {
+    return { pallet: XcmPallets.XTOKENS, call: 'transferMultiasset' };
+  }
+
+  const pallet = api.tx.xcmPallet ? XcmPallets.XCM_PALLET : XcmPallets.POLKADOT_XCM;
+
+  if (transferType === XcmTransferType.XCMPALLET) {
+    return { pallet, call: 'limitedReserveTransferAssets' };
+  }
+
+  if (transferType === XcmTransferType.XCMPALLET_TELEPORT) {
+    return { pallet, call: 'limitedTeleportAssets' };
+  }
+
+  // Should never be reached as all transferType cases are covered
+  throw new Error('Invalid transferType');
 };
