@@ -146,8 +146,8 @@ sample({
 
     return (
       (xcmTransfer.type === 'xtokens' && accountId
-        ? getVersionedDestinationLocation(api, chain, paraId || undefined, accountId)
-        : getVersionedDestinationLocation(api, chain, paraId || undefined)) || null
+        ? getVersionedDestinationLocation(api, xcmTransfer.type, chain, paraId || undefined, accountId)
+        : getVersionedDestinationLocation(api, xcmTransfer.type, chain, paraId || undefined)) || null
     );
   },
   target: $txDest,
@@ -159,11 +159,11 @@ forward({
 });
 
 sample({
-  source: { accountId: $accountId, props: $xcmProps },
-  fn: ({ accountId, props: { api } }) => {
-    if (!accountId || accountId === '0x00' || !api) return null;
+  source: { accountId: $accountId, props: $xcmProps, xcmTransfer: $xcmTransfer },
+  fn: ({ xcmTransfer, accountId, props: { api } }) => {
+    if (!accountId || accountId === '0x00' || !api || !xcmTransfer) return null;
 
-    return getVersionedAccountLocation(api, accountId) || null;
+    return getVersionedAccountLocation(api, xcmTransfer.type, accountId) || null;
   },
   target: $txBeneficiary,
 });
@@ -208,7 +208,7 @@ sample({
     const resultAmount = new BN(amount || 0).add(new BN(xcmFee || 0));
     const isArray = xcmTransfer.type !== 'xtokens';
 
-    return getAssetLocation(api, xcmAsset, config.assetsLocation, resultAmount, isArray) || null;
+    return getAssetLocation(api, xcmTransfer.type, xcmAsset, config.assetsLocation, resultAmount, isArray) || null;
   },
   target: $txAsset,
 });
