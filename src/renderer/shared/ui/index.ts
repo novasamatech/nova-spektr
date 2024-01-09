@@ -5,7 +5,6 @@ import InputHint from './InputHint/InputHint';
 import Button from './Buttons/Button/Button';
 import ButtonLink from './Buttons/ButtonLink/ButtonLink';
 import ButtonBack from './Buttons/ButtonBack/ButtonBack';
-import InfoPopover from './Popovers/InfoPopover/InfoPopover';
 import InfoLink from './InfoLink/InfoLink';
 import Select from './Dropdowns/Select/Select';
 import Combobox from './Dropdowns/Combobox/Combobox';
@@ -13,7 +12,6 @@ import RadioGroup from './RadioGroup/RadioGroup';
 import PopoverLink from './PopoverLink/PopoverLink';
 import Checkbox from './Checkbox/Checkbox';
 import MultiSelect from './Dropdowns/MultiSelect/MultiSelect';
-import MenuPopover from './Popovers/MenuPopover/MenuPopover';
 import SearchInput from './Inputs/SearchInput/SearchInput';
 import Accordion from './Accordion/Accordion';
 import Alert from './Alert/Alert';
@@ -35,12 +33,10 @@ export { AmountInput } from './Inputs/AmountInput/AmountInput';
 export { BaseModal } from './Modals/BaseModal/BaseModal';
 export { ConfirmModal } from './Modals/ConfirmModal/ConfirmModal';
 export { StatusModal } from './Modals/StatusModal/StatusModal';
-export { Popover } from './Popovers/Popover/Popover';
 export { ExplorerLink } from './ExplorerLink/ExplorerLink';
 export { ContextMenu } from './ContextMenu/ContextMenu';
 export { DropdownButton } from './Dropdowns/DropdownButton/DropdownButton';
 export { DropdownIconButton } from './Dropdowns/DropdownIconButton/DropdownIconButton';
-export { Tooltip } from './Popovers/Tooltip/Tooltip';
 export { LabelHelpBox } from './LabelHelpbox/LabelHelpBox';
 export { MainLayout } from './Layouts/MainLayout/MainLayout';
 export { Truncate } from './Truncate/Truncate';
@@ -59,6 +55,7 @@ export {
   HeaderTitleText,
   HelpText,
 } from './Typography';
+export { Popover, Tooltip, MenuPopover, InfoPopover, useParentScrollLock } from './Popovers';
 
 // FIXME: Animation component exported separately.
 // Adding them to this file causes to crash all tests which use anything from that file
@@ -73,8 +70,6 @@ export {
   Button,
   ButtonLink,
   ButtonBack,
-  InfoPopover,
-  MenuPopover,
   InfoLink,
   Select,
   Combobox,

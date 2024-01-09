@@ -3,7 +3,7 @@ export const popoverUtils = {
   blockScroll,
 };
 
-function findScrollContainer(element: HTMLElement | null) {
+function findScrollContainer(element: HTMLElement | null): HTMLElement | undefined {
   if (!element) {
     return undefined;
   }

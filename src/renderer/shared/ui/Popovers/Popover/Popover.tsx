@@ -1,17 +1,17 @@
 import { Popover as Popup, Transition } from '@headlessui/react';
-import { AriaRole, Fragment, PropsWithChildren, ReactNode, useEffect, useId, useRef, useState } from 'react';
+import { AriaRole, Fragment, PropsWithChildren, ReactNode, useId, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 
 import { cnTw } from '@shared/lib/utils';
 import { useDebounce } from '@shared/lib/hooks';
-import { popoverUtils } from '../common/utils';
+import { useParentScrollLock } from '../common/useParentScrollLock';
 
 type Props = {
   content: ReactNode;
   offsetPx?: number;
   panelClass?: string;
   contentClass?: string;
-  horizontalPos?: 'left' | 'center' | 'right';
+  pos?: 'left' | 'center' | 'right';
   role?: AriaRole;
 };
 
@@ -20,7 +20,7 @@ export const Popover = ({
   children,
   offsetPx = 10,
   panelClass,
-  horizontalPos = 'right',
+  pos = 'right',
   contentClass,
   role,
 }: PropsWithChildren<Props>) => {
@@ -32,26 +32,11 @@ export const Popover = ({
   // and gives user more time to move cursor to Popup.Panel
   const debouncedIsOpen = useDebounce(isOpen, 100);
   const parentRect = ref.current?.getBoundingClientRect();
-  const horizontalAlign = horizontalPos !== 'right' && {
-    transform: `translateX(${horizontalPos === 'center' ? '-50%' : '-100%'})`,
+  const horizontalAlign = pos !== 'right' && {
+    transform: `translateX(${pos === 'center' ? '-50%' : '-100%'})`,
   };
 
-  useEffect(() => {
-    const scrollableParent = popoverUtils.findScrollContainer(ref.current);
-
-    if (debouncedIsOpen) {
-      scrollableParent?.addEventListener('wheel', popoverUtils.blockScroll);
-      scrollableParent?.addEventListener('touchmove', popoverUtils.blockScroll);
-    } else {
-      scrollableParent?.removeEventListener('wheel', popoverUtils.blockScroll);
-      scrollableParent?.removeEventListener('touchmove', popoverUtils.blockScroll);
-    }
-
-    return () => {
-      scrollableParent?.removeEventListener('wheel', popoverUtils.blockScroll);
-      scrollableParent?.removeEventListener('touchmove', popoverUtils.blockScroll);
-    };
-  }, [debouncedIsOpen, ref.current]);
+  useParentScrollLock(debouncedIsOpen, ref.current);
 
   return (
     <Popup className="relative" role={role}>

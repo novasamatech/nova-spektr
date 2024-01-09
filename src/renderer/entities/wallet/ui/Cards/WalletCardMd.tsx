@@ -61,7 +61,7 @@ export const WalletCardMd = ({ wallet, description, prefix, hideIcon, className,
       </button>
 
       {/* TODO remove when details for proxied wallets are done */}
-      {!walletUtils.isProxiedWallet(wallet) && (
+      {!walletUtils.isProxied(wallet) && (
         <IconButton
           className={cnTw(
             'absolute right-2 opacity-0 transition-opacity',

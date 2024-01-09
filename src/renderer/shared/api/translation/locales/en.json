@@ -1065,12 +1065,12 @@
     "multisigLabel": "Multisig",
     "novaWalletLabel": "Nova Wallet",
     "paritySignerLabel": "Polkadot Vault",
+    "proxiedLabel": "Delegated to you (Proxied)",
     "searchPlaceholder": "Search",
     "shards": "Shards",
     "title": "Wallets",
     "walletConnectLabel": "WalletConnect",
-    "watchOnlyLabel": "Watch-only",
-    "proxiedLabel": "Delegated to you (Proxied)"
+    "watchOnlyLabel": "Watch-only"
   },
   "welcome": {
     "addLedgerButton": "Coming soon",

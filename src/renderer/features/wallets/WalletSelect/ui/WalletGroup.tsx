@@ -1,7 +1,7 @@
 import { Accordion, CaptionText, Icon } from '@shared/ui';
 import { useI18n } from '@app/providers';
 import { Wallet, WalletFamily, WalletType } from '@shared/core';
-import { WalletCardMd, WalletIcon, walletModel } from '@entities/wallet';
+import { WalletCardMd, WalletIcon, walletModel, walletUtils } from '@entities/wallet';
 import { WalletFiatBalance } from './WalletFiatBalance';
 import { walletSelectModel } from '../model/wallet-select-model';
 import { ProxiedTooltip } from './ProxiedTooltip';
@@ -28,9 +28,11 @@ export const WalletGroup = ({ type, wallets }: Props) => {
       <Accordion.Button buttonClass="px-2 py-1.5 my-2 rounded hover:bg-action-background-hover focus:bg-action-background-hover">
         <div className="flex gap-x-2 items-center">
           <WalletIcon type={type} />
-          <CaptionText className="text-text-secondary  font-semibold uppercase">{t(GroupLabels[type])}</CaptionText>
+          <CaptionText className="text-text-secondary  font-semibold uppercase">
+            {t(GroupLabels[type as WalletFamily])}
+          </CaptionText>
           <CaptionText className="text-text-tertiary font-semibold">{wallets.length}</CaptionText>
-          {type === WalletType.PROXIED && <ProxiedTooltip />}
+          {walletUtils.isProxied(wallets[0]) && <ProxiedTooltip />}
         </div>
       </Accordion.Button>
       <Accordion.Content>

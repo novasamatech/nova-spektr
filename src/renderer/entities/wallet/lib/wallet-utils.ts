@@ -21,7 +21,7 @@ export const walletUtils = {
   isWatchOnly,
   isNovaWallet,
   isWalletConnect,
-  isProxiedWallet,
+  isProxied,
   isWalletConnectGroup,
   isPolkadotVaultGroup,
   isValidSignatory,
@@ -64,7 +64,7 @@ function isWalletConnectGroup(wallet?: Pick<Wallet, 'type'>): wallet is WalletCo
   return isNovaWallet(wallet) || isWalletConnect(wallet);
 }
 
-function isProxiedWallet(wallet?: Pick<Wallet, 'type'>): wallet is ProxiedWallet {
+function isProxied(wallet?: Pick<Wallet, 'type'>): wallet is ProxiedWallet {
   return wallet?.type === WalletType.PROXIED;
 }
 
