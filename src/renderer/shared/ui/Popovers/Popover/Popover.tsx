@@ -33,6 +33,7 @@ export const Popover = ({
   const debouncedIsOpen = useDebounce(isOpen, 100);
   const parentRect = ref.current?.getBoundingClientRect();
   const horizontalAlign = pos !== 'right' && {
+    // @ts-ignore
     transform: `translateX(${pos === 'center' ? '-50%' : '-100%'})`,
   };
 
@@ -68,7 +69,9 @@ export const Popover = ({
             id={id}
             style={
               parentRect && {
+                // @ts-ignore
                 top: `${parentRect.top + parentRect.height + offsetPx}px`,
+                // @ts-ignore
                 left: `${parentRect.left + parentRect.width / 2}px`,
                 ...horizontalAlign,
               }
