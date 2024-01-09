@@ -4,7 +4,7 @@ import { ProviderInterface } from '@polkadot/rpc-provider/types';
 import { UnsubscribePromise } from '@polkadot/api/types';
 import { cloneDeep, keyBy } from 'lodash';
 
-import { Metadata, ProviderType, chainsService, isDisabled, networkService } from '../lib';
+import { Metadata, ProviderType, chainsService, isEnabled, networkService } from '../lib';
 import { Chain, ChainId, Connection, ConnectionStatus, ConnectionType, RpcNode } from '@shared/core';
 import { useMetadata } from '../lib/metadataService';
 import { storageService } from '@shared/api/storage';
@@ -66,7 +66,11 @@ const createConnectionFx = createEffect((connection: Omit<Connection, 'id'>): Pr
 });
 
 const updateConnectionFx = createEffect(async ({ id, ...rest }: Connection): Promise<Connection> => {
-  await storageService.connections.update(id, rest);
+  if (id) {
+    await storageService.connections.update(id, rest);
+  } else {
+    await storageService.connections.create(rest);
+  }
 
   return { id, ...rest };
 });
@@ -219,7 +223,7 @@ sample({
     connections: $connections,
   },
   filter: ({ connections }, chainId) => {
-    return !connections[chainId] || isDisabled(connections[chainId]);
+    return !connections[chainId] || isEnabled(connections[chainId]);
   },
   fn: ({ connections, chains }, chainId) => {
     const connection = connections[chainId];
@@ -485,7 +489,7 @@ sample({
     providers: $providers,
     apis: $apis,
   },
-  filter: (_, connection) => isDisabled(connection),
+  filter: (_, connection) => isEnabled(connection),
   fn: ({ providers, apis }, connection) => ({
     provider: providers[connection.chainId],
     api: apis[connection.chainId],

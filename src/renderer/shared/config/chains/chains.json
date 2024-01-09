@@ -1034,7 +1034,7 @@
         "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Kusama_(KSM).svg",
         "typeExtras": {
           "currencyIdScale": "0x0204",
-          "currencyIdType": "NodePrimitivesCurrencyCurrencyId",
+          "currencyIdType": "BifrostPrimitivesCurrencyCurrencyId",
           "existentialDeposit": "100000000",
           "transfersEnabled": true
         },
@@ -1049,7 +1049,7 @@
         "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/RMRK.svg",
         "typeExtras": {
           "currencyIdScale": "0x0209",
-          "currencyIdType": "NodePrimitivesCurrencyCurrencyId",
+          "currencyIdType": "BifrostPrimitivesCurrencyCurrencyId",
           "existentialDeposit": "10000",
           "transfersEnabled": true
         },
@@ -1064,7 +1064,7 @@
         "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Zenlink_(ZLK).svg",
         "typeExtras": {
           "currencyIdScale": "0x0207",
-          "currencyIdType": "NodePrimitivesCurrencyCurrencyId",
+          "currencyIdType": "BifrostPrimitivesCurrencyCurrencyId",
           "existentialDeposit": "1000000000000",
           "transfersEnabled": true
         },
@@ -1079,7 +1079,7 @@
         "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Karura_(KAR).svg",
         "typeExtras": {
           "currencyIdScale": "0x0206",
-          "currencyIdType": "NodePrimitivesCurrencyCurrencyId",
+          "currencyIdType": "BifrostPrimitivesCurrencyCurrencyId",
           "existentialDeposit": "100000000",
           "transfersEnabled": true
         },
@@ -1094,7 +1094,7 @@
         "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/aSEED.svg",
         "typeExtras": {
           "currencyIdScale": "0x0302",
-          "currencyIdType": "NodePrimitivesCurrencyCurrencyId",
+          "currencyIdType": "BifrostPrimitivesCurrencyCurrencyId",
           "existentialDeposit": "100000000",
           "transfersEnabled": true
         },
@@ -1108,7 +1108,7 @@
         "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/vsKSM.svg",
         "typeExtras": {
           "currencyIdScale": "0x0404",
-          "currencyIdType": "NodePrimitivesCurrencyCurrencyId",
+          "currencyIdType": "BifrostPrimitivesCurrencyCurrencyId",
           "existentialDeposit": "100000000",
           "transfersEnabled": true
         },
@@ -1123,7 +1123,7 @@
         "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/USDT.svg",
         "typeExtras": {
           "currencyIdScale": "0x0800",
-          "currencyIdType": "NodePrimitivesCurrencyCurrencyId",
+          "currencyIdType": "BifrostPrimitivesCurrencyCurrencyId",
           "existentialDeposit": "1000",
           "transfersEnabled": true
         },
@@ -1138,7 +1138,7 @@
         "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Moonriver_(MOVR).svg",
         "typeExtras": {
           "currencyIdScale": "0x020a",
-          "currencyIdType": "NodePrimitivesCurrencyCurrencyId",
+          "currencyIdType": "BifrostPrimitivesCurrencyCurrencyId",
           "existentialDeposit": "1000000000000",
           "transfersEnabled": true
         },
@@ -1153,7 +1153,7 @@
         "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Phala_(PHA).svg",
         "typeExtras": {
           "currencyIdScale": "0x0208",
-          "currencyIdType": "NodePrimitivesCurrencyCurrencyId",
+          "currencyIdType": "BifrostPrimitivesCurrencyCurrencyId",
           "existentialDeposit": "40000000000",
           "transfersEnabled": true
         },
@@ -1167,7 +1167,7 @@
         "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/vKSM.svg",
         "typeExtras": {
           "currencyIdScale": "0x0104",
-          "currencyIdType": "NodePrimitivesCurrencyCurrencyId",
+          "currencyIdType": "BifrostPrimitivesCurrencyCurrencyId",
           "existentialDeposit": "100000000",
           "transfersEnabled": true
         },
@@ -1182,7 +1182,7 @@
         "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/kBTC.svg",
         "typeExtras": {
           "currencyIdScale": "0x0802",
-          "currencyIdType": "NodePrimitivesCurrencyCurrencyId",
+          "currencyIdType": "BifrostPrimitivesCurrencyCurrencyId",
           "existentialDeposit": "100",
           "transfersEnabled": true
         },
@@ -1196,7 +1196,7 @@
         "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/vBNC.svg",
         "typeExtras": {
           "currencyIdScale": "0x0101",
-          "currencyIdType": "NodePrimitivesCurrencyCurrencyId",
+          "currencyIdType": "BifrostPrimitivesCurrencyCurrencyId",
           "existentialDeposit": "10000000000",
           "transfersEnabled": true
         },
@@ -1210,7 +1210,7 @@
         "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/vMOVR.svg",
         "typeExtras": {
           "currencyIdScale": "0x010a",
-          "currencyIdType": "NodePrimitivesCurrencyCurrencyId",
+          "currencyIdType": "BifrostPrimitivesCurrencyCurrencyId",
           "existentialDeposit": "1000000000000",
           "transfersEnabled": true
         },
