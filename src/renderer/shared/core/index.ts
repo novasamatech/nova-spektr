@@ -52,3 +52,4 @@ export { RewardsDestination } from './types/stake';
 export type { Stake, Unlocking } from './types/stake';
 
 export type { ProxyAccount, PartialProxyAccount, ProxyType } from './types/proxy';
+export { XcmPallets } from './types/substrate';
