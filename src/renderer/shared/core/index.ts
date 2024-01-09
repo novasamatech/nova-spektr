@@ -49,3 +49,4 @@ export type { Validator } from './types/validator';
 
 export { RewardsDestination } from './types/stake';
 export type { Stake, Unlocking } from './types/stake';
+export { XcmPallets } from './types/substrate';
