@@ -2,6 +2,8 @@ name: Run system tests
 
 on:
   pull_request:
+    branches:
+      - 'main'
 
 env:
   CI: true
