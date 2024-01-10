@@ -8,7 +8,7 @@ import { WalletModalElements } from '../_elements/WalletModalElements';
 import { WalletModalWindow } from '../modals/WalletModalWindow';
 
 export class WatchOnlyAssetsPage extends BasePage {
-  protected pageElements: AssetsPageElements;
+  public pageElements: AssetsPageElements;
 
   constructor(page: Page, pageElements: AssetsPageElements) {
     super(page);
@@ -23,5 +23,13 @@ export class WatchOnlyAssetsPage extends BasePage {
     await this.clickOnButton(this.pageElements.accountButton);
 
     return new WalletModalWindow(this.page, new WalletModalElements(), this);
+  }
+
+  public async openBrokenWalletManagement(): Promise<WalletModalWindow> {
+    // This is workaround to avoid problem - https://app.clickup.com/t/8693ggzv4
+    await this.openWalletManagement();
+    await this.page.waitForTimeout(2000);
+
+    return this.openWalletManagement();
   }
 }

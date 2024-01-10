@@ -14,7 +14,7 @@ export class BaseSettingsPage extends BasePage {
   }
 
   public async clickOnMatrixElementMenu(): Promise<MatrixModalWindow> {
-    await this.page.goto(this.pageElements.matrixUrl)
+    await this.page.goto(this.pageElements.matrixUrl);
 
     return new MatrixModalWindow(this.page, new MatrixModalElements(), this);
   }

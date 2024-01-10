@@ -21,11 +21,13 @@ test.describe('Polkadot Vault onboarding', () => {
   test('Show access denied if no permissions', async () => {
     context = await browser.newContext({ ignoreHTTPSErrors: true, permissions: [] });
     page = await context.newPage();
-    const pageElements = new LoginPageElements();
-    loginPage = new BaseLoginPage(page, pageElements);
+    loginPage = new BaseLoginPage(page, new LoginPageElements());
 
-    const polkadotVaultOnboardingPage = await (await loginPage.gotoOnboarding()).clickPolkadotVaultButton();
-    await page.waitForSelector(polkadotVaultOnboardingPage.pageElements.accessDeniedText);
-    expect(await page.isVisible(polkadotVaultOnboardingPage.pageElements.accessDeniedText)).toBeTruthy();
+    const polkadotVaultOnboardingPage = await loginPage
+      .gotoOnboarding()
+      .then((onboarding) => onboarding.clickPolkadotVaultButton());
+    const { accessDeniedText } = polkadotVaultOnboardingPage.pageElements;
+    await page.waitForSelector(accessDeniedText);
+    expect(await page.isVisible(accessDeniedText));
   });
 });

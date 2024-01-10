@@ -34,4 +34,10 @@ export class MatrixModalWindow extends BaseModal {
 
     return this;
   }
+
+  public async matrixLogOut(): Promise<MatrixModalWindow> {
+    await this.clickOnButton(this.pageElements.logOut);
+
+    return this;
+  }
 }
