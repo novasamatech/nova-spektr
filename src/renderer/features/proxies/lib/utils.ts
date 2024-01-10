@@ -2,7 +2,7 @@ import { u8aToHex } from '@polkadot/util';
 import { decodeAddress } from '@polkadot/util-crypto';
 import { WellKnownChain } from '@substrate/connect';
 
-import type { AccountId, Chain, ChainId, ProxyAccount, Account, ProxiedAccount, ProxyAction, NoID } from '@shared/core';
+import { AccountId, Chain, ChainId, ProxyAccount, Account, ProxiedAccount, ProxyAction, NoID } from '@shared/core';
 import { AccountType, NotificationType, Wallet } from '@shared/core';
 import { dictionary } from '@shared/lib/utils';
 

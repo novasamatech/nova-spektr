@@ -11,13 +11,14 @@ import { assetsModel } from '@pages/Assets/Assets/model/assets-model';
 import './i18n';
 import './index.css';
 import './styles/theme/default.css';
+import { proxiesModel } from '@features/proxies';
 
 log.variables.version = process.env.VERSION;
 log.variables.env = process.env.NODE_ENV;
 log.transports.console.format = '{y}/{m}/{d} {h}:{i}:{s}.{ms} [{env}#{version}]-{processType} [{level}] > {text}';
 log.transports.console.useStyles = true;
 
-Object.assign(console, log.functions);
+// Object.assign(console, log.functions);
 log.errorHandler.startCatching({
   showDialog: false,
   onError({ createIssue, error, processType, versions }) {
@@ -35,6 +36,9 @@ networkModel.events.networkStarted();
 balanceSubscriptionModel.events.balancesSubscribed();
 assetsModel.events.assetsStarted();
 notificationModel.events.notificationsStarted();
+setTimeout(() => {
+  proxiesModel.events.proxiesStarted();
+}, 1000);
 
 createRoot(container).render(
   <Router>

@@ -1,4 +1,3 @@
-import { useEffect } from 'react';
 import { useUnit } from 'effector-react';
 
 import { walletSelectModel } from '@features/wallets';
@@ -9,9 +8,6 @@ import { MultishardWalletDetails } from './MultishardWalletDetails';
 import { VaultWalletDetails } from './VaultWalletDetails';
 import { walletProviderModel } from '../model/wallet-provider-model';
 import { walletUtils } from '@entities/wallet';
-import { proxyModel } from '@entities/proxy';
-// TODO: Remove when proxies will be used in UI
-import { proxiesModel } from '@features/proxies';
 
 export const WalletDetailsProvider = () => {
   const wallet = useUnit(walletSelectModel.$walletForDetails);
@@ -22,13 +18,6 @@ export const WalletDetailsProvider = () => {
   const contacts = useUnit(walletProviderModel.$signatoryContacts);
   const vaultAccounts = useUnit(walletProviderModel.$vaultAccounts);
   const signatoryWallets = useUnit(walletProviderModel.$signatoryWallets);
-  // TODO: Remove when proxies will be used in UI
-  const proxies = useUnit(proxyModel.$proxies);
-
-  useEffect(() => {
-    // TODO: Remove when proxies will be used in UI
-    console.log('proxies', proxies, proxiesModel);
-  }, [proxies]);
 
   if (!wallet) return null;
 

@@ -17,6 +17,7 @@ const endpoint = createEndpoint(worker, {
   callable: ['initConnection', 'getProxies', 'disconnect'],
 });
 
+const proxiesStarted = createEvent();
 const connected = createEvent<ChainId>();
 
 type StartChainsProps = {
@@ -128,4 +129,8 @@ sample({
   }),
 });
 
-export const proxiesModel = {};
+export const proxiesModel = {
+  events: {
+    proxiesStarted,
+  },
+};

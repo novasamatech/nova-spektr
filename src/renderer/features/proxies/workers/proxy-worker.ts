@@ -2,16 +2,30 @@ import { createEndpoint } from '@remote-ui/rpc';
 import { ScProvider, WsProvider } from '@polkadot/rpc-provider';
 import { ProviderInterface } from '@polkadot/rpc-provider/types';
 import { ApiPromise } from '@polkadot/api';
-import { isEqual } from 'lodash';
+import isEqual from 'lodash/isEqual';
 import * as Sc from '@substrate/connect';
 
-import type { Chain, ChainId, Connection, ProxyAccount, ProxiedAccount, Account, AccountId, NoID } from '@shared/core';
-import { ConnectionType, ProxyVariant } from '@shared/core';
-import { InitConnectionsResult } from '../lib/constants';
+import {
+  Chain,
+  ChainId,
+  Connection,
+  ConnectionType,
+  ProxyAccount,
+  ProxiedAccount,
+  Account,
+  AccountId,
+  ProxyVariant,
+  NoID,
+} from '@shared/core';
 import { proxyWorkerUtils } from '../lib/utils';
 
 const state = {
   apis: {} as Record<ChainId, ApiPromise>,
+};
+
+const InitConnectionsResult = {
+  SUCCESS: 'success',
+  FAILED: 'failed',
 };
 
 function initConnection(chain: Chain, connection: Connection) {
@@ -51,12 +65,14 @@ function initConnection(chain: Chain, connection: Connection) {
   });
 }
 
-async function disconnect(chainId: ChainId): Promise<void> {
+async function disconnect(chainId: ChainId) {
   const api = state.apis[chainId];
 
-  if (!api?.isConnected) return;
+  if (!api) return;
 
-  await api.disconnect();
+  if (api.isConnected) {
+    await api.disconnect();
+  }
 }
 
 type PartialProxiedAccount = Pick<
@@ -174,15 +190,15 @@ async function getProxies(
   };
 }
 
-function getConnectionStatus(chainId: ChainId): boolean {
-  const api = state.apis[chainId];
-
-  return Boolean(api?.isConnected);
-}
+// function getConnectionStatus(chainId: ChainId): boolean {
+//   const api = state.apis[chainId];
+//
+//   return Boolean(api?.isConnected);
+// }
 
 // @ts-ignore
 const endpoint = createEndpoint(self);
 
-endpoint.expose({ initConnection, getProxies, getConnectionStatus, disconnect });
+endpoint.expose({ initConnection, getProxies, disconnect });
 
 console.log('proxy worker started successfully');
