@@ -1,11 +1,10 @@
 import { createEvent, sample, createEffect, createStore, createApi, attach, split } from 'effector';
 
-import { AccountId, MultisigAccount, Wallet } from '@shared/core';
+import { MultisigAccount, Wallet } from '@shared/core';
 import { accountUtils, walletModel, walletUtils } from '@entities/wallet';
-import { useBalanceService } from '@entities/balance';
+import { balanceModel } from '@entities/balance';
 import { useForgetMultisig } from '@entities/multisig';
 
-const balanceService = useBalanceService();
 const { deleteMultisigTxs } = useForgetMultisig();
 
 export type Callbacks = {
@@ -20,14 +19,6 @@ const callbacksApi = createApi($callbacks, {
 const forgetWallet = createEvent<Wallet>();
 const forgetSimpleWallet = createEvent<Wallet>();
 const forgetMultisigWallet = createEvent<Wallet>();
-
-const deleteWalletBalancesFx = createEffect(async (accountsIds: AccountId[]): Promise<void> => {
-  try {
-    await balanceService.deleteBalances(accountsIds);
-  } catch (e) {
-    console.error(`Error while deleting wallet balances`, e);
-  }
-});
 
 const deleteMultisigOperationsFx = createEffect(async (account: MultisigAccount): Promise<void> => {
   try {
@@ -52,7 +43,7 @@ sample({
   clock: [forgetSimpleWallet, forgetMultisigWallet],
   source: walletModel.$accounts,
   fn: (accounts, wallet) => accountUtils.getWalletAccounts(wallet.id, accounts).map((a) => a.accountId),
-  target: deleteWalletBalancesFx,
+  target: balanceModel.events.accountsBalancesRemoved,
 });
 
 sample({
