@@ -1,5 +1,7 @@
 import { BN, BN_THOUSAND, BN_TWO } from '@polkadot/util';
 
+import { Asset } from '../../core';
+
 export const ZERO_BALANCE = '0';
 
 export const DEFAULT_TRANSITION = 300;
@@ -38,3 +40,13 @@ export const RootExplorers = [
 export const THRESHOLD = BN_THOUSAND.div(BN_TWO);
 export const DEFAULT_TIME = new BN(6_000);
 export const ONE_DAY = new BN(24 * 60 * 60 * 1000);
+
+export const TEST_ASSET = {
+  assetId: 0,
+  symbol: 'DOT',
+  precision: 10,
+  priceId: 'polkadot',
+  staking: 'relaychain',
+  icon: 'https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Polkadot_(DOT).svg',
+  name: 'Polkadot',
+} as Asset;
