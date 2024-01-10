@@ -5,6 +5,7 @@ import { once, spread } from 'patronum';
 
 import {
   Account,
+  AccountId,
   AccountType,
   Chain,
   ChainId,
@@ -22,6 +23,7 @@ import { isDisabled, networkModel } from '@entities/network';
 import { proxyWorkerUtils } from '../lib/utils';
 import { accountUtils, walletModel } from '@entities/wallet';
 import { proxyModel, proxyUtils } from '@entities/proxy';
+import { balanceModel } from '@entities/balance';
 
 // @ts-ignore
 const worker = new Worker(new URL('@features/proxies/workers/proxy-worker', import.meta.url));
@@ -31,7 +33,7 @@ const endpoint = createEndpoint(worker, {
 });
 
 const connected = createEvent<ChainId>();
-const proxiedesRemoved = createEvent<PartialProxiedAccount[]>();
+const proxiedAccountsRemoved = createEvent<ProxiedAccount[]>();
 
 type StartChainsProps = {
   chains: Chain[];
@@ -57,24 +59,27 @@ type GetProxiesParams = {
 type GetProxiesResult = {
   proxiesToAdd: ProxyAccount[];
   proxiesToRemove: ProxyAccount[];
+  proxiedAccountsToAdd: PartialProxiedAccount[];
+  proxiedAccountsToRemove: ProxiedAccount[];
+  deposits: Record<AccountId, Record<ChainId, string>>;
 };
 const getProxiesFx = createEffect(({ chainId, accounts, proxies }: GetProxiesParams): Promise<GetProxiesResult> => {
-  const proxiedes = accounts.filter((a) => accountUtils.isProxiedAccount(a));
+  const proxiedAccounts = accounts.filter((a) => accountUtils.isProxiedAccount(a));
   const nonProxiedAccounts = keyBy(
     accounts.filter((a) => !accountUtils.isProxiedAccount(a)),
     'accountId',
   );
 
-  return endpoint.call.getProxies(chainId, nonProxiedAccounts, proxiedes, proxies) as Promise<GetProxiesResult>;
+  return endpoint.call.getProxies(chainId, nonProxiedAccounts, proxiedAccounts, proxies) as Promise<GetProxiesResult>;
 });
 
 const disconnectFx = createEffect((chainId: ChainId): Promise<unknown> => {
   return endpoint.call.disconnect(chainId);
 });
 
-const createProxiedesFx = createEffect(
-  (proxiedes: PartialProxiedAccount[]): { wallet: Wallet; accounts: ProxiedAccount[] }[] => {
-    return proxiedes.map((proxied) => {
+const createProxiedWalletsFx = createEffect(
+  (proxiedAccounts: PartialProxiedAccount[]): { wallet: Wallet; accounts: ProxiedAccount[] }[] => {
+    return proxiedAccounts.map((proxied) => {
       const walletName = proxyUtils.getProxiedName(proxied);
       const wallet = {
         name: walletName,
@@ -133,14 +138,26 @@ spread({
   targets: {
     proxiesToAdd: proxyModel.events.proxiesAdded,
     proxiesToRemove: proxyModel.events.proxiesRemoved,
-    proxiedesToAdd: createProxiedesFx,
-    proxiedesToRemove: proxiedesRemoved,
+    proxiedAccountsToAdd: createProxiedWalletsFx,
+    proxiedAccountsToRemove: proxiedAccountsRemoved,
   },
 });
 
 sample({
-  clock: createProxiedesFx.doneData,
-  target: walletModel.events.proxiedesCreated,
+  clock: createProxiedWalletsFx.doneData,
+  target: walletModel.events.proxiedWalletsCreated,
+});
+
+sample({
+  clock: proxiedAccountsRemoved,
+  fn: (proxiedAccounts) => proxiedAccounts.map((p) => p.walletId),
+  target: walletModel.events.walletsRemoved,
+});
+
+sample({
+  clock: proxiedAccountsRemoved,
+  fn: (proxiedAccounts) => proxiedAccounts.map((p) => p.accountId),
+  target: balanceModel.events.accountsBalancesRemoved,
 });
 
 sample({

@@ -76,7 +76,7 @@ async function disconnect(chainId: ChainId) {
 async function getProxies(
   chainId: ChainId,
   accounts: Record<AccountId, Account>,
-  proxiedes: ProxiedAccount[],
+  proxiedAccounts: ProxiedAccount[],
   proxies: ProxyAccount[],
 ) {
   const api = state.apis[chainId];
@@ -85,12 +85,12 @@ async function getProxies(
   const proxiesToAdd = [] as NoID<ProxyAccount>[];
 
   const existingProxiedAccounts = [] as PartialProxiedAccount[];
-  const proxiedesToAdd = [] as PartialProxiedAccount[];
+  const proxiedAccountsToAdd = [] as PartialProxiedAccount[];
 
   const deposits = {} as Record<AccountId, Record<ChainId, string>>;
 
   if (!api || !api.query.proxy) {
-    return { proxiesToAdd, proxiesToRemove: [], proxiedesToAdd, proxiedesToRemove: [], deposits };
+    return { proxiesToAdd, proxiesToRemove: [], proxiedAccountsToAdd, proxiedAccountsToRemove: [], deposits };
   }
 
   try {
@@ -132,12 +132,12 @@ async function getProxies(
               proxyVariant: ProxyVariant.NONE,
             } as PartialProxiedAccount;
 
-            const doesProxiedAccountExist = proxiedes.some((oldProxy) =>
+            const doesProxiedAccountExist = proxiedAccounts.some((oldProxy) =>
               proxyWorkerUtils.isSameProxied(oldProxy, proxiedAccount),
             );
 
             if (!doesProxiedAccountExist) {
-              proxiedesToAdd.push(proxiedAccount);
+              proxiedAccountsToAdd.push(proxiedAccount);
             }
 
             existingProxiedAccounts.push(proxiedAccount);
@@ -161,7 +161,7 @@ async function getProxies(
   }
 
   const proxiesToRemove = proxies.filter((p) => existingProxies.some((ep) => isEqual(p, ep)));
-  const proxiedesToRemove = Object.values(accounts)
+  const proxiedAccountsToRemove = Object.values(proxiedAccounts)
     .filter(proxyWorkerUtils.isProxiedAccount)
     .filter(
       (p) =>
@@ -179,8 +179,8 @@ async function getProxies(
   return {
     proxiesToAdd,
     proxiesToRemove,
-    proxiedesToAdd,
-    proxiedesToRemove,
+    proxiedAccountsToAdd,
+    proxiedAccountsToRemove,
     deposits,
   };
 }

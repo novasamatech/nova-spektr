@@ -50,11 +50,12 @@ const multishardCreated = createEvent<CreateParams<BaseAccount | ChainAccount>>(
 const singleshardCreated = createEvent<CreateParams<BaseAccount>>();
 const multisigCreated = createEvent<CreateParams<MultisigAccount>>();
 const walletConnectCreated = createEvent<CreateParams<WalletConnectAccount>>();
-const proxiedesCreated = createEvent<CreateParams<ProxiedAccount>[]>();
+const proxiedWalletsCreated = createEvent<CreateParams<ProxiedAccount>[]>();
 
 const walletSelected = createEvent<ID>();
 const multisigAccountUpdated = createEvent<MultisigUpdateParams>();
 const walletRemoved = createEvent<ID>();
+const walletsRemoved = createEvent<ID[]>();
 
 const fetchAllAccountsFx = createEffect((): Promise<Account[]> => {
   return storageService.accounts.readAll();
@@ -119,9 +120,9 @@ const multishardCreatedFx = createEffect(
 );
 
 // TODO: Move wallet creation to it's own feature
-const proxiedesCreatedFx = createEffect(
-  async (proxiedes: CreateParams<ProxiedAccount>[]): Promise<(CreateResult | undefined)[]> => {
-    return Promise.all(proxiedes.map((p) => walletCreatedFx(p)));
+const proxiedWalletsCreatedFx = createEffect(
+  async (proxiedWallets: CreateParams<ProxiedAccount>[]): Promise<(CreateResult | undefined)[]> => {
+    return Promise.all(proxiedWallets.map((p) => walletCreatedFx(p)));
   },
 );
 
@@ -159,6 +160,10 @@ const removeWalletFx = createEffect(async ({ walletId, accountIds }: RemoveParam
   await Promise.all([storageService.accounts.deleteAll(accountIds), storageService.wallets.delete(walletId)]);
 
   return walletId;
+});
+
+const removeWalletsFx = createEffect((wallets: RemoveParams[]): Promise<ID[]> => {
+  return Promise.all(wallets.map((w) => removeWalletFx(w)));
 });
 
 sample({
@@ -217,8 +222,8 @@ sample({
 });
 
 sample({
-  clock: proxiedesCreated,
-  target: proxiedesCreatedFx,
+  clock: proxiedWalletsCreated,
+  target: proxiedWalletsCreatedFx,
 });
 
 sample({
@@ -269,6 +274,17 @@ sample({
 });
 
 sample({
+  clock: walletsRemoved,
+  source: $accounts,
+  fn: (accounts, walletIds) =>
+    walletIds.map((walletId) => ({
+      accountIds: accountUtils.getWalletAccounts(walletId, accounts).map((a) => a.id),
+      walletId,
+    })),
+  target: removeWalletsFx,
+});
+
+sample({
   clock: removeWalletFx.doneData,
   source: { wallets: $wallets, accounts: $accounts },
   fn: ({ accounts, wallets }, walletId) => ({
@@ -305,10 +321,11 @@ export const walletModel = {
     singleshardCreated,
     multisigCreated,
     walletConnectCreated,
-    proxiedesCreated,
+    proxiedWalletsCreated,
     walletSelected,
     multisigAccountUpdated,
     walletRemoved,
     walletRemovedSuccess: removeWalletFx.done,
+    walletsRemoved,
   },
 };
