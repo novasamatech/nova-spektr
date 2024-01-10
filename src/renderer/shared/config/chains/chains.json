@@ -6,16 +6,17 @@
     "chainId": "0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3",
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/chains/Polkadot.svg",
     "options": [
-      "multisig"
+      "multisig",
+      "regular_proxy"
     ],
     "nodes": [
       {
-        "url": "wss://dot-rpc.stakeworld.io",
-        "name": "Stakeworld node"
-      },
-      {
         "url": "wss://polkadot.public.curie.radiumblock.co/ws",
         "name": "Radium node"
+      },
+      {
+        "url": "wss://dot-rpc.stakeworld.io",
+        "name": "Stakeworld node"
       },
       {
         "url": "wss://polkadot-rpc.dwellir.com",
@@ -93,7 +94,8 @@
     "chainId": "0xb0a8d493285c2df73290dfb7e61f870f17b41801197a149ca93654499ea3dafe",
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/chains/Kusama.svg",
     "options": [
-      "multisig"
+      "multisig",
+      "regular_proxy"
     ],
     "nodes": [
       {
@@ -181,7 +183,8 @@
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/chains/Westend_Testnet.svg",
     "options": [
       "testnet",
-      "multisig"
+      "multisig",
+      "regular_proxy"
     ],
     "nodes": [
       {
@@ -1034,7 +1037,7 @@
         "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Kusama_(KSM).svg",
         "typeExtras": {
           "currencyIdScale": "0x0204",
-          "currencyIdType": "NodePrimitivesCurrencyCurrencyId",
+          "currencyIdType": "BifrostPrimitivesCurrencyCurrencyId",
           "existentialDeposit": "100000000",
           "transfersEnabled": true
         },
@@ -1049,7 +1052,7 @@
         "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/RMRK.svg",
         "typeExtras": {
           "currencyIdScale": "0x0209",
-          "currencyIdType": "NodePrimitivesCurrencyCurrencyId",
+          "currencyIdType": "BifrostPrimitivesCurrencyCurrencyId",
           "existentialDeposit": "10000",
           "transfersEnabled": true
         },
@@ -1064,7 +1067,7 @@
         "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Zenlink_(ZLK).svg",
         "typeExtras": {
           "currencyIdScale": "0x0207",
-          "currencyIdType": "NodePrimitivesCurrencyCurrencyId",
+          "currencyIdType": "BifrostPrimitivesCurrencyCurrencyId",
           "existentialDeposit": "1000000000000",
           "transfersEnabled": true
         },
@@ -1079,7 +1082,7 @@
         "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Karura_(KAR).svg",
         "typeExtras": {
           "currencyIdScale": "0x0206",
-          "currencyIdType": "NodePrimitivesCurrencyCurrencyId",
+          "currencyIdType": "BifrostPrimitivesCurrencyCurrencyId",
           "existentialDeposit": "100000000",
           "transfersEnabled": true
         },
@@ -1094,7 +1097,7 @@
         "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/aSEED.svg",
         "typeExtras": {
           "currencyIdScale": "0x0302",
-          "currencyIdType": "NodePrimitivesCurrencyCurrencyId",
+          "currencyIdType": "BifrostPrimitivesCurrencyCurrencyId",
           "existentialDeposit": "100000000",
           "transfersEnabled": true
         },
@@ -1108,7 +1111,7 @@
         "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/vsKSM.svg",
         "typeExtras": {
           "currencyIdScale": "0x0404",
-          "currencyIdType": "NodePrimitivesCurrencyCurrencyId",
+          "currencyIdType": "BifrostPrimitivesCurrencyCurrencyId",
           "existentialDeposit": "100000000",
           "transfersEnabled": true
         },
@@ -1123,7 +1126,7 @@
         "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/USDT.svg",
         "typeExtras": {
           "currencyIdScale": "0x0800",
-          "currencyIdType": "NodePrimitivesCurrencyCurrencyId",
+          "currencyIdType": "BifrostPrimitivesCurrencyCurrencyId",
           "existentialDeposit": "1000",
           "transfersEnabled": true
         },
@@ -1138,7 +1141,7 @@
         "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Moonriver_(MOVR).svg",
         "typeExtras": {
           "currencyIdScale": "0x020a",
-          "currencyIdType": "NodePrimitivesCurrencyCurrencyId",
+          "currencyIdType": "BifrostPrimitivesCurrencyCurrencyId",
           "existentialDeposit": "1000000000000",
           "transfersEnabled": true
         },
@@ -1153,7 +1156,7 @@
         "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Phala_(PHA).svg",
         "typeExtras": {
           "currencyIdScale": "0x0208",
-          "currencyIdType": "NodePrimitivesCurrencyCurrencyId",
+          "currencyIdType": "BifrostPrimitivesCurrencyCurrencyId",
           "existentialDeposit": "40000000000",
           "transfersEnabled": true
         },
@@ -1167,7 +1170,7 @@
         "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/vKSM.svg",
         "typeExtras": {
           "currencyIdScale": "0x0104",
-          "currencyIdType": "NodePrimitivesCurrencyCurrencyId",
+          "currencyIdType": "BifrostPrimitivesCurrencyCurrencyId",
           "existentialDeposit": "100000000",
           "transfersEnabled": true
         },
@@ -1182,7 +1185,7 @@
         "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/kBTC.svg",
         "typeExtras": {
           "currencyIdScale": "0x0802",
-          "currencyIdType": "NodePrimitivesCurrencyCurrencyId",
+          "currencyIdType": "BifrostPrimitivesCurrencyCurrencyId",
           "existentialDeposit": "100",
           "transfersEnabled": true
         },
@@ -1196,7 +1199,7 @@
         "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/vBNC.svg",
         "typeExtras": {
           "currencyIdScale": "0x0101",
-          "currencyIdType": "NodePrimitivesCurrencyCurrencyId",
+          "currencyIdType": "BifrostPrimitivesCurrencyCurrencyId",
           "existentialDeposit": "10000000000",
           "transfersEnabled": true
         },
@@ -1210,7 +1213,7 @@
         "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/vMOVR.svg",
         "typeExtras": {
           "currencyIdScale": "0x010a",
-          "currencyIdType": "NodePrimitivesCurrencyCurrencyId",
+          "currencyIdType": "BifrostPrimitivesCurrencyCurrencyId",
           "existentialDeposit": "1000000000000",
           "transfersEnabled": true
         },
@@ -2716,12 +2719,12 @@
     ],
     "nodes": [
       {
-        "url": "wss://rpc.parallel.fi",
-        "name": "Parallel node"
-      },
-      {
         "url": "wss://parallel-rpc.dwellir.com",
         "name": "Dwellir node"
+      },
+      {
+        "url": "wss://rpc.parallel.fi",
+        "name": "Parallel node"
       }
     ],
     "assets": [
@@ -3857,12 +3860,12 @@
     ],
     "nodes": [
       {
-        "url": "wss://rpc.hydradx.cloud",
-        "name": "Calactic Council node"
-      },
-      {
         "url": "wss://hydradx-rpc.dwellir.com",
         "name": "Dwellir node"
+      },
+      {
+        "url": "wss://rpc.hydradx.cloud",
+        "name": "Calactic Council node"
       }
     ],
     "assets": [
@@ -4157,6 +4160,21 @@
           "transfersEnabled": true
         },
         "name": "vDOT"
+      },
+      {
+        "assetId": 20,
+        "symbol": "PHA",
+        "precision": 12,
+        "type": "orml",
+        "priceId": "pha",
+        "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Phala_(PHA).svg",
+        "typeExtras": {
+          "currencyIdScale": "0x08000000",
+          "currencyIdType": "u32",
+          "existentialDeposit": "54945054945",
+          "transfersEnabled": true
+        },
+        "name": "Phala"
       }
     ],
     "explorers": [
@@ -4857,16 +4875,12 @@
     ],
     "nodes": [
       {
-        "url": "wss://mainnet.polkadex.trade",
-        "name": "Polkadex team node"
+        "url": "wss://polkadex.api.onfinality.io/public-ws",
+        "name": "OnFinality node"
       },
       {
         "url": "wss://polkadex.public.curie.radiumblock.co/ws",
         "name": "RadiumBlock node"
-      },
-      {
-        "url": "wss://polkadex.api.onfinality.io/public-ws",
-        "name": "OnFinality node"
       }
     ],
     "assets": [
@@ -5051,7 +5065,7 @@
         "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Moonbeam_(GLMR).svg",
         "typeExtras": {
           "currencyIdScale": "0x0801",
-          "currencyIdType": "NodePrimitivesCurrencyCurrencyId",
+          "currencyIdType": "BifrostPrimitivesCurrencyCurrencyId",
           "existentialDeposit": "1000000000000",
           "transfersEnabled": true
         },
@@ -5066,7 +5080,7 @@
         "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Polkadot_(DOT).svg",
         "typeExtras": {
           "currencyIdScale": "0x0800",
-          "currencyIdType": "NodePrimitivesCurrencyCurrencyId",
+          "currencyIdType": "BifrostPrimitivesCurrencyCurrencyId",
           "existentialDeposit": "1000000",
           "transfersEnabled": true
         },
@@ -5081,7 +5095,7 @@
         "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/USDT.svg",
         "typeExtras": {
           "currencyIdScale": "0x0802",
-          "currencyIdType": "NodePrimitivesCurrencyCurrencyId",
+          "currencyIdType": "BifrostPrimitivesCurrencyCurrencyId",
           "existentialDeposit": "1000",
           "transfersEnabled": true
         },
@@ -5096,7 +5110,7 @@
         "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Astar_(ASTR).svg",
         "typeExtras": {
           "currencyIdScale": "0x0803",
-          "currencyIdType": "NodePrimitivesCurrencyCurrencyId",
+          "currencyIdType": "BifrostPrimitivesCurrencyCurrencyId",
           "existentialDeposit": "10000000000000000",
           "transfersEnabled": true
         },
@@ -5111,7 +5125,7 @@
         "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/vDOT.svg",
         "typeExtras": {
           "currencyIdScale": "0x0900",
-          "currencyIdType": "NodePrimitivesCurrencyCurrencyId",
+          "currencyIdType": "BifrostPrimitivesCurrencyCurrencyId",
           "existentialDeposit": "1000000",
           "transfersEnabled": true
         },
@@ -5125,7 +5139,7 @@
         "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/vGLMR.svg",
         "typeExtras": {
           "currencyIdScale": "0x0901",
-          "currencyIdType": "NodePrimitivesCurrencyCurrencyId",
+          "currencyIdType": "BifrostPrimitivesCurrencyCurrencyId",
           "existentialDeposit": "1000000000000",
           "transfersEnabled": true
         },
@@ -5139,7 +5153,7 @@
         "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/vFIL.svg",
         "typeExtras": {
           "currencyIdScale": "0x0904",
-          "currencyIdType": "NodePrimitivesCurrencyCurrencyId",
+          "currencyIdType": "BifrostPrimitivesCurrencyCurrencyId",
           "existentialDeposit": "1000000000000",
           "transfersEnabled": true
         },
@@ -5153,7 +5167,7 @@
         "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/vASTR.svg",
         "typeExtras": {
           "currencyIdScale": "0x0903",
-          "currencyIdType": "NodePrimitivesCurrencyCurrencyId",
+          "currencyIdType": "BifrostPrimitivesCurrencyCurrencyId",
           "existentialDeposit": "10000000000000000",
           "transfersEnabled": true
         },
@@ -6105,6 +6119,10 @@
     ],
     "nodes": [
       {
+        "url": "wss://c3.hashed.live",
+        "name": "Hashed systems 3 node"
+      },
+      {
         "url": "wss://c2.hashed.network",
         "name": "Hashed systems 2 node"
       }
@@ -6717,6 +6735,53 @@
         "priceId": "energy-web-token",
         "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Energy_Web_(EWT).svg",
         "name": "Energy Web token"
+      }
+    ]
+  },
+  {
+    "name": "InvArch",
+    "specName": "invarch",
+    "addressPrefix": 117,
+    "chainId": "0x31a7d8914fb31c249b972f18c115f1e22b4b039abbcb03c73b6774c5642f9efe",
+    "parentId": "0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3",
+    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/chains/InvArch.svg",
+    "nodes": [
+      {
+        "url": "wss://invarch-rpc.dwellir.com",
+        "name": "Dwellir node"
+      }
+    ],
+    "assets": [
+      {
+        "assetId": 0,
+        "symbol": "VARCH",
+        "precision": 12,
+        "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/InvArch_(VARCH).svg",
+        "name": "VARCH token"
+      }
+    ]
+  },
+  {
+    "name": "Polimec",
+    "specName": "polimec-mainnet",
+    "addressPrefix": 41,
+    "chainId": "0x7eb9354488318e7549c722669dcbdcdc526f1fef1420e7944667212f3601fdbd",
+    "parentId": "0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3",
+    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/chains/Polimec.svg",
+    "nodes": [
+      {
+        "url": "wss://rpc.polimec.org",
+        "name": "Polimec node"
+      }
+    ],
+    "assets": [
+      {
+        "assetId": 0,
+        "symbol": "PLMC",
+        "precision": 10,
+        "priceId": "polimec",
+        "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/PLMC.svg",
+        "name": "Polimec token"
       }
     ]
   }
