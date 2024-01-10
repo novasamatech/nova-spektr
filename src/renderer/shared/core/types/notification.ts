@@ -38,11 +38,11 @@ export type MultisigOperation = MultisigBaseNotification & {
 };
 
 export type ProxyAction = BaseNotification & {
-  proxyAccountId: AccountId;
-  proxiedAccountId: AccountId;
-  proxyType: ProxyType;
   chainId: ChainId;
+  proxyType: ProxyType;
+  proxyAccountId: AccountId;
   proxyWalletName: string;
+  proxiedAccountId: AccountId;
   proxiedWalletName: string;
   proxiedWalletType: WalletType;
 };
