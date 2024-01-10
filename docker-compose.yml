@@ -7,10 +7,3 @@ services:
       dockerfile: docker/Dockerfile
     ports:
       - '3000:3000'
-
-  system-tests:
-    build:
-      context: .
-      dockerfile: docker/Dockerfile.tests
-    depends_on:
-      - web-app

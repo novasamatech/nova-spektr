@@ -1,5 +1,7 @@
 import { BasePageElements } from './BasePageElements';
 
 export class SettingsPageElements implements BasePageElements {
-  url = 'https://localhost:3000/#/settings';
+  url = '/#/settings';
+  matrixUrl = '/#/settings/matrix'
+  matrixButton = 'Matrix Connection Manage';
 }

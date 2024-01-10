@@ -1,7 +1,7 @@
 import { BasePageElements } from './BasePageElements';
 
 export class LoginPageElements implements BasePageElements {
-  url = 'https://localhost:3000/#/onboarding';
+  url = '/#/onboarding';
   enterAccountAddress = 'Enter or paste your account address';
   accountNameField = 'Enter a name for your wallet';
   watchOnlyButton = 'text=Watch-only';

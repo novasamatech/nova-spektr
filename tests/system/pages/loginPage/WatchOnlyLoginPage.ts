@@ -31,7 +31,7 @@ export class WatchOnlyLoginPage extends BasePage {
     await this.fillWalletName(name);
     await this.fillAccountAddress(address);
     await this.clickOnButton(this.pageElements.continueButton);
-
+    await this.page.waitForTimeout(5000);
     return new WatchOnlyAssetsPage(this.page, new AssetsPageElements());
   }
 

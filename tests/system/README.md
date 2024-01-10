@@ -38,13 +38,13 @@
  To run the application, use the following command:
 
  ```bash
- docker-compose up -d
+ docker-compose up -d --build
  ```
 
  To run the tests, use the following command:
 
  ```bash
- docker-compose run system-tests
+ pnpm run test:system
  ```
 
  ## TODO

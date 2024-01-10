@@ -1,6 +1,6 @@
 import { BasePageElements } from './BasePageElements';
 
 export class AssetsPageElements implements BasePageElements {
-  url = 'https://localhost:3000/#/assets';
-  accountButton = 'test_account Watch-only';
+  url = '/#/assets';
+  accountButton = 'test_account $';
 }
