@@ -11,16 +11,18 @@ type Props = {
   offsetPx?: number;
   panelClass?: string;
   contentClass?: string;
-  pos?: 'left' | 'center' | 'right';
+  position?: 'left' | 'center' | 'right';
   role?: AriaRole;
 };
+
+/* eslint-disable i18next/no-literal-string */
 
 export const Popover = ({
   content,
   children,
   offsetPx = 10,
   panelClass,
-  pos = 'right',
+  position = 'right',
   contentClass,
   role,
 }: PropsWithChildren<Props>) => {
@@ -32,9 +34,8 @@ export const Popover = ({
   // and gives user more time to move cursor to Popup.Panel
   const debouncedIsOpen = useDebounce(isOpen, 100);
   const parentRect = ref.current?.getBoundingClientRect();
-  const horizontalAlign = pos !== 'right' && {
-    // @ts-ignore
-    transform: `translateX(${pos === 'center' ? '-50%' : '-100%'})`,
+  const horizontalAlign = position !== 'right' && {
+    transform: `translateX(${position === 'center' ? '-50%' : '-100%'})`,
   };
 
   useParentScrollLock(debouncedIsOpen, ref.current);
@@ -69,9 +70,7 @@ export const Popover = ({
             id={id}
             style={
               parentRect && {
-                // @ts-ignore
                 top: `${parentRect.top + parentRect.height + offsetPx}px`,
-                // @ts-ignore
                 left: `${parentRect.left + parentRect.width / 2}px`,
                 ...horizontalAlign,
               }

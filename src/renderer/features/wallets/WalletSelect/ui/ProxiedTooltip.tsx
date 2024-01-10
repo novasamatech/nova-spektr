@@ -9,7 +9,7 @@ export const ProxiedTooltip = () => {
       contentClass="p-4"
       panelClass="w-[360px]"
       offsetPx={4}
-      pos="center"
+      position="center"
       content={
         <div className="flex flex-col gap-y-4">
           <FootnoteText className="text-text-secondary">{t('proxy.tooltipPart1')}</FootnoteText>
