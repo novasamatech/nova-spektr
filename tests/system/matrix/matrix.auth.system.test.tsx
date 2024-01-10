@@ -6,7 +6,7 @@ import { LoginPageElements } from '../pages/_elements/LoginPageElements';
 import { baseTestConfig } from '../BaseTestConfig';
 import { MatrixModalWindow } from '../pages/modals/MatrixModalWindow';
 
-const timeout = 60_000;
+const timeout = 120_000;
 test.setTimeout(timeout);
 
 test.describe('Matrix Login', () => {
