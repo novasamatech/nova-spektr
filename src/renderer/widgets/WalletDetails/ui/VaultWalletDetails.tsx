@@ -1,12 +1,21 @@
 import { useUnit } from 'effector-react';
 import { useState } from 'react';
 
-import { BaseModal, ContextMenu, IconButton, HelpText, DropdownIconButton } from '@shared/ui';
+import { BaseModal, ContextMenu, IconButton, HelpText, DropdownIconButton, Tabs } from '@shared/ui';
 import { useModalClose, useToggle } from '@shared/lib/hooks';
 import { RootAccountLg, WalletCardLg, VaultAccountsList } from '@entities/wallet';
 import { networkModel } from '@entities/network';
 import { useI18n } from '@app/providers';
-import { Wallet, BaseAccount, ChainAccount, ShardAccount, DraftAccount, KeyType, Account } from '@shared/core';
+import {
+  Wallet,
+  BaseAccount,
+  ChainAccount,
+  ShardAccount,
+  DraftAccount,
+  KeyType,
+  Account,
+  ProxyAccount, AccountId,
+} from '@shared/core';
 import { copyToClipboard, toAddress } from '@shared/lib/utils';
 import { IconNames } from '@shared/ui/Icon/data';
 import { VaultMap } from '../lib/types';
@@ -16,6 +25,10 @@ import { walletDetailsUtils } from '../lib/utils';
 import { KeyConstructor, ImportKeysModal, DerivationsAddressModal } from '@features/wallets';
 import { RenameWalletModal } from '@features/wallets/RenameWallet';
 import { ForgetWalletModal } from '@features/wallets/ForgetWallet';
+import { proxyModel } from '@entities/proxy';
+import { TabItem } from '@shared/ui/Tabs/common/types';
+import { ProxiesList } from '@widgets/WalletDetails/ui/ProxiesList';
+import { walletProviderModel } from '../model/wallet-provider-model';
 
 type Props = {
   wallet: Wallet;
@@ -27,6 +40,8 @@ export const VaultWalletDetails = ({ wallet, root, accountsMap, onClose }: Props
   const { t } = useI18n();
 
   const chains = useUnit(networkModel.$chains);
+  const proxies = useUnit(proxyModel.$proxies);
+  const accountsIds = useUnit(walletProviderModel.$accounts).map((a: Account) => a.accountId);
 
   const [isModalOpen, closeModal] = useModalClose(true, onClose);
   const [newKeys, setNewKeys] = useState<DraftAccount<ChainAccount>[]>([]);
@@ -36,6 +51,14 @@ export const VaultWalletDetails = ({ wallet, root, accountsMap, onClose }: Props
   const [isImportModalOpen, toggleImportModal] = useToggle();
   const [isScanModalOpen, toggleScanModal] = useToggle();
   const [isConfirmForgetOpen, toggleConfirmForget] = useToggle();
+
+  const proxyAccounts = accountsIds.reduce((acc: ProxyAccount[], accountId: AccountId) => {
+    if (proxies[accountId]) {
+      acc.push(...proxies[accountId]);
+    }
+
+    return acc;
+  }, []);
 
   const handleConstructorKeys = (
     keysToAdd: Array<ChainAccount | ShardAccount[]>,
@@ -115,21 +138,11 @@ export const VaultWalletDetails = ({ wallet, root, accountsMap, onClose }: Props
     </DropdownIconButton>
   );
 
-  return (
-    <BaseModal
-      closeButton
-      contentClass=""
-      panelClass="h-modal"
-      title={t('walletDetails.common.title')}
-      actionButton={ActionButton}
-      isOpen={isModalOpen}
-      onClose={closeModal}
-    >
-      <div className="flex flex-col w-full">
-        <div className="py-6 px-5 border-b border-divider">
-          <WalletCardLg wallet={wallet} />
-        </div>
-
+  const tabItems: TabItem[] = [
+    {
+      id: 'accounts',
+      title: t('walletDetails.common.accountTabTitle'),
+      panel: (
         <div className="px-5 py-4">
           <ContextMenu button={<RootAccountLg name={wallet.name} accountId={root.accountId} />}>
             <ContextMenu.Group title={t('general.explorers.publicKeyTitle')}>
@@ -146,14 +159,46 @@ export const VaultWalletDetails = ({ wallet, root, accountsMap, onClose }: Props
               </div>
             </ContextMenu.Group>
           </ContextMenu>
+
+          <VaultAccountsList
+            className="h-[343px] mt-4"
+            chains={Object.values(chains)}
+            accountsMap={accountsMap}
+            onShardClick={vaultDetailsModel.events.shardsSelected}
+          />
+        </div>
+      ),
+    },
+    {
+      id: 'proxies',
+      title: t('walletDetails.common.proxiesTabTitle'),
+      panel: (
+        <ProxiesList
+          walletId={wallet.id}
+          proxies={proxyAccounts}
+          chains={Object.values(chains)}
+          className="h-[392px] mt-4"
+        />
+      ),
+    },
+  ];
+
+  return (
+    <BaseModal
+      closeButton
+      contentClass=""
+      panelClass="h-modal"
+      title={t('walletDetails.common.title')}
+      actionButton={ActionButton}
+      isOpen={isModalOpen}
+      onClose={closeModal}
+    >
+      <div className="flex flex-col w-full">
+        <div className="py-6 px-5 border-b border-divider">
+          <WalletCardLg wallet={wallet} />
         </div>
 
-        <VaultAccountsList
-          className="h-[377px]"
-          chains={Object.values(chains)}
-          accountsMap={accountsMap}
-          onShardClick={vaultDetailsModel.events.shardsSelected}
-        />
+        <Tabs items={tabItems} panelClassName="" tabsClassName="mx-5" />
       </div>
 
       <ShardsList />
