@@ -1,4 +1,12 @@
-import { AccountType, Chain, ProxyAccount } from '@shared/core';
+import {
+  AccountType,
+  Chain,
+  ChainType,
+  CryptoType,
+  PartialProxiedAccount,
+  ProxyAccount,
+  ProxyVariant,
+} from '@shared/core';
 import { TEST_ACCOUNT_ID, TEST_ADDRESS } from '@shared/lib/utils';
 import { proxyWorkerUtils } from '../utils';
 
@@ -47,6 +55,78 @@ describe('features/proxies/lib/utils', () => {
     } as ProxyAccount;
 
     const result = proxyWorkerUtils.isSameProxy(oldProxy, newProxy);
+
+    expect(result).toBe(false);
+  });
+
+  it('should return true when oldProxy and newProxy have the same properties', () => {
+    const oldProxied = {
+      id: 0,
+      walletId: 0,
+      name: 'Proxied wallet',
+      type: AccountType.PROXIED,
+      accountId: '0x00',
+      proxyAccountId: '0x01',
+      chainId: '0x05',
+      proxyType: 'Any',
+      delay: 0,
+      proxyVariant: ProxyVariant.REGULAR,
+      chainType: ChainType.SUBSTRATE,
+      cryptoType: CryptoType.SR25519,
+    } as PartialProxiedAccount;
+
+    const newProxied = {
+      id: 2,
+      walletId: 1,
+      name: 'Proxied wallet 2',
+      type: AccountType.PROXIED,
+      accountId: '0x00',
+      proxyAccountId: '0x01',
+      chainId: '0x05',
+      proxyType: 'Any',
+      delay: 0,
+      proxyVariant: ProxyVariant.REGULAR,
+      chainType: ChainType.SUBSTRATE,
+      cryptoType: CryptoType.SR25519,
+    } as PartialProxiedAccount;
+
+    const result = proxyWorkerUtils.isSameProxied(oldProxied, newProxied);
+
+    expect(result).toBe(true);
+  });
+
+  it('should return false when oldProxied and newProxied have different properties', () => {
+    const oldProxied = {
+      id: 0,
+      walletId: 0,
+      name: 'Proxied wallet',
+      type: AccountType.PROXIED,
+      accountId: '0x00',
+      proxyAccountId: '0x01',
+      chainId: '0x05',
+      proxyType: 'Any',
+      delay: 0,
+      proxyVariant: ProxyVariant.REGULAR,
+      chainType: ChainType.SUBSTRATE,
+      cryptoType: CryptoType.SR25519,
+    } as PartialProxiedAccount;
+
+    const newProxied = {
+      id: 2,
+      walletId: 1,
+      name: 'Proxied wallet 2',
+      type: AccountType.PROXIED,
+      accountId: '0x00',
+      proxyAccountId: '0x02',
+      chainId: '0x06',
+      proxyType: 'Any',
+      delay: 0,
+      proxyVariant: ProxyVariant.REGULAR,
+      chainType: ChainType.SUBSTRATE,
+      cryptoType: CryptoType.SR25519,
+    } as PartialProxiedAccount;
+
+    const result = proxyWorkerUtils.isSameProxied(oldProxied, newProxied);
 
     expect(result).toBe(false);
   });
