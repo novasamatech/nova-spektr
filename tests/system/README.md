@@ -1,6 +1,5 @@
  # System Tests
 
- This document describes the process of running playwright end-to-end (e2e) tests.
 
  ## Running without docker
 
@@ -39,7 +38,7 @@
  To run the application, use the following command:
 
  ```bash
- docker-compose run web-app
+ docker-compose up -d
  ```
 
  To run the tests, use the following command:
