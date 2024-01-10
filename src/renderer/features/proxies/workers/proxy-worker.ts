@@ -17,7 +17,7 @@ import {
   ProxyVariant,
   NoID,
 } from '@shared/core';
-import { proxyWorkerUtils } from '../lib/utils';
+import { proxyWorkerUtils } from '../lib/worker-utils';
 
 const state = {
   apis: {} as Record<ChainId, ApiPromise>,
@@ -66,13 +66,9 @@ function initConnection(chain: Chain, connection: Connection) {
 }
 
 async function disconnect(chainId: ChainId) {
-  const api = state.apis[chainId];
+  if (!proxyWorkerUtils.isApiConnected(state.apis, chainId)) return;
 
-  if (!api) return;
-
-  if (api.isConnected) {
-    await api.disconnect();
-  }
+  await state.apis[chainId].disconnect();
 }
 
 type PartialProxiedAccount = Pick<
@@ -189,12 +185,6 @@ async function getProxies(
     deposits,
   };
 }
-
-// function getConnectionStatus(chainId: ChainId): boolean {
-//   const api = state.apis[chainId];
-//
-//   return Boolean(api?.isConnected);
-// }
 
 // @ts-ignore
 const endpoint = createEndpoint(self);

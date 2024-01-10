@@ -5,10 +5,10 @@ import { once, spread } from 'patronum';
 
 import { Account, Chain, ChainId, Connection, ProxyAccount, NotificationType } from '@shared/core';
 import { isDisabled, networkModel } from '@entities/network';
-import { proxyWorkerUtils } from '../lib/utils';
 import { accountUtils, walletModel } from '@entities/wallet';
 import { proxyModel } from '@entities/proxy';
 import { notificationModel } from '@entities/notification';
+import { proxiesUtils } from '../lib/utils';
 
 // @ts-ignore
 const worker = new Worker(new URL('@features/proxies/workers/proxy-worker', import.meta.url));
@@ -68,7 +68,7 @@ sample({
     chains: networkModel.$chains,
   },
   fn: ({ connections, chains }) => ({
-    chains: Object.values(chains).filter(proxyWorkerUtils.isRegularProxy),
+    chains: Object.values(chains).filter(proxiesUtils.isRegularProxy),
     connections,
   }),
   target: startChainsFx,
@@ -105,28 +105,24 @@ sample({
     wallets: walletModel.$wallets,
     accounts: walletModel.$accounts,
   },
+  filter: (_, proxies) => proxies.proxiesToAdd.length > 0,
   fn: ({ wallets, accounts }, proxies) => {
-    const proxyAddedNotifications = proxyWorkerUtils.getNotification_NEW(
-      proxies.proxiesToAdd,
-      wallets,
-      accounts,
-      NotificationType.PROXY_CREATED,
-    );
-    const proxyRemovedNotifications = proxyWorkerUtils.getNotification_NEW(
-      proxies.proxiesToRemove,
-      wallets,
-      accounts,
-      NotificationType.PROXY_REMOVED,
-    );
-
-    return { proxyAddedNotifications, proxyRemovedNotifications };
+    return proxiesUtils.getNotification(proxies.proxiesToAdd, wallets, accounts, NotificationType.PROXY_CREATED);
   },
-  target: spread({
-    targets: {
-      proxyAddedNotifications: notificationModel.events.notificationsAdded,
-      proxyRemovedNotifications: notificationModel.events.notificationsAdded,
-    },
-  }),
+  target: notificationModel.events.notificationsAdded,
+});
+
+sample({
+  clock: getProxiesFx.doneData,
+  source: {
+    wallets: walletModel.$wallets,
+    accounts: walletModel.$accounts,
+  },
+  filter: (_, proxies) => proxies.proxiesToRemove.length > 0,
+  fn: ({ wallets, accounts }, proxies) => {
+    return proxiesUtils.getNotification(proxies.proxiesToRemove, wallets, accounts, NotificationType.PROXY_REMOVED);
+  },
+  target: notificationModel.events.notificationsAdded,
 });
 
 export const proxiesModel = {

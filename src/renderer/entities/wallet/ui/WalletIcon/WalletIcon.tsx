@@ -29,7 +29,6 @@ type Props = {
   type: WalletType;
   className?: string;
   size?: number;
-
 };
 
 export const WalletIcon = ({ type, size = 20, className }: Props) => {

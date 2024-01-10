@@ -1,9 +1,10 @@
 import { createEffect, createEvent, createStore, sample } from 'effector';
 
-import { ProxyStore } from '../lib/types';
 import { proxyUtils } from '../lib/utils';
-import type { ProxyAccount } from '@shared/core';
+import type { ProxyAccount, AccountId } from '@shared/core';
 import { storageService } from '@shared/api/storage';
+
+type ProxyStore = Record<AccountId, ProxyAccount[]>;
 
 const $proxies = createStore<ProxyStore>({});
 

@@ -7,8 +7,8 @@ import { useI18n } from '@app/providers';
 import { toAddress } from '@shared/lib/utils';
 import { ChainTitle } from '@entities/chain';
 import { WalletType, ProxyAction } from '@shared/core';
-import { ProxyTypeOperation } from '../../lib/constants';
 import { networkModel } from '@entities/network';
+import { ProxyTypeOperation } from '../../lib/constants';
 
 type Props = {
   notification: ProxyAction;

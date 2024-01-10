@@ -36,9 +36,7 @@ networkModel.events.networkStarted();
 balanceSubscriptionModel.events.balancesSubscribed();
 assetsModel.events.assetsStarted();
 notificationModel.events.notificationsStarted();
-setTimeout(() => {
-  proxiesModel.events.proxiesStarted();
-}, 1000);
+proxiesModel.events.proxiesStarted();
 
 createRoot(container).render(
   <Router>
