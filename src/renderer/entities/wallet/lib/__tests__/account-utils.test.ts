@@ -1,4 +1,13 @@
-import { AccountType, ChainAccount, ChainType, CryptoType, KeyType, ShardAccount } from '@shared/core';
+import {
+  Account,
+  AccountId,
+  AccountType,
+  ChainAccount,
+  ChainType,
+  CryptoType,
+  KeyType,
+  ShardAccount,
+} from '@shared/core';
 import { TEST_ACCOUNT_ID, TEST_CHAIN_ID } from '@shared/lib/utils';
 import { accountUtils } from '@entities/wallet';
 
@@ -141,4 +150,56 @@ describe('entities/wallet/lib/account-utils#getDerivationPath', () => {
       expect(derivationPath).toEqual(expectedResult);
     },
   );
+
+  test('should return the account ID', () => {
+    const ids = ['0x00', '0x01', '0x02'] as AccountId[];
+    const threshold = 2;
+    const result = accountUtils.getMultisigAccountId(ids, threshold);
+
+    expect(result).toEqual('0x7c03b938aa7d9952e4c0f9b573e5e3a3ae9f6a9910c4f965a22803f64d7fbc68');
+  });
+
+  it('should return an empty array if no accounts match the chainId', () => {
+    const accounts: Account[] = [
+      { accountId: '0x01', chainId: '0x01', type: AccountType.CHAIN } as unknown as Account,
+      { accountId: '0x02', chainId: '0x02', type: AccountType.CHAIN } as unknown as Account,
+    ];
+    const chainId = '0x03';
+
+    const result = accountUtils.getAllAccountIds(accounts, chainId);
+
+    expect(result).toEqual([]);
+  });
+
+  it('should return an array of unique accountIds', () => {
+    const accounts: Account[] = [
+      { accountId: '0x01', chainId: '0x01', type: AccountType.CHAIN } as unknown as Account,
+      { accountId: '0x02', chainId: '0x01', type: AccountType.CHAIN } as unknown as Account,
+      { accountId: '0x03', chainId: '0x02', type: AccountType.CHAIN } as unknown as Account,
+      { accountId: '0x04', chainId: '0x02', type: AccountType.CHAIN } as unknown as Account,
+      { accountId: '0x05', chainId: '0x03', type: AccountType.CHAIN } as unknown as Account,
+    ];
+    const chainId = '0x01';
+
+    const result = accountUtils.getAllAccountIds(accounts, chainId);
+
+    expect(result).toEqual(['0x01', '0x02']);
+  });
+
+  it('should include accountIds from multisig accounts', () => {
+    const accounts: Account[] = [
+      { accountId: '0x01', chainId: '0x01', type: AccountType.CHAIN } as unknown as Account,
+      {
+        accountId: '0x02',
+        chainId: '0x01',
+        type: AccountType.MULTISIG,
+        signatories: [{ accountId: '0x03', chainId: '0x01' }],
+      } as unknown as Account,
+    ];
+    const chainId = '0x01';
+
+    const result = accountUtils.getAllAccountIds(accounts, chainId);
+
+    expect(result).toEqual(['0x01', '0x02', '0x03']);
+  });
 });
