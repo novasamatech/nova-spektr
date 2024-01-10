@@ -1,3 +1,4 @@
+import { ProxiedAccount } from './account';
 import { AccountId, ID, ChainId } from './general';
 
 export type ProxyChainGroup = {
@@ -35,3 +36,8 @@ export const enum ProxyVariant {
 }
 
 export type PartialProxyAccount = Omit<ProxyAccount, 'chainId'>;
+
+export type PartialProxiedAccount = Pick<
+  ProxiedAccount,
+  'chainId' | 'proxyAccountId' | 'accountId' | 'delay' | 'proxyType' | 'proxyVariant'
+>;

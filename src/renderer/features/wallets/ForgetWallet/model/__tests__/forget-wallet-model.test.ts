@@ -9,15 +9,11 @@ import { walletModel } from '@entities/wallet';
 jest.mock('@shared/api/storage', () => ({
   __esModule: true,
   default: jest.fn(),
-  storage: { connectTo: jest.fn() },
+  storage: { connectTo: jest.fn().mockReturnValue({}) },
   storageService: {
     wallets: {},
     accounts: {},
   },
-}));
-
-jest.mock('@app/providers', () => ({
-  useMatrix: jest.fn(),
 }));
 
 jest.mock('@entities/multisig', () => ({
@@ -25,6 +21,7 @@ jest.mock('@entities/multisig', () => ({
 }));
 
 jest.mock('@entities/balance', () => ({
+  ...jest.requireActual('@entities/balance'),
   useBalanceService: () => ({ deleteBalance: jest.fn() }),
 }));
 
@@ -72,6 +69,7 @@ describe('features/ForgetModel', () => {
     const spyCallback = jest.fn();
     storageService.wallets.delete = jest.fn();
     storageService.accounts.deleteAll = jest.fn();
+
     const scope = fork({
       values: new Map().set(walletModel.$wallets, [wallet]).set(walletModel.$accounts, walletAccounts),
     });

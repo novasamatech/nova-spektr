@@ -10,6 +10,7 @@ import type {
   NovaWalletWallet,
   PolkadotVaultGroup,
   WalletConnectGroup,
+  ProxiedWallet,
 } from '@shared/core';
 
 export const walletUtils = {
@@ -20,6 +21,7 @@ export const walletUtils = {
   isWatchOnly,
   isNovaWallet,
   isWalletConnect,
+  isProxied,
   isWalletConnectGroup,
   isPolkadotVaultGroup,
   isValidSignatory,
@@ -54,6 +56,10 @@ function isWalletConnect(wallet?: Pick<Wallet, 'type'>): wallet is WalletConnect
   return wallet?.type === WalletType.WALLET_CONNECT;
 }
 
+function isProxied(wallet?: Pick<Wallet, 'type'>): wallet is ProxiedWallet {
+  return wallet?.type === WalletType.PROXIED;
+}
+
 function isPolkadotVaultGroup(wallet?: Pick<Wallet, 'type'>): wallet is PolkadotVaultGroup {
   return isPolkadotVault(wallet) || isMultiShard(wallet) || isSingleShard(wallet);
 }
@@ -67,7 +73,7 @@ const VALID_SIGNATORY_WALLET_TYPES = [
   WalletType.WALLET_CONNECT,
   WalletType.NOVA_WALLET,
 ];
-function isValidSignatory(wallet?: Wallet): boolean {
+function isValidSignatory(wallet?: Pick<Wallet, 'type'>): boolean {
   if (!wallet) return false;
 
   return VALID_SIGNATORY_WALLET_TYPES.includes(wallet.type);

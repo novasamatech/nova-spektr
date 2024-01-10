@@ -5,6 +5,7 @@ import log from 'electron-log';
 import { App } from './App';
 import { kernelModel } from '@shared/core';
 import { networkModel } from '@entities/network';
+import { proxyModel } from '@entities/proxy';
 import { balanceSubscriptionModel } from '@features/balances';
 import { assetsModel } from '@pages/Assets/Assets/model/assets-model';
 import './i18n';
@@ -31,6 +32,7 @@ if (!container) {
 
 kernelModel.events.appStarted();
 networkModel.events.networkStarted();
+proxyModel.events.proxyStarted();
 balanceSubscriptionModel.events.balancesSubscribed();
 assetsModel.events.assetsStarted();
 
