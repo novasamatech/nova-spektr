@@ -2,17 +2,9 @@ import { u8aToHex } from '@polkadot/util';
 import { decodeAddress } from '@polkadot/util-crypto';
 import { WellKnownChain } from '@substrate/connect';
 
-import {
-  AccountId,
-  Chain,
-  ChainId,
-  ProxyAccount,
-  AccountType,
-  Account,
-  ProxiedAccount,
-  NoID,
-  ProxyAction, NotificationType,
-} from '@shared/core';
+import type { AccountId, Chain, ChainId, ProxyAccount, Account, ProxiedAccount, ProxyAction, NoID } from '@shared/core';
+import { AccountType, NotificationType, Wallet } from '@shared/core';
+import { dictionary } from '@shared/lib/utils';
 
 export const proxyWorkerUtils = {
   toAccountId,
@@ -20,7 +12,7 @@ export const proxyWorkerUtils = {
   isSameProxy,
   getKnownChain,
   isProxiedAccount,
-  getNotification,
+  getNotification_NEW,
 };
 
 /**
@@ -69,14 +61,25 @@ function isProxiedAccount(account: Pick<Account, 'type'>): account is ProxiedAcc
   return account.type === AccountType.PROXIED;
 }
 
-function getNotification(proxy: ProxyAccount, type: NotificationType): NoID<ProxyAction> {
-  return {
+function getNotification_NEW(
+  proxies: ProxyAccount[],
+  wallets: Wallet[],
+  accounts: Account[],
+  type: NotificationType,
+): NoID<ProxyAction>[] {
+  const walletsMap = dictionary(wallets, 'id', ({ name, type }) => ({ name, type }));
+  const accountsWalletsMap = dictionary(accounts, 'accountId', (account) => walletsMap[account.walletId]);
+
+  return proxies.map((proxy) => ({
     chainId: proxy.chainId,
     dateCreated: Date.now(),
     proxiedAccountId: proxy.proxiedAccountId,
+    proxiedWalletType: accountsWalletsMap[proxy.proxiedAccountId].type,
+    proxiedWalletName: accountsWalletsMap[proxy.proxiedAccountId].name,
     proxyAccountId: proxy.accountId,
     proxyType: proxy.proxyType,
+    proxyWalletName: accountsWalletsMap[proxy.accountId].name,
     read: false,
     type,
-  };
+  }));
 }

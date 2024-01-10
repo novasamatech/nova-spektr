@@ -1,24 +1,14 @@
 import { createEndpoint } from '@remote-ui/rpc';
 import { ScProvider, WsProvider } from '@polkadot/rpc-provider';
-import { ApiPromise } from '@polkadot/api';
-import isEqual from 'lodash/isEqual';
 import { ProviderInterface } from '@polkadot/rpc-provider/types';
+import { ApiPromise } from '@polkadot/api';
+import { isEqual } from 'lodash';
 import * as Sc from '@substrate/connect';
 
-import {
-  Chain,
-  ChainId,
-  Connection,
-  ConnectionType,
-  ProxyAccount,
-  ProxiedAccount,
-  Account,
-  AccountId,
-  NoID,
-} from '@shared/core';
+import type { Chain, ChainId, Connection, ProxyAccount, ProxiedAccount, Account, AccountId, NoID } from '@shared/core';
+import { ConnectionType, ProxyVariant } from '@shared/core';
 import { InitConnectionsResult } from '../lib/constants';
 import { proxyWorkerUtils } from '../lib/utils';
-import { ProxyVariant } from '@/src/renderer/shared/core/types/proxy';
 
 const state = {
   apis: {} as Record<ChainId, ApiPromise>,

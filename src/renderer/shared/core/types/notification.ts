@@ -1,4 +1,4 @@
-import { ProxyType } from '@shared/core';
+import { ProxyType, WalletType } from '@shared/core';
 import type { ID, AccountId, CallHash, ChainId, Timepoint } from '@shared/core';
 
 export const enum NotificationType {
@@ -42,6 +42,9 @@ export type ProxyAction = BaseNotification & {
   proxiedAccountId: AccountId;
   proxyType: ProxyType;
   chainId: ChainId;
+  proxyWalletName: string;
+  proxiedWalletName: string;
+  proxiedWalletType: WalletType;
 };
 
 export type Notification = MultisigInvite | MultisigOperation | ProxyAction;

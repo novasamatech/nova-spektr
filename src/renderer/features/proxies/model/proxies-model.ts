@@ -93,14 +93,29 @@ spread({
 });
 
 sample({
-  clock: getProxiesFx.doneData,
-  fn: ({ proxiesToAdd, proxiesToRemove }) => {
-    const proxyAddedNotifications = proxiesToAdd.map((proxy) =>
-      proxyWorkerUtils.getNotification(proxy, NotificationType.PROXY_CREATED),
-    );
+  clock: getProxiesFx.done,
+  fn: ({ params: { chainId } }) => chainId,
+  target: disconnectFx,
+});
 
-    const proxyRemovedNotifications = proxiesToRemove.map((proxy) =>
-      proxyWorkerUtils.getNotification(proxy, NotificationType.PROXY_REMOVED),
+sample({
+  clock: getProxiesFx.doneData,
+  source: {
+    wallets: walletModel.$wallets,
+    accounts: walletModel.$accounts,
+  },
+  fn: ({ wallets, accounts }, proxies) => {
+    const proxyAddedNotifications = proxyWorkerUtils.getNotification_NEW(
+      proxies.proxiesToAdd,
+      wallets,
+      accounts,
+      NotificationType.PROXY_CREATED,
+    );
+    const proxyRemovedNotifications = proxyWorkerUtils.getNotification_NEW(
+      proxies.proxiesToRemove,
+      wallets,
+      accounts,
+      NotificationType.PROXY_REMOVED,
     );
 
     return { proxyAddedNotifications, proxyRemovedNotifications };
@@ -111,12 +126,6 @@ sample({
       proxyRemovedNotifications: notificationModel.events.notificationsAdded,
     },
   }),
-});
-
-sample({
-  clock: getProxiesFx.done,
-  fn: ({ params: { chainId } }) => chainId,
-  target: disconnectFx,
 });
 
 export const proxiesModel = {};
