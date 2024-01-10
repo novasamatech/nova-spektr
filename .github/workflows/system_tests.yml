@@ -25,3 +25,25 @@ jobs:
           name: playwright-report
           path: playwright-report/
           retention-days: 30
+  
+  publishTestResults:
+    name: "Publish Test Results"
+    needs: system-tests
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+      - name: Download artifacts
+        uses: actions/download-artifact@v2
+        id: download
+
+      - name: Publish to GH Pages
+        if: always()
+        uses: peaceiris/actions-gh-pages@v3.7.3
+        with:
+          external_repository: novasamatech/spektr-reports
+          publish_branch: main
+          personal_token: ${{ secrets.CREATE_TAG_PAT }}
+          publish_dir: ${{steps.download.outputs.download-path}}
+          keep_files: true
+          user_name: "github-actions[bot]"
+          user_email: "github-actions[bot]@users.noreply.github.com"
