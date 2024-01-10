@@ -47,8 +47,10 @@ sample({
   clock: proxiesRemoved,
   source: $proxies,
   fn: (proxies, proxiesToRemove) => {
-    return proxiesToRemove.reduce<ProxyStore>((acc, p) => {
-      acc[p.accountId] = acc[p.accountId].filter((pr) => !proxyUtils.isSameProxy(pr, p));
+    return proxiesToRemove.reduce<ProxyStore>((acc, proxyAccount) => {
+      acc[proxyAccount.accountId] = acc[proxyAccount.accountId].filter(
+        (account) => !proxyUtils.isSameProxy(account, proxyAccount),
+      );
 
       return acc;
     }, proxies);

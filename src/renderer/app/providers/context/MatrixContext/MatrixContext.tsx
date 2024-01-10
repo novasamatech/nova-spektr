@@ -114,17 +114,19 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
 
         await joinRoom(roomId, content);
 
-        notificationModel.events.notificationsAdded([{
-          smpRoomId: roomId,
-          multisigAccountId: accountId,
-          multisigAccountName: accountName,
-          signatories,
-          threshold,
-          originatorAccountId: creatorAccountId,
-          read: true,
-          dateCreated: Date.now(),
-          type: NotificationType.MULTISIG_INVITE,
-        }] as NoID<MultisigInvite>[]);
+        notificationModel.events.notificationsAdded([
+          {
+            smpRoomId: roomId,
+            multisigAccountId: accountId,
+            multisigAccountName: accountName,
+            signatories,
+            threshold,
+            originatorAccountId: creatorAccountId,
+            read: true,
+            dateCreated: Date.now(),
+            type: NotificationType.MULTISIG_INVITE,
+          },
+        ] as NoID<MultisigInvite>[]);
       } else {
         console.log(`Multisig account ${accountId} already exists. Trying to change room to ${roomId}`);
         await changeRoom(roomId, mstAccount, content, creatorAccountId);
