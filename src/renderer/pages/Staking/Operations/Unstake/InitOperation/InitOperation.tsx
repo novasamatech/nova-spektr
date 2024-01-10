@@ -1,16 +1,16 @@
 import { ApiPromise } from '@polkadot/api';
 import { BN } from '@polkadot/util';
 import { useEffect, useState } from 'react';
+import { useUnit } from 'effector-react';
 
-import { useI18n } from '@renderer/app/providers';
-import { Asset, useBalance, Balance as AccountBalance } from '@renderer/entities/asset';
-import { ChainId, AccountId } from '@renderer/domain/shared-kernel';
-import { Transaction, TransactionType } from '@renderer/entities/transaction';
-import { isMultisig, Account } from '@renderer/entities/account';
-import { formatAmount, nonNullable, toAddress } from '@renderer/shared/lib/utils';
-import { StakingMap, useStakingData } from '@renderer/entities/staking';
-import { OperationForm } from '@renderer/pages/Staking/Operations/components';
-import { OperationError, OperationFooter, OperationHeader } from '@renderer/features/operation';
+import { useI18n } from '@app/providers';
+import { Transaction, TransactionType, OperationError } from '@entities/transaction';
+import type { Account, Asset, Balance as AccountBalance, ChainId, AccountId, Wallet } from '@shared/core';
+import { formatAmount, nonNullable, toAddress } from '@shared/lib/utils';
+import { StakingMap, useStakingData } from '@entities/staking';
+import { OperationForm } from '@pages/Staking/Operations/components';
+import { OperationFooter, OperationHeader } from '@features/operation';
+import { walletUtils, accountUtils, walletModel } from '@entities/wallet';
 import {
   getUnstakeAccountOption,
   validateBalanceForFee,
@@ -18,6 +18,7 @@ import {
   validateBalanceForFeeDeposit,
   getSignatoryOption,
 } from '../../common/utils';
+import { useAssetBalances } from '@entities/balance';
 
 export type UnstakeResult = {
   accounts: Account[];
@@ -38,8 +39,9 @@ type Props = {
 
 const InitOperation = ({ api, chainId, addressPrefix, accounts, asset, onResult }: Props) => {
   const { t } = useI18n();
+  const activeWallet = useUnit(walletModel.$activeWallet);
+
   const { subscribeStaking, getMinNominatorBond } = useStakingData();
-  const { getLiveAssetBalances } = useBalance();
 
   const [fee, setFee] = useState('');
   const [feeLoading, setFeeLoading] = useState(true);
@@ -57,14 +59,23 @@ const InitOperation = ({ api, chainId, addressPrefix, accounts, asset, onResult 
   const [activeBalances, setActiveBalances] = useState<AccountBalance[]>([]);
 
   const firstAccount = activeUnstakeAccounts[0] || accounts[0];
-  const accountIsMultisig = isMultisig(firstAccount);
-  const formFields = accountIsMultisig ? [{ name: 'amount' }, { name: 'description' }] : [{ name: 'amount' }];
+  const isMultisigWallet = walletUtils.isMultisig(activeWallet);
+  const isMultisigAccount = firstAccount && accountUtils.isMultisigAccount(firstAccount);
+  const formFields = isMultisigWallet ? [{ name: 'amount' }, { name: 'description' }] : [{ name: 'amount' }];
 
   const accountIds = accounts.map((account) => account.accountId);
-  const balances = getLiveAssetBalances(accountIds, chainId, asset.assetId.toString());
+  const balances = useAssetBalances({
+    accountIds,
+    chainId,
+    assetId: asset.assetId.toString(),
+  });
 
-  const signatoryIds = accountIsMultisig ? firstAccount.signatories.map((s) => s.accountId) : [];
-  const signatoriesBalances = getLiveAssetBalances(signatoryIds, chainId, asset.assetId.toString());
+  const signatoryIds = isMultisigAccount ? firstAccount.signatories.map((s) => s.accountId) : [];
+  const signatoriesBalances = useAssetBalances({
+    accountIds: signatoryIds,
+    chainId,
+    assetId: asset.assetId.toString(),
+  });
   const signerBalance = signatoriesBalances.find((b) => b.accountId === activeSignatory?.accountId);
 
   useEffect(() => {
@@ -138,10 +149,10 @@ const InitOperation = ({ api, chainId, addressPrefix, accounts, asset, onResult 
     return getUnstakeAccountOption(account, { balance, stake, asset, addressPrefix, fee, amount });
   };
 
-  const getSignatoryDrowdownOption = (account: Account) => {
+  const getSignatoryDropdownOption = (wallet: Wallet, account: Account) => {
     const balance = signatoriesBalances.find((b) => b.accountId === account.accountId);
 
-    return getSignatoryOption(account, { balance, asset, addressPrefix, fee, deposit });
+    return getSignatoryOption(wallet, account, { balance, asset, addressPrefix, fee, deposit });
   };
 
   const submitUnstake = (data: { amount: string; description?: string }) => {
@@ -160,7 +171,7 @@ const InitOperation = ({ api, chainId, addressPrefix, accounts, asset, onResult 
       amount,
       withChill,
       accounts: selectedAccounts,
-      ...(accountIsMultisig && {
+      ...(isMultisigWallet && {
         description: data.description || t('transactionMessage.unstake', { amount: data.amount, asset: asset.symbol }),
         signer: activeSignatory,
       }),
@@ -176,7 +187,7 @@ const InitOperation = ({ api, chainId, addressPrefix, accounts, asset, onResult 
   };
 
   const validateFee = (): boolean => {
-    if (!accountIsMultisig) {
+    if (!isMultisigWallet) {
       return activeBalances.every((b) => validateBalanceForFee(b, fee));
     }
 
@@ -186,7 +197,7 @@ const InitOperation = ({ api, chainId, addressPrefix, accounts, asset, onResult 
   };
 
   const validateDeposit = (): boolean => {
-    if (!accountIsMultisig) return true;
+    if (!isMultisigWallet) return true;
     if (!signerBalance) return false;
 
     return validateBalanceForFeeDeposit(signerBalance, deposit, fee);
@@ -199,7 +210,7 @@ const InitOperation = ({ api, chainId, addressPrefix, accounts, asset, onResult 
   };
 
   const getActiveAccounts = (): AccountId[] => {
-    if (!accountIsMultisig) return activeUnstakeAccounts.map((acc) => acc.accountId);
+    if (!isMultisigWallet) return activeUnstakeAccounts.map((acc) => acc.accountId);
 
     return activeSignatory ? [activeSignatory.accountId] : [];
   };
@@ -225,7 +236,7 @@ const InitOperation = ({ api, chainId, addressPrefix, accounts, asset, onResult 
             accounts={accounts}
             isMultiselect
             errors={invalidDeposit || invalidFee || invalidBalance ? [OperationError.EMPTY_ERROR] : undefined}
-            getSignatoryOption={getSignatoryDrowdownOption}
+            getSignatoryOption={getSignatoryDropdownOption}
             getAccountOption={getAccountDropdownOption}
             onSignatoryChange={setActiveSignatory}
             onAccountChange={setActiveUnstakeAccounts}

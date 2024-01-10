@@ -1,8 +1,8 @@
 import { useNavigate } from 'react-router-dom';
 
-import { Paths } from '@renderer/app/providers';
-import { EditContactModal } from '@renderer/widgets';
-import { EditRouteGuard } from '@renderer/features/contacts';
+import { Paths } from '@shared/routes';
+import { EditContactModal } from '@widgets/ManageContactModal';
+import { EditRouteGuard } from '@features/contacts';
 
 export const EditContact = () => {
   const navigate = useNavigate();

@@ -1,18 +1,15 @@
 import { act, render, screen } from '@testing-library/react';
 
-import { Matrix } from '@renderer/shared/api/matrix';
-import { ConnectionType } from '@renderer/domain/connection';
+import { Matrix } from '@shared/api/matrix';
 import { MatrixProvider } from './MatrixContext';
 
-jest.mock('@renderer/shared/api/matrix', () => ({ Matrix: jest.fn().mockReturnValue({}) }));
-
-jest.mock('@renderer/entities/account', () => ({
-  useAccount: jest.fn().mockReturnValue({
-    getAccounts: jest.fn().mockReturnValue([]),
-  }),
+jest.mock('@app/providers', () => ({
+  useMatrix: jest.fn(),
 }));
 
-jest.mock('@renderer/entities/multisig', () => ({
+jest.mock('@shared/api/matrix', () => ({ Matrix: jest.fn().mockReturnValue({}) }));
+
+jest.mock('@entities/multisig', () => ({
   useMultisigTx: jest.fn().mockReturnValue({
     getMultisigTxs: jest.fn(),
     addMultisigTx: jest.fn(),
@@ -26,30 +23,13 @@ jest.mock('@renderer/entities/multisig', () => ({
   }),
 }));
 
-jest.mock('@renderer/entities/contact', () => ({
-  useContact: jest.fn().mockReturnValue({
-    getContacts: jest.fn().mockReturnValue([]),
-  }),
-}));
-
-jest.mock('@renderer/entities/notification', () => ({
+jest.mock('@entities/notification', () => ({
   useNotification: jest.fn().mockReturnValue({
     addNotification: jest.fn(),
   }),
 }));
 
-jest.mock('@renderer/app/providers', () => ({
-  useNetworkContext: jest.fn(() => ({
-    connections: {
-      '0x00': {
-        chainId: '1',
-        assets: [{ assetId: '1', symbol: '1' }],
-        connection: {
-          connectionType: ConnectionType.RPC_NODE,
-        },
-      },
-    },
-  })),
+jest.mock('@app/providers', () => ({
   useMultisigChainContext: jest.fn(() => ({
     addTask: () => undefined,
   })),

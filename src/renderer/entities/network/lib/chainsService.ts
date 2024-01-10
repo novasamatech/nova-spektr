@@ -1,16 +1,18 @@
-import sortBy from 'lodash/sortBy';
-import concat from 'lodash/concat';
-import keyBy from 'lodash/keyBy';
-import orderBy from 'lodash/orderBy';
+import { keyBy, orderBy, concat, sortBy } from 'lodash';
+import BigNumber from 'bignumber.js';
 
-import { Chain } from '@renderer/entities/chain/model/chain';
-import chainsProd from '@renderer/assets/chains/chains.json';
-import chainsDev from '@renderer/assets/chains/chains_dev.json';
-import { ChainId } from '@renderer/domain/shared-kernel';
-import { getRelaychainAsset, nonNullable, totalAmount, ZERO_BALANCE } from '@renderer/shared/lib/utils';
-import { Balance } from '@renderer/entities/asset/model/balance';
-import { ChainLike } from './common/types';
+import chainsProd from '@shared/config/chains/chains.json';
+import chainsDev from '@shared/config/chains/chains_dev.json';
+import { getRelaychainAsset, nonNullable, totalAmount, ZERO_BALANCE } from '@shared/lib/utils';
+import { ChainLike, ChainMap } from './common/types';
 import { isKusama, isPolkadot, isTestnet, isNameWithNumber } from './common/utils';
+import type { Chain, ChainId, Balance } from '@shared/core';
+import { PriceObject } from '@shared/api/price-provider';
+import { sumBalances } from '@pages/Assets/Assets/common/utils';
+
+type ChainWithFiatBalance = Chain & {
+  fiatBalance: string;
+};
 
 const CHAINS: Record<string, any> = {
   chains: chainsProd,
@@ -19,26 +21,34 @@ const CHAINS: Record<string, any> = {
 
 export const chainsService = {
   getChainsData,
+  getChainsMap,
   getChainById,
   getStakingChainsData,
   sortChains,
   sortChainsByBalance,
+  searchChain,
 };
 
-function getChainsData(): Chain[] {
-  return CHAINS[process.env.CHAINS_FILE || 'chains'];
+function getChainsData(params = { sort: false }): Chain[] {
+  const chains = CHAINS[process.env.CHAINS_FILE || 'chains'];
+
+  return params.sort ? sortChains(chains) : chains;
+}
+
+function getChainsMap(params = { sort: false }): ChainMap {
+  return keyBy(getChainsData(params), 'chainId');
 }
 
 function getChainById(chainId: ChainId): Chain | undefined {
-  const chainsData: Chain[] = CHAINS[process.env.CHAINS_FILE || 'chains'];
-
-  return chainsData.find((chain) => chain.chainId === chainId);
+  return getChainsData().find((chain) => chain.chainId === chainId);
 }
 
-function getStakingChainsData(): Chain[] {
-  const chainsData: Chain[] = CHAINS[process.env.CHAINS_FILE || 'chains'];
+function searchChain(query: string): Chain | undefined {
+  return getChainsData().find((chain) => chain.chainId.includes(query));
+}
 
-  return chainsData.reduce<Chain[]>((acc, chain) => {
+function getStakingChainsData(params = { sort: false }): Chain[] {
+  return getChainsData(params).reduce<Chain[]>((acc, chain) => {
     if (getRelaychainAsset(chain.assets)) {
       acc.push(chain);
     }
@@ -70,15 +80,57 @@ function sortChains<T extends ChainLike>(chains: T[]): T[] {
   );
 }
 
-function sortChainsByBalance(chains: Chain[], balances: Balance[]): Chain[] {
+const compareFiatBalances = (a: ChainWithFiatBalance, b: ChainWithFiatBalance) => {
+  return new BigNumber(b.fiatBalance).lt(new BigNumber(a.fiatBalance)) ? -1 : 1;
+};
+
+function sortChainsByBalance(
+  chains: Chain[],
+  balances: Balance[],
+  assetPrices: PriceObject | null,
+  currency?: string,
+): Chain[] {
+  const chainsWithFiatBalance = [] as ChainWithFiatBalance[];
+
   const relaychains = { withBalance: [], noBalance: [] };
   const parachains = { withBalance: [], noBalance: [] };
   const numberchains = { withBalance: [], noBalance: [] };
   const testnets = { withBalance: [], noBalance: [] };
 
-  const balancesMap = keyBy(balances, (b) => `${b.chainId}_${b.assetId}`);
+  const balancesMap = balances.reduce<Record<string, Balance>>((acc, balance) => {
+    const key = `${balance.chainId}_${balance.assetId}`;
+    acc[key] = acc[key] ? sumBalances(acc[key], balance) : balance;
+
+    return acc;
+  }, {});
 
   chains.forEach((chain) => {
+    const fiatBalance = chain.assets.reduce((acc, a) => {
+      const amount = totalAmount(balancesMap[`${chain.chainId}_${a.assetId}`]);
+      const assetPrice = a.priceId && currency && assetPrices?.[a.priceId]?.[currency]?.price;
+
+      const BNWithConfig = BigNumber.clone();
+      BNWithConfig.config({
+        ROUNDING_MODE: BNWithConfig.ROUND_DOWN,
+      });
+
+      const bnPrecision = new BNWithConfig(a.precision);
+      const TEN = new BNWithConfig(10);
+      const bnFiatBalance = new BNWithConfig(new BigNumber(amount).multipliedBy(assetPrice || 0).toString()).div(
+        TEN.pow(bnPrecision),
+      );
+
+      return acc.plus(bnFiatBalance);
+    }, new BigNumber(0));
+
+    if (fiatBalance.gt(0) && !isTestnet(chain.options)) {
+      (chain as ChainWithFiatBalance).fiatBalance = fiatBalance.toString();
+
+      chainsWithFiatBalance.push(chain as ChainWithFiatBalance);
+
+      return;
+    }
+
     const hasBalance = chain.assets.some((a) => {
       return totalAmount(balancesMap[`${chain.chainId}_${a.assetId}`]) !== ZERO_BALANCE;
     });
@@ -97,6 +149,7 @@ function sortChainsByBalance(chains: Chain[], balances: Balance[]): Chain[] {
   });
 
   return concat(
+    chainsWithFiatBalance.sort(compareFiatBalances),
     orderBy(relaychains.withBalance, 'name', ['desc']),
     orderBy(relaychains.noBalance, 'name', ['desc']),
     sortBy(parachains.withBalance, 'name'),

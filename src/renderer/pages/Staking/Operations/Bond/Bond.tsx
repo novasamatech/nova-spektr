@@ -1,22 +1,27 @@
 import { UnsignedTransaction } from '@substrate/txwrapper-polkadot';
 import { useEffect, useState } from 'react';
 import { Navigate, useNavigate, useParams, useSearchParams } from 'react-router-dom';
+import { useUnit } from 'effector-react';
 
-import { DEFAULT_TRANSITION, getRelaychainAsset, toAddress } from '@renderer/shared/lib/utils';
-import { RewardsDestination, ValidatorMap } from '@renderer/entities/staking';
-import { Paths, useI18n, useNetworkContext } from '@renderer/app/providers';
-import { Address, ChainId, HexString } from '@renderer/domain/shared-kernel';
-import { Transaction, TransactionType, useTransaction } from '@renderer/entities/transaction';
+import { DEFAULT_TRANSITION, getRelaychainAsset, toAddress } from '@shared/lib/utils';
+import { ValidatorMap } from '@entities/staking';
+import { useI18n } from '@app/providers';
+import { Paths } from '@shared/routes';
+import { Transaction, TransactionType, useTransaction } from '@entities/transaction';
 import { Confirmation, NoAsset, Submit, Validators } from '../components';
-import { useToggle } from '@renderer/shared/lib/hooks';
-import { Account, isMultisig, useAccount } from '@renderer/entities/account';
-import { Alert, BaseModal, Button, Loader } from '@renderer/shared/ui';
+import { useToggle } from '@shared/lib/hooks';
+import { RewardsDestination } from '@shared/core';
+import type { Account, Address, ChainId, HexString } from '@shared/core';
+import { BaseModal, Button, Loader } from '@shared/ui';
 import InitOperation, { BondResult } from './InitOperation/InitOperation';
-import { OperationTitle } from '@renderer/components/common';
+import { OperationTitle } from '@entities/chain';
 import { DestinationType } from '../common/types';
-import { UnstakingDuration } from '@renderer/pages/Staking/Overview/components';
-import { isLightClient } from '@renderer/entities/network';
-import { Signing } from '@renderer/features/operation';
+import { UnstakingDuration } from '@pages/Staking/Overview/components';
+import { useNetworkData, isLightClient } from '@entities/network';
+import { Signing } from '@features/operation';
+import { walletUtils, walletModel } from '@entities/wallet';
+import { priceProviderModel } from '@entities/price';
+import { StakingPopover } from '../components/StakingPopover/StakingPopover';
 
 const enum Step {
   INIT,
@@ -28,15 +33,17 @@ const enum Step {
 
 export const Bond = () => {
   const { t } = useI18n();
+  const activeWallet = useUnit(walletModel.$activeWallet);
+  const activeAccounts = useUnit(walletModel.$activeAccounts);
+
   const navigate = useNavigate();
-  const { connections } = useNetworkContext();
-  const { getActiveAccounts } = useAccount();
   const { setTxs, txs, setWrappers, wrapTx, buildTransaction } = useTransaction();
   const [searchParams] = useSearchParams();
   const params = useParams<{ chainId: ChainId }>();
 
+  const { api, chain, connection } = useNetworkData(params.chainId || ('' as ChainId));
+
   const [isBondModalOpen, toggleBondModal] = useToggle(true);
-  const [isAlertOpen, toggleAlert] = useToggle(true);
 
   const [activeStep, setActiveStep] = useState<Step>(Step.INIT);
   const [validators, setValidators] = useState<ValidatorMap>({});
@@ -52,9 +59,14 @@ export const Bond = () => {
   const [signer, setSigner] = useState<Account>();
   const [signatures, setSignatures] = useState<HexString[]>([]);
 
+  const isMultisigWallet = walletUtils.isMultisig(activeWallet);
+
   const accountIds = searchParams.get('id')?.split(',') || [];
   const chainId = params.chainId || ('' as ChainId);
-  const activeAccounts = getActiveAccounts();
+
+  useEffect(() => {
+    priceProviderModel.events.assetsPricesRequested({ includeRates: true });
+  }, []);
 
   useEffect(() => {
     if (!activeAccounts.length || !accountIds.length) return;
@@ -63,13 +75,11 @@ export const Bond = () => {
     setAccounts(accounts);
   }, [activeAccounts.length, activeAccounts.length && activeAccounts[0].accountId]);
 
-  const connection = connections[chainId];
-
-  if (!connection || accountIds.length === 0) {
+  if (!api || accountIds.length === 0) {
     return <Navigate replace to={Paths.STAKING} />;
   }
 
-  const { api, explorers, addressPrefix, assets, name } = connections[chainId];
+  const { explorers, addressPrefix, assets, name } = chain;
   const asset = getRelaychainAsset(assets);
 
   const goToPrevStep = () => {
@@ -90,7 +100,7 @@ export const Bond = () => {
       <BaseModal
         closeButton
         contentClass=""
-        headerClass="py-3 px-5 max-w-[440px]"
+        headerClass="py-3 pl-5 pr-3"
         panelClass="w-max"
         isOpen={isBondModalOpen}
         title={<OperationTitle title={t('staking.bond.title')} chainId={chainId} />}
@@ -111,7 +121,7 @@ export const Bond = () => {
       <BaseModal
         closeButton
         contentClass=""
-        headerClass="py-3 px-5 max-w-[440px]"
+        headerClass="py-3 pl-5 pr-3"
         panelClass="w-max"
         isOpen={isBondModalOpen}
         title={<OperationTitle title={t('staking.bond.title')} chainId={chainId} />}
@@ -129,7 +139,7 @@ export const Bond = () => {
       ? { type: RewardsDestination.TRANSFERABLE, address: destination }
       : { type: RewardsDestination.RESTAKE };
 
-    if (signer && isMultisig(accounts[0])) {
+    if (signer && isMultisigWallet) {
       setSigner(signer);
       setDescription(description || '');
     }
@@ -143,7 +153,7 @@ export const Bond = () => {
   const onSelectValidators = (validators: ValidatorMap) => {
     const transactions = getBondTxs(Object.keys(validators));
 
-    if (signer && isMultisig(txAccounts[0])) {
+    if (signer && isMultisigWallet) {
       setWrappers([
         {
           signatoryId: signer.accountId,
@@ -181,7 +191,8 @@ export const Bond = () => {
 
   const explorersProps = { explorers, addressPrefix, asset };
   const bondValues = new Array(txAccounts.length).fill(stakeAmount);
-  const multisigTx = isMultisig(txAccounts[0]) ? wrapTx(txs[0], api, addressPrefix) : undefined;
+  const multisigTx = isMultisigWallet ? wrapTx(txs[0], api, addressPrefix) : undefined;
+  const eraLength = api.consts?.staking?.sessionsPerEra.toNumber() || 0;
 
   return (
     <>
@@ -189,7 +200,7 @@ export const Bond = () => {
         closeButton
         contentClass=""
         panelClass="w-max"
-        headerClass="py-3 px-5 max-w-[440px]"
+        headerClass="py-3 pl-5 pr-3"
         isOpen={activeStep !== Step.SUBMIT && isBondModalOpen}
         title={<OperationTitle title={t('staking.bond.title', { asset: asset.symbol })} chainId={chainId} />}
         onClose={closeBondModal}
@@ -221,18 +232,21 @@ export const Bond = () => {
             onGoBack={goToPrevStep}
             {...explorersProps}
           >
-            {isAlertOpen && (
-              <Alert title={t('staking.confirmation.hintTitle')} onClose={toggleAlert}>
-                <Alert.Item>{t('staking.confirmation.hintRewards')}</Alert.Item>
-                <Alert.Item>
-                  {t('staking.confirmation.hintUnstakePeriod')} {'('}
-                  <UnstakingDuration api={api} />
-                  {')'}
-                </Alert.Item>
-                <Alert.Item>{t('staking.confirmation.hintNoRewards')}</Alert.Item>
-                <Alert.Item>{t('staking.confirmation.hintWithdraw')}</Alert.Item>
-              </Alert>
-            )}
+            <StakingPopover labelText={t('staking.confirmation.hintTitleStartStaking')}>
+              <StakingPopover.Item>
+                {t('staking.confirmation.hintRewards')}
+                {' ('}
+                {t('time.hours_other', { count: eraLength })}
+                {')'}
+              </StakingPopover.Item>
+              <StakingPopover.Item>
+                {t('staking.confirmation.hintUnstakePeriod')} {'('}
+                <UnstakingDuration api={api} />
+                {')'}
+              </StakingPopover.Item>
+              <StakingPopover.Item>{t('staking.confirmation.hintNoRewards')}</StakingPopover.Item>
+              <StakingPopover.Item>{t('staking.confirmation.hintWithdraw')}</StakingPopover.Item>
+            </StakingPopover>
           </Confirmation>
         )}
         {activeStep === Step.SIGNING && (

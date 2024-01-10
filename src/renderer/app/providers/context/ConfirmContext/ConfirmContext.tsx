@@ -1,14 +1,17 @@
 import { createContext, PropsWithChildren, useCallback, useContext, useRef, useState, ReactNode } from 'react';
 
-import { ConfirmModal, SmallTitleText, FootnoteText } from '@renderer/shared/ui';
-import { DEFAULT_TRANSITION } from '@renderer/shared/lib/utils';
-import { useToggle } from '@renderer/shared/lib/hooks';
+import { ConfirmModal, SmallTitleText, FootnoteText } from '@shared/ui';
+import { DEFAULT_TRANSITION } from '@shared/lib/utils';
+import { useToggle } from '@shared/lib/hooks';
+
+type Pallet = 'primary' | 'secondary' | 'error';
 
 export type ConfirmDialogProps = {
   title: string;
   message: ReactNode;
   confirmText?: string;
   cancelText?: string;
+  confirmPallet?: Pallet;
 };
 
 type ConfirmContextProps = {
@@ -22,6 +25,7 @@ const defaultState = {
   message: '',
   confirmText: '',
   cancelText: '',
+  confirmPallet: undefined,
 };
 
 export const ConfirmDialogProvider = ({ children }: PropsWithChildren) => {
@@ -55,6 +59,7 @@ export const ConfirmDialogProvider = ({ children }: PropsWithChildren) => {
         isOpen={isDialogOpen}
         confirmText={dialogState.confirmText}
         cancelText={dialogState.cancelText}
+        confirmPallet={dialogState.confirmPallet}
         onClose={() => fn.current?.(false)}
         onConfirm={() => fn.current?.(true)}
       >

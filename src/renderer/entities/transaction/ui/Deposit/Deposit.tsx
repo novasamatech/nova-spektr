@@ -1,9 +1,10 @@
 import { ApiPromise } from '@polkadot/api';
 import { useEffect, useState, memo } from 'react';
 
-import { Asset, AssetBalance } from '@renderer/entities/asset';
-import { Threshold } from '@renderer/domain/shared-kernel';
-import { useTransaction } from '@renderer/entities/transaction';
+import { AssetBalance } from '@entities/asset';
+import { useTransaction } from '@entities/transaction';
+import type { Asset, Threshold } from '@shared/core';
+import { AssetFiatBalance } from '@entities/price/ui/AssetFiatBalance';
 
 type Props = {
   api: ApiPromise;
@@ -15,7 +16,6 @@ type Props = {
 
 export const Deposit = memo(({ api, asset, threshold, className, onDepositChange }: Props) => {
   const { getTransactionDeposit } = useTransaction();
-
   const [deposit, setDeposit] = useState('');
 
   useEffect(() => {
@@ -25,5 +25,10 @@ export const Deposit = memo(({ api, asset, threshold, className, onDepositChange
     onDepositChange?.(txDeposit);
   }, [threshold, api]);
 
-  return <AssetBalance className={className} value={deposit} asset={asset} />;
+  return (
+    <div className="flex flex-col gap-y-0.5 items-end">
+      <AssetBalance value={deposit} asset={asset} className={className} />
+      <AssetFiatBalance asset={asset} amount={deposit} />
+    </div>
+  );
 });

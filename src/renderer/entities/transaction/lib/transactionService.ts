@@ -6,14 +6,13 @@ import { Weight } from '@polkadot/types/interfaces';
 import { blake2AsU8a, signatureVerify } from '@polkadot/util-crypto';
 import { useState } from 'react';
 
-import { AccountId, Address, ChainId, HexString, Threshold } from '@renderer/domain/shared-kernel';
-import { Transaction, TransactionType } from '@renderer/entities/transaction/model/transaction';
-import { createTxMetadata, toAccountId } from '@renderer/shared/lib/utils';
+import { Transaction, TransactionType } from '@entities/transaction/model/transaction';
+import { createTxMetadata, toAccountId } from '@shared/lib/utils';
 import { ITransactionService, HashData, ExtrinsicResultParams } from './common/types';
-import { MultisigAccount } from '@renderer/entities/account';
 import { getExtrinsic, getUnsignedTransaction, wrapAsMulti } from './extrinsicService';
 import { decodeDispatchError } from './common/utils';
 import { useCallDataDecoder } from './callDataDecoder';
+import type { AccountId, Address, ChainId, HexString, Threshold, MultisigAccount } from '@shared/core';
 
 type WrapAsMulti = {
   account: MultisigAccount;

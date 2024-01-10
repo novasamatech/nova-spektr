@@ -1,13 +1,12 @@
 import { ApiPromise } from '@polkadot/api';
 import { useLiveQuery } from 'dexie-react-hooks';
 
-import { MultisigAccount } from '@renderer/entities/account/model/account';
 import {
   MultisigTransaction,
   MultisigTxFinalStatus,
   MultisigTxInitStatus,
-} from '@renderer/entities/transaction/model/transaction';
-import storage, { MultisigTransactionDS } from '../../../../shared/api/storage';
+} from '@entities/transaction/model/transaction';
+import { storage, MultisigTransactionDS } from '@shared/api/storage';
 import { DEFAULT_BLOCK_HASH, MULTISIG_EXTRINSIC_CALL_INDEX, QUERY_INTERVAL } from './common/consts';
 import { IMultisigTxService } from './common/types';
 import {
@@ -18,12 +17,12 @@ import {
   createNewEventsPayload,
   updateOldEventsPayload,
 } from './common/utils';
-import { chainsService } from '../../../network/lib/chainsService';
-import { useTransaction } from '../../../transaction/lib/transactionService';
-import { CallData, AccountId } from '@renderer/domain/shared-kernel';
-import { toAddress, getCurrentBlockNumber, getExpectedBlockTime } from '@renderer/shared/lib/utils';
+import { useTransaction } from '@entities/transaction/lib/transactionService';
+import { toAddress, getCurrentBlockNumber, getExpectedBlockTime } from '@shared/lib/utils';
 import { useMultisigEvent } from '../multisigEvent/multisigEventService';
-import { Task } from '@renderer/shared/lib/hooks/useTaskQueue';
+import { Task } from '@shared/lib/hooks/useTaskQueue';
+import type { CallData, AccountId, MultisigAccount } from '@shared/core';
+import { chainsService } from '@entities/network';
 
 type Props = {
   addTask?: (task: Task) => void;

@@ -1,24 +1,31 @@
 import { KeyboardEvent } from 'react';
 import { Link } from 'react-router-dom';
+import { useUnit } from 'effector-react';
 
-import { BodyText, Icon, Shimmering } from '@renderer/shared/ui';
-import { Asset, AssetBalance, AssetDetails, AssetIcon, Balance } from '@renderer/entities/asset';
-import { useToggle } from '@renderer/shared/lib/hooks';
-import { cnTw, KeyboardKey, totalAmount, transferableAmount } from '@renderer/shared/lib/utils';
-import { useI18n } from '@renderer/app/providers';
-import { Paths } from '../../../../app/providers/routes/paths';
-import { createLink } from '../../../../app/providers/routes/utils';
-import { ChainId } from '@renderer/domain/shared-kernel';
+import { BodyText, Icon, Shimmering } from '@shared/ui';
+import { AssetBalance, AssetDetails, AssetIcon } from '@entities/asset';
+import { useToggle } from '@shared/lib/hooks';
+import { cnTw, KeyboardKey, totalAmount, transferableAmount } from '@shared/lib/utils';
+import { useI18n } from '@app/providers';
+import { Paths, createLink } from '@shared/routes';
+import { ChainId, Asset, Balance } from '@shared/core';
+// TODO: Move it to another layer https://app.clickup.com/t/8692tr8x0
+import { TokenPrice } from '@entities/price/ui/TokenPrice';
+import { AssetFiatBalance } from '@entities/price/ui/AssetFiatBalance';
+import { priceProviderModel } from '@entities/price';
+import { walletModel, walletUtils } from '@entities/wallet';
 
 type Props = {
   chainId: ChainId;
   asset: Asset;
   balance?: Balance;
-  canMakeActions?: boolean;
 };
 
-export const AssetCard = ({ chainId, asset, balance, canMakeActions }: Props) => {
+export const AssetCard = ({ chainId, asset, balance }: Props) => {
   const { t } = useI18n();
+
+  const fiatFlag = useUnit(priceProviderModel.$fiatFlag);
+  const activeWallet = useUnit(walletModel.$activeWallet);
 
   const [isExpanded, toggleExpanded] = useToggle();
 
@@ -48,14 +55,25 @@ export const AssetCard = ({ chainId, asset, balance, canMakeActions }: Props) =>
       <div className="flex items-center py-1.5 px-2">
         <div className="flex items-center gap-x-2 px-2 py-1  mr-auto">
           <AssetIcon src={asset.icon} name={asset.name} />
-          <BodyText>{asset.name}</BodyText>
+          <div>
+            <BodyText>{asset.name}</BodyText>
+            <TokenPrice assetId={asset.priceId} />
+          </div>
         </div>
-        {balance?.free ? (
-          <AssetBalance value={totalAmount(balance)} asset={asset} />
-        ) : (
-          <Shimmering width={82} height={20} />
-        )}
-        {canMakeActions && (
+        <div className="flex flex-col items-end">
+          {balance?.free ? (
+            <>
+              <AssetBalance value={totalAmount(balance)} asset={asset} />
+              <AssetFiatBalance amount={totalAmount(balance)} asset={asset} />
+            </>
+          ) : (
+            <div className="flex flex-col gap-y-1 items-end">
+              <Shimmering width={82} height={20} />
+              {fiatFlag && <Shimmering width={56} height={18} />}
+            </div>
+          )}
+        </div>
+        {!walletUtils.isWatchOnly(activeWallet) && (
           <div className="flex gap-x-2 ml-3">
             <Link
               to={createLink(Paths.SEND_ASSET, {}, { chainId: [chainId], assetId: [asset.assetId] })}

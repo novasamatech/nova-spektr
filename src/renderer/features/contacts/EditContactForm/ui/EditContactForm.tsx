@@ -1,14 +1,14 @@
-import { useStore } from 'effector-react';
+import { useUnit } from 'effector-react';
 import { FormEvent, useEffect } from 'react';
 import { useForm } from 'effector-forms';
 
-import * as editFormModel from '../model/contact-form';
-import { Button, Icon, Identicon, Input, InputHint } from '@renderer/shared/ui';
-import { useI18n } from '@renderer/app/providers';
-import { ContactDS } from '@renderer/shared/api/storage';
+import { editFormModel, Callbacks } from '../model/contact-form';
+import { Button, Icon, Identicon, Input, InputHint } from '@shared/ui';
+import { useI18n } from '@app/providers';
+import { Contact } from '@shared/core';
 
-type Props = editFormModel.Callbacks & {
-  contactToEdit: ContactDS;
+type Props = Callbacks & {
+  contactToEdit: Contact;
 };
 export const EditContactForm = ({ contactToEdit, onSubmit }: Props) => {
   const { t } = useI18n();
@@ -17,9 +17,9 @@ export const EditContactForm = ({ contactToEdit, onSubmit }: Props) => {
     submit,
     isValid,
     fields: { name, address, matrixId },
-  } = useForm(editFormModel.contactForm);
+  } = useForm(editFormModel.$contactForm);
 
-  const pending = useStore(editFormModel.$submitPending);
+  const pending = useUnit(editFormModel.$submitPending);
 
   useEffect(() => {
     editFormModel.events.formInitiated(contactToEdit);

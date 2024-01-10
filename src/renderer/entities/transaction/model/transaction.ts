@@ -1,6 +1,4 @@
-import { Address, ChainId, HexString, AccountId, CallData, CallHash } from '../../../domain/shared-kernel';
-import { Signatory } from '../../signatory/model/signatory';
-import { PartialBy } from '@renderer/domain/utility';
+import type { Address, ChainId, HexString, AccountId, CallData, CallHash, PartialBy, Signatory } from '@shared/core';
 
 export const enum TransactionType {
   TRANSFER = 'transfer',

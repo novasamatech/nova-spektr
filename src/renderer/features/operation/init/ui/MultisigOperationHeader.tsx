@@ -1,37 +1,51 @@
 import { useEffect, useState } from 'react';
+import { useUnit } from 'effector-react';
 
-import { DropdownOption, DropdownResult } from '@renderer/shared/ui/Dropdowns/common/types';
-import { Account, MultisigAccount, useAccount } from '@renderer/entities/account';
-import { SigningType } from '@renderer/domain/shared-kernel';
-import { InputHint, Select } from '@renderer/shared/ui';
-import { useI18n } from '@renderer/app/providers';
-import { OperationErrorType } from '@renderer/features/operation/init/model';
+import { DropdownOption, DropdownResult } from '@shared/ui/Dropdowns/common/types';
+import { InputHint, Select } from '@shared/ui';
+import { useI18n } from '@app/providers';
+import { OperationErrorType } from '@entities/transaction';
+import { accountUtils, walletModel, walletUtils } from '@entities/wallet';
+import type { Account, ChainId, MultisigAccount, Wallet } from '@shared/core';
 
 type Props = {
-  account: MultisigAccount;
+  chainId: ChainId;
+  account?: MultisigAccount;
   invalid?: boolean;
   error?: OperationErrorType;
-  getSignatoryOption: (account: Account) => DropdownOption<Account>;
+  getSignatoryOption: (wallet: Wallet, account: Account) => DropdownOption<Account>;
   onSignatoryChange: (account: Account) => void;
 };
 
-export const MultisigOperationHeader = ({ account, invalid, error, getSignatoryOption, onSignatoryChange }: Props) => {
+export const MultisigOperationHeader = ({
+  chainId,
+  account,
+  invalid,
+  error,
+  getSignatoryOption,
+  onSignatoryChange,
+}: Props) => {
   const { t } = useI18n();
-  const { getLiveAccounts } = useAccount();
+
+  const accounts = useUnit(walletModel.$accounts);
+  const wallets = useUnit(walletModel.$wallets);
 
   const [signatoryOptions, setSignatoryOptions] = useState<DropdownOption<Account>[]>([]);
   const [activeSignatory, setActiveSignatory] = useState<DropdownResult<Account>>();
 
-  const dbAccounts = getLiveAccounts();
-
-  const signatoryIds = account.signatories.map((s) => s.accountId);
+  const signatoryIds = account?.signatories.map((s) => s.accountId) || [];
 
   useEffect(() => {
-    const signerOptions = dbAccounts.reduce<DropdownOption<Account>[]>((acc, signer) => {
-      const isWatchOnly = signer.signingType === SigningType.WATCH_ONLY;
-      const signerExist = signatoryIds.includes(signer.accountId);
-      if (!isWatchOnly && signerExist) {
-        acc.push(getSignatoryOption(signer));
+    const signerOptions = wallets.reduce<DropdownOption<Account>[]>((acc, wallet) => {
+      const isWatchOnly = walletUtils.isWatchOnly(wallet);
+      const walletAccounts = accountUtils.getWalletAccounts(wallet.id, accounts);
+
+      const signer = walletAccounts.find(
+        (a) => signatoryIds.includes(a.accountId) && accountUtils.isChainIdMatch(a, chainId),
+      );
+
+      if (!isWatchOnly && signer) {
+        acc.push(getSignatoryOption(wallet, signer));
       }
 
       return acc;
@@ -41,7 +55,7 @@ export const MultisigOperationHeader = ({ account, invalid, error, getSignatoryO
 
     setSignatoryOptions(signerOptions);
     !activeSignatory && onChange({ id: signerOptions[0].id, value: signerOptions[0].value });
-  }, [dbAccounts.length, getSignatoryOption]);
+  }, [wallets.length, accounts.length, getSignatoryOption, signatoryIds.length]);
 
   const onChange = (signatory: DropdownResult<Account>) => {
     onSignatoryChange(signatory.value);

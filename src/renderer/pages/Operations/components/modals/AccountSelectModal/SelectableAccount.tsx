@@ -1,7 +1,6 @@
-import { AccountAddress, AccountAddressProps } from '@renderer/entities/account';
-import { Icon } from '@renderer/shared/ui';
-import { Explorer } from '@renderer/entities/chain';
-import { ChainId } from '@renderer/domain/shared-kernel';
+import { AccountAddress, AccountAddressProps } from '@entities/wallet';
+import { Icon } from '@shared/ui';
+import type { Explorer, ChainId } from '@shared/core';
 
 type Props<T extends any> = {
   explorers?: Explorer[];

@@ -1,15 +1,16 @@
-import { join } from 'path';
-import { BrowserWindow, shell } from 'electron';
+import { join, parse } from 'path';
+import { readdirSync, rmSync, renameSync } from 'fs';
+import { BrowserWindow, Menu, shell } from 'electron';
 import log, { LogFile } from 'electron-log';
 import windowStateKeeper from 'electron-window-state';
-import * as path from 'path';
-import * as fs from 'fs';
 
-import { ENVIRONMENT } from '@shared/constants';
 import { APP_CONFIG } from '../../app.config';
+import { ENVIRONMENT } from './shared/constants';
 import { createWindow } from './factories/create';
+import { buildMenuTemplate } from './factories/menu';
 
 const { MAIN, TITLE } = APP_CONFIG;
+const MAX_LOG_FILES_TO_KEEP = 10;
 log.initialize({ preload: true });
 log.variables.version = process.env.VERSION;
 log.variables.env = process.env.NODE_ENV;
@@ -20,19 +21,7 @@ log.transports.file.fileName = 'nova-spektr.log';
 log.transports.file.format = '{y}/{m}/{d} {h}:{i}:{s}.{ms} [{env}#{version}]-{processType} [{level}] > {text}';
 log.transports.file.level = 'info';
 log.transports.file.maxSize = 1048576 * 5; // 5 MB;
-log.transports.file.archiveLogFn = (oldLogFile: LogFile): void => {
-  const file = oldLogFile.toString();
-  const info = path.parse(file);
-
-  try {
-    const date = new Date().toISOString();
-    let newFileName = path.join(info.dir, info.name + '.' + date + info.ext);
-    fs.renameSync(file, newFileName);
-  } catch (e) {
-    console.warn('Could not rotate log', e);
-  }
-};
-
+log.transports.file.archiveLogFn = rotateLogs;
 Object.assign(console, log.functions);
 log.errorHandler.startCatching({
   showDialog: false,
@@ -46,6 +35,7 @@ export async function MainWindow() {
     defaultWidth: MAIN.WINDOW.WIDTH,
     defaultHeight: MAIN.WINDOW.HEIGHT,
   });
+
   const window = createWindow({
     title: TITLE,
     x: mainWindowState.x,
@@ -60,15 +50,17 @@ export async function MainWindow() {
 
     webPreferences: {
       preload: join(__dirname, 'bridge.js'),
+      nodeIntegrationInWorker: true,
     },
   });
 
   ENVIRONMENT.IS_DEV && window.webContents.openDevTools({ mode: 'bottom' });
 
   // Open urls in the user's browser
-  window.webContents.on('new-window', (event, url) => {
-    event.preventDefault();
-    shell.openExternal(url);
+  window.webContents.setWindowOpenHandler((details) => {
+    shell.openExternal(details.url);
+
+    return { action: 'deny' };
   });
 
   window.on('close', () => {
@@ -82,7 +74,26 @@ export async function MainWindow() {
 
     window.show();
   });
+  Menu.setApplicationMenu(buildMenuTemplate());
   mainWindowState.manage(window);
 
   return window;
+}
+
+function rotateLogs(oldLogFile: LogFile) {
+  const file = oldLogFile.toString();
+  const info = parse(file);
+  const files = readdirSync(info.dir);
+
+  if (files.length > MAX_LOG_FILES_TO_KEEP) {
+    const filesToDelete = files.sort().slice(0, files.length - MAX_LOG_FILES_TO_KEEP);
+    filesToDelete.forEach((fileToDelete) => rmSync(join(info.dir, fileToDelete)));
+  }
+  try {
+    const date = new Date().toISOString();
+    let newFileName = join(info.dir, info.name + '.' + date + info.ext);
+    renameSync(file, newFileName);
+  } catch (error) {
+    console.warn('Could not rotate log', error);
+  }
 }

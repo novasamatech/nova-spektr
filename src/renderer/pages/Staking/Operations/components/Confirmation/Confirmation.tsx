@@ -1,27 +1,25 @@
 import { BN, BN_ZERO } from '@polkadot/util';
 import { ApiPromise } from '@polkadot/api';
 import { PropsWithChildren, useState, useEffect } from 'react';
+import { useUnit } from 'effector-react';
 
-import { Icon, Button, FootnoteText, CaptionText, InputHint } from '@renderer/shared/ui';
-import { useI18n } from '@renderer/app/providers';
-import { useToggle } from '@renderer/shared/lib/hooks';
-import { RewardsDestination } from '@renderer/entities/staking';
-import { Validator } from '@renderer/domain/validator';
-import { Account, AddressWithExplorers, isMultisig } from '@renderer/entities/account';
-import { Asset, AssetBalance } from '@renderer/entities/asset';
-import { Explorer } from '@renderer/entities/chain';
-import {
-  MultisigTxInitStatus,
-  DepositWithLabel,
-  Fee,
-  useTransaction,
-  Transaction,
-} from '@renderer/entities/transaction';
+import { Icon, Button, FootnoteText, CaptionText, InputHint, DetailRow } from '@shared/ui';
+import { useI18n } from '@app/providers';
+import { useToggle } from '@shared/lib/hooks';
+import { Validator } from '@shared/core/types/validator';
+import { AddressWithExplorers, WalletCardSm, WalletIcon, accountUtils, walletModel } from '@entities/wallet';
+import { AssetBalance } from '@entities/asset';
+import { MultisigTxInitStatus, DepositWithLabel, Fee, useTransaction, Transaction } from '@entities/transaction';
 import AccountsModal from '../Modals/AccountsModal/AccountsModal';
-import ValidatorsModal from '../Modals/ValidatorsModal/ValidatorsModal';
 import { DestinationType } from '../../common/types';
-import { cnTw } from '@renderer/shared/lib/utils';
-import { useMultisigTx } from '@renderer/entities/multisig';
+import { cnTw } from '@shared/lib/utils';
+import { useMultisigTx } from '@entities/multisig';
+import { RewardsDestination, WalletType } from '@shared/core';
+import type { Account, Asset, Explorer } from '@shared/core';
+import { AssetFiatBalance } from '@entities/price/ui/AssetFiatBalance';
+import { SelectedValidatorsModal } from '@entities/staking';
+import { SignButton } from '@entities/operation/ui/SignButton';
+import { getIconName } from '@entities/transaction/lib/transactionIcon';
 
 const ActionStyle = 'group hover:bg-action-background-hover px-2 py-1 rounded';
 
@@ -61,18 +59,25 @@ export const Confirmation = ({
   const { getMultisigTxs } = useMultisigTx({});
   const { getTransactionHash } = useTransaction();
 
+  const activeWallet = useUnit(walletModel.$activeWallet);
+  const wallets = useUnit(walletModel.$wallets);
+
   const [isAccountsOpen, toggleAccounts] = useToggle();
   const [isValidatorsOpen, toggleValidators] = useToggle();
 
   const [feeLoading, setFeeLoading] = useState(true);
   const [multisigTxExist, setMultisigTxExist] = useState(false);
 
+  const isMultisigAccount = accountUtils.isMultisigAccount(accounts[0]);
   const singleAccount = accounts.length === 1;
   const validatorsExist = validators && validators.length > 0;
   const totalAmount = amounts.reduce((acc, amount) => acc.add(new BN(amount)), BN_ZERO).toString();
 
+  const signerWallet = signer && wallets.find((w) => w.id === signer.walletId);
+  const walletType = signerWallet?.type || activeWallet?.type || WalletType.POLKADOT_VAULT;
+
   useEffect(() => {
-    if (!accounts.length && !isMultisig(accounts[0])) return;
+    if (!accounts.length && !isMultisigAccount) return;
 
     const { callHash } = getTransactionHash(transaction, api);
 
@@ -92,8 +97,18 @@ export const Confirmation = ({
     <>
       <div className="w-[440px] px-5 py-4">
         <div className="flex flex-col items-center gap-y-3 mb-6">
+          <div className="flex items-center justify-center w-15 h-15 box-content rounded-full border-2 border-icon-default">
+            <Icon className="text-icon-default" name={getIconName(transaction)} size={42} />
+          </div>
           {amounts.length > 0 && (
-            <AssetBalance className="block mx-auto text-center text-4xl font-bold" value={totalAmount} asset={asset} />
+            <div className="flex flex-col gap-y-2 items-center mx-auto">
+              <AssetBalance
+                value={totalAmount}
+                asset={asset}
+                className="font-manrope text-text-primary text-[32px] leading-[36px] font-bold"
+              />
+              <AssetFiatBalance asset={asset} amount={totalAmount} className="text-headline" />
+            </div>
           )}
 
           {description && (
@@ -103,16 +118,19 @@ export const Confirmation = ({
           )}
         </div>
 
-        {/* TODO: use DetailRow */}
         <div className="flex flex-col gap-y-4">
-          <div className="flex justify-between items-center gap-x-2">
-            <FootnoteText className="text-text-tertiary">
-              {t('staking.confirmation.accountLabel', { count: accounts.length })}
-            </FootnoteText>
+          {activeWallet && (
+            <DetailRow label={t('operation.details.wallet')} className="flex gap-x-2">
+              <WalletIcon type={activeWallet.type} size={16} />
+              <FootnoteText className="pr-2">{activeWallet.name}</FootnoteText>
+            </DetailRow>
+          )}
+          <DetailRow label={t('staking.confirmation.accountLabel', { count: accounts.length })}>
             {singleAccount ? (
               <AddressWithExplorers
+                type="short"
+                wrapperClassName="text-text-secondary"
                 accountId={accounts[0].accountId}
-                name={accounts[0].name}
                 explorers={explorers}
                 addressPrefix={addressPrefix}
               />
@@ -124,23 +142,21 @@ export const Confirmation = ({
                 <Icon className="group-hover:text-icon-hover" name="info" size={16} />
               </button>
             )}
-          </div>
+          </DetailRow>
 
-          {signer && (
-            <div className="flex justify-between items-center gap-x-2">
-              <FootnoteText className="text-text-tertiary">{t('staking.confirmation.signatoryLabel')}</FootnoteText>
-              <AddressWithExplorers
+          {signerWallet && (
+            <DetailRow className="flex gap-x-2" label={t('staking.confirmation.signatoryLabel')}>
+              <WalletCardSm
+                wallet={signerWallet}
                 accountId={signer.accountId}
-                name={signer.name}
-                explorers={explorers}
                 addressPrefix={addressPrefix}
+                explorers={explorers}
               />
-            </div>
+            </DetailRow>
           )}
 
           {validatorsExist && (
-            <div className="flex justify-between items-center gap-x-2">
-              <FootnoteText className="text-text-tertiary">{t('staking.confirmation.validatorsLabel')}</FootnoteText>
+            <DetailRow label={t('staking.confirmation.validatorsLabel')}>
               <button
                 type="button"
                 className={cnTw('flex items-center gap-x-1', ActionStyle)}
@@ -151,73 +167,59 @@ export const Confirmation = ({
                 </div>
                 <Icon className="group-hover:text-icon-hover" name="info" size={16} />
               </button>
-            </div>
+            </DetailRow>
           )}
-
-          <hr className="border-divider w-full" />
 
           {destination && (
             <>
-              <div className="flex justify-between items-center gap-x-2">
-                <FootnoteText className="text-text-tertiary">
-                  {t('staking.confirmation.rewardsDestinationLabel')}
-                </FootnoteText>
-                {destination?.type === RewardsDestination.RESTAKE && (
-                  <FootnoteText>{t('staking.confirmation.restakeRewards')}</FootnoteText>
-                )}
-                {destination?.type === RewardsDestination.TRANSFERABLE && destination.address && (
-                  <AddressWithExplorers address={destination.address} explorers={explorers} type="short" />
-                )}
-              </div>
-
-              <hr className="border-divider w-full" />
+              <hr className="border-filter-border w-full" />
+              <DetailRow label={t('staking.confirmation.rewardsDestinationLabel')}>
+                <>
+                  {destination?.type === RewardsDestination.RESTAKE && (
+                    <FootnoteText>{t('staking.confirmation.restakeRewards')}</FootnoteText>
+                  )}
+                  {destination?.type === RewardsDestination.TRANSFERABLE && destination.address && (
+                    <AddressWithExplorers address={destination.address} explorers={explorers} type="short" />
+                  )}
+                </>
+              </DetailRow>
+              {children}
             </>
           )}
 
-          {isMultisig(accounts[0]) && <DepositWithLabel api={api} asset={asset} threshold={accounts[0].threshold} />}
+          <hr className="border-filter-border" />
 
-          <div className="flex justify-between items-center gap-x-2">
-            <FootnoteText className="text-text-tertiary">
-              {t('staking.networkFee', { count: accounts.length })}
-            </FootnoteText>
-            <FootnoteText>
-              <Fee api={api} asset={asset} transaction={transaction} onFeeLoading={setFeeLoading} />
-            </FootnoteText>
-          </div>
+          {accountUtils.isMultisigAccount(accounts[0]) && (
+            <DepositWithLabel api={api} asset={asset} threshold={accounts[0].threshold} />
+          )}
+          <DetailRow label={t('staking.networkFee', { count: accounts.length })}>
+            <Fee api={api} asset={asset} transaction={transaction} onFeeLoading={setFeeLoading} />
+          </DetailRow>
 
           {accounts.length > 1 && (
-            <div className="flex justify-between items-center gap-x-2">
-              <FootnoteText className="text-text-tertiary">{t('staking.networkFeeTotal')}</FootnoteText>
-              <FootnoteText className="text-text-tertiary">
-                <Fee
-                  api={api}
-                  asset={asset}
-                  multiply={accounts.length}
-                  transaction={transaction}
-                  onFeeLoading={setFeeLoading}
-                />
-              </FootnoteText>
-            </div>
+            <DetailRow label={t('staking.networkFeeTotal')}>
+              <Fee
+                api={api}
+                asset={asset}
+                multiply={accounts.length}
+                transaction={transaction}
+                onFeeLoading={setFeeLoading}
+              />
+            </DetailRow>
           )}
+
+          {!destination && children}
 
           <InputHint active={multisigTxExist} variant="error">
             {t('staking.confirmation.hintMstExists')}
           </InputHint>
-
-          {children}
         </div>
 
         <div className="flex justify-between items-center mt-7">
           <Button variant="text" onClick={onGoBack}>
             {t('staking.confirmation.backButton')}
           </Button>
-          <Button
-            disabled={feeLoading || multisigTxExist}
-            prefixElement={<Icon name="vault" size={14} />}
-            onClick={onResult}
-          >
-            {t('staking.confirmation.signButton')}
-          </Button>
+          <SignButton disabled={feeLoading || multisigTxExist} type={walletType} onClick={onResult} />
         </div>
       </div>
 
@@ -225,6 +227,7 @@ export const Confirmation = ({
         isOpen={isAccountsOpen}
         accounts={accounts}
         amounts={amounts}
+        chainId={transaction?.chainId}
         asset={asset}
         explorers={explorers}
         addressPrefix={addressPrefix}
@@ -232,7 +235,7 @@ export const Confirmation = ({
       />
 
       {validatorsExist && (
-        <ValidatorsModal
+        <SelectedValidatorsModal
           isOpen={isValidatorsOpen}
           validators={validators}
           explorers={explorers}

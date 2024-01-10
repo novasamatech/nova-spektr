@@ -1,12 +1,12 @@
 import { useEffect, useState } from 'react';
 import { Controller, SubmitHandler, useForm } from 'react-hook-form';
 
-import { BaseModal, Button, Input, InputHint, Alert } from '@renderer/shared/ui';
-import { useI18n, useNetworkContext } from '@renderer/app/providers';
-import { RpcNode } from '@renderer/entities/chain';
-import { RpcValidation, ExtendedChain } from '@renderer/entities/network';
-import { validateWsAddress } from '@renderer/shared/lib/utils';
-import { OperationTitle } from '@renderer/components/common';
+import { BaseModal, Button, Input, InputHint, Alert } from '@shared/ui';
+import { useI18n } from '@app/providers';
+import { networkModel, networkService, RpcValidation, ExtendedChain } from '@entities/network';
+import { validateWsAddress } from '@shared/lib/utils';
+import { OperationTitle } from '@entities/chain';
+import type { RpcNode } from '@shared/core';
 
 const MODAL_ANIMATION = 300;
 
@@ -32,7 +32,6 @@ type Props = {
 
 export const CustomRpcModal = ({ network, node, isOpen, onClose }: Props) => {
   const { t } = useI18n();
-  const { validateRpcNode, addRpcNode, updateRpcNode } = useNetworkContext();
 
   const [formState, setFormState] = useState<FormState>(FormState.INIT);
 
@@ -107,7 +106,7 @@ export const CustomRpcModal = ({ network, node, isOpen, onClose }: Props) => {
 
     try {
       setFormState(FormState.LOADING);
-      const result = await validateRpcNode(network.chainId, formData.url);
+      const result = await networkService.validateRpcNode(network.chainId, formData.url);
 
       const options = {
         [RpcValidation.INVALID]: () => setFormState(FormState.INVALID),
@@ -121,14 +120,17 @@ export const CustomRpcModal = ({ network, node, isOpen, onClose }: Props) => {
   };
 
   const saveRpcNode = async (formData: CustomRpcForm): Promise<void> => {
-    try {
-      if (node) {
-        await updateRpcNode(network.chainId, node, formData);
-      } else {
-        await addRpcNode(network.chainId, formData);
-      }
-    } catch (error) {
-      console.warn(error);
+    if (node) {
+      networkModel.events.rpcNodeUpdated({
+        chainId: network.chainId,
+        oldNode: node,
+        rpcNode: formData,
+      });
+    } else {
+      networkModel.events.rpcNodeAdded({
+        chainId: network.chainId,
+        rpcNode: formData,
+      });
     }
   };
 
@@ -141,7 +143,7 @@ export const CustomRpcModal = ({ network, node, isOpen, onClose }: Props) => {
     <BaseModal
       closeButton
       title={<OperationTitle title={modalTitle} chainId={network.chainId} />}
-      headerClass="py-3 px-5 max-w-[440px]"
+      headerClass="py-3 pl-5 pr-3"
       isOpen={isOpen}
       onClose={onClose}
     >
@@ -205,10 +207,16 @@ export const CustomRpcModal = ({ network, node, isOpen, onClose }: Props) => {
             </InputHint>
           </div>
 
-          {formState === FormState.INVALID && <Alert title={t('settings.networks.addressNoConnect')} variant="error" />}
-          {formState === FormState.WRONG_NETWORK && (
-            <Alert title={t('settings.networks.addressWrongNetwork', { networkName: network.name })} variant="error" />
-          )}
+          <Alert
+            active={formState === FormState.INVALID}
+            title={t('settings.networks.addressNoConnect')}
+            variant="error"
+          />
+          <Alert
+            active={formState === FormState.WRONG_NETWORK}
+            title={t('settings.networks.addressWrongNetwork', { networkName: network.name })}
+            variant="error"
+          />
         </div>
 
         <div className="flex justify-end mt-7 w-full">

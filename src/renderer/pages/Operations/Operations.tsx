@@ -1,27 +1,32 @@
 import { useEffect, useState } from 'react';
 import { groupBy } from 'lodash';
 import { format } from 'date-fns';
+import { useUnit } from 'effector-react';
 
-import { useI18n, useNetworkContext } from '@renderer/app/providers';
+import { useI18n } from '@app/providers';
 import EmptyOperations from './components/EmptyState/EmptyOperations';
-import { useAccount, MultisigAccount } from '@renderer/entities/account';
 import Operation from './components/Operation';
 import { sortByDateDesc } from './common/utils';
-import { FootnoteText } from '@renderer/shared/ui';
-import { MultisigTransactionDS } from '@renderer/shared/api/storage';
-import { useMultisigTx, useMultisigEvent } from '@renderer/entities/multisig';
-import { Header } from '@renderer/components/common';
-import { MultisigEvent, MultisigTransactionKey } from '@renderer/entities/transaction';
-import { OperationsFilter } from '@renderer/features/operation';
+import { FootnoteText, Header } from '@shared/ui';
+import { MultisigTransactionDS } from '@shared/api/storage';
+import { useMultisigTx, useMultisigEvent } from '@entities/multisig';
+import { MultisigEvent, MultisigTransactionKey } from '@entities/transaction';
+import { OperationsFilter } from '@features/operation';
+import { walletModel, accountUtils } from '@entities/wallet';
+import { priceProviderModel } from '@entities/price';
+import { networkModel } from '@entities/network';
 
 export const Operations = () => {
   const { t, dateLocale } = useI18n();
-  const { connections } = useNetworkContext();
-  const { getActiveMultisigAccount } = useAccount();
+  const activeAccounts = useUnit(walletModel.$activeAccounts);
+  const chains = useUnit(networkModel.$chains);
+
   const { getLiveAccountMultisigTxs } = useMultisigTx({});
   const { getLiveEventsByKeys } = useMultisigEvent({});
 
-  const account = getActiveMultisigAccount();
+  const activeAccount = activeAccounts.at(0);
+  const account = activeAccount && accountUtils.isMultisigAccount(activeAccount) ? activeAccount : undefined;
+
   const allTxs = getLiveAccountMultisigTxs(account?.accountId ? [account.accountId] : []);
 
   const [txs, setTxs] = useState<MultisigTransactionDS[]>([]);
@@ -48,12 +53,16 @@ export const Operations = () => {
   });
 
   useEffect(() => {
-    setTxs(allTxs.filter((tx) => connections[tx.chainId]));
+    priceProviderModel.events.assetsPricesRequested({ includeRates: true });
+  }, []);
+
+  useEffect(() => {
+    setTxs(allTxs.filter((tx) => chains[tx.chainId]));
   }, [allTxs.length]);
 
   useEffect(() => {
     setFilteredTxs([]);
-  }, [account?.accountId]);
+  }, [activeAccount]);
 
   return (
     <div className="flex flex-col items-center relative h-full">
@@ -73,7 +82,7 @@ export const Operations = () => {
                     .sort((a, b) => (b.dateCreated || 0) - (a.dateCreated || 0))
                     .map((tx) => (
                       <li key={tx.dateCreated}>
-                        <Operation tx={tx} account={account as MultisigAccount} />
+                        <Operation tx={tx} account={account} />
                       </li>
                     ))}
                 </ul>
@@ -82,7 +91,7 @@ export const Operations = () => {
         </div>
       )}
 
-      {!filteredTxs.length && (
+      {filteredTxs.length === 0 && (
         <EmptyOperations multisigAccount={account} isEmptyFromFilters={txs.length !== filteredTxs.length} />
       )}
     </div>

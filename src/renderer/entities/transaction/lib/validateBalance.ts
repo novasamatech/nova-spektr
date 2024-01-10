@@ -1,19 +1,16 @@
 import { BN } from '@polkadot/util';
 import { ApiPromise } from '@polkadot/api';
 
-import { Balance, IBalanceService } from '@renderer/entities/asset';
-import { ITransactionService, Transaction } from '@renderer/entities/transaction';
-import { toAccountId, transferableAmount, ValidationErrors } from '@renderer/shared/lib/utils';
-import { ChainId } from '@renderer/domain/shared-kernel';
-import { PartialBy } from '@renderer/domain/utility';
-import { OperationError, OperationErrorType } from '@renderer/features/operation';
+import { ITransactionService, Transaction, OperationError, type OperationErrorType } from '@entities/transaction';
+import { toAccountId, transferableAmount, ValidationErrors } from '@shared/lib/utils';
+import type { AccountId, Balance, ChainId, PartialBy } from '@shared/core';
 
 type Props = {
   api: ApiPromise;
   chainId: ChainId;
   transaction: Transaction;
   assetId: string;
-  getBalance: IBalanceService['getBalance'];
+  getBalance: (accountId: AccountId, chainId: ChainId, assetId: string) => Balance | undefined;
   getTransactionFee: ITransactionService['getTransactionFee'];
 };
 
@@ -34,19 +31,19 @@ export const validateBalance = async (
   }
 };
 
-const getTokenBalance = ({ getBalance, transaction, assetId, chainId }: Props): Promise<Balance | undefined> => {
+const getTokenBalance = ({ getBalance, transaction, assetId, chainId }: Props): Balance | undefined => {
   return getBalance(toAccountId(transaction.address), chainId, assetId.toString());
 };
 
-const getNativeTokenBalance = ({ assetId, transaction, chainId, getBalance }: Props): Promise<Balance | undefined> => {
-  if (assetId === '0') return Promise.resolve(undefined);
+const getNativeTokenBalance = ({ assetId, transaction, chainId, getBalance }: Props): Balance | undefined => {
+  if (assetId === '0') return undefined;
 
   return getBalance(toAccountId(transaction.address), chainId, '0');
 };
 
-const validateBalanceForAmount = async ({ transaction, ...props }: Props): Promise<boolean> => {
+const validateBalanceForAmount = ({ transaction, ...props }: Props): boolean => {
   const amount = transaction.args.value;
-  const tokenBalance = await getTokenBalance({ transaction, ...props });
+  const tokenBalance = getTokenBalance({ transaction, ...props });
   const transferableBalance = transferableAmount(tokenBalance);
 
   return new BN(transferableBalance).gte(new BN(amount));
@@ -54,8 +51,8 @@ const validateBalanceForAmount = async ({ transaction, ...props }: Props): Promi
 
 const validateBalanceForFee = async ({ transaction, getTransactionFee, api, ...props }: Props): Promise<boolean> => {
   const amountBN = new BN(transaction.args.value);
-  const nativeTokenBalance = await getNativeTokenBalance({ transaction, api, getTransactionFee, ...props });
-  const tokenBalance = await getTokenBalance({ transaction, api, getTransactionFee, ...props });
+  const nativeTokenBalance = getNativeTokenBalance({ transaction, api, getTransactionFee, ...props });
+  const tokenBalance = getTokenBalance({ transaction, api, getTransactionFee, ...props });
   const transferableBalance = transferableAmount(tokenBalance);
   const transferableNativeTokenBalance = transferableAmount(nativeTokenBalance);
   const fee = await getTransactionFee(transaction, api);

@@ -1,4 +1,4 @@
-import { createStore, createEffect, createEvent, sample, forward, attach } from 'effector';
+import { createStore, createEffect, createEvent, sample, attach } from 'effector';
 import { ApiPromise } from '@polkadot/api';
 import { BN } from '@polkadot/util';
 import { createGate } from 'effector-react';
@@ -12,23 +12,21 @@ import {
   getVersionedAccountLocation,
   estimateRequiredDestWeight,
   getVersionedDestinationLocation,
-} from '@renderer/shared/api/xcm';
-import { xcmModel } from '@renderer/entities/xcm';
-import { Chain } from '@renderer/entities/chain';
-import { Asset } from '@renderer/entities/asset';
-import { getParachainId } from '@renderer/services/dataVerification/dataVerification';
-import { ExtendedChain } from '@renderer/entities/network';
-import { AccountId } from '@renderer/domain/shared-kernel';
-import { toLocalChainId } from '@renderer/shared/lib/utils';
+  XcmTransferType,
+} from '@shared/api/xcm';
+import { xcmModel } from '@entities/xcm';
+import { toLocalChainId, getParachainId } from '@shared/lib/utils';
+import type { AccountId, Asset, Chain, ChainId } from '@shared/core';
+import { networkModel } from '@entities/network';
 
 const xcmConfigRequested = createEvent();
-const destinationChainSelected = createEvent<ExtendedChain>();
+const destinationChainSelected = createEvent<ChainId>();
 const accountIdSelected = createEvent<AccountId>();
 const amountChanged = createEvent<string>();
 const xcmFeeChanged = createEvent<string>();
 const storeCleared = createEvent();
 
-export const $destinationChain = createStore<ExtendedChain | null>(null).reset(storeCleared);
+export const $destinationChain = createStore<ChainId | null>(null).reset(storeCleared);
 export const $finalConfig = createStore<XcmConfig | null>(null);
 export const $xcmTransfer = createStore<XcmTransfer | null>(null).reset(storeCleared);
 export const $xcmAsset = createStore<AssetXCM | null>(null).reset(storeCleared);
@@ -67,11 +65,14 @@ const getParaIdFx = createEffect(async (api: ApiPromise): Promise<number | null>
   }
 });
 
-forward({ from: PropsGate.state, to: $xcmProps });
+sample({
+  clock: PropsGate.state,
+  target: $xcmProps,
+});
 
-forward({
-  from: xcmConfigRequested,
-  to: [getConfigFx, fetchConfigFx],
+sample({
+  clock: xcmConfigRequested,
+  target: [getConfigFx, fetchConfigFx],
 });
 
 sample({
@@ -92,14 +93,15 @@ sample({
 
 sample({
   clock: destinationChainSelected,
-  filter: (chain: ExtendedChain): chain is ExtendedChain & { api: ApiPromise } => Boolean(chain.api),
-  fn: ({ api }) => api,
+  source: networkModel.$apis,
+  filter: (apis, chainId): boolean => Boolean(apis[chainId]),
+  fn: (apis, chainId) => apis[chainId],
   target: getParaIdFx,
 });
 
-forward({
-  from: getParaIdFx.doneData,
-  to: $destinationParaId,
+sample({
+  clock: getParaIdFx.doneData,
+  target: $destinationParaId,
 });
 
 sample({
@@ -121,13 +123,13 @@ sample({
 
 sample({
   source: {
-    destinationChain: $destinationChain,
+    chainId: $destinationChain,
     xcmAsset: $xcmAsset,
   },
-  fn: ({ xcmAsset, destinationChain }) => {
-    if (!xcmAsset || !destinationChain) return null;
+  fn: ({ xcmAsset, chainId }) => {
+    if (!xcmAsset || !chainId) return null;
 
-    const destinationChainId = toLocalChainId(destinationChain.chainId);
+    const destinationChainId = toLocalChainId(chainId);
     const configXcmTransfer = xcmAsset?.xcmTransfers.find((t) => t.destination.chainId === destinationChainId);
 
     return configXcmTransfer || null;
@@ -146,32 +148,32 @@ sample({
     if (!xcmTransfer || !chain || !api) return null;
 
     return (
-      (xcmTransfer.type === 'xtokens' && accountId
-        ? getVersionedDestinationLocation(api, chain, paraId || undefined, accountId)
-        : getVersionedDestinationLocation(api, chain, paraId || undefined)) || null
+      (xcmTransfer.type === XcmTransferType.XTOKENS && accountId
+        ? getVersionedDestinationLocation(api, xcmTransfer.type, chain, paraId || undefined, accountId)
+        : getVersionedDestinationLocation(api, xcmTransfer.type, chain, paraId || undefined)) || null
     );
   },
   target: $txDest,
 });
 
-forward({
-  from: accountIdSelected,
-  to: $accountId,
+sample({
+  clock: accountIdSelected,
+  target: $accountId,
 });
 
 sample({
-  source: { accountId: $accountId, props: $xcmProps },
-  fn: ({ accountId, props: { api } }) => {
-    if (!accountId || accountId === '0x00' || !api) return null;
+  source: { accountId: $accountId, props: $xcmProps, xcmTransfer: $xcmTransfer },
+  fn: ({ xcmTransfer, accountId, props: { api } }) => {
+    if (!accountId || accountId === '0x00' || !api || !xcmTransfer) return null;
 
-    return getVersionedAccountLocation(api, accountId) || null;
+    return getVersionedAccountLocation(api, xcmTransfer.type, accountId) || null;
   },
   target: $txBeneficiary,
 });
 
-forward({
-  from: xcmFeeChanged,
-  to: $xcmFee,
+sample({
+  clock: xcmFeeChanged,
+  target: $xcmFee,
 });
 
 sample({
@@ -207,9 +209,9 @@ sample({
     if (!api || !xcmAsset || !config || !xcmTransfer) return null;
 
     const resultAmount = new BN(amount || 0).add(new BN(xcmFee || 0));
-    const isArray = xcmTransfer.type !== 'xtokens';
+    const isArray = xcmTransfer.type !== XcmTransferType.XTOKENS;
 
-    return getAssetLocation(api, xcmAsset, config.assetsLocation, resultAmount, isArray) || null;
+    return getAssetLocation(api, xcmTransfer.type, xcmAsset, config.assetsLocation, resultAmount, isArray) || null;
   },
   target: $txAsset,
 });
@@ -220,19 +222,19 @@ sample({
   target: calculateFinalConfigFx,
 });
 
-forward({
-  from: amountChanged,
-  to: $amount,
+sample({
+  clock: amountChanged,
+  target: $amount,
 });
 
-forward({
-  from: fetchConfigFx.doneData,
-  to: [saveConfigFx, calculateFinalConfigFx],
+sample({
+  clock: fetchConfigFx.doneData,
+  target: [saveConfigFx, calculateFinalConfigFx],
 });
 
-forward({
-  from: calculateFinalConfigFx.doneData,
-  to: $finalConfig,
+sample({
+  clock: calculateFinalConfigFx.doneData,
+  target: $finalConfig,
 });
 
 export const events = {

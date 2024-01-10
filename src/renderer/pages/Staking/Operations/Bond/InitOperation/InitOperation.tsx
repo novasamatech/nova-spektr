@@ -1,16 +1,26 @@
 import { ApiPromise } from '@polkadot/api';
 import { BN } from '@polkadot/util';
 import { useEffect, useState } from 'react';
+import { useUnit } from 'effector-react';
 
-import { OperationError, OperationFooter, OperationHeader } from '@renderer/features/operation';
-import { useI18n } from '@renderer/app/providers';
-import { Asset, Balance as AccountBalance, useBalance } from '@renderer/entities/asset';
-import { AccountId, Address, ChainId } from '@renderer/domain/shared-kernel';
-import { Transaction, TransactionType } from '@renderer/entities/transaction';
-import { Account, isMultisig, MultisigAccount } from '@renderer/entities/account';
-import { formatAmount, stakeableAmount, toAddress, nonNullable, TEST_ADDRESS } from '@renderer/shared/lib/utils';
-import { useValidators } from '@renderer/entities/staking';
+import { OperationFooter, OperationHeader } from '@features/operation';
+import { useI18n } from '@app/providers';
+import { Transaction, TransactionType, OperationError } from '@entities/transaction';
+import { formatAmount, stakeableAmount, toAddress, nonNullable, TEST_ADDRESS } from '@shared/lib/utils';
+import { validatorsService } from '@entities/staking';
+import { walletModel, walletUtils, accountUtils } from '@entities/wallet';
 import { OperationForm } from '../../components';
+import { useAssetBalances } from '@entities/balance';
+import type {
+  Account,
+  Asset,
+  MultisigAccount,
+  AccountId,
+  Address,
+  ChainId,
+  Balance as AccountBalance,
+  Wallet,
+} from '@shared/core';
 import {
   getStakeAccountOption,
   validateBalanceForFee,
@@ -38,8 +48,7 @@ type Props = {
 
 const InitOperation = ({ api, chainId, accounts, asset, addressPrefix, onResult }: Props) => {
   const { t } = useI18n();
-  const { getMaxValidators } = useValidators();
-  const { getLiveAssetBalances } = useBalance();
+  const activeWallet = useUnit(walletModel.$activeWallet);
 
   const [fee, setFee] = useState('');
   const [feeLoading, setFeeLoading] = useState(true);
@@ -56,16 +65,28 @@ const InitOperation = ({ api, chainId, accounts, asset, addressPrefix, onResult 
   const [activeBalances, setActiveBalances] = useState<AccountBalance[]>([]);
 
   const firstAccount = activeStakeAccounts[0] || accounts[0];
-  const accountIsMultisig = isMultisig(firstAccount);
-  const formFields = accountIsMultisig
+  const isMultisigWallet = walletUtils.isMultisig(activeWallet);
+  const isMultisigAccount = firstAccount && accountUtils.isMultisigAccount(firstAccount);
+
+  const formFields = isMultisigWallet
     ? [{ name: 'amount' }, { name: 'destination' }, { name: 'description' }]
     : [{ name: 'amount' }, { name: 'destination' }];
 
   const accountIds = accounts.map((account) => account.accountId);
-  const balances = getLiveAssetBalances(accountIds, chainId, asset.assetId.toString());
 
-  const signatoryIds = accountIsMultisig ? firstAccount.signatories.map((s) => s.accountId) : [];
-  const signatoriesBalances = getLiveAssetBalances(signatoryIds, chainId, asset.assetId.toString());
+  const balances = useAssetBalances({
+    accountIds,
+    chainId,
+    assetId: asset.assetId.toString(),
+  });
+
+  const signatoryIds = isMultisigAccount ? firstAccount.signatories.map((s) => s.accountId) : [];
+  const signatoriesBalances = useAssetBalances({
+    accountIds: signatoryIds,
+    chainId,
+    assetId: asset.assetId.toString(),
+  });
+
   const signerBalance = signatoriesBalances.find((b) => b.accountId === activeSignatory?.accountId);
 
   useEffect(() => {
@@ -89,14 +110,14 @@ const InitOperation = ({ api, chainId, accounts, asset, addressPrefix, onResult 
     return getStakeAccountOption(account, { asset, fee, amount, balance, addressPrefix });
   };
 
-  const getSignatoryDrowdownOption = (account: Account) => {
+  const getSignatoryDropdownOption = (wallet: Wallet, account: Account) => {
     const balance = signatoriesBalances.find((b) => b.accountId === account.accountId);
 
-    return getSignatoryOption(account, { balance, asset, addressPrefix, fee, deposit });
+    return getSignatoryOption(wallet, account, { balance, asset, addressPrefix, fee, deposit });
   };
 
   useEffect(() => {
-    if (accountIsMultisig || activeBalances.length === 1) {
+    if (isMultisigWallet || activeBalances.length === 1) {
       setMinBalance(stakeableAmount(activeBalances[0]));
 
       return;
@@ -116,13 +137,13 @@ const InitOperation = ({ api, chainId, accounts, asset, addressPrefix, onResult 
   }, [activeBalances.length, activeSignatory, signerBalance]);
 
   useEffect(() => {
-    if (accountIsMultisig) {
+    if (isMultisigWallet) {
       setActiveStakeAccounts(accounts);
     }
-  }, [accountIsMultisig, firstAccount?.accountId]);
+  }, [isMultisigWallet, firstAccount?.accountId]);
 
   useEffect(() => {
-    const maxValidators = getMaxValidators(api);
+    const maxValidators = validatorsService.getMaxValidators(api);
 
     const bondPayload = activeStakeAccounts.map(({ accountId }) => {
       const address = toAddress(accountId, { prefix: addressPrefix });
@@ -162,7 +183,7 @@ const InitOperation = ({ api, chainId, accounts, asset, addressPrefix, onResult 
       accounts: selectedAccounts,
       amount: formatAmount(data.amount, asset.precision),
       destination: data.destination || '',
-      ...(accountIsMultisig && {
+      ...(isMultisigWallet && {
         description: data.description || t('transactionMessage.bond', { amount: data.amount, asset: asset.symbol }),
         signer: activeSignatory,
       }),
@@ -174,7 +195,7 @@ const InitOperation = ({ api, chainId, accounts, asset, addressPrefix, onResult 
   };
 
   const validateFee = (amount: string): boolean => {
-    if (!accountIsMultisig) {
+    if (!isMultisigWallet) {
       return activeBalances.every((b) => validateStake(b, amount, asset.precision, fee));
     }
 
@@ -184,7 +205,7 @@ const InitOperation = ({ api, chainId, accounts, asset, addressPrefix, onResult 
   };
 
   const validateDeposit = (): boolean => {
-    if (!accountIsMultisig) return true;
+    if (!isMultisigWallet) return true;
     if (!signerBalance) return false;
 
     return validateBalanceForFeeDeposit(signerBalance, deposit, fee);
@@ -199,7 +220,7 @@ const InitOperation = ({ api, chainId, accounts, asset, addressPrefix, onResult 
   const canSubmit = !feeLoading && (activeStakeAccounts.length > 0 || Boolean(activeSignatory));
 
   const getActiveAccounts = (): AccountId[] => {
-    if (!accountIsMultisig) return activeStakeAccounts.map((acc) => acc.accountId as AccountId);
+    if (!isMultisigWallet) return activeStakeAccounts.map((acc) => acc.accountId as AccountId);
 
     return activeSignatory ? [activeSignatory.accountId] : [];
   };
@@ -223,7 +244,7 @@ const InitOperation = ({ api, chainId, accounts, asset, addressPrefix, onResult 
             accounts={accounts}
             isMultiselect
             errors={invalidDeposit || invalidFee || invalidBalance ? [OperationError.EMPTY_ERROR] : undefined}
-            getSignatoryOption={getSignatoryDrowdownOption}
+            getSignatoryOption={getSignatoryDropdownOption}
             getAccountOption={getAccountDropdownOption}
             onSignatoryChange={setActiveSignatory}
             onAccountChange={setActiveStakeAccounts}

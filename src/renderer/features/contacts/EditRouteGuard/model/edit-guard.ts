@@ -1,8 +1,8 @@
 import { attach, createApi, createEffect, createEvent, createStore, sample } from 'effector';
 import { NavigateFunction } from 'react-router-dom';
 
-import { Contact, contactModel } from '@renderer/entities/contact';
-import { ContactDS } from '@renderer/shared/api/storage';
+import { contactModel } from '@entities/contact';
+import { Contact } from '@shared/core';
 
 const validateUrlParams = createEvent<URLSearchParams>();
 const storeCleared = createEvent();
@@ -20,7 +20,7 @@ const navigationApi = createApi($navigation, {
 
 type ValidateParams = {
   contactId: string | null;
-  contacts: ContactDS[];
+  contacts: Contact[];
 };
 const getContactFx = createEffect(({ contactId, contacts }: ValidateParams) => {
   if (!contactId) return undefined;

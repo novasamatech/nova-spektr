@@ -1,43 +1,57 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useNavigate, Outlet } from 'react-router-dom';
+import { useUnit } from 'effector-react';
 
-import { Header } from '@renderer/components/common';
-import { Chain } from '@renderer/entities/chain';
-import { getRelaychainAsset, toAddress } from '@renderer/shared/lib/utils';
-import { useGraphql, useI18n, useNetworkContext, PathValue, createLink } from '@renderer/app/providers';
-import { ChainId, Address, SigningType } from '@renderer/domain/shared-kernel';
+import { Header } from '@shared/ui';
+import { getRelaychainAsset, toAddress } from '@shared/lib/utils';
+import { createLink, type PathType } from '@shared/routes';
+import { useGraphql, useI18n } from '@app/providers';
+import { useToggle } from '@shared/lib/hooks';
+import { AboutStaking, NetworkInfo, NominatorsList, Actions, InactiveChain } from './components';
+import {
+  ChainId,
+  Chain,
+  Address,
+  Account,
+  Stake,
+  Validator,
+  ShardAccount,
+  ChainAccount,
+  ConnectionType,
+  ConnectionStatus,
+} from '@shared/core';
+import { accountUtils, walletModel, walletUtils } from '@entities/wallet';
+import { priceProviderModel } from '@entities/price';
+import { NominatorInfo } from './common/types';
 import {
   useEra,
   useStakingData,
   StakingMap,
   ValidatorMap,
-  useValidators,
+  validatorsService,
   useStakingRewards,
-  Stake,
-} from '@renderer/entities/staking';
-import { useAccount } from '@renderer/entities/account';
-import { useToggle } from '@renderer/shared/lib/hooks';
-import { NominatorInfo } from '@renderer/pages/Staking/Overview/components/NominatorsList/NominatorsList';
-import { AccountDS } from '@renderer/shared/api/storage';
-import { ConnectionType, ConnectionStatus } from '@renderer/domain/connection';
-import { AboutStaking, NetworkInfo, NominatorsList, Actions, ValidatorsModal, InactiveChain } from './components';
+  ValidatorsModal,
+} from '@entities/staking';
+import { isDisabled as isNetworkDisabled, useNetworkData } from '@entities/network';
 
 export const Overview = () => {
   const { t } = useI18n();
+  const activeWallet = useUnit(walletModel.$activeWallet);
+  const activeAccounts = useUnit(walletModel.$activeAccounts);
+
   const navigate = useNavigate();
   const { changeClient } = useGraphql();
-  const { connections } = useNetworkContext();
 
   const { subscribeActiveEra } = useEra();
   const { subscribeStaking } = useStakingData();
-  const { getValidatorsList } = useValidators();
-  const { getActiveAccounts } = useAccount();
   const [isShowNominators, toggleNominators] = useToggle();
 
   const [chainEra, setChainEra] = useState<Record<ChainId, number | undefined>>({});
   const [staking, setStaking] = useState<StakingMap>({});
   const [isStakingLoading, setIsStakingLoading] = useState(true);
+
   const [validators, setValidators] = useState<ValidatorMap>({});
+  const [nominators, setNominators] = useState<Validator[]>([]);
 
   const [activeChain, setActiveChain] = useState<Chain>();
   const [networkIsActive, setNetworkIsActive] = useState(true);
@@ -46,23 +60,22 @@ export const Overview = () => {
   const [selectedStash, setSelectedStash] = useState<Address>('');
 
   const chainId = (activeChain?.chainId || '') as ChainId;
-  const api = connections[chainId]?.api;
-  const connection = connections[chainId]?.connection;
+
+  const { api, connection, connectionStatus } = useNetworkData(chainId);
+
   const addressPrefix = activeChain?.addressPrefix;
   const explorers = activeChain?.explorers;
 
-  const accounts = getActiveAccounts().reduce<AccountDS[]>((acc, a) => {
-    const derivationIsCorrect = a.rootId && a.derivationPath && a.chainId === chainId;
+  const accounts = activeAccounts.filter((account) => {
+    const isBaseAccount = accountUtils.isBaseAccount(account);
+    const isPolkadotVault = walletUtils.isPolkadotVault(activeWallet);
+    const hasManyAccounts = activeAccounts.length > 1;
 
-    if (!a.rootId || derivationIsCorrect) {
-      acc.push(a);
-    }
+    if (isPolkadotVault && isBaseAccount && hasManyAccounts) return false;
 
-    return acc;
+    return accountUtils.isChainIdMatch(account, chainId);
   }, []);
 
-  const signingType = accounts[0]?.signingType;
-  const rootAccountId = accounts[0]?.accountId;
   const addresses = accounts.map((a) => toAddress(a.accountId, { prefix: addressPrefix }));
 
   const { rewards, isRewardsLoading } = useStakingRewards(addresses);
@@ -70,10 +83,14 @@ export const Overview = () => {
   const isLightClient = connection?.connectionType === ConnectionType.LIGHT_CLIENT;
 
   useEffect(() => {
+    priceProviderModel.events.assetsPricesRequested({ includeRates: true });
+  }, []);
+
+  useEffect(() => {
     if (!connection) return;
 
-    const isDisabled = connection.connectionType === ConnectionType.DISABLED;
-    const isError = connection.connectionStatus === ConnectionStatus.ERROR;
+    const isDisabled = isNetworkDisabled(connection);
+    const isError = connectionStatus === ConnectionStatus.ERROR;
 
     setNetworkIsActive(!isDisabled && !isError);
   }, [chainId, connection]);
@@ -100,18 +117,20 @@ export const Overview = () => {
       unsubEra?.();
       unsubStaking?.();
     };
-  }, [chainId, api, signingType, rootAccountId, addresses.length]);
+  }, [chainId, api, activeAccounts]);
 
   useEffect(() => {
-    const isMultiShard = signingType === SigningType.PARITY_SIGNER && addresses.length > 1;
-    const isSingleShard = signingType === SigningType.PARITY_SIGNER && addresses.length === 1;
+    const isMultisig = walletUtils.isMultisig(activeWallet);
+    const isNovaWallet = walletUtils.isNovaWallet(activeWallet);
+    const isWalletConnect = walletUtils.isWalletConnect(activeWallet);
+    const isPolkadotVault = walletUtils.isPolkadotVaultGroup(activeWallet);
 
-    if (signingType === SigningType.WATCH_ONLY || isMultiShard) {
-      setSelectedNominators([]);
-    } else if (signingType === SigningType.MULTISIG || isSingleShard) {
+    if (isMultisig || isNovaWallet || isWalletConnect || (isPolkadotVault && addresses.length === 1)) {
       setSelectedNominators([addresses[0]]);
+    } else {
+      setSelectedNominators([]);
     }
-  }, [chainId, signingType, rootAccountId, addresses.length]);
+  }, [chainId, activeWallet]);
 
   useEffect(() => {
     if (!chainId || !api?.isConnected) return;
@@ -119,8 +138,16 @@ export const Overview = () => {
     const era = chainEra[chainId];
     if (!era) return;
 
-    getValidatorsList(api, era).then(setValidators);
+    validatorsService.getValidatorsList(api, era).then(setValidators);
   }, [chainId, api, chainEra]);
+
+  useEffect(() => {
+    if (!api) return;
+
+    validatorsService.getNominators(api, selectedStash, isLightClient).then((nominators) => {
+      setNominators(Object.values(nominators));
+    });
+  }, [api, selectedStash]);
 
   const changeNetwork = (chain: Chain) => {
     if (chain.chainId === chainId) return;
@@ -139,22 +166,40 @@ export const Overview = () => {
     toggleNominators();
   };
 
-  const nominatorsInfo = accounts.reduce<NominatorInfo[]>((acc, account) => {
-    const address = toAddress(account.accountId, { prefix: addressPrefix });
+  const groupedAccounts = useMemo((): Array<Account | ChainAccount | ShardAccount[]> => {
+    if (!walletUtils.isPolkadotVault(activeWallet)) return accounts;
 
-    acc.push({
+    return accountUtils.getAccountsAndShardGroups(accounts);
+  }, [accounts, activeWallet]);
+
+  const nominatorsInfo = useMemo(() => {
+    const getInfo = <T extends Account | ShardAccount>(address: Address, account: T): NominatorInfo<T> => ({
       address,
+      account,
       stash: staking[address]?.stash,
-      signingType: account.signingType,
-      accountName: account.name,
       isSelected: selectedNominators.includes(address),
       totalStake: isStakingLoading ? undefined : staking[address]?.total || '0',
       totalReward: isRewardsLoading ? undefined : rewards[address],
       unlocking: staking[address]?.unlocking,
     });
 
-    return acc;
-  }, []);
+    return groupedAccounts.reduce<Array<NominatorInfo<Account> | NominatorInfo<ShardAccount>[]>>((acc, account) => {
+      if (accountUtils.isAccountWithShards(account)) {
+        const shardsGroup = account.map((shard) => {
+          const address = toAddress(shard.accountId, { prefix: addressPrefix });
+
+          return getInfo(address, shard);
+        });
+
+        acc.push(shardsGroup);
+      } else {
+        const address = toAddress(account.accountId, { prefix: addressPrefix });
+        acc.push(getInfo(address, account));
+      }
+
+      return acc;
+    }, []);
+  }, [groupedAccounts, addressPrefix, isStakingLoading, isRewardsLoading, staking, selectedNominators]);
 
   const selectedStakes = selectedNominators.reduce<Stake[]>((acc, address) => {
     const stake = staking[address];
@@ -163,14 +208,30 @@ export const Overview = () => {
     return acc;
   }, []);
 
-  const navigateToStake = (path: PathValue, addresses?: Address[]) => {
+  const [selectedValidators, notSelectedValidators] = nominators.reduce<[Validator[], Validator[]]>(
+    (acc, nominator) => {
+      if (validators[nominator.address]) {
+        acc[0].push({
+          ...nominator,
+          ...validators[nominator.address],
+        });
+      } else {
+        acc[1].push(nominator);
+      }
+
+      return acc;
+    },
+    [[], []],
+  );
+
+  const navigateToStake = (path: PathType, addresses?: Address[]) => {
     if (addresses) {
       setSelectedNominators(addresses);
 
       return;
     }
 
-    const accountsMap = accounts.reduce<Record<Address, string>>((acc, account) => {
+    const accountsMap = accounts.reduce<Record<Address, number>>((acc, account) => {
       if (account.id) {
         acc[toAddress(account.accountId, { prefix: addressPrefix })] = account.id;
       }
@@ -186,8 +247,10 @@ export const Overview = () => {
   const totalStakes = Object.values(staking).map((stake) => stake?.total || '0');
   const relaychainAsset = getRelaychainAsset(activeChain?.assets);
 
-  const toggleSelectedNominators = (address: Address) => {
-    if (selectedNominators.includes(address)) {
+  const toggleSelectedNominators = (address: Address, isAllSelected?: boolean) => {
+    const isSelected = isAllSelected === undefined ? selectedNominators.includes(address) : !isAllSelected;
+
+    if (isSelected) {
       setSelectedNominators((value) => value.filter((a) => a !== address));
     } else {
       setSelectedNominators((value) => value.concat(address));
@@ -196,7 +259,7 @@ export const Overview = () => {
 
   return (
     <>
-      <div className="h-full flex flex-col items-start relative">
+      <div className="h-full flex flex-col">
         <Header title={t('staking.title')} />
 
         <div className="overflow-y-auto w-full h-full mt-6">
@@ -219,7 +282,7 @@ export const Overview = () => {
             {networkIsActive && accounts.length > 0 && (
               <>
                 <Actions
-                  canInteract={signingType !== SigningType.WATCH_ONLY}
+                  canInteract={!walletUtils.isWatchOnly(activeWallet)}
                   stakes={selectedStakes}
                   isStakingLoading={isStakingLoading}
                   onNavigate={navigateToStake}
@@ -232,6 +295,7 @@ export const Overview = () => {
                   asset={relaychainAsset}
                   explorers={activeChain?.explorers}
                   isStakingLoading={isStakingLoading}
+                  addressPrefix={addressPrefix}
                   onCheckValidators={openSelectedValidators}
                   onToggleNominator={toggleSelectedNominators}
                 />
@@ -244,13 +308,11 @@ export const Overview = () => {
       </div>
 
       <ValidatorsModal
-        api={api}
         asset={relaychainAsset}
-        stash={selectedStash}
-        validators={validators}
+        selectedValidators={selectedValidators}
+        notSelectedValidators={notSelectedValidators}
         explorers={explorers}
         isOpen={isShowNominators}
-        isLightClient={isLightClient}
         onClose={toggleNominators}
       />
 

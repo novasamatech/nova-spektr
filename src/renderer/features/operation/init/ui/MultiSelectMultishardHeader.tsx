@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react';
 
-import { Account, MultisigAccount } from '@renderer/entities/account';
-import { InputHint, Select } from '@renderer/shared/ui';
-import { useI18n } from '@renderer/app/providers';
-import { DropdownOption, DropdownResult } from '@renderer/shared/ui/Dropdowns/common/types';
-import { ChainId } from '@renderer/domain/shared-kernel';
-import { OperationErrorType } from '@renderer/features/operation/init/model';
+import { InputHint, Select } from '@shared/ui';
+import { useI18n } from '@app/providers';
+import { DropdownOption, DropdownResult } from '@shared/ui/Dropdowns/common/types';
+import { OperationErrorType } from '@entities/transaction';
+import { accountUtils } from '@entities/wallet';
+import type { Account, MultisigAccount, ChainId } from '@shared/core';
 
 type Props = {
   accounts: Account[];
@@ -31,9 +31,10 @@ export const MultiSelectMultishardHeader = ({
 
   useEffect(() => {
     const options = accounts.reduce<any[]>((acc, account) => {
-      const isSameChain = !account.chainId || account.chainId === chainId;
+      const isBaseAccount = accountUtils.isBaseAccount(account);
+      const isChainMatch = accountUtils.isChainIdMatch(account, chainId);
 
-      if (isSameChain) {
+      if (isBaseAccount || isChainMatch) {
         acc.push(getAccountOption(account));
       }
 

@@ -2,17 +2,16 @@ import { ApiPromise } from '@polkadot/api';
 import { Vec } from '@polkadot/types';
 import { AccountId32 } from '@polkadot/types/interfaces';
 
-import { MultisigAccount } from '@renderer/entities/account/model/account';
-import { Address, ChainId } from '@renderer/domain/shared-kernel';
+import { PendingMultisigTransaction } from './types';
+import { getCreatedDate, toAccountId } from '@shared/lib/utils';
+import { type DecodedTransaction, type ExtrinsicResultParams, TransactionType } from '@entities/transaction';
+import type { MultisigAccount, Address, ChainId } from '@shared/core';
 import {
   MultisigEvent,
   MultisigTransaction,
   MultisigTxInitStatus,
   Transaction,
-} from '@renderer/entities/transaction/model/transaction';
-import { PendingMultisigTransaction } from './types';
-import { getCreatedDate, toAccountId } from '@renderer/shared/lib/utils';
-import { ExtrinsicResultParams } from '@renderer/entities/transaction';
+} from '@entities/transaction/model/transaction';
 
 type MultisigTxResult = {
   transaction: MultisigTransaction;
@@ -111,7 +110,7 @@ export const createEventsPayload = (
 
   const dateCreated = getCreatedDate(when.height.toNumber(), currentBlock, blockTime);
 
-  const events: MultisigEvent[] = approvals.map((a) => ({
+  return approvals.map((a) => ({
     txAccountId: tx.accountId,
     txChainId: tx.chainId,
     txCallHash: tx.callHash,
@@ -121,8 +120,6 @@ export const createEventsPayload = (
     accountId: account.signatories.find((s) => s.accountId === a.toHuman())?.accountId || a.toHex(),
     dateCreated: a.toHex() === depositor.toHex() ? dateCreated : undefined,
   }));
-
-  return events;
 };
 
 export const createTransactionPayload = (
@@ -189,4 +186,16 @@ export const buildMultisigTx = (
     event,
     transaction,
   };
+};
+
+export const getTransactionFromMultisigTx = (tx: MultisigTransaction): Transaction | DecodedTransaction | undefined => {
+  if (!tx.transaction || tx.transaction.type !== 'batchAll') {
+    return tx.transaction;
+  }
+
+  const transactionMatch = tx.transaction.args.transactions.find((tx: Transaction) => {
+    return tx.type === TransactionType.BOND || tx.type === TransactionType.UNSTAKE;
+  });
+
+  return transactionMatch || tx.transaction.args.transactions[0];
 };

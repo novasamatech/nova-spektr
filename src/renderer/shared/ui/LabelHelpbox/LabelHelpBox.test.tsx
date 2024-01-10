@@ -2,6 +2,10 @@ import { render, screen } from '@testing-library/react';
 
 import { LabelHelpBox } from './LabelHelpBox';
 
+jest.mock('@app/providers', () => ({
+  useMatrix: jest.fn(),
+}));
+
 describe('ui/LabelHelpBox', () => {
   test('should render component', () => {
     const label = 'This is simple content';

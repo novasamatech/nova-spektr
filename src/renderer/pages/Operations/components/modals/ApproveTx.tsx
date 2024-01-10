@@ -2,33 +2,35 @@ import { useEffect, useState } from 'react';
 import { UnsignedTransaction } from '@substrate/txwrapper-polkadot';
 import { Weight } from '@polkadot/types/interfaces';
 import { BN } from '@polkadot/util';
+import { useUnit } from 'effector-react';
 
-import { BaseModal, Button, Icon } from '@renderer/shared/ui';
-import { useI18n } from '@renderer/app/providers';
-import { AccountDS, MultisigTransactionDS } from '@renderer/shared/api/storage';
-import { useToggle } from '@renderer/shared/lib/hooks';
-import { Account, MultisigAccount, useAccount } from '@renderer/entities/account';
-import { ExtendedChain } from '@renderer/entities/network';
-import { Address, HexString, SigningType, Timepoint } from '@renderer/domain/shared-kernel';
-import { TEST_ADDRESS, toAddress, transferableAmount, getAssetById } from '@renderer/shared/lib/utils';
-import { getModalTransactionTitle } from '../../common/utils';
-import { useBalance } from '@renderer/entities/asset';
+import { BaseModal, Button } from '@shared/ui';
+import { useI18n } from '@app/providers';
+import { MultisigTransactionDS } from '@shared/api/storage';
+import { useToggle } from '@shared/lib/hooks';
+import { ExtendedChain } from '@entities/network';
+import { TEST_ADDRESS, toAddress, transferableAmount, getAssetById } from '@shared/lib/utils';
+import { getMultisigSignOperationTitle, getSignatoryAccounts } from '../../common/utils';
 import { Submit } from '../ActionSteps/Submit';
 import { Confirmation } from '../ActionSteps/Confirmation';
 import { SignatorySelectModal } from './SignatorySelectModal';
-import { useMultisigEvent } from '@renderer/entities/multisig';
-import { Signing } from '@renderer/features/operation';
-import { OperationTitle } from '@renderer/components/common';
+import { useMultisigEvent } from '@entities/multisig';
+import { Signing } from '@features/operation';
+import { walletModel } from '@entities/wallet';
+import { priceProviderModel } from '@entities/price';
+import type { Address, HexString, Timepoint, MultisigAccount, Account } from '@shared/core';
+import { balanceModel, balanceUtils } from '@entities/balance';
+import { OperationTitle } from '@entities/chain';
 import {
+  isXcmTransaction,
+  MAX_WEIGHT,
   OperationResult,
   Transaction,
   TransactionType,
   useCallDataDecoder,
   useTransaction,
   validateBalance,
-  isXcmTransaction,
-  MAX_WEIGHT,
-} from '@renderer/entities/transaction';
+} from '@entities/transaction';
 
 type Props = {
   tx: MultisigTransactionDS;
@@ -46,8 +48,10 @@ const AllSteps = [Step.CONFIRMATION, Step.SIGNING, Step.SUBMIT];
 
 const ApproveTx = ({ tx, account, connection }: Props) => {
   const { t } = useI18n();
-  const { getBalance } = useBalance();
-  const { getLiveAccounts } = useAccount();
+  const wallets = useUnit(walletModel.$wallets);
+  const accounts = useUnit(walletModel.$accounts);
+  const balances = useUnit(balanceModel.$balances);
+
   const { getTransactionFee, getExtrinsicWeight, getTxWeight } = useTransaction();
   const { getTxFromCallData } = useCallDataDecoder();
   const { getLiveTxEvents } = useMultisigEvent({});
@@ -67,20 +71,16 @@ const ApproveTx = ({ tx, account, connection }: Props) => {
   const [txWeight, setTxWeight] = useState<Weight>();
   const [signature, setSignature] = useState<HexString>();
 
-  const accounts = getLiveAccounts();
-  const transactionTitle = getModalTransactionTitle(isXcmTransaction(tx.transaction), tx.transaction);
+  const transactionTitle = getMultisigSignOperationTitle(isXcmTransaction(tx.transaction), t, feeTx?.type, tx);
 
   const nativeAsset = connection.assets[0];
   const asset = getAssetById(tx.transaction?.args.assetId, connection.assets);
 
-  const unsignedAccounts = accounts.filter((a) => {
-    const isSignatory = account.signatories.find((s) => s.accountId === a.accountId);
-    const isSigned = events.some((e) => e.accountId === a.accountId);
-    const isCurrentChain = !a.chainId || a.chainId === tx.chainId;
-    const isWatchOnly = a.signingType === SigningType.WATCH_ONLY;
+  const unsignedAccounts = getSignatoryAccounts(accounts, wallets, events, account.signatories, tx.chainId);
 
-    return isSignatory && !isSigned && isCurrentChain && !isWatchOnly;
-  });
+  useEffect(() => {
+    priceProviderModel.events.assetsPricesRequested({ includeRates: true });
+  }, []);
 
   useEffect(() => {
     setFeeTx(getMultisigTx(TEST_ADDRESS));
@@ -106,7 +106,7 @@ const ApproveTx = ({ tx, account, connection }: Props) => {
       }
     }
 
-    setTxWeight(weight);
+    setTxWeight(weight as Weight);
   };
 
   useEffect(() => {
@@ -144,7 +144,7 @@ const ApproveTx = ({ tx, account, connection }: Props) => {
 
     return {
       chainId: tx.chainId,
-      address: signer,
+      address: signerAddress,
       type: tx.callData ? TransactionType.MULTISIG_AS_MULTI : TransactionType.MULTISIG_APPROVE_AS_MULTI,
       args: {
         threshold: account.threshold,
@@ -160,11 +160,16 @@ const ApproveTx = ({ tx, account, connection }: Props) => {
     };
   };
 
-  const validateBalanceForFee = async (signAccount: AccountDS): Promise<boolean> => {
+  const validateBalanceForFee = async (signAccount: Account): Promise<boolean> => {
     if (!connection.api || !feeTx || !signAccount.accountId || !nativeAsset) return false;
 
     const fee = await getTransactionFee(feeTx, connection.api);
-    const balance = await getBalance(signAccount.accountId, connection.chainId, nativeAsset.assetId.toString());
+    const balance = balanceUtils.getBalance(
+      balances,
+      signAccount.accountId,
+      connection.chainId,
+      nativeAsset.assetId.toString(),
+    );
 
     if (!balance) return false;
 
@@ -199,7 +204,7 @@ const ApproveTx = ({ tx, account, connection }: Props) => {
       chainId: tx.chainId,
       transaction: approveTx,
       assetId: nativeAsset.assetId.toString(),
-      getBalance,
+      getBalance: balanceUtils.getBalanceWrapped(balances),
       getTransactionFee,
     });
 
@@ -216,7 +221,7 @@ const ApproveTx = ({ tx, account, connection }: Props) => {
   return (
     <>
       {txWeight && (
-        <Button size="sm" className="ml-auto" onClick={() => setIsModalOpen(true)}>
+        <Button className="ml-auto" onClick={() => setIsModalOpen(true)}>
           {t('operation.approveButton')}
         </Button>
       )}
@@ -226,21 +231,19 @@ const ApproveTx = ({ tx, account, connection }: Props) => {
         isOpen={activeStep !== Step.SUBMIT && isModalOpen}
         title={<OperationTitle title={t(transactionTitle, { asset: asset?.symbol })} chainId={tx.chainId} />}
         contentClass={activeStep === Step.SIGNING ? '' : undefined}
-        headerClass="py-3 px-5 max-w-[440px]"
+        headerClass="py-3 pl-5 pr-3"
         panelClass="w-[440px]"
         onClose={handleClose}
       >
         {activeStep === Step.CONFIRMATION && (
-          <>
-            <Confirmation tx={tx} account={account} connection={connection} feeTx={feeTx} />
-            <Button
-              className="mt-7 ml-auto"
-              prefixElement={<Icon name="vault" size={14} />}
-              onClick={trySetSignerAccount}
-            >
-              {t('operation.signButton')}
-            </Button>
-          </>
+          <Confirmation
+            tx={tx}
+            account={account}
+            connection={connection}
+            feeTx={feeTx}
+            signatory={unsignedAccounts.length === 1 ? unsignedAccounts[0] : undefined}
+            onSign={trySetSignerAccount}
+          />
         )}
 
         {activeStep === Step.SIGNING && approveTx && connection.api && signAccount && (

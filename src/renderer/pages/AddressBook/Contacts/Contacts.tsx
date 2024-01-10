@@ -1,21 +1,10 @@
 import { Outlet } from 'react-router-dom';
 import { useUnit } from 'effector-react';
 
-import { Header } from '@renderer/components/common';
-import { useI18n } from '@renderer/app/providers';
-import {
-  ContactFilter,
-  CreateContactNavigation,
-  EditContactNavigation,
-  filterModel,
-} from '@renderer/features/contacts';
-import {
-  ContactList,
-  contactModel,
-  ContactRow,
-  EmptyContactList,
-  EmptyFilteredContacts,
-} from '@renderer/entities/contact';
+import { Header } from '@shared/ui';
+import { useI18n } from '@app/providers';
+import { ContactFilter, CreateContactNavigation, EditContactNavigation, filterModel } from '@features/contacts';
+import { ContactList, contactModel, ContactRow, EmptyContactList, EmptyFilteredContacts } from '@entities/contact';
 
 export const Contacts = () => {
   const { t } = useI18n();
@@ -27,7 +16,7 @@ export const Contacts = () => {
 
   return (
     <>
-      <div className="h-full flex flex-col items-start relative">
+      <div className="h-full flex flex-col">
         <Header title={t('addressBook.title')} titleClass="py-[3px]" headerClass="pt-4 pb-[15px]">
           <div className="flex items-center gap-4">
             <ContactFilter />
@@ -45,7 +34,7 @@ export const Contacts = () => {
               <ContactList>
                 {contactsFiltered.map((contact) => (
                   <ContactRow key={contact.id} contact={contact}>
-                    <EditContactNavigation contactId={contact.id || '-1'} />
+                    <EditContactNavigation contactId={contact.id} />
                   </ContactRow>
                 ))}
               </ContactList>

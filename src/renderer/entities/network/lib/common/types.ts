@@ -1,40 +1,9 @@
 import { ApiPromise } from '@polkadot/api';
-import { ProviderInterface } from '@polkadot/rpc-provider/types';
+import { ProviderInterface, ProviderInterfaceCallback } from '@polkadot/rpc-provider/types';
 import { UnsubscribePromise } from '@polkadot/api/types';
 
-import { Chain, RpcNode } from '@renderer/entities/chain/model/chain';
-import { Connection, ConnectionType } from '@renderer/domain/connection';
-import { ChainId, HexString } from '@renderer/domain/shared-kernel';
-import { Balance } from '@renderer/entities/asset/model/balance';
-
-// =====================================================
-// ================ Service interface ==================
-// =====================================================
-
-export interface IChainService {
-  getChainsData: () => Chain[];
-  getChainById: (chainId: ChainId) => Chain | undefined;
-  getStakingChainsData: () => Chain[];
-  sortChains: <T extends ChainLike>(chains: T[]) => T[];
-  sortChainsByBalance: (chains: Chain[], balances: Balance[]) => Chain[];
-}
-
-export interface IChainSpecService {
-  getLightClientChains: () => ChainId[];
-  getKnownChain: (chainId: ChainId) => string | undefined;
-}
-
-export interface INetworkService {
-  connections: ConnectionsMap;
-  setupConnections: () => Promise<void>;
-  addRpcNode: (chainId: ChainId, rpcNode: RpcNode) => Promise<void>;
-  updateRpcNode: (chainId: ChainId, oldNode: RpcNode, newNode: RpcNode) => Promise<void>;
-  removeRpcNode: (chainId: ChainId, rpcNode: RpcNode) => Promise<void>;
-  validateRpcNode: (chainId: ChainId, rpcUrl: string) => Promise<RpcValidation>;
-  connectToNetwork: (props: ConnectProps) => Promise<void>;
-  connectWithAutoBalance: (chainId: ChainId, attempt: number) => Promise<void>;
-  getParachains: (chainId: ChainId) => ExtendedChain[];
-}
+import type { Connection, Chain, ChainId, HexString, ConnectionStatus } from '@shared/core';
+import { MetadataDS } from '@shared/api/storage';
 
 // =====================================================
 // ======================= General =====================
@@ -50,19 +19,10 @@ export const enum RpcValidation {
 
 export type ExtendedChain = Chain & {
   connection: Connection;
+  connectionStatus: ConnectionStatus;
   api?: ApiPromise;
   provider?: ProviderInterface;
   disconnect?: (switchNetwork: boolean) => Promise<void>;
-};
-
-export type ConnectionsMap = Record<ChainId, ExtendedChain>;
-
-export type ConnectProps = {
-  chainId: ChainId;
-  type: ConnectionType;
-  node?: RpcNode;
-  attempt?: number;
-  timeoutId?: any;
 };
 
 export type Metadata = {
@@ -83,5 +43,22 @@ export interface IMetadataService {
   /**
    * Subscribe to subscribeRuntimeVersion and trigger syncMetadata if it will be changed
    */
-  subscribeMetadata: (api: ApiPromise) => UnsubscribePromise;
+  subscribeMetadata: (api: ApiPromise, callback?: () => void) => UnsubscribePromise;
+  getAllMetadata: <T extends Metadata>(where?: Partial<T>) => Promise<MetadataDS[]>;
+  addMetadata: (metadata: Metadata) => Promise<string[]>;
+  updateMetadata: (metadata: Metadata) => Promise<string[]>;
 }
+
+export const enum ProviderType {
+  WEB_SOCKET = 'ws',
+  LIGHT_CLIENT = 'sc',
+}
+
+export type Subscription = {
+  type: string;
+  method: string;
+  params: unknown[];
+  cb: ProviderInterfaceCallback;
+};
+
+export type ChainMap = Record<ChainId, Chain>;

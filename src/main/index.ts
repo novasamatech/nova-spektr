@@ -1,16 +1,25 @@
-import { app, dialog } from 'electron';
+import { app, dialog, ipcMain } from 'electron';
 import { autoUpdater } from 'electron-updater';
-import * as process from 'process';
+import Store from 'electron-store';
 
 import { MainWindow } from './main';
 import { makeAppWithSingleInstanceLock } from './factories/instance';
 import { makeAppSetup } from './factories/setup';
+import { checkAutoUpdateSupported } from './shared/lib/utils';
+import { AUTO_UPDATE_ENABLED } from './shared/constants';
 
-// @ts-ignore
 const setupAutoUpdate = () => {
-  if (process.env.BUILD_SOURCE !== 'github') return;
+  const isAutoUpdateSupported = checkAutoUpdateSupported();
+  const store = new Store({ defaults: { [AUTO_UPDATE_ENABLED]: isAutoUpdateSupported } });
+
+  ipcMain.handle('getStoreValue', (event, key) => store.get(key));
+
+  ipcMain.handle('setStoreValue', (event, key, value) => store.set(key, value));
+
+  if (!store.get(AUTO_UPDATE_ENABLED) || !isAutoUpdateSupported) return;
 
   autoUpdater.autoRunAppAfterInstall = true;
+  autoUpdater.autoInstallOnAppQuit = false;
 
   app.on('ready', () => {
     autoUpdater.checkForUpdates();
@@ -37,9 +46,9 @@ const setupAutoUpdate = () => {
         message: `A new version ${info.version} of Nova Spektr is ready to be installed.`,
         detail: info.releaseNotes?.toString().replaceAll(/<[a-zA-Z0-9/]*>/g, ''), // clear html tags from changelog
         type: 'question',
-        buttons: ['Install now', 'Install on next launch', 'Not now'],
+        buttons: ['Install now', 'Not now'],
         defaultId: 0,
-        cancelId: 2,
+        cancelId: 1,
       })
       .then((result) => {
         switch (result.response) {
@@ -47,9 +56,6 @@ const setupAutoUpdate = () => {
             autoUpdater.quitAndInstall();
             break;
           case 1:
-            autoUpdater.autoInstallOnAppQuit = true;
-            break;
-          case 2:
             autoUpdater.autoInstallOnAppQuit = false;
             break;
         }
@@ -67,7 +73,7 @@ const setupAutoUpdate = () => {
 makeAppWithSingleInstanceLock(async () => {
   app.commandLine.appendSwitch('autoplay-policy', 'no-user-gesture-required');
 
-  // setupAutoUpdate();
+  setupAutoUpdate();
 
   await app.whenReady();
   await makeAppSetup(MainWindow);

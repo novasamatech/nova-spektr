@@ -1,15 +1,15 @@
 import { useEffect, useState } from 'react';
 
-import { useI18n } from '@renderer/app/providers';
-import { MultisigTransactionDS } from '@renderer/shared/api/storage';
-import { DropdownOption, DropdownResult } from '@renderer/shared/ui/types';
-import { Button, MultiSelect } from '@renderer/shared/ui';
-import { MultisigTransaction, Transaction, TransactionType } from '@renderer/entities/transaction/model/transaction';
-import { TransferTypes, XcmTypes } from '@renderer/entities/transaction/lib/common/constants';
+import { useI18n } from '@app/providers';
+import { MultisigTransactionDS } from '@shared/api/storage';
+import { DropdownOption, DropdownResult } from '@shared/ui/types';
+import { Button, MultiSelect } from '@shared/ui';
+import { MultisigTransaction, Transaction, TransactionType } from '@entities/transaction/model/transaction';
+import { TransferTypes, XcmTypes } from '@entities/transaction/lib/common/constants';
 import { getStatusOptions, getTransactionOptions } from '../lib/utils';
 import { UNKNOWN_TYPE } from '../lib/constants';
-import { ChainId } from '@renderer/domain/shared-kernel';
-import { chainsService } from '@renderer/entities/network';
+import { chainsService } from '@entities/network';
+import type { ChainId } from '@shared/core';
 
 type FilterName = 'status' | 'network' | 'type';
 

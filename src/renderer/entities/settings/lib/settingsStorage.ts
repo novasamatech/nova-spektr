@@ -1,6 +1,6 @@
-import { ChainId } from '@renderer/domain/shared-kernel';
 import { UserSettings, TRUE } from './common/constants';
 import { ISettingsStorage } from './common/types';
+import type { ChainId } from '@shared/core';
 
 export const useSettingsStorage = (): ISettingsStorage => {
   const setHideZeroBalance = (hideZeroBalance: boolean) => {

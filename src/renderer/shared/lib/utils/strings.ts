@@ -1,4 +1,4 @@
-import { Identity } from '@renderer/domain/identity';
+import { Identity } from '@shared/core/types/identity';
 
 /**
  * Validate WebSocket address
@@ -52,10 +52,10 @@ export const getComposedIdentity = (identity?: Identity): string => {
   return identity.subName ? `${identity.parent.name}/${identity.subName}` : identity.parent.name;
 };
 
-export const includes = (value?: string, searchString?: string): boolean => {
+export const includes = (value?: string, searchString = ''): boolean => {
   if (!value) return false;
 
-  return value.toLowerCase().includes((searchString || '').toLowerCase());
+  return value.toLowerCase().includes(searchString.toLowerCase());
 };
 
 /**
@@ -85,4 +85,23 @@ export const formatSectionAndMethod = (section: string, method: string): string 
   const methodSplit = method.replace(/([a-z0-9])([A-Z])/g, '$1 $2').toLowerCase();
 
   return `${splitFn(sectionSplit)}: ${splitFn(methodSplit)}`;
+};
+
+/**
+ * Formats number without exponential notation and removes trailing zeros
+ * @param value number to format
+ * @param maxPrecision Maximum number of characters in decimal part
+ * @return {String}
+ */
+export const toFixedNotation = (value: number, maxPrecision = 20): string => {
+  const fixedValue = value.toFixed(maxPrecision);
+  const decimalPart = fixedValue.split('.')[1];
+  if (!decimalPart) return value.toString();
+
+  const trailingZeros = decimalPart.search(/0+(?![1-9])+$/g);
+  if (trailingZeros === -1) {
+    return fixedValue;
+  }
+
+  return value.toFixed(trailingZeros);
 };

@@ -1,10 +1,14 @@
 import { render, screen } from '@testing-library/react';
 
-import { Transaction, TransactionType } from '@renderer/entities/transaction';
-import { TEST_ADDRESS, TEST_CHAIN_ID } from '@renderer/shared/lib/utils';
+import { Transaction, TransactionType } from '@entities/transaction';
+import { TEST_ADDRESS, TEST_CHAIN_ID } from '@shared/lib/utils';
 import { TransactionTitle } from './TransactionTitle';
 
-jest.mock('@renderer/app/providers', () => ({
+jest.mock('@app/providers', () => ({
+  useMatrix: jest.fn(),
+}));
+
+jest.mock('@app/providers', () => ({
   useI18n: jest.fn().mockReturnValue({
     t: (key: string) => key,
   }),

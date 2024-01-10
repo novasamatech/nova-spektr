@@ -1,12 +1,16 @@
-import { AccountAddress, getAddress, AccountAddressProps, useAddressInfo } from '@renderer/entities/account';
-import { InfoPopover, Icon } from '@renderer/shared/ui';
-import { Explorer } from '@renderer/entities/chain';
-import { SigningStatus } from '@renderer/entities/transaction';
-import { cnTw } from '@renderer/shared/lib/utils';
+import { PropsWithChildren } from 'react';
+
+import { getAddress } from '@entities/wallet';
+import { useAddressInfo } from '@entities/wallet/lib/useAddressInfo';
+import { InfoPopover, Icon } from '@shared/ui';
+import { SigningStatus } from '@entities/transaction';
+import { cnTw } from '@shared/lib/utils';
+import type { Explorer } from '@shared/core';
+import { AccountId } from '@shared/core';
 
 const IconProps = {
-  SIGNED: { className: 'group-hover:hidden text-text-positive', name: 'checkLineRedesign' },
-  CANCELLED: { className: 'group-hover:hidden text-text-negative', name: 'closeLineRedesign' },
+  SIGNED: { className: 'group-hover:hidden text-text-positive', name: 'checkmarkOutline' },
+  CANCELLED: { className: 'group-hover:hidden text-text-negative', name: 'closeOutline' },
 } as const;
 
 type Props = {
@@ -14,20 +18,20 @@ type Props = {
   status?: SigningStatus;
   matrixId?: string;
   wrapperClassName?: string;
-} & AccountAddressProps;
+  accountId: AccountId;
+  addressPrefix?: number;
+};
 
 export const SignatoryCard = ({
   explorers,
   status,
-  addressFont = 'text-body text-inherit',
-  size = 20,
-  name,
   matrixId,
   wrapperClassName,
+  children,
   ...addressProps
-}: Props) => {
+}: PropsWithChildren<Props>) => {
   const address = getAddress(addressProps);
-  const popoverItems = useAddressInfo(address, explorers, true);
+  const popoverItems = useAddressInfo({ address, explorers, showMatrix: true });
 
   if (!popoverItems.find((item) => item.title === 'Matrix ID') && matrixId) {
     popoverItems.push({
@@ -40,14 +44,12 @@ export const SignatoryCard = ({
     <InfoPopover data={popoverItems} buttonClassName="w-full" className="w-[230px]" position="right-0 left-unset">
       <div
         className={cnTw(
-          'group flex items-center justify-between cursor-pointer flex-1',
-          'hover:bg-action-background-hover hover:text-text-primary text-text-secondary px-2 py-1.5 rounded',
-          wrapperClassName,
+          'group flex gap-x-2 px-2 py-1.5 items-center cursor-pointer flex-1 hover:bg-action-background-hover text-text-secondary hover:text-text-primary rounded',
         )}
       >
-        <AccountAddress addressFont={addressFont} size={size} name={name} {...addressProps} />
-        <Icon name="info" size={14} className="text-icon-hover invisible group-hover:visible" />
-        {status && status in IconProps && <Icon size={14} {...IconProps[status as keyof typeof IconProps]} />}
+        {children}
+        <Icon name="info" size={16} className="text-icon-hover invisible group-hover:visible" />
+        {status && status in IconProps && <Icon size={16} {...IconProps[status as keyof typeof IconProps]} />}
       </div>
     </InfoPopover>
   );

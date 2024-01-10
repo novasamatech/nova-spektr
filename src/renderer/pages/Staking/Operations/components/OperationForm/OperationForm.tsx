@@ -1,17 +1,18 @@
 import { useForm, Controller, SubmitHandler } from 'react-hook-form';
 import { useState, useEffect, ReactNode } from 'react';
 import { Trans, TFunction } from 'react-i18next';
+import { useUnit } from 'effector-react';
 
-import { Identicon, Button, AmountInput, InputHint, Combobox, RadioGroup, Input } from '@renderer/shared/ui';
-import { useI18n } from '@renderer/app/providers';
-import { RewardsDestination } from '@renderer/entities/staking';
-import { validateAddress } from '@renderer/shared/lib/utils';
-import { Asset, useBalance } from '@renderer/entities/asset';
-import { Address, ChainId, AccountId } from '@renderer/domain/shared-kernel';
-import { RadioOption } from '@renderer/shared/ui/RadioGroup/common/types';
-import { DropdownOption, ComboboxOption } from '@renderer/shared/ui/Dropdowns/common/types';
-import { useAccount } from '@renderer/entities/account';
-import { getPayoutAccountOption } from '../../common/utils';
+import { AmountInput, Button, Combobox, Identicon, Input, InputHint, RadioGroup } from '@shared/ui';
+import { useI18n } from '@app/providers';
+import { validateAddress } from '@shared/lib/utils';
+import { RadioOption } from '@shared/ui/RadioGroup/common/types';
+import { DropdownOption, ComboboxOption } from '@shared/ui/Dropdowns/common/types';
+import { getDestinationAccounts, getPayoutAccountOption } from '../../common/utils';
+import type { Asset, Address, ChainId, AccountId } from '@shared/core';
+import { RewardsDestination } from '@shared/core';
+import { walletModel, accountUtils } from '@entities/wallet';
+import { useAssetBalances } from '@entities/balance';
 
 const getDestinations = (t: TFunction): RadioOption<RewardsDestination>[] => {
   const Options = [
@@ -78,18 +79,21 @@ export const OperationForm = ({
   onSubmit,
 }: Props) => {
   const { t } = useI18n();
-  const { getLiveAccounts } = useAccount();
-  const { getLiveAssetBalances } = useBalance();
+  const dbAccounts = useUnit(walletModel.$accounts);
+  const dbWallets = useUnit(walletModel.$wallets);
 
-  const dbAccounts = getLiveAccounts();
   const destinations = getDestinations(t);
 
   const [activePayout, setActivePayout] = useState<Address>('');
   const [payoutAccounts, setPayoutAccounts] = useState<ComboboxOption<Address>[]>([]);
 
-  const destAccounts = dbAccounts.filter((a) => !a.chainId || a.chainId === chainId);
+  const destAccounts = getDestinationAccounts(dbAccounts, dbWallets, chainId);
   const payoutIds = destAccounts.map((a) => a.accountId);
-  const balances = getLiveAssetBalances(payoutIds, chainId, asset.assetId.toString());
+  const balances = useAssetBalances({
+    accountIds: payoutIds,
+    chainId,
+    assetId: asset.assetId.toString(),
+  });
 
   const amountField = fields.find((f) => f.name === 'amount');
   const destinationField = fields.find((f) => f.name === 'destination');
@@ -128,7 +132,9 @@ export const OperationForm = ({
 
   useEffect(() => {
     const payoutAccounts = destAccounts.reduce<DropdownOption<Address>[]>((acc, account) => {
-      if (!account.chainId || account.chainId === chainId) {
+      const isChainIdMatch = accountUtils.isChainIdMatch(account, chainId);
+
+      if (isChainIdMatch) {
         const balance = balances.find((b) => b.accountId === account.accountId);
         const option = getPayoutAccountOption(account, { asset, addressPrefix, balance });
 
@@ -155,16 +161,18 @@ export const OperationForm = ({
 
   const submitDisabled = !isValid || !canSubmit || !validateDestination();
 
+  const formHeader =
+    typeof header === 'function'
+      ? header({
+          invalidBalance: errors.amount?.type === 'insufficientBalance',
+          invalidFee: errors.amount?.type === 'insufficientBalanceForFee',
+          invalidDeposit: errors.amount?.type === 'insufficientBalanceForDeposit',
+        })
+      : header;
+
   return (
     <form className="w-full" onSubmit={handleSubmit(submitForm)}>
-      {typeof header === 'function'
-        ? header({
-            invalidBalance: errors.amount?.type === 'insufficientBalance',
-            invalidFee: errors.amount?.type === 'insufficientBalanceForFee',
-            invalidDeposit: errors.amount?.type === 'insufficientBalanceForDeposit',
-          })
-        : header}
-
+      {formHeader}
       <div className="flex flex-col gap-y-5">
         {amountField && (
           <Controller

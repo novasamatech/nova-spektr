@@ -1,13 +1,30 @@
 import { Link } from 'react-router-dom';
+import { useUnit } from 'effector-react/effector-react.umd';
+import { useEffect, useState } from 'react';
 
-import { Icon, BodyText, Plate, FootnoteText, HelpText } from '@renderer/shared/ui';
-import { useI18n } from '@renderer/app/providers';
-import { Paths } from '../../../../../app/providers/routes/paths';
-import { cnTw } from '@renderer/shared/lib/utils';
+import { Icon, BodyText, Plate, FootnoteText, HelpText, Switch } from '@shared/ui';
+import { useI18n } from '@app/providers';
+import { Paths } from '@shared/routes';
+import { cnTw } from '@shared/lib/utils';
+import { currencyModel, priceProviderModel } from '@entities/price';
 
 // TODO: Language switcher temporary removed
 export const GeneralActions = () => {
   const { t } = useI18n();
+  const currency = useUnit(currencyModel.$activeCurrency);
+  const fiatFlag = useUnit(priceProviderModel.$fiatFlag);
+  const [isAutoUpdateOn, setIsAutoUpdateOn] = useState(true);
+  const isAutoUpdateSupported = window.App && window.App.isAutoUpdateSupported;
+
+  useEffect(() => {
+    if (isAutoUpdateSupported) {
+      window.App.getIsAutoUpdateEnabled().then(setIsAutoUpdateOn);
+    }
+  }, []);
+
+  const handleAutoUpdateValueChange = (value: boolean) => {
+    window.App.setIsAutoUpdateEnabled(value).then(() => setIsAutoUpdateOn(value));
+  };
 
   // const localeOptions: DropdownOption[] = locales.map((option) => ({
   //   id: option.value,
@@ -59,6 +76,34 @@ export const GeneralActions = () => {
           <HelpText className="text-text-tertiary">{t('settings.overview.networkDetailsLabel')}</HelpText>
         </Link>
       </Plate>
+
+      <Plate className="p-0">
+        <Link
+          to={Paths.CURRENCY}
+          className={cnTw(
+            'w-full flex items-center gap-x-2 p-3 rounded',
+            'transition hover:shadow-card-shadow focus:shadow-card-shadow',
+          )}
+        >
+          <Icon className="row-span-2" name="currency" size={36} />
+          <BodyText>{t('settings.currency.plateTitle')}</BodyText>
+          {fiatFlag && <FootnoteText className="text-text-tertiary ml-auto">{currency?.code}</FootnoteText>}
+        </Link>
+      </Plate>
+      {isAutoUpdateSupported && (
+        <Plate className="p-0">
+          <div className="w-full flex items-center gap-x-2 p-3 rounded transition hover:shadow-card-shadow focus:shadow-card-shadow">
+            <Icon className="row-span-2" name="update" size={36} />
+            <BodyText className="mr-auto">{t('settings.autoUpdate')}</BodyText>
+            <Switch
+              checked={isAutoUpdateOn}
+              knobClassName="transition-none"
+              switchClassName="transition-none"
+              onChange={handleAutoUpdateValueChange}
+            />
+          </div>
+        </Plate>
+      )}
     </div>
   );
 };

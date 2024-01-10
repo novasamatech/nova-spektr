@@ -1,5 +1,5 @@
 import { Position, Theme } from './types';
-import { cnTw } from '@renderer/shared/lib/utils';
+import { cnTw } from '@shared/lib/utils';
 
 export const ViewClass: Record<Exclude<Position, 'auto'>, string> = {
   up: 'bottom-full mb-2.5',
@@ -10,7 +10,7 @@ export const OptionsContainerStyle =
   'mt-1 absolute z-20 py-1 px-1 max-h-60 w-full overflow-auto border rounded shadow-card-shadow';
 
 export const ButtonTextFilledStyle = {
-  light: 'text-text-primary',
+  light: 'text-inherit',
   dark: 'text-white',
 };
 

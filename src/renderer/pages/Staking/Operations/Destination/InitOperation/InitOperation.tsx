@@ -1,13 +1,12 @@
 import { ApiPromise } from '@polkadot/api';
 import { useEffect, useState } from 'react';
+import { useUnit } from 'effector-react';
 
-import { useI18n } from '@renderer/app/providers';
-import { Asset, useBalance, Balance as AccountBalance } from '@renderer/entities/asset';
-import { Address, ChainId, AccountId } from '@renderer/domain/shared-kernel';
-import { getOperationErrors, Transaction, TransactionType } from '@renderer/entities/transaction';
-import { Account, isMultisig } from '@renderer/entities/account';
-import { toAddress, nonNullable, TEST_ADDRESS } from '@renderer/shared/lib/utils';
-import { OperationFooter, OperationHeader } from '@renderer/features/operation';
+import { useI18n } from '@app/providers';
+import { getOperationErrors, Transaction, TransactionType } from '@entities/transaction';
+import type { Asset, Account, Balance as AccountBalance, Address, ChainId, AccountId, Wallet } from '@shared/core';
+import { toAddress, nonNullable, TEST_ADDRESS } from '@shared/lib/utils';
+import { OperationFooter, OperationHeader } from '@features/operation';
 import { OperationForm } from '../../components';
 import {
   validateBalanceForFeeDeposit,
@@ -15,6 +14,8 @@ import {
   getGeneralAccountOption,
   getSignatoryOption,
 } from '../../common/utils';
+import { walletModel, walletUtils, accountUtils } from '@entities/wallet';
+import { useAssetBalances } from '@entities/balance';
 
 export type DestinationResult = {
   accounts: Account[];
@@ -34,7 +35,7 @@ type Props = {
 
 const InitOperation = ({ api, chainId, accounts, addressPrefix, asset, onResult }: Props) => {
   const { t } = useI18n();
-  const { getLiveAssetBalances } = useBalance();
+  const activeWallet = useUnit(walletModel.$activeWallet);
 
   const [fee, setFee] = useState('');
   const [feeLoading, setFeeLoading] = useState(true);
@@ -47,14 +48,24 @@ const InitOperation = ({ api, chainId, accounts, addressPrefix, asset, onResult 
   const [activeBalances, setActiveBalances] = useState<AccountBalance[]>([]);
 
   const firstAccount = activeDestAccounts[0] || accounts[0];
-  const accountIsMultisig = isMultisig(firstAccount);
-  const formFields = accountIsMultisig ? [{ name: 'destination' }, { name: 'description' }] : [{ name: 'destination' }];
+  const isMultisigWallet = walletUtils.isMultisig(activeWallet);
+  const isMultisigAccount = firstAccount && accountUtils.isMultisigAccount(firstAccount);
+  const formFields = isMultisigWallet ? [{ name: 'destination' }, { name: 'description' }] : [{ name: 'destination' }];
 
   const accountIds = accounts.map((account) => account.accountId);
-  const balances = getLiveAssetBalances(accountIds, chainId, asset.assetId.toString());
+  const balances = useAssetBalances({
+    accountIds,
+    chainId,
+    assetId: asset.assetId.toString(),
+  });
 
-  const signatoryIds = accountIsMultisig ? firstAccount.signatories.map((s) => s.accountId) : [];
-  const signatoriesBalances = getLiveAssetBalances(signatoryIds, chainId, asset.assetId.toString());
+  const signatoryIds = isMultisigAccount ? firstAccount.signatories.map((s) => s.accountId) : [];
+  const signatoriesBalances = useAssetBalances({
+    accountIds: signatoryIds,
+    chainId,
+    assetId: asset.assetId.toString(),
+  });
+
   const signerBalance = signatoriesBalances.find((b) => b.accountId === activeSignatory?.accountId);
 
   useEffect(() => {
@@ -73,10 +84,10 @@ const InitOperation = ({ api, chainId, accounts, addressPrefix, asset, onResult 
   }, [activeDestAccounts.length, balances]);
 
   useEffect(() => {
-    if (accountIsMultisig) {
+    if (isMultisigWallet) {
       setActiveDestAccounts(accounts);
     }
-  }, [accountIsMultisig, firstAccount?.accountId]);
+  }, [isMultisigWallet, firstAccount?.accountId]);
 
   useEffect(() => {
     const newTransactions = activeDestAccounts.map((value) => ({
@@ -95,10 +106,10 @@ const InitOperation = ({ api, chainId, accounts, addressPrefix, asset, onResult 
     return getGeneralAccountOption(account, { asset, fee, balance, addressPrefix });
   };
 
-  const getSignatoryDrowdownOption = (account: Account) => {
+  const getSignatoryDropdownOption = (wallet: Wallet, account: Account) => {
     const balance = signatoriesBalances.find((b) => b.accountId === account.accountId);
 
-    return getSignatoryOption(account, { balance, asset, addressPrefix, fee, deposit });
+    return getSignatoryOption(wallet, account, { balance, asset, addressPrefix, fee, deposit });
   };
 
   const submitDestination = (data: { destination?: string; description?: string }) => {
@@ -108,7 +119,7 @@ const InitOperation = ({ api, chainId, accounts, addressPrefix, asset, onResult 
     onResult({
       accounts: selectedAccounts,
       destination: data.destination || '',
-      ...(accountIsMultisig && {
+      ...(isMultisigWallet && {
         description:
           data.description ||
           t('transactionMessage.destination', {
@@ -120,7 +131,7 @@ const InitOperation = ({ api, chainId, accounts, addressPrefix, asset, onResult 
   };
 
   const validateFee = (): boolean => {
-    if (!accountIsMultisig) {
+    if (!isMultisigWallet) {
       return activeBalances.every((b) => validateBalanceForFee(b, fee));
     }
 
@@ -130,14 +141,14 @@ const InitOperation = ({ api, chainId, accounts, addressPrefix, asset, onResult 
   };
 
   const validateDeposit = (): boolean => {
-    if (!accountIsMultisig) return true;
+    if (!isMultisigWallet) return true;
     if (!signerBalance) return false;
 
     return validateBalanceForFeeDeposit(signerBalance, deposit, fee);
   };
 
   const getActiveAccounts = (): AccountId[] => {
-    if (!accountIsMultisig) return activeDestAccounts.map((acc) => acc.accountId);
+    if (!isMultisigWallet) return activeDestAccounts.map((acc) => acc.accountId);
 
     return activeSignatory ? [activeSignatory.accountId] : [];
   };
@@ -163,7 +174,7 @@ const InitOperation = ({ api, chainId, accounts, addressPrefix, asset, onResult 
             isMultiselect
             errors={getOperationErrors(!isValidFee, !isValidDeposit)}
             getAccountOption={getAccountDropdownOption}
-            getSignatoryOption={getSignatoryDrowdownOption}
+            getSignatoryOption={getSignatoryDropdownOption}
             onSignatoryChange={setActiveSignatory}
             onAccountChange={setActiveDestAccounts}
           />

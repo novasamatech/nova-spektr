@@ -1,5 +1,7 @@
 import { ReactNode } from 'react';
 
+import { IconNames } from '@shared/ui/Icon/data';
+
 export type Position = 'up' | 'down' | 'auto';
 export type Theme = 'dark' | 'light';
 
@@ -16,3 +18,9 @@ export type DropdownResult<T extends any = any> = {
 };
 
 export type ComboboxOption<T extends any = any> = DropdownOption<T>;
+
+export type DropdownIconButtonOption = {
+  icon: IconNames;
+  title: string;
+  onClick: () => void;
+};

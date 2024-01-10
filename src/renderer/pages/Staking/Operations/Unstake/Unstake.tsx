@@ -1,19 +1,24 @@
 import { UnsignedTransaction } from '@substrate/txwrapper-polkadot';
 import { useEffect, useState } from 'react';
 import { Navigate, useNavigate, useParams, useSearchParams } from 'react-router-dom';
+import { useUnit } from 'effector-react';
 
-import { UnstakingDuration } from '@renderer/pages/Staking/Overview/components';
-import { Paths, useI18n, useNetworkContext } from '@renderer/app/providers';
-import { ChainId, HexString } from '@renderer/domain/shared-kernel';
-import { Transaction, TransactionType, useTransaction } from '@renderer/entities/transaction';
-import { Account, isMultisig, useAccount } from '@renderer/entities/account';
+import { UnstakingDuration } from '@pages/Staking/Overview/components';
+import { Paths } from '@shared/routes';
+import { useI18n } from '@app/providers';
+import { Transaction, TransactionType, useTransaction } from '@entities/transaction';
 import InitOperation, { UnstakeResult } from './InitOperation/InitOperation';
 import { Confirmation, NoAsset, Submit } from '../components';
-import { DEFAULT_TRANSITION, getRelaychainAsset, toAddress } from '@renderer/shared/lib/utils';
-import { useToggle } from '@renderer/shared/lib/hooks';
-import { Alert, BaseModal, Button, Loader } from '@renderer/shared/ui';
-import { OperationTitle } from '@renderer/components/common';
-import { Signing } from '@renderer/features/operation';
+import { DEFAULT_TRANSITION, getRelaychainAsset, toAddress } from '@shared/lib/utils';
+import { useToggle } from '@shared/lib/hooks';
+import { BaseModal, Button, Loader } from '@shared/ui';
+import { Signing } from '@features/operation';
+import type { Account, ChainId, HexString } from '@shared/core';
+import { walletModel, walletUtils } from '@entities/wallet';
+import { priceProviderModel } from '@entities/price';
+import { StakingPopover } from '../components/StakingPopover/StakingPopover';
+import { useNetworkData } from '@entities/network';
+import { OperationTitle } from '@entities/chain';
 
 const enum Step {
   INIT,
@@ -24,15 +29,17 @@ const enum Step {
 
 export const Unstake = () => {
   const { t } = useI18n();
+  const activeWallet = useUnit(walletModel.$activeWallet);
+  const activeAccounts = useUnit(walletModel.$activeAccounts);
+
   const navigate = useNavigate();
   const { setTxs, txs, setWrappers, wrapTx, buildTransaction } = useTransaction();
-  const { connections } = useNetworkContext();
-  const { getActiveAccounts } = useAccount();
   const [searchParams] = useSearchParams();
   const params = useParams<{ chainId: ChainId }>();
 
+  const { api, chain } = useNetworkData(params.chainId || ('' as ChainId));
+
   const [isUnstakeModalOpen, toggleUnstakeModal] = useToggle(true);
-  const [isAlertOpen, toggleAlert] = useToggle(true);
 
   const [activeStep, setActiveStep] = useState<Step>(Step.INIT);
 
@@ -46,9 +53,14 @@ export const Unstake = () => {
   const [signer, setSigner] = useState<Account>();
   const [signatures, setSignatures] = useState<HexString[]>([]);
 
+  const isMultisigWallet = walletUtils.isMultisig(activeWallet);
+
   const accountIds = searchParams.get('id')?.split(',') || [];
   const chainId = params.chainId || ('' as ChainId);
-  const activeAccounts = getActiveAccounts();
+
+  useEffect(() => {
+    priceProviderModel.events.assetsPricesRequested({ includeRates: true });
+  }, []);
 
   useEffect(() => {
     if (!activeAccounts.length || !accountIds.length) return;
@@ -57,13 +69,11 @@ export const Unstake = () => {
     setAccounts(accounts);
   }, [activeAccounts.length]);
 
-  const connection = connections[chainId];
-
-  if (!connection || accountIds.length === 0) {
+  if (!api || accountIds.length === 0) {
     return <Navigate replace to={Paths.STAKING} />;
   }
 
-  const { api, explorers, addressPrefix, assets, name } = connections[chainId];
+  const { explorers, addressPrefix, assets, name } = chain;
   const asset = getRelaychainAsset(assets);
 
   const goToPrevStep = () => {
@@ -84,7 +94,7 @@ export const Unstake = () => {
       <BaseModal
         closeButton
         contentClass=""
-        headerClass="py-3 px-5 max-w-[440px]"
+        headerClass="py-3 pl-5 pr-3"
         panelClass="w-max"
         isOpen={isUnstakeModalOpen}
         title={<OperationTitle title={t('staking.unstake.title')} chainId={chainId} />}
@@ -105,7 +115,7 @@ export const Unstake = () => {
       <BaseModal
         closeButton
         contentClass=""
-        headerClass="py-3 px-5 max-w-[440px]"
+        headerClass="py-3 pl-5 pr-3"
         panelClass="w-max"
         isOpen={isUnstakeModalOpen}
         title={<OperationTitle title={t('staking.unstake.title')} chainId={chainId} />}
@@ -121,7 +131,7 @@ export const Unstake = () => {
   const onInitResult = ({ accounts, amount, signer, description, withChill }: UnstakeResult) => {
     const transactions = getUnstakeTxs(accounts, amount, withChill);
 
-    if (signer && isMultisig(accounts[0])) {
+    if (signer && isMultisigWallet) {
       setWrappers([
         {
           signatoryId: signer.accountId,
@@ -160,7 +170,7 @@ export const Unstake = () => {
 
   const explorersProps = { explorers, addressPrefix, asset };
   const unstakeValues = new Array(txAccounts.length).fill(unstakeAmount);
-  const multisigTx = isMultisig(txAccounts[0]) ? wrapTx(txs[0], api, addressPrefix) : undefined;
+  const multisigTx = isMultisigWallet ? wrapTx(txs[0], api, addressPrefix) : undefined;
 
   return (
     <>
@@ -168,7 +178,7 @@ export const Unstake = () => {
         closeButton
         contentClass=""
         panelClass="w-max"
-        headerClass="py-3 px-5 max-w-[440px]"
+        headerClass="py-3 pl-5 pr-3"
         isOpen={activeStep !== Step.SUBMIT && isUnstakeModalOpen}
         title={<OperationTitle title={t('staking.unstake.title', { asset: asset.symbol })} chainId={chainId} />}
         onClose={closeUnstakeModal}
@@ -188,17 +198,15 @@ export const Unstake = () => {
             onGoBack={goToPrevStep}
             {...explorersProps}
           >
-            {isAlertOpen && (
-              <Alert title={t('staking.confirmation.hintTitle')} onClose={toggleAlert}>
-                <Alert.Item>
-                  {t('staking.confirmation.hintUnstakePeriod')} {'('}
-                  <UnstakingDuration api={api} />
-                  {')'}
-                </Alert.Item>
-                <Alert.Item>{t('staking.confirmation.hintNoRewards')}</Alert.Item>
-                <Alert.Item>{t('staking.confirmation.hintWithdraw')}</Alert.Item>
-              </Alert>
-            )}
+            <StakingPopover labelText={t('staking.confirmation.hintTitle')}>
+              <StakingPopover.Item>
+                {t('staking.confirmation.hintUnstakePeriod')} {' ('}
+                <UnstakingDuration api={api} />
+                {')'}
+              </StakingPopover.Item>
+              <StakingPopover.Item>{t('staking.confirmation.hintNoRewards')}</StakingPopover.Item>
+              <StakingPopover.Item>{t('staking.confirmation.hintWithdraw')}</StakingPopover.Item>
+            </StakingPopover>
           </Confirmation>
         )}
         {activeStep === Step.SIGNING && (

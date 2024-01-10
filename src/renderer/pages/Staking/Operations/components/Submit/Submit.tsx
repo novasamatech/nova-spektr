@@ -3,8 +3,9 @@ import { useEffect, useState, ComponentProps } from 'react';
 import { ApiPromise } from '@polkadot/api';
 import { useNavigate } from 'react-router-dom';
 
-import { useI18n, useMatrix, useMultisigChainContext, Paths } from '@renderer/app/providers';
-import { HexString } from '@renderer/domain/shared-kernel';
+import { useI18n, useMatrix, useMultisigChainContext } from '@app/providers';
+import { Paths } from '@shared/routes';
+import { HexString } from '@shared/core';
 import {
   useTransaction,
   ExtrinsicResultParams,
@@ -13,12 +14,13 @@ import {
   MultisigEvent,
   MultisigTransaction,
   MultisigTxInitStatus,
-} from '@renderer/entities/transaction';
-import { isMultisig, Account, MultisigAccount } from '@renderer/entities/account';
-import { toAccountId, DEFAULT_TRANSITION } from '@renderer/shared/lib/utils';
-import { Button } from '@renderer/shared/ui';
-import { useToggle } from '@renderer/shared/lib/hooks';
-import { useMultisigTx, useMultisigEvent } from '@renderer/entities/multisig';
+} from '@entities/transaction';
+import { toAccountId, DEFAULT_TRANSITION } from '@shared/lib/utils';
+import { Button } from '@shared/ui';
+import { useToggle } from '@shared/lib/hooks';
+import { useMultisigTx, useMultisigEvent } from '@entities/multisig';
+import type { Account, MultisigAccount } from '@shared/core';
+import { accountUtils } from '@entities/wallet';
 
 type ResultProps = Pick<ComponentProps<typeof OperationResult>, 'title' | 'description' | 'variant'>;
 
@@ -38,7 +40,6 @@ type Props = {
 export const Submit = ({ api, accounts, txs, multisigTx, unsignedTx, signatures, description, onClose }: Props) => {
   const { t } = useI18n();
   const navigate = useNavigate();
-
   const { matrix } = useMatrix();
   const { submitAndWatchExtrinsic, getSignedExtrinsic } = useTransaction();
   const { addTask } = useMultisigChainContext();
@@ -50,12 +51,15 @@ export const Submit = ({ api, accounts, txs, multisigTx, unsignedTx, signatures,
   const [inProgress, toggleInProgress] = useToggle(true);
   const [errorMessage, setErrorMessage] = useState('');
 
+  const firstAccount = accounts[0];
+  const isMultisigAccount = accountUtils.isMultisigAccount(firstAccount);
+
   useEffect(() => {
     submitExtrinsic(signatures).catch(() => console.warn('Error getting signed extrinsics'));
   }, []);
 
   const handleSuccessClose = () => {
-    if (isMultisig(accounts[0]) && isSuccess) {
+    if (isMultisigAccount && isSuccess) {
       setTimeout(() => navigate(Paths.OPERATIONS), DEFAULT_TRANSITION);
     } else {
       setTimeout(() => navigate(Paths.STAKING), DEFAULT_TRANSITION);
@@ -74,22 +78,21 @@ export const Submit = ({ api, accounts, txs, multisigTx, unsignedTx, signatures,
     allExtrinsics.forEach((extrinsic, index) => {
       submitAndWatchExtrinsic(extrinsic, unsignedTx[index], api, async (executed, params) => {
         if (executed) {
-          const mstAccount = accounts[0];
           const typedParams = params as ExtrinsicResultParams;
 
-          if (multisigTx && isMultisig(mstAccount)) {
+          if (multisigTx && isMultisigAccount) {
             const newTx: MultisigTransaction = {
-              accountId: mstAccount.accountId,
+              accountId: firstAccount.accountId,
               chainId: multisigTx.chainId,
-              signatories: mstAccount.signatories,
+              signatories: firstAccount.signatories,
               callData: multisigTx.args.callData,
               callHash: multisigTx.args.callHash,
               transaction: txs[index],
               status: MultisigTxInitStatus.SIGNING,
               blockCreated: typedParams.timepoint.height,
               indexCreated: typedParams.timepoint.index,
-              description,
               dateCreated: Date.now(),
+              description,
             };
 
             const event: MultisigEvent = {
@@ -109,7 +112,7 @@ export const Submit = ({ api, accounts, txs, multisigTx, unsignedTx, signatures,
             await Promise.all([addMultisigTx(newTx), addEventWithQueue(event)]);
 
             if (matrix.userIsLoggedIn) {
-              sendMultisigEvent(mstAccount.matrixRoomId, newTx, typedParams);
+              sendMultisigEvent(firstAccount.matrixRoomId, newTx, typedParams);
             }
           }
 
@@ -117,7 +120,7 @@ export const Submit = ({ api, accounts, txs, multisigTx, unsignedTx, signatures,
           setTimeout(() => {
             onClose();
 
-            if (isMultisig(mstAccount)) {
+            if (isMultisigAccount) {
               setTimeout(() => navigate(Paths.OPERATIONS), DEFAULT_TRANSITION);
             } else {
               setTimeout(() => navigate(Paths.STAKING), DEFAULT_TRANSITION);

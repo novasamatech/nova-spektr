@@ -1,9 +1,9 @@
-import { Icon, BodyText } from '@renderer/shared/ui';
-import { useI18n } from '@renderer/app/providers';
-import { Account } from '@renderer/entities/account';
+import { Icon, BodyText } from '@shared/ui';
+import { useI18n } from '@app/providers';
+import type { MultisigAccount } from '@shared/core';
 
 type Props = {
-  multisigAccount: Account | null;
+  multisigAccount?: MultisigAccount;
   isEmptyFromFilters: boolean;
 };
 

@@ -2,10 +2,22 @@ import { BN } from '@polkadot/util';
 import cn from 'classnames';
 import { ReactNode } from 'react';
 
-import { Account, MultisigAccount, AccountAddress } from '@renderer/entities/account';
-import { Address } from '@renderer/domain/shared-kernel';
-import { DropdownOption } from '@renderer/shared/ui/Dropdowns/common/types';
-import { Balance as AccountBalance, Asset, AssetBalance } from '@renderer/entities/asset';
+import { AccountAddress, accountUtils, WalletIcon, walletUtils } from '@entities/wallet';
+import { DropdownOption } from '@shared/ui/Dropdowns/common/types';
+import { AssetBalance } from '@entities/asset';
+import { ExplorerLink, FootnoteText } from '@shared/ui';
+import { ChainId, Explorer } from '@shared/core';
+import { InfoSection } from '@shared/ui/Popovers/InfoPopover/InfoPopover';
+import type {
+  Address,
+  Stake,
+  Account,
+  MultisigAccount,
+  Asset,
+  Balance as AccountBalance,
+  Wallet,
+  WalletType,
+} from '@shared/core';
 import {
   toAddress,
   stakeableAmount,
@@ -13,8 +25,9 @@ import {
   transferableAmount,
   unlockingAmount,
   redeemableAmount,
-} from '@renderer/shared/lib/utils';
-import { Stake } from '@renderer/entities/staking';
+  getAccountExplorer,
+  dictionary,
+} from '@shared/lib/utils';
 
 export const validateBalanceForFee = (balance: AccountBalance | string, fee: string): boolean => {
   const transferableBalance = typeof balance === 'string' ? balance : transferableAmount(balance);
@@ -64,6 +77,19 @@ const getElement = (address: Address, accountName: string, content?: ReactNode):
   return (
     <div className="flex justify-between w-full">
       <AccountAddress size={20} type="short" address={address} name={accountName} canCopy={false} />
+      {content}
+    </div>
+  );
+};
+
+const getWalletElement = (walletType: WalletType, walletName: string, content?: ReactNode): ReactNode => {
+  return (
+    <div className="flex justify-between items-center w-full">
+      <div className="flex gap-x-2 items-center">
+        <WalletIcon type={walletType} />
+
+        <FootnoteText className="text-text-secondary">{walletName}</FootnoteText>
+      </div>
       {content}
     </div>
   );
@@ -194,10 +220,10 @@ export const getUnstakeAccountOption = (
 };
 
 export const getSignatoryOption = (
+  wallet: Wallet,
   account: Account,
-  { balance, asset, addressPrefix, fee, deposit }: Params,
+  { balance, asset, fee, deposit }: Params,
 ): DropdownOption<Account> => {
-  const address = toAddress(account.accountId, { prefix: addressPrefix });
   const canValidateBalance = balance && fee && deposit;
 
   let balanceIsCorrect = true;
@@ -206,7 +232,24 @@ export const getSignatoryOption = (
   }
 
   const balanceContent = getBalance(transferableAmount(balance), asset, balanceIsCorrect);
-  const element = getElement(address, account.name, balanceContent);
+  const element = getWalletElement(wallet.type, wallet.name, balanceContent);
 
-  return { id: account.accountId + account.name, value: account, element };
+  return { id: wallet.id + account.accountId + account.name, value: account, element };
+};
+
+export const getExplorers = (address: Address, explorers: Explorer[] = []): [InfoSection] => {
+  const explorersContent = explorers.map((explorer) => ({
+    id: explorer.name,
+    value: <ExplorerLink name={explorer.name} href={getAccountExplorer(explorer, { address })} />,
+  }));
+
+  return [{ items: explorersContent }];
+};
+
+export const getDestinationAccounts = (accounts: Account[], wallets: Wallet[], chainId: ChainId) => {
+  const walletsMap = dictionary(wallets, 'id', walletUtils.isPolkadotVault);
+
+  return accounts.filter(
+    (a) => (!accountUtils.isBaseAccount(a) || !walletsMap[a.walletId]) && accountUtils.isChainIdMatch(a, chainId),
+  );
 };

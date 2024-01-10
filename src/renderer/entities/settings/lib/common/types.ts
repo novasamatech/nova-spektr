@@ -1,4 +1,4 @@
-import { ChainId } from '@renderer/domain/shared-kernel';
+import type { ChainId } from '@shared/core';
 
 export type ISettingsStorage = {
   setHideZeroBalance: (hideZeroBalance: boolean) => void;

@@ -2,7 +2,13 @@ import { ApiPromise } from '@polkadot/api';
 import { UnsignedTransaction } from '@substrate/txwrapper-polkadot';
 import { useEffect, useState, ComponentProps } from 'react';
 
-import { useI18n, useMatrix, useMultisigChainContext } from '@renderer/app/providers';
+import { useI18n, useMatrix, useMultisigChainContext } from '@app/providers';
+import { useMultisigTx, useMultisigEvent } from '@entities/multisig';
+import { toAccountId } from '@shared/lib/utils';
+import { useToggle } from '@shared/lib/hooks';
+import { Button, StatusModal } from '@shared/ui';
+import { Animation } from '@shared/ui/Animation/Animation';
+import type { Account, HexString } from '@shared/core';
 import {
   MultisigEvent,
   MultisigTxFinalStatus,
@@ -12,16 +18,9 @@ import {
   MultisigTransaction,
   useTransaction,
   ExtrinsicResultParams,
-  OperationResult,
-} from '@renderer/entities/transaction';
-import { HexString } from '@renderer/domain/shared-kernel';
-import { Account } from '@renderer/entities/account';
-import { useMultisigTx, useMultisigEvent } from '@renderer/entities/multisig';
-import { toAccountId } from '@renderer/shared/lib/utils';
-import { useToggle } from '@renderer/shared/lib/hooks';
-import { Button } from '@renderer/shared/ui';
+} from '@entities/transaction';
 
-type ResultProps = Pick<ComponentProps<typeof OperationResult>, 'title' | 'description' | 'variant'>;
+type ResultProps = Pick<ComponentProps<typeof StatusModal>, 'title' | 'content' | 'description'>;
 
 type Props = {
   api: ApiPromise;
@@ -82,29 +81,30 @@ export const Submit = ({
 
           if (isReject) {
             updatedTx.status = MultisigTxFinalStatus.CANCELLED;
+            updatedTx.cancelDescription = rejectReason;
           }
+
+          await updateMultisigTx(updatedTx);
+
+          const eventStatus: SigningStatus = isReject ? 'CANCELLED' : 'SIGNED';
+          const event: MultisigEvent = {
+            txAccountId: multisigTx.accountId,
+            txChainId: multisigTx.chainId,
+            txCallHash: multisigTx.callHash,
+            txBlock: multisigTx.blockCreated,
+            txIndex: multisigTx.indexCreated,
+            status: eventStatus,
+            accountId: account.accountId,
+            extrinsicHash: typedParams.extrinsicHash,
+            eventBlock: typedParams.timepoint.height,
+            eventIndex: typedParams.timepoint.index,
+            dateCreated: Date.now(),
+          };
+
+          await addEventWithQueue(event);
 
           if (matrix.userIsLoggedIn) {
             sendMultisigEvent(updatedTx, typedParams, rejectReason);
-          } else {
-            await updateMultisigTx(updatedTx);
-
-            const eventStatus: SigningStatus = isReject ? 'CANCELLED' : 'SIGNED';
-            const event: MultisigEvent = {
-              txAccountId: multisigTx.accountId,
-              txChainId: multisigTx.chainId,
-              txCallHash: multisigTx.callHash,
-              txBlock: multisigTx.blockCreated,
-              txIndex: multisigTx.indexCreated,
-              status: eventStatus,
-              accountId: account.accountId,
-              extrinsicHash: typedParams.extrinsicHash,
-              eventBlock: typedParams.timepoint.height,
-              eventIndex: typedParams.timepoint.index,
-              dateCreated: Date.now(),
-            };
-
-            await addEventWithQueue(event);
           }
         }
 
@@ -148,13 +148,23 @@ export const Submit = ({
 
   const getResultProps = (): ResultProps => {
     if (inProgress) {
-      return { title: t(isReject ? 'operation.rejectInProgress' : 'operation.inProgress'), variant: 'loading' };
+      return {
+        title: t(isReject ? 'operation.rejectInProgress' : 'operation.inProgress'),
+        content: <Animation variant="loading" loop />,
+      };
     }
     if (successMessage) {
-      return { title: t(isReject ? 'operation.successRejectMessage' : 'operation.successMessage'), variant: 'success' };
+      return {
+        title: t(isReject ? 'operation.successRejectMessage' : 'operation.successMessage'),
+        content: <Animation variant="success" />,
+      };
     }
     if (errorMessage) {
-      return { title: t('operation.feeErrorTitle'), description: errorMessage, variant: 'error' };
+      return {
+        title: t('operation.feeErrorTitle'),
+        content: <Animation variant="error" />,
+        description: errorMessage,
+      };
     }
 
     return { title: '' };
@@ -166,12 +176,8 @@ export const Submit = ({
   };
 
   return (
-    <OperationResult
-      isOpen={Boolean(inProgress || errorMessage || successMessage)}
-      {...getResultProps()}
-      onClose={onClose}
-    >
+    <StatusModal isOpen={Boolean(inProgress || errorMessage || successMessage)} {...getResultProps()} onClose={onClose}>
       {errorMessage && <Button onClick={closeErrorMessage}>{t('operation.feeErrorButton')}</Button>}
-    </OperationResult>
+    </StatusModal>
   );
 };

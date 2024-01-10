@@ -3,8 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useStore } from 'effector-react';
 
 import * as assetGuardModel from '../model/asset-guard';
-import { Chain } from '@renderer/entities/chain';
-import { Asset } from '@renderer/entities/asset';
+import type { Chain, Asset } from '@shared/core';
 
 type Props = {
   redirectPath: string;

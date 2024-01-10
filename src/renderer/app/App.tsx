@@ -1,44 +1,47 @@
 import { useEffect, useState } from 'react';
 import { ErrorBoundary } from 'react-error-boundary';
 import { useNavigate, useRoutes } from 'react-router-dom';
+import { useUnit } from 'effector-react';
 
-import { FallbackScreen } from '@renderer/components/common';
-import { useAccount } from '@renderer/entities/account';
+import { CreateWalletProvider } from '@widgets/CreateWallet';
+import { WalletDetailsProvider } from '@widgets/WalletDetails';
+import { walletModel } from '@entities/wallet';
+import { ROUTES_CONFIG } from '@pages/index';
+import { Paths } from '@shared/routes';
+import { FallbackScreen } from '@shared/ui';
 import {
   ConfirmDialogProvider,
+  StatusModalProvider,
   I18Provider,
   MatrixProvider,
-  NetworkProvider,
   GraphqlProvider,
   MultisigChainProvider,
-  Paths,
-  routesConfig,
 } from './providers';
 
 const SPLASH_SCREEN_DELAY = 450;
 
-const App = () => {
+export const App = () => {
   const navigate = useNavigate();
-  const appRoutes = useRoutes(routesConfig);
-  const { getAccounts } = useAccount();
+  const appRoutes = useRoutes(ROUTES_CONFIG);
 
-  const [showSplashScreen, setShowSplashScreen] = useState(true);
-  const [isAccountsLoading, setIsAccountsLoading] = useState(true);
+  const wallets = useUnit(walletModel.$wallets);
+  const isLoadingWallets = useUnit(walletModel.$isLoadingWallets);
+
+  const [splashScreenLoading, setSplashScreenLoading] = useState(true);
 
   useEffect(() => {
-    setTimeout(() => setShowSplashScreen(false), SPLASH_SCREEN_DELAY);
-
-    getAccounts().then((accounts) => {
-      setIsAccountsLoading(false);
-
-      if (accounts.length === 0) {
-        navigate(Paths.ONBOARDING, { replace: true });
-      }
-    });
+    setTimeout(() => setSplashScreenLoading(false), SPLASH_SCREEN_DELAY);
   }, []);
 
+  useEffect(() => {
+    if (isLoadingWallets) return;
+
+    const path = wallets.length > 0 ? Paths.ASSETS : Paths.ONBOARDING;
+    navigate(path, { replace: true });
+  }, [isLoadingWallets, wallets.length]);
+
   const getContent = () => {
-    if (showSplashScreen || isAccountsLoading) return null;
+    if (splashScreenLoading || isLoadingWallets) return null;
 
     document.querySelector('.splash_placeholder')?.remove();
 
@@ -48,18 +51,20 @@ const App = () => {
   return (
     <I18Provider>
       <ErrorBoundary FallbackComponent={FallbackScreen} onError={console.error}>
-        <NetworkProvider>
-          <MultisigChainProvider>
-            <MatrixProvider>
-              <ConfirmDialogProvider>
-                <GraphqlProvider>{getContent()}</GraphqlProvider>
-              </ConfirmDialogProvider>
-            </MatrixProvider>
-          </MultisigChainProvider>
-        </NetworkProvider>
+        <MultisigChainProvider>
+          <MatrixProvider>
+            <ConfirmDialogProvider>
+              <StatusModalProvider>
+                <GraphqlProvider>
+                  {getContent()}
+                  <CreateWalletProvider />
+                  <WalletDetailsProvider />
+                </GraphqlProvider>
+              </StatusModalProvider>
+            </ConfirmDialogProvider>
+          </MatrixProvider>
+        </MultisigChainProvider>
       </ErrorBoundary>
     </I18Provider>
   );
 };
-
-export default App;

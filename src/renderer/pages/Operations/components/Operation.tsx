@@ -1,17 +1,19 @@
 import { format } from 'date-fns';
 
-import { useI18n } from '@renderer/app/providers';
+import { useI18n } from '@app/providers';
 import { TransactionTitle } from './TransactionTitle/TransactionTitle';
-import { MultisigAccount } from '@renderer/entities/account';
-import { FootnoteText, Accordion } from '@renderer/shared/ui';
-import { TransactionAmount } from './TransactionAmount';
+import { FootnoteText, Accordion } from '@shared/ui';
 import OperationStatus from './OperationStatus';
 import OperationFullInfo from './OperationFullInfo';
-import { MultisigTransactionDS } from '@renderer/shared/api/storage';
-import { useMultisigEvent } from '@renderer/entities/multisig';
-import { ChainTitle, XcmChains } from '@renderer/entities/chain';
+import { MultisigTransactionDS } from '@shared/api/storage';
+import { useMultisigEvent } from '@entities/multisig';
+import { ChainTitle, XcmChains } from '@entities/chain';
 import { getTransactionAmount } from '../common/utils';
-import { isXcmTransaction } from '@renderer/entities/transaction';
+import { isXcmTransaction } from '@entities/transaction';
+import type { MultisigAccount } from '@shared/core';
+import { chainsService } from '@entities/network';
+import { getAssetById } from '@shared/lib/utils';
+import { AssetBalance } from '@entities/asset';
 
 type Props = {
   tx: MultisigTransactionDS;
@@ -26,6 +28,9 @@ const Operation = ({ tx, account }: Props) => {
   const approvals = events?.filter((e) => e.status === 'SIGNED') || [];
   const initEvent = approvals.find((e) => e.accountId === tx.depositor);
   const date = new Date(tx.dateCreated || initEvent?.dateCreated || Date.now());
+  const asset =
+    tx.transaction && getAssetById(tx.transaction.args.asset, chainsService.getChainById(tx.chainId)?.assets);
+  const amount = tx.transaction && getTransactionAmount(tx.transaction);
 
   return (
     <Accordion className="bg-block-background-default transition-shadow rounded hover:shadow-card-shadow focus-visible:shadow-card-shadow">
@@ -39,8 +44,12 @@ const Operation = ({ tx, account }: Props) => {
 
           <TransactionTitle className="flex-1 overflow-hidden" tx={tx.transaction} description={tx.description} />
 
-          {tx.transaction && getTransactionAmount(tx.transaction) && (
-            <TransactionAmount wrapperClassName="w-[160px]" tx={tx.transaction} />
+          {asset && amount ? (
+            <div className="w-[160px]">
+              <AssetBalance value={amount} asset={asset} showIcon />
+            </div>
+          ) : (
+            <span className="w-[160px]" />
           )}
 
           {isXcmTransaction(tx.transaction) ? (

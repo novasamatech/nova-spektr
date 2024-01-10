@@ -1,7 +1,7 @@
-import { createEffect, forward } from 'effector';
+import { createEffect, sample } from 'effector';
 
-import { kernelModel } from '@renderer/shared/core';
-import { XcmConfig, getXcmConfig, fetchXcmConfig, saveXcmConfig } from '@renderer/shared/api/xcm';
+import { kernelModel } from '@shared/core';
+import { XcmConfig, getXcmConfig, fetchXcmConfig, saveXcmConfig } from '@shared/api/xcm';
 
 const getConfigFx = createEffect((): XcmConfig | null => {
   return getXcmConfig();
@@ -13,14 +13,14 @@ const saveConfigFx = createEffect((config: XcmConfig) => {
   return saveXcmConfig(config);
 });
 
-forward({
-  from: kernelModel.events.appStarted,
-  to: fetchConfigFx,
+sample({
+  clock: kernelModel.events.appStarted,
+  target: fetchConfigFx,
 });
 
-forward({
-  from: fetchConfigFx.doneData,
-  to: saveConfigFx,
+sample({
+  clock: fetchConfigFx.doneData,
+  target: saveConfigFx,
 });
 
 export const effects = {

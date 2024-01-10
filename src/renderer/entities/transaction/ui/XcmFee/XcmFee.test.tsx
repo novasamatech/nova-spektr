@@ -1,30 +1,28 @@
 import { act, render, screen } from '@testing-library/react';
 
-import { Asset } from '@renderer/entities/asset';
-import { Transaction } from '@renderer/entities/transaction';
+import { Transaction } from '@entities/transaction';
 import { XcmFee } from './XcmFee';
-import { ChainXCM, XcmConfig } from '@renderer/shared/api/xcm';
+import { ChainXCM, XcmConfig } from '@shared/api/xcm';
+import type { Asset } from '@shared/core';
 
-jest.mock('@renderer/components/common');
-
-jest.mock('@renderer/app/providers', () => ({
+jest.mock('@app/providers', () => ({
   useI18n: jest.fn().mockReturnValue({
     t: (key: string) => key,
   }),
 }));
 
-jest.mock('@renderer/entities/transaction', () => ({
+jest.mock('@entities/transaction', () => ({
   useTransaction: jest.fn().mockReturnValue({
     getTransactionFee: jest.fn().mockResolvedValue('12'),
   }),
 }));
 
-jest.mock('@renderer/entities/asset', () => ({
-  ...jest.requireActual('@renderer/entities/asset'),
+jest.mock('@entities/asset', () => ({
+  ...jest.requireActual('@entities/asset'),
   AssetBalance: ({ value }: any) => <div>{value}</div>,
 }));
 
-describe('components/common/XcmFee', () => {
+describe('entities/transaction/ui/XcmFee', () => {
   test('should render component', async () => {
     const asset = { symbol: 'DOT', precision: 10 } as Asset;
     const tx = {

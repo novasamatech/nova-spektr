@@ -1,5 +1,5 @@
-import { useToggle } from '@renderer/shared/lib/hooks';
-import { cnTw } from '@renderer/shared/lib/utils';
+import { useToggle } from '@shared/lib/hooks';
+import { cnTw } from '@shared/lib/utils';
 
 type Props = {
   src?: string;
@@ -8,6 +8,7 @@ type Props = {
   className?: string;
 };
 
+// TODO add currency support
 export const AssetIcon = ({ src, name, size = 32, className }: Props) => {
   const [isImgLoaded, toggleImgLoaded] = useToggle();
 

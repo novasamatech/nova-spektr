@@ -1,8 +1,8 @@
 import { useEffect, useState, ReactNode } from 'react';
 
-import { ExtendedChain } from '@renderer/entities/network';
-import { CaptionText, Counter, Accordion } from '@renderer/shared/ui';
-import { ConnectionType, ConnectionStatus } from '@renderer/domain/connection';
+import { ExtendedChain, isDisabled } from '@entities/network';
+import { CaptionText, Counter, Accordion } from '@shared/ui';
+import { ConnectionStatus } from '@shared/core';
 
 type Props = {
   title: string;
@@ -25,22 +25,22 @@ export const NetworkList = ({ title, isDefaultOpen, query, networkList, children
 
   if (networkList.length === 0) return null;
 
-  const [success, connecting, error] = networkList.reduce(
+  const { success, connecting, error } = networkList.reduce(
     (acc, network) => {
-      if (network.connection.connectionType === ConnectionType.DISABLED) return acc;
+      if (isDisabled(network.connection)) return acc;
 
-      if (network.connection.connectionStatus === ConnectionStatus.CONNECTED) acc[0] += 1;
-      if (network.connection.connectionStatus === ConnectionStatus.CONNECTING) acc[1] += 1;
-      if (network.connection.connectionStatus === ConnectionStatus.ERROR) acc[2] += 1;
+      if (network.connectionStatus === ConnectionStatus.CONNECTED) acc.success += 1;
+      if (network.connectionStatus === ConnectionStatus.DISCONNECTED) acc.connecting += 1;
+      if (network.connectionStatus === ConnectionStatus.ERROR) acc.error += 1;
 
       return acc;
     },
-    [0, 0, 0],
+    { success: 0, connecting: 0, error: 0 },
   );
 
   return (
     <Accordion isDefaultOpen={isListOpen}>
-      <Accordion.Button buttonClass="py-1.5">
+      <Accordion.Button buttonClass="py-1.5 px-2">
         <div className="flex items-center gap-x-1.5 w-full">
           <CaptionText as="h2" className="uppercase text-text-secondary tracking-[0.75px]">
             {title}
@@ -55,7 +55,7 @@ export const NetworkList = ({ title, isDefaultOpen, query, networkList, children
         </div>
       </Accordion.Button>
       <Accordion.Content>
-        <ul>
+        <ul className="px-2">
           {networkList.map((network) => (
             <li key={network.chainId} className="border-b border-b-filter-border last:border-0">
               {children(network)}

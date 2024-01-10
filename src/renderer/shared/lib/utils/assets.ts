@@ -1,4 +1,4 @@
-import { Asset, AssetType, OrmlExtras, StatemineExtras, StakingType } from '@renderer/entities/asset/model/asset';
+import { Asset, AssetType, OrmlExtras, StatemineExtras, StakingType } from '@shared/core/types/asset';
 
 /**
  * Get ID of the asset by type
@@ -38,12 +38,3 @@ export const getRelaychainAsset = (assets: Asset[] = []): Asset | undefined => {
 
   return assets.find((asset) => asset.staking === StakingType.RELAYCHAIN);
 };
-
-/**
- * Get asset alternative icon
- * @param url default icon url
- * @param variant variant name
- * @return {string}
- */
-export const getIconVariant = (url: string, variant: 'alternative' | 'original' | 'white') =>
-  url.replace('/white/', `/${variant}/`);

@@ -1,20 +1,24 @@
 import { UnsignedTransaction } from '@substrate/txwrapper-polkadot';
 import { useState, useEffect } from 'react';
 import { Navigate, useNavigate, useParams, useSearchParams } from 'react-router-dom';
+import { useUnit } from 'effector-react';
 
-import { toAddress, getRelaychainAsset, DEFAULT_TRANSITION } from '@renderer/shared/lib/utils';
-import { RewardsDestination } from '@renderer/entities/staking';
-import { useI18n, useNetworkContext, Paths } from '@renderer/app/providers';
-import { Address, ChainId, HexString } from '@renderer/domain/shared-kernel';
-import { Transaction, TransactionType, useTransaction } from '@renderer/entities/transaction';
+import { toAddress, getRelaychainAsset, DEFAULT_TRANSITION } from '@shared/lib/utils';
+import { useI18n } from '@app/providers';
+import { Paths } from '@shared/routes';
+import { Transaction, TransactionType, useTransaction } from '@entities/transaction';
 import { Confirmation, Submit, NoAsset } from '../components';
 import InitOperation, { DestinationResult } from './InitOperation/InitOperation';
-import { useToggle } from '@renderer/shared/lib/hooks';
-import { isMultisig, Account, useAccount } from '@renderer/entities/account';
+import { useToggle } from '@shared/lib/hooks';
 import { DestinationType } from '../common/types';
-import { BaseModal, Button, Loader } from '@renderer/shared/ui';
-import { OperationTitle } from '@renderer/components/common';
-import { Signing } from '@renderer/features/operation';
+import { BaseModal, Button, Loader } from '@shared/ui';
+import { OperationTitle } from '@entities/chain';
+import { Signing } from '@features/operation';
+import { RewardsDestination } from '@shared/core';
+import type { Account, Address, ChainId, HexString } from '@shared/core';
+import { walletModel, walletUtils } from '@entities/wallet';
+import { priceProviderModel } from '@entities/price';
+import { useNetworkData } from '@entities/network';
 
 const enum Step {
   INIT,
@@ -25,12 +29,15 @@ const enum Step {
 
 export const Destination = () => {
   const { t } = useI18n();
+  const activeWallet = useUnit(walletModel.$activeWallet);
+  const activeAccounts = useUnit(walletModel.$activeAccounts);
+
   const navigate = useNavigate();
-  const { getActiveAccounts } = useAccount();
-  const { connections } = useNetworkContext();
   const { setTxs, txs, setWrappers, wrapTx, buildTransaction } = useTransaction();
   const [searchParams] = useSearchParams();
   const params = useParams<{ chainId: ChainId }>();
+
+  const { api, chain } = useNetworkData(params.chainId || ('' as ChainId));
 
   const [isDestModalOpen, toggleDestModal] = useToggle(true);
 
@@ -46,9 +53,14 @@ export const Destination = () => {
   const [signer, setSigner] = useState<Account>();
   const [signatures, setSignatures] = useState<HexString[]>([]);
 
+  const isMultisigWallet = walletUtils.isMultisig(activeWallet);
+
   const accountIds = searchParams.get('id')?.split(',') || [];
   const chainId = params.chainId || ('' as ChainId);
-  const activeAccounts = getActiveAccounts();
+
+  useEffect(() => {
+    priceProviderModel.events.assetsPricesRequested({ includeRates: true });
+  }, []);
 
   useEffect(() => {
     if (!activeAccounts.length || !accountIds.length) return;
@@ -57,13 +69,11 @@ export const Destination = () => {
     setAccounts(accounts);
   }, [activeAccounts.length]);
 
-  const connection = connections[chainId];
-
-  if (!connection || accountIds.length === 0) {
+  if (!api || accountIds.length === 0) {
     return <Navigate replace to={Paths.STAKING} />;
   }
 
-  const { api, explorers, addressPrefix, assets, name } = connections[chainId];
+  const { explorers, addressPrefix, assets, name } = chain;
   const asset = getRelaychainAsset(assets);
 
   const goToPrevStep = () => {
@@ -84,7 +94,7 @@ export const Destination = () => {
       <BaseModal
         closeButton
         contentClass=""
-        headerClass="py-3 px-5 max-w-[440px]"
+        headerClass="py-3 pl-5 pr-3"
         panelClass="w-max"
         isOpen={isDestModalOpen}
         title={<OperationTitle title={t('staking.destination.title')} chainId={chainId} />}
@@ -106,7 +116,7 @@ export const Destination = () => {
         closeButton
         contentClass=""
         panelClass="w-max"
-        headerClass="py-3 px-5 max-w-[440px]"
+        headerClass="py-3 pl-5 pr-3"
         isOpen={isDestModalOpen}
         title={<OperationTitle title={t('staking.destination.title')} chainId={chainId} />}
         onClose={closeDestinationModal}
@@ -125,7 +135,7 @@ export const Destination = () => {
 
     const transactions = getDestinationTxs(accounts, destination);
 
-    if (signer && isMultisig(accounts[0])) {
+    if (signer && isMultisigWallet) {
       setWrappers([
         {
           signatoryId: signer.accountId,
@@ -159,14 +169,14 @@ export const Destination = () => {
   };
 
   const explorersProps = { explorers, addressPrefix, asset };
-  const multisigTx = isMultisig(txAccounts[0]) ? wrapTx(txs[0], api, addressPrefix) : undefined;
+  const multisigTx = isMultisigWallet ? wrapTx(txs[0], api, addressPrefix) : undefined;
 
   return (
     <>
       <BaseModal
         closeButton
         contentClass=""
-        headerClass="py-3 px-5 max-w-[440px]"
+        headerClass="py-3 pl-5 pr-3"
         panelClass="w-max"
         isOpen={activeStep !== Step.SUBMIT && isDestModalOpen}
         title={<OperationTitle title={t('staking.destination.title')} chainId={chainId} />}

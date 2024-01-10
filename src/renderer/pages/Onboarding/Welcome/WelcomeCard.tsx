@@ -1,7 +1,7 @@
-import { cnTw } from '@renderer/shared/lib/utils';
-import { Icon, BodyText, CaptionText, FootnoteText } from '@renderer/shared/ui';
-import { useI18n } from '@renderer/app/providers';
-import { IconNames } from '@renderer/shared/ui/Icon/data';
+import { cnTw } from '@shared/lib/utils';
+import { Icon, BodyText, CaptionText, FootnoteText } from '@shared/ui';
+import { useI18n } from '@app/providers';
+import { IconNames } from '@shared/ui/Icon/data';
 
 type Props = {
   title: string;
@@ -24,11 +24,7 @@ export const WelcomeCard = ({ title, description, iconName, disabled, onClick }:
       )}
       onClick={onClick}
     >
-      <Icon
-        className={cnTw('p-2 text-icon-button rounded-xl', disabled ? 'bg-tab-icon-inactive' : 'bg-icon-active')}
-        size={40}
-        name={iconName}
-      />
+      <Icon size={56} name={iconName} />
 
       <div className="flex-1 flex flex-col gap-y-1">
         <div className="flex justify-between items-center w-full">

@@ -2,6 +2,10 @@ import { act, render, screen } from '@testing-library/react';
 
 import InfoPopover, { InfoSection } from './InfoPopover';
 
+jest.mock('@app/providers', () => ({
+  useMatrix: jest.fn(),
+}));
+
 const menuLinks = [
   {
     id: '3',

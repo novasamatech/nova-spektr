@@ -2,14 +2,12 @@ import { BN } from '@polkadot/util';
 import { ReactNode, useEffect, useState } from 'react';
 import { Controller, SubmitHandler, useForm } from 'react-hook-form';
 import { Trans } from 'react-i18next';
+import { useUnit } from 'effector-react';
 
-import { AmountInput, Button, Icon, Identicon, Input, InputHint, Select } from '@renderer/shared/ui';
-import { useI18n, useNetworkContext } from '@renderer/app/providers';
-import { Asset, useBalance } from '@renderer/entities/asset';
-import { MultisigTxInitStatus } from '@renderer/entities/transaction';
-import { Address, ChainId, HexString } from '@renderer/domain/shared-kernel';
-import { useMultisigTx } from '@renderer/entities/multisig';
-import { Account, isMultisig, MultisigAccount } from '@renderer/entities/account';
+import { AmountInput, Button, Icon, Identicon, Input, InputHint, Select } from '@shared/ui';
+import { useI18n } from '@app/providers';
+import { MultisigTxInitStatus } from '@entities/transaction';
+import { useMultisigTx } from '@entities/multisig';
 import {
   SS58_DEFAULT_PREFIX,
   formatAmount,
@@ -17,12 +15,14 @@ import {
   toAddress,
   transferableAmount,
   validateAddress,
-} from '@renderer/shared/lib/utils';
-import { Chain } from '@renderer/entities/chain';
+} from '@shared/lib/utils';
 import { getChainOption, getPlaceholder } from '../common/utils';
-import { DropdownOption, DropdownResult } from '@renderer/shared/ui/types';
-import AccountSelectModal from '@renderer/pages/Operations/components/modals/AccountSelectModal/AccountSelectModal';
+import { DropdownOption, DropdownResult } from '@shared/ui/types';
+import AccountSelectModal from '@pages/Operations/components/modals/AccountSelectModal/AccountSelectModal';
+import type { Chain, Account, MultisigAccount, Asset, Address, ChainId, HexString } from '@shared/core';
 import * as sendAssetModel from '../../model/send-asset';
+import { accountUtils } from '@entities/wallet';
+import { balanceModel, balanceUtils } from '@entities/balance';
 
 const DESCRIPTION_MAX_LENGTH = 120;
 
@@ -78,9 +78,8 @@ export const TransferForm = ({
   xcmFee,
 }: Props) => {
   const { t } = useI18n();
-  const { getBalance } = useBalance();
   const { getMultisigTxs } = useMultisigTx({});
-  const { connections } = useNetworkContext();
+  const balances = useUnit(balanceModel.$balances);
 
   const [accountBalance, setAccountBalance] = useState('');
   const [signerBalance, setSignerBalance] = useState('');
@@ -90,6 +89,8 @@ export const TransferForm = ({
   const [multisigTxExist, setMultisigTxExist] = useState(false);
   const [destinationOptions, setDestinationOptions] = useState<DropdownOption<ChainId | string>[]>([]);
   const [isSelectAccountModalOpen, setSelectAccountModalOpen] = useState(false);
+
+  const isMultisigAccount = account && accountUtils.isMultisigAccount(account);
 
   const {
     handleSubmit,
@@ -124,11 +125,12 @@ export const TransferForm = ({
   const destination = watch('destination');
   const description = watch('description');
   const destinationChain = watch('destinationChain');
-  const destinationChainAccounts = accounts?.filter((a) => !a.rootId || a.chainId === destinationChain?.value) || [];
+  const destinationChainAccounts =
+    accounts?.filter((a) => accountUtils.isChainIdMatch(a, destinationChain?.value || '0x00')) || [];
 
   useEffect(() => {
     if (destinationChain) {
-      sendAssetModel.events.destinationChainSelected(connections[destinationChain.value]);
+      sendAssetModel.events.destinationChainSelected(destinationChain.value);
     }
   }, [destinationChain]);
 
@@ -151,14 +153,12 @@ export const TransferForm = ({
   ) => {
     const accountId = toAccountId(address);
 
-    getBalance(accountId, chain.chainId, asset.assetId.toString()).then((balance) => {
-      callbackBalance(balance ? transferableAmount(balance) : '0');
-    });
+    const balance = balanceUtils.getBalance(balances, accountId, chain.chainId, asset.assetId.toString());
+    callbackBalance(balance ? transferableAmount(balance) : '0');
 
     if (asset.assetId !== 0) {
-      getBalance(accountId, chain.chainId, '0').then((balance) => {
-        callbackNativeToken(balance ? transferableAmount(balance) : '0');
-      });
+      const nativeBalance = balanceUtils.getBalance(balances, accountId, chain.chainId, '0');
+      callbackNativeToken(nativeBalance ? transferableAmount(nativeBalance) : '0');
     }
   };
 
@@ -189,7 +189,7 @@ export const TransferForm = ({
       amount: formatAmount(amount, asset.precision),
       signatory: signer?.accountId,
       destinationChain,
-      description: isMultisig(account)
+      description: isMultisigAccount
         ? description ||
           t('transactionMessage.transfer', {
             amount,
@@ -209,8 +209,8 @@ export const TransferForm = ({
   };
 
   const validateBalanceForFee = (amount: string): boolean => {
-    const balance = isMultisig(account) ? signerBalance : accountBalance;
-    const nativeTokenBalance = isMultisig(account) ? signerNativeTokenBalance : accountNativeTokenBalance;
+    const balance = isMultisigAccount ? signerBalance : accountBalance;
+    const nativeTokenBalance = isMultisigAccount ? signerNativeTokenBalance : accountNativeTokenBalance;
 
     const amountBN = new BN(formatAmount(amount, asset.precision));
     const xcmFeeBN = new BN(xcmFee || 0);
@@ -221,7 +221,7 @@ export const TransferForm = ({
       return new BN(fee).lte(new BN(nativeTokenBalance));
     }
 
-    if (isMultisig(account)) {
+    if (isMultisigAccount) {
       return new BN(fee).lte(new BN(balance));
     }
 
@@ -229,7 +229,7 @@ export const TransferForm = ({
   };
 
   const validateBalanceForFeeAndDeposit = (): boolean => {
-    if (!isMultisig(account)) return true;
+    if (!isMultisigAccount) return true;
     if (!signerBalance) return false;
 
     const feeBN = new BN(fee);
@@ -244,7 +244,7 @@ export const TransferForm = ({
   const submitTransaction: SubmitHandler<TransferFormData> = async ({ description }) => {
     if (!amount || !destination || !account) return;
 
-    if (!isMultisig(account)) {
+    if (!isMultisigAccount) {
       onSubmit();
 
       return;
@@ -388,7 +388,7 @@ export const TransferForm = ({
           )}
         />
 
-        {isMultisig(account) && (
+        {isMultisigAccount && (
           <Controller
             name="description"
             control={control}

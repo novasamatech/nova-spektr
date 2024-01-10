@@ -1,8 +1,8 @@
 import { useNavigate } from 'react-router-dom';
 
-import { AssetRouteGuard } from '@renderer/features/assets';
-import { Paths } from '@renderer/app/providers';
-import { ReceiveAssetModal } from '@renderer/widgets';
+import { AssetRouteGuard } from '@features/assets';
+import { Paths } from '@shared/routes';
+import { ReceiveAssetModal } from '@widgets/ReceiveAssetModal';
 
 export const ReceiveAsset = () => {
   const navigate = useNavigate();

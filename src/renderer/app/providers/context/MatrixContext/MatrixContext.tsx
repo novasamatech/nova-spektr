@@ -1,14 +1,12 @@
 import { createContext, PropsWithChildren, useContext, useEffect, useRef, useState } from 'react';
+import { useUnit } from 'effector-react';
 
-import { createMultisigAccount, getMultisigAccountId, MultisigAccount, useAccount } from '@renderer/entities/account';
-import { getCreatedDateFromApi, toAddress, validateCallData } from '@renderer/shared/lib/utils';
-import { AccountId, Address, CallHash, ChainId, SigningType } from '@renderer/domain/shared-kernel';
-import { useMultisigEvent, useMultisigTx } from '@renderer/entities/multisig';
-import { Signatory } from '@renderer/entities/signatory';
-import { useContact } from '@renderer/entities/contact';
-import { MultisigNotificationType, useNotification } from '@renderer/entities/notification';
-import { useMultisigChainContext } from '@renderer/app/providers';
-import { useNetworkContext } from '../NetworkContext';
+import { getCreatedDateFromApi, toAddress, validateCallData } from '@shared/lib/utils';
+import { useMultisigEvent, useMultisigTx } from '@entities/multisig';
+import { MultisigNotificationType, useNotification } from '@entities/notification';
+import { useMultisigChainContext } from '@app/providers';
+import { contactModel } from '@entities/contact';
+import type { Signatory, MultisigAccount, AccountId, Address, CallHash, ChainId } from '@shared/core';
 import {
   ApprovePayload,
   BaseMultisigPayload,
@@ -20,7 +18,7 @@ import {
   MultisigPayload,
   SpektrExtras,
   UpdatePayload,
-} from '@renderer/shared/api/matrix';
+} from '@shared/api/matrix';
 import {
   MultisigEvent,
   MultisigTransaction,
@@ -29,7 +27,10 @@ import {
   MultisigTxStatus,
   SigningStatus,
   useTransaction,
-} from '@renderer/entities/transaction';
+} from '@entities/transaction';
+import { walletModel, accountUtils } from '@entities/wallet';
+import { WalletType, SigningType, CryptoType, ChainType, AccountType } from '@shared/core';
+import { networkModel } from '@entities/network';
 
 type MatrixContextProps = {
   matrix: ISecureMessenger;
@@ -39,24 +40,32 @@ type MatrixContextProps = {
 const MatrixContext = createContext<MatrixContextProps>({} as MatrixContextProps);
 
 export const MatrixProvider = ({ children }: PropsWithChildren) => {
-  const { getContacts } = useContact();
+  const contacts = useUnit(contactModel.$contacts);
+  const accounts = useUnit(walletModel.$accounts);
+  const chains = useUnit(networkModel.$chains);
+  const apis = useUnit(networkModel.$apis);
+
   const { addTask } = useMultisigChainContext();
   const { getMultisigTx, addMultisigTx, updateMultisigTx, updateCallData } = useMultisigTx({ addTask });
-  const { getAccounts, addAccount, updateAccount, setActiveAccount } = useAccount();
   const { decodeCallData } = useTransaction();
-  const { connections } = useNetworkContext();
   const { addNotification } = useNotification();
   const { addEventWithQueue, updateEvent, getEvents } = useMultisigEvent({ addTask });
 
-  const connectionsRef = useRef(connections);
+  const apisRef = useRef(apis);
+  const accountsRef = useRef(accounts);
   const { current: matrix } = useRef<ISecureMessenger>(new Matrix());
 
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   // HOOK: correct connections for update multisig tx
   useEffect(() => {
-    connectionsRef.current = connections;
-  }, [connections]);
+    apisRef.current = apis;
+  }, [apis]);
+
+  // HOOK: correct accounts for update multisig tx
+  useEffect(() => {
+    accountsRef.current = accounts;
+  }, [accounts]);
 
   const onSyncProgress = () => {
     if (!isLoggedIn) {
@@ -79,19 +88,18 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
   const onInvite = async (payload: InvitePayload) => {
     console.info('💛 ===> onInvite', payload);
 
-    const { roomId, content, sender } = payload;
+    const { roomId, content } = payload;
     const { accountId, threshold, signatories, accountName, creatorAccountId } = content.mstAccount;
 
     try {
       validateMstAccount(accountId, signatories, threshold);
 
-      const accounts = await getAccounts();
       const mstAccount = accounts.find((a) => a.accountId === accountId) as MultisigAccount;
 
       if (!mstAccount) {
         console.log(`No multisig account ${accountId} found. Joining room and adding wallet`);
 
-        await joinRoom(roomId, content, sender === matrix.userId);
+        await joinRoom(roomId, content);
         await addNotification({
           smpRoomId: roomId,
           multisigAccountId: accountId,
@@ -121,41 +129,47 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
   };
 
   const validateMstAccount = (accountId: AccountId, signatories: AccountId[], threshold: number) => {
-    const isValid = accountId === getMultisigAccountId(signatories, threshold);
+    const isValid = accountId === accountUtils.getMultisigAccountId(signatories, threshold);
 
     if (!isValid) {
       throw new Error(`Multisig address ${accountId} can't be derived from signatories and threshold`);
     }
   };
 
-  const createMstAccount = async (roomId: string, extras: SpektrExtras, makeActive: boolean) => {
+  const createMstAccount = (roomId: string, extras: SpektrExtras) => {
     const { signatories, threshold, accountName, creatorAccountId } = extras.mstAccount;
 
-    const contacts = await getContacts();
     const contactsMap = contacts.reduce<Record<AccountId, [Address, string]>>((acc, contact) => {
       acc[contact.accountId] = [contact.address, contact.name];
 
       return acc;
     }, {});
+
     const mstSignatories = signatories.map((accountId) => ({
       accountId,
       address: contactsMap[accountId]?.[0] || toAddress(accountId),
       name: contactsMap[accountId]?.[1],
     }));
 
-    const mstAccount = createMultisigAccount({
-      threshold,
-      creatorAccountId,
-      name: accountName,
-      signatories: mstSignatories,
-      matrixRoomId: roomId,
-      isActive: false,
-    });
-
-    await addAccount(mstAccount).then((id) => {
-      if (!makeActive) return;
-
-      setActiveAccount(id);
+    walletModel.events.multisigCreated({
+      wallet: {
+        name: accountName,
+        type: WalletType.MULTISIG,
+        signingType: SigningType.MULTISIG,
+      },
+      accounts: [
+        {
+          threshold,
+          creatorAccountId,
+          accountId: accountUtils.getMultisigAccountId(signatories, threshold),
+          signatories: mstSignatories,
+          name: accountName,
+          matrixRoomId: roomId,
+          cryptoType: CryptoType.SR25519,
+          chainType: ChainType.SUBSTRATE,
+          type: AccountType.MULTISIG,
+        },
+      ],
     });
   };
 
@@ -176,8 +190,9 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
         console.log(`Leave old ${mstAccount.matrixRoomId}, join new room ${roomId}`);
         await matrix.leaveRoom(mstAccount.matrixRoomId);
         await matrix.joinRoom(roomId);
-        await updateAccount<MultisigAccount>({
-          ...mstAccount,
+
+        walletModel.events.multisigAccountUpdated({
+          id: mstAccount.id,
           name: accountName,
           matrixRoomId: roomId,
           creatorAccountId,
@@ -188,10 +203,10 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
     }
   };
 
-  const joinRoom = async (roomId: string, extras: SpektrExtras, makeActive: boolean) => {
+  const joinRoom = async (roomId: string, extras: SpektrExtras): Promise<void> => {
     try {
       await matrix.joinRoom(roomId);
-      await createMstAccount(roomId, extras, makeActive);
+      createMstAccount(roomId, extras);
     } catch (error) {
       console.error(error);
     }
@@ -202,9 +217,8 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
 
     if (!validateMatrixEvent(content, extras)) return;
 
-    const multisigAccount = await getMultisigAccount(extras.mstAccount.accountId);
-
-    if (!multisigAccount) return;
+    const multisigAccount = accountsRef.current.find((a) => a.accountId === extras.mstAccount.accountId);
+    if (!multisigAccount || !accountUtils.isMultisigAccount(multisigAccount)) return;
 
     const multisigTx = await getMultisigTx(
       multisigAccount.accountId,
@@ -213,6 +227,7 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
       content.callTimepoint.height,
       content.callTimepoint.index,
     );
+
     if (matrix.isUpdateEvent(type, content)) {
       await handleUpdateEvent(content, multisigTx);
     }
@@ -233,16 +248,10 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
   ): boolean => {
     const { accountId, threshold, signatories } = extras.mstAccount;
     const senderIsSignatory = signatories.some((accountId) => accountId === senderAccountId);
-    const mstAccountIsValid = accountId === getMultisigAccountId(signatories, threshold);
+    const mstAccountIsValid = accountId === accountUtils.getMultisigAccountId(signatories, threshold);
     const callDataIsValid = !callData || validateCallData(callData, callHash);
 
     return senderIsSignatory && mstAccountIsValid && callDataIsValid;
-  };
-
-  const getMultisigAccount = async (accountId: AccountId): Promise<MultisigAccount | undefined> => {
-    const accounts = await getAccounts<MultisigAccount>({ signingType: SigningType.MULTISIG });
-
-    return accounts.find((a) => a.accountId === accountId) as MultisigAccount;
   };
 
   const createEvent = async (
@@ -256,7 +265,7 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
   ): Promise<MultisigEvent> => {
     const callOutcome = (payload as FinalApprovePayload).callOutcome;
 
-    const api = connectionsRef.current[payload.chainId]?.api;
+    const api = apisRef.current[payload.chainId];
     const dateCreated = api ? await getCreatedDateFromApi(payload.extrinsicTimepoint.height, api) : Date.now();
 
     return {
@@ -282,7 +291,8 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
     txStatus: MultisigTxStatus,
   ): Promise<void> => {
     const descriptionField = txStatus === MultisigTxFinalStatus.CANCELLED ? 'cancelDescription' : 'description';
-    const { api, addressPrefix } = connectionsRef.current[payload.chainId];
+    const api = apisRef.current[payload.chainId];
+    const addressPrefix = chains[payload.chainId]?.addressPrefix;
     const dateCreated = api && (await getCreatedDateFromApi(payload.callTimepoint.height, api));
 
     if (!api) {
@@ -313,7 +323,7 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
   const handleUpdateEvent = async ({ callData }: UpdatePayload, tx?: MultisigTransaction): Promise<void> => {
     if (!tx) return;
     console.log(`Start update call data for tx ${tx.callHash}`);
-    const api = connectionsRef.current[tx.chainId]?.api;
+    const api = apisRef.current[tx.chainId];
 
     if (!api || !callData || callData === tx.callData) return;
     console.log(`Updating call data for tx ${tx.callHash}`);
@@ -456,13 +466,16 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
 
     if (payload.callData && !tx.callData) {
       console.log(`Update call data for tx ${payload.callHash}`);
-      const { api, addressPrefix } = connectionsRef.current[payload.chainId];
+      const api = apisRef.current[payload.chainId];
+      const addressPrefix = chains[payload.chainId]?.addressPrefix;
+
       if (!api) {
         console.warn(`No api found for ${payload.chainId} can't decode call data for ${payload.callHash}`);
       }
       if (!addressPrefix) {
         console.warn(`No addressPrefix found for ${payload.chainId} can't decode call data for ${payload.callHash}`);
       }
+
       const transaction =
         api &&
         payload.callData &&

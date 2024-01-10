@@ -1,17 +1,18 @@
 import { createContext, PropsWithChildren, useContext, useEffect } from 'react';
 import { VoidFn } from '@polkadot/api/types';
 import { Event } from '@polkadot/types/interfaces';
+import { useUnit } from 'effector-react';
 
-import { useChainSubscription } from '@renderer/entities/chain';
-import { useNetworkContext } from '../NetworkContext';
-import { useMultisigTx, useMultisigEvent } from '@renderer/entities/multisig';
-import { useAccount, MultisigAccount } from '@renderer/entities/account';
-import { MultisigTxFinalStatus, SigningStatus } from '@renderer/entities/transaction';
-import { toAddress, getCreatedDateFromApi } from '@renderer/shared/lib/utils';
-import { ChainId } from '@renderer/domain/shared-kernel';
-import { useDebounce, useTaskQueue } from '@renderer/shared/lib/hooks';
-import { ConnectionStatus } from '@renderer/domain/connection';
-import { Task } from '@renderer/shared/lib/hooks/useTaskQueue';
+import { useChainSubscription } from '@entities/chain';
+import { useMultisigTx, useMultisigEvent } from '@entities/multisig';
+import { MultisigTxFinalStatus, SigningStatus } from '@entities/transaction';
+import { toAddress, getCreatedDateFromApi } from '@shared/lib/utils';
+import { useDebounce, useTaskQueue } from '@shared/lib/hooks';
+import { Task } from '@shared/lib/hooks/useTaskQueue';
+import type { MultisigAccount, ChainId } from '@shared/core';
+import { ConnectionStatus } from '@shared/core';
+import { walletModel, accountUtils } from '@entities/wallet';
+import { networkModel } from '@entities/network';
 
 type MultisigChainContextProps = {
   addTask: (task: Task) => void;
@@ -23,7 +24,6 @@ const MULTISIG_RESULT_ERROR: string = 'err';
 const MultisigChainContext = createContext<MultisigChainContextProps>({} as MultisigChainContextProps);
 
 export const MultisigChainProvider = ({ children }: PropsWithChildren) => {
-  const { connections } = useNetworkContext();
   const { addTask } = useTaskQueue();
   const {
     subscribeMultisigAccount,
@@ -33,32 +33,38 @@ export const MultisigChainProvider = ({ children }: PropsWithChildren) => {
     updateCallData,
     updateCallDataFromChain,
   } = useMultisigTx({ addTask });
-  const { getActiveMultisigAccount } = useAccount();
+  const activeAccounts = useUnit(walletModel.$activeAccounts);
+  const apis = useUnit(networkModel.$apis);
+  const chains = useUnit(networkModel.$chains);
+  const connectionStatuses = useUnit(networkModel.$connectionStatuses);
+
   const { updateEvent, getEvents, addEventWithQueue } = useMultisigEvent({ addTask });
 
   const { subscribeEvents } = useChainSubscription();
-  const debouncedConnections = useDebounce(connections, 1000);
+  const debouncedApis = useDebounce(apis, 1000);
+  const debouncedConnectionStatuses = useDebounce(connectionStatuses, 1000);
 
-  const account = getActiveMultisigAccount();
+  const activeAccount = activeAccounts.at(0);
+  const account = activeAccount && accountUtils.isMultisigAccount(activeAccount) ? activeAccount : undefined;
 
   const txs = getLiveAccountMultisigTxs(account?.accountId ? [account.accountId] : []);
 
   useEffect(() => {
     txs.forEach(async (tx) => {
-      const connection = connections[tx.chainId];
+      const api = apis[tx.chainId];
 
-      if (!connection?.api) return;
+      if (!api) return;
 
       if (tx.callData && !tx.transaction) {
-        updateCallData(connection.api, tx, tx.callData);
+        updateCallData(api, tx, tx.callData);
       }
 
       if (tx.blockCreated && tx.indexCreated && !tx.callData && !tx.transaction) {
-        updateCallDataFromChain(connection.api, tx, tx.blockCreated, tx.indexCreated);
+        updateCallDataFromChain(api, tx, tx.blockCreated, tx.indexCreated);
       }
 
       if (!tx.dateCreated && tx.blockCreated) {
-        const dateCreated = await getCreatedDateFromApi(tx.blockCreated, connection.api);
+        const dateCreated = await getCreatedDateFromApi(tx.blockCreated, api);
         updateMultisigTx({ ...tx, dateCreated });
 
         const events = await getEvents({
@@ -78,7 +84,7 @@ export const MultisigChainProvider = ({ children }: PropsWithChildren) => {
         console.log(`Create date recovered for multisig tx ${tx.callHash}`);
       }
     });
-  }, [txs, debouncedConnections]);
+  }, [txs, debouncedApis]);
 
   const eventCallback = async (
     account: MultisigAccount,
@@ -119,16 +125,19 @@ export const MultisigChainProvider = ({ children }: PropsWithChildren) => {
     );
   };
 
-  const availableConnectionsAmount = Object.values(debouncedConnections).filter(
-    (c) => c.connection.connectionStatus === ConnectionStatus.CONNECTED,
+  const availableConnectionsAmount = Object.values(debouncedConnectionStatuses).filter(
+    (status) => status === ConnectionStatus.CONNECTED,
   ).length;
 
   useEffect(() => {
     const unsubscribeMultisigs: (() => void)[] = [];
     const unsubscribeEvents: VoidFn[] = [];
 
-    Object.values(connections).forEach(async ({ api, addressPrefix }) => {
-      if (!api?.query.multisig || !account) return;
+    Object.entries(apis).forEach(async ([chainId, api]) => {
+      const chain = chains[chainId as ChainId];
+      const addressPrefix = chain?.addressPrefix;
+
+      if (!api?.query.multisig || !account || !addressPrefix) return;
 
       const unsubscribeMultisig = subscribeMultisigAccount(api, account as MultisigAccount);
       unsubscribeMultisigs.push(unsubscribeMultisig);

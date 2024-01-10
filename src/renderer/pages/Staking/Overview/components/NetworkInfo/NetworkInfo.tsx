@@ -1,15 +1,17 @@
 import { PropsWithChildren, useEffect, useState } from 'react';
 import { BN, BN_ZERO } from '@polkadot/util';
 
-import { Select, FootnoteText, Plate, IconButton, Shimmering } from '@renderer/shared/ui';
-import { DropdownOption, DropdownResult } from '@renderer/shared/ui/types';
-import { getRelaychainAsset } from '@renderer/shared/lib/utils';
-import { chainsService } from '@renderer/entities/network';
-import { useSettingsStorage } from '@renderer/entities/settings';
-import { Chain, ChainTitle } from '@renderer/entities/chain';
-import { useToggle } from '@renderer/shared/lib/hooks';
-import { useI18n } from '@renderer/app/providers';
-import { AssetBalance } from '@renderer/entities/asset';
+import { Select, FootnoteText, Plate, IconButton, Shimmering } from '@shared/ui';
+import { DropdownOption, DropdownResult } from '@shared/ui/types';
+import { getRelaychainAsset } from '@shared/lib/utils';
+import { chainsService } from '@entities/network';
+import { useSettingsStorage } from '@entities/settings';
+import { ChainTitle } from '@entities/chain';
+import { useToggle } from '@shared/lib/hooks';
+import { useI18n } from '@app/providers';
+import { AssetBalance } from '@entities/asset';
+import type { Chain } from '@shared/core';
+import { AssetFiatBalance } from '@entities/price/ui/AssetFiatBalance';
 
 const getTotal = (values: string[]): BN => {
   return values.reduce((acc, value) => acc.add(new BN(value || 0)), BN_ZERO);
@@ -39,8 +41,8 @@ export const NetworkInfo = ({
   const [activeNetwork, setActiveNetwork] = useState<DropdownResult<Chain>>();
 
   useEffect(() => {
-    const chains = chainsService.getChainsData();
-    const relaychains = chainsService.sortChains(chains).reduce<DropdownOption<Chain>[]>((acc, chain) => {
+    const chains = chainsService.getChainsData({ sort: true });
+    const relaychains = chains.reduce<DropdownOption<Chain>[]>((acc, chain) => {
       const { chainId, assets } = chain;
 
       if (getRelaychainAsset(assets)) {
@@ -87,26 +89,31 @@ export const NetworkInfo = ({
   return (
     <Plate className="flex flex-col gap-y-3 w-full">
       <div className="grid grid-cols-[178px,repeat(2,122px),28px] items-center gap-x-6">
-        <Select
-          placeholder={t('staking.overview.networkPlaceholder')}
-          options={networks}
-          selectedId={activeNetwork?.id}
-          onChange={(chain) => {
-            setActiveNetwork(chain);
-            setStakingNetwork(chain.value.chainId);
-            onNetworkChange(chain.value);
-          }}
-        />
+        <div className="flex flex-col gap-2">
+          <FootnoteText className="text-text-secondary">{t('staking.overview.networkLabel')}</FootnoteText>
+          <Select
+            placeholder={t('staking.overview.networkPlaceholder')}
+            options={networks}
+            selectedId={activeNetwork?.id}
+            onChange={(chain) => {
+              setActiveNetwork(chain);
+              setStakingNetwork(chain.value.chainId);
+              onNetworkChange(chain.value);
+            }}
+          />
+        </div>
         {totalInfo.map(({ isLoading, title, amount, asset }) =>
           isLoading || !asset ? (
             <div key={title} className="flex flex-col gap-y-1" data-testid="value-loading">
-              <Shimmering width={80} height={12} />
+              <FootnoteText className="text-text-secondary">{title}</FootnoteText>
               <Shimmering width={122} height={20} />
+              <Shimmering width={47} height={18} />
             </div>
           ) : (
             <div key={title} className="text-left">
               <FootnoteText className="text-text-secondary">{title}</FootnoteText>
-              <AssetBalance value={amount.toString()} asset={asset} className="text-small-title" />
+              <AssetBalance value={amount.toString()} asset={asset} className="text-small-title font-manrope" />
+              <AssetFiatBalance amount={amount.toString()} asset={asset} />
             </div>
           ),
         )}

@@ -1,17 +1,16 @@
-import cn from 'classnames';
 import { useEffect, useState } from 'react';
+import { useUnit } from 'effector-react';
 
-import { OperationTitle, QrTextGenerator } from '@renderer/components/common';
-import { DefaultExplorer, ExplorerIcons } from '@renderer/components/common/ExplorerLink/constants';
-import { BaseModal, Button, FootnoteText, HelpText, Icon, Select } from '@renderer/shared/ui';
-import { DropdownOption, DropdownResult } from '@renderer/shared/ui/types';
-import { useI18n } from '@renderer/app/providers';
-import { SigningType } from '@renderer/domain/shared-kernel';
-import { copyToClipboard, DEFAULT_TRANSITION, toAddress } from '@renderer/shared/lib/utils';
-import { AccountAddress, useAccount } from '@renderer/entities/account';
-import { Chain } from '@renderer/entities/chain';
-import { Asset } from '@renderer/entities/asset';
-import { useToggle } from '@renderer/shared/lib/hooks';
+import { OperationTitle } from '@entities/chain';
+import { DefaultExplorer, ExplorerIcons } from '@shared/ui/ExplorerLink/constants';
+import { BaseModal, Button, FootnoteText, HelpText, Icon, Select } from '@shared/ui';
+import { DropdownOption, DropdownResult } from '@shared/ui/types';
+import { useI18n } from '@app/providers';
+import { copyToClipboard, DEFAULT_TRANSITION, toAddress, cnTw } from '@shared/lib/utils';
+import { AccountAddress, walletModel, walletUtils, accountUtils } from '@entities/wallet';
+import { useToggle } from '@shared/lib/hooks';
+import type { Chain, Asset } from '@shared/core';
+import { QrTextGenerator } from '@entities/transaction';
 
 type Props = {
   chain: Chain;
@@ -22,34 +21,43 @@ type Props = {
 // TODO: Divide into model + feature/entity
 export const ReceiveAssetModal = ({ chain, asset, onClose }: Props) => {
   const { t } = useI18n();
-  const { getActiveAccounts } = useAccount();
+  const activeWallet = useUnit(walletModel.$activeWallet);
+  const activeAccounts = useUnit(walletModel.$activeAccounts);
 
   const [isModalOpen, toggleIsModalOpen] = useToggle(true);
   const [activeAccount, setActiveAccount] = useState<DropdownResult<number>>();
   const [activeAccountsOptions, setActiveAccountsOptions] = useState<DropdownOption<number>[]>([]);
 
-  const activeAccounts = getActiveAccounts();
-
   useEffect(() => {
+    if (walletUtils.isWatchOnly(activeWallet)) return;
+
     const accounts = activeAccounts.reduce<DropdownOption[]>((acc, account, index) => {
-      const isWatchOnly = account.signingType === SigningType.WATCH_ONLY;
-      const isWrongChain = account.chainId && account.chainId !== chain.chainId;
+      const isBaseAccount = accountUtils.isBaseAccount(account);
+      const isPolkadotVault = walletUtils.isPolkadotVault(activeWallet);
+      const isChainMatch = accountUtils.isChainIdMatch(account, chain.chainId);
 
-      if (isWatchOnly || isWrongChain) return acc;
+      if (isPolkadotVault && isBaseAccount) return acc;
 
-      const element = (
-        <AccountAddress
-          type="short"
-          accountId={account.accountId}
-          addressPrefix={chain.addressPrefix}
-          name={account.name}
-          size={20}
-          canCopy={false}
-          showIcon
-        />
-      );
+      if (isChainMatch) {
+        const accountName = accountUtils.isShardAccount(account) ? undefined : account.name;
 
-      return acc.concat({ id: index.toString(), value: index, element });
+        const element = (
+          <AccountAddress
+            type="adaptive"
+            className="max-w-[365px]"
+            accountId={account.accountId}
+            addressPrefix={chain.addressPrefix}
+            name={accountName}
+            size={20}
+            canCopy={false}
+            showIcon
+          />
+        );
+
+        acc.push({ id: index.toString(), value: index, element });
+      }
+
+      return acc;
     }, []);
 
     if (accounts.length === 0) return;
@@ -63,7 +71,7 @@ export const ReceiveAssetModal = ({ chain, asset, onClose }: Props) => {
     setTimeout(onClose, DEFAULT_TRANSITION);
   };
 
-  const hasShards = activeAccounts.length > 1;
+  const isVault = walletUtils.isPolkadotVault(activeWallet) || walletUtils.isMultiShard(activeWallet);
   const account = activeAccount ? activeAccounts[activeAccount.value] : undefined;
   const accountId = account?.accountId || '0x00';
   const prefix = chain.addressPrefix;
@@ -77,11 +85,11 @@ export const ReceiveAssetModal = ({ chain, asset, onClose }: Props) => {
       isOpen={isModalOpen}
       title={<OperationTitle title={t('receive.title', { asset: asset.symbol })} chainId={chain.chainId} />}
       contentClass="pb-6 px-4 pt-4 flex flex-col items-center"
-      headerClass="py-3 px-5 max-w-[440px]"
+      headerClass="py-3 pl-5 pr-3"
       closeButton
       onClose={closeReceiveModal}
     >
-      {hasShards && (
+      {isVault && activeAccounts.length > 1 && (
         <Select
           placeholder={t('receive.selectWalletPlaceholder')}
           className="w-full mb-6"
@@ -99,7 +107,7 @@ export const ReceiveAssetModal = ({ chain, asset, onClose }: Props) => {
 
       <QrTextGenerator
         skipEncoding
-        className={cn('mb-4', !activeAccount && 'invisible')}
+        className={cnTw('mb-4', !activeAccount && 'invisible')}
         payload={qrCodePayload}
         size={240}
       />
@@ -108,7 +116,12 @@ export const ReceiveAssetModal = ({ chain, asset, onClose }: Props) => {
         <ul className="flex gap-x-2 mb-4">
           {chain.explorers?.map(({ name, account }) => (
             <li aria-label={t('receive.explorerLinkLabel', { name })} key={name} className="flex">
-              <a href={account?.replace('{address}', address)} rel="noopener noreferrer" target="_blank">
+              <a
+                href={account?.replace('{address}', address)}
+                rel="noopener noreferrer"
+                target="_blank"
+                className="px-1.5 py-1"
+              >
                 <Icon size={16} as="img" name={ExplorerIcons[name] || ExplorerIcons[DefaultExplorer]} />
               </a>
             </li>
@@ -116,13 +129,8 @@ export const ReceiveAssetModal = ({ chain, asset, onClose }: Props) => {
         </ul>
       )}
 
-      <HelpText className="w-[240px] mb-2 break-all" align="center">
-        <AccountAddress
-          className="justify-center"
-          address={toAddress(accountId, { prefix })}
-          showIcon={false}
-          type="adaptive"
-        />
+      <HelpText className="w-[240px] text-text-secondary break-all mb-2" align="center">
+        {toAddress(accountId, { prefix })}
       </HelpText>
 
       <Button variant="text" size="sm" onClick={() => copyToClipboard(address)}>

@@ -1,20 +1,22 @@
 import { useState, useEffect } from 'react';
 import { UnsignedTransaction } from '@substrate/txwrapper-polkadot';
-import { useStore, useGate } from 'effector-react';
+import { useStore, useGate, useUnit } from 'effector-react';
 import { useNavigate } from 'react-router-dom';
 
-import { Paths, useI18n, useNetworkContext } from '@renderer/app/providers';
-import { HexString } from '@renderer/domain/shared-kernel';
-import { Transaction, useTransaction, validateBalance } from '@renderer/entities/transaction';
-import { Account, isMultisig, MultisigAccount } from '@renderer/entities/account';
-import { BaseModal, Button, Loader } from '@renderer/shared/ui';
+import { useI18n } from '@app/providers';
+import { Paths } from '@shared/routes';
+import { Transaction, useTransaction, validateBalance } from '@entities/transaction';
+import { BaseModal, Button, Loader } from '@shared/ui';
 import { Confirmation, InitOperation, Submit } from './components/ActionSteps';
-import { Signing } from '@renderer/features/operation';
-import { Asset, useBalance } from '@renderer/entities/asset';
-import { OperationTitle } from '@renderer/components/common';
-import { Chain } from '@renderer/entities/chain';
-import { useToggle } from '@renderer/shared/lib/hooks';
+import { Signing } from '@features/operation';
+import { OperationTitle } from '@entities/chain';
+import { useToggle } from '@shared/lib/hooks';
 import * as sendAssetModel from '../model/send-asset';
+import type { Chain, Asset, Account, MultisigAccount, HexString } from '@shared/core';
+import { accountUtils, walletModel, walletUtils } from '@entities/wallet';
+import { priceProviderModel } from '@entities/price';
+import { useNetworkData } from '@entities/network';
+import { balanceModel, balanceUtils } from '@entities/balance';
 
 const enum Step {
   INIT,
@@ -31,10 +33,12 @@ type Props = {
 export const SendAssetModal = ({ chain, asset }: Props) => {
   const { t } = useI18n();
   const navigate = useNavigate();
+  const { api, chain: chainData, extendedChain } = useNetworkData(chain.chainId);
 
-  const { getBalance } = useBalance();
+  const balances = useUnit(balanceModel.$balances);
+  const activeWallet = useUnit(walletModel.$activeWallet);
+
   const { getTransactionFee, setTxs, txs, setWrappers, wrapTx } = useTransaction();
-  const { connections } = useNetworkContext();
   const config = useStore(sendAssetModel.$finalConfig);
   const xcmAsset = useStore(sendAssetModel.$xcmAsset);
   const destinationChain = useStore(sendAssetModel.$destinationChain);
@@ -47,9 +51,17 @@ export const SendAssetModal = ({ chain, asset }: Props) => {
   const [unsignedTx, setUnsignedTx] = useState<UnsignedTransaction>({} as UnsignedTransaction);
   const [signature, setSignature] = useState<HexString>('0x0');
 
-  const connection = connections[chain.chainId];
+  const { assets, addressPrefix, explorers } = chainData;
 
-  const { api, assets, addressPrefix, explorers } = connection;
+  useEffect(() => {
+    priceProviderModel.events.assetsPricesRequested({ includeRates: true });
+  }, []);
+
+  useEffect(() => {
+    if (isModalOpen && walletUtils.isWatchOnly(activeWallet)) {
+      toggleIsModalOpen();
+    }
+  }, [activeWallet]);
 
   useGate(sendAssetModel.PropsGate, { chain, asset, api });
 
@@ -60,6 +72,17 @@ export const SendAssetModal = ({ chain, asset }: Props) => {
       sendAssetModel.events.storeCleared();
     };
   }, []);
+
+  useEffect(() => {
+    if (signatory && account) {
+      setWrappers([
+        {
+          signatoryId: signatory.accountId,
+          account: account as MultisigAccount,
+        },
+      ]);
+    }
+  }, [account, signatory]);
 
   const onInitResult = (transferTx: Transaction, description?: string) => {
     setTxs([transferTx]);
@@ -72,10 +95,10 @@ export const SendAssetModal = ({ chain, asset }: Props) => {
   const checkBalance = () =>
     validateBalance({
       api,
-      transaction,
+      transaction: api && wrapTx(transaction, api, addressPrefix),
       chainId: chain.chainId,
       assetId: asset.assetId.toString(),
-      getBalance,
+      getBalance: balanceUtils.getBalanceWrapped(balances),
       getTransactionFee: (transaction, api) => getTransactionFee(transaction, api),
     });
 
@@ -101,12 +124,6 @@ export const SendAssetModal = ({ chain, asset }: Props) => {
 
   const onSignatoryChange = (signatory: Account) => {
     setSignatory(signatory);
-    setWrappers([
-      {
-        signatoryId: signatory.accountId,
-        account: account as MultisigAccount,
-      },
-    ]);
   };
 
   const commonProps = { explorers, addressPrefix };
@@ -115,7 +132,7 @@ export const SendAssetModal = ({ chain, asset }: Props) => {
     return api ? (
       <Submit
         tx={transaction}
-        multisigTx={isMultisig(account) ? wrapTx(transaction, api, addressPrefix) : undefined}
+        multisigTx={accountUtils.isMultisigAccount(account) ? wrapTx(transaction, api, addressPrefix) : undefined}
         account={account}
         unsignedTx={unsignedTx}
         signature={signature}
@@ -131,16 +148,17 @@ export const SendAssetModal = ({ chain, asset }: Props) => {
     );
   }
 
-  const operationTitle = destinationChain?.chainId !== chain.chainId ? 'transfer.xcmTitle' : 'transfer.title';
+  const operationTitle =
+    destinationChain && destinationChain !== chain.chainId ? 'transfer.xcmTitle' : 'transfer.title';
 
   return (
     <BaseModal
       closeButton
       isOpen={isModalOpen}
       title={<OperationTitle title={`${t(operationTitle, { asset: asset.symbol })}`} chainId={chain.chainId} />}
-      contentClass={activeStep === Step.SIGNING ? '' : undefined}
+      contentClass=""
       panelClass="w-[440px]"
-      headerClass="py-3 px-5 max-w-[440px]"
+      headerClass="py-3 pl-5 pr-3"
       onClose={closeSendModal}
     >
       {!api?.isConnected ? (
@@ -175,7 +193,7 @@ export const SendAssetModal = ({ chain, asset }: Props) => {
               description={description}
               account={account}
               signatory={signatory}
-              connection={connection}
+              connection={extendedChain}
               onBack={() => setActiveStep(Step.INIT)}
               onResult={onConfirmResult}
             />

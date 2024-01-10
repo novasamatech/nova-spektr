@@ -1,4 +1,2 @@
-export * from './ui';
-export * from './lib';
-export * from './model/types';
-export * as contactModel from './model/contact';
+export { ContactList, ContactRow, EmptyContactList, EmptyFilteredContacts } from './ui';
+export { contactModel } from './model/contact-model';

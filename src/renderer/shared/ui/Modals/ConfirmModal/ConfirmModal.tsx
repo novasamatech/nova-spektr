@@ -1,8 +1,9 @@
 import { PropsWithChildren } from 'react';
 
-import { cnTw } from '@renderer/shared/lib/utils';
-import { Button } from '@renderer/shared/ui';
-import BaseModal from '../BaseModal/BaseModal';
+import { cnTw } from '@shared/lib/utils';
+import { Button } from '@shared/ui';
+import { BaseModal } from '../BaseModal/BaseModal';
+import { Pallet } from '../../Buttons/common/types';
 
 type Props = {
   isOpen: boolean;
@@ -10,21 +11,29 @@ type Props = {
   panelClass?: string;
   confirmText?: string;
   cancelText?: string;
+  confirmPallet?: Pallet;
   onClose: () => void;
   onConfirm: () => void;
 };
 
-const ConfirmModal = ({
+export const ConfirmModal = ({
   isOpen,
   children,
   contentClass,
   panelClass,
   confirmText,
   cancelText,
+  confirmPallet,
   onClose,
   onConfirm,
 }: PropsWithChildren<Props>) => (
-  <BaseModal isOpen={isOpen} panelClass={panelClass} contentClass={cnTw('p-4', contentClass)} onClose={onClose}>
+  <BaseModal
+    isOpen={isOpen}
+    panelClass={panelClass}
+    contentClass={cnTw('p-4', contentClass)}
+    zIndex="z-[60]"
+    onClose={onClose}
+  >
     {children}
     <div className="flex gap-x-3 mt-4">
       {cancelText && (
@@ -33,12 +42,10 @@ const ConfirmModal = ({
         </Button>
       )}
       {confirmText && (
-        <Button className="flex-1" variant="fill" size="sm" onClick={onConfirm}>
+        <Button className="flex-1" variant="fill" size="sm" pallet={confirmPallet} onClick={onConfirm}>
           {confirmText}
         </Button>
       )}
     </div>
   </BaseModal>
 );
-
-export default ConfirmModal;

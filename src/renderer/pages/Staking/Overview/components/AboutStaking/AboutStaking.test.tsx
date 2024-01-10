@@ -1,19 +1,19 @@
 import { render, screen, act } from '@testing-library/react';
 import { ApiPromise } from '@polkadot/api';
 
-import { Asset } from '@renderer/entities/asset';
-import { Validator } from '@renderer/domain/validator';
+import { Asset } from '@shared/core';
+import { Validator } from '@shared/core/types/validator';
 import { AboutStaking } from './AboutStaking';
 
 jest.mock('react-i18next', () => ({ Trans: (props: any) => props.i18nKey }));
 
-jest.mock('@renderer/app/providers', () => ({
+jest.mock('@app/providers', () => ({
   useI18n: jest.fn().mockReturnValue({
     t: (key: string, params?: any) => `${key} ${params?.value || ''}`,
   }),
 }));
 
-jest.mock('@renderer/entities/staking', () => ({
+jest.mock('@entities/staking', () => ({
   getAvgApy: jest.fn().mockResolvedValue('3'),
   useStakingData: jest.fn().mockReturnValue({
     getMinNominatorBond: jest.fn().mockResolvedValue('1000000000000'),
@@ -54,7 +54,7 @@ describe('pages/Staking/Overview/AboutStaking', () => {
     });
 
     const loaders = screen.getAllByTestId('shimmer');
-    expect(loaders).toHaveLength(4);
+    expect(loaders).toHaveLength(6);
   });
 
   test('should show whole info', async () => {

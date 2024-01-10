@@ -1,17 +1,17 @@
 import { render, screen, act } from '@testing-library/react';
 import noop from 'lodash/noop';
 
-import { Chain } from '@renderer/entities/chain';
 import { NetworkInfo } from './NetworkInfo';
-import { useSettingsStorage } from '@renderer/entities/settings';
+import { useSettingsStorage } from '@entities/settings';
+import type { Chain } from '@shared/core';
 
-jest.mock('@renderer/app/providers', () => ({
+jest.mock('@app/providers', () => ({
   useI18n: jest.fn().mockReturnValue({
     t: (key: string, params?: any) => `${key} ${params?.value || ''}`,
   }),
 }));
 
-jest.mock('@renderer/entities/network', () => ({
+jest.mock('@entities/network', () => ({
   chainsService: {
     sortChains: jest.fn((value: Chain[]) => value),
     getChainsData: jest.fn().mockReturnValue([
@@ -31,7 +31,7 @@ jest.mock('@renderer/entities/network', () => ({
   },
 }));
 
-jest.mock('@renderer/entities/settings', () => ({
+jest.mock('@entities/settings', () => ({
   useSettingsStorage: jest.fn().mockReturnValue({
     getStakingNetwork: jest.fn().mockReturnValue('0x123'),
     setStakingNetwork: jest.fn(),
