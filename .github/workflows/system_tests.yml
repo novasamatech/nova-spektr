@@ -26,31 +26,8 @@ jobs:
           path: playwright-report/
           retention-days: 30
   
-  # publishTestResults:
-  #   name: "Publish Test Results"
-  #   needs: system-tests
-  #   runs-on: ubuntu-latest
-  #   if: always()
-  #   steps:
-  #     - name: Download artifacts
-  #       uses: actions/download-artifact@v2
-  #       id: download
-
-  #     - name: Publish to GH Pages
-  #       if: always()
-  #       uses: peaceiris/actions-gh-pages@v3.7.3
-  #       with:
-  #         external_repository: novasamatech/spektr-reports
-  #         publish_branch: main
-  #         personal_token: ${{ secrets.CREATE_TAG_PAT }}
-  #         publish_dir: ${{steps.download.outputs.download-path}}
-  #         keep_files: true
-  #         user_name: "github-actions[bot]"
-  #         user_email: "github-actions[bot]@users.noreply.github.com"
-  
   publish_report:
     name: Publish HTML Report
-    # using always() is not ideal here, because it would also run if the workflow was cancelled
     if: success() || needs.system-tests.result == 'failure'
     needs: [system-tests]
     runs-on: ubuntu-latest
@@ -97,6 +74,6 @@ jobs:
           done
       - name: Output Report URL as Worfklow Annotation
         run: |
-          FULL_HTML_REPORT_URL=https://ysfaran.github.io/playwright-gh-actions-gh-pages/$HTML_REPORT_URL_PATH
+          FULL_HTML_REPORT_URL=https://novasamatech.github.io/spektr-reports/$HTML_REPORT_URL_PATH
   
           echo "::notice title=📋 Published Playwright Test Report::$FULL_HTML_REPORT_URL"
