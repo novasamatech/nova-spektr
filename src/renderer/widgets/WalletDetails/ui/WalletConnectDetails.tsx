@@ -24,7 +24,8 @@ import {
   FootnoteText,
   Icon,
   SmallTitleText,
-  StatusModal, Tabs,
+  StatusModal,
+  Tabs,
 } from '@shared/ui';
 import { TabItem } from '@shared/ui/Tabs/common/types';
 import { ProxiesList } from '@widgets/WalletDetails/ui/ProxiesList';

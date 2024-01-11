@@ -14,7 +14,8 @@ import {
   DraftAccount,
   KeyType,
   Account,
-  ProxyAccount, AccountId,
+  ProxyAccount,
+  AccountId,
 } from '@shared/core';
 import { copyToClipboard, toAddress } from '@shared/lib/utils';
 import { IconNames } from '@shared/ui/Icon/data';
