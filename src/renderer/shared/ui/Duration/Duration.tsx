@@ -1,3 +1,4 @@
+/* eslint-disable i18next/no-literal-string */
 import { useI18n } from '@app/providers';
 import { secondsToDuration, getDurationFormat, getDurationParams, DurationFormat } from '@shared/lib/utils';
 
