@@ -2,16 +2,15 @@ import { useState, ChangeEvent, ComponentPropsWithoutRef, forwardRef } from 'rea
 
 import { cnTw } from '@shared/lib/utils';
 import { HTMLInputFileProps } from '../common/types';
-import TextBase from '@shared/ui/Typography/common/TextBase';
-import Icon from '../../Icon/Icon';
-import { FootnoteText } from '../../Typography';
+import { Icon } from '../../Icon/Icon';
+import { FootnoteText, TextBase } from '../../Typography';
 
 interface Props extends Pick<ComponentPropsWithoutRef<'input'>, HTMLInputFileProps> {
   invalid?: boolean;
   onChange?: (file: File) => void;
 }
 
-const InputFile = forwardRef<HTMLInputElement, Props>(
+export const InputFile = forwardRef<HTMLInputElement, Props>(
   ({ placeholder, className, invalid = false, onChange, ...props }, ref) => {
     const [fileName, setFileName] = useState('');
 
@@ -59,5 +58,3 @@ const InputFile = forwardRef<HTMLInputElement, Props>(
     );
   },
 );
-
-export default InputFile;

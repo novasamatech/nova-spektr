@@ -15,7 +15,6 @@ export type {
   WatchOnlyWallet,
   WalletConnectWallet,
   NovaWalletWallet,
-  ProxiedWallet,
   WalletFamily,
   PolkadotVaultGroup,
   WalletConnectGroup,
