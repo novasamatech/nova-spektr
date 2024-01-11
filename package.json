@@ -1,7 +1,7 @@
 {
   "name": "nova-spektr",
   "description": "Polkadot Enterprise application",
-  "version": "1.4.1",
+  "version": "1.4.3",
   "main": "./release/build/main.js",
   "repository": "https://github.com/novasamatech/nova-spektr",
   "license": "MIT",
@@ -44,7 +44,7 @@
     "test:dataVerification": "jest --config=tests/integrations/jest.config.ts --group=dataVerification --json --outputFile=jest-results.json",
     "test:matrix": "jest --config=tests/integrations/jest.config.ts --group=matrix --json --outputFile=jest-results.json",
     "test:coverage": "jest --config=jest.config.ts --coverage --passWithNoTests | tee ./coverage.txt",
-    "test:coverage-new-files": "jest --config=jest.config.ts --coverage --changedSince=dev | tee ./coverage.txt",
+    "test:coverage-new-files": "jest --config=jest.config.pr.ts --coverage --changedSince=dev ; exitCode=$? ; echo $exitCode | tee ./coverage.txt ; exit $exitCode",
 
     "lint": "eslint . --ext=js,ts,tsx,json",
     "lint:fix": "pnpm lint --fix",

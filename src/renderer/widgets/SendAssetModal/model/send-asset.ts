@@ -12,6 +12,7 @@ import {
   getVersionedAccountLocation,
   estimateRequiredDestWeight,
   getVersionedDestinationLocation,
+  XcmTransferType,
 } from '@shared/api/xcm';
 import { xcmModel } from '@entities/xcm';
 import { toLocalChainId, getParachainId } from '@shared/lib/utils';
@@ -147,9 +148,9 @@ sample({
     if (!xcmTransfer || !chain || !api) return null;
 
     return (
-      (xcmTransfer.type === 'xtokens' && accountId
-        ? getVersionedDestinationLocation(api, chain, paraId || undefined, accountId)
-        : getVersionedDestinationLocation(api, chain, paraId || undefined)) || null
+      (xcmTransfer.type === XcmTransferType.XTOKENS && accountId
+        ? getVersionedDestinationLocation(api, xcmTransfer.type, chain, paraId || undefined, accountId)
+        : getVersionedDestinationLocation(api, xcmTransfer.type, chain, paraId || undefined)) || null
     );
   },
   target: $txDest,
@@ -161,11 +162,11 @@ sample({
 });
 
 sample({
-  source: { accountId: $accountId, props: $xcmProps },
-  fn: ({ accountId, props: { api } }) => {
-    if (!accountId || accountId === '0x00' || !api) return null;
+  source: { accountId: $accountId, props: $xcmProps, xcmTransfer: $xcmTransfer },
+  fn: ({ xcmTransfer, accountId, props: { api } }) => {
+    if (!accountId || accountId === '0x00' || !api || !xcmTransfer) return null;
 
-    return getVersionedAccountLocation(api, accountId) || null;
+    return getVersionedAccountLocation(api, xcmTransfer.type, accountId) || null;
   },
   target: $txBeneficiary,
 });
@@ -208,9 +209,9 @@ sample({
     if (!api || !xcmAsset || !config || !xcmTransfer) return null;
 
     const resultAmount = new BN(amount || 0).add(new BN(xcmFee || 0));
-    const isArray = xcmTransfer.type !== 'xtokens';
+    const isArray = xcmTransfer.type !== XcmTransferType.XTOKENS;
 
-    return getAssetLocation(api, xcmAsset, config.assetsLocation, resultAmount, isArray) || null;
+    return getAssetLocation(api, xcmTransfer.type, xcmAsset, config.assetsLocation, resultAmount, isArray) || null;
   },
   target: $txAsset,
 });
