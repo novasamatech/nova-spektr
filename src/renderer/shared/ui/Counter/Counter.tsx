@@ -10,7 +10,7 @@ type Props = {
   className?: string;
 };
 
-const Counter = ({ variant, className, children }: PropsWithChildren<Props>) => (
+export const Counter = ({ variant, className, children }: PropsWithChildren<Props>) => (
   <div className={cnTw('flex items-center justify-center rounded-[30px] px-1.5 h-4', BadgeStyles[variant], className)}>
     {['string', 'number'].includes(typeof children) ? (
       <CaptionText className="text-white">{children}</CaptionText>
@@ -19,5 +19,3 @@ const Counter = ({ variant, className, children }: PropsWithChildren<Props>) => 
     )}
   </div>
 );
-
-export default Counter;

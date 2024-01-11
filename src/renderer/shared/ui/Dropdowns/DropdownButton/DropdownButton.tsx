@@ -3,8 +3,10 @@ import { Menu } from '@headlessui/react';
 import { ComponentProps, ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 
-import { IconNames } from '@shared/ui/Icon/data';
-import { Button, FootnoteText, Icon } from '@shared/ui';
+import { FootnoteText } from '../../Typography';
+import { Icon } from '../../Icon/Icon';
+import { IconNames } from '../../Icon/data';
+import { Button } from '../../Buttons';
 import { cnTw } from '@shared/lib/utils';
 
 type ButtonProps = ComponentProps<typeof Button>;

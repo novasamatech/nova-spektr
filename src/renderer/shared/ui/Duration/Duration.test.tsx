@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/react';
 
-import Duration from './Duration';
+import { Duration } from './Duration';
 
 jest.mock('@app/providers', () => ({
   useI18n: jest.fn().mockReturnValue({
