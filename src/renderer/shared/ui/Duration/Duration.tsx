@@ -1,13 +1,12 @@
-/* eslint-disable i18next/no-literal-string */
 import { useI18n } from '@app/providers';
 import { secondsToDuration, getDurationFormat, getDurationParams, DurationFormat } from '@shared/lib/utils';
 
-interface Props {
+type Props = {
   seconds: string;
   className?: string;
-}
+};
 
-const Duration = ({ seconds, className }: Props) => {
+export const Duration = ({ seconds, className }: Props) => {
   const { t } = useI18n();
 
   const duration = secondsToDuration(parseInt(seconds));
@@ -25,5 +24,3 @@ const Duration = ({ seconds, className }: Props) => {
 
   return <span className={className}>{t(`time.${i18nKey}`, durationParams)}</span>;
 };
-
-export default Duration;

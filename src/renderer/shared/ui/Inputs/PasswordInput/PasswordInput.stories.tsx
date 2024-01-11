@@ -1,6 +1,6 @@
 import { ComponentMeta, ComponentStory } from '@storybook/react';
 
-import PasswordInput from './PasswordInput';
+import { PasswordInput } from './PasswordInput';
 
 export default {
   title: 'Redesign/Password Input',

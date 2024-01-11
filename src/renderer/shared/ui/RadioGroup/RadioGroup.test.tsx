@@ -1,6 +1,6 @@
 import { act, render, screen } from '@testing-library/react';
 
-import RadioGroup from './RadioGroup';
+import { RadioGroup } from './RadioGroup';
 
 jest.mock('@app/providers', () => ({
   useMatrix: jest.fn(),

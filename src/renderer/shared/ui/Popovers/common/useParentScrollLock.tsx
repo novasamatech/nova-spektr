@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 
-import { popoverUtils } from '@shared/ui/Popovers/common/utils';
+import { popoverUtils } from './utils';
 
 export const useParentScrollLock = (shouldLockScroll: boolean, element?: HTMLElement | null) => {
   useEffect(() => {
