@@ -11,6 +11,7 @@ import { chainsService } from '@entities/network';
 import { AssetBalance } from '@entities/asset';
 import { DropdownIconButtonOption } from '@shared/ui/Dropdowns/common/types';
 import { ExplorersPopover } from '@entities/wallet';
+import { proxyUtils } from '@entities/proxy/lib/utils';
 
 const getMockProxyChainGroups = (walletId: ID, chains: Chain[]): ProxyChainGroup[] => {
   return chains.map((chain) => ({
@@ -35,7 +36,7 @@ export const ProxiesList = ({ proxies, chains, walletId, className, canCreatePro
 
   if (!proxies || !proxies.length) return <EmptyProxyList />;
 
-  const proxiesByChain = groupBy(proxies, 'chainId');
+  const proxiesByChain = groupBy(proxyUtils.sortAccountsByProxyType(proxies), 'chainId');
 
   const proxyChainGroups = getMockProxyChainGroups(walletId, chains); // TODO get it from effector model when it's ready
 
