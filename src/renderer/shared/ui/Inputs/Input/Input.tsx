@@ -16,7 +16,7 @@ export type Props = Pick<ComponentPropsWithoutRef<'input'>, HTMLInputProps> & {
   onChange?: (value: string) => void;
 };
 
-const Input = forwardRef<HTMLInputElement, Props>(
+export const Input = forwardRef<HTMLInputElement, Props>(
   (
     {
       type = 'text',
@@ -83,5 +83,3 @@ const Input = forwardRef<HTMLInputElement, Props>(
     );
   },
 );
-
-export default Input;

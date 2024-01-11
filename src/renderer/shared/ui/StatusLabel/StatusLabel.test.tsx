@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/react';
 
-import StatusLabel from './StatusLabel';
+import { StatusLabel } from './StatusLabel';
 
 jest.mock('@app/providers', () => ({
   useMatrix: jest.fn(),

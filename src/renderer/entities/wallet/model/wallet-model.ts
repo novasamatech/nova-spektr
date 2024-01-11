@@ -121,7 +121,7 @@ const multishardCreatedFx = createEffect(
 
 // TODO: Move wallet creation to it's own feature
 const proxiedWalletsCreatedFx = createEffect(
-  async (proxiedWallets: CreateParams<ProxiedAccount>[]): Promise<(CreateResult | undefined)[]> => {
+  (proxiedWallets: CreateParams<ProxiedAccount>[]): Promise<(CreateResult | undefined)[]> => {
     return Promise.all(proxiedWallets.map((p) => walletCreatedFx(p)));
   },
 );

@@ -15,10 +15,10 @@ export type {
   WatchOnlyWallet,
   WalletConnectWallet,
   NovaWalletWallet,
-  ProxiedWallet,
   WalletFamily,
   PolkadotVaultGroup,
   WalletConnectGroup,
+  ProxiedWallet,
 } from './types/wallet';
 export { WalletType, SigningType } from './types/wallet';
 

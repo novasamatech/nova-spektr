@@ -1,22 +1,28 @@
 import { Popover as Popup, Transition } from '@headlessui/react';
 import { AriaRole, Fragment, PropsWithChildren, ReactNode, useId, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 
 import { cnTw } from '@shared/lib/utils';
 import { useDebounce } from '@shared/lib/hooks';
+import { useParentScrollLock } from '../common/useParentScrollLock';
 
 type Props = {
   content: ReactNode;
   offsetPx?: number;
   panelClass?: string;
   contentClass?: string;
+  position?: 'left' | 'center' | 'right';
   role?: AriaRole;
 };
+
+/* eslint-disable i18next/no-literal-string */
 
 export const Popover = ({
   content,
   children,
   offsetPx = 10,
-  panelClass = 'left-0 top-full',
+  panelClass,
+  position = 'right',
   contentClass,
   role,
 }: PropsWithChildren<Props>) => {
@@ -26,7 +32,13 @@ export const Popover = ({
 
   // prevents modal flickering when just passing across popup button
   // and gives user more time to move cursor to Popup.Panel
-  const debouncedIsOpen = useDebounce(isOpen, 200);
+  const debouncedIsOpen = useDebounce(isOpen, 100);
+  const parentRect = ref.current?.getBoundingClientRect();
+  const horizontalAlign = position !== 'right' && {
+    transform: `translateX(${position === 'center' ? '-50%' : '-100%'})`,
+  };
+
+  useParentScrollLock(debouncedIsOpen, ref.current);
 
   return (
     <Popup className="relative" role={role}>
@@ -42,31 +54,41 @@ export const Popover = ({
       >
         {children}
       </div>
-      <Transition
-        show={debouncedIsOpen}
-        as={Fragment}
-        enter="transition ease-out duration-200"
-        enterFrom="opacity-0 translate-y-1"
-        enterTo="opacity-100 translate-y-0"
-        leave="transition ease-in duration-150"
-        leaveFrom="opacity-100 translate-y-0"
-        leaveTo="opacity-0 translate-y-1"
-      >
-        <Popup.Panel
-          id={id}
-          style={{ marginTop: offsetPx + 'px' }}
-          className={cnTw(
-            'absolute z-20 rounded-md bg-token-container-background border border-token-container-border shadow-card-shadow',
-            panelClass,
-          )}
-          onFocus={() => setIsOpen(true)}
-          onBlur={() => setIsOpen(false)}
-          onMouseEnter={() => setIsOpen(true)}
-          onMouseLeave={() => setIsOpen(false)}
+      {createPortal(
+        <Transition
+          show={debouncedIsOpen}
+          as={Fragment}
+          enter="transition ease-out duration-200"
+          enterFrom="opacity-0 translate-y-1"
+          enterTo="opacity-100 translate-y-0"
+          leave="transition ease-in duration-150"
+          leaveFrom="opacity-100 translate-y-0"
+          leaveTo="opacity-0 translate-y-1"
         >
-          <div className={cnTw('relative', contentClass)}>{content}</div>
-        </Popup.Panel>
-      </Transition>
+          <Popup.Panel
+            as="div"
+            id={id}
+            style={
+              parentRect && {
+                top: `${parentRect.top + parentRect.height + offsetPx}px`,
+                left: `${parentRect.left + parentRect.width / 2}px`,
+                ...horizontalAlign,
+              }
+            }
+            className={cnTw(
+              'absolute z-[60] rounded-md bg-token-container-background border border-token-container-border shadow-card-shadow',
+              panelClass,
+            )}
+            onFocus={() => setIsOpen(true)}
+            onBlur={() => setIsOpen(false)}
+            onMouseEnter={() => setIsOpen(true)}
+            onMouseLeave={() => setIsOpen(false)}
+          >
+            <div className={cnTw('relative', contentClass)}>{content}</div>
+          </Popup.Panel>
+        </Transition>,
+        document.body,
+      )}
     </Popup>
   );
 };

@@ -177,7 +177,7 @@ export const SelectSignatories = ({ isActive, wallets, accounts, contacts, onSel
         {disabledWallets.map(({ id, name, type }) => (
           <li key={id + '_wallets'} className="py-1.5 px-2 rounded-md">
             <Tooltip
-              position="start"
+              position="left"
               offsetPx={-65}
               content={getDisabledMessage(type)}
               panelClass="left-0 -translate-x-2"

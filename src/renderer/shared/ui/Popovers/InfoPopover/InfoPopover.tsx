@@ -2,7 +2,7 @@ import { PropsWithChildren, ReactNode } from 'react';
 import { Menu } from '@headlessui/react';
 
 import { cnTw } from '@shared/lib/utils';
-import MenuPopover, { Props as MenuPopoverProps } from '../MenuPopover/MenuPopover';
+import { MenuPopover, Props as MenuPopoverProps } from '../MenuPopover/MenuPopover';
 import { FootnoteText } from '@shared/ui';
 
 type Props = {
@@ -19,7 +19,7 @@ export type InfoSection = {
   items: MenuItem[];
 };
 
-const InfoPopover = ({
+export const InfoPopover = ({
   data,
   className,
   buttonClassName,
@@ -63,5 +63,3 @@ const InfoPopover = ({
     </MenuPopover>
   );
 };
-
-export default InfoPopover;

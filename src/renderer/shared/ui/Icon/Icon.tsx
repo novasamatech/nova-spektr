@@ -9,7 +9,7 @@ type Props = {
   alt?: string;
 };
 
-const Icon = ({ as = 'svg', name, size = 24, className, alt = '' }: Props) => {
+export const Icon = ({ as = 'svg', name, size = 24, className, alt = '' }: Props) => {
   let iconType = as;
   let IconComponent = AllIcons[name][as];
 
@@ -53,5 +53,3 @@ const Icon = ({ as = 'svg', name, size = 24, className, alt = '' }: Props) => {
 
   return null;
 };
-
-export default Icon;

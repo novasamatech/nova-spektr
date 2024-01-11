@@ -1,6 +1,6 @@
 import { ComponentStory, ComponentMeta } from '@storybook/react';
 
-import Duration from './Duration';
+import { Duration } from './Duration';
 
 export default {
   title: 'Duration',

@@ -1,7 +1,7 @@
 import { ComponentMeta, ComponentStory } from '@storybook/react';
 
-import { Identicon } from '@shared/ui';
-import MultiSelect from './MultiSelect';
+import { Identicon } from '../../Identicon/Identicon';
+import { MultiSelect } from './MultiSelect';
 
 export default {
   title: 'Redesign/MultiSelect',

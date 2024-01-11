@@ -1,7 +1,7 @@
 import { PropsWithChildren } from 'react';
 import { RadioGroup as HeadlessRadioGroup } from '@headlessui/react';
 
-import Option from './RadioOption';
+import { Option } from './RadioOption';
 import { RadioOption, RadioResult } from './common/types';
 import { LabelText } from '@shared/ui';
 import './RadioGroup.css';
@@ -15,7 +15,15 @@ type Props = {
   onChange: (data: RadioResult) => void;
 };
 
-const RadioGroup = ({ name, label, activeId, options, className, children, onChange }: PropsWithChildren<Props>) => {
+const RadioGroupRoot = ({
+  name,
+  label,
+  activeId,
+  options,
+  className,
+  children,
+  onChange,
+}: PropsWithChildren<Props>) => {
   const activeOption = options.find((option) => option.id === activeId);
 
   const radioElement = (
@@ -36,6 +44,6 @@ const RadioGroup = ({ name, label, activeId, options, className, children, onCha
   );
 };
 
-RadioGroup.Option = Option;
-
-export default RadioGroup;
+export const RadioGroup = Object.assign(RadioGroupRoot, {
+  Option,
+});

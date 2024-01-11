@@ -1,6 +1,6 @@
 import { ComponentMeta, ComponentStory } from '@storybook/react';
 
-import InfoPopover from './InfoPopover';
+import { InfoPopover } from './InfoPopover';
 import { popoverItems } from './InfoPopover.test';
 
 export default {
