@@ -111,9 +111,31 @@ const newAccounts = [
   },
 ];
 
+const newProxiedWallet = {
+  id: 4,
+  name: 'Proxied Wallet',
+  type: WalletType.PROXIED,
+  signingType: SigningType.POLKADOT_VAULT,
+  isActive: false,
+};
+
+const newProxiedAccounts = [
+  {
+    id: 6,
+    walletId: 4,
+    name: 'Proxied Wallet',
+    type: AccountType.PROXIED,
+    accountId: TEST_ACCOUNT_ID as AccountId,
+    chainType: ChainType.SUBSTRATE,
+    cryptoType: CryptoType.SR25519,
+  },
+];
+
 export const walletMock = {
   getWallets,
   accounts,
   newWallet,
   newAccounts,
+  newProxiedWallet,
+  newProxiedAccounts,
 };

@@ -13,6 +13,7 @@ export type SingleShardWallet = AbstractWallet;
 export type MultiShardWallet = AbstractWallet;
 export type WatchOnlyWallet = AbstractWallet;
 export type MultisigWallet = AbstractWallet;
+export type ProxiedWallet = AbstractWallet;
 
 export type WalletConnectWallet = AbstractWallet & {
   isConnected: boolean;
@@ -27,7 +28,8 @@ export type Wallet =
   | WatchOnlyWallet
   | MultisigWallet
   | WalletConnectWallet
-  | NovaWalletWallet;
+  | NovaWalletWallet
+  | ProxiedWallet;
 
 export const enum WalletType {
   WATCH_ONLY = 'wallet_wo',
@@ -47,7 +49,8 @@ export type WalletFamily =
   | WalletType.MULTISIG
   | WalletType.WATCH_ONLY
   | WalletType.WALLET_CONNECT
-  | WalletType.NOVA_WALLET;
+  | WalletType.NOVA_WALLET
+  | WalletType.PROXIED;
 
 export type WalletConnectGroup = WalletConnectWallet | NovaWalletWallet;
 

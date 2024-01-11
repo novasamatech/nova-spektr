@@ -1,11 +1,21 @@
 import { combine, createEffect, createEvent, createStore, sample } from 'effector';
 import { spread } from 'patronum';
 
-import type { Account, BaseAccount, ChainAccount, ID, MultisigAccount, NoID, Wallet } from '@shared/core';
+import type {
+  Account,
+  BaseAccount,
+  ChainAccount,
+  ID,
+  MultisigAccount,
+  NoID,
+  ProxiedAccount,
+  Wallet,
+} from '@shared/core';
 import { kernelModel, WalletConnectAccount } from '@shared/core';
 import { storageService } from '@shared/api/storage';
 import { modelUtils } from '../lib/model-utils';
 import { accountUtils } from '../lib/account-utils';
+import { walletUtils } from '../lib/wallet-utils';
 
 const $wallets = createStore<Wallet[]>([]);
 const $activeWallet = combine(
@@ -40,10 +50,12 @@ const multishardCreated = createEvent<CreateParams<BaseAccount | ChainAccount>>(
 const singleshardCreated = createEvent<CreateParams<BaseAccount>>();
 const multisigCreated = createEvent<CreateParams<MultisigAccount>>();
 const walletConnectCreated = createEvent<CreateParams<WalletConnectAccount>>();
+const proxiedWalletsCreated = createEvent<CreateParams<ProxiedAccount>[]>();
 
 const walletSelected = createEvent<ID>();
 const multisigAccountUpdated = createEvent<MultisigUpdateParams>();
 const walletRemoved = createEvent<ID>();
+const walletsRemoved = createEvent<ID[]>();
 
 const fetchAllAccountsFx = createEffect((): Promise<Account[]> => {
   return storageService.accounts.readAll();
@@ -58,7 +70,10 @@ type CreateResult = {
   accounts: Account[];
 };
 const walletCreatedFx = createEffect(
-  async ({ wallet, accounts }: CreateParams<BaseAccount | WalletConnectAccount>): Promise<CreateResult | undefined> => {
+  async ({
+    wallet,
+    accounts,
+  }: CreateParams<BaseAccount | WalletConnectAccount | ProxiedAccount>): Promise<CreateResult | undefined> => {
     const dbWallet = await storageService.wallets.create({ ...wallet, isActive: false });
 
     if (!dbWallet) return undefined;
@@ -104,6 +119,13 @@ const multishardCreatedFx = createEffect(
   },
 );
 
+// TODO: Move wallet creation to it's own feature
+const proxiedWalletsCreatedFx = createEffect(
+  async (proxiedWallets: CreateParams<ProxiedAccount>[]): Promise<(CreateResult | undefined)[]> => {
+    return Promise.all(proxiedWallets.map((p) => walletCreatedFx(p)));
+  },
+);
+
 type SelectParams = {
   prevId?: ID;
   nextId: ID;
@@ -138,6 +160,10 @@ const removeWalletFx = createEffect(async ({ walletId, accountIds }: RemoveParam
   await Promise.all([storageService.accounts.deleteAll(accountIds), storageService.wallets.delete(walletId)]);
 
   return walletId;
+});
+
+const removeWalletsFx = createEffect((wallets: RemoveParams[]): Promise<ID[]> => {
+  return Promise.all(wallets.map((w) => removeWalletFx(w)));
 });
 
 sample({
@@ -196,6 +222,11 @@ sample({
 });
 
 sample({
+  clock: proxiedWalletsCreated,
+  target: proxiedWalletsCreatedFx,
+});
+
+sample({
   clock: [walletCreatedFx.doneData, multishardCreatedFx.doneData],
   source: { wallets: $wallets, accounts: $accounts },
   filter: (_, data) => Boolean(data),
@@ -210,7 +241,9 @@ sample({
 
 sample({
   clock: [walletCreatedFx.doneData, multishardCreatedFx.doneData],
-  filter: (data: CreateResult | undefined): data is CreateResult => Boolean(data),
+  filter: (data: CreateResult | undefined): data is CreateResult => {
+    return Boolean(data) && !walletUtils.isProxied(data?.wallet);
+  },
   fn: (data) => data.wallet.id,
   target: walletSelected,
 });
@@ -238,6 +271,17 @@ sample({
     walletId,
   }),
   target: removeWalletFx,
+});
+
+sample({
+  clock: walletsRemoved,
+  source: $accounts,
+  fn: (accounts, walletIds) =>
+    walletIds.map((walletId) => ({
+      accountIds: accountUtils.getWalletAccounts(walletId, accounts).map((a) => a.id),
+      walletId,
+    })),
+  target: removeWalletsFx,
 });
 
 sample({
@@ -277,9 +321,11 @@ export const walletModel = {
     singleshardCreated,
     multisigCreated,
     walletConnectCreated,
+    proxiedWalletsCreated,
     walletSelected,
     multisigAccountUpdated,
     walletRemoved,
     walletRemovedSuccess: removeWalletFx.done,
+    walletsRemoved,
   },
 };
