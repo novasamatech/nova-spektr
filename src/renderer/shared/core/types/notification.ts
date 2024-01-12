@@ -44,7 +44,7 @@ export type ProxyAction = BaseNotification & {
   proxyWalletName: string;
   proxyWalletType: WalletType;
   proxiedAccountId: AccountId;
-  proxiedWalletName: AccountId;
+  proxiedWalletName: string;
 };
 
 export type Notification = MultisigInvite | MultisigOperation | ProxyAction;

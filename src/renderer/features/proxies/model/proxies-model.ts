@@ -167,10 +167,9 @@ sample({
     wallets: walletModel.$wallets,
     accounts: walletModel.$accounts,
   },
-  filter: (_, proxies) => proxies.proxiesToAdd.length > 0,
-  fn: ({ wallets, accounts }, proxies) => {
-    return proxiesUtils.getNotification(proxies.proxiesToAdd, wallets, accounts, NotificationType.PROXY_CREATED);
-  },
+  filter: (_, data) => data.proxiedAccountsToAdd.length > 0,
+  fn: ({ wallets, accounts }, data) =>
+    proxiesUtils.getNotification(data.proxiedAccountsToAdd, wallets, accounts, NotificationType.PROXY_CREATED),
   target: notificationModel.events.notificationsAdded,
 });
 
@@ -180,10 +179,9 @@ sample({
     wallets: walletModel.$wallets,
     accounts: walletModel.$accounts,
   },
-  filter: (_, proxies) => proxies.proxiesToRemove.length > 0,
-  fn: ({ wallets, accounts }, proxies) => {
-    return proxiesUtils.getNotification(proxies.proxiesToRemove, wallets, accounts, NotificationType.PROXY_REMOVED);
-  },
+  filter: (_, data) => data.proxiedAccountsToRemove.length > 0,
+  fn: ({ wallets, accounts }, data) =>
+    proxiesUtils.getNotification(data.proxiedAccountsToRemove, wallets, accounts, NotificationType.PROXY_REMOVED),
   target: notificationModel.events.notificationsAdded,
 });
 

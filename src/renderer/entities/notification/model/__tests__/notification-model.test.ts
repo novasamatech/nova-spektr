@@ -13,12 +13,14 @@ const notifications = [
   },
 ] as Notification[];
 
-const newNotifications = [{
-  id: 2,
-  read: true,
-  dateCreated: Date.now(),
-  type: NotificationType.MULTISIG_INVITE,
-}] as Notification[];
+const newNotifications = [
+  {
+    id: 2,
+    read: true,
+    dateCreated: Date.now(),
+    type: NotificationType.MULTISIG_INVITE,
+  },
+] as Notification[];
 
 describe('entities/notification/model/notification-model', () => {
   afterEach(() => {
