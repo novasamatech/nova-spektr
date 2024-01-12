@@ -49,8 +49,8 @@ describe('shared/lib/utils/substrate', () => {
 
     const result = getPalletAndCallByXcmTransferType(api, transferType);
 
-    expect(result.pallet).toBe(XcmPallets.XTOKENS);
-    expect(result.call).toBe('transferMultiasset');
+    expect(result.pallet).toEqual(XcmPallets.XTOKENS);
+    expect(result.call).toEqual('transferMultiasset');
   });
 
   test('should return XCM_PALLET and "limitedReserveTransferAssets" call for XCMPALLET', () => {
@@ -59,8 +59,8 @@ describe('shared/lib/utils/substrate', () => {
 
     const result = getPalletAndCallByXcmTransferType(api, transferType);
 
-    expect(result.pallet).toBe(XcmPallets.XCM_PALLET);
-    expect(result.call).toBe('limitedReserveTransferAssets');
+    expect(result.pallet).toEqual(XcmPallets.XCM_PALLET);
+    expect(result.call).toEqual('limitedReserveTransferAssets');
   });
 
   test('should return XCM_PALLET and "limitedTeleportAssets" call for XCMPALLET_TELEPORT', () => {
@@ -69,7 +69,7 @@ describe('shared/lib/utils/substrate', () => {
 
     const result = getPalletAndCallByXcmTransferType(api, transferType);
 
-    expect(result.pallet).toBe(XcmPallets.XCM_PALLET);
-    expect(result.call).toBe('limitedTeleportAssets');
+    expect(result.pallet).toEqual(XcmPallets.XCM_PALLET);
+    expect(result.call).toEqual('limitedTeleportAssets');
   });
 });

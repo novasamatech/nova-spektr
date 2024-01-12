@@ -1,8 +1,15 @@
-import { Icon, BodyText } from '@shared/ui';
-import { useI18n } from '@app/providers';
+import { useUnit } from 'effector-react';
 
-const EmptyNotifications = () => {
+import { useI18n } from '@app/providers';
+import { Icon, BodyText } from '@shared/ui';
+import { notificationModel } from '@entities/notification';
+
+export const EmptyNotifications = () => {
   const { t } = useI18n();
+
+  const notifications = useUnit(notificationModel.$notifications);
+
+  if (notifications.length > 0) return null;
 
   return (
     <div className="flex flex-col h-full items-center justify-center">
@@ -11,5 +18,3 @@ const EmptyNotifications = () => {
     </div>
   );
 };
-
-export default EmptyNotifications;

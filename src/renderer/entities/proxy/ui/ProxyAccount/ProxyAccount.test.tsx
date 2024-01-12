@@ -2,7 +2,7 @@ import { render, screen } from '@testing-library/react';
 
 import { ProxyAccount } from './ProxyAccount';
 import { TEST_ACCOUNT_ID, TEST_ADDRESS } from '@shared/lib/utils';
-import { ProxyType } from '@entities/proxy';
+import { ProxyType } from '@shared/core';
 
 jest.mock('@app/providers', () => ({
   useI18n: jest.fn().mockReturnValue({

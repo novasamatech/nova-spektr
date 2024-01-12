@@ -2,7 +2,7 @@ import { render, screen } from '@testing-library/react';
 
 import { Header } from './Header';
 
-describe('components/common/Header', () => {
+describe('ui/Header', () => {
   test('should render component', () => {
     render(<Header title="My title">children</Header>);
 

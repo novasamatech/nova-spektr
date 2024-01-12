@@ -27,7 +27,7 @@ jest.mock('@app/providers', () => ({
   }),
 }));
 
-describe('components/common/QrCode/QrReader', () => {
+describe('ui/QrCode/QrReader', () => {
   const mockUserMedia = () => {
     const mediaValue = {
       getUserMedia: jest.fn().mockResolvedValue({

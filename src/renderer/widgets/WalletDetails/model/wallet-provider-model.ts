@@ -19,9 +19,13 @@ const $accounts = combine(
   },
 );
 
-const $singleShardAccount = combine($accounts, (accounts): BaseAccount | undefined => {
-  return accountUtils.getBaseAccount(accounts);
-});
+const $singleShardAccount = combine(
+  $accounts,
+  (accounts): BaseAccount | undefined => {
+    return accountUtils.getBaseAccount(accounts);
+  },
+  { skipVoid: false },
+);
 
 const $multiShardAccounts = combine($accounts, (accounts): MultishardMap => {
   if (accounts.length === 0) return new Map();
@@ -41,6 +45,7 @@ const $multisigAccount = combine(
 
     return match && accountUtils.isMultisigAccount(match) ? match : undefined;
   },
+  { skipVoid: false },
 );
 
 type VaultAccounts = {
@@ -63,35 +68,37 @@ const $vaultAccounts = combine(
       accountsMap: walletDetailsUtils.getVaultAccountsMap(accounts),
     };
   },
+  { skipVoid: false },
 );
 
 const $signatoryContacts = combine(
   {
-    account: $accounts.map((accounts) => accounts[0]),
+    account: $accounts,
     accounts: walletModel.$accounts,
   },
   ({ account, accounts }): Signatory[] => {
-    if (!account || !accountUtils.isMultisigAccount(account)) return [];
+    const multisigAccount = accounts[0];
+    if (!multisigAccount || !accountUtils.isMultisigAccount(multisigAccount)) return [];
 
     const accountsMap = dictionary(accounts, 'accountId', () => true);
 
-    return account.signatories.filter((signatory) => !accountsMap[signatory.accountId]);
+    return multisigAccount.signatories.filter((signatory) => !accountsMap[signatory.accountId]);
   },
 );
 
 const $signatoryWallets = combine(
   {
-    account: $accounts.map((accounts) => accounts[0]),
-    accounts: walletModel.$accounts,
+    accounts: $accounts,
     wallets: walletModel.$wallets,
   },
-  ({ account, accounts, wallets }): [AccountId, Wallet][] => {
-    if (!account || !accountUtils.isMultisigAccount(account)) return [];
+  ({ accounts, wallets }): [AccountId, Wallet][] => {
+    const multisigAccount = accounts[0];
+    if (!multisigAccount || !accountUtils.isMultisigAccount(multisigAccount)) return [];
 
     const walletsMap = dictionary(wallets, 'id');
     const accountsMap = dictionary(accounts, 'accountId', (account) => account.walletId);
 
-    return account.signatories.reduce<[AccountId, Wallet][]>((acc, signatory) => {
+    return multisigAccount.signatories.reduce<[AccountId, Wallet][]>((acc, signatory) => {
       const wallet = walletsMap[accountsMap[signatory.accountId]];
       if (wallet) {
         acc.push([signatory.accountId, wallet]);

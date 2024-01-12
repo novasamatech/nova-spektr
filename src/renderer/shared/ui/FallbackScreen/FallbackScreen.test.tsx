@@ -9,7 +9,7 @@ jest.mock('@app/providers', () => ({
   }),
 }));
 
-describe('components/common/FallbackScreen', () => {
+describe('ui/FallbackScreen', () => {
   test('should render component', () => {
     render(<FallbackScreen />, { wrapper: MemoryRouter });
 

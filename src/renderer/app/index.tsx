@@ -6,11 +6,13 @@ import { App } from './App';
 import { kernelModel } from '@shared/core';
 import { networkModel } from '@entities/network';
 import { proxyModel } from '@entities/proxy';
+import { notificationModel } from '@entities/notification';
 import { balanceSubscriptionModel } from '@features/balances';
 import { assetsModel } from '@pages/Assets/Assets/model/assets-model';
 import './i18n';
 import './index.css';
 import './styles/theme/default.css';
+import { proxiesModel } from '@features/proxies';
 
 log.variables.version = process.env.VERSION;
 log.variables.env = process.env.NODE_ENV;
@@ -35,6 +37,8 @@ networkModel.events.networkStarted();
 proxyModel.events.proxyStarted();
 balanceSubscriptionModel.events.balancesSubscribed();
 assetsModel.events.assetsStarted();
+notificationModel.events.notificationsStarted();
+proxiesModel.events.proxiesStarted();
 
 createRoot(container).render(
   <Router>
