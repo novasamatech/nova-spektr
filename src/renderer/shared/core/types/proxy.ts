@@ -6,7 +6,7 @@ export type ProxyChainGroup = {
   walletId: ID;
   proxiedAccountId: AccountId;
   chainId: ChainId;
-  totalDeposit: number;
+  totalDeposit: string;
 };
 
 export type ProxyAccount = {
@@ -41,3 +41,8 @@ export type PartialProxiedAccount = Pick<
   ProxiedAccount,
   'chainId' | 'proxyAccountId' | 'accountId' | 'delay' | 'proxyType' | 'proxyVariant'
 >;
+
+export type ProxyDeposits = {
+  chainId: ChainId;
+  deposits: Record<AccountId, string>;
+};

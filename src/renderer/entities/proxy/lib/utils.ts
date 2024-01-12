@@ -1,9 +1,10 @@
 import { toShortAddress } from '@shared/lib/utils';
-import { ProxyAccount, AccountId, ProxyType } from '@shared/core';
+import { ProxyAccount, AccountId, ProxyType, ProxyChainGroup, NoID } from '@shared/core';
 
 export const proxyUtils = {
   isSameProxy,
   sortAccountsByProxyType,
+  isSameProxyChainGroup,
   getProxiedName,
 };
 
@@ -29,6 +30,14 @@ function sortAccountsByProxyType(accounts: ProxyAccount[]) {
   ];
 
   return accounts.sort((a, b) => typeOrder.indexOf(a.proxyType) - typeOrder.indexOf(b.proxyType));
+}
+
+function isSameProxyChainGroup(oldGroup: NoID<ProxyChainGroup>, newGroup: NoID<ProxyChainGroup>) {
+  return (
+    oldGroup.walletId === newGroup.walletId &&
+    oldGroup.proxiedAccountId === newGroup.proxiedAccountId &&
+    oldGroup.chainId === newGroup.chainId
+  );
 }
 // TODO: Add i18n for wallet name
 function getProxiedName(accountId: AccountId, proxyType: ProxyType): string {
