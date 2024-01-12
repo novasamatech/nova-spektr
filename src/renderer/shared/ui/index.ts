@@ -5,7 +5,6 @@ import InputHint from './InputHint/InputHint';
 import Button from './Buttons/Button/Button';
 import ButtonLink from './Buttons/ButtonLink/ButtonLink';
 import ButtonBack from './Buttons/ButtonBack/ButtonBack';
-import InfoPopover from './Popovers/InfoPopover/InfoPopover';
 import InfoLink from './InfoLink/InfoLink';
 import Select from './Dropdowns/Select/Select';
 import Combobox from './Dropdowns/Combobox/Combobox';
@@ -29,6 +28,7 @@ import Shimmering from './Shimmering/Shimmering';
 import Duration from './Duration/Duration';
 import Loader from './Loader/Loader';
 import DetailRow from './DetailRow/DetailRow';
+
 export { FallbackScreen } from './FallbackScreen/FallbackScreen';
 export { Header } from './Header/Header';
 export { AmountInput } from './Inputs/AmountInput/AmountInput';
@@ -73,7 +73,6 @@ export {
   Button,
   ButtonLink,
   ButtonBack,
-  InfoPopover,
   MenuPopover,
   InfoLink,
   Select,

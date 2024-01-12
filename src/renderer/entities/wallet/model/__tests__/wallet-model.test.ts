@@ -2,7 +2,7 @@ import { fork, allSettled } from 'effector';
 
 import { walletModel } from '../wallet-model';
 import { walletMock } from './mocks/wallet-mock';
-import { kernelModel } from '@shared/core';
+import { kernelModel, Wallet, type ProxiedAccount } from '@shared/core';
 import { storageService } from '@shared/api/storage';
 
 jest.mock('@app/providers', () => ({
@@ -108,7 +108,7 @@ describe('entities/wallet/model/wallet-model', () => {
     expect(scope.getState(walletModel.$wallets)).toHaveLength(wallets.length);
     await allSettled(walletModel.events.proxiedWalletsCreated, {
       scope,
-      params: [{ wallet: newProxiedWallet, accounts: newProxiedAccounts }],
+      params: [{ wallet: newProxiedWallet as Wallet, accounts: newProxiedAccounts as ProxiedAccount[] }],
     });
 
     expect(scope.getState(walletModel.$wallets)).toEqual(wallets.concat(newProxiedWallet));

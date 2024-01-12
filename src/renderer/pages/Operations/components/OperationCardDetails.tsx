@@ -1,8 +1,8 @@
 import cn from 'classnames';
 import { useUnit } from 'effector-react';
 
-import { useI18n } from '@app/providers';
-import { AddressWithExplorers, WalletCardSm, walletModel } from '@entities/wallet';
+import { useI18n, useMatrix } from '@app/providers';
+import { AddressWithExplorers, WalletCardSm, walletModel, ExplorersPopover } from '@entities/wallet';
 import { Icon, Button, FootnoteText, DetailRow } from '@shared/ui';
 import { copyToClipboard, truncate, cnTw, getAssetById } from '@shared/lib/utils';
 import { useToggle } from '@shared/lib/hooks';
@@ -25,6 +25,8 @@ type Props = {
 
 export const OperationCardDetails = ({ tx, account, extendedChain }: Props) => {
   const { t } = useI18n();
+  const { matrix } = useMatrix();
+
   const activeWallet = useUnit(walletModel.$activeWallet);
   const wallets = useUnit(walletModel.$wallets);
   const accounts = useUnit(walletModel.$accounts);
@@ -89,13 +91,14 @@ export const OperationCardDetails = ({ tx, account, extendedChain }: Props) => {
 
       {account && activeWallet && (
         <DetailRow label={t('operation.details.multisigWallet')} className={valueClass}>
-          <WalletCardSm
-            wallet={activeWallet}
-            accountId={account.accountId}
-            addressPrefix={addressPrefix}
-            explorers={explorers}
-            className="-mr-2 max-w-none"
-          />
+          <div className="-mr-2">
+            <ExplorersPopover
+              button={<WalletCardSm wallet={activeWallet} />}
+              address={account.accountId}
+              explorers={explorers}
+              addressPrefix={addressPrefix}
+            />
+          </div>
         </DetailRow>
       )}
 
@@ -225,11 +228,11 @@ export const OperationCardDetails = ({ tx, account, extendedChain }: Props) => {
           {depositorSignatory && (
             <DetailRow label={t('operation.details.depositor')} className={valueClass}>
               {depositorWallet ? (
-                <WalletCardSm
-                  wallet={depositorWallet}
-                  accountId={depositorSignatory.accountId}
-                  addressPrefix={addressPrefix}
+                <ExplorersPopover
+                  button={<WalletCardSm wallet={depositorWallet} />}
+                  address={depositorSignatory.accountId}
                   explorers={explorers}
+                  addressPrefix={addressPrefix}
                 />
               ) : (
                 <AddressWithExplorers
@@ -238,7 +241,7 @@ export const OperationCardDetails = ({ tx, account, extendedChain }: Props) => {
                   name={depositorSignatory.name}
                   addressFont={AddressStyle}
                   addressPrefix={addressPrefix}
-                  showMatrix
+                  matrixId={matrix.userId}
                   wrapperClassName="-mr-2 min-w-min"
                   type="short"
                 />
