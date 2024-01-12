@@ -53,7 +53,7 @@ describe('entities/proxy/lib/utils', () => {
 
   it('should return the proxied name for a given proxied account', () => {
     const proxiedAccount = {
-      proxyAccountId: TEST_ACCOUNT_ID as HexString,
+      accountId: TEST_ACCOUNT_ID as HexString,
       proxyType: 'Any' as ProxyType,
     };
     const expectedName = 'Any for ' + toAddress(TEST_ACCOUNT_ID, { chunk: 6 });

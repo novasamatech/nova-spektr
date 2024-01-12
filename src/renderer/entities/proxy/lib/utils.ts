@@ -18,10 +18,10 @@ function isSameProxy(oldProxy: ProxyAccount, newProxy: ProxyAccount) {
 
 // TODO: Add i18n for wallet name
 function getProxiedName(
-  proxiedAccount: Pick<ProxiedAccount, 'proxyType' | 'proxyAccountId'>,
+  proxiedAccount: Pick<ProxiedAccount, 'accountId' | 'proxyType'>,
   addressPrefix = SS58_DEFAULT_PREFIX,
 ): string {
-  return `${proxiedAccount.proxyType} for ${toAddress(proxiedAccount.proxyAccountId, {
+  return `${proxiedAccount.proxyType} for ${toAddress(proxiedAccount.accountId, {
     prefix: addressPrefix,
     chunk: 6,
   })}`;
