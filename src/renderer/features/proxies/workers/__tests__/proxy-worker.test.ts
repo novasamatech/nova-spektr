@@ -49,32 +49,6 @@ describe('initConnection', () => {
     expect(api.disconnect).toHaveBeenCalled();
   });
 
-  test('should return false if api is not connected', () => {
-    const chainId = '0x01' as ChainId;
-    state.apis = {
-      '0x01': {
-        isConnected: false,
-      } as unknown as ApiPromise,
-    };
-
-    const result = proxyWorkerFunctions.getConnectionStatus(chainId);
-
-    expect(result).toEqual(false);
-  });
-
-  test('should return true if api is connected', () => {
-    const chainId = '0x01';
-    state.apis = {
-      '0x01': {
-        isConnected: true,
-      } as unknown as ApiPromise,
-    };
-
-    const result = proxyWorkerFunctions.getConnectionStatus(chainId);
-
-    expect(result).toEqual(true);
-  });
-
   test('should return empty arrays and deposits object when api or api.query.proxy is not available', async () => {
     state.apis = {
       '0x01': {

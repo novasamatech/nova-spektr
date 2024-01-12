@@ -36,7 +36,7 @@ const InitConnectionsResult = {
   FAILED: 'failed',
 };
 
-function initConnection(chain: Chain, connection: Connection) {
+function initConnection(chain?: Chain, connection?: Connection) {
   return new Promise((resolve, reject) => {
     if (!chain) {
       console.log('chain not provided');

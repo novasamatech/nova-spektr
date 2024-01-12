@@ -9,7 +9,7 @@ import {
 } from '@shared/core';
 import { proxiesUtils } from '../utils';
 import { proxyWorkerUtils } from '../worker-utils';
-import { TEST_ACCOUNT_ID, TEST_ADDRESS } from '@/src/renderer/shared/lib/utils';
+import { TEST_ACCOUNT_ID, TEST_ADDRESS } from '@shared/lib/utils';
 
 describe('features/proxies/lib/utils', () => {
   test('should return true when oldProxy and newProxy have the same properties', () => {
