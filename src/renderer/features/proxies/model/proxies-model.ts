@@ -20,7 +20,7 @@ import { accountUtils, walletModel } from '@entities/wallet';
 import { proxyModel, proxyUtils } from '@entities/proxy';
 import { balanceModel } from '@entities/balance';
 import { notificationModel } from '@entities/notification';
-import { proxiesUtils } from '../lib/utils';
+import { proxiesUtils } from '../lib/proxies-utils';
 
 // @ts-ignore
 const worker = new Worker(new URL('@features/proxies/workers/proxy-worker', import.meta.url));
@@ -83,33 +83,35 @@ type ProxiedWalletsResult = {
   wallet: Wallet;
   accounts: ProxiedAccount[];
 };
-const createProxiedWalletsFx = createEffect(({ proxiedAccounts, chains }: ProxiedWalletsParams): ProxiedWalletsResult[] => {
-  return proxiedAccounts.map((proxied) => {
-    const walletName = proxyUtils.getProxiedName(
-      proxied.accountId,
-      proxied.proxyType,
-      chains[proxied.chainId].addressPrefix,
-    );
-    const wallet = {
-      name: walletName,
-      type: WalletType.PROXIED,
-      signingType: SigningType.WATCH_ONLY,
-    } as Wallet;
-
-    const accounts = [
-      {
-        ...proxied,
+const createProxiedWalletsFx = createEffect(
+  ({ proxiedAccounts, chains }: ProxiedWalletsParams): ProxiedWalletsResult[] => {
+    return proxiedAccounts.map((proxied) => {
+      const walletName = proxyUtils.getProxiedName(
+        proxied.accountId,
+        proxied.proxyType,
+        chains[proxied.chainId].addressPrefix,
+      );
+      const wallet = {
         name: walletName,
-        type: AccountType.PROXIED,
-        // TODO: use chain data, when ethereum chains support
-        chainType: ChainType.SUBSTRATE,
-        cryptoType: CryptoType.SR25519,
-      } as ProxiedAccount,
-    ];
+        type: WalletType.PROXIED,
+        signingType: SigningType.WATCH_ONLY,
+      } as Wallet;
 
-    return { wallet, accounts };
-  });
-});
+      // TODO: use chain data, when ethereum chains support
+      const accounts = [
+        {
+          ...proxied,
+          name: walletName,
+          type: AccountType.PROXIED,
+          chainType: ChainType.SUBSTRATE,
+          cryptoType: CryptoType.SR25519,
+        } as ProxiedAccount,
+      ];
+
+      return { wallet, accounts };
+    });
+  },
+);
 
 sample({
   clock: once(networkModel.$connections),
@@ -182,10 +184,17 @@ sample({
   source: {
     wallets: walletModel.$wallets,
     accounts: walletModel.$accounts,
+    chains: networkModel.$chains,
   },
   filter: (_, data) => data.proxiedAccountsToAdd.length > 0,
-  fn: ({ wallets, accounts }, data) =>
-    proxiesUtils.getNotification(data.proxiedAccountsToAdd, wallets, accounts, NotificationType.PROXY_CREATED),
+  fn: ({ wallets, accounts, chains }, data) =>
+    proxiesUtils.getNotification({
+      wallets,
+      accounts,
+      chains,
+      proxiedAccounts: data.proxiedAccountsToAdd,
+      type: NotificationType.PROXY_CREATED,
+    }),
   target: notificationModel.events.notificationsAdded,
 });
 
@@ -194,10 +203,17 @@ sample({
   source: {
     wallets: walletModel.$wallets,
     accounts: walletModel.$accounts,
+    chains: networkModel.$chains,
   },
   filter: (_, data) => data.proxiedAccountsToRemove.length > 0,
-  fn: ({ wallets, accounts }, data) =>
-    proxiesUtils.getNotification(data.proxiedAccountsToRemove, wallets, accounts, NotificationType.PROXY_REMOVED),
+  fn: ({ wallets, accounts, chains }, data) =>
+    proxiesUtils.getNotification({
+      wallets,
+      accounts,
+      chains,
+      proxiedAccounts: data.proxiedAccountsToRemove,
+      type: NotificationType.PROXY_REMOVED,
+    }),
   target: notificationModel.events.notificationsAdded,
 });
 
