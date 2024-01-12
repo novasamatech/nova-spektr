@@ -37,6 +37,7 @@ class MockWorker {
   }
 }
 
+// @ts-ignore
 Worker = MockWorker;
 
 describe('entities/proxy/model/proxy-model', () => {
