@@ -1,5 +1,5 @@
-import { createEffect, createEvent, sample, scopeBind } from 'effector';
-import { createEndpoint } from '@remote-ui/rpc';
+import { createEffect, createEvent, createStore, sample, scopeBind } from 'effector';
+import { Endpoint, createEndpoint } from '@remote-ui/rpc';
 import { keyBy } from 'lodash';
 import { once, spread } from 'patronum';
 
@@ -12,9 +12,12 @@ import {
   ChainType,
   Connection,
   CryptoType,
+  NoID,
   PartialProxiedAccount,
   ProxiedAccount,
   ProxyAccount,
+  ProxyChainGroup,
+  ProxyDeposits,
   SigningType,
   Wallet,
   WalletType,
@@ -25,21 +28,29 @@ import { accountUtils, walletModel } from '@entities/wallet';
 import { proxyModel, proxyUtils } from '@entities/proxy';
 import { balanceModel } from '@entities/balance';
 
-// @ts-ignore
-const worker = new Worker(new URL('@features/proxies/workers/proxy-worker', import.meta.url));
-
-const endpoint = createEndpoint(worker, {
-  callable: ['initConnection', 'getProxies', 'disconnect'],
-});
+const workerStarted = createEvent();
 
 const connected = createEvent<ChainId>();
 const proxiedAccountsRemoved = createEvent<ProxiedAccount[]>();
+const depositsReceived = createEvent<ProxyDeposits>();
+
+const $endpoint = createStore<Endpoint<any> | null>(null);
+
+const startWorkerFx = createEffect(() => {
+  // @ts-ignore
+  const worker = new Worker(new URL('@features/proxies/workers/proxy-worker', import.meta.url));
+
+  return createEndpoint(worker, {
+    callable: ['initConnection', 'getProxies', 'disconnect'],
+  });
+});
 
 type StartChainsProps = {
   chains: Chain[];
   connections: Record<ChainId, Connection>;
+  endpoint: Endpoint<any>;
 };
-const startChainsFx = createEffect(({ chains, connections }: StartChainsProps) => {
+const startChainsFx = createEffect(({ chains, connections, endpoint }: StartChainsProps) => {
   const bindedConnected = scopeBind(connected, { safe: true });
 
   chains.forEach((chain) => {
@@ -55,6 +66,7 @@ type GetProxiesParams = {
   chainId: ChainId;
   accounts: Account[];
   proxies: ProxyAccount[];
+  endpoint: Endpoint<any>;
 };
 type GetProxiesResult = {
   proxiesToAdd: ProxyAccount[];
@@ -63,19 +75,30 @@ type GetProxiesResult = {
   proxiedAccountsToRemove: ProxiedAccount[];
   deposits: Record<AccountId, Record<ChainId, string>>;
 };
-const getProxiesFx = createEffect(({ chainId, accounts, proxies }: GetProxiesParams): Promise<GetProxiesResult> => {
-  const proxiedAccounts = accounts.filter((a) => accountUtils.isProxiedAccount(a));
-  const nonProxiedAccounts = keyBy(
-    accounts.filter((a) => !accountUtils.isProxiedAccount(a)),
-    'accountId',
-  );
+const getProxiesFx = createEffect(
+  async ({ chainId, accounts, proxies, endpoint }: GetProxiesParams): Promise<GetProxiesResult> => {
+    const proxiedAccounts = accounts.filter((a) => accountUtils.isProxiedAccount(a));
+    const nonProxiedAccounts = keyBy(
+      accounts.filter((a) => !accountUtils.isProxiedAccount(a)),
+      'accountId',
+    );
 
-  return endpoint.call.getProxies(chainId, nonProxiedAccounts, proxiedAccounts, proxies) as Promise<GetProxiesResult>;
-});
+    const result = (await endpoint.call.getProxies(
+      chainId,
+      nonProxiedAccounts,
+      proxiedAccounts,
+      proxies,
+    )) as Promise<GetProxiesResult>;
 
-const disconnectFx = createEffect((chainId: ChainId): Promise<unknown> => {
-  return endpoint.call.disconnect(chainId);
-});
+    return result;
+  },
+);
+
+const disconnectFx = createEffect(
+  ({ chainId, endpoint }: { chainId: ChainId; endpoint: Endpoint<any> }): Promise<unknown> => {
+    return endpoint.call.disconnect(chainId);
+  },
+);
 
 const createProxiedWalletsFx = createEffect(
   (proxiedAccounts: PartialProxiedAccount[]): { wallet: Wallet; accounts: ProxiedAccount[] }[] => {
@@ -107,14 +130,27 @@ const createProxiedWalletsFx = createEffect(
 );
 
 sample({
-  clock: once(networkModel.$connections),
+  clock: workerStarted,
+  target: startWorkerFx,
+});
+
+sample({
+  clock: startWorkerFx.doneData,
+  target: $endpoint,
+});
+
+sample({
+  clock: [startWorkerFx.done, once(networkModel.$connections)],
   source: {
     connections: networkModel.$connections,
     chains: networkModel.$chains,
+    endpoint: $endpoint,
   },
-  fn: ({ connections, chains }) => ({
+  filter: ({ endpoint }) => Boolean(endpoint),
+  fn: ({ connections, chains, endpoint }) => ({
     chains: Object.values(chains).filter(proxyWorkerUtils.isRegularProxy),
     connections,
+    endpoint: endpoint!,
   }),
   target: startChainsFx,
 });
@@ -124,11 +160,14 @@ sample({
   source: {
     accounts: walletModel.$accounts,
     proxies: proxyModel.$proxies,
+    endpoint: $endpoint,
   },
-  fn: ({ accounts, proxies }, chainId) => ({
+  filter: ({ endpoint }) => Boolean(endpoint),
+  fn: ({ accounts, proxies, endpoint }, chainId) => ({
     chainId,
     accounts: accounts.filter((a) => accountUtils.isChainIdMatch(a, chainId)),
     proxies: Object.values(proxies).flat(),
+    endpoint: endpoint!,
   }),
   target: getProxiesFx,
 });
@@ -140,6 +179,7 @@ spread({
     proxiesToRemove: proxyModel.events.proxiesRemoved,
     proxiedAccountsToAdd: createProxiedWalletsFx,
     proxiedAccountsToRemove: proxiedAccountsRemoved,
+    deposits: depositsReceived,
   },
 });
 
@@ -162,8 +202,82 @@ sample({
 
 sample({
   clock: getProxiesFx.done,
-  fn: ({ params: { chainId } }) => chainId,
+  source: $endpoint,
+  filter: (endpoint) => Boolean(endpoint),
+  fn: (endpoint, { params: { chainId } }) => ({ chainId, endpoint: endpoint! }),
   target: disconnectFx,
 });
 
-export const proxiesModel = {};
+sample({
+  clock: depositsReceived,
+  source: {
+    wallets: walletModel.$wallets,
+    accounts: walletModel.$accounts,
+    proxyChainGroups: proxyModel.$proxyChainGroups,
+  },
+  fn: ({ wallets, accounts, proxyChainGroups }, deposits) => {
+    const proxyGroups = wallets.reduce<NoID<ProxyChainGroup>[]>((acc, w) => {
+      const walletAccounts = accounts.filter((a) => a.walletId === w.id);
+
+      if (walletAccounts.length > 0) {
+        const walletProxyGroups = walletAccounts.reduce<NoID<ProxyChainGroup>[]>((acc, a) => {
+          const walletDeposits = deposits[a.accountId];
+          if (!walletDeposits) return acc;
+
+          Object.entries(walletDeposits).forEach(([chainId, deposit]) => {
+            acc.push({
+              walletId: w.id,
+              proxiedAccountId: a.accountId,
+              chainId: chainId as ChainId,
+              totalDeposit: deposit,
+            });
+          });
+
+          return acc;
+        }, []);
+
+        acc.concat(walletProxyGroups);
+      }
+
+      return acc;
+    }, []);
+
+    const { toAdd, toUpdate } = proxyGroups.reduce<{
+      toAdd: NoID<ProxyChainGroup>[];
+      toUpdate: NoID<ProxyChainGroup>[];
+    }>(
+      (acc, g) => {
+        if (!proxyChainGroups.some((p) => proxyUtils.isSameProxyChainGroup(p, g))) {
+          acc.toAdd.push(g);
+        } else {
+          acc.toUpdate.push(g);
+        }
+
+        return acc;
+      },
+      {
+        toAdd: [],
+        toUpdate: [],
+      },
+    );
+
+    const toRemove = proxyChainGroups.filter((p) => !proxyGroups.some((g) => proxyUtils.isSameProxyChainGroup(g, p)));
+
+    return {
+      toAdd,
+      toUpdate,
+      toRemove,
+    };
+  },
+  target: spread({
+    toAdd: proxyModel.events.proxyGroupsAdded,
+    toUpdate: proxyModel.events.proxyGroupsUpdated,
+    toRemove: proxyModel.events.proxyGroupsRemoved,
+  }),
+});
+
+export const proxiesModel = {
+  events: {
+    workerStarted,
+  },
+};

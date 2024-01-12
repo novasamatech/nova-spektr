@@ -1,10 +1,5 @@
-export const enum ProxyType {
-  ANY = 'Any',
-  NON_TRANSFER = 'NonTransfer',
-  STAKING = 'Staking',
-  AUCTION = 'Auction',
-  CANCEL_PROXY = 'CancelProxy',
-  GOVERNANCE = 'Governance',
-  IDENTITY_JUDGEMENT = 'IdentityJudgement',
-  NOMINATION_POOLS = 'NominationPools',
-}
+import { AccountId, ID, NoID, ProxyAccount, ProxyChainGroup } from '@shared/core';
+
+export type ProxyStore = Record<AccountId, ProxyAccount[]>;
+export type ProxyGroupStore = Record<ID, NoID<ProxyChainGroup>[]>;
+export type ProxyChainGroupStore = Record<ID, ProxyChainGroup[]>;

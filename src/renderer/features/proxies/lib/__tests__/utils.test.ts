@@ -11,7 +11,7 @@ import { TEST_ACCOUNT_ID, TEST_ADDRESS } from '@shared/lib/utils';
 import { proxyWorkerUtils } from '../utils';
 
 describe('features/proxies/lib/utils', () => {
-  it('should return true when oldProxy and newProxy have the same properties', () => {
+  test('should return true when oldProxy and newProxy have the same properties', () => {
     const oldProxy = {
       id: 1,
       accountId: '0x00',
@@ -32,10 +32,10 @@ describe('features/proxies/lib/utils', () => {
 
     const result = proxyWorkerUtils.isSameProxy(oldProxy, newProxy);
 
-    expect(result).toBe(true);
+    expect(result).toEqual(true);
   });
 
-  it('should return false when oldProxy and newProxy have different properties', () => {
+  test('should return false when oldProxy and newProxy have different properties', () => {
     const oldProxy = {
       id: 1,
       accountId: '0x00',
@@ -56,10 +56,10 @@ describe('features/proxies/lib/utils', () => {
 
     const result = proxyWorkerUtils.isSameProxy(oldProxy, newProxy);
 
-    expect(result).toBe(false);
+    expect(result).toEqual(false);
   });
 
-  it('should return true when oldProxy and newProxy have the same properties', () => {
+  test('should return true when oldProxy and newProxy have the same properties', () => {
     const oldProxied = {
       id: 0,
       walletId: 0,
@@ -92,10 +92,10 @@ describe('features/proxies/lib/utils', () => {
 
     const result = proxyWorkerUtils.isSameProxied(oldProxied, newProxied);
 
-    expect(result).toBe(true);
+    expect(result).toEqual(true);
   });
 
-  it('should return false when oldProxied and newProxied have different properties', () => {
+  test('should return false when oldProxied and newProxied have different properties', () => {
     const oldProxied = {
       id: 0,
       walletId: 0,
@@ -128,10 +128,10 @@ describe('features/proxies/lib/utils', () => {
 
     const result = proxyWorkerUtils.isSameProxied(oldProxied, newProxied);
 
-    expect(result).toBe(false);
+    expect(result).toEqual(false);
   });
 
-  it('should return the account id when given a valid address', () => {
+  test('should return the account id when given a valid address', () => {
     const address = TEST_ADDRESS;
     const expectedAccountId = TEST_ACCOUNT_ID;
 
@@ -140,7 +140,7 @@ describe('features/proxies/lib/utils', () => {
     expect(result).toEqual(expectedAccountId);
   });
 
-  it('should return "0x00" when given an invalid address', () => {
+  test('should return "0x00" when given an invalid address', () => {
     const address = 'invalid_address';
     const expectedAccountId = '0x00';
 
@@ -149,34 +149,34 @@ describe('features/proxies/lib/utils', () => {
     expect(result).toEqual(expectedAccountId);
   });
 
-  it('should return true if "regular_proxy" is included in chain options', () => {
+  test('should return true if "regular_proxy" is included in chain options', () => {
     const chainWithRegularProxy = { options: ['regular_proxy'] } as Chain;
     const result = proxyWorkerUtils.isRegularProxy(chainWithRegularProxy);
 
-    expect(result).toBe(true);
+    expect(result).toEqual(true);
   });
 
-  it('should return false if "regular_proxy" is not included in chain options', () => {
+  test('should return false if "regular_proxy" is not included in chain options', () => {
     const chainWithoutRegularProxy = { options: ['multisig'] } as Chain;
     const result = proxyWorkerUtils.isRegularProxy(chainWithoutRegularProxy);
 
-    expect(result).toBe(false);
+    expect(result).toEqual(false);
   });
 
-  it('should return false if chain options is undefined', () => {
+  test('should return false if chain options is undefined', () => {
     const chainWithUndefinedOptions = {} as Chain;
     const result = proxyWorkerUtils.isRegularProxy(chainWithUndefinedOptions);
 
-    expect(result).toBe(false);
+    expect(result).toEqual(false);
   });
 
-  it('should return true if account type is PROXIED', () => {
+  test('should return true if account type is PROXIED', () => {
     const account = { type: AccountType.PROXIED };
-    expect(proxyWorkerUtils.isProxiedAccount(account)).toBe(true);
+    expect(proxyWorkerUtils.isProxiedAccount(account)).toEqual(true);
   });
 
-  it('should return false if account type is not PROXIED', () => {
+  test('should return false if account type is not PROXIED', () => {
     const account = { type: AccountType.BASE };
-    expect(proxyWorkerUtils.isProxiedAccount(account)).toBe(false);
+    expect(proxyWorkerUtils.isProxiedAccount(account)).toEqual(false);
   });
 });

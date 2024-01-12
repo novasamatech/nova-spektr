@@ -1,8 +1,9 @@
 import { toShortAddress } from '@shared/lib/utils';
-import type { ProxiedAccount, ProxyAccount } from '@shared/core';
+import type { NoID, ProxiedAccount, ProxyAccount, ProxyChainGroup } from '@shared/core';
 
 export const proxyUtils = {
   isSameProxy,
+  isSameProxyChainGroup,
   getProxiedName,
 };
 
@@ -13,6 +14,14 @@ function isSameProxy(oldProxy: ProxyAccount, newProxy: ProxyAccount) {
     oldProxy.chainId === newProxy.chainId &&
     oldProxy.proxyType === newProxy.proxyType &&
     oldProxy.delay === newProxy.delay
+  );
+}
+
+function isSameProxyChainGroup(oldGroup: NoID<ProxyChainGroup>, newGroup: NoID<ProxyChainGroup>) {
+  return (
+    oldGroup.walletId === newGroup.walletId &&
+    oldGroup.proxiedAccountId === newGroup.proxiedAccountId &&
+    oldGroup.chainId === newGroup.chainId
   );
 }
 

@@ -17,17 +17,30 @@ import {
   NoID,
   PartialProxiedAccount,
   ProxyVariant,
+  ProxyDeposits,
 } from '@shared/core';
 import { InitConnectionsResult } from '../lib/constants';
 import { proxyWorkerUtils } from '../lib/utils';
 
-const state = {
+export const proxyWorkerFunctions = {
+  initConnection,
+  getProxies,
+  getConnectionStatus,
+  disconnect,
+};
+
+export const state = {
   apis: {} as Record<ChainId, ApiPromise>,
 };
 
-function initConnection(chain: Chain, connection: Connection) {
-  return new Promise((resolve) => {
-    if (!chain) return;
+function initConnection(chain?: Chain, connection?: Connection): Promise<InitConnectionsResult> {
+  return new Promise((resolve, reject) => {
+    if (!chain) {
+      console.log('chain not provided');
+      reject();
+
+      return;
+    }
 
     try {
       let provider: ProviderInterface | undefined;
@@ -46,10 +59,18 @@ function initConnection(chain: Chain, connection: Connection) {
           }
         } catch (e) {
           console.log('light client not connected', e);
+          reject();
+
+          return;
         }
       }
 
-      if (!provider) return;
+      if (!provider) {
+        console.log('provider not connected');
+        reject();
+
+        return;
+      }
 
       provider.on('connected', async () => {
         state.apis[chain.chainId] = await ApiPromise.create({ provider, throwOnConnect: true, throwOnUnknown: true });
@@ -58,6 +79,8 @@ function initConnection(chain: Chain, connection: Connection) {
       });
     } catch (e) {
       console.log(e);
+
+      reject();
     }
   });
 }
@@ -87,7 +110,7 @@ async function getProxies(
   const existingProxiedAccounts = [] as PartialProxiedAccount[];
   const proxiedAccountsToAdd = [] as PartialProxiedAccount[];
 
-  const deposits = {} as Record<AccountId, Record<ChainId, string>>;
+  const deposits = {} as ProxyDeposits;
 
   if (!api || !api.query.proxy) {
     return { proxiesToAdd, proxiesToRemove: [], proxiedAccountsToAdd, proxiedAccountsToRemove: [], deposits };

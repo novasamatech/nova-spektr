@@ -30,7 +30,7 @@ describe('entities/proxy/model/proxy-model', () => {
     await allSettled(proxyModel.events.proxiesAdded, { scope, params: [proxyMock] });
 
     expect(scope.getState(proxyModel.$proxies)).toEqual({
-      '0x00': [proxyMock],
+      '0x01': [proxyMock],
     });
   });
 

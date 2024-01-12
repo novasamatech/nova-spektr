@@ -23,7 +23,7 @@ describe('entities/proxy/lib/utils', () => {
 
     const result = proxyUtils.isSameProxy(oldProxy, newProxy);
 
-    expect(result).toBe(true);
+    expect(result).toEqual(true);
   });
 
   it('should return false when oldProxy and newProxy have different properties', () => {
@@ -47,7 +47,7 @@ describe('entities/proxy/lib/utils', () => {
 
     const result = proxyUtils.isSameProxy(oldProxy, newProxy);
 
-    expect(result).toBe(false);
+    expect(result).toEqual(false);
   });
 
   it('should return the proxied name for a given proxied account', () => {

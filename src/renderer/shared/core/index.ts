@@ -52,6 +52,12 @@ export type { Validator } from './types/validator';
 export { RewardsDestination } from './types/stake';
 export type { Stake, Unlocking } from './types/stake';
 
-export type { ProxyAccount, PartialProxyAccount, PartialProxiedAccount, ProxyType } from './types/proxy';
-export { ProxyVariant } from './types/proxy';
 export { XcmPallets } from './types/substrate';
+export type {
+  ProxyAccount,
+  PartialProxyAccount,
+  PartialProxiedAccount,
+  ProxyDeposits,
+  ProxyChainGroup,
+} from './types/proxy';
+export { ProxyVariant, ProxyType } from './types/proxy';

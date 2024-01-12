@@ -1,7 +1,6 @@
 import { cnTw, toAddress, toShortAddress } from '@shared/lib/utils';
 import { BodyText, DropdownIconButton, HelpText, Identicon, Truncate } from '@shared/ui';
-import { AccountId } from '@shared/core';
-import { ProxyType } from '../../lib/types';
+import { AccountId, ProxyType } from '@shared/core';
 import { ProxyTypeName } from '@entities/proxy/lib/constants';
 import { useI18n } from '@app/providers';
 import { DropdownIconButtonOption } from '@shared/ui/types';
