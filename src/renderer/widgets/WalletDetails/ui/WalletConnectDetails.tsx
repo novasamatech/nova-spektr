@@ -7,7 +7,7 @@ import wallet_connect_reconnect from '@shared/assets/video/wallet_connect_reconn
 import { useModalClose, useToggle } from '@shared/lib/hooks';
 import { MultiAccountsList, WalletCardLg } from '@entities/wallet';
 import { useI18n } from '@app/providers';
-import { chainsService, networkModel } from '@entities/network';
+import { chainsService } from '@entities/network';
 import { walletConnectUtils } from '@entities/walletConnect';
 import type { Chain, Account, WalletConnectWallet, AccountId } from '@shared/core';
 import { wcDetailsModel } from '../model/wc-details-model';
@@ -49,7 +49,6 @@ export const WalletConnectDetails = ({ wallet, accounts, onClose }: Props) => {
 
   const reconnectStep = useUnit(wcDetailsModel.$reconnectStep);
   const forgetStep = useUnit(wcDetailsModel.$forgetStep);
-  const chains = useUnit(networkModel.$chains);
 
   useEffect(() => {
     wcDetailsModel.events.reset();
@@ -154,7 +153,7 @@ export const WalletConnectDetails = ({ wallet, accounts, onClose }: Props) => {
     {
       id: 'proxies',
       title: t('walletDetails.common.proxiesTabTitle'),
-      panel: <ProxiesList walletId={wallet.id} chains={Object.values(chains)} className="h-[385px] mt-6" />,
+      panel: <ProxiesList walletId={wallet.id} className="h-[385px] mt-6" />,
     },
   ];
 

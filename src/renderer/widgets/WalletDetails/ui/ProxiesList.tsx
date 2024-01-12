@@ -15,12 +15,11 @@ import { walletProviderModel } from '../model/wallet-provider-model';
 
 type Props = {
   walletId: ID;
-  chains: Chain[];
   canCreateProxy?: boolean;
   className?: string;
 };
 
-export const ProxiesList = ({ chains, walletId, className, canCreateProxy = true }: Props) => {
+export const ProxiesList = ({ walletId, className, canCreateProxy = true }: Props) => {
   const { t } = useI18n();
 
   const proxyAccounts = useUnit(walletProviderModel.$proxyAccounts);
@@ -52,6 +51,7 @@ export const ProxiesList = ({ chains, walletId, className, canCreateProxy = true
               address={proxyAccount.accountId}
               explorers={chain.explorers || []}
               addressPrefix={chain.addressPrefix}
+              className="-mt-10 -mr-1"
               button={<DropdownIconButton.Option option={openInfoAction} />}
             >
               <ExplorersPopover.Group title={t('walletDetails.common.proxiedAddressTitle')}>

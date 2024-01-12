@@ -67,7 +67,7 @@ export const MultishardWalletDetails = ({ wallet, accounts, onClose }: Props) =>
     {
       id: 'proxies',
       title: t('walletDetails.common.proxiesTabTitle'),
-      panel: <ProxiesList walletId={wallet.id} chains={Object.values(chains)} className="h-[393px] mt-4" />,
+      panel: <ProxiesList walletId={wallet.id} className="h-[393px] mt-4" />,
     },
   ];
 
