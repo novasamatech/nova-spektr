@@ -1,13 +1,14 @@
 import { createEffect, createEvent, createStore, sample } from 'effector';
 
 import { proxyUtils } from '../lib/utils';
-import type { ProxyAccount, AccountId } from '@shared/core';
+import { type ProxyAccount, AccountId } from '@shared/core';
 import { storageService } from '@shared/api/storage';
 
 type ProxyStore = Record<AccountId, ProxyAccount[]>;
 
 const $proxies = createStore<ProxyStore>({});
 
+const proxyStarted = createEvent();
 const proxiesAdded = createEvent<ProxyAccount[]>();
 const proxiesRemoved = createEvent<ProxyAccount[]>();
 
@@ -24,6 +25,11 @@ const removeProxiesFx = createEffect((proxies: ProxyAccount[]) => {
 });
 
 sample({
+  clock: proxyStarted,
+  target: populateProxiesFx,
+});
+
+sample({
   clock: populateProxiesFx.doneData,
   fn: (proxies) => proxies.reduce<ProxyStore>((acc, p) => ({ ...acc, [p.accountId]: p }), {}),
   target: $proxies,
@@ -32,6 +38,7 @@ sample({
 sample({
   clock: proxiesAdded,
   source: $proxies,
+  filter: (_, proxiesToAdd) => proxiesToAdd.length > 0,
   fn: (proxies, proxiesToAdd) => {
     return proxiesToAdd.reduce<ProxyStore>(
       (acc, p) => ({ ...acc, [p.accountId]: [...(acc[p.accountId] || []), p] }),
@@ -46,6 +53,7 @@ sample({ clock: proxiesAdded, target: addProxiesFx });
 sample({
   clock: proxiesRemoved,
   source: $proxies,
+  filter: (_, proxiesToRemove) => proxiesToRemove.length > 0,
   fn: (proxies, proxiesToRemove) => {
     return proxiesToRemove.reduce<ProxyStore>((acc, proxyAccount) => {
       acc[proxyAccount.accountId] = acc[proxyAccount.accountId].filter(
@@ -63,6 +71,7 @@ sample({ clock: proxiesRemoved, target: removeProxiesFx });
 export const proxyModel = {
   $proxies,
   events: {
+    proxyStarted,
     proxiesAdded,
     proxiesRemoved,
   },

@@ -4,9 +4,9 @@ import { ReactNode, useEffect } from 'react';
 
 import { walletSelectModel } from '../model/wallet-select-model';
 import { SmallTitleText, SearchInput } from '@shared/ui';
-import { WalletFamily } from '@shared/core';
 import { useI18n } from '@app/providers';
 import { WalletGroup } from './WalletGroup';
+import { WalletFamily } from '@shared/core';
 
 type Props = {
   action?: ReactNode;

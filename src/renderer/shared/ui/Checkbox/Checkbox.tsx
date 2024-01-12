@@ -1,6 +1,6 @@
 import { ChangeEvent, PropsWithChildren } from 'react';
 
-import { LabelText } from '@shared/ui';
+import { LabelText } from '../Typography';
 import { cnTw } from '@shared/lib/utils';
 import './Checkbox.css';
 
@@ -17,7 +17,7 @@ type Props = {
   tabIndex?: number;
 };
 
-const Checkbox = ({
+export const Checkbox = ({
   checked,
   semiChecked,
   defaultChecked,
@@ -55,5 +55,3 @@ const Checkbox = ({
     {Boolean(children) && position === 'right' && children}
   </LabelText>
 );
-
-export default Checkbox;

@@ -14,8 +14,9 @@ import {
   ProxiedAccount,
   Account,
   AccountId,
-  ProxyVariant,
   NoID,
+  PartialProxiedAccount,
+  ProxyVariant,
 } from '@shared/core';
 import { proxyWorkerUtils } from '../lib/worker-utils';
 
@@ -71,16 +72,11 @@ async function disconnect(chainId: ChainId) {
   await state.apis[chainId].disconnect();
 }
 
-type PartialProxiedAccount = Pick<
-  ProxiedAccount,
-  'chainId' | 'proxyAccountId' | 'accountId' | 'delay' | 'proxyType' | 'proxyVariant'
->;
-
 // TODO: Refactor this code
 async function getProxies(
   chainId: ChainId,
   accounts: Record<AccountId, Account>,
-  proxides: Record<AccountId, ProxiedAccount>,
+  proxiedAccounts: ProxiedAccount[],
   proxies: ProxyAccount[],
 ) {
   const api = state.apis[chainId];
@@ -89,12 +85,12 @@ async function getProxies(
   const proxiesToAdd = [] as NoID<ProxyAccount>[];
 
   const existingProxiedAccounts = [] as PartialProxiedAccount[];
-  const proxidesToAdd = [] as PartialProxiedAccount[];
+  const proxiedAccountsToAdd = [] as PartialProxiedAccount[];
 
   const deposits = {} as Record<AccountId, Record<ChainId, string>>;
 
   if (!api || !api.query.proxy) {
-    return { proxiesToAdd, proxiesToRemove: [], proxidesToAdd, proxidesToRemove: [], deposits };
+    return { proxiesToAdd, proxiesToRemove: [], proxiedAccountsToAdd, proxiedAccountsToRemove: [], deposits };
   }
 
   try {
@@ -127,7 +123,6 @@ async function getProxies(
           }
 
           const needToAddProxiedAccount = accounts[newProxy.accountId];
-          const doesProxiedAccountExist = proxides[newProxy.proxiedAccountId];
 
           if (needToAddProxiedAccount) {
             const proxiedAccount = {
@@ -137,8 +132,12 @@ async function getProxies(
               proxyVariant: ProxyVariant.NONE,
             } as PartialProxiedAccount;
 
+            const doesProxiedAccountExist = proxiedAccounts.some((oldProxy) =>
+              proxyWorkerUtils.isSameProxied(oldProxy, proxiedAccount),
+            );
+
             if (!doesProxiedAccountExist) {
-              proxidesToAdd.push(proxiedAccount);
+              proxiedAccountsToAdd.push(proxiedAccount);
             }
 
             existingProxiedAccounts.push(proxiedAccount);
@@ -161,8 +160,8 @@ async function getProxies(
     console.log(e);
   }
 
-  const proxiesToRemove = proxies.filter((p) => !existingProxies.some((ep) => isEqual(p, ep)));
-  const proxidesToRemove = Object.values(accounts)
+  const proxiesToRemove = proxies.filter((p) => existingProxies.some((ep) => isEqual(p, ep)));
+  const proxiedAccountsToRemove = Object.values(proxiedAccounts)
     .filter(proxyWorkerUtils.isProxiedAccount)
     .filter(
       (p) =>
@@ -180,8 +179,8 @@ async function getProxies(
   return {
     proxiesToAdd,
     proxiesToRemove,
-    proxidesToAdd,
-    proxidesToRemove,
+    proxiedAccountsToAdd,
+    proxiedAccountsToRemove,
     deposits,
   };
 }

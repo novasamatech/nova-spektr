@@ -3,14 +3,14 @@ import { RadioGroup as HeadlessRadioGroup } from '@headlessui/react';
 
 import { cnTw } from '@shared/lib/utils';
 import { RadioOption } from './common/types';
-import { SmallTitleText } from '@shared/ui';
+import { SmallTitleText } from '../Typography';
 import './RadioGroup.css';
 
 type Props = {
   option: RadioOption;
 };
 
-const Option = ({ option, children }: PropsWithChildren<Props>) => {
+export const Option = ({ option, children }: PropsWithChildren<Props>) => {
   const { id, value, title } = option;
 
   // Not using ui-active, because when Option is checked and child is another headless-ui component (like Dropdown)
@@ -46,5 +46,3 @@ const Option = ({ option, children }: PropsWithChildren<Props>) => {
     </HeadlessRadioGroup.Option>
   );
 };
-
-export default Option;
