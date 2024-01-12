@@ -110,7 +110,10 @@ async function getProxies(
   const existingProxiedAccounts = [] as PartialProxiedAccount[];
   const proxiedAccountsToAdd = [] as PartialProxiedAccount[];
 
-  const deposits = {} as ProxyDeposits;
+  const deposits = {
+    chainId: chainId,
+    deposits: {},
+  } as ProxyDeposits;
 
   if (!api || !api.query.proxy) {
     return { proxiesToAdd, proxiesToRemove: [], proxiedAccountsToAdd, proxiedAccountsToRemove: [], deposits };
@@ -167,10 +170,7 @@ async function getProxies(
           }
 
           if (needToAddProxyAccount || needToAddProxiedAccount) {
-            deposits[proxiedAccountId] = {
-              ...deposits[proxiedAccountId],
-              [chainId]: proxyData[0][1].toHuman(),
-            };
+            deposits.deposits[proxiedAccountId] = proxyData[0][1].toHuman();
           }
         });
       } catch (e) {

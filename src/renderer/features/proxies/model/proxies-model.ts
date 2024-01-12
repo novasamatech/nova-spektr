@@ -73,7 +73,10 @@ type GetProxiesResult = {
   proxiesToRemove: ProxyAccount[];
   proxiedAccountsToAdd: PartialProxiedAccount[];
   proxiedAccountsToRemove: ProxiedAccount[];
-  deposits: Record<AccountId, Record<ChainId, string>>;
+  deposits: {
+    chainId: ChainId;
+    deposits: Record<AccountId, string>;
+  };
 };
 const getProxiesFx = createEffect(
   ({ chainId, accounts, proxies, endpoint }: GetProxiesParams): Promise<GetProxiesResult> => {
@@ -214,16 +217,14 @@ sample({
 
       if (walletAccounts.length > 0) {
         const walletProxyGroups = walletAccounts.reduce<NoID<ProxyChainGroup>[]>((acc, a) => {
-          const walletDeposits = deposits[a.accountId];
+          const walletDeposits = deposits.deposits[a.accountId];
           if (!walletDeposits) return acc;
 
-          Object.entries(walletDeposits).forEach(([chainId, deposit]) => {
-            acc.push({
-              walletId: w.id,
-              proxiedAccountId: a.accountId,
-              chainId: chainId as ChainId,
-              totalDeposit: deposit,
-            });
+          acc.push({
+            walletId: w.id,
+            proxiedAccountId: a.accountId,
+            chainId: deposits.chainId,
+            totalDeposit: walletDeposits,
           });
 
           return acc;
@@ -254,7 +255,9 @@ sample({
       },
     );
 
-    const toRemove = proxyChainGroups.filter((p) => !proxyGroups.some((g) => proxyUtils.isSameProxyChainGroup(g, p)));
+    const toRemove = proxyChainGroups.filter(
+      (p) => p.chainId === deposits.chainId && !proxyGroups.some((g) => proxyUtils.isSameProxyChainGroup(g, p)),
+    );
 
     return {
       toAdd,

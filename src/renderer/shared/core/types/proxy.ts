@@ -42,4 +42,7 @@ export type PartialProxiedAccount = Pick<
   'chainId' | 'proxyAccountId' | 'accountId' | 'delay' | 'proxyType' | 'proxyVariant'
 >;
 
-export type ProxyDeposits = Record<AccountId, Record<ChainId, string>>;
+export type ProxyDeposits = {
+  chainId: ChainId;
+  deposits: Record<AccountId, string>;
+};

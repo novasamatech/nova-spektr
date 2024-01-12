@@ -105,9 +105,9 @@ sample({
 sample({
   clock: addProxyGroupsFx.doneData,
   source: $proxyChainGroups,
-  filter: (_, proxyGroups) => Boolean(proxyGroups),
-  fn: (groups, proxyGroups) => {
-    return groups.concat(proxyGroups!);
+  filter: (_, newProxyGroups) => Boolean(newProxyGroups) || newProxyGroups!.length > 0,
+  fn: (groups, newProxyGroups) => {
+    return groups.concat(newProxyGroups!);
   },
   target: $proxyChainGroups,
 });
