@@ -1,12 +1,17 @@
 import { Icon, SmallTitleText, FootnoteText, Button } from '@shared/ui';
 import { useI18n } from '@app/providers';
 import { ProxyPopover } from './ProxyPopover';
+import { cnTw } from '@shared/lib/utils';
 
-export const EmptyProxyList = () => {
+type Props = {
+  className?: string;
+};
+
+export const EmptyProxyList = ({ className }: Props) => {
   const { t } = useI18n();
 
   return (
-    <div className="flex flex-col items-center justify-center h-[376px]">
+    <div className={cnTw('flex flex-col items-center justify-center h-[376px]', className)}>
       <Icon name="emptyListFile" size={64} />
       <div className="flex items-center gap-x-1.5 mt-6 mb-2">
         <SmallTitleText>{t('walletDetails.common.emptyProxyTitle')}</SmallTitleText>

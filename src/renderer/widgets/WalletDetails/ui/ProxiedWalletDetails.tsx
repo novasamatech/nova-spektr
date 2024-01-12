@@ -5,9 +5,11 @@ import { useI18n } from '@app/providers';
 import { networkModel } from '@entities/network';
 import { useModalClose, useToggle } from '@shared/lib/hooks';
 import { IconNames } from '@shared/ui/Icon/data';
-import { BaseModal, DropdownIconButton, FootnoteText, Icon } from '@shared/ui';
+import { BaseModal, DropdownIconButton, FootnoteText, Icon, Tabs } from '@shared/ui';
 import { AccountsList, WalletCardLg, WalletIcon } from '@entities/wallet';
 import { RenameWalletModal } from '@features/wallets/RenameWallet';
+import { TabItem } from '@shared/ui/Tabs/common/types';
+import { ProxiesList } from '@widgets/WalletDetails/ui/ProxiesList';
 
 const ProxyTypeOperation: Record<ProxyType, string> = {
   [ProxyType.ANY]: 'proxy.operations.any',
@@ -55,6 +57,19 @@ export const ProxiedWalletDetails = ({ wallet, proxyWallet, account, onClose }: 
     </DropdownIconButton>
   );
 
+  const tabItems: TabItem[] = [
+    {
+      id: 'accounts',
+      title: t('walletDetails.common.accountTabTitle'),
+      panel: <AccountsList accountId={account.accountId} chains={[chains[account.chainId]]} className="h-[328px]" />,
+    },
+    {
+      id: 'proxies',
+      title: t('walletDetails.common.proxiesTabTitle'),
+      panel: <ProxiesList walletId={wallet.id} className="h-[353px]" />,
+    },
+  ];
+
   return (
     <BaseModal
       closeButton
@@ -79,7 +94,7 @@ export const ProxiedWalletDetails = ({ wallet, proxyWallet, account, onClose }: 
             <FootnoteText>{t(ProxyTypeOperation[account.proxyType])}</FootnoteText>
           </div>
         </div>
-        <AccountsList accountId={account.accountId} chains={[chains[account.chainId]]} className="h-[401px]" />
+        <Tabs items={tabItems} panelClassName="" tabsClassName="mx-5" />
       </div>
 
       <RenameWalletModal wallet={wallet} isOpen={isRenameModalOpen} onClose={toggleIsRenameModalOpen} />

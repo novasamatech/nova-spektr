@@ -25,7 +25,7 @@ export const ProxiesList = ({ walletId, className, canCreateProxy = true }: Prop
   const proxyAccounts = useUnit(walletProviderModel.$proxyAccounts);
   const proxyChainGroups = useUnit(proxyModel.$proxyChainGroupStore)[walletId];
 
-  if (!proxyAccounts || !proxyAccounts.length) return <EmptyProxyList />;
+  if (!proxyAccounts || !proxyAccounts.length) return <EmptyProxyList className={className} />;
 
   const proxiesByChain = groupBy(proxyAccounts, 'chainId');
 
