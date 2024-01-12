@@ -3,33 +3,29 @@ import { Endpoint, createEndpoint } from '@remote-ui/rpc';
 import { keyBy } from 'lodash';
 import { once, spread } from 'patronum';
 
-import {
+import type {
   Account,
   AccountId,
-  AccountType,
   Chain,
   ChainId,
-  ChainType,
   Connection,
-  CryptoType,
   NoID,
   PartialProxiedAccount,
   ProxiedAccount,
   ProxyAccount,
   ProxyChainGroup,
   ProxyDeposits,
-  SigningType,
   Wallet,
-  WalletType,
 } from '@shared/core';
+import { AccountType, ChainType, CryptoType, SigningType, WalletType, NotificationType } from '@shared/core';
 import { isDisabled, networkModel } from '@entities/network';
-import { proxyWorkerUtils } from '../lib/utils';
 import { accountUtils, walletModel } from '@entities/wallet';
 import { proxyModel, proxyUtils } from '@entities/proxy';
 import { balanceModel } from '@entities/balance';
+import { notificationModel } from '@entities/notification';
+import { proxiesUtils } from '../lib/utils';
 
 const workerStarted = createEvent();
-
 const connected = createEvent<ChainId>();
 const proxiedAccountsRemoved = createEvent<ProxiedAccount[]>();
 const depositsReceived = createEvent<ProxyDeposits>();
@@ -51,13 +47,13 @@ type StartChainsProps = {
   endpoint: Endpoint<any>;
 };
 const startChainsFx = createEffect(({ chains, connections, endpoint }: StartChainsProps) => {
-  const bindedConnected = scopeBind(connected, { safe: true });
+  const boundConnected = scopeBind(connected, { safe: true });
 
   chains.forEach((chain) => {
     if (isDisabled(connections[chain.chainId])) return;
 
     endpoint.call.initConnection(chain, connections[chain.chainId]).then(() => {
-      bindedConnected(chain.chainId);
+      boundConnected(chain.chainId);
     });
   });
 });
@@ -90,16 +86,14 @@ const getProxiesFx = createEffect(
   },
 );
 
-const disconnectFx = createEffect(
-  ({ chainId, endpoint }: { chainId: ChainId; endpoint: Endpoint<any> }): Promise<unknown> => {
-    return endpoint.call.disconnect(chainId);
-  },
-);
+const disconnectFx = createEffect(async ({ chainId, endpoint }: { chainId: ChainId; endpoint: Endpoint<any> }) => {
+  await endpoint.call.disconnect(chainId);
+});
 
 const createProxiedWalletsFx = createEffect(
   (proxiedAccounts: PartialProxiedAccount[]): { wallet: Wallet; accounts: ProxiedAccount[] }[] => {
     return proxiedAccounts.map((proxied) => {
-      const walletName = proxyUtils.getProxiedName(proxied);
+      const walletName = proxyUtils.getProxiedName(proxied.accountId, proxied.proxyType);
       const wallet = {
         name: walletName,
         type: WalletType.PROXIED,
@@ -117,10 +111,7 @@ const createProxiedWalletsFx = createEffect(
         } as ProxiedAccount,
       ];
 
-      return {
-        wallet,
-        accounts,
-      };
+      return { wallet, accounts };
     });
   },
 );
@@ -144,7 +135,7 @@ sample({
   },
   filter: ({ endpoint }) => Boolean(endpoint),
   fn: ({ connections, chains, endpoint }) => ({
-    chains: Object.values(chains).filter(proxyWorkerUtils.isRegularProxy),
+    chains: Object.values(chains).filter(proxiesUtils.isRegularProxy),
     connections,
     endpoint: endpoint!,
   }),
@@ -270,6 +261,30 @@ sample({
     toUpdate: proxyModel.events.proxyGroupsUpdated,
     toRemove: proxyModel.events.proxyGroupsRemoved,
   }),
+});
+
+sample({
+  clock: getProxiesFx.doneData,
+  source: {
+    wallets: walletModel.$wallets,
+    accounts: walletModel.$accounts,
+  },
+  filter: (_, data) => data.proxiedAccountsToAdd.length > 0,
+  fn: ({ wallets, accounts }, data) =>
+    proxiesUtils.getNotification(data.proxiedAccountsToAdd, wallets, accounts, NotificationType.PROXY_CREATED),
+  target: notificationModel.events.notificationsAdded,
+});
+
+sample({
+  clock: getProxiesFx.doneData,
+  source: {
+    wallets: walletModel.$wallets,
+    accounts: walletModel.$accounts,
+  },
+  filter: (_, data) => data.proxiedAccountsToRemove.length > 0,
+  fn: ({ wallets, accounts }, data) =>
+    proxiesUtils.getNotification(data.proxiedAccountsToRemove, wallets, accounts, NotificationType.PROXY_REMOVED),
+  target: notificationModel.events.notificationsAdded,
 });
 
 export const proxiesModel = {

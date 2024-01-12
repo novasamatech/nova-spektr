@@ -7,8 +7,9 @@ import {
   ProxyAccount,
   ProxyVariant,
 } from '@shared/core';
-import { TEST_ACCOUNT_ID, TEST_ADDRESS } from '@shared/lib/utils';
-import { proxyWorkerUtils } from '../utils';
+import { proxiesUtils } from '../utils';
+import { proxyWorkerUtils } from '../worker-utils';
+import { TEST_ACCOUNT_ID, TEST_ADDRESS } from '@/src/renderer/shared/lib/utils';
 
 describe('features/proxies/lib/utils', () => {
   test('should return true when oldProxy and newProxy have the same properties', () => {
@@ -151,21 +152,21 @@ describe('features/proxies/lib/utils', () => {
 
   test('should return true if "regular_proxy" is included in chain options', () => {
     const chainWithRegularProxy = { options: ['regular_proxy'] } as Chain;
-    const result = proxyWorkerUtils.isRegularProxy(chainWithRegularProxy);
+    const result = proxiesUtils.isRegularProxy(chainWithRegularProxy);
 
     expect(result).toEqual(true);
   });
 
   test('should return false if "regular_proxy" is not included in chain options', () => {
     const chainWithoutRegularProxy = { options: ['multisig'] } as Chain;
-    const result = proxyWorkerUtils.isRegularProxy(chainWithoutRegularProxy);
+    const result = proxiesUtils.isRegularProxy(chainWithoutRegularProxy);
 
     expect(result).toEqual(false);
   });
 
   test('should return false if chain options is undefined', () => {
     const chainWithUndefinedOptions = {} as Chain;
-    const result = proxyWorkerUtils.isRegularProxy(chainWithUndefinedOptions);
+    const result = proxiesUtils.isRegularProxy(chainWithUndefinedOptions);
 
     expect(result).toEqual(false);
   });

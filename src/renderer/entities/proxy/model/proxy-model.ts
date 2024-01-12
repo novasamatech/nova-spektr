@@ -1,10 +1,11 @@
 import { combine, createEffect, createEvent, createStore, sample } from 'effector';
 import groupBy from 'lodash/groupBy';
 
-import { ProxyStore } from '../lib/types';
 import { proxyUtils } from '../lib/utils';
-import { ProxyChainGroup, type ProxyAccount, NoID } from '@shared/core';
+import { type ProxyAccount, AccountId, ProxyChainGroup, NoID } from '@shared/core';
 import { storageService } from '@shared/api/storage';
+
+type ProxyStore = Record<AccountId, ProxyAccount[]>;
 
 const $proxies = createStore<ProxyStore>({});
 const $proxyChainGroups = createStore<ProxyChainGroup[]>([]);
@@ -87,10 +88,13 @@ sample({
   source: $proxies,
   filter: (_, proxiesToRemove) => proxiesToRemove.length > 0,
   fn: (proxies, proxiesToRemove) => {
-    return proxiesToRemove.reduce<ProxyStore>(
-      (acc, p) => ({ ...acc, [p.accountId]: acc[p.accountId].filter((pr) => !proxyUtils.isSameProxy(pr, p)) }),
-      proxies,
-    );
+    return proxiesToRemove.reduce<ProxyStore>((acc, proxyAccount) => {
+      acc[proxyAccount.accountId] = acc[proxyAccount.accountId].filter(
+        (account) => !proxyUtils.isSameProxy(account, proxyAccount),
+      );
+
+      return acc;
+    }, proxies);
   },
   target: $proxies, // TODO: update $proxies after effect
 });

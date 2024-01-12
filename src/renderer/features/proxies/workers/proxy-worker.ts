@@ -1,8 +1,8 @@
 import { createEndpoint } from '@remote-ui/rpc';
 import { ScProvider, WsProvider } from '@polkadot/rpc-provider';
+import { ProviderInterface } from '@polkadot/rpc-provider/types';
 import { ApiPromise } from '@polkadot/api';
 import isEqual from 'lodash/isEqual';
-import { ProviderInterface } from '@polkadot/rpc-provider/types';
 import * as Sc from '@substrate/connect';
 
 import {
@@ -19,13 +19,11 @@ import {
   ProxyVariant,
   ProxyDeposits,
 } from '@shared/core';
-import { InitConnectionsResult } from '../lib/constants';
-import { proxyWorkerUtils } from '../lib/utils';
+import { proxyWorkerUtils } from '../lib/worker-utils';
 
 export const proxyWorkerFunctions = {
   initConnection,
   getProxies,
-  getConnectionStatus,
   disconnect,
 };
 
@@ -33,7 +31,12 @@ export const state = {
   apis: {} as Record<ChainId, ApiPromise>,
 };
 
-function initConnection(chain?: Chain, connection?: Connection): Promise<InitConnectionsResult> {
+const InitConnectionsResult = {
+  SUCCESS: 'success',
+  FAILED: 'failed',
+};
+
+function initConnection(chain: Chain, connection: Connection) {
   return new Promise((resolve, reject) => {
     if (!chain) {
       console.log('chain not provided');
@@ -86,13 +89,9 @@ function initConnection(chain?: Chain, connection?: Connection): Promise<InitCon
 }
 
 async function disconnect(chainId: ChainId) {
-  const api = state.apis[chainId];
+  if (!proxyWorkerUtils.isApiConnected(state.apis, chainId)) return;
 
-  if (!api) return;
-
-  if (api.isConnected) {
-    await api.disconnect();
-  }
+  await state.apis[chainId].disconnect();
 }
 
 // TODO: Refactor this code
@@ -208,15 +207,9 @@ async function getProxies(
   };
 }
 
-function getConnectionStatus(chainId: ChainId): boolean {
-  const api = state.apis[chainId];
-
-  return Boolean(api?.isConnected);
-}
-
 // @ts-ignore
 const endpoint = createEndpoint(self);
 
-endpoint.expose({ initConnection, getProxies, getConnectionStatus, disconnect });
+endpoint.expose({ initConnection, getProxies, disconnect });
 
 console.log('proxy worker started successfully');

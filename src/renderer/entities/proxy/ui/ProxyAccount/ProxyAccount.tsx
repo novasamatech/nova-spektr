@@ -1,9 +1,19 @@
 import { cnTw, toAddress, toShortAddress } from '@shared/lib/utils';
 import { BodyText, DropdownIconButton, HelpText, Identicon, Truncate } from '@shared/ui';
 import { AccountId, ProxyType } from '@shared/core';
-import { ProxyTypeName } from '@entities/proxy/lib/constants';
 import { useI18n } from '@app/providers';
 import { DropdownIconButtonOption } from '@shared/ui/types';
+
+const ProxyTypeName: Record<ProxyType, string> = {
+  [ProxyType.ANY]: 'proxy.names.any',
+  [ProxyType.NON_TRANSFER]: 'proxy.names.nonTransfer',
+  [ProxyType.STAKING]: 'proxy.names.staking',
+  [ProxyType.AUCTION]: 'proxy.names.auction',
+  [ProxyType.CANCEL_PROXY]: 'proxy.names.cancelProxy',
+  [ProxyType.GOVERNANCE]: 'proxy.names.governance',
+  [ProxyType.IDENTITY_JUDGEMENT]: 'proxy.names.identityJudgement',
+  [ProxyType.NOMINATION_POOLS]: 'proxy.names.nominationPools',
+};
 
 type Props = {
   className?: string;
@@ -37,18 +47,6 @@ export const ProxyAccount = ({
     addressToShow
   );
 
-  const ActionButton = actions && (
-    <DropdownIconButton name="more" className="ml-2">
-      <DropdownIconButton.Items>
-        {actions.map((option) => (
-          <DropdownIconButton.Item key={option.icon}>
-            <DropdownIconButton.Option option={option} />
-          </DropdownIconButton.Item>
-        ))}
-      </DropdownIconButton.Items>
-    </DropdownIconButton>
-  );
-
   return (
     <div className={cnTw('flex items-center gap-x-2', className)}>
       <Identicon className="inline-block" address={address} size={20} background={false} canCopy={canCopy} />
@@ -60,7 +58,17 @@ export const ProxyAccount = ({
           <HelpText className="text-tab-text-accent">{t(ProxyTypeName[proxyType])}</HelpText>
         </div>
       </div>
-      {ActionButton}
+      {actions && (
+        <DropdownIconButton name="more" className="ml-2">
+          <DropdownIconButton.Items>
+            {actions.map((option) => (
+              <DropdownIconButton.Item key={option.icon}>
+                <DropdownIconButton.Option option={option} />
+              </DropdownIconButton.Item>
+            ))}
+          </DropdownIconButton.Items>
+        </DropdownIconButton>
+      )}
     </div>
   );
 };

@@ -52,7 +52,7 @@ export type { Validator } from './types/validator';
 export { RewardsDestination } from './types/stake';
 export type { Stake, Unlocking } from './types/stake';
 
-export { XcmPallets } from './types/substrate';
+export { ProxyType, ProxyVariant } from './types/proxy';
 export type {
   ProxyAccount,
   PartialProxyAccount,
@@ -60,4 +60,8 @@ export type {
   ProxyDeposits,
   ProxyChainGroup,
 } from './types/proxy';
-export { ProxyVariant, ProxyType } from './types/proxy';
+
+export type { Notification, MultisigInvite, MultisigOperation, ProxyAction } from './types/notification';
+export { NotificationType } from './types/notification';
+
+export { XcmPallets } from './types/substrate';

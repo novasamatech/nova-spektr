@@ -2,7 +2,7 @@ import { HexString, ProxyAccount, ProxyType } from '@shared/core';
 import { proxyUtils } from '../utils';
 
 describe('entities/proxy/lib/utils', () => {
-  it('should return true when oldProxy and newProxy have the same properties', () => {
+  test('should return true when oldProxy and newProxy have the same properties', () => {
     const oldProxy = {
       id: 1,
       accountId: '0x00',
@@ -26,7 +26,7 @@ describe('entities/proxy/lib/utils', () => {
     expect(result).toEqual(true);
   });
 
-  it('should return false when oldProxy and newProxy have different properties', () => {
+  test('should return false when oldProxy and newProxy have different properties', () => {
     const oldProxy = {
       id: 1,
       accountId: '0x00',
@@ -50,14 +50,14 @@ describe('entities/proxy/lib/utils', () => {
     expect(result).toEqual(false);
   });
 
-  it('should return the proxied name for a given proxied account', () => {
+  test('should return the proxied name for a given proxied account', () => {
     const proxiedAccount = {
       accountId: '0x01' as HexString,
       proxyType: 'Any' as ProxyType,
     };
     const expectedName = 'Any for 0x01';
 
-    const result = proxyUtils.getProxiedName(proxiedAccount);
+    const result = proxyUtils.getProxiedName(proxiedAccount.accountId, proxiedAccount.proxyType);
 
     expect(result).toEqual(expectedName);
   });
