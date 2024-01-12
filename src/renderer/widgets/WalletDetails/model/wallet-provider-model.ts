@@ -88,11 +88,10 @@ const $signatoryContacts = combine(
 
 const $signatoryWallets = combine(
   {
-    account: $accounts,
-    accounts: walletModel.$accounts,
+    accounts: $accounts,
     wallets: walletModel.$wallets,
   },
-  ({ account, accounts, wallets }): [AccountId, Wallet][] => {
+  ({ accounts, wallets }): [AccountId, Wallet][] => {
     const multisigAccount = accounts[0];
     if (!multisigAccount || !accountUtils.isMultisigAccount(multisigAccount)) return [];
 
