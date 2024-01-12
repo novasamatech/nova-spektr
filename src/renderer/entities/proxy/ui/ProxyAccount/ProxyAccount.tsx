@@ -3,8 +3,18 @@ import { ReactNode } from 'react';
 import { cnTw, toAddress, toShortAddress } from '@shared/lib/utils';
 import { BodyText, HelpText, Identicon, Truncate } from '@shared/ui';
 import { AccountId, ProxyType } from '@shared/core';
-import { ProxyTypeName } from '@entities/proxy/lib/constants';
 import { useI18n } from '@app/providers';
+
+const ProxyTypeName: Record<ProxyType, string> = {
+  [ProxyType.ANY]: 'proxy.names.any',
+  [ProxyType.NON_TRANSFER]: 'proxy.names.nonTransfer',
+  [ProxyType.STAKING]: 'proxy.names.staking',
+  [ProxyType.AUCTION]: 'proxy.names.auction',
+  [ProxyType.CANCEL_PROXY]: 'proxy.names.cancelProxy',
+  [ProxyType.GOVERNANCE]: 'proxy.names.governance',
+  [ProxyType.IDENTITY_JUDGEMENT]: 'proxy.names.identityJudgement',
+  [ProxyType.NOMINATION_POOLS]: 'proxy.names.nominationPools',
+};
 
 type Props = {
   className?: string;

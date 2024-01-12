@@ -264,11 +264,13 @@
   },
   "notifications": {
     "details": {
-      "newMultisigAccountDescription": "<strong>{name}</strong> with threshold { threshold } out of { signatories } signatories",
-      "newMultisigAccountTitle": "New multisig wallet added",
-      "proxyCreatedDetails": "<chain /> is now available for your <walletIcon /> {name} to control {operations}",
+      "multisigInviteDescription": "<strong>{name}</strong>  with threshold { threshold } out of { signatories } signatories",
+      "multisigInviteTitle": "New multisig wallet added",
+      "proxyCreatedDetails": "<chain />  is now available for your <walletIcon /> {name} to control {operations}",
       "proxyCreatedTitle": "New delegated authority wallet added",
-      "proxyCreatedWallet": "<strong>{name}</strong>  with <identicon />{address}"
+      "proxyRemovedDetails": "<chain />  is no longer available for your <walletIcon /> {name} to control {operations}",
+      "proxyRemovedTitle": "Delegated authority wallet has been removed",
+      "proxyWalletAction": "<strong>{name}</strong>  with <identicon />{address}"
     },
     "noNotificationsDescription": "You don't have notifications yet",
     "title": "Notifications"
@@ -560,9 +562,11 @@
       "governance": "governance operations",
       "identityJudgement": "judgement operations",
       "nominationPools": "nominations operations",
-      "nonTransfer": "nonTransfer operations",
+      "nonTransfer": "non-transfer operations",
       "staking": "staking operations"
-    }
+    },
+    "tooltipPart1": "Proxied wallets are wallet which have set one of your accounts in Nova Spektr as delegated authority (Proxies).",
+    "tooltipPart2": "This means that you can control certain functions of these wallets based on the access type granted to you by the proxied wallet."
   },
   "qrReader": {
     "parsingLabel": "Parsing data",
@@ -1076,6 +1080,7 @@
     "multisigLabel": "Multisig",
     "novaWalletLabel": "Nova Wallet",
     "paritySignerLabel": "Polkadot Vault",
+    "proxiedLabel": "Delegated to you (Proxied)",
     "searchPlaceholder": "Search",
     "shards": "Shards",
     "title": "Wallets",

@@ -1,16 +1,16 @@
 import { PropsWithChildren, forwardRef, ElementType } from 'react';
 import { Disclosure, Transition } from '@headlessui/react';
 
-import { Icon } from '@shared/ui';
 import { cnTw } from '@shared/lib/utils';
 import { IconNames } from '../Icon/data';
+import { Icon } from '../Icon/Icon';
 
 type Props = {
   className?: string;
   isDefaultOpen?: boolean;
 };
 
-const Accordion = ({ className, isDefaultOpen, children }: PropsWithChildren<Props>) => {
+const AccordionRoot = ({ className, isDefaultOpen, children }: PropsWithChildren<Props>) => {
   return (
     <div className={cnTw('w-full', className)}>
       <Disclosure defaultOpen={isDefaultOpen}>{children}</Disclosure>
@@ -80,7 +80,7 @@ const Content = ({ as = 'div', className, children }: PropsWithChildren<ContentP
   );
 };
 
-Accordion.Button = Button;
-Accordion.Content = Content;
-
-export default Accordion;
+export const Accordion = Object.assign(AccordionRoot, {
+  Button,
+  Content,
+});

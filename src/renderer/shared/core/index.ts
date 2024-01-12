@@ -15,10 +15,10 @@ export type {
   WatchOnlyWallet,
   WalletConnectWallet,
   NovaWalletWallet,
-  ProxiedWallet,
   WalletFamily,
   PolkadotVaultGroup,
   WalletConnectGroup,
+  ProxiedWallet,
 } from './types/wallet';
 export { WalletType, SigningType } from './types/wallet';
 
@@ -52,6 +52,10 @@ export type { Validator } from './types/validator';
 export { RewardsDestination } from './types/stake';
 export type { Stake, Unlocking } from './types/stake';
 
+export { ProxyType, ProxyVariant } from './types/proxy';
 export type { ProxyAccount, PartialProxyAccount, PartialProxiedAccount } from './types/proxy';
-export { ProxyVariant, ProxyType } from './types/proxy';
+
+export type { Notification, MultisigInvite, MultisigOperation, ProxyAction } from './types/notification';
+export { NotificationType } from './types/notification';
+
 export { XcmPallets } from './types/substrate';

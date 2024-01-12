@@ -1,6 +1,5 @@
 import { Table } from 'dexie';
 
-import { Notification } from '@entities/notification';
 import type { Metadata } from '@entities/network';
 import { MultisigEvent, MultisigTransaction, MultisigTransactionKey } from '@entities/transaction/model/transaction';
 import type {
@@ -14,6 +13,7 @@ import type {
   BalanceKey,
   ProxyAccount,
   Connection,
+  Notification,
 } from '@shared/core';
 
 // =====================================================
@@ -75,10 +75,6 @@ export interface IMultisigTransactionStorage {
   ) => Promise<void>;
   deleteMultisigTxs: (accountId: AccountId) => Promise<number>;
 }
-export interface INotificationStorage {
-  getNotifications: <T extends Notification>(where?: Partial<T>) => Promise<NotificationDS[]>;
-  addNotification: (notification: Notification) => Promise<ID>;
-}
 
 // =====================================================
 // ================== Storage Schemes ==================
@@ -88,7 +84,6 @@ export type DataStorage = {
   balances: IBalanceStorage;
   multisigTransactions: IMultisigTransactionStorage;
   multisigEvents: IMultisigEventStorage;
-  notifications: INotificationStorage;
   metadata: IMetadataStorage;
 };
 
@@ -98,7 +93,6 @@ type WithID<T extends Object> = { id?: ID } & T;
 export type BalanceDS = WithID<Balance>;
 export type MultisigTransactionDS = WithID<MultisigTransaction>;
 export type MultisigEventDS = WithID<MultisigEvent>;
-export type NotificationDS = WithID<Notification>;
 export type MetadataDS = WithID<Metadata>;
 
 export type TWallet = Table<Wallet, Wallet['id']>;
@@ -106,8 +100,8 @@ export type TContact = Table<Contact, Contact['id']>;
 export type TAccount = Table<Account, Account['id']>;
 export type TBalance = Table<Balance, ID[]>;
 export type TConnection = Table<Connection, Connection['id']>;
-export type TProxy = Table<ProxyAccount, number>;
+export type TProxy = Table<ProxyAccount, ProxyAccount['id']>;
 export type TMultisigTransaction = Table<MultisigTransaction, ID[]>;
 export type TMultisigEvent = Table<MultisigEvent, ID>;
-export type TNotification = Table<Notification, ID>;
+export type TNotification = Table<Notification, Notification['id']>;
 export type TMetadata = Table<Metadata, ID[]>;
