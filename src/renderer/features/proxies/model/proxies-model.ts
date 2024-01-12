@@ -3,27 +3,24 @@ import { createEndpoint } from '@remote-ui/rpc';
 import { keyBy } from 'lodash';
 import { once, spread } from 'patronum';
 
-import {
+import type {
   Account,
   AccountId,
-  AccountType,
   Chain,
   ChainId,
-  ChainType,
   Connection,
-  CryptoType,
   PartialProxiedAccount,
   ProxiedAccount,
   ProxyAccount,
-  SigningType,
   Wallet,
-  WalletType,
 } from '@shared/core';
+import { AccountType, ChainType, CryptoType, SigningType, WalletType, NotificationType } from '@shared/core';
 import { isDisabled, networkModel } from '@entities/network';
-import { proxyWorkerUtils } from '../lib/utils';
 import { accountUtils, walletModel } from '@entities/wallet';
 import { proxyModel, proxyUtils } from '@entities/proxy';
 import { balanceModel } from '@entities/balance';
+import { notificationModel } from '@entities/notification';
+import { proxiesUtils } from '../lib/utils';
 
 // @ts-ignore
 const worker = new Worker(new URL('@features/proxies/workers/proxy-worker', import.meta.url));
@@ -32,6 +29,7 @@ const endpoint = createEndpoint(worker, {
   callable: ['initConnection', 'getProxies', 'disconnect'],
 });
 
+const proxiesStarted = createEvent();
 const connected = createEvent<ChainId>();
 const proxiedAccountsRemoved = createEvent<ProxiedAccount[]>();
 
@@ -40,13 +38,13 @@ type StartChainsProps = {
   connections: Record<ChainId, Connection>;
 };
 const startChainsFx = createEffect(({ chains, connections }: StartChainsProps) => {
-  const bindedConnected = scopeBind(connected, { safe: true });
+  const boundConnected = scopeBind(connected, { safe: true });
 
   chains.forEach((chain) => {
     if (isDisabled(connections[chain.chainId])) return;
 
     endpoint.call.initConnection(chain, connections[chain.chainId]).then(() => {
-      bindedConnected(chain.chainId);
+      boundConnected(chain.chainId);
     });
   });
 });
@@ -73,8 +71,8 @@ const getProxiesFx = createEffect(({ chainId, accounts, proxies }: GetProxiesPar
   return endpoint.call.getProxies(chainId, nonProxiedAccounts, proxiedAccounts, proxies) as Promise<GetProxiesResult>;
 });
 
-const disconnectFx = createEffect((chainId: ChainId): Promise<unknown> => {
-  return endpoint.call.disconnect(chainId);
+const disconnectFx = createEffect(async (chainId: ChainId) => {
+  await endpoint.call.disconnect(chainId);
 });
 
 type ProxiedWalletsParams = {
@@ -120,7 +118,7 @@ sample({
     chains: networkModel.$chains,
   },
   fn: ({ connections, chains }) => ({
-    chains: Object.values(chains).filter(proxyWorkerUtils.isRegularProxy),
+    chains: Object.values(chains).filter(proxiesUtils.isRegularProxy),
     connections,
   }),
   target: startChainsFx,
@@ -179,4 +177,32 @@ sample({
   target: disconnectFx,
 });
 
-export const proxiesModel = {};
+sample({
+  clock: getProxiesFx.doneData,
+  source: {
+    wallets: walletModel.$wallets,
+    accounts: walletModel.$accounts,
+  },
+  filter: (_, data) => data.proxiedAccountsToAdd.length > 0,
+  fn: ({ wallets, accounts }, data) =>
+    proxiesUtils.getNotification(data.proxiedAccountsToAdd, wallets, accounts, NotificationType.PROXY_CREATED),
+  target: notificationModel.events.notificationsAdded,
+});
+
+sample({
+  clock: getProxiesFx.doneData,
+  source: {
+    wallets: walletModel.$wallets,
+    accounts: walletModel.$accounts,
+  },
+  filter: (_, data) => data.proxiedAccountsToRemove.length > 0,
+  fn: ({ wallets, accounts }, data) =>
+    proxiesUtils.getNotification(data.proxiedAccountsToRemove, wallets, accounts, NotificationType.PROXY_REMOVED),
+  target: notificationModel.events.notificationsAdded,
+});
+
+export const proxiesModel = {
+  events: {
+    proxiesStarted,
+  },
+};

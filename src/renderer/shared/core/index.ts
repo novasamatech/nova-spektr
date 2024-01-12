@@ -54,4 +54,8 @@ export type { Stake, Unlocking } from './types/stake';
 
 export type { ProxyAccount, PartialProxyAccount, PartialProxiedAccount } from './types/proxy';
 export { ProxyVariant, ProxyType } from './types/proxy';
+
+export type { Notification, MultisigInvite, MultisigOperation, ProxyAction } from './types/notification';
+export { NotificationType } from './types/notification';
+
 export { XcmPallets } from './types/substrate';

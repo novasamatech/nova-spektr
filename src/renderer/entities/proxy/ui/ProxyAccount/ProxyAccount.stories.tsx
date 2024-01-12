@@ -2,7 +2,7 @@ import { ComponentMeta, ComponentStory } from '@storybook/react';
 
 import { TEST_ACCOUNT_ID } from '@shared/lib/utils';
 import { ProxyAccount } from './ProxyAccount';
-import { ProxyType } from '@entities/proxy';
+import { ProxyType } from '@shared/core';
 
 export default {
   title: 'ProxyAccount',

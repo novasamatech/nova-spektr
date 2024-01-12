@@ -125,20 +125,6 @@ export const getMultisigSignOperationTitle = (
   return '';
 };
 
-export const sortByDateDesc = <T>([dateA]: [string, T[]], [dateB]: [string, T[]]) =>
-  new Date(dateA) < new Date(dateB) ? 1 : -1;
-
-export const sortByDateAsc = <T>([dateA]: [string, T[]], [dateB]: [string, T[]]) =>
-  new Date(dateA) > new Date(dateB) ? 1 : -1;
-
-export const getExtrinsicLink = (hash?: HexString, explorers?: Explorer[]): string | undefined => {
-  const extrinsicLink = explorers?.find((e) => e.extrinsic)?.extrinsic;
-
-  if (!extrinsicLink || !hash) return;
-
-  return extrinsicLink.replace('{hash}', hash);
-};
-
 export const getMultisigExtrinsicLink = (
   callHash?: HexString,
   indexCreated?: number,
