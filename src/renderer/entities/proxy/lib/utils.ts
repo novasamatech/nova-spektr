@@ -1,5 +1,5 @@
-import { SS58_DEFAULT_PREFIX, toAddress } from '@shared/lib/utils';
-import type { ProxiedAccount, ProxyAccount } from '@shared/core';
+import { toAddress } from '@shared/lib/utils';
+import { ProxyAccount, ProxyType, AccountId } from '@shared/core';
 
 export const proxyUtils = {
   isSameProxy,
@@ -17,12 +17,6 @@ function isSameProxy(oldProxy: ProxyAccount, newProxy: ProxyAccount) {
 }
 
 // TODO: Add i18n for wallet name
-function getProxiedName(
-  proxiedAccount: Pick<ProxiedAccount, 'accountId' | 'proxyType'>,
-  addressPrefix = SS58_DEFAULT_PREFIX,
-): string {
-  return `${proxiedAccount.proxyType} for ${toAddress(proxiedAccount.accountId, {
-    prefix: addressPrefix,
-    chunk: 6,
-  })}`;
+function getProxiedName(accountId: AccountId, proxyType: ProxyType, addressPrefix?: number): string {
+  return `${proxyType} for ${toAddress(accountId, { prefix: addressPrefix, chunk: 6 })}`;
 }

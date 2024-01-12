@@ -1,15 +1,16 @@
-import { HexString, ProxyAccount, ProxyType } from '@shared/core';
+import type { ProxyAccount } from '@shared/core';
+import { ProxyType } from '@shared/core';
 import { proxyUtils } from '../utils';
-import { SS58_DEFAULT_PREFIX, TEST_ACCOUNT_ID, toAddress } from '@shared/lib/utils';
+import { TEST_ACCOUNT_ID } from '@shared/lib/utils';
 
 describe('entities/proxy/lib/utils', () => {
-  it('should return true when oldProxy and newProxy have the same properties', () => {
+  test('should return true when oldProxy and newProxy have the same properties', () => {
     const oldProxy = {
       id: 1,
       accountId: '0x00',
       proxiedAccountId: '0x01',
       chainId: '0x05',
-      proxyType: 'Any',
+      proxyType: ProxyType.ANY,
       delay: 0,
     } as ProxyAccount;
 
@@ -18,22 +19,22 @@ describe('entities/proxy/lib/utils', () => {
       accountId: '0x00',
       proxiedAccountId: '0x01',
       chainId: '0x05',
-      proxyType: 'Any',
+      proxyType: ProxyType.ANY,
       delay: 0,
     } as ProxyAccount;
 
     const result = proxyUtils.isSameProxy(oldProxy, newProxy);
 
-    expect(result).toBe(true);
+    expect(result).toEqual(true);
   });
 
-  it('should return false when oldProxy and newProxy have different properties', () => {
+  test('should return false when oldProxy and newProxy have different properties', () => {
     const oldProxy = {
       id: 1,
       accountId: '0x00',
       proxiedAccountId: '0x01',
       chainId: '0x05',
-      proxyType: 'Any',
+      proxyType: ProxyType.ANY,
       delay: 0,
     } as ProxyAccount;
 
@@ -42,24 +43,18 @@ describe('entities/proxy/lib/utils', () => {
       accountId: '0x01',
       proxiedAccountId: '0x02',
       chainId: '0x05',
-      proxyType: 'Any',
+      proxyType: ProxyType.ANY,
       delay: 0,
     } as ProxyAccount;
 
     const result = proxyUtils.isSameProxy(oldProxy, newProxy);
 
-    expect(result).toBe(false);
+    expect(result).toEqual(false);
   });
 
-  it('should return the proxied name for a given proxied account', () => {
-    const proxiedAccount = {
-      accountId: TEST_ACCOUNT_ID as HexString,
-      proxyType: 'Any' as ProxyType,
-    };
-    const expectedName = 'Any for ' + toAddress(TEST_ACCOUNT_ID, { chunk: 6 });
+  test('should return proxied name for a given proxied account', () => {
+    const result = proxyUtils.getProxiedName(TEST_ACCOUNT_ID, ProxyType.ANY);
 
-    const result = proxyUtils.getProxiedName(proxiedAccount, SS58_DEFAULT_PREFIX);
-
-    expect(result).toEqual(expectedName);
+    expect(result).toEqual('Any for 5CGQ7B...VbXyr9');
   });
 });

@@ -1,4 +1,4 @@
-import { createEffect, createEvent, sample, scopeBind } from 'effector';
+import { createEffect, createEvent, sample, scopeBind, attach } from 'effector';
 import { createEndpoint } from '@remote-ui/rpc';
 import { keyBy } from 'lodash';
 import { once, spread } from 'patronum';
@@ -19,7 +19,7 @@ import {
   Wallet,
   WalletType,
 } from '@shared/core';
-import { chainsService, isDisabled, networkModel } from '@entities/network';
+import { isDisabled, networkModel } from '@entities/network';
 import { proxyWorkerUtils } from '../lib/utils';
 import { accountUtils, walletModel } from '@entities/wallet';
 import { proxyModel, proxyUtils } from '@entities/proxy';
@@ -77,34 +77,41 @@ const disconnectFx = createEffect((chainId: ChainId): Promise<unknown> => {
   return endpoint.call.disconnect(chainId);
 });
 
-const createProxiedWalletsFx = createEffect(
-  (proxiedAccounts: PartialProxiedAccount[]): { wallet: Wallet; accounts: ProxiedAccount[] }[] => {
-    return proxiedAccounts.map((proxied) => {
-      const walletName = proxyUtils.getProxiedName(proxied, chainsService.getChainById(proxied.chainId)?.addressPrefix);
-      const wallet = {
+type ProxiedWalletsParams = {
+  proxiedAccounts: PartialProxiedAccount[];
+  chains: Record<ChainId, Chain>;
+};
+type ProxiedWalletsResult = {
+  wallet: Wallet;
+  accounts: ProxiedAccount[];
+};
+const createProxiedWalletsFx = createEffect(({ proxiedAccounts, chains }: ProxiedWalletsParams): ProxiedWalletsResult[] => {
+  return proxiedAccounts.map((proxied) => {
+    const walletName = proxyUtils.getProxiedName(
+      proxied.accountId,
+      proxied.proxyType,
+      chains[proxied.chainId].addressPrefix,
+    );
+    const wallet = {
+      name: walletName,
+      type: WalletType.PROXIED,
+      signingType: SigningType.WATCH_ONLY,
+    } as Wallet;
+
+    const accounts = [
+      {
+        ...proxied,
         name: walletName,
-        type: WalletType.PROXIED,
-        signingType: SigningType.WATCH_ONLY,
-      } as Wallet;
+        type: AccountType.PROXIED,
+        // TODO: use chain data, when ethereum chains support
+        chainType: ChainType.SUBSTRATE,
+        cryptoType: CryptoType.SR25519,
+      } as ProxiedAccount,
+    ];
 
-      const accounts = [
-        {
-          ...proxied,
-          name: walletName,
-          type: AccountType.PROXIED,
-          // TODO: use chain data, when ethereum chains support
-          chainType: ChainType.SUBSTRATE,
-          cryptoType: CryptoType.SR25519,
-        } as ProxiedAccount,
-      ];
-
-      return {
-        wallet,
-        accounts,
-      };
-    });
-  },
-);
+    return { wallet, accounts };
+  });
+});
 
 sample({
   clock: once(networkModel.$connections),
@@ -136,10 +143,16 @@ sample({
 spread({
   source: getProxiesFx.doneData,
   targets: {
-    proxiesToAdd: proxyModel.events.proxiesAdded,
     proxiesToRemove: proxyModel.events.proxiesRemoved,
-    proxiedAccountsToAdd: createProxiedWalletsFx,
+    proxiesToAdd: proxyModel.events.proxiesAdded,
     proxiedAccountsToRemove: proxiedAccountsRemoved,
+    proxiedAccountsToAdd: attach({
+      source: networkModel.$chains,
+      effect: createProxiedWalletsFx,
+      mapParams: (proxiedAccounts: ProxiedAccount[], chains) => {
+        return { proxiedAccounts, chains };
+      },
+    }),
   },
 });
 

@@ -6,6 +6,7 @@ import {
   PartialProxiedAccount,
   ProxyAccount,
   ProxyVariant,
+  ProxyType,
 } from '@shared/core';
 import { TEST_ACCOUNT_ID, TEST_ADDRESS } from '@shared/lib/utils';
 import { proxyWorkerUtils } from '../utils';
@@ -17,7 +18,7 @@ describe('features/proxies/lib/utils', () => {
       accountId: '0x00',
       proxiedAccountId: '0x01',
       chainId: '0x05',
-      proxyType: 'Any',
+      proxyType: ProxyType.ANY,
       delay: 0,
     } as ProxyAccount;
 
@@ -26,7 +27,7 @@ describe('features/proxies/lib/utils', () => {
       accountId: '0x00',
       proxiedAccountId: '0x01',
       chainId: '0x05',
-      proxyType: 'Any',
+      proxyType: ProxyType.ANY,
       delay: 0,
     } as ProxyAccount;
 
@@ -41,7 +42,7 @@ describe('features/proxies/lib/utils', () => {
       accountId: '0x00',
       proxiedAccountId: '0x01',
       chainId: '0x05',
-      proxyType: 'Any',
+      proxyType: ProxyType.ANY,
       delay: 0,
     } as ProxyAccount;
 
@@ -50,7 +51,7 @@ describe('features/proxies/lib/utils', () => {
       accountId: '0x01',
       proxiedAccountId: '0x02',
       chainId: '0x05',
-      proxyType: 'Any',
+      proxyType: ProxyType.ANY,
       delay: 0,
     } as ProxyAccount;
 
@@ -68,7 +69,7 @@ describe('features/proxies/lib/utils', () => {
       accountId: '0x00',
       proxyAccountId: '0x01',
       chainId: '0x05',
-      proxyType: 'Any',
+      proxyType: ProxyType.ANY,
       delay: 0,
       proxyVariant: ProxyVariant.REGULAR,
       chainType: ChainType.SUBSTRATE,
@@ -83,7 +84,7 @@ describe('features/proxies/lib/utils', () => {
       accountId: '0x00',
       proxyAccountId: '0x01',
       chainId: '0x05',
-      proxyType: 'Any',
+      proxyType: ProxyType.ANY,
       delay: 0,
       proxyVariant: ProxyVariant.REGULAR,
       chainType: ChainType.SUBSTRATE,
@@ -104,7 +105,7 @@ describe('features/proxies/lib/utils', () => {
       accountId: '0x00',
       proxyAccountId: '0x01',
       chainId: '0x05',
-      proxyType: 'Any',
+      proxyType: ProxyType.ANY,
       delay: 0,
       proxyVariant: ProxyVariant.REGULAR,
       chainType: ChainType.SUBSTRATE,
@@ -119,7 +120,7 @@ describe('features/proxies/lib/utils', () => {
       accountId: '0x00',
       proxyAccountId: '0x02',
       chainId: '0x06',
-      proxyType: 'Any',
+      proxyType: ProxyType.ANY,
       delay: 0,
       proxyVariant: ProxyVariant.REGULAR,
       chainType: ChainType.SUBSTRATE,

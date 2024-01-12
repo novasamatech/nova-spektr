@@ -2,7 +2,8 @@ import { fork, allSettled } from 'effector';
 
 import { storageService } from '@shared/api/storage';
 import { proxyModel } from '../proxy-model';
-import { HexString, ProxyAccount } from '@shared/core';
+import { ProxyType } from '@shared/core';
+import type { HexString, ProxyAccount } from '@shared/core';
 
 jest.mock('@app/providers', () => ({
   useMatrix: jest.fn(),
@@ -13,7 +14,7 @@ const proxyMock = {
   chainId: '0x00' as HexString,
   accountId: '0x00' as HexString,
   proxiedAccountId: '0x01' as HexString,
-  proxyType: 'Any',
+  proxyType: ProxyType.ANY,
   delay: 0,
 } as ProxyAccount;
 
