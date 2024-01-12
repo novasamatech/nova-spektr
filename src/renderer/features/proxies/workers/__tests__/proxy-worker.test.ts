@@ -93,7 +93,10 @@ describe('initConnection', () => {
     expect(result.proxiesToRemove).toEqual([]);
     expect(result.proxiedAccountsToAdd).toEqual([]);
     expect(result.proxiedAccountsToRemove).toEqual([]);
-    expect(result.deposits).toEqual({});
+    expect(result.deposits).toEqual({
+      chainId: '0x01',
+      deposits: {},
+    });
   });
 
   test('should return empty arrays and deposits object when empty keys come from proxy.proxies.keys', async () => {
@@ -120,6 +123,9 @@ describe('initConnection', () => {
     expect(result.proxiesToRemove).toEqual([]);
     expect(result.proxiedAccountsToAdd).toEqual([]);
     expect(result.proxiedAccountsToRemove).toEqual([]);
-    expect(result.deposits).toEqual({});
+    expect(result.deposits).toEqual({
+      chainId: '0x01',
+      deposits: {},
+    });
   });
 });

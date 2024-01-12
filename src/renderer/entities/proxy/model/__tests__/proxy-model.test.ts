@@ -2,7 +2,7 @@ import { fork, allSettled } from 'effector';
 
 import { storageService } from '@shared/api/storage';
 import { proxyModel } from '../proxy-model';
-import { HexString, ProxyAccount } from '@shared/core';
+import { HexString, ProxyAccount, ProxyChainGroup } from '@shared/core';
 
 jest.mock('@app/providers', () => ({
   useMatrix: jest.fn(),
@@ -16,6 +16,14 @@ const proxyMock = {
   proxyType: 'Any',
   delay: 0,
 } as ProxyAccount;
+
+const proxyGroupMock = {
+  id: 1,
+  chainId: '0x00' as HexString,
+  proxiedAccountId: '0x01' as HexString,
+  walletId: 1,
+  totalDeposit: '1,000,000',
+} as ProxyChainGroup;
 
 describe('entities/proxy/model/proxy-model', () => {
   afterEach(() => {
@@ -42,5 +50,29 @@ describe('entities/proxy/model/proxy-model', () => {
     await allSettled(proxyModel.events.proxiesRemoved, { scope, params: [proxyMock] });
 
     expect(scope.getState(proxyModel.$proxies)).toEqual({});
+  });
+
+  test('should add proxy group', async () => {
+    jest.spyOn(storageService.proxyGroups, 'createAll').mockResolvedValue([proxyGroupMock]);
+
+    const scope = fork();
+
+    await allSettled(proxyModel.events.proxyGroupsAdded, { scope, params: [proxyGroupMock] });
+
+    expect(scope.getState(proxyModel.$proxyChainGroups)).toEqual([proxyGroupMock]);
+    expect(scope.getState(proxyModel.$proxyChainGroupStore)).toEqual({
+      1: [proxyGroupMock],
+    });
+  });
+
+  test('should remove proxy group', async () => {
+    jest.spyOn(storageService.proxyGroups, 'deleteAll').mockResolvedValue([1]);
+
+    const scope = fork();
+
+    await allSettled(proxyModel.events.proxyGroupsRemoved, { scope, params: [proxyGroupMock] });
+
+    expect(scope.getState(proxyModel.$proxyChainGroups)).toEqual([]);
+    expect(scope.getState(proxyModel.$proxyChainGroupStore)).toEqual({});
   });
 });
