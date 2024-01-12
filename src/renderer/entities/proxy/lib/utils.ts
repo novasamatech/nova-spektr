@@ -1,4 +1,4 @@
-import { toShortAddress } from '@shared/lib/utils';
+import { SS58_DEFAULT_PREFIX, toAddress } from '@shared/lib/utils';
 import type { ProxiedAccount, ProxyAccount } from '@shared/core';
 
 export const proxyUtils = {
@@ -17,6 +17,12 @@ function isSameProxy(oldProxy: ProxyAccount, newProxy: ProxyAccount) {
 }
 
 // TODO: Add i18n for wallet name
-function getProxiedName(proxiedAccount: Pick<ProxiedAccount, 'accountId' | 'proxyType'>): string {
-  return `${proxiedAccount.proxyType} for ${toShortAddress(proxiedAccount.accountId)}`;
+function getProxiedName(
+  proxiedAccount: Pick<ProxiedAccount, 'proxyType' | 'proxyAccountId'>,
+  addressPrefix = SS58_DEFAULT_PREFIX,
+): string {
+  return `${proxiedAccount.proxyType} for ${toAddress(proxiedAccount.proxyAccountId, {
+    prefix: addressPrefix,
+    chunk: 6,
+  })}`;
 }

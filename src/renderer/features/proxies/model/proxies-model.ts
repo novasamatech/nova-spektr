@@ -19,7 +19,7 @@ import {
   Wallet,
   WalletType,
 } from '@shared/core';
-import { isDisabled, networkModel } from '@entities/network';
+import { chainsService, isDisabled, networkModel } from '@entities/network';
 import { proxyWorkerUtils } from '../lib/utils';
 import { accountUtils, walletModel } from '@entities/wallet';
 import { proxyModel, proxyUtils } from '@entities/proxy';
@@ -80,7 +80,7 @@ const disconnectFx = createEffect((chainId: ChainId): Promise<unknown> => {
 const createProxiedWalletsFx = createEffect(
   (proxiedAccounts: PartialProxiedAccount[]): { wallet: Wallet; accounts: ProxiedAccount[] }[] => {
     return proxiedAccounts.map((proxied) => {
-      const walletName = proxyUtils.getProxiedName(proxied);
+      const walletName = proxyUtils.getProxiedName(proxied, chainsService.getChainById(proxied.chainId)?.addressPrefix);
       const wallet = {
         name: walletName,
         type: WalletType.PROXIED,

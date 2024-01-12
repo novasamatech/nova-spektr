@@ -1,5 +1,6 @@
 import { HexString, ProxyAccount, ProxyType } from '@shared/core';
 import { proxyUtils } from '../utils';
+import { SS58_DEFAULT_PREFIX, TEST_ACCOUNT_ID, toAddress } from '@shared/lib/utils';
 
 describe('entities/proxy/lib/utils', () => {
   it('should return true when oldProxy and newProxy have the same properties', () => {
@@ -52,12 +53,12 @@ describe('entities/proxy/lib/utils', () => {
 
   it('should return the proxied name for a given proxied account', () => {
     const proxiedAccount = {
-      accountId: '0x01' as HexString,
+      proxyAccountId: TEST_ACCOUNT_ID as HexString,
       proxyType: 'Any' as ProxyType,
     };
-    const expectedName = 'Any for 0x01';
+    const expectedName = 'Any for ' + toAddress(TEST_ACCOUNT_ID, { chunk: 6 });
 
-    const result = proxyUtils.getProxiedName(proxiedAccount);
+    const result = proxyUtils.getProxiedName(proxiedAccount, SS58_DEFAULT_PREFIX);
 
     expect(result).toEqual(expectedName);
   });
