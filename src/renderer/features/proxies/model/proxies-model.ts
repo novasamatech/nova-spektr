@@ -229,7 +229,7 @@ sample({
           return acc;
         }, []);
 
-        acc.concat(walletProxyGroups);
+        acc = acc.concat(walletProxyGroups);
       }
 
       return acc;
