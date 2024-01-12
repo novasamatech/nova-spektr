@@ -76,21 +76,14 @@ type GetProxiesResult = {
   deposits: Record<AccountId, Record<ChainId, string>>;
 };
 const getProxiesFx = createEffect(
-  async ({ chainId, accounts, proxies, endpoint }: GetProxiesParams): Promise<GetProxiesResult> => {
+  ({ chainId, accounts, proxies, endpoint }: GetProxiesParams): Promise<GetProxiesResult> => {
     const proxiedAccounts = accounts.filter((a) => accountUtils.isProxiedAccount(a));
     const nonProxiedAccounts = keyBy(
       accounts.filter((a) => !accountUtils.isProxiedAccount(a)),
       'accountId',
     );
 
-    const result = (await endpoint.call.getProxies(
-      chainId,
-      nonProxiedAccounts,
-      proxiedAccounts,
-      proxies,
-    )) as Promise<GetProxiesResult>;
-
-    return result;
+    return endpoint.call.getProxies(chainId, nonProxiedAccounts, proxiedAccounts, proxies) as Promise<GetProxiesResult>;
   },
 );
 
