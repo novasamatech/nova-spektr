@@ -1,6 +1,6 @@
 import { ComponentMeta, ComponentStory } from '@storybook/react';
 
-import Input from './Input';
+import { Input } from './Input';
 import { Icon } from '@shared/ui';
 
 export default {

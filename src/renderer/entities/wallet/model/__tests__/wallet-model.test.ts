@@ -2,7 +2,7 @@ import { fork, allSettled } from 'effector';
 
 import { walletModel } from '../wallet-model';
 import { walletMock } from './mocks/wallet-mock';
-import { kernelModel, Wallet, type ProxiedAccount } from '@shared/core';
+import { kernelModel, Wallet, ProxiedAccount } from '@shared/core';
 import { storageService } from '@shared/api/storage';
 
 jest.mock('@app/providers', () => ({

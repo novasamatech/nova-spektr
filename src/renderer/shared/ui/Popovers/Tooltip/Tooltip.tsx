@@ -5,7 +5,9 @@ import { cnTw } from '@shared/lib/utils';
 import { HelpText } from '../../Typography';
 import './Tooltip.css';
 
-type PopoverProps = ComponentProps<typeof Popover> & { pointer?: 'up' | 'down'; position?: 'start' | 'center' | 'end' };
+type PopoverProps = ComponentProps<typeof Popover> & {
+  pointer?: 'up' | 'down';
+};
 
 export const Tooltip = ({
   offsetPx = 8,

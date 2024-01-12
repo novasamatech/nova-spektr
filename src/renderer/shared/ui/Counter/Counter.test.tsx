@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/react';
 
-import Counter from './Counter';
+import { Counter } from './Counter';
 
 jest.mock('@app/providers', () => ({
   useMatrix: jest.fn(),
