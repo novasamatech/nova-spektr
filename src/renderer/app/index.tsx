@@ -33,12 +33,12 @@ if (!container) {
 }
 
 kernelModel.events.appStarted();
+proxiesModel.events.workerStarted();
 networkModel.events.networkStarted();
 proxyModel.events.proxyStarted();
 balanceSubscriptionModel.events.balancesSubscribed();
 assetsModel.events.assetsStarted();
 notificationModel.events.notificationsStarted();
-proxiesModel.events.proxiesStarted();
 
 createRoot(container).render(
   <Router>

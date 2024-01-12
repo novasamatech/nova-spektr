@@ -1,14 +1,17 @@
 import { useUnit } from 'effector-react';
 
-import { BaseModal, DropdownIconButton } from '@shared/ui';
+import { BaseModal, DropdownIconButton, Tabs } from '@shared/ui';
 import { useModalClose, useToggle } from '@shared/lib/hooks';
-import { AccountsList, WalletCardLg } from '@entities/wallet';
+import { AccountsList, WalletCardLg, walletUtils } from '@entities/wallet';
 import { networkModel } from '@entities/network';
 import { useI18n } from '@app/providers';
 import type { BaseAccount, Wallet } from '@shared/core';
 import { IconNames } from '@shared/ui/Icon/data';
 import { RenameWalletModal } from '@features/wallets/RenameWallet';
 import { ForgetWalletModal } from '@features/wallets/ForgetWallet';
+import { TabItem } from '@shared/ui/Tabs/common/types';
+import { ProxiesList } from './ProxiesList';
+import { walletProviderModel } from '../model/wallet-provider-model';
 
 type Props = {
   wallet: Wallet;
@@ -19,6 +22,7 @@ export const SimpleWalletDetails = ({ wallet, account, onClose }: Props) => {
   const { t } = useI18n();
 
   const chains = useUnit(networkModel.$chains);
+  const proxyAccounts = useUnit(walletProviderModel.$proxyAccounts);
 
   const [isModalOpen, closeModal] = useModalClose(true, onClose);
   const [isRenameModalOpen, toggleIsRenameModalOpen] = useToggle();
@@ -49,6 +53,21 @@ export const SimpleWalletDetails = ({ wallet, account, onClose }: Props) => {
     </DropdownIconButton>
   );
 
+  const tabItems: TabItem[] = [
+    {
+      id: 'accounts',
+      title: t('walletDetails.common.accountTabTitle'),
+      panel: <AccountsList accountId={account.accountId} chains={Object.values(chains)} className="h-[351px]" />,
+    },
+    {
+      id: 'proxies',
+      title: t('walletDetails.common.proxiesTabTitle'),
+      panel: (
+        <ProxiesList canCreateProxy={!walletUtils.isWatchOnly(wallet)} walletId={wallet.id} className="h-[376px]" />
+      ),
+    },
+  ];
+
   return (
     <BaseModal
       closeButton
@@ -63,7 +82,11 @@ export const SimpleWalletDetails = ({ wallet, account, onClose }: Props) => {
         <div className="py-6 px-5 border-b border-divider">
           <WalletCardLg wallet={wallet} />
         </div>
-        <AccountsList accountId={account.accountId} chains={Object.values(chains)} className="h-[401px]" />
+        {walletUtils.isWatchOnly(wallet) && proxyAccounts.length ? (
+          <AccountsList accountId={account.accountId} chains={Object.values(chains)} className="h-[351px]" />
+        ) : (
+          <Tabs items={tabItems} panelClassName="" tabsClassName="mx-5" />
+        )}
       </div>
 
       <RenameWalletModal wallet={wallet} isOpen={isRenameModalOpen} onClose={toggleIsRenameModalOpen} />

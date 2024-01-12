@@ -6,7 +6,7 @@ import { networkModel } from '@entities/network';
 import { useModalClose, useToggle } from '@shared/lib/hooks';
 import { IconNames } from '@shared/ui/Icon/data';
 import { BaseModal, DropdownIconButton, FootnoteText, Icon } from '@shared/ui';
-import { AccountsList, WalletCardLg, WalletCardSm, WalletIcon } from '@entities/wallet';
+import { AccountsList, WalletCardLg, WalletIcon } from '@entities/wallet';
 import { RenameWalletModal } from '@features/wallets/RenameWallet';
 
 const ProxyTypeOperation: Record<ProxyType, string> = {

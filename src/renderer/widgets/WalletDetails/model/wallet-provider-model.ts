@@ -6,6 +6,8 @@ import { dictionary } from '@shared/lib/utils';
 import { walletDetailsUtils } from '../lib/utils';
 import type { MultishardMap, VaultMap } from '../lib/types';
 import type { Account, Signatory, Wallet, MultisigAccount, BaseAccount, AccountId, ProxiedAccount } from '@shared/core';
+import { proxyModel, proxyUtils } from '@entities/proxy';
+import { ProxyAccount } from '@shared/core';
 
 const $accounts = combine(
   {
@@ -16,6 +18,24 @@ const $accounts = combine(
     if (!details) return [];
 
     return accountUtils.getWalletAccounts(details.id, accounts);
+  },
+);
+
+const $proxyAccounts = combine(
+  {
+    accounts: $accounts,
+    proxies: proxyModel.$proxies,
+  },
+  ({ accounts, proxies }) => {
+    const proxyAccounts = accounts.reduce((acc: ProxyAccount[], account: Account) => {
+      if (proxies[account.accountId]) {
+        acc.push(...proxies[account.accountId]);
+      }
+
+      return acc;
+    }, []);
+
+    return proxyUtils.sortAccountsByProxyType(proxyAccounts);
   },
 );
 
@@ -130,6 +150,7 @@ const $proxyWalletForProxied = combine(
 
 export const walletProviderModel = {
   $accounts,
+  $proxyAccounts,
   $singleShardAccount,
   $multiShardAccounts,
   $multisigAccount,

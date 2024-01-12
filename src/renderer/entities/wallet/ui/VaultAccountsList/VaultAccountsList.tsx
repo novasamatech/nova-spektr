@@ -17,13 +17,13 @@ export const VaultAccountsList = ({ chains, accountsMap, className, onShardClick
 
   return (
     <div className={cnTw('flex flex-col overflow-y-auto', className)}>
-      <FootnoteText className="pl-15 text-text-tertiary">{t('accountList.addressColumn')}</FootnoteText>
+      <FootnoteText className="pl-10 text-text-tertiary">{t('accountList.addressColumn')}</FootnoteText>
 
       {chains.map((chain) => {
         if (!accountsMap[chain.chainId]) return;
 
         return (
-          <Accordion key={chain.chainId} isDefaultOpen className="pl-13 pr-1">
+          <Accordion key={chain.chainId} isDefaultOpen className="pl-8 pr-1">
             <Accordion.Button buttonClass="p-2">
               <div className="flex gap-x-2">
                 <ChainTitle fontClass="text-text-primary" chain={chain} />

@@ -12,6 +12,7 @@ import { WalletFiatBalance } from '@features/wallets/WalletSelect/ui/WalletFiatB
 import { IconNames } from '@shared/ui/Icon/data';
 import { RenameWalletModal } from '@features/wallets/RenameWallet';
 import { ForgetWalletModal } from '@features/wallets/ForgetWallet';
+import { ProxiesList } from '@widgets/WalletDetails/ui/ProxiesList';
 
 type Props = {
   wallet: Wallet;
@@ -61,7 +62,7 @@ export const MultisigWalletDetails = ({ wallet, account, signatoryWallets, signa
     <BaseModal
       closeButton
       contentClass=""
-      panelClass="h-modal"
+      panelClass="h-modal w-[448px]"
       title={t('walletDetails.common.title')}
       actionButton={ActionButton}
       isOpen={isModalOpen}
@@ -74,6 +75,7 @@ export const MultisigWalletDetails = ({ wallet, account, signatoryWallets, signa
 
         <Tabs
           unmount={false}
+          tabClassName="whitespace-nowrap"
           tabsClassName="mx-4 mt-4"
           items={[
             {
@@ -155,6 +157,11 @@ export const MultisigWalletDetails = ({ wallet, account, signatoryWallets, signa
                   </div>
                 </div>
               ),
+            },
+            {
+              id: 'proxies',
+              title: t('walletDetails.common.proxiesTabTitle'),
+              panel: <ProxiesList walletId={wallet.id} className="h-[376px]" />,
             },
           ]}
         />

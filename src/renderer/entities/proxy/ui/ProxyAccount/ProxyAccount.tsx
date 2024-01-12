@@ -1,8 +1,9 @@
+import { ReactNode } from 'react';
+
 import { cnTw, toAddress, toShortAddress } from '@shared/lib/utils';
-import { BodyText, DropdownIconButton, HelpText, Identicon, Truncate } from '@shared/ui';
+import { BodyText, HelpText, Identicon, Truncate } from '@shared/ui';
 import { AccountId, ProxyType } from '@shared/core';
 import { useI18n } from '@app/providers';
-import { DropdownIconButtonOption } from '@shared/ui/types';
 
 const ProxyTypeName: Record<ProxyType, string> = {
   [ProxyType.ANY]: 'proxy.names.any',
@@ -23,7 +24,7 @@ type Props = {
   accountId: AccountId;
   addressPrefix?: number;
   proxyType: ProxyType;
-  actions?: DropdownIconButtonOption[];
+  actionButton?: ReactNode;
 };
 
 export const ProxyAccount = ({
@@ -34,7 +35,7 @@ export const ProxyAccount = ({
   accountId,
   addressPrefix,
   proxyType,
-  actions,
+  actionButton,
 }: Props) => {
   const { t } = useI18n();
   const address = toAddress(accountId, { prefix: addressPrefix });
@@ -58,17 +59,7 @@ export const ProxyAccount = ({
           <HelpText className="text-tab-text-accent">{t(ProxyTypeName[proxyType])}</HelpText>
         </div>
       </div>
-      {actions && (
-        <DropdownIconButton name="more" className="ml-2">
-          <DropdownIconButton.Items>
-            {actions.map((option) => (
-              <DropdownIconButton.Item key={option.icon}>
-                <DropdownIconButton.Option option={option} />
-              </DropdownIconButton.Item>
-            ))}
-          </DropdownIconButton.Items>
-        </DropdownIconButton>
-      )}
+      {actionButton}
     </div>
   );
 };
