@@ -1,6 +1,7 @@
 import { NotificationType, Chain } from '@shared/core';
 import type { ProxyAccount, Account, ProxyAction, NoID, Wallet } from '@shared/core';
 import { dictionary } from '@shared/lib/utils';
+import { proxyUtils } from '@entities/proxy';
 
 export const proxiesUtils = {
   isRegularProxy,
@@ -23,12 +24,12 @@ function getNotification(
   return proxies.map((proxy) => ({
     chainId: proxy.chainId,
     dateCreated: Date.now(),
-    proxiedAccountId: proxy.proxiedAccountId,
-    proxiedWalletType: accountsWalletsMap[proxy.proxiedAccountId].type,
-    proxiedWalletName: accountsWalletsMap[proxy.proxiedAccountId].name,
-    proxyAccountId: proxy.accountId,
     proxyType: proxy.proxyType,
+    proxyAccountId: proxy.accountId,
     proxyWalletName: accountsWalletsMap[proxy.accountId].name,
+    proxyWalletType: accountsWalletsMap[proxy.accountId].type,
+    proxiedAccountId: proxy.proxiedAccountId,
+    proxiedWalletName: proxyUtils.getProxiedName(proxy.accountId, proxy.proxyType),
     read: false,
     type,
   }));

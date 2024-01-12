@@ -175,6 +175,7 @@ async function getProxies(
             ep.proxyType === p.proxyType,
         ),
     );
+  console.log('XXX ', proxiesToAdd, chainId);
 
   return {
     proxiesToAdd,

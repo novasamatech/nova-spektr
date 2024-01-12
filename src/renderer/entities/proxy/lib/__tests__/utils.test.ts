@@ -57,7 +57,7 @@ describe('entities/proxy/lib/utils', () => {
     };
     const expectedName = 'Any for 0x01';
 
-    const result = proxyUtils.getProxiedName(proxiedAccount);
+    const result = proxyUtils.getProxiedName(proxiedAccount.accountId, proxiedAccount.proxyType);
 
     expect(result).toEqual(expectedName);
   });

@@ -45,12 +45,12 @@ export const ProxyCreatedNotification = ({ notification }: Props) => {
             t={t}
             i18nKey="notifications.details.proxyCreatedDetails"
             values={{
-              name: notification.proxiedWalletName,
+              name: notification.proxyWalletName,
               operations: t(ProxyTypeOperation[notification.proxyType]),
             }}
             components={{
               chain: <ChainTitle chainId={notification.chainId} fontClass="text-text-primary text-body" />,
-              walletIcon: <WalletIcon size={16} type={notification.proxiedWalletType} className="mx-1" />,
+              walletIcon: <WalletIcon size={16} type={notification.proxyWalletType} className="mx-1" />,
             }}
           />
         </BodyText>

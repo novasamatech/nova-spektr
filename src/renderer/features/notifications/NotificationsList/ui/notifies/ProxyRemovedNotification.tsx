@@ -34,7 +34,7 @@ export const ProxyRemovedNotification = ({ notification }: Props) => {
           <Trans
             t={t}
             i18nKey="notifications.details.proxyWalletAction"
-            values={{ address, name: notification.proxyWalletName }}
+            values={{ address, name: notification.proxiedWalletName }}
             components={{
               identicon: <Identicon className="mx-1" address={address} size={16} background={false} canCopy={true} />,
             }}
@@ -45,12 +45,12 @@ export const ProxyRemovedNotification = ({ notification }: Props) => {
             t={t}
             i18nKey="notifications.details.proxyRemovedDetails"
             values={{
-              name: notification.proxiedWalletName,
+              name: notification.proxyWalletName,
               operations: t(ProxyTypeOperation[notification.proxyType]),
             }}
             components={{
               chain: <ChainTitle chainId={notification.chainId} fontClass="text-text-primary text-body" />,
-              walletIcon: <WalletIcon size={16} type={notification.proxiedWalletType} className="mx-1" />,
+              walletIcon: <WalletIcon size={16} type={notification.proxyWalletType} className="mx-1" />,
             }}
           />
         </BodyText>

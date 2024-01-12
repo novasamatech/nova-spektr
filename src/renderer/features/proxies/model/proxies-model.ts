@@ -3,22 +3,18 @@ import { createEndpoint } from '@remote-ui/rpc';
 import { keyBy } from 'lodash';
 import { once, spread } from 'patronum';
 
-import {
+import type {
   Account,
   AccountId,
-  AccountType,
   Chain,
   ChainId,
-  ChainType,
   Connection,
-  CryptoType,
   PartialProxiedAccount,
   ProxiedAccount,
   ProxyAccount,
-  SigningType,
   Wallet,
-  WalletType, NotificationType,
 } from '@shared/core';
+import { AccountType, ChainType, CryptoType, SigningType, WalletType, NotificationType } from '@shared/core';
 import { isDisabled, networkModel } from '@entities/network';
 import { accountUtils, walletModel } from '@entities/wallet';
 import { proxyModel, proxyUtils } from '@entities/proxy';
@@ -82,7 +78,7 @@ const disconnectFx = createEffect(async (chainId: ChainId) => {
 const createProxiedWalletsFx = createEffect(
   (proxiedAccounts: PartialProxiedAccount[]): { wallet: Wallet; accounts: ProxiedAccount[] }[] => {
     return proxiedAccounts.map((proxied) => {
-      const walletName = proxyUtils.getProxiedName(proxied);
+      const walletName = proxyUtils.getProxiedName(proxied.accountId, proxied.proxyType);
       const wallet = {
         name: walletName,
         type: WalletType.PROXIED,
@@ -100,10 +96,7 @@ const createProxiedWalletsFx = createEffect(
         } as ProxiedAccount,
       ];
 
-      return {
-        wallet,
-        accounts,
-      };
+      return { wallet, accounts };
     });
   },
 );
