@@ -1,11 +1,11 @@
 import { combine } from 'effector';
 
-import { accountUtils, walletModel } from '@entities/wallet';
+import { accountUtils, walletModel, walletUtils } from '@entities/wallet';
 import { walletSelectModel } from '@features/wallets';
 import { dictionary } from '@shared/lib/utils';
 import { walletDetailsUtils } from '../lib/utils';
 import type { MultishardMap, VaultMap } from '../lib/types';
-import type { Account, Signatory, Wallet, MultisigAccount, BaseAccount, AccountId } from '@shared/core';
+import type { Account, Signatory, Wallet, MultisigAccount, BaseAccount, AccountId, ProxiedAccount } from '@shared/core';
 
 const $accounts = combine(
   {
@@ -109,6 +109,25 @@ const $signatoryWallets = combine(
   },
 );
 
+const $proxyWalletForProxied = combine(
+  {
+    account: $accounts.map((accounts) => accounts[0] as unknown as ProxiedAccount),
+    accounts: walletModel.$accounts,
+    wallets: walletModel.$wallets,
+    detailsWallet: walletSelectModel.$walletForDetails,
+  },
+  ({ account, accounts, wallets, detailsWallet }): Wallet | undefined => {
+    if (!walletUtils.isProxied(detailsWallet || undefined)) return;
+
+    const walletsDict = dictionary(wallets, 'id');
+    const proxyAccount = accounts.find(
+      (a) => a.accountId === account.proxyAccountId && !walletUtils.isWatchOnly(walletsDict[a.walletId]),
+    );
+
+    return proxyAccount && walletsDict[proxyAccount.walletId];
+  },
+);
+
 export const walletProviderModel = {
   $accounts,
   $singleShardAccount,
@@ -117,4 +136,5 @@ export const walletProviderModel = {
   $vaultAccounts,
   $signatoryContacts,
   $signatoryWallets,
+  $proxyWalletForProxied,
 };

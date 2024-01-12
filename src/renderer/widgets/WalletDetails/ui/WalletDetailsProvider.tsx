@@ -8,6 +8,8 @@ import { MultishardWalletDetails } from './MultishardWalletDetails';
 import { VaultWalletDetails } from './VaultWalletDetails';
 import { walletProviderModel } from '../model/wallet-provider-model';
 import { walletUtils } from '@entities/wallet';
+import { ProxiedWalletDetails } from '@widgets/WalletDetails/ui/ProxiedWalletDetails';
+import { ProxiedAccount } from '@shared/core';
 
 export const WalletDetailsProvider = () => {
   const wallet = useUnit(walletSelectModel.$walletForDetails);
@@ -18,6 +20,7 @@ export const WalletDetailsProvider = () => {
   const contacts = useUnit(walletProviderModel.$signatoryContacts);
   const vaultAccounts = useUnit(walletProviderModel.$vaultAccounts);
   const signatoryWallets = useUnit(walletProviderModel.$signatoryWallets);
+  const proxyWalletForProxied = useUnit(walletProviderModel.$proxyWalletForProxied);
 
   if (!wallet) return null;
 
@@ -65,6 +68,17 @@ export const WalletDetailsProvider = () => {
         wallet={wallet}
         root={vaultAccounts.root}
         accountsMap={vaultAccounts.accountsMap}
+        onClose={walletSelectModel.events.walletIdCleared}
+      />
+    );
+  }
+
+  if (walletUtils.isProxied(wallet) && proxyWalletForProxied) {
+    return (
+      <ProxiedWalletDetails
+        wallet={wallet}
+        proxyWallet={proxyWalletForProxied}
+        account={accounts[0] as ProxiedAccount}
         onClose={walletSelectModel.events.walletIdCleared}
       />
     );

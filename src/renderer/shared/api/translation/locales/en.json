@@ -562,7 +562,7 @@
       "governance": "governance operations",
       "identityJudgement": "judgement operations",
       "nominationPools": "nominations operations",
-      "nonTransfer": "non-transfer operations",
+      "nonTransfer": "all, transfer operations",
       "staking": "staking operations"
     },
     "tooltipPart1": "Proxied wallets are wallet which have set one of your accounts in Nova Spektr as delegated authority (Proxies).",
@@ -1023,7 +1023,9 @@
       "renameSaveButton": "Save",
       "renameTitle": "Rename wallet",
       "title": "Wallet details",
-      "walletRemoved": "Wallet removed"
+      "walletRemoved": "Wallet removed",
+      "proxyVia": "via",
+      "proxyToControl": "to control"
     },
     "multisig": {
       "contactsGroup": "Contacts",
