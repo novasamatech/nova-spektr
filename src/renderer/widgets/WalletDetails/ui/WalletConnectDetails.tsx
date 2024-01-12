@@ -29,8 +29,6 @@ import {
 } from '@shared/ui';
 import { TabItem } from '@shared/ui/Tabs/common/types';
 import { ProxiesList } from '@widgets/WalletDetails/ui/ProxiesList';
-import { ProxyAccount } from '@shared/core';
-import { proxyModel } from '@entities/proxy';
 
 type AccountItem = {
   accountId: AccountId;
@@ -51,16 +49,7 @@ export const WalletConnectDetails = ({ wallet, accounts, onClose }: Props) => {
 
   const reconnectStep = useUnit(wcDetailsModel.$reconnectStep);
   const forgetStep = useUnit(wcDetailsModel.$forgetStep);
-  const proxies = useUnit(proxyModel.$proxies);
   const chains = useUnit(networkModel.$chains);
-
-  const proxyAccounts = accounts.reduce((acc: ProxyAccount[], account: Account) => {
-    if (proxies[account.accountId]) {
-      acc.push(...proxies[account.accountId]);
-    }
-
-    return acc;
-  }, []);
 
   useEffect(() => {
     wcDetailsModel.events.reset();
@@ -165,14 +154,7 @@ export const WalletConnectDetails = ({ wallet, accounts, onClose }: Props) => {
     {
       id: 'proxies',
       title: t('walletDetails.common.proxiesTabTitle'),
-      panel: (
-        <ProxiesList
-          walletId={wallet.id}
-          proxies={proxyAccounts}
-          chains={Object.values(chains)}
-          className="h-[385px] mt-6"
-        />
-      ),
+      panel: <ProxiesList walletId={wallet.id} chains={Object.values(chains)} className="h-[385px] mt-6" />,
     },
   ];
 

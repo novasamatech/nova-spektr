@@ -1,35 +1,23 @@
 import { useUnit } from 'effector-react';
 import { useState } from 'react';
 
-import { BaseModal, ContextMenu, IconButton, HelpText, DropdownIconButton, Tabs } from '@shared/ui';
+import { BaseModal, ContextMenu, DropdownIconButton, HelpText, IconButton, Tabs } from '@shared/ui';
 import { useModalClose, useToggle } from '@shared/lib/hooks';
-import { RootAccountLg, WalletCardLg, VaultAccountsList } from '@entities/wallet';
+import { RootAccountLg, VaultAccountsList, WalletCardLg } from '@entities/wallet';
 import { networkModel } from '@entities/network';
 import { useI18n } from '@app/providers';
-import {
-  Wallet,
-  BaseAccount,
-  ChainAccount,
-  ShardAccount,
-  DraftAccount,
-  KeyType,
-  Account,
-  ProxyAccount,
-  AccountId,
-} from '@shared/core';
+import { Account, BaseAccount, ChainAccount, DraftAccount, KeyType, ShardAccount, Wallet } from '@shared/core';
 import { copyToClipboard, toAddress } from '@shared/lib/utils';
 import { IconNames } from '@shared/ui/Icon/data';
 import { VaultMap } from '../lib/types';
 import { ShardsList } from './ShardsList';
 import { vaultDetailsModel } from '../model/vault-details-model';
 import { walletDetailsUtils } from '../lib/utils';
-import { KeyConstructor, ImportKeysModal, DerivationsAddressModal } from '@features/wallets';
+import { DerivationsAddressModal, ImportKeysModal, KeyConstructor } from '@features/wallets';
 import { RenameWalletModal } from '@features/wallets/RenameWallet';
 import { ForgetWalletModal } from '@features/wallets/ForgetWallet';
-import { proxyModel } from '@entities/proxy';
 import { TabItem } from '@shared/ui/Tabs/common/types';
 import { ProxiesList } from '@widgets/WalletDetails/ui/ProxiesList';
-import { walletProviderModel } from '../model/wallet-provider-model';
 
 type Props = {
   wallet: Wallet;
@@ -41,8 +29,6 @@ export const VaultWalletDetails = ({ wallet, root, accountsMap, onClose }: Props
   const { t } = useI18n();
 
   const chains = useUnit(networkModel.$chains);
-  const proxies = useUnit(proxyModel.$proxies);
-  const accountsIds = useUnit(walletProviderModel.$accounts).map((a: Account) => a.accountId);
 
   const [isModalOpen, closeModal] = useModalClose(true, onClose);
   const [newKeys, setNewKeys] = useState<DraftAccount<ChainAccount>[]>([]);
@@ -52,14 +38,6 @@ export const VaultWalletDetails = ({ wallet, root, accountsMap, onClose }: Props
   const [isImportModalOpen, toggleImportModal] = useToggle();
   const [isScanModalOpen, toggleScanModal] = useToggle();
   const [isConfirmForgetOpen, toggleConfirmForget] = useToggle();
-
-  const proxyAccounts = accountsIds.reduce((acc: ProxyAccount[], accountId: AccountId) => {
-    if (proxies[accountId]) {
-      acc.push(...proxies[accountId]);
-    }
-
-    return acc;
-  }, []);
 
   const handleConstructorKeys = (
     keysToAdd: Array<ChainAccount | ShardAccount[]>,
@@ -173,14 +151,7 @@ export const VaultWalletDetails = ({ wallet, root, accountsMap, onClose }: Props
     {
       id: 'proxies',
       title: t('walletDetails.common.proxiesTabTitle'),
-      panel: (
-        <ProxiesList
-          walletId={wallet.id}
-          proxies={proxyAccounts}
-          chains={Object.values(chains)}
-          className="h-[392px] mt-4"
-        />
-      ),
+      panel: <ProxiesList walletId={wallet.id} chains={Object.values(chains)} className="h-[392px] mt-4" />,
     },
   ];
 

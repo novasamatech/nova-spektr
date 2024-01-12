@@ -1,5 +1,4 @@
 import { useMemo } from 'react';
-import { useUnit } from 'effector-react';
 
 import { MultisigAccount, Signatory, Wallet, AccountId } from '@shared/core';
 import { BaseModal, FootnoteText, Tabs, HelpText, DropdownIconButton } from '@shared/ui';
@@ -13,7 +12,6 @@ import { WalletFiatBalance } from '@features/wallets/WalletSelect/ui/WalletFiatB
 import { IconNames } from '@shared/ui/Icon/data';
 import { RenameWalletModal } from '@features/wallets/RenameWallet';
 import { ForgetWalletModal } from '@features/wallets/ForgetWallet';
-import { proxyModel } from '@entities/proxy';
 import { ProxiesList } from '@widgets/WalletDetails/ui/ProxiesList';
 
 type Props = {
@@ -26,8 +24,6 @@ type Props = {
 export const MultisigWalletDetails = ({ wallet, account, signatoryWallets, signatoryContacts, onClose }: Props) => {
   const { t } = useI18n();
   const { matrix, isLoggedIn } = useMatrix();
-
-  const proxies = useUnit(proxyModel.$proxies);
 
   const [isModalOpen, closeModal] = useModalClose(true, onClose);
   const [isRenameModalOpen, toggleIsRenameModalOpen] = useToggle();
@@ -165,14 +161,7 @@ export const MultisigWalletDetails = ({ wallet, account, signatoryWallets, signa
             {
               id: 'proxies',
               title: t('walletDetails.common.proxiesTabTitle'),
-              panel: (
-                <ProxiesList
-                  walletId={wallet.id}
-                  proxies={proxies[account.accountId]}
-                  chains={Object.values(chains)}
-                  className="h-[376px]"
-                />
-              ),
+              panel: <ProxiesList walletId={wallet.id} chains={Object.values(chains)} className="h-[376px]" />,
             },
           ]}
         />

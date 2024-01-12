@@ -11,7 +11,7 @@ import { RenameWalletModal } from '@features/wallets/RenameWallet';
 import { ForgetWalletModal } from '@features/wallets/ForgetWallet';
 import { TabItem } from '@shared/ui/Tabs/common/types';
 import { ProxiesList } from './ProxiesList';
-import { proxyModel } from '@entities/proxy';
+import { walletProviderModel } from '../model/wallet-provider-model';
 
 type Props = {
   wallet: Wallet;
@@ -22,7 +22,7 @@ export const SimpleWalletDetails = ({ wallet, account, onClose }: Props) => {
   const { t } = useI18n();
 
   const chains = useUnit(networkModel.$chains);
-  const proxies = useUnit(proxyModel.$proxies);
+  const proxyAccounts = useUnit(walletProviderModel.$proxyAccounts);
 
   const [isModalOpen, closeModal] = useModalClose(true, onClose);
   const [isRenameModalOpen, toggleIsRenameModalOpen] = useToggle();
@@ -66,7 +66,6 @@ export const SimpleWalletDetails = ({ wallet, account, onClose }: Props) => {
         <ProxiesList
           canCreateProxy={!walletUtils.isWatchOnly(wallet)}
           walletId={wallet.id}
-          proxies={proxies[account.accountId]}
           chains={Object.values(chains)}
           className="h-[376px]"
         />
@@ -88,7 +87,7 @@ export const SimpleWalletDetails = ({ wallet, account, onClose }: Props) => {
         <div className="py-6 px-5 border-b border-divider">
           <WalletCardLg wallet={wallet} />
         </div>
-        {walletUtils.isWatchOnly(wallet) && proxies[account.accountId]?.length ? (
+        {walletUtils.isWatchOnly(wallet) && proxyAccounts.length ? (
           <AccountsList accountId={account.accountId} chains={Object.values(chains)} className="h-[351px]" />
         ) : (
           <Tabs items={tabItems} panelClassName="" tabsClassName="mx-5" />

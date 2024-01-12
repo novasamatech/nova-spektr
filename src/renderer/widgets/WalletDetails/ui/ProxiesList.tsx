@@ -1,44 +1,34 @@
 import { groupBy } from 'lodash';
+import { useUnit } from 'effector-react';
 
 import { cnTw, copyToClipboard, toAddress } from '@shared/lib/utils';
 import { ChainTitle } from '@entities/chain';
 import { useI18n } from '@app/providers';
 import { Accordion, DropdownIconButton, FootnoteText, HelpText, IconButton } from '@shared/ui';
 import type { Chain, ID, ProxyAccount } from '@shared/core';
-import { EmptyProxyList, ProxyAccount as ProxyAccountComponent } from '@entities/proxy';
-import { ProxyChainGroup } from '@shared/core/types/proxy';
+import { EmptyProxyList, ProxyAccount as ProxyAccountComponent, proxyModel } from '@entities/proxy';
 import { chainsService } from '@entities/network';
 import { AssetBalance } from '@entities/asset';
 import { DropdownIconButtonOption } from '@shared/ui/Dropdowns/common/types';
 import { ExplorersPopover } from '@entities/wallet';
-import { proxyUtils } from '@entities/proxy/lib/utils';
-
-const getMockProxyChainGroups = (walletId: ID, chains: Chain[]): ProxyChainGroup[] => {
-  return chains.map((chain) => ({
-    id: 1,
-    walletId: walletId,
-    proxiedAccountId: '0x00',
-    chainId: chain.chainId,
-    totalDeposit: 2000000,
-  }));
-};
+import { walletProviderModel } from '../model/wallet-provider-model';
 
 type Props = {
   walletId: ID;
   chains: Chain[];
-  proxies: ProxyAccount[];
   canCreateProxy?: boolean;
   className?: string;
 };
 
-export const ProxiesList = ({ proxies, chains, walletId, className, canCreateProxy = true }: Props) => {
+export const ProxiesList = ({ chains, walletId, className, canCreateProxy = true }: Props) => {
   const { t } = useI18n();
 
-  if (!proxies || !proxies.length) return <EmptyProxyList />;
+  const proxyAccounts = useUnit(walletProviderModel.$proxyAccounts);
+  const proxyChainGroups = useUnit(proxyModel.$proxyChainGroupStore)[walletId];
 
-  const proxiesByChain = groupBy(proxyUtils.sortAccountsByProxyType(proxies), 'chainId');
+  if (!proxyAccounts || !proxyAccounts.length) return <EmptyProxyList />;
 
-  const proxyChainGroups = getMockProxyChainGroups(walletId, chains); // TODO get it from effector model when it's ready
+  const proxiesByChain = groupBy(proxyAccounts, 'chainId');
 
   const forgetProxyAction: DropdownIconButtonOption = {
     icon: 'forget',
@@ -111,7 +101,7 @@ export const ProxiesList = ({ proxies, chains, walletId, className, canCreatePro
                       {t('walletDetails.common.proxyDeposit')}
                       &nbsp;
                       <AssetBalance
-                        value={totalDeposit.toString()}
+                        value={totalDeposit}
                         asset={chain?.assets[0]}
                         showIcon={false}
                         className="text-help-text"
