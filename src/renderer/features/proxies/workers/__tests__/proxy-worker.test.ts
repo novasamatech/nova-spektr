@@ -144,10 +144,10 @@ describe('initConnection', () => {
                     },
                   ],
                 },
+                {
+                  toHuman: () => '1,002,050,000,000',
+                },
               ],
-              {
-                toHuman: () => '1,002,050,000,000',
-              },
             ],
           },
         },
@@ -156,12 +156,12 @@ describe('initConnection', () => {
 
     const chainId = '0x01';
     const accounts = {
-      '0x02': {
+      '0x01': {
         id: 1,
         walletId: 1,
         name: 'Account 1',
         type: AccountType.BASE,
-        accountId: '0x02',
+        accountId: '0x01',
         chainType: ChainType.SUBSTRATE,
         cryptoType: CryptoType.SR25519,
       } as Account,
@@ -171,23 +171,23 @@ describe('initConnection', () => {
 
     const result = await proxyWorkerFunctions.getProxies(chainId, accounts, proxiedAccounts, proxies);
 
-    expect(result.proxiesToAdd).toEqual([]);
-    expect(result.proxiesToRemove).toEqual([]);
-    expect(result.proxiedAccountsToAdd).toEqual([
+    expect(result.proxiesToAdd).toEqual([
       {
-        accountId: '0x01',
+        accountId: '0x02',
         chainId: '0x01',
         delay: 0,
         proxiedAccountId: '0x01',
-        proxyAccountId: '0x02',
         proxyType: 'Governance',
-        proxyVariant: 'none',
       },
     ]);
+    expect(result.proxiesToRemove).toEqual([]);
+    expect(result.proxiedAccountsToAdd).toEqual([]);
     expect(result.proxiedAccountsToRemove).toEqual([]);
     expect(result.deposits).toEqual({
       chainId: '0x01',
-      deposits: {},
+      deposits: {
+        '0x01': '1,002,050,000,000',
+      },
     });
   });
 });

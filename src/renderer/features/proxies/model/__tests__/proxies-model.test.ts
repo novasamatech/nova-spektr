@@ -4,6 +4,7 @@ import { networkModel } from '@entities/network';
 import { ConnectionType } from '@shared/core';
 import { storageService } from '@shared/api/storage';
 import { proxiesModel } from '../proxies-model';
+import { proxyModel } from '@entities/proxy';
 
 jest.mock('@remote-ui/rpc', () => ({
   createEndpoint: jest.fn().mockReturnValue({
@@ -69,5 +70,7 @@ describe('entities/proxy/model/proxy-model', () => {
         },
       },
     });
+
+    expect(scope.getState(proxyModel.$proxies)).toEqual({});
   });
 });
