@@ -1,6 +1,6 @@
 import { ReactNode, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { useStore } from 'effector-react';
+import { useUnit } from 'effector-react';
 
 import * as editGuardModel from '../model/edit-guard';
 import type { Contact } from '@shared/core';
@@ -13,7 +13,7 @@ export const EditRouteGuard = ({ redirectPath, children }: Props) => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
 
-  const contact = useStore(editGuardModel.$contact);
+  const contact = useUnit(editGuardModel.$contact);
 
   useEffect(() => {
     editGuardModel.events.navigateApiChanged({ navigate, redirectPath });

@@ -1,5 +1,5 @@
 import { ComponentProps, useState, useEffect } from 'react';
-import { useStore } from 'effector-react';
+import { useUnit } from 'effector-react';
 
 import { BaseModal, HeaderTitleText, StatusLabel, Button, IconButton } from '@shared/ui';
 import { useI18n, useMatrix } from '@app/providers';
@@ -27,11 +27,11 @@ type Props = {
   onComplete: () => void;
 };
 
-export const MultisigAccount = ({ isOpen, onClose, onComplete }: Props) => {
+export const MultisigWallet = ({ isOpen, onClose, onComplete }: Props) => {
   const { t } = useI18n();
-  const wallets = useStore(walletModel.$wallets);
-  const accounts = useStore(walletModel.$accounts);
-  const contacts = useStore(contactModel.$contacts);
+  const wallets = useUnit(walletModel.$wallets);
+  const accounts = useUnit(walletModel.$accounts);
+  const contacts = useUnit(contactModel.$contacts);
 
   const { matrix, isLoggedIn } = useMatrix();
 
