@@ -57,7 +57,7 @@ class MockWorker {
   }
 }
 
-// @eslint-disable-next-line no-global-assign
+// eslint-disable-next-line no-global-assign
 Worker = MockWorker;
 
 describe('entities/proxy/model/proxy-model', () => {
