@@ -10,7 +10,26 @@ jest.mock('@remote-ui/rpc', () => ({
   createEndpoint: jest.fn().mockReturnValue({
     call: {
       initConnection: jest.fn().mockResolvedValue(''),
-      getProxies: jest.fn().mockResolvedValue([]),
+      getProxies: jest.fn().mockResolvedValue({
+        proxiesToAdd: [
+          {
+            accountId: '0x02',
+            chainId: '0x01',
+            delay: 0,
+            proxiedAccountId: '0x01',
+            proxyType: 'Governance',
+          },
+        ],
+        proxiesToRemove: [],
+        proxiedAccountsToAdd: [],
+        proxiedAccountsToRemove: [],
+        deposits: {
+          chainId: '0x01',
+          deposits: {
+            '0x01': '1,002,050,000,000',
+          },
+        },
+      }),
       disconnect: jest.fn(),
     },
   }),
@@ -38,7 +57,7 @@ class MockWorker {
   }
 }
 
-// @eslint-disable-next-line no-global-assign
+// eslint-disable-next-line no-global-assign
 Worker = MockWorker;
 
 describe('entities/proxy/model/proxy-model', () => {
@@ -71,6 +90,16 @@ describe('entities/proxy/model/proxy-model', () => {
       },
     });
 
-    expect(scope.getState(proxyModel.$proxies)).toEqual({});
+    expect(scope.getState(proxyModel.$proxies)).toEqual({
+      '0x01': [
+        {
+          accountId: '0x02',
+          chainId: '0x01',
+          delay: 0,
+          proxiedAccountId: '0x01',
+          proxyType: 'Governance',
+        },
+      ],
+    });
   });
 });
