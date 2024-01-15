@@ -182,7 +182,8 @@ async function getProxies(
     console.log(e);
   }
 
-  const proxiesToRemove = proxies.filter((p) => existingProxies.some((ep) => isEqual(p, ep)));
+  const proxiesToRemove = proxies.filter((p) => !existingProxies.some((ep) => isEqual(p, ep)));
+
   const proxiedAccountsToRemove = Object.values(proxiedAccounts)
     .filter(proxyWorkerUtils.isProxiedAccount)
     .filter(
