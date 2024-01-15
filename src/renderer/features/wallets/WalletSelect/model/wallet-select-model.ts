@@ -2,14 +2,14 @@ import { createStore, combine, createEvent, sample, createApi, attach, createEff
 import BigNumber from 'bignumber.js';
 import { once, previous } from 'patronum';
 
-import { includes, getRoundedValue, totalAmount, dictionary } from '@shared/lib/utils';
+import { getRoundedValue, totalAmount, dictionary } from '@shared/lib/utils';
 import { walletModel, walletUtils, accountUtils } from '@entities/wallet';
 import { currencyModel, priceProviderModel } from '@entities/price';
-import type { WalletFamily, Wallet, ID } from '@shared/core';
-import { WalletType } from '@shared/core';
+import type { Wallet, ID } from '@shared/core';
 import { networkModel } from '@entities/network';
 import { balanceModel } from '@entities/balance';
 import { storageService } from '@shared/api/storage';
+import { walletSelectUtils } from '../lib/wallet-select-utils';
 
 export type Callbacks = {
   onClose: () => void;
@@ -66,31 +66,7 @@ const $filteredWalletGroups = combine(
     wallets: walletModel.$wallets,
   },
   ({ wallets, query }) => {
-    const accumulator: Record<WalletFamily, Wallet[]> = {
-      [WalletType.POLKADOT_VAULT]: [],
-      [WalletType.MULTISIG]: [],
-      [WalletType.NOVA_WALLET]: [],
-      [WalletType.WALLET_CONNECT]: [],
-      [WalletType.WATCH_ONLY]: [],
-      [WalletType.PROXIED]: [],
-    };
-
-    return wallets.reduce<Record<WalletFamily, Wallet[]>>((acc, wallet) => {
-      let groupIndex: WalletFamily | undefined;
-
-      if (walletUtils.isPolkadotVaultGroup(wallet)) groupIndex = WalletType.POLKADOT_VAULT;
-      if (walletUtils.isMultisig(wallet)) groupIndex = WalletType.MULTISIG;
-      if (walletUtils.isWatchOnly(wallet)) groupIndex = WalletType.WATCH_ONLY;
-      if (walletUtils.isWalletConnect(wallet)) groupIndex = WalletType.WALLET_CONNECT;
-      if (walletUtils.isNovaWallet(wallet)) groupIndex = WalletType.NOVA_WALLET;
-      if (walletUtils.isProxied(wallet)) groupIndex = WalletType.PROXIED;
-
-      if (groupIndex && includes(wallet.name, query)) {
-        acc[groupIndex].push(wallet);
-      }
-
-      return acc;
-    }, accumulator);
+    return walletSelectUtils.getWalletByGroups(wallets, query);
   },
 );
 
@@ -157,9 +133,12 @@ sample({
   clock: once(walletModel.$wallets),
   filter: (wallets) => wallets.length > 0,
   fn: (wallets) => {
-    const match = wallets.find((wallet) => wallet.isActive) || wallets[0];
+    const match = wallets.find((wallet) => wallet.isActive);
+    if (match) return { nextId: match.id };
 
-    return { nextId: match.id };
+    const groups = walletSelectUtils.getWalletByGroups(wallets);
+
+    return { nextId: Object.values(groups).flat()[0].id };
   },
   target: walletSelectedFx,
 });
@@ -179,7 +158,11 @@ sample({
 
     return wallets.every((wallet) => !wallet.isActive);
   },
-  fn: (wallets) => ({ nextId: wallets[0].id }),
+  fn: (wallets) => {
+    const groups = walletSelectUtils.getWalletByGroups(wallets);
+
+    return { nextId: Object.values(groups).flat()[0].id };
+  },
   target: walletSelectedFx,
 });
 
@@ -208,12 +191,7 @@ sample({
   source: walletModel.$wallets,
   filter: (_, nextId) => Boolean(nextId),
   fn: (wallets, nextId) => {
-    return wallets.map((wallet) => {
-      const isCurrent = wallet.isActive;
-      const isSelected = wallet.id === nextId;
-
-      return isCurrent || isSelected ? { ...wallet, isActive: wallet.id === nextId } : wallet;
-    });
+    return wallets.map((wallet) => ({ ...wallet, isActive: wallet.id === nextId }));
   },
   target: walletModel.$wallets,
 });

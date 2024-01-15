@@ -23,6 +23,14 @@ describe('features/wallets/WalletSelect/model/wallet-select-model', () => {
     },
   ];
 
+  const newWallet: Wallet = {
+    id: 3,
+    signingType: SigningType.POLKADOT_VAULT,
+    type: WalletType.SINGLE_PARITY_SIGNER,
+    isActive: false,
+    name: 'My new SPS',
+  };
+
   beforeEach(() => {
     jest.restoreAllMocks();
   });
@@ -87,13 +95,6 @@ describe('features/wallets/WalletSelect/model/wallet-select-model', () => {
   });
 
   test('should set $activeWallet when $wallets receives new wallet', async () => {
-    const newWallet: Wallet = {
-      id: 3,
-      signingType: SigningType.POLKADOT_VAULT,
-      type: WalletType.SINGLE_PARITY_SIGNER,
-      isActive: false,
-      name: 'My new SPS',
-    };
     jest.spyOn(storageService.wallets, 'update').mockResolvedValue(newWallet.id);
 
     const scope = fork({
@@ -105,15 +106,16 @@ describe('features/wallets/WalletSelect/model/wallet-select-model', () => {
     expect(scope.getState(walletModel.$activeWallet)).toEqual({ ...newWallet, isActive: true });
   });
 
-  test('should set $activeWallet when current $activeWallet is removed', async () => {
-    jest.spyOn(storageService.wallets, 'update').mockResolvedValue(2);
+  test('should set $activeWallet on $activeWallet removed, respect wallet groups', async () => {
+    const extendedWallets = wallets.concat(newWallet);
+    jest.spyOn(storageService.wallets, 'update').mockResolvedValue(3);
 
     const scope = fork({
-      values: new Map().set(walletModel.$wallets, wallets),
+      values: new Map().set(walletModel.$wallets, extendedWallets),
     });
 
-    expect(scope.getState(walletModel.$activeWallet)).toEqual(wallets[0]);
-    await allSettled(walletModel.$wallets, { scope, params: wallets.slice(1) });
-    expect(scope.getState(walletModel.$activeWallet)).toEqual({ ...wallets[1], isActive: true });
+    expect(scope.getState(walletModel.$activeWallet)).toEqual(extendedWallets[0]);
+    await allSettled(walletModel.$wallets, { scope, params: extendedWallets.slice(1) });
+    expect(scope.getState(walletModel.$activeWallet)).toEqual({ ...extendedWallets[2], isActive: true });
   });
 });
