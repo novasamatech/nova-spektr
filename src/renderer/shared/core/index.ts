@@ -52,7 +52,13 @@ export type { Validator } from './types/validator';
 export { RewardsDestination } from './types/stake';
 export type { Stake, Unlocking } from './types/stake';
 
-export type { ProxyAccount, PartialProxyAccount, PartialProxiedAccount } from './types/proxy';
+export type {
+  ProxyAccount,
+  PartialProxyAccount,
+  PartialProxiedAccount,
+  ProxyDeposits,
+  ProxyGroup,
+} from './types/proxy';
 export { ProxyVariant, ProxyType } from './types/proxy';
 
 export type { Notification, MultisigInvite, MultisigOperation, ProxyAction } from './types/notification';

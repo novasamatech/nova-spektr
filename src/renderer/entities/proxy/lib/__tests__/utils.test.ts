@@ -4,7 +4,7 @@ import { proxyUtils } from '../utils';
 import { TEST_ACCOUNT_ID } from '@shared/lib/utils';
 
 describe('entities/proxy/lib/utils', () => {
-  test('should return true when oldProxy and newProxy have the same properties', () => {
+  test('should return true when for identical Proxies', () => {
     const oldProxy = {
       id: 1,
       accountId: '0x00',
