@@ -56,7 +56,7 @@ test.describe('Matrix Login', () => {
 
   test('User can login in Matrix from Multisig creation flow', async () => {
     const assetsPage = await loginPage.createBaseWatchOnlyWallet();
-    const walletModalWindow = await assetsPage.openBrokenWalletManagement();
+    const walletModalWindow = await assetsPage.openWalletManagement();
     const matrixSettings = await (await walletModalWindow.clickOnAddButton()).clickOnMultisigButtonWithoutAuth();
     await loginAndCheckVisibility(matrixSettings, matrixSettings.pageElements.multisigLoggednInd);
   });
