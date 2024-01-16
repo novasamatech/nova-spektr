@@ -1,18 +1,15 @@
-import { useEffect, useMemo } from 'react';
+import { useEffect } from 'react';
 import { useUnit } from 'effector-react';
-import keyBy from 'lodash/keyBy';
 
-import wallet_connect_reconnect_webm from '@shared/assets/video/wallet_connect_reconnect.webm';
-import wallet_connect_reconnect from '@shared/assets/video/wallet_connect_reconnect.mp4';
 import { useModalClose, useToggle } from '@shared/lib/hooks';
-import { MultiAccountsList, WalletCardLg } from '@entities/wallet';
+import { WalletCardLg } from '@entities/wallet';
 import { useI18n } from '@app/providers';
 import { chainsService } from '@entities/network';
 import { walletConnectUtils } from '@entities/walletConnect';
-import type { Chain, Account, WalletConnectWallet, AccountId } from '@shared/core';
-import { wcDetailsModel } from '../model/wc-details-model';
-import { wcDetailsUtils, walletDetailsUtils } from '../lib/utils';
-import { ForgetStep } from '../lib/constants';
+import type { Account, WalletConnectWallet } from '@shared/core';
+import { wcDetailsModel } from '../../model/wc-details-model';
+import { wcDetailsUtils, walletDetailsUtils } from '../../lib/utils';
+import { ForgetStep } from '../../lib/constants';
 import { Animation } from '@shared/ui/Animation/Animation';
 import { IconNames } from '@shared/ui/Icon/data';
 import { RenameWalletModal } from '@features/wallets/RenameWallet';
@@ -22,20 +19,15 @@ import {
   ConfirmModal,
   DropdownIconButton,
   FootnoteText,
-  Icon,
   SmallTitleText,
   StatusModal,
   Tabs,
 } from '@shared/ui';
 import { TabItem } from '@shared/ui/Tabs/common/types';
-import { ProxiesList } from './ProxiesList';
+import { ProxiesList } from '../components/ProxiesList';
 import { walletProviderModel } from '@widgets/WalletDetails/model/wallet-provider-model';
 import { EmptyProxyList } from '@entities/proxy';
-
-type AccountItem = {
-  accountId: AccountId;
-  chain: Chain;
-};
+import { WalletConnectAccounts } from '../components/WalletConnectAccounts';
 
 type Props = {
   wallet: WalletConnectWallet;
@@ -57,27 +49,6 @@ export const WalletConnectDetails = ({ wallet, accounts, onClose }: Props) => {
   useEffect(() => {
     wcDetailsModel.events.reset();
   }, []);
-
-  // TODO: Rework with https://app.clickup.com/t/8692ykm3y
-  const accountsList = useMemo(() => {
-    const sortedChains = chainsService.getChainsData({ sort: true });
-
-    const accountsMap = keyBy(accounts, 'chainId');
-
-    return sortedChains.reduce<AccountItem[]>((acc, chain) => {
-      const accountId = accountsMap[chain.chainId]?.accountId;
-
-      if (accountId) {
-        acc.push({ accountId, chain });
-      }
-
-      return acc;
-    }, []);
-  }, [accounts]);
-
-  const showReconnectConfirm = () => {
-    wcDetailsModel.events.confirmReconnectShown();
-  };
 
   const reconnect = () => {
     wcDetailsModel.events.reconnectStarted({
@@ -106,7 +77,7 @@ export const WalletConnectDetails = ({ wallet, accounts, onClose }: Props) => {
     {
       icon: 'refresh' as IconNames,
       title: t('walletDetails.walletConnect.refreshButton'),
-      onClick: showReconnectConfirm,
+      onClick: wcDetailsModel.events.confirmReconnectShown,
     },
   ];
 
@@ -126,33 +97,7 @@ export const WalletConnectDetails = ({ wallet, accounts, onClose }: Props) => {
     {
       id: 'accounts',
       title: t('walletDetails.common.accountTabTitle'),
-      panel: (
-        <>
-          {wcDetailsUtils.isNotStarted(reconnectStep, wallet.isConnected) && (
-            <MultiAccountsList accounts={accountsList} className="h-[367px]" headerClassName="pt-4 pb-2" />
-          )}
-
-          {wcDetailsUtils.isReadyToReconnect(reconnectStep, wallet.isConnected) && (
-            <div className="flex flex-col h-[404px] justify-center items-center">
-              <Icon name="document" size={64} className="mb-6 text-icon-default" />
-              <SmallTitleText className="mb-2">{t('walletDetails.walletConnect.disconnectedTitle')}</SmallTitleText>
-              <FootnoteText className="mb-4 text-text-tertiary">
-                {t('walletDetails.walletConnect.disconnectedDescription')}
-              </FootnoteText>
-              <Button onClick={showReconnectConfirm}>{t('walletDetails.walletConnect.reconnectButton')}</Button>
-            </div>
-          )}
-
-          {wcDetailsUtils.isReconnecting(reconnectStep) && (
-            <div className="flex flex-col h-[409px] justify-center items-center">
-              <video className="object-contain h-[409px]" autoPlay loop>
-                <source src={wallet_connect_reconnect_webm} type="video/webm" />
-                <source src={wallet_connect_reconnect} type="video/mp4" />
-              </video>
-            </div>
-          )}
-        </>
-      ),
+      panel: <WalletConnectAccounts wallet={wallet} accounts={accounts} />,
     },
     {
       id: 'proxies',

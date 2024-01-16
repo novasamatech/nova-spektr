@@ -1,14 +1,14 @@
 import { useUnit } from 'effector-react';
 
 import { walletSelectModel } from '@features/wallets';
-import { SimpleWalletDetails } from './SimpleWalletDetails';
-import { MultisigWalletDetails } from './MultisigWalletDetails';
-import { WalletConnectDetails } from './WalletConnectDetails';
-import { MultishardWalletDetails } from './MultishardWalletDetails';
-import { VaultWalletDetails } from './VaultWalletDetails';
-import { walletProviderModel } from '../model/wallet-provider-model';
+import { SimpleWalletDetails } from '../wallets/SimpleWalletDetails';
+import { MultisigWalletDetails } from '../wallets/MultisigWalletDetails';
+import { WalletConnectDetails } from '../wallets/WalletConnectDetails';
+import { MultishardWalletDetails } from '../wallets/MultishardWalletDetails';
+import { VaultWalletDetails } from '../wallets/VaultWalletDetails';
+import { walletProviderModel } from '../../model/wallet-provider-model';
 import { walletUtils } from '@entities/wallet';
-import { ProxiedWalletDetails } from './ProxiedWalletDetails';
+import { ProxiedWalletDetails } from '../wallets/ProxiedWalletDetails';
 import { ProxiedAccount } from '@shared/core';
 
 export const WalletDetailsProvider = () => {

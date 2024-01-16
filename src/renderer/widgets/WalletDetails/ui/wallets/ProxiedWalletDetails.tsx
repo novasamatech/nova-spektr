@@ -9,7 +9,7 @@ import { BaseModal, DropdownIconButton, FootnoteText, Icon, Tabs } from '@shared
 import { AccountsList, WalletCardLg, WalletIcon } from '@entities/wallet';
 import { RenameWalletModal } from '@features/wallets/RenameWallet';
 import { TabItem } from '@shared/ui/Tabs/common/types';
-import { ProxiesList } from '@widgets/WalletDetails/ui/ProxiesList';
+import { ProxiesList } from '@widgets/WalletDetails/ui/components/ProxiesList';
 import { walletProviderModel } from '@widgets/WalletDetails/model/wallet-provider-model';
 import { EmptyProxyList } from '@entities/proxy';
 

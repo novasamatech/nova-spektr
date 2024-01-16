@@ -2,26 +2,27 @@ import { useUnit } from 'effector-react';
 
 import { BaseModal, DropdownIconButton, Tabs } from '@shared/ui';
 import { useModalClose, useToggle } from '@shared/lib/hooks';
-import { AccountsList, WalletCardLg, walletUtils } from '@entities/wallet';
-import { networkModel } from '@entities/network';
+import { MultishardAccountsList, WalletCardLg } from '@entities/wallet';
 import { useI18n } from '@app/providers';
-import type { BaseAccount, Wallet } from '@shared/core';
-import { IconNames } from '@shared/ui/Icon/data';
+import type { Wallet } from '@shared/core';
+import type { MultishardMap } from '../../lib/types';
+import { walletDetailsUtils } from '../../lib/utils';
 import { RenameWalletModal } from '@features/wallets/RenameWallet';
+import { IconNames } from '@shared/ui/Icon/data';
 import { ForgetWalletModal } from '@features/wallets/ForgetWallet';
 import { TabItem } from '@shared/ui/Tabs/common/types';
-import { ProxiesList } from './ProxiesList';
-import { walletProviderModel } from '../model/wallet-provider-model';
+import { ProxiesList } from '@widgets/WalletDetails/ui/components/ProxiesList';
+import { walletProviderModel } from '@widgets/WalletDetails/model/wallet-provider-model';
+import { EmptyProxyList } from '@entities/proxy';
 
 type Props = {
   wallet: Wallet;
-  account: BaseAccount;
+  accounts: MultishardMap;
   onClose: () => void;
 };
-export const SimpleWalletDetails = ({ wallet, account, onClose }: Props) => {
+export const MultishardWalletDetails = ({ wallet, accounts, onClose }: Props) => {
   const { t } = useI18n();
 
-  const chains = useUnit(networkModel.$chains);
   const hasProxies = useUnit(walletProviderModel.$hasProxies);
 
   const [isModalOpen, closeModal] = useModalClose(true, onClose);
@@ -33,6 +34,11 @@ export const SimpleWalletDetails = ({ wallet, account, onClose }: Props) => {
       icon: 'rename' as IconNames,
       title: t('walletDetails.common.renameButton'),
       onClick: toggleIsRenameModalOpen,
+    },
+    {
+      icon: 'export' as IconNames,
+      title: t('walletDetails.vault.export'),
+      onClick: () => walletDetailsUtils.exportMultishardWallet(wallet, accounts),
     },
     {
       icon: 'forget' as IconNames,
@@ -57,13 +63,15 @@ export const SimpleWalletDetails = ({ wallet, account, onClose }: Props) => {
     {
       id: 'accounts',
       title: t('walletDetails.common.accountTabTitle'),
-      panel: <AccountsList accountId={account.accountId} chains={Object.values(chains)} className="h-[351px]" />,
+      panel: <MultishardAccountsList accounts={accounts} className="h-[409px]" />,
     },
     {
       id: 'proxies',
       title: t('walletDetails.common.proxiesTabTitle'),
-      panel: (
-        <ProxiesList canCreateProxy={!walletUtils.isWatchOnly(wallet)} walletId={wallet.id} className="h-[376px]" />
+      panel: hasProxies ? (
+        <ProxiesList walletId={wallet.id} className="h-[393px] mt-4" />
+      ) : (
+        <EmptyProxyList className="h-[393px] mt-4" />
       ),
     },
   ];
@@ -78,15 +86,11 @@ export const SimpleWalletDetails = ({ wallet, account, onClose }: Props) => {
       isOpen={isModalOpen}
       onClose={closeModal}
     >
-      <div className="flex flex-col gap-y-4 w-full">
+      <div className="flex flex-col w-full">
         <div className="py-6 px-5 border-b border-divider">
           <WalletCardLg wallet={wallet} />
         </div>
-        {walletUtils.isWatchOnly(wallet) && !hasProxies ? (
-          <AccountsList accountId={account.accountId} chains={Object.values(chains)} className="h-[351px]" />
-        ) : (
-          <Tabs items={tabItems} panelClassName="" tabsClassName="mx-5" unmount={false} />
-        )}
+        <Tabs items={tabItems} panelClassName="" unmount={false} tabsClassName="mx-5" />
       </div>
 
       <RenameWalletModal wallet={wallet} isOpen={isRenameModalOpen} onClose={toggleIsRenameModalOpen} />

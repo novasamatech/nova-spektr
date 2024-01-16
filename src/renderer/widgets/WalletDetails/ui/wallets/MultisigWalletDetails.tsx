@@ -13,7 +13,7 @@ import { WalletFiatBalance } from '@features/wallets/WalletSelect/ui/WalletFiatB
 import { IconNames } from '@shared/ui/Icon/data';
 import { RenameWalletModal } from '@features/wallets/RenameWallet';
 import { ForgetWalletModal } from '@features/wallets/ForgetWallet';
-import { ProxiesList } from './ProxiesList';
+import { ProxiesList } from '../components/ProxiesList';
 import { walletProviderModel } from '@widgets/WalletDetails/model/wallet-provider-model';
 import { EmptyProxyList } from '@entities/proxy';
 
