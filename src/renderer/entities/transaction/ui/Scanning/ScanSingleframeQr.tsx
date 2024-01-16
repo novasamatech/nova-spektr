@@ -4,7 +4,7 @@ import { UnsignedTransaction } from '@substrate/txwrapper-polkadot';
 
 import { useI18n } from '@app/providers';
 import { Button, FootnoteText } from '@shared/ui';
-import { WalletCardSm } from '@entities/wallet'; // TODO: cross import
+import { WalletIcon } from '@entities/wallet'; // TODO: cross import
 import type { Account, ChainAccount, ChainId, ShardAccount, Wallet, Address } from '@shared/core';
 import { QrGeneratorContainer } from '../QrCode/QrGeneratorContainer/QrGeneratorContainer';
 import { QrTxGenerator } from '../QrCode/QrGenerator/QrTxGenerator';
@@ -18,7 +18,6 @@ type Props = {
   transaction: Transaction;
   account?: Account;
   signerWallet: Wallet;
-  addressPrefix: number;
   countdown: number;
   onGoBack: () => void;
   onResetCountdown: () => void;
@@ -32,7 +31,6 @@ export const ScanSingleframeQr = ({
   address,
   account,
   signerWallet,
-  addressPrefix,
   countdown,
   onGoBack,
   onResetCountdown,
@@ -69,9 +67,13 @@ export const ScanSingleframeQr = ({
     <div className="flex flex-col items-center w-full">
       <div className="flex items-center justify-center mb-1 h-8 w-full">
         {account && (
-          <div className="flex h-full w-1/2 justify-center items-center gap-x-0.5 ">
+          <div className="flex h-full justify-center items-center gap-x-0.5 ">
             <FootnoteText className="text-text-secondary">{t('signing.signer')}</FootnoteText>
-            <WalletCardSm wallet={signerWallet} accountId={account.accountId} addressPrefix={addressPrefix} />
+
+            <div className="w-full flex gap-x-2 items-center px-2">
+              <WalletIcon className="shrink-0" type={signerWallet.type} size={16} />
+              <FootnoteText className="text-text-secondary w-max">{signerWallet.name}</FootnoteText>
+            </div>
           </div>
         )}
       </div>

@@ -109,7 +109,6 @@ export const VaultSigning = ({
             chainId={chainId}
             api={api}
             address={getSignerAddress()}
-            addressPrefix={addressPrefix}
             countdown={countdown}
             account={signatory || accounts[0]}
             signerWallet={wallet}

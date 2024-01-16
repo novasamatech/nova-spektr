@@ -4,7 +4,7 @@ export { BaseModal, ConfirmModal, StatusModal } from './Modals';
 
 export { Select, Combobox, MultiSelect, DropdownButton, DropdownIconButton } from './Dropdowns';
 
-export { Popover, Tooltip, MenuPopover, InfoPopover, useParentScrollLock } from './Popovers';
+export { Popover, Tooltip, MenuPopover, useParentScrollLock } from './Popovers';
 
 export { Input, AmountInput, PasswordInput, SearchInput, InputArea, InputFile } from './Inputs';
 
