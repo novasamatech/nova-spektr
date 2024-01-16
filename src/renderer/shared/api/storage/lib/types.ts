@@ -14,6 +14,7 @@ import type {
   ProxyAccount,
   Connection,
   Notification,
+  ProxyGroup,
 } from '@shared/core';
 
 // =====================================================
@@ -101,6 +102,7 @@ export type TAccount = Table<Account, Account['id']>;
 export type TBalance = Table<Balance, ID[]>;
 export type TConnection = Table<Connection, Connection['id']>;
 export type TProxy = Table<ProxyAccount, ProxyAccount['id']>;
+export type TProxyGroup = Table<ProxyGroup, ProxyGroup['id']>;
 export type TMultisigTransaction = Table<MultisigTransaction, ID[]>;
 export type TMultisigEvent = Table<MultisigEvent, ID>;
 export type TNotification = Table<Notification, Notification['id']>;

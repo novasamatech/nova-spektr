@@ -34,13 +34,13 @@ if (!container) {
 }
 
 kernelModel.events.appStarted();
+proxiesModel.events.workerStarted();
 walletModel.events.walletStarted();
 networkModel.events.networkStarted();
 proxyModel.events.proxyStarted();
 balanceSubscriptionModel.events.balancesSubscribed();
 assetsModel.events.assetsStarted();
 notificationModel.events.notificationsStarted();
-proxiesModel.events.proxiesStarted();
 
 createRoot(container).render(
   <Router>

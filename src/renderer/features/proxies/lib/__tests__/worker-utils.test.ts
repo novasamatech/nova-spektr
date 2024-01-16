@@ -151,4 +151,10 @@ describe('features/proxies/lib/worker-utils', () => {
     const account = { type: AccountType.BASE };
     expect(proxyWorkerUtils.isProxiedAccount(account)).toEqual(false);
   });
+
+  test('should return undefined if chainId is not found', () => {
+    const result = proxyWorkerUtils.getKnownChain('0x01');
+
+    expect(result).toBeUndefined();
+  });
 });
