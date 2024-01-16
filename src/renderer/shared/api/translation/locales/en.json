@@ -94,7 +94,7 @@
     "create": "Create",
     "disabledError": {
       "differentAccounts": "Wallets with different accounts for chains are not supported",
-      "unsupportedType": "This type of wallet is not yet supported for the Multisig wallet creation"
+      "unsupportedType": "This type of wallet is not supported for the Multisig wallet creation"
     },
     "disabledLabel": "Not supported",
     "errorMessage": "Something went wrong",

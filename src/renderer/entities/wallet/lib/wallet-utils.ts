@@ -70,6 +70,7 @@ function isProxied(wallet?: Pick<Wallet, 'type'>): wallet is ProxiedWallet {
 
 const VALID_SIGNATORY_WALLET_TYPES = [
   WalletType.SINGLE_PARITY_SIGNER,
+  WalletType.MULTISHARD_PARITY_SIGNER,
   WalletType.WALLET_CONNECT,
   WalletType.NOVA_WALLET,
 ];
