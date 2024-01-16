@@ -147,7 +147,8 @@ async function getProxies(
             existingProxies.push(newProxy);
           }
 
-          const needToAddProxiedAccount = accounts[newProxy.accountId];
+          const needToAddProxiedAccount =
+            accounts[newProxy.accountId] && proxyWorkerUtils.isAvailableProxiedAccount(newProxy);
 
           if (needToAddProxiedAccount) {
             const proxiedAccount = {
