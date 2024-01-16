@@ -22,7 +22,7 @@ export const SimpleWalletDetails = ({ wallet, account, onClose }: Props) => {
   const { t } = useI18n();
 
   const chains = useUnit(networkModel.$chains);
-  const proxyAccounts = useUnit(walletProviderModel.$proxyAccounts);
+  const hasProxies = useUnit(walletProviderModel.$hasProxies);
 
   const [isModalOpen, closeModal] = useModalClose(true, onClose);
   const [isRenameModalOpen, toggleIsRenameModalOpen] = useToggle();
@@ -82,10 +82,10 @@ export const SimpleWalletDetails = ({ wallet, account, onClose }: Props) => {
         <div className="py-6 px-5 border-b border-divider">
           <WalletCardLg wallet={wallet} />
         </div>
-        {walletUtils.isWatchOnly(wallet) && proxyAccounts.length ? (
+        {walletUtils.isWatchOnly(wallet) && !hasProxies ? (
           <AccountsList accountId={account.accountId} chains={Object.values(chains)} className="h-[351px]" />
         ) : (
-          <Tabs items={tabItems} panelClassName="" tabsClassName="mx-5" />
+          <Tabs items={tabItems} panelClassName="" tabsClassName="mx-5" unmount={false} />
         )}
       </div>
 

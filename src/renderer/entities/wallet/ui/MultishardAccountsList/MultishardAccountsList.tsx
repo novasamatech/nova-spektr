@@ -1,20 +1,22 @@
 import { useMemo } from 'react';
+import { useUnit } from 'effector-react';
 
-import { RootExplorers, cnTw } from '@shared/lib/utils';
+import { cnTw, RootExplorers } from '@shared/lib/utils';
 import { ContactItem, ExplorersPopover } from '@entities/wallet';
 import { useI18n } from '@app/providers';
-import { FootnoteText, Accordion, HelpText } from '@shared/ui';
-import type { Chain, ChainAccount, ChainId, BaseAccount } from '@shared/core';
+import { Accordion, FootnoteText, HelpText } from '@shared/ui';
+import type { BaseAccount, ChainAccount, ChainId } from '@shared/core';
 import { ChainTitle } from '@entities/chain';
+import { networkModel } from '@entities/network';
 
 type Props = {
   accounts: Map<BaseAccount, Record<ChainId, ChainAccount[]>>;
-  chains: Chain[];
   className?: string;
 };
 
-export const MultishardAccountsList = ({ accounts, chains, className }: Props) => {
+export const MultishardAccountsList = ({ accounts, className }: Props) => {
   const { t } = useI18n();
+  const chains = useUnit(networkModel.$chains);
 
   const accountList = useMemo(() => {
     return [...accounts.entries()];
@@ -39,7 +41,7 @@ export const MultishardAccountsList = ({ accounts, chains, className }: Props) =
 
           <FootnoteText className="pl-10 text-text-tertiary">{t('accountList.addressColumn')}</FootnoteText>
 
-          {chains.map((chain) => {
+          {Object.values(chains).map((chain) => {
             if (!chainMap[chain.chainId]) return;
 
             return (

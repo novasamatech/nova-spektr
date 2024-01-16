@@ -24,7 +24,7 @@ type Props = {
   accountId: AccountId;
   addressPrefix?: number;
   proxyType: ProxyType;
-  actionButton?: ReactNode;
+  suffix?: ReactNode;
 };
 
 export const ProxyAccount = ({
@@ -35,7 +35,7 @@ export const ProxyAccount = ({
   accountId,
   addressPrefix,
   proxyType,
-  actionButton,
+  suffix,
 }: Props) => {
   const { t } = useI18n();
   const address = toAddress(accountId, { prefix: addressPrefix });
@@ -59,7 +59,7 @@ export const ProxyAccount = ({
           <HelpText className="text-tab-text-accent">{t(ProxyTypeName[proxyType])}</HelpText>
         </div>
       </div>
-      {actionButton}
+      {suffix}
     </div>
   );
 };

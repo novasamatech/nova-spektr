@@ -4,7 +4,6 @@ import { useState } from 'react';
 import { BaseModal, ContextMenu, DropdownIconButton, HelpText, IconButton, Tabs } from '@shared/ui';
 import { useModalClose, useToggle } from '@shared/lib/hooks';
 import { RootAccountLg, VaultAccountsList, WalletCardLg } from '@entities/wallet';
-import { networkModel } from '@entities/network';
 import { useI18n } from '@app/providers';
 import { Account, BaseAccount, ChainAccount, DraftAccount, KeyType, ShardAccount, Wallet } from '@shared/core';
 import { copyToClipboard, toAddress } from '@shared/lib/utils';
@@ -18,6 +17,8 @@ import { RenameWalletModal } from '@features/wallets/RenameWallet';
 import { ForgetWalletModal } from '@features/wallets/ForgetWallet';
 import { TabItem } from '@shared/ui/Tabs/common/types';
 import { ProxiesList } from '@widgets/WalletDetails/ui/ProxiesList';
+import { walletProviderModel } from '@widgets/WalletDetails/model/wallet-provider-model';
+import { EmptyProxyList } from '@entities/proxy';
 
 type Props = {
   wallet: Wallet;
@@ -28,7 +29,7 @@ type Props = {
 export const VaultWalletDetails = ({ wallet, root, accountsMap, onClose }: Props) => {
   const { t } = useI18n();
 
-  const chains = useUnit(networkModel.$chains);
+  const hasProxies = useUnit(walletProviderModel.$hasProxies);
 
   const [isModalOpen, closeModal] = useModalClose(true, onClose);
   const [newKeys, setNewKeys] = useState<DraftAccount<ChainAccount>[]>([]);
@@ -141,7 +142,6 @@ export const VaultWalletDetails = ({ wallet, root, accountsMap, onClose }: Props
 
           <VaultAccountsList
             className="h-[343px] mt-4"
-            chains={Object.values(chains)}
             accountsMap={accountsMap}
             onShardClick={vaultDetailsModel.events.shardsSelected}
           />
@@ -151,7 +151,11 @@ export const VaultWalletDetails = ({ wallet, root, accountsMap, onClose }: Props
     {
       id: 'proxies',
       title: t('walletDetails.common.proxiesTabTitle'),
-      panel: <ProxiesList walletId={wallet.id} className="h-[392px] mt-4" />,
+      panel: hasProxies ? (
+        <ProxiesList walletId={wallet.id} className="h-[392px] mt-4" />
+      ) : (
+        <EmptyProxyList className="h-[392px] mt-4" />
+      ),
     },
   ];
 
@@ -170,7 +174,7 @@ export const VaultWalletDetails = ({ wallet, root, accountsMap, onClose }: Props
           <WalletCardLg wallet={wallet} />
         </div>
 
-        <Tabs items={tabItems} panelClassName="" tabsClassName="mx-5" />
+        <Tabs items={tabItems} panelClassName="" tabsClassName="mx-5" unmount={false} />
       </div>
 
       <ShardsList />

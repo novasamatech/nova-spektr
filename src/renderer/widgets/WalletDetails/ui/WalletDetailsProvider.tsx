@@ -78,7 +78,7 @@ export const WalletDetailsProvider = () => {
       <ProxiedWalletDetails
         wallet={wallet}
         proxyWallet={proxyWalletForProxied}
-        account={accounts[0] as ProxiedAccount}
+        proxiedAccount={accounts[0] as ProxiedAccount}
         onClose={walletSelectModel.events.walletIdCleared}
       />
     );

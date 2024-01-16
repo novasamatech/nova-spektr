@@ -131,26 +131,29 @@ const $signatoryWallets = combine(
 
 const $proxyWalletForProxied = combine(
   {
-    account: $accounts.map((accounts) => accounts[0] as unknown as ProxiedAccount),
+    walletAccounts: $accounts,
     accounts: walletModel.$accounts,
     wallets: walletModel.$wallets,
     detailsWallet: walletSelectModel.$walletForDetails,
   },
-  ({ account, accounts, wallets, detailsWallet }): Wallet | undefined => {
+  ({ walletAccounts, accounts, wallets, detailsWallet }): Wallet | undefined => {
     if (!walletUtils.isProxied(detailsWallet || undefined)) return;
 
-    const walletsDict = dictionary(wallets, 'id');
+    const proxiedAccount = walletAccounts[0] as unknown as ProxiedAccount;
+    const walletsMap = dictionary(wallets, 'id');
     const proxyAccount = accounts.find(
-      (a) => a.accountId === account.proxyAccountId && !walletUtils.isWatchOnly(walletsDict[a.walletId]),
+      (a) => a.accountId === proxiedAccount.proxyAccountId && !walletUtils.isWatchOnly(walletsMap[a.walletId]),
     );
 
-    return proxyAccount && walletsDict[proxyAccount.walletId];
+    return proxyAccount && walletsMap[proxyAccount.walletId];
   },
+  { skipVoid: false },
 );
 
 export const walletProviderModel = {
   $accounts,
   $proxyAccounts,
+  $hasProxies: $proxyAccounts.map((accounts) => Boolean(accounts.length)),
   $singleShardAccount,
   $multiShardAccounts,
   $multisigAccount,

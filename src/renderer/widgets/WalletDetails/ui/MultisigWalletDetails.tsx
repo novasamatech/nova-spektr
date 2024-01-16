@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+import { useUnit } from 'effector-react';
 
 import { MultisigAccount, Signatory, Wallet, AccountId } from '@shared/core';
 import { BaseModal, FootnoteText, Tabs, HelpText, DropdownIconButton } from '@shared/ui';
@@ -12,7 +13,9 @@ import { WalletFiatBalance } from '@features/wallets/WalletSelect/ui/WalletFiatB
 import { IconNames } from '@shared/ui/Icon/data';
 import { RenameWalletModal } from '@features/wallets/RenameWallet';
 import { ForgetWalletModal } from '@features/wallets/ForgetWallet';
-import { ProxiesList } from '@widgets/WalletDetails/ui/ProxiesList';
+import { ProxiesList } from './ProxiesList';
+import { walletProviderModel } from '@widgets/WalletDetails/model/wallet-provider-model';
+import { EmptyProxyList } from '@entities/proxy';
 
 type Props = {
   wallet: Wallet;
@@ -24,6 +27,8 @@ type Props = {
 export const MultisigWalletDetails = ({ wallet, account, signatoryWallets, signatoryContacts, onClose }: Props) => {
   const { t } = useI18n();
   const { matrix, isLoggedIn } = useMatrix();
+
+  const hasProxies = useUnit(walletProviderModel.$hasProxies);
 
   const [isModalOpen, closeModal] = useModalClose(true, onClose);
   const [isRenameModalOpen, toggleIsRenameModalOpen] = useToggle();
@@ -161,7 +166,11 @@ export const MultisigWalletDetails = ({ wallet, account, signatoryWallets, signa
             {
               id: 'proxies',
               title: t('walletDetails.common.proxiesTabTitle'),
-              panel: <ProxiesList walletId={wallet.id} className="h-[376px]" />,
+              panel: hasProxies ? (
+                <ProxiesList walletId={wallet.id} className="h-[376px]" />
+              ) : (
+                <EmptyProxyList className="h-[376px]" />
+              ),
             },
           ]}
         />

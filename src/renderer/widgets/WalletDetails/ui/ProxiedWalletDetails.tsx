@@ -10,6 +10,8 @@ import { AccountsList, WalletCardLg, WalletIcon } from '@entities/wallet';
 import { RenameWalletModal } from '@features/wallets/RenameWallet';
 import { TabItem } from '@shared/ui/Tabs/common/types';
 import { ProxiesList } from '@widgets/WalletDetails/ui/ProxiesList';
+import { walletProviderModel } from '@widgets/WalletDetails/model/wallet-provider-model';
+import { EmptyProxyList } from '@entities/proxy';
 
 const ProxyTypeOperation: Record<ProxyType, string> = {
   [ProxyType.ANY]: 'proxy.operations.any',
@@ -25,12 +27,14 @@ const ProxyTypeOperation: Record<ProxyType, string> = {
 type Props = {
   wallet: Wallet;
   proxyWallet: Wallet;
-  account: ProxiedAccount;
+  proxiedAccount: ProxiedAccount;
   onClose: () => void;
 };
 
-export const ProxiedWalletDetails = ({ wallet, proxyWallet, account, onClose }: Props) => {
+export const ProxiedWalletDetails = ({ wallet, proxyWallet, proxiedAccount, onClose }: Props) => {
   const { t } = useI18n();
+
+  const hasProxies = useUnit(walletProviderModel.$hasProxies);
 
   const chains = useUnit(networkModel.$chains);
 
@@ -61,12 +65,22 @@ export const ProxiedWalletDetails = ({ wallet, proxyWallet, account, onClose }: 
     {
       id: 'accounts',
       title: t('walletDetails.common.accountTabTitle'),
-      panel: <AccountsList accountId={account.accountId} chains={[chains[account.chainId]]} className="h-[328px]" />,
+      panel: (
+        <AccountsList
+          accountId={proxiedAccount.accountId}
+          chains={[chains[proxiedAccount.chainId]]}
+          className="h-[328px]"
+        />
+      ),
     },
     {
       id: 'proxies',
       title: t('walletDetails.common.proxiesTabTitle'),
-      panel: <ProxiesList walletId={wallet.id} className="h-[353px]" />,
+      panel: hasProxies ? (
+        <ProxiesList walletId={wallet.id} className="h-[353px]" />
+      ) : (
+        <EmptyProxyList className="h-[353px]" />
+      ),
     },
   ];
 
@@ -91,10 +105,10 @@ export const ProxiedWalletDetails = ({ wallet, proxyWallet, account, onClose }: 
             &nbsp;
             <FootnoteText>{t('walletDetails.common.proxyToControl')}</FootnoteText>
             &nbsp;
-            <FootnoteText>{t(ProxyTypeOperation[account.proxyType])}</FootnoteText>
+            <FootnoteText>{t(ProxyTypeOperation[proxiedAccount.proxyType])}</FootnoteText>
           </div>
         </div>
-        <Tabs items={tabItems} panelClassName="" tabsClassName="mx-5" />
+        <Tabs items={tabItems} panelClassName="" unmount={false} tabsClassName="mx-5" />
       </div>
 
       <RenameWalletModal wallet={wallet} isOpen={isRenameModalOpen} onClose={toggleIsRenameModalOpen} />

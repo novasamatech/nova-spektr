@@ -29,6 +29,8 @@ import {
 } from '@shared/ui';
 import { TabItem } from '@shared/ui/Tabs/common/types';
 import { ProxiesList } from '@widgets/WalletDetails/ui/ProxiesList';
+import { walletProviderModel } from '@widgets/WalletDetails/model/wallet-provider-model';
+import { EmptyProxyList } from '@entities/proxy';
 
 type AccountItem = {
   accountId: AccountId;
@@ -42,6 +44,8 @@ type Props = {
 };
 export const WalletConnectDetails = ({ wallet, accounts, onClose }: Props) => {
   const { t } = useI18n();
+
+  const hasProxies = useUnit(walletProviderModel.$hasProxies);
 
   const [isModalOpen, closeModal] = useModalClose(true, onClose);
   const [isConfirmForgetOpen, toggleConfirmForget] = useToggle();
@@ -153,7 +157,11 @@ export const WalletConnectDetails = ({ wallet, accounts, onClose }: Props) => {
     {
       id: 'proxies',
       title: t('walletDetails.common.proxiesTabTitle'),
-      panel: <ProxiesList walletId={wallet.id} className="h-[385px] mt-6" />,
+      panel: hasProxies ? (
+        <ProxiesList walletId={wallet.id} className="h-[385px] mt-6" />
+      ) : (
+        <EmptyProxyList className="h-[385px] mt-6" />
+      ),
     },
   ];
 
@@ -172,7 +180,13 @@ export const WalletConnectDetails = ({ wallet, accounts, onClose }: Props) => {
           <WalletCardLg full wallet={wallet} />
         </div>
         <div className="px-3 flex-1">
-          <Tabs items={tabItems} panelClassName="" tabClassName="whitespace-nowrap" tabsClassName="mx-5" />
+          <Tabs
+            items={tabItems}
+            panelClassName=""
+            tabClassName="whitespace-nowrap"
+            tabsClassName="mx-5"
+            unmount={false}
+          />
         </div>
 
         <ConfirmModal

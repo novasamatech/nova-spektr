@@ -1,19 +1,23 @@
+import { useUnit } from 'effector-react';
+
 import { cnTw } from '@shared/lib/utils';
 import { DerivedAccount, accountUtils, ExplorersPopover } from '@entities/wallet';
 import { useI18n } from '@app/providers';
 import { FootnoteText, Accordion, HelpText } from '@shared/ui';
 import { ChainTitle } from '@entities/chain';
-import type { Chain, ChainId, ChainAccount, ShardAccount } from '@shared/core';
+import type { ChainId, ChainAccount, ShardAccount } from '@shared/core';
+import { networkModel } from '@entities/network';
 
 type Props = {
-  chains: Chain[];
   accountsMap: Record<ChainId, Array<ChainAccount | ShardAccount[]>>;
   className?: string;
   onShardClick?: (shards: ShardAccount[]) => void;
 };
 
-export const VaultAccountsList = ({ chains, accountsMap, className, onShardClick }: Props) => {
+export const VaultAccountsList = ({ accountsMap, className, onShardClick }: Props) => {
   const { t } = useI18n();
+
+  const chains = Object.values(useUnit(networkModel.$chains));
 
   return (
     <div className={cnTw('flex flex-col overflow-y-auto', className)}>

@@ -6,7 +6,7 @@ import { ChainTitle } from '@entities/chain';
 import { useI18n } from '@app/providers';
 import { Accordion, DropdownIconButton, FootnoteText, HelpText, IconButton } from '@shared/ui';
 import type { Chain, ID, ProxyAccount } from '@shared/core';
-import { EmptyProxyList, ProxyAccount as ProxyAccountComponent, proxyModel } from '@entities/proxy';
+import { ProxyAccount as ProxyAccountComponent, proxyModel } from '@entities/proxy';
 import { chainsService } from '@entities/network';
 import { AssetBalance } from '@entities/asset';
 import { DropdownIconButtonOption } from '@shared/ui/Dropdowns/common/types';
@@ -24,8 +24,6 @@ export const ProxiesList = ({ walletId, className, canCreateProxy = true }: Prop
 
   const proxyAccounts = useUnit(walletProviderModel.$proxyAccounts);
   const proxyChainGroups = useUnit(proxyModel.$proxyChainGroupStore)[walletId];
-
-  if (!proxyAccounts || !proxyAccounts.length) return <EmptyProxyList className={className} />;
 
   const proxiesByChain = groupBy(proxyAccounts, 'chainId');
 
@@ -117,7 +115,7 @@ export const ProxiesList = ({ walletId, className, canCreateProxy = true }: Prop
                           accountId={proxy.accountId}
                           proxyType={proxy.proxyType}
                           addressPrefix={chain?.addressPrefix}
-                          actionButton={getProxyActionButton(proxy, chain)}
+                          suffix={getProxyActionButton(proxy, chain)}
                         />
                       </li>
                     ))}
