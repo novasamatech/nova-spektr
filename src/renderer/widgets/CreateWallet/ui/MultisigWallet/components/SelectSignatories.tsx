@@ -128,7 +128,7 @@ export const SelectSignatories = ({ isActive, wallets, accounts, contacts, onSel
   });
 
   const getDisabledMessage = (type: WalletType) => {
-    const UnsupportedTypes = [WalletType.WATCH_ONLY, WalletType.MULTISIG];
+    const UnsupportedTypes = [WalletType.WATCH_ONLY, WalletType.MULTISIG, WalletType.PROXIED];
     if (UnsupportedTypes.includes(type)) {
       return t('createMultisigAccount.disabledError.unsupportedType');
     }
