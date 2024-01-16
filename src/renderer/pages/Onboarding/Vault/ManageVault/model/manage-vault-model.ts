@@ -9,6 +9,7 @@ import { AccountType, ChainType, CryptoType, KeyType } from '@shared/core';
 import { dictionary } from '@shared/lib/utils';
 import { storageService } from '@shared/api/storage';
 import { SeedInfo } from '@entities/transaction';
+import { walletSelectModel } from '@features/wallets';
 
 const chains = chainsService.getChainsData();
 
@@ -164,7 +165,7 @@ sample({
   clock: createVaultFx.doneData,
   filter: (data: CreateResult | undefined): data is CreateResult => Boolean(data),
   fn: (data) => data.wallet.id,
-  target: walletModel.events.walletSelected,
+  target: walletSelectModel.events.walletSelected,
 });
 
 sample({
