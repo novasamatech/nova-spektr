@@ -7,7 +7,7 @@ import { useI18n } from '@app/providers';
 import { Accordion, DropdownIconButton, FootnoteText, HelpText, IconButton } from '@shared/ui';
 import type { Chain, ID, ProxyAccount } from '@shared/core';
 import { ProxyAccount as ProxyAccountComponent, proxyModel } from '@entities/proxy';
-import { chainsService } from '@entities/network';
+import { networkModel } from '@entities/network';
 import { AssetBalance } from '@entities/asset';
 import { DropdownIconButtonOption } from '@shared/ui/Dropdowns/common/types';
 import { ExplorersPopover } from '@entities/wallet';
@@ -24,6 +24,8 @@ export const ProxiesList = ({ walletId, className, canCreateProxy = true }: Prop
 
   const proxyAccounts = useUnit(walletProviderModel.$proxyAccounts);
   const proxyChainGroups = useUnit(proxyModel.$proxyChainGroupStore)[walletId];
+
+  const chains = useUnit(networkModel.$chains);
 
   const proxiesByChain = groupBy(proxyAccounts, 'chainId');
 
@@ -47,7 +49,7 @@ export const ProxiesList = ({ walletId, className, canCreateProxy = true }: Prop
           <DropdownIconButton.Item>
             <ExplorersPopover
               address={proxyAccount.accountId}
-              explorers={chain.explorers || []}
+              explorers={chain.explorers}
               addressPrefix={chain.addressPrefix}
               className="-mt-10 -mr-1"
               button={<DropdownIconButton.Option option={openInfoAction} />}
@@ -85,9 +87,9 @@ export const ProxiesList = ({ walletId, className, canCreateProxy = true }: Prop
         {proxyChainGroups.map((chainGroup) => {
           const { chainId, totalDeposit } = chainGroup;
 
-          const chain = chainsService.getChainById(chainId);
+          const chain = chains[chainId];
 
-          if (!chain || !proxiesByChain[chainId] || !proxiesByChain[chainId].length) return;
+          if (!proxiesByChain[chainId] || !proxiesByChain[chainId].length) return;
 
           return (
             <li key={chainId} className="flex items-center py-2">
@@ -100,7 +102,7 @@ export const ProxiesList = ({ walletId, className, canCreateProxy = true }: Prop
                       &nbsp;
                       <AssetBalance
                         value={totalDeposit}
-                        asset={chain?.assets[0]}
+                        asset={chain.assets[0]}
                         showIcon={false}
                         className="text-help-text"
                       />
@@ -109,7 +111,7 @@ export const ProxiesList = ({ walletId, className, canCreateProxy = true }: Prop
                 </Accordion.Button>
                 <Accordion.Content>
                   <ul className="flex flex-col gap-y-2">
-                    {(proxiesByChain[chainId] || []).map((proxy) => (
+                    {proxiesByChain[chainId].map((proxy) => (
                       <li className="px-2 py-1.5" key={proxy.accountId}>
                         <ProxyAccountComponent
                           accountId={proxy.accountId}

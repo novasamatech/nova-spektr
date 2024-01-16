@@ -16,7 +16,7 @@ import { DerivationsAddressModal, ImportKeysModal, KeyConstructor } from '@featu
 import { RenameWalletModal } from '@features/wallets/RenameWallet';
 import { ForgetWalletModal } from '@features/wallets/ForgetWallet';
 import { TabItem } from '@shared/ui/Tabs/common/types';
-import { ProxiesList } from '@widgets/WalletDetails/ui/ProxiesList';
+import { ProxiesList } from './ProxiesList';
 import { walletProviderModel } from '@widgets/WalletDetails/model/wallet-provider-model';
 import { EmptyProxyList } from '@entities/proxy';
 

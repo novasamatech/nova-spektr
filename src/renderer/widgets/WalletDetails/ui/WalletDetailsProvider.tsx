@@ -8,7 +8,7 @@ import { MultishardWalletDetails } from './MultishardWalletDetails';
 import { VaultWalletDetails } from './VaultWalletDetails';
 import { walletProviderModel } from '../model/wallet-provider-model';
 import { walletUtils } from '@entities/wallet';
-import { ProxiedWalletDetails } from '@widgets/WalletDetails/ui/ProxiedWalletDetails';
+import { ProxiedWalletDetails } from './ProxiedWalletDetails';
 import { ProxiedAccount } from '@shared/core';
 
 export const WalletDetailsProvider = () => {

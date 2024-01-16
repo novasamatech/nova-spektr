@@ -28,7 +28,7 @@ import {
   Tabs,
 } from '@shared/ui';
 import { TabItem } from '@shared/ui/Tabs/common/types';
-import { ProxiesList } from '@widgets/WalletDetails/ui/ProxiesList';
+import { ProxiesList } from './ProxiesList';
 import { walletProviderModel } from '@widgets/WalletDetails/model/wallet-provider-model';
 import { EmptyProxyList } from '@entities/proxy';
 
