@@ -1,7 +1,7 @@
 import { Chain } from '@shared/core';
-import { proxiesUtils } from '../utils';
+import { proxiesUtils } from '../proxies-utils';
 
-describe('features/proxies/lib/utils', () => {
+describe('features/proxies/lib/proxies-utils', () => {
   test('should return true if "regular_proxy" is included in chain options', () => {
     const chainWithRegularProxy = { options: ['regular_proxy'] } as Chain;
     const result = proxiesUtils.isRegularProxy(chainWithRegularProxy);
