@@ -11,11 +11,22 @@ import type {
   ProxiedAccount,
   Wallet,
 } from '@shared/core';
-import { kernelModel, WalletConnectAccount } from '@shared/core';
+import { WalletConnectAccount } from '@shared/core';
 import { storageService } from '@shared/api/storage';
 import { modelUtils } from '../lib/model-utils';
 import { accountUtils } from '../lib/account-utils';
-import { walletUtils } from '../lib/wallet-utils';
+
+const walletStarted = createEvent();
+const watchOnlyCreated = createEvent<CreateParams<BaseAccount>>();
+const multishardCreated = createEvent<CreateParams<BaseAccount | ChainAccount>>();
+const singleshardCreated = createEvent<CreateParams<BaseAccount>>();
+const multisigCreated = createEvent<CreateParams<MultisigAccount>>();
+const walletConnectCreated = createEvent<CreateParams<WalletConnectAccount>>();
+const proxiedWalletsCreated = createEvent<CreateParams<ProxiedAccount>[]>();
+
+const multisigAccountUpdated = createEvent<MultisigUpdateParams>();
+const walletRemoved = createEvent<ID>();
+const walletsRemoved = createEvent<ID[]>();
 
 const $wallets = createStore<Wallet[]>([]);
 const $activeWallet = combine(
@@ -44,18 +55,6 @@ type CreateParams<T extends Account> = {
   accounts: Omit<NoID<T>, 'walletId'>[];
 };
 type MultisigUpdateParams = Partial<MultisigAccount> & { id: Account['id'] };
-
-const watchOnlyCreated = createEvent<CreateParams<BaseAccount>>();
-const multishardCreated = createEvent<CreateParams<BaseAccount | ChainAccount>>();
-const singleshardCreated = createEvent<CreateParams<BaseAccount>>();
-const multisigCreated = createEvent<CreateParams<MultisigAccount>>();
-const walletConnectCreated = createEvent<CreateParams<WalletConnectAccount>>();
-const proxiedWalletsCreated = createEvent<CreateParams<ProxiedAccount>[]>();
-
-const walletSelected = createEvent<ID>();
-const multisigAccountUpdated = createEvent<MultisigUpdateParams>();
-const walletRemoved = createEvent<ID>();
-const walletsRemoved = createEvent<ID[]>();
 
 const fetchAllAccountsFx = createEffect((): Promise<Account[]> => {
   return storageService.accounts.readAll();
@@ -126,24 +125,6 @@ const proxiedWalletsCreatedFx = createEffect(
   },
 );
 
-type SelectParams = {
-  prevId?: ID;
-  nextId: ID;
-};
-const walletSelectedFx = createEffect(async ({ prevId, nextId }: SelectParams): Promise<ID | undefined> => {
-  if (!prevId) {
-    return storageService.wallets.update(nextId, { isActive: true });
-  }
-
-  // TODO: consider using Dexie transaction() | Task --> https://app.clickup.com/t/8692uyemn
-  const [, nextWallet] = await Promise.all([
-    storageService.wallets.update(prevId, { isActive: false }),
-    storageService.wallets.update(nextId, { isActive: true }),
-  ]);
-
-  return nextWallet ? nextId : undefined;
-});
-
 const multisigWalletUpdatedFx = createEffect(
   async (account: MultisigUpdateParams): Promise<MultisigUpdateParams | undefined> => {
     const id = await storageService.accounts.update(account.id, account);
@@ -167,7 +148,7 @@ const removeWalletsFx = createEffect((wallets: RemoveParams[]): Promise<ID[]> =>
 });
 
 sample({
-  clock: kernelModel.events.appStarted,
+  clock: walletStarted,
   target: [fetchAllWalletsFx, fetchAllAccountsFx],
 });
 sample({
@@ -177,34 +158,6 @@ sample({
 sample({
   clock: fetchAllAccountsFx.doneData,
   target: $accounts,
-});
-
-sample({
-  clock: fetchAllWalletsFx.doneData,
-  filter: (wallets) => wallets.length > 0,
-  fn: (wallets) => {
-    const match = wallets.find((wallet) => wallet.isActive) || wallets[0];
-
-    return { nextId: match.id };
-  },
-  target: walletSelectedFx,
-});
-
-sample({
-  clock: walletSelected,
-  source: $activeWallet,
-  fn: (wallet, nextId) => ({ prevId: wallet?.id, nextId }),
-  target: walletSelectedFx,
-});
-
-sample({
-  clock: walletSelectedFx.doneData,
-  source: $wallets,
-  filter: (_, nextId) => Boolean(nextId),
-  fn: (wallets, nextId) => {
-    return wallets.map((wallet) => ({ ...wallet, isActive: wallet.id === nextId }));
-  },
-  target: $wallets,
 });
 
 sample({
@@ -237,15 +190,6 @@ sample({
   target: spread({
     targets: { wallets: $wallets, accounts: $accounts },
   }),
-});
-
-sample({
-  clock: [walletCreatedFx.doneData, multishardCreatedFx.doneData],
-  filter: (data: CreateResult | undefined): data is CreateResult => {
-    return Boolean(data) && !walletUtils.isProxied(data?.wallet);
-  },
-  fn: (data) => data.wallet.id,
-  target: walletSelected,
 });
 
 sample({
@@ -296,19 +240,6 @@ sample({
   }),
 });
 
-sample({
-  clock: removeWalletFx.doneData,
-  source: {
-    activeWallet: $activeWallet,
-    wallets: $wallets,
-  },
-  filter: ({ activeWallet }, walletId) => activeWallet?.id === walletId,
-  fn: ({ wallets }) => ({
-    nextId: wallets[0].id,
-  }),
-  target: walletSelectedFx,
-});
-
 export const walletModel = {
   $wallets,
   $activeWallet,
@@ -316,13 +247,13 @@ export const walletModel = {
   $activeAccounts,
   $isLoadingWallets: fetchAllWalletsFx.pending,
   events: {
+    walletStarted,
     watchOnlyCreated,
     multishardCreated,
     singleshardCreated,
     multisigCreated,
     walletConnectCreated,
     proxiedWalletsCreated,
-    walletSelected,
     multisigAccountUpdated,
     walletRemoved,
     walletRemovedSuccess: removeWalletFx.done,

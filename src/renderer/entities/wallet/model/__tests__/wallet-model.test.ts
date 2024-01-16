@@ -2,16 +2,12 @@ import { fork, allSettled } from 'effector';
 
 import { walletModel } from '../wallet-model';
 import { walletMock } from './mocks/wallet-mock';
-import { kernelModel, Wallet, ProxiedAccount } from '@shared/core';
+import { Wallet, ProxiedAccount } from '@shared/core';
 import { storageService } from '@shared/api/storage';
-
-jest.mock('@app/providers', () => ({
-  useMatrix: jest.fn(),
-}));
 
 describe('entities/wallet/model/wallet-model', () => {
   afterEach(() => {
-    jest.clearAllMocks();
+    jest.restoreAllMocks();
   });
 
   test('should set $wallets, $accounts, $activeWallets, $activeAccounts with data on appStarted', async () => {
@@ -25,27 +21,11 @@ describe('entities/wallet/model/wallet-model', () => {
 
     const scope = fork();
 
-    await allSettled(kernelModel.events.appStarted, { scope });
+    await allSettled(walletModel.events.walletStarted, { scope });
     expect(scope.getState(walletModel.$wallets)).toEqual(wallets);
     expect(scope.getState(walletModel.$accounts)).toEqual(walletMock.accounts);
     expect(scope.getState(walletModel.$activeWallet)).toEqual(wallets[0]);
     expect(scope.getState(walletModel.$activeAccounts)).toEqual([acc1, acc2]);
-  });
-
-  test('should update $activeWallet, $activeAccounts on walletSelected', async () => {
-    const prevWallets = walletMock.getWallets(1);
-    const [, , acc3, acc4] = walletMock.accounts;
-
-    jest.spyOn(storageService.wallets, 'update').mockResolvedValue(2);
-
-    const scope = fork({
-      values: new Map().set(walletModel.$wallets, prevWallets).set(walletModel.$accounts, walletMock.accounts),
-    });
-
-    const nextWallets = walletMock.getWallets(2);
-    await allSettled(walletModel.events.walletSelected, { scope, params: 2 });
-    expect(scope.getState(walletModel.$activeWallet)).toEqual(nextWallets[1]);
-    expect(scope.getState(walletModel.$activeAccounts)).toEqual([acc3, acc4]);
   });
 
   test('should update $wallets, $accounts on watchOnlyCreated', async () => {
@@ -65,7 +45,7 @@ describe('entities/wallet/model/wallet-model', () => {
       params: { wallet: newWallet, accounts: [newAccounts[0]] },
     });
 
-    expect(scope.getState(walletModel.$wallets)).toEqual(wallets.concat({ ...newWallet, isActive: true }));
+    expect(scope.getState(walletModel.$wallets)).toEqual(wallets.concat(newWallet));
     expect(scope.getState(walletModel.$accounts)).toEqual(walletMock.accounts.concat(newAccounts[0]));
   });
 
@@ -88,7 +68,7 @@ describe('entities/wallet/model/wallet-model', () => {
       params: { wallet: newWallet, accounts: newAccounts },
     });
 
-    expect(scope.getState(walletModel.$wallets)).toEqual(wallets.concat({ ...newWallet, isActive: true }));
+    expect(scope.getState(walletModel.$wallets)).toEqual(wallets.concat(newWallet));
     expect(scope.getState(walletModel.$accounts)).toEqual(walletMock.accounts.concat(newAccounts));
   });
 

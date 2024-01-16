@@ -8,10 +8,6 @@ jest.mock('@shared/api/xcm', () => ({
   ...jest.requireActual('@shared/api/xcm'),
 }));
 
-jest.mock('@app/providers', () => ({
-  useMatrix: jest.fn(),
-}));
-
 describe('widgets/SendAssetModal/model/send-asset', () => {
   afterEach(() => {
     jest.restoreAllMocks();

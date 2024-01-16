@@ -4,10 +4,6 @@ import { storageService } from '@shared/api/storage';
 import { proxyModel } from '../proxy-model';
 import { HexString, ProxyAccount } from '@shared/core';
 
-jest.mock('@app/providers', () => ({
-  useMatrix: jest.fn(),
-}));
-
 const proxyMock = {
   id: 0,
   chainId: '0x00' as HexString,

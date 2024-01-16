@@ -6,10 +6,6 @@ import { ChainAccount, KeyType, AccountType, CryptoType, ChainType } from '@rend
 import { TEST_HASH } from '@renderer/shared/lib/utils';
 import { SeedInfo } from '@entities/transaction';
 
-jest.mock('@renderer/app/providers', () => ({
-  useMatrix: jest.fn(),
-}));
-
 describe('pages/Onboarding/Vault/ManageVault/model/manage-vault-model', () => {
   const defaultKeys = [
     {
