@@ -15,7 +15,7 @@ describe('features/wallets/WalletSelect/lib/wallet-select-utils', () => {
     expect(groupedWallets).toEqual([wallets[0], wallets[2], wallets[1]]);
   });
 
-  test('should group wallets, respect query', () => {
+  test('should group wallets with respect to query', () => {
     const groups = walletSelectUtils.getWalletByGroups(wallets, 'p');
     const groupedWallets = Object.values(groups).flat();
 
