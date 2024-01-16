@@ -15,7 +15,7 @@ import type {
   Connection,
   Notification,
 } from '@shared/core';
-import { ProxyChainGroup } from '../../../core/types/proxy';
+import { ProxyGroup } from '../../../core/types/proxy';
 
 // =====================================================
 // ================ Storage interface ==================
@@ -102,7 +102,7 @@ export type TAccount = Table<Account, Account['id']>;
 export type TBalance = Table<Balance, ID[]>;
 export type TConnection = Table<Connection, Connection['id']>;
 export type TProxy = Table<ProxyAccount, ProxyAccount['id']>;
-export type TProxyGroup = Table<ProxyChainGroup, ProxyChainGroup['id']>;
+export type TProxyGroup = Table<ProxyGroup, ProxyGroup['id']>;
 export type TMultisigTransaction = Table<MultisigTransaction, ID[]>;
 export type TMultisigEvent = Table<MultisigEvent, ID>;
 export type TNotification = Table<Notification, Notification['id']>;

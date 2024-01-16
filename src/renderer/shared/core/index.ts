@@ -58,7 +58,7 @@ export type {
   PartialProxyAccount,
   PartialProxiedAccount,
   ProxyDeposits,
-  ProxyChainGroup,
+  ProxyGroup,
 } from './types/proxy';
 
 export type { Notification, MultisigInvite, MultisigOperation, ProxyAction } from './types/notification';

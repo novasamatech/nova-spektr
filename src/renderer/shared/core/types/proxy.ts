@@ -1,7 +1,7 @@
 import { ProxiedAccount } from './account';
 import { AccountId, ID, ChainId } from './general';
 
-export type ProxyChainGroup = {
+export type ProxyGroup = {
   id: ID;
   walletId: ID;
   proxiedAccountId: AccountId;

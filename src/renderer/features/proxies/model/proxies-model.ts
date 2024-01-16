@@ -13,7 +13,7 @@ import type {
   PartialProxiedAccount,
   ProxiedAccount,
   ProxyAccount,
-  ProxyChainGroup,
+  ProxyGroup,
   ProxyDeposits,
   Wallet,
 } from '@shared/core';
@@ -200,39 +200,16 @@ sample({
   source: {
     wallets: walletModel.$wallets,
     accounts: walletModel.$accounts,
-    proxyChainGroups: proxyModel.$proxyChainGroups,
+    groups: proxyModel.$proxyGroups,
   },
-  fn: ({ wallets, accounts, proxyChainGroups }, deposits) => {
-    const proxyGroups = wallets.reduce<NoID<ProxyChainGroup>[]>((acc, w) => {
-      const walletAccounts = accounts.filter((a) => a.walletId === w.id);
+  fn: ({ wallets, accounts, groups }, deposits) => {
+    const proxyGroups = proxyUtils.getProxyGroups(wallets, accounts, deposits);
 
-      if (walletAccounts.length > 0) {
-        const walletProxyGroups = walletAccounts.reduce<NoID<ProxyChainGroup>[]>((acc, a) => {
-          const walletDeposits = deposits.deposits[a.accountId];
-          if (!walletDeposits) return acc;
-
-          acc.push({
-            walletId: w.id,
-            proxiedAccountId: a.accountId,
-            chainId: deposits.chainId,
-            totalDeposit: walletDeposits,
-          });
-
-          return acc;
-        }, []);
-
-        acc = acc.concat(walletProxyGroups);
-      }
-
-      return acc;
-    }, []);
-
-    const { toAdd, toUpdate } = proxyGroups.reduce<{
-      toAdd: NoID<ProxyChainGroup>[];
-      toUpdate: NoID<ProxyChainGroup>[];
-    }>(
+    const { toAdd, toUpdate } = groups.reduce<Record<'toAdd' | 'toUpdate', NoID<ProxyGroup>[]>>(
       (acc, g) => {
-        if (!proxyChainGroups.some((p) => proxyUtils.isSameProxyChainGroup(p, g))) {
+        const shouldAddAll = proxyGroups.every((p) => proxyUtils.isSameProxyGroup(p, g));
+
+        if (shouldAddAll) {
           acc.toAdd.push(g);
         } else {
           acc.toUpdate.push(g);
@@ -240,21 +217,16 @@ sample({
 
         return acc;
       },
-      {
-        toAdd: [],
-        toUpdate: [],
-      },
+      { toAdd: [], toUpdate: [] },
     );
 
-    const toRemove = proxyChainGroups.filter(
-      (p) => p.chainId === deposits.chainId && !proxyGroups.some((g) => proxyUtils.isSameProxyChainGroup(g, p)),
-    );
+    const toRemove = groups.filter((p) => {
+      if (p.chainId !== deposits.chainId) return false;
 
-    return {
-      toAdd,
-      toUpdate,
-      toRemove,
-    };
+      return !proxyGroups.some((g) => proxyUtils.isSameProxyGroup(g, p));
+    });
+
+    return { toAdd, toUpdate, toRemove };
   },
   target: spread({
     toAdd: proxyModel.events.proxyGroupsAdded,
