@@ -14,8 +14,8 @@ import type {
   ProxyAccount,
   Connection,
   Notification,
+  ProxyGroup,
 } from '@shared/core';
-import { ProxyGroup } from '../../../core/types/proxy';
 
 // =====================================================
 // ================ Storage interface ==================
