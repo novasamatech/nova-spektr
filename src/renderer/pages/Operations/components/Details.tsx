@@ -1,7 +1,7 @@
 import { useUnit } from 'effector-react';
 
 import { useI18n } from '@app/providers';
-import { AddressWithExplorers, WalletCardSm, WalletIcon, walletModel } from '@entities/wallet';
+import { AddressWithExplorers, WalletCardSm, WalletIcon, walletModel, ExplorersPopover } from '@entities/wallet';
 import { Icon, FootnoteText, DetailRow, CaptionText } from '@shared/ui';
 import { useToggle } from '@shared/lib/hooks';
 import { MultisigTransaction, Transaction, isXcmTransaction, isTransferTransaction } from '@entities/transaction';
@@ -83,11 +83,11 @@ const Details = ({ tx, account, extendedChain, signatory }: Props) => {
 
       {signatory && signatoryWallet && (
         <DetailRow label={t('transfer.signatoryLabel')} className="text-text-secondary -mr-2">
-          <WalletCardSm
-            wallet={signatoryWallet}
-            accountId={signatory.accountId}
-            addressPrefix={addressPrefix}
+          <ExplorersPopover
+            button={<WalletCardSm wallet={signatoryWallet} />}
+            address={signatory.accountId}
             explorers={explorers}
+            addressPrefix={addressPrefix}
           />
         </DetailRow>
       )}

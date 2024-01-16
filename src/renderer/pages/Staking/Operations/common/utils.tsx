@@ -5,9 +5,8 @@ import { ReactNode } from 'react';
 import { AccountAddress, accountUtils, WalletIcon, walletUtils } from '@entities/wallet';
 import { DropdownOption } from '@shared/ui/Dropdowns/common/types';
 import { AssetBalance } from '@entities/asset';
-import { ExplorerLink, FootnoteText } from '@shared/ui';
-import { ChainId, Explorer } from '@shared/core';
-import { InfoSection } from '@shared/ui/Popovers/InfoPopover/InfoPopover';
+import { FootnoteText } from '@shared/ui';
+import { WalletType } from '@shared/core';
 import type {
   Address,
   Stake,
@@ -16,7 +15,7 @@ import type {
   Asset,
   Balance as AccountBalance,
   Wallet,
-  WalletType,
+  ChainId,
 } from '@shared/core';
 import {
   toAddress,
@@ -25,7 +24,6 @@ import {
   transferableAmount,
   unlockingAmount,
   redeemableAmount,
-  getAccountExplorer,
   dictionary,
 } from '@shared/lib/utils';
 
@@ -235,15 +233,6 @@ export const getSignatoryOption = (
   const element = getWalletElement(wallet.type, wallet.name, balanceContent);
 
   return { id: wallet.id + account.accountId + account.name, value: account, element };
-};
-
-export const getExplorers = (address: Address, explorers: Explorer[] = []): [InfoSection] => {
-  const explorersContent = explorers.map((explorer) => ({
-    id: explorer.name,
-    value: <ExplorerLink name={explorer.name} href={getAccountExplorer(explorer, { address })} />,
-  }));
-
-  return [{ items: explorersContent }];
 };
 
 export const getDestinationAccounts = (accounts: Account[], wallets: Wallet[], chainId: ChainId) => {

@@ -52,14 +52,14 @@ export const AccountAddress = ({
 
   const addressContent = typeIsAdaptive ? (
     <Truncate
-      className={cnTw('text-footnote text-text-secondary', addressFont)}
+      className={cnTw('transition-colors text-footnote text-inherit', addressFont)}
       ellipsis="..."
       start={4}
       end={4}
       text={addressToShow}
     />
   ) : (
-    <p className={cnTw('inline-block break-all text-footnote text-text-secondary truncate', addressFont)}>
+    <p className={cnTw('transition-colors inline-block break-all text-footnote text-inherit truncate', addressFont)}>
       {addressToShow}
     </p>
   );

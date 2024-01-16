@@ -1,12 +1,11 @@
 import { PropsWithChildren } from 'react';
 
-import { getAddress } from '@entities/wallet';
-import { useAddressInfo } from '@entities/wallet/lib/useAddressInfo';
-import { InfoPopover, Icon } from '@shared/ui';
+import { ExplorersPopover } from '@entities/wallet';
+import { Icon, HelpText } from '@shared/ui';
 import { SigningStatus } from '@entities/transaction';
 import { cnTw } from '@shared/lib/utils';
-import type { Explorer } from '@shared/core';
-import { AccountId } from '@shared/core';
+import type { Explorer, AccountId } from '@shared/core';
+import { useI18n } from '@app/providers';
 
 const IconProps = {
   SIGNED: { className: 'group-hover:hidden text-text-positive', name: 'checkmarkOutline' },
@@ -14,43 +13,41 @@ const IconProps = {
 } as const;
 
 type Props = {
+  accountId: AccountId;
   explorers?: Explorer[];
+  addressPrefix?: number;
   status?: SigningStatus;
   matrixId?: string;
-  wrapperClassName?: string;
-  accountId: AccountId;
-  addressPrefix?: number;
 };
 
 export const SignatoryCard = ({
+  accountId,
   explorers,
+  addressPrefix,
   status,
   matrixId,
-  wrapperClassName,
   children,
-  ...addressProps
 }: PropsWithChildren<Props>) => {
-  const address = getAddress(addressProps);
-  const popoverItems = useAddressInfo({ address, explorers, showMatrix: true });
+  const { t } = useI18n();
 
-  if (!popoverItems.find((item) => item.title === 'Matrix ID') && matrixId) {
-    popoverItems.push({
-      title: 'Matrix ID',
-      items: [{ id: matrixId, value: matrixId }],
-    });
-  }
+  const button = (
+    <div
+      className={cnTw(
+        'group flex items-center gap-x-2 px-2 py-1.5 cursor-pointer flex-1 text-text-secondary rounded',
+        'transition-colors hover:bg-action-background-hover hover:text-text-primary',
+      )}
+    >
+      {children}
+      <Icon name="info" size={16} className="text-icon-hover invisible group-hover:visible" />
+      {status && status in IconProps && <Icon size={16} {...IconProps[status as keyof typeof IconProps]} />}
+    </div>
+  );
 
   return (
-    <InfoPopover data={popoverItems} buttonClassName="w-full" className="w-[230px]" position="right-0 left-unset">
-      <div
-        className={cnTw(
-          'group flex gap-x-2 px-2 py-1.5 items-center cursor-pointer flex-1 hover:bg-action-background-hover text-text-secondary hover:text-text-primary rounded',
-        )}
-      >
-        {children}
-        <Icon name="info" size={16} className="text-icon-hover invisible group-hover:visible" />
-        {status && status in IconProps && <Icon size={16} {...IconProps[status as keyof typeof IconProps]} />}
-      </div>
-    </InfoPopover>
+    <ExplorersPopover button={button} address={accountId} explorers={explorers} addressPrefix={addressPrefix}>
+      <ExplorersPopover.Group active={Boolean(matrixId)} title={t('general.explorers.matrixIdTitle')}>
+        <HelpText className="text-text-secondary break-all">{matrixId}</HelpText>
+      </ExplorersPopover.Group>
+    </ExplorersPopover>
   );
 };
