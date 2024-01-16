@@ -10,7 +10,7 @@ import wallet_connect_reconnect from '@shared/assets/video/wallet_connect_reconn
 import { useI18n } from '@app/providers';
 import { Account, AccountId, Chain, WalletConnectWallet } from '@shared/core';
 import { wcDetailsModel } from '@widgets/WalletDetails/model/wc-details-model';
-import { chainsService } from '@entities/network';
+import { chainsService, networkModel } from '@entities/network';
 
 type AccountItem = {
   accountId: AccountId;
@@ -25,11 +25,11 @@ type Props = {
 export const WalletConnectAccounts = ({ wallet, accounts }: Props) => {
   const { t } = useI18n();
 
+  const chains = useUnit(networkModel.$chains);
   const reconnectStep = useUnit(wcDetailsModel.$reconnectStep);
 
-  // TODO: Rework with https://app.clickup.com/t/8692ykm3y
   const accountsList = useMemo(() => {
-    const sortedChains = chainsService.getChainsData({ sort: true });
+    const sortedChains = chainsService.sortChains(Object.values(chains));
 
     const accountsMap = keyBy(accounts, 'chainId');
 
