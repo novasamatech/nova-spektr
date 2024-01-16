@@ -1,37 +1,48 @@
-import { InfoPopover, Icon } from '@shared/ui';
+import { HelpText, IconButton } from '@shared/ui';
 import { cnTw } from '@shared/lib/utils';
 import { AccountAddressProps, AccountAddress, getAddress } from '../AccountAddress/AccountAddress';
-import { useAddressInfo } from '../../lib/useAddressInfo';
 import type { Explorer } from '@shared/core';
+import { ExplorersPopover } from '../ExplorersPopover/ExplorersPopover';
+import { useI18n } from '@app/providers';
 
 type Props = {
-  showMatrix?: boolean;
+  matrixId?: string;
   explorers?: Explorer[];
   position?: string;
   wrapperClassName?: string;
 } & AccountAddressProps;
 
 export const AddressWithExplorers = ({
+  matrixId,
   explorers = [],
-  showMatrix,
   position,
   wrapperClassName,
   ...addressProps
 }: Props) => {
-  const address = getAddress(addressProps);
-  const popoverItems = useAddressInfo({ address, explorers, showMatrix });
+  const { t } = useI18n();
+
+  const button = (
+    <div
+      className={cnTw(
+        'group flex items-center gap-x-1 px-2 h-6 rounded cursor-pointer transition-colors',
+        'hover:bg-action-background-hover focus-within:bg-action-background-hover',
+        wrapperClassName,
+      )}
+    >
+      <AccountAddress
+        className="w-full"
+        addressFont="text-text-secondary group-hover:text-text-primary group-focus-within:text-text-primary"
+        {...addressProps}
+      />
+      <IconButton name="info" />
+    </div>
+  );
 
   return (
-    <InfoPopover data={popoverItems} position={position} className="w-[230px]">
-      <div
-        className={cnTw(
-          'flex max-w-full items-center gap-x-1 cursor-pointer group hover:bg-action-background-hover hover:text-text-primary px-2 h-6 rounded',
-          wrapperClassName,
-        )}
-      >
-        <AccountAddress className="w-full" {...addressProps} />
-        <Icon name="info" size={16} className="shrink-0 group-hover:text-icon-hover" />
-      </div>
-    </InfoPopover>
+    <ExplorersPopover button={button} address={getAddress(addressProps)} explorers={explorers}>
+      <ExplorersPopover.Group active={Boolean(matrixId)} title={t('general.explorers.matrixIdTitle')}>
+        <HelpText className="text-text-secondary break-all">{matrixId}</HelpText>
+      </ExplorersPopover.Group>
+    </ExplorersPopover>
   );
 };

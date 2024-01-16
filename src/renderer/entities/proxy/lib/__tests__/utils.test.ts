@@ -1,5 +1,7 @@
-import { HexString, ProxyAccount, ProxyType } from '@shared/core';
+import type { ProxyAccount } from '@shared/core';
+import { ProxyType } from '@shared/core';
 import { proxyUtils } from '../utils';
+import { TEST_ACCOUNT_ID } from '@shared/lib/utils';
 
 describe('entities/proxy/lib/utils', () => {
   test('should return true when for identical Proxies', () => {
@@ -8,7 +10,7 @@ describe('entities/proxy/lib/utils', () => {
       accountId: '0x00',
       proxiedAccountId: '0x01',
       chainId: '0x05',
-      proxyType: 'Any',
+      proxyType: ProxyType.ANY,
       delay: 0,
     } as ProxyAccount;
 
@@ -17,7 +19,7 @@ describe('entities/proxy/lib/utils', () => {
       accountId: '0x00',
       proxiedAccountId: '0x01',
       chainId: '0x05',
-      proxyType: 'Any',
+      proxyType: ProxyType.ANY,
       delay: 0,
     } as ProxyAccount;
 
@@ -32,7 +34,7 @@ describe('entities/proxy/lib/utils', () => {
       accountId: '0x00',
       proxiedAccountId: '0x01',
       chainId: '0x05',
-      proxyType: 'Any',
+      proxyType: ProxyType.ANY,
       delay: 0,
     } as ProxyAccount;
 
@@ -41,7 +43,7 @@ describe('entities/proxy/lib/utils', () => {
       accountId: '0x01',
       proxiedAccountId: '0x02',
       chainId: '0x05',
-      proxyType: 'Any',
+      proxyType: ProxyType.ANY,
       delay: 0,
     } as ProxyAccount;
 
@@ -50,15 +52,9 @@ describe('entities/proxy/lib/utils', () => {
     expect(result).toEqual(false);
   });
 
-  test('should return the proxied name for a given proxied account', () => {
-    const proxiedAccount = {
-      accountId: '0x01' as HexString,
-      proxyType: 'Any' as ProxyType,
-    };
-    const expectedName = 'Any for 0x01';
+  test('should return proxied name for a given proxied account', () => {
+    const result = proxyUtils.getProxiedName(TEST_ACCOUNT_ID, ProxyType.ANY);
 
-    const result = proxyUtils.getProxiedName(proxiedAccount.accountId, proxiedAccount.proxyType);
-
-    expect(result).toEqual(expectedName);
+    expect(result).toEqual('Any for 5CGQ7B...VbXyr9');
   });
 });

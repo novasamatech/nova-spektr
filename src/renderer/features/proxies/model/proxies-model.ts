@@ -1,4 +1,4 @@
-import { createEffect, createEvent, createStore, sample, scopeBind } from 'effector';
+import { attach, createEffect, createEvent, createStore, sample, scopeBind } from 'effector';
 import { Endpoint, createEndpoint } from '@remote-ui/rpc';
 import { keyBy } from 'lodash';
 import { once, spread } from 'patronum';
@@ -23,7 +23,7 @@ import { accountUtils, walletModel } from '@entities/wallet';
 import { proxyModel, proxyUtils } from '@entities/proxy';
 import { balanceModel } from '@entities/balance';
 import { notificationModel } from '@entities/notification';
-import { proxiesUtils } from '../lib/utils';
+import { proxiesUtils } from '../lib/proxies-utils';
 
 const workerStarted = createEvent();
 const connected = createEvent<ChainId>();
@@ -90,22 +90,34 @@ const disconnectFx = createEffect(async ({ chainId, endpoint }: { chainId: Chain
   await endpoint.call.disconnect(chainId);
 });
 
+type ProxiedWalletsParams = {
+  proxiedAccounts: PartialProxiedAccount[];
+  chains: Record<ChainId, Chain>;
+};
+type ProxiedWalletsResult = {
+  wallet: Wallet;
+  accounts: ProxiedAccount[];
+};
 const createProxiedWalletsFx = createEffect(
-  (proxiedAccounts: PartialProxiedAccount[]): { wallet: Wallet; accounts: ProxiedAccount[] }[] => {
+  ({ proxiedAccounts, chains }: ProxiedWalletsParams): ProxiedWalletsResult[] => {
     return proxiedAccounts.map((proxied) => {
-      const walletName = proxyUtils.getProxiedName(proxied.accountId, proxied.proxyType);
+      const walletName = proxyUtils.getProxiedName(
+        proxied.accountId,
+        proxied.proxyType,
+        chains[proxied.chainId].addressPrefix,
+      );
       const wallet = {
         name: walletName,
         type: WalletType.PROXIED,
         signingType: SigningType.WATCH_ONLY,
       } as Wallet;
 
+      // TODO: use chain data, when ethereum chains support
       const accounts = [
         {
           ...proxied,
           name: walletName,
           type: AccountType.PROXIED,
-          // TODO: use chain data, when ethereum chains support
           chainType: ChainType.SUBSTRATE,
           cryptoType: CryptoType.SR25519,
         } as ProxiedAccount,
@@ -162,10 +174,16 @@ sample({
 spread({
   source: getProxiesFx.doneData,
   targets: {
-    proxiesToAdd: proxyModel.events.proxiesAdded,
     proxiesToRemove: proxyModel.events.proxiesRemoved,
-    proxiedAccountsToAdd: createProxiedWalletsFx,
+    proxiesToAdd: proxyModel.events.proxiesAdded,
     proxiedAccountsToRemove: proxiedAccountsRemoved,
+    proxiedAccountsToAdd: attach({
+      source: networkModel.$chains,
+      effect: createProxiedWalletsFx,
+      mapParams: (proxiedAccounts: ProxiedAccount[], chains) => {
+        return { proxiedAccounts, chains };
+      },
+    }),
     deposits: depositsReceived,
   },
 });
@@ -240,10 +258,17 @@ sample({
   source: {
     wallets: walletModel.$wallets,
     accounts: walletModel.$accounts,
+    chains: networkModel.$chains,
   },
   filter: (_, data) => data.proxiedAccountsToAdd.length > 0,
-  fn: ({ wallets, accounts }, data) =>
-    proxiesUtils.getNotification(data.proxiedAccountsToAdd, wallets, accounts, NotificationType.PROXY_CREATED),
+  fn: ({ wallets, accounts, chains }, data) =>
+    proxiesUtils.getNotification({
+      wallets,
+      accounts,
+      chains,
+      proxiedAccounts: data.proxiedAccountsToAdd,
+      type: NotificationType.PROXY_CREATED,
+    }),
   target: notificationModel.events.notificationsAdded,
 });
 
@@ -252,10 +277,17 @@ sample({
   source: {
     wallets: walletModel.$wallets,
     accounts: walletModel.$accounts,
+    chains: networkModel.$chains,
   },
   filter: (_, data) => data.proxiedAccountsToRemove.length > 0,
-  fn: ({ wallets, accounts }, data) =>
-    proxiesUtils.getNotification(data.proxiedAccountsToRemove, wallets, accounts, NotificationType.PROXY_REMOVED),
+  fn: ({ wallets, accounts, chains }, data) =>
+    proxiesUtils.getNotification({
+      wallets,
+      accounts,
+      chains,
+      proxiedAccounts: data.proxiedAccountsToRemove,
+      type: NotificationType.PROXY_REMOVED,
+    }),
   target: notificationModel.events.notificationsAdded,
 });
 

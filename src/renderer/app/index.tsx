@@ -4,6 +4,7 @@ import log from 'electron-log';
 
 import { App } from './App';
 import { kernelModel } from '@shared/core';
+import { walletModel } from '@entities/wallet';
 import { networkModel } from '@entities/network';
 import { proxyModel } from '@entities/proxy';
 import { notificationModel } from '@entities/notification';
@@ -34,6 +35,7 @@ if (!container) {
 
 kernelModel.events.appStarted();
 proxiesModel.events.workerStarted();
+walletModel.events.walletStarted();
 networkModel.events.networkStarted();
 proxyModel.events.proxyStarted();
 balanceSubscriptionModel.events.balancesSubscribed();
