@@ -97,7 +97,8 @@ async function disconnect(chainId: ChainId) {
 // TODO: Refactor this code
 async function getProxies(
   chainId: ChainId,
-  accounts: Record<AccountId, Account>,
+  accountsForProxy: Record<AccountId, Account>,
+  accountsForProxied: Record<AccountId, Account>,
   proxiedAccounts: ProxiedAccount[],
   proxies: ProxyAccount[],
 ) {
@@ -136,7 +137,7 @@ async function getProxies(
             delay: Number(account.delay),
           };
 
-          const needToAddProxyAccount = accounts[proxiedAccountId];
+          const needToAddProxyAccount = accountsForProxy[proxiedAccountId];
           const doesProxyExist = proxies.some((oldProxy) => proxyWorkerUtils.isSameProxy(oldProxy, newProxy));
 
           if (needToAddProxyAccount) {
@@ -147,7 +148,8 @@ async function getProxies(
             existingProxies.push(newProxy);
           }
 
-          const needToAddProxiedAccount = accounts[newProxy.accountId] && !proxyWorkerUtils.isDelayedProxy(newProxy);
+          const needToAddProxiedAccount =
+            accountsForProxied[newProxy.accountId] && !proxyWorkerUtils.isDelayedProxy(newProxy);
 
           if (needToAddProxiedAccount) {
             const proxiedAccount = {

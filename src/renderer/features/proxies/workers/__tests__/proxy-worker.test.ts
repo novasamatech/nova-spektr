@@ -62,11 +62,18 @@ describe('features/proxies/workers/proxy-worker', () => {
     set(state.apis, '0x01.query', {});
 
     const chainId = '0x01';
-    const accounts = {};
+    const accountsForProxy = {};
+    const accountsForProxied = {};
     const proxiedAccounts = [] as ProxiedAccount[];
     const proxies = [] as ProxyAccount[];
 
-    const result = await proxyWorker.getProxies(chainId, accounts, proxiedAccounts, proxies);
+    const result = await proxyWorker.getProxies(
+      chainId,
+      accountsForProxy,
+      accountsForProxied,
+      proxiedAccounts,
+      proxies,
+    );
 
     expect(result.proxiesToAdd).toEqual([]);
     expect(result.proxiesToRemove).toEqual([]);
@@ -82,11 +89,18 @@ describe('features/proxies/workers/proxy-worker', () => {
     set(state.apis, '0x01.query.proxy.proxies.keys', () => []);
 
     const chainId = '0x01';
-    const accounts = {};
+    const accountsForProxy = {};
+    const accountsForProxied = {};
     const proxiedAccounts = [] as ProxiedAccount[];
     const proxies = [] as ProxyAccount[];
 
-    const result = await proxyWorker.getProxies(chainId, accounts, proxiedAccounts, proxies);
+    const result = await proxyWorker.getProxies(
+      chainId,
+      accountsForProxy,
+      accountsForProxied,
+      proxiedAccounts,
+      proxies,
+    );
 
     expect(result.proxiesToAdd).toEqual([]);
     expect(result.proxiesToRemove).toEqual([]);
@@ -126,7 +140,7 @@ describe('features/proxies/workers/proxy-worker', () => {
     ]);
 
     const chainId = '0x01';
-    const accounts = {
+    const accountsForProxy = {
       '0x01': {
         id: 1,
         walletId: 1,
@@ -137,10 +151,18 @@ describe('features/proxies/workers/proxy-worker', () => {
         cryptoType: CryptoType.SR25519,
       } as Account,
     };
+    const accountsForProxied = {};
+
     const proxiedAccounts = [] as ProxiedAccount[];
     const proxies = [] as ProxyAccount[];
 
-    const result = await proxyWorker.getProxies(chainId, accounts, proxiedAccounts, proxies);
+    const result = await proxyWorker.getProxies(
+      chainId,
+      accountsForProxy,
+      accountsForProxied,
+      proxiedAccounts,
+      proxies,
+    );
 
     expect(result.proxiesToAdd).toEqual([
       {
@@ -190,7 +212,8 @@ describe('features/proxies/workers/proxy-worker', () => {
     };
 
     const chainId = '0x01';
-    const accounts = {
+
+    const accountsForProxy = {
       '0x01': {
         id: 1,
         walletId: 1,
@@ -201,10 +224,18 @@ describe('features/proxies/workers/proxy-worker', () => {
         cryptoType: CryptoType.SR25519,
       } as Account,
     };
+    const accountsForProxied = {};
+
     const proxiedAccounts = [] as ProxiedAccount[];
     const proxies = [mockProxy] as ProxyAccount[];
 
-    const result = await proxyWorker.getProxies(chainId, accounts, proxiedAccounts, proxies);
+    const result = await proxyWorker.getProxies(
+      chainId,
+      accountsForProxy,
+      accountsForProxied,
+      proxiedAccounts,
+      proxies,
+    );
 
     expect(result.proxiesToAdd).toEqual([]);
     expect(result.proxiesToRemove).toEqual([mockProxy]);
@@ -250,7 +281,7 @@ describe('features/proxies/workers/proxy-worker', () => {
     };
 
     const chainId = '0x01';
-    const accounts = {
+    const accountsForProxy = {
       '0x01': {
         id: 1,
         walletId: 1,
@@ -261,10 +292,18 @@ describe('features/proxies/workers/proxy-worker', () => {
         cryptoType: CryptoType.SR25519,
       } as Account,
     };
+    const accountsForProxied = {};
+
     const proxiedAccounts = [mockProxied] as ProxiedAccount[];
     const proxies = [] as ProxyAccount[];
 
-    const result = await proxyWorker.getProxies(chainId, accounts, proxiedAccounts, proxies);
+    const result = await proxyWorker.getProxies(
+      chainId,
+      accountsForProxy,
+      accountsForProxied,
+      proxiedAccounts,
+      proxies,
+    );
 
     expect(result.proxiesToAdd).toEqual([]);
     expect(result.proxiesToRemove).toEqual([]);
@@ -273,6 +312,78 @@ describe('features/proxies/workers/proxy-worker', () => {
     expect(result.deposits).toEqual({
       chainId: '0x01',
       deposits: {},
+    });
+  });
+
+  test('should return array with proxied account to add ', async () => {
+    const mockProxied = {
+      accountId: '0x02',
+      proxiedAccountId: '0x02',
+      proxyAccountId: '0x01',
+      chainId: '0x01',
+      delay: 0,
+      proxyType: 'Governance',
+      proxyVariant: ProxyVariant.NONE,
+    };
+
+    set(state.apis, '0x01.query.proxy.proxies.keys', () => [
+      {
+        args: [
+          {
+            toHex: () => '0x02',
+          },
+        ],
+      },
+    ]);
+    set(state.apis, '0x01.rpc.state.queryStorageAt', () => [
+      [
+        {
+          toHuman: () => [
+            {
+              delegate: '0x01',
+              proxyType: 'Governance',
+              delay: 0,
+            },
+          ],
+        },
+        {
+          toHuman: () => '1,002,050,000,000',
+        },
+      ],
+    ]);
+
+    const chainId = '0x01';
+    const accountsForProxy = {};
+    const accountsForProxied = {
+      '0x01': {
+        id: 1,
+        walletId: 1,
+        name: 'Account 1',
+        type: AccountType.BASE,
+        accountId: '0x01',
+        chainType: ChainType.SUBSTRATE,
+        cryptoType: CryptoType.SR25519,
+      } as Account,
+    };
+
+    const proxiedAccounts = [] as ProxiedAccount[];
+    const proxies = [] as ProxyAccount[];
+
+    const result = await proxyWorker.getProxies(
+      chainId,
+      accountsForProxy,
+      accountsForProxied,
+      proxiedAccounts,
+      proxies,
+    );
+
+    expect(result.proxiesToAdd).toEqual([]);
+    expect(result.proxiesToRemove).toEqual([]);
+    expect(result.proxiedAccountsToAdd).toEqual([mockProxied]);
+    expect(result.proxiedAccountsToRemove).toEqual([]);
+    expect(result.deposits).toEqual({
+      chainId: '0x01',
+      deposits: { '0x02': '1,002,050,000,000' },
     });
   });
 });

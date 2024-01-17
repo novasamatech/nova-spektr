@@ -1,5 +1,6 @@
 import { combine, createEffect, createEvent, createStore, sample } from 'effector';
 import { spread } from 'patronum';
+import keyBy from 'lodash/keyBy';
 
 import type {
   Account,
@@ -10,6 +11,7 @@ import type {
   NoID,
   ProxiedAccount,
   Wallet,
+  WalletsMap,
 } from '@shared/core';
 import { WalletConnectAccount } from '@shared/core';
 import { storageService } from '@shared/api/storage';
@@ -36,6 +38,9 @@ const $activeWallet = combine(
   },
   { skipVoid: false },
 );
+const $walletsMap = combine($wallets, (wallets): WalletsMap | undefined => keyBy(wallets, 'id'), {
+  skipVoid: false,
+});
 
 const $accounts = createStore<Account[]>([]);
 const $activeAccounts = combine(
@@ -243,6 +248,7 @@ sample({
 export const walletModel = {
   $wallets,
   $activeWallet,
+  $walletsMap,
   $accounts,
   $activeAccounts,
   $isLoadingWallets: fetchAllWalletsFx.pending,

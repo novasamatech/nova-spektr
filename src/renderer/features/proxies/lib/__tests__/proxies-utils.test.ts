@@ -1,4 +1,4 @@
-import { Chain } from '@shared/core';
+import { Account, AccountType, Chain, Wallet, WalletType } from '@shared/core';
 import { proxiesUtils } from '../proxies-utils';
 
 describe('features/proxies/lib/proxies-utils', () => {
@@ -21,5 +21,38 @@ describe('features/proxies/lib/proxies-utils', () => {
     const result = proxiesUtils.isRegularProxy(chainWithUndefinedOptions);
 
     expect(result).toEqual(false);
+  });
+
+  test('should check if proxy for account is available (true for chain account)', () => {
+    const account = { type: AccountType.CHAIN } as unknown as Account;
+
+    expect(proxiesUtils.isProxyAvailable(account)).toEqual(true);
+  });
+
+  test('should check if proxy for account is available (false for proxied account)', () => {
+    const account = { type: AccountType.PROXIED } as unknown as Account;
+
+    expect(proxiesUtils.isProxyAvailable(account)).toEqual(false);
+  });
+
+  test('should check if proxied for account is available (false for watch only)', () => {
+    const account = { walletId: 1, type: AccountType.BASE } as unknown as Account;
+    const wallet = { id: 1, type: WalletType.WATCH_ONLY } as unknown as Wallet;
+
+    expect(proxiesUtils.isProxiedAvailable(account, wallet)).toEqual(false);
+  });
+
+  test('should check if proxied for account is available (false for proxied)', () => {
+    const account = { walletId: 1, type: AccountType.PROXIED } as unknown as Account;
+    const wallet = { id: 1, type: WalletType.PROXIED } as unknown as Wallet;
+
+    expect(proxiesUtils.isProxiedAvailable(account, wallet)).toEqual(false);
+  });
+
+  test('should check if proxied for account is available (true for polkadot vault)', () => {
+    const account = { walletId: 1, type: AccountType.CHAIN } as unknown as Account;
+    const wallet = { id: 1, type: WalletType.POLKADOT_VAULT } as unknown as Wallet;
+
+    expect(proxiesUtils.isProxiedAvailable(account, wallet)).toEqual(true);
   });
 });
