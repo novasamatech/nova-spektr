@@ -164,7 +164,7 @@ export const MultisigWalletDetails = ({ wallet, account, signatoryWallets, signa
               ),
             },
             {
-              id: 'proxies',
+              id: 3,
               title: t('walletDetails.common.proxiesTabTitle'),
               panel: hasProxies ? (
                 <ProxiesList walletId={wallet.id} className="h-[376px]" />

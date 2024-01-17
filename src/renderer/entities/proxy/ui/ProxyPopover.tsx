@@ -18,15 +18,17 @@ export const ProxyPopover = () => {
       content={
         <div className="flex flex-col gap-y-4">
           <section className="flex flex-col gap-y-2">
-            <SmallTitleText>{t('walletDetails.common.proxyTooltipTitle1')}</SmallTitleText>
+            <SmallTitleText>{t('walletDetails.common.proxyTooltipWhatIsProxyTitle')}</SmallTitleText>
             <FootnoteText className="text-text-secondary">
-              <Trans t={t} i18nKey="walletDetails.common.proxyTooltipDesc1" />
+              <Trans t={t} i18nKey="walletDetails.common.proxyTooltipWhatIsProxy" />
             </FootnoteText>
           </section>
 
           <section className="flex flex-col gap-y-2">
-            <SmallTitleText>{t('walletDetails.common.proxyTooltipTitle2')}</SmallTitleText>
-            <FootnoteText className="text-text-secondary">{t('walletDetails.common.proxyTooltipDesc2')}</FootnoteText>
+            <SmallTitleText>{t('walletDetails.common.proxyTooltipWhyProxyTitle')}</SmallTitleText>
+            <FootnoteText className="text-text-secondary">
+              {t('walletDetails.common.proxyTooltipWhyProxy')}
+            </FootnoteText>
           </section>
         </div>
       }

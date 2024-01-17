@@ -1,3 +1,5 @@
+import noop from 'lodash/noop';
+
 import { Chain, ProxyAccount } from '@shared/core';
 import { ProxyAccount as ProxyAccountComponent } from '@entities/proxy';
 import { copyToClipboard, toAddress } from '@shared/lib/utils';
@@ -20,12 +22,12 @@ export const ProxyAccountWithActions = ({ account, chain, canCreateProxy }: Prop
   const forgetProxyAction: DropdownIconButtonOption = {
     icon: 'forget',
     title: t('walletDetails.common.removeProxyAction'),
-    onClick: () => {},
+    onClick: () => {}, // TODO add remove proxy flow her
   };
   const openInfoAction: DropdownIconButtonOption = {
     icon: 'info',
     title: t('walletDetails.common.openInfoAction'),
-    onClick: () => {},
+    onClick: () => noop(),
   };
 
   return (
