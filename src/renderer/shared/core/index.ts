@@ -59,7 +59,7 @@ export type {
   ProxyDeposits,
   ProxyGroup,
 } from './types/proxy';
-export { ProxyVariant, ProxyType } from './types/proxy';
+export { ProxyType, ProxyVariant } from './types/proxy';
 
 export type { Notification, MultisigInvite, MultisigOperation, ProxyAction } from './types/notification';
 export { NotificationType } from './types/notification';

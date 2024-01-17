@@ -1,11 +1,13 @@
 import { combine } from 'effector';
 
-import { accountUtils, walletModel } from '@entities/wallet';
+import { accountUtils, walletModel, walletUtils } from '@entities/wallet';
 import { walletSelectModel } from '@features/wallets';
 import { dictionary } from '@shared/lib/utils';
 import { walletDetailsUtils } from '../lib/utils';
 import type { MultishardMap, VaultMap } from '../lib/types';
-import type { Account, Signatory, Wallet, MultisigAccount, BaseAccount, AccountId } from '@shared/core';
+import type { Account, Signatory, Wallet, MultisigAccount, BaseAccount, AccountId, ProxiedAccount } from '@shared/core';
+import { proxyModel, proxyUtils } from '@entities/proxy';
+import { ProxyAccount } from '@shared/core';
 
 const $accounts = combine(
   {
@@ -16,6 +18,24 @@ const $accounts = combine(
     if (!details) return [];
 
     return accountUtils.getWalletAccounts(details.id, accounts);
+  },
+);
+
+const $proxyAccounts = combine(
+  {
+    accounts: $accounts,
+    proxies: proxyModel.$proxies,
+  },
+  ({ accounts, proxies }) => {
+    const proxyAccounts = accounts.reduce((acc: ProxyAccount[], account: Account) => {
+      if (proxies[account.accountId]) {
+        acc.push(...proxies[account.accountId]);
+      }
+
+      return acc;
+    }, []);
+
+    return proxyUtils.sortAccountsByProxyType(proxyAccounts);
   },
 );
 
@@ -88,11 +108,12 @@ const $signatoryContacts = combine(
 
 const $signatoryWallets = combine(
   {
-    accounts: $accounts,
+    walletAccounts: $accounts,
+    accounts: walletModel.$accounts,
     wallets: walletModel.$wallets,
   },
-  ({ accounts, wallets }): [AccountId, Wallet][] => {
-    const multisigAccount = accounts[0];
+  ({ walletAccounts, accounts, wallets }): [AccountId, Wallet][] => {
+    const multisigAccount = walletAccounts[0];
     if (!multisigAccount || !accountUtils.isMultisigAccount(multisigAccount)) return [];
 
     const walletsMap = dictionary(wallets, 'id');
@@ -109,12 +130,38 @@ const $signatoryWallets = combine(
   },
 );
 
+const $proxyWalletForProxied = combine(
+  {
+    walletAccounts: $accounts,
+    accounts: walletModel.$accounts,
+    wallets: walletModel.$wallets,
+    detailsWallet: walletSelectModel.$walletForDetails,
+  },
+  ({ walletAccounts, accounts, wallets, detailsWallet }): Wallet | undefined => {
+    if (!walletUtils.isProxied(detailsWallet || undefined)) return;
+
+    const proxiedAccount = walletAccounts[0] as unknown as ProxiedAccount;
+    const walletsMap = dictionary(wallets, 'id');
+    const proxyAccount = accounts.find(
+      (a) => a.accountId === proxiedAccount.proxyAccountId && !walletUtils.isWatchOnly(walletsMap[a.walletId]),
+    );
+
+    return proxyAccount && walletsMap[proxyAccount.walletId];
+  },
+  { skipVoid: false },
+);
+
+const $hasProxies = $proxyAccounts.map((accounts) => Boolean(accounts.length));
+
 export const walletProviderModel = {
   $accounts,
+  $proxyAccounts,
+  $hasProxies,
   $singleShardAccount,
   $multiShardAccounts,
   $multisigAccount,
   $vaultAccounts,
   $signatoryContacts,
   $signatoryWallets,
+  $proxyWalletForProxied,
 };
