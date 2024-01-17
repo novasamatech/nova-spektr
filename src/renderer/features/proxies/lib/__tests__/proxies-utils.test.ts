@@ -23,28 +23,9 @@ describe('features/proxies/lib/proxies-utils', () => {
     expect(result).toEqual(false);
   });
 
-  test('should be true if proxy is available for chain account', () => {
-    const account = { type: AccountType.CHAIN } as unknown as Account;
-
-    expect(proxiesUtils.isProxyAvailable(account)).toEqual(true);
-  });
-
-  test('should be false if proxy is unavailable for proxied account', () => {
-    const account = { type: AccountType.PROXIED } as unknown as Account;
-
-    expect(proxiesUtils.isProxyAvailable(account)).toEqual(false);
-  });
-
   test('should be false if proxied is unavailable for watch only wallet', () => {
     const account = { walletId: 1, type: AccountType.BASE } as unknown as Account;
     const wallet = { id: 1, type: WalletType.WATCH_ONLY } as unknown as Wallet;
-
-    expect(proxiesUtils.isProxiedAvailable(account, wallet)).toEqual(false);
-  });
-
-  test('should be false if proxied is unavailable for proxied wallet)', () => {
-    const account = { walletId: 1, type: AccountType.PROXIED } as unknown as Account;
-    const wallet = { id: 1, type: WalletType.PROXIED } as unknown as Wallet;
 
     expect(proxiesUtils.isProxiedAvailable(account, wallet)).toEqual(false);
   });

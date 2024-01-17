@@ -80,10 +80,7 @@ const getProxiesFx = createEffect(
   ({ chainId, accounts, wallets, proxies, endpoint }: GetProxiesParams): Promise<GetProxiesResult> => {
     const proxiedAccounts = accounts.filter((a) => accountUtils.isProxiedAccount(a));
 
-    const accountsForProxy = keyBy(
-      accounts.filter((a) => proxiesUtils.isProxyAvailable(a)),
-      'accountId',
-    );
+    const accountsForProxy = keyBy(accounts, 'accountId');
     const accountsForProxied = keyBy(
       accounts.filter((a) => proxiesUtils.isProxiedAvailable(a, wallets[a.walletId])),
       'accountId',

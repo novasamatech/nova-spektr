@@ -2,12 +2,11 @@ import type { Account, ProxyAction, NoID, Wallet, ChainId } from '@shared/core';
 import { NotificationType, Chain, type PartialProxiedAccount } from '@shared/core';
 import { dictionary } from '@shared/lib/utils';
 import { proxyUtils } from '@entities/proxy';
-import { accountUtils, walletUtils } from '@entities/wallet';
+import { walletUtils } from '@entities/wallet';
 
 export const proxiesUtils = {
   isRegularProxy,
   getNotification,
-  isProxyAvailable,
   isProxiedAvailable,
 };
 
@@ -50,10 +49,6 @@ function getNotification({
   });
 }
 
-function isProxyAvailable(account: Account): boolean {
-  return !accountUtils.isProxiedAccount(account);
-}
-
 function isProxiedAvailable(account: Account, wallet?: Wallet): boolean {
-  return !accountUtils.isProxiedAccount(account) && !walletUtils.isWatchOnly(wallet);
+  return !walletUtils.isWatchOnly(wallet);
 }
