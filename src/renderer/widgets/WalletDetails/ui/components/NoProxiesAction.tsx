@@ -1,13 +1,13 @@
 import { Icon, SmallTitleText, FootnoteText, Button } from '@shared/ui';
 import { useI18n } from '@app/providers';
-import { ProxyPopover } from './ProxyPopover';
+import { ProxyPopover } from '@entities/proxy/ui/ProxyPopover';
 import { cnTw } from '@shared/lib/utils';
 
 type Props = {
   className?: string;
 };
 
-export const EmptyProxyList = ({ className }: Props) => {
+export const NoProxiesAction = ({ className }: Props) => {
   const { t } = useI18n();
 
   return (

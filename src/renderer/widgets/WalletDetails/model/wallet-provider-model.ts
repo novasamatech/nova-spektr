@@ -150,10 +150,12 @@ const $proxyWalletForProxied = combine(
   { skipVoid: false },
 );
 
+const $hasProxies = $proxyAccounts.map((accounts) => Boolean(accounts.length));
+
 export const walletProviderModel = {
   $accounts,
   $proxyAccounts,
-  $hasProxies: $proxyAccounts.map((accounts) => Boolean(accounts.length)),
+  $hasProxies,
   $singleShardAccount,
   $multiShardAccounts,
   $multisigAccount,

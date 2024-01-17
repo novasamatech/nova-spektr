@@ -12,6 +12,7 @@ import { ForgetWalletModal } from '@features/wallets/ForgetWallet';
 import { TabItem } from '@shared/ui/Tabs/common/types';
 import { ProxiesList } from '../components/ProxiesList';
 import { walletProviderModel } from '../../model/wallet-provider-model';
+import { NoProxiesAction } from '../components/NoProxiesAction';
 
 type Props = {
   wallet: Wallet;
@@ -62,8 +63,10 @@ export const SimpleWalletDetails = ({ wallet, account, onClose }: Props) => {
     {
       id: 'proxies',
       title: t('walletDetails.common.proxiesTabTitle'),
-      panel: (
+      panel: hasProxies ? (
         <ProxiesList canCreateProxy={!walletUtils.isWatchOnly(wallet)} walletId={wallet.id} className="h-[376px]" />
+      ) : (
+        <NoProxiesAction className="h-[376px]" />
       ),
     },
   ];

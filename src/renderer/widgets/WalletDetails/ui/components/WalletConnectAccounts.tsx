@@ -2,15 +2,15 @@ import { useUnit } from 'effector-react';
 import { useMemo } from 'react';
 import { keyBy } from 'lodash';
 
-import { wcDetailsUtils } from '@widgets/WalletDetails/lib/utils';
+import { wcDetailsUtils } from '../../lib/utils';
 import { MultiAccountsList } from '@entities/wallet';
 import { Button, FootnoteText, Icon, SmallTitleText } from '@shared/ui';
 import wallet_connect_reconnect_webm from '@shared/assets/video/wallet_connect_reconnect.webm';
 import wallet_connect_reconnect from '@shared/assets/video/wallet_connect_reconnect.mp4';
 import { useI18n } from '@app/providers';
 import { Account, AccountId, Chain, WalletConnectWallet } from '@shared/core';
-import { wcDetailsModel } from '@widgets/WalletDetails/model/wc-details-model';
-import { chainsService, networkModel } from '@entities/network';
+import { wcDetailsModel } from '../../model/wc-details-model';
+import { networkModel } from '@entities/network';
 
 type AccountItem = {
   accountId: AccountId;
@@ -25,15 +25,13 @@ type Props = {
 export const WalletConnectAccounts = ({ wallet, accounts }: Props) => {
   const { t } = useI18n();
 
-  const chains = useUnit(networkModel.$chains);
+  const chains = Object.values(useUnit(networkModel.$chains));
   const reconnectStep = useUnit(wcDetailsModel.$reconnectStep);
 
   const accountsList = useMemo(() => {
-    const sortedChains = chainsService.sortChains(Object.values(chains));
-
     const accountsMap = keyBy(accounts, 'chainId');
 
-    return sortedChains.reduce<AccountItem[]>((acc, chain) => {
+    return chains.reduce<AccountItem[]>((acc, chain) => {
       const accountId = accountsMap[chain.chainId]?.accountId;
 
       if (accountId) {

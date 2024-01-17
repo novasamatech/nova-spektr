@@ -9,9 +9,9 @@ import { BaseModal, DropdownIconButton, FootnoteText, Icon, Tabs } from '@shared
 import { AccountsList, WalletCardLg, WalletIcon } from '@entities/wallet';
 import { RenameWalletModal } from '@features/wallets/RenameWallet';
 import { TabItem } from '@shared/ui/Tabs/common/types';
-import { ProxiesList } from '@widgets/WalletDetails/ui/components/ProxiesList';
-import { walletProviderModel } from '@widgets/WalletDetails/model/wallet-provider-model';
-import { EmptyProxyList } from '@entities/proxy';
+import { ProxiesList } from '../components/ProxiesList';
+import { walletProviderModel } from '../../model/wallet-provider-model';
+import { NoProxiesAction } from '../components/NoProxiesAction';
 
 const ProxyTypeOperation: Record<ProxyType, string> = {
   [ProxyType.ANY]: 'proxy.operations.any',
@@ -79,7 +79,7 @@ export const ProxiedWalletDetails = ({ wallet, proxyWallet, proxiedAccount, onCl
       panel: hasProxies ? (
         <ProxiesList walletId={wallet.id} className="h-[353px]" />
       ) : (
-        <EmptyProxyList className="h-[353px]" />
+        <NoProxiesAction className="h-[353px]" />
       ),
     },
   ];

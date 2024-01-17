@@ -11,9 +11,9 @@ import { RenameWalletModal } from '@features/wallets/RenameWallet';
 import { IconNames } from '@shared/ui/Icon/data';
 import { ForgetWalletModal } from '@features/wallets/ForgetWallet';
 import { TabItem } from '@shared/ui/Tabs/common/types';
-import { ProxiesList } from '@widgets/WalletDetails/ui/components/ProxiesList';
-import { walletProviderModel } from '@widgets/WalletDetails/model/wallet-provider-model';
-import { EmptyProxyList } from '@entities/proxy';
+import { ProxiesList } from '../components/ProxiesList';
+import { walletProviderModel } from '../../model/wallet-provider-model';
+import { NoProxiesAction } from '../components/NoProxiesAction';
 
 type Props = {
   wallet: Wallet;
@@ -71,7 +71,7 @@ export const MultishardWalletDetails = ({ wallet, accounts, onClose }: Props) =>
       panel: hasProxies ? (
         <ProxiesList walletId={wallet.id} className="h-[393px] mt-4" />
       ) : (
-        <EmptyProxyList className="h-[393px] mt-4" />
+        <NoProxiesAction className="h-[393px] mt-4" />
       ),
     },
   ];

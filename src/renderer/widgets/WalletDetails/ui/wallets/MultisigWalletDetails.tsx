@@ -14,8 +14,8 @@ import { IconNames } from '@shared/ui/Icon/data';
 import { RenameWalletModal } from '@features/wallets/RenameWallet';
 import { ForgetWalletModal } from '@features/wallets/ForgetWallet';
 import { ProxiesList } from '../components/ProxiesList';
-import { walletProviderModel } from '@widgets/WalletDetails/model/wallet-provider-model';
-import { EmptyProxyList } from '@entities/proxy';
+import { walletProviderModel } from '../../model/wallet-provider-model';
+import { NoProxiesAction } from '../components/NoProxiesAction';
 
 type Props = {
   wallet: Wallet;
@@ -169,7 +169,7 @@ export const MultisigWalletDetails = ({ wallet, account, signatoryWallets, signa
               panel: hasProxies ? (
                 <ProxiesList walletId={wallet.id} className="h-[376px]" />
               ) : (
-                <EmptyProxyList className="h-[376px]" />
+                <NoProxiesAction className="h-[376px]" />
               ),
             },
           ]}

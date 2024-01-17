@@ -17,8 +17,9 @@ import { RenameWalletModal } from '@features/wallets/RenameWallet';
 import { ForgetWalletModal } from '@features/wallets/ForgetWallet';
 import { TabItem } from '@shared/ui/Tabs/common/types';
 import { ProxiesList } from '../components/ProxiesList';
-import { walletProviderModel } from '@widgets/WalletDetails/model/wallet-provider-model';
-import { EmptyProxyList } from '@entities/proxy';
+import { walletProviderModel } from '../../model/wallet-provider-model';
+import { NoProxiesAction } from '../components/NoProxiesAction';
+import { networkModel } from '@entities/network';
 
 type Props = {
   wallet: Wallet;
@@ -30,6 +31,7 @@ export const VaultWalletDetails = ({ wallet, root, accountsMap, onClose }: Props
   const { t } = useI18n();
 
   const hasProxies = useUnit(walletProviderModel.$hasProxies);
+  const chains = useUnit(networkModel.$chains);
 
   const [isModalOpen, closeModal] = useModalClose(true, onClose);
   const [newKeys, setNewKeys] = useState<DraftAccount<ChainAccount>[]>([]);
@@ -142,6 +144,7 @@ export const VaultWalletDetails = ({ wallet, root, accountsMap, onClose }: Props
 
           <VaultAccountsList
             className="h-[343px] mt-4"
+            chains={Object.values(chains)}
             accountsMap={accountsMap}
             onShardClick={vaultDetailsModel.events.shardsSelected}
           />
@@ -154,7 +157,7 @@ export const VaultWalletDetails = ({ wallet, root, accountsMap, onClose }: Props
       panel: hasProxies ? (
         <ProxiesList walletId={wallet.id} className="h-[392px] mt-4" />
       ) : (
-        <EmptyProxyList className="h-[392px] mt-4" />
+        <NoProxiesAction className="h-[392px] mt-4" />
       ),
     },
   ];

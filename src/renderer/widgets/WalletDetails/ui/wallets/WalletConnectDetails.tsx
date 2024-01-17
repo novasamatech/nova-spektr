@@ -25,8 +25,8 @@ import {
 } from '@shared/ui';
 import { TabItem } from '@shared/ui/Tabs/common/types';
 import { ProxiesList } from '../components/ProxiesList';
-import { walletProviderModel } from '@widgets/WalletDetails/model/wallet-provider-model';
-import { EmptyProxyList } from '@entities/proxy';
+import { walletProviderModel } from '../../model/wallet-provider-model';
+import { NoProxiesAction } from '../components/NoProxiesAction';
 import { WalletConnectAccounts } from '../components/WalletConnectAccounts';
 
 type Props = {
@@ -105,7 +105,7 @@ export const WalletConnectDetails = ({ wallet, accounts, onClose }: Props) => {
       panel: hasProxies ? (
         <ProxiesList walletId={wallet.id} className="h-[385px] mt-6" />
       ) : (
-        <EmptyProxyList className="h-[385px] mt-6" />
+        <NoProxiesAction className="h-[385px] mt-6" />
       ),
     },
   ];
