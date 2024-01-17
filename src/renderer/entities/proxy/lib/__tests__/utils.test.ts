@@ -1,5 +1,3 @@
-import { expect } from '@playwright/test';
-
 import type { ProxyAccount } from '@shared/core';
 import { ProxyType } from '@shared/core';
 import { proxyUtils } from '../utils';
@@ -90,10 +88,6 @@ describe('entities/proxy/lib/utils', () => {
 
     const sortedAccounts = proxyUtils.sortAccountsByProxyType(proxyAccounts);
 
-    expect(sortedAccounts.map((a) => a.proxyType)).toEqual([
-      ProxyType.NON_TRANSFER,
-      ProxyType.CANCEL_PROXY,
-      ProxyType.GOVERNANCE,
-    ]);
+    expect(sortedAccounts).toEqual([proxyAccounts[2], proxyAccounts[0], proxyAccounts[1]]);
   });
 });

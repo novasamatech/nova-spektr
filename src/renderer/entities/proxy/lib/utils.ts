@@ -30,7 +30,7 @@ function sortAccountsByProxyType(accounts: ProxyAccount[]) {
     ProxyType.NOMINATION_POOLS,
   ];
 
-  return accounts.sort((a, b) => typeOrder.indexOf(a.proxyType) - typeOrder.indexOf(b.proxyType));
+  return [...accounts].sort((a, b) => typeOrder.indexOf(a.proxyType) - typeOrder.indexOf(b.proxyType));
 }
 
 function isSameProxyGroup(oldGroup: NoID<ProxyGroup>, newGroup: NoID<ProxyGroup>) {

@@ -1,12 +1,11 @@
 import { allSettled, fork } from 'effector';
-import { expect } from '@playwright/test';
 
 import { walletModel } from '@entities/wallet';
 import { walletSelectModel } from '@features/wallets';
 import { walletProviderModel } from '../wallet-provider-model';
 import { storageService } from '@shared/api/storage';
 import { proxyModel } from '@entities/proxy';
-import { walletProviderMock } from '@widgets/WalletDetails/model/__tests__/wallet-provider.mock';
+import { walletProviderMock } from './wallet-provider.mock';
 
 describe('widgets/WalletDetails/model/wallet-provider-model', () => {
   beforeEach(() => {
