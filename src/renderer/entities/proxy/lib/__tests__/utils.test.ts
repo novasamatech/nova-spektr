@@ -1,3 +1,5 @@
+import { expect } from '@playwright/test';
+
 import type { ProxyAccount } from '@shared/core';
 import { ProxyType } from '@shared/core';
 import { proxyUtils } from '../utils';
@@ -56,5 +58,42 @@ describe('entities/proxy/lib/utils', () => {
     const result = proxyUtils.getProxiedName(TEST_ACCOUNT_ID, ProxyType.ANY);
 
     expect(result).toEqual('Any for 5CGQ7B...VbXyr9');
+  });
+
+  test('should sort proxy accounts by type', () => {
+    const proxyAccounts: ProxyAccount[] = [
+      {
+        id: 1,
+        accountId: '0x01',
+        proxiedAccountId: '0x02',
+        chainId: '0x05',
+        proxyType: ProxyType.CANCEL_PROXY,
+        delay: 0,
+      },
+      {
+        id: 2,
+        accountId: '0x01',
+        proxiedAccountId: '0x02',
+        chainId: '0x05',
+        proxyType: ProxyType.GOVERNANCE,
+        delay: 0,
+      },
+      {
+        id: 2,
+        accountId: '0x01',
+        proxiedAccountId: '0x02',
+        chainId: '0x05',
+        proxyType: ProxyType.NON_TRANSFER,
+        delay: 0,
+      },
+    ];
+
+    const sortedAccounts = proxyUtils.sortAccountsByProxyType(proxyAccounts);
+
+    expect(sortedAccounts.map((a) => a.proxyType)).toEqual([
+      ProxyType.NON_TRANSFER,
+      ProxyType.CANCEL_PROXY,
+      ProxyType.GOVERNANCE,
+    ]);
   });
 });
