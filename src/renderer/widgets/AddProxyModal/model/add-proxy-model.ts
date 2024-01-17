@@ -71,11 +71,15 @@ const $proxyForm = createForm({
   validateOn: ['submit'],
 });
 
+// TODO: use combine
+const $isMultisig = createStore<boolean>(false);
+
 sample({ clock: stepChanged, target: $steps });
 
 export const addProxyModel = {
   $steps,
   $proxyForm,
+  $isMultisig,
   events: {
     stepChanged,
   },

@@ -35,7 +35,7 @@ export const CreateContactForm = ({ onSubmit }: Props) => {
 
   return (
     <form className="flex flex-col pt-4 gap-4" onSubmit={submitForm}>
-      <div className="flex flex-col gap-2">
+      <div className="flex flex-col gap-y-2">
         <Input
           name="name"
           className="w-full"
@@ -51,7 +51,7 @@ export const CreateContactForm = ({ onSubmit }: Props) => {
         </InputHint>
       </div>
 
-      <div className="flex flex-col gap-2">
+      <div className="flex flex-col gap-y-2">
         <Input
           name="address"
           wrapperClass="h-[42px]"
@@ -74,7 +74,7 @@ export const CreateContactForm = ({ onSubmit }: Props) => {
         </InputHint>
       </div>
 
-      <div className="flex flex-col gap-2">
+      <div className="flex flex-col gap-y-2">
         <Input
           name="matrixId"
           className="w-full"

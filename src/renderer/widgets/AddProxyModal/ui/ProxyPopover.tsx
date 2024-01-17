@@ -30,6 +30,7 @@ export const ProxyPopover = () => {
         </div>
       }
     >
+      {/*Delegated authorities (proxies)*/}
       <Icon name="questionOutline" className="hover:text-icon-hover active:text-icon-active" size={16} />
     </Popover>
   );
