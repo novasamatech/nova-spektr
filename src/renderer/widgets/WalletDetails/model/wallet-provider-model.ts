@@ -108,11 +108,12 @@ const $signatoryContacts = combine(
 
 const $signatoryWallets = combine(
   {
-    accounts: $accounts,
+    walletAccounts: $accounts,
+    accounts: walletModel.$accounts,
     wallets: walletModel.$wallets,
   },
-  ({ accounts, wallets }): [AccountId, Wallet][] => {
-    const multisigAccount = accounts[0];
+  ({ walletAccounts, accounts, wallets }): [AccountId, Wallet][] => {
+    const multisigAccount = walletAccounts[0];
     if (!multisigAccount || !accountUtils.isMultisigAccount(multisigAccount)) return [];
 
     const walletsMap = dictionary(wallets, 'id');
