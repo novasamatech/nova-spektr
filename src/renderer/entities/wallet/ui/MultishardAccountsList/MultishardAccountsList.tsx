@@ -1,22 +1,20 @@
 import { useMemo } from 'react';
-import { useUnit } from 'effector-react';
 
 import { cnTw, RootExplorers } from '@shared/lib/utils';
 import { ContactItem, ExplorersPopover } from '@entities/wallet';
 import { useI18n } from '@app/providers';
 import { Accordion, FootnoteText, HelpText } from '@shared/ui';
-import type { BaseAccount, ChainAccount, ChainId } from '@shared/core';
+import type { BaseAccount, Chain, ChainAccount, ChainId } from '@shared/core';
 import { ChainTitle } from '@entities/chain';
-import { networkModel } from '@entities/network';
 
 type Props = {
+  chains: Chain[];
   accounts: Map<BaseAccount, Record<ChainId, ChainAccount[]>>;
   className?: string;
 };
 
-export const MultishardAccountsList = ({ accounts, className }: Props) => {
+export const MultishardAccountsList = ({ chains, accounts, className }: Props) => {
   const { t } = useI18n();
-  const chains = useUnit(networkModel.$chains);
 
   const accountList = useMemo(() => {
     return [...accounts.entries()];
@@ -41,7 +39,7 @@ export const MultishardAccountsList = ({ accounts, className }: Props) => {
 
           <FootnoteText className="pl-10 text-text-tertiary">{t('accountList.addressColumn')}</FootnoteText>
 
-          {Object.values(chains).map((chain) => {
+          {chains.map((chain) => {
             if (!chainMap[chain.chainId]) return;
 
             return (

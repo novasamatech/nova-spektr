@@ -14,6 +14,7 @@ import { TabItem } from '@shared/ui/Tabs/common/types';
 import { ProxiesList } from '../components/ProxiesList';
 import { walletProviderModel } from '../../model/wallet-provider-model';
 import { NoProxiesAction } from '../components/NoProxiesAction';
+import { networkModel } from '@entities/network';
 
 type Props = {
   wallet: Wallet;
@@ -24,6 +25,7 @@ export const MultishardWalletDetails = ({ wallet, accounts, onClose }: Props) =>
   const { t } = useI18n();
 
   const hasProxies = useUnit(walletProviderModel.$hasProxies);
+  const chains = useUnit(networkModel.$chains);
 
   const [isModalOpen, closeModal] = useModalClose(true, onClose);
   const [isRenameModalOpen, toggleIsRenameModalOpen] = useToggle();
@@ -63,7 +65,7 @@ export const MultishardWalletDetails = ({ wallet, accounts, onClose }: Props) =>
     {
       id: 'accounts',
       title: t('walletDetails.common.accountTabTitle'),
-      panel: <MultishardAccountsList accounts={accounts} className="h-[409px]" />,
+      panel: <MultishardAccountsList accounts={accounts} chains={Object.values(chains)} className="h-[409px]" />,
     },
     {
       id: 'proxies',
