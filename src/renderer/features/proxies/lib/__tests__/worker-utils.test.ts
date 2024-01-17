@@ -158,7 +158,7 @@ describe('features/proxies/lib/worker-utils', () => {
     expect(result).toBeUndefined();
   });
 
-  test('should check proxy account is available (false for delay > 0)', () => {
+  test('should check proxy is delayed (true for delay > 0)', () => {
     const proxy = {
       accountId: '0x00',
       proxiedAccountId: '0x01',
@@ -167,10 +167,10 @@ describe('features/proxies/lib/worker-utils', () => {
       delay: 1,
     } as NoID<ProxyAccount>;
 
-    expect(proxyWorkerUtils.isAvailableProxiedAccount(proxy)).toEqual(false);
+    expect(proxyWorkerUtils.isDelayedProxy(proxy)).toEqual(true);
   });
 
-  test('should check proxy account is available (true for delay === 0)', () => {
+  test('should check proxy is delayed (false for delay === 0)', () => {
     const proxy = {
       accountId: '0x00',
       proxiedAccountId: '0x01',
@@ -179,6 +179,6 @@ describe('features/proxies/lib/worker-utils', () => {
       delay: 0,
     } as NoID<ProxyAccount>;
 
-    expect(proxyWorkerUtils.isAvailableProxiedAccount(proxy)).toEqual(true);
+    expect(proxyWorkerUtils.isDelayedProxy(proxy)).toEqual(false);
   });
 });

@@ -20,7 +20,7 @@ export const proxyWorkerUtils = {
   isSameProxied,
   isProxiedAccount,
   isApiConnected,
-  isAvailableProxiedAccount,
+  isDelayedProxy,
   getKnownChain,
 };
 
@@ -62,8 +62,8 @@ function isApiConnected(apis: Record<ChainId, ApiPromise>, chainId: ChainId): bo
   return Boolean(api?.isConnected);
 }
 
-function isAvailableProxiedAccount(proxy: NoID<ProxyAccount>): boolean {
-  return proxy.delay === 0;
+function isDelayedProxy(proxy: NoID<ProxyAccount>): boolean {
+  return proxy.delay !== 0;
 }
 
 const MainChains = {
