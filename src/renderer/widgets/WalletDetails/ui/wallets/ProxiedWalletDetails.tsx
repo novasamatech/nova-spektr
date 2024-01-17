@@ -69,7 +69,7 @@ export const ProxiedWalletDetails = ({ wallet, proxyWallet, proxiedAccount, onCl
         <AccountsList
           accountId={proxiedAccount.accountId}
           chains={[chains[proxiedAccount.chainId]]}
-          className="h-[328px]"
+          className="h-[327px]"
         />
       ),
     },

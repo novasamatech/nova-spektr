@@ -58,15 +58,15 @@ export const SimpleWalletDetails = ({ wallet, account, onClose }: Props) => {
     {
       id: 'accounts',
       title: t('walletDetails.common.accountTabTitle'),
-      panel: <AccountsList accountId={account.accountId} chains={Object.values(chains)} className="h-[351px]" />,
+      panel: <AccountsList accountId={account.accountId} chains={Object.values(chains)} className="h-[362px]" />,
     },
     {
       id: 'proxies',
       title: t('walletDetails.common.proxiesTabTitle'),
       panel: hasProxies ? (
-        <ProxiesList canCreateProxy={!walletUtils.isWatchOnly(wallet)} walletId={wallet.id} className="h-[376px]" />
+        <ProxiesList canCreateProxy={!walletUtils.isWatchOnly(wallet)} walletId={wallet.id} className="h-[388px]" />
       ) : (
-        <NoProxiesAction className="h-[376px]" />
+        <NoProxiesAction className="h-[388px]" />
       ),
     },
   ];
@@ -86,7 +86,7 @@ export const SimpleWalletDetails = ({ wallet, account, onClose }: Props) => {
           <WalletCardLg wallet={wallet} />
         </div>
         {walletUtils.isWatchOnly(wallet) && !hasProxies ? (
-          <AccountsList accountId={account.accountId} chains={Object.values(chains)} className="h-[351px]" />
+          <AccountsList accountId={account.accountId} chains={Object.values(chains)} className="h-[412px]" />
         ) : (
           <Tabs items={tabItems} panelClassName="" tabsClassName="mx-5" unmount={false} />
         )}

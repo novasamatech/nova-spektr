@@ -103,9 +103,9 @@ export const WalletConnectDetails = ({ wallet, accounts, onClose }: Props) => {
       id: 'proxies',
       title: t('walletDetails.common.proxiesTabTitle'),
       panel: hasProxies ? (
-        <ProxiesList walletId={wallet.id} className="h-[385px] mt-6" />
+        <ProxiesList walletId={wallet.id} className="h-[395px] mt-6" />
       ) : (
-        <NoProxiesAction className="h-[385px] mt-6" />
+        <NoProxiesAction className="h-[395px] mt-6" />
       ),
     },
   ];

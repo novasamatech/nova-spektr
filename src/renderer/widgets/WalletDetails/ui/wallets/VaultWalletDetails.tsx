@@ -125,8 +125,8 @@ export const VaultWalletDetails = ({ wallet, root, accountsMap, onClose }: Props
       id: 'accounts',
       title: t('walletDetails.common.accountTabTitle'),
       panel: (
-        <div className="px-5 py-4">
-          <ContextMenu button={<RootAccountLg name={wallet.name} accountId={root.accountId} />}>
+        <div className="pt-4">
+          <ContextMenu button={<RootAccountLg name={wallet.name} accountId={root.accountId} className="px-5" />}>
             <ContextMenu.Group title={t('general.explorers.publicKeyTitle')}>
               <div className="flex items-center gap-x-2">
                 <HelpText className="text-text-secondary break-all">
@@ -143,7 +143,7 @@ export const VaultWalletDetails = ({ wallet, root, accountsMap, onClose }: Props
           </ContextMenu>
 
           <VaultAccountsList
-            className="h-[343px] mt-4"
+            className="h-[354px] mt-4 pb-4 px-5"
             chains={Object.values(chains)}
             accountsMap={accountsMap}
             onShardClick={vaultDetailsModel.events.shardsSelected}
@@ -155,9 +155,9 @@ export const VaultWalletDetails = ({ wallet, root, accountsMap, onClose }: Props
       id: 'proxies',
       title: t('walletDetails.common.proxiesTabTitle'),
       panel: hasProxies ? (
-        <ProxiesList walletId={wallet.id} className="h-[392px] mt-4" />
+        <ProxiesList walletId={wallet.id} className="h-[403px] mt-4" />
       ) : (
-        <NoProxiesAction className="h-[392px] mt-4" />
+        <NoProxiesAction className="h-[403px] mt-4" />
       ),
     },
   ];

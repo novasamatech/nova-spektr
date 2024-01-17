@@ -86,7 +86,7 @@ export const MultisigWalletDetails = ({ wallet, account, signatoryWallets, signa
             {
               id: 1,
               title: t('walletDetails.multisig.networksTab'),
-              panel: <AccountsList accountId={account.accountId} chains={chains} className="h-[355px]" />,
+              panel: <AccountsList accountId={account.accountId} chains={chains} className="h-[361px]" />,
             },
             {
               id: 2,
@@ -100,7 +100,7 @@ export const MultisigWalletDetails = ({ wallet, account, signatoryWallets, signa
                     })}
                   </FootnoteText>
 
-                  <div className="overflow-y-auto mt-4 h-[357px]">
+                  <div className="overflow-y-auto mt-4 h-[353px]">
                     {signatoryWallets.length > 0 && (
                       <div className="flex flex-col gap-y-2">
                         <FootnoteText className="text-text-tertiary px-5">
@@ -167,9 +167,9 @@ export const MultisigWalletDetails = ({ wallet, account, signatoryWallets, signa
               id: 3,
               title: t('walletDetails.common.proxiesTabTitle'),
               panel: hasProxies ? (
-                <ProxiesList walletId={wallet.id} className="h-[376px]" />
+                <ProxiesList walletId={wallet.id} className="h-[387px]" />
               ) : (
-                <NoProxiesAction className="h-[376px]" />
+                <NoProxiesAction className="h-[387px]" />
               ),
             },
           ]}
