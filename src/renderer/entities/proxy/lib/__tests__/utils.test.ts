@@ -57,4 +57,37 @@ describe('entities/proxy/lib/utils', () => {
 
     expect(result).toEqual('Any for 5CGQ7B...VbXyr9');
   });
+
+  test('should sort proxy accounts by type', () => {
+    const proxyAccounts: ProxyAccount[] = [
+      {
+        id: 1,
+        accountId: '0x01',
+        proxiedAccountId: '0x02',
+        chainId: '0x05',
+        proxyType: ProxyType.CANCEL_PROXY,
+        delay: 0,
+      },
+      {
+        id: 2,
+        accountId: '0x01',
+        proxiedAccountId: '0x02',
+        chainId: '0x05',
+        proxyType: ProxyType.GOVERNANCE,
+        delay: 0,
+      },
+      {
+        id: 2,
+        accountId: '0x01',
+        proxiedAccountId: '0x02',
+        chainId: '0x05',
+        proxyType: ProxyType.NON_TRANSFER,
+        delay: 0,
+      },
+    ];
+
+    const sortedAccounts = proxyUtils.sortAccountsByProxyType(proxyAccounts);
+
+    expect(sortedAccounts).toEqual([proxyAccounts[2], proxyAccounts[0], proxyAccounts[1]]);
+  });
 });

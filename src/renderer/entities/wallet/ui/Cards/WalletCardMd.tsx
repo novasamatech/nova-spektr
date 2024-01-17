@@ -60,17 +60,14 @@ export const WalletCardMd = ({ wallet, description, prefix, hideIcon, className,
         </div>
       </button>
 
-      {/* TODO remove when details for proxied wallets are done */}
-      {!walletUtils.isProxied(wallet) && (
-        <IconButton
-          className={cnTw(
-            'absolute right-2 opacity-0 transition-opacity',
-            'group-hover:opacity-100 group-focus-within:opacity-100 focus:opacity-100',
-          )}
-          name="info"
-          onClick={handleClick(onInfoClick)}
-        />
-      )}
+      <IconButton
+        className={cnTw(
+          'absolute right-2 opacity-0 transition-opacity',
+          'group-hover:opacity-100 group-focus-within:opacity-100 focus:opacity-100',
+        )}
+        name="info"
+        onClick={handleClick(onInfoClick)}
+      />
     </div>
   );
 };

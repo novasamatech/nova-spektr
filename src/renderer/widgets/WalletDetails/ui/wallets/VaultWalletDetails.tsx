@@ -1,21 +1,25 @@
 import { useUnit } from 'effector-react';
 import { useState } from 'react';
 
-import { BaseModal, ContextMenu, IconButton, HelpText, DropdownIconButton } from '@shared/ui';
+import { BaseModal, ContextMenu, DropdownIconButton, HelpText, IconButton, Tabs } from '@shared/ui';
 import { useModalClose, useToggle } from '@shared/lib/hooks';
-import { RootAccountLg, WalletCardLg, VaultAccountsList } from '@entities/wallet';
-import { networkModel } from '@entities/network';
+import { RootAccountLg, VaultAccountsList, WalletCardLg } from '@entities/wallet';
 import { useI18n } from '@app/providers';
-import { Wallet, BaseAccount, ChainAccount, ShardAccount, DraftAccount, KeyType, Account } from '@shared/core';
+import { Account, BaseAccount, ChainAccount, DraftAccount, KeyType, ShardAccount, Wallet } from '@shared/core';
 import { copyToClipboard, toAddress } from '@shared/lib/utils';
 import { IconNames } from '@shared/ui/Icon/data';
-import { VaultMap } from '../lib/types';
-import { ShardsList } from './ShardsList';
-import { vaultDetailsModel } from '../model/vault-details-model';
-import { walletDetailsUtils } from '../lib/utils';
-import { KeyConstructor, ImportKeysModal, DerivationsAddressModal } from '@features/wallets';
+import { VaultMap } from '../../lib/types';
+import { ShardsList } from '../components/ShardsList';
+import { vaultDetailsModel } from '../../model/vault-details-model';
+import { walletDetailsUtils } from '../../lib/utils';
+import { DerivationsAddressModal, ImportKeysModal, KeyConstructor } from '@features/wallets';
 import { RenameWalletModal } from '@features/wallets/RenameWallet';
 import { ForgetWalletModal } from '@features/wallets/ForgetWallet';
+import { TabItem } from '@shared/ui/Tabs/common/types';
+import { ProxiesList } from '../components/ProxiesList';
+import { walletProviderModel } from '../../model/wallet-provider-model';
+import { NoProxiesAction } from '../components/NoProxiesAction';
+import { networkModel } from '@entities/network';
 
 type Props = {
   wallet: Wallet;
@@ -26,6 +30,7 @@ type Props = {
 export const VaultWalletDetails = ({ wallet, root, accountsMap, onClose }: Props) => {
   const { t } = useI18n();
 
+  const hasProxies = useUnit(walletProviderModel.$hasProxies);
   const chains = useUnit(networkModel.$chains);
 
   const [isModalOpen, closeModal] = useModalClose(true, onClose);
@@ -115,6 +120,48 @@ export const VaultWalletDetails = ({ wallet, root, accountsMap, onClose }: Props
     </DropdownIconButton>
   );
 
+  const tabItems: TabItem[] = [
+    {
+      id: 'accounts',
+      title: t('walletDetails.common.accountTabTitle'),
+      panel: (
+        <div className="pt-4">
+          <ContextMenu button={<RootAccountLg name={wallet.name} accountId={root.accountId} className="px-5" />}>
+            <ContextMenu.Group title={t('general.explorers.publicKeyTitle')}>
+              <div className="flex items-center gap-x-2">
+                <HelpText className="text-text-secondary break-all">
+                  {toAddress(root.accountId, { prefix: 1 })}
+                </HelpText>
+                <IconButton
+                  className="shrink-0"
+                  name="copy"
+                  size={20}
+                  onClick={() => copyToClipboard(root.accountId)}
+                />
+              </div>
+            </ContextMenu.Group>
+          </ContextMenu>
+
+          <VaultAccountsList
+            className="h-[354px] mt-4 pb-4 px-5"
+            chains={Object.values(chains)}
+            accountsMap={accountsMap}
+            onShardClick={vaultDetailsModel.events.shardsSelected}
+          />
+        </div>
+      ),
+    },
+    {
+      id: 'proxies',
+      title: t('walletDetails.common.proxiesTabTitle'),
+      panel: hasProxies ? (
+        <ProxiesList walletId={wallet.id} className="h-[403px] mt-4" />
+      ) : (
+        <NoProxiesAction className="h-[403px] mt-4" />
+      ),
+    },
+  ];
+
   return (
     <BaseModal
       closeButton
@@ -130,30 +177,7 @@ export const VaultWalletDetails = ({ wallet, root, accountsMap, onClose }: Props
           <WalletCardLg wallet={wallet} />
         </div>
 
-        <div className="px-5 py-4">
-          <ContextMenu button={<RootAccountLg name={wallet.name} accountId={root.accountId} />}>
-            <ContextMenu.Group title={t('general.explorers.publicKeyTitle')}>
-              <div className="flex items-center gap-x-2">
-                <HelpText className="text-text-secondary break-all">
-                  {toAddress(root.accountId, { prefix: 1 })}
-                </HelpText>
-                <IconButton
-                  className="shrink-0"
-                  name="copy"
-                  size={20}
-                  onClick={() => copyToClipboard(root.accountId)}
-                />
-              </div>
-            </ContextMenu.Group>
-          </ContextMenu>
-        </div>
-
-        <VaultAccountsList
-          className="h-[377px]"
-          chains={Object.values(chains)}
-          accountsMap={accountsMap}
-          onShardClick={vaultDetailsModel.events.shardsSelected}
-        />
+        <Tabs items={tabItems} panelClassName="" tabsClassName="mx-5" unmount={false} />
       </div>
 
       <ShardsList />
