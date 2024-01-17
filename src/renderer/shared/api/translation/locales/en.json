@@ -94,7 +94,7 @@
     "create": "Create",
     "disabledError": {
       "differentAccounts": "Wallets with different accounts for chains are not supported",
-      "unsupportedType": "This type of wallet is not yet supported for the Multisig wallet creation"
+      "unsupportedType": "This type of wallet is not supported for the Multisig wallet creation"
     },
     "disabledLabel": "Not supported",
     "errorMessage": "Something went wrong",
@@ -728,7 +728,7 @@
     "scanSignatureTitle": "Scan QR code from Polkadot Vault",
     "signatureExpiredDescription": "For security reasons generated operations valid for only 5 mins. Please generate new QR code and sign it with Polkadot Vault",
     "signatureExpiredLabel": "QR Code has expired",
-    "signer": "Signatory:",
+    "signer": "Signer:",
     "title": "Signing",
     "troubleshootingLink": "I have an error in Polkadot Vault"
   },

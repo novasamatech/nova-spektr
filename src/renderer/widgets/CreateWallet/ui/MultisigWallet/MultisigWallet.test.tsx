@@ -5,7 +5,7 @@ import { Provider } from 'effector-react';
 
 import { contactModel } from '@entities/contact';
 import { walletModel } from '@entities/wallet';
-import { MultisigAccount } from './MultisigAccount';
+import { MultisigWallet } from './MultisigWallet';
 
 jest.mock('@app/providers', () => ({
   useI18n: jest.fn().mockReturnValue({
@@ -40,7 +40,7 @@ jest.mock('./components', () => ({
   ConfirmSignatories: () => <span>confirmSignatories</span>,
 }));
 
-describe('widgets/CreteWallet/ui/MultisigAccount', () => {
+describe('widgets/CreteWallet/ui/MultisigWallet', () => {
   test('should render component', async () => {
     const scope = fork({
       values: new Map().set(contactModel.$contacts, []).set(walletModel.$wallets, []).set(walletModel.$accounts, []),
@@ -49,7 +49,7 @@ describe('widgets/CreteWallet/ui/MultisigAccount', () => {
     await act(async () => {
       render(
         <Provider value={scope}>
-          <MultisigAccount isOpen={true} onClose={noop} onComplete={noop} />
+          <MultisigWallet isOpen={true} onClose={noop} onComplete={noop} />
         </Provider>,
       );
     });

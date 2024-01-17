@@ -1,4 +1,5 @@
 import { ApiPromise } from '@polkadot/api';
+import set from 'lodash/set';
 
 import {
   Account,
@@ -12,7 +13,7 @@ import {
   ProxyAccount,
   ProxyVariant,
 } from '@shared/core';
-import { proxyWorkerFunctions, state } from '../proxy-worker';
+import { proxyWorker, state } from '../proxy-worker';
 
 jest.mock('@polkadot/rpc-provider', () => ({
   ScProvider: function () {
@@ -23,10 +24,10 @@ jest.mock('@polkadot/rpc-provider', () => ({
   },
 }));
 
-describe('initConnection', () => {
+describe('features/proxies/workers/proxy-worker', () => {
   test('should reject if chain is not provided', async () => {
     try {
-      await proxyWorkerFunctions.initConnection();
+      await proxyWorker.initConnection();
       // If the promise is resolved, it means the test failed
       throw new Error('Expected promise to be rejected');
     } catch (error) {
@@ -36,7 +37,7 @@ describe('initConnection', () => {
 
   test('should reject if provider is not connected', async () => {
     try {
-      await proxyWorkerFunctions.initConnection({} as Chain, {} as Connection);
+      await proxyWorker.initConnection({} as Chain, {} as Connection);
       // If the promise is resolved, it means the test failed
       throw new Error('Expected promise to be rejected');
     } catch (error) {
@@ -45,34 +46,27 @@ describe('initConnection', () => {
   });
 
   test('should call disconnect if api exists and connected', async () => {
-    // Arrange
-    const chainId = '0x00' as ChainId; // Update with your test data
+    const chainId = '0x00' as ChainId;
     const api = {
       isConnected: true,
       disconnect: jest.fn(),
     } as unknown as ApiPromise;
     state.apis = { [chainId]: api };
 
-    // Act
-    await proxyWorkerFunctions.disconnect(chainId);
+    await proxyWorker.disconnect(chainId);
 
-    // Assert
     expect(api.disconnect).toHaveBeenCalled();
   });
 
   test('should return empty arrays and deposits object when api or api.query.proxy is not available', async () => {
-    state.apis = {
-      '0x01': {
-        query: {},
-      } as unknown as ApiPromise,
-    };
+    set(state.apis, '0x01.query', {});
 
     const chainId = '0x01';
     const accounts = {};
     const proxiedAccounts = [] as ProxiedAccount[];
     const proxies = [] as ProxyAccount[];
 
-    const result = await proxyWorkerFunctions.getProxies(chainId, accounts, proxiedAccounts, proxies);
+    const result = await proxyWorker.getProxies(chainId, accounts, proxiedAccounts, proxies);
 
     expect(result.proxiesToAdd).toEqual([]);
     expect(result.proxiesToRemove).toEqual([]);
@@ -85,24 +79,14 @@ describe('initConnection', () => {
   });
 
   test('should return empty arrays and deposits object when empty keys come from proxy.proxies.keys', async () => {
-    state.apis = {
-      '0x01': {
-        query: {
-          proxy: {
-            proxies: {
-              keys: () => [],
-            },
-          },
-        },
-      } as unknown as ApiPromise,
-    };
+    set(state.apis, '0x01.query.proxy.proxies.keys', () => []);
 
     const chainId = '0x01';
     const accounts = {};
     const proxiedAccounts = [] as ProxiedAccount[];
     const proxies = [] as ProxyAccount[];
 
-    const result = await proxyWorkerFunctions.getProxies(chainId, accounts, proxiedAccounts, proxies);
+    const result = await proxyWorker.getProxies(chainId, accounts, proxiedAccounts, proxies);
 
     expect(result.proxiesToAdd).toEqual([]);
     expect(result.proxiesToRemove).toEqual([]);
@@ -115,45 +99,31 @@ describe('initConnection', () => {
   });
 
   test('should return array with account and deposit object ', async () => {
-    state.apis = {
-      '0x01': {
-        query: {
-          proxy: {
-            proxies: {
-              keys: () => [
-                {
-                  args: [
-                    {
-                      toHex: () => '0x01',
-                    },
-                  ],
-                },
-              ],
+    set(state.apis, '0x01.query.proxy.proxies.keys', () => [
+      {
+        args: [
+          {
+            toHex: () => '0x01',
+          },
+        ],
+      },
+    ]);
+    set(state.apis, '0x01.rpc.state.queryStorageAt', () => [
+      [
+        {
+          toHuman: () => [
+            {
+              delegate: '0x02',
+              proxyType: 'Governance',
+              delay: 0,
             },
-          },
+          ],
         },
-        rpc: {
-          state: {
-            queryStorageAt: () => [
-              [
-                {
-                  toHuman: () => [
-                    {
-                      delegate: '0x02',
-                      proxyType: 'Governance',
-                      delay: 0,
-                    },
-                  ],
-                },
-                {
-                  toHuman: () => '1,002,050,000,000',
-                },
-              ],
-            ],
-          },
+        {
+          toHuman: () => '1,002,050,000,000',
         },
-      } as unknown as ApiPromise,
-    };
+      ],
+    ]);
 
     const chainId = '0x01';
     const accounts = {
@@ -170,7 +140,7 @@ describe('initConnection', () => {
     const proxiedAccounts = [] as ProxiedAccount[];
     const proxies = [] as ProxyAccount[];
 
-    const result = await proxyWorkerFunctions.getProxies(chainId, accounts, proxiedAccounts, proxies);
+    const result = await proxyWorker.getProxies(chainId, accounts, proxiedAccounts, proxies);
 
     expect(result.proxiesToAdd).toEqual([
       {
@@ -234,7 +204,7 @@ describe('initConnection', () => {
     const proxiedAccounts = [] as ProxiedAccount[];
     const proxies = [mockProxy] as ProxyAccount[];
 
-    const result = await proxyWorkerFunctions.getProxies(chainId, accounts, proxiedAccounts, proxies);
+    const result = await proxyWorker.getProxies(chainId, accounts, proxiedAccounts, proxies);
 
     expect(result.proxiesToAdd).toEqual([]);
     expect(result.proxiesToRemove).toEqual([mockProxy]);
@@ -294,7 +264,7 @@ describe('initConnection', () => {
     const proxiedAccounts = [mockProxied] as ProxiedAccount[];
     const proxies = [] as ProxyAccount[];
 
-    const result = await proxyWorkerFunctions.getProxies(chainId, accounts, proxiedAccounts, proxies);
+    const result = await proxyWorker.getProxies(chainId, accounts, proxiedAccounts, proxies);
 
     expect(result.proxiesToAdd).toEqual([]);
     expect(result.proxiesToRemove).toEqual([]);

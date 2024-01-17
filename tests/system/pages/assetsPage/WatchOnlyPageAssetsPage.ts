@@ -24,12 +24,4 @@ export class WatchOnlyAssetsPage extends BasePage {
 
     return new WalletModalWindow(this.page, new WalletModalElements(), this);
   }
-
-  public async openBrokenWalletManagement(): Promise<WalletModalWindow> {
-    // This is workaround to avoid problem - https://app.clickup.com/t/8693ggzv4
-    await this.openWalletManagement();
-    await this.page.waitForTimeout(2000);
-
-    return this.openWalletManagement();
-  }
 }

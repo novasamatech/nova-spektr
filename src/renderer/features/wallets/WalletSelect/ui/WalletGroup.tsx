@@ -1,7 +1,7 @@
 import { Accordion, CaptionText, Icon } from '@shared/ui';
 import { useI18n } from '@app/providers';
 import { Wallet, WalletFamily, WalletType } from '@shared/core';
-import { WalletCardMd, WalletIcon, walletModel, walletUtils } from '@entities/wallet';
+import { WalletCardMd, WalletIcon, walletUtils } from '@entities/wallet';
 import { WalletFiatBalance } from './WalletFiatBalance';
 import { walletSelectModel } from '../model/wallet-select-model';
 import { ProxiedTooltip } from './ProxiedTooltip';
@@ -52,7 +52,7 @@ export const WalletGroup = ({ type, wallets }: Props) => {
                     <div className="w-5 h-5 row-span-2 shrink-0" />
                   )
                 }
-                onClick={() => walletModel.events.walletSelected(wallet.id)}
+                onClick={() => walletSelectModel.events.walletSelected(wallet.id)}
                 onInfoClick={() => walletSelectModel.events.walletIdSet(wallet.id)}
               />
             </li>

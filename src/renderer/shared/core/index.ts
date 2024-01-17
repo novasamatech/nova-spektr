@@ -53,12 +53,13 @@ export { RewardsDestination } from './types/stake';
 export type { Stake, Unlocking } from './types/stake';
 
 export { ProxyType, ProxyVariant } from './types/proxy';
+
 export type {
   ProxyAccount,
   PartialProxyAccount,
   PartialProxiedAccount,
   ProxyDeposits,
-  ProxyChainGroup,
+  ProxyGroup,
 } from './types/proxy';
 
 export type { Notification, MultisigInvite, MultisigOperation, ProxyAction } from './types/notification';

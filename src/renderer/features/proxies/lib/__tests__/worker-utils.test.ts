@@ -153,8 +153,7 @@ describe('features/proxies/lib/worker-utils', () => {
   });
 
   test('should return undefined if chainId is not found', () => {
-    const chainId = '0x01';
-    const result = proxyWorkerUtils.getKnownChain(chainId);
+    const result = proxyWorkerUtils.getKnownChain('0x01');
 
     expect(result).toBeUndefined();
   });

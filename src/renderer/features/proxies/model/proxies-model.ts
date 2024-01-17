@@ -1,4 +1,4 @@
-import { createEffect, createEvent, createStore, sample, scopeBind } from 'effector';
+import { attach, createEffect, createEvent, createStore, sample, scopeBind } from 'effector';
 import { Endpoint, createEndpoint } from '@remote-ui/rpc';
 import { keyBy } from 'lodash';
 import { once, spread } from 'patronum';
@@ -13,7 +13,7 @@ import type {
   PartialProxiedAccount,
   ProxiedAccount,
   ProxyAccount,
-  ProxyChainGroup,
+  ProxyGroup,
   ProxyDeposits,
   Wallet,
 } from '@shared/core';
@@ -23,7 +23,7 @@ import { accountUtils, walletModel } from '@entities/wallet';
 import { proxyModel, proxyUtils } from '@entities/proxy';
 import { balanceModel } from '@entities/balance';
 import { notificationModel } from '@entities/notification';
-import { proxiesUtils } from '../lib/utils';
+import { proxiesUtils } from '../lib/proxies-utils';
 
 const workerStarted = createEvent();
 const connected = createEvent<ChainId>();
@@ -90,22 +90,34 @@ const disconnectFx = createEffect(async ({ chainId, endpoint }: { chainId: Chain
   await endpoint.call.disconnect(chainId);
 });
 
+type ProxiedWalletsParams = {
+  proxiedAccounts: PartialProxiedAccount[];
+  chains: Record<ChainId, Chain>;
+};
+type ProxiedWalletsResult = {
+  wallet: Wallet;
+  accounts: ProxiedAccount[];
+};
 const createProxiedWalletsFx = createEffect(
-  (proxiedAccounts: PartialProxiedAccount[]): { wallet: Wallet; accounts: ProxiedAccount[] }[] => {
+  ({ proxiedAccounts, chains }: ProxiedWalletsParams): ProxiedWalletsResult[] => {
     return proxiedAccounts.map((proxied) => {
-      const walletName = proxyUtils.getProxiedName(proxied.accountId, proxied.proxyType);
+      const walletName = proxyUtils.getProxiedName(
+        proxied.accountId,
+        proxied.proxyType,
+        chains[proxied.chainId].addressPrefix,
+      );
       const wallet = {
         name: walletName,
         type: WalletType.PROXIED,
         signingType: SigningType.WATCH_ONLY,
       } as Wallet;
 
+      // TODO: use chain data, when ethereum chains support
       const accounts = [
         {
           ...proxied,
           name: walletName,
           type: AccountType.PROXIED,
-          // TODO: use chain data, when ethereum chains support
           chainType: ChainType.SUBSTRATE,
           cryptoType: CryptoType.SR25519,
         } as ProxiedAccount,
@@ -162,10 +174,16 @@ sample({
 spread({
   source: getProxiesFx.doneData,
   targets: {
-    proxiesToAdd: proxyModel.events.proxiesAdded,
     proxiesToRemove: proxyModel.events.proxiesRemoved,
-    proxiedAccountsToAdd: createProxiedWalletsFx,
+    proxiesToAdd: proxyModel.events.proxiesAdded,
     proxiedAccountsToRemove: proxiedAccountsRemoved,
+    proxiedAccountsToAdd: attach({
+      source: networkModel.$chains,
+      effect: createProxiedWalletsFx,
+      mapParams: (proxiedAccounts: ProxiedAccount[], chains) => {
+        return { proxiedAccounts, chains };
+      },
+    }),
     deposits: depositsReceived,
   },
 });
@@ -200,39 +218,16 @@ sample({
   source: {
     wallets: walletModel.$wallets,
     accounts: walletModel.$accounts,
-    proxyChainGroups: proxyModel.$proxyChainGroups,
+    groups: proxyModel.$proxyGroups,
   },
-  fn: ({ wallets, accounts, proxyChainGroups }, deposits) => {
-    const proxyGroups = wallets.reduce<NoID<ProxyChainGroup>[]>((acc, w) => {
-      const walletAccounts = accounts.filter((a) => a.walletId === w.id);
+  fn: ({ wallets, accounts, groups }, deposits) => {
+    const proxyGroups = proxyUtils.getProxyGroups(wallets, accounts, deposits);
 
-      if (walletAccounts.length > 0) {
-        const walletProxyGroups = walletAccounts.reduce<NoID<ProxyChainGroup>[]>((acc, a) => {
-          const walletDeposits = deposits.deposits[a.accountId];
-          if (!walletDeposits) return acc;
-
-          acc.push({
-            walletId: w.id,
-            proxiedAccountId: a.accountId,
-            chainId: deposits.chainId,
-            totalDeposit: walletDeposits,
-          });
-
-          return acc;
-        }, []);
-
-        acc = acc.concat(walletProxyGroups);
-      }
-
-      return acc;
-    }, []);
-
-    const { toAdd, toUpdate } = proxyGroups.reduce<{
-      toAdd: NoID<ProxyChainGroup>[];
-      toUpdate: NoID<ProxyChainGroup>[];
-    }>(
+    const { toAdd, toUpdate } = groups.reduce<Record<'toAdd' | 'toUpdate', NoID<ProxyGroup>[]>>(
       (acc, g) => {
-        if (!proxyChainGroups.some((p) => proxyUtils.isSameProxyChainGroup(p, g))) {
+        const shouldAddAll = proxyGroups.every((p) => proxyUtils.isSameProxyGroup(p, g));
+
+        if (shouldAddAll) {
           acc.toAdd.push(g);
         } else {
           acc.toUpdate.push(g);
@@ -240,21 +235,16 @@ sample({
 
         return acc;
       },
-      {
-        toAdd: [],
-        toUpdate: [],
-      },
+      { toAdd: [], toUpdate: [] },
     );
 
-    const toRemove = proxyChainGroups.filter(
-      (p) => p.chainId === deposits.chainId && !proxyGroups.some((g) => proxyUtils.isSameProxyChainGroup(g, p)),
-    );
+    const toRemove = groups.filter((p) => {
+      if (p.chainId !== deposits.chainId) return false;
 
-    return {
-      toAdd,
-      toUpdate,
-      toRemove,
-    };
+      return !proxyGroups.some((g) => proxyUtils.isSameProxyGroup(g, p));
+    });
+
+    return { toAdd, toUpdate, toRemove };
   },
   target: spread({
     toAdd: proxyModel.events.proxyGroupsAdded,
@@ -268,10 +258,17 @@ sample({
   source: {
     wallets: walletModel.$wallets,
     accounts: walletModel.$accounts,
+    chains: networkModel.$chains,
   },
   filter: (_, data) => data.proxiedAccountsToAdd.length > 0,
-  fn: ({ wallets, accounts }, data) =>
-    proxiesUtils.getNotification(data.proxiedAccountsToAdd, wallets, accounts, NotificationType.PROXY_CREATED),
+  fn: ({ wallets, accounts, chains }, data) =>
+    proxiesUtils.getNotification({
+      wallets,
+      accounts,
+      chains,
+      proxiedAccounts: data.proxiedAccountsToAdd,
+      type: NotificationType.PROXY_CREATED,
+    }),
   target: notificationModel.events.notificationsAdded,
 });
 
@@ -280,10 +277,17 @@ sample({
   source: {
     wallets: walletModel.$wallets,
     accounts: walletModel.$accounts,
+    chains: networkModel.$chains,
   },
   filter: (_, data) => data.proxiedAccountsToRemove.length > 0,
-  fn: ({ wallets, accounts }, data) =>
-    proxiesUtils.getNotification(data.proxiedAccountsToRemove, wallets, accounts, NotificationType.PROXY_REMOVED),
+  fn: ({ wallets, accounts, chains }, data) =>
+    proxiesUtils.getNotification({
+      wallets,
+      accounts,
+      chains,
+      proxiedAccounts: data.proxiedAccountsToRemove,
+      type: NotificationType.PROXY_REMOVED,
+    }),
   target: notificationModel.events.notificationsAdded,
 });
 

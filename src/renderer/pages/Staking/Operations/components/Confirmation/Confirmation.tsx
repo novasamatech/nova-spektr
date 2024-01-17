@@ -7,10 +7,17 @@ import { Icon, Button, FootnoteText, CaptionText, InputHint, DetailRow } from '@
 import { useI18n } from '@app/providers';
 import { useToggle } from '@shared/lib/hooks';
 import { Validator } from '@shared/core/types/validator';
-import { AddressWithExplorers, WalletCardSm, WalletIcon, accountUtils, walletModel } from '@entities/wallet';
+import {
+  AddressWithExplorers,
+  WalletCardSm,
+  WalletIcon,
+  accountUtils,
+  walletModel,
+  ExplorersPopover,
+} from '@entities/wallet';
 import { AssetBalance } from '@entities/asset';
 import { MultisigTxInitStatus, DepositWithLabel, Fee, useTransaction, Transaction } from '@entities/transaction';
-import AccountsModal from '../Modals/AccountsModal/AccountsModal';
+import AccountsModal from '../AccountsModal/AccountsModal';
 import { DestinationType } from '../../common/types';
 import { cnTw } from '@shared/lib/utils';
 import { useMultisigTx } from '@entities/multisig';
@@ -146,11 +153,11 @@ export const Confirmation = ({
 
           {signerWallet && (
             <DetailRow className="flex gap-x-2" label={t('staking.confirmation.signatoryLabel')}>
-              <WalletCardSm
-                wallet={signerWallet}
-                accountId={signer.accountId}
-                addressPrefix={addressPrefix}
+              <ExplorersPopover
+                button={<WalletCardSm wallet={signerWallet} />}
+                address={signer.accountId}
                 explorers={explorers}
+                addressPrefix={addressPrefix}
               />
             </DetailRow>
           )}
