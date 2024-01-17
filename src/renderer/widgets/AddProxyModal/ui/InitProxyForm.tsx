@@ -1,10 +1,9 @@
 import { useForm } from 'effector-forms';
-import { FormEvent, useMemo } from 'react';
+import { FormEvent } from 'react';
 import { useUnit } from 'effector-react';
 
 import { Button, Select, Input, InputHint, Combobox, FootnoteText } from '@shared/ui';
 import { useI18n } from '@app/providers';
-import { networkModel } from '@entities/network';
 import { ChainTitle } from '@entities/chain';
 import { ProxyPopover } from './ProxyPopover';
 import { addProxyModel } from '../model/add-proxy-model';
@@ -66,22 +65,20 @@ const NetworkSelector = () => {
     fields: { network },
   } = useForm(addProxyModel.$proxyForm);
 
-  const chains = useUnit(networkModel.$chains);
+  const proxyChains = useUnit(addProxyModel.$proxyChains);
 
-  const networks = useMemo(() => {
-    return Object.values(chains).map((chain) => ({
-      id: chain.chainId,
-      value: chain,
-      element: (
-        <ChainTitle
-          className="overflow-hidden"
-          fontClass="text-text-primary truncate"
-          key={chain.chainId}
-          chain={chain}
-        />
-      ),
-    }));
-  }, []);
+  const networks = Object.values(proxyChains).map((chain) => ({
+    id: chain.chainId,
+    value: chain,
+    element: (
+      <ChainTitle
+        className="overflow-hidden"
+        fontClass="text-text-primary truncate"
+        key={chain.chainId}
+        chain={chain}
+      />
+    ),
+  }));
 
   return (
     <div className="flex flex-col gap-y-2">
@@ -182,13 +179,17 @@ const ProxyTypeSelector = () => {
     fields: { proxyType },
   } = useForm(addProxyModel.$proxyForm);
 
+  const proxyTypes = useUnit(addProxyModel.$proxyTypes);
+
+  const types = proxyTypes.map((type) => ({ id: type, value: type, element: type }));
+
   return (
     <div className="flex flex-col gap-y-2">
       <Select
         label="Access type"
         placeholder="Choose type"
         selectedId={proxyType.value}
-        options={[]}
+        options={types}
         onChange={({ value }) => proxyType.onChange(value)}
       />
     </div>

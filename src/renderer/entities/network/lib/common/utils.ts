@@ -22,6 +22,10 @@ export const isMultisigAvailable = (chainOptions?: ChainOptions[]): boolean => {
   return Boolean(chainOptions?.includes('multisig'));
 };
 
+export const isRegularProxyAvailable = (chainOptions?: ChainOptions[]): boolean => {
+  return Boolean(chainOptions?.includes('regular_proxy'));
+};
+
 export const isNameWithNumber = (chainName: string): boolean => {
   return /^[0-9]+/.test(chainName);
 };

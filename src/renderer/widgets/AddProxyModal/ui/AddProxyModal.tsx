@@ -1,4 +1,5 @@
 import { useUnit } from 'effector-react';
+import { useEffect } from 'react';
 
 import { BaseModal } from '@shared/ui';
 import { useModalClose } from '@shared/lib/hooks';
@@ -15,6 +16,12 @@ export const AddProxyModal = ({ isOpen, onClose }: Props) => {
   const step = useUnit(addProxyModel.$steps);
 
   const [isModalOpen, closeModal] = useModalClose(isOpen, onClose);
+
+  useEffect(() => {
+    if (!isOpen) return;
+
+    addProxyModel.events.formInitiated();
+  }, [isOpen]);
 
   return (
     <BaseModal closeButton isOpen={isModalOpen} title="Add delegated authority (proxy)" onClose={closeModal}>

@@ -12,6 +12,7 @@ import { WalletFiatBalance } from '@features/wallets/WalletSelect/ui/WalletFiatB
 import { IconNames } from '@shared/ui/Icon/data';
 import { RenameWalletModal } from '@features/wallets/RenameWallet';
 import { ForgetWalletModal } from '@features/wallets/ForgetWallet';
+import { AddProxyModal } from '../../AddProxyModal';
 
 type Props = {
   wallet: Wallet;
@@ -27,6 +28,7 @@ export const MultisigWalletDetails = ({ wallet, account, signatoryWallets, signa
   const [isModalOpen, closeModal] = useModalClose(true, onClose);
   const [isRenameModalOpen, toggleIsRenameModalOpen] = useToggle();
   const [isConfirmForgetOpen, toggleConfirmForget] = useToggle();
+  const [isAddProxyModalOpen, toggleIsAddProxyModalOpen] = useToggle();
 
   const chains = useMemo(() => {
     return chainsService.getChainsData({ sort: true }).filter((chain) => isMultisigAvailable(chain.options));
@@ -69,6 +71,9 @@ export const MultisigWalletDetails = ({ wallet, account, signatoryWallets, signa
     >
       <div className="flex flex-col w-full">
         <div className="py-6 px-5 border-b border-divider">
+          <button className="bg-red-50" onClick={toggleIsAddProxyModalOpen}>
+            open
+          </button>
           <WalletCardLg wallet={wallet} />
         </div>
 
@@ -168,6 +173,8 @@ export const MultisigWalletDetails = ({ wallet, account, signatoryWallets, signa
         onClose={toggleConfirmForget}
         onForget={onClose}
       />
+
+      <AddProxyModal isOpen={isAddProxyModalOpen} onClose={toggleIsAddProxyModalOpen} />
     </BaseModal>
   );
 };
