@@ -94,14 +94,21 @@ async function disconnect(chainId: ChainId) {
   await state.apis[chainId].disconnect();
 }
 
+type GetProxiesParams = {
+  chainId: ChainId;
+  accountsForProxy: Record<AccountId, Account>;
+  accountsForProxied: Record<AccountId, Account>;
+  proxiedAccounts: ProxiedAccount[];
+  proxies: ProxyAccount[];
+};
 // TODO: Refactor this code
-async function getProxies(
-  chainId: ChainId,
-  accountsForProxy: Record<AccountId, Account>,
-  accountsForProxied: Record<AccountId, Account>,
-  proxiedAccounts: ProxiedAccount[],
-  proxies: ProxyAccount[],
-) {
+async function getProxies({
+  chainId,
+  accountsForProxy,
+  accountsForProxied,
+  proxiedAccounts,
+  proxies,
+}: GetProxiesParams) {
   const api = state.apis[chainId];
 
   const existingProxies = [] as NoID<ProxyAccount>[];
