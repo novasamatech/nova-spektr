@@ -67,13 +67,13 @@ describe('features/proxies/workers/proxy-worker', () => {
     const proxiedAccounts = [] as ProxiedAccount[];
     const proxies = [] as ProxyAccount[];
 
-    const result = await proxyWorker.getProxies(
+    const result = await proxyWorker.getProxies({
       chainId,
       accountsForProxy,
       accountsForProxied,
       proxiedAccounts,
       proxies,
-    );
+    });
 
     expect(result.proxiesToAdd).toEqual([]);
     expect(result.proxiesToRemove).toEqual([]);
@@ -94,13 +94,13 @@ describe('features/proxies/workers/proxy-worker', () => {
     const proxiedAccounts = [] as ProxiedAccount[];
     const proxies = [] as ProxyAccount[];
 
-    const result = await proxyWorker.getProxies(
+    const result = await proxyWorker.getProxies({
       chainId,
       accountsForProxy,
       accountsForProxied,
       proxiedAccounts,
       proxies,
-    );
+    });
 
     expect(result.proxiesToAdd).toEqual([]);
     expect(result.proxiesToRemove).toEqual([]);
@@ -156,13 +156,13 @@ describe('features/proxies/workers/proxy-worker', () => {
     const proxiedAccounts = [] as ProxiedAccount[];
     const proxies = [] as ProxyAccount[];
 
-    const result = await proxyWorker.getProxies(
+    const result = await proxyWorker.getProxies({
       chainId,
       accountsForProxy,
       accountsForProxied,
       proxiedAccounts,
       proxies,
-    );
+    });
 
     expect(result.proxiesToAdd).toEqual([
       {
@@ -229,13 +229,13 @@ describe('features/proxies/workers/proxy-worker', () => {
     const proxiedAccounts = [] as ProxiedAccount[];
     const proxies = [mockProxy] as ProxyAccount[];
 
-    const result = await proxyWorker.getProxies(
+    const result = await proxyWorker.getProxies({
       chainId,
       accountsForProxy,
       accountsForProxied,
       proxiedAccounts,
       proxies,
-    );
+    });
 
     expect(result.proxiesToAdd).toEqual([]);
     expect(result.proxiesToRemove).toEqual([mockProxy]);
@@ -297,13 +297,13 @@ describe('features/proxies/workers/proxy-worker', () => {
     const proxiedAccounts = [mockProxied] as ProxiedAccount[];
     const proxies = [] as ProxyAccount[];
 
-    const result = await proxyWorker.getProxies(
+    const result = await proxyWorker.getProxies({
       chainId,
       accountsForProxy,
       accountsForProxied,
       proxiedAccounts,
       proxies,
-    );
+    });
 
     expect(result.proxiesToAdd).toEqual([]);
     expect(result.proxiesToRemove).toEqual([]);
@@ -369,13 +369,13 @@ describe('features/proxies/workers/proxy-worker', () => {
     const proxiedAccounts = [] as ProxiedAccount[];
     const proxies = [] as ProxyAccount[];
 
-    const result = await proxyWorker.getProxies(
+    const result = await proxyWorker.getProxies({
       chainId,
       accountsForProxy,
       accountsForProxied,
       proxiedAccounts,
       proxies,
-    );
+    });
 
     expect(result.proxiesToAdd).toEqual([]);
     expect(result.proxiesToRemove).toEqual([]);

@@ -38,9 +38,15 @@ const $activeWallet = combine(
   },
   { skipVoid: false },
 );
-const $walletsMap = combine($wallets, (wallets): WalletsMap | undefined => keyBy(wallets, 'id'), {
-  skipVoid: false,
-});
+const $walletsMap = combine(
+  $wallets,
+  (wallets): WalletsMap | undefined => {
+    return keyBy(wallets, 'id');
+  },
+  {
+    skipVoid: false,
+  },
+);
 
 const $accounts = createStore<Account[]>([]);
 const $activeAccounts = combine(

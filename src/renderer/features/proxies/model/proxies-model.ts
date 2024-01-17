@@ -89,14 +89,13 @@ const getProxiesFx = createEffect(
       'accountId',
     );
 
-    return endpoint.call.getProxies(
+    return endpoint.call.getProxies({
       chainId,
       accountsForProxy,
       accountsForProxied,
       proxiedAccounts,
       proxies,
-      wallets,
-    ) as Promise<GetProxiesResult>;
+    }) as Promise<GetProxiesResult>;
   },
 );
 
