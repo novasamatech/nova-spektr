@@ -16,6 +16,7 @@ import type {
   ProxyGroup,
   ProxyDeposits,
   Wallet,
+  WalletsMap,
 } from '@shared/core';
 import { AccountType, ChainType, CryptoType, SigningType, WalletType, NotificationType } from '@shared/core';
 import { isDisabled, networkModel } from '@entities/network';
@@ -61,6 +62,7 @@ const startChainsFx = createEffect(({ chains, connections, endpoint }: StartChai
 type GetProxiesParams = {
   chainId: ChainId;
   accounts: Account[];
+  wallets: WalletsMap;
   proxies: ProxyAccount[];
   endpoint: Endpoint<any>;
 };
@@ -75,14 +77,23 @@ type GetProxiesResult = {
   };
 };
 const getProxiesFx = createEffect(
-  ({ chainId, accounts, proxies, endpoint }: GetProxiesParams): Promise<GetProxiesResult> => {
+  ({ chainId, accounts, wallets, proxies, endpoint }: GetProxiesParams): Promise<GetProxiesResult> => {
     const proxiedAccounts = accounts.filter((a) => accountUtils.isProxiedAccount(a));
-    const nonProxiedAccounts = keyBy(
-      accounts.filter((a) => !accountUtils.isProxiedAccount(a)),
+    const walletsMap = keyBy(wallets, 'id');
+
+    const accountsForProxy = keyBy(accounts, 'accountId');
+    const accountsForProxied = keyBy(
+      accounts.filter((a) => proxiesUtils.isProxiedAvailable(a, walletsMap[a.walletId])),
       'accountId',
     );
 
-    return endpoint.call.getProxies(chainId, nonProxiedAccounts, proxiedAccounts, proxies) as Promise<GetProxiesResult>;
+    return endpoint.call.getProxies({
+      chainId,
+      accountsForProxy,
+      accountsForProxied,
+      proxiedAccounts,
+      proxies,
+    }) as Promise<GetProxiesResult>;
   },
 );
 
@@ -159,12 +170,14 @@ sample({
   source: {
     accounts: walletModel.$accounts,
     proxies: proxyModel.$proxies,
+    wallets: walletModel.$wallets,
     endpoint: $endpoint,
   },
-  filter: ({ endpoint }) => Boolean(endpoint),
-  fn: ({ accounts, proxies, endpoint }, chainId) => ({
+  filter: ({ wallets, endpoint }) => Boolean(endpoint),
+  fn: ({ accounts, wallets, proxies, endpoint }, chainId) => ({
     chainId,
     accounts: accounts.filter((a) => accountUtils.isChainIdMatch(a, chainId)),
+    wallets,
     proxies: Object.values(proxies).flat(),
     endpoint: endpoint!,
   }),

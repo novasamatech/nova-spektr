@@ -94,13 +94,21 @@ async function disconnect(chainId: ChainId) {
   await state.apis[chainId].disconnect();
 }
 
+type GetProxiesParams = {
+  chainId: ChainId;
+  accountsForProxy: Record<AccountId, Account>;
+  accountsForProxied: Record<AccountId, Account>;
+  proxiedAccounts: ProxiedAccount[];
+  proxies: ProxyAccount[];
+};
 // TODO: Refactor this code
-async function getProxies(
-  chainId: ChainId,
-  accounts: Record<AccountId, Account>,
-  proxiedAccounts: ProxiedAccount[],
-  proxies: ProxyAccount[],
-) {
+async function getProxies({
+  chainId,
+  accountsForProxy,
+  accountsForProxied,
+  proxiedAccounts,
+  proxies,
+}: GetProxiesParams) {
   const api = state.apis[chainId];
 
   const existingProxies = [] as NoID<ProxyAccount>[];
@@ -136,7 +144,7 @@ async function getProxies(
             delay: Number(account.delay),
           };
 
-          const needToAddProxyAccount = accounts[proxiedAccountId];
+          const needToAddProxyAccount = accountsForProxy[proxiedAccountId];
           const doesProxyExist = proxies.some((oldProxy) => proxyWorkerUtils.isSameProxy(oldProxy, newProxy));
 
           if (needToAddProxyAccount) {
@@ -147,7 +155,8 @@ async function getProxies(
             existingProxies.push(newProxy);
           }
 
-          const needToAddProxiedAccount = accounts[newProxy.accountId] && !proxyWorkerUtils.isDelayedProxy(newProxy);
+          const needToAddProxiedAccount =
+            accountsForProxied[newProxy.accountId] && !proxyWorkerUtils.isDelayedProxy(newProxy);
 
           if (needToAddProxiedAccount) {
             const proxiedAccount = {
