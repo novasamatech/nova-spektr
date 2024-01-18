@@ -6,9 +6,9 @@ export const ProxiedTooltip = () => {
 
   return (
     <Popover
+      offsetPx={4}
       contentClass="p-4"
       panelClass="w-[360px]"
-      offsetPx={4}
       position="center"
       content={
         <div className="flex flex-col gap-y-4">

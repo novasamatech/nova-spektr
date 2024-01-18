@@ -17,7 +17,7 @@ import { ProxiesList } from '../components/ProxiesList';
 import { walletProviderModel } from '../../model/wallet-provider-model';
 import { NoProxiesAction } from '../components/NoProxiesAction';
 import { ShardsList } from '../components/ShardsList';
-import { AddProxyModal } from '../../AddProxyModal';
+import { AddProxyModal } from '../../../AddProxyModal';
 import { vaultDetailsModel } from '../../model/vault-details-model';
 import { walletDetailsUtils } from '../../lib/utils';
 import { VaultMap } from '../../lib/types';

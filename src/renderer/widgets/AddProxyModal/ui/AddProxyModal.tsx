@@ -5,7 +5,7 @@ import { BaseModal } from '@shared/ui';
 import { useModalClose } from '@shared/lib/hooks';
 import { Callbacks, addProxyModel } from '../model/add-proxy-model';
 import { addProxyUtils } from '../lib/add-proxy-utils';
-import { InitProxyForm } from './InitProxyForm';
+import { AddProxyForm } from './AddProxyForm';
 import { ConfirmProxy } from './ConfirmProxy';
 import { Step } from '../lib/types';
 
@@ -25,7 +25,7 @@ export const AddProxyModal = ({ isOpen, onClose }: Props) => {
 
   return (
     <BaseModal closeButton isOpen={isModalOpen} title="Add delegated authority (proxy)" onClose={closeModal}>
-      {addProxyUtils.isInitStep(step) && <InitProxyForm onBack={closeModal} />}
+      {addProxyUtils.isInitStep(step) && <AddProxyForm onBack={closeModal} />}
       {addProxyUtils.isConfirmStep(step) && <ConfirmProxy onBack={() => addProxyModel.events.stepChanged(Step.INIT)} />}
       {addProxyUtils.isSignStep(step) && <div>Signing</div>}
       {/*{addProxyUtils.isSignStep(step) && <Signing onGoBack={() => addProxyModel.events.stepChanged(Step.CONFIRM)} />}*/}

@@ -5,7 +5,7 @@ import { useUnit } from 'effector-react';
 import { Button, Select, Input, InputHint, Combobox, FootnoteText, Identicon } from '@shared/ui';
 import { useI18n } from '@app/providers';
 import { ChainTitle } from '@entities/chain';
-import { ProxyPopover } from './ProxyPopover';
+import { ProxyPopover } from '@entities/proxy';
 import { addProxyModel } from '../model/add-proxy-model';
 import { AccountAddress, accountUtils } from '@entities/wallet';
 import { toAddress, toShortAddress } from '@shared/lib/utils';
@@ -13,8 +13,8 @@ import { toAddress, toShortAddress } from '@shared/lib/utils';
 type Props = {
   onBack: () => void;
 };
-export const InitProxyForm = ({ onBack }: Props) => {
-  // const { t } = useI18n();
+export const AddProxyForm = ({ onBack }: Props) => {
+  const { t } = useI18n();
 
   const { submit, isValid } = useForm(addProxyModel.$proxyForm);
 
@@ -25,7 +25,7 @@ export const InitProxyForm = ({ onBack }: Props) => {
 
   return (
     <div>
-      <ProxyPopover />
+      <ProxyPopover>{t('manageProxy.addProxy.proxyTooltip')}</ProxyPopover>
       <form id="init-proxy-form" className="flex flex-col gap-y-4 mt-4" onSubmit={submitProxy}>
         <NetworkSelector />
         <AccountSelector />

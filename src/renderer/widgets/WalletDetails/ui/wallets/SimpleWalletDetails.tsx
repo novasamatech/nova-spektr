@@ -9,11 +9,11 @@ import type { BaseAccount, Wallet } from '@shared/core';
 import { IconNames } from '@shared/ui/Icon/data';
 import { RenameWalletModal } from '@features/wallets/RenameWallet';
 import { ForgetWalletModal } from '@features/wallets/ForgetWallet';
-import { AddProxyModal } from '@widgets/AddProxyModal';
 import { TabItem } from '@shared/ui/Tabs/common/types';
 import { ProxiesList } from '../components/ProxiesList';
 import { NoProxiesAction } from '../components/NoProxiesAction';
 import { walletProviderModel } from '../../model/wallet-provider-model';
+import { AddProxyModal } from '../../../AddProxyModal';
 
 type Props = {
   wallet: Wallet;

@@ -15,7 +15,7 @@ import { NoProxiesAction } from '../components/NoProxiesAction';
 import type { MultishardMap } from '../../lib/types';
 import { walletDetailsUtils } from '../../lib/utils';
 import { walletProviderModel } from '../../model/wallet-provider-model';
-import { AddProxyModal } from '../../AddProxyModal';
+import { AddProxyModal } from '../../../AddProxyModal';
 
 type Props = {
   wallet: Wallet;

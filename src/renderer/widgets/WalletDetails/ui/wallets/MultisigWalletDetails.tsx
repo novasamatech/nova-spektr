@@ -15,7 +15,7 @@ import { ForgetWalletModal } from '@features/wallets/ForgetWallet';
 import { walletProviderModel } from '../../model/wallet-provider-model';
 import { ProxiesList } from '../components/ProxiesList';
 import { NoProxiesAction } from '../components/NoProxiesAction';
-import { AddProxyModal } from '../../AddProxyModal';
+import { AddProxyModal } from '../../../AddProxyModal';
 
 type Props = {
   wallet: Wallet;
