@@ -5,6 +5,7 @@ import { ConnectionType } from '@shared/core';
 import { storageService } from '@shared/api/storage';
 import { proxiesModel } from '../proxies-model';
 import { proxyModel } from '@entities/proxy';
+import { walletModel } from '@entities/wallet';
 
 jest.mock('@remote-ui/rpc', () => ({
   createEndpoint: jest.fn().mockReturnValue({
@@ -25,9 +26,7 @@ jest.mock('@remote-ui/rpc', () => ({
         proxiedAccountsToRemove: [],
         deposits: {
           chainId: '0x01',
-          deposits: {
-            '0x01': '1,002,050,000,000',
-          },
+          deposits: { '0x01': '1,002,050,000,000' },
         },
       }),
       disconnect: jest.fn(),
@@ -67,27 +66,27 @@ describe('entities/proxy/model/proxy-model', () => {
 
   test('should add proxy ', async () => {
     const scope = fork({
-      values: new Map().set(networkModel.$chains, {
-        '0x01': {
-          chainId: '0x01',
-          name: 'Westend',
-          options: ['regular_proxy'],
-        },
-      }),
+      values: new Map()
+        .set(networkModel.$chains, {
+          '0x01': {
+            chainId: '0x01',
+            name: 'Westend',
+            options: ['regular_proxy'],
+          },
+        })
+        .set(walletModel.$accounts, [{ walletId: 1, accountId: '0x01' }])
+        .set(walletModel.$wallets, [{ id: 1 }]),
     });
 
     jest.spyOn(storageService.proxies, 'createAll').mockResolvedValue([]);
+    jest
+      .spyOn(storageService.proxyGroups, 'createAll')
+      .mockImplementation(async (value) => value.map((value, id) => ({ id, ...value })));
 
     await allSettled(proxiesModel.events.workerStarted, { scope });
     await allSettled(networkModel.$connections, {
       scope,
-      params: {
-        '0x01': {
-          id: 1,
-          chainId: '0x01',
-          connectionType: ConnectionType.AUTO_BALANCE,
-        },
-      },
+      params: { '0x01': { id: 1, chainId: '0x01', connectionType: ConnectionType.AUTO_BALANCE } },
     });
 
     expect(scope.getState(proxyModel.$proxies)).toEqual({
@@ -101,5 +100,9 @@ describe('entities/proxy/model/proxy-model', () => {
         },
       ],
     });
+
+    expect(scope.getState(proxyModel.$proxyGroups)).toEqual([
+      { chainId: '0x01', id: 0, proxiedAccountId: '0x01', totalDeposit: '1,002,050,000,000', walletId: 1 },
+    ]);
   });
 });

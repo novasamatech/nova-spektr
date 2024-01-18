@@ -236,14 +236,14 @@ sample({
   fn: ({ wallets, accounts, groups }, deposits) => {
     const proxyGroups = proxyUtils.getProxyGroups(wallets, accounts, deposits);
 
-    const { toAdd, toUpdate } = groups.reduce<Record<'toAdd' | 'toUpdate', NoID<ProxyGroup>[]>>(
+    const { toAdd, toUpdate } = proxyGroups.reduce<Record<'toAdd' | 'toUpdate', NoID<ProxyGroup>[]>>(
       (acc, g) => {
-        const shouldAddAll = proxyGroups.every((p) => proxyUtils.isSameProxyGroup(p, g));
+        const shouldUpdate = groups.some((p) => proxyUtils.isSameProxyGroup(p, g));
 
-        if (shouldAddAll) {
-          acc.toAdd.push(g);
-        } else {
+        if (shouldUpdate) {
           acc.toUpdate.push(g);
+        } else {
+          acc.toAdd.push(g);
         }
 
         return acc;
@@ -254,7 +254,7 @@ sample({
     const toRemove = groups.filter((p) => {
       if (p.chainId !== deposits.chainId) return false;
 
-      return !proxyGroups.some((g) => proxyUtils.isSameProxyGroup(g, p));
+      return proxyGroups.every((g) => !proxyUtils.isSameProxyGroup(g, p));
     });
 
     return { toAdd, toUpdate, toRemove };
