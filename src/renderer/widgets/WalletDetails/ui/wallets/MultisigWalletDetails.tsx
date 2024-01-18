@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+import { useUnit } from 'effector-react';
 
 import { MultisigAccount, Signatory, Wallet, AccountId } from '@shared/core';
 import { BaseModal, FootnoteText, Tabs, HelpText, DropdownIconButton } from '@shared/ui';
@@ -7,11 +8,13 @@ import { useModalClose, useToggle } from '@shared/lib/hooks';
 import { AccountsList, ContactItem, ExplorersPopover, WalletCardLg, WalletCardMd } from '@entities/wallet';
 import { chainsService, isMultisigAvailable } from '@entities/network';
 import { useI18n, useMatrix } from '@app/providers';
-// TODO: think about combining balances and wallets
 import { WalletFiatBalance } from '@features/wallets/WalletSelect/ui/WalletFiatBalance';
 import { IconNames } from '@shared/ui/Icon/data';
 import { RenameWalletModal } from '@features/wallets/RenameWallet';
 import { ForgetWalletModal } from '@features/wallets/ForgetWallet';
+import { walletProviderModel } from '../../model/wallet-provider-model';
+import { ProxiesList } from '../components/ProxiesList';
+import { NoProxiesAction } from '../components/NoProxiesAction';
 import { AddProxyModal } from '../../AddProxyModal';
 
 type Props = {
@@ -24,6 +27,8 @@ type Props = {
 export const MultisigWalletDetails = ({ wallet, account, signatoryWallets, signatoryContacts, onClose }: Props) => {
   const { t } = useI18n();
   const { matrix, isLoggedIn } = useMatrix();
+
+  const hasProxies = useUnit(walletProviderModel.$hasProxies);
 
   const [isModalOpen, closeModal] = useModalClose(true, onClose);
   const [isRenameModalOpen, toggleIsRenameModalOpen] = useToggle();
@@ -63,7 +68,7 @@ export const MultisigWalletDetails = ({ wallet, account, signatoryWallets, signa
     <BaseModal
       closeButton
       contentClass=""
-      panelClass="h-modal"
+      panelClass="h-modal w-[448px]"
       title={t('walletDetails.common.title')}
       actionButton={ActionButton}
       isOpen={isModalOpen}
@@ -79,12 +84,13 @@ export const MultisigWalletDetails = ({ wallet, account, signatoryWallets, signa
 
         <Tabs
           unmount={false}
+          tabClassName="whitespace-nowrap"
           tabsClassName="mx-4 mt-4"
           items={[
             {
               id: 1,
               title: t('walletDetails.multisig.networksTab'),
-              panel: <AccountsList accountId={account.accountId} chains={chains} className="h-[355px]" />,
+              panel: <AccountsList accountId={account.accountId} chains={chains} className="h-[361px]" />,
             },
             {
               id: 2,
@@ -98,7 +104,7 @@ export const MultisigWalletDetails = ({ wallet, account, signatoryWallets, signa
                     })}
                   </FootnoteText>
 
-                  <div className="overflow-y-auto mt-4 h-[357px]">
+                  <div className="overflow-y-auto mt-4 h-[353px]">
                     {signatoryWallets.length > 0 && (
                       <div className="flex flex-col gap-y-2">
                         <FootnoteText className="text-text-tertiary px-5">
@@ -159,6 +165,15 @@ export const MultisigWalletDetails = ({ wallet, account, signatoryWallets, signa
                     )}
                   </div>
                 </div>
+              ),
+            },
+            {
+              id: 3,
+              title: t('walletDetails.common.proxiesTabTitle'),
+              panel: hasProxies ? (
+                <ProxiesList walletId={wallet.id} className="h-[387px]" />
+              ) : (
+                <NoProxiesAction className="h-[387px]" />
               ),
             },
           ]}

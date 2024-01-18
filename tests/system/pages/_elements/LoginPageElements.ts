@@ -8,6 +8,6 @@ export class LoginPageElements implements BasePageElements {
   polkadotVaultButton = 'text=Polkadot Vault';
   continueButton = 'Continue';
   accessDeniedText = 'text=Access denied!';
-  firstInfoButton = '[id="headlessui-menu-button-\\:r4\\:"]';
+  firstInfoButton = '[id="headlessui-popover-button-\\:r4\\:"]';
   subscanLabel = 'View on Subscan';
 }

@@ -1,43 +1,41 @@
 import { useUnit } from 'effector-react';
 
-import { BaseModal, DropdownIconButton } from '@shared/ui';
+import { BaseModal, DropdownIconButton, Tabs } from '@shared/ui';
 import { useModalClose, useToggle } from '@shared/lib/hooks';
-import { MultishardAccountsList, WalletCardLg } from '@entities/wallet';
+import { AccountsList, WalletCardLg, walletUtils } from '@entities/wallet';
 import { networkModel } from '@entities/network';
 import { useI18n } from '@app/providers';
-import type { Wallet } from '@shared/core';
-import type { MultishardMap } from '../lib/types';
-import { walletDetailsUtils } from '../lib/utils';
-import { RenameWalletModal } from '@features/wallets/RenameWallet';
+import type { BaseAccount, Wallet } from '@shared/core';
 import { IconNames } from '@shared/ui/Icon/data';
+import { RenameWalletModal } from '@features/wallets/RenameWallet';
 import { ForgetWalletModal } from '@features/wallets/ForgetWallet';
-import { AddProxyModal } from '../../AddProxyModal';
+import { AddProxyModal } from '@widgets/AddProxyModal';
+import { TabItem } from '@shared/ui/Tabs/common/types';
+import { ProxiesList } from '../components/ProxiesList';
+import { NoProxiesAction } from '../components/NoProxiesAction';
+import { walletProviderModel } from '../../model/wallet-provider-model';
 
 type Props = {
   wallet: Wallet;
-  accounts: MultishardMap;
+  account: BaseAccount;
   onClose: () => void;
 };
-export const MultishardWalletDetails = ({ wallet, accounts, onClose }: Props) => {
+export const SimpleWalletDetails = ({ wallet, account, onClose }: Props) => {
   const { t } = useI18n();
+
+  const chains = useUnit(networkModel.$chains);
+  const hasProxies = useUnit(walletProviderModel.$hasProxies);
 
   const [isModalOpen, closeModal] = useModalClose(true, onClose);
   const [isRenameModalOpen, toggleIsRenameModalOpen] = useToggle();
   const [isConfirmForgetOpen, toggleConfirmForget] = useToggle();
   const [isAddProxyModalOpen, toggleIsAddProxyModalOpen] = useToggle();
 
-  const chains = useUnit(networkModel.$chains);
-
   const Options = [
     {
       icon: 'rename' as IconNames,
       title: t('walletDetails.common.renameButton'),
       onClick: toggleIsRenameModalOpen,
-    },
-    {
-      icon: 'export' as IconNames,
-      title: t('walletDetails.vault.export'),
-      onClick: () => walletDetailsUtils.exportMultishardWallet(wallet, accounts),
     },
     {
       icon: 'forget' as IconNames,
@@ -58,6 +56,23 @@ export const MultishardWalletDetails = ({ wallet, accounts, onClose }: Props) =>
     </DropdownIconButton>
   );
 
+  const tabItems: TabItem[] = [
+    {
+      id: 'accounts',
+      title: t('walletDetails.common.accountTabTitle'),
+      panel: <AccountsList accountId={account.accountId} chains={Object.values(chains)} className="h-[362px]" />,
+    },
+    {
+      id: 'proxies',
+      title: t('walletDetails.common.proxiesTabTitle'),
+      panel: hasProxies ? (
+        <ProxiesList canCreateProxy={!walletUtils.isWatchOnly(wallet)} walletId={wallet.id} className="h-[388px]" />
+      ) : (
+        <NoProxiesAction className="h-[388px]" />
+      ),
+    },
+  ];
+
   return (
     <BaseModal
       closeButton
@@ -68,14 +83,18 @@ export const MultishardWalletDetails = ({ wallet, accounts, onClose }: Props) =>
       isOpen={isModalOpen}
       onClose={closeModal}
     >
-      <div className="flex flex-col w-full">
+      <div className="flex flex-col gap-y-4 w-full">
         <div className="py-6 px-5 border-b border-divider">
           <button className="bg-red-50" onClick={toggleIsAddProxyModalOpen}>
             open
           </button>
           <WalletCardLg wallet={wallet} />
         </div>
-        <MultishardAccountsList accounts={accounts} chains={Object.values(chains)} className="h-[443px]" />
+        {walletUtils.isWatchOnly(wallet) && !hasProxies ? (
+          <AccountsList accountId={account.accountId} chains={Object.values(chains)} className="h-[412px]" />
+        ) : (
+          <Tabs items={tabItems} panelClassName="" tabsClassName="mx-5" unmount={false} />
+        )}
       </div>
 
       <RenameWalletModal wallet={wallet} isOpen={isRenameModalOpen} onClose={toggleIsRenameModalOpen} />

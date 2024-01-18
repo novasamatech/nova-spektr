@@ -1,13 +1,15 @@
 import { useUnit } from 'effector-react';
 
 import { walletSelectModel } from '@features/wallets';
-import { SimpleWalletDetails } from './SimpleWalletDetails';
-import { MultisigWalletDetails } from './MultisigWalletDetails';
-import { WalletConnectDetails } from './WalletConnectDetails';
-import { MultishardWalletDetails } from './MultishardWalletDetails';
-import { VaultWalletDetails } from './VaultWalletDetails';
-import { walletProviderModel } from '../model/wallet-provider-model';
+import { SimpleWalletDetails } from '../wallets/SimpleWalletDetails';
+import { MultisigWalletDetails } from '../wallets/MultisigWalletDetails';
+import { WalletConnectDetails } from '../wallets/WalletConnectDetails';
+import { MultishardWalletDetails } from '../wallets/MultishardWalletDetails';
+import { VaultWalletDetails } from '../wallets/VaultWalletDetails';
+import { walletProviderModel } from '../../model/wallet-provider-model';
 import { walletUtils } from '@entities/wallet';
+import { ProxiedWalletDetails } from '../wallets/ProxiedWalletDetails';
+import { ProxiedAccount } from '@shared/core';
 
 export const WalletDetailsProvider = () => {
   const wallet = useUnit(walletSelectModel.$walletForDetails);
@@ -18,6 +20,7 @@ export const WalletDetailsProvider = () => {
   const contacts = useUnit(walletProviderModel.$signatoryContacts);
   const vaultAccounts = useUnit(walletProviderModel.$vaultAccounts);
   const signatoryWallets = useUnit(walletProviderModel.$signatoryWallets);
+  const proxyWalletForProxied = useUnit(walletProviderModel.$proxyWalletForProxied);
 
   if (!wallet) return null;
 
@@ -65,6 +68,17 @@ export const WalletDetailsProvider = () => {
         wallet={wallet}
         root={vaultAccounts.root}
         accountsMap={vaultAccounts.accountsMap}
+        onClose={walletSelectModel.events.walletIdCleared}
+      />
+    );
+  }
+
+  if (walletUtils.isProxied(wallet) && proxyWalletForProxied) {
+    return (
+      <ProxiedWalletDetails
+        wallet={wallet}
+        proxyWallet={proxyWalletForProxied}
+        proxiedAccount={accounts[0] as ProxiedAccount}
         onClose={walletSelectModel.events.walletIdCleared}
       />
     );

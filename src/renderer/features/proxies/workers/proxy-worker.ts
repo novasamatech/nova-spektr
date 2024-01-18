@@ -17,10 +17,17 @@ import {
   NoID,
   PartialProxiedAccount,
   ProxyVariant,
+  ProxyDeposits,
 } from '@shared/core';
 import { proxyWorkerUtils } from '../lib/worker-utils';
 
-const state = {
+export const proxyWorker = {
+  initConnection,
+  getProxies,
+  disconnect,
+};
+
+export const state = {
   apis: {} as Record<ChainId, ApiPromise>,
 };
 
@@ -29,9 +36,14 @@ const InitConnectionsResult = {
   FAILED: 'failed',
 };
 
-function initConnection(chain: Chain, connection: Connection) {
-  return new Promise((resolve) => {
-    if (!chain) return;
+function initConnection(chain?: Chain, connection?: Connection) {
+  return new Promise((resolve, reject) => {
+    if (!chain) {
+      console.log('chain not provided');
+      reject();
+
+      return;
+    }
 
     try {
       let provider: ProviderInterface | undefined;
@@ -50,10 +62,18 @@ function initConnection(chain: Chain, connection: Connection) {
           }
         } catch (e) {
           console.log('light client not connected', e);
+          reject();
+
+          return;
         }
       }
 
-      if (!provider) return;
+      if (!provider) {
+        console.log('provider not connected');
+        reject();
+
+        return;
+      }
 
       provider.on('connected', async () => {
         state.apis[chain.chainId] = await ApiPromise.create({ provider, throwOnConnect: true, throwOnUnknown: true });
@@ -62,6 +82,8 @@ function initConnection(chain: Chain, connection: Connection) {
       });
     } catch (e) {
       console.log(e);
+
+      reject();
     }
   });
 }
@@ -72,13 +94,21 @@ async function disconnect(chainId: ChainId) {
   await state.apis[chainId].disconnect();
 }
 
+type GetProxiesParams = {
+  chainId: ChainId;
+  accountsForProxy: Record<AccountId, Account>;
+  accountsForProxied: Record<AccountId, Account>;
+  proxiedAccounts: ProxiedAccount[];
+  proxies: ProxyAccount[];
+};
 // TODO: Refactor this code
-async function getProxies(
-  chainId: ChainId,
-  accounts: Record<AccountId, Account>,
-  proxiedAccounts: ProxiedAccount[],
-  proxies: ProxyAccount[],
-) {
+async function getProxies({
+  chainId,
+  accountsForProxy,
+  accountsForProxied,
+  proxiedAccounts,
+  proxies,
+}: GetProxiesParams) {
   const api = state.apis[chainId];
 
   const existingProxies = [] as NoID<ProxyAccount>[];
@@ -87,7 +117,10 @@ async function getProxies(
   const existingProxiedAccounts = [] as PartialProxiedAccount[];
   const proxiedAccountsToAdd = [] as PartialProxiedAccount[];
 
-  const deposits = {} as Record<AccountId, Record<ChainId, string>>;
+  const deposits = {
+    chainId: chainId,
+    deposits: {},
+  } as ProxyDeposits;
 
   if (!api || !api.query.proxy) {
     return { proxiesToAdd, proxiesToRemove: [], proxiedAccountsToAdd, proxiedAccountsToRemove: [], deposits };
@@ -111,7 +144,7 @@ async function getProxies(
             delay: Number(account.delay),
           };
 
-          const needToAddProxyAccount = accounts[proxiedAccountId];
+          const needToAddProxyAccount = accountsForProxy[proxiedAccountId];
           const doesProxyExist = proxies.some((oldProxy) => proxyWorkerUtils.isSameProxy(oldProxy, newProxy));
 
           if (needToAddProxyAccount) {
@@ -122,7 +155,8 @@ async function getProxies(
             existingProxies.push(newProxy);
           }
 
-          const needToAddProxiedAccount = accounts[newProxy.accountId];
+          const needToAddProxiedAccount =
+            accountsForProxied[newProxy.accountId] && !proxyWorkerUtils.isDelayedProxy(newProxy);
 
           if (needToAddProxiedAccount) {
             const proxiedAccount = {
@@ -144,10 +178,7 @@ async function getProxies(
           }
 
           if (needToAddProxyAccount || needToAddProxiedAccount) {
-            deposits[proxiedAccountId] = {
-              ...deposits[proxiedAccountId],
-              [chainId]: proxyData[0][1].toHuman(),
-            };
+            deposits.deposits[proxiedAccountId] = proxyData[0][1].toHuman();
           }
         });
       } catch (e) {
@@ -160,7 +191,8 @@ async function getProxies(
     console.log(e);
   }
 
-  const proxiesToRemove = proxies.filter((p) => existingProxies.some((ep) => isEqual(p, ep)));
+  const proxiesToRemove = proxies.filter((p) => existingProxies.every((ep) => isEqual(p, ep)));
+
   const proxiedAccountsToRemove = Object.values(proxiedAccounts)
     .filter(proxyWorkerUtils.isProxiedAccount)
     .filter(

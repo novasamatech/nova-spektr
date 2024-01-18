@@ -4,7 +4,7 @@ import { proxyUtils } from '../utils';
 import { TEST_ACCOUNT_ID } from '@shared/lib/utils';
 
 describe('entities/proxy/lib/utils', () => {
-  test('should return true when oldProxy and newProxy have the same properties', () => {
+  test('should return true when for identical Proxies', () => {
     const oldProxy = {
       id: 1,
       accountId: '0x00',
@@ -56,5 +56,38 @@ describe('entities/proxy/lib/utils', () => {
     const result = proxyUtils.getProxiedName(TEST_ACCOUNT_ID, ProxyType.ANY);
 
     expect(result).toEqual('Any for 5CGQ7B...VbXyr9');
+  });
+
+  test('should sort proxy accounts by type', () => {
+    const proxyAccounts: ProxyAccount[] = [
+      {
+        id: 1,
+        accountId: '0x01',
+        proxiedAccountId: '0x02',
+        chainId: '0x05',
+        proxyType: ProxyType.CANCEL_PROXY,
+        delay: 0,
+      },
+      {
+        id: 2,
+        accountId: '0x01',
+        proxiedAccountId: '0x02',
+        chainId: '0x05',
+        proxyType: ProxyType.GOVERNANCE,
+        delay: 0,
+      },
+      {
+        id: 2,
+        accountId: '0x01',
+        proxiedAccountId: '0x02',
+        chainId: '0x05',
+        proxyType: ProxyType.NON_TRANSFER,
+        delay: 0,
+      },
+    ];
+
+    const sortedAccounts = proxyUtils.sortAccountsByProxyType(proxyAccounts);
+
+    expect(sortedAccounts).toEqual([proxyAccounts[2], proxyAccounts[0], proxyAccounts[1]]);
   });
 });

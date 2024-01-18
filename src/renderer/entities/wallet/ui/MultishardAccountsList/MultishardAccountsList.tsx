@@ -1,19 +1,19 @@
 import { useMemo } from 'react';
 
-import { RootExplorers, cnTw } from '@shared/lib/utils';
+import { cnTw, RootExplorers } from '@shared/lib/utils';
 import { ContactItem, ExplorersPopover } from '@entities/wallet';
 import { useI18n } from '@app/providers';
-import { FootnoteText, Accordion, HelpText } from '@shared/ui';
-import type { Chain, ChainAccount, ChainId, BaseAccount } from '@shared/core';
+import { Accordion, FootnoteText, HelpText } from '@shared/ui';
+import type { BaseAccount, Chain, ChainAccount, ChainId } from '@shared/core';
 import { ChainTitle } from '@entities/chain';
 
 type Props = {
-  accounts: Map<BaseAccount, Record<ChainId, ChainAccount[]>>;
   chains: Chain[];
+  accounts: Map<BaseAccount, Record<ChainId, ChainAccount[]>>;
   className?: string;
 };
 
-export const MultishardAccountsList = ({ accounts, chains, className }: Props) => {
+export const MultishardAccountsList = ({ chains, accounts, className }: Props) => {
   const { t } = useI18n();
 
   const accountList = useMemo(() => {

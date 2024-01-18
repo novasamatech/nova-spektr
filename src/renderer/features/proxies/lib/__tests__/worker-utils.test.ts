@@ -1,5 +1,5 @@
 import { AccountType, ProxyVariant, ChainType, CryptoType } from '@shared/core';
-import type { PartialProxiedAccount, ProxyAccount } from '@shared/core';
+import type { NoID, PartialProxiedAccount, ProxyAccount } from '@shared/core';
 import { TEST_ACCOUNT_ID, TEST_ADDRESS } from '@shared/lib/utils';
 import { proxyWorkerUtils } from '../worker-utils';
 
@@ -150,5 +150,35 @@ describe('features/proxies/lib/worker-utils', () => {
   test('should return false if account type is not PROXIED', () => {
     const account = { type: AccountType.BASE };
     expect(proxyWorkerUtils.isProxiedAccount(account)).toEqual(false);
+  });
+
+  test('should return undefined if chainId is not found', () => {
+    const result = proxyWorkerUtils.getKnownChain('0x01');
+
+    expect(result).toBeUndefined();
+  });
+
+  test('should check proxy is delayed (true for delay > 0)', () => {
+    const proxy = {
+      accountId: '0x00',
+      proxiedAccountId: '0x01',
+      chainId: '0x05',
+      proxyType: 'Any',
+      delay: 1,
+    } as NoID<ProxyAccount>;
+
+    expect(proxyWorkerUtils.isDelayedProxy(proxy)).toEqual(true);
+  });
+
+  test('should check proxy is delayed (false for delay === 0)', () => {
+    const proxy = {
+      accountId: '0x00',
+      proxiedAccountId: '0x01',
+      chainId: '0x05',
+      proxyType: 'Any',
+      delay: 0,
+    } as NoID<ProxyAccount>;
+
+    expect(proxyWorkerUtils.isDelayedProxy(proxy)).toEqual(false);
   });
 });

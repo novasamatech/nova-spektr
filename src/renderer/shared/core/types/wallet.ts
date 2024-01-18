@@ -31,6 +31,8 @@ export type Wallet =
   | NovaWalletWallet
   | ProxiedWallet;
 
+export type WalletsMap = Record<ID, Wallet>;
+
 export const enum WalletType {
   WATCH_ONLY = 'wallet_wo',
   POLKADOT_VAULT = 'wallet_pv',

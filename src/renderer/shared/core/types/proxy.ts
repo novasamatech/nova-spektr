@@ -1,12 +1,12 @@
 import { ProxiedAccount } from './account';
 import { AccountId, ID, ChainId } from './general';
 
-export type ProxyChainGroup = {
+export type ProxyGroup = {
   id: ID;
   walletId: ID;
   proxiedAccountId: AccountId;
   chainId: ChainId;
-  totalDeposit: number;
+  totalDeposit: string;
 };
 
 export type ProxyAccount = {
@@ -30,7 +30,7 @@ export const enum ProxyType {
 }
 
 export const enum ProxyVariant {
-  NONE = 'none',
+  NONE = 'none', // temp value, until we not receive correct proxy variant
   PURE = 'pure',
   REGULAR = 'regular',
 }
@@ -41,3 +41,8 @@ export type PartialProxiedAccount = Pick<
   ProxiedAccount,
   'chainId' | 'proxyAccountId' | 'accountId' | 'delay' | 'proxyType' | 'proxyVariant'
 >;
+
+export type ProxyDeposits = {
+  chainId: ChainId;
+  deposits: Record<AccountId, string>;
+};
