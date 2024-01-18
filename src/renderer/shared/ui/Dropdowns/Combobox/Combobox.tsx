@@ -1,7 +1,7 @@
-import { Fragment, useState } from 'react';
+import { Fragment } from 'react';
 import { Transition, Combobox as HeadlessCombobox } from '@headlessui/react';
 
-import { cnTw, includes } from '@shared/lib/utils';
+import { cnTw } from '@shared/lib/utils';
 import { Props as InputProps } from '@shared/ui/Inputs/Input/Input';
 import { Position, ComboboxOption, Theme } from '../common/types';
 import { FootnoteText, Input } from '@shared/ui';
@@ -14,40 +14,40 @@ import {
 } from '../common/constants';
 
 type Props = Omit<InputProps, 'onChange' | 'value'> & {
+  query?: string;
+  value?: ComboboxOption['value'];
   options: ComboboxOption[];
-  value?: ComboboxOption;
   position?: Position;
-  onChange: (data: ComboboxOption) => void;
   tabIndex?: number;
   theme?: Theme;
+  onInput: (value: string) => void;
+  onChange: (data: ComboboxOption) => void;
 };
 
 export const Combobox = ({
   className,
+  query = '',
   value,
   options,
   disabled,
   position = 'down',
   theme = 'light',
+  onInput,
   onChange,
   ...inputProps
 }: Props) => {
-  const [query, setQuery] = useState('');
+  const selectedOption = options.find((option) => option.value === value);
 
-  const filteredOptions = query
-    ? options.filter((option) => includes(option.value, query) || includes(JSON.stringify(option.element), query))
-    : options;
-
-  const nothingFound = query.length > 0 && !filteredOptions.length;
+  const nothingFound = query.length > 0 && options.length === 0;
 
   return (
-    <HeadlessCombobox by="value" value={value} disabled={disabled} onChange={onChange}>
+    <HeadlessCombobox value={selectedOption || {}} disabled={disabled} onChange={onChange}>
       <div className={cnTw('relative', className)}>
         <HeadlessCombobox.Input
           as={Input}
           displayValue={(option: ComboboxOption) => option.value}
           // @ts-ignore onChange doesn't respect custom <Input /> onChange type
-          onChange={setQuery}
+          onChange={onInput}
           {...inputProps}
         />
 
@@ -68,7 +68,7 @@ export const Combobox = ({
               </HeadlessCombobox.Option>
             )}
 
-            {filteredOptions.map((option) => (
+            {options.map((option) => (
               <HeadlessCombobox.Option
                 key={option.id}
                 value={option}

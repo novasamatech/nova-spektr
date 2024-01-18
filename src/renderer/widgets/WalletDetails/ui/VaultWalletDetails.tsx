@@ -16,6 +16,7 @@ import { walletDetailsUtils } from '../lib/utils';
 import { KeyConstructor, ImportKeysModal, DerivationsAddressModal } from '@features/wallets';
 import { RenameWalletModal } from '@features/wallets/RenameWallet';
 import { ForgetWalletModal } from '@features/wallets/ForgetWallet';
+import { AddProxyModal } from '../../AddProxyModal';
 
 type Props = {
   wallet: Wallet;
@@ -36,6 +37,7 @@ export const VaultWalletDetails = ({ wallet, root, accountsMap, onClose }: Props
   const [isImportModalOpen, toggleImportModal] = useToggle();
   const [isScanModalOpen, toggleScanModal] = useToggle();
   const [isConfirmForgetOpen, toggleConfirmForget] = useToggle();
+  const [isAddProxyModalOpen, toggleIsAddProxyModalOpen] = useToggle();
 
   const handleConstructorKeys = (
     keysToAdd: Array<ChainAccount | ShardAccount[]>,
@@ -127,6 +129,9 @@ export const VaultWalletDetails = ({ wallet, root, accountsMap, onClose }: Props
     >
       <div className="flex flex-col w-full">
         <div className="py-6 px-5 border-b border-divider">
+          <button className="bg-red-50" onClick={toggleIsAddProxyModalOpen}>
+            open
+          </button>
           <WalletCardLg wallet={wallet} />
         </div>
 
@@ -187,6 +192,8 @@ export const VaultWalletDetails = ({ wallet, root, accountsMap, onClose }: Props
         onClose={toggleConfirmForget}
         onForget={onClose}
       />
+
+      <AddProxyModal isOpen={isAddProxyModalOpen} onClose={toggleIsAddProxyModalOpen} />
     </BaseModal>
   );
 };

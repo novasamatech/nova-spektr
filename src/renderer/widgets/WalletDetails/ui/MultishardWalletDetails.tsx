@@ -11,6 +11,7 @@ import { walletDetailsUtils } from '../lib/utils';
 import { RenameWalletModal } from '@features/wallets/RenameWallet';
 import { IconNames } from '@shared/ui/Icon/data';
 import { ForgetWalletModal } from '@features/wallets/ForgetWallet';
+import { AddProxyModal } from '../../AddProxyModal';
 
 type Props = {
   wallet: Wallet;
@@ -23,6 +24,7 @@ export const MultishardWalletDetails = ({ wallet, accounts, onClose }: Props) =>
   const [isModalOpen, closeModal] = useModalClose(true, onClose);
   const [isRenameModalOpen, toggleIsRenameModalOpen] = useToggle();
   const [isConfirmForgetOpen, toggleConfirmForget] = useToggle();
+  const [isAddProxyModalOpen, toggleIsAddProxyModalOpen] = useToggle();
 
   const chains = useUnit(networkModel.$chains);
 
@@ -68,6 +70,9 @@ export const MultishardWalletDetails = ({ wallet, accounts, onClose }: Props) =>
     >
       <div className="flex flex-col w-full">
         <div className="py-6 px-5 border-b border-divider">
+          <button className="bg-red-50" onClick={toggleIsAddProxyModalOpen}>
+            open
+          </button>
           <WalletCardLg wallet={wallet} />
         </div>
         <MultishardAccountsList accounts={accounts} chains={Object.values(chains)} className="h-[443px]" />
@@ -81,6 +86,8 @@ export const MultishardWalletDetails = ({ wallet, accounts, onClose }: Props) =>
         onClose={toggleConfirmForget}
         onForget={onClose}
       />
+
+      <AddProxyModal isOpen={isAddProxyModalOpen} onClose={toggleIsAddProxyModalOpen} />
     </BaseModal>
   );
 };

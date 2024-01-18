@@ -236,11 +236,7 @@ sample({
         ? [...(chains[chainId]?.nodes || []), ...(connection?.customNodes || [])].map((node) => node.url)
         : [connection?.activeNode?.url || ''];
 
-    return {
-      chainId,
-      providerType,
-      nodes,
-    };
+    return { chainId, providerType, nodes };
   },
   target: createProviderFx,
 });
@@ -336,7 +332,8 @@ sample({
       acc[chain.chainId] = connectionsMap[chainId] || {
         chainId: chain.chainId,
         canUseLightClient: false,
-        connectionType: ConnectionType.AUTO_BALANCE,
+        // connectionType: ConnectionType.AUTO_BALANCE,
+        connectionType: ConnectionType.DISABLED,
         customNodes: [],
       };
 

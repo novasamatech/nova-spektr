@@ -254,6 +254,7 @@ export const OperationForm = ({
                           canCopy={false}
                         />
                       }
+                      onInput={(value) => console.log(value)}
                       onChange={(option) => setActivePayout(option.value)}
                     />
                   </RadioGroup.Option>

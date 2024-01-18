@@ -63,7 +63,9 @@ export const SimpleWalletDetails = ({ wallet, account, onClose }: Props) => {
     >
       <div className="flex flex-col gap-y-4 w-full">
         <div className="py-6 px-5 border-b border-divider">
-          <button className="bg-red-50" onClick={toggleIsAddProxyModalOpen}>open</button>
+          <button className="bg-red-50" onClick={toggleIsAddProxyModalOpen}>
+            open
+          </button>
           <WalletCardLg wallet={wallet} />
         </div>
         <AccountsList accountId={account.accountId} chains={Object.values(chains)} className="h-[401px]" />

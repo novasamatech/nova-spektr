@@ -3,10 +3,6 @@ import { act, render, screen } from '@testing-library/react';
 import { Matrix } from '@shared/api/matrix';
 import { MatrixProvider } from './MatrixContext';
 
-jest.mock('@app/providers', () => ({
-  useMatrix: jest.fn(),
-}));
-
 jest.mock('@shared/api/matrix', () => ({ Matrix: jest.fn().mockReturnValue({}) }));
 
 jest.mock('@entities/multisig', () => ({

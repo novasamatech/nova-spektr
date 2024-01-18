@@ -159,6 +159,7 @@ export const LoginForm = () => {
               disabled={!isEditing || isHomeserverLoading}
               options={HOME_SERVERS}
               value={value}
+              onInput={(value) => console.log(value)}
               onChange={changeHomeserver(onChange)}
             />
             <InputHint active={invalidHomeserver} variant="error">

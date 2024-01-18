@@ -4,10 +4,6 @@ import { ConnectionStatus, ConnectionType } from '@shared/core';
 import { ExtendedChain } from '@entities/network';
 import { NetworkList } from './NetworkList';
 
-jest.mock('@app/providers', () => ({
-  useMatrix: jest.fn(),
-}));
-
 describe('pages/Settings/Networks/NetworkList', () => {
   const children = () => 'children';
   const networks: ExtendedChain[] = [

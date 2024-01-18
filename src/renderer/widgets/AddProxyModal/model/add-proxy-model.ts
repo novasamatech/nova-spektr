@@ -5,8 +5,8 @@ import { Step } from '../lib/types';
 import { Chain, Address, ProxyType } from '@shared/core';
 import { networkModel, isRegularProxyAvailable } from '@entities/network';
 import { walletSelectModel } from '@features/wallets';
-import { walletUtils } from '@entities/wallet';
-import { getProxyTypes } from '@shared/lib/utils';
+import { walletUtils, accountUtils, walletModel } from '@entities/wallet';
+import { getProxyTypes, dictionary, isStringsMatchQuery, toAddress } from '@shared/lib/utils';
 
 export type Callbacks = {
   onClose: () => void;
@@ -14,6 +14,7 @@ export type Callbacks = {
 
 const stepChanged = createEvent<Step>();
 const formInitiated = createEvent();
+const proxyQueryChanged = createEvent<string>();
 
 const $steps = createStore<Step>(Step.INIT);
 
@@ -75,6 +76,29 @@ const $proxyForm = createForm({
   },
   validateOn: ['submit'],
 });
+$proxyForm.fields.proxyAddress.$value.watch(console.log);
+
+const $proxyQuery = createStore<string>('');
+
+const $proxiedAccounts = combine(
+  {
+    wallet: walletSelectModel.$walletForDetails,
+    accounts: walletModel.$accounts,
+    chain: $proxyForm.fields.network.$value,
+  },
+  ({ wallet, accounts, chain }) => {
+    const isPolkadotVault = walletUtils.isPolkadotVault(wallet);
+    const isMultishard = walletUtils.isMultiShard(wallet);
+
+    if (!wallet || (!isPolkadotVault && !isMultishard)) return [];
+
+    return accountUtils.getWalletAccounts(wallet.id, accounts).filter((account) => {
+      if (isPolkadotVault && accountUtils.isBaseAccount(account)) return false;
+
+      return accountUtils.isChainIdMatch(account, chain.chainId);
+    });
+  },
+);
 
 // TODO: or look at txWrappers
 const $isMultisig = combine(walletSelectModel.$walletForDetails, (wallet) => {
@@ -105,7 +129,31 @@ const $proxyTypes = combine(
   },
 );
 
-sample({ clock: formInitiated, target: $proxyForm.reset });
+const $proxyAccounts = combine(
+  {
+    wallets: walletModel.$wallets,
+    accounts: walletModel.$accounts,
+    chain: $proxyForm.fields.network.$value,
+    query: $proxyQuery,
+  },
+  ({ wallets, accounts, chain, query }) => {
+    const walletsMap = dictionary(wallets, 'id', walletUtils.isPolkadotVault);
+
+    return accounts.filter((account) => {
+      if (accountUtils.isBaseAccount(account) && walletsMap[account.walletId]) return false;
+      if (!accountUtils.isChainIdMatch(account, chain.chainId)) return false;
+
+      const address = toAddress(account.accountId, { prefix: chain.addressPrefix });
+
+      return isStringsMatchQuery(query, [account.name, address]);
+    });
+  },
+);
+
+sample({
+  clock: formInitiated,
+  target: [$proxyForm.reset, $proxyQuery.reinit],
+});
 
 sample({
   clock: formInitiated,
@@ -114,6 +162,8 @@ sample({
   target: $proxyForm.fields.network.onChange,
 });
 
+sample({ clock: proxyQueryChanged, target: $proxyQuery });
+
 sample({
   clock: $proxyForm.fields.network.$value,
   source: $proxyTypes,
@@ -121,16 +171,27 @@ sample({
   target: $proxyForm.fields.proxyType.onChange,
 });
 
+sample({
+  clock: $proxyForm.fields.network.onChange,
+  target: [$proxyForm.fields.account.reset, $proxyForm.fields.proxyAddress.reset],
+});
+
 sample({ clock: stepChanged, target: $steps });
 
 export const addProxyModel = {
   $steps,
   $proxyForm,
+  $proxyQuery,
+
   $proxyChains,
   $proxyTypes,
+  $proxiedAccounts,
+  $proxyAccounts,
+
   $isMultisig,
   events: {
     stepChanged,
     formInitiated,
+    proxyQueryChanged,
   },
 };

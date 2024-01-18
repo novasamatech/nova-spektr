@@ -2,11 +2,13 @@ import { useForm } from 'effector-forms';
 import { FormEvent } from 'react';
 import { useUnit } from 'effector-react';
 
-import { Button, Select, Input, InputHint, Combobox, FootnoteText } from '@shared/ui';
+import { Button, Select, Input, InputHint, Combobox, FootnoteText, Identicon } from '@shared/ui';
 import { useI18n } from '@app/providers';
 import { ChainTitle } from '@entities/chain';
 import { ProxyPopover } from './ProxyPopover';
 import { addProxyModel } from '../model/add-proxy-model';
+import { AccountAddress, accountUtils } from '@entities/wallet';
+import { toAddress } from '@shared/lib/utils';
 
 type Props = {
   onBack: () => void;
@@ -28,7 +30,7 @@ export const InitProxyForm = ({ onBack }: Props) => {
         <NetworkSelector />
         <AccountSelector />
         <SignatorySelector />
-        <ProxyInput />
+        <ProxyCombobox />
         <ProxyTypeSelector />
         <DescriptionInput />
       </form>
@@ -67,7 +69,7 @@ const NetworkSelector = () => {
 
   const proxyChains = useUnit(addProxyModel.$proxyChains);
 
-  const networks = Object.values(proxyChains).map((chain) => ({
+  const options = Object.values(proxyChains).map((chain) => ({
     id: chain.chainId,
     value: chain,
     element: (
@@ -87,7 +89,7 @@ const NetworkSelector = () => {
         placeholder="Select network"
         selectedId={network.value.chainId}
         invalid={network.hasError()}
-        options={networks}
+        options={options}
         onChange={({ value }) => network.onChange(value)}
       />
       <InputHint variant="error" active={network.hasError()}>
@@ -101,8 +103,33 @@ const AccountSelector = () => {
   const { t } = useI18n();
 
   const {
-    fields: { account },
+    fields: { account, network },
   } = useForm(addProxyModel.$proxyForm);
+
+  const proxiedAccounts = useUnit(addProxyModel.$proxiedAccounts);
+
+  if (proxiedAccounts.length === 0) return null;
+
+  const options = proxiedAccounts.map((account) => {
+    const isShard = accountUtils.isShardAccount(account);
+    const address = toAddress(account.accountId, { prefix: network.value.addressPrefix });
+
+    return {
+      id: address,
+      value: address,
+      element: (
+        <div className="flex justify-between w-full" key={account.id}>
+          <AccountAddress
+            size={20}
+            type="short"
+            address={address}
+            name={isShard ? address : account.name}
+            canCopy={false}
+          />
+        </div>
+      ),
+    };
+  });
 
   return (
     <div className="flex flex-col gap-y-2">
@@ -110,7 +137,7 @@ const AccountSelector = () => {
         label="Your account"
         placeholder="Select account"
         selectedId={account.value}
-        options={[]}
+        options={options}
         invalid={account.hasError()}
         onChange={({ value }) => account.onChange(value)}
       />
@@ -149,20 +176,50 @@ const SignatorySelector = () => {
   );
 };
 
-const ProxyInput = () => {
+const ProxyCombobox = () => {
   const { t } = useI18n();
 
   const {
-    fields: { proxyAddress },
+    fields: { proxyAddress, network },
   } = useForm(addProxyModel.$proxyForm);
+
+  const proxyAccounts = useUnit(addProxyModel.$proxyAccounts);
+  const proxyQuery = useUnit(addProxyModel.$proxyQuery);
+
+  const options = proxyAccounts.map((proxyAccount) => {
+    const isShard = accountUtils.isShardAccount(proxyAccount);
+    const address = toAddress(proxyAccount.accountId, { prefix: network.value.addressPrefix });
+
+    return {
+      id: address,
+      value: address,
+      element: (
+        <div className="flex justify-between w-full" key={proxyAccount.id}>
+          <AccountAddress
+            size={20}
+            type="short"
+            address={address}
+            name={isShard ? address : proxyAccount.name}
+            canCopy={false}
+          />
+        </div>
+      ),
+    };
+  });
 
   return (
     <div className="flex flex-col gap-y-2">
       <Combobox
         label="Give authority to"
         placeholder="Enter address"
-        options={[]}
+        query={proxyQuery}
+        options={options}
+        value={proxyAddress.value}
         invalid={proxyAddress.hasError()}
+        prefixElement={
+          <Identicon className="mr-1" address={proxyAddress.value} size={20} background={false} canCopy={false} />
+        }
+        onInput={addProxyModel.events.proxyQueryChanged}
         onChange={({ value }) => proxyAddress.onChange(value)}
       />
       <InputHint variant="error" active={proxyAddress.hasError()}>
@@ -181,7 +238,7 @@ const ProxyTypeSelector = () => {
 
   const proxyTypes = useUnit(addProxyModel.$proxyTypes);
 
-  const types = proxyTypes.map((type) => ({ id: type, value: type, element: type }));
+  const options = proxyTypes.map((type) => ({ id: type, value: type, element: type }));
 
   return (
     <div className="flex flex-col gap-y-2">
@@ -189,7 +246,7 @@ const ProxyTypeSelector = () => {
         label="Access type"
         placeholder="Choose type"
         selectedId={proxyType.value}
-        options={types}
+        options={options}
         onChange={({ value }) => proxyType.onChange(value)}
       />
     </div>
