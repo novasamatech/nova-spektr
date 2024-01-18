@@ -8,7 +8,7 @@ import { ChainTitle } from '@entities/chain';
 import { ProxyPopover } from './ProxyPopover';
 import { addProxyModel } from '../model/add-proxy-model';
 import { AccountAddress, accountUtils } from '@entities/wallet';
-import { toAddress } from '@shared/lib/utils';
+import { toAddress, toShortAddress } from '@shared/lib/utils';
 
 type Props = {
   onBack: () => void;
@@ -123,7 +123,7 @@ const AccountSelector = () => {
             size={20}
             type="short"
             address={address}
-            name={isShard ? address : account.name}
+            name={isShard ? toShortAddress(address, 20) : account.name}
             canCopy={false}
           />
         </div>
@@ -199,7 +199,7 @@ const ProxyCombobox = () => {
             size={20}
             type="short"
             address={address}
-            name={isShard ? address : proxyAccount.name}
+            name={isShard ? toShortAddress(address, 20) : proxyAccount.name}
             canCopy={false}
           />
         </div>

@@ -1,9 +1,13 @@
 import { Controller, SubmitHandler, useForm } from 'react-hook-form';
 import { Trans } from 'react-i18next';
 import { useEffect, useState } from 'react';
+import { useUnit } from 'effector-react';
 
 import { useI18n, useMatrix } from '@app/providers';
-import { validateShortUserName, WELL_KNOWN_SERVERS } from '@shared/api/matrix';
+import { validateShortUserName } from '@shared/api/matrix';
+import type { ComboboxOption } from '@shared/ui/types';
+import { matrixLoginModel } from '../model/matrix-login-model';
+import { HOME_SERVERS } from '../lib/constants';
 import {
   Alert,
   Button,
@@ -16,13 +20,6 @@ import {
   Loader,
   PasswordInput,
 } from '@shared/ui';
-import type { ComboboxOption } from '@shared/ui/types';
-
-const HOME_SERVERS = WELL_KNOWN_SERVERS.map((server) => ({
-  id: server.domain,
-  value: server.domain,
-  element: server.domain,
-}));
 
 const DEFAULT_HOMESERVER = HOME_SERVERS[0];
 
@@ -45,6 +42,9 @@ export const LoginForm = () => {
   const { t } = useI18n();
 
   const { matrix } = useMatrix();
+
+  const homeserverQuery = useUnit(matrixLoginModel.$homeserverQuery);
+  const homeServers = useUnit(matrixLoginModel.$homeServers);
 
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isHomeserverLoading, setIsHomeserverLoading] = useState(false);
@@ -155,11 +155,12 @@ export const LoginForm = () => {
               label={t('settings.matrix.homeserverLabel')}
               placeholder={t('settings.matrix.homeserverPlaceholder')}
               wrapperClass="py-[11px]"
+              query={homeserverQuery}
               invalid={invalidHomeserver}
               disabled={!isEditing || isHomeserverLoading}
-              options={HOME_SERVERS}
-              value={value}
-              onInput={(value) => console.log(value)}
+              options={homeServers}
+              value={value.value}
+              onInput={matrixLoginModel.events.homeserverQueryChanged}
               onChange={changeHomeserver(onChange)}
             />
             <InputHint active={invalidHomeserver} variant="error">

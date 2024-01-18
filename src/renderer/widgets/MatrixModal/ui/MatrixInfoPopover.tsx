@@ -6,27 +6,25 @@ import { useI18n } from '@app/providers';
 const MATRIX = 'https://matrix.org/';
 const SMP = 'https://docs.novaspektr.io/multisig-accounts/spektr-matrix-protocol';
 
-const sectionClass = 'flex flex-col gap-y-2';
-const linkClass = 'text-footnote text-tab-text-accent';
-
 export const MatrixInfoPopover = () => {
   const { t } = useI18n();
 
-  const matrix = <InfoLink url={MATRIX} className={linkClass} />;
-  const smp = <InfoLink url={SMP} className={linkClass} />;
+  const matrix = <InfoLink url={MATRIX} className="text-footnote text-tab-text-accent" />;
+  const smp = <InfoLink url={SMP} className="text-footnote text-tab-text-accent" />;
 
   return (
     <Popover
       contentClass="p-4"
+      panelClass="w-[360px] left-1/2 -translate-x-1/2"
       offsetPx={4}
       content={
         <div className="flex flex-col gap-y-4">
-          <section className={sectionClass}>
+          <section className="flex flex-col gap-y-2">
             <SmallTitleText>{t('settings.matrix.infoWhyMatrixTitle')}</SmallTitleText>
             <FootnoteText className="text-text-secondary">{t('settings.matrix.infoSpektrDescription')}</FootnoteText>
           </section>
 
-          <section className={sectionClass}>
+          <section className="flex flex-col gap-y-2">
             <SmallTitleText>{t('settings.matrix.infoWhatIsMatrixTitle')}</SmallTitleText>
             <FootnoteText className="text-text-secondary">
               <Trans t={t} i18nKey="settings.matrix.infoMatrixDescription" components={{ matrix, smp }} />
