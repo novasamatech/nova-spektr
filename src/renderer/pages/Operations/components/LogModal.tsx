@@ -13,7 +13,7 @@ import { getAssetById, SS58_DEFAULT_PREFIX, toAddress, getExtrinsicExplorer, sor
 import { useMultisigEvent } from '@entities/multisig';
 import { MultisigTransactionDS } from '@shared/api/storage';
 import { AssetBalance } from '@entities/asset';
-import type { Account, Contact, MultisigAccount, Wallet, AccountId, ID } from '@shared/core';
+import type { Account, Contact, MultisigAccount, Wallet, AccountId, WalletsMap } from '@shared/core';
 import { WalletIcon, walletModel, walletUtils } from '@entities/wallet';
 
 type Props = {
@@ -33,8 +33,6 @@ const EventMessage: Partial<Record<SigningStatus | 'INITIATED', string>> = {
   CANCELLED: 'log.cancelledMessage',
   ERROR_CANCELLED: 'log.errorCancelledMessage',
 } as const;
-
-type WalletsMap = Record<ID, Wallet>;
 
 const getFilteredWalletsMap = (wallets: Wallet[]): WalletsMap => {
   return wallets.reduce<WalletsMap>((acc, wallet) => {

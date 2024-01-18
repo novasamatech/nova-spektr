@@ -30,7 +30,7 @@ export const enum ProxyType {
 }
 
 export const enum ProxyVariant {
-  NONE = 'none',
+  NONE = 'none', // temp value, until we not receive correct proxy variant
   PURE = 'pure',
   REGULAR = 'regular',
 }
