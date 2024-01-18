@@ -26,9 +26,7 @@ jest.mock('@remote-ui/rpc', () => ({
         proxiedAccountsToRemove: [],
         deposits: {
           chainId: '0x01',
-          deposits: {
-            '0x01': '1,002,050,000,000',
-          },
+          deposits: { '0x01': '1,002,050,000,000' },
         },
       }),
       disconnect: jest.fn(),
@@ -76,37 +74,19 @@ describe('entities/proxy/model/proxy-model', () => {
             options: ['regular_proxy'],
           },
         })
-        .set(walletModel.$accounts, [
-          {
-            walletId: 1,
-            accountId: '0x01',
-          },
-        ])
-        .set(walletModel.$wallets, [
-          {
-            id: 1,
-          },
-        ]),
+        .set(walletModel.$accounts, [{ walletId: 1, accountId: '0x01' }])
+        .set(walletModel.$wallets, [{ id: 1 }]),
     });
 
     jest.spyOn(storageService.proxies, 'createAll').mockResolvedValue([]);
-    jest.spyOn(storageService.proxyGroups, 'createAll').mockImplementation(async (value) =>
-      value.map((value, id) => ({
-        id,
-        ...value,
-      })),
-    );
+    jest
+      .spyOn(storageService.proxyGroups, 'createAll')
+      .mockImplementation(async (value) => value.map((value, id) => ({ id, ...value })));
 
     await allSettled(proxiesModel.events.workerStarted, { scope });
     await allSettled(networkModel.$connections, {
       scope,
-      params: {
-        '0x01': {
-          id: 1,
-          chainId: '0x01',
-          connectionType: ConnectionType.AUTO_BALANCE,
-        },
-      },
+      params: { '0x01': { id: 1, chainId: '0x01', connectionType: ConnectionType.AUTO_BALANCE } },
     });
 
     expect(scope.getState(proxyModel.$proxies)).toEqual({
