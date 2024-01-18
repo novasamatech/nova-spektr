@@ -79,10 +79,11 @@ type GetProxiesResult = {
 const getProxiesFx = createEffect(
   ({ chainId, accounts, wallets, proxies, endpoint }: GetProxiesParams): Promise<GetProxiesResult> => {
     const proxiedAccounts = accounts.filter((a) => accountUtils.isProxiedAccount(a));
+    const walletsMap = keyBy(wallets, 'id');
 
     const accountsForProxy = keyBy(accounts, 'accountId');
     const accountsForProxied = keyBy(
-      accounts.filter((a) => proxiesUtils.isProxiedAvailable(a, wallets[a.walletId])),
+      accounts.filter((a) => proxiesUtils.isProxiedAvailable(a, walletsMap[a.walletId])),
       'accountId',
     );
 
@@ -169,14 +170,14 @@ sample({
   source: {
     accounts: walletModel.$accounts,
     proxies: proxyModel.$proxies,
-    wallets: walletModel.$walletsMap,
+    wallets: walletModel.$wallets,
     endpoint: $endpoint,
   },
-  filter: ({ wallets, endpoint }) => Boolean(endpoint) && Boolean(wallets),
+  filter: ({ wallets, endpoint }) => Boolean(endpoint),
   fn: ({ accounts, wallets, proxies, endpoint }, chainId) => ({
     chainId,
     accounts: accounts.filter((a) => accountUtils.isChainIdMatch(a, chainId)),
-    wallets: wallets!,
+    wallets,
     proxies: Object.values(proxies).flat(),
     endpoint: endpoint!,
   }),
