@@ -38,8 +38,6 @@ export const ProxiesList = ({ walletId, className, canCreateProxy = true }: Prop
         {proxyGroups.map((chainGroup) => {
           const { chainId, totalDeposit } = chainGroup;
 
-          console.log('totalDeposit', totalDeposit);
-
           const chain = chains[chainId];
 
           if (!proxiesByChain[chainId] || !proxiesByChain[chainId].length) return;
