@@ -8,6 +8,10 @@ import { createLink, type PathType } from '@shared/routes';
 import { useGraphql, useI18n } from '@app/providers';
 import { useToggle } from '@shared/lib/hooks';
 import { AboutStaking, NetworkInfo, NominatorsList, Actions, InactiveChain } from './components';
+import { accountUtils, walletModel, walletUtils } from '@entities/wallet';
+import { priceProviderModel } from '@entities/price';
+import { NominatorInfo } from './common/types';
+import { isDisabled as isNetworkDisabled, useNetworkData, networkUtils } from '@entities/network';
 import {
   ChainId,
   Chain,
@@ -18,11 +22,7 @@ import {
   ShardAccount,
   ChainAccount,
   ConnectionType,
-  ConnectionStatus,
 } from '@shared/core';
-import { accountUtils, walletModel, walletUtils } from '@entities/wallet';
-import { priceProviderModel } from '@entities/price';
-import { NominatorInfo } from './common/types';
 import {
   useEra,
   useStakingData,
@@ -32,7 +32,6 @@ import {
   useStakingRewards,
   ValidatorsModal,
 } from '@entities/staking';
-import { isDisabled as isNetworkDisabled, useNetworkData } from '@entities/network';
 
 export const Overview = () => {
   const { t } = useI18n();
@@ -90,7 +89,7 @@ export const Overview = () => {
     if (!connection) return;
 
     const isDisabled = isNetworkDisabled(connection);
-    const isError = connectionStatus === ConnectionStatus.ERROR;
+    const isError = networkUtils.isError(connectionStatus);
 
     setNetworkIsActive(!isDisabled && !isError);
   }, [chainId, connection]);

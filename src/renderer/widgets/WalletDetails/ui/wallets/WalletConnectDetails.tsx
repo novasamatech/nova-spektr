@@ -13,6 +13,12 @@ import { ForgetStep } from '../../lib/constants';
 import { Animation } from '@shared/ui/Animation/Animation';
 import { IconNames } from '@shared/ui/Icon/data';
 import { RenameWalletModal } from '@features/wallets/RenameWallet';
+import { TabItem } from '@shared/ui/Tabs/common/types';
+import { ProxiesList } from '../components/ProxiesList';
+import { walletProviderModel } from '../../model/wallet-provider-model';
+import { NoProxiesAction } from '../components/NoProxiesAction';
+import { WalletConnectAccounts } from '../components/WalletConnectAccounts';
+import { AddProxyModal } from '../../../AddProxyModal';
 import {
   BaseModal,
   Button,
@@ -23,11 +29,6 @@ import {
   StatusModal,
   Tabs,
 } from '@shared/ui';
-import { TabItem } from '@shared/ui/Tabs/common/types';
-import { ProxiesList } from '../components/ProxiesList';
-import { walletProviderModel } from '../../model/wallet-provider-model';
-import { NoProxiesAction } from '../components/NoProxiesAction';
-import { WalletConnectAccounts } from '../components/WalletConnectAccounts';
 
 type Props = {
   wallet: WalletConnectWallet;
@@ -42,6 +43,7 @@ export const WalletConnectDetails = ({ wallet, accounts, onClose }: Props) => {
   const [isModalOpen, closeModal] = useModalClose(true, onClose);
   const [isConfirmForgetOpen, toggleConfirmForget] = useToggle();
   const [isRenameModalOpen, toggleIsRenameModalOpen] = useToggle();
+  const [isAddProxyModalOpen, toggleIsAddProxyModalOpen] = useToggle();
 
   const reconnectStep = useUnit(wcDetailsModel.$reconnectStep);
   const forgetStep = useUnit(wcDetailsModel.$forgetStep);
@@ -105,7 +107,7 @@ export const WalletConnectDetails = ({ wallet, accounts, onClose }: Props) => {
       panel: hasProxies ? (
         <ProxiesList walletId={wallet.id} className="h-[395px] mt-6" />
       ) : (
-        <NoProxiesAction className="h-[395px] mt-6" />
+        <NoProxiesAction className="h-[395px] mt-6" onAddProxy={toggleIsAddProxyModalOpen} />
       ),
     },
   ];
@@ -198,6 +200,8 @@ export const WalletConnectDetails = ({ wallet, accounts, onClose }: Props) => {
       </div>
 
       <RenameWalletModal wallet={wallet} isOpen={isRenameModalOpen} onClose={toggleIsRenameModalOpen} />
+
+      <AddProxyModal isOpen={isAddProxyModalOpen} onClose={toggleIsAddProxyModalOpen} />
     </BaseModal>
   );
 };

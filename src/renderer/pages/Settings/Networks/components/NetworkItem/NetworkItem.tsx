@@ -1,11 +1,11 @@
 import { TFunction } from 'react-i18next';
 
-import { ExtendedChain } from '@entities/network';
+import { ExtendedChain, networkUtils } from '@entities/network';
 import { NetworkSelector } from '../NetworkSelector/NetworkSelector';
 import { BodyText, StatusLabel, FootnoteText, HelpText } from '@shared/ui';
 import { useI18n } from '@app/providers';
 import { ChainIcon } from '@entities/chain';
-import { ConnectionStatus, ConnectionType } from '@shared/core';
+import { ConnectionType } from '@shared/core';
 import type { RpcNode } from '@shared/core';
 import './NetworkItem.css';
 
@@ -46,10 +46,12 @@ export const NetworkItem = ({
   const { connectionType, activeNode } = connection;
 
   const networkIsActive = connectionType !== ConnectionType.DISABLED;
-  const isConnected = connectionStatus === ConnectionStatus.CONNECTED;
-  const isError = connectionStatus === ConnectionStatus.CONNECTED;
 
-  const status = isConnected ? 'connected' : networkIsActive && isError ? 'error' : 'connecting';
+  const status = networkUtils.isConnected(connectionStatus)
+    ? 'connected'
+    : networkIsActive && networkUtils.isError(connectionStatus)
+    ? 'error'
+    : 'connecting';
 
   return (
     <div className="flex items-center py-3">

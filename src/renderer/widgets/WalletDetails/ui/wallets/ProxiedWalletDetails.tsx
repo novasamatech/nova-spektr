@@ -1,4 +1,5 @@
 import { useUnit } from 'effector-react';
+import noop from 'lodash/noop';
 
 import { ProxiedAccount, ProxyType, Wallet } from '@shared/core';
 import { useI18n } from '@app/providers';
@@ -79,7 +80,7 @@ export const ProxiedWalletDetails = ({ wallet, proxyWallet, proxiedAccount, onCl
       panel: hasProxies ? (
         <ProxiesList walletId={wallet.id} className="h-[353px]" />
       ) : (
-        <NoProxiesAction className="h-[353px]" />
+        <NoProxiesAction className="h-[353px]" onAddProxy={noop} />
       ),
     },
   ];

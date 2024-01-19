@@ -6,7 +6,7 @@ import keyBy from 'lodash/keyBy';
 
 import { Account, AccountId, Balance, Chain, ChainId, ConnectionStatus } from '@shared/core';
 import { accountUtils, walletModel } from '@entities/wallet';
-import { networkModel } from '@entities/network';
+import { networkModel, networkUtils } from '@entities/network';
 import { balanceModel, balanceSubscriptionService, useBalanceService } from '@entities/balance';
 import { SUBSCRIPTION_DELAY } from '../common/constants';
 
@@ -44,9 +44,11 @@ const createSubscriptionsBalancesFx = createEffect(
 
     const newSubscriptions = {} as Record<ChainId, SubscriptionObject>;
 
-    const balanceSubscriptions = Object.entries(apis).map(async ([chainId, api]) => {
+    const balanceSubscriptions = Object.entries(apis).map(async (apiMap) => {
+      const [chainId, api] = apiMap as [ChainId, ApiPromise];
+
       const accountIds = accounts.reduce<Record<AccountId, boolean>>((acc, account) => {
-        if (accountUtils.isChainIdMatch(account, chainId as ChainId)) {
+        if (accountUtils.isChainIdMatch(account, chainId)) {
           acc[account.accountId] = true;
         }
 
@@ -54,14 +56,11 @@ const createSubscriptionsBalancesFx = createEffect(
       }, {});
 
       const uniqAccountIds = Object.keys(accountIds) as AccountId[];
-      const networkConnected = statuses[chainId as ChainId] === ConnectionStatus.CONNECTED;
-      const oldSubscription = subscriptions[chainId as ChainId];
+      const networkConnected = networkUtils.isConnected(statuses[chainId]);
+      const oldSubscription = subscriptions[chainId];
 
       if (!networkConnected) {
-        await unsubscribeBalancesFx({
-          chainId: chainId as ChainId,
-          subscription: oldSubscription,
-        });
+        await unsubscribeBalancesFx({ chainId, subscription: oldSubscription });
 
         return;
       }
@@ -71,19 +70,16 @@ const createSubscriptionsBalancesFx = createEffect(
 
         if (sameAccounts) return;
 
-        await unsubscribeBalancesFx({
-          chainId: chainId as ChainId,
-          subscription: oldSubscription,
-        });
+        await unsubscribeBalancesFx({ chainId, subscription: oldSubscription });
       }
 
-      const chain = chains[chainId as ChainId];
-
       try {
+        const chain = chains[chainId];
+
         const balanceSubs = balanceSubscriptionService.subscribeBalances(chain, api, uniqAccountIds, boundUpdate);
         const locksSubs = balanceSubscriptionService.subscribeLockBalances(chain, api, uniqAccountIds, boundUpdate);
 
-        newSubscriptions[chainId as ChainId] = {
+        newSubscriptions[chainId] = {
           accounts: uniqAccountIds,
           subscription: [balanceSubs, locksSubs],
         };

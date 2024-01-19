@@ -76,9 +76,6 @@ export const MultisigWalletDetails = ({ wallet, account, signatoryWallets, signa
     >
       <div className="flex flex-col w-full">
         <div className="py-6 px-5 border-b border-divider">
-          <button className="bg-red-50" onClick={toggleIsAddProxyModalOpen}>
-            open
-          </button>
           <WalletCardLg wallet={wallet} />
         </div>
 
@@ -173,7 +170,7 @@ export const MultisigWalletDetails = ({ wallet, account, signatoryWallets, signa
               panel: hasProxies ? (
                 <ProxiesList walletId={wallet.id} className="h-[387px]" />
               ) : (
-                <NoProxiesAction className="h-[387px]" />
+                <NoProxiesAction className="h-[387px]" onAddProxy={toggleIsAddProxyModalOpen} />
               ),
             },
           ]}

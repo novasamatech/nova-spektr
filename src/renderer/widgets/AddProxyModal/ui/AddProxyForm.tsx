@@ -6,7 +6,7 @@ import { Button, Select, Input, InputHint, Combobox, FootnoteText, Identicon } f
 import { useI18n } from '@app/providers';
 import { ChainTitle } from '@entities/chain';
 import { ProxyPopover } from '@entities/proxy';
-import { addProxyModel } from '../model/add-proxy-model';
+import { proxyFormModel } from '../model/proxy-form-model';
 import { AccountAddress, accountUtils } from '@entities/wallet';
 import { toAddress, toShortAddress } from '@shared/lib/utils';
 
@@ -16,7 +16,8 @@ type Props = {
 export const AddProxyForm = ({ onBack }: Props) => {
   const { t } = useI18n();
 
-  const { submit, isValid } = useForm(addProxyModel.$proxyForm);
+  const { submit, isValid } = useForm(proxyFormModel.$proxyForm);
+  const isChainConnected = useUnit(proxyFormModel.$isChainConnected);
 
   const submitProxy = (event: FormEvent) => {
     event.preventDefault();
@@ -52,7 +53,7 @@ export const AddProxyForm = ({ onBack }: Props) => {
         <Button variant="text" onClick={onBack}>
           Back
         </Button>
-        <Button form="init-proxy-form" type="submit" disabled={!isValid}>
+        <Button form="init-proxy-form" type="submit" disabled={!isValid || !isChainConnected}>
           Continue
         </Button>
       </div>
@@ -65,9 +66,9 @@ const NetworkSelector = () => {
 
   const {
     fields: { network },
-  } = useForm(addProxyModel.$proxyForm);
+  } = useForm(proxyFormModel.$proxyForm);
 
-  const proxyChains = useUnit(addProxyModel.$proxyChains);
+  const proxyChains = useUnit(proxyFormModel.$proxyChains);
 
   const options = Object.values(proxyChains).map((chain) => ({
     id: chain.chainId,
@@ -104,9 +105,9 @@ const AccountSelector = () => {
 
   const {
     fields: { account, network },
-  } = useForm(addProxyModel.$proxyForm);
+  } = useForm(proxyFormModel.$proxyForm);
 
-  const proxiedAccounts = useUnit(addProxyModel.$proxiedAccounts);
+  const proxiedAccounts = useUnit(proxyFormModel.$proxiedAccounts);
 
   if (proxiedAccounts.length === 0) return null;
 
@@ -153,9 +154,9 @@ const SignatorySelector = () => {
 
   const {
     fields: { signatory },
-  } = useForm(addProxyModel.$proxyForm);
+  } = useForm(proxyFormModel.$proxyForm);
 
-  const isMultisig = useUnit(addProxyModel.$isMultisig);
+  const isMultisig = useUnit(proxyFormModel.$isMultisig);
 
   if (!isMultisig) return null;
 
@@ -181,10 +182,10 @@ const ProxyCombobox = () => {
 
   const {
     fields: { proxyAddress, network },
-  } = useForm(addProxyModel.$proxyForm);
+  } = useForm(proxyFormModel.$proxyForm);
 
-  const proxyAccounts = useUnit(addProxyModel.$proxyAccounts);
-  const proxyQuery = useUnit(addProxyModel.$proxyQuery);
+  const proxyAccounts = useUnit(proxyFormModel.$proxyAccounts);
+  const proxyQuery = useUnit(proxyFormModel.$proxyQuery);
 
   const options = proxyAccounts.map((proxyAccount) => {
     const isShard = accountUtils.isShardAccount(proxyAccount);
@@ -219,7 +220,7 @@ const ProxyCombobox = () => {
         prefixElement={
           <Identicon className="mr-1" address={proxyAddress.value} size={20} background={false} canCopy={false} />
         }
-        onInput={addProxyModel.events.proxyQueryChanged}
+        onInput={proxyFormModel.events.proxyQueryChanged}
         onChange={({ value }) => proxyAddress.onChange(value)}
       />
       <InputHint variant="error" active={proxyAddress.hasError()}>
@@ -234,9 +235,10 @@ const ProxyTypeSelector = () => {
 
   const {
     fields: { proxyType },
-  } = useForm(addProxyModel.$proxyForm);
+  } = useForm(proxyFormModel.$proxyForm);
 
-  const proxyTypes = useUnit(addProxyModel.$proxyTypes);
+  const proxyTypes = useUnit(proxyFormModel.$proxyTypes);
+  const isChainConnected = useUnit(proxyFormModel.$isChainConnected);
 
   const options = proxyTypes.map((type) => ({ id: type, value: type, element: type }));
 
@@ -247,6 +249,7 @@ const ProxyTypeSelector = () => {
         placeholder="Choose type"
         selectedId={proxyType.value}
         options={options}
+        disabled={!isChainConnected}
         onChange={({ value }) => proxyType.onChange(value)}
       />
     </div>
@@ -258,9 +261,9 @@ const DescriptionInput = () => {
 
   const {
     fields: { description },
-  } = useForm(addProxyModel.$proxyForm);
+  } = useForm(proxyFormModel.$proxyForm);
 
-  const isMultisig = useUnit(addProxyModel.$isMultisig);
+  const isMultisig = useUnit(proxyFormModel.$isMultisig);
 
   if (!isMultisig) return null;
 

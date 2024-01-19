@@ -5,9 +5,10 @@ import { cnTw } from '@shared/lib/utils';
 
 type Props = {
   className?: string;
+  onAddProxy: () => void;
 };
 
-export const NoProxiesAction = ({ className }: Props) => {
+export const NoProxiesAction = ({ className, onAddProxy }: Props) => {
   const { t } = useI18n();
 
   return (
@@ -17,10 +18,10 @@ export const NoProxiesAction = ({ className }: Props) => {
         <SmallTitleText>{t('walletDetails.common.emptyProxyTitle')}</SmallTitleText>
         <ProxyPopover />
       </div>
-      <FootnoteText className="text-text-tertiary mb-4">
-        {t('walletDetails.common.emptyProxyDescriptionription')}
-      </FootnoteText>
-      <Button size="sm">{t('walletDetails.common.addProxyButton')}</Button>
+      <FootnoteText className="text-text-tertiary mb-4">{t('walletDetails.common.emptyProxyDescription')}</FootnoteText>
+      <Button size="sm" onClick={onAddProxy}>
+        {t('walletDetails.common.addProxyButton')}
+      </Button>
     </div>
   );
 };

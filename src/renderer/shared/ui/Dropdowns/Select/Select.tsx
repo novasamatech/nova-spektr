@@ -42,10 +42,10 @@ export const Select = forwardRef<HTMLButtonElement, Props>(
       invalid,
       selectedId,
       options,
-      onChange,
       position = 'down',
       tabIndex,
       theme = 'light',
+      onChange,
     },
     ref,
   ) => {

@@ -1,7 +1,9 @@
 import { u8aToHex } from '@polkadot/util';
 import { createKeyMulti } from '@polkadot/util-crypto';
 
-import { AccountType } from '@shared/core';
+import { dictionary } from '@shared/lib/utils';
+import { walletUtils } from './wallet-utils';
+import { AccountType, Wallet } from '@shared/core';
 import type {
   ID,
   AccountId,
@@ -24,13 +26,14 @@ export const accountUtils = {
   isWalletConnectAccount,
   isProxiedAccount,
   isShardAccount,
-  getAccountsAndShardGroups,
   isAccountWithShards,
+  getAccountsAndShardGroups,
   getMultisigAccountId,
   getAllAccountIds,
   getWalletAccounts,
   getBaseAccount,
   getDerivationPath,
+  getAccountsForBalances,
 };
 
 function getMultisigAccountId(ids: AccountId[], threshold: Threshold): AccountId {
@@ -133,4 +136,18 @@ function getDerivationPath(data: DerivationPathLike | DerivationPathLike[]): str
   if (!Array.isArray(data)) return data.derivationPath;
 
   return data[0].derivationPath.replace(/\d+$/, `0..${data.length - 1}`);
+}
+
+function getAccountsForBalances(
+  wallets: Wallet[],
+  accounts: Account[],
+  filterFn?: (account: Account) => boolean,
+): Account[] {
+  const walletsMap = dictionary(wallets, 'id', walletUtils.isPolkadotVault);
+
+  return accounts.filter((account) => {
+    if (accountUtils.isBaseAccount(account) && walletsMap[account.walletId]) return false;
+
+    return filterFn?.(account) || true;
+  });
 }

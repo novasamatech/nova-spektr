@@ -6,16 +6,17 @@ import { cloneDeep, keyBy } from 'lodash';
 
 import { Metadata, ProviderType, chainsService, isEnabled, networkService } from '../lib';
 import { Chain, ChainId, Connection, ConnectionStatus, ConnectionType, RpcNode } from '@shared/core';
-import { useMetadata } from '../lib/metadataService';
 import { storageService } from '@shared/api/storage';
+import { useMetadata } from '../lib/metadataService';
+import { networkUtils } from '../lib/network-utils';
 
 const chains = chainsService.getChainsMap({ sort: true });
 
-const defaultStatuses = Object.values(chains).reduce((acc, chain) => {
+const defaultStatuses = Object.values(chains).reduce<Record<ChainId, ConnectionStatus>>((acc, chain) => {
   acc[chain.chainId] = ConnectionStatus.DISCONNECTED;
 
   return acc;
-}, {} as Record<ChainId, ConnectionStatus>);
+}, {});
 
 const metadataStorage = useMetadata();
 
@@ -110,7 +111,7 @@ const syncMetadataFx = createEffect((api: ApiPromise): Promise<Metadata> => {
 sample({
   clock: connected,
   source: $connectionStatuses,
-  filter: (statuses, chainId) => statuses[chainId] !== ConnectionStatus.CONNECTED,
+  filter: (statuses, chainId) => !networkUtils.isConnected(statuses[chainId]),
   fn: (statuses, chainId) => ({
     ...statuses,
     [chainId]: ConnectionStatus.CONNECTED,
@@ -121,7 +122,7 @@ sample({
 sample({
   clock: disconnected,
   source: $connectionStatuses,
-  filter: (statuses, chainId) => statuses[chainId] !== ConnectionStatus.DISCONNECTED,
+  filter: (statuses, chainId) => !networkUtils.isDisconnected(statuses[chainId]),
   fn: (statuses, chainId) => ({
     ...statuses,
     [chainId]: ConnectionStatus.DISCONNECTED,
@@ -132,7 +133,7 @@ sample({
 sample({
   clock: failed,
   source: $connectionStatuses,
-  filter: (statuses, chainId) => statuses[chainId] !== ConnectionStatus.ERROR,
+  filter: (statuses, chainId) => !networkUtils.isError(statuses[chainId]),
   fn: (statuses, chainId) => ({
     ...statuses,
     [chainId]: ConnectionStatus.ERROR,

@@ -159,7 +159,7 @@ export const VaultWalletDetails = ({ wallet, root, accountsMap, onClose }: Props
       panel: hasProxies ? (
         <ProxiesList walletId={wallet.id} className="h-[403px] mt-4" />
       ) : (
-        <NoProxiesAction className="h-[403px] mt-4" />
+        <NoProxiesAction className="h-[403px] mt-4" onAddProxy={toggleIsAddProxyModalOpen} />
       ),
     },
   ];
@@ -176,9 +176,6 @@ export const VaultWalletDetails = ({ wallet, root, accountsMap, onClose }: Props
     >
       <div className="flex flex-col w-full">
         <div className="py-6 px-5 border-b border-divider">
-          <button className="bg-red-50" onClick={toggleIsAddProxyModalOpen}>
-            open
-          </button>
           <WalletCardLg wallet={wallet} />
         </div>
 
