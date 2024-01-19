@@ -52,7 +52,7 @@ export const ProxiesList = ({ walletId, className, canCreateProxy = true }: Prop
                       {t('walletDetails.common.proxyDeposit')}
                       &nbsp;
                       <AssetBalance
-                        value={totalDeposit}
+                        value={totalDeposit.replaceAll(',', '')}
                         asset={chain.assets[0]}
                         showIcon={false}
                         className="text-help-text"
