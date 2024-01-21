@@ -230,11 +230,12 @@ sample({
   fn: ({ connections, chains }, chainId) => {
     const connection = connections[chainId];
 
-    const providerType =
-      connection?.connectionType === ConnectionType.LIGHT_CLIENT ? ProviderType.LIGHT_CLIENT : ProviderType.WEB_SOCKET;
+    const providerType = networkUtils.isLightClientConnection(connection)
+      ? ProviderType.LIGHT_CLIENT
+      : ProviderType.WEB_SOCKET;
 
     const nodes =
-      connection?.connectionType === ConnectionType.AUTO_BALANCE || !connection
+      !connection || networkUtils.isAutoBalanceConnection(connection)
         ? [...(chains[chainId]?.nodes || []), ...(connection?.customNodes || [])].map((node) => node.url)
         : [connection?.activeNode?.url || ''];
 
@@ -434,7 +435,7 @@ sample({
   clock: updateConnectionFx.done,
   source: $chains,
   filter: (chains, { params: connection }) => {
-    const isSingleNodeType = connection.connectionType === ConnectionType.RPC_NODE;
+    const isSingleNodeType = networkUtils.isRpcConnection(connection);
     const activeNode = connection.activeNode;
     const nodes = (connection.customNodes || []).concat(chains[connection.chainId].nodes || []);
     const isNodeFound = nodes.some((node) => node.url === activeNode?.url);

@@ -12,17 +12,7 @@ import { accountUtils, walletModel, walletUtils } from '@entities/wallet';
 import { priceProviderModel } from '@entities/price';
 import { NominatorInfo } from './common/types';
 import { useNetworkData, networkUtils } from '@entities/network';
-import {
-  ChainId,
-  Chain,
-  Address,
-  Account,
-  Stake,
-  Validator,
-  ShardAccount,
-  ChainAccount,
-  ConnectionType,
-} from '@shared/core';
+import { ChainId, Chain, Address, Account, Stake, Validator, ShardAccount, ChainAccount } from '@shared/core';
 import {
   useEra,
   useStakingData,
@@ -78,8 +68,6 @@ export const Overview = () => {
   const addresses = accounts.map((a) => toAddress(a.accountId, { prefix: addressPrefix }));
 
   const { rewards, isRewardsLoading } = useStakingRewards(addresses);
-
-  const isLightClient = connection?.connectionType === ConnectionType.LIGHT_CLIENT;
 
   useEffect(() => {
     priceProviderModel.events.assetsPricesRequested({ includeRates: true });
@@ -143,9 +131,11 @@ export const Overview = () => {
   useEffect(() => {
     if (!api) return;
 
-    validatorsService.getNominators(api, selectedStash, isLightClient).then((nominators) => {
-      setNominators(Object.values(nominators));
-    });
+    validatorsService
+      .getNominators(api, selectedStash, networkUtils.isLightClientConnection(connection))
+      .then((nominators) => {
+        setNominators(Object.values(nominators));
+      });
   }, [api, selectedStash]);
 
   const changeNetwork = (chain: Chain) => {

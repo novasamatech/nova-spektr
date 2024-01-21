@@ -1,5 +1,4 @@
-import type { ChainOptions, Connection } from '@shared/core';
-import { ConnectionType, ConnectionStatus } from '@shared/core';
+import { ChainOptions, Connection, ConnectionType, ConnectionStatus } from '@shared/core';
 
 export const networkUtils = {
   isConnectedStatus,
@@ -12,6 +11,8 @@ export const networkUtils = {
   isLightClientConnection,
   isDisabledConnection,
   isEnabledConnection,
+  isRpcConnection,
+  isAutoBalanceConnection,
 };
 
 function isConnectedStatus(status: ConnectionStatus): boolean {
@@ -42,4 +43,12 @@ function isDisabledConnection(connection: Connection): boolean {
 
 function isEnabledConnection(connection: Connection): boolean {
   return connection.connectionType !== ConnectionType.DISABLED;
+}
+
+function isRpcConnection(connection: Connection): boolean {
+  return connection.connectionType === ConnectionType.RPC_NODE;
+}
+
+function isAutoBalanceConnection(connection: Connection): boolean {
+  return connection.connectionType === ConnectionType.AUTO_BALANCE;
 }

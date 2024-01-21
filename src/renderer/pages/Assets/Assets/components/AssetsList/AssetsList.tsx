@@ -4,7 +4,6 @@ import { useUnit } from 'effector-react';
 import { useI18n } from '@app/providers';
 import { networkModel, networkUtils } from '@entities/network';
 import type { Chain } from '@shared/core';
-import { ConnectionType } from '@shared/core';
 import { walletModel, walletUtils } from '@entities/wallet';
 import { priceProviderModel, currencyModel } from '@entities/price';
 import { includes } from '@shared/lib/utils';
@@ -39,7 +38,7 @@ export const AssetsList = () => {
     const isMultisig = walletUtils.isMultisig(activeWallet);
 
     const filteredChains = Object.values(chains).filter((c) => {
-      const isDisabled = connections[c.chainId]?.connectionType === ConnectionType.DISABLED;
+      const isDisabled = networkUtils.isDisabledConnection(connections[c.chainId]);
       const hasMultiPallet = !isMultisig || networkUtils.isMultisigSupported(c.options);
 
       return !isDisabled && hasMultiPallet;
