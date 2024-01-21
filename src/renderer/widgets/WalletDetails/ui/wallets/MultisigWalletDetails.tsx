@@ -6,7 +6,6 @@ import { BaseModal, FootnoteText, Tabs, HelpText, DropdownIconButton } from '@sh
 import { RootExplorers } from '@shared/lib/utils';
 import { useModalClose, useToggle } from '@shared/lib/hooks';
 import { AccountsList, ContactItem, ExplorersPopover, WalletCardLg, WalletCardMd } from '@entities/wallet';
-import { chainsService, isMultisigAvailable } from '@entities/network';
 import { useI18n, useMatrix } from '@app/providers';
 // TODO: think about combining balances and wallets
 import { WalletFiatBalance } from '@features/wallets/WalletSelect/ui/WalletFiatBalance';
@@ -16,6 +15,8 @@ import { ForgetWalletModal } from '@features/wallets/ForgetWallet';
 import { ProxiesList } from '../components/ProxiesList';
 import { walletProviderModel } from '../../model/wallet-provider-model';
 import { NoProxiesAction } from '../components/NoProxiesAction';
+import { chainsService } from '@shared/api/network';
+import { networkUtils } from '@entities/network';
 
 type Props = {
   wallet: Wallet;
@@ -35,7 +36,9 @@ export const MultisigWalletDetails = ({ wallet, account, signatoryWallets, signa
   const [isConfirmForgetOpen, toggleConfirmForget] = useToggle();
 
   const chains = useMemo(() => {
-    return chainsService.getChainsData({ sort: true }).filter((chain) => isMultisigAvailable(chain.options));
+    return chainsService
+      .getChainsData({ sort: true })
+      .filter((chain) => networkUtils.isMultisigSupported(chain.options));
   }, []);
 
   const Options = [

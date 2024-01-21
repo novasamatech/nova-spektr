@@ -12,7 +12,8 @@ import { includes, DEFAULT_TRANSITION } from '@shared/lib/utils';
 import { NetworkList, NetworkItem, CustomRpcModal } from './components';
 import type { RpcNode, ChainId } from '@shared/core';
 import { ConnectionType } from '@shared/core';
-import { networkModel, ExtendedChain, chainsService, isDisabled } from '@entities/network';
+import { networkModel, ExtendedChain, networkUtils } from '@entities/network';
+import { chainsService } from '@shared/api/network';
 
 const MAX_LIGHT_CLIENTS = 3;
 
@@ -55,7 +56,9 @@ export const Networks = () => {
     return acc;
   }, []);
 
-  const [inactive, active] = partition(extendedChains, ({ connection }) => isDisabled(connection));
+  const [inactive, active] = partition(extendedChains, ({ connection }) =>
+    networkUtils.isDisabledConnection(connection),
+  );
 
   const confirmRemoveCustomNode = (name: string): Promise<boolean> => {
     return confirm({

@@ -1,6 +1,6 @@
 import { createStore, createEvent, createEffect, sample } from 'effector';
 
-import { chainsService } from '@entities/network';
+import { chainsService } from '@shared/api/network';
 import { storageService } from '@shared/api/storage';
 import { walletModel, accountUtils } from '@entities/wallet';
 import type { ShardAccount, Chain, ChainId, ChainAccount, ID, DraftAccount, Account, AccountId } from '@shared/core';

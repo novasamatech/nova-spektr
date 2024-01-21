@@ -1,9 +1,9 @@
 import { ApiPromise } from '@polkadot/api';
 import { UnsubscribePromise } from '@polkadot/api/types';
 
-import { storage } from '@shared/api/storage';
-import { IMetadataService, Metadata } from './common/types';
-import type { ChainId } from '@shared/core';
+import { storage } from '../../storage';
+import { IMetadataService } from '../lib/types';
+import type { ChainId, Metadata } from '@shared/core';
 
 export const useMetadata = (): IMetadataService => {
   const metadataStorage = storage.connectTo('metadata');
@@ -29,13 +29,11 @@ export const useMetadata = (): IMetadataService => {
   const syncMetadata = async (api: ApiPromise): Promise<Metadata> => {
     const [metadata, version] = await Promise.all([api.rpc.state.getMetadata(), api.rpc.state.getRuntimeVersion()]);
 
-    const newMetadata: Metadata = {
+    return {
       metadata: metadata.toHex(),
       version: version.specVersion.toNumber(),
       chainId: api.genesisHash.toHex(),
     };
-
-    return newMetadata;
   };
 
   const subscribeMetadata = (api: ApiPromise, callback?: () => void): UnsubscribePromise => {

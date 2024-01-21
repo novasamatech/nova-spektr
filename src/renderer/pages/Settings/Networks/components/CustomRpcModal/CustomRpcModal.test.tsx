@@ -1,8 +1,9 @@
 import { act, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
-import { RpcValidation, ExtendedChain, networkService, networkModel } from '@entities/network';
 import { CustomRpcModal } from './CustomRpcModal';
+import { ExtendedChain, networkModel } from '@entities/network';
+import { networkService, RpcValidation } from '@shared/api/network';
 
 jest.mock('@app/providers', () => ({
   useI18n: jest.fn().mockReturnValue({

@@ -2,7 +2,7 @@ import { createApi, createEvent, createStore, sample, combine, createEffect, att
 import { createForm } from 'effector-forms';
 import { spread } from 'patronum';
 
-import { chainsService } from '@entities/network';
+import { chainsService } from '@shared/api/network';
 import { accountUtils, KEY_NAMES, walletModel } from '@entities/wallet';
 import type { ChainAccount, ShardAccount, DraftAccount, BaseAccount, Wallet, Account, NoID } from '@shared/core';
 import { AccountType, ChainType, CryptoType, KeyType } from '@shared/core';

@@ -1,6 +1,5 @@
-import type { Metadata } from '@entities/network';
 import { ID, IMetadataStorage, MetadataDS, TMetadata } from '../lib/types';
-import { ChainId } from '@shared/core';
+import type { ChainId, Metadata } from '@shared/core';
 
 export const useMetadataStorage = (db: TMetadata): IMetadataStorage => ({
   getMetadata: (chainId: ChainId, version: number): Promise<MetadataDS | undefined> => {

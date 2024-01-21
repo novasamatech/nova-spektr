@@ -3,10 +3,11 @@ import { Controller, SubmitHandler, useForm } from 'react-hook-form';
 
 import { BaseModal, Button, Input, InputHint, Alert } from '@shared/ui';
 import { useI18n } from '@app/providers';
-import { networkModel, networkService, RpcValidation, ExtendedChain } from '@entities/network';
+import { networkModel, ExtendedChain } from '@entities/network';
 import { validateWsAddress } from '@shared/lib/utils';
 import { OperationTitle } from '@entities/chain';
 import type { RpcNode } from '@shared/core';
+import { networkService, RpcValidation } from '@shared/api/network';
 
 const MODAL_ANIMATION = 300;
 

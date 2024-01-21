@@ -3,11 +3,11 @@ import { ProviderInterface } from '@polkadot/rpc-provider/types';
 import * as Sc from '@substrate/connect';
 import { noop } from '@polkadot/util';
 
-import { ChainId } from '@shared/core';
-import { ProviderType, RpcValidation } from './common/types';
-import { chainSpecService } from './chainSpecService';
-import { useMetadata } from './metadataService';
-import { createCachedProvider } from './provider/CachedProvider';
+import { ChainId } from '../../../core';
+import { ProviderType, RpcValidation } from '../lib/types';
+import { useMetadata } from '../../metadata/service/metadataService';
+import { createCachedProvider } from '../provider/CachedProvider';
+import { getKnownChain } from '../lib/utils';
 
 const metadataService = useMetadata();
 
@@ -66,7 +66,7 @@ function createProvider(
 }
 
 function createSubstrateProvider(chainId: ChainId): ProviderInterface | undefined {
-  const knownChainId = chainSpecService.getKnownChain(chainId);
+  const knownChainId = getKnownChain(chainId);
 
   if (knownChainId) {
     const CachedScProvider = createCachedProvider(ScProvider, chainId, metadataService.getMetadata);
@@ -74,7 +74,7 @@ function createSubstrateProvider(chainId: ChainId): ProviderInterface | undefine
     return new CachedScProvider(Sc, knownChainId);
   }
 
-  throw new Error('Parachains do not support Substrate Connect yet');
+  throw new Error(`Chain ${chainId} do not support Substrate Connect yet`);
 }
 
 function createWebsocketProvider(nodes: string[], chainId: ChainId): ProviderInterface {

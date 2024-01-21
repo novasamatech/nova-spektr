@@ -4,11 +4,13 @@ import { ProviderInterface } from '@polkadot/rpc-provider/types';
 import { UnsubscribePromise } from '@polkadot/api/types';
 import { cloneDeep, keyBy } from 'lodash';
 
-import { Metadata, ProviderType, chainsService, isEnabled, networkService } from '../lib';
-import { Chain, ChainId, Connection, ConnectionStatus, ConnectionType, RpcNode } from '@shared/core';
-import { useMetadata } from '../lib/metadataService';
+import { Chain, ChainId, Connection, ConnectionStatus, ConnectionType, RpcNode, Metadata } from '@shared/core';
+import { ProviderType, chainsService, networkService } from '@shared/api/network';
+import { useMetadata } from '@shared/api/metadata/service/metadataService';
 import { storageService } from '@shared/api/storage';
+import { networkUtils } from '../lib/network-utils';
 
+// TODO: very bad
 const chains = chainsService.getChainsMap({ sort: true });
 
 const defaultStatuses = Object.values(chains).reduce((acc, chain) => {
@@ -223,7 +225,7 @@ sample({
     connections: $connections,
   },
   filter: ({ connections }, chainId) => {
-    return !connections[chainId] || isEnabled(connections[chainId]);
+    return !connections[chainId] || networkUtils.isEnabledConnection(connections[chainId]);
   },
   fn: ({ connections, chains }, chainId) => {
     const connection = connections[chainId];
@@ -489,7 +491,7 @@ sample({
     providers: $providers,
     apis: $apis,
   },
-  filter: (_, connection) => isEnabled(connection),
+  filter: (_, connection) => networkUtils.isEnabledConnection(connection),
   fn: ({ providers, apis }, connection) => ({
     provider: providers[connection.chainId],
     api: apis[connection.chainId],

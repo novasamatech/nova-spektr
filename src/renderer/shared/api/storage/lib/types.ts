@@ -1,8 +1,8 @@
 import { Table } from 'dexie';
 
-import type { Metadata } from '@entities/network';
 import { MultisigEvent, MultisigTransaction, MultisigTransactionKey } from '@entities/transaction/model/transaction';
 import type {
+  Metadata,
   Wallet,
   Account,
   Contact,
