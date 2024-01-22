@@ -24,6 +24,8 @@ export const enum TransactionType {
   BATCH_ALL = 'batchAll',
   DESTINATION = 'payee',
   CHILL = 'chill',
+
+  REMOVE_PROXY = 'remove_pryx',
 }
 
 export type SigningStatus =

@@ -563,7 +563,14 @@
       "identityJudgement": "judgement operations",
       "nominationPools": "nominations operations",
       "nonTransfer": "all, except transfer operations",
-      "staking": "staking operations"
+      "staking": "staking operations",
+      "removeProxyTitle": "Revoke delegated authority (proxy) on "
+    },
+    "details": {
+      "wallet": "Your wallet",
+      "account": "Your account",
+      "revokeAccessType": "Revoke access type",
+      "revokeFor": "Revoke for"
     },
     "tooltipPart1": "Proxied wallets are wallet which have set one of your accounts in Nova Spektr as delegated authority (Proxies).",
     "tooltipPart2": "This means that you can control certain functions of these wallets based on the access type granted to you by the proxied wallet."
@@ -1038,7 +1045,11 @@
       "renameSaveButton": "Save",
       "renameTitle": "Rename wallet",
       "title": "Wallet details",
-      "walletRemoved": "Wallet removed"
+      "walletRemoved": "Wallet removed",
+      "confirmRemoveProxyTitle": "Revoke delegated authority?",
+      "confirmRemoveProxyDescription": "The account will lose access to your wallet. Are you sure?",
+      "confirmRemoveProxyCancel": "Cancel",
+      "confirmRemoveProxySubmit": "Delete"
     },
     "multisig": {
       "contactsGroup": "Contacts",

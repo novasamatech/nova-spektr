@@ -34,7 +34,7 @@ export const ProxiesList = ({ walletId, className, canCreateProxy = true }: Prop
         <FootnoteText className="flex-1 px-2 text-text-tertiary">{t('accountList.addressColumn')}</FootnoteText>
       </div>
 
-      <ul className="flex flex-col px-5 divide-y divide-divider overflow-y-auto overflow-x-hidden">
+      <ul className="flex flex-col px-5 divide-y divide-divider overflow-y-auto overflow-x-hidden h-[inherit]">
         {proxyGroups.map((chainGroup) => {
           const { chainId, totalDeposit } = chainGroup;
 
@@ -46,7 +46,7 @@ export const ProxiesList = ({ walletId, className, canCreateProxy = true }: Prop
             <li key={chainId} className="flex items-center py-2">
               <Accordion isDefaultOpen>
                 <Accordion.Button buttonClass="p-2 rounded hover:bg-action-background-hover focus:bg-action-background-hover">
-                  <div className="flex gap-x-2 items-center justify-between flex-1 pr-2">
+                  <div className="flex gap-x-2 items-center justify-between pr-2">
                     <ChainTitle className="flex-1" fontClass="text-text-primary" chain={chain} />
                     <HelpText className="text-text-tertiary">
                       {t('walletDetails.common.proxyDeposit')}
@@ -64,7 +64,7 @@ export const ProxiesList = ({ walletId, className, canCreateProxy = true }: Prop
                   <ul className="flex flex-col gap-y-2">
                     {proxiesByChain[chainId].map((proxy) => (
                       <li className="px-2 py-1.5" key={proxy.accountId}>
-                        <ProxyAccountWithActions account={proxy} chain={chain} />
+                        <ProxyAccountWithActions account={proxy} chain={chain} canCreateProxy={canCreateProxy} />
                       </li>
                     ))}
                   </ul>

@@ -5,7 +5,7 @@ import { BodyText, HelpText, Identicon, Truncate } from '@shared/ui';
 import { AccountId, ProxyType } from '@shared/core';
 import { useI18n } from '@app/providers';
 
-const ProxyTypeName: Record<ProxyType, string> = {
+export const ProxyTypeName: Record<ProxyType, string> = {
   [ProxyType.ANY]: 'proxy.names.any',
   [ProxyType.NON_TRANSFER]: 'proxy.names.nonTransfer',
   [ProxyType.STAKING]: 'proxy.names.staking',
