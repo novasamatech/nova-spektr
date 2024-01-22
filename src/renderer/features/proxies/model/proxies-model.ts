@@ -214,8 +214,8 @@ sample({
 
 sample({
   clock: proxiedAccountsRemoved,
-  fn: (proxiedAccounts) => proxiedAccounts.map((p) => p.accountId),
-  target: balanceModel.events.accountsBalancesRemoved,
+  fn: (proxiedAccounts) => proxiedAccounts.map((p) => p.id),
+  target: balanceModel.events.balancesRemoved,
 });
 
 sample({

@@ -7,10 +7,10 @@ import keyBy from 'lodash/keyBy';
 import { Account, AccountId, Balance, Chain, ChainId, ConnectionStatus } from '@shared/core';
 import { accountUtils, walletModel } from '@entities/wallet';
 import { networkModel } from '@entities/network';
-import { balanceModel, balanceSubscriptionService, useBalanceService } from '@entities/balance';
-import { SUBSCRIPTION_DELAY } from '../common/constants';
-
-const balanceService = useBalanceService();
+import { balanceModel, balanceUtils } from '@entities/balance';
+import { SUBSCRIPTION_DELAY } from '../lib/constants';
+import { balanceService } from '@shared/api/balances';
+import { storageService } from '@shared/api/storage';
 
 type SubscriptionObject = {
   accounts: AccountId[];
@@ -80,8 +80,8 @@ const createSubscriptionsBalancesFx = createEffect(
       const chain = chains[chainId as ChainId];
 
       try {
-        const balanceSubs = balanceSubscriptionService.subscribeBalances(chain, api, uniqAccountIds, boundUpdate);
-        const locksSubs = balanceSubscriptionService.subscribeLockBalances(chain, api, uniqAccountIds, boundUpdate);
+        const balanceSubs = balanceService.subscribeBalances(api, chain, uniqAccountIds, boundUpdate);
+        const locksSubs = balanceService.subscribeLockBalances(api, chain, uniqAccountIds, boundUpdate);
 
         newSubscriptions[chainId as ChainId] = {
           accounts: uniqAccountIds,
@@ -113,8 +113,10 @@ const unsubscribeBalancesFx = createEffect(async ({ subscription }: UnsubscribeP
   lockUnsubs.forEach((fn) => fn());
 });
 
-const populateBalancesFx = createEffect((accounts: AccountId[]): Promise<Balance[]> => {
-  return balanceService.getBalances(accounts);
+const populateBalancesFx = createEffect(async (accountIds: AccountId[]): Promise<Balance[]> => {
+  const balances = await storageService.balances.readAll();
+
+  return balanceUtils.getAccountsBalances(balances, accountIds);
 });
 
 sample({
@@ -175,7 +177,7 @@ sample({
   target: $subscriptions,
 });
 
-export const balanceSubscriptionModel = {
+export const balanceSubModel = {
   $subscriptions,
   events: {
     balancesSubscribed,

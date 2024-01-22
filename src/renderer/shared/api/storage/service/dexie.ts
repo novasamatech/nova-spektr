@@ -1,6 +1,5 @@
 import Dexie from 'dexie';
 
-import { useBalanceStorage } from './balanceStorage';
 import { useTransactionStorage } from './transactionStorage';
 import { useMultisigEventStorage } from './multisigEventStorage';
 import { migrateEvents, migrateWallets } from '../migration';
@@ -62,12 +61,13 @@ class DexieStorage extends Dexie {
       })
       .upgrade(migrateWallets);
 
-    this.version(22).stores({
+    this.version(23).stores({
       proxies: '++id',
       proxyGroups: '++id',
       connections: '++id',
       notifications: '++id',
       metadata: '++id',
+      balances: '++id',
     });
 
     this.connections = this.table('connections');
@@ -93,8 +93,6 @@ class StorageFactory implements IStorage {
 
   public connectTo<T extends keyof DataStorage>(name: T): DataStorage[T] | undefined {
     switch (name) {
-      case 'balances':
-        return useBalanceStorage(this.dexieDB.balances) as DataStorage[T];
       case 'multisigTransactions':
         return useTransactionStorage(this.dexieDB.multisigTransactions) as DataStorage[T];
       case 'multisigEvents':
@@ -118,4 +116,5 @@ export const dexieStorage = {
   proxyGroups: dexie.proxyGroups,
   notifications: dexie.notifications,
   metadata: dexie.metadata,
+  balances: dexie.balances,
 };

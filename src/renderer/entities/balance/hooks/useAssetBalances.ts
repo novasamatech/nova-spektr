@@ -1,8 +1,8 @@
 import { useUnit } from 'effector-react';
 
 import { AccountId, Balance, ChainId } from '@shared/core';
-import { balanceModel } from '../../model/balance-model';
-import { balanceUtils } from '../common/utils';
+import { balanceModel } from '../model/balance-model';
+import { balanceUtils } from '../lib/balance-utils';
 
 type Props = {
   chainId: ChainId;

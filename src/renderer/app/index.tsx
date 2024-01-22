@@ -8,12 +8,12 @@ import { walletModel } from '@entities/wallet';
 import { networkModel } from '@entities/network';
 import { proxyModel } from '@entities/proxy';
 import { notificationModel } from '@entities/notification';
-import { balanceSubscriptionModel } from '@features/balances';
+import { balanceSubModel } from '@features/balances';
+import { proxiesModel } from '@features/proxies';
 import { assetsModel } from '@pages/Assets/Assets/model/assets-model';
 import './i18n';
 import './index.css';
 import './styles/theme/default.css';
-import { proxiesModel } from '@features/proxies';
 
 log.variables.version = process.env.VERSION;
 log.variables.env = process.env.NODE_ENV;
@@ -38,7 +38,7 @@ proxiesModel.events.workerStarted();
 walletModel.events.walletStarted();
 networkModel.events.networkStarted();
 proxyModel.events.proxyStarted();
-balanceSubscriptionModel.events.balancesSubscribed();
+balanceSubModel.events.balancesSubscribed();
 assetsModel.events.assetsStarted();
 notificationModel.events.notificationsStarted();
 

@@ -42,8 +42,8 @@ split({
 sample({
   clock: [forgetSimpleWallet, forgetMultisigWallet],
   source: walletModel.$accounts,
-  fn: (accounts, wallet) => accountUtils.getWalletAccounts(wallet.id, accounts).map((a) => a.accountId),
-  target: balanceModel.events.accountsBalancesRemoved,
+  fn: (accounts, wallet) => accountUtils.getWalletAccounts(wallet.id, accounts).map((a) => a.id),
+  target: balanceModel.events.balancesRemoved,
 });
 
 sample({

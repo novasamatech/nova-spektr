@@ -5,3 +5,5 @@ export type KeysOfType<T, TCondition> = {
 }[keyof T];
 
 export type ObjectValues<T extends object> = T[keyof T];
+
+export type OmitFirstArg<F> = F extends (first: any, ...args: infer P) => infer R ? (...args: P) => R : never;
