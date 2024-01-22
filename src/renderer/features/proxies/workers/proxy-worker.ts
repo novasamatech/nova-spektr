@@ -209,7 +209,7 @@ async function getProxies({
         ep.proxyType === p.proxyType,
     );
   });
-  console.log('proxy-worker: proxied accounts to remove: ', proxiedAccountsToRemove.toString());
+  console.log('proxy-worker: proxied accounts to remove: ', proxiedAccountsToRemove);
 
   return {
     proxiesToAdd,
