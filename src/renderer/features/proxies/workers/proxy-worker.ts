@@ -172,7 +172,7 @@ async function getProxies({
             const doesProxiedAccountExist = proxiedAccounts.some((oldProxy) =>
               proxyWorkerUtils.isSameProxied(oldProxy, proxiedAccount),
             );
-            
+
             console.log('proxy-worker: found proxied account: ', proxiedAccount);
             if (!doesProxiedAccountExist) {
               console.log('proxy-worker: proxied should be added: ', proxiedAccount);
