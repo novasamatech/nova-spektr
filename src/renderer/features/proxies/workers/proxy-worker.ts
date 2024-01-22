@@ -38,7 +38,7 @@ const InitConnectionsResult = {
 function initConnection(chain?: Chain, connection?: Connection) {
   return new Promise((resolve, reject) => {
     if (!chain) {
-      console.log('chain not provided');
+      console.log('proxy-worker: chain not provided');
       reject();
 
       return;
@@ -60,7 +60,7 @@ function initConnection(chain?: Chain, connection?: Connection) {
             provider = new ScProvider(Sc, knownChainId);
           }
         } catch (e) {
-          console.log('light client not connected', e);
+          console.log('proxy-worker: light client not connected', e);
           reject();
 
           return;
@@ -68,7 +68,7 @@ function initConnection(chain?: Chain, connection?: Connection) {
       }
 
       if (!provider) {
-        console.log('provider not connected');
+        console.log('proxy-worker: provider not connected');
         reject();
 
         return;
@@ -77,10 +77,11 @@ function initConnection(chain?: Chain, connection?: Connection) {
       provider.on('connected', async () => {
         state.apis[chain.chainId] = await ApiPromise.create({ provider, throwOnConnect: true, throwOnUnknown: true });
 
+        console.log('proxy-worker: provider connected successfully');
         resolve(InitConnectionsResult.SUCCESS);
       });
     } catch (e) {
-      console.log(e);
+      console.log('proxy-worker: error in initConnection', e);
 
       reject();
     }
@@ -90,6 +91,7 @@ function initConnection(chain?: Chain, connection?: Connection) {
 async function disconnect(chainId: ChainId) {
   if (!proxyWorkerUtils.isApiConnected(state.apis, chainId)) return;
 
+  console.log('proxy-worker: disconnecting from chainId', chainId);
   await state.apis[chainId].disconnect();
 }
 
@@ -147,7 +149,9 @@ async function getProxies({
           const doesProxyExist = proxies.some((oldProxy) => proxyWorkerUtils.isSameProxy(oldProxy, newProxy));
 
           if (needToAddProxyAccount) {
+            console.log('proxy-worker: found proxy: ', newProxy);
             if (!doesProxyExist) {
+              console.log('proxy-worker: proxy should be added: ', newProxy);
               proxiesToAdd.push(newProxy);
             }
 
@@ -168,8 +172,10 @@ async function getProxies({
             const doesProxiedAccountExist = proxiedAccounts.some((oldProxy) =>
               proxyWorkerUtils.isSameProxied(oldProxy, proxiedAccount),
             );
-
+            
+            console.log('proxy-worker: found proxied account: ', proxiedAccount);
             if (!doesProxiedAccountExist) {
+              console.log('proxy-worker: proxied should be added: ', proxiedAccount);
               proxiedAccountsToAdd.push(proxiedAccount);
             }
 
@@ -181,13 +187,13 @@ async function getProxies({
           }
         });
       } catch (e) {
-        console.log('proxy error', e);
+        console.log('proxy-worker: proxy error', e);
       }
     });
 
     await Promise.all(proxiesRequests);
   } catch (e) {
-    console.log(e);
+    console.log('proxy-worker: error in getProxies', e);
   }
 
   const proxiesToRemove = proxies.filter((p) => !existingProxies.some((ep) => proxyWorkerUtils.isSameProxy(p, ep)));
@@ -203,6 +209,7 @@ async function getProxies({
         ep.proxyType === p.proxyType,
     );
   });
+  console.log('proxy-worker: proxied accounts to remove: ', proxiedAccountsToRemove.toString());
 
   return {
     proxiesToAdd,
@@ -218,4 +225,4 @@ const endpoint = createEndpoint(self);
 
 endpoint.expose({ initConnection, getProxies, disconnect });
 
-console.log('proxy worker started successfully');
+console.log('proxy-worker: worker started successfully');
