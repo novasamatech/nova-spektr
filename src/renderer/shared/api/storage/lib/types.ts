@@ -47,14 +47,6 @@ export interface IMultisigEventStorage {
   deleteEvent: (eventId: ID) => Promise<void>;
 }
 
-export interface IMetadataStorage {
-  getMetadata: (chainId: ChainId, version: number) => Promise<MetadataDS | undefined>;
-  getAllMetadata: <T extends Metadata>(where?: Partial<T>) => Promise<MetadataDS[]>;
-  addMetadata: (metadata: Metadata) => Promise<ID[]>;
-  updateMetadata: (metadata: Metadata) => Promise<ID[]>;
-  deleteMetadata: (chainId: ChainId, version: number) => Promise<void>;
-}
-
 export interface IMultisigTransactionStorage {
   getMultisigTx: (
     accountId: AccountId,
@@ -85,7 +77,6 @@ export type DataStorage = {
   balances: IBalanceStorage;
   multisigTransactions: IMultisigTransactionStorage;
   multisigEvents: IMultisigEventStorage;
-  metadata: IMetadataStorage;
 };
 
 export type ID = string;
@@ -94,7 +85,6 @@ type WithID<T extends Object> = { id?: ID } & T;
 export type BalanceDS = WithID<Balance>;
 export type MultisigTransactionDS = WithID<MultisigTransaction>;
 export type MultisigEventDS = WithID<MultisigEvent>;
-export type MetadataDS = WithID<Metadata>;
 
 export type TWallet = Table<Wallet, Wallet['id']>;
 export type TContact = Table<Contact, Contact['id']>;
@@ -106,4 +96,4 @@ export type TProxyGroup = Table<ProxyGroup, ProxyGroup['id']>;
 export type TMultisigTransaction = Table<MultisigTransaction, ID[]>;
 export type TMultisigEvent = Table<MultisigEvent, ID>;
 export type TNotification = Table<Notification, Notification['id']>;
-export type TMetadata = Table<Metadata, ID[]>;
+export type TMetadata = Table<Metadata, Metadata['id']>;

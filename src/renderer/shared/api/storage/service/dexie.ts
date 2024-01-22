@@ -3,7 +3,6 @@ import Dexie from 'dexie';
 import { useBalanceStorage } from './balanceStorage';
 import { useTransactionStorage } from './transactionStorage';
 import { useMultisigEventStorage } from './multisigEventStorage';
-import { useMetadataStorage } from './metadataStorage';
 import { migrateEvents, migrateWallets } from '../migration';
 import {
   DataStorage,
@@ -63,11 +62,12 @@ class DexieStorage extends Dexie {
       })
       .upgrade(migrateWallets);
 
-    this.version(21).stores({
+    this.version(22).stores({
       proxies: '++id',
       proxyGroups: '++id',
       connections: '++id',
       notifications: '++id',
+      metadata: '++id',
     });
 
     this.connections = this.table('connections');
@@ -99,8 +99,6 @@ class StorageFactory implements IStorage {
         return useTransactionStorage(this.dexieDB.multisigTransactions) as DataStorage[T];
       case 'multisigEvents':
         return useMultisigEventStorage(this.dexieDB.multisigEvents) as DataStorage[T];
-      case 'metadata':
-        return useMetadataStorage(this.dexieDB.metadata) as DataStorage[T];
       default:
         return undefined;
     }
@@ -119,4 +117,5 @@ export const dexieStorage = {
   proxies: dexie.proxies,
   proxyGroups: dexie.proxyGroups,
   notifications: dexie.notifications,
+  metadata: dexie.metadata,
 };

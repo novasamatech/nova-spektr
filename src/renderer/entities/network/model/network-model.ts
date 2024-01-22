@@ -4,22 +4,10 @@ import { ProviderInterface } from '@polkadot/rpc-provider/types';
 import { UnsubscribePromise } from '@polkadot/api/types';
 import { cloneDeep, keyBy } from 'lodash';
 
-import { Chain, ChainId, Connection, ConnectionStatus, ConnectionType, RpcNode, Metadata } from '@shared/core';
-import { ProviderType, chainsService, networkService } from '@shared/api/network';
-import { useMetadata } from '@shared/api/metadata/service/metadataService';
+import { Chain, ChainId, Connection, ConnectionStatus, ConnectionType, RpcNode, Metadata, NoID } from '@shared/core';
+import { ProviderType, chainsService, networkService, metadataService } from '@shared/api/network';
 import { storageService } from '@shared/api/storage';
 import { networkUtils } from '../lib/network-utils';
-
-// TODO: very bad
-const chains = chainsService.getChainsMap({ sort: true });
-
-const defaultStatuses = Object.values(chains).reduce((acc, chain) => {
-  acc[chain.chainId] = ConnectionStatus.DISCONNECTED;
-
-  return acc;
-}, {} as Record<ChainId, ConnectionStatus>);
-
-const metadataStorage = useMetadata();
 
 const networkStarted = createEvent();
 const chainStarted = createEvent<ChainId>();
@@ -45,19 +33,30 @@ const failed = createEvent<ChainId>();
 
 const metadataUnsubscribed = createEvent<ChainId>();
 
-type ProviderTypeSwitchedParams = {
-  chainId: ChainId;
-  type: ProviderType;
-};
-const providerTypeSwitched = createEvent<ProviderTypeSwitchedParams>();
-
 const $providers = createStore<Record<ChainId, ProviderInterface>>({});
 const $apis = createStore<Record<ChainId, ApiPromise>>({});
-const $connectionStatuses = createStore(defaultStatuses);
-const $chains = createStore<Record<ChainId, Chain>>(chains);
+const $connectionStatuses = createStore<Record<ChainId, ConnectionStatus>>({});
+const $chains = createStore<Record<ChainId, Chain>>({});
+const $metadata = createStore<Metadata[]>([]);
 const $connections = createStore<Record<ChainId, Connection>>({});
 
 const $metadataSubscriptions = createStore<Record<ChainId, UnsubscribePromise>>({});
+
+const populateChainsFx = createEffect((): Record<ChainId, Chain> => {
+  return chainsService.getChainsMap({ sort: true });
+});
+
+const populateMetadataFx = createEffect(async (): Promise<Metadata[]> => {
+  return storageService.metadata.readAll();
+});
+
+const getDefaultStatusesFx = createEffect((chains: Record<ChainId, Chain>): Record<ChainId, ConnectionStatus> => {
+  return Object.values(chains).reduce<Record<ChainId, ConnectionStatus>>((acc, chain) => {
+    acc[chain.chainId] = ConnectionStatus.DISCONNECTED;
+
+    return acc;
+  }, {});
+});
 
 const populateConnectionsFx = createEffect((): Promise<Connection[]> => {
   return storageService.connections.readAll();
@@ -83,21 +82,20 @@ const deleteConnectionFx = createEffect(async (connectionId: number): Promise<nu
   return connectionId;
 });
 
-const subscribeMetadataFx = createEffect(
-  ({
+type MetadataSubParams = {
+  chainId: ChainId;
+  api: ApiPromise;
+};
+type MetadataSubResult = {
+  chainId: ChainId;
+  unsubscribe: UnsubscribePromise;
+};
+const subscribeMetadataFx = createEffect(({ chainId, api }: MetadataSubParams): MetadataSubResult => {
+  return {
     chainId,
-    api,
-  }: {
-    chainId: ChainId;
-    api: ApiPromise;
-  }): {
-    chainId: ChainId;
-    unsubscribe: UnsubscribePromise;
-  } => ({
-    chainId,
-    unsubscribe: metadataStorage.subscribeMetadata(api, () => syncMetadataFx(api)),
-  }),
-);
+    unsubscribe: metadataService.subscribeMetadata(api, () => requestMetadataFx(api)),
+  };
+});
 
 const unsubscribeMetadataFx = createEffect(async (unsubscribe: UnsubscribePromise): Promise<void> => {
   const unsubscribeFn = await unsubscribe;
@@ -105,47 +103,16 @@ const unsubscribeMetadataFx = createEffect(async (unsubscribe: UnsubscribePromis
   unsubscribeFn();
 });
 
-const syncMetadataFx = createEffect((api: ApiPromise): Promise<Metadata> => {
-  return metadataStorage.syncMetadata(api);
+const requestMetadataFx = createEffect((api: ApiPromise): Promise<NoID<Metadata>> => {
+  return metadataService.requestMetadata(api);
 });
 
-sample({
-  clock: connected,
-  source: $connectionStatuses,
-  filter: (statuses, chainId) => statuses[chainId] !== ConnectionStatus.CONNECTED,
-  fn: (statuses, chainId) => ({
-    ...statuses,
-    [chainId]: ConnectionStatus.CONNECTED,
-  }),
-  target: $connectionStatuses,
-});
+// const saveMetadataFx = createEffect(async (metadata: NoID<Metadata>): Promise<void> => {
+//   await storageService.metadata.create(metadata);
+// });
 
-sample({
-  clock: disconnected,
-  source: $connectionStatuses,
-  filter: (statuses, chainId) => statuses[chainId] !== ConnectionStatus.DISCONNECTED,
-  fn: (statuses, chainId) => ({
-    ...statuses,
-    [chainId]: ConnectionStatus.DISCONNECTED,
-  }),
-  target: $connectionStatuses,
-});
-
-sample({
-  clock: failed,
-  source: $connectionStatuses,
-  filter: (statuses, chainId) => statuses[chainId] !== ConnectionStatus.ERROR,
-  fn: (statuses, chainId) => ({
-    ...statuses,
-    [chainId]: ConnectionStatus.ERROR,
-  }),
-  target: $connectionStatuses,
-});
-
-const initConnectionsFx = createEffect(async () => {
-  for (const chainId of Object.keys(chains)) {
-    chainStarted(chainId as ChainId);
-  }
+const initConnectionsFx = createEffect((chains: Record<ChainId, Chain>) => {
+  Object.keys(chains).forEach((chainId) => chainStarted(chainId as ChainId));
 });
 
 type DisconnectParams = {
@@ -166,34 +133,36 @@ const reconnectFx = createEffect(async ({ api }: ReconnectParams): Promise<void>
 type CreateProviderParams = {
   chainId: ChainId;
   nodes: string[];
+  metadata?: Metadata;
   providerType: ProviderType;
 };
-const createProviderFx = createEffect(({ chainId, providerType, nodes }: CreateProviderParams): ProviderInterface => {
-  const boundConnected = scopeBind(connected, { safe: true });
-  const boundDisconnected = scopeBind(disconnected, { safe: true });
-  const boundFailed = scopeBind(failed, { safe: true });
+const createProviderFx = createEffect(
+  ({ chainId, nodes, metadata, providerType }: CreateProviderParams): ProviderInterface => {
+    const boundConnected = scopeBind(connected, { safe: true });
+    const boundDisconnected = scopeBind(disconnected, { safe: true });
+    const boundFailed = scopeBind(failed, { safe: true });
 
-  return networkService.createProvider(
-    chainId,
-    nodes,
-    providerType,
-    () => {
-      console.info('🟢 provider connected ==> ', chainId);
-
-      boundConnected(chainId);
-    },
-    () => {
-      console.info('🔶 provider disconnected ==> ', chainId);
-
-      boundDisconnected(chainId);
-    },
-    () => {
-      console.info('🔴 provider error ==> ', chainId);
-
-      boundFailed(chainId);
-    },
-  );
-});
+    return networkService.createProvider(
+      chainId,
+      providerType,
+      { nodes, metadata: metadata?.metadata },
+      {
+        onConnected: () => {
+          console.info('🟢 provider connected ==> ', chainId);
+          boundConnected(chainId);
+        },
+        onDisconnected: () => {
+          console.info('🔶 provider disconnected ==> ', chainId);
+          boundDisconnected(chainId);
+        },
+        onError: () => {
+          console.info('🔴 provider error ==> ', chainId);
+          boundFailed(chainId);
+        },
+      },
+    );
+  },
+);
 
 type CreateApiParams = {
   chainId: ChainId;
@@ -214,7 +183,28 @@ const createApiFx = createEffect(async ({ chainId, provider }: CreateApiParams):
 });
 
 sample({
-  clock: populateConnectionsFx.done,
+  clock: networkStarted,
+  target: [populateChainsFx, populateMetadataFx, populateConnectionsFx],
+});
+
+sample({
+  clock: populateChainsFx.doneData,
+  target: [$chains, getDefaultStatusesFx],
+});
+
+sample({
+  clock: populateMetadataFx.doneData,
+  target: $metadata,
+});
+
+sample({
+  clock: getDefaultStatusesFx.doneData,
+  target: $connectionStatuses,
+});
+
+sample({
+  clock: populateConnectionsFx.doneData,
+  source: $chains,
   target: initConnectionsFx,
 });
 
@@ -223,12 +213,13 @@ sample({
   source: {
     chains: $chains,
     connections: $connections,
+    metadata: $metadata,
   },
   filter: ({ connections }, chainId) => {
     return !connections[chainId] || networkUtils.isEnabledConnection(connections[chainId]);
   },
-  fn: ({ connections, chains }, chainId) => {
-    const connection = connections[chainId];
+  fn: (store, chainId) => {
+    const connection = store.connections[chainId];
 
     const providerType = networkUtils.isLightClientConnection(connection)
       ? ProviderType.LIGHT_CLIENT
@@ -236,14 +227,12 @@ sample({
 
     const nodes =
       !connection || networkUtils.isAutoBalanceConnection(connection)
-        ? [...(chains[chainId]?.nodes || []), ...(connection?.customNodes || [])].map((node) => node.url)
+        ? [...(store.chains[chainId]?.nodes || []), ...(connection?.customNodes || [])].map((node) => node.url)
         : [connection?.activeNode?.url || ''];
 
-    return {
-      chainId,
-      providerType,
-      nodes,
-    };
+    const metadata = networkUtils.getNewestMetadata(store.metadata)[chainId];
+
+    return { chainId, nodes, metadata, providerType };
   },
   target: createProviderFx,
 });
@@ -260,10 +249,7 @@ sample({
 
 sample({
   clock: createProviderFx.done,
-  fn: ({ params, result: provider }) => ({
-    chainId: params.chainId,
-    provider,
-  }),
+  fn: ({ params, result: provider }) => ({ chainId: params.chainId, provider }),
   target: createApiFx,
 });
 
@@ -271,11 +257,32 @@ sample({
   clock: createApiFx.doneData,
   source: $apis,
   filter: (_, api) => Boolean(api),
-  fn: (apis, api) => ({
-    ...apis,
-    [api!.genesisHash.toHex()]: api!,
-  }),
+  fn: (apis, api) => ({ ...apis, [api!.genesisHash.toHex()]: api! }),
   target: $apis,
+});
+
+sample({
+  clock: connected,
+  source: $connectionStatuses,
+  filter: (statuses, chainId) => statuses[chainId] !== ConnectionStatus.CONNECTED,
+  fn: (statuses, chainId) => ({ ...statuses, [chainId]: ConnectionStatus.CONNECTED }),
+  target: $connectionStatuses,
+});
+
+sample({
+  clock: disconnected,
+  source: $connectionStatuses,
+  filter: (statuses, chainId) => statuses[chainId] !== ConnectionStatus.DISCONNECTED,
+  fn: (statuses, chainId) => ({ ...statuses, [chainId]: ConnectionStatus.DISCONNECTED }),
+  target: $connectionStatuses,
+});
+
+sample({
+  clock: failed,
+  source: $connectionStatuses,
+  filter: (statuses, chainId) => statuses[chainId] !== ConnectionStatus.ERROR,
+  fn: (statuses, chainId) => ({ ...statuses, [chainId]: ConnectionStatus.ERROR }),
+  target: $connectionStatuses,
 });
 
 // =====================================================
@@ -324,6 +331,9 @@ sample({
   }),
   target: $metadataSubscriptions,
 });
+
+// TODO: matadata save was lost, turn it back task: https://app.clickup.com/t/8693kq4b8
+// sample({ clock: requestMetadataFx.doneData, target: saveMetadataFx });
 
 // =====================================================
 // =============== Connection section ==================
@@ -383,8 +393,6 @@ sample({
   },
   target: $connections,
 });
-
-sample({ clock: networkStarted, target: populateConnectionsFx });
 
 sample({
   clock: rpcNodeAdded,
@@ -536,8 +544,6 @@ export const networkModel = {
   events: {
     networkStarted,
 
-    chainStarted,
-    providerTypeSwitched,
     disconnectStarted,
     lightClientSelected,
     autoBalanceSelected,

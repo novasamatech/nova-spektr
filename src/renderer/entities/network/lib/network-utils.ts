@@ -1,4 +1,4 @@
-import { ChainOptions, Connection, ConnectionType, ConnectionStatus } from '@shared/core';
+import { ChainOptions, Connection, ConnectionType, ConnectionStatus, type Metadata, ChainId } from '@shared/core';
 
 export const networkUtils = {
   isConnectedStatus,
@@ -13,6 +13,8 @@ export const networkUtils = {
   isEnabledConnection,
   isRpcConnection,
   isAutoBalanceConnection,
+
+  getNewestMetadata,
 };
 
 function isConnectedStatus(status: ConnectionStatus): boolean {
@@ -51,4 +53,14 @@ function isRpcConnection(connection: Connection): boolean {
 
 function isAutoBalanceConnection(connection: Connection): boolean {
   return connection.connectionType === ConnectionType.AUTO_BALANCE;
+}
+
+function getNewestMetadata(metadata: Metadata[]): Record<ChainId, Metadata> {
+  return metadata.reduce<Record<ChainId, Metadata>>((acc, data) => {
+    if (data.version >= (acc[data.chainId]?.version || -1)) {
+      acc[data.chainId] = data;
+    }
+
+    return acc;
+  }, {} as Record<ChainId, Metadata>);
 }

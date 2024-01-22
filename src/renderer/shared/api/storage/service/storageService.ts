@@ -116,4 +116,5 @@ export const storageService = {
   proxies: new StorageService(dexieStorage.proxies),
   proxyGroups: new StorageService(dexieStorage.proxyGroups),
   notifications: new StorageService(dexieStorage.notifications),
+  metadata: new StorageService(dexieStorage.metadata),
 };

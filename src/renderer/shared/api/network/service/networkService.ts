@@ -1,15 +1,11 @@
 import { ApiPromise, ScProvider, WsProvider } from '@polkadot/api';
 import { ProviderInterface } from '@polkadot/rpc-provider/types';
 import * as Sc from '@substrate/connect';
-import { noop } from '@polkadot/util';
 
-import { ChainId } from '../../../core';
-import { ProviderType, RpcValidation } from '../lib/types';
-import { useMetadata } from '../../metadata/service/metadataService';
+import type { ChainId, HexString } from '@shared/core';
 import { createCachedProvider } from '../provider/CachedProvider';
+import { ProviderType, RpcValidation } from '../lib/types';
 import { getKnownChain } from '../lib/utils';
-
-const metadataService = useMetadata();
 
 export const networkService = {
   createProvider,
@@ -19,57 +15,48 @@ export const networkService = {
   validateRpcNode,
 };
 
-async function createApi(
-  provider: ProviderInterface,
-  onConnected?: () => void,
-  onDisconnected?: () => void,
-  onError?: () => void,
-) {
-  const api = await ApiPromise.create({
-    provider,
-    throwOnConnect: true,
-    throwOnUnknown: true,
-  });
-
-  api.on('connected', onConnected || noop);
-  api.on('disconnected', onDisconnected || noop);
-  api.on('error', onError || noop);
-
-  return api;
+function createApi(provider: ProviderInterface): Promise<ApiPromise> {
+  return ApiPromise.create({ provider, throwOnConnect: true, throwOnUnknown: true });
 }
 
+type ProviderParams = {
+  nodes: string[];
+  metadata?: HexString;
+};
+type ProviderListeners = {
+  onConnected: (value?: any) => void;
+  onDisconnected: (value?: any) => void;
+  onError: (value?: any) => void;
+};
 function createProvider(
   chainId: ChainId,
-  nodes: string[],
   providerType: ProviderType,
-  onConnected?: (value?: any) => void,
-  onDisconnected?: (value?: any) => void,
-  onError?: (value?: any) => void,
+  params: ProviderParams,
+  listeners: ProviderListeners,
 ): ProviderInterface {
-  let provider;
+  const creatorFn: Record<ProviderType, () => ProviderInterface | undefined> = {
+    [ProviderType.WEB_SOCKET]: () => createWebsocketProvider(params),
+    [ProviderType.LIGHT_CLIENT]: () => createSubstrateProvider(chainId, params.metadata),
+  };
 
-  if (providerType === ProviderType.WEB_SOCKET) {
-    provider = createWebsocketProvider(nodes, chainId);
-  } else {
-    provider = createSubstrateProvider(chainId);
-  }
+  const provider = creatorFn[providerType]();
 
   if (!provider) {
     throw new Error('Provider not found');
   }
 
-  provider.on('connected', onConnected || noop);
-  provider.on('disconnected', onDisconnected || noop);
-  provider.on('error', onError || noop);
+  provider.on('connected', listeners.onConnected);
+  provider.on('disconnected', listeners.onDisconnected);
+  provider.on('error', listeners.onError);
 
   return provider;
 }
 
-function createSubstrateProvider(chainId: ChainId): ProviderInterface | undefined {
+function createSubstrateProvider(chainId: ChainId, metadata?: HexString): ProviderInterface | undefined {
   const knownChainId = getKnownChain(chainId);
 
   if (knownChainId) {
-    const CachedScProvider = createCachedProvider(ScProvider, chainId, metadataService.getMetadata);
+    const CachedScProvider = createCachedProvider(ScProvider, metadata);
 
     return new CachedScProvider(Sc, knownChainId);
   }
@@ -77,8 +64,8 @@ function createSubstrateProvider(chainId: ChainId): ProviderInterface | undefine
   throw new Error(`Chain ${chainId} do not support Substrate Connect yet`);
 }
 
-function createWebsocketProvider(nodes: string[], chainId: ChainId): ProviderInterface {
-  const CachedWsProvider = createCachedProvider(WsProvider, chainId, metadataService.getMetadata);
+function createWebsocketProvider({ nodes, metadata }: ProviderParams): ProviderInterface {
+  const CachedWsProvider = createCachedProvider(WsProvider, metadata);
 
   return new CachedWsProvider(nodes, 2000);
 }
