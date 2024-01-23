@@ -62,7 +62,7 @@ export const Confirmation = ({
         <hr className="border-filter-border w-full pr-2" />
 
         <DetailRow label={t('proxy.details.revokeAccessType')}>
-          <FootnoteText>{ProxyTypeName[proxyAccount.proxyType]}</FootnoteText>
+          <FootnoteText>{t(ProxyTypeName[proxyAccount.proxyType])}</FootnoteText>
         </DetailRow>
 
         <DetailRow label={t('proxy.details.revokeFor')}>

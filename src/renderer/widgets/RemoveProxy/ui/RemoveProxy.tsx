@@ -75,7 +75,10 @@ export const RemoveProxy = ({ isOpen, proxyAccount, chain, onClose }: Props) => 
     const proxyAddress = toAddress(proxyAccount.accountId, { prefix: addressPrefix });
 
     setTxs([
-      buildTransaction(TransactionType.REMOVE_PROXY, proxyAddress, extendedChain.chainId, { delegate: proxyAddress }),
+      buildTransaction(TransactionType.REMOVE_PROXY, proxyAddress, extendedChain.chainId, {
+        delegate: proxyAddress,
+        proxyType: proxyAccount.proxyType,
+      }),
     ]);
   }, [proxyAccount]);
 

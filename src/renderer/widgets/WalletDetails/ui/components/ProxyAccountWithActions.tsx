@@ -81,7 +81,10 @@ export const ProxyAccountWithActions = ({ account, chain, canCreateProxy }: Prop
         confirmPallet="error"
         panelClass="w-[240px]"
         onClose={toggleIsRemoveConfirmOpen}
-        onConfirm={toggleIsRemoveProxyOpen}
+        onConfirm={() => {
+          toggleIsRemoveConfirmOpen();
+          toggleIsRemoveProxyOpen();
+        }}
       >
         <SmallTitleText align="center" className="mb-2">
           {t('walletDetails.common.confirmRemoveProxyTitle')}
@@ -91,7 +94,7 @@ export const ProxyAccountWithActions = ({ account, chain, canCreateProxy }: Prop
         </FootnoteText>
       </ConfirmModal>
 
-      <RemoveProxy isOpen={isRemoveProxyOpen} proxyAccount={account} chain={chain} onClose={() => {}} />
+      <RemoveProxy isOpen={isRemoveProxyOpen} proxyAccount={account} chain={chain} onClose={toggleIsRemoveConfirmOpen} />
     </>
   );
 };

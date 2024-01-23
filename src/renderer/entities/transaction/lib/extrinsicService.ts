@@ -303,7 +303,11 @@ export const getUnsignedTransaction: Record<
     );
   },
   [TransactionType.REMOVE_PROXY]: (transaction, info, options) => {
-    return methods.proxy.removeProxy(transaction.args.delegate, info, options);
+    return methods.proxy.removeProxy(
+      { delegate: transaction.args.delegate, proxyType: transaction.args.proxyType, delay: 0 },
+      info,
+      options,
+    );
   },
 };
 
@@ -374,7 +378,8 @@ export const getExtrinsic: Record<
 
     return api.tx.utility.batchAll(calls);
   },
-  [TransactionType.REMOVE_PROXY]: ({ delegate, proxyType, delay }, api) => api.tx.proxy.removeProxy(delegate, proxyType, delay),
+  [TransactionType.REMOVE_PROXY]: ({ delegate, proxyType, delay }, api) =>
+    api.tx.proxy.removeProxy(delegate, proxyType, delay),
 };
 
 export const wrapAsMulti = (

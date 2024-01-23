@@ -22,7 +22,9 @@ export const ProxiesList = ({ walletId, className, canCreateProxy = true }: Prop
   const { t } = useI18n();
 
   const proxyAccounts = useUnit(walletProviderModel.$proxyAccounts);
-  const proxyGroups = useUnit(proxyModel.$walletsProxyGroups)[walletId];
+  const proxyGroups = useUnit(proxyModel.$walletsProxyGroups);
+
+  console.log('proxyGroups', proxyGroups)
 
   const chains = useUnit(networkModel.$chains);
 
@@ -35,7 +37,7 @@ export const ProxiesList = ({ walletId, className, canCreateProxy = true }: Prop
       </div>
 
       <ul className="flex flex-col px-5 divide-y divide-divider overflow-y-auto overflow-x-hidden h-[inherit]">
-        {proxyGroups.map((chainGroup) => {
+        {(proxyGroups[walletId] || []).map((chainGroup) => {
           const { chainId, totalDeposit } = chainGroup;
 
           const chain = chains[chainId];
