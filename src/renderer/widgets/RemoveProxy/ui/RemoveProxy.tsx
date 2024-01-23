@@ -160,7 +160,13 @@ export const RemoveProxy = ({ isOpen, proxyAccount, chain, onClose }: Props) => 
     <BaseModal
       closeButton
       isOpen={isOpen}
-      title={<OperationTitle title={t('proxy.operations.removeProxyTitle')} chainId={chain.chainId} />}
+      title={
+        <OperationTitle
+          className="max-w-[380px]"
+          title={t('proxy.operations.removeProxyTitle')}
+          chainId={chain.chainId}
+        />
+      }
       contentClass=""
       panelClass="w-[440px]"
       headerClass="py-3 pl-5 pr-3"
