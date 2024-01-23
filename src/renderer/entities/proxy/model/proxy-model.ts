@@ -57,7 +57,7 @@ sample({
 
 sample({
   clock: populateProxiesFx.doneData,
-  fn: (proxies) => proxies.reduce<ProxyStore>((acc, p) => ({ ...acc, [p.accountId]: p }), {}),
+  fn: (proxies) => groupBy(proxies, 'accountId'),
   target: $proxies,
 });
 
