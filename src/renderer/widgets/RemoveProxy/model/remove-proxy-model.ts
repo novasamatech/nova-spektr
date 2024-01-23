@@ -1,8 +1,9 @@
 import { UnsignedTransaction } from '@substrate/txwrapper-polkadot';
 import { combine, createEvent, createStore, sample } from 'effector';
 import { spread } from 'patronum';
+import { ApiPromise } from '@polkadot/api';
 
-import { Account, Chain, HexString, ProxyAccount } from '@shared/core';
+import { Account, Chain, HexString, ProxyAccount, ProxyGroup } from '@shared/core';
 import { accountUtils, walletModel, walletUtils } from '@entities/wallet';
 import { dictionary } from '@shared/lib/utils';
 import { getSignatoryAccounts } from '@pages/Operations/common/utils';
@@ -92,7 +93,12 @@ type TransactionSignedProps = {
   unsignedTx: UnsignedTransaction;
 };
 const transactionSigned = createEvent<TransactionSignedProps>();
-const proxyRemoved = createEvent();
+const proxyRemoved = createEvent<ApiPromise>();
+type ProxyGroupUpdatedProps = {
+  proxyGroup: ProxyGroup;
+  shouldDelete: boolean;
+};
+const proxyGroupUpdated = createEvent<ProxyGroupUpdatedProps>();
 
 sample({
   source: flowStarted,
@@ -128,6 +134,51 @@ sample({
 sample({
   source: activeStepChanged,
   target: $activeStep,
+});
+
+sample({
+  clock: proxyRemoved,
+  source: {
+    proxyAccount: $proxyAccount,
+    proxies: proxyModel.$proxies,
+    proxyGroups: proxyModel.$proxyGroups,
+  },
+  filter: (proxyAccount) => Boolean(proxyAccount),
+  fn: ({ proxyAccount, proxies, proxyGroups }, api) => {
+    const sameGroupProxies = proxies[proxyAccount!.proxiedAccountId].filter((p) => p.chainId === proxyAccount!.chainId);
+    const proxyGroup = proxyGroups.find(
+      (p) => p.chainId === proxyAccount!.chainId && p.proxiedAccountId === proxyAccount!.proxiedAccountId,
+    );
+
+    if (sameGroupProxies.length === 1 && proxyGroup) {
+      return { proxyGroup, shouldDelete: true };
+    }
+
+    const updatedDeposit =
+      Number(proxyGroup!.totalDeposit) -
+      api.consts.proxy.proxyDepositBase.toNumber() -
+      api.consts.proxy.proxyDepositBase.toNumber();
+
+    return {
+      proxyGroup: { ...proxyGroup, totalDeposit: updatedDeposit.toString() } as ProxyGroup,
+      shouldDelete: false,
+    };
+  },
+  target: proxyGroupUpdated,
+});
+
+sample({
+  clock: proxyGroupUpdated,
+  filter: ({ shouldDelete }) => shouldDelete,
+  fn: ({ proxyGroup }) => [proxyGroup],
+  target: proxyModel.events.proxyGroupsRemoved,
+});
+
+sample({
+  clock: proxyGroupUpdated,
+  filter: ({ shouldDelete }) => !shouldDelete,
+  fn: ({ proxyGroup }) => [proxyGroup],
+  target: proxyModel.events.proxyGroupsUpdated,
 });
 
 sample({

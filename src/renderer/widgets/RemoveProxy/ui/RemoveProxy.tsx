@@ -146,7 +146,7 @@ export const RemoveProxy = ({ isOpen, proxyAccount, chain, onClose }: Props) => 
         unsignedTx={unsignedTx}
         signature={signature}
         api={api}
-        onSubmitted={removeProxyModel.events.proxyRemoved}
+        onSubmitted={() => removeProxyModel.events.proxyRemoved(api)}
         onClose={onClose}
       />
     ) : (
