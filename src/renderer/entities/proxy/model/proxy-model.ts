@@ -1,9 +1,9 @@
 import { combine, createEffect, createEvent, createStore, sample } from 'effector';
+import groupBy from 'lodash/groupBy';
 
 import { proxyUtils } from '../lib/utils';
 import { type ProxyAccount, AccountId, ProxyGroup, NoID } from '@shared/core';
 import { storageService } from '@shared/api/storage';
-import { dictionary } from '@shared/lib/utils';
 
 type ProxyStore = Record<AccountId, ProxyAccount[]>;
 
@@ -11,7 +11,7 @@ const $proxies = createStore<ProxyStore>({});
 const $proxyGroups = createStore<ProxyGroup[]>([]);
 
 const $walletsProxyGroups = combine($proxyGroups, (groups) => {
-  return dictionary(groups, 'walletId');
+  return groupBy(groups, 'walletId');
 });
 
 const proxyStarted = createEvent();
@@ -57,7 +57,7 @@ sample({
 
 sample({
   clock: populateProxiesFx.doneData,
-  fn: (proxies) => dictionary(proxies, 'accountId'),
+  fn: (proxies) => groupBy(proxies, 'accountId'),
   target: $proxies,
 });
 
