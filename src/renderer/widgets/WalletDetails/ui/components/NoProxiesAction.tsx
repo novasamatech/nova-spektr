@@ -17,9 +17,7 @@ export const NoProxiesAction = ({ className }: Props) => {
         <SmallTitleText>{t('walletDetails.common.emptyProxyTitle')}</SmallTitleText>
         <ProxyPopover />
       </div>
-      <FootnoteText className="text-text-tertiary mb-4">
-        {t('walletDetails.common.emptyProxyDescription')}
-      </FootnoteText>
+      <FootnoteText className="text-text-tertiary mb-4">{t('walletDetails.common.emptyProxyDescription')}</FootnoteText>
       <Button size="sm">{t('walletDetails.common.addProxyButton')}</Button>
     </div>
   );
