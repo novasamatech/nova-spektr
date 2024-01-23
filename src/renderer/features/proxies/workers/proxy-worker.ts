@@ -196,7 +196,7 @@ async function getProxies({
     console.log(`proxy-worker ${api.genesisHash}: error in getProxies`, e);
   }
 
-  const proxiesToRemove = proxies.filter((p) => existingProxies.every((ep) => isEqual(p, ep)));
+  const proxiesToRemove = proxies.filter((p) => !existingProxies.some((ep) => proxyWorkerUtils.isSameProxy(p, ep)));
   console.log(`proxy-worker ${api.genesisHash}: proxies👩‍💼 accounts to remove: `, proxiesToRemove);
 
   const proxiedAccountsToRemove = Object.values(proxiedAccounts).filter((p) => {
