@@ -2,7 +2,6 @@ import { createEndpoint } from '@remote-ui/rpc';
 import { ScProvider, WsProvider } from '@polkadot/rpc-provider';
 import { ProviderInterface } from '@polkadot/rpc-provider/types';
 import { ApiPromise } from '@polkadot/api';
-import isEqual from 'lodash/isEqual';
 import * as Sc from '@substrate/connect';
 
 import {
@@ -191,22 +190,22 @@ async function getProxies({
     console.log(e);
   }
 
-  const proxiesToRemove = proxies.filter((p) => existingProxies.every((ep) => isEqual(p, ep)));
+  const proxiesToRemove = proxies.filter((p) => !existingProxies.some((ep) => proxyWorkerUtils.isSameProxy(p, ep)));
+  console.log(`proxy-worker ${api.genesisHash}: proxies👩‍💼 accounts to remove: `, proxiesToRemove);
 
-  const proxiedAccountsToRemove = Object.values(proxiedAccounts)
-    .filter(proxyWorkerUtils.isProxiedAccount)
-    .filter(
-      (p) =>
-        !existingProxiedAccounts.some(
-          (ep) =>
-            ep.accountId === p.accountId &&
-            ep.chainId === p.chainId &&
-            ep.proxyAccountId === p.proxyAccountId &&
-            ep.proxyVariant === p.proxyVariant &&
-            ep.delay === p.delay &&
-            ep.proxyType === p.proxyType,
-        ),
-    );
+  const proxiedAccountsToRemove = Object.values(proxiedAccounts).filter(
+    (p) =>
+      !existingProxiedAccounts.some(
+        (ep) =>
+          ep.accountId === p.accountId &&
+          ep.chainId === p.chainId &&
+          ep.proxyAccountId === p.proxyAccountId &&
+          ep.proxyVariant === p.proxyVariant &&
+          ep.delay === p.delay &&
+          ep.proxyType === p.proxyType,
+      ),
+  );
+  console.log(`proxy-worker ${api.genesisHash}: proxied👨‍🔧 accounts to remove: `, proxiedAccountsToRemove);
 
   return {
     proxiesToAdd,
