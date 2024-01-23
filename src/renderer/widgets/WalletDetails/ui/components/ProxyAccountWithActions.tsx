@@ -26,7 +26,7 @@ export const ProxyAccountWithActions = ({ account, chain, canCreateProxy }: Prop
   const forgetProxyAction: DropdownIconButtonOption = {
     icon: 'forget',
     title: t('walletDetails.common.removeProxyAction'),
-    onClick: () => toggleIsRemoveConfirmOpen(), // TODO add remove proxy flow her
+    onClick: () => toggleIsRemoveConfirmOpen(),
   };
   const openInfoAction: DropdownIconButtonOption = {
     icon: 'info',
@@ -90,11 +90,11 @@ export const ProxyAccountWithActions = ({ account, chain, canCreateProxy }: Prop
           {t('walletDetails.common.confirmRemoveProxyTitle')}
         </SmallTitleText>
         <FootnoteText className="text-text-tertiary" align="center">
-          {t('walletDetails.common.confirmRemoveProxySubmit')}
+          {t('walletDetails.common.confirmRemoveProxyDescription')}
         </FootnoteText>
       </ConfirmModal>
 
-      <RemoveProxy isOpen={isRemoveProxyOpen} proxyAccount={account} chain={chain} onClose={toggleIsRemoveConfirmOpen} />
+      <RemoveProxy isOpen={isRemoveProxyOpen} proxyAccount={account} chain={chain} onClose={toggleIsRemoveProxyOpen} />
     </>
   );
 };

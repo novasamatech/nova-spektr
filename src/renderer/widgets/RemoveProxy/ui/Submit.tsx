@@ -1,22 +1,22 @@
 import { ApiPromise } from '@polkadot/api';
 import { UnsignedTransaction } from '@substrate/txwrapper-polkadot';
-import { useEffect, useState, ComponentProps } from 'react';
+import { ComponentProps, useEffect, useState } from 'react';
 import { useUnit } from 'effector-react';
 
 import { useI18n, useMatrix, useMultisigChainContext } from '@app/providers';
 import {
-  Transaction,
-  MultisigTransaction,
-  useTransaction,
   ExtrinsicResultParams,
+  MultisigTransaction,
   OperationResult,
+  Transaction,
+  useTransaction,
 } from '@entities/transaction';
-import { HexString, NotificationType, PartialProxiedAccount } from '@shared/core';
-import { useMultisigTx, useMultisigEvent, buildMultisigTx } from '@entities/multisig';
+import type { Account, MultisigAccount } from '@shared/core';
+import { HexString, NotificationType, PartialProxiedAccount, ProxyAccount, ProxyVariant } from '@shared/core';
+import { buildMultisigTx, useMultisigEvent, useMultisigTx } from '@entities/multisig';
 import { toAccountId } from '@shared/lib/utils';
 import { useToggle } from '@shared/lib/hooks';
 import { Button } from '@shared/ui';
-import type { Account, MultisigAccount } from '@shared/core';
 import { accountUtils, walletModel } from '@entities/wallet';
 import { notificationModel } from '@entities/notification';
 import { proxiesUtils } from '@features/proxies/lib/proxies-utils';
@@ -31,10 +31,11 @@ type Props = {
   multisigTx?: Transaction;
   unsignedTx: UnsignedTransaction;
   signature: HexString;
+  proxyAccount: ProxyAccount;
   onClose: () => void;
 };
 
-export const Submit = ({ api, tx, multisigTx, account, unsignedTx, signature, onClose }: Props) => {
+export const Submit = ({ api, tx, multisigTx, account, proxyAccount, unsignedTx, signature, onClose }: Props) => {
   const { t } = useI18n();
 
   const wallets = useUnit(walletModel.$wallets);
@@ -122,11 +123,19 @@ export const Submit = ({ api, tx, multisigTx, account, unsignedTx, signature, on
   };
 
   const sendProxynotification = () => {
+    const proxiedAccount: PartialProxiedAccount = {
+      accountId: proxyAccount.proxiedAccountId,
+      chainId: proxyAccount.chainId,
+      proxyAccountId: proxyAccount.accountId,
+      proxyType: proxyAccount.proxyType,
+      delay: proxyAccount.delay,
+      proxyVariant: ProxyVariant.REGULAR, // TODO get value from proxied account
+    };
     const proxyRemovedNotification = proxiesUtils.getNotification({
       wallets,
       accounts,
       chains,
-      proxiedAccounts: [account as PartialProxiedAccount],
+      proxiedAccounts: [proxiedAccount],
       type: NotificationType.PROXY_REMOVED,
     });
     notificationModel.events.notificationsAdded(proxyRemovedNotification);

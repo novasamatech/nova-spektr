@@ -71,14 +71,17 @@ export const RemoveProxy = ({ isOpen, proxyAccount, chain, onClose }: Props) => 
     : undefined;
 
   useEffect(() => {
-    if (!extendedChain) return;
-    const proxyAddress = toAddress(proxyAccount.accountId, { prefix: addressPrefix });
-
     setTxs([
-      buildTransaction(TransactionType.REMOVE_PROXY, proxyAddress, extendedChain.chainId, {
-        delegate: proxyAddress,
-        proxyType: proxyAccount.proxyType,
-      }),
+      buildTransaction(
+        TransactionType.REMOVE_PROXY,
+        toAddress(proxyAccount.proxiedAccountId, { prefix: addressPrefix }),
+        chain.chainId,
+        {
+          delegate: toAddress(proxyAccount.accountId, { prefix: addressPrefix }),
+          proxyType: proxyAccount.proxyType,
+          delay: proxyAccount.delay,
+        },
+      ),
     ]);
   }, [proxyAccount]);
 
@@ -160,7 +163,8 @@ export const RemoveProxy = ({ isOpen, proxyAccount, chain, onClose }: Props) => 
       <Submit
         tx={transaction}
         multisigTx={isMultisigAccount ? wrapTx(transaction, api, addressPrefix) : undefined}
-        account={signatory || proxiedAccount}
+        proxyAccount={proxyAccount}
+        account={proxiedAccount}
         unsignedTx={unsignedTx}
         signature={signature}
         api={api}

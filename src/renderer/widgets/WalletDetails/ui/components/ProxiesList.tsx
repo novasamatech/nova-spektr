@@ -24,8 +24,6 @@ export const ProxiesList = ({ walletId, className, canCreateProxy = true }: Prop
   const proxyAccounts = useUnit(walletProviderModel.$proxyAccounts);
   const proxyGroups = useUnit(proxyModel.$walletsProxyGroups);
 
-  console.log('proxyGroups', proxyGroups)
-
   const chains = useUnit(networkModel.$chains);
 
   const proxiesByChain = groupBy(proxyAccounts, 'chainId');
