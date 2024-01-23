@@ -149,9 +149,9 @@ async function getProxies({
           const doesProxyExist = proxies.some((oldProxy) => proxyWorkerUtils.isSameProxy(oldProxy, newProxy));
 
           if (needToAddProxyAccount) {
-            console.log(`proxy-worker ${api.genesisHash}: found proxy👩‍💼: `, newProxy);
+            console.log(`proxy-worker ${api.genesisHash}: found 🔵proxy : `, newProxy);
             if (!doesProxyExist) {
-              console.log(`proxy-worker ${api.genesisHash}: proxy👩‍💼 should be added: `, newProxy);
+              console.log(`proxy-worker ${api.genesisHash}: 🔵proxy  should be added: `, newProxy);
               proxiesToAdd.push(newProxy);
             }
 
@@ -173,9 +173,9 @@ async function getProxies({
               proxyWorkerUtils.isSameProxied(oldProxy, proxiedAccount),
             );
 
-            console.log(`proxy-worker ${api.genesisHash}: found proxied👨‍🔧 account: `, proxiedAccount);
+            console.log(`proxy-worker ${api.genesisHash}: found 🟣proxied account: `, proxiedAccount);
             if (!doesProxiedAccountExist) {
-              console.log(`proxy-worker ${api.genesisHash}: proxied👨‍🔧 should be added: `, proxiedAccount);
+              console.log(`proxy-worker ${api.genesisHash}: 🟣proxied should be added: `, proxiedAccount);
               proxiedAccountsToAdd.push(proxiedAccount);
             }
 
@@ -197,7 +197,7 @@ async function getProxies({
   }
 
   const proxiesToRemove = proxies.filter((p) => !existingProxies.some((ep) => proxyWorkerUtils.isSameProxy(p, ep)));
-  console.log(`proxy-worker ${api.genesisHash}: proxies👩‍💼 accounts to remove: `, proxiesToRemove);
+  console.log(`proxy-worker ${api.genesisHash}: 🔵proxy accounts to remove: `, proxiesToRemove);
 
   const proxiedAccountsToRemove = Object.values(proxiedAccounts).filter((p) => {
     return !existingProxiedAccounts.some(
@@ -210,7 +210,7 @@ async function getProxies({
         ep.proxyType === p.proxyType,
     );
   });
-  console.log(`proxy-worker ${api.genesisHash}: proxied👨‍🔧 accounts to remove: `, proxiedAccountsToRemove);
+  console.log(`proxy-worker ${api.genesisHash}: 🟣proxied accounts to remove: `, proxiedAccountsToRemove);
 
   return {
     proxiesToAdd,
