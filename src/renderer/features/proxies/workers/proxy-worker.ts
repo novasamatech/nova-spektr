@@ -191,21 +191,18 @@ async function getProxies({
   }
 
   const proxiesToRemove = proxies.filter((p) => !existingProxies.some((ep) => proxyWorkerUtils.isSameProxy(p, ep)));
-  console.log(`proxy-worker ${api.genesisHash}: proxies👩‍💼 accounts to remove: `, proxiesToRemove);
 
-  const proxiedAccountsToRemove = Object.values(proxiedAccounts).filter(
-    (p) =>
-      !existingProxiedAccounts.some(
-        (ep) =>
-          ep.accountId === p.accountId &&
-          ep.chainId === p.chainId &&
-          ep.proxyAccountId === p.proxyAccountId &&
-          ep.proxyVariant === p.proxyVariant &&
-          ep.delay === p.delay &&
-          ep.proxyType === p.proxyType,
-      ),
-  );
-  console.log(`proxy-worker ${api.genesisHash}: proxied👨‍🔧 accounts to remove: `, proxiedAccountsToRemove);
+  const proxiedAccountsToRemove = Object.values(proxiedAccounts).filter((p) => {
+    return !existingProxiedAccounts.some(
+      (ep) =>
+        ep.accountId === p.accountId &&
+        ep.chainId === p.chainId &&
+        ep.proxyAccountId === p.proxyAccountId &&
+        ep.proxyVariant === p.proxyVariant &&
+        ep.delay === p.delay &&
+        ep.proxyType === p.proxyType,
+    );
+  });
 
   return {
     proxiesToAdd,
