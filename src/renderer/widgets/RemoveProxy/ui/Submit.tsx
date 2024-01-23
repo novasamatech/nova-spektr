@@ -26,16 +26,17 @@ type ResultProps = Pick<ComponentProps<typeof OperationResult>, 'title' | 'descr
 
 type Props = {
   api: ApiPromise;
-  account?: Account | MultisigAccount;
+  account?: Account | MultisigAccount | null;
   tx: Transaction;
   multisigTx?: Transaction;
-  unsignedTx: UnsignedTransaction;
-  signature: HexString;
+  unsignedTx: UnsignedTransaction | null;
+  signature: HexString | null;
   proxyAccount: ProxyAccount;
   onClose: () => void;
+  onSubmitted: () => void;
 };
 
-export const Submit = ({ api, tx, multisigTx, account, proxyAccount, unsignedTx, signature, onClose }: Props) => {
+export const Submit = ({ api, tx, multisigTx, account, proxyAccount, unsignedTx, signature, onClose, onSubmitted }: Props) => {
   const { t } = useI18n();
 
   const wallets = useUnit(walletModel.$wallets);
@@ -61,6 +62,7 @@ export const Submit = ({ api, tx, multisigTx, account, proxyAccount, unsignedTx,
 
   const closeSuccessMessage = () => {
     onClose();
+    onSubmitted();
     toggleSuccessMessage();
   };
 
@@ -70,10 +72,12 @@ export const Submit = ({ api, tx, multisigTx, account, proxyAccount, unsignedTx,
   };
 
   useEffect(() => {
-    submitExtrinsic(signature).catch(() => console.warn('Error getting signed extrinsics'));
+    signature && submitExtrinsic(signature).catch(() => console.warn('Error getting signed extrinsics'));
   }, []);
 
   const submitExtrinsic = async (signature: HexString) => {
+    if (!unsignedTx) return;
+
     const extrinsic = await getSignedExtrinsic(unsignedTx, signature, api);
 
     submitAndWatchExtrinsic(extrinsic, unsignedTx, api, async (executed, params) => {

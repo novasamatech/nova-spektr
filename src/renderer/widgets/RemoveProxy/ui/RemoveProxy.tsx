@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useUnit } from 'effector-react';
 import { BN } from '@polkadot/util';
 import { UnsignedTransaction } from '@substrate/txwrapper-polkadot';
@@ -11,19 +11,13 @@ import { Confirmation } from './Confirmation';
 import { useNetworkData } from '@entities/network';
 import { OperationResult, TransactionType, useTransaction, validateBalance } from '@entities/transaction';
 import { Signing } from '@features/operation';
-import { accountUtils, walletModel, walletUtils } from '@entities/wallet';
-import { dictionary, toAddress, transferableAmount } from '@shared/lib/utils';
-import { getSignatoryAccounts } from '@pages/Operations/common/utils';
+import { toAddress, transferableAmount } from '@shared/lib/utils';
 import { SignatorySelectModal } from '@pages/Operations/components/modals/SignatorySelectModal';
 import { useToggle } from '@shared/lib/hooks';
 import { balanceModel, balanceUtils } from '@entities/balance';
 import { Submit } from './Submit';
-
-const enum Step {
-  CONFIRMATION,
-  SIGNING,
-  SUBMIT,
-}
+import { removeProxyModel, Step } from '@widgets/RemoveProxy/model/remove-proxy-model';
+import { accountUtils } from '@entities/wallet';
 
 type Props = {
   isOpen: boolean;
@@ -35,40 +29,26 @@ type Props = {
 export const RemoveProxy = ({ isOpen, proxyAccount, chain, onClose }: Props) => {
   const { t } = useI18n();
 
-  const [activeStep, setActiveStep] = useState<Step>(Step.CONFIRMATION);
+  const proxiedAccount = useUnit(removeProxyModel.$proxiedAccount);
+  const proxiedWallet = useUnit(removeProxyModel.$proxiedWallet);
+  const activeStep = useUnit(removeProxyModel.$activeStep);
+  const signatory = useUnit(removeProxyModel.$signatory);
+  const unsignedTx = useUnit(removeProxyModel.$unsignedTx);
+  const signature = useUnit(removeProxyModel.$signature);
+  const signatories = useUnit(removeProxyModel.$signatories);
+
   const [isSelectAccountModalOpen, toggleSelectAccountModal] = useToggle();
   const [isFeeModalOpen, toggleFeeModal] = useToggle();
-  const [signatory, setSignatory] = useState<Account>();
-
-  const [unsignedTx, setUnsignedTx] = useState<UnsignedTransaction>({} as UnsignedTransaction);
-  const [signature, setSignature] = useState<HexString>('0x0');
 
   const balances = useUnit(balanceModel.$balances);
-
-  const wallets = useUnit(walletModel.$wallets);
-  const accounts = useUnit(walletModel.$accounts);
 
   const { api, extendedChain } = useNetworkData(chain.chainId);
   const { getTransactionFee, setTxs, txs, setWrappers, wrapTx, buildTransaction } = useTransaction();
 
-  const walletsMap = dictionary(wallets, 'id');
-  const proxiedAccount = accounts.find(
-    (a) => a.accountId === proxyAccount.proxiedAccountId && !walletUtils.isWatchOnly(walletsMap[a.walletId]),
-  );
-
-  if (!proxiedAccount) return null;
-
   const nativeToken = chain.assets[0];
-  const isMultisigAccount = accountUtils.isMultisigAccount(proxiedAccount);
-
-  const proxiedWallet = walletsMap[proxiedAccount?.walletId];
-
   const transaction = txs[0];
   const { addressPrefix } = chain;
-
-  const signatories = isMultisigAccount
-    ? getSignatoryAccounts(accounts, wallets, [], proxiedAccount.signatories, chain.chainId)
-    : undefined;
+  const isMultisigAccount = proxiedAccount && accountUtils.isMultisigAccount(proxiedAccount);
 
   useEffect(() => {
     setTxs([
@@ -83,6 +63,8 @@ export const RemoveProxy = ({ isOpen, proxyAccount, chain, onClose }: Props) => 
         },
       ),
     ]);
+
+    removeProxyModel.events.flowStarted({ proxyAccount, chain });
   }, [proxyAccount]);
 
   useEffect(() => {
@@ -113,13 +95,12 @@ export const RemoveProxy = ({ isOpen, proxyAccount, chain, onClose }: Props) => 
   };
 
   const selectSignatoryAccount = async (account: Account) => {
-    setSignatory(account);
     toggleSelectAccountModal();
 
     const isValid = await validateBalanceForFee(account);
 
     if (isValid) {
-      setActiveStep(Step.SIGNING);
+      removeProxyModel.events.signatorySelected(account);
     } else {
       toggleFeeModal();
     }
@@ -129,23 +110,20 @@ export const RemoveProxy = ({ isOpen, proxyAccount, chain, onClose }: Props) => 
     if (isMultisigAccount) {
       trySetSignatoryAccount();
     } else {
-      setActiveStep(Step.SIGNING);
+      removeProxyModel.events.activeStepChanged(Step.SIGNING);
     }
   };
 
   const trySetSignatoryAccount = () => {
     if (signatories?.length === 1) {
-      setSignatory(signatories[0]);
-      setActiveStep(Step.SIGNING);
+      removeProxyModel.events.signatorySelected(signatories[0]);
     } else {
       toggleSelectAccountModal();
     }
   };
 
   const onSignResult = (signature: HexString[], tx: UnsignedTransaction[]) => {
-    setUnsignedTx(tx[0]);
-    setSignature(signature[0]);
-    setActiveStep(Step.SUBMIT);
+    removeProxyModel.events.transactionSigned({ unsignedTx: tx[0], signature: signature[0] });
   };
 
   const checkBalance = () =>
@@ -168,6 +146,7 @@ export const RemoveProxy = ({ isOpen, proxyAccount, chain, onClose }: Props) => 
         unsignedTx={unsignedTx}
         signature={signature}
         api={api}
+        onSubmitted={removeProxyModel.events.proxyRemoved}
         onClose={onClose}
       />
     ) : (
@@ -199,17 +178,17 @@ export const RemoveProxy = ({ isOpen, proxyAccount, chain, onClose }: Props) => 
         />
       )}
 
-      {activeStep === Step.SIGNING && (
+      {activeStep === Step.SIGNING && proxiedAccount && (
         <Signing
           walletForSigning={proxiedWallet}
           chainId={chain.chainId}
           api={api}
           addressPrefix={addressPrefix}
           accounts={[proxiedAccount]}
-          signatory={signatory}
+          signatory={signatory || undefined}
           transactions={[wrapTx(transaction, api, addressPrefix)]}
           validateBalance={checkBalance}
-          onGoBack={() => setActiveStep(Step.CONFIRMATION)}
+          onGoBack={() => removeProxyModel.events.activeStepChanged(Step.CONFIRMATION)}
           onResult={onSignResult}
         />
       )}

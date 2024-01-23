@@ -6,7 +6,7 @@ import { ValidationErrors } from '@shared/lib/utils';
 import type { Account, ChainId, HexString, Wallet } from '@shared/core';
 
 export type SigningProps = {
-  walletForSigning?: Wallet;
+  walletForSigning?: Wallet | null;
   chainId: ChainId;
   api: ApiPromise;
   addressPrefix: number;

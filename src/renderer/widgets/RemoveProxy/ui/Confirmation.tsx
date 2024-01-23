@@ -12,8 +12,8 @@ import { ProxyTypeName } from '@entities/proxy/ui/ProxyAccount/ProxyAccount';
 type Props = {
   transaction: Transaction;
   proxyAccount: ProxyAccount;
-  proxiedAccount: Account;
-  proxiedWallet: Wallet;
+  proxiedAccount: Account | null;
+  proxiedWallet: Wallet | null;
   connection: ExtendedChain;
   onResult?: () => void;
   onBack?: () => void;
@@ -33,6 +33,8 @@ export const Confirmation = ({
   const [feeLoaded, setFeeLoaded] = useState(false);
 
   const { addressPrefix, explorers } = connection;
+
+  if (!proxiedWallet || !proxiedAccount) return null;
 
   return (
     <div className="flex flex-col items-center pt-4 gap-y-4 pb-4 pl-5 pr-3">
@@ -61,7 +63,7 @@ export const Confirmation = ({
 
         <hr className="border-filter-border w-full pr-2" />
 
-        <DetailRow label={t('proxy.details.revokeAccessType')}>
+        <DetailRow label={t('proxy.details.revokeAccessType')} className="pr-2">
           <FootnoteText>{t(ProxyTypeName[proxyAccount.proxyType])}</FootnoteText>
         </DetailRow>
 
