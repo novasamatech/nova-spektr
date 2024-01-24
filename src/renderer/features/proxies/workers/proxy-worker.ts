@@ -38,7 +38,7 @@ const InitConnectionsResult = {
 function initConnection(chain?: Chain, connection?: Connection) {
   return new Promise((resolve, reject) => {
     if (!chain) {
-      console.log('chain not provided');
+      console.log('proxy-worker: chain not provided');
       reject();
 
       return;
@@ -60,7 +60,7 @@ function initConnection(chain?: Chain, connection?: Connection) {
             provider = new ScProvider(Sc, knownChainId);
           }
         } catch (e) {
-          console.log('light client not connected', e);
+          console.log('proxy-worker: light client not connected', e);
           reject();
 
           return;
@@ -68,7 +68,7 @@ function initConnection(chain?: Chain, connection?: Connection) {
       }
 
       if (!provider) {
-        console.log('provider not connected');
+        console.log('proxy-worker: provider not connected');
         reject();
 
         return;
@@ -77,10 +77,11 @@ function initConnection(chain?: Chain, connection?: Connection) {
       provider.on('connected', async () => {
         state.apis[chain.chainId] = await ApiPromise.create({ provider, throwOnConnect: true, throwOnUnknown: true });
 
+        console.log('proxy-worker: provider connected successfully');
         resolve(InitConnectionsResult.SUCCESS);
       });
     } catch (e) {
-      console.log(e);
+      console.log('proxy-worker: error in initConnection', e);
 
       reject();
     }
@@ -90,6 +91,7 @@ function initConnection(chain?: Chain, connection?: Connection) {
 async function disconnect(chainId: ChainId) {
   if (!proxyWorkerUtils.isApiConnected(state.apis, chainId)) return;
 
+  console.log('proxy-worker: disconnecting from chainId', chainId);
   await state.apis[chainId].disconnect();
 }
 
@@ -143,17 +145,6 @@ async function getProxies({
             delay: Number(account.delay),
           };
 
-          const needToAddProxyAccount = accountsForProxy[proxiedAccountId];
-          const doesProxyExist = proxies.some((oldProxy) => proxyWorkerUtils.isSameProxy(oldProxy, newProxy));
-
-          if (needToAddProxyAccount) {
-            if (!doesProxyExist) {
-              proxiesToAdd.push(newProxy);
-            }
-
-            existingProxies.push(newProxy);
-          }
-
           const needToAddProxiedAccount =
             accountsForProxied[newProxy.accountId] && !proxyWorkerUtils.isDelayedProxy(newProxy);
 
@@ -169,28 +160,59 @@ async function getProxies({
               proxyWorkerUtils.isSameProxied(oldProxy, proxiedAccount),
             );
 
+            console.log(`proxy-worker ${api.genesisHash}: found 🟣 proxied account: `, proxiedAccount);
             if (!doesProxiedAccountExist) {
+              console.log(`proxy-worker ${api.genesisHash}: 🟣 proxied should be added: `, proxiedAccount);
               proxiedAccountsToAdd.push(proxiedAccount);
             }
 
             existingProxiedAccounts.push(proxiedAccount);
           }
 
-          if (needToAddProxyAccount || needToAddProxiedAccount) {
+          if (needToAddProxiedAccount) {
+            deposits.deposits[proxiedAccountId] = proxyData[0][1].toHuman();
+          }
+        });
+
+        proxyData[0][0].toHuman().forEach((account: any) => {
+          const newProxy: NoID<ProxyAccount> = {
+            chainId,
+            proxiedAccountId,
+            accountId: proxyWorkerUtils.toAccountId(account?.delegate),
+            proxyType: account.proxyType,
+            delay: Number(account.delay),
+          };
+
+          const needToAddProxyAccount =
+            accountsForProxy[proxiedAccountId] || proxiedAccountsToAdd.some((p) => p.accountId === proxiedAccountId);
+          const doesProxyExist = proxies.some((oldProxy) => proxyWorkerUtils.isSameProxy(oldProxy, newProxy));
+
+          if (needToAddProxyAccount) {
+            console.log(`proxy-worker ${api.genesisHash}: found 🔵 proxy : `, newProxy);
+            if (!doesProxyExist) {
+              console.log(`proxy-worker ${api.genesisHash}: 🔵 proxy  should be added: `, newProxy);
+              proxiesToAdd.push(newProxy);
+            }
+
+            existingProxies.push(newProxy);
+          }
+
+          if (needToAddProxyAccount) {
             deposits.deposits[proxiedAccountId] = proxyData[0][1].toHuman();
           }
         });
       } catch (e) {
-        console.log('proxy error', e);
+        console.log(`proxy-worker ${api.genesisHash}: proxy error`, e);
       }
     });
 
     await Promise.all(proxiesRequests);
   } catch (e) {
-    console.log(e);
+    console.log(`proxy-worker ${api.genesisHash}: error in getProxies`, e);
   }
 
   const proxiesToRemove = proxies.filter((p) => !existingProxies.some((ep) => proxyWorkerUtils.isSameProxy(p, ep)));
+  console.log(`proxy-worker ${api.genesisHash}: 🔵 proxy accounts to remove: `, proxiesToRemove);
 
   const proxiedAccountsToRemove = Object.values(proxiedAccounts).filter((p) => {
     return !existingProxiedAccounts.some(
@@ -203,6 +225,7 @@ async function getProxies({
         ep.proxyType === p.proxyType,
     );
   });
+  console.log(`proxy-worker ${api.genesisHash}: 🟣 proxied accounts to remove: `, proxiedAccountsToRemove);
 
   return {
     proxiesToAdd,
@@ -218,4 +241,4 @@ const endpoint = createEndpoint(self);
 
 endpoint.expose({ initConnection, getProxies, disconnect });
 
-console.log('proxy worker started successfully');
+console.log(`proxy-worker: worker started successfully`);
