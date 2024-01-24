@@ -24,8 +24,8 @@ type Props = {
 export const MultishardWalletDetails = ({ wallet, accounts, onClose }: Props) => {
   const { t } = useI18n();
 
-  const hasProxies = useUnit(walletProviderModel.$hasProxies);
   const chains = useUnit(networkModel.$chains);
+  const hasProxies = useUnit(walletProviderModel.$hasProxies);
 
   const [isModalOpen, closeModal] = useModalClose(true, onClose);
   const [isRenameModalOpen, toggleIsRenameModalOpen] = useToggle();

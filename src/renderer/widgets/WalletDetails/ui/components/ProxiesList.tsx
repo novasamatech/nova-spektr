@@ -21,10 +21,9 @@ type Props = {
 export const ProxiesList = ({ walletId, className, canCreateProxy = true }: Props) => {
   const { t } = useI18n();
 
+  const chains = useUnit(networkModel.$chains);
   const proxyAccounts = useUnit(walletProviderModel.$proxyAccounts);
   const proxyGroups = useUnit(proxyModel.$walletsProxyGroups)[walletId];
-
-  const chains = useUnit(networkModel.$chains);
 
   const proxiesByChain = groupBy(proxyAccounts, 'chainId');
 
@@ -34,26 +33,22 @@ export const ProxiesList = ({ walletId, className, canCreateProxy = true }: Prop
         <FootnoteText className="flex-1 px-2 text-text-tertiary">{t('accountList.addressColumn')}</FootnoteText>
       </div>
 
-      <ul className="flex flex-col px-5 divide-y divide-divider overflow-y-auto overflow-x-hidden">
-        {proxyGroups.map((chainGroup) => {
-          const { chainId, totalDeposit } = chainGroup;
-
-          const chain = chains[chainId];
-
-          if (!proxiesByChain[chainId] || !proxiesByChain[chainId].length) return;
+      <ul className="flex flex-col h-full px-5 divide-y divide-divider overflow-y-auto overflow-x-hidden">
+        {proxyGroups.map(({ chainId, totalDeposit }) => {
+          if (!proxiesByChain[chainId]?.length) return;
 
           return (
             <li key={chainId} className="flex items-center py-2">
               <Accordion isDefaultOpen>
                 <Accordion.Button buttonClass="p-2 rounded hover:bg-action-background-hover focus:bg-action-background-hover">
                   <div className="flex gap-x-2 items-center justify-between flex-1 pr-2">
-                    <ChainTitle className="flex-1" fontClass="text-text-primary" chain={chain} />
+                    <ChainTitle className="flex-1" fontClass="text-text-primary" chain={chains[chainId]} />
                     <HelpText className="text-text-tertiary">
                       {t('walletDetails.common.proxyDeposit')}
                       &nbsp;
                       <AssetBalance
                         value={totalDeposit.replaceAll(',', '')}
-                        asset={chain.assets[0]}
+                        asset={chains[chainId].assets[0]}
                         showIcon={false}
                         className="text-help-text"
                       />
@@ -64,7 +59,7 @@ export const ProxiesList = ({ walletId, className, canCreateProxy = true }: Prop
                   <ul className="flex flex-col gap-y-2">
                     {proxiesByChain[chainId].map((proxy) => (
                       <li className="px-2 py-1.5" key={proxy.accountId}>
-                        <ProxyAccountWithActions account={proxy} chain={chain} />
+                        <ProxyAccountWithActions account={proxy} chain={chains[chainId]} />
                       </li>
                     ))}
                   </ul>

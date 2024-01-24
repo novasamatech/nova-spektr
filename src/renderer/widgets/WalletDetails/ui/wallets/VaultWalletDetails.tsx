@@ -30,8 +30,8 @@ type Props = {
 export const VaultWalletDetails = ({ wallet, root, accountsMap, onClose }: Props) => {
   const { t } = useI18n();
 
-  const hasProxies = useUnit(walletProviderModel.$hasProxies);
   const chains = useUnit(networkModel.$chains);
+  const hasProxies = useUnit(walletProviderModel.$hasProxies);
 
   const [isModalOpen, closeModal] = useModalClose(true, onClose);
   const [newKeys, setNewKeys] = useState<DraftAccount<ChainAccount>[]>([]);
