@@ -145,19 +145,6 @@ async function getProxies({
             delay: Number(account.delay),
           };
 
-          const needToAddProxyAccount = accountsForProxy[proxiedAccountId];
-          const doesProxyExist = proxies.some((oldProxy) => proxyWorkerUtils.isSameProxy(oldProxy, newProxy));
-
-          if (needToAddProxyAccount) {
-            console.log(`proxy-worker ${api.genesisHash}: found 🔵 proxy : `, newProxy);
-            if (!doesProxyExist) {
-              console.log(`proxy-worker ${api.genesisHash}: 🔵 proxy  should be added: `, newProxy);
-              proxiesToAdd.push(newProxy);
-            }
-
-            existingProxies.push(newProxy);
-          }
-
           const needToAddProxiedAccount =
             accountsForProxied[newProxy.accountId] && !proxyWorkerUtils.isDelayedProxy(newProxy);
 
@@ -182,7 +169,35 @@ async function getProxies({
             existingProxiedAccounts.push(proxiedAccount);
           }
 
-          if (needToAddProxyAccount || needToAddProxiedAccount) {
+          if (needToAddProxiedAccount) {
+            deposits.deposits[proxiedAccountId] = proxyData[0][1].toHuman();
+          }
+        });
+
+        proxyData[0][0].toHuman().forEach((account: any) => {
+          const newProxy: NoID<ProxyAccount> = {
+            chainId,
+            proxiedAccountId,
+            accountId: proxyWorkerUtils.toAccountId(account?.delegate),
+            proxyType: account.proxyType,
+            delay: Number(account.delay),
+          };
+
+          const needToAddProxyAccount =
+            accountsForProxy[proxiedAccountId] || proxiedAccountsToAdd.some((p) => p.accountId === proxiedAccountId);
+          const doesProxyExist = proxies.some((oldProxy) => proxyWorkerUtils.isSameProxy(oldProxy, newProxy));
+
+          if (needToAddProxyAccount) {
+            console.log(`proxy-worker ${api.genesisHash}: found 🔵 proxy : `, newProxy);
+            if (!doesProxyExist) {
+              console.log(`proxy-worker ${api.genesisHash}: 🔵 proxy  should be added: `, newProxy);
+              proxiesToAdd.push(newProxy);
+            }
+
+            existingProxies.push(newProxy);
+          }
+
+          if (needToAddProxyAccount) {
             deposits.deposits[proxiedAccountId] = proxyData[0][1].toHuman();
           }
         });

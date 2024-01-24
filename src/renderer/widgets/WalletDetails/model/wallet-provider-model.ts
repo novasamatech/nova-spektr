@@ -28,8 +28,8 @@ const $proxyAccounts = combine(
   },
   ({ accounts, proxies }) => {
     const proxyAccounts = accounts.reduce((acc: ProxyAccount[], account: Account) => {
-      if (accountUtils.isProxiedAccount(account) && proxies[account.proxyAccountId]) {
-        acc.push(...proxies[account.proxyAccountId]);
+      if (proxies[account.accountId]) {
+        acc.push(...proxies[account.accountId]);
       }
 
       return acc;

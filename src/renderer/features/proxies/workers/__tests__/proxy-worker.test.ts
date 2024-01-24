@@ -377,7 +377,15 @@ describe('features/proxies/workers/proxy-worker', () => {
       proxies,
     });
 
-    expect(result.proxiesToAdd).toEqual([]);
+    expect(result.proxiesToAdd).toEqual([
+      {
+        accountId: '0x01',
+        chainId: '0x01',
+        delay: 0,
+        proxiedAccountId: '0x02',
+        proxyType: 'Governance',
+      },
+    ]);
     expect(result.proxiesToRemove).toEqual([]);
     expect(result.proxiedAccountsToAdd).toEqual([mockProxied]);
     expect(result.proxiedAccountsToRemove).toEqual([]);
