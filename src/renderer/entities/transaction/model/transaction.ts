@@ -25,7 +25,7 @@ export const enum TransactionType {
   DESTINATION = 'payee',
   CHILL = 'chill',
 
-  REMOVE_PROXY = 'remove_pryx',
+  REMOVE_PROXY = 'remove_proxy',
 }
 
 export type SigningStatus =

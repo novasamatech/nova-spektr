@@ -2,6 +2,7 @@ import { UnsignedTransaction } from '@substrate/txwrapper-polkadot';
 import { combine, createEvent, createStore, sample } from 'effector';
 import { spread } from 'patronum';
 import { ApiPromise } from '@polkadot/api';
+import { BN } from '@polkadot/util';
 
 import { Account, Chain, HexString, ProxyAccount, ProxyGroup } from '@shared/core';
 import { accountUtils, walletModel, walletUtils } from '@entities/wallet';
@@ -19,15 +20,29 @@ type FlowStartedProps = {
   chain: Chain;
   proxyAccount: ProxyAccount;
 };
-const flowStarted = createEvent<FlowStartedProps>();
+const removeStarted = createEvent<FlowStartedProps>();
+const signatorySelected = createEvent<Account>();
+const activeStepChanged = createEvent<Step>();
+
+type TransactionSignedProps = {
+  signature: HexString;
+  unsignedTx: UnsignedTransaction;
+};
+const transactionSigned = createEvent<TransactionSignedProps>();
+const proxyRemoved = createEvent<ApiPromise>();
+type ProxyGroupUpdatedProps = {
+  proxyGroup: ProxyGroup;
+  shouldDelete: boolean;
+};
+const proxyGroupUpdated = createEvent<ProxyGroupUpdatedProps>();
 
 const $chain = createStore<Chain | null>(null);
 const $proxyAccount = createStore<ProxyAccount | null>(null);
-const $activeStep = createStore<Step>(Step.CONFIRMATION).reset(flowStarted);
-const $signatory = createStore<Account | null>(null).reset(flowStarted);
+const $activeStep = createStore<Step>(Step.CONFIRMATION).reset(removeStarted);
+const $signatory = createStore<Account | null>(null).reset(removeStarted);
 
-const $unsignedTx = createStore<UnsignedTransaction | null>(null).reset(flowStarted);
-const $signature = createStore<HexString | null>(null).reset(flowStarted);
+const $unsignedTx = createStore<UnsignedTransaction | null>(null).reset(removeStarted);
+const $signature = createStore<HexString | null>(null).reset(removeStarted);
 
 const $proxiedAccount = combine(
   {
@@ -46,9 +61,7 @@ const $proxiedAccount = combine(
       ) || null
     );
   },
-  {
-    skipVoid: false,
-  },
+  { skipVoid: false },
 );
 
 const $proxiedWallet = combine(
@@ -61,9 +74,7 @@ const $proxiedWallet = combine(
 
     return wallets.find((w) => w.id === proxiedAccount.walletId) || null;
   },
-  {
-    skipVoid: false,
-  },
+  { skipVoid: false },
 );
 
 const $signatories = combine(
@@ -80,28 +91,11 @@ const $signatories = combine(
       ? getSignatoryAccounts(accounts, wallets, [], proxiedAccount.signatories, chain.chainId)
       : null;
   },
-  {
-    skipVoid: false,
-  },
+  { skipVoid: false },
 );
 
-const signatorySelected = createEvent<Account>();
-const activeStepChanged = createEvent<Step>();
-
-type TransactionSignedProps = {
-  signature: HexString;
-  unsignedTx: UnsignedTransaction;
-};
-const transactionSigned = createEvent<TransactionSignedProps>();
-const proxyRemoved = createEvent<ApiPromise>();
-type ProxyGroupUpdatedProps = {
-  proxyGroup: ProxyGroup;
-  shouldDelete: boolean;
-};
-const proxyGroupUpdated = createEvent<ProxyGroupUpdatedProps>();
-
 sample({
-  source: flowStarted,
+  source: removeStarted,
   target: spread({
     targets: { chain: $chain, proxyAccount: $proxyAccount },
   }),
@@ -145,6 +139,7 @@ sample({
   },
   filter: (proxyAccount) => Boolean(proxyAccount),
   fn: ({ proxyAccount, proxies, proxyGroups }, api) => {
+    // find other proxies in the same as proxy we are removing
     const sameGroupProxies = proxies[proxyAccount!.proxiedAccountId].filter((p) => p.chainId === proxyAccount!.chainId);
     const proxyGroup = proxyGroups.find(
       (p) => p.chainId === proxyAccount!.chainId && p.proxiedAccountId === proxyAccount!.proxiedAccountId,
@@ -154,10 +149,9 @@ sample({
       return { proxyGroup, shouldDelete: true };
     }
 
-    const updatedDeposit =
-      Number(proxyGroup!.totalDeposit) -
-      api.consts.proxy.proxyDepositBase.toNumber() -
-      api.consts.proxy.proxyDepositBase.toNumber();
+    const updatedDeposit = new BN(proxyGroup!.totalDeposit)
+      .sub(api.consts.proxy.proxyDepositBase.toBn())
+      .sub(api.consts.proxy.proxyDepositFactor);
 
     return {
       proxyGroup: { ...proxyGroup, totalDeposit: updatedDeposit.toString() } as ProxyGroup,
@@ -200,7 +194,7 @@ export const removeProxyModel = {
   $signatories,
   $signatory,
   events: {
-    flowStarted,
+    removeStarted,
     signatorySelected,
     transactionSigned,
     activeStepChanged,

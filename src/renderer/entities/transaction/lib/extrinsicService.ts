@@ -304,7 +304,11 @@ export const getUnsignedTransaction: Record<
   },
   [TransactionType.REMOVE_PROXY]: (transaction, info, options) => {
     return methods.proxy.removeProxy(
-      { delegate: transaction.args.delegate, proxyType: transaction.args.proxyType, delay: transaction.args.delay },
+      {
+        delegate: transaction.args.delegate,
+        proxyType: transaction.args.proxyType,
+        delay: transaction.args.delay,
+      },
       info,
       options,
     );

@@ -1,4 +1,5 @@
 import { allSettled, fork } from 'effector';
+import { ApiPromise } from '@polkadot/api';
 
 import type { Chain, HexString, ProxyAccount, Wallet } from '@shared/core';
 import { Account, AccountType, ProxyType, SigningType, WalletType } from '@shared/core';
@@ -6,7 +7,7 @@ import { walletModel } from '@entities/wallet';
 import { removeProxyModel } from '@widgets/RemoveProxy/model/remove-proxy-model';
 import { TEST_CHAIN_ICON, TEST_CHAIN_ID } from '@shared/lib/utils';
 import { storageService } from '@shared/api/storage';
-import { proxyModel } from "@entities/proxy";
+import { proxyModel } from '@entities/proxy';
 
 const proxyAccountMock = {
   id: 1,
@@ -56,7 +57,7 @@ describe('widgets/RemoveProxy/model/remove-proxy-model', () => {
       values: new Map().set(walletModel.$wallets, [proxiedWalletMock]).set(walletModel.$accounts, [proxiedAccountMock]),
     });
 
-    await allSettled(removeProxyModel.events.flowStarted, {
+    await allSettled(removeProxyModel.events.removeStarted, {
       scope,
       params: { proxyAccount: proxyAccountMock, chain: chainMock },
     });
@@ -74,7 +75,7 @@ describe('widgets/RemoveProxy/model/remove-proxy-model', () => {
         .set(removeProxyModel.$proxyAccount, proxyAccountMock),
     });
 
-    await allSettled(removeProxyModel.events.proxyRemoved, { scope });
+    await allSettled(removeProxyModel.events.proxyRemoved, { scope, params: {} as ApiPromise });
 
     expect(scope.getState(proxyModel.$proxies)).toEqual({});
   });

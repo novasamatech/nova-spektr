@@ -64,7 +64,7 @@ export const RemoveProxy = ({ isOpen, proxyAccount, chain, onClose }: Props) => 
       ),
     ]);
 
-    removeProxyModel.events.flowStarted({ proxyAccount, chain });
+    removeProxyModel.events.removeStarted({ proxyAccount, chain });
   }, [proxyAccount]);
 
   useEffect(() => {

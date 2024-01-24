@@ -1,5 +1,5 @@
 import { combine, createEffect, createEvent, createStore, sample } from 'effector';
-import { groupBy } from 'lodash';
+import groupBy from 'lodash/groupBy';
 
 import { proxyUtils } from '../lib/utils';
 import { type ProxyAccount, AccountId, ProxyGroup, NoID } from '@shared/core';

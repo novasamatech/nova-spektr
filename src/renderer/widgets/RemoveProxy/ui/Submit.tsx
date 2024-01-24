@@ -36,7 +36,17 @@ type Props = {
   onSubmitted: () => void;
 };
 
-export const Submit = ({ api, tx, multisigTx, account, proxyAccount, unsignedTx, signature, onClose, onSubmitted }: Props) => {
+export const Submit = ({
+  api,
+  tx,
+  multisigTx,
+  account,
+  proxyAccount,
+  unsignedTx,
+  signature,
+  onClose,
+  onSubmitted,
+}: Props) => {
   const { t } = useI18n();
 
   const wallets = useUnit(walletModel.$wallets);
