@@ -195,9 +195,7 @@ spread({
     proxiedAccountsToAdd: attach({
       source: networkModel.$chains,
       effect: createProxiedWalletsFx,
-      mapParams: (proxiedAccounts: ProxiedAccount[], chains) => {
-        return { proxiedAccounts, chains };
-      },
+      mapParams: (proxiedAccounts: ProxiedAccount[], chains) => ({ proxiedAccounts, chains }),
     }),
     deposits: depositsReceived,
   },

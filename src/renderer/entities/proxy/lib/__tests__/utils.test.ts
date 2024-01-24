@@ -1,5 +1,16 @@
-import type { ProxyAccount } from '@shared/core';
-import { ProxyType } from '@shared/core';
+import {
+  ProxyAccount,
+  AccountType,
+  ChainType,
+  CryptoType,
+  ProxyType,
+  WalletType,
+  SigningType,
+  AccountId,
+  ProxyDeposits,
+  Account,
+  Wallet,
+} from '@shared/core';
 import { proxyUtils } from '../utils';
 import { TEST_ACCOUNT_ID } from '@shared/lib/utils';
 
@@ -24,7 +35,6 @@ describe('entities/proxy/lib/utils', () => {
     } as ProxyAccount;
 
     const result = proxyUtils.isSameProxy(oldProxy, newProxy);
-
     expect(result).toEqual(true);
   });
 
@@ -48,14 +58,49 @@ describe('entities/proxy/lib/utils', () => {
     } as ProxyAccount;
 
     const result = proxyUtils.isSameProxy(oldProxy, newProxy);
-
     expect(result).toEqual(false);
   });
 
   test('should return proxied name for a given proxied account', () => {
     const result = proxyUtils.getProxiedName(TEST_ACCOUNT_ID, ProxyType.ANY);
-
     expect(result).toEqual('Any for 5CGQ7B...VbXyr9');
+  });
+
+  test('should return proxy group', () => {
+    const wallets: Wallet[] = [
+      {
+        id: 1,
+        name: 'My first wallet',
+        isActive: true,
+        type: WalletType.MULTISIG,
+        signingType: SigningType.MULTISIG,
+      },
+    ];
+    const accounts: Account[] = [
+      {
+        id: 1,
+        walletId: 1,
+        name: 'My base account',
+        type: AccountType.BASE,
+        accountId: TEST_ACCOUNT_ID as AccountId,
+        chainType: ChainType.SUBSTRATE,
+        cryptoType: CryptoType.SR25519,
+      },
+    ];
+    const deposits: ProxyDeposits = {
+      chainId: '0x00',
+      deposits: { [TEST_ACCOUNT_ID]: '100' },
+    };
+
+    const result = proxyUtils.getProxyGroups(wallets, accounts, deposits);
+    expect(result).toEqual([
+      {
+        walletId: 1,
+        proxiedAccountId: TEST_ACCOUNT_ID,
+        chainId: '0x00',
+        totalDeposit: '100',
+      },
+    ]);
   });
 
   test('should sort proxy accounts by type', () => {
@@ -87,7 +132,6 @@ describe('entities/proxy/lib/utils', () => {
     ];
 
     const sortedAccounts = proxyUtils.sortAccountsByProxyType(proxyAccounts);
-
     expect(sortedAccounts).toEqual([proxyAccounts[2], proxyAccounts[0], proxyAccounts[1]]);
   });
 });

@@ -28,8 +28,8 @@ const $proxyAccounts = combine(
   },
   ({ accounts, proxies }) => {
     const proxyAccounts = accounts.reduce((acc: ProxyAccount[], account: Account) => {
-      if (proxies[account.accountId]) {
-        acc.push(...proxies[account.accountId]);
+      if (accountUtils.isProxiedAccount(account) && proxies[account.proxyAccountId]) {
+        acc.push(...proxies[account.proxyAccountId]);
       }
 
       return acc;
@@ -151,7 +151,7 @@ const $proxyWalletForProxied = combine(
   { skipVoid: false },
 );
 
-const $hasProxies = $proxyAccounts.map((accounts) => Boolean(accounts.length));
+const $hasProxies = combine($proxyAccounts, (accounts) => accounts.length > 0);
 
 export const walletProviderModel = {
   $accounts,
