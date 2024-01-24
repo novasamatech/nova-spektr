@@ -113,11 +113,19 @@ describe('features/proxies/workers/proxy-worker', () => {
   });
 
   test('should return array with account and deposit object ', async () => {
+    const newProxy = {
+      accountId: '0x02',
+      chainId: '0x01',
+      delay: 0,
+      proxiedAccountId: '0x01',
+      proxyType: 'Governance',
+    };
+
     set(state.apis, '0x01.query.proxy.proxies.keys', () => [
       {
         args: [
           {
-            toHex: () => '0x01',
+            toHex: () => newProxy.proxiedAccountId,
           },
         ],
       },
@@ -127,9 +135,9 @@ describe('features/proxies/workers/proxy-worker', () => {
         {
           toHuman: () => [
             {
-              delegate: '0x02',
-              proxyType: 'Governance',
-              delay: 0,
+              delegate: newProxy.accountId,
+              proxyType: newProxy.proxyType,
+              delay: newProxy.delay,
             },
           ],
         },
@@ -164,15 +172,7 @@ describe('features/proxies/workers/proxy-worker', () => {
       proxies,
     });
 
-    expect(result.proxiesToAdd).toEqual([
-      {
-        accountId: '0x02',
-        chainId: '0x01',
-        delay: 0,
-        proxiedAccountId: '0x01',
-        proxyType: 'Governance',
-      },
-    ]);
+    expect(result.proxiesToAdd).toEqual([newProxy]);
     expect(result.proxiesToRemove).toEqual([]);
     expect(result.proxiedAccountsToAdd).toEqual([]);
     expect(result.proxiedAccountsToRemove).toEqual([]);
