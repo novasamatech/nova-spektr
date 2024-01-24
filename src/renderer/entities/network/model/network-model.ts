@@ -279,7 +279,9 @@ sample({
   clock: createApiFx.doneData,
   source: $apis,
   filter: (_, api) => Boolean(api),
-  fn: (apis, api) => ({ ...apis, [api!.genesisHash.toHex()]: api! }),
+  fn: (apis, api) => {
+    return { ...apis, [api!.genesisHash.toHex()]: api! };
+  },
   target: $apis,
 });
 
