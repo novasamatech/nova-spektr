@@ -1,4 +1,4 @@
-import { ChainOptions, Connection, ConnectionType, ConnectionStatus, type Metadata, ChainId } from '@shared/core';
+import { ChainOptions, Connection, ConnectionType, ConnectionStatus, ChainMetadata, ChainId } from '@shared/core';
 
 export const networkUtils = {
   isConnectedStatus,
@@ -55,12 +55,12 @@ function isAutoBalanceConnection(connection: Connection): boolean {
   return connection.connectionType === ConnectionType.AUTO_BALANCE;
 }
 
-function getNewestMetadata(metadata: Metadata[]): Record<ChainId, Metadata> {
-  return metadata.reduce<Record<ChainId, Metadata>>((acc, data) => {
+function getNewestMetadata(metadata: ChainMetadata[]): Record<ChainId, ChainMetadata> {
+  return metadata.reduce<Record<ChainId, ChainMetadata>>((acc, data) => {
     if (data.version >= (acc[data.chainId]?.version || -1)) {
       acc[data.chainId] = data;
     }
 
     return acc;
-  }, {} as Record<ChainId, Metadata>);
+  }, {} as Record<ChainId, ChainMetadata>);
 }

@@ -2,7 +2,7 @@ import { Table } from 'dexie';
 
 import { MultisigEvent, MultisigTransaction, MultisigTransactionKey } from '@entities/transaction/model/transaction';
 import type {
-  Metadata,
+  ChainMetadata,
   Wallet,
   Account,
   Contact,
@@ -96,4 +96,4 @@ export type TProxyGroup = Table<ProxyGroup, ProxyGroup['id']>;
 export type TMultisigTransaction = Table<MultisigTransaction, ID[]>;
 export type TMultisigEvent = Table<MultisigEvent, ID>;
 export type TNotification = Table<Notification, Notification['id']>;
-export type TMetadata = Table<Metadata, Metadata['id']>;
+export type TMetadata = Table<ChainMetadata, ChainMetadata['id']>;

@@ -1,13 +1,28 @@
 import { createEffect, createEvent, createStore, sample, scopeBind } from 'effector';
 import { ApiPromise } from '@polkadot/api';
-import { ProviderInterface } from '@polkadot/rpc-provider/types';
 import { UnsubscribePromise } from '@polkadot/api/types';
 import { cloneDeep, keyBy } from 'lodash';
 
-import { Chain, ChainId, Connection, ConnectionStatus, ConnectionType, RpcNode, Metadata, NoID } from '@shared/core';
-import { ProviderType, chainsService, networkService, metadataService } from '@shared/api/network';
 import { storageService } from '@shared/api/storage';
 import { networkUtils } from '../lib/network-utils';
+import {
+  Chain,
+  ChainId,
+  Connection,
+  ConnectionStatus,
+  ConnectionType,
+  RpcNode,
+  ChainMetadata,
+  NoID,
+  Metadata,
+} from '@shared/core';
+import {
+  ProviderType,
+  chainsService,
+  networkService,
+  metadataService,
+  ProviderWithMetadata,
+} from '@shared/api/network';
 
 const networkStarted = createEvent();
 const chainStarted = createEvent<ChainId>();
@@ -23,6 +38,7 @@ type NodeEventParams = {
   oldNode?: RpcNode;
 };
 
+// TODO: move to it's own feature task - https://app.clickup.com/t/8693mce8u
 const rpcNodeAdded = createEvent<NodeEventParams>();
 const rpcNodeUpdated = createEvent<NodeEventParams>();
 const rpcNodeRemoved = createEvent<NodeEventParams>();
@@ -33,11 +49,11 @@ const failed = createEvent<ChainId>();
 
 const metadataUnsubscribed = createEvent<ChainId>();
 
-const $providers = createStore<Record<ChainId, ProviderInterface>>({});
+const $providers = createStore<Record<ChainId, ProviderWithMetadata>>({});
 const $apis = createStore<Record<ChainId, ApiPromise>>({});
 const $connectionStatuses = createStore<Record<ChainId, ConnectionStatus>>({});
 const $chains = createStore<Record<ChainId, Chain>>({});
-const $metadata = createStore<Metadata[]>([]);
+const $metadata = createStore<ChainMetadata[]>([]);
 const $connections = createStore<Record<ChainId, Connection>>({});
 
 const $metadataSubscriptions = createStore<Record<ChainId, UnsubscribePromise>>({});
@@ -46,7 +62,7 @@ const populateChainsFx = createEffect((): Record<ChainId, Chain> => {
   return chainsService.getChainsMap({ sort: true });
 });
 
-const populateMetadataFx = createEffect(async (): Promise<Metadata[]> => {
+const populateMetadataFx = createEffect((): Promise<ChainMetadata[]> => {
   return storageService.metadata.readAll();
 });
 
@@ -97,19 +113,25 @@ const subscribeMetadataFx = createEffect(({ chainId, api }: MetadataSubParams): 
   };
 });
 
-const unsubscribeMetadataFx = createEffect(async (unsubscribe: UnsubscribePromise): Promise<void> => {
-  const unsubscribeFn = await unsubscribe;
-
-  unsubscribeFn();
-});
-
-const requestMetadataFx = createEffect((api: ApiPromise): Promise<NoID<Metadata>> => {
+const requestMetadataFx = createEffect((api: ApiPromise): Promise<NoID<ChainMetadata>> => {
   return metadataService.requestMetadata(api);
 });
 
-// const saveMetadataFx = createEffect(async (metadata: NoID<Metadata>): Promise<void> => {
-//   await storageService.metadata.create(metadata);
-// });
+const unsubscribeMetadataFx = createEffect((unsubscribe: UnsubscribePromise) => {
+  unsubscribe.then((unsubFn) => unsubFn());
+});
+
+const saveMetadataFx = createEffect((metadata: NoID<ChainMetadata>): Promise<ChainMetadata | undefined> => {
+  return storageService.metadata.create(metadata);
+});
+
+type ProviderMetadataParams = {
+  provider: ProviderWithMetadata;
+  metadata: Metadata;
+};
+const updateProviderMetadataFx = createEffect(({ provider, metadata }: ProviderMetadataParams) => {
+  provider.updateMetadata(metadata);
+});
 
 const initConnectionsFx = createEffect((chains: Record<ChainId, Chain>) => {
   Object.keys(chains).forEach((chainId) => chainStarted(chainId as ChainId));
@@ -133,11 +155,11 @@ const reconnectFx = createEffect(async ({ api }: ReconnectParams): Promise<void>
 type CreateProviderParams = {
   chainId: ChainId;
   nodes: string[];
-  metadata?: Metadata;
+  metadata?: ChainMetadata;
   providerType: ProviderType;
 };
 const createProviderFx = createEffect(
-  ({ chainId, nodes, metadata, providerType }: CreateProviderParams): ProviderInterface => {
+  ({ chainId, nodes, metadata, providerType }: CreateProviderParams): ProviderWithMetadata => {
     const boundConnected = scopeBind(connected, { safe: true });
     const boundDisconnected = scopeBind(disconnected, { safe: true });
     const boundFailed = scopeBind(failed, { safe: true });
@@ -166,7 +188,7 @@ const createProviderFx = createEffect(
 
 type CreateApiParams = {
   chainId: ChainId;
-  provider: ProviderInterface;
+  provider: ProviderWithMetadata;
 };
 const createApiFx = createEffect(async ({ chainId, provider }: CreateApiParams): Promise<ApiPromise | undefined> => {
   if (!provider.isConnected) {
@@ -332,8 +354,26 @@ sample({
   target: $metadataSubscriptions,
 });
 
-// TODO: matadata save was lost, turn it back task: https://app.clickup.com/t/8693kq4b8
-// sample({ clock: requestMetadataFx.doneData, target: saveMetadataFx });
+sample({ clock: requestMetadataFx.doneData, target: saveMetadataFx });
+
+sample({
+  clock: saveMetadataFx.doneData,
+  source: $metadata,
+  filter: (_, newMetadata) => Boolean(newMetadata),
+  fn: (metadata, newMetadata) => metadata.concat(newMetadata!),
+  target: $metadata,
+});
+
+sample({
+  clock: saveMetadataFx.doneData,
+  source: $providers,
+  filter: (metadata) => Boolean(metadata),
+  fn: (providers, metadata) => ({
+    provider: providers[metadata!.chainId],
+    metadata: metadata!.metadata,
+  }),
+  target: updateProviderMetadataFx,
+});
 
 // =====================================================
 // =============== Connection section ==================

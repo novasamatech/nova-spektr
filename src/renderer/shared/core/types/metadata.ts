@@ -1,8 +1,8 @@
-import type { ChainId, HexString, ID } from './general';
+import type { ChainId, ID, Metadata } from './general';
 
-export type Metadata = {
+export type ChainMetadata = {
   id: ID;
   chainId: ChainId;
   version: number;
-  metadata?: HexString;
+  metadata: Metadata;
 };
