@@ -176,12 +176,7 @@ export const SelectSignatories = ({ isActive, wallets, accounts, contacts, onSel
       <ul className="gap-y-2">
         {disabledWallets.map(({ id, name, type }) => (
           <li key={id + '_wallets'} className="py-1.5 px-2 rounded-md">
-            <Tooltip
-              position="left"
-              offsetPx={-65}
-              content={getDisabledMessage(type)}
-              panelClass="left-0 -translate-x-2"
-            >
+            <Tooltip offsetPx={-65} content={getDisabledMessage(type)}>
               <Checkbox disabled>
                 <WalletItem name={name} type={type} />
               </Checkbox>

@@ -9,12 +9,13 @@
 }
 
 .spektr-arrow__center::before {
-  left: calc(50% - 6px);
+  left: 50%;
+  transform: translateX(-50%);
 }
-.spektr-arrow__start::before {
+.spektr-arrow__left::before {
   left: 12px;
 }
-.spektr-arrow__end::before {
+.spektr-arrow__right::before {
   right: 12px;
 }
 
