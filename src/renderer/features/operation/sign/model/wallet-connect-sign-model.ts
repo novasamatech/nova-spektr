@@ -5,7 +5,7 @@ import { EngineTypes } from '@walletconnect/types';
 
 import { walletConnectModel, type InitReconnectParams } from '@entities/walletConnect';
 import { toAccountId } from '@shared/lib/utils';
-import { chainsService } from '@entities/network';
+import { chainsService } from '@shared/api/network';
 import { WalletConnectAccount } from '@shared/core';
 import { ReconnectStep } from '../lib/constants';
 import { walletModel } from '@entities/wallet';

@@ -5,7 +5,7 @@ import {
   ProviderInterfaceEmitted,
 } from '@polkadot/rpc-provider/types';
 
-import { ProviderType, Subscription } from '../common/types';
+import { ProviderType, Subscription } from '../lib/types';
 
 export class UniversalProvider implements ProviderInterface {
   private wsProvider: ProviderInterface;

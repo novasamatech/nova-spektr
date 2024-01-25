@@ -1,5 +1,5 @@
 import { DecodedTransaction, Transaction } from '@entities/transaction';
-import { chainsService } from '@entities/network';
+import { chainsService } from '@shared/api/network';
 import { AssetBalance } from '@entities/asset';
 import { cnTw, getAssetById } from '@shared/lib/utils';
 import { getTransactionAmount } from '../common/utils';

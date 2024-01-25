@@ -6,7 +6,6 @@ import { BaseModal, FootnoteText, Tabs, HelpText, DropdownIconButton } from '@sh
 import { RootExplorers } from '@shared/lib/utils';
 import { useModalClose, useToggle } from '@shared/lib/hooks';
 import { AccountsList, ContactItem, ExplorersPopover, WalletCardLg, WalletCardMd } from '@entities/wallet';
-import { chainsService, isMultisigAvailable } from '@entities/network';
 import { useI18n, useMatrix } from '@app/providers';
 // TODO: think about combining balances and wallets
 import { WalletFiatBalance } from '@features/wallets/WalletSelect/ui/WalletFiatBalance';
@@ -16,6 +15,7 @@ import { ForgetWalletModal } from '@features/wallets/ForgetWallet';
 import { ProxiesList } from '../components/ProxiesList';
 import { walletProviderModel } from '../../model/wallet-provider-model';
 import { NoProxiesAction } from '../components/NoProxiesAction';
+import { networkUtils, networkModel } from '@entities/network';
 
 type Props = {
   wallet: Wallet;
@@ -28,15 +28,16 @@ export const MultisigWalletDetails = ({ wallet, account, signatoryWallets, signa
   const { t } = useI18n();
   const { matrix, isLoggedIn } = useMatrix();
 
+  const chains = useUnit(networkModel.$chains);
   const hasProxies = useUnit(walletProviderModel.$hasProxies);
 
   const [isModalOpen, closeModal] = useModalClose(true, onClose);
   const [isRenameModalOpen, toggleIsRenameModalOpen] = useToggle();
   const [isConfirmForgetOpen, toggleConfirmForget] = useToggle();
 
-  const chains = useMemo(() => {
-    return chainsService.getChainsData({ sort: true }).filter((chain) => isMultisigAvailable(chain.options));
-  }, []);
+  const multisigChains = useMemo(() => {
+    return Object.values(chains).filter((chain) => networkUtils.isMultisigSupported(chain.options));
+  }, [chains]);
 
   const Options = [
     {
@@ -86,7 +87,7 @@ export const MultisigWalletDetails = ({ wallet, account, signatoryWallets, signa
             {
               id: 1,
               title: t('walletDetails.multisig.networksTab'),
-              panel: <AccountsList accountId={account.accountId} chains={chains} className="h-[361px]" />,
+              panel: <AccountsList accountId={account.accountId} chains={multisigChains} className="h-[361px]" />,
             },
             {
               id: 2,
