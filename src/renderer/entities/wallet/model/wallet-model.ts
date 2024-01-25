@@ -258,5 +258,6 @@ export const walletModel = {
     walletRemoved,
     walletRemovedSuccess: removeWalletFx.done,
     walletsRemoved,
+    proxiedWalletsCreatedSuccess: proxiedWalletsCreatedFx.done,
   },
 };

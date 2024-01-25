@@ -48,6 +48,11 @@ export const ProxyAccount = ({
     addressToShow
   );
 
+  // if proxy type is not in ProxyTypeName enum split camel case string and add spaces
+  const proxyTypeName = ProxyTypeName[proxyType]
+    ? t(ProxyTypeName[proxyType])
+    : proxyType.replace(/([a-zA-Z])(?=[A-Z])/g, '$1 ');
+
   return (
     <div className={cnTw('flex items-center gap-x-2', className)}>
       <Identicon className="inline-block" address={address} size={20} background={false} canCopy={canCopy} />
@@ -56,7 +61,7 @@ export const ProxyAccount = ({
         {name && <HelpText className="text-text-tertiary truncate">{addressContent}</HelpText>}
         <div className="flex gap-x-1 items-center mt-0.5">
           <span className="w-1 h-1 rounded-full bg-tab-text-accent" />
-          <HelpText className="text-tab-text-accent">{t(ProxyTypeName[proxyType])}</HelpText>
+          <HelpText className="text-tab-text-accent">{proxyTypeName}</HelpText>
         </div>
       </div>
       {suffix}

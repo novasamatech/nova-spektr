@@ -9,11 +9,9 @@ import type {
   Chain,
   ChainId,
   Connection,
-  NoID,
   PartialProxiedAccount,
   ProxiedAccount,
   ProxyAccount,
-  ProxyGroup,
   ProxyDeposits,
   Wallet,
   WalletsMap,
@@ -32,6 +30,7 @@ const proxiedAccountsRemoved = createEvent<ProxiedAccount[]>();
 const depositsReceived = createEvent<ProxyDeposits>();
 
 const $endpoint = createStore<Endpoint<any> | null>(null);
+const $deposits = createStore<ProxyDeposits | null>(null);
 
 const startWorkerFx = createEffect(() => {
   // @ts-ignore
@@ -202,6 +201,11 @@ spread({
 });
 
 sample({
+  clock: depositsReceived,
+  target: $deposits,
+});
+
+sample({
   clock: createProxiedWalletsFx.doneData,
   target: walletModel.events.proxiedWalletsCreated,
 });
@@ -233,32 +237,24 @@ sample({
     accounts: walletModel.$accounts,
     groups: proxyModel.$proxyGroups,
   },
-  fn: ({ wallets, accounts, groups }, deposits) => {
-    const proxyGroups = proxyUtils.getProxyGroups(wallets, accounts, deposits);
+  fn: ({ wallets, accounts, groups }, deposits) => proxyUtils.createProxyGroups(wallets, accounts, groups, deposits),
+  target: spread({
+    toAdd: proxyModel.events.proxyGroupsAdded,
+    toUpdate: proxyModel.events.proxyGroupsUpdated,
+    toRemove: proxyModel.events.proxyGroupsRemoved,
+  }),
+});
 
-    const { toAdd, toUpdate } = proxyGroups.reduce<Record<'toAdd' | 'toUpdate', NoID<ProxyGroup>[]>>(
-      (acc, g) => {
-        const shouldUpdate = groups.some((p) => proxyUtils.isSameProxyGroup(p, g));
-
-        if (shouldUpdate) {
-          acc.toUpdate.push(g);
-        } else {
-          acc.toAdd.push(g);
-        }
-
-        return acc;
-      },
-      { toAdd: [], toUpdate: [] },
-    );
-
-    const toRemove = groups.filter((p) => {
-      if (p.chainId !== deposits.chainId) return false;
-
-      return proxyGroups.every((g) => !proxyUtils.isSameProxyGroup(g, p));
-    });
-
-    return { toAdd, toUpdate, toRemove };
+sample({
+  clock: walletModel.events.proxiedWalletsCreatedSuccess,
+  source: {
+    wallets: walletModel.$wallets,
+    accounts: walletModel.$accounts,
+    groups: proxyModel.$proxyGroups,
+    deposits: $deposits,
   },
+  filter: ({ deposits }) => Boolean(deposits),
+  fn: ({ wallets, accounts, groups, deposits }) => proxyUtils.createProxyGroups(wallets, accounts, groups, deposits!),
   target: spread({
     toAdd: proxyModel.events.proxyGroupsAdded,
     toUpdate: proxyModel.events.proxyGroupsUpdated,
