@@ -1,4 +1,4 @@
-import { Account, AccountType, Chain, Wallet, WalletType } from '@shared/core';
+import { Chain, Wallet, WalletType } from '@shared/core';
 import { proxiesUtils } from '../proxies-utils';
 
 describe('features/proxies/lib/proxies-utils', () => {
@@ -24,16 +24,20 @@ describe('features/proxies/lib/proxies-utils', () => {
   });
 
   test('should be false if proxied is unavailable for watch only wallet', () => {
-    const account = { walletId: 1, type: AccountType.BASE } as unknown as Account;
     const wallet = { id: 1, type: WalletType.WATCH_ONLY } as unknown as Wallet;
 
-    expect(proxiesUtils.isProxiedAvailable(account, wallet)).toEqual(false);
+    expect(proxiesUtils.isProxiedAvailable(wallet)).toEqual(false);
+  });
+
+  test('should be false if proxied is unavailable for proxied wallet', () => {
+    const wallet = { id: 1, type: WalletType.PROXIED } as unknown as Wallet;
+
+    expect(proxiesUtils.isProxiedAvailable(wallet)).toEqual(false);
   });
 
   test('should be true if proxied is available for polkadot vault wallet', () => {
-    const account = { walletId: 1, type: AccountType.CHAIN } as unknown as Account;
     const wallet = { id: 1, type: WalletType.POLKADOT_VAULT } as unknown as Wallet;
 
-    expect(proxiesUtils.isProxiedAvailable(account, wallet)).toEqual(true);
+    expect(proxiesUtils.isProxiedAvailable(wallet)).toEqual(true);
   });
 });
