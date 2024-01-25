@@ -2,7 +2,7 @@ import { combine, createEffect, createEvent, createStore, sample } from 'effecto
 import groupBy from 'lodash/groupBy';
 
 import { proxyUtils } from '../lib/utils';
-import { type ProxyAccount, AccountId, ProxyGroup, NoID } from '@shared/core';
+import { type ProxyAccount, AccountId, ProxyGroup, NoID, ID } from '@shared/core';
 import { storageService } from '@shared/api/storage';
 
 type ProxyStore = Record<AccountId, ProxyAccount[]>;
@@ -30,7 +30,7 @@ const addProxiesFx = createEffect((proxies: ProxyAccount[]): Promise<ProxyAccoun
   return storageService.proxies.createAll(proxies);
 });
 
-const removeProxiesFx = createEffect((proxies: ProxyAccount[]) => {
+const removeProxiesFx = createEffect((proxies: ProxyAccount[]): Promise<ID[] | undefined> => {
   return storageService.proxies.deleteAll(proxies.map((p) => p.id));
 });
 
@@ -46,7 +46,7 @@ const updateProxyGroupsFx = createEffect((groups: ProxyGroup[]) => {
   return storageService.proxyGroups.updateAll(groups);
 });
 
-const removeProxyGroupsFx = createEffect((groups: ProxyGroup[]) => {
+const removeProxyGroupsFx = createEffect((groups: ProxyGroup[]): Promise<ID[] | undefined> => {
   return storageService.proxyGroups.deleteAll(groups.map((p) => p.id));
 });
 
@@ -57,7 +57,7 @@ sample({
 
 sample({
   clock: populateProxiesFx.doneData,
-  fn: (proxies) => proxies.reduce<ProxyStore>((acc, p) => ({ ...acc, [p.accountId]: p }), {}),
+  fn: (proxies) => groupBy(proxies, 'accountId'),
   target: $proxies,
 });
 
@@ -68,11 +68,21 @@ sample({
 
 sample({
   clock: proxiesAdded,
+  filter: (proxiesToAdd) => proxiesToAdd.length > 0,
+  target: addProxiesFx,
+});
+
+sample({
+  clock: addProxiesFx.doneData,
   source: $proxies,
-  filter: (_, proxiesToAdd) => proxiesToAdd.length > 0,
+  filter: (_, proxiesToAdd) => Boolean(proxiesToAdd),
   fn: (proxies, proxiesToAdd) => {
-    return proxiesToAdd.reduce<ProxyStore>((acc, proxyAccount) => {
-      acc[proxyAccount.proxiedAccountId] = (acc[proxyAccount.proxiedAccountId] || []).concat(proxyAccount);
+    return proxiesToAdd!.reduce<ProxyStore>((acc, proxyAccount) => {
+      if (acc[proxyAccount.proxiedAccountId]) {
+        acc[proxyAccount.proxiedAccountId].push(proxyAccount);
+      } else {
+        acc[proxyAccount.proxiedAccountId] = [proxyAccount];
+      }
 
       return acc;
     }, proxies);
@@ -80,29 +90,27 @@ sample({
   target: $proxies,
 });
 
-sample({ clock: proxiesAdded, target: addProxiesFx });
-
 sample({
   clock: proxiesRemoved,
-  source: $proxies,
-  filter: (_, proxiesToRemove) => proxiesToRemove.length > 0,
-  fn: (proxies, proxiesToRemove) => {
-    return proxiesToRemove.reduce<ProxyStore>((acc, proxyAccount) => {
-      acc[proxyAccount.proxiedAccountId] = acc[proxyAccount.proxiedAccountId]?.filter(
-        (account) => !proxyUtils.isSameProxy(account, proxyAccount),
-      );
-
-      if (acc[proxyAccount.proxiedAccountId].length === 0) {
-        delete acc[proxyAccount.proxiedAccountId];
-      }
-
-      return acc;
-    }, proxies);
-  },
-  target: $proxies, // TODO: update $proxies after effect
+  filter: (proxiesToRemove) => proxiesToRemove.length > 0,
+  target: removeProxiesFx,
 });
 
-sample({ clock: proxiesRemoved, target: removeProxiesFx });
+sample({
+  clock: removeProxiesFx.doneData,
+  source: $proxies,
+  filter: (_, proxiesToRemove) => Boolean(proxiesToRemove),
+  fn: (proxies, proxiesToRemove) => {
+    return Object.entries(proxies).reduce<ProxyStore>((acc, entry) => {
+      const [accountId, proxyAccounts] = entry as [AccountId, ProxyAccount[]];
+
+      acc[accountId] = proxyAccounts.filter((proxyAccount) => !proxiesToRemove!.includes(proxyAccount.id));
+
+      return acc;
+    }, {});
+  },
+  target: $proxies,
+});
 
 sample({
   clock: proxyGroupsAdded,

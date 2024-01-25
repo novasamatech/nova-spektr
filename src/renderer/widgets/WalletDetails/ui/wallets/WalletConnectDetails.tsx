@@ -38,13 +38,12 @@ export const WalletConnectDetails = ({ wallet, accounts, onClose }: Props) => {
   const { t } = useI18n();
 
   const hasProxies = useUnit(walletProviderModel.$hasProxies);
+  const forgetStep = useUnit(wcDetailsModel.$forgetStep);
+  const reconnectStep = useUnit(wcDetailsModel.$reconnectStep);
 
   const [isModalOpen, closeModal] = useModalClose(true, onClose);
   const [isConfirmForgetOpen, toggleConfirmForget] = useToggle();
   const [isRenameModalOpen, toggleIsRenameModalOpen] = useToggle();
-
-  const reconnectStep = useUnit(wcDetailsModel.$reconnectStep);
-  const forgetStep = useUnit(wcDetailsModel.$forgetStep);
 
   useEffect(() => {
     wcDetailsModel.events.reset();
