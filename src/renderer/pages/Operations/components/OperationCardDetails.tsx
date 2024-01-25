@@ -6,7 +6,7 @@ import { AddressWithExplorers, WalletCardSm, walletModel, ExplorersPopover } fro
 import { Icon, Button, FootnoteText, DetailRow } from '@shared/ui';
 import { copyToClipboard, truncate, cnTw, getAssetById } from '@shared/lib/utils';
 import { useToggle } from '@shared/lib/hooks';
-import { chainsService, ExtendedChain, isLightClient } from '@entities/network';
+import { ExtendedChain, networkUtils } from '@entities/network';
 import { MultisigTransaction, Transaction, isXcmTransaction } from '@entities/transaction';
 import { AddressStyle, DescriptionBlockStyle, InteractionStyle } from '../common/constants';
 import { getMultisigExtrinsicLink } from '../common/utils';
@@ -16,6 +16,7 @@ import type { Address, MultisigAccount, Validator } from '@shared/core';
 import { getTransactionFromMultisigTx } from '@entities/multisig';
 import { useValidatorsMap, ValidatorsModal } from '@entities/staking';
 import { singnatoryUtils } from '@entities/signatory';
+import { chainsService } from '@shared/api/network';
 
 type Props = {
   tx: MultisigTransaction;
@@ -43,7 +44,7 @@ export const OperationCardDetails = ({ tx, account, extendedChain }: Props) => {
   const { indexCreated, blockCreated, deposit, depositor, callHash, callData, description, cancelDescription } = tx;
 
   const transaction = getTransactionFromMultisigTx(tx);
-  const validatorsMap = useValidatorsMap(api, connection && isLightClient(connection));
+  const validatorsMap = useValidatorsMap(api, connection && networkUtils.isLightClientConnection(connection));
 
   const allValidators = Object.values(validatorsMap);
 

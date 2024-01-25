@@ -92,18 +92,7 @@ sample({
 
 sample({
   clock: proxiesRemoved,
-  source: $proxies,
-  filter: (_, proxiesToRemove) => proxiesToRemove.length > 0,
-  fn: (proxies, proxiesToRemove) => {
-    return proxiesToRemove!.reduce<ProxyAccount[]>((acc, proxyAccount) => {
-      const accounts = proxies[proxyAccount.proxiedAccountId];
-      if (!accounts) return acc;
-
-      const toRemove = accounts.filter((account) => proxyUtils.isSameProxy(account, proxyAccount));
-
-      return acc.concat(toRemove);
-    }, []);
-  },
+  filter: (proxiesToRemove) => proxiesToRemove.length > 0,
   target: removeProxiesFx,
 });
 
@@ -115,7 +104,7 @@ sample({
     return Object.entries(proxies).reduce<ProxyStore>((acc, entry) => {
       const [accountId, proxyAccounts] = entry as [AccountId, ProxyAccount[]];
 
-      acc[accountId] = proxyAccounts.filter((account) => !proxiesToRemove!.includes(account.id));
+      acc[accountId] = proxyAccounts.filter((proxyAccount) => !proxiesToRemove!.includes(proxyAccount.id));
 
       return acc;
     }, {});
