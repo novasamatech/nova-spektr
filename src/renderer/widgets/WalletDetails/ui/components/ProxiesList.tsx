@@ -33,7 +33,7 @@ export const ProxiesList = ({ walletId, className, canCreateProxy = true }: Prop
         <FootnoteText className="flex-1 px-2 text-text-tertiary">{t('accountList.addressColumn')}</FootnoteText>
       </div>
 
-      <ul className="flex flex-col px-5 divide-y divide-divider overflow-y-auto overflow-x-hidden h-[inherit]">
+      <ul className="flex flex-col h-full px-5 divide-y divide-divider overflow-y-auto overflow-x-hidden">
         {proxyGroups.map(({ chainId, totalDeposit }) => {
           if (!proxiesByChain[chainId]?.length) return;
 
@@ -59,7 +59,11 @@ export const ProxiesList = ({ walletId, className, canCreateProxy = true }: Prop
                   <ul className="flex flex-col gap-y-2">
                     {proxiesByChain[chainId].map((proxy) => (
                       <li className="px-2 py-1.5" key={proxy.accountId}>
-                        <ProxyAccountWithActions account={proxy} chain={chains[chainId]} canCreateProxy={canCreateProxy} />
+                        <ProxyAccountWithActions
+                          account={proxy}
+                          chain={chains[chainId]}
+                          canCreateProxy={canCreateProxy}
+                        />
                       </li>
                     ))}
                   </ul>

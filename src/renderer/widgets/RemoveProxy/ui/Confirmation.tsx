@@ -7,7 +7,7 @@ import { useI18n } from '@app/providers';
 import { SignButton } from '@entities/operation/ui/SignButton';
 import { Account, ProxyAccount, Wallet } from '@shared/core';
 import { AddressWithExplorers, WalletIcon } from '@entities/wallet';
-import { ProxyTypeName } from '@entities/proxy/ui/ProxyAccount/ProxyAccount';
+import { ProxyTypeName } from '@entities/proxy';
 
 type Props = {
   transaction: Transaction;
