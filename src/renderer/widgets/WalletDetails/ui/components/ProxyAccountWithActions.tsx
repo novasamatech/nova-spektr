@@ -1,4 +1,4 @@
-import { noop } from 'lodash';
+import noop from 'lodash/noop';
 
 import { Chain, ProxyAccount } from '@shared/core';
 import { ProxyAccount as ProxyAccountComponent } from '@entities/proxy';

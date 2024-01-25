@@ -52,7 +52,7 @@ describe('widgets/RemoveProxy/model/remove-proxy-model', () => {
     jest.restoreAllMocks();
   });
 
-  it('should set proxied account and wallet when flow starts', async () => {
+  test('should set proxied account and wallet when flow starts', async () => {
     const scope = fork({
       values: new Map().set(walletModel.$wallets, [proxiedWalletMock]).set(walletModel.$accounts, [proxiedAccountMock]),
     });
@@ -62,11 +62,11 @@ describe('widgets/RemoveProxy/model/remove-proxy-model', () => {
       params: { proxyAccount: proxyAccountMock, chain: chainMock },
     });
 
-    expect(scope.getState(removeProxyModel.$proxiedAccount)).toBe(proxiedAccountMock);
-    expect(scope.getState(removeProxyModel.$proxiedWallet)).toBe(proxiedWalletMock);
+    expect(scope.getState(removeProxyModel.$proxiedAccount)).toEqual(proxiedAccountMock);
+    expect(scope.getState(removeProxyModel.$proxiedWallet)).toEqual(proxiedWalletMock);
   });
 
-  it('should delete proxy from app when flow successfully finished', async () => {
+  test('should delete proxy from app when flow successfully finished', async () => {
     jest.spyOn(storageService.proxies, 'deleteAll').mockResolvedValue([1]);
 
     const scope = fork({

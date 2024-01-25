@@ -186,7 +186,7 @@ export const RemoveProxy = ({ isOpen, proxyAccount, chain, onClose }: Props) => 
 
       {activeStep === Step.SIGNING && proxiedAccount && (
         <Signing
-          walletForSigning={proxiedWallet}
+          signerWaller={proxiedWallet}
           chainId={chain.chainId}
           api={api}
           addressPrefix={addressPrefix}
