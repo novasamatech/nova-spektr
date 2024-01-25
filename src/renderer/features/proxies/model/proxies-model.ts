@@ -78,12 +78,14 @@ type GetProxiesResult = {
 };
 const getProxiesFx = createEffect(
   ({ chainId, accounts, wallets, proxies, endpoint }: GetProxiesParams): Promise<GetProxiesResult> => {
-    const proxiedAccounts = accounts.filter((a) => accountUtils.isProxiedAccount(a));
+    const proxiedAccounts = accounts.filter((a) => accountUtils.isProxiedAccount(a) && a.chainId === chainId);
+    const chainProxies = proxies.filter((p) => p.chainId === chainId);
+
     const walletsMap = keyBy(wallets, 'id');
 
     const accountsForProxy = keyBy(accounts, 'accountId');
     const accountsForProxied = keyBy(
-      accounts.filter((a) => proxiesUtils.isProxiedAvailable(a, walletsMap[a.walletId])),
+      accounts.filter((a) => proxiesUtils.isProxiedAvailable(walletsMap[a.walletId])),
       'accountId',
     );
 
@@ -92,7 +94,7 @@ const getProxiesFx = createEffect(
       accountsForProxy,
       accountsForProxied,
       proxiedAccounts,
-      proxies,
+      proxies: chainProxies,
     }) as Promise<GetProxiesResult>;
   },
 );
@@ -173,7 +175,7 @@ sample({
     wallets: walletModel.$wallets,
     endpoint: $endpoint,
   },
-  filter: ({ wallets, endpoint }) => Boolean(endpoint),
+  filter: ({ endpoint }) => Boolean(endpoint),
   fn: ({ accounts, wallets, proxies, endpoint }, chainId) => ({
     chainId,
     accounts: accounts.filter((a) => accountUtils.isChainIdMatch(a, chainId)),
@@ -193,9 +195,7 @@ spread({
     proxiedAccountsToAdd: attach({
       source: networkModel.$chains,
       effect: createProxiedWalletsFx,
-      mapParams: (proxiedAccounts: ProxiedAccount[], chains) => {
-        return { proxiedAccounts, chains };
-      },
+      mapParams: (proxiedAccounts: ProxiedAccount[], chains) => ({ proxiedAccounts, chains }),
     }),
     deposits: depositsReceived,
   },
