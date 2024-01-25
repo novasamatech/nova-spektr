@@ -85,7 +85,7 @@ const getProxiesFx = createEffect(
 
     const accountsForProxy = keyBy(accounts, 'accountId');
     const accountsForProxied = keyBy(
-      accounts.filter((a) => proxiesUtils.isProxiedAvailable(a, walletsMap[a.walletId])),
+      accounts.filter((a) => proxiesUtils.isProxiedAvailable(walletsMap[a.walletId])),
       'accountId',
     );
 
