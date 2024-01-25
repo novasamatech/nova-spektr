@@ -1,6 +1,6 @@
 import { createEffect, createEvent, createStore, sample, scopeBind } from 'effector';
 import { ApiPromise } from '@polkadot/api';
-import { UnsubscribePromise } from '@polkadot/api/types';
+import { VoidFn } from '@polkadot/api/types';
 import { cloneDeep, keyBy } from 'lodash';
 
 import { storageService } from '@shared/api/storage';
@@ -49,14 +49,16 @@ const failed = createEvent<ChainId>();
 
 const metadataUnsubscribed = createEvent<ChainId>();
 
+const $chains = createStore<Record<ChainId, Chain>>({});
+
 const $providers = createStore<Record<ChainId, ProviderWithMetadata>>({});
 const $apis = createStore<Record<ChainId, ApiPromise>>({});
-const $connectionStatuses = createStore<Record<ChainId, ConnectionStatus>>({});
-const $chains = createStore<Record<ChainId, Chain>>({});
-const $metadata = createStore<ChainMetadata[]>([]);
-const $connections = createStore<Record<ChainId, Connection>>({});
 
-const $metadataSubscriptions = createStore<Record<ChainId, UnsubscribePromise>>({});
+const $connections = createStore<Record<ChainId, Connection>>({});
+const $connectionStatuses = createStore<Record<ChainId, ConnectionStatus>>({});
+
+const $metadata = createStore<ChainMetadata[]>([]);
+const $metadataSubscriptions = createStore<Record<ChainId, VoidFn>>({});
 
 const populateChainsFx = createEffect((): Record<ChainId, Chain> => {
   return chainsService.getChainsMap({ sort: true });
@@ -104,25 +106,24 @@ type MetadataSubParams = {
 };
 type MetadataSubResult = {
   chainId: ChainId;
-  unsubscribe: UnsubscribePromise;
+  unsubscribe: VoidFn;
 };
-const subscribeMetadataFx = createEffect(({ chainId, api }: MetadataSubParams): MetadataSubResult => {
-  return {
-    chainId,
-    unsubscribe: metadataService.subscribeMetadata(api, () => requestMetadataFx(api)),
-  };
+const subscribeMetadataFx = createEffect(async ({ chainId, api }: MetadataSubParams): Promise<MetadataSubResult> => {
+  const unsubscribe = await metadataService.subscribeMetadata(api, requestMetadataFx);
+
+  return { chainId, unsubscribe };
 });
 
 const requestMetadataFx = createEffect((api: ApiPromise): Promise<NoID<ChainMetadata>> => {
   return metadataService.requestMetadata(api);
 });
 
-const unsubscribeMetadataFx = createEffect((unsubscribe: UnsubscribePromise) => {
-  unsubscribe.then((unsubFn) => unsubFn());
+const unsubscribeMetadataFx = createEffect((unsubscribe: VoidFn) => {
+  unsubscribe();
 });
 
 const saveMetadataFx = createEffect((metadata: NoID<ChainMetadata>): Promise<ChainMetadata | undefined> => {
-  return storageService.metadata.create(metadata);
+  return storageService.metadata.put(metadata);
 });
 
 type ProviderMetadataParams = {
@@ -314,19 +315,16 @@ sample({
 // =====================================================
 
 sample({
-  clock: connected,
-  source: $apis,
-  fn: (apis, chainId) => ({
-    chainId: chainId,
-    api: apis[chainId],
-  }),
+  clock: createApiFx.done,
+  filter: ({ result: api }) => Boolean(api),
+  fn: ({ params, result: api }) => ({ api: api!, chainId: params.chainId }),
   target: subscribeMetadataFx,
 });
 
 sample({
   clock: disconnectStarted,
   source: $metadataSubscriptions,
-  fn: (subscriptions, chainId) => subscriptions[chainId],
+  fn: (metadataSubscriptions, chainId) => metadataSubscriptions[chainId],
   target: unsubscribeMetadataFx,
 });
 

@@ -18,6 +18,6 @@ async function requestMetadata(api: ApiPromise): Promise<NoID<ChainMetadata>> {
   };
 }
 
-function subscribeMetadata(api: ApiPromise, callback?: () => void): UnsubscribePromise {
-  return api.rpc.state.subscribeRuntimeVersion(() => callback?.());
+function subscribeMetadata(api: ApiPromise, callback: (api: ApiPromise) => void): UnsubscribePromise {
+  return api.rpc.state.subscribeRuntimeVersion(() => callback(api));
 }
