@@ -8,7 +8,7 @@ import { MultisigTransaction, Transaction, TransactionType } from '@entities/tra
 import { TransferTypes, XcmTypes } from '@entities/transaction/lib/common/constants';
 import { getStatusOptions, getTransactionOptions } from '../lib/utils';
 import { UNKNOWN_TYPE } from '../lib/constants';
-import { chainsService } from '@entities/network';
+import { chainsService } from '@shared/api/network';
 import type { ChainId } from '@shared/core';
 
 type FilterName = 'status' | 'network' | 'type';

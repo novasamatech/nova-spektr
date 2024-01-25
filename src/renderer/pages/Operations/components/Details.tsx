@@ -6,7 +6,7 @@ import { Icon, FootnoteText, DetailRow, CaptionText } from '@shared/ui';
 import { useToggle } from '@shared/lib/hooks';
 import { MultisigTransaction, Transaction, isXcmTransaction, isTransferTransaction } from '@entities/transaction';
 import { cnTw } from '@shared/lib/utils';
-import { ExtendedChain, isLightClient } from '@entities/network';
+import { ExtendedChain, networkUtils } from '@entities/network';
 import { AddressStyle, DescriptionBlockStyle, InteractionStyle } from '../common/constants';
 import { ChainTitle } from '@entities/chain';
 import { Account } from '@shared/core';
@@ -35,7 +35,7 @@ const Details = ({ tx, account, extendedChain, signatory }: Props) => {
   const addressPrefix = extendedChain?.addressPrefix;
   const explorers = extendedChain?.explorers;
 
-  const validatorsMap = useValidatorsMap(api, connection && isLightClient(connection));
+  const validatorsMap = useValidatorsMap(api, connection && networkUtils.isLightClientConnection(connection));
 
   const [isValidatorsOpen, toggleValidators] = useToggle();
 

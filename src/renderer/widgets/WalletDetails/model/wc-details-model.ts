@@ -7,7 +7,7 @@ import { ReconnectStep, ForgetStep } from '../lib/constants';
 import { walletProviderModel } from './wallet-provider-model';
 import { walletSelectModel } from '@features/wallets';
 import type { Wallet, WalletConnectAccount } from '@shared/core';
-import { chainsService } from '@entities/network';
+import { chainsService } from '@shared/api/network';
 import { toAccountId } from '@shared/lib/utils';
 import { balanceModel } from '@entities/balance';
 

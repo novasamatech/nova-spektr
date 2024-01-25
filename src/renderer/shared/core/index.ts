@@ -41,6 +41,8 @@ export type { Asset, OrmlExtras, StatemineExtras } from './types/asset';
 export { LockTypes } from './types/balance';
 export type { Balance, BalanceKey, BalanceLock } from './types/balance';
 
+export type { ChainMetadata } from './types/metadata';
+
 export type { Chain, ChainOptions, Explorer, RpcNode } from './types/chain';
 
 export { ConnectionType, ConnectionStatus } from './types/connection';

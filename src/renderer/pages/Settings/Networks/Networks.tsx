@@ -12,7 +12,8 @@ import { includes, DEFAULT_TRANSITION } from '@shared/lib/utils';
 import { NetworkList, NetworkItem, CustomRpcModal } from './components';
 import type { RpcNode, ChainId } from '@shared/core';
 import { ConnectionType } from '@shared/core';
-import { networkModel, ExtendedChain, chainsService, isDisabled } from '@entities/network';
+import { networkModel, ExtendedChain, networkUtils } from '@entities/network';
+import { chainsService } from '@shared/api/network';
 
 const MAX_LIGHT_CLIENTS = 3;
 
@@ -55,7 +56,9 @@ export const Networks = () => {
     return acc;
   }, []);
 
-  const [inactive, active] = partition(extendedChains, ({ connection }) => isDisabled(connection));
+  const [inactive, active] = partition(extendedChains, ({ connection }) =>
+    networkUtils.isDisabledConnection(connection),
+  );
 
   const confirmRemoveCustomNode = (name: string): Promise<boolean> => {
     return confirm({
@@ -118,9 +121,9 @@ export const Networks = () => {
   const disableNetwork = ({ connection, name }: ExtendedChain) => {
     return async (): Promise<void> => {
       let proceed = false;
-      if (connection.connectionType === ConnectionType.LIGHT_CLIENT) {
+      if (networkUtils.isLightClientConnection(connection)) {
         proceed = await confirmDisableLightClient(name);
-      } else if ([ConnectionType.RPC_NODE, ConnectionType.AUTO_BALANCE].includes(connection.connectionType)) {
+      } else if (networkUtils.isRpcConnection(connection) || networkUtils.isAutoBalanceConnection(connection)) {
         proceed = await confirmDisableNetwork(name);
       }
       if (!proceed) return;
@@ -131,15 +134,13 @@ export const Networks = () => {
 
   const connectToNode = ({ chainId, connection, name }: ExtendedChain) => {
     return async (type: ConnectionType, node?: RpcNode): Promise<void> => {
-      if (connection.connectionType === ConnectionType.LIGHT_CLIENT) {
+      if (networkUtils.isLightClientConnection(connection)) {
         const proceed = await confirmDisableLightClient(name);
         if (!proceed) return;
       }
 
       if (type === ConnectionType.LIGHT_CLIENT) {
-        const lightClientsAmount = Object.values(connections).filter(
-          (connection) => connection.connectionType === ConnectionType.LIGHT_CLIENT,
-        ).length;
+        const lightClientsAmount = Object.values(connections).filter(networkUtils.isLightClientConnection).length;
 
         if (lightClientsAmount >= MAX_LIGHT_CLIENTS) {
           const proceed = await confirmEnableLightClient();

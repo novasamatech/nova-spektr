@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import { Controller, SubmitHandler, useForm } from 'react-hook-form';
 
 import { useI18n } from '@app/providers';
-import { chainsService } from '@entities/network';
+import { chainsService } from '@shared/api/network';
 import { toAccountId, validateAddress, DEFAULT_TRANSITION } from '@shared/lib/utils';
 import EmptyState from './EmptyState';
 import { AccountsList, walletModel } from '@entities/wallet';

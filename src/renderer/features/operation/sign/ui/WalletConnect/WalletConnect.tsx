@@ -7,7 +7,7 @@ import { useTransaction } from '@entities/transaction';
 import { useI18n } from '@app/providers';
 import { Button, ConfirmModal, Countdown, FootnoteText, SmallTitleText, StatusModal } from '@shared/ui';
 import { walletConnectModel, DEFAULT_POLKADOT_METHODS, walletConnectUtils } from '@entities/walletConnect';
-import { chainsService } from '@entities/network';
+import { chainsService } from '@shared/api/network';
 import { useCountdown } from '@shared/lib/hooks';
 import wallet_connect_confirm from '@shared/assets/video/wallet_connect_confirm.mp4';
 import wallet_connect_confirm_webm from '@shared/assets/video/wallet_connect_confirm.webm';

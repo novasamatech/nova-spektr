@@ -6,7 +6,7 @@ import { constructorModel } from '../model/constructor-model';
 import { Button, Input, Checkbox, FootnoteText, Select, InputHint } from '@shared/ui';
 import { ShardInfoPopover } from './ShardInfoPopover';
 import { ChainTitle } from '@entities/chain';
-import { chainsService } from '@entities/network';
+import { chainsService } from '@shared/api/network';
 import { KeyType } from '@shared/core';
 import { useI18n } from '@app/providers';
 

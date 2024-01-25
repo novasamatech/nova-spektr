@@ -2,7 +2,7 @@ import { useUnit } from 'effector-react';
 import { ApiPromise } from '@polkadot/api';
 
 import { Chain, ChainId, Connection, ConnectionStatus } from '@shared/core';
-import { networkModel } from '../../model/network-model';
+import { networkModel } from '../model/network-model';
 import { ExtendedChain } from './types';
 
 type NetworkData = {

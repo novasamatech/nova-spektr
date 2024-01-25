@@ -19,7 +19,7 @@ import type {
   WalletsMap,
 } from '@shared/core';
 import { AccountType, ChainType, CryptoType, SigningType, WalletType, NotificationType } from '@shared/core';
-import { isDisabled, networkModel } from '@entities/network';
+import { networkModel, networkUtils } from '@entities/network';
 import { accountUtils, walletModel } from '@entities/wallet';
 import { proxyModel, proxyUtils } from '@entities/proxy';
 import { balanceModel } from '@entities/balance';
@@ -51,7 +51,7 @@ const startChainsFx = createEffect(({ chains, connections, endpoint }: StartChai
   const boundConnected = scopeBind(connected, { safe: true });
 
   chains.forEach((chain) => {
-    if (isDisabled(connections[chain.chainId])) return;
+    if (networkUtils.isDisabledConnection(connections[chain.chainId])) return;
 
     endpoint.call.initConnection(chain, connections[chain.chainId]).then(() => {
       boundConnected(chain.chainId);
