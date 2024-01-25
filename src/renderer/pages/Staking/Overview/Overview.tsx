@@ -33,6 +33,7 @@ import {
   ValidatorsModal,
 } from '@entities/staking';
 import { isDisabled as isNetworkDisabled, useNetworkData } from '@entities/network';
+import { permissionService } from '@shared/api/permission';
 
 export const Overview = () => {
   const { t } = useI18n();
@@ -282,7 +283,7 @@ export const Overview = () => {
             {networkIsActive && accounts.length > 0 && (
               <>
                 <Actions
-                  canInteract={!walletUtils.isWatchOnly(activeWallet)}
+                  canInteract={!!activeWallet && permissionService.isStakingAvailable(activeWallet, accounts)}
                   stakes={selectedStakes}
                   isStakingLoading={isStakingLoading}
                   onNavigate={navigateToStake}

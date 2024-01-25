@@ -28,7 +28,7 @@ function isTransferAvailable(wallet: Wallet, accounts: Account[]): boolean {
   return true;
 }
 
-function isReceiveAvailable(wallet: Wallet): boolean {
+function isReceiveAvailable(wallet: Wallet, accounts: Account[]): boolean {
   return !walletUtils.isWatchOnly(wallet);
 }
 
