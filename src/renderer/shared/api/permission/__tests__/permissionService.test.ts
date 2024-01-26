@@ -76,14 +76,14 @@ describe('shared/api/permission/permissionService.ts', () => {
   });
 
   it('should return correct values for receive available for all wallets', () => {
-    expect(permissionService.isReceiveAvailable(wallets[0])).toBe(false);
-    expect(permissionService.isReceiveAvailable(wallets[1])).toBe(true);
-    expect(permissionService.isReceiveAvailable(wallets[2])).toBe(true);
-    expect(permissionService.isReceiveAvailable(wallets[3])).toBe(true);
-    expect(permissionService.isReceiveAvailable(wallets[4])).toBe(true);
-    expect(permissionService.isReceiveAvailable(wallets[5])).toBe(true);
-    expect(permissionService.isReceiveAvailable(wallets[6])).toBe(true);
-    expect(permissionService.isReceiveAvailable(proxiedWallet)).toBe(true);
+    expect(permissionService.isReceiveAvailable(wallets[0], [])).toBe(false);
+    expect(permissionService.isReceiveAvailable(wallets[1], [])).toBe(true);
+    expect(permissionService.isReceiveAvailable(wallets[2], [])).toBe(true);
+    expect(permissionService.isReceiveAvailable(wallets[3], [])).toBe(true);
+    expect(permissionService.isReceiveAvailable(wallets[4], [])).toBe(true);
+    expect(permissionService.isReceiveAvailable(wallets[5], [])).toBe(true);
+    expect(permissionService.isReceiveAvailable(wallets[6], [])).toBe(true);
+    expect(permissionService.isReceiveAvailable(proxiedWallet, [])).toBe(true);
   });
 
   it('should return correct values for staking available for all wallets', () => {
