@@ -3,13 +3,17 @@ import { WellKnownChain } from '@substrate/connect';
 import type { ChainId, ChainOptions } from '@shared/core';
 import { Chains } from './types';
 
-export function getKnownChain(chainId: ChainId): WellKnownChain | undefined {
-  const KnownChains: Record<ChainId, WellKnownChain> = {
-    [Chains.POLKADOT]: WellKnownChain.polkadot,
-    [Chains.KUSAMA]: WellKnownChain.ksmcc3,
-  };
+const KnownChains: Record<ChainId, WellKnownChain> = {
+  [Chains.POLKADOT]: WellKnownChain.polkadot,
+  [Chains.KUSAMA]: WellKnownChain.ksmcc3,
+};
 
+export function getKnownChain(chainId: ChainId): WellKnownChain | undefined {
   return KnownChains[chainId];
+}
+
+export function getLightClientChains(): ChainId[] {
+  return Object.keys(KnownChains) as ChainId[];
 }
 
 export function isPolkadot(chainName: string): boolean {

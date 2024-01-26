@@ -388,7 +388,7 @@ sample({
     return Object.entries(chains).reduce<Record<ChainId, Connection>>((acc, [chainId, chain]) => {
       acc[chain.chainId] = connectionsMap[chainId] || {
         chainId: chain.chainId,
-        canUseLightClient: false,
+        canUseLightClient: networkService.getLightClientChains().includes(chain.chainId),
         connectionType: ConnectionType.AUTO_BALANCE,
         customNodes: [],
       };

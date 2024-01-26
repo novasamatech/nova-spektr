@@ -5,7 +5,7 @@ import * as Sc from '@substrate/connect';
 import type { ChainId, HexString } from '@shared/core';
 import { createCachedProvider } from '../provider/CachedProvider';
 import { ProviderType, RpcValidation, ProviderWithMetadata } from '../lib/types';
-import { getKnownChain } from '../lib/utils';
+import { getKnownChain, getLightClientChains } from '../lib/utils';
 
 export const networkService = {
   createProvider,
@@ -13,6 +13,7 @@ export const networkService = {
   connect,
   disconnect,
   validateRpcNode,
+  getLightClientChains,
 };
 
 function createApi(provider: ProviderInterface): Promise<ApiPromise> {
