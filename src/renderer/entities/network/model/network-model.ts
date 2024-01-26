@@ -388,11 +388,12 @@ sample({
   source: $chains,
   fn: (chains, connections) => {
     const connectionsMap = keyBy(connections, 'chainId');
+    const lightClientChains = networkService.getLightClientChains();
 
     return Object.entries(chains).reduce<Record<ChainId, Connection>>((acc, [chainId, chain]) => {
       acc[chain.chainId] = connectionsMap[chainId] || {
         chainId: chain.chainId,
-        canUseLightClient: networkService.getLightClientChains().includes(chain.chainId),
+        canUseLightClient: lightClientChains.includes(chain.chainId),
         connectionType: ConnectionType.AUTO_BALANCE,
         customNodes: [],
       };
