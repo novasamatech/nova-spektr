@@ -113,8 +113,9 @@ export const Overview = () => {
     const isNovaWallet = walletUtils.isNovaWallet(activeWallet);
     const isWalletConnect = walletUtils.isWalletConnect(activeWallet);
     const isPolkadotVault = walletUtils.isPolkadotVaultGroup(activeWallet);
+    const isProxied = walletUtils.isProxied(activeWallet);
 
-    if (isMultisig || isNovaWallet || isWalletConnect || (isPolkadotVault && addresses.length === 1)) {
+    if (isMultisig || isNovaWallet || isWalletConnect || isProxied || (isPolkadotVault && addresses.length === 1)) {
       setSelectedNominators([addresses[0]]);
     } else {
       setSelectedNominators([]);
