@@ -44,9 +44,7 @@ const $activeAccounts = combine(
     accounts: $accounts,
   },
   ({ wallet, accounts }): Account[] => {
-    if (!wallet) return [];
-
-    return accounts.filter((account) => account.walletId === wallet.id);
+    return wallet ? accountUtils.getWalletAccounts(wallet.id, accounts) : [];
   },
 );
 
