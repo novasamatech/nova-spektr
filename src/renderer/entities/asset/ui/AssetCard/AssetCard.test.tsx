@@ -1,11 +1,14 @@
 import { act, render, screen } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
 import userEvent from '@testing-library/user-event';
+import { fork } from 'effector';
+import { Provider } from 'effector-react';
 
 import chains from '@shared/config/chains/chains.json';
 import { TEST_ACCOUNT_ID } from '@shared/lib/utils';
 import { AssetCard } from './AssetCard';
-import type { Chain, Asset, Balance } from '@shared/core';
+import { type Chain, type Asset, type Balance, WalletType } from '@shared/core';
+import { walletModel } from '../../../wallet';
 
 jest.mock('@app/providers', () => ({
   useI18n: jest.fn().mockReturnValue({
@@ -55,9 +58,28 @@ describe('pages/Assets/AssetCard', () => {
     expect(buttons.length).toEqual(1);
   });
 
-  test('should navigate to receive asset modal', () => {
+  test('should navigate to receive asset modal', async () => {
+    const scope = fork({
+      values: new Map().set(walletModel.$wallets, [
+        {
+          walletId: 1,
+          type: WalletType.POLKADOT_VAULT,
+          isActive: true,
+        },
+      ]),
+    });
+
     window.history.pushState({}, '', '/assets');
-    render(<AssetCard {...defaultProps} />, { wrapper: BrowserRouter });
+
+    await act(async () => {
+      render(
+        <Provider value={scope}>
+          <AssetCard {...defaultProps} />
+        </Provider>,
+        { wrapper: BrowserRouter },
+      );
+    });
+
     expect(window.location.href).toEqual('http://localhost/assets');
 
     const link = screen.getAllByRole('link')[1];
