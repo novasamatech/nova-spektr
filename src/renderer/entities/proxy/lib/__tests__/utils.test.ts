@@ -1,7 +1,7 @@
 import type { ProxyAccount } from '@shared/core';
 import { ProxyType } from '@shared/core';
 import { proxyUtils } from '../utils';
-import { TEST_ACCOUNT_ID } from '@shared/lib/utils';
+import { TEST_ACCOUNTS } from '@shared/lib/utils';
 
 describe('entities/proxy/lib/utils', () => {
   test('should return true when for identical Proxies', () => {
@@ -53,7 +53,7 @@ describe('entities/proxy/lib/utils', () => {
   });
 
   test('should return proxied name for a given proxied account', () => {
-    const result = proxyUtils.getProxiedName(TEST_ACCOUNT_ID, ProxyType.ANY);
+    const result = proxyUtils.getProxiedName(TEST_ACCOUNTS[0], ProxyType.ANY);
 
     expect(result).toEqual('Any for 5CGQ7B...VbXyr9');
   });

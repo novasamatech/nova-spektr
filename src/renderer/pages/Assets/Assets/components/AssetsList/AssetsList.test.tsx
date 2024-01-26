@@ -2,7 +2,7 @@ import { render, screen } from '@testing-library/react';
 import { fork } from 'effector';
 import { Provider } from 'effector-react';
 
-import { TEST_ACCOUNT_ID } from '@shared/lib/utils';
+import { TEST_ACCOUNTS } from '@shared/lib/utils';
 import { ConnectionType } from '@shared/core';
 import { AssetsList } from './AssetsList';
 import { networkModel } from '@entities/network';
@@ -57,7 +57,7 @@ jest.mock('../NetworkAssets/NetworkAssets', () => ({
 describe('pages/Assets/Assets/components/AssetsList', () => {
   const scope = fork({
     values: new Map()
-      .set(assetsModel.$activeShards, [{ name: 'Test Wallet', accountId: TEST_ACCOUNT_ID }])
+      .set(assetsModel.$activeShards, [{ name: 'Test Wallet', accountId: TEST_ACCOUNTS[0] }])
       .set(networkModel.$chains, {
         '0x00': CHAINS[0],
         '0x01': CHAINS[1],

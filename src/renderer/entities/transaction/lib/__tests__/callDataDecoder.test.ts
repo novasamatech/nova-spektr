@@ -6,7 +6,7 @@ import { metadata } from './metadata';
 import { useCallDataDecoder } from '../callDataDecoder';
 import { TEST_ADDRESS } from '@shared/lib/utils';
 
-describe('entities/transaction/lib/callDataDecoder.ts', () => {
+describe('entities/transaction/lib/callDataDecoder', () => {
   const { decodeCallData } = useCallDataDecoder();
 
   const registry = new TypeRegistry();

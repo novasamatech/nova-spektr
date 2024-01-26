@@ -98,15 +98,13 @@ export const useCallDataDecoder = (): ICallDataDecoder => {
     decoded: SubmittableExtrinsic<'promise'>,
     api: ApiPromise,
   ): DecodedTransaction => {
-    const transactionType = TransactionType.PROXY;
-
     const proxyTransaction = getDecodedTransaction(
       address,
       decoded,
       method,
       section,
       api.genesisHash.toHex(),
-      transactionType,
+      TransactionType.PROXY,
     );
     const call = api.createType('Call', proxyTransaction.args.call);
     proxyTransaction.args.transaction = decodeCallData(api, address, call.toHex());
@@ -281,22 +279,23 @@ export const useCallDataDecoder = (): ICallDataDecoder => {
       return { calls: decoded.args[0].toHex() };
     },
     [TransactionType.MULTISIG_AS_MULTI]: (decoded): Record<string, any> => {
+      const baseParams = {
+        threshold: decoded.args[0].toString(),
+        otherSignatories: decoded.args[1].toHuman(),
+        timepoint: decoded.args[2].toString(),
+        call: decoded.args[3].toHex(),
+      };
+
       if (decoded.args.length === OLD_MULTISIG_ARGS_AMOUNT) {
         return {
-          threshold: decoded.args[0].toString(),
-          otherSignatories: decoded.args[1].toHuman(),
-          timepoint: decoded.args[2].toString(),
-          call: decoded.args[3].toHex(),
+          ...baseParams,
           storeCall: decoded.args[4].toString(),
           maxWeight: decoded.args[5].toString(),
         };
       }
 
       return {
-        threshold: decoded.args[0].toString(),
-        otherSignatories: decoded.args[1].toHuman(),
-        timepoint: decoded.args[2].toString(),
-        call: decoded.args[3].toHex(),
+        ...baseParams,
         maxWeight: decoded.args[4].toHuman(),
       };
     },

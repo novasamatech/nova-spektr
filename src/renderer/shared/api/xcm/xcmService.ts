@@ -3,7 +3,7 @@ import { ApiPromise } from '@polkadot/api';
 import get from 'lodash/get';
 
 import { XCM_URL, XCM_KEY } from './lib/constants';
-import { getTypeVersion, toLocalChainId, getTypeName, getAssetId, TEST_ACCOUNT_ID } from '@shared/lib/utils';
+import { getTypeVersion, toLocalChainId, getTypeName, getAssetId, TEST_ACCOUNTS } from '@shared/lib/utils';
 import { XcmPalletTransferArgs, XTokenPalletTransferArgs } from '@entities/transaction';
 import { chainsService } from '@entities/network';
 import { toRawString } from './lib/utils';
@@ -574,7 +574,7 @@ const InstructionObjects: Record<Action, (assetLocation: object, destLocation: o
             X1: {
               AccountId32: {
                 network: 'Any',
-                id: TEST_ACCOUNT_ID,
+                id: TEST_ACCOUNTS[0],
               },
             },
           },
@@ -662,14 +662,14 @@ export const estimateFeeFromApi = async (
   let paymentInfo;
 
   try {
-    paymentInfo = await api.tx[pallet].execute(message, 0).paymentInfo(TEST_ACCOUNT_ID);
+    paymentInfo = await api.tx[pallet].execute(message, 0).paymentInfo(TEST_ACCOUNTS[0]);
   } catch (e) {
     paymentInfo = await api.tx[pallet]
       .execute(message, {
         refTime: '0',
         proofSize: '0',
       })
-      .paymentInfo(TEST_ACCOUNT_ID);
+      .paymentInfo(TEST_ACCOUNTS[0]);
   }
 
   return paymentInfo.partialFee;

@@ -2,7 +2,7 @@ import { TEST_ADDRESS } from '@shared/lib/utils';
 import { getIconName } from '../transactionIcon';
 import { TransactionType } from '../../model/transaction';
 
-describe('entities/transaction/lib/transactionIcon.ts', () => {
+describe('entities/transaction/lib/transactionIcon', () => {
   test('should get transfer icon for transfer transaction', () => {
     const iconName = getIconName({
       address: TEST_ADDRESS,
