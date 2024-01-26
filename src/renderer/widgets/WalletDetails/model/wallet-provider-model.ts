@@ -1,13 +1,14 @@
 import { combine } from 'effector';
 
-import { accountUtils, walletModel, walletUtils } from '@entities/wallet';
+import { accountUtils, walletModel } from '@entities/wallet';
 import { walletSelectModel } from '@features/wallets';
 import { dictionary } from '@shared/lib/utils';
 import { walletDetailsUtils } from '../lib/utils';
 import type { MultishardMap, VaultMap } from '../lib/types';
 import type { Account, Signatory, Wallet, MultisigAccount, BaseAccount, AccountId, ProxiedAccount } from '@shared/core';
-import { proxyModel, proxyUtils } from '@entities/proxy';
+import { proxyModel } from '@entities/proxy';
 import { ProxyAccount } from '@shared/core';
+import { proxyUtils, walletUtils } from '@shared/core/utils';
 
 const $accounts = combine(
   {

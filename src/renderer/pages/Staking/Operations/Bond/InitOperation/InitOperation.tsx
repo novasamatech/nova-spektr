@@ -8,7 +8,8 @@ import { useI18n } from '@app/providers';
 import { Transaction, TransactionType, OperationError } from '@entities/transaction';
 import { formatAmount, stakeableAmount, toAddress, nonNullable, TEST_ADDRESS } from '@shared/lib/utils';
 import { validatorsService } from '@entities/staking';
-import { walletModel, walletUtils, accountUtils } from '@entities/wallet';
+import { walletModel, accountUtils } from '@entities/wallet';
+import { walletUtils } from '@shared/core/utils';
 import { OperationForm } from '../../components';
 import { useAssetBalances } from '@entities/balance';
 import type {

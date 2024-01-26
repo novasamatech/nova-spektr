@@ -1,7 +1,8 @@
 import { createEvent, createEffect, createStore, sample } from 'effector';
 
 import { localStorageService } from '@shared/api/local-storage';
-import { walletModel, accountUtils, walletUtils } from '@entities/wallet';
+import { walletModel, accountUtils } from '@entities/wallet';
+import { walletUtils } from '@shared/core/utils';
 import { Account } from '@shared/core';
 import { HIDE_ZERO_BALANCES } from '../common/constants';
 

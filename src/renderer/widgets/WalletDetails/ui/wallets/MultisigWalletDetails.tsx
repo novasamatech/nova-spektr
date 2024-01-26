@@ -5,7 +5,7 @@ import { MultisigAccount, Signatory, Wallet, AccountId } from '@shared/core';
 import { BaseModal, FootnoteText, Tabs, HelpText, DropdownIconButton } from '@shared/ui';
 import { RootExplorers } from '@shared/lib/utils';
 import { useModalClose, useToggle } from '@shared/lib/hooks';
-import { AccountsList, ContactItem, ExplorersPopover, WalletCardLg, WalletCardMd } from '@entities/wallet';
+import { AccountsList, ContactItem, ExplorersPopover, WalletCardLg, WalletCardMd, walletModel } from '@entities/wallet';
 import { chainsService, isMultisigAvailable } from '@entities/network';
 import { useI18n, useMatrix } from '@app/providers';
 // TODO: think about combining balances and wallets
@@ -16,6 +16,7 @@ import { ForgetWalletModal } from '@features/wallets/ForgetWallet';
 import { ProxiesList } from '../components/ProxiesList';
 import { walletProviderModel } from '../../model/wallet-provider-model';
 import { NoProxiesAction } from '../components/NoProxiesAction';
+import { permissionService } from '@shared/api/permission';
 
 type Props = {
   wallet: Wallet;
@@ -29,6 +30,8 @@ export const MultisigWalletDetails = ({ wallet, account, signatoryWallets, signa
   const { matrix, isLoggedIn } = useMatrix();
 
   const hasProxies = useUnit(walletProviderModel.$hasProxies);
+  const activeWallet = useUnit(walletModel.$activeWallet);
+  const activeAccounts = useUnit(walletModel.$activeAccounts);
 
   const [isModalOpen, closeModal] = useModalClose(true, onClose);
   const [isRenameModalOpen, toggleIsRenameModalOpen] = useToggle();
@@ -62,6 +65,11 @@ export const MultisigWalletDetails = ({ wallet, account, signatoryWallets, signa
       </DropdownIconButton.Items>
     </DropdownIconButton>
   );
+
+  const canCreateProxy =
+    activeWallet &&
+    (permissionService.isCreateAnyProxyAvailable(activeWallet, activeAccounts) ||
+      permissionService.isCreateNonAnyProxyAvailable(activeWallet, activeAccounts));
 
   return (
     <BaseModal
@@ -167,9 +175,9 @@ export const MultisigWalletDetails = ({ wallet, account, signatoryWallets, signa
               id: 3,
               title: t('walletDetails.common.proxiesTabTitle'),
               panel: hasProxies ? (
-                <ProxiesList walletId={wallet.id} className="h-[387px]" />
+                <ProxiesList walletId={wallet.id} className="h-[387px]" canCreateProxy={canCreateProxy} />
               ) : (
-                <NoProxiesAction className="h-[387px]" />
+                <NoProxiesAction className="h-[387px]" canCreateProxy={canCreateProxy} />
               ),
             },
           ]}

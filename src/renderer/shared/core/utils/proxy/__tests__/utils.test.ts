@@ -11,10 +11,10 @@ import {
   Account,
   Wallet,
 } from '@shared/core';
-import { proxyUtils } from '../utils';
 import { TEST_ACCOUNT_ID } from '@shared/lib/utils';
+import { proxyUtils } from '../proxy-utils';
 
-describe('entities/proxy/lib/utils', () => {
+describe('shared/core/utils/proxy/proxy-utils', () => {
   test('should return true when for identical Proxies', () => {
     const oldProxy = {
       id: 1,

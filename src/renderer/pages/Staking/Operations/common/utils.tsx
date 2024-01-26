@@ -2,7 +2,8 @@ import { BN } from '@polkadot/util';
 import cn from 'classnames';
 import { ReactNode } from 'react';
 
-import { AccountAddress, accountUtils, WalletIcon, walletUtils } from '@entities/wallet';
+import { AccountAddress, accountUtils, WalletIcon } from '@entities/wallet';
+import { walletUtils } from '@shared/core/utils';
 import { DropdownOption } from '@shared/ui/Dropdowns/common/types';
 import { AssetBalance } from '@entities/asset';
 import { FootnoteText } from '@shared/ui';

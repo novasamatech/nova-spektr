@@ -4,10 +4,11 @@ import { ProxyPopover } from '@entities/proxy/ui/ProxyPopover';
 import { cnTw } from '@shared/lib/utils';
 
 type Props = {
+  canCreateProxy?: boolean;
   className?: string;
 };
 
-export const NoProxiesAction = ({ className }: Props) => {
+export const NoProxiesAction = ({ className, canCreateProxy = true }: Props) => {
   const { t } = useI18n();
 
   return (
@@ -18,7 +19,7 @@ export const NoProxiesAction = ({ className }: Props) => {
         <ProxyPopover />
       </div>
       <FootnoteText className="text-text-tertiary mb-4">{t('walletDetails.common.emptyProxyDescription')}</FootnoteText>
-      <Button size="sm">{t('walletDetails.common.addProxyButton')}</Button>
+      {canCreateProxy && <Button size="sm">{t('walletDetails.common.addProxyButton')}</Button>}
     </div>
   );
 };

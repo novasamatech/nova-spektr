@@ -1,3 +1,5 @@
+import { useUnit } from 'effector-react';
+
 import { Icon, Button, InfoLink, SmallTitleText } from '@shared/ui';
 import { OperationCardDetails } from './OperationCardDetails';
 import RejectTx from './modals/RejectTx';
@@ -11,6 +13,9 @@ import { MultisigTransactionDS } from '@shared/api/storage';
 import type { CallData, MultisigAccount } from '@shared/core';
 import { OperationSignatories } from './OperationSignatories';
 import { useNetworkData } from '@entities/network';
+import { permissionService } from '@/src/renderer/shared/api/permission';
+import { walletModel } from '@/src/renderer/entities/wallet';
+import { dictionary } from '@/src/renderer/shared/lib/utils';
 
 type Props = {
   tx: MultisigTransactionDS;
@@ -20,7 +25,9 @@ type Props = {
 const OperationFullInfo = ({ tx, account }: Props) => {
   const { t } = useI18n();
   const { api, chain, connection, extendedChain } = useNetworkData(tx.chainId);
+  const wallets = useUnit(walletModel.$wallets);
 
+  const walletsMap = dictionary(wallets, 'id');
   const callData = tx.callData;
 
   const { matrix } = useMatrix();
@@ -51,6 +58,9 @@ const OperationFullInfo = ({ tx, account }: Props) => {
     });
   };
 
+  const isRejectAvailable =
+    account && permissionService.isRejectMultisigTxAvailable(walletsMap[account.walletId], [account]);
+
   return (
     <div className="flex flex-1">
       <div className="flex flex-col w-[416px] p-4 border-r border-r-divider">
@@ -77,7 +87,7 @@ const OperationFullInfo = ({ tx, account }: Props) => {
         <OperationCardDetails tx={tx} account={account} extendedChain={extendedChain} />
 
         <div className="flex items-center mt-3">
-          {account && connection && <RejectTx tx={tx} account={account} connection={extendedChain} />}
+          {connection && isRejectAvailable && <RejectTx tx={tx} account={account} connection={extendedChain} />}
           {account && connection && <ApproveTx tx={tx} account={account} connection={extendedChain} />}
         </div>
       </div>

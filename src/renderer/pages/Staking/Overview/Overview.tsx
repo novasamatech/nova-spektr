@@ -20,7 +20,8 @@ import {
   ConnectionType,
   ConnectionStatus,
 } from '@shared/core';
-import { accountUtils, walletModel, walletUtils } from '@entities/wallet';
+import { accountUtils, walletModel } from '@entities/wallet';
+import { walletUtils } from '@shared/core/utils';
 import { priceProviderModel } from '@entities/price';
 import { NominatorInfo } from './common/types';
 import {

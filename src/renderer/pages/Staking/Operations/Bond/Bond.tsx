@@ -19,7 +19,8 @@ import { DestinationType } from '../common/types';
 import { UnstakingDuration } from '@pages/Staking/Overview/components';
 import { useNetworkData, isLightClient } from '@entities/network';
 import { Signing } from '@features/operation';
-import { walletUtils, walletModel } from '@entities/wallet';
+import { walletModel } from '@entities/wallet';
+import { walletUtils } from '@shared/core/utils';
 import { priceProviderModel } from '@entities/price';
 import { StakingPopover } from '../components/StakingPopover/StakingPopover';
 

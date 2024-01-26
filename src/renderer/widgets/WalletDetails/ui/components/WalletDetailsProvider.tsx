@@ -7,7 +7,7 @@ import { WalletConnectDetails } from '../wallets/WalletConnectDetails';
 import { MultishardWalletDetails } from '../wallets/MultishardWalletDetails';
 import { VaultWalletDetails } from '../wallets/VaultWalletDetails';
 import { walletProviderModel } from '../../model/wallet-provider-model';
-import { walletUtils } from '@entities/wallet';
+import { walletUtils } from '@shared/core/utils';
 import { ProxiedWalletDetails } from '../wallets/ProxiedWalletDetails';
 import { ProxiedAccount } from '@shared/core';
 

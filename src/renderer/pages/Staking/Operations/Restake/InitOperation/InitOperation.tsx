@@ -9,7 +9,8 @@ import type { Account, Asset, Balance as AccountBalance, ChainId, AccountId, Wal
 import { formatAmount, unlockingAmount, toAddress, nonNullable } from '@shared/lib/utils';
 import { StakingMap, useStakingData } from '@entities/staking';
 import { OperationFooter, OperationHeader } from '@features/operation';
-import { walletModel, walletUtils, accountUtils } from '@entities/wallet';
+import { walletModel, accountUtils } from '@entities/wallet';
+import { walletUtils } from '@shared/core/utils';
 import { OperationForm } from '../../components';
 import {
   getRestakeAccountOption,

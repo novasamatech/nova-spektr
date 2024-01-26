@@ -1,7 +1,8 @@
 import { createEvent, sample, createEffect, createStore, createApi, attach, split } from 'effector';
 
 import { MultisigAccount, Wallet } from '@shared/core';
-import { accountUtils, walletModel, walletUtils } from '@entities/wallet';
+import { accountUtils, walletModel } from '@entities/wallet';
+import { walletUtils } from '@shared/core/utils';
 import { balanceModel } from '@entities/balance';
 import { useForgetMultisig } from '@entities/multisig';
 

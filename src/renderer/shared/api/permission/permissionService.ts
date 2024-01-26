@@ -1,6 +1,5 @@
-import { walletUtils } from '@entities/wallet';
 import { Account, ProxiedAccount, Wallet } from '../../core';
-import { proxyUtils } from '@entities/proxy';
+import { proxyUtils, walletUtils } from '@shared/core/utils';
 
 export const permissionService = {
   isTransferAvailable,

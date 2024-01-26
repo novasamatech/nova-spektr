@@ -7,7 +7,8 @@ import { BaseModal, Button, FootnoteText, HelpText, Icon, Select } from '@shared
 import { DropdownOption, DropdownResult } from '@shared/ui/types';
 import { useI18n } from '@app/providers';
 import { copyToClipboard, DEFAULT_TRANSITION, toAddress, cnTw } from '@shared/lib/utils';
-import { AccountAddress, walletModel, walletUtils, accountUtils } from '@entities/wallet';
+import { AccountAddress, walletModel, accountUtils } from '@entities/wallet';
+import { walletUtils } from '@shared/core/utils';
 import { useToggle } from '@shared/lib/hooks';
 import type { Chain, Asset } from '@shared/core';
 import { QrTextGenerator } from '@entities/transaction';

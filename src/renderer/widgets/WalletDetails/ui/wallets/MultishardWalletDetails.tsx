@@ -2,7 +2,7 @@ import { useUnit } from 'effector-react';
 
 import { BaseModal, DropdownIconButton, Tabs } from '@shared/ui';
 import { useModalClose, useToggle } from '@shared/lib/hooks';
-import { MultishardAccountsList, WalletCardLg } from '@entities/wallet';
+import { MultishardAccountsList, WalletCardLg, walletModel } from '@entities/wallet';
 import { useI18n } from '@app/providers';
 import type { Wallet } from '@shared/core';
 import type { MultishardMap } from '../../lib/types';
@@ -15,6 +15,7 @@ import { ProxiesList } from '../components/ProxiesList';
 import { walletProviderModel } from '../../model/wallet-provider-model';
 import { NoProxiesAction } from '../components/NoProxiesAction';
 import { networkModel } from '@entities/network';
+import { permissionService } from '@shared/api/permission';
 
 type Props = {
   wallet: Wallet;
@@ -26,6 +27,8 @@ export const MultishardWalletDetails = ({ wallet, accounts, onClose }: Props) =>
 
   const chains = useUnit(networkModel.$chains);
   const hasProxies = useUnit(walletProviderModel.$hasProxies);
+  const activeWallet = useUnit(walletModel.$activeWallet);
+  const activeAccounts = useUnit(walletModel.$activeAccounts);
 
   const [isModalOpen, closeModal] = useModalClose(true, onClose);
   const [isRenameModalOpen, toggleIsRenameModalOpen] = useToggle();
@@ -61,6 +64,11 @@ export const MultishardWalletDetails = ({ wallet, accounts, onClose }: Props) =>
     </DropdownIconButton>
   );
 
+  const canCreateProxy =
+    activeWallet &&
+    (permissionService.isCreateAnyProxyAvailable(activeWallet, activeAccounts) ||
+      permissionService.isCreateNonAnyProxyAvailable(activeWallet, activeAccounts));
+
   const tabItems: TabItem[] = [
     {
       id: 'accounts',
@@ -71,9 +79,9 @@ export const MultishardWalletDetails = ({ wallet, accounts, onClose }: Props) =>
       id: 'proxies',
       title: t('walletDetails.common.proxiesTabTitle'),
       panel: hasProxies ? (
-        <ProxiesList walletId={wallet.id} className="h-[403px] mt-4" />
+        <ProxiesList walletId={wallet.id} className="h-[403px] mt-4" canCreateProxy={canCreateProxy} />
       ) : (
-        <NoProxiesAction className="h-[403px] mt-4" />
+        <NoProxiesAction className="h-[403px] mt-4" canCreateProxy={canCreateProxy} />
       ),
     },
   ];

@@ -9,7 +9,8 @@ import { toAddress, nonNullable } from '@shared/lib/utils';
 import { OperationFooter, OperationHeader } from '@features/operation';
 import { OperationForm } from '../../components';
 import { Balance as AccountBalance, Account, Asset, MultisigAccount, ChainId, AccountId, Wallet } from '@shared/core';
-import { walletUtils, accountUtils, walletModel } from '@entities/wallet';
+import { accountUtils, walletModel } from '@entities/wallet';
+import { walletUtils } from '@shared/core/utils';
 import { useAssetBalances } from '@entities/balance';
 import {
   getSignatoryOption,

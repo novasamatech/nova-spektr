@@ -5,7 +5,7 @@ import { FootnoteText, StatusLabel } from '@shared/ui';
 import { cnTw } from '@shared/lib/utils';
 import type { Wallet } from '@shared/core';
 import { WalletIcon } from '../WalletIcon/WalletIcon';
-import { walletUtils } from '../../lib/wallet-utils';
+import { walletUtils } from '@shared/core/utils';
 
 type Props = {
   wallet: Wallet;

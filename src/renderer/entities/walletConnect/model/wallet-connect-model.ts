@@ -8,7 +8,8 @@ import { nonNullable } from '@shared/lib/utils';
 import { ID, Account, WalletConnectAccount, kernelModel } from '@shared/core';
 import { localStorageService } from '@shared/api/local-storage';
 import { storageService } from '@shared/api/storage';
-import { walletModel, walletUtils } from '../../wallet';
+import { walletModel } from '../../wallet';
+import { walletUtils } from '@shared/core/utils';
 import { InitConnectParams } from '../lib/types';
 import { walletConnectUtils } from '../lib/utils';
 import {

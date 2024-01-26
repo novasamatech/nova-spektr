@@ -6,12 +6,13 @@ import { networkModel } from '@entities/network';
 import { useModalClose, useToggle } from '@shared/lib/hooks';
 import { IconNames } from '@shared/ui/Icon/data';
 import { BaseModal, DropdownIconButton, FootnoteText, Icon, Tabs } from '@shared/ui';
-import { AccountsList, WalletCardLg, WalletIcon } from '@entities/wallet';
+import { AccountsList, WalletCardLg, WalletIcon, walletModel } from '@entities/wallet';
 import { RenameWalletModal } from '@features/wallets/RenameWallet';
 import { TabItem } from '@shared/ui/Tabs/common/types';
 import { ProxiesList } from '../components/ProxiesList';
 import { walletProviderModel } from '../../model/wallet-provider-model';
 import { NoProxiesAction } from '../components/NoProxiesAction';
+import { permissionService } from '@shared/api/permission';
 
 const ProxyTypeOperation: Record<ProxyType, string> = {
   [ProxyType.ANY]: 'proxy.operations.any',
@@ -36,9 +37,16 @@ export const ProxiedWalletDetails = ({ wallet, proxyWallet, proxiedAccount, onCl
 
   const chains = useUnit(networkModel.$chains);
   const hasProxies = useUnit(walletProviderModel.$hasProxies);
+  const activeWallet = useUnit(walletModel.$activeWallet);
+  const activeAccounts = useUnit(walletModel.$activeAccounts);
 
   const [isModalOpen, closeModal] = useModalClose(true, onClose);
   const [isRenameModalOpen, toggleIsRenameModalOpen] = useToggle();
+
+  const canCreateProxy =
+    activeWallet &&
+    (permissionService.isCreateAnyProxyAvailable(activeWallet, activeAccounts) ||
+      permissionService.isCreateNonAnyProxyAvailable(activeWallet, activeAccounts));
 
   const Options = [
     {
@@ -76,9 +84,9 @@ export const ProxiedWalletDetails = ({ wallet, proxyWallet, proxiedAccount, onCl
       id: 'proxies',
       title: t('walletDetails.common.proxiesTabTitle'),
       panel: hasProxies ? (
-        <ProxiesList walletId={wallet.id} className="h-[353px]" />
+        <ProxiesList walletId={wallet.id} className="h-[353px]" canCreateProxy={canCreateProxy} />
       ) : (
-        <NoProxiesAction className="h-[353px]" />
+        <NoProxiesAction className="h-[353px]" canCreateProxy={canCreateProxy} />
       ),
     },
   ];

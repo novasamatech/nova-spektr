@@ -5,7 +5,8 @@ import { DropdownOption, DropdownResult } from '@shared/ui/Dropdowns/common/type
 import { InputHint, Select } from '@shared/ui';
 import { useI18n } from '@app/providers';
 import { OperationErrorType } from '@entities/transaction';
-import { accountUtils, walletModel, walletUtils } from '@entities/wallet';
+import { accountUtils, walletModel } from '@entities/wallet';
+import { walletUtils } from '@shared/core/utils';
 import type { Account, ChainId, MultisigAccount, Wallet } from '@shared/core';
 
 type Props = {

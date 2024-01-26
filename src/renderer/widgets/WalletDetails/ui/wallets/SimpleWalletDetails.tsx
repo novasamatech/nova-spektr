@@ -2,7 +2,8 @@ import { useUnit } from 'effector-react';
 
 import { BaseModal, DropdownIconButton, Tabs } from '@shared/ui';
 import { useModalClose, useToggle } from '@shared/lib/hooks';
-import { AccountsList, WalletCardLg, walletUtils } from '@entities/wallet';
+import { AccountsList, WalletCardLg, walletModel } from '@entities/wallet';
+import { walletUtils } from '@shared/core/utils';
 import { networkModel } from '@entities/network';
 import { useI18n } from '@app/providers';
 import type { BaseAccount, Wallet } from '@shared/core';
@@ -13,6 +14,7 @@ import { TabItem } from '@shared/ui/Tabs/common/types';
 import { ProxiesList } from '../components/ProxiesList';
 import { walletProviderModel } from '../../model/wallet-provider-model';
 import { NoProxiesAction } from '../components/NoProxiesAction';
+import { permissionService } from '@shared/api/permission';
 
 type Props = {
   wallet: Wallet;
@@ -24,10 +26,17 @@ export const SimpleWalletDetails = ({ wallet, account, onClose }: Props) => {
 
   const chains = useUnit(networkModel.$chains);
   const hasProxies = useUnit(walletProviderModel.$hasProxies);
+  const activeWallet = useUnit(walletModel.$activeWallet);
+  const activeAccounts = useUnit(walletModel.$activeAccounts);
 
   const [isModalOpen, closeModal] = useModalClose(true, onClose);
   const [isRenameModalOpen, toggleIsRenameModalOpen] = useToggle();
   const [isConfirmForgetOpen, toggleConfirmForget] = useToggle();
+
+  const canCreateProxy =
+    activeWallet &&
+    (permissionService.isCreateAnyProxyAvailable(activeWallet, activeAccounts) ||
+      permissionService.isCreateNonAnyProxyAvailable(activeWallet, activeAccounts));
 
   const Options = [
     {
@@ -64,9 +73,9 @@ export const SimpleWalletDetails = ({ wallet, account, onClose }: Props) => {
       id: 'proxies',
       title: t('walletDetails.common.proxiesTabTitle'),
       panel: hasProxies ? (
-        <ProxiesList canCreateProxy={!walletUtils.isWatchOnly(wallet)} walletId={wallet.id} className="h-[388px]" />
+        <ProxiesList walletId={wallet.id} className="h-[388px]" canCreateProxy={canCreateProxy} />
       ) : (
-        <NoProxiesAction className="h-[388px]" />
+        <NoProxiesAction className="h-[388px]" canCreateProxy={canCreateProxy} />
       ),
     },
   ];
