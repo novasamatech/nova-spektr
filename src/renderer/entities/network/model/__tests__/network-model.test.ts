@@ -80,7 +80,7 @@ describe('entities/network/model/network-model', () => {
 
     const spyCreateProvider = jest
       .spyOn(networkService, 'createProvider')
-      .mockReturnValue({ isConnected: true } as ProviderWithMetadata);
+      .mockReturnValue({ isConnected: true, connect: jest.fn() } as unknown as ProviderWithMetadata);
     jest.spyOn(networkService, 'createApi').mockResolvedValue(api);
 
     await allSettled(networkModel.events.networkStarted, { scope });
