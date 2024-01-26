@@ -7,7 +7,7 @@ import { useI18n } from '@app/providers';
 import { OperationErrorType } from '@entities/transaction';
 import { accountUtils, walletModel } from '@entities/wallet';
 import type { Account, ChainId, MultisigAccount, Wallet } from '@shared/core';
-import { permissionService } from '@/src/renderer/shared/api/permission';
+import { permissionService } from '@shared/api/permission';
 
 type Props = {
   chainId: ChainId;

@@ -31,7 +31,7 @@ import {
   useTransaction,
   validateBalance,
 } from '@entities/transaction';
-import { permissionService } from '@/src/renderer/shared/api/permission';
+import { permissionService } from '@shared/api/permission';
 
 type Props = {
   tx: MultisigTransactionDS;

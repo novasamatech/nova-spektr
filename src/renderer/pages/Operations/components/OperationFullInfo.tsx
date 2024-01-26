@@ -13,7 +13,7 @@ import { MultisigTransactionDS } from '@shared/api/storage';
 import type { CallData, MultisigAccount } from '@shared/core';
 import { OperationSignatories } from './OperationSignatories';
 import { useNetworkData } from '@entities/network';
-import { permissionService } from '@/src/renderer/shared/api/permission';
+import { permissionService } from '@shared/api/permission';
 import { walletModel } from '@/src/renderer/entities/wallet';
 import { dictionary } from '@/src/renderer/shared/lib/utils';
 
