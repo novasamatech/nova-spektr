@@ -43,7 +43,6 @@ const rpcNodeAdded = createEvent<NodeEventParams>();
 const rpcNodeUpdated = createEvent<NodeEventParams>();
 const rpcNodeRemoved = createEvent<NodeEventParams>();
 
-const connected = createEvent<ChainId>();
 const disconnected = createEvent<ChainId>();
 const failed = createEvent<ChainId>();
 
@@ -161,7 +160,6 @@ type CreateProviderParams = {
 };
 const createProviderFx = createEffect(
   async ({ chainId, nodes, metadata, providerType }: CreateProviderParams): Promise<ProviderWithMetadata> => {
-    const boundConnected = scopeBind(connected, { safe: true });
     const boundDisconnected = scopeBind(disconnected, { safe: true });
     const boundFailed = scopeBind(failed, { safe: true });
 
@@ -170,16 +168,12 @@ const createProviderFx = createEffect(
       providerType,
       { nodes, metadata: metadata?.metadata },
       {
-        onConnected: () => {
-          console.info('🟢 provider connected ==> ', chainId);
-          boundConnected(chainId);
-        },
         onDisconnected: () => {
-          console.info('🔶 provider disconnected ==> ', chainId);
+          console.info('🔶 API disconnected ==> ', chainId);
           boundDisconnected(chainId);
         },
         onError: () => {
-          console.info('🔴 provider error ==> ', chainId);
+          console.info('🔴 API error ==> ', chainId);
           boundFailed(chainId);
         },
       },
@@ -291,10 +285,12 @@ sample({
 });
 
 sample({
-  clock: connected,
+  clock: createApiFx.done,
   source: $connectionStatuses,
-  filter: (statuses, chainId) => statuses[chainId] !== ConnectionStatus.CONNECTED,
-  fn: (statuses, chainId) => ({ ...statuses, [chainId]: ConnectionStatus.CONNECTED }),
+  filter: (statuses, { params, result: api }) => {
+    return Boolean(api) && statuses[params.chainId] !== ConnectionStatus.CONNECTED;
+  },
+  fn: (statuses, { params }) => ({ ...statuses, [params.chainId]: ConnectionStatus.CONNECTED }),
   target: $connectionStatuses,
 });
 
@@ -388,12 +384,14 @@ sample({
   source: $chains,
   fn: (chains, connections) => {
     const connectionsMap = keyBy(connections, 'chainId');
-    const lightClientChains = networkService.getLightClientChains();
+    const lightClientChains = networkUtils.getLightClientChains();
 
-    return Object.entries(chains).reduce<Record<ChainId, Connection>>((acc, [chainId, chain]) => {
-      acc[chain.chainId] = connectionsMap[chainId] || {
-        chainId: chain.chainId,
-        canUseLightClient: lightClientChains.includes(chain.chainId),
+    return Object.keys(chains).reduce<Record<ChainId, Connection>>((acc, key) => {
+      const chainId = key as ChainId;
+
+      acc[chainId] = connectionsMap[chainId] || {
+        chainId,
+        canUseLightClient: lightClientChains.includes(chainId),
         connectionType: ConnectionType.AUTO_BALANCE,
         customNodes: [],
       };
