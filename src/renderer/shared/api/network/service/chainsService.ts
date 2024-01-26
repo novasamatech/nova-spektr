@@ -4,9 +4,8 @@ import BigNumber from 'bignumber.js';
 import chainsProd from '@shared/config/chains/chains.json';
 import chainsDev from '@shared/config/chains/chains_dev.json';
 import { getRelaychainAsset, nonNullable, totalAmount, ZERO_BALANCE } from '@shared/lib/utils';
-import { ChainLike, ChainMap } from './common/types';
-import { isKusama, isPolkadot, isTestnet, isNameWithNumber } from './common/utils';
 import type { Chain, ChainId, Balance } from '@shared/core';
+import { isPolkadot, isKusama, isTestnet, isNameStartsWithNumber } from '../lib/utils';
 import { PriceObject } from '@shared/api/price-provider';
 import { sumBalances } from '@pages/Assets/Assets/common/utils';
 
@@ -35,7 +34,7 @@ function getChainsData(params = { sort: false }): Chain[] {
   return params.sort ? sortChains(chains) : chains;
 }
 
-function getChainsMap(params = { sort: false }): ChainMap {
+function getChainsMap(params = { sort: false }): Record<ChainId, Chain> {
   return keyBy(getChainsData(params), 'chainId');
 }
 
@@ -57,7 +56,7 @@ function getStakingChainsData(params = { sort: false }): Chain[] {
   }, []);
 }
 
-function sortChains<T extends ChainLike>(chains: T[]): T[] {
+function sortChains<T extends Pick<Chain, 'name' | 'options'>>(chains: T[]): T[] {
   let polkadot;
   let kusama;
   const testnets = [] as T[];
@@ -68,7 +67,7 @@ function sortChains<T extends ChainLike>(chains: T[]): T[] {
     if (isPolkadot(chain.name)) polkadot = chain;
     else if (isKusama(chain.name)) kusama = chain;
     else if (isTestnet(chain.options)) testnets.push(chain);
-    else if (isNameWithNumber(chain.name)) numberchains.push(chain);
+    else if (isNameStartsWithNumber(chain.name)) numberchains.push(chain);
     else parachains.push(chain);
   });
 
@@ -141,7 +140,7 @@ function sortChainsByBalance(
       collection = hasBalance ? relaychains.withBalance : relaychains.noBalance;
     } else if (isTestnet(chain.options)) {
       collection = hasBalance ? testnets.withBalance : testnets.noBalance;
-    } else if (isNameWithNumber(chain.name)) {
+    } else if (isNameStartsWithNumber(chain.name)) {
       collection = hasBalance ? numberchains.withBalance : numberchains.noBalance;
     }
 

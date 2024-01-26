@@ -8,21 +8,11 @@ import { createLink, type PathType } from '@shared/routes';
 import { useGraphql, useI18n } from '@app/providers';
 import { useToggle } from '@shared/lib/hooks';
 import { AboutStaking, NetworkInfo, NominatorsList, Actions, InactiveChain } from './components';
-import {
-  ChainId,
-  Chain,
-  Address,
-  Account,
-  Stake,
-  Validator,
-  ShardAccount,
-  ChainAccount,
-  ConnectionType,
-  ConnectionStatus,
-} from '@shared/core';
 import { accountUtils, walletModel, walletUtils } from '@entities/wallet';
 import { priceProviderModel } from '@entities/price';
 import { NominatorInfo } from './common/types';
+import { useNetworkData, networkUtils } from '@entities/network';
+import { ChainId, Chain, Address, Account, Stake, Validator, ShardAccount, ChainAccount } from '@shared/core';
 import {
   useEra,
   useStakingData,
@@ -32,7 +22,6 @@ import {
   useStakingRewards,
   ValidatorsModal,
 } from '@entities/staking';
-import { isDisabled as isNetworkDisabled, useNetworkData } from '@entities/network';
 
 export const Overview = () => {
   const { t } = useI18n();
@@ -80,8 +69,6 @@ export const Overview = () => {
 
   const { rewards, isRewardsLoading } = useStakingRewards(addresses);
 
-  const isLightClient = connection?.connectionType === ConnectionType.LIGHT_CLIENT;
-
   useEffect(() => {
     priceProviderModel.events.assetsPricesRequested({ includeRates: true });
   }, []);
@@ -89,8 +76,8 @@ export const Overview = () => {
   useEffect(() => {
     if (!connection) return;
 
-    const isDisabled = isNetworkDisabled(connection);
-    const isError = connectionStatus === ConnectionStatus.ERROR;
+    const isDisabled = networkUtils.isDisabledConnection(connection);
+    const isError = networkUtils.isErrorStatus(connectionStatus);
 
     setNetworkIsActive(!isDisabled && !isError);
   }, [chainId, connection]);
@@ -144,9 +131,11 @@ export const Overview = () => {
   useEffect(() => {
     if (!api) return;
 
-    validatorsService.getNominators(api, selectedStash, isLightClient).then((nominators) => {
-      setNominators(Object.values(nominators));
-    });
+    validatorsService
+      .getNominators(api, selectedStash, networkUtils.isLightClientConnection(connection))
+      .then((nominators) => {
+        setNominators(Object.values(nominators));
+      });
   }, [api, selectedStash]);
 
   const changeNetwork = (chain: Chain) => {

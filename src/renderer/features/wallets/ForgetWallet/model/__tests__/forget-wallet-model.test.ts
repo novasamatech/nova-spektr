@@ -6,16 +6,6 @@ import { storageService } from '@shared/api/storage';
 import { TEST_ACCOUNTS } from '@shared/lib/utils';
 import { walletModel } from '@entities/wallet';
 
-jest.mock('@shared/api/storage', () => ({
-  __esModule: true,
-  default: jest.fn(),
-  storage: { connectTo: jest.fn().mockReturnValue({}) },
-  storageService: {
-    wallets: {},
-    accounts: {},
-  },
-}));
-
 jest.mock('@entities/multisig', () => ({
   useForgetMultisig: () => ({ deleteMultisigTxs: jest.fn() }),
 }));
@@ -23,10 +13,6 @@ jest.mock('@entities/multisig', () => ({
 jest.mock('@entities/balance', () => ({
   ...jest.requireActual('@entities/balance'),
   useBalanceService: () => ({ deleteBalance: jest.fn() }),
-}));
-
-jest.mock('@entities/network', () => ({
-  useMetadata: () => ({}),
 }));
 
 const wallet = {
@@ -49,20 +35,6 @@ const walletAccounts: Account[] = [
   { ...accountBase, id: 1, accountId: TEST_ACCOUNTS[0] },
   { ...accountBase, id: 2, accountId: '0x00' },
 ];
-
-jest.mock(
-  'dexie',
-  jest.fn().mockImplementation(() => {
-    return jest.fn().mockReturnValue({
-      version: jest.fn().mockReturnValue({
-        stores: jest.fn().mockReturnValue({
-          upgrade: jest.fn(),
-        }),
-      }),
-      table: jest.fn(),
-    });
-  }),
-);
 
 describe('features/ForgetModel', () => {
   test('should call success calback after wallet delete', async () => {

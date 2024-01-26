@@ -5,7 +5,7 @@ import get from 'lodash/get';
 import { XCM_URL, XCM_KEY } from './lib/constants';
 import { getTypeVersion, toLocalChainId, getTypeName, getAssetId, TEST_ACCOUNTS } from '@shared/lib/utils';
 import { XcmPalletTransferArgs, XTokenPalletTransferArgs } from '@entities/transaction';
-import { chainsService } from '@entities/network';
+import { chainsService } from '@shared/api/network';
 import { toRawString } from './lib/utils';
 import type { AccountId, ChainId, Chain, HexString } from '@shared/core';
 import {
