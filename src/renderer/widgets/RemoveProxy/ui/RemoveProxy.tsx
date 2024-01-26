@@ -3,12 +3,12 @@ import { useUnit } from 'effector-react';
 import { BN } from '@polkadot/util';
 import { UnsignedTransaction } from '@substrate/txwrapper-polkadot';
 
-import { Account, Chain, HexString, MultisigAccount, ProxyAccount } from '@shared/core';
+import { Account, HexString, MultisigAccount, ProxyAccount } from '@shared/core';
 import { OperationTitle } from '@entities/chain';
 import { BaseModal, Button, Loader } from '@shared/ui';
 import { useI18n } from '@app/providers';
 import { Confirmation } from './Confirmation';
-import { useNetworkData } from '@entities/network';
+import { networkModel, useNetworkData } from '@entities/network';
 import { OperationResult, TransactionType, useTransaction, validateBalance } from '@entities/transaction';
 import { Signing } from '@features/operation';
 import { toAddress, transferableAmount } from '@shared/lib/utils';
@@ -21,13 +21,14 @@ import { accountUtils } from '@entities/wallet';
 
 type Props = {
   isOpen: boolean;
-  chain: Chain;
   onClose: () => void;
-  proxyAccount: ProxyAccount;
+  proxyAccount: ProxyAccount | null;
 };
 
-export const RemoveProxy = ({ isOpen, proxyAccount, chain, onClose }: Props) => {
+export const RemoveProxy = ({ isOpen, proxyAccount, onClose }: Props) => {
   const { t } = useI18n();
+
+  if (!proxyAccount) return null;
 
   const proxiedAccount = useUnit(removeProxyModel.$proxiedAccount);
   const proxiedWallet = useUnit(removeProxyModel.$proxiedWallet);
@@ -36,6 +37,7 @@ export const RemoveProxy = ({ isOpen, proxyAccount, chain, onClose }: Props) => 
   const unsignedTx = useUnit(removeProxyModel.$unsignedTx);
   const signature = useUnit(removeProxyModel.$signature);
   const signatories = useUnit(removeProxyModel.$signatories);
+  const chain = useUnit(networkModel.$chains)[proxyAccount.chainId];
 
   const [isSelectAccountModalOpen, toggleSelectAccountModal] = useToggle();
   const [isFeeModalOpen, toggleFeeModal] = useToggle();
