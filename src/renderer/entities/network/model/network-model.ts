@@ -160,12 +160,12 @@ type CreateProviderParams = {
   providerType: ProviderType;
 };
 const createProviderFx = createEffect(
-  ({ chainId, nodes, metadata, providerType }: CreateProviderParams): ProviderWithMetadata => {
+  async ({ chainId, nodes, metadata, providerType }: CreateProviderParams): Promise<ProviderWithMetadata> => {
     const boundConnected = scopeBind(connected, { safe: true });
     const boundDisconnected = scopeBind(disconnected, { safe: true });
     const boundFailed = scopeBind(failed, { safe: true });
 
-    return networkService.createProvider(
+    const provider = networkService.createProvider(
       chainId,
       providerType,
       { nodes, metadata: metadata?.metadata },
@@ -184,6 +184,10 @@ const createProviderFx = createEffect(
         },
       },
     );
+
+    await provider.connect();
+
+    return provider;
   },
 );
 
