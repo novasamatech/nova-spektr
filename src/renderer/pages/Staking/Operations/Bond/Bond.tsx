@@ -17,7 +17,7 @@ import InitOperation, { BondResult } from './InitOperation/InitOperation';
 import { OperationTitle } from '@entities/chain';
 import { DestinationType } from '../common/types';
 import { UnstakingDuration } from '@pages/Staking/Overview/components';
-import { useNetworkData, isLightClient } from '@entities/network';
+import { useNetworkData, networkUtils } from '@entities/network';
 import { Signing } from '@features/operation';
 import { walletModel } from '@entities/wallet';
 import { walletUtils } from '@shared/core/utils';
@@ -213,7 +213,7 @@ export const Bond = () => {
           <Validators
             api={api}
             chainId={chainId}
-            isLightClient={isLightClient(connection)}
+            isLightClient={networkUtils.isLightClientConnection(connection)}
             onResult={onSelectValidators}
             onGoBack={goToPrevStep}
             {...explorersProps}

@@ -4,16 +4,6 @@ import { GraphqlProvider, useGraphql } from './GraphqlContext';
 
 jest.mock('@shared/lib/hooks');
 
-jest.mock('@entities/network', () => ({
-  chainsService: {
-    getStakingChainsData: jest
-      .fn()
-      .mockReturnValue([
-        { chainId: '0x123', externalApi: { staking: [{ type: 'subquery', url: 'https://localhost:8080' }] } },
-      ]),
-  },
-}));
-
 jest.mock('@entities/settings', () => ({
   useSettingsStorage: jest.fn().mockReturnValue({
     getStakingNetwork: jest.fn().mockReturnValue('0x123'),

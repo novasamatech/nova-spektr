@@ -4,7 +4,7 @@ import { useUnit } from 'effector-react';
 import { useModalClose, useToggle } from '@shared/lib/hooks';
 import { WalletCardLg, walletModel } from '@entities/wallet';
 import { useI18n } from '@app/providers';
-import { chainsService } from '@entities/network';
+import { chainsService } from '@shared/api/network';
 import { walletConnectUtils } from '@entities/walletConnect';
 import type { Account, WalletConnectWallet } from '@shared/core';
 import { wcDetailsModel } from '../../model/wc-details-model';

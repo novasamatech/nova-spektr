@@ -1,3 +1,4 @@
+/* eslint-disable i18next/no-literal-string */
 import { Popover as Popup, Transition } from '@headlessui/react';
 import { AriaRole, Fragment, PropsWithChildren, ReactNode, useId, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
@@ -5,24 +6,35 @@ import { createPortal } from 'react-dom';
 import { cnTw } from '@shared/lib/utils';
 import { useDebounce } from '@shared/lib/hooks';
 import { useParentScrollLock } from '../common/useParentScrollLock';
+import { Horizontal, Vertical } from '../common/types';
+
+const TranslateX: Record<Horizontal, string> = {
+  left: '-translate-x-full',
+  center: '-translate-x-1/2',
+  right: 'translate-x-0',
+};
+const TranslateY: Record<Vertical, string> = {
+  up: '-translate-y-full',
+  down: '-translate-y-0',
+};
 
 type Props = {
   content: ReactNode;
   offsetPx?: number;
   panelClass?: string;
   contentClass?: string;
-  position?: 'left' | 'center' | 'right';
+  horizontal?: Horizontal;
+  vertical?: Vertical;
   role?: AriaRole;
 };
-
-/* eslint-disable i18next/no-literal-string */
 
 export const Popover = ({
   content,
   children,
   offsetPx = 10,
   panelClass,
-  position = 'right',
+  horizontal = 'center',
+  vertical = 'down',
   contentClass,
   role,
 }: PropsWithChildren<Props>) => {
@@ -33,12 +45,17 @@ export const Popover = ({
   // prevents modal flickering when just passing across popup button
   // and gives user more time to move cursor to Popup.Panel
   const debouncedIsOpen = useDebounce(isOpen, 100);
-  const parentRect = ref.current?.getBoundingClientRect();
-  const horizontalAlign = position !== 'right' && {
-    transform: `translateX(${position === 'center' ? '-50%' : '-100%'})`,
-  };
-
   useParentScrollLock(debouncedIsOpen, ref.current);
+
+  const getPanelPosition = () => {
+    const rect = ref.current?.getBoundingClientRect();
+    if (!rect) return {};
+
+    return {
+      top: vertical === 'up' ? `${rect.top - offsetPx}px` : `${rect.top + rect.height + offsetPx}px`,
+      left: `${rect.left + rect.width / 2}px`,
+    };
+  };
 
   return (
     <Popup className="relative" role={role}>
@@ -59,24 +76,21 @@ export const Popover = ({
           show={debouncedIsOpen}
           as={Fragment}
           enter="transition ease-out duration-200"
-          enterFrom="opacity-0 translate-y-1"
-          enterTo="opacity-100 translate-y-0"
+          enterFrom="opacity-0"
+          enterTo="opacity-100"
           leave="transition ease-in duration-150"
-          leaveFrom="opacity-100 translate-y-0"
-          leaveTo="opacity-0 translate-y-1"
+          leaveFrom="opacity-100"
+          leaveTo="opacity-0"
         >
           <Popup.Panel
             as="div"
             id={id}
-            style={
-              parentRect && {
-                top: `${parentRect.top + parentRect.height + offsetPx}px`,
-                left: `${parentRect.left + parentRect.width / 2}px`,
-                ...horizontalAlign,
-              }
-            }
+            style={getPanelPosition()}
             className={cnTw(
-              'absolute z-[60] rounded-md bg-token-container-background border border-token-container-border shadow-card-shadow',
+              'absolute z-[60] rounded-md bg-token-container-background',
+              'border border-token-container-border shadow-card-shadow',
+              TranslateX[horizontal],
+              TranslateY[vertical],
               panelClass,
             )}
             onFocus={() => setIsOpen(true)}

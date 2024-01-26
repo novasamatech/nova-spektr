@@ -6,7 +6,7 @@ import { PalletIdentityRegistration } from '@polkadot/types/lookup';
 import { AccountId32 } from '@polkadot/types/interfaces';
 
 import type { Address, EraIndex, Identity, SubIdentity, Validator } from '@shared/core';
-import { isKusamaChainId } from '../../network';
+import { stakingUtils } from '../lib/staking-utils';
 import { DEFAULT_MAX_NOMINATORS, KUSAMA_MAX_NOMINATORS } from '../lib/constants';
 import { ValidatorMap } from '../lib/types';
 
@@ -121,7 +121,7 @@ async function getValidatorsPrefs(api: ApiPromise, era: EraIndex): Promise<Valid
 }
 
 function getDefaultValidatorsAmount(api: ApiPromise): number {
-  if (isKusamaChainId(api.genesisHash.toHex())) return KUSAMA_MAX_NOMINATORS;
+  if (stakingUtils.isKusamaChainId(api.genesisHash.toHex())) return KUSAMA_MAX_NOMINATORS;
 
   return DEFAULT_MAX_NOMINATORS;
 }

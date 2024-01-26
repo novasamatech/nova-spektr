@@ -10,7 +10,7 @@ import { toAddress, dictionary, IS_MAC, copyToClipboard } from '@shared/lib/util
 import { VaultInfoPopover } from './VaultInfoPopover';
 import { useAltOrCtrlKeyPressed, useToggle } from '@shared/lib/hooks';
 import { manageVaultModel } from './model/manage-vault-model';
-import { chainsService } from '@entities/network';
+import { chainsService } from '@shared/api/network';
 import { RootAccountLg, accountUtils, DerivedAccount } from '@entities/wallet';
 import { KeyConstructor, DerivationsAddressModal, ImportKeysModal } from '@features/wallets';
 import { Animation } from '@shared/ui/Animation/Animation';

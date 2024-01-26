@@ -3,7 +3,7 @@ import { format } from 'date-fns';
 import { useUnit } from 'effector-react';
 
 import { useI18n } from '@app/providers';
-import { chainsService, ExtendedChain } from '@entities/network';
+import { ExtendedChain } from '@entities/network';
 import { MultisigEvent, SigningStatus } from '@entities/transaction/model/transaction';
 import { TransactionTitle } from './TransactionTitle/TransactionTitle';
 import OperationStatus from './OperationStatus';
@@ -16,6 +16,7 @@ import { AssetBalance } from '@entities/asset';
 import type { Account, Contact, MultisigAccount, Wallet, AccountId, WalletsMap } from '@shared/core';
 import { WalletIcon, walletModel } from '@entities/wallet';
 import { walletUtils } from '@shared/core/utils';
+import { chainsService } from '@shared/api/network';
 
 type Props = {
   tx: MultisigTransactionDS;

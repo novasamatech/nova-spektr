@@ -23,7 +23,7 @@ import {
   KeyType,
   ShardAccount,
 } from '@shared/core';
-import { chainsService } from '@entities/network';
+import { chainsService } from '@shared/api/network';
 import { toAccountId } from '@shared/lib/utils';
 import { ErrorDetails } from './derivation-import-error';
 import { KEY_NAMES, SHARDED_KEY_NAMES } from '@entities/wallet';
