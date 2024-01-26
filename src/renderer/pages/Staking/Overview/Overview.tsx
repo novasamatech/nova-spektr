@@ -23,6 +23,7 @@ import {
   useStakingRewards,
   ValidatorsModal,
 } from '@entities/staking';
+import { permissionService } from '@shared/api/permission';
 
 export const Overview = () => {
   const { t } = useI18n();
