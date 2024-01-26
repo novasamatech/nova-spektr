@@ -1,7 +1,7 @@
 import { Transaction, TransactionType } from '@entities/transaction';
 import { getTransactionTitle, getModalTransactionTitle } from '../utils';
 
-describe('pages/Operations/common/utils.ts', () => {
+describe('pages/Operations/common/utils', () => {
   test('should return correct tx title for transfer transaction', () => {
     const tx = { type: TransactionType.TRANSFER } as unknown as Transaction;
     const title = getTransactionTitle(tx);
