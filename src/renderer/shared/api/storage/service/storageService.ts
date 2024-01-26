@@ -38,6 +38,19 @@ class StorageService<T extends { id: K }, K extends IndexableType> {
     }
   }
 
+  async put(item: NoID<T, K>): Promise<T | undefined> {
+    try {
+      const id = await this.dexieTable.put(item as T);
+      if (!id) return undefined;
+
+      return { id, ...item } as T;
+    } catch (error) {
+      console.log('Error putting object - ', error);
+
+      return undefined;
+    }
+  }
+
   read(id: K): Promise<T | undefined> {
     try {
       return this.dexieTable.get(id);

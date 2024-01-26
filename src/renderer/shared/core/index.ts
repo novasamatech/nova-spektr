@@ -43,6 +43,8 @@ export type { Balance, BalanceLock } from './types/balance';
 
 export type { Metadata } from './types/metadata';
 
+export type { ChainMetadata } from './types/metadata';
+
 export type { Chain, ChainOptions, Explorer, RpcNode } from './types/chain';
 
 export { ConnectionType, ConnectionStatus } from './types/connection';

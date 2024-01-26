@@ -1,4 +1,6 @@
-import { ProviderInterfaceCallback } from '@polkadot/rpc-provider/types';
+import { ProviderInterfaceCallback, ProviderInterface } from '@polkadot/rpc-provider/types';
+
+import type { HexString } from '@shared/core';
 
 export const enum Chains {
   POLKADOT = '0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3',
@@ -22,3 +24,7 @@ export type Subscription = {
   params: unknown[];
   cb: ProviderInterfaceCallback;
 };
+
+export interface ProviderWithMetadata extends ProviderInterface {
+  updateMetadata: (metadata: HexString) => void;
+}

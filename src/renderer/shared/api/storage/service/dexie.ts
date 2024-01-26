@@ -61,13 +61,12 @@ class DexieStorage extends Dexie {
       })
       .upgrade(migrateWallets);
 
-    this.version(23).stores({
+    this.version(21).stores({
       proxies: '++id',
       proxyGroups: '++id',
       connections: '++id',
       notifications: '++id',
       metadata: '++id',
-      balances: '++id',
     });
 
     this.connections = this.table('connections');

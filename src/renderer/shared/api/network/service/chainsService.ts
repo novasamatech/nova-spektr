@@ -5,7 +5,7 @@ import chainsProd from '@shared/config/chains/chains.json';
 import chainsDev from '@shared/config/chains/chains_dev.json';
 import { getRelaychainAsset, nonNullable, totalAmount, ZERO_BALANCE } from '@shared/lib/utils';
 import type { Chain, ChainId, Balance } from '@shared/core';
-import { isPolkadot, isKusama, isTestnet, isNameWithNumber } from '../lib/utils';
+import { isPolkadot, isKusama, isTestnet, isNameStartsWithNumber } from '../lib/utils';
 import { PriceObject } from '@shared/api/price-provider';
 import { sumBalances } from '@pages/Assets/Assets/common/utils';
 
@@ -67,7 +67,7 @@ function sortChains<T extends Pick<Chain, 'name' | 'options'>>(chains: T[]): T[]
     if (isPolkadot(chain.name)) polkadot = chain;
     else if (isKusama(chain.name)) kusama = chain;
     else if (isTestnet(chain.options)) testnets.push(chain);
-    else if (isNameWithNumber(chain.name)) numberchains.push(chain);
+    else if (isNameStartsWithNumber(chain.name)) numberchains.push(chain);
     else parachains.push(chain);
   });
 
@@ -140,7 +140,7 @@ function sortChainsByBalance(
       collection = hasBalance ? relaychains.withBalance : relaychains.noBalance;
     } else if (isTestnet(chain.options)) {
       collection = hasBalance ? testnets.withBalance : testnets.noBalance;
-    } else if (isNameWithNumber(chain.name)) {
+    } else if (isNameStartsWithNumber(chain.name)) {
       collection = hasBalance ? numberchains.withBalance : numberchains.noBalance;
     }
 

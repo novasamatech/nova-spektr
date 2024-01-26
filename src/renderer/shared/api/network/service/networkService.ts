@@ -4,7 +4,7 @@ import * as Sc from '@substrate/connect';
 
 import type { ChainId, HexString } from '@shared/core';
 import { createCachedProvider } from '../provider/CachedProvider';
-import { ProviderType, RpcValidation } from '../lib/types';
+import { ProviderType, RpcValidation, ProviderWithMetadata } from '../lib/types';
 import { getKnownChain } from '../lib/utils';
 
 export const networkService = {
@@ -33,8 +33,8 @@ function createProvider(
   providerType: ProviderType,
   params: ProviderParams,
   listeners: ProviderListeners,
-): ProviderInterface {
-  const creatorFn: Record<ProviderType, () => ProviderInterface | undefined> = {
+): ProviderWithMetadata {
+  const creatorFn: Record<ProviderType, () => ProviderWithMetadata | undefined> = {
     [ProviderType.WEB_SOCKET]: () => createWebsocketProvider(params),
     [ProviderType.LIGHT_CLIENT]: () => createSubstrateProvider(chainId, params.metadata),
   };
@@ -52,7 +52,7 @@ function createProvider(
   return provider;
 }
 
-function createSubstrateProvider(chainId: ChainId, metadata?: HexString): ProviderInterface | undefined {
+function createSubstrateProvider(chainId: ChainId, metadata?: HexString): ProviderWithMetadata | undefined {
   const knownChainId = getKnownChain(chainId);
 
   if (knownChainId) {
@@ -64,7 +64,7 @@ function createSubstrateProvider(chainId: ChainId, metadata?: HexString): Provid
   throw new Error(`Chain ${chainId} do not support Substrate Connect yet`);
 }
 
-function createWebsocketProvider({ nodes, metadata }: ProviderParams): ProviderInterface {
+function createWebsocketProvider({ nodes, metadata }: ProviderParams): ProviderWithMetadata {
   const CachedWsProvider = createCachedProvider(WsProvider, metadata);
 
   return new CachedWsProvider(nodes, 2000);

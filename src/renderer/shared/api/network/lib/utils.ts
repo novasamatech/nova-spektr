@@ -24,6 +24,6 @@ export function isTestnet(chainOptions?: ChainOptions[]): boolean {
   return Boolean(chainOptions?.includes('testnet'));
 }
 
-export function isNameWithNumber(chainName: string): boolean {
+export function isNameStartsWithNumber(chainName: string): boolean {
   return /^[0-9]+/.test(chainName);
 }

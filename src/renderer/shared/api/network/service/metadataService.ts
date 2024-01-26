@@ -1,14 +1,14 @@
 import { ApiPromise } from '@polkadot/api';
 import { UnsubscribePromise } from '@polkadot/api/types';
 
-import type { Metadata, NoID } from '@shared/core';
+import type { ChainMetadata, NoID } from '@shared/core';
 
 export const metadataService = {
   requestMetadata,
   subscribeMetadata,
 };
 
-async function requestMetadata(api: ApiPromise): Promise<NoID<Metadata>> {
+async function requestMetadata(api: ApiPromise): Promise<NoID<ChainMetadata>> {
   const [metadata, version] = await Promise.all([api.rpc.state.getMetadata(), api.rpc.state.getRuntimeVersion()]);
 
   return {
@@ -18,6 +18,6 @@ async function requestMetadata(api: ApiPromise): Promise<NoID<Metadata>> {
   };
 }
 
-function subscribeMetadata(api: ApiPromise, callback?: () => void): UnsubscribePromise {
-  return api.rpc.state.subscribeRuntimeVersion(() => callback?.());
+function subscribeMetadata(api: ApiPromise, callback: (api: ApiPromise) => void): UnsubscribePromise {
+  return api.rpc.state.subscribeRuntimeVersion(() => callback(api));
 }
