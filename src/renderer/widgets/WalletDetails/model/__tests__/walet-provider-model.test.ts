@@ -6,6 +6,8 @@ import { walletProviderModel } from '../wallet-provider-model';
 import { storageService } from '@shared/api/storage';
 import { proxyModel } from '@entities/proxy';
 import { walletProviderMock } from './wallet-provider.mock';
+import { networkModel } from '@entities/network';
+import { TEST_CHAIN_ID } from '@shared/lib/utils';
 
 describe('widgets/WalletDetails/model/wallet-provider-model', () => {
   beforeEach(() => {
@@ -26,22 +28,23 @@ describe('widgets/WalletDetails/model/wallet-provider-model', () => {
     expect(scope.getState(walletProviderModel.$accounts)).toEqual([walletProviderMock.accounts[0]]);
   });
 
-  test('should set $proxyAccounts when $walletForDetails changes', async () => {
-    jest.spyOn(storageService.wallets, 'update').mockResolvedValue(walletProviderMock.wallet.id);
+  test('should set $proxiesByChain when $walletForDetails changes', async () => {
+    // jest.spyOn(storageService.wallets, 'update').mockResolvedValue(walletProviderMock.wallet.id);
 
     const scope = fork({
       values: new Map()
         .set(walletModel.$wallets, [walletProviderMock.wallet])
-        .set(walletModel.$accounts, walletProviderMock.accounts)
+        .set(walletModel.$accounts, walletProviderMock.dupAccounts)
+        .set(networkModel.$chains, walletProviderMock.chains)
         .set(proxyModel.$proxies, walletProviderMock.proxyAccounts),
     });
 
     await allSettled(walletSelectModel.events.walletIdSet, { scope, params: walletProviderMock.wallet.id });
 
-    expect(scope.getState(walletProviderModel.$proxyAccounts)).toEqual([
-      walletProviderMock.proxyAccount1,
-      walletProviderMock.proxyAccount2,
-    ]);
+    expect(scope.getState(walletProviderModel.$proxiesByChain)).toEqual({
+      [TEST_CHAIN_ID]: [walletProviderMock.proxyAccount1],
+      ['0xe143f23803ac50e8f6f8e62695d1ce9e4e1d68aa36c1cd2cfd15340213f3423e']: [walletProviderMock.proxyAccount2],
+    });
   });
 
   test('should set $signatoryContacts when $walletForDetails changes to multisig', async () => {

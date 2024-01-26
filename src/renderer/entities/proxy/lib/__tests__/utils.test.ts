@@ -122,7 +122,7 @@ describe('entities/proxy/lib/utils', () => {
         delay: 0,
       },
       {
-        id: 2,
+        id: 3,
         accountId: '0x01',
         proxiedAccountId: '0x02',
         chainId: '0x05',
@@ -131,7 +131,9 @@ describe('entities/proxy/lib/utils', () => {
       },
     ];
 
-    const sortedAccounts = proxyUtils.sortAccountsByProxyType(proxyAccounts);
-    expect(sortedAccounts).toEqual([proxyAccounts[2], proxyAccounts[0], proxyAccounts[1]]);
+    proxyUtils.sortAccountsByProxyType(proxyAccounts);
+    ['NonTransfer', 'CancelProxy', 'Governance'].forEach((type, index) => {
+      expect(proxyAccounts[index].proxyType).toEqual(type);
+    });
   });
 });

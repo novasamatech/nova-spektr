@@ -1,13 +1,24 @@
 import { combine } from 'effector';
+import { uniqBy } from 'lodash';
 
 import { accountUtils, walletModel, walletUtils } from '@entities/wallet';
 import { walletSelectModel } from '@features/wallets';
 import { dictionary } from '@shared/lib/utils';
 import { walletDetailsUtils } from '../lib/utils';
 import type { MultishardMap, VaultMap } from '../lib/types';
-import type { Account, Signatory, Wallet, MultisigAccount, BaseAccount, AccountId, ProxiedAccount } from '@shared/core';
+import type {
+  Account,
+  Signatory,
+  Wallet,
+  MultisigAccount,
+  BaseAccount,
+  AccountId,
+  ProxiedAccount,
+  ChainId,
+} from '@shared/core';
 import { proxyModel, proxyUtils } from '@entities/proxy';
 import { ProxyAccount } from '@shared/core';
+import { networkModel } from '@entities/network';
 
 const $accounts = combine(
   {
@@ -21,13 +32,14 @@ const $accounts = combine(
   },
 );
 
-const $proxyAccounts = combine(
+const $proxiesByChain = combine(
   {
     accounts: $accounts,
+    chains: networkModel.$chains,
     proxies: proxyModel.$proxies,
   },
-  ({ accounts, proxies }) => {
-    const proxyAccounts = accounts.reduce((acc: ProxyAccount[], account: Account) => {
+  ({ accounts, chains, proxies }): Record<ChainId, ProxyAccount[]> => {
+    const proxiesForAccounts = uniqBy(accounts, 'accountId').reduce<ProxyAccount[]>((acc, account) => {
       if (proxies[account.accountId]) {
         acc.push(...proxies[account.accountId]);
       }
@@ -35,7 +47,19 @@ const $proxyAccounts = combine(
       return acc;
     }, []);
 
-    return proxyUtils.sortAccountsByProxyType(proxyAccounts);
+    proxyUtils.sortAccountsByProxyType(proxiesForAccounts);
+
+    const chainsMap = Object.keys(chains).reduce<Record<ChainId, ProxyAccount[]>>((acc, chainId) => {
+      acc[chainId as ChainId] = [];
+
+      return acc;
+    }, {});
+
+    return proxiesForAccounts.reduce((acc, proxy) => {
+      acc[proxy.chainId].push(proxy);
+
+      return acc;
+    }, chainsMap);
   },
 );
 
@@ -151,11 +175,13 @@ const $proxyWalletForProxied = combine(
   { skipVoid: false },
 );
 
-const $hasProxies = combine($proxyAccounts, (accounts) => accounts.length > 0);
+const $hasProxies = combine($proxiesByChain, (proxiesByChain) => {
+  return Object.values(proxiesByChain).some((accounts) => accounts.length > 0);
+});
 
 export const walletProviderModel = {
   $accounts,
-  $proxyAccounts,
+  $proxiesByChain,
   $hasProxies,
   $singleShardAccount,
   $multiShardAccounts,

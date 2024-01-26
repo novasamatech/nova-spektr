@@ -33,7 +33,7 @@ const accounts: Account[] = [
     cryptoType: 0,
   },
   {
-    id: 1,
+    id: 2,
     accountId: '0x00',
     chainId: TEST_CHAIN_ID,
     walletId: 2,
@@ -44,10 +44,46 @@ const accounts: Account[] = [
   },
 ];
 
+const dupAccounts: Account[] = [
+  {
+    id: 1,
+    accountId: TEST_ACCOUNT_ID,
+    chainId: TEST_CHAIN_ID,
+    walletId: 1,
+    name: 'My account 1',
+    type: AccountType.CHAIN,
+    chainType: 0,
+    cryptoType: 0,
+  },
+  {
+    id: 2,
+    accountId: TEST_ACCOUNT_ID,
+    chainId: '0xe143f23803ac50e8f6f8e62695d1ce9e4e1d68aa36c1cd2cfd15340213f3423e',
+    walletId: 1,
+    name: 'My account 2',
+    type: AccountType.CHAIN,
+    chainType: 0,
+    cryptoType: 0,
+  },
+];
+
+const chains = {
+  [TEST_CHAIN_ID]: {
+    name: 'My chain 1',
+    addressPrefix: 42,
+    chainId: TEST_CHAIN_ID,
+  },
+  ['0xe143f23803ac50e8f6f8e62695d1ce9e4e1d68aa36c1cd2cfd15340213f3423e']: {
+    name: 'My chain 2',
+    addressPrefix: 20,
+    chainId: '0xe143f23803ac50e8f6f8e62695d1ce9e4e1d68aa36c1cd2cfd15340213f3423e',
+  },
+};
+
 const proxyAccount1 = {
   accountId: '0x00' as AccountId,
   proxiedAccountId: TEST_ACCOUNT_ID as AccountId,
-  id: 3,
+  id: 1,
   chainId: TEST_CHAIN_ID as ChainId,
   proxyType: ProxyType.GOVERNANCE,
   delay: 0,
@@ -56,8 +92,9 @@ const proxyAccount1 = {
 const proxyAccount2 = {
   accountId: '0x01' as AccountId,
   proxiedAccountId: TEST_ACCOUNT_ID as AccountId,
-  id: 3,
-  chainId: TEST_CHAIN_ID as ChainId,
+  id: 2,
+  chainId: '0xe143f23803ac50e8f6f8e62695d1ce9e4e1d68aa36c1cd2cfd15340213f3423e' as ChainId,
+  // chainId: TEST_CHAIN_ID as ChainId,
   proxyType: ProxyType.GOVERNANCE,
   delay: 0,
 };
@@ -138,6 +175,8 @@ const signatoriesWallets: Wallet[] = [
 export const walletProviderMock = {
   wallet,
   accounts,
+  dupAccounts,
+  chains,
   proxyAccount1,
   proxyAccount2,
   proxyAccounts,

@@ -1,4 +1,3 @@
-import { groupBy } from 'lodash';
 import { useUnit } from 'effector-react';
 
 import { cnTw } from '@shared/lib/utils';
@@ -22,10 +21,8 @@ export const ProxiesList = ({ walletId, className, canCreateProxy = true }: Prop
   const { t } = useI18n();
 
   const chains = useUnit(networkModel.$chains);
-  const proxyAccounts = useUnit(walletProviderModel.$proxyAccounts);
+  const proxiesByChain = useUnit(walletProviderModel.$proxiesByChain);
   const proxyGroups = useUnit(proxyModel.$walletsProxyGroups)[walletId];
-
-  const proxiesByChain = groupBy(proxyAccounts, 'chainId');
 
   return (
     <div className={cnTw('flex flex-col', className)}>
