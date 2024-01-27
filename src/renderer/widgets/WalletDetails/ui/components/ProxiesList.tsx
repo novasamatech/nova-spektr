@@ -55,7 +55,7 @@ export const ProxiesList = ({ walletId, className, canCreateProxy = true }: Prop
                 <Accordion.Content>
                   <ul className="flex flex-col gap-y-2">
                     {proxiesByChain[chainId].map((proxy) => (
-                      <li className="px-2 py-1.5" key={proxy.accountId}>
+                      <li className="px-2 py-1.5" key={`${proxy.id}_${proxy.proxyType}`}>
                         <ProxyAccountWithActions account={proxy} chain={chains[chainId]} />
                       </li>
                     ))}

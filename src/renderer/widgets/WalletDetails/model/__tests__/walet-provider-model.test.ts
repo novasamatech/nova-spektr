@@ -1,11 +1,10 @@
 import { allSettled, fork } from 'effector';
 
-import { walletModel } from '@entities/wallet';
-import { walletSelectModel } from '@features/wallets';
 import { walletProviderModel } from '../wallet-provider-model';
-import { storageService } from '@shared/api/storage';
-import { proxyModel } from '@entities/proxy';
 import { walletProviderMock } from './wallet-provider.mock';
+import { walletSelectModel } from '@features/wallets';
+import { proxyModel } from '@entities/proxy';
+import { walletModel } from '@entities/wallet';
 import { networkModel } from '@entities/network';
 import { TEST_CHAIN_ID } from '@shared/lib/utils';
 
@@ -15,8 +14,6 @@ describe('widgets/WalletDetails/model/wallet-provider-model', () => {
   });
 
   test('should set $accounts when $walletForDetails changes', async () => {
-    jest.spyOn(storageService.wallets, 'update').mockResolvedValue(walletProviderMock.wallet.id);
-
     const scope = fork({
       values: new Map()
         .set(walletModel.$wallets, [walletProviderMock.wallet])
@@ -29,12 +26,10 @@ describe('widgets/WalletDetails/model/wallet-provider-model', () => {
   });
 
   test('should set $proxiesByChain when $walletForDetails changes', async () => {
-    // jest.spyOn(storageService.wallets, 'update').mockResolvedValue(walletProviderMock.wallet.id);
-
     const scope = fork({
       values: new Map()
         .set(walletModel.$wallets, [walletProviderMock.wallet])
-        .set(walletModel.$accounts, walletProviderMock.dupAccounts)
+        .set(walletModel.$accounts, walletProviderMock.duplicateAccounts)
         .set(networkModel.$chains, walletProviderMock.chains)
         .set(proxyModel.$proxies, walletProviderMock.proxyAccounts),
     });
@@ -48,13 +43,12 @@ describe('widgets/WalletDetails/model/wallet-provider-model', () => {
   });
 
   test('should set $signatoryContacts when $walletForDetails changes to multisig', async () => {
-    jest.spyOn(storageService.wallets, 'update').mockResolvedValue(walletProviderMock.wallet.id);
-
     const scope = fork({
       values: new Map()
         .set(walletModel.$wallets, [walletProviderMock.multisiigWallet])
         .set(walletModel.$accounts, [walletProviderMock.multisigAccount])
-        .set(proxyModel.$proxies, walletProviderMock.proxyAccounts),
+        .set(proxyModel.$proxies, walletProviderMock.proxyAccounts)
+        .set(networkModel.$chains, walletProviderMock.chains),
     });
 
     await allSettled(walletSelectModel.events.walletIdSet, { scope, params: walletProviderMock.multisiigWallet.id });
@@ -65,13 +59,12 @@ describe('widgets/WalletDetails/model/wallet-provider-model', () => {
   });
 
   test('should set $signatoryWallets when $walletForDetails changes to multisig', async () => {
-    jest.spyOn(storageService.wallets, 'update').mockResolvedValue(walletProviderMock.wallet.id);
-
     const scope = fork({
       values: new Map()
         .set(walletModel.$wallets, [walletProviderMock.multisiigWallet, ...walletProviderMock.signatoriesWallets])
         .set(walletModel.$accounts, [walletProviderMock.multisigAccount, ...walletProviderMock.signatoriesAccounts])
-        .set(proxyModel.$proxies, walletProviderMock.proxyAccounts),
+        .set(proxyModel.$proxies, walletProviderMock.proxyAccounts)
+        .set(networkModel.$chains, walletProviderMock.chains),
     });
 
     await allSettled(walletSelectModel.events.walletIdSet, { scope, params: walletProviderMock.multisiigWallet.id });

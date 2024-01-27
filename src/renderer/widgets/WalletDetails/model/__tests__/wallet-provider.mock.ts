@@ -44,7 +44,7 @@ const accounts: Account[] = [
   },
 ];
 
-const dupAccounts: Account[] = [
+const duplicateAccounts: Account[] = [
   {
     id: 1,
     accountId: TEST_ACCOUNT_ID,
@@ -94,7 +94,6 @@ const proxyAccount2 = {
   proxiedAccountId: TEST_ACCOUNT_ID as AccountId,
   id: 2,
   chainId: '0xe143f23803ac50e8f6f8e62695d1ce9e4e1d68aa36c1cd2cfd15340213f3423e' as ChainId,
-  // chainId: TEST_CHAIN_ID as ChainId,
   proxyType: ProxyType.GOVERNANCE,
   delay: 0,
 };
@@ -175,7 +174,7 @@ const signatoriesWallets: Wallet[] = [
 export const walletProviderMock = {
   wallet,
   accounts,
-  dupAccounts,
+  duplicateAccounts,
   chains,
   proxyAccount1,
   proxyAccount2,
