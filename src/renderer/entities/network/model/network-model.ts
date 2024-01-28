@@ -99,18 +99,14 @@ const deleteConnectionFx = createEffect(async (connectionId: number): Promise<nu
   return connectionId;
 });
 
-type MetadataSubParams = {
-  chainId: ChainId;
-  api: ApiPromise;
-};
 type MetadataSubResult = {
   chainId: ChainId;
   unsubscribe: VoidFn;
 };
-const subscribeMetadataFx = createEffect(async ({ chainId, api }: MetadataSubParams): Promise<MetadataSubResult> => {
+const subscribeMetadataFx = createEffect(async (api: ApiPromise): Promise<MetadataSubResult> => {
   const unsubscribe = await metadataService.subscribeMetadata(api, requestMetadataFx);
 
-  return { chainId, unsubscribe };
+  return { chainId: api.genesisHash.toHex(), unsubscribe };
 });
 
 const requestMetadataFx = createEffect((api: ApiPromise): Promise<NoID<ChainMetadata>> => {
@@ -168,39 +164,34 @@ const createProviderFx = createEffect(
       providerType,
       { nodes, metadata: metadata?.metadata },
       {
+        onConnected: () => {
+          console.info('🟢 Provider connected ==> ', chainId);
+        },
         onDisconnected: () => {
-          console.info('🔶 API disconnected ==> ', chainId);
+          console.info('🟠 Provider disconnected ==> ', chainId);
           boundDisconnected(chainId);
         },
         onError: () => {
-          console.info('🔴 API error ==> ', chainId);
+          console.info('🔴 Provider error ==> ', chainId);
           boundFailed(chainId);
         },
       },
     );
 
-    await provider.connect();
+    if (providerType === ProviderType.LIGHT_CLIENT) {
+      /**
+       * HINT: Light Client provider must be connected manually
+       * GitHub Light Client section - https://github.com/polkadot-js/api/tree/master/packages/rpc-provider#readme
+       */
+      await provider.connect();
+    }
 
     return provider;
   },
 );
 
-type CreateApiParams = {
-  chainId: ChainId;
-  provider: ProviderWithMetadata;
-};
-const createApiFx = createEffect(async ({ chainId, provider }: CreateApiParams): Promise<ApiPromise | undefined> => {
-  if (!provider.isConnected) {
-    setTimeout(() => createApiFx({ chainId, provider }), 1000);
-
-    return;
-  }
-
-  try {
-    return networkService.createApi(provider);
-  } catch (error) {
-    console.log(`Create API failed for ${chainId} - `, error);
-  }
+const createApiFx = createEffect((provider: ProviderWithMetadata): Promise<ApiPromise> => {
+  return networkService.createApi(provider);
 });
 
 sample({
@@ -246,6 +237,7 @@ sample({
       ? ProviderType.LIGHT_CLIENT
       : ProviderType.WEB_SOCKET;
 
+    // TODO: rework this condition
     const nodes =
       !connection || networkUtils.isAutoBalanceConnection(connection)
         ? [...(store.chains[chainId]?.nodes || []), ...(connection?.customNodes || [])].map((node) => node.url)
@@ -269,28 +261,22 @@ sample({
 });
 
 sample({
-  clock: createProviderFx.done,
-  fn: ({ params, result: provider }) => ({ chainId: params.chainId, provider }),
+  clock: createProviderFx.doneData,
   target: createApiFx,
 });
 
 sample({
   clock: createApiFx.doneData,
   source: $apis,
-  filter: (_, api) => Boolean(api),
-  fn: (apis, api) => {
-    return { ...apis, [api!.genesisHash.toHex()]: api! };
-  },
+  fn: (apis, api) => ({ ...apis, [api.genesisHash.toHex()]: api }),
   target: $apis,
 });
 
 sample({
-  clock: createApiFx.done,
+  clock: createApiFx.doneData,
   source: $connectionStatuses,
-  filter: (statuses, { params, result: api }) => {
-    return Boolean(api) && statuses[params.chainId] !== ConnectionStatus.CONNECTED;
-  },
-  fn: (statuses, { params }) => ({ ...statuses, [params.chainId]: ConnectionStatus.CONNECTED }),
+  filter: (statuses, api) => statuses[api.genesisHash.toHex()] !== ConnectionStatus.CONNECTED,
+  fn: (statuses, api) => ({ ...statuses, [api.genesisHash.toHex()]: ConnectionStatus.CONNECTED }),
   target: $connectionStatuses,
 });
 
@@ -315,9 +301,7 @@ sample({
 // =====================================================
 
 sample({
-  clock: createApiFx.done,
-  filter: ({ result: api }) => Boolean(api),
-  fn: ({ params, result: api }) => ({ api: api!, chainId: params.chainId }),
+  clock: createApiFx.doneData,
   target: subscribeMetadataFx,
 });
 
@@ -391,10 +375,10 @@ sample({
 
       acc[chainId] = connectionsMap[chainId] || {
         chainId,
-        canUseLightClient: lightClientChains.includes(chainId),
-        connectionType: ConnectionType.AUTO_BALANCE,
         customNodes: [],
+        connectionType: ConnectionType.AUTO_BALANCE,
       };
+      acc[chainId].canUseLightClient = lightClientChains.includes(chainId);
 
       return acc;
     }, {});

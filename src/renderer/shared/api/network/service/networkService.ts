@@ -20,10 +20,11 @@ function createApi(provider: ProviderInterface): Promise<ApiPromise> {
 }
 
 type ProviderParams = {
-  nodes: string[];
+  nodes?: string[];
   metadata?: HexString;
 };
 type ProviderListeners = {
+  onConnected: (value?: any) => void;
   onDisconnected: (value?: any) => void;
   onError: (value?: any) => void;
 };
@@ -44,6 +45,7 @@ function createProvider(
     throw new Error('Provider not found');
   }
 
+  provider.on('connected', listeners.onConnected);
   provider.on('disconnected', listeners.onDisconnected);
   provider.on('error', listeners.onError);
 

@@ -68,5 +68,5 @@ function getNewestMetadata(metadata: ChainMetadata[]): Record<ChainId, ChainMeta
 }
 
 function getLightClientChains(): ChainId[] {
-  return Object.keys(RelayChains) as ChainId[];
+  return Object.values(RelayChains);
 }
