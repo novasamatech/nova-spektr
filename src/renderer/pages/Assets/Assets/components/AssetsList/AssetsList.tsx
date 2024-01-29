@@ -42,7 +42,7 @@ export const AssetsList = () => {
       const isDisabled = networkUtils.isDisabledConnection(connections[c.chainId]);
       const hasMultiPallet = !isMultisig || networkUtils.isMultisigSupported(c.options);
 
-      const hasChainAccount = activeAccounts.find((a) => accountUtils.isChainIdMatch(a, c.chainId));
+      const hasChainAccount = activeAccounts.some((a) => accountUtils.isChainIdMatch(a, c.chainId));
 
       return !isDisabled && hasMultiPallet && hasChainAccount;
     });
