@@ -92,7 +92,7 @@ export const Submit = ({
 
     submitAndWatchExtrinsic(extrinsic, unsignedTx, api, async (executed, params) => {
       if (executed) {
-        sendProxynotification();
+        sendProxyNotification();
 
         if (multisigTx && isMultisigAccount) {
           const result = buildMultisigTx(tx, multisigTx, params as ExtrinsicResultParams, account);
@@ -136,7 +136,7 @@ export const Submit = ({
       .catch(console.warn);
   };
 
-  const sendProxynotification = () => {
+  const sendProxyNotification = () => {
     const proxiedAccount: PartialProxiedAccount = {
       accountId: proxyAccount.proxiedAccountId,
       chainId: proxyAccount.chainId,
