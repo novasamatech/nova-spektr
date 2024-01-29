@@ -2,7 +2,7 @@ import { ApiPromise } from '@polkadot/api';
 import { useEffect, useState } from 'react';
 import { useUnit } from 'effector-react';
 
-import { getAssetId, TEST_ACCOUNT_ID, toAddress, toHexChainId } from '@shared/lib/utils';
+import { getAssetId, TEST_ACCOUNTS, toAddress, toHexChainId } from '@shared/lib/utils';
 import { Transaction, TransactionType, useTransaction } from '@entities/transaction';
 import { TransferForm, TransferFormData } from '../TransferForm';
 import { getAccountOption, getSignatoryOption } from '../../common/utils';
@@ -183,7 +183,7 @@ export const InitOperation = ({
 
     return buildTransaction(
       transactionType,
-      toAddress(activeAccount?.accountId || TEST_ACCOUNT_ID, { prefix: addressPrefix }),
+      toAddress(activeAccount?.accountId || TEST_ACCOUNTS[0], { prefix: addressPrefix }),
       chainId,
       args,
     );

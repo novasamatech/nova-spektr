@@ -11,7 +11,7 @@ import {
   Wallet,
   WalletType,
 } from '@shared/core';
-import { TEST_ACCOUNT_ID, TEST_ADDRESS, TEST_CHAIN_ID } from '@shared/lib/utils';
+import { TEST_ACCOUNTS, TEST_ADDRESS, TEST_CHAIN_ID } from '@shared/lib/utils';
 
 const wallet: Wallet = {
   id: 1,
@@ -24,7 +24,7 @@ const wallet: Wallet = {
 const accounts: Account[] = [
   {
     id: 1,
-    accountId: TEST_ACCOUNT_ID,
+    accountId: TEST_ACCOUNTS[0],
     chainId: TEST_CHAIN_ID,
     walletId: 1,
     name: 'My account',
@@ -46,7 +46,7 @@ const accounts: Account[] = [
 
 const proxyAccount1 = {
   accountId: '0x00' as AccountId,
-  proxiedAccountId: TEST_ACCOUNT_ID as AccountId,
+  proxiedAccountId: TEST_ACCOUNTS[0] as AccountId,
   id: 3,
   chainId: TEST_CHAIN_ID as ChainId,
   proxyType: ProxyType.GOVERNANCE,
@@ -55,7 +55,7 @@ const proxyAccount1 = {
 
 const proxyAccount2 = {
   accountId: '0x01' as AccountId,
-  proxiedAccountId: TEST_ACCOUNT_ID as AccountId,
+  proxiedAccountId: TEST_ACCOUNTS[0] as AccountId,
   id: 3,
   chainId: TEST_CHAIN_ID as ChainId,
   proxyType: ProxyType.GOVERNANCE,
@@ -63,7 +63,7 @@ const proxyAccount2 = {
 };
 
 const proxyAccounts: Record<string, ProxyAccount[]> = {
-  [TEST_ACCOUNT_ID]: [proxyAccount1, proxyAccount2],
+  [TEST_ACCOUNTS[0]]: [proxyAccount1, proxyAccount2],
 };
 
 const multisiigWallet: MultisigWallet = {
@@ -75,7 +75,7 @@ const multisiigWallet: MultisigWallet = {
 };
 
 const multisigAccount: MultisigAccount = {
-  accountId: TEST_ACCOUNT_ID,
+  accountId: TEST_ACCOUNTS[0],
   id: 3,
   walletId: 2,
   type: AccountType.MULTISIG,
