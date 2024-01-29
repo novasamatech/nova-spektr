@@ -36,6 +36,8 @@ describe('entities/network/model/network-model', () => {
   const mockStorage = ({ chains, connections, metadata }: StorageParams) => {
     jest.spyOn(chainsService, 'getChainsMap').mockReturnValue(chains || {});
     jest.spyOn(storageService.connections, 'readAll').mockResolvedValue(connections || []);
+    jest.spyOn(storageService.connections, 'update').mockResolvedValue(1);
+    jest.spyOn(storageService.connections, 'create').mockResolvedValue({ id: 1 } as unknown as Connection);
     jest.spyOn(storageService.metadata, 'readAll').mockResolvedValue(metadata || []);
   };
 
@@ -92,5 +94,51 @@ describe('entities/network/model/network-model', () => {
       { metadata: mockMetadata.metadata, nodes: ['http://localhost:8080'] },
       { onConnected: expect.any(Function), onDisconnected: expect.any(Function), onError: expect.any(Function) },
     );
+  });
+
+  test('should update connection type on disconnect', async () => {
+    mockStorage({ chains: mockChainMap, connections: [mockConnection] });
+
+    const scope = fork({});
+
+    await allSettled(networkModel.events.networkStarted, { scope });
+    await allSettled(networkModel.events.disconnectStarted, { scope, params: mockConnection.chainId });
+    expect(scope.getState(networkModel.$connections)).toEqual({
+      '0x01': { ...mockConnection, connectionType: ConnectionType.DISABLED },
+    });
+  });
+
+  test('should update connection type on lightClientSelected', async () => {
+    mockStorage({ chains: mockChainMap, connections: [mockConnection] });
+
+    const scope = fork({});
+
+    await allSettled(networkModel.events.networkStarted, { scope });
+    await allSettled(networkModel.events.lightClientSelected, { scope, params: mockConnection.chainId });
+    expect(scope.getState(networkModel.$connections)).toEqual({
+      '0x01': { ...mockConnection, connectionType: ConnectionType.LIGHT_CLIENT, activeNode: undefined },
+    });
+  });
+
+  test('should update connection type and active node on singleNodeSelected', async () => {
+    mockStorage({ chains: mockChainMap, connections: [mockConnection] });
+
+    const scope = fork({});
+    const newNode = {
+      name: 'New single node',
+      url: 'ws://127.0.0.1:9944',
+    };
+
+    await allSettled(networkModel.events.networkStarted, { scope });
+    await allSettled(networkModel.events.singleNodeSelected, {
+      scope,
+      params: {
+        chainId: mockConnection.chainId,
+        node: newNode,
+      },
+    });
+    expect(scope.getState(networkModel.$connections)).toEqual({
+      '0x01': { ...mockConnection, connectionType: ConnectionType.RPC_NODE, activeNode: newNode },
+    });
   });
 });
