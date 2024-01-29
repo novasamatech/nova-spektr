@@ -17,6 +17,7 @@ import {
   GraphqlProvider,
   MultisigChainProvider,
 } from './providers';
+import { usePrevious } from '../shared/lib/hooks';
 
 const SPLASH_SCREEN_DELAY = 450;
 
@@ -27,6 +28,8 @@ export const App = () => {
   const wallets = useUnit(walletModel.$wallets);
   const isLoadingWallets = useUnit(walletModel.$isLoadingWallets);
 
+  const previousWallets = usePrevious(wallets);
+
   const [splashScreenLoading, setSplashScreenLoading] = useState(true);
 
   useEffect(() => {
@@ -34,7 +37,8 @@ export const App = () => {
   }, []);
 
   useEffect(() => {
-    if (isLoadingWallets) return;
+    const alreadyAddNewWallet = previousWallets?.length > 0 && wallets.length > 0;
+    if (isLoadingWallets || alreadyAddNewWallet) return;
 
     const path = wallets.length > 0 ? Paths.ASSETS : Paths.ONBOARDING;
     navigate(path, { replace: true });
