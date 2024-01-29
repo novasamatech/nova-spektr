@@ -2,7 +2,7 @@ import { fork, allSettled } from 'effector';
 import { ApiPromise } from '@polkadot/api';
 
 import { networkModel } from '../network-model';
-import { chainsService, networkService, ProviderWithMetadata, ProviderType } from '@shared/api/network';
+import { chainsService, networkService, ProviderType, ProviderWithMetadata } from '@shared/api/network';
 import { Chain, ConnectionStatus, ChainMetadata, Connection, ConnectionType, ChainId } from '@shared/core';
 import { storageService } from '@shared/api/storage';
 
@@ -80,10 +80,8 @@ describe('entities/network/model/network-model', () => {
 
     const scope = fork({});
 
-    const spyCreateProvider = jest
-      .spyOn(networkService, 'createProvider')
-      .mockReturnValue({ isConnected: true, connect: jest.fn() } as unknown as ProviderWithMetadata);
     jest.spyOn(networkService, 'createApi').mockResolvedValue(api);
+    const spyCreateProvider = jest.spyOn(networkService, 'createProvider').mockReturnValue({} as ProviderWithMetadata);
 
     await allSettled(networkModel.events.networkStarted, { scope });
 
@@ -140,5 +138,39 @@ describe('entities/network/model/network-model', () => {
     expect(scope.getState(networkModel.$connections)).toEqual({
       '0x01': { ...mockConnection, connectionType: ConnectionType.RPC_NODE, activeNode: newNode },
     });
+  });
+
+  test('should set Light Client in $apis on chainStarted', async () => {
+    const api = { genesisHash: { toHex: () => mockChainMap['0x01'].chainId } } as ApiPromise;
+    mockStorage({
+      chains: mockChainMap,
+      connections: [
+        {
+          ...mockConnection,
+          connectionType: ConnectionType.LIGHT_CLIENT,
+          activeNode: undefined,
+        },
+      ],
+      metadata: [mockMetadata],
+    });
+
+    const scope = fork({});
+
+    const connectMock = jest.fn();
+    jest.spyOn(networkService, 'createApi').mockResolvedValue(api);
+    const spyCreateProvider = jest
+      .spyOn(networkService, 'createProvider')
+      .mockReturnValue({ connect: connectMock } as unknown as ProviderWithMetadata);
+
+    await allSettled(networkModel.events.networkStarted, { scope });
+
+    expect(connectMock).toHaveBeenCalled();
+    expect(scope.getState(networkModel.$apis)).toEqual({ '0x01': api });
+    expect(spyCreateProvider).toHaveBeenCalledWith(
+      mockChainMap['0x01'].chainId,
+      ProviderType.LIGHT_CLIENT,
+      { metadata: mockMetadata.metadata, nodes: [''] },
+      { onConnected: expect.any(Function), onDisconnected: expect.any(Function), onError: expect.any(Function) },
+    );
   });
 });

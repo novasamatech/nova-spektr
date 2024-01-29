@@ -3,9 +3,9 @@ import { ProviderInterface } from '@polkadot/rpc-provider/types';
 import * as Sc from '@substrate/connect';
 
 import type { ChainId, HexString } from '@shared/core';
+import { getKnownChain } from '@shared/lib/utils';
 import { createCachedProvider } from '../provider/CachedProvider';
 import { ProviderType, RpcValidation, ProviderWithMetadata } from '../lib/types';
-import { getKnownChain, getLightClientChains } from '../lib/utils';
 
 export const networkService = {
   createProvider,
@@ -13,7 +13,6 @@ export const networkService = {
   connect,
   disconnect,
   validateRpcNode,
-  getLightClientChains,
 };
 
 function createApi(provider: ProviderInterface): Promise<ApiPromise> {
@@ -21,7 +20,7 @@ function createApi(provider: ProviderInterface): Promise<ApiPromise> {
 }
 
 type ProviderParams = {
-  nodes: string[];
+  nodes?: string[];
   metadata?: HexString;
 };
 type ProviderListeners = {
@@ -71,25 +70,20 @@ function createWebsocketProvider({ nodes, metadata }: ProviderParams): ProviderW
   return new CachedWsProvider(nodes, 2000);
 }
 
-async function disconnect(api: ApiPromise) {
+async function disconnect(api: ApiPromise): Promise<void> {
   try {
     await api.disconnect();
-  } catch (e) {
-    console.warn(e);
+  } catch (error) {
+    console.warn(error);
   }
 }
 
-async function connect(provider: ProviderInterface, api: ApiPromise) {
+async function connect(provider: ProviderInterface, api: ApiPromise): Promise<void> {
   try {
     await provider.connect();
-  } catch (e) {
-    console.warn(e);
-  }
-
-  try {
     await api.connect();
-  } catch (e) {
-    console.warn(e);
+  } catch (error) {
+    console.warn(error);
   }
 }
 
