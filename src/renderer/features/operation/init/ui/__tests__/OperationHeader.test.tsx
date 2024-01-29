@@ -5,7 +5,7 @@ import { fork } from 'effector';
 import { Provider } from 'effector-react';
 
 import { OperationHeader } from '../OperationHeader';
-import { TEST_ACCOUNT_ID, TEST_ADDRESS, TEST_CHAIN_ID } from '@shared/lib/utils';
+import { TEST_ACCOUNTS, TEST_ADDRESS, TEST_CHAIN_ID } from '@shared/lib/utils';
 import type { Account, AccountId, MultisigAccount, Wallet } from '@shared/core';
 import { CryptoType, ChainType, AccountType, WalletType, SigningType } from '@shared/core';
 import { walletModel } from '@entities/wallet';
@@ -52,7 +52,7 @@ describe.skip('features/operation/init/OperationHeader', () => {
     const spySignatoryChange = jest.fn();
     const account = {
       type: AccountType.MULTISIG,
-      accountId: TEST_ACCOUNT_ID,
+      accountId: TEST_ACCOUNTS[0],
       name: 'multisig account',
       signatories: [SIGNATORY_ACCOUNT],
       threshold: 2,
