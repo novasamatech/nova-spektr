@@ -151,7 +151,10 @@ const $proxyWalletForProxied = combine(
   { skipVoid: false },
 );
 
-const $hasProxies = combine($proxyAccounts, (accounts) => accounts.length > 0);
+const $hasProxies = combine(
+  { accounts: $proxyAccounts, groups: proxyModel.$walletsProxyGroups, wallet: walletSelectModel.$walletForDetails },
+  ({ accounts, groups, wallet }) => accounts.length > 0 && wallet && groups[wallet.id]?.length > 0,
+);
 
 export const walletProviderModel = {
   $accounts,
