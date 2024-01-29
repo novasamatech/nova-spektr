@@ -37,8 +37,8 @@ export const App = () => {
   }, []);
 
   useEffect(() => {
-    const alreadyAddNewWallet = previousWallets?.length > 0 && wallets.length > 0;
-    if (isLoadingWallets || alreadyAddNewWallet) return;
+    const alreadyHadAccounts = previousWallets.length > 0 && wallets.length > 0;
+    if (isLoadingWallets || alreadyHadAccounts) return;
 
     const path = wallets.length > 0 ? Paths.ASSETS : Paths.ONBOARDING;
     navigate(path, { replace: true });
