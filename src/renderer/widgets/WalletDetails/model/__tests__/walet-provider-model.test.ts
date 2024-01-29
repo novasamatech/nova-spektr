@@ -7,6 +7,11 @@ import { storageService } from '@shared/api/storage';
 import { proxyModel } from '@entities/proxy';
 import { walletProviderMock } from './wallet-provider.mock';
 
+// @widgets/RemoveProxy export of RemoveProxy causes chain of imports up to wallet-connect model which causes error
+jest.mock('@features/operation', () => ({
+  Signing: () => null,
+}));
+
 describe('widgets/WalletDetails/model/wallet-provider-model', () => {
   beforeEach(() => {
     jest.restoreAllMocks();

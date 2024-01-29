@@ -545,6 +545,12 @@
     "withSymbol": "{ symbol }{ amount }"
   },
   "proxy": {
+    "details": {
+      "account": "Your account",
+      "revokeAccessType": "Revoke access type",
+      "revokeFor": "Revoke for",
+      "wallet": "Your wallet"
+    },
     "names": {
       "any": "All operations",
       "auction": "Auction operations",
@@ -563,6 +569,7 @@
       "identityJudgement": "judgement operations",
       "nominationPools": "nominations operations",
       "nonTransfer": "all, except transfer operations",
+      "removeProxyTitle": "Revoke delegated authority (proxy) on ",
       "staking": "staking operations"
     },
     "tooltipPart1": "Proxied wallets are wallet which have set one of your accounts in Nova Spektr as delegated authority (Proxies).",
@@ -1011,6 +1018,10 @@
       "accountTabTitle": "Accounts",
       "addProxyButton": "Add delegated authority",
       "cancelButton": "Cancel",
+      "confirmRemoveProxyCancel": "Cancel",
+      "confirmRemoveProxyDescription": "The account will lose access to your wallet. Are you sure?",
+      "confirmRemoveProxySubmit": "Delete",
+      "confirmRemoveProxyTitle": "Revoke delegated authority?",
       "emptyProxyDescription": "Add new proxies to work with them",
       "emptyProxyTitle": "Wallet doesn't have delegated authorities",
       "forgetButton": "Remove",

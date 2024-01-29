@@ -4,13 +4,15 @@ import { useUnit } from 'effector-react';
 import { cnTw } from '@shared/lib/utils';
 import { ChainTitle } from '@entities/chain';
 import { useI18n } from '@app/providers';
-import { Accordion, FootnoteText, HelpText } from '@shared/ui';
-import type { ID } from '@shared/core';
+import { Accordion, ConfirmModal, FootnoteText, HelpText, SmallTitleText } from '@shared/ui';
+import type { ID, ProxyAccount } from '@shared/core';
 import { proxyModel } from '@entities/proxy';
 import { networkModel } from '@entities/network';
 import { AssetBalance } from '@entities/asset';
 import { walletProviderModel } from '../../model/wallet-provider-model';
 import { ProxyAccountWithActions } from './ProxyAccountWithActions';
+import { useToggle } from '@shared/lib/hooks';
+import { RemoveProxy } from '@widgets/RemoveProxy';
 
 type Props = {
   walletId: ID;
@@ -24,8 +26,17 @@ export const ProxiesList = ({ walletId, className, canCreateProxy = true }: Prop
   const chains = useUnit(networkModel.$chains);
   const proxyAccounts = useUnit(walletProviderModel.$proxyAccounts);
   const proxyGroups = useUnit(proxyModel.$walletsProxyGroups)[walletId];
+  const proxyForRemoval = useUnit(walletProviderModel.$proxyForRemoval);
+
+  const [isRemoveConfirmOpen, toggleIsRemoveConfirmOpen] = useToggle();
+  const [isRemoveProxyOpen, toggleIsRemoveProxyOpen] = useToggle();
 
   const proxiesByChain = groupBy(proxyAccounts, 'chainId');
+
+  const handleDeleteProxy = (proxyAccount: ProxyAccount) => {
+    walletProviderModel.events.removeProxy(proxyAccount);
+    toggleIsRemoveConfirmOpen();
+  };
 
   return (
     <div className={cnTw('flex flex-col', className)}>
@@ -41,7 +52,7 @@ export const ProxiesList = ({ walletId, className, canCreateProxy = true }: Prop
             <li key={chainId} className="flex items-center py-2">
               <Accordion isDefaultOpen>
                 <Accordion.Button buttonClass="p-2 rounded hover:bg-action-background-hover focus:bg-action-background-hover">
-                  <div className="flex gap-x-2 items-center justify-between flex-1 pr-2">
+                  <div className="flex gap-x-2 items-center justify-between pr-2">
                     <ChainTitle className="flex-1" fontClass="text-text-primary" chain={chains[chainId]} />
                     <HelpText className="text-text-tertiary">
                       {t('walletDetails.common.proxyDeposit')}
@@ -59,7 +70,12 @@ export const ProxiesList = ({ walletId, className, canCreateProxy = true }: Prop
                   <ul className="flex flex-col gap-y-2">
                     {proxiesByChain[chainId].map((proxy) => (
                       <li className="px-2 py-1.5" key={proxy.accountId}>
-                        <ProxyAccountWithActions account={proxy} chain={chains[chainId]} />
+                        <ProxyAccountWithActions
+                          account={proxy}
+                          chain={chains[chainId]}
+                          canCreateProxy={canCreateProxy}
+                          onRemoveProxy={handleDeleteProxy}
+                        />
                       </li>
                     ))}
                   </ul>
@@ -69,6 +85,28 @@ export const ProxiesList = ({ walletId, className, canCreateProxy = true }: Prop
           );
         })}
       </ul>
+
+      <ConfirmModal
+        isOpen={isRemoveConfirmOpen}
+        cancelText={t('walletDetails.common.confirmRemoveProxyCancel')}
+        confirmText={t('walletDetails.common.confirmRemoveProxySubmit')}
+        confirmPallet="error"
+        panelClass="w-[240px]"
+        onClose={toggleIsRemoveConfirmOpen}
+        onConfirm={() => {
+          toggleIsRemoveConfirmOpen();
+          toggleIsRemoveProxyOpen();
+        }}
+      >
+        <SmallTitleText align="center" className="mb-2">
+          {t('walletDetails.common.confirmRemoveProxyTitle')}
+        </SmallTitleText>
+        <FootnoteText className="text-text-tertiary" align="center">
+          {t('walletDetails.common.confirmRemoveProxyDescription')}
+        </FootnoteText>
+      </ConfirmModal>
+
+      <RemoveProxy isOpen={isRemoveProxyOpen} proxyAccount={proxyForRemoval} onClose={toggleIsRemoveProxyOpen} />
     </div>
   );
 };
