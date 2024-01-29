@@ -1,6 +1,6 @@
 import { AccountType, ProxyVariant, ChainType, CryptoType } from '@shared/core';
 import type { NoID, PartialProxiedAccount, ProxyAccount } from '@shared/core';
-import { TEST_ACCOUNT_ID, TEST_ADDRESS } from '@shared/lib/utils';
+import { TEST_ACCOUNTS, TEST_ADDRESS } from '@shared/lib/utils';
 import { proxyWorkerUtils } from '../worker-utils';
 
 describe('features/proxies/lib/worker-utils', () => {
@@ -126,7 +126,7 @@ describe('features/proxies/lib/worker-utils', () => {
 
   test('should return the account id when given a valid address', () => {
     const address = TEST_ADDRESS;
-    const expectedAccountId = TEST_ACCOUNT_ID;
+    const expectedAccountId = TEST_ACCOUNTS[0];
 
     const result = proxyWorkerUtils.toAccountId(address);
 

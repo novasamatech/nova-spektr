@@ -3,18 +3,8 @@ import { allSettled, fork } from 'effector';
 import { Account, AccountType, ChainType, CryptoType, SigningType, WalletType } from '@shared/core';
 import { forgetWalletModel } from '../forget-wallet-model';
 import { storageService } from '@shared/api/storage';
-import { TEST_ACCOUNT_ID } from '@shared/lib/utils';
+import { TEST_ACCOUNTS } from '@shared/lib/utils';
 import { walletModel } from '@entities/wallet';
-
-jest.mock('@shared/api/storage', () => ({
-  __esModule: true,
-  default: jest.fn(),
-  storage: { connectTo: jest.fn().mockReturnValue({}) },
-  storageService: {
-    wallets: {},
-    accounts: {},
-  },
-}));
 
 jest.mock('@entities/multisig', () => ({
   useForgetMultisig: () => ({ deleteMultisigTxs: jest.fn() }),
@@ -23,10 +13,6 @@ jest.mock('@entities/multisig', () => ({
 jest.mock('@entities/balance', () => ({
   ...jest.requireActual('@entities/balance'),
   useBalanceService: () => ({ deleteBalance: jest.fn() }),
-}));
-
-jest.mock('@entities/network', () => ({
-  useMetadata: () => ({}),
 }));
 
 const wallet = {
@@ -46,23 +32,9 @@ const accountBase = {
 };
 
 const walletAccounts: Account[] = [
-  { ...accountBase, id: 1, accountId: TEST_ACCOUNT_ID },
+  { ...accountBase, id: 1, accountId: TEST_ACCOUNTS[0] },
   { ...accountBase, id: 2, accountId: '0x00' },
 ];
-
-jest.mock(
-  'dexie',
-  jest.fn().mockImplementation(() => {
-    return jest.fn().mockReturnValue({
-      version: jest.fn().mockReturnValue({
-        stores: jest.fn().mockReturnValue({
-          upgrade: jest.fn(),
-        }),
-      }),
-      table: jest.fn(),
-    });
-  }),
-);
 
 describe('features/ForgetModel', () => {
   test('should call success calback after wallet delete', async () => {

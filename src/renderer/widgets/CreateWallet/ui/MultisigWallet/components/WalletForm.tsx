@@ -83,7 +83,11 @@ export const WalletForm = ({ signatories, onContinue, isActive, isLoading, onGoB
     return (
       !walletUtils.isWatchOnly(wallet) &&
       accounts.some((account) => {
-        return account.accountId === multisigAccountId && account.walletId === (wallet as Wallet).id;
+        return (
+          !accountUtils.isProxiedAccount(account) &&
+          account.accountId === multisigAccountId &&
+          account.walletId === (wallet as Wallet).id
+        );
       })
     );
   });

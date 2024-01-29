@@ -1,5 +1,4 @@
 import { useUnit } from 'effector-react';
-import { useState } from 'react';
 
 import { BaseModal, ContextMenu, DropdownIconButton, HelpText, IconButton, Tabs } from '@shared/ui';
 import { useModalClose, useToggle } from '@shared/lib/hooks';
@@ -30,11 +29,11 @@ type Props = {
 export const VaultWalletDetails = ({ wallet, root, accountsMap, onClose }: Props) => {
   const { t } = useI18n();
 
-  const hasProxies = useUnit(walletProviderModel.$hasProxies);
   const chains = useUnit(networkModel.$chains);
+  const hasProxies = useUnit(walletProviderModel.$hasProxies);
+  const keysToAdd = useUnit(vaultDetailsModel.$keysToAdd);
 
   const [isModalOpen, closeModal] = useModalClose(true, onClose);
-  const [newKeys, setNewKeys] = useState<DraftAccount<ChainAccount>[]>([]);
 
   const [isRenameModalOpen, toggleIsRenameModalOpen] = useToggle();
   const [isConstructorModalOpen, toggleConstructorModal] = useToggle();
@@ -56,7 +55,7 @@ export const VaultWalletDetails = ({ wallet, root, accountsMap, onClose }: Props
       const vaultAccounts = Object.values(accountsMap).flat();
       const mainAccounts = walletDetailsUtils.getMainAccounts(vaultAccounts);
 
-      setNewKeys([...mainAccounts, ...keysToAdd.flat()]);
+      vaultDetailsModel.events.keysAdded([...mainAccounts, ...keysToAdd.flat()]);
       toggleScanModal();
     }
   };
@@ -67,7 +66,7 @@ export const VaultWalletDetails = ({ wallet, root, accountsMap, onClose }: Props
       return key.keyType === KeyType.MAIN || !(key as Account).accountId;
     });
 
-    setNewKeys(newKeys);
+    vaultDetailsModel.events.keysAdded(newKeys);
     toggleScanModal();
   };
 
@@ -200,7 +199,7 @@ export const VaultWalletDetails = ({ wallet, root, accountsMap, onClose }: Props
       <DerivationsAddressModal
         isOpen={isScanModalOpen}
         rootAccountId={root.accountId}
-        keys={newKeys}
+        keys={keysToAdd}
         onClose={toggleScanModal}
         onComplete={handleVaultKeys}
       />

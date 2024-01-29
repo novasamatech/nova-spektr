@@ -4,7 +4,7 @@ import { useUnit } from 'effector-react';
 import { useModalClose, useToggle } from '@shared/lib/hooks';
 import { WalletCardLg } from '@entities/wallet';
 import { useI18n } from '@app/providers';
-import { chainsService } from '@entities/network';
+import { chainsService } from '@shared/api/network';
 import { walletConnectUtils } from '@entities/walletConnect';
 import type { Account, WalletConnectWallet } from '@shared/core';
 import { wcDetailsModel } from '../../model/wc-details-model';
@@ -38,13 +38,12 @@ export const WalletConnectDetails = ({ wallet, accounts, onClose }: Props) => {
   const { t } = useI18n();
 
   const hasProxies = useUnit(walletProviderModel.$hasProxies);
+  const forgetStep = useUnit(wcDetailsModel.$forgetStep);
+  const reconnectStep = useUnit(wcDetailsModel.$reconnectStep);
 
   const [isModalOpen, closeModal] = useModalClose(true, onClose);
   const [isConfirmForgetOpen, toggleConfirmForget] = useToggle();
   const [isRenameModalOpen, toggleIsRenameModalOpen] = useToggle();
-
-  const reconnectStep = useUnit(wcDetailsModel.$reconnectStep);
-  const forgetStep = useUnit(wcDetailsModel.$forgetStep);
 
   useEffect(() => {
     wcDetailsModel.events.reset();
