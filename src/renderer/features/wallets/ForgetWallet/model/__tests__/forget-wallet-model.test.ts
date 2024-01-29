@@ -3,7 +3,7 @@ import { allSettled, fork } from 'effector';
 import { Account, AccountType, ChainType, CryptoType, SigningType, WalletType } from '@shared/core';
 import { forgetWalletModel } from '../forget-wallet-model';
 import { storageService } from '@shared/api/storage';
-import { TEST_ACCOUNT_ID } from '@shared/lib/utils';
+import { TEST_ACCOUNTS } from '@shared/lib/utils';
 import { walletModel } from '@entities/wallet';
 
 jest.mock('@entities/multisig', () => ({
@@ -32,7 +32,7 @@ const accountBase = {
 };
 
 const walletAccounts: Account[] = [
-  { ...accountBase, id: 1, accountId: TEST_ACCOUNT_ID },
+  { ...accountBase, id: 1, accountId: TEST_ACCOUNTS[0] },
   { ...accountBase, id: 2, accountId: '0x00' },
 ];
 
