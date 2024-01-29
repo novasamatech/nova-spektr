@@ -57,7 +57,7 @@ sample({
 
 sample({
   clock: populateProxiesFx.doneData,
-  fn: (proxies) => groupBy(proxies, 'accountId'),
+  fn: (proxies) => groupBy(proxies, 'proxiedAccountId'),
   target: $proxies,
 });
 

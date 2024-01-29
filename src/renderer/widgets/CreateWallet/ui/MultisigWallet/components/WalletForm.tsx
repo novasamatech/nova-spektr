@@ -80,7 +80,9 @@ export const WalletForm = ({ signatories, onContinue, isActive, isLoading, onGoB
     );
   });
 
-  const accountAlreadyExists = accounts.some((a) => a.accountId === multisigAccountId);
+  const accountAlreadyExists = accounts.some(
+    (a) => !accountUtils.isProxiedAccount(a) && a.accountId === multisigAccountId,
+  );
 
   const hasTwoSignatories = signatories.length > 1;
 
