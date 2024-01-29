@@ -1,3 +1,5 @@
+import { TFunction } from 'react-i18next';
+
 import { toAddress } from '@shared/lib/utils';
 import { ProxyAccount, ProxyType, AccountId, NoID, ProxyGroup, Wallet, Account, ProxyDeposits } from '@shared/core';
 
@@ -8,6 +10,7 @@ export const proxyUtils = {
   getProxiedName,
   getProxyGroups,
   createProxyGroups,
+  getProxyTypeName,
 };
 
 function isSameProxy(oldProxy: ProxyAccount, newProxy: ProxyAccount) {
@@ -107,5 +110,25 @@ function createProxyGroups(
     return proxyGroups.every((g) => !proxyUtils.isSameProxyGroup(g, p));
   });
 
+  console.log('toAdd', toAdd);
+
   return { toAdd, toUpdate, toRemove };
+}
+
+const ProxyTypeName: Record<ProxyType, string> = {
+  [ProxyType.ANY]: 'proxy.names.any',
+  [ProxyType.NON_TRANSFER]: 'proxy.names.nonTransfer',
+  [ProxyType.STAKING]: 'proxy.names.staking',
+  [ProxyType.AUCTION]: 'proxy.names.auction',
+  [ProxyType.CANCEL_PROXY]: 'proxy.names.cancelProxy',
+  [ProxyType.GOVERNANCE]: 'proxy.names.governance',
+  [ProxyType.IDENTITY_JUDGEMENT]: 'proxy.names.identityJudgement',
+  [ProxyType.NOMINATION_POOLS]: 'proxy.names.nominationPools',
+};
+
+function getProxyTypeName(proxyType: ProxyType | string, t: TFunction) {
+  // if proxy type is not in ProxyTypeName enum split camel case string and add spaces
+  return ProxyTypeName[proxyType as ProxyType]
+    ? t(ProxyTypeName[proxyType as ProxyType])
+    : proxyType.replace(/([a-zA-Z])(?=[A-Z])/g, '$1 ');
 }
