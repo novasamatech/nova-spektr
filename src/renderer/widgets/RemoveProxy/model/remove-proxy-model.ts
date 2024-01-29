@@ -139,7 +139,7 @@ sample({
   },
   filter: (proxyAccount) => Boolean(proxyAccount),
   fn: ({ proxyAccount, proxies, proxyGroups }, api) => {
-    // find other proxies in the same as proxy we are removing
+    // find other proxies in the same group as proxy we are removing
     const sameGroupProxies = proxies[proxyAccount!.proxiedAccountId].filter((p) => p.chainId === proxyAccount!.chainId);
     const proxyGroup = proxyGroups.find(
       (p) => p.chainId === proxyAccount!.chainId && p.proxiedAccountId === proxyAccount!.proxiedAccountId,

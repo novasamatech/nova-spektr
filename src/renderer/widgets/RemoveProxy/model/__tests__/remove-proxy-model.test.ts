@@ -11,7 +11,7 @@ import { proxyModel } from '@entities/proxy';
 
 const proxyAccountMock = {
   id: 1,
-  chainId: '0x00' as HexString,
+  chainId: TEST_CHAIN_ID,
   accountId: '0x00' as HexString,
   proxiedAccountId: '0x01' as HexString,
   proxyType: ProxyType.ANY,
@@ -72,7 +72,16 @@ describe('widgets/RemoveProxy/model/remove-proxy-model', () => {
     const scope = fork({
       values: new Map()
         .set(proxyModel.$proxies, { '0x01': [proxyAccountMock] })
-        .set(removeProxyModel.$proxyAccount, proxyAccountMock),
+        .set(removeProxyModel.$proxyAccount, proxyAccountMock)
+        .set(proxyModel.$proxyGroups, [
+          {
+            id: 1,
+            walletId: 1,
+            proxiedAccountId: '0x01',
+            chainId: TEST_CHAIN_ID,
+            totalDeposit: '11111111',
+          },
+        ]),
     });
 
     await allSettled(removeProxyModel.events.proxyRemoved, { scope, params: {} as ApiPromise });
