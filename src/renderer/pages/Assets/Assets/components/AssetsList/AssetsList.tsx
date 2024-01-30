@@ -3,7 +3,7 @@ import { useUnit } from 'effector-react';
 
 import { useI18n } from '@app/providers';
 import { networkModel, networkUtils } from '@entities/network';
-import type { Chain } from '@shared/core';
+import type { Chain, ChainAccount, ChainId } from '@shared/core';
 import { accountUtils, walletModel, walletUtils } from '@entities/wallet';
 import { priceProviderModel, currencyModel } from '@entities/price';
 import { includes } from '@shared/lib/utils';
@@ -38,11 +38,23 @@ export const AssetsList = () => {
   useEffect(() => {
     const isMultisig = walletUtils.isMultisig(activeWallet);
 
+    const availableChains = activeAccounts.some(accountUtils.isAllChainsSupport)
+      ? new Set(Object.keys(chains) as ChainId[])
+      : activeAccounts.reduce<Set<ChainId>>((acc, account) => {
+          const chainId = (account as ChainAccount).chainId;
+
+          if (chainId) {
+            acc.add(chainId);
+          }
+
+          return acc;
+        }, new Set<ChainId>());
+
     const filteredChains = Object.values(chains).filter((c) => {
       const isDisabled = networkUtils.isDisabledConnection(connections[c.chainId]);
       const hasMultiPallet = !isMultisig || networkUtils.isMultisigSupported(c.options);
 
-      const hasChainAccount = activeAccounts.some((a) => accountUtils.isChainIdMatch(a, c.chainId));
+      const hasChainAccount = availableChains.has(c.chainId);
 
       return !isDisabled && hasMultiPallet && hasChainAccount;
     });

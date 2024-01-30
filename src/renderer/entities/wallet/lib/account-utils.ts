@@ -20,6 +20,7 @@ export const accountUtils = {
   isBaseAccount,
   isChainAccount,
   isMultisigAccount,
+  isAllChainsSupport,
   isChainIdMatch,
   isWalletConnectAccount,
   isProxiedAccount,
@@ -57,8 +58,12 @@ function isAccountWithShards(accounts: Pick<Account, 'type'> | ShardAccount[]): 
   return Array.isArray(accounts) && isShardAccount(accounts[0]);
 }
 
+function isAllChainsSupport(account: Pick<Account, 'type'>): boolean {
+  return isBaseAccount(account) || isMultisigAccount(account);
+}
+
 function isChainIdMatch(account: Pick<Account, 'type'>, chainId: ChainId): boolean {
-  if (isBaseAccount(account) || isMultisigAccount(account)) return true;
+  if (isAllChainsSupport(account)) return true;
 
   const chainAccountMatch = isChainAccount(account) && account.chainId === chainId;
   const shardAccountMatch = isShardAccount(account) && account.chainId === chainId;
