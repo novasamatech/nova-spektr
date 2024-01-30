@@ -52,23 +52,23 @@ function getProxyGroups(wallets: Wallet[], accounts: Account[], deposits: ProxyD
   return wallets.reduce<NoID<ProxyGroup>[]>((acc, w) => {
     const walletAccounts = accounts.filter((a) => a.walletId === w.id);
 
-    if (walletAccounts.length > 0) {
-      const walletProxyGroups = walletAccounts.reduce<NoID<ProxyGroup>[]>((acc, a) => {
-        const walletDeposits = deposits.deposits[a.accountId];
-        if (!walletDeposits) return acc;
+    if (walletAccounts.length === 0) return acc;
 
-        acc.push({
-          walletId: w.id,
-          proxiedAccountId: a.accountId,
-          chainId: deposits.chainId,
-          totalDeposit: walletDeposits,
-        });
+    const walletProxyGroups = walletAccounts.reduce<NoID<ProxyGroup>[]>((acc, a) => {
+      const walletDeposits = deposits.deposits[a.accountId];
+      if (!walletDeposits) return acc;
 
-        return acc;
-      }, []);
+      acc.push({
+        walletId: w.id,
+        proxiedAccountId: a.accountId,
+        chainId: deposits.chainId,
+        totalDeposit: walletDeposits,
+      });
 
-      acc = acc.concat(walletProxyGroups);
-    }
+      return acc;
+    }, []);
+
+    acc.push(...walletProxyGroups);
 
     return acc;
   }, []);
