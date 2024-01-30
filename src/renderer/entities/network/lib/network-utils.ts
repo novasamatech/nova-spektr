@@ -3,6 +3,7 @@ import { RelayChains } from '@shared/lib/utils';
 
 export const networkUtils = {
   isConnectedStatus,
+  isConnectingStatus,
   isDisconnectedStatus,
   isErrorStatus,
 
@@ -24,6 +25,10 @@ function isConnectedStatus(status: ConnectionStatus): boolean {
 }
 function isDisconnectedStatus(status: ConnectionStatus): boolean {
   return status === ConnectionStatus.DISCONNECTED;
+}
+
+function isConnectingStatus(status: ConnectionStatus): boolean {
+  return status === ConnectionStatus.CONNECTING;
 }
 function isErrorStatus(status: ConnectionStatus): boolean {
   return status === ConnectionStatus.ERROR;

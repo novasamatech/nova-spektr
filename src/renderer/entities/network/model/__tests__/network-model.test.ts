@@ -1,5 +1,4 @@
 import { fork, allSettled } from 'effector';
-import { ApiPromise } from '@polkadot/api';
 
 import { networkModel } from '../network-model';
 import { chainsService, networkService, ProviderType, ProviderWithMetadata } from '@shared/api/network';
@@ -17,6 +16,7 @@ describe('entities/network/model/network-model', () => {
   const mockConnection: Connection = {
     id: 1,
     chainId: '0x01',
+    customNodes: [],
     connectionType: ConnectionType.RPC_NODE,
     activeNode: { name: 'My node', url: 'http://localhost:8080' },
   };
@@ -68,8 +68,7 @@ describe('entities/network/model/network-model', () => {
     expect(scope.getState(networkModel.$connections)).toEqual({ '0x01': mockConnection });
   });
 
-  test('should set $apis on chainStarted', async () => {
-    const api = { genesisHash: { toHex: () => mockChainMap['0x01'].chainId } } as ApiPromise;
+  test('should set $providers on networkStarted', async () => {
     mockStorage({
       chains: mockChainMap,
       connections: [mockConnection],
@@ -78,22 +77,24 @@ describe('entities/network/model/network-model', () => {
 
     const scope = fork({});
 
-    jest.spyOn(networkService, 'createApi').mockResolvedValue(api);
-    const spyCreateProvider = jest.spyOn(networkService, 'createProvider').mockReturnValue({} as ProviderWithMetadata);
+    const spyCreateProvider = jest
+      .spyOn(networkService, 'createProvider')
+      .mockReturnValue({ isConnected: true } as ProviderWithMetadata);
 
     await allSettled(networkModel.events.networkStarted, { scope });
 
-    expect(scope.getState(networkModel.$apis)).toEqual({ '0x01': api });
     expect(spyCreateProvider).toHaveBeenCalledWith(
       mockChainMap['0x01'].chainId,
       ProviderType.WEB_SOCKET,
       { metadata: mockMetadata.metadata, nodes: ['http://localhost:8080'] },
       { onConnected: expect.any(Function), onDisconnected: expect.any(Function), onError: expect.any(Function) },
     );
+    expect(scope.getState(networkModel.$providers)).toEqual({
+      '0x01': { isConnected: true },
+    });
   });
 
-  test('should set Light Client in $apis on chainStarted', async () => {
-    const api = { genesisHash: { toHex: () => mockChainMap['0x01'].chainId } } as ApiPromise;
+  test('should set Light Client in $providers on networkStarted', async () => {
     mockStorage({
       chains: mockChainMap,
       connections: [
@@ -109,20 +110,21 @@ describe('entities/network/model/network-model', () => {
     const scope = fork({});
 
     const connectMock = jest.fn();
-    jest.spyOn(networkService, 'createApi').mockResolvedValue(api);
     const spyCreateProvider = jest
       .spyOn(networkService, 'createProvider')
-      .mockReturnValue({ connect: connectMock } as unknown as ProviderWithMetadata);
+      .mockReturnValue({ connect: connectMock, isConnected: true } as unknown as ProviderWithMetadata);
 
     await allSettled(networkModel.events.networkStarted, { scope });
 
     expect(connectMock).toHaveBeenCalled();
-    expect(scope.getState(networkModel.$apis)).toEqual({ '0x01': api });
     expect(spyCreateProvider).toHaveBeenCalledWith(
       mockChainMap['0x01'].chainId,
       ProviderType.LIGHT_CLIENT,
       { metadata: mockMetadata.metadata, nodes: [''] },
       { onConnected: expect.any(Function), onDisconnected: expect.any(Function), onError: expect.any(Function) },
     );
+    expect(scope.getState(networkModel.$providers)).toEqual({
+      '0x01': { connect: connectMock, isConnected: true },
+    });
   });
 });

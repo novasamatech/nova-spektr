@@ -10,8 +10,6 @@ import { ProviderType, RpcValidation, ProviderWithMetadata } from '../lib/types'
 export const networkService = {
   createProvider,
   createApi,
-  connect,
-  disconnect,
   validateRpcNode,
 };
 
@@ -68,23 +66,6 @@ function createWebsocketProvider({ nodes, metadata }: ProviderParams): ProviderW
   const CachedWsProvider = createCachedProvider(WsProvider, metadata);
 
   return new CachedWsProvider(nodes, 2000);
-}
-
-async function disconnect(api: ApiPromise): Promise<void> {
-  try {
-    await api.disconnect();
-  } catch (error) {
-    console.warn(error);
-  }
-}
-
-async function connect(provider: ProviderInterface, api: ApiPromise): Promise<void> {
-  try {
-    await provider.connect();
-    await api.connect();
-  } catch (error) {
-    console.warn(error);
-  }
 }
 
 function validateRpcNode(chainId: ChainId, rpcUrl: string): Promise<RpcValidation> {

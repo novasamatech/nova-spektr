@@ -3,7 +3,7 @@ import { Controller, SubmitHandler, useForm } from 'react-hook-form';
 
 import { BaseModal, Button, Input, InputHint, Alert } from '@shared/ui';
 import { useI18n } from '@app/providers';
-import { networkModel, ExtendedChain } from '@entities/network';
+import { ExtendedChain, networkSelectorModel } from '@entities/network';
 import { validateWsAddress } from '@shared/lib/utils';
 import { OperationTitle } from '@entities/chain';
 import type { RpcNode } from '@shared/core';
@@ -122,13 +122,13 @@ export const CustomRpcModal = ({ network, node, isOpen, onClose }: Props) => {
 
   const saveRpcNode = async (formData: CustomRpcForm): Promise<void> => {
     if (node) {
-      networkModel.events.rpcNodeUpdated({
+      networkSelectorModel.events.rpcNodeUpdated({
         chainId: network.chainId,
         oldNode: node,
         rpcNode: formData,
       });
     } else {
-      networkModel.events.rpcNodeAdded({
+      networkSelectorModel.events.rpcNodeAdded({
         chainId: network.chainId,
         rpcNode: formData,
       });
