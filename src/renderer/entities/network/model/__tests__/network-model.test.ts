@@ -37,7 +37,6 @@ describe('entities/network/model/network-model', () => {
     jest.spyOn(chainsService, 'getChainsMap').mockReturnValue(chains || {});
     jest.spyOn(storageService.connections, 'readAll').mockResolvedValue(connections || []);
     jest.spyOn(storageService.connections, 'update').mockResolvedValue(1);
-    jest.spyOn(storageService.connections, 'create').mockResolvedValue({ id: 1 } as unknown as Connection);
     jest.spyOn(storageService.metadata, 'readAll').mockResolvedValue(metadata || []);
   };
 

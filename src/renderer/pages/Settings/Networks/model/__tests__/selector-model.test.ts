@@ -14,6 +14,10 @@ describe('pages/Settings/Networks/model/selector-model', () => {
     activeNode,
   });
 
+  beforeEach(() => {
+    jest.restoreAllMocks();
+  });
+
   test('should update $connections on chainDisabled', async () => {
     const mockConnection = getMockConnection(ConnectionType.RPC_NODE, {
       name: 'My node',
