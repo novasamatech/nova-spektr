@@ -8,6 +8,7 @@ import { SignButton } from '@entities/operation/ui/SignButton';
 import { Account, ProxyAccount, Wallet } from '@shared/core';
 import { AddressWithExplorers, WalletIcon } from '@entities/wallet';
 import { ProxyTypeName } from '@entities/proxy';
+import { splitCamelCaseString } from "@shared/lib/utils";
 
 type Props = {
   transaction: Transaction;
@@ -65,7 +66,7 @@ export const Confirmation = ({
 
         <DetailRow label={t('proxy.details.revokeAccessType')} className="pr-2">
           <FootnoteText>
-            {t(ProxyTypeName[proxyAccount.proxyType]) || proxyAccount.proxyType.replace(/([a-zA-Z])(?=[A-Z])/g, '$1 ')}
+            {t(ProxyTypeName[proxyAccount.proxyType]) || splitCamelCaseString(proxyAccount.proxyType)}
           </FootnoteText>
         </DetailRow>
 

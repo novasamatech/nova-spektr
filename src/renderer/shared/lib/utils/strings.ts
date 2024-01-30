@@ -105,3 +105,12 @@ export const toFixedNotation = (value: number, maxPrecision = 20): string => {
 
   return value.toFixed(trailingZeros);
 };
+
+/**
+ * Splits string in camelCase by capital letters and adds spaces
+ * @param value camelCaseString
+ * @return {String}
+ */
+export const splitCamelCaseString = (value: string): string => {
+  return value.replace(/([a-zA-Z])(?=[A-Z])/g, '$1 ');
+};

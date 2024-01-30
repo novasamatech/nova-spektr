@@ -1,6 +1,6 @@
 import { ReactNode } from 'react';
 
-import { cnTw, toAddress, toShortAddress } from '@shared/lib/utils';
+import { cnTw, splitCamelCaseString, toAddress, toShortAddress } from '@shared/lib/utils';
 import { BodyText, HelpText, Identicon, Truncate } from '@shared/ui';
 import { AccountId, ProxyType } from '@shared/core';
 import { useI18n } from '@app/providers';
@@ -48,7 +48,7 @@ export const ProxyAccount = ({
           <span className="w-1 h-1 rounded-full bg-tab-text-accent" />
           {/* if proxy type is not in ProxyTypeName enum split camel case string and add spaces */}
           <HelpText className="text-tab-text-accent">
-            {t(ProxyTypeName[proxyType]) || proxyType.replace(/([a-zA-Z])(?=[A-Z])/g, '$1 ')}
+            {t(ProxyTypeName[proxyType]) || splitCamelCaseString(proxyType)}
           </HelpText>
         </div>
       </div>
