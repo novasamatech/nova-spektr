@@ -28,7 +28,7 @@ export const App = () => {
   const wallets = useUnit(walletModel.$wallets);
   const isLoadingWallets = useUnit(walletModel.$isLoadingWallets);
 
-  const previousWallets = usePrevious(wallets);
+  const previousWalletsLength = usePrevious(wallets.length);
 
   const [splashScreenLoading, setSplashScreenLoading] = useState(true);
 
@@ -37,7 +37,7 @@ export const App = () => {
   }, []);
 
   useEffect(() => {
-    const hasWallets = previousWallets.length > 0 && wallets.length > 0;
+    const hasWallets = previousWalletsLength > 0 && wallets.length > 0;
     if (isLoadingWallets || hasWallets) return;
 
     const path = wallets.length > 0 ? Paths.ASSETS : Paths.ONBOARDING;
