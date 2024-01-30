@@ -108,7 +108,7 @@ export const toFixedNotation = (value: number, maxPrecision = 20): string => {
 
 /**
  * Splits string in camelCase by capital letters and adds spaces
- * @param value camelCaseString
+ * @param value string in camel case
  * @return {String}
  */
 export const splitCamelCaseString = (value: string): string => {
