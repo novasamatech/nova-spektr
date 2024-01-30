@@ -22,7 +22,6 @@ const multishardCreated = createEvent<CreateParams<BaseAccount | ChainAccount>>(
 const singleshardCreated = createEvent<CreateParams<BaseAccount>>();
 const multisigCreated = createEvent<CreateParams<MultisigAccount>>();
 const walletConnectCreated = createEvent<CreateParams<WalletConnectAccount>>();
-const proxiedWalletsCreated = createEvent<CreateParams<ProxiedAccount>[]>();
 
 const multisigAccountUpdated = createEvent<MultisigUpdateParams>();
 const walletRemoved = createEvent<ID>();
@@ -175,11 +174,6 @@ sample({
 });
 
 sample({
-  clock: proxiedWalletsCreated,
-  target: proxiedWalletsCreatedFx,
-});
-
-sample({
   clock: [walletCreatedFx.doneData, multishardCreatedFx.doneData],
   source: { wallets: $wallets, accounts: $accounts },
   filter: (_, data) => Boolean(data),
@@ -253,7 +247,6 @@ export const walletModel = {
     singleshardCreated,
     multisigCreated,
     walletConnectCreated,
-    proxiedWalletsCreated,
     multisigAccountUpdated,
     walletRemoved,
     walletRemovedSuccess: removeWalletFx.done,

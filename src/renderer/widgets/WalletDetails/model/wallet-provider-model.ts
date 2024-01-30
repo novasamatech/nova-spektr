@@ -1,4 +1,4 @@
-import { combine } from 'effector';
+import { combine, createEvent, createStore, sample } from 'effector';
 
 import { accountUtils, walletModel, walletUtils } from '@entities/wallet';
 import { walletSelectModel } from '@features/wallets';
@@ -8,7 +8,11 @@ import type { MultishardMap, VaultMap } from '../lib/types';
 import type { Account, Signatory, Wallet, MultisigAccount, BaseAccount, AccountId, ProxiedAccount } from '@shared/core';
 import { proxyModel, proxyUtils } from '@entities/proxy';
 import { ProxyAccount } from '@shared/core';
+import { removeProxyModel } from '@widgets/RemoveProxy';
 
+const removeProxy = createEvent<ProxyAccount>();
+
+const $proxyForRemoval = createStore<ProxyAccount | null>(null).reset(removeProxyModel.events.proxyRemoved);
 const $accounts = combine(
   {
     accounts: walletModel.$accounts,
@@ -151,7 +155,21 @@ const $proxyWalletForProxied = combine(
   { skipVoid: false },
 );
 
-const $hasProxies = combine($proxyAccounts, (accounts) => accounts.length > 0);
+const $hasProxies = combine(
+  {
+    accounts: $proxyAccounts,
+    groups: proxyModel.$walletsProxyGroups,
+    wallet: walletSelectModel.$walletForDetails,
+  },
+  ({ accounts, groups, wallet }) => {
+    return accounts.length > 0 && wallet && groups[wallet.id]?.length > 0;
+  },
+);
+
+sample({
+  source: removeProxy,
+  target: $proxyForRemoval,
+});
 
 export const walletProviderModel = {
   $accounts,
@@ -164,4 +182,8 @@ export const walletProviderModel = {
   $signatoryContacts,
   $signatoryWallets,
   $proxyWalletForProxied,
+  $proxyForRemoval,
+  events: {
+    removeProxy,
+  },
 };
