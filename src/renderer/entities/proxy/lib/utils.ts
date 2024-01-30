@@ -110,8 +110,6 @@ function createProxyGroups(
     return proxyGroups.every((g) => !proxyUtils.isSameProxyGroup(g, p));
   });
 
-  console.log('toAdd', toAdd);
-
   return { toAdd, toUpdate, toRemove };
 }
 

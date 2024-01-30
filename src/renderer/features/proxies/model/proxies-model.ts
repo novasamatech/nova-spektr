@@ -173,7 +173,7 @@ const createProxiedWalletsFx = createEffect(
       (acc, proxiedCreatedResult) => {
         if (!proxiedCreatedResult) return acc;
 
-        acc.accounts = acc.accounts.concat(proxiedCreatedResult.accounts);
+        acc.accounts.push(...proxiedCreatedResult.accounts);
         acc.wallets = acc.wallets.concat(proxiedCreatedResult.wallet);
 
         return acc;
@@ -276,7 +276,10 @@ sample({
 
 sample({
   clock: createProxiedWalletsFx.doneData,
-  source: { wallets: walletModel.$wallets, accounts: walletModel.$accounts },
+  source: {
+    wallets: walletModel.$wallets,
+    accounts: walletModel.$accounts,
+  },
   filter: (_, data) => Boolean(data && data.wallets.length && data.accounts.length),
   fn: ({ wallets, accounts }, data) => ({
     wallets: wallets.concat(data.wallets),
