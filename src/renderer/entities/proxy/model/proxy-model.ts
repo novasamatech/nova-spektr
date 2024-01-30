@@ -57,7 +57,7 @@ sample({
 
 sample({
   clock: populateProxiesFx.doneData,
-  fn: (proxies) => groupBy(proxies, 'accountId'),
+  fn: (proxies) => groupBy(proxies, 'proxiedAccountId'),
   target: $proxies,
 });
 
@@ -104,7 +104,10 @@ sample({
     return Object.entries(proxies).reduce<ProxyStore>((acc, entry) => {
       const [accountId, proxyAccounts] = entry as [AccountId, ProxyAccount[]];
 
-      acc[accountId] = proxyAccounts.filter((proxyAccount) => !proxiesToRemove!.includes(proxyAccount.id));
+      const filteredProxyAccounts = proxyAccounts.filter((proxyAccount) => !proxiesToRemove!.includes(proxyAccount.id));
+      if (filteredProxyAccounts.length) {
+        acc[accountId] = filteredProxyAccounts;
+      }
 
       return acc;
     }, {});

@@ -1,14 +1,14 @@
-import { TEST_ACCOUNT_ID, TEST_ADDRESS } from '@shared/lib/utils';
+import { TEST_ACCOUNTS, TEST_ADDRESS } from '@shared/lib/utils';
 import { toAddress, validateAddress } from '../address';
 
 describe('shared/lib/utils/address', () => {
   test('should convert address to Polkadot', () => {
-    const address = toAddress(TEST_ACCOUNT_ID, { prefix: 0 });
+    const address = toAddress(TEST_ACCOUNTS[0], { prefix: 0 });
     expect(address).toEqual(TEST_ADDRESS);
   });
 
   test('should convert address to Substrate', () => {
-    const address = toAddress(TEST_ACCOUNT_ID);
+    const address = toAddress(TEST_ACCOUNTS[0]);
     expect(address).toEqual('5CGQ7BPJZZKNirQgVhzbX9wdkgbnUHtJ5V7FkMXdZeVbXyr9');
   });
 

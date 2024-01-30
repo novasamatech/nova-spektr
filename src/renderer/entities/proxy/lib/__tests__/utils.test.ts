@@ -12,7 +12,7 @@ import {
   Wallet,
 } from '@shared/core';
 import { proxyUtils } from '../utils';
-import { TEST_ACCOUNT_ID } from '@shared/lib/utils';
+import { TEST_ACCOUNTS } from '@shared/lib/utils';
 
 describe('entities/proxy/lib/utils', () => {
   test('should return true when for identical Proxies', () => {
@@ -62,7 +62,8 @@ describe('entities/proxy/lib/utils', () => {
   });
 
   test('should return proxied name for a given proxied account', () => {
-    const result = proxyUtils.getProxiedName(TEST_ACCOUNT_ID, ProxyType.ANY);
+    const result = proxyUtils.getProxiedName(TEST_ACCOUNTS[0], ProxyType.ANY);
+
     expect(result).toEqual('Any for 5CGQ7B...VbXyr9');
   });
 
@@ -82,21 +83,21 @@ describe('entities/proxy/lib/utils', () => {
         walletId: 1,
         name: 'My base account',
         type: AccountType.BASE,
-        accountId: TEST_ACCOUNT_ID as AccountId,
+        accountId: TEST_ACCOUNTS[0] as AccountId,
         chainType: ChainType.SUBSTRATE,
         cryptoType: CryptoType.SR25519,
       },
     ];
     const deposits: ProxyDeposits = {
       chainId: '0x00',
-      deposits: { [TEST_ACCOUNT_ID]: '100' },
+      deposits: { [TEST_ACCOUNTS[0]]: '100' },
     };
 
     const result = proxyUtils.getProxyGroups(wallets, accounts, deposits);
     expect(result).toEqual([
       {
         walletId: 1,
-        proxiedAccountId: TEST_ACCOUNT_ID,
+        proxiedAccountId: TEST_ACCOUNTS[0],
         chainId: '0x00',
         totalDeposit: '100',
       },
