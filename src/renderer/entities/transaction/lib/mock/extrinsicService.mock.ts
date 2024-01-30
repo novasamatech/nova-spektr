@@ -46,7 +46,7 @@ export const extrinsicTests = [
     testName: 'should create extrinsic for transfer and get call data',
     args: { dest: 'Evo4vR5tHsTVvNqYZNo4GVQc2xHcB5J8i7gKv4cwXKRynK3', value: '1000000000000' },
     transactionType: TransactionType.TRANSFER,
-    callData: '0x04000068161e62bc8d7cf1bef225fd2ed12857889718d97c687256cb4b8794cef1a242070010a5d4e8',
+    callData: '0x04030068161e62bc8d7cf1bef225fd2ed12857889718d97c687256cb4b8794cef1a242070010a5d4e8',
   },
   {
     testName: 'should create extrinsic for add proxy tx and get call data',
@@ -79,14 +79,14 @@ export const extrinsicTests = [
           value: '1000000000000',
         },
         chainId: '0x1234000000000000000000000000000000000000000000000000000000000000',
-        method: 'transferAllowDeath',
+        method: 'transferKeepAlive',
         section: 'balances',
         type: 'transfer',
       },
     },
     transactionType: TransactionType.PROXY,
     callData:
-      '0x1e000008eb319467ea54784cd9edfbd03bbcc53f7a021ed8d9ed2ca97b6ae46b3f60140004000008eb319467ea54784cd9edfbd03bbcc53f7a021ed8d9ed2ca97b6ae46b3f6014070010a5d4e8',
+      '0x1e000008eb319467ea54784cd9edfbd03bbcc53f7a021ed8d9ed2ca97b6ae46b3f60140004030008eb319467ea54784cd9edfbd03bbcc53f7a021ed8d9ed2ca97b6ae46b3f6014070010a5d4e8',
   },
   {
     testName: 'should create extrinsic for bond tx and get call data',

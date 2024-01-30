@@ -11,7 +11,7 @@ describe('entities/transaction/lib/transactionIcon', () => {
         value: '1000000000000',
       },
       chainId: '0x1234000000000000000000000000000000000000000000000000000000000000',
-      method: 'transferAllowDeath',
+      method: 'transferKeepAlive',
       section: 'balances',
       type: TransactionType.TRANSFER,
     });
