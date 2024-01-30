@@ -1,8 +1,7 @@
 import { createEffect, createEvent, sample, attach } from 'effector';
 import { spread, delay } from 'patronum';
 
-import { networkModel } from './network-model';
-import { networkUtils } from '../lib/network-utils';
+import { networkModel, networkUtils } from '@entities/network';
 import { ChainId, Connection, ConnectionType, RpcNode } from '@shared/core';
 import { storageService } from '@shared/api/storage';
 import { ProviderWithMetadata } from '@shared/api/network';
@@ -18,7 +17,6 @@ type NodeEventParams = {
   oldNode?: RpcNode;
 };
 
-// TODO: move to it's own feature task - https://app.clickup.com/t/8693mce8u
 const rpcNodeAdded = createEvent<NodeEventParams>();
 const rpcNodeUpdated = createEvent<NodeEventParams>();
 const rpcNodeRemoved = createEvent<NodeEventParams>();
@@ -204,7 +202,7 @@ delay({
   target: networkModel.events.chainConnected,
 });
 
-export const networkSelectorModel = {
+export const selectorModel = {
   events: {
     lightClientSelected,
     autoBalanceSelected,

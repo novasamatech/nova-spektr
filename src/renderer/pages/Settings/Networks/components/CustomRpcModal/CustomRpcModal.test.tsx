@@ -2,8 +2,9 @@ import { act, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
 import { CustomRpcModal } from './CustomRpcModal';
-import { ExtendedChain, networkSelectorModel } from '@entities/network';
+import { ExtendedChain } from '@entities/network';
 import { networkService, RpcValidation } from '@shared/api/network';
+import { selectorModel } from '../../model/selector-model';
 
 jest.mock('@app/providers', () => ({
   useI18n: jest.fn().mockReturnValue({
@@ -101,7 +102,7 @@ describe('pages/Settings/Networks/CustomRpcModal', () => {
     const spyAddRpcNode = jest.fn();
 
     jest.spyOn(networkService, 'validateRpcNode').mockResolvedValue(RpcValidation.VALID);
-    jest.spyOn(networkSelectorModel.events, 'rpcNodeAdded').mockImplementation(spyAddRpcNode);
+    jest.spyOn(selectorModel.events, 'rpcNodeAdded').mockImplementation(spyAddRpcNode);
 
     const { name, url } = await renderAndFillTheForm();
 
@@ -133,7 +134,7 @@ describe('pages/Settings/Networks/CustomRpcModal', () => {
     const spyUpdateRpcNode = jest.fn();
 
     jest.spyOn(networkService, 'validateRpcNode').mockResolvedValue(RpcValidation.VALID);
-    jest.spyOn(networkSelectorModel.events, 'rpcNodeUpdated').mockImplementation(spyUpdateRpcNode);
+    jest.spyOn(selectorModel.events, 'rpcNodeUpdated').mockImplementation(spyUpdateRpcNode);
 
     await act(async () => {
       render(<CustomRpcModal {...defaultProps} node={node} />);
