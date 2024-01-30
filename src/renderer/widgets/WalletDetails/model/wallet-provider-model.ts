@@ -1,5 +1,5 @@
-import { combine } from 'effector';
 import { uniqBy } from 'lodash';
+import { combine, createEvent, createStore, sample } from 'effector';
 
 import { accountUtils, walletModel, walletUtils } from '@entities/wallet';
 import { walletSelectModel } from '@features/wallets';
@@ -19,7 +19,11 @@ import type {
 import { proxyModel, proxyUtils } from '@entities/proxy';
 import { ProxyAccount } from '@shared/core';
 import { networkModel } from '@entities/network';
+import { removeProxyModel } from '@widgets/RemoveProxy';
 
+const removeProxy = createEvent<ProxyAccount>();
+
+const $proxyForRemoval = createStore<ProxyAccount | null>(null).reset(removeProxyModel.events.proxyRemoved);
 const $accounts = combine(
   {
     accounts: walletModel.$accounts,
@@ -179,6 +183,11 @@ const $hasProxies = combine($proxiesByChain, (proxiesByChain) => {
   return Object.values(proxiesByChain).some((accounts) => accounts.length > 0);
 });
 
+sample({
+  source: removeProxy,
+  target: $proxyForRemoval,
+});
+
 export const walletProviderModel = {
   $accounts,
   $proxiesByChain,
@@ -190,4 +199,8 @@ export const walletProviderModel = {
   $signatoryContacts,
   $signatoryWallets,
   $proxyWalletForProxied,
+  $proxyForRemoval,
+  events: {
+    removeProxy,
+  },
 };

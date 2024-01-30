@@ -12,9 +12,10 @@ type Props = {
   account: ProxyAccount;
   chain: Chain;
   canCreateProxy?: boolean;
+  onRemoveProxy: (proxyAccount: ProxyAccount) => void;
 };
 
-export const ProxyAccountWithActions = ({ account, chain, canCreateProxy }: Props) => {
+export const ProxyAccountWithActions = ({ account, chain, canCreateProxy, onRemoveProxy }: Props) => {
   const { t } = useI18n();
 
   const proxiedAddress = toAddress(account.proxiedAccountId, { prefix: chain.addressPrefix });
@@ -22,7 +23,7 @@ export const ProxyAccountWithActions = ({ account, chain, canCreateProxy }: Prop
   const forgetProxyAction: DropdownIconButtonOption = {
     icon: 'forget',
     title: t('walletDetails.common.removeProxyAction'),
-    onClick: () => {}, // TODO add remove proxy flow her
+    onClick: () => onRemoveProxy(account),
   };
   const openInfoAction: DropdownIconButtonOption = {
     icon: 'info',
