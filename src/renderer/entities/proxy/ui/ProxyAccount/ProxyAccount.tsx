@@ -4,7 +4,7 @@ import { cnTw, toAddress, toShortAddress } from '@shared/lib/utils';
 import { BodyText, HelpText, Identicon, Truncate } from '@shared/ui';
 import { AccountId, ProxyType } from '@shared/core';
 import { useI18n } from '@app/providers';
-import { ProxyTypeName } from '@entities/proxy/lib/constants';
+import { ProxyTypeName } from '../../lib/constants';
 
 type Props = {
   className?: string;
