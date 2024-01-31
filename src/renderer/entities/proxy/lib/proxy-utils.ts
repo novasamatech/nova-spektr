@@ -4,6 +4,7 @@ import { toAddress, dictionary } from '@shared/lib/utils';
 import type { ProxyAccount, AccountId, NoID, ProxyGroup, Wallet, Account, ProxyDeposits, ID } from '@shared/core';
 import { ProxyType } from '@shared/core';
 import { accountUtils } from '../../wallet';
+import { ProxyTypeName } from './constants';
 
 export const proxyUtils = {
   isSameProxy,
@@ -65,15 +66,15 @@ function getProxyGroups(wallets: Wallet[], accounts: Account[], deposits: ProxyD
 
   return Object.values(walletsAccounts).reduce<NoID<ProxyGroup>[]>((acc, accounts) => {
     const walletProxyGroups = accounts.reduce<NoID<ProxyGroup>[]>((acc, account) => {
-      if (!accountUtils.isChainIdMatch(account, deposits.chainId)) return acc;
+      const isChainMatch = accountUtils.isChainIdMatch(account, deposits.chainId);
+      const accountDeposit = deposits.deposits[account.accountId];
 
-      const walletDeposits = deposits.deposits[account.accountId];
-      if (walletDeposits) {
+      if (isChainMatch && accountDeposit) {
         acc.push({
           walletId: account.walletId,
           proxiedAccountId: account.accountId,
           chainId: deposits.chainId,
-          totalDeposit: walletDeposits,
+          totalDeposit: accountDeposit,
         });
       }
 
@@ -123,20 +124,6 @@ function createProxyGroups(
   return { toAdd, toUpdate, toRemove };
 }
 
-const ProxyTypeName: Record<ProxyType, string> = {
-  [ProxyType.ANY]: 'proxy.names.any',
-  [ProxyType.NON_TRANSFER]: 'proxy.names.nonTransfer',
-  [ProxyType.STAKING]: 'proxy.names.staking',
-  [ProxyType.AUCTION]: 'proxy.names.auction',
-  [ProxyType.CANCEL_PROXY]: 'proxy.names.cancelProxy',
-  [ProxyType.GOVERNANCE]: 'proxy.names.governance',
-  [ProxyType.IDENTITY_JUDGEMENT]: 'proxy.names.identityJudgement',
-  [ProxyType.NOMINATION_POOLS]: 'proxy.names.nominationPools',
-};
-
-function getProxyTypeName(proxyType: ProxyType | string, t: TFunction) {
-  // if proxy type is not in ProxyTypeName enum split camel case string and add spaces
-  return ProxyTypeName[proxyType as ProxyType]
-    ? t(ProxyTypeName[proxyType as ProxyType])
-    : proxyType.replace(/([a-zA-Z])(?=[A-Z])/g, '$1 ');
+function getProxyTypeName(proxyType: ProxyType | string): string {
+  return ProxyTypeName[proxyType as ProxyType] || proxyType.replace(/([a-zA-Z])(?=[A-Z])/g, '$1 ');
 }
