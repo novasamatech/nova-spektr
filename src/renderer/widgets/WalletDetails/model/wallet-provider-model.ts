@@ -51,15 +51,13 @@ const $proxiesByChain = combine(
       return acc;
     }, []);
 
-    proxyUtils.sortAccountsByProxyType(proxiesForAccounts);
-
     const chainsMap = Object.keys(chains).reduce<Record<ChainId, ProxyAccount[]>>((acc, chainId) => {
       acc[chainId as ChainId] = [];
 
       return acc;
     }, {});
 
-    return proxiesForAccounts.reduce((acc, proxy) => {
+    return proxyUtils.sortAccountsByProxyType(proxiesForAccounts).reduce((acc, proxy) => {
       acc[proxy.chainId].push(proxy);
 
       return acc;
@@ -121,11 +119,11 @@ const $vaultAccounts = combine(
 
 const $signatoryContacts = combine(
   {
-    account: $accounts,
+    activeAccounts: $accounts,
     accounts: walletModel.$accounts,
   },
-  ({ account, accounts }): Signatory[] => {
-    const multisigAccount = accounts[0];
+  ({ activeAccounts, accounts }): Signatory[] => {
+    const multisigAccount = activeAccounts[0];
     if (!multisigAccount || !accountUtils.isMultisigAccount(multisigAccount)) return [];
 
     const accountsMap = dictionary(accounts, 'accountId', () => true);
