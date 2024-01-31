@@ -42,7 +42,7 @@ const testBalances = [
   },
 ];
 
-jest.mock('@entities/asset', () => ({
+jest.mock('../AssetCard/AssetCard', () => ({
   AssetCard: ({ asset }: any) => <span data-testid="AssetCard">{asset.name}</span>,
 }));
 

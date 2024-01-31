@@ -14,7 +14,7 @@ import { NetworkFiatBalance } from '../NetworkFiatBalance/NetworkFiatBalance';
 import { currencyModel, priceProviderModel } from '@entities/price';
 import { balanceModel } from '@entities/balance';
 import { assetsModel } from '../../model/assets-model';
-import { AssetCard } from '../';
+import { AssetCard } from '../AssetCard/AssetCard';
 
 type Props = {
   searchSymbolOnly?: boolean;
