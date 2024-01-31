@@ -80,9 +80,6 @@ const proxiedWallet = {
 };
 
 describe('features/ForgetModel', () => {
-  beforeEach(() => {
-    global.TextEncoder = TextEncoder;
-  });
   test('should call success calback after wallet delete', async () => {
     const spyCallback = jest.fn();
     storageService.wallets.delete = jest.fn();
