@@ -117,13 +117,6 @@ const multishardCreatedFx = createEffect(
   },
 );
 
-// TODO: Move wallet creation to its own feature
-const proxiedWalletsCreatedFx = createEffect(
-  (proxiedWallets: CreateParams<ProxiedAccount>[]): Promise<(CreateResult | undefined)[]> => {
-    return Promise.all(proxiedWallets.map(walletCreatedFx));
-  },
-);
-
 const multisigWalletUpdatedFx = createEffect(
   async (account: MultisigUpdateParams): Promise<MultisigUpdateParams | undefined> => {
     const id = await storageService.accounts.update(account.id, account);
