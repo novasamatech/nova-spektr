@@ -4,7 +4,7 @@ import { cnTw } from '@shared/lib/utils';
 import { ChainTitle } from '@entities/chain';
 import { useI18n } from '@app/providers';
 import { Accordion, ConfirmModal, FootnoteText, HelpText, SmallTitleText } from '@shared/ui';
-import type { ID, ProxyAccount } from '@shared/core';
+import type { ProxyAccount } from '@shared/core';
 import { networkModel } from '@entities/network';
 import { AssetBalance } from '@entities/asset';
 import { walletProviderModel } from '../../model/wallet-provider-model';
@@ -13,12 +13,11 @@ import { useToggle } from '@shared/lib/hooks';
 import { RemoveProxy } from '@widgets/RemoveProxy';
 
 type Props = {
-  walletId: ID;
   canCreateProxy?: boolean;
   className?: string;
 };
 
-export const ProxiesList = ({ walletId, className, canCreateProxy = true }: Props) => {
+export const ProxiesList = ({ className, canCreateProxy = true }: Props) => {
   const { t } = useI18n();
 
   const chains = useUnit(networkModel.$chains);

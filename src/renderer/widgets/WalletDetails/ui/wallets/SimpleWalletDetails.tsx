@@ -64,7 +64,7 @@ export const SimpleWalletDetails = ({ wallet, account, onClose }: Props) => {
       id: 'proxies',
       title: t('walletDetails.common.proxiesTabTitle'),
       panel: hasProxies ? (
-        <ProxiesList canCreateProxy={!walletUtils.isWatchOnly(wallet)} walletId={wallet.id} className="h-[388px]" />
+        <ProxiesList canCreateProxy={!walletUtils.isWatchOnly(wallet)} className="h-[388px]" />
       ) : (
         <NoProxiesAction className="h-[388px]" />
       ),
