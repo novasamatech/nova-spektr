@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { groupBy } from 'lodash';
+import groupBy from 'lodash/groupBy';
 import { useUnit } from 'effector-react';
 
 import { Icon, CaptionText, Tooltip, Accordion } from '@shared/ui';

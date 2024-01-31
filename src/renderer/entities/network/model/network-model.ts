@@ -1,7 +1,8 @@
 import { createEffect, createEvent, createStore, sample, scopeBind } from 'effector';
 import { ApiPromise } from '@polkadot/api';
 import { VoidFn } from '@polkadot/api/types';
-import { cloneDeep, keyBy } from 'lodash';
+import cloneDeep from 'lodash/cloneDeep';
+import keyBy from 'lodash/keyBy';
 
 import { storageService } from '@shared/api/storage';
 import { networkUtils } from '../lib/network-utils';

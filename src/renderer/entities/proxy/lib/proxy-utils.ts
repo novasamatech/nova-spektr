@@ -1,4 +1,4 @@
-import { sortBy } from 'lodash';
+import sortBy from 'lodash/sortBy';
 
 import { toAddress, dictionary } from '@shared/lib/utils';
 import type { ProxyAccount, AccountId, NoID, ProxyGroup, Wallet, Account, ProxyDeposits, ID } from '@shared/core';

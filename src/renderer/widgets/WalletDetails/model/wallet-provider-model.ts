@@ -1,4 +1,4 @@
-import { uniqBy } from 'lodash';
+import uniqBy from 'lodash/uniqBy';
 import { combine, createEvent, createStore, sample } from 'effector';
 
 import { accountUtils, walletModel, walletUtils } from '@entities/wallet';
