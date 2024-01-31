@@ -1,7 +1,9 @@
-import { TFunction } from 'react-i18next';
+import { sortBy } from 'lodash';
 
-import { toAddress } from '@shared/lib/utils';
-import { ProxyAccount, ProxyType, AccountId, NoID, ProxyGroup, Wallet, Account, ProxyDeposits } from '@shared/core';
+import { toAddress, dictionary } from '@shared/lib/utils';
+import type { ProxyAccount, AccountId, NoID, ProxyGroup, Wallet, Account, ProxyDeposits, ID } from '@shared/core';
+import { ProxyType } from '@shared/core';
+import { accountUtils } from '../../wallet';
 
 export const proxyUtils = {
   isSameProxy,
@@ -13,7 +15,7 @@ export const proxyUtils = {
   getProxyTypeName,
 };
 
-function isSameProxy(oldProxy: ProxyAccount, newProxy: ProxyAccount) {
+function isSameProxy(oldProxy: ProxyAccount, newProxy: ProxyAccount): boolean {
   return (
     oldProxy.accountId === newProxy.accountId &&
     oldProxy.proxiedAccountId === newProxy.proxiedAccountId &&
@@ -22,7 +24,7 @@ function isSameProxy(oldProxy: ProxyAccount, newProxy: ProxyAccount) {
     oldProxy.delay === newProxy.delay
   );
 }
-function sortAccountsByProxyType(accounts: ProxyAccount[]) {
+function sortAccountsByProxyType(accounts: ProxyAccount[]): ProxyAccount[] {
   const typeOrder = [
     ProxyType.ANY,
     ProxyType.NON_TRANSFER,
@@ -34,12 +36,10 @@ function sortAccountsByProxyType(accounts: ProxyAccount[]) {
     ProxyType.NOMINATION_POOLS,
   ];
 
-  accounts.sort((a, b) => {
-    return typeOrder.indexOf(a.proxyType) - typeOrder.indexOf(b.proxyType);
-  });
+  return sortBy(accounts, (account) => typeOrder.indexOf(account.proxyType));
 }
 
-function isSameProxyGroup(oldGroup: NoID<ProxyGroup>, newGroup: NoID<ProxyGroup>) {
+function isSameProxyGroup(oldGroup: NoID<ProxyGroup>, newGroup: NoID<ProxyGroup>): boolean {
   return (
     oldGroup.walletId === newGroup.walletId &&
     oldGroup.proxiedAccountId === newGroup.proxiedAccountId &&
@@ -53,21 +53,29 @@ function getProxiedName(accountId: AccountId, proxyType: ProxyType, addressPrefi
 }
 
 function getProxyGroups(wallets: Wallet[], accounts: Account[], deposits: ProxyDeposits): NoID<ProxyGroup>[] {
-  return wallets.reduce<NoID<ProxyGroup>[]>((acc, w) => {
-    const walletAccounts = accounts.filter((a) => a.walletId === w.id);
+  const walletMap = dictionary(wallets, 'id', () => []);
 
-    if (walletAccounts.length === 0) return acc;
+  const walletsAccounts = accounts.reduce<Record<ID, Account[]>>((acc, account) => {
+    if (walletMap[account.walletId]) {
+      acc[account.walletId].push(account);
+    }
 
-    const walletProxyGroups = walletAccounts.reduce<NoID<ProxyGroup>[]>((acc, a) => {
-      const walletDeposits = deposits.deposits[a.accountId];
-      if (!walletDeposits) return acc;
+    return acc;
+  }, walletMap);
 
-      acc.push({
-        walletId: w.id,
-        proxiedAccountId: a.accountId,
-        chainId: deposits.chainId,
-        totalDeposit: walletDeposits,
-      });
+  return Object.values(walletsAccounts).reduce<NoID<ProxyGroup>[]>((acc, accounts) => {
+    const walletProxyGroups = accounts.reduce<NoID<ProxyGroup>[]>((acc, account) => {
+      if (!accountUtils.isChainIdMatch(account, deposits.chainId)) return acc;
+
+      const walletDeposits = deposits.deposits[account.accountId];
+      if (walletDeposits) {
+        acc.push({
+          walletId: account.walletId,
+          proxiedAccountId: account.accountId,
+          chainId: deposits.chainId,
+          totalDeposit: walletDeposits,
+        });
+      }
 
       return acc;
     }, []);

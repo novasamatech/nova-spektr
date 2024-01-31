@@ -1,16 +1,5 @@
-import {
-  Account,
-  AccountId,
-  AccountType,
-  ChainId,
-  MultisigAccount,
-  MultisigWallet,
-  ProxyAccount,
-  ProxyType,
-  SigningType,
-  Wallet,
-  WalletType,
-} from '@shared/core';
+import { AccountType, ProxyType, SigningType, WalletType } from '@shared/core';
+import type { Account, AccountId, ChainId, MultisigAccount, MultisigWallet, ProxyAccount, Wallet } from '@shared/core';
 import { TEST_ACCOUNTS, TEST_ADDRESS, TEST_CHAIN_ID } from '@shared/lib/utils';
 
 const wallet: Wallet = {
@@ -82,7 +71,7 @@ const chains = {
 
 const proxyAccount1 = {
   accountId: '0x00' as AccountId,
-  proxiedAccountId: TEST_ACCOUNTS[0] as AccountId,
+  proxiedAccountId: TEST_ACCOUNTS[0],
   id: 3,
   chainId: TEST_CHAIN_ID as ChainId,
   proxyType: ProxyType.GOVERNANCE,
@@ -91,7 +80,7 @@ const proxyAccount1 = {
 
 const proxyAccount2 = {
   accountId: '0x01' as AccountId,
-  proxiedAccountId: TEST_ACCOUNTS[0] as AccountId,
+  proxiedAccountId: TEST_ACCOUNTS[0],
   id: 3,
   chainId: TEST_CHAIN_ID as ChainId,
   proxyType: ProxyType.GOVERNANCE,
