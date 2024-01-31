@@ -4,7 +4,7 @@ import { useUnit } from 'effector-react';
 import { Alert, Button, Input, InputHint, Select, SmallTitleText } from '@shared/ui';
 import { useI18n, useMatrix } from '@app/providers';
 import { DropdownOption, DropdownResult } from '@shared/ui/Dropdowns/common/types';
-import type { AccountId, Signatory, Wallet } from '@shared/core';
+import type { AccountId, Signatory } from '@shared/core';
 import { accountUtils, walletModel, walletUtils } from '@entities/wallet';
 
 type MultisigAccountForm = {
@@ -69,7 +69,7 @@ export const WalletForm = ({ signatories, onContinue, isActive, isLoading, onGoB
     onSubmit(name, threshold.value, creator.accountId);
   };
 
-  const hasNoAccount = !wallets.some((wallet) => !walletUtils.isWatchOnly(wallet) || !walletUtils.isMultisig(wallet));
+  const hasNoAccount = wallets.every((wallet) => !walletUtils.isWatchOnly(wallet) || !walletUtils.isMultisig(wallet));
 
   const hasOwnSignatory = signatories.some((s) => {
     const walletIds = accounts.filter((a) => a.accountId === s.accountId).map((a) => a.walletId);
@@ -80,16 +80,16 @@ export const WalletForm = ({ signatories, onContinue, isActive, isLoading, onGoB
   });
 
   const accountAlreadyExists = wallets.some((wallet) => {
-    return (
-      !walletUtils.isWatchOnly(wallet) &&
-      accounts.some((account) => {
-        return (
-          !accountUtils.isProxiedAccount(account) &&
-          account.accountId === multisigAccountId &&
-          account.walletId === (wallet as Wallet).id
-        );
-      })
-    );
+    const isWatchOnly = walletUtils.isWatchOnly(wallet);
+    const isMatch = accounts.some((account) => {
+      return (
+        !accountUtils.isProxiedAccount(account) &&
+        account.accountId === multisigAccountId &&
+        account.walletId === wallet.id
+      );
+    });
+
+    return !isWatchOnly && isMatch;
   });
 
   const hasTwoSignatories = signatories.length > 1;
