@@ -6,6 +6,10 @@ import { walletSelectModel } from '@features/wallets';
 import { dictionary } from '@shared/lib/utils';
 import { walletDetailsUtils } from '../lib/utils';
 import type { MultishardMap, VaultMap } from '../lib/types';
+import { proxyModel, proxyUtils } from '@entities/proxy';
+import { ProxyAccount } from '@shared/core';
+import { networkModel } from '@entities/network';
+import { removeProxyModel } from '@widgets/RemoveProxy';
 import type {
   Account,
   Signatory,
@@ -16,10 +20,6 @@ import type {
   ProxiedAccount,
   ChainId,
 } from '@shared/core';
-import { proxyModel, proxyUtils } from '@entities/proxy';
-import { ProxyAccount } from '@shared/core';
-import { networkModel } from '@entities/network';
-import { removeProxyModel } from '@widgets/RemoveProxy';
 
 const removeProxy = createEvent<ProxyAccount>();
 

@@ -1,3 +1,5 @@
+import { TFunction } from 'react-i18next';
+
 import { toAddress } from '@shared/lib/utils';
 import { ProxyAccount, ProxyType, AccountId, NoID, ProxyGroup, Wallet, Account, ProxyDeposits } from '@shared/core';
 
@@ -7,6 +9,8 @@ export const proxyUtils = {
   sortAccountsByProxyType,
   getProxiedName,
   getProxyGroups,
+  createProxyGroups,
+  getProxyTypeName,
 };
 
 function isSameProxy(oldProxy: ProxyAccount, newProxy: ProxyAccount) {
@@ -72,4 +76,59 @@ function getProxyGroups(wallets: Wallet[], accounts: Account[], deposits: ProxyD
 
     return acc;
   }, []);
+}
+
+type CreateProxyGroupResult = {
+  toAdd: NoID<ProxyGroup>[];
+  toUpdate: NoID<ProxyGroup>[];
+  toRemove: ProxyGroup[];
+};
+function createProxyGroups(
+  wallets: Wallet[],
+  accounts: Account[],
+  groups: ProxyGroup[],
+  deposits: ProxyDeposits,
+): CreateProxyGroupResult {
+  const proxyGroups = getProxyGroups(wallets, accounts, deposits);
+
+  const { toAdd, toUpdate } = proxyGroups.reduce<Record<'toAdd' | 'toUpdate', NoID<ProxyGroup>[]>>(
+    (acc, g) => {
+      const shouldUpdate = groups.some((p) => isSameProxyGroup(p, g));
+
+      if (shouldUpdate) {
+        acc.toUpdate.push(g);
+      } else {
+        acc.toAdd.push(g);
+      }
+
+      return acc;
+    },
+    { toAdd: [], toUpdate: [] },
+  );
+
+  const toRemove = groups.filter((p) => {
+    if (p.chainId !== deposits.chainId) return false;
+
+    return proxyGroups.every((g) => !proxyUtils.isSameProxyGroup(g, p));
+  });
+
+  return { toAdd, toUpdate, toRemove };
+}
+
+const ProxyTypeName: Record<ProxyType, string> = {
+  [ProxyType.ANY]: 'proxy.names.any',
+  [ProxyType.NON_TRANSFER]: 'proxy.names.nonTransfer',
+  [ProxyType.STAKING]: 'proxy.names.staking',
+  [ProxyType.AUCTION]: 'proxy.names.auction',
+  [ProxyType.CANCEL_PROXY]: 'proxy.names.cancelProxy',
+  [ProxyType.GOVERNANCE]: 'proxy.names.governance',
+  [ProxyType.IDENTITY_JUDGEMENT]: 'proxy.names.identityJudgement',
+  [ProxyType.NOMINATION_POOLS]: 'proxy.names.nominationPools',
+};
+
+function getProxyTypeName(proxyType: ProxyType | string, t: TFunction) {
+  // if proxy type is not in ProxyTypeName enum split camel case string and add spaces
+  return ProxyTypeName[proxyType as ProxyType]
+    ? t(ProxyTypeName[proxyType as ProxyType])
+    : proxyType.replace(/([a-zA-Z])(?=[A-Z])/g, '$1 ');
 }
