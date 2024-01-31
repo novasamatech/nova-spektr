@@ -20,11 +20,7 @@ const Status = {
   },
   [ConnectionStatus.DISCONNECTED]: {
     variant: 'waiting',
-    title: (t: TFunction) => (
-      <div className="spektr-waiting">
-        <FootnoteText className="text-text-tertiary">{t('settings.networks.connectingStatusLabel')}</FootnoteText>
-      </div>
-    ),
+    title: () => '',
   },
   [ConnectionStatus.CONNECTED]: {
     variant: 'success',
