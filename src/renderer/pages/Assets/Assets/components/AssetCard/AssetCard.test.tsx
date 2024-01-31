@@ -5,7 +5,7 @@ import { fork } from 'effector';
 import { Provider } from 'effector-react';
 
 import chains from '@shared/config/chains/chains.json';
-import { TEST_ACCOUNT_ID } from '@shared/lib/utils';
+import { TEST_ACCOUNTS } from '@shared/lib/utils';
 import { AssetCard } from './AssetCard';
 import { type Chain, type Asset, type Balance, WalletType } from '@shared/core';
 import { walletModel } from '@entities/wallet';
@@ -25,7 +25,7 @@ const defaultProps = {
   balance: {
     assetId: testAsset.assetId.toString(),
     chainId: testChain.chainId,
-    accountId: TEST_ACCOUNT_ID,
+    accountId: TEST_ACCOUNTS[0],
     free: '10',
     frozen: '2',
   } as Balance,

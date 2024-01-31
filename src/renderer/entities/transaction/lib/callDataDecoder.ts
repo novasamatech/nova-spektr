@@ -14,6 +14,8 @@ import {
   TRANSFER_SECTIONS,
   STAKING_SECTION,
   XCM_SECTIONS,
+  PROXY_SECTION,
+  MULTISIG_SECTION,
 } from './common/constants';
 
 export const useCallDataDecoder = (): ICallDataDecoder => {
@@ -56,6 +58,10 @@ export const useCallDataDecoder = (): ICallDataDecoder => {
       return parseBatch(method, section, address, decoded, api);
     }
 
+    if (isProxyExtrinsic(method, section)) {
+      return parseProxy(method, section, address, decoded, api);
+    }
+
     return parseSingle(method, section, address, decoded, api.genesisHash.toHex());
   };
 
@@ -83,6 +89,27 @@ export const useCallDataDecoder = (): ICallDataDecoder => {
     batchTransaction.args.transactions = calls.map((call) => decodeCallData(api, address, call.toHex()));
 
     return batchTransaction;
+  };
+
+  const parseProxy = (
+    method: string,
+    section: string,
+    address: Address,
+    decoded: SubmittableExtrinsic<'promise'>,
+    api: ApiPromise,
+  ): DecodedTransaction => {
+    const proxyTransaction = getDecodedTransaction(
+      address,
+      decoded,
+      method,
+      section,
+      api.genesisHash.toHex(),
+      TransactionType.PROXY,
+    );
+    const call = api.createType('Call', proxyTransaction.args.call);
+    proxyTransaction.args.transaction = decodeCallData(api, address, call.toHex());
+
+    return proxyTransaction;
   };
 
   const parseSingle = (
@@ -252,40 +279,62 @@ export const useCallDataDecoder = (): ICallDataDecoder => {
       return { calls: decoded.args[0].toHex() };
     },
     [TransactionType.MULTISIG_AS_MULTI]: (decoded): Record<string, any> => {
+      const baseParams = {
+        threshold: decoded.args[0].toString(),
+        otherSignatories: decoded.args[1].toHuman(),
+        timepoint: decoded.args[2].toString(),
+        call: decoded.args[3].toHex(),
+      };
+
       if (decoded.args.length === OLD_MULTISIG_ARGS_AMOUNT) {
         return {
-          threshold: decoded.args[0],
-          otherSignatories: decoded.args[1],
-          timepoint: decoded.args[2],
-          call: decoded.args[3],
-          storeCall: decoded.args[4],
-          maxWeight: decoded.args[5],
+          ...baseParams,
+          storeCall: decoded.args[4].toString(),
+          maxWeight: decoded.args[5].toString(),
         };
       }
 
       return {
-        threshold: decoded.args[0],
-        otherSignatories: decoded.args[1],
-        timepoint: decoded.args[2],
-        call: decoded.args[3],
-        maxWeight: decoded.args[4],
+        ...baseParams,
+        maxWeight: decoded.args[4].toHuman(),
       };
     },
     [TransactionType.MULTISIG_APPROVE_AS_MULTI]: (decoded): Record<string, any> => {
       return {
-        threshold: decoded.args[0],
-        otherSignatories: decoded.args[1],
-        timepoint: decoded.args[2],
-        callHash: decoded.args[3],
-        maxWeight: decoded.args[4],
+        threshold: decoded.args[0].toString(),
+        otherSignatories: decoded.args[1].toHuman(),
+        timepoint: decoded.args[2].toString(),
+        callHash: decoded.args[3].toHex(),
+        maxWeight: decoded.args[4].toHuman(),
       };
     },
     [TransactionType.MULTISIG_CANCEL_AS_MULTI]: (decoded): Record<string, any> => {
       return {
-        threshold: decoded.args[0],
-        otherSignatories: decoded.args[1],
-        timepoint: decoded.args[2],
-        callHash: decoded.args[3],
+        threshold: decoded.args[0].toString(),
+        otherSignatories: decoded.args[1].toHuman(),
+        timepoint: decoded.args[2].toString(),
+        callHash: decoded.args[3].toHex(),
+      };
+    },
+    [TransactionType.ADD_PROXY]: (decoded): Record<string, any> => {
+      return {
+        delegate: decoded.args[0].toString(),
+        proxyType: decoded.args[1].toString(),
+        delay: decoded.args[2].toString(),
+      };
+    },
+    [TransactionType.REMOVE_PROXY]: (decoded): Record<string, any> => {
+      return {
+        delegate: decoded.args[0].toString(),
+        proxyType: decoded.args[1].toString(),
+        delay: decoded.args[2].toString(),
+      };
+    },
+    [TransactionType.PROXY]: (decoded): Record<string, any> => {
+      return {
+        real: decoded.args[0].toString(),
+        forceProxyType: decoded.args[1].toString(),
+        call: decoded.args[2].toHex(),
       };
     },
   };
@@ -294,12 +343,18 @@ export const useCallDataDecoder = (): ICallDataDecoder => {
     return section === 'utility' && method === 'batchAll';
   };
 
+  const isProxyExtrinsic = (method: string, section: string): boolean => {
+    return section === 'proxy' && method === 'proxy';
+  };
+
   const getTransactionType = (method: string, section: string): TransactionType | undefined => {
     const transferType = getTransferTxType(method, section);
     const stakingType = getStakingTxType(method, section);
     const xcmType = getXcmTxType(method, section);
+    const proxyType = getProxyTxType(method, section);
+    const multisigType = getMultisigTxType(method, section);
 
-    return transferType || stakingType || xcmType;
+    return transferType || stakingType || xcmType || proxyType || multisigType;
   };
 
   const getTransferTxType = (method: string, section: string): TransactionType | undefined => {
@@ -351,6 +406,26 @@ export const useCallDataDecoder = (): ICallDataDecoder => {
     }
 
     return undefined;
+  };
+
+  const getProxyTxType = (method: string, section: string): TransactionType | undefined => {
+    if (PROXY_SECTION !== section) return;
+
+    return {
+      addProxy: TransactionType.ADD_PROXY,
+      removeProxy: TransactionType.REMOVE_PROXY,
+      proxy: TransactionType.PROXY,
+    }[method];
+  };
+
+  const getMultisigTxType = (method: string, section: string): TransactionType | undefined => {
+    if (MULTISIG_SECTION !== section) return;
+
+    return {
+      asMulti: TransactionType.MULTISIG_AS_MULTI,
+      approveAsMulti: TransactionType.MULTISIG_APPROVE_AS_MULTI,
+      cancelAsMulti: TransactionType.MULTISIG_CANCEL_AS_MULTI,
+    }[method];
   };
 
   return { decodeCallData, getTxFromCallData };

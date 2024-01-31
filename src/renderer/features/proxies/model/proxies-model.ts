@@ -9,29 +9,44 @@ import type {
   Chain,
   ChainId,
   Connection,
-  NoID,
   PartialProxiedAccount,
   ProxiedAccount,
   ProxyAccount,
-  ProxyGroup,
   ProxyDeposits,
   Wallet,
   WalletsMap,
 } from '@shared/core';
-import { AccountType, ChainType, CryptoType, SigningType, WalletType, NotificationType } from '@shared/core';
+import {
+  AccountType,
+  ChainType,
+  CryptoType,
+  SigningType,
+  WalletType,
+  NotificationType,
+  NoID,
+  ProxyGroup,
+} from '@shared/core';
 import { networkModel, networkUtils } from '@entities/network';
 import { accountUtils, walletModel } from '@entities/wallet';
 import { proxyModel, proxyUtils } from '@entities/proxy';
 import { balanceModel } from '@entities/balance';
 import { notificationModel } from '@entities/notification';
 import { proxiesUtils } from '../lib/proxies-utils';
+import { storageService } from '@shared/api/storage';
 
 const workerStarted = createEvent();
 const connected = createEvent<ChainId>();
 const proxiedAccountsRemoved = createEvent<ProxiedAccount[]>();
 const depositsReceived = createEvent<ProxyDeposits>();
 
+type WalletsAddedProps = {
+  wallets: Wallet[];
+  accounts: Account[];
+};
+const walletsAdded = createEvent<WalletsAddedProps>();
+
 const $endpoint = createStore<Endpoint<any> | null>(null);
+const $deposits = createStore<ProxyDeposits[]>([]);
 
 const startWorkerFx = createEffect(() => {
   // @ts-ignore
@@ -108,12 +123,12 @@ type ProxiedWalletsParams = {
   chains: Record<ChainId, Chain>;
 };
 type ProxiedWalletsResult = {
-  wallet: Wallet;
+  wallets: Wallet[];
   accounts: ProxiedAccount[];
 };
 const createProxiedWalletsFx = createEffect(
-  ({ proxiedAccounts, chains }: ProxiedWalletsParams): ProxiedWalletsResult[] => {
-    return proxiedAccounts.map((proxied) => {
+  async ({ proxiedAccounts, chains }: ProxiedWalletsParams): Promise<ProxiedWalletsResult> => {
+    const proxiedWallets = proxiedAccounts.map((proxied) => {
       const walletName = proxyUtils.getProxiedName(
         proxied.accountId,
         proxied.proxyType,
@@ -138,6 +153,36 @@ const createProxiedWalletsFx = createEffect(
 
       return { wallet, accounts };
     });
+
+    const dbWalletsAndAccounts = await Promise.all(
+      proxiedWallets.map(async ({ wallet, accounts }) => {
+        const dbWallet = await storageService.wallets.create({ ...wallet, isActive: false });
+
+        if (!dbWallet) return undefined;
+
+        const accountsPayload = accounts.map((account) => ({ ...account, walletId: dbWallet.id }));
+        const dbAccounts = await storageService.accounts.createAll(accountsPayload);
+
+        if (!dbAccounts) return undefined;
+
+        return { wallet: dbWallet, accounts: dbAccounts as ProxiedAccount[] };
+      }),
+    );
+
+    return dbWalletsAndAccounts.reduce(
+      (acc, proxiedCreatedResult) => {
+        if (!proxiedCreatedResult) return acc;
+
+        acc.accounts.push(...proxiedCreatedResult.accounts);
+        acc.wallets = acc.wallets.concat(proxiedCreatedResult.wallet);
+
+        return acc;
+      },
+      {
+        wallets: [] as Wallet[],
+        accounts: [] as ProxiedAccount[],
+      },
+    );
   },
 );
 
@@ -202,8 +247,11 @@ spread({
 });
 
 sample({
-  clock: createProxiedWalletsFx.doneData,
-  target: walletModel.events.proxiedWalletsCreated,
+  clock: depositsReceived,
+  source: $deposits,
+  filter: (_, newDeposits) => newDeposits && Object.keys(newDeposits.deposits).length > 0,
+  fn: (deposits, newDeposits) => deposits.filter((d) => d.chainId === newDeposits.chainId).concat(newDeposits),
+  target: $deposits,
 });
 
 sample({
@@ -227,38 +275,67 @@ sample({
 });
 
 sample({
+  clock: createProxiedWalletsFx.doneData,
+  source: {
+    wallets: walletModel.$wallets,
+    accounts: walletModel.$accounts,
+  },
+  filter: (_, data) => Boolean(data && data.wallets.length && data.accounts.length),
+  fn: ({ wallets, accounts }, data) => ({
+    wallets: wallets.concat(data.wallets),
+    accounts: accounts.concat(data.accounts),
+  }),
+  target: walletsAdded,
+});
+
+sample({
+  source: walletsAdded,
+  target: spread({
+    wallets: walletModel.$wallets,
+    accounts: walletModel.$accounts,
+  }),
+});
+
+sample({
   clock: depositsReceived,
   source: {
     wallets: walletModel.$wallets,
     accounts: walletModel.$accounts,
     groups: proxyModel.$proxyGroups,
   },
-  fn: ({ wallets, accounts, groups }, deposits) => {
-    const proxyGroups = proxyUtils.getProxyGroups(wallets, accounts, deposits);
+  filter: (_, deposits) => Boolean(deposits),
+  fn: ({ wallets, accounts, groups }, deposits) => proxyUtils.createProxyGroups(wallets, accounts, groups, deposits!),
+  target: spread({
+    toAdd: proxyModel.events.proxyGroupsAdded,
+    toUpdate: proxyModel.events.proxyGroupsUpdated,
+    toRemove: proxyModel.events.proxyGroupsRemoved,
+  }),
+});
 
-    const { toAdd, toUpdate } = proxyGroups.reduce<Record<'toAdd' | 'toUpdate', NoID<ProxyGroup>[]>>(
-      (acc, g) => {
-        const shouldUpdate = groups.some((p) => proxyUtils.isSameProxyGroup(p, g));
-
-        if (shouldUpdate) {
-          acc.toUpdate.push(g);
-        } else {
-          acc.toAdd.push(g);
-        }
-
-        return acc;
-      },
-      { toAdd: [], toUpdate: [] },
-    );
-
-    const toRemove = groups.filter((p) => {
-      if (p.chainId !== deposits.chainId) return false;
-
-      return proxyGroups.every((g) => !proxyUtils.isSameProxyGroup(g, p));
-    });
-
-    return { toAdd, toUpdate, toRemove };
+sample({
+  clock: walletsAdded,
+  source: {
+    groups: proxyModel.$proxyGroups,
+    deposits: $deposits,
   },
+  filter: ({ deposits }) => Boolean(deposits),
+  fn: ({ groups, deposits }, { wallets, accounts }) =>
+    deposits.reduce(
+      (acc, deposit) => {
+        const { toAdd, toUpdate, toRemove } = proxyUtils.createProxyGroups(wallets, accounts, groups, deposit);
+
+        return {
+          toAdd: acc.toAdd.concat(toAdd),
+          toUpdate: acc.toUpdate.concat(toUpdate),
+          toRemove: acc.toRemove.concat(toRemove),
+        };
+      },
+      {
+        toAdd: [] as NoID<ProxyGroup>[],
+        toUpdate: [] as NoID<ProxyGroup>[],
+        toRemove: [] as ProxyGroup[],
+      },
+    ),
   target: spread({
     toAdd: proxyModel.events.proxyGroupsAdded,
     toUpdate: proxyModel.events.proxyGroupsUpdated,
