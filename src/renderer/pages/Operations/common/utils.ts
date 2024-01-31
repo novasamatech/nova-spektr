@@ -1,7 +1,6 @@
 import { TFunction } from 'react-i18next';
 
-import { accountUtils } from '@entities/wallet';
-import { walletUtils } from '@shared/core/utils';
+import { accountUtils, walletUtils } from '@entities/wallet';
 import { formatSectionAndMethod, toAddress } from '@shared/lib/utils';
 import { TransferTypes, XcmTypes } from '@entities/transaction';
 import type { Account, AccountId, ChainId, Contact, Explorer, HexString, Signatory, Wallet } from '@shared/core';

@@ -14,8 +14,7 @@ import { useMultisigEvent } from '@entities/multisig';
 import { MultisigTransactionDS } from '@shared/api/storage';
 import { AssetBalance } from '@entities/asset';
 import type { Account, Contact, MultisigAccount, Wallet, AccountId, WalletsMap } from '@shared/core';
-import { WalletIcon, walletModel } from '@entities/wallet';
-import { walletUtils } from '@shared/core/utils';
+import { WalletIcon, walletModel, walletUtils } from '@entities/wallet';
 import { chainsService } from '@shared/api/network';
 
 type Props = {

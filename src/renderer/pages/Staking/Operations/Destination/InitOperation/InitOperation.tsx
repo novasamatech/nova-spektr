@@ -14,8 +14,7 @@ import {
   getGeneralAccountOption,
   getSignatoryOption,
 } from '../../common/utils';
-import { walletModel, accountUtils } from '@entities/wallet';
-import { walletUtils } from '@shared/core/utils';
+import { walletModel, accountUtils, walletUtils } from '@entities/wallet';
 import { useAssetBalances } from '@entities/balance';
 
 export type DestinationResult = {

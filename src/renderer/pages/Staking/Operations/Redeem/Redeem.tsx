@@ -15,8 +15,7 @@ import { useToggle } from '@shared/lib/hooks';
 import { OperationTitle } from '@entities/chain';
 import { BaseModal, Button, Loader } from '@shared/ui';
 import { Signing } from '@features/operation';
-import { walletModel } from '@entities/wallet';
-import { walletUtils } from '@shared/core/utils';
+import { walletModel, walletUtils } from '@entities/wallet';
 import { priceProviderModel } from '@entities/price';
 import { useNetworkData } from '@entities/network';
 

@@ -8,7 +8,7 @@ import chains from '@shared/config/chains/chains.json';
 import { TEST_ACCOUNT_ID } from '@shared/lib/utils';
 import { AssetCard } from './AssetCard';
 import { type Chain, type Asset, type Balance, WalletType } from '@shared/core';
-import { walletModel } from '../../../wallet';
+import { walletModel } from '@entities/wallet';
 
 jest.mock('@app/providers', () => ({
   useI18n: jest.fn().mockReturnValue({

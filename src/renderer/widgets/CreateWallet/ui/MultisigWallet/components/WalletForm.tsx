@@ -5,8 +5,7 @@ import { Alert, Button, Input, InputHint, Select, SmallTitleText } from '@shared
 import { useI18n, useMatrix } from '@app/providers';
 import { DropdownOption, DropdownResult } from '@shared/ui/Dropdowns/common/types';
 import type { AccountId, Signatory } from '@shared/core';
-import { accountUtils, walletModel } from '@entities/wallet';
-import { walletUtils } from '@shared/core/utils';
+import { accountUtils, walletModel, walletUtils } from '@entities/wallet';
 
 type MultisigAccountForm = {
   name: string;

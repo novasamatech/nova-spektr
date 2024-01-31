@@ -2,8 +2,7 @@ import { useUnit } from 'effector-react';
 
 import { BaseModal, DropdownIconButton, Tabs } from '@shared/ui';
 import { useModalClose, useToggle } from '@shared/lib/hooks';
-import { AccountsList, WalletCardLg, walletModel } from '@entities/wallet';
-import { walletUtils } from '@shared/core/utils';
+import { AccountsList, WalletCardLg, permissionUtils, walletModel, walletUtils } from '@entities/wallet';
 import { networkModel } from '@entities/network';
 import { useI18n } from '@app/providers';
 import type { BaseAccount, Wallet } from '@shared/core';
@@ -14,7 +13,6 @@ import { TabItem } from '@shared/ui/Tabs/common/types';
 import { ProxiesList } from '../components/ProxiesList';
 import { walletProviderModel } from '../../model/wallet-provider-model';
 import { NoProxiesAction } from '../components/NoProxiesAction';
-import { permissionService } from '@shared/api/permission';
 
 type Props = {
   wallet: Wallet;
@@ -35,8 +33,8 @@ export const SimpleWalletDetails = ({ wallet, account, onClose }: Props) => {
 
   const canCreateProxy =
     activeWallet &&
-    (permissionService.isCreateAnyProxyAvailable(activeWallet, activeAccounts) ||
-      permissionService.isCreateNonAnyProxyAvailable(activeWallet, activeAccounts));
+    (permissionUtils.isCreateAnyProxyAvailable(activeWallet, activeAccounts) ||
+      permissionUtils.isCreateNonAnyProxyAvailable(activeWallet, activeAccounts));
 
   const Options = [
     {

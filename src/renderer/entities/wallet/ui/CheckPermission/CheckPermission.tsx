@@ -1,8 +1,8 @@
 import { PropsWithChildren } from 'react';
 
-import { Account, Wallet } from '../../../core';
-import { OperationType } from '../common/types';
-import { getOperationTypeFn } from '../common/utils';
+import { Account, Wallet } from '@shared/core';
+import { OperationType } from '../../common/types';
+import { getOperationTypeFn } from '../../common/utils';
 
 type Props = {
   operationType: OperationType;

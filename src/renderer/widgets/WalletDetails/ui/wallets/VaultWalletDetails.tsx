@@ -2,7 +2,7 @@ import { useUnit } from 'effector-react';
 
 import { BaseModal, ContextMenu, DropdownIconButton, HelpText, IconButton, Tabs } from '@shared/ui';
 import { useModalClose, useToggle } from '@shared/lib/hooks';
-import { RootAccountLg, VaultAccountsList, WalletCardLg, walletModel } from '@entities/wallet';
+import { RootAccountLg, VaultAccountsList, WalletCardLg, permissionUtils, walletModel } from '@entities/wallet';
 import { useI18n } from '@app/providers';
 import { Account, BaseAccount, ChainAccount, DraftAccount, KeyType, ShardAccount, Wallet } from '@shared/core';
 import { copyToClipboard, toAddress } from '@shared/lib/utils';
@@ -19,7 +19,6 @@ import { ProxiesList } from '../components/ProxiesList';
 import { walletProviderModel } from '../../model/wallet-provider-model';
 import { NoProxiesAction } from '../components/NoProxiesAction';
 import { networkModel } from '@entities/network';
-import { permissionService } from '@shared/api/permission';
 
 type Props = {
   wallet: Wallet;
@@ -84,8 +83,8 @@ export const VaultWalletDetails = ({ wallet, root, accountsMap, onClose }: Props
 
   const canCreateProxy =
     activeWallet &&
-    (permissionService.isCreateAnyProxyAvailable(activeWallet, activeAccounts) ||
-      permissionService.isCreateNonAnyProxyAvailable(activeWallet, activeAccounts));
+    (permissionUtils.isCreateAnyProxyAvailable(activeWallet, activeAccounts) ||
+      permissionUtils.isCreateNonAnyProxyAvailable(activeWallet, activeAccounts));
 
   const Options = [
     {

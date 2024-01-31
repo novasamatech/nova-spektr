@@ -16,7 +16,7 @@ import { Confirmation } from '../ActionSteps/Confirmation';
 import { SignatorySelectModal } from './SignatorySelectModal';
 import { useMultisigEvent } from '@entities/multisig';
 import { Signing } from '@features/operation';
-import { walletModel } from '@entities/wallet';
+import { permissionUtils, walletModel } from '@entities/wallet';
 import { priceProviderModel } from '@entities/price';
 import type { Address, HexString, Timepoint, MultisigAccount, Account } from '@shared/core';
 import { balanceModel, balanceUtils } from '@entities/balance';
@@ -31,7 +31,6 @@ import {
   useTransaction,
   validateBalance,
 } from '@entities/transaction';
-import { permissionService } from '@shared/api/permission';
 
 type Props = {
   tx: MultisigTransactionDS;
@@ -79,7 +78,7 @@ const ApproveTx = ({ tx, account, connection }: Props) => {
 
   const walletsMap = dictionary(wallets, 'id');
   const availableAccounts = accounts.filter((a) =>
-    permissionService.isApproveMultisigTxAvailable(walletsMap[a.walletId], [a]),
+    permissionUtils.isApproveMultisigTxAvailable(walletsMap[a.walletId], [a]),
   );
 
   const unsignedAccounts = getSignatoryAccounts(availableAccounts, wallets, events, account.signatories, tx.chainId);

@@ -6,13 +6,12 @@ import { networkModel } from '@entities/network';
 import { useModalClose, useToggle } from '@shared/lib/hooks';
 import { IconNames } from '@shared/ui/Icon/data';
 import { BaseModal, DropdownIconButton, FootnoteText, Icon, Tabs } from '@shared/ui';
-import { AccountsList, WalletCardLg, WalletIcon, walletModel } from '@entities/wallet';
+import { AccountsList, WalletCardLg, WalletIcon, permissionUtils, walletModel } from '@entities/wallet';
 import { RenameWalletModal } from '@features/wallets/RenameWallet';
 import { TabItem } from '@shared/ui/Tabs/common/types';
 import { ProxiesList } from '../components/ProxiesList';
 import { walletProviderModel } from '../../model/wallet-provider-model';
 import { NoProxiesAction } from '../components/NoProxiesAction';
-import { permissionService } from '@shared/api/permission';
 
 const ProxyTypeOperation: Record<ProxyType, string> = {
   [ProxyType.ANY]: 'proxy.operations.any',
@@ -45,8 +44,8 @@ export const ProxiedWalletDetails = ({ wallet, proxyWallet, proxiedAccount, onCl
 
   const canCreateProxy =
     activeWallet &&
-    (permissionService.isCreateAnyProxyAvailable(activeWallet, activeAccounts) ||
-      permissionService.isCreateNonAnyProxyAvailable(activeWallet, activeAccounts));
+    (permissionUtils.isCreateAnyProxyAvailable(activeWallet, activeAccounts) ||
+      permissionUtils.isCreateNonAnyProxyAvailable(activeWallet, activeAccounts));
 
   const Options = [
     {

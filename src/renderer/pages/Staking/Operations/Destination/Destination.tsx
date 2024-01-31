@@ -16,8 +16,7 @@ import { OperationTitle } from '@entities/chain';
 import { Signing } from '@features/operation';
 import { RewardsDestination } from '@shared/core';
 import type { Account, Address, ChainId, HexString } from '@shared/core';
-import { walletModel } from '@entities/wallet';
-import { walletUtils } from '@shared/core/utils';
+import { walletModel, walletUtils } from '@entities/wallet';
 import { priceProviderModel } from '@entities/price';
 import { useNetworkData } from '@entities/network';
 

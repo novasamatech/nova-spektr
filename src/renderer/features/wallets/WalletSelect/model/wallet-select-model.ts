@@ -3,8 +3,7 @@ import BigNumber from 'bignumber.js';
 import { once, previous } from 'patronum';
 
 import { getRoundedValue, totalAmount, dictionary } from '@shared/lib/utils';
-import { walletModel, accountUtils } from '@entities/wallet';
-import { walletUtils } from '@shared/core/utils';
+import { walletModel, accountUtils, walletUtils } from '@entities/wallet';
 import { currencyModel, priceProviderModel } from '@entities/price';
 import type { Wallet, ID } from '@shared/core';
 import { networkModel } from '@entities/network';

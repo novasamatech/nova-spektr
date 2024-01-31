@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { useUnit } from 'effector-react';
 
 import { useModalClose, useToggle } from '@shared/lib/hooks';
-import { WalletCardLg, walletModel } from '@entities/wallet';
+import { WalletCardLg, permissionUtils, walletModel } from '@entities/wallet';
 import { useI18n } from '@app/providers';
 import { chainsService } from '@shared/api/network';
 import { walletConnectUtils } from '@entities/walletConnect';
@@ -28,7 +28,6 @@ import { ProxiesList } from '../components/ProxiesList';
 import { walletProviderModel } from '../../model/wallet-provider-model';
 import { NoProxiesAction } from '../components/NoProxiesAction';
 import { WalletConnectAccounts } from '../components/WalletConnectAccounts';
-import { permissionService } from '@shared/api/permission';
 
 type Props = {
   wallet: WalletConnectWallet;
@@ -67,8 +66,8 @@ export const WalletConnectDetails = ({ wallet, accounts, onClose }: Props) => {
 
   const canCreateProxy =
     activeWallet &&
-    (permissionService.isCreateAnyProxyAvailable(activeWallet, activeAccounts) ||
-      permissionService.isCreateNonAnyProxyAvailable(activeWallet, activeAccounts));
+    (permissionUtils.isCreateAnyProxyAvailable(activeWallet, activeAccounts) ||
+      permissionUtils.isCreateNonAnyProxyAvailable(activeWallet, activeAccounts));
 
   const Options = [
     {

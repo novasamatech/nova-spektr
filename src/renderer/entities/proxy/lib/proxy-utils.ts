@@ -7,9 +7,6 @@ export const proxyUtils = {
   sortAccountsByProxyType,
   getProxiedName,
   getProxyGroups,
-  isAnyProxyType,
-  isNonTransferProxyType,
-  isStakingProxyType,
 };
 
 function isSameProxy(oldProxy: ProxyAccount, newProxy: ProxyAccount) {
@@ -73,16 +70,4 @@ function getProxyGroups(wallets: Wallet[], accounts: Account[], deposits: ProxyD
 
     return acc;
   }, []);
-}
-
-function isAnyProxyType({ proxyType }: { proxyType: ProxyType }) {
-  return proxyType === ProxyType.ANY;
-}
-
-function isNonTransferProxyType({ proxyType }: { proxyType: ProxyType }) {
-  return proxyType === ProxyType.NON_TRANSFER;
-}
-
-function isStakingProxyType({ proxyType }: { proxyType: ProxyType }) {
-  return proxyType === ProxyType.STAKING;
 }

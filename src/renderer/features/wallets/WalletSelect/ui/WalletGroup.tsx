@@ -1,8 +1,7 @@
 import { Accordion, CaptionText, Icon } from '@shared/ui';
 import { useI18n } from '@app/providers';
 import { Wallet, WalletFamily, WalletType } from '@shared/core';
-import { WalletCardMd, WalletIcon } from '@entities/wallet';
-import { walletUtils } from '@shared/core/utils';
+import { WalletCardMd, WalletIcon, walletUtils } from '@entities/wallet';
 import { WalletFiatBalance } from './WalletFiatBalance';
 import { walletSelectModel } from '../model/wallet-select-model';
 import { ProxiedTooltip } from './ProxiedTooltip';

@@ -11,7 +11,7 @@ import type {
   WatchOnlyWallet,
   ProxiedWallet,
 } from '@shared/core';
-import { ID, WalletType } from '@shared/core';
+import { ID, ProxyType, WalletType } from '@shared/core';
 
 export const walletUtils = {
   isPolkadotVault,
@@ -26,6 +26,10 @@ export const walletUtils = {
   isPolkadotVaultGroup,
   isValidSignatory,
   getWalletById,
+
+  isAnyProxyType,
+  isStakingProxyType,
+  isNonTransferProxyType,
 };
 
 function isPolkadotVault(wallet?: Pick<Wallet, 'type'>): wallet is PolkadotVaultWallet {
@@ -82,4 +86,16 @@ function isValidSignatory(wallet?: Pick<Wallet, 'type'>): boolean {
 
 function getWalletById(wallets: Wallet[], id: ID): Wallet | undefined {
   return wallets.find((wallet) => wallet.id === id);
+}
+
+function isAnyProxyType({ proxyType }: { proxyType: ProxyType }) {
+  return proxyType === ProxyType.ANY;
+}
+
+function isNonTransferProxyType({ proxyType }: { proxyType: ProxyType }) {
+  return proxyType === ProxyType.NON_TRANSFER;
+}
+
+function isStakingProxyType({ proxyType }: { proxyType: ProxyType }) {
+  return proxyType === ProxyType.STAKING;
 }

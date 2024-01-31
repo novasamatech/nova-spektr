@@ -1,10 +1,9 @@
 import { useUnit } from 'effector-react';
 
-import { CheckPermissionWithRedirect, OperationType } from '@shared/api/permission';
 import { AssetRouteGuard } from '@features/assets';
 import { Paths } from '@shared/routes';
 import { SendAssetModal } from '@widgets/SendAssetModal';
-import { walletModel } from '@entities/wallet';
+import { CheckPermissionWithRedirect, OperationType, walletModel } from '@entities/wallet';
 
 export const SendAsset = () => {
   const activeWallet = useUnit(walletModel.$activeWallet);

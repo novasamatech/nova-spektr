@@ -21,8 +21,7 @@ import type {
 import { AccountType, ChainType, CryptoType, SigningType, WalletType, NotificationType } from '@shared/core';
 import { networkModel, networkUtils } from '@entities/network';
 import { accountUtils, walletModel } from '@entities/wallet';
-import { proxyModel } from '@entities/proxy';
-import { proxyUtils } from '@shared/core/utils';
+import { proxyModel, proxyUtils } from '@entities/proxy';
 import { balanceModel } from '@entities/balance';
 import { notificationModel } from '@entities/notification';
 import { proxiesUtils } from '../lib/proxies-utils';

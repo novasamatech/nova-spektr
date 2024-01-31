@@ -13,9 +13,8 @@ import { MultisigTransactionDS } from '@shared/api/storage';
 import type { CallData, MultisigAccount } from '@shared/core';
 import { OperationSignatories } from './OperationSignatories';
 import { useNetworkData } from '@entities/network';
-import { permissionService } from '@shared/api/permission';
-import { walletModel } from '@/src/renderer/entities/wallet';
-import { dictionary } from '@/src/renderer/shared/lib/utils';
+import { walletModel, permissionUtils } from '@entities/wallet';
+import { dictionary } from '@shared/lib/utils';
 
 type Props = {
   tx: MultisigTransactionDS;
@@ -59,7 +58,7 @@ const OperationFullInfo = ({ tx, account }: Props) => {
   };
 
   const isRejectAvailable =
-    account && permissionService.isRejectMultisigTxAvailable(walletsMap[account.walletId], [account]);
+    account && permissionUtils.isRejectMultisigTxAvailable(walletsMap[account.walletId], [account]);
 
   return (
     <div className="flex flex-1">

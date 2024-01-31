@@ -5,7 +5,15 @@ import { MultisigAccount, Signatory, Wallet, AccountId } from '@shared/core';
 import { BaseModal, FootnoteText, Tabs, HelpText, DropdownIconButton } from '@shared/ui';
 import { RootExplorers } from '@shared/lib/utils';
 import { useModalClose, useToggle } from '@shared/lib/hooks';
-import { AccountsList, ContactItem, ExplorersPopover, WalletCardLg, WalletCardMd, walletModel } from '@entities/wallet';
+import {
+  AccountsList,
+  ContactItem,
+  ExplorersPopover,
+  WalletCardLg,
+  WalletCardMd,
+  permissionUtils,
+  walletModel,
+} from '@entities/wallet';
 import { useI18n, useMatrix } from '@app/providers';
 // TODO: think about combining balances and wallets
 import { WalletFiatBalance } from '@features/wallets/WalletSelect/ui/WalletFiatBalance';
@@ -15,7 +23,6 @@ import { ForgetWalletModal } from '@features/wallets/ForgetWallet';
 import { ProxiesList } from '../components/ProxiesList';
 import { walletProviderModel } from '../../model/wallet-provider-model';
 import { NoProxiesAction } from '../components/NoProxiesAction';
-import { permissionService } from '@shared/api/permission';
 import { networkUtils, networkModel } from '@entities/network';
 
 type Props = {
@@ -69,8 +76,8 @@ export const MultisigWalletDetails = ({ wallet, account, signatoryWallets, signa
 
   const canCreateProxy =
     activeWallet &&
-    (permissionService.isCreateAnyProxyAvailable(activeWallet, activeAccounts) ||
-      permissionService.isCreateNonAnyProxyAvailable(activeWallet, activeAccounts));
+    (permissionUtils.isCreateAnyProxyAvailable(activeWallet, activeAccounts) ||
+      permissionUtils.isCreateNonAnyProxyAvailable(activeWallet, activeAccounts));
 
   return (
     <BaseModal

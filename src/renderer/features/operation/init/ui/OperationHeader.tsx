@@ -5,8 +5,7 @@ import { MultiSelectMultishardHeader } from './MultiSelectMultishardHeader';
 import { DropdownOption } from '@shared/ui/Dropdowns/common/types';
 import { MultisigOperationHeader } from './MultisigOperationHeader';
 import { OperationError, OperationErrorType } from '@entities/transaction';
-import { accountUtils, walletModel } from '@entities/wallet';
-import { walletUtils } from '@shared/core/utils';
+import { accountUtils, walletModel, walletUtils } from '@entities/wallet';
 import type { Account, ChainId, MultisigAccount, Wallet } from '@shared/core';
 
 type Props = {

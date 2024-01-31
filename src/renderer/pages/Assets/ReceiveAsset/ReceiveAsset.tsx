@@ -4,8 +4,7 @@ import { useUnit } from 'effector-react';
 import { AssetRouteGuard } from '@features/assets';
 import { Paths } from '@shared/routes';
 import { ReceiveAssetModal } from '@widgets/ReceiveAssetModal';
-import { walletModel } from '@renderer/entities/wallet';
-import { CheckPermissionWithRedirect, OperationType } from '@shared/api/permission';
+import { CheckPermissionWithRedirect, OperationType, walletModel } from '@entities/wallet';
 
 export const ReceiveAsset = () => {
   const navigate = useNavigate();

@@ -9,12 +9,10 @@ import { cnTw, KeyboardKey, totalAmount, transferableAmount } from '@shared/lib/
 import { useI18n } from '@app/providers';
 import { Paths, createLink } from '@shared/routes';
 import { ChainId, Asset, Balance } from '@shared/core';
-// TODO: Move it to another layer https://app.clickup.com/t/8692tr8x0
 import { TokenPrice } from '@entities/price/ui/TokenPrice';
 import { AssetFiatBalance } from '@entities/price/ui/AssetFiatBalance';
 import { priceProviderModel } from '@entities/price';
-import { walletModel } from '@entities/wallet';
-import { CheckPermission, OperationType } from '@shared/api/permission/';
+import { CheckPermission, OperationType, walletModel } from '@entities/wallet';
 
 type Props = {
   chainId: ChainId;

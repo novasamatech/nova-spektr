@@ -8,8 +8,7 @@ import { createLink, type PathType } from '@shared/routes';
 import { useGraphql, useI18n } from '@app/providers';
 import { useToggle } from '@shared/lib/hooks';
 import { AboutStaking, NetworkInfo, NominatorsList, Actions, InactiveChain } from './components';
-import { accountUtils, walletModel } from '@entities/wallet';
-import { walletUtils } from '@shared/core/utils';
+import { accountUtils, permissionUtils, walletModel, walletUtils } from '@entities/wallet';
 import { priceProviderModel } from '@entities/price';
 import { NominatorInfo } from './common/types';
 import { useNetworkData, networkUtils } from '@entities/network';
@@ -23,7 +22,6 @@ import {
   useStakingRewards,
   ValidatorsModal,
 } from '@entities/staking';
-import { permissionService } from '@shared/api/permission';
 
 export const Overview = () => {
   const { t } = useI18n();
@@ -274,7 +272,7 @@ export const Overview = () => {
             {networkIsActive && accounts.length > 0 && (
               <>
                 <Actions
-                  canInteract={!!activeWallet && permissionService.isStakingAvailable(activeWallet, accounts)}
+                  canInteract={!!activeWallet && permissionUtils.isStakingAvailable(activeWallet, accounts)}
                   stakes={selectedStakes}
                   isStakingLoading={isStakingLoading}
                   onNavigate={navigateToStake}

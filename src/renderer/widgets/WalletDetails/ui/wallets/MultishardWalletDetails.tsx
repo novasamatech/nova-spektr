@@ -2,7 +2,7 @@ import { useUnit } from 'effector-react';
 
 import { BaseModal, DropdownIconButton, Tabs } from '@shared/ui';
 import { useModalClose, useToggle } from '@shared/lib/hooks';
-import { MultishardAccountsList, WalletCardLg, walletModel } from '@entities/wallet';
+import { MultishardAccountsList, WalletCardLg, permissionUtils, walletModel } from '@entities/wallet';
 import { useI18n } from '@app/providers';
 import type { Wallet } from '@shared/core';
 import type { MultishardMap } from '../../lib/types';
@@ -15,7 +15,6 @@ import { ProxiesList } from '../components/ProxiesList';
 import { walletProviderModel } from '../../model/wallet-provider-model';
 import { NoProxiesAction } from '../components/NoProxiesAction';
 import { networkModel } from '@entities/network';
-import { permissionService } from '@shared/api/permission';
 
 type Props = {
   wallet: Wallet;
@@ -66,8 +65,8 @@ export const MultishardWalletDetails = ({ wallet, accounts, onClose }: Props) =>
 
   const canCreateProxy =
     activeWallet &&
-    (permissionService.isCreateAnyProxyAvailable(activeWallet, activeAccounts) ||
-      permissionService.isCreateNonAnyProxyAvailable(activeWallet, activeAccounts));
+    (permissionUtils.isCreateAnyProxyAvailable(activeWallet, activeAccounts) ||
+      permissionUtils.isCreateNonAnyProxyAvailable(activeWallet, activeAccounts));
 
   const tabItems: TabItem[] = [
     {

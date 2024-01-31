@@ -1,8 +1,7 @@
 import { useUnit } from 'effector-react';
 
 import { Accordion, Checkbox, FootnoteText } from '@shared/ui';
-import { accountUtils, walletModel } from '@entities/wallet';
-import { walletUtils } from '@shared/core/utils';
+import { accountUtils, walletModel, walletUtils } from '@entities/wallet';
 import { ChainTitle } from '@entities/chain';
 import { RootExplorers } from '@shared/lib/utils';
 import { shardsModel } from '../model/shards-model';

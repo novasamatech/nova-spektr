@@ -1,7 +1,8 @@
 import type { Account, ProxyAction, NoID, Wallet, ChainId } from '@shared/core';
 import { NotificationType, Chain, type PartialProxiedAccount } from '@shared/core';
 import { dictionary } from '@shared/lib/utils';
-import { proxyUtils, walletUtils } from '@shared/core/utils';
+import { walletUtils } from '@entities/wallet';
+import { proxyUtils } from '@entities/proxy';
 
 export const proxiesUtils = {
   isRegularProxy,
