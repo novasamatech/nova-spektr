@@ -7,7 +7,6 @@ import { dictionary } from '@shared/lib/utils';
 import { walletDetailsUtils } from '../lib/utils';
 import type { MultishardMap, VaultMap } from '../lib/types';
 import { proxyModel, proxyUtils } from '@entities/proxy';
-import { ProxyAccount } from '@shared/core';
 import { networkModel } from '@entities/network';
 import { removeProxyModel } from '@widgets/RemoveProxy';
 import type {
@@ -17,13 +16,16 @@ import type {
   MultisigAccount,
   BaseAccount,
   AccountId,
+  ProxyAccount,
   ProxiedAccount,
   ChainId,
+  ProxyGroup,
 } from '@shared/core';
 
 const removeProxy = createEvent<ProxyAccount>();
 
 const $proxyForRemoval = createStore<ProxyAccount | null>(null).reset(removeProxyModel.events.proxyRemoved);
+
 const $accounts = combine(
   {
     accounts: walletModel.$accounts,
@@ -33,35 +35,6 @@ const $accounts = combine(
     if (!details) return [];
 
     return accountUtils.getWalletAccounts(details.id, accounts);
-  },
-);
-
-const $proxiesByChain = combine(
-  {
-    accounts: $accounts,
-    chains: networkModel.$chains,
-    proxies: proxyModel.$proxies,
-  },
-  ({ accounts, chains, proxies }): Record<ChainId, ProxyAccount[]> => {
-    const proxiesForAccounts = uniqBy(accounts, 'accountId').reduce<ProxyAccount[]>((acc, account) => {
-      if (proxies[account.accountId]) {
-        acc.push(...proxies[account.accountId]);
-      }
-
-      return acc;
-    }, []);
-
-    const chainsMap = Object.keys(chains).reduce<Record<ChainId, ProxyAccount[]>>((acc, chainId) => {
-      acc[chainId as ChainId] = [];
-
-      return acc;
-    }, {});
-
-    return proxyUtils.sortAccountsByProxyType(proxiesForAccounts).reduce((acc, proxy) => {
-      acc[proxy.chainId].push(proxy);
-
-      return acc;
-    }, chainsMap);
   },
 );
 
@@ -156,7 +129,48 @@ const $signatoryWallets = combine(
   },
 );
 
-const $proxyWalletForProxied = combine(
+const $chainsProxies = combine(
+  {
+    accounts: $accounts,
+    chains: networkModel.$chains,
+    proxies: proxyModel.$proxies,
+  },
+  ({ accounts, chains, proxies }): Record<ChainId, ProxyAccount[]> => {
+    const proxiesForAccounts = uniqBy(accounts, 'accountId').reduce<ProxyAccount[]>((acc, account) => {
+      if (proxies[account.accountId]) {
+        acc.push(...proxies[account.accountId]);
+      }
+
+      return acc;
+    }, []);
+
+    const chainsMap = Object.keys(chains).reduce<Record<ChainId, ProxyAccount[]>>((acc, chainId) => {
+      acc[chainId as ChainId] = [];
+
+      return acc;
+    }, {});
+
+    return proxyUtils.sortAccountsByProxyType(proxiesForAccounts).reduce((acc, proxy) => {
+      acc[proxy.chainId].push(proxy);
+
+      return acc;
+    }, chainsMap);
+  },
+);
+
+const $walletProxyGroups = combine(
+  {
+    wallet: walletSelectModel.$walletForDetails,
+    groups: proxyModel.$walletsProxyGroups,
+  },
+  ({ wallet, groups }): ProxyGroup[] => {
+    if (!wallet || !groups[wallet.id]) return [];
+
+    return groups[wallet.id];
+  },
+);
+
+const $proxyWallet = combine(
   {
     walletAccounts: $accounts,
     accounts: walletModel.$accounts,
@@ -164,21 +178,24 @@ const $proxyWalletForProxied = combine(
     detailsWallet: walletSelectModel.$walletForDetails,
   },
   ({ walletAccounts, accounts, wallets, detailsWallet }): Wallet | undefined => {
-    if (!walletUtils.isProxied(detailsWallet || undefined)) return;
+    if (!walletUtils.isProxied(detailsWallet)) return;
 
-    const proxiedAccount = walletAccounts[0] as unknown as ProxiedAccount;
     const walletsMap = dictionary(wallets, 'id');
-    const proxyAccount = accounts.find(
-      (a) => a.accountId === proxiedAccount.proxyAccountId && !walletUtils.isWatchOnly(walletsMap[a.walletId]),
-    );
+
+    const proxyAccount = accounts.find((a) => {
+      const isProxyMatch = a.accountId === (walletAccounts[0] as ProxiedAccount).proxyAccountId;
+      const isWatchOnly = walletUtils.isWatchOnly(walletsMap[a.walletId]);
+
+      return isProxyMatch && !isWatchOnly;
+    });
 
     return proxyAccount && walletsMap[proxyAccount.walletId];
   },
   { skipVoid: false },
 );
 
-const $hasProxies = combine($proxiesByChain, (proxiesByChain) => {
-  return Object.values(proxiesByChain).some((accounts) => accounts.length > 0);
+const $hasProxies = combine($chainsProxies, (chainsProxies) => {
+  return Object.values(chainsProxies).some((accounts) => accounts.length > 0);
 });
 
 sample({
@@ -188,15 +205,18 @@ sample({
 
 export const walletProviderModel = {
   $accounts,
-  $proxiesByChain,
-  $hasProxies,
+
+  $vaultAccounts,
+  $multisigAccount,
   $singleShardAccount,
   $multiShardAccounts,
-  $multisigAccount,
-  $vaultAccounts,
   $signatoryContacts,
   $signatoryWallets,
-  $proxyWalletForProxied,
+
+  $chainsProxies,
+  $walletProxyGroups,
+  $proxyWallet,
+  $hasProxies,
   $proxyForRemoval,
   events: {
     removeProxy,

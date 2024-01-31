@@ -2,13 +2,22 @@ import type { Account, AccountId, MultisigAccount, MultisigWallet, ProxyAccount,
 import { AccountType, ProxyType, SigningType, WalletType } from '@shared/core';
 import { TEST_ACCOUNTS, TEST_ADDRESS } from '@shared/lib/utils';
 
-const wallet: Wallet = {
-  id: 1,
-  signingType: SigningType.POLKADOT_VAULT,
-  type: WalletType.POLKADOT_VAULT,
-  isActive: true,
-  name: 'My PV',
-};
+const wallets: Wallet[] = [
+  {
+    id: 1,
+    signingType: SigningType.POLKADOT_VAULT,
+    type: WalletType.POLKADOT_VAULT,
+    isActive: true,
+    name: 'My PV',
+  },
+  {
+    id: 2,
+    signingType: SigningType.POLKADOT_VAULT,
+    type: WalletType.PROXIED,
+    isActive: false,
+    name: 'My Proxied',
+  },
+];
 
 const accounts: Account[] = [
   {
@@ -25,9 +34,20 @@ const accounts: Account[] = [
     id: 2,
     accountId: TEST_ACCOUNTS[1],
     chainId: '0x01',
-    walletId: 2,
+    walletId: 1,
     name: 'My another account',
     type: AccountType.CHAIN,
+    chainType: 0,
+    cryptoType: 0,
+  },
+  {
+    id: 3,
+    accountId: TEST_ACCOUNTS[2],
+    chainId: '0x01',
+    walletId: 2,
+    name: 'My proxied account',
+    type: AccountType.PROXIED,
+    proxyAccountId: TEST_ACCOUNTS[0],
     chainType: 0,
     cryptoType: 0,
   },
@@ -162,7 +182,7 @@ const signatoriesWallets: Wallet[] = [
 ];
 
 export const walletProviderMock = {
-  wallet,
+  wallets,
   accounts,
   dupAccounts,
   chains,

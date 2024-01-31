@@ -5,7 +5,6 @@ import { ChainTitle } from '@entities/chain';
 import { useI18n } from '@app/providers';
 import { Accordion, ConfirmModal, FootnoteText, HelpText, SmallTitleText } from '@shared/ui';
 import type { ID, ProxyAccount } from '@shared/core';
-import { proxyModel } from '@entities/proxy';
 import { networkModel } from '@entities/network';
 import { AssetBalance } from '@entities/asset';
 import { walletProviderModel } from '../../model/wallet-provider-model';
@@ -23,8 +22,8 @@ export const ProxiesList = ({ walletId, className, canCreateProxy = true }: Prop
   const { t } = useI18n();
 
   const chains = useUnit(networkModel.$chains);
-  const proxiesByChain = useUnit(walletProviderModel.$proxiesByChain);
-  const proxyGroups = useUnit(proxyModel.$walletsProxyGroups)[walletId];
+  const chainsProxies = useUnit(walletProviderModel.$chainsProxies);
+  const walletProxyGroups = useUnit(walletProviderModel.$walletProxyGroups);
   const proxyForRemoval = useUnit(walletProviderModel.$proxyForRemoval);
 
   const [isRemoveConfirmOpen, toggleIsRemoveConfirmOpen] = useToggle();
@@ -42,8 +41,8 @@ export const ProxiesList = ({ walletId, className, canCreateProxy = true }: Prop
       </div>
 
       <ul className="flex flex-col h-full px-5 divide-y divide-divider overflow-y-auto overflow-x-hidden">
-        {proxyGroups.map(({ chainId, totalDeposit }) => {
-          if (!proxiesByChain[chainId]?.length) return;
+        {walletProxyGroups.map(({ chainId, totalDeposit }) => {
+          if (!chainsProxies[chainId]?.length) return;
 
           return (
             <li key={chainId} className="flex items-center py-2">
@@ -65,7 +64,7 @@ export const ProxiesList = ({ walletId, className, canCreateProxy = true }: Prop
                 </Accordion.Button>
                 <Accordion.Content>
                   <ul className="flex flex-col gap-y-2">
-                    {proxiesByChain[chainId].map((proxy) => (
+                    {chainsProxies[chainId].map((proxy) => (
                       <li className="px-2 py-1.5" key={`${proxy.id}_${proxy.proxyType}`}>
                         <ProxyAccountWithActions
                           account={proxy}
