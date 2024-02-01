@@ -40,9 +40,9 @@ export const WalletCardMd = ({ wallet, description, prefix, hideIcon, className,
         {prefix}
 
         {!hideIcon && <WalletIcon type={wallet.type} size={20} />}
-        <div className="flex flex-col">
+        <div className="flex flex-col min-w-0">
           <div className="flex items-center gap-x-2">
-            <FootnoteText className="text-text-primary">{wallet.name}</FootnoteText>
+            <FootnoteText className="text-text-primary truncate">{wallet.name}</FootnoteText>
             {isWalletConnect && (
               <span
                 className={cnTw(

@@ -30,17 +30,20 @@ export const ProxyCreatedNotification = ({ notification }: Props) => {
 
       <div className="flex flex-col gap-y-2">
         <BodyText>{t('notifications.details.proxyCreatedTitle')}</BodyText>
-        <BodyText className="inline-flex items-center">
+        <BodyText className="inline-flex flex-wrap gap-y-2 items-center">
           <Trans
             t={t}
             i18nKey="notifications.details.proxyWalletAction"
             values={{ address, name: notification.proxiedWalletName }}
             components={{
-              identicon: <Identicon className="mx-1" address={address} size={16} background={false} canCopy={true} />,
+              identicon: (
+                <Identicon className="mx-1 inline-flex" address={address} size={16} background={false} canCopy={true} />
+              ),
+              address: <p className="inline-flex" />,
             }}
           />
         </BodyText>
-        <BodyText className="inline-flex items-center">
+        <BodyText className="inline-flex flex-wrap gap-y-2 items-center">
           <Trans
             t={t}
             i18nKey="notifications.details.proxyCreatedDetails"
@@ -51,6 +54,7 @@ export const ProxyCreatedNotification = ({ notification }: Props) => {
             components={{
               chain: <ChainTitle chainId={notification.chainId} fontClass="text-text-primary text-body" />,
               walletIcon: <WalletIcon size={16} type={notification.proxyWalletType} className="mx-1" />,
+              wallet: <p className="inline-flex" />,
             }}
           />
         </BodyText>
