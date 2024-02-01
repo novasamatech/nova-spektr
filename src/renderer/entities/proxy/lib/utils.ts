@@ -123,6 +123,5 @@ const ProxyTypeName: Record<ProxyType, string> = {
 };
 
 function getProxyTypeName(proxyType: ProxyType | string): string {
-  // if proxy type is not in ProxyTypeName enum split camel case string and add spaces
   return ProxyTypeName[proxyType as ProxyType] || splitCamelCaseString(proxyType as string);
 }

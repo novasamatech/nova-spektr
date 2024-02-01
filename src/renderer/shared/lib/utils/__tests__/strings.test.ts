@@ -14,7 +14,7 @@ describe('shared/lib/utils/strings', () => {
       expect(formatSectionAndMethod('simpleProxy', 'addProxy')).toEqual('Simple proxy: Add proxy');
     });
 
-    test('split camel case sting and add spaces', () => {
+    test('split camel case string into parts divided by space', () => {
       expect(splitCamelCaseString('SudoBalances')).toEqual('Sudo Balances');
     });
   });
