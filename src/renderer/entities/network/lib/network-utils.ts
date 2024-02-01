@@ -1,7 +1,9 @@
 import { ChainOptions, Connection, ConnectionType, ConnectionStatus, ChainMetadata, ChainId } from '@shared/core';
+import { RelayChains } from '@shared/lib/utils';
 
 export const networkUtils = {
   isConnectedStatus,
+  isConnectingStatus,
   isDisconnectedStatus,
   isErrorStatus,
 
@@ -15,6 +17,7 @@ export const networkUtils = {
   isAutoBalanceConnection,
 
   getNewestMetadata,
+  getLightClientChains,
 };
 
 function isConnectedStatus(status: ConnectionStatus): boolean {
@@ -22,6 +25,10 @@ function isConnectedStatus(status: ConnectionStatus): boolean {
 }
 function isDisconnectedStatus(status: ConnectionStatus): boolean {
   return status === ConnectionStatus.DISCONNECTED;
+}
+
+function isConnectingStatus(status: ConnectionStatus): boolean {
+  return status === ConnectionStatus.CONNECTING;
 }
 function isErrorStatus(status: ConnectionStatus): boolean {
   return status === ConnectionStatus.ERROR;
@@ -63,4 +70,8 @@ function getNewestMetadata(metadata: ChainMetadata[]): Record<ChainId, ChainMeta
 
     return acc;
   }, {} as Record<ChainId, ChainMetadata>);
+}
+
+function getLightClientChains(): ChainId[] {
+  return Object.values(RelayChains);
 }

@@ -8,7 +8,7 @@ import {
   KeyType,
   ShardAccount,
 } from '@shared/core';
-import { TEST_ACCOUNT_ID, TEST_CHAIN_ID } from '@shared/lib/utils';
+import { TEST_ACCOUNTS, TEST_CHAIN_ID } from '@shared/lib/utils';
 import { accountUtils } from '@entities/wallet';
 
 const accounts: Array<ChainAccount | ShardAccount> = [
@@ -18,7 +18,7 @@ const accounts: Array<ChainAccount | ShardAccount> = [
     baseId: 1,
     name: 'My chain account',
     type: AccountType.CHAIN,
-    accountId: TEST_ACCOUNT_ID,
+    accountId: TEST_ACCOUNTS[0],
     chainId: TEST_CHAIN_ID,
     chainType: ChainType.SUBSTRATE,
     cryptoType: CryptoType.SR25519,
@@ -31,7 +31,7 @@ const accounts: Array<ChainAccount | ShardAccount> = [
     baseId: 1,
     name: 'My chain account',
     type: AccountType.CHAIN,
-    accountId: TEST_ACCOUNT_ID,
+    accountId: TEST_ACCOUNTS[0],
     chainId: TEST_CHAIN_ID,
     chainType: ChainType.SUBSTRATE,
     cryptoType: CryptoType.SR25519,
@@ -45,7 +45,7 @@ const accounts: Array<ChainAccount | ShardAccount> = [
     chainId: TEST_CHAIN_ID,
     name: 'My shard',
     type: AccountType.SHARD,
-    accountId: TEST_ACCOUNT_ID,
+    accountId: TEST_ACCOUNTS[0],
     keyType: KeyType.STAKING,
     chainType: ChainType.SUBSTRATE,
     cryptoType: CryptoType.SR25519,
@@ -58,7 +58,7 @@ const accounts: Array<ChainAccount | ShardAccount> = [
     chainId: TEST_CHAIN_ID,
     name: 'My shard',
     type: AccountType.SHARD,
-    accountId: TEST_ACCOUNT_ID,
+    accountId: TEST_ACCOUNTS[0],
     keyType: KeyType.STAKING,
     chainType: ChainType.SUBSTRATE,
     cryptoType: CryptoType.SR25519,
@@ -71,7 +71,7 @@ const accounts: Array<ChainAccount | ShardAccount> = [
     chainId: TEST_CHAIN_ID,
     name: 'My shard',
     type: AccountType.SHARD,
-    accountId: TEST_ACCOUNT_ID,
+    accountId: TEST_ACCOUNTS[0],
     keyType: KeyType.MAIN,
     chainType: ChainType.SUBSTRATE,
     cryptoType: CryptoType.SR25519,
@@ -84,7 +84,7 @@ const accounts: Array<ChainAccount | ShardAccount> = [
     name: 'My shard',
     type: AccountType.SHARD,
     chainId: TEST_CHAIN_ID,
-    accountId: TEST_ACCOUNT_ID,
+    accountId: TEST_ACCOUNTS[0],
     keyType: KeyType.STAKING,
     chainType: ChainType.SUBSTRATE,
     cryptoType: CryptoType.SR25519,
@@ -97,7 +97,7 @@ const accounts: Array<ChainAccount | ShardAccount> = [
     name: 'My shard',
     type: AccountType.SHARD,
     chainId: TEST_CHAIN_ID,
-    accountId: TEST_ACCOUNT_ID,
+    accountId: TEST_ACCOUNTS[0],
     keyType: KeyType.STAKING,
     chainType: ChainType.SUBSTRATE,
     cryptoType: CryptoType.SR25519,
