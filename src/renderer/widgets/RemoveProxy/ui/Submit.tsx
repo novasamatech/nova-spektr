@@ -11,7 +11,7 @@ import {
   useTransaction,
 } from '@entities/transaction';
 import type { Account, MultisigAccount } from '@shared/core';
-import { HexString, ProxyAccount } from '@shared/core';
+import { HexString } from '@shared/core';
 import { buildMultisigTx, useMultisigEvent, useMultisigTx } from '@entities/multisig';
 import { toAccountId } from '@shared/lib/utils';
 import { useToggle } from '@shared/lib/hooks';
@@ -27,22 +27,11 @@ type Props = {
   multisigTx?: Transaction;
   unsignedTx: UnsignedTransaction | null;
   signature: HexString | null;
-  proxyAccount: ProxyAccount;
   onClose: () => void;
   onSubmitted: () => void;
 };
 
-export const Submit = ({
-  api,
-  tx,
-  multisigTx,
-  account,
-  proxyAccount,
-  unsignedTx,
-  signature,
-  onClose,
-  onSubmitted,
-}: Props) => {
+export const Submit = ({ api, tx, multisigTx, account, unsignedTx, signature, onClose, onSubmitted }: Props) => {
   const { t } = useI18n();
 
   const { matrix } = useMatrix();
