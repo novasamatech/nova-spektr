@@ -31,9 +31,7 @@ const WalletText: Record<SignableWalletFamily, string> = {
 export const SignButton = ({ disabled, type, onClick, className }: Props) => {
   const { t } = useI18n();
 
-  const isSignableType = type in WalletIcon;
-
-  if (!isSignableType) return <></>;
+  if (!(type in WalletIcon)) return null;
 
   return (
     <Button
