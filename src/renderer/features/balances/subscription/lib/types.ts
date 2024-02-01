@@ -1,16 +1,13 @@
 import { VoidFn } from '@polkadot/api/types';
 
-import type { ID, AccountId, ChainId } from '@shared/core';
+import type { ID, ChainId, AccountId } from '@shared/core';
 
-export type Subscription = Record<ChainId, SubPayload | undefined>;
-
-export type SubPayload = {
-  [walletId: ID]: {
-    accounts: AccountId[];
-    unsubFn: [VoidFn, VoidFn];
-  };
+export type Subscriptions = {
+  [chainId: ChainId]: { [walletId: ID]: [VoidFn, VoidFn] } | undefined;
 };
 
 export type SubAccounts = {
-  [walletId: ID]: AccountId[];
+  [chainId: ChainId]: {
+    [walletId: ID]: AccountId[];
+  };
 };

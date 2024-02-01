@@ -8,7 +8,7 @@ import { networkModel, networkUtils } from '@entities/network';
 import { balanceModel } from '@entities/balance';
 import { storageService } from '@shared/api/storage';
 import { balanceSubUtils } from '../lib/balance-sub-utils';
-import { SubAccounts, Subscription } from '../lib/types';
+import { Subscriptions, SubAccounts } from '../lib/types';
 import { SUBSCRIPTION_DELAY } from '../lib/constants';
 
 const balancesSubStarted = createEvent();
@@ -18,7 +18,7 @@ const walletToSubSet = createEvent<Wallet>();
 const chainsUnsubscribed = createEvent<ChainId[]>();
 const chainsSubscribed = createEvent<ChainId[]>();
 
-const $subscriptions = createStore<Subscription>({});
+const $subscriptions = createStore<Subscriptions>({});
 const $subAccounts = createStore<SubAccounts>({});
 const $previousWallet = previous(walletModel.$activeWallet);
 
@@ -28,18 +28,18 @@ const populateBalancesFx = createEffect((accountIds: AccountId[]): Promise<Balan
 
 type UnsubParams = {
   chainIds: ChainId[];
-  subscriptions: Subscription;
+  subscriptions: Subscriptions;
 };
-const unsubscribeFromChainsFx = createEffect(({ chainIds, subscriptions }: UnsubParams): Subscription => {
+const unsubscribeFromChainsFx = createEffect(({ chainIds, subscriptions }: UnsubParams): Subscriptions => {
   console.log('=== UNSUB');
 
-  return chainIds.reduce<Subscription>((acc, chainId) => {
+  return chainIds.reduce<Subscriptions>((acc, chainId) => {
     const chainSubscription = acc[chainId];
     if (!chainSubscription) return acc;
 
-    Object.values(chainSubscription).forEach((sub) => {
-      sub.unsubFn[0]();
-      sub.unsubFn[1]();
+    Object.values(chainSubscription).forEach((unsubFn) => {
+      unsubFn[0]();
+      unsubFn[1]();
     });
 
     acc[chainId] = undefined;
@@ -50,43 +50,47 @@ const unsubscribeFromChainsFx = createEffect(({ chainIds, subscriptions }: Unsub
 
 type SubParams = {
   apis: Record<ChainId, ApiPromise>;
-  chains: Record<ChainId, Chain>;
-  chainIds: ChainId[];
+  chains: Chain[];
+  // chainIds: ChainId[];
   subAccounts: SubAccounts;
-  subscriptions: Subscription;
+  subscriptions: Subscriptions;
 };
-const subscribeToChainsFx = createEffect(
-  ({ apis, chains, chainIds, subAccounts, subscriptions }: SubParams): Subscription => {
-    console.log('=== SUB');
-    // const boundUpdate = scopeBind(balanceModel.events.balancesUpdated);
-    //
-    // const x = chainIds.map((chainId) => {});
-    //
-    // const x = Object.entries(subAccounts).map(([walletName, account]) => {});
-    //
-    // balanceService.subscribeBalances(api, chain, accs, boundUpdate);
-    // balanceService.subscribeLockBalances(api, chain, accs, boundUpdate);
-    //
-    // return chainIds.reduce<Subscription>((acc, chainId) => {
-    //   const chainSubscription = subscriptions[chainId];
-    //   if (!chainSubscription) return acc;
-    //
-    //   acc[chainId] = {
-    //     a: {
-    //       accounts: [],
-    //       unsubFn: [],
-    //     },
-    //   };
+const subscribeToChainsFx = createEffect(({ apis, chains, subAccounts, subscriptions }: SubParams): Subscriptions => {
+  console.log('=== SUB');
 
-    //   Object.values(chainSubscription).forEach((sub) => {
-    //     sub.unsubFn[0]();
-    //     sub.unsubFn[1]();
-    //   });
-    //
-    //   return acc;
-    // }, subscriptions);
-  },
-);
+  // const newSubscriptions: Record<ChainId, UnsubMap> = {};
+
+  // const x = chains.reduce((acc, chain) => {}, []);
+
+  return { ...subscriptions };
+  // const boundUpdate = scopeBind(balanceModel.events.balancesUpdated);
+  //
+  // const x = chainIds.map((chainId) => {});
+  //
+  // const x = Object.entries(subAccounts).map(([walletName, account]) => {});
+  //
+  // balanceService.subscribeBalances(api, chain, accs, boundUpdate);
+  // balanceService.subscribeLockBalances(api, chain, accs, boundUpdate);
+  //
+  // return chainIds.reduce<Subscription>((acc, chainId) => {
+  //   const chainSubscription = subscriptions[chainId];
+  //   if (!chainSubscription) return acc;
+  //
+  //   acc[chainId] = {
+  //     a: {
+  //       accounts: [],
+  //       unsubFn: [],
+  //     },
+  //   };
+
+  //   Object.values(chainSubscription).forEach((sub) => {
+  //     sub.unsubFn[0]();
+  //     sub.unsubFn[1]();
+  //   });
+  //
+  //   return acc;
+  // }, subscriptions);
+});
 
 // TODO: might not work for $previousWallet
 // TODO: run unsub for concrete wallet + all chains
@@ -95,9 +99,12 @@ sample({
   source: $subAccounts,
   filter: (_, wallet) => Boolean(wallet),
   fn: (subAccounts, wallet) => {
-    const { [wallet!.id]: _, ...rest } = subAccounts;
+    return Object.entries(subAccounts).reduce<SubAccounts>((acc, [chainId, walletMap]) => {
+      const { [wallet!.id]: _, ...rest } = walletMap;
+      acc[chainId as ChainId] = rest;
 
-    return rest;
+      return acc;
+    }, {});
   },
   target: $subAccounts,
 });
@@ -115,17 +122,36 @@ sample({
     const walletAccounts = accountUtils.getWalletAccounts(wallet!.id, accounts);
     const accountsToSub = balanceSubUtils.getAccountsToSubscribe(wallet!, walletAccounts);
 
-    return {
-      ...subAccounts,
-      [wallet!.id]: accountsToSub.map((a) => a.accountId),
-    };
+    return balanceSubUtils.addNewAccounts(subAccounts, accountsToSub);
   },
   target: $subAccounts,
 });
 
+/*
+ *
+ * subs: {
+ *  [chainId]: {
+ *    [walletId]: [unsub, unsub],
+ *  }
+ * }
+ *
+ * subs: {
+ *  [chainId]: {
+ *    [walletId]: [acc_id1, acc_id2],
+ *  }
+ * }
+ *
+ */
+
 sample({
   clock: $subAccounts,
-  fn: (subAccounts) => Object.values(subAccounts).flat(),
+  fn: (subAccounts) => {
+    return Object.values(subAccounts).reduce<AccountId[]>((acc, walletMap) => {
+      acc.push(...Object.values(walletMap).flat());
+
+      return acc;
+    }, []);
+  },
   target: populateBalancesFx,
 });
 
@@ -191,22 +217,18 @@ sample({
     subAccounts: $subAccounts,
     subscriptions: $subscriptions,
   },
-  fn: (params, chainIds) => {
+  fn: ({ subAccounts, subscriptions, ...params }, chainIds) => {
     const { apis, chains } = chainIds.reduce(
       (acc, chainId) => {
-        if (params.apis[chainId]) {
-          acc.apis[chainId] = params.apis[chainId];
-        }
-        if (params.chains[chainId]) {
-          acc.chains[chainId] = params.chains[chainId];
-        }
+        acc.apis[chainId] = params.apis[chainId];
+        acc.chains.push(params.chains[chainId]);
 
         return acc;
       },
-      { apis: {} as Record<ChainId, ApiPromise>, chains: {} as Record<ChainId, Chain> },
+      { apis: {} as Record<ChainId, ApiPromise>, chains: [] as Chain[] },
     );
 
-    return { ...params, chainIds };
+    return { apis, chains, subAccounts, subscriptions };
   },
   target: subscribeToChainsFx,
 });
