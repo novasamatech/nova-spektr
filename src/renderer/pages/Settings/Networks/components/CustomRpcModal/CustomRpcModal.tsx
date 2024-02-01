@@ -8,7 +8,7 @@ import { validateWsAddress } from '@shared/lib/utils';
 import { OperationTitle } from '@entities/chain';
 import type { RpcNode } from '@shared/core';
 import { networkService, RpcValidation } from '@shared/api/network';
-import { selectorModel } from '../../model/selector-model';
+import { manageNetworkModel } from '../../model/manage-network-model';
 
 const MODAL_ANIMATION = 300;
 
@@ -123,13 +123,13 @@ export const CustomRpcModal = ({ network, node, isOpen, onClose }: Props) => {
 
   const saveRpcNode = async (formData: CustomRpcForm): Promise<void> => {
     if (node) {
-      selectorModel.events.rpcNodeUpdated({
+      manageNetworkModel.events.rpcNodeUpdated({
         chainId: network.chainId,
         oldNode: node,
         rpcNode: formData,
       });
     } else {
-      selectorModel.events.rpcNodeAdded({
+      manageNetworkModel.events.rpcNodeAdded({
         chainId: network.chainId,
         rpcNode: formData,
       });

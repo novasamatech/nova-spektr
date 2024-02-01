@@ -14,7 +14,7 @@ import type { RpcNode, ChainId } from '@shared/core';
 import { ConnectionType } from '@shared/core';
 import { networkModel, ExtendedChain, networkUtils } from '@entities/network';
 import { chainsService } from '@shared/api/network';
-import { selectorModel } from './model/selector-model';
+import { manageNetworkModel } from './model/manage-network-model';
 
 const MAX_LIGHT_CLIENTS = 3;
 
@@ -112,7 +112,7 @@ export const Networks = () => {
       if (!proceed) return;
 
       try {
-        selectorModel.events.rpcNodeRemoved({ chainId, rpcNode: node });
+        manageNetworkModel.events.rpcNodeRemoved({ chainId, rpcNode: node });
       } catch (error) {
         console.warn(error);
       }
@@ -129,7 +129,7 @@ export const Networks = () => {
       }
       if (!proceed) return;
 
-      selectorModel.events.chainDisabled(connection.chainId);
+      manageNetworkModel.events.chainDisabled(connection.chainId);
     };
   };
 
@@ -153,15 +153,15 @@ export const Networks = () => {
         // Let unsubscribe from previous Provider, microtask first - macrotask second
         if (type === ConnectionType.LIGHT_CLIENT) {
           setTimeout(() => {
-            selectorModel.events.lightClientSelected(chainId);
+            manageNetworkModel.events.lightClientSelected(chainId);
           });
         } else if (type === ConnectionType.AUTO_BALANCE) {
           setTimeout(() => {
-            selectorModel.events.autoBalanceSelected(chainId);
+            manageNetworkModel.events.autoBalanceSelected(chainId);
           });
         } else if (node) {
           setTimeout(() => {
-            selectorModel.events.rpcNodeSelected({ chainId, node });
+            manageNetworkModel.events.rpcNodeSelected({ chainId, node });
           });
         }
       } catch (error) {
@@ -181,9 +181,9 @@ export const Networks = () => {
     toggleCustomRpc();
 
     if (node && network && network.connection.activeNode === nodeToEdit) {
-      selectorModel.events.rpcNodeUpdated({ chainId: network.chainId, oldNode: nodeToEdit, rpcNode: node });
+      manageNetworkModel.events.rpcNodeUpdated({ chainId: network.chainId, oldNode: nodeToEdit, rpcNode: node });
     } else if (node && network) {
-      selectorModel.events.rpcNodeAdded({ chainId: network.chainId, rpcNode: node });
+      manageNetworkModel.events.rpcNodeAdded({ chainId: network.chainId, rpcNode: node });
     }
 
     setTimeout(() => {

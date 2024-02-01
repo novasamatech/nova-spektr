@@ -1,11 +1,11 @@
 import { fork, allSettled } from 'effector';
 
 import { networkModel } from '@entities/network';
-import { selectorModel } from '../selector-model';
+import { manageNetworkModel } from '../manage-network-model';
 import { ConnectionType, Connection, RpcNode } from '@shared/core';
 import { storageService } from '@shared/api/storage';
 
-describe('pages/Settings/Networks/model/selector-model', () => {
+describe('pages/Settings/Networks/model/manage-network-model', () => {
   const getMockConnection = (type: ConnectionType, activeNode?: RpcNode): Connection => ({
     id: 1,
     chainId: '0x01',
@@ -29,7 +29,7 @@ describe('pages/Settings/Networks/model/selector-model', () => {
       values: new Map().set(networkModel.$connections, { '0x01': mockConnection }),
     });
 
-    await allSettled(selectorModel.events.chainDisabled, { scope, params: mockConnection.chainId });
+    await allSettled(manageNetworkModel.events.chainDisabled, { scope, params: mockConnection.chainId });
 
     expect(scope.getState(networkModel.$connections)).toEqual({
       '0x01': { ...mockConnection, connectionType: ConnectionType.DISABLED },
@@ -44,7 +44,7 @@ describe('pages/Settings/Networks/model/selector-model', () => {
       values: new Map().set(networkModel.$connections, { '0x01': mockConnection }),
     });
 
-    await allSettled(selectorModel.events.lightClientSelected, { scope, params: mockConnection.chainId });
+    await allSettled(manageNetworkModel.events.lightClientSelected, { scope, params: mockConnection.chainId });
 
     expect(scope.getState(networkModel.$connections)).toEqual({
       '0x01': { ...mockConnection, connectionType: ConnectionType.LIGHT_CLIENT, activeNode: undefined },
@@ -60,7 +60,7 @@ describe('pages/Settings/Networks/model/selector-model', () => {
     });
     const node: RpcNode = { name: 'New single node', url: 'ws://127.0.0.1:9944' };
 
-    await allSettled(selectorModel.events.rpcNodeSelected, {
+    await allSettled(manageNetworkModel.events.rpcNodeSelected, {
       scope,
       params: { chainId: mockConnection.chainId, node },
     });

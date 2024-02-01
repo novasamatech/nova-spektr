@@ -62,16 +62,6 @@ const getDefaultStatusesFx = createEffect((chains: Record<ChainId, Chain>): Reco
   }, {});
 });
 
-// const createConnectionFx = createEffect((connection: Omit<Connection, 'id'>): Promise<Connection | undefined> => {
-//   return storageService.connections.create(connection);
-// });
-
-// const deleteConnectionFx = createEffect(async (connectionId: number): Promise<number> => {
-//   await storageService.connections.delete(connectionId);
-//
-//   return connectionId;
-// });
-
 type MetadataSubResult = {
   chainId: ChainId;
   unsubscribe: VoidFn;

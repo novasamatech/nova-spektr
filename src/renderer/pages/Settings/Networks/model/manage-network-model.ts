@@ -202,7 +202,7 @@ delay({
   target: networkModel.events.chainConnected,
 });
 
-export const selectorModel = {
+export const manageNetworkModel = {
   events: {
     lightClientSelected,
     autoBalanceSelected,
