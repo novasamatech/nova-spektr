@@ -1,6 +1,4 @@
-import { TFunction } from 'react-i18next';
-
-import { toAddress } from '@shared/lib/utils';
+import { splitCamelCaseString, toAddress } from '@shared/lib/utils';
 import { ProxyAccount, ProxyType, AccountId, NoID, ProxyGroup, Wallet, Account, ProxyDeposits } from '@shared/core';
 
 export const proxyUtils = {
@@ -124,9 +122,7 @@ const ProxyTypeName: Record<ProxyType, string> = {
   [ProxyType.NOMINATION_POOLS]: 'proxy.names.nominationPools',
 };
 
-function getProxyTypeName(proxyType: ProxyType | string, t: TFunction) {
+function getProxyTypeName(proxyType: ProxyType | string): string {
   // if proxy type is not in ProxyTypeName enum split camel case string and add spaces
-  return ProxyTypeName[proxyType as ProxyType]
-    ? t(ProxyTypeName[proxyType as ProxyType])
-    : proxyType.replace(/([a-zA-Z])(?=[A-Z])/g, '$1 ');
+  return ProxyTypeName[proxyType as ProxyType] || splitCamelCaseString(proxyType as string);
 }

@@ -7,8 +7,7 @@ import { useI18n } from '@app/providers';
 import { SignButton } from '@entities/operation/ui/SignButton';
 import { Account, ProxyAccount, Wallet } from '@shared/core';
 import { AddressWithExplorers, WalletIcon } from '@entities/wallet';
-import { ProxyTypeName } from '@entities/proxy';
-import { splitCamelCaseString } from "@shared/lib/utils";
+import { proxyUtils } from '@entities/proxy';
 
 type Props = {
   transaction: Transaction;
@@ -65,9 +64,7 @@ export const Confirmation = ({
         <hr className="border-filter-border w-full pr-2" />
 
         <DetailRow label={t('proxy.details.revokeAccessType')} className="pr-2">
-          <FootnoteText>
-            {t(ProxyTypeName[proxyAccount.proxyType]) || splitCamelCaseString(proxyAccount.proxyType)}
-          </FootnoteText>
+          <FootnoteText>{t(proxyUtils.getProxyTypeName(proxyAccount.proxyType))}</FootnoteText>
         </DetailRow>
 
         <DetailRow label={t('proxy.details.revokeFor')}>
