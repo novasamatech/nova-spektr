@@ -74,11 +74,13 @@ function initConnection(chain?: Chain, connection?: Connection) {
         return;
       }
 
-      provider.on('connected', async () => {
-        state.apis[chain.chainId] = await ApiPromise.create({ provider, throwOnConnect: true, throwOnUnknown: true });
+      provider.connect().then(() => {
+        provider!.on('connected', async () => {
+          state.apis[chain.chainId] = await ApiPromise.create({ provider, throwOnConnect: true, throwOnUnknown: true });
 
-        console.log('proxy-worker: provider connected successfully');
-        resolve(InitConnectionsResult.SUCCESS);
+          console.log('proxy-worker: provider connected successfully');
+          resolve(InitConnectionsResult.SUCCESS);
+        });
       });
     } catch (e) {
       console.log('proxy-worker: error in initConnection', e);

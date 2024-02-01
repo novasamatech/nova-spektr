@@ -4,7 +4,7 @@ import { vaultDetailsModel } from '../vault-details-model';
 import { ShardAccount, Chain, type ChainAccount, DraftAccount } from '@shared/core';
 import { walletModel } from '@entities/wallet';
 import { storageService } from '@shared/api/storage';
-import { TEST_ACCOUNT_ID } from '@shared/lib/utils';
+import { TEST_ACCOUNTS } from '@shared/lib/utils';
 
 describe('widgets/WalletDetails/model/vault-details-model', () => {
   beforeEach(() => {
@@ -54,7 +54,7 @@ describe('widgets/WalletDetails/model/vault-details-model', () => {
   test('should update $accounts on accountsCreated', async () => {
     const walletId = 1;
     const key = { id: 1, name: 'My shard' } as unknown as DraftAccount<ChainAccount>;
-    const params = { walletId, rootAccountId: TEST_ACCOUNT_ID, accounts: [key] };
+    const params = { walletId, rootAccountId: TEST_ACCOUNTS[0], accounts: [key] };
 
     jest.spyOn(storageService.accounts, 'createAll').mockResolvedValue([{ walletId, ...key } as ChainAccount]);
 

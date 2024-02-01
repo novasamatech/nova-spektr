@@ -39,6 +39,10 @@ const TransactionTitles: Record<TransactionType, string> = {
   // Technical
   [TransactionType.CHILL]: 'operations.titles.unstake',
   [TransactionType.BATCH_ALL]: 'operations.titles.unknown',
+  // Proxy
+  [TransactionType.ADD_PROXY]: '',
+  [TransactionType.REMOVE_PROXY]: '',
+  [TransactionType.PROXY]: '',
 };
 
 const TransactionTitlesModal: Record<TransactionType, (crossChain: boolean) => string> = {
@@ -73,6 +77,10 @@ const TransactionTitlesModal: Record<TransactionType, (crossChain: boolean) => s
   // Technical
   [TransactionType.CHILL]: () => 'operations.modalTitles.unstakeOn',
   [TransactionType.BATCH_ALL]: () => 'operations.modalTitles.unknownOn',
+  // Proxy
+  [TransactionType.ADD_PROXY]: () => '',
+  [TransactionType.REMOVE_PROXY]: () => '',
+  [TransactionType.PROXY]: () => '',
 };
 
 export const getTransactionTitle = (transaction?: Transaction | DecodedTransaction): string => {

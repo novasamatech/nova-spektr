@@ -88,7 +88,7 @@ describe('features/proxies/model/proxies-model', () => {
     await allSettled(proxiesModel.events.workerStarted, { scope });
     await allSettled(networkModel.$connections, {
       scope,
-      params: { '0x01': { id: 1, chainId: '0x01', connectionType: ConnectionType.AUTO_BALANCE } },
+      params: { '0x01': { id: 1, chainId: '0x01', connectionType: ConnectionType.AUTO_BALANCE, customNodes: [] } },
     });
 
     expect(scope.getState(proxyModel.$proxies)).toEqual({ '0x01': [newProxy] });
