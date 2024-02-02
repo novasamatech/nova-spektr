@@ -60,24 +60,6 @@ export const KeyForm = () => {
       ),
     },
     {
-      id: KeyType.STAKING,
-      value: KeyType.STAKING,
-      element: (
-        <FootnoteText className="text-text-secondary">
-          {t('dynamicDerivations.constructor.keyTypeStaking')}
-        </FootnoteText>
-      ),
-    },
-    {
-      id: KeyType.GOVERNANCE,
-      value: KeyType.GOVERNANCE,
-      element: (
-        <FootnoteText className="text-text-secondary">
-          {t('dynamicDerivations.constructor.keyTypeGovernance')}
-        </FootnoteText>
-      ),
-    },
-    {
       id: KeyType.CUSTOM,
       value: KeyType.CUSTOM,
       element: (
