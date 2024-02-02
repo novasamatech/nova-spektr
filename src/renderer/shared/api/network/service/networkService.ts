@@ -3,15 +3,13 @@ import { ProviderInterface } from '@polkadot/rpc-provider/types';
 import * as Sc from '@substrate/connect';
 
 import type { ChainId, HexString } from '@shared/core';
+import { getKnownChain } from '@shared/lib/utils';
 import { createCachedProvider } from '../provider/CachedProvider';
 import { ProviderType, RpcValidation, ProviderWithMetadata } from '../lib/types';
-import { getKnownChain } from '../lib/utils';
 
 export const networkService = {
   createProvider,
   createApi,
-  connect,
-  disconnect,
   validateRpcNode,
 };
 
@@ -20,7 +18,7 @@ function createApi(provider: ProviderInterface): Promise<ApiPromise> {
 }
 
 type ProviderParams = {
-  nodes: string[];
+  nodes?: string[];
   metadata?: HexString;
 };
 type ProviderListeners = {
@@ -68,28 +66,6 @@ function createWebsocketProvider({ nodes, metadata }: ProviderParams): ProviderW
   const CachedWsProvider = createCachedProvider(WsProvider, metadata);
 
   return new CachedWsProvider(nodes, 2000);
-}
-
-async function disconnect(api: ApiPromise) {
-  try {
-    await api.disconnect();
-  } catch (e) {
-    console.warn(e);
-  }
-}
-
-async function connect(provider: ProviderInterface, api: ApiPromise) {
-  try {
-    await provider.connect();
-  } catch (e) {
-    console.warn(e);
-  }
-
-  try {
-    await api.connect();
-  } catch (e) {
-    console.warn(e);
-  }
 }
 
 function validateRpcNode(chainId: ChainId, rpcUrl: string): Promise<RpcValidation> {

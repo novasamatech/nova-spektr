@@ -1,10 +1,10 @@
 import sortBy from 'lodash/sortBy';
 
-import { toAddress, dictionary } from '@shared/lib/utils';
+import { splitCamelCaseString, toAddress, dictionary } from '@shared/lib/utils';
 import type { ProxyAccount, AccountId, NoID, ProxyGroup, Wallet, Account, ProxyDeposits, ID } from '@shared/core';
 import { ProxyType } from '@shared/core';
-import { accountUtils } from '../../wallet';
 import { ProxyTypeName } from './constants';
+import { accountUtils } from '../../wallet';
 
 export const proxyUtils = {
   isSameProxy,
@@ -125,5 +125,5 @@ function createProxyGroups(
 }
 
 function getProxyTypeName(proxyType: ProxyType | string): string {
-  return ProxyTypeName[proxyType as ProxyType] || proxyType.replace(/([a-zA-Z])(?=[A-Z])/g, '$1 ');
+  return ProxyTypeName[proxyType as ProxyType] || splitCamelCaseString(proxyType as string);
 }
