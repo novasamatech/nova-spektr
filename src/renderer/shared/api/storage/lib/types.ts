@@ -67,8 +67,6 @@ export type DataStorage = {
 export type ID = string;
 type WithID<T extends Object> = { id?: ID } & T;
 
-export type ArrayValues<T extends Object> = { [K in keyof T]: T[K] | T[K][] };
-
 export type MultisigTransactionDS = WithID<MultisigTransaction>;
 export type MultisigEventDS = WithID<MultisigEvent>;
 

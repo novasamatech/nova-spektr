@@ -1,8 +1,7 @@
 import { IndexableType, Table } from 'dexie';
 
 import { dexieStorage } from './dexie';
-import type { NoID } from '@shared/core';
-import { ArrayValues } from '../lib/types';
+import type { NoID, ArrayOfKeys } from '@shared/core';
 
 // TODO: think about throwing errors instead of returning value from catch
 class StorageService<T extends { id: K }, K extends IndexableType> {
@@ -61,7 +60,7 @@ class StorageService<T extends { id: K }, K extends IndexableType> {
     }
   }
 
-  readAll(where?: Partial<ArrayValues<T>>): Promise<T[]> {
+  readAll(where?: Partial<ArrayOfKeys<T>>): Promise<T[]> {
     try {
       if (!where) {
         return this.dexieTable.toArray();
@@ -70,7 +69,10 @@ class StorageService<T extends { id: K }, K extends IndexableType> {
       const keys = Object.keys(where);
       const values = Object.values(where);
 
-      return this.dexieTable.where(keys).anyOf(values).toArray();
+      return this.dexieTable
+        .where(keys.length === 1 ? keys[0] : keys)
+        .anyOf(values)
+        .toArray();
     } catch (error) {
       console.log('Error reading collection - ', error);
 
