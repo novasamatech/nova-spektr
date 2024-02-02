@@ -1,4 +1,4 @@
-import { PropsWithChildren } from 'react';
+import { PropsWithChildren, ReactNode } from 'react';
 
 import { Account, Wallet } from '@shared/core';
 import { OperationType } from '../../common/types';
@@ -10,17 +10,10 @@ type Props = {
   accounts: Account[];
 };
 
-export const CheckPermission = ({
-  operationType,
-  wallet,
-  accounts,
-  children,
-}: PropsWithChildren<Props>): JSX.Element => {
+export const CheckPermission = ({ operationType, wallet, accounts, children }: PropsWithChildren<Props>): ReactNode => {
   const operationFn = getOperationTypeFn(operationType);
 
-  if (wallet && operationFn(wallet, accounts)) {
-    return <>{children}</>;
-  }
+  if (!wallet || !operationFn(wallet, accounts)) return null;
 
-  return <></>;
+  return children;
 };

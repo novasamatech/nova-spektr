@@ -1,4 +1,4 @@
-import { PropsWithChildren } from 'react';
+import { PropsWithChildren, ReactNode, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import { Account, Wallet } from '@shared/core';
@@ -18,16 +18,16 @@ export const CheckPermissionWithRedirect = ({
   accounts,
   children,
   redirectPath,
-}: PropsWithChildren<Props>): JSX.Element => {
+}: PropsWithChildren<Props>): ReactNode => {
   const navigate = useNavigate();
 
   const operationFn = getOperationTypeFn(operationType);
 
-  if (wallet && operationFn(wallet, accounts)) {
-    return <>{children}</>;
-  } else {
-    navigate(redirectPath);
-  }
+  useEffect(() => {
+    if (wallet && !operationFn(wallet, accounts)) {
+      navigate(redirectPath);
+    }
+  }, []);
 
-  return <></>;
+  return children;
 };

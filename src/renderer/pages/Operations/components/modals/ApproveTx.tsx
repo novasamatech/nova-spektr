@@ -77,9 +77,7 @@ const ApproveTx = ({ tx, account, connection }: Props) => {
   const asset = getAssetById(tx.transaction?.args.assetId, connection.assets);
 
   const walletsMap = dictionary(wallets, 'id');
-  const availableAccounts = accounts.filter((a) =>
-    permissionUtils.isApproveMultisigTxAvailable(walletsMap[a.walletId], [a]),
-  );
+  const availableAccounts = accounts.filter((a) => permissionUtils.canApproveMultisigTx(walletsMap[a.walletId], [a]));
 
   const unsignedAccounts = getSignatoryAccounts(availableAccounts, wallets, events, account.signatories, tx.chainId);
 

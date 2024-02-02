@@ -1,7 +1,7 @@
 import { u8aToHex } from '@polkadot/util';
 import { createKeyMulti } from '@polkadot/util-crypto';
 
-import { AccountType } from '@shared/core';
+import { AccountType, ProxyType } from '@shared/core';
 import type {
   ID,
   AccountId,
@@ -31,6 +31,9 @@ export const accountUtils = {
   getWalletAccounts,
   getBaseAccount,
   getDerivationPath,
+  isAnyProxyType,
+  isNonTransferProxyType,
+  isStakingProxyType,
 };
 
 function getMultisigAccountId(ids: AccountId[], threshold: Threshold): AccountId {
@@ -133,4 +136,16 @@ function getDerivationPath(data: DerivationPathLike | DerivationPathLike[]): str
   if (!Array.isArray(data)) return data.derivationPath;
 
   return data[0].derivationPath.replace(/\d+$/, `0..${data.length - 1}`);
+}
+
+function isAnyProxyType({ proxyType }: ProxiedAccount): boolean {
+  return proxyType === ProxyType.ANY;
+}
+
+function isNonTransferProxyType({ proxyType }: ProxiedAccount): boolean {
+  return proxyType === ProxyType.NON_TRANSFER;
+}
+
+function isStakingProxyType({ proxyType }: ProxiedAccount): boolean {
+  return proxyType === ProxyType.STAKING;
 }

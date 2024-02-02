@@ -4,14 +4,14 @@ import { OperationType } from './types';
 
 export function getOperationTypeFn(operationType: OperationType): (wallet: Wallet, accounts: Account[]) => boolean {
   return {
-    [OperationType.TRANSFER]: permissionUtils.isTransferAvailable,
-    [OperationType.RECEIVE]: permissionUtils.isReceiveAvailable,
-    [OperationType.STAKING]: permissionUtils.isStakingAvailable,
-    [OperationType.CREATE_MULTISIG_TX]: permissionUtils.isCreateMultisigTxAvailable,
-    [OperationType.APPROVE_MULTISIG_TX]: permissionUtils.isApproveMultisigTxAvailable,
-    [OperationType.REJECT_MULTISIG_TX]: permissionUtils.isRejectMultisigTxAvailable,
-    [OperationType.CREATE_ANY_PROXY]: permissionUtils.isCreateAnyProxyAvailable,
-    [OperationType.CREATE_NON_ANY_PROXY]: permissionUtils.isCreateNonAnyProxyAvailable,
-    [OperationType.REMOV_PROXY]: permissionUtils.isRemoveProxyAvailable,
+    [OperationType.TRANSFER]: permissionUtils.canTransfer,
+    [OperationType.RECEIVE]: permissionUtils.canReceive,
+    [OperationType.STAKING]: permissionUtils.canStake,
+    [OperationType.CREATE_MULTISIG_TX]: permissionUtils.canCreateMultisigTx,
+    [OperationType.APPROVE_MULTISIG_TX]: permissionUtils.canApproveMultisigTx,
+    [OperationType.REJECT_MULTISIG_TX]: permissionUtils.canRejectMultisigTx,
+    [OperationType.CREATE_ANY_PROXY]: permissionUtils.canCreateAnyProxy,
+    [OperationType.CREATE_NON_ANY_PROXY]: permissionUtils.canCreateNonAnyProxy,
+    [OperationType.REMOV_PROXY]: permissionUtils.canRemoveProxy,
   }[operationType];
 }

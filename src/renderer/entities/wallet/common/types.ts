@@ -1,4 +1,4 @@
-export enum OperationType {
+export const enum OperationType {
   TRANSFER = 'transfer',
   RECEIVE = 'receive',
   STAKING = 'staking',

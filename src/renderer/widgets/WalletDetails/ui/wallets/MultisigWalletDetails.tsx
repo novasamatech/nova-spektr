@@ -5,15 +5,7 @@ import { MultisigAccount, Signatory, Wallet, AccountId } from '@shared/core';
 import { BaseModal, FootnoteText, Tabs, HelpText, DropdownIconButton } from '@shared/ui';
 import { RootExplorers } from '@shared/lib/utils';
 import { useModalClose, useToggle } from '@shared/lib/hooks';
-import {
-  AccountsList,
-  ContactItem,
-  ExplorersPopover,
-  WalletCardLg,
-  WalletCardMd,
-  permissionUtils,
-  walletModel,
-} from '@entities/wallet';
+import { AccountsList, ContactItem, ExplorersPopover, WalletCardLg, WalletCardMd } from '@entities/wallet';
 import { useI18n, useMatrix } from '@app/providers';
 // TODO: think about combining balances and wallets
 import { WalletFiatBalance } from '@features/wallets/WalletSelect/ui/WalletFiatBalance';
@@ -38,8 +30,7 @@ export const MultisigWalletDetails = ({ wallet, account, signatoryWallets, signa
 
   const chains = useUnit(networkModel.$chains);
   const hasProxies = useUnit(walletProviderModel.$hasProxies);
-  const activeWallet = useUnit(walletModel.$activeWallet);
-  const activeAccounts = useUnit(walletModel.$activeAccounts);
+  const canCreateProxy = useUnit(walletProviderModel.$canCreateProxy);
 
   const [isModalOpen, closeModal] = useModalClose(true, onClose);
   const [isRenameModalOpen, toggleIsRenameModalOpen] = useToggle();
@@ -73,11 +64,6 @@ export const MultisigWalletDetails = ({ wallet, account, signatoryWallets, signa
       </DropdownIconButton.Items>
     </DropdownIconButton>
   );
-
-  const canCreateProxy =
-    activeWallet &&
-    (permissionUtils.isCreateAnyProxyAvailable(activeWallet, activeAccounts) ||
-      permissionUtils.isCreateNonAnyProxyAvailable(activeWallet, activeAccounts));
 
   return (
     <BaseModal

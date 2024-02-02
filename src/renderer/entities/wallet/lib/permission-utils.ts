@@ -1,54 +1,51 @@
-import { Account, ProxiedAccount, Wallet } from '@shared/core';
+import { Account, Wallet } from '@shared/core';
 import { walletUtils } from './wallet-utils';
+import { accountUtils } from './account-utils';
 
 export const permissionUtils = {
-  isTransferAvailable,
-  isReceiveAvailable,
-  isStakingAvailable,
-  isCreateMultisigTxAvailable,
-  isApproveMultisigTxAvailable,
-  isRejectMultisigTxAvailable,
-  isCreateAnyProxyAvailable,
-  isCreateNonAnyProxyAvailable,
-  isRemoveProxyAvailable,
+  canTransfer,
+  canReceive,
+  canStake,
+  canCreateMultisigTx,
+  canApproveMultisigTx,
+  canRejectMultisigTx,
+  canCreateAnyProxy,
+  canCreateNonAnyProxy,
+  canRemoveProxy,
 };
 
-function isTransferAvailable(wallet: Wallet, accounts: Account[]): boolean {
+function canTransfer(wallet: Wallet, accounts: Account[]): boolean {
   if (walletUtils.isWatchOnly(wallet)) {
     return false;
   }
 
-  if (walletUtils.isProxied(wallet)) {
-    const account = accounts[0] as ProxiedAccount;
-
-    return walletUtils.isAnyProxyType(account);
+  if (walletUtils.isProxied(wallet) && accountUtils.isProxiedAccount(accounts[0])) {
+    return accountUtils.isAnyProxyType(accounts[0]);
   }
 
   return true;
 }
 
-function isReceiveAvailable(wallet: Wallet, accounts: Account[]): boolean {
+function canReceive(wallet: Wallet, accounts: Account[]): boolean {
   return !walletUtils.isWatchOnly(wallet);
 }
 
-function isStakingAvailable(wallet: Wallet, accounts: Account[]): boolean {
+function canStake(wallet: Wallet, accounts: Account[]): boolean {
   if (walletUtils.isWatchOnly(wallet)) {
     return false;
   }
 
-  if (walletUtils.isProxied(wallet)) {
-    const account = accounts[0] as ProxiedAccount;
-
+  if (walletUtils.isProxied(wallet) && accountUtils.isProxiedAccount(accounts[0])) {
     return (
-      walletUtils.isAnyProxyType(account) ||
-      walletUtils.isStakingProxyType(account) ||
-      walletUtils.isNonTransferProxyType(account)
+      accountUtils.isAnyProxyType(accounts[0]) ||
+      accountUtils.isStakingProxyType(accounts[0]) ||
+      accountUtils.isNonTransferProxyType(accounts[0])
     );
   }
 
   return true;
 }
-function isCreateMultisigTxAvailable(wallet: Wallet, accounts: Account[]): boolean {
+function canCreateMultisigTx(wallet: Wallet, accounts: Account[]): boolean {
   if (walletUtils.isWatchOnly(wallet)) {
     return false;
   }
@@ -57,15 +54,13 @@ function isCreateMultisigTxAvailable(wallet: Wallet, accounts: Account[]): boole
     return false;
   }
 
-  if (walletUtils.isProxied(wallet)) {
-    const account = accounts[0] as ProxiedAccount;
-
-    return walletUtils.isAnyProxyType(account) || walletUtils.isNonTransferProxyType(account);
+  if (walletUtils.isProxied(wallet) && accountUtils.isProxiedAccount(accounts[0])) {
+    return accountUtils.isAnyProxyType(accounts[0]) || accountUtils.isNonTransferProxyType(accounts[0]);
   }
 
   return true;
 }
-function isApproveMultisigTxAvailable(wallet: Wallet, accounts: Account[]): boolean {
+function canApproveMultisigTx(wallet: Wallet, accounts: Account[]): boolean {
   if (walletUtils.isWatchOnly(wallet)) {
     return false;
   }
@@ -74,15 +69,13 @@ function isApproveMultisigTxAvailable(wallet: Wallet, accounts: Account[]): bool
     return false;
   }
 
-  if (walletUtils.isProxied(wallet)) {
-    const account = accounts[0] as ProxiedAccount;
-
-    return walletUtils.isAnyProxyType(account) || walletUtils.isNonTransferProxyType(account);
+  if (walletUtils.isProxied(wallet) && accountUtils.isProxiedAccount(accounts[0])) {
+    return accountUtils.isAnyProxyType(accounts[0]) || accountUtils.isNonTransferProxyType(accounts[0]);
   }
 
   return true;
 }
-function isRejectMultisigTxAvailable(wallet: Wallet, accounts: Account[]): boolean {
+function canRejectMultisigTx(wallet: Wallet, accounts: Account[]): boolean {
   if (walletUtils.isWatchOnly(wallet)) {
     return false;
   }
@@ -91,52 +84,44 @@ function isRejectMultisigTxAvailable(wallet: Wallet, accounts: Account[]): boole
     return false;
   }
 
-  if (walletUtils.isProxied(wallet)) {
-    const account = accounts[0] as ProxiedAccount;
-
-    return walletUtils.isAnyProxyType(account) || walletUtils.isNonTransferProxyType(account);
+  if (walletUtils.isProxied(wallet) && accountUtils.isProxiedAccount(accounts[0])) {
+    return accountUtils.isAnyProxyType(accounts[0]) || accountUtils.isNonTransferProxyType(accounts[0]);
   }
 
   return true;
 }
 
-function isCreateAnyProxyAvailable(wallet: Wallet, accounts: Account[]): boolean {
+function canCreateAnyProxy(wallet: Wallet, accounts: Account[]): boolean {
   if (walletUtils.isWatchOnly(wallet)) {
     return false;
   }
 
-  if (walletUtils.isProxied(wallet)) {
-    const account = accounts[0] as ProxiedAccount;
-
-    return walletUtils.isAnyProxyType(account);
+  if (walletUtils.isProxied(wallet) && accountUtils.isProxiedAccount(accounts[0])) {
+    return accountUtils.isAnyProxyType(accounts[0]);
   }
 
   return true;
 }
 
-function isCreateNonAnyProxyAvailable(wallet: Wallet, accounts: Account[]): boolean {
+function canCreateNonAnyProxy(wallet: Wallet, accounts: Account[]): boolean {
   if (walletUtils.isWatchOnly(wallet)) {
     return false;
   }
 
-  if (walletUtils.isProxied(wallet)) {
-    const account = accounts[0] as ProxiedAccount;
-
-    return walletUtils.isAnyProxyType(account) || walletUtils.isNonTransferProxyType(account);
+  if (walletUtils.isProxied(wallet) && accountUtils.isProxiedAccount(accounts[0])) {
+    return accountUtils.isAnyProxyType(accounts[0]) || accountUtils.isNonTransferProxyType(accounts[0]);
   }
 
   return true;
 }
 
-function isRemoveProxyAvailable(wallet: Wallet, accounts: Account[]): boolean {
+function canRemoveProxy(wallet: Wallet, accounts: Account[]): boolean {
   if (walletUtils.isWatchOnly(wallet)) {
     return false;
   }
 
-  if (walletUtils.isProxied(wallet)) {
-    const account = accounts[0] as ProxiedAccount;
-
-    return walletUtils.isAnyProxyType(account) || walletUtils.isNonTransferProxyType(account);
+  if (walletUtils.isProxied(wallet) && accountUtils.isProxiedAccount(accounts[0])) {
+    return accountUtils.isAnyProxyType(accounts[0]) || accountUtils.isNonTransferProxyType(accounts[0]);
   }
 
   return true;

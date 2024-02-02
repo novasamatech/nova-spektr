@@ -6,7 +6,7 @@ import { networkModel } from '@entities/network';
 import { useModalClose, useToggle } from '@shared/lib/hooks';
 import { IconNames } from '@shared/ui/Icon/data';
 import { BaseModal, DropdownIconButton, FootnoteText, Icon, Tabs } from '@shared/ui';
-import { AccountsList, WalletCardLg, WalletIcon, permissionUtils, walletModel } from '@entities/wallet';
+import { AccountsList, WalletCardLg, WalletIcon } from '@entities/wallet';
 import { RenameWalletModal } from '@features/wallets/RenameWallet';
 import { TabItem } from '@shared/ui/Tabs/common/types';
 import { ProxiesList } from '../components/ProxiesList';
@@ -36,16 +36,10 @@ export const ProxiedWalletDetails = ({ wallet, proxyWallet, proxiedAccount, onCl
 
   const chains = useUnit(networkModel.$chains);
   const hasProxies = useUnit(walletProviderModel.$hasProxies);
-  const activeWallet = useUnit(walletModel.$activeWallet);
-  const activeAccounts = useUnit(walletModel.$activeAccounts);
+  const canCreateProxy = useUnit(walletProviderModel.$canCreateProxy);
 
   const [isModalOpen, closeModal] = useModalClose(true, onClose);
   const [isRenameModalOpen, toggleIsRenameModalOpen] = useToggle();
-
-  const canCreateProxy =
-    activeWallet &&
-    (permissionUtils.isCreateAnyProxyAvailable(activeWallet, activeAccounts) ||
-      permissionUtils.isCreateNonAnyProxyAvailable(activeWallet, activeAccounts));
 
   const Options = [
     {

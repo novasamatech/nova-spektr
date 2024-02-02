@@ -38,7 +38,7 @@ export const MultisigOperationHeader = ({
   useEffect(() => {
     const signerOptions = wallets.reduce<DropdownOption<Account>[]>((acc, wallet) => {
       const walletAccounts = accountUtils.getWalletAccounts(wallet.id, accounts);
-      const isAvailable = permissionUtils.isCreateMultisigTxAvailable(wallet, walletAccounts);
+      const isAvailable = permissionUtils.canCreateMultisigTx(wallet, walletAccounts);
 
       const signer = walletAccounts.find(
         (a) => signatoryIds.includes(a.accountId) && accountUtils.isChainIdMatch(a, chainId),

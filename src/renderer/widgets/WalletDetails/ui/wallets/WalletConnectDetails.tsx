@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { useUnit } from 'effector-react';
 
 import { useModalClose, useToggle } from '@shared/lib/hooks';
-import { WalletCardLg, permissionUtils, walletModel } from '@entities/wallet';
+import { WalletCardLg } from '@entities/wallet';
 import { useI18n } from '@app/providers';
 import { chainsService } from '@shared/api/network';
 import { walletConnectUtils } from '@entities/walletConnect';
@@ -40,8 +40,7 @@ export const WalletConnectDetails = ({ wallet, accounts, onClose }: Props) => {
   const hasProxies = useUnit(walletProviderModel.$hasProxies);
   const forgetStep = useUnit(wcDetailsModel.$forgetStep);
   const reconnectStep = useUnit(wcDetailsModel.$reconnectStep);
-  const activeWallet = useUnit(walletModel.$activeWallet);
-  const activeAccounts = useUnit(walletModel.$activeAccounts);
+  const canCreateProxy = useUnit(walletProviderModel.$canCreateProxy);
 
   const [isModalOpen, closeModal] = useModalClose(true, onClose);
   const [isConfirmForgetOpen, toggleConfirmForget] = useToggle();
@@ -63,11 +62,6 @@ export const WalletConnectDetails = ({ wallet, accounts, onClose }: Props) => {
     wcDetailsModel.events.forgetButtonClicked(wallet);
     toggleConfirmForget();
   };
-
-  const canCreateProxy =
-    activeWallet &&
-    (permissionUtils.isCreateAnyProxyAvailable(activeWallet, activeAccounts) ||
-      permissionUtils.isCreateNonAnyProxyAvailable(activeWallet, activeAccounts));
 
   const Options = [
     {

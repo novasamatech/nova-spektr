@@ -57,8 +57,7 @@ const OperationFullInfo = ({ tx, account }: Props) => {
     });
   };
 
-  const isRejectAvailable =
-    account && permissionUtils.isRejectMultisigTxAvailable(walletsMap[account.walletId], [account]);
+  const isRejectAvailable = account && permissionUtils.canRejectMultisigTx(walletsMap[account.walletId], [account]);
 
   return (
     <div className="flex flex-1">
