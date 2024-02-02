@@ -20,7 +20,7 @@ export const WalletDetailsProvider = () => {
   const contacts = useUnit(walletProviderModel.$signatoryContacts);
   const vaultAccounts = useUnit(walletProviderModel.$vaultAccounts);
   const signatoryWallets = useUnit(walletProviderModel.$signatoryWallets);
-  const proxyWalletForProxied = useUnit(walletProviderModel.$proxyWalletForProxied);
+  const proxyWallet = useUnit(walletProviderModel.$proxyWallet);
 
   if (!wallet) return null;
 
@@ -73,11 +73,11 @@ export const WalletDetailsProvider = () => {
     );
   }
 
-  if (walletUtils.isProxied(wallet) && proxyWalletForProxied) {
+  if (walletUtils.isProxied(wallet) && proxyWallet) {
     return (
       <ProxiedWalletDetails
         wallet={wallet}
-        proxyWallet={proxyWalletForProxied}
+        proxyWallet={proxyWallet}
         proxiedAccount={accounts[0] as ProxiedAccount}
         onClose={walletSelectModel.events.walletIdCleared}
       />

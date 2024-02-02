@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { groupBy } from 'lodash';
+import groupBy from 'lodash/groupBy';
 import { format } from 'date-fns';
 import { useUnit } from 'effector-react';
 

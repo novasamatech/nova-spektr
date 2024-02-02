@@ -4,7 +4,7 @@ import { cnTw, toAddress, toShortAddress } from '@shared/lib/utils';
 import { BodyText, HelpText, Identicon, Truncate } from '@shared/ui';
 import { AccountId, ProxyType } from '@shared/core';
 import { useI18n } from '@app/providers';
-import { proxyUtils } from '@entities/proxy';
+import { proxyUtils } from '../../lib/proxy-utils';
 
 type Props = {
   className?: string;
@@ -46,7 +46,6 @@ export const ProxyAccount = ({
         {name && <HelpText className="text-text-tertiary truncate">{addressContent}</HelpText>}
         <div className="flex gap-x-1 items-center mt-0.5">
           <span className="w-1 h-1 rounded-full bg-tab-text-accent" />
-          {/* if proxy type is not in ProxyTypeName enum split camel case string and add spaces */}
           <HelpText className="text-tab-text-accent">{t(proxyUtils.getProxyTypeName(proxyType))}</HelpText>
         </div>
       </div>
