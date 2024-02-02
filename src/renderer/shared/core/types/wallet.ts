@@ -46,6 +46,13 @@ export const enum WalletType {
   SINGLE_PARITY_SIGNER = 'wallet_sps',
 }
 
+export type SignableWalletFamily =
+  | WalletType.POLKADOT_VAULT
+  | WalletType.WALLET_CONNECT
+  | WalletType.NOVA_WALLET
+  | WalletType.MULTISHARD_PARITY_SIGNER
+  | WalletType.SINGLE_PARITY_SIGNER;
+
 export type WalletFamily =
   | WalletType.POLKADOT_VAULT
   | WalletType.MULTISIG
