@@ -1,4 +1,5 @@
 import uniqBy from 'lodash/uniqBy';
+import mapValues from 'lodash/mapValues';
 import { combine, createEvent, createStore, sample } from 'effector';
 
 import { accountUtils, walletModel, walletUtils } from '@entities/wallet';
@@ -144,11 +145,7 @@ const $chainsProxies = combine(
       return acc;
     }, []);
 
-    const chainsMap = Object.keys(chains).reduce<Record<ChainId, ProxyAccount[]>>((acc, chainId) => {
-      acc[chainId as ChainId] = [];
-
-      return acc;
-    }, {});
+    const chainsMap = mapValues(chains, () => []) as Record<ChainId, ProxyAccount[]>;
 
     return proxyUtils.sortAccountsByProxyType(proxiesForAccounts).reduce((acc, proxy) => {
       acc[proxy.chainId].push(proxy);
