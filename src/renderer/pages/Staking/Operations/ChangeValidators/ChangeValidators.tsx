@@ -16,7 +16,7 @@ import { useNetworkData, networkUtils } from '@entities/network';
 import { OperationTitle } from '@entities/chain';
 import { Signing } from '@features/operation';
 import type { Account, ChainId, HexString, Address } from '@shared/core';
-import { walletUtils, walletModel } from '@entities/wallet';
+import { walletModel, walletUtils } from '@entities/wallet';
 import { priceProviderModel } from '@entities/price';
 import { StakingPopover } from '../components/StakingPopover/StakingPopover';
 

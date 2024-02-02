@@ -9,11 +9,10 @@ import { cnTw, KeyboardKey, totalAmount, transferableAmount } from '@shared/lib/
 import { useI18n } from '@app/providers';
 import { Paths, createLink } from '@shared/routes';
 import { ChainId, Asset, Balance } from '@shared/core';
-// TODO: Move it to another layer https://app.clickup.com/t/8692tr8x0
 import { TokenPrice } from '@entities/price/ui/TokenPrice';
 import { AssetFiatBalance } from '@entities/price/ui/AssetFiatBalance';
 import { priceProviderModel } from '@entities/price';
-import { walletModel, walletUtils } from '@entities/wallet';
+import { CheckPermission, OperationType, walletModel } from '@entities/wallet';
 
 type Props = {
   chainId: ChainId;
@@ -26,6 +25,7 @@ export const AssetCard = ({ chainId, asset, balance }: Props) => {
 
   const fiatFlag = useUnit(priceProviderModel.$fiatFlag);
   const activeWallet = useUnit(walletModel.$activeWallet);
+  const activeAccounts = useUnit(walletModel.$activeAccounts);
 
   const [isExpanded, toggleExpanded] = useToggle();
 
@@ -73,22 +73,24 @@ export const AssetCard = ({ chainId, asset, balance }: Props) => {
             </div>
           )}
         </div>
-        {!walletUtils.isWatchOnly(activeWallet) && (
-          <div className="flex gap-x-2 ml-3">
+        <div className="flex gap-x-2 ml-3">
+          <CheckPermission operationType={OperationType.TRANSFER} wallet={activeWallet} accounts={activeAccounts}>
             <Link
               to={createLink(Paths.SEND_ASSET, {}, { chainId: [chainId], assetId: [asset.assetId] })}
               onClick={(e) => e.stopPropagation()}
             >
               <Icon name="sendArrow" size={20} />
             </Link>
+          </CheckPermission>
+          <CheckPermission operationType={OperationType.RECEIVE} wallet={activeWallet} accounts={activeAccounts}>
             <Link
               to={createLink(Paths.RECEIVE_ASSET, {}, { chainId: [chainId], assetId: [asset.assetId] })}
               onClick={(e) => e.stopPropagation()}
             >
               <Icon name="receiveArrow" size={20} />
             </Link>
-          </div>
-        )}
+          </CheckPermission>
+        </div>
       </div>
 
       {isExpanded && (

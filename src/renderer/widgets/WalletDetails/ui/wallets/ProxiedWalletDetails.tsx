@@ -36,6 +36,7 @@ export const ProxiedWalletDetails = ({ wallet, proxyWallet, proxiedAccount, onCl
 
   const chains = useUnit(networkModel.$chains);
   const hasProxies = useUnit(walletProviderModel.$hasProxies);
+  const canCreateProxy = useUnit(walletProviderModel.$canCreateProxy);
 
   const [isModalOpen, closeModal] = useModalClose(true, onClose);
   const [isRenameModalOpen, toggleIsRenameModalOpen] = useToggle();
@@ -75,7 +76,11 @@ export const ProxiedWalletDetails = ({ wallet, proxyWallet, proxiedAccount, onCl
     {
       id: 'proxies',
       title: t('walletDetails.common.proxiesTabTitle'),
-      panel: hasProxies ? <ProxiesList className="h-[353px]" /> : <NoProxiesAction className="h-[353px]" />,
+      panel: hasProxies ? (
+        <ProxiesList className="h-[353px]" canCreateProxy={canCreateProxy} />
+      ) : (
+        <NoProxiesAction className="h-[353px]" canCreateProxy={canCreateProxy} />
+      ),
     },
   ];
 

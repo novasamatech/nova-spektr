@@ -2,7 +2,7 @@ import uniqBy from 'lodash/uniqBy';
 import mapValues from 'lodash/mapValues';
 import { combine, createEvent, createStore, sample } from 'effector';
 
-import { accountUtils, walletModel, walletUtils } from '@entities/wallet';
+import { accountUtils, permissionUtils, walletModel, walletUtils } from '@entities/wallet';
 import { walletSelectModel } from '@features/wallets';
 import { dictionary } from '@shared/lib/utils';
 import { walletDetailsUtils } from '../lib/utils';
@@ -66,6 +66,21 @@ const $multisigAccount = combine(
     return match && accountUtils.isMultisigAccount(match) ? match : undefined;
   },
   { skipVoid: false },
+);
+
+const $canCreateProxy = combine(
+  {
+    accounts: walletModel.$activeAccounts,
+    wallet: walletModel.$activeWallet,
+  },
+  ({ accounts, wallet }) => {
+    if (!wallet) return false;
+
+    const canCreateAnyProxy = permissionUtils.canCreateAnyProxy(wallet, accounts);
+    const canCreateNonAnyProxy = permissionUtils.canCreateNonAnyProxy(wallet, accounts);
+
+    return canCreateAnyProxy || canCreateNonAnyProxy;
+  },
 );
 
 type VaultAccounts = {
@@ -215,6 +230,7 @@ export const walletProviderModel = {
   $proxyWallet,
   $hasProxies,
   $proxyForRemoval,
+  $canCreateProxy,
   events: {
     removeProxy,
   },

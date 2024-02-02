@@ -8,7 +8,7 @@ import { createLink, type PathType } from '@shared/routes';
 import { useGraphql, useI18n } from '@app/providers';
 import { useToggle } from '@shared/lib/hooks';
 import { AboutStaking, NetworkInfo, NominatorsList, Actions, InactiveChain } from './components';
-import { accountUtils, walletModel, walletUtils } from '@entities/wallet';
+import { accountUtils, permissionUtils, walletModel, walletUtils } from '@entities/wallet';
 import { priceProviderModel } from '@entities/price';
 import { NominatorInfo } from './common/types';
 import { useNetworkData, networkUtils } from '@entities/network';
@@ -111,8 +111,9 @@ export const Overview = () => {
     const isNovaWallet = walletUtils.isNovaWallet(activeWallet);
     const isWalletConnect = walletUtils.isWalletConnect(activeWallet);
     const isPolkadotVault = walletUtils.isPolkadotVaultGroup(activeWallet);
+    const isProxied = walletUtils.isProxied(activeWallet);
 
-    if (isMultisig || isNovaWallet || isWalletConnect || (isPolkadotVault && addresses.length === 1)) {
+    if (isMultisig || isNovaWallet || isWalletConnect || isProxied || (isPolkadotVault && addresses.length === 1)) {
       setSelectedNominators([addresses[0]]);
     } else {
       setSelectedNominators([]);
@@ -271,7 +272,7 @@ export const Overview = () => {
             {networkIsActive && accounts.length > 0 && (
               <>
                 <Actions
-                  canInteract={!walletUtils.isWatchOnly(activeWallet)}
+                  canInteract={!!activeWallet && permissionUtils.canStake(activeWallet, accounts)}
                   stakes={selectedStakes}
                   isStakingLoading={isStakingLoading}
                   onNavigate={navigateToStake}

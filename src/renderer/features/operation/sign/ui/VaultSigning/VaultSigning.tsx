@@ -5,7 +5,7 @@ import { useUnit } from 'effector-react';
 import { useCountdown } from '@shared/lib/hooks';
 import { ValidationErrors, toAddress } from '@shared/lib/utils';
 import { useTransaction, ScanMultiframeQr, ScanSingleframeQr, QrReaderWrapper } from '@entities/transaction';
-import { walletModel, walletUtils, accountUtils } from '@entities/wallet';
+import { walletModel, accountUtils, walletUtils } from '@entities/wallet';
 import type { HexString, Address } from '@shared/core';
 import type { InnerSigningProps } from '../../model/types';
 
