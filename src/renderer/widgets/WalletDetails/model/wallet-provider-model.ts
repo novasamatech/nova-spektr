@@ -78,10 +78,12 @@ const $canCreateProxy = combine(
     wallet: walletModel.$activeWallet,
   },
   ({ accounts, wallet }) => {
-    return (
-      !!wallet &&
-      (permissionUtils.canCreateAnyProxy(wallet, accounts) || permissionUtils.canCreateNonAnyProxy(wallet, accounts))
-    );
+    if (!wallet) return false;
+
+    const canCreateAnyProxy = permissionUtils.canCreateAnyProxy(wallet, accounts);
+    const canCreateNonAnyProxy = permissionUtils.canCreateNonAnyProxy(wallet, accounts);
+
+    return canCreateAnyProxy || canCreateNonAnyProxy;
   },
 );
 
