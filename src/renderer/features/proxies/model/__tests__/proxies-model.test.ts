@@ -1,7 +1,7 @@
 import { allSettled, fork } from 'effector';
 
 import { networkModel } from '@entities/network';
-import { ConnectionType, ProxyAccount, type HexString, ProxyType, AccountId } from '@shared/core';
+import { ConnectionType, ProxyAccount, type HexString, ProxyType, AccountId, AccountType } from '@shared/core';
 import { storageService } from '@shared/api/storage';
 import { proxiesModel } from '../proxies-model';
 import { proxyModel } from '@entities/proxy';
@@ -16,9 +16,9 @@ jest.mock('@remote-ui/rpc', () => ({
           {
             accountId: '0x02',
             chainId: '0x01',
-            delay: 0,
             proxiedAccountId: '0x01',
             proxyType: 'Governance',
+            delay: 0,
           },
         ],
         proxiesToRemove: [],
@@ -64,7 +64,7 @@ describe('features/proxies/model/proxies-model', () => {
     jest.restoreAllMocks();
   });
 
-  test('should add proxy ', async () => {
+  test('should add $proxies and $proxyGroups ', async () => {
     const newProxy = {
       chainId: '0x01' as HexString,
       accountId: '0x02' as AccountId,
@@ -80,21 +80,20 @@ describe('features/proxies/model/proxies-model', () => {
 
     const scope = fork({
       values: new Map()
-        .set(networkModel.$chains, { '0x01': { chainId: '0x01', name: 'Westend', options: ['regular_proxy'] } })
-        .set(walletModel.$accounts, [{ walletId: 1, accountId: '0x01' }])
-        .set(walletModel.$wallets, [{ id: 1 }]),
+        .set(walletModel.$wallets, [{ id: 1 }])
+        .set(walletModel.$accounts, [{ walletId: 1, accountId: '0x01', type: AccountType.CHAIN, chainId: '0x01' }])
+        .set(networkModel.$chains, { '0x01': { chainId: '0x01', name: 'Westend', options: ['regular_proxy'] } }),
     });
 
     await allSettled(proxiesModel.events.workerStarted, { scope });
     await allSettled(networkModel.$connections, {
       scope,
-      params: { '0x01': { id: 1, chainId: '0x01', connectionType: ConnectionType.AUTO_BALANCE } },
+      params: { '0x01': { id: 1, chainId: '0x01', connectionType: ConnectionType.AUTO_BALANCE, customNodes: [] } },
     });
 
     expect(scope.getState(proxyModel.$proxies)).toEqual({ '0x01': [newProxy] });
-
     expect(scope.getState(proxyModel.$proxyGroups)).toEqual([
-      { chainId: '0x01', id: 0, proxiedAccountId: '0x01', totalDeposit: '1,002,050,000,000', walletId: 1 },
+      { id: 0, chainId: '0x01', proxiedAccountId: '0x01', totalDeposit: '1,002,050,000,000', walletId: 1 },
     ]);
   });
 });

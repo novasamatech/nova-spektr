@@ -1,12 +1,10 @@
-import { groupBy } from 'lodash';
 import { useUnit } from 'effector-react';
 
 import { cnTw } from '@shared/lib/utils';
 import { ChainTitle } from '@entities/chain';
 import { useI18n } from '@app/providers';
 import { Accordion, ConfirmModal, FootnoteText, HelpText, SmallTitleText } from '@shared/ui';
-import type { ID, ProxyAccount } from '@shared/core';
-import { proxyModel } from '@entities/proxy';
+import type { ProxyAccount } from '@shared/core';
 import { networkModel } from '@entities/network';
 import { AssetBalance } from '@entities/asset';
 import { walletProviderModel } from '../../model/wallet-provider-model';
@@ -15,23 +13,20 @@ import { useToggle } from '@shared/lib/hooks';
 import { RemoveProxy } from '@widgets/RemoveProxy';
 
 type Props = {
-  walletId: ID;
   canCreateProxy?: boolean;
   className?: string;
 };
 
-export const ProxiesList = ({ walletId, className, canCreateProxy = true }: Props) => {
+export const ProxiesList = ({ className, canCreateProxy = true }: Props) => {
   const { t } = useI18n();
 
   const chains = useUnit(networkModel.$chains);
-  const proxyAccounts = useUnit(walletProviderModel.$proxyAccounts);
-  const proxyGroups = useUnit(proxyModel.$walletsProxyGroups)[walletId];
+  const chainsProxies = useUnit(walletProviderModel.$chainsProxies);
+  const walletProxyGroups = useUnit(walletProviderModel.$walletProxyGroups);
   const proxyForRemoval = useUnit(walletProviderModel.$proxyForRemoval);
 
   const [isRemoveConfirmOpen, toggleIsRemoveConfirmOpen] = useToggle();
   const [isRemoveProxyOpen, toggleIsRemoveProxyOpen] = useToggle();
-
-  const proxiesByChain = groupBy(proxyAccounts, 'chainId');
 
   const handleDeleteProxy = (proxyAccount: ProxyAccount) => {
     walletProviderModel.events.removeProxy(proxyAccount);
@@ -45,8 +40,8 @@ export const ProxiesList = ({ walletId, className, canCreateProxy = true }: Prop
       </div>
 
       <ul className="flex flex-col h-full px-5 divide-y divide-divider overflow-y-auto overflow-x-hidden">
-        {proxyGroups.map(({ chainId, totalDeposit }) => {
-          if (!proxiesByChain[chainId]?.length) return;
+        {walletProxyGroups.map(({ chainId, totalDeposit }) => {
+          if (!chainsProxies[chainId]?.length) return;
 
           return (
             <li key={chainId} className="flex items-center py-2">
@@ -68,8 +63,8 @@ export const ProxiesList = ({ walletId, className, canCreateProxy = true }: Prop
                 </Accordion.Button>
                 <Accordion.Content>
                   <ul className="flex flex-col gap-y-2">
-                    {proxiesByChain[chainId].map((proxy) => (
-                      <li className="px-2 py-1.5" key={proxy.accountId}>
+                    {chainsProxies[chainId].map((proxy) => (
+                      <li className="px-2 py-1.5" key={`${proxy.id}_${proxy.proxyType}`}>
                         <ProxyAccountWithActions
                           account={proxy}
                           chain={chains[chainId]}

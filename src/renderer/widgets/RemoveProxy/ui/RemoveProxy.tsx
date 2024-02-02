@@ -143,7 +143,6 @@ export const RemoveProxy = ({ isOpen, proxyAccount, onClose }: Props) => {
       <Submit
         tx={transaction}
         multisigTx={isMultisigAccount ? wrapTx(transaction, api, addressPrefix) : undefined}
-        proxyAccount={proxyAccount}
         account={proxiedAccount}
         unsignedTx={unsignedTx}
         signature={signature}

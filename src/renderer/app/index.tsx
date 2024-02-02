@@ -7,13 +7,13 @@ import { kernelModel } from '@shared/core';
 import { walletModel } from '@entities/wallet';
 import { networkModel } from '@entities/network';
 import { proxyModel } from '@entities/proxy';
+import { proxiesModel } from '@features/proxies';
 import { notificationModel } from '@entities/notification';
 import { balanceSubscriptionModel } from '@features/balances';
 import { assetsModel } from '@pages/Assets/Assets/model/assets-model';
 import './i18n';
 import './index.css';
 import './styles/theme/default.css';
-import { proxiesModel } from '@features/proxies';
 
 log.variables.version = process.env.VERSION;
 log.variables.env = process.env.NODE_ENV;

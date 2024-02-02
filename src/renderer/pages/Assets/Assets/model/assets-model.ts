@@ -15,7 +15,7 @@ const $activeShards = createStore<Account[]>([]);
 const $hideZeroBalances = createStore<boolean>(false);
 
 const getHideZeroBalancesFx = createEffect((): boolean => {
-  return localStorageService.getFromStorage(HIDE_ZERO_BALANCES, true);
+  return localStorageService.getFromStorage(HIDE_ZERO_BALANCES, false);
 });
 
 const saveHideZeroBalancesFx = createEffect((value: boolean): boolean => {
@@ -28,13 +28,13 @@ sample({
 });
 
 sample({
-  clock: [saveHideZeroBalancesFx.doneData, getHideZeroBalancesFx.doneData],
-  target: $hideZeroBalances,
+  clock: hideZeroBalancesChanged,
+  target: saveHideZeroBalancesFx,
 });
 
 sample({
-  clock: hideZeroBalancesChanged,
-  target: saveHideZeroBalancesFx,
+  clock: [saveHideZeroBalancesFx.doneData, getHideZeroBalancesFx.doneData],
+  target: $hideZeroBalances,
 });
 
 sample({
@@ -49,7 +49,7 @@ sample({
     if (!walletUtils.isPolkadotVault(wallet)) return accounts;
 
     return accounts.filter((account) => {
-      return !accountUtils.isBaseAccount(account) && account;
+      return account && !accountUtils.isBaseAccount(account);
     });
   },
   target: $activeShards,
@@ -60,8 +60,8 @@ export const assetsModel = {
   $activeShards,
   $hideZeroBalances,
   events: {
-    activeShardsSet,
     assetsStarted,
+    activeShardsSet,
     queryChanged,
     hideZeroBalancesChanged,
   },

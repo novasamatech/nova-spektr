@@ -72,7 +72,7 @@ export const MultishardWalletDetails = ({ wallet, accounts, onClose }: Props) =>
       id: 'proxies',
       title: t('walletDetails.common.proxiesTabTitle'),
       panel: hasProxies ? (
-        <ProxiesList walletId={wallet.id} className="h-[403px] mt-4" canCreateProxy={canCreateProxy} />
+        <ProxiesList className="h-[403px] mt-4" canCreateProxy={canCreateProxy} />
       ) : (
         <NoProxiesAction className="h-[403px] mt-4" canCreateProxy={canCreateProxy} />
       ),

@@ -1,3 +1,5 @@
+import uniqBy from 'lodash/uniqBy';
+import mapValues from 'lodash/mapValues';
 import { combine, createEvent, createStore, sample } from 'effector';
 
 import { accountUtils, permissionUtils, walletModel, walletUtils } from '@entities/wallet';
@@ -5,14 +7,26 @@ import { walletSelectModel } from '@features/wallets';
 import { dictionary } from '@shared/lib/utils';
 import { walletDetailsUtils } from '../lib/utils';
 import type { MultishardMap, VaultMap } from '../lib/types';
-import type { Account, Signatory, Wallet, MultisigAccount, BaseAccount, AccountId, ProxiedAccount } from '@shared/core';
 import { proxyModel, proxyUtils } from '@entities/proxy';
-import { ProxyAccount } from '@shared/core';
+import { networkModel } from '@entities/network';
 import { removeProxyModel } from '@widgets/RemoveProxy';
+import type {
+  Account,
+  Signatory,
+  Wallet,
+  MultisigAccount,
+  BaseAccount,
+  AccountId,
+  ProxyAccount,
+  ProxiedAccount,
+  ChainId,
+  ProxyGroup,
+} from '@shared/core';
 
 const removeProxy = createEvent<ProxyAccount>();
 
 const $proxyForRemoval = createStore<ProxyAccount | null>(null).reset(removeProxyModel.events.proxyRemoved);
+
 const $accounts = combine(
   {
     accounts: walletModel.$accounts,
@@ -22,24 +36,6 @@ const $accounts = combine(
     if (!details) return [];
 
     return accountUtils.getWalletAccounts(details.id, accounts);
-  },
-);
-
-const $proxyAccounts = combine(
-  {
-    accounts: $accounts,
-    proxies: proxyModel.$proxies,
-  },
-  ({ accounts, proxies }) => {
-    const proxyAccounts = accounts.reduce((acc: ProxyAccount[], account: Account) => {
-      if (proxies[account.accountId]) {
-        acc.push(...proxies[account.accountId]);
-      }
-
-      return acc;
-    }, []);
-
-    return proxyUtils.sortAccountsByProxyType(proxyAccounts);
   },
 );
 
@@ -112,11 +108,11 @@ const $vaultAccounts = combine(
 
 const $signatoryContacts = combine(
   {
-    account: $accounts,
+    activeAccounts: $accounts,
     accounts: walletModel.$accounts,
   },
-  ({ account, accounts }): Signatory[] => {
-    const multisigAccount = accounts[0];
+  ({ activeAccounts, accounts }): Signatory[] => {
+    const multisigAccount = activeAccounts[0];
     if (!multisigAccount || !accountUtils.isMultisigAccount(multisigAccount)) return [];
 
     const accountsMap = dictionary(accounts, 'accountId', () => true);
@@ -149,7 +145,44 @@ const $signatoryWallets = combine(
   },
 );
 
-const $proxyWalletForProxied = combine(
+const $chainsProxies = combine(
+  {
+    accounts: $accounts,
+    chains: networkModel.$chains,
+    proxies: proxyModel.$proxies,
+  },
+  ({ accounts, chains, proxies }): Record<ChainId, ProxyAccount[]> => {
+    const proxiesForAccounts = uniqBy(accounts, 'accountId').reduce<ProxyAccount[]>((acc, account) => {
+      if (proxies[account.accountId]) {
+        acc.push(...proxies[account.accountId]);
+      }
+
+      return acc;
+    }, []);
+
+    const chainsMap = mapValues(chains, () => []) as Record<ChainId, ProxyAccount[]>;
+
+    return proxyUtils.sortAccountsByProxyType(proxiesForAccounts).reduce((acc, proxy) => {
+      acc[proxy.chainId].push(proxy);
+
+      return acc;
+    }, chainsMap);
+  },
+);
+
+const $walletProxyGroups = combine(
+  {
+    wallet: walletSelectModel.$walletForDetails,
+    groups: proxyModel.$walletsProxyGroups,
+  },
+  ({ wallet, groups }): ProxyGroup[] => {
+    if (!wallet || !groups[wallet.id]) return [];
+
+    return groups[wallet.id];
+  },
+);
+
+const $proxyWallet = combine(
   {
     walletAccounts: $accounts,
     accounts: walletModel.$accounts,
@@ -157,29 +190,25 @@ const $proxyWalletForProxied = combine(
     detailsWallet: walletSelectModel.$walletForDetails,
   },
   ({ walletAccounts, accounts, wallets, detailsWallet }): Wallet | undefined => {
-    if (!walletUtils.isProxied(detailsWallet || undefined)) return;
+    if (!walletUtils.isProxied(detailsWallet)) return;
 
-    const proxiedAccount = walletAccounts[0] as unknown as ProxiedAccount;
     const walletsMap = dictionary(wallets, 'id');
-    const proxyAccount = accounts.find(
-      (a) => a.accountId === proxiedAccount.proxyAccountId && !walletUtils.isWatchOnly(walletsMap[a.walletId]),
-    );
+
+    const proxyAccount = accounts.find((a) => {
+      const isProxyMatch = a.accountId === (walletAccounts[0] as ProxiedAccount).proxyAccountId;
+      const isWatchOnly = walletUtils.isWatchOnly(walletsMap[a.walletId]);
+
+      return isProxyMatch && !isWatchOnly;
+    });
 
     return proxyAccount && walletsMap[proxyAccount.walletId];
   },
   { skipVoid: false },
 );
 
-const $hasProxies = combine(
-  {
-    accounts: $proxyAccounts,
-    groups: proxyModel.$walletsProxyGroups,
-    wallet: walletSelectModel.$walletForDetails,
-  },
-  ({ accounts, groups, wallet }) => {
-    return accounts.length > 0 && wallet && groups[wallet.id]?.length > 0;
-  },
-);
+const $hasProxies = combine($chainsProxies, (chainsProxies) => {
+  return Object.values(chainsProxies).some((accounts) => accounts.length > 0);
+});
 
 sample({
   source: removeProxy,
@@ -188,15 +217,18 @@ sample({
 
 export const walletProviderModel = {
   $accounts,
-  $proxyAccounts,
-  $hasProxies,
+
+  $vaultAccounts,
+  $multisigAccount,
   $singleShardAccount,
   $multiShardAccounts,
-  $multisigAccount,
-  $vaultAccounts,
   $signatoryContacts,
   $signatoryWallets,
-  $proxyWalletForProxied,
+
+  $chainsProxies,
+  $walletProxyGroups,
+  $proxyWallet,
+  $hasProxies,
   $proxyForRemoval,
   $canCreateProxy,
   events: {
