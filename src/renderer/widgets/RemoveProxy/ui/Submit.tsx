@@ -1,7 +1,6 @@
 import { ApiPromise } from '@polkadot/api';
 import { UnsignedTransaction } from '@substrate/txwrapper-polkadot';
 import { ComponentProps, useEffect, useState } from 'react';
-import { useUnit } from 'effector-react';
 
 import { useI18n, useMatrix, useMultisigChainContext } from '@app/providers';
 import {
@@ -12,15 +11,12 @@ import {
   useTransaction,
 } from '@entities/transaction';
 import type { Account, MultisigAccount } from '@shared/core';
-import { HexString, NotificationType, PartialProxiedAccount, ProxyAccount, ProxyVariant } from '@shared/core';
+import { HexString } from '@shared/core';
 import { buildMultisigTx, useMultisigEvent, useMultisigTx } from '@entities/multisig';
 import { toAccountId } from '@shared/lib/utils';
 import { useToggle } from '@shared/lib/hooks';
 import { Button } from '@shared/ui';
-import { accountUtils, walletModel } from '@entities/wallet';
-import { notificationModel } from '@entities/notification';
-import { proxiesUtils } from '@features/proxies/lib/proxies-utils';
-import { networkModel } from '@entities/network';
+import { accountUtils } from '@entities/wallet';
 
 type ResultProps = Pick<ComponentProps<typeof OperationResult>, 'title' | 'description' | 'variant'>;
 
@@ -31,27 +27,12 @@ type Props = {
   multisigTx?: Transaction;
   unsignedTx: UnsignedTransaction | null;
   signature: HexString | null;
-  proxyAccount: ProxyAccount;
   onClose: () => void;
   onSubmitted: () => void;
 };
 
-export const Submit = ({
-  api,
-  tx,
-  multisigTx,
-  account,
-  proxyAccount,
-  unsignedTx,
-  signature,
-  onClose,
-  onSubmitted,
-}: Props) => {
+export const Submit = ({ api, tx, multisigTx, account, unsignedTx, signature, onClose, onSubmitted }: Props) => {
   const { t } = useI18n();
-
-  const wallets = useUnit(walletModel.$wallets);
-  const accounts = useUnit(walletModel.$accounts);
-  const chains = useUnit(networkModel.$chains);
 
   const { matrix } = useMatrix();
   const { addTask } = useMultisigChainContext();
@@ -92,8 +73,6 @@ export const Submit = ({
 
     submitAndWatchExtrinsic(extrinsic, unsignedTx, api, async (executed, params) => {
       if (executed) {
-        sendProxyNotification();
-
         if (multisigTx && isMultisigAccount) {
           const result = buildMultisigTx(tx, multisigTx, params as ExtrinsicResultParams, account);
 
@@ -134,25 +113,6 @@ export const Submit = ({
         },
       })
       .catch(console.warn);
-  };
-
-  const sendProxyNotification = () => {
-    const proxiedAccount: PartialProxiedAccount = {
-      accountId: proxyAccount.proxiedAccountId,
-      chainId: proxyAccount.chainId,
-      proxyAccountId: proxyAccount.accountId,
-      proxyType: proxyAccount.proxyType,
-      delay: proxyAccount.delay,
-      proxyVariant: ProxyVariant.REGULAR, // TODO get value from proxied account
-    };
-    const proxyRemovedNotification = proxiesUtils.getNotification({
-      wallets,
-      accounts,
-      chains,
-      proxiedAccounts: [proxiedAccount],
-      type: NotificationType.PROXY_REMOVED,
-    });
-    notificationModel.events.notificationsAdded(proxyRemovedNotification);
   };
 
   const getResultProps = (): ResultProps => {
