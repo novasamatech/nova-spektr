@@ -21,10 +21,8 @@ const rpcNodeAdded = createEvent<NodeEventParams>();
 const rpcNodeUpdated = createEvent<NodeEventParams>();
 const rpcNodeRemoved = createEvent<NodeEventParams>();
 
-const updateConnectionFx = createEffect(async ({ id, ...rest }: Connection): Promise<Connection> => {
-  await storageService.connections.update(id, rest);
-
-  return { id, ...rest };
+const updateConnectionFx = createEffect((connection: Connection): Promise<Connection | undefined> => {
+  return storageService.connections.put(connection);
 });
 
 const addRpcNodeFx = attach({ effect: updateConnectionFx });
@@ -45,12 +43,6 @@ const disconnectProviderFx = createEffect(async ({ chainId, providers }: Disconn
 });
 
 const reconnectProviderFx = attach({ effect: disconnectProviderFx });
-
-// const deleteConnectionFx = createEffect(async (connectionId: number): Promise<number> => {
-//   await storageService.connections.delete(connectionId);
-//
-//   return connectionId;
-// });
 
 sample({
   clock: rpcNodeAdded,
@@ -165,9 +157,10 @@ sample({
 sample({
   clock: updateConnectionFx.doneData,
   source: networkModel.$connections,
+  filter: (connection) => Boolean(connection),
   fn: (connections, connection) => ({
     ...connections,
-    [connection.chainId]: connection,
+    [connection!.chainId]: connection,
   }),
   target: networkModel.$connections,
 });
@@ -175,8 +168,12 @@ sample({
 sample({
   clock: updateConnectionFx.doneData,
   source: networkModel.$providers,
-  filter: (_, connection) => networkUtils.isEnabledConnection(connection),
-  fn: (providers, { chainId }) => {
+  filter: (_, connection) => {
+    return Boolean(connection) && networkUtils.isEnabledConnection(connection!);
+  },
+  fn: (providers, connection) => {
+    const chainId = connection!.chainId;
+
     return providers[chainId] ? { reconnect: { chainId, providers } } : { start: chainId };
   },
   target: spread({

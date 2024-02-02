@@ -75,11 +75,7 @@ export const ProxiedWalletDetails = ({ wallet, proxyWallet, proxiedAccount, onCl
     {
       id: 'proxies',
       title: t('walletDetails.common.proxiesTabTitle'),
-      panel: hasProxies ? (
-        <ProxiesList walletId={wallet.id} className="h-[353px]" />
-      ) : (
-        <NoProxiesAction className="h-[353px]" />
-      ),
+      panel: hasProxies ? <ProxiesList className="h-[353px]" /> : <NoProxiesAction className="h-[353px]" />,
     },
   ];
 

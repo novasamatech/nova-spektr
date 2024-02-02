@@ -1,4 +1,5 @@
-import { groupBy, unionBy } from 'lodash';
+import groupBy from 'lodash/groupBy';
+import unionBy from 'lodash/unionBy';
 import { TFunction } from 'react-i18next';
 
 import {

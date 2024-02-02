@@ -2,7 +2,7 @@ import cn from 'classnames';
 import { useEffect, useState } from 'react';
 import { Controller, SubmitHandler, useForm } from 'react-hook-form';
 import { u8aToHex } from '@polkadot/util';
-import { keyBy } from 'lodash';
+import keyBy from 'lodash/keyBy';
 
 import { useI18n } from '@app/providers';
 import { ChainTitle } from '@entities/chain';

@@ -1,5 +1,5 @@
 import { createStore, createEvent, sample, combine, createApi, attach } from 'effector';
-import { cloneDeep } from 'lodash';
+import cloneDeep from 'lodash/cloneDeep';
 
 import type { Account } from '@shared/core';
 import { walletModel, walletUtils } from '@entities/wallet';

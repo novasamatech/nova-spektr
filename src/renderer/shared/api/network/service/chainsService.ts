@@ -1,4 +1,7 @@
-import { keyBy, orderBy, concat, sortBy } from 'lodash';
+import keyBy from 'lodash/keyBy';
+import orderBy from 'lodash/orderBy';
+import concat from 'lodash/concat';
+import sortBy from 'lodash/sortBy';
 import BigNumber from 'bignumber.js';
 
 import chainsProd from '@shared/config/chains/chains.json';

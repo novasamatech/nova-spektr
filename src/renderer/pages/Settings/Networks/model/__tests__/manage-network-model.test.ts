@@ -23,7 +23,12 @@ describe('pages/Settings/Networks/model/manage-network-model', () => {
       name: 'My node',
       url: 'http://localhost:8080',
     });
-    jest.spyOn(storageService.connections, 'update').mockResolvedValue(mockConnection.id);
+    const updatedConnection = {
+      ...mockConnection,
+      connectionType: ConnectionType.DISABLED,
+    };
+
+    jest.spyOn(storageService.connections, 'put').mockResolvedValue(updatedConnection);
 
     const scope = fork({
       values: new Map().set(networkModel.$connections, { '0x01': mockConnection }),
@@ -31,14 +36,18 @@ describe('pages/Settings/Networks/model/manage-network-model', () => {
 
     await allSettled(manageNetworkModel.events.chainDisabled, { scope, params: mockConnection.chainId });
 
-    expect(scope.getState(networkModel.$connections)).toEqual({
-      '0x01': { ...mockConnection, connectionType: ConnectionType.DISABLED },
-    });
+    expect(scope.getState(networkModel.$connections)).toEqual({ '0x01': updatedConnection });
   });
 
   test('should update $connections on lightClientSelected', async () => {
     const mockConnection = getMockConnection(ConnectionType.DISABLED);
-    jest.spyOn(storageService.connections, 'update').mockResolvedValue(mockConnection.id);
+    const updatedConnection = {
+      ...mockConnection,
+      connectionType: ConnectionType.LIGHT_CLIENT,
+      activeNode: undefined,
+    };
+
+    jest.spyOn(storageService.connections, 'put').mockResolvedValue(updatedConnection);
 
     const scope = fork({
       values: new Map().set(networkModel.$connections, { '0x01': mockConnection }),
@@ -46,26 +55,28 @@ describe('pages/Settings/Networks/model/manage-network-model', () => {
 
     await allSettled(manageNetworkModel.events.lightClientSelected, { scope, params: mockConnection.chainId });
 
-    expect(scope.getState(networkModel.$connections)).toEqual({
-      '0x01': { ...mockConnection, connectionType: ConnectionType.LIGHT_CLIENT, activeNode: undefined },
-    });
+    expect(scope.getState(networkModel.$connections)).toEqual({ '0x01': updatedConnection });
   });
 
   test('should update $connections on rpcNodeSelected', async () => {
     const mockConnection = getMockConnection(ConnectionType.DISABLED);
-    jest.spyOn(storageService.connections, 'update').mockResolvedValue(mockConnection.id);
+    const node: RpcNode = { name: 'New single node', url: 'ws://127.0.0.1:9944' };
+    const updatedConnection = {
+      ...mockConnection,
+      connectionType: ConnectionType.RPC_NODE,
+      activeNode: node,
+    };
+
+    jest.spyOn(storageService.connections, 'put').mockResolvedValue(updatedConnection);
 
     const scope = fork({
       values: new Map().set(networkModel.$connections, { '0x01': mockConnection }),
     });
-    const node: RpcNode = { name: 'New single node', url: 'ws://127.0.0.1:9944' };
 
     await allSettled(manageNetworkModel.events.rpcNodeSelected, {
       scope,
       params: { chainId: mockConnection.chainId, node },
     });
-    expect(scope.getState(networkModel.$connections)).toEqual({
-      '0x01': { ...mockConnection, connectionType: ConnectionType.RPC_NODE, activeNode: node },
-    });
+    expect(scope.getState(networkModel.$connections)).toEqual({ '0x01': updatedConnection });
   });
 });

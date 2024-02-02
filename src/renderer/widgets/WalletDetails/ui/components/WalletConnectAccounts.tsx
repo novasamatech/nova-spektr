@@ -1,6 +1,6 @@
 import { useUnit } from 'effector-react';
 import { useMemo } from 'react';
-import { keyBy } from 'lodash';
+import keyBy from 'lodash/keyBy';
 
 import { wcDetailsUtils } from '../../lib/utils';
 import { MultiAccountsList } from '@entities/wallet';
