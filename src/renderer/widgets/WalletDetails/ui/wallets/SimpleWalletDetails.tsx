@@ -2,7 +2,7 @@ import { useUnit } from 'effector-react';
 
 import { BaseModal, DropdownIconButton, Tabs } from '@shared/ui';
 import { useModalClose, useToggle } from '@shared/lib/hooks';
-import { AccountsList, WalletCardLg, walletUtils } from '@entities/wallet';
+import { AccountsList, WalletCardLg, walletModel, walletUtils } from '@entities/wallet';
 import { networkModel } from '@entities/network';
 import { useI18n } from '@app/providers';
 import type { BaseAccount, Wallet } from '@shared/core';
@@ -24,6 +24,9 @@ export const SimpleWalletDetails = ({ wallet, account, onClose }: Props) => {
 
   const chains = useUnit(networkModel.$chains);
   const hasProxies = useUnit(walletProviderModel.$hasProxies);
+  const activeWallet = useUnit(walletModel.$activeWallet);
+  const activeAccounts = useUnit(walletModel.$activeAccounts);
+  const canCreateProxy = useUnit(walletProviderModel.$canCreateProxy);
 
   const [isModalOpen, closeModal] = useModalClose(true, onClose);
   const [isRenameModalOpen, toggleIsRenameModalOpen] = useToggle();
@@ -64,9 +67,9 @@ export const SimpleWalletDetails = ({ wallet, account, onClose }: Props) => {
       id: 'proxies',
       title: t('walletDetails.common.proxiesTabTitle'),
       panel: hasProxies ? (
-        <ProxiesList canCreateProxy={!walletUtils.isWatchOnly(wallet)} className="h-[388px]" />
+        <ProxiesList canCreateProxy={canCreateProxy} className="h-[388px]" />
       ) : (
-        <NoProxiesAction className="h-[388px]" />
+        <NoProxiesAction className="h-[388px]" canCreateProxy={canCreateProxy} />
       ),
     },
   ];
