@@ -33,8 +33,6 @@ type UnsubParams = {
   subscriptions: Subscriptions;
 };
 const unsubscribeFromChainsFx = createEffect(({ chainIds, subscriptions }: UnsubParams): Subscriptions => {
-  console.log('=== UNSUB');
-
   return chainIds.reduce<Subscriptions>((acc, chainId) => {
     const chainSubscription = acc[chainId];
     if (!chainSubscription) return acc;
@@ -58,8 +56,6 @@ type SubParams = {
 };
 const subscribeToChainsFx = createEffect(
   async ({ apis, chains, subAccounts, subscriptions }: SubParams): Promise<Subscriptions> => {
-    console.log('=== SUB');
-
     const boundUpdate = scopeBind(balanceModel.events.balancesUpdated, { safe: true });
 
     const balanceRequests = chains.reduce<Promise<[VoidFn[], VoidFn[]]>[]>((acc, chain) => {
@@ -200,6 +196,7 @@ sample({
 sample({
   clock: chainsUnsubscribed,
   source: $subscriptions,
+  filter: (_, chainIds) => chainIds.length > 0,
   fn: (subscriptions, chainIds) => ({ chainIds, subscriptions }),
   target: unsubscribeFromChainsFx,
 });
@@ -212,6 +209,7 @@ sample({
     subAccounts: $subAccounts,
     subscriptions: $subscriptions,
   },
+  filter: (_, chainIds) => chainIds.length > 0,
   fn: ({ subAccounts, subscriptions, ...params }, chainIds) => {
     const { apis, chains } = chainIds.reduce(
       (acc, chainId) => {
