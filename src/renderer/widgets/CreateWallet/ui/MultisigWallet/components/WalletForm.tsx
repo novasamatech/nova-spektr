@@ -69,8 +69,7 @@ export const WalletForm = ({ signatories, onContinue, isActive, isLoading, onGoB
     onSubmit(name, threshold.value, creator.accountId);
   };
 
-  const hasNoAccounts =
-    wallets.filter((wallet) => !walletUtils.isWatchOnly(wallet) || !walletUtils.isMultisig(wallet)).length === 0;
+  const hasNoAccount = wallets.every((wallet) => !walletUtils.isWatchOnly(wallet) || !walletUtils.isMultisig(wallet));
 
   const hasOwnSignatory = signatories.some((s) => {
     const walletIds = accounts.filter((a) => a.accountId === s.accountId).map((a) => a.walletId);
@@ -80,9 +79,18 @@ export const WalletForm = ({ signatories, onContinue, isActive, isLoading, onGoB
     );
   });
 
-  const accountAlreadyExists = accounts.some(
-    (a) => !accountUtils.isProxiedAccount(a) && a.accountId === multisigAccountId,
-  );
+  const accountAlreadyExists = wallets.some((wallet) => {
+    const isWatchOnly = walletUtils.isWatchOnly(wallet);
+    const isMatch = accounts.some((account) => {
+      return (
+        !accountUtils.isProxiedAccount(account) &&
+        account.accountId === multisigAccountId &&
+        account.walletId === wallet.id
+      );
+    });
+
+    return !isWatchOnly && isMatch;
+  });
 
   const hasTwoSignatories = signatories.length > 1;
 
@@ -145,7 +153,7 @@ export const WalletForm = ({ signatories, onContinue, isActive, isLoading, onGoB
           <Alert.Item withDot={false}>{t('createMultisigAccount.multisigExistText')}</Alert.Item>
         </Alert>
 
-        <Alert active={hasNoAccounts} title={t('createMultisigAccount.walletAlertTitle')} variant="warn">
+        <Alert active={hasNoAccount} title={t('createMultisigAccount.walletAlertTitle')} variant="warn">
           <Alert.Item withDot={false}>{t('createMultisigAccount.accountsAlertText')}</Alert.Item>
         </Alert>
 
