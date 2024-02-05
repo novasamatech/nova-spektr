@@ -1,6 +1,5 @@
 import { allSettled, fork } from 'effector';
 
-
 import {
   Account,
   AccountType,
@@ -80,6 +79,10 @@ const proxiedWallet = {
 };
 
 describe('features/ForgetModel', () => {
+  beforeEach(() => {
+    jest.restoreAllMocks();
+  });
+
   test('should call success calback after wallet delete', async () => {
     const spyCallback = jest.fn();
     storageService.wallets.delete = jest.fn();
@@ -114,8 +117,8 @@ describe('features/ForgetModel', () => {
   });
 
   test('should delete proxied accounts, wallets and proxyGroups', async () => {
-    storageService.proxies.deleteAll = (ids: number[]) => new Promise((resolve) => resolve(ids));
-    storageService.proxyGroups.deleteAll = (ids: number[]) => new Promise((resolve) => resolve(ids));
+    jest.spyOn(storageService.proxies, 'deleteAll').mockResolvedValue([1]);
+    jest.spyOn(storageService.proxyGroups, 'deleteAll').mockResolvedValue([1]);
 
     const scope = fork({
       values: new Map()

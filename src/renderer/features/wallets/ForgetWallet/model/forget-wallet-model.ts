@@ -1,6 +1,5 @@
 import { createEvent, sample, createEffect, createStore, createApi, attach, split } from 'effector';
 import uniq from 'lodash/uniq';
-import { Dictionary } from 'lodash';
 import { spread } from 'patronum';
 
 import { Account, AccountId, ID, MultisigAccount, ProxyAccount, ProxyGroup, Wallet } from '@shared/core';
@@ -33,12 +32,11 @@ const deleteMultisigOperationsFx = createEffect(async (account: MultisigAccount)
   }
 });
 
-type CheckForProxiedWalletsProps = {
+type CheckForProxiedWalletsParams = {
   wallet: Wallet;
-  wallets: Wallet[];
   accounts: Account[];
-  proxies: Dictionary<ProxyAccount[]>;
-  walletsProxyGroups: Dictionary<ProxyGroup[]>;
+  proxies: Record<AccountId, ProxyAccount[]>;
+  walletsProxyGroups: Record<Wallet['id'], ProxyGroup[]>;
 };
 type CheckForProxiedWalletsResult = {
   proxiedWalletsToDelete: ID[];
@@ -46,14 +44,8 @@ type CheckForProxiedWalletsResult = {
   proxiesToDelete: ProxyAccount[];
   proxyGroupsToDelete: ProxyGroup[];
 };
-const checkForProxiedWalletsFx = createEffect(
-  ({
-    wallet,
-    wallets,
-    accounts,
-    proxies,
-    walletsProxyGroups,
-  }: CheckForProxiedWalletsProps): CheckForProxiedWalletsResult => {
+const findProxiedWalletsFx = createEffect(
+  ({ wallet, accounts, proxies, walletsProxyGroups }: CheckForProxiedWalletsParams): CheckForProxiedWalletsResult => {
     const walletAccountsIds = accounts.filter((a) => a.walletId === wallet.id).map((a) => a.accountId);
 
     const proxiedAccountsToDelete = accounts.filter(
@@ -64,7 +56,7 @@ const checkForProxiedWalletsFx = createEffect(
     const proxiesToDelete = proxiedAccountsToDelete
       .map((a) => a.accountId)
       .concat(walletAccountsIds)
-      .reduce((acc, accountId) => (proxies[accountId] ? acc.concat(proxies[accountId]) : acc), [] as ProxyAccount[]);
+      .reduce<ProxyAccount[]>((acc, accountId) => (proxies[accountId] ? acc.concat(proxies[accountId]) : acc), []);
     const proxyGroupsToDelete = proxiedWalletsToDelete.reduce(
       (acc, walletId) => (walletsProxyGroups[walletId] ? acc.concat(walletsProxyGroups[walletId]) : acc),
       [] as ProxyGroup[],
@@ -93,23 +85,19 @@ split({
 sample({
   clock: [forgetWallet, wcDetailsModel.events.forgetButtonClicked],
   source: {
-    wallets: walletModel.$wallets,
     accounts: walletModel.$accounts,
     proxies: proxyModel.$proxies,
     walletsProxyGroups: proxyModel.$walletsProxyGroups,
   },
-  fn: ({ wallets, accounts, proxies, walletsProxyGroups }, wallet) => ({
-    wallets,
-    accounts,
-    proxies,
-    walletsProxyGroups,
+  fn: (params, wallet) => ({
+    ...params,
     wallet,
   }),
-  target: checkForProxiedWalletsFx,
+  target: findProxiedWalletsFx,
 });
 
 sample({
-  source: checkForProxiedWalletsFx.doneData,
+  source: findProxiedWalletsFx.doneData,
   target: spread({
     proxiesToDelete: proxyModel.events.proxiesRemoved,
     proxiedWalletsToDelete: walletModel.events.walletsRemoved,
