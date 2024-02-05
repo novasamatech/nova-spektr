@@ -1,6 +1,7 @@
 import { ApiPromise } from '@polkadot/api';
 import { createEffect, createStore, sample, createEvent, scopeBind } from 'effector';
-import { previous, throttle } from 'patronum';
+import { previous, throttle, once, combineEvents, spread } from 'patronum';
+import mapValues from 'lodash/mapValues';
 import { VoidFn } from '@polkadot/api/types';
 
 import { AccountId, Balance, ChainId, ConnectionStatus, Wallet, Chain } from '@shared/core';
@@ -22,7 +23,6 @@ const chainsSubscribed = createEvent<ChainId[]>();
 
 const $subscriptions = createStore<Subscriptions>({});
 const $subAccounts = createStore<SubAccounts>({});
-const $previousWallet = previous(walletModel.$activeWallet);
 
 const populateBalancesFx = createEffect((accountIds: AccountId[]): Promise<Balance[]> => {
   return storageService.balances.readAll({ accountId: accountIds });
@@ -91,25 +91,22 @@ const subscribeToChainsFx = createEffect(
   },
 );
 
-// sample({
-//   clock: balancesSubStarted,
-//   source: {
-//     chains: networkModel.$chains,
-//     wallet: walletModel.$activeWallet,
-//   },
-//   filter: ({ chains, wallet }) => {
-//     return Object.keys(chains).length > 0 && Boolean(wallet);
-//   },
-//   fn: ({ chains, wallet }) => {
-//     return mapValues(chains, () => ({ [wallet!.id]: [] }));
-//   },
-//   target: $subAccounts,
-// });
+sample({
+  clock: once(combineEvents([walletModel.$activeWallet.updates, networkModel.$chains.updates])),
+  filter: ([wallet]) => Boolean(wallet),
+  fn: ([wallet, chains]) => ({
+    subAccounts: mapValues(chains, () => ({ [wallet!.id]: [] })),
+    walletToSub: wallet,
+  }),
+  target: spread({
+    subAccounts: $subAccounts,
+    walletToSub: walletToSubSet,
+  }),
+});
 
-// TODO: might not work for $previousWallet
 // TODO: run unsub for concrete wallet + all chains
 sample({
-  clock: [walletToUnsubSet, $previousWallet],
+  clock: [walletToUnsubSet, previous(walletModel.$activeWallet)],
   source: $subAccounts,
   filter: (_, wallet) => Boolean(wallet),
   fn: (subAccounts, wallet) => {
