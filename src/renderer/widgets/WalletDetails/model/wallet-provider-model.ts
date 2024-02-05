@@ -70,8 +70,8 @@ const $multisigAccount = combine(
 
 const $canCreateProxy = combine(
   {
-    accounts: walletModel.$activeAccounts,
-    wallet: walletModel.$activeWallet,
+    accounts: $accounts,
+    wallet: walletSelectModel.$walletForDetails,
   },
   ({ accounts, wallet }) => {
     if (!wallet) return false;
