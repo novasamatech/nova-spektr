@@ -28,7 +28,7 @@ import { ProxiesList } from '../components/ProxiesList';
 import { walletProviderModel } from '../../model/wallet-provider-model';
 import { NoProxiesAction } from '../components/NoProxiesAction';
 import { WalletConnectAccounts } from '../components/WalletConnectAccounts';
-import { forgetWalletModel } from "@features/wallets/ForgetWallet";
+import { forgetWalletModel } from '@features/wallets/ForgetWallet';
 
 type Props = {
   wallet: WalletConnectWallet;
