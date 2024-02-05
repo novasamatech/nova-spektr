@@ -19,11 +19,9 @@ export const CheckPermission = ({
   redirectPath,
   children,
 }: PropsWithChildren<Props>) => {
-  const operationFn = getOperationTypeFn(operationType);
-
   if (!wallet) return null;
 
-  if (operationFn(wallet, accounts)) {
+  if (getOperationTypeFn(operationType)(wallet, accounts)) {
     return <>{children}</>;
   }
 
