@@ -40,7 +40,7 @@ export const Confirmation = ({
     <div className="flex flex-col items-center pt-4 gap-y-4 pb-4 pl-5 pr-3">
       <div className="flex flex-col items-center gap-y-3 mb-2">
         <div className="flex items-center justify-center shrink-0 w-15 h-15 box-border rounded-full border-[2.5px] border-icon-default">
-          <Icon name="proxied" size={42} />
+          <Icon name="proxiedBackground" size={42} />
         </div>
       </div>
 
