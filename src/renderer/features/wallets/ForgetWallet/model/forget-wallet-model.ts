@@ -7,7 +7,6 @@ import { accountUtils, walletModel, walletUtils } from '@entities/wallet';
 import { balanceModel } from '@entities/balance';
 import { useForgetMultisig } from '@entities/multisig';
 import { proxyModel } from '@entities/proxy';
-import { wcDetailsModel } from '@widgets/WalletDetails/model/wc-details-model';
 
 const { deleteMultisigTxs } = useForgetMultisig();
 
@@ -15,14 +14,15 @@ export type Callbacks = {
   onDeleteFinished: () => void;
 };
 
+const forgetWallet = createEvent<Wallet>();
+const forgetSimpleWallet = createEvent<Wallet>();
+const forgetMultisigWallet = createEvent<Wallet>();
+const forgetWcWallet = createEvent<Wallet>();
+
 const $callbacks = createStore<Callbacks | null>(null);
 const callbacksApi = createApi($callbacks, {
   callbacksChanged: (state, props: Callbacks) => ({ ...state, ...props }),
 });
-
-const forgetWallet = createEvent<Wallet>();
-const forgetSimpleWallet = createEvent<Wallet>();
-const forgetMultisigWallet = createEvent<Wallet>();
 
 const deleteMultisigOperationsFx = createEffect(async (account: MultisigAccount): Promise<void> => {
   try {
@@ -83,7 +83,7 @@ split({
 });
 
 sample({
-  clock: [forgetWallet, wcDetailsModel.events.forgetButtonClicked],
+  clock: [forgetWallet, forgetWcWallet],
   source: {
     accounts: walletModel.$accounts,
     proxies: proxyModel.$proxies,
@@ -137,6 +137,7 @@ sample({
 export const forgetWalletModel = {
   events: {
     forgetWallet,
+    forgetWcWallet,
     callbacksChanged: callbacksApi.callbacksChanged,
   },
 };
