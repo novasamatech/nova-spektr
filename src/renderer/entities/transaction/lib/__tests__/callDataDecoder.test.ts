@@ -94,7 +94,7 @@ describe('entities/transaction/lib/callDataDecoder', () => {
     const transaction = decodeCallData(
       api,
       TEST_ADDRESS,
-      '0x04000068161e62bc8d7cf1bef225fd2ed12857889718d97c687256cb4b8794cef1a242070010a5d4e8',
+      '0x04030068161e62bc8d7cf1bef225fd2ed12857889718d97c687256cb4b8794cef1a242070010a5d4e8',
     );
 
     expect(transaction).toEqual({
@@ -104,7 +104,7 @@ describe('entities/transaction/lib/callDataDecoder', () => {
         value: '1000000000000',
       },
       chainId: '0x1234000000000000000000000000000000000000000000000000000000000000',
-      method: 'transferAllowDeath',
+      method: 'transferKeepAlive',
       section: 'balances',
       type: 'transfer',
     });
