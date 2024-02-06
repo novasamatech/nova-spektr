@@ -4,7 +4,7 @@ import { useUnit } from 'effector-react';
 import { AssetRouteGuard } from '@features/assets';
 import { Paths } from '@shared/routes';
 import { ReceiveAssetModal } from '@widgets/ReceiveAssetModal';
-import { CheckPermissionWithRedirect, OperationType, walletModel } from '@entities/wallet';
+import { CheckPermission, OperationType, walletModel } from '@entities/wallet';
 
 export const ReceiveAsset = () => {
   const navigate = useNavigate();
@@ -12,15 +12,15 @@ export const ReceiveAsset = () => {
   const activeAccounts = useUnit(walletModel.$activeAccounts);
 
   return (
-    <CheckPermissionWithRedirect
+    <CheckPermission
+      operationType={OperationType.RECEIVE}
       wallet={activeWallet}
       accounts={activeAccounts}
-      operationType={OperationType.RECEIVE}
       redirectPath={Paths.ASSETS}
     >
       <AssetRouteGuard redirectPath={Paths.ASSETS}>
         {(chain, asset) => <ReceiveAssetModal chain={chain} asset={asset} onClose={() => navigate(Paths.ASSETS)} />}
       </AssetRouteGuard>
-    </CheckPermissionWithRedirect>
+    </CheckPermission>
   );
 };
