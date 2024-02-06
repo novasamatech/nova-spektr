@@ -239,7 +239,7 @@
   },
   {
     "name": "Westmint",
-    "specName": "westmint",
+    "specName": "westend",
     "addressPrefix": 42,
     "chainId": "0x67f9723393ef76214df0118c34bbbd3dbebc8ed46a10973a8c969d48fe7598c9",
     "parentId": "0xe143f23803ac50e8f6f8e62695d1ce9e4e1d68aa36c1cd2cfd15340213f3423e",
@@ -319,7 +319,7 @@
   },
   {
     "name": "Kusama Asset Hub",
-    "specName": "statemine",
+    "specName": "kusama",
     "addressPrefix": 2,
     "chainId": "0x48239ef607d7928874027a43a67689209727dfb3d3dc5e5b03a39bdc2eda771a",
     "parentId": "0xb0a8d493285c2df73290dfb7e61f870f17b41801197a149ca93654499ea3dafe",
@@ -452,7 +452,7 @@
   },
   {
     "name": "Karura",
-    "specName": "karura",
+    "specName": "kusama",
     "addressPrefix": 8,
     "chainId": "0xbaf5aabe40646d11f0ee8abbdc64f4a4b7674925cba08e4a05ff9ebed6e2126b",
     "parentId": "0xb0a8d493285c2df73290dfb7e61f870f17b41801197a149ca93654499ea3dafe",
@@ -890,7 +890,7 @@
   },
   {
     "name": "Shiden",
-    "specName": "shiden",
+    "specName": "kusama",
     "addressPrefix": 5,
     "chainId": "0xf1cf9022c7ebb34b162d5b5e34e705a5a740b2d0ecc1009fb89023e62a488108",
     "parentId": "0xb0a8d493285c2df73290dfb7e61f870f17b41801197a149ca93654499ea3dafe",
@@ -1093,7 +1093,7 @@
   },
   {
     "name": "Bifrost Kusama",
-    "specName": "bifrost",
+    "specName": "kusama",
     "addressPrefix": 6,
     "chainId": "0x9f28c6a68e0fc9646eff64935684f6eeeece527e37bbe1f213d22caa1d9d6bed",
     "parentId": "0xb0a8d493285c2df73290dfb7e61f870f17b41801197a149ca93654499ea3dafe",
@@ -1350,7 +1350,7 @@
   },
   {
     "name": "Kintsugi",
-    "specName": "kintsugi-parachain",
+    "specName": "kusama",
     "addressPrefix": 2092,
     "chainId": "0x9af9a64e6e4da8e3073901c3ff0cc4c3aad9563786d89daf6ad820b6e14a0b8b",
     "parentId": "0xb0a8d493285c2df73290dfb7e61f870f17b41801197a149ca93654499ea3dafe",
@@ -1628,7 +1628,7 @@
   },
   {
     "name": "Parallel Heiko",
-    "specName": "heiko",
+    "specName": "kusama",
     "addressPrefix": 110,
     "chainId": "0x64a1c658a48b2e70a7fb1ad4c39eea35022568c20fc44a6e2e3d0a57aee6053b",
     "parentId": "0xb0a8d493285c2df73290dfb7e61f870f17b41801197a149ca93654499ea3dafe",
@@ -1806,7 +1806,7 @@
   },
   {
     "name": "Basilisk",
-    "specName": "basilisk",
+    "specName": "kusama",
     "addressPrefix": 10041,
     "chainId": "0xa85cfb9b9fd4d622a5b28289a02347af987d8f73fa3108450e2b4a11c1ce5755",
     "parentId": "0xb0a8d493285c2df73290dfb7e61f870f17b41801197a149ca93654499ea3dafe",
@@ -1936,7 +1936,7 @@
   },
   {
     "name": "Altair",
-    "specName": "altair",
+    "specName": "kusama",
     "addressPrefix": 136,
     "chainId": "0xaa3876c1dc8a1afcc2e9a685a49ff7704cfd36ad8c90bf2702b9d1b00cc40011",
     "parentId": "0xb0a8d493285c2df73290dfb7e61f870f17b41801197a149ca93654499ea3dafe",
@@ -1988,7 +1988,7 @@
   },
   {
     "name": "Khala",
-    "specName": "khala",
+    "specName": "kusama",
     "addressPrefix": 30,
     "chainId": "0xd43540ba6d3eb4897c28a77d48cb5b729fea37603cbbfc7a86a73b72adb3be8d",
     "parentId": "0xb0a8d493285c2df73290dfb7e61f870f17b41801197a149ca93654499ea3dafe",
@@ -2226,7 +2226,7 @@
   },
   {
     "name": "KILT",
-    "specName": "kilt-spiritnet",
+    "specName": "polkadot",
     "addressPrefix": 38,
     "chainId": "0x411f057b9107718c9624d6aa4a3f23c1653898297f3d4d529d9bb6511a39dd21",
     "parentId": "0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3",
@@ -2319,7 +2319,7 @@
   },
   {
     "name": "Calamari",
-    "specName": "calamari",
+    "specName": "kusama",
     "addressPrefix": 78,
     "chainId": "0x4ac80c99289841dd946ef92765bf659a307d39189b3ce374a92b5f0415ee17a1",
     "parentId": "0xb0a8d493285c2df73290dfb7e61f870f17b41801197a149ca93654499ea3dafe",
@@ -2449,7 +2449,7 @@
   },
   {
     "name": "QUARTZ",
-    "specName": "quartz",
+    "specName": "kusama",
     "addressPrefix": 255,
     "chainId": "0xcd4d732201ebe5d6b014edda071c4203e16867305332301dc8d092044b28e554",
     "parentId": "0xb0a8d493285c2df73290dfb7e61f870f17b41801197a149ca93654499ea3dafe",
@@ -2510,7 +2510,7 @@
   },
   {
     "name": "Bit.Country Pioneer",
-    "specName": "pioneer-runtime",
+    "specName": "kusama",
     "addressPrefix": 268,
     "chainId": "0xf22b7850cdd5a7657bbfd90ac86441275bbc57ace3d2698a740c7b0ec4de5ec3",
     "parentId": "0xb0a8d493285c2df73290dfb7e61f870f17b41801197a149ca93654499ea3dafe",
@@ -2572,7 +2572,7 @@
   },
   {
     "name": "Acala",
-    "specName": "acala",
+    "specName": "polkadot",
     "addressPrefix": 10,
     "chainId": "0xfc41b9bd8ef8fe53d58c7ea67c794c7ec9a73daf05e6d54b14ff6342c99ba64c",
     "parentId": "0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3",
@@ -2860,7 +2860,7 @@
   },
   {
     "name": "Astar",
-    "specName": "astar",
+    "specName": "polkadot",
     "addressPrefix": 5,
     "chainId": "0x9eb76c5184c4ab8679d2d5d819fdf90b9c001403e9e17da2e14b6d8aec4029c6",
     "parentId": "0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3",
@@ -3072,7 +3072,7 @@
   },
   {
     "name": "Parallel",
-    "specName": "parallel",
+    "specName": "polkadot",
     "addressPrefix": 172,
     "chainId": "0xe61a41c53f5dcd0beb09df93b34402aada44cb05117b71059cce40a2723a4e97",
     "parentId": "0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3",
@@ -3327,7 +3327,7 @@
   },
   {
     "name": "CLV Parachain",
-    "specName": "clover-mainnet",
+    "specName": "polkadot",
     "addressPrefix": 128,
     "chainId": "0x5c7bd13edf349b33eb175ffae85210299e324d852916336027391536e686f267",
     "parentId": "0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3",
@@ -3372,7 +3372,7 @@
   },
   {
     "name": "Polkadot Asset Hub",
-    "specName": "statemint",
+    "specName": "polkadot",
     "addressPrefix": 0,
     "chainId": "0x68d56f15f85d3136970ec16946040bc1752654e906147f7e43e9d539d7c3de2f",
     "parentId": "0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3",
@@ -3461,7 +3461,7 @@
   },
   {
     "name": "Robonomics",
-    "specName": "robonomics",
+    "specName": "kusama",
     "addressPrefix": 32,
     "chainId": "0x631ccc82a078481584041656af292834e1ae6daab61d2875b4dd0c14bb9b17bc",
     "parentId": "0xb0a8d493285c2df73290dfb7e61f870f17b41801197a149ca93654499ea3dafe",
@@ -3529,7 +3529,7 @@
   },
   {
     "name": "Encointer",
-    "specName": "encointer-parachain",
+    "specName": "kusama",
     "addressPrefix": 2,
     "chainId": "0x7dd99936c1e9e6d1ce7d90eb6f33bea8393b4bf87677d675aa63c9cb3e8c5b5b",
     "parentId": "0xb0a8d493285c2df73290dfb7e61f870f17b41801197a149ca93654499ea3dafe",
@@ -3582,7 +3582,7 @@
   },
   {
     "name": "Picasso",
-    "specName": "picasso",
+    "specName": "kusama",
     "addressPrefix": 49,
     "chainId": "0x6811a339673c9daa897944dcdac99c6e2939cc88245ed21951a0a3c9a2be75bc",
     "parentId": "0xb0a8d493285c2df73290dfb7e61f870f17b41801197a149ca93654499ea3dafe",
@@ -3679,7 +3679,7 @@
   },
   {
     "name": "Zeitgeist",
-    "specName": "zeitgeist",
+    "specName": "kusama",
     "addressPrefix": 73,
     "chainId": "0x1bf2a2ecb4a868de66ea8610f2ce7c8c43706561b6476031315f6640fe38e060",
     "parentId": "0xb0a8d493285c2df73290dfb7e61f870f17b41801197a149ca93654499ea3dafe",
@@ -3741,7 +3741,7 @@
   },
   {
     "name": "Litmus",
-    "specName": "litmus-parachain",
+    "specName": "kusama",
     "addressPrefix": 131,
     "chainId": "0xda5831fbc8570e3c6336d0d72b8c08f8738beefec812df21ef2afc2982ede09c",
     "parentId": "0xb0a8d493285c2df73290dfb7e61f870f17b41801197a149ca93654499ea3dafe",
@@ -3790,7 +3790,7 @@
   },
   {
     "name": "Subsocial",
-    "specName": "subsocial-parachain",
+    "specName": "kusama",
     "addressPrefix": 28,
     "chainId": "0x4a12be580bb959937a1c7a61d5cf24428ed67fa571974b4007645d1886e7c89f",
     "parentId": "0xb0a8d493285c2df73290dfb7e61f870f17b41801197a149ca93654499ea3dafe",
@@ -3840,7 +3840,7 @@
   },
   {
     "name": "Crust Shadow",
-    "specName": "crust-collator",
+    "specName": "kusama",
     "addressPrefix": 66,
     "chainId": "0xd4c0c08ca49dc7c680c3dac71a7c0703e5b222f4b6c03fe4c5219bb8f22c18dc",
     "parentId": "0xb0a8d493285c2df73290dfb7e61f870f17b41801197a149ca93654499ea3dafe",
@@ -3892,7 +3892,7 @@
   },
   {
     "name": "Integritee Parachain",
-    "specName": "integritee-parachain",
+    "specName": "kusama",
     "addressPrefix": 13,
     "chainId": "0xcdedc8eadbfa209d3f207bba541e57c3c58a667b05a2e1d1e86353c9000758da",
     "parentId": "0xb0a8d493285c2df73290dfb7e61f870f17b41801197a149ca93654499ea3dafe",
@@ -3948,7 +3948,7 @@
   },
   {
     "name": "Centrifuge Parachain",
-    "specName": "centrifuge",
+    "specName": "polkadot",
     "addressPrefix": 36,
     "chainId": "0xb3db41421702df9a7fcac62b53ffeac85f7853cc4e689e0b93aeb3db18c09d82",
     "parentId": "0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3",
@@ -4004,7 +4004,7 @@
   },
   {
     "name": "HydraDX",
-    "specName": "hydradx",
+    "specName": "polkadot",
     "addressPrefix": 63,
     "chainId": "0xafdc188f45c71dacbaa0b62e16a91f726c7b8699a9748cdf715459de6b7f366d",
     "parentId": "0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3",
@@ -4355,7 +4355,7 @@
   },
   {
     "name": "Interlay",
-    "specName": "interlay-parachain",
+    "specName": "polkadot",
     "addressPrefix": 2032,
     "chainId": "0xbf88efe70e9e0e916416e8bed61f2b45717f517d7f3523e33c7b001e5ffcbc72",
     "parentId": "0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3",
@@ -4607,7 +4607,7 @@
   },
   {
     "name": "Nodle Parachain",
-    "specName": "nodle-para",
+    "specName": "polkadot",
     "addressPrefix": 37,
     "chainId": "0x97da7ede98d7bad4e36b4d734b6055425a3be036da2a332ea5a7037656427a21",
     "parentId": "0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3",
@@ -4663,7 +4663,7 @@
   },
   {
     "name": "Phala",
-    "specName": "phala",
+    "specName": "polkadot",
     "addressPrefix": 30,
     "chainId": "0x1bb969d85965e4bb5a651abbedf21a54b6b31a21f66b5401cc3f1e286268d736",
     "parentId": "0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3",
@@ -4719,7 +4719,7 @@
   },
   {
     "name": "Turing",
-    "specName": "turing",
+    "specName": "kusama",
     "addressPrefix": 51,
     "chainId": "0x0f62b701fb12d02237a33b84818c11f621653d2b1614c777973babf4652b535d",
     "parentId": "0xb0a8d493285c2df73290dfb7e61f870f17b41801197a149ca93654499ea3dafe",
@@ -4928,7 +4928,7 @@
   },
   {
     "name": "Composable Finance",
-    "specName": "composable",
+    "specName": "polkadot",
     "addressPrefix": 50,
     "chainId": "0xdaab8df776eb52ec604a5df5d388bb62a050a0aaec4556a64265b9d42755552d",
     "parentId": "0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3",
@@ -5137,7 +5137,7 @@
   },
   {
     "name": "OriginTrail Parachain",
-    "specName": "origintrail-parachain",
+    "specName": "polkadot",
     "addressPrefix": 101,
     "chainId": "0xe7e0962324a3b86c83404dbea483f25fb5dab4c224791c81b756cfc948006174",
     "parentId": "0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3",
@@ -5187,7 +5187,7 @@
   },
   {
     "name": "Bifrost Polkadot",
-    "specName": "bifrost_polkadot",
+    "specName": "polkadot",
     "addressPrefix": 6,
     "chainId": "0x262e1b2ad728475fd6fe88e62d34c200abe6fd693931ddad144059b1eb884e5b",
     "parentId": "0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3",
@@ -5352,7 +5352,7 @@
   },
   {
     "name": "Litentry",
-    "specName": "litentry-parachain",
+    "specName": "polkadot",
     "addressPrefix": 31,
     "chainId": "0x2fc8bb6ed7c0051bdcf4866c322ed32b6276572713607e3297ccf411b8f14aa9",
     "parentId": "0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3",
@@ -5398,7 +5398,7 @@
   },
   {
     "name": "UNIQUE",
-    "specName": "unique",
+    "specName": "polkadot",
     "addressPrefix": 7391,
     "chainId": "0x84322d9cddbf35088f1e54e9a85c967a41a56a4f43445768125e61af166c7d31",
     "parentId": "0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3",
@@ -5451,7 +5451,7 @@
   },
   {
     "name": "Mangata X",
-    "specName": "mangata-parachain",
+    "specName": "kusama",
     "addressPrefix": 42,
     "chainId": "0xd611f22d291c5b7b69f1e105cca03352984c344c4421977efaa4cbdd1834e2aa",
     "parentId": "0xb0a8d493285c2df73290dfb7e61f870f17b41801197a149ca93654499ea3dafe",
@@ -5702,7 +5702,7 @@
   },
   {
     "name": "Kabocha",
-    "specName": "kabocha-parachain",
+    "specName": "kusama",
     "addressPrefix": 27,
     "chainId": "0xfeb426ca713f0f46c96465b8f039890370cf6bfd687c9076ea2843f58a6ae8a7",
     "parentId": "0xb0a8d493285c2df73290dfb7e61f870f17b41801197a149ca93654499ea3dafe",
@@ -5743,7 +5743,7 @@
   },
   {
     "name": "Bajun",
-    "specName": "bajun",
+    "specName": "kusama",
     "addressPrefix": 1337,
     "chainId": "0x35a06bfec2edf0ff4be89a6428ccd9ff5bd0167d618c5a0d4341f9600a458d14",
     "parentId": "0xb0a8d493285c2df73290dfb7e61f870f17b41801197a149ca93654499ea3dafe",
@@ -5799,7 +5799,7 @@
   },
   {
     "name": "Imbue",
-    "specName": "imbue",
+    "specName": "kusama",
     "addressPrefix": 42,
     "chainId": "0xca93a37c913a25fa8fdb33c7f738afc39379cb71d37874a16d4c091a5aef9f89",
     "parentId": "0xb0a8d493285c2df73290dfb7e61f870f17b41801197a149ca93654499ea3dafe",
@@ -5865,7 +5865,7 @@
   },
   {
     "name": "Tinkernet",
-    "specName": "tinkernet_node",
+    "specName": "kusama",
     "addressPrefix": 117,
     "chainId": "0xd42e9606a995dfe433dc7955dc2a70f495f350f373daa200098ae84437816ad2",
     "parentId": "0xb0a8d493285c2df73290dfb7e61f870f17b41801197a149ca93654499ea3dafe",
@@ -5906,7 +5906,7 @@
   },
   {
     "name": "Amplitude",
-    "specName": "amplitude",
+    "specName": "kusama",
     "addressPrefix": 57,
     "chainId": "0xcceae7f3b9947cdb67369c026ef78efa5f34a08fe5808d373c04421ecf4f1aaf",
     "parentId": "0xb0a8d493285c2df73290dfb7e61f870f17b41801197a149ca93654499ea3dafe",
@@ -6104,7 +6104,7 @@
   },
   {
     "name": "Kapex",
-    "specName": "totem-parachain",
+    "specName": "polkadot",
     "addressPrefix": 2007,
     "chainId": "0x7838c3c774e887c0a53bcba9e64f702361a1a852d5550b86b58cd73827fa1e1e",
     "parentId": "0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3",
@@ -6249,7 +6249,7 @@
   },
   {
     "name": "DAO IPCI",
-    "specName": "ipci",
+    "specName": "kusama",
     "addressPrefix": 32,
     "chainId": "0x6f0f071506de39058fe9a95bbca983ac0e9c5da3443909574e95d52eb078d348",
     "parentId": "0xb0a8d493285c2df73290dfb7e61f870f17b41801197a149ca93654499ea3dafe",
@@ -6411,7 +6411,7 @@
   },
   {
     "name": "Pendulum",
-    "specName": "pendulum",
+    "specName": "polkadot",
     "addressPrefix": 56,
     "chainId": "0x5d3c298622d5634ed019bf61ea4b71655030015bde9beb0d6a24743714462c86",
     "parentId": "0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3",
@@ -6508,7 +6508,7 @@
   },
   {
     "name": "Aventus",
-    "specName": "avn-parachain",
+    "specName": "polkadot",
     "addressPrefix": 42,
     "chainId": "0x8b5c955b5c8fd7112562327e3859473df4e3dff49bd72a113dbb668d2cfa20d7",
     "parentId": "0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3",
@@ -6547,7 +6547,7 @@
   },
   {
     "name": "Crust Polkadot Parachain",
-    "specName": "polkadot-crust-parachain",
+    "specName": "polkadot",
     "addressPrefix": 88,
     "chainId": "0x4319cc49ee79495b57a1fec4d2bd43f59052dcc690276de566c2691d6df4f7b8",
     "parentId": "0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3",
@@ -6590,7 +6590,7 @@
   },
   {
     "name": "Kintsugi Testnet",
-    "specName": "kintsugi-parachain",
+    "specName": "kusama",
     "addressPrefix": 2092,
     "chainId": "0x3a5a5cd27eb15fd26c37315a0f0b938733bb798c897428448efac5e6150cad06",
     "parentId": "0xb0a8d493285c2df73290dfb7e61f870f17b41801197a149ca93654499ea3dafe",
@@ -6777,7 +6777,7 @@
   },
   {
     "name": "Hashed Network",
-    "specName": "luhn",
+    "specName": "polkadot",
     "addressPrefix": 42,
     "chainId": "0xdce5477cfca571c2cb652f38bbb70429004be3cf9649dd2b4ad9455b2251fe43",
     "parentId": "0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3",
@@ -6900,7 +6900,7 @@
   },
   {
     "name": "Ajuna",
-    "specName": "ajuna",
+    "specName": "polkadot",
     "addressPrefix": 1328,
     "chainId": "0xe358eb1d11b31255a286c12e44fe6780b7edb171d657905a97e39f71d9c6c3ee",
     "parentId": "0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3",
@@ -6938,7 +6938,7 @@
   },
   {
     "name": "Frequency",
-    "specName": "frequency",
+    "specName": "polkadot",
     "addressPrefix": 90,
     "chainId": "0x4a587bf17a404e3572747add7aab7bbe56e805a5479c6c436f07f36fcc8d3ae1",
     "parentId": "0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3",
@@ -7054,7 +7054,7 @@
   },
   {
     "name": "Polkadot Bridge Hub",
-    "specName": "bridge-hub-polkadot",
+    "specName": "polkadot",
     "addressPrefix": 0,
     "chainId": "0xdcf691b5a3fbe24adc99ddc959c0561b973e329b1aef4c4b22e7bb2ddecb4464",
     "parentId": "0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3",
@@ -7097,7 +7097,7 @@
   },
   {
     "name": "Kusama Bridge Hub",
-    "specName": "bridge-hub-kusama",
+    "specName": "kusama",
     "addressPrefix": 2,
     "chainId": "0x00dcb981df86429de8bbacf9803401f09485366c44efbf53af9ecfab03adc7e5",
     "parentId": "0xb0a8d493285c2df73290dfb7e61f870f17b41801197a149ca93654499ea3dafe",
@@ -7140,7 +7140,7 @@
   },
   {
     "name": "Polkadot Collectives",
-    "specName": "collectives",
+    "specName": "polkadot",
     "addressPrefix": 0,
     "chainId": "0x46ee89aa2eedd13e988962630ec9fb7565964cf5023bb351f2b6b25c1b68b0b2",
     "parentId": "0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3",
@@ -7191,7 +7191,7 @@
   },
   {
     "name": "Amplitude Foucoco",
-    "specName": "foucoco",
+    "specName": "kusama",
     "addressPrefix": 57,
     "chainId": "0x67221cd96c1551b72d55f65164d6a39f31b570c77a05c90e31931b0e2f379e13",
     "parentId": "0xb0a8d493285c2df73290dfb7e61f870f17b41801197a149ca93654499ea3dafe",
@@ -7217,7 +7217,7 @@
   },
   {
     "name": "Interlay Testnet",
-    "specName": "interlay-parachain",
+    "specName": "polkadot",
     "addressPrefix": 2032,
     "chainId": "0x418ae94c9fce02b1ab3b5bc211cd2f2133426f2861d97482bbdfdac1bbb0fb92",
     "parentId": "0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3",
@@ -7440,7 +7440,7 @@
   },
   {
     "name": "krest",
-    "specName": "peaq-node-krest",
+    "specName": "kusama",
     "addressPrefix": 42,
     "chainId": "0xb3dd5ad6a82872b30aabaede8f41dfd4ff6c32ff82f8757d034a45be63cf104c",
     "parentId": "0xb0a8d493285c2df73290dfb7e61f870f17b41801197a149ca93654499ea3dafe",
@@ -7520,7 +7520,7 @@
   },
   {
     "name": "Manta",
-    "specName": "manta",
+    "specName": "polkadot",
     "addressPrefix": 77,
     "chainId": "0xf3c7ad88f6a80f366c4be216691411ef0622e8b809b1046ea297ef106058d4eb",
     "parentId": "0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3",
@@ -7655,7 +7655,7 @@
   },
   {
     "name": "EWX Staging Parachain Argon",
-    "specName": "ewx-parachain",
+    "specName": "polkadot",
     "addressPrefix": 42,
     "chainId": "0x6ab1bd8aed6d5fdcaf347826bfcd0172681181edf8356b90cb3cf47076698ae2",
     "parentId": "0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3",
@@ -7681,7 +7681,7 @@
   },
   {
     "name": "Watr",
-    "specName": "watr-mainnet",
+    "specName": "polkadot",
     "addressPrefix": 19,
     "chainId": "0x161db6cdc5896fe55ef12b4778fe78dd65d7af43f65c601786b88d7a93ebc58a",
     "parentId": "0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3",
@@ -7786,7 +7786,7 @@
   },
   {
     "name": "Polimec",
-    "specName": "polimec-mainnet",
+    "specName": "polkadot",
     "addressPrefix": 41,
     "chainId": "0x7eb9354488318e7549c722669dcbdcdc526f1fef1420e7944667212f3601fdbd",
     "parentId": "0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3",
@@ -7813,7 +7813,7 @@
   },
   {
     "name": "Energy Web X",
-    "specName": "ewx-parachain",
+    "specName": "polkadot",
     "addressPrefix": 42,
     "chainId": "0x5a51e04b88a4784d205091aa7bada002f3e5da3045e5b05655ee4db2589c33b5",
     "parentId": "0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3",
@@ -7865,7 +7865,7 @@
   },
   {
     "name": "InvArch",
-    "specName": "invarch",
+    "specName": "polkadot",
     "addressPrefix": 117,
     "chainId": "0x31a7d8914fb31c249b972f18c115f1e22b4b039abbcb03c73b6774c5642f9efe",
     "parentId": "0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3",
