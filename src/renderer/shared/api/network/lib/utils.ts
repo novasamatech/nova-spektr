@@ -8,6 +8,10 @@ export function isKusama(chainName: string): boolean {
   return chainName === 'Kusama';
 }
 
+export function isWestend(chainName: string): boolean {
+  return chainName === 'Westend';
+}
+
 export function isTestnet(chainOptions?: ChainOptions[]): boolean {
   return Boolean(chainOptions?.includes('testnet'));
 }

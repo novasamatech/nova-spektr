@@ -5,7 +5,7 @@ import { throttle } from 'patronum';
 import keyBy from 'lodash/keyBy';
 
 import { Account, AccountId, Balance, Chain, ChainId, ConnectionStatus } from '@shared/core';
-import { accountUtils, walletModel } from '@entities/wallet';
+import { accountUtils, walletModel, walletUtils } from '@entities/wallet';
 import { networkModel } from '@entities/network';
 import { balanceModel, balanceSubscriptionService, useBalanceService } from '@entities/balance';
 import { SUBSCRIPTION_DELAY } from '../common/constants';
@@ -57,7 +57,7 @@ const createSubscriptionsBalancesFx = createEffect(
       const networkConnected = statuses[chainId as ChainId] === ConnectionStatus.CONNECTED;
       const oldSubscription = subscriptions[chainId as ChainId];
 
-      if (!networkConnected) {
+      if (!networkConnected || !uniqAccountIds.length) {
         await unsubscribeBalancesFx({
           chainId: chainId as ChainId,
           subscription: oldSubscription,
@@ -80,6 +80,8 @@ const createSubscriptionsBalancesFx = createEffect(
       const chain = chains[chainId as ChainId];
 
       try {
+        if (!chain) return;
+
         const balanceSubs = balanceSubscriptionService.subscribeBalances(chain, api, uniqAccountIds, boundUpdate);
         const locksSubs = balanceSubscriptionService.subscribeLockBalances(chain, api, uniqAccountIds, boundUpdate);
 
@@ -119,11 +121,14 @@ const populateBalancesFx = createEffect((accounts: AccountId[]): Promise<Balance
 
 sample({
   clock: walletModel.$activeAccounts,
-  source: walletModel.$accounts,
-  fn: (accounts, activeAccounts) => {
-    const subscriptionAccounts = [...activeAccounts];
-
+  source: { accounts: walletModel.$accounts, wallets: walletModel.$wallets },
+  fn: ({ accounts, wallets }, activeAccounts) => {
     const accountsMap = keyBy(accounts, 'accountId');
+    const walletsMap = keyBy(wallets, 'id');
+
+    const subscriptionAccounts = activeAccounts.filter((account) => {
+      return !walletUtils.isPolkadotVault(walletsMap[account.walletId]) || !accountUtils.isBaseAccount(account);
+    });
 
     activeAccounts.forEach((account) => {
       if (accountUtils.isMultisigAccount(account)) {

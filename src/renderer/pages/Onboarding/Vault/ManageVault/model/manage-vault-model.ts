@@ -2,16 +2,14 @@ import { createApi, createEvent, createStore, sample, combine, createEffect, att
 import { createForm } from 'effector-forms';
 import { spread } from 'patronum';
 
-import { chainsService } from '@shared/api/network';
 import { accountUtils, KEY_NAMES, walletModel } from '@entities/wallet';
 import type { ChainAccount, ShardAccount, DraftAccount, BaseAccount, Wallet, Account, NoID } from '@shared/core';
 import { AccountType, ChainType, CryptoType, KeyType } from '@shared/core';
-import { dictionary } from '@shared/lib/utils';
+import { dictionary, isDefaultChain } from '@shared/lib/utils';
 import { storageService } from '@shared/api/storage';
 import { SeedInfo } from '@entities/transaction';
 import { walletSelectModel } from '@features/wallets';
-
-const chains = chainsService.getChainsData();
+import { networkModel } from '@entities/network';
 
 const WALLET_NAME_MAX_LENGTH = 256;
 
@@ -103,8 +101,14 @@ sample({
 
 sample({
   clock: formInitiated,
-  fn: () => {
-    return chains.reduce<DraftAccount<ChainAccount | ShardAccount>[]>((acc, chain) => {
+  source: {
+    chains: networkModel.$chains,
+  },
+  fn: ({ chains }) => {
+    const chainList = Object.values(chains);
+    const defaultChains = chainList.filter((chain) => isDefaultChain(chain.chainId));
+
+    return defaultChains.reduce<DraftAccount<ChainAccount | ShardAccount>[]>((acc, chain) => {
       if (!chain.specName) return acc;
 
       acc.push({

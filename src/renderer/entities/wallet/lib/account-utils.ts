@@ -14,7 +14,9 @@ import type {
   ShardAccount,
   WalletConnectAccount,
   ProxiedAccount,
+  Wallet,
 } from '@shared/core';
+import { walletUtils } from './wallet-utils';
 
 export const accountUtils = {
   isBaseAccount,
@@ -35,6 +37,7 @@ export const accountUtils = {
   isAnyProxyType,
   isNonTransferProxyType,
   isStakingProxyType,
+  isNonBaseVaultAccount,
 };
 
 function getMultisigAccountId(ids: AccountId[], threshold: Threshold): AccountId {
@@ -153,4 +156,8 @@ function isNonTransferProxyType({ proxyType }: ProxiedAccount): boolean {
 
 function isStakingProxyType({ proxyType }: ProxiedAccount): boolean {
   return proxyType === ProxyType.STAKING;
+}
+
+function isNonBaseVaultAccount(account: Account, wallet: Wallet): boolean {
+  return !walletUtils.isPolkadotVault(wallet) || !accountUtils.isBaseAccount(account);
 }
