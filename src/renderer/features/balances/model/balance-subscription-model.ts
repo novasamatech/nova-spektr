@@ -5,7 +5,7 @@ import { throttle } from 'patronum';
 import keyBy from 'lodash/keyBy';
 
 import { Account, AccountId, Balance, Chain, ChainId, ConnectionStatus } from '@shared/core';
-import { accountUtils, walletModel, walletUtils } from '@entities/wallet';
+import { accountUtils, walletModel } from '@entities/wallet';
 import { networkModel } from '@entities/network';
 import { balanceModel, balanceSubscriptionService, useBalanceService } from '@entities/balance';
 import { SUBSCRIPTION_DELAY } from '../common/constants';
@@ -121,14 +121,13 @@ const populateBalancesFx = createEffect((accounts: AccountId[]): Promise<Balance
 
 sample({
   clock: walletModel.$activeAccounts,
-  source: { accounts: walletModel.$accounts, wallets: walletModel.$wallets },
-  fn: ({ accounts, wallets }, activeAccounts) => {
+  source: { accounts: walletModel.$accounts, wallet: walletModel.$activeWallet },
+  fn: ({ accounts, wallet }, activeAccounts) => {
     const accountsMap = keyBy(accounts, 'accountId');
-    const walletsMap = keyBy(wallets, 'id');
 
-    const subscriptionAccounts = activeAccounts.filter((account) => {
-      return !walletUtils.isPolkadotVault(walletsMap[account.walletId]) || !accountUtils.isBaseAccount(account);
-    });
+    const subscriptionAccounts = activeAccounts.filter(
+      (account) => wallet && accountUtils.isNonBaseVaultAccount(account, wallet),
+    );
 
     activeAccounts.forEach((account) => {
       if (accountUtils.isMultisigAccount(account)) {
