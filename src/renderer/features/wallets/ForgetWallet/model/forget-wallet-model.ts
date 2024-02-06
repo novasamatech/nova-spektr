@@ -46,7 +46,7 @@ type CheckForProxiedWalletsResult = {
 };
 const findProxiedWalletsFx = createEffect(
   ({ wallet, accounts, proxies, walletsProxyGroups }: CheckForProxiedWalletsParams): CheckForProxiedWalletsResult => {
-    const walletAccountsIds = accounts.filter((a) => a.walletId === wallet.id).map((a) => a.accountId);
+    const walletAccountsIds = accountUtils.getWalletAccounts(wallet.id, accounts).map((a) => a.accountId);
 
     const proxiedAccountsToDelete = accounts.filter(
       (a) => accountUtils.isProxiedAccount(a) && walletAccountsIds.includes(a.proxyAccountId),
@@ -57,10 +57,13 @@ const findProxiedWalletsFx = createEffect(
       .map((a) => a.accountId)
       .concat(walletAccountsIds)
       .reduce<ProxyAccount[]>((acc, accountId) => (proxies[accountId] ? acc.concat(proxies[accountId]) : acc), []);
-    const proxyGroupsToDelete = proxiedWalletsToDelete.reduce(
-      (acc, walletId) => (walletsProxyGroups[walletId] ? acc.concat(walletsProxyGroups[walletId]) : acc),
-      [] as ProxyGroup[],
-    );
+    const proxyGroupsToDelete = proxiedWalletsToDelete.reduce((acc, walletId) => {
+      if (walletsProxyGroups[walletId]) {
+        acc.push(...walletsProxyGroups[walletId]);
+      }
+
+      return acc;
+    }, [] as ProxyGroup[]);
 
     return {
       proxiedWalletsToDelete,
@@ -89,10 +92,7 @@ sample({
     proxies: proxyModel.$proxies,
     walletsProxyGroups: proxyModel.$walletsProxyGroups,
   },
-  fn: (params, wallet) => ({
-    ...params,
-    wallet,
-  }),
+  fn: (params, wallet) => ({ ...params, wallet }),
   target: findProxiedWalletsFx,
 });
 
