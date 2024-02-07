@@ -15,6 +15,7 @@ import {
   InputHint,
   Loader,
   PasswordInput,
+  Separator,
 } from '@shared/ui';
 import type { ComboboxOption } from '@shared/ui/types';
 
@@ -144,106 +145,130 @@ export const LoginForm = () => {
   const register = <InfoLink url="https://app.element.io/#/register" />;
 
   return (
-    <form className="flex flex-col gap-y-4" onSubmit={handleSubmit(submitMatrixLogin)}>
-      <Controller
-        name="homeserver"
-        control={control}
-        rules={{ required: true }}
-        render={({ field: { value, onChange } }) => (
-          <div className="flex flex-col gap-y-2">
-            <Combobox
-              label={t('settings.matrix.homeserverLabel')}
-              placeholder={t('settings.matrix.homeserverPlaceholder')}
-              wrapperClass="py-[11px]"
-              invalid={invalidHomeserver}
-              disabled={!isEditing || isHomeserverLoading}
-              options={HOME_SERVERS}
-              value={value}
-              onChange={changeHomeserver(onChange)}
-            />
-            <InputHint active={invalidHomeserver} variant="error">
-              {t('settings.matrix.badServerError')}
-            </InputHint>
-          </div>
-        )}
-      />
-
-      {credentialsFlow ? (
-        <>
-          {!isHomeserverLoading ? (
-            <>
-              <Controller
-                name="username"
-                control={control}
-                rules={{ required: true, validate: validateShortUserName }}
-                render={({ field: { value, onChange }, fieldState: { error } }) => (
-                  <>
-                    <Input
-                      label={t('settings.matrix.usernameLabel')}
-                      placeholder={t('settings.matrix.usernamePlaceholder')}
-                      wrapperClass="py-[11px]"
-                      disabled={!isEditing}
-                      invalid={invalidLogin || Boolean(errors.username)}
-                      value={value}
-                      onChange={changeInputValue(onChange)}
-                    />
-                    <InputHint active={error?.type === 'validate'} variant="error" className="-mt-2">
-                      {t('settings.matrix.usernameError')}
-                    </InputHint>
-                  </>
-                )}
+    <>
+      <form id="matrixLogin" className="flex flex-col gap-y-4" onSubmit={handleSubmit(submitMatrixLogin)}>
+        <Controller
+          name="homeserver"
+          control={control}
+          rules={{ required: true }}
+          render={({ field: { value, onChange } }) => (
+            <div className="flex flex-col gap-y-2">
+              <Combobox
+                label={t('settings.matrix.homeserverLabel')}
+                placeholder={t('settings.matrix.homeserverPlaceholder')}
+                wrapperClass="py-[11px]"
+                invalid={invalidHomeserver}
+                disabled={!isEditing || isHomeserverLoading}
+                options={HOME_SERVERS}
+                value={value}
+                onChange={changeHomeserver(onChange)}
               />
-
-              <Controller
-                name="password"
-                control={control}
-                rules={{ required: true }}
-                render={({ field: { value, onChange } }) => (
-                  <>
-                    <PasswordInput
-                      label={t('settings.matrix.passwordLabel')}
-                      placeholder={t('settings.matrix.passwordPlaceholder')}
-                      wrapperClass="py-[11px]"
-                      disabled={!isEditing}
-                      invalid={invalidLogin || Boolean(errors.password)}
-                      value={value}
-                      onChange={changeInputValue(onChange)}
-                    />
-                    <Alert
-                      active={invalidLogin}
-                      title={t('settings.matrix.badCredentialsError')}
-                      variant="error"
-                      className="-mt-2"
-                    />
-                  </>
-                )}
-              />
-            </>
-          ) : (
-            <div className="w-full h-[136px] flex items-center justify-center">
-              <Loader color="primary" />
+              <InputHint active={invalidHomeserver} variant="error">
+                {t('settings.matrix.badServerError')}
+              </InputHint>
             </div>
           )}
+        />
 
-          <FootnoteText className="text-text-tertiary mt-2">{t('settings.matrix.privacyTitle')}</FootnoteText>
+        {!credentialsFlow && (
+          <p className="text-center text-shade-40 text-sm py-4">
+            <Trans t={t} i18nKey="settings.matrix.loginNotAvailable" values={{ homeserver }} />
+          </p>
+        )}
 
-          <FootnoteText className="mt-2">
-            <Trans t={t} i18nKey="settings.matrix.registerLink" components={{ register }} />
-          </FootnoteText>
-        </>
-      ) : (
-        <p className="text-center text-shade-40 text-sm py-4">
-          <Trans t={t} i18nKey="settings.matrix.loginNotAvailable" values={{ homeserver }} />
-        </p>
-      )}
+        {credentialsFlow && isHomeserverLoading && (
+          <div className="w-full h-[136px] flex items-center justify-center">
+            <Loader color="primary" />
+          </div>
+        )}
+
+        {credentialsFlow && !isHomeserverLoading && (
+          <>
+            <Controller
+              name="username"
+              control={control}
+              rules={{ required: true, validate: validateShortUserName }}
+              render={({ field: { value, onChange }, fieldState: { error } }) => (
+                <>
+                  <Input
+                    label={t('settings.matrix.usernameLabel')}
+                    placeholder={t('settings.matrix.usernamePlaceholder')}
+                    wrapperClass="py-[11px]"
+                    disabled={!isEditing}
+                    invalid={invalidLogin || Boolean(errors.username)}
+                    value={value}
+                    onChange={changeInputValue(onChange)}
+                  />
+                  <InputHint active={error?.type === 'validate'} variant="error" className="-mt-2">
+                    {t('settings.matrix.usernameError')}
+                  </InputHint>
+                </>
+              )}
+            />
+
+            <Controller
+              name="password"
+              control={control}
+              rules={{ required: true }}
+              render={({ field: { value, onChange } }) => (
+                <>
+                  <PasswordInput
+                    label={t('settings.matrix.passwordLabel')}
+                    placeholder={t('settings.matrix.passwordPlaceholder')}
+                    wrapperClass="py-[11px]"
+                    disabled={!isEditing}
+                    invalid={invalidLogin || Boolean(errors.password)}
+                    value={value}
+                    onChange={changeInputValue(onChange)}
+                  />
+                  <Alert
+                    active={invalidLogin}
+                    title={t('settings.matrix.badCredentialsError')}
+                    variant="error"
+                    className="-mt-2"
+                  />
+                </>
+              )}
+            />
+          </>
+        )}
+      </form>
+
+      <div className="flex flex-col gap-y-6 mt-6">
+        {/* TODO: Add condition */}
+        <div className="flex flex-col gap-y-6">
+          <Separator text="or sign in" />
+
+          <div className="flex justify-between gap-x-4">
+            <Button className="flex-1" pallet="secondary" onClick={() => console.log('go')}>
+              <div className="flex items-center gap-x-2">
+                <Icon name="google" />
+                Google
+              </div>
+            </Button>
+            <Button className="flex-1" pallet="secondary" onClick={() => console.log('gh')}>
+              <div className="flex items-center gap-x-2">
+                <Icon name="github" className="text-text-primary" />
+                Github
+              </div>
+            </Button>
+          </div>
+        </div>
+
+        <FootnoteText className="text-text-tertiary">{t('settings.matrix.privacyTitle')}</FootnoteText>
+
+        <FootnoteText>
+          <Trans t={t} i18nKey="settings.matrix.registerLink" components={{ register }} />
+        </FootnoteText>
+      </div>
 
       <div className="flex justify-between items-center pt-3">
         <Icon name="matrixFull" className="!w-[56px] text-[#00000066]" size={24} />
-        <Button type="submit" isLoading={inProgress} disabled={logInDisabled || inProgress}>
+        <Button form="matrixLogin" type="submit" isLoading={inProgress} disabled={logInDisabled || inProgress}>
           {t('settings.matrix.logInButton')}
         </Button>
       </div>
-    </form>
+    </>
   );
 };
 
