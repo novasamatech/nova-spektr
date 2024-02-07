@@ -33,8 +33,6 @@ const UnkownWalletText = 'operation.sign.unkown';
 export const SignButton = ({ disabled, type, onClick, className }: Props) => {
   const { t } = useI18n();
 
-  console.log('type', type);
-
   return (
     <Button
       className={className}
