@@ -5,11 +5,11 @@ import { spread } from 'patronum';
 import { accountUtils, KEY_NAMES, walletModel } from '@entities/wallet';
 import type { ChainAccount, ShardAccount, DraftAccount, BaseAccount, Wallet, Account, NoID } from '@shared/core';
 import { AccountType, ChainType, CryptoType, KeyType } from '@shared/core';
-import { dictionary, isDefaultChain } from '@shared/lib/utils';
+import { dictionary } from '@shared/lib/utils';
 import { storageService } from '@shared/api/storage';
 import { SeedInfo } from '@entities/transaction';
 import { walletSelectModel } from '@features/wallets';
-import { networkModel } from '@entities/network';
+import { networkModel, networkUtils } from '@entities/network';
 
 const WALLET_NAME_MAX_LENGTH = 256;
 
@@ -101,12 +101,9 @@ sample({
 
 sample({
   clock: formInitiated,
-  source: {
-    chains: networkModel.$chains,
-  },
-  fn: ({ chains }) => {
-    const chainList = Object.values(chains);
-    const defaultChains = chainList.filter((chain) => isDefaultChain(chain.chainId));
+  source: networkModel.$chains,
+  fn: (chains) => {
+    const defaultChains = networkUtils.getMainRelaychains(Object.values(chains));
 
     return defaultChains.reduce<DraftAccount<ChainAccount | ShardAccount>[]>((acc, chain) => {
       if (!chain.specName) return acc;

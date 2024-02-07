@@ -52,7 +52,3 @@ export function getKnownChain(chainId: ChainId): WellKnownChain | undefined {
     [RelayChains.ROCOCO]: WellKnownChain.rococo_v2_2,
   }[chainId];
 }
-
-export function isDefaultChain(chainId: ChainId): boolean {
-  return [RelayChains.POLKADOT, RelayChains.KUSAMA, RelayChains.WESTEND].includes(chainId);
-}
