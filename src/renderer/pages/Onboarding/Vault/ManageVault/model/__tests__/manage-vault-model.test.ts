@@ -91,7 +91,7 @@ describe('pages/Onboarding/Vault/ManageVault/model/manage-vault-model', () => {
     };
 
     expect(scope.getState(manageVaultModel.$walletForm.$values)).toEqual({ name: 'test' });
-    expect(scope.getState(manageVaultModel.$keys).length).toEqual(2); // Polkadot, Kusama
+    expect(scope.getState(manageVaultModel.$keys).length).toEqual(3); // Polkadot, Kusama, Westend
     expect(
       scope.getState(manageVaultModel.$keys).find((account) => (account as ChainAccount).chainId === POLKADOT_CHAIN_ID),
     ).toEqual(MAIN_POLKAODT_ACCOUNT);

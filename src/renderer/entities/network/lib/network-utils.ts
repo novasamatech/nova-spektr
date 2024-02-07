@@ -87,10 +87,7 @@ function getLightClientChains(): ChainId[] {
 }
 
 function getMainRelaychains(chains: Chain[]): Chain[] {
-  const CHAINS_AMOUNT_DEV = 3;
-  const CHAINS_AMOUNT = 2;
+  const MainRelaychains = [RelayChains.POLKADOT, RelayChains.KUSAMA, RelayChains.WESTEND];
 
-  const mainChainsAmount = process.env.NODE_ENV === 'development' ? CHAINS_AMOUNT_DEV : CHAINS_AMOUNT;
-
-  return chains.slice(0, mainChainsAmount);
+  return chains.filter(({ chainId }) => MainRelaychains.includes(chainId));
 }
