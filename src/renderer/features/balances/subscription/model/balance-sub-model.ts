@@ -77,7 +77,7 @@ type SubChainsParams = {
 };
 const subscribeChainsFx = createEffect(
   async ({ apis, chains, walletId, subAccounts, subscriptions }: SubChainsParams): Promise<Subscriptions> => {
-    const boundUpdate = scopeBind(balanceModel.events.balancesUpdated);
+    const boundUpdate = scopeBind(balanceModel.events.balancesUpdated, { safe: true });
 
     const balanceRequests = chains.reduce<Promise<[VoidFn[], VoidFn[]]>[]>((acc, chain) => {
       Object.entries(subAccounts[chain.chainId]).forEach(([id, accountIds]) => {
@@ -94,22 +94,18 @@ const subscribeChainsFx = createEffect(
 
     const unsubFunctions = await Promise.all(balanceRequests);
 
-    // TODO: reduce modifies original object, that's wrong
-    return chains.reduce((acc, chain, index) => {
-      Object.keys(subAccounts[chain.chainId]).forEach((id) => {
-        if (walletId && Number(id) !== walletId) return;
+    return chains.reduce<Subscriptions>(
+      (acc, chain, index) => {
+        Object.keys(subAccounts[chain.chainId]).forEach((id) => {
+          if (walletId && Number(id) !== walletId) return;
 
-        const subChain = acc[chain.chainId];
+          acc[chain.chainId] = { ...acc[chain.chainId], [Number(id)]: unsubFunctions[index] };
+        });
 
-        if (subChain) {
-          subChain[Number(id)] = unsubFunctions[index];
-        } else {
-          acc[chain.chainId] = { [Number(id)]: unsubFunctions[index] };
-        }
-      });
-
-      return acc;
-    }, subscriptions);
+        return acc;
+      },
+      { ...subscriptions },
+    );
   },
 );
 
