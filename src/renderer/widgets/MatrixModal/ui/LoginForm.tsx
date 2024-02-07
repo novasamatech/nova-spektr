@@ -3,7 +3,7 @@ import { Trans } from 'react-i18next';
 import { useEffect, useState } from 'react';
 
 import { useI18n, useMatrix } from '@app/providers';
-import { validateShortUserName, WELL_KNOWN_SERVERS } from '@shared/api/matrix';
+import { validateShortUserName, WELL_KNOWN_SERVERS, LoginFlows } from '@shared/api/matrix';
 import {
   Alert,
   Button,
@@ -18,6 +18,7 @@ import {
   Separator,
 } from '@shared/ui';
 import type { ComboboxOption } from '@shared/ui/types';
+import { IconNames } from '@shared/ui/Icon/data';
 
 const HOME_SERVERS = WELL_KNOWN_SERVERS.map((server) => ({
   id: server.domain,
@@ -51,6 +52,7 @@ export const LoginForm = () => {
   const [isHomeserverLoading, setIsHomeserverLoading] = useState(false);
   const [inProgress, setInProgress] = useState(false);
   const [credentialsFlow, setCredentialsFlow] = useState(true);
+  const [ssoFlows, setSsoFlows] = useState<LoginFlows['sso']>([]);
   const [invalidHomeserver, setInvalidHomeserver] = useState(false);
   const [invalidLogin, setInvalidLogin] = useState(false);
 
@@ -114,15 +116,16 @@ export const LoginForm = () => {
 
   const checkLoginFlow = async () => {
     const flows = await matrix.loginFlows();
-    const loginIsAvailable = flows.includes('password');
+    const loginIsAvailable = flows.password;
 
-    if (!loginIsAvailable) {
+    if (!flows.password) {
       resetField('username');
       resetField('password');
     }
     clearErrors();
     setInvalidLogin(false);
     setCredentialsFlow(loginIsAvailable);
+    setSsoFlows(flows.sso);
   };
 
   const submitMatrixLogin: SubmitHandler<MatrixForm> = async ({ username, password }) => {
@@ -236,24 +239,28 @@ export const LoginForm = () => {
 
       <div className="flex flex-col gap-y-6 mt-6">
         {/* TODO: Add condition */}
-        <div className="flex flex-col gap-y-6">
-          <Separator text="or sign in" />
+        {ssoFlows.length > 0 && (
+          <div className="flex flex-col gap-y-6">
+            <Separator text="or sign in" />
 
-          <div className="flex justify-between gap-x-4">
-            <Button className="flex-1" pallet="secondary" onClick={() => console.log('go')}>
-              <div className="flex items-center gap-x-2">
-                <Icon name="google" />
-                Google
-              </div>
-            </Button>
-            <Button className="flex-1" pallet="secondary" onClick={() => console.log('gh')}>
-              <div className="flex items-center gap-x-2">
-                <Icon name="github" className="text-text-primary" />
-                Github
-              </div>
-            </Button>
+            <div className="flex justify-between gap-x-4">
+              {ssoFlows.map(({ id, name, brand }) => (
+                <a
+                  key={id}
+                  className="flex-1"
+                  href={matrix.getSsoLoginUrl('https://localhost:3000/#/settings/matrix', 'sso', id)}
+                  rel="noopener noreferrer"
+                  target="_blank"
+                >
+                  <div className="flex items-center gap-x-2">
+                    <Icon className="text-text-primary" name={brand as IconNames} />
+                    {name}
+                  </div>
+                </a>
+              ))}
+            </div>
           </div>
-        </div>
+        )}
 
         <FootnoteText className="text-text-tertiary">{t('settings.matrix.privacyTitle')}</FootnoteText>
 

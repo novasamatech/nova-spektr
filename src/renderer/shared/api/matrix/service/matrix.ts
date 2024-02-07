@@ -41,7 +41,7 @@ import {
   InvitePayload,
   ISecretStorage,
   ISecureMessenger,
-  LoginFlow,
+  LoginFlows,
   MatrixError,
   Membership,
   MultisigPayload,
@@ -117,15 +117,41 @@ export class Matrix implements ISecureMessenger {
   //   window.location.href = client.getSsoLoginUrl(window.location.href, type, idpId);
   // }
 
+  getSsoLoginUrl(baseUrl: string, type: string, id: string): string {
+    // const client = createClient({ baseUrl });
+
+    console.log(this.matrixClient.getHomeserverUrl());
+    return this.matrixClient.getSsoLoginUrl(baseUrl, type, id);
+  }
+
+  async startSsoLogin(baseUrl: string, type: string, id: string): Promise<void> {
+    const client = createClient({ baseUrl });
+
+    localStorage.setItem('matrix_sso_url', client.baseUrl);
+    window.location.href = client.getSsoLoginUrl(window.location.href, type, id);
+  }
+
   /**
    * Get available login flows
    */
-  async loginFlows(): Promise<LoginFlow[]> {
+  async loginFlows(): Promise<LoginFlows> {
     try {
       const { flows } = await this.matrixClient.loginFlows();
 
-      // TODO: return more data in future
-      return flows.map((flow: any) => flow.type.replace('m.login.', '')) as LoginFlow[];
+      return flows.reduce<LoginFlows>(
+        (acc, flow) => {
+          if (flow.type === 'm.login.token') acc.token = true;
+          if (flow.type === 'm.login.password') acc.password = true;
+          if ((flow.type === 'm.login.sso' || flow.type === 'm.login.cas') && 'identity_providers' in flow) {
+            acc.sso = (flow.identity_providers || [])
+              .filter(({ brand }) => brand === 'github' || brand === 'google')
+              .map(({ id, name, brand }) => ({ id, name, brand: brand || name.toLowerCase() }));
+          }
+
+          return acc;
+        },
+        { token: false, password: false, sso: [] },
+      );
     } catch (error) {
       throw this.createError(MatrixError.LOGIN_FLOWS, error);
     }
@@ -584,6 +610,14 @@ export class Matrix implements ISecureMessenger {
   get userIsLoggedIn(): boolean {
     return this.matrixClient.isLoggedIn();
   }
+
+  /**
+   * Get device session key
+   * @return {String | undefined}
+   */
+  // get sessionKey(): string | undefined {
+  //   return this.matrixClient.getDeviceEd25519Key() || undefined;
+  // }
 
   /**
    * Get device session key

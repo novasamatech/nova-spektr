@@ -10,7 +10,9 @@ import type { HexString, AccountId, Timepoint, Threshold, CallHash, CallData, Ch
 export interface ISecureMessenger {
   // Init
   setHomeserver: (domain: string) => Promise<void>;
-  loginFlows: () => Promise<LoginFlow[]>;
+  loginFlows: () => Promise<LoginFlows>;
+  getSsoLoginUrl: (baseUrl: string, type: string, id: string) => string;
+  startSsoLogin: (baseUrl: string, type: string, id: string) => Promise<void>;
   loginWithCreds: (login: string, password: string) => Promise<void>;
   loginFromCache: () => Promise<void>;
   logout: () => Promise<void>;
@@ -123,7 +125,15 @@ export type SpektrExtras = {
   };
 };
 
-export type LoginFlow = 'password' | 'sso' | 'cas';
+export type LoginFlows = {
+  token: boolean;
+  password: boolean;
+  sso: {
+    id: string;
+    name: string;
+    brand: string;
+  }[];
+};
 
 // =====================================================
 // ============== MST Events / Callbacks ===============
