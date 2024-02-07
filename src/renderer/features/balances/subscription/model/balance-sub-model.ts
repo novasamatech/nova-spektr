@@ -4,7 +4,7 @@ import { previous, throttle, once, combineEvents, spread } from 'patronum';
 import mapValues from 'lodash/mapValues';
 import { VoidFn } from '@polkadot/api/types';
 
-import { AccountId, Balance, ChainId, ConnectionStatus, Wallet, Chain } from '@shared/core';
+import { AccountId, Balance, ChainId, ConnectionStatus, Wallet, Chain, ID } from '@shared/core';
 import { accountUtils, walletModel } from '@entities/wallet';
 import { networkModel, networkUtils } from '@entities/network';
 import { balanceService } from '@shared/api/balances';
@@ -24,15 +24,17 @@ const chainsSubscribed = createEvent<ChainId[]>();
 const $subscriptions = createStore<Subscriptions>({});
 const $subAccounts = createStore<SubAccounts>({});
 
+const $previousWallet = previous(walletModel.$activeWallet);
+
 const populateBalancesFx = createEffect((accountIds: AccountId[]): Promise<Balance[]> => {
   return storageService.balances.readAll({ accountId: accountIds });
 });
 
-type UnsubParams = {
+type UnsubChainsParams = {
   chainIds: ChainId[];
   subscriptions: Subscriptions;
 };
-const unsubscribeFromChainsFx = createEffect(({ chainIds, subscriptions }: UnsubParams): Subscriptions => {
+const unsubscribeChainsFx = createEffect(({ chainIds, subscriptions }: UnsubChainsParams): Subscriptions => {
   return chainIds.reduce<Subscriptions>((acc, chainId) => {
     const chainSubscription = acc[chainId];
     if (!chainSubscription) return acc;
@@ -48,18 +50,39 @@ const unsubscribeFromChainsFx = createEffect(({ chainIds, subscriptions }: Unsub
   }, subscriptions);
 });
 
-type SubParams = {
+type UnsubWalletParams = {
+  walletId: ID;
+  subscriptions: Subscriptions;
+};
+const unsubscribeWalletFx = createEffect(({ walletId, subscriptions }: UnsubWalletParams): Subscriptions => {
+  return Object.entries(subscriptions).reduce((acc, [chainId, walletMap]) => {
+    if (!walletMap || !walletMap[walletId]) return acc;
+
+    const { [walletId]: walletToUnsub, ...rest } = walletMap;
+    walletToUnsub[0].forEach((fn) => fn());
+    walletToUnsub[1].forEach((fn) => fn());
+
+    acc[chainId as ChainId] = Object.keys(rest).length > 0 ? rest : undefined;
+
+    return acc;
+  }, subscriptions);
+});
+
+type SubChainsParams = {
   apis: Record<ChainId, ApiPromise>;
   chains: Chain[];
+  walletId?: ID;
   subAccounts: SubAccounts;
   subscriptions: Subscriptions;
 };
-const subscribeToChainsFx = createEffect(
-  async ({ apis, chains, subAccounts, subscriptions }: SubParams): Promise<Subscriptions> => {
-    const boundUpdate = scopeBind(balanceModel.events.balancesUpdated, { safe: true });
+const subscribeChainsFx = createEffect(
+  async ({ apis, chains, walletId, subAccounts, subscriptions }: SubChainsParams): Promise<Subscriptions> => {
+    const boundUpdate = scopeBind(balanceModel.events.balancesUpdated);
 
     const balanceRequests = chains.reduce<Promise<[VoidFn[], VoidFn[]]>[]>((acc, chain) => {
-      Object.values(subAccounts[chain.chainId]).forEach((accountIds) => {
+      Object.entries(subAccounts[chain.chainId]).forEach(([id, accountIds]) => {
+        if (walletId && Number(id) !== walletId) return;
+
         const subBalances = balanceService.subscribeBalances(apis[chain.chainId], chain, accountIds, boundUpdate);
         const subLocks = balanceService.subscribeLockBalances(apis[chain.chainId], chain, accountIds, boundUpdate);
 
@@ -71,14 +94,17 @@ const subscribeToChainsFx = createEffect(
 
     const unsubFunctions = await Promise.all(balanceRequests);
 
+    // TODO: reduce modifies original object, that's wrong
     return chains.reduce((acc, chain, index) => {
-      Object.keys(subAccounts[chain.chainId]).forEach((walletId) => {
+      Object.keys(subAccounts[chain.chainId]).forEach((id) => {
+        if (walletId && Number(id) !== walletId) return;
+
         const subChain = acc[chain.chainId];
 
         if (subChain) {
-          subChain[Number(walletId)] = unsubFunctions[index];
+          subChain[Number(id)] = unsubFunctions[index];
         } else {
-          acc[chain.chainId] = { [Number(walletId)]: unsubFunctions[index] };
+          acc[chain.chainId] = { [Number(id)]: unsubFunctions[index] };
         }
       });
 
@@ -100,9 +126,8 @@ sample({
   }),
 });
 
-// TODO: run unsub for concrete wallet + all chains
 sample({
-  clock: [walletToUnsubSet, previous(walletModel.$activeWallet)],
+  clock: [walletToUnsubSet, $previousWallet],
   source: $subAccounts,
   filter: (_, wallet) => Boolean(wallet),
   fn: (subAccounts, wallet) => {
@@ -116,8 +141,14 @@ sample({
   target: $subAccounts,
 });
 
-// TODO: run unsub for concrete wallet + chain
-// TODO: run sub for concrete wallet + chain
+sample({
+  clock: [walletToUnsubSet, $previousWallet],
+  source: $subscriptions,
+  filter: (_, wallet) => Boolean(wallet),
+  fn: (subscriptions, wallet) => ({ walletId: wallet!.id, subscriptions }),
+  target: unsubscribeWalletFx,
+});
+
 sample({
   clock: [walletToSubSet, walletModel.$activeWallet],
   source: {
@@ -132,6 +163,37 @@ sample({
     return balanceSubUtils.addNewAccounts(subAccounts, accountsToSub);
   },
   target: $subAccounts,
+});
+
+sample({
+  clock: [walletToSubSet, walletModel.$activeWallet],
+  source: {
+    apis: networkModel.$apis,
+    chains: networkModel.$chains,
+    statuses: networkModel.$connectionStatuses,
+    subAccounts: $subAccounts,
+    subscriptions: $subscriptions,
+  },
+  filter: ({ statuses }, wallet) => {
+    return Boolean(wallet) && Object.values(statuses).some(networkUtils.isConnectedStatus);
+  },
+  fn: ({ subAccounts, subscriptions, statuses, ...params }, wallet) => {
+    const { apis, chains } = Object.entries(statuses).reduce(
+      (acc, entry) => {
+        const [chainId, status] = entry as [ChainId, ConnectionStatus];
+        if (!networkUtils.isConnectedStatus(status)) return acc;
+
+        acc.apis[chainId] = params.apis[chainId];
+        acc.chains.push(params.chains[chainId]);
+
+        return acc;
+      },
+      { apis: {} as Record<ChainId, ApiPromise>, chains: [] as Chain[] },
+    );
+
+    return { apis, chains, walletId: wallet!.id, subAccounts, subscriptions };
+  },
+  target: subscribeChainsFx,
 });
 
 sample({
@@ -198,7 +260,7 @@ sample({
   source: $subscriptions,
   filter: (_, chainIds) => chainIds.length > 0,
   fn: (subscriptions, chainIds) => ({ chainIds, subscriptions }),
-  target: unsubscribeFromChainsFx,
+  target: unsubscribeChainsFx,
 });
 
 sample({
@@ -223,11 +285,11 @@ sample({
 
     return { apis, chains, subAccounts, subscriptions };
   },
-  target: subscribeToChainsFx,
+  target: subscribeChainsFx,
 });
 
 sample({
-  clock: [unsubscribeFromChainsFx.doneData, subscribeToChainsFx.doneData],
+  clock: [unsubscribeChainsFx.doneData, subscribeChainsFx.doneData],
   target: $subscriptions,
 });
 
