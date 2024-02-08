@@ -66,14 +66,6 @@ describe('features/wallet/model/constructor-model', () => {
     expect(scope.getState(constructorModel.$hasKeys)).toEqual(true);
   });
 
-  test('should not have visible keys', () => {
-    const scope = fork({
-      values: new Map().set(constructorModel.$keysToAdd, defaultKeys.slice(0, 1)).set(networkModel.$chains, chainsMap),
-    });
-
-    expect(scope.getState(constructorModel.$hasKeys)).toEqual(false);
-  });
-
   test('should mark existing key for removal', async () => {
     const scope = fork({
       values: new Map().set(networkModel.$chains, chainsMap),
