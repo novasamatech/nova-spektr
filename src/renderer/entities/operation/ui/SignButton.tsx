@@ -28,7 +28,7 @@ const WalletText: Record<SignableWalletFamily, string> = {
   [WalletType.SINGLE_PARITY_SIGNER]: 'operation.sign.polkadotVault',
 };
 
-const UnkownWalletText = 'operation.sign.unkown';
+const UnkownWalletText = 'operation.sign.unknown';
 
 export const SignButton = ({ disabled, type, onClick, className }: Props) => {
   const { t } = useI18n();
