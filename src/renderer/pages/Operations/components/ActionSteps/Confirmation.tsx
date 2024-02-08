@@ -14,7 +14,7 @@ import { DetailRow, FootnoteText, Icon } from '@shared/ui';
 import { ExtendedChain } from '@entities/network';
 import { useI18n } from '@app/providers';
 import { getIconName } from '@entities/transaction/lib/transactionIcon';
-import { type Account, type MultisigAccount, WalletType } from '@shared/core';
+import { type Account, type MultisigAccount } from '@shared/core';
 import Details from '../Details';
 import { getAssetById } from '@shared/lib/utils';
 import { getTransactionFromMultisigTx } from '@entities/multisig';
@@ -91,12 +91,7 @@ export const Confirmation = ({ tx, account, connection, signatory, feeTx, onSign
         </DetailRow>
       )}
 
-      <SignButton
-        disabled={!isFeeLoaded}
-        className="mt-3 ml-auto"
-        type={wallet?.type || WalletType.SINGLE_PARITY_SIGNER}
-        onClick={onSign}
-      />
+      <SignButton disabled={!isFeeLoaded} className="mt-3 ml-auto" type={wallet?.type} onClick={onSign} />
     </div>
   );
 };
