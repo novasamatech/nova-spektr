@@ -124,13 +124,7 @@ const $derivationEnabled = combine($constructorForm.fields.keyType.$value, (keyT
   return keyType === KeyType.CUSTOM;
 });
 
-const $hasKeys = combine($keys, (keys): boolean => {
-  return keys.some((key) => {
-    const keyData = Array.isArray(key) ? key[0] : key;
-
-    return keyData.keyType !== KeyType.MAIN;
-  });
-});
+const $hasKeys = combine($keys, (keys) => Boolean(keys.length));
 
 const focusElementFx = createEffect((element: HTMLButtonElement) => {
   element.focus();
