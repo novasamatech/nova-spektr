@@ -140,6 +140,7 @@
       "keyTypeGovernance": "Governance account",
       "keyTypeHot": "Hot account",
       "keyTypeLabel": "Type of key",
+      "keyTypeMain": "Main account",
       "keyTypePlaceholder": "Select",
       "keyTypePublic": "Public account",
       "keyTypeStaking": "Staking account",
