@@ -5,7 +5,7 @@ import { SubAccounts } from './types';
 
 export const balanceSubUtils = {
   getAccountsToSubscribe,
-  addNewAccounts,
+  getNewAccounts,
 };
 
 function getAccountsToSubscribe(wallet: Wallet, accounts: Account[]): Account[] {
@@ -32,14 +32,18 @@ function getAccountsToSubscribe(wallet: Wallet, accounts: Account[]): Account[] 
   return accounts;
 }
 
-function addNewAccounts(subAccounts: SubAccounts, accountsToSub: Account[]): SubAccounts {
+function getNewAccounts(subAccounts: SubAccounts, accountsToSub: Account[]): SubAccounts {
   const chainIds = Object.keys(subAccounts) as ChainId[];
 
   const updateChain = (acc: SubAccounts, chainId: ChainId, walletId: ID, accountId: AccountId) => {
-    acc[chainId][walletId] ? acc[chainId][walletId].push(accountId) : (acc[chainId][walletId] = [accountId]);
+    if (acc[chainId]) {
+      acc[chainId][walletId].push(accountId);
+    } else {
+      acc[chainId] = { [walletId]: [accountId] };
+    }
   };
 
-  return accountsToSub.reduce((acc, account) => {
+  const newSubAccounts = accountsToSub.reduce<SubAccounts>((acc, account) => {
     if (accountUtils.isBaseAccount(account) || accountUtils.isMultisigAccount(account)) {
       chainIds.forEach((chainId) => updateChain(acc, chainId, account.walletId, account.accountId));
     } else {
@@ -47,5 +51,11 @@ function addNewAccounts(subAccounts: SubAccounts, accountsToSub: Account[]): Sub
     }
 
     return acc;
-  }, subAccounts);
+  }, {});
+
+  return chainIds.reduce<SubAccounts>((acc, chainId) => {
+    acc[chainId] = { ...subAccounts[chainId], ...newSubAccounts[chainId] };
+
+    return acc;
+  }, {});
 }

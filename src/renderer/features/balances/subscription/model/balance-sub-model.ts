@@ -156,7 +156,7 @@ sample({
     const walletAccounts = accountUtils.getWalletAccounts(wallet!.id, accounts);
     const accountsToSub = balanceSubUtils.getAccountsToSubscribe(wallet!, walletAccounts);
 
-    return balanceSubUtils.addNewAccounts(subAccounts, accountsToSub);
+    return balanceSubUtils.getNewAccounts(subAccounts, accountsToSub);
   },
   target: $subAccounts,
 });
