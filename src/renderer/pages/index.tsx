@@ -70,5 +70,5 @@ export const ROUTES_CONFIG: RouteObject[] = [
       },
     ],
   },
-  // { path: '*', element: <Navigate to={Paths.ASSETS} replace /> },
+  { path: '*', element: <Navigate to={Paths.ASSETS} replace /> },
 ];

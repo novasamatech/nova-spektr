@@ -28,15 +28,6 @@ const HOME_SERVERS = WELL_KNOWN_SERVERS.map((server) => ({
 
 const DEFAULT_HOMESERVER = HOME_SERVERS[0];
 
-// TODO: might come form loginFlows method
-// const REGISTER_LINKS: { icon: IconNames; url: string }[] = [
-//   { icon: 'apple', url: 'https://link_1.com' },
-//   { icon: 'google', url: 'https://link_2.com' },
-//   { icon: 'facebook', url: 'https://link_3.com' },
-//   { icon: 'gitlab', url: 'https://link_4.com' },
-//   { icon: 'github', url: 'https://link_5.com' },
-// ];
-
 type MatrixForm = {
   homeserver: ComboboxOption;
   username: string;
@@ -248,7 +239,7 @@ export const LoginForm = () => {
                 <a
                   key={id}
                   className="flex-1"
-                  href={matrix.getSsoLoginUrl('https://localhost:3000/#/settings/matrix', 'sso', id)}
+                  href={matrix.getSsoLoginUrl('https://localhost:3000/settings/matrix', 'sso', id)}
                   rel="noopener noreferrer"
                   target="_blank"
                 >
@@ -278,17 +269,3 @@ export const LoginForm = () => {
     </>
   );
 };
-
-// TODO: in future show for SSO Login_Flows
-// <div className="flex flex-col items-center gap-y-4 mt-5 pt-2.5 border-t border-shade-10">
-//   <p className="text-shade-20 font-bold text-2xs uppercase">{t('settings.matrix.loginSeparator')}</p>
-// <ul className="flex justify-center items-center gap-x-5">
-//   {REGISTER_LINKS.map(({ icon, url }) => (
-//     <li key={url}>
-//       <a href={url} rel="noopener noreferrer" target="_blank">
-//         <Icon name={icon} />
-//       </a>
-//     </li>
-//   ))}
-// </ul>
-// </div>

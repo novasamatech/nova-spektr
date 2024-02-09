@@ -18,6 +18,7 @@ const config = merge<WpConfig & WdsConfig>(baseConfig, {
   entry: resolve(FOLDERS.ENTRY_POINTS.RENDERER),
 
   output: {
+    publicPath: './',
     path: resolve(FOLDERS.DEV_BUILD),
     filename: 'renderer-[fullhash].js',
   },

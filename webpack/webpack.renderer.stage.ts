@@ -8,8 +8,7 @@ import ReactRefreshWebpackPlugin from '@pmmmwh/react-refresh-webpack-plugin';
 import sharedConfig from './webpack.shared';
 import { APP_CONFIG } from '../app.config';
 
-const { FOLDERS, RENDERER } = APP_CONFIG;
-const port = RENDERER.DEV_SERVER.URL.split(':')?.[2] || 3000;
+const { FOLDERS } = APP_CONFIG;
 
 const config = merge<WpConfig & WdsConfig>(sharedConfig, {
   mode: 'none',
@@ -17,21 +16,8 @@ const config = merge<WpConfig & WdsConfig>(sharedConfig, {
 
   entry: resolve(FOLDERS.ENTRY_POINTS.RENDERER),
 
-  devServer: {
-    port,
-    historyApiFallback: true,
-    compress: true,
-    hot: true,
-    server: {
-      type: 'https',
-    },
-    allowedHosts: 'all',
-    client: {
-      overlay: false,
-    },
-  },
-
   output: {
+    publicPath: '/',
     path: resolve(FOLDERS.DEV_BUILD),
     filename: 'renderer-[fullhash].js',
   },
