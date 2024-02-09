@@ -1,4 +1,4 @@
-import { Account, Wallet, ChainId, ID, AccountId } from '@shared/core';
+import { Account, Wallet, ChainId } from '@shared/core';
 import { accountUtils, walletUtils } from '@entities/wallet';
 import { dictionary } from '@shared/lib/utils';
 import { SubAccounts } from './types';
@@ -35,20 +35,19 @@ function getAccountsToSubscribe(wallet: Wallet, accounts: Account[]): Account[] 
 function getNewAccounts(subAccounts: SubAccounts, accountsToSub: Account[]): SubAccounts {
   const chainIds = Object.keys(subAccounts) as ChainId[];
 
-  const updateChain = (acc: SubAccounts, chainId: ChainId, walletId: ID, accountId: AccountId) => {
-    if (acc[chainId]) {
-      acc[chainId][walletId].push(accountId);
-    } else {
-      acc[chainId] = { [walletId]: [accountId] };
-    }
-  };
-
   const newSubAccounts = accountsToSub.reduce<SubAccounts>((acc, account) => {
-    if (accountUtils.isBaseAccount(account) || accountUtils.isMultisigAccount(account)) {
-      chainIds.forEach((chainId) => updateChain(acc, chainId, account.walletId, account.accountId));
-    } else {
-      updateChain(acc, account.chainId, account.walletId, account.accountId);
-    }
+    const isBaseAccount = accountUtils.isBaseAccount(account);
+    const isMultisigAccount = accountUtils.isMultisigAccount(account);
+
+    const chainsToUpdate = isBaseAccount || isMultisigAccount ? chainIds : [account.chainId];
+
+    chainsToUpdate.forEach((chainId) => {
+      if (acc[chainId]) {
+        acc[chainId][account.walletId].push(account.accountId);
+      } else {
+        acc[chainId] = { [account.walletId]: [account.accountId] };
+      }
+    });
 
     return acc;
   }, {});

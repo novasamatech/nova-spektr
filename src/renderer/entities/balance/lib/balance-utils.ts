@@ -27,11 +27,7 @@ function getNetworkBalances(balances: Balance[], accountIds: AccountId[], chainI
 }
 
 function getAccountsBalances(balances: Balance[], accountIds: AccountId[]): Balance[] {
-  const accountsMap = accountIds.reduce<Record<AccountId, boolean>>((acc, accountId) => {
-    acc[accountId] = true;
+  const accountsMap = new Set(accountIds);
 
-    return acc;
-  }, {});
-
-  return balances.filter((balance) => accountsMap[balance.accountId]);
+  return balances.filter((balance) => accountsMap.has(balance.accountId));
 }
