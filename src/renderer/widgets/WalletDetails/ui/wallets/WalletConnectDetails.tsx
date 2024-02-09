@@ -28,6 +28,7 @@ import { ProxiesList } from '../components/ProxiesList';
 import { walletProviderModel } from '../../model/wallet-provider-model';
 import { NoProxiesAction } from '../components/NoProxiesAction';
 import { WalletConnectAccounts } from '../components/WalletConnectAccounts';
+import { forgetWalletModel } from '@features/wallets/ForgetWallet';
 
 type Props = {
   wallet: WalletConnectWallet;
@@ -40,6 +41,7 @@ export const WalletConnectDetails = ({ wallet, accounts, onClose }: Props) => {
   const hasProxies = useUnit(walletProviderModel.$hasProxies);
   const forgetStep = useUnit(wcDetailsModel.$forgetStep);
   const reconnectStep = useUnit(wcDetailsModel.$reconnectStep);
+  const canCreateProxy = useUnit(walletProviderModel.$canCreateProxy);
 
   const [isModalOpen, closeModal] = useModalClose(true, onClose);
   const [isConfirmForgetOpen, toggleConfirmForget] = useToggle();
@@ -59,6 +61,7 @@ export const WalletConnectDetails = ({ wallet, accounts, onClose }: Props) => {
 
   const handleForgetWallet = () => {
     wcDetailsModel.events.forgetButtonClicked(wallet);
+    forgetWalletModel.events.forgetWcWallet(wallet);
     toggleConfirmForget();
   };
 
@@ -102,9 +105,9 @@ export const WalletConnectDetails = ({ wallet, accounts, onClose }: Props) => {
       id: 'proxies',
       title: t('walletDetails.common.proxiesTabTitle'),
       panel: hasProxies ? (
-        <ProxiesList walletId={wallet.id} className="h-[395px] mt-6" />
+        <ProxiesList className="h-[395px] mt-6" canCreateProxy={canCreateProxy} />
       ) : (
-        <NoProxiesAction className="h-[395px] mt-6" />
+        <NoProxiesAction className="h-[395px] mt-6" canCreateProxy={canCreateProxy} />
       ),
     },
   ];

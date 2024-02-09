@@ -20,6 +20,7 @@ export type {
   PolkadotVaultGroup,
   WalletConnectGroup,
   ProxiedWallet,
+  SignableWalletFamily,
 } from './types/wallet';
 export { WalletType, SigningType } from './types/wallet';
 

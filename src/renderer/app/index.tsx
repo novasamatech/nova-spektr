@@ -7,6 +7,7 @@ import { kernelModel } from '@shared/core';
 import { walletModel } from '@entities/wallet';
 import { networkModel } from '@entities/network';
 import { proxyModel } from '@entities/proxy';
+import { proxiesModel } from '@features/proxies';
 import { notificationModel } from '@entities/notification';
 import { balanceSubModel } from '@features/balances';
 import { proxiesModel } from '@features/proxies';

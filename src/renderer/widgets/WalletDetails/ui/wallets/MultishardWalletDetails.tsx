@@ -26,6 +26,7 @@ export const MultishardWalletDetails = ({ wallet, accounts, onClose }: Props) =>
 
   const chains = useUnit(networkModel.$chains);
   const hasProxies = useUnit(walletProviderModel.$hasProxies);
+  const canCreateProxy = useUnit(walletProviderModel.$canCreateProxy);
 
   const [isModalOpen, closeModal] = useModalClose(true, onClose);
   const [isRenameModalOpen, toggleIsRenameModalOpen] = useToggle();
@@ -71,9 +72,9 @@ export const MultishardWalletDetails = ({ wallet, accounts, onClose }: Props) =>
       id: 'proxies',
       title: t('walletDetails.common.proxiesTabTitle'),
       panel: hasProxies ? (
-        <ProxiesList walletId={wallet.id} className="h-[403px] mt-4" />
+        <ProxiesList className="h-[403px] mt-4" canCreateProxy={canCreateProxy} />
       ) : (
-        <NoProxiesAction className="h-[403px] mt-4" />
+        <NoProxiesAction className="h-[403px] mt-4" canCreateProxy={canCreateProxy} />
       ),
     },
   ];

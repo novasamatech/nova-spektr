@@ -461,6 +461,7 @@
     "sign": {
       "novaWallet": "Sign with Nova Wallet",
       "polkadotVault": "Sign with Polkadot Vault",
+      "unknown": "Sign",
       "walletConnect": "Sign with WalletConnect"
     },
     "signatoriesTitle": "Signatories",
@@ -510,11 +511,14 @@
       "statusSummary": "Operation statuses"
     },
     "modalTitles": {
+      "addProxy": "Add Proxy",
       "approve": "Approve",
       "destinationOn": "Set reward destination on",
       "nominateOn": "Change Validators on",
+      "proxy": "Proxy",
       "redeemOn": "Withdraw Unstaked { asset } on",
       "reject": "Reject",
+      "removeProxy": "Remove Proxy",
       "restakeOn": "Restake { asset } on",
       "stakeMoreOn": "Stake More { asset } on",
       "startStakingOn": "Start Staking { asset } on",
@@ -528,10 +532,13 @@
     "noOperationsWalletNotMulti": "You can only view operations for your Multisig wallets. Transaction history for other types of wallets will be available later. Stay tuned.",
     "title": "Operations",
     "titles": {
+      "addProxy": "Add Proxy",
       "crossChainTransfer": "Cross-chain transfer",
       "destination": "Set reward destination",
       "nominate": "Change Validators",
+      "proxy": "Proxy",
       "redeem": "Withdraw Unstaked",
+      "removeProxy": "Remove Proxy",
       "restake": "Restake",
       "stakeMore": "Stake More",
       "startStaking": "Start Staking",

@@ -1,6 +1,6 @@
 import { createEffect, createEvent, createStore, sample } from 'effector';
 import { parse } from 'yaml';
-import { groupBy } from 'lodash';
+import groupBy from 'lodash/groupBy';
 import { reset } from 'patronum';
 
 import {

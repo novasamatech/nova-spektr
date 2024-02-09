@@ -30,6 +30,7 @@ export const MultisigWalletDetails = ({ wallet, account, signatoryWallets, signa
 
   const chains = useUnit(networkModel.$chains);
   const hasProxies = useUnit(walletProviderModel.$hasProxies);
+  const canCreateProxy = useUnit(walletProviderModel.$canCreateProxy);
 
   const [isModalOpen, closeModal] = useModalClose(true, onClose);
   const [isRenameModalOpen, toggleIsRenameModalOpen] = useToggle();
@@ -168,9 +169,9 @@ export const MultisigWalletDetails = ({ wallet, account, signatoryWallets, signa
               id: 3,
               title: t('walletDetails.common.proxiesTabTitle'),
               panel: hasProxies ? (
-                <ProxiesList walletId={wallet.id} className="h-[387px]" />
+                <ProxiesList className="h-[387px]" canCreateProxy={canCreateProxy} />
               ) : (
-                <NoProxiesAction className="h-[387px]" />
+                <NoProxiesAction className="h-[387px]" canCreateProxy={canCreateProxy} />
               ),
             },
           ]}

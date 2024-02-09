@@ -1,6 +1,6 @@
 import { createEffect, createEvent, createStore, sample } from 'effector';
 import { throttle } from 'patronum';
-import { keyBy } from 'lodash';
+import keyBy from 'lodash/keyBy';
 
 import { Balance, ID } from '@shared/core';
 import { SAVE_TIMEOUT, BUFFER_DELAY } from '../lib/constants';

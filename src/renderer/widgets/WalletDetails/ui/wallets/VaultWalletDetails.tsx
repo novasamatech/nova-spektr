@@ -2,7 +2,7 @@ import { useUnit } from 'effector-react';
 
 import { BaseModal, ContextMenu, DropdownIconButton, HelpText, IconButton, Tabs } from '@shared/ui';
 import { useModalClose, useToggle } from '@shared/lib/hooks';
-import { RootAccountLg, VaultAccountsList, WalletCardLg } from '@entities/wallet';
+import { RootAccountLg, VaultAccountsList, WalletCardLg, walletModel } from '@entities/wallet';
 import { useI18n } from '@app/providers';
 import { Account, BaseAccount, ChainAccount, DraftAccount, KeyType, ShardAccount, Wallet } from '@shared/core';
 import { copyToClipboard, toAddress } from '@shared/lib/utils';
@@ -31,7 +31,10 @@ export const VaultWalletDetails = ({ wallet, root, accountsMap, onClose }: Props
 
   const chains = useUnit(networkModel.$chains);
   const hasProxies = useUnit(walletProviderModel.$hasProxies);
+  const activeWallet = useUnit(walletModel.$activeWallet);
+  const activeAccounts = useUnit(walletModel.$activeAccounts);
   const keysToAdd = useUnit(vaultDetailsModel.$keysToAdd);
+  const canCreateProxy = useUnit(walletProviderModel.$canCreateProxy);
 
   const [isModalOpen, closeModal] = useModalClose(true, onClose);
 
@@ -154,9 +157,9 @@ export const VaultWalletDetails = ({ wallet, root, accountsMap, onClose }: Props
       id: 'proxies',
       title: t('walletDetails.common.proxiesTabTitle'),
       panel: hasProxies ? (
-        <ProxiesList walletId={wallet.id} className="h-[403px] mt-4" />
+        <ProxiesList className="h-[403px] mt-4" canCreateProxy={canCreateProxy} />
       ) : (
-        <NoProxiesAction className="h-[403px] mt-4" />
+        <NoProxiesAction className="h-[403px] mt-4" canCreateProxy={canCreateProxy} />
       ),
     },
   ];

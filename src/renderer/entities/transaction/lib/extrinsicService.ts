@@ -14,7 +14,7 @@ type BalancesTransferArgs = Parameters<typeof methods.balances.transfer>[0];
 type BondWithoutContollerArgs = Omit<Parameters<typeof methods.staking.bond>[0], 'controller'>;
 
 // TODO: change to substrate txwrapper method when it'll update
-const transferAllowDeath = (
+const transferKeepAlive = (
   args: BalancesTransferArgs,
   info: BaseTxInfo,
   options: OptionsWithMeta,
@@ -23,7 +23,7 @@ const transferAllowDeath = (
     {
       method: {
         args,
-        name: 'transferAllowDeath',
+        name: 'transferKeepAlive',
         pallet: 'balances',
       },
       ...info,
@@ -54,8 +54,8 @@ export const getUnsignedTransaction: Record<
 > = {
   [TransactionType.TRANSFER]: (transaction, info, options, api) => {
     // @ts-ignore
-    return api.tx.balances.transferAllowDeath
-      ? transferAllowDeath(
+    return api.tx.balances.transferKeepAlive
+      ? transferKeepAlive(
           {
             dest: transaction.args.dest,
             value: transaction.args.value,
@@ -345,8 +345,8 @@ export const getExtrinsic: Record<
   (args: Record<string, any>, api: ApiPromise) => SubmittableExtrinsic<'promise'>
 > = {
   [TransactionType.TRANSFER]: ({ dest, value }, api) =>
-    api.tx.balances.transferAllowDeath
-      ? api.tx.balances.transferAllowDeath(dest, value)
+    api.tx.balances.transferKeepAlive
+      ? api.tx.balances.transferKeepAlive(dest, value)
       : api.tx.balances.transfer(dest, value),
   [TransactionType.ASSET_TRANSFER]: ({ dest, value, asset }, api) => api.tx.assets.transfer(asset, dest, value),
   [TransactionType.ORML_TRANSFER]: ({ dest, value, asset }, api) =>

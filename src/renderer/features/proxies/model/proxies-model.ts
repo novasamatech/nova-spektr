@@ -1,6 +1,6 @@
 import { attach, createEffect, createEvent, createStore, sample, scopeBind } from 'effector';
 import { Endpoint, createEndpoint } from '@remote-ui/rpc';
-import { keyBy } from 'lodash';
+import keyBy from 'lodash/keyBy';
 import { once, spread } from 'patronum';
 
 import type {

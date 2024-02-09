@@ -9,7 +9,7 @@ import { CreateContactModal } from '@widgets/ManageContactModal';
 import { ExtendedContact, ExtendedWallet } from '../common/types';
 import { EmptyContactList } from '@entities/contact';
 import { type Contact, type Wallet, type Account, type MultisigAccount, WalletType } from '@shared/core';
-import { walletUtils, ContactItem, ExplorersPopover } from '@entities/wallet';
+import { ContactItem, ExplorersPopover, walletUtils } from '@entities/wallet';
 import { WalletItem } from './WalletItem';
 
 const enum SignatoryTabs {
@@ -276,7 +276,7 @@ export const SelectSignatories = ({ isActive, wallets, accounts, contacts, onSel
 
   return (
     <>
-      <div className={cnTw(!isActive && 'hidden')}>
+      <div className={cnTw('max-h-full flex flex-col', !isActive && 'hidden')}>
         <SmallTitleText className="py-2 px-2 mb-4">{t('createMultisigAccount.signatoryTitle')}</SmallTitleText>
 
         <Tabs
