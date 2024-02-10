@@ -1,9 +1,13 @@
 import { Controller, SubmitHandler, useForm } from 'react-hook-form';
 import { Trans } from 'react-i18next';
 import { useEffect, useState } from 'react';
+import { useUnit } from 'effector-react';
 
-import { useI18n, useMatrix } from '@app/providers';
+import { useI18n } from '@app/providers';
 import { validateShortUserName, WELL_KNOWN_SERVERS, LoginFlows } from '@shared/api/matrix';
+import type { ComboboxOption } from '@shared/ui/types';
+import { IconNames } from '@shared/ui/Icon/data';
+import { matrixModel } from '@entities/matrix';
 import {
   Alert,
   Button,
@@ -17,8 +21,6 @@ import {
   PasswordInput,
   Separator,
 } from '@shared/ui';
-import type { ComboboxOption } from '@shared/ui/types';
-import { IconNames } from '@shared/ui/Icon/data';
 
 const HOME_SERVERS = WELL_KNOWN_SERVERS.map((server) => ({
   id: server.domain,
@@ -37,7 +39,7 @@ type MatrixForm = {
 export const LoginForm = () => {
   const { t } = useI18n();
 
-  const { matrix } = useMatrix();
+  const matrix = useUnit(matrixModel.$matrix);
 
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isHomeserverLoading, setIsHomeserverLoading] = useState(false);
@@ -241,7 +243,6 @@ export const LoginForm = () => {
                   className="flex-1"
                   href={matrix.getSsoLoginUrl('https://localhost:3000/settings/matrix', 'sso', id)}
                   rel="noopener noreferrer"
-                  target="_blank"
                 >
                   <div className="flex items-center gap-x-2">
                     <Icon className="text-text-primary" name={brand as IconNames} />

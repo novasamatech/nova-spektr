@@ -2,7 +2,7 @@ import { ComponentProps, useState, useEffect } from 'react';
 import { useUnit } from 'effector-react';
 
 import { BaseModal, HeaderTitleText, StatusLabel, Button, IconButton } from '@shared/ui';
-import { useI18n, useMatrix } from '@app/providers';
+import { useI18n } from '@app/providers';
 import { useToggle } from '@shared/lib/hooks';
 import { OperationResult } from '@entities/transaction';
 import { ExtendedContact, ExtendedWallet } from './common/types';
@@ -13,6 +13,7 @@ import { MatrixLoginModal } from '@widgets/MatrixModal';
 import { walletModel, accountUtils } from '@entities/wallet';
 import type { AccountId } from '@shared/core';
 import { WalletType, SigningType, CryptoType, ChainType, AccountType } from '@shared/core';
+import { matrixModel, matrixUtils } from '@entities/matrix';
 
 type OperationResultProps = Pick<ComponentProps<typeof OperationResult>, 'variant' | 'description'>;
 
@@ -29,11 +30,13 @@ type Props = {
 
 export const MultisigWallet = ({ isOpen, onClose, onComplete }: Props) => {
   const { t } = useI18n();
+
+  const matrix = useUnit(matrixModel.$matrix);
+  const loginStatus = useUnit(matrixModel.$loginStatus);
+
   const wallets = useUnit(walletModel.$wallets);
   const accounts = useUnit(walletModel.$accounts);
   const contacts = useUnit(contactModel.$contacts);
-
-  const { matrix, isLoggedIn } = useMatrix();
 
   const [isLoading, toggleLoading] = useToggle();
   const [isModalOpen, toggleIsModalOpen] = useToggle(isOpen);
@@ -170,7 +173,7 @@ export const MultisigWallet = ({ isOpen, onClose, onComplete }: Props) => {
   const modalTitle = (
     <div className="flex justify-between items-center px-5 py-3 w-[464px] bg-white rounded-tl-lg">
       <HeaderTitleText className="py-[3px]">{t('createMultisigAccount.title')}</HeaderTitleText>
-      {isLoggedIn && <StatusLabel title={matrix.userId || ''} variant="success" />}
+      {matrixUtils.isLoggedIn(loginStatus) && <StatusLabel title={matrix.userId || ''} variant="success" />}
     </div>
   );
 
@@ -219,7 +222,7 @@ export const MultisigWallet = ({ isOpen, onClose, onComplete }: Props) => {
           />
         </section>
 
-        <MatrixLoginModal isOpen={!isLoggedIn} zIndex="z-60" onClose={closeMultisigModal} />
+        <MatrixLoginModal isOpen={matrixUtils.isLoggedOut(loginStatus)} zIndex="z-60" onClose={closeMultisigModal} />
       </BaseModal>
 
       <OperationResult

@@ -1,10 +1,12 @@
 import { useState } from 'react';
 import { TFunction } from 'react-i18next';
 import { useForm, SubmitHandler, Controller } from 'react-hook-form';
+import { useUnit } from 'effector-react';
 
-import { useI18n, useMatrix } from '@app/providers';
+import { useI18n } from '@app/providers';
 import { Button, Input, InputHint, FootnoteText, InputFile, Tabs, Icon } from '@shared/ui';
 import { TabItem } from '@shared/ui/Tabs/common/types';
+import { matrixModel } from '@entities/matrix';
 
 type VerifyForm = {
   secretKey: string;
@@ -51,7 +53,8 @@ const getErrorMessage = (t: TFunction, method: VerifyMethodsType): string => {
 
 export const Verification = () => {
   const { t } = useI18n();
-  const { matrix } = useMatrix();
+
+  const matrix = useUnit(matrixModel.$matrix);
 
   const [verifyFailed, setVerifyFailed] = useState(false);
   const [sessionIsVerified, setSessionIsVerified] = useState(matrix.sessionIsVerified);

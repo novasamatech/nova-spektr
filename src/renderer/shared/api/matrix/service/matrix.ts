@@ -63,9 +63,7 @@ export class Matrix implements ISecureMessenger {
   constructor() {
     this.eventCallbacks = {
       onSyncEnd: noop,
-      onSyncProgress: noop,
       onInvite: noop,
-      onMessage: noop,
       onLogout: noop,
       onMultisigEvent: () => Promise.resolve(),
     };
@@ -90,6 +88,7 @@ export class Matrix implements ISecureMessenger {
         const config = { 'm.homeserver': { base_url: wellKnown.url } };
         await AutoDiscovery.fromDiscoveryConfig(config);
         this.createTempClient(wellKnown.url);
+        localStorage.setItem('matrix_hs', wellKnown.url);
 
         return;
       } catch (error) {
@@ -109,26 +108,11 @@ export class Matrix implements ISecureMessenger {
     }
 
     this.createTempClient(discoveryResult['m.homeserver'].base_url);
+    localStorage.setItem('matrix_hs', discoveryResult['m.homeserver'].base_url);
   }
-
-  // HINT: redirect to external login form (example: "saml" for mozilla.com)
-  // async function startSsoLogin(baseUrl, type, idpId) {
-  //   const client = createTemporaryClient(baseUrl);
-  //   window.location.href = client.getSsoLoginUrl(window.location.href, type, idpId);
-  // }
 
   getSsoLoginUrl(baseUrl: string, type: string, id: string): string {
-    // const client = createClient({ baseUrl });
-
-    console.log(this.matrixClient.getHomeserverUrl());
     return this.matrixClient.getSsoLoginUrl(baseUrl, type, id);
-  }
-
-  async startSsoLogin(baseUrl: string, type: string, id: string): Promise<void> {
-    const client = createClient({ baseUrl });
-
-    localStorage.setItem('matrix_sso_url', client.baseUrl);
-    window.location.href = client.getSsoLoginUrl(window.location.href, type, id);
   }
 
   /**
@@ -188,6 +172,23 @@ export class Matrix implements ISecureMessenger {
       this.subscribeToEvents();
     } catch (error) {
       throw this.createError(MatrixError.LOGIN_CACHE, error);
+    }
+  }
+
+  /**
+   * Login user to Matrix with SSO token
+   * @param token sso token
+   * @return {Promise}
+   */
+  async loginWithSso(token: string): Promise<void> {
+    try {
+      await this.initClientWithSso(token);
+      await this.matrixClient.initCrypto();
+      await this.matrixClient.startClient({ lazyLoadMembers: true });
+      this.matrixClient.setGlobalErrorOnUnknownDevices(false);
+      this.subscribeToEvents();
+    } catch (error) {
+      throw this.createError(MatrixError.LOGIN_CREDS, error);
     }
   }
 
@@ -756,6 +757,51 @@ export class Matrix implements ISecureMessenger {
    * Initiate Matrix client from storage (cache)
    * @return {Promise}
    */
+  private async initClientWithSso(token: string): Promise<void> {
+    const baseUrl = localStorage.getItem('matrix_hs') || '';
+    if (!baseUrl) return;
+
+    try {
+      this.createTempClient(baseUrl);
+
+      const userLoginResult = await this.matrixClient.login('m.login.token', {
+        token,
+        initial_device_display_name: process.env.PRODUCT_NAME,
+      });
+
+      this.matrixClient = await this.createMatrixClient({
+        baseUrl: this.matrixClient.baseUrl,
+        userId: userLoginResult.user_id,
+        accessToken: userLoginResult.access_token,
+        deviceId: userLoginResult.device_id,
+      });
+
+      const credentials = this.credentialStorage.getCredentials('userId', userLoginResult);
+
+      if (credentials) {
+        this.credentialStorage.updateCredentials(credentials.userId, {
+          accessToken: userLoginResult.access_token,
+          isLastLogin: true,
+        });
+      } else {
+        this.credentialStorage.saveCredentials({
+          username: this.matrixClient.getUser(userLoginResult.user_id)?.displayName || userLoginResult.user_id,
+          userId: userLoginResult.user_id,
+          accessToken: userLoginResult.access_token,
+          deviceId: userLoginResult.device_id,
+          baseUrl: this.matrixClient.baseUrl,
+          isLastLogin: true,
+        });
+      }
+    } catch (error) {
+      throw this.createError(MatrixError.INIT_WITH_SSO, error);
+    }
+  }
+
+  /**
+   * Initiate Matrix client from storage (cache)
+   * @return {Promise}
+   */
   private async initClientFromCache(): Promise<void> {
     const credentials = this.credentialStorage.getCredentials('isLastLogin', true);
 
@@ -786,12 +832,9 @@ export class Matrix implements ISecureMessenger {
    */
   private handleSyncEvent() {
     this.matrixClient.on(ClientEvent.Sync, (state) => {
-      if (state === SyncState.Syncing) {
-        this.eventCallbacks.onSyncProgress();
-      }
-      if (state === SyncState.Prepared) {
-        this.eventCallbacks.onSyncEnd();
-      }
+      if (state !== SyncState.Prepared) return;
+
+      this.eventCallbacks.onSyncEnd();
     });
   }
 
@@ -848,10 +891,10 @@ export class Matrix implements ISecureMessenger {
           .onMultisigEvent(payload, this.getSpektrTopic(room))
           .catch((error) => console.warn('onMultisigEvent error - ', error));
       }
-      if (event.getType() === EventType.RoomMessage) {
-        const payload = event.getContent().body;
-        this.eventCallbacks.onMessage(payload);
-      }
+      // if (event.getType() === EventType.RoomMessage) {
+      //   const payload = event.getContent().body;
+      //   this.eventCallbacks.onMessage(payload);
+      // }
     });
   }
 

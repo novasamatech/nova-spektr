@@ -1,16 +1,22 @@
 import { useNavigate } from 'react-router-dom';
+import { useUnit } from 'effector-react';
 
 import { MatrixLoginModal, MatrixInfoModal } from '@widgets/MatrixModal';
-import { useMatrix } from '@app/providers';
 import { Paths } from '@shared/routes';
+import { matrixModel, matrixUtils } from '@entities/matrix';
 
 export const Matrix = () => {
   const navigate = useNavigate();
-  const { isLoggedIn } = useMatrix();
+
+  const loginStatus = useUnit(matrixModel.$loginStatus);
 
   const closeModal = () => {
     navigate(Paths.SETTINGS);
   };
 
-  return isLoggedIn ? <MatrixInfoModal onClose={closeModal} /> : <MatrixLoginModal onClose={closeModal} />;
+  return matrixUtils.isLoggedIn(loginStatus) ? (
+    <MatrixInfoModal onClose={closeModal} />
+  ) : (
+    <MatrixLoginModal onClose={closeModal} />
+  );
 };

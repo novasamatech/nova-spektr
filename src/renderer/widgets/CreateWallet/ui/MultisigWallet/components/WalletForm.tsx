@@ -2,10 +2,11 @@ import { Controller, useForm, SubmitHandler } from 'react-hook-form';
 import { useUnit } from 'effector-react';
 
 import { Alert, Button, Input, InputHint, Select, SmallTitleText } from '@shared/ui';
-import { useI18n, useMatrix } from '@app/providers';
+import { useI18n } from '@app/providers';
 import { DropdownOption, DropdownResult } from '@shared/ui/Dropdowns/common/types';
 import type { AccountId, Signatory } from '@shared/core';
 import { accountUtils, walletModel, walletUtils } from '@entities/wallet';
+import { matrixModel } from '@entities/matrix';
 
 type MultisigAccountForm = {
   name: string;
@@ -33,10 +34,10 @@ type Props = {
 
 export const WalletForm = ({ signatories, onContinue, isActive, isLoading, onGoBack, onSubmit }: Props) => {
   const { t } = useI18n();
+
   const wallets = useUnit(walletModel.$wallets);
   const accounts = useUnit(walletModel.$accounts);
-
-  const { matrix } = useMatrix();
+  const matrix = useUnit(matrixModel.$matrix);
 
   const {
     control,

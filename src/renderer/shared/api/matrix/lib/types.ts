@@ -12,7 +12,7 @@ export interface ISecureMessenger {
   setHomeserver: (domain: string) => Promise<void>;
   loginFlows: () => Promise<LoginFlows>;
   getSsoLoginUrl: (baseUrl: string, type: string, id: string) => string;
-  startSsoLogin: (baseUrl: string, type: string, id: string) => Promise<void>;
+  loginWithSso: (token: string) => Promise<void>;
   loginWithCreds: (login: string, password: string) => Promise<void>;
   loginFromCache: () => Promise<void>;
   logout: () => Promise<void>;
@@ -135,6 +135,14 @@ export type LoginFlows = {
   }[];
 };
 
+export const enum LoginStatus {
+  NOT_LOGGED_IN = 'NOT_LOGGED_IN',
+  LOADING = 'LOADING',
+  SUCCESS = 'SUCCESS',
+  LOGGED_IN = 'LOGGED_IN',
+  ERROR = 'LOADING',
+}
+
 // =====================================================
 // ============== MST Events / Callbacks ===============
 // =====================================================
@@ -190,10 +198,8 @@ export type MultisigPayload = MatrixEventPayload & {
 
 type GeneralCallbacks = {
   onSyncEnd: () => void;
-  onSyncProgress: () => void;
   onInvite: (data: InvitePayload) => void;
-  // TODO: change message type in future
-  onMessage: (message: string) => void;
+  // onMessage: (message: string) => void;
   onLogout: () => void;
 };
 
@@ -223,6 +229,7 @@ export const enum MatrixError {
   LOGIN_FLOWS,
   LOGIN_CACHE,
   INIT_WITH_CREDENTIALS,
+  INIT_WITH_SSO,
   NO_CREDS_IN_DB,
   CREATE_ROOM,
   LEAVE_ROOM,
