@@ -1,19 +1,14 @@
 import { render, screen, act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { Scope, fork } from 'effector';
+import { Provider } from 'effector-react';
 
 import { Verification } from '../Verification';
-import { useMatrix } from '@app/providers';
+import { matrixModel } from '@entities/matrix';
 
 jest.mock('@app/providers', () => ({
   useI18n: jest.fn().mockReturnValue({
     t: (key: string) => key,
-  }),
-  useMatrix: jest.fn().mockReturnValue({
-    matrix: {
-      sessionIsVerified: false,
-      verifyWithKey: jest.fn().mockReturnValue(false),
-      verifyWithFile: jest.fn().mockReturnValue(true),
-    },
   }),
 }));
 
@@ -24,9 +19,13 @@ jest.mock('@shared/lib/utils', () => ({
 }));
 
 describe('pages/Settings/Matrix/Verification', () => {
-  const submitFormWithString = async () => {
+  const submitFormWithString = async (scope?: Scope) => {
     const user = userEvent.setup({ delay: null });
-    render(<Verification />);
+    render(
+      <Provider value={scope || fork()}>
+        <Verification />
+      </Provider>,
+    );
 
     const input = screen.getByRole('textbox');
     await act(() => user.type(input, 'my secret value'));
@@ -35,9 +34,13 @@ describe('pages/Settings/Matrix/Verification', () => {
     await act(() => submit.click());
   };
 
-  const submitFormWithFile = async () => {
-    const user = userEvent.setup();
-    render(<Verification />);
+  const submitFormWithFile = async (scope?: Scope) => {
+    const user = userEvent.setup({ delay: null });
+    render(
+      <Provider value={scope || fork()}>
+        <Verification />
+      </Provider>,
+    );
 
     const fileTab = screen.getByText('settings.matrix.verifyWithFile');
     await act(() => fileTab.click());
@@ -54,7 +57,7 @@ describe('pages/Settings/Matrix/Verification', () => {
     jest.clearAllMocks();
   });
 
-  test('should render component', () => {
+  test('should render component', async () => {
     render(<Verification />);
 
     const title = screen.getByText('settings.matrix.verificationLabel');
@@ -72,7 +75,10 @@ describe('pages/Settings/Matrix/Verification', () => {
   });
 
   test('should become verified by file', async () => {
-    await submitFormWithFile();
+    const scope = fork({
+      values: new Map().set(matrixModel.$matrix, { verifyWithFile: jest.fn().mockReturnValue(true) }),
+    });
+    await submitFormWithFile(scope);
 
     const verified = screen.getByText('settings.matrix.statusVerified');
     const errorHint = screen.queryByText('settings.matrix.fileError');
@@ -81,13 +87,13 @@ describe('pages/Settings/Matrix/Verification', () => {
   });
 
   test('should become verified by secret key', async () => {
-    (useMatrix as jest.Mock).mockReturnValue({
-      matrix: {
+    const scope = fork({
+      values: new Map().set(matrixModel.$matrix, {
         sessionIsVerified: false,
         verifyWithKey: jest.fn().mockReturnValue(true),
-      },
+      }),
     });
-    await submitFormWithString();
+    await submitFormWithString(scope);
 
     const verified = screen.getByText('settings.matrix.statusVerified');
     const errorHint = screen.queryByText('settings.matrix.secretKeyError');
@@ -96,10 +102,16 @@ describe('pages/Settings/Matrix/Verification', () => {
   });
 
   test('should be verified from the start', async () => {
-    (useMatrix as jest.Mock).mockReturnValue({
-      matrix: { sessionIsVerified: true },
+    const scope = fork({
+      values: new Map().set(matrixModel.$matrix, { sessionIsVerified: true }),
     });
-    render(<Verification />);
+    await act(async () => {
+      render(
+        <Provider value={scope}>
+          <Verification />
+        </Provider>,
+      );
+    });
 
     const verified = screen.getByText('settings.matrix.statusVerified');
     const submit = screen.queryByRole('button', { name: 'settings.matrix.verifyDeviceButton' });

@@ -11,13 +11,6 @@ jest.mock('@app/providers', () => ({
   useI18n: jest.fn().mockReturnValue({
     t: (key: string) => key,
   }),
-  useMatrix: jest.fn().mockReturnValue({
-    isLoggedIn: true,
-    matrix: {
-      createRoom: jest.fn(),
-      userId: 'userId',
-    },
-  }),
 }));
 
 jest.mock('@entities/network', () => ({

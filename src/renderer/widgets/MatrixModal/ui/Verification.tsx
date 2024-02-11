@@ -169,7 +169,9 @@ export const Verification = () => {
         </div>
       </div>
 
-      {!sessionIsVerified ? (
+      {sessionIsVerified && <Icon name="matrixFull" className="!w-[56px] text-[#00000066] mt-3" size={24} />}
+
+      {!sessionIsVerified && (
         <form className="flex flex-col gap-y-2" onSubmit={handleSubmit(submitVerification)}>
           <Tabs
             panelClassName=""
@@ -192,8 +194,6 @@ export const Verification = () => {
             </Button>
           </div>
         </form>
-      ) : (
-        <Icon name="matrixFull" className="!w-[56px] text-[#00000066] mt-3" size={24} />
       )}
     </>
   );

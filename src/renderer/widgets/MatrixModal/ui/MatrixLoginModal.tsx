@@ -1,8 +1,9 @@
 import { useEffect } from 'react';
+import { useUnit } from 'effector-react';
 
 import { useI18n } from '@app/providers';
 import { BaseModal } from '@shared/ui';
-import { MatrixInfoPopover } from './MatrixInfoPopover';
+import { MatrixInfoPopover, matrixUtils, matrixModel } from '@entities/matrix';
 import { LoginForm } from './LoginForm';
 import { useToggle } from '@shared/lib/hooks';
 import { DEFAULT_TRANSITION } from '@shared/lib/utils';
@@ -15,6 +16,8 @@ type Props = {
 
 export const MatrixLoginModal = ({ isOpen = true, zIndex, onClose }: Props) => {
   const { t } = useI18n();
+
+  const loginStatus = useUnit(matrixModel.$loginStatus);
 
   const [isModalOpen, toggleIsModalOpen] = useToggle(isOpen);
 
@@ -35,6 +38,8 @@ export const MatrixLoginModal = ({ isOpen = true, zIndex, onClose }: Props) => {
       setTimeout(onClose, DEFAULT_TRANSITION);
     }
   };
+
+  if (!matrixUtils.isLoggedOut(loginStatus)) return null;
 
   return (
     <BaseModal

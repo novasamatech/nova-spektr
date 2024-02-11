@@ -5,7 +5,7 @@ import { useToggle } from '@shared/lib/hooks';
 import { Button, FootnoteText, StatusLabel } from '@shared/ui';
 import { matrixModel } from '@entities/matrix';
 
-export const Credentials = () => {
+export const UserInfo = () => {
   const { t } = useI18n();
 
   const matrix = useUnit(matrixModel.$matrix);

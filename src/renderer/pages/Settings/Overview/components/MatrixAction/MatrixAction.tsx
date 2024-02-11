@@ -9,6 +9,7 @@ import { matrixModel, matrixUtils } from '@entities/matrix';
 
 export const MatrixAction = () => {
   const { t } = useI18n();
+
   const matrix = useUnit(matrixModel.$matrix);
   const loginStatus = useUnit(matrixModel.$loginStatus);
 
