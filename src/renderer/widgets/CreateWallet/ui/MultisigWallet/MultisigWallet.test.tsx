@@ -19,10 +19,6 @@ jest.mock('@entities/network', () => ({
   },
 }));
 
-jest.mock('@widgets/MatrixModal', () => ({
-  MatrixLoginModal: () => <span>matrixModal</span>,
-}));
-
 jest.mock('@entities/transaction', () => ({
   OperationResult: () => <span>operationResult</span>,
 }));

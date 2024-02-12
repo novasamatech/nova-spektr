@@ -14,7 +14,7 @@ type Props = {
   onClose: () => void;
 };
 
-export const MatrixLoginModal = ({ isOpen = true, zIndex, onClose }: Props) => {
+export const MatrixLogin = ({ isOpen = true, zIndex, onClose }: Props) => {
   const { t } = useI18n();
 
   const loginStatus = useUnit(matrixModel.$loginStatus);

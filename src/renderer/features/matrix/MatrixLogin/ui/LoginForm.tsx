@@ -231,7 +231,6 @@ export const LoginForm = () => {
       </form>
 
       <div className="flex flex-col gap-y-6 mt-6">
-        {/* TODO: Add condition */}
         {ssoFlows.length > 0 && (
           <div className="flex flex-col gap-y-6">
             <Separator text="or sign in" />

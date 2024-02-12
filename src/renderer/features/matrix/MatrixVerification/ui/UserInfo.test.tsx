@@ -2,7 +2,7 @@ import { render, screen, act } from '@testing-library/react';
 import { Provider } from 'effector-react';
 import { fork } from 'effector';
 
-import { UserInfo } from '../UserInfo';
+import { UserInfo } from './UserInfo';
 import { matrixModel } from '@entities/matrix';
 
 jest.mock('@app/providers', () => ({

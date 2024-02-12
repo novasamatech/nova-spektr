@@ -5,8 +5,6 @@ import { fork } from 'effector';
 import { MatrixProvider } from './MatrixContext';
 import { matrixModel } from '@entities/matrix';
 
-jest.mock('@shared/api/matrix', () => ({ Matrix: jest.fn().mockReturnValue({}) }));
-
 jest.mock('@entities/multisig', () => ({
   useMultisigTx: jest.fn().mockReturnValue({
     getMultisigTxs: jest.fn(),

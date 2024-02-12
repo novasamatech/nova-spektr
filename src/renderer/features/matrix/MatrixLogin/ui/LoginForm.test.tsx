@@ -3,7 +3,7 @@ import userEvent from '@testing-library/user-event';
 import { Provider } from 'effector-react';
 import { fork } from 'effector';
 
-import { LoginForm } from '../LoginForm';
+import { LoginForm } from './LoginForm';
 
 jest.mock('react-i18next', () => ({ Trans: (props: any) => props.i18nKey }));
 

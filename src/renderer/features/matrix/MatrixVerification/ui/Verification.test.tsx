@@ -3,7 +3,7 @@ import userEvent from '@testing-library/user-event';
 import { Scope, fork } from 'effector';
 import { Provider } from 'effector-react';
 
-import { Verification } from '../Verification';
+import { Verification } from './Verification';
 import { matrixModel } from '@entities/matrix';
 
 jest.mock('@app/providers', () => ({

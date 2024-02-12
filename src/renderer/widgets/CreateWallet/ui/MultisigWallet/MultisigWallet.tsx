@@ -9,7 +9,7 @@ import { ExtendedContact, ExtendedWallet } from './common/types';
 import { SelectSignatories, ConfirmSignatories, WalletForm } from './components';
 import { contactModel } from '@entities/contact';
 import { DEFAULT_TRANSITION } from '@shared/lib/utils';
-import { MatrixLoginModal } from '@widgets/MatrixModal';
+import { MatrixLogin } from '@features/matrix';
 import { walletModel, accountUtils } from '@entities/wallet';
 import type { AccountId } from '@shared/core';
 import { WalletType, SigningType, CryptoType, ChainType, AccountType } from '@shared/core';
@@ -222,7 +222,8 @@ export const MultisigWallet = ({ isOpen, onClose, onComplete }: Props) => {
           />
         </section>
 
-        <MatrixLoginModal isOpen={matrixUtils.isLoggedOut(loginStatus)} zIndex="z-60" onClose={closeMultisigModal} />
+        <MatrixLogin zIndex="z-60" onClose={closeMultisigModal} />
+        {/*<MatrixLogin isOpen={matrixUtils.isLoggedOut(loginStatus)} zIndex="z-60" onClose={closeMultisigModal} />*/}
       </BaseModal>
 
       <OperationResult

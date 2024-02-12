@@ -1,8 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 
 import { Paths } from '@shared/routes';
-import { MatrixLoginModal, MatrixVerificationModal } from '@widgets/MatrixModal';
-import { MatrixAutoLogin } from '@features/matrix/MatrixAutoLogin';
+import { MatrixAutoLogin, MatrixLogin, MatrixVerification } from '@features/matrix';
 
 export const Matrix = () => {
   const navigate = useNavigate();
@@ -14,8 +13,8 @@ export const Matrix = () => {
   return (
     <>
       <MatrixAutoLogin />
-      <MatrixLoginModal onClose={closeModal} />
-      <MatrixVerificationModal onClose={closeModal} />
+      <MatrixLogin onClose={closeModal} />
+      <MatrixVerification onClose={closeModal} />
     </>
   );
 };

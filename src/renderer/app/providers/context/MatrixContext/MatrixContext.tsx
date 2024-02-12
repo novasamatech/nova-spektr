@@ -44,7 +44,7 @@ import {
   useTransaction,
 } from '@entities/transaction';
 import { matrixModel, LoginStatus } from '@entities/matrix';
-import { matrixAutologinModel } from '@features/matrix/MatrixAutoLogin';
+import { matrixAutologinModel } from '@features/matrix';
 
 const MatrixContext = createContext({});
 

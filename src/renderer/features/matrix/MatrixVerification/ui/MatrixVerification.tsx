@@ -12,7 +12,7 @@ type Props = {
   onClose: () => void;
 };
 
-export const MatrixVerificationModal = ({ onClose }: Props) => {
+export const MatrixVerification = ({ onClose }: Props) => {
   const { t } = useI18n();
 
   const loginStatus = useUnit(matrixModel.$loginStatus);
