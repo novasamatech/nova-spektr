@@ -7,7 +7,7 @@ import { networkModel } from '@entities/network';
 import { constructorMock } from './mocks/constructor-mock';
 
 describe('features/wallet/model/constructor-model', () => {
-  const { defaultKeys, chainsMap } = constructorMock;
+  const { customKey, defaultKeys, chainsMap } = constructorMock;
 
   const submitForm = async (scope: Scope, form?: any): Promise<void> => {
     await allSettled(constructorModel.$constructorForm.fields.network.onChange, {
@@ -164,5 +164,29 @@ describe('features/wallet/model/constructor-model', () => {
       chainType: ChainType.SUBSTRATE,
       derivationPath: '//polkadot//custom//0',
     });
+  });
+
+  test('should check derivations path to be unique inside network', async () => {
+    const scope = fork({
+      values: new Map().set(networkModel.$chains, chainsMap),
+    });
+
+    await allSettled(constructorModel.events.formInitiated, {
+      scope,
+      params: [customKey] as ChainAccount[],
+    });
+
+    const network = { chainId: customKey.chainId, specName: 'polkadot' } as unknown;
+
+    await submitForm(scope, {
+      keyType: KeyType.CUSTOM,
+      isSharded: false,
+      keyName: 'My main key',
+      network,
+    });
+
+    const validationErrors = scope.getState(constructorModel.$constructorForm.fields.derivationPath.$errors);
+
+    expect(validationErrors[0]?.rule).toEqual('duplicated');
   });
 });
