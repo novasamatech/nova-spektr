@@ -36,6 +36,7 @@ export type MultisigAccount = BaseAccount & {
   threshold: Threshold;
   matrixRoomId: string;
   creatorAccountId: AccountId;
+  chainId?: ChainId;
 };
 
 export type WalletConnectAccount = Omit<BaseAccount, 'cryptoType'> & {

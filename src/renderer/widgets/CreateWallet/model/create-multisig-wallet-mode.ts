@@ -44,44 +44,48 @@ type CreateWalletParams = {
   threshold: number;
   creatorId: string;
   signatories: Signatory[];
+  chainId: ChainId;
 };
 
-const createWalletFx = createEffect(async ({ matrix, name, threshold, creatorId, signatories }: CreateWalletParams) => {
-  const accountIds = signatories.map((s) => s.accountId);
-  const accountId = accountUtils.getMultisigAccountId(accountIds, threshold);
-  let roomId = matrix.joinedRooms(accountId)[0]?.roomId;
+const createWalletFx = createEffect(
+  async ({ matrix, name, threshold, creatorId, signatories, chainId }: CreateWalletParams) => {
+    const accountIds = signatories.map((s) => s.accountId);
+    const accountId = accountUtils.getMultisigAccountId(accountIds, threshold);
+    let roomId = matrix.joinedRooms(accountId)[0]?.roomId;
 
-  if (!roomId) {
-    roomId = await matrix.createRoom({
-      creatorAccountId: creatorId,
-      accountName: name,
-      accountId: accountId,
-      threshold: threshold,
-      signatories: signatories.map(({ accountId, matrixId }) => ({ accountId, matrixId })),
-    });
-  }
-
-  walletModel.events.multisigCreated({
-    wallet: {
-      name,
-      type: WalletType.MULTISIG,
-      signingType: SigningType.MULTISIG,
-    },
-    accounts: [
-      {
-        signatories,
-        name: name.trim(),
+    if (!roomId) {
+      roomId = await matrix.createRoom({
+        creatorAccountId: creatorId,
+        accountName: name,
         accountId: accountId,
-        matrixRoomId: roomId,
         threshold: threshold,
-        creatorAccountId: creatorId as AccountId,
-        cryptoType: CryptoType.SR25519,
-        chainType: ChainType.SUBSTRATE,
-        type: AccountType.MULTISIG,
+        signatories: signatories.map(({ accountId, matrixId }) => ({ accountId, matrixId })),
+      });
+    }
+
+    walletModel.events.multisigCreated({
+      wallet: {
+        name,
+        type: WalletType.MULTISIG,
+        signingType: SigningType.MULTISIG,
       },
-    ],
-  });
-});
+      accounts: [
+        {
+          signatories,
+          chainId,
+          name: name.trim(),
+          accountId: accountId,
+          matrixRoomId: roomId,
+          threshold: threshold,
+          creatorAccountId: creatorId as AccountId,
+          cryptoType: CryptoType.SR25519,
+          chainType: ChainType.SUBSTRATE,
+          type: AccountType.MULTISIG,
+        },
+      ],
+    });
+  },
+);
 
 const $availableAccounts = combine(
   {
@@ -118,9 +122,11 @@ sample({
   source: {
     signatories: $signatories,
     matrix: $matrix,
+    chainId: $chain,
   },
+  filter: ({ chainId }) => Boolean(chainId),
   fn: (sourceValues, resultValues) => {
-    return { ...sourceValues, ...resultValues };
+    return { ...sourceValues, ...resultValues, chainId: sourceValues.chainId! };
   },
   target: createWalletFx,
 });
