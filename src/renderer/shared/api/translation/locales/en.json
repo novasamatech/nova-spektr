@@ -81,6 +81,22 @@
     "closeButton": "Close modal window"
   },
   "createMultisigAccount": {
+    "singleChain": {
+      "title": "Single-chain multisig",
+      "description": "Creating is free, the wallet can work on one network only",
+      "featureOne": "Single chain",
+      "featureTwo": "Use any wallet",
+      "featureThree": "Mutliple signers",
+      "featureFour": "Custom voting threshold"
+    },
+    "multiChain": {
+      "title": "Multi-chain multisig",
+      "description": "Creating is free, the wallet works on all networks",
+      "featureOne": "Any chain",
+      "featureTwo": "Some wallets are not supported",
+      "featureThree": "Mutliple signers",
+      "featureFour": "Custom voting threshold"
+    },
     "accountsAlertText": "Add signatory wallet before creating Multisig wallet",
     "addContact": "Add new",
     "addContactsButton": "Add selected",
@@ -90,6 +106,7 @@
     "backButton": "Back",
     "closeButton": "Close",
     "contactsTab": "Contacts",
+    "accountsTab": "Accounts",
     "continueButton": "Continue",
     "create": "Create",
     "disabledError": {
@@ -115,6 +132,9 @@
     "thresholdHint": "Threshold of signatories required to execute a transaction",
     "thresholdName": "Threshold",
     "thresholdPlaceholder": "Select threshold",
+    "chainHint": "Multisig’ll work in only this network, if you want to use different network, you’ll need to create new multisig.",
+    "chainName": "Network",
+    "chainPlaceholder": "Select network",
     "title": "Create Multisig Wallet",
     "walletAlertText": "To create a multisig wallet, you need to select at least one of your wallet",
     "walletAlertTitle": "Select wallet",
