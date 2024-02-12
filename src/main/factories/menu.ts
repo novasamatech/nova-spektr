@@ -1,9 +1,18 @@
-import { app, shell, Menu, MenuItem, MenuItemConstructorOptions } from 'electron';
+import { app, shell, Menu, MenuItem, MenuItemConstructorOptions, BrowserWindow } from 'electron';
 
 import { ENVIRONMENT, PLATFORM } from '../shared/constants';
 
-export function buildMenuTemplate(): Menu {
+export function buildMenuTemplate(window: BrowserWindow): Menu {
   const template: MenuItemConstructorOptions[] | MenuItem[] = [
+    {
+      label: 'TEST',
+      submenu: [
+        {
+          click: () => window.webContents.send('protocol-open', 'test data  '),
+          label: 'send url',
+        },
+      ],
+    },
     {
       label: 'Edit',
       accelerator: 'e',

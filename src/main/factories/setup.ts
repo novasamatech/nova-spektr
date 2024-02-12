@@ -17,7 +17,10 @@ export async function makeAppSetup(createWindow: () => Promise<BrowserWindow>) {
   // Handle the protocol novaspektr://
   app.on('open-url', (_, url) => {
     // novaspektr://nova/matrix/auth
-    window.webContents.send('protocol-open', url);
+    // window.loadURL()
+    // setTimeout(() => {
+    //   window.webContents.send('protocol-open', url);
+    // }, 10000);
   });
 
   app.on('second-instance', (event, commandLine, workingDirectory) => {
@@ -28,7 +31,9 @@ export async function makeAppSetup(createWindow: () => Promise<BrowserWindow>) {
     }
 
     // the commandLine is array of strings in which last element is deep link url
-    window.webContents.send('protocol-open', commandLine.pop());
+    // setTimeout(() => {
+    //   window.webContents.send('protocol-open', commandLine.pop());
+    // }, 3000);
   });
 
   app.on('activate', async () => {

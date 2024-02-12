@@ -6,14 +6,12 @@ import { ENVIRONMENT } from '../shared/constants';
 export function createWindow(settings: BrowserWindowConstructorOptions) {
   const window = new BrowserWindow(settings);
 
-  const { URL, PORT } = APP_CONFIG.RENDERER.DEV_SERVER;
-  const devServerURL = `${URL}:${PORT}`;
-
   const isDevServer = ENVIRONMENT.IS_DEV || ENVIRONMENT.IS_STAGE;
   if (ENVIRONMENT.IS_FORCE_ELECTRON || !isDevServer) {
-    window.loadFile('index.html');
+    window.loadFile('index.html/#/settings');
   } else {
-    window.loadURL(devServerURL);
+    const { URL, PORT } = APP_CONFIG.RENDERER.DEV_SERVER;
+    window.loadURL(`${URL}:${PORT}/#/settings/matrix`);
   }
 
   window.on('closed', window.destroy);

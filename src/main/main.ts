@@ -74,7 +74,7 @@ export async function MainWindow() {
 
     window.show();
   });
-  Menu.setApplicationMenu(buildMenuTemplate());
+  Menu.setApplicationMenu(buildMenuTemplate(window));
   mainWindowState.manage(window);
 
   return window;

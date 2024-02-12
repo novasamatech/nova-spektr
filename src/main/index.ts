@@ -75,6 +75,6 @@ makeAppWithSingleInstanceLock(async () => {
 
   setupAutoUpdate();
 
-  await makeAppSetup(MainWindow);
   await app.whenReady();
+  await makeAppSetup(MainWindow);
 });

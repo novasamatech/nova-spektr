@@ -33,7 +33,6 @@ const config = merge<WpConfig & WdsConfig>(sharedConfig, {
   },
 
   output: {
-    publicPath: '/',
     path: resolve(FOLDERS.DEV_BUILD),
     filename: 'renderer-[fullhash].js',
   },

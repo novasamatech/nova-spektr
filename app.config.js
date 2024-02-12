@@ -9,7 +9,7 @@ const idProd = `com.${AUTHOR_IN_KEBAB_CASE}.${NAME}`.toLowerCase();
 const idStage = `com.${AUTHOR_IN_KEBAB_CASE}.${NAME}.stage`.toLowerCase();
 
 const protocolProd = NAME.replace('-', '');
-const protocolStage = `${NAME.replace('-', '')}.stage`;
+const protocolStage = `${NAME.replace('-', '')}-stage`;
 
 module.exports = {
   APP_CONFIG: {
