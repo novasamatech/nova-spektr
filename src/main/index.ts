@@ -12,9 +12,9 @@ const setupAutoUpdate = () => {
   const isAutoUpdateSupported = checkAutoUpdateSupported();
   const store = new Store({ defaults: { [AUTO_UPDATE_ENABLED]: isAutoUpdateSupported } });
 
-  ipcMain.handle('getStoreValue', (event, key) => store.get(key));
+  ipcMain.handle('getStoreValue', (_, key) => store.get(key));
 
-  ipcMain.handle('setStoreValue', (event, key, value) => store.set(key, value));
+  ipcMain.handle('setStoreValue', (_, key, value) => store.set(key, value));
 
   if (!store.get(AUTO_UPDATE_ENABLED) || !isAutoUpdateSupported) return;
 
@@ -75,6 +75,6 @@ makeAppWithSingleInstanceLock(async () => {
 
   setupAutoUpdate();
 
-  await app.whenReady();
   await makeAppSetup(MainWindow);
+  await app.whenReady();
 });

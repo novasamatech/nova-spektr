@@ -39,6 +39,14 @@ export const App = () => {
     navigate(Paths.ONBOARDING, { replace: true });
   }, [isLoadingWallets, wallets.length]);
 
+  useEffect(() => {
+    if (!window.App) return;
+
+    window.App.onProtocolOpen((url) => {
+      console.log('=== URL: ', url);
+    });
+  }, []);
+
   const getContent = () => {
     if (splashScreenLoading || isLoadingWallets) return null;
 
