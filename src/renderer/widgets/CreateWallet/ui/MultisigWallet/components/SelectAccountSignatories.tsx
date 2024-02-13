@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { groupBy } from 'lodash';
+import { groupBy, isEqual } from 'lodash';
 
 import { cnTw, includes, isStringsMatchQuery, RootExplorers, toAddress } from '@shared/lib/utils';
 import { useI18n, useMatrix } from '@app/providers';
@@ -63,6 +63,10 @@ export const SelectAccountSignatories = ({ isActive, accounts, wallets, contacts
 
     setContactList(addressBookContacts);
   }, [contacts.length, isLoggedIn]);
+
+  useEffect(() => {
+    setSelectedAccounts({});
+  }, [chain]);
 
   useEffect(() => {
     const extendedAccounts = accounts.reduce<Array<ExtendedAccount | ExtendedAccount[]>>((acc, account, index) => {
@@ -145,7 +149,7 @@ export const SelectAccountSignatories = ({ isActive, accounts, wallets, contacts
   };
 
   const isDisabledAccount = (account: ExtendedAccount): boolean => {
-    const isThisAccount = selectedAccountsList.includes(account);
+    const isThisAccount = selectedAccountsList.find((a) => isEqual(a, account));
     const isSameContactSelected = selectedContactsList.some((c) => c.accountId === account.accountId);
     const isSameWalletSelected = selectedAccountsList.some((w) => w.accountId === account.accountId);
 
@@ -165,13 +169,12 @@ export const SelectAccountSignatories = ({ isActive, accounts, wallets, contacts
   const AccountsTab = hasAccounts ? (
     <div className="flex flex-col gap-2">
       <ul className="flex flex-col gap-y-2">
-        {/* WIP */}
-        {/* <SearchInput
-          wrapperClass="flex-1"
+        <SearchInput
+          wrapperClass="mx-2"
           placeholder={t('createMultisigAccount.searchContactPlaceholder')}
           value={accountsQuery}
           onChange={setAccountsQuery}
-        /> */}
+        />
 
         {Object.entries(accountsList).map(([walletId, accounts]) => {
           const wallet = wallets[Number(walletId)];
@@ -181,11 +184,11 @@ export const SelectAccountSignatories = ({ isActive, accounts, wallets, contacts
               <WalletCardMd className="py-[7px] px-2" wallet={wallet} />
 
               <div className="pl-6">
-                {accounts.map((account, index) => {
+                {accounts.map((account) => {
                   if (Array.isArray(account)) {
                     return (
-                      <Accordion key={index} className="pl-8">
-                        <Accordion.Button buttonClass="mb-2 p-2">
+                      <Accordion key={`${walletId}_${account[0].id}`} className="pl-8">
+                        <Accordion.Button buttonClass="">
                           <div className="flex items-center gap-x-2">
                             <div
                               className={cnTw(
@@ -204,7 +207,7 @@ export const SelectAccountSignatories = ({ isActive, accounts, wallets, contacts
 
                             return (
                               <li
-                                key={a.id + '_wallets'}
+                                key={`${a.id}_${walletId}`}
                                 className={cnTw(
                                   'py-1.5 pl-8 rounded-md',
                                   !disabled && 'hover:bg-action-background-hover',
@@ -235,7 +238,7 @@ export const SelectAccountSignatories = ({ isActive, accounts, wallets, contacts
 
                   return (
                     <li
-                      key={account.id + '_wallets'}
+                      key={`${account.id}_${walletId}`}
                       className={cnTw('py-1.5 px-2 rounded-md', !disabled && 'hover:bg-action-background-hover')}
                     >
                       <Checkbox
