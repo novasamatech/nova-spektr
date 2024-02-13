@@ -188,7 +188,7 @@ export const SelectAccountSignatories = ({ isActive, accounts, wallets, contacts
                   if (Array.isArray(account)) {
                     return (
                       <Accordion key={`${walletId}_${account[0].id}`} className="pl-8">
-                        <Accordion.Button buttonClass="">
+                        <Accordion.Button buttonClass="py-2">
                           <div className="flex items-center gap-x-2">
                             <div
                               className={cnTw(
@@ -220,6 +220,7 @@ export const SelectAccountSignatories = ({ isActive, accounts, wallets, contacts
                                 >
                                   <AddressWithExplorers
                                     type="short"
+                                    size={20}
                                     accountId={a.accountId}
                                     explorers={chain?.explorers}
                                     addressPrefix={chain?.addressPrefix}
@@ -246,6 +247,7 @@ export const SelectAccountSignatories = ({ isActive, accounts, wallets, contacts
                         onChange={() => selectAccount(account)}
                       >
                         <AddressWithName
+                          size={20}
                           name={account.name}
                           accountId={account.accountId}
                           addressPrefix={chain?.addressPrefix}
@@ -298,7 +300,13 @@ export const SelectAccountSignatories = ({ isActive, accounts, wallets, contacts
                   <ExplorersPopover
                     address={contact.accountId}
                     explorers={RootExplorers}
-                    button={<ContactItem name={contact.name} address={contact.accountId} />}
+                    button={
+                      <ContactItem
+                        addressPrefix={chain?.addressPrefix}
+                        name={contact.name}
+                        address={contact.accountId}
+                      />
+                    }
                   >
                     <ExplorersPopover.Group
                       active={Boolean(contact.matrixId)}
