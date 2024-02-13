@@ -53,6 +53,10 @@ export const SingleChainMultisigWallet = ({ isOpen, onClose, onComplete }: Props
   const signatories = (signatoryAccounts as ExtendedContact[]).concat(signatoryContacts);
 
   useEffect(() => {
+    createMultisigWalletModel.events.signatoriesChanged(signatories);
+  }, [signatories.length]);
+
+  useEffect(() => {
     createMultisigWalletModel.events.callbacksChanged({ onComplete });
   }, [onComplete]);
 

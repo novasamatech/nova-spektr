@@ -40,7 +40,7 @@ export const ConfirmSignatories = ({ isActive, wallets = [], accounts = [], cont
         {accounts.length > 0 && (
           <>
             <FootnoteText className="text-text-tertiary">
-              {t('createMultisigAccount.walletsTab')} <span className="ml-2">{wallets.length}</span>
+              {t('createMultisigAccount.accountsTab')} <span className="ml-2">{accounts.length}</span>
             </FootnoteText>
             <ul className="flex flex-col gap-y-2">
               {accounts.map(({ index, name, accountId }) => (
