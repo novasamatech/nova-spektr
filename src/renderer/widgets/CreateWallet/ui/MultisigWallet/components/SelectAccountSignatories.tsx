@@ -220,7 +220,6 @@ export const SelectAccountSignatories = ({ isActive, accounts, wallets, contacts
                                 >
                                   <AddressWithExplorers
                                     type="short"
-                                    name={toAddress(a.accountId, {})}
                                     accountId={a.accountId}
                                     explorers={chain?.explorers}
                                     addressPrefix={chain?.addressPrefix}
