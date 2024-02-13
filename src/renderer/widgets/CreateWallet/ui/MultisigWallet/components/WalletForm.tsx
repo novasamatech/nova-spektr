@@ -7,7 +7,7 @@ import { useI18n, useMatrix } from '@app/providers';
 import { DropdownOption, DropdownResult } from '@shared/ui/Dropdowns/common/types';
 import type { AccountId, Chain, ChainId, Signatory } from '@shared/core';
 import { accountUtils, walletModel, walletUtils } from '@entities/wallet';
-import { networkModel } from '@/src/renderer/entities/network';
+import { networkModel, networkUtils } from '@/src/renderer/entities/network';
 import { ChainTitle } from '@/src/renderer/entities/chain';
 
 type MultisigAccountForm = {
@@ -86,7 +86,9 @@ export const WalletForm = ({
   }, [chain]);
 
   const thresholdOptions = getThresholdOptions(signatories.length - 1);
-  const chainOptions = getChainOptions(Object.values(chains));
+  const chainOptions = getChainOptions(
+    Object.values(chains).filter((c) => networkUtils.isMultisigSupported(c.options)),
+  );
 
   const multisigAccountId =
     threshold &&
