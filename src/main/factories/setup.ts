@@ -2,12 +2,11 @@ import { app, BrowserWindow } from 'electron';
 import installExtension, { REACT_DEVELOPER_TOOLS } from 'electron-devtools-installer';
 import { resolve } from 'path';
 
-import { PLATFORM, ENVIRONMENT } from '../shared/constants';
+import { ENVIRONMENT } from '../shared/constants/environment';
+import { PLATFORM } from '../shared/constants/platform';
 import { APP_CONFIG } from '../../../app.config';
 
-export async function makeAppSetup(createWindow: () => Promise<BrowserWindow>) {
-  let window = await createWindow();
-
+export async function setupApplication(window: BrowserWindow): Promise<void> {
   if (!process.defaultApp) {
     app.setAsDefaultProtocolClient(APP_CONFIG.ELECTRON_PROTOCOL);
   } else if (process.argv.length >= 2) {
@@ -37,9 +36,7 @@ export async function makeAppSetup(createWindow: () => Promise<BrowserWindow>) {
   });
 
   app.on('activate', async () => {
-    if (!BrowserWindow.getAllWindows().length) {
-      return (window = await createWindow());
-    }
+    if (!BrowserWindow.getAllWindows().length) return window;
 
     return BrowserWindow.getAllWindows()
       ?.reverse()
@@ -55,16 +52,4 @@ export async function makeAppSetup(createWindow: () => Promise<BrowserWindow>) {
   if (ENVIRONMENT.IS_DEV) {
     await installExtension(REACT_DEVELOPER_TOOLS, { forceDownload: false });
   }
-
-  return window;
 }
-
-PLATFORM.IS_LINUX && app.disableHardwareAcceleration();
-
-if (ENVIRONMENT.IS_DEV || ENVIRONMENT.IS_STAGE) {
-  app.commandLine.appendSwitch('ignore-certificate-errors');
-}
-app.commandLine.appendSwitch('force-color-profile', 'srgb');
-
-process.env.ELECTRON_DISABLE_SECURITY_WARNINGS = 'true';
-delete process.env.ELECTRON_ENABLE_SECURITY_WARNINGS;

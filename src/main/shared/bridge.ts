@@ -1,7 +1,7 @@
 import { contextBridge, ipcRenderer } from 'electron';
 
 import { checkAutoUpdateSupported } from './lib/utils';
-import { AUTO_UPDATE_ENABLED } from './constants';
+import { AUTO_UPDATE_ENABLED } from './constants/store';
 
 declare global {
   interface Window {
