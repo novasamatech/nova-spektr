@@ -115,7 +115,7 @@ export const Submit = ({ api, accounts, txs, multisigTx, unsignedTx, signatures,
 
             await Promise.all([addMultisigTx(newTx), addEventWithQueue(event)]);
 
-            if (matrix.userIsLoggedIn) {
+            if (matrix.userIsLoggedIn && firstAccount.matrixRoomId) {
               sendMultisigEvent(firstAccount.matrixRoomId, newTx, typedParams);
             }
           }

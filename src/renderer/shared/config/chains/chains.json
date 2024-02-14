@@ -4886,7 +4886,6 @@
         "symbol": "PDEX",
         "precision": 12,
         "priceId": "polkadex",
-        "staking": "relaychain",
         "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Polkadex_(PDEX).svg",
         "name": "Polkadex"
       },
@@ -5719,7 +5718,6 @@
         "symbol": "CAPS",
         "precision": 18,
         "priceId": "coin-capsule",
-        "staking": "relaychain",
         "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Ternoa_(CAPS).svg",
         "name": "Ternoa"
       }

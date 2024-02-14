@@ -186,7 +186,10 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
         await matrix.leaveRoom(roomId);
       } else {
         console.log(`Leave old ${mstAccount.matrixRoomId}, join new room ${roomId}`);
-        await matrix.leaveRoom(mstAccount.matrixRoomId);
+        if (mstAccount.matrixRoomId) {
+          await matrix.leaveRoom(mstAccount.matrixRoomId);
+        }
+
         await matrix.joinRoom(roomId);
 
         walletModel.events.multisigAccountUpdated({
