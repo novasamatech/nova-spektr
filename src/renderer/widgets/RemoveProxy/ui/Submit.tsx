@@ -80,7 +80,7 @@ export const Submit = ({ api, tx, multisigTx, account, unsignedTx, signature, on
 
           console.log(`New removeProxy transaction was created with call hash ${result.transaction.callHash}`);
 
-          if (matrix.userIsLoggedIn) {
+          if (matrix.userIsLoggedIn && account.matrixRoomId) {
             sendMultisigEvent(account.matrixRoomId, result.transaction, params as ExtrinsicResultParams);
           }
         }

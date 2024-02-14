@@ -27,7 +27,7 @@ type Props = {
   account?: Account;
   tx: Transaction;
   multisigTx?: MultisigTransaction;
-  matrixRoomId: string;
+  matrixRoomId?: string;
   unsignedTx: UnsignedTransaction;
   signature: HexString;
   rejectReason?: string;
@@ -103,7 +103,7 @@ export const Submit = ({
 
           await addEventWithQueue(event);
 
-          if (matrix.userIsLoggedIn) {
+          if (matrix.userIsLoggedIn && matrixRoomId) {
             sendMultisigEvent(updatedTx, typedParams, rejectReason);
           }
         }
@@ -121,7 +121,7 @@ export const Submit = ({
   };
 
   const sendMultisigEvent = (updatedTx: MultisigTransaction, params: ExtrinsicResultParams, rejectReason?: string) => {
-    if (!tx || !updatedTx) return;
+    if (!tx || !updatedTx || !matrixRoomId) return;
 
     const payload = {
       senderAccountId: toAccountId(tx.address),
