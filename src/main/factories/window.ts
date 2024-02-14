@@ -28,7 +28,6 @@ export function createWindow(): BrowserWindow {
 
     webPreferences: {
       preload: join(__dirname, 'bridge.js'),
-      nodeIntegrationInWorker: true,
     },
   });
 

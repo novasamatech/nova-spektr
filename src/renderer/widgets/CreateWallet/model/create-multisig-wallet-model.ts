@@ -1,5 +1,4 @@
 import { combine, createApi, createEffect, createEvent, createStore, sample } from 'effector';
-import { createGate } from 'effector-react';
 
 import {
   AccountId,
@@ -11,9 +10,9 @@ import {
   SigningType,
   WalletType,
 } from '@shared/core';
-import { accountUtils, walletModel } from '@/src/renderer/entities/wallet';
-import { ISecureMessenger } from '@shared/api/matrix';
-import { RelayChains } from '@/src/renderer/shared/lib/utils';
+import { accountUtils, walletModel } from '@entities/wallet';
+import { RelayChains } from '@shared/lib/utils';
+import { matrixModel } from '@entities/matrix';
 
 const reset = createEvent();
 
@@ -33,9 +32,7 @@ const walletCreated = createEvent<{
 }>();
 const chainSelected = createEvent<ChainId>();
 const signatoriesChanged = createEvent<Signatory[]>();
-const MatrixGate = createGate<ISecureMessenger>('matrix');
 
-const $matrix = createStore<ISecureMessenger | null>(null);
 const $chain = createStore<ChainId | null>(null).reset(reset);
 const $signatories = createStore<Signatory[]>([]).reset(reset);
 const $error = createStore('').reset(reset);
@@ -106,11 +103,6 @@ const $availableAccounts = combine(
 );
 
 sample({
-  clock: MatrixGate.state,
-  target: $matrix,
-});
-
-sample({
   clock: chainSelected,
   target: $chain,
 });
@@ -124,7 +116,7 @@ sample({
   clock: walletCreated,
   source: {
     signatories: $signatories,
-    matrix: $matrix,
+    matrix: matrixModel.$matrix,
     chainId: $chain,
   },
   fn: (sourceValues, resultValues) => ({ ...sourceValues, ...resultValues }),
@@ -138,7 +130,6 @@ sample({
 });
 
 export const createMultisigWalletModel = {
-  MatrixGate,
   $availableAccounts,
   $chain,
   $isLoading: createWalletFx.pending,

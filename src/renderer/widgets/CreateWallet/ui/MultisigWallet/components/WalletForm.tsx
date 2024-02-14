@@ -7,8 +7,8 @@ import { useI18n } from '@app/providers';
 import { DropdownOption, DropdownResult } from '@shared/ui/Dropdowns/common/types';
 import type { AccountId, Chain, ChainId, Signatory } from '@shared/core';
 import { accountUtils, walletModel, walletUtils } from '@entities/wallet';
-import { networkModel, networkUtils } from '@/src/renderer/entities/network';
-import { ChainTitle } from '@/src/renderer/entities/chain';
+import { networkModel, networkUtils } from '@entities/network';
+import { ChainTitle } from '@entities/chain';
 import { matrixModel } from '@entities/matrix';
 
 type MultisigAccountForm = {
@@ -58,11 +58,10 @@ export const WalletForm = ({
 }: Props) => {
   const { t } = useI18n();
 
+  const matrix = useUnit(matrixModel.$matrix);
   const wallets = useUnit(walletModel.$wallets);
   const accounts = useUnit(walletModel.$accounts);
-const chains = useUnit(networkModel.$chains);
-
-  const matrix = useUnit(matrixModel.$matrix);
+  const chains = useUnit(networkModel.$chains);
 
   const {
     control,
