@@ -24,7 +24,13 @@ import { SyncState } from 'matrix-js-sdk/lib/sync';
 import { logger } from 'matrix-js-sdk/lib/logger';
 import noop from 'lodash/noop';
 
-import { BASE_MATRIX_URL, KEY_FILE_MAX_SIZE, ROOM_CRYPTO_CONFIG, WELL_KNOWN_SERVERS } from '../lib/constants';
+import {
+  BASE_MATRIX_URL,
+  KEY_FILE_MAX_SIZE,
+  ROOM_CRYPTO_CONFIG,
+  WELL_KNOWN_SERVERS,
+  MATRIX_HOME_SERVER,
+} from '../lib/constants';
 import MATRIX_ERRORS from '../lib/errors';
 import CredentialStorage from './credentialStorage';
 import SecretStorage from './secretStorage';
@@ -88,7 +94,7 @@ export class Matrix implements ISecureMessenger {
         const config = { 'm.homeserver': { base_url: wellKnown.url } };
         await AutoDiscovery.fromDiscoveryConfig(config);
         this.createTempClient(wellKnown.url);
-        localStorage.setItem('matrix_hs', wellKnown.url);
+        localStorage.setItem(MATRIX_HOME_SERVER, wellKnown.url);
 
         return;
       } catch (error) {
@@ -108,7 +114,7 @@ export class Matrix implements ISecureMessenger {
     }
 
     this.createTempClient(discoveryResult['m.homeserver'].base_url);
-    localStorage.setItem('matrix_hs', discoveryResult['m.homeserver'].base_url);
+    localStorage.setItem(MATRIX_HOME_SERVER, discoveryResult['m.homeserver'].base_url);
   }
 
   getSsoLoginUrl(baseUrl: string, type: string, id: string): string {
@@ -126,7 +132,7 @@ export class Matrix implements ISecureMessenger {
         (acc, flow) => {
           if (flow.type === 'm.login.token') acc.token = true;
           if (flow.type === 'm.login.password') acc.password = true;
-          if ((flow.type === 'm.login.sso') && 'identity_providers' in flow) {
+          if (flow.type === 'm.login.sso' && 'identity_providers' in flow) {
             acc.sso = (flow.identity_providers || [])
               .filter(({ brand }) => brand === 'github' || brand === 'google')
               .map(({ id, name, brand }) => ({ id, name, brand: brand || name.toLowerCase() }));
@@ -750,7 +756,7 @@ export class Matrix implements ISecureMessenger {
    * @return {Promise}
    */
   private async initClientWithSso(token: string): Promise<void> {
-    const baseUrl = localStorage.getItem('matrix_hs') || '';
+    const baseUrl = localStorage.getItem(MATRIX_HOME_SERVER);
     if (!baseUrl) return;
 
     try {

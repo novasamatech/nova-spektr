@@ -7,7 +7,7 @@ import { APP_CONFIG } from '../../../app.config';
 export function registerCustomProtocol() {
   if (!process.defaultApp) {
     app.setAsDefaultProtocolClient(APP_CONFIG.ELECTRON_PROTOCOL);
-  } else if (process.argv.length >= 2) {
+  } else if (process.argv.length > 1) {
     app.setAsDefaultProtocolClient(APP_CONFIG.ELECTRON_PROTOCOL, process.execPath, [resolve(process.argv[1])]);
   }
 }

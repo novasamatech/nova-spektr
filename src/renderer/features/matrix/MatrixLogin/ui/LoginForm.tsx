@@ -144,6 +144,7 @@ export const LoginForm = ({ redirectStep }: Props) => {
   const logInDisabled = isHomeserverLoading || !isValid || invalidHomeserver || invalidLogin;
   const isEditing = !isLoggedIn && !isHomeserverLoading && !inProgress;
   const register = <InfoLink url="https://app.element.io/#/register" />;
+  //eslint-disable-next-line i18next/no-literal-string
   const ssoRedirectUrl = `${window.location.origin}/?step=${redirectStep}`;
 
   return (
