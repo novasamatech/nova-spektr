@@ -16,4 +16,3 @@ export const WELL_KNOWN_SERVERS = [
 ];
 
 export const MATRIX_HOME_SERVER = 'matrix_hs';
-1
