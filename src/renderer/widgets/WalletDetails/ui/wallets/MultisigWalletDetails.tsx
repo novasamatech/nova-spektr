@@ -13,7 +13,7 @@ import {
   WalletCardMd,
   accountUtils,
 } from '@entities/wallet';
-import { useI18n, useMatrix } from '@app/providers';
+import { useI18n } from '@app/providers';
 // TODO: think about combining balances and wallets
 import { WalletFiatBalance } from '@features/wallets/WalletSelect/ui/WalletFiatBalance';
 import { IconNames } from '@shared/ui/Icon/data';
@@ -23,6 +23,7 @@ import { ProxiesList } from '../components/ProxiesList';
 import { walletProviderModel } from '../../model/wallet-provider-model';
 import { NoProxiesAction } from '../components/NoProxiesAction';
 import { networkUtils, networkModel } from '@entities/network';
+import { matrixModel, matrixUtils } from '@entities/matrix';
 
 type Props = {
   wallet: Wallet;
@@ -33,7 +34,9 @@ type Props = {
 };
 export const MultisigWalletDetails = ({ wallet, account, signatoryWallets, signatoryContacts, onClose }: Props) => {
   const { t } = useI18n();
-  const { matrix, isLoggedIn } = useMatrix();
+
+  const matrix = useUnit(matrixModel.$matrix);
+  const loginStatus = useUnit(matrixModel.$loginStatus);
 
   const chains = useUnit(networkModel.$chains);
   const hasProxies = useUnit(walletProviderModel.$hasProxies);
@@ -132,7 +135,7 @@ export const MultisigWalletDetails = ({ wallet, account, signatoryWallets, signa
                                 }
                               >
                                 <ExplorersPopover.Group
-                                  active={isLoggedIn}
+                                  active={matrixUtils.isLoggedIn(loginStatus)}
                                   title={t('general.explorers.matrixIdTitle')}
                                 >
                                   <HelpText className="text-text-secondary">{matrix.userId}</HelpText>

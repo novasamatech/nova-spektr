@@ -1,8 +1,9 @@
 import { useEffect } from 'react';
+import { useUnit } from 'effector-react';
 
 import { useI18n } from '@app/providers';
 import { BaseModal } from '@shared/ui';
-import { MatrixInfoPopover } from './MatrixInfoPopover';
+import { MatrixInfoPopover, matrixUtils, matrixModel } from '@entities/matrix';
 import { LoginForm } from './LoginForm';
 import { useToggle } from '@shared/lib/hooks';
 import { DEFAULT_TRANSITION } from '@shared/lib/utils';
@@ -10,11 +11,14 @@ import { DEFAULT_TRANSITION } from '@shared/lib/utils';
 type Props = {
   isOpen?: boolean;
   zIndex?: string;
+  redirectStep: string;
   onClose: () => void;
 };
 
-export const MatrixLoginModal = ({ isOpen = true, zIndex, onClose }: Props) => {
+export const MatrixLogin = ({ isOpen = true, zIndex, redirectStep, onClose }: Props) => {
   const { t } = useI18n();
+
+  const loginStatus = useUnit(matrixModel.$loginStatus);
 
   const [isModalOpen, toggleIsModalOpen] = useToggle(isOpen);
 
@@ -36,6 +40,8 @@ export const MatrixLoginModal = ({ isOpen = true, zIndex, onClose }: Props) => {
     }
   };
 
+  if (!matrixUtils.isLoggedOut(loginStatus)) return null;
+
   return (
     <BaseModal
       closeButton
@@ -45,7 +51,7 @@ export const MatrixLoginModal = ({ isOpen = true, zIndex, onClose }: Props) => {
       onClose={closeMatrixModal}
     >
       <MatrixInfoPopover />
-      <LoginForm />
+      <LoginForm redirectStep={redirectStep} />
     </BaseModal>
   );
 };

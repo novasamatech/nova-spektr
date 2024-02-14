@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
 import { groupBy, isEqual } from 'lodash';
+import { useUnit } from 'effector-react';
 
 import { cnTw, includes, isStringsMatchQuery, RootExplorers, toAddress } from '@shared/lib/utils';
-import { useI18n, useMatrix } from '@app/providers';
+import { useI18n } from '@app/providers';
 import { useToggle } from '@shared/lib/hooks';
 import {
   Button,
@@ -23,6 +24,7 @@ import { ExtendedAccount, ExtendedContact } from '../common/types';
 import { EmptyContactList } from '@entities/contact';
 import { type Contact, type Account, ShardAccount, Wallet, Chain } from '@shared/core';
 import { AddressWithExplorers, AddressWithName, ContactItem, ExplorersPopover, WalletCardMd } from '@entities/wallet';
+import { matrixModel } from '@entities/matrix';
 
 const enum SignatoryTabs {
   ACCOUNTS = 'accounts',
@@ -40,7 +42,9 @@ type Props = {
 
 export const SelectAccountSignatories = ({ isActive, accounts, wallets, contacts, chain, onSelect }: Props) => {
   const { t } = useI18n();
-  const { matrix, isLoggedIn } = useMatrix();
+
+  const matrix = useUnit(matrixModel.$matrix);
+  const loginStatus = useUnit(matrixModel.$loginStatus);
 
   const [query, setQuery] = useState('');
   const [accountsQuery, setAccountsQuery] = useState('');
@@ -62,7 +66,7 @@ export const SelectAccountSignatories = ({ isActive, accounts, wallets, contacts
       .map((contact, index) => ({ ...contact, index: index.toString() }));
 
     setContactList(addressBookContacts);
-  }, [contacts.length, isLoggedIn]);
+  }, [contacts.length, loginStatus]);
 
   useEffect(() => {
     setSelectedAccounts({});
@@ -110,7 +114,7 @@ export const SelectAccountSignatories = ({ isActive, accounts, wallets, contacts
     );
 
     setAccountsList(groupedWithWallet);
-  }, [accounts.length, isLoggedIn, accountsQuery]);
+  }, [accounts.length, loginStatus, accountsQuery]);
 
   useEffect(() => {
     onSelect(selectedAccountsList, selectedContactsList);

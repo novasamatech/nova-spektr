@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
-import { MatrixInfoPopover } from '../MatrixInfoPopover';
+import { MatrixInfoPopover } from './MatrixInfoPopover';
 
 jest.mock('react-i18next', () => ({ Trans: (props: any) => props.i18nKey }));
 
@@ -11,7 +11,7 @@ jest.mock('@app/providers', () => ({
   }),
 }));
 
-describe('pages/Settings/Matrix/MatrixInfoPopover', () => {
+describe('entities/matrix/ui/MatrixInfoPopover', () => {
   test('should render component', async () => {
     const user = userEvent.setup();
 

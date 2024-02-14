@@ -630,6 +630,7 @@
       "unpopularFiatLabel": "Fiat currencies"
     },
     "matrix": {
+      "autoLoginTitle": "Logging into Matrix",
       "badCredentialsError": "Invalid username or password",
       "badServerError": "Server is not a correct matrix server",
       "fileError": "File does not contain a valid verification key, please upload another one",

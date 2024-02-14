@@ -1,8 +1,8 @@
 import { ComponentProps, useState, useEffect } from 'react';
-import { useGate, useUnit } from 'effector-react';
+import { useUnit } from 'effector-react';
 
 import { BaseModal, HeaderTitleText, StatusLabel, Button, IconButton } from '@shared/ui';
-import { useI18n, useMatrix } from '@app/providers';
+import { useI18n } from '@app/providers';
 import { useToggle } from '@shared/lib/hooks';
 import { OperationResult } from '@entities/transaction';
 import { ExtendedAccount, ExtendedContact } from './common/types';
@@ -13,6 +13,7 @@ import { createMultisigWalletModel } from '../../model/create-multisig-wallet-mo
 import { SelectAccountSignatories } from './components/SelectAccountSignatories';
 import { walletModel } from '@entities/wallet';
 import { networkModel } from '@entities/network';
+import { matrixModel, matrixUtils } from '@entities/matrix';
 
 type OperationResultProps = Pick<ComponentProps<typeof OperationResult>, 'variant' | 'description'>;
 
@@ -30,6 +31,9 @@ type Props = {
 export const SingleChainMultisigWallet = ({ isOpen, onClose, onComplete }: Props) => {
   const { t } = useI18n();
 
+  const matrix = useUnit(matrixModel.$matrix);
+  const loginStatus = useUnit(matrixModel.$loginStatus);
+
   const accounts = useUnit(createMultisigWalletModel.$availableAccounts);
   const wallets = useUnit(walletModel.$wallets);
   const contacts = useUnit(contactModel.$contacts);
@@ -37,9 +41,6 @@ export const SingleChainMultisigWallet = ({ isOpen, onClose, onComplete }: Props
   const chains = useUnit(networkModel.$chains);
   const isLoading = useUnit(createMultisigWalletModel.$isLoading);
   const error = useUnit(createMultisigWalletModel.$error);
-
-  const { matrix, isLoggedIn } = useMatrix();
-  useGate(createMultisigWalletModel.MatrixGate, matrix);
 
   const [isModalOpen, toggleIsModalOpen] = useToggle(isOpen);
   const [isResultModalOpen, toggleResultModal] = useToggle();
@@ -94,7 +95,7 @@ export const SingleChainMultisigWallet = ({ isOpen, onClose, onComplete }: Props
   const modalTitle = (
     <div className="flex justify-between items-center px-5 py-3 w-[464px] bg-white rounded-tl-lg">
       <HeaderTitleText className="py-[3px]">{t('createMultisigAccount.title')}</HeaderTitleText>
-      {isLoggedIn && <StatusLabel title={matrix.userId || ''} variant="success" />}
+      {matrixUtils.isLoggedIn(loginStatus) && <StatusLabel title={matrix.userId || ''} variant="success" />}
     </div>
   );
 
