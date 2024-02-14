@@ -5,7 +5,14 @@ import { MultisigAccount, Signatory, Wallet, AccountId } from '@shared/core';
 import { BaseModal, FootnoteText, Tabs, HelpText, DropdownIconButton } from '@shared/ui';
 import { RootExplorers } from '@shared/lib/utils';
 import { useModalClose, useToggle } from '@shared/lib/hooks';
-import { AccountsList, ContactItem, ExplorersPopover, WalletCardLg, WalletCardMd } from '@entities/wallet';
+import {
+  AccountsList,
+  ContactItem,
+  ExplorersPopover,
+  WalletCardLg,
+  WalletCardMd,
+  accountUtils,
+} from '@entities/wallet';
 import { useI18n, useMatrix } from '@app/providers';
 // TODO: think about combining balances and wallets
 import { WalletFiatBalance } from '@features/wallets/WalletSelect/ui/WalletFiatBalance';
@@ -37,7 +44,9 @@ export const MultisigWalletDetails = ({ wallet, account, signatoryWallets, signa
   const [isConfirmForgetOpen, toggleConfirmForget] = useToggle();
 
   const multisigChains = useMemo(() => {
-    return Object.values(chains).filter((chain) => networkUtils.isMultisigSupported(chain.options));
+    return Object.values(chains).filter((chain) => {
+      return networkUtils.isMultisigSupported(chain.options) && accountUtils.isChainIdMatch(account, chain.chainId);
+    });
   }, [chains]);
 
   const Options = [

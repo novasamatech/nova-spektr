@@ -1,35 +1,56 @@
 import { cnTw, RootExplorers } from '@shared/lib/utils';
 import { useI18n } from '@app/providers';
 import { FootnoteText, SmallTitleText, HelpText } from '@shared/ui';
-import { ExtendedWallet, ExtendedContact } from '../common/types';
+import { ExtendedWallet, ExtendedContact, ExtendedAccount } from '../common/types';
 import { WalletItem } from './WalletItem';
 import { ContactItem, ExplorersPopover } from '@entities/wallet';
 import { WalletType } from '@shared/core';
+import { AccountItem } from './AccountItem';
 
 type Props = {
   isActive: boolean;
-  wallets: ExtendedWallet[];
+  wallets?: ExtendedWallet[];
+  accounts?: ExtendedAccount[];
   contacts: ExtendedContact[];
 };
 
-export const ConfirmSignatories = ({ isActive, wallets, contacts }: Props) => {
+export const ConfirmSignatories = ({ isActive, wallets = [], accounts = [], contacts }: Props) => {
   const { t } = useI18n();
 
   return (
-    <div className={cnTw(!isActive && 'hidden')}>
+    <div className={cnTw('max-h-full flex flex-col', !isActive && 'hidden')}>
       <SmallTitleText className="py-2 mb-4">{t('createMultisigAccount.selectedSignatoriesTitle')}</SmallTitleText>
 
       <div className="flex flex-col gap-y-2 flex-1 overflow-y-auto">
-        <FootnoteText className="text-text-tertiary">
-          {t('createMultisigAccount.walletsTab')} <span className="ml-2">{wallets.length}</span>
-        </FootnoteText>
-        <ul className="flex flex-col gap-y-2">
-          {wallets.map(({ index, name, type }) => (
-            <li key={index} className="py-1.5 px-1 rounded-md hover:bg-action-background-hover">
-              <WalletItem name={name} type={type || WalletType.POLKADOT_VAULT} />
-            </li>
-          ))}
-        </ul>
+        {wallets.length > 0 && (
+          <>
+            <FootnoteText className="text-text-tertiary">
+              {t('createMultisigAccount.walletsTab')} <span className="ml-2">{wallets.length}</span>
+            </FootnoteText>
+            <ul className="flex flex-col gap-y-2">
+              {wallets.map(({ index, name, type }) => (
+                <li key={index} className="py-1.5 px-1 rounded-md hover:bg-action-background-hover">
+                  <WalletItem name={name} type={type || WalletType.POLKADOT_VAULT} />
+                </li>
+              ))}
+            </ul>
+          </>
+        )}
+
+        {accounts.length > 0 && (
+          <>
+            <FootnoteText className="text-text-tertiary">
+              {t('createMultisigAccount.accountsTab')} <span className="ml-2">{accounts.length}</span>
+            </FootnoteText>
+            <ul className="flex flex-col gap-y-2">
+              {accounts.map(({ index, name, accountId }) => (
+                <li key={index} className="py-1.5 px-1 rounded-md hover:bg-action-background-hover">
+                  <AccountItem name={name} accountId={accountId} />
+                </li>
+              ))}
+            </ul>
+          </>
+        )}
 
         {contacts.length > 0 && (
           <>

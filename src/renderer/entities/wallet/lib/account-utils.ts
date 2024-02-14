@@ -65,7 +65,7 @@ function isAccountWithShards(accounts: Pick<Account, 'type'> | ShardAccount[]): 
 }
 
 function isChainDependant(account: Pick<Account, 'type'>): boolean {
-  return !isBaseAccount(account) && !isMultisigAccount(account);
+  return !!(account as ChainAccount).chainId;
 }
 
 function isChainIdMatch(account: Pick<Account, 'type'>, chainId: ChainId): boolean {
@@ -75,8 +75,11 @@ function isChainIdMatch(account: Pick<Account, 'type'>, chainId: ChainId): boole
   const shardAccountMatch = isShardAccount(account) && account.chainId === chainId;
   const walletConnectAccountMatch = isWalletConnectAccount(account) && account.chainId === chainId;
   const proxiedAccountMatch = isProxiedAccount(account) && account.chainId === chainId;
+  const multisigWalletMatch = isMultisigAccount(account) && account.chainId === chainId;
 
-  return chainAccountMatch || walletConnectAccountMatch || shardAccountMatch || proxiedAccountMatch;
+  return (
+    chainAccountMatch || walletConnectAccountMatch || shardAccountMatch || proxiedAccountMatch || multisigWalletMatch
+  );
 }
 
 function isMultisigAccount(account: Pick<Account, 'type'>): account is MultisigAccount {

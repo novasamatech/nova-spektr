@@ -96,7 +96,7 @@ export const Submit = ({ api, tx, multisigTx, account, unsignedTx, signature, de
 
           console.log(`New transfer was created with call hash ${result.transaction.callHash}`);
 
-          if (matrix.userIsLoggedIn) {
+          if (matrix.userIsLoggedIn && account.matrixRoomId) {
             sendMultisigEvent(account.matrixRoomId, result.transaction, params as ExtrinsicResultParams);
           }
         }
