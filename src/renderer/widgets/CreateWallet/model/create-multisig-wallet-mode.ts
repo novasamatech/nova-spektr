@@ -15,11 +15,13 @@ import { accountUtils, walletModel } from '@/src/renderer/entities/wallet';
 import { ISecureMessenger } from '@shared/api/matrix';
 import { RelayChains } from '@/src/renderer/shared/lib/utils';
 
+const reset = createEvent();
+
 export type Callbacks = {
   onComplete: () => void;
 };
 
-const $callbacks = createStore<Callbacks | null>(null);
+const $callbacks = createStore<Callbacks | null>(null).reset(reset);
 const callbacksApi = createApi($callbacks, {
   callbacksChanged: (state, props: Callbacks) => ({ ...state, ...props }),
 });
@@ -34,9 +36,9 @@ const signatoriesChanged = createEvent<Signatory[]>();
 const MatrixGate = createGate<ISecureMessenger>('matrix');
 
 const $matrix = createStore<ISecureMessenger | null>(null);
-const $chain = createStore<ChainId | null>(null);
-const $signatories = createStore<Signatory[]>([]);
-const $error = createStore('');
+const $chain = createStore<ChainId | null>(null).reset(reset);
+const $signatories = createStore<Signatory[]>([]).reset(reset);
+const $error = createStore('').reset(reset);
 
 type CreateWalletParams = {
   matrix: any;
@@ -44,7 +46,7 @@ type CreateWalletParams = {
   threshold: number;
   creatorId: string;
   signatories: Signatory[];
-  chainId: ChainId;
+  chainId: ChainId | null;
 };
 
 const createWalletFx = createEffect(
@@ -72,7 +74,7 @@ const createWalletFx = createEffect(
       accounts: [
         {
           signatories,
-          chainId,
+          chainId: chainId || undefined,
           name: name.trim(),
           accountId: accountId,
           matrixRoomId: roomId,
@@ -124,10 +126,7 @@ sample({
     matrix: $matrix,
     chainId: $chain,
   },
-  filter: ({ chainId }) => Boolean(chainId),
-  fn: (sourceValues, resultValues) => {
-    return { ...sourceValues, ...resultValues, chainId: sourceValues.chainId! };
-  },
+  fn: (sourceValues, resultValues) => ({ ...sourceValues, ...resultValues }),
   target: createWalletFx,
 });
 
@@ -144,6 +143,7 @@ export const createMultisigWalletModel = {
   $isLoading: createWalletFx.pending,
   $error,
   events: {
+    reset,
     callbacksChanged: callbacksApi.callbacksChanged,
     walletCreated,
     chainSelected,

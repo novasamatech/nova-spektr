@@ -46,6 +46,7 @@ export const SingleChainMultisigWallet = ({ isOpen, onClose, onComplete }: Props
   const [isResultModalOpen, toggleResultModal] = useToggle();
 
   const [activeStep, setActiveStep] = useState<Step>(Step.INIT);
+  const [name, setName] = useState('');
 
   const [signatoryAccounts, setSignatoryAccounts] = useState<ExtendedAccount[]>([]);
   const [signatoryContacts, setSignatoryContacts] = useState<ExtendedContact[]>([]);
@@ -100,6 +101,7 @@ export const SingleChainMultisigWallet = ({ isOpen, onClose, onComplete }: Props
 
   const submitHandler = (args: any) => {
     toggleResultModal();
+    setName(args.name);
 
     createMultisigWalletModel.events.walletCreated(args);
   };
@@ -157,7 +159,7 @@ export const SingleChainMultisigWallet = ({ isOpen, onClose, onComplete }: Props
 
       <OperationResult
         {...getResultProps()}
-        title={''}
+        title={name}
         isOpen={isModalOpen && isResultModalOpen}
         onClose={closeMultisigModal}
       >
