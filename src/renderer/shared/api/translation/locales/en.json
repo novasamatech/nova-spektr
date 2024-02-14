@@ -89,7 +89,7 @@
     "alertTitle": "Select wallet",
     "availableLabel": "Available",
     "backButton": "Back",
-    "chainHint": "Multisig’ll work in only this network, if you want to use different network, you’ll need to create new multisig.",
+    "chainHint": "Multisig will work only in this network, if you want to use different network, you need to create a new multisig",
     "chainName": "Network",
     "chainPlaceholder": "Select network",
     "closeButton": "Close",
@@ -103,7 +103,7 @@
     "disabledLabel": "Not supported",
     "errorMessage": "Something went wrong",
     "multiChain": {
-      "description": "Creating is free, the wallet works on all networks",
+      "description": "Creation is free, the wallet works on all networks",
       "featureFour": "Custom voting threshold",
       "featureOne": "Any chain",
       "featureThree": "Mutliple signers",
@@ -123,7 +123,7 @@
     "signatoriesLabel": "Signatories",
     "signatoryTitle": "Select signatories",
     "singleChain": {
-      "description": "Creating is free, the wallet can work on one network only",
+      "description": "Creation is free, the wallet can work on one network only",
       "featureFour": "Custom voting threshold",
       "featureOne": "Single chain",
       "featureThree": "Mutliple signers",

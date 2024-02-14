@@ -9,7 +9,7 @@ import { ExtendedAccount, ExtendedContact } from './common/types';
 import { ConfirmSignatories, WalletForm } from './components';
 import { contactModel } from '@entities/contact';
 import { DEFAULT_TRANSITION, dictionary } from '@shared/lib/utils';
-import { createMultisigWalletModel } from '../../model/create-multisig-wallet-mode';
+import { createMultisigWalletModel } from '../../model/create-multisig-wallet-model';
 import { SelectAccountSignatories } from './components/SelectAccountSignatories';
 import { walletModel } from '@entities/wallet';
 import { networkModel } from '@entities/network';

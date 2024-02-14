@@ -10,7 +10,7 @@ import { SelectSignatories, ConfirmSignatories, WalletForm } from './components'
 import { contactModel } from '@entities/contact';
 import { DEFAULT_TRANSITION } from '@shared/lib/utils';
 import { walletModel } from '@entities/wallet';
-import { createMultisigWalletModel } from '../../model/create-multisig-wallet-mode';
+import { createMultisigWalletModel } from '../../model/create-multisig-wallet-model';
 
 type OperationResultProps = Pick<ComponentProps<typeof OperationResult>, 'variant' | 'description'>;
 
