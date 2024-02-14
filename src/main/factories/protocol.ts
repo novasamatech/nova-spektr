@@ -19,6 +19,7 @@ export function registerSchema() {
       privileges: {
         standard: true,
         secure: true,
+        supportFetchAPI: true,
       },
     },
   ]);
@@ -51,5 +52,5 @@ export function processUrl(url: string, mainWindow?: BrowserWindow) {
   const parsed = new URL(url);
   if (parsed.protocol !== `${APP_CONFIG.ELECTRON_PROTOCOL}:`) return;
 
-  mainWindow.loadURL(parsed.href.replace('webapp/', 'webapp/#/'));
+  mainWindow.loadURL(parsed.href);
 }

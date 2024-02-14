@@ -38,10 +38,10 @@ type MatrixForm = {
 };
 
 type Props = {
-  redirectUrl: string;
+  redirectStep: string;
 };
 
-export const LoginForm = ({ redirectUrl }: Props) => {
+export const LoginForm = ({ redirectStep }: Props) => {
   const { t } = useI18n();
 
   const matrix = useUnit(matrixModel.$matrix);
@@ -144,6 +144,7 @@ export const LoginForm = ({ redirectUrl }: Props) => {
   const logInDisabled = isHomeserverLoading || !isValid || invalidHomeserver || invalidLogin;
   const isEditing = !isLoggedIn && !isHomeserverLoading && !inProgress;
   const register = <InfoLink url="https://app.element.io/#/register" />;
+  const ssoRedirectUrl = `${window.location.origin}/?step=${redirectStep}`;
 
   return (
     <>
@@ -244,7 +245,7 @@ export const LoginForm = ({ redirectUrl }: Props) => {
               {ssoFlows.map(({ id, name, brand }) => (
                 <ButtonWebLink
                   key={id}
-                  href={matrix.getSsoLoginUrl(redirectUrl, 'sso', id)}
+                  href={matrix.getSsoLoginUrl(ssoRedirectUrl, 'sso', id)}
                   target={window.App ? '_blank' : '_self'}
                   pallet="secondary"
                   className="flex-1"

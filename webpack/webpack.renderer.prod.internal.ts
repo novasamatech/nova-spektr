@@ -42,7 +42,7 @@ const config = merge<WpConfig & WdsConfig>(baseConfig, {
   },
 
   optimization: {
-    minimize: true,
+    // minimize: true,
     minimizer: [new CssMinimizerPlugin()],
   },
 
@@ -50,7 +50,7 @@ const config = merge<WpConfig & WdsConfig>(baseConfig, {
     new webpack.EnvironmentPlugin({
       NODE_ENV: 'production',
       FORCE_ELECTRON: 'true',
-      DEBUG_PROD: false,
+      DEBUG_PROD: true,
     }),
 
     new MiniCssExtractPlugin({

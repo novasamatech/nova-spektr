@@ -31,7 +31,8 @@ export const MatrixAutoLogin = () => {
   return (
     <StatusModal
       isOpen
-      title={t('Matrix auto_login')}
+      title={t('settings.matrix.autoLoginTitle')}
+      zIndex="60"
       content={<Animation {...getAnimationParams(autoLoginStatus)} />}
       onClose={noop}
     />
