@@ -58,6 +58,7 @@ function initConnection(chain?: Chain, connection?: Connection) {
           if (knownChainId) {
             // @ts-ignore
             provider = new ScProvider(Sc, knownChainId);
+            provider.connect();
           }
         } catch (e) {
           console.log('proxy-worker: light client not connected', e);
@@ -74,13 +75,11 @@ function initConnection(chain?: Chain, connection?: Connection) {
         return;
       }
 
-      provider.connect().then(() => {
-        provider!.on('connected', async () => {
-          state.apis[chain.chainId] = await ApiPromise.create({ provider, throwOnConnect: true, throwOnUnknown: true });
+      provider.on('connected', async () => {
+        state.apis[chain.chainId] = await ApiPromise.create({ provider, throwOnConnect: true, throwOnUnknown: true });
 
-          console.log('proxy-worker: provider connected successfully');
-          resolve(InitConnectionsResult.SUCCESS);
-        });
+        console.log('proxy-worker: provider connected successfully');
+        resolve(InitConnectionsResult.SUCCESS);
       });
     } catch (e) {
       console.log('proxy-worker: error in initConnection', e);

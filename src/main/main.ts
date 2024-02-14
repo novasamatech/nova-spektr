@@ -50,7 +50,6 @@ export async function MainWindow() {
 
     webPreferences: {
       preload: join(__dirname, 'bridge.js'),
-      nodeIntegrationInWorker: true,
     },
   });
 
