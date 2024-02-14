@@ -61,6 +61,14 @@ export const MultiChainMultisigWallet = ({ isOpen, onClose, onComplete }: Props)
     }
   }, [isOpen]);
 
+  useEffect(() => {
+    createMultisigWalletModel.events.signatoriesChanged(signatories);
+  }, [signatories.length]);
+
+  useEffect(() => {
+    createMultisigWalletModel.events.callbacksChanged({ onComplete });
+  }, [onComplete]);
+
   const goToPrevStep = () => {
     if (activeStep === Step.INIT) {
       closeMultisigModal();
