@@ -9,7 +9,6 @@ import { ExtendedContact, ExtendedWallet } from './common/types';
 import { SelectSignatories, ConfirmSignatories, WalletForm } from './components';
 import { contactModel } from '@entities/contact';
 import { DEFAULT_TRANSITION } from '@shared/lib/utils';
-import { MatrixLoginModal } from '@widgets/MatrixModal';
 import { walletModel } from '@entities/wallet';
 import { createMultisigWalletModel } from '../../model/create-multisig-wallet-mode';
 
@@ -148,8 +147,6 @@ export const MultiChainMultisigWallet = ({ isOpen, onClose, onComplete }: Props)
             contacts={signatoryContacts}
           />
         </section>
-
-        <MatrixLoginModal isOpen={!isLoggedIn} zIndex="z-60" onClose={closeMultisigModal} />
       </BaseModal>
 
       <OperationResult
