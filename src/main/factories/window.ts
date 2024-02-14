@@ -7,7 +7,7 @@ import { APP_CONFIG } from '../../../app.config';
 import { ENVIRONMENT } from '../shared/constants/environment';
 
 export function createWindow(): BrowserWindow {
-  const { MAIN, TITLE } = APP_CONFIG;
+  const { MAIN, TITLE, ELECTRON_PROTOCOL } = APP_CONFIG;
 
   const mainWindowState = windowStateKeeper({
     defaultWidth: MAIN.WINDOW.WIDTH,
@@ -32,20 +32,10 @@ export function createWindow(): BrowserWindow {
     },
   });
 
-  // window.loadURL('');
-
-  const isDevServer = ENVIRONMENT.IS_DEV || ENVIRONMENT.IS_STAGE;
-  if (ENVIRONMENT.IS_FORCE_ELECTRON || !isDevServer) {
-    // window.loadURL(`file://${join(__dirname, '../../index.html')}`);
-    window.loadFile('index.html');
-  } else {
-    const { URL, PORT } = APP_CONFIG.RENDERER.DEV_SERVER;
-    window.loadURL(`${URL}:${PORT}`);
-  }
+  window.loadURL(`${ELECTRON_PROTOCOL}://webapp/`);
 
   ENVIRONMENT.IS_DEV && window.webContents.openDevTools({ mode: 'bottom' });
 
-  window.on('closed', window.destroy);
   session.defaultSession.webRequest.onBeforeSendHeaders((details, callback) => {
     details.requestHeaders['User-Agent'] = 'Nova Spektr';
     delete details.requestHeaders['Origin'];
@@ -59,10 +49,6 @@ export function createWindow(): BrowserWindow {
     return { action: 'deny' };
   });
 
-  window.on('close', () => {
-    BrowserWindow.getAllWindows().forEach((window) => window.destroy());
-  });
-
   window.on('ready-to-show', () => {
     if (!window) {
       throw new Error('"MainWindow" is not defined');
@@ -70,6 +56,13 @@ export function createWindow(): BrowserWindow {
 
     window.show();
   });
+
+  window.on('close', () => {
+    BrowserWindow.getAllWindows().forEach((window) => window.destroy());
+  });
+
+  window.on('closed', window.destroy);
+
   Menu.setApplicationMenu(buildMenuTemplate());
   mainWindowState.manage(window);
 
