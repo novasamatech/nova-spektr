@@ -33,7 +33,7 @@ const config = merge<WpConfig & WdsConfig>(sharedConfig, {
 
     devMiddleware: {
       writeToDisk: true,
-    }
+    },
   },
 
   output: {

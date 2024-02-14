@@ -126,7 +126,7 @@ export class Matrix implements ISecureMessenger {
         (acc, flow) => {
           if (flow.type === 'm.login.token') acc.token = true;
           if (flow.type === 'm.login.password') acc.password = true;
-          if ((flow.type === 'm.login.sso' || flow.type === 'm.login.cas') && 'identity_providers' in flow) {
+          if ((flow.type === 'm.login.sso') && 'identity_providers' in flow) {
             acc.sso = (flow.identity_providers || [])
               .filter(({ brand }) => brand === 'github' || brand === 'google')
               .map(({ id, name, brand }) => ({ id, name, brand: brand || name.toLowerCase() }));
@@ -616,14 +616,6 @@ export class Matrix implements ISecureMessenger {
    * Get device session key
    * @return {String | undefined}
    */
-  // get sessionKey(): string | undefined {
-  //   return this.matrixClient.getDeviceEd25519Key() || undefined;
-  // }
-
-  /**
-   * Get device session key
-   * @return {String | undefined}
-   */
   get sessionKey(): string | undefined {
     return this.matrixClient.getDeviceEd25519Key() || undefined;
   }
@@ -754,7 +746,7 @@ export class Matrix implements ISecureMessenger {
   }
 
   /**
-   * Initiate Matrix client from storage (cache)
+   * Initiate Matrix client with SSO
    * @return {Promise}
    */
   private async initClientWithSso(token: string): Promise<void> {

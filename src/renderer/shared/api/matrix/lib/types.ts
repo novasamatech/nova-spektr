@@ -135,14 +135,6 @@ export type LoginFlows = {
   }[];
 };
 
-export const enum LoginStatus {
-  NOT_LOGGED_IN = 'NOT_LOGGED_IN',
-  LOADING = 'LOADING',
-  SUCCESS = 'SUCCESS',
-  LOGGED_IN = 'LOGGED_IN',
-  ERROR = 'LOADING',
-}
-
 // =====================================================
 // ============== MST Events / Callbacks ===============
 // =====================================================

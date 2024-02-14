@@ -33,8 +33,7 @@ module.exports = {
     },
     target: {
       target: 'dmg',
-      arch: ['arm64'],
-      // arch: ['x64', 'arm64'],
+      arch: ['x64', 'arm64'],
     },
   },
   afterSign: 'scripts/notarize.js',
