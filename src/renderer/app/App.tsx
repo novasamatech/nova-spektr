@@ -7,8 +7,10 @@ import { CreateWalletProvider } from '@widgets/CreateWallet';
 import { WalletDetailsProvider } from '@widgets/WalletDetails';
 import { walletModel } from '@entities/wallet';
 import { ROUTES_CONFIG } from '@pages/index';
-import { Paths } from '@shared/routes';
+import { Paths, createLink } from '@shared/routes';
 import { FallbackScreen } from '@shared/ui';
+import { walletPairingModel } from '@features/wallets';
+import { WalletType } from '@shared/core';
 import {
   ConfirmDialogProvider,
   StatusModalProvider,
@@ -40,11 +42,22 @@ export const App = () => {
   }, [isLoadingWallets, wallets.length]);
 
   useEffect(() => {
-    if (!window.App) return;
+    const url = new URL(window.location.href);
+    if (!url.searchParams.has('step') || !url.searchParams.has('loginToken')) return;
 
-    window.App.onProtocolOpen((url) => {
-      console.log('=== URL: ', url);
-    });
+    const loginToken = url.searchParams.get('loginToken') as string;
+    const step = url.searchParams.get('step') as string;
+
+    url.searchParams.delete('step');
+    url.searchParams.delete('loginToken');
+    window.history.replaceState(null, '', url.href);
+
+    if (step === 'settings_matrix') {
+      navigate(createLink(Paths.MATRIX, {}, { loginToken: [loginToken] }));
+    }
+    if (step === 'multisig_wallet') {
+      walletPairingModel.events.walletTypeSet(WalletType.MULTISIG);
+    }
   }, []);
 
   const getContent = () => {

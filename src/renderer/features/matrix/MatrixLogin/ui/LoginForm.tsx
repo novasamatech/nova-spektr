@@ -11,6 +11,7 @@ import { matrixModel } from '@entities/matrix';
 import {
   Alert,
   Button,
+  ButtonWebLink,
   Combobox,
   FootnoteText,
   Icon,
@@ -36,7 +37,11 @@ type MatrixForm = {
   password: string;
 };
 
-export const LoginForm = () => {
+type Props = {
+  redirectUrl: string;
+};
+
+export const LoginForm = ({ redirectUrl }: Props) => {
   const { t } = useI18n();
 
   const matrix = useUnit(matrixModel.$matrix);
@@ -237,17 +242,18 @@ export const LoginForm = () => {
 
             <div className="flex justify-between gap-x-4">
               {ssoFlows.map(({ id, name, brand }) => (
-                <a
+                <ButtonWebLink
                   key={id}
+                  href={matrix.getSsoLoginUrl(redirectUrl, 'sso', id)}
+                  target={window.App ? '_blank' : '_self'}
+                  pallet="secondary"
                   className="flex-1"
-                  href={matrix.getSsoLoginUrl('https://localhost:3000/settings/matrix', 'sso', id)}
-                  rel="noopener noreferrer"
                 >
                   <div className="flex items-center gap-x-2">
                     <Icon className="text-text-primary" name={brand as IconNames} />
                     {name}
                   </div>
-                </a>
+                </ButtonWebLink>
               ))}
             </div>
           </div>

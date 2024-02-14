@@ -1,4 +1,4 @@
-export { Button, ButtonLink, IconButton } from './Buttons';
+export { Button, ButtonLink, ButtonWebLink, IconButton } from './Buttons';
 
 export { BaseModal, ConfirmModal, StatusModal } from './Modals';
 

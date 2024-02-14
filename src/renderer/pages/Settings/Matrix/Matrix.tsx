@@ -13,7 +13,7 @@ export const Matrix = () => {
   return (
     <>
       <MatrixAutoLogin />
-      <MatrixLogin onClose={closeModal} />
+      <MatrixLogin redirectStep="settings_matrix" onClose={closeModal} />
       <MatrixVerification onClose={closeModal} />
     </>
   );

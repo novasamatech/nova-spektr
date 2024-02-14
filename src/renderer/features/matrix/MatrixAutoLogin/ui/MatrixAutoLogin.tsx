@@ -13,7 +13,7 @@ export const MatrixAutoLogin = () => {
   const { t } = useI18n();
 
   const loginStatus = useUnit(matrixModel.$loginStatus);
-  const autoLoginError = useUnit(matrixAutologinModel.$autoLoginStatus);
+  const autoLoginStatus = useUnit(matrixAutologinModel.$autoLoginStatus);
 
   const getAnimationParams = (status: AutoLoginStatus) => {
     if (matrixAutologinUtils.isError(status)) {
@@ -32,7 +32,7 @@ export const MatrixAutoLogin = () => {
     <StatusModal
       isOpen
       title={t('Matrix auto_login')}
-      content={<Animation {...getAnimationParams(autoLoginError)} />}
+      content={<Animation {...getAnimationParams(autoLoginStatus)} />}
       onClose={noop}
     />
   );

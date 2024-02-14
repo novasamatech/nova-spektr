@@ -46,11 +46,11 @@ export const SelectSignatories = ({ isActive, wallets, accounts, contacts, onSel
   const selectedContactsList = Object.values(selectedContacts);
 
   useEffect(() => {
+    if (accounts.length === 0) return;
+
     const addressBookContacts = contacts
       .filter((c) => c.matrixId)
       .map((contact, index) => ({ ...contact, index: index.toString() }));
-
-    setContactList(addressBookContacts);
 
     const { available, disabled } = wallets.reduce<{
       available: ExtendedWallet[];
@@ -79,6 +79,7 @@ export const SelectSignatories = ({ isActive, wallets, accounts, contacts, onSel
       { available: [], disabled: [] },
     );
 
+    setContactList(addressBookContacts);
     setAvailableWallets(available);
     setDisabledWallets(disabled);
   }, [accounts.length, contacts.length, wallets.length, loginStatus]);
