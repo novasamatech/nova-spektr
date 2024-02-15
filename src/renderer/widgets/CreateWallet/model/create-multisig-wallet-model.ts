@@ -10,8 +10,8 @@ import {
   SigningType,
   WalletType,
 } from '@shared/core';
-import { accountUtils, walletModel } from '@entities/wallet';
-import { RelayChains } from '@shared/lib/utils';
+import { accountUtils, walletModel, walletUtils } from '@entities/wallet';
+import { RelayChains, dictionary } from '@shared/lib/utils';
 import { matrixModel } from '@entities/matrix';
 
 const reset = createEvent();
@@ -90,11 +90,15 @@ const createWalletFx = createEffect(
 const $availableAccounts = combine(
   {
     accounts: walletModel.$accounts,
+    wallets: walletModel.$wallets,
     chain: $chain,
   },
-  ({ accounts, chain }) => {
+  ({ accounts, chain, wallets }) => {
+    const walletsMap = dictionary(wallets, 'id');
+
     const chainAccounts = accounts.filter((account) => {
-      const isAvailableType = !accountUtils.isMultisigAccount(account);
+      const wallet = walletsMap[account.walletId];
+      const isAvailableType = !accountUtils.isMultisigAccount(account) && !walletUtils.isWatchOnly(wallet);
       const isChainIdMatch = accountUtils.isChainIdMatch(account, chain || RelayChains.POLKADOT);
 
       return isChainIdMatch && isAvailableType;
