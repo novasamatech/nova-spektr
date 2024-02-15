@@ -23,7 +23,7 @@ import { CreateContactModal } from '@widgets/ManageContactModal';
 import { ExtendedAccount, ExtendedContact } from '../common/types';
 import { EmptyContactList } from '@entities/contact';
 import { type Contact, type Account, ShardAccount, Wallet, Chain } from '@shared/core';
-import { AddressWithExplorers, ContactItem, ExplorersPopover, WalletCardMd } from '@entities/wallet';
+import { ContactItem, ExplorersPopover, WalletCardMd } from '@entities/wallet';
 import { matrixModel } from '@entities/matrix';
 
 const enum SignatoryTabs {
@@ -191,8 +191,8 @@ export const SelectAccountSignatories = ({ isActive, accounts, wallets, contacts
                 {accounts.map((account) => {
                   if (Array.isArray(account)) {
                     return (
-                      <Accordion key={`${walletId}_${account[0].id}`} className="pl-8">
-                        <Accordion.Button buttonClass="py-2">
+                      <Accordion key={`${walletId}_sharded_${account[0].id}`} className="pl-8">
+                        <Accordion.Button buttonClass="px-1.5 py-2">
                           <div className="flex items-center gap-x-2">
                             <div
                               className={cnTw(
@@ -211,7 +211,7 @@ export const SelectAccountSignatories = ({ isActive, accounts, wallets, contacts
 
                             return (
                               <li
-                                key={`${a.id}_${walletId}`}
+                                key={`${a.id}_shard_${walletId}`}
                                 className={cnTw(
                                   'py-1.5 pl-8 rounded-md',
                                   !disabled && 'hover:bg-action-background-hover',
@@ -222,12 +222,17 @@ export const SelectAccountSignatories = ({ isActive, accounts, wallets, contacts
                                   disabled={disabled}
                                   onChange={() => selectAccount(a)}
                                 >
-                                  <AddressWithExplorers
-                                    type="short"
-                                    size={20}
-                                    accountId={a.accountId}
-                                    explorers={chain?.explorers}
-                                    addressPrefix={chain?.addressPrefix}
+                                  <ExplorersPopover
+                                    address={a.accountId}
+                                    explorers={RootExplorers}
+                                    button={
+                                      <ContactItem
+                                        addressPrefix={chain?.addressPrefix}
+                                        hideAddress
+                                        name={toAddress(a.accountId, { prefix: chain?.addressPrefix, chunk: 7 })}
+                                        address={a.accountId}
+                                      />
+                                    }
                                   />
                                 </Checkbox>
                               </li>
