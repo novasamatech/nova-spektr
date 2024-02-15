@@ -114,7 +114,7 @@ export const SelectAccountSignatories = ({ isActive, accounts, wallets, contacts
     );
 
     setAccountsList(groupedWithWallet);
-  }, [accounts.length, loginStatus, accountsQuery]);
+  }, [accounts.length, chain?.chainId, loginStatus, accountsQuery]);
 
   useEffect(() => {
     onSelect(selectedAccountsList, selectedContactsList);
