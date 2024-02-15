@@ -93,11 +93,16 @@ const $availableAccounts = combine(
     chain: $chain,
   },
   ({ accounts, chain }) => {
-    const chainAccounts = accounts.filter((account) =>
-      accountUtils.isChainIdMatch(account, chain || RelayChains.POLKADOT),
-    );
+    const chainAccounts = accounts.filter((account) => {
+      const isAvailableType = !accountUtils.isMultisigAccount(account);
+      const isChainIdMatch = accountUtils.isChainIdMatch(account, chain || RelayChains.POLKADOT);
 
-    return accountUtils.getAccountsAndShardGroups(chainAccounts);
+      return isChainIdMatch && isAvailableType;
+    });
+
+    const baseAccounts = chainAccounts.filter((a) => accountUtils.isBaseAccount(a) && a.name);
+
+    return [...accountUtils.getAccountsAndShardGroups(chainAccounts), ...baseAccounts];
   },
   { skipVoid: false },
 );

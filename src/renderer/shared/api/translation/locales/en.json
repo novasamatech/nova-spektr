@@ -140,7 +140,8 @@
     "walletAlertTitle": "Select wallet",
     "walletFormTitle": "Set up your wallet",
     "walletNameLabel": "Wallet name",
-    "walletsTab": "Your wallets"
+    "walletsTab": "Your wallets",
+    "yourAccounts": "Your accounts"
   },
   "dropdown": {
     "chooseOptionLabel": "Choose an option"
@@ -1080,6 +1081,7 @@
       "walletRemoved": "Wallet removed"
     },
     "multisig": {
+      "accountsGroup": "Your accounts",
       "contactsGroup": "Contacts",
       "networksTab": "Networks",
       "signatoriesTab": "Signatories",

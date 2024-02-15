@@ -5,7 +5,7 @@ import { useEffect } from 'react';
 import { Alert, Button, Input, InputHint, Select, SmallTitleText } from '@shared/ui';
 import { useI18n } from '@app/providers';
 import { DropdownOption, DropdownResult } from '@shared/ui/Dropdowns/common/types';
-import type { AccountId, Chain, ChainId, Signatory } from '@shared/core';
+import type { AccountId, Chain, ChainId, MultisigAccount, Signatory } from '@shared/core';
 import { accountUtils, walletModel, walletUtils } from '@entities/wallet';
 import { networkModel, networkUtils } from '@entities/network';
 import { ChainTitle } from '@entities/chain';
@@ -28,11 +28,13 @@ const getThresholdOptions = (optionsAmount: number): DropdownOption<number>[] =>
 };
 
 const getChainOptions = (chains: Chain[]): DropdownOption<ChainId>[] => {
-  return chains.map((chain) => ({
-    id: chain.chainId.toString(),
-    element: <ChainTitle chain={chain} />,
-    value: chain.chainId,
-  }));
+  return chains
+    .filter((c) => networkUtils.isMultisigSupported(c.options))
+    .map((chain) => ({
+      id: chain.chainId.toString(),
+      element: <ChainTitle chain={chain} />,
+      value: chain.chainId,
+    }));
 };
 
 type Props = {
@@ -87,9 +89,7 @@ export const WalletForm = ({
   }, [chain]);
 
   const thresholdOptions = getThresholdOptions(signatories.length - 1);
-  const chainOptions = getChainOptions(
-    Object.values(chains).filter((c) => networkUtils.isMultisigSupported(c.options)),
-  );
+  const chainOptions = getChainOptions(Object.values(chains));
 
   const multisigAccountId =
     threshold &&
@@ -118,17 +118,11 @@ export const WalletForm = ({
     );
   });
 
-  const accountAlreadyExists = wallets.some((wallet) => {
-    const isWatchOnly = walletUtils.isWatchOnly(wallet);
-    const isMatch = accounts.some((account) => {
-      return (
-        !accountUtils.isProxiedAccount(account) &&
-        account.accountId === multisigAccountId &&
-        account.walletId === wallet.id
-      );
-    });
+  const accountAlreadyExists = accounts.filter(accountUtils.isMultisigAccount).some((account) => {
+    const isSameAccountId = account.accountId === multisigAccountId;
+    const isSameChainId = !(account as MultisigAccount).chainId || (account as MultisigAccount).chainId === chain;
 
-    return !isWatchOnly && isMatch;
+    return isSameAccountId && isSameChainId;
   });
 
   const hasTwoSignatories = signatories.length > 1;

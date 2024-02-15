@@ -43,22 +43,38 @@ export const SelectMultisigWalletType = ({ isOpen, onClose, onContinue }: Props)
           onChange={(option) => setWalletType(option.value)}
         >
           <RadioGroup.CardOption option={singleChainOption}>
-            <div className="flex flex-col gap-4 list-disc pl-3.5">
-              <BodyText className="text-text-primary">{t('createMultisigAccount.singleChain.featureOne')}</BodyText>
-              <BodyText className="text-text-primary">{t('createMultisigAccount.singleChain.featureTwo')}</BodyText>
-              <BodyText className="text-text-primary">{t('createMultisigAccount.singleChain.featureThree')}</BodyText>
-              <BodyText className="text-text-primary">{t('createMultisigAccount.singleChain.featureFour')}</BodyText>
+            <div className="flex flex-col gap-4 pl-3.5">
+              <BodyText className="text-text-primary list-item list-disc">
+                {t('createMultisigAccount.singleChain.featureOne')}
+              </BodyText>
+              <BodyText className="text-text-primary list-item list-disc">
+                {t('createMultisigAccount.singleChain.featureTwo')}
+              </BodyText>
+              <BodyText className="text-text-primary list-item list-disc">
+                {t('createMultisigAccount.singleChain.featureThree')}
+              </BodyText>
+              <BodyText className="text-text-primary list-item list-disc">
+                {t('createMultisigAccount.singleChain.featureFour')}
+              </BodyText>
             </div>
             <BodyText className="text-text-tertiary mt-8">
               {t('createMultisigAccount.singleChain.description')}
             </BodyText>
           </RadioGroup.CardOption>
           <RadioGroup.CardOption option={multiChainOption}>
-            <div className="flex flex-col gap-4 list-disc pl-3.5">
-              <BodyText className="text-text-primary">{t('createMultisigAccount.multiChain.featureOne')}</BodyText>
-              <BodyText className="text-text-primary">{t('createMultisigAccount.multiChain.featureTwo')}</BodyText>
-              <BodyText className="text-text-primary">{t('createMultisigAccount.multiChain.featureThree')}</BodyText>
-              <BodyText className="text-text-primary">{t('createMultisigAccount.multiChain.featureFour')}</BodyText>
+            <div className="flex flex-col gap-4 pl-3.5">
+              <BodyText className="text-text-primary list-item list-disc">
+                {t('createMultisigAccount.multiChain.featureOne')}
+              </BodyText>
+              <BodyText className="text-text-primary list-item list-disc">
+                {t('createMultisigAccount.multiChain.featureTwo')}
+              </BodyText>
+              <BodyText className="text-text-primary list-item list-disc">
+                {t('createMultisigAccount.multiChain.featureThree')}
+              </BodyText>
+              <BodyText className="text-text-primary list-item list-disc">
+                {t('createMultisigAccount.multiChain.featureFour')}
+              </BodyText>
             </div>
             <BodyText className="text-text-tertiary mt-8">{t('createMultisigAccount.multiChain.description')}</BodyText>
           </RadioGroup.CardOption>
