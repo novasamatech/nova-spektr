@@ -5634,7 +5634,6 @@
         "assetId": 0,
         "symbol": "TZERO",
         "precision": 12,
-        "priceId": "aleph-zero",
         "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Default.svg",
         "name": "Aleph Zero Testnet"
       }
