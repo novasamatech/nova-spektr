@@ -191,6 +191,7 @@ export const SelectAccountSignatories = ({ isActive, accounts, wallets, contacts
                 {accounts.map((account) => {
                   if (Array.isArray(account)) {
                     return (
+                      //eslint-disable-next-line i18next/no-literal-string
                       <Accordion key={`${walletId}_sharded_${account[0].id}`} className="pl-8">
                         <Accordion.Button buttonClass="px-1.5 py-2">
                           <div className="flex items-center gap-x-2">
