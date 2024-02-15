@@ -6,7 +6,6 @@ import { SelectMultisigWalletType } from './SelectMultisigWalletType';
 import { MultisigWalletType } from './common/constants';
 import { SingleChainMultisigWallet } from './SingleChainMultisigWallet';
 import { MultiChainMultisigWallet } from './MultiChainMultisigWallet';
-import { MatrixAutoLogin, MatrixLogin } from '@features/matrix';
 
 type Props = {
   isOpen: boolean;
@@ -55,9 +54,6 @@ export const MultisigWallet = ({ isOpen, onClose, onComplete }: Props) => {
         onClose={closeMultisigModal}
         onComplete={onComplete}
       />
-
-      <MatrixAutoLogin />
-      <MatrixLogin zIndex="z-60" redirectStep="multisig_wallet" onClose={closeMultisigModal} />
     </>
   );
 };
