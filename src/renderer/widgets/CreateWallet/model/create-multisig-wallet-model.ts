@@ -3,6 +3,7 @@ import { combine, createApi, createEffect, createEvent, createStore, sample } fr
 import {
   AccountId,
   AccountType,
+  BaseAccount,
   ChainId,
   ChainType,
   CryptoType,
@@ -93,11 +94,22 @@ const $availableAccounts = combine(
     chain: $chain,
   },
   ({ accounts, chain }) => {
+    const walletIds = new Set(accounts.map((account) => account.walletId));
     const chainAccounts = accounts.filter((account) =>
       accountUtils.isChainIdMatch(account, chain || RelayChains.POLKADOT),
     );
 
-    return accountUtils.getAccountsAndShardGroups(chainAccounts);
+    const walletBaseAccounts = [...walletIds].reduce<BaseAccount[]>((acc, walletId) => {
+      const baseAccount = accountUtils.getBaseAccount(accounts, walletId);
+
+      if (baseAccount && baseAccount.name) {
+        acc.push(baseAccount);
+      }
+
+      return acc;
+    }, []);
+
+    return [...accountUtils.getAccountsAndShardGroups(chainAccounts), ...walletBaseAccounts];
   },
   { skipVoid: false },
 );
