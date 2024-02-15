@@ -53,7 +53,7 @@ const createWalletFx = createEffect(
     let roomId = matrix.joinedRooms(accountId)[0]?.roomId;
     const isMyAccounts = signatories.every((s) => s.matrixId === matrix.userId);
 
-    if (!roomId || isMyAccounts) {
+    if (!roomId || !isMyAccounts) {
       roomId = await matrix.createRoom({
         creatorAccountId: creatorId,
         accountName: name,
