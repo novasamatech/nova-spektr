@@ -23,7 +23,7 @@ import { CreateContactModal } from '@widgets/ManageContactModal';
 import { ExtendedAccount, ExtendedContact } from '../common/types';
 import { EmptyContactList } from '@entities/contact';
 import { type Contact, type Account, ShardAccount, Wallet, Chain } from '@shared/core';
-import { AddressWithExplorers, AddressWithName, ContactItem, ExplorersPopover, WalletCardMd } from '@entities/wallet';
+import { AddressWithExplorers, ContactItem, ExplorersPopover, WalletCardMd } from '@entities/wallet';
 import { matrixModel } from '@entities/matrix';
 
 const enum SignatoryTabs {
@@ -83,7 +83,7 @@ export const SelectAccountSignatories = ({ isActive, accounts, wallets, contacts
           if (!accountsQuery || isStringsMatchQuery(accountsQuery, [a.accountId, a.name, address]))
             toAdd.push({
               ...a,
-              index: `${index.toString()}_${secondIndex.toString()}`,
+              index: a.accountId.toString(),
               matrixId: matrix.userId,
               address,
             });
@@ -98,7 +98,7 @@ export const SelectAccountSignatories = ({ isActive, accounts, wallets, contacts
         if (!accountsQuery || isStringsMatchQuery(accountsQuery, [account.accountId, account.name, address])) {
           acc.push({
             ...account,
-            index: index.toString(),
+            index: account.accountId.toString(),
             matrixId: matrix.userId,
             address: toAddress(account.accountId),
           });
@@ -250,11 +250,16 @@ export const SelectAccountSignatories = ({ isActive, accounts, wallets, contacts
                         disabled={disabled}
                         onChange={() => selectAccount(account)}
                       >
-                        <AddressWithName
-                          size={20}
-                          name={account.name}
-                          accountId={account.accountId}
-                          addressPrefix={chain?.addressPrefix}
+                        <ExplorersPopover
+                          address={account.accountId}
+                          explorers={RootExplorers}
+                          button={
+                            <ContactItem
+                              addressPrefix={chain?.addressPrefix}
+                              name={account.name}
+                              address={account.accountId}
+                            />
+                          }
                         />
                       </Checkbox>
                     </li>
