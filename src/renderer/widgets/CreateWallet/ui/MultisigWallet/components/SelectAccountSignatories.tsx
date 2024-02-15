@@ -374,7 +374,7 @@ export const SelectAccountSignatories = ({ isActive, accounts, wallets, contacts
 
   return (
     <>
-      <div className={cnTw('max-h-full flex flex-col', !isActive && 'hidden')}>
+      <div className={cnTw('max-h-full flex flex-col flex-1', !isActive && 'hidden')}>
         <SmallTitleText className="py-2 px-2 mb-4">{t('createMultisigAccount.signatoryTitle')}</SmallTitleText>
 
         <Tabs

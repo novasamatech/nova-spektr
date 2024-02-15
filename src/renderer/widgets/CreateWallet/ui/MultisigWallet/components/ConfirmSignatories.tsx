@@ -20,7 +20,7 @@ export const ConfirmSignatories = ({ isActive, chain, wallets = [], accounts = [
   const explorers = chain ? chain.explorers : RootExplorers;
 
   return (
-    <div className={cnTw('max-h-full flex flex-col', !isActive && 'hidden')}>
+    <div className={cnTw('max-h-full flex flex-col flex-1', !isActive && 'hidden')}>
       <SmallTitleText className="py-2 mb-4">{t('createMultisigAccount.selectedSignatoriesTitle')}</SmallTitleText>
 
       <div className="flex flex-col gap-y-2 flex-1 overflow-y-auto">
