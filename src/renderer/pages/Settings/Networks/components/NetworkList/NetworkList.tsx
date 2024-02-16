@@ -1,41 +1,53 @@
 import { useEffect, useState, ReactNode } from 'react';
+import { useUnit } from 'effector-react';
 
 import { ExtendedChain, networkUtils } from '@entities/network';
 import { CaptionText, Counter, Accordion } from '@shared/ui';
+import { filterModel } from '@features/networks/NetworkFilter/model/network-filter';
 
 type Props = {
   title: string;
   isDefaultOpen?: boolean;
-  query?: string;
   networkList: ExtendedChain[];
   children: (network: ExtendedChain) => ReactNode;
 };
 
-export const NetworkList = ({ title, isDefaultOpen, query, networkList, children }: Props) => {
+export const NetworkList = ({ title, isDefaultOpen, networkList, children }: Props) => {
   const [isListOpen, setIsListOpen] = useState(isDefaultOpen);
+  const filterQuery = useUnit(filterModel.$filterQuery);
+
+  console.log('filterQuery', filterQuery);
+  console.log('isDefaultOpen', isDefaultOpen);
+  console.log('isListOpen', isListOpen);
 
   useEffect(() => {
-    if (query) {
-      setIsListOpen(Boolean(query));
+    if (filterQuery) {
+      setIsListOpen(true);
     } else {
       setIsListOpen(isDefaultOpen);
     }
-  }, [query]);
+  }, [filterQuery]);
 
   if (networkList.length === 0) return null;
 
   const { success, connecting, error } = networkList.reduce(
     (acc, network) => {
+      network.name === 'Acala' && console.log('Acala', network);
       if (networkUtils.isDisabledConnection(network.connection)) return acc;
 
       if (networkUtils.isConnectedStatus(network.connectionStatus)) acc.success += 1;
-      if (networkUtils.isConnectingStatus(network.connectionStatus)) acc.connecting += 1;
+      if (networkUtils.isConnectingStatus(network.connectionStatus)) {
+        acc.connecting += 1;
+        console.log(acc.connecting, network.name);
+      }
       if (networkUtils.isErrorStatus(network.connectionStatus)) acc.error += 1;
 
       return acc;
     },
     { success: 0, connecting: 0, error: 0 },
   );
+
+  console.log('success: 0, connecting: 0, error: 0', success, connecting, error);
 
   return (
     <Accordion isDefaultOpen={isListOpen}>

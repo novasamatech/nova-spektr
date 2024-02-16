@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Trans } from 'react-i18next';
 import partition from 'lodash/partition';
@@ -8,13 +8,14 @@ import { useI18n, useConfirmContext } from '@app/providers';
 import { Paths } from '@shared/routes';
 import { BaseModal, SearchInput, BodyText, InfoLink, Icon } from '@shared/ui';
 import { useToggle } from '@shared/lib/hooks';
-import { includes, DEFAULT_TRANSITION } from '@shared/lib/utils';
+import { DEFAULT_TRANSITION } from '@shared/lib/utils';
 import { NetworkList, NetworkItem, CustomRpcModal } from './components';
 import type { RpcNode, ChainId } from '@shared/core';
 import { ConnectionType } from '@shared/core';
 import { networkModel, ExtendedChain, networkUtils } from '@entities/network';
 import { chainsService } from '@shared/api/network';
 import { manageNetworkModel } from './model/manage-network-model';
+import { filterModel } from '@features/networks/NetworkFilter/model/network-filter';
 
 const MAX_LIGHT_CLIENTS = 3;
 
@@ -27,24 +28,27 @@ export const Networks = () => {
   const { confirm } = useConfirmContext();
 
   const connections = useUnit(networkModel.$connections);
-  const chains = useUnit(networkModel.$chains);
+  const filteredNetworks = useUnit(filterModel.$networksFiltered);
   const connectionStatuses = useUnit(networkModel.$connectionStatuses);
 
   const [isCustomRpcOpen, toggleCustomRpc] = useToggle();
   const [isNetworksModalOpen, toggleNetworksModal] = useToggle(true);
 
-  const [query, setQuery] = useState('');
   const [nodeToEdit, setNodeToEdit] = useState<RpcNode>();
   const [network, setNetwork] = useState<ExtendedChain>();
+
+  console.log('connections', connections);
 
   const closeNetworksModal = () => {
     toggleNetworksModal();
     setTimeout(() => navigate(Paths.SETTINGS), DEFAULT_TRANSITION);
   };
 
-  const extendedChains = Object.values(chains).reduce<ExtendedChain[]>((acc, chain) => {
-    if (!includes(chain.name, query)) return acc;
+  useEffect(() => {
+    filterModel.events.componentMounted();
+  }, []);
 
+  const extendedChains = filteredNetworks.reduce<ExtendedChain[]>((acc, chain) => {
     const connection = connections[chain.chainId];
     const extendedChain = {
       ...chain,
@@ -202,12 +206,11 @@ export const Networks = () => {
         title={t('settings.networks.title')}
         onClose={closeNetworksModal}
       >
-        <SearchInput wrapperClass="mx-5" placeholder="Search" value={query} onChange={setQuery} />
+        <SearchInput wrapperClass="mx-5" placeholder="Search" onChange={filterModel.events.queryChanged} />
 
         <div className="flex flex-col gap-y-4 px-3 pb-4 pt-1 mt-5 h-[454px] overflow-y-auto">
           <NetworkList
             isDefaultOpen={false}
-            query={query}
             title={t('settings.networks.disabledNetworksLabel')}
             networkList={chainsService.sortChains(inactive)}
           >
@@ -224,7 +227,6 @@ export const Networks = () => {
 
           <NetworkList
             isDefaultOpen
-            query={query}
             title={t('settings.networks.activeNetworksLabel')}
             networkList={chainsService.sortChains(active)}
           >
