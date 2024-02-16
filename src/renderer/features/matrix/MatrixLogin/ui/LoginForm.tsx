@@ -7,7 +7,7 @@ import { useI18n } from '@app/providers';
 import { validateShortUserName, WELL_KNOWN_SERVERS, LoginFlows } from '@shared/api/matrix';
 import type { ComboboxOption } from '@shared/ui/types';
 import { IconNames } from '@shared/ui/Icon/data';
-import { matrixModel } from '@entities/matrix';
+import { matrixModel, LoginStatus, matrixUtils } from '@entities/matrix';
 import {
   Alert,
   Button,
@@ -45,8 +45,8 @@ export const LoginForm = ({ redirectStep }: Props) => {
   const { t } = useI18n();
 
   const matrix = useUnit(matrixModel.$matrix);
+  const loginStatus = useUnit(matrixModel.$loginStatus);
 
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isHomeserverLoading, setIsHomeserverLoading] = useState(false);
   const [inProgress, setInProgress] = useState(false);
   const [credentialsFlow, setCredentialsFlow] = useState(true);
@@ -133,16 +133,17 @@ export const LoginForm = ({ redirectStep }: Props) => {
     setInvalidLogin(false);
     try {
       await matrix.loginWithCreds(username, password);
-      setIsLoggedIn(true);
+      matrixModel.events.loginStatusChanged(LoginStatus.LOGGED_IN);
     } catch (error) {
       console.warn(error);
-      setInProgress(false);
       setInvalidLogin(true);
+    } finally {
+      setInProgress(false);
     }
   };
 
   const logInDisabled = isHomeserverLoading || !isValid || invalidHomeserver || invalidLogin;
-  const isEditing = !isLoggedIn && !isHomeserverLoading && !inProgress;
+  const isEditing = !matrixUtils.isLoggedIn(loginStatus) && !isHomeserverLoading && !inProgress;
   const register = <InfoLink url="https://app.element.io/#/register" />;
   //eslint-disable-next-line i18next/no-literal-string
   const ssoRedirectUrl = `${window.location.origin}/?step=${redirectStep}`;

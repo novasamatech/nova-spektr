@@ -574,9 +574,12 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
   }, []);
 
   useEffect(() => {
-    const token = new URLSearchParams(window.location.search).get('loginToken');
+    matrixAutologinModel.events.loggedInFromCache();
 
-    matrixAutologinModel.events.loginStarted(token || undefined);
+    const token = new URLSearchParams(window.location.search).get('loginToken');
+    if (token) {
+      matrixAutologinModel.events.loggedInWithToken(token);
+    }
   }, []);
 
   return <MatrixContext.Provider value={{}}>{children}</MatrixContext.Provider>;

@@ -8,11 +8,28 @@ import ReactRefreshWebpackPlugin from '@pmmmwh/react-refresh-webpack-plugin';
 import sharedConfig from './webpack.shared';
 import { APP_CONFIG } from '../app.config';
 
-const { FOLDERS } = APP_CONFIG;
+const { FOLDERS, RENDERER } = APP_CONFIG;
 
 const config = merge<WpConfig & WdsConfig>(sharedConfig, {
   mode: 'none',
   target: 'web',
+
+  devServer: {
+    port: RENDERER.DEV_SERVER.PORT,
+    historyApiFallback: true,
+    compress: true,
+    hot: true,
+    server: {
+      type: 'https',
+    },
+    allowedHosts: 'all',
+    client: {
+      overlay: false,
+    },
+    devMiddleware: {
+      writeToDisk: true,
+    },
+  },
 
   entry: resolve(FOLDERS.ENTRY_POINTS.RENDERER),
 

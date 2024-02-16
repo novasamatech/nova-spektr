@@ -13,7 +13,7 @@ describe('features/matrix/MatrixAutoLogin/model/matrix-autologin-model', () => {
     jest.restoreAllMocks();
   });
 
-  test('should login with token on loginStarted', async () => {
+  test('should login with token on loggedInWithToken', async () => {
     const spyLoginWithSso = jest.fn().mockResolvedValue('');
     const scope = fork({
       values: new Map()
@@ -21,7 +21,7 @@ describe('features/matrix/MatrixAutoLogin/model/matrix-autologin-model', () => {
         .set(matrixModel.$loginStatus, LoginStatus.LOGGED_OUT),
     });
 
-    const action = allSettled(matrixAutologinModel.events.loginStarted, { scope, params: 'token' });
+    const action = allSettled(matrixAutologinModel.events.loggedInWithToken, { scope, params: 'token' });
 
     await jest.runAllTimersAsync();
     await action;
@@ -39,7 +39,7 @@ describe('features/matrix/MatrixAutoLogin/model/matrix-autologin-model', () => {
         .set(matrixModel.$loginStatus, LoginStatus.LOGGED_OUT),
     });
 
-    const action = allSettled(matrixAutologinModel.events.loginStarted, { scope, params: 'token' });
+    const action = allSettled(matrixAutologinModel.events.loggedInWithToken, { scope, params: 'token' });
 
     await jest.runAllTimersAsync();
     await action;
@@ -49,7 +49,7 @@ describe('features/matrix/MatrixAutoLogin/model/matrix-autologin-model', () => {
     expect(scope.getState(matrixAutologinModel.$autoLoginStatus)).toEqual(AutoLoginStatus.ERROR);
   });
 
-  test('should login from cache on loginStarted', async () => {
+  test('should login from cache on loggedInFromCache', async () => {
     const spyLoginFromCache = jest.fn().mockResolvedValue('');
     const scope = fork({
       values: new Map()
@@ -57,14 +57,14 @@ describe('features/matrix/MatrixAutoLogin/model/matrix-autologin-model', () => {
         .set(matrixModel.$loginStatus, LoginStatus.LOGGED_OUT),
     });
 
-    const action = allSettled(matrixAutologinModel.events.loginStarted, { scope, params: undefined });
+    const action = allSettled(matrixAutologinModel.events.loggedInFromCache, { scope });
 
     await jest.runAllTimersAsync();
     await action;
 
     expect(spyLoginFromCache).toHaveBeenCalled();
     expect(scope.getState(matrixModel.$loginStatus)).toEqual(LoginStatus.LOGGED_IN);
-    expect(scope.getState(matrixAutologinModel.$autoLoginStatus)).toEqual(AutoLoginStatus.SUCCESS);
+    expect(scope.getState(matrixAutologinModel.$autoLoginStatus)).toEqual(AutoLoginStatus.NONE);
   });
 
   test('should be logged out if login from cache fail', async () => {
@@ -75,31 +75,82 @@ describe('features/matrix/MatrixAutoLogin/model/matrix-autologin-model', () => {
         .set(matrixModel.$loginStatus, LoginStatus.LOGGED_OUT),
     });
 
-    const action = allSettled(matrixAutologinModel.events.loginStarted, { scope, params: undefined });
+    const action = allSettled(matrixAutologinModel.events.loggedInFromCache, { scope });
 
     await jest.runAllTimersAsync();
     await action;
 
-    expect(spyLoginFromCache).toHaveBeenCalledWith();
+    expect(spyLoginFromCache).toHaveBeenCalled();
     expect(scope.getState(matrixModel.$loginStatus)).toEqual(LoginStatus.LOGGED_OUT);
-    expect(scope.getState(matrixAutologinModel.$autoLoginStatus)).toEqual(AutoLoginStatus.ERROR);
+    expect(scope.getState(matrixAutologinModel.$autoLoginStatus)).toEqual(AutoLoginStatus.NONE);
   });
 
   test('should not login on loginStarted if already logged in', async () => {
+    const spyLoginFromCache = jest.fn().mockResolvedValue('');
     const spyLoginWithSso = jest.fn().mockResolvedValue('');
     const scope = fork({
       values: new Map()
-        .set(matrixModel.$matrix, { loginWithSso: spyLoginWithSso })
-        .set(matrixModel.$loginStatus, LoginStatus.IN_PROCESS),
+        .set(matrixModel.$matrix, { loginFromCache: spyLoginFromCache, loginWithSso: spyLoginWithSso })
+        .set(matrixModel.$loginStatus, LoginStatus.LOGGED_IN),
     });
 
-    const action = allSettled(matrixAutologinModel.events.loginStarted, { scope, params: 'token' });
+    const actions = Promise.all([
+      allSettled(matrixAutologinModel.events.loggedInFromCache, { scope }),
+      allSettled(matrixAutologinModel.events.loggedInWithToken, { scope, params: 'token' }),
+    ]);
 
     await jest.runAllTimersAsync();
-    await action;
+    await actions;
 
+    expect(spyLoginFromCache).not.toHaveBeenCalled();
     expect(spyLoginWithSso).not.toHaveBeenCalled();
-    expect(scope.getState(matrixModel.$loginStatus)).toEqual(LoginStatus.IN_PROCESS);
+    expect(scope.getState(matrixModel.$loginStatus)).toEqual(LoginStatus.LOGGED_IN);
     expect(scope.getState(matrixAutologinModel.$autoLoginStatus)).toEqual(AutoLoginStatus.NONE);
+  });
+
+  test('should not login with token after login from cache', async () => {
+    const spyLoginFromCache = jest.fn().mockResolvedValue('');
+    const spyLoginWithSso = jest.fn().mockResolvedValue('');
+    const scope = fork({
+      values: new Map()
+        .set(matrixModel.$matrix, { loginFromCache: spyLoginFromCache, loginWithSso: spyLoginWithSso })
+        .set(matrixModel.$loginStatus, LoginStatus.LOGGED_OUT),
+    });
+
+    const actions = Promise.all([
+      allSettled(matrixAutologinModel.events.loggedInFromCache, { scope }),
+      allSettled(matrixAutologinModel.events.loggedInWithToken, { scope, params: 'token' }),
+    ]);
+
+    await jest.runAllTimersAsync();
+    await actions;
+
+    expect(spyLoginFromCache).toHaveBeenCalled();
+    expect(spyLoginWithSso).not.toHaveBeenCalled();
+    expect(scope.getState(matrixModel.$loginStatus)).toEqual(LoginStatus.LOGGED_IN);
+    expect(scope.getState(matrixAutologinModel.$autoLoginStatus)).toEqual(AutoLoginStatus.NONE);
+  });
+
+  test('should login with token after login from cache failed', async () => {
+    const spyLoginFromCache = jest.fn().mockRejectedValue(new Error('bad creds'));
+    const spyLoginWithSso = jest.fn().mockResolvedValue('');
+    const scope = fork({
+      values: new Map()
+        .set(matrixModel.$matrix, { loginFromCache: spyLoginFromCache, loginWithSso: spyLoginWithSso })
+        .set(matrixModel.$loginStatus, LoginStatus.LOGGED_OUT),
+    });
+
+    const actions = Promise.all([
+      allSettled(matrixAutologinModel.events.loggedInFromCache, { scope }),
+      allSettled(matrixAutologinModel.events.loggedInWithToken, { scope, params: 'token' }),
+    ]);
+
+    await jest.runAllTimersAsync();
+    await actions;
+
+    expect(spyLoginFromCache).toHaveBeenCalled();
+    expect(spyLoginWithSso).toHaveBeenCalledWith('token');
+    expect(scope.getState(matrixModel.$loginStatus)).toEqual(LoginStatus.LOGGED_IN);
+    expect(scope.getState(matrixAutologinModel.$autoLoginStatus)).toEqual(AutoLoginStatus.SUCCESS);
   });
 });
