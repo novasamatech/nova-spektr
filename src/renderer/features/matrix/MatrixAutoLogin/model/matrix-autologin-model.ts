@@ -30,7 +30,6 @@ sample({
   source: {
     matrix: matrixModel.$matrix,
     loginStatus: matrixModel.$loginStatus,
-    autoLoginStatus: $autoLoginStatus,
   },
   filter: ({ loginStatus }) => matrixUtils.isLoggedOut(loginStatus),
   fn: ({ matrix }) => ({
@@ -60,7 +59,6 @@ sample({
   source: {
     matrix: matrixModel.$matrix,
     loginStatus: matrixModel.$loginStatus,
-    autoLoginStatus: $autoLoginStatus,
   },
   filter: ({ loginStatus }) => matrixUtils.isLoggedOut(loginStatus),
   fn: ({ matrix }, token) => ({
