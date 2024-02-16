@@ -26,7 +26,7 @@ import type { Account, Asset, Explorer } from '@shared/core';
 import { AssetFiatBalance } from '@entities/price/ui/AssetFiatBalance';
 import { SelectedValidatorsModal } from '@entities/staking';
 import { SignButton } from '@entities/operation/ui/SignButton';
-import { getIconName } from '@entities/transaction/lib/transactionIcon';
+import { getIconName } from '@entities/transaction/lib/transactionConfirmIcon';
 
 const ActionStyle = 'group hover:bg-action-background-hover px-2 py-1 rounded';
 
@@ -104,9 +104,8 @@ export const Confirmation = ({
     <>
       <div className="w-[440px] px-5 py-4">
         <div className="flex flex-col items-center gap-y-3 mb-6">
-          <div className="flex items-center justify-center w-15 h-15 box-content rounded-full border-2 border-icon-default">
-            <Icon className="text-icon-default" name={getIconName(transaction)} size={42} />
-          </div>
+          <Icon className="text-icon-default" name={getIconName(transaction)} size={60} />
+
           {amounts.length > 0 && (
             <div className="flex flex-col gap-y-2 items-center mx-auto">
               <AssetBalance
