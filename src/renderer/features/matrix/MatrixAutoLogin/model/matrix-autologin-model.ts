@@ -1,16 +1,17 @@
-import { createEffect, sample, split, createEvent, createStore } from 'effector';
-import { delay } from 'patronum';
+import { createEffect, sample, createEvent, createStore } from 'effector';
+import { delay, spread, not } from 'patronum';
 
 import { ISecureMessenger } from '@shared/api/matrix';
-import { matrixModel, LoginStatus } from '@entities/matrix';
+import { matrixModel, LoginStatus, matrixUtils } from '@entities/matrix';
 import { AUTO_LOGIN_DELAY } from '../lib/constants';
 import { AutoLoginStatus } from '../lib/types';
 
-const loginStarted = createEvent<string | undefined>();
-const loggedInWithToken = createEvent<string>();
 const loggedInFromCache = createEvent();
+const loggedInWithToken = createEvent<string>();
+const proceedWithToken = createEvent<string>();
 
-const $autoLoginStatus = createStore<AutoLoginStatus>(AutoLoginStatus.IN_PROCESS);
+const $ssoToken = createStore<string | null>(null);
+const $autoLoginStatus = createStore<AutoLoginStatus>(AutoLoginStatus.NONE);
 
 type LoginTokenParams = {
   matrix: ISecureMessenger;
@@ -25,68 +26,88 @@ const loginFromCacheFx = createEffect((matrix: ISecureMessenger): Promise<void> 
 });
 
 sample({
-  clock: loginStarted,
-  fn: () => AutoLoginStatus.IN_PROCESS,
-  target: $autoLoginStatus,
-});
-
-split({
-  source: loginStarted,
-  match: {
-    withToken: (value) => Boolean(value),
+  clock: loggedInFromCache,
+  source: {
+    matrix: matrixModel.$matrix,
+    loginStatus: matrixModel.$loginStatus,
   },
-  cases: {
-    withToken: loggedInWithToken,
-    __: loggedInFromCache,
-  },
-});
-
-sample({
-  clock: [loggedInWithToken, loggedInFromCache],
-  fn: () => LoginStatus.AUTO_LOGIN,
-  target: matrixModel.events.loginStatusChanged,
+  filter: ({ loginStatus }) => matrixUtils.isLoggedOut(loginStatus),
+  fn: ({ matrix }) => ({
+    loginEffect: matrix,
+    loginStatus: LoginStatus.AUTO_LOGIN,
+  }),
+  target: spread({
+    loginEffect: loginFromCacheFx,
+    loginStatus: matrixModel.$loginStatus,
+  }),
 });
 
 sample({
   clock: loggedInWithToken,
-  source: matrixModel.$matrix,
-  fn: (matrix, token) => ({ matrix, token }),
-  target: loginWithTokenFx,
+  filter: loginFromCacheFx.pending,
+  target: $ssoToken,
 });
 
 sample({
-  clock: loggedInFromCache,
-  source: matrixModel.$matrix,
-  target: loginFromCacheFx,
+  clock: loggedInWithToken,
+  filter: not(loginFromCacheFx.pending),
+  target: proceedWithToken,
 });
 
 sample({
-  clock: [loginWithTokenFx.doneData, loginFromCacheFx.doneData],
+  clock: proceedWithToken,
+  source: {
+    matrix: matrixModel.$matrix,
+    loginStatus: matrixModel.$loginStatus,
+  },
+  filter: ({ loginStatus }) => matrixUtils.isLoggedOut(loginStatus),
+  fn: ({ matrix }, token) => ({
+    loginEffect: { matrix, token },
+    loginStatus: LoginStatus.AUTO_LOGIN,
+    autoLoginStatus: AutoLoginStatus.IN_PROCESS,
+  }),
+  target: spread({
+    loginEffect: loginWithTokenFx,
+    loginStatus: matrixModel.$loginStatus,
+    autoLoginStatus: $autoLoginStatus,
+  }),
+});
+
+sample({
+  clock: loginWithTokenFx.doneData,
   fn: () => AutoLoginStatus.SUCCESS,
   target: $autoLoginStatus,
 });
 
 sample({
-  clock: [delay(loginWithTokenFx.doneData, AUTO_LOGIN_DELAY), delay(loginFromCacheFx.doneData, AUTO_LOGIN_DELAY)],
+  clock: [loginFromCacheFx.doneData, delay(loginWithTokenFx.doneData, AUTO_LOGIN_DELAY)],
   fn: () => LoginStatus.LOGGED_IN,
-  target: matrixModel.events.loginStatusChanged,
+  target: matrixModel.$loginStatus,
 });
 
 sample({
-  clock: [loginWithTokenFx.failData, loginFromCacheFx.failData],
+  clock: loginWithTokenFx.failData,
   fn: () => AutoLoginStatus.ERROR,
   target: $autoLoginStatus,
 });
 
 sample({
-  clock: [delay(loginWithTokenFx.failData, AUTO_LOGIN_DELAY), delay(loginFromCacheFx.failData, AUTO_LOGIN_DELAY)],
+  clock: [loginFromCacheFx.failData, delay(loginWithTokenFx.failData, AUTO_LOGIN_DELAY)],
   fn: () => LoginStatus.LOGGED_OUT,
-  target: matrixModel.events.loginStatusChanged,
+  target: matrixModel.$loginStatus,
+});
+
+sample({
+  clock: loginFromCacheFx.failData,
+  source: $ssoToken,
+  filter: Boolean,
+  target: proceedWithToken,
 });
 
 export const matrixAutologinModel = {
   $autoLoginStatus,
   events: {
-    loginStarted,
+    loggedInFromCache,
+    loggedInWithToken,
   },
 };

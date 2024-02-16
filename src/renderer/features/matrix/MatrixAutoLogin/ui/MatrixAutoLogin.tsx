@@ -30,7 +30,7 @@ export const MatrixAutoLogin = () => {
 
   return (
     <StatusModal
-      isOpen
+      isOpen={!matrixAutologinUtils.isNone(autoLoginStatus)}
       title={t('settings.matrix.autoLoginTitle')}
       zIndex="z-60"
       content={<Animation {...getAnimationParams(autoLoginStatus)} />}
