@@ -25,6 +25,8 @@ const OperationFullInfo = ({ tx, account }: Props) => {
   const { t } = useI18n();
   const { api, chain, connection, extendedChain } = useNetworkData(tx.chainId);
   const wallets = useUnit(walletModel.$wallets);
+  const accounts = useUnit(walletModel.$accounts);
+  const depositorAccounts = accounts.filter((a) => a.accountId === tx.depositor);
 
   const walletsMap = dictionary(wallets, 'id');
   const callData = tx.callData;
@@ -57,7 +59,9 @@ const OperationFullInfo = ({ tx, account }: Props) => {
     });
   };
 
-  const isRejectAvailable = account && permissionUtils.canRejectMultisigTx(walletsMap[account.walletId], [account]);
+  const isRejectAvailable = depositorAccounts.some((depositor) => {
+    return permissionUtils.canRejectMultisigTx(walletsMap[depositor.walletId], [depositor]);
+  });
 
   return (
     <div className="flex flex-1">
@@ -85,7 +89,9 @@ const OperationFullInfo = ({ tx, account }: Props) => {
         <OperationCardDetails tx={tx} account={account} extendedChain={extendedChain} />
 
         <div className="flex items-center mt-3">
-          {connection && isRejectAvailable && <RejectTx tx={tx} account={account} connection={extendedChain} />}
+          {connection && isRejectAvailable && account && (
+            <RejectTx tx={tx} account={account} connection={extendedChain} />
+          )}
           {account && connection && <ApproveTx tx={tx} account={account} connection={extendedChain} />}
         </div>
       </div>
