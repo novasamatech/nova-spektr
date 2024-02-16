@@ -15,7 +15,8 @@ export function registerCustomProtocol() {
 export function registerSchema() {
   protocol.registerSchemesAsPrivileged([
     {
-      scheme: APP_CONFIG.ELECTRON_PROTOCOL,
+      scheme: 'file',
+      // scheme: APP_CONFIG.ELECTRON_PROTOCOL,
       privileges: {
         standard: true,
         secure: true,
@@ -32,9 +33,11 @@ export function registerSchema() {
 export function registerSchemaHandler() {
   protocol.handle(APP_CONFIG.ELECTRON_PROTOCOL, async (req) => {
     const url = new URL(req.url);
+    console.log('=== url - ', req.url);
 
     const pathname = path.posix.normalize(url.pathname);
     const fileUrl = pathToFileURL(path.join(__dirname, pathname === '/' ? 'index.html' : pathname));
+    console.log('=== file - ', fileUrl.toString());
 
     return net.fetch(fileUrl.toString());
   });

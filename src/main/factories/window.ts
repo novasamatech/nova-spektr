@@ -31,7 +31,9 @@ export function createWindow(): BrowserWindow {
     },
   });
 
-  window.loadURL(`${ELECTRON_PROTOCOL}://webapp/`);
+  window.loadURL('file://' + __dirname + '/index.html');
+  // window.loadURL(`${ELECTRON_PROTOCOL}://webapp/`);
+  // window.loadURL(`${ELECTRON_PROTOCOL}://`);
 
   ENVIRONMENT.IS_DEV && window.webContents.openDevTools({ mode: 'bottom' });
 
