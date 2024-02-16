@@ -1,6 +1,6 @@
-import path, { resolve } from 'path';
-import { protocol, app, BrowserWindow } from 'electron';
-import { readFile } from 'fs/promises';
+import path from 'path';
+import { pathToFileURL } from 'url';
+import { protocol, net, app, BrowserWindow } from 'electron';
 
 import { APP_CONFIG } from '../../../app.config';
 
@@ -8,7 +8,7 @@ export function registerCustomProtocol() {
   if (!process.defaultApp) {
     app.setAsDefaultProtocolClient(APP_CONFIG.ELECTRON_PROTOCOL);
   } else if (process.argv.length > 1) {
-    app.setAsDefaultProtocolClient(APP_CONFIG.ELECTRON_PROTOCOL, process.execPath, [resolve(process.argv[1])]);
+    app.setAsDefaultProtocolClient(APP_CONFIG.ELECTRON_PROTOCOL, process.execPath, [path.resolve(process.argv[1])]);
   }
 }
 
@@ -34,15 +34,9 @@ export function registerSchemaHandler() {
     const url = new URL(req.url);
 
     const pathname = path.posix.normalize(url.pathname);
-    if (pathname === '/') {
-      const contents = await readFile(path.join(__dirname, 'index.html'), 'utf8');
+    const fileUrl = pathToFileURL(path.join(__dirname, pathname === '/' ? 'index.html' : pathname));
 
-      return new Response(contents, { headers: { 'content-type': 'text/html' } });
-    }
-
-    const contents = await readFile(path.join(__dirname, pathname));
-
-    return new Response(contents);
+    return net.fetch(fileUrl.toString());
   });
 }
 
