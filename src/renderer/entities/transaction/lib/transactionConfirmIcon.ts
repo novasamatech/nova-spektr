@@ -33,7 +33,7 @@ const TransactionIcons: Record<TransactionType, IconNames> = {
 };
 
 export const getIconName = (transaction?: Transaction | DecodedTransaction): IconNames => {
-  if (!transaction?.type) return 'question';
+  if (!transaction?.type) return 'unknownConfirm';
 
   if (transaction.type === TransactionType.BATCH_ALL) {
     return getIconName(transaction?.args?.transactions?.[0]);
