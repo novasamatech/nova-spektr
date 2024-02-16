@@ -1,0 +1,1 @@
+export { filterModel } from './NetworkFilter';

@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Trans } from 'react-i18next';
-import partition from 'lodash/partition';
 import { useUnit } from 'effector-react';
 
 import { useI18n, useConfirmContext } from '@app/providers';
@@ -15,7 +14,7 @@ import { ConnectionType } from '@shared/core';
 import { networkModel, ExtendedChain, networkUtils } from '@entities/network';
 import { chainsService } from '@shared/api/network';
 import { manageNetworkModel } from './model/manage-network-model';
-import { filterModel } from '@features/networks/NetworkFilter/model/network-filter';
+import { filterModel } from '@features/networks';
 
 const MAX_LIGHT_CLIENTS = 3;
 
@@ -28,8 +27,8 @@ export const Networks = () => {
   const { confirm } = useConfirmContext();
 
   const connections = useUnit(networkModel.$connections);
-  const filteredNetworks = useUnit(filterModel.$networksFiltered);
-  const connectionStatuses = useUnit(networkModel.$connectionStatuses);
+  const active = useUnit(networkModel.$activeChainsSorted);
+  const inactive = useUnit(networkModel.$inactiveChainsSorted);
 
   const [isCustomRpcOpen, toggleCustomRpc] = useToggle();
   const [isNetworksModalOpen, toggleNetworksModal] = useToggle(true);
@@ -47,23 +46,6 @@ export const Networks = () => {
   useEffect(() => {
     filterModel.events.componentMounted();
   }, []);
-
-  const extendedChains = filteredNetworks.reduce<ExtendedChain[]>((acc, chain) => {
-    const connection = connections[chain.chainId];
-    const extendedChain = {
-      ...chain,
-      connection,
-      connectionStatus: connectionStatuses[chain.chainId],
-    };
-
-    acc.push(extendedChain);
-
-    return acc;
-  }, []);
-
-  const [inactive, active] = partition(extendedChains, ({ connection }) =>
-    networkUtils.isDisabledConnection(connection),
-  );
 
   const confirmRemoveCustomNode = (name: string): Promise<boolean> => {
     return confirm({

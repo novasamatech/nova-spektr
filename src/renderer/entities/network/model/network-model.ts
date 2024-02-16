@@ -1,4 +1,4 @@
-import { createEffect, createEvent, createStore, sample, scopeBind } from 'effector';
+import { Store, combine, createEffect, createEvent, createStore, sample, scopeBind } from 'effector';
 import { ApiPromise } from '@polkadot/api';
 import { VoidFn } from '@polkadot/api/types';
 
@@ -22,7 +22,8 @@ import {
   metadataService,
   ProviderWithMetadata,
 } from '@shared/api/network';
-
+import { ExtendedChain } from '@entities/network';
+import { filterModel } from '@features/networks';
 const networkStarted = createEvent();
 
 const chainConnected = createEvent<ChainId>();
@@ -38,6 +39,53 @@ const $apis = createStore<Record<ChainId, ApiPromise>>({});
 
 const $connections = createStore<Record<ChainId, Connection>>({});
 const $connectionStatuses = createStore<Record<ChainId, ConnectionStatus>>({});
+
+// not sure where this should live
+// network-utils did not seem like the best place
+const getExtendedChain = (
+  chains: Chain[],
+  connections: Record<`0x${string}`, Connection>,
+  connectionStatuses: Record<`0x${string}`, ConnectionStatus>,
+) => {
+  return chains.reduce<ExtendedChain[]>((acc, chain) => {
+    const connection = connections[chain.chainId];
+    const extendedChain = {
+      ...chain,
+      connection,
+      connectionStatus: connectionStatuses[chain.chainId],
+    };
+
+    acc.push(extendedChain);
+
+    return acc;
+  }, []);
+};
+
+const $activeChainsSorted: Store<ExtendedChain[]> = combine(
+  {
+    filteredNetworks: filterModel.$networksFiltered,
+    connectionStatuses: $connectionStatuses,
+    connections: $connections,
+  },
+  ({ filteredNetworks, connectionStatuses, connections }) => {
+    return getExtendedChain(filteredNetworks, connections, connectionStatuses).filter((o) =>
+      networkUtils.isEnabledConnection(o.connection),
+    );
+  },
+);
+
+const $inactiveChainsSorted: Store<ExtendedChain[]> = combine(
+  {
+    filteredNetworks: filterModel.$networksFiltered,
+    connectionStatuses: $connectionStatuses,
+    connections: $connections,
+  },
+  ({ filteredNetworks, connectionStatuses, connections }) => {
+    return getExtendedChain(filteredNetworks, connections, connectionStatuses).filter((o) =>
+      networkUtils.isDisabledConnection(o.connection),
+    );
+  },
+);
 
 const $metadata = createStore<ChainMetadata[]>([]);
 const $metadataSubscriptions = createStore<Record<ChainId, VoidFn>>({});
@@ -369,6 +417,8 @@ export const networkModel = {
   $providers,
   $connectionStatuses,
   $connections,
+  $activeChainsSorted,
+  $inactiveChainsSorted,
   events: {
     networkStarted,
     chainConnected,
