@@ -435,7 +435,9 @@
       "timePoint": "Time Point",
       "toNetwork": "To network",
       "validators": "Validators",
-      "wallet": "Wallet"
+      "revokeFor": "Revoke for",
+      "delegateTo": "Delegate to",
+      "accessType": "Access type"
     },
     "detailsTitle": "Details",
     "explorerLink": "View in explorer",
@@ -511,14 +513,14 @@
       "statusSummary": "Operation statuses"
     },
     "modalTitles": {
-      "addProxy": "Add Proxy",
+      "addProxy": "Add delegated authority (proxy)",
       "approve": "Approve",
       "destinationOn": "Set reward destination on",
       "nominateOn": "Change Validators on",
       "proxy": "Proxy",
       "redeemOn": "Withdraw Unstaked { asset } on",
       "reject": "Reject",
-      "removeProxy": "Remove Proxy",
+      "removeProxy": "Revoke delegated authority (proxy)",
       "restakeOn": "Restake { asset } on",
       "stakeMoreOn": "Stake More { asset } on",
       "startStakingOn": "Start Staking { asset } on",
@@ -532,13 +534,13 @@
     "noOperationsWalletNotMulti": "You can only view operations for your Multisig wallets. Transaction history for other types of wallets will be available later. Stay tuned.",
     "title": "Operations",
     "titles": {
-      "addProxy": "Add Proxy",
+      "addProxy": "Add delegated authority (proxy)",
       "crossChainTransfer": "Cross-chain transfer",
       "destination": "Set reward destination",
       "nominate": "Change Validators",
       "proxy": "Proxy",
       "redeem": "Withdraw Unstaked",
-      "removeProxy": "Remove Proxy",
+      "removeProxy": "Revoke delegated authority (proxy)",
       "restake": "Restake",
       "stakeMore": "Stake More",
       "startStaking": "Start Staking",
@@ -565,7 +567,7 @@
       "governance": "Governance operations",
       "identityJudgement": "Judgement operations",
       "nominationPools": "Nominations operations",
-      "nonTransfer": "NonTransfer operations",
+      "nonTransfer": "All, except transfer operations",
       "staking": "Staking operations"
     },
     "operations": {
