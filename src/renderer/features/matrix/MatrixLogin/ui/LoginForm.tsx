@@ -8,6 +8,7 @@ import { validateShortUserName, WELL_KNOWN_SERVERS, LoginFlows } from '@shared/a
 import type { ComboboxOption } from '@shared/ui/types';
 import { IconNames } from '@shared/ui/Icon/data';
 import { matrixModel, LoginStatus, matrixUtils } from '@entities/matrix';
+import { APP_CONFIG } from '../../../../../../app.config';
 import {
   Alert,
   Button,
@@ -142,11 +143,19 @@ export const LoginForm = ({ redirectStep }: Props) => {
     }
   };
 
+  const getSsoRedirectUrl = (redirectStep: string): string => {
+    if (window.App) {
+      //eslint-disable-next-line i18next/no-literal-string
+      return `${APP_CONFIG.ELECTRON_PROTOCOL}://webapp/?step=${redirectStep}`;
+    }
+
+    //eslint-disable-next-line i18next/no-literal-string
+    return `${window.location.origin}/?step=${redirectStep}`;
+  };
+
   const logInDisabled = isHomeserverLoading || !isValid || invalidHomeserver || invalidLogin;
   const isEditing = !matrixUtils.isLoggedIn(loginStatus) && !isHomeserverLoading && !inProgress;
   const register = <InfoLink url="https://app.element.io/#/register" />;
-  //eslint-disable-next-line i18next/no-literal-string
-  const ssoRedirectUrl = `${window.location.origin}/?step=${redirectStep}`;
 
   return (
     <>
@@ -247,7 +256,7 @@ export const LoginForm = ({ redirectStep }: Props) => {
               {ssoFlows.map(({ id, name, brand }) => (
                 <ButtonWebLink
                   key={id}
-                  href={matrix.getSsoLoginUrl(ssoRedirectUrl, 'sso', id)}
+                  href={matrix.getSsoLoginUrl(getSsoRedirectUrl(redirectStep), 'sso', id)}
                   target={window.App ? '_blank' : '_self'}
                   pallet="secondary"
                   className="flex-1"

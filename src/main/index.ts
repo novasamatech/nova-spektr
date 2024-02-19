@@ -5,7 +5,7 @@ import { createWindow } from './factories/window';
 import { setupApplication } from './factories/setup';
 import { setupAutoUpdater } from './factories/updater';
 import { runAppSingleInstance } from './factories/instance';
-import { registerSchema, registerSchemaHandler, registerCustomProtocol, processUrl } from './factories/protocol';
+import { registerDeepLinkProtocol, processUrl } from './factories/protocol';
 import { PLATFORM } from './shared/constants/platform';
 import { ENVIRONMENT } from './shared/constants/environment';
 import { APP_CONFIG } from '../../app.config';
@@ -27,8 +27,7 @@ runAppSingleInstance(async () => {
   setupLogger();
   setupAutoUpdater();
 
-  registerSchema();
-  registerCustomProtocol();
+  registerDeepLinkProtocol();
 
   if (PLATFORM.IS_MAC) {
     // Protocol handler for macos
@@ -54,7 +53,6 @@ runAppSingleInstance(async () => {
   }
 
   await app.whenReady();
-  registerSchemaHandler();
 
   mainWindow = createWindow();
   await setupApplication(mainWindow);
