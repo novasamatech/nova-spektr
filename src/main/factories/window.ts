@@ -7,7 +7,7 @@ import { APP_CONFIG } from '../../../app.config';
 import { ENVIRONMENT } from '../shared/constants/environment';
 
 export function createWindow(): BrowserWindow {
-  const { MAIN, TITLE, ELECTRON_PROTOCOL } = APP_CONFIG;
+  const { MAIN, TITLE } = APP_CONFIG;
 
   const mainWindowState = windowStateKeeper({
     defaultWidth: MAIN.WINDOW.WIDTH,
@@ -31,7 +31,7 @@ export function createWindow(): BrowserWindow {
     },
   });
 
-  window.loadURL(`${ELECTRON_PROTOCOL}://webapp/`);
+  window.loadURL('file://' + __dirname + '/index.html');
 
   ENVIRONMENT.IS_DEV && window.webContents.openDevTools({ mode: 'bottom' });
 
