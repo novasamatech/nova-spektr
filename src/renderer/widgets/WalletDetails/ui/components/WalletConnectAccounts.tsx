@@ -49,13 +49,13 @@ export const WalletConnectAccounts = ({ wallet, accounts }: Props) => {
       )}
 
       {wcDetailsUtils.isReadyToReconnect(reconnectStep, wallet.isConnected) && (
-        <div className="flex flex-col h-[414px] justify-center items-center">
+        <div className="flex flex-col h-[390px] w-[208px] justify-center items-center mx-auto mt-6">
           <Icon name="document" size={64} className="mb-6 text-icon-default" />
           <SmallTitleText className="mb-2">{t('walletDetails.walletConnect.disconnectedTitle')}</SmallTitleText>
-          <FootnoteText className="mb-4 text-text-tertiary">
+          <FootnoteText className="mb-4 text-text-tertiary" align="center">
             {t('walletDetails.walletConnect.disconnectedDescription')}
           </FootnoteText>
-          <Button onClick={() => wcDetailsModel.events.confirmReconnectShown()}>
+          <Button size="sm" onClick={() => wcDetailsModel.events.confirmReconnectShown()}>
             {t('walletDetails.walletConnect.reconnectButton')}
           </Button>
         </div>

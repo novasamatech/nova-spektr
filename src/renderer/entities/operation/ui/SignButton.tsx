@@ -4,7 +4,7 @@ import { Button, Icon } from '@shared/ui';
 import { IconNames } from '@shared/ui/Icon/data';
 
 type Props = {
-  type: WalletType;
+  type?: WalletType;
   disabled?: boolean;
   onClick?: () => void;
   className?: string;
@@ -28,19 +28,21 @@ const WalletText: Record<SignableWalletFamily, string> = {
   [WalletType.SINGLE_PARITY_SIGNER]: 'operation.sign.polkadotVault',
 };
 
+const UnkownWalletText = 'operation.sign.unknown';
+
 export const SignButton = ({ disabled, type, onClick, className }: Props) => {
   const { t } = useI18n();
-
-  if (!(type in WalletIcon)) return null;
 
   return (
     <Button
       className={className}
       disabled={disabled}
-      prefixElement={<Icon className="text-icon-button" name={WalletIcon[type as SignableWalletFamily]} size={14} />}
+      prefixElement={
+        type && <Icon className="text-icon-button" name={WalletIcon[type as SignableWalletFamily]} size={14} />
+      }
       onClick={onClick}
     >
-      {t(WalletText[type as SignableWalletFamily])}
+      {t(type ? WalletText[type as SignableWalletFamily] : UnkownWalletText)}
     </Button>
   );
 };
