@@ -78,7 +78,7 @@ const proxiedWallet = {
   signingType: SigningType.POLKADOT_VAULT,
 };
 
-describe('features/ForgetModel', () => {
+describe('features/wallets/ForgetModel', () => {
   beforeEach(() => {
     jest.restoreAllMocks();
   });

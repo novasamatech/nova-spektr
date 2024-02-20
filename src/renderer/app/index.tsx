@@ -7,7 +7,6 @@ import { kernelModel } from '@shared/core';
 import { walletModel } from '@entities/wallet';
 import { networkModel } from '@entities/network';
 import { proxyModel } from '@entities/proxy';
-import { proxiesModel } from '@features/proxies';
 import { notificationModel } from '@entities/notification';
 import { balanceSubModel } from '@features/balances';
 import { proxiesModel } from '@features/proxies';
@@ -21,7 +20,7 @@ log.variables.env = process.env.NODE_ENV;
 log.transports.console.format = '{y}/{m}/{d} {h}:{i}:{s}.{ms} [{env}#{version}]-{processType} [{level}] > {text}';
 log.transports.console.useStyles = true;
 
-Object.assign(console, log.functions);
+// Object.assign(console, log.functions);
 log.errorHandler.startCatching({
   showDialog: false,
   onError({ createIssue, error, processType, versions }) {

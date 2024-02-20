@@ -60,6 +60,9 @@ class StorageService<T extends { id: K }, K extends IndexableType> {
     }
   }
 
+  /**
+   * Use **where** param only for indexed fields
+   */
   readAll(where?: Partial<ArrayOfKeys<T>>): Promise<T[]> {
     try {
       if (!where) {

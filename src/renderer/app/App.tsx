@@ -9,6 +9,7 @@ import { walletModel } from '@entities/wallet';
 import { ROUTES_CONFIG } from '@pages/index';
 import { Paths } from '@shared/routes';
 import { FallbackScreen } from '@shared/ui';
+import { usePrevious } from '@shared/lib/hooks';
 import {
   ConfirmDialogProvider,
   StatusModalProvider,
@@ -17,7 +18,6 @@ import {
   GraphqlProvider,
   MultisigChainProvider,
 } from './providers';
-import { usePrevious } from '../shared/lib/hooks';
 
 const SPLASH_SCREEN_DELAY = 450;
 

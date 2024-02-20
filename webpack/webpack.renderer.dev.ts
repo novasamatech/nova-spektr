@@ -28,7 +28,7 @@ const config = merge<WpConfig & WdsConfig>(sharedConfig, {
     },
     allowedHosts: 'all',
     client: {
-      overlay: true,
+      overlay: false,
     },
   },
 
@@ -47,7 +47,9 @@ const config = merge<WpConfig & WdsConfig>(sharedConfig, {
   },
 
   plugins: [
-    new ReactRefreshWebpackPlugin(),
+    new ReactRefreshWebpackPlugin({
+      overlay: false,
+    }),
 
     new webpack.EnvironmentPlugin({
       NODE_ENV: 'development',
