@@ -28,6 +28,7 @@ import { ProxiesList } from '../components/ProxiesList';
 import { walletProviderModel } from '../../model/wallet-provider-model';
 import { NoProxiesAction } from '../components/NoProxiesAction';
 import { WalletConnectAccounts } from '../components/WalletConnectAccounts';
+import { forgetWalletModel } from '@features/wallets/ForgetWallet';
 
 type Props = {
   wallet: WalletConnectWallet;
@@ -60,6 +61,7 @@ export const WalletConnectDetails = ({ wallet, accounts, onClose }: Props) => {
 
   const handleForgetWallet = () => {
     wcDetailsModel.events.forgetButtonClicked(wallet);
+    forgetWalletModel.events.forgetWcWallet(wallet);
     toggleConfirmForget();
   };
 

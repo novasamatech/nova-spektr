@@ -483,6 +483,7 @@
     "sign": {
       "novaWallet": "Sign with Nova Wallet",
       "polkadotVault": "Sign with Polkadot Vault",
+      "unknown": "Sign",
       "walletConnect": "Sign with WalletConnect"
     },
     "signatoriesTitle": "Signatories",
