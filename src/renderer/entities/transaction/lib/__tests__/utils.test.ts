@@ -18,9 +18,9 @@ describe('entities/transaction/lib/common/utils', () => {
       type: TransactionType.TRANSFER,
     } as unknown as Transaction;
 
-    expect(isTransferTransaction(transferTransaction)).isEqual(true);
-    expect(isTransferTransaction(ormlTransferTransaction)).isEqual(true);
-    expect(isTransferTransaction(assetTransferTransaction)).isEqual(true);
+    expect(isTransferTransaction(transferTransaction)).toEqual(true);
+    expect(isTransferTransaction(ormlTransferTransaction)).toEqual(true);
+    expect(isTransferTransaction(assetTransferTransaction)).toEqual(true);
   });
 
   test('should return false for an other transaction', () => {
@@ -28,7 +28,7 @@ describe('entities/transaction/lib/common/utils', () => {
       type: TransactionType.BOND,
     } as unknown as Transaction;
 
-    expect(isTransferTransaction(transaction)).isEqual(false);
+    expect(isTransferTransaction(transaction)).toEqual(false);
   });
 
   test('should return true for add proxy transaction', () => {
@@ -36,7 +36,7 @@ describe('entities/transaction/lib/common/utils', () => {
       type: TransactionType.ADD_PROXY,
     } as unknown as Transaction;
 
-    expect(isAddProxyTransaction(transaction)).isEqual(true);
+    expect(isAddProxyTransaction(transaction)).toEqual(true);
   });
 
   test('should return true for remove proxy transaction', () => {
@@ -44,7 +44,7 @@ describe('entities/transaction/lib/common/utils', () => {
       type: TransactionType.REMOVE_PROXY,
     } as unknown as Transaction;
 
-    expect(isRemoveProxyTransaction(transaction)).isEqual(true);
+    expect(isRemoveProxyTransaction(transaction)).toEqual(true);
   });
 
   test('should return true for remove proxy transaction', () => {
@@ -55,7 +55,7 @@ describe('entities/transaction/lib/common/utils', () => {
       type: TransactionType.REMOVE_PROXY,
     } as unknown as Transaction;
 
-    expect(isManageProxyTransaction(addProxyTransaction)).isEqual(true);
-    expect(isManageProxyTransaction(removeProxyTransaction)).isEqual(true);
+    expect(isManageProxyTransaction(addProxyTransaction)).toEqual(true);
+    expect(isManageProxyTransaction(removeProxyTransaction)).toEqual(true);
   });
 });
