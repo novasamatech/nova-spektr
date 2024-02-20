@@ -26,17 +26,19 @@ type Props = {
   horizontal?: Horizontal;
   vertical?: Vertical;
   role?: AriaRole;
+  tabIndex?: number;
 };
 
 export const Popover = ({
   content,
-  children,
   offsetPx = 10,
   panelClass,
   horizontal = 'center',
   vertical = 'down',
   contentClass,
   role,
+  tabIndex = 0,
+  children,
 }: PropsWithChildren<Props>) => {
   const id = useId();
   const ref = useRef<HTMLDivElement>(null);
@@ -62,7 +64,7 @@ export const Popover = ({
       <div
         className="w-fit"
         ref={ref}
-        tabIndex={0}
+        tabIndex={tabIndex}
         aria-details={id}
         onFocus={() => setIsOpen(true)}
         onBlur={() => setIsOpen(false)}

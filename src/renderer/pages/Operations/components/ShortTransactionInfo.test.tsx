@@ -5,10 +5,6 @@ import { Transaction, TransactionType } from '@entities/transaction';
 import { TEST_ADDRESS, TEST_CHAIN_ID } from '@shared/lib/utils';
 
 jest.mock('@app/providers', () => ({
-  useMatrix: jest.fn(),
-}));
-
-jest.mock('@app/providers', () => ({
   useI18n: jest.fn().mockReturnValue({
     t: (key: string) => key,
   }),

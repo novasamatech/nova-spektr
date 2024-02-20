@@ -1,7 +1,7 @@
 import cn from 'classnames';
 import { useUnit } from 'effector-react';
 
-import { useI18n, useMatrix } from '@app/providers';
+import { useI18n } from '@app/providers';
 import { AddressWithExplorers, WalletCardSm, walletModel, ExplorersPopover } from '@entities/wallet';
 import { Icon, Button, FootnoteText, DetailRow } from '@shared/ui';
 import { copyToClipboard, truncate, cnTw, getAssetById } from '@shared/lib/utils';
@@ -17,6 +17,7 @@ import { getTransactionFromMultisigTx } from '@entities/multisig';
 import { useValidatorsMap, ValidatorsModal } from '@entities/staking';
 import { singnatoryUtils } from '@entities/signatory';
 import { chainsService } from '@shared/api/network';
+import { matrixModel } from '@entities/matrix';
 
 type Props = {
   tx: MultisigTransaction;
@@ -26,7 +27,7 @@ type Props = {
 
 export const OperationCardDetails = ({ tx, account, extendedChain }: Props) => {
   const { t } = useI18n();
-  const { matrix } = useMatrix();
+  const matrix = useUnit(matrixModel.$matrix);
 
   const activeWallet = useUnit(walletModel.$activeWallet);
   const wallets = useUnit(walletModel.$wallets);

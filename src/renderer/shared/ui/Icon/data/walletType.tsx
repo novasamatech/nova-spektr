@@ -33,9 +33,10 @@ import WalletConnectOnboardingImg, {
 import NovaWalletOnboardingImg, {
   ReactComponent as NovaWalletOnboardingSvg,
 } from '@shared/assets/images/walletTypes/novaWalletOnboarding.svg';
-import ProxyBackgroundImg, {
-  ReactComponent as ProxyBackgroundSvg,
-} from '@shared/assets/images/walletTypes/proxyBackground.svg';
+import ProxiedImg, { ReactComponent as ProxiedSvg } from '@shared/assets/images/walletTypes/proxied.svg';
+import ProxiedBackgroundImg, {
+  ReactComponent as ProxiedBackgroundSvg,
+} from '@shared/assets/images/walletTypes/proxiedBackground.svg';
 
 const WalletTypeImages = {
   watchOnlyBackground: { svg: WatchOnlyBackgroundSvg, img: WatchOnlyBackgroundImg },
@@ -51,7 +52,8 @@ const WalletTypeImages = {
   walletConnect: { img: WalletConnectImg, svg: WalletConnectSvg },
   walletConnectBackground: { img: WalletConnectBackgroundImg, svg: WalletConnectBackgroundSvg },
   walletConnectOnboarding: { img: WalletConnectOnboardingImg, svg: WalletConnectOnboardingSvg },
-  proxiedBackground: { svg: ProxyBackgroundSvg, img: ProxyBackgroundImg },
+  proxied: { svg: ProxiedSvg, img: ProxiedImg },
+  proxiedBackground: { svg: ProxiedBackgroundSvg, img: ProxiedBackgroundImg },
 } as const;
 
 export type WalletImages = keyof typeof WalletTypeImages;

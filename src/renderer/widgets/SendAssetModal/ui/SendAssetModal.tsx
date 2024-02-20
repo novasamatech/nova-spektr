@@ -163,7 +163,7 @@ export const SendAssetModal = ({ chain, asset }: Props) => {
       onClose={closeSendModal}
     >
       {!api?.isConnected ? (
-        <div>
+        <div className="pb-4 px-5">
           <Loader className="my-24 mx-auto" color="primary" size={25} />
           <Button disabled className="w-fit flex-0 mt-7 ml-auto">
             {t('transfer.continueButton')}

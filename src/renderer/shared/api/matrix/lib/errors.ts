@@ -25,6 +25,10 @@ const MATRIX_ERRORS: Record<MatrixError, ErrorObject> = {
     code: MatrixError.INIT_WITH_CREDENTIALS,
     message: 'Failed to init client with credentials',
   },
+  [MatrixError.INIT_WITH_SSO]: {
+    code: MatrixError.INIT_WITH_SSO,
+    message: 'Failed to init client with sso',
+  },
   [MatrixError.NOT_LOGGED_IN]: {
     code: MatrixError.NOT_LOGGED_IN,
     message: 'Client is not logged in',

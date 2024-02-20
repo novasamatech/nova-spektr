@@ -2,7 +2,7 @@ import { useUnit } from 'effector-react';
 
 import { BaseModal, DropdownIconButton, Tabs } from '@shared/ui';
 import { useModalClose, useToggle } from '@shared/lib/hooks';
-import { AccountsList, WalletCardLg, walletModel, walletUtils } from '@entities/wallet';
+import { AccountsList, WalletCardLg, walletUtils } from '@entities/wallet';
 import { networkModel } from '@entities/network';
 import { useI18n } from '@app/providers';
 import type { BaseAccount, Wallet } from '@shared/core';
@@ -24,8 +24,6 @@ export const SimpleWalletDetails = ({ wallet, account, onClose }: Props) => {
 
   const chains = useUnit(networkModel.$chains);
   const hasProxies = useUnit(walletProviderModel.$hasProxies);
-  const activeWallet = useUnit(walletModel.$activeWallet);
-  const activeAccounts = useUnit(walletModel.$activeAccounts);
   const canCreateProxy = useUnit(walletProviderModel.$canCreateProxy);
 
   const [isModalOpen, closeModal] = useModalClose(true, onClose);

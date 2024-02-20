@@ -46,6 +46,13 @@ export const KeyForm = () => {
 
   const keyTypes = [
     {
+      id: KeyType.MAIN,
+      value: KeyType.MAIN,
+      element: (
+        <FootnoteText className="text-text-secondary">{t('dynamicDerivations.constructor.keyTypeMain')}</FootnoteText>
+      ),
+    },
+    {
       id: KeyType.HOT,
       value: KeyType.HOT,
       element: (

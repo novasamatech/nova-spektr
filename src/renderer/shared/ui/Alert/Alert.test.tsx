@@ -3,10 +3,6 @@ import noop from 'lodash/noop';
 
 import { Alert } from './Alert';
 
-jest.mock('@app/providers', () => ({
-  useMatrix: jest.fn(),
-}));
-
 describe('ui/Alert', () => {
   test('should render title and items', () => {
     render(

@@ -6,7 +6,7 @@ import RejectTx from './modals/RejectTx';
 import ApproveTx from './modals/ApproveTx';
 import { getMultisigExtrinsicLink } from '../common/utils';
 import CallDataModal from './modals/CallDataModal';
-import { useMatrix, useI18n, useMultisigChainContext } from '@app/providers';
+import { useI18n, useMultisigChainContext } from '@app/providers';
 import { useMultisigTx } from '@entities/multisig';
 import { useToggle } from '@shared/lib/hooks';
 import { MultisigTransactionDS } from '@shared/api/storage';
@@ -15,6 +15,7 @@ import { OperationSignatories } from './OperationSignatories';
 import { useNetworkData } from '@entities/network';
 import { walletModel, permissionUtils } from '@entities/wallet';
 import { dictionary } from '@shared/lib/utils';
+import { matrixModel } from '@entities/matrix';
 
 type Props = {
   tx: MultisigTransactionDS;
@@ -24,12 +25,12 @@ type Props = {
 const OperationFullInfo = ({ tx, account }: Props) => {
   const { t } = useI18n();
   const { api, chain, connection, extendedChain } = useNetworkData(tx.chainId);
+
   const wallets = useUnit(walletModel.$wallets);
+  const matrix = useUnit(matrixModel.$matrix);
 
   const walletsMap = dictionary(wallets, 'id');
   const callData = tx.callData;
-
-  const { matrix } = useMatrix();
 
   const { addTask } = useMultisigChainContext();
   const { updateCallData } = useMultisigTx({ addTask });

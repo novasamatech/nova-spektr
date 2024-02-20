@@ -1,4 +1,4 @@
-import { createEvent, createEffect, createStore, sample } from 'effector';
+import { createEvent, createEffect, createStore, sample, combine } from 'effector';
 
 import { localStorageService } from '@shared/api/local-storage';
 import { walletModel, accountUtils, walletUtils } from '@entities/wallet';
@@ -21,6 +21,16 @@ const getHideZeroBalancesFx = createEffect((): boolean => {
 const saveHideZeroBalancesFx = createEffect((value: boolean): boolean => {
   return localStorageService.saveToStorage(HIDE_ZERO_BALANCES, value);
 });
+
+const $accounts = combine(
+  {
+    accounts: walletModel.$activeAccounts,
+    wallet: walletModel.$activeWallet,
+  },
+  ({ accounts, wallet }) => {
+    return wallet ? accounts.filter((account) => accountUtils.isNonBaseVaultAccount(account, wallet)) : [];
+  },
+);
 
 sample({
   clock: assetsStarted,
@@ -57,6 +67,7 @@ sample({
 
 export const assetsModel = {
   $query,
+  $accounts,
   $activeShards,
   $hideZeroBalances,
   events: {

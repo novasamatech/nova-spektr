@@ -1,5 +1,5 @@
-export const checkAutoUpdateSupported = (): boolean => {
+export function checkAutoUpdateSupported(): boolean {
   const supportedBuildSources = ['github'];
 
   return !!process.env.BUILD_SOURCE && supportedBuildSources.includes(process.env.BUILD_SOURCE);
-};
+}
