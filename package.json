@@ -28,11 +28,11 @@
     "webpack:main:prod:internal": "webpack --config webpack/webpack.main.prod.internal.ts",
 
     "build": "cross-env NODE_ENV=production CHAINS_FILE=chains pnpm r clean:prod webpack:renderer:prod webpack:main:prod",
-    "build:stage": "cross-env NODE_ENV=stage FORCE_ELECTRON=true CHAINS_FILE=chains-dev pnpm r clean:prod webpack:renderer:prod:internal webpack:main:prod:internal",
+    "build:stage": "cross-env NODE_ENV=stage CHAINS_FILE=chains-dev pnpm r clean:prod webpack:renderer:prod:internal webpack:main:prod:internal",
     "postbuild": "node scripts/postbuild.js",
     "postbuild:stage": "node scripts/postbuild.js stage",
     "dist": "cross-env NODE_ENV=production electron-builder -p never",
-    "dist:stage": "cross-env NODE_ENV=stage FORCE_ELECTRON=true electron-builder -p never",
+    "dist:stage": "cross-env NODE_ENV=stage electron-builder -p never",
     "clean:build": "rimraf release/build",
     "clean:prod": "rimraf release/dist",
     "stage:sequence": "pnpm r clean:build clean:prod build:stage postbuild:stage dist:stage",
