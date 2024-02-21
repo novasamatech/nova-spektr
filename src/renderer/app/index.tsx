@@ -1,5 +1,5 @@
 import { createRoot } from 'react-dom/client';
-import { HashRouter as Router } from 'react-router-dom';
+import { HashRouter } from 'react-router-dom';
 import log from 'electron-log';
 
 import { App } from './App';
@@ -43,9 +43,9 @@ assetsModel.events.assetsStarted();
 notificationModel.events.notificationsStarted();
 
 createRoot(container).render(
-  <Router>
+  <HashRouter>
     <App />
-  </Router>,
+  </HashRouter>,
 );
 
 // NOTE: React 18 Strict mode renders twice in DEV mode

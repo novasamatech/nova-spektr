@@ -1,1 +1,1 @@
-export { MatrixProvider, useMatrix } from './MatrixContext';
+export { MatrixProvider } from './MatrixContext';

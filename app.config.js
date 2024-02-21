@@ -2,8 +2,14 @@ const { name: NAME, author: AUTHOR, version: VERSION, description: DESCRIPTION }
 
 const AUTHOR_IN_KEBAB_CASE = AUTHOR.name.replace(/\s+/g, '-');
 
-const prod_app_id = `com.${AUTHOR_IN_KEBAB_CASE}.${NAME}`.toLowerCase();
-const stage_app_id = `com.${AUTHOR_IN_KEBAB_CASE}.${NAME}.stage`.toLowerCase();
+const titleProd = 'Nova Spektr';
+const titleStage = 'Nova Spektr Stage';
+
+const idProd = `com.${AUTHOR_IN_KEBAB_CASE}.${NAME}`.toLowerCase();
+const idStage = `com.${AUTHOR_IN_KEBAB_CASE}.${NAME}.stage`.toLowerCase();
+
+const protocolProd = NAME.replace('-', '');
+const protocolStage = `${NAME.replace('-', '')}-stage`;
 
 module.exports = {
   APP_CONFIG: {
@@ -11,9 +17,10 @@ module.exports = {
     AUTHOR,
     VERSION,
     DESCRIPTION,
+    ELECTRON_PROTOCOL: process.env.NODE_ENV === 'stage' ? protocolStage : protocolProd,
 
-    TITLE: process.env.NODE_ENV === 'staging' ? 'Nova Spektr Stage' : 'Nova Spektr',
-    APP_ID: process.env.NODE_ENV === 'staging' ? stage_app_id : prod_app_id,
+    TITLE: process.env.NODE_ENV === 'stage' ? titleStage : titleProd,
+    APP_ID: process.env.NODE_ENV === 'stage' ? idStage : idProd,
 
     MAIN: {
       WINDOW: {

@@ -99,11 +99,11 @@ const $constructorForm = createForm<FormValues>({
           name: 'duplicated',
           source: $keys,
           errorText: 'dynamicDerivations.constructor.duplicateDerivationError',
-          validator: (value, _, keys: Array<ChainAccount | ShardAccount[]>): boolean => {
+          validator: (value, { network }, keys: Array<ChainAccount | ShardAccount[]>): boolean => {
             return keys.every((key) => {
               const keyToCheck = Array.isArray(key) ? key[0] : key;
 
-              return !keyToCheck.derivationPath.includes(value);
+              return keyToCheck.chainId !== network.chainId || !keyToCheck.derivationPath.includes(value);
             });
           },
         },
@@ -124,13 +124,7 @@ const $derivationEnabled = combine($constructorForm.fields.keyType.$value, (keyT
   return keyType === KeyType.CUSTOM;
 });
 
-const $hasKeys = combine($keys, (keys): boolean => {
-  return keys.some((key) => {
-    const keyData = Array.isArray(key) ? key[0] : key;
-
-    return keyData.keyType !== KeyType.MAIN;
-  });
-});
+const $hasKeys = combine($keys, (keys) => Boolean(keys.length));
 
 const focusElementFx = createEffect((element: HTMLButtonElement) => {
   element.focus();

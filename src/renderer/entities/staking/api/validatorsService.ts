@@ -281,6 +281,7 @@ function isOldRuntimeForValidators(api: ApiPromise): boolean {
 }
 
 function getMaxNominatorRewarded(api: ApiPromise): number {
+  // @ts-ignore
   return api.consts.staking.maxNominatorRewardedPerValidator.toNumber();
 }
 

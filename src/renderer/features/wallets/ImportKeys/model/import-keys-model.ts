@@ -120,10 +120,9 @@ const mergePathsFx = createEffect<MergePathsParams, MergeResult>(({ imported, ex
   return Object.entries(importedByChain).reduce<MergeResult>(
     (acc, [chain, derivations]) => {
       const existingChainDerivations = existingByChain[chain];
-      if (!existingChainDerivations) return acc;
 
       const { mergedDerivations, added, duplicated } = importKeysUtils.mergeChainDerivations(
-        existingChainDerivations,
+        existingChainDerivations || [],
         derivations,
       );
 

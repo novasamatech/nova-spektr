@@ -1,0 +1,6 @@
+.spektr-separator::before, .spektr-separator::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background-color: theme('textColor.divider');
+}

@@ -135,7 +135,7 @@ function mergeChainDerivations(
         acc.push({
           name: d.name || KEY_NAMES[d.type],
           derivationPath: d.derivationPath,
-          chainId: existingDerivations[0].chainId,
+          chainId: d.chainId,
           cryptoType: CryptoType.SR25519,
           chainType: ChainType.SUBSTRATE,
           type: AccountType.CHAIN,
@@ -153,7 +153,7 @@ function mergeChainDerivations(
         acc.push({
           name: d.name || SHARDED_KEY_NAMES[d.type],
           derivationPath: d.derivationPath + '//' + i,
-          chainId: existingDerivations[0].chainId,
+          chainId: d.chainId,
           cryptoType: CryptoType.SR25519,
           chainType: ChainType.SUBSTRATE,
           type: AccountType.SHARD,

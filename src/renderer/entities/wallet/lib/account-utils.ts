@@ -14,7 +14,9 @@ import type {
   ShardAccount,
   WalletConnectAccount,
   ProxiedAccount,
+  Wallet,
 } from '@shared/core';
+import { walletUtils } from './wallet-utils';
 
 export const accountUtils = {
   isBaseAccount,
@@ -35,6 +37,7 @@ export const accountUtils = {
   isAnyProxyType,
   isNonTransferProxyType,
   isStakingProxyType,
+  isNonBaseVaultAccount,
 };
 
 function getMultisigAccountId(ids: AccountId[], threshold: Threshold): AccountId {
@@ -62,7 +65,7 @@ function isAccountWithShards(accounts: Pick<Account, 'type'> | ShardAccount[]): 
 }
 
 function isChainDependant(account: Pick<Account, 'type'>): boolean {
-  return !isBaseAccount(account) && !isMultisigAccount(account);
+  return !!(account as ChainAccount).chainId;
 }
 
 function isChainIdMatch(account: Pick<Account, 'type'>, chainId: ChainId): boolean {
@@ -72,8 +75,11 @@ function isChainIdMatch(account: Pick<Account, 'type'>, chainId: ChainId): boole
   const shardAccountMatch = isShardAccount(account) && account.chainId === chainId;
   const walletConnectAccountMatch = isWalletConnectAccount(account) && account.chainId === chainId;
   const proxiedAccountMatch = isProxiedAccount(account) && account.chainId === chainId;
+  const multisigWalletMatch = isMultisigAccount(account) && account.chainId === chainId;
 
-  return chainAccountMatch || walletConnectAccountMatch || shardAccountMatch || proxiedAccountMatch;
+  return (
+    chainAccountMatch || walletConnectAccountMatch || shardAccountMatch || proxiedAccountMatch || multisigWalletMatch
+  );
 }
 
 function isMultisigAccount(account: Pick<Account, 'type'>): account is MultisigAccount {
@@ -153,4 +159,8 @@ function isNonTransferProxyType({ proxyType }: ProxiedAccount): boolean {
 
 function isStakingProxyType({ proxyType }: ProxiedAccount): boolean {
   return proxyType === ProxyType.STAKING;
+}
+
+function isNonBaseVaultAccount(account: Account, wallet: Wallet): boolean {
+  return !walletUtils.isPolkadotVault(wallet) || !accountUtils.isBaseAccount(account);
 }
