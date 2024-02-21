@@ -1,8 +1,9 @@
 import { ApiPromise } from '@polkadot/api';
 import { UnsignedTransaction } from '@substrate/txwrapper-polkadot';
 import { ComponentProps, useEffect, useState } from 'react';
+import { useUnit } from 'effector-react';
 
-import { useI18n, useMatrix, useMultisigChainContext } from '@app/providers';
+import { useI18n, useMultisigChainContext } from '@app/providers';
 import {
   ExtrinsicResultParams,
   MultisigTransaction,
@@ -17,6 +18,7 @@ import { toAccountId } from '@shared/lib/utils';
 import { useToggle } from '@shared/lib/hooks';
 import { Button } from '@shared/ui';
 import { accountUtils } from '@entities/wallet';
+import { matrixModel } from '@entities/matrix';
 
 type ResultProps = Pick<ComponentProps<typeof OperationResult>, 'title' | 'description' | 'variant'>;
 
@@ -34,9 +36,9 @@ type Props = {
 export const Submit = ({ api, tx, multisigTx, account, unsignedTx, signature, onClose, onSubmitted }: Props) => {
   const { t } = useI18n();
 
-  const { matrix } = useMatrix();
-  const { addTask } = useMultisigChainContext();
+  const matrix = useUnit(matrixModel.$matrix);
 
+  const { addTask } = useMultisigChainContext();
   const { addMultisigTx } = useMultisigTx({ addTask });
   const { submitAndWatchExtrinsic, getSignedExtrinsic } = useTransaction();
   const { addEventWithQueue } = useMultisigEvent({ addTask });
@@ -80,7 +82,7 @@ export const Submit = ({ api, tx, multisigTx, account, unsignedTx, signature, on
 
           console.log(`New removeProxy transaction was created with call hash ${result.transaction.callHash}`);
 
-          if (matrix.userIsLoggedIn) {
+          if (matrix.userIsLoggedIn && account.matrixRoomId) {
             sendMultisigEvent(account.matrixRoomId, result.transaction, params as ExtrinsicResultParams);
           }
         }
