@@ -1,13 +1,11 @@
 import { ApiPromise } from '@polkadot/api';
 import { createEffect, createStore, sample, createEvent, scopeBind } from 'effector';
-import { throttle, once, combineEvents, spread, previous } from 'patronum';
-import { VoidFn } from '@polkadot/api/types';
+import { throttle, once, combineEvents, spread, previous, not } from 'patronum';
 import mapValues from 'lodash/mapValues';
 
 import { AccountId, Balance, ChainId, ConnectionStatus, Wallet, Chain, ID } from '@shared/core';
 import { accountUtils, walletModel } from '@entities/wallet';
 import { networkModel, networkUtils } from '@entities/network';
-import { balanceService } from '@shared/api/balances';
 import { balanceModel } from '@entities/balance';
 import { storageService } from '@shared/api/storage';
 import { balanceSubUtils } from '../lib/balance-sub-utils';
@@ -19,10 +17,13 @@ const walletToUnsubSet = createEvent<Wallet>();
 const walletToSubSet = createEvent<Wallet>();
 
 const proceedWalletToSub = createEvent<Wallet>();
+const proceedConnectionToUpdate = createEvent<Record<ChainId, ConnectionStatus>>();
 
 const $subscriptions = createStore<Subscriptions>({});
 const $subAccounts = createStore<SubAccounts>({});
-const $newestWalletToSub = createStore<Wallet | null>(null);
+
+const $latestWalletToSub = createStore<Wallet | null>(null);
+const $latestConnectionsToUpdate = createStore<Record<ChainId, ConnectionStatus> | null>(null);
 
 const $previousWallet = previous(walletModel.$activeWallet);
 
@@ -30,45 +31,12 @@ const populateBalancesFx = createEffect((accountIds: AccountId[]): Promise<Balan
   return storageService.balances.readAll({ accountId: accountIds });
 });
 
-type UnsubChainsParams = {
-  chainIds: ChainId[];
-  subscriptions: Subscriptions;
-};
-const unsubscribeChainsFx = createEffect(({ chainIds, subscriptions }: UnsubChainsParams): Subscriptions => {
-  return chainIds.reduce<Subscriptions>(
-    (acc, chainId) => {
-      const chainSubscription = acc[chainId];
-      if (!chainSubscription) return acc;
-
-      Object.values(chainSubscription).forEach((unsubFn) => {
-        unsubFn[0].forEach((fn) => fn());
-        unsubFn[1].forEach((fn) => fn());
-      });
-
-      acc[chainId] = undefined;
-
-      return acc;
-    },
-    { ...subscriptions },
-  );
-});
-
 type UnsubWalletParams = {
   walletId: ID;
   subscriptions: Subscriptions;
 };
 const unsubscribeWalletFx = createEffect(({ walletId, subscriptions }: UnsubWalletParams): Subscriptions => {
-  return Object.entries(subscriptions).reduce<Subscriptions>((acc, [chainId, walletMap]) => {
-    if (!walletMap || !walletMap[walletId]) return acc;
-
-    const { [walletId]: walletToUnsub, ...rest } = walletMap;
-    walletToUnsub[0].forEach((fn) => fn());
-    walletToUnsub[1].forEach((fn) => fn());
-
-    acc[chainId as ChainId] = Object.keys(rest).length > 0 ? rest : undefined;
-
-    return acc;
-  }, {});
+  return balanceSubUtils.getSubscriptionsWithoutWallet(walletId, subscriptions);
 });
 
 type SubChainsParams = {
@@ -78,50 +46,25 @@ type SubChainsParams = {
   subAccounts: SubAccounts;
   subscriptions: Subscriptions;
 };
-const subscribeChainsFx = createEffect(
-  async ({ apis, chains, walletId, subAccounts, subscriptions }: SubChainsParams): Promise<Subscriptions> => {
-    const boundUpdate = scopeBind(balanceModel.events.balancesUpdated, { safe: true });
+const subscribeChainsFx = createEffect(async (params: SubChainsParams): Promise<Subscriptions> => {
+  // console.log('=== SUB');
+  const boundUpdate = scopeBind(balanceModel.events.balancesUpdated, { safe: true });
 
-    const balanceRequests = chains.reduce<Promise<[VoidFn[], VoidFn[]]>[]>((acc, chain) => {
-      Object.entries(subAccounts[chain.chainId]).forEach(([id, accountIds]) => {
-        if (walletId && Number(id) !== walletId) return;
-
-        const subBalances = balanceService.subscribeBalances(apis[chain.chainId], chain, accountIds, boundUpdate);
-        const subLocks = balanceService.subscribeLockBalances(apis[chain.chainId], chain, accountIds, boundUpdate);
-
-        acc.push(Promise.all([subBalances, subLocks]));
-      });
-
-      return acc;
-    }, []);
-
-    const unsubFunctions = await Promise.all(balanceRequests);
-
-    return chains.reduce<Subscriptions>(
-      (acc, chain, index) => {
-        Object.keys(subAccounts[chain.chainId]).forEach((id) => {
-          if (walletId && Number(id) !== walletId) return;
-
-          acc[chain.chainId] = { ...acc[chain.chainId], [Number(id)]: unsubFunctions[index] };
-        });
-
-        return acc;
-      },
-      { ...subscriptions },
-    );
-  },
-);
+  return balanceSubUtils.getSubscriptionsToBalances(params, boundUpdate);
+});
 
 type UpdateChainsParams = {
   subscriptions: Subscriptions;
-  unsubParams: Omit<UnsubChainsParams, 'subscriptions'>;
+  unsubChains: ChainId[];
   subParams: Omit<SubChainsParams, 'subscriptions'>;
 };
 const updateChainsSubscriptionsFx = createEffect(
-  async ({ subscriptions, unsubParams, subParams }: UpdateChainsParams): Promise<Subscriptions> => {
-    const newSubscription = await unsubscribeChainsFx({ ...unsubParams, subscriptions });
+  async ({ subscriptions, unsubChains, subParams }: UpdateChainsParams): Promise<Subscriptions> => {
+    const boundUpdate = scopeBind(balanceModel.events.balancesUpdated, { safe: true });
 
-    return subscribeChainsFx({ ...subParams, subscriptions: newSubscription });
+    let newSubscription = balanceSubUtils.getSubscriptionsWithoutChains(unsubChains, subscriptions);
+
+    return balanceSubUtils.getSubscriptionsToBalances({ ...subParams, subscriptions: newSubscription }, boundUpdate);
   },
 );
 
@@ -145,9 +88,14 @@ sample({
 
 sample({
   clock: $subAccounts,
-  fn: (subAccounts) => {
-    return Object.values(subAccounts).reduce<AccountId[]>((acc, walletMap) => {
-      acc.push(...Object.values(walletMap).flat());
+  source: networkModel.$connectionStatuses,
+  fn: (statuses, subAccounts) => {
+    return Object.entries(subAccounts).reduce<AccountId[]>((acc, entry) => {
+      const [chainId, walletMap] = entry as [ChainId, Record<ID, AccountId[]>];
+
+      if (networkUtils.isConnectedStatus(statuses[chainId])) {
+        acc.push(...Object.values(walletMap).flat());
+      }
 
       return acc;
     }, []);
@@ -191,17 +139,17 @@ sample({
     return isPending ? { hold: wallet! } : { proceed: wallet! };
   },
   target: spread({
-    hold: $newestWalletToSub,
+    hold: $latestWalletToSub,
     proceed: proceedWalletToSub,
   }),
 });
 
 sample({
   clock: unsubscribeWalletFx.doneData,
-  source: $newestWalletToSub,
-  filter: (wallet) => Boolean(wallet),
+  source: $latestWalletToSub,
+  filter: (latest) => Boolean(latest),
   fn: (wallet) => wallet!,
-  target: [proceedWalletToSub, $newestWalletToSub.reinit],
+  target: [proceedWalletToSub, $latestWalletToSub.reinit],
 });
 
 sample({
@@ -251,11 +199,51 @@ sample({
   target: subscribeChainsFx,
 });
 
+const throttleXXX = throttle({
+  source: networkModel.$connectionStatuses,
+  timeout: SUBSCRIPTION_DELAY,
+});
+
 sample({
-  clock: throttle({
-    source: networkModel.$connectionStatuses,
-    timeout: SUBSCRIPTION_DELAY,
-  }),
+  clock: throttleXXX,
+  filter: updateChainsSubscriptionsFx.pending,
+  fn: (x) => {
+    console.log('=== waiting');
+
+    return x;
+  },
+  target: $latestConnectionsToUpdate,
+});
+
+sample({
+  clock: throttleXXX,
+  filter: not(updateChainsSubscriptionsFx.pending),
+  fn: (x) => {
+    console.log('=== NOT waiting');
+
+    return x;
+  },
+  target: proceedConnectionToUpdate,
+});
+
+sample({
+  clock: updateChainsSubscriptionsFx.doneData,
+  source: $latestConnectionsToUpdate,
+  filter: (latest) => Boolean(latest),
+  fn: (statuses) => {
+    console.log('=== wait > start');
+
+    return statuses!;
+  },
+  target: [proceedConnectionToUpdate, $latestConnectionsToUpdate.reinit],
+});
+
+updateChainsSubscriptionsFx.pending.watch((v) => {
+  console.log('=== pending ', v);
+});
+
+sample({
+  clock: proceedConnectionToUpdate,
   source: {
     apis: networkModel.$apis,
     chains: networkModel.$chains,
@@ -284,7 +272,7 @@ sample({
 
     return {
       subscriptions,
-      unsubParams: { chainIds: disconnected },
+      unsubChains: disconnected,
       subParams: { apis, chains, subAccounts },
     };
   },

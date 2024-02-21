@@ -24,7 +24,6 @@ import {
 } from '@shared/api/network';
 
 const networkStarted = createEvent();
-
 const chainConnected = createEvent<ChainId>();
 
 const connected = createEvent<ChainId>();
@@ -140,8 +139,12 @@ const createProviderFx = createEffect(
   },
 );
 
-const createApiFx = createEffect((provider: ProviderWithMetadata): Promise<ApiPromise> => {
-  return networkService.createApi(provider);
+type CreateApiParams = {
+  chainId: ChainId;
+  providers: Record<ChainId, ProviderWithMetadata>;
+};
+const createApiFx = createEffect(({ chainId, providers }: CreateApiParams): Promise<ApiPromise> => {
+  return networkService.createApi(providers[chainId]);
 });
 
 const disconnectApiFx = createEffect(async (api: ApiPromise): Promise<ChainId> => {
@@ -252,35 +255,43 @@ sample({
 sample({
   clock: connected,
   source: $providers,
-  fn: (providers, chainId) => providers[chainId],
+  fn: (providers, chainId) => ({ chainId, providers }),
   target: createApiFx,
 });
 
 sample({
-  clock: createApiFx.doneData,
+  clock: createApiFx.done,
   source: $apis,
-  fn: (apis, api) => ({ ...apis, [api.genesisHash.toHex()]: api }),
+  fn: (apis, { result, params }) => {
+    return { ...apis, [params.chainId]: result };
+  },
   target: $apis,
 });
 
 sample({
-  clock: createApiFx.doneData,
+  clock: createApiFx.done,
   source: $connectionStatuses,
-  fn: (statuses, api) => ({ ...statuses, [api.genesisHash.toHex()]: ConnectionStatus.CONNECTED }),
+  fn: (statuses, { params }) => {
+    return { ...statuses, [params.chainId]: ConnectionStatus.CONNECTED };
+  },
   target: $connectionStatuses,
 });
 
 sample({
   clock: disconnected,
   source: $connectionStatuses,
-  fn: (statuses, chainId) => ({ ...statuses, [chainId]: ConnectionStatus.DISCONNECTED }),
+  fn: (statuses, chainId) => {
+    return { ...statuses, [chainId]: ConnectionStatus.DISCONNECTED };
+  },
   target: $connectionStatuses,
 });
 
 sample({
   clock: failed,
   source: $connectionStatuses,
-  fn: (statuses, chainId) => ({ ...statuses, [chainId]: ConnectionStatus.ERROR }),
+  fn: (statuses, chainId) => {
+    return { ...statuses, [chainId]: ConnectionStatus.ERROR };
+  },
   target: $connectionStatuses,
 });
 
