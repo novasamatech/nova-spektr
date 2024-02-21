@@ -44,12 +44,10 @@ const Operation = ({ tx, account }: Props) => {
 
           <TransactionTitle className="flex-1 overflow-hidden" tx={tx.transaction} description={tx.description} />
 
-          {asset && amount ? (
+          {asset && amount && (
             <div className="w-[160px]">
               <AssetBalance value={amount} asset={asset} showIcon />
             </div>
-          ) : (
-            <span className="w-[160px]" />
           )}
 
           {isXcmTransaction(tx.transaction) ? (
