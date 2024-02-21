@@ -165,6 +165,7 @@ export const WalletForm = ({
                     className="w-[204px]"
                     selectedId={value}
                     options={chainOptions}
+                    disabled={!isActive}
                     onChange={({ id }) => onChange(id)}
                   />
                 </>
