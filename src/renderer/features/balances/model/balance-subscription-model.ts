@@ -59,7 +59,7 @@ const createSubscriptionsBalancesFx = createEffect(
       const networkConnected = networkUtils.isConnected(statuses[chainId]);
       const oldSubscription = subscriptions[chainId];
 
-      if (!networkConnected) {
+      if (!networkConnected || !uniqAccountIds.length) {
         await unsubscribeBalancesFx({ chainId, subscription: oldSubscription });
 
         return;
@@ -74,7 +74,7 @@ const createSubscriptionsBalancesFx = createEffect(
       }
 
       try {
-        const chain = chains[chainId];
+        if (!chain) return;
 
         const balanceSubs = balanceSubscriptionService.subscribeBalances(chain, api, uniqAccountIds, boundUpdate);
         const locksSubs = balanceSubscriptionService.subscribeLockBalances(chain, api, uniqAccountIds, boundUpdate);
@@ -115,11 +115,13 @@ const populateBalancesFx = createEffect((accounts: AccountId[]): Promise<Balance
 
 sample({
   clock: walletModel.$activeAccounts,
-  source: walletModel.$accounts,
-  fn: (accounts, activeAccounts) => {
-    const subscriptionAccounts = [...activeAccounts];
-
+  source: { accounts: walletModel.$accounts, wallet: walletModel.$activeWallet },
+  fn: ({ accounts, wallet }, activeAccounts) => {
     const accountsMap = keyBy(accounts, 'accountId');
+
+    const subscriptionAccounts = activeAccounts.filter(
+      (account) => wallet && accountUtils.isNonBaseVaultAccount(account, wallet),
+    );
 
     activeAccounts.forEach((account) => {
       if (accountUtils.isMultisigAccount(account)) {

@@ -1,7 +1,7 @@
 import { allSettled, fork } from 'effector';
 
 import { networkModel } from '@entities/network';
-import { ConnectionType } from '@shared/core';
+import { ConnectionType, ProxyAccount, type HexString, ProxyType, AccountId, AccountType } from '@shared/core';
 import { storageService } from '@shared/api/storage';
 import { proxiesModel } from '../proxies-model';
 import { proxyModel } from '@entities/proxy';
@@ -16,9 +16,9 @@ jest.mock('@remote-ui/rpc', () => ({
           {
             accountId: '0x02',
             chainId: '0x01',
-            delay: 0,
             proxiedAccountId: '0x01',
             proxyType: 'Governance',
+            delay: 0,
           },
         ],
         proxiesToRemove: [],
@@ -59,50 +59,41 @@ class MockWorker {
 // eslint-disable-next-line no-global-assign
 Worker = MockWorker;
 
-describe('entities/proxy/model/proxy-model', () => {
+describe('features/proxies/model/proxies-model', () => {
   afterEach(() => {
     jest.restoreAllMocks();
   });
 
-  test('should add proxy ', async () => {
-    const scope = fork({
-      values: new Map()
-        .set(networkModel.$chains, {
-          '0x01': {
-            chainId: '0x01',
-            name: 'Westend',
-            options: ['regular_proxy'],
-          },
-        })
-        .set(walletModel.$accounts, [{ walletId: 1, accountId: '0x01' }])
-        .set(walletModel.$wallets, [{ id: 1 }]),
+  test('should add $proxies and $proxyGroups ', async () => {
+    const newProxy = {
+      chainId: '0x01' as HexString,
+      accountId: '0x02' as AccountId,
+      proxiedAccountId: '0x01' as AccountId,
+      proxyType: ProxyType.GOVERNANCE,
+      delay: 0,
+    } as ProxyAccount;
+
+    jest.spyOn(storageService.proxies, 'createAll').mockResolvedValue([newProxy]);
+    jest.spyOn(storageService.proxyGroups, 'createAll').mockImplementation(async (value) => {
+      return value.map((value, id) => ({ id, ...value }));
     });
 
-    jest.spyOn(storageService.proxies, 'createAll').mockResolvedValue([]);
-    jest
-      .spyOn(storageService.proxyGroups, 'createAll')
-      .mockImplementation(async (value) => value.map((value, id) => ({ id, ...value })));
+    const scope = fork({
+      values: new Map()
+        .set(walletModel.$wallets, [{ id: 1 }])
+        .set(walletModel.$accounts, [{ walletId: 1, accountId: '0x01', type: AccountType.CHAIN, chainId: '0x01' }])
+        .set(networkModel.$chains, { '0x01': { chainId: '0x01', name: 'Westend', options: ['regular_proxy'] } }),
+    });
 
     await allSettled(proxiesModel.events.workerStarted, { scope });
     await allSettled(networkModel.$connections, {
       scope,
-      params: { '0x01': { id: 1, chainId: '0x01', connectionType: ConnectionType.AUTO_BALANCE } },
+      params: { '0x01': { id: 1, chainId: '0x01', connectionType: ConnectionType.AUTO_BALANCE, customNodes: [] } },
     });
 
-    expect(scope.getState(proxyModel.$proxies)).toEqual({
-      '0x01': [
-        {
-          accountId: '0x02',
-          chainId: '0x01',
-          delay: 0,
-          proxiedAccountId: '0x01',
-          proxyType: 'Governance',
-        },
-      ],
-    });
-
+    expect(scope.getState(proxyModel.$proxies)).toEqual({ '0x01': [newProxy] });
     expect(scope.getState(proxyModel.$proxyGroups)).toEqual([
-      { chainId: '0x01', id: 0, proxiedAccountId: '0x01', totalDeposit: '1,002,050,000,000', walletId: 1 },
+      { id: 0, chainId: '0x01', proxiedAccountId: '0x01', totalDeposit: '1,002,050,000,000', walletId: 1 },
     ]);
   });
 });

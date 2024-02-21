@@ -4,11 +4,12 @@ import { ProxyPopover } from '@entities/proxy';
 import { cnTw } from '@shared/lib/utils';
 
 type Props = {
+  canCreateProxy?: boolean;
   className?: string;
   onAddProxy: () => void;
 };
 
-export const NoProxiesAction = ({ className, onAddProxy }: Props) => {
+export const NoProxiesAction = ({ className, canCreateProxy = true, onAddProxy }: Props) => {
   const { t } = useI18n();
 
   return (
@@ -18,10 +19,12 @@ export const NoProxiesAction = ({ className, onAddProxy }: Props) => {
         <SmallTitleText>{t('walletDetails.common.emptyProxyTitle')}</SmallTitleText>
         <ProxyPopover />
       </div>
-      <FootnoteText className="text-text-tertiary mb-4">{t('walletDetails.common.emptyProxyDescription')}</FootnoteText>
+      {canCreateProxy && (
+        <><FootnoteText className="text-text-tertiary mb-4">{t('walletDetails.common.emptyProxyDescription')}</FootnoteText>
       <Button size="sm" onClick={onAddProxy}>
         {t('walletDetails.common.addProxyButton')}
-      </Button>
+      </Button></>
+      )}
     </div>
   );
 };

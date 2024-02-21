@@ -55,6 +55,7 @@ const config: Config = {
   modulePathIgnorePatterns: ['<rootDir>/tests'],
   collectCoverageFrom: [
     'src/renderer/**/*.{js,ts}',
+    '!src/renderer/pages/**/*.{js,ts}',
     '!src/main/',
     '!src/scripts/',
     '!src/**/*.stories.{js,jsx,ts,tsx}',

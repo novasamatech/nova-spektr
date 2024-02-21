@@ -4,7 +4,7 @@ import { PriceApiProvider } from '../lib/types';
 import { DEFAULT_FIAT_PROVIDER, DEFAULT_ASSETS_PRICES, DEFAULT_FIAT_FLAG } from '../lib/constants';
 import { fiatService, coingekoService, PriceObject, PriceAdapter } from '@shared/api/price-provider';
 import { kernelModel } from '@shared/core';
-import { chainsService } from '@entities/network';
+import { chainsService } from '@shared/api/network';
 import { nonNullable } from '@shared/lib/utils';
 import { currencyModel } from './currency-model';
 

@@ -22,6 +22,7 @@ describe('pages/Settings/Networks/NetworkList', () => {
         chainId: '0x123',
         connectionType: ConnectionType.RPC_NODE,
         activeNode: { name: 'test node', url: 'wss://test.com' },
+        customNodes: [],
       },
     },
   ];

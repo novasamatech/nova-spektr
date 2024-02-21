@@ -1,5 +1,5 @@
 import { useLayoutEffect, useRef, useState } from 'react';
-import { throttle } from 'lodash';
+import throttle from 'lodash/throttle';
 
 import { Icon, TitleText } from '@shared/ui';
 import { useI18n } from '@app/providers';

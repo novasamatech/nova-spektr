@@ -3,7 +3,7 @@ import { createKeyMulti } from '@polkadot/util-crypto';
 
 import { dictionary } from '@shared/lib/utils';
 import { walletUtils } from './wallet-utils';
-import { AccountType, Wallet } from '@shared/core';
+import { AccountType, Wallet, ProxyType } from '@shared/core';
 import type {
   ID,
   AccountId,
@@ -16,12 +16,15 @@ import type {
   ShardAccount,
   WalletConnectAccount,
   ProxiedAccount,
+  Wallet,
 } from '@shared/core';
+import { walletUtils } from './wallet-utils';
 
 export const accountUtils = {
   isBaseAccount,
   isChainAccount,
   isMultisigAccount,
+  isChainDependant,
   isChainIdMatch,
   isWalletConnectAccount,
   isProxiedAccount,
@@ -34,6 +37,10 @@ export const accountUtils = {
   getBaseAccount,
   getDerivationPath,
   getAccountsForBalances,
+  isAnyProxyType,
+  isNonTransferProxyType,
+  isStakingProxyType,
+  isNonBaseVaultAccount,
 };
 
 function getMultisigAccountId(ids: AccountId[], threshold: Threshold): AccountId {
@@ -60,15 +67,22 @@ function isAccountWithShards(accounts: Pick<Account, 'type'> | ShardAccount[]): 
   return Array.isArray(accounts) && isShardAccount(accounts[0]);
 }
 
+function isChainDependant(account: Pick<Account, 'type'>): boolean {
+  return !!(account as ChainAccount).chainId;
+}
+
 function isChainIdMatch(account: Pick<Account, 'type'>, chainId: ChainId): boolean {
-  if (isBaseAccount(account) || isMultisigAccount(account)) return true;
+  if (!isChainDependant(account)) return true;
 
   const chainAccountMatch = isChainAccount(account) && account.chainId === chainId;
   const shardAccountMatch = isShardAccount(account) && account.chainId === chainId;
   const walletConnectAccountMatch = isWalletConnectAccount(account) && account.chainId === chainId;
   const proxiedAccountMatch = isProxiedAccount(account) && account.chainId === chainId;
+  const multisigWalletMatch = isMultisigAccount(account) && account.chainId === chainId;
 
-  return chainAccountMatch || walletConnectAccountMatch || shardAccountMatch || proxiedAccountMatch;
+  return (
+    chainAccountMatch || walletConnectAccountMatch || shardAccountMatch || proxiedAccountMatch || multisigWalletMatch
+  );
 }
 
 function isMultisigAccount(account: Pick<Account, 'type'>): account is MultisigAccount {
@@ -150,4 +164,20 @@ function getAccountsForBalances(
 
     return filterFn?.(account) || true;
   });
+}
+
+function isAnyProxyType({ proxyType }: ProxiedAccount): boolean {
+  return proxyType === ProxyType.ANY;
+}
+
+function isNonTransferProxyType({ proxyType }: ProxiedAccount): boolean {
+  return proxyType === ProxyType.NON_TRANSFER;
+}
+
+function isStakingProxyType({ proxyType }: ProxiedAccount): boolean {
+  return proxyType === ProxyType.STAKING;
+}
+
+function isNonBaseVaultAccount(account: Account, wallet: Wallet): boolean {
+  return !walletUtils.isPolkadotVault(wallet) || !accountUtils.isBaseAccount(account);
 }

@@ -150,10 +150,15 @@ export const QrReader = ({
 
     if (fountainResult) {
       // decode the 1st frame --> it's a single frame QR
-      const result = EXPORT_ADDRESS.decode(fountainResult.slice(3));
+      let result: ScanResult;
+      if (isDynamicDerivations) {
+        result = DYNAMIC_DERIVATIONS_ADDRESS_RESPONSE.decode(fountainResult.slice(3));
+      } else {
+        result = EXPORT_ADDRESS.decode(fountainResult.slice(3)).payload;
+      }
       isComplete.current = true;
 
-      onResult?.(makeResultPayload(result.payload));
+      onResult?.(makeResultPayload(result));
     } else {
       // if there is more than 1 frame --> proceed scanning and keep the progress
       onProgress?.({ decoded: 1, total: frameData.total });

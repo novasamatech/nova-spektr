@@ -13,6 +13,9 @@ import ChangeValidatorsImg, {
 import ReturnToStakeImg, {
   ReactComponent as ReturnToStakeSvg,
 } from '@shared/assets/images/mst/return-to-stake-mst.svg';
+import DelegatedAuthoritiesImg, {
+  ReactComponent as DelegatedAuthoritiesSvg,
+} from '@shared/assets/images/mst/delegated-authorities.svg';
 
 const MstImages = {
   transferMst: { svg: TransferSvg, img: TransferImg },
@@ -24,6 +27,7 @@ const MstImages = {
   stakeMoreMst: { svg: StakeMoreSvg, img: StakeMoreImg },
   changeValidatorsMst: { svg: ChangeValidatorsSvg, img: ChangeValidatorsImg },
   returnToStakeMst: { svg: ReturnToStakeSvg, img: ReturnToStakeImg },
+  proxyMst: { svg: DelegatedAuthoritiesSvg, img: DelegatedAuthoritiesImg },
 } as const;
 
 export type Mst = keyof typeof MstImages;

@@ -1,7 +1,7 @@
 import { ComponentStory, ComponentMeta } from '@storybook/react';
 
 import { AccountAddress } from './AccountAddress';
-import { TEST_ACCOUNT_ID } from '@shared/lib/utils';
+import { TEST_ACCOUNTS } from '@shared/lib/utils';
 
 export default {
   title: 'Redesign/Address',
@@ -13,11 +13,11 @@ const Template: ComponentStory<typeof AccountAddress> = (args) => <AccountAddres
 
 export const Primary = Template.bind({});
 Primary.args = {
-  accountId: TEST_ACCOUNT_ID,
+  accountId: TEST_ACCOUNTS[0],
 };
 
 export const Full = Template.bind({});
 Full.args = {
-  accountId: TEST_ACCOUNT_ID,
+  accountId: TEST_ACCOUNTS[0],
   type: 'full',
 };

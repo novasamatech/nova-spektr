@@ -4,17 +4,7 @@ import { cnTw, toAddress, toShortAddress } from '@shared/lib/utils';
 import { BodyText, HelpText, Identicon, Truncate } from '@shared/ui';
 import { AccountId, ProxyType } from '@shared/core';
 import { useI18n } from '@app/providers';
-
-const ProxyTypeName: Record<ProxyType, string> = {
-  [ProxyType.ANY]: 'proxy.names.any',
-  [ProxyType.NON_TRANSFER]: 'proxy.names.nonTransfer',
-  [ProxyType.STAKING]: 'proxy.names.staking',
-  [ProxyType.AUCTION]: 'proxy.names.auction',
-  [ProxyType.CANCEL_PROXY]: 'proxy.names.cancelProxy',
-  [ProxyType.GOVERNANCE]: 'proxy.names.governance',
-  [ProxyType.IDENTITY_JUDGEMENT]: 'proxy.names.identityJudgement',
-  [ProxyType.NOMINATION_POOLS]: 'proxy.names.nominationPools',
-};
+import { proxyUtils } from '../../lib/proxy-utils';
 
 type Props = {
   className?: string;
@@ -56,7 +46,7 @@ export const ProxyAccount = ({
         {name && <HelpText className="text-text-tertiary truncate">{addressContent}</HelpText>}
         <div className="flex gap-x-1 items-center mt-0.5">
           <span className="w-1 h-1 rounded-full bg-tab-text-accent" />
-          <HelpText className="text-tab-text-accent">{t(ProxyTypeName[proxyType])}</HelpText>
+          <HelpText className="text-tab-text-accent">{t(proxyUtils.getProxyTypeName(proxyType))}</HelpText>
         </div>
       </div>
       {suffix}

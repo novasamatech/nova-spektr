@@ -25,6 +25,7 @@ export const SimpleWalletDetails = ({ wallet, account, onClose }: Props) => {
 
   const chains = useUnit(networkModel.$chains);
   const hasProxies = useUnit(walletProviderModel.$hasProxies);
+  const canCreateProxy = useUnit(walletProviderModel.$canCreateProxy);
 
   const [isModalOpen, closeModal] = useModalClose(true, onClose);
   const [isRenameModalOpen, toggleIsRenameModalOpen] = useToggle();
@@ -66,9 +67,9 @@ export const SimpleWalletDetails = ({ wallet, account, onClose }: Props) => {
       id: 'proxies',
       title: t('walletDetails.common.proxiesTabTitle'),
       panel: hasProxies ? (
-        <ProxiesList canCreateProxy={!walletUtils.isWatchOnly(wallet)} walletId={wallet.id} className="h-[388px]" />
+        <ProxiesList canCreateProxy={canCreateProxy} className="h-[388px]" />
       ) : (
-        <NoProxiesAction className="h-[388px]" onAddProxy={toggleIsAddProxyModalOpen} />
+        <NoProxiesAction className="h-[388px]" canCreateProxy={canCreateProxy} onAddProxy={toggleIsAddProxyModalOpen} />
       ),
     },
   ];

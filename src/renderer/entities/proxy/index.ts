@@ -1,4 +1,5 @@
-export { proxyUtils } from './lib/utils';
 export { proxyModel } from './model/proxy-model';
+export { ProxyTypeName } from './lib/constants';
+export { proxyUtils } from './lib/proxy-utils';
 export { ProxyAccount } from './ui/ProxyAccount/ProxyAccount';
 export { ProxyPopover } from './ui/ProxyPopover';

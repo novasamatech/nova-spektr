@@ -1,9 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
-import { groupBy } from 'lodash';
+import groupBy from 'lodash/groupBy';
 import { useUnit } from 'effector-react';
 
 import { Icon, CaptionText, Tooltip, Accordion } from '@shared/ui';
-import { AssetCard } from '@entities/asset';
 import { ChainTitle } from '@entities/chain';
 import { ZERO_BALANCE, totalAmount, includes, cnTw } from '@shared/lib/utils';
 import { ExtendedChain } from '@entities/network';
@@ -15,6 +14,7 @@ import { NetworkFiatBalance } from '../NetworkFiatBalance/NetworkFiatBalance';
 import { currencyModel, priceProviderModel } from '@entities/price';
 import { balanceModel } from '@entities/balance';
 import { assetsModel } from '../../model/assets-model';
+import { AssetCard } from '../AssetCard/AssetCard';
 
 type Props = {
   searchSymbolOnly?: boolean;

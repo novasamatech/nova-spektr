@@ -35,9 +35,9 @@ type Props = {
 export const ProxiedWalletDetails = ({ wallet, proxyWallet, proxiedAccount, onClose }: Props) => {
   const { t } = useI18n();
 
-  const hasProxies = useUnit(walletProviderModel.$hasProxies);
-
   const chains = useUnit(networkModel.$chains);
+  const hasProxies = useUnit(walletProviderModel.$hasProxies);
+  const canCreateProxy = useUnit(walletProviderModel.$canCreateProxy);
 
   const [isModalOpen, closeModal] = useModalClose(true, onClose);
   const [isRenameModalOpen, toggleIsRenameModalOpen] = useToggle();
@@ -78,9 +78,9 @@ export const ProxiedWalletDetails = ({ wallet, proxyWallet, proxiedAccount, onCl
       id: 'proxies',
       title: t('walletDetails.common.proxiesTabTitle'),
       panel: hasProxies ? (
-        <ProxiesList walletId={wallet.id} className="h-[353px]" />
+        <ProxiesList className="h-[353px]" canCreateProxy={canCreateProxy} />
       ) : (
-        <NoProxiesAction className="h-[353px]" onAddProxy={noop} />
+        <NoProxiesAction className="h-[353px]" canCreateProxy={canCreateProxy} onAddProxy={noop} />
       ),
     },
   ];
@@ -102,11 +102,11 @@ export const ProxiedWalletDetails = ({ wallet, proxyWallet, proxiedAccount, onCl
             <Icon name="arrowCurveLeftRight" size={16} className="mr-1" />
             <FootnoteText>{t('walletDetails.common.proxyVia')}</FootnoteText>
             <WalletIcon type={proxyWallet.type} size={16} className="mx-1" />
-            <FootnoteText>{proxyWallet.name}</FootnoteText>
+            <FootnoteText className="truncate">{proxyWallet.name}</FootnoteText>
             &nbsp;
-            <FootnoteText>{t('walletDetails.common.proxyToControl')}</FootnoteText>
+            <FootnoteText className="whitespace-nowrap">{t('walletDetails.common.proxyToControl')}</FootnoteText>
             &nbsp;
-            <FootnoteText>{t(ProxyTypeOperation[proxiedAccount.proxyType])}</FootnoteText>
+            <FootnoteText className="whitespace-nowrap">{t(ProxyTypeOperation[proxiedAccount.proxyType])}</FootnoteText>
           </div>
         </div>
         <Tabs items={tabItems} panelClassName="" unmount={false} tabsClassName="mx-5" />

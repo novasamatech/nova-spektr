@@ -1,69 +1,115 @@
-import {
-  Account,
-  AccountId,
-  AccountType,
-  ChainId,
-  MultisigAccount,
-  MultisigWallet,
-  ProxyAccount,
-  ProxyType,
-  SigningType,
-  Wallet,
-  WalletType,
-} from '@shared/core';
-import { TEST_ACCOUNT_ID, TEST_ADDRESS, TEST_CHAIN_ID } from '@shared/lib/utils';
+import type { Account, AccountId, MultisigAccount, MultisigWallet, ProxyAccount, Wallet } from '@shared/core';
+import { AccountType, ProxyType, SigningType, WalletType } from '@shared/core';
+import { TEST_ACCOUNTS, TEST_ADDRESS } from '@shared/lib/utils';
 
-const wallet: Wallet = {
-  id: 1,
-  signingType: SigningType.POLKADOT_VAULT,
-  type: WalletType.POLKADOT_VAULT,
-  isActive: true,
-  name: 'My PV',
-};
+const wallets: Wallet[] = [
+  {
+    id: 1,
+    signingType: SigningType.POLKADOT_VAULT,
+    type: WalletType.POLKADOT_VAULT,
+    isActive: true,
+    name: 'My PV',
+  },
+  {
+    id: 2,
+    signingType: SigningType.POLKADOT_VAULT,
+    type: WalletType.PROXIED,
+    isActive: false,
+    name: 'My Proxied',
+  },
+];
 
 const accounts: Account[] = [
   {
     id: 1,
-    accountId: TEST_ACCOUNT_ID,
-    chainId: TEST_CHAIN_ID,
+    accountId: TEST_ACCOUNTS[0],
+    chainId: '0x01',
     walletId: 1,
     name: 'My account',
-    type: AccountType.BASE,
+    type: AccountType.CHAIN,
     chainType: 0,
     cryptoType: 0,
   },
   {
-    id: 1,
-    accountId: '0x00',
-    chainId: TEST_CHAIN_ID,
-    walletId: 2,
+    id: 2,
+    accountId: TEST_ACCOUNTS[1],
+    chainId: '0x01',
+    walletId: 1,
     name: 'My another account',
-    type: AccountType.BASE,
+    type: AccountType.CHAIN,
+    chainType: 0,
+    cryptoType: 0,
+  },
+  {
+    id: 3,
+    accountId: TEST_ACCOUNTS[2],
+    chainId: '0x01',
+    walletId: 2,
+    name: 'My proxied account',
+    type: AccountType.PROXIED,
+    proxyAccountId: TEST_ACCOUNTS[0],
     chainType: 0,
     cryptoType: 0,
   },
 ];
 
-const proxyAccount1 = {
-  accountId: '0x00' as AccountId,
-  proxiedAccountId: TEST_ACCOUNT_ID as AccountId,
-  id: 3,
-  chainId: TEST_CHAIN_ID as ChainId,
-  proxyType: ProxyType.GOVERNANCE,
-  delay: 0,
+const dupAccounts: Account[] = [
+  {
+    id: 1,
+    walletId: 1,
+    accountId: TEST_ACCOUNTS[0],
+    chainId: '0x01',
+    name: 'My account 1',
+    type: AccountType.CHAIN,
+    chainType: 0,
+    cryptoType: 0,
+  },
+  {
+    id: 2,
+    walletId: 1,
+    accountId: TEST_ACCOUNTS[0],
+    chainId: '0x02',
+    name: 'My account 2',
+    type: AccountType.CHAIN,
+    chainType: 0,
+    cryptoType: 0,
+  },
+];
+
+const chains = {
+  '0x01': {
+    name: 'My chain 1',
+    addressPrefix: 42,
+    chainId: '0x01',
+  },
+  '0x02': {
+    name: 'My chain 2',
+    addressPrefix: 20,
+    chainId: '0x02',
+  },
 };
 
-const proxyAccount2 = {
-  accountId: '0x01' as AccountId,
-  proxiedAccountId: TEST_ACCOUNT_ID as AccountId,
-  id: 3,
-  chainId: TEST_CHAIN_ID as ChainId,
-  proxyType: ProxyType.GOVERNANCE,
-  delay: 0,
-};
+const proxyAccounts: ProxyAccount[] = [
+  {
+    id: 3,
+    accountId: '0x00' as AccountId,
+    proxiedAccountId: TEST_ACCOUNTS[0],
+    chainId: '0x01',
+    proxyType: ProxyType.GOVERNANCE,
+    delay: 0,
+  },
+  {
+    id: 4,
+    accountId: '0x01' as AccountId,
+    proxiedAccountId: TEST_ACCOUNTS[0],
+    chainId: '0x02',
+    proxyType: ProxyType.GOVERNANCE,
+    delay: 0,
+  },
+];
 
-const proxyAccounts: Record<string, ProxyAccount[]> = {
-  [TEST_ACCOUNT_ID]: [proxyAccount1, proxyAccount2],
+const proxies: Record<string, ProxyAccount[]> = {
+  [TEST_ACCOUNTS[0]]: proxyAccounts,
 };
 
 const multisiigWallet: MultisigWallet = {
@@ -75,7 +121,7 @@ const multisiigWallet: MultisigWallet = {
 };
 
 const multisigAccount: MultisigAccount = {
-  accountId: TEST_ACCOUNT_ID,
+  accountId: TEST_ACCOUNTS[0],
   id: 3,
   walletId: 2,
   type: AccountType.MULTISIG,
@@ -136,11 +182,12 @@ const signatoriesWallets: Wallet[] = [
 ];
 
 export const walletProviderMock = {
-  wallet,
+  wallets,
   accounts,
-  proxyAccount1,
-  proxyAccount2,
+  dupAccounts,
+  chains,
   proxyAccounts,
+  proxies,
   multisiigWallet,
   multisigAccount,
   signatoriesWallets,
