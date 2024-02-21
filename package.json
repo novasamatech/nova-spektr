@@ -165,7 +165,7 @@
     "@typescript-eslint/eslint-plugin": "^5.30.4",
     "@typescript-eslint/parser": "^5.30.4",
     "autoprefixer": "^10.4.13",
-    "axios": "^0.27.2",
+    "axios": "^0.28.0",
     "babel-loader": "^8.2.5",
     "camelcase": "6.3.0",
     "child_process": "^1.0.2",
