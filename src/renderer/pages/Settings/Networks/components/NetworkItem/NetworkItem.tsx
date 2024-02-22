@@ -5,7 +5,7 @@ import { NetworkSelector } from '../NetworkSelector/NetworkSelector';
 import { BodyText, StatusLabel, FootnoteText, HelpText } from '@shared/ui';
 import { useI18n } from '@app/providers';
 import { ChainIcon } from '@entities/chain';
-import { ConnectionType } from '@shared/core';
+import { ConnectionType, ConnectionStatus } from '@shared/core';
 import type { RpcNode } from '@shared/core';
 import './NetworkItem.css';
 

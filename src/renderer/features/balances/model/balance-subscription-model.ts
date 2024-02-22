@@ -56,7 +56,7 @@ const createSubscriptionsBalancesFx = createEffect(
       }, {});
 
       const uniqAccountIds = Object.keys(accountIds) as AccountId[];
-      const networkConnected = networkUtils.isConnected(statuses[chainId]);
+      const networkConnected = networkUtils.isConnectedStatus(statuses[chainId]);
       const oldSubscription = subscriptions[chainId];
 
       if (!networkConnected || !uniqAccountIds.length) {
@@ -74,10 +74,10 @@ const createSubscriptionsBalancesFx = createEffect(
       }
 
       try {
-        if (!chain) return;
+        if (!chains[chainId]) return;
 
-        const balanceSubs = balanceSubscriptionService.subscribeBalances(chain, api, uniqAccountIds, boundUpdate);
-        const locksSubs = balanceSubscriptionService.subscribeLockBalances(chain, api, uniqAccountIds, boundUpdate);
+        const balanceSubs = balanceSubscriptionService.subscribeBalances(chains[chainId], api, uniqAccountIds, boundUpdate);
+        const locksSubs = balanceSubscriptionService.subscribeLockBalances(chains[chainId], api, uniqAccountIds, boundUpdate);
 
         newSubscriptions[chainId] = {
           accounts: uniqAccountIds,

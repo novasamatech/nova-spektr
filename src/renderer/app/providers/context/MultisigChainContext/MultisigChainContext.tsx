@@ -124,7 +124,7 @@ export const MultisigChainProvider = ({ children }: PropsWithChildren) => {
     );
   };
 
-  const availableConnectionsAmount = Object.values(debouncedConnectionStatuses).filter(networkUtils.isConnected).length;
+  const availableConnectionsAmount = Object.values(debouncedConnectionStatuses).filter(networkUtils.isConnectedStatus).length;
 
   useEffect(() => {
     const unsubscribeMultisigs: (() => void)[] = [];

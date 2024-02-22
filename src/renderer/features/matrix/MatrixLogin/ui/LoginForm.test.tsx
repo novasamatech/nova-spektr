@@ -20,7 +20,7 @@ describe('pages/Settings/Matrix/LoginForm', () => {
     await act(async () => {
       render(
         <Provider value={fork()}>
-          <LoginForm />
+          <LoginForm redirectStep="settings_matrix" />
         </Provider>,
       );
     });
@@ -38,7 +38,7 @@ describe('pages/Settings/Matrix/LoginForm', () => {
     await act(async () => {
       render(
         <Provider value={fork()}>
-          <LoginForm />
+          <LoginForm redirectStep="settings_matrix" />
         </Provider>,
       );
     });

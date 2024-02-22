@@ -3,7 +3,7 @@ import { createKeyMulti } from '@polkadot/util-crypto';
 
 import { dictionary } from '@shared/lib/utils';
 import { walletUtils } from './wallet-utils';
-import { AccountType, Wallet, ProxyType } from '@shared/core';
+import { AccountType, ProxyType } from '@shared/core';
 import type {
   ID,
   AccountId,
@@ -18,7 +18,6 @@ import type {
   ProxiedAccount,
   Wallet,
 } from '@shared/core';
-import { walletUtils } from './wallet-utils';
 
 export const accountUtils = {
   isBaseAccount,

@@ -3,8 +3,9 @@ import { createForm } from 'effector-forms';
 
 import { Step } from '../lib/types';
 import { Chain, Address, ProxyType } from '@shared/core';
-import { networkModel, isRegularProxyAvailable, networkUtils } from '@entities/network';
+import { networkModel, networkUtils } from '@entities/network';
 import { walletSelectModel } from '@features/wallets';
+import { proxiesUtils } from '@features/proxies/lib/proxies-utils';
 import { walletUtils, accountUtils, walletModel } from '@entities/wallet';
 import { getProxyTypes, isStringsMatchQuery, toAddress } from '@shared/lib/utils';
 
@@ -75,7 +76,6 @@ const $proxyForm = createForm({
   },
   validateOn: ['submit'],
 });
-$proxyForm.fields.proxyAddress.$value.watch(console.log);
 
 const $proxyQuery = createStore<string>('');
 
@@ -105,7 +105,7 @@ const $isMultisig = combine(walletSelectModel.$walletForDetails, (wallet) => {
 });
 
 const $proxyChains = combine(networkModel.$chains, (chains) => {
-  return Object.values(chains).filter((chain) => isRegularProxyAvailable(chain.options));
+  return Object.values(chains).filter(proxiesUtils.isRegularProxy);
 });
 
 const $isChainConnected = combine(
@@ -113,7 +113,7 @@ const $isChainConnected = combine(
     chain: $proxyForm.fields.network.$value,
     statuses: networkModel.$connectionStatuses,
   },
-  ({ chain, statuses }) => networkUtils.isConnected(statuses[chain.chainId]),
+  ({ chain, statuses }) => networkUtils.isConnectedStatus(statuses[chain.chainId]),
 );
 
 const $proxyTypes = combine(
@@ -123,7 +123,7 @@ const $proxyTypes = combine(
     chain: $proxyForm.fields.network.$value,
   },
   ({ apis, statuses, chain }) => {
-    return networkUtils.isConnected(statuses[chain.chainId]) ? getProxyTypes(apis[chain.chainId]) : [ProxyType.ANY];
+    return networkUtils.isConnectedStatus(statuses[chain.chainId]) ? getProxyTypes(apis[chain.chainId]) : [ProxyType.ANY];
   },
 );
 

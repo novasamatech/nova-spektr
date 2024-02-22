@@ -153,7 +153,7 @@
     "@testing-library/jest-dom": "^5.16.4",
     "@testing-library/react": "^13.3.0",
     "@testing-library/user-event": "^14.2.1",
-    "@types/jest": "^28.1.4",
+    "@types/jest": "^29.5.12",
     "@types/lodash": "^4.14.182",
     "@types/node": "^18.0.0",
     "@types/qrcode": "^1.5.1",

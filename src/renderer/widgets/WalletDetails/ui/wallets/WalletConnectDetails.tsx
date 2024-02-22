@@ -13,18 +13,13 @@ import { ForgetStep } from '../../lib/constants';
 import { Animation } from '@shared/ui/Animation/Animation';
 import { IconNames } from '@shared/ui/Icon/data';
 import { RenameWalletModal } from '@features/wallets/RenameWallet';
-import { TabItem } from '@shared/ui/Tabs/common/types';
-import { ProxiesList } from '../components/ProxiesList';
-import { walletProviderModel } from '../../model/wallet-provider-model';
-import { NoProxiesAction } from '../components/NoProxiesAction';
-import { WalletConnectAccounts } from '../components/WalletConnectAccounts';
-import { AddProxyModal } from '../../../AddProxyModal';
-import { TabItem } from '@shared/ui/Tabs/common/types';
-import { ProxiesList } from '../components/ProxiesList';
-import { walletProviderModel } from '../../model/wallet-provider-model';
-import { NoProxiesAction } from '../components/NoProxiesAction';
-import { WalletConnectAccounts } from '../components/WalletConnectAccounts';
 import { forgetWalletModel } from '@features/wallets/ForgetWallet';
+import { TabItem } from '@shared/ui/Tabs/common/types';
+import { walletProviderModel } from '../../model/wallet-provider-model';
+import { WalletConnectAccounts } from '../components/WalletConnectAccounts';
+import { ProxiesList } from '../components/ProxiesList';
+import { NoProxiesAction } from '../components/NoProxiesAction';
+import { AddProxyModal } from '../../../AddProxyModal';
 import {
   BaseModal,
   Button,
@@ -114,7 +109,11 @@ export const WalletConnectDetails = ({ wallet, accounts, onClose }: Props) => {
       panel: hasProxies ? (
         <ProxiesList className="h-[395px] mt-6" canCreateProxy={canCreateProxy} />
       ) : (
-        <NoProxiesAction className="h-[395px] mt-6" canCreateProxy={canCreateProxy} onAddProxy={toggleIsAddProxyModalOpen} />
+        <NoProxiesAction
+          className="h-[395px] mt-6"
+          canCreateProxy={canCreateProxy}
+          onAddProxy={toggleIsAddProxyModalOpen}
+        />
       ),
     },
   ];
