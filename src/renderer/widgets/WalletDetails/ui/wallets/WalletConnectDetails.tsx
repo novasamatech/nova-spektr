@@ -83,6 +83,11 @@ export const WalletConnectDetails = ({ wallet, accounts, onClose }: Props) => {
       title: t('walletDetails.walletConnect.refreshButton'),
       onClick: wcDetailsModel.events.confirmReconnectShown,
     },
+    {
+      icon: 'addCircle' as IconNames,
+      title: t('walletDetails.common.addProxyAction'),
+      onClick: toggleIsAddProxyModalOpen,
+    },
   ];
 
   const ActionButton = (

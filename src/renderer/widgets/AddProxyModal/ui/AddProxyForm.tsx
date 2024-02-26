@@ -1,21 +1,21 @@
 import { useForm } from 'effector-forms';
-import { FormEvent } from 'react';
+import { FormEvent, useEffect } from 'react';
 import { useUnit } from 'effector-react';
 
 import { Button, Select, Input, InputHint, Combobox, FootnoteText, Identicon } from '@shared/ui';
 import { useI18n } from '@app/providers';
 import { ChainTitle } from '@entities/chain';
 import { ProxyPopover } from '@entities/proxy';
-import { proxyFormModel } from '../model/proxy-form-model';
 import { AccountAddress, accountUtils } from '@entities/wallet';
 import { toAddress, toShortAddress } from '@shared/lib/utils';
-import { Fee, MultisigDepositWithLabel, ProxyDepositWithLabel } from '@entities/transaction';
+import { Fee, ProxyDepositWithLabel } from '@entities/transaction';
 import { useNetworkData } from '@entities/network';
+import { proxyFormModel, Callbacks } from '../model/proxy-form-model';
 
-type Props = {
+type Props = Callbacks & {
   onBack: () => void;
 };
-export const AddProxyForm = ({ onBack }: Props) => {
+export const AddProxyForm = ({ onBack, onSubmit }: Props) => {
   const { t } = useI18n();
 
   const {
@@ -26,6 +26,10 @@ export const AddProxyForm = ({ onBack }: Props) => {
   const isChainConnected = useUnit(proxyFormModel.$isChainConnected);
 
   const { api, chain } = useNetworkData(network.value.chainId);
+
+  useEffect(() => {
+    proxyFormModel.events.callbacksChanged({ onSubmit });
+  }, [onSubmit]);
 
   const submitProxy = (event: FormEvent) => {
     event.preventDefault();
@@ -44,16 +48,16 @@ export const AddProxyForm = ({ onBack }: Props) => {
         <DescriptionInput />
       </form>
       <div className="flex flex-col gap-y-2 mt-6">
-        <ProxyDepositWithLabel api={api} asset={chain.assets[0]} />
+        <ProxyDepositWithLabel api={api} asset={chain?.assets[0]} />
 
-        <MultisigDepositWithLabel api={api} asset={chain.assets[0]} threshold={1} />
+        {/*<MultisigDepositWithLabel api={api} asset={chain.assets[0]} threshold={1} />*/}
 
         <div className="flex justify-between items-center">
           <FootnoteText className="text-text-tertiary">Network fee</FootnoteText>
           <FootnoteText className="text-text-tertiary">
             <Fee
               api={api}
-              asset={chain.assets[0]}
+              asset={chain?.assets[0]}
               // transaction={feeTx}
               // onFeeChange={onFeeChange}
               // onFeeLoading={onFeeLoading}
@@ -65,7 +69,8 @@ export const AddProxyForm = ({ onBack }: Props) => {
         <Button variant="text" onClick={onBack}>
           Back
         </Button>
-        <Button form="init-proxy-form" type="submit" disabled={!isValid || !isChainConnected}>
+        <Button form="init-proxy-form" type="submit" disabled={!isValid}>
+        {/*<Button form="init-proxy-form" type="submit" disabled={!isValid || !isChainConnected}>*/}
           Continue
         </Button>
       </div>
@@ -193,7 +198,7 @@ const ProxyCombobox = () => {
   const { t } = useI18n();
 
   const {
-    fields: { proxyAddress, network },
+    fields: { delegate, network },
   } = useForm(proxyFormModel.$proxyForm);
 
   const proxyAccounts = useUnit(proxyFormModel.$proxyAccounts);
@@ -227,16 +232,16 @@ const ProxyCombobox = () => {
         placeholder="Enter address"
         query={proxyQuery}
         options={options}
-        value={proxyAddress.value}
-        invalid={proxyAddress.hasError()}
+        value={delegate.value}
+        invalid={delegate.hasError()}
         prefixElement={
-          <Identicon className="mr-1" address={proxyAddress.value} size={20} background={false} canCopy={false} />
+          <Identicon className="mr-1" address={delegate.value} size={20} background={false} canCopy={false} />
         }
         onInput={proxyFormModel.events.proxyQueryChanged}
-        onChange={({ value }) => proxyAddress.onChange(value)}
+        onChange={({ value }) => delegate.onChange(value)}
       />
-      <InputHint variant="error" active={proxyAddress.hasError()}>
-        {t(proxyAddress.errorText())}
+      <InputHint variant="error" active={delegate.hasError()}>
+        {t(delegate.errorText())}
       </InputHint>
     </div>
   );

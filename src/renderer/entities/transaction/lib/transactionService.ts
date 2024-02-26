@@ -110,13 +110,6 @@ export const useTransaction = (): ITransactionService => {
     return deposit.toString();
   };
 
-  const getProxyDeposit = (api: ApiPromise): string => {
-    const { proxyDepositFactor, proxyDepositBase } = api.consts.proxy;
-    const deposit = proxyDepositFactor.add(proxyDepositBase);
-
-    return deposit.toString();
-  };
-
   const submitAndWatchExtrinsic = async (
     tx: string,
     unsigned: UnsignedTransaction,
@@ -231,7 +224,6 @@ export const useTransaction = (): ITransactionService => {
     getExtrinsicWeight,
     getTxWeight,
     getMultisigDeposit,
-    getProxyDeposit,
     getTransactionHash,
     decodeCallData,
     verifySignature,

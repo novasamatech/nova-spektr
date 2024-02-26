@@ -31,7 +31,6 @@ export type ITransactionService = {
   getExtrinsicWeight: (extrinsic: SubmittableExtrinsic<'promise'>) => Promise<Weight>;
   getTxWeight: (transaction: Transaction, api: ApiPromise) => Promise<Weight>;
   getMultisigDeposit: (threshold: Threshold, api: ApiPromise) => string;
-  getProxyDeposit: (api: ApiPromise) => string;
   getTransactionHash: (transaction: Transaction, api: ApiPromise) => HashData;
   decodeCallData: (api: ApiPromise, accountId: Address, callData: CallData) => DecodedTransaction;
   verifySignature: (payload: Uint8Array, signature: HexString, accountId: AccountId) => Boolean;

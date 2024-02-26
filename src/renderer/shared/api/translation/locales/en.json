@@ -1079,6 +1079,7 @@
       "removeButton": "Remove",
       "removeMessage": "Are you sure you want to remove { walletName }?",
       "removeProxyAction": "Revoke authority",
+      "addProxyAction": "Add delegated authority",
       "removeTitle": "Remove wallet",
       "removeWalletDesc": "Are you sure you want to remove {walletName}?",
       "removeWalletTitle": "Remove wallet",

@@ -26,7 +26,8 @@ export const AddProxyModal = ({ isOpen, onClose }: Props) => {
 
   return (
     <BaseModal closeButton isOpen={isModalOpen} title="Add delegated authority (proxy)" onClose={closeModal}>
-      {addProxyUtils.isInitStep(step) && <AddProxyForm onBack={closeModal} />}
+      {addProxyUtils.isInitStep(step) && <AddProxyForm onBack={closeModal} onSubmit={() => console.log('submit')} />}
+      {/*{addProxyUtils.isInitStep(step) && <AddProxyForm onBack={closeModal} onSubmit={addProxyModel.events.txCreated} />}*/}
       {addProxyUtils.isConfirmStep(step) && <ConfirmProxy onBack={() => addProxyModel.events.stepChanged(Step.INIT)} />}
       {addProxyUtils.isSignStep(step) && <div>Signing</div>}
       {/*{addProxyUtils.isSignStep(step) && <Signing onGoBack={() => addProxyModel.events.stepChanged(Step.CONFIRM)} />}*/}

@@ -1,24 +1,38 @@
-import { createEvent, createStore, sample, combine } from 'effector';
+import { createEvent, createStore, sample, combine, createEffect, createApi } from 'effector';
 import { createForm } from 'effector-forms';
+import { ApiPromise } from '@polkadot/api';
 
-import { Step } from '../lib/types';
+import { ActiveProxy } from '../lib/types';
 import { Chain, Address, ProxyType } from '@shared/core';
 import { networkModel, networkUtils } from '@entities/network';
 import { walletSelectModel } from '@features/wallets';
 import { proxiesUtils } from '@features/proxies/lib/proxies-utils';
 import { walletUtils, accountUtils, walletModel } from '@entities/wallet';
 import { getProxyTypes, isStringsMatchQuery, toAddress } from '@shared/lib/utils';
+import { proxyService } from '@shared/api/proxy';
 
 export type Callbacks = {
-  onClose: () => void;
+  onSubmit: (formData: FormValues) => void;
 };
+
+const $callbacks = createStore<Callbacks | null>(null);
+const callbacksApi = createApi($callbacks, {
+  callbacksChanged: (state, props: Callbacks) => ({ ...state, ...props }),
+});
 
 const formInitiated = createEvent();
 const proxyQueryChanged = createEvent<string>();
 
-const $steps = createStore<Step>(Step.INIT);
-
-const $proxyForm = createForm({
+type FormValues = {
+  network: Chain;
+  account: Address;
+  signatory: Address;
+  delegate: Address;
+  proxyType: ProxyType;
+  description: string;
+};
+const $proxyForm = createForm<FormValues>({
+  // filter: ,
   fields: {
     network: {
       init: {} as Chain,
@@ -35,21 +49,26 @@ const $proxyForm = createForm({
     },
     signatory: {
       init: '' as Address,
-      rules: [
-        {
-          name: 'required',
-          errorText: 'signatory_error',
-          validator: Boolean,
-        },
-      ],
+      // rules: [
+      //   {
+      //     name: 'required',
+      //     errorText: 'signatory_error',
+      //     validator: Boolean,
+      //   },
+      // ],
     },
-    proxyAddress: {
+    delegate: {
       init: '' as Address,
       rules: [
         {
           name: 'required',
           errorText: 'proxy_address_error',
           validator: Boolean,
+        },
+        {
+          name: 'sameAsProxied',
+          errorText: 'same_as_proxied_error',
+          validator: (value, { account }) => value !== account,
         },
       ],
     },
@@ -65,19 +84,21 @@ const $proxyForm = createForm({
     },
     description: {
       init: '',
-      rules: [
-        {
-          name: 'required',
-          errorText: 'description_error',
-          validator: Boolean,
-        },
-      ],
+      // rules: [
+      //   {
+      //     name: 'required',
+      //     errorText: 'description_error',
+      //     validator: Boolean,
+      //   },
+      // ],
     },
   },
   validateOn: ['submit'],
 });
 
 const $proxyQuery = createStore<string>('');
+const $maxProxies = createStore<number>(0);
+const $activeProxies = createStore<ActiveProxy[]>([]);
 
 const $proxiedAccounts = combine(
   {
@@ -113,7 +134,9 @@ const $isChainConnected = combine(
     chain: $proxyForm.fields.network.$value,
     statuses: networkModel.$connectionStatuses,
   },
-  ({ chain, statuses }) => networkUtils.isConnectedStatus(statuses[chain.chainId]),
+  ({ chain, statuses }) => {
+    return networkUtils.isConnectedStatus(statuses[chain.chainId]);
+  },
 );
 
 const $proxyTypes = combine(
@@ -123,7 +146,9 @@ const $proxyTypes = combine(
     chain: $proxyForm.fields.network.$value,
   },
   ({ apis, statuses, chain }) => {
-    return networkUtils.isConnectedStatus(statuses[chain.chainId]) ? getProxyTypes(apis[chain.chainId]) : [ProxyType.ANY];
+    return networkUtils.isConnectedStatus(statuses[chain.chainId])
+      ? getProxyTypes(apis[chain.chainId])
+      : [ProxyType.ANY];
   },
 );
 
@@ -144,6 +169,19 @@ const $proxyAccounts = combine(
   },
 );
 
+type ProxyParams = {
+  api: ApiPromise;
+  address: Address;
+};
+const getAccountProxiesFx = createEffect(({ api, address }: ProxyParams): Promise<ActiveProxy[]> => {
+  return proxyService.getProxiesForAccount(api, address);
+});
+
+const getMaxProxiesFx = createEffect((api: ApiPromise): number => {
+  return 2;
+  // return proxyService.getMaxProxies(api);
+});
+
 sample({
   clock: formInitiated,
   target: [$proxyForm.reset, $proxyQuery.reinit],
@@ -156,10 +194,44 @@ sample({
   target: $proxyForm.fields.network.onChange,
 });
 
-sample({ clock: proxyQueryChanged, target: $proxyQuery });
+sample({
+  clock: getAccountProxiesFx.doneData,
+  target: $activeProxies,
+});
 
 sample({
-  clock: $proxyForm.fields.network.$value,
+  clock: proxyQueryChanged,
+  target: $proxyQuery,
+});
+
+sample({
+  clock: $proxyForm.fields.network.onChange,
+  target: [$proxyForm.fields.delegate.reset, $proxyForm.fields.network.resetErrors],
+});
+
+sample({
+  clock: [$proxyForm.fields.delegate.onChange, $proxyForm.fields.proxyType.onChange],
+  target: $proxyForm.fields.delegate.resetErrors,
+});
+
+sample({
+  clock: $proxyForm.fields.network.onChange,
+  source: {
+    wallet: walletSelectModel.$walletForDetails,
+    accounts: walletModel.$accounts,
+    chain: $proxyForm.fields.network.$value,
+  },
+  filter: ({ wallet }) => Boolean(wallet),
+  fn: ({ wallet, accounts, chain }) => {
+    const walletAccounts = accountUtils.getWalletAccounts(wallet!.id, accounts);
+
+    return toAddress(walletAccounts[0].accountId, { prefix: chain.addressPrefix });
+  },
+  target: $proxyForm.fields.account.onChange,
+});
+
+sample({
+  clock: $proxyForm.fields.network.onChange,
   source: $proxyTypes,
   fn: (types) => types[0],
   target: $proxyForm.fields.proxyType.onChange,
@@ -167,11 +239,68 @@ sample({
 
 sample({
   clock: $proxyForm.fields.network.onChange,
-  target: [$proxyForm.fields.account.reset, $proxyForm.fields.proxyAddress.reset],
+  source: networkModel.$apis,
+  fn: (apis, chain) => apis[chain.chainId],
+  target: getMaxProxiesFx,
 });
 
+sample({
+  clock: getMaxProxiesFx.doneData,
+  target: $maxProxies,
+});
+
+sample({
+  clock: $proxyForm.formValidated,
+  source: networkModel.$apis,
+  filter: $isChainConnected,
+  fn: (apis, { network, account }) => {
+    return { api: apis[network.chainId], address: account };
+  },
+  target: getAccountProxiesFx,
+});
+
+sample({
+  clock: getAccountProxiesFx.doneData,
+  target: $activeProxies,
+});
+
+sample({
+  clock: getAccountProxiesFx.doneData,
+  source: $maxProxies,
+  filter: (maxProxies, activeProxies) => maxProxies === activeProxies.length,
+  fn: (maxProxies, activeProxies) => ({
+    rule: 'maxProxies',
+    errorText: 'max_proxies_error',
+  }),
+  target: $proxyForm.fields.network.addError,
+});
+
+// check existing proxy
+sample({
+  clock: getAccountProxiesFx.doneData,
+  source: {
+    delegate: $proxyForm.fields.delegate.$value,
+    proxyType: $proxyForm.fields.proxyType.$value,
+  },
+  filter: ({ delegate, proxyType }, activeProxies) => {
+    return activeProxies.some((proxy) => proxy.proxyType === proxyType && proxy.address === delegate);
+  },
+  fn: (maxProxies, activeProxies) => ({
+    rule: 'proxyExists',
+    errorText: 'proxy_exists_error',
+  }),
+  target: $proxyForm.fields.delegate.addError,
+});
+
+// sample({
+//   clock: $proxyForm.formValidated,
+//   target: attach({
+//     source: $callbacks,
+//     effect: (state, formData: FormValues) => state?.onSubmit(formData),
+//   }),
+// });
+
 export const proxyFormModel = {
-  $steps,
   $proxyForm,
   $proxyQuery,
 
@@ -184,6 +313,7 @@ export const proxyFormModel = {
   $isChainConnected,
   events: {
     formInitiated,
+    callbacksChanged: callbacksApi.callbacksChanged,
     proxyQueryChanged,
   },
 };

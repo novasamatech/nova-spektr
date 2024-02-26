@@ -1,90 +1,58 @@
-import { createEvent, createStore, sample, createEffect } from 'effector';
+import { createEvent, createStore, sample } from 'effector';
 
 import { Step } from '../lib/types';
-import { addProxyUtils } from '../lib/add-proxy-utils';
+import { Transaction, TransactionType } from '@entities/transaction';
+import { ChainId, Address, ProxyType } from '@shared/core';
 
 export type Callbacks = {
   onClose: () => void;
 };
 
 const stepChanged = createEvent<Step>();
+const txCreated = createEvent<{
+  chainId: ChainId;
+  address: Address;
+  delegate: Address;
+  proxyType: ProxyType;
+}>();
 
 const $step = createStore<Step>(Step.INIT);
+const $transaction = createStore<Transaction | null>(null);
 
-// const subscribeBalancesFx = createEffect(() => {
-//   console.log('=== Sub');
-// });
-
-const unsubscribeBalancesFx = createEffect(() => {
-  console.log('=== Unsub');
-});
-
-// sample({
-//   clock: walletSelectModel.$walletForDetails,
-//   source: walletSelectModel.$walletForDetails,
-//   target: balanceModel.$balancesBuffer,
-// });
-
-// TODO: also check that subs is already active
 // sample({
 //   clock: $step,
-//   source: {
-//     chains: networkModel.$chains,
-//     wallets: walletModel.$wallets,
-//     wallet: walletSelectModel.$walletForDetails,
-//     activeWallet: walletModel.$activeWallet,
-//     accounts: walletModel.$accounts,
-//   },
-//   filter: ({ wallet, activeWallet }, step) => {
-//     const isWalletExist = Boolean(wallet);
-//     const isInitStep = addProxyUtils.isInitStep(step);
-//     const isActiveWallet = wallet === activeWallet;
-//
-//     return isWalletExist && isInitStep && !isActiveWallet;
-//   },
-//   fn: ({ chains, wallets, wallet, accounts }) => {
-//     const proxyChains = Object.values(chains).filter((chain) => isRegularProxyAvailable(chain.options));
-//
-//     const chainAccountsMap = proxyChains.reduce<Record<ChainId, Account[]>>((acc, chain) => {
-//       const chainAccounts = accountUtils.getAccountsForBalances(wallets, accounts, (account) => {
-//         return accountUtils.isChainIdMatch(account, chain.chainId);
-//       });
-//       chainAccounts.
-//       // acc[chain.chainId] = accountUtils.getAccountsForBalances(wallets, accounts, chain.chainId);
-//
-//
-//       return acc;
-//     }, {});
-//
-//
-//     const accountsToSub = accounts.forEach((account) => {
-//       if (accountUtils.isMultisigAccount(account)) {
-//         account.signatories.forEach((signatory) => {
-//           if (accountsMap[signatory.accountId]) {
-//             subscriptionAccounts.push(accountsMap[signatory.accountId]);
-//           }
-//         });
-//       }
-//
-//       // TODO: Add same for proxied accounts https://app.clickup.com/t/86934k047
-//     });
-//
-//     return 1;
-//   },
-//   target: subscribeBalancesFx,
+//   filter: (step) => addProxyUtils.isSubmitStep(step),
+//   target: unsubscribeBalancesFx,
 // });
 
 sample({
-  clock: $step,
-  filter: (step) => addProxyUtils.isSubmitStep(step),
-  target: unsubscribeBalancesFx,
+  clock: stepChanged,
+  target: $step,
 });
 
-sample({ clock: stepChanged, target: $step });
+sample({
+  clock: txCreated,
+  fn: () => Step.CONFIRM,
+  target: stepChanged,
+});
+
+sample({
+  clock: txCreated,
+  fn: ({ chainId, address, proxyType, delegate }) => {
+    return {
+      chainId,
+      address,
+      type: TransactionType.ADD_PROXY,
+      args: { delegate, proxyType, delay: 0 },
+    } as Transaction;
+  },
+  target: $transaction,
+});
 
 export const addProxyModel = {
   $step,
   events: {
     stepChanged,
+    txCreated,
   },
 };

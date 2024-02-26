@@ -50,7 +50,7 @@ const bondWithoutController = (
 
 export const getUnsignedTransaction: Record<
   TransactionType,
-  (args: Transaction, info: BaseTxInfo, options: OptionsWithMeta, api: ApiPromise) => UnsignedTransaction
+  (transaction: Transaction, info: BaseTxInfo, options: OptionsWithMeta, api: ApiPromise) => UnsignedTransaction
 > = {
   [TransactionType.TRANSFER]: (transaction, info, options, api) => {
     // @ts-ignore
@@ -302,7 +302,7 @@ export const getUnsignedTransaction: Record<
       options,
     );
   },
-  [TransactionType.ADD_PROXY]: (transaction, info, options, api) => {
+  [TransactionType.ADD_PROXY]: (transaction, info, options) => {
     return methods.proxy.addProxy(
       {
         delegate: transaction.args.delegate,
@@ -313,7 +313,7 @@ export const getUnsignedTransaction: Record<
       options,
     );
   },
-  [TransactionType.REMOVE_PROXY]: (transaction, info, options, api) => {
+  [TransactionType.REMOVE_PROXY]: (transaction, info, options) => {
     return methods.proxy.removeProxy(
       {
         delegate: transaction.args.delegate,

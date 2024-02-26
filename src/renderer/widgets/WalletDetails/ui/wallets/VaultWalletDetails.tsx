@@ -108,6 +108,11 @@ export const VaultWalletDetails = ({ wallet, root, accountsMap, onClose }: Props
       title: t('walletDetails.common.forgetButton'),
       onClick: toggleConfirmForget,
     },
+    {
+      icon: 'addCircle' as IconNames,
+      title: t('walletDetails.common.addProxyAction'),
+      onClick: toggleIsAddProxyModalOpen,
+    },
   ];
 
   const ActionButton = (
