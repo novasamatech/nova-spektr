@@ -15,7 +15,7 @@ import {
   QrReader,
   WhiteTextButtonStyle,
 } from '@entities/transaction';
-import { CryptoType } from '@/src/renderer/shared/core';
+import { CryptoType } from '@shared/core';
 
 const enum CameraState {
   ACTIVE,
