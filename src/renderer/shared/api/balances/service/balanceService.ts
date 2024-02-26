@@ -1,7 +1,7 @@
 import { BN, hexToU8a } from '@polkadot/util';
 import { ApiPromise } from '@polkadot/api';
 import { Codec } from '@polkadot/types/types';
-import { UnsubscribePromise, VoidFn } from '@polkadot/api/types';
+import { UnsubscribePromise } from '@polkadot/api/types';
 import { BalanceLock } from '@polkadot/types/interfaces';
 import noop from 'lodash/noop';
 import uniq from 'lodash/uniq';
@@ -154,7 +154,7 @@ function subscribeBalances(
   chain: Chain,
   accountIds: AccountId[],
   callback: (newBalances: Balance[]) => void,
-): Promise<VoidFn[]> {
+): UnsubscribePromise[] {
   const uniqueAccountIds = uniq(accountIds);
 
   const { nativeAsset, statemineAssets, ormlAssets } = chain.assets.reduce<{
@@ -172,11 +172,11 @@ function subscribeBalances(
     { nativeAsset: undefined, statemineAssets: [], ormlAssets: [] },
   );
 
-  return Promise.all([
+  return [
     subscribeBalancesChange(api, chain, nativeAsset?.assetId, uniqueAccountIds, callback),
     subscribeStatemineAssetsChange(api, chain, statemineAssets, uniqueAccountIds, callback),
     subscribeOrmlAssetsChange(api, chain, ormlAssets, uniqueAccountIds, callback),
-  ]);
+  ];
 }
 
 function subscribeLockBalanceChange(
@@ -252,7 +252,7 @@ function subscribeLockBalances(
   chain: Chain,
   accountIds: AccountId[],
   callback: (newLocks: Balance[]) => void,
-): Promise<VoidFn[]> {
+): UnsubscribePromise[] {
   const { nativeAsset, ormlAssets } = chain.assets.reduce<{ nativeAsset?: Asset; ormlAssets: Asset[] }>(
     (acc, asset) => {
       if (!asset.type) acc.nativeAsset = asset;
@@ -263,8 +263,8 @@ function subscribeLockBalances(
     { nativeAsset: undefined, ormlAssets: [] },
   );
 
-  return Promise.all([
+  return [
     subscribeLockBalanceChange(api, chain, nativeAsset?.assetId, accountIds, callback),
-    subscribeLockOrmlAssetChange(api, chain,ormlAssets, accountIds, callback),
-  ]);
+    subscribeLockOrmlAssetChange(api, chain, ormlAssets, accountIds, callback),
+  ];
 }

@@ -1,9 +1,9 @@
-import { VoidFn } from '@polkadot/api/types';
+import { UnsubscribePromise } from '@polkadot/api/types';
 
-import type { ID, ChainId, AccountId } from '@shared/core';
+import type { AccountId, ChainId, ID } from '@shared/core';
 
 export type Subscriptions = {
-  [chainId: ChainId]: { [walletId: ID]: [VoidFn[], VoidFn[]] } | undefined;
+  [chainId: ChainId]: { [walletId: ID]: UnsubscribePromise[] } | undefined;
 };
 
 export type SubAccounts = {

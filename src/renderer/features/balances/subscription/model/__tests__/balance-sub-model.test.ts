@@ -27,6 +27,8 @@ describe('features/balances/subscription/model/balance-sub-model', () => {
 
   const balanceSpy = jest.fn();
   const lockSpy = jest.fn();
+  const balanceSpyPromise = Promise.resolve(balanceSpy);
+  const lockSpyPromise = Promise.resolve(lockSpy);
 
   beforeAll(() => {
     jest.useFakeTimers();
@@ -39,8 +41,8 @@ describe('features/balances/subscription/model/balance-sub-model', () => {
     jest.spyOn(storageService.balances, 'readAll').mockResolvedValue([]);
     jest.spyOn(storageService.balances, 'insertAll').mockResolvedValue([]);
 
-    jest.spyOn(balanceService, 'subscribeBalances').mockResolvedValue([balanceSpy]);
-    jest.spyOn(balanceService, 'subscribeLockBalances').mockResolvedValue([lockSpy]);
+    jest.spyOn(balanceService, 'subscribeBalances').mockReturnValue([balanceSpyPromise]);
+    jest.spyOn(balanceService, 'subscribeLockBalances').mockReturnValue([lockSpyPromise]);
   });
 
   test('should set initial $subAccounts on $chains & $activeWallet first change', async () => {
@@ -123,7 +125,7 @@ describe('features/balances/subscription/model/balance-sub-model', () => {
 
     expect(scope_1.getState(balanceSubModel.__$subscriptions)).toEqual({
       '0x01': undefined,
-      '0x02': { [wallets[0].id]: [[balanceSpy], [lockSpy]] },
+      '0x02': { [wallets[0].id]: [balanceSpyPromise, lockSpyPromise] },
     });
 
     const action = allSettled(balanceSubModel.events.walletToSubSet, { scope: scope_1, params: wallets[1] });
@@ -135,7 +137,10 @@ describe('features/balances/subscription/model/balance-sub-model', () => {
     expect(lockSpy).not.toHaveBeenCalled();
     expect(scope_1.getState(balanceSubModel.__$subscriptions)).toEqual({
       '0x01': undefined,
-      '0x02': { [wallets[0].id]: [[balanceSpy], [lockSpy]], [wallets[1].id]: [[balanceSpy], [lockSpy]] },
+      '0x02': {
+        [wallets[0].id]: [balanceSpyPromise, lockSpyPromise],
+        [wallets[1].id]: [balanceSpyPromise, lockSpyPromise],
+      },
     });
   });
 
@@ -151,7 +156,7 @@ describe('features/balances/subscription/model/balance-sub-model', () => {
     expect(balanceSpy).not.toHaveBeenCalled();
     expect(lockSpy).not.toHaveBeenCalled();
     expect(scope.getState(balanceSubModel.__$subscriptions)).toEqual({
-      '0x01': { [wallets[0].id]: [[balanceSpy], [lockSpy]] },
+      '0x01': { [wallets[0].id]: [balanceSpyPromise, lockSpyPromise] },
       '0x02': undefined,
     });
 
@@ -163,7 +168,7 @@ describe('features/balances/subscription/model/balance-sub-model', () => {
     expect(balanceSpy).toHaveBeenCalledTimes(1);
     expect(lockSpy).toHaveBeenCalledTimes(1);
     expect(scope.getState(balanceSubModel.__$subscriptions)).toEqual({
-      '0x01': { [wallets[1].id]: [[balanceSpy], [lockSpy]] },
+      '0x01': { [wallets[1].id]: [balanceSpyPromise, lockSpyPromise] },
       '0x02': undefined,
     });
   });
@@ -178,8 +183,8 @@ describe('features/balances/subscription/model/balance-sub-model', () => {
     await setupInitialState(scope);
 
     expect(scope.getState(balanceSubModel.__$subscriptions)).toEqual({
-      '0x01': { [wallets[0].id]: [[balanceSpy], [lockSpy]] },
-      '0x02': { [wallets[0].id]: [[balanceSpy], [lockSpy]] },
+      '0x01': { [wallets[0].id]: [balanceSpyPromise, lockSpyPromise] },
+      '0x02': { [wallets[0].id]: [balanceSpyPromise, lockSpyPromise] },
     });
 
     const action = allSettled(balanceSubModel.events.walletToUnsubSet, { scope, params: wallets[0] });
@@ -192,20 +197,17 @@ describe('features/balances/subscription/model/balance-sub-model', () => {
     expect(scope.getState(balanceSubModel.__$subscriptions)).toEqual({ '0x01': undefined, '0x02': undefined });
   });
 
-  test('should update $subscriptions for disconnected $connectionStatuses ', async () => {
+  test('should update $subscriptions on disconnected connectionStatusChanged', async () => {
     const scope = fork({
       values: new Map().set(balanceSubModel.__$subscriptions, {
-        '0x01': { [wallets[0].id]: [[balanceSpy], [lockSpy]] },
-        '0x02': { [wallets[0].id]: [[balanceSpy], [lockSpy]] },
+        '0x01': { [wallets[0].id]: [balanceSpyPromise, lockSpyPromise] },
+        '0x02': { [wallets[0].id]: [balanceSpyPromise, lockSpyPromise] },
       }),
     });
 
-    const action = allSettled(networkModel.$connectionStatuses, {
+    const action = allSettled(networkModel.watch.connectionStatusChanged, {
       scope,
-      params: {
-        '0x01': ConnectionStatus.DISCONNECTED,
-        '0x02': ConnectionStatus.CONNECTED,
-      },
+      params: { chainId: '0x01', status: ConnectionStatus.DISCONNECTED },
     });
 
     await jest.runAllTimersAsync();
@@ -215,30 +217,26 @@ describe('features/balances/subscription/model/balance-sub-model', () => {
     expect(lockSpy).toHaveBeenCalledTimes(1);
     expect(scope.getState(balanceSubModel.__$subscriptions)).toEqual({
       '0x01': undefined,
-      '0x02': { [wallets[0].id]: [[balanceSpy], [lockSpy]] },
+      '0x02': { [wallets[0].id]: [balanceSpyPromise, lockSpyPromise] },
     });
   });
 
-  test('should update $subscriptions for connected $connectionStatuses ', async () => {
+  test('should update $subscriptions to connected connectionStatusChanged ', async () => {
     const scope = fork();
     await setupInitialState(scope);
 
     expect(scope.getState(balanceSubModel.__$subscriptions)).toEqual({});
 
-    const action = allSettled(networkModel.$connectionStatuses, {
+    const action = allSettled(networkModel.watch.connectionStatusChanged, {
       scope,
-      params: {
-        '0x01': ConnectionStatus.CONNECTED,
-        '0x02': ConnectionStatus.CONNECTED,
-      },
+      params: { chainId: '0x02', status: ConnectionStatus.CONNECTED },
     });
 
     await jest.runAllTimersAsync();
     await action;
 
     expect(scope.getState(balanceSubModel.__$subscriptions)).toEqual({
-      '0x01': { [wallets[0].id]: [[balanceSpy], [lockSpy]] },
-      '0x02': { [wallets[0].id]: [[balanceSpy], [lockSpy]] },
+      '0x02': { [wallets[0].id]: [balanceSpyPromise, lockSpyPromise] },
     });
   });
 

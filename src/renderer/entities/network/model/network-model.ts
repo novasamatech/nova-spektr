@@ -1,6 +1,7 @@
 import { createEffect, createEvent, createStore, sample, scopeBind } from 'effector';
 import { ApiPromise } from '@polkadot/api';
 import { VoidFn } from '@polkadot/api/types';
+import { spread } from 'patronum';
 
 import { storageService } from '@shared/api/storage';
 import { dictionary } from '@shared/lib/utils';
@@ -25,6 +26,7 @@ import {
 
 const networkStarted = createEvent();
 const chainConnected = createEvent<ChainId>();
+const connectionStatusChanged = createEvent<{ chainId: ChainId; status: ConnectionStatus }>();
 
 const connected = createEvent<ChainId>();
 const disconnected = createEvent<ChainId>();
@@ -271,28 +273,40 @@ sample({
 sample({
   clock: createApiFx.done,
   source: $connectionStatuses,
-  fn: (statuses, { params }) => {
-    return { ...statuses, [params.chainId]: ConnectionStatus.CONNECTED };
-  },
-  target: $connectionStatuses,
+  fn: (statuses, { params }) => ({
+    newStatuses: { ...statuses, [params.chainId]: ConnectionStatus.CONNECTED },
+    event: { chainId: params.chainId, status: ConnectionStatus.CONNECTED },
+  }),
+  target: spread({
+    newStatuses: $connectionStatuses,
+    event: connectionStatusChanged,
+  }),
 });
 
 sample({
   clock: disconnected,
   source: $connectionStatuses,
-  fn: (statuses, chainId) => {
-    return { ...statuses, [chainId]: ConnectionStatus.DISCONNECTED };
-  },
-  target: $connectionStatuses,
+  fn: (statuses, chainId) => ({
+    newStatuses: { ...statuses, [chainId]: ConnectionStatus.DISCONNECTED },
+    event: { chainId, status: ConnectionStatus.DISCONNECTED },
+  }),
+  target: spread({
+    newStatuses: $connectionStatuses,
+    event: connectionStatusChanged,
+  }),
 });
 
 sample({
   clock: failed,
   source: $connectionStatuses,
-  fn: (statuses, chainId) => {
-    return { ...statuses, [chainId]: ConnectionStatus.ERROR };
-  },
-  target: $connectionStatuses,
+  fn: (statuses, chainId) => ({
+    newStatuses: { ...statuses, [chainId]: ConnectionStatus.ERROR },
+    event: { chainId, status: ConnectionStatus.ERROR },
+  }),
+  target: spread({
+    newStatuses: $connectionStatuses,
+    event: connectionStatusChanged,
+  }),
 });
 
 sample({
@@ -383,5 +397,8 @@ export const networkModel = {
   events: {
     networkStarted,
     chainConnected,
+  },
+  watch: {
+    connectionStatusChanged,
   },
 };
