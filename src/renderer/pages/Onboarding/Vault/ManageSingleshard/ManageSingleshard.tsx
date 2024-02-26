@@ -60,8 +60,8 @@ export const ManageSingleshard = ({ seedInfo, onBack, onClose, onComplete }: Pro
         {
           accountId,
           name: walletName.trim(),
-          cryptoType: CryptoType.SR25519,
-          chainType: ChainType.SUBSTRATE,
+          cryptoType: isEthereumBased ? CryptoType.ETHEREUM : CryptoType.ED25519,
+          chainType: isEthereumBased ? ChainType.ETHEREUM : ChainType.SUBSTRATE,
           type: AccountType.BASE,
         },
       ],
