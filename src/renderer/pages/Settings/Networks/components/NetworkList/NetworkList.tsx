@@ -17,11 +17,6 @@ export const NetworkList = ({ title, isDefaultOpen, networkList, children }: Pro
   const filterQuery = useUnit(networkListModel.$filterQuery);
   const { success, connecting, error } = getMetrics(networkList);
 
-  console.log('success: 0, connecting: 0, error: 0', success, connecting, error);
-  console.log('filterQuery', filterQuery);
-  console.log('isDefaultOpen', isDefaultOpen);
-  console.log('isListOpen', isListOpen);
-
   useEffect(() => {
     if (filterQuery) {
       setIsListOpen(true);

@@ -1,4 +1,4 @@
-import { act, render, screen, waitFor } from '@testing-library/react';
+import { act, render, screen } from '@testing-library/react';
 
 import { ConnectionStatus, ConnectionType } from '@shared/core';
 import { ExtendedChain } from '@entities/network';
@@ -53,27 +53,5 @@ describe('pages/Settings/Networks/NetworkList', () => {
 
     const visibleChildren = screen.getByText('children');
     expect(visibleChildren).toBeInTheDocument();
-  });
-
-  test('should render open list with active search query', async () => {
-    const { rerender } = render(
-      <NetworkList title="Test list" networkList={networks}>
-        {children}
-      </NetworkList>,
-    );
-
-    const hiddenChildren = screen.queryByText('children');
-    expect(hiddenChildren).not.toBeInTheDocument();
-
-    rerender(
-      <NetworkList query="My test chain" title="Test list" networkList={networks}>
-        {children}
-      </NetworkList>,
-    );
-
-    waitFor(() => {
-      const visibleChildren = screen.getByText('children');
-      expect(visibleChildren).toBeInTheDocument();
-    });
   });
 });

@@ -1,4 +1,4 @@
-import { ExtendedChain, networkUtils } from '@/src/renderer/entities/network';
+import { ExtendedChain, networkUtils } from '@entities/network';
 import { Chain, Connection, ConnectionStatus } from '@/src/renderer/shared/core';
 
 export const getExtendedChain = (

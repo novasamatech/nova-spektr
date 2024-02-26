@@ -1,6 +1,6 @@
 import { combine, createEvent, createStore, sample, Store } from 'effector';
 
-import { ExtendedChain, networkModel, networkUtils } from '@/src/renderer/entities/network';
+import { ExtendedChain, networkModel, networkUtils } from '@entities/network';
 import { getExtendedChain } from '../networks-list-utils';
 import { includes } from '@shared/lib/utils';
 

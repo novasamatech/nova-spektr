@@ -1,5 +1,4 @@
 import { render, screen, act } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
 import { Provider } from 'effector-react';
 import { fork } from 'effector';
@@ -7,6 +6,7 @@ import { fork } from 'effector';
 import Networks from './Networks';
 import { ConnectionStatus, ConnectionType } from '@shared/core';
 import { ExtendedChain, networkModel } from '@entities/network';
+import { networkListModel } from '@features/networks/NetworkList';
 
 const confirmSpy = jest.fn();
 
@@ -59,7 +59,7 @@ jest.mock('./components', () => ({
 }));
 
 describe('pages/Settings/Networks', () => {
-  const renderNetworks = async () => {
+  const renderNetworks = async (filter = '') => {
     const scope = fork({
       values: new Map()
         .set(networkModel.$chains, {
@@ -99,7 +99,8 @@ describe('pages/Settings/Networks', () => {
           '0x222': ConnectionStatus.CONNECTED,
           '0x333': ConnectionStatus.DISCONNECTED,
           '0x444': ConnectionStatus.DISCONNECTED,
-        }),
+        })
+        .set(networkListModel.$filterQuery, filter),
     });
 
     await act(async () => {
@@ -122,25 +123,19 @@ describe('pages/Settings/Networks', () => {
   });
 
   test('should render no results', async () => {
-    const user = userEvent.setup();
     await renderNetworks();
 
     let noResults = screen.queryByText('settings.networks.emptyStateLabel');
     expect(noResults).not.toBeInTheDocument();
 
-    const input = screen.getByRole('textbox');
-    await user.type(input, 'xxx');
+    await renderNetworks('xxx');
 
     noResults = screen.getByText('settings.networks.emptyStateLabel');
     expect(noResults).toBeInTheDocument();
   });
 
   test('should render filtered networks', async () => {
-    const user = userEvent.setup({ delay: null });
-    await renderNetworks();
-
-    const input = screen.getByRole('textbox');
-    await user.type(input, 'west');
+    await renderNetworks('west');
 
     const polkadotItem = screen.queryByText('Polkadot');
     expect(polkadotItem).not.toBeInTheDocument();
