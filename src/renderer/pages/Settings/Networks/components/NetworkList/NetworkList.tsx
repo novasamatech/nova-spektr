@@ -1,9 +1,9 @@
 import { useEffect, useState, ReactNode } from 'react';
 import { useUnit } from 'effector-react';
 
-import { ExtendedChain, networkUtils } from '@entities/network';
+import { ExtendedChain } from '@entities/network';
 import { CaptionText, Counter, Accordion } from '@shared/ui';
-import { networkListModel } from '@features/networks/NetworkList';
+import { getMetrics, networkListModel } from '@features/networks/NetworkList';
 
 type Props = {
   title: string;
@@ -15,7 +15,9 @@ type Props = {
 export const NetworkList = ({ title, isDefaultOpen, networkList, children }: Props) => {
   const [isListOpen, setIsListOpen] = useState(isDefaultOpen);
   const filterQuery = useUnit(networkListModel.$filterQuery);
+  const { success, connecting, error } = getMetrics(networkList);
 
+  console.log('success: 0, connecting: 0, error: 0', success, connecting, error);
   console.log('filterQuery', filterQuery);
   console.log('isDefaultOpen', isDefaultOpen);
   console.log('isListOpen', isListOpen);
@@ -29,25 +31,6 @@ export const NetworkList = ({ title, isDefaultOpen, networkList, children }: Pro
   }, [filterQuery]);
 
   if (networkList.length === 0) return null;
-
-  const { success, connecting, error } = networkList.reduce(
-    (acc, network) => {
-      network.name === 'Acala' && console.log('Acala', network);
-      if (networkUtils.isDisabledConnection(network.connection)) return acc;
-
-      if (networkUtils.isConnectedStatus(network.connectionStatus)) acc.success += 1;
-      if (networkUtils.isConnectingStatus(network.connectionStatus)) {
-        acc.connecting += 1;
-        console.log(acc.connecting, network.name);
-      }
-      if (networkUtils.isErrorStatus(network.connectionStatus)) acc.error += 1;
-
-      return acc;
-    },
-    { success: 0, connecting: 0, error: 0 },
-  );
-
-  console.log('success: 0, connecting: 0, error: 0', success, connecting, error);
 
   return (
     <Accordion isDefaultOpen={isListOpen}>

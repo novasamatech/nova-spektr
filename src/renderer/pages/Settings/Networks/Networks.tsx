@@ -44,7 +44,7 @@ export const Networks = () => {
   };
 
   useEffect(() => {
-    networkListModel.events.componentMounted();
+    networkListModel.events.formInitiated();
   }, []);
 
   const confirmRemoveCustomNode = (name: string): Promise<boolean> => {

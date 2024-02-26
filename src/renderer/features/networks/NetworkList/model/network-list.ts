@@ -4,20 +4,22 @@ import { ExtendedChain, networkModel, networkUtils } from '@/src/renderer/entiti
 import { getExtendedChain } from '../networks-list-utils';
 import { includes } from '@shared/lib/utils';
 
-const componentMounted = createEvent();
+const formInitiated = createEvent();
+const queryChanged = createEvent<string>();
 
 const $filterQuery = createStore<string>('');
-const queryChanged = createEvent<string>();
-const queryReset = createEvent();
-
-$filterQuery.on(queryChanged, (_, query) => query).reset(queryReset);
 
 sample({
-  clock: componentMounted,
-  target: queryReset,
+  clock: queryChanged,
+  target: $filterQuery,
 });
 
-const $networksFiltered = combine(
+sample({
+  clock: formInitiated,
+  target: $filterQuery.reinit,
+});
+
+const $filteredNetworks = combine(
   {
     chains: networkModel.$chains,
     query: $filterQuery,
@@ -31,7 +33,7 @@ const $networksFiltered = combine(
 
 const $activeChainsSorted: Store<ExtendedChain[]> = combine(
   {
-    filteredNetworks: $networksFiltered,
+    filteredNetworks: $filteredNetworks,
     connectionStatuses: networkModel.$connectionStatuses,
     connections: networkModel.$connections,
   },
@@ -44,7 +46,7 @@ const $activeChainsSorted: Store<ExtendedChain[]> = combine(
 
 const $inactiveChainsSorted: Store<ExtendedChain[]> = combine(
   {
-    filteredNetworks: $networksFiltered,
+    filteredNetworks: $filteredNetworks,
     connectionStatuses: networkModel.$connectionStatuses,
     connections: networkModel.$connections,
   },
@@ -58,10 +60,9 @@ const $inactiveChainsSorted: Store<ExtendedChain[]> = combine(
 export const networkListModel = {
   $activeChainsSorted,
   $inactiveChainsSorted,
-  $networksFiltered,
   $filterQuery,
   events: {
-    componentMounted,
+    formInitiated,
     queryChanged,
   },
 };
