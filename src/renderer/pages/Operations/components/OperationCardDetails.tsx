@@ -1,22 +1,31 @@
 import cn from 'classnames';
 import { useUnit } from 'effector-react';
 
-import { useI18n, useMatrix } from '@app/providers';
+import { useI18n } from '@app/providers';
 import { AddressWithExplorers, WalletCardSm, walletModel, ExplorersPopover } from '@entities/wallet';
 import { Icon, Button, FootnoteText, DetailRow } from '@shared/ui';
 import { copyToClipboard, truncate, cnTw, getAssetById } from '@shared/lib/utils';
 import { useToggle } from '@shared/lib/hooks';
 import { ExtendedChain, networkUtils } from '@entities/network';
-import { MultisigTransaction, Transaction, isXcmTransaction } from '@entities/transaction';
+import {
+  MultisigTransaction,
+  Transaction,
+  isAddProxyTransaction,
+  isManageProxyTransaction,
+  isRemoveProxyTransaction,
+  isXcmTransaction,
+} from '@entities/transaction';
 import { AddressStyle, DescriptionBlockStyle, InteractionStyle } from '../common/constants';
 import { getMultisigExtrinsicLink } from '../common/utils';
 import { AssetBalance } from '@entities/asset';
 import { ChainTitle } from '@entities/chain';
-import type { Address, MultisigAccount, Validator } from '@shared/core';
+import type { Address, MultisigAccount, ProxyType, Validator } from '@shared/core';
 import { getTransactionFromMultisigTx } from '@entities/multisig';
 import { useValidatorsMap, ValidatorsModal } from '@entities/staking';
 import { singnatoryUtils } from '@entities/signatory';
 import { chainsService } from '@shared/api/network';
+import { proxyUtils } from '@entities/proxy';
+import { matrixModel } from '@entities/matrix';
 
 type Props = {
   tx: MultisigTransaction;
@@ -26,7 +35,7 @@ type Props = {
 
 export const OperationCardDetails = ({ tx, account, extendedChain }: Props) => {
   const { t } = useI18n();
-  const { matrix } = useMatrix();
+  const matrix = useUnit(matrixModel.$matrix);
 
   const activeWallet = useUnit(walletModel.$activeWallet);
   const wallets = useUnit(walletModel.$wallets);
@@ -140,6 +149,40 @@ export const OperationCardDetails = ({ tx, account, extendedChain }: Props) => {
             addressPrefix={addressPrefix}
             wrapperClassName="-mr-2 min-w-min"
           />
+        </DetailRow>
+      )}
+
+      {isAddProxyTransaction(tx.transaction) && (
+        <DetailRow label={t('operation.details.delegateTo')} className={valueClass}>
+          <AddressWithExplorers
+            explorers={explorers}
+            addressFont={AddressStyle}
+            type="short"
+            accountId={transaction?.args.delegate}
+            addressPrefix={addressPrefix}
+            wrapperClassName="-mr-2 min-w-min"
+          />
+        </DetailRow>
+      )}
+
+      {isRemoveProxyTransaction(tx.transaction) && (
+        <DetailRow label={t('operation.details.revokeFor')} className={valueClass}>
+          <AddressWithExplorers
+            explorers={explorers}
+            addressFont={AddressStyle}
+            type="short"
+            accountId={transaction?.args.delegate}
+            addressPrefix={addressPrefix}
+            wrapperClassName="-mr-2 min-w-min"
+          />
+        </DetailRow>
+      )}
+
+      {isManageProxyTransaction(tx.transaction) && (
+        <DetailRow label={t('operation.details.accessType')} className={valueClass}>
+          <FootnoteText className={valueClass}>
+            {t(proxyUtils.getProxyTypeName(transaction?.args.proxyType as ProxyType))}
+          </FootnoteText>
         </DetailRow>
       )}
 

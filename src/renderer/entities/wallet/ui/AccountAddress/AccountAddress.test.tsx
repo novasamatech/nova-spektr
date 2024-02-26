@@ -3,10 +3,6 @@ import { render, screen } from '@testing-library/react';
 import { AccountAddress } from './AccountAddress';
 import { TEST_ACCOUNTS, TEST_ADDRESS } from '@shared/lib/utils';
 
-jest.mock('@app/providers', () => ({
-  useMatrix: jest.fn(),
-}));
-
 describe('ui/AccountAddress', () => {
   test('should render component', () => {
     render(<AccountAddress accountId={TEST_ACCOUNTS[0]} addressPrefix={0} />);

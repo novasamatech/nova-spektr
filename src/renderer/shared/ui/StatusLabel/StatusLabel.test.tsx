@@ -2,10 +2,6 @@ import { render, screen } from '@testing-library/react';
 
 import { StatusLabel } from './StatusLabel';
 
-jest.mock('@app/providers', () => ({
-  useMatrix: jest.fn(),
-}));
-
 describe('ui/StatusLabel', () => {
   test('should render component', () => {
     render(<StatusLabel title="My label" subtitle="Subtitle" variant="success" />);

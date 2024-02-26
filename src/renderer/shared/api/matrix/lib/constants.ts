@@ -14,3 +14,5 @@ export const WELL_KNOWN_SERVERS = [
   { domain: 'matrix.parity.io', url: 'https://matrix.parity.io' },
   { domain: 'matrix.web3.foundation', url: 'https://matrix.web3.foundation' },
 ];
+
+export const MATRIX_HOME_SERVER = 'matrix_hs';
