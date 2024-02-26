@@ -14,7 +14,7 @@ import { ConnectionType } from '@shared/core';
 import { networkModel, ExtendedChain, networkUtils } from '@entities/network';
 import { chainsService } from '@shared/api/network';
 import { manageNetworkModel } from './model/manage-network-model';
-import { filterModel, networkListModel } from '@features/networks';
+import { networkListModel } from '@features/networks';
 
 const MAX_LIGHT_CLIENTS = 3;
 
@@ -44,7 +44,7 @@ export const Networks = () => {
   };
 
   useEffect(() => {
-    filterModel.events.componentMounted();
+    networkListModel.events.componentMounted();
   }, []);
 
   const confirmRemoveCustomNode = (name: string): Promise<boolean> => {
@@ -188,7 +188,7 @@ export const Networks = () => {
         title={t('settings.networks.title')}
         onClose={closeNetworksModal}
       >
-        <SearchInput wrapperClass="mx-5" placeholder="Search" onChange={filterModel.events.queryChanged} />
+        <SearchInput wrapperClass="mx-5" placeholder="Search" onChange={networkListModel.events.queryChanged} />
 
         <div className="flex flex-col gap-y-4 px-3 pb-4 pt-1 mt-5 h-[454px] overflow-y-auto">
           <NetworkList
