@@ -14,7 +14,7 @@ import { ConnectionType } from '@shared/core';
 import { networkModel, ExtendedChain, networkUtils } from '@entities/network';
 import { chainsService } from '@shared/api/network';
 import { manageNetworkModel } from './model/manage-network-model';
-import { filterModel } from '@features/networks';
+import { filterModel, networkListModel } from '@features/networks';
 
 const MAX_LIGHT_CLIENTS = 3;
 
@@ -27,8 +27,8 @@ export const Networks = () => {
   const { confirm } = useConfirmContext();
 
   const connections = useUnit(networkModel.$connections);
-  const active = useUnit(networkModel.$activeChainsSorted);
-  const inactive = useUnit(networkModel.$inactiveChainsSorted);
+  const active = useUnit(networkListModel.$activeChainsSorted);
+  const inactive = useUnit(networkListModel.$inactiveChainsSorted);
 
   const [isCustomRpcOpen, toggleCustomRpc] = useToggle();
   const [isNetworksModalOpen, toggleNetworksModal] = useToggle(true);
