@@ -9,6 +9,7 @@ export const DEFAULT_TRANSITION = 300;
 export const PUBLIC_KEY_LENGTH = 64;
 
 export const PUBLIC_KEY_LENGTH_BYTES = 32;
+export const ETHEREUM_PUBLIC_KEY_LENGTH_BYTES = 20;
 
 export const ADDRESS_ALLOWED_ENCODED_LENGTHS = [35, 36, 37, 38];
 

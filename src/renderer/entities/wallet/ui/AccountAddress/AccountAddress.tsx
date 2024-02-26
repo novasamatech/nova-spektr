@@ -1,4 +1,6 @@
-import { cnTw, toShortAddress, toAddress } from '@shared/lib/utils';
+import { hexToU8a } from '@polkadot/util';
+
+import { cnTw, toShortAddress, toAddress, isEthereumAccountId } from '@shared/lib/utils';
 import { Identicon, Truncate } from '@shared/ui';
 import type { AccountId, Address } from '@shared/core';
 
@@ -30,6 +32,10 @@ export const getAddress = (props: WithAccountId | WithAddress): Address => {
 
   const { accountId, addressPrefix } = props as WithAccountId;
 
+  if (hexToU8a(accountId).length === 20) {
+    return accountId;
+  }
+
   return toAddress(accountId, { prefix: addressPrefix });
 };
 
@@ -44,6 +50,7 @@ export const AccountAddress = ({
   showIcon = true,
   ...props
 }: AccountAddressProps) => {
+  const isEthereum = isEthereumAccountId((props as WithAccountId).accountId);
   const currentAddress = getAddress(props);
   const typeIsAdaptive = type === 'adaptive';
   const addressToShow = type === 'short' ? toShortAddress(currentAddress, symbols) : currentAddress;
@@ -67,7 +74,14 @@ export const AccountAddress = ({
   return (
     <div className={cnTw('flex items-center gap-x-2', className)}>
       {showIcon && (
-        <Identicon className="inline-block" address={currentAddress} size={size} background={false} canCopy={canCopy} />
+        <Identicon
+          theme={isEthereum ? 'ethereum' : 'polkadot'}
+          className="inline-block"
+          address={currentAddress}
+          size={size}
+          background={false}
+          canCopy={canCopy}
+        />
       )}
       {nameContent || addressContent}
     </div>

@@ -120,7 +120,7 @@ export const cryptoTypeToMultisignerIndex = (cryptoType: CryptoType): number => 
     [CryptoType.ED25519]: 0,
     [CryptoType.SR25519]: 1,
     [CryptoType.ECDSA]: 2,
-    [CryptoType.ETHEREUM]: -1,
+    [CryptoType.ETHEREUM]: 3,
   }[cryptoType];
 };
 
@@ -135,7 +135,7 @@ export const createDynamicDerivationPayload = (publicKey: Address, derivations: 
       dynamicDerivations: derivations.map((d) => ({
         derivationPath: d.derivationPath,
         genesisHash: hexToU8a(d.genesisHash),
-        encryption: cryptoTypeToMultisignerIndex(CryptoType.SR25519),
+        encryption: cryptoTypeToMultisignerIndex(d.encryption),
       })),
     },
   });

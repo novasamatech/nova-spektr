@@ -4,11 +4,11 @@ import { Controller, SubmitHandler, useForm } from 'react-hook-form';
 
 import { useI18n } from '@app/providers';
 import { chainsService } from '@shared/api/network';
-import { toAccountId, validateAddress, DEFAULT_TRANSITION } from '@shared/lib/utils';
+import { toAccountId, validateAddress, DEFAULT_TRANSITION, isEthereumAccountId } from '@shared/lib/utils';
 import EmptyState from './EmptyState';
 import { AccountsList, walletModel } from '@entities/wallet';
 import { useToggle } from '@shared/lib/hooks';
-import type { AccountId, Chain } from '@shared/core';
+import type { AccountId, Chain, HexString } from '@shared/core';
 import { ErrorType, CryptoType, ChainType, WalletType, SigningType, AccountType } from '@shared/core';
 import {
   Icon,
@@ -21,6 +21,7 @@ import {
   SmallTitleText,
   IconButton,
 } from '@shared/ui';
+import { networkUtils } from '@entities/network';
 
 type WalletForm = {
   walletName: string;
@@ -67,10 +68,16 @@ const WatchOnly = ({ isOpen, onClose, onComplete }: Props) => {
   }, [address]);
 
   useEffect(() => {
-    setChains(chainsService.getChainsData({ sort: true }));
-  }, []);
+    const newChains = chainsService.getChainsData({ sort: true });
+
+    setChains(
+      isEthereumAccountId(accountId) ? newChains.filter((c) => networkUtils.isEthereumBased(c.options)) : newChains,
+    );
+  }, [accountId]);
 
   const createWallet: SubmitHandler<WalletForm> = async ({ walletName, address }) => {
+    const isEthereum = isEthereumAccountId(accountId);
+
     walletModel.events.watchOnlyCreated({
       wallet: {
         name: walletName,
@@ -81,8 +88,8 @@ const WatchOnly = ({ isOpen, onClose, onComplete }: Props) => {
         {
           name: walletName.trim(),
           accountId: toAccountId(address),
-          cryptoType: CryptoType.SR25519,
-          chainType: ChainType.SUBSTRATE,
+          cryptoType: isEthereum ? CryptoType.ETHEREUM : CryptoType.SR25519,
+          chainType: isEthereum ? ChainType.ETHEREUM : ChainType.SUBSTRATE,
           type: AccountType.BASE,
         },
       ],
@@ -142,7 +149,15 @@ const WatchOnly = ({ isOpen, onClose, onComplete }: Props) => {
                   value={value}
                   prefixElement={
                     <div className="mr-2">
-                      {isValid ? <Identicon address={value} background={false} /> : <Icon name="emptyIdenticon" />}
+                      {isValid ? (
+                        <Identicon
+                          theme={isEthereumAccountId(value as HexString) ? 'ethereum' : 'polkadot'}
+                          address={value}
+                          background={false}
+                        />
+                      ) : (
+                        <Icon name="emptyIdenticon" />
+                      )}
                     </div>
                   }
                   onChange={onChange}
