@@ -5,7 +5,14 @@ import { useEffect } from 'react';
 import { Alert, Button, Input, InputHint, Select, SmallTitleText } from '@shared/ui';
 import { useI18n } from '@app/providers';
 import { DropdownOption, DropdownResult } from '@shared/ui/Dropdowns/common/types';
-import type { AccountId, Chain, ChainId, MultisigAccount, Signatory } from '@shared/core';
+import {
+  CryptoType,
+  type AccountId,
+  type Chain,
+  type ChainId,
+  type MultisigAccount,
+  type Signatory,
+} from '@shared/core';
 import { accountUtils, walletModel, walletUtils } from '@entities/wallet';
 import { networkModel, networkUtils } from '@entities/network';
 import { ChainTitle } from '@entities/chain';
@@ -90,12 +97,17 @@ export const WalletForm = ({
 
   const thresholdOptions = getThresholdOptions(signatories.length - 1);
   const chainOptions = getChainOptions(Object.values(chains));
+  const cryptoType =
+    withChain && chain && networkUtils.isEthereumBased(chains[chain].options)
+      ? CryptoType.ETHEREUM
+      : CryptoType.SR25519;
 
   const multisigAccountId =
     threshold &&
     accountUtils.getMultisigAccountId(
       signatories.map((s) => s.accountId),
       threshold.value,
+      cryptoType,
     );
 
   const submitMstAccount: SubmitHandler<MultisigAccountForm> = ({ name, threshold }) => {

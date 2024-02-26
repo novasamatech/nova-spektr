@@ -8,8 +8,9 @@ import { chainsService } from '@shared/api/network';
 import { Button, Input, InputHint, HeaderTitleText, SmallTitleText, IconButton } from '@shared/ui';
 import { AccountsList, walletModel } from '@entities/wallet';
 import type { Chain } from '@shared/core';
-import { SigningType, ErrorType, WalletType, CryptoType, ChainType, AccountType } from '@shared/core';
+import { SigningType, ErrorType, WalletType, CryptoType, ChainType, AccountType, CryptoTypeString } from '@shared/core';
 import { SeedInfo } from '@entities/transaction';
+import { networkUtils } from '@/src/renderer/entities/network';
 
 type WalletForm = {
   walletName: string;
@@ -38,8 +39,12 @@ export const ManageSingleshard = ({ seedInfo, onBack, onClose, onComplete }: Pro
     defaultValues: { walletName: seedInfo[0].name || '' },
   });
 
+  const isEthereumBased = seedInfo[0].multiSigner?.MultiSigner === CryptoTypeString.ECDSA;
+
   useEffect(() => {
-    setChains(chainsService.getChainsData({ sort: true }));
+    const newChains = chainsService.getChainsData({ sort: true });
+
+    setChains(isEthereumBased ? newChains.filter((c) => networkUtils.isEthereumBased(c.options)) : newChains);
   }, []);
 
   const createWallet: SubmitHandler<WalletForm> = async ({ walletName }) => {
