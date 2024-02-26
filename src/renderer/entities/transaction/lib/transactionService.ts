@@ -103,9 +103,16 @@ export const useTransaction = (): ITransactionService => {
     return weight;
   };
 
-  const getTransactionDeposit = (threshold: Threshold, api: ApiPromise): string => {
+  const getMultisigDeposit = (threshold: Threshold, api: ApiPromise): string => {
     const { depositFactor, depositBase } = api.consts.multisig;
     const deposit = depositFactor.muln(threshold).add(depositBase);
+
+    return deposit.toString();
+  };
+
+  const getProxyDeposit = (api: ApiPromise): string => {
+    const { proxyDepositFactor, proxyDepositBase } = api.consts.proxy;
+    const deposit = proxyDepositFactor.add(proxyDepositBase);
 
     return deposit.toString();
   };
@@ -223,7 +230,8 @@ export const useTransaction = (): ITransactionService => {
     getTransactionFee,
     getExtrinsicWeight,
     getTxWeight,
-    getTransactionDeposit,
+    getMultisigDeposit,
+    getProxyDeposit,
     getTransactionHash,
     decodeCallData,
     verifySignature,

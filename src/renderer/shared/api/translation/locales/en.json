@@ -264,7 +264,9 @@
   "manageProxy": {
     "addProxy": {
       "proxyTooltip": "Delegated authorities (proxies)"
-    }
+    },
+    "proxyDepositLabel": "Proxy deposit",
+    "proxyDepositHint": "The deposit stays reserved on your account until the proxy is removed"
   },
   "matrixCredentials": {
     "subTitle": "Matrix Credentials"

@@ -1,7 +1,7 @@
 import { ApiPromise } from '@polkadot/api';
 import { render, screen } from '@testing-library/react';
 
-import { DepositWithLabel } from './DepositWithLabel';
+import { MultisigDepositWithLabel } from './MultisigDepositWithLabel';
 import type { Asset } from '@shared/core';
 
 jest.mock('@app/providers', () => ({
@@ -12,17 +12,17 @@ jest.mock('@app/providers', () => ({
 
 jest.mock('@entities/transaction', () => ({
   useTransaction: jest.fn().mockReturnValue({
-    getTransactionDeposit: jest.fn().mockReturnValue('46'),
+    getMultisigDeposit: jest.fn().mockReturnValue('46'),
   }),
 }));
 
 jest.mock('@entities/asset', () => ({ AssetBalance: () => <div>deposit_value</div> }));
 
-describe('entities/transaction/ui/DepositWithLabel', () => {
+describe('entities/transaction/ui/ProxyDepositWithLabel', () => {
   test('should render component', () => {
     const asset = { symbol: 'DOT', precision: 10 } as Asset;
 
-    render(<DepositWithLabel api={{} as ApiPromise} asset={asset} threshold={3} />);
+    render(<MultisigDepositWithLabel api={{} as ApiPromise} asset={asset} threshold={3} />);
 
     const value = screen.getByText('deposit_value');
     expect(value).toBeInTheDocument();

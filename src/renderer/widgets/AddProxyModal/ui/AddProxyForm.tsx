@@ -9,6 +9,8 @@ import { ProxyPopover } from '@entities/proxy';
 import { proxyFormModel } from '../model/proxy-form-model';
 import { AccountAddress, accountUtils } from '@entities/wallet';
 import { toAddress, toShortAddress } from '@shared/lib/utils';
+import { Fee, MultisigDepositWithLabel, ProxyDepositWithLabel } from '@entities/transaction';
+import { useNetworkData } from '@entities/network';
 
 type Props = {
   onBack: () => void;
@@ -16,8 +18,14 @@ type Props = {
 export const AddProxyForm = ({ onBack }: Props) => {
   const { t } = useI18n();
 
-  const { submit, isValid } = useForm(proxyFormModel.$proxyForm);
+  const {
+    fields: { network },
+    submit,
+    isValid,
+  } = useForm(proxyFormModel.$proxyForm);
   const isChainConnected = useUnit(proxyFormModel.$isChainConnected);
+
+  const { api, chain } = useNetworkData(network.value.chainId);
 
   const submitProxy = (event: FormEvent) => {
     event.preventDefault();
@@ -36,17 +44,21 @@ export const AddProxyForm = ({ onBack }: Props) => {
         <DescriptionInput />
       </form>
       <div className="flex flex-col gap-y-2 mt-6">
+        <ProxyDepositWithLabel api={api} asset={chain.assets[0]} />
+
+        <MultisigDepositWithLabel api={api} asset={chain.assets[0]} threshold={1} />
+
         <div className="flex justify-between items-center">
-          <FootnoteText>Proxy Deposit</FootnoteText>
-          <FootnoteText>20 DOT</FootnoteText>
-        </div>
-        <div className="flex justify-between items-center">
-          <FootnoteText>Multisig Deposit</FootnoteText>
-          <FootnoteText>5 DOT</FootnoteText>
-        </div>
-        <div className="flex justify-between items-center">
-          <FootnoteText>Fee</FootnoteText>
-          <FootnoteText>1 DOT</FootnoteText>
+          <FootnoteText className="text-text-tertiary">Network fee</FootnoteText>
+          <FootnoteText className="text-text-tertiary">
+            <Fee
+              api={api}
+              asset={chain.assets[0]}
+              // transaction={feeTx}
+              // onFeeChange={onFeeChange}
+              // onFeeLoading={onFeeLoading}
+            />
+          </FootnoteText>
         </div>
       </div>
       <div className="flex justify-between items-center mt-4">
@@ -192,7 +204,7 @@ const ProxyCombobox = () => {
     const address = toAddress(proxyAccount.accountId, { prefix: network.value.addressPrefix });
 
     return {
-      id: address,
+      id: proxyAccount.id.toString(),
       value: address,
       element: (
         <div className="flex justify-between w-full" key={proxyAccount.id}>

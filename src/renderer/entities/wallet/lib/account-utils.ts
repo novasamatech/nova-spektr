@@ -67,7 +67,7 @@ function isAccountWithShards(accounts: Pick<Account, 'type'> | ShardAccount[]): 
 }
 
 function isChainDependant(account: Pick<Account, 'type'>): boolean {
-  return !!(account as ChainAccount).chainId;
+  return Boolean((account as ChainAccount).chainId);
 }
 
 function isChainIdMatch(account: Pick<Account, 'type'>, chainId: ChainId): boolean {
@@ -161,7 +161,7 @@ function getAccountsForBalances(
   return accounts.filter((account) => {
     if (accountUtils.isBaseAccount(account) && walletsMap[account.walletId]) return false;
 
-    return filterFn?.(account) || true;
+    return filterFn?.(account) ?? true;
   });
 }
 

@@ -2,7 +2,7 @@ import { ApiPromise } from '@polkadot/api';
 
 import { Icon, FootnoteText, Tooltip } from '@shared/ui';
 import { useI18n } from '@app/providers';
-import { Transaction, Deposit, Fee, XcmTypes } from '@entities/transaction';
+import { Transaction, MultisigDeposit, Fee, XcmTypes } from '@entities/transaction';
 import { XcmConfig } from '@shared/api/xcm';
 import { XcmFee } from '@entities/transaction/ui/XcmFee/XcmFee';
 import type { Asset, Account } from '@shared/core';
@@ -54,7 +54,7 @@ export const OperationFooter = ({
             </Tooltip>
           </div>
           <FootnoteText>
-            <Deposit api={api} asset={asset} threshold={account.threshold} onDepositChange={onDepositChange} />
+            <MultisigDeposit api={api} asset={asset} threshold={account.threshold} onDepositChange={onDepositChange} />
           </FootnoteText>
         </div>
       )}

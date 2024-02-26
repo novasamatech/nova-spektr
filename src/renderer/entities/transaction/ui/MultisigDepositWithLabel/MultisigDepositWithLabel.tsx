@@ -2,14 +2,14 @@ import { ComponentProps } from 'react';
 
 import { useI18n } from '@app/providers';
 import { Icon, FootnoteText, Tooltip, DetailRow } from '@shared/ui';
-import { Deposit } from '../Deposit/Deposit';
+import { MultisigDeposit } from '../MultisigDeposit/MultisigDeposit';
 import { cnTw } from '@shared/lib/utils';
 
 type Props = {
   wrapperClassName?: string;
-} & ComponentProps<typeof Deposit>;
+} & ComponentProps<typeof MultisigDeposit>;
 
-export const DepositWithLabel = ({ wrapperClassName, ...depositProps }: Props) => {
+export const MultisigDepositWithLabel = ({ wrapperClassName, ...depositProps }: Props) => {
   const { t } = useI18n();
 
   return (
@@ -25,7 +25,7 @@ export const DepositWithLabel = ({ wrapperClassName, ...depositProps }: Props) =
       }
       className={cnTw('text-text-primary', wrapperClassName)}
     >
-      <Deposit {...depositProps} />
+      <MultisigDeposit {...depositProps} />
     </DetailRow>
   );
 };

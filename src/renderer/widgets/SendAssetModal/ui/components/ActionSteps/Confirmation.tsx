@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useUnit } from 'effector-react';
 
-import { Transaction, DepositWithLabel, Fee, XcmTypes } from '@entities/transaction';
+import { Transaction, MultisigDepositWithLabel, Fee, XcmTypes } from '@entities/transaction';
 import { TransactionAmount } from '@pages/Operations/components/TransactionAmount';
 import { Button, DetailRow, FootnoteText, Icon } from '@shared/ui';
 import { ExtendedChain } from '@entities/network';
@@ -66,7 +66,7 @@ export const Confirmation = ({
       <Details transaction={transaction} account={account} signatory={signatory} connection={connection} />
 
       {signatory && connection.api && (
-        <DepositWithLabel
+        <MultisigDepositWithLabel
           api={connection.api}
           asset={connection.assets[0]}
           wrapperClassName="pr-2"
