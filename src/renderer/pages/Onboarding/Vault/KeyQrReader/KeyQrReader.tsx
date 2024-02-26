@@ -8,7 +8,7 @@ import { DropdownOption, DropdownResult } from '@shared/ui/Dropdowns/common/type
 import { useI18n } from '@app/providers';
 import { cnTw } from '@shared/lib/utils';
 import { SeedInfo, VideoInput, ErrorObject, QrError, QrReader } from '@entities/transaction';
-import { CryptoTypeString } from '@/src/renderer/shared/core';
+import { CryptoTypeString } from '@shared/core';
 
 const enum CameraState {
   ACTIVE,
