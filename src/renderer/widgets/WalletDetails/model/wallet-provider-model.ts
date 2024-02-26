@@ -157,9 +157,7 @@ const $signatoryAccounts = combine(
     const accountsMap = dictionary(accounts, 'accountId');
 
     return multisigAccount.signatories.reduce<Signatory[]>((acc, signatory) => {
-      const account = accountsMap[signatory.accountId];
-
-      if (account) {
+      if (accountsMap[signatory.accountId]) {
         acc.push(signatory);
       }
 
