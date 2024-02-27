@@ -8,6 +8,7 @@ import { useTransaction, ScanMultiframeQr, ScanSingleframeQr, QrReaderWrapper } 
 import { walletModel, accountUtils, walletUtils } from '@entities/wallet';
 import type { HexString, Address } from '@shared/core';
 import type { InnerSigningProps } from '../../model/types';
+import { transformEcdsaSignature } from '../../lib/utils';
 
 export const VaultSigning = ({
   chainId,
@@ -41,7 +42,10 @@ export const VaultSigning = ({
 
   const handleSignature = async (data: string | string[]): Promise<void> => {
     const isMultishard = Array.isArray(data);
-    const signatures = isMultishard ? (data as HexString[]) : [data as HexString];
+    let signatures = isMultishard ? (data as HexString[]) : [data as HexString];
+
+    signatures = signatures.map(transformEcdsaSignature);
+
     const accountIds = isMultiframe ? accounts.map((t) => t.accountId) : [(signatory || accounts[0])?.accountId];
 
     const isVerified = signatures.every((signature, index) => {
