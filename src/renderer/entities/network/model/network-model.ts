@@ -22,6 +22,7 @@ import {
   metadataService,
   ProviderWithMetadata,
 } from '@shared/api/network';
+
 const networkStarted = createEvent();
 
 const chainConnected = createEvent<ChainId>();
