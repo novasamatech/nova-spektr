@@ -25,7 +25,7 @@ export const Identicon = ({
   className,
   buttonClassName,
 }: Props) => {
-  const valueTheme = theme || (address && isEthereumAccountId(address as AccountId)) ? 'ethereum' : 'polkadot';
+  const valueTheme = theme || (address && isEthereumAccountId(address as AccountId) ? 'ethereum' : 'polkadot');
 
   const wrapperRef = useRef<HTMLDivElement>(null);
 
