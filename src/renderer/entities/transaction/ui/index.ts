@@ -6,6 +6,7 @@ export { ScanMultiframeQr } from './Scanning/ScanMultiframeQr';
 export { MultisigDeposit } from './MultisigDeposit/MultisigDeposit';
 export { MultisigDepositWithLabel } from './MultisigDepositWithLabel/MultisigDepositWithLabel';
 export { ProxyDepositWithLabel } from './ProxyDepositWithLabel/ProxyDepositWithLabel';
+export { FeeWithLabel } from './FeeWithLabel/FeeWithLabel';
 
 // TODO: requires refactoring clickup task - https://app.clickup.com/t/86933e82e
 export { cryptoTypeToMultisignerIndex } from './QrCode/QrGenerator/common/utils';

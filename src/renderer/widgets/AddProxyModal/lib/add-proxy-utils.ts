@@ -5,6 +5,9 @@ export const addProxyUtils = {
   isConfirmStep,
   isSignStep,
   isSubmitStep,
+
+  hasMultisig,
+  hasProxy,
 };
 
 function isInitStep(step: Step): boolean {
@@ -21,4 +24,12 @@ function isSignStep(step: Step): boolean {
 
 function isSubmitStep(step: Step): boolean {
   return step === Step.SUBMIT;
+}
+
+function hasMultisig(txWrappers: ('proxy' | 'multisig')[]): boolean {
+  return txWrappers.includes('multisig');
+}
+
+function hasProxy(txWrappers: ('proxy' | 'multisig')[]): boolean {
+  return txWrappers.includes('proxy');
 }

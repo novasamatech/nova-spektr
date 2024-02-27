@@ -6,8 +6,8 @@ import { AssetBalance } from '@entities/asset';
 import type { Asset } from '@shared/core';
 import { AssetFiatBalance } from '@entities/price/ui/AssetFiatBalance';
 import { Shimmering } from '@shared/ui';
-import { priceProviderModel } from '../../../price';
 import { proxyService } from '@shared/api/proxy';
+import { priceProviderModel } from '@entities/price';
 
 type Props = {
   api: ApiPromise;

@@ -19,6 +19,8 @@ const txCreated = createEvent<{
 const $step = createStore<Step>(Step.INIT);
 const $transaction = createStore<Transaction | null>(null);
 
+// const $txWrappers = createStore<'multisig' | 'proxy'[]>([]);
+
 // sample({
 //   clock: $step,
 //   filter: (step) => addProxyUtils.isSubmitStep(step),
