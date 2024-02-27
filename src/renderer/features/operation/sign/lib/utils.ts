@@ -16,5 +16,5 @@ const ECDSA_SIGNATURE_LENGTH = 66;
 export const transformEcdsaSignature = (signature: HexString): HexString => {
   const u8aSignature = hexToU8a(signature);
 
-  return u8aToHex(signature.length === ECDSA_SIGNATURE_LENGTH ? u8aSignature.subarray(1) : u8aSignature);
+  return u8aToHex(u8aSignature.length === ECDSA_SIGNATURE_LENGTH ? u8aSignature.subarray(1) : u8aSignature);
 };
