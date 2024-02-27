@@ -89,7 +89,7 @@
     "alertTitle": "Select wallet",
     "availableLabel": "Available",
     "backButton": "Back",
-    "chainHint": "Multisig will work only in this network, if you want to use different network, you need to create a new multisig",
+    "chainHint": "Multisig’ll work in only this network, if you want to use different network, you’ll need to create new multisig",
     "chainName": "Network",
     "chainPlaceholder": "Select network",
     "closeButton": "Close",
