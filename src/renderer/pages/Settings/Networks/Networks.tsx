@@ -36,8 +36,6 @@ export const Networks = () => {
   const [nodeToEdit, setNodeToEdit] = useState<RpcNode>();
   const [network, setNetwork] = useState<ExtendedChain>();
 
-  console.log('connections', connections);
-
   const closeNetworksModal = () => {
     toggleNetworksModal();
     setTimeout(() => navigate(Paths.SETTINGS), DEFAULT_TRANSITION);
