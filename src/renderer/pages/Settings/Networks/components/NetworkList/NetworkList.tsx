@@ -3,7 +3,7 @@ import { useUnit } from 'effector-react';
 
 import { ExtendedChain } from '@entities/network';
 import { CaptionText, Counter, Accordion } from '@shared/ui';
-import { getMetrics, networkListModel } from '@features/networks/NetworkList';
+import { networkListUtils, networkListModel } from '@features/networks/NetworkList';
 
 type Props = {
   title: string;
@@ -15,7 +15,7 @@ type Props = {
 export const NetworkList = ({ title, isDefaultOpen, networkList, children }: Props) => {
   const [isListOpen, setIsListOpen] = useState(isDefaultOpen);
   const filterQuery = useUnit(networkListModel.$filterQuery);
-  const { success, connecting, error } = getMetrics(networkList);
+  const { success, connecting, error } = networkListUtils.getMetrics(networkList);
 
   useEffect(() => {
     if (filterQuery) {

@@ -1,7 +1,7 @@
 import { combine, createEvent, createStore, sample, Store } from 'effector';
 
 import { ExtendedChain, networkModel, networkUtils } from '@entities/network';
-import { getExtendedChain } from '../networks-list-utils';
+import { networkListUtils } from '../lib/networks-list-utils';
 import { includes } from '@shared/lib/utils';
 
 const formInitiated = createEvent();
@@ -38,9 +38,9 @@ const $activeChainsSorted: Store<ExtendedChain[]> = combine(
     connections: networkModel.$connections,
   },
   ({ filteredNetworks, connectionStatuses, connections }) => {
-    return getExtendedChain(filteredNetworks, connections, connectionStatuses).filter((o) =>
-      networkUtils.isEnabledConnection(o.connection),
-    );
+    return networkListUtils
+      .getExtendedChain(filteredNetworks, connections, connectionStatuses)
+      .filter((o) => networkUtils.isEnabledConnection(o.connection));
   },
 );
 
@@ -51,9 +51,9 @@ const $inactiveChainsSorted: Store<ExtendedChain[]> = combine(
     connections: networkModel.$connections,
   },
   ({ filteredNetworks, connectionStatuses, connections }) => {
-    return getExtendedChain(filteredNetworks, connections, connectionStatuses).filter((o) =>
-      networkUtils.isDisabledConnection(o.connection),
-    );
+    return networkListUtils
+      .getExtendedChain(filteredNetworks, connections, connectionStatuses)
+      .filter((o) => networkUtils.isDisabledConnection(o.connection));
   },
 );
 

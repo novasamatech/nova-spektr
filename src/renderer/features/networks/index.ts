@@ -1,1 +1,1 @@
-export { networkListModel } from './NetworkList';
+export { networkListModel, networkListUtils } from './NetworkList';

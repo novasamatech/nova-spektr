@@ -1,7 +1,9 @@
 import { ExtendedChain, networkUtils } from '@entities/network';
 import { Chain, Connection, ConnectionStatus } from '@/src/renderer/shared/core';
 
-export const getExtendedChain = (
+type Metrics = { success: number; connecting: number; error: number };
+
+const getExtendedChain = (
   chains: Chain[],
   connections: Record<`0x${string}`, Connection>,
   connectionStatuses: Record<`0x${string}`, ConnectionStatus>,
@@ -20,16 +22,14 @@ export const getExtendedChain = (
   }, []);
 };
 
-export const getMetrics = (networkList: ExtendedChain[]) =>
+const getMetrics = (networkList: ExtendedChain[]): Metrics =>
   networkList.reduce(
     (acc, network) => {
-      network.name === 'Acala' && console.log('Acala', network);
       if (networkUtils.isDisabledConnection(network.connection)) return acc;
 
       if (networkUtils.isConnectedStatus(network.connectionStatus)) acc.success += 1;
       if (networkUtils.isConnectingStatus(network.connectionStatus)) {
         acc.connecting += 1;
-        console.log(acc.connecting, network.name);
       }
       if (networkUtils.isErrorStatus(network.connectionStatus)) acc.error += 1;
 
@@ -37,3 +37,8 @@ export const getMetrics = (networkList: ExtendedChain[]) =>
     },
     { success: 0, connecting: 0, error: 0 },
   );
+
+export const networkListUtils = {
+  getExtendedChain,
+  getMetrics,
+};
