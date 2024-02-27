@@ -12,6 +12,7 @@ import { ProxyDepositWithLabel, MultisigDepositWithLabel, FeeWithLabel } from '@
 import { proxyFormModel, Callbacks } from '../model/proxy-form-model';
 import { addProxyUtils } from '../lib/add-proxy-utils';
 import { useNetworkData } from '@entities/network';
+import { AssetBalance } from '@entities/asset';
 
 type Props = Callbacks & {
   onBack: () => void;
@@ -153,20 +154,45 @@ const SignatorySelector = () => {
   const { t } = useI18n();
 
   const {
-    fields: { signatory },
+    fields: { network, signatory },
   } = useForm(proxyFormModel.$proxyForm);
 
   const txWrappers = useUnit(proxyFormModel.$txWrappers);
+  const signatories = useUnit(proxyFormModel.$signatories);
 
   if (!addProxyUtils.hasMultisig(txWrappers)) return null;
+
+  const options = signatories.map(({ wallet, signer, balance }) => {
+    const isShard = accountUtils.isShardAccount(signer);
+    const address = toAddress(signer.accountId, { prefix: network.value.addressPrefix });
+
+    return {
+      id: signer.id.toString(),
+      value: signer,
+      element: (
+        <div className="flex justify-between items-center w-full">
+          <div className="flex gap-x-2 items-center">
+            <AccountAddress
+              size={20}
+              type="short"
+              address={address}
+              name={isShard ? address : signer.name}
+              canCopy={false}
+            />
+          </div>
+          <AssetBalance value={balance} asset={network.value.assets[0]} />
+        </div>
+      ),
+    };
+  });
 
   return (
     <div className="flex flex-col gap-y-2">
       <Select
         label="Signatory"
         placeholder="Select signatory"
-        selectedId={signatory.value}
-        options={[]}
+        selectedId={signatory.value.id.toString()}
+        options={options}
         invalid={signatory.hasError()}
         onChange={({ value }) => signatory.onChange(value)}
       />
