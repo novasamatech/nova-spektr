@@ -8,6 +8,7 @@ import { DropdownOption, DropdownResult } from '@shared/ui/Dropdowns/common/type
 import { useI18n } from '@app/providers';
 import { cnTw } from '@shared/lib/utils';
 import { SeedInfo, VideoInput, ErrorObject, QrError, QrReader } from '@entities/transaction';
+import { CryptoTypeString } from '@shared/core';
 
 const enum CameraState {
   ACTIVE,
@@ -77,14 +78,17 @@ const KeyQrReader = ({ size = 300, className, onResult }: Props) => {
     try {
       qrPayload.forEach((qr) => {
         if (qr.multiSigner) {
-          encodeAddress(qr.multiSigner.public);
+          if (qr.multiSigner.MultiSigner !== CryptoTypeString.ECDSA) {
+            encodeAddress(qr.multiSigner.public);
+          }
         }
-
         if (qr.derivedKeys.length === 0) return;
 
-        qr.derivedKeys.forEach(({ address }) =>
-          encodeAddress(isHex(address) ? hexToU8a(address) : decodeAddress(address)),
-        );
+        qr.derivedKeys.forEach(({ address }) => {
+          const accountId = isHex(address) ? hexToU8a(address) : decodeAddress(address);
+
+          return accountId.length === 20 ? address : encodeAddress(accountId);
+        });
       });
 
       setIsScanComplete(true);

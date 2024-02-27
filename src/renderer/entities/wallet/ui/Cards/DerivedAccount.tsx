@@ -36,6 +36,7 @@ export const DerivedAccount = ({
   onInfoClick,
 }: Props) => {
   const isShardedAccount = accountUtils.isAccountWithShards(account);
+  const isEthereumBased = accountUtils.isEthereumBased(isShardedAccount ? account[0] : account);
   const chainWithAccountId = !isShardedAccount && account.accountId;
   const chainWithoutAccountId = !isShardedAccount && !account.accountId;
 
@@ -66,6 +67,7 @@ export const DerivedAccount = ({
         {chainWithAccountId && (
           <div className="flex">
             <Identicon
+              theme={isEthereumBased ? 'ethereum' : 'polkadot'}
               background={false}
               canCopy={false}
               address={toAddress(account.accountId, { prefix: addressPrefix })}

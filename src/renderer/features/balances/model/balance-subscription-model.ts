@@ -45,8 +45,10 @@ const createSubscriptionsBalancesFx = createEffect(
     const newSubscriptions = {} as Record<ChainId, SubscriptionObject>;
 
     const balanceSubscriptions = Object.entries(apis).map(async ([chainId, api]) => {
+      const chain = chains[chainId as ChainId];
+
       const accountIds = accounts.reduce<Record<AccountId, boolean>>((acc, account) => {
-        if (accountUtils.isChainIdMatch(account, chainId as ChainId)) {
+        if (accountUtils.isChainIdAndCryptoTypeMatch(account, chain)) {
           acc[account.accountId] = true;
         }
 
@@ -76,8 +78,6 @@ const createSubscriptionsBalancesFx = createEffect(
           subscription: oldSubscription,
         });
       }
-
-      const chain = chains[chainId as ChainId];
 
       try {
         if (!chain) return;
