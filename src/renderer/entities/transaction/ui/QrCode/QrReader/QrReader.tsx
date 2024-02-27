@@ -94,17 +94,14 @@ export const QrReader = ({
       return [payload];
     }
 
-    const address = data.split(':')[1];
-    const cryptoType = data.split(':')[0] as keyof typeof CryptoTypes;
-
-    const multiSignerType = CryptoTypes[cryptoType];
+    const [cryptoType, address] = data.split(':');
 
     return [
       {
         name: '',
         derivedKeys: [],
         multiSigner: {
-          MultiSigner: multiSignerType,
+          MultiSigner: CryptoTypes[cryptoType],
           public: decodeAddress(address),
         },
       },

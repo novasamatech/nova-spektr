@@ -1092,7 +1092,6 @@
       "walletsGroup": "Your wallets"
     },
     "vault": {
-      "derivationPath": "Derivation path",
       "editKeys": "Edit keys",
       "export": "Export keyset",
       "import": "Import keyset",

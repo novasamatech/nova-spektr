@@ -44,11 +44,7 @@ export const accountUtils = {
   isCryptoTypeMatch,
 };
 
-function getMultisigAccountId(
-  ids: AccountId[],
-  threshold: Threshold,
-  cryptoType: CryptoType = CryptoType.SR25519,
-): AccountId {
+function getMultisigAccountId(ids: AccountId[], threshold: Threshold, cryptoType = CryptoType.SR25519): AccountId {
   const accountId = createKeyMulti(ids, threshold);
   const isEthereum = cryptoType === CryptoType.ETHEREUM;
 
