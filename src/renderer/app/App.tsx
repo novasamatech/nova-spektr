@@ -5,7 +5,7 @@ import { useUnit } from 'effector-react';
 
 import { CreateWalletProvider } from '@widgets/CreateWallet';
 import { WalletDetailsProvider } from '@widgets/WalletDetails';
-import { walletModel } from '@entities/wallet';
+import { WalletIcon, walletModel } from '@entities/wallet';
 import { ROUTES_CONFIG } from '@pages/index';
 import { Paths, createLink } from '@shared/routes';
 import { FallbackScreen } from '@shared/ui';
@@ -79,6 +79,9 @@ export const App = () => {
                   {getContent()}
                   <CreateWalletProvider />
                   <WalletDetailsProvider />
+                  {/* HACK: correctly display NOVA WALLET icon on multisig creation */}
+                  {/* TODO: find correct way to fix issue with lost svg defs */}
+                  <WalletIcon className="fixed" type={WalletType.NOVA_WALLET} />
                 </GraphqlProvider>
               </StatusModalProvider>
             </ConfirmDialogProvider>
