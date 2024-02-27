@@ -94,13 +94,11 @@ export const isCorrectAccountId = (accountId?: AccountId): boolean => {
 };
 
 export const isEthereumAccountId = (accountId?: AccountId): boolean => {
-  if (accountId) {
-    try {
-      return hexToU8a(accountId).length === 20;
-    } catch (e) {
-      return false;
-    }
-  }
+  if (!accountId) return false;
 
-  return false;
+  try {
+    return hexToU8a(accountId).length === 20;
+  } catch (e) {
+    return false;
+  }
 };

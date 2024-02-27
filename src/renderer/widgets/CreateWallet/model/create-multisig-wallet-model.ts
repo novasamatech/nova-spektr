@@ -13,7 +13,7 @@ import {
 import { accountUtils, walletModel, walletUtils } from '@entities/wallet';
 import { RelayChains, dictionary } from '@shared/lib/utils';
 import { matrixModel } from '@entities/matrix';
-import { networkModel, networkUtils } from '@/src/renderer/entities/network';
+import { networkModel, networkUtils } from '@entities/network';
 
 const reset = createEvent();
 
@@ -38,9 +38,15 @@ const $chain = createStore<ChainId | null>(null).reset(reset);
 const $signatories = createStore<Signatory[]>([]).reset(reset);
 const $error = createStore('').reset(reset);
 
-const $isEthereumChain = combine({ chainId: $chain, chains: networkModel.$chains }, ({ chainId, chains }) => {
-  return !!chainId && networkUtils.isEthereumBased(chains[chainId].options);
-});
+const $isEthereumChain = combine(
+  {
+    chainId: $chain,
+    chains: networkModel.$chains,
+  },
+  ({ chainId, chains }) => {
+    return !!chainId && networkUtils.isEthereumBased(chains[chainId].options);
+  },
+);
 
 type CreateWalletParams = {
   matrix: any;

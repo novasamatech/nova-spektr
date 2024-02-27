@@ -1,9 +1,9 @@
 import cn from 'classnames';
 import { useEffect, useState } from 'react';
 import { Controller, SubmitHandler, useForm } from 'react-hook-form';
+import { useUnit } from 'effector-react';
 
 import { useI18n } from '@app/providers';
-import { chainsService } from '@shared/api/network';
 import { toAccountId, validateAddress, DEFAULT_TRANSITION, isEthereumAccountId } from '@shared/lib/utils';
 import EmptyState from './EmptyState';
 import { AccountsList, walletModel } from '@entities/wallet';
@@ -21,7 +21,7 @@ import {
   SmallTitleText,
   IconButton,
 } from '@shared/ui';
-import { networkUtils } from '@entities/network';
+import { networkModel, networkUtils } from '@entities/network';
 
 type WalletForm = {
   walletName: string;
@@ -36,6 +36,7 @@ type Props = {
 
 const WatchOnly = ({ isOpen, onClose, onComplete }: Props) => {
   const { t } = useI18n();
+  const allChains = useUnit(networkModel.$chains);
 
   const [isModalOpen, toggleIsModalOpen] = useToggle(isOpen);
   const [chains, setChains] = useState<Chain[]>([]);
@@ -68,10 +69,10 @@ const WatchOnly = ({ isOpen, onClose, onComplete }: Props) => {
   }, [address]);
 
   useEffect(() => {
-    const newChains = chainsService.getChainsData({ sort: true });
+    const chainList = Object.values(allChains);
 
     setChains(
-      isEthereumAccountId(accountId) ? newChains.filter((c) => networkUtils.isEthereumBased(c.options)) : newChains,
+      isEthereumAccountId(accountId) ? chainList.filter((c) => networkUtils.isEthereumBased(c.options)) : chainList,
     );
   }, [accountId]);
 
