@@ -2,6 +2,7 @@ import Client from '@walletconnect/sign-client';
 
 import type { Chain, Wallet, Account } from '@shared/core';
 import { walletUtils } from '@entities/wallet';
+import { networkUtils } from '../../network';
 
 export const walletConnectUtils = {
   getWalletConnectChains,
@@ -10,7 +11,9 @@ export const walletConnectUtils = {
 };
 
 function getWalletConnectChains(chains: Chain[]): string[] {
-  return chains.map((c) => `polkadot:${c.chainId.slice(2, 34)}`);
+  return chains
+    .filter((c) => !networkUtils.isEthereumBased(c.options))
+    .map((c) => `polkadot:${c.chainId.slice(2, 34)}`);
 }
 
 function isConnected(client: Client, sessionTopic: string): boolean {
