@@ -10,12 +10,30 @@ export const validateWsAddress = (address: string): boolean => {
 };
 
 /**
- * Validate Parity Signer QR format
+ * Validate Polkadot Vault QR format
  * @param value qr code to validate
  * @return {Boolean}
  */
 export const validateSignerFormat = (value: string): boolean => {
+  return validateSubstrateSignerFormat(value) || validateEthereumSignerFormat(value);
+};
+
+/**
+ * Validate Substrate QR format
+ * @param value qr code to validate
+ * @return {Boolean}
+ */
+export const validateSubstrateSignerFormat = (value: string): boolean => {
   return /^substrate:[a-zA-Z0-9]+:0x[a-zA-Z0-9]+$/.test(value);
+};
+
+/**
+ * Validate Ethereum QR format
+ * @param value qr code to validate
+ * @return {Boolean}
+ */
+export const validateEthereumSignerFormat = (value: string): boolean => {
+  return /^ethereum:0x[a-zA-Z0-9]+:0x[a-zA-Z0-9]+$/.test(value);
 };
 
 /**

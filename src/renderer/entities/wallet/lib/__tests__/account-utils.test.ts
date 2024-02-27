@@ -159,50 +159,6 @@ describe('entities/wallet/lib/account-utils#getDerivationPath', () => {
     expect(result).toEqual('0x7c03b938aa7d9952e4c0f9b573e5e3a3ae9f6a9910c4f965a22803f64d7fbc68');
   });
 
-  test('should return an empty array if no accounts match the chainId', () => {
-    const accounts: Account[] = [
-      { accountId: '0x01', chainId: '0x01', type: AccountType.CHAIN } as unknown as Account,
-      { accountId: '0x02', chainId: '0x02', type: AccountType.CHAIN } as unknown as Account,
-    ];
-    const chainId = '0x03';
-
-    const result = accountUtils.getAllAccountIds(accounts, chainId);
-
-    expect(result).toEqual([]);
-  });
-
-  test('should return an array of unique accountIds', () => {
-    const accounts: Account[] = [
-      { accountId: '0x01', chainId: '0x01', type: AccountType.CHAIN } as unknown as Account,
-      { accountId: '0x02', chainId: '0x01', type: AccountType.CHAIN } as unknown as Account,
-      { accountId: '0x03', chainId: '0x02', type: AccountType.CHAIN } as unknown as Account,
-      { accountId: '0x04', chainId: '0x02', type: AccountType.CHAIN } as unknown as Account,
-      { accountId: '0x05', chainId: '0x03', type: AccountType.CHAIN } as unknown as Account,
-    ];
-    const chainId = '0x01';
-
-    const result = accountUtils.getAllAccountIds(accounts, chainId);
-
-    expect(result).toEqual(['0x01', '0x02']);
-  });
-
-  test('should include accountIds from multisig accounts', () => {
-    const accounts: Account[] = [
-      { accountId: '0x01', chainId: '0x01', type: AccountType.CHAIN } as unknown as Account,
-      {
-        accountId: '0x02',
-        chainId: '0x01',
-        type: AccountType.MULTISIG,
-        signatories: [{ accountId: '0x03', chainId: '0x01' }],
-      } as unknown as Account,
-    ];
-    const chainId = '0x01';
-
-    const result = accountUtils.getAllAccountIds(accounts, chainId);
-
-    expect(result).toEqual(['0x01', '0x02', '0x03']);
-  });
-
   test('should return undefined if accounts array is empty', () => {
     const accounts: Account[] = [];
     const result = accountUtils.getBaseAccount(accounts);

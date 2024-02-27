@@ -1,5 +1,5 @@
 import { hexToU8a, isHex } from '@polkadot/util';
-import { decodeAddress, encodeAddress } from '@polkadot/util-crypto';
+import { decodeAddress, encodeAddress, ethereumEncode } from '@polkadot/util-crypto';
 import { useState } from 'react';
 
 import { Icon, Loader, Button, CaptionText, FootnoteText, Select, SmallTitleText } from '@shared/ui';
@@ -15,6 +15,7 @@ import {
   QrReader,
   WhiteTextButtonStyle,
 } from '@entities/transaction';
+import { CryptoType } from '@shared/core';
 
 const enum CameraState {
   ACTIVE,
@@ -95,17 +96,21 @@ export const DdKeyQrReader = ({ size = 300, className, onGoBack, onResult }: Pro
 
         if (qr.dynamicDerivations.length === 0) return;
 
-        const derivationsAddressInfo = qr.dynamicDerivations.map((addressInfo) => ({
-          ...addressInfo,
-          publicKey: {
-            MultiSigner: addressInfo.publicKey.MultiSigner,
-            public: encodeAddress(
-              isHex(addressInfo.publicKey.public)
-                ? hexToU8a(addressInfo.publicKey.public)
-                : decodeAddress(addressInfo.publicKey.public),
-            ),
-          },
-        }));
+        const derivationsAddressInfo = qr.dynamicDerivations.map((addressInfo) => {
+          const publicKey = isHex(addressInfo.publicKey.public)
+            ? hexToU8a(addressInfo.publicKey.public)
+            : decodeAddress(addressInfo.publicKey.public);
+
+          const isEthereum = addressInfo.encryption === CryptoType.ETHEREUM;
+
+          return {
+            ...addressInfo,
+            publicKey: {
+              MultiSigner: addressInfo.publicKey.MultiSigner,
+              public: isEthereum ? ethereumEncode(publicKey) : encodeAddress(publicKey),
+            },
+          };
+        });
 
         derivations.push(...derivationsAddressInfo);
       });
