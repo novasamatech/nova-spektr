@@ -43,6 +43,7 @@ const $contactsFiltered = combine(
 
 export const filterModel = {
   $contactsFiltered,
+  $filterQuery,
   events: {
     formInitiated,
     queryChanged,
