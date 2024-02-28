@@ -1,13 +1,18 @@
 import { createEvent, createStore, sample, combine, createEffect, createApi } from 'effector';
 import { ApiPromise } from '@polkadot/api';
 import { createForm } from 'effector-forms';
+import { BN } from '@polkadot/util';
 
 import { ActiveProxy } from '../lib/types';
-import { Address, ProxyType, Chain, Account, Wallet } from '@shared/core';
+import { Address, ProxyType, Chain, Account } from '@shared/core';
 import { networkModel, networkUtils } from '@entities/network';
 import { walletSelectModel } from '@features/wallets';
 import { proxiesUtils } from '@features/proxies/lib/proxies-utils';
 import { walletUtils, accountUtils, walletModel, permissionUtils } from '@entities/wallet';
+import { proxyService } from '@shared/api/proxy';
+import { TransactionType, Transaction } from '@entities/transaction';
+import { balanceModel, balanceUtils } from '@entities/balance';
+import { addProxyUtils } from '../lib/add-proxy-utils';
 import {
   getProxyTypes,
   isStringsMatchQuery,
@@ -16,9 +21,6 @@ import {
   dictionary,
   transferableAmount,
 } from '@shared/lib/utils';
-import { proxyService } from '@shared/api/proxy';
-import { TransactionType, Transaction } from '@entities/transaction';
-import { balanceModel } from '@entities/balance';
 
 const formInitiated = createEvent();
 const proxyQueryChanged = createEvent<string>();
@@ -26,6 +28,18 @@ const proxyQueryChanged = createEvent<string>();
 const proxyDepositChanged = createEvent<string>();
 const multisigDepositChanged = createEvent<string>();
 const feeChanged = createEvent<string>();
+
+export type TxWrapper = ('proxy' | 'multisig')[];
+
+const $proxyDeposit = createStore<string>('0');
+const $multisigDeposit = createStore<string>('0');
+const $fee = createStore<string>('0');
+
+const $proxyQuery = createStore<string>('');
+const $maxProxies = createStore<number>(0);
+const $activeProxies = createStore<ActiveProxy[]>([]);
+
+const $txWrappers = createStore<TxWrapper>([]);
 
 export type Callbacks = {
   onSubmit: (formData: FormValues) => void;
@@ -53,14 +67,59 @@ const $proxyForm = createForm<FormValues>({
       init: {} as Account,
       rules: [
         {
-          name: 'required',
-          errorText: 'proxied_address_error',
-          validator: Boolean,
+          name: 'notEnoughTokens',
+          errorText: 'no_tokens_for_fee_deposit_error',
+          source: combine({
+            fee: $fee,
+            proxyDeposit: $proxyDeposit,
+            balances: balanceModel.$balances,
+            txWrappers: $txWrappers,
+          }),
+          validator: (value, form, { txWrappers, balances, ...params }) => {
+            if (addProxyUtils.hasMultisig(txWrappers)) return true;
+
+            const balance = balanceUtils.getBalance(
+              balances,
+              value.accountId,
+              form.network.chainId,
+              form.network.assets[0].assetId.toString(),
+            );
+
+            return new BN(params.proxyDeposit).add(new BN(params.fee)).lte(new BN(transferableAmount(balance)));
+          },
         },
       ],
     },
     signatory: {
       init: {} as Account,
+      rules: [
+        {
+          name: 'notEnoughTokens',
+          errorText: 'no_tokens_for_fee_deposit_error',
+          source: combine({
+            fee: $fee,
+            multisigDeposit: $multisigDeposit,
+            proxyDeposit: $proxyDeposit,
+            balances: balanceModel.$balances,
+            txWrappers: $txWrappers,
+          }),
+          validator: (value, form, { txWrappers, balances, ...params }) => {
+            if (!addProxyUtils.hasMultisig(txWrappers)) return true;
+
+            const balance = balanceUtils.getBalance(
+              balances,
+              value.accountId,
+              form.network.chainId,
+              form.network.assets[0].assetId.toString(),
+            );
+
+            return new BN(params.proxyDeposit)
+              .add(new BN(params.multisigDeposit))
+              .add(new BN(params.fee))
+              .lte(new BN(transferableAmount(balance)));
+          },
+        },
+      ],
     },
     delegate: {
       init: '' as Address,
@@ -103,62 +162,97 @@ const $proxyForm = createForm<FormValues>({
   validateOn: ['submit'],
 });
 
-const $proxyQuery = createStore<string>('');
-const $maxProxies = createStore<number>(0);
-const $activeProxies = createStore<ActiveProxy[]>([]);
-
-const $proxyDeposit = createStore<string>('0');
-const $multisigDeposit = createStore<string>('0');
-const $fee = createStore<string>('0');
-
-const $txWrappers = combine(
-  {
-    wallet: walletSelectModel.$walletForDetails,
-    wallets: walletModel.$wallets,
-    account: $proxyForm.fields.account.$value,
-  },
-  ({ wallet, wallets, account }): ('proxy' | 'multisig')[] => {
-    if (!wallet) return [];
-    if (walletUtils.isMultisig(wallet)) return ['multisig'];
-    if (!walletUtils.isProxied(wallet)) return [];
-
-    const accountWallet = walletUtils.getWalletById(wallets, account.walletId);
-
-    return walletUtils.isMultisig(accountWallet) ? ['proxy', 'multisig'] : ['proxy'];
-  },
-);
+const $proxyChains = combine(networkModel.$chains, (chains) => {
+  return Object.values(chains).filter(proxiesUtils.isRegularProxy);
+});
 
 const $proxiedAccounts = combine(
   {
     wallet: walletSelectModel.$walletForDetails,
     accounts: walletModel.$accounts,
     chain: $proxyForm.fields.network.$value,
+    balances: balanceModel.$balances,
   },
-  ({ wallet, accounts, chain }) => {
+  ({ wallet, accounts, chain, balances }) => {
+    if (!wallet) return [];
+
     const isPolkadotVault = walletUtils.isPolkadotVault(wallet);
-    const isMultishard = walletUtils.isMultiShard(wallet);
-
-    if (!wallet || (!isPolkadotVault && !isMultishard)) return [];
-
-    return accountUtils.getWalletAccounts(wallet.id, accounts).filter((account) => {
+    const walletAccounts = accountUtils.getWalletAccounts(wallet.id, accounts).filter((account) => {
       if (isPolkadotVault && accountUtils.isBaseAccount(account)) return false;
 
       return accountUtils.isChainIdMatch(account, chain.chainId);
     });
+
+    return walletAccounts.map((account) => {
+      const balance = balances.find((balance) => {
+        return (
+          balance.chainId === chain.chainId &&
+          balance.accountId === account.accountId &&
+          balance.assetId === chain.assets[0].assetId.toString()
+        );
+      });
+
+      return { account, balance: transferableAmount(balance) };
+    });
   },
 );
 
-const $proxyChains = combine(networkModel.$chains, (chains) => {
-  return Object.values(chains).filter(proxiesUtils.isRegularProxy);
-});
-
-const $isChainConnected = combine(
+const $signatories = combine(
   {
+    wallet: walletSelectModel.$walletForDetails,
+    wallets: walletModel.$wallets,
+    account: $proxyForm.fields.account.$value,
     chain: $proxyForm.fields.network.$value,
-    statuses: networkModel.$connectionStatuses,
+    accounts: walletModel.$accounts,
+    balances: balanceModel.$balances,
   },
-  ({ chain, statuses }) => {
-    return networkUtils.isConnectedStatus(statuses[chain.chainId]);
+  ({ wallet, wallets, account, accounts, chain, balances }) => {
+    if (!wallet || !accountUtils.isMultisigAccount(account)) return [];
+
+    const signers = dictionary(account.signatories, 'accountId', () => true);
+
+    return wallets.reduce<{ signer: Account; balance: string }[]>((acc, wallet) => {
+      const walletAccounts = accountUtils.getWalletAccounts(wallet.id, accounts);
+      const isAvailable = permissionUtils.canCreateMultisigTx(wallet, walletAccounts);
+
+      if (!isAvailable) return acc;
+
+      const signer = walletAccounts.find((a) => {
+        return signers[a.accountId] && accountUtils.isChainIdMatch(a, chain.chainId);
+      });
+
+      if (signer) {
+        const balance = balances.find((balance) => {
+          return (
+            balance.chainId === chain.chainId &&
+            balance.accountId === signer.accountId &&
+            balance.assetId === chain.assets[0].assetId.toString()
+          );
+        });
+
+        acc.push({ signer, balance: transferableAmount(balance) });
+      }
+
+      return acc;
+    }, []);
+  },
+);
+
+const $proxyAccounts = combine(
+  {
+    wallets: walletModel.$wallets,
+    accounts: walletModel.$accounts,
+    chain: $proxyForm.fields.network.$value,
+    query: $proxyQuery,
+  },
+  ({ wallets, accounts, chain, query }) => {
+    return accountUtils.getAccountsForBalances(wallets, accounts, (account) => {
+      const isChainMatch = accountUtils.isChainIdMatch(account, chain.chainId);
+      const isShardAccount = accountUtils.isShardAccount(account);
+      const address = toAddress(account.accountId, { prefix: chain.addressPrefix });
+
+      return isChainMatch && !isShardAccount && isStringsMatchQuery(query, [account.name, address]);
+    });
   },
 );
 
@@ -175,20 +269,13 @@ const $proxyTypes = combine(
   },
 );
 
-const $proxyAccounts = combine(
+const $isChainConnected = combine(
   {
-    wallets: walletModel.$wallets,
-    accounts: walletModel.$accounts,
     chain: $proxyForm.fields.network.$value,
-    query: $proxyQuery,
+    statuses: networkModel.$connectionStatuses,
   },
-  ({ wallets, accounts, chain, query }) => {
-    return accountUtils.getAccountsForBalances(wallets, accounts, (account) => {
-      const isChainMatch = accountUtils.isChainIdMatch(account, chain.chainId);
-      const address = toAddress(account.accountId, { prefix: chain.addressPrefix });
-
-      return isChainMatch && isStringsMatchQuery(query, [account.name, address]);
-    });
+  ({ chain, statuses }) => {
+    return networkUtils.isConnectedStatus(statuses[chain.chainId]);
   },
 );
 
@@ -214,47 +301,6 @@ const $fakeTx = combine(
   { skipVoid: false },
 );
 
-const $signatories = combine(
-  {
-    wallet: walletSelectModel.$walletForDetails,
-    wallets: walletModel.$wallets,
-    account: $proxyForm.fields.account.$value,
-    chain: $proxyForm.fields.network.$value,
-    accounts: walletModel.$accounts,
-    balances: balanceModel.$balances,
-  },
-  ({ wallet, wallets, account, accounts, chain, balances }) => {
-    if (!wallet || !accountUtils.isMultisigAccount(account)) return [];
-
-    const signers = dictionary(account.signatories, 'accountId', () => true);
-
-    return wallets.reduce<{ wallet: Wallet; signer: Account; balance: string }[]>((acc, wallet) => {
-      const walletAccounts = accountUtils.getWalletAccounts(wallet.id, accounts);
-      const isAvailable = permissionUtils.canCreateMultisigTx(wallet, walletAccounts);
-
-      if (!isAvailable) return acc;
-
-      const signer = walletAccounts.find((a) => {
-        return signers[a.accountId] && accountUtils.isChainIdMatch(a, chain.chainId);
-      });
-
-      if (signer) {
-        const balance = balances.find((balance) => {
-          return (
-            balance.chainId === chain.chainId &&
-            balance.accountId === signer.accountId &&
-            balance.assetId === chain.assets[0].assetId.toString()
-          );
-        });
-
-        acc.push({ wallet, signer, balance: transferableAmount(balance) });
-      }
-
-      return acc;
-    }, []);
-  },
-);
-
 type ProxyParams = {
   api: ApiPromise;
   address: Address;
@@ -264,8 +310,7 @@ const getAccountProxiesFx = createEffect(({ api, address }: ProxyParams): Promis
 });
 
 const getMaxProxiesFx = createEffect((api: ApiPromise): number => {
-  return 2;
-  // return proxyService.getMaxProxies(api);
+  return proxyService.getMaxProxies(api);
 });
 
 sample({
@@ -281,18 +326,8 @@ sample({
 });
 
 sample({
-  clock: getAccountProxiesFx.doneData,
-  target: $activeProxies,
-});
-
-sample({
   clock: proxyQueryChanged,
   target: $proxyQuery,
-});
-
-sample({
-  clock: $proxyForm.fields.network.onChange,
-  target: [$proxyForm.fields.delegate.reset, $proxyForm.fields.network.resetErrors],
 });
 
 sample({
@@ -302,21 +337,50 @@ sample({
 
 sample({
   clock: $proxyForm.fields.network.onChange,
-  source: {
-    wallet: walletSelectModel.$walletForDetails,
-    accounts: walletModel.$accounts,
-  },
-  filter: ({ wallet }) => Boolean(wallet),
-  fn: ({ wallet, accounts }) => {
-    return accountUtils.getWalletAccounts(wallet!.id, accounts)[0];
-  },
-  target: $proxyForm.fields.account.onChange,
+  target: [
+    $proxyQuery.reinit,
+    $proxyForm.fields.delegate.reset,
+    $proxyForm.fields.network.resetErrors,
+    $proxyForm.fields.account.resetErrors,
+    $proxyForm.fields.signatory.resetErrors,
+  ],
 });
 
 sample({
   clock: $proxyForm.fields.network.onChange,
-  source: $signatories,
-  fn: (signatories) => signatories[0].signer,
+  source: $proxiedAccounts,
+  fn: (proxiedAccounts) => proxiedAccounts[0].account,
+  target: $proxyForm.fields.account.onChange,
+});
+
+sample({
+  clock: $proxyForm.fields.account.onChange,
+  source: {
+    wallet: walletSelectModel.$walletForDetails,
+    wallets: walletModel.$wallets,
+  },
+  fn: ({ wallet, wallets }, account): TxWrapper => {
+    if (!wallet) return [];
+    if (walletUtils.isMultisig(wallet)) return ['multisig'];
+    if (!walletUtils.isProxied(wallet)) return [];
+
+    const accountWallet = walletUtils.getWalletById(wallets, account.walletId);
+
+    return walletUtils.isMultisig(accountWallet) ? ['proxy', 'multisig'] : ['proxy'];
+  },
+  target: $txWrappers,
+});
+
+sample({
+  clock: $proxyForm.fields.network.onChange,
+  source: {
+    signatories: $signatories,
+    txWrappers: $txWrappers,
+  },
+  filter: ({ txWrappers, signatories }) => {
+    return addProxyUtils.hasMultisig(txWrappers) && signatories.length > 0;
+  },
+  fn: ({ signatories }) => signatories[0].signer,
   target: $proxyForm.fields.signatory.onChange,
 });
 
@@ -339,16 +403,36 @@ sample({
   target: $maxProxies,
 });
 
+// DEPOSITS
+
+sample({
+  clock: proxyDepositChanged,
+  target: $proxyDeposit,
+});
+
+sample({
+  clock: multisigDepositChanged,
+  target: $multisigDeposit,
+});
+
+sample({
+  clock: feeChanged,
+  target: $fee,
+});
+
+// SUBMIT
+
 sample({
   clock: $proxyForm.formValidated,
-  source: networkModel.$apis,
-  filter: $isChainConnected,
-  fn: (apis, { network, account }) => {
-    return {
-      api: apis[network.chainId],
-      address: toAddress(account.accountId, { prefix: network.addressPrefix }),
-    };
+  source: {
+    apis: networkModel.$apis,
+    form: $proxyForm.$values,
   },
+  filter: $isChainConnected,
+  fn: ({ apis, form }) => ({
+    api: apis[form.network.chainId],
+    address: toAddress(form.account.accountId, { prefix: form.network.addressPrefix }),
+  }),
   target: getAccountProxiesFx,
 });
 
@@ -368,7 +452,6 @@ sample({
   target: $proxyForm.fields.network.addError,
 });
 
-// check existing proxy
 sample({
   clock: getAccountProxiesFx.doneData,
   source: {

@@ -6,13 +6,14 @@ import { Button, Select, Input, InputHint, Combobox, Identicon } from '@shared/u
 import { useI18n } from '@app/providers';
 import { ChainTitle } from '@entities/chain';
 import { ProxyPopover } from '@entities/proxy';
-import { AccountAddress, accountUtils } from '@entities/wallet';
+import { AccountAddress, accountUtils, walletUtils } from '@entities/wallet';
 import { toAddress, toShortAddress } from '@shared/lib/utils';
 import { ProxyDepositWithLabel, MultisigDepositWithLabel, FeeWithLabel } from '@entities/transaction';
 import { proxyFormModel, Callbacks } from '../model/proxy-form-model';
 import { addProxyUtils } from '../lib/add-proxy-utils';
 import { useNetworkData } from '@entities/network';
 import { AssetBalance } from '@entities/asset';
+import { walletSelectModel } from '@features/wallets';
 
 type Props = Callbacks & {
   onBack: () => void;
@@ -108,11 +109,12 @@ const AccountSelector = () => {
     fields: { account, network },
   } = useForm(proxyFormModel.$proxyForm);
 
+  const wallet = useUnit(walletSelectModel.$walletForDetails);
   const proxiedAccounts = useUnit(proxyFormModel.$proxiedAccounts);
 
-  if (proxiedAccounts.length === 0) return null;
+  if (walletUtils.isMultisig(wallet) || proxiedAccounts.length === 0) return null;
 
-  const options = proxiedAccounts.map((account) => {
+  const options = proxiedAccounts.map(({ account, balance }) => {
     const isShard = accountUtils.isShardAccount(account);
     const address = toAddress(account.accountId, { prefix: network.value.addressPrefix });
 
@@ -125,9 +127,10 @@ const AccountSelector = () => {
             size={20}
             type="short"
             address={address}
-            name={isShard ? toShortAddress(address, 20) : account.name}
+            name={isShard ? toShortAddress(address, 16) : account.name}
             canCopy={false}
           />
+          <AssetBalance value={balance} asset={network.value.assets[0]} />
         </div>
       ),
     };
@@ -141,6 +144,7 @@ const AccountSelector = () => {
         selectedId={account.value.id.toString()}
         options={options}
         invalid={account.hasError()}
+        disabled={options.length === 1}
         onChange={({ value }) => account.onChange(value)}
       />
       <InputHint variant="error" active={account.hasError()}>
@@ -162,7 +166,7 @@ const SignatorySelector = () => {
 
   if (!addProxyUtils.hasMultisig(txWrappers)) return null;
 
-  const options = signatories.map(({ wallet, signer, balance }) => {
+  const options = signatories.map(({ signer, balance }) => {
     const isShard = accountUtils.isShardAccount(signer);
     const address = toAddress(signer.accountId, { prefix: network.value.addressPrefix });
 
@@ -171,15 +175,13 @@ const SignatorySelector = () => {
       value: signer,
       element: (
         <div className="flex justify-between items-center w-full">
-          <div className="flex gap-x-2 items-center">
-            <AccountAddress
-              size={20}
-              type="short"
-              address={address}
-              name={isShard ? address : signer.name}
-              canCopy={false}
-            />
-          </div>
+          <AccountAddress
+            size={20}
+            type="short"
+            address={address}
+            name={isShard ? address : signer.name}
+            canCopy={false}
+          />
           <AssetBalance value={balance} asset={network.value.assets[0]} />
         </div>
       ),
