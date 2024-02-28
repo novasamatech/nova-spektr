@@ -147,12 +147,9 @@ export const SingleChainMultisigWallet = ({ isOpen, onClose, onComplete }: Props
             }}
           />
 
-          <ConfirmSignatories
-            chain={chains[chain!]}
-            isActive={activeStep === Step.CONFIRMATION}
-            accounts={signatoryAccounts}
-            contacts={signatoryContacts}
-          />
+          {activeStep === Step.CONFIRMATION && (
+            <ConfirmSignatories chain={chains[chain!]} accounts={signatoryAccounts} contacts={signatoryContacts} />
+          )}
         </section>
       </BaseModal>
 

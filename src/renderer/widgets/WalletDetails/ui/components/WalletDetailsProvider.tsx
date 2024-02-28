@@ -20,6 +20,7 @@ export const WalletDetailsProvider = () => {
   const contacts = useUnit(walletProviderModel.$signatoryContacts);
   const vaultAccounts = useUnit(walletProviderModel.$vaultAccounts);
   const signatoryWallets = useUnit(walletProviderModel.$signatoryWallets);
+  const signatoryAccounts = useUnit(walletProviderModel.$signatoryAccounts);
   const proxyWallet = useUnit(walletProviderModel.$proxyWallet);
 
   if (!wallet) return null;
@@ -50,6 +51,7 @@ export const WalletDetailsProvider = () => {
         wallet={wallet}
         account={multisigAccount}
         signatoryWallets={signatoryWallets}
+        signatoryAccounts={signatoryAccounts}
         signatoryContacts={contacts}
         onClose={walletSelectModel.events.walletIdCleared}
       />
