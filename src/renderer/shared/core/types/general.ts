@@ -19,10 +19,10 @@ export type Timepoint = {
 };
 
 export const enum CryptoType {
-  SR25519,
-  ED25519,
-  ECDSA,
-  ETHEREUM,
+  ED25519 = 0,
+  SR25519 = 1,
+  ECDSA = 2,
+  ETHEREUM = 3,
 }
 
 export const enum ChainType {
