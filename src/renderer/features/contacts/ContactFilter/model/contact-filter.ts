@@ -3,17 +3,24 @@ import { combine, createEvent, createStore, sample } from 'effector';
 import { includes } from '@shared/lib/utils';
 import { contactModel } from '@entities/contact';
 
-const componentMounted = createEvent();
+const formInitiated = createEvent();
 
 const $filterQuery = createStore<string>('');
 const queryChanged = createEvent<string>();
 const queryReset = createEvent();
 
-$filterQuery.on(queryChanged, (_, query) => query).reset(queryReset);
+sample({
+  clock: queryChanged,
+  target: $filterQuery,
+});
+sample({
+  clock: formInitiated,
+  target: queryReset,
+});
 
 sample({
-  clock: componentMounted,
-  target: queryReset,
+  clock: queryChanged,
+  target: $filterQuery.reinit,
 });
 
 const $contactsFiltered = combine(
@@ -37,7 +44,7 @@ const $contactsFiltered = combine(
 export const filterModel = {
   $contactsFiltered,
   events: {
-    componentMounted,
+    formInitiated,
     queryChanged,
   },
 };
