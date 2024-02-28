@@ -7,20 +7,20 @@ const formInitiated = createEvent();
 
 const $filterQuery = createStore<string>('');
 const queryChanged = createEvent<string>();
-const queryReset = createEvent();
 
 sample({
   clock: queryChanged,
   target: $filterQuery,
 });
+
 sample({
   clock: formInitiated,
-  target: queryReset,
+  target: $filterQuery.reinit,
 });
 
 sample({
   clock: queryChanged,
-  target: $filterQuery.reinit,
+  target: $filterQuery,
 });
 
 const $contactsFiltered = combine(
