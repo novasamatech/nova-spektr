@@ -1,5 +1,6 @@
 import { ComponentProps, useState, useEffect } from 'react';
 import { useUnit } from 'effector-react';
+import noop from 'lodash/noop';
 
 import { BaseModal, HeaderTitleText, StatusLabel, Button, IconButton } from '@shared/ui';
 import { useI18n } from '@app/providers';
@@ -26,9 +27,10 @@ type Props = {
   isOpen: boolean;
   onClose: () => void;
   onComplete: () => void;
+  onBack: () => void;
 };
 
-export const SingleChainMultisigWallet = ({ isOpen, onClose, onComplete }: Props) => {
+export const SingleChainMultisigWallet = ({ isOpen, onClose, onComplete, onBack }: Props) => {
   const { t } = useI18n();
 
   const matrix = useUnit(matrixModel.$matrix);
@@ -67,22 +69,22 @@ export const SingleChainMultisigWallet = ({ isOpen, onClose, onComplete }: Props
     }
 
     if (!isOpen && isModalOpen) {
-      closeMultisigModal();
+      closeMultisigModal({ closeAll: false });
     }
   }, [isOpen]);
 
   const goToPrevStep = () => {
     if (activeStep === Step.INIT) {
-      closeMultisigModal();
+      onBack();
     } else {
       setActiveStep((prev) => prev - 1);
     }
   };
 
-  const closeMultisigModal = (params?: { complete: boolean }) => {
+  const closeMultisigModal = (params: { complete?: boolean; closeAll?: boolean } = { closeAll: true }) => {
     toggleIsModalOpen();
 
-    setTimeout(params?.complete ? onComplete : onClose, DEFAULT_TRANSITION);
+    setTimeout(params?.complete ? onComplete : params?.closeAll ? onClose : noop, DEFAULT_TRANSITION);
   };
 
   const getResultProps = (): OperationResultProps => {

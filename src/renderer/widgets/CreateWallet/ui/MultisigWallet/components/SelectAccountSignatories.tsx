@@ -73,11 +73,11 @@ export const SelectAccountSignatories = ({ isActive, accounts, wallets, contacts
   }, [chain]);
 
   useEffect(() => {
-    const extendedAccounts = accounts.reduce<Array<ExtendedAccount | ExtendedAccount[]>>((acc, account, index) => {
+    const extendedAccounts = accounts.reduce<Array<ExtendedAccount | ExtendedAccount[]>>((acc, account) => {
       if (Array.isArray(account)) {
         const toAdd = [] as ExtendedAccount[];
 
-        (account as ShardAccount[]).forEach((a, secondIndex) => {
+        (account as ShardAccount[]).forEach((a) => {
           const address = toAddress(a.accountId, { prefix: chain?.addressPrefix });
 
           if (!accountsQuery || isStringsMatchQuery(accountsQuery, [a.accountId, a.name, address]))
