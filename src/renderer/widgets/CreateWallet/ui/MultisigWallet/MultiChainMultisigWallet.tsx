@@ -131,6 +131,11 @@ export const MultiChainMultisigWallet = ({ isOpen, onClose, onComplete }: Props)
             onClick={() => closeMultisigModal()}
           />
 
+          {/* Should be before SelectSignatories to avoid hidden nova wallet icon */}
+          {activeStep === Step.CONFIRMATION && (
+            <ConfirmSignatories wallets={signatoryWallets} contacts={signatoryContacts} />
+          )}
+
           <SelectSignatories
             isActive={activeStep === Step.INIT}
             wallets={wallets}
@@ -140,12 +145,6 @@ export const MultiChainMultisigWallet = ({ isOpen, onClose, onComplete }: Props)
               setSignatoryWallets(wallets);
               setSignatoryContacts(contacts);
             }}
-          />
-
-          <ConfirmSignatories
-            isActive={activeStep === Step.CONFIRMATION}
-            wallets={signatoryWallets}
-            contacts={signatoryContacts}
           />
         </section>
       </BaseModal>
