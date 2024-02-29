@@ -4866,7 +4866,7 @@ packages:
       fs-extra: 9.1.0
       global: 4.4.0
       globby: 11.1.0
-      ip: 2.0.0
+      ip: 2.0.1
       lodash: 4.17.21
       node-fetch: 2.7.0
       open: 8.4.2
@@ -12991,8 +12991,8 @@ packages:
       - supports-color
     dev: false
 
-  /ip@2.0.0:
-    resolution: {integrity: sha512-WKa+XuLG1A1R0UWhl2+1XQSi+fZWMsYKffMZTTYsiZaUD8k2yDAj5atimTUD2TZkyCkNEeYE5NhFZmupOGtjYQ==}
+  /ip@2.0.1:
+    resolution: {integrity: sha512-lJUL9imLTNi1ZfXT+DU6rBBdbiKGBuay9B6xGSPVjUeQwaH1RIGqef8RZkUtHioLmSNpPR5M4HVKJGm1j8FWVQ==}
     dev: true
 
   /ipaddr.js@1.9.1:
@@ -18475,6 +18475,7 @@ packages:
   /slice-ansi@3.0.0:
     resolution: {integrity: sha512-pSyv7bSTC7ig9Dcgbw9AuRNUb5k5V6oDudjZoMBSr13qpLBG7tB+zgCkARjq7xIUgdz5P1Qe8u+rSGdouOOIyQ==}
     engines: {node: '>=8'}
+    requiresBuild: true
     dependencies:
       ansi-styles: 4.3.0
       astral-regex: 2.0.0
