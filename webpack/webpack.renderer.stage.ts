@@ -48,8 +48,7 @@ const config = merge<WpConfig & WdsConfig>(sharedConfig, {
   },
 
   plugins: [
-    //@ts-ignore
-    new ReactRefreshWebpackPlugin(),
+    new ReactRefreshWebpackPlugin({ overlay: false }),
 
     new webpack.EnvironmentPlugin({
       NODE_ENV: 'production',
