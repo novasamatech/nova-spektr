@@ -9,16 +9,14 @@ import { AddressWithExplorers, WalletIcon } from '@entities/wallet';
 import { proxyUtils } from '@entities/proxy';
 import { useNetworkData } from '@entities/network';
 import { addProxyModel } from '../model/add-proxy-model';
+import { walletSelectModel } from '@features/wallets';
+import { Step } from '../lib/types';
 
-type Props = {
-  onResult: () => void;
-  onBack: () => void;
-};
-
-export const Confirmation = ({ onResult, onBack }: Props) => {
+export const Confirmation = () => {
   const { t } = useI18n();
 
   const transaction = useUnit(addProxyModel.$transaction);
+  const wallet = useUnit(walletSelectModel.$walletForDetails);
   const account = useUnit(addProxyModel.$account);
 
   const { api, chain } = useNetworkData(transaction!.chainId);
@@ -37,8 +35,8 @@ export const Confirmation = ({ onResult, onBack }: Props) => {
 
       <dl className="flex flex-col gap-y-4 w-full">
         <DetailRow label={t('proxy.details.wallet')} className="flex gap-x-2">
-          <WalletIcon type={proxiedWallet.type} size={16} />
-          <FootnoteText className="pr-2">{proxiedWallet.name}</FootnoteText>
+          <WalletIcon type={wallet!.type} size={16} />
+          <FootnoteText className="pr-2">{wallet!.name}</FootnoteText>
         </DetailRow>
 
         <DetailRow label={t('proxy.details.account')}>
@@ -58,16 +56,16 @@ export const Confirmation = ({ onResult, onBack }: Props) => {
           <FootnoteText>{t(proxyUtils.getProxyTypeName(transaction!.args.proxyType))}</FootnoteText>
         </DetailRow>
 
-        <DetailRow label={t('proxy.details.revokeFor')}>
-          <AddressWithExplorers
-            type="short"
-            explorers={chain.explorers}
-            addressFont="text-footnote text-inherit"
-            accountId={proxyAccount.accountId}
-            addressPrefix={chain.addressPrefix}
-            wrapperClassName="text-text-secondary"
-          />
-        </DetailRow>
+        {/*<DetailRow label={t('proxy.details.revokeFor')}>*/}
+        {/*  <AddressWithExplorers*/}
+        {/*    type="short"*/}
+        {/*    explorers={chain.explorers}*/}
+        {/*    addressFont="text-footnote text-inherit"*/}
+        {/*    accountId={proxyAccount.accountId}*/}
+        {/*    addressPrefix={chain.addressPrefix}*/}
+        {/*    wrapperClassName="text-text-secondary"*/}
+        {/*  />*/}
+        {/*</DetailRow>*/}
 
         <hr className="border-filter-border w-full pr-2" />
 
@@ -77,17 +75,21 @@ export const Confirmation = ({ onResult, onBack }: Props) => {
             api={api}
             asset={chain.assets[0]}
             transaction={transaction!}
-            onFeeChange={(fee) => setIsFeeLoading(Boolean(fee))}
+            onFeeLoading={setIsFeeLoading}
           />
         </DetailRow>
       </dl>
 
       <div className="flex w-full justify-between mt-3 pr-2">
-        <Button variant="text" onClick={onBack}>
+        <Button variant="text" onClick={() => addProxyModel.events.stepChanged(Step.INIT)}>
           {t('operation.goBackButton')}
         </Button>
 
-        <SignButton disabled={!isFeeLoading} type={proxiedWallet.type} onClick={onResult} />
+        <SignButton
+          disabled={!isFeeLoading}
+          type={wallet!.type}
+          onClick={() => addProxyModel.events.stepChanged(Step.SIGN)}
+        />
       </div>
     </div>
   );

@@ -1,17 +1,27 @@
-import { createEvent, createStore, sample } from 'effector';
+import { createEvent, createStore, sample, createApi } from 'effector';
 import { spread } from 'patronum';
+import { attach } from 'effector/effector.cjs';
 
 import { Transaction, TransactionType } from '@entities/transaction';
-import { Step, FormValues } from '../lib/types';
 import { toAddress } from '@shared/lib/utils';
 import type { Account } from '@shared/core';
+import { Step } from '../lib/types';
+import { addProxyUtils } from '../lib/add-proxy-utils';
+import { formModel } from './form-model';
+import { confirmModel } from './confirm-model';
+import { signModel } from './sign-model';
+import { submitModel } from './submit-model';
 
 export type Callbacks = {
   onClose: () => void;
 };
 
 const stepChanged = createEvent<Step>();
-const txCreated = createEvent<FormValues>();
+
+const $callbacks = createStore<Callbacks | null>(null);
+const callbacksApi = createApi($callbacks, {
+  callbacksChanged: (state, props: Callbacks) => ({ ...state, ...props }),
+});
 
 const $step = createStore<Step>(Step.INIT);
 
@@ -28,13 +38,18 @@ const $transaction = createStore<Transaction | null>(null);
 //   target: unsubscribeBalancesFx,
 // });
 
+sample({ clock: stepChanged, target: $step });
+
+// Handle proxy-form (Step.INIT)
+
 sample({
   clock: stepChanged,
-  target: $step,
+  filter: addProxyUtils.isInitStep,
+  target: formModel.events.formInitiated,
 });
 
 sample({
-  clock: txCreated,
+  clock: formModel.watch.formSubmitted,
   fn: ({ network, account, proxyType, delegate }) => {
     // TODO: wrap in proxy/multisig
     return {
@@ -48,7 +63,7 @@ sample({
 });
 
 sample({
-  clock: txCreated,
+  clock: formModel.watch.formSubmitted,
   fn: (formData) => ({
     account: formData.account,
     signatory: Object.keys(formData.signatory).length > 0 ? formData.signatory : null,
@@ -62,10 +77,53 @@ sample({
 });
 
 sample({
-  clock: txCreated,
-  fn: () => Step.SIGN,
-  // fn: () => Step.CONFIRM,
+  clock: formModel.watch.formSubmitted,
+  fn: () => Step.CONFIRM,
   target: stepChanged,
+});
+
+// Handle confirm (Step.CONFIRM)
+
+sample({
+  clock: stepChanged,
+  filter: addProxyUtils.isConfirmStep,
+  target: confirmModel.events.formInitiated,
+});
+
+sample({
+  clock: confirmModel.watch.formSubmitted,
+  fn: () => Step.SIGN,
+  target: stepChanged,
+});
+
+// Handle signing (Step.SIGN)
+
+sample({
+  clock: stepChanged,
+  filter: addProxyUtils.isSignStep,
+  target: signModel.events.formInitiated,
+});
+
+sample({
+  clock: signModel.watch.formSubmitted,
+  fn: () => Step.SUBMIT,
+  target: stepChanged,
+});
+
+// Handle submit (Step.SUBMIT)
+
+sample({
+  clock: stepChanged,
+  filter: addProxyUtils.isSubmitStep,
+  target: submitModel.events.formInitiated,
+});
+
+sample({
+  clock: submitModel.watch.formSubmitted,
+  target: attach({
+    source: $callbacks,
+    effect: (state) => state?.onClose(),
+  }),
 });
 
 $transaction.watch((v) => {
@@ -75,12 +133,8 @@ $transaction.watch((v) => {
 export const addProxyModel = {
   $step,
 
-  $account,
-  $signatory,
-  $description,
-  $transaction,
   events: {
     stepChanged,
-    txCreated,
+    callbacksChanged: callbacksApi.callbacksChanged,
   },
 };

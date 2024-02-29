@@ -3,13 +3,9 @@ import { useUnit } from 'effector-react';
 import { Signing } from '@features/operation';
 import { addProxyModel } from '../model/add-proxy-model';
 import { useNetworkData } from '@entities/network';
+import { Step } from '../lib/types';
 
-type Props = {
-  onGoBack: () => void;
-  onSubmit: () => void;
-};
-
-export const SignProxy = ({ onGoBack, onSubmit }: Props) => {
+export const SignProxy = () => {
   const account = useUnit(addProxyModel.$account);
   const signatory = useUnit(addProxyModel.$signatory);
   const transaction = useUnit(addProxyModel.$transaction);
@@ -26,8 +22,8 @@ export const SignProxy = ({ onGoBack, onSubmit }: Props) => {
       accounts={[account]}
       signatory={signatory || undefined}
       transactions={[transaction]}
-      onGoBack={onGoBack}
-      onResult={onSubmit}
+      onGoBack={() => addProxyModel.events.stepChanged(Step.CONFIRM)}
+      onResult={() => addProxyModel.events.stepChanged(Step.SUBMIT)}
     />
   );
 };

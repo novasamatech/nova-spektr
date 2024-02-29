@@ -36,7 +36,7 @@ export const StakeMore = () => {
   const [searchParams] = useSearchParams();
   const params = useParams<{ chainId: ChainId }>();
 
-  const { api, chain } = useNetworkData(params.chainId || ('' as ChainId));
+  const { api, chain } = useNetworkData(params.chainId);
 
   const [isStakeMoreModalOpen, toggleStakeMoreModal] = useToggle(true);
 

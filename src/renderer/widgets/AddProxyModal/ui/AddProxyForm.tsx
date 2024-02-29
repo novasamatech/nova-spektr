@@ -1,5 +1,5 @@
 import { useForm } from 'effector-forms';
-import { FormEvent, useEffect } from 'react';
+import { FormEvent } from 'react';
 import { useUnit } from 'effector-react';
 
 import { Button, Select, Input, InputHint, Combobox, Identicon } from '@shared/ui';
@@ -9,25 +9,19 @@ import { ProxyPopover } from '@entities/proxy';
 import { AccountAddress, accountUtils, walletUtils } from '@entities/wallet';
 import { toAddress, toShortAddress } from '@shared/lib/utils';
 import { ProxyDepositWithLabel, MultisigDepositWithLabel, FeeWithLabel } from '@entities/transaction';
-import { proxyFormModel, Callbacks } from '../model/proxy-form-model';
+import { formModel } from '../model/form-model';
 import { addProxyUtils } from '../lib/add-proxy-utils';
 import { useNetworkData } from '@entities/network';
 import { AssetBalance } from '@entities/asset';
 import { walletSelectModel } from '@features/wallets';
 
-type Props = Callbacks & {
-  onBack: () => void;
+type Props = {
+  onGoBack: () => void;
 };
-export const AddProxyForm = ({ onBack, onSubmit }: Props) => {
+export const AddProxyForm = ({ onGoBack }: Props) => {
   const { t } = useI18n();
 
-  const { submit, isValid } = useForm(proxyFormModel.$proxyForm);
-  const isChainConnected = useUnit(proxyFormModel.$isChainConnected);
-  const isLoading = useUnit(proxyFormModel.$isLoading);
-
-  useEffect(() => {
-    proxyFormModel.events.callbacksChanged({ onSubmit });
-  }, [onSubmit]);
+  const { submit } = useForm(formModel.$proxyForm);
 
   const submitProxy = (event: FormEvent) => {
     event.preventDefault();
@@ -37,7 +31,7 @@ export const AddProxyForm = ({ onBack, onSubmit }: Props) => {
   return (
     <div className="pb-4 px-5">
       <ProxyPopover>{t('manageProxy.addProxy.proxyTooltip')}</ProxyPopover>
-      <form id="init-proxy-form" className="flex flex-col gap-y-4 mt-4" onSubmit={submitProxy}>
+      <form id="add-proxy-form" className="flex flex-col gap-y-4 mt-4" onSubmit={submitProxy}>
         <NetworkSelector />
         <AccountSelector />
         <SignatorySelector />
@@ -46,19 +40,7 @@ export const AddProxyForm = ({ onBack, onSubmit }: Props) => {
         <DescriptionInput />
       </form>
       <FeeSection />
-      <div className="flex justify-between items-center mt-4">
-        <Button variant="text" onClick={onBack}>
-          Back
-        </Button>
-        <Button
-          form="init-proxy-form"
-          type="submit"
-          disabled={!isValid || isLoading || !isChainConnected}
-          isLoading={isLoading}
-        >
-          Continue
-        </Button>
-      </div>
+      <ButtonsSection onGoBack={onGoBack} />
     </div>
   );
 };
@@ -68,9 +50,9 @@ const NetworkSelector = () => {
 
   const {
     fields: { network },
-  } = useForm(proxyFormModel.$proxyForm);
+  } = useForm(formModel.$proxyForm);
 
-  const proxyChains = useUnit(proxyFormModel.$proxyChains);
+  const proxyChains = useUnit(formModel.$proxyChains);
 
   const options = Object.values(proxyChains).map((chain) => ({
     id: chain.chainId,
@@ -107,10 +89,10 @@ const AccountSelector = () => {
 
   const {
     fields: { account, network },
-  } = useForm(proxyFormModel.$proxyForm);
+  } = useForm(formModel.$proxyForm);
 
   const wallet = useUnit(walletSelectModel.$walletForDetails);
-  const proxiedAccounts = useUnit(proxyFormModel.$proxiedAccounts);
+  const proxiedAccounts = useUnit(formModel.$proxiedAccounts);
 
   if (walletUtils.isMultisig(wallet) || proxiedAccounts.length === 0) return null;
 
@@ -159,10 +141,10 @@ const SignatorySelector = () => {
 
   const {
     fields: { network, signatory },
-  } = useForm(proxyFormModel.$proxyForm);
+  } = useForm(formModel.$proxyForm);
 
-  const txWrappers = useUnit(proxyFormModel.$txWrappers);
-  const signatories = useUnit(proxyFormModel.$signatories);
+  const txWrappers = useUnit(formModel.$txWrappers);
+  const signatories = useUnit(formModel.$signatories);
 
   if (!addProxyUtils.hasMultisig(txWrappers)) return null;
 
@@ -210,10 +192,10 @@ const ProxyCombobox = () => {
 
   const {
     fields: { delegate, network },
-  } = useForm(proxyFormModel.$proxyForm);
+  } = useForm(formModel.$proxyForm);
 
-  const proxyAccounts = useUnit(proxyFormModel.$proxyAccounts);
-  const proxyQuery = useUnit(proxyFormModel.$proxyQuery);
+  const proxyAccounts = useUnit(formModel.$proxyAccounts);
+  const proxyQuery = useUnit(formModel.$proxyQuery);
 
   const options = proxyAccounts.map((proxyAccount) => {
     const isShard = accountUtils.isShardAccount(proxyAccount);
@@ -248,7 +230,7 @@ const ProxyCombobox = () => {
         prefixElement={
           <Identicon className="mr-1" address={delegate.value} size={20} background={false} canCopy={false} />
         }
-        onInput={proxyFormModel.events.proxyQueryChanged}
+        onInput={formModel.events.proxyQueryChanged}
         onChange={({ value }) => delegate.onChange(value)}
       />
       <InputHint variant="error" active={delegate.hasError()}>
@@ -263,10 +245,10 @@ const ProxyTypeSelector = () => {
 
   const {
     fields: { proxyType },
-  } = useForm(proxyFormModel.$proxyForm);
+  } = useForm(formModel.$proxyForm);
 
-  const proxyTypes = useUnit(proxyFormModel.$proxyTypes);
-  const isChainConnected = useUnit(proxyFormModel.$isChainConnected);
+  const proxyTypes = useUnit(formModel.$proxyTypes);
+  const isChainConnected = useUnit(formModel.$isChainConnected);
 
   const options = proxyTypes.map((type) => ({ id: type, value: type, element: type }));
 
@@ -289,9 +271,9 @@ const DescriptionInput = () => {
 
   const {
     fields: { description },
-  } = useForm(proxyFormModel.$proxyForm);
+  } = useForm(formModel.$proxyForm);
 
-  const txWrappers = useUnit(proxyFormModel.$txWrappers);
+  const txWrappers = useUnit(formModel.$txWrappers);
 
   if (!addProxyUtils.hasMultisig(txWrappers)) return null;
 
@@ -316,10 +298,10 @@ const DescriptionInput = () => {
 const FeeSection = () => {
   const {
     fields: { network, account },
-  } = useForm(proxyFormModel.$proxyForm);
+  } = useForm(formModel.$proxyForm);
 
-  const fakeTx = useUnit(proxyFormModel.$fakeTx);
-  const txWrappers = useUnit(proxyFormModel.$txWrappers);
+  const fakeTx = useUnit(formModel.$fakeTx);
+  const txWrappers = useUnit(formModel.$txWrappers);
 
   const { api, chain } = useNetworkData(network.value.chainId);
 
@@ -327,25 +309,47 @@ const FeeSection = () => {
     <div className="flex flex-col gap-y-2 mt-6">
       <ProxyDepositWithLabel
         api={api}
-        asset={chain?.assets[0]}
-        onDepositChange={proxyFormModel.events.proxyDepositChanged}
+        asset={chain.assets[0]}
+        onDepositChange={formModel.events.proxyDepositChanged}
       />
 
-      {addProxyUtils.hasMultisig(txWrappers) && accountUtils.isMultisigAccount(account.value) && (
+      {addProxyUtils.hasMultisig(txWrappers) && account.value && accountUtils.isMultisigAccount(account.value) && (
         <MultisigDepositWithLabel
           api={api}
           asset={chain.assets[0]}
           threshold={account.value.threshold}
-          onDepositChange={proxyFormModel.events.multisigDepositChanged}
+          onDepositChange={formModel.events.multisigDepositChanged}
         />
       )}
 
       <FeeWithLabel
         api={api}
-        asset={chain?.assets[0]}
+        asset={chain.assets[0]}
         transaction={fakeTx}
-        onFeeChange={proxyFormModel.events.feeChanged}
+        onFeeChange={formModel.events.feeChanged}
       />
+    </div>
+  );
+};
+
+const ButtonsSection = ({ onGoBack }: Pick<Props, 'onGoBack'>) => {
+  const { isValid } = useForm(formModel.$proxyForm);
+  const isChainConnected = useUnit(formModel.$isChainConnected);
+  const isLoading = useUnit(formModel.$isLoading);
+
+  return (
+    <div className="flex justify-between items-center mt-4">
+      <Button variant="text" onClick={onGoBack}>
+        Back
+      </Button>
+      <Button
+        form="add-proxy-form"
+        type="submit"
+        disabled={!isValid || isLoading || !isChainConnected}
+        isLoading={isLoading}
+      >
+        Continue
+      </Button>
     </div>
   );
 };
