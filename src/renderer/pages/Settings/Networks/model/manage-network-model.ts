@@ -6,6 +6,7 @@ import { ChainId, Connection, ConnectionType, RpcNode } from '@shared/core';
 import { storageService } from '@shared/api/storage';
 import { ProviderWithMetadata } from '@shared/api/network';
 
+// TODO: create 2 features for Network selection & Manage custom RPC
 const lightClientSelected = createEvent<ChainId>();
 const autoBalanceSelected = createEvent<ChainId>();
 const rpcNodeSelected = createEvent<{ chainId: ChainId; node: RpcNode }>();

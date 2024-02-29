@@ -1,9 +1,8 @@
-import { useEffect, useState, ReactNode } from 'react';
-import { useUnit } from 'effector-react';
+import { ReactNode } from 'react';
 
 import { ExtendedChain } from '@entities/network';
 import { CaptionText, Counter, Accordion } from '@shared/ui';
-import { networkListUtils, networkListModel } from '@features/networks/NetworkList';
+import { networksListUtils } from '../lib/networks-list-utils';
 
 type Props = {
   title: string;
@@ -12,23 +11,13 @@ type Props = {
   children: (network: ExtendedChain) => ReactNode;
 };
 
-export const NetworkList = ({ title, isDefaultOpen, networkList, children }: Props) => {
-  const [isListOpen, setIsListOpen] = useState(isDefaultOpen);
-  const filterQuery = useUnit(networkListModel.$filterQuery);
-  const { success, connecting, error } = networkListUtils.getMetrics(networkList);
-
-  useEffect(() => {
-    if (filterQuery) {
-      setIsListOpen(true);
-    } else {
-      setIsListOpen(isDefaultOpen);
-    }
-  }, [filterQuery]);
-
+export const NetworksList = ({ title, isDefaultOpen, networkList, children }: Props) => {
   if (networkList.length === 0) return null;
 
+  const { success, connecting, error } = networksListUtils.getMetrics(networkList);
+
   return (
-    <Accordion isDefaultOpen={isListOpen}>
+    <Accordion isDefaultOpen={isDefaultOpen}>
       <Accordion.Button buttonClass="py-1.5 px-2">
         <div className="flex items-center gap-x-1.5 w-full">
           <CaptionText as="h2" className="uppercase text-text-secondary tracking-[0.75px]">

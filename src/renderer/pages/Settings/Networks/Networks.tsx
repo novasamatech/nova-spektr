@@ -1,20 +1,27 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Trans } from 'react-i18next';
 import { useUnit } from 'effector-react';
 
 import { useI18n, useConfirmContext } from '@app/providers';
 import { Paths } from '@shared/routes';
-import { BaseModal, SearchInput, BodyText, InfoLink, Icon } from '@shared/ui';
+import { BaseModal, InfoLink } from '@shared/ui';
 import { useToggle } from '@shared/lib/hooks';
 import { DEFAULT_TRANSITION } from '@shared/lib/utils';
-import { NetworkList, NetworkItem, CustomRpcModal } from './components';
+import { CustomRpcModal, NetworkSelector } from './components';
 import type { RpcNode, ChainId } from '@shared/core';
 import { ConnectionType } from '@shared/core';
 import { networkModel, ExtendedChain, networkUtils } from '@entities/network';
-import { chainsService } from '@shared/api/network';
 import { manageNetworkModel } from './model/manage-network-model';
-import { networkListModel } from '@features/networks';
+import { NetworksFilter } from '@features/network/NetworksFilter';
+import {
+  EmptyNetworks,
+  NetworksList,
+  InactiveNetwork,
+  activeNetworksModel,
+  inactiveNetworksModel, ActiveNetwork,
+} from '@features/network/NetworksList';
+import './model/networks-overview-model';
 
 const MAX_LIGHT_CLIENTS = 3;
 
@@ -26,9 +33,9 @@ export const Networks = () => {
   const navigate = useNavigate();
   const { confirm } = useConfirmContext();
 
+  const activeNetworks = useUnit(activeNetworksModel.$activeNetworks);
+  const inactiveNetworks = useUnit(inactiveNetworksModel.$inactiveNetworks);
   const connections = useUnit(networkModel.$connections);
-  const active = useUnit(networkListModel.$activeChainsSorted);
-  const inactive = useUnit(networkListModel.$inactiveChainsSorted);
 
   const [isCustomRpcOpen, toggleCustomRpc] = useToggle();
   const [isNetworksModalOpen, toggleNetworksModal] = useToggle(true);
@@ -41,14 +48,10 @@ export const Networks = () => {
     setTimeout(() => navigate(Paths.SETTINGS), DEFAULT_TRANSITION);
   };
 
-  useEffect(() => {
-    networkListModel.events.formInitiated();
-  }, []);
-
   const confirmRemoveCustomNode = (name: string): Promise<boolean> => {
     return confirm({
       title: t('settings.networks.confirmModal.removeTitle'),
-      message: <Trans t={t} i18nKey="settings.networks.confirmModal.removeLabel" values={{ node: name }} />,
+      message: <Trans t={t} i18nKey="settings.networkss.confirmModal.removeLabel" values={{ node: name }} />,
       confirmText: t('settings.networks.confirmModal.confirmButton'),
       cancelText: t('settings.networks.confirmModal.cancelButton'),
     });
@@ -57,7 +60,7 @@ export const Networks = () => {
   const confirmDisableNetwork = (name: string): Promise<boolean> => {
     return confirm({
       title: t('settings.networks.confirmModal.disableTitle'),
-      message: <Trans t={t} i18nKey="settings.networks.confirmModal.disableLabel" values={{ network: name }} />,
+      message: <Trans t={t} i18nKey="settings.networkss.confirmModal.disableLabel" values={{ network: name }} />,
       confirmText: t('settings.networks.confirmModal.confirmButton'),
       cancelText: t('settings.networks.confirmModal.cancelButton'),
     });
@@ -71,7 +74,7 @@ export const Networks = () => {
       message: (
         <Trans
           t={t}
-          i18nKey="settings.networks.confirmModal.disableLightLabel"
+          i18nKey="settings.networkss.confirmModal.disableLightLabel"
           components={{ verify }}
           values={{ network: name }}
         />
@@ -84,7 +87,7 @@ export const Networks = () => {
   const confirmEnableLightClient = (): Promise<boolean> => {
     return confirm({
       title: t('settings.networks.confirmModal.enableLightTitle'),
-      message: <Trans t={t} i18nKey="settings.networks.confirmModal.enableLightLabel" />,
+      message: <Trans t={t} i18nKey="settings.networkss.confirmModal.enableLightLabel" />,
       confirmText: t('settings.networks.confirmModal.confirmButton'),
       cancelText: t('settings.networks.confirmModal.cancelButton'),
     });
@@ -133,32 +136,23 @@ export const Networks = () => {
         }
       }
 
-      try {
-        // Let unsubscribe from previous Provider, microtask first - macrotask second
-        if (type === ConnectionType.LIGHT_CLIENT) {
-          setTimeout(() => {
-            manageNetworkModel.events.lightClientSelected(chainId);
-          });
-        } else if (type === ConnectionType.AUTO_BALANCE) {
-          setTimeout(() => {
-            manageNetworkModel.events.autoBalanceSelected(chainId);
-          });
-        } else if (node) {
-          setTimeout(() => {
-            manageNetworkModel.events.rpcNodeSelected({ chainId, node });
-          });
-        }
-      } catch (error) {
-        console.warn(error);
+      if (type === ConnectionType.LIGHT_CLIENT) {
+        manageNetworkModel.events.lightClientSelected(chainId);
+      } else if (type === ConnectionType.AUTO_BALANCE) {
+        manageNetworkModel.events.autoBalanceSelected(chainId);
+      } else if (node) {
+        manageNetworkModel.events.rpcNodeSelected({ chainId, node });
       }
     };
   };
 
-  const changeCustomNode = (network: ExtendedChain) => (node?: RpcNode) => {
-    setNodeToEdit(node);
-    setNetwork(network);
+  const changeCustomNode = (network: ExtendedChain) => {
+    return (node?: RpcNode) => {
+      setNodeToEdit(node);
+      setNetwork(network);
 
-    toggleCustomRpc();
+      toggleCustomRpc();
+    };
   };
 
   const closeCustomRpcModal = async (node?: RpcNode): Promise<void> => {
@@ -177,66 +171,55 @@ export const Networks = () => {
   };
 
   return (
-    <>
-      <BaseModal
-        closeButton
-        contentClass="pt-4"
-        panelClass="w-[784px]"
-        isOpen={isNetworksModalOpen}
-        title={t('settings.networks.title')}
-        onClose={closeNetworksModal}
-      >
-        <SearchInput wrapperClass="mx-5" placeholder="Search" onChange={networkListModel.events.queryChanged} />
+    <BaseModal
+      closeButton
+      contentClass="pt-4"
+      panelClass="w-[784px]"
+      isOpen={isNetworksModalOpen}
+      title={t('settings.networks.title')}
+      onClose={closeNetworksModal}
+    >
+      <NetworksFilter className="mx-5" />
 
-        <div className="flex flex-col gap-y-4 px-3 pb-4 pt-1 mt-5 h-[454px] overflow-y-auto">
-          <NetworkList
-            isDefaultOpen={false}
-            title={t('settings.networks.disabledNetworksLabel')}
-            networkList={chainsService.sortChains(inactive)}
-          >
-            {(network) => (
-              <NetworkItem
+      <div className="flex flex-col gap-y-4 px-3 pb-4 pt-1 mt-5 h-[454px] overflow-y-auto">
+        <NetworksList
+          isDefaultOpen={false}
+          title={t('settings.networks.disabledNetworksLabel')}
+          networkList={inactiveNetworks}
+        >
+          {(network) => (
+            <InactiveNetwork networkItem={network}>
+              <NetworkSelector
                 networkItem={network}
                 onConnect={connectToNode(network)}
                 onDisconnect={disableNetwork(network)}
                 onRemoveCustomNode={removeCustomNode(network.chainId)}
                 onChangeCustomNode={changeCustomNode(network)}
               />
-            )}
-          </NetworkList>
-
-          <NetworkList
-            isDefaultOpen
-            title={t('settings.networks.activeNetworksLabel')}
-            networkList={chainsService.sortChains(active)}
-          >
-            {(network) => (
-              <NetworkItem
-                networkItem={network}
-                onConnect={connectToNode(network)}
-                onDisconnect={disableNetwork(network)}
-                onRemoveCustomNode={removeCustomNode(network.chainId)}
-                onChangeCustomNode={changeCustomNode(network)}
-              />
-            )}
-          </NetworkList>
-
-          {!inactive.length && !active.length && (
-            <div className="flex flex-col items-center mx-auto pt-12 pb-15 px-2">
-              <Icon as="img" name="emptyList" alt={t('settings.networks.emptyStateLabel')} size={178} />
-              <BodyText className="w-52 text-center text-text-tertiary">
-                {t('settings.networks.emptyStateLabel')}
-              </BodyText>
-            </div>
+            </InactiveNetwork>
           )}
-        </div>
-      </BaseModal>
+        </NetworksList>
+
+        <NetworksList isDefaultOpen title={t('settings.networks.activeNetworksLabel')} networkList={activeNetworks}>
+          {(network) => (
+            <ActiveNetwork networkItem={network}>
+              <NetworkSelector
+                networkItem={network}
+                onConnect={connectToNode(network)}
+                onDisconnect={disableNetwork(network)}
+                onRemoveCustomNode={removeCustomNode(network.chainId)}
+                onChangeCustomNode={changeCustomNode(network)}
+              />
+            </ActiveNetwork>
+          )}
+        </NetworksList>
+
+        <EmptyNetworks />
+      </div>
 
       {network && (
         <CustomRpcModal isOpen={isCustomRpcOpen} node={nodeToEdit} network={network} onClose={closeCustomRpcModal} />
       )}
-    </>
+    </BaseModal>
   );
 };
-
-export default Networks;
