@@ -35,7 +35,7 @@ export const AddProxyForm = ({ onBack, onSubmit }: Props) => {
   };
 
   return (
-    <div>
+    <div className="pb-4 px-5">
       <ProxyPopover>{t('manageProxy.addProxy.proxyTooltip')}</ProxyPopover>
       <form id="init-proxy-form" className="flex flex-col gap-y-4 mt-4" onSubmit={submitProxy}>
         <NetworkSelector />

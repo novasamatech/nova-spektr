@@ -4,7 +4,8 @@ import { useEffect } from 'react';
 import { BaseModal } from '@shared/ui';
 import { useModalClose } from '@shared/lib/hooks';
 import { AddProxyForm } from './AddProxyForm';
-import { ConfirmProxy } from './ConfirmProxy';
+import { Confirmation } from './Confirmation';
+import { SignProxy } from './SignProxy';
 import { addProxyUtils } from '../lib/add-proxy-utils';
 import { Callbacks, addProxyModel } from '../model/add-proxy-model';
 import { proxyFormModel } from '../model/proxy-form-model';
@@ -25,12 +26,21 @@ export const AddProxyModal = ({ isOpen, onClose }: Props) => {
   }, [isOpen]);
 
   return (
-    <BaseModal closeButton isOpen={isModalOpen} title="Add delegated authority (proxy)" onClose={closeModal}>
-      {addProxyUtils.isInitStep(step) && <AddProxyForm onBack={closeModal} onSubmit={() => console.log('submit')} />}
-      {/*{addProxyUtils.isInitStep(step) && <AddProxyForm onBack={closeModal} onSubmit={addProxyModel.events.txCreated} />}*/}
-      {addProxyUtils.isConfirmStep(step) && <ConfirmProxy onBack={() => addProxyModel.events.stepChanged(Step.INIT)} />}
-      {addProxyUtils.isSignStep(step) && <div>Signing</div>}
-      {/*{addProxyUtils.isSignStep(step) && <Signing onGoBack={() => addProxyModel.events.stepChanged(Step.CONFIRM)} />}*/}
+    <BaseModal
+      closeButton
+      contentClass=""
+      isOpen={isModalOpen}
+      title="Add delegated authority (proxy)"
+      onClose={closeModal}
+    >
+      {addProxyUtils.isInitStep(step) && <AddProxyForm onBack={closeModal} onSubmit={addProxyModel.events.txCreated} />}
+      {addProxyUtils.isConfirmStep(step) && <Confirmation onBack={() => addProxyModel.events.stepChanged(Step.INIT)} />}
+      {addProxyUtils.isSignStep(step) && (
+        <SignProxy
+          onGoBack={() => addProxyModel.events.stepChanged(Step.CONFIRM)}
+          onSubmit={() => addProxyModel.events.stepChanged(Step.SUBMIT)}
+        />
+      )}
       {addProxyUtils.isSubmitStep(step) && <div>Submit</div>}
     </BaseModal>
   );

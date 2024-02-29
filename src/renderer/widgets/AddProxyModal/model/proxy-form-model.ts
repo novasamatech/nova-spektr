@@ -1,9 +1,9 @@
-import { createEvent, createStore, sample, combine, createEffect, createApi } from 'effector';
+import { createEvent, createStore, sample, combine, createEffect, createApi, attach } from 'effector';
 import { ApiPromise } from '@polkadot/api';
 import { createForm } from 'effector-forms';
 import { BN } from '@polkadot/util';
 
-import { ActiveProxy } from '../lib/types';
+import { ActiveProxy, TxWrapper, FormValues } from '../lib/types';
 import { Address, ProxyType, Chain, Account } from '@shared/core';
 import { networkModel, networkUtils } from '@entities/network';
 import { walletSelectModel } from '@features/wallets';
@@ -29,8 +29,6 @@ const proxyDepositChanged = createEvent<string>();
 const multisigDepositChanged = createEvent<string>();
 const feeChanged = createEvent<string>();
 
-export type TxWrapper = ('proxy' | 'multisig')[];
-
 const $proxyDeposit = createStore<string>('0');
 const $multisigDeposit = createStore<string>('0');
 const $fee = createStore<string>('0');
@@ -50,14 +48,6 @@ const callbacksApi = createApi($callbacks, {
   callbacksChanged: (state, props: Callbacks) => ({ ...state, ...props }),
 });
 
-type FormValues = {
-  network: Chain;
-  account: Account;
-  signatory: Account;
-  delegate: Address;
-  proxyType: ProxyType;
-  description: string;
-};
 const $proxyForm = createForm<FormValues>({
   fields: {
     network: {
@@ -468,29 +458,32 @@ sample({
   target: $proxyForm.fields.delegate.addError,
 });
 
-// sample({
-//   clock: $proxyForm.formValidated,
-//   target: attach({
-//     source: $callbacks,
-//     effect: (state, formData: FormValues) => state?.onSubmit(formData),
-//   }),
-// });
+sample({
+  clock: getAccountProxiesFx.doneData,
+  filter: $proxyForm.$isValid,
+  target: attach({
+    source: {
+      callbacks: $callbacks,
+      form: $proxyForm.$values,
+    },
+    effect: ({ form, callbacks }) => callbacks?.onSubmit(form),
+  }),
+});
 
 export const proxyFormModel = {
   $proxyForm,
+  $proxyChains,
+  $proxiedAccounts,
+  $signatories,
+  $proxyAccounts,
+  $proxyTypes,
   $proxyQuery,
 
-  $proxyChains,
-  $proxyTypes,
-  $proxiedAccounts,
-  $proxyAccounts,
-
-  $fakeTx,
   $proxyDeposit,
   $multisigDeposit,
   $fee,
 
-  $signatories,
+  $fakeTx,
   $txWrappers,
   $isChainConnected,
   $isLoading: getAccountProxiesFx.pending,
@@ -498,7 +491,6 @@ export const proxyFormModel = {
     formInitiated,
     callbacksChanged: callbacksApi.callbacksChanged,
     proxyQueryChanged,
-
     proxyDepositChanged,
     multisigDepositChanged,
     feeChanged,
