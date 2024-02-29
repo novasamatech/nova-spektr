@@ -52,7 +52,7 @@ export const Networks = () => {
   const confirmRemoveCustomNode = (name: string): Promise<boolean> => {
     return confirm({
       title: t('settings.networks.confirmModal.removeTitle'),
-      message: <Trans t={t} i18nKey="settings.networkss.confirmModal.removeLabel" values={{ node: name }} />,
+      message: <Trans t={t} i18nKey="settings.networks.confirmModal.removeLabel" values={{ node: name }} />,
       confirmText: t('settings.networks.confirmModal.confirmButton'),
       cancelText: t('settings.networks.confirmModal.cancelButton'),
     });
@@ -61,7 +61,7 @@ export const Networks = () => {
   const confirmDisableNetwork = (name: string): Promise<boolean> => {
     return confirm({
       title: t('settings.networks.confirmModal.disableTitle'),
-      message: <Trans t={t} i18nKey="settings.networkss.confirmModal.disableLabel" values={{ network: name }} />,
+      message: <Trans t={t} i18nKey="settings.networks.confirmModal.disableLabel" values={{ network: name }} />,
       confirmText: t('settings.networks.confirmModal.confirmButton'),
       cancelText: t('settings.networks.confirmModal.cancelButton'),
     });
@@ -75,7 +75,7 @@ export const Networks = () => {
       message: (
         <Trans
           t={t}
-          i18nKey="settings.networkss.confirmModal.disableLightLabel"
+          i18nKey="settings.networks.confirmModal.disableLightLabel"
           components={{ verify }}
           values={{ network: name }}
         />
@@ -88,7 +88,7 @@ export const Networks = () => {
   const confirmEnableLightClient = (): Promise<boolean> => {
     return confirm({
       title: t('settings.networks.confirmModal.enableLightTitle'),
-      message: <Trans t={t} i18nKey="settings.networkss.confirmModal.enableLightLabel" />,
+      message: <Trans t={t} i18nKey="settings.networks.confirmModal.enableLightLabel" />,
       confirmText: t('settings.networks.confirmModal.confirmButton'),
       cancelText: t('settings.networks.confirmModal.cancelButton'),
     });

@@ -1,9 +1,8 @@
 import { PropsWithChildren } from 'react';
-import { TFunction } from 'react-i18next';
+import { Trans } from 'react-i18next';
 
 import { ExtendedChain } from '@entities/network';
 import { BodyText, StatusLabel, FootnoteText, HelpText } from '@shared/ui';
-import { useI18n } from '@app/providers';
 import { ChainIcon } from '@entities/chain';
 import { ConnectionStatus } from '@shared/core';
 
@@ -12,27 +11,31 @@ import './styles.css';
 const Status = {
   [ConnectionStatus.CONNECTING]: {
     variant: 'waiting',
-    title: (t: TFunction) => (
+    title: (
       <div className="spektr-waiting">
-        <FootnoteText className="text-text-tertiary">{t('settings.networks.connectingStatusLabel')}</FootnoteText>
+        <FootnoteText className="text-text-tertiary">
+          <Trans>settings.networks.connectingStatusLabel</Trans>
+        </FootnoteText>
       </div>
     ),
   },
   [ConnectionStatus.DISCONNECTED]: {
     variant: 'waiting',
-    title: (t: TFunction) => (
+    title: (
       <div className="spektr-waiting">
-        <FootnoteText className="text-text-tertiary">{t('settings.networks.connectingStatusLabel')}</FootnoteText>
+        <FootnoteText className="text-text-tertiary">
+          <Trans>settings.networks.connectingStatusLabel</Trans>
+        </FootnoteText>
       </div>
     ),
   },
   [ConnectionStatus.CONNECTED]: {
     variant: 'success',
-    title: (t: TFunction) => t('settings.networks.connectedStatusLabel'),
+    title: <Trans>settings.networks.connectedStatusLabel</Trans>,
   },
   [ConnectionStatus.ERROR]: {
     variant: 'error',
-    title: (t: TFunction) => t('settings.networks.errorStatusLabel'),
+    title: <Trans>settings.networks.errorStatusLabel</Trans>,
   },
 } as const;
 
@@ -41,8 +44,6 @@ type Props = {
 };
 
 export const ActiveNetwork = ({ networkItem, children }: PropsWithChildren<Props>) => {
-  const { t } = useI18n();
-
   return (
     <div className="flex items-center py-3">
       <ChainIcon src={networkItem.icon} name={networkItem.name} size={26} />
@@ -53,7 +54,7 @@ export const ActiveNetwork = ({ networkItem, children }: PropsWithChildren<Props
         )}
       </div>
       <StatusLabel
-        title={Status[networkItem.connectionStatus].title(t)}
+        title={Status[networkItem.connectionStatus].title}
         variant={Status[networkItem.connectionStatus].variant}
         className="mr-8.5"
       />
