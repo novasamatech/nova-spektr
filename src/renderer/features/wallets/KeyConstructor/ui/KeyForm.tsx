@@ -6,7 +6,7 @@ import { constructorModel } from '../model/constructor-model';
 import { Button, Input, Checkbox, FootnoteText, Select, InputHint } from '@shared/ui';
 import { ShardInfoPopover } from './ShardInfoPopover';
 import { ChainTitle } from '@entities/chain';
-import { chainsService } from '@shared/api/network';
+import { chainsService } from '@entities/network';
 import { KeyType } from '@shared/core';
 import { useI18n } from '@app/providers';
 
@@ -46,13 +46,6 @@ export const KeyForm = () => {
 
   const keyTypes = [
     {
-      id: KeyType.MAIN,
-      value: KeyType.MAIN,
-      element: (
-        <FootnoteText className="text-text-secondary">{t('dynamicDerivations.constructor.keyTypeMain')}</FootnoteText>
-      ),
-    },
-    {
       id: KeyType.HOT,
       value: KeyType.HOT,
       element: (
@@ -64,6 +57,24 @@ export const KeyForm = () => {
       value: KeyType.PUBLIC,
       element: (
         <FootnoteText className="text-text-secondary">{t('dynamicDerivations.constructor.keyTypePublic')}</FootnoteText>
+      ),
+    },
+    {
+      id: KeyType.STAKING,
+      value: KeyType.STAKING,
+      element: (
+        <FootnoteText className="text-text-secondary">
+          {t('dynamicDerivations.constructor.keyTypeStaking')}
+        </FootnoteText>
+      ),
+    },
+    {
+      id: KeyType.GOVERNANCE,
+      value: KeyType.GOVERNANCE,
+      element: (
+        <FootnoteText className="text-text-secondary">
+          {t('dynamicDerivations.constructor.keyTypeGovernance')}
+        </FootnoteText>
       ),
     },
     {

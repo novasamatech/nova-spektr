@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/react';
 
-import { Plate } from './Plate';
+import Plate from './Plate';
 
 describe('ui/Plate', () => {
   test('should render component', () => {

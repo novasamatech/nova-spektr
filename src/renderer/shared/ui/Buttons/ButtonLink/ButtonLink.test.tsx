@@ -1,7 +1,7 @@
 import { act, render, screen } from '@testing-library/react';
 import { BrowserRouter, MemoryRouter } from 'react-router-dom';
 
-import { ButtonLink } from './ButtonLink';
+import ButtonLink from './ButtonLink';
 
 describe('ui/Buttons/ButtonLink', () => {
   test('should render component', () => {

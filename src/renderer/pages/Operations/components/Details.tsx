@@ -1,27 +1,18 @@
 import { useUnit } from 'effector-react';
 
 import { useI18n } from '@app/providers';
-import { AddressWithExplorers, WalletCardSm, WalletIcon, walletModel, ExplorersPopover } from '@entities/wallet';
+import { AddressWithExplorers, WalletCardSm, WalletIcon, walletModel } from '@entities/wallet';
 import { Icon, FootnoteText, DetailRow, CaptionText } from '@shared/ui';
 import { useToggle } from '@shared/lib/hooks';
-import {
-  MultisigTransaction,
-  Transaction,
-  isXcmTransaction,
-  isTransferTransaction,
-  isManageProxyTransaction,
-  isAddProxyTransaction,
-  isRemoveProxyTransaction,
-} from '@entities/transaction';
+import { MultisigTransaction, Transaction, isXcmTransaction, isTransferTransaction } from '@entities/transaction';
 import { cnTw } from '@shared/lib/utils';
-import { ExtendedChain, networkUtils } from '@entities/network';
+import { ExtendedChain, isLightClient } from '@entities/network';
 import { AddressStyle, DescriptionBlockStyle, InteractionStyle } from '../common/constants';
 import { ChainTitle } from '@entities/chain';
 import { Account } from '@shared/core';
 import { getTransactionFromMultisigTx } from '@entities/multisig';
-import type { Address, MultisigAccount, ProxyType, Validator } from '@shared/core';
+import type { Address, MultisigAccount, Validator } from '@shared/core';
 import { useValidatorsMap, SelectedValidatorsModal } from '@entities/staking';
-import { proxyUtils } from '@entities/proxy';
 
 type Props = {
   tx: MultisigTransaction;
@@ -44,7 +35,7 @@ const Details = ({ tx, account, extendedChain, signatory }: Props) => {
   const addressPrefix = extendedChain?.addressPrefix;
   const explorers = extendedChain?.explorers;
 
-  const validatorsMap = useValidatorsMap(api, connection && networkUtils.isLightClientConnection(connection));
+  const validatorsMap = useValidatorsMap(api, connection && isLightClient(connection));
 
   const [isValidatorsOpen, toggleValidators] = useToggle();
 
@@ -65,7 +56,6 @@ const Details = ({ tx, account, extendedChain, signatory }: Props) => {
 
   const isDidverVisible =
     (isXcmTransaction(tx.transaction) && transaction?.args.destinationChain) ||
-    isManageProxyTransaction(tx.transaction) ||
     transaction?.args.dest ||
     transaction?.args.payee;
 
@@ -93,11 +83,11 @@ const Details = ({ tx, account, extendedChain, signatory }: Props) => {
 
       {signatory && signatoryWallet && (
         <DetailRow label={t('transfer.signatoryLabel')} className="text-text-secondary -mr-2">
-          <ExplorersPopover
-            button={<WalletCardSm wallet={signatoryWallet} />}
-            address={signatory.accountId}
-            explorers={explorers}
+          <WalletCardSm
+            wallet={signatoryWallet}
+            accountId={signatory.accountId}
             addressPrefix={addressPrefix}
+            explorers={explorers}
           />
         </DetailRow>
       )}
@@ -144,40 +134,6 @@ const Details = ({ tx, account, extendedChain, signatory }: Props) => {
       )}
 
       {isDidverVisible && <hr className="border-filter-border" />}
-
-      {isAddProxyTransaction(tx.transaction) && (
-        <DetailRow label={t('operation.details.delegateTo')} className="text-text-secondary">
-          <AddressWithExplorers
-            explorers={explorers}
-            addressFont={AddressStyle}
-            type="short"
-            accountId={transaction?.args.delegate}
-            addressPrefix={addressPrefix}
-            wrapperClassName="-mr-2 min-w-min"
-          />
-        </DetailRow>
-      )}
-
-      {isRemoveProxyTransaction(tx.transaction) && (
-        <DetailRow label={t('operation.details.revokeFor')} className="text-text-secondary">
-          <AddressWithExplorers
-            explorers={explorers}
-            addressFont={AddressStyle}
-            type="short"
-            accountId={transaction?.args.delegate}
-            addressPrefix={addressPrefix}
-            wrapperClassName="-mr-2 min-w-min"
-          />
-        </DetailRow>
-      )}
-
-      {isManageProxyTransaction(tx.transaction) && (
-        <DetailRow label={t('operation.details.accessType')}>
-          <FootnoteText className="text-text-secondary">
-            {t(proxyUtils.getProxyTypeName(transaction?.args.proxyType as ProxyType))}
-          </FootnoteText>
-        </DetailRow>
-      )}
 
       {isXcmTransaction(tx.transaction) && transaction?.args.destinationChain && (
         <DetailRow label={t('operation.details.toNetwork')}>

@@ -2,23 +2,27 @@ import { Popover } from '@headlessui/react';
 import { useUnit } from 'effector-react';
 import { ReactNode, useEffect } from 'react';
 
+import { walletSelectModel } from '../model/wallet-select-model';
 import { SmallTitleText, SearchInput } from '@shared/ui';
-import { useI18n } from '@app/providers';
 import { WalletFamily } from '@shared/core';
+import { useI18n } from '@app/providers';
 import { WalletGroup } from './WalletGroup';
-import { walletSelectModel, Callbacks } from '../model/wallet-select-model';
 
-type Props = Callbacks & {
+type Props = {
   action?: ReactNode;
+  onClose: () => void;
 };
 export const WalletPanel = ({ action, onClose }: Props) => {
   const { t } = useI18n();
 
   const filteredWalletGroups = useUnit(walletSelectModel.$filteredWalletGroups);
+  const isWalletChanged = useUnit(walletSelectModel.$isWalletChanged);
 
   useEffect(() => {
-    walletSelectModel.events.callbacksChanged({ onClose });
-  }, [onClose]);
+    if (!isWalletChanged) return;
+
+    onClose();
+  }, [isWalletChanged]);
 
   return (
     <Popover.Panel className="absolute mt-2 z-10 rounded-md bg-token-container-background border border-token-container-border shadow-card-shadow overflow-hidden">

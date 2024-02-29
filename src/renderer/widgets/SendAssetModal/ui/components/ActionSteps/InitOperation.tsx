@@ -1,19 +1,19 @@
 import { ApiPromise } from '@polkadot/api';
 import { useEffect, useState } from 'react';
-import { useUnit } from 'effector-react';
+import { useStore, useUnit } from 'effector-react';
 
-import { getAssetId, TEST_ACCOUNTS, toAddress, toHexChainId } from '@shared/lib/utils';
+import { getAssetId, TEST_ACCOUNT_ID, toAddress, toHexChainId } from '@shared/lib/utils';
 import { Transaction, TransactionType, useTransaction } from '@entities/transaction';
 import { TransferForm, TransferFormData } from '../TransferForm';
 import { getAccountOption, getSignatoryOption } from '../../common/utils';
 import { OperationFooter, OperationHeader } from '@features/operation';
+import * as sendAssetModel from '../../../model/send-asset';
 import { XcmTransferType } from '@shared/api/xcm';
 import { walletModel, accountUtils, walletUtils } from '@entities/wallet';
 import { AssetType } from '@shared/core';
 import type { ChainId, Asset, Explorer, Account, MultisigAccount, Chain, Wallet } from '@shared/core';
 import { networkModel } from '@entities/network';
 import { useAssetBalances } from '@entities/balance';
-import { sendAssetModel } from '../../../model/send-asset';
 
 type Props = {
   api: ApiPromise;
@@ -51,15 +51,15 @@ export const InitOperation = ({
   const connections = useUnit(networkModel.$connections);
   const apis = useUnit(networkModel.$apis);
 
-  const availableDestinations = useUnit(sendAssetModel.$destinations);
-  const config = useUnit(sendAssetModel.$finalConfig);
-  const xcmAsset = useUnit(sendAssetModel.$txAsset);
-  const xcmDest = useUnit(sendAssetModel.$txDest);
-  const xcmBeneficiary = useUnit(sendAssetModel.$txBeneficiary);
-  const xcmTransfer = useUnit(sendAssetModel.$xcmTransfer);
-  const xcmFee = useUnit(sendAssetModel.$xcmFee);
-  const xcmWeight = useUnit(sendAssetModel.$xcmWeight);
-  const reserveAsset = useUnit(sendAssetModel.$xcmAsset);
+  const availableDestinations = useStore(sendAssetModel.$destinations);
+  const config = useStore(sendAssetModel.$finalConfig);
+  const xcmAsset = useStore(sendAssetModel.$txAsset);
+  const xcmDest = useStore(sendAssetModel.$txDest);
+  const xcmBeneficiary = useStore(sendAssetModel.$txBeneficiary);
+  const xcmTransfer = useStore(sendAssetModel.$xcmTransfer);
+  const xcmFee = useStore(sendAssetModel.$xcmFee);
+  const xcmWeight = useStore(sendAssetModel.$xcmWeight);
+  const reserveAsset = useStore(sendAssetModel.$xcmAsset);
 
   const [fee, setFee] = useState<string>('0');
   const [feeIsLoading, setFeeIsLoading] = useState(false);
@@ -183,7 +183,7 @@ export const InitOperation = ({
 
     return buildTransaction(
       transactionType,
-      toAddress(activeAccount?.accountId || TEST_ACCOUNTS[0], { prefix: addressPrefix }),
+      toAddress(activeAccount?.accountId || TEST_ACCOUNT_ID, { prefix: addressPrefix }),
       chainId,
       args,
     );

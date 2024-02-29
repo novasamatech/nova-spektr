@@ -1,11 +1,10 @@
-import { hexToU8a, isHex, isU8a, u8aToHex, u8aToU8a } from '@polkadot/util';
+import { isHex, isU8a, u8aToHex, u8aToU8a } from '@polkadot/util';
 import { base58Decode, checkAddressChecksum, decodeAddress, encodeAddress } from '@polkadot/util-crypto';
 
 import type { AccountId, Address } from '@shared/core';
 import { truncate } from './strings';
 import {
   ADDRESS_ALLOWED_ENCODED_LENGTHS,
-  ETHEREUM_PUBLIC_KEY_LENGTH_BYTES,
   PUBLIC_KEY_LENGTH,
   PUBLIC_KEY_LENGTH_BYTES,
   SS58_DEFAULT_PREFIX,
@@ -26,7 +25,7 @@ export const toAddress = (value: Address | AccountId, params?: { chunk?: number;
   try {
     address = encodeAddress(decodeAddress(value), prefixValue);
   } catch {
-    address = value;
+    return address;
   }
 
   return chunkValue ? toShortAddress(address, chunkValue) : address;
@@ -52,7 +51,7 @@ export const validateAddress = (address?: Address | AccountId): boolean => {
   if (!address) return false;
 
   if (isU8a(address) || isHex(address)) {
-    return [ETHEREUM_PUBLIC_KEY_LENGTH_BYTES, PUBLIC_KEY_LENGTH_BYTES].includes(u8aToU8a(address).length);
+    return u8aToU8a(address).length === PUBLIC_KEY_LENGTH_BYTES;
   }
 
   try {
@@ -91,14 +90,4 @@ export const isCorrectAccountId = (accountId?: AccountId): boolean => {
   const trimmedValue = accountId.replace(/^0x/, '');
 
   return trimmedValue.length === PUBLIC_KEY_LENGTH && /^[0-9a-fA-F]+$/.test(trimmedValue);
-};
-
-export const isEthereumAccountId = (accountId?: AccountId): boolean => {
-  if (!accountId) return false;
-
-  try {
-    return hexToU8a(accountId).length === 20;
-  } catch (e) {
-    return false;
-  }
 };

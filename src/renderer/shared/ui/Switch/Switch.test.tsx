@@ -1,6 +1,10 @@
 import { render, screen } from '@testing-library/react';
 
-import { Switch } from './Switch';
+import Switch from './Switch';
+
+jest.mock('@app/providers', () => ({
+  useMatrix: jest.fn(),
+}));
 
 describe('ui/Switch', () => {
   test('should render component', () => {

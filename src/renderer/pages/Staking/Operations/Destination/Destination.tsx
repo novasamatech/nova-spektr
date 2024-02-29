@@ -12,7 +12,7 @@ import InitOperation, { DestinationResult } from './InitOperation/InitOperation'
 import { useToggle } from '@shared/lib/hooks';
 import { DestinationType } from '../common/types';
 import { BaseModal, Button, Loader } from '@shared/ui';
-import { OperationTitle } from '@entities/chain';
+import { OperationTitle } from '@renderer/components/common';
 import { Signing } from '@features/operation';
 import { RewardsDestination } from '@shared/core';
 import type { Account, Address, ChainId, HexString } from '@shared/core';

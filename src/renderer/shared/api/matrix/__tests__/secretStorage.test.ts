@@ -1,5 +1,5 @@
 import SecretStorage from '../service/secretStorage';
-import { ISecretStorage } from '../lib/types';
+import { ISecretStorage } from '../common/types';
 
 describe('service/matrix/secretStorage', () => {
   let storage: ISecretStorage;

@@ -86,16 +86,13 @@ export const NominatorsItem = ({
           <button
             type="button"
             className={cnTw(
-              'group flex items-center gap-x-2 px-2 py-1 w-full h-full rounded-md transition-colors',
+              'flex items-center gap-x-2 px-2 py-1 w-full h-full rounded-md transition-colors',
               'hover:bg-action-background-hover focus:bg-action-background-hover',
             )}
             onClick={() => onCheckValidators(stake.stash)}
           >
             <Icon name="viewValidators" size={16} />
-            <FootnoteText
-              as="span"
-              className="text-text-secondary transition-colors group-hover:text-text-primary group-focus:text-text-primary"
-            >
+            <FootnoteText as="span" className="text-text-primary">
               {t('staking.overview.viewValidatorsOption')}
             </FootnoteText>
           </button>

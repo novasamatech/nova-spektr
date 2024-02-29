@@ -1,6 +1,6 @@
 import { ComponentStory, ComponentMeta } from '@storybook/react';
 
-import { Plate } from './Plate';
+import Plate from './Plate';
 
 export default {
   title: 'Plate',

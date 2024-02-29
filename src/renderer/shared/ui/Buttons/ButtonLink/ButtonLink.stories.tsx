@@ -1,8 +1,8 @@
 import { MemoryRouter } from 'react-router-dom';
 import { ComponentMeta, ComponentStory } from '@storybook/react';
 
-import { Icon } from '../../Icon/Icon';
-import { ButtonLink } from './ButtonLink';
+import { Icon } from '@shared/ui';
+import ButtonLink from './ButtonLink';
 
 export default {
   title: 'ButtonLink',

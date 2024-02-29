@@ -11,7 +11,6 @@ type Props = {
   title: string;
   description?: string;
   isOpen: boolean;
-  zIndex?: string;
   onClose: () => void;
   className?: string;
 };
@@ -20,7 +19,6 @@ export const StatusModal = ({
   title,
   description,
   isOpen,
-  zIndex = 'z-50',
   content,
   className,
   children,
@@ -28,7 +26,7 @@ export const StatusModal = ({
 }: PropsWithChildren<Props>) => {
   return (
     <Transition appear show={isOpen} as={Fragment}>
-      <Dialog as="div" className={cnTw('relative', zIndex)} onClose={onClose}>
+      <Dialog as="div" className="relative z-50" onClose={onClose}>
         <ModalBackdrop />
 
         <div className="fixed inset-0 overflow-hidden flex min-h-full w-full items-center justify-center text-center">

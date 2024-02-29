@@ -20,9 +20,9 @@ import { getChainOption, getPlaceholder } from '../common/utils';
 import { DropdownOption, DropdownResult } from '@shared/ui/types';
 import AccountSelectModal from '@pages/Operations/components/modals/AccountSelectModal/AccountSelectModal';
 import type { Chain, Account, MultisigAccount, Asset, Address, ChainId, HexString } from '@shared/core';
+import * as sendAssetModel from '../../model/send-asset';
 import { accountUtils } from '@entities/wallet';
 import { balanceModel, balanceUtils } from '@entities/balance';
-import { sendAssetModel } from '../../model/send-asset';
 
 const DESCRIPTION_MAX_LENGTH = 120;
 

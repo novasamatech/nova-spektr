@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/react';
 
-import { InputHint } from './InputHint';
+import InputHint from './InputHint';
 
 describe('ui/InputHint', () => {
   test('should render component', () => {

@@ -1,6 +1,6 @@
-import { createEffect, createEvent, createStore, sample } from 'effector';
+import { createEffect, createEvent, createStore, forward, sample } from 'effector';
 import { parse } from 'yaml';
-import groupBy from 'lodash/groupBy';
+import { groupBy } from 'lodash';
 import { reset } from 'patronum';
 
 import {
@@ -120,9 +120,10 @@ const mergePathsFx = createEffect<MergePathsParams, MergeResult>(({ imported, ex
   return Object.entries(importedByChain).reduce<MergeResult>(
     (acc, [chain, derivations]) => {
       const existingChainDerivations = existingByChain[chain];
+      if (!existingChainDerivations) return acc;
 
       const { mergedDerivations, added, duplicated } = importKeysUtils.mergeChainDerivations(
-        existingChainDerivations || [],
+        existingChainDerivations,
         derivations,
       );
 
@@ -153,15 +154,9 @@ reset({
   target: [$validationError, $mergedKeys, $report],
 });
 
-sample({
-  clock: resetValues,
-  target: $existingDerivations,
-});
+forward({ from: resetValues, to: $existingDerivations });
 
-sample({
-  clock: fileUploaded,
-  target: parseFileContentFx,
-});
+forward({ from: fileUploaded, to: parseFileContentFx });
 
 sample({
   source: parseFileContentFx.fail,

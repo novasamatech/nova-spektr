@@ -1,8 +1,8 @@
 import { ComponentMeta, ComponentStory } from '@storybook/react';
 
-import { TEST_ACCOUNTS } from '@shared/lib/utils';
+import { TEST_ACCOUNT_ID } from '@shared/lib/utils';
 import { ProxyAccount } from './ProxyAccount';
-import { ProxyType } from '@shared/core';
+import { ProxyType } from '@entities/proxy';
 
 export default {
   title: 'ProxyAccount',
@@ -14,14 +14,14 @@ const Template: ComponentStory<typeof ProxyAccount> = (args) => <ProxyAccount {.
 
 export const Primary = Template.bind({});
 Primary.args = {
-  accountId: TEST_ACCOUNTS[0],
-  proxyType: ProxyType.STAKING,
+  accountId: TEST_ACCOUNT_ID,
+  proxyType: ProxyType.Staking,
 };
 
 export const WithName = Template.bind({});
 WithName.args = {
-  accountId: TEST_ACCOUNTS[0],
-  proxyType: ProxyType.ANY,
+  accountId: TEST_ACCOUNT_ID,
+  proxyType: ProxyType.Any,
   name: 'Some account',
   type: 'full',
 };

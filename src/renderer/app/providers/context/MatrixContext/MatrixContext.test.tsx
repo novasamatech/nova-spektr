@@ -1,9 +1,13 @@
 import { act, render, screen } from '@testing-library/react';
-import { Provider } from 'effector-react';
-import { fork } from 'effector';
 
+import { Matrix } from '@shared/api/matrix';
 import { MatrixProvider } from './MatrixContext';
-import { matrixModel } from '@entities/matrix';
+
+jest.mock('@app/providers', () => ({
+  useMatrix: jest.fn(),
+}));
+
+jest.mock('@shared/api/matrix', () => ({ Matrix: jest.fn().mockReturnValue({}) }));
 
 jest.mock('@entities/multisig', () => ({
   useMultisigTx: jest.fn().mockReturnValue({
@@ -19,6 +23,12 @@ jest.mock('@entities/multisig', () => ({
   }),
 }));
 
+jest.mock('@entities/notification', () => ({
+  useNotification: jest.fn().mockReturnValue({
+    addNotification: jest.fn(),
+  }),
+}));
+
 jest.mock('@app/providers', () => ({
   useMultisigChainContext: jest.fn(() => ({
     addTask: () => undefined,
@@ -31,64 +41,53 @@ describe('context/MatrixContext', () => {
   });
 
   test('should render children', async () => {
-    const scope = fork({
-      values: new Map().set(matrixModel.$matrix, {
-        loginFromCache: jest.fn().mockResolvedValue({}),
-        setEventCallbacks: jest.fn(),
-        stopClient: jest.fn(),
-      }),
-    });
+    (Matrix as jest.Mock).mockImplementation(() => ({
+      loginFromCache: jest.fn().mockResolvedValue({}),
+      setEventCallbacks: jest.fn(),
+      stopClient: jest.fn(),
+    }));
+
     await act(async () => {
-      render(
-        <Provider value={scope}>
-          <MatrixProvider>children</MatrixProvider>
-        </Provider>,
-      );
+      render(<MatrixProvider>children</MatrixProvider>);
     });
 
     expect(screen.getByText('children')).toBeInTheDocument();
   });
 
-  test('should set eventCallbacks', async () => {
+  test('should set eventCallbacks and login', async () => {
     const spyEventCallbacks = jest.fn();
+    const spyLoginFromCache = jest.fn().mockResolvedValue({});
 
-    const scope = fork({
-      values: new Map().set(matrixModel.$matrix, {
-        setEventCallbacks: spyEventCallbacks,
-        stopClient: jest.fn(),
-      }),
-    });
+    (Matrix as jest.Mock).mockImplementation(() => ({
+      loginFromCache: spyLoginFromCache,
+      setEventCallbacks: spyEventCallbacks,
+      stopClient: jest.fn(),
+    }));
+
     await act(async () => {
-      render(
-        <Provider value={scope}>
-          <MatrixProvider>children</MatrixProvider>
-        </Provider>,
-      );
+      render(<MatrixProvider>children</MatrixProvider>);
     });
 
-    expect(spyEventCallbacks).toHaveBeenCalled();
+    expect(spyEventCallbacks).toBeCalled();
+    expect(spyLoginFromCache).toBeCalled();
   });
 
   test('should stop Matrix client on context unmount', async () => {
     const spyStopClient = jest.fn();
 
-    const scope = fork({
-      values: new Map().set(matrixModel.$matrix, {
-        setEventCallbacks: jest.fn(),
-        stopClient: spyStopClient,
-      }),
-    });
+    (Matrix as jest.Mock).mockImplementation(() => ({
+      loginFromCache: jest.fn().mockResolvedValue({}),
+      setEventCallbacks: jest.fn(),
+      stopClient: spyStopClient,
+    }));
+
     let unmount = () => {};
     await act(async () => {
-      const result = render(
-        <Provider value={scope}>
-          <MatrixProvider>children</MatrixProvider>
-        </Provider>,
-      );
+      const result = render(<MatrixProvider>children</MatrixProvider>);
       unmount = result.unmount;
     });
 
     unmount();
-    expect(spyStopClient).toHaveBeenCalled();
+    expect(spyStopClient).toBeCalled();
   });
 });

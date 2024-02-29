@@ -2,14 +2,15 @@ import { createApi, createEvent, createStore, sample, combine, createEffect, att
 import { createForm } from 'effector-forms';
 import { spread } from 'patronum';
 
+import { SeedInfo } from '@renderer/components/common/QrCode/common/types';
+import { chainsService } from '@entities/network';
 import { accountUtils, KEY_NAMES, walletModel } from '@entities/wallet';
 import type { ChainAccount, ShardAccount, DraftAccount, BaseAccount, Wallet, Account, NoID } from '@shared/core';
 import { AccountType, ChainType, CryptoType, KeyType } from '@shared/core';
 import { dictionary } from '@shared/lib/utils';
 import { storageService } from '@shared/api/storage';
-import { SeedInfo } from '@entities/transaction';
-import { walletSelectModel } from '@features/wallets';
-import { networkModel, networkUtils } from '@entities/network';
+
+const chains = chainsService.getChainsData();
 
 const WALLET_NAME_MAX_LENGTH = 256;
 
@@ -101,18 +102,15 @@ sample({
 
 sample({
   clock: formInitiated,
-  source: networkModel.$chains,
-  fn: (chains) => {
-    const defaultChains = networkUtils.getMainRelaychains(Object.values(chains));
-
-    return defaultChains.reduce<DraftAccount<ChainAccount | ShardAccount>[]>((acc, chain) => {
+  fn: () => {
+    return chains.reduce<DraftAccount<ChainAccount | ShardAccount>[]>((acc, chain) => {
       if (!chain.specName) return acc;
 
       acc.push({
         chainId: chain.chainId,
         name: KEY_NAMES[KeyType.MAIN],
         derivationPath: `//${chain.specName}`,
-        cryptoType: networkUtils.isEthereumBased(chain.options) ? CryptoType.ETHEREUM : CryptoType.SR25519,
+        cryptoType: CryptoType.SR25519,
         chainType: ChainType.SUBSTRATE,
         type: AccountType.CHAIN,
         keyType: KeyType.MAIN,
@@ -166,7 +164,7 @@ sample({
   clock: createVaultFx.doneData,
   filter: (data: CreateResult | undefined): data is CreateResult => Boolean(data),
   fn: (data) => data.wallet.id,
-  target: walletSelectModel.events.walletSelected,
+  target: walletModel.events.walletSelected,
 });
 
 sample({

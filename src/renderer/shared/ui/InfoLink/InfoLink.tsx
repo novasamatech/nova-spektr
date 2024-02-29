@@ -1,8 +1,8 @@
 import { PropsWithChildren } from 'react';
 
 import { cnTw } from '@shared/lib/utils';
-import { IconNames } from '../Icon/data';
-import { Icon } from '../Icon/Icon';
+import { IconNames } from '@shared/ui/Icon/data';
+import { Icon } from '@shared/ui';
 
 type Props = {
   url: string;
@@ -14,7 +14,7 @@ type Props = {
   download?: boolean;
 };
 
-export const InfoLink = ({
+const InfoLink = ({
   url,
   children,
   iconName,
@@ -42,3 +42,5 @@ export const InfoLink = ({
     {iconPosition === 'right' && iconName && <Icon name={iconName} size={16} className="text-inherit" />}
   </a>
 );
+
+export default InfoLink;

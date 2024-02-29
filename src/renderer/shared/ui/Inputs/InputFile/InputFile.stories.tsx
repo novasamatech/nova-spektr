@@ -1,6 +1,6 @@
 import { ComponentMeta, ComponentStory } from '@storybook/react';
 
-import { InputFile } from './InputFile';
+import InputFile from './InputFile';
 
 export default {
   title: 'InputFile',

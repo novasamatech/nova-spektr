@@ -2,9 +2,8 @@ import { UnsignedTransaction } from '@substrate/txwrapper-polkadot';
 import { useEffect, useState, ComponentProps } from 'react';
 import { ApiPromise } from '@polkadot/api';
 import { useNavigate } from 'react-router-dom';
-import { useUnit } from 'effector-react';
 
-import { useI18n, useMultisigChainContext } from '@app/providers';
+import { useI18n, useMatrix, useMultisigChainContext } from '@app/providers';
 import { Paths } from '@shared/routes';
 import { HexString } from '@shared/core';
 import {
@@ -22,7 +21,6 @@ import { useToggle } from '@shared/lib/hooks';
 import { useMultisigTx, useMultisigEvent } from '@entities/multisig';
 import type { Account, MultisigAccount } from '@shared/core';
 import { accountUtils } from '@entities/wallet';
-import { matrixModel } from '@entities/matrix';
 
 type ResultProps = Pick<ComponentProps<typeof OperationResult>, 'title' | 'description' | 'variant'>;
 
@@ -41,10 +39,8 @@ type Props = {
 
 export const Submit = ({ api, accounts, txs, multisigTx, unsignedTx, signatures, description, onClose }: Props) => {
   const { t } = useI18n();
-
-  const matrix = useUnit(matrixModel.$matrix);
-
   const navigate = useNavigate();
+  const { matrix } = useMatrix();
   const { submitAndWatchExtrinsic, getSignedExtrinsic } = useTransaction();
   const { addTask } = useMultisigChainContext();
 
@@ -115,7 +111,7 @@ export const Submit = ({ api, accounts, txs, multisigTx, unsignedTx, signatures,
 
             await Promise.all([addMultisigTx(newTx), addEventWithQueue(event)]);
 
-            if (matrix.userIsLoggedIn && firstAccount.matrixRoomId) {
+            if (matrix.userIsLoggedIn) {
               sendMultisigEvent(firstAccount.matrixRoomId, newTx, typedParams);
             }
           }

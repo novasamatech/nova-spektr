@@ -5,6 +5,7 @@ import { constructorModel } from '../model/constructor-model';
 import { networkModel } from '@entities/network';
 import { ChainIcon } from '@entities/chain';
 import { accountUtils } from '@entities/wallet';
+import { KeyType } from '@shared/core';
 import { useI18n } from '@app/providers';
 
 export const KeysList = () => {
@@ -35,6 +36,8 @@ export const KeysList = () => {
       <ul className="flex flex-col gap-y-2">
         {keys.map((key, index) => {
           const keyData = accountUtils.isAccountWithShards(key) ? key[0] : key;
+
+          if (keyData.keyType === KeyType.MAIN) return;
 
           return (
             <li key={keyData.id || keyData.derivationPath} className="flex items-center gap-x-3 py-1.5 pl-2">

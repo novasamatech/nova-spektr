@@ -1,10 +1,7 @@
 import type { ChainAccount, ShardAccount, DraftAccount } from '@shared/core';
+import { DdAddressInfoDecoded, DynamicDerivationRequestInfo } from '@renderer/components/common/QrCode/common/types';
+import { cryptoTypeToMultisignerIndex } from '@renderer/components/common/QrCode/QrGenerator/common/utils';
 import { toAccountId } from '@renderer/shared/lib/utils';
-import {
-  DynamicDerivationRequestInfo,
-  DdAddressInfoDecoded,
-  cryptoTypeToMultisignerIndex,
-} from '@entities/transaction';
 
 export const derivationAddressUtils = {
   createDerivationsRequest,

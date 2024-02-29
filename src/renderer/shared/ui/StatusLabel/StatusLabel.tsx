@@ -13,10 +13,12 @@ type Props = {
   className?: string;
 };
 
-export const StatusLabel = ({ title, subtitle, variant, className }: Props) => (
+const StatusLabel = ({ title, subtitle, variant, className }: Props) => (
   <div className={cnTw('grid grid-flow-col gap-x-1.5', className)}>
     <span className={cnTw('w-[9px] h-[9px] mt-[5px] rounded-full row-span-2', DotStyles[variant])} />
     {typeof title === 'string' ? <FootnoteText className={TitleStyles[variant]}>{title}</FootnoteText> : title}
     {subtitle && <HelpText className="text-text-tertiary">{subtitle}</HelpText>}
   </div>
 );
+
+export default StatusLabel;

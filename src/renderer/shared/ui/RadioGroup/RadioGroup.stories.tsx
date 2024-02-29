@@ -1,6 +1,6 @@
 import { ComponentMeta, ComponentStory } from '@storybook/react';
 
-import { RadioGroup } from './RadioGroup';
+import RadioGroup from './RadioGroup';
 
 export default {
   title: 'RadioGroup',

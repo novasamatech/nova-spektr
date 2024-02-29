@@ -15,7 +15,7 @@ env:
 
 jobs:
   internal-version-increment:
-    if: contains(github.event.label.name, 'internal-build')
+    if: ${{ github.event.label.name == 'internal-build' }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout

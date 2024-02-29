@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { UnsignedTransaction } from '@substrate/txwrapper-polkadot';
-import { useGate, useUnit } from 'effector-react';
+import { useStore, useGate, useUnit } from 'effector-react';
 import { useNavigate } from 'react-router-dom';
 
 import { useI18n } from '@app/providers';
@@ -9,9 +9,9 @@ import { Transaction, useTransaction, validateBalance } from '@entities/transact
 import { BaseModal, Button, Loader } from '@shared/ui';
 import { Confirmation, InitOperation, Submit } from './components/ActionSteps';
 import { Signing } from '@features/operation';
-import { OperationTitle } from '@entities/chain';
+import { OperationTitle } from '@renderer/components/common';
 import { useToggle } from '@shared/lib/hooks';
-import { sendAssetModel } from '../model/send-asset';
+import * as sendAssetModel from '../model/send-asset';
 import type { Chain, Asset, Account, MultisigAccount, HexString } from '@shared/core';
 import { accountUtils, walletModel, walletUtils } from '@entities/wallet';
 import { priceProviderModel } from '@entities/price';
@@ -38,11 +38,10 @@ export const SendAssetModal = ({ chain, asset }: Props) => {
   const balances = useUnit(balanceModel.$balances);
   const activeWallet = useUnit(walletModel.$activeWallet);
 
-  const config = useUnit(sendAssetModel.$finalConfig);
-  const xcmAsset = useUnit(sendAssetModel.$xcmAsset);
-  const destinationChain = useUnit(sendAssetModel.$destinationChain);
-
   const { getTransactionFee, setTxs, txs, setWrappers, wrapTx } = useTransaction();
+  const config = useStore(sendAssetModel.$finalConfig);
+  const xcmAsset = useStore(sendAssetModel.$xcmAsset);
+  const destinationChain = useStore(sendAssetModel.$destinationChain);
 
   const [isModalOpen, toggleIsModalOpen] = useToggle(true);
   const [activeStep, setActiveStep] = useState<Step>(Step.INIT);
@@ -163,7 +162,7 @@ export const SendAssetModal = ({ chain, asset }: Props) => {
       onClose={closeSendModal}
     >
       {!api?.isConnected ? (
-        <div className="pb-4 px-5">
+        <div>
           <Loader className="my-24 mx-auto" color="primary" size={25} />
           <Button disabled className="w-fit flex-0 mt-7 ml-auto">
             {t('transfer.continueButton')}

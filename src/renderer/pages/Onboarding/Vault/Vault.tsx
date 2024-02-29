@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 
+import { SeedInfo } from '@renderer/components/common/QrCode/common/types';
 import ScanStep from './ScanStep/ScanStep';
 import { ManageMultishard } from './ManageMultishard/ManageMultishard';
 import { ManageSingleshard } from './ManageSingleshard/ManageSingleshard';
@@ -7,7 +8,7 @@ import { ManageVault } from './ManageVault/ManageVault';
 import { BaseModal } from '@shared/ui';
 import { DEFAULT_TRANSITION } from '@shared/lib/utils';
 import { useToggle } from '@shared/lib/hooks';
-import { SeedInfo, VaultFeatures } from '@entities/transaction';
+import { VaultFeatures } from '@renderer/components/common/QrCode/common/constants';
 
 const isDynamicDerivationSupport = (seedInfo: SeedInfo): boolean => {
   const dynamicDerivationsExist = seedInfo.features?.some(

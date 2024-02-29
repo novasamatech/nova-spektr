@@ -13,7 +13,7 @@ export type Props = {
   closeOnClick?: boolean;
 };
 
-export const MenuPopover = ({
+const MenuPopover = ({
   content,
   className,
   containerClassName,
@@ -55,3 +55,5 @@ export const MenuPopover = ({
     </Menu>
   );
 };
+
+export default MenuPopover;

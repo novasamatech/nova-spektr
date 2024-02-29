@@ -1,6 +1,10 @@
 import { render, screen } from '@testing-library/react';
 
-import { Checkbox } from './Checkbox';
+import Checkbox from './Checkbox';
+
+jest.mock('@app/providers', () => ({
+  useMatrix: jest.fn(),
+}));
 
 describe('ui/Checkbox', () => {
   test('should render component', () => {

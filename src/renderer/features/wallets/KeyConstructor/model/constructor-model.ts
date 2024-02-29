@@ -2,7 +2,7 @@ import { createForm } from 'effector-forms';
 import { createStore, createEvent, sample, combine, createEffect } from 'effector';
 import { spread } from 'patronum';
 
-import { networkModel, networkUtils } from '@entities/network';
+import { networkModel } from '@entities/network';
 import type { ChainAccount, ShardAccount, Chain } from '@shared/core';
 import { KeyType, AccountType, CryptoType, ChainType } from '@shared/core';
 import { validateDerivation, derivationHasPassword } from '@shared/lib/utils';
@@ -99,11 +99,11 @@ const $constructorForm = createForm<FormValues>({
           name: 'duplicated',
           source: $keys,
           errorText: 'dynamicDerivations.constructor.duplicateDerivationError',
-          validator: (value, { network }, keys: Array<ChainAccount | ShardAccount[]>): boolean => {
+          validator: (value, _, keys: Array<ChainAccount | ShardAccount[]>): boolean => {
             return keys.every((key) => {
               const keyToCheck = Array.isArray(key) ? key[0] : key;
 
-              return keyToCheck.chainId !== network.chainId || !keyToCheck.derivationPath.includes(value);
+              return !keyToCheck.derivationPath.includes(value);
             });
           },
         },
@@ -117,29 +117,33 @@ const $hasChanged = createStore<boolean>(false).reset(formStarted);
 const $elementToFocus = createStore<HTMLButtonElement | null>(null);
 
 const $isKeyTypeSharded = combine($constructorForm.fields.keyType.$value, (keyType): boolean => {
-  return keyType === KeyType.CUSTOM;
+  return [KeyType.MAIN, KeyType.STAKING, KeyType.GOVERNANCE, KeyType.CUSTOM].includes(keyType);
 });
 
 const $derivationEnabled = combine($constructorForm.fields.keyType.$value, (keyType): boolean => {
   return keyType === KeyType.CUSTOM;
 });
 
-const $hasKeys = combine($keys, (keys) => Boolean(keys.length));
+const $hasKeys = combine($keys, (keys): boolean => {
+  return keys.some((key) => {
+    const keyData = Array.isArray(key) ? key[0] : key;
+
+    return keyData.keyType !== KeyType.MAIN;
+  });
+});
 
 const focusElementFx = createEffect((element: HTMLButtonElement) => {
   element.focus();
 });
 
 const addNewKeyFx = createEffect((formValues: FormValues): ChainAccount | ShardAccount[] => {
-  const isEthereumBased = networkUtils.isEthereumBased(formValues.network.options);
-
   const base = {
     name: formValues.keyName,
     keyType: formValues.keyType,
     chainId: formValues.network.chainId,
     type: AccountType.CHAIN,
-    cryptoType: isEthereumBased ? CryptoType.ETHEREUM : CryptoType.SR25519,
-    chainType: isEthereumBased ? ChainType.ETHEREUM : ChainType.SUBSTRATE,
+    cryptoType: CryptoType.SR25519,
+    chainType: ChainType.SUBSTRATE,
     derivationPath: formValues.derivationPath,
   };
 

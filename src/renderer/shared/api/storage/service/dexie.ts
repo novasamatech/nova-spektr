@@ -2,7 +2,9 @@ import Dexie from 'dexie';
 
 import { useBalanceStorage } from './balanceStorage';
 import { useTransactionStorage } from './transactionStorage';
+import { useNotificationStorage } from './notificationStorage';
 import { useMultisigEventStorage } from './multisigEventStorage';
+import { useMetadataStorage } from './metadataStorage';
 import { migrateEvents, migrateWallets } from '../migration';
 import {
   DataStorage,
@@ -16,9 +18,7 @@ import {
   TNotification,
   TMultisigEvent,
   TMetadata,
-  TProxy,
-  TProxyGroup,
-} from '../lib/types';
+} from '../common/types';
 
 class DexieStorage extends Dexie {
   connections: TConnection;
@@ -30,8 +30,6 @@ class DexieStorage extends Dexie {
   multisigEvents: TMultisigEvent;
   notifications: TNotification;
   metadata: TMetadata;
-  proxies: TProxy;
-  proxyGroups: TProxyGroup;
 
   constructor() {
     super('spektr');
@@ -62,13 +60,6 @@ class DexieStorage extends Dexie {
       })
       .upgrade(migrateWallets);
 
-    this.version(21).stores({
-      proxies: '++id',
-      proxyGroups: '++id',
-      connections: '++id',
-      notifications: '++id',
-    });
-
     this.connections = this.table('connections');
     this.balances = this.table('balances');
     this.wallets = this.table('wallets');
@@ -78,8 +69,6 @@ class DexieStorage extends Dexie {
     this.multisigEvents = this.table('multisigEvents');
     this.notifications = this.table('notifications');
     this.metadata = this.table('metadata');
-    this.proxies = this.table('proxies');
-    this.proxyGroups = this.table('proxyGroups');
   }
 }
 
@@ -98,6 +87,10 @@ class StorageFactory implements IStorage {
         return useTransactionStorage(this.dexieDB.multisigTransactions) as DataStorage[T];
       case 'multisigEvents':
         return useMultisigEventStorage(this.dexieDB.multisigEvents) as DataStorage[T];
+      case 'notifications':
+        return useNotificationStorage(this.dexieDB.notifications) as DataStorage[T];
+      case 'metadata':
+        return useMetadataStorage(this.dexieDB.metadata) as DataStorage[T];
       default:
         return undefined;
     }
@@ -113,8 +106,4 @@ export const dexieStorage = {
   accounts: dexie.accounts,
   contacts: dexie.contacts,
   connections: dexie.connections,
-  proxies: dexie.proxies,
-  proxyGroups: dexie.proxyGroups,
-  notifications: dexie.notifications,
-  metadata: dexie.metadata,
 };

@@ -10,7 +10,6 @@ type Props = {
   address: Address | AccountId;
   explorers?: Explorer[];
   addressPrefix?: number;
-  className?: string;
 };
 
 const ExplorersPopoverRoot = ({
@@ -19,14 +18,13 @@ const ExplorersPopoverRoot = ({
   explorers = [],
   addressPrefix,
   children,
-  className,
 }: PropsWithChildren<Props>) => {
   const { t } = useI18n();
 
   const formattedAddress = toAddress(address, { prefix: addressPrefix });
 
   return (
-    <ContextMenu button={button} className={className}>
+    <ContextMenu button={button}>
       <ContextMenu.Group title={t('general.explorers.addressTitle')}>
         <div className="flex items-center gap-x-2">
           <HelpText className="text-text-secondary break-all">{formattedAddress}</HelpText>

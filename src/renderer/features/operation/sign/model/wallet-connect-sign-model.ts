@@ -1,11 +1,11 @@
-import { combine, createEffect, createEvent, createStore, sample } from 'effector';
+import { combine, createEffect, createEvent, createStore, forward, sample } from 'effector';
 import { combineEvents } from 'patronum';
 import Client from '@walletconnect/sign-client';
 import { EngineTypes } from '@walletconnect/types';
 
 import { walletConnectModel, type InitReconnectParams } from '@entities/walletConnect';
 import { toAccountId } from '@shared/lib/utils';
-import { chainsService } from '@shared/api/network';
+import { chainsService } from '@entities/network';
 import { WalletConnectAccount } from '@shared/core';
 import { ReconnectStep } from '../lib/constants';
 import { walletModel } from '@entities/wallet';
@@ -48,9 +48,9 @@ const signFx = createEffect(({ client, payload }: SignParams): Promise<SignRespo
   return client.request(payload);
 });
 
-sample({
-  clock: signingStarted,
-  target: signFx,
+forward({
+  from: signingStarted,
+  to: signFx,
 });
 
 sample({
@@ -77,9 +77,9 @@ sample({
   target: $reconnectStep,
 });
 
-sample({
-  clock: reconnectStarted,
-  target: walletConnectModel.events.connect,
+forward({
+  from: reconnectStarted,
+  to: walletConnectModel.events.connect,
 });
 
 sample({
@@ -146,9 +146,9 @@ sample({
   target: $reconnectStep,
 });
 
-sample({
-  clock: [reconnectAborted, reconnectDone],
-  target: reset,
+forward({
+  from: [reconnectAborted, reconnectDone],
+  to: reset,
 });
 
 export const walletConnectSignModel = {

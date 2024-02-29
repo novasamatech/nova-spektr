@@ -13,9 +13,7 @@ export const GeneralActions = () => {
   const { t } = useI18n();
   const currency = useUnit(currencyModel.$activeCurrency);
   const fiatFlag = useUnit(priceProviderModel.$fiatFlag);
-
   const [isAutoUpdateOn, setIsAutoUpdateOn] = useState(true);
-
   const isAutoUpdateSupported = window.App && window.App.isAutoUpdateSupported;
 
   useEffect(() => {

@@ -1,6 +1,6 @@
 import { ComponentMeta, ComponentStory } from '@storybook/react';
 
-import { Shimmering } from './Shimmering';
+import Shimmering from './Shimmering';
 
 export default {
   title: 'Shimmering',

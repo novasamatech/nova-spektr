@@ -9,18 +9,17 @@ import { useI18n } from '@app/providers';
 import { MultisigTransactionDS } from '@shared/api/storage';
 import { useToggle } from '@shared/lib/hooks';
 import { ExtendedChain } from '@entities/network';
-import { TEST_ADDRESS, toAddress, transferableAmount, getAssetById, dictionary } from '@shared/lib/utils';
+import { TEST_ADDRESS, toAddress, transferableAmount, getAssetById } from '@shared/lib/utils';
 import { getMultisigSignOperationTitle, getSignatoryAccounts } from '../../common/utils';
 import { Submit } from '../ActionSteps/Submit';
 import { Confirmation } from '../ActionSteps/Confirmation';
 import { SignatorySelectModal } from './SignatorySelectModal';
 import { useMultisigEvent } from '@entities/multisig';
 import { Signing } from '@features/operation';
-import { permissionUtils, walletModel } from '@entities/wallet';
+import { OperationTitle } from '@renderer/components/common';
+import { walletModel } from '@entities/wallet';
 import { priceProviderModel } from '@entities/price';
 import type { Address, HexString, Timepoint, MultisigAccount, Account } from '@shared/core';
-import { balanceModel, balanceUtils } from '@entities/balance';
-import { OperationTitle } from '@entities/chain';
 import {
   isXcmTransaction,
   MAX_WEIGHT,
@@ -31,6 +30,7 @@ import {
   useTransaction,
   validateBalance,
 } from '@entities/transaction';
+import { balanceModel, balanceUtils } from '@entities/balance';
 
 type Props = {
   tx: MultisigTransactionDS;
@@ -76,10 +76,7 @@ const ApproveTx = ({ tx, account, connection }: Props) => {
   const nativeAsset = connection.assets[0];
   const asset = getAssetById(tx.transaction?.args.assetId, connection.assets);
 
-  const walletsMap = dictionary(wallets, 'id');
-  const availableAccounts = accounts.filter((a) => permissionUtils.canApproveMultisigTx(walletsMap[a.walletId], [a]));
-
-  const unsignedAccounts = getSignatoryAccounts(availableAccounts, wallets, events, account.signatories, tx.chainId);
+  const unsignedAccounts = getSignatoryAccounts(accounts, wallets, events, account.signatories, tx.chainId);
 
   useEffect(() => {
     priceProviderModel.events.assetsPricesRequested({ includeRates: true });

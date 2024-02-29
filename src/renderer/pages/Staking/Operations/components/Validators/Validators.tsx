@@ -1,6 +1,6 @@
 import { ApiPromise } from '@polkadot/api';
 import { useEffect, useState } from 'react';
-import mapValues from 'lodash/mapValues';
+import { mapValues } from 'lodash';
 
 import { Icon, Shimmering, Loader, BodyText, Button, SearchInput, SmallTitleText, Checkbox } from '@shared/ui';
 import { useI18n } from '@app/providers';

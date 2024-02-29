@@ -4,7 +4,7 @@ import { BN, BN_ZERO } from '@polkadot/util';
 import { Select, FootnoteText, Plate, IconButton, Shimmering } from '@shared/ui';
 import { DropdownOption, DropdownResult } from '@shared/ui/types';
 import { getRelaychainAsset } from '@shared/lib/utils';
-import { chainsService } from '@shared/api/network';
+import { chainsService } from '@entities/network';
 import { useSettingsStorage } from '@entities/settings';
 import { ChainTitle } from '@entities/chain';
 import { useToggle } from '@shared/lib/hooks';

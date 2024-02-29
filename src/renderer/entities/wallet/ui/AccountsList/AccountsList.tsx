@@ -28,7 +28,7 @@ export const AccountsList = ({ accountId, chains, className }: Props) => {
           const { chainId, addressPrefix, explorers } = chain;
 
           return (
-            <li key={chainId} className="flex items-center py-2">
+            <li key={chainId} className="flex items-center py-4">
               <ChainTitle className="flex-1" fontClass="text-text-primary" chain={chain} />
 
               <div className="flex-1 pl-2">

@@ -15,7 +15,7 @@ import {
 import { AssetBalance, AssetIcon } from '@entities/asset';
 import { useI18n } from '@app/providers';
 import { FootnoteText, HelpText, TitleText } from '../../Typography';
-import { Input } from '../Input/Input';
+import Input from '../Input/Input';
 import { IconButton } from '@shared/ui';
 import { useToggle } from '@shared/lib/hooks';
 import { currencyModel, useCurrencyRate } from '@entities/price';

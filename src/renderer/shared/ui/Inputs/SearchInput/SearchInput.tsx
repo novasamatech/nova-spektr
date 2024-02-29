@@ -7,7 +7,7 @@ import { cnTw } from '@shared/lib/utils';
 
 type Props = Omit<InputProps, 'prefixElement' | 'suffixElement'>;
 
-export const SearchInput = forwardRef<HTMLInputElement, Props>(({ className, wrapperClass, ...props }, ref) => (
+const SearchInput = forwardRef<HTMLInputElement, Props>(({ className, wrapperClass, ...props }, ref) => (
   <Input
     ref={ref}
     className={className}
@@ -24,3 +24,5 @@ export const SearchInput = forwardRef<HTMLInputElement, Props>(({ className, wra
     {...props}
   />
 ));
+
+export default SearchInput;

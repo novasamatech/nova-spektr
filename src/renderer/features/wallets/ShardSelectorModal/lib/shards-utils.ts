@@ -1,4 +1,4 @@
-import set from 'lodash/set';
+import { set } from 'lodash';
 
 import type { Account, Chain, ChainId, BaseAccount, ChainAccount, ShardAccount, ID, AccountId } from '@shared/core';
 import { accountUtils } from '@entities/wallet';

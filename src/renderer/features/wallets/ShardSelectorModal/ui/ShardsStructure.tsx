@@ -47,7 +47,6 @@ export const ShardsStructure = () => {
       {shardsStructure.map(([root, chainTuple]) => (
         <li key={root.id}>
           <SelectableShard
-            wallet={wallet}
             account={root}
             addressPrefix={1}
             explorers={RootExplorers}

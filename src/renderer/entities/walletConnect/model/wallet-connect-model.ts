@@ -1,14 +1,14 @@
 import Client from '@walletconnect/sign-client';
 import { PairingTypes, SessionTypes } from '@walletconnect/types';
 import { getSdkError } from '@walletconnect/utils';
-import { createEffect, createEvent, createStore, sample, scopeBind } from 'effector';
+import { createEffect, createEvent, createStore, forward, sample, scopeBind } from 'effector';
 import keyBy from 'lodash/keyBy';
 
 import { nonNullable } from '@shared/lib/utils';
 import { ID, Account, WalletConnectAccount, kernelModel } from '@shared/core';
 import { localStorageService } from '@shared/api/local-storage';
 import { storageService } from '@shared/api/storage';
-import { walletModel, walletUtils } from '@entities/wallet';
+import { walletModel, walletUtils } from '../../wallet';
 import { InitConnectParams } from '../lib/types';
 import { walletConnectUtils } from '../lib/utils';
 import {
@@ -68,8 +68,8 @@ const extendSessionsFx = createEffect((client: Client) => {
 });
 
 const subscribeToEventsFx = createEffect((client: Client) => {
-  const boundSessionUpdated = scopeBind(sessionUpdated);
-  const boundReset = scopeBind(reset);
+  const bindedSessionUpdated = scopeBind(sessionUpdated);
+  const bindedReset = scopeBind(reset);
 
   client.on('session_update', ({ topic, params }) => {
     console.log('WC EVENT', 'session_update', { topic, params });
@@ -77,7 +77,7 @@ const subscribeToEventsFx = createEffect((client: Client) => {
     const _session = client.session.get(topic);
     const updatedSession = { ..._session, namespaces };
 
-    boundSessionUpdated(updatedSession);
+    bindedSessionUpdated(updatedSession);
   });
 
   client.on('session_ping', (args) => {
@@ -90,7 +90,7 @@ const subscribeToEventsFx = createEffect((client: Client) => {
 
   client.on('session_delete', () => {
     console.log('WC EVENT', 'session_delete');
-    boundReset();
+    bindedReset();
   });
 });
 
@@ -198,9 +198,9 @@ sample({
   target: walletModel.$accounts,
 });
 
-sample({
-  clock: kernelModel.events.appStarted,
-  target: createClientFx,
+forward({
+  from: kernelModel.events.appStarted,
+  to: createClientFx,
 });
 
 sample({
@@ -270,14 +270,14 @@ const disconnectFx = createEffect(async ({ client, session }: DisconnectParams) 
   });
 });
 
-sample({
-  clock: disconnectFx.done,
-  target: createClientFx,
+forward({
+  from: disconnectFx.done,
+  to: createClientFx,
 });
 
-sample({
-  clock: sessionUpdated,
-  target: $session,
+forward({
+  from: sessionUpdated,
+  to: $session,
 });
 
 sample({
@@ -346,10 +346,7 @@ sample({
   target: $pairings,
 });
 
-sample({
-  clock: connectFx.done,
-  target: connected,
-});
+forward({ from: connectFx.done, to: connected });
 
 sample({
   clock: disconnectCurrentSessionStarted,
@@ -370,10 +367,7 @@ sample({
   target: disconnectFx,
 });
 
-sample({
-  clock: disconnectFx.done,
-  target: reset,
-});
+forward({ from: disconnectFx.done, to: reset });
 
 sample({
   clock: currentSessionTopicUpdated,
@@ -382,10 +376,7 @@ sample({
   target: sessionTopicUpdatedFx,
 });
 
-sample({
-  clock: sessionTopicUpdated,
-  target: sessionTopicUpdatedFx,
-});
+forward({ from: sessionTopicUpdated, to: sessionTopicUpdatedFx });
 
 sample({
   clock: sessionTopicUpdatedFx.doneData,

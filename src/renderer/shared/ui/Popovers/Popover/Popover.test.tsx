@@ -13,7 +13,7 @@ describe('ui/Popover', () => {
     expect(content).not.toBeInTheDocument();
   });
 
-  test('should toggle popover on hover/uncover', async () => {
+  test('should toggle popover on hover/unhover', async () => {
     const user = userEvent.setup();
 
     render(<Popover content="content">Hover me</Popover>);
@@ -29,7 +29,7 @@ describe('ui/Popover', () => {
 
     await act(async () => user.unhover(text));
 
-    await waitForElementToBeRemoved(screen.queryByText('content'), { timeout: 300 });
+    await waitForElementToBeRemoved(screen.queryByText('content'));
   });
 
   test('should toggle popover on focus/blur', async () => {
@@ -46,6 +46,6 @@ describe('ui/Popover', () => {
 
     await act(async () => text.blur());
 
-    await waitForElementToBeRemoved(screen.queryByText('content'), { timeout: 300 });
+    await waitForElementToBeRemoved(screen.queryByText('content'));
   });
 });

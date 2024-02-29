@@ -18,7 +18,7 @@ export const DepositWithLabel = ({ wrapperClassName, ...depositProps }: Props) =
         <>
           <Icon className="text-text-tertiary" name="lock" size={12} />
           <FootnoteText className="text-text-tertiary">{t('staking.networkDepositLabel')}</FootnoteText>
-          <Tooltip content={t('staking.tooltips.depositDescription')} offsetPx={-90}>
+          <Tooltip content={t('staking.tooltips.depositDescription')} offsetPx={-90} pointer="down">
             <Icon name="info" className="hover:text-icon-hover cursor-pointer" size={16} />
           </Tooltip>
         </>

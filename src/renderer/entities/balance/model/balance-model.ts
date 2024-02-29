@@ -1,28 +1,19 @@
 import { createEffect, createEvent, createStore, sample } from 'effector';
 import { throttle } from 'patronum';
-import keyBy from 'lodash/keyBy';
+import { keyBy } from 'lodash';
 
-import { AccountId, Balance } from '@shared/core';
+import { Balance } from '@shared/core';
 import { useBalanceService, SAVE_TIMEOUT, BUFFER_DELAY } from '../lib';
 
 const balanceService = useBalanceService();
 
 const balancesUpdated = createEvent<Balance[]>();
-const accountsBalancesRemoved = createEvent<AccountId[]>();
 
 const $balances = createStore<Balance[]>([]);
 const $balancesBuffer = createStore<Balance[]>([]);
 
 const insertBalancesFx = createEffect(async (balances: Balance[]): Promise<void> => {
   await balanceService.insertBalances(balances);
-});
-
-const deleteAccountsBalancesFx = createEffect(async (accountIds: AccountId[]): Promise<void> => {
-  try {
-    await balanceService.deleteBalances(accountIds);
-  } catch (e) {
-    console.error(`Error while deleting wallet balances`, e);
-  }
 });
 
 sample({
@@ -64,16 +55,10 @@ throttle({
   target: $balances,
 });
 
-sample({
-  clock: accountsBalancesRemoved,
-  target: deleteAccountsBalancesFx,
-});
-
 export const balanceModel = {
   $balances,
   $balancesBuffer,
   events: {
     balancesUpdated,
-    accountsBalancesRemoved,
   },
 };

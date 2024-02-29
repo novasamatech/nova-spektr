@@ -7,7 +7,7 @@ import { useI18n } from '@app/providers';
 import { Transaction, TransactionType, OperationError } from '@entities/transaction';
 import { formatAmount, stakeableAmount, nonNullable, toAddress } from '@shared/lib/utils';
 import { OperationFooter, OperationHeader } from '@renderer/features/operation';
-import { accountUtils, walletModel, walletUtils } from '@entities/wallet';
+import { walletUtils, accountUtils, walletModel } from '@entities/wallet';
 import type { Account, Asset, Balance as AccountBalance, ChainId, AccountId, Balance, Wallet } from '@shared/core';
 import { OperationForm } from '../../components';
 import {

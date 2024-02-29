@@ -22,7 +22,7 @@ import { toAddress, getCurrentBlockNumber, getExpectedBlockTime } from '@shared/
 import { useMultisigEvent } from '../multisigEvent/multisigEventService';
 import { Task } from '@shared/lib/hooks/useTaskQueue';
 import type { CallData, AccountId, MultisigAccount } from '@shared/core';
-import { chainsService } from '@shared/api/network';
+import { chainsService } from '@entities/network';
 
 type Props = {
   addTask?: (task: Task) => void;

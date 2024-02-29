@@ -2,7 +2,7 @@ import { act, render, screen } from '@testing-library/react';
 import { Provider } from 'effector-react';
 import { fork } from 'effector';
 
-import { TEST_ACCOUNTS } from '@shared/lib/utils';
+import { TEST_ACCOUNT_ID } from '@shared/lib/utils';
 import chains from '@shared/config/chains/chains.json';
 import { NetworkAssets } from './NetworkAssets';
 import type { Chain, BaseAccount, ChainAccount, ShardAccount } from '@shared/core';
@@ -28,21 +28,21 @@ const testBalances = [
   {
     assetId: testAsset.assetId.toString(),
     chainId: testChain.chainId,
-    accountId: TEST_ACCOUNTS[0],
+    accountId: TEST_ACCOUNT_ID,
     free: '10',
     frozen: [{ type: 'test', amount: '1' }],
   },
   {
     assetId: testAsset2.assetId.toString(),
     chainId: testChain.chainId,
-    accountId: TEST_ACCOUNTS[0],
+    accountId: TEST_ACCOUNT_ID,
     free: '1000000000000',
     frozen: [{ type: 'test', amount: '1' }],
     verified: false,
   },
 ];
 
-jest.mock('../AssetCard/AssetCard', () => ({
+jest.mock('@entities/asset', () => ({
   AssetCard: ({ asset }: any) => <span data-testid="AssetCard">{asset.name}</span>,
 }));
 
@@ -52,7 +52,7 @@ const accounts = [
     walletId: 1,
     name: 'test',
     type: AccountType.BASE,
-    accountId: TEST_ACCOUNTS[0],
+    accountId: TEST_ACCOUNT_ID,
     cryptoType: CryptoType.SR25519,
     chainType: ChainType.SUBSTRATE,
   },

@@ -20,9 +20,9 @@ describe('pages/Settings/Networks/NetworkItem', () => {
     networkItem: {
       icon: 'wnd.svg',
       name: 'Westend',
-      connectionStatus: ConnectionStatus.CONNECTED,
       connection: {
         connectionType: ConnectionType.RPC_NODE,
+        connectionStatus: ConnectionStatus.CONNECTED,
         activeNode: { name: 'Active node', url: 'wss://test.com' },
       },
     } as unknown as ExtendedChain,

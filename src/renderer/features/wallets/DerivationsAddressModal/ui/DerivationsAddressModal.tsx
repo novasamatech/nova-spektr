@@ -3,11 +3,13 @@ import { useState, useEffect } from 'react';
 
 import { BaseModal, Button, InfoLink, SmallTitleText } from '@renderer/shared/ui';
 import { useI18n } from '@renderer/app/providers';
+import { TROUBLESHOOTING_URL } from '@renderer/components/common/QrCode/common/constants';
 import { toAddress } from '@shared/lib/utils';
+import { DdAddressInfoDecoded } from '@renderer/components/common/QrCode/common/types';
 import { derivationAddressUtils } from '../lib/utils';
+import { QrDerivationsGenerator } from '@renderer/components/common/QrCode/QrGenerator/QrDerivationsGenerator';
 import { DdKeyQrReader } from './DdKeyQrReader';
 import type { AccountId, DraftAccount, ShardAccount, ChainAccount, Account } from '@shared/core';
-import { DdAddressInfoDecoded, QrDerivationsGenerator, TROUBLESHOOTING_URL } from '@entities/transaction';
 
 const enum Step {
   GENERATE_QR,

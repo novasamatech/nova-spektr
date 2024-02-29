@@ -1,23 +1,21 @@
 import { cnTw, toAddress } from '@shared/lib/utils';
 import { BodyText, Checkbox, HelpText, Identicon, Truncate, IconButton } from '@shared/ui';
-import type { ChainAccount, ShardAccount, Explorer, BaseAccount, Wallet } from '@shared/core';
-import { ExplorersPopover, accountUtils, walletUtils } from '@entities/wallet';
+import { ChainAccount, ShardAccount, Explorer, BaseAccount } from '@shared/core';
+import { ExplorersPopover, accountUtils } from '@entities/wallet';
 import { useI18n } from '@app/providers';
 
 type Props = {
-  wallet?: Wallet;
   account: BaseAccount | ChainAccount | ShardAccount;
   addressPrefix?: number;
   explorers?: Explorer[];
   checked: boolean;
-  semiChecked?: boolean;
   truncate?: boolean;
+  semiChecked?: boolean;
   className?: string;
   onChange: (value: boolean) => void;
 };
 
 export const SelectableShard = ({
-  wallet,
   account,
   addressPrefix,
   explorers,
@@ -31,19 +29,12 @@ export const SelectableShard = ({
 
   const isChain = accountUtils.isChainAccount(account);
   const isShard = accountUtils.isShardAccount(account);
-  const isBase = accountUtils.isBaseAccount(account);
   const isSharded = isShard || isChain;
   const address = toAddress(account.accountId, { prefix: addressPrefix });
 
   const content = (
     <div className="flex items-center gap-x-2">
-      <Identicon
-        address={address}
-        theme={isBase && walletUtils.isPolkadotVault(wallet) ? 'jdenticon' : 'polkadot'}
-        size={20}
-        background={false}
-        canCopy={false}
-      />
+      <Identicon address={address} size={20} background={false} canCopy={false} />
       <div className={cnTw('truncate mr-auto', className)}>
         {account.name && !isShard && <BodyText>{account.name}</BodyText>}
         {truncate ? (
@@ -66,7 +57,7 @@ export const SelectableShard = ({
     >
       <Checkbox checked={checked} semiChecked={semiChecked} onChange={(event) => onChange(event.target.checked)} />
       <ExplorersPopover button={content} address={address} explorers={explorers}>
-        <ExplorersPopover.Group active={isSharded} title={t('general.explorers.derivationTitle')}>
+        <ExplorersPopover.Group active={isSharded} title={t('walletDetails.vault.derivationPath')}>
           <HelpText className="text-text-secondary break-all">{isSharded && account.derivationPath}</HelpText>
         </ExplorersPopover.Group>
       </ExplorersPopover>

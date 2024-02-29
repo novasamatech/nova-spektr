@@ -3,14 +3,12 @@ import { ErrorBoundary } from 'react-error-boundary';
 import { useNavigate, useRoutes } from 'react-router-dom';
 import { useUnit } from 'effector-react';
 
+import { FallbackScreen } from '@renderer/components/common';
 import { CreateWalletProvider } from '@widgets/CreateWallet';
 import { WalletDetailsProvider } from '@widgets/WalletDetails';
 import { walletModel } from '@entities/wallet';
 import { ROUTES_CONFIG } from '@pages/index';
-import { Paths, createLink } from '@shared/routes';
-import { FallbackScreen } from '@shared/ui';
-import { walletPairingModel } from '@features/wallets';
-import { WalletType } from '@shared/core';
+import { Paths } from '@shared/routes';
 import {
   ConfirmDialogProvider,
   StatusModalProvider,
@@ -36,29 +34,11 @@ export const App = () => {
   }, []);
 
   useEffect(() => {
-    if (isLoadingWallets || wallets.length > 0) return;
+    if (isLoadingWallets) return;
 
-    navigate(Paths.ONBOARDING, { replace: true });
+    const path = wallets.length > 0 ? Paths.ASSETS : Paths.ONBOARDING;
+    navigate(path, { replace: true });
   }, [isLoadingWallets, wallets.length]);
-
-  useEffect(() => {
-    const url = new URL(window.location.href);
-    if (!url.searchParams.has('step') || !url.searchParams.has('loginToken')) return;
-
-    const loginToken = url.searchParams.get('loginToken') as string;
-    const step = url.searchParams.get('step') as string;
-
-    url.searchParams.delete('step');
-    url.searchParams.delete('loginToken');
-    window.history.replaceState(null, '', url.href);
-
-    if (step === 'settings_matrix') {
-      navigate(createLink(Paths.MATRIX, {}, { loginToken: [loginToken] }));
-    }
-    if (step === 'multisig_wallet') {
-      walletPairingModel.events.walletTypeSet(WalletType.MULTISIG);
-    }
-  }, []);
 
   const getContent = () => {
     if (splashScreenLoading || isLoadingWallets) return null;

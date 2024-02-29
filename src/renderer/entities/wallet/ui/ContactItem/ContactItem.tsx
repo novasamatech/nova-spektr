@@ -10,18 +10,9 @@ type Props = {
   addressPrefix?: number;
   size?: number;
   className?: string;
-  hideAddress?: boolean;
   onInfoClick?: () => void;
 };
-export const ContactItem = ({
-  name,
-  address,
-  addressPrefix,
-  size = 20,
-  hideAddress = false,
-  className,
-  onInfoClick,
-}: Props) => {
+export const ContactItem = ({ name, address, addressPrefix, size = 20, className, onInfoClick }: Props) => {
   const formattedAddress = toAddress(address, { prefix: addressPrefix });
 
   const handleClick = (event: MouseEvent<HTMLDivElement>) => {
@@ -44,7 +35,7 @@ export const ContactItem = ({
               {name}
             </BodyText>
           )}
-          {!hideAddress && <HelpText className="text-text-tertiary truncate">{formattedAddress}</HelpText>}
+          <HelpText className="text-text-tertiary truncate">{formattedAddress}</HelpText>
         </div>
       </div>
 

@@ -29,7 +29,7 @@ describe('services/matrix', () => {
   test.each([test_data.test_accounts])('User %s can login', async (credentials) => {
     await matrixLoginAndSync(matrix, credentials.login, credentials.password);
 
-    expect(matrix.isLoggedIn).toEqual(true);
+    expect(matrix.isLoggedIn).toBe(true);
   });
 
   test.each([test_data.test_accounts])('User %s can create the room', async (credentials) => {

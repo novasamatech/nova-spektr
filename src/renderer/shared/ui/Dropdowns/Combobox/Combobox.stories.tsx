@@ -1,8 +1,7 @@
 import { ComponentMeta, ComponentStory } from '@storybook/react';
 
-import { Icon } from '../../Icon/Icon';
-import { Identicon } from '../../Identicon/Identicon';
-import { Combobox } from './Combobox';
+import { Icon, Identicon } from '@shared/ui';
+import Combobox from './Combobox';
 
 export default {
   title: 'Redesign/Combobox',

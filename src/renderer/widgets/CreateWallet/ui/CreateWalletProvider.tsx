@@ -6,7 +6,7 @@ import WatchOnly from '@pages/Onboarding/WatchOnly/WatchOnly';
 import { Vault } from '@pages/Onboarding/Vault/Vault';
 import { NovaWallet } from '@pages/Onboarding/WalletConnect/NovaWallet';
 import { WalletConnect } from '@pages/Onboarding/WalletConnect/WalletConnect';
-import { MultisigWallet } from './MultisigWallet/MultisigWallet';
+import { MultisigAccount } from './MultisigAccount/MultisigAccount';
 import { WalletType, WalletFamily } from '@shared/core';
 import { walletPairingModel } from '@features/wallets';
 import { Paths } from '@shared/routes';
@@ -17,13 +17,12 @@ type ModalProps = {
   onClose: () => void;
   onComplete: () => void;
 };
-const WalletModals: Record<WalletFamily, (props: ModalProps) => JSX.Element | null> = {
+const WalletModals: Record<WalletFamily, (props: ModalProps) => JSX.Element> = {
   [WalletType.POLKADOT_VAULT]: (props) => <Vault isOpen {...props} />,
   [WalletType.WATCH_ONLY]: (props) => <WatchOnly isOpen {...props} />,
-  [WalletType.MULTISIG]: (props) => <MultisigWallet isOpen {...props} />,
+  [WalletType.MULTISIG]: (props) => <MultisigAccount isOpen {...props} />,
   [WalletType.WALLET_CONNECT]: (props) => <WalletConnect isOpen {...props} />,
   [WalletType.NOVA_WALLET]: (props) => <NovaWallet isOpen {...props} />,
-  [WalletType.PROXIED]: () => null,
 };
 
 export const CreateWalletProvider = () => {

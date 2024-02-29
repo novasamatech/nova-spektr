@@ -3,6 +3,10 @@ import noop from 'lodash/noop';
 
 import { ConfirmModal } from './ConfirmModal';
 
+jest.mock('@app/providers', () => ({
+  useMatrix: jest.fn(),
+}));
+
 describe('ui/Modals/ConfirmModal', () => {
   const defaultProps = {
     isOpen: true,

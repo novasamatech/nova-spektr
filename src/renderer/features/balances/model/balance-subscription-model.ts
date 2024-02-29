@@ -45,10 +45,8 @@ const createSubscriptionsBalancesFx = createEffect(
     const newSubscriptions = {} as Record<ChainId, SubscriptionObject>;
 
     const balanceSubscriptions = Object.entries(apis).map(async ([chainId, api]) => {
-      const chain = chains[chainId as ChainId];
-
       const accountIds = accounts.reduce<Record<AccountId, boolean>>((acc, account) => {
-        if (accountUtils.isChainIdAndCryptoTypeMatch(account, chain)) {
+        if (accountUtils.isChainIdMatch(account, chainId as ChainId)) {
           acc[account.accountId] = true;
         }
 
@@ -59,7 +57,7 @@ const createSubscriptionsBalancesFx = createEffect(
       const networkConnected = statuses[chainId as ChainId] === ConnectionStatus.CONNECTED;
       const oldSubscription = subscriptions[chainId as ChainId];
 
-      if (!networkConnected || !uniqAccountIds.length) {
+      if (!networkConnected) {
         await unsubscribeBalancesFx({
           chainId: chainId as ChainId,
           subscription: oldSubscription,
@@ -79,9 +77,9 @@ const createSubscriptionsBalancesFx = createEffect(
         });
       }
 
-      try {
-        if (!chain) return;
+      const chain = chains[chainId as ChainId];
 
+      try {
         const balanceSubs = balanceSubscriptionService.subscribeBalances(chain, api, uniqAccountIds, boundUpdate);
         const locksSubs = balanceSubscriptionService.subscribeLockBalances(chain, api, uniqAccountIds, boundUpdate);
 
@@ -121,13 +119,11 @@ const populateBalancesFx = createEffect((accounts: AccountId[]): Promise<Balance
 
 sample({
   clock: walletModel.$activeAccounts,
-  source: { accounts: walletModel.$accounts, wallet: walletModel.$activeWallet },
-  fn: ({ accounts, wallet }, activeAccounts) => {
-    const accountsMap = keyBy(accounts, 'accountId');
+  source: walletModel.$accounts,
+  fn: (accounts, activeAccounts) => {
+    const subscriptionAccounts = [...activeAccounts];
 
-    const subscriptionAccounts = activeAccounts.filter(
-      (account) => wallet && accountUtils.isNonBaseVaultAccount(account, wallet),
-    );
+    const accountsMap = keyBy(accounts, 'accountId');
 
     activeAccounts.forEach((account) => {
       if (accountUtils.isMultisigAccount(account)) {

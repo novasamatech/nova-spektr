@@ -7,6 +7,8 @@ type Props = {
   className?: string;
 };
 
-export const Plate = ({ as: Tag = 'div', className, children }: PropsWithChildren<Props>) => (
+const Plate = ({ as: Tag = 'div', className, children }: PropsWithChildren<Props>) => (
   <Tag className={cnTw('p-3 rounded-md bg-white', className)}>{children}</Tag>
 );
+
+export default Plate;

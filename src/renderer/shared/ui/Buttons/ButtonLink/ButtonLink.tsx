@@ -17,7 +17,7 @@ type Props = {
   callback?: () => void;
 };
 
-export const ButtonLink = ({
+const ButtonLink = ({
   to,
   variant = 'fill',
   pallet = 'primary',
@@ -53,3 +53,5 @@ export const ButtonLink = ({
     </Link>
   );
 };
+
+export default ButtonLink;

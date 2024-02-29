@@ -1,10 +1,10 @@
-import { ReactNode } from 'react';
-
 import { cnTw, toAddress, toShortAddress } from '@shared/lib/utils';
-import { BodyText, HelpText, Identicon, Truncate } from '@shared/ui';
-import { AccountId, ProxyType } from '@shared/core';
+import { BodyText, DropdownIconButton, HelpText, Identicon, Truncate } from '@shared/ui';
+import { AccountId } from '@shared/core';
+import { ProxyType } from '../../lib/types';
+import { ProxyTypeName } from '@entities/proxy/lib/constants';
 import { useI18n } from '@app/providers';
-import { proxyUtils } from '../../lib/proxy-utils';
+import { DropdownIconButtonOption } from '@shared/ui/types';
 
 type Props = {
   className?: string;
@@ -14,7 +14,7 @@ type Props = {
   accountId: AccountId;
   addressPrefix?: number;
   proxyType: ProxyType;
-  suffix?: ReactNode;
+  actions?: DropdownIconButtonOption[];
 };
 
 export const ProxyAccount = ({
@@ -25,7 +25,7 @@ export const ProxyAccount = ({
   accountId,
   addressPrefix,
   proxyType,
-  suffix,
+  actions,
 }: Props) => {
   const { t } = useI18n();
   const address = toAddress(accountId, { prefix: addressPrefix });
@@ -38,6 +38,18 @@ export const ProxyAccount = ({
     addressToShow
   );
 
+  const ActionButton = actions && (
+    <DropdownIconButton name="more" className="ml-2">
+      <DropdownIconButton.Items>
+        {actions.map((option) => (
+          <DropdownIconButton.Item key={option.icon}>
+            <DropdownIconButton.Option option={option} />
+          </DropdownIconButton.Item>
+        ))}
+      </DropdownIconButton.Items>
+    </DropdownIconButton>
+  );
+
   return (
     <div className={cnTw('flex items-center gap-x-2', className)}>
       <Identicon className="inline-block" address={address} size={20} background={false} canCopy={canCopy} />
@@ -46,10 +58,10 @@ export const ProxyAccount = ({
         {name && <HelpText className="text-text-tertiary truncate">{addressContent}</HelpText>}
         <div className="flex gap-x-1 items-center mt-0.5">
           <span className="w-1 h-1 rounded-full bg-tab-text-accent" />
-          <HelpText className="text-tab-text-accent">{t(proxyUtils.getProxyTypeName(proxyType))}</HelpText>
+          <HelpText className="text-tab-text-accent">{t(ProxyTypeName[proxyType])}</HelpText>
         </div>
       </div>
-      {suffix}
+      {ActionButton}
     </div>
   );
 };

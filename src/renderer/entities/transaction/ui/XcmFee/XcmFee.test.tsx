@@ -5,6 +5,8 @@ import { XcmFee } from './XcmFee';
 import { ChainXCM, XcmConfig } from '@shared/api/xcm';
 import type { Asset } from '@shared/core';
 
+jest.mock('@renderer/components/common');
+
 jest.mock('@app/providers', () => ({
   useI18n: jest.fn().mockReturnValue({
     t: (key: string) => key,
@@ -22,7 +24,7 @@ jest.mock('@entities/asset', () => ({
   AssetBalance: ({ value }: any) => <div>{value}</div>,
 }));
 
-describe('entities/transaction/ui/XcmFee', () => {
+describe('components/common/XcmFee', () => {
   test('should render component', async () => {
     const asset = { symbol: 'DOT', precision: 10 } as Asset;
     const tx = {

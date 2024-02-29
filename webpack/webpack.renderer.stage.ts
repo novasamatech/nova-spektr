@@ -9,13 +9,16 @@ import sharedConfig from './webpack.shared';
 import { APP_CONFIG } from '../app.config';
 
 const { FOLDERS, RENDERER } = APP_CONFIG;
+const port = RENDERER.DEV_SERVER.URL.split(':')?.[2] || 3000;
 
 const config = merge<WpConfig & WdsConfig>(sharedConfig, {
   mode: 'none',
   target: 'web',
 
+  entry: resolve(FOLDERS.ENTRY_POINTS.RENDERER),
+
   devServer: {
-    port: RENDERER.DEV_SERVER.PORT,
+    port,
     historyApiFallback: true,
     compress: true,
     hot: true,
@@ -26,12 +29,7 @@ const config = merge<WpConfig & WdsConfig>(sharedConfig, {
     client: {
       overlay: false,
     },
-    devMiddleware: {
-      writeToDisk: true,
-    },
   },
-
-  entry: resolve(FOLDERS.ENTRY_POINTS.RENDERER),
 
   output: {
     path: resolve(FOLDERS.DEV_BUILD),

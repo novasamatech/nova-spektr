@@ -1,10 +1,10 @@
 import { Identicon as PolkadotIdenticon } from '@polkadot/react-identicon';
 import { IconTheme } from '@polkadot/react-identicon/types';
-import { useLayoutEffect, useRef, SyntheticEvent } from 'react';
+import { useLayoutEffect, useRef, memo, SyntheticEvent } from 'react';
 
 import { cnTw, copyToClipboard } from '@shared/lib/utils';
 import { Address } from '@shared/core';
-import { Icon } from '../Icon/Icon';
+import Icon from '../Icon/Icon';
 
 type Props = {
   theme?: IconTheme;
@@ -16,7 +16,7 @@ type Props = {
   buttonClassName?: string;
 };
 
-export const Identicon = ({
+const Identicon = ({
   theme = 'polkadot',
   address,
   size = 24,
@@ -80,3 +80,5 @@ export const Identicon = ({
     </div>
   );
 };
+
+export default memo(Identicon);

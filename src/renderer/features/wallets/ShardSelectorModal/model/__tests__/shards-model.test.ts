@@ -1,20 +1,16 @@
 import { fork, allSettled } from 'effector';
 
+import { walletModel } from '@entities/wallet';
 import { shardsModel } from '../shards-model';
 import { shardsMock } from './mocks/shards-mock';
-import { walletModel } from '@entities/wallet';
 import { ChainAccount, ShardAccount } from '@shared/core';
-import { networkModel } from '@entities/network';
 
 describe('features/wallet/model/shards-model', () => {
   test('should create $walletStructure for vaultAccounts with sorted chains', async () => {
-    const { vaultWallet, vaultAccounts, chainsMap } = shardsMock;
+    const { vaultWallet, vaultAccounts } = shardsMock;
 
     const scope = fork({
-      values: new Map()
-        .set(walletModel.$wallets, [vaultWallet])
-        .set(walletModel.$accounts, vaultAccounts)
-        .set(networkModel.$chains, chainsMap),
+      values: new Map().set(walletModel.$activeWallet, vaultWallet).set(walletModel.$activeAccounts, vaultAccounts),
     });
 
     await allSettled(shardsModel.events.structureRequested, { scope, params: true });
@@ -30,13 +26,12 @@ describe('features/wallet/model/shards-model', () => {
   });
 
   test('should create $walletStructure for multishardAccounts with sorted chains', async () => {
-    const { multishardWallet, multishardAccounts, chainsMap } = shardsMock;
+    const { multishardWallet, multishardAccounts } = shardsMock;
 
     const scope = fork({
       values: new Map()
-        .set(walletModel.$wallets, [multishardWallet])
-        .set(walletModel.$accounts, multishardAccounts)
-        .set(networkModel.$chains, chainsMap),
+        .set(walletModel.$activeWallet, multishardWallet)
+        .set(walletModel.$activeAccounts, multishardAccounts),
     });
 
     await allSettled(shardsModel.events.structureRequested, { scope, params: true });

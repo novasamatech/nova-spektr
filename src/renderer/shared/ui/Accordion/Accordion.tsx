@@ -1,16 +1,16 @@
 import { PropsWithChildren, forwardRef, ElementType } from 'react';
 import { Disclosure, Transition } from '@headlessui/react';
 
+import { Icon } from '@shared/ui';
 import { cnTw } from '@shared/lib/utils';
 import { IconNames } from '../Icon/data';
-import { Icon } from '../Icon/Icon';
 
 type Props = {
   className?: string;
   isDefaultOpen?: boolean;
 };
 
-const AccordionRoot = ({ className, isDefaultOpen, children }: PropsWithChildren<Props>) => {
+const Accordion = ({ className, isDefaultOpen, children }: PropsWithChildren<Props>) => {
   return (
     <div className={cnTw('w-full', className)}>
       <Disclosure defaultOpen={isDefaultOpen}>{children}</Disclosure>
@@ -31,10 +31,7 @@ const Button = forwardRef<HTMLButtonElement, PropsWithChildren<ButtonProps>>(
     return (
       <Disclosure.Button
         ref={ref}
-        className={cnTw(
-          'group flex items-center justify-between w-full gap-x-2 hover:bg-action-background-hover rounded',
-          buttonClass,
-        )}
+        className={cnTw('group flex items-center justify-between w-full gap-x-2', buttonClass)}
         onClick={onClick}
       >
         {({ open }) => (
@@ -46,8 +43,8 @@ const Button = forwardRef<HTMLButtonElement, PropsWithChildren<ButtonProps>>(
                 size={16}
                 className={cnTw(
                   'cursor-pointer rounded-full transition-colors',
-                  'group-hover:text-icon-hover',
-                  'group-focus-visible:text-icon-hover',
+                  'group-hover:text-icon-hover group-hover:bg-hover',
+                  'group-focus-visible:text-icon-hover group-focus-visible:bg-hover',
                 )}
               />
             </div>
@@ -80,7 +77,7 @@ const Content = ({ as = 'div', className, children }: PropsWithChildren<ContentP
   );
 };
 
-export const Accordion = Object.assign(AccordionRoot, {
-  Button,
-  Content,
-});
+Accordion.Button = Button;
+Accordion.Content = Content;
+
+export default Accordion;

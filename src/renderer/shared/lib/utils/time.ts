@@ -75,9 +75,3 @@ export const getDurationParams = (
       return {};
   }
 };
-
-export const sortByDateDesc = <T>([dateA]: [string, T[]], [dateB]: [string, T[]]): number =>
-  new Date(dateA) < new Date(dateB) ? 1 : -1;
-
-export const sortByDateAsc = <T>([dateA]: [string, T[]], [dateB]: [string, T[]]): number =>
-  new Date(dateA) > new Date(dateB) ? 1 : -1;

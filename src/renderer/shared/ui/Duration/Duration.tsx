@@ -2,12 +2,12 @@
 import { useI18n } from '@app/providers';
 import { secondsToDuration, getDurationFormat, getDurationParams, DurationFormat } from '@shared/lib/utils';
 
-type Props = {
+interface Props {
   seconds: string;
   className?: string;
-};
+}
 
-export const Duration = ({ seconds, className }: Props) => {
+const Duration = ({ seconds, className }: Props) => {
   const { t } = useI18n();
 
   const duration = secondsToDuration(parseInt(seconds));
@@ -25,3 +25,5 @@ export const Duration = ({ seconds, className }: Props) => {
 
   return <span className={className}>{t(`time.${i18nKey}`, durationParams)}</span>;
 };
+
+export default Duration;

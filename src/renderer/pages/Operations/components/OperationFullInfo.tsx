@@ -1,21 +1,16 @@
-import { useUnit } from 'effector-react';
-
 import { Icon, Button, InfoLink, SmallTitleText } from '@shared/ui';
 import { OperationCardDetails } from './OperationCardDetails';
 import RejectTx from './modals/RejectTx';
 import ApproveTx from './modals/ApproveTx';
 import { getMultisigExtrinsicLink } from '../common/utils';
 import CallDataModal from './modals/CallDataModal';
-import { useI18n, useMultisigChainContext } from '@app/providers';
+import { useMatrix, useI18n, useMultisigChainContext } from '@app/providers';
 import { useMultisigTx } from '@entities/multisig';
 import { useToggle } from '@shared/lib/hooks';
 import { MultisigTransactionDS } from '@shared/api/storage';
 import type { CallData, MultisigAccount } from '@shared/core';
 import { OperationSignatories } from './OperationSignatories';
 import { useNetworkData } from '@entities/network';
-import { walletModel, permissionUtils } from '@entities/wallet';
-import { dictionary } from '@shared/lib/utils';
-import { matrixModel } from '@entities/matrix';
 
 type Props = {
   tx: MultisigTransactionDS;
@@ -26,13 +21,9 @@ const OperationFullInfo = ({ tx, account }: Props) => {
   const { t } = useI18n();
   const { api, chain, connection, extendedChain } = useNetworkData(tx.chainId);
 
-  const wallets = useUnit(walletModel.$wallets);
-  const accounts = useUnit(walletModel.$accounts);
-  const depositorAccounts = accounts.filter((a) => a.accountId === tx.depositor);
-  const matrix = useUnit(matrixModel.$matrix);
-
-  const walletsMap = dictionary(wallets, 'id');
   const callData = tx.callData;
+
+  const { matrix } = useMatrix();
 
   const { addTask } = useMultisigChainContext();
   const { updateCallData } = useMultisigTx({ addTask });
@@ -60,10 +51,6 @@ const OperationFullInfo = ({ tx, account }: Props) => {
     });
   };
 
-  const isRejectAvailable = depositorAccounts.some((depositor) => {
-    return permissionUtils.canRejectMultisigTx(walletsMap[depositor.walletId], [depositor]);
-  });
-
   return (
     <div className="flex flex-1">
       <div className="flex flex-col w-[416px] p-4 border-r border-r-divider">
@@ -90,9 +77,7 @@ const OperationFullInfo = ({ tx, account }: Props) => {
         <OperationCardDetails tx={tx} account={account} extendedChain={extendedChain} />
 
         <div className="flex items-center mt-3">
-          {connection && isRejectAvailable && account && (
-            <RejectTx tx={tx} account={account} connection={extendedChain} />
-          )}
+          {account && connection && <RejectTx tx={tx} account={account} connection={extendedChain} />}
           {account && connection && <ApproveTx tx={tx} account={account} connection={extendedChain} />}
         </div>
       </div>

@@ -1,7 +1,7 @@
 import { useUnit } from 'effector-react';
 
 import { useI18n } from '@app/providers';
-import { AddressWithExplorers, WalletCardSm, WalletIcon, walletModel, ExplorersPopover } from '@entities/wallet';
+import { AddressWithExplorers, WalletCardSm, WalletIcon, walletModel } from '@entities/wallet';
 import { ChainTitle } from '@entities/chain';
 import { ExtendedChain } from '@entities/network';
 import { Transaction } from '@entities/transaction';
@@ -50,11 +50,11 @@ const Details = ({ transaction, account, signatory, connection }: Props) => {
 
       {signatory && signatoryWallet && (
         <DetailRow label={t('transfer.signatoryLabel')}>
-          <ExplorersPopover
-            button={<WalletCardSm wallet={signatoryWallet} />}
-            address={signatory.accountId}
-            explorers={explorers}
+          <WalletCardSm
+            wallet={signatoryWallet}
+            accountId={signatory.accountId}
             addressPrefix={addressPrefix}
+            explorers={explorers}
           />
         </DetailRow>
       )}

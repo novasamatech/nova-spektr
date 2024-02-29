@@ -10,7 +10,7 @@ import novawallet_onboarding_tutorial from '@shared/assets/video/novawallet_onbo
 import novawallet_onboarding_tutorial_webm from '@shared/assets/video/novawallet_onboarding_tutorial.webm';
 import { usePrevious } from '@shared/lib/hooks';
 import { walletConnectUtils, walletConnectModel } from '@entities/walletConnect';
-import { chainsService } from '@shared/api/network';
+import { chainsService } from '@entities/network';
 import { wcOnboardingModel } from '@pages/Onboarding/WalletConnect/model/wc-onboarding-model';
 import { WCQRConfig, Step, EXPIRE_TIMEOUT } from './lib/const';
 import { useStatusContext } from '@app/providers/context/StatusContext';

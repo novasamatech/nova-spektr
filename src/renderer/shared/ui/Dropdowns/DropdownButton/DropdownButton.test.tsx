@@ -3,6 +3,10 @@ import noop from 'lodash/noop';
 
 import { DropdownButton, ButtonDropdownOption } from './DropdownButton';
 
+jest.mock('@app/providers', () => ({
+  useMatrix: jest.fn(),
+}));
+
 describe('ui/Dropdowns/DropdownButton', () => {
   const options: ButtonDropdownOption[] = [
     { id: '0', title: 'label_0', icon: 'globe', onClick: noop },

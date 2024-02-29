@@ -1,7 +1,8 @@
 import { useEffect, useState, ReactNode } from 'react';
 
-import { ExtendedChain, networkUtils } from '@entities/network';
+import { ExtendedChain } from '@entities/network';
 import { CaptionText, Counter, Accordion } from '@shared/ui';
+import { ConnectionType, ConnectionStatus } from '@shared/core';
 
 type Props = {
   title: string;
@@ -26,11 +27,11 @@ export const NetworkList = ({ title, isDefaultOpen, query, networkList, children
 
   const { success, connecting, error } = networkList.reduce(
     (acc, network) => {
-      if (networkUtils.isDisabledConnection(network.connection)) return acc;
+      if (network.connection.connectionType === ConnectionType.DISABLED) return acc;
 
-      if (networkUtils.isConnectedStatus(network.connectionStatus)) acc.success += 1;
-      if (networkUtils.isConnectingStatus(network.connectionStatus)) acc.connecting += 1;
-      if (networkUtils.isErrorStatus(network.connectionStatus)) acc.error += 1;
+      if (network.connectionStatus === ConnectionStatus.CONNECTED) acc.success += 1;
+      if (network.connectionStatus === ConnectionStatus.DISCONNECTED) acc.connecting += 1;
+      if (network.connectionStatus === ConnectionStatus.ERROR) acc.error += 1;
 
       return acc;
     },
@@ -39,7 +40,7 @@ export const NetworkList = ({ title, isDefaultOpen, query, networkList, children
 
   return (
     <Accordion isDefaultOpen={isListOpen}>
-      <Accordion.Button buttonClass="py-1.5 px-2">
+      <Accordion.Button buttonClass="py-1.5">
         <div className="flex items-center gap-x-1.5 w-full">
           <CaptionText as="h2" className="uppercase text-text-secondary tracking-[0.75px]">
             {title}
@@ -54,7 +55,7 @@ export const NetworkList = ({ title, isDefaultOpen, query, networkList, children
         </div>
       </Accordion.Button>
       <Accordion.Content>
-        <ul className="px-2">
+        <ul>
           {networkList.map((network) => (
             <li key={network.chainId} className="border-b border-b-filter-border last:border-0">
               {children(network)}

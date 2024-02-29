@@ -11,7 +11,7 @@ jest.mock('@app/providers', () => ({
   }),
 }));
 
-jest.mock('@shared/api/network', () => ({
+jest.mock('@entities/network', () => ({
   chainsService: {
     sortChains: jest.fn((value: Chain[]) => value),
     getChainsData: jest.fn().mockReturnValue([

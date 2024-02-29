@@ -8,8 +8,9 @@ import {
   ChainType,
   CryptoType,
   KeyType,
+  AccountId,
 } from '@shared/core';
-import { TEST_ACCOUNTS, TEST_CHAIN_ID } from '@shared/lib/utils';
+import { TEST_ACCOUNT_ID, TEST_CHAIN_ID } from '@shared/lib/utils';
 
 function getWallets(activeId: ID): Wallet[] {
   return [
@@ -36,7 +37,7 @@ const accounts: Account[] = [
     walletId: 1,
     name: 'My base account',
     type: AccountType.BASE,
-    accountId: TEST_ACCOUNTS[0],
+    accountId: TEST_ACCOUNT_ID,
     chainType: ChainType.SUBSTRATE,
     cryptoType: CryptoType.SR25519,
   },
@@ -46,7 +47,7 @@ const accounts: Account[] = [
     baseId: 1,
     name: 'My chain account',
     type: AccountType.CHAIN,
-    accountId: TEST_ACCOUNTS[0],
+    accountId: TEST_ACCOUNT_ID,
     chainId: TEST_CHAIN_ID,
     chainType: ChainType.SUBSTRATE,
     cryptoType: CryptoType.SR25519,
@@ -58,7 +59,7 @@ const accounts: Account[] = [
     walletId: 2,
     name: 'My base account',
     type: AccountType.BASE,
-    accountId: TEST_ACCOUNTS[0],
+    accountId: TEST_ACCOUNT_ID,
     chainType: ChainType.SUBSTRATE,
     cryptoType: CryptoType.SR25519,
   },
@@ -68,7 +69,7 @@ const accounts: Account[] = [
     baseId: 3,
     name: 'My chain account',
     type: AccountType.CHAIN,
-    accountId: TEST_ACCOUNTS[0],
+    accountId: TEST_ACCOUNT_ID,
     chainId: TEST_CHAIN_ID,
     chainType: ChainType.SUBSTRATE,
     cryptoType: CryptoType.SR25519,
@@ -91,7 +92,7 @@ const newAccounts = [
     walletId: 3,
     name: 'My base account',
     type: AccountType.BASE,
-    accountId: TEST_ACCOUNTS[0],
+    accountId: TEST_ACCOUNT_ID as AccountId,
     chainType: ChainType.SUBSTRATE,
     cryptoType: CryptoType.SR25519,
   },
@@ -101,7 +102,7 @@ const newAccounts = [
     baseId: 4,
     name: 'My chain account',
     type: AccountType.CHAIN,
-    accountId: TEST_ACCOUNTS[0],
+    accountId: TEST_ACCOUNT_ID as AccountId,
     chainId: TEST_CHAIN_ID,
     chainType: ChainType.SUBSTRATE,
     cryptoType: CryptoType.SR25519,
@@ -110,31 +111,9 @@ const newAccounts = [
   },
 ];
 
-const newProxiedWallet = {
-  id: 4,
-  name: 'Proxied Wallet',
-  type: WalletType.PROXIED,
-  signingType: SigningType.POLKADOT_VAULT,
-  isActive: false,
-};
-
-const newProxiedAccounts = [
-  {
-    id: 6,
-    walletId: 4,
-    name: 'Proxied Wallet',
-    type: AccountType.PROXIED,
-    accountId: TEST_ACCOUNTS[0],
-    chainType: ChainType.SUBSTRATE,
-    cryptoType: CryptoType.SR25519,
-  },
-];
-
 export const walletMock = {
   getWallets,
   accounts,
   newWallet,
   newAccounts,
-  newProxiedWallet,
-  newProxiedAccounts,
 };

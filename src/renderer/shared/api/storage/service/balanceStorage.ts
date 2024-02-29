@@ -1,6 +1,6 @@
 import { Balance, BalanceKey } from '@shared/core/types/balance';
 import { ChainId, AccountId } from '@shared/core';
-import { BalanceDS, IBalanceStorage, TBalance } from '../lib/types';
+import { BalanceDS, IBalanceStorage, TBalance } from '../common/types';
 
 export const useBalanceStorage = (db: TBalance): IBalanceStorage => ({
   getBalance: (accountId: AccountId, chainId: ChainId, assetId: string): Promise<BalanceDS | undefined> => {

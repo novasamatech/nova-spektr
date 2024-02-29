@@ -2,7 +2,7 @@ import { Listbox } from '@headlessui/react';
 
 import { cnTw } from '@shared/lib/utils';
 import { LanguageItem, SupportedLocale } from '@shared/api/translation/lib/types';
-import { Icon } from '../Icon/Icon';
+import Icon from '../Icon/Icon';
 
 type Props = {
   className?: string;
@@ -13,7 +13,7 @@ type Props = {
   top?: boolean;
 };
 
-export const LanguageSwitcher = ({ className, languages, selected, short, onChange, top }: Props) => {
+const LanguageSwitcher = ({ className, languages, selected, short, onChange, top }: Props) => {
   const selectedLanguage = languages.find(({ value }) => value === selected) || languages[0];
   const availableLanguages = languages.filter((l) => l !== selectedLanguage);
   const languagesList = top ? [...availableLanguages, selectedLanguage] : [selectedLanguage, ...availableLanguages];
@@ -57,3 +57,5 @@ export const LanguageSwitcher = ({ className, languages, selected, short, onChan
     </div>
   );
 };
+
+export default LanguageSwitcher;

@@ -1,14 +1,5 @@
-import {
-  Account,
-  AccountId,
-  AccountType,
-  ChainAccount,
-  ChainType,
-  CryptoType,
-  KeyType,
-  ShardAccount,
-} from '@shared/core';
-import { TEST_ACCOUNTS, TEST_CHAIN_ID } from '@shared/lib/utils';
+import { AccountType, ChainAccount, ChainType, CryptoType, KeyType, ShardAccount } from '@shared/core';
+import { TEST_ACCOUNT_ID, TEST_CHAIN_ID } from '@shared/lib/utils';
 import { accountUtils } from '@entities/wallet';
 
 const accounts: Array<ChainAccount | ShardAccount> = [
@@ -18,7 +9,7 @@ const accounts: Array<ChainAccount | ShardAccount> = [
     baseId: 1,
     name: 'My chain account',
     type: AccountType.CHAIN,
-    accountId: TEST_ACCOUNTS[0],
+    accountId: TEST_ACCOUNT_ID,
     chainId: TEST_CHAIN_ID,
     chainType: ChainType.SUBSTRATE,
     cryptoType: CryptoType.SR25519,
@@ -31,7 +22,7 @@ const accounts: Array<ChainAccount | ShardAccount> = [
     baseId: 1,
     name: 'My chain account',
     type: AccountType.CHAIN,
-    accountId: TEST_ACCOUNTS[0],
+    accountId: TEST_ACCOUNT_ID,
     chainId: TEST_CHAIN_ID,
     chainType: ChainType.SUBSTRATE,
     cryptoType: CryptoType.SR25519,
@@ -45,7 +36,7 @@ const accounts: Array<ChainAccount | ShardAccount> = [
     chainId: TEST_CHAIN_ID,
     name: 'My shard',
     type: AccountType.SHARD,
-    accountId: TEST_ACCOUNTS[0],
+    accountId: TEST_ACCOUNT_ID,
     keyType: KeyType.STAKING,
     chainType: ChainType.SUBSTRATE,
     cryptoType: CryptoType.SR25519,
@@ -58,7 +49,7 @@ const accounts: Array<ChainAccount | ShardAccount> = [
     chainId: TEST_CHAIN_ID,
     name: 'My shard',
     type: AccountType.SHARD,
-    accountId: TEST_ACCOUNTS[0],
+    accountId: TEST_ACCOUNT_ID,
     keyType: KeyType.STAKING,
     chainType: ChainType.SUBSTRATE,
     cryptoType: CryptoType.SR25519,
@@ -71,7 +62,7 @@ const accounts: Array<ChainAccount | ShardAccount> = [
     chainId: TEST_CHAIN_ID,
     name: 'My shard',
     type: AccountType.SHARD,
-    accountId: TEST_ACCOUNTS[0],
+    accountId: TEST_ACCOUNT_ID,
     keyType: KeyType.MAIN,
     chainType: ChainType.SUBSTRATE,
     cryptoType: CryptoType.SR25519,
@@ -84,7 +75,7 @@ const accounts: Array<ChainAccount | ShardAccount> = [
     name: 'My shard',
     type: AccountType.SHARD,
     chainId: TEST_CHAIN_ID,
-    accountId: TEST_ACCOUNTS[0],
+    accountId: TEST_ACCOUNT_ID,
     keyType: KeyType.STAKING,
     chainType: ChainType.SUBSTRATE,
     cryptoType: CryptoType.SR25519,
@@ -97,7 +88,7 @@ const accounts: Array<ChainAccount | ShardAccount> = [
     name: 'My shard',
     type: AccountType.SHARD,
     chainId: TEST_CHAIN_ID,
-    accountId: TEST_ACCOUNTS[0],
+    accountId: TEST_ACCOUNT_ID,
     keyType: KeyType.STAKING,
     chainType: ChainType.SUBSTRATE,
     cryptoType: CryptoType.SR25519,
@@ -150,44 +141,4 @@ describe('entities/wallet/lib/account-utils#getDerivationPath', () => {
       expect(derivationPath).toEqual(expectedResult);
     },
   );
-
-  test('should return the account ID', () => {
-    const ids = ['0x00', '0x01', '0x02'] as AccountId[];
-    const threshold = 2;
-    const result = accountUtils.getMultisigAccountId(ids, threshold);
-
-    expect(result).toEqual('0x7c03b938aa7d9952e4c0f9b573e5e3a3ae9f6a9910c4f965a22803f64d7fbc68');
-  });
-
-  test('should return undefined if accounts array is empty', () => {
-    const accounts: Account[] = [];
-    const result = accountUtils.getBaseAccount(accounts);
-
-    expect(result).toBeUndefined();
-  });
-
-  test('should return undefined if no account matches the walletId', () => {
-    const accounts: Account[] = [
-      { id: 1, walletId: 1, type: AccountType.BASE } as unknown as Account,
-      { id: 2, walletId: 2, type: AccountType.BASE } as unknown as Account,
-      { id: 3, walletId: 3, type: AccountType.BASE } as unknown as Account,
-    ];
-    const walletId = 4;
-    const result = accountUtils.getBaseAccount(accounts, walletId);
-
-    expect(result).toBeUndefined();
-  });
-
-  test('should return the first account that matches the walletId and is a base account', () => {
-    const accounts: Account[] = [
-      { id: 1, walletId: 1 } as unknown as Account,
-      { id: 2, walletId: 1 } as unknown as Account,
-      { id: 3, walletId: 1, type: AccountType.BASE } as unknown as Account,
-    ];
-
-    const walletId = 1;
-    const result = accountUtils.getBaseAccount(accounts, walletId);
-
-    expect(result).toEqual(accounts[2]);
-  });
 });

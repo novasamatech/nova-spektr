@@ -1,4 +1,4 @@
-import { Action, XcmConfig, XcmTransferType } from '../../lib/types';
+import { Action, XcmConfig } from '../../common/types';
 
 export const CONFIG: XcmConfig = {
   assetsLocation: {
@@ -80,7 +80,7 @@ export const CONFIG: XcmConfig = {
                   instructions: 'xtokensDest',
                 },
               },
-              type: XcmTransferType.XTOKENS,
+              type: 'xtokens',
             },
             {
               destination: {
@@ -94,7 +94,7 @@ export const CONFIG: XcmConfig = {
                   instructions: 'xtokensDest',
                 },
               },
-              type: XcmTransferType.XTOKENS,
+              type: 'xtokens',
             },
           ],
         },
@@ -117,7 +117,7 @@ export const CONFIG: XcmConfig = {
                   instructions: 'xtokensDest',
                 },
               },
-              type: XcmTransferType.XTOKENS,
+              type: 'xtokens',
             },
           ],
         },
@@ -132,7 +132,7 @@ export const CONFIG: XcmConfig = {
           assetLocationPath: { type: 'absolute' },
           xcmTransfers: [
             {
-              type: XcmTransferType.XTOKENS,
+              type: 'xtokens',
               destination: {
                 chainId: 'baf5aabe40646d11f0ee8abbdc64f4a4b7674925cba08e4a05ff9ebed6e2126b',
                 assetId: 0,

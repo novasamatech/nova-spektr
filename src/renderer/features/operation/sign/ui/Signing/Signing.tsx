@@ -19,7 +19,7 @@ export const Signing = (props: SigningProps) => {
   const wallets = useUnit(walletModel.$wallets);
 
   const signatoryWallet = wallets.find((w) => w.id === props.signatory?.walletId);
-  const wallet = props.signerWaller || signatoryWallet || activeWallet;
+  const wallet = signatoryWallet || activeWallet;
 
   if (!wallet) return null;
 

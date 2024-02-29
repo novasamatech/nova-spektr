@@ -14,7 +14,7 @@ type BalancesTransferArgs = Parameters<typeof methods.balances.transfer>[0];
 type BondWithoutContollerArgs = Omit<Parameters<typeof methods.staking.bond>[0], 'controller'>;
 
 // TODO: change to substrate txwrapper method when it'll update
-const transferKeepAlive = (
+const transferAllowDeath = (
   args: BalancesTransferArgs,
   info: BaseTxInfo,
   options: OptionsWithMeta,
@@ -23,7 +23,7 @@ const transferKeepAlive = (
     {
       method: {
         args,
-        name: 'transferKeepAlive',
+        name: 'transferAllowDeath',
         pallet: 'balances',
       },
       ...info,
@@ -54,8 +54,8 @@ export const getUnsignedTransaction: Record<
 > = {
   [TransactionType.TRANSFER]: (transaction, info, options, api) => {
     // @ts-ignore
-    return api.tx.balances.transferKeepAlive
-      ? transferKeepAlive(
+    return api.tx.balances.transferAllowDeath
+      ? transferAllowDeath(
           {
             dest: transaction.args.dest,
             value: transaction.args.value,
@@ -302,42 +302,6 @@ export const getUnsignedTransaction: Record<
       options,
     );
   },
-  [TransactionType.ADD_PROXY]: (transaction, info, options, api) => {
-    return methods.proxy.addProxy(
-      {
-        delegate: transaction.args.delegate,
-        proxyType: transaction.args.proxyType,
-        delay: transaction.args.delay,
-      },
-      info,
-      options,
-    );
-  },
-  [TransactionType.REMOVE_PROXY]: (transaction, info, options, api) => {
-    return methods.proxy.removeProxy(
-      {
-        delegate: transaction.args.delegate,
-        proxyType: transaction.args.proxyType,
-        delay: transaction.args.delay,
-      },
-      info,
-      options,
-    );
-  },
-  [TransactionType.PROXY]: (transaction, info, options, api) => {
-    const tx = transaction.args.transaction as Transaction;
-    const call = getUnsignedTransaction[tx.type](tx, info, options, api).method;
-
-    return methods.proxy.proxy(
-      {
-        real: transaction.args.real,
-        forceProxyType: transaction.args.forceProxyType,
-        call,
-      },
-      info,
-      options,
-    );
-  },
 };
 
 export const getExtrinsic: Record<
@@ -345,8 +309,8 @@ export const getExtrinsic: Record<
   (args: Record<string, any>, api: ApiPromise) => SubmittableExtrinsic<'promise'>
 > = {
   [TransactionType.TRANSFER]: ({ dest, value }, api) =>
-    api.tx.balances.transferKeepAlive
-      ? api.tx.balances.transferKeepAlive(dest, value)
+    api.tx.balances.transferAllowDeath
+      ? api.tx.balances.transferAllowDeath(dest, value)
       : api.tx.balances.transfer(dest, value),
   [TransactionType.ASSET_TRANSFER]: ({ dest, value, asset }, api) => api.tx.assets.transfer(asset, dest, value),
   [TransactionType.ORML_TRANSFER]: ({ dest, value, asset }, api) =>
@@ -403,22 +367,9 @@ export const getExtrinsic: Record<
   [TransactionType.DESTINATION]: ({ payee }, api) => api.tx.staking.setPayee(payee),
   [TransactionType.CHILL]: (_, api) => api.tx.staking.chill(),
   [TransactionType.BATCH_ALL]: ({ transactions }, api) => {
-    const calls = transactions.map((tx: Transaction) => getExtrinsic[tx.type](tx.args, api).method);
+    const calls = transactions.map((t: Transaction) => getExtrinsic[t.type](t.args, api).method);
 
     return api.tx.utility.batchAll(calls);
-  },
-  [TransactionType.ADD_PROXY]: ({ delegate, proxyType, delay }, api) => {
-    return api.tx.proxy.addProxy(delegate, proxyType, delay);
-  },
-  [TransactionType.REMOVE_PROXY]: ({ delegate, proxyType, delay }, api) => {
-    return api.tx.proxy.removeProxy(delegate, proxyType, delay);
-  },
-  // TODO: Check that this method works correctly
-  [TransactionType.PROXY]: ({ real, forceProxyType, transaction }, api) => {
-    const tx = transaction as Transaction;
-    const call = getExtrinsic[tx.type](tx.args, api).method;
-
-    return api.tx.proxy.proxy(real, forceProxyType, call);
   },
 };
 

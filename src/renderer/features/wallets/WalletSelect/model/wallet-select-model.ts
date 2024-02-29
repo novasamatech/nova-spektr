@@ -1,72 +1,65 @@
-import { createStore, combine, createEvent, sample, createApi, attach, createEffect } from 'effector';
+import { createStore, combine, createEvent, sample } from 'effector';
 import BigNumber from 'bignumber.js';
-import { once, previous } from 'patronum';
 
-import { getRoundedValue, totalAmount, dictionary } from '@shared/lib/utils';
-import { walletModel, accountUtils, walletUtils } from '@entities/wallet';
+import { includes, getRoundedValue, totalAmount, dictionary } from '@shared/lib/utils';
+import { walletModel, walletUtils, accountUtils } from '@entities/wallet';
 import { currencyModel, priceProviderModel } from '@entities/price';
-import type { Wallet, ID } from '@shared/core';
+import type { WalletFamily, Wallet, ID } from '@shared/core';
+import { WalletType } from '@shared/core';
 import { networkModel } from '@entities/network';
 import { balanceModel } from '@entities/balance';
-import { storageService } from '@shared/api/storage';
-import { walletSelectUtils } from '../lib/wallet-select-utils';
-
-export type Callbacks = {
-  onClose: () => void;
-};
 
 const walletIdSet = createEvent<ID>();
+const walletIdCleared = createEvent();
+const clearData = createEvent();
 const queryChanged = createEvent<string>();
-const walletSelected = createEvent<ID>();
 
-const $callbacks = createStore<Callbacks | null>(null);
-const callbacksApi = createApi($callbacks, {
-  callbacksChanged: (state, props: Callbacks) => ({ ...state, ...props }),
-});
-
-const $walletId = createStore<ID | null>(null);
-const $filterQuery = createStore<string>('');
-
-const $isWalletsRemoved = combine(
-  {
-    prevWallets: previous(walletModel.$wallets, []),
-    wallets: walletModel.$wallets,
-  },
-  ({ prevWallets, wallets }) => {
-    return prevWallets.length > wallets.length;
-  },
-);
-
-const $isWalletsAdded = combine(
-  {
-    prevWallets: previous(walletModel.$wallets, []),
-    wallets: walletModel.$wallets,
-  },
-  ({ prevWallets, wallets }) => {
-    return wallets.length > prevWallets.length;
-  },
-);
+const $walletId = createStore<ID | null>(null).reset(walletIdCleared);
+const $filterQuery = createStore<string>('').reset(clearData);
+const $isWalletChanged = createStore<boolean>(false).reset(clearData);
 
 const $walletForDetails = combine(
   {
-    walletId: $walletId,
     wallets: walletModel.$wallets,
+    walletId: $walletId,
   },
-  ({ wallets, walletId }): Wallet | undefined => {
-    if (!walletId) return;
+  ({ wallets, walletId }): Wallet | null => {
+    if (!walletId) return null;
 
-    return walletUtils.getWalletById(wallets, walletId);
+    return walletUtils.getWalletById(wallets, walletId) ?? null;
   },
-  { skipVoid: false },
 );
 
 const $filteredWalletGroups = combine(
   {
-    query: $filterQuery,
     wallets: walletModel.$wallets,
+    query: $filterQuery,
   },
   ({ wallets, query }) => {
-    return walletSelectUtils.getWalletByGroups(wallets, query);
+    return wallets.reduce<Record<WalletFamily, Wallet[]>>(
+      (acc, wallet) => {
+        let groupIndex: WalletFamily | undefined;
+
+        if (walletUtils.isPolkadotVaultGroup(wallet)) groupIndex = WalletType.POLKADOT_VAULT;
+        if (walletUtils.isMultisig(wallet)) groupIndex = WalletType.MULTISIG;
+        if (walletUtils.isWatchOnly(wallet)) groupIndex = WalletType.WATCH_ONLY;
+        if (walletUtils.isWalletConnect(wallet)) groupIndex = WalletType.WALLET_CONNECT;
+        if (walletUtils.isNovaWallet(wallet)) groupIndex = WalletType.NOVA_WALLET;
+
+        if (groupIndex && includes(wallet.name, query)) {
+          acc[groupIndex].push(wallet);
+        }
+
+        return acc;
+      },
+      {
+        [WalletType.POLKADOT_VAULT]: [],
+        [WalletType.MULTISIG]: [],
+        [WalletType.NOVA_WALLET]: [],
+        [WalletType.WALLET_CONNECT]: [],
+        [WalletType.WATCH_ONLY]: [],
+      },
+    );
   },
 );
 
@@ -107,105 +100,26 @@ const $walletBalance = combine(
   },
 );
 
-type SelectParams = {
-  prevId?: ID;
-  nextId: ID;
-};
-const walletSelectedFx = createEffect(async ({ prevId, nextId }: SelectParams): Promise<ID | undefined> => {
-  if (!prevId) {
-    return storageService.wallets.update(nextId, { isActive: true });
-  }
-
-  // TODO: consider using Dexie transaction() | Task --> https://app.clickup.com/t/8692uyemn
-  const [, nextWallet] = await Promise.all([
-    storageService.wallets.update(prevId, { isActive: false }),
-    storageService.wallets.update(nextId, { isActive: true }),
-  ]);
-
-  return nextWallet ? nextId : undefined;
-});
-
 sample({ clock: queryChanged, target: $filterQuery });
 
 sample({ clock: walletIdSet, target: $walletId });
 
 sample({
-  clock: once(walletModel.$wallets),
-  filter: (wallets) => wallets.length > 0,
-  fn: (wallets) => {
-    const match = wallets.find((wallet) => wallet.isActive);
-    if (match) return { nextId: match.id };
-
-    const groups = walletSelectUtils.getWalletByGroups(wallets);
-
-    return { nextId: Object.values(groups).flat()[0].id };
-  },
-  target: walletSelectedFx,
-});
-
-sample({
-  clock: walletSelected,
+  clock: walletModel.events.walletSelected,
   source: walletModel.$activeWallet,
-  fn: (wallet, nextId) => ({ prevId: wallet?.id, nextId }),
-  target: walletSelectedFx,
-});
-
-sample({
-  clock: $isWalletsRemoved,
-  source: walletModel.$wallets,
-  filter: (wallets, isWalletsRemoved) => {
-    if (!isWalletsRemoved || wallets.length === 0) return false;
-
-    return wallets.every((wallet) => !wallet.isActive);
-  },
-  fn: (wallets) => {
-    const groups = walletSelectUtils.getWalletByGroups(wallets);
-
-    return { nextId: Object.values(groups).flat()[0].id };
-  },
-  target: walletSelectedFx,
-});
-
-sample({
-  clock: $isWalletsAdded,
-  source: walletModel.$wallets,
-  filter: (wallets, isWalletsAdded) => {
-    return isWalletsAdded && !walletUtils.isProxied(wallets[wallets.length - 1]);
-  },
-  fn: (wallets) => ({ nextId: wallets[wallets.length - 1].id }),
-  target: walletSelectedFx,
-});
-
-sample({
-  clock: walletSelected,
-  source: walletModel.$activeWallet,
-  filter: (wallet, walletId) => walletId !== wallet?.id,
-  target: attach({
-    source: $callbacks,
-    effect: (state) => state?.onClose(),
-  }),
-});
-
-sample({
-  clock: walletSelectedFx.doneData,
-  source: walletModel.$wallets,
-  filter: (_, nextId) => Boolean(nextId),
-  fn: (wallets, nextId) => {
-    return wallets.map((wallet) => ({ ...wallet, isActive: wallet.id === nextId }));
-  },
-  target: walletModel.$wallets,
+  fn: (wallet, walletId) => walletId !== wallet?.id,
+  target: $isWalletChanged,
 });
 
 export const walletSelectModel = {
   $filteredWalletGroups,
   $walletBalance,
   $walletForDetails,
+  $isWalletChanged,
   events: {
-    walletSelected,
-    walletIdSet,
+    clearData,
     queryChanged,
-    clearData: $filterQuery.reinit,
-    walletIdCleared: $walletId.reinit,
-    callbacksChanged: callbacksApi.callbacksChanged,
+    walletIdSet,
+    walletIdCleared,
   },
 };

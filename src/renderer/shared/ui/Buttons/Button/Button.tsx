@@ -4,7 +4,7 @@ import { MouseEvent, PropsWithChildren, ReactNode, forwardRef } from 'react';
 import { cnTw } from '@shared/lib/utils';
 import { ViewClass, SizeClass, Padding } from '../common/constants';
 import { Pallet, Variant } from '../common/types';
-import { Loader } from '../../Loader/Loader';
+import { Loader } from '@shared/ui';
 
 type Props = {
   className?: string;
@@ -21,7 +21,7 @@ type Props = {
   isLoading?: boolean;
 };
 
-export const Button = forwardRef<HTMLButtonElement, PropsWithChildren<Props>>(
+const Button = forwardRef<HTMLButtonElement, PropsWithChildren<Props>>(
   (
     {
       variant = 'fill',
@@ -63,3 +63,5 @@ export const Button = forwardRef<HTMLButtonElement, PropsWithChildren<Props>>(
     </button>
   ),
 );
+
+export default Button;

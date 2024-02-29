@@ -6,10 +6,9 @@ import { FootnoteText } from '../Typography';
 
 type Props = {
   button: ReactNode;
-  className?: string;
 };
 
-const ContextMenuRoot = ({ button, children, className }: PropsWithChildren<Props>) => {
+const ContextMenuRoot = ({ button, children }: PropsWithChildren<Props>) => {
   const popoverRef = useRef<HTMLDivElement>(null);
 
   const onButtonClick = (e: MouseEvent<HTMLDivElement>) => {
@@ -47,7 +46,6 @@ const ContextMenuRoot = ({ button, children, className }: PropsWithChildren<Prop
           className={cnTw(
             'absolute right-0 z-10 -mt-3 py-4 px-2.5 rounded-md w-[230px]',
             'bg-token-container-background border border-token-container-border shadow-card-shadow',
-            className,
           )}
         >
           {children}

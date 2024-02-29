@@ -2,30 +2,20 @@ import cn from 'classnames';
 import { useUnit } from 'effector-react';
 
 import { useI18n } from '@app/providers';
-import { AddressWithExplorers, WalletCardSm, walletModel, ExplorersPopover } from '@entities/wallet';
+import { AddressWithExplorers, WalletCardSm, walletModel } from '@entities/wallet';
 import { Icon, Button, FootnoteText, DetailRow } from '@shared/ui';
 import { copyToClipboard, truncate, cnTw, getAssetById } from '@shared/lib/utils';
 import { useToggle } from '@shared/lib/hooks';
-import { ExtendedChain, networkUtils } from '@entities/network';
-import {
-  MultisigTransaction,
-  Transaction,
-  isAddProxyTransaction,
-  isManageProxyTransaction,
-  isRemoveProxyTransaction,
-  isXcmTransaction,
-} from '@entities/transaction';
+import { chainsService, ExtendedChain, isLightClient } from '@entities/network';
+import { MultisigTransaction, Transaction, isXcmTransaction } from '@entities/transaction';
 import { AddressStyle, DescriptionBlockStyle, InteractionStyle } from '../common/constants';
 import { getMultisigExtrinsicLink } from '../common/utils';
 import { AssetBalance } from '@entities/asset';
 import { ChainTitle } from '@entities/chain';
-import type { Address, MultisigAccount, ProxyType, Validator } from '@shared/core';
+import type { Address, MultisigAccount, Validator } from '@shared/core';
 import { getTransactionFromMultisigTx } from '@entities/multisig';
 import { useValidatorsMap, ValidatorsModal } from '@entities/staking';
 import { singnatoryUtils } from '@entities/signatory';
-import { chainsService } from '@shared/api/network';
-import { proxyUtils } from '@entities/proxy';
-import { matrixModel } from '@entities/matrix';
 
 type Props = {
   tx: MultisigTransaction;
@@ -35,8 +25,6 @@ type Props = {
 
 export const OperationCardDetails = ({ tx, account, extendedChain }: Props) => {
   const { t } = useI18n();
-  const matrix = useUnit(matrixModel.$matrix);
-
   const activeWallet = useUnit(walletModel.$activeWallet);
   const wallets = useUnit(walletModel.$wallets);
   const accounts = useUnit(walletModel.$accounts);
@@ -53,7 +41,7 @@ export const OperationCardDetails = ({ tx, account, extendedChain }: Props) => {
   const { indexCreated, blockCreated, deposit, depositor, callHash, callData, description, cancelDescription } = tx;
 
   const transaction = getTransactionFromMultisigTx(tx);
-  const validatorsMap = useValidatorsMap(api, connection && networkUtils.isLightClientConnection(connection));
+  const validatorsMap = useValidatorsMap(api, connection && isLightClient(connection));
 
   const allValidators = Object.values(validatorsMap);
 
@@ -101,14 +89,13 @@ export const OperationCardDetails = ({ tx, account, extendedChain }: Props) => {
 
       {account && activeWallet && (
         <DetailRow label={t('operation.details.multisigWallet')} className={valueClass}>
-          <div className="-mr-2">
-            <ExplorersPopover
-              button={<WalletCardSm wallet={activeWallet} />}
-              address={account.accountId}
-              explorers={explorers}
-              addressPrefix={addressPrefix}
-            />
-          </div>
+          <WalletCardSm
+            wallet={activeWallet}
+            accountId={account.accountId}
+            addressPrefix={addressPrefix}
+            explorers={explorers}
+            className="-mr-2 max-w-none"
+          />
         </DetailRow>
       )}
 
@@ -149,40 +136,6 @@ export const OperationCardDetails = ({ tx, account, extendedChain }: Props) => {
             addressPrefix={addressPrefix}
             wrapperClassName="-mr-2 min-w-min"
           />
-        </DetailRow>
-      )}
-
-      {isAddProxyTransaction(tx.transaction) && (
-        <DetailRow label={t('operation.details.delegateTo')} className={valueClass}>
-          <AddressWithExplorers
-            explorers={explorers}
-            addressFont={AddressStyle}
-            type="short"
-            accountId={transaction?.args.delegate}
-            addressPrefix={addressPrefix}
-            wrapperClassName="-mr-2 min-w-min"
-          />
-        </DetailRow>
-      )}
-
-      {isRemoveProxyTransaction(tx.transaction) && (
-        <DetailRow label={t('operation.details.revokeFor')} className={valueClass}>
-          <AddressWithExplorers
-            explorers={explorers}
-            addressFont={AddressStyle}
-            type="short"
-            accountId={transaction?.args.delegate}
-            addressPrefix={addressPrefix}
-            wrapperClassName="-mr-2 min-w-min"
-          />
-        </DetailRow>
-      )}
-
-      {isManageProxyTransaction(tx.transaction) && (
-        <DetailRow label={t('operation.details.accessType')} className={valueClass}>
-          <FootnoteText className={valueClass}>
-            {t(proxyUtils.getProxyTypeName(transaction?.args.proxyType as ProxyType))}
-          </FootnoteText>
         </DetailRow>
       )}
 
@@ -272,11 +225,11 @@ export const OperationCardDetails = ({ tx, account, extendedChain }: Props) => {
           {depositorSignatory && (
             <DetailRow label={t('operation.details.depositor')} className={valueClass}>
               {depositorWallet ? (
-                <ExplorersPopover
-                  button={<WalletCardSm wallet={depositorWallet} />}
-                  address={depositorSignatory.accountId}
-                  explorers={explorers}
+                <WalletCardSm
+                  wallet={depositorWallet}
+                  accountId={depositorSignatory.accountId}
                   addressPrefix={addressPrefix}
+                  explorers={explorers}
                 />
               ) : (
                 <AddressWithExplorers
@@ -285,7 +238,7 @@ export const OperationCardDetails = ({ tx, account, extendedChain }: Props) => {
                   name={depositorSignatory.name}
                   addressFont={AddressStyle}
                   addressPrefix={addressPrefix}
-                  matrixId={matrix.userId}
+                  showMatrix
                   wrapperClassName="-mr-2 min-w-min"
                   type="short"
                 />

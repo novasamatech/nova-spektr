@@ -3,12 +3,12 @@ import { decodeAddress, encodeAddress } from '@polkadot/util-crypto';
 import cn from 'classnames';
 import { useState } from 'react';
 
+import { QrReader } from '@renderer/components/common';
+import { ErrorObject, QrError, SeedInfo, VideoInput } from '@renderer/components/common/QrCode/common/types';
 import { Icon, Loader, Button, CaptionText, FootnoteText, Select } from '@shared/ui';
 import { DropdownOption, DropdownResult } from '@shared/ui/Dropdowns/common/types';
 import { useI18n } from '@app/providers';
 import { cnTw } from '@shared/lib/utils';
-import { SeedInfo, VideoInput, ErrorObject, QrError, QrReader } from '@entities/transaction';
-import { CryptoTypeString } from '@shared/core';
 
 const enum CameraState {
   ACTIVE,
@@ -78,17 +78,14 @@ const KeyQrReader = ({ size = 300, className, onResult }: Props) => {
     try {
       qrPayload.forEach((qr) => {
         if (qr.multiSigner) {
-          if (qr.multiSigner.MultiSigner !== CryptoTypeString.ECDSA) {
-            encodeAddress(qr.multiSigner.public);
-          }
+          encodeAddress(qr.multiSigner.public);
         }
+
         if (qr.derivedKeys.length === 0) return;
 
-        qr.derivedKeys.forEach(({ address }) => {
-          const accountId = isHex(address) ? hexToU8a(address) : decodeAddress(address);
-
-          return accountId.length === 20 ? address : encodeAddress(accountId);
-        });
+        qr.derivedKeys.forEach(({ address }) =>
+          encodeAddress(isHex(address) ? hexToU8a(address) : decodeAddress(address)),
+        );
       });
 
       setIsScanComplete(true);
@@ -228,6 +225,7 @@ const KeyQrReader = ({ size = 300, className, onResult }: Props) => {
                 'text-white uppercase bg-label-background-gray px-2 py-1 rounded-full',
                 total === decoded && 'bg-label-background-green',
               )}
+              data-testid="progress"
             >
               {t('qrReader.parsingProgress', { decoded, total })}
             </CaptionText>

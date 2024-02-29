@@ -1,7 +1,7 @@
 import { ElementType, useEffect, useState } from 'react';
 
 import { cnTw } from '@shared/lib/utils';
-import { chainsService } from '@shared/api/network';
+import { chainsService } from '@entities/network';
 import { ChainIcon } from '@entities/chain';
 import TextBase from '@shared/ui/Typography/common/TextBase';
 import type { ChainId, Chain as ChainType } from '@shared/core';

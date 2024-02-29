@@ -12,7 +12,6 @@ import StakingImages, { Staking } from './staking';
 import SocialImages, { Social } from './social';
 import MstImages, { Mst } from './mst';
 import KeyTypeImages, { KeyImages } from './keyType';
-import ConfirmImages, { Confirm } from './confirm';
 
 const AllIcons = {
   ...CurrencyImages,
@@ -29,7 +28,6 @@ const AllIcons = {
   ...SocialImages,
   ...MstImages,
   ...KeyTypeImages,
-  ...ConfirmImages,
 };
 
 export type IconNames =
@@ -46,7 +44,6 @@ export type IconNames =
   | Social
   | WalletImages
   | Mst
-  | KeyImages
-  | Confirm;
+  | KeyImages;
 
 export default AllIcons;

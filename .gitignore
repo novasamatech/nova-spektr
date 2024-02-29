@@ -31,6 +31,3 @@ yarn-error.log*
 schema.graphql
 
 *-results.json
-/test-results/
-/playwright-report/
-/playwright/.cache/

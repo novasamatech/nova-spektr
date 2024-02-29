@@ -22,7 +22,7 @@ type Props = Omit<InputProps, 'onChange' | 'value'> & {
   theme?: Theme;
 };
 
-export const Combobox = ({
+const Combobox = ({
   className,
   value,
   options,
@@ -83,3 +83,5 @@ export const Combobox = ({
     </HeadlessCombobox>
   );
 };
+
+export default Combobox;

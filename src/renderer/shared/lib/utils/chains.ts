@@ -1,8 +1,6 @@
-import { WellKnownChain } from '@substrate/connect';
-
 import type { ChainId, Explorer, HexString, Address, AccountId } from '@shared/core';
 import { toAddress } from './address';
-import { SS58_DEFAULT_PREFIX, RelayChains } from './constants';
+import { SS58_DEFAULT_PREFIX } from './constants';
 
 export const toLocalChainId = (chainId?: ChainId): string | undefined => {
   return chainId?.replace('0x', '');
@@ -38,17 +36,3 @@ export const getAccountExplorer = (explorer: Explorer, params: WithAddress | Wit
 export const getExtrinsicExplorer = (explorer: Explorer, hash: HexString): string | undefined => {
   return explorer.extrinsic?.replace('{hash}', hash);
 };
-
-/**
- * Get relay chain id that are relevant chain specification and are likely to be connected to
- * @param chainId genesis hash of the chain
- * @return {WellKnownChain | undefined}
- */
-export function getKnownChain(chainId: ChainId): WellKnownChain | undefined {
-  return {
-    [RelayChains.POLKADOT]: WellKnownChain.polkadot,
-    [RelayChains.KUSAMA]: WellKnownChain.ksmcc3,
-    [RelayChains.WESTEND]: WellKnownChain.westend2,
-    [RelayChains.ROCOCO]: WellKnownChain.rococo_v2_2,
-  }[chainId];
-}

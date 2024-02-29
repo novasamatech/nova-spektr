@@ -3,9 +3,12 @@ import { UnsignedTransaction } from '@substrate/txwrapper-polkadot';
 import { useUnit } from 'effector-react';
 
 import { useCountdown } from '@shared/lib/hooks';
+import ScanMultiframeQr from '@renderer/components/common/Scanning/ScanMultiframeQr';
+import ScanSingleframeQr from '@renderer/components/common/Scanning/ScanSingleframeQr';
+import QrReaderWrapper from '@renderer/components/common/QrCode/QrReader/QrReaderWrapper';
 import { ValidationErrors, toAddress } from '@shared/lib/utils';
-import { useTransaction, ScanMultiframeQr, ScanSingleframeQr, QrReaderWrapper } from '@entities/transaction';
-import { walletModel, accountUtils, walletUtils } from '@entities/wallet';
+import { useTransaction } from '@entities/transaction';
+import { walletModel, walletUtils, accountUtils } from '@entities/wallet';
 import type { HexString, Address } from '@shared/core';
 import type { InnerSigningProps } from '../../model/types';
 
@@ -109,6 +112,7 @@ export const VaultSigning = ({
             chainId={chainId}
             api={api}
             address={getSignerAddress()}
+            addressPrefix={addressPrefix}
             countdown={countdown}
             account={signatory || accounts[0]}
             signerWallet={wallet}

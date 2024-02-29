@@ -1,48 +1,34 @@
-import { MouseEvent } from 'react';
-
-import { Wallet } from '@shared/core';
-import { FootnoteText, IconButton } from '@shared/ui';
-import { WalletIcon } from '../WalletIcon/WalletIcon';
-import { cnTw } from '@shared/lib/utils';
+import { AccountId, Explorer, Wallet } from '@shared/core';
+import { useAddressInfo, WalletIcon } from '../../index';
+import { FootnoteText, Icon, InfoPopover } from '@shared/ui';
+import { cnTw, toAddress } from '@shared/lib/utils';
 
 type Props = {
   wallet: Wallet;
   iconSize?: number;
   className?: string;
-  onClick?: () => void;
-  onInfoClick?: () => void;
+  explorers?: Explorer[];
+  addressPrefix?: number;
+  accountId: AccountId;
 };
 
-export const WalletCardSm = ({ wallet, className, iconSize = 16, onClick, onInfoClick }: Props) => {
-  const handleClick = (fn?: () => void) => {
-    return (event: MouseEvent<HTMLButtonElement>) => {
-      if (!fn) return;
-
-      event.stopPropagation();
-      fn();
-    };
-  };
+export const WalletCardSm = ({ wallet, className, iconSize = 16, addressPrefix, accountId, explorers }: Props) => {
+  const address = toAddress(accountId, { prefix: addressPrefix });
+  const popoverItems = useAddressInfo({ address, explorers });
 
   return (
-    <div
-      className={cnTw(
-        'group relative flex items-center w-full rounded transition-colors',
-        'hover:bg-action-background-hover focus-within:bg-action-background-hover',
-        className,
-      )}
-    >
-      <button className="w-full flex gap-x-2 items-center pl-2 py-[3px] pr-7 rounded" onClick={handleClick(onClick)}>
-        <WalletIcon className="shrink-0" type={wallet.type} size={iconSize} />
-        <FootnoteText
-          className={cnTw(
-            'text-text-secondary transition-colors truncate',
-            'group-hover:text-text-primary group-focus-within:text-text-primary',
-          )}
-        >
-          {wallet.name}
-        </FootnoteText>
-      </button>
-      <IconButton className={cnTw('absolute right-2')} name="info" size={16} onClick={handleClick(onInfoClick)} />
-    </div>
+    <InfoPopover data={popoverItems} className="w-[230px]">
+      <div
+        className={cnTw(
+          'group flex items-center gap-x-2 max-w-full px-2 py-[3px] cursor-pointer text-text-secondary rounded',
+          'hover:bg-action-background-hover hover:text-text-primary',
+          className,
+        )}
+      >
+        <WalletIcon type={wallet.type} size={iconSize} />
+        <FootnoteText className="text-inherit inline w-max">{wallet.name}</FootnoteText>
+        <Icon name="info" size={16} className="shrink-0 group-hover:text-icon-hover" />
+      </div>
+    </InfoPopover>
   );
 };

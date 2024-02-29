@@ -1,6 +1,10 @@
 import { render, screen } from '@testing-library/react';
 
-import { Button } from './Button';
+import Button from './Button';
+
+jest.mock('@app/providers', () => ({
+  useMatrix: jest.fn(),
+}));
 
 describe('ui/Buttons/Button', () => {
   test('should render component', () => {

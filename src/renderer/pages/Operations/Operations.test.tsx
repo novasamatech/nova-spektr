@@ -2,7 +2,7 @@ import { render, screen, act } from '@testing-library/react';
 import { fork } from 'effector';
 import { Provider } from 'effector-react';
 
-import { TEST_ACCOUNTS } from '@shared/lib/utils';
+import { TEST_ACCOUNT_ID } from '@shared/lib/utils';
 import { Operations } from './Operations';
 import { networkModel } from '@entities/network';
 
@@ -14,7 +14,7 @@ jest.mock('@app/providers', () => ({
 
 jest.mock('@entities/multisig', () => ({
   useMultisigTx: jest.fn().mockReturnValue({
-    getLiveAccountMultisigTxs: () => [{ name: 'Test Wallet', accountId: TEST_ACCOUNTS[0], chainId: '0x00' }],
+    getLiveAccountMultisigTxs: () => [{ name: 'Test Wallet', accountId: TEST_ACCOUNT_ID, chainId: '0x00' }],
   }),
   useMultisigEvent: jest.fn().mockReturnValue({
     getLiveEventsByKeys: jest.fn().mockResolvedValue([]),

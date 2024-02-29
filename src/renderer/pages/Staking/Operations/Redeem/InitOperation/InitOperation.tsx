@@ -9,7 +9,7 @@ import type { Account, Asset, Balance as AccountBalance, ChainId, AccountId, Wal
 import { redeemableAmount, formatBalance, nonNullable, toAddress } from '@shared/lib/utils';
 import { StakingMap, useStakingData, useEra } from '@entities/staking';
 import { OperationFooter, OperationHeader } from '@features/operation';
-import { walletModel, accountUtils, walletUtils } from '@entities/wallet';
+import { walletModel, walletUtils, accountUtils } from '@entities/wallet';
 import { OperationForm } from '../../components';
 import {
   getSignatoryOption,

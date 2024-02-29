@@ -1,4 +1,4 @@
-import { ISecretStorage } from '../lib/types';
+import { ISecretStorage } from '../common/types';
 
 class SecretStorage implements ISecretStorage {
   private secretStorage: Map<string, Uint8Array>;

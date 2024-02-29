@@ -1,4 +1,4 @@
-import { formatSectionAndMethod, splitCamelCaseString } from '../strings';
+import { formatSectionAndMethod } from '../strings';
 
 describe('shared/lib/utils/strings', () => {
   describe('formatSectionAndMethod', () => {
@@ -12,10 +12,6 @@ describe('shared/lib/utils/strings', () => {
 
     test('split camel case for section and method', () => {
       expect(formatSectionAndMethod('simpleProxy', 'addProxy')).toEqual('Simple proxy: Add proxy');
-    });
-
-    test('split camel case string into parts divided by space', () => {
-      expect(splitCamelCaseString('SudoBalances')).toEqual('Sudo Balances');
     });
   });
 });

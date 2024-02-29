@@ -1,7 +1,7 @@
 import { ComponentMeta, ComponentStory } from '@storybook/react';
 
 import { Icon } from '@shared/ui';
-import { Button } from './Button';
+import Button from './Button';
 export default {
   title: 'Redesign/Button',
   component: Button,

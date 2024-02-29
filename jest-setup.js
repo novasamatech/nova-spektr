@@ -1,6 +1,5 @@
 import 'whatwg-fetch';
 import { TextDecoder } from 'util';
-import crypto from 'crypto';
 
 global.IntersectionObserver = jest.fn().mockImplementation(() => ({
   observe: jest.fn(),
@@ -16,7 +15,6 @@ global.ResizeObserver = jest.fn().mockImplementation(() => ({
 Object.defineProperty(global, 'crypto', {
   value: {
     randomUUID: () => '42',
-    getRandomValues: (arr) => crypto.getRandomValues(arr),
   },
 });
 

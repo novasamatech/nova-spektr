@@ -1,6 +1,10 @@
 import { act, render, screen } from '@testing-library/react';
 
-import { Select } from './Select';
+import Select from './Select';
+
+jest.mock('@app/providers', () => ({
+  useMatrix: jest.fn(),
+}));
 
 describe('ui/Dropdowns/Select', () => {
   const options = [

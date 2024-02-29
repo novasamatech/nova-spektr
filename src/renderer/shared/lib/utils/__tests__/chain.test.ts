@@ -1,5 +1,5 @@
 import { getAccountExplorer, getExtrinsicExplorer } from '../chains';
-import { TEST_ADDRESS, TEST_ACCOUNTS, TEST_SUBSTRATE_ADDRESS, TEST_HASH } from '../constants';
+import { TEST_ADDRESS, TEST_ACCOUNT_ID, TEST_SUBSTRATE_ADDRESS, TEST_HASH } from '../constants';
 
 const explorers = [
   { name: 'Subscan', account: 'https://polkadot.subscan.io/account/{address}' },
@@ -14,7 +14,7 @@ describe('shared/lib/utils/chain/getAccountExplorer', () => {
   });
 
   test('should return correct url from accountId', () => {
-    const url = getAccountExplorer(explorers[0], { value: TEST_ACCOUNTS[0] });
+    const url = getAccountExplorer(explorers[0], { value: TEST_ACCOUNT_ID });
     expect(url).toEqual(`https://polkadot.subscan.io/account/${TEST_SUBSTRATE_ADDRESS}`);
   });
 

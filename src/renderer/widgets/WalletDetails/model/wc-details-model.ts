@@ -1,4 +1,4 @@
-import { createEvent, createStore, sample } from 'effector';
+import { createEffect, createEvent, createStore, forward, sample } from 'effector';
 import { combineEvents, spread } from 'patronum';
 
 import { accountUtils, walletModel } from '@entities/wallet';
@@ -7,9 +7,12 @@ import { ReconnectStep, ForgetStep } from '../lib/constants';
 import { walletProviderModel } from './wallet-provider-model';
 import { walletSelectModel } from '@features/wallets';
 import type { Wallet, WalletConnectAccount } from '@shared/core';
-import { chainsService } from '@shared/api/network';
+import { chainsService } from '@entities/network';
 import { toAccountId } from '@shared/lib/utils';
-import { balanceModel } from '@entities/balance';
+import { AccountId } from '@shared/core';
+import { useBalanceService } from '@entities/balance';
+
+const balanceService = useBalanceService();
 
 const reset = createEvent();
 const confirmReconnectShown = createEvent();
@@ -22,11 +25,19 @@ const forgetModalClosed = createEvent();
 const $reconnectStep = createStore<ReconnectStep>(ReconnectStep.NOT_STARTED).reset(reset);
 const $forgetStep = createStore<ForgetStep>(ForgetStep.NOT_STARTED).reset(reset);
 
+const deleteWalletBalancesFx = createEffect(async (accountsIds: AccountId[]): Promise<void> => {
+  try {
+    await balanceService.deleteBalances(accountsIds);
+  } catch (e) {
+    console.error(`Error while deleting wallet balances`, e);
+  }
+});
+
 sample({
   clock: forgetButtonClicked,
   source: walletModel.$accounts,
   fn: (accounts, wallet) => accountUtils.getWalletAccounts(wallet.id, accounts).map((a) => a.accountId),
-  target: balanceModel.events.accountsBalancesRemoved,
+  target: deleteWalletBalancesFx,
 });
 
 sample({
@@ -41,9 +52,9 @@ sample({
   target: $reconnectStep,
 });
 
-sample({
-  clock: reconnectStarted,
-  target: walletConnectModel.events.connect,
+forward({
+  from: reconnectStarted,
+  to: walletConnectModel.events.connect,
 });
 
 sample({
@@ -151,9 +162,9 @@ sample({
   target: $forgetStep,
 });
 
-sample({
-  clock: forgetModalClosed,
-  target: walletSelectModel.events.walletIdCleared,
+forward({
+  from: forgetModalClosed,
+  to: walletSelectModel.events.walletIdCleared,
 });
 
 export const wcDetailsModel = {

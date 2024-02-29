@@ -1,6 +1,6 @@
-import { AssetId, Currency, PriceObject, PriceAdapter, PriceItem, PriceRange } from '../lib/types';
-import { getCurrencyChangeKey } from '../lib/utils';
-import { COINGECKO_URL } from '../lib/constants';
+import { AssetId, Currency, PriceObject, PriceAdapter, PriceItem, PriceRange } from '../common/types';
+import { getCurrencyChangeKey } from '../common/utils';
+import { COINGECKO_URL } from '../common/constants';
 
 export const coingekoService: PriceAdapter = {
   getPrice,

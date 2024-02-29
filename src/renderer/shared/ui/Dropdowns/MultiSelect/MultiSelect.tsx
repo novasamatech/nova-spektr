@@ -2,11 +2,9 @@ import { Listbox, Transition } from '@headlessui/react';
 import { Fragment, useId } from 'react';
 
 import { cnTw } from '@shared/lib/utils';
-import { Checkbox } from '../../Checkbox/Checkbox';
-import { FootnoteText, LabelText, CaptionText } from '../../Typography';
-import { Icon } from '../../Icon/Icon';
-import { CommonInputStyles, CommonInputStylesTheme } from '../../Inputs/common/styles';
+import { Icon, Checkbox, FootnoteText, LabelText, CaptionText } from '@shared/ui';
 import { DropdownOption, DropdownResult, Position, Theme } from '../common/types';
+import { CommonInputStyles, CommonInputStylesTheme } from '@shared/ui/Inputs/common/styles';
 import {
   OptionsContainerStyle,
   OptionsContainerStyleTheme,
@@ -31,7 +29,7 @@ type Props = {
   onChange: (data: DropdownResult[]) => void;
 };
 
-export const MultiSelect = ({
+const MultiSelect = ({
   className,
   placeholder,
   multiPlaceholder,
@@ -135,7 +133,9 @@ export const MultiSelect = ({
     </Listbox>
   );
 
-  if (!label) return selectElement;
+  if (!label) {
+    return selectElement;
+  }
 
   return (
     <div className="flex flex-col gap-y-2">
@@ -146,3 +146,5 @@ export const MultiSelect = ({
     </div>
   );
 };
+
+export default MultiSelect;

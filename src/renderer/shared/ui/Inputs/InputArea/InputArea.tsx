@@ -11,7 +11,7 @@ interface Props extends Pick<ComponentPropsWithoutRef<'textarea'>, HTMLTextAreaP
   onChange?: (value: string) => void;
 }
 
-export const InputArea = forwardRef<HTMLTextAreaElement, Props>(
+const InputArea = forwardRef<HTMLTextAreaElement, Props>(
   ({ className, invalid, theme = 'light', onChange, ...props }, ref) => (
     <textarea
       className={cnTw(
@@ -31,3 +31,5 @@ export const InputArea = forwardRef<HTMLTextAreaElement, Props>(
     />
   ),
 );
+
+export default InputArea;

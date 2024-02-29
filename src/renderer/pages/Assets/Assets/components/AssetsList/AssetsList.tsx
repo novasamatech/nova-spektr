@@ -2,23 +2,22 @@ import { useEffect, useState } from 'react';
 import { useUnit } from 'effector-react';
 
 import { useI18n } from '@app/providers';
-import { networkModel, networkUtils } from '@entities/network';
-import type { Chain, ChainId } from '@shared/core';
-import { accountUtils, walletModel, walletUtils } from '@entities/wallet';
+import { isMultisigAvailable, networkModel, chainsService } from '@entities/network';
+import type { Chain } from '@shared/core';
+import { ConnectionType } from '@shared/core';
+import { walletModel, walletUtils } from '@entities/wallet';
 import { priceProviderModel, currencyModel } from '@entities/price';
 import { includes } from '@shared/lib/utils';
 import { Icon, BodyText } from '@shared/ui';
 import { NetworkAssets } from '../NetworkAssets/NetworkAssets';
 import { assetsModel } from '../../model/assets-model';
 import { balanceModel } from '@entities/balance';
-import { chainsService } from '@shared/api/network';
 
 export const AssetsList = () => {
   const { t } = useI18n();
 
   const query = useUnit(assetsModel.$query);
   const activeShards = useUnit(assetsModel.$activeShards);
-  const accounts = useUnit(assetsModel.$accounts);
 
   const activeWallet = useUnit(walletModel.$activeWallet);
   const balances = useUnit(balanceModel.$balances);
@@ -38,18 +37,11 @@ export const AssetsList = () => {
   useEffect(() => {
     const isMultisig = walletUtils.isMultisig(activeWallet);
 
-    const availableChains = accounts.some((a) => !accountUtils.isChainDependant(a))
-      ? new Set(Object.keys(chains) as ChainId[])
-      : // @ts-ignore
-        new Set(accounts.filter((a) => Boolean(a.chainId)).map((a) => a.chainId));
-
     const filteredChains = Object.values(chains).filter((c) => {
-      const isDisabled = networkUtils.isDisabledConnection(connections[c.chainId]);
-      const hasMultiPallet = !isMultisig || networkUtils.isMultisigSupported(c.options);
+      const isDisabled = connections[c.chainId]?.connectionType === ConnectionType.DISABLED;
+      const hasMultiPallet = !isMultisig || isMultisigAvailable(c.options);
 
-      const hasChainAccount = availableChains.has(c.chainId);
-
-      return !isDisabled && hasMultiPallet && hasChainAccount;
+      return !isDisabled && hasMultiPallet;
     });
 
     const sortedChains = chainsService.sortChainsByBalance(

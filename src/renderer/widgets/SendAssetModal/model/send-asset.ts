@@ -1,4 +1,4 @@
-import { createStore, createEffect, createEvent, sample, attach } from 'effector';
+import { createStore, createEffect, createEvent, sample, forward, attach } from 'effector';
 import { ApiPromise } from '@polkadot/api';
 import { BN } from '@polkadot/util';
 import { createGate } from 'effector-react';
@@ -15,7 +15,8 @@ import {
   XcmTransferType,
 } from '@shared/api/xcm';
 import { xcmModel } from '@entities/xcm';
-import { toLocalChainId, getParachainId } from '@shared/lib/utils';
+import { getParachainId } from '@renderer/services/dataVerification/dataVerification';
+import { toLocalChainId } from '@shared/lib/utils';
 import type { AccountId, Asset, Chain, ChainId } from '@shared/core';
 import { networkModel } from '@entities/network';
 
@@ -26,27 +27,28 @@ const amountChanged = createEvent<string>();
 const xcmFeeChanged = createEvent<string>();
 const storeCleared = createEvent();
 
-const $destinationChain = createStore<ChainId | null>(null).reset(storeCleared);
-const $finalConfig = createStore<XcmConfig | null>(null);
-const $xcmTransfer = createStore<XcmTransfer | null>(null).reset(storeCleared);
-const $xcmAsset = createStore<AssetXCM | null>(null).reset(storeCleared);
-const $destinations = createStore<XcmTransfer[] | []>([]).reset(storeCleared);
-const $destinationParaId = createStore<number | null>(null).reset(storeCleared);
-const $accountId = createStore<AccountId | null>(null).reset(storeCleared);
+export const $destinationChain = createStore<ChainId | null>(null).reset(storeCleared);
+export const $finalConfig = createStore<XcmConfig | null>(null);
+export const $xcmTransfer = createStore<XcmTransfer | null>(null).reset(storeCleared);
+export const $xcmAsset = createStore<AssetXCM | null>(null).reset(storeCleared);
+export const $destinations = createStore<XcmTransfer[] | []>([]).reset(storeCleared);
+export const $destinationParaId = createStore<number | null>(null).reset(storeCleared);
+export const $accountId = createStore<AccountId | null>(null).reset(storeCleared);
 
-const $txDest = createStore<Object | null>(null).reset(storeCleared);
-const $txBeneficiary = createStore<Object | null>(null).reset(storeCleared);
-const $txAsset = createStore<Object | null>(null).reset(storeCleared);
-const $xcmFee = createStore<string>('').reset(storeCleared);
-const $amount = createStore<string>('').reset(storeCleared);
-const $xcmWeight = createStore<string>('').reset(storeCleared);
-const $xcmProps = createStore<{
+export const $txDest = createStore<Object | null>(null).reset(storeCleared);
+export const $txBeneficiary = createStore<Object | null>(null).reset(storeCleared);
+export const $txAsset = createStore<Object | null>(null).reset(storeCleared);
+export const $xcmFee = createStore<string>('').reset(storeCleared);
+export const $amount = createStore<string>('').reset(storeCleared);
+export const $xcmWeight = createStore<string>('').reset(storeCleared);
+
+export const $xcmProps = createStore<{
   chain?: Chain;
   asset?: Asset;
   api?: ApiPromise;
 }>({}).reset(storeCleared);
 
-const PropsGate = createGate<{ chain: Chain; asset: Asset; api?: ApiPromise }>('props');
+export const PropsGate = createGate<{ chain: Chain; asset: Asset; api?: ApiPromise }>('props');
 
 const calculateFinalConfigFx = createEffect((config: XcmConfig): XcmConfig => {
   return config;
@@ -64,14 +66,11 @@ const getParaIdFx = createEffect(async (api: ApiPromise): Promise<number | null>
   }
 });
 
-sample({
-  clock: PropsGate.state,
-  target: $xcmProps,
-});
+forward({ from: PropsGate.state, to: $xcmProps });
 
-sample({
-  clock: xcmConfigRequested,
-  target: [getConfigFx, fetchConfigFx],
+forward({
+  from: xcmConfigRequested,
+  to: [getConfigFx, fetchConfigFx],
 });
 
 sample({
@@ -98,9 +97,9 @@ sample({
   target: getParaIdFx,
 });
 
-sample({
-  clock: getParaIdFx.doneData,
-  target: $destinationParaId,
+forward({
+  from: getParaIdFx.doneData,
+  to: $destinationParaId,
 });
 
 sample({
@@ -155,9 +154,9 @@ sample({
   target: $txDest,
 });
 
-sample({
-  clock: accountIdSelected,
-  target: $accountId,
+forward({
+  from: accountIdSelected,
+  to: $accountId,
 });
 
 sample({
@@ -170,9 +169,9 @@ sample({
   target: $txBeneficiary,
 });
 
-sample({
-  clock: xcmFeeChanged,
-  target: $xcmFee,
+forward({
+  from: xcmFeeChanged,
+  to: $xcmFee,
 });
 
 sample({
@@ -221,43 +220,26 @@ sample({
   target: calculateFinalConfigFx,
 });
 
-sample({
-  clock: amountChanged,
-  target: $amount,
+forward({
+  from: amountChanged,
+  to: $amount,
 });
 
-sample({
-  clock: fetchConfigFx.doneData,
-  target: [saveConfigFx, calculateFinalConfigFx],
+forward({
+  from: fetchConfigFx.doneData,
+  to: [saveConfigFx, calculateFinalConfigFx],
 });
 
-sample({
-  clock: calculateFinalConfigFx.doneData,
-  target: $finalConfig,
+forward({
+  from: calculateFinalConfigFx.doneData,
+  to: $finalConfig,
 });
 
-export const sendAssetModel = {
-  $destinationChain,
-  $finalConfig,
-  $xcmTransfer,
-  $xcmAsset,
-  $destinations,
-  $destinationParaId,
-  $accountId,
-  $txDest,
-  $txBeneficiary,
-  $txAsset,
-  $xcmFee,
-  $amount,
-  $xcmWeight,
-  $xcmProps,
-  PropsGate,
-  events: {
-    xcmConfigRequested,
-    destinationChainSelected,
-    accountIdSelected,
-    amountChanged,
-    xcmFeeChanged,
-    storeCleared,
-  },
+export const events = {
+  xcmConfigRequested,
+  destinationChainSelected,
+  accountIdSelected,
+  amountChanged,
+  xcmFeeChanged,
+  storeCleared,
 };

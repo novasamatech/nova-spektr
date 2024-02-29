@@ -1,7 +1,7 @@
 import { Outlet } from 'react-router-dom';
 
 import { useI18n } from '@app/providers';
-import { Header } from '@shared/ui';
+import { Header } from '@renderer/components/common';
 import { GeneralActions, MatrixAction, SocialLinks, Version } from './components';
 
 export const Overview = () => {

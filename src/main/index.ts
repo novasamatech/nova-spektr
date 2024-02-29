@@ -1,59 +1,80 @@
-import { app, BrowserWindow } from 'electron';
+import { app, dialog, ipcMain } from 'electron';
+import { autoUpdater } from 'electron-updater';
+import Store from 'electron-store';
 
-import { setupLogger } from './factories/logs';
-import { createWindow } from './factories/window';
-import { setupApplication } from './factories/setup';
-import { setupAutoUpdater } from './factories/updater';
-import { runAppSingleInstance } from './factories/instance';
-import { registerDeepLinkProtocol, processUrl } from './factories/protocol';
-import { PLATFORM } from './shared/constants/platform';
-import { ENVIRONMENT } from './shared/constants/environment';
-import { APP_CONFIG } from '../../app.config';
+import { MainWindow } from './main';
+import { makeAppWithSingleInstanceLock } from './factories/instance';
+import { makeAppSetup } from './factories/setup';
+import { checkAutoUpdateSupported } from './shared/lib/utils';
+import { AUTO_UPDATE_ENABLED } from './shared/constants';
 
-runAppSingleInstance(async () => {
-  if (ENVIRONMENT.IS_DEV || ENVIRONMENT.IS_STAGE) {
-    app.commandLine.appendSwitch('ignore-certificate-errors');
-  }
-  app.commandLine.appendSwitch('force-color-profile', 'srgb');
+const setupAutoUpdate = () => {
+  const isAutoUpdateSupported = checkAutoUpdateSupported();
+  const store = new Store({ defaults: { [AUTO_UPDATE_ENABLED]: isAutoUpdateSupported } });
 
+  ipcMain.handle('getStoreValue', (event, key) => store.get(key));
+
+  ipcMain.handle('setStoreValue', (event, key, value) => store.set(key, value));
+
+  if (!store.get(AUTO_UPDATE_ENABLED) || !isAutoUpdateSupported) return;
+
+  autoUpdater.autoRunAppAfterInstall = true;
+  autoUpdater.autoInstallOnAppQuit = false;
+
+  app.on('ready', () => {
+    autoUpdater.checkForUpdates();
+  });
+  autoUpdater.on('checking-for-update', () => {
+    console.log('[app-updater] Checking for update...');
+  });
+  autoUpdater.on('update-not-available', () => {
+    console.log(`[app-updater] No updates available. Application is up to date.`);
+  });
+  autoUpdater.on('update-available', (info) => {
+    console.log(`[app-updater] New update available ${info.releaseName} ${info.releaseDate} ${info.version}`);
+  });
+  autoUpdater.on('download-progress', (progressObj) => {
+    console.log(
+      `[app-updater] Downloading update ${progressObj.percent}% of ${progressObj.total} bytes; ${progressObj.bytesPerSecond} bytes per second`,
+    );
+  });
+  autoUpdater.on('update-downloaded', (info) => {
+    console.log(`[app-updater] Downloaded update ${info.releaseName} ${info.releaseDate} ${info.version}`);
+    dialog
+      .showMessageBox({
+        title: 'Update Available',
+        message: `A new version ${info.version} of Nova Spektr is ready to be installed.`,
+        detail: info.releaseNotes?.toString().replaceAll(/<[a-zA-Z0-9/]*>/g, ''), // clear html tags from changelog
+        type: 'question',
+        buttons: ['Install now', 'Not now'],
+        defaultId: 0,
+        cancelId: 1,
+      })
+      .then((result) => {
+        switch (result.response) {
+          case 0:
+            autoUpdater.quitAndInstall();
+            break;
+          case 1:
+            autoUpdater.autoInstallOnAppQuit = false;
+            break;
+        }
+      });
+  });
+  autoUpdater.on('update-cancelled', (info) => {
+    console.error(`[app-updater] Update cancelled ${info.releaseName} ${info.releaseDate} ${info.version}`);
+  });
+  autoUpdater.on('error', (err) => {
+    console.error('[app-updater] Error on update', err);
+    dialog.showErrorBox('Error', 'Error updating the application');
+  });
+};
+
+makeAppWithSingleInstanceLock(async () => {
   app.commandLine.appendSwitch('autoplay-policy', 'no-user-gesture-required');
-  process.env.ELECTRON_DISABLE_SECURITY_WARNINGS = 'true';
-  delete process.env.ELECTRON_ENABLE_SECURITY_WARNINGS;
 
-  PLATFORM.IS_LINUX && app.disableHardwareAcceleration();
-
-  let mainWindow: BrowserWindow | undefined;
-
-  setupLogger();
-  setupAutoUpdater();
-
-  registerDeepLinkProtocol();
-
-  if (PLATFORM.IS_MAC) {
-    // Protocol handler for macos
-    app.on('open-url', (event, url) => {
-      event.preventDefault();
-      processUrl(url, mainWindow);
-    });
-  }
-
-  if (PLATFORM.IS_WINDOWS || PLATFORM.IS_LINUX) {
-    // Protocol handler for win32/Linux
-    app.on('second-instance', (_, commandLine) => {
-      if (mainWindow) {
-        if (mainWindow.isMinimized()) mainWindow.restore();
-        mainWindow.focus();
-      }
-
-      const url = commandLine[commandLine.length - 1];
-      if (!url.startsWith(APP_CONFIG.ELECTRON_PROTOCOL + '://')) return;
-
-      processUrl(url, mainWindow);
-    });
-  }
+  setupAutoUpdate();
 
   await app.whenReady();
-
-  mainWindow = createWindow();
-  await setupApplication(mainWindow);
+  await makeAppSetup(MainWindow);
 });

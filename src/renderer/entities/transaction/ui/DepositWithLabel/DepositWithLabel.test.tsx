@@ -18,7 +18,7 @@ jest.mock('@entities/transaction', () => ({
 
 jest.mock('@entities/asset', () => ({ AssetBalance: () => <div>deposit_value</div> }));
 
-describe('entities/transaction/ui/DepositWithLabel', () => {
+describe('components/common/DepositWithLabel', () => {
   test('should render component', () => {
     const asset = { symbol: 'DOT', precision: 10 } as Asset;
 

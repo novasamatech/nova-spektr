@@ -1,6 +1,10 @@
 import { render, screen } from '@testing-library/react';
 
-import { Combobox } from './Combobox';
+import Combobox from './Combobox';
+
+jest.mock('@app/providers', () => ({
+  useMatrix: jest.fn(),
+}));
 
 describe('ui/Combobox/Combobox', () => {
   const options = [

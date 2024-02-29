@@ -36,7 +36,6 @@ describe('pages/Settings/Networks/NetworkSelector', () => {
       chainId: '0x123',
       canUseLightClient: false,
       connectionType: ConnectionType.DISABLED,
-      customNodes: [],
     },
   };
 

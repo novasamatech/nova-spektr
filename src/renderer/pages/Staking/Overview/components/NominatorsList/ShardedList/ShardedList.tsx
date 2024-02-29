@@ -75,7 +75,6 @@ export const ShardedList = ({
                   {shardsStake[0].account.name}
                 </FootnoteText>
                 <Tooltip
-                  offsetPx={-60}
                   content={
                     <Trans
                       t={t}
@@ -83,6 +82,8 @@ export const ShardedList = ({
                       values={{ countUnstake: shardsStats.unstaking, countWithdraw: shardsStats.withdraw }}
                     />
                   }
+                  offsetPx={-60}
+                  pointer="down"
                 >
                   <div className="flex items-center gap-x-1">
                     {Boolean(shardsStats.unstaking) && <span className="w-1.5 h-1.5 rounded-full bg-icon-accent" />}

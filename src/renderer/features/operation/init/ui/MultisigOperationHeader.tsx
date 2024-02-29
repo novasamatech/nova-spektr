@@ -5,7 +5,7 @@ import { DropdownOption, DropdownResult } from '@shared/ui/Dropdowns/common/type
 import { InputHint, Select } from '@shared/ui';
 import { useI18n } from '@app/providers';
 import { OperationErrorType } from '@entities/transaction';
-import { accountUtils, permissionUtils, walletModel } from '@entities/wallet';
+import { accountUtils, walletModel, walletUtils } from '@entities/wallet';
 import type { Account, ChainId, MultisigAccount, Wallet } from '@shared/core';
 
 type Props = {
@@ -37,14 +37,14 @@ export const MultisigOperationHeader = ({
 
   useEffect(() => {
     const signerOptions = wallets.reduce<DropdownOption<Account>[]>((acc, wallet) => {
+      const isWatchOnly = walletUtils.isWatchOnly(wallet);
       const walletAccounts = accountUtils.getWalletAccounts(wallet.id, accounts);
-      const isAvailable = permissionUtils.canCreateMultisigTx(wallet, walletAccounts);
 
       const signer = walletAccounts.find(
         (a) => signatoryIds.includes(a.accountId) && accountUtils.isChainIdMatch(a, chainId),
       );
 
-      if (isAvailable && signer) {
+      if (!isWatchOnly && signer) {
         acc.push(getSignatoryOption(wallet, signer));
       }
 

@@ -2,8 +2,16 @@ name: Coverage report for pull request
 
 on:
   pull_request:
-    paths:
-      - 'src/**'
+    paths-ignore:
+      - '**/*.md'
+      - '**/*.yml'
+      - '**/*.yaml'
+      - '**/*.json'
+      - '**/jest.config.ts'
+      - '.gitignore'
+      - '.github/**'
+      - 'scripts/**'
+      - 'tests/**'
 
 jobs:
   test-coverage:

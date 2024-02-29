@@ -25,6 +25,7 @@ const config: Configuration = merge<WpConfig & WdsConfig>(sharedConfig, {
   plugins: [
     new webpack.EnvironmentPlugin({
       NODE_ENV: 'production',
+      FORCE_ELECTRON: 'true',
       DEBUG_PROD: false,
       START_MINIMIZED: false,
     }),

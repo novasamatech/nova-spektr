@@ -1,4 +1,4 @@
-import { attach, createApi, createStore, sample } from 'effector';
+import { attach, createApi, createStore, forward, sample } from 'effector';
 import { createForm } from 'effector-forms';
 
 import { contactModel } from '@entities/contact';
@@ -78,9 +78,9 @@ const createContactFx = attach({
   },
 });
 
-sample({
-  clock: $contactForm.formValidated,
-  target: createContactFx,
+forward({
+  from: $contactForm.formValidated,
+  to: createContactFx,
 });
 
 sample({

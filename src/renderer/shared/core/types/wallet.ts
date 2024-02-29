@@ -13,7 +13,6 @@ export type SingleShardWallet = AbstractWallet;
 export type MultiShardWallet = AbstractWallet;
 export type WatchOnlyWallet = AbstractWallet;
 export type MultisigWallet = AbstractWallet;
-export type ProxiedWallet = AbstractWallet;
 
 export type WalletConnectWallet = AbstractWallet & {
   isConnected: boolean;
@@ -28,10 +27,7 @@ export type Wallet =
   | WatchOnlyWallet
   | MultisigWallet
   | WalletConnectWallet
-  | NovaWalletWallet
-  | ProxiedWallet;
-
-export type WalletsMap = Record<ID, Wallet>;
+  | NovaWalletWallet;
 
 export const enum WalletType {
   WATCH_ONLY = 'wallet_wo',
@@ -39,27 +35,18 @@ export const enum WalletType {
   MULTISIG = 'wallet_ms',
   WALLET_CONNECT = 'wallet_wc',
   NOVA_WALLET = 'wallet_nw',
-  PROXIED = 'wallet_pxd',
 
   // Legacy
   MULTISHARD_PARITY_SIGNER = 'wallet_mps',
   SINGLE_PARITY_SIGNER = 'wallet_sps',
 }
 
-export type SignableWalletFamily =
-  | WalletType.POLKADOT_VAULT
-  | WalletType.WALLET_CONNECT
-  | WalletType.NOVA_WALLET
-  | WalletType.MULTISHARD_PARITY_SIGNER
-  | WalletType.SINGLE_PARITY_SIGNER;
-
 export type WalletFamily =
   | WalletType.POLKADOT_VAULT
   | WalletType.MULTISIG
   | WalletType.WATCH_ONLY
   | WalletType.WALLET_CONNECT
-  | WalletType.NOVA_WALLET
-  | WalletType.PROXIED;
+  | WalletType.NOVA_WALLET;
 
 export type WalletConnectGroup = WalletConnectWallet | NovaWalletWallet;
 
@@ -71,4 +58,5 @@ export const enum SigningType {
   MULTISIG = 'signing_ms',
   POLKADOT_VAULT = 'signing_pv',
   WALLET_CONNECT = 'signing_wc',
+  // NOVA_WALLET = 'signing_nw',
 }

@@ -1,19 +1,19 @@
 import { useMemo } from 'react';
 
-import { cnTw, RootExplorers } from '@shared/lib/utils';
+import { RootExplorers, cnTw } from '@shared/lib/utils';
 import { ContactItem, ExplorersPopover } from '@entities/wallet';
 import { useI18n } from '@app/providers';
-import { Accordion, FootnoteText, HelpText } from '@shared/ui';
-import type { BaseAccount, Chain, ChainAccount, ChainId } from '@shared/core';
+import { FootnoteText, Accordion, HelpText } from '@shared/ui';
+import type { Chain, ChainAccount, ChainId, BaseAccount } from '@shared/core';
 import { ChainTitle } from '@entities/chain';
 
 type Props = {
-  chains: Chain[];
   accounts: Map<BaseAccount, Record<ChainId, ChainAccount[]>>;
+  chains: Chain[];
   className?: string;
 };
 
-export const MultishardAccountsList = ({ chains, accounts, className }: Props) => {
+export const MultishardAccountsList = ({ accounts, chains, className }: Props) => {
   const { t } = useI18n();
 
   const accountList = useMemo(() => {
@@ -23,13 +23,13 @@ export const MultishardAccountsList = ({ chains, accounts, className }: Props) =
   return (
     <div className={cnTw('flex flex-col overflow-y-auto', className)}>
       {accountList.map(([baseAccount, chainMap]) => (
-        <div key={baseAccount.id} className="flex flex-col pl-5">
+        <div key={baseAccount.id} className="flex flex-col pl-5 pr-2">
           <ExplorersPopover
             address={baseAccount.accountId}
             explorers={RootExplorers}
             button={
               <ContactItem
-                className="bg-white py-4 pr-2"
+                className="bg-white py-4"
                 size={28}
                 name={baseAccount.name}
                 address={baseAccount.accountId}
@@ -43,8 +43,8 @@ export const MultishardAccountsList = ({ chains, accounts, className }: Props) =
             if (!chainMap[chain.chainId]) return;
 
             return (
-              <Accordion key={chain.chainId} isDefaultOpen className="pl-8">
-                <Accordion.Button buttonClass="p-2">
+              <Accordion key={chain.chainId} isDefaultOpen className="pl-10">
+                <Accordion.Button buttonClass="py-2">
                   <div className="flex gap-x-2">
                     <ChainTitle fontClass="text-text-primary" chain={chain} />
                     <FootnoteText className="text-text-tertiary">{chainMap[chain.chainId].length}</FootnoteText>
@@ -52,7 +52,7 @@ export const MultishardAccountsList = ({ chains, accounts, className }: Props) =
                 </Accordion.Button>
                 <Accordion.Content>
                   {chainMap[chain.chainId].map((account) => (
-                    <div key={account.id} className="flex items-center py-1.5 mb-2 px-2">
+                    <div key={account.id} className="flex items-center py-1.5 mb-2">
                       <ExplorersPopover
                         address={account.accountId}
                         explorers={chain.explorers}

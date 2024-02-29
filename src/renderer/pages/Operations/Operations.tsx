@@ -1,20 +1,21 @@
 import { useEffect, useState } from 'react';
-import groupBy from 'lodash/groupBy';
+import { groupBy } from 'lodash';
 import { format } from 'date-fns';
 import { useUnit } from 'effector-react';
 
 import { useI18n } from '@app/providers';
 import EmptyOperations from './components/EmptyState/EmptyOperations';
 import Operation from './components/Operation';
-import { FootnoteText, Header } from '@shared/ui';
+import { sortByDateDesc } from './common/utils';
+import { FootnoteText } from '@shared/ui';
 import { MultisigTransactionDS } from '@shared/api/storage';
 import { useMultisigTx, useMultisigEvent } from '@entities/multisig';
+import { Header } from '@renderer/components/common';
 import { MultisigEvent, MultisigTransactionKey } from '@entities/transaction';
 import { OperationsFilter } from '@features/operation';
 import { walletModel, accountUtils } from '@entities/wallet';
 import { priceProviderModel } from '@entities/price';
 import { networkModel } from '@entities/network';
-import { sortByDateDesc } from '@shared/lib/utils';
 
 export const Operations = () => {
   const { t, dateLocale } = useI18n();

@@ -1,1 +1,1 @@
-export { WalletDetailsProvider } from './ui/components/WalletDetailsProvider';
+export { WalletDetailsProvider } from './ui/WalletDetailsProvider';

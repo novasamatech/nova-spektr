@@ -17,7 +17,6 @@ class MyDatabase extends Dexie {
     });
     this.accounts = this.table('accounts');
     this.wallets = this.table('wallets');
-    this.multisigEvents = this.table('multisigEvents');
   }
 }
 
@@ -59,7 +58,7 @@ describe('migrateWallets from 17 to 18', () => {
     db.close();
   });
 
-  test('multishard with one root and one shard migrate correctly', async () => {
+  it('multishard with one root and one shard migrate correctly', async () => {
     const { wallet, root, shard } = mockDataBuilder.buildMultishardWallet();
     await pushDataToDB(db, db.accounts, [root, shard]);
     await pushDataToDB(db, db.wallets, [wallet]);
@@ -91,7 +90,7 @@ describe('migrateWallets from 17 to 18', () => {
     });
   });
 
-  test('multisig migrate correctly', async () => {
+  it('multisig migrate correctly', async () => {
     const { signatoryAccount, multisigAccount } = mockDataBuilder.buildMultisigWallet(3, 3);
     await pushDataToDB(db, db.accounts, [signatoryAccount, multisigAccount]);
 
@@ -120,7 +119,7 @@ describe('migrateWallets from 17 to 18', () => {
     expect(vaultWalletBD).toMatchObject({ signingType: 'signing_ps' });
   });
 
-  test('polkadot vault migrate correctly', async () => {
+  it('polkadot vault migrate correctly', async () => {
     const vaultAccount = mockDataBuilder.buildAccount(true, false, 'signing_ps');
     await pushDataToDB(db, db.accounts, [vaultAccount]);
 
@@ -140,7 +139,7 @@ describe('migrateWallets from 17 to 18', () => {
     expect(vaultWalletBD).toMatchObject({ signingType: 'signing_ps' });
   });
 
-  test('watch only wallet migrate correctly', async () => {
+  it('watch only wallet migrate correctly', async () => {
     const watchOnlyAccount = mockDataBuilder.buildAccount(true, false, 'signing_wo');
     await pushDataToDB(db, db.accounts, [watchOnlyAccount]);
 
@@ -158,6 +157,6 @@ describe('migrateWallets from 17 to 18', () => {
     });
 
     expect(watchOnlyWalletBD).toMatchObject({ signingType: 'signing_wo' });
-    expect(watchOnlyWalletBD.isActive).toEqual(true);
+    expect(watchOnlyWalletBD.isActive).toBe(true);
   });
 });

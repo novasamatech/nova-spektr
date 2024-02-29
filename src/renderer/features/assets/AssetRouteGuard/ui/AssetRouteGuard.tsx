@@ -1,6 +1,6 @@
 import { ReactNode, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { useUnit } from 'effector-react';
+import { useStore } from 'effector-react';
 
 import * as assetGuardModel from '../model/asset-guard';
 import type { Chain, Asset } from '@shared/core';
@@ -13,8 +13,8 @@ export const AssetRouteGuard = ({ redirectPath, children }: Props) => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
 
-  const chain = useUnit(assetGuardModel.$chain);
-  const asset = useUnit(assetGuardModel.$asset);
+  const chain = useStore(assetGuardModel.$chain);
+  const asset = useStore(assetGuardModel.$asset);
 
   useEffect(() => {
     assetGuardModel.events.navigateApiChanged({ navigate, redirectPath });

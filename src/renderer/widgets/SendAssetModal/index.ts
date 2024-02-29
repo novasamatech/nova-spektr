@@ -1,2 +1,2 @@
 export { SendAssetModal } from './ui/SendAssetModal';
-export { sendAssetModel } from './model/send-asset';
+export * as sendAssetModel from './model/send-asset';

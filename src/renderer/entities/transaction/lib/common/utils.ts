@@ -1,7 +1,7 @@
 import { ApiPromise } from '@polkadot/api';
 import { SpRuntimeDispatchError } from '@polkadot/types/lookup';
 
-import { Transaction, DecodedTransaction, TransactionType } from '@entities/transaction/model/transaction';
+import { Transaction, DecodedTransaction } from '@entities/transaction/model/transaction';
 import {
   MAX_WEIGHT,
   OLD_MULTISIG_ARGS_AMOUNT,
@@ -9,7 +9,6 @@ import {
   DEST_WEIGHT_ARG_NAME,
   XcmTypes,
   TransferTypes,
-  ManageProxyTypes,
 } from './constants';
 
 export const decodeDispatchError = (error: SpRuntimeDispatchError, api: ApiPromise): string => {
@@ -53,18 +52,4 @@ export const isTransferTransaction = (transaction?: Transaction | DecodedTransac
   if (!transaction?.type) return false;
 
   return TransferTypes.includes(transaction.type);
-};
-
-export const isManageProxyTransaction = (transaction?: Transaction | DecodedTransaction): boolean => {
-  if (!transaction?.type) return false;
-
-  return ManageProxyTypes.includes(transaction.type);
-};
-
-export const isAddProxyTransaction = (transaction?: Transaction | DecodedTransaction): boolean => {
-  return transaction?.type === TransactionType.ADD_PROXY;
-};
-
-export const isRemoveProxyTransaction = (transaction?: Transaction | DecodedTransaction): boolean => {
-  return transaction?.type === TransactionType.REMOVE_PROXY;
 };

@@ -9,8 +9,8 @@ type Props = {
 
 export const StakingPopover = ({ labelText, children }: PropsWithChildren<Props>) => (
   <Popover
-    offsetPx={1}
     contentClass="p-4"
+    offsetPx={1}
     panelClass="w-[230px]"
     content={<ul className="flex flex-col gap-y-1 list-disc pl-5">{children}</ul>}
   >

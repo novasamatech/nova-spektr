@@ -4,11 +4,11 @@ import { useEffect, useState } from 'react';
 import { Duration, Shimmering } from '@shared/ui';
 import { useEra } from '@entities/staking';
 
-type Props = {
+interface Props {
   api?: ApiPromise;
   era?: number;
   className?: string;
-};
+}
 
 export const TimeToEra = ({ api, era, className }: Props) => {
   const { getTimeToEra } = useEra();

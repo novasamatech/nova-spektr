@@ -11,15 +11,14 @@ type Props = {
     accountId: AccountId;
   }[];
   className?: string;
-  headerClassName?: string;
 };
 
-export const MultiAccountsList = ({ accounts, className, headerClassName }: Props) => {
+export const MultiAccountsList = ({ accounts, className }: Props) => {
   const { t } = useI18n();
 
   return (
     <div className="flex flex-col">
-      <div className={cnTw('flex px-5 py-4', headerClassName)}>
+      <div className="flex px-5 py-4">
         <FootnoteText className="w-[214px] text-text-tertiary">
           {t('accountList.networksColumn', { chains: accounts.length })}
         </FootnoteText>

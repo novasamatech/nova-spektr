@@ -1,4 +1,4 @@
-import { createEvent, createStore, createEffect, sample } from 'effector';
+import { createEvent, createStore, createEffect, forward, sample } from 'effector';
 
 import { kernelModel } from '@shared/core';
 import { CurrencyItem, fiatService } from '@shared/api/price-provider';
@@ -36,20 +36,14 @@ const currencyChangedFx = createEffect<ChangeParams, CurrencyItem | undefined>((
   });
 });
 
-sample({
-  clock: kernelModel.events.appStarted,
-  target: [getActiveCurrencyCodeFx, getCurrencyConfigFx],
+forward({
+  from: kernelModel.events.appStarted,
+  to: [getActiveCurrencyCodeFx, getCurrencyConfigFx],
 });
 
-sample({
-  clock: getActiveCurrencyCodeFx.doneData,
-  target: $activeCurrencyCode,
-});
+forward({ from: getActiveCurrencyCodeFx.doneData, to: $activeCurrencyCode });
 
-sample({
-  clock: getCurrencyConfigFx.doneData,
-  target: $currencyConfig,
-});
+forward({ from: getCurrencyConfigFx.doneData, to: $currencyConfig });
 
 sample({
   clock: getCurrencyConfigFx.doneData,

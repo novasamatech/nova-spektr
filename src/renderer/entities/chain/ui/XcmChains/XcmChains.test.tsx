@@ -2,6 +2,10 @@ import { render, screen } from '@testing-library/react';
 
 import { XcmChains } from './XcmChains';
 
+jest.mock('@app/providers', () => ({
+  useMatrix: jest.fn(),
+}));
+
 jest.mock('../ChainTitle/ChainTitle', () => ({
   ChainTitle: ({ chainId }: any) => <span>{chainId}</span>,
 }));

@@ -49,6 +49,7 @@ const config = merge<WpConfig & WdsConfig>(baseConfig, {
   plugins: [
     new webpack.EnvironmentPlugin({
       NODE_ENV: 'production',
+      FORCE_ELECTRON: 'true',
       DEBUG_PROD: false,
     }),
 

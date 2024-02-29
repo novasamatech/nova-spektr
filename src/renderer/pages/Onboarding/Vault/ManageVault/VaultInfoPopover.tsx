@@ -6,9 +6,9 @@ export const VaultInfoPopover = () => {
 
   return (
     <Popover
-      offsetPx={4}
       contentClass="p-4"
-      panelClass="w-[360px]"
+      offsetPx={4}
+      panelClass="w-[360px] left-1/2 -translate-x-1/2"
       content={
         <div className="flex flex-col gap-y-4">
           <section className="flex flex-col gap-y-2">

@@ -1,5 +1,7 @@
 import { app } from 'electron';
 
-export function runAppSingleInstance(fn: () => void) {
-  app.requestSingleInstanceLock() ? fn() : app.quit();
+export function makeAppWithSingleInstanceLock(fn: () => void) {
+  const isPrimaryInstance = app.requestSingleInstanceLock();
+
+  !isPrimaryInstance ? app.quit() : fn();
 }

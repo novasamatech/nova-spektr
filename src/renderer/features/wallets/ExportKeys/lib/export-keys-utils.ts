@@ -1,7 +1,7 @@
 import { AccountId, ChainAccount, ChainId, ShardAccount } from '@shared/core';
 import { DynamicDerivationsExport, ExportedDerivation } from '@features/wallets/ExportKeys/lib/types';
 import { accountUtils } from '@entities/wallet';
-import { chainsService } from '@shared/api/network';
+import { chainsService } from '@entities/network';
 
 export const exportKeysUtils = {
   getExportStructure,
