@@ -19,7 +19,8 @@ import {
   NetworksList,
   InactiveNetwork,
   activeNetworksModel,
-  inactiveNetworksModel, ActiveNetwork,
+  inactiveNetworksModel,
+  ActiveNetwork,
 } from '@features/network/NetworksList';
 import './model/networks-overview-model';
 
