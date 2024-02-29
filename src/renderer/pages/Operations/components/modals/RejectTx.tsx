@@ -15,10 +15,11 @@ import RejectReasonModal from './RejectReasonModal';
 import { Submit } from '../ActionSteps/Submit';
 import { Confirmation } from '../ActionSteps/Confirmation';
 import { Signing } from '@features/operation';
-import { OperationTitle } from '@renderer/components/common';
+import { OperationTitle } from '@entities/chain';
 import { walletModel, walletUtils } from '@entities/wallet';
 import { priceProviderModel } from '@entities/price';
 import type { Address, HexString, Timepoint, MultisigAccount, Account } from '@shared/core';
+import { balanceModel, balanceUtils } from '@entities/balance';
 import {
   Transaction,
   TransactionType,
@@ -27,7 +28,6 @@ import {
   validateBalance,
   isXcmTransaction,
 } from '@entities/transaction';
-import { balanceModel, balanceUtils } from '@entities/balance';
 
 type Props = {
   tx: MultisigTransactionDS;

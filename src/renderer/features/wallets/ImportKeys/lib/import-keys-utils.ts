@@ -1,4 +1,5 @@
-import { groupBy, unionBy } from 'lodash';
+import groupBy from 'lodash/groupBy';
+import unionBy from 'lodash/unionBy';
 import { TFunction } from 'react-i18next';
 
 import {
@@ -23,7 +24,7 @@ import {
   KeyType,
   ShardAccount,
 } from '@shared/core';
-import { chainsService } from '@entities/network';
+import { chainsService } from '@shared/api/network';
 import { toAccountId } from '@shared/lib/utils';
 import { ErrorDetails } from './derivation-import-error';
 import { KEY_NAMES, SHARDED_KEY_NAMES } from '@entities/wallet';
@@ -134,7 +135,7 @@ function mergeChainDerivations(
         acc.push({
           name: d.name || KEY_NAMES[d.type],
           derivationPath: d.derivationPath,
-          chainId: existingDerivations[0].chainId,
+          chainId: d.chainId,
           cryptoType: CryptoType.SR25519,
           chainType: ChainType.SUBSTRATE,
           type: AccountType.CHAIN,
@@ -152,7 +153,7 @@ function mergeChainDerivations(
         acc.push({
           name: d.name || SHARDED_KEY_NAMES[d.type],
           derivationPath: d.derivationPath + '//' + i,
-          chainId: existingDerivations[0].chainId,
+          chainId: d.chainId,
           cryptoType: CryptoType.SR25519,
           chainType: ChainType.SUBSTRATE,
           type: AccountType.SHARD,

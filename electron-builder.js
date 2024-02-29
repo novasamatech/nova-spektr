@@ -1,9 +1,13 @@
 const { APP_CONFIG } = require('./app.config');
 
-const { APP_ID, AUTHOR, TITLE, FOLDERS } = APP_CONFIG;
+const { APP_ID, AUTHOR, TITLE, FOLDERS, ELECTRON_PROTOCOL } = APP_CONFIG;
 
 const CURRENT_YEAR = new Date().getFullYear();
 
+/**
+ * @type {import('electron-builder').Configuration}
+ * @see https://www.electron.build/configuration/configuration
+ */
 module.exports = {
   appId: APP_ID,
   productName: TITLE,
@@ -12,6 +16,11 @@ module.exports = {
   directories: {
     app: FOLDERS.DEV_BUILD,
     output: FOLDERS.PROD_BUILD,
+  },
+
+  protocols: {
+    name: TITLE,
+    schemes: [ELECTRON_PROTOCOL],
   },
 
   mac: {
@@ -23,7 +32,7 @@ module.exports = {
       NSCameraUsageDescription: 'This app requires camera access to import accounts and sign operations',
     },
     target: {
-      target: 'default',
+      target: 'dmg',
       arch: ['x64', 'arm64'],
     },
   },
@@ -37,6 +46,10 @@ module.exports = {
     icon: `${FOLDERS.RESOURCES}/icons/icon.png`,
     category: 'Finance',
     target: ['AppImage'],
+    desktop: {
+      mimeTypes: [`x-scheme-handler/${ELECTRON_PROTOCOL}`],
+      exec: `${ELECTRON_PROTOCOL} %U`,
+    },
   },
 
   win: {
@@ -47,6 +60,5 @@ module.exports = {
   publish: {
     provider: 'github',
     owner: 'novasamatech',
-    // repo: 'nova-spektr',
   },
 };

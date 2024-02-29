@@ -1,4 +1,4 @@
-import { XCM_KEY } from '../common/constants';
+import { XCM_KEY } from '../lib/constants';
 import {
   estimateFeeFromConfig,
   getXcmConfig,
@@ -13,10 +13,6 @@ import {
   XCMPALLET_TRANSFER_KSM_BIFROST,
   XCMPALLET_TRANSFER_HUB_ASTAR,
 } from './mock/xcmData';
-
-jest.mock('@app/providers', () => ({
-  useMatrix: jest.fn(),
-}));
 
 describe('shared/api/xcm/xcmService', () => {
   beforeEach(() => {

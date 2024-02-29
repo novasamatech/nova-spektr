@@ -7,10 +7,17 @@ import { Icon, Button, FootnoteText, CaptionText, InputHint, DetailRow } from '@
 import { useI18n } from '@app/providers';
 import { useToggle } from '@shared/lib/hooks';
 import { Validator } from '@shared/core/types/validator';
-import { AddressWithExplorers, WalletCardSm, WalletIcon, accountUtils, walletModel } from '@entities/wallet';
+import {
+  AddressWithExplorers,
+  WalletCardSm,
+  WalletIcon,
+  accountUtils,
+  walletModel,
+  ExplorersPopover,
+} from '@entities/wallet';
 import { AssetBalance } from '@entities/asset';
 import { MultisigTxInitStatus, DepositWithLabel, Fee, useTransaction, Transaction } from '@entities/transaction';
-import AccountsModal from '../Modals/AccountsModal/AccountsModal';
+import AccountsModal from '../AccountsModal/AccountsModal';
 import { DestinationType } from '../../common/types';
 import { cnTw } from '@shared/lib/utils';
 import { useMultisigTx } from '@entities/multisig';
@@ -19,7 +26,7 @@ import type { Account, Asset, Explorer } from '@shared/core';
 import { AssetFiatBalance } from '@entities/price/ui/AssetFiatBalance';
 import { SelectedValidatorsModal } from '@entities/staking';
 import { SignButton } from '@entities/operation/ui/SignButton';
-import { getIconName } from '@entities/transaction/lib/transactionIcon';
+import { getIconName } from '@entities/transaction/lib/transactionConfirmIcon';
 
 const ActionStyle = 'group hover:bg-action-background-hover px-2 py-1 rounded';
 
@@ -97,9 +104,8 @@ export const Confirmation = ({
     <>
       <div className="w-[440px] px-5 py-4">
         <div className="flex flex-col items-center gap-y-3 mb-6">
-          <div className="flex items-center justify-center w-15 h-15 box-content rounded-full border-2 border-icon-default">
-            <Icon className="text-icon-default" name={getIconName(transaction)} size={42} />
-          </div>
+          <Icon className="text-icon-default" name={getIconName(transaction)} size={60} />
+
           {amounts.length > 0 && (
             <div className="flex flex-col gap-y-2 items-center mx-auto">
               <AssetBalance
@@ -146,11 +152,11 @@ export const Confirmation = ({
 
           {signerWallet && (
             <DetailRow className="flex gap-x-2" label={t('staking.confirmation.signatoryLabel')}>
-              <WalletCardSm
-                wallet={signerWallet}
-                accountId={signer.accountId}
-                addressPrefix={addressPrefix}
+              <ExplorersPopover
+                button={<WalletCardSm wallet={signerWallet} />}
+                address={signer.accountId}
                 explorers={explorers}
+                addressPrefix={addressPrefix}
               />
             </DetailRow>
           )}

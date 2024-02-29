@@ -14,8 +14,6 @@ const validatorsMap = {
   },
 };
 
-jest.mock('@renderer/components/common');
-
 jest.mock('@app/providers', () => ({
   useI18n: jest.fn().mockReturnValue({
     t: (key: string) => key,

@@ -3,7 +3,7 @@ import { AccountInfo } from '@polkadot/types/interfaces';
 import { Codec } from '@polkadot/types/types';
 
 import chains from '../../../src/renderer/shared/config/chains/chains.json';
-import { validate } from '../../../src/renderer/services/dataVerification';
+import { validate } from '../../../src/renderer/shared/api/chain-verification';
 import {
   getTestAccounts,
   TestAccountsURL,
@@ -19,7 +19,7 @@ const [_, polkadotParachains, kusamaParachains, polkadot, kusama] = prepareTestD
  * Data Verification integration tests
  *
  * @group integration
- * @group dataVerification/base
+ * @group chain-verification/base
  */
 
 describe('Verification function can verify parachains', () => {
@@ -41,7 +41,7 @@ describe('Verification function can verify parachains', () => {
     const data = await parachainApi.query.system.account(parachainAccount?.account);
     const validationStatus = await validate(polkadotApi, parachainApi, storageKey, data);
 
-    expect(validationStatus).toBe(true);
+    expect(validationStatus).toEqual(true);
   });
 
   test.each(kusamaParachains)('Can verify data for kusama parachain: $name', async (parachain) => {
@@ -52,7 +52,7 @@ describe('Verification function can verify parachains', () => {
     const data = await parachainApi.query.system.account(parachainAccount?.account);
     const validationStatus = await validate(kusamaApi, parachainApi, storageKey, data);
 
-    expect(validationStatus).toBe(true);
+    expect(validationStatus).toEqual(true);
   });
 
   test.each(kusamaParachains)('Verification return false if nonce was changed for $name', async (parachain) => {
@@ -66,7 +66,7 @@ describe('Verification function can verify parachains', () => {
     data.set('nonce', new_nonce_value);
 
     const validationStatus = await validate(kusamaApi, parachainApi, storageKey, data);
-    expect(validationStatus).toBe(false);
+    expect(validationStatus).toEqual(false);
   });
 
   test.each(polkadotParachains)('Verification return false if balance was changed for $name', async (parachain) => {
@@ -80,6 +80,6 @@ describe('Verification function can verify parachains', () => {
     data.data.set('free', new_balance_value);
 
     const validationStatus = await validate(polkadotApi, parachainApi, storageKey, data);
-    expect(validationStatus).toBe(false);
+    expect(validationStatus).toEqual(false);
   });
 });

@@ -20,7 +20,7 @@ export const WalletCardLg = ({ wallet, description, full, className }: Props) =>
   const isWalletConnect = walletUtils.isWalletConnectGroup(wallet);
 
   return (
-    <div className={cnTw('flex items-center gap-x-2 h-10.5', className)}>
+    <div className={cnTw('flex items-center gap-x-2 h-8 w-full', className)}>
       <div className="relative">
         <WalletIcon type={wallet.type} size={32} />
         {isWalletConnect && !full && (
@@ -32,8 +32,8 @@ export const WalletCardLg = ({ wallet, description, full, className }: Props) =>
           />
         )}
       </div>
-      <div className="flex flex-col">
-        <FootnoteText className="text-text-primary">{wallet.name}</FootnoteText>
+      <div className="flex flex-col min-w-0">
+        <FootnoteText className="text-text-primary truncate">{wallet.name}</FootnoteText>
         {typeof description === 'string' ? (
           <FootnoteText className="text-text-tertiary">{description}</FootnoteText>
         ) : (

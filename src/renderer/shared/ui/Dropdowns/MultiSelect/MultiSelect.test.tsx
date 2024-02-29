@@ -1,10 +1,6 @@
 import { act, render, screen } from '@testing-library/react';
 
-import MultiSelect from './MultiSelect';
-
-jest.mock('@app/providers', () => ({
-  useMatrix: jest.fn(),
-}));
+import { MultiSelect } from './MultiSelect';
 
 describe('ui/Dropdowns/MultiSelect', () => {
   const options = [

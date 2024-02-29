@@ -12,7 +12,9 @@ import { includes, DEFAULT_TRANSITION } from '@shared/lib/utils';
 import { NetworkList, NetworkItem, CustomRpcModal } from './components';
 import type { RpcNode, ChainId } from '@shared/core';
 import { ConnectionType } from '@shared/core';
-import { networkModel, ExtendedChain, chainsService } from '@entities/network';
+import { networkModel, ExtendedChain, networkUtils } from '@entities/network';
+import { chainsService } from '@shared/api/network';
+import { manageNetworkModel } from './model/manage-network-model';
 
 const MAX_LIGHT_CLIENTS = 3;
 
@@ -55,9 +57,8 @@ export const Networks = () => {
     return acc;
   }, []);
 
-  const [inactive, active] = partition(
-    extendedChains,
-    ({ connection }) => connection.connectionType === ConnectionType.DISABLED,
+  const [inactive, active] = partition(extendedChains, ({ connection }) =>
+    networkUtils.isDisabledConnection(connection),
   );
 
   const confirmRemoveCustomNode = (name: string): Promise<boolean> => {
@@ -111,7 +112,7 @@ export const Networks = () => {
       if (!proceed) return;
 
       try {
-        await networkModel.events.rpcNodeRemoved({ chainId, rpcNode: node });
+        manageNetworkModel.events.rpcNodeRemoved({ chainId, rpcNode: node });
       } catch (error) {
         console.warn(error);
       }
@@ -121,28 +122,26 @@ export const Networks = () => {
   const disableNetwork = ({ connection, name }: ExtendedChain) => {
     return async (): Promise<void> => {
       let proceed = false;
-      if (connection.connectionType === ConnectionType.LIGHT_CLIENT) {
+      if (networkUtils.isLightClientConnection(connection)) {
         proceed = await confirmDisableLightClient(name);
-      } else if ([ConnectionType.RPC_NODE, ConnectionType.AUTO_BALANCE].includes(connection.connectionType)) {
+      } else if (networkUtils.isRpcConnection(connection) || networkUtils.isAutoBalanceConnection(connection)) {
         proceed = await confirmDisableNetwork(name);
       }
       if (!proceed) return;
 
-      networkModel.events.disconnectStarted(connection.chainId);
+      manageNetworkModel.events.chainDisabled(connection.chainId);
     };
   };
 
   const connectToNode = ({ chainId, connection, name }: ExtendedChain) => {
     return async (type: ConnectionType, node?: RpcNode): Promise<void> => {
-      if (connection.connectionType === ConnectionType.LIGHT_CLIENT) {
+      if (networkUtils.isLightClientConnection(connection)) {
         const proceed = await confirmDisableLightClient(name);
         if (!proceed) return;
       }
 
       if (type === ConnectionType.LIGHT_CLIENT) {
-        const lightClientsAmount = Object.values(connections).filter(
-          (connection) => connection.connectionType === ConnectionType.LIGHT_CLIENT,
-        ).length;
+        const lightClientsAmount = Object.values(connections).filter(networkUtils.isLightClientConnection).length;
 
         if (lightClientsAmount >= MAX_LIGHT_CLIENTS) {
           const proceed = await confirmEnableLightClient();
@@ -154,15 +153,15 @@ export const Networks = () => {
         // Let unsubscribe from previous Provider, microtask first - macrotask second
         if (type === ConnectionType.LIGHT_CLIENT) {
           setTimeout(() => {
-            networkModel.events.lightClientSelected(chainId);
+            manageNetworkModel.events.lightClientSelected(chainId);
           });
         } else if (type === ConnectionType.AUTO_BALANCE) {
           setTimeout(() => {
-            networkModel.events.autoBalanceSelected(chainId);
+            manageNetworkModel.events.autoBalanceSelected(chainId);
           });
         } else if (node) {
           setTimeout(() => {
-            networkModel.events.singleNodeSelected({ chainId, node });
+            manageNetworkModel.events.rpcNodeSelected({ chainId, node });
           });
         }
       } catch (error) {
@@ -182,9 +181,9 @@ export const Networks = () => {
     toggleCustomRpc();
 
     if (node && network && network.connection.activeNode === nodeToEdit) {
-      networkModel.events.rpcNodeUpdated({ chainId: network.chainId, oldNode: nodeToEdit, rpcNode: node });
+      manageNetworkModel.events.rpcNodeUpdated({ chainId: network.chainId, oldNode: nodeToEdit, rpcNode: node });
     } else if (node && network) {
-      networkModel.events.rpcNodeAdded({ chainId: network.chainId, rpcNode: node });
+      manageNetworkModel.events.rpcNodeAdded({ chainId: network.chainId, rpcNode: node });
     }
 
     setTimeout(() => {
@@ -205,7 +204,7 @@ export const Networks = () => {
       >
         <SearchInput wrapperClass="mx-5" placeholder="Search" value={query} onChange={setQuery} />
 
-        <div className="flex flex-col gap-y-4 px-5 pb-4 pt-1 mt-5 h-[454px] overflow-y-auto">
+        <div className="flex flex-col gap-y-4 px-3 pb-4 pt-1 mt-5 h-[454px] overflow-y-auto">
           <NetworkList
             isDefaultOpen={false}
             query={query}
@@ -241,7 +240,7 @@ export const Networks = () => {
           </NetworkList>
 
           {!inactive.length && !active.length && (
-            <div className="flex flex-col items-center mx-auto pt-12 pb-15">
+            <div className="flex flex-col items-center mx-auto pt-12 pb-15 px-2">
               <Icon as="img" name="emptyList" alt={t('settings.networks.emptyStateLabel')} size={178} />
               <BodyText className="w-52 text-center text-text-tertiary">
                 {t('settings.networks.emptyStateLabel')}

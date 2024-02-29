@@ -6,9 +6,10 @@ export const ShardInfoPopover = () => {
 
   return (
     <Popover
-      contentClass="p-4"
       offsetPx={4}
-      panelClass="w-[360px] left-1/2 -translate-x-1/2"
+      tabIndex={-1}
+      contentClass="p-4"
+      panelClass="w-[360px]"
       content={
         <div className="flex flex-col gap-y-4">
           <section className="flex flex-col gap-y-2">

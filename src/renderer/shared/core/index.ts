@@ -8,6 +8,7 @@ export type { Signatory } from './types/signatory';
 
 export type {
   Wallet,
+  WalletsMap,
   PolkadotVaultWallet,
   SingleShardWallet,
   MultiShardWallet,
@@ -18,6 +19,8 @@ export type {
   WalletFamily,
   PolkadotVaultGroup,
   WalletConnectGroup,
+  ProxiedWallet,
+  SignableWalletFamily,
 } from './types/wallet';
 export { WalletType, SigningType } from './types/wallet';
 
@@ -28,6 +31,7 @@ export type {
   ChainAccount,
   MultisigAccount,
   WalletConnectAccount,
+  ProxiedAccount,
   ShardAccount,
   DraftAccount,
 } from './types/account';
@@ -37,6 +41,8 @@ export type { Asset, OrmlExtras, StatemineExtras } from './types/asset';
 
 export { LockTypes } from './types/balance';
 export type { Balance, BalanceKey, BalanceLock } from './types/balance';
+
+export type { ChainMetadata } from './types/metadata';
 
 export type { Chain, ChainOptions, Explorer, RpcNode } from './types/chain';
 
@@ -49,4 +55,17 @@ export type { Validator } from './types/validator';
 
 export { RewardsDestination } from './types/stake';
 export type { Stake, Unlocking } from './types/stake';
+
+export type {
+  ProxyAccount,
+  PartialProxyAccount,
+  PartialProxiedAccount,
+  ProxyDeposits,
+  ProxyGroup,
+} from './types/proxy';
+export { ProxyType, ProxyVariant } from './types/proxy';
+
+export type { Notification, MultisigInvite, MultisigOperation, ProxyAction } from './types/notification';
+export { NotificationType } from './types/notification';
+
 export { XcmPallets } from './types/substrate';

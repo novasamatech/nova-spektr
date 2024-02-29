@@ -1,4 +1,4 @@
 export * from './service/matrix';
-export * from './common/types';
-export * from './common/constants';
-export * from './common/utils';
+export * from './lib/types';
+export * from './lib/constants';
+export * from './lib/utils';

@@ -1,10 +1,6 @@
 import { render, screen } from '@testing-library/react';
 
-import Counter from './Counter';
-
-jest.mock('@app/providers', () => ({
-  useMatrix: jest.fn(),
-}));
+import { Counter } from './Counter';
 
 describe('ui/Counter', () => {
   test('should render component', () => {

@@ -1,13 +1,15 @@
 import { ApiPromise } from '@polkadot/api';
 import { UnsignedTransaction } from '@substrate/txwrapper-polkadot';
 import { useEffect, useState, ComponentProps } from 'react';
+import { useUnit } from 'effector-react';
 
-import { useI18n, useMatrix, useMultisigChainContext } from '@app/providers';
+import { useI18n, useMultisigChainContext } from '@app/providers';
 import { useMultisigTx, useMultisigEvent } from '@entities/multisig';
 import { toAccountId } from '@shared/lib/utils';
 import { useToggle } from '@shared/lib/hooks';
 import { Button, StatusModal } from '@shared/ui';
 import { Animation } from '@shared/ui/Animation/Animation';
+import { matrixModel } from '@entities/matrix';
 import type { Account, HexString } from '@shared/core';
 import {
   MultisigEvent,
@@ -27,7 +29,7 @@ type Props = {
   account?: Account;
   tx: Transaction;
   multisigTx?: MultisigTransaction;
-  matrixRoomId: string;
+  matrixRoomId?: string;
   unsignedTx: UnsignedTransaction;
   signature: HexString;
   rejectReason?: string;
@@ -49,7 +51,7 @@ export const Submit = ({
 }: Props) => {
   const { t } = useI18n();
 
-  const { matrix } = useMatrix();
+  const matrix = useUnit(matrixModel.$matrix);
   const { submitAndWatchExtrinsic, getSignedExtrinsic } = useTransaction();
   const { addTask } = useMultisigChainContext();
   const { updateMultisigTx } = useMultisigTx({ addTask });
@@ -103,7 +105,7 @@ export const Submit = ({
 
           await addEventWithQueue(event);
 
-          if (matrix.userIsLoggedIn) {
+          if (matrix.userIsLoggedIn && matrixRoomId) {
             sendMultisigEvent(updatedTx, typedParams, rejectReason);
           }
         }
@@ -121,7 +123,7 @@ export const Submit = ({
   };
 
   const sendMultisigEvent = (updatedTx: MultisigTransaction, params: ExtrinsicResultParams, rejectReason?: string) => {
-    if (!tx || !updatedTx) return;
+    if (!tx || !updatedTx || !matrixRoomId) return;
 
     const payload = {
       senderAccountId: toAccountId(tx.address),

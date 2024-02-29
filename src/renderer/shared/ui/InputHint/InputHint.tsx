@@ -1,14 +1,14 @@
 import { cnTw } from '@shared/lib/utils';
-import { TypographyProps } from '@shared/ui/Typography/common/types';
-import { HintVariant, HintStyles } from '@shared/ui/InputHint/contants';
+import { TypographyProps } from '../Typography/common/types';
 import { FootnoteText } from '../Typography';
+import { HintVariant, HintStyles } from './contants';
 
-type Props = {
+type Props = TypographyProps & {
   active: boolean;
   variant?: HintVariant;
 };
 
-const InputHint = ({ variant = 'hint', active, className, children, ...props }: Props & TypographyProps) => {
+export const InputHint = ({ variant = 'hint', active, className, children, ...props }: Props) => {
   if (!active) return null;
 
   return (
@@ -17,5 +17,3 @@ const InputHint = ({ variant = 'hint', active, className, children, ...props }: 
     </FootnoteText>
   );
 };
-
-export default InputHint;

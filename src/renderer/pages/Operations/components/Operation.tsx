@@ -11,7 +11,7 @@ import { ChainTitle, XcmChains } from '@entities/chain';
 import { getTransactionAmount } from '../common/utils';
 import { isXcmTransaction } from '@entities/transaction';
 import type { MultisigAccount } from '@shared/core';
-import { chainsService } from '@entities/network';
+import { chainsService } from '@shared/api/network';
 import { getAssetById } from '@shared/lib/utils';
 import { AssetBalance } from '@entities/asset';
 
@@ -44,12 +44,10 @@ const Operation = ({ tx, account }: Props) => {
 
           <TransactionTitle className="flex-1 overflow-hidden" tx={tx.transaction} description={tx.description} />
 
-          {asset && amount ? (
+          {asset && amount && (
             <div className="w-[160px]">
               <AssetBalance value={amount} asset={asset} showIcon />
             </div>
-          ) : (
-            <span className="w-[160px]" />
           )}
 
           {isXcmTransaction(tx.transaction) ? (

@@ -4,10 +4,6 @@ import { ConnectionStatus, ConnectionType } from '@shared/core';
 import { ExtendedChain } from '@entities/network';
 import { NetworkList } from './NetworkList';
 
-jest.mock('@app/providers', () => ({
-  useMatrix: jest.fn(),
-}));
-
 describe('pages/Settings/Networks/NetworkList', () => {
   const children = () => 'children';
   const networks: ExtendedChain[] = [
@@ -26,6 +22,7 @@ describe('pages/Settings/Networks/NetworkList', () => {
         chainId: '0x123',
         connectionType: ConnectionType.RPC_NODE,
         activeNode: { name: 'test node', url: 'wss://test.com' },
+        customNodes: [],
       },
     },
   ];

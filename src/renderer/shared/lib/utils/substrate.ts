@@ -2,6 +2,7 @@ import { ApiPromise } from '@polkadot/api';
 import { BaseTxInfo, getRegistry, GetRegistryOpts, OptionsWithMeta, TypeRegistry } from '@substrate/txwrapper-polkadot';
 import { isHex, hexToU8a, bnMin, BN_TWO, BN } from '@polkadot/util';
 import { blake2AsHex } from '@polkadot/util-crypto';
+import { u32 } from '@polkadot/types';
 
 import { Address, CallData, CallHash, XcmPallets } from '@shared/core';
 import { XcmTransferType } from '../../api/xcm';
@@ -76,6 +77,12 @@ export const getCurrentBlockNumber = async (api: ApiPromise): Promise<number> =>
 
   return block.header.number.toNumber();
 };
+
+export async function getParachainId(api: ApiPromise): Promise<number> {
+  const parachainId = (await api.query.parachainInfo.parachainId()) as unknown as u32;
+
+  return parachainId.toNumber();
+}
 
 export const getExpectedBlockTime = (api: ApiPromise): BN => {
   const substrateBlockTime = api.consts.babe?.expectedBlockTime;

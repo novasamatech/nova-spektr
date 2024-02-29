@@ -32,7 +32,7 @@ describe('hooks/useTaskQueue', () => {
       expect(fn).toHaveBeenCalledTimes(1);
     });
 
-    expect(result.current.tasks.length).toBe(1);
+    expect(result.current.tasks.length).toEqual(1);
 
     act(() => addTask(fn));
 

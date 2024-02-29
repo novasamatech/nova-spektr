@@ -14,12 +14,12 @@ import { RewardsDestination } from '@shared/core';
 import type { Account, Address, ChainId, HexString } from '@shared/core';
 import { BaseModal, Button, Loader } from '@shared/ui';
 import InitOperation, { BondResult } from './InitOperation/InitOperation';
-import { OperationTitle } from '@renderer/components/common';
+import { OperationTitle } from '@entities/chain';
 import { DestinationType } from '../common/types';
 import { UnstakingDuration } from '@pages/Staking/Overview/components';
-import { useNetworkData, isLightClient } from '@entities/network';
+import { useNetworkData, networkUtils } from '@entities/network';
 import { Signing } from '@features/operation';
-import { walletUtils, walletModel } from '@entities/wallet';
+import { walletModel, walletUtils } from '@entities/wallet';
 import { priceProviderModel } from '@entities/price';
 import { StakingPopover } from '../components/StakingPopover/StakingPopover';
 
@@ -212,7 +212,7 @@ export const Bond = () => {
           <Validators
             api={api}
             chainId={chainId}
-            isLightClient={isLightClient(connection)}
+            isLightClient={networkUtils.isLightClientConnection(connection)}
             onResult={onSelectValidators}
             onGoBack={goToPrevStep}
             {...explorersProps}

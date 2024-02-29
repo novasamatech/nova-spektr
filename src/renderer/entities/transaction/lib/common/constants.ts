@@ -17,8 +17,11 @@ export const TRANSFER_SECTIONS = ['balances', 'assets', 'currencies', 'tokens'];
 export const XCM_SECTIONS = ['xcmPallet', 'polkadotXcm', 'xTokens'];
 
 export const STAKING_SECTION = 'staking';
+export const PROXY_SECTION = 'proxy';
+export const MULTISIG_SECTION = 'multisig';
 
 export const TransferTypes = [TransactionType.TRANSFER, TransactionType.ASSET_TRANSFER, TransactionType.ORML_TRANSFER];
+export const ManageProxyTypes = [TransactionType.ADD_PROXY, TransactionType.REMOVE_PROXY];
 
 export const XcmTypes = [
   TransactionType.XCM_TELEPORT,

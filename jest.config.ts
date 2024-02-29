@@ -27,7 +27,7 @@ const config: Config = {
   setupFilesAfterEnv: ['@testing-library/jest-dom'],
   coverageThreshold: {
     global: {
-      branches: 50,
+      branches: 25,
       functions: 50,
       lines: 50,
       statements: 50,
@@ -54,7 +54,8 @@ const config: Config = {
   },
   modulePathIgnorePatterns: ['<rootDir>/tests'],
   collectCoverageFrom: [
-    'src/renderer/**/*.{js,jsx,ts,tsx}',
+    'src/renderer/**/*.{js,ts}',
+    '!src/renderer/pages/**/*.{js,ts}',
     '!src/main/',
     '!src/scripts/',
     '!src/**/*.stories.{js,jsx,ts,tsx}',

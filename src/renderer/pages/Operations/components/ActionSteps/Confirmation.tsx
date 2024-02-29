@@ -13,14 +13,14 @@ import { TransactionAmount } from '@pages/Operations/components/TransactionAmoun
 import { DetailRow, FootnoteText, Icon } from '@shared/ui';
 import { ExtendedChain } from '@entities/network';
 import { useI18n } from '@app/providers';
-import { getIconName } from '@entities/transaction/lib/transactionIcon';
-import { type Account, type MultisigAccount, WalletType } from '@shared/core';
+import { type Account, type MultisigAccount } from '@shared/core';
 import Details from '../Details';
 import { getAssetById } from '@shared/lib/utils';
 import { getTransactionFromMultisigTx } from '@entities/multisig';
 import { sendAssetModel } from '@widgets/SendAssetModal';
 import { SignButton } from '@entities/operation/ui/SignButton';
 import { walletModel } from '@entities/wallet';
+import { getIconName } from '@entities/transaction/lib/transactionConfirmIcon';
 
 type Props = {
   tx: MultisigTransaction;
@@ -49,9 +49,7 @@ export const Confirmation = ({ tx, account, connection, signatory, feeTx, onSign
   return (
     <div className="flex flex-col items-center gap-y-3">
       <div className="flex flex-col items-center gap-y-3 mb-6">
-        <div className="flex items-center justify-center w-15 h-15 box-content rounded-full border-2 border-icon-default">
-          <Icon className="text-icon-default" name={getIconName(tx.transaction)} size={42} />
-        </div>
+        <Icon className="text-icon-default" name={getIconName(tx.transaction)} size={60} />
 
         {tx.transaction && <TransactionAmount tx={tx.transaction} />}
 
@@ -91,12 +89,7 @@ export const Confirmation = ({ tx, account, connection, signatory, feeTx, onSign
         </DetailRow>
       )}
 
-      <SignButton
-        disabled={!isFeeLoaded}
-        className="mt-3 ml-auto"
-        type={wallet?.type || WalletType.SINGLE_PARITY_SIGNER}
-        onClick={onSign}
-      />
+      <SignButton disabled={!isFeeLoaded} className="mt-3 ml-auto" type={wallet?.type} onClick={onSign} />
     </div>
   );
 };

@@ -1,6 +1,6 @@
 import { render, screen, act } from '@testing-library/react';
 
-import PasswordInput from './PasswordInput';
+import { PasswordInput } from './PasswordInput';
 
 jest.mock('@app/providers', () => ({
   useI18n: jest.fn().mockReturnValue({

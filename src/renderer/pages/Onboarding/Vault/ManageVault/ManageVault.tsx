@@ -6,8 +6,16 @@ import { Trans } from 'react-i18next';
 import { u8aToHex } from '@polkadot/util';
 
 import { useI18n, useStatusContext } from '@app/providers';
-import { SeedInfo } from '@renderer/components/common/QrCode/common/types';
 import { toAddress, dictionary, IS_MAC, copyToClipboard } from '@shared/lib/utils';
+import { VaultInfoPopover } from './VaultInfoPopover';
+import { useAltOrCtrlKeyPressed, useToggle } from '@shared/lib/hooks';
+import { manageVaultModel } from './model/manage-vault-model';
+import { chainsService } from '@shared/api/network';
+import { RootAccountLg, accountUtils, DerivedAccount } from '@entities/wallet';
+import { KeyConstructor, DerivationsAddressModal, ImportKeysModal } from '@features/wallets';
+import { Animation } from '@shared/ui/Animation/Animation';
+import { ChainTitle } from '@entities/chain';
+import { SeedInfo } from '@entities/transaction';
 import {
   ChainAccount,
   ChainId,
@@ -19,14 +27,6 @@ import {
   ChainType,
   AccountType,
 } from '@shared/core';
-import { VaultInfoPopover } from './VaultInfoPopover';
-import { useAltOrCtrlKeyPressed, useToggle } from '@shared/lib/hooks';
-import { manageVaultModel } from './model/manage-vault-model';
-import { chainsService } from '@entities/network';
-import { RootAccountLg, accountUtils, DerivedAccount } from '@entities/wallet';
-import { KeyConstructor, DerivationsAddressModal, ImportKeysModal } from '@features/wallets';
-import { Animation } from '@shared/ui/Animation/Animation';
-import { ChainTitle } from '@entities/chain';
 import {
   Button,
   Input,

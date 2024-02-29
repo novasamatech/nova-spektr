@@ -10,12 +10,30 @@ export const validateWsAddress = (address: string): boolean => {
 };
 
 /**
- * Validate Parity Signer QR format
+ * Validate Polkadot Vault QR format
  * @param value qr code to validate
  * @return {Boolean}
  */
 export const validateSignerFormat = (value: string): boolean => {
+  return validateSubstrateSignerFormat(value) || validateEthereumSignerFormat(value);
+};
+
+/**
+ * Validate Substrate QR format
+ * @param value qr code to validate
+ * @return {Boolean}
+ */
+export const validateSubstrateSignerFormat = (value: string): boolean => {
   return /^substrate:[a-zA-Z0-9]+:0x[a-zA-Z0-9]+$/.test(value);
+};
+
+/**
+ * Validate Ethereum QR format
+ * @param value qr code to validate
+ * @return {Boolean}
+ */
+export const validateEthereumSignerFormat = (value: string): boolean => {
+  return /^ethereum:0x[a-zA-Z0-9]+:0x[a-zA-Z0-9]+$/.test(value);
 };
 
 /**
@@ -104,4 +122,13 @@ export const toFixedNotation = (value: number, maxPrecision = 20): string => {
   }
 
   return value.toFixed(trailingZeros);
+};
+
+/**
+ * Splits string in camelCase by capital letters and adds spaces
+ * @param value string in camel case
+ * @return {String}
+ */
+export const splitCamelCaseString = (value: string): string => {
+  return value.replace(/([a-zA-Z])(?=[A-Z])/g, '$1 ');
 };

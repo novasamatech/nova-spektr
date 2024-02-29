@@ -1,10 +1,10 @@
-import { createEvent, createStore, forward, createEffect, sample } from 'effector';
+import { createEvent, createStore, createEffect, sample } from 'effector';
 
 import { PriceApiProvider } from '../lib/types';
 import { DEFAULT_FIAT_PROVIDER, DEFAULT_ASSETS_PRICES, DEFAULT_FIAT_FLAG } from '../lib/constants';
 import { fiatService, coingekoService, PriceObject, PriceAdapter } from '@shared/api/price-provider';
 import { kernelModel } from '@shared/core';
-import { chainsService } from '@entities/network';
+import { chainsService } from '@shared/api/network';
 import { nonNullable } from '@shared/lib/utils';
 import { currencyModel } from './currency-model';
 
@@ -60,16 +60,25 @@ const saveAssetsPricesFx = createEffect((prices: PriceObject): PriceObject => {
   return fiatService.saveAssetsPrices(prices);
 });
 
-forward({
-  from: kernelModel.events.appStarted,
-  to: [getFiatFlagFx, getPriceProviderFx, getAssetsPricesFx],
+sample({
+  clock: kernelModel.events.appStarted,
+  target: [getFiatFlagFx, getPriceProviderFx, getAssetsPricesFx],
 });
 
-forward({ from: getFiatFlagFx.doneData, to: $fiatFlag });
+sample({
+  clock: getFiatFlagFx.doneData,
+  target: $fiatFlag,
+});
 
-forward({ from: getPriceProviderFx.doneData, to: $priceProvider });
+sample({
+  clock: getPriceProviderFx.doneData,
+  target: $priceProvider,
+});
 
-forward({ from: getAssetsPricesFx.doneData, to: $assetsPrices });
+sample({
+  clock: getAssetsPricesFx.doneData,
+  target: $assetsPrices,
+});
 
 sample({
   clock: [assetsPricesRequested, $priceProvider, currencyModel.$activeCurrency],
@@ -81,14 +90,32 @@ sample({
   target: fetchAssetsPricesFx,
 });
 
-forward({ from: fiatFlagChanged, to: saveFiatFlagFx });
-forward({ from: saveFiatFlagFx.doneData, to: $fiatFlag });
+sample({
+  clock: fiatFlagChanged,
+  target: saveFiatFlagFx,
+});
+sample({
+  clock: saveFiatFlagFx.doneData,
+  target: $fiatFlag,
+});
 
-forward({ from: priceProviderChanged, to: savePriceProviderFx });
-forward({ from: savePriceProviderFx.doneData, to: $priceProvider });
+sample({
+  clock: priceProviderChanged,
+  target: savePriceProviderFx,
+});
+sample({
+  clock: savePriceProviderFx.doneData,
+  target: $priceProvider,
+});
 
-forward({ from: fetchAssetsPricesFx.doneData, to: saveAssetsPricesFx });
-forward({ from: saveAssetsPricesFx.doneData, to: $assetsPrices });
+sample({
+  clock: fetchAssetsPricesFx.doneData,
+  target: saveAssetsPricesFx,
+});
+sample({
+  clock: saveAssetsPricesFx.doneData,
+  target: $assetsPrices,
+});
 
 export const priceProviderModel = {
   $fiatFlag,

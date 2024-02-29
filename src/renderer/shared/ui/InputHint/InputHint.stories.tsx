@@ -1,6 +1,6 @@
 import { ComponentMeta, ComponentStory } from '@storybook/react';
 
-import InputHint from './InputHint';
+import { InputHint } from './InputHint';
 
 export default {
   title: 'Redesign/Input Hint',

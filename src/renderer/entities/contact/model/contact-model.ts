@@ -1,4 +1,4 @@
-import { createEffect, createStore, forward } from 'effector';
+import { createEffect, createStore, sample } from 'effector';
 
 import { storageService } from '@shared/api/storage';
 import { kernelModel, Contact } from '@shared/core';
@@ -42,9 +42,9 @@ $contacts
     return splice(state, contact, position);
   });
 
-forward({
-  from: kernelModel.events.appStarted,
-  to: populateContactsFx,
+sample({
+  clock: kernelModel.events.appStarted,
+  target: populateContactsFx,
 });
 
 export const contactModel = {

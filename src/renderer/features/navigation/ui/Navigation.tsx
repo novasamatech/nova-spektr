@@ -1,25 +1,18 @@
-import { useEffect, useState } from 'react';
-import { keyBy } from 'lodash';
 import { useUnit } from 'effector-react';
 
 import { useMultisigTx } from '@entities/multisig';
 import { MultisigTxInitStatus } from '@entities/transaction';
 import { NavItem, Props as NavItemProps } from './NavItem';
-import { chainsService, ChainMap } from '@entities/network';
+import { networkModel } from '@entities/network';
 import { Paths } from '@shared/routes';
 import { walletModel } from '@entities/wallet';
 import { BodyText } from '@shared/ui';
 
 export const Navigation = () => {
+  const chains = useUnit(networkModel.$chains);
   const activeAccounts = useUnit(walletModel.$activeAccounts);
 
   const { getLiveAccountMultisigTxs } = useMultisigTx({});
-
-  const [chains, setChains] = useState<ChainMap>({});
-
-  useEffect(() => {
-    setChains(keyBy(chainsService.getChainsData(), 'chainId'));
-  }, []);
 
   const txs = getLiveAccountMultisigTxs(activeAccounts.map((a) => a.accountId)).filter(
     (tx) => tx.status === MultisigTxInitStatus.SIGNING && chains[tx.chainId],

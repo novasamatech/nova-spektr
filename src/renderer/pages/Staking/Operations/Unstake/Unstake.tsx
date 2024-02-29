@@ -12,13 +12,13 @@ import { Confirmation, NoAsset, Submit } from '../components';
 import { DEFAULT_TRANSITION, getRelaychainAsset, toAddress } from '@shared/lib/utils';
 import { useToggle } from '@shared/lib/hooks';
 import { BaseModal, Button, Loader } from '@shared/ui';
-import { OperationTitle } from '@renderer/components/common';
 import { Signing } from '@features/operation';
 import type { Account, ChainId, HexString } from '@shared/core';
 import { walletModel, walletUtils } from '@entities/wallet';
 import { priceProviderModel } from '@entities/price';
 import { StakingPopover } from '../components/StakingPopover/StakingPopover';
 import { useNetworkData } from '@entities/network';
+import { OperationTitle } from '@entities/chain';
 
 const enum Step {
   INIT,

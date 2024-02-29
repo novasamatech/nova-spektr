@@ -1,21 +1,21 @@
-import { groupBy } from 'lodash';
+import groupBy from 'lodash/groupBy';
 import { format } from 'date-fns';
 import { useUnit } from 'effector-react';
 
 import { useI18n } from '@app/providers';
-import { chainsService, ExtendedChain } from '@entities/network';
+import { ExtendedChain } from '@entities/network';
 import { MultisigEvent, SigningStatus } from '@entities/transaction/model/transaction';
 import { TransactionTitle } from './TransactionTitle/TransactionTitle';
 import OperationStatus from './OperationStatus';
-import { getSignatoryName, getTransactionAmount, sortByDateAsc } from '../common/utils';
-import { BaseModal, BodyText, FootnoteText, Identicon } from '@shared/ui';
-import { getAssetById, SS58_DEFAULT_PREFIX, toAddress } from '@shared/lib/utils';
-import { ExtrinsicExplorers } from '@renderer/components/common';
+import { getSignatoryName, getTransactionAmount } from '../common/utils';
+import { BaseModal, BodyText, FootnoteText, Identicon, ContextMenu, ExplorerLink, IconButton } from '@shared/ui';
+import { getAssetById, SS58_DEFAULT_PREFIX, toAddress, getExtrinsicExplorer, sortByDateAsc } from '@shared/lib/utils';
 import { useMultisigEvent } from '@entities/multisig';
 import { MultisigTransactionDS } from '@shared/api/storage';
 import { AssetBalance } from '@entities/asset';
-import type { Account, Contact, MultisigAccount, Wallet, AccountId, ID } from '@shared/core';
+import type { Account, Contact, MultisigAccount, Wallet, AccountId, WalletsMap } from '@shared/core';
 import { WalletIcon, walletModel, walletUtils } from '@entities/wallet';
+import { chainsService } from '@shared/api/network';
 
 type Props = {
   tx: MultisigTransactionDS;
@@ -34,8 +34,6 @@ const EventMessage: Partial<Record<SigningStatus | 'INITIATED', string>> = {
   CANCELLED: 'log.cancelledMessage',
   ERROR_CANCELLED: 'log.errorCancelledMessage',
 } as const;
-
-type WalletsMap = Record<ID, Wallet>;
 
 const getFilteredWalletsMap = (wallets: Wallet[]): WalletsMap => {
   return wallets.reduce<WalletsMap>((acc, wallet) => {
@@ -148,12 +146,28 @@ const LogModal = ({ isOpen, onClose, tx, account, connection, contacts, accounts
                               background={false}
                             />
                           )}
-                          <BodyText className="text-text-secondary">{getEventMessage(event)}</BodyText>
-                          <BodyText className="text-text-tertiary ml-auto">
+                          <BodyText className="flex-1 text-text-secondary">{getEventMessage(event)}</BodyText>
+                          <BodyText className="text-text-tertiary">
                             {event.dateCreated && format(new Date(event.dateCreated), 'p', { locale: dateLocale })}
                           </BodyText>
+
                           {event.extrinsicHash && connection?.explorers && (
-                            <ExtrinsicExplorers hash={event.extrinsicHash} explorers={connection.explorers} />
+                            <div>
+                              <ContextMenu button={<IconButton name="info" size={16} />}>
+                                <ContextMenu.Group>
+                                  <ul className="flex flex-col gap-y-2">
+                                    {connection.explorers.map((explorer) => (
+                                      <li key={explorer.name}>
+                                        <ExplorerLink
+                                          name={explorer.name}
+                                          href={getExtrinsicExplorer(explorer, event.extrinsicHash!)}
+                                        />
+                                      </li>
+                                    ))}
+                                  </ul>
+                                </ContextMenu.Group>
+                              </ContextMenu>
+                            </div>
                           )}
                         </div>
 

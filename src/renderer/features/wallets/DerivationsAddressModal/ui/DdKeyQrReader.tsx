@@ -1,20 +1,21 @@
 import { hexToU8a, isHex } from '@polkadot/util';
-import { decodeAddress, encodeAddress } from '@polkadot/util-crypto';
+import { decodeAddress, encodeAddress, ethereumEncode } from '@polkadot/util-crypto';
 import { useState } from 'react';
 
-import { QrReader } from '@renderer/components/common';
 import { Icon, Loader, Button, CaptionText, FootnoteText, Select, SmallTitleText } from '@shared/ui';
 import { DropdownOption, DropdownResult } from '@shared/ui/Dropdowns/common/types';
 import { useI18n } from '@app/providers';
 import { cnTw } from '@shared/lib/utils';
-import { WhiteTextButtonStyle } from '@renderer/components/common/QrCode/common/constants';
 import {
   DdAddressInfoDecoded,
+  VideoInput,
   DdSeedInfo,
   ErrorObject,
   QrError,
-  VideoInput,
-} from '@renderer/components/common/QrCode/common/types';
+  QrReader,
+  WhiteTextButtonStyle,
+} from '@entities/transaction';
+import { CryptoType } from '@shared/core';
 
 const enum CameraState {
   ACTIVE,
@@ -95,17 +96,21 @@ export const DdKeyQrReader = ({ size = 300, className, onGoBack, onResult }: Pro
 
         if (qr.dynamicDerivations.length === 0) return;
 
-        const derivationsAddressInfo = qr.dynamicDerivations.map((addressInfo) => ({
-          ...addressInfo,
-          publicKey: {
-            MultiSigner: addressInfo.publicKey.MultiSigner,
-            public: encodeAddress(
-              isHex(addressInfo.publicKey.public)
-                ? hexToU8a(addressInfo.publicKey.public)
-                : decodeAddress(addressInfo.publicKey.public),
-            ),
-          },
-        }));
+        const derivationsAddressInfo = qr.dynamicDerivations.map((addressInfo) => {
+          const publicKey = isHex(addressInfo.publicKey.public)
+            ? hexToU8a(addressInfo.publicKey.public)
+            : decodeAddress(addressInfo.publicKey.public);
+
+          const isEthereum = addressInfo.encryption === CryptoType.ETHEREUM;
+
+          return {
+            ...addressInfo,
+            publicKey: {
+              MultiSigner: addressInfo.publicKey.MultiSigner,
+              public: isEthereum ? ethereumEncode(publicKey) : encodeAddress(publicKey),
+            },
+          };
+        });
 
         derivations.push(...derivationsAddressInfo);
       });

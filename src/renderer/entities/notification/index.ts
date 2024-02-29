@@ -1,3 +1,1 @@
-export * from './ui';
-export * from './lib';
-export * from './model/notification';
+export { notificationModel } from './model/notification-model';

@@ -1,23 +1,19 @@
 import { modelUtils } from '../model-utils';
 import { AccountType, ChainType, CryptoType, KeyType, BaseAccount, ChainAccount } from '@shared/core';
-import { TEST_ACCOUNT_ID, TEST_CHAIN_ID } from '@shared/lib/utils';
-
-jest.mock('@app/providers', () => ({
-  useMatrix: jest.fn(),
-}));
+import { TEST_ACCOUNTS, TEST_CHAIN_ID } from '@shared/lib/utils';
 
 const accounts = [
   {
     name: 'My base account',
     type: AccountType.BASE,
-    accountId: TEST_ACCOUNT_ID,
+    accountId: TEST_ACCOUNTS[0],
     chainType: ChainType.SUBSTRATE,
     cryptoType: CryptoType.SR25519,
   },
   {
     name: 'My chain account',
     type: AccountType.CHAIN,
-    accountId: TEST_ACCOUNT_ID,
+    accountId: TEST_ACCOUNTS[0],
     chainId: TEST_CHAIN_ID,
     chainType: ChainType.SUBSTRATE,
     cryptoType: CryptoType.SR25519,
@@ -27,7 +23,7 @@ const accounts = [
   {
     name: 'My chain account',
     type: AccountType.CHAIN,
-    accountId: TEST_ACCOUNT_ID,
+    accountId: TEST_ACCOUNTS[0],
     chainId: TEST_CHAIN_ID,
     chainType: ChainType.SUBSTRATE,
     cryptoType: CryptoType.SR25519,
@@ -37,7 +33,7 @@ const accounts = [
   {
     name: 'My base account',
     type: AccountType.BASE,
-    accountId: TEST_ACCOUNT_ID,
+    accountId: TEST_ACCOUNTS[0],
     chainType: ChainType.SUBSTRATE,
     cryptoType: CryptoType.SR25519,
   },

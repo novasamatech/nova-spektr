@@ -1,7 +1,7 @@
 import { Outlet } from 'react-router-dom';
 
 import { useI18n } from '@app/providers';
-import { Header } from '@renderer/components/common';
+import { Header } from '@shared/ui';
 import { ShardSelectorButton, ShardSelectorModal } from '@features/wallets';
 import { AssetsFilters, AssetsList } from './components';
 import { assetsModel } from './model/assets-model';

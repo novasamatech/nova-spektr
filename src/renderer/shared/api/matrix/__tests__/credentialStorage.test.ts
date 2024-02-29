@@ -1,5 +1,5 @@
 import CredentialStorage from '../service/credentialStorage';
-import { ICredentialStorage } from '../common/types';
+import { ICredentialStorage } from '../lib/types';
 
 describe('service/matrix/credentialStorage', () => {
   let storage: ICredentialStorage;

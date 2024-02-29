@@ -1,4 +1,4 @@
-import { ICredentialStorage, Credential } from '../common/types';
+import { ICredentialStorage, Credential } from '../lib/types';
 
 class CredentialStorage implements ICredentialStorage {
   private credsKey = 'matrix_credentials';

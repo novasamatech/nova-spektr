@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/react';
 
-import Icon from './Icon';
+import { Icon } from './Icon';
 
 describe('ui/Icon', () => {
   test('should render svg component', () => {

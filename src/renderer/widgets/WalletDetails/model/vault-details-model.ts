@@ -1,6 +1,6 @@
 import { createStore, createEvent, createEffect, sample } from 'effector';
 
-import { chainsService } from '@entities/network';
+import { chainsService } from '@shared/api/network';
 import { storageService } from '@shared/api/storage';
 import { walletModel, accountUtils } from '@entities/wallet';
 import type { ShardAccount, Chain, ChainId, ChainAccount, ID, DraftAccount, Account, AccountId } from '@shared/core';
@@ -13,12 +13,14 @@ type AccountsCreatedParams = {
 
 const shardsSelected = createEvent<ShardAccount[]>();
 const shardsCleared = createEvent();
-const keysRemoved = createEvent<Array<ChainAccount | ShardAccount>>();
-const keysAdded = createEvent<Array<ChainAccount | ShardAccount>>();
 const accountsCreated = createEvent<AccountsCreatedParams>();
+
+const keysRemoved = createEvent<Array<ChainAccount | ShardAccount>>();
+const keysAdded = createEvent<DraftAccount<ChainAccount>[]>();
 
 const $shards = createStore<ShardAccount[]>([]).reset(shardsCleared);
 const $chain = createStore<Chain>({} as Chain).reset(shardsCleared);
+const $keysToAdd = createStore<DraftAccount<ChainAccount>[]>([]).reset(accountsCreated);
 
 const chainSetFx = createEffect((chainId: ChainId): Chain | undefined => {
   return chainsService.getChainById(chainId);
@@ -59,6 +61,12 @@ sample({
 });
 
 sample({
+  clock: keysAdded,
+  filter: (keys) => keys.length > 0,
+  target: $keysToAdd,
+});
+
+sample({
   clock: keysRemoved,
   filter: (keys) => keys.length > 0,
   fn: (keys) => keys.map((key) => key.id),
@@ -90,6 +98,7 @@ sample({
 export const vaultDetailsModel = {
   $shards,
   $chain,
+  $keysToAdd,
   events: {
     shardsSelected,
     shardsCleared,

@@ -1,10 +1,14 @@
 import { createRoot } from 'react-dom/client';
-import { HashRouter as Router } from 'react-router-dom';
+import { HashRouter } from 'react-router-dom';
 import log from 'electron-log';
 
 import { App } from './App';
 import { kernelModel } from '@shared/core';
+import { walletModel } from '@entities/wallet';
 import { networkModel } from '@entities/network';
+import { proxyModel } from '@entities/proxy';
+import { proxiesModel } from '@features/proxies';
+import { notificationModel } from '@entities/notification';
 import { balanceSubscriptionModel } from '@features/balances';
 import { assetsModel } from '@pages/Assets/Assets/model/assets-model';
 import './i18n';
@@ -30,14 +34,18 @@ if (!container) {
 }
 
 kernelModel.events.appStarted();
+proxiesModel.events.workerStarted();
+walletModel.events.walletStarted();
 networkModel.events.networkStarted();
+proxyModel.events.proxyStarted();
 balanceSubscriptionModel.events.balancesSubscribed();
 assetsModel.events.assetsStarted();
+notificationModel.events.notificationsStarted();
 
 createRoot(container).render(
-  <Router>
+  <HashRouter>
     <App />
-  </Router>,
+  </HashRouter>,
 );
 
 // NOTE: React 18 Strict mode renders twice in DEV mode

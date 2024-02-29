@@ -26,6 +26,10 @@ const TransactionIcons: Record<TransactionType, IconNames> = {
   // Technical
   [TransactionType.CHILL]: 'unstakeMst',
   [TransactionType.BATCH_ALL]: 'unknownMst',
+  // Proxy
+  [TransactionType.ADD_PROXY]: 'proxyMst',
+  [TransactionType.REMOVE_PROXY]: 'proxyMst',
+  [TransactionType.PROXY]: 'unknownMst',
 };
 
 export const getIconName = (transaction?: Transaction | DecodedTransaction): IconNames => {
@@ -33,6 +37,10 @@ export const getIconName = (transaction?: Transaction | DecodedTransaction): Ico
 
   if (transaction.type === TransactionType.BATCH_ALL) {
     return getIconName(transaction?.args?.transactions?.[0]);
+  }
+
+  if (transaction.type === TransactionType.PROXY) {
+    return getIconName(transaction?.args?.transaction);
   }
 
   return TransactionIcons[transaction.type];

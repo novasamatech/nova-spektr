@@ -1,6 +1,6 @@
 import { ComponentMeta, ComponentStory } from '@storybook/react';
 
-import StatusLabel from './StatusLabel';
+import { StatusLabel } from './StatusLabel';
 
 export default {
   title: 'Redesign/StatusLabel',

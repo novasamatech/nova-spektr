@@ -8,7 +8,7 @@ type Props = {
   className?: string;
 };
 
-const DetailRow = ({ label, className, children }: PropsWithChildren<Props>) => (
+export const DetailRow = ({ label, className, children }: PropsWithChildren<Props>) => (
   <div className="flex justify-between items-center w-full">
     {typeof label === 'string' ? (
       <FootnoteText as="dt" className="text-text-tertiary">
@@ -27,5 +27,3 @@ const DetailRow = ({ label, className, children }: PropsWithChildren<Props>) => 
     )}
   </div>
 );
-
-export default DetailRow;

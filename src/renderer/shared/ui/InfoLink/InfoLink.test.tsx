@@ -1,10 +1,6 @@
 import { render, screen } from '@testing-library/react';
 
-import InfoLink from './InfoLink';
-
-jest.mock('@app/providers', () => ({
-  useMatrix: jest.fn(),
-}));
+import { InfoLink } from './InfoLink';
 
 describe('pages/Settings/InfoLink', () => {
   test('should render component', () => {

@@ -82,22 +82,34 @@
   },
   "createMultisigAccount": {
     "accountsAlertText": "Add signatory wallet before creating Multisig wallet",
+    "accountsTab": "Accounts",
     "addContact": "Add new",
     "addContactsButton": "Add selected",
     "addSignatoryButton": "Add signatory",
     "alertTitle": "Select wallet",
     "availableLabel": "Available",
     "backButton": "Back",
+    "chainHint": "Multisig will work only in this network, if you want to use different network, you need to create a new multisig",
+    "chainName": "Network",
+    "chainPlaceholder": "Select network",
     "closeButton": "Close",
     "contactsTab": "Contacts",
     "continueButton": "Continue",
     "create": "Create",
     "disabledError": {
       "differentAccounts": "Wallets with different accounts for chains are not supported",
-      "unsupportedType": "This type of wallet is not yet supported for the Multisig wallet creation"
+      "unsupportedType": "This type of wallet is not supported for the Multisig wallet creation"
     },
     "disabledLabel": "Not supported",
     "errorMessage": "Something went wrong",
+    "multiChain": {
+      "description": "Creation is free, the wallet works on all networks",
+      "featureFour": "Custom voting threshold",
+      "featureOne": "Any chain",
+      "featureThree": "Mutliple signers",
+      "featureTwo": "Some wallets are not supported",
+      "title": "Multi-chain multisig"
+    },
     "multisigExistText": "Multisig account with selected signatories and threshold already exists",
     "multisigExistTitle": "Account already exists",
     "nameDescription": "Give a name to your multisig account",
@@ -110,6 +122,14 @@
     "signatoriesDescription": "Add signatories to your multisig account",
     "signatoriesLabel": "Signatories",
     "signatoryTitle": "Select signatories",
+    "singleChain": {
+      "description": "Creation is free, the wallet can work on one network only",
+      "featureFour": "Custom voting threshold",
+      "featureOne": "Single chain",
+      "featureThree": "Mutliple signers",
+      "featureTwo": "Use any wallet",
+      "title": "Single-chain multisig"
+    },
     "successMessage": "Wallet added",
     "thresholdDescription": "Set the threshold of signatories required to execute a transaction",
     "thresholdHint": "Threshold of signatories required to execute a transaction",
@@ -120,7 +140,8 @@
     "walletAlertTitle": "Select wallet",
     "walletFormTitle": "Set up your wallet",
     "walletNameLabel": "Wallet name",
-    "walletsTab": "Your wallets"
+    "walletsTab": "Your wallets",
+    "yourAccounts": "Your accounts"
   },
   "dropdown": {
     "chooseOptionLabel": "Choose an option"
@@ -140,6 +161,7 @@
       "keyTypeGovernance": "Governance account",
       "keyTypeHot": "Hot account",
       "keyTypeLabel": "Type of key",
+      "keyTypeMain": "Main account",
       "keyTypePlaceholder": "Select",
       "keyTypePublic": "Public account",
       "keyTypeStaking": "Staking account",
@@ -264,7 +286,13 @@
   },
   "notifications": {
     "details": {
-      "newMultisigAccountDescription": "New multisig wallet added:<identicon />{name}, with threshold { threshold } out of { signatories } signatories"
+      "multisigInviteDescription": "<strong>{name}</strong>  with threshold { threshold } out of { signatories } signatories",
+      "multisigInviteTitle": "New multisig wallet added",
+      "proxyCreatedDetails": "<chain />  is now available for your <wallet><walletIcon /> {name}</wallet>  to control {operations}",
+      "proxyCreatedTitle": "New delegated authority wallet added",
+      "proxyRemovedDetails": "<chain />  is no longer available for your <wallet><walletIcon /> {name}</wallet>  to control {operations}",
+      "proxyRemovedTitle": "Delegated authority wallet has been removed",
+      "proxyWalletAction": "<strong>{name}</strong>  with <address><identicon /> {address}</address>"
     },
     "noNotificationsDescription": "You don't have notifications yet",
     "title": "Notifications"
@@ -411,11 +439,13 @@
     "contactSignatoriesTitle": "Contacts",
     "continueButton": "Continue",
     "details": {
+      "accessType": "Access type",
       "account": "Account",
       "amount": "Amount",
       "callData": "Call Data",
       "callHash": "Call Hash",
       "controller": "Controller",
+      "delegateTo": "Delegate to",
       "deposit": "Multisig deposit",
       "depositor": "Depositor",
       "description": "Description",
@@ -425,11 +455,11 @@
       "payee": "Rewards destination",
       "recipient": "Recipient",
       "rejectReason": "Reject reason",
+      "revokeFor": "Revoke for",
       "sender": "Sender",
       "timePoint": "Time Point",
       "toNetwork": "To network",
-      "validators": "Validators",
-      "wallet": "Wallet"
+      "validators": "Validators"
     },
     "detailsTitle": "Details",
     "explorerLink": "View in explorer",
@@ -455,6 +485,7 @@
     "sign": {
       "novaWallet": "Sign with Nova Wallet",
       "polkadotVault": "Sign with Polkadot Vault",
+      "unknown": "Sign",
       "walletConnect": "Sign with WalletConnect"
     },
     "signatoriesTitle": "Signatories",
@@ -504,11 +535,14 @@
       "statusSummary": "Operation statuses"
     },
     "modalTitles": {
+      "addProxy": "Add delegated authority (proxy)",
       "approve": "Approve",
       "destinationOn": "Set reward destination on",
       "nominateOn": "Change Validators on",
+      "proxy": "Proxy",
       "redeemOn": "Withdraw Unstaked { asset } on",
       "reject": "Reject",
+      "removeProxy": "Revoke delegated authority (proxy)",
       "restakeOn": "Restake { asset } on",
       "stakeMoreOn": "Stake More { asset } on",
       "startStakingOn": "Start Staking { asset } on",
@@ -522,10 +556,13 @@
     "noOperationsWalletNotMulti": "You can only view operations for your Multisig wallets. Transaction history for other types of wallets will be available later. Stay tuned.",
     "title": "Operations",
     "titles": {
+      "addProxy": "Add delegated authority (proxy)",
       "crossChainTransfer": "Cross-chain transfer",
       "destination": "Set reward destination",
       "nominate": "Change Validators",
+      "proxy": "Proxy",
       "redeem": "Withdraw Unstaked",
+      "removeProxy": "Revoke delegated authority (proxy)",
       "restake": "Restake",
       "stakeMore": "Stake More",
       "startStaking": "Start Staking",
@@ -539,6 +576,12 @@
     "withSymbol": "{ symbol }{ amount }"
   },
   "proxy": {
+    "details": {
+      "account": "Your account",
+      "revokeAccessType": "Revoke access type",
+      "revokeFor": "Revoke for",
+      "wallet": "Your wallet"
+    },
     "names": {
       "any": "All operations",
       "auction": "Auction operations",
@@ -546,9 +589,22 @@
       "governance": "Governance operations",
       "identityJudgement": "Judgement operations",
       "nominationPools": "Nominations operations",
-      "nonTransfer": "NonTransfer operations",
+      "nonTransfer": "All, except transfer operations",
       "staking": "Staking operations"
-    }
+    },
+    "operations": {
+      "any": "all operations",
+      "auction": "auction operations",
+      "cancelProxy": "cancel operations",
+      "governance": "governance operations",
+      "identityJudgement": "judgement operations",
+      "nominationPools": "nominations operations",
+      "nonTransfer": "all, except transfer operations",
+      "removeProxyTitle": "Revoke delegated authority (proxy) on ",
+      "staking": "staking operations"
+    },
+    "tooltipPart1": "Proxied wallets are wallet which have set one of your accounts in Nova Spektr as delegated authority (Proxies).",
+    "tooltipPart2": "This means that you can control certain functions of these wallets based on the access type granted to you by the proxied wallet."
   },
   "qrReader": {
     "parsingLabel": "Parsing data",
@@ -578,6 +634,7 @@
       "unpopularFiatLabel": "Fiat currencies"
     },
     "matrix": {
+      "autoLoginTitle": "Logging into Matrix",
       "badCredentialsError": "Invalid username or password",
       "badServerError": "Server is not a correct matrix server",
       "fileError": "File does not contain a valid verification key, please upload another one",
@@ -710,7 +767,7 @@
     "scanSignatureTitle": "Scan QR code from Polkadot Vault",
     "signatureExpiredDescription": "For security reasons generated operations valid for only 5 mins. Please generate new QR code and sign it with Polkadot Vault",
     "signatureExpiredLabel": "QR Code has expired",
-    "signer": "Signatory:",
+    "signer": "Signer:",
     "title": "Signing",
     "troubleshootingLink": "I have an error in Polkadot Vault"
   },
@@ -990,12 +1047,31 @@
   },
   "walletDetails": {
     "common": {
+      "accountTabTitle": "Accounts",
+      "addProxyButton": "Add delegated authority",
       "cancelButton": "Cancel",
+      "confirmRemoveProxyCancel": "Cancel",
+      "confirmRemoveProxyDescription": "The account will lose access to your wallet. Are you sure?",
+      "confirmRemoveProxySubmit": "Delete",
+      "confirmRemoveProxyTitle": "Revoke delegated authority?",
+      "emptyProxyDescription": "Add new proxies to work with them",
+      "emptyProxyTitle": "Wallet doesn't have delegated authorities",
       "forgetButton": "Remove",
       "nameExistsError": "This wallet name already exists",
       "nameRequiredError": "Name is required",
+      "openInfoAction": "Open info",
+      "proxiedAddressTitle": "Delegated from",
+      "proxiesTabTitle": "Delegated authorities (proxies)",
+      "proxyDeposit": "Total proxy deposit",
+      "proxyToControl": "to control",
+      "proxyTooltipWhatIsProxy": "A delegated authority is a type of account that acts as an intermediary or delegate for another account. Delegated authorities add an additional layer of control for your assets, allowing other accounts to control various operations for your account in a customizable way depending upon the access type.",
+      "proxyTooltipWhatIsProxyTitle": "What are delegated authorities (proxies)?",
+      "proxyTooltipWhyProxy": "Delegated authorities offer an additional layer of control. You can set explicit permissions and restrictions for another account to control certain operations relating to your assets.  Delegated authorities allow you to distribute responsibilities more effectively. You are able to customize the type of access that delegated authorities have. For example you can allow another account to conduct only staking operations, only governance operations, or any operation on the network except for the transfer of assets.",
+      "proxyTooltipWhyProxyTitle": "Why do I need to create delegated authorities (proxies)?",
+      "proxyVia": "via",
       "removeButton": "Remove",
       "removeMessage": "Are you sure you want to remove { walletName }?",
+      "removeProxyAction": "Revoke authority",
       "removeTitle": "Remove wallet",
       "removeWalletDesc": "Are you sure you want to remove {walletName}?",
       "removeWalletTitle": "Remove wallet",
@@ -1008,6 +1084,7 @@
       "walletRemoved": "Wallet removed"
     },
     "multisig": {
+      "accountsGroup": "Your accounts",
       "contactsGroup": "Contacts",
       "networksTab": "Networks",
       "signatoriesTab": "Signatories",
@@ -1049,6 +1126,7 @@
     "multisigLabel": "Multisig",
     "novaWalletLabel": "Nova Wallet",
     "paritySignerLabel": "Polkadot Vault",
+    "proxiedLabel": "Delegated to you (Proxied)",
     "searchPlaceholder": "Search",
     "shards": "Shards",
     "title": "Wallets",

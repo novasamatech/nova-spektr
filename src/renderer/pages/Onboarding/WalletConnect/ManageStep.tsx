@@ -5,7 +5,7 @@ import { Controller, useForm, SubmitHandler } from 'react-hook-form';
 import { useI18n, useStatusContext } from '@app/providers';
 import { Button, Input, InputHint, HeaderTitleText, SmallTitleText, Icon } from '@shared/ui';
 import { toAccountId } from '@shared/lib/utils';
-import { chainsService } from '@entities/network';
+import { chainsService } from '@shared/api/network';
 import { IconNames } from '@shared/ui/Icon/data';
 import { MultiAccountsList, walletModel } from '@entities/wallet';
 import {

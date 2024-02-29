@@ -2,11 +2,11 @@ import { BN, BN_TEN, BN_ZERO } from '@polkadot/util';
 import { ApiPromise } from '@polkadot/api';
 import get from 'lodash/get';
 
-import { XCM_URL, XCM_KEY } from './common/constants';
-import { getTypeVersion, getTypeName, toLocalChainId, getAssetId, TEST_ACCOUNT_ID } from '@shared/lib/utils';
+import { XCM_URL, XCM_KEY } from './lib/constants';
+import { getTypeVersion, toLocalChainId, getTypeName, getAssetId, TEST_ACCOUNTS } from '@shared/lib/utils';
 import { XcmPalletTransferArgs, XTokenPalletTransferArgs } from '@entities/transaction';
-import { chainsService } from '@entities/network';
-import { toRawString } from './common/utils';
+import { chainsService } from '@shared/api/network';
+import { toRawString } from './lib/utils';
 import type { AccountId, ChainId, Chain, HexString } from '@shared/core';
 import {
   XcmConfig,
@@ -21,7 +21,7 @@ import {
   PathType,
   Action,
   XcmTransferType,
-} from './common/types';
+} from './lib/types';
 
 export const fetchXcmConfig = async (): Promise<XcmConfig> => {
   const response = await fetch(XCM_URL, { cache: 'default' });
@@ -574,7 +574,7 @@ const InstructionObjects: Record<Action, (assetLocation: object, destLocation: o
             X1: {
               AccountId32: {
                 network: 'Any',
-                id: TEST_ACCOUNT_ID,
+                id: TEST_ACCOUNTS[0],
               },
             },
           },
@@ -662,14 +662,14 @@ export const estimateFeeFromApi = async (
   let paymentInfo;
 
   try {
-    paymentInfo = await api.tx[pallet].execute(message, 0).paymentInfo(TEST_ACCOUNT_ID);
+    paymentInfo = await api.tx[pallet].execute(message, 0).paymentInfo(TEST_ACCOUNTS[0]);
   } catch (e) {
     paymentInfo = await api.tx[pallet]
       .execute(message, {
         refTime: '0',
         proofSize: '0',
       })
-      .paymentInfo(TEST_ACCOUNT_ID);
+      .paymentInfo(TEST_ACCOUNTS[0]);
   }
 
   return paymentInfo.partialFee;

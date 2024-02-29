@@ -12,11 +12,11 @@ import { Confirmation, Submit, Validators, NoAsset } from '../components';
 import { useToggle } from '@shared/lib/hooks';
 import { BaseModal, Button, Loader } from '@shared/ui';
 import InitOperation, { ValidatorsResult } from './InitOperation/InitOperation';
-import { isLightClient, useNetworkData } from '@entities/network';
-import { OperationTitle } from '@renderer/components/common';
+import { useNetworkData, networkUtils } from '@entities/network';
+import { OperationTitle } from '@entities/chain';
 import { Signing } from '@features/operation';
 import type { Account, ChainId, HexString, Address } from '@shared/core';
-import { walletUtils, walletModel } from '@entities/wallet';
+import { walletModel, walletUtils } from '@entities/wallet';
 import { priceProviderModel } from '@entities/price';
 import { StakingPopover } from '../components/StakingPopover/StakingPopover';
 
@@ -194,7 +194,7 @@ export const ChangeValidators = () => {
             asset={asset}
             explorers={explorers}
             addressPrefix={addressPrefix}
-            isLightClient={isLightClient(connection)}
+            isLightClient={networkUtils.isLightClientConnection(connection)}
             onResult={onSelectValidators}
             onGoBack={goToPrevStep}
           />

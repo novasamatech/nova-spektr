@@ -1,4 +1,4 @@
-import { BalanceDS } from '@shared/api/storage/common/types';
+import { BalanceDS } from '@shared/api/storage/lib/types';
 import type { ChainId, AccountId, Balance } from '@shared/core';
 
 export interface IBalanceService {

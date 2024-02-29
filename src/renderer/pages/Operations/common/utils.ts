@@ -39,6 +39,10 @@ const TransactionTitles: Record<TransactionType, string> = {
   // Technical
   [TransactionType.CHILL]: 'operations.titles.unstake',
   [TransactionType.BATCH_ALL]: 'operations.titles.unknown',
+  // Proxy
+  [TransactionType.ADD_PROXY]: 'operations.titles.addProxy',
+  [TransactionType.REMOVE_PROXY]: 'operations.titles.removeProxy',
+  [TransactionType.PROXY]: 'operations.titles.proxy',
 };
 
 const TransactionTitlesModal: Record<TransactionType, (crossChain: boolean) => string> = {
@@ -73,6 +77,10 @@ const TransactionTitlesModal: Record<TransactionType, (crossChain: boolean) => s
   // Technical
   [TransactionType.CHILL]: () => 'operations.modalTitles.unstakeOn',
   [TransactionType.BATCH_ALL]: () => 'operations.modalTitles.unknownOn',
+  // Proxy
+  [TransactionType.ADD_PROXY]: () => 'operations.modalTitles.addProxy',
+  [TransactionType.REMOVE_PROXY]: () => 'operations.modalTitles.removeProxy',
+  [TransactionType.PROXY]: () => 'operations.modalTitles.proxy',
 };
 
 export const getTransactionTitle = (transaction?: Transaction | DecodedTransaction): string => {
@@ -123,20 +131,6 @@ export const getMultisigSignOperationTitle = (
   }
 
   return '';
-};
-
-export const sortByDateDesc = <T>([dateA]: [string, T[]], [dateB]: [string, T[]]) =>
-  new Date(dateA) < new Date(dateB) ? 1 : -1;
-
-export const sortByDateAsc = <T>([dateA]: [string, T[]], [dateB]: [string, T[]]) =>
-  new Date(dateA) > new Date(dateB) ? 1 : -1;
-
-export const getExtrinsicLink = (hash?: HexString, explorers?: Explorer[]): string | undefined => {
-  const extrinsicLink = explorers?.find((e) => e.extrinsic)?.extrinsic;
-
-  if (!extrinsicLink || !hash) return;
-
-  return extrinsicLink.replace('{hash}', hash);
 };
 
 export const getMultisigExtrinsicLink = (

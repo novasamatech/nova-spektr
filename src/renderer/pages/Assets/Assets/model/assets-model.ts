@@ -1,4 +1,4 @@
-import { createEvent, createEffect, createStore, sample } from 'effector';
+import { createEvent, createEffect, createStore, sample, combine } from 'effector';
 
 import { localStorageService } from '@shared/api/local-storage';
 import { walletModel, accountUtils, walletUtils } from '@entities/wallet';
@@ -15,12 +15,22 @@ const $activeShards = createStore<Account[]>([]);
 const $hideZeroBalances = createStore<boolean>(false);
 
 const getHideZeroBalancesFx = createEffect((): boolean => {
-  return localStorageService.getFromStorage(HIDE_ZERO_BALANCES, true);
+  return localStorageService.getFromStorage(HIDE_ZERO_BALANCES, false);
 });
 
 const saveHideZeroBalancesFx = createEffect((value: boolean): boolean => {
   return localStorageService.saveToStorage(HIDE_ZERO_BALANCES, value);
 });
+
+const $accounts = combine(
+  {
+    accounts: walletModel.$activeAccounts,
+    wallet: walletModel.$activeWallet,
+  },
+  ({ accounts, wallet }) => {
+    return wallet ? accounts.filter((account) => accountUtils.isNonBaseVaultAccount(account, wallet)) : [];
+  },
+);
 
 sample({
   clock: assetsStarted,
@@ -28,13 +38,13 @@ sample({
 });
 
 sample({
-  clock: [saveHideZeroBalancesFx.doneData, getHideZeroBalancesFx.doneData],
-  target: $hideZeroBalances,
+  clock: hideZeroBalancesChanged,
+  target: saveHideZeroBalancesFx,
 });
 
 sample({
-  clock: hideZeroBalancesChanged,
-  target: saveHideZeroBalancesFx,
+  clock: [saveHideZeroBalancesFx.doneData, getHideZeroBalancesFx.doneData],
+  target: $hideZeroBalances,
 });
 
 sample({
@@ -49,7 +59,7 @@ sample({
     if (!walletUtils.isPolkadotVault(wallet)) return accounts;
 
     return accounts.filter((account) => {
-      return !accountUtils.isBaseAccount(account) && account;
+      return account && !accountUtils.isBaseAccount(account);
     });
   },
   target: $activeShards,
@@ -57,11 +67,12 @@ sample({
 
 export const assetsModel = {
   $query,
+  $accounts,
   $activeShards,
   $hideZeroBalances,
   events: {
-    activeShardsSet,
     assetsStarted,
+    activeShardsSet,
     queryChanged,
     hideZeroBalancesChanged,
   },

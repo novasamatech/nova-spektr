@@ -2,7 +2,7 @@ import { ApolloClient, ApolloProvider, from, HttpLink, InMemoryCache, Normalized
 import { onError } from '@apollo/client/link/error';
 import { createContext, PropsWithChildren, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 
-import { chainsService } from '@entities/network';
+import { chainsService } from '@shared/api/network';
 import { useSettingsStorage } from '@entities/settings';
 import type { ChainId } from '@shared/core';
 

@@ -3,10 +3,6 @@ import { act, render, screen } from '@testing-library/react';
 import { ChainTitle } from './ChainTitle';
 import { TEST_CHAIN_ID } from '@shared/lib/utils';
 
-jest.mock('@app/providers', () => ({
-  useMatrix: jest.fn(),
-}));
-
 describe('ui/ChainTitle', () => {
   test('should render component', async () => {
     await act(async () => {

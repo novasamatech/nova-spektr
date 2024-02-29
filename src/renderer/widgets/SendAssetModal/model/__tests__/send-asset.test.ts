@@ -1,15 +1,11 @@
 import { fork, allSettled } from 'effector';
 
-import * as sendAssetModel from '../../model/send-asset';
+import { sendAssetModel } from '../../model/send-asset';
 import * as service from '@shared/api/xcm';
 
 jest.mock('@shared/api/xcm', () => ({
   __esModule: true,
   ...jest.requireActual('@shared/api/xcm'),
-}));
-
-jest.mock('@app/providers', () => ({
-  useMatrix: jest.fn(),
 }));
 
 describe('widgets/SendAssetModal/model/send-asset', () => {

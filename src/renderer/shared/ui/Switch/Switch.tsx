@@ -4,7 +4,7 @@ import { PropsWithChildren } from 'react';
 import { cnTw } from '@shared/lib/utils';
 import { LabelText } from '@shared/ui';
 
-interface Props {
+type Props = {
   checked?: boolean;
   defaultChecked?: boolean;
   disabled?: boolean;
@@ -13,9 +13,9 @@ interface Props {
   switchClassName?: string;
   labelPosition?: 'left' | 'right';
   onChange?: (checked: boolean) => void;
-}
+};
 
-const Switch = ({
+export const Switch = ({
   checked,
   defaultChecked,
   disabled,
@@ -61,5 +61,3 @@ const Switch = ({
     </HeadlessSwitch.Group>
   );
 };
-
-export default Switch;
