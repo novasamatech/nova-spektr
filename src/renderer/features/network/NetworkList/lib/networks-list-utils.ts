@@ -3,7 +3,7 @@ import { Chain, ChainId, Connection, ConnectionStatus } from '@shared/core';
 
 export const networksListUtils = {
   getExtendedChain,
-  getMetrics,
+  getStatusMetrics,
 };
 
 function getExtendedChain(
@@ -21,7 +21,7 @@ function getExtendedChain(
 }
 
 type Metrics = Record<'success' | 'connecting' | 'error', number>;
-function getMetrics(networkList: ExtendedChain[]): Metrics {
+function getStatusMetrics(networkList: ExtendedChain[]): Metrics {
   return networkList.reduce(
     (acc, network) => {
       if (networkUtils.isDisabledConnection(network.connection)) return acc;

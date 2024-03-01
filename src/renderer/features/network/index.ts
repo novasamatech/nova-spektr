@@ -1,8 +1,8 @@
 export {
-  NetworksList,
+  NetworkList as NetworksList,
   ActiveNetwork,
   InactiveNetwork,
   inactiveNetworksModel,
   activeNetworksModel,
-} from './NetworksList';
+} from './NetworkList';
 export { NetworksFilter, networksFilterModel } from './NetworksFilter';

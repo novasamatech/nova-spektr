@@ -1,4 +1,4 @@
-import { createEvent, sample, createStore, combine } from 'effector';
+import { createEvent, createStore, combine, sample } from 'effector';
 
 import { networkUtils, networkModel } from '@entities/network';
 import { Chain } from '@shared/core';
@@ -8,7 +8,7 @@ const networksChanged = createEvent<Chain[]>();
 
 const $networks = createStore<Chain[]>([]);
 
-const $inactiveNetworks = combine(
+const $activeNetworks = combine(
   {
     networks: $networks,
     connectionStatuses: networkModel.$connectionStatuses,
@@ -17,14 +17,15 @@ const $inactiveNetworks = combine(
   ({ networks, connectionStatuses, connections }) => {
     return networksListUtils
       .getExtendedChain(networks, connections, connectionStatuses)
-      .filter((o) => networkUtils.isDisabledConnection(o.connection));
+      .filter((o) => networkUtils.isEnabledConnection(o.connection));
   },
 );
 
 sample({ clock: networksChanged, target: $networks });
 
-export const inactiveNetworksModel = {
-  $inactiveNetworks,
+export const activeNetworksModel = {
+  $activeNetworks,
+
   events: {
     networksChanged,
   },

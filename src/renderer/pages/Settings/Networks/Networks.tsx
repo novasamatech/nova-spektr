@@ -16,12 +16,12 @@ import { manageNetworkModel } from './model/manage-network-model';
 import { NetworksFilter } from '@features/network/NetworksFilter';
 import {
   EmptyNetworks,
-  NetworksList,
+  NetworkList,
   InactiveNetwork,
   activeNetworksModel,
   inactiveNetworksModel,
   ActiveNetwork,
-} from '@features/network/NetworksList';
+} from '@/src/renderer/features/network/NetworkList';
 import './model/networks-overview-model';
 
 const MAX_LIGHT_CLIENTS = 3;
@@ -183,7 +183,7 @@ export const Networks = () => {
       <NetworksFilter className="mx-5" />
 
       <div className="flex flex-col gap-y-4 px-3 pb-4 pt-1 mt-5 h-[454px] overflow-y-auto">
-        <NetworksList
+        <NetworkList
           isDefaultOpen={false}
           title={t('settings.networks.disabledNetworksLabel')}
           networkList={inactiveNetworks}
@@ -199,9 +199,9 @@ export const Networks = () => {
               />
             </InactiveNetwork>
           )}
-        </NetworksList>
+        </NetworkList>
 
-        <NetworksList isDefaultOpen title={t('settings.networks.activeNetworksLabel')} networkList={activeNetworks}>
+        <NetworkList isDefaultOpen title={t('settings.networks.activeNetworksLabel')} networkList={activeNetworks}>
           {(network) => (
             <ActiveNetwork networkItem={network}>
               <NetworkSelector
@@ -213,7 +213,7 @@ export const Networks = () => {
               />
             </ActiveNetwork>
           )}
-        </NetworksList>
+        </NetworkList>
 
         <EmptyNetworks />
       </div>

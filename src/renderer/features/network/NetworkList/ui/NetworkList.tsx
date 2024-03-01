@@ -11,10 +11,10 @@ type Props = {
   children: (network: ExtendedChain) => ReactNode;
 };
 
-export const NetworksList = ({ title, isDefaultOpen, networkList, children }: Props) => {
+export const NetworkList = ({ title, isDefaultOpen, networkList, children }: Props) => {
   if (networkList.length === 0) return null;
 
-  const { success, connecting, error } = networksListUtils.getMetrics(networkList);
+  const { success, connecting, error } = networksListUtils.getStatusMetrics(networkList);
 
   return (
     <Accordion isDefaultOpen={isDefaultOpen}>

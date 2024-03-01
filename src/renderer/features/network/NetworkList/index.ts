@@ -1,4 +1,4 @@
-export { NetworksList } from './ui/NetworksList';
+export { NetworkList } from './ui/NetworkList';
 export { ActiveNetwork } from './ui/ActiveNetwork';
 export { InactiveNetwork } from './ui/InactiveNetwork';
 export { EmptyNetworks } from './ui/EmptyNetworks';
