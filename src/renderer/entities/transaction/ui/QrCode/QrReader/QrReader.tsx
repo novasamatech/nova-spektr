@@ -77,6 +77,11 @@ export const QrReader = ({
     return typeof error === 'object' && ErrorFields.CODE in error && ErrorFields.MESSAGE in error;
   };
 
+  const CryptoTypes: Record<string, Exclude<CryptoTypeString, CryptoTypeString.ETHEREUM>> = {
+    substrate: CryptoTypeString.SR25519,
+    ethereum: CryptoTypeString.ECDSA,
+  };
+
   const makeResultPayload = <T extends ScanResult>(data: T): Array<SeedInfo | DdSeedInfo> => {
     if (Array.isArray(data)) return data;
 
@@ -89,13 +94,15 @@ export const QrReader = ({
       return [payload];
     }
 
+    const [cryptoType, address] = data.split(':');
+
     return [
       {
         name: '',
         derivedKeys: [],
         multiSigner: {
-          MultiSigner: CryptoTypeString.SR25519,
-          public: decodeAddress(data.split(':')[1]),
+          MultiSigner: CryptoTypes[cryptoType],
+          public: decodeAddress(address),
         },
       },
     ];

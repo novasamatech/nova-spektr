@@ -2,8 +2,8 @@ import { Identicon as PolkadotIdenticon } from '@polkadot/react-identicon';
 import { IconTheme } from '@polkadot/react-identicon/types';
 import { useLayoutEffect, useRef, SyntheticEvent } from 'react';
 
-import { cnTw, copyToClipboard } from '@shared/lib/utils';
-import { Address } from '@shared/core';
+import { cnTw, copyToClipboard, isEthereumAccountId } from '@shared/lib/utils';
+import { AccountId, Address } from '@shared/core';
 import { Icon } from '../Icon/Icon';
 
 type Props = {
@@ -17,7 +17,7 @@ type Props = {
 };
 
 export const Identicon = ({
-  theme = 'polkadot',
+  theme,
   address,
   size = 24,
   background = true,
@@ -25,6 +25,8 @@ export const Identicon = ({
   className,
   buttonClassName,
 }: Props) => {
+  const defaultTheme = address && isEthereumAccountId(address as AccountId) ? 'ethereum' : 'polkadot';
+
   const wrapperRef = useRef<HTMLDivElement>(null);
 
   useLayoutEffect(() => {
@@ -40,10 +42,10 @@ export const Identicon = ({
 
   const icon = address ? (
     <PolkadotIdenticon
-      theme={theme}
+      theme={theme || defaultTheme}
       value={address}
       size={background ? size * 0.75 : size}
-      className="pointer-events-none"
+      className="pointer-events-none rounded-full overflow-hidden"
     />
   ) : (
     <Icon name="emptyIdenticon" size={size} />

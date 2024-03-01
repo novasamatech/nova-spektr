@@ -189,4 +189,18 @@ describe('features/wallet/model/constructor-model', () => {
 
     expect(validationErrors[0]?.rule).toEqual('duplicated');
   });
+
+  test.each([
+    [KeyType.MAIN, false],
+    [KeyType.PUBLIC, false],
+    [KeyType.HOT, false],
+    [KeyType.GOVERNANCE, false],
+    [KeyType.STAKING, false],
+    [KeyType.CUSTOM, true],
+  ])(`should calculate sharded key for %s`, async (keyType: KeyType, expected: boolean) => {
+    const scope = fork();
+
+    await allSettled(constructorModel.$constructorForm.fields.keyType.onChange, { scope, params: keyType });
+    expect(scope.getState(constructorModel.$isKeyTypeSharded)).toEqual(expected);
+  });
 });
