@@ -4,7 +4,15 @@ import qrcode from 'qrcode-generator';
 import { Encoder } from 'raptorq';
 import { str } from 'parity-scale-codec';
 
-import { Command, CRYPTO_SR25519, CRYPTO_STUB, FRAME_SIZE, SUBSTRATE_ID } from './constants';
+import {
+  Command,
+  CRYPTO_ECDSA,
+  CRYPTO_ETHEREUM,
+  CRYPTO_SR25519,
+  CRYPTO_STUB,
+  FRAME_SIZE,
+  SUBSTRATE_ID,
+} from './constants';
 import type { ChainId } from '@renderer/shared/core';
 import { Address, CryptoType, CryptoTypeString, SigningType } from '@renderer/shared/core';
 import { DynamicDerivationRequestInfo } from '../../common/types';
@@ -38,7 +46,8 @@ export const createSubstrateSignPayload = (
   payload: string | Uint8Array,
   genesisHash: ChainId | Uint8Array,
   signingType: SigningType,
-  derivationPath?: string,
+  derivationPath: string = '',
+  cryptoType = CryptoType.SR25519,
 ): Uint8Array => {
   if (signingType === SigningType.POLKADOT_VAULT) {
     return createDynamicDerivationsSignPayload(
@@ -46,11 +55,12 @@ export const createSubstrateSignPayload = (
       Command.DynamicDerivationsTransaction,
       payload,
       genesisHash,
-      derivationPath || '',
+      derivationPath,
+      cryptoType,
     );
   }
 
-  return createSignPayload(address, Command.Transaction, payload, genesisHash);
+  return createSignPayload(address, Command.Transaction, payload, genesisHash, cryptoType);
 };
 
 export const createSignPayload = (
@@ -58,9 +68,12 @@ export const createSignPayload = (
   cmd: number,
   payload: string | Uint8Array,
   genesisHash: ChainId | Uint8Array,
+  cryptoType = CryptoType.SR25519,
 ): Uint8Array => {
+  const isEthereum = cryptoType === CryptoType.ETHEREUM;
+
   return u8aConcat(
-    CRYPTO_SR25519,
+    isEthereum ? CRYPTO_ETHEREUM : CRYPTO_SR25519,
     new Uint8Array([cmd]),
     decodeAddress(address),
     u8aToU8a(payload),
@@ -74,9 +87,10 @@ export const createDynamicDerivationsSignPayload = (
   payload: string | Uint8Array,
   genesisHash: ChainId | Uint8Array,
   derivationPath: string,
-) => {
+  cryptoType = CryptoType.SR25519,
+): Uint8Array => {
   return u8aConcat(
-    CRYPTO_SR25519,
+    cryptoType === CryptoType.SR25519 ? CRYPTO_SR25519 : CRYPTO_ECDSA,
     new Uint8Array([cmd]),
     decodeAddress(address),
     str.encode(derivationPath),

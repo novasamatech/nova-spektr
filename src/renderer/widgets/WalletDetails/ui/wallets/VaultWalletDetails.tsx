@@ -15,9 +15,9 @@ import { DerivationsAddressModal, ImportKeysModal, KeyConstructor } from '@featu
 import { RenameWalletModal } from '@features/wallets/RenameWallet';
 import { ForgetWalletModal } from '@features/wallets/ForgetWallet';
 import { TabItem } from '@shared/ui/Tabs/common/types';
-import { ProxiesList } from '../components/ProxiesList';
+// import { ProxiesList } from '../components/ProxiesList';
 import { walletProviderModel } from '../../model/wallet-provider-model';
-import { NoProxiesAction } from '../components/NoProxiesAction';
+// import { NoProxiesAction } from '../components/NoProxiesAction';
 import { networkModel } from '@entities/network';
 
 type Props = {
@@ -151,15 +151,15 @@ export const VaultWalletDetails = ({ wallet, root, accountsMap, onClose }: Props
         </div>
       ),
     },
-    {
-      id: 'proxies',
-      title: t('walletDetails.common.proxiesTabTitle'),
-      panel: hasProxies ? (
-        <ProxiesList className="h-[403px] mt-4" canCreateProxy={canCreateProxy} />
-      ) : (
-        <NoProxiesAction className="h-[403px] mt-4" canCreateProxy={canCreateProxy} />
-      ),
-    },
+    // {
+    //   id: 'proxies',
+    //   title: t('walletDetails.common.proxiesTabTitle'),
+    //   panel: hasProxies ? (
+    //     <ProxiesList className="h-[403px] mt-4" canCreateProxy={canCreateProxy} />
+    //   ) : (
+    //     <NoProxiesAction className="h-[403px] mt-4" canCreateProxy={canCreateProxy} />
+    //   ),
+    // },
   ];
 
   return (

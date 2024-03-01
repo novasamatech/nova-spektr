@@ -18,7 +18,8 @@ import type {
   ChainId,
 } from '@shared/core';
 import { walletUtils } from './wallet-utils';
-import { networkUtils } from '../../network';
+// TODO: resolve cross import
+import { networkUtils } from '@entities/network';
 
 export const accountUtils = {
   isBaseAccount,
