@@ -25,7 +25,7 @@ export const Identicon = ({
   className,
   buttonClassName,
 }: Props) => {
-  const valueTheme = theme || (address && isEthereumAccountId(address as AccountId) ? 'ethereum' : 'polkadot');
+  const defaultTheme = address && isEthereumAccountId(address as AccountId) ? 'ethereum' : 'polkadot';
 
   const wrapperRef = useRef<HTMLDivElement>(null);
 
@@ -42,7 +42,7 @@ export const Identicon = ({
 
   const icon = address ? (
     <PolkadotIdenticon
-      theme={valueTheme}
+      theme={theme || defaultTheme}
       value={address}
       size={background ? size * 0.75 : size}
       className="pointer-events-none rounded-full overflow-hidden"

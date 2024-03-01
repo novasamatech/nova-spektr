@@ -47,7 +47,7 @@ export const createSubstrateSignPayload = (
   genesisHash: ChainId | Uint8Array,
   signingType: SigningType,
   derivationPath: string = '',
-  cryptoType: CryptoType = CryptoType.SR25519,
+  cryptoType = CryptoType.SR25519,
 ): Uint8Array => {
   if (signingType === SigningType.POLKADOT_VAULT) {
     return createDynamicDerivationsSignPayload(
@@ -68,7 +68,7 @@ export const createSignPayload = (
   cmd: number,
   payload: string | Uint8Array,
   genesisHash: ChainId | Uint8Array,
-  cryptoType: CryptoType = CryptoType.SR25519,
+  cryptoType = CryptoType.SR25519,
 ): Uint8Array => {
   const isEthereum = cryptoType === CryptoType.ETHEREUM;
 
@@ -87,7 +87,7 @@ export const createDynamicDerivationsSignPayload = (
   payload: string | Uint8Array,
   genesisHash: ChainId | Uint8Array,
   derivationPath: string,
-  cryptoType: CryptoType = CryptoType.SR25519,
+  cryptoType = CryptoType.SR25519,
 ): Uint8Array => {
   return u8aConcat(
     cryptoType === CryptoType.SR25519 ? CRYPTO_SR25519 : CRYPTO_ECDSA,

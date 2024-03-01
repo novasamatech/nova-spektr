@@ -5,16 +5,8 @@ import { UnsignedTransaction } from '@substrate/txwrapper-polkadot';
 import { useI18n } from '@app/providers';
 import { Button, FootnoteText } from '@shared/ui';
 import { WalletIcon } from '@entities/wallet'; // TODO: cross import
-import {
-  type Account,
-  type ChainAccount,
-  type ChainId,
-  type ShardAccount,
-  type Wallet,
-  type Address,
-  type BaseAccount,
-  CryptoType,
-} from '@shared/core';
+import type { Account, ChainAccount, ChainId, ShardAccount, Wallet, Address, BaseAccount } from '@shared/core';
+import { CryptoType } from '@shared/core';
 import { QrGeneratorContainer } from '../QrCode/QrGeneratorContainer/QrGeneratorContainer';
 import { QrTxGenerator } from '../QrCode/QrGenerator/QrTxGenerator';
 import { Transaction } from '../../model/transaction';

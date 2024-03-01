@@ -42,9 +42,9 @@ export const VaultSigning = ({
 
   const handleSignature = async (data: string | string[]): Promise<void> => {
     const isMultishard = Array.isArray(data);
-    let signatures = isMultishard ? (data as HexString[]) : [data as HexString];
-
-    signatures = signatures.map(transformEcdsaSignature);
+    const signatures = isMultishard
+      ? (data as HexString[]).map(transformEcdsaSignature)
+      : [data as HexString].map(transformEcdsaSignature);
 
     const accountIds = isMultiframe ? accounts.map((t) => t.accountId) : [(signatory || accounts[0])?.accountId];
 
