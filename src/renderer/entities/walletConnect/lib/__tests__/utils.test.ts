@@ -1,3 +1,5 @@
+import Client from '@walletconnect/sign-client';
+
 import { Chain } from '@shared/core';
 import { walletConnectUtils } from '../utils';
 
@@ -15,5 +17,29 @@ describe('entities/walletConnect/lib/utils', () => {
     const result = walletConnectUtils.getWalletConnectChains(chains as unknown as Chain[]);
 
     expect(result).toEqual(['polkadot:91b171bb158e2d3848fa23a9f1c25182', 'polkadot:b0a8d493285c2df73290dfb7e61f870f']);
+  });
+
+  test('should return false if not connected', () => {
+    const client = {
+      session: {
+        getAll: () => [],
+      },
+    } as unknown as Client;
+
+    const result = walletConnectUtils.isConnected(client, 'topic');
+
+    expect(result).toEqual(false);
+  });
+
+  test('should return true if connected', () => {
+    const client = {
+      session: {
+        getAll: () => ['topic'],
+      },
+    } as unknown as Client;
+
+    const result = walletConnectUtils.isConnected(client, 'topic');
+
+    expect(result).toEqual(false);
   });
 });
