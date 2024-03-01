@@ -1,20 +1,22 @@
 import Client from '@walletconnect/sign-client';
 
-import type { Chain, Wallet, Account } from '@shared/core';
+import type { Chain, Wallet, Account, ChainId } from '@shared/core';
 import { walletUtils } from '@entities/wallet';
-// TODO: resolve cross import
-import { networkUtils } from '@entities/network';
+import { FIRST_CHAIN_ID_SYMBOL, LAST_CHAIN_ID_SYMBOL } from './constants';
 
 export const walletConnectUtils = {
   getWalletConnectChains,
+  getWalletConnectChainId,
   isConnected,
   isConnectedByAccounts,
 };
 
 function getWalletConnectChains(chains: Chain[]): string[] {
-  return chains
-    .filter((c) => !networkUtils.isEthereumBased(c.options))
-    .map((c) => `polkadot:${c.chainId.slice(2, 34)}`);
+  return chains.map((c) => getWalletConnectChainId(c.chainId));
+}
+
+function getWalletConnectChainId(chainId: ChainId): string {
+  return `polkadot:${chainId.slice(FIRST_CHAIN_ID_SYMBOL, LAST_CHAIN_ID_SYMBOL)}`;
 }
 
 function isConnected(client: Client, sessionTopic: string): boolean {
