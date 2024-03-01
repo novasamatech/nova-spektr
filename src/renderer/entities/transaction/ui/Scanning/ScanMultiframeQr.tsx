@@ -8,7 +8,7 @@ import { useI18n } from '@app/providers';
 import { Transaction, useTransaction } from '@entities/transaction';
 import { toAddress } from '@shared/lib/utils';
 import { Button } from '@shared/ui';
-import type { Account, ChainId, ShardAccount } from '@shared/core';
+import type { Account, BaseAccount, ChainId, ShardAccount } from '@shared/core';
 import { SigningType, Wallet } from '@shared/core';
 import { createSubstrateSignPayload, createMultipleSignPayload } from '../QrCode/QrGenerator/common/utils';
 import { TRANSACTION_BULK } from '../QrCode/common/constants';
@@ -69,6 +69,7 @@ export const ScanMultiframeQr = ({
           chainId,
           signerWallet.signingType,
           (account as ShardAccount).derivationPath,
+          (account as BaseAccount).cryptoType,
         );
 
         return {
