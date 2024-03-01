@@ -4,7 +4,7 @@ import SubIdImg, { ReactComponent as SubIdSvg } from '@shared/assets/images/expl
 import SubscanImg, { ReactComponent as SubscanSvg } from '@shared/assets/images/explorers/subscan.svg';
 import StatescanImg, { ReactComponent as StatescanSvg } from '@shared/assets/images/explorers/statescan.svg';
 import TernoaImg, { ReactComponent as TernoaSvg } from '@shared/assets/images/explorers/ternoa.svg';
-import MoonscanImg, { ReactComponent as MoonscanSvg } from '@shared/assets/images/explorers/ternoa.svg';
+import MoonscanImg, { ReactComponent as MoonscanSvg } from '@shared/assets/images/explorers/moonscan.svg';
 import PolkaholicImg from '@shared/assets/images/explorers/polkaholic.webp';
 
 const ExplorerImages = {

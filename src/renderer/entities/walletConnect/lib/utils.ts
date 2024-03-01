@@ -2,7 +2,8 @@ import Client from '@walletconnect/sign-client';
 
 import type { Chain, Wallet, Account } from '@shared/core';
 import { walletUtils } from '@entities/wallet';
-import { networkUtils } from '../../network';
+// TODO: resolve cross import
+import { networkUtils } from '@entities/network';
 
 export const walletConnectUtils = {
   getWalletConnectChains,
