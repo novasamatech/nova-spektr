@@ -9,11 +9,6 @@ const $filterQuery = createStore<string>('');
 const queryChanged = createEvent<string>();
 
 sample({
-  clock: queryChanged,
-  target: $filterQuery,
-});
-
-sample({
   clock: formInitiated,
   target: $filterQuery.reinit,
 });

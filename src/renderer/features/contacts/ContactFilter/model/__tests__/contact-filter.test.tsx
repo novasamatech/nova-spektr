@@ -1,6 +1,6 @@
 import { fork } from 'effector';
 
-import { filterModel } from '@features/contacts';
+import { filterModel } from '../contact-filter';
 import { contactModel } from '@entities/contact';
 
 const mockContact1 = {
@@ -18,6 +18,7 @@ const mockContact2 = {
   accountId: '0x888',
   matrixId: '@999',
 };
+
 const getScopeByQuery = (query: string) => {
   return fork({
     values: new Map().set(contactModel.$contacts, [mockContact1, mockContact2]).set(filterModel.$filterQuery, query),
@@ -25,10 +26,6 @@ const getScopeByQuery = (query: string) => {
 };
 
 describe('features/contacts/model/contact-filter-model', () => {
-  afterEach(() => {
-    jest.clearAllMocks();
-  });
-
   test('should return all contacts if no search query', async () => {
     const scope = getScopeByQuery('');
 
