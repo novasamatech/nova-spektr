@@ -1,94 +1,109 @@
 import { useState } from 'react';
 import { useUnit } from 'effector-react';
 
-import { Fee } from '@entities/transaction';
+import { FeeWithLabel, ProxyDepositWithLabel, MultisigDepositWithLabel } from '@entities/transaction';
 import { Button, DetailRow, FootnoteText, Icon } from '@shared/ui';
 import { useI18n } from '@app/providers';
 import { SignButton } from '@entities/operation/ui/SignButton';
-import { AddressWithExplorers, WalletIcon } from '@entities/wallet';
+import { AddressWithExplorers, WalletIcon, accountUtils, ExplorersPopover, WalletCardSm } from '@entities/wallet';
 import { proxyUtils } from '@entities/proxy';
-import { useNetworkData } from '@entities/network';
-import { addProxyModel } from '../model/add-proxy-model';
-import { walletSelectModel } from '@features/wallets';
-import { Step } from '../lib/types';
+import { confirmModel } from '../model/confirm-model';
 
-export const Confirmation = () => {
+type Props = {
+  onGoBack: () => void;
+};
+
+export const Confirmation = ({ onGoBack }: Props) => {
   const { t } = useI18n();
 
-  const transaction = useUnit(addProxyModel.$transaction);
-  const wallet = useUnit(walletSelectModel.$walletForDetails);
-  const account = useUnit(addProxyModel.$account);
+  const store = useUnit(confirmModel.$confirmStore);
+  const initiatorWallet = useUnit(confirmModel.$initiatorWallet);
+  const signerWallet = useUnit(confirmModel.$signerWallet);
+  const api = useUnit(confirmModel.$api);
 
-  const { api, chain } = useNetworkData(transaction!.chainId);
+  if (!store || !api || !initiatorWallet) return null;
 
-  const [isFeeLoading, setIsFeeLoading] = useState(false);
-
-  if (!account) return null;
+  const [isFeeLoading, setIsFeeLoading] = useState(true);
 
   return (
-    <div className="flex flex-col items-center pt-4 gap-y-4 pb-4 pl-5 pr-3">
+    <div className="flex flex-col items-center pt-4 gap-y-4 pb-4 px-5">
       <div className="flex flex-col items-center gap-y-3 mb-2">
-        <div className="flex items-center justify-center shrink-0 w-15 h-15 box-border rounded-full border-[2.5px] border-icon-default">
-          <Icon name="proxied" size={42} />
-        </div>
+        <Icon name="proxyConfirm" size={60} />
+
+        <FootnoteText className="py-2 px-3 rounded bg-block-background ml-3 text-text-secondary">
+          {store.description}
+        </FootnoteText>
       </div>
 
       <dl className="flex flex-col gap-y-4 w-full">
         <DetailRow label={t('proxy.details.wallet')} className="flex gap-x-2">
-          <WalletIcon type={wallet!.type} size={16} />
-          <FootnoteText className="pr-2">{wallet!.name}</FootnoteText>
+          <WalletIcon type={initiatorWallet.type} size={16} />
+          <FootnoteText className="pr-2">{initiatorWallet.name}</FootnoteText>
         </DetailRow>
 
         <DetailRow label={t('proxy.details.account')}>
           <AddressWithExplorers
             type="short"
-            explorers={chain.explorers}
+            explorers={store.chain.explorers}
             addressFont="text-footnote text-inherit"
-            accountId={account.accountId}
-            addressPrefix={chain.addressPrefix}
+            accountId={store.account.accountId}
+            addressPrefix={store.chain.addressPrefix}
+            wrapperClassName="text-text-secondary"
+          />
+        </DetailRow>
+
+        {signerWallet && store.signatory && (
+          <DetailRow label={t('proxy.details.signatory')}>
+            <ExplorersPopover
+              button={<WalletCardSm wallet={signerWallet} />}
+              address={store.signatory.accountId}
+              explorers={store.chain.explorers}
+              addressPrefix={store.chain.addressPrefix}
+            />
+          </DetailRow>
+        )}
+
+        <hr className="border-filter-border w-full pr-2" />
+
+        <DetailRow label={t('proxy.details.grantAccessType')} className="pr-2">
+          <FootnoteText>{t(proxyUtils.getProxyTypeName(store.transaction.args.proxyType))}</FootnoteText>
+        </DetailRow>
+
+        <DetailRow label={t('proxy.details.delegateTo')}>
+          <AddressWithExplorers
+            type="short"
+            explorers={store.chain.explorers}
+            addressFont="text-footnote text-inherit"
+            address={store.transaction.args.delegate}
             wrapperClassName="text-text-secondary"
           />
         </DetailRow>
 
         <hr className="border-filter-border w-full pr-2" />
 
-        <DetailRow label={t('proxy.details.revokeAccessType')} className="pr-2">
-          <FootnoteText>{t(proxyUtils.getProxyTypeName(transaction!.args.proxyType))}</FootnoteText>
-        </DetailRow>
+        <ProxyDepositWithLabel api={api} asset={store.chain.assets[0]} />
 
-        {/*<DetailRow label={t('proxy.details.revokeFor')}>*/}
-        {/*  <AddressWithExplorers*/}
-        {/*    type="short"*/}
-        {/*    explorers={chain.explorers}*/}
-        {/*    addressFont="text-footnote text-inherit"*/}
-        {/*    accountId={proxyAccount.accountId}*/}
-        {/*    addressPrefix={chain.addressPrefix}*/}
-        {/*    wrapperClassName="text-text-secondary"*/}
-        {/*  />*/}
-        {/*</DetailRow>*/}
+        {accountUtils.isMultisigAccount(store.account) && (
+          <MultisigDepositWithLabel api={api} asset={store.chain.assets[0]} threshold={store.account.threshold} />
+        )}
 
-        <hr className="border-filter-border w-full pr-2" />
-
-        <DetailRow label={t('operation.networkFee')} className="text-text-primary pr-2">
-          <Fee
-            className="text-footnote text-text-primary"
-            api={api}
-            asset={chain.assets[0]}
-            transaction={transaction!}
-            onFeeLoading={setIsFeeLoading}
-          />
-        </DetailRow>
+        <FeeWithLabel
+          api={api}
+          asset={store.chain.assets[0]}
+          transaction={store.transaction}
+          onFeeLoading={setIsFeeLoading}
+        />
       </dl>
 
-      <div className="flex w-full justify-between mt-3 pr-2">
-        <Button variant="text" onClick={() => addProxyModel.events.stepChanged(Step.INIT)}>
+      <div className="flex w-full justify-between mt-3">
+        <Button variant="text" onClick={onGoBack}>
           {t('operation.goBackButton')}
         </Button>
 
         <SignButton
-          disabled={!isFeeLoading}
-          type={wallet!.type}
-          onClick={() => addProxyModel.events.stepChanged(Step.SIGN)}
+          disabled={isFeeLoading}
+          type={(signerWallet || initiatorWallet).type}
+          onClick={() => confirmModel.output.formSubmitted}
         />
       </div>
     </div>

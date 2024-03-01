@@ -80,7 +80,7 @@ export const currencyModel = {
   events: {
     currencyChanged,
   },
-  watch: {
+  output: {
     currencyChangedDone: currencyChangedFx.done,
     currencyChangedFail: currencyChangedFx.fail,
     activeCurrencyLoaded: getActiveCurrencyCodeFx.done,

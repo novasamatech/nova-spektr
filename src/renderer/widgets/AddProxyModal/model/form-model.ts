@@ -3,8 +3,8 @@ import { ApiPromise } from '@polkadot/api';
 import { createForm } from 'effector-forms';
 import { BN } from '@polkadot/util';
 
-import { ActiveProxy, TxWrapper, FormValues } from '../lib/types';
-import { Address, ProxyType, Chain, Account, RequiredNotNull } from '@shared/core';
+import { ActiveProxy, TxWrapper } from '../lib/types';
+import { Address, ProxyType, Chain, Account, PartialBy } from '@shared/core';
 import { networkModel, networkUtils } from '@entities/network';
 import { walletSelectModel } from '@features/wallets';
 import { proxiesUtils } from '@features/proxies/lib/proxies-utils';
@@ -22,17 +22,28 @@ import {
   transferableAmount,
 } from '@shared/lib/utils';
 
+type FormParams = {
+  network: Chain;
+  account: Account;
+  signatory: Account;
+  delegate: Address;
+  proxyType: ProxyType;
+  description: string;
+};
+
 const formInitiated = createEvent();
-const formSubmitted = createEvent<RequiredNotNull<FormValues>>();
+const formSubmitted = createEvent<PartialBy<FormParams, 'signatory' | 'description'>>();
 const proxyQueryChanged = createEvent<string>();
 
 const proxyDepositChanged = createEvent<string>();
 const multisigDepositChanged = createEvent<string>();
 const feeChanged = createEvent<string>();
+const isFeeLoadingChanged = createEvent<boolean>();
 
 const $proxyDeposit = createStore<string>('0');
 const $multisigDeposit = createStore<string>('0');
 const $fee = createStore<string>('0');
+const $isFeeLoading = createStore<boolean>(true);
 
 const $proxyQuery = createStore<string>('');
 const $maxProxies = createStore<number>(0);
@@ -40,7 +51,7 @@ const $activeProxies = createStore<ActiveProxy[]>([]);
 
 const $txWrappers = createStore<TxWrapper>([]);
 
-const $proxyForm = createForm<FormValues>({
+const $proxyForm = createForm<FormParams>({
   fields: {
     network: {
       init: {} as Chain,
@@ -395,20 +406,13 @@ sample({
 
 // DEPOSITS
 
-sample({
-  clock: proxyDepositChanged,
-  target: $proxyDeposit,
-});
+sample({ clock: proxyDepositChanged, target: $proxyDeposit });
 
-sample({
-  clock: multisigDepositChanged,
-  target: $multisigDeposit,
-});
+sample({ clock: multisigDepositChanged, target: $multisigDeposit });
 
-sample({
-  clock: feeChanged,
-  target: $fee,
-});
+sample({ clock: feeChanged, target: $fee });
+
+sample({ clock: isFeeLoadingChanged, target: $isFeeLoading });
 
 // SUBMIT
 
@@ -463,6 +467,11 @@ sample({
   clock: getAccountProxiesFx.doneData,
   source: $proxyForm.$values,
   filter: $proxyForm.$isValid,
+  fn: (formData) => ({
+    ...formData,
+    signatory: Object.keys(formData.signatory).length > 0 ? formData.signatory : undefined,
+    description: formData.description || undefined,
+  }),
   target: formSubmitted,
 });
 
@@ -478,6 +487,7 @@ export const formModel = {
   $proxyDeposit,
   $multisigDeposit,
   $fee,
+  $isFeeLoading,
 
   $fakeTx,
   $txWrappers,
@@ -490,9 +500,10 @@ export const formModel = {
     proxyDepositChanged,
     multisigDepositChanged,
     feeChanged,
+    isFeeLoadingChanged,
   },
 
-  watch: {
+  output: {
     formSubmitted,
   },
 };

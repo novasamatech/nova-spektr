@@ -585,8 +585,11 @@
   "proxy": {
     "details": {
       "account": "Your account",
+      "delegateTo": "Delegate to",
+      "grantAccessType": "Grant access type",
       "revokeAccessType": "Revoke access type",
       "revokeFor": "Revoke for",
+      "signatory": "Signatory",
       "wallet": "Your wallet"
     },
     "names": {

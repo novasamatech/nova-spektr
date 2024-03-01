@@ -8,7 +8,7 @@ export const signModel = {
     formInitiated,
   },
 
-  watch: {
+  output: {
     formSubmitted,
   },
 };

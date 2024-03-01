@@ -1,6 +1,6 @@
 import { ComponentMeta, ComponentStory } from '@storybook/react';
 
-import TextBase from './common/TextBase';
+import { TextBase } from './common/TextBase';
 import { BodyText } from './components/BodyText';
 import { CaptionText } from './components/CaptionText';
 import { FootnoteText } from './components/FootnoteText';

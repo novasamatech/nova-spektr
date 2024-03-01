@@ -10,7 +10,6 @@ import { AccountAddress, accountUtils, walletUtils } from '@entities/wallet';
 import { toAddress, toShortAddress } from '@shared/lib/utils';
 import { ProxyDepositWithLabel, MultisigDepositWithLabel, FeeWithLabel } from '@entities/transaction';
 import { formModel } from '../model/form-model';
-import { addProxyUtils } from '../lib/add-proxy-utils';
 import { useNetworkData } from '@entities/network';
 import { AssetBalance } from '@entities/asset';
 import { walletSelectModel } from '@features/wallets';
@@ -140,13 +139,12 @@ const SignatorySelector = () => {
   const { t } = useI18n();
 
   const {
-    fields: { network, signatory },
+    fields: { network, account, signatory },
   } = useForm(formModel.$proxyForm);
 
-  const txWrappers = useUnit(formModel.$txWrappers);
   const signatories = useUnit(formModel.$signatories);
 
-  if (!addProxyUtils.hasMultisig(txWrappers)) return null;
+  if (!accountUtils.isMultisigAccount(account.value)) return null;
 
   const options = signatories.map(({ signer, balance }) => {
     const isShard = accountUtils.isShardAccount(signer);
@@ -270,12 +268,10 @@ const DescriptionInput = () => {
   const { t } = useI18n();
 
   const {
-    fields: { description },
+    fields: { account, description },
   } = useForm(formModel.$proxyForm);
 
-  const txWrappers = useUnit(formModel.$txWrappers);
-
-  if (!addProxyUtils.hasMultisig(txWrappers)) return null;
+  if (!accountUtils.isMultisigAccount(account.value)) return null;
 
   return (
     <div className="flex flex-col gap-y-2">
@@ -301,19 +297,13 @@ const FeeSection = () => {
   } = useForm(formModel.$proxyForm);
 
   const fakeTx = useUnit(formModel.$fakeTx);
-  const txWrappers = useUnit(formModel.$txWrappers);
-
   const { api, chain } = useNetworkData(network.value.chainId);
 
   return (
     <div className="flex flex-col gap-y-2 mt-6">
-      <ProxyDepositWithLabel
-        api={api}
-        asset={chain.assets[0]}
-        onDepositChange={formModel.events.proxyDepositChanged}
-      />
+      <ProxyDepositWithLabel api={api} asset={chain.assets[0]} onDepositChange={formModel.events.proxyDepositChanged} />
 
-      {addProxyUtils.hasMultisig(txWrappers) && account.value && accountUtils.isMultisigAccount(account.value) && (
+      {accountUtils.isMultisigAccount(account.value) && (
         <MultisigDepositWithLabel
           api={api}
           asset={chain.assets[0]}
@@ -327,15 +317,17 @@ const FeeSection = () => {
         asset={chain.assets[0]}
         transaction={fakeTx}
         onFeeChange={formModel.events.feeChanged}
+        onFeeLoading={formModel.events.isFeeLoadingChanged}
       />
     </div>
   );
 };
 
-const ButtonsSection = ({ onGoBack }: Pick<Props, 'onGoBack'>) => {
+const ButtonsSection = ({ onGoBack }: Props) => {
   const { isValid } = useForm(formModel.$proxyForm);
-  const isChainConnected = useUnit(formModel.$isChainConnected);
   const isLoading = useUnit(formModel.$isLoading);
+  const isChainConnected = useUnit(formModel.$isChainConnected);
+  const isFeeLoading = useUnit(formModel.$isFeeLoading);
 
   return (
     <div className="flex justify-between items-center mt-4">
@@ -345,7 +337,7 @@ const ButtonsSection = ({ onGoBack }: Pick<Props, 'onGoBack'>) => {
       <Button
         form="add-proxy-form"
         type="submit"
-        disabled={!isValid || isLoading || !isChainConnected}
+        disabled={!isValid || isLoading || !isChainConnected || isFeeLoading}
         isLoading={isLoading}
       >
         Continue

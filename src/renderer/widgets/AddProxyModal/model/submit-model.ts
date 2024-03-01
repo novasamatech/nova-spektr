@@ -8,7 +8,7 @@ export const submitModel = {
     formInitiated,
   },
 
-  watch: {
+  output: {
     formSubmitted,
   },
 };
