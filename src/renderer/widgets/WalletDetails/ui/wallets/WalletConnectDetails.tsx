@@ -24,9 +24,9 @@ import {
   Tabs,
 } from '@shared/ui';
 import { TabItem } from '@shared/ui/Tabs/common/types';
-import { ProxiesList } from '../components/ProxiesList';
+// import { ProxiesList } from '../components/ProxiesList';
 import { walletProviderModel } from '../../model/wallet-provider-model';
-import { NoProxiesAction } from '../components/NoProxiesAction';
+// import { NoProxiesAction } from '../components/NoProxiesAction';
 import { WalletConnectAccounts } from '../components/WalletConnectAccounts';
 import { forgetWalletModel } from '@features/wallets/ForgetWallet';
 
@@ -101,15 +101,15 @@ export const WalletConnectDetails = ({ wallet, accounts, onClose }: Props) => {
       title: t('walletDetails.common.accountTabTitle'),
       panel: <WalletConnectAccounts wallet={wallet} accounts={accounts} />,
     },
-    {
-      id: 'proxies',
-      title: t('walletDetails.common.proxiesTabTitle'),
-      panel: hasProxies ? (
-        <ProxiesList className="h-[395px] mt-6" canCreateProxy={canCreateProxy} />
-      ) : (
-        <NoProxiesAction className="h-[395px] mt-6" canCreateProxy={canCreateProxy} />
-      ),
-    },
+    // {
+    //   id: 'proxies',
+    //   title: t('walletDetails.common.proxiesTabTitle'),
+    //   panel: hasProxies ? (
+    //     <ProxiesList className="h-[395px] mt-6" canCreateProxy={canCreateProxy} />
+    //   ) : (
+    //     <NoProxiesAction className="h-[395px] mt-6" canCreateProxy={canCreateProxy} />
+    //   ),
+    // },
   ];
 
   return (

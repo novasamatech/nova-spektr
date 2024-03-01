@@ -117,7 +117,7 @@ const $hasChanged = createStore<boolean>(false).reset(formStarted);
 const $elementToFocus = createStore<HTMLButtonElement | null>(null);
 
 const $isKeyTypeSharded = combine($constructorForm.fields.keyType.$value, (keyType): boolean => {
-  return [KeyType.MAIN, KeyType.STAKING, KeyType.GOVERNANCE, KeyType.CUSTOM].includes(keyType);
+  return keyType === KeyType.CUSTOM;
 });
 
 const $derivationEnabled = combine($constructorForm.fields.keyType.$value, (keyType): boolean => {

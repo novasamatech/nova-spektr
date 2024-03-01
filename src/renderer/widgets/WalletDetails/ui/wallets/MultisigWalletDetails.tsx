@@ -19,9 +19,9 @@ import { WalletFiatBalance } from '@features/wallets/WalletSelect/ui/WalletFiatB
 import { IconNames } from '@shared/ui/Icon/data';
 import { RenameWalletModal } from '@features/wallets/RenameWallet';
 import { ForgetWalletModal } from '@features/wallets/ForgetWallet';
-import { ProxiesList } from '../components/ProxiesList';
+// import { ProxiesList } from '../components/ProxiesList';
 import { walletProviderModel } from '../../model/wallet-provider-model';
-import { NoProxiesAction } from '../components/NoProxiesAction';
+// import { NoProxiesAction } from '../components/NoProxiesAction';
 import { networkUtils, networkModel } from '@entities/network';
 import { matrixModel, matrixUtils } from '@entities/matrix';
 
@@ -221,15 +221,15 @@ export const MultisigWalletDetails = ({
                 </div>
               ),
             },
-            {
-              id: 3,
-              title: t('walletDetails.common.proxiesTabTitle'),
-              panel: hasProxies ? (
-                <ProxiesList className="h-[387px]" canCreateProxy={canCreateProxy} />
-              ) : (
-                <NoProxiesAction className="h-[387px]" canCreateProxy={canCreateProxy} />
-              ),
-            },
+            // {
+            //   id: 3,
+            //   title: t('walletDetails.common.proxiesTabTitle'),
+            //   panel: hasProxies ? (
+            //     <ProxiesList className="h-[387px]" canCreateProxy={canCreateProxy} />
+            //   ) : (
+            //     <NoProxiesAction className="h-[387px]" canCreateProxy={canCreateProxy} />
+            //   ),
+            // },
           ]}
         />
       </div>
