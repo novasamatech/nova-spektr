@@ -19,23 +19,17 @@ const mockContact2 = {
   matrixId: '@999',
 };
 
-const getScopeByQuery = () => {
-  return fork({
+describe('features/contacts/model/contact-filter-model', () => {
+  const scope = fork({
     values: new Map().set(contactModel.$contacts, [mockContact1, mockContact2]),
   });
-};
 
-describe('features/contacts/model/contact-filter-model', () => {
   test('should return all contacts if no search query', async () => {
-    const scope = getScopeByQuery();
-
     allSettled(filterModel.events.formInitiated, { scope });
     expect(scope.getState(filterModel.$contactsFiltered)).toHaveLength(2);
   });
 
   test('should return nothing if there is no match', async () => {
-    const scope = getScopeByQuery();
-
     allSettled(filterModel.events.formInitiated, { scope });
     allSettled(filterModel.events.queryChanged, { scope, params: 'nothing' });
 
@@ -43,8 +37,6 @@ describe('features/contacts/model/contact-filter-model', () => {
   });
 
   test('should search by name', async () => {
-    const scope = getScopeByQuery();
-
     allSettled(filterModel.events.formInitiated, { scope });
     allSettled(filterModel.events.queryChanged, { scope, params: mockContact1.name });
 
@@ -53,8 +45,6 @@ describe('features/contacts/model/contact-filter-model', () => {
   });
 
   test('should search by address', async () => {
-    const scope = getScopeByQuery();
-
     allSettled(filterModel.events.formInitiated, { scope });
     allSettled(filterModel.events.queryChanged, { scope, params: mockContact1.address });
 
@@ -63,8 +53,6 @@ describe('features/contacts/model/contact-filter-model', () => {
   });
 
   test('should search by matrix id', async () => {
-    const scope = getScopeByQuery();
-
     allSettled(filterModel.events.formInitiated, { scope });
     allSettled(filterModel.events.queryChanged, { scope, params: mockContact2.matrixId });
 
