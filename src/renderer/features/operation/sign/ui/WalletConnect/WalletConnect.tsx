@@ -115,7 +115,7 @@ export const WalletConnect = ({
       client,
       payload: {
         // eslint-disable-next-line i18next/no-literal-string
-        chainId: `polkadot:${transaction.chainId.slice(2, 34)}`,
+        chainId: walletConnectUtils.getWalletConnectChainId(transaction.chainId),
         topic: session.topic,
         request: {
           method: DEFAULT_POLKADOT_METHODS.POLKADOT_SIGN_TRANSACTION,
