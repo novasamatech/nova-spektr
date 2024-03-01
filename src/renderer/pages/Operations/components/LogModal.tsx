@@ -146,26 +146,28 @@ const LogModal = ({ isOpen, onClose, tx, account, connection, contacts, accounts
                               background={false}
                             />
                           )}
-                          <BodyText className="text-text-secondary">{getEventMessage(event)}</BodyText>
-                          <BodyText className="text-text-tertiary ml-auto">
+                          <BodyText className="flex-1 text-text-secondary">{getEventMessage(event)}</BodyText>
+                          <BodyText className="text-text-tertiary">
                             {event.dateCreated && format(new Date(event.dateCreated), 'p', { locale: dateLocale })}
                           </BodyText>
 
                           {event.extrinsicHash && connection?.explorers && (
-                            <ContextMenu button={<IconButton name="info" size={16} />}>
-                              <ContextMenu.Group>
-                                <ul className="flex flex-col gap-y-2">
-                                  {connection.explorers.map((explorer) => (
-                                    <li key={explorer.name}>
-                                      <ExplorerLink
-                                        name={explorer.name}
-                                        href={getExtrinsicExplorer(explorer, event.extrinsicHash!)}
-                                      />
-                                    </li>
-                                  ))}
-                                </ul>
-                              </ContextMenu.Group>
-                            </ContextMenu>
+                            <div>
+                              <ContextMenu button={<IconButton name="info" size={16} />}>
+                                <ContextMenu.Group>
+                                  <ul className="flex flex-col gap-y-2">
+                                    {connection.explorers.map((explorer) => (
+                                      <li key={explorer.name}>
+                                        <ExplorerLink
+                                          name={explorer.name}
+                                          href={getExtrinsicExplorer(explorer, event.extrinsicHash!)}
+                                        />
+                                      </li>
+                                    ))}
+                                  </ul>
+                                </ContextMenu.Group>
+                              </ContextMenu>
+                            </div>
                           )}
                         </div>
 
