@@ -1,33 +1,37 @@
-// import { useUnit } from 'effector-react';
-//
-// import { Signing } from '@features/operation';
-// import { addProxyModel } from '../model/add-proxy-model';
-// import { useNetworkData } from '@entities/network';
-// import { signModel } from '../model/sign-model';
+import { useUnit } from 'effector-react';
+import { UnsignedTransaction } from '@substrate/txwrapper-polkadot';
+
+import type { HexString } from '@shared/core';
+import { Signing } from '@features/operation';
+import { signModel } from '../model/sign-model';
 
 type Props = {
   onGoBack: () => void;
 };
 
 export const SignProxy = ({ onGoBack }: Props) => {
-  // const account = useUnit(addProxyModel.$account);
-  // const signatory = useUnit(addProxyModel.$signatory);
-  // const transaction = useUnit(addProxyModel.$transaction);
-  //
-  // const { api, chain } = useNetworkData(transaction!.chainId);
-  //
-  // if (!account || !transaction) return null;
-  //
-  // return (
-  //   <Signing
-  //     api={api}
-  //     chainId={chain.chainId}
-  //     addressPrefix={chain.addressPrefix}
-  //     accounts={[account]}
-  //     signatory={signatory || undefined}
-  //     transactions={[transaction]}
-  //     onGoBack={onGoBack}
-  //     onResult={() => signModel.output.formSubmitted}
-  //   />
-  // );
+  const signStore = useUnit(signModel.$signStore);
+  const api = useUnit(signModel.$api);
+
+  if (!signStore || !api) return null;
+
+  const onSignResult = (signatures: HexString[], unsignedTxs: UnsignedTransaction[]) => {
+    signModel.output.formSubmitted({
+      signature: signatures[0],
+      unsignedTx: unsignedTxs[0],
+    });
+  };
+
+  return (
+    <Signing
+      api={api}
+      chainId={signStore.chain.chainId}
+      addressPrefix={signStore.chain.addressPrefix}
+      accounts={[signStore.account]}
+      signatory={signStore.signatory || undefined}
+      transactions={[signStore.transaction]}
+      onGoBack={onGoBack}
+      onResult={onSignResult}
+    />
+  );
 };

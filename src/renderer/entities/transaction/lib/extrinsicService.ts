@@ -423,10 +423,10 @@ export const getExtrinsic: Record<
 };
 
 export const wrapAsMulti = (
+  api: ApiPromise,
+  transaction: Transaction,
   account: MultisigAccount,
   signerAccountId: AccountId,
-  transaction: Transaction,
-  api: ApiPromise,
   addressPrefix: number,
 ): Transaction => {
   const extrinsic = getExtrinsic[transaction.type](transaction.args, api);
@@ -448,6 +448,26 @@ export const wrapAsMulti = (
     args: {
       threshold: account.threshold,
       otherSignatories: otherSignatories.sort(),
+      maybeTimepoint: null,
+      callData,
+      callHash,
+    },
+  };
+};
+
+// TODO: finish in later tasks
+export const wrapAsProxy = (api: ApiPromise, transaction: Transaction, addressPrefix: number): Transaction => {
+  const extrinsic = getExtrinsic[transaction.type](transaction.args, api);
+  const callData = extrinsic.method.toHex();
+  const callHash = extrinsic.method.hash.toHex();
+
+  return {
+    chainId: transaction.chainId,
+    address: toAddress('', { prefix: addressPrefix }),
+    type: TransactionType.PROXY,
+    args: {
+      // real: '',
+      // forceProxyType: '',
       maybeTimepoint: null,
       callData,
       callHash,

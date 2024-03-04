@@ -229,7 +229,11 @@ export const MultisigWalletDetails = ({
               panel: hasProxies ? (
                 <ProxiesList className="h-[387px]" canCreateProxy={canCreateProxy} />
               ) : (
-                <NoProxiesAction className="h-[387px]" onAddProxy={toggleIsAddProxyModalOpen} canCreateProxy={canCreateProxy} />
+                <NoProxiesAction
+                  className="h-[387px]"
+                  canCreateProxy={canCreateProxy}
+                  onAddProxy={toggleIsAddProxyModalOpen}
+                />
               ),
             },
           ]}

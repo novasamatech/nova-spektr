@@ -13,6 +13,7 @@ import { formModel } from '../model/form-model';
 import { useNetworkData } from '@entities/network';
 import { AssetBalance } from '@entities/asset';
 import { walletSelectModel } from '@features/wallets';
+import { MultisigAccount } from '@shared/core';
 
 type Props = {
   onGoBack: () => void;
@@ -297,17 +298,18 @@ const FeeSection = () => {
   } = useForm(formModel.$proxyForm);
 
   const fakeTx = useUnit(formModel.$fakeTx);
+  const isMultisig = useUnit(formModel.$isMultisig);
   const { api, chain } = useNetworkData(network.value.chainId);
 
   return (
     <div className="flex flex-col gap-y-2 mt-6">
       <ProxyDepositWithLabel api={api} asset={chain.assets[0]} onDepositChange={formModel.events.proxyDepositChanged} />
 
-      {accountUtils.isMultisigAccount(account.value) && (
+      {isMultisig && (
         <MultisigDepositWithLabel
           api={api}
           asset={chain.assets[0]}
-          threshold={account.value.threshold}
+          threshold={(account.value as MultisigAccount).threshold}
           onDepositChange={formModel.events.multisigDepositChanged}
         />
       )}

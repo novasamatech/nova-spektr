@@ -195,7 +195,7 @@ export const useTransaction = (): ITransactionService => {
   const wrapTx = (transaction: Transaction, api: ApiPromise, addressPrefix: number) => {
     wrappers.forEach((wrapper) => {
       if (shouldWrapAsMulti(wrapper)) {
-        transaction = wrapAsMulti(wrapper.account, wrapper.signatoryId, transaction, api, addressPrefix);
+        transaction = wrapAsMulti(api, transaction, wrapper.account, wrapper.signatoryId, addressPrefix);
       }
     });
 

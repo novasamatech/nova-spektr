@@ -1,15 +1,19 @@
 import { createEvent, createStore, sample, attach, createApi } from 'effector';
-import { spread } from 'patronum';
+import { spread, delay } from 'patronum';
 
 import { Transaction, TransactionType } from '@entities/transaction';
 import { toAddress } from '@shared/lib/utils';
-import type { Account, Chain } from '@shared/core';
-import { Step } from '../lib/types';
+import type { Account, Chain, MultisigAccount } from '@shared/core';
+import { walletSelectModel } from '@features/wallets';
+import { Step, TxWrappers } from '../lib/types';
 import { addProxyUtils } from '../lib/add-proxy-utils';
 import { formModel } from './form-model';
 import { confirmModel } from './confirm-model';
 import { signModel } from './sign-model';
 import { submitModel } from './submit-model';
+import { networkModel } from '@entities/network';
+import { walletModel, walletUtils } from '@entities/wallet';
+import { wrapAsMulti, wrapAsProxy } from '@entities/transaction/lib/extrinsicService';
 
 export type Callbacks = {
   onClose: () => void;
@@ -30,17 +34,9 @@ const $signatory = createStore<Account | null>(null);
 const $description = createStore<string | null>(null);
 const $transaction = createStore<Transaction | null>(null);
 
-// const $txWrappers = createStore<'multisig' | 'proxy'[]>([]);
-
-// sample({
-//   clock: $step,
-//   filter: (step) => addProxyUtils.isSubmitStep(step),
-//   target: unsubscribeBalancesFx,
-// });
+const $txWrappers = createStore<TxWrappers>([]);
 
 sample({ clock: stepChanged, target: $step });
-
-// Transition to Step.INIT
 
 sample({
   clock: stepChanged,
@@ -66,19 +62,57 @@ sample({
 
 sample({
   clock: formModel.output.formSubmitted,
-  fn: ({ network, account, proxyType, delegate }) => {
-    // TODO: wrap in proxy/multisig
-    return {
+  source: {
+    wallet: walletSelectModel.$walletForDetails,
+    wallets: walletModel.$wallets,
+  },
+  fn: ({ wallet, wallets }, { account }): TxWrappers => {
+    if (!wallet) return [];
+    if (walletUtils.isMultisig(wallet)) return ['multisig'];
+    if (!walletUtils.isProxied(wallet)) return [];
+
+    const accountWallet = walletUtils.getWalletById(wallets, account.walletId);
+
+    return walletUtils.isMultisig(accountWallet) ? ['multisig', 'proxy'] : ['proxy'];
+  },
+  target: $txWrappers,
+});
+
+sample({
+  clock: formModel.output.formSubmitted,
+  source: {
+    txWrappers: $txWrappers,
+    apis: networkModel.$apis,
+  },
+  fn: ({ txWrappers, apis }, formData) => {
+    const { network, account, signatory, delegate, proxyType } = formData;
+
+    const transaction: Transaction = {
       chainId: network.chainId,
       address: toAddress(account.accountId, { prefix: network.addressPrefix }),
       type: TransactionType.ADD_PROXY,
       args: { delegate, proxyType, delay: 0 },
-    } as Transaction;
+    };
+
+    return txWrappers.reduce((acc, wrapper) => {
+      if (addProxyUtils.hasMultisig([wrapper])) {
+        return wrapAsMulti(
+          apis[network.chainId],
+          acc,
+          account as MultisigAccount,
+          signatory!.accountId,
+          network.addressPrefix,
+        );
+      }
+      if (addProxyUtils.hasProxy([wrapper])) {
+        return wrapAsProxy(apis[network.chainId], acc, network.addressPrefix);
+      }
+
+      return acc;
+    }, transaction);
   },
   target: $transaction,
 });
-
-// Transition to Step.CONFIRM
 
 sample({
   clock: formModel.output.formSubmitted,
@@ -101,42 +135,59 @@ sample({
 
 sample({
   clock: confirmModel.output.formSubmitted,
-  fn: () => Step.SIGN,
-  target: stepChanged,
-});
-
-// Transition to Step.SIGN
-
-sample({
-  clock: stepChanged,
-  filter: addProxyUtils.isSignStep,
-  target: signModel.events.formInitiated,
+  source: {
+    chain: $chain,
+    account: $account,
+    signatory: $signatory,
+    transaction: $transaction,
+  },
+  fn: (proxyData) => ({
+    event: {
+      chain: proxyData.chain!,
+      account: proxyData.account!,
+      signatory: proxyData.signatory,
+      transaction: proxyData.transaction!,
+    },
+    step: Step.SIGN,
+  }),
+  target: spread({
+    event: signModel.events.formInitiated,
+    step: stepChanged,
+  }),
 });
 
 sample({
   clock: signModel.output.formSubmitted,
-  fn: () => Step.SUBMIT,
-  target: stepChanged,
+  source: {
+    chain: $chain,
+    account: $account,
+    signatory: $signatory,
+    transaction: $transaction,
+    description: $description,
+  },
+  fn: (proxyData, signParams) => ({
+    event: {
+      ...signParams,
+      chain: proxyData.chain!,
+      account: proxyData.account!,
+      signatory: proxyData.signatory,
+      transaction: proxyData.transaction!,
+      description: proxyData.description,
+    },
+    step: Step.SUBMIT,
+  }),
+  target: spread({
+    event: submitModel.events.formInitiated,
+    step: stepChanged,
+  }),
 });
 
-// Transition to Step.SUBMIT
-
 sample({
-  clock: stepChanged,
-  filter: addProxyUtils.isSubmitStep,
-  target: submitModel.events.formInitiated,
-});
-
-sample({
-  clock: submitModel.output.formSubmitted,
+  clock: delay(submitModel.output.formSubmitted, 2000),
   target: attach({
     source: $callbacks,
     effect: (state) => state?.onClose(),
   }),
-});
-
-$transaction.watch((v) => {
-  console.log('=== tx', v);
 });
 
 export const addProxyModel = {

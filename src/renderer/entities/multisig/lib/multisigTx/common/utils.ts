@@ -164,8 +164,8 @@ export const buildMultisigTx = (
     status: MultisigTxInitStatus.SIGNING,
     blockCreated: params.timepoint.height,
     indexCreated: params.timepoint.index,
-    description,
     dateCreated: Date.now(),
+    description,
   };
 
   const event: MultisigEvent = {
@@ -182,10 +182,7 @@ export const buildMultisigTx = (
     dateCreated: Date.now(),
   };
 
-  return {
-    event,
-    transaction,
-  };
+  return { event, transaction };
 };
 
 export const getTransactionFromMultisigTx = (tx: MultisigTransaction): Transaction | DecodedTransaction | undefined => {

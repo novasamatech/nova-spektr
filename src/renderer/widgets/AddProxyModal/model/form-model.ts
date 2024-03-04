@@ -2,8 +2,9 @@ import { createEvent, createStore, sample, combine, createEffect } from 'effecto
 import { ApiPromise } from '@polkadot/api';
 import { createForm } from 'effector-forms';
 import { BN } from '@polkadot/util';
+import { spread } from 'patronum';
 
-import { ActiveProxy, TxWrapper } from '../lib/types';
+import { ActiveProxy } from '../lib/types';
 import { Address, ProxyType, Chain, Account, PartialBy } from '@shared/core';
 import { networkModel, networkUtils } from '@entities/network';
 import { walletSelectModel } from '@features/wallets';
@@ -12,7 +13,6 @@ import { walletUtils, accountUtils, walletModel, permissionUtils } from '@entiti
 import { proxyService } from '@shared/api/proxy';
 import { TransactionType, Transaction } from '@entities/transaction';
 import { balanceModel, balanceUtils } from '@entities/balance';
-import { addProxyUtils } from '../lib/add-proxy-utils';
 import {
   getProxyTypes,
   isStringsMatchQuery,
@@ -49,7 +49,8 @@ const $proxyQuery = createStore<string>('');
 const $maxProxies = createStore<number>(0);
 const $activeProxies = createStore<ActiveProxy[]>([]);
 
-const $txWrappers = createStore<TxWrapper>([]);
+const $isMultisig = createStore<boolean>(false);
+const $isProxy = createStore<boolean>(false);
 
 const $proxyForm = createForm<FormParams>({
   fields: {
@@ -66,10 +67,10 @@ const $proxyForm = createForm<FormParams>({
             fee: $fee,
             proxyDeposit: $proxyDeposit,
             balances: balanceModel.$balances,
-            txWrappers: $txWrappers,
+            isMultisig: $isMultisig,
           }),
-          validator: (value, form, { txWrappers, balances, ...params }) => {
-            if (addProxyUtils.hasMultisig(txWrappers)) return true;
+          validator: (value, form, { isMultisig, balances, ...params }) => {
+            if (isMultisig) return true;
 
             const balance = balanceUtils.getBalance(
               balances,
@@ -94,10 +95,10 @@ const $proxyForm = createForm<FormParams>({
             multisigDeposit: $multisigDeposit,
             proxyDeposit: $proxyDeposit,
             balances: balanceModel.$balances,
-            txWrappers: $txWrappers,
+            isMultisig: $isMultisig,
           }),
-          validator: (value, form, { txWrappers, balances, ...params }) => {
-            if (!addProxyUtils.hasMultisig(txWrappers)) return true;
+          validator: (value, form, { isMultisig, balances, ...params }) => {
+            if (!isMultisig) return true;
 
             const balance = balanceUtils.getBalance(
               balances,
@@ -359,26 +360,32 @@ sample({
     wallets: walletModel.$wallets,
   },
   filter: (_, account) => Boolean(account),
-  fn: ({ wallet, wallets }, account): TxWrapper => {
-    if (!wallet) return [];
-    if (walletUtils.isMultisig(wallet)) return ['multisig'];
-    if (!walletUtils.isProxied(wallet)) return [];
+  fn: ({ wallet, wallets }, account): Record<string, boolean> => {
+    if (!wallet) return { isMultisig: false, isProxy: false };
+    if (walletUtils.isMultisig(wallet)) return { isMultisig: true, isProxy: false };
+    if (!walletUtils.isProxied(wallet)) return { isMultisig: false, isProxy: false };
 
     const accountWallet = walletUtils.getWalletById(wallets, account!.walletId);
 
-    return walletUtils.isMultisig(accountWallet) ? ['proxy', 'multisig'] : ['proxy'];
+    return {
+      isMultisig: walletUtils.isMultisig(accountWallet),
+      isProxy: true,
+    };
   },
-  target: $txWrappers,
+  target: spread({
+    isMultisig: $isMultisig,
+    isProxy: $isProxy,
+  }),
 });
 
 sample({
   clock: $proxyForm.fields.network.onChange,
   source: {
     signatories: $signatories,
-    txWrappers: $txWrappers,
+    isMultisig: $isMultisig,
   },
-  filter: ({ txWrappers, signatories }) => {
-    return addProxyUtils.hasMultisig(txWrappers) && signatories.length > 0;
+  filter: ({ isMultisig, signatories }) => {
+    return isMultisig && signatories.length > 0;
   },
   fn: ({ signatories }) => signatories[0].signer,
   target: $proxyForm.fields.signatory.onChange,
@@ -467,11 +474,19 @@ sample({
   clock: getAccountProxiesFx.doneData,
   source: $proxyForm.$values,
   filter: $proxyForm.$isValid,
-  fn: (formData) => ({
-    ...formData,
-    signatory: Object.keys(formData.signatory).length > 0 ? formData.signatory : undefined,
-    description: formData.description || undefined,
-  }),
+  fn: (formData) => {
+    const signatory = Object.keys(formData.signatory).length > 0 ? formData.signatory : undefined;
+    const proxied = toAddress(formData.account.accountId, {
+      prefix: formData.network.addressPrefix,
+    });
+    const multisigDescription = `Add proxy for ${proxied}`;
+
+    return {
+      ...formData,
+      signatory,
+      description: signatory ? formData.description || multisigDescription : undefined,
+    };
+  },
   target: formSubmitted,
 });
 
@@ -490,7 +505,8 @@ export const formModel = {
   $isFeeLoading,
 
   $fakeTx,
-  $txWrappers,
+  $isMultisig,
+  $isProxy,
   $isChainConnected,
   $isLoading: getAccountProxiesFx.pending,
 

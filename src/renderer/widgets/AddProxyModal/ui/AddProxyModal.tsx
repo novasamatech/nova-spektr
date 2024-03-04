@@ -5,13 +5,14 @@ import { BaseModal } from '@shared/ui';
 import { useModalClose } from '@shared/lib/hooks';
 import { OperationTitle } from '@entities/chain';
 import { useI18n } from '@app/providers';
+import type { Chain } from '@shared/core';
+import { Step } from '../lib/types';
 import { AddProxyForm } from './AddProxyForm';
 import { Confirmation } from './Confirmation';
 import { SignProxy } from './SignProxy';
+import { SubmitProxy } from './SubmitProxy';
 import { addProxyUtils } from '../lib/add-proxy-utils';
 import { Callbacks, addProxyModel } from '../model/add-proxy-model';
-import { Step } from '../lib/types';
-import { Chain } from '@shared/core';
 
 type Props = Callbacks & {
   isOpen: boolean;
@@ -39,6 +40,8 @@ export const AddProxyModal = ({ isOpen, onClose }: Props) => {
     );
   };
 
+  if (addProxyUtils.isSubmitStep(step)) return <SubmitProxy onClose={onClose} />;
+
   return (
     <BaseModal closeButton contentClass="" isOpen={isModalOpen} title={getModalTitle(step, chain)} onClose={closeModal}>
       {addProxyUtils.isInitStep(step) && <AddProxyForm onGoBack={closeModal} />}
@@ -46,7 +49,6 @@ export const AddProxyModal = ({ isOpen, onClose }: Props) => {
         <Confirmation onGoBack={() => addProxyModel.events.stepChanged(Step.INIT)} />
       )}
       {addProxyUtils.isSignStep(step) && <SignProxy onGoBack={() => addProxyModel.events.stepChanged(Step.CONFIRM)} />}
-      {addProxyUtils.isSubmitStep(step) && <div>Submit</div>}
     </BaseModal>
   );
 };

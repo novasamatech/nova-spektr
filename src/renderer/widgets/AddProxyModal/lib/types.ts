@@ -7,9 +7,15 @@ export const enum Step {
   SUBMIT,
 }
 
+export const enum SubmitStep {
+  LOADING,
+  SUCCESS,
+  ERROR,
+}
+
 export type ActiveProxy = {
   address: Address;
   proxyType: ProxyType;
 };
 
-export type TxWrapper = ('proxy' | 'multisig')[];
+export type TxWrappers = ('proxy' | 'multisig')[];

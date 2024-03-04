@@ -1,4 +1,4 @@
-import { Step } from './types';
+import { Step, TxWrappers } from './types';
 
 export const addProxyUtils = {
   isInitStep,
@@ -26,10 +26,10 @@ function isSubmitStep(step: Step): boolean {
   return step === Step.SUBMIT;
 }
 
-function hasMultisig(txWrappers: ('proxy' | 'multisig')[]): boolean {
+function hasMultisig(txWrappers: TxWrappers): boolean {
   return txWrappers.includes('multisig');
 }
 
-function hasProxy(txWrappers: ('proxy' | 'multisig')[]): boolean {
+function hasProxy(txWrappers: TxWrappers): boolean {
   return txWrappers.includes('proxy');
 }
