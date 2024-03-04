@@ -188,6 +188,7 @@ export const Networks = () => {
           query={filterQuery}
           title={t('settings.networks.disabledNetworksLabel')}
           networkList={inactiveNetworks}
+          isDefaultOpen={false}
         >
           {(network) => (
             <InactiveNetwork networkItem={network}>

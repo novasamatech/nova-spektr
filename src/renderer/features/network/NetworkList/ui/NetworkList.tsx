@@ -10,12 +10,13 @@ type Props = {
   query: string;
   networkList: ExtendedChain[];
   children: (network: ExtendedChain) => ReactNode;
+  isDefaultOpen?: boolean;
 };
 
-export const NetworkList = ({ title, query, networkList, children }: Props) => {
+export const NetworkList = ({ title, query, networkList, children, isDefaultOpen = true }: Props) => {
   const buttonRef = useRef<HTMLButtonElement>(null);
 
-  const [isListOpen, toggleList] = useToggle(true);
+  const [isListOpen, toggleList] = useToggle(isDefaultOpen);
 
   useEffect(() => {
     if (!buttonRef.current) return;
