@@ -26,7 +26,7 @@ describe('features/contacts/model/contact-filter-model', () => {
       values: new Map().set(contactModel.$contacts, contacts),
     });
 
-    expect(scope.getState(filterModel.$contactsFiltered)).toHaveLength(2);
+    expect(scope.getState(filterModel.$contactsFiltered)).toEqual(contacts);
   });
 
   test('should return nothing if there is no match', async () => {
@@ -46,8 +46,7 @@ describe('features/contacts/model/contact-filter-model', () => {
 
     await allSettled(filterModel.events.queryChanged, { scope, params: contacts[0].name });
 
-    expect(scope.getState(filterModel.$contactsFiltered)).toHaveLength(1);
-    expect(scope.getState(filterModel.$contactsFiltered)[0].id).toEqual(contacts[0].id);
+    expect(scope.getState(filterModel.$contactsFiltered)).toEqual([contacts[0]]);
   });
 
   test('should search by address', async () => {
@@ -57,8 +56,7 @@ describe('features/contacts/model/contact-filter-model', () => {
 
     await allSettled(filterModel.events.queryChanged, { scope, params: contacts[0].address });
 
-    expect(scope.getState(filterModel.$contactsFiltered)).toHaveLength(1);
-    expect(scope.getState(filterModel.$contactsFiltered)[0].id).toEqual(contacts[0].id);
+    expect(scope.getState(filterModel.$contactsFiltered)).toEqual([contacts[0]]);
   });
 
   test('should search by matrix id', async () => {
@@ -68,7 +66,6 @@ describe('features/contacts/model/contact-filter-model', () => {
 
     await allSettled(filterModel.events.queryChanged, { scope, params: contacts[1].matrixId });
 
-    expect(scope.getState(filterModel.$contactsFiltered)).toHaveLength(1);
-    expect(scope.getState(filterModel.$contactsFiltered)[0].id).toEqual(contacts[1].id);
+    expect(scope.getState(filterModel.$contactsFiltered)).toEqual([contacts[1]]);
   });
 });
