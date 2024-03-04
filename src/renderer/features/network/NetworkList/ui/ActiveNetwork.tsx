@@ -1,41 +1,37 @@
 import { PropsWithChildren } from 'react';
-import { Trans } from 'react-i18next';
+import { TFunction } from 'react-i18next';
 
-import { ExtendedChain } from '@entities/network';
-import { BodyText, StatusLabel, FootnoteText, HelpText } from '@shared/ui';
 import { ChainIcon } from '@entities/chain';
+import { ExtendedChain } from '@entities/network';
 import { ConnectionStatus } from '@shared/core';
-
+import { BodyText, FootnoteText, HelpText, StatusLabel } from '@shared/ui';
+import { useI18n } from '@app/providers';
 import './styles.css';
 
 const Status = {
   [ConnectionStatus.CONNECTING]: {
     variant: 'waiting',
-    title: (
+    title: (t: TFunction) => (
       <div className="spektr-waiting">
-        <FootnoteText className="text-text-tertiary">
-          <Trans>settings.networks.connectingStatusLabel</Trans>
-        </FootnoteText>
+        <FootnoteText className="text-text-tertiary">{t('settings.networks.connectingStatusLabel')}</FootnoteText>
       </div>
     ),
   },
   [ConnectionStatus.DISCONNECTED]: {
     variant: 'waiting',
-    title: (
+    title: (t: TFunction) => (
       <div className="spektr-waiting">
-        <FootnoteText className="text-text-tertiary">
-          <Trans>settings.networks.connectingStatusLabel</Trans>
-        </FootnoteText>
+        <FootnoteText className="text-text-tertiary">{t('settings.networks.connectingStatusLabel')}</FootnoteText>
       </div>
     ),
   },
   [ConnectionStatus.CONNECTED]: {
     variant: 'success',
-    title: <Trans>settings.networks.connectedStatusLabel</Trans>,
+    title: (t: TFunction) => t('settings.networks.connectedStatusLabel'),
   },
   [ConnectionStatus.ERROR]: {
     variant: 'error',
-    title: <Trans>settings.networks.errorStatusLabel</Trans>,
+    title: (t: TFunction) => t('settings.networks.errorStatusLabel'),
   },
 } as const;
 
@@ -44,6 +40,8 @@ type Props = {
 };
 
 export const ActiveNetwork = ({ networkItem, children }: PropsWithChildren<Props>) => {
+  const { t } = useI18n();
+
   return (
     <div className="flex items-center py-3">
       <ChainIcon src={networkItem.icon} name={networkItem.name} size={26} />
@@ -54,7 +52,7 @@ export const ActiveNetwork = ({ networkItem, children }: PropsWithChildren<Props
         )}
       </div>
       <StatusLabel
-        title={Status[networkItem.connectionStatus].title}
+        title={Status[networkItem.connectionStatus].title(t)}
         variant={Status[networkItem.connectionStatus].variant}
         className="mr-8.5"
       />

@@ -1,24 +1,36 @@
-import { ReactNode } from 'react';
+import { ReactNode, useEffect, useRef } from 'react';
 
 import { ExtendedChain } from '@entities/network';
 import { CaptionText, Counter, Accordion } from '@shared/ui';
 import { networksListUtils } from '../lib/networks-list-utils';
+import { useToggle } from '@shared/lib/hooks';
 
 type Props = {
   title: string;
-  isDefaultOpen?: boolean;
+  query: string;
   networkList: ExtendedChain[];
   children: (network: ExtendedChain) => ReactNode;
 };
 
-export const NetworkList = ({ title, isDefaultOpen, networkList, children }: Props) => {
+export const NetworkList = ({ title, query, networkList, children }: Props) => {
+  const buttonRef = useRef<HTMLButtonElement>(null);
+
+  const [isListOpen, toggleList] = useToggle(true);
+
+  useEffect(() => {
+    if (!buttonRef.current) return;
+    if (isListOpen || !query) return;
+
+    buttonRef.current.click();
+  }, [query]);
+
   if (networkList.length === 0) return null;
 
   const { success, connecting, error } = networksListUtils.getStatusMetrics(networkList);
 
   return (
-    <Accordion isDefaultOpen={isDefaultOpen}>
-      <Accordion.Button buttonClass="py-1.5 px-2">
+    <Accordion isDefaultOpen={isListOpen}>
+      <Accordion.Button buttonClass="py-1.5 px-2" ref={buttonRef} onClick={toggleList}>
         <div className="flex items-center gap-x-1.5 w-full">
           <CaptionText as="h2" className="uppercase text-text-secondary tracking-[0.75px]">
             {title}

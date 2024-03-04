@@ -13,7 +13,7 @@ import type { RpcNode, ChainId } from '@shared/core';
 import { ConnectionType } from '@shared/core';
 import { networkModel, ExtendedChain, networkUtils } from '@entities/network';
 import { manageNetworkModel } from './model/manage-network-model';
-import { NetworksFilter } from '@features/network/NetworksFilter';
+import { NetworksFilter, networksFilterModel } from '@features/network/NetworksFilter';
 import {
   EmptyNetworks,
   NetworkList,
@@ -37,6 +37,7 @@ export const Networks = () => {
   const activeNetworks = useUnit(activeNetworksModel.$activeNetworks);
   const inactiveNetworks = useUnit(inactiveNetworksModel.$inactiveNetworks);
   const connections = useUnit(networkModel.$connections);
+  const filterQuery = useUnit(networksFilterModel.$filterQuery);
 
   const [isCustomRpcOpen, toggleCustomRpc] = useToggle();
   const [isNetworksModalOpen, toggleNetworksModal] = useToggle(true);
@@ -184,7 +185,7 @@ export const Networks = () => {
 
       <div className="flex flex-col gap-y-4 px-3 pb-4 pt-1 mt-5 h-[454px] overflow-y-auto">
         <NetworkList
-          isDefaultOpen={false}
+          query={filterQuery}
           title={t('settings.networks.disabledNetworksLabel')}
           networkList={inactiveNetworks}
         >
@@ -201,7 +202,11 @@ export const Networks = () => {
           )}
         </NetworkList>
 
-        <NetworkList isDefaultOpen title={t('settings.networks.activeNetworksLabel')} networkList={activeNetworks}>
+        <NetworkList
+          query={filterQuery}
+          title={t('settings.networks.activeNetworksLabel')}
+          networkList={activeNetworks}
+        >
           {(network) => (
             <ActiveNetwork networkItem={network}>
               <NetworkSelector
