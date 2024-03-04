@@ -21,7 +21,7 @@ const contacts = [
 ];
 
 describe('features/contacts/model/contact-filter-model', () => {
-  test('should return all contacts if no search query', async () => {
+  test('should return all contacts if no search query', () => {
     const scope = fork({
       values: new Map().set(contactModel.$contacts, contacts),
     });
