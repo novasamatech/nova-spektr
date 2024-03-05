@@ -16,7 +16,7 @@ export const SignProxy = ({ onGoBack }: Props) => {
   if (!signStore || !api) return null;
 
   const onSignResult = (signatures: HexString[], unsignedTxs: UnsignedTransaction[]) => {
-    signModel.output.formSubmitted({
+    signModel.events.dataReceived({
       signature: signatures[0],
       unsignedTx: unsignedTxs[0],
     });

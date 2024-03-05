@@ -1,4 +1,4 @@
-import { Address, ProxyType } from '@shared/core';
+import { Address, Chain, Account, ProxyType } from '@shared/core';
 
 export const enum Step {
   INIT,
@@ -13,9 +13,13 @@ export const enum SubmitStep {
   ERROR,
 }
 
-export type ActiveProxy = {
-  address: Address;
+export type AddProxyStore = {
+  chain: Chain;
+  account: Account;
+  signatory?: Account;
+  delegate: Address;
   proxyType: ProxyType;
+  description: string;
 };
 
 export type TxWrappers = ('proxy' | 'multisig')[];

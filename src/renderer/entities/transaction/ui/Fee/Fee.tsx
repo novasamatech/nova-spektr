@@ -11,7 +11,7 @@ import { priceProviderModel } from '@entities/price';
 import { AssetFiatBalance } from '@entities/price/ui/AssetFiatBalance';
 
 type Props = {
-  api: ApiPromise;
+  api?: ApiPromise;
   multiply?: number;
   asset: Asset;
   transaction?: Transaction;
@@ -25,7 +25,7 @@ export const Fee = memo(({ api, multiply = 1, asset, transaction, className, onF
   const fiatFlag = useUnit(priceProviderModel.$fiatFlag);
 
   const [fee, setFee] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   const updateFee = (fee: string) => {
     setFee(fee);
@@ -38,6 +38,8 @@ export const Fee = memo(({ api, multiply = 1, asset, transaction, className, onF
 
   useEffect(() => {
     setIsLoading(true);
+
+    if (!api) return;
 
     if (!transaction?.address) {
       updateFee('0');
@@ -53,7 +55,7 @@ export const Fee = memo(({ api, multiply = 1, asset, transaction, className, onF
     }
   }, [transaction, api]);
 
-  if (isLoading) {
+  if (!api || isLoading) {
     return (
       <div className="flex flex-col gap-y-0.5 items-end">
         <Shimmering width={90} height={20} data-testid="fee-loader" />

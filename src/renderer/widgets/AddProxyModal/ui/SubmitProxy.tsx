@@ -1,5 +1,5 @@
 import { useUnit } from 'effector-react';
-import { ComponentProps } from 'react';
+import { ComponentProps, useEffect } from 'react';
 
 import { Button } from '@shared/ui';
 import { useI18n } from '@app/providers';
@@ -7,18 +7,33 @@ import { OperationResult } from '@entities/transaction';
 import { submitModel } from '../model/submit-model';
 import { submitProxyUtils } from '../lib/submit-proxy-utils';
 import { SubmitStep } from '../lib/types';
+import { useTaskQueue } from '@shared/lib/hooks';
+import { useMultisigTx, useMultisigEvent } from '@entities/multisig';
 
 type ResultProps = Pick<ComponentProps<typeof OperationResult>, 'title' | 'description' | 'variant'>;
 
 type Props = {
+  isOpen: boolean;
   onClose: () => void;
 };
 
-export const SubmitProxy = ({ onClose }: Props) => {
+export const SubmitProxy = ({ isOpen, onClose }: Props) => {
   const { t } = useI18n();
 
   const submitStore = useUnit(submitModel.$submitStore);
   const { step, message } = useUnit(submitModel.$submitStep);
+
+  const { addTask } = useTaskQueue();
+  const { addMultisigTx } = useMultisigTx({ addTask });
+  const { addEventWithQueue } = useMultisigEvent({ addTask });
+
+  useEffect(() => {
+    submitModel.events.hooksApiChanged({ addMultisigTx, addEventWithQueue });
+  }, [addMultisigTx, addEventWithQueue]);
+
+  useEffect(() => {
+    submitModel.events.submitStarted();
+  }, []);
 
   if (!submitStore) return null;
 
@@ -34,7 +49,7 @@ export const SubmitProxy = ({ onClose }: Props) => {
   };
 
   return (
-    <OperationResult isOpen {...getResultProps(step, message)} onClose={onClose}>
+    <OperationResult isOpen={isOpen} {...getResultProps(step, message)} onClose={onClose}>
       {submitProxyUtils.isErrorStep(step) && <Button onClick={onClose}>{t('operation.feeErrorButton')}</Button>}
     </OperationResult>
   );

@@ -155,12 +155,12 @@ export const buildMultisigTx = (
   description?: string,
 ): MultisigTxResult => {
   const transaction: MultisigTransaction = {
+    transaction: tx,
     accountId: account.accountId,
     chainId: multisigTx.chainId,
     signatories: account.signatories,
     callData: multisigTx.args.callData,
     callHash: multisigTx.args.callHash,
-    transaction: tx,
     status: MultisigTxInitStatus.SIGNING,
     blockCreated: params.timepoint.height,
     indexCreated: params.timepoint.index,
@@ -174,12 +174,12 @@ export const buildMultisigTx = (
     txCallHash: transaction.callHash,
     txBlock: transaction.blockCreated,
     txIndex: transaction.indexCreated,
-    status: 'SIGNED',
     accountId: toAccountId(multisigTx.address),
     extrinsicHash: params.extrinsicHash,
     eventBlock: params.timepoint.height,
     eventIndex: params.timepoint.index,
     dateCreated: Date.now(),
+    status: 'SIGNED',
   };
 
   return { event, transaction };

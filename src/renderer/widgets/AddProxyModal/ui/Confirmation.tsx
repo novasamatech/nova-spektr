@@ -66,7 +66,7 @@ export const Confirmation = ({ onGoBack }: Props) => {
         <hr className="border-filter-border w-full pr-2" />
 
         <DetailRow label={t('proxy.details.grantAccessType')} className="pr-2">
-          <FootnoteText>{t(proxyUtils.getProxyTypeName(confirmStore.transaction.args.proxyType))}</FootnoteText>
+          <FootnoteText>{t(proxyUtils.getProxyTypeName(confirmStore.proxyType))}</FootnoteText>
         </DetailRow>
 
         <DetailRow label={t('proxy.details.delegateTo')}>
@@ -74,7 +74,7 @@ export const Confirmation = ({ onGoBack }: Props) => {
             type="short"
             explorers={confirmStore.chain.explorers}
             addressFont="text-footnote text-inherit"
-            address={confirmStore.transaction.args.delegate}
+            address={confirmStore.delegate}
             wrapperClassName="text-text-secondary"
           />
         </DetailRow>

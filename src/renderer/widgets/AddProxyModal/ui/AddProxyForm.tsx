@@ -10,7 +10,6 @@ import { AccountAddress, accountUtils, walletUtils } from '@entities/wallet';
 import { toAddress, toShortAddress } from '@shared/lib/utils';
 import { ProxyDepositWithLabel, MultisigDepositWithLabel, FeeWithLabel } from '@entities/transaction';
 import { formModel } from '../model/form-model';
-import { useNetworkData } from '@entities/network';
 import { AssetBalance } from '@entities/asset';
 import { walletSelectModel } from '@features/wallets';
 import { MultisigAccount } from '@shared/core';
@@ -49,7 +48,7 @@ const NetworkSelector = () => {
   const { t } = useI18n();
 
   const {
-    fields: { network },
+    fields: { chain },
   } = useForm(formModel.$proxyForm);
 
   const proxyChains = useUnit(formModel.$proxyChains);
@@ -72,13 +71,13 @@ const NetworkSelector = () => {
       <Select
         label="Network"
         placeholder="Select network"
-        selectedId={network.value.chainId}
-        invalid={network.hasError()}
+        selectedId={chain.value.chainId}
+        invalid={chain.hasError()}
         options={options}
-        onChange={({ value }) => network.onChange(value)}
+        onChange={({ value }) => chain.onChange(value)}
       />
-      <InputHint variant="error" active={network.hasError()}>
-        {t(network.errorText())}
+      <InputHint variant="error" active={chain.hasError()}>
+        {t(chain.errorText())}
       </InputHint>
     </div>
   );
@@ -88,7 +87,7 @@ const AccountSelector = () => {
   const { t } = useI18n();
 
   const {
-    fields: { account, network },
+    fields: { account, chain },
   } = useForm(formModel.$proxyForm);
 
   const wallet = useUnit(walletSelectModel.$walletForDetails);
@@ -98,7 +97,7 @@ const AccountSelector = () => {
 
   const options = proxiedAccounts.map(({ account, balance }) => {
     const isShard = accountUtils.isShardAccount(account);
-    const address = toAddress(account.accountId, { prefix: network.value.addressPrefix });
+    const address = toAddress(account.accountId, { prefix: chain.value.addressPrefix });
 
     return {
       id: account.id.toString(),
@@ -112,7 +111,7 @@ const AccountSelector = () => {
             name={isShard ? toShortAddress(address, 16) : account.name}
             canCopy={false}
           />
-          <AssetBalance value={balance} asset={network.value.assets[0]} />
+          <AssetBalance value={balance} asset={chain.value.assets[0]} />
         </div>
       ),
     };
@@ -140,7 +139,7 @@ const SignatorySelector = () => {
   const { t } = useI18n();
 
   const {
-    fields: { network, account, signatory },
+    fields: { chain, account, signatory },
   } = useForm(formModel.$proxyForm);
 
   const signatories = useUnit(formModel.$signatories);
@@ -149,7 +148,7 @@ const SignatorySelector = () => {
 
   const options = signatories.map(({ signer, balance }) => {
     const isShard = accountUtils.isShardAccount(signer);
-    const address = toAddress(signer.accountId, { prefix: network.value.addressPrefix });
+    const address = toAddress(signer.accountId, { prefix: chain.value.addressPrefix });
 
     return {
       id: signer.id.toString(),
@@ -163,7 +162,7 @@ const SignatorySelector = () => {
             name={isShard ? address : signer.name}
             canCopy={false}
           />
-          <AssetBalance value={balance} asset={network.value.assets[0]} />
+          <AssetBalance value={balance} asset={chain.value.assets[0]} />
         </div>
       ),
     };
@@ -190,7 +189,7 @@ const ProxyCombobox = () => {
   const { t } = useI18n();
 
   const {
-    fields: { delegate, network },
+    fields: { delegate, chain },
   } = useForm(formModel.$proxyForm);
 
   const proxyAccounts = useUnit(formModel.$proxyAccounts);
@@ -198,7 +197,7 @@ const ProxyCombobox = () => {
 
   const options = proxyAccounts.map((proxyAccount) => {
     const isShard = accountUtils.isShardAccount(proxyAccount);
-    const address = toAddress(proxyAccount.accountId, { prefix: network.value.addressPrefix });
+    const address = toAddress(proxyAccount.accountId, { prefix: chain.value.addressPrefix });
 
     return {
       id: proxyAccount.id.toString(),
@@ -294,21 +293,25 @@ const DescriptionInput = () => {
 
 const FeeSection = () => {
   const {
-    fields: { network, account },
+    fields: { chain, account },
   } = useForm(formModel.$proxyForm);
 
+  const api = useUnit(formModel.$api);
   const fakeTx = useUnit(formModel.$fakeTx);
   const isMultisig = useUnit(formModel.$isMultisig);
-  const { api, chain } = useNetworkData(network.value.chainId);
 
   return (
     <div className="flex flex-col gap-y-2 mt-6">
-      <ProxyDepositWithLabel api={api} asset={chain.assets[0]} onDepositChange={formModel.events.proxyDepositChanged} />
+      <ProxyDepositWithLabel
+        api={api}
+        asset={chain.value.assets[0]}
+        onDepositChange={formModel.events.proxyDepositChanged}
+      />
 
       {isMultisig && (
         <MultisigDepositWithLabel
           api={api}
-          asset={chain.assets[0]}
+          asset={chain.value.assets[0]}
           threshold={(account.value as MultisigAccount).threshold}
           onDepositChange={formModel.events.multisigDepositChanged}
         />
@@ -316,7 +319,7 @@ const FeeSection = () => {
 
       <FeeWithLabel
         api={api}
-        asset={chain.assets[0]}
+        asset={chain.value.assets[0]}
         transaction={fakeTx}
         onFeeChange={formModel.events.feeChanged}
         onFeeLoading={formModel.events.isFeeLoadingChanged}

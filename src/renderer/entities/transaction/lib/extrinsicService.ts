@@ -433,9 +433,9 @@ export const wrapAsMulti = (
   const callData = extrinsic.method.toHex();
   const callHash = extrinsic.method.hash.toHex();
 
-  const otherSignatories = account.signatories.reduce<Address[]>((acc, s) => {
-    if (s.accountId !== signerAccountId) {
-      acc.push(toAddress(s.accountId, { prefix: addressPrefix }));
+  const otherSignatories = account.signatories.reduce<Address[]>((acc, { accountId }) => {
+    if (accountId !== signerAccountId) {
+      acc.push(toAddress(accountId, { prefix: addressPrefix }));
     }
 
     return acc;

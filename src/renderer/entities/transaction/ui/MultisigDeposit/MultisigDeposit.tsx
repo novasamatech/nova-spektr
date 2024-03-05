@@ -10,7 +10,7 @@ import { Shimmering } from '@shared/ui';
 import { priceProviderModel } from '@entities/price';
 
 type Props = {
-  api: ApiPromise;
+  api?: ApiPromise;
   asset: Asset;
   threshold: Threshold;
   className?: string;
@@ -37,7 +37,7 @@ export const MultisigDeposit = memo(({ api, asset, threshold, className, onDepos
     }
   }, [threshold, api]);
 
-  if (isLoading) {
+  if (!api || isLoading) {
     return (
       <div className="flex flex-col gap-y-0.5 items-end">
         <Shimmering width={90} height={20} data-testid="fee-loader" />

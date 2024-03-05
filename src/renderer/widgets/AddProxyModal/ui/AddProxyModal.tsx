@@ -26,10 +26,16 @@ export const AddProxyModal = ({ isOpen, onClose }: Props) => {
   const [isModalOpen, closeModal] = useModalClose(isOpen, onClose);
 
   useEffect(() => {
-    addProxyModel.events.stepChanged(Step.INIT);
-  }, []);
+    if (!isOpen) return;
 
-  const getModalTitle = (step: Step, chain: Chain | null) => {
+    addProxyModel.events.stepChanged(Step.INIT);
+  }, [isOpen]);
+
+  useEffect(() => {
+    addProxyModel.events.callbacksChanged({ onClose: closeModal });
+  }, [closeModal]);
+
+  const getModalTitle = (step: Step, chain?: Chain) => {
     if (addProxyUtils.isInitStep(step) || !chain) return 'Add delegated authority (proxy)';
 
     return (
@@ -40,7 +46,7 @@ export const AddProxyModal = ({ isOpen, onClose }: Props) => {
     );
   };
 
-  if (addProxyUtils.isSubmitStep(step)) return <SubmitProxy onClose={onClose} />;
+  if (addProxyUtils.isSubmitStep(step)) return <SubmitProxy isOpen={isModalOpen} onClose={closeModal} />;
 
   return (
     <BaseModal closeButton contentClass="" isOpen={isModalOpen} title={getModalTitle(step, chain)} onClose={closeModal}>

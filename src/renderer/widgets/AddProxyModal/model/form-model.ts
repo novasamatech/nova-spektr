@@ -4,7 +4,6 @@ import { createForm } from 'effector-forms';
 import { BN } from '@polkadot/util';
 import { spread } from 'patronum';
 
-import { ActiveProxy } from '../lib/types';
 import { Address, ProxyType, Chain, Account, PartialBy } from '@shared/core';
 import { networkModel, networkUtils } from '@entities/network';
 import { walletSelectModel } from '@features/wallets';
@@ -22,8 +21,13 @@ import {
   transferableAmount,
 } from '@shared/lib/utils';
 
+type ActiveProxy = {
+  address: Address;
+  proxyType: ProxyType;
+};
+
 type FormParams = {
-  network: Chain;
+  chain: Chain;
   account: Account;
   signatory: Account;
   delegate: Address;
@@ -32,7 +36,7 @@ type FormParams = {
 };
 
 const formInitiated = createEvent();
-const formSubmitted = createEvent<PartialBy<FormParams, 'signatory' | 'description'>>();
+const formSubmitted = createEvent<PartialBy<FormParams, 'signatory'>>();
 const proxyQueryChanged = createEvent<string>();
 
 const proxyDepositChanged = createEvent<string>();
@@ -54,7 +58,7 @@ const $isProxy = createStore<boolean>(false);
 
 const $proxyForm = createForm<FormParams>({
   fields: {
-    network: {
+    chain: {
       init: {} as Chain,
     },
     account: {
@@ -75,8 +79,8 @@ const $proxyForm = createForm<FormParams>({
             const balance = balanceUtils.getBalance(
               balances,
               value!.accountId,
-              form.network.chainId,
-              form.network.assets[0].assetId.toString(),
+              form.chain.chainId,
+              form.chain.assets[0].assetId.toString(),
             );
 
             return new BN(params.proxyDeposit).add(new BN(params.fee)).lte(new BN(transferableAmount(balance)));
@@ -103,8 +107,8 @@ const $proxyForm = createForm<FormParams>({
             const balance = balanceUtils.getBalance(
               balances,
               value!.accountId,
-              form.network.chainId,
-              form.network.assets[0].assetId.toString(),
+              form.chain.chainId,
+              form.chain.assets[0].assetId.toString(),
             );
 
             return new BN(params.proxyDeposit)
@@ -126,8 +130,8 @@ const $proxyForm = createForm<FormParams>({
         {
           name: 'sameAsProxied',
           errorText: 'same_as_proxied_error',
-          validator: (value, { account, network }) => {
-            return value !== toAddress(account.accountId, { prefix: network.addressPrefix });
+          validator: (value, { account, chain }) => {
+            return value !== toAddress(account.accountId, { prefix: chain.addressPrefix });
           },
         },
       ],
@@ -164,7 +168,7 @@ const $proxiedAccounts = combine(
   {
     wallet: walletSelectModel.$walletForDetails,
     accounts: walletModel.$accounts,
-    chain: $proxyForm.fields.network.$value,
+    chain: $proxyForm.fields.chain.$value,
     balances: balanceModel.$balances,
   },
   ({ wallet, accounts, chain, balances }) => {
@@ -196,7 +200,7 @@ const $signatories = combine(
     wallet: walletSelectModel.$walletForDetails,
     wallets: walletModel.$wallets,
     account: $proxyForm.fields.account.$value,
-    chain: $proxyForm.fields.network.$value,
+    chain: $proxyForm.fields.chain.$value,
     accounts: walletModel.$accounts,
     balances: balanceModel.$balances,
   },
@@ -236,7 +240,7 @@ const $proxyAccounts = combine(
   {
     wallets: walletModel.$wallets,
     accounts: walletModel.$accounts,
-    chain: $proxyForm.fields.network.$value,
+    chain: $proxyForm.fields.chain.$value,
     query: $proxyQuery,
   },
   ({ wallets, accounts, chain, query }) => {
@@ -256,7 +260,7 @@ const $proxyTypes = combine(
   {
     apis: networkModel.$apis,
     statuses: networkModel.$connectionStatuses,
-    chain: $proxyForm.fields.network.$value,
+    chain: $proxyForm.fields.chain.$value,
   },
   ({ apis, statuses, chain }) => {
     if (!chain) return [];
@@ -269,7 +273,7 @@ const $proxyTypes = combine(
 
 const $isChainConnected = combine(
   {
-    chain: $proxyForm.fields.network.$value,
+    chain: $proxyForm.fields.chain.$value,
     statuses: networkModel.$connectionStatuses,
   },
   ({ chain, statuses }) => {
@@ -279,9 +283,22 @@ const $isChainConnected = combine(
   },
 );
 
+const $api = combine(
+  {
+    apis: networkModel.$apis,
+    form: $proxyForm.$values,
+  },
+  ({ apis, form }) => {
+    if (!form.chain.chainId) return undefined;
+
+    return apis[form.chain.chainId];
+  },
+  { skipVoid: false },
+);
+
 const $fakeTx = combine(
   {
-    chain: $proxyForm.fields.network.$value,
+    chain: $proxyForm.fields.chain.$value,
     isConnected: $isChainConnected,
   },
   ({ isConnected, chain }): Transaction | undefined => {
@@ -322,7 +339,7 @@ sample({
   clock: formInitiated,
   source: $proxyChains,
   fn: (chains) => chains[0],
-  target: $proxyForm.fields.network.onChange,
+  target: $proxyForm.fields.chain.onChange,
 });
 
 sample({
@@ -336,18 +353,18 @@ sample({
 });
 
 sample({
-  clock: $proxyForm.fields.network.onChange,
+  clock: $proxyForm.fields.chain.onChange,
   target: [
     $proxyQuery.reinit,
     $proxyForm.fields.delegate.reset,
-    $proxyForm.fields.network.resetErrors,
+    $proxyForm.fields.chain.resetErrors,
     $proxyForm.fields.account.resetErrors,
     $proxyForm.fields.signatory.resetErrors,
   ],
 });
 
 sample({
-  clock: $proxyForm.fields.network.onChange,
+  clock: $proxyForm.fields.chain.onChange,
   source: $proxiedAccounts,
   fn: (proxiedAccounts) => proxiedAccounts[0].account,
   target: $proxyForm.fields.account.onChange,
@@ -379,7 +396,7 @@ sample({
 });
 
 sample({
-  clock: $proxyForm.fields.network.onChange,
+  clock: $proxyForm.fields.chain.onChange,
   source: {
     signatories: $signatories,
     isMultisig: $isMultisig,
@@ -392,14 +409,14 @@ sample({
 });
 
 sample({
-  clock: $proxyForm.fields.network.onChange,
+  clock: $proxyForm.fields.chain.onChange,
   source: $proxyTypes,
   fn: (types) => types[0],
   target: $proxyForm.fields.proxyType.onChange,
 });
 
 sample({
-  clock: $proxyForm.fields.network.onChange,
+  clock: $proxyForm.fields.chain.onChange,
   source: networkModel.$apis,
   filter: (_, chain) => Boolean(chain),
   fn: (apis, chain) => apis[chain!.chainId],
@@ -430,10 +447,10 @@ sample({
     form: $proxyForm.$values,
     isChainConnected: $isChainConnected,
   },
-  filter: ({ isChainConnected, form }) => isChainConnected && Boolean(form.network) && Boolean(form.account),
+  filter: ({ isChainConnected, form }) => isChainConnected && Boolean(form.chain) && Boolean(form.account),
   fn: ({ apis, form }) => ({
-    api: apis[form.network!.chainId],
-    address: toAddress(form.account!.accountId, { prefix: form.network!.addressPrefix }),
+    api: apis[form.chain!.chainId],
+    address: toAddress(form.account!.accountId, { prefix: form.chain!.addressPrefix }),
   }),
   target: getAccountProxiesFx,
 });
@@ -451,7 +468,7 @@ sample({
     rule: 'maxProxies',
     errorText: 'max_proxies_error',
   }),
-  target: $proxyForm.fields.network.addError,
+  target: $proxyForm.fields.chain.addError,
 });
 
 sample({
@@ -477,15 +494,12 @@ sample({
   fn: (formData) => {
     const signatory = Object.keys(formData.signatory).length > 0 ? formData.signatory : undefined;
     const proxied = toAddress(formData.account.accountId, {
-      prefix: formData.network.addressPrefix,
+      prefix: formData.chain.addressPrefix,
     });
     const multisigDescription = `Add proxy for ${proxied}`;
+    const description = signatory ? formData.description || multisigDescription : '';
 
-    return {
-      ...formData,
-      signatory,
-      description: signatory ? formData.description || multisigDescription : undefined,
-    };
+    return { ...formData, signatory, description };
   },
   target: formSubmitted,
 });
@@ -504,6 +518,7 @@ export const formModel = {
   $fee,
   $isFeeLoading,
 
+  $api,
   $fakeTx,
   $isMultisig,
   $isProxy,
