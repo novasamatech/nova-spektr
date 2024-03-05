@@ -407,7 +407,7 @@ export class Matrix implements ISecureMessenger {
       const isJoinedRoom = room.getMyMembership() === Membership.JOIN;
       if (!isSpektrRoom || !isJoinedRoom) return false;
 
-      return !accountId || this.getSpektrTopic(room).mstAccount.accountId === accountId;
+      return !accountId || this.getSpektrTopic(room)?.mstAccount?.accountId === accountId;
     });
   }
 
