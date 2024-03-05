@@ -4,8 +4,7 @@ import { ApiPromise } from '@polkadot/api';
 import { useUnit } from 'effector-react';
 
 import { AssetBalance } from '@entities/asset';
-import { DecodedTransaction, Transaction } from '@entities/transaction';
-import { Shimmering } from '@shared/ui';
+import { DecodedTransaction, FeeLoader, Transaction } from '@entities/transaction';
 import { estimateFee, XcmConfig } from '@shared/api/xcm';
 import { toLocalChainId } from '@shared/lib/utils';
 import type { Asset } from '@shared/core';
@@ -73,12 +72,7 @@ export const XcmFee = memo(
     }, [transaction]);
 
     if (isLoading) {
-      return (
-        <div className="flex flex-col gap-y-0.5 items-end">
-          <Shimmering width={90} height={20} data-testid="fee-loader" />
-          {fiatFlag && <Shimmering width={70} height={18} data-testid="fee-loader" />}
-        </div>
-      );
+      return <FeeLoader fiatFlag={!!fiatFlag} />;
     }
 
     const totalFee = new BN(fee).muln(multiply).toString();
