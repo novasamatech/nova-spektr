@@ -1,7 +1,8 @@
 export {
-  NetworkList as NetworksList,
+  NetworkList,
   ActiveNetwork,
   InactiveNetwork,
+  EmptyNetworks,
   inactiveNetworksModel,
   activeNetworksModel,
 } from './NetworkList';

@@ -13,7 +13,6 @@ import type { RpcNode, ChainId } from '@shared/core';
 import { ConnectionType } from '@shared/core';
 import { networkModel, ExtendedChain, networkUtils } from '@entities/network';
 import { manageNetworkModel } from './model/manage-network-model';
-import { NetworksFilter, networksFilterModel } from '@features/network/NetworksFilter';
 import {
   EmptyNetworks,
   NetworkList,
@@ -21,7 +20,10 @@ import {
   activeNetworksModel,
   inactiveNetworksModel,
   ActiveNetwork,
-} from '@/src/renderer/features/network/NetworkList';
+  NetworksFilter,
+  networksFilterModel,
+} from '@features/network';
+
 import './model/networks-overview-model';
 
 const MAX_LIGHT_CLIENTS = 3;
@@ -38,6 +40,10 @@ export const Networks = () => {
   const inactiveNetworks = useUnit(inactiveNetworksModel.$inactiveNetworks);
   const connections = useUnit(networkModel.$connections);
   const filterQuery = useUnit(networksFilterModel.$filterQuery);
+  const filteredNetworks = useUnit(networksFilterModel.$filteredNetworks);
+
+  console.log('filteredNetworks', filteredNetworks);
+  console.log('filterQuery', filterQuery === '');
 
   const [isCustomRpcOpen, toggleCustomRpc] = useToggle();
   const [isNetworksModalOpen, toggleNetworksModal] = useToggle(true);
