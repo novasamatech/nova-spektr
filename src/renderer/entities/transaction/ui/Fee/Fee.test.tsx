@@ -15,6 +15,7 @@ jest.mock('@entities/transaction', () => ({
   useTransaction: jest.fn().mockReturnValue({
     getTransactionFee: jest.fn().mockResolvedValue('12'),
   }),
+  FeeLoader: ({ fiatFlag }: any) => <div>{fiatFlag ? 'fiat' : 'crypto'}</div>,
 }));
 
 jest.mock('@entities/asset', () => ({
