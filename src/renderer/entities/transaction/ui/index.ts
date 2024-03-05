@@ -2,6 +2,7 @@ export { Deposit } from './Deposit/Deposit';
 export { DepositWithLabel } from './DepositWithLabel/DepositWithLabel';
 export { Fee } from './Fee/Fee';
 export { XcmFee } from './XcmFee/XcmFee';
+export { FeeLoader } from './FeeLoader/FeeLoader';
 export { OperationResult } from './OperationResult/OperationResult';
 export { ScanSingleframeQr } from './Scanning/ScanSingleframeQr';
 export { ScanMultiframeQr } from './Scanning/ScanMultiframeQr';
