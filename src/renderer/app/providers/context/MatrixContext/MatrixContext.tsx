@@ -213,12 +213,12 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
     }
   };
 
-  const onMultisigEvent = async ({ type, content, sender }: MultisigPayload, extras: SpektrExtras) => {
+  const onMultisigEvent = async ({ type, content, sender }: MultisigPayload, extras: SpektrExtras | undefined) => {
     console.info('🚀 === onMultisigEvent - ', type, '\n Content: ', content);
 
     if (!validateMatrixEvent(content, extras)) return;
 
-    const multisigAccount = accountsRef.current.find((a) => a.accountId === extras.mstAccount.accountId);
+    const multisigAccount = accountsRef.current.find((a) => a.accountId === extras?.mstAccount.accountId);
     if (!multisigAccount || !accountUtils.isMultisigAccount(multisigAccount)) return;
 
     const multisigTx = await getMultisigTx(
@@ -245,8 +245,10 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
 
   const validateMatrixEvent = <T extends BaseMultisigPayload>(
     { callData, callHash, senderAccountId }: T,
-    extras: SpektrExtras,
+    extras: SpektrExtras | undefined,
   ): boolean => {
+    if (!extras) return false;
+
     const { accountId, threshold, signatories } = extras.mstAccount;
     const senderIsSignatory = signatories.some((accountId) => accountId === senderAccountId);
     const mstAccountIsValid = accountId === accountUtils.getMultisigAccountId(signatories, threshold);
