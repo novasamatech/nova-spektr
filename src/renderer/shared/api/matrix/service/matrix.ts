@@ -1002,7 +1002,7 @@ export class Matrix implements ISecureMessenger {
    * @param room the room itself
    * @return {Object}
    */
-  private getSpektrTopic(room: Room): SpektrExtras {
+  private getSpektrTopic(room: Room): SpektrExtras | undefined {
     // on invite user only sees stripped state, which has '' as state key for all events
     const strippedStateKey = '';
 
