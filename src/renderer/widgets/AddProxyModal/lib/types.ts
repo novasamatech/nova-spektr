@@ -20,6 +20,7 @@ export type AddProxyStore = {
   delegate: Address;
   proxyType: ProxyType;
   description: string;
+  proxyDeposit: string;
 };
 
 export type TxWrappers = ('proxy' | 'multisig')[];

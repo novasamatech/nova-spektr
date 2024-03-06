@@ -5,7 +5,7 @@ import { useUnit } from 'effector-react';
 import { Button, Select, Input, InputHint, Combobox, Identicon, Alert } from '@shared/ui';
 import { useI18n } from '@app/providers';
 import { ChainTitle } from '@entities/chain';
-import { ProxyPopover } from '@entities/proxy';
+import { ProxyPopover, proxyUtils } from '@entities/proxy';
 import { AccountAddress, accountUtils } from '@entities/wallet';
 import { toAddress, toShortAddress } from '@shared/lib/utils';
 import { ProxyDepositWithLabel, MultisigDepositWithLabel, FeeWithLabel } from '@entities/transaction';
@@ -237,7 +237,11 @@ const ProxyTypeSelector = () => {
   const proxyTypes = useUnit(formModel.$proxyTypes);
   const isChainConnected = useUnit(formModel.$isChainConnected);
 
-  const options = proxyTypes.map((type) => ({ id: type, value: type, element: type }));
+  const options = proxyTypes.map((type) => ({
+    id: type,
+    value: type,
+    element: t(proxyUtils.getProxyTypeName(type)),
+  }));
 
   return (
     <div className="flex flex-col gap-y-2">

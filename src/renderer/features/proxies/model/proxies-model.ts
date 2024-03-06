@@ -82,7 +82,7 @@ type GetProxiesParams = {
   endpoint: Endpoint<any>;
 };
 type GetProxiesResult = {
-  proxiesToAdd: ProxyAccount[];
+  proxiesToAdd: NoID<ProxyAccount>[];
   proxiesToRemove: ProxyAccount[];
   proxiedAccountsToAdd: PartialProxiedAccount[];
   proxiedAccountsToRemove: ProxiedAccount[];

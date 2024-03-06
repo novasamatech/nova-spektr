@@ -2,18 +2,19 @@ import { createEvent, createStore, sample, attach, createApi } from 'effector';
 import { spread, delay } from 'patronum';
 
 import { Transaction, TransactionType } from '@entities/transaction';
-import { toAddress } from '@shared/lib/utils';
+import { toAddress, toAccountId } from '@shared/lib/utils';
 import { walletSelectModel } from '@features/wallets';
+import { walletModel, walletUtils } from '@entities/wallet';
+import type { MultisigAccount, ProxyGroup, NoID } from '@shared/core';
+import { wrapAsMulti, wrapAsProxy } from '@entities/transaction/lib/extrinsicService';
+import { proxyModel, proxyUtils } from '@entities/proxy';
+import { networkModel } from '@entities/network';
 import { Step, TxWrappers, AddProxyStore } from '../lib/types';
 import { addProxyUtils } from '../lib/add-proxy-utils';
 import { formModel } from './form-model';
 import { confirmModel } from './confirm-model';
 import { signModel } from './sign-model';
 import { submitModel } from './submit-model';
-import { networkModel } from '@entities/network';
-import { walletModel, walletUtils } from '@entities/wallet';
-import type { MultisigAccount } from '@shared/core';
-import { wrapAsMulti, wrapAsProxy } from '@entities/transaction/lib/extrinsicService';
 
 export type Callbacks = {
   onClose: () => void;
@@ -175,26 +176,48 @@ sample({
   }),
 });
 
-// // TODO: add proxy in DB
-// sample({
-//   clock: submitModel.output.formSubmitted,
-//   source: {
-//     account: $account,
-//     chain: $chain,
-//     delegate: ,
-//     prox
-//   },
-//   fn: () => ({
-//     accountId: AccountId,
-//     proxiedAccountId: AccountId,
-//     chainId: ChainId,
-//     proxyType: ProxyType,
-//     delay: 0,
-//   }),
-//   target: proxyModel.events.proxiesAdded,
-// });
+sample({
+  clock: submitModel.output.formSubmitted,
+  source: $addProxyStore,
+  filter: (addProxyStore: AddProxyStore | null): addProxyStore is AddProxyStore => Boolean(addProxyStore),
+  fn: (addProxyStore) => [
+    {
+      accountId: toAccountId(addProxyStore.delegate),
+      proxiedAccountId: addProxyStore.account.accountId,
+      chainId: addProxyStore.chain.chainId,
+      proxyType: addProxyStore.proxyType,
+      delay: 0,
+    },
+  ],
+  target: proxyModel.events.proxiesAdded,
+});
 
-// TODO: after add proxy to DB
+sample({
+  clock: submitModel.output.formSubmitted,
+  source: {
+    wallet: walletSelectModel.$walletForDetails,
+    addProxyStore: $addProxyStore,
+    proxyGroups: proxyModel.$proxyGroups,
+  },
+  filter: ({ wallet, addProxyStore }) => Boolean(wallet) && Boolean(addProxyStore),
+  fn: ({ wallet, addProxyStore, proxyGroups }) => {
+    const newProxyGroup: NoID<ProxyGroup> = {
+      walletId: wallet!.id,
+      chainId: addProxyStore!.chain.chainId,
+      proxiedAccountId: addProxyStore!.account.accountId,
+      totalDeposit: addProxyStore!.proxyDeposit,
+    };
+
+    const proxyGroupExists = proxyGroups.some((group) => proxyUtils.isSameProxyGroup(group, newProxyGroup));
+
+    return proxyGroupExists ? { groupsUpdated: [newProxyGroup] } : { groupsAdded: [newProxyGroup] };
+  },
+  target: spread({
+    groupsAdded: proxyModel.events.proxyGroupsAdded,
+    groupsUpdated: proxyModel.events.proxyGroupsUpdated,
+  }),
+});
+
 sample({
   clock: delay(submitModel.output.formSubmitted, 2000),
   target: attach({

@@ -7,6 +7,14 @@ import { proxyUtils } from '../lib/proxy-utils';
 
 type ProxyStore = Record<AccountId, ProxyAccount[]>;
 
+const proxyStarted = createEvent();
+const proxiesAdded = createEvent<NoID<ProxyAccount>[]>();
+const proxiesRemoved = createEvent<ProxyAccount[]>();
+
+const proxyGroupsAdded = createEvent<NoID<ProxyGroup>[]>();
+const proxyGroupsUpdated = createEvent<NoID<ProxyGroup>[]>();
+const proxyGroupsRemoved = createEvent<ProxyGroup[]>();
+
 const $proxies = createStore<ProxyStore>({});
 const $proxyGroups = createStore<ProxyGroup[]>([]);
 
@@ -14,19 +22,11 @@ const $walletsProxyGroups = combine($proxyGroups, (groups) => {
   return groupBy(groups, 'walletId');
 });
 
-const proxyStarted = createEvent();
-const proxiesAdded = createEvent<ProxyAccount[]>();
-const proxiesRemoved = createEvent<ProxyAccount[]>();
-
-const proxyGroupsAdded = createEvent<NoID<ProxyGroup>[]>();
-const proxyGroupsUpdated = createEvent<NoID<ProxyGroup>[]>();
-const proxyGroupsRemoved = createEvent<ProxyGroup[]>();
-
 const populateProxiesFx = createEffect((): Promise<ProxyAccount[]> => {
   return storageService.proxies.readAll();
 });
 
-const addProxiesFx = createEffect((proxies: ProxyAccount[]): Promise<ProxyAccount[] | undefined> => {
+const addProxiesFx = createEffect((proxies: NoID<ProxyAccount>[]): Promise<ProxyAccount[] | undefined> => {
   return storageService.proxies.createAll(proxies);
 });
 

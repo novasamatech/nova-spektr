@@ -39,6 +39,7 @@ type FormParams = {
 };
 
 type FormSubmitEvent = PartialBy<FormParams, 'signatory'> & {
+  proxyDeposit: string;
   oldProxyDeposit: string;
   proxyNumber: number;
 };
@@ -193,6 +194,8 @@ const $proxyForm = createForm<FormParams>({
   validateOn: ['submit'],
 });
 
+// Options for selectors
+
 const $proxyChains = combine(networkModel.$chains, (chains) => {
   return Object.values(chains).filter(proxiesUtils.isRegularProxy);
 });
@@ -304,6 +307,8 @@ const $proxyTypes = combine(
   },
 );
 
+// Miscellaneous
+
 const $isChainConnected = combine(
   {
     chain: $proxyForm.fields.chain.$value,
@@ -373,6 +378,8 @@ const getAccountProxiesFx = createEffect(({ api, address }: ProxyParams): Promis
 const getMaxProxiesFx = createEffect((api: ApiPromise): number => {
   return proxyService.getMaxProxies(api);
 });
+
+// Fields connections
 
 sample({
   clock: formInitiated,
@@ -514,7 +521,7 @@ sample({
   }),
 });
 
-// DEPOSITS
+// Deposits
 
 sample({ clock: proxyDepositChanged, target: $newProxyDeposit });
 
@@ -526,15 +533,16 @@ sample({ clock: feeChanged, target: $fee });
 
 sample({ clock: isFeeLoadingChanged, target: $isFeeLoading });
 
-// SUBMIT
+// Submit
 
 sample({
   clock: $proxyForm.formValidated,
   source: {
+    newProxyDeposit: $newProxyDeposit,
     oldProxyDeposit: $oldProxyDeposit,
     proxies: $activeProxies,
   },
-  fn: ({ oldProxyDeposit, proxies }, formData) => {
+  fn: ({ newProxyDeposit, oldProxyDeposit, proxies }, formData) => {
     const signatory = Object.keys(formData.signatory).length > 0 ? formData.signatory : undefined;
     const proxied = toAddress(formData.account.accountId, {
       prefix: formData.chain.addressPrefix,
@@ -546,6 +554,7 @@ sample({
       ...formData,
       signatory,
       description,
+      proxyDeposit: newProxyDeposit,
       oldProxyDeposit,
       proxyNumber: proxies.length + 1,
     };
