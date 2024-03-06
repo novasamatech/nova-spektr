@@ -55,6 +55,5 @@ function getNotification({
 }
 
 function isProxiedAvailable(wallet?: Wallet): boolean {
-  // return !walletUtils.isWatchOnly(wallet) && !walletUtils.isProxied(wallet);
-  return !walletUtils.isProxied(wallet);
+  return !walletUtils.isWatchOnly(wallet) && !walletUtils.isProxied(wallet);
 }
