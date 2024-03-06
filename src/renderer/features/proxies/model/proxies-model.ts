@@ -76,6 +76,7 @@ const startChainsFx = createEffect(({ chains, connections, endpoint }: StartChai
 
 type GetProxiesParams = {
   chainId: ChainId;
+  chain: Chain;
   accounts: Account[];
   wallets: WalletsMap;
   proxies: ProxyAccount[];
@@ -92,7 +93,7 @@ type GetProxiesResult = {
   };
 };
 const getProxiesFx = createEffect(
-  ({ chainId, accounts, wallets, proxies, endpoint }: GetProxiesParams): Promise<GetProxiesResult> => {
+  ({ chainId, chain, accounts, wallets, proxies, endpoint }: GetProxiesParams): Promise<GetProxiesResult> => {
     const proxiedAccounts = accounts.filter((a) => accountUtils.isProxiedAccount(a) && a.chainId === chainId);
     const chainProxies = proxies.filter((p) => p.chainId === chainId);
 
@@ -104,8 +105,11 @@ const getProxiesFx = createEffect(
       'accountId',
     );
 
+    const proxyUrl = chain.externalApi?.proxy?.[0]?.url;
+
     return endpoint.call.getProxies({
       chainId,
+      proxyUrl,
       accountsForProxy,
       accountsForProxied,
       proxiedAccounts,
@@ -216,13 +220,15 @@ sample({
   clock: connected,
   source: {
     accounts: walletModel.$accounts,
+    chains: networkModel.$chains,
     proxies: proxyModel.$proxies,
     wallets: walletModel.$wallets,
     endpoint: $endpoint,
   },
   filter: ({ endpoint }) => Boolean(endpoint),
-  fn: ({ accounts, wallets, proxies, endpoint }, chainId) => ({
+  fn: ({ accounts, chains, wallets, proxies, endpoint }, chainId) => ({
     chainId,
+    chain: chains[chainId],
     accounts: accounts.filter((a) => accountUtils.isChainIdMatch(a, chainId)),
     wallets,
     proxies: Object.values(proxies).flat(),

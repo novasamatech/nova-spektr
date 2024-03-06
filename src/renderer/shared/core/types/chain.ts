@@ -35,5 +35,5 @@ type ExternalValue = {
   url: string;
 };
 
-type ExternalType = 'history' | 'staking' | 'crowdloans';
+type ExternalType = 'history' | 'staking' | 'crowdloans' | 'proxy';
 type HistoryType = 'subquery' | 'github';
