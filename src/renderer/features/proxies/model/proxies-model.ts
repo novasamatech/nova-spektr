@@ -105,7 +105,7 @@ const getProxiesFx = createEffect(
       'accountId',
     );
 
-    const proxyUrl = chain.externalApi?.proxy?.[0]?.url;
+    const proxyUrl = networkUtils.isPureProxySupported(chain.options) && chain.externalApi?.proxy?.[0]?.url;
 
     return endpoint.call.getProxies({
       chainId,

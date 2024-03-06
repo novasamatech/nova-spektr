@@ -232,12 +232,6 @@ async function getProxies({
   });
   console.log(`proxy-worker ${api.genesisHash}: 🟣 proxied accounts to remove: `, proxiedAccountsToRemove);
 
-  console.log(
-    'xcm',
-    proxyUrl,
-    proxiedAccountsToAdd.map((p) => p.accountId),
-  );
-
   if (proxyUrl && proxiedAccountsToAdd.length) {
     const client = new GraphQLClient(proxyUrl);
 
