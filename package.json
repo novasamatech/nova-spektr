@@ -1,0 +1,15 @@
+{
+  "main": "main.js",
+  "name": "nova-spektr",
+  "description": "Polkadot Enterprise application",
+  "version": "1.5.0",
+  "repository": "https://github.com/novasamatech/nova-spektr",
+  "license": "MIT",
+  "author": {
+    "name": "Novasama Technologies"
+  },
+  "engines": {
+    "node": ">=18.x",
+    "pnpm": ">=8.x"
+  }
+}
