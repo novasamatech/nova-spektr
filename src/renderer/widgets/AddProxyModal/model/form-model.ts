@@ -21,9 +21,12 @@ import {
   transferableAmount,
 } from '@shared/lib/utils';
 
-type ActiveProxy = {
-  address: Address;
-  proxyType: ProxyType;
+type ProxyAccounts = {
+  accounts: {
+    address: Address;
+    proxyType: ProxyType;
+  }[];
+  deposit: string;
 };
 
 type FormParams = {
@@ -35,23 +38,31 @@ type FormParams = {
   description: string;
 };
 
+type FormSubmitEvent = PartialBy<FormParams, 'signatory'> & {
+  oldProxyDeposit: string;
+  proxyNumber: number;
+};
+
 const formInitiated = createEvent();
-const formSubmitted = createEvent<PartialBy<FormParams, 'signatory'>>();
+const formSubmitted = createEvent<FormSubmitEvent>();
 const proxyQueryChanged = createEvent<string>();
 
 const proxyDepositChanged = createEvent<string>();
 const multisigDepositChanged = createEvent<string>();
 const feeChanged = createEvent<string>();
 const isFeeLoadingChanged = createEvent<boolean>();
+const isProxyDepositLoadingChanged = createEvent<boolean>();
 
-const $proxyDeposit = createStore<string>('0');
-const $multisigDeposit = createStore<string>('0');
 const $fee = createStore<string>('0');
+const $oldProxyDeposit = createStore<string>('0');
+const $newProxyDeposit = createStore<string>('0');
+const $multisigDeposit = createStore<string>('0');
 const $isFeeLoading = createStore<boolean>(true);
+const $isProxyDepositLoading = createStore<boolean>(true);
 
 const $proxyQuery = createStore<string>('');
 const $maxProxies = createStore<number>(0);
-const $activeProxies = createStore<ActiveProxy[]>([]);
+const $activeProxies = createStore<ProxyAccounts['accounts']>([]);
 
 const $isMultisig = createStore<boolean>(false);
 const $isProxy = createStore<boolean>(false);
@@ -60,30 +71,41 @@ const $proxyForm = createForm<FormParams>({
   fields: {
     chain: {
       init: {} as Chain,
+      rules: [
+        {
+          name: 'maxProxies',
+          errorText: 'max_proxies_error',
+          source: combine({
+            maxProxies: $maxProxies,
+            proxies: $activeProxies,
+          }),
+          validator: (_v, _f, { maxProxies, proxies }) => maxProxies > proxies.length,
+        },
+      ],
     },
     account: {
       init: {} as Account,
       rules: [
         {
           name: 'notEnoughTokens',
-          errorText: 'no_tokens_for_fee_deposit_error',
+          errorText: 'no_tokens_for_proxy_deposit_error',
           source: combine({
             fee: $fee,
-            proxyDeposit: $proxyDeposit,
+            proxyDeposit: $newProxyDeposit,
             balances: balanceModel.$balances,
             isMultisig: $isMultisig,
           }),
           validator: (value, form, { isMultisig, balances, ...params }) => {
-            if (isMultisig) return true;
-
             const balance = balanceUtils.getBalance(
               balances,
-              value!.accountId,
+              value.accountId,
               form.chain.chainId,
               form.chain.assets[0].assetId.toString(),
             );
 
-            return new BN(params.proxyDeposit).add(new BN(params.fee)).lte(new BN(transferableAmount(balance)));
+            return isMultisig
+              ? new BN(params.proxyDeposit).lte(new BN(transferableAmount(balance)))
+              : new BN(params.proxyDeposit).add(new BN(params.fee)).lte(new BN(transferableAmount(balance)));
           },
         },
       ],
@@ -93,28 +115,27 @@ const $proxyForm = createForm<FormParams>({
       rules: [
         {
           name: 'notEnoughTokens',
-          errorText: 'no_tokens_for_fee_deposit_error',
+          errorText: 'no_tokens_for_multisig_deposit_error',
           source: combine({
             fee: $fee,
             multisigDeposit: $multisigDeposit,
-            proxyDeposit: $proxyDeposit,
+            proxyDeposit: $newProxyDeposit,
             balances: balanceModel.$balances,
             isMultisig: $isMultisig,
           }),
           validator: (value, form, { isMultisig, balances, ...params }) => {
             if (!isMultisig) return true;
 
-            const balance = balanceUtils.getBalance(
+            const signatoryBalance = balanceUtils.getBalance(
               balances,
-              value!.accountId,
+              value.accountId,
               form.chain.chainId,
               form.chain.assets[0].assetId.toString(),
             );
 
-            return new BN(params.proxyDeposit)
-              .add(new BN(params.multisigDeposit))
+            return new BN(params.multisigDeposit)
               .add(new BN(params.fee))
-              .lte(new BN(transferableAmount(balance)));
+              .lte(new BN(transferableAmount(signatoryBalance)));
           },
         },
       ],
@@ -132,6 +153,18 @@ const $proxyForm = createForm<FormParams>({
           errorText: 'same_as_proxied_error',
           validator: (value, { account, chain }) => {
             return value !== toAddress(account.accountId, { prefix: chain.addressPrefix });
+          },
+        },
+        {
+          name: 'proxyTypeExist',
+          errorText: 'proxy_type_exists_error',
+          source: $activeProxies,
+          validator: (value, { proxyType }, activeProxies: ProxyAccounts['accounts']) => {
+            const sameProxyExist = activeProxies.some((proxy) => {
+              return proxy.proxyType === proxyType && proxy.address === value;
+            });
+
+            return !sameProxyExist;
           },
         },
       ],
@@ -318,11 +351,22 @@ const $fakeTx = combine(
   { skipVoid: false },
 );
 
+const $canSubmit = combine(
+  {
+    isFormValid: $proxyForm.$isValid,
+    isFeeLoading: $isFeeLoading,
+    isProxyDepositLoading: $isProxyDepositLoading,
+  },
+  ({ isFormValid, isFeeLoading, isProxyDepositLoading }) => {
+    return isFormValid && !isFeeLoading && !isProxyDepositLoading;
+  },
+);
+
 type ProxyParams = {
   api: ApiPromise;
   address: Address;
 };
-const getAccountProxiesFx = createEffect(({ api, address }: ProxyParams): Promise<ActiveProxy[]> => {
+const getAccountProxiesFx = createEffect(({ api, address }: ProxyParams): Promise<ProxyAccounts> => {
   return proxyService.getProxiesForAccount(api, address);
 });
 
@@ -349,17 +393,17 @@ sample({
 
 sample({
   clock: [$proxyForm.fields.delegate.onChange, $proxyForm.fields.proxyType.onChange],
-  target: $proxyForm.fields.delegate.resetErrors,
+  target: [$proxyForm.fields.delegate.resetErrors, $proxyForm.fields.proxyType.resetErrors],
 });
 
 sample({
   clock: $proxyForm.fields.chain.onChange,
   target: [
     $proxyQuery.reinit,
-    $proxyForm.fields.delegate.reset,
     $proxyForm.fields.chain.resetErrors,
     $proxyForm.fields.account.resetErrors,
     $proxyForm.fields.signatory.resetErrors,
+    $proxyForm.fields.delegate.reset,
   ],
 });
 
@@ -424,13 +468,57 @@ sample({
 });
 
 sample({
-  clock: getMaxProxiesFx.doneData,
+  clock: getMaxProxiesFx.done,
+  source: {
+    chain: $proxyForm.fields.chain.$value,
+    apis: networkModel.$apis,
+  },
+  filter: ({ chain, apis }, { params }) => {
+    return apis[chain.chainId].genesisHash === params.genesisHash;
+  },
+  fn: (_, { result }) => result,
   target: $maxProxies,
+});
+
+sample({
+  clock: $proxyForm.fields.chain.onChange,
+  source: {
+    apis: networkModel.$apis,
+    account: $proxyForm.fields.account.$value,
+    isChainConnected: $isChainConnected,
+  },
+  filter: ({ isChainConnected, account }) => isChainConnected && Boolean(account),
+  fn: ({ apis, account }, chain) => ({
+    api: apis[chain.chainId],
+    address: toAddress(account.accountId, { prefix: chain.addressPrefix }),
+  }),
+  target: getAccountProxiesFx,
+});
+
+sample({
+  clock: getAccountProxiesFx.done,
+  source: {
+    chain: $proxyForm.fields.chain.$value,
+    apis: networkModel.$apis,
+  },
+  filter: ({ chain, apis }, { params }) => {
+    return apis[chain.chainId].genesisHash === params.api.genesisHash;
+  },
+  fn: (_, { result }) => ({
+    activeProxies: result.accounts,
+    oldProxyDeposit: result.deposit,
+  }),
+  target: spread({
+    activeProxies: $activeProxies,
+    oldProxyDeposit: $oldProxyDeposit,
+  }),
 });
 
 // DEPOSITS
 
-sample({ clock: proxyDepositChanged, target: $proxyDeposit });
+sample({ clock: proxyDepositChanged, target: $newProxyDeposit });
+
+sample({ clock: isProxyDepositLoadingChanged, target: $isProxyDepositLoading });
 
 sample({ clock: multisigDepositChanged, target: $multisigDeposit });
 
@@ -443,55 +531,10 @@ sample({ clock: isFeeLoadingChanged, target: $isFeeLoading });
 sample({
   clock: $proxyForm.formValidated,
   source: {
-    apis: networkModel.$apis,
-    form: $proxyForm.$values,
-    isChainConnected: $isChainConnected,
+    oldProxyDeposit: $oldProxyDeposit,
+    proxies: $activeProxies,
   },
-  filter: ({ isChainConnected, form }) => isChainConnected && Boolean(form.chain) && Boolean(form.account),
-  fn: ({ apis, form }) => ({
-    api: apis[form.chain!.chainId],
-    address: toAddress(form.account!.accountId, { prefix: form.chain!.addressPrefix }),
-  }),
-  target: getAccountProxiesFx,
-});
-
-sample({
-  clock: getAccountProxiesFx.doneData,
-  target: $activeProxies,
-});
-
-sample({
-  clock: getAccountProxiesFx.doneData,
-  source: $maxProxies,
-  filter: (maxProxies, activeProxies) => maxProxies === activeProxies.length,
-  fn: () => ({
-    rule: 'maxProxies',
-    errorText: 'max_proxies_error',
-  }),
-  target: $proxyForm.fields.chain.addError,
-});
-
-sample({
-  clock: getAccountProxiesFx.doneData,
-  source: {
-    delegate: $proxyForm.fields.delegate.$value,
-    proxyType: $proxyForm.fields.proxyType.$value,
-  },
-  filter: ({ delegate, proxyType }, activeProxies) => {
-    return activeProxies.some((proxy) => proxy.proxyType === proxyType && proxy.address === delegate);
-  },
-  fn: () => ({
-    rule: 'proxyExists',
-    errorText: 'proxy_exists_error',
-  }),
-  target: $proxyForm.fields.delegate.addError,
-});
-
-sample({
-  clock: getAccountProxiesFx.doneData,
-  source: $proxyForm.$values,
-  filter: $proxyForm.$isValid,
-  fn: (formData) => {
+  fn: ({ oldProxyDeposit, proxies }, formData) => {
     const signatory = Object.keys(formData.signatory).length > 0 ? formData.signatory : undefined;
     const proxied = toAddress(formData.account.accountId, {
       prefix: formData.chain.addressPrefix,
@@ -499,7 +542,13 @@ sample({
     const multisigDescription = `Add proxy for ${proxied}`;
     const description = signatory ? formData.description || multisigDescription : '';
 
-    return { ...formData, signatory, description };
+    return {
+      ...formData,
+      signatory,
+      description,
+      oldProxyDeposit,
+      proxyNumber: proxies.length + 1,
+    };
   },
   target: formSubmitted,
 });
@@ -513,7 +562,9 @@ export const formModel = {
   $proxyTypes,
   $proxyQuery,
 
-  $proxyDeposit,
+  $activeProxies,
+  $oldProxyDeposit,
+  $newProxyDeposit,
   $multisigDeposit,
   $fee,
   $isFeeLoading,
@@ -521,9 +572,8 @@ export const formModel = {
   $api,
   $fakeTx,
   $isMultisig,
-  $isProxy,
   $isChainConnected,
-  $isLoading: getAccountProxiesFx.pending,
+  $canSubmit,
 
   events: {
     formInitiated,
@@ -532,6 +582,7 @@ export const formModel = {
     multisigDepositChanged,
     feeChanged,
     isFeeLoadingChanged,
+    isProxyDepositLoadingChanged,
   },
 
   output: {

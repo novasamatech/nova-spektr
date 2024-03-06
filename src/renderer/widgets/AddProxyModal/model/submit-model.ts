@@ -36,9 +36,6 @@ const extrinsicSucceeded = createEvent<ExtrinsicResultParams>();
 const extrinsicFailed = createEvent<string>();
 
 const $submitStore = restore<Input>(formInitiated, null);
-$submitStore.watch((v) => {
-  console.log('=== $submitStore', v);
-});
 
 const $submitStep = createStore<{ step: SubmitStep; message: string }>({ step: SubmitStep.LOADING, message: '' });
 

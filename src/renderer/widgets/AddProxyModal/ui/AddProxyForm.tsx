@@ -2,16 +2,15 @@ import { useForm } from 'effector-forms';
 import { FormEvent } from 'react';
 import { useUnit } from 'effector-react';
 
-import { Button, Select, Input, InputHint, Combobox, Identicon } from '@shared/ui';
+import { Button, Select, Input, InputHint, Combobox, Identicon, Alert } from '@shared/ui';
 import { useI18n } from '@app/providers';
 import { ChainTitle } from '@entities/chain';
 import { ProxyPopover } from '@entities/proxy';
-import { AccountAddress, accountUtils, walletUtils } from '@entities/wallet';
+import { AccountAddress, accountUtils } from '@entities/wallet';
 import { toAddress, toShortAddress } from '@shared/lib/utils';
 import { ProxyDepositWithLabel, MultisigDepositWithLabel, FeeWithLabel } from '@entities/transaction';
 import { formModel } from '../model/form-model';
 import { AssetBalance } from '@entities/asset';
-import { walletSelectModel } from '@features/wallets';
 import { MultisigAccount } from '@shared/core';
 
 type Props = {
@@ -38,7 +37,10 @@ export const AddProxyForm = ({ onGoBack }: Props) => {
         <ProxyTypeSelector />
         <DescriptionInput />
       </form>
-      <FeeSection />
+      <div className="flex flex-col gap-y-6 pt-6 pb-4">
+        <FeeSection />
+        <FeeError />
+      </div>
       <ButtonsSection onGoBack={onGoBack} />
     </div>
   );
@@ -84,16 +86,13 @@ const NetworkSelector = () => {
 };
 
 const AccountSelector = () => {
-  const { t } = useI18n();
-
   const {
     fields: { account, chain },
   } = useForm(formModel.$proxyForm);
 
-  const wallet = useUnit(walletSelectModel.$walletForDetails);
   const proxiedAccounts = useUnit(formModel.$proxiedAccounts);
 
-  if (walletUtils.isMultisig(wallet) || proxiedAccounts.length === 0) return null;
+  if (proxiedAccounts.length === 1) return null;
 
   const options = proxiedAccounts.map(({ account, balance }) => {
     const isShard = accountUtils.isShardAccount(account);
@@ -124,20 +123,14 @@ const AccountSelector = () => {
         placeholder="Select account"
         selectedId={account.value.id.toString()}
         options={options}
-        invalid={account.hasError()}
         disabled={options.length === 1}
         onChange={({ value }) => account.onChange(value)}
       />
-      <InputHint variant="error" active={account.hasError()}>
-        {t(account.errorText())}
-      </InputHint>
     </div>
   );
 };
 
 const SignatorySelector = () => {
-  const { t } = useI18n();
-
   const {
     fields: { chain, account, signatory },
   } = useForm(formModel.$proxyForm);
@@ -175,12 +168,8 @@ const SignatorySelector = () => {
         placeholder="Select signatory"
         selectedId={signatory.value.id.toString()}
         options={options}
-        invalid={signatory.hasError()}
         onChange={({ value }) => signatory.onChange(value)}
       />
-      <InputHint variant="error" active={signatory.hasError()}>
-        {t(signatory.errorText())}
-      </InputHint>
     </div>
   );
 };
@@ -239,7 +228,7 @@ const ProxyCombobox = () => {
 };
 
 const ProxyTypeSelector = () => {
-  // const { t } = useI18n();
+  const { t } = useI18n();
 
   const {
     fields: { proxyType },
@@ -257,9 +246,13 @@ const ProxyTypeSelector = () => {
         placeholder="Choose type"
         selectedId={proxyType.value}
         options={options}
+        invalid={proxyType.hasError()}
         disabled={!isChainConnected}
         onChange={({ value }) => proxyType.onChange(value)}
       />
+      <InputHint variant="error" active={proxyType.hasError()}>
+        {t(proxyType.errorText())}
+      </InputHint>
     </div>
   );
 };
@@ -299,13 +292,18 @@ const FeeSection = () => {
   const api = useUnit(formModel.$api);
   const fakeTx = useUnit(formModel.$fakeTx);
   const isMultisig = useUnit(formModel.$isMultisig);
+  const oldProxyDeposit = useUnit(formModel.$oldProxyDeposit);
+  const activeProxies = useUnit(formModel.$activeProxies);
 
   return (
-    <div className="flex flex-col gap-y-2 mt-6">
+    <div className="flex flex-col gap-y-2">
       <ProxyDepositWithLabel
         api={api}
+        deposit={oldProxyDeposit}
+        proxyNumber={activeProxies.length + 1}
         asset={chain.value.assets[0]}
         onDepositChange={formModel.events.proxyDepositChanged}
+        onDepositLoading={formModel.events.isProxyDepositLoadingChanged}
       />
 
       {isMultisig && (
@@ -328,23 +326,37 @@ const FeeSection = () => {
   );
 };
 
+const FeeError = () => {
+  const {
+    fields: { account, signatory },
+  } = useForm(formModel.$proxyForm);
+  const isMultisig = useUnit(formModel.$isMultisig);
+
+  return (
+    <Alert title="Not enough tokens" active={account.hasError() || signatory.hasError()} variant="error">
+      {isMultisig ? (
+        <>
+          <Alert.Item active={account.hasError()}>To pay proxy deposit with selected account</Alert.Item>
+          <Alert.Item active={signatory.hasError()}>
+            To pay multisig deposit and network fee with signatory account
+          </Alert.Item>
+        </>
+      ) : (
+        <Alert.Item withDot={false}>To pay proxy deposit and network fee with selected account</Alert.Item>
+      )}
+    </Alert>
+  );
+};
+
 const ButtonsSection = ({ onGoBack }: Props) => {
-  const { isValid } = useForm(formModel.$proxyForm);
-  const isLoading = useUnit(formModel.$isLoading);
-  const isChainConnected = useUnit(formModel.$isChainConnected);
-  const isFeeLoading = useUnit(formModel.$isFeeLoading);
+  const canSubmit = useUnit(formModel.$canSubmit);
 
   return (
     <div className="flex justify-between items-center mt-4">
       <Button variant="text" onClick={onGoBack}>
         Back
       </Button>
-      <Button
-        form="add-proxy-form"
-        type="submit"
-        disabled={!isValid || isLoading || !isChainConnected || isFeeLoading}
-        isLoading={isLoading}
-      >
+      <Button form="add-proxy-form" type="submit" disabled={!canSubmit}>
         Continue
       </Button>
     </div>

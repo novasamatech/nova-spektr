@@ -13,15 +13,15 @@ type Input = {
   delegate: Address;
   description: string;
   transaction: Transaction;
+
+  oldProxyDeposit: string;
+  proxyNumber: number;
 };
 
 const formInitiated = createEvent<Input>();
 const formSubmitted = createEvent();
 
 const $confirmStore = restore<Input>(formInitiated, null);
-$confirmStore.watch((v) => {
-  console.log('=== $confirmStore', v);
-});
 
 const $api = combine(
   {

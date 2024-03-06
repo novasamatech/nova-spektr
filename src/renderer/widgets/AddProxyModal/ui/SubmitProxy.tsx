@@ -3,12 +3,12 @@ import { ComponentProps, useEffect } from 'react';
 
 import { Button } from '@shared/ui';
 import { useI18n } from '@app/providers';
-import { OperationResult } from '@entities/transaction';
-import { submitModel } from '../model/submit-model';
-import { submitProxyUtils } from '../lib/submit-proxy-utils';
-import { SubmitStep } from '../lib/types';
 import { useTaskQueue } from '@shared/lib/hooks';
+import { OperationResult } from '@entities/transaction';
 import { useMultisigTx, useMultisigEvent } from '@entities/multisig';
+import { SubmitStep } from '../lib/types';
+import { submitProxyUtils } from '../lib/submit-proxy-utils';
+import { submitModel } from '../model/submit-model';
 
 type ResultProps = Pick<ComponentProps<typeof OperationResult>, 'title' | 'description' | 'variant'>;
 

@@ -24,6 +24,7 @@ export const Confirmation = ({ onGoBack }: Props) => {
   if (!confirmStore || !api || !initiatorWallet) return null;
 
   const [isFeeLoading, setIsFeeLoading] = useState(true);
+  const [isProxyDepositLoading, setIsProxyDepositLoading] = useState(true);
 
   return (
     <div className="flex flex-col items-center pt-4 gap-y-4 pb-4 px-5">
@@ -81,7 +82,13 @@ export const Confirmation = ({ onGoBack }: Props) => {
 
         <hr className="border-filter-border w-full pr-2" />
 
-        <ProxyDepositWithLabel api={api} asset={confirmStore.chain.assets[0]} />
+        <ProxyDepositWithLabel
+          api={api}
+          deposit={confirmStore.oldProxyDeposit}
+          proxyNumber={confirmStore.proxyNumber}
+          asset={confirmStore.chain.assets[0]}
+          onDepositLoading={setIsProxyDepositLoading}
+        />
 
         {accountUtils.isMultisigAccount(confirmStore.account) && (
           <MultisigDepositWithLabel
@@ -105,7 +112,7 @@ export const Confirmation = ({ onGoBack }: Props) => {
         </Button>
 
         <SignButton
-          disabled={isFeeLoading}
+          disabled={isFeeLoading || isProxyDepositLoading}
           type={(signerWallet || initiatorWallet).type}
           onClick={confirmModel.output.formSubmitted}
         />

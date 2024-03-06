@@ -12,41 +12,50 @@ import { priceProviderModel } from '@entities/price';
 type Props = {
   api?: ApiPromise;
   asset: Asset;
+  deposit?: string;
+  proxyNumber?: number;
   className?: string;
   onDepositChange?: (deposit: string) => void;
+  onDepositLoading?: (loading: boolean) => void;
 };
 
-export const ProxyDeposit = memo(({ api, asset, className, onDepositChange }: Props) => {
-  const fiatFlag = useUnit(priceProviderModel.$fiatFlag);
+export const ProxyDeposit = memo(
+  ({ api, asset, deposit, proxyNumber, className, onDepositChange, onDepositLoading }: Props) => {
+    const fiatFlag = useUnit(priceProviderModel.$fiatFlag);
 
-  const [deposit, setDeposit] = useState('');
-  const [isLoading, setIsLoading] = useState(true);
+    const [proxyDeposit, setProxyDeposit] = useState('');
+    const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    setIsLoading(true);
+    useEffect(() => {
+      onDepositLoading?.(isLoading);
+    }, [isLoading]);
 
-    if (api) {
-      const txDeposit = proxyService.getProxyDeposit(api);
+    useEffect(() => {
+      setIsLoading(true);
 
-      setDeposit(txDeposit);
-      setIsLoading(false);
-      onDepositChange?.(txDeposit);
+      if (api && deposit && proxyNumber) {
+        const txDeposit = proxyService.getProxyDeposit(api, deposit, proxyNumber);
+
+        setProxyDeposit(txDeposit);
+        setIsLoading(false);
+        onDepositChange?.(txDeposit);
+      }
+    }, [api, deposit, proxyNumber]);
+
+    if (isLoading) {
+      return (
+        <div className="flex flex-col gap-y-0.5 items-end">
+          <Shimmering width={90} height={20} data-testid="fee-loader" />
+          {fiatFlag && <Shimmering width={70} height={18} data-testid="fee-loader" />}
+        </div>
+      );
     }
-  }, [api]);
 
-  if (!api || isLoading) {
     return (
       <div className="flex flex-col gap-y-0.5 items-end">
-        <Shimmering width={90} height={20} data-testid="fee-loader" />
-        {fiatFlag && <Shimmering width={70} height={18} data-testid="fee-loader" />}
+        <AssetBalance value={proxyDeposit} asset={asset} className={className} />
+        <AssetFiatBalance asset={asset} amount={proxyDeposit} />
       </div>
     );
-  }
-
-  return (
-    <div className="flex flex-col gap-y-0.5 items-end">
-      <AssetBalance value={deposit} asset={asset} className={className} />
-      <AssetFiatBalance asset={asset} amount={deposit} />
-    </div>
-  );
-});
+  },
+);
