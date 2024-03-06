@@ -38,6 +38,8 @@ export const Networks = () => {
   const [network, setNetwork] = useState<ExtendedChain>();
 
   const closeNetworksModal = () => {
+    if (isCustomRpcOpen) return;
+
     toggleNetworksModal();
     setTimeout(() => navigate(Paths.SETTINGS), DEFAULT_TRANSITION);
   };

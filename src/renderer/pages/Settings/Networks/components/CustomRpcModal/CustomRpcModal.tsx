@@ -74,15 +74,6 @@ export const CustomRpcModal = ({ network, node, isOpen, onClose }: Props) => {
     setValue('url', node.url);
   }, [node]);
 
-  // const onCloseModal = (newNode?: RpcNode) => {
-  //   onClose(newNode);
-  //
-  //   setTimeout(() => {
-  //     reset();
-  //     setFormState(FormState.INIT);
-  //   }, MODAL_ANIMATION);
-  // };
-
   const onAddressChange = (onChange: (value: string) => void) => {
     return (value: string) => {
       onChange(value);
