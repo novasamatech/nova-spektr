@@ -132,12 +132,13 @@ const AccountSelector = () => {
 
 const SignatorySelector = () => {
   const {
-    fields: { chain, account, signatory },
+    fields: { chain, signatory },
   } = useForm(formModel.$proxyForm);
 
   const signatories = useUnit(formModel.$signatories);
+  const isMultisig = useUnit(formModel.$isMultisig);
 
-  if (!accountUtils.isMultisigAccount(account.value)) return null;
+  if (!isMultisig) return null;
 
   const options = signatories.map(({ signer, balance }) => {
     const isShard = accountUtils.isShardAccount(signer);
@@ -265,10 +266,11 @@ const DescriptionInput = () => {
   const { t } = useI18n();
 
   const {
-    fields: { account, description },
+    fields: { description },
   } = useForm(formModel.$proxyForm);
+  const isMultisig = useUnit(formModel.$isMultisig);
 
-  if (!accountUtils.isMultisigAccount(account.value)) return null;
+  if (!isMultisig) return null;
 
   return (
     <div className="flex flex-col gap-y-2">

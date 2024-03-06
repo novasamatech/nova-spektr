@@ -239,7 +239,7 @@ export const MultisigWalletDetails = ({
                   onAddProxy={toggleIsAddProxyModalOpen}
                 />
               ),
-            }
+            },
           ]}
         />
       </div>

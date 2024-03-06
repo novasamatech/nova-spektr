@@ -81,7 +81,11 @@ export const MultishardWalletDetails = ({ wallet, accounts, onClose }: Props) =>
       panel: hasProxies ? (
         <ProxiesList className="h-[403px] mt-4" canCreateProxy={canCreateProxy} />
       ) : (
-        <NoProxiesAction className="h-[403px] mt-4" onAddProxy={toggleIsAddProxyModalOpen} canCreateProxy={canCreateProxy} />
+        <NoProxiesAction
+          className="h-[403px] mt-4"
+          canCreateProxy={canCreateProxy}
+          onAddProxy={toggleIsAddProxyModalOpen}
+        />
       ),
     },
   ];

@@ -181,7 +181,8 @@ export const LoginForm = ({ redirectStep }: Props) => {
                 value={value.value}
                 onInput={matrixLoginModel.events.homeserverQueryChanged}
                 onChange={changeHomeserver(onChange)}
-              />              <InputHint active={invalidHomeserver} variant="error">
+              />
+              <InputHint active={invalidHomeserver} variant="error">
                 {t('settings.matrix.badServerError')}
               </InputHint>
             </div>

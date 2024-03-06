@@ -20,12 +20,12 @@ export type Callbacks = {
   onClose: () => void;
 };
 
-const stepChanged = createEvent<Step>();
-
 const $callbacks = createStore<Callbacks | null>(null);
 const callbacksApi = createApi($callbacks, {
   callbacksChanged: (state, props: Callbacks) => ({ ...state, ...props }),
 });
+
+const stepChanged = createEvent<Step>();
 
 const $step = createStore<Step>(Step.INIT);
 

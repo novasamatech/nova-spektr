@@ -20,10 +20,14 @@ export const NoProxiesAction = ({ className, canCreateProxy = true, onAddProxy }
         <ProxyPopover />
       </div>
       {canCreateProxy && (
-        <><FootnoteText className="text-text-tertiary mb-4">{t('walletDetails.common.emptyProxyDescription')}</FootnoteText>
-      <Button size="sm" onClick={onAddProxy}>
-        {t('walletDetails.common.addProxyButton')}
-      </Button></>
+        <>
+          <FootnoteText className="text-text-tertiary mb-4">
+            {t('walletDetails.common.emptyProxyDescription')}
+          </FootnoteText>
+          <Button size="sm" onClick={onAddProxy}>
+            {t('walletDetails.common.addProxyButton')}
+          </Button>
+        </>
       )}
     </div>
   );

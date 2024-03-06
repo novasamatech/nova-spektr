@@ -35,7 +35,7 @@ const $api = combine(
 );
 
 sample({
-  clock: once(dataReceived),
+  clock: once({ source: dataReceived, reset: formInitiated }),
   target: formSubmitted,
 });
 

@@ -547,7 +547,7 @@ sample({
     const proxied = toAddress(formData.account.accountId, {
       prefix: formData.chain.addressPrefix,
     });
-    const multisigDescription = `Add proxy for ${proxied}`;
+    const multisigDescription = `Add proxy for ${proxied}`; // TODO: update after i18n effector integration
     const description = signatory ? formData.description || multisigDescription : '';
 
     return {

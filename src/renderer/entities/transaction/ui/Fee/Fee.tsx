@@ -54,9 +54,7 @@ export const Fee = memo(({ api, multiply = 1, asset, transaction, className, onF
     }
   }, [transaction, api]);
 
-  if (!api || isLoading) {
-    return <FeeLoader fiatFlag={!!fiatFlag} />;
-  }
+  if (isLoading) return <FeeLoader fiatFlag={Boolean(fiatFlag)} />;
 
   const totalFee = new BN(fee).muln(multiply).toString();
 

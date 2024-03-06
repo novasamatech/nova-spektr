@@ -455,7 +455,8 @@ export const wrapAsMulti = (
   };
 };
 
-// TODO: finish in later tasks
+// TODO: finish in "Create proxy operation for add/remove proxy"
+// https://github.com/novasamatech/nova-spektr/issues/1445
 export const wrapAsProxy = (api: ApiPromise, transaction: Transaction, addressPrefix: number): Transaction => {
   const extrinsic = getExtrinsic[transaction.type](transaction.args, api);
   const callData = extrinsic.method.toHex();

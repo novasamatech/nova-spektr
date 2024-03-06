@@ -164,7 +164,11 @@ export const VaultWalletDetails = ({ wallet, root, accountsMap, onClose }: Props
       panel: hasProxies ? (
         <ProxiesList className="h-[403px] mt-4" canCreateProxy={canCreateProxy} />
       ) : (
-        <NoProxiesAction className="h-[403px] mt-4" canCreateProxy={canCreateProxy} onAddProxy={toggleIsAddProxyModalOpen} />
+        <NoProxiesAction
+          className="h-[403px] mt-4"
+          canCreateProxy={canCreateProxy}
+          onAddProxy={toggleIsAddProxyModalOpen}
+        />
       ),
     },
   ];
