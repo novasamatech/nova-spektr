@@ -20,7 +20,7 @@ import {
   ProxyDeposits,
 } from '@shared/core';
 import { proxyWorkerUtils } from '../lib/worker-utils';
-import { checkPureProxies } from '@/src/renderer/entities/proxy/api/pureProxiesService';
+import { checkPureProxies } from '@entities/proxy/api/pureProxiesService';
 
 export const proxyWorker = {
   initConnection,

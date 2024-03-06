@@ -69,6 +69,7 @@ describe('features/proxies/workers/proxy-worker', () => {
 
     const result = await proxyWorker.getProxies({
       chainId,
+      proxyUrl: '',
       accountsForProxy,
       accountsForProxied,
       proxiedAccounts,
@@ -96,6 +97,7 @@ describe('features/proxies/workers/proxy-worker', () => {
 
     const result = await proxyWorker.getProxies({
       chainId,
+      proxyUrl: '',
       accountsForProxy,
       accountsForProxied,
       proxiedAccounts,
@@ -166,6 +168,7 @@ describe('features/proxies/workers/proxy-worker', () => {
 
     const result = await proxyWorker.getProxies({
       chainId,
+      proxyUrl: '',
       accountsForProxy,
       accountsForProxied,
       proxiedAccounts,
@@ -231,6 +234,7 @@ describe('features/proxies/workers/proxy-worker', () => {
 
     const result = await proxyWorker.getProxies({
       chainId,
+      proxyUrl: '',
       accountsForProxy,
       accountsForProxied,
       proxiedAccounts,
@@ -299,6 +303,7 @@ describe('features/proxies/workers/proxy-worker', () => {
 
     const result = await proxyWorker.getProxies({
       chainId,
+      proxyUrl: '',
       accountsForProxy,
       accountsForProxied,
       proxiedAccounts,
@@ -371,6 +376,7 @@ describe('features/proxies/workers/proxy-worker', () => {
 
     const result = await proxyWorker.getProxies({
       chainId,
+      proxyUrl: '',
       accountsForProxy,
       accountsForProxied,
       proxiedAccounts,
