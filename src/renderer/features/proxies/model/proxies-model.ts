@@ -136,6 +136,7 @@ const createProxiedWalletsFx = createEffect(
       const walletName = proxyUtils.getProxiedName(
         proxied.accountId,
         proxied.proxyType,
+        proxied.proxyVariant,
         chains[proxied.chainId].addressPrefix,
       );
       const wallet = {

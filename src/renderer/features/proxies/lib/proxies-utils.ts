@@ -42,7 +42,12 @@ function getNotification({
       proxyWalletName: accountsWalletsMap[proxied.proxyAccountId].name,
       proxyWalletType: accountsWalletsMap[proxied.proxyAccountId].type,
       proxiedAccountId: proxied.accountId,
-      proxiedWalletName: proxyUtils.getProxiedName(proxied.accountId, proxied.proxyType, addressPrefix),
+      proxiedWalletName: proxyUtils.getProxiedName(
+        proxied.accountId,
+        proxied.proxyType,
+        proxied.proxyVariant,
+        addressPrefix,
+      ),
       read: false,
       type,
     };

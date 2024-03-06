@@ -1,4 +1,4 @@
-import { ProxyType } from '@shared/core';
+import { ProxyType, ProxyVariant } from '@shared/core';
 import { TEST_ACCOUNTS } from '@shared/lib/utils';
 import { proxyUtils } from '../proxy-utils';
 import { proxyMock } from './mocks/proxy-mocks';
@@ -19,7 +19,7 @@ describe('entities/proxy/lib/utils', () => {
   });
 
   test('should return proxied name for a given proxied account', () => {
-    const result = proxyUtils.getProxiedName(TEST_ACCOUNTS[0], ProxyType.ANY);
+    const result = proxyUtils.getProxiedName(TEST_ACCOUNTS[0], ProxyType.ANY, ProxyVariant.REGULAR);
 
     expect(result).toEqual('Any for 5CGQ7B...VbXyr9');
   });
