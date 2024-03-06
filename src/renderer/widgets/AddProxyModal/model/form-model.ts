@@ -75,7 +75,7 @@ const $proxyForm = createForm<FormParams>({
       rules: [
         {
           name: 'maxProxies',
-          errorText: 'max_proxies_error',
+          errorText: 'proxy.addProxy.maxProxiesError',
           source: combine({
             maxProxies: $maxProxies,
             proxies: $activeProxies,
@@ -89,7 +89,6 @@ const $proxyForm = createForm<FormParams>({
       rules: [
         {
           name: 'notEnoughTokens',
-          errorText: 'no_tokens_for_proxy_deposit_error',
           source: combine({
             fee: $fee,
             proxyDeposit: $newProxyDeposit,
@@ -116,7 +115,7 @@ const $proxyForm = createForm<FormParams>({
       rules: [
         {
           name: 'notEnoughTokens',
-          errorText: 'no_tokens_for_multisig_deposit_error',
+          errorText: 'proxy.addProxy.notEnoughMultisigTokens',
           source: combine({
             fee: $fee,
             multisigDeposit: $multisigDeposit,
@@ -146,19 +145,19 @@ const $proxyForm = createForm<FormParams>({
       rules: [
         {
           name: 'required',
-          errorText: 'proxy_address_error',
+          errorText: 'proxy.addProxy.proxyAddressRequiredError',
           validator: Boolean,
         },
         {
           name: 'sameAsProxied',
-          errorText: 'same_as_proxied_error',
+          errorText: 'proxy.addProxy.sameAsProxiedError',
           validator: (value, { account, chain }) => {
             return value !== toAddress(account.accountId, { prefix: chain.addressPrefix });
           },
         },
         {
           name: 'proxyTypeExist',
-          errorText: 'proxy_type_exists_error',
+          errorText: 'proxy.addProxy.proxyTypeExistError',
           source: $activeProxies,
           validator: (value, { proxyType }, activeProxies: ProxyAccounts['accounts']) => {
             const sameProxyExist = activeProxies.some((proxy) => {
@@ -172,20 +171,12 @@ const $proxyForm = createForm<FormParams>({
     },
     proxyType: {
       init: '' as ProxyType,
-      rules: [
-        {
-          name: 'required',
-          errorText: 'proxy_type_error',
-          validator: Boolean,
-        },
-      ],
     },
     description: {
       init: '',
       rules: [
         {
           name: 'maxLength',
-          errorText: 'description_error',
           validator: (value) => !value || value.length <= 120,
         },
       ],
@@ -576,7 +567,6 @@ export const formModel = {
   $newProxyDeposit,
   $multisigDeposit,
   $fee,
-  $isFeeLoading,
 
   $api,
   $fakeTx,

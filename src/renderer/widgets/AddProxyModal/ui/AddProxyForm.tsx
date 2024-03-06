@@ -28,7 +28,7 @@ export const AddProxyForm = ({ onGoBack }: Props) => {
 
   return (
     <div className="pb-4 px-5">
-      <ProxyPopover>{t('manageProxy.addProxy.proxyTooltip')}</ProxyPopover>
+      <ProxyPopover>{t('proxy.proxyTooltip')}</ProxyPopover>
       <form id="add-proxy-form" className="flex flex-col gap-y-4 mt-4" onSubmit={submitProxy}>
         <NetworkSelector />
         <AccountSelector />
@@ -71,8 +71,8 @@ const NetworkSelector = () => {
   return (
     <div className="flex flex-col gap-y-2">
       <Select
-        label="Network"
-        placeholder="Select network"
+        label={t('proxy.addProxy.networkLabel')}
+        placeholder={t('proxy.addProxy.networkPlaceholder')}
         selectedId={chain.value.chainId}
         invalid={chain.hasError()}
         options={options}
@@ -86,6 +86,8 @@ const NetworkSelector = () => {
 };
 
 const AccountSelector = () => {
+  const { t } = useI18n();
+
   const {
     fields: { account, chain },
   } = useForm(formModel.$proxyForm);
@@ -119,8 +121,8 @@ const AccountSelector = () => {
   return (
     <div className="flex flex-col gap-y-2">
       <Select
-        label="Your account"
-        placeholder="Select account"
+        label={t('proxy.addProxy.accountLabel')}
+        placeholder={t('proxy.addProxy.accountPlaceholder')}
         selectedId={account.value.id.toString()}
         options={options}
         disabled={options.length === 1}
@@ -131,6 +133,8 @@ const AccountSelector = () => {
 };
 
 const SignatorySelector = () => {
+  const { t } = useI18n();
+
   const {
     fields: { chain, signatory },
   } = useForm(formModel.$proxyForm);
@@ -165,12 +169,16 @@ const SignatorySelector = () => {
   return (
     <div className="flex flex-col gap-y-2">
       <Select
-        label="Signatory"
-        placeholder="Select signatory"
+        label={t('proxy.addProxy.signatoryLabel')}
+        placeholder={t('proxy.addProxy.signatoryPlaceholder')}
         selectedId={signatory.value.id.toString()}
         options={options}
+        invalid={signatory.hasError()}
         onChange={({ value }) => signatory.onChange(value)}
       />
+      <InputHint variant="error" active={signatory.hasError()}>
+        {t(signatory.errorText())}
+      </InputHint>
     </div>
   );
 };
@@ -209,8 +217,8 @@ const ProxyCombobox = () => {
   return (
     <div className="flex flex-col gap-y-2">
       <Combobox
-        label="Give authority to"
-        placeholder="Enter address"
+        label={t('proxy.addProxy.delegateLabel')}
+        placeholder={t('proxy.addProxy.delegatePlaceholder')}
         query={proxyQuery}
         options={options}
         value={delegate.value}
@@ -247,8 +255,8 @@ const ProxyTypeSelector = () => {
   return (
     <div className="flex flex-col gap-y-2">
       <Select
-        label="Access type"
-        placeholder="Choose type"
+        label={t('proxy.addProxy.proxyTypeLabel')}
+        placeholder={t('proxy.addProxy.proxyTypePlaceholder')}
         selectedId={proxyType.value}
         options={options}
         invalid={proxyType.hasError()}
@@ -284,7 +292,9 @@ const DescriptionInput = () => {
         onChange={description.onChange}
       />
       <InputHint variant="error" active={description.hasError()}>
-        {t(description.errorText())}
+        {description.errorText({
+          maxLength: t('proxy.addProxy.maxLengthDescriptionError', { maxLength: 120 }),
+        })}
       </InputHint>
     </div>
   );
@@ -333,37 +343,35 @@ const FeeSection = () => {
 };
 
 const FeeError = () => {
+  const { t } = useI18n();
+
   const {
-    fields: { account, signatory },
+    fields: { account },
   } = useForm(formModel.$proxyForm);
+
   const isMultisig = useUnit(formModel.$isMultisig);
 
   return (
-    <Alert title="Not enough tokens" active={account.hasError() || signatory.hasError()} variant="error">
-      {isMultisig ? (
-        <>
-          <Alert.Item active={account.hasError()}>To pay proxy deposit with selected account</Alert.Item>
-          <Alert.Item active={signatory.hasError()}>
-            To pay multisig deposit and network fee with signatory account
-          </Alert.Item>
-        </>
-      ) : (
-        <Alert.Item withDot={false}>To pay proxy deposit and network fee with selected account</Alert.Item>
-      )}
+    <Alert title={t('proxy.addProxy.balanceAlertTitle')} active={account.hasError()} variant="error">
+      <Alert.Item withDot={false}>
+        {isMultisig ? t('proxy.addProxy.balanceAlertMultisig') : t('proxy.addProxy.balanceAlertRegular')}
+      </Alert.Item>
     </Alert>
   );
 };
 
 const ButtonsSection = ({ onGoBack }: Props) => {
+  const { t } = useI18n();
+
   const canSubmit = useUnit(formModel.$canSubmit);
 
   return (
     <div className="flex justify-between items-center mt-4">
       <Button variant="text" onClick={onGoBack}>
-        Back
+        {t('operation.goBackButton')}
       </Button>
       <Button form="add-proxy-form" type="submit" disabled={!canSubmit}>
-        Continue
+        {t('operation.continueButton')}
       </Button>
     </div>
   );

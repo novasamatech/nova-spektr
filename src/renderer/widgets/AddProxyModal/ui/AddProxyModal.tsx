@@ -36,14 +36,9 @@ export const AddProxyModal = ({ isOpen, onClose }: Props) => {
   }, [closeModal]);
 
   const getModalTitle = (step: Step, chain?: Chain) => {
-    if (addProxyUtils.isInitStep(step) || !chain) return 'Add delegated authority (proxy)';
+    if (addProxyUtils.isInitStep(step) || !chain) return t('operations.modalTitles.addProxy');
 
-    return (
-      <OperationTitle
-        title={t('Add delegated authority (proxy) on ', { asset: chain.assets[0].symbol })}
-        chainId={chain.chainId}
-      />
-    );
+    return <OperationTitle title={t('operations.modalTitles.addProxyOn')} chainId={chain.chainId} />;
   };
 
   if (addProxyUtils.isSubmitStep(step)) return <SubmitProxy isOpen={isModalOpen} onClose={closeModal} />;
