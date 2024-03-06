@@ -11,8 +11,8 @@ import { AccountsList, WalletCardLg, WalletIcon } from '@entities/wallet';
 import { RenameWalletModal } from '@features/wallets/RenameWallet';
 import { TabItem } from '@shared/ui/Tabs/common/types';
 import { ProxiesList } from '../components/ProxiesList';
-import { walletProviderModel } from '../../model/wallet-provider-model';
 import { NoProxiesAction } from '../components/NoProxiesAction';
+import { walletProviderModel } from '../../model/wallet-provider-model';
 
 const ProxyTypeOperation: Record<ProxyType, string> = {
   [ProxyType.ANY]: 'proxy.operations.any',

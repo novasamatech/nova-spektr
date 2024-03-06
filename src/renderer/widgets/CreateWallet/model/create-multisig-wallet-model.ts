@@ -13,6 +13,7 @@ import {
 import { accountUtils, walletModel, walletUtils } from '@entities/wallet';
 import { RelayChains, dictionary } from '@shared/lib/utils';
 import { matrixModel } from '@entities/matrix';
+import { networkModel, networkUtils } from '@entities/network';
 
 const reset = createEvent();
 
@@ -37,6 +38,16 @@ const $chain = createStore<ChainId | null>(null).reset(reset);
 const $signatories = createStore<Signatory[]>([]).reset(reset);
 const $error = createStore('').reset(reset);
 
+const $isEthereumChain = combine(
+  {
+    chainId: $chain,
+    chains: networkModel.$chains,
+  },
+  ({ chainId, chains }) => {
+    return !!chainId && networkUtils.isEthereumBased(chains[chainId].options);
+  },
+);
+
 type CreateWalletParams = {
   matrix: any;
   name: string;
@@ -44,16 +55,24 @@ type CreateWalletParams = {
   creatorId: string;
   signatories: Signatory[];
   chainId: ChainId | null;
+  isEthereumChain: boolean;
 };
 
 const createWalletFx = createEffect(
-  async ({ matrix, name, threshold, creatorId, signatories, chainId }: CreateWalletParams) => {
+  async ({ matrix, name, threshold, creatorId, signatories, chainId, isEthereumChain }: CreateWalletParams) => {
     const accountIds = signatories.map((s) => s.accountId);
-    const accountId = accountUtils.getMultisigAccountId(accountIds, threshold);
+    const accountId = accountUtils.getMultisigAccountId(
+      accountIds,
+      threshold,
+      isEthereumChain ? CryptoType.ETHEREUM : CryptoType.SR25519,
+    );
     let roomId = matrix.joinedRooms(accountId)[0]?.roomId;
     const isMyAccounts = signatories.every((s) => s.matrixId === matrix.userId);
 
-    if (!roomId || !isMyAccounts) {
+    if (!roomId && !isMyAccounts) {
+      // Create new room only if both conditions are met:
+      // 1. No existing roomId is found.
+      // 2. Not all signatories are controlled by the current user.
       roomId = await matrix.createRoom({
         creatorAccountId: creatorId,
         accountName: name,
@@ -78,8 +97,8 @@ const createWalletFx = createEffect(
           matrixRoomId: roomId,
           threshold: threshold,
           creatorAccountId: creatorId as AccountId,
-          cryptoType: CryptoType.SR25519,
-          chainType: ChainType.SUBSTRATE,
+          cryptoType: isEthereumChain ? CryptoType.ETHEREUM : CryptoType.SR25519,
+          chainType: isEthereumChain ? ChainType.ETHEREUM : ChainType.SUBSTRATE,
           type: AccountType.MULTISIG,
         },
       ],
@@ -92,16 +111,18 @@ const $availableAccounts = combine(
     accounts: walletModel.$accounts,
     wallets: walletModel.$wallets,
     chain: $chain,
+    chains: networkModel.$chains,
   },
-  ({ accounts, chain, wallets }) => {
+  ({ accounts, chain, wallets, chains }) => {
     const walletsMap = dictionary(wallets, 'id');
 
     const chainAccounts = accounts.filter((account) => {
       const wallet = walletsMap[account.walletId];
       const isAvailableType = !accountUtils.isMultisigAccount(account) && !walletUtils.isWatchOnly(wallet);
       const isChainIdMatch = accountUtils.isChainIdMatch(account, chain || RelayChains.POLKADOT);
+      const isCryptoTypeMatch = chain ? accountUtils.isCryptoTypeMatch(account, chains[chain]) : true;
 
-      return isChainIdMatch && isAvailableType;
+      return isChainIdMatch && isAvailableType && isCryptoTypeMatch;
     });
 
     const baseAccounts = chainAccounts.filter((a) => accountUtils.isBaseAccount(a) && a.name);
@@ -127,6 +148,7 @@ sample({
     signatories: $signatories,
     matrix: matrixModel.$matrix,
     chainId: $chain,
+    isEthereumChain: $isEthereumChain,
   },
   fn: (sourceValues, resultValues) => ({ ...sourceValues, ...resultValues }),
   target: createWalletFx,

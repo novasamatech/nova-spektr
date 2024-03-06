@@ -18,9 +18,9 @@ import { WalletFiatBalance } from '@features/wallets/WalletSelect/ui/WalletFiatB
 import { IconNames } from '@shared/ui/Icon/data';
 import { RenameWalletModal } from '@features/wallets/RenameWallet';
 import { ForgetWalletModal } from '@features/wallets/ForgetWallet';
-import { walletProviderModel } from '../../model/wallet-provider-model';
 import { ProxiesList } from '../components/ProxiesList';
 import { NoProxiesAction } from '../components/NoProxiesAction';
+import { walletProviderModel } from '../../model/wallet-provider-model';
 import { networkUtils, networkModel } from '@entities/network';
 import { matrixModel, matrixUtils } from '@entities/matrix';
 import { AddProxyModal } from '../../../AddProxyModal';
@@ -30,6 +30,7 @@ type Props = {
   account: MultisigAccount;
   signatoryWallets: [AccountId, Wallet][];
   signatoryContacts: Signatory[];
+  signatoryAccounts: Signatory[];
   onClose: () => void;
 };
 export const MultisigWalletDetails = ({
@@ -37,6 +38,7 @@ export const MultisigWalletDetails = ({
   account,
   signatoryWallets = [],
   signatoryContacts = [],
+  signatoryAccounts = [],
   onClose,
 }: Props) => {
   const { t } = useI18n();
@@ -55,10 +57,6 @@ export const MultisigWalletDetails = ({
 
   const chain = account.chainId && chains[account.chainId];
   const explorers = chain?.explorers || RootExplorers;
-
-  const accountSignatories = useMemo(() => {
-    return chain && account.signatories;
-  }, [chain, account]);
 
   const multisigChains = useMemo(() => {
     return Object.values(chains).filter((chain) => {
@@ -166,19 +164,25 @@ export const MultisigWalletDetails = ({
                       </div>
                     )}
 
-                    {chain && accountSignatories?.length && (
+                    {chain && signatoryAccounts?.length && (
                       <div className="flex flex-col gap-y-2 px-5">
                         <FootnoteText className="text-text-tertiary ">
-                          {t('walletDetails.multisig.accountsGroup')} {signatoryWallets.length}
+                          {t('walletDetails.multisig.accountsGroup')} {signatoryAccounts.length}
                         </FootnoteText>
 
                         <ul className="flex flex-col gap-y-2">
-                          {accountSignatories.map((signatory) => (
+                          {signatoryAccounts.map((signatory) => (
                             <li key={signatory.accountId} className="flex items-center gap-x-2 py-1.5">
                               <ExplorersPopover
                                 address={signatory.accountId}
                                 explorers={RootExplorers}
-                                button={<ContactItem name={signatory.name} address={signatory.accountId} />}
+                                button={
+                                  <ContactItem
+                                    name={signatory.name}
+                                    address={signatory.accountId}
+                                    addressPrefix={chain.addressPrefix}
+                                  />
+                                }
                               >
                                 <ExplorersPopover.Group
                                   active={matrixUtils.isLoggedIn(loginStatus)}
@@ -235,7 +239,7 @@ export const MultisigWalletDetails = ({
                   onAddProxy={toggleIsAddProxyModalOpen}
                 />
               ),
-            },
+            }
           ]}
         />
       </div>

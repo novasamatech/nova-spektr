@@ -112,7 +112,7 @@ sample({
         chainId: chain.chainId,
         name: KEY_NAMES[KeyType.MAIN],
         derivationPath: `//${chain.specName}`,
-        cryptoType: CryptoType.SR25519,
+        cryptoType: networkUtils.isEthereumBased(chain.options) ? CryptoType.ETHEREUM : CryptoType.SR25519,
         chainType: ChainType.SUBSTRATE,
         type: AccountType.CHAIN,
         keyType: KeyType.MAIN,

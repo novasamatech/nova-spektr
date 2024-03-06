@@ -4,8 +4,7 @@ import { useEffect, useState, memo } from 'react';
 import { useUnit } from 'effector-react';
 
 import { AssetBalance } from '@entities/asset';
-import { Transaction, useTransaction } from '@entities/transaction';
-import { Shimmering } from '@shared/ui';
+import { FeeLoader, Transaction, useTransaction } from '@entities/transaction';
 import type { Asset } from '@shared/core';
 import { priceProviderModel } from '@entities/price';
 import { AssetFiatBalance } from '@entities/price/ui/AssetFiatBalance';
@@ -56,12 +55,7 @@ export const Fee = memo(({ api, multiply = 1, asset, transaction, className, onF
   }, [transaction, api]);
 
   if (!api || isLoading) {
-    return (
-      <div className="flex flex-col gap-y-0.5 items-end">
-        <Shimmering width={90} height={20} data-testid="fee-loader" />
-        {fiatFlag && <Shimmering width={70} height={18} data-testid="fee-loader" />}
-      </div>
-    );
+    return <FeeLoader fiatFlag={!!fiatFlag} />;
   }
 
   const totalFee = new BN(fee).muln(multiply).toString();

@@ -35,6 +35,11 @@ export const MultisigWallet = ({ isOpen, onClose, onComplete }: Props) => {
     setTimeout(params?.complete ? onComplete : onClose, DEFAULT_TRANSITION);
   };
 
+  const goBack = () => {
+    setWalletType(undefined);
+    setStep(Step.SELECT_WALLET_TYPE);
+  };
+
   return (
     <>
       <SelectMultisigWalletType
@@ -47,12 +52,14 @@ export const MultisigWallet = ({ isOpen, onClose, onComplete }: Props) => {
         isOpen={isModalOpen && step === Step.CREATE_WALLET && walletType === MultisigWalletType.SINGLE_CHAIN}
         onClose={closeMultisigModal}
         onComplete={onComplete}
+        onBack={goBack}
       />
 
       <MultiChainMultisigWallet
         isOpen={isModalOpen && step === Step.CREATE_WALLET && walletType === MultisigWalletType.MULTI_CHAIN}
         onClose={closeMultisigModal}
         onComplete={onComplete}
+        onBack={goBack}
       />
     </>
   );
