@@ -2,6 +2,7 @@ import { render, screen } from '@testing-library/react';
 
 import { AddressWithName } from './AddressWithName';
 import { TEST_ACCOUNTS, TEST_ADDRESS } from '@shared/lib/utils';
+
 describe('ui/Address', () => {
   test('should render component', () => {
     render(<AddressWithName accountId={TEST_ACCOUNTS[0]} addressPrefix={0} />);

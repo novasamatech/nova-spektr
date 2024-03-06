@@ -6,15 +6,16 @@ import { cnTw } from '@shared/lib/utils';
 import { Fee } from '../Fee/Fee';
 
 type Props = ComponentProps<typeof Fee> & {
+  label?: string;
   wrapperClassName?: string;
 };
 
-export const FeeWithLabel = ({ wrapperClassName, ...feeProps }: Props) => {
+export const FeeWithLabel = ({ label, wrapperClassName, ...feeProps }: Props) => {
   const { t } = useI18n();
 
   return (
     <DetailRow
-      label={<FootnoteText className="text-text-tertiary">{t('operation.networkFee')}</FootnoteText>}
+      label={<FootnoteText className="text-text-tertiary">{label || t('operation.networkFee')}</FootnoteText>}
       className={cnTw('text-text-primary', wrapperClassName)}
     >
       <Fee {...feeProps} />

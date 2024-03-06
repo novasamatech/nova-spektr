@@ -142,7 +142,7 @@ sample({
   filter: ({ params }) => Boolean(params),
   fn: ({ apis, params }) => {
     return {
-      api: apis[params!.chain.chainId], // params - null
+      api: apis[params!.chain.chainId],
       signature: params!.signature,
       unsignedTx: params!.unsignedTx,
     };

@@ -46,9 +46,10 @@ const createSubscriptionsBalancesFx = createEffect(
 
     const balanceSubscriptions = Object.entries(apis).map(async (apiMap) => {
       const [chainId, api] = apiMap as [ChainId, ApiPromise];
+      const chain = chains[chainId];
 
       const accountIds = accounts.reduce<Record<AccountId, boolean>>((acc, account) => {
-        if (accountUtils.isChainIdAndCryptoTypeMatch(account, chains[chainId])) {
+        if (accountUtils.isChainIdAndCryptoTypeMatch(account, chain)) {
           acc[account.accountId] = true;
         }
 
@@ -74,28 +75,18 @@ const createSubscriptionsBalancesFx = createEffect(
       }
 
       try {
-        if (!chains[chainId]) return;
+        if (!chain) return;
 
-        const balanceSubs = balanceSubscriptionService.subscribeBalances(
-          chains[chainId],
-          api,
-          uniqAccountIds,
-          boundUpdate,
-        );
-        const locksSubs = balanceSubscriptionService.subscribeLockBalances(
-          chains[chainId],
-          api,
-          uniqAccountIds,
-          boundUpdate,
-        );
+        const balanceSubs = balanceSubscriptionService.subscribeBalances(chain, api, uniqAccountIds, boundUpdate);
+        const locksSubs = balanceSubscriptionService.subscribeLockBalances(chain, api, uniqAccountIds, boundUpdate);
 
         newSubscriptions[chainId] = {
           accounts: uniqAccountIds,
           subscription: [balanceSubs, locksSubs],
         };
-      } catch (e) {
+      } catch (error) {
         // TODO: Can't subscribe to Rococo Asset Hub testnet
-        console.log('ERROR: cannot subscribe to balance for', chainId, e);
+        console.log('ERROR: cannot subscribe to balance for', chainId, error);
       }
     });
 
