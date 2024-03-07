@@ -2,6 +2,7 @@ import { attach, createEffect, createEvent, createStore, sample, scopeBind } fro
 import { Endpoint, createEndpoint } from '@remote-ui/rpc';
 import keyBy from 'lodash/keyBy';
 import { once, spread } from 'patronum';
+import { GraphQLClient } from 'graphql-request';
 
 import type {
   Account,
@@ -25,10 +26,12 @@ import {
   NotificationType,
   NoID,
   ProxyGroup,
+  ProxyVariant,
+  ExternalType,
 } from '@shared/core';
 import { networkModel, networkUtils } from '@entities/network';
 import { accountUtils, walletModel } from '@entities/wallet';
-import { proxyModel, proxyUtils } from '@entities/proxy';
+import { proxyModel, proxyUtils, pureProxiesService } from '@entities/proxy';
 import { balanceModel } from '@entities/balance';
 import { notificationModel } from '@entities/notification';
 import { proxiesUtils } from '../lib/proxies-utils';
@@ -93,7 +96,7 @@ type GetProxiesResult = {
   };
 };
 const getProxiesFx = createEffect(
-  ({ chainId, chain, accounts, wallets, proxies, endpoint }: GetProxiesParams): Promise<GetProxiesResult> => {
+  async ({ chainId, chain, accounts, wallets, proxies, endpoint }: GetProxiesParams): Promise<GetProxiesResult> => {
     const proxiedAccounts = accounts.filter((a) => accountUtils.isProxiedAccount(a) && a.chainId === chainId);
     const chainProxies = proxies.filter((p) => p.chainId === chainId);
 
@@ -105,16 +108,36 @@ const getProxiesFx = createEffect(
       'accountId',
     );
 
-    const proxyUrl = networkUtils.isPureProxySupported(chain.options) && chain.externalApi?.proxy?.[0]?.url;
+    const proxyUrl =
+      networkUtils.isPureProxySupported(chain.options) && chain.externalApi?.[ExternalType.PROXY]?.[0]?.url;
 
-    return endpoint.call.getProxies({
+    const proxiesResult = (await endpoint.call.getProxies({
       chainId,
       proxyUrl,
       accountsForProxy,
       accountsForProxied,
       proxiedAccounts,
       proxies: chainProxies,
-    }) as Promise<GetProxiesResult>;
+    })) as GetProxiesResult;
+
+    const { proxiedAccountsToAdd } = proxiesResult;
+
+    if (proxyUrl && proxiedAccountsToAdd.length) {
+      const client = new GraphQLClient(proxyUrl);
+
+      const pureProxies = await pureProxiesService.filterPureProxiedAccountIds(
+        client,
+        proxiedAccountsToAdd.map((p) => p.accountId),
+      );
+
+      for (let i in proxiedAccountsToAdd) {
+        proxiedAccountsToAdd[i].proxyVariant = pureProxies.includes(proxiedAccountsToAdd[i].accountId)
+          ? ProxyVariant.PURE
+          : ProxyVariant.REGULAR;
+      }
+    }
+
+    return proxiesResult;
   },
 );
 
@@ -133,12 +156,7 @@ type ProxiedWalletsResult = {
 const createProxiedWalletsFx = createEffect(
   async ({ proxiedAccounts, chains }: ProxiedWalletsParams): Promise<ProxiedWalletsResult> => {
     const proxiedWallets = proxiedAccounts.map((proxied) => {
-      const walletName = proxyUtils.getProxiedName(
-        proxied.accountId,
-        proxied.proxyType,
-        proxied.proxyVariant,
-        chains[proxied.chainId].addressPrefix,
-      );
+      const walletName = proxyUtils.getProxiedName(proxied, chains[proxied.chainId].addressPrefix);
       const wallet = {
         name: walletName,
         type: WalletType.PROXIED,

@@ -3,7 +3,6 @@ import { ScProvider, WsProvider } from '@polkadot/rpc-provider';
 import { ProviderInterface } from '@polkadot/rpc-provider/types';
 import { ApiPromise } from '@polkadot/api';
 import * as Sc from '@substrate/connect';
-import { GraphQLClient } from 'graphql-request';
 
 import {
   Chain,
@@ -20,7 +19,6 @@ import {
   ProxyDeposits,
 } from '@shared/core';
 import { proxyWorkerUtils } from '../lib/worker-utils';
-import { checkPureProxies } from '@entities/proxy/api/pureProxiesService';
 
 export const proxyWorker = {
   initConnection,
@@ -231,21 +229,6 @@ async function getProxies({
     );
   });
   console.log(`proxy-worker ${api.genesisHash}: 🟣 proxied accounts to remove: `, proxiedAccountsToRemove);
-
-  if (proxyUrl && proxiedAccountsToAdd.length) {
-    const client = new GraphQLClient(proxyUrl);
-
-    const pureProxies = await checkPureProxies(
-      client,
-      proxiedAccountsToAdd.map((p) => p.accountId),
-    );
-
-    for (let i in proxiedAccountsToAdd) {
-      proxiedAccountsToAdd[i].proxyVariant = pureProxies.includes(proxiedAccountsToAdd[i].accountId)
-        ? ProxyVariant.PURE
-        : ProxyVariant.REGULAR;
-    }
-  }
 
   return {
     proxiesToAdd,

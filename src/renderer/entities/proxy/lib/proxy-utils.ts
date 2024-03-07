@@ -1,7 +1,16 @@
 import sortBy from 'lodash/sortBy';
 
 import { splitCamelCaseString, toAddress, dictionary } from '@shared/lib/utils';
-import type { ProxyAccount, AccountId, NoID, ProxyGroup, Wallet, Account, ProxyDeposits, ID } from '@shared/core';
+import type {
+  ProxyAccount,
+  NoID,
+  ProxyGroup,
+  Wallet,
+  Account,
+  ProxyDeposits,
+  ID,
+  PartialProxiedAccount,
+} from '@shared/core';
 import { ProxyType, ProxyVariant } from '@shared/core';
 import { ProxyTypeName } from './constants';
 import { accountUtils } from '../../wallet';
@@ -49,18 +58,14 @@ function isSameProxyGroup(oldGroup: NoID<ProxyGroup>, newGroup: NoID<ProxyGroup>
 }
 
 // TODO: Add i18n for wallet name
-function getProxiedName(
-  accountId: AccountId,
-  proxyType: ProxyType,
-  proxyVariant: ProxyVariant,
-  addressPrefix?: number,
-): string {
+function getProxiedName({ accountId, proxyVariant, proxyType }: PartialProxiedAccount, addressPrefix?: number): string {
   const address = toAddress(accountId, {
     prefix: addressPrefix,
     chunk: 6,
   });
+  const proxyVariantLabel = proxyVariant === ProxyVariant.PURE ? 'for pure' : 'for';
 
-  return `${proxyType} ${proxyVariant === ProxyVariant.PURE ? 'for pure' : 'for'} ${address}`;
+  return `${proxyType} ${proxyVariantLabel} ${address}`;
 }
 
 function getProxyGroups(wallets: Wallet[], accounts: Account[], deposits: ProxyDeposits): NoID<ProxyGroup>[] {

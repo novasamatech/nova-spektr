@@ -15,7 +15,14 @@ export type Chain = {
   options?: ChainOptions[];
 };
 
-export type ChainOptions = 'testnet' | 'crowdloans' | 'multisig' | 'regular_proxy' | 'pure_proxy' | 'ethereum_based';
+export enum ChainOptions {
+  TESTNET = 'testnet',
+  CROWDLOANS = 'crowdloans',
+  MULTISIG = 'multisig',
+  REGULAR_PROXY = 'regular_proxy',
+  PURE_PROXY = 'pure_proxy',
+  ETHEREUM_BASED = 'ethereum_based',
+}
 
 export type RpcNode = {
   url: string;
@@ -35,5 +42,11 @@ type ExternalValue = {
   url: string;
 };
 
-type ExternalType = 'history' | 'staking' | 'crowdloans' | 'proxy';
+// TODO: make it an enum
+export enum ExternalType {
+  HISTORY = 'history',
+  STAKING = 'staking',
+  CROWDLOANS = 'crowdloans',
+  PROXY = 'proxy',
+}
 type HistoryType = 'subquery' | 'github';
