@@ -398,7 +398,7 @@ export const networkModel = {
     networkStarted,
     chainConnected,
   },
-  watch: {
+  output: {
     connectionStatusChanged,
   },
 };

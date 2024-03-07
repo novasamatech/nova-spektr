@@ -1,7 +1,7 @@
 import { IndexableType, Table } from 'dexie';
 
 import { dexieStorage } from './dexie';
-import type { NoID, ArrayOfKeys } from '@shared/core';
+import type { NoID } from '@shared/core';
 
 // TODO: think about throwing errors instead of returning value from catch
 class StorageService<T extends { id: K }, K extends IndexableType> {
@@ -60,22 +60,9 @@ class StorageService<T extends { id: K }, K extends IndexableType> {
     }
   }
 
-  /**
-   * Use **where** param only for indexed fields
-   */
-  readAll(where?: Partial<ArrayOfKeys<T>>): Promise<T[]> {
+  readAll(): Promise<T[]> {
     try {
-      if (!where) {
-        return this.dexieTable.toArray();
-      }
-
-      const keys = Object.keys(where);
-      const values = Object.values(where);
-
-      return this.dexieTable
-        .where(keys.length === 1 ? keys[0] : keys)
-        .anyOf(values)
-        .toArray();
+      return this.dexieTable.toArray();
     } catch (error) {
       console.log('Error reading collection - ', error);
 

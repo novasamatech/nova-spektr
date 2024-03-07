@@ -205,7 +205,7 @@ describe('features/balances/subscription/model/balance-sub-model', () => {
       }),
     });
 
-    const action = allSettled(networkModel.watch.connectionStatusChanged, {
+    const action = allSettled(networkModel.output.connectionStatusChanged, {
       scope,
       params: { chainId: '0x01', status: ConnectionStatus.DISCONNECTED },
     });
@@ -227,7 +227,7 @@ describe('features/balances/subscription/model/balance-sub-model', () => {
 
     expect(scope.getState(balanceSubModel.__$subscriptions)).toEqual({});
 
-    const action = allSettled(networkModel.watch.connectionStatusChanged, {
+    const action = allSettled(networkModel.output.connectionStatusChanged, {
       scope,
       params: { chainId: '0x02', status: ConnectionStatus.CONNECTED },
     });
@@ -249,6 +249,7 @@ describe('features/balances/subscription/model/balance-sub-model', () => {
     const newBalances = [
       { id: 1, chainId: '0x01', accountId: accounts[2].accountId },
       { id: 2, chainId: '0x02', accountId: accounts[3].accountId },
+      { id: 3, chainId: '0x02', accountId: accounts[0].accountId },
     ] as unknown as Balance[];
 
     jest.spyOn(storageService.balances, 'readAll').mockResolvedValue(newBalances);
@@ -260,6 +261,6 @@ describe('features/balances/subscription/model/balance-sub-model', () => {
     await jest.runAllTimersAsync();
     await action;
 
-    expect(scope.getState(balanceModel.$balancesBuffer)).toEqual(newBalances);
+    expect(scope.getState(balanceModel.$balancesBuffer)).toEqual([newBalances[0], newBalances[1]]);
   });
 });

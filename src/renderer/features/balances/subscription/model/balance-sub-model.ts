@@ -22,8 +22,12 @@ const $subAccounts = createStore<SubAccounts>({});
 
 const $previousWallet = previous(walletModel.$activeWallet);
 
-const populateBalancesFx = createEffect((accountIds: AccountId[]): Promise<Balance[]> => {
-  return storageService.balances.readAll({ accountId: accountIds });
+const populateBalancesFx = createEffect(async (accountIds: Set<AccountId>): Promise<Balance[]> => {
+  if (accountIds.size === 0) return Promise.resolve([]);
+
+  const balances = await storageService.balances.readAll();
+
+  return balances.filter((balance) => accountIds.has(balance.accountId));
 });
 
 type UnsubWalletParams = {
@@ -31,8 +35,6 @@ type UnsubWalletParams = {
   subscriptions: Subscriptions;
 };
 const unsubscribeWalletFx = createEffect(({ walletId, subscriptions }: UnsubWalletParams): Subscriptions => {
-  console.log('=== UNSUB_wallet', walletId);
-
   return Object.entries(subscriptions).reduce<Subscriptions>((acc, [chainId, walletMap]) => {
     if (!walletMap || !walletMap[walletId]) {
       acc[chainId as ChainId] = walletMap;
@@ -64,7 +66,6 @@ type UnsubChainParams = {
 const unsubscribeChainFx = createEffect(({ chainId, subscriptions }: UnsubChainParams) => {
   const chainSubscription = subscriptions[chainId];
   if (!chainSubscription) return subscriptions;
-  console.log('=== UNSUB ', chainId);
 
   Object.values(chainSubscription).forEach((unsubFn) => {
     Promise.allSettled(unsubFn)
@@ -93,7 +94,7 @@ type SubChainsParams = {
 const pureSubscribeChainsFx = createEffect(
   ({ apis, chains, walletId, subAccounts, subscriptions }: SubChainsParams): Subscriptions => {
     if (chains.length === 0) return subscriptions;
-    console.log('=== SUB ', chains.length, walletId);
+
     const boundUpdate = scopeBind(balanceModel.events.balancesUpdated, { safe: true });
 
     return chains.reduce<Subscriptions>(
@@ -148,17 +149,14 @@ sample({
 
 sample({
   clock: $subAccounts,
-  source: networkModel.$connectionStatuses,
-  fn: (statuses, subAccounts) => {
-    return Object.entries(subAccounts).reduce<AccountId[]>((acc, entry) => {
-      const [chainId, walletMap] = entry as [ChainId, Record<ID, AccountId[]>];
-
-      if (networkUtils.isConnectedStatus(statuses[chainId])) {
-        acc.push(...Object.values(walletMap).flat());
-      }
+  fn: (subAccounts) => {
+    return Object.values(subAccounts).reduce<Set<AccountId>>((acc, walletMap) => {
+      Object.values(walletMap)
+        .flat()
+        .forEach((accountId) => acc.add(accountId));
 
       return acc;
-    }, []);
+    }, new Set());
   },
   target: populateBalancesFx,
 });
@@ -238,7 +236,7 @@ sample({
 });
 
 sample({
-  clock: networkModel.watch.connectionStatusChanged,
+  clock: networkModel.output.connectionStatusChanged,
   source: $subscriptions,
   filter: (subscriptions, { chainId, status }) => {
     const isDisabled = networkUtils.isDisconnectedStatus(status);
@@ -251,7 +249,7 @@ sample({
 });
 
 sample({
-  clock: networkModel.watch.connectionStatusChanged,
+  clock: networkModel.output.connectionStatusChanged,
   source: {
     apis: networkModel.$apis,
     chains: networkModel.$chains,
