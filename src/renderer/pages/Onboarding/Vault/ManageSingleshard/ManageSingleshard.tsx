@@ -45,12 +45,11 @@ export const ManageSingleshard = ({ seedInfo, onBack, onClose, onComplete }: Pro
 
   useEffect(() => {
     const chainList = Object.values(allChains);
+    const filteredChains = chainList.filter((c) => {
+      return isEthereumBased ? networkUtils.isEthereumBased(c.options) : !networkUtils.isEthereumBased(c.options);
+    });
 
-    setChains(
-      chainList.filter((c) =>
-        isEthereumBased ? networkUtils.isEthereumBased(c.options) : !networkUtils.isEthereumBased(c.options),
-      ),
-    );
+    setChains(filteredChains);
   }, []);
 
   const createWallet: SubmitHandler<WalletForm> = async ({ walletName }) => {
