@@ -1,5 +1,4 @@
-import { OmitFirstArg } from '@shared/lib/types/utilityTypes';
-import { AccountId, Balance, ChainId } from '@shared/core';
+import type { AccountId, Balance, ChainId, OmitFirstArg } from '@shared/core';
 
 export const balanceUtils = {
   getAssetBalances,
@@ -30,5 +29,7 @@ function getNetworkBalances(balances: Balance[], accountIds: AccountId[], chainI
 }
 
 function getAccountsBalances(balances: Balance[], accountIds: AccountId[]): Balance[] {
-  return balances.filter((balance) => accountIds.includes(balance.accountId));
+  const accountsMap = new Set(accountIds);
+
+  return balances.filter((balance) => accountsMap.has(balance.accountId));
 }

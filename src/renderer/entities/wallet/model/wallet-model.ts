@@ -1,5 +1,5 @@
 import { combine, createEffect, createEvent, createStore, sample } from 'effector';
-import { spread } from 'patronum';
+import { spread, combineEvents } from 'patronum';
 
 import type {
   Account,
@@ -43,9 +43,7 @@ const $activeAccounts = combine(
     accounts: $accounts,
   },
   ({ wallet, accounts }): Account[] => {
-    if (!wallet) return [];
-
-    return accounts.filter((account) => account.walletId === wallet.id);
+    return wallet ? accountUtils.getWalletAccounts(wallet.id, accounts) : [];
   },
 );
 
@@ -141,15 +139,16 @@ const removeWalletsFx = createEffect((wallets: RemoveParams[]): Promise<ID[]> =>
 
 sample({
   clock: walletStarted,
-  target: [fetchAllWalletsFx, fetchAllAccountsFx],
+  target: [fetchAllAccountsFx, fetchAllWalletsFx],
 });
+
 sample({
-  clock: fetchAllWalletsFx.doneData,
-  target: $wallets,
-});
-sample({
-  clock: fetchAllAccountsFx.doneData,
-  target: $accounts,
+  clock: combineEvents([fetchAllAccountsFx.doneData, fetchAllWalletsFx.doneData]),
+  fn: ([accounts, wallets]) => ({ accounts, wallets }),
+  target: spread({
+    accounts: $accounts,
+    wallets: $wallets,
+  }),
 });
 
 sample({
