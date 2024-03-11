@@ -29,6 +29,7 @@ const $filteredNetworks = combine(
     return Object.values(chains).filter((c) => includes(c.name, query));
   },
 );
+
 export const networksFilterModel = {
   $filterQuery,
   $filteredNetworks,

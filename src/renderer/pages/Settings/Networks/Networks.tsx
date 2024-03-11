@@ -40,10 +40,6 @@ export const Networks = () => {
   const inactiveNetworks = useUnit(inactiveNetworksModel.$inactiveNetworks);
   const connections = useUnit(networkModel.$connections);
   const filterQuery = useUnit(networksFilterModel.$filterQuery);
-  const filteredNetworks = useUnit(networksFilterModel.$filteredNetworks);
-
-  console.log('filteredNetworks', filteredNetworks);
-  console.log('filterQuery', filterQuery === '');
 
   const [isCustomRpcOpen, toggleCustomRpc] = useToggle();
   const [isNetworksModalOpen, toggleNetworksModal] = useToggle(true);
