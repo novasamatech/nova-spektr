@@ -12,11 +12,11 @@ import { RenameWalletModal } from '@features/wallets/RenameWallet';
 import { ForgetWalletModal } from '@features/wallets/ForgetWallet';
 import { networkModel } from '@entities/network';
 import { TabItem } from '@shared/ui/Tabs/common/types';
+import { addProxyModel, AddProxyModal } from '@widgets/AddProxyModal';
 import { ProxiesList } from '../components/ProxiesList';
 import { walletProviderModel } from '../../model/wallet-provider-model';
 import { NoProxiesAction } from '../components/NoProxiesAction';
 import { ShardsList } from '../components/ShardsList';
-import { AddProxyModal } from '../../../AddProxyModal';
 import { vaultDetailsModel } from '../../model/vault-details-model';
 import { walletDetailsUtils } from '../../lib/utils';
 import { VaultMap } from '../../lib/types';
@@ -42,7 +42,6 @@ export const VaultWalletDetails = ({ wallet, root, accountsMap, onClose }: Props
   const [isImportModalOpen, toggleImportModal] = useToggle();
   const [isScanModalOpen, toggleScanModal] = useToggle();
   const [isConfirmForgetOpen, toggleConfirmForget] = useToggle();
-  const [isAddProxyModalOpen, toggleIsAddProxyModalOpen] = useToggle();
 
   const handleConstructorKeys = (
     keysToAdd: Array<ChainAccount | ShardAccount[]>,
@@ -111,7 +110,7 @@ export const VaultWalletDetails = ({ wallet, root, accountsMap, onClose }: Props
     {
       icon: 'addCircle' as IconNames,
       title: t('walletDetails.common.addProxyAction'),
-      onClick: toggleIsAddProxyModalOpen,
+      onClick: addProxyModel.events.flowStarted,
     },
   ];
 
@@ -167,7 +166,7 @@ export const VaultWalletDetails = ({ wallet, root, accountsMap, onClose }: Props
         <NoProxiesAction
           className="h-[403px] mt-4"
           canCreateProxy={canCreateProxy}
-          onAddProxy={toggleIsAddProxyModalOpen}
+          onAddProxy={addProxyModel.events.flowStarted}
         />
       ),
     },
@@ -223,7 +222,7 @@ export const VaultWalletDetails = ({ wallet, root, accountsMap, onClose }: Props
         onForget={onClose}
       />
 
-      <AddProxyModal isOpen={isAddProxyModalOpen} onClose={toggleIsAddProxyModalOpen} />
+      <AddProxyModal />
     </BaseModal>
   );
 };

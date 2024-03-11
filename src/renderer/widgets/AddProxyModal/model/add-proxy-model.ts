@@ -1,4 +1,4 @@
-import { createEvent, createStore, sample, attach, createApi } from 'effector';
+import { createEvent, createStore, sample } from 'effector';
 import { spread, delay } from 'patronum';
 
 import { Transaction, TransactionType } from '@entities/transaction';
@@ -9,6 +9,7 @@ import type { MultisigAccount, ProxyGroup, NoID } from '@shared/core';
 import { wrapAsMulti, wrapAsProxy } from '@entities/transaction/lib/extrinsicService';
 import { proxyModel, proxyUtils } from '@entities/proxy';
 import { networkModel } from '@entities/network';
+import { balanceSubModel } from '@features/balances';
 import { Step, TxWrappers, AddProxyStore } from '../lib/types';
 import { addProxyUtils } from '../lib/add-proxy-utils';
 import { formModel } from './form-model';
@@ -16,18 +17,12 @@ import { confirmModel } from './confirm-model';
 import { signModel } from './sign-model';
 import { submitModel } from './submit-model';
 
-export type Callbacks = {
-  onClose: () => void;
-};
-
-const $callbacks = createStore<Callbacks | null>(null);
-const callbacksApi = createApi($callbacks, {
-  callbacksChanged: (state, props: Callbacks) => ({ ...state, ...props }),
-});
-
 const stepChanged = createEvent<Step>();
 
-const $step = createStore<Step>(Step.INIT);
+const flowStarted = createEvent();
+const flowFinished = createEvent();
+
+const $step = createStore<Step>(Step.NONE);
 
 const $addProxyStore = createStore<AddProxyStore | null>(null);
 const $transaction = createStore<Transaction | null>(null);
@@ -38,8 +33,28 @@ const $txWrappers = createStore<TxWrappers>([]);
 sample({ clock: stepChanged, target: $step });
 
 sample({
-  clock: stepChanged,
-  filter: addProxyUtils.isInitStep,
+  clock: flowStarted,
+  fn: () => Step.INIT,
+  target: stepChanged,
+});
+
+sample({
+  clock: flowStarted,
+  source: {
+    activeWallet: walletModel.$activeWallet,
+    walletDetails: walletSelectModel.$walletForDetails,
+  },
+  filter: ({ activeWallet, walletDetails }) => {
+    if (!activeWallet || !walletDetails) return false;
+
+    return activeWallet !== walletDetails;
+  },
+  fn: ({ walletDetails }) => walletDetails!,
+  target: balanceSubModel.events.walletToSubSet,
+});
+
+sample({
+  clock: flowStarted,
   target: formModel.events.formInitiated,
 });
 
@@ -220,17 +235,38 @@ sample({
 
 sample({
   clock: delay(submitModel.output.formSubmitted, 2000),
-  target: attach({
-    source: $callbacks,
-    effect: (state) => state?.onClose(),
-  }),
+  target: flowFinished,
+});
+
+sample({
+  clock: flowFinished,
+  source: {
+    activeWallet: walletModel.$activeWallet,
+    walletDetails: walletSelectModel.$walletForDetails,
+  },
+  filter: ({ activeWallet, walletDetails }, step) => {
+    if (!activeWallet || !walletDetails) return false;
+
+    return activeWallet !== walletDetails;
+  },
+  fn: ({ walletDetails }) => walletDetails!,
+  target: balanceSubModel.events.walletToUnsubSet,
+});
+
+sample({
+  clock: flowFinished,
+  fn: () => Step.NONE,
+  target: stepChanged,
 });
 
 export const addProxyModel = {
   $step,
   $chain: $addProxyStore.map((store) => store?.chain, { skipVoid: false }),
   events: {
+    flowStarted,
     stepChanged,
-    callbacksChanged: callbacksApi.callbacksChanged,
+  },
+  outputs: {
+    flowFinished,
   },
 };

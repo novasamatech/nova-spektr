@@ -15,11 +15,11 @@ import { IconNames } from '@shared/ui/Icon/data';
 import { RenameWalletModal } from '@features/wallets/RenameWallet';
 import { forgetWalletModel } from '@features/wallets/ForgetWallet';
 import { TabItem } from '@shared/ui/Tabs/common/types';
+import { addProxyModel, AddProxyModal } from '@widgets/AddProxyModal';
 import { walletProviderModel } from '../../model/wallet-provider-model';
 import { WalletConnectAccounts } from '../components/WalletConnectAccounts';
 import { ProxiesList } from '../components/ProxiesList';
 import { NoProxiesAction } from '../components/NoProxiesAction';
-import { AddProxyModal } from '../../../AddProxyModal';
 import {
   BaseModal,
   Button,
@@ -47,7 +47,6 @@ export const WalletConnectDetails = ({ wallet, accounts, onClose }: Props) => {
   const [isModalOpen, closeModal] = useModalClose(true, onClose);
   const [isConfirmForgetOpen, toggleConfirmForget] = useToggle();
   const [isRenameModalOpen, toggleIsRenameModalOpen] = useToggle();
-  const [isAddProxyModalOpen, toggleIsAddProxyModalOpen] = useToggle();
 
   useEffect(() => {
     wcDetailsModel.events.reset();
@@ -86,7 +85,7 @@ export const WalletConnectDetails = ({ wallet, accounts, onClose }: Props) => {
     {
       icon: 'addCircle' as IconNames,
       title: t('walletDetails.common.addProxyAction'),
-      onClick: toggleIsAddProxyModalOpen,
+      onClick: addProxyModel.events.flowStarted,
     },
   ];
 
@@ -117,7 +116,7 @@ export const WalletConnectDetails = ({ wallet, accounts, onClose }: Props) => {
         <NoProxiesAction
           className="h-[395px] mt-6"
           canCreateProxy={canCreateProxy}
-          onAddProxy={toggleIsAddProxyModalOpen}
+          onAddProxy={addProxyModel.events.flowStarted}
         />
       ),
     },
@@ -212,7 +211,7 @@ export const WalletConnectDetails = ({ wallet, accounts, onClose }: Props) => {
 
       <RenameWalletModal wallet={wallet} isOpen={isRenameModalOpen} onClose={toggleIsRenameModalOpen} />
 
-      <AddProxyModal isOpen={isAddProxyModalOpen} onClose={toggleIsAddProxyModalOpen} />
+      <AddProxyModal />
     </BaseModal>
   );
 };

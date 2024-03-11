@@ -1,6 +1,7 @@
 import { Address, Chain, Account, ProxyType } from '@shared/core';
 
 export const enum Step {
+  NONE,
   INIT,
   CONFIRM,
   SIGN,

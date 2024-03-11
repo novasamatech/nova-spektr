@@ -10,12 +10,12 @@ import { IconNames } from '@shared/ui/Icon/data';
 import { ForgetWalletModal } from '@features/wallets/ForgetWallet';
 import { TabItem } from '@shared/ui/Tabs/common/types';
 import { networkModel } from '@entities/network';
+import { addProxyModel, AddProxyModal } from '@widgets/AddProxyModal';
 import { ProxiesList } from '../components/ProxiesList';
 import { NoProxiesAction } from '../components/NoProxiesAction';
 import type { MultishardMap } from '../../lib/types';
 import { walletDetailsUtils } from '../../lib/utils';
 import { walletProviderModel } from '../../model/wallet-provider-model';
-import { AddProxyModal } from '../../../AddProxyModal';
 
 type Props = {
   wallet: Wallet;
@@ -32,7 +32,6 @@ export const MultishardWalletDetails = ({ wallet, accounts, onClose }: Props) =>
   const [isModalOpen, closeModal] = useModalClose(true, onClose);
   const [isRenameModalOpen, toggleIsRenameModalOpen] = useToggle();
   const [isConfirmForgetOpen, toggleConfirmForget] = useToggle();
-  const [isAddProxyModalOpen, toggleIsAddProxyModalOpen] = useToggle();
 
   const Options = [
     {
@@ -53,7 +52,7 @@ export const MultishardWalletDetails = ({ wallet, accounts, onClose }: Props) =>
     {
       icon: 'addCircle' as IconNames,
       title: t('walletDetails.common.addProxyAction'),
-      onClick: toggleIsAddProxyModalOpen,
+      onClick: addProxyModel.events.flowStarted,
     },
   ];
 
@@ -84,7 +83,7 @@ export const MultishardWalletDetails = ({ wallet, accounts, onClose }: Props) =>
         <NoProxiesAction
           className="h-[403px] mt-4"
           canCreateProxy={canCreateProxy}
-          onAddProxy={toggleIsAddProxyModalOpen}
+          onAddProxy={addProxyModel.events.flowStarted}
         />
       ),
     },
@@ -116,7 +115,7 @@ export const MultishardWalletDetails = ({ wallet, accounts, onClose }: Props) =>
         onForget={onClose}
       />
 
-      <AddProxyModal isOpen={isAddProxyModalOpen} onClose={toggleIsAddProxyModalOpen} />
+      <AddProxyModal />
     </BaseModal>
   );
 };

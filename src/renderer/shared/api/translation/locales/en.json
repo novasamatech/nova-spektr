@@ -580,8 +580,8 @@
     "addProxy": {
       "accountLabel": "Your account",
       "accountPlaceholder": "Select account",
-      "balanceAlertMultisig": "Not enough tokens for paying proxy deposit and network fee on a selected account",
-      "balanceAlertRegular": "Not enough tokens for paying proxy deposit on a selected account",
+      "balanceAlertMultisig": "To pay proxy deposit with selected account",
+      "balanceAlertRegular": "To pay proxy deposit and network fee with selected account",
       "balanceAlertTitle": "Not enough tokens",
       "delegateLabel": "Give authority to",
       "delegatePlaceholder": "Enter address",

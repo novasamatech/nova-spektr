@@ -18,12 +18,12 @@ import { WalletFiatBalance } from '@features/wallets/WalletSelect/ui/WalletFiatB
 import { IconNames } from '@shared/ui/Icon/data';
 import { RenameWalletModal } from '@features/wallets/RenameWallet';
 import { ForgetWalletModal } from '@features/wallets/ForgetWallet';
+import { addProxyModel, AddProxyModal } from '@widgets/AddProxyModal';
 import { ProxiesList } from '../components/ProxiesList';
 import { NoProxiesAction } from '../components/NoProxiesAction';
 import { walletProviderModel } from '../../model/wallet-provider-model';
 import { networkUtils, networkModel } from '@entities/network';
 import { matrixModel, matrixUtils } from '@entities/matrix';
-import { AddProxyModal } from '../../../AddProxyModal';
 
 type Props = {
   wallet: Wallet;
@@ -53,7 +53,6 @@ export const MultisigWalletDetails = ({
   const [isModalOpen, closeModal] = useModalClose(true, onClose);
   const [isRenameModalOpen, toggleIsRenameModalOpen] = useToggle();
   const [isConfirmForgetOpen, toggleConfirmForget] = useToggle();
-  const [isAddProxyModalOpen, toggleIsAddProxyModalOpen] = useToggle();
 
   const chain = account.chainId && chains[account.chainId];
   const explorers = chain?.explorers || RootExplorers;
@@ -78,7 +77,7 @@ export const MultisigWalletDetails = ({
     {
       icon: 'addCircle' as IconNames,
       title: t('walletDetails.common.addProxyAction'),
-      onClick: toggleIsAddProxyModalOpen,
+      onClick: addProxyModel.events.flowStarted,
     },
   ];
 
@@ -236,7 +235,7 @@ export const MultisigWalletDetails = ({
                 <NoProxiesAction
                   className="h-[387px]"
                   canCreateProxy={canCreateProxy}
-                  onAddProxy={toggleIsAddProxyModalOpen}
+                  onAddProxy={addProxyModel.events.flowStarted}
                 />
               ),
             },
@@ -253,7 +252,7 @@ export const MultisigWalletDetails = ({
         onForget={onClose}
       />
 
-      <AddProxyModal isOpen={isAddProxyModalOpen} onClose={toggleIsAddProxyModalOpen} />
+      <AddProxyModal />
     </BaseModal>
   );
 };

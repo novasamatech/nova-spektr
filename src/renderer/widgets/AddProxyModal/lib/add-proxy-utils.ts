@@ -1,6 +1,7 @@
 import { Step, TxWrappers } from './types';
 
 export const addProxyUtils = {
+  isNoneStep,
   isInitStep,
   isConfirmStep,
   isSignStep,
@@ -9,6 +10,10 @@ export const addProxyUtils = {
   hasMultisig,
   hasProxy,
 };
+
+function isNoneStep(step: Step): boolean {
+  return step === Step.NONE;
+}
 
 function isInitStep(step: Step): boolean {
   return step === Step.INIT;

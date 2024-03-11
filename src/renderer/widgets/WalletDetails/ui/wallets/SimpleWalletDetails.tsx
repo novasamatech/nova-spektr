@@ -13,7 +13,7 @@ import { TabItem } from '@shared/ui/Tabs/common/types';
 import { ProxiesList } from '../components/ProxiesList';
 import { NoProxiesAction } from '../components/NoProxiesAction';
 import { walletProviderModel } from '../../model/wallet-provider-model';
-import { AddProxyModal } from '../../../AddProxyModal';
+import { addProxyModel, AddProxyModal } from '@widgets/AddProxyModal';
 
 type Props = {
   wallet: Wallet;
@@ -30,7 +30,6 @@ export const SimpleWalletDetails = ({ wallet, account, onClose }: Props) => {
   const [isModalOpen, closeModal] = useModalClose(true, onClose);
   const [isRenameModalOpen, toggleIsRenameModalOpen] = useToggle();
   const [isConfirmForgetOpen, toggleConfirmForget] = useToggle();
-  const [isAddProxyModalOpen, toggleIsAddProxyModalOpen] = useToggle();
 
   const Options = [
     {
@@ -46,7 +45,7 @@ export const SimpleWalletDetails = ({ wallet, account, onClose }: Props) => {
     {
       icon: 'addCircle' as IconNames,
       title: t('walletDetails.common.addProxyAction'),
-      onClick: toggleIsAddProxyModalOpen,
+      onClick: addProxyModel.events.flowStarted,
     },
   ];
 
@@ -74,7 +73,11 @@ export const SimpleWalletDetails = ({ wallet, account, onClose }: Props) => {
       panel: hasProxies ? (
         <ProxiesList canCreateProxy={canCreateProxy} className="h-[388px]" />
       ) : (
-        <NoProxiesAction className="h-[388px]" canCreateProxy={canCreateProxy} onAddProxy={toggleIsAddProxyModalOpen} />
+        <NoProxiesAction
+          className="h-[388px]"
+          canCreateProxy={canCreateProxy}
+          onAddProxy={addProxyModel.events.flowStarted}
+        />
       ),
     },
   ];
@@ -109,7 +112,7 @@ export const SimpleWalletDetails = ({ wallet, account, onClose }: Props) => {
         onForget={onClose}
       />
 
-      <AddProxyModal isOpen={isAddProxyModalOpen} onClose={toggleIsAddProxyModalOpen} />
+      <AddProxyModal />
     </BaseModal>
   );
 };

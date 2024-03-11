@@ -1,5 +1,4 @@
 import { useUnit } from 'effector-react';
-import { useEffect } from 'react';
 
 import { BaseModal } from '@shared/ui';
 import { useModalClose } from '@shared/lib/hooks';
@@ -12,28 +11,15 @@ import { Confirmation } from './Confirmation';
 import { SignProxy } from './SignProxy';
 import { SubmitProxy } from './SubmitProxy';
 import { addProxyUtils } from '../lib/add-proxy-utils';
-import { Callbacks, addProxyModel } from '../model/add-proxy-model';
+import { addProxyModel } from '../model/add-proxy-model';
 
-type Props = Callbacks & {
-  isOpen: boolean;
-};
-export const AddProxyModal = ({ isOpen, onClose }: Props) => {
+export const AddProxyModal = () => {
   const { t } = useI18n();
 
   const step = useUnit(addProxyModel.$step);
   const chain = useUnit(addProxyModel.$chain);
 
-  const [isModalOpen, closeModal] = useModalClose(isOpen, onClose);
-
-  useEffect(() => {
-    if (!isOpen) return;
-
-    addProxyModel.events.stepChanged(Step.INIT);
-  }, [isOpen]);
-
-  useEffect(() => {
-    addProxyModel.events.callbacksChanged({ onClose: closeModal });
-  }, [closeModal]);
+  const [isModalOpen, closeModal] = useModalClose(!addProxyUtils.isNoneStep(step), addProxyModel.outputs.flowFinished);
 
   const getModalTitle = (step: Step, chain?: Chain) => {
     if (addProxyUtils.isInitStep(step) || !chain) return t('operations.modalTitles.addProxy');
