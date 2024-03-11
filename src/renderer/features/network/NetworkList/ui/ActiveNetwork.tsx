@@ -8,16 +8,10 @@ import { BodyText, FootnoteText, HelpText, StatusLabel } from '@shared/ui';
 import { useI18n } from '@app/providers';
 import './styles.css';
 
+type ValidStatus = Exclude<ConnectionStatus, ConnectionStatus.DISCONNECTED>;
+
 const Status = {
   [ConnectionStatus.CONNECTING]: {
-    variant: 'waiting',
-    title: (t: TFunction) => (
-      <div className="spektr-waiting">
-        <FootnoteText className="text-text-tertiary">{t('settings.networks.connectingStatusLabel')}</FootnoteText>
-      </div>
-    ),
-  },
-  [ConnectionStatus.DISCONNECTED]: {
     variant: 'waiting',
     title: (t: TFunction) => (
       <div className="spektr-waiting">
@@ -52,8 +46,8 @@ export const ActiveNetwork = ({ networkItem, children }: PropsWithChildren<Props
         )}
       </div>
       <StatusLabel
-        title={Status[networkItem.connectionStatus].title(t)}
-        variant={Status[networkItem.connectionStatus].variant}
+        title={Status[networkItem.connectionStatus as ValidStatus].title(t)}
+        variant={Status[networkItem.connectionStatus as ValidStatus].variant}
         className="mr-8.5"
       />
       {children}
