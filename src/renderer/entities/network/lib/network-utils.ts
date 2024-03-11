@@ -1,4 +1,12 @@
-import { ChainOptions, Connection, ConnectionType, ConnectionStatus, ChainMetadata, ChainId } from '@shared/core';
+import {
+  ChainOptions,
+  Connection,
+  ConnectionType,
+  ConnectionStatus,
+  ChainMetadata,
+  ChainId,
+  Chain,
+} from '@shared/core';
 import { RelayChains } from '@shared/lib/utils';
 
 export const networkUtils = {
@@ -9,6 +17,7 @@ export const networkUtils = {
 
   isMultisigSupported,
   isProxySupported,
+  isEthereumBased,
 
   isLightClientConnection,
   isDisabledConnection,
@@ -18,6 +27,8 @@ export const networkUtils = {
 
   getNewestMetadata,
   getLightClientChains,
+
+  getMainRelaychains,
 };
 
 function isConnectedStatus(status: ConnectionStatus): boolean {
@@ -40,6 +51,10 @@ function isMultisigSupported(chainOptions?: ChainOptions[]): boolean {
 
 function isProxySupported(chainOptions?: ChainOptions[]): boolean {
   return Boolean(chainOptions?.includes('regular_proxy'));
+}
+
+function isEthereumBased(chainOptions?: ChainOptions[]): boolean {
+  return Boolean(chainOptions?.includes('ethereum_based'));
 }
 
 function isLightClientConnection(connection: Connection): boolean {
@@ -74,4 +89,10 @@ function getNewestMetadata(metadata: ChainMetadata[]): Record<ChainId, ChainMeta
 
 function getLightClientChains(): ChainId[] {
   return Object.values(RelayChains);
+}
+
+function getMainRelaychains(chains: Chain[]): Chain[] {
+  const MainRelaychains = [RelayChains.POLKADOT, RelayChains.KUSAMA, RelayChains.WESTEND];
+
+  return chains.filter(({ chainId }) => MainRelaychains.includes(chainId));
 }

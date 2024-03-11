@@ -9,16 +9,13 @@ import sharedConfig from './webpack.shared';
 import { APP_CONFIG } from '../app.config';
 
 const { FOLDERS, RENDERER } = APP_CONFIG;
-const port = RENDERER.DEV_SERVER.URL.split(':')?.[2] || 3000;
 
 const config = merge<WpConfig & WdsConfig>(sharedConfig, {
   mode: 'none',
   target: 'web',
 
-  entry: resolve(FOLDERS.ENTRY_POINTS.RENDERER),
-
   devServer: {
-    port,
+    port: RENDERER.DEV_SERVER.PORT,
     historyApiFallback: true,
     compress: true,
     hot: true,
@@ -30,6 +27,8 @@ const config = merge<WpConfig & WdsConfig>(sharedConfig, {
       overlay: false,
     },
   },
+
+  entry: resolve(FOLDERS.ENTRY_POINTS.RENDERER),
 
   output: {
     path: resolve(FOLDERS.DEV_BUILD),
@@ -46,9 +45,7 @@ const config = merge<WpConfig & WdsConfig>(sharedConfig, {
   },
 
   plugins: [
-    new ReactRefreshWebpackPlugin({
-      overlay: false,
-    }),
+    new ReactRefreshWebpackPlugin({ overlay: false }),
 
     new webpack.EnvironmentPlugin({
       NODE_ENV: 'production',

@@ -32,6 +32,19 @@ const defaultKeys = [
   },
 ];
 
+const customKey = {
+  name: 'custom key',
+  keyType: KeyType.CUSTOM,
+  chainId: '0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3',
+  type: AccountType.CHAIN,
+  cryptoType: CryptoType.SR25519,
+  chainType: ChainType.SUBSTRATE,
+  derivationPath: '//polkadot//custom',
+  id: 1,
+  walletId: 1,
+  accountId: '0x00',
+};
+
 const chainsMap = {
   '0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3': {
     name: 'Polkadot',
@@ -62,4 +75,5 @@ const chainsMap = {
 export const constructorMock = {
   defaultKeys,
   chainsMap,
+  customKey,
 };

@@ -145,6 +145,27 @@ const $signatoryWallets = combine(
   },
 );
 
+const $signatoryAccounts = combine(
+  {
+    walletAccounts: $accounts,
+    accounts: walletModel.$accounts,
+  },
+  ({ walletAccounts, accounts }): Signatory[] => {
+    const multisigAccount = walletAccounts[0];
+    if (!multisigAccount || !accountUtils.isMultisigAccount(multisigAccount)) return [];
+
+    const accountsMap = dictionary(accounts, 'accountId');
+
+    return multisigAccount.signatories.reduce<Signatory[]>((acc, signatory) => {
+      if (accountsMap[signatory.accountId]) {
+        acc.push(signatory);
+      }
+
+      return acc;
+    }, []);
+  },
+);
+
 const $chainsProxies = combine(
   {
     accounts: $accounts,
@@ -224,6 +245,7 @@ export const walletProviderModel = {
   $multiShardAccounts,
   $signatoryContacts,
   $signatoryWallets,
+  $signatoryAccounts,
 
   $chainsProxies,
   $walletProxyGroups,

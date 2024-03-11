@@ -7,6 +7,7 @@ export const ShardInfoPopover = () => {
   return (
     <Popover
       offsetPx={4}
+      tabIndex={-1}
       contentClass="p-4"
       panelClass="w-[360px]"
       content={

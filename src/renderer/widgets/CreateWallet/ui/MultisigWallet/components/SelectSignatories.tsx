@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
+import { useUnit } from 'effector-react';
 
 import { cnTw, includes, toAddress, RootExplorers } from '@shared/lib/utils';
-import { useI18n, useMatrix } from '@app/providers';
+import { useI18n } from '@app/providers';
 import { useToggle } from '@shared/lib/hooks';
 import { Button, Checkbox, FootnoteText, Icon, SearchInput, SmallTitleText, Tabs, Tooltip, HelpText } from '@shared/ui';
 import { TabItem } from '@shared/ui/types';
@@ -11,6 +12,7 @@ import { EmptyContactList } from '@entities/contact';
 import { type Contact, type Wallet, type Account, type MultisigAccount, WalletType } from '@shared/core';
 import { ContactItem, ExplorersPopover, walletUtils } from '@entities/wallet';
 import { WalletItem } from './WalletItem';
+import { matrixModel } from '@entities/matrix';
 
 const enum SignatoryTabs {
   WALLETS = 'wallets',
@@ -27,7 +29,9 @@ type Props = {
 
 export const SelectSignatories = ({ isActive, wallets, accounts, contacts, onSelect }: Props) => {
   const { t } = useI18n();
-  const { matrix, isLoggedIn } = useMatrix();
+
+  const matrix = useUnit(matrixModel.$matrix);
+  const loginStatus = useUnit(matrixModel.$loginStatus);
 
   const [query, setQuery] = useState('');
   const [contactList, setContactList] = useState<ExtendedContact[]>([]);
@@ -42,11 +46,11 @@ export const SelectSignatories = ({ isActive, wallets, accounts, contacts, onSel
   const selectedContactsList = Object.values(selectedContacts);
 
   useEffect(() => {
+    if (accounts.length === 0) return;
+
     const addressBookContacts = contacts
       .filter((c) => c.matrixId)
       .map((contact, index) => ({ ...contact, index: index.toString() }));
-
-    setContactList(addressBookContacts);
 
     const { available, disabled } = wallets.reduce<{
       available: ExtendedWallet[];
@@ -55,7 +59,8 @@ export const SelectSignatories = ({ isActive, wallets, accounts, contacts, onSel
       (acc, wallet, index) => {
         const walletAccounts = accounts.filter((a) => a.walletId === wallet.id);
 
-        const accountId = walletAccounts[0].accountId;
+        // TODO: Check why it can be empty
+        const accountId = walletAccounts[0]?.accountId;
         const isSameAccounts = walletAccounts.every((a) => a.accountId === accountId);
 
         if (isSameAccounts && walletUtils.isValidSignatory(wallet)) {
@@ -75,9 +80,10 @@ export const SelectSignatories = ({ isActive, wallets, accounts, contacts, onSel
       { available: [], disabled: [] },
     );
 
+    setContactList(addressBookContacts);
     setAvailableWallets(available);
     setDisabledWallets(disabled);
-  }, [accounts.length, contacts.length, wallets.length, isLoggedIn]);
+  }, [accounts.length, contacts.length, wallets.length, loginStatus]);
 
   useEffect(() => {
     onSelect(selectedWalletsList, selectedContactsList);
@@ -276,7 +282,7 @@ export const SelectSignatories = ({ isActive, wallets, accounts, contacts, onSel
 
   return (
     <>
-      <div className={cnTw('max-h-full flex flex-col', !isActive && 'hidden')}>
+      <div className={cnTw('max-h-full flex flex-col flex-1', !isActive && 'hidden')}>
         <SmallTitleText className="py-2 px-2 mb-4">{t('createMultisigAccount.signatoryTitle')}</SmallTitleText>
 
         <Tabs

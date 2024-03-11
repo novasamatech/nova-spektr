@@ -1,4 +1,4 @@
-import { createContext, PropsWithChildren, useContext, useEffect, useRef, useState } from 'react';
+import { PropsWithChildren, useEffect, useRef, createContext } from 'react';
 import { useUnit } from 'effector-react';
 
 import { getCreatedDateFromApi, toAddress, validateCallData } from '@shared/lib/utils';
@@ -30,8 +30,6 @@ import {
   CancelPayload,
   FinalApprovePayload,
   InvitePayload,
-  ISecureMessenger,
-  Matrix,
   MultisigPayload,
   SpektrExtras,
   UpdatePayload,
@@ -45,15 +43,14 @@ import {
   SigningStatus,
   useTransaction,
 } from '@entities/transaction';
+import { matrixModel, LoginStatus } from '@entities/matrix';
+import { matrixAutologinModel } from '@features/matrix';
 
-type MatrixContextProps = {
-  matrix: ISecureMessenger;
-  isLoggedIn: boolean;
-};
-
-const MatrixContext = createContext<MatrixContextProps>({} as MatrixContextProps);
+const MatrixContext = createContext({});
 
 export const MatrixProvider = ({ children }: PropsWithChildren) => {
+  const matrix = useUnit(matrixModel.$matrix);
+
   const contacts = useUnit(contactModel.$contacts);
   const accounts = useUnit(walletModel.$accounts);
   const chains = useUnit(networkModel.$chains);
@@ -66,9 +63,6 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
 
   const apisRef = useRef(apis);
   const accountsRef = useRef(accounts);
-  const { current: matrix } = useRef<ISecureMessenger>(new Matrix());
-
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   // HOOK: correct connections for update multisig tx
   useEffect(() => {
@@ -80,26 +74,14 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
     accountsRef.current = accounts;
   }, [accounts]);
 
-  const onSyncProgress = () => {
-    if (!isLoggedIn) {
-      setIsLoggedIn(true);
-    }
-
-    console.info('💛 ===> onSyncProgress');
-  };
-
   const onSyncEnd = () => {
-    console.info('💛 ===> onSyncEnd');
+    console.info('💛 ===> Matrix: sync end');
 
     matrix.syncSpektrTimeline().catch(console.warn);
   };
 
-  const onMessage = (value: any) => {
-    console.info('💛 ===> onMessage - ', value);
-  };
-
   const onInvite = async (payload: InvitePayload) => {
-    console.info('💛 ===> onInvite', payload);
+    console.info('💛 ===> Matrix: Multisig invite', payload);
 
     const { roomId, content } = payload;
     const { accountId, threshold, signatories, accountName, creatorAccountId } = content.mstAccount;
@@ -204,7 +186,10 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
         await matrix.leaveRoom(roomId);
       } else {
         console.log(`Leave old ${mstAccount.matrixRoomId}, join new room ${roomId}`);
-        await matrix.leaveRoom(mstAccount.matrixRoomId);
+        if (mstAccount.matrixRoomId) {
+          await matrix.leaveRoom(mstAccount.matrixRoomId);
+        }
+
         await matrix.joinRoom(roomId);
 
         walletModel.events.multisigAccountUpdated({
@@ -228,12 +213,12 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
     }
   };
 
-  const onMultisigEvent = async ({ type, content, sender }: MultisigPayload, extras: SpektrExtras) => {
+  const onMultisigEvent = async ({ type, content, sender }: MultisigPayload, extras: SpektrExtras | undefined) => {
     console.info('🚀 === onMultisigEvent - ', type, '\n Content: ', content);
 
     if (!validateMatrixEvent(content, extras)) return;
 
-    const multisigAccount = accountsRef.current.find((a) => a.accountId === extras.mstAccount.accountId);
+    const multisigAccount = accountsRef.current.find((a) => a.accountId === extras?.mstAccount.accountId);
     if (!multisigAccount || !accountUtils.isMultisigAccount(multisigAccount)) return;
 
     const multisigTx = await getMultisigTx(
@@ -260,8 +245,10 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
 
   const validateMatrixEvent = <T extends BaseMultisigPayload>(
     { callData, callHash, senderAccountId }: T,
-    extras: SpektrExtras,
+    extras: SpektrExtras | undefined,
   ): boolean => {
+    if (!extras) return false;
+
     const { accountId, threshold, signatories } = extras.mstAccount;
     const senderIsSignatory = signatories.some((accountId) => accountId === senderAccountId);
     const mstAccountIsValid = accountId === accountUtils.getMultisigAccountId(signatories, threshold);
@@ -575,28 +562,27 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
   };
 
   const onLogout = () => {
-    console.info('🛑 ===> onLogout');
-    setIsLoggedIn(false);
+    console.info('🛑 ===> Matrix: on logout');
+
+    matrixModel.events.loginStatusChanged(LoginStatus.LOGGED_OUT);
   };
 
   useEffect(() => {
-    matrix.setEventCallbacks({
-      onSyncProgress,
-      onSyncEnd,
-      onMessage,
-      onInvite,
-      onMultisigEvent,
-      onLogout,
-    });
-
-    matrix.loginFromCache().catch(console.warn);
+    matrix.setEventCallbacks({ onInvite, onSyncEnd, onMultisigEvent, onLogout });
 
     return () => {
       matrix.stopClient();
     };
   }, []);
 
-  return <MatrixContext.Provider value={{ matrix, isLoggedIn }}>{children}</MatrixContext.Provider>;
-};
+  useEffect(() => {
+    matrixAutologinModel.events.loggedInFromCache();
 
-export const useMatrix = () => useContext<MatrixContextProps>(MatrixContext);
+    const token = new URLSearchParams(window.location.search).get('loginToken');
+    if (token) {
+      matrixAutologinModel.events.loggedInWithToken(token);
+    }
+  }, []);
+
+  return <MatrixContext.Provider value={{}}>{children}</MatrixContext.Provider>;
+};

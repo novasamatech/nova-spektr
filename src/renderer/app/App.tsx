@@ -7,9 +7,10 @@ import { CreateWalletProvider } from '@widgets/CreateWallet';
 import { WalletDetailsProvider } from '@widgets/WalletDetails';
 import { walletModel } from '@entities/wallet';
 import { ROUTES_CONFIG } from '@pages/index';
-import { Paths } from '@shared/routes';
+import { Paths, createLink } from '@shared/routes';
 import { FallbackScreen } from '@shared/ui';
-import { usePrevious } from '@shared/lib/hooks';
+import { walletPairingModel } from '@features/wallets';
+import { WalletType } from '@shared/core';
 import {
   ConfirmDialogProvider,
   StatusModalProvider,
@@ -28,8 +29,6 @@ export const App = () => {
   const wallets = useUnit(walletModel.$wallets);
   const isLoadingWallets = useUnit(walletModel.$isLoadingWallets);
 
-  const previousWalletsLength = usePrevious(wallets.length);
-
   const [splashScreenLoading, setSplashScreenLoading] = useState(true);
 
   useEffect(() => {
@@ -37,12 +36,29 @@ export const App = () => {
   }, []);
 
   useEffect(() => {
-    const hasWallets = previousWalletsLength > 0 && wallets.length > 0;
-    if (isLoadingWallets || hasWallets) return;
+    if (isLoadingWallets || wallets.length > 0) return;
 
-    const path = wallets.length > 0 ? Paths.ASSETS : Paths.ONBOARDING;
-    navigate(path, { replace: true });
+    navigate(Paths.ONBOARDING, { replace: true });
   }, [isLoadingWallets, wallets.length]);
+
+  useEffect(() => {
+    const url = new URL(window.location.href);
+    if (!url.searchParams.has('step') || !url.searchParams.has('loginToken')) return;
+
+    const loginToken = url.searchParams.get('loginToken') as string;
+    const step = url.searchParams.get('step') as string;
+
+    url.searchParams.delete('step');
+    url.searchParams.delete('loginToken');
+    window.history.replaceState(null, '', url.href);
+
+    if (step === 'settings_matrix') {
+      navigate(createLink(Paths.MATRIX, {}, { loginToken: [loginToken] }));
+    }
+    if (step === 'multisig_wallet') {
+      walletPairingModel.events.walletTypeSet(WalletType.MULTISIG);
+    }
+  }, []);
 
   const getContent = () => {
     if (splashScreenLoading || isLoadingWallets) return null;

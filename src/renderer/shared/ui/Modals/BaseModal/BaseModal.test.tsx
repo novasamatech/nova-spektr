@@ -2,10 +2,6 @@ import { render, screen } from '@testing-library/react';
 
 import { BaseModal } from './BaseModal';
 
-jest.mock('@app/providers', () => ({
-  useMatrix: jest.fn(),
-}));
-
 describe('ui/Modals/BaseModal', () => {
   test('should render component', () => {
     render(

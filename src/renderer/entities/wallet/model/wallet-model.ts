@@ -160,6 +160,7 @@ sample({
   clock: [watchOnlyCreated, multisigCreated, singleshardCreated],
   target: walletCreatedFx,
 });
+
 sample({
   clock: multishardCreated,
   target: multishardCreatedFx,

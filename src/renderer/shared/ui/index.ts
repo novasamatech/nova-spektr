@@ -1,4 +1,4 @@
-export { Button, ButtonLink, IconButton } from './Buttons';
+export { Button, ButtonLink, ButtonWebLink, IconButton } from './Buttons';
 
 export { BaseModal, ConfirmModal, StatusModal } from './Modals';
 
@@ -22,6 +22,7 @@ export {
 } from './Typography';
 
 export { Plate } from './Plate/Plate';
+export { Separator } from './Separator/Separator';
 export { InputHint } from './InputHint/InputHint';
 export { InfoLink } from './InfoLink/InfoLink';
 export { RadioGroup } from './RadioGroup/RadioGroup';

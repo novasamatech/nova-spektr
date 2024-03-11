@@ -2,6 +2,7 @@ import { PropsWithChildren } from 'react';
 import { RadioGroup as HeadlessRadioGroup } from '@headlessui/react';
 
 import { Option } from './RadioOption';
+import { RadioCard } from './RadioCard';
 import { RadioOption, RadioResult } from './common/types';
 import { LabelText } from '@shared/ui';
 import './RadioGroup.css';
@@ -46,4 +47,5 @@ const RadioGroupRoot = ({
 
 export const RadioGroup = Object.assign(RadioGroupRoot, {
   Option,
+  CardOption: RadioCard,
 });

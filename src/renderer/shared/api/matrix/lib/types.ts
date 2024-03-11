@@ -10,7 +10,9 @@ import type { HexString, AccountId, Timepoint, Threshold, CallHash, CallData, Ch
 export interface ISecureMessenger {
   // Init
   setHomeserver: (domain: string) => Promise<void>;
-  loginFlows: () => Promise<LoginFlow[]>;
+  loginFlows: () => Promise<LoginFlows>;
+  getSsoLoginUrl: (baseUrl: string, type: string, id: string) => string;
+  loginWithSso: (token: string) => Promise<void>;
   loginWithCreds: (login: string, password: string) => Promise<void>;
   loginFromCache: () => Promise<void>;
   logout: () => Promise<void>;
@@ -123,7 +125,15 @@ export type SpektrExtras = {
   };
 };
 
-export type LoginFlow = 'password' | 'sso' | 'cas';
+export type LoginFlows = {
+  token: boolean;
+  password: boolean;
+  sso: {
+    id: string;
+    name: string;
+    brand: string;
+  }[];
+};
 
 // =====================================================
 // ============== MST Events / Callbacks ===============
@@ -180,15 +190,13 @@ export type MultisigPayload = MatrixEventPayload & {
 
 type GeneralCallbacks = {
   onSyncEnd: () => void;
-  onSyncProgress: () => void;
   onInvite: (data: InvitePayload) => void;
-  // TODO: change message type in future
-  onMessage: (message: string) => void;
+  // onMessage: (message: string) => void;
   onLogout: () => void;
 };
 
 export type MultisigCallbacks = {
-  onMultisigEvent: (payload: MultisigPayload, extras: SpektrExtras) => Promise<void>;
+  onMultisigEvent: (payload: MultisigPayload, extras: SpektrExtras | undefined) => Promise<void>;
 };
 
 export type Callbacks = GeneralCallbacks & MultisigCallbacks;
@@ -213,6 +221,7 @@ export const enum MatrixError {
   LOGIN_FLOWS,
   LOGIN_CACHE,
   INIT_WITH_CREDENTIALS,
+  INIT_WITH_SSO,
   NO_CREDS_IN_DB,
   CREATE_ROOM,
   LEAVE_ROOM,

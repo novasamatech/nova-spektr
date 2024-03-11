@@ -77,6 +77,11 @@ export const QrReader = ({
     return typeof error === 'object' && ErrorFields.CODE in error && ErrorFields.MESSAGE in error;
   };
 
+  const CryptoTypes: Record<string, Exclude<CryptoTypeString, CryptoTypeString.ETHEREUM>> = {
+    substrate: CryptoTypeString.SR25519,
+    ethereum: CryptoTypeString.ECDSA,
+  };
+
   const makeResultPayload = <T extends ScanResult>(data: T): Array<SeedInfo | DdSeedInfo> => {
     if (Array.isArray(data)) return data;
 
@@ -89,13 +94,15 @@ export const QrReader = ({
       return [payload];
     }
 
+    const [cryptoType, address] = data.split(':');
+
     return [
       {
         name: '',
         derivedKeys: [],
         multiSigner: {
-          MultiSigner: CryptoTypeString.SR25519,
-          public: decodeAddress(data.split(':')[1]),
+          MultiSigner: CryptoTypes[cryptoType],
+          public: decodeAddress(address),
         },
       },
     ];
@@ -150,10 +157,15 @@ export const QrReader = ({
 
     if (fountainResult) {
       // decode the 1st frame --> it's a single frame QR
-      const result = EXPORT_ADDRESS.decode(fountainResult.slice(3));
+      let result: ScanResult;
+      if (isDynamicDerivations) {
+        result = DYNAMIC_DERIVATIONS_ADDRESS_RESPONSE.decode(fountainResult.slice(3));
+      } else {
+        result = EXPORT_ADDRESS.decode(fountainResult.slice(3)).payload;
+      }
       isComplete.current = true;
 
-      onResult?.(makeResultPayload(result.payload));
+      onResult?.(makeResultPayload(result));
     } else {
       // if there is more than 1 frame --> proceed scanning and keep the progress
       onProgress?.({ decoded: 1, total: frameData.total });

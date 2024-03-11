@@ -2,14 +2,15 @@ import cn from 'classnames';
 import { useEffect, useState } from 'react';
 import { Controller, useForm, SubmitHandler } from 'react-hook-form';
 import { u8aToHex } from '@polkadot/util';
+import { useUnit } from 'effector-react';
 
 import { useI18n } from '@app/providers';
-import { chainsService } from '@shared/api/network';
 import { Button, Input, InputHint, HeaderTitleText, SmallTitleText, IconButton } from '@shared/ui';
 import { AccountsList, walletModel } from '@entities/wallet';
 import type { Chain } from '@shared/core';
-import { SigningType, ErrorType, WalletType, CryptoType, ChainType, AccountType } from '@shared/core';
+import { SigningType, ErrorType, WalletType, CryptoType, ChainType, AccountType, CryptoTypeString } from '@shared/core';
 import { SeedInfo } from '@entities/transaction';
+import { networkModel, networkUtils } from '@entities/network';
 
 type WalletForm = {
   walletName: string;
@@ -25,6 +26,8 @@ type Props = {
 export const ManageSingleshard = ({ seedInfo, onBack, onClose, onComplete }: Props) => {
   const { t } = useI18n();
 
+  const allChains = useUnit(networkModel.$chains);
+
   const [chains, setChains] = useState<Chain[]>([]);
 
   const accountId = u8aToHex(seedInfo[0].multiSigner?.public);
@@ -38,8 +41,12 @@ export const ManageSingleshard = ({ seedInfo, onBack, onClose, onComplete }: Pro
     defaultValues: { walletName: seedInfo[0].name || '' },
   });
 
+  const isEthereumBased = seedInfo[0].multiSigner?.MultiSigner === CryptoTypeString.ECDSA;
+
   useEffect(() => {
-    setChains(chainsService.getChainsData({ sort: true }));
+    const chainList = Object.values(allChains);
+
+    setChains(isEthereumBased ? chainList.filter((c) => networkUtils.isEthereumBased(c.options)) : chainList);
   }, []);
 
   const createWallet: SubmitHandler<WalletForm> = async ({ walletName }) => {
@@ -55,8 +62,8 @@ export const ManageSingleshard = ({ seedInfo, onBack, onClose, onComplete }: Pro
         {
           accountId,
           name: walletName.trim(),
-          cryptoType: CryptoType.SR25519,
-          chainType: ChainType.SUBSTRATE,
+          cryptoType: isEthereumBased ? CryptoType.ETHEREUM : CryptoType.SR25519,
+          chainType: isEthereumBased ? ChainType.ETHEREUM : ChainType.SUBSTRATE,
           type: AccountType.BASE,
         },
       ],

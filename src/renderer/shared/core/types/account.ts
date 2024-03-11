@@ -34,8 +34,9 @@ export type ShardAccount = BaseAccount & {
 export type MultisigAccount = BaseAccount & {
   signatories: Signatory[];
   threshold: Threshold;
-  matrixRoomId: string;
   creatorAccountId: AccountId;
+  matrixRoomId?: string;
+  chainId?: ChainId;
 };
 
 export type WalletConnectAccount = Omit<BaseAccount, 'cryptoType'> & {

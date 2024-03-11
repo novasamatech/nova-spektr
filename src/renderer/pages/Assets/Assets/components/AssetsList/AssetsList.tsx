@@ -18,9 +18,9 @@ export const AssetsList = () => {
 
   const query = useUnit(assetsModel.$query);
   const activeShards = useUnit(assetsModel.$activeShards);
+  const accounts = useUnit(assetsModel.$accounts);
 
   const activeWallet = useUnit(walletModel.$activeWallet);
-  const activeAccounts = useUnit(walletModel.$activeAccounts);
   const balances = useUnit(balanceModel.$balances);
 
   const assetsPrices = useUnit(priceProviderModel.$assetsPrices);
@@ -38,10 +38,10 @@ export const AssetsList = () => {
   useEffect(() => {
     const isMultisig = walletUtils.isMultisig(activeWallet);
 
-    const availableChains = activeAccounts.some((a) => !accountUtils.isChainDependant(a))
+    const availableChains = accounts.some((a) => !accountUtils.isChainDependant(a))
       ? new Set(Object.keys(chains) as ChainId[])
       : // @ts-ignore
-        new Set(activeAccounts.filter((a) => Boolean(a.chainId)).map((a) => a.chainId));
+        new Set(accounts.filter((a) => Boolean(a.chainId)).map((a) => a.chainId));
 
     const filteredChains = Object.values(chains).filter((c) => {
       if (!connections[c.chainId]) return false;

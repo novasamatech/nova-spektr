@@ -6,7 +6,7 @@ import RejectTx from './modals/RejectTx';
 import ApproveTx from './modals/ApproveTx';
 import { getMultisigExtrinsicLink } from '../common/utils';
 import CallDataModal from './modals/CallDataModal';
-import { useMatrix, useI18n, useMultisigChainContext } from '@app/providers';
+import { useI18n, useMultisigChainContext } from '@app/providers';
 import { useMultisigTx } from '@entities/multisig';
 import { useToggle } from '@shared/lib/hooks';
 import { MultisigTransactionDS } from '@shared/api/storage';
@@ -15,6 +15,7 @@ import { OperationSignatories } from './OperationSignatories';
 import { useNetworkData } from '@entities/network';
 import { walletModel, permissionUtils } from '@entities/wallet';
 import { dictionary } from '@shared/lib/utils';
+import { matrixModel } from '@entities/matrix';
 
 type Props = {
   tx: MultisigTransactionDS;
@@ -24,12 +25,14 @@ type Props = {
 const OperationFullInfo = ({ tx, account }: Props) => {
   const { t } = useI18n();
   const { api, chain, connection, extendedChain } = useNetworkData(tx.chainId);
+
   const wallets = useUnit(walletModel.$wallets);
+  const accounts = useUnit(walletModel.$accounts);
+  const depositorAccounts = accounts.filter((a) => a.accountId === tx.depositor);
+  const matrix = useUnit(matrixModel.$matrix);
 
   const walletsMap = dictionary(wallets, 'id');
   const callData = tx.callData;
-
-  const { matrix } = useMatrix();
 
   const { addTask } = useMultisigChainContext();
   const { updateCallData } = useMultisigTx({ addTask });
@@ -57,7 +60,9 @@ const OperationFullInfo = ({ tx, account }: Props) => {
     });
   };
 
-  const isRejectAvailable = account && permissionUtils.canRejectMultisigTx(walletsMap[account.walletId], [account]);
+  const isRejectAvailable = depositorAccounts.some((depositor) => {
+    return permissionUtils.canRejectMultisigTx(walletsMap[depositor.walletId], [depositor]);
+  });
 
   return (
     <div className="flex flex-1">
@@ -85,7 +90,9 @@ const OperationFullInfo = ({ tx, account }: Props) => {
         <OperationCardDetails tx={tx} account={account} extendedChain={extendedChain} />
 
         <div className="flex items-center mt-3">
-          {connection && isRejectAvailable && <RejectTx tx={tx} account={account} connection={extendedChain} />}
+          {connection && isRejectAvailable && account && (
+            <RejectTx tx={tx} account={account} connection={extendedChain} />
+          )}
           {account && connection && <ApproveTx tx={tx} account={account} connection={extendedChain} />}
         </div>
       </div>

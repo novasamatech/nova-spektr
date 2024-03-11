@@ -2,7 +2,7 @@ import { useUnit } from 'effector-react';
 
 import { BaseModal, ContextMenu, DropdownIconButton, HelpText, IconButton, Tabs } from '@shared/ui';
 import { useModalClose, useToggle } from '@shared/lib/hooks';
-import { RootAccountLg, VaultAccountsList, WalletCardLg, walletModel } from '@entities/wallet';
+import { RootAccountLg, VaultAccountsList, WalletCardLg } from '@entities/wallet';
 import { useI18n } from '@app/providers';
 import { Account, BaseAccount, ChainAccount, DraftAccount, KeyType, ShardAccount, Wallet } from '@shared/core';
 import { copyToClipboard, toAddress } from '@shared/lib/utils';
@@ -15,9 +15,9 @@ import { DerivationsAddressModal, ImportKeysModal, KeyConstructor } from '@featu
 import { RenameWalletModal } from '@features/wallets/RenameWallet';
 import { ForgetWalletModal } from '@features/wallets/ForgetWallet';
 import { TabItem } from '@shared/ui/Tabs/common/types';
-import { ProxiesList } from '../components/ProxiesList';
+// import { ProxiesList } from '../components/ProxiesList';
 import { walletProviderModel } from '../../model/wallet-provider-model';
-import { NoProxiesAction } from '../components/NoProxiesAction';
+// import { NoProxiesAction } from '../components/NoProxiesAction';
 import { networkModel } from '@entities/network';
 
 type Props = {
@@ -31,8 +31,6 @@ export const VaultWalletDetails = ({ wallet, root, accountsMap, onClose }: Props
 
   const chains = useUnit(networkModel.$chains);
   const hasProxies = useUnit(walletProviderModel.$hasProxies);
-  const activeWallet = useUnit(walletModel.$activeWallet);
-  const activeAccounts = useUnit(walletModel.$activeAccounts);
   const keysToAdd = useUnit(vaultDetailsModel.$keysToAdd);
   const canCreateProxy = useUnit(walletProviderModel.$canCreateProxy);
 
@@ -153,15 +151,15 @@ export const VaultWalletDetails = ({ wallet, root, accountsMap, onClose }: Props
         </div>
       ),
     },
-    {
-      id: 'proxies',
-      title: t('walletDetails.common.proxiesTabTitle'),
-      panel: hasProxies ? (
-        <ProxiesList className="h-[403px] mt-4" canCreateProxy={canCreateProxy} />
-      ) : (
-        <NoProxiesAction className="h-[403px] mt-4" canCreateProxy={canCreateProxy} />
-      ),
-    },
+    // {
+    //   id: 'proxies',
+    //   title: t('walletDetails.common.proxiesTabTitle'),
+    //   panel: hasProxies ? (
+    //     <ProxiesList className="h-[403px] mt-4" canCreateProxy={canCreateProxy} />
+    //   ) : (
+    //     <NoProxiesAction className="h-[403px] mt-4" canCreateProxy={canCreateProxy} />
+    //   ),
+    // },
   ];
 
   return (

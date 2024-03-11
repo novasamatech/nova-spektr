@@ -2,7 +2,6 @@ import { createApi, createEvent, createStore, sample, combine, createEffect, att
 import { createForm } from 'effector-forms';
 import { spread } from 'patronum';
 
-import { chainsService } from '@shared/api/network';
 import { accountUtils, KEY_NAMES, walletModel } from '@entities/wallet';
 import type { ChainAccount, ShardAccount, DraftAccount, BaseAccount, Wallet, Account, NoID } from '@shared/core';
 import { AccountType, ChainType, CryptoType, KeyType } from '@shared/core';
@@ -10,8 +9,7 @@ import { dictionary } from '@shared/lib/utils';
 import { storageService } from '@shared/api/storage';
 import { SeedInfo } from '@entities/transaction';
 import { walletSelectModel } from '@features/wallets';
-
-const chains = chainsService.getChainsData();
+import { networkModel, networkUtils } from '@entities/network';
 
 const WALLET_NAME_MAX_LENGTH = 256;
 
@@ -103,15 +101,18 @@ sample({
 
 sample({
   clock: formInitiated,
-  fn: () => {
-    return chains.reduce<DraftAccount<ChainAccount | ShardAccount>[]>((acc, chain) => {
+  source: networkModel.$chains,
+  fn: (chains) => {
+    const defaultChains = networkUtils.getMainRelaychains(Object.values(chains));
+
+    return defaultChains.reduce<DraftAccount<ChainAccount | ShardAccount>[]>((acc, chain) => {
       if (!chain.specName) return acc;
 
       acc.push({
         chainId: chain.chainId,
         name: KEY_NAMES[KeyType.MAIN],
         derivationPath: `//${chain.specName}`,
-        cryptoType: CryptoType.SR25519,
+        cryptoType: networkUtils.isEthereumBased(chain.options) ? CryptoType.ETHEREUM : CryptoType.SR25519,
         chainType: ChainType.SUBSTRATE,
         type: AccountType.CHAIN,
         keyType: KeyType.MAIN,
