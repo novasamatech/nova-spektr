@@ -11,7 +11,7 @@ import {
   WalletType,
 } from '@shared/core';
 import { accountUtils, walletModel, walletUtils } from '@entities/wallet';
-import { RelayChains, dictionary } from '@shared/lib/utils';
+import { dictionary } from '@shared/lib/utils';
 import { matrixModel } from '@entities/matrix';
 import { networkModel, networkUtils } from '@entities/network';
 
@@ -114,15 +114,16 @@ const $availableAccounts = combine(
     chains: networkModel.$chains,
   },
   ({ accounts, chain, wallets, chains }) => {
+    if (!chain) return [];
+
     const walletsMap = dictionary(wallets, 'id');
 
     const chainAccounts = accounts.filter((account) => {
       const wallet = walletsMap[account.walletId];
       const isAvailableType = !accountUtils.isMultisigAccount(account) && !walletUtils.isWatchOnly(wallet);
-      const isChainIdMatch = accountUtils.isChainIdMatch(account, chain || RelayChains.POLKADOT);
-      const isCryptoTypeMatch = chain ? accountUtils.isCryptoTypeMatch(account, chains[chain]) : true;
+      const isChainIdMatch = accountUtils.isChainIdAndCryptoTypeMatch(account, chains[chain]);
 
-      return isChainIdMatch && isAvailableType && isCryptoTypeMatch;
+      return isChainIdMatch && isAvailableType;
     });
 
     const baseAccounts = chainAccounts.filter((a) => accountUtils.isBaseAccount(a) && a.name);

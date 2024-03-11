@@ -23,6 +23,7 @@ import type { Chain, Account, MultisigAccount, Asset, Address, ChainId, HexStrin
 import { accountUtils } from '@entities/wallet';
 import { balanceModel, balanceUtils } from '@entities/balance';
 import { sendAssetModel } from '../../model/send-asset';
+import { networkModel, networkUtils } from '@entities/network';
 
 const DESCRIPTION_MAX_LENGTH = 120;
 
@@ -80,6 +81,7 @@ export const TransferForm = ({
   const { t } = useI18n();
   const { getMultisigTxs } = useMultisigTx({});
   const balances = useUnit(balanceModel.$balances);
+  const chains = useUnit(networkModel.$chains);
 
   const [accountBalance, setAccountBalance] = useState('');
   const [signerBalance, setSignerBalance] = useState('');
@@ -145,6 +147,11 @@ export const TransferForm = ({
   useEffect(() => {
     sendAssetModel.events.accountIdSelected(toAccountId(destination));
   }, [destination]);
+
+  const destinationChainOptions = destinationChain?.value && chains[destinationChain?.value].options;
+
+  const isDestinationCryptoTypeMatch =
+    networkUtils.isEthereumBased(chain.options) === networkUtils.isEthereumBased(destinationChainOptions);
 
   const setupBalances = (
     address: Address,
@@ -323,7 +330,8 @@ export const TransferForm = ({
                 }
                 suffixElement={
                   isXcmTransfer &&
-                  !destination && (
+                  !destination &&
+                  isDestinationCryptoTypeMatch && (
                     <Button size="sm" pallet="secondary" onClick={handleMyselfClick}>
                       {t('transfer.myselfButton')}
                     </Button>
