@@ -23,7 +23,7 @@ import type { Chain, Account, MultisigAccount, Asset, Address, ChainId, HexStrin
 import { accountUtils } from '@entities/wallet';
 import { balanceModel, balanceUtils } from '@entities/balance';
 import { sendAssetModel } from '../../model/send-asset';
-import { networkModel, networkUtils } from '@/src/renderer/entities/network';
+import { networkModel, networkUtils } from '@entities/network';
 
 const DESCRIPTION_MAX_LENGTH = 120;
 
