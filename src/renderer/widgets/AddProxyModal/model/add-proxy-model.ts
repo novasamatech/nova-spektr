@@ -244,7 +244,7 @@ sample({
     activeWallet: walletModel.$activeWallet,
     walletDetails: walletSelectModel.$walletForDetails,
   },
-  filter: ({ activeWallet, walletDetails }, step) => {
+  filter: ({ activeWallet, walletDetails }) => {
     if (!activeWallet || !walletDetails) return false;
 
     return activeWallet !== walletDetails;
