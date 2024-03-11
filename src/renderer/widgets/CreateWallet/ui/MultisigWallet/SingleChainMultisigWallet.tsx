@@ -159,7 +159,7 @@ export const SingleChainMultisigWallet = ({ isOpen, onClose, onComplete, onBack 
         {...getResultProps()}
         title={name}
         isOpen={isModalOpen && isResultModalOpen}
-        onClose={closeMultisigModal}
+        onClose={() => closeMultisigModal({ complete: true })}
       >
         {error && <Button onClick={toggleResultModal}>{t('createMultisigAccount.closeButton')}</Button>}
       </OperationResult>

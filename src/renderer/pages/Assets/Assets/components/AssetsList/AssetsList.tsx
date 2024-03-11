@@ -6,7 +6,7 @@ import { networkModel, networkUtils } from '@entities/network';
 import type { Chain, ChainId } from '@shared/core';
 import { accountUtils, walletModel, walletUtils } from '@entities/wallet';
 import { priceProviderModel, currencyModel } from '@entities/price';
-import { includes } from '@shared/lib/utils';
+import { isStringsMatchQuery } from '@shared/lib/utils';
 import { Icon, BodyText } from '@shared/ui';
 import { NetworkAssets } from '../NetworkAssets/NetworkAssets';
 import { assetsModel } from '../../model/assets-model';
@@ -44,6 +44,8 @@ export const AssetsList = () => {
         new Set(accounts.filter((a) => Boolean(a.chainId)).map((a) => a.chainId));
 
     const filteredChains = Object.values(chains).filter((c) => {
+      if (!connections[c.chainId]) return false;
+
       const isDisabled = networkUtils.isDisabledConnection(connections[c.chainId]);
       const hasMultiPallet = !isMultisig || networkUtils.isMultisigSupported(c.options);
 
@@ -63,7 +65,7 @@ export const AssetsList = () => {
   }, [balances, assetsPrices]);
 
   const searchSymbolOnly = sortedChains.some((chain) => {
-    return chain.assets.some((asset) => includes(asset.symbol, query));
+    return chain.assets.some((asset) => isStringsMatchQuery(query, [asset.symbol, asset.name]));
   });
 
   return (

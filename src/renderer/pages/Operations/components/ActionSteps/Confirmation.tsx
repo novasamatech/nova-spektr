@@ -8,6 +8,7 @@ import {
   DepositWithLabel,
   isXcmTransaction,
   XcmFee,
+  FeeLoader,
 } from '@entities/transaction';
 import { TransactionAmount } from '@pages/Operations/components/TransactionAmount';
 import { DetailRow, FootnoteText, Icon } from '@shared/ui';
@@ -21,6 +22,7 @@ import { sendAssetModel } from '@widgets/SendAssetModal';
 import { SignButton } from '@entities/operation/ui/SignButton';
 import { walletModel } from '@entities/wallet';
 import { getIconName } from '@entities/transaction/lib/transactionConfirmIcon';
+import { priceProviderModel } from '@entities/price';
 
 type Props = {
   tx: MultisigTransaction;
@@ -33,6 +35,7 @@ type Props = {
 export const Confirmation = ({ tx, account, connection, signatory, feeTx, onSign }: Props) => {
   const { t } = useI18n();
   const [isFeeLoaded, setIsFeeLoaded] = useState(false);
+  const fiatFlag = useUnit(priceProviderModel.$fiatFlag);
 
   const wallets = useUnit(walletModel.$wallets);
   const wallet = wallets.find((w) => w.id === signatory?.walletId);
@@ -72,7 +75,7 @@ export const Confirmation = ({ tx, account, connection, signatory, feeTx, onSign
       )}
 
       <DetailRow label={t('operation.networkFee')} className="text-text-primary">
-        {connection?.api && feeTx && (
+        {connection?.api && feeTx ? (
           <Fee
             className="text-footnote"
             api={connection.api}
@@ -80,6 +83,8 @@ export const Confirmation = ({ tx, account, connection, signatory, feeTx, onSign
             transaction={feeTx}
             onFeeChange={(fee) => setIsFeeLoaded(Boolean(fee))}
           />
+        ) : (
+          <FeeLoader fiatFlag={!!fiatFlag} />
         )}
       </DetailRow>
 

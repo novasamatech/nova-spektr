@@ -196,7 +196,7 @@ type GeneralCallbacks = {
 };
 
 export type MultisigCallbacks = {
-  onMultisigEvent: (payload: MultisigPayload, extras: SpektrExtras) => Promise<void>;
+  onMultisigEvent: (payload: MultisigPayload, extras: SpektrExtras | undefined) => Promise<void>;
 };
 
 export type Callbacks = GeneralCallbacks & MultisigCallbacks;
