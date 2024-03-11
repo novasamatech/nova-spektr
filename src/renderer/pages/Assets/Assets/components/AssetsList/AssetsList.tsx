@@ -65,7 +65,7 @@ export const AssetsList = () => {
   }, [balances, assetsPrices]);
 
   const searchSymbolOnly = sortedChains.some((chain) => {
-    return chain.assets.some((asset) => includes(asset.symbol, query));
+    return chain.assets.some((asset) => includes(asset.symbol, query) || includes(asset.name, query));
   });
 
   return (
