@@ -96,6 +96,16 @@ class StorageService<T extends { id: K }, K extends IndexableType> {
     }
   }
 
+  async insertAll(items: T[]): Promise<K[] | undefined> {
+    try {
+      return this.dexieTable.bulkPut(items as T[], { allKeys: true });
+    } catch (error) {
+      console.log('Error inserting object - ', error);
+
+      return Promise.resolve(undefined);
+    }
+  }
+
   async delete(id: K): Promise<K | undefined> {
     try {
       await this.dexieTable.delete(id);
@@ -130,4 +140,5 @@ export const storageService = {
   proxyGroups: new StorageService(dexieStorage.proxyGroups),
   notifications: new StorageService(dexieStorage.notifications),
   metadata: new StorageService(dexieStorage.metadata),
+  balances: new StorageService(dexieStorage.balances),
 };

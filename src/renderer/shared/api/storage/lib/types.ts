@@ -10,7 +10,6 @@ import type {
   CallHash,
   ChainId,
   Balance,
-  BalanceKey,
   ProxyAccount,
   Connection,
   Notification,
@@ -23,19 +22,6 @@ import type {
 
 export interface IStorage {
   connectTo: <T extends keyof DataStorage>(name: T) => DataStorage[T] | undefined;
-}
-
-export interface IBalanceStorage {
-  getBalance: (accountId: AccountId, chainId: ChainId, assetId: string) => Promise<BalanceDS | undefined>;
-  getNetworkBalances: (accountIds: AccountId[], chainId: ChainId) => Promise<BalanceDS[]>;
-  getAssetBalances: (accountIds: AccountId[], chainId: ChainId, assetId: string) => Promise<BalanceDS[]>;
-  getBalances: (accountIds: AccountId[]) => Promise<BalanceDS[]>;
-  getAllBalances: () => Promise<BalanceDS[]>;
-  addBalance: (balance: Balance) => Promise<void>;
-  updateBalance: (balance: Balance) => Promise<void>;
-  insertBalances: (balances: Balance[]) => Promise<string[]>;
-  setBalanceIsValid: (balanceKey: BalanceKey, verified: boolean) => Promise<number>;
-  deleteBalances: (accountIds: AccountId[]) => Promise<number>;
 }
 
 export interface IMultisigEventStorage {
@@ -74,7 +60,6 @@ export interface IMultisigTransactionStorage {
 // =====================================================
 
 export type DataStorage = {
-  balances: IBalanceStorage;
   multisigTransactions: IMultisigTransactionStorage;
   multisigEvents: IMultisigEventStorage;
 };
@@ -82,14 +67,13 @@ export type DataStorage = {
 export type ID = string;
 type WithID<T extends Object> = { id?: ID } & T;
 
-export type BalanceDS = WithID<Balance>;
 export type MultisigTransactionDS = WithID<MultisigTransaction>;
 export type MultisigEventDS = WithID<MultisigEvent>;
 
 export type TWallet = Table<Wallet, Wallet['id']>;
 export type TContact = Table<Contact, Contact['id']>;
 export type TAccount = Table<Account, Account['id']>;
-export type TBalance = Table<Balance, ID[]>;
+export type TBalance = Table<Balance, Balance['id']>;
 export type TConnection = Table<Connection, Connection['id']>;
 export type TProxy = Table<ProxyAccount, ProxyAccount['id']>;
 export type TProxyGroup = Table<ProxyGroup, ProxyGroup['id']>;

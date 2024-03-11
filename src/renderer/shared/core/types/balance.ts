@@ -1,6 +1,7 @@
-import type { ChainId, AccountId } from './general';
+import type { ChainId, AccountId, ID } from './general';
 
 export type Balance = {
+  id: ID;
   chainId: ChainId;
   accountId: AccountId;
   assetId: string;
@@ -19,5 +20,3 @@ export type BalanceLock = {
   type: LockTypes;
   amount: string;
 };
-
-export type BalanceKey = Pick<Balance, 'accountId' | 'chainId' | 'assetId'>;

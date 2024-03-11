@@ -1,1 +1,1 @@
-export { balanceSubscriptionModel } from './model/balance-subscription-model';
+export { balanceSubModel } from './subscription';

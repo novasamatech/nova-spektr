@@ -1,5 +1,4 @@
-import { OmitFirstArg } from '@shared/lib/types/utilityTypes';
-import { AccountId, Balance, ChainId } from '@shared/core';
+import type { AccountId, Balance, ChainId, OmitFirstArg } from '@shared/core';
 
 export const balanceUtils = {
   getAssetBalances,
@@ -10,9 +9,9 @@ export const balanceUtils = {
 };
 
 function getAssetBalances(balances: Balance[], accountIds: AccountId[], chainId: ChainId, assetId: string): Balance[] {
-  return balances.filter(
-    (balance) => accountIds.includes(balance.accountId) && balance.chainId === chainId && balance.assetId === assetId,
-  );
+  return balances.filter((balance) => {
+    return accountIds.includes(balance.accountId) && balance.chainId === chainId && balance.assetId === assetId;
+  });
 }
 
 function getBalance(balances: Balance[], accountId: AccountId, chainId: ChainId, assetId: string): Balance | undefined {
@@ -28,5 +27,7 @@ function getNetworkBalances(balances: Balance[], accountIds: AccountId[], chainI
 }
 
 function getAccountsBalances(balances: Balance[], accountIds: AccountId[]): Balance[] {
-  return balances.filter((balance) => accountIds.includes(balance.accountId));
+  const accountsMap = new Set(accountIds);
+
+  return balances.filter((balance) => accountsMap.has(balance.accountId));
 }

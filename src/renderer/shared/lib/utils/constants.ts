@@ -22,6 +22,7 @@ export const TEST_ACCOUNTS: AccountId[] = [
   '0x08eb319467ea54784cd9edfbd03bbcc53f7a021ed8d9ed2ca97b6ae46b3f6014',
   '0x83e0844510ede3aea6953c9886d9a51abdd944b6395de7b83bbce6dffce0c765',
   '0x3b8318a62a8f84e86ef55432ef5c029be966b840a1f070175d8a92df6e08e99b',
+  '0x6871a0a8984a068b69e853a0a9b221dc7876d141547fea7c1cf6457c55fba20b',
 ];
 
 export const TEST_ADDRESS = '1ChFWeNRLarAPRCTM3bfJmncJbSAbSS9yqjueWz7jX7iTVZ';

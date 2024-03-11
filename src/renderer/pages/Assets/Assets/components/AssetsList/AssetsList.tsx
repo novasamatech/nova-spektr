@@ -44,6 +44,8 @@ export const AssetsList = () => {
         new Set(accounts.filter((a) => Boolean(a.chainId)).map((a) => a.chainId));
 
     const filteredChains = Object.values(chains).filter((c) => {
+      if (!connections[c.chainId]) return false;
+
       const isDisabled = networkUtils.isDisabledConnection(connections[c.chainId]);
       const hasMultiPallet = !isMultisig || networkUtils.isMultisigSupported(c.options);
 

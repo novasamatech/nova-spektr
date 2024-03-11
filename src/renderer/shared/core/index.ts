@@ -40,7 +40,7 @@ export { AssetType, StakingType } from './types/asset';
 export type { Asset, OrmlExtras, StatemineExtras } from './types/asset';
 
 export { LockTypes } from './types/balance';
-export type { Balance, BalanceKey, BalanceLock } from './types/balance';
+export type { Balance, BalanceLock } from './types/balance';
 
 export type { ChainMetadata } from './types/metadata';
 

@@ -23,6 +23,7 @@ const defaultProps = {
   asset: testAsset as Asset,
   chainId: testChain.chainId,
   balance: {
+    id: 1,
     assetId: testAsset.assetId.toString(),
     chainId: testChain.chainId,
     accountId: TEST_ACCOUNTS[0],
