@@ -25,10 +25,6 @@ function getAccountsToSubscribe(wallet: Wallet, accounts: Account[]): Account[] 
     return accounts.filter((account) => !accountUtils.isBaseAccount(account));
   }
 
-  if (walletUtils.isProxied(wallet)) {
-    // TODO: Handle proxied accounts https://app.clickup.com/t/86934k047
-  }
-
   return accounts;
 }
 
