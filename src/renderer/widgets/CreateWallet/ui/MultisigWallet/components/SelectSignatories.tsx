@@ -10,7 +10,7 @@ import { CreateContactModal } from '@widgets/ManageContactModal';
 import { ExtendedContact, ExtendedWallet } from '../common/types';
 import { EmptyContactList } from '@entities/contact';
 import { type Contact, type Wallet, type Account, type MultisigAccount, WalletType } from '@shared/core';
-import { ContactItem, ExplorersPopover, walletUtils } from '@entities/wallet';
+import { ContactItem, ExplorersPopover, accountUtils, walletUtils } from '@entities/wallet';
 import { WalletItem } from './WalletItem';
 import { matrixModel } from '@entities/matrix';
 
@@ -62,8 +62,9 @@ export const SelectSignatories = ({ isActive, wallets, accounts, contacts, onSel
         // TODO: Check why it can be empty
         const accountId = walletAccounts[0]?.accountId;
         const isSameAccounts = walletAccounts.every((a) => a.accountId === accountId);
+        const isEvmAccount = accountUtils.isEthereumBased(walletAccounts[0]);
 
-        if (isSameAccounts && walletUtils.isValidSignatory(wallet)) {
+        if (isSameAccounts && !isEvmAccount && walletUtils.isValidSignatory(wallet)) {
           acc.available.push({
             ...wallet,
             index: index.toString(),

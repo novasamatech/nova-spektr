@@ -68,10 +68,10 @@ export const NetworkAssets = ({ chain, accounts, searchSymbolOnly }: Props) => {
     const filteredAssets = chain.assets.filter((asset) => {
       if (query) {
         const hasSymbol = includes(asset.symbol, query);
-        const hasChainName = includes(chain.name, query);
         const hasAssetName = includes(asset.name, query);
+        const hasChainName = includes(chain.name, query);
 
-        return hasSymbol || (!searchSymbolOnly && (hasChainName || hasAssetName));
+        return hasSymbol || hasAssetName || (!searchSymbolOnly && hasChainName);
       }
 
       const balance = balancesObject[asset.assetId];
