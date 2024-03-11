@@ -17,7 +17,7 @@ const $activeNetworks = combine(
   ({ networks, connectionStatuses, connections }) => {
     return networksListUtils
       .getExtendedChain(networks, connections, connectionStatuses)
-      .filter((o) => networkUtils.isEnabledConnection(o.connection));
+      .filter((chain) => networkUtils.isEnabledConnection(chain.connection));
   },
 );
 
