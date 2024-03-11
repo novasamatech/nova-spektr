@@ -714,7 +714,7 @@
       "editNodeButton": "Edit custom node",
       "emptyStateLabel": "Nothing was found, update the search",
       "errorStatusLabel": "Error",
-      "maxLengthNameError": "Name cannot be longer than 50 characters",
+      "maxLengthNameError": "Name must be between 3 and 50 characters long",
       "nameLabel": "Name",
       "namePlaceholder": "Enter node name",
       "nodeExist": "Node already exists",
