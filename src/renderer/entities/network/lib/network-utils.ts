@@ -17,6 +17,7 @@ export const networkUtils = {
 
   isMultisigSupported,
   isProxySupported,
+  isPureProxySupported,
   isEthereumBased,
 
   isLightClientConnection,
@@ -46,15 +47,19 @@ function isErrorStatus(status: ConnectionStatus): boolean {
 }
 
 function isMultisigSupported(chainOptions?: ChainOptions[]): boolean {
-  return Boolean(chainOptions?.includes('multisig'));
+  return Boolean(chainOptions?.includes(ChainOptions.MULTISIG));
 }
 
 function isProxySupported(chainOptions?: ChainOptions[]): boolean {
-  return Boolean(chainOptions?.includes('regular_proxy'));
+  return Boolean(chainOptions?.includes(ChainOptions.REGULAR_PROXY));
+}
+
+function isPureProxySupported(chainOptions?: ChainOptions[]): boolean {
+  return Boolean(chainOptions?.includes(ChainOptions.PURE_PROXY));
 }
 
 function isEthereumBased(chainOptions?: ChainOptions[]): boolean {
-  return Boolean(chainOptions?.includes('ethereum_based'));
+  return Boolean(chainOptions?.includes(ChainOptions.ETHEREUM_BASED));
 }
 
 function isLightClientConnection(connection: Connection): boolean {
