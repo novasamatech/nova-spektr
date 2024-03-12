@@ -1,5 +1,5 @@
 import type { Account, ProxyAction, NoID, Wallet, ChainId } from '@shared/core';
-import { NotificationType, Chain, type PartialProxiedAccount } from '@shared/core';
+import { NotificationType, Chain, type PartialProxiedAccount, ChainOptions } from '@shared/core';
 import { dictionary } from '@shared/lib/utils';
 import { walletUtils } from '@entities/wallet';
 import { proxyUtils } from '@entities/proxy';
@@ -11,7 +11,7 @@ export const proxiesUtils = {
 };
 
 function isRegularProxy(chain: Chain): boolean {
-  return Boolean(chain.options?.includes('regular_proxy'));
+  return Boolean(chain.options?.includes(ChainOptions.REGULAR_PROXY));
 }
 
 type GetNotificationParams = {
@@ -42,7 +42,7 @@ function getNotification({
       proxyWalletName: accountsWalletsMap[proxied.proxyAccountId].name,
       proxyWalletType: accountsWalletsMap[proxied.proxyAccountId].type,
       proxiedAccountId: proxied.accountId,
-      proxiedWalletName: proxyUtils.getProxiedName(proxied.accountId, proxied.proxyType, addressPrefix),
+      proxiedWalletName: proxyUtils.getProxiedName(proxied, addressPrefix),
       read: false,
       type,
     };

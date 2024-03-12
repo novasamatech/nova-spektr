@@ -4,7 +4,7 @@ import { createContext, PropsWithChildren, useCallback, useContext, useEffect, u
 
 import { chainsService } from '@shared/api/network';
 import { useSettingsStorage } from '@entities/settings';
-import type { ChainId } from '@shared/core';
+import { ExternalType, type ChainId } from '@shared/core';
 
 type GraphqlContextProps = {
   changeClient: (chainId: ChainId) => void;
@@ -47,7 +47,7 @@ export const GraphqlProvider = ({ children }: PropsWithChildren) => {
     const chainsData = chainsService.getStakingChainsData();
 
     chainUrls.current = chainsData.reduce((acc, chain) => {
-      const subqueryMatch = chain.externalApi?.staking.find((api) => api.type === 'subquery');
+      const subqueryMatch = chain.externalApi?.[ExternalType.STAKING].find((api) => api.type === 'subquery');
 
       if (subqueryMatch) {
         return { ...acc, [chain.chainId]: subqueryMatch.url };

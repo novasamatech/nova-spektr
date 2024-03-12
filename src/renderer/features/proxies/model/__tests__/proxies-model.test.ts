@@ -1,7 +1,15 @@
 import { allSettled, fork } from 'effector';
 
 import { networkModel } from '@entities/network';
-import { ConnectionType, ProxyAccount, type HexString, ProxyType, AccountId, AccountType } from '@shared/core';
+import {
+  ConnectionType,
+  ProxyAccount,
+  type HexString,
+  ProxyType,
+  AccountId,
+  AccountType,
+  ChainOptions,
+} from '@shared/core';
 import { storageService } from '@shared/api/storage';
 import { proxiesModel } from '../proxies-model';
 import { proxyModel } from '@entities/proxy';
@@ -82,7 +90,9 @@ describe('features/proxies/model/proxies-model', () => {
       values: new Map()
         .set(walletModel.$wallets, [{ id: 1 }])
         .set(walletModel.$accounts, [{ walletId: 1, accountId: '0x01', type: AccountType.CHAIN, chainId: '0x01' }])
-        .set(networkModel.$chains, { '0x01': { chainId: '0x01', name: 'Westend', options: ['regular_proxy'] } }),
+        .set(networkModel.$chains, {
+          '0x01': { chainId: '0x01', name: 'Westend', options: [ChainOptions.REGULAR_PROXY] },
+        }),
     });
 
     await allSettled(proxiesModel.events.workerStarted, { scope });
