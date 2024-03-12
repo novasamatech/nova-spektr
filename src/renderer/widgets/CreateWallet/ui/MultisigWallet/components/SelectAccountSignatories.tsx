@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { groupBy, isEqual } from 'lodash';
 import { useUnit } from 'effector-react';
 
-import { cnTw, includes, isStringsMatchQuery, RootExplorers, toAddress } from '@shared/lib/utils';
+import { cnTw, includes, isEthereumAccountId, isStringsMatchQuery, RootExplorers, toAddress } from '@shared/lib/utils';
 import { useI18n } from '@app/providers';
 import { useToggle } from '@shared/lib/hooks';
 import {
@@ -25,6 +25,7 @@ import { EmptyContactList } from '@entities/contact';
 import { type Contact, type Account, ShardAccount, Wallet, Chain } from '@shared/core';
 import { ContactItem, ExplorersPopover, WalletCardMd } from '@entities/wallet';
 import { matrixModel } from '@entities/matrix';
+import { networkUtils } from '@/src/renderer/entities/network';
 
 const enum SignatoryTabs {
   ACCOUNTS = 'accounts',
@@ -62,14 +63,20 @@ export const SelectAccountSignatories = ({ isActive, accounts, wallets, contacts
 
   useEffect(() => {
     const addressBookContacts = contacts
-      .filter((c) => c.matrixId)
+      .filter((c) => {
+        const isEthereumContact = isEthereumAccountId(c.accountId);
+        const isEthereumChain = networkUtils.isEthereumBased(chain?.options);
+
+        return c.matrixId && isEthereumContact === isEthereumChain;
+      })
       .map((contact, index) => ({ ...contact, index: index.toString() }));
 
     setContactList(addressBookContacts);
-  }, [contacts.length, loginStatus]);
+  }, [contacts.length, loginStatus, chain]);
 
   useEffect(() => {
     setSelectedAccounts({});
+    setSelectedContacts({});
   }, [chain]);
 
   useEffect(() => {
