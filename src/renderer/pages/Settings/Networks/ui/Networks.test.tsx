@@ -25,13 +25,8 @@ jest.mock('@app/providers', () => ({
   })),
 }));
 
-jest.mock('./components', () => ({
+jest.mock('./NetworkSelector', () => ({
   NetworkSelector: () => <div>NetworkSelector</div>,
-  CustomRpcModal: ({ onClose }: any) => (
-    <button type="button" onClick={() => onClose({ name: 'edit_node', url: 'wss://edit_url.com' })}>
-      editCustomRpc
-    </button>
-  ),
 }));
 
 jest.mock('@features/network', () => ({
@@ -52,6 +47,7 @@ jest.mock('@features/network', () => ({
   InactiveNetwork: () => <span>InactiveNetwork</span>,
   EmptyNetworks: () => <span>EmptyNetworks</span>,
   NetworksFilter: () => <div>NetworksFilter</div>,
+  CreateRpcNode: () => <div>CreateRpcNode</div>,
 }));
 
 describe('pages/Settings/Networks', () => {
@@ -102,6 +98,7 @@ describe('pages/Settings/Networks', () => {
     const inactiveItem = screen.getByText('InactiveNetwork');
     const emptyNetworks = screen.getByText('EmptyNetworks');
     const networkSelector = screen.getAllByText('NetworkSelector');
+    const createRpcNode = screen.getByText('CreateRpcNode');
 
     expect(text).toBeInTheDocument();
     expect(networksFilter).toBeInTheDocument();
@@ -110,5 +107,6 @@ describe('pages/Settings/Networks', () => {
     expect(inactiveItem).toBeInTheDocument();
     expect(emptyNetworks).toBeInTheDocument();
     expect(networkSelector).toHaveLength(3);
+    expect(createRpcNode).toBeInTheDocument();
   });
 });

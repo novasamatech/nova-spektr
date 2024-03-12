@@ -8,11 +8,11 @@ import { Paths } from '@shared/routes';
 import { BaseModal, InfoLink } from '@shared/ui';
 import { useToggle } from '@shared/lib/hooks';
 import { DEFAULT_TRANSITION } from '@shared/lib/utils';
-import { NetworkSelector } from './components';
+import { NetworkSelector } from './NetworkSelector';
 import type { RpcNode, ChainId } from '@shared/core';
 import { ConnectionType } from '@shared/core';
 import { networkModel, ExtendedChain, networkUtils } from '@entities/network';
-import { manageNetworkModel } from './model/manage-network-model';
+import { manageNetworkModel } from '../model/manage-network-model';
 import {
   EmptyNetworks,
   NetworkList,
@@ -22,9 +22,10 @@ import {
   ActiveNetwork,
   NetworksFilter,
   networksFilterModel,
+  CreateRpcNode,
 } from '@features/network';
 
-import './model/networks-overview-model';
+import '../model/networks-overview-model';
 
 const MAX_LIGHT_CLIENTS = 3;
 
@@ -226,7 +227,7 @@ export const Networks = () => {
       </div>
 
       {network && (
-        <CustomRpcModal isOpen={isCustomRpcOpen} node={nodeToEdit} network={network} onClose={closeCustomRpcModal} />
+        <CreateRpcNode isOpen={isCustomRpcOpen} node={nodeToEdit} network={network} onClose={closeCustomRpcModal} />
       )}
     </BaseModal>
   );
