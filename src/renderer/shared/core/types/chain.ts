@@ -15,7 +15,7 @@ export type Chain = {
   options?: ChainOptions[];
 };
 
-export enum ChainOptions {
+export const enum ChainOptions {
   TESTNET = 'testnet',
   CROWDLOANS = 'crowdloans',
   MULTISIG = 'multisig',
@@ -42,8 +42,7 @@ type ExternalValue = {
   url: string;
 };
 
-// TODO: make it an enum
-export enum ExternalType {
+export const enum ExternalType {
   HISTORY = 'history',
   STAKING = 'staking',
   CROWDLOANS = 'crowdloans',

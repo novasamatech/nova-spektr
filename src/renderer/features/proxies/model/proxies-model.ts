@@ -108,12 +108,8 @@ const getProxiesFx = createEffect(
       'accountId',
     );
 
-    const proxyUrl =
-      networkUtils.isPureProxySupported(chain.options) && chain.externalApi?.[ExternalType.PROXY]?.[0]?.url;
-
     const proxiesResult = (await endpoint.call.getProxies({
       chainId,
-      proxyUrl,
       accountsForProxy,
       accountsForProxied,
       proxiedAccounts,
@@ -121,6 +117,9 @@ const getProxiesFx = createEffect(
     })) as GetProxiesResult;
 
     const { proxiedAccountsToAdd } = proxiesResult;
+
+    const proxyUrl =
+      networkUtils.isPureProxySupported(chain.options) && chain.externalApi?.[ExternalType.PROXY]?.[0]?.url;
 
     if (proxyUrl && proxiedAccountsToAdd.length) {
       const client = new GraphQLClient(proxyUrl);

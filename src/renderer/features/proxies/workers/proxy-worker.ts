@@ -98,7 +98,6 @@ async function disconnect(chainId: ChainId) {
 
 type GetProxiesParams = {
   chainId: ChainId;
-  proxyUrl: string;
   accountsForProxy: Record<AccountId, Account>;
   accountsForProxied: Record<AccountId, Account>;
   proxiedAccounts: ProxiedAccount[];
@@ -107,7 +106,6 @@ type GetProxiesParams = {
 // TODO: Refactor this code
 async function getProxies({
   chainId,
-  proxyUrl,
   accountsForProxy,
   accountsForProxied,
   proxiedAccounts,
