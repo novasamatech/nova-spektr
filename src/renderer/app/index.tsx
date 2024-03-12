@@ -7,9 +7,9 @@ import { kernelModel } from '@shared/core';
 import { walletModel } from '@entities/wallet';
 import { networkModel } from '@entities/network';
 import { proxyModel } from '@entities/proxy';
-import { proxiesModel } from '@features/proxies';
 import { notificationModel } from '@entities/notification';
-import { balanceSubscriptionModel } from '@features/balances';
+import { balanceSubModel } from '@features/balances';
+import { proxiesModel } from '@features/proxies';
 import { assetsModel } from '@pages/Assets/Assets/model/assets-model';
 import './i18n';
 import './index.css';
@@ -23,7 +23,7 @@ log.transports.console.useStyles = true;
 // Object.assign(console, log.functions);
 log.errorHandler.startCatching({
   showDialog: false,
-  onError({ createIssue, error, processType, versions }) {
+  onError({ error }) {
     console.error('Uncaught error', error);
   },
 });
@@ -38,7 +38,7 @@ proxiesModel.events.workerStarted();
 walletModel.events.walletStarted();
 networkModel.events.networkStarted();
 proxyModel.events.proxyStarted();
-balanceSubscriptionModel.events.balancesSubscribed();
+balanceSubModel.events.balancesSubStarted();
 assetsModel.events.assetsStarted();
 notificationModel.events.notificationsStarted();
 

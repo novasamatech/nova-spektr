@@ -29,10 +29,6 @@ const config = merge<WpConfig & WdsConfig>(sharedConfig, {
     client: {
       overlay: false,
     },
-
-    devMiddleware: {
-      writeToDisk: true,
-    },
   },
 
   output: {

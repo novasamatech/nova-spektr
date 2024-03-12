@@ -1,6 +1,7 @@
 import { createEffect, createEvent, createStore, sample, scopeBind } from 'effector';
 import { ApiPromise } from '@polkadot/api';
 import { VoidFn } from '@polkadot/api/types';
+import { spread } from 'patronum';
 
 import { storageService } from '@shared/api/storage';
 import { dictionary } from '@shared/lib/utils';
@@ -24,8 +25,8 @@ import {
 } from '@shared/api/network';
 
 const networkStarted = createEvent();
-
 const chainConnected = createEvent<ChainId>();
+const connectionStatusChanged = createEvent<{ chainId: ChainId; status: ConnectionStatus }>();
 
 const connected = createEvent<ChainId>();
 const disconnected = createEvent<ChainId>();
@@ -140,8 +141,12 @@ const createProviderFx = createEffect(
   },
 );
 
-const createApiFx = createEffect((provider: ProviderWithMetadata): Promise<ApiPromise> => {
-  return networkService.createApi(provider);
+type CreateApiParams = {
+  chainId: ChainId;
+  providers: Record<ChainId, ProviderWithMetadata>;
+};
+const createApiFx = createEffect(({ chainId, providers }: CreateApiParams): Promise<ApiPromise> => {
+  return networkService.createApi(providers[chainId]);
 });
 
 const disconnectApiFx = createEffect(async (api: ApiPromise): Promise<ChainId> => {
@@ -252,36 +257,56 @@ sample({
 sample({
   clock: connected,
   source: $providers,
-  fn: (providers, chainId) => providers[chainId],
+  fn: (providers, chainId) => ({ chainId, providers }),
   target: createApiFx,
 });
 
 sample({
-  clock: createApiFx.doneData,
+  clock: createApiFx.done,
   source: $apis,
-  fn: (apis, api) => ({ ...apis, [api.genesisHash.toHex()]: api }),
+  fn: (apis, { result, params }) => {
+    return { ...apis, [params.chainId]: result };
+  },
   target: $apis,
 });
 
 sample({
-  clock: createApiFx.doneData,
+  clock: createApiFx.done,
   source: $connectionStatuses,
-  fn: (statuses, api) => ({ ...statuses, [api.genesisHash.toHex()]: ConnectionStatus.CONNECTED }),
-  target: $connectionStatuses,
+  fn: (statuses, { params }) => ({
+    newStatuses: { ...statuses, [params.chainId]: ConnectionStatus.CONNECTED },
+    event: { chainId: params.chainId, status: ConnectionStatus.CONNECTED },
+  }),
+  target: spread({
+    newStatuses: $connectionStatuses,
+    event: connectionStatusChanged,
+  }),
 });
 
 sample({
   clock: disconnected,
   source: $connectionStatuses,
-  fn: (statuses, chainId) => ({ ...statuses, [chainId]: ConnectionStatus.DISCONNECTED }),
-  target: $connectionStatuses,
+  fn: (statuses, chainId) => ({
+    newStatuses: { ...statuses, [chainId]: ConnectionStatus.DISCONNECTED },
+    event: { chainId, status: ConnectionStatus.DISCONNECTED },
+  }),
+  target: spread({
+    newStatuses: $connectionStatuses,
+    event: connectionStatusChanged,
+  }),
 });
 
 sample({
   clock: failed,
   source: $connectionStatuses,
-  fn: (statuses, chainId) => ({ ...statuses, [chainId]: ConnectionStatus.ERROR }),
-  target: $connectionStatuses,
+  fn: (statuses, chainId) => ({
+    newStatuses: { ...statuses, [chainId]: ConnectionStatus.ERROR },
+    event: { chainId, status: ConnectionStatus.ERROR },
+  }),
+  target: spread({
+    newStatuses: $connectionStatuses,
+    event: connectionStatusChanged,
+  }),
 });
 
 sample({
@@ -372,5 +397,8 @@ export const networkModel = {
   events: {
     networkStarted,
     chainConnected,
+  },
+  output: {
+    connectionStatusChanged,
   },
 };

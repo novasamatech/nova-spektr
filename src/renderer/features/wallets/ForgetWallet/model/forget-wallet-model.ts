@@ -40,7 +40,7 @@ type CheckForProxiedWalletsParams = {
 };
 type CheckForProxiedWalletsResult = {
   proxiedWalletsToDelete: ID[];
-  proxiedAccountsToDelete: AccountId[];
+  proxiedAccountsToDelete: ID[];
   proxiesToDelete: ProxyAccount[];
   proxyGroupsToDelete: ProxyGroup[];
 };
@@ -68,7 +68,7 @@ const findProxiedWalletsFx = createEffect(
     return {
       proxiedWalletsToDelete,
       proxiesToDelete,
-      proxiedAccountsToDelete: proxiedAccountsToDelete.map((a) => a.accountId),
+      proxiedAccountsToDelete: proxiedAccountsToDelete.map((a) => a.id),
       proxyGroupsToDelete,
     };
   },
@@ -101,7 +101,7 @@ sample({
   target: spread({
     proxiesToDelete: proxyModel.events.proxiesRemoved,
     proxiedWalletsToDelete: walletModel.events.walletsRemoved,
-    proxiedAccountsToDelete: balanceModel.events.accountsBalancesRemoved,
+    proxiedAccountsToDelete: balanceModel.events.balancesRemoved,
     proxyGroupsToDelete: proxyModel.events.proxyGroupsRemoved,
   }),
 });
@@ -109,8 +109,8 @@ sample({
 sample({
   clock: [forgetSimpleWallet, forgetMultisigWallet],
   source: walletModel.$accounts,
-  fn: (accounts, wallet) => accountUtils.getWalletAccounts(wallet.id, accounts).map((a) => a.accountId),
-  target: balanceModel.events.accountsBalancesRemoved,
+  fn: (accounts, wallet) => accountUtils.getWalletAccounts(wallet.id, accounts).map((a) => a.id),
+  target: balanceModel.events.balancesRemoved,
 });
 
 sample({

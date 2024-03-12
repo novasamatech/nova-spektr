@@ -73,7 +73,7 @@ function isAccountWithShards(accounts: Pick<Account, 'type'> | ShardAccount[]): 
 }
 
 function isChainDependant(account: Pick<Account, 'type'>): boolean {
-  return !!(account as ChainAccount).chainId;
+  return Boolean((account as ChainAccount).chainId);
 }
 
 function isChainIdMatch(account: Pick<Account, 'type'>, chainId: ChainId): boolean {
@@ -91,15 +91,13 @@ function isChainIdMatch(account: Pick<Account, 'type'>, chainId: ChainId): boole
 }
 
 function isChainIdAndCryptoTypeMatch(account: Account, chain: Chain): boolean {
-  if (!isChainDependant(account)) return isCryptoTypeMatch(account, chain);
-
-  return isChainIdMatch(account, chain.chainId);
+  return isChainDependant(account) ? isChainIdMatch(account, chain.chainId) : isCryptoTypeMatch(account, chain);
 }
 
 function isCryptoTypeMatch(account: Account, chain: Chain): boolean {
   const cryptoType = networkUtils.isEthereumBased(chain.options) ? CryptoType.ETHEREUM : CryptoType.SR25519;
 
-  return (account as BaseAccount).cryptoType ? (account as BaseAccount).cryptoType === cryptoType : true;
+  return !isWalletConnectAccount(account) ? account.cryptoType === cryptoType : true;
 }
 
 function isMultisigAccount(account: Pick<Account, 'type'>): account is MultisigAccount {
