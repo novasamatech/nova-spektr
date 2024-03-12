@@ -21,6 +21,12 @@ type Props = {
 
 export const CreateRpcNode = ({ network, node, isOpen, onClose }: Props) => {
   const { t } = useI18n();
+
+  const {
+    fields: { name, url },
+    submit,
+  } = useForm(createRpcNodeModel.$createRpcNodeForm);
+
   const formState = useUnit(createRpcNodeModel.$formState);
   const selectedNetwork = useUnit(createRpcNodeModel.$selectedNetwork);
 
@@ -63,11 +69,6 @@ export const CreateRpcNode = ({ network, node, isOpen, onClose }: Props) => {
     console.log('---> go', network);
     createRpcNodeModel.events.networkChanged(network);
   }, []);
-
-  const {
-    fields: { name, url },
-    submit,
-  } = useForm(createRpcNodeModel.$createRpcNodeForm);
 
   // useEffect(() => {
   //   if (!isOpen) return;

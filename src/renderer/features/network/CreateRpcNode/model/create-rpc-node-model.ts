@@ -1,6 +1,5 @@
-import { createEffect, createEvent, createStore } from 'effector';
+import { createEffect, createEvent, createStore, sample } from 'effector';
 import { createForm } from 'effector-forms';
-import { sample } from 'lodash';
 
 import { networkService, RpcValidation } from '@shared/api/network';
 import { ExtendedChain } from '@entities/network';
@@ -18,7 +17,6 @@ const $createRpcNodeForm = createForm({
           validator: (val) => val.length < 50 || val.length > 3,
         },
       ],
-      validateOn: ['blur'],
     },
     url: {
       init: '',
@@ -47,23 +45,32 @@ const formStateChanged = createEvent<FormState>();
 const $selectedNetwork = createStore<ExtendedChain | null>(null);
 const $formState = createStore<FormState>(FormState.INIT);
 
-const checkRpcNodeFx = createEffect(async ({ network, url }: { network: ExtendedChain; url: string }) => {
-  console.log('go', network, url);
-  if (!$selectedNetwork) return;
+type ValidateNodeParams = {
+  network: ExtendedChain;
+  url: string;
+};
+// TODO: move RpcValidation inside feature
+const validateRpcNodeFx = createEffect(({ network, url }: ValidateNodeParams): Promise<RpcValidation> => {
+  return networkService.validateRpcNode(network.chainId, url);
 
-  try {
-    formStateChanged(FormState.LOADING);
-    const result = await networkService.validateRpcNode(network.chainId, url);
-
-    const options = {
-      [RpcValidation.INVALID]: () => formStateChanged(FormState.INVALID),
-      [RpcValidation.VALID]: () => formStateChanged(FormState.VALID),
-      [RpcValidation.WRONG_NETWORK]: () => formStateChanged(FormState.WRONG_NETWORK),
-    };
-    options[result]();
-  } catch (error) {
-    console.warn(error);
-  }
+  // console.log('go', network, url);
+  // // TODO: Cannot use stores inside effect, the must be passed in parameters
+  // // if (!$selectedNetwork) return;
+  //
+  // TODO: must be handled in sample({ clock: validateRpcNodeFx.doneData })
+  // try {
+  //   formStateChanged(FormState.LOADING);
+  //   const result = await networkService.validateRpcNode(network.chainId, url);
+  //
+  //   const options = {
+  //     [RpcValidation.INVALID]: () => formStateChanged(FormState.INVALID),
+  //     [RpcValidation.VALID]: () => formStateChanged(FormState.VALID),
+  //     [RpcValidation.WRONG_NETWORK]: () => formStateChanged(FormState.WRONG_NETWORK),
+  //   };
+  //   options[result]();
+  // } catch (error) {
+  //   console.warn(error);
+  // }
 });
 
 sample({
@@ -77,14 +84,17 @@ sample({
 });
 
 // when the form is submitted, we need to check if the node is responding
-sample({
-  clock: $createRpcNodeForm.submit,
-  source: { network: $selectedNetwork, url: $createRpcNodeForm.fields.url },
-  target: checkRpcNodeFx,
-});
+// sample({
+//   clock: $createRpcNodeForm.formValidated,
+//   source: {
+//     network: $selectedNetwork,
+//     url: $createRpcNodeForm.fields.url.$value,
+//   },
+//   target: validateRpcNodeFx,
+// });
 
-$createRpcNodeForm.submit.watch(() => {
-  console.log('form submited');
+$createRpcNodeForm.formValidated.watch(() => {
+  console.log('form submitted');
 });
 
 export const createRpcNodeModel = {
