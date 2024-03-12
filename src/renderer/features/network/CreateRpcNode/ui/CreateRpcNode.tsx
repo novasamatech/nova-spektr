@@ -7,15 +7,10 @@ import { useI18n } from '@app/providers';
 import { ExtendedChain } from '@entities/network';
 import { OperationTitle } from '@entities/chain';
 import type { RpcNode } from '@shared/core';
-import { manageNetworkModel } from '../../model/manage-network-model';
-import { FormState, curstomRpcCreationModel } from '@features/customRpc';
+import { createRpcNodeModel } from '../model/create-rpc-node-model';
+import { FormState } from '../lib/types';
 
-const MODAL_ANIMATION = 300;
-
-type CustomRpcForm = {
-  name: string;
-  url: string;
-};
+// const MODAL_ANIMATION = 300;
 
 type Props = {
   isOpen: boolean;
@@ -24,10 +19,10 @@ type Props = {
   onClose: (newNode?: RpcNode) => void;
 };
 
-export const CustomRpcModal = ({ network, node, isOpen, onClose }: Props) => {
+export const CreateRpcNode = ({ network, node, isOpen, onClose }: Props) => {
   const { t } = useI18n();
-  const formState = useUnit(curstomRpcCreationModel.$formState);
-  const selectedNetwork = useUnit(curstomRpcCreationModel.$selectedNetwork);
+  const formState = useUnit(createRpcNodeModel.$formState);
+  const selectedNetwork = useUnit(createRpcNodeModel.$selectedNetwork);
 
   console.log('--> formstate', formState);
   // this remains null
@@ -60,19 +55,19 @@ export const CustomRpcModal = ({ network, node, isOpen, onClose }: Props) => {
   // };
 
   useEffect(() => {
-    curstomRpcCreationModel.events.formInitiated();
+    createRpcNodeModel.events.formInitiated();
   }, []);
 
   useEffect(() => {
     // this is called with the right network
     console.log('---> go', network);
-    curstomRpcCreationModel.events.networkChanged(network);
+    createRpcNodeModel.events.networkChanged(network);
   }, []);
 
   const {
     fields: { name, url },
     submit,
-  } = useForm(curstomRpcCreationModel.$customRpcCreationForm);
+  } = useForm(createRpcNodeModel.$createRpcNodeForm);
 
   // useEffect(() => {
   //   if (!isOpen) return;
@@ -115,20 +110,20 @@ export const CustomRpcModal = ({ network, node, isOpen, onClose }: Props) => {
   //   }
   // };
 
-  const saveRpcNode = async (formData: CustomRpcForm): Promise<void> => {
-    if (node) {
-      manageNetworkModel.events.rpcNodeUpdated({
-        chainId: network.chainId,
-        oldNode: node,
-        rpcNode: formData,
-      });
-    } else {
-      manageNetworkModel.events.rpcNodeAdded({
-        chainId: network.chainId,
-        rpcNode: formData,
-      });
-    }
-  };
+  // const saveRpcNode = async (formData: CustomRpcForm): Promise<void> => {
+  //   if (node) {
+  //     manageNetworkModel.events.rpcNodeUpdated({
+  //       chainId: network.chainId,
+  //       oldNode: node,
+  //       rpcNode: formData,
+  //     });
+  //   } else {
+  //     manageNetworkModel.events.rpcNodeAdded({
+  //       chainId: network.chainId,
+  //       rpcNode: formData,
+  //     });
+  //   }
+  // };
 
   const onSubmit = (event: FormEvent) => {
     event.preventDefault();

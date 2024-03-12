@@ -9,12 +9,13 @@ import { Paths } from '@shared/routes';
 import { BaseModal, SearchInput, BodyText, InfoLink, Icon } from '@shared/ui';
 import { useToggle } from '@shared/lib/hooks';
 import { includes, DEFAULT_TRANSITION } from '@shared/lib/utils';
-import { NetworkList, NetworkItem, CustomRpcModal } from './components';
+import { NetworkList, NetworkItem } from './components';
 import type { RpcNode, ChainId } from '@shared/core';
 import { ConnectionType } from '@shared/core';
 import { networkModel, ExtendedChain, networkUtils } from '@entities/network';
 import { chainsService } from '@shared/api/network';
 import { manageNetworkModel } from './model/manage-network-model';
+import { CreateRpcNode } from '@features/network';
 
 const MAX_LIGHT_CLIENTS = 3;
 
@@ -249,11 +250,9 @@ export const Networks = () => {
           )}
         </div>
         {network && (
-          <CustomRpcModal isOpen={isCustomRpcOpen} node={nodeToEdit} network={network} onClose={closeCustomRpcModal} />
+          <CreateRpcNode isOpen={isCustomRpcOpen} node={nodeToEdit} network={network} onClose={closeCustomRpcModal} />
         )}
       </BaseModal>
     </>
   );
 };
-
-export default Networks;

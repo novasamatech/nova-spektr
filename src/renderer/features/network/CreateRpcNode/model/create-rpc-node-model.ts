@@ -6,7 +6,7 @@ import { networkService, RpcValidation } from '@shared/api/network';
 import { ExtendedChain } from '@entities/network';
 import { FormState } from '../lib/types';
 
-const $customRpcCreationForm = createForm({
+const $createRpcNodeForm = createForm({
   fields: {
     name: {
       init: '',
@@ -78,17 +78,17 @@ sample({
 
 // when the form is submitted, we need to check if the node is responding
 sample({
-  clock: $customRpcCreationForm.submit,
-  source: { network: $selectedNetwork, url: $customRpcCreationForm.fields.url },
+  clock: $createRpcNodeForm.submit,
+  source: { network: $selectedNetwork, url: $createRpcNodeForm.fields.url },
   target: checkRpcNodeFx,
 });
 
-$customRpcCreationForm.submit.watch(() => {
+$createRpcNodeForm.submit.watch(() => {
   console.log('form submited');
 });
 
-export const customRpcCreationModel = {
-  $customRpcCreationForm,
+export const createRpcNodeModel = {
+  $createRpcNodeForm,
   $formState,
   $selectedNetwork,
 
