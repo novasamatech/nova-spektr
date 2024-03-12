@@ -454,3 +454,24 @@ export const wrapAsMulti = (
     },
   };
 };
+
+// TODO: finish in "Create proxy operation for add/remove proxy"
+// https://github.com/novasamatech/nova-spektr/issues/1445
+export const wrapAsProxy = (api: ApiPromise, transaction: Transaction, addressPrefix: number): Transaction => {
+  const extrinsic = getExtrinsic[transaction.type](transaction.args, api);
+  const callData = extrinsic.method.toHex();
+  const callHash = extrinsic.method.hash.toHex();
+
+  return {
+    chainId: transaction.chainId,
+    address: toAddress('', { prefix: addressPrefix }),
+    type: TransactionType.PROXY,
+    args: {
+      // real: '',
+      // forceProxyType: '',
+      maybeTimepoint: null,
+      callData,
+      callHash,
+    },
+  };
+};
