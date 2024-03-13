@@ -4,37 +4,32 @@ import { useUnit } from 'effector-react';
 
 import { BaseModal, Button, Input, InputHint, Alert } from '@shared/ui';
 import { useI18n } from '@app/providers';
-import { ExtendedChain } from '@entities/network';
 import { OperationTitle } from '@entities/chain';
-import type { RpcNode } from '@shared/core';
-import { RpcCheckResult, curstomRpcCreationModel } from '@/src/renderer/features/network';
+import { RpcCheckResult, customRpcCreationModel } from '@/src/renderer/features/network';
 
 // const MODAL_ANIMATION = 300;
 
 type Props = {
   isOpen: boolean;
-  network: ExtendedChain;
-  node?: RpcNode;
+  // network: ExtendedChain;
+  // node?: RpcNode;
   onClose: () => void;
 };
 
-export const CustomRpcModal = ({ network, node, isOpen, onClose }: Props) => {
+export const AddCustomRpcModal = ({ isOpen, onClose }: Props) => {
   const { t } = useI18n();
-  const rpcCheckResult = useUnit(curstomRpcCreationModel.$rpcConnectivityResult);
-  const isNodeExist = useUnit(curstomRpcCreationModel.$isNodeExist);
+  const rpcCheckResult = useUnit(customRpcCreationModel.$rpcConnectivityResult);
+  const isNodeExist = useUnit(customRpcCreationModel.$isNodeExist);
+  const network = useUnit(customRpcCreationModel.$selectedNetwork);
 
   useEffect(() => {
-    curstomRpcCreationModel.events.formInitiated();
-  }, []);
-
-  useEffect(() => {
-    curstomRpcCreationModel.events.networkChanged(network);
+    customRpcCreationModel.events.formInitiated();
   }, []);
 
   const {
     fields: { name, url },
     submit,
-  } = useForm(curstomRpcCreationModel.$customRpcCreationForm);
+  } = useForm(customRpcCreationModel.$customRpcCreationForm);
 
   // useEffect(() => {
   //   if (!isOpen) return;
@@ -73,14 +68,16 @@ export const CustomRpcModal = ({ network, node, isOpen, onClose }: Props) => {
     submit();
   };
 
-  const modalTitle = node ? t('settings.networks.titleEdit') : t('settings.networks.titleAdd');
-  const submitLabel = node ? t('settings.networks.editNodeButton') : t('settings.networks.addNodeButton');
+  // const modalTitle = node ? t('settings.networks.titleEdit') : t('settings.networks.titleAdd');
+  // const submitLabel = node ? t('settings.networks.editNodeButton') : t('settings.networks.addNodeButton');
   const isLoading = rpcCheckResult === RpcCheckResult.LOADING;
+
+  if (!network) return null;
 
   return (
     <BaseModal
       closeButton
-      title={<OperationTitle title={modalTitle} chainId={network.chainId} />}
+      title={<OperationTitle title={'settings.networks.titleAdd'} chainId={network.chainId} />}
       headerClass="py-3 pl-5 pr-3"
       isOpen={isOpen}
       onClose={onClose}
@@ -136,7 +133,7 @@ export const CustomRpcModal = ({ network, node, isOpen, onClose }: Props) => {
 
         <div className="flex justify-end mt-7 w-full">
           <Button type="submit" isLoading={isLoading} disabled={isLoading}>
-            {submitLabel}
+            {t('settings.networks.addNodeButton')}
           </Button>
         </div>
       </form>

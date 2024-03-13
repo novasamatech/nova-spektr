@@ -1,3 +1,3 @@
 export { NetworkList } from './NetworkList/NetworkList';
 export { NetworkItem } from './NetworkItem/NetworkItem';
-export { CustomRpcModal } from './CustomRpcModal/CustomRpcModal';
+export { AddCustomRpcModal as CustomRpcModal } from './CustomRpcModal/AddCustomRpcModal';

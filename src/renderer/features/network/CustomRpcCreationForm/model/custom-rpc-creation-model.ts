@@ -36,12 +36,12 @@ const formInitiated = createEvent();
 const networkChanged = createEvent<ExtendedChain>();
 const rpcConnectivityChecked = createEvent<RpcCheckResult>();
 const isNodeExistChecked = createEvent<boolean>();
-const isProcessOpened = createEvent<boolean>();
+const processStarted = createEvent<boolean>();
 
 const $selectedNetwork = createStore<ExtendedChain | null>(null);
 const $rpcConnectivityResult = createStore<RpcCheckResult>(RpcCheckResult.INIT);
 const $isNodeExist = createStore<boolean>(false);
-const $isProcessOpen = createStore<boolean>(false);
+const $isProcessStarted = createStore<boolean>(false);
 
 const checkRpcNodeFx = createEffect(
   async ({ network, url }: { network: ExtendedChain | null; url: string }): Promise<RpcCheckResult | null> => {
@@ -89,7 +89,7 @@ const saveRpcNodeFx = createEffect(
       },
     });
 
-    isProcessOpened(false);
+    processStarted(false);
   },
 );
 
@@ -121,8 +121,8 @@ const resetRpcValidationFx = createEffect(() => {
 });
 
 sample({
-  clock: isProcessOpened,
-  target: $isProcessOpen,
+  clock: processStarted,
+  target: $isProcessStarted,
 });
 
 sample({
@@ -158,8 +158,8 @@ sample({
   target: [checkRpcNodeFx, isNodeExistFx],
 });
 
-// if we are done checking the data and it is valid
-// we can proceed with saving the rpc
+// if we are done checking the form data and it is valid
+// we can proceed with saving the new rpc node
 sample({
   clock: [isNodeExistFx.doneData, checkRpcNodeFx.doneData],
   source: {
@@ -179,11 +179,11 @@ export const customRpcCreationModel = {
   $rpcConnectivityResult,
   $selectedNetwork,
   $isNodeExist,
-  $isProcessOpen,
+  $isProcessStarted,
 
   events: {
     formInitiated,
     networkChanged,
-    isProcessOpened,
+    processStarted,
   },
 };

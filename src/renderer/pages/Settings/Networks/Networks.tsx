@@ -15,7 +15,7 @@ import { ConnectionType } from '@shared/core';
 import { networkModel, ExtendedChain, networkUtils } from '@entities/network';
 import { chainsService } from '@shared/api/network';
 import { manageNetworkModel } from './model/manage-network-model';
-import { customRpcCreationModel } from '@/src/renderer/features/network/CustomRpcCreationForm';
+import { customRpcCreationModel } from '@features/network';
 
 const MAX_LIGHT_CLIENTS = 3;
 
@@ -31,16 +31,16 @@ export const Networks = () => {
   const chains = useUnit(networkModel.$chains);
   const connectionStatuses = useUnit(networkModel.$connectionStatuses);
   const [isAddRpcModalOpen, setRpcModalOpen] = useUnit([
-    customRpcCreationModel.$isProcessOpen,
-    customRpcCreationModel.events.isProcessOpened,
+    customRpcCreationModel.$isProcessStarted,
+    customRpcCreationModel.events.processStarted,
   ]);
 
   // const [isCustomRpcOpen, toggleCustomRpc] = useToggle();
   const [isNetworksModalOpen, toggleNetworksModal] = useToggle(true);
 
   const [query, setQuery] = useState('');
-  const [nodeToEdit, setNodeToEdit] = useState<RpcNode>();
-  const [network, setNetwork] = useState<ExtendedChain>();
+  // const [nodeToEdit, setNodeToEdit] = useState<RpcNode>();
+  // const [network, setNetwork] = useState<ExtendedChain>();
 
   const closeNetworksModal = () => {
     toggleNetworksModal();
@@ -177,7 +177,8 @@ export const Networks = () => {
 
   const changeCustomNode = (network: ExtendedChain) => (node?: RpcNode) => {
     // setNodeToEdit(node);
-    setNetwork(network);
+    // setNetwork(network);
+    customRpcCreationModel.events.networkChanged(network);
 
     setRpcModalOpen(true);
     // toggleCustomRpc();
@@ -255,14 +256,12 @@ export const Networks = () => {
             </div>
           )}
         </div>
-        {network && (
-          <CustomRpcModal
-            isOpen={isAddRpcModalOpen}
-            node={nodeToEdit}
-            network={network}
-            onClose={closeCustomRpcModal}
-          />
-        )}
+        <CustomRpcModal
+          isOpen={isAddRpcModalOpen}
+          // node={nodeToEdit}
+          // network={network}
+          onClose={closeCustomRpcModal}
+        />
       </BaseModal>
     </>
   );

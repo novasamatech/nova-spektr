@@ -1,7 +1,7 @@
 import { act, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
-import { CustomRpcModal } from './CustomRpcModal';
+import { AddCustomRpcModal } from './AddCustomRpcModal';
 import { ExtendedChain } from '@entities/network';
 import { networkService, RpcValidation } from '@shared/api/network';
 import { manageNetworkModel } from '../../model/manage-network-model';
@@ -30,7 +30,7 @@ describe('pages/Settings/Networks/CustomRpcModal', () => {
     const user = userEvent.setup({ delay: null });
 
     await act(async () => {
-      render(<CustomRpcModal {...props} />);
+      render(<AddCustomRpcModal {...props} />);
     });
 
     if (!skipName) {
@@ -47,7 +47,7 @@ describe('pages/Settings/Networks/CustomRpcModal', () => {
 
   test('should render component', async () => {
     await act(async () => {
-      render(<CustomRpcModal {...defaultProps} />);
+      render(<AddCustomRpcModal {...defaultProps} />);
     });
 
     const name = screen.getByPlaceholderText('settings.networks.namePlaceholder');
@@ -62,7 +62,7 @@ describe('pages/Settings/Networks/CustomRpcModal', () => {
   test('should focus name input', async () => {
     jest.useFakeTimers();
     await act(async () => {
-      render(<CustomRpcModal {...defaultProps} />);
+      render(<AddCustomRpcModal {...defaultProps} />);
     });
     jest.advanceTimersByTime(500);
 
@@ -137,7 +137,7 @@ describe('pages/Settings/Networks/CustomRpcModal', () => {
     jest.spyOn(manageNetworkModel.events, 'rpcNodeUpdated').mockImplementation(spyUpdateRpcNode);
 
     await act(async () => {
-      render(<CustomRpcModal {...defaultProps} node={node} />);
+      render(<AddCustomRpcModal {...defaultProps} node={node} />);
     });
 
     const address = screen.getByPlaceholderText('settings.networks.addressPlaceholder');
