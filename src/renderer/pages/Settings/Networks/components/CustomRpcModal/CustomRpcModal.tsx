@@ -7,65 +7,27 @@ import { useI18n } from '@app/providers';
 import { ExtendedChain } from '@entities/network';
 import { OperationTitle } from '@entities/chain';
 import type { RpcNode } from '@shared/core';
-import { manageNetworkModel } from '../../model/manage-network-model';
-import { FormState, curstomRpcCreationModel } from '@features/customRpc';
+import { RpcCheckResult, curstomRpcCreationModel } from '@/src/renderer/features/network';
 
-const MODAL_ANIMATION = 300;
-
-type CustomRpcForm = {
-  name: string;
-  url: string;
-};
+// const MODAL_ANIMATION = 300;
 
 type Props = {
   isOpen: boolean;
   network: ExtendedChain;
   node?: RpcNode;
-  onClose: (newNode?: RpcNode) => void;
+  onClose: () => void;
 };
 
 export const CustomRpcModal = ({ network, node, isOpen, onClose }: Props) => {
   const { t } = useI18n();
-  const formState = useUnit(curstomRpcCreationModel.$formState);
-  const selectedNetwork = useUnit(curstomRpcCreationModel.$selectedNetwork);
-
-  console.log('--> formstate', formState);
-  // this remains null
-  console.log('---> selectedNetwork', selectedNetwork);
-
-  // const [formState, setFormState] = useState<FormState>(FormState.INIT);
-
-  // const {
-  //   control,
-  //   handleSubmit,
-  //   setFocus,
-  //   setValue,
-  //   watch,
-  //   formState: { isValid, errors },
-  // } = useForm<CustomRpcForm>({
-  //   mode: 'onChange',
-  //   defaultValues: { name: '', url: '' },
-  // });
-
-  // const urlAddress = watch('url');
-
-  // const isNodeExist = (): boolean => {
-  //   if (node?.url === urlAddress) return false;
-
-  //   const predicate = (node: RpcNode): boolean => node.url === urlAddress;
-  //   const defaultNodes = network.nodes;
-  //   const customNodes = network.connection.customNodes || [];
-
-  //   return defaultNodes.some(predicate) || customNodes.some(predicate);
-  // };
+  const rpcCheckResult = useUnit(curstomRpcCreationModel.$rpcConnectivityResult);
+  const isNodeExist = useUnit(curstomRpcCreationModel.$isNodeExist);
 
   useEffect(() => {
     curstomRpcCreationModel.events.formInitiated();
   }, []);
 
   useEffect(() => {
-    // this is called with the right network
-    console.log('---> go', network);
     curstomRpcCreationModel.events.networkChanged(network);
   }, []);
 
@@ -77,15 +39,8 @@ export const CustomRpcModal = ({ network, node, isOpen, onClose }: Props) => {
   // useEffect(() => {
   //   if (!isOpen) return;
 
-  //   setTimeout(() => setFocus('name'), MODAL_ANIMATION);
-  // }, [isOpen, setFocus]);
-
-  // useEffect(() => {
-  //   if (!node?.name || !node.url) return;
-
-  //   setValue('name', node.name);
-  //   setValue('url', node.url);
-  // }, [node]);
+  //   // setTimeout(() => setFocus('name'), MODAL_ANIMATION);
+  // }, [isOpen]);
 
   // const onSubmitCustomNode: SubmitHandler<CustomRpcForm> = async (formData) => {
   //   if (formState === FormState.INIT) {
@@ -97,49 +52,30 @@ export const CustomRpcModal = ({ network, node, isOpen, onClose }: Props) => {
   //   }
   // };
 
-  // const checkRpcNode = async (formData: CustomRpcForm): Promise<void> => {
-  //   if (!network.chainId) return;
-
-  //   try {
-  //     setFormState(FormState.LOADING);
-  //     const result = await networkService.validateRpcNode(network.chainId, formData.url);
-
-  //     const options = {
-  //       [RpcValidation.INVALID]: () => setFormState(FormState.INVALID),
-  //       [RpcValidation.VALID]: () => setFormState(FormState.VALID),
-  //       [RpcValidation.WRONG_NETWORK]: () => setFormState(FormState.WRONG_NETWORK),
-  //     };
-  //     options[result]();
-  //   } catch (error) {
-  //     console.warn(error);
+  // const saveRpcNode = async (formData: CustomRpcForm): Promise<void> => {
+  //   if (node) {
+  //     manageNetworkModel.events.rpcNodeUpdated({
+  //       chainId: network.chainId,
+  //       oldNode: node,
+  //       rpcNode: formData,
+  //     });
+  //   } else {
+  //     manageNetworkModel.events.rpcNodeAdded({
+  //       chainId: network.chainId,
+  //       rpcNode: formData,
+  //     });
   //   }
   // };
 
-  const saveRpcNode = async (formData: CustomRpcForm): Promise<void> => {
-    if (node) {
-      manageNetworkModel.events.rpcNodeUpdated({
-        chainId: network.chainId,
-        oldNode: node,
-        rpcNode: formData,
-      });
-    } else {
-      manageNetworkModel.events.rpcNodeAdded({
-        chainId: network.chainId,
-        rpcNode: formData,
-      });
-    }
-  };
-
   const onSubmit = (event: FormEvent) => {
     event.preventDefault();
+
     submit();
   };
 
   const modalTitle = node ? t('settings.networks.titleEdit') : t('settings.networks.titleAdd');
   const submitLabel = node ? t('settings.networks.editNodeButton') : t('settings.networks.addNodeButton');
-  // const submitDisabled = !isValid || isNodeExist() || isLoading;
-  const isLoading = false;
-  const submitDisabled = !!isLoading;
+  const isLoading = rpcCheckResult === RpcCheckResult.LOADING;
 
   return (
     <BaseModal
@@ -152,32 +88,19 @@ export const CustomRpcModal = ({ network, node, isOpen, onClose }: Props) => {
       <form onSubmit={onSubmit}>
         <div className="flex flex-col gap-y-4 mt-4">
           <div className="flex flex-col gap-y-2">
-            {/* <Controller
-              name="name"
-              control={control}
-              rules={{ required: true, minLength: 3, maxLength: 50 }}
-              render={({ field: { name, ref } }) => ( */}
             <Input
-              // ref={ref}
               label={t('settings.networks.nameLabel')}
               placeholder={t('settings.networks.namePlaceholder')}
               invalid={name.hasError()}
               disabled={isLoading}
               value={name.value}
               onChange={name.onChange}
-              //   />
-              // )}
             />
             <InputHint variant="error" active={name?.hasError()}>
               {t(name?.errorText())}
             </InputHint>
           </div>
           <div className="flex flex-col gap-y-2">
-            {/* <Controller
-              name="url"
-              control={control}
-              rules={{ required: true, validate: validateWsAddress }}
-              render={({ field: { onChange, value } }) => ( */}
             <Input
               label={t('settings.networks.addressLabel')}
               placeholder={t('settings.networks.addressPlaceholder')}
@@ -186,25 +109,33 @@ export const CustomRpcModal = ({ network, node, isOpen, onClose }: Props) => {
               disabled={isLoading}
               onChange={url.onChange}
             />
+            <InputHint active variant="hint">
+              {t('settings.networks.addressHint')}
+            </InputHint>
             <InputHint variant="error" active={url?.hasError()}>
               {t(url?.errorText())}
             </InputHint>
           </div>
-
+          <InputHint active={rpcCheckResult === RpcCheckResult.VALID && !isNodeExist} variant="success">
+            {t('settings.networks.addressConnected')}
+          </InputHint>
+          <InputHint active={isNodeExist === true} variant="error">
+            {t('settings.networks.nodeExist')}
+          </InputHint>
           <Alert
-            active={formState === FormState.INVALID}
+            active={rpcCheckResult === RpcCheckResult.INVALID}
             title={t('settings.networks.addressNoConnect')}
             variant="error"
           />
           <Alert
-            active={formState === FormState.WRONG_NETWORK}
+            active={rpcCheckResult === RpcCheckResult.WRONG_NETWORK}
             title={t('settings.networks.addressWrongNetwork', { networkName: network.name })}
             variant="error"
           />
         </div>
 
         <div className="flex justify-end mt-7 w-full">
-          <Button type="submit" isLoading={isLoading} disabled={submitDisabled}>
+          <Button type="submit" isLoading={isLoading} disabled={isLoading}>
             {submitLabel}
           </Button>
         </div>

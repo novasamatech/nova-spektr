@@ -15,6 +15,7 @@ import { ConnectionType } from '@shared/core';
 import { networkModel, ExtendedChain, networkUtils } from '@entities/network';
 import { chainsService } from '@shared/api/network';
 import { manageNetworkModel } from './model/manage-network-model';
+import { customRpcCreationModel } from '@/src/renderer/features/network/CustomRpcCreationForm';
 
 const MAX_LIGHT_CLIENTS = 3;
 
@@ -29,8 +30,12 @@ export const Networks = () => {
   const connections = useUnit(networkModel.$connections);
   const chains = useUnit(networkModel.$chains);
   const connectionStatuses = useUnit(networkModel.$connectionStatuses);
+  const [isAddRpcModalOpen, setRpcModalOpen] = useUnit([
+    customRpcCreationModel.$isProcessOpen,
+    customRpcCreationModel.events.isProcessOpened,
+  ]);
 
-  const [isCustomRpcOpen, toggleCustomRpc] = useToggle();
+  // const [isCustomRpcOpen, toggleCustomRpc] = useToggle();
   const [isNetworksModalOpen, toggleNetworksModal] = useToggle(true);
 
   const [query, setQuery] = useState('');
@@ -171,25 +176,27 @@ export const Networks = () => {
   };
 
   const changeCustomNode = (network: ExtendedChain) => (node?: RpcNode) => {
-    setNodeToEdit(node);
+    // setNodeToEdit(node);
     setNetwork(network);
 
-    toggleCustomRpc();
+    setRpcModalOpen(true);
+    // toggleCustomRpc();
   };
 
-  const closeCustomRpcModal = async (node?: RpcNode): Promise<void> => {
-    toggleCustomRpc();
+  const closeCustomRpcModal = () => {
+    // toggleCustomRpc();
+    setRpcModalOpen(false);
 
-    if (node && network && network.connection.activeNode === nodeToEdit) {
-      manageNetworkModel.events.rpcNodeUpdated({ chainId: network.chainId, oldNode: nodeToEdit, rpcNode: node });
-    } else if (node && network) {
-      manageNetworkModel.events.rpcNodeAdded({ chainId: network.chainId, rpcNode: node });
-    }
+    // if (node && network && network.connection.activeNode === nodeToEdit) {
+    //   manageNetworkModel.events.rpcNodeUpdated({ chainId: network.chainId, oldNode: nodeToEdit, rpcNode: node });
+    // } else if (node && network) {
+    //   manageNetworkModel.events.rpcNodeAdded({ chainId: network.chainId, rpcNode: node });
+    // }
 
-    setTimeout(() => {
-      setNodeToEdit(undefined);
-      setNetwork(undefined);
-    }, DEFAULT_TRANSITION);
+    // setTimeout(() => {
+    //   setNodeToEdit(undefined);
+    //   setNetwork(undefined);
+    // }, DEFAULT_TRANSITION);
   };
 
   return (
@@ -249,7 +256,12 @@ export const Networks = () => {
           )}
         </div>
         {network && (
-          <CustomRpcModal isOpen={isCustomRpcOpen} node={nodeToEdit} network={network} onClose={closeCustomRpcModal} />
+          <CustomRpcModal
+            isOpen={isAddRpcModalOpen}
+            node={nodeToEdit}
+            network={network}
+            onClose={closeCustomRpcModal}
+          />
         )}
       </BaseModal>
     </>
