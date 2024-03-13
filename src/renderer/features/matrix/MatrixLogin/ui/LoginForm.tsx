@@ -138,9 +138,8 @@ export const LoginForm = ({ redirectStep }: Props) => {
     } catch (error) {
       console.warn(error);
       setInvalidLogin(true);
-    } finally {
-      setInProgress(false);
     }
+    setInProgress(false);
   };
 
   const getSsoRedirectUrl = (redirectStep: string): string => {
