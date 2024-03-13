@@ -25,7 +25,7 @@ import { EmptyContactList } from '@entities/contact';
 import { type Contact, type Account, ShardAccount, Wallet, Chain } from '@shared/core';
 import { ContactItem, ExplorersPopover, WalletCardMd } from '@entities/wallet';
 import { matrixModel } from '@entities/matrix';
-import { networkUtils } from '@/src/renderer/entities/network';
+import { networkUtils } from '@entities/network';
 
 const enum SignatoryTabs {
   ACCOUNTS = 'accounts',

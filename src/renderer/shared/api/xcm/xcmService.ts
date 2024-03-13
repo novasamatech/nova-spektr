@@ -323,9 +323,7 @@ export const getVersionedAccountLocation = (
 };
 
 export const getAccountLocation = (accountId?: AccountId): Object | undefined => {
-  const isEthereum = isEthereumAccountId(accountId);
-
-  const account = isEthereum
+  const account = isEthereumAccountId(accountId)
     ? {
         accountKey20: {
           network: 'Any',
