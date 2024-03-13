@@ -35,15 +35,11 @@ export const SelectableShard = ({
   const isSharded = isShard || isChain;
   const address = toAddress(account.accountId, { prefix: addressPrefix });
 
+  const theme = isBase && walletUtils.isPolkadotVault(wallet) ? 'jdenticon' : undefined;
+
   const content = (
     <div className="flex items-center gap-x-2">
-      <Identicon
-        address={address}
-        theme={isBase && walletUtils.isPolkadotVault(wallet) ? 'jdenticon' : 'polkadot'}
-        size={20}
-        background={false}
-        canCopy={false}
-      />
+      <Identicon address={address} theme={theme} size={20} background={false} canCopy={false} />
       <div className={cnTw('truncate mr-auto', className)}>
         {account.name && !isShard && <BodyText>{account.name}</BodyText>}
         {truncate ? (

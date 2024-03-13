@@ -23,7 +23,7 @@ import type { Chain, Account, MultisigAccount, Asset, Address, ChainId, HexStrin
 import { accountUtils } from '@entities/wallet';
 import { balanceModel, balanceUtils } from '@entities/balance';
 import { sendAssetModel } from '../../model/send-asset';
-import { networkModel, networkUtils } from '@entities/network';
+import { networkModel } from '@entities/network';
 
 const DESCRIPTION_MAX_LENGTH = 120;
 
@@ -128,7 +128,9 @@ export const TransferForm = ({
   const description = watch('description');
   const destinationChain = watch('destinationChain');
   const destinationChainAccounts =
-    accounts?.filter((a) => accountUtils.isChainIdMatch(a, destinationChain?.value || '0x00')) || [];
+    accounts?.filter(
+      (a) => destinationChain?.value && accountUtils.isChainIdAndCryptoTypeMatch(a, chains[destinationChain.value]),
+    ) || [];
 
   useEffect(() => {
     if (destinationChain) {
@@ -147,11 +149,6 @@ export const TransferForm = ({
   useEffect(() => {
     sendAssetModel.events.accountIdSelected(toAccountId(destination));
   }, [destination]);
-
-  const destinationChainOptions = destinationChain?.value && chains[destinationChain?.value].options;
-
-  const isDestinationCryptoTypeMatch =
-    networkUtils.isEthereumBased(chain.options) === networkUtils.isEthereumBased(destinationChainOptions);
 
   const setupBalances = (
     address: Address,
@@ -273,8 +270,8 @@ export const TransferForm = ({
   const handleMyselfClick = () => {
     if (destinationChainAccounts.length > 1) {
       setSelectAccountModalOpen(true);
-    } else if (account) {
-      handleAccountSelect(account);
+    } else if (destinationChainAccounts.length === 1) {
+      handleAccountSelect(destinationChainAccounts[0]);
     }
   };
 
@@ -285,7 +282,9 @@ export const TransferForm = ({
 
     const prefix =
       destinations.find((c) => c.chainId === destinationChain?.value)?.addressPrefix || SS58_DEFAULT_PREFIX;
-    const address = toAddress(account.accountId, { prefix });
+    const address = accountUtils.isEthereumBased(account)
+      ? account.accountId
+      : toAddress(account.accountId, { prefix });
 
     setValue('destination', address, { shouldValidate: true });
   };
@@ -331,7 +330,7 @@ export const TransferForm = ({
                 suffixElement={
                   isXcmTransfer &&
                   !destination &&
-                  isDestinationCryptoTypeMatch && (
+                  Boolean(destinationChainAccounts.length) && (
                     <Button size="sm" pallet="secondary" onClick={handleMyselfClick}>
                       {t('transfer.myselfButton')}
                     </Button>
