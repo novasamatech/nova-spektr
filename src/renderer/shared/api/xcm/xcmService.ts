@@ -323,24 +323,17 @@ export const getVersionedAccountLocation = (
 };
 
 export const getAccountLocation = (accountId?: AccountId): Object | undefined => {
-  const account = isEthereumAccountId(accountId)
-    ? {
-        accountKey20: {
-          network: 'Any',
-          key: accountId,
-        },
-      }
-    : {
-        accountId32: {
-          network: 'Any',
-          id: accountId,
-        },
-      };
+  const isEthereum = isEthereumAccountId(accountId);
 
   return {
     parents: 0,
     interior: {
-      X1: account,
+      X1: {
+        [isEthereum ? 'accountKey20' : 'accountId32']: {
+          network: 'Any',
+          [isEthereum ? 'key' : 'id']: accountId,
+        },
+      },
     },
   };
 };
@@ -367,17 +360,10 @@ const getParentLocation = (accountId?: AccountId): Object => {
   const isEthereum = isEthereumAccountId(accountId);
 
   if (accountId) {
-    if (isEthereum) {
-      location.accountKey = {
-        network: 'Any',
-        key: accountId,
-      };
-    } else {
-      location.accountId = {
-        network: 'Any',
-        id: accountId,
-      };
-    }
+    location[isEthereum ? 'accountKey' : 'accountId'] = {
+      network: 'Any',
+      [isEthereum ? 'key' : 'id']: accountId,
+    };
   }
 
   return {
@@ -391,17 +377,10 @@ const getSiblingLocation = (parachainId: number, accountId?: AccountId): Object 
   const isEthereum = isEthereumAccountId(accountId);
 
   if (accountId) {
-    if (isEthereum) {
-      location.accountKey = {
-        network: 'Any',
-        key: accountId,
-      };
-    } else {
-      location.accountId = {
-        network: 'Any',
-        id: accountId,
-      };
-    }
+    location[isEthereum ? 'accountKey' : 'accountId'] = {
+      network: 'Any',
+      [isEthereum ? 'key' : 'id']: accountId,
+    };
   }
 
   return {
