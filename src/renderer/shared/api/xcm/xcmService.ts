@@ -350,17 +350,10 @@ const getChildLocation = (parachainId: number, accountId?: AccountId): Object =>
   const isEthereum = isEthereumAccountId(accountId);
 
   if (accountId) {
-    if (isEthereum) {
-      location.accountKey = {
-        network: 'Any',
-        key: accountId,
-      };
-    } else {
-      location.accountId = {
-        network: 'Any',
-        id: accountId,
-      };
-    }
+    location[isEthereum ? 'accountKey' : 'accountId'] = {
+      network: 'Any',
+      [isEthereum ? 'key' : 'id']: accountId,
+    };
   }
 
   return {
