@@ -6,9 +6,11 @@ import { XcmConfig, getXcmConfig, fetchXcmConfig, saveXcmConfig } from '@shared/
 const getConfigFx = createEffect((): XcmConfig | null => {
   return getXcmConfig();
 });
+
 const fetchConfigFx = createEffect((): Promise<XcmConfig> => {
   return fetchXcmConfig();
 });
+
 const saveConfigFx = createEffect((config: XcmConfig) => {
   return saveXcmConfig(config);
 });
@@ -23,8 +25,10 @@ sample({
   target: saveConfigFx,
 });
 
-export const effects = {
-  getConfigFx,
-  fetchConfigFx,
-  saveConfigFx,
+export const xcmModel = {
+  effects: {
+    getConfigFx,
+    fetchConfigFx,
+    saveConfigFx,
+  }
 };

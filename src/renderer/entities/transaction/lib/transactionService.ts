@@ -41,12 +41,12 @@ export const getSignedExtrinsic = async (
   });
 };
 
-export const submitAndWatchExtrinsic = async (
+export const submitAndWatchExtrinsic = (
   tx: string,
   unsigned: UnsignedTransaction,
   api: ApiPromise,
   callback: (executed: boolean, params: ExtrinsicResultParams | string) => void,
-): Promise<void> => {
+) => {
   let extrinsicCalls = 0;
 
   const callIndex = api.createType('Call', unsigned.method).callIndex;

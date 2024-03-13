@@ -8,7 +8,7 @@ import { walletModel, walletUtils } from '@entities/wallet';
 import type { MultisigAccount } from '@shared/core';
 import { wrapAsMulti, wrapAsProxy } from '@entities/transaction/lib/extrinsicService';
 import { networkModel } from '@entities/network';
-import { Step, TxWrappers, AddProxyStore } from '../lib/types';
+import { Step, TxWrappers, TransferStore } from '../lib/types';
 import { transferUtils } from '../lib/transfer-utils';
 import { formModel } from './form-model';
 import { confirmModel } from './confirm-model';
@@ -22,7 +22,7 @@ const flowFinished = createEvent();
 
 const $step = createStore<Step>(Step.NONE);
 
-const $transferStore = createStore<AddProxyStore | null>(null);
+const $transferStore = createStore<TransferStore | null>(null);
 const $transaction = createStore<Transaction | null>(null);
 const $multisigTx = createStore<Transaction | null>(null);
 
@@ -46,80 +46,80 @@ sample({
   target: $transferStore,
 });
 
-sample({
-  clock: formModel.output.formSubmitted,
-  source: {
-    wallet: walletSelectModel.$walletForDetails,
-    wallets: walletModel.$wallets,
-  },
-  fn: ({ wallet, wallets }, { account }): TxWrappers => {
-    if (!wallet) return [];
-    if (walletUtils.isMultisig(wallet)) return ['multisig'];
-    if (!walletUtils.isProxied(wallet)) return [];
-
-    const accountWallet = walletUtils.getWalletById(wallets, account.walletId);
-
-    return walletUtils.isMultisig(accountWallet) ? ['multisig', 'proxy'] : ['proxy'];
-  },
-  target: $txWrappers,
-});
-
-sample({
-  clock: formModel.output.formSubmitted,
-  source: {
-    txWrappers: $txWrappers,
-    apis: networkModel.$apis,
-  },
-  fn: ({ txWrappers, apis }, formData) => {
-    const { chain, account, signatory, delegate, proxyType } = formData;
-
-    const transaction: Transaction = {
-      chainId: chain.chainId,
-      address: toAddress(account.accountId, { prefix: chain.addressPrefix }),
-      type: TransactionType.ADD_PROXY,
-      args: { delegate, proxyType, delay: 0 },
-    };
-
-    return txWrappers.reduce<{ transaction: Transaction; multisigTx: Transaction | null }>(
-      (acc, wrapper) => {
-        if (transferUtils.hasMultisig([wrapper])) {
-          acc.transaction = wrapAsMulti(
-            apis[chain.chainId],
-            acc.transaction,
-            account as MultisigAccount,
-            signatory!.accountId,
-            chain.addressPrefix,
-          );
-          acc.multisigTx = acc.transaction;
-        }
-        if (transferUtils.hasProxy([wrapper])) {
-          acc.transaction = wrapAsProxy(apis[chain.chainId], acc.transaction, chain.addressPrefix);
-        }
-
-        return acc;
-      },
-      { transaction, multisigTx: null },
-    );
-  },
-  target: spread({
-    transaction: $transaction,
-    multisigTx: $multisigTx,
-  }),
-});
-
-sample({
-  clock: formModel.output.formSubmitted,
-  source: $transaction,
-  filter: (transaction: Transaction | null): transaction is Transaction => Boolean(transaction),
-  fn: (transaction, formData) => ({
-    event: { ...formData, transaction },
-    step: Step.CONFIRM,
-  }),
-  target: spread({
-    event: confirmModel.events.formInitiated,
-    step: stepChanged,
-  }),
-});
+// sample({
+//   clock: formModel.output.formSubmitted,
+//   source: {
+//     wallet: walletSelectModel.$walletForDetails,
+//     wallets: walletModel.$wallets,
+//   },
+//   fn: ({ wallet, wallets }, { account }): TxWrappers => {
+//     if (!wallet) return [];
+//     if (walletUtils.isMultisig(wallet)) return ['multisig'];
+//     if (!walletUtils.isProxied(wallet)) return [];
+//
+//     const accountWallet = walletUtils.getWalletById(wallets, account.walletId);
+//
+//     return walletUtils.isMultisig(accountWallet) ? ['multisig', 'proxy'] : ['proxy'];
+//   },
+//   target: $txWrappers,
+// });
+//
+// sample({
+//   clock: formModel.output.formSubmitted,
+//   source: {
+//     txWrappers: $txWrappers,
+//     apis: networkModel.$apis,
+//   },
+//   fn: ({ txWrappers, apis }, formData) => {
+//     const { chain, account, signatory, delegate, proxyType } = formData;
+//
+//     const transaction: Transaction = {
+//       chainId: chain.chainId,
+//       address: toAddress(account.accountId, { prefix: chain.addressPrefix }),
+//       type: TransactionType.ADD_PROXY,
+//       args: { delegate, proxyType, delay: 0 },
+//     };
+//
+//     return txWrappers.reduce<{ transaction: Transaction; multisigTx: Transaction | null }>(
+//       (acc, wrapper) => {
+//         if (transferUtils.hasMultisig([wrapper])) {
+//           acc.transaction = wrapAsMulti(
+//             apis[chain.chainId],
+//             acc.transaction,
+//             account as MultisigAccount,
+//             signatory!.accountId,
+//             chain.addressPrefix,
+//           );
+//           acc.multisigTx = acc.transaction;
+//         }
+//         if (transferUtils.hasProxy([wrapper])) {
+//           acc.transaction = wrapAsProxy(apis[chain.chainId], acc.transaction, chain.addressPrefix);
+//         }
+//
+//         return acc;
+//       },
+//       { transaction, multisigTx: null },
+//     );
+//   },
+//   target: spread({
+//     transaction: $transaction,
+//     multisigTx: $multisigTx,
+//   }),
+// });
+//
+// sample({
+//   clock: formModel.output.formSubmitted,
+//   source: $transaction,
+//   filter: (transaction: Transaction | null): transaction is Transaction => Boolean(transaction),
+//   fn: (transaction, formData) => ({
+//     event: { ...formData, transaction },
+//     step: Step.CONFIRM,
+//   }),
+//   target: spread({
+//     event: confirmModel.events.formInitiated,
+//     step: stepChanged,
+//   }),
+// });
 
 sample({
   clock: confirmModel.output.formSubmitted,
@@ -193,7 +193,7 @@ export const transferModel = {
     flowStarted,
     stepChanged,
   },
-  outputs: {
+  output: {
     flowFinished,
   },
 };

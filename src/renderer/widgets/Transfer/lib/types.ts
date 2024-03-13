@@ -14,14 +14,11 @@ export const enum SubmitStep {
   ERROR,
 }
 
-export type AddProxyStore = {
+export type TransferStore = {
   chain: Chain;
   account: Account;
   signatory?: Account;
-  delegate: Address;
-  proxyType: ProxyType;
   description: string;
-  proxyDeposit: string;
 };
 
 export type TxWrappers = ('proxy' | 'multisig')[];
