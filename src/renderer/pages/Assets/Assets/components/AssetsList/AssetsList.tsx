@@ -39,7 +39,7 @@ export const AssetsList = () => {
     const isMultisig = walletUtils.isMultisig(activeWallet);
 
     const availableChains = Object.values(chains).filter((chain) => {
-      return activeAccounts.some((account) => accountUtils.isChainIdAndCryptoTypeMatch(account, chain));
+      return activeAccounts.some((account) => accountUtils.isChainAndCryptoMatch(account, chain));
     });
 
     const filteredChains = availableChains.filter((c) => {
