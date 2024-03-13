@@ -33,7 +33,7 @@ export const AddProxyForm = ({ onGoBack }: Props) => {
         <NetworkSelector />
         <AccountSelector />
         <SignatorySelector />
-        <ProxyCombobox />
+        <ProxyInput />
         <ProxyTypeSelector />
         <DescriptionInput />
       </form>
@@ -41,7 +41,7 @@ export const AddProxyForm = ({ onGoBack }: Props) => {
         <FeeSection />
         <FeeError />
       </div>
-      <ButtonsSection onGoBack={onGoBack} />
+      <ActionSection onGoBack={onGoBack} />
     </div>
   );
 };
@@ -183,7 +183,7 @@ const SignatorySelector = () => {
   );
 };
 
-const ProxyCombobox = () => {
+const ProxyInput = () => {
   const { t } = useI18n();
 
   const {
@@ -360,7 +360,7 @@ const FeeError = () => {
   );
 };
 
-const ButtonsSection = ({ onGoBack }: Props) => {
+const ActionSection = ({ onGoBack }: Props) => {
   const { t } = useI18n();
 
   const canSubmit = useUnit(formModel.$canSubmit);

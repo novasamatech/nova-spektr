@@ -18,7 +18,7 @@ import { WalletFiatBalance } from '@features/wallets/WalletSelect/ui/WalletFiatB
 import { IconNames } from '@shared/ui/Icon/data';
 import { RenameWalletModal } from '@features/wallets/RenameWallet';
 import { ForgetWalletModal } from '@features/wallets/ForgetWallet';
-import { addProxyModel, AddProxyModal } from '@widgets/AddProxyModal';
+import { addProxyModel, AddProxy } from '@widgets/AddProxyModal';
 import { ProxiesList } from '../components/ProxiesList';
 import { NoProxiesAction } from '../components/NoProxiesAction';
 import { walletProviderModel } from '../../model/wallet-provider-model';
@@ -252,7 +252,7 @@ export const MultisigWalletDetails = ({
         onForget={onClose}
       />
 
-      <AddProxyModal />
+      <AddProxy />
     </BaseModal>
   );
 };

@@ -75,7 +75,9 @@ function isAccountWithShards(accounts: Pick<Account, 'type'> | ShardAccount[]): 
 }
 
 function isChainDependant(account: Pick<Account, 'type'>): boolean {
-  return Boolean((account as ChainAccount).chainId);
+  if (isBaseAccount(account)) return false;
+
+  return !isMultisigAccount(account) || Boolean(account.chainId);
 }
 
 function isChainIdMatch(account: Pick<Account, 'type'>, chainId: ChainId): boolean {

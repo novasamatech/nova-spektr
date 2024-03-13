@@ -10,7 +10,7 @@ import { IconNames } from '@shared/ui/Icon/data';
 import { ForgetWalletModal } from '@features/wallets/ForgetWallet';
 import { TabItem } from '@shared/ui/Tabs/common/types';
 import { networkModel } from '@entities/network';
-import { addProxyModel, AddProxyModal } from '@widgets/AddProxyModal';
+import { addProxyModel, AddProxy } from '@widgets/AddProxyModal';
 import { ProxiesList } from '../components/ProxiesList';
 import { NoProxiesAction } from '../components/NoProxiesAction';
 import type { MultishardMap } from '../../lib/types';
@@ -115,7 +115,7 @@ export const MultishardWalletDetails = ({ wallet, accounts, onClose }: Props) =>
         onForget={onClose}
       />
 
-      <AddProxyModal />
+      <AddProxy />
     </BaseModal>
   );
 };

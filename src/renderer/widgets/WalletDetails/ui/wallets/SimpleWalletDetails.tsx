@@ -13,7 +13,7 @@ import { TabItem } from '@shared/ui/Tabs/common/types';
 import { ProxiesList } from '../components/ProxiesList';
 import { NoProxiesAction } from '../components/NoProxiesAction';
 import { walletProviderModel } from '../../model/wallet-provider-model';
-import { addProxyModel, AddProxyModal } from '@widgets/AddProxyModal';
+import { addProxyModel, AddProxy } from '@widgets/AddProxyModal';
 
 type Props = {
   wallet: Wallet;
@@ -112,7 +112,7 @@ export const SimpleWalletDetails = ({ wallet, account, onClose }: Props) => {
         onForget={onClose}
       />
 
-      <AddProxyModal />
+      <AddProxy />
     </BaseModal>
   );
 };

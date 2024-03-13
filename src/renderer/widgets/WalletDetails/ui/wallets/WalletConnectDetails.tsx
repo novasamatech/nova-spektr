@@ -15,7 +15,7 @@ import { IconNames } from '@shared/ui/Icon/data';
 import { RenameWalletModal } from '@features/wallets/RenameWallet';
 import { forgetWalletModel } from '@features/wallets/ForgetWallet';
 import { TabItem } from '@shared/ui/Tabs/common/types';
-import { addProxyModel, AddProxyModal } from '@widgets/AddProxyModal';
+import { addProxyModel, AddProxy } from '@widgets/AddProxyModal';
 import { walletProviderModel } from '../../model/wallet-provider-model';
 import { WalletConnectAccounts } from '../components/WalletConnectAccounts';
 import { ProxiesList } from '../components/ProxiesList';
@@ -211,7 +211,7 @@ export const WalletConnectDetails = ({ wallet, accounts, onClose }: Props) => {
 
       <RenameWalletModal wallet={wallet} isOpen={isRenameModalOpen} onClose={toggleIsRenameModalOpen} />
 
-      <AddProxyModal />
+      <AddProxy />
     </BaseModal>
   );
 };

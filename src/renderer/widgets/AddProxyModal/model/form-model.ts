@@ -209,13 +209,12 @@ const $proxiedAccounts = combine(
     });
 
     return walletAccounts.map((account) => {
-      const balance = balances.find((balance) => {
-        return (
-          balance.chainId === chain.chainId &&
-          balance.accountId === account.accountId &&
-          balance.assetId === chain.assets[0].assetId.toString()
-        );
-      });
+      const balance = balanceUtils.getBalance(
+        balances,
+        account.accountId,
+        chain.chainId,
+        chain.assets[0].assetId.toString(),
+      );
 
       return { account, balance: transferableAmount(balance) };
     });
@@ -247,13 +246,12 @@ const $signatories = combine(
       });
 
       if (signer) {
-        const balance = balances.find((balance) => {
-          return (
-            balance.chainId === chain.chainId &&
-            balance.accountId === signer.accountId &&
-            balance.assetId === chain.assets[0].assetId.toString()
-          );
-        });
+        const balance = balanceUtils.getBalance(
+          balances,
+          signer.accountId,
+          chain.chainId,
+          chain.assets[0].assetId.toString(),
+        );
 
         acc.push({ signer, balance: transferableAmount(balance) });
       }

@@ -5,8 +5,7 @@ import { Transaction, TransactionType } from '@entities/transaction';
 import { toAddress, toAccountId } from '@shared/lib/utils';
 import { walletSelectModel } from '@features/wallets';
 import { walletModel, walletUtils } from '@entities/wallet';
-import type { MultisigAccount, ProxyGroup, NoID } from '@shared/core';
-import { wrapAsMulti, wrapAsProxy } from '@entities/transaction/lib/extrinsicService';
+import type { ProxyGroup, NoID } from '@shared/core';
 import { proxyModel, proxyUtils } from '@entities/proxy';
 import { networkModel } from '@entities/network';
 import { balanceSubModel } from '@features/balances';
@@ -97,26 +96,12 @@ sample({
       args: { delegate, proxyType, delay: 0 },
     };
 
-    return txWrappers.reduce<{ transaction: Transaction; multisigTx: Transaction | null }>(
-      (acc, wrapper) => {
-        if (addProxyUtils.hasMultisig([wrapper])) {
-          acc.transaction = wrapAsMulti(
-            apis[chain.chainId],
-            acc.transaction,
-            account as MultisigAccount,
-            signatory!.accountId,
-            chain.addressPrefix,
-          );
-          acc.multisigTx = acc.transaction;
-        }
-        if (addProxyUtils.hasProxy([wrapper])) {
-          acc.transaction = wrapAsProxy(apis[chain.chainId], acc.transaction, chain.addressPrefix);
-        }
-
-        return acc;
-      },
-      { transaction, multisigTx: null },
-    );
+    return addProxyUtils.getWrappedTransactions(txWrappers, transaction, {
+      api: apis[chain.chainId],
+      addressPrefix: chain.addressPrefix,
+      account,
+      signerAccountId: signatory?.accountId,
+    });
   },
   target: spread({
     transaction: $transaction,
@@ -266,7 +251,7 @@ export const addProxyModel = {
     flowStarted,
     stepChanged,
   },
-  outputs: {
+  output: {
     flowFinished,
   },
 };

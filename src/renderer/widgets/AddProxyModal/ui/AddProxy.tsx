@@ -13,13 +13,13 @@ import { SubmitProxy } from './SubmitProxy';
 import { addProxyUtils } from '../lib/add-proxy-utils';
 import { addProxyModel } from '../model/add-proxy-model';
 
-export const AddProxyModal = () => {
+export const AddProxy = () => {
   const { t } = useI18n();
 
   const step = useUnit(addProxyModel.$step);
   const chain = useUnit(addProxyModel.$chain);
 
-  const [isModalOpen, closeModal] = useModalClose(!addProxyUtils.isNoneStep(step), addProxyModel.outputs.flowFinished);
+  const [isModalOpen, closeModal] = useModalClose(!addProxyUtils.isNoneStep(step), addProxyModel.output.flowFinished);
 
   const getModalTitle = (step: Step, chain?: Chain) => {
     if (addProxyUtils.isInitStep(step) || !chain) return t('operations.modalTitles.addProxy');

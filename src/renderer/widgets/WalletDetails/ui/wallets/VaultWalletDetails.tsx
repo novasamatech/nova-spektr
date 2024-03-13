@@ -12,7 +12,7 @@ import { RenameWalletModal } from '@features/wallets/RenameWallet';
 import { ForgetWalletModal } from '@features/wallets/ForgetWallet';
 import { networkModel } from '@entities/network';
 import { TabItem } from '@shared/ui/Tabs/common/types';
-import { addProxyModel, AddProxyModal } from '@widgets/AddProxyModal';
+import { addProxyModel, AddProxy } from '@widgets/AddProxyModal';
 import { ProxiesList } from '../components/ProxiesList';
 import { walletProviderModel } from '../../model/wallet-provider-model';
 import { NoProxiesAction } from '../components/NoProxiesAction';
@@ -222,7 +222,7 @@ export const VaultWalletDetails = ({ wallet, root, accountsMap, onClose }: Props
         onForget={onClose}
       />
 
-      <AddProxyModal />
+      <AddProxy />
     </BaseModal>
   );
 };
