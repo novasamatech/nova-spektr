@@ -3,7 +3,7 @@ import { useUnit } from 'effector-react';
 
 import { useI18n } from '@app/providers';
 import { networkModel, networkUtils } from '@entities/network';
-import type { Chain, ChainId } from '@shared/core';
+import type { Chain } from '@shared/core';
 import { accountUtils, walletModel, walletUtils } from '@entities/wallet';
 import { priceProviderModel, currencyModel } from '@entities/price';
 import { isStringsMatchQuery } from '@shared/lib/utils';
@@ -18,9 +18,9 @@ export const AssetsList = () => {
 
   const query = useUnit(assetsModel.$query);
   const activeShards = useUnit(assetsModel.$activeShards);
-  const accounts = useUnit(assetsModel.$accounts);
 
   const activeWallet = useUnit(walletModel.$activeWallet);
+  const activeAccounts = useUnit(walletModel.$activeAccounts);
   const balances = useUnit(balanceModel.$balances);
 
   const assetsPrices = useUnit(priceProviderModel.$assetsPrices);
@@ -38,20 +38,17 @@ export const AssetsList = () => {
   useEffect(() => {
     const isMultisig = walletUtils.isMultisig(activeWallet);
 
-    const availableChains = accounts.some((a) => !accountUtils.isChainDependant(a))
-      ? new Set(Object.keys(chains) as ChainId[])
-      : // @ts-ignore
-        new Set(accounts.filter((a) => Boolean(a.chainId)).map((a) => a.chainId));
+    const availableChains = Object.values(chains).filter((chain) => {
+      return activeAccounts.some((account) => accountUtils.isChainIdAndCryptoTypeMatch(account, chain));
+    });
 
-    const filteredChains = Object.values(chains).filter((c) => {
+    const filteredChains = availableChains.filter((c) => {
       if (!connections[c.chainId]) return false;
 
       const isDisabled = networkUtils.isDisabledConnection(connections[c.chainId]);
       const hasMultiPallet = !isMultisig || networkUtils.isMultisigSupported(c.options);
 
-      const hasChainAccount = availableChains.has(c.chainId);
-
-      return !isDisabled && hasMultiPallet && hasChainAccount;
+      return !isDisabled && hasMultiPallet;
     });
 
     const sortedChains = chainsService.sortChainsByBalance(

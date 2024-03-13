@@ -1,7 +1,7 @@
-import { useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useUnit } from 'effector-react';
 
-import { MultisigAccount, Signatory, Wallet, AccountId } from '@shared/core';
+import { MultisigAccount, Signatory, Wallet, AccountId, Chain } from '@shared/core';
 import { BaseModal, FootnoteText, Tabs, HelpText, DropdownIconButton } from '@shared/ui';
 import { RootExplorers } from '@shared/lib/utils';
 import { useModalClose, useToggle } from '@shared/lib/hooks';
@@ -46,7 +46,7 @@ export const MultisigWalletDetails = ({
   const matrix = useUnit(matrixModel.$matrix);
   const loginStatus = useUnit(matrixModel.$loginStatus);
 
-  const chains = useUnit(networkModel.$chains);
+  const allChains = useUnit(networkModel.$chains);
   const hasProxies = useUnit(walletProviderModel.$hasProxies);
   const canCreateProxy = useUnit(walletProviderModel.$canCreateProxy);
 
@@ -54,7 +54,20 @@ export const MultisigWalletDetails = ({
   const [isRenameModalOpen, toggleIsRenameModalOpen] = useToggle();
   const [isConfirmForgetOpen, toggleConfirmForget] = useToggle();
 
-  const chain = account.chainId && chains[account.chainId];
+  const [chains, setChains] = useState<Chain[]>([]);
+
+  const isEthereumBased = accountUtils.isEthereumBased(account);
+
+  useEffect(() => {
+    const chainList = Object.values(allChains);
+    const filteredChains = chainList.filter((c) => {
+      return isEthereumBased ? networkUtils.isEthereumBased(c.options) : !networkUtils.isEthereumBased(c.options);
+    });
+
+    setChains(filteredChains);
+  }, []);
+
+  const chain = account.chainId && allChains[account.chainId];
   const explorers = chain?.explorers || RootExplorers;
 
   const multisigChains = useMemo(() => {

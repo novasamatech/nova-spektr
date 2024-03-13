@@ -3,7 +3,14 @@ import { ApiPromise } from '@polkadot/api';
 import get from 'lodash/get';
 
 import { XCM_URL, XCM_KEY } from './lib/constants';
-import { getTypeVersion, toLocalChainId, getTypeName, getAssetId, TEST_ACCOUNTS } from '@shared/lib/utils';
+import {
+  getTypeVersion,
+  toLocalChainId,
+  getTypeName,
+  getAssetId,
+  TEST_ACCOUNTS,
+  isEthereumAccountId,
+} from '@shared/lib/utils';
 import { XcmPalletTransferArgs, XTokenPalletTransferArgs } from '@entities/transaction';
 import { chainsService } from '@shared/api/network';
 import { toRawString } from './lib/utils';
@@ -316,13 +323,15 @@ export const getVersionedAccountLocation = (
 };
 
 export const getAccountLocation = (accountId?: AccountId): Object | undefined => {
+  const isEthereum = isEthereumAccountId(accountId);
+
   return {
     parents: 0,
     interior: {
       X1: {
-        accountId32: {
+        [isEthereum ? 'accountKey20' : 'accountId32']: {
           network: 'Any',
-          id: accountId,
+          [isEthereum ? 'key' : 'id']: accountId,
         },
       },
     },
@@ -331,11 +340,12 @@ export const getAccountLocation = (accountId?: AccountId): Object | undefined =>
 
 const getChildLocation = (parachainId: number, accountId?: AccountId): Object => {
   const location: Record<string, any> = { parachainId };
+  const isEthereum = isEthereumAccountId(accountId);
 
   if (accountId) {
-    location.accountId = {
+    location[isEthereum ? 'accountKey' : 'accountId'] = {
       network: 'Any',
-      id: accountId,
+      [isEthereum ? 'key' : 'id']: accountId,
     };
   }
 
@@ -347,11 +357,12 @@ const getChildLocation = (parachainId: number, accountId?: AccountId): Object =>
 
 const getParentLocation = (accountId?: AccountId): Object => {
   const location: Record<string, any> = {};
+  const isEthereum = isEthereumAccountId(accountId);
 
   if (accountId) {
-    location.accountId = {
+    location[isEthereum ? 'accountKey' : 'accountId'] = {
       network: 'Any',
-      id: accountId,
+      [isEthereum ? 'key' : 'id']: accountId,
     };
   }
 
@@ -363,11 +374,12 @@ const getParentLocation = (accountId?: AccountId): Object => {
 
 const getSiblingLocation = (parachainId: number, accountId?: AccountId): Object => {
   const location: Record<string, any> = { parachainId };
+  const isEthereum = isEthereumAccountId(accountId);
 
   if (accountId) {
-    location.accountId = {
+    location[isEthereum ? 'accountKey' : 'accountId'] = {
       network: 'Any',
-      id: accountId,
+      [isEthereum ? 'key' : 'id']: accountId,
     };
   }
 

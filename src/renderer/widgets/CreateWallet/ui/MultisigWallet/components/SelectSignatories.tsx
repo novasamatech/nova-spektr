@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useUnit } from 'effector-react';
 
-import { cnTw, includes, toAddress, RootExplorers } from '@shared/lib/utils';
+import { cnTw, includes, toAddress, RootExplorers, isEthereumAccountId } from '@shared/lib/utils';
 import { useI18n } from '@app/providers';
 import { useToggle } from '@shared/lib/hooks';
 import { Button, Checkbox, FootnoteText, Icon, SearchInput, SmallTitleText, Tabs, Tooltip, HelpText } from '@shared/ui';
@@ -49,7 +49,9 @@ export const SelectSignatories = ({ isActive, wallets, accounts, contacts, onSel
     if (accounts.length === 0) return;
 
     const addressBookContacts = contacts
-      .filter((c) => c.matrixId)
+      .filter((c) => {
+        return c.matrixId && !isEthereumAccountId(c.accountId);
+      })
       .map((contact, index) => ({ ...contact, index: index.toString() }));
 
     const { available, disabled } = wallets.reduce<{
