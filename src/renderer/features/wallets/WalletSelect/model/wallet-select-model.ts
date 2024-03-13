@@ -29,21 +29,27 @@ const $filterQuery = createStore<string>('');
 
 const $isWalletsRemoved = combine(
   {
-    prevWallets: previous(walletModel.$wallets, []),
+    prevWallets: previous(walletModel.$wallets),
     wallets: walletModel.$wallets,
   },
   ({ prevWallets, wallets }) => {
+    if (!prevWallets) return false;
+
     return prevWallets.length > wallets.length;
   },
 );
 
 const $isWalletsAdded = combine(
   {
-    prevWallets: previous(walletModel.$wallets, []),
+    prevWallets: previous(walletModel.$wallets),
     wallets: walletModel.$wallets,
   },
   ({ prevWallets, wallets }) => {
-    return wallets.length > prevWallets.length;
+    if (!prevWallets) return false;
+
+    if (prevWallets.length > 0) return wallets.length > prevWallets.length;
+
+    return wallets.length === 1 && !wallets[0].isActive;
   },
 );
 
@@ -107,22 +113,16 @@ const $walletBalance = combine(
   },
 );
 
-type SelectParams = {
-  prevId?: ID;
-  nextId: ID;
-};
-const walletSelectedFx = createEffect(async ({ prevId, nextId }: SelectParams): Promise<ID | undefined> => {
-  if (!prevId) {
-    return storageService.wallets.update(nextId, { isActive: true });
-  }
+const walletSelectedFx = createEffect(async (nextId: ID): Promise<ID | undefined> => {
+  const wallets = await storageService.wallets.readAll();
+  const inactiveWallets = wallets.filter((wallet) => wallet.isActive).map((wallet) => ({ ...wallet, isActive: false }));
 
-  // TODO: consider using Dexie transaction() | Task --> https://app.clickup.com/t/8692uyemn
   const [, nextWallet] = await Promise.all([
-    storageService.wallets.update(prevId, { isActive: false }),
+    storageService.wallets.updateAll(inactiveWallets),
     storageService.wallets.update(nextId, { isActive: true }),
   ]);
 
-  return nextWallet ? nextId : undefined;
+  return nextWallet;
 });
 
 sample({ clock: queryChanged, target: $filterQuery });
@@ -131,24 +131,19 @@ sample({ clock: walletIdSet, target: $walletId });
 
 sample({
   clock: once(walletModel.$wallets),
-  filter: (wallets) => wallets.length > 0,
+  filter: (wallets) => wallets.every((wallet) => !wallet.isActive),
   fn: (wallets) => {
     const match = wallets.find((wallet) => wallet.isActive);
-    if (match) return { nextId: match.id };
+    if (match) return match.id;
 
     const groups = walletSelectUtils.getWalletByGroups(wallets);
 
-    return { nextId: Object.values(groups).flat()[0].id };
+    return Object.values(groups).flat()[0].id;
   },
   target: walletSelectedFx,
 });
 
-sample({
-  clock: walletSelected,
-  source: walletModel.$activeWallet,
-  fn: (wallet, nextId) => ({ prevId: wallet?.id, nextId }),
-  target: walletSelectedFx,
-});
+sample({ clock: walletSelected, target: walletSelectedFx });
 
 sample({
   clock: $isWalletsRemoved,
@@ -161,7 +156,7 @@ sample({
   fn: (wallets) => {
     const groups = walletSelectUtils.getWalletByGroups(wallets);
 
-    return { nextId: Object.values(groups).flat()[0].id };
+    return Object.values(groups).flat()[0].id;
   },
   target: walletSelectedFx,
 });
@@ -172,7 +167,7 @@ sample({
   filter: (wallets, isWalletsAdded) => {
     return isWalletsAdded && !walletUtils.isProxied(wallets[wallets.length - 1]);
   },
-  fn: (wallets) => ({ nextId: wallets[wallets.length - 1].id }),
+  fn: (wallets) => wallets[wallets.length - 1].id,
   target: walletSelectedFx,
 });
 

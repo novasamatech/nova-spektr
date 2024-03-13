@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useUnit } from 'effector-react';
 
-import { cnTw, includes, toAddress, RootExplorers } from '@shared/lib/utils';
+import { cnTw, includes, toAddress, RootExplorers, isEthereumAccountId } from '@shared/lib/utils';
 import { useI18n } from '@app/providers';
 import { useToggle } from '@shared/lib/hooks';
 import { Button, Checkbox, FootnoteText, Icon, SearchInput, SmallTitleText, Tabs, Tooltip, HelpText } from '@shared/ui';
@@ -10,7 +10,7 @@ import { CreateContactModal } from '@widgets/ManageContactModal';
 import { ExtendedContact, ExtendedWallet } from '../common/types';
 import { EmptyContactList } from '@entities/contact';
 import { type Contact, type Wallet, type Account, type MultisigAccount, WalletType } from '@shared/core';
-import { ContactItem, ExplorersPopover, walletUtils } from '@entities/wallet';
+import { ContactItem, ExplorersPopover, accountUtils, walletUtils } from '@entities/wallet';
 import { WalletItem } from './WalletItem';
 import { matrixModel } from '@entities/matrix';
 
@@ -49,7 +49,9 @@ export const SelectSignatories = ({ isActive, wallets, accounts, contacts, onSel
     if (accounts.length === 0) return;
 
     const addressBookContacts = contacts
-      .filter((c) => c.matrixId)
+      .filter((c) => {
+        return c.matrixId && !isEthereumAccountId(c.accountId);
+      })
       .map((contact, index) => ({ ...contact, index: index.toString() }));
 
     const { available, disabled } = wallets.reduce<{
@@ -62,8 +64,9 @@ export const SelectSignatories = ({ isActive, wallets, accounts, contacts, onSel
         // TODO: Check why it can be empty
         const accountId = walletAccounts[0]?.accountId;
         const isSameAccounts = walletAccounts.every((a) => a.accountId === accountId);
+        const isEvmAccount = accountUtils.isEthereumBased(walletAccounts[0]);
 
-        if (isSameAccounts && walletUtils.isValidSignatory(wallet)) {
+        if (isSameAccounts && !isEvmAccount && walletUtils.isValidSignatory(wallet)) {
           acc.available.push({
             ...wallet,
             index: index.toString(),
