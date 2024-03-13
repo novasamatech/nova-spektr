@@ -205,7 +205,7 @@ const $proxiedAccounts = combine(
     const walletAccounts = accountUtils.getWalletAccounts(wallet.id, accounts).filter((account) => {
       if (isPolkadotVault && accountUtils.isBaseAccount(account)) return false;
 
-      return accountUtils.isChainIdMatch(account, chain.chainId);
+      return accountUtils.isChainAndCryptoMatch(account, chain);
     });
 
     return walletAccounts.map((account) => {
@@ -242,7 +242,7 @@ const $signatories = combine(
       if (!isAvailable) return acc;
 
       const signer = walletAccounts.find((a) => {
-        return signers[a.accountId] && accountUtils.isChainIdMatch(a, chain.chainId);
+        return signers[a.accountId] && accountUtils.isChainAndCryptoMatch(a, chain);
       });
 
       if (signer) {
@@ -272,11 +272,11 @@ const $proxyAccounts = combine(
     if (!chain) return [];
 
     return accountUtils.getAccountsForBalances(wallets, accounts, (account) => {
-      const isChainMatch = accountUtils.isChainIdMatch(account, chain.chainId);
+      const isChainAndCryptoMatch = accountUtils.isChainAndCryptoMatch(account, chain);
       const isShardAccount = accountUtils.isShardAccount(account);
       const address = toAddress(account.accountId, { prefix: chain.addressPrefix });
 
-      return isChainMatch && !isShardAccount && isStringsMatchQuery(query, [account.name, address]);
+      return isChainAndCryptoMatch && !isShardAccount && isStringsMatchQuery(query, [account.name, address]);
     });
   },
 );

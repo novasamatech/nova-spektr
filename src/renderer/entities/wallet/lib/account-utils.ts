@@ -28,7 +28,7 @@ export const accountUtils = {
   isMultisigAccount,
   isChainDependant,
   isChainIdMatch,
-  isChainIdAndCryptoTypeMatch,
+  isChainAndCryptoMatch,
   isWalletConnectAccount,
   isProxiedAccount,
   isShardAccount,
@@ -94,7 +94,7 @@ function isChainIdMatch(account: Pick<Account, 'type'>, chainId: ChainId): boole
   );
 }
 
-function isChainIdAndCryptoTypeMatch(account: Account, chain: Chain): boolean {
+function isChainAndCryptoMatch(account: Account, chain: Chain): boolean {
   return isChainDependant(account) ? isChainIdMatch(account, chain.chainId) : isCryptoTypeMatch(account, chain);
 }
 
