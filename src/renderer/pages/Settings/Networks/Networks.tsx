@@ -9,7 +9,7 @@ import { Paths } from '@shared/routes';
 import { BaseModal, SearchInput, BodyText, InfoLink, Icon } from '@shared/ui';
 import { useToggle } from '@shared/lib/hooks';
 import { includes, DEFAULT_TRANSITION } from '@shared/lib/utils';
-import { NetworkList, NetworkItem, CustomRpcModal } from './components';
+import { NetworkList, NetworkItem, AddCustomRpcModal } from './components';
 import type { RpcNode, ChainId } from '@shared/core';
 import { ConnectionType } from '@shared/core';
 import { networkModel, ExtendedChain, networkUtils } from '@entities/network';
@@ -256,12 +256,7 @@ export const Networks = () => {
             </div>
           )}
         </div>
-        <CustomRpcModal
-          isOpen={isAddRpcModalOpen}
-          // node={nodeToEdit}
-          // network={network}
-          onClose={closeCustomRpcModal}
-        />
+        <AddCustomRpcModal isOpen={isAddRpcModalOpen} onClose={closeCustomRpcModal} />
       </BaseModal>
     </>
   );

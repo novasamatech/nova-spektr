@@ -4,7 +4,7 @@ import userEvent from '@testing-library/user-event';
 import { AddCustomRpcModal } from './AddCustomRpcModal';
 import { ExtendedChain } from '@entities/network';
 import { networkService, RpcValidation } from '@shared/api/network';
-import { manageNetworkModel } from '../../model/manage-network-model';
+import { manageNetworkModel } from '../../../../pages/Settings/Networks/model/manage-network-model';
 
 jest.mock('@app/providers', () => ({
   useI18n: jest.fn().mockReturnValue({

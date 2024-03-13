@@ -1,2 +1,2 @@
-export { customRpcCreationModel } from './CustomRpcCreationForm';
+export { customRpcCreationModel, AddCustomRpcModal } from './CustomRpcCreationForm';
 export { RpcCheckResult } from './CustomRpcCreationForm/lib/types';
