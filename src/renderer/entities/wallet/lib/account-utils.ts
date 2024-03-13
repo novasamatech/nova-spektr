@@ -101,7 +101,7 @@ function isChainAndCryptoMatch(account: Account, chain: Chain): boolean {
 function isCryptoTypeMatch(account: Account, chain: Chain): boolean {
   const cryptoType = networkUtils.isEthereumBased(chain.options) ? CryptoType.ETHEREUM : CryptoType.SR25519;
 
-  return isBaseAccount(account) ? account.cryptoType === cryptoType : true;
+  return !isWalletConnectAccount(account) ? account.cryptoType === cryptoType : true;
 }
 
 function isMultisigAccount(account: Pick<Account, 'type'>): account is MultisigAccount {

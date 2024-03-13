@@ -23,6 +23,7 @@ import type { Chain, Account, MultisigAccount, Asset, Address, ChainId, HexStrin
 import { accountUtils } from '@entities/wallet';
 import { balanceModel, balanceUtils } from '@entities/balance';
 import { sendAssetModel } from '../../model/send-asset';
+import { networkModel } from '@entities/network';
 
 const DESCRIPTION_MAX_LENGTH = 120;
 
@@ -80,6 +81,7 @@ export const TransferForm = ({
   const { t } = useI18n();
   const { getMultisigTxs } = useMultisigTx({});
   const balances = useUnit(balanceModel.$balances);
+  const chains = useUnit(networkModel.$chains);
 
   const [accountBalance, setAccountBalance] = useState('');
   const [signerBalance, setSignerBalance] = useState('');
@@ -126,7 +128,9 @@ export const TransferForm = ({
   const description = watch('description');
   const destinationChain = watch('destinationChain');
   const destinationChainAccounts =
-    accounts?.filter((a) => accountUtils.isChainIdMatch(a, destinationChain?.value || '0x00')) || [];
+    accounts?.filter(
+      (a) => destinationChain?.value && accountUtils.isChainIdAndCryptoTypeMatch(a, chains[destinationChain.value]),
+    ) || [];
 
   useEffect(() => {
     if (destinationChain) {
@@ -266,8 +270,8 @@ export const TransferForm = ({
   const handleMyselfClick = () => {
     if (destinationChainAccounts.length > 1) {
       setSelectAccountModalOpen(true);
-    } else if (account) {
-      handleAccountSelect(account);
+    } else if (destinationChainAccounts.length === 1) {
+      handleAccountSelect(destinationChainAccounts[0]);
     }
   };
 
@@ -278,7 +282,9 @@ export const TransferForm = ({
 
     const prefix =
       destinations.find((c) => c.chainId === destinationChain?.value)?.addressPrefix || SS58_DEFAULT_PREFIX;
-    const address = toAddress(account.accountId, { prefix });
+    const address = accountUtils.isEthereumBased(account)
+      ? account.accountId
+      : toAddress(account.accountId, { prefix });
 
     setValue('destination', address, { shouldValidate: true });
   };
@@ -323,7 +329,8 @@ export const TransferForm = ({
                 }
                 suffixElement={
                   isXcmTransfer &&
-                  !destination && (
+                  !destination &&
+                  Boolean(destinationChainAccounts.length) && (
                     <Button size="sm" pallet="secondary" onClick={handleMyselfClick}>
                       {t('transfer.myselfButton')}
                     </Button>

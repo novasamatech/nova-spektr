@@ -751,6 +751,7 @@
       "namePlaceholder": "Enter node name",
       "nodeExist": "Node already exists",
       "requiredNameError": "Name is required",
+      "searchPlaceholder": "Search",
       "selectorAddNodeButton": "Add custom node",
       "selectorAutoBalance": "Auto balance",
       "selectorDisableNode": "Disable network",

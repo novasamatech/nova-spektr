@@ -1,16 +1,17 @@
 import { useUnit } from 'effector-react';
+import { useEffect, useState } from 'react';
 
 import { BaseModal, ContextMenu, DropdownIconButton, HelpText, IconButton, Tabs } from '@shared/ui';
 import { useModalClose, useToggle } from '@shared/lib/hooks';
-import { RootAccountLg, VaultAccountsList, WalletCardLg } from '@entities/wallet';
+import { RootAccountLg, VaultAccountsList, WalletCardLg, accountUtils } from '@entities/wallet';
 import { useI18n } from '@app/providers';
-import { Account, BaseAccount, ChainAccount, DraftAccount, KeyType, ShardAccount, Wallet } from '@shared/core';
+import { Account, BaseAccount, Chain, ChainAccount, DraftAccount, KeyType, ShardAccount, Wallet } from '@shared/core';
 import { copyToClipboard, toAddress } from '@shared/lib/utils';
 import { IconNames } from '@shared/ui/Icon/data';
 import { DerivationsAddressModal, ImportKeysModal, KeyConstructor } from '@features/wallets';
 import { RenameWalletModal } from '@features/wallets/RenameWallet';
 import { ForgetWalletModal } from '@features/wallets/ForgetWallet';
-import { networkModel } from '@entities/network';
+import { networkModel, networkUtils } from '@entities/network';
 import { TabItem } from '@shared/ui/Tabs/common/types';
 import { addProxyModel, AddProxy } from '@widgets/AddProxyModal';
 import { ProxiesList } from '../components/ProxiesList';
@@ -30,7 +31,7 @@ type Props = {
 export const VaultWalletDetails = ({ wallet, root, accountsMap, onClose }: Props) => {
   const { t } = useI18n();
 
-  const chains = useUnit(networkModel.$chains);
+  const allChains = useUnit(networkModel.$chains);
   const hasProxies = useUnit(walletProviderModel.$hasProxies);
   const keysToAdd = useUnit(vaultDetailsModel.$keysToAdd);
   const canCreateProxy = useUnit(walletProviderModel.$canCreateProxy);
@@ -42,6 +43,19 @@ export const VaultWalletDetails = ({ wallet, root, accountsMap, onClose }: Props
   const [isImportModalOpen, toggleImportModal] = useToggle();
   const [isScanModalOpen, toggleScanModal] = useToggle();
   const [isConfirmForgetOpen, toggleConfirmForget] = useToggle();
+
+  const [chains, setChains] = useState<Chain[]>([]);
+
+  const isEthereumBased = accountUtils.isEthereumBased(root);
+
+  useEffect(() => {
+    const chainList = Object.values(allChains);
+    const filteredChains = chainList.filter((c) => {
+      return isEthereumBased ? networkUtils.isEthereumBased(c.options) : !networkUtils.isEthereumBased(c.options);
+    });
+
+    setChains(filteredChains);
+  }, []);
 
   const handleConstructorKeys = (
     keysToAdd: Array<ChainAccount | ShardAccount[]>,
