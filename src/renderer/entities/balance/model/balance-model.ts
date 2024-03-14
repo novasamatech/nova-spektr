@@ -20,6 +20,14 @@ const removeBalancesFx = createEffect(async (ids: ID[]): Promise<void> => {
   await storageService.balances.deleteAll(ids);
 });
 
+const deleteAccountsBalancesFx = createEffect(async (accountIds: AccountId[]): Promise<void> => {
+  try {
+    await balanceService.deleteBalances(accountIds);
+  } catch (e) {
+    console.error(`Error while deleting wallet balances`, e);
+  }
+});
+
 sample({
   clock: balancesUpdated,
   source: $balancesBuffer,

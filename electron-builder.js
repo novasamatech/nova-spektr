@@ -32,7 +32,7 @@ module.exports = {
       NSCameraUsageDescription: 'This app requires camera access to import accounts and sign operations',
     },
     target: {
-      target: 'default',
+      target: 'dmg',
       arch: ['x64', 'arm64'],
     },
   },

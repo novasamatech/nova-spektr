@@ -26,6 +26,9 @@ const config = merge<WpConfig & WdsConfig>(sharedConfig, {
     client: {
       overlay: false,
     },
+    devMiddleware: {
+      writeToDisk: true,
+    },
   },
 
   entry: resolve(FOLDERS.ENTRY_POINTS.RENDERER),

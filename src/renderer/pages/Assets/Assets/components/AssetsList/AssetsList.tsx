@@ -18,6 +18,7 @@ export const AssetsList = () => {
 
   const query = useUnit(assetsModel.$query);
   const activeShards = useUnit(assetsModel.$activeShards);
+  const accounts = useUnit(assetsModel.$accounts);
 
   const activeWallet = useUnit(walletModel.$activeWallet);
   const activeAccounts = useUnit(walletModel.$activeAccounts);
@@ -48,7 +49,13 @@ export const AssetsList = () => {
       const isDisabled = networkUtils.isDisabledConnection(connections[c.chainId]);
       const hasMultiPallet = !isMultisig || networkUtils.isMultisigSupported(c.options);
 
-      return !isDisabled && hasMultiPallet;
+    const filteredChains = Object.values(chains).filter((c) => {
+      const isDisabled = networkUtils.isDisabledConnection(connections[c.chainId]);
+      const hasMultiPallet = !isMultisig || networkUtils.isMultisigSupported(c.options);
+
+      const hasChainAccount = availableChains.has(c.chainId);
+
+      return !isDisabled && hasMultiPallet && hasChainAccount;
     });
 
     const sortedChains = chainsService.sortChainsByBalance(

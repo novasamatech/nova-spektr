@@ -8,7 +8,7 @@ import { toAccountId, validateAddress, DEFAULT_TRANSITION, isEthereumAccountId }
 import EmptyState from './EmptyState';
 import { AccountsList, walletModel } from '@entities/wallet';
 import { useToggle } from '@shared/lib/hooks';
-import type { AccountId, Chain } from '@shared/core';
+import type { AccountId, Chain, HexString } from '@shared/core';
 import { ErrorType, CryptoType, ChainType, WalletType, SigningType, AccountType } from '@shared/core';
 import {
   Icon,
@@ -150,7 +150,15 @@ const WatchOnly = ({ isOpen, onClose, onComplete }: Props) => {
                   value={value}
                   prefixElement={
                     <div className="mr-2">
-                      {isValid ? <Identicon address={value} background={false} /> : <Icon name="emptyIdenticon" />}
+                      {isValid ? (
+                        <Identicon
+                          theme={isEthereumAccountId(value as HexString) ? 'ethereum' : 'polkadot'}
+                          address={value}
+                          background={false}
+                        />
+                      ) : (
+                        <Icon name="emptyIdenticon" />
+                      )}
                     </div>
                   }
                   onChange={onChange}
