@@ -1,6 +1,6 @@
 import { hexToU8a } from '@polkadot/util';
 
-import { cnTw, toShortAddress, toAddress } from '@shared/lib/utils';
+import { cnTw, toShortAddress, toAddress, isEthereumAccountId } from '@shared/lib/utils';
 import { Identicon, Truncate } from '@shared/ui';
 import type { AccountId, Address } from '@shared/core';
 

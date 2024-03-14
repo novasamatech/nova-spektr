@@ -1,6 +1,6 @@
 import { ReactNode, useEffect, useRef } from 'react';
 
-import { ExtendedChain, networkUtils } from '@entities/network';
+import { ExtendedChain } from '@entities/network';
 import { CaptionText, Counter, Accordion } from '@shared/ui';
 import { networksListUtils } from '../lib/networks-list-utils';
 import { useToggle } from '@shared/lib/hooks';
