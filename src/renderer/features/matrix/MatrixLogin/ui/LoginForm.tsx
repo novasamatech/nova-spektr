@@ -8,6 +8,7 @@ import { validateShortUserName, WELL_KNOWN_SERVERS, LoginFlows } from '@shared/a
 import type { ComboboxOption } from '@shared/ui/types';
 import { IconNames } from '@shared/ui/Icon/data';
 import { matrixModel, LoginStatus, matrixUtils } from '@entities/matrix';
+import { matrixLoginModel } from '../model/matrix-login-model';
 import { APP_CONFIG } from '../../../../../../app.config';
 import {
   Alert,
@@ -47,6 +48,9 @@ export const LoginForm = ({ redirectStep }: Props) => {
 
   const matrix = useUnit(matrixModel.$matrix);
   const loginStatus = useUnit(matrixModel.$loginStatus);
+
+  const homeserverQuery = useUnit(matrixLoginModel.$homeserverQuery);
+  const homeServers = useUnit(matrixLoginModel.$homeServers);
 
   const [isHomeserverLoading, setIsHomeserverLoading] = useState(false);
   const [inProgress, setInProgress] = useState(false);
@@ -169,10 +173,12 @@ export const LoginForm = ({ redirectStep }: Props) => {
                 label={t('settings.matrix.homeserverLabel')}
                 placeholder={t('settings.matrix.homeserverPlaceholder')}
                 wrapperClass="py-[11px]"
+                query={homeserverQuery}
                 invalid={invalidHomeserver}
                 disabled={!isEditing || isHomeserverLoading}
-                options={HOME_SERVERS}
-                value={value}
+                options={homeServers}
+                value={value.value}
+                onInput={matrixLoginModel.events.homeserverQueryChanged}
                 onChange={changeHomeserver(onChange)}
               />
               <InputHint active={invalidHomeserver} variant="error">

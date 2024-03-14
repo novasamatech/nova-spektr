@@ -10,7 +10,9 @@ export const balanceUtils = {
 
 function getAssetBalances(balances: Balance[], accountIds: AccountId[], chainId: ChainId, assetId: string): Balance[] {
   return balances.filter((balance) => {
-    return accountIds.includes(balance.accountId) && balance.chainId === chainId && balance.assetId === assetId;
+    return (
+      balance.chainId === chainId && balance.assetId === assetId.toString() && accountIds.includes(balance.accountId)
+    );
   });
 }
 
@@ -23,7 +25,7 @@ function getBalanceWrapped(balances: Balance[]) {
 }
 
 function getNetworkBalances(balances: Balance[], accountIds: AccountId[], chainId: ChainId): Balance[] {
-  return balances.filter((balance) => accountIds.includes(balance.accountId) && balance.chainId === chainId);
+  return balances.filter((balance) => balance.chainId === chainId && accountIds.includes(balance.accountId));
 }
 
 function getAccountsBalances(balances: Balance[], accountIds: AccountId[]): Balance[] {

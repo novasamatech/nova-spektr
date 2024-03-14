@@ -8,24 +8,24 @@ export const balanceSubUtils = {
   getNewAccounts,
 };
 
-function getAccountsToSubscribe(wallet: Wallet, accounts: Account[]): Account[] {
-  if (walletUtils.isMultisig(wallet) && accountUtils.isMultisigAccount(accounts[0])) {
+function getAccountsToSubscribe(wallet: Wallet, walletAccounts: Account[], accounts: Account[]): Account[] {
+  if (walletUtils.isMultisig(wallet) && accountUtils.isMultisigAccount(walletAccounts[0])) {
     const accountsMap = dictionary(accounts, 'accountId');
 
-    return accounts[0].signatories.reduce((acc, signatory) => {
+    return walletAccounts[0].signatories.reduce((acc, signatory) => {
       if (accountsMap[signatory.accountId]) {
         acc.push(accountsMap[signatory.accountId]);
       }
 
       return acc;
-    }, accounts);
+    }, walletAccounts);
   }
 
   if (walletUtils.isPolkadotVault(wallet)) {
-    return accounts.filter((account) => !accountUtils.isBaseAccount(account));
+    return walletAccounts.filter((account) => !accountUtils.isBaseAccount(account));
   }
 
-  return accounts;
+  return walletAccounts;
 }
 
 function getNewAccounts(subAccounts: SubAccounts, accountsToSub: Account[]): SubAccounts {
@@ -38,10 +38,12 @@ function getNewAccounts(subAccounts: SubAccounts, accountsToSub: Account[]): Sub
     const chainsToUpdate = isBaseAccount || isMultisigAccount ? chainIds : [account.chainId];
 
     chainsToUpdate.forEach((chainId) => {
-      if (acc[chainId]) {
+      if (!acc[chainId]) {
+        acc[chainId] = { [account.walletId]: [account.accountId] };
+      } else if (acc[chainId][account.walletId]) {
         acc[chainId][account.walletId].push(account.accountId);
       } else {
-        acc[chainId] = { [account.walletId]: [account.accountId] };
+        acc[chainId][account.walletId] = [account.accountId];
       }
     });
 

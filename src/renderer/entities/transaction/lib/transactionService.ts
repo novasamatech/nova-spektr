@@ -173,7 +173,7 @@ export const useTransaction = (): ITransactionService => {
     return weight;
   };
 
-  const getTransactionDeposit = (threshold: Threshold, api: ApiPromise): string => {
+  const getMultisigDeposit = (threshold: Threshold, api: ApiPromise): string => {
     const { depositFactor, depositBase } = api.consts.multisig;
     const deposit = depositFactor.muln(threshold).add(depositBase);
 
@@ -189,7 +189,7 @@ export const useTransaction = (): ITransactionService => {
   const wrapTx = (transaction: Transaction, api: ApiPromise, addressPrefix: number) => {
     wrappers.forEach((wrapper) => {
       if (shouldWrapAsMulti(wrapper)) {
-        transaction = wrapAsMulti(wrapper.account, wrapper.signatoryId, transaction, api, addressPrefix);
+        transaction = wrapAsMulti(api, transaction, wrapper.account, wrapper.signatoryId, addressPrefix);
       }
     });
 
@@ -217,7 +217,7 @@ export const useTransaction = (): ITransactionService => {
     getTransactionFee,
     getExtrinsicWeight,
     getTxWeight,
-    getTransactionDeposit,
+    getMultisigDeposit,
     getTransactionHash,
     decodeCallData,
     verifySignature,

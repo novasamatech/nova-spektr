@@ -536,6 +536,7 @@
     },
     "modalTitles": {
       "addProxy": "Add delegated authority (proxy)",
+      "addProxyOn": "Add delegated authority (proxy) on",
       "approve": "Approve",
       "destinationOn": "Set reward destination on",
       "nominateOn": "Change Validators on",
@@ -576,10 +577,34 @@
     "withSymbol": "{ symbol }{ amount }"
   },
   "proxy": {
+    "addProxy": {
+      "accountLabel": "Your account",
+      "accountPlaceholder": "Select account",
+      "balanceAlertMultisig": "To pay proxy deposit with selected account",
+      "balanceAlertRegular": "To pay proxy deposit and network fee with selected account",
+      "balanceAlertTitle": "Not enough tokens",
+      "delegateLabel": "Give authority to",
+      "delegatePlaceholder": "Enter address",
+      "maxLengthDescriptionError": "Description cannot exceed { maxLength } symbols",
+      "maxProxiesError": "Maximum number of proxy is achieved",
+      "networkLabel": "Network",
+      "networkPlaceholder": "Select network",
+      "notEnoughMultisigTokens": "Not enough tokens to pay multisig deposit and network fee",
+      "proxyAddressRequiredError": "Delegate address is required",
+      "proxyTypeExistError": "The same proxy already exists, choose another access type",
+      "proxyTypeLabel": "Access type",
+      "proxyTypePlaceholder": "Choose type",
+      "sameAsProxiedError": "Delegated account can’t be equal to delegating account",
+      "signatoryLabel": "Signatory",
+      "signatoryPlaceholder": "Select signatory"
+    },
     "details": {
       "account": "Your account",
+      "delegateTo": "Delegate to",
+      "grantAccessType": "Grant access type",
       "revokeAccessType": "Revoke access type",
       "revokeFor": "Revoke for",
+      "signatory": "Signatory",
       "wallet": "Your wallet"
     },
     "names": {
@@ -603,6 +628,13 @@
       "removeProxyTitle": "Revoke delegated authority (proxy) on ",
       "staking": "staking operations"
     },
+    "proxyDepositHint": "The deposit stays reserved on your account until the proxy is removed",
+    "proxyDepositLabel": "Proxy deposit",
+    "proxyTooltip": "Delegated authorities (proxies)",
+    "submitError": "Error",
+    "submitErrorButton": "Close",
+    "submitInProgress": "Submitting operation...",
+    "submitSuccess": "Operation Success",
     "tooltipPart1": "Proxied wallets are wallet which have set one of your accounts in Nova Spektr as delegated authority (Proxies).",
     "tooltipPart2": "This means that you can control certain functions of these wallets based on the access type granted to you by the proxied wallet."
   },
@@ -863,7 +895,7 @@
       "title": "Change rewards destination on"
     },
     "loadingMessage": "Connecting to { chainName }",
-    "networkDepositLabel": "Multisig Deposit",
+    "multisigDepositLabel": "Multisig Deposit",
     "networkFeeTotal": "Total network fee",
     "networkFee_one": "Network fee",
     "networkFee_other": "Network fee per account",
@@ -1000,7 +1032,7 @@
     "amountPlaceholder": "0",
     "continueButton": "Continue",
     "crossChainPlaceholder": "Cross-chain",
-    "descriptionLengthError": "Description must be 120 symbols long",
+    "descriptionLengthError": "Description cannot exceed 120 symbols",
     "destinationChainLabel": "Recipient network",
     "destinationChainPlaceholder": "Select recipient network",
     "editOperationButton": "Edit operation",
@@ -1049,6 +1081,7 @@
   "walletDetails": {
     "common": {
       "accountTabTitle": "Accounts",
+      "addProxyAction": "Add delegated authority",
       "addProxyButton": "Add delegated authority",
       "cancelButton": "Cancel",
       "confirmRemoveProxyCancel": "Cancel",

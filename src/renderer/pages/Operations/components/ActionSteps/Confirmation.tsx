@@ -5,7 +5,7 @@ import {
   MultisigTransaction,
   Transaction,
   Fee,
-  DepositWithLabel,
+  MultisigDepositWithLabel,
   isXcmTransaction,
   XcmFee,
   FeeLoader,
@@ -66,7 +66,7 @@ export const Confirmation = ({ tx, account, connection, signatory, feeTx, onSign
       <Details tx={tx} account={account} extendedChain={connection} signatory={signatory} />
 
       {signatory && connection?.api && (
-        <DepositWithLabel
+        <MultisigDepositWithLabel
           api={connection.api}
           asset={connection.assets[0]}
           className="text-footnote"

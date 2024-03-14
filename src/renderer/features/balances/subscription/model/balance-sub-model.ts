@@ -198,7 +198,7 @@ sample({
   filter: (_, wallet) => Boolean(wallet),
   fn: ({ subAccounts, accounts }, wallet) => {
     const walletAccounts = accountUtils.getWalletAccounts(wallet!.id, accounts);
-    const accountsToSub = balanceSubUtils.getAccountsToSubscribe(wallet!, walletAccounts);
+    const accountsToSub = balanceSubUtils.getAccountsToSubscribe(wallet!, walletAccounts, accounts);
 
     return balanceSubUtils.getNewAccounts(subAccounts, accountsToSub);
   },

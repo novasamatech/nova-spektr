@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useUnit } from 'effector-react';
 
-import { cnTw, includes, toAddress, RootExplorers } from '@shared/lib/utils';
+import { cnTw, includes, toAddress, RootExplorers, isEthereumAccountId } from '@shared/lib/utils';
 import { useI18n } from '@app/providers';
 import { useToggle } from '@shared/lib/hooks';
 import { Button, Checkbox, FootnoteText, Icon, SearchInput, SmallTitleText, Tabs, Tooltip, HelpText } from '@shared/ui';
@@ -49,7 +49,9 @@ export const SelectSignatories = ({ isActive, wallets, accounts, contacts, onSel
     if (accounts.length === 0) return;
 
     const addressBookContacts = contacts
-      .filter((c) => c.matrixId)
+      .filter((c) => {
+        return c.matrixId && !isEthereumAccountId(c.accountId);
+      })
       .map((contact, index) => ({ ...contact, index: index.toString() }));
 
     const { available, disabled } = wallets.reduce<{
@@ -150,7 +152,7 @@ export const SelectSignatories = ({ isActive, wallets, accounts, contacts, onSel
   const selectedContactsLength = Object.values(selectedContacts).length;
 
   const WalletsTab = hasWallets ? (
-    <div className="flex flex-col gap-2">
+    <div className="flex flex-col gap-y-2">
       {Boolean(disabledWallets) && (
         <FootnoteText className="text-text-tertiary px-2">{t('createMultisigAccount.availableLabel')}</FootnoteText>
       )}

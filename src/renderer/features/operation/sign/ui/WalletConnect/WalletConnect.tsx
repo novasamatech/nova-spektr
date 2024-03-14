@@ -135,10 +135,8 @@ export const WalletConnect = ({
 
     if (isVerified && balanceValidationError) {
       setValidationError(balanceValidationError || ValidationErrors.INVALID_SIGNATURE);
-    } else {
-      if (unsignedTx) {
-        onResult([signature], [unsignedTx]);
-      }
+    } else if (unsignedTx) {
+      onResult([signature], [unsignedTx]);
     }
   };
 
