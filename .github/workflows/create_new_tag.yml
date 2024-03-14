@@ -44,7 +44,7 @@ jobs:
         with:
           commit_path: package.json
           commit_message: 'ci: update version in package.json'
-          branch_name: rc/${{ steps.bump.outputs.major }}.${{ steps.bump.outputs.minor }}.${{ steps.bump.outputs.patch }}
+          branch_name: release/${{ steps.bump.outputs.major }}.${{ steps.bump.outputs.minor }}.${{ steps.bump.outputs.patch }}
           destination_branch: main
           second_destination_branch: dev
           pr_title: Release candidate - ${{ steps.bump.outputs.major }}.${{ steps.bump.outputs.minor }}.${{ steps.bump.outputs.patch }}

@@ -44,14 +44,14 @@ runs:
       uses: ad-m/github-push-action@master
       with:
         github_token: ${{ inputs.github_token }}
-        branch: refs/heads/${{ inputs.branch_name }}-${{github.run_number}}
+        branch: refs/heads/${{ inputs.branch_name }}
 
     - name: Pull Request
       id: mpr
       uses: repo-sync/pull-request@v2
       if: steps.commit.outcome == 'success'
       with:
-        source_branch: '${{ inputs.branch_name }}-${{github.run_number}}'
+        source_branch: '${{ inputs.branch_name }}'
         destination_branch: ${{ inputs.destination_branch }}
         pr_title: ${{ inputs.pr_title }}
         pr_body: |
@@ -64,7 +64,7 @@ runs:
       if: steps.commit.outcome == 'success' && inputs.second_destination_branch
       uses: repo-sync/pull-request@v2
       with:
-        source_branch: '${{ inputs.branch_name }}-${{github.run_number}}'
+        source_branch: '${{ inputs.branch_name }}'
         destination_branch: ${{ inputs.second_destination_branch }}
         pr_title: 'PR in order to sync ${{ inputs.commit_path }}'
         pr_body: |
