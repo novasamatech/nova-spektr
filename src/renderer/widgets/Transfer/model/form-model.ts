@@ -1,21 +1,43 @@
 import { createEvent, createStore, combine, sample } from 'effector';
 import { createForm } from 'effector-forms';
 import { spread } from 'patronum';
+import { BN } from '@polkadot/util';
 
-import { Chain, Account, Asset } from '@shared/core';
+import { Chain, Account, Asset, AssetType } from '@shared/core';
 import { walletModel, walletUtils, accountUtils, permissionUtils } from '@entities/wallet';
 import { balanceModel, balanceUtils } from '@entities/balance';
-import { transferableAmount, dictionary } from '@shared/lib/utils';
+import {
+  transferableAmount,
+  dictionary,
+  toAddress,
+  TEST_ACCOUNTS,
+  getAssetId,
+  formatAmount,
+  validateAddress,
+} from '@shared/lib/utils';
+import { networkModel, networkUtils } from '@entities/network';
+import { Transaction, TransactionType } from '@entities/transaction';
 
 const formInitiated = createEvent<{ chain: Chain; asset: Asset }>();
 const formSubmitted = createEvent();
+
+const feeChanged = createEvent<string>();
+const multisigDepositChanged = createEvent<string>();
+const isFeeLoadingChanged = createEvent<boolean>();
 
 const myselfClicked = createEvent();
 
 const $chain = createStore<Chain | null>(null);
 const $asset = createStore<Asset | null>(null);
+const $isNative = createStore<boolean>(false);
 
-const $canSubmit = createStore<boolean>(true);
+const $accountBalance = createStore<string[]>(['0', '0']);
+const $signatoryBalance = createStore<string[]>(['0', '0']);
+
+const $fee = createStore<string>('0');
+const $multisigDeposit = createStore<string>('0');
+const $isFeeLoading = createStore<boolean>(true);
+
 const $isMultisig = createStore<boolean>(false);
 const $isProxy = createStore<boolean>(false);
 
@@ -26,15 +48,97 @@ const $transferForm = createForm({
     },
     signatory: {
       init: {} as Account,
+      rules: [
+        {
+          name: 'notEnoughTokens',
+          errorText: 'proxy.addProxy.notEnoughMultisigTokens',
+          source: combine({
+            fee: $fee,
+            isMultisig: $isMultisig,
+            multisigDeposit: $multisigDeposit,
+            signatoryBalance: $signatoryBalance,
+          }),
+          validator: (value, _, { fee, isMultisig, signatoryBalance, multisigDeposit }) => {
+            if (!isMultisig) return true;
+
+            return new BN(multisigDeposit).add(new BN(fee)).lte(new BN(signatoryBalance[0]));
+          },
+        },
+      ],
     },
     // xcmChain: {
     //   init: {} as Chain,
     // },
     destination: {
       init: '',
+      rules: [
+        {
+          name: 'required',
+          errorText: 'transfer.requiredRecipientError',
+          validator: Boolean,
+        },
+        {
+          name: 'incorrectRecipient',
+          errorText: 'transfer.incorrectRecipientError',
+          validator: validateAddress,
+        },
+      ],
     },
     amount: {
       init: '',
+      rules: [
+        {
+          name: 'required',
+          errorText: 'transfer.requiredAmountError',
+          validator: Boolean,
+        },
+        {
+          name: 'notZero',
+          errorText: 'transfer.requiredAmountError',
+          validator: (value) => value !== '0',
+        },
+        {
+          name: 'notEnoughBalance',
+          errorText: 'transfer.notEnoughBalanceError',
+          source: combine({
+            asset: $asset,
+            isMultisig: $isMultisig,
+            accountBalance: $accountBalance,
+          }),
+          validator: (value, _, { asset, isMultisig, accountBalance }) => {
+            if (!isMultisig) return true;
+
+            const amountBN = new BN(formatAmount(value, asset.precision));
+            // const xcmFeeBN = new BN(xcmFee || 0);
+
+            return amountBN.lte(new BN(accountBalance[0]));
+            // return amountBN.add(xcmFeeBN).lte(new BN(accountBalance));
+          },
+        },
+        {
+          name: 'insufficientBalanceForFee',
+          errorText: 'transfer.notEnoughBalanceForFeeError',
+          source: combine({
+            fee: $fee,
+            asset: $asset,
+            isNative: $isNative,
+            isMultisig: $isMultisig,
+            accountBalance: $accountBalance,
+          }),
+          validator: (value, _, { fee, asset, isNative, isMultisig, accountBalance }) => {
+            if (isMultisig) return true;
+
+            const amountBN = new BN(formatAmount(value, asset.precision));
+            // const xcmFeeBN = new BN(xcmFee || 0);
+
+            return isNative
+              ? new BN(fee).add(amountBN).lte(new BN(accountBalance[1]))
+              : new BN(fee).lte(new BN(accountBalance[1]));
+
+            // return new BN(fee).add(amountBN).add(xcmFeeBN).lte(new BN(balance));
+          },
+        },
+      ],
     },
     description: {
       init: '',
@@ -106,18 +210,6 @@ const $accounts = combine(
   },
 );
 
-const $accountBalance = combine(
-  {
-    accounts: $accounts,
-    account: $transferForm.fields.account.$value,
-  },
-  ({ accounts, account }) => {
-    const match = accounts.find((a) => a.account.id === account.id);
-
-    return match?.balances || ['0', '0'];
-  },
-);
-
 const $signatories = combine(
   {
     chain: $chain,
@@ -164,25 +256,86 @@ const $signatories = combine(
   },
 );
 
-// const $accountBalance = combine(
-//   {
-//     accounts: $accounts,
-//     account: $transferForm.fields.account.$value,
-//   },
-//   ({ accounts, account }) => {
-//     const match = accounts.find((a) => a.account.id === account.id);
-//
-//     return match?.balances || ['0', '0'];
-//   },
-// );
+const $isChainConnected = combine(
+  {
+    chain: $chain,
+    statuses: networkModel.$connectionStatuses,
+  },
+  ({ chain, statuses }) => {
+    if (!chain) return false;
+
+    return networkUtils.isConnectedStatus(statuses[chain.chainId]);
+  },
+);
+
+const $api = combine(
+  {
+    apis: networkModel.$apis,
+    chain: $chain,
+  },
+  ({ apis, chain }) => {
+    if (!chain) return undefined;
+
+    return apis[chain.chainId];
+  },
+  { skipVoid: false },
+);
+
+const $fakeTx = combine(
+  {
+    chain: $chain,
+    asset: $asset,
+    isNative: $isNative,
+    form: $transferForm.$values,
+    isConnected: $isChainConnected,
+  },
+  ({ chain, asset, isNative, form, isConnected }): Transaction | undefined => {
+    if (!chain || !asset || !isConnected) return undefined;
+
+    const TransferType: Record<AssetType, TransactionType> = {
+      [AssetType.ORML]: TransactionType.ORML_TRANSFER,
+      [AssetType.STATEMINE]: TransactionType.ASSET_TRANSFER,
+    };
+
+    // TODO: XCM here
+
+    return {
+      chainId: chain.chainId,
+      address: toAddress(TEST_ACCOUNTS[0], { prefix: chain.addressPrefix }),
+      type: isNative ? TransactionType.TRANSFER : TransferType[asset.type!],
+      args: {
+        dest: toAddress(form.destination || TEST_ACCOUNTS[1], { prefix: chain.addressPrefix }),
+        value: formatAmount(form.amount, asset.precision) || '1',
+        ...(!isNative && { asset: getAssetId(asset) }),
+      },
+    };
+  },
+  { skipVoid: false },
+);
+
+const $canSubmit = combine(
+  {
+    isFormValid: $transferForm.$isValid,
+    isFeeLoading: $isFeeLoading,
+  },
+  ({ isFormValid, isFeeLoading }) => {
+    return isFormValid && !isFeeLoading;
+  },
+);
 
 // Fields connections
 
 sample({
   clock: formInitiated,
+  fn: ({ chain, asset }) => ({
+    chain,
+    asset,
+    isNative: getAssetId(chain.assets[0]) === getAssetId(asset),
+  }),
   target: spread({
     chain: $chain,
     asset: $asset,
+    isNative: $isNative,
   }),
 });
 
@@ -196,19 +349,6 @@ sample({
   source: $accounts,
   fn: (accounts) => accounts[0].account,
   target: $transferForm.fields.account.onChange,
-});
-
-sample({
-  clock: $transferForm.fields.account.onChange,
-  source: {
-    signatories: $signatories,
-    isMultisig: $isMultisig,
-  },
-  filter: ({ isMultisig, signatories }) => {
-    return isMultisig && signatories.length > 0;
-  },
-  fn: ({ signatories }) => signatories[0].signer,
-  target: $transferForm.fields.signatory.onChange,
 });
 
 sample({
@@ -231,21 +371,83 @@ sample({
   }),
 });
 
+sample({
+  clock: $transferForm.fields.account.onChange,
+  source: {
+    signatories: $signatories,
+    isMultisig: $isMultisig,
+  },
+  filter: ({ isMultisig, signatories }) => {
+    return isMultisig && signatories.length > 0;
+  },
+  fn: ({ signatories }) => signatories[0].signer,
+  target: $transferForm.fields.signatory.onChange,
+});
+
+sample({
+  clock: $transferForm.fields.account.$value,
+  source: $accounts,
+  fn: (accounts, account) => {
+    const match = accounts.find((a) => a.account.id === account.id);
+
+    return match?.balances || ['0', '0'];
+  },
+  target: $accountBalance,
+});
+
+sample({
+  clock: $transferForm.fields.signatory.$value,
+  source: $signatories,
+  fn: (signatories, signatory) => {
+    const match = signatories.find(({ signer }) => signer.id === signatory.id);
+
+    return match?.balances || ['0', '0'];
+  },
+  target: $signatoryBalance,
+});
+
+// Deposits
+
+sample({ clock: multisigDepositChanged, target: $multisigDeposit });
+
+sample({ clock: feeChanged, target: $fee });
+
+sample({ clock: isFeeLoadingChanged, target: $isFeeLoading });
+
+// Submit
+
+sample({
+  clock: $transferForm.formValidated,
+  fn: () => {},
+  target: formSubmitted,
+});
+
 export const formModel = {
   $transferForm,
   $proxyWallet,
   $signatories,
-  $isMultisig,
 
   $chain,
   $asset,
   $accounts,
   $accountBalance,
 
+  $fee,
+  $multisigDeposit,
+
+  $api,
+  $fakeTx,
+  $isMultisig,
+  $isChainConnected,
   $canSubmit,
+
   events: {
     formInitiated,
     myselfClicked,
+
+    feeChanged,
+    multisigDepositChanged,
+    isFeeLoadingChanged,
   },
   output: {
     formSubmitted,

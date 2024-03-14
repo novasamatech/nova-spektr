@@ -1,15 +1,15 @@
 import { useForm } from 'effector-forms';
-import { FormEvent, useState } from 'react';
+import { FormEvent } from 'react';
 import { useUnit } from 'effector-react';
 
-import { Select, Input, Identicon, Icon, Button, InputHint, AmountInput, Alert } from '@shared/ui';
+import { Select, Input, Identicon, Icon, Button, InputHint, AmountInput } from '@shared/ui';
 import { formModel } from '../model/form-model';
 import { useI18n } from '@app/providers';
-import { DropdownOption } from '@shared/ui/Dropdowns/common/types';
-import { Chain } from '@shared/core';
+import { MultisigAccount } from '@shared/core';
 import { accountUtils, AccountAddress } from '@entities/wallet';
-import { toAddress, toShortAddress } from '@shared/lib/utils';
+import { toAddress, toShortAddress, validateAddress } from '@shared/lib/utils';
 import { AssetBalance } from '@entities/asset';
+import { MultisigDepositWithLabel, FeeWithLabel } from '@entities/transaction';
 
 type Props = {
   onGoBack: () => void;
@@ -26,64 +26,64 @@ export const TransferForm = ({ onGoBack }: Props) => {
   return (
     <div className="pb-4 px-5">
       <form id="transfer-form" className="flex flex-col gap-y-4 mt-4" onSubmit={submitForm}>
-        <ProxyFeeAlert />
+        {/*<ProxyFeeAlert />*/}
         <AccountSelector />
         <SignatorySelector />
         {/*<XcmChainSelector />*/}
         <Destination />
         <Amount />
         <Description />
-        <div className="flex flex-col gap-y-6 pt-6 pb-4">
-          <FeeSection />
-        </div>
-        <ActionsSection onGoBack={onGoBack} />
-
-        {/*<InputHint className="mt-2" active={multisigTxExist} variant="error">*/}
-        {/*  {t('transfer.multisigTransactionExist')}*/}
-        {/*</InputHint>*/}
-
-        {/*{accounts && (*/}
-        {/*  <AccountSelectModal*/}
-        {/*    isOpen={isSelectAccountModalOpen}*/}
-        {/*    accounts={destinationChainAccounts}*/}
-        {/*    chain={chain}*/}
-        {/*    onClose={() => setSelectAccountModalOpen(false)}*/}
-        {/*    onSelect={handleAccountSelect}*/}
-        {/*  />*/}
-        {/*)}*/}
       </form>
+      <div className="flex flex-col gap-y-6 pt-6 pb-4">
+        <FeeSection />
+      </div>
+      <ActionsSection onGoBack={onGoBack} />
+
+      {/*<InputHint className="mt-2" active={multisigTxExist} variant="error">*/}
+      {/*  {t('transfer.multisigTransactionExist')}*/}
+      {/*</InputHint>*/}
+
+      {/*{accounts && (*/}
+      {/*  <AccountSelectModal*/}
+      {/*    isOpen={isSelectAccountModalOpen}*/}
+      {/*    accounts={destinationChainAccounts}*/}
+      {/*    chain={chain}*/}
+      {/*    onClose={() => setSelectAccountModalOpen(false)}*/}
+      {/*    onSelect={handleAccountSelect}*/}
+      {/*  />*/}
+      {/*)}*/}
     </div>
   );
 };
 
-const ProxyFeeAlert = () => {
-  const {
-    fields: { amount },
-  } = useForm(formModel.$transferForm);
-
-  const [isAlertOpen, setIsAlertOpen] = useState(true);
-
-  // const proxyWallet = useUnit(formModel.$proxyWallet);
-  //
-  // if (!proxyWallet) return null;
-
-  return (
-    <Alert
-      title="Not enough tokens to pay the fee"
-      variant="warn"
-      active={isAlertOpen}
-      onClose={() => setIsAlertOpen(false)}
-    >
-      <Alert.Item withDot={false}>
-        Delegated authority
-        {/*<WalletCardSm wallet={proxyWallet} />*/}
-        doesn't have enough balance to pay the network fee of 0.00 DOT.
-        <br />
-        Available balance to pay fee: 0.00 DOT
-      </Alert.Item>
-    </Alert>
-  );
-};
+// const ProxyFeeAlert = () => {
+//   const {
+//     fields: { amount },
+//   } = useForm(formModel.$transferForm);
+//
+//   const [isAlertOpen, setIsAlertOpen] = useState(true);
+//
+//   // const proxyWallet = useUnit(formModel.$proxyWallet);
+//   //
+//   // if (!proxyWallet) return null;
+//
+//   return (
+//     <Alert
+//       title="Not enough tokens to pay the fee"
+//       variant="warn"
+//       active={isAlertOpen}
+//       onClose={() => setIsAlertOpen(false)}
+//     >
+//       <Alert.Item withDot={false}>
+//         Delegated authority
+//         {/*<WalletCardSm wallet={proxyWallet} />*/}
+//         doesn't have enough balance to pay the network fee of 0.00 DOT.
+//         <br />
+//         Available balance to pay fee: 0.00 DOT
+//       </Alert.Item>
+//     </Alert>
+//   );
+// };
 
 const AccountSelector = () => {
   const { t } = useI18n();
@@ -186,27 +186,27 @@ const SignatorySelector = () => {
   );
 };
 
-const XcmChainSelector = () => {
-  const { t } = useI18n();
-
-  const {
-    fields: { xcmChain },
-  } = useForm(formModel.$transferForm);
-
-  const options = [] as DropdownOption<Chain>[];
-
-  return (
-    // {Boolean(destinations?.length) && (
-    <Select
-      label={t('transfer.destinationChainLabel')}
-      placeholder={t('transfer.destinationChainPlaceholder')}
-      invalid={xcmChain.hasError()}
-      selectedId={xcmChain.value.chainId}
-      options={options}
-      onChange={({ value }) => xcmChain.onChange(value)}
-    />
-  );
-};
+// const XcmChainSelector = () => {
+//   const { t } = useI18n();
+//
+//   const {
+//     fields: { xcmChain },
+//   } = useForm(formModel.$transferForm);
+//
+//   const options = [] as DropdownOption<Chain>[];
+//
+//   return (
+//     // {Boolean(destinations?.length) && (
+//     <Select
+//       label={t('transfer.destinationChainLabel')}
+//       placeholder={t('transfer.destinationChainPlaceholder')}
+//       invalid={xcmChain.hasError()}
+//       selectedId={xcmChain.value.chainId}
+//       options={options}
+//       onChange={({ value }) => xcmChain.onChange(value)}
+//     />
+//   );
+// };
 
 const Destination = () => {
   const { t } = useI18n();
@@ -217,10 +217,10 @@ const Destination = () => {
 
   const prefixElement = (
     <div className="flex h-auto items-center">
-      {!destination.value || destination.hasError() ? (
-        <Icon className="mr-2" size={20} name="emptyIdenticon" />
-      ) : (
+      {validateAddress(destination.value) ? (
         <Identicon className="mr-2" size={20} address={destination.value} background={false} />
+      ) : (
+        <Icon className="mr-2" size={20} name="emptyIdenticon" />
       )}
     </div>
   );
@@ -231,7 +231,6 @@ const Destination = () => {
   );
 
   return (
-    // rules={{ required: true, validate: validateAddress }}
     <div className="flex flex-col gap-y-2">
       <Input
         wrapperClass="w-full h-10.5"
@@ -240,18 +239,12 @@ const Destination = () => {
         invalid={destination.hasError()}
         value={destination.value}
         prefixElement={prefixElement}
-        suffixElement={suffixElement}
+        // suffixElement={suffixElement} TODO: isXcmTransfer
         onChange={destination.onChange}
       />
       <InputHint active={destination.hasError()} variant="error">
         {t(destination.errorText())}
       </InputHint>
-      {/*<InputHint active={error?.type === 'validate'} variant="error">*/}
-      {/*  {t('transfer.incorrectRecipientError')}*/}
-      {/*</InputHint>*/}
-      {/*<InputHint active={error?.type === 'required'} variant="error">*/}
-      {/*  {t('transfer.requiredRecipientError')}*/}
-      {/*</InputHint>*/}
     </div>
   );
 };
@@ -269,13 +262,6 @@ const Amount = () => {
   if (!asset) return null;
 
   return (
-    // required: true,
-    // validate: {
-    //   notZero: (v) => Number(v) > 0,
-    //   insufficientBalance: validateBalance,
-    //   insufficientBalanceForFee: validateBalanceForFee,
-    //   insufficientBalanceForDeposit: validateBalanceForFeeAndDeposit,
-    // },
     <div className="flex flex-col gap-y-2">
       <AmountInput
         invalid={amount.hasError()}
@@ -289,21 +275,6 @@ const Amount = () => {
       <InputHint active={amount.hasError()} variant="error">
         {t(amount.errorText())}
       </InputHint>
-      {/*<InputHint active={error?.type === 'insufficientBalance'} variant="error">*/}
-      {/*  {t('transfer.notEnoughBalanceError')}*/}
-      {/*</InputHint>*/}
-      {/*<InputHint active={error?.type === 'insufficientBalanceForFee'} variant="error">*/}
-      {/*  {t('transfer.notEnoughBalanceForFeeError')}*/}
-      {/*</InputHint>*/}
-      {/*<InputHint active={error?.type === 'insufficientBalanceForDeposit'} variant="error">*/}
-      {/*  {t('transfer.notEnoughBalanceForDepositError')}*/}
-      {/*</InputHint>*/}
-      {/*<InputHint active={error?.type === 'required'} variant="error">*/}
-      {/*  {t('transfer.requiredAmountError')}*/}
-      {/*</InputHint>*/}
-      {/*<InputHint active={error?.type === 'notZero'} variant="error">*/}
-      {/*  {t('transfer.requiredAmountError')}*/}
-      {/*</InputHint>*/}
     </div>
   );
 };
@@ -338,7 +309,39 @@ const Description = () => {
 };
 
 const FeeSection = () => {
-  return <div>123</div>;
+  const {
+    fields: { account },
+  } = useForm(formModel.$transferForm);
+
+  const api = useUnit(formModel.$api);
+  const chain = useUnit(formModel.$chain);
+  const fakeTx = useUnit(formModel.$fakeTx);
+  const isMultisig = useUnit(formModel.$isMultisig);
+
+  if (!chain) return null;
+
+  return (
+    <div className="flex flex-col gap-y-2">
+      {isMultisig && (
+        <MultisigDepositWithLabel
+          api={api}
+          asset={chain.assets[0]}
+          threshold={(account.value as MultisigAccount).threshold}
+          onDepositChange={formModel.events.multisigDepositChanged}
+        />
+      )}
+
+      <FeeWithLabel
+        api={api}
+        asset={chain.assets[0]}
+        transaction={fakeTx}
+        onFeeChange={formModel.events.feeChanged}
+        onFeeLoading={formModel.events.isFeeLoadingChanged}
+      />
+
+      {/* TODO: xcm fee */}
+    </div>
+  );
 };
 
 const ActionsSection = ({ onGoBack }: Props) => {
