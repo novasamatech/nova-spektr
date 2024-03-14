@@ -5,7 +5,7 @@ import { useUnit } from 'effector-react';
 import { BaseModal, Button, Input, InputHint, Alert } from '@shared/ui';
 import { useI18n } from '@app/providers';
 import { OperationTitle } from '@entities/chain';
-import { RpcCheckResult, addCustomRpcModel } from '@/src/renderer/features/network';
+import { RpcCheckResult, addCustomRpcModel } from '@features/network';
 
 // const MODAL_ANIMATION = 300;
 
@@ -29,7 +29,7 @@ export const AddCustomRpcModal = ({ isOpen, onClose }: Props) => {
   const {
     fields: { name, url },
     submit,
-  } = useForm(addCustomRpcModel.$customRpcCreationForm);
+  } = useForm(addCustomRpcModel.$addCustomRpcForm);
 
   const onSubmit = (event: FormEvent) => {
     event.preventDefault();

@@ -5,7 +5,7 @@ import { validateWsAddress } from '@renderer/shared/lib/utils';
 import { networkService, RpcValidation } from '@shared/api/network';
 import { ExtendedChain } from '@entities/network';
 import { CustomRpcForm, NodeExistParam, RpcCheckResult } from '../lib/types';
-import { manageNetworkModel } from '@/src/renderer/pages/Settings/Networks/model/manage-network-model';
+import { manageNetworkModel } from '@pages/Settings/Networks/model/manage-network-model';
 
 const $addCustomRpcForm = createForm({
   fields: {
@@ -14,7 +14,7 @@ const $addCustomRpcForm = createForm({
       rules: [
         { name: 'required', errorText: 'settings.networks.requiredNameError', validator: Boolean },
         {
-          name: 'maxLength',
+          name: 'minMaxLength',
           errorText: 'settings.networks.maxLengthNameError',
           validator: (val) => val.length <= 50 && val.length >= 3,
         },
@@ -35,7 +35,7 @@ const $addCustomRpcForm = createForm({
 const formInitiated = createEvent();
 const networkChanged = createEvent<ExtendedChain>();
 const rpcConnectivityChecked = createEvent<RpcCheckResult>();
-const isNodeExistChecked = createEvent<boolean>();
+const nodeExistChecked = createEvent<boolean>();
 const processStarted = createEvent<boolean>();
 
 const $selectedNetwork = createStore<ExtendedChain | null>(null);
@@ -95,7 +95,7 @@ const saveRpcNodeFx = createEffect(
 
 const isNodeExistFx = createEffect(({ network, url }: NodeExistParam): boolean => {
   if (!network) {
-    isNodeExistChecked(false);
+    nodeExistChecked(false);
 
     return false;
   }
@@ -105,7 +105,7 @@ const isNodeExistFx = createEffect(({ network, url }: NodeExistParam): boolean =
 
   const result = defaultNodes.some(({ url: u }) => u === url) || customNodes.some(({ url: u }) => u === url);
 
-  isNodeExistChecked(result);
+  nodeExistChecked(result);
 
   return result;
 });
@@ -116,7 +116,7 @@ const resetFormFx = createEffect(() => {
 });
 
 const resetRpcValidationFx = createEffect(() => {
-  isNodeExistChecked(false);
+  nodeExistChecked(false);
   rpcConnectivityChecked(RpcCheckResult.INIT);
 });
 
@@ -147,7 +147,7 @@ sample({
 });
 
 sample({
-  clock: isNodeExistChecked,
+  clock: nodeExistChecked,
   target: $isNodeExist,
 });
 
@@ -175,7 +175,7 @@ sample({
 });
 
 export const addCustomRpcModel = {
-  $customRpcCreationForm: $addCustomRpcForm,
+  $addCustomRpcForm,
   $rpcConnectivityResult,
   $selectedNetwork,
   $isNodeExist,
