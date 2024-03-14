@@ -11,10 +11,12 @@ import { RpcCheckResult, addCustomRpcModel } from '@features/network';
 
 type Props = {
   isOpen: boolean;
+  // network: ExtendedChain;
+  // node?: RpcNode;
   onClose: () => void;
 };
 
-export const AddCustomRpcModal = ({ isOpen, onClose }: Props) => {
+export const EditCustomRpcModal = ({ isOpen, onClose }: Props) => {
   const { t } = useI18n();
   const rpcCheckResult = useUnit(addCustomRpcModel.$rpcConnectivityResult);
   const isNodeExist = useUnit(addCustomRpcModel.$isNodeExist);
@@ -35,6 +37,8 @@ export const AddCustomRpcModal = ({ isOpen, onClose }: Props) => {
     submit();
   };
 
+  // const modalTitle = node ? t('settings.networks.titleEdit') : t('settings.networks.titleAdd');
+  // const submitLabel = node ? t('settings.networks.editNodeButton') : t('settings.networks.addNodeButton');
   const isLoading = rpcCheckResult === RpcCheckResult.LOADING;
 
   if (!network) return null;
