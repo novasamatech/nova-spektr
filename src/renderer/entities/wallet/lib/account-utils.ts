@@ -27,7 +27,7 @@ export const accountUtils = {
   isMultisigAccount,
   isChainDependant,
   isChainIdMatch,
-  isChainIdAndCryptoTypeMatch,
+  isChainAndCryptoMatch,
   isWalletConnectAccount,
   isProxiedAccount,
   isShardAccount,
@@ -90,14 +90,14 @@ function isChainIdMatch(account: Pick<Account, 'type'>, chainId: ChainId): boole
   );
 }
 
-function isChainIdAndCryptoTypeMatch(account: Account, chain: Chain): boolean {
+function isChainAndCryptoMatch(account: Account, chain: Chain): boolean {
   return isChainDependant(account) ? isChainIdMatch(account, chain.chainId) : isCryptoTypeMatch(account, chain);
 }
 
 function isCryptoTypeMatch(account: Account, chain: Chain): boolean {
   const cryptoType = networkUtils.isEthereumBased(chain.options) ? CryptoType.ETHEREUM : CryptoType.SR25519;
 
-  return !isWalletConnectAccount(account) ? account.cryptoType === cryptoType : true;
+  return isWalletConnectAccount(account) || account.cryptoType === cryptoType;
 }
 
 function isMultisigAccount(account: Pick<Account, 'type'>): account is MultisigAccount {

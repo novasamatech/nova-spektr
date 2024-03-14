@@ -1,13 +1,8 @@
 import { createEvent, createStore, sample } from 'effector';
 import { spread, delay } from 'patronum';
 
-import { Transaction, TransactionType } from '@entities/transaction';
-import { toAddress } from '@shared/lib/utils';
-import { walletSelectModel } from '@features/wallets';
-import { walletModel, walletUtils } from '@entities/wallet';
-import type { MultisigAccount } from '@shared/core';
-import { wrapAsMulti, wrapAsProxy } from '@entities/transaction/lib/extrinsicService';
-import { networkModel } from '@entities/network';
+import { Transaction } from '@entities/transaction';
+import type { Chain, Asset } from '@shared/core';
 import { Step, TxWrappers, TransferStore } from '../lib/types';
 import { transferUtils } from '../lib/transfer-utils';
 import { formModel } from './form-model';
@@ -17,7 +12,7 @@ import { submitModel } from './submit-model';
 
 const stepChanged = createEvent<Step>();
 
-const flowStarted = createEvent();
+const flowStarted = createEvent<{ chain: Chain; asset: Asset }>();
 const flowFinished = createEvent();
 
 const $step = createStore<Step>(Step.NONE);
@@ -41,10 +36,10 @@ sample({
   target: formModel.events.formInitiated,
 });
 
-sample({
-  clock: formModel.output.formSubmitted,
-  target: $transferStore,
-});
+// sample({
+//   clock: formModel.output.formSubmitted,
+//   target: $transferStore,
+// });
 
 // sample({
 //   clock: formModel.output.formSubmitted,

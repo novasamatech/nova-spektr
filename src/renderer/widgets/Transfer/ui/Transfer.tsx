@@ -1,10 +1,12 @@
 import { useUnit } from 'effector-react';
-import { ReactNode } from 'react';
+import { ReactNode, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 import { BaseModal } from '@shared/ui';
 import { useModalClose } from '@shared/lib/hooks';
 import { OperationTitle } from '@entities/chain';
 import { useI18n } from '@app/providers';
+import type { Chain, Asset } from '@shared/core';
 import { Step } from '../lib/types';
 import { TransferForm } from './TransferForm';
 import { Confirmation } from './Confirmation';
@@ -12,30 +14,38 @@ import { SignTransfer } from './SignTransfer';
 import { SubmitTransfer } from './SubmitTransfer';
 import { transferUtils } from '../lib/transfer-utils';
 import { transferModel } from '../model/transfer-model';
-import type { Chain, Asset } from '@shared/core';
+import { Paths } from '@shared/routes';
 
 type Props = {
   chain: Chain;
   asset: Asset;
 };
 
-export const TransferAssets = ({ asset }: Props) => {
+export const Transfer = ({ chain, asset }: Props) => {
   const { t } = useI18n();
 
-  const step = useUnit(transferModel.$step);
-  const chain = useUnit(transferModel.$chain);
+  const navigate = useNavigate();
 
-  const [isModalOpen, closeModal] = useModalClose(!transferUtils.isNoneStep(step), transferModel.output.flowFinished);
+  const step = useUnit(transferModel.$step);
+  // const xcmChain = useUnit(transferModel.$xcmChain);
+
+  const [isModalOpen, closeModal] = useModalClose(!transferUtils.isNoneStep(step), () => {
+    navigate(Paths.ASSETS);
+    transferModel.output.flowFinished();
+  });
+
+  useEffect(() => {
+    transferModel.events.flowStarted({ chain, asset });
+  }, []);
 
   if (transferUtils.isSubmitStep(step)) return <SubmitTransfer isOpen={isModalOpen} onClose={closeModal} />;
 
-  const getModalTitle = (chain?: Chain, asset?: Asset): String | ReactNode => {
+  const getModalTitle = (chain: Chain, asset: Asset): String | ReactNode => {
     // TODO: refactor this trash
-    if (!chain || !asset) return '';
     const operationTitle = 'transfer.title';
     //   destinationChain && destinationChain !== chain.chainId ? 'transfer.xcmTitle' : 'transfer.title';
 
-    return <OperationTitle title={t(operationTitle)} chainId={chain.chainId} />;
+    return <OperationTitle title={`${t(operationTitle, { asset: asset.symbol })}`} chainId={chain.chainId} />;
   };
 
   return (

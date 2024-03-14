@@ -121,7 +121,7 @@ const $availableAccounts = combine(
     const chainAccounts = accounts.filter((account) => {
       const wallet = walletsMap[account.walletId];
       const isAvailableType = !accountUtils.isMultisigAccount(account) && !walletUtils.isWatchOnly(wallet);
-      const isChainIdMatch = accountUtils.isChainIdAndCryptoTypeMatch(account, chains[chain]);
+      const isChainIdMatch = accountUtils.isChainAndCryptoMatch(account, chains[chain]);
 
       return isChainIdMatch && isAvailableType;
     });

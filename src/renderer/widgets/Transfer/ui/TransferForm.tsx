@@ -1,15 +1,14 @@
 import { useForm } from 'effector-forms';
-import { Trans } from 'react-i18next';
-import { FormEvent } from 'react';
+import { FormEvent, useState } from 'react';
 import { useUnit } from 'effector-react';
 
-import { Select, Input, Identicon, Icon, Button, InputHint, AmountInput } from '@shared/ui';
+import { Select, Input, Identicon, Icon, Button, InputHint, AmountInput, Alert } from '@shared/ui';
 import { formModel } from '../model/form-model';
 import { useI18n } from '@app/providers';
 import { DropdownOption } from '@shared/ui/Dropdowns/common/types';
 import { Chain } from '@shared/core';
 import { accountUtils, AccountAddress } from '@entities/wallet';
-import { toAddress } from '@shared/lib/utils';
+import { toAddress, toShortAddress } from '@shared/lib/utils';
 import { AssetBalance } from '@entities/asset';
 
 type Props = {
@@ -25,62 +24,97 @@ export const TransferForm = ({ onGoBack }: Props) => {
   };
 
   return (
-    <form className="w-full" onSubmit={submitForm}>
-      <AccountsSelector />
-      <SignatorySelector />
-      <ChainSelector />
-      <Destination />
-      <Amount />
-      <Description />
-      <div className="flex flex-col gap-y-6 pt-6 pb-4">
-        <FeeSection />
-      </div>
-      <ButtonsSection onGoBack={onGoBack} />
+    <div className="pb-4 px-5">
+      <form id="transfer-form" className="flex flex-col gap-y-4 mt-4" onSubmit={submitForm}>
+        <ProxyFeeAlert />
+        <AccountSelector />
+        <SignatorySelector />
+        {/*<XcmChainSelector />*/}
+        <Destination />
+        <Amount />
+        <Description />
+        <div className="flex flex-col gap-y-6 pt-6 pb-4">
+          <FeeSection />
+        </div>
+        <ActionsSection onGoBack={onGoBack} />
 
-      {/*<InputHint className="mt-2" active={multisigTxExist} variant="error">*/}
-      {/*  {t('transfer.multisigTransactionExist')}*/}
-      {/*</InputHint>*/}
+        {/*<InputHint className="mt-2" active={multisigTxExist} variant="error">*/}
+        {/*  {t('transfer.multisigTransactionExist')}*/}
+        {/*</InputHint>*/}
 
-      {/*{accounts && (*/}
-      {/*  <AccountSelectModal*/}
-      {/*    isOpen={isSelectAccountModalOpen}*/}
-      {/*    accounts={destinationChainAccounts}*/}
-      {/*    chain={chain}*/}
-      {/*    onClose={() => setSelectAccountModalOpen(false)}*/}
-      {/*    onSelect={handleAccountSelect}*/}
-      {/*  />*/}
-      {/*)}*/}
-    </form>
+        {/*{accounts && (*/}
+        {/*  <AccountSelectModal*/}
+        {/*    isOpen={isSelectAccountModalOpen}*/}
+        {/*    accounts={destinationChainAccounts}*/}
+        {/*    chain={chain}*/}
+        {/*    onClose={() => setSelectAccountModalOpen(false)}*/}
+        {/*    onSelect={handleAccountSelect}*/}
+        {/*  />*/}
+        {/*)}*/}
+      </form>
+    </div>
   );
 };
 
-const AccountsSelector = () => {
+const ProxyFeeAlert = () => {
+  const {
+    fields: { amount },
+  } = useForm(formModel.$transferForm);
+
+  const [isAlertOpen, setIsAlertOpen] = useState(true);
+
+  // const proxyWallet = useUnit(formModel.$proxyWallet);
+  //
+  // if (!proxyWallet) return null;
+
+  return (
+    <Alert
+      title="Not enough tokens to pay the fee"
+      variant="warn"
+      active={isAlertOpen}
+      onClose={() => setIsAlertOpen(false)}
+    >
+      <Alert.Item withDot={false}>
+        Delegated authority
+        {/*<WalletCardSm wallet={proxyWallet} />*/}
+        doesn't have enough balance to pay the network fee of 0.00 DOT.
+        <br />
+        Available balance to pay fee: 0.00 DOT
+      </Alert.Item>
+    </Alert>
+  );
+};
+
+const AccountSelector = () => {
   const { t } = useI18n();
 
   const {
-    fields: { accounts },
+    fields: { account },
   } = useForm(formModel.$transferForm);
 
-  const signatories = useUnit(formModel.$signatories);
-  const isMultisig = useUnit(formModel.$isMultisig);
+  const accounts = useUnit(formModel.$accounts);
+  const chain = useUnit(formModel.$chain);
+  const asset = useUnit(formModel.$asset);
 
-  const options = signatories.map(({ signer, balance }) => {
-    const isShard = accountUtils.isShardAccount(signer);
-    const address = toAddress(signer.accountId, { prefix: chain.value.addressPrefix });
+  if (!chain || !asset || accounts.length <= 1) return null;
+
+  const options = accounts.map(({ account, balances }) => {
+    const isShard = accountUtils.isShardAccount(account);
+    const address = toAddress(account.accountId, { prefix: chain.addressPrefix });
 
     return {
-      id: signer.id.toString(),
-      value: signer,
+      id: account.id.toString(),
+      value: account,
       element: (
-        <div className="flex justify-between items-center w-full">
+        <div className="flex justify-between w-full" key={account.id}>
           <AccountAddress
             size={20}
             type="short"
             address={address}
-            name={isShard ? address : signer.name}
+            name={isShard ? toShortAddress(address, 16) : account.name}
             canCopy={false}
           />
-          <AssetBalance value={balance} asset={chain.value.assets[0]} />
+          <AssetBalance value={balances[0]} asset={asset} />
         </div>
       ),
     };
@@ -89,16 +123,12 @@ const AccountsSelector = () => {
   return (
     <div className="flex flex-col gap-y-2">
       <Select
-        label={t('proxy.addProxy.signatoryLabel')}
-        placeholder={t('proxy.addProxy.signatoryPlaceholder')}
-        selectedId={accounts.value.id.toString()}
+        label={t('proxy.addProxy.accountLabel')}
+        placeholder={t('proxy.addProxy.accountPlaceholder')}
+        selectedId={account.value.id?.toString()}
         options={options}
-        invalid={signatory.hasError()}
-        onChange={({ value }) => signatory.onChange(value)}
+        onChange={({ value }) => account.onChange(value)}
       />
-      <InputHint variant="error" active={signatory.hasError()}>
-        {t(signatory.errorText())}
-      </InputHint>
     </div>
   );
 };
@@ -107,17 +137,19 @@ const SignatorySelector = () => {
   const { t } = useI18n();
 
   const {
-    fields: { chain, signatory },
+    fields: { signatory },
   } = useForm(formModel.$transferForm);
 
   const signatories = useUnit(formModel.$signatories);
   const isMultisig = useUnit(formModel.$isMultisig);
+  const chain = useUnit(formModel.$chain);
+  const asset = useUnit(formModel.$asset);
 
-  if (!isMultisig) return null;
+  if (!chain || !asset || !isMultisig) return null;
 
-  const options = signatories.map(({ signer, balance }) => {
+  const options = signatories.map(({ signer, balances }) => {
     const isShard = accountUtils.isShardAccount(signer);
-    const address = toAddress(signer.accountId, { prefix: chain.value.addressPrefix });
+    const address = toAddress(signer.accountId, { prefix: chain.addressPrefix });
 
     return {
       id: signer.id.toString(),
@@ -131,7 +163,7 @@ const SignatorySelector = () => {
             name={isShard ? address : signer.name}
             canCopy={false}
           />
-          <AssetBalance value={balance} asset={chain.value.assets[0]} />
+          <AssetBalance value={balances[0]} asset={asset} />
         </div>
       ),
     };
@@ -142,7 +174,7 @@ const SignatorySelector = () => {
       <Select
         label={t('proxy.addProxy.signatoryLabel')}
         placeholder={t('proxy.addProxy.signatoryPlaceholder')}
-        selectedId={signatory.value.id.toString()}
+        selectedId={signatory.value.id?.toString()}
         options={options}
         invalid={signatory.hasError()}
         onChange={({ value }) => signatory.onChange(value)}
@@ -154,11 +186,11 @@ const SignatorySelector = () => {
   );
 };
 
-const ChainSelector = () => {
+const XcmChainSelector = () => {
   const { t } = useI18n();
 
   const {
-    fields: { chain },
+    fields: { xcmChain },
   } = useForm(formModel.$transferForm);
 
   const options = [] as DropdownOption<Chain>[];
@@ -168,10 +200,10 @@ const ChainSelector = () => {
     <Select
       label={t('transfer.destinationChainLabel')}
       placeholder={t('transfer.destinationChainPlaceholder')}
-      invalid={chain.hasError()}
-      selectedId={chain.value.chainId}
+      invalid={xcmChain.hasError()}
+      selectedId={xcmChain.value.chainId}
       options={options}
-      onChange={({ value }) => chain.onChange(value)}
+      onChange={({ value }) => xcmChain.onChange(value)}
     />
   );
 };
@@ -231,6 +263,11 @@ const Amount = () => {
     fields: { amount },
   } = useForm(formModel.$transferForm);
 
+  const [balance] = useUnit(formModel.$accountBalance);
+  const asset = useUnit(formModel.$asset);
+
+  if (!asset) return null;
+
   return (
     // required: true,
     // validate: {
@@ -243,7 +280,7 @@ const Amount = () => {
       <AmountInput
         invalid={amount.hasError()}
         value={amount.value}
-        balance={accountBalance}
+        balance={balance}
         balancePlaceholder={t('general.input.availableLabel')}
         placeholder={t('general.input.amountLabel')}
         asset={asset}
@@ -278,6 +315,10 @@ const Description = () => {
     fields: { description },
   } = useForm(formModel.$transferForm);
 
+  const isMultisig = useUnit(formModel.$isMultisig);
+
+  if (!isMultisig) return null;
+
   return (
     <div className="flex flex-col gap-y-2">
       <Input
@@ -290,18 +331,17 @@ const Description = () => {
         onChange={description.onChange}
       />
       <InputHint active={description.hasError()} variant="error">
-        <Trans t={t} i18nKey="transfer.descriptionLengthError" values={{ maxLength: DESCRIPTION_MAX_LENGTH }} />
+        {t(description.errorText())}
       </InputHint>
     </div>
   );
-  // rules={{ maxLength: DESCRIPTION_MAX_LENGTH }}
 };
 
 const FeeSection = () => {
   return <div>123</div>;
 };
 
-const ButtonsSection = ({ onGoBack }: Props) => {
+const ActionsSection = ({ onGoBack }: Props) => {
   const { t } = useI18n();
 
   const canSubmit = useUnit(formModel.$canSubmit);
@@ -311,7 +351,7 @@ const ButtonsSection = ({ onGoBack }: Props) => {
       <Button variant="text" onClick={onGoBack}>
         {t('operation.goBackButton')}
       </Button>
-      <Button form="add-proxy-form" type="submit" disabled={!canSubmit}>
+      <Button form="transfer-form" type="submit" disabled={!canSubmit}>
         {t('transfer.continueButton')}
       </Button>
     </div>
