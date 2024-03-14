@@ -7,7 +7,7 @@ import { ExtendedChain } from '@entities/network';
 import { CustomRpcForm, NodeExistParam, RpcCheckResult } from '../lib/types';
 import { manageNetworkModel } from '@/src/renderer/pages/Settings/Networks/model/manage-network-model';
 
-const $customRpcCreationForm = createForm({
+const $addCustomRpcForm = createForm({
   fields: {
     name: {
       init: '',
@@ -112,7 +112,7 @@ const isNodeExistFx = createEffect(({ network, url }: NodeExistParam): boolean =
 
 const resetFormFx = createEffect(() => {
   resetRpcValidationFx();
-  $customRpcCreationForm.reset;
+  $addCustomRpcForm.reset;
 });
 
 const resetRpcValidationFx = createEffect(() => {
@@ -132,7 +132,7 @@ sample({
 
 // reset the rpc validations when the url field is changed
 sample({
-  clock: $customRpcCreationForm.fields.url.onChange,
+  clock: $addCustomRpcForm.fields.url.onChange,
   target: resetRpcValidationFx,
 });
 
@@ -153,8 +153,8 @@ sample({
 
 // when the form is submitted, we need to check if the node is responding
 sample({
-  clock: $customRpcCreationForm.submit,
-  source: { network: $selectedNetwork, url: $customRpcCreationForm.fields.url.$value },
+  clock: $addCustomRpcForm.submit,
+  source: { network: $selectedNetwork, url: $addCustomRpcForm.fields.url.$value },
   target: [checkRpcNodeFx, isNodeExistFx],
 });
 
@@ -166,7 +166,7 @@ sample({
     rpcConnectivityResult: $rpcConnectivityResult,
     isNodeExist: $isNodeExist,
     network: $selectedNetwork,
-    form: $customRpcCreationForm.$values,
+    form: $addCustomRpcForm.$values,
   },
   filter: ({ isNodeExist, rpcConnectivityResult }) => {
     return !isNodeExist && rpcConnectivityResult === RpcCheckResult.VALID;
@@ -174,8 +174,8 @@ sample({
   target: saveRpcNodeFx,
 });
 
-export const customRpcCreationModel = {
-  $customRpcCreationForm,
+export const addCustomRpcModel = {
+  $customRpcCreationForm: $addCustomRpcForm,
   $rpcConnectivityResult,
   $selectedNetwork,
   $isNodeExist,

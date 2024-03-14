@@ -5,7 +5,7 @@ import { useUnit } from 'effector-react';
 import { BaseModal, Button, Input, InputHint, Alert } from '@shared/ui';
 import { useI18n } from '@app/providers';
 import { OperationTitle } from '@entities/chain';
-import { RpcCheckResult, customRpcCreationModel } from '@/src/renderer/features/network';
+import { RpcCheckResult, addCustomRpcModel } from '@/src/renderer/features/network';
 
 // const MODAL_ANIMATION = 300;
 
@@ -18,18 +18,18 @@ type Props = {
 
 export const AddCustomRpcModal = ({ isOpen, onClose }: Props) => {
   const { t } = useI18n();
-  const rpcCheckResult = useUnit(customRpcCreationModel.$rpcConnectivityResult);
-  const isNodeExist = useUnit(customRpcCreationModel.$isNodeExist);
-  const network = useUnit(customRpcCreationModel.$selectedNetwork);
+  const rpcCheckResult = useUnit(addCustomRpcModel.$rpcConnectivityResult);
+  const isNodeExist = useUnit(addCustomRpcModel.$isNodeExist);
+  const network = useUnit(addCustomRpcModel.$selectedNetwork);
 
   useEffect(() => {
-    customRpcCreationModel.events.formInitiated();
+    addCustomRpcModel.events.formInitiated();
   }, []);
 
   const {
     fields: { name, url },
     submit,
-  } = useForm(customRpcCreationModel.$customRpcCreationForm);
+  } = useForm(addCustomRpcModel.$customRpcCreationForm);
 
   const onSubmit = (event: FormEvent) => {
     event.preventDefault();

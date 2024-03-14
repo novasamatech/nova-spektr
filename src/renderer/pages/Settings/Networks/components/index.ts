@@ -1,2 +1,2 @@
-export { AddCustomRpcModal } from '../../../../features/network/CustomRpcCreationForm/ui/AddCustomRpcModal';
+export { AddCustomRpcModal } from '../../../../features/network/AddCustomRpcForm/ui/AddCustomRpcModal';
 export { NetworkSelector } from './NetworkSelector/NetworkSelector';

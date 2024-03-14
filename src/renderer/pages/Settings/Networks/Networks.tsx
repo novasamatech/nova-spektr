@@ -13,7 +13,7 @@ import { ConnectionType } from '@shared/core';
 import { networkModel, ExtendedChain, networkUtils } from '@entities/network';
 import { manageNetworkModel } from './model/manage-network-model';
 import {
-  customRpcCreationModel,
+  addCustomRpcModel,
   EmptyNetworks,
   NetworkList,
   InactiveNetwork,
@@ -41,8 +41,8 @@ export const Networks = () => {
   const connections = useUnit(networkModel.$connections);
   const filterQuery = useUnit(networksFilterModel.$filterQuery);
   const [isAddRpcModalOpen, setRpcModalOpen] = useUnit([
-    customRpcCreationModel.$isProcessStarted,
-    customRpcCreationModel.events.processStarted,
+    addCustomRpcModel.$isProcessStarted,
+    addCustomRpcModel.events.processStarted,
   ]);
 
   // const [isCustomRpcOpen, toggleCustomRpc] = useToggle();
@@ -156,7 +156,7 @@ export const Networks = () => {
   const changeCustomNode = (network: ExtendedChain) => (node?: RpcNode | undefined) => {
     // setNodeToEdit(node);
     // setNetwork(network);
-    customRpcCreationModel.events.networkChanged(network);
+    addCustomRpcModel.events.networkChanged(network);
 
     setRpcModalOpen(true);
     // toggleCustomRpc();

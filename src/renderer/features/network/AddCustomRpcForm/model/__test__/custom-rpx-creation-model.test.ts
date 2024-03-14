@@ -1,6 +1,6 @@
 import { fork, allSettled } from 'effector';
 
-import { customRpcCreationModel } from '../custom-rpc-creation-model';
+import { addCustomRpcModel } from '../add-custom-rpc-model';
 
 describe('features/network/CustomRpcCreationForm/custom-rpc-creation-model', () => {
   test('should have errors for wrong node url', async () => {
@@ -8,10 +8,10 @@ describe('features/network/CustomRpcCreationForm/custom-rpc-creation-model', () 
       // values: new Map().set(priceProviderModel.$fiatFlag, false).set(currencyModel.$currencyConfig, config),
     });
 
-    const { name, url } = customRpcCreationModel.$customRpcCreationForm.fields;
+    const { name, url } = addCustomRpcModel.$customRpcCreationForm.fields;
     await allSettled(name.onChange, { scope, params: 'some name' });
     await allSettled(url.onChange, { scope, params: 'wrong url' });
-    await allSettled(customRpcCreationModel.$customRpcCreationForm.submit, { scope });
+    await allSettled(addCustomRpcModel.$customRpcCreationForm.submit, { scope });
 
     console.log('scope.getState(url.$errors)', scope.getState(url.$errors));
     expect(scope.getState(name.$errors)).toEqual([]);
