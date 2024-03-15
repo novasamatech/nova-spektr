@@ -1,24 +1,25 @@
 import { ApiPromise } from '@polkadot/api';
 import { createEffect, createStore, sample, createEvent, scopeBind, attach } from 'effector';
-import { once, combineEvents, spread, previous } from 'patronum';
+import { once, combineEvents, spread, previous, interval } from 'patronum';
 import mapValues from 'lodash/mapValues';
 
 import { AccountId, Balance, ChainId, ConnectionStatus, Wallet, Chain, ID } from '@shared/core';
 import { accountUtils, walletModel } from '@entities/wallet';
 import { networkModel, networkUtils } from '@entities/network';
-import { balanceModel } from '@entities/balance';
+import { balanceModel, balanceUtils } from '@entities/balance';
 import { storageService } from '@shared/api/storage';
 import { balanceSubUtils } from '../lib/balance-sub-utils';
 import { Subscriptions, SubAccounts } from '../lib/types';
 import { balanceService } from '@shared/api/balances';
 import { isRejected } from '@shared/lib/utils';
 
-const balancesSubStarted = createEvent();
 const walletToUnsubSet = createEvent<Wallet>();
 const walletToSubSet = createEvent<Wallet>();
+const balancesUpdated = createEvent<Balance[]>();
 
 const $subscriptions = createStore<Subscriptions>({});
 const $subAccounts = createStore<SubAccounts>({});
+const $subBalances = createStore<Balance[]>([]);
 
 const $previousWallet = previous(walletModel.$activeWallet);
 
@@ -95,7 +96,7 @@ const pureSubscribeChainsFx = createEffect(
   ({ apis, chains, walletId, subAccounts, subscriptions }: SubChainsParams): Subscriptions => {
     if (chains.length === 0) return subscriptions;
 
-    const boundUpdate = scopeBind(balanceModel.events.balancesUpdated, { safe: true });
+    const boundUpdate = scopeBind(balancesUpdated, { safe: true });
 
     return chains.reduce<Subscriptions>(
       (acc, chain) => {
@@ -127,6 +128,27 @@ const subscribeChainsFx = attach({
   mapParams: (data: Omit<SubChainsParams, 'subscriptions'>, subscriptions) => {
     return { ...data, subscriptions };
   },
+});
+
+sample({
+  clock: balancesUpdated,
+  source: $subBalances,
+  fn: balanceUtils.getMergeBalances,
+  target: $subBalances,
+});
+
+sample({
+  clock: interval({
+    timeout: 300,
+    start: subscribeChainsFx.doneData,
+  }).tick,
+  source: {
+    subBalances: $subBalances,
+    isPending: populateBalancesFx.pending,
+  },
+  filter: ({ subBalances, isPending }) => !isPending && subBalances.length > 0,
+  fn: ({ subBalances }) => subBalances,
+  target: [balanceModel.events.balancesUpdated, $subBalances.reinit],
 });
 
 sample({
@@ -269,7 +291,6 @@ sample({
 
 export const balanceSubModel = {
   events: {
-    balancesSubStarted,
     walletToSubSet,
     walletToUnsubSet,
   },
