@@ -1,7 +1,7 @@
 import { EventType, MatrixEvent, Room } from 'matrix-js-sdk';
 
 import { MultisigTxStatus } from '@entities/transaction/model/transaction';
-import type { HexString, AccountId, Timepoint, Threshold, CallHash, CallData, ChainId } from '@shared/core';
+import type { HexString, AccountId, Timepoint, Threshold, CallHash, CallData, ChainId, CryptoType } from '@shared/core';
 
 // =====================================================
 // ============ ISecureMessenger interface =============
@@ -109,6 +109,8 @@ export type RoomParams = {
   accountId: AccountId;
   creatorAccountId: AccountId;
   threshold: Threshold;
+  cryptoType: CryptoType;
+  chainId: ChainId;
   signatories: {
     accountId: AccountId;
     matrixId?: string;
@@ -122,6 +124,8 @@ export type SpektrExtras = {
     signatories: AccountId[];
     accountId: AccountId;
     creatorAccountId: AccountId;
+    cryptoType: CryptoType;
+    chainId?: ChainId;
   };
 };
 

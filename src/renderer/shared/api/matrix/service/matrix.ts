@@ -676,6 +676,8 @@ export class Matrix implements ISecureMessenger {
           threshold: params.threshold,
           signatories: params.signatories.map((s) => s.accountId),
           accountId: params.accountId,
+          cryptoType: params.cryptoType,
+          chainId: params.chainId,
           creatorAccountId: params.creatorAccountId,
         },
       };
