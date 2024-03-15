@@ -1,7 +1,7 @@
 import { PropsWithChildren, useEffect, useRef, createContext } from 'react';
 import { useUnit } from 'effector-react';
 
-import { getCreatedDateFromApi, toAddress, validateCallData } from '@shared/lib/utils';
+import { getCreatedDateFromApi, isEthereumAccountId, toAddress, validateCallData } from '@shared/lib/utils';
 import { useMultisigEvent, useMultisigTx } from '@entities/multisig';
 import { useMultisigChainContext } from '@app/providers';
 import { contactModel } from '@entities/contact';
@@ -127,7 +127,8 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
   };
 
   const validateMstAccount = (accountId: AccountId, signatories: AccountId[], threshold: number) => {
-    const isValid = accountId === accountUtils.getMultisigAccountId(signatories, threshold);
+    const cryptoType = isEthereumAccountId(accountId) ? CryptoType.ETHEREUM : CryptoType.SR25519;
+    const isValid = accountId === accountUtils.getMultisigAccountId(signatories, threshold, cryptoType);
 
     if (!isValid) {
       throw new Error(`Multisig address ${accountId} can't be derived from signatories and threshold`);
@@ -149,6 +150,8 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
       name: contactsMap[accountId]?.[1],
     }));
 
+    const mstAccountId = accountUtils.getMultisigAccountId(signatories, threshold);
+
     walletModel.events.multisigCreated({
       wallet: {
         name: accountName,
@@ -159,11 +162,11 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
         {
           threshold,
           creatorAccountId,
-          accountId: accountUtils.getMultisigAccountId(signatories, threshold),
+          accountId: mstAccountId,
           signatories: mstSignatories,
           name: accountName,
           matrixRoomId: roomId,
-          cryptoType: CryptoType.SR25519,
+          cryptoType: isEthereumAccountId(mstAccountId) ? CryptoType.ETHEREUM : CryptoType.SR25519,
           chainType: ChainType.SUBSTRATE,
           type: AccountType.MULTISIG,
         },
