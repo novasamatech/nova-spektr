@@ -1,5 +1,6 @@
 import { u8aToHex } from '@polkadot/util';
 import { createKeyMulti } from '@polkadot/util-crypto';
+import keyBy from 'lodash/keyBy';
 
 import { AccountType, ChainType, CryptoType, ProxyType } from '@shared/core';
 import type {
@@ -35,6 +36,7 @@ export const accountUtils = {
   isAccountWithShards,
   getMultisigAccountId,
   getWalletAccounts,
+  getSignatoryAccounts,
   getBaseAccount,
   getDerivationPath,
   isAnyProxyType,
@@ -73,7 +75,10 @@ function isAccountWithShards(accounts: Pick<Account, 'type'> | ShardAccount[]): 
 }
 
 function isChainDependant(account: Pick<Account, 'type'>): boolean {
-  return Boolean((account as ChainAccount).chainId);
+  const isBase = isBaseAccount(account);
+  const isMultisigWithoutChainId = isMultisigAccount(account) && !account.chainId;
+
+  return !isBase && !isMultisigWithoutChainId;
 }
 
 function isChainIdMatch(account: Pick<Account, 'type'>, chainId: ChainId): boolean {
@@ -142,6 +147,12 @@ function getBaseAccount(accounts: Account[], walletId?: ID): BaseAccount | undef
 
 function getWalletAccounts<T extends Account>(walletId: ID, accounts: T[]): T[] {
   return accounts.filter((account) => account.walletId === walletId);
+}
+
+function getSignatoryAccounts<T extends Account>(accountIds: AccountId[], accounts: T[]): T[] {
+  const accountsMap = keyBy(accounts, 'accountId');
+
+  return accountIds.map((id) => accountsMap[id]);
 }
 
 type DerivationPathLike = Pick<ChainAccount, 'derivationPath'>;
