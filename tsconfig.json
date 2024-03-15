@@ -21,7 +21,8 @@
     "allowSyntheticDefaultImports": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
-    "noEmit": true
+    "noEmit": true,
+    "types": ["@testing-library/jest-dom"],
   },
   "include": ["src", "webpack", "globals.d.ts"],
   "exclude": ["node_modules"]
