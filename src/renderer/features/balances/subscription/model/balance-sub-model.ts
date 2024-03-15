@@ -140,7 +140,7 @@ sample({
 sample({
   clock: interval({
     timeout: 300,
-    start: subscribeChainsFx.doneData,
+    start: balancesUpdated,
   }).tick,
   source: {
     subBalances: $subBalances,
