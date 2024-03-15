@@ -136,7 +136,7 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
   };
 
   const createMstAccount = (roomId: string, extras: SpektrExtras) => {
-    const { signatories, threshold, accountName, creatorAccountId } = extras.mstAccount;
+    const { signatories, threshold, accountName, creatorAccountId, chainId, cryptoType } = extras.mstAccount;
 
     const contactsMap = contacts.reduce<Record<AccountId, [Address, string]>>((acc, contact) => {
       acc[contact.accountId] = [contact.address, contact.name];
@@ -150,7 +150,7 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
       name: contactsMap[accountId]?.[1],
     }));
 
-    const mstAccountId = accountUtils.getMultisigAccountId(signatories, threshold);
+    const mstAccountId = accountUtils.getMultisigAccountId(signatories, threshold, cryptoType);
 
     walletModel.events.multisigCreated({
       wallet: {
@@ -165,8 +165,9 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
           accountId: mstAccountId,
           signatories: mstSignatories,
           name: accountName,
+          chainId,
           matrixRoomId: roomId,
-          cryptoType: isEthereumAccountId(mstAccountId) ? CryptoType.ETHEREUM : CryptoType.SR25519,
+          cryptoType,
           chainType: ChainType.SUBSTRATE,
           type: AccountType.MULTISIG,
         },
