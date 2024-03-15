@@ -5,6 +5,7 @@ import { Provider } from 'effector-react';
 
 import { AddCustomRpcModal } from './AddCustomRpcModal';
 import { addCustomRpcModel } from '../model/add-custom-rpc-model';
+import { ConnectionStatus } from '@shared/core';
 
 jest.mock('@app/providers', () => ({
   useI18n: jest.fn().mockReturnValue({
@@ -18,30 +19,33 @@ describe('pages/Settings/Networks/AddCustomRpcModal', () => {
     onClose: () => {},
   };
 
-  const renderAndFillTheForm = async ({ payload, skipName, skipAddress, props = defaultProps }: Partial<any> = {}) => {
-    const formPayload = payload || { name: 'test_name', url: 'wss://localhost:3000' };
-    const user = userEvent.setup({ delay: null });
+  // const fillTheForm = async ({ payload, skipName, skipAddress }: Partial<any> = {}) => {
+  //   const formPayload = payload || { name: 'test_name', url: 'wss://localhost:3000' };
+  //   const user = userEvent.setup({ delay: null });
 
-    await act(async () => {
-      render(<AddCustomRpcModal {...props} />);
-    });
+  //   if (!skipName) {
+  //     const name = screen.getByPlaceholderText('settings.networks.namePlaceholder');
+  //     await act(async () => user.type(name, formPayload.name));
+  //   }
 
-    if (!skipName) {
-      const name = screen.getByPlaceholderText('settings.networks.namePlaceholder');
-      await act(async () => user.type(name, formPayload.name));
-    }
+  //   if (!skipAddress) {
+  //     const address = screen.getByPlaceholderText('settings.networks.addressPlaceholder');
+  //     await act(async () => user.type(address, formPayload.url));
+  //   }
 
-    if (!skipAddress) {
-      const address = screen.getByPlaceholderText('settings.networks.addressPlaceholder');
-      await act(async () => user.type(address, formPayload.url));
-    }
+  //   return formPayload;
+  // };
 
-    return formPayload;
+  const network = {
+    chainId: '0x01',
+    connection: { chainId: '0x01', id: '0x01' },
+    connectionStatus: ConnectionStatus.CONNECTED,
+    nodes: [{ url: 'wss://some-rpc.com', name: 'node' }],
   };
 
   test('should render component', async () => {
     const scope = fork({
-      values: new Map().set(addCustomRpcModel.$isProcessStarted, true),
+      values: new Map().set(addCustomRpcModel.$isProcessStarted, true).set(addCustomRpcModel.$selectedNetwork, network),
     });
 
     await act(async () => {
@@ -50,10 +54,6 @@ describe('pages/Settings/Networks/AddCustomRpcModal', () => {
           <AddCustomRpcModal {...defaultProps} />
         </Provider>,
       );
-    });
-
-    await act(async () => {
-      render(<AddCustomRpcModal {...defaultProps} />);
     });
 
     const name = screen.getByPlaceholderText('settings.networks.namePlaceholder');
@@ -65,31 +65,48 @@ describe('pages/Settings/Networks/AddCustomRpcModal', () => {
     expect(submit).toBeDisabled();
   });
 
-  //   test('should focus name input', async () => {
-  //     jest.useFakeTimers();
-  //     await act(async () => {
-  //       render(<AddCustomRpcModal {...defaultProps} />);
-  //     });
-  //     jest.advanceTimersByTime(500);
+  test('should disable submit button during submission', async () => {
+    const scope = fork({
+      values: new Map().set(addCustomRpcModel.$isProcessStarted, true).set(addCustomRpcModel.$selectedNetwork, network),
+    });
 
-  //     const name = screen.getByPlaceholderText('settings.networks.namePlaceholder');
-  //     expect(name).toHaveFocus();
+    await act(async () => {
+      render(
+        <Provider value={scope}>
+          <AddCustomRpcModal {...defaultProps} />
+        </Provider>,
+      );
+    });
 
-  //     jest.useRealTimers();
-  //   });
+    const formPayload = { name: 'test_name', url: 'wss://localhost:3000' };
+    const user = userEvent.setup({ delay: null });
 
-  //   test('should disable submit button during submission', async () => {
-  //     jest.spyOn(networkService, 'validateRpcNode').mockRejectedValue(new Error('error'));
+    const name = screen.getByPlaceholderText('settings.networks.namePlaceholder');
+    await act(async () => user.type(name, formPayload.name));
 
-  //     await renderAndFillTheForm();
+    const address = screen.getByPlaceholderText('settings.networks.addressPlaceholder');
+    await act(async () => user.type(address, formPayload.url));
 
-  //     const button = screen.getByRole('button', { name: 'settings.networks.addNodeButton' });
-  //     expect(button).toBeEnabled();
+    const button = screen.getByRole('button', { name: 'settings.networks.addNodeButton' });
+    expect(button).toBeEnabled();
 
-  //     await act(async () => button.click());
+    await act(async () => button.click());
 
-  //     expect(button).toBeDisabled();
-  //   });
+    expect(button).toBeDisabled();
+  });
+
+  // test('should disable submit button during submission', async () => {
+  //   jest.spyOn(networkService, 'validateRpcNode').mockRejectedValue(new Error('error'));
+
+  //   await renderAndFillTheForm();
+
+  //   const button = screen.getByRole('button', { name: 'settings.networks.addNodeButton' });
+  //   expect(button).toBeEnabled();
+
+  //   await act(async () => button.click());
+
+  //   expect(button).toBeDisabled();
+  // });
 
   //   test('should call validateRpcNode', async () => {
   //     const spyValidateRpc = jest.fn().mockResolvedValue(RpcValidation.VALID);

@@ -97,7 +97,7 @@ export const AddCustomRpcModal = ({ isOpen, onClose }: Props) => {
         </div>
 
         <div className="flex justify-end mt-7 w-full">
-          <Button type="submit" isLoading={isLoading} disabled={isLoading}>
+          <Button type="submit" isLoading={isLoading} disabled={isLoading || !url.value || !name.value}>
             {t('settings.networks.addNodeButton')}
           </Button>
         </div>
