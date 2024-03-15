@@ -19,7 +19,7 @@ import { TabItem } from '@shared/ui/Tabs/common/types';
 // import { ProxiesList } from '../components/ProxiesList';
 import { walletProviderModel } from '../../model/wallet-provider-model';
 // import { NoProxiesAction } from '../components/NoProxiesAction';
-import { networkModel, networkUtils } from '@entities/network';
+import { networkModel } from '@entities/network';
 
 type Props = {
   wallet: Wallet;
@@ -45,12 +45,12 @@ export const VaultWalletDetails = ({ wallet, root, accountsMap, onClose }: Props
 
   const [chains, setChains] = useState<Chain[]>([]);
 
-  const isEthereumBased = accountUtils.isEthereumBased(root);
-
   useEffect(() => {
     const chainList = Object.values(allChains);
     const filteredChains = chainList.filter((c) => {
-      return isEthereumBased ? networkUtils.isEthereumBased(c.options) : !networkUtils.isEthereumBased(c.options);
+      const accounts = Object.values(accountsMap).flat(2);
+
+      return accounts.some((a) => accountUtils.isChainIdAndCryptoTypeMatch(a, c));
     });
 
     setChains(filteredChains);

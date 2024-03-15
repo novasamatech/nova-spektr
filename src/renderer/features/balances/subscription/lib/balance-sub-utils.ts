@@ -1,4 +1,4 @@
-import { Account, Wallet, ChainId } from '@shared/core';
+import { Account, Wallet, ChainId, Chain } from '@shared/core';
 import { accountUtils, walletUtils } from '@entities/wallet';
 import { dictionary } from '@shared/lib/utils';
 import { SubAccounts } from './types';
@@ -8,38 +8,43 @@ export const balanceSubUtils = {
   getNewAccounts,
 };
 
-function getAccountsToSubscribe(wallet: Wallet, accounts: Account[]): Account[] {
-  if (walletUtils.isMultisig(wallet) && accountUtils.isMultisigAccount(accounts[0])) {
+function getAccountsToSubscribe(wallet: Wallet, walletAccounts: Account[], accounts?: Account[]): Account[] {
+  if (walletUtils.isMultisig(wallet) && accountUtils.isMultisigAccount(walletAccounts[0]) && accounts) {
     const accountsMap = dictionary(accounts, 'accountId');
 
-    return accounts[0].signatories.reduce((acc, signatory) => {
+    return walletAccounts[0].signatories.reduce((acc, signatory) => {
       if (accountsMap[signatory.accountId]) {
         acc.push(accountsMap[signatory.accountId]);
       }
 
       return acc;
-    }, accounts);
+    }, walletAccounts);
   }
 
   if (walletUtils.isPolkadotVault(wallet)) {
-    return accounts.filter((account) => !accountUtils.isBaseAccount(account));
+    return walletAccounts.filter((account) => !accountUtils.isBaseAccount(account));
   }
 
-  return accounts;
+  return walletAccounts;
 }
 
-function getNewAccounts(subAccounts: SubAccounts, accountsToSub: Account[]): SubAccounts {
+function getNewAccounts(
+  subAccounts: SubAccounts,
+  accountsToSub: Account[],
+  chains: Record<ChainId, Chain>,
+): SubAccounts {
   const chainIds = Object.keys(subAccounts) as ChainId[];
 
   const newSubAccounts = accountsToSub.reduce<SubAccounts>((acc, account) => {
-    const isBaseAccount = accountUtils.isBaseAccount(account);
-    const isMultisigAccount = accountUtils.isMultisigAccount(account);
-
-    const chainsToUpdate = isBaseAccount || isMultisigAccount ? chainIds : [account.chainId];
+    const chainsToUpdate = chainIds.filter((chainId) =>
+      accountUtils.isChainIdAndCryptoTypeMatch(account, chains[chainId]),
+    );
 
     chainsToUpdate.forEach((chainId) => {
-      if (acc[chainId]) {
+      if (acc[chainId] && acc[chainId][account.walletId]) {
         acc[chainId][account.walletId].push(account.accountId);
+      } else if (acc[chainId]) {
+        acc[chainId][account.walletId] = [account.accountId];
       } else {
         acc[chainId] = { [account.walletId]: [account.accountId] };
       }
