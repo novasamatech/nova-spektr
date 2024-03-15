@@ -15,6 +15,7 @@ import { WalletConnectAccount } from '@shared/core';
 import { storageService } from '@shared/api/storage';
 import { modelUtils } from '../lib/model-utils';
 import { accountUtils } from '../lib/account-utils';
+import { dictionary } from '@shared/lib/utils';
 
 const walletStarted = createEvent();
 const watchOnlyCreated = createEvent<CreateParams<BaseAccount>>();
@@ -57,8 +58,26 @@ const fetchAllAccountsFx = createEffect((): Promise<Account[]> => {
   return storageService.accounts.readAll();
 });
 
-const fetchAllWalletsFx = createEffect((): Promise<Wallet[]> => {
-  return storageService.wallets.readAll();
+const fetchAllWalletsFx = createEffect(async (): Promise<Wallet[]> => {
+  const wallets = await storageService.wallets.readAll();
+
+  // Deactivate wallets except first one if more than one selected
+  const activeWallets = wallets.filter((wallet) => wallet.isActive);
+
+  if (activeWallets.length > 1) {
+    const inactiveWallets = activeWallets.slice(1).map((wallet) => ({ ...wallet, isActive: false }));
+    await storageService.wallets.updateAll(inactiveWallets);
+
+    const walletsMap = dictionary(wallets, 'id');
+
+    inactiveWallets.forEach((wallet) => {
+      walletsMap[wallet.id] = wallet;
+    });
+
+    return Object.values(walletsMap);
+  }
+
+  return wallets;
 });
 
 type CreateResult = {

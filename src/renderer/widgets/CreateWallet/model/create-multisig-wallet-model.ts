@@ -60,12 +60,9 @@ type CreateWalletParams = {
 
 const createWalletFx = createEffect(
   async ({ matrix, name, threshold, creatorId, signatories, chainId, isEthereumChain }: CreateWalletParams) => {
+    const cryptoType = isEthereumChain ? CryptoType.ETHEREUM : CryptoType.SR25519;
     const accountIds = signatories.map((s) => s.accountId);
-    const accountId = accountUtils.getMultisigAccountId(
-      accountIds,
-      threshold,
-      isEthereumChain ? CryptoType.ETHEREUM : CryptoType.SR25519,
-    );
+    const accountId = accountUtils.getMultisigAccountId(accountIds, threshold, cryptoType);
     let roomId = matrix.joinedRooms(accountId)[0]?.roomId;
     const isMyAccounts = signatories.every((s) => s.matrixId === matrix.userId);
 
@@ -78,6 +75,8 @@ const createWalletFx = createEffect(
         accountName: name,
         accountId: accountId,
         threshold: threshold,
+        cryptoType,
+        chainId,
         signatories: signatories.map(({ accountId, matrixId }) => ({ accountId, matrixId })),
       });
     }

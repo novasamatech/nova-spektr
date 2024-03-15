@@ -1,4 +1,4 @@
-import { ChainId, Chain, Wallet, AccountType, Account } from '@shared/core';
+import { ChainId, Chain, Wallet, AccountType, Account, CryptoType } from '@shared/core';
 import { TEST_ACCOUNTS } from '@shared/lib/utils';
 
 const wallets = [
@@ -17,6 +17,7 @@ const accounts = [
     walletId: 1,
     accountId: TEST_ACCOUNTS[0],
     type: AccountType.BASE,
+    cryptoType: CryptoType.SR25519,
   },
   {
     id: 2,
@@ -24,12 +25,14 @@ const accounts = [
     accountId: TEST_ACCOUNTS[1],
     type: AccountType.CHAIN,
     chainId: '0x02',
+    cryptoType: CryptoType.SR25519,
   },
   {
     id: 3,
     walletId: 2,
     accountId: TEST_ACCOUNTS[2],
     type: AccountType.BASE,
+    cryptoType: CryptoType.SR25519,
   },
   {
     id: 4,
@@ -37,6 +40,7 @@ const accounts = [
     accountId: TEST_ACCOUNTS[3],
     type: AccountType.CHAIN,
     chainId: '0x02',
+    cryptoType: CryptoType.SR25519,
   },
 ] as Account[];
 
