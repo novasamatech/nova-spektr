@@ -31,7 +31,6 @@ type Props = {
   onDisconnect: () => void;
   onConnect: (type: ConnectionType, node?: RpcNode) => void;
   onRemoveCustomNode: (node: RpcNode) => void;
-  // onChangeCustomNode: (node?: RpcNode) => void;
 };
 
 export const NetworkSelector = ({
@@ -40,15 +39,14 @@ export const NetworkSelector = ({
   onDisconnect,
   onConnect,
   onRemoveCustomNode,
-}: // onChangeCustomNode,
-Props) => {
+}: Props) => {
   const { t } = useI18n();
   const [ref, scroll] = useScrollTo<HTMLDivElement>(TRANSITION_DURATION);
   const openAddCustomNodeModal = useUnit(addCustomRpcModel.events.processStarted);
   const openEditCustomNodeModal = useUnit(editCustomRpcModel.events.processStarted);
-  const selectAddCustomNodeNetwork = useUnit(addCustomRpcModel.events.networkChanged);
+  const selectNetwork = useUnit(addCustomRpcModel.events.networkChanged);
   const selectEditCustomNodeNetwork = useUnit(editCustomRpcModel.events.networkChanged);
-  const selectEditCustomNodeNode = useUnit(editCustomRpcModel.events.nodeSelected);
+  const selectNode = useUnit(editCustomRpcModel.events.nodeSelected);
 
   const { connection, nodes } = networkItem;
   const { canUseLightClient, connectionType, activeNode, customNodes } = connection;
@@ -79,7 +77,7 @@ Props) => {
 
   const changeConnection = async (payload?: SelectorPayload) => {
     if (!payload) {
-      selectAddCustomNodeNetwork(networkItem);
+      selectNetwork(networkItem);
       openAddCustomNodeModal(true);
     } else if (payload.type === ConnectionType.DISABLED) {
       onDisconnect();
@@ -90,7 +88,7 @@ Props) => {
 
   const onEditCustomNode = (node: RpcNode) => {
     selectEditCustomNodeNetwork(networkItem);
-    selectEditCustomNodeNode(node);
+    selectNode(node);
     openEditCustomNodeModal(true);
   };
 

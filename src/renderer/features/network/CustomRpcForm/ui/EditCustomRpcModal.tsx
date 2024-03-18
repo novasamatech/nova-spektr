@@ -7,12 +7,8 @@ import { useI18n } from '@app/providers';
 import { OperationTitle } from '@entities/chain';
 import { RpcCheckResult, editCustomRpcModel } from '@features/network';
 
-// const MODAL_ANIMATION = 300;
-
 type Props = {
   isOpen: boolean;
-  // network: ExtendedChain;
-  // node?: RpcNode;
   onClose: () => void;
 };
 
@@ -36,8 +32,6 @@ export const EditCustomRpcModal = ({ isOpen, onClose }: Props) => {
     submit();
   };
 
-  // const modalTitle = node ? t('settings.networks.titleEdit') : t('settings.networks.titleAdd');
-  // const submitLabel = node ? t('settings.networks.editNodeButton') : t('settings.networks.addNodeButton');
   const isLoading = rpcCheckResult === RpcCheckResult.LOADING;
 
   if (!network) return null;

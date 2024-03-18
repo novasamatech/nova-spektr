@@ -50,12 +50,8 @@ export const Networks = () => {
     editCustomRpcModel.$isProcessStarted,
     editCustomRpcModel.events.processStarted,
   ]);
-  // const nodeToEdit = useUnit(editCustomRpcModel.events.nodeSelected);
 
-  // const [isCustomRpcOpen, toggleCustomRpc] = useToggle();
   const [isNetworksModalOpen, toggleNetworksModal] = useToggle(true);
-  // const [nodeToEdit, setNodeToEdit] = useState<RpcNode>();
-  // const [network, setNetwork] = useState<ExtendedChain>();
 
   const closeNetworksModal = () => {
     toggleNetworksModal();
@@ -160,43 +156,16 @@ export const Networks = () => {
     };
   };
 
-  // const changeCustomNode = (network: ExtendedChain) => (node?: RpcNode | undefined) => {
-  // setNodeToEdit(node);
-  // setNetwork(network);
-  // setAddRpcModalOpen(true);
-  // toggleCustomRpc();
-  // };
-
   const closeAddCustomRpcModal = () => {
-    // toggleCustomRpc();
-    setAddRpcModalOpen(false);
-
-    // if (node && network && network.connection.activeNode === nodeToEdit) {
-    //   manageNetworkModel.events.rpcNodeUpdated({ chainId: network.chainId, oldNode: nodeToEdit, rpcNode: node });
-    // } else if (node && network) {
-    //   manageNetworkModel.events.rpcNodeAdded({ chainId: network.chainId, rpcNode: node });
-    // }
-
-    // setTimeout(() => {
-    //   setNodeToEdit(undefined);
-    //   setNetwork(undefined);
-    // }, DEFAULT_TRANSITION);
+    setTimeout(() => {
+      setAddRpcModalOpen(false);
+    }, DEFAULT_TRANSITION);
   };
 
   const closeEditCustomRpcModal = () => {
-    // toggleCustomRpc();
-    setEditRpcModalOpen(false);
-
-    // if (node && network && network.connection.activeNode === nodeToEdit) {
-    //   manageNetworkModel.events.rpcNodeUpdated({ chainId: network.chainId, oldNode: nodeToEdit, rpcNode: node });
-    // } else if (node && network) {
-    //   manageNetworkModel.events.rpcNodeAdded({ chainId: network.chainId, rpcNode: node });
-    // }
-
-    // setTimeout(() => {
-    //   setNodeToEdit(undefined);
-    //   setNetwork(undefined);
-    // }, DEFAULT_TRANSITION);
+    setTimeout(() => {
+      setEditRpcModalOpen(false);
+    }, DEFAULT_TRANSITION);
   };
 
   return (

@@ -7,8 +7,6 @@ import { useI18n } from '@app/providers';
 import { OperationTitle } from '@entities/chain';
 import { RpcCheckResult, addCustomRpcModel } from '@features/network';
 
-// const MODAL_ANIMATION = 300;
-
 type Props = {
   isOpen: boolean;
   onClose: () => void;
@@ -42,7 +40,7 @@ export const AddCustomRpcModal = ({ isOpen, onClose }: Props) => {
   return (
     <BaseModal
       closeButton
-      title={<OperationTitle title={'settings.networks.titleAdd'} chainId={network.chainId} />}
+      title={<OperationTitle title={'settings.networks.titleEdit'} chainId={network.chainId} />}
       headerClass="py-3 pl-5 pr-3"
       isOpen={isOpen}
       onClose={onClose}

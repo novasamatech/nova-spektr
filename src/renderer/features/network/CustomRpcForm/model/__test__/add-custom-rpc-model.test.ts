@@ -75,7 +75,7 @@ describe('features/network/CustomRpcForm/add-custom-rpc-model', () => {
     expect(scope.getState(addCustomRpcModel.$isNodeExist)).toEqual(true);
   });
 
-  test.only('should have the wrong network state', async () => {
+  test('should have the wrong network state', async () => {
     const scope = fork({});
 
     const network = {
