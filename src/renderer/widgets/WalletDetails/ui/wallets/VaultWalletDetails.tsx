@@ -11,7 +11,7 @@ import { IconNames } from '@shared/ui/Icon/data';
 import { DerivationsAddressModal, ImportKeysModal, KeyConstructor } from '@features/wallets';
 import { RenameWalletModal } from '@features/wallets/RenameWallet';
 import { ForgetWalletModal } from '@features/wallets/ForgetWallet';
-import { networkModel, networkUtils } from '@entities/network';
+import { networkModel } from '@entities/network';
 import { TabItem } from '@shared/ui/Tabs/common/types';
 import { addProxyModel, AddProxy } from '@widgets/AddProxyModal';
 import { ProxiesList } from '../components/ProxiesList';
@@ -46,12 +46,12 @@ export const VaultWalletDetails = ({ wallet, root, accountsMap, onClose }: Props
 
   const [chains, setChains] = useState<Chain[]>([]);
 
-  const isEthereumBased = accountUtils.isEthereumBased(root);
-
   useEffect(() => {
     const chainList = Object.values(allChains);
     const filteredChains = chainList.filter((c) => {
-      return isEthereumBased ? networkUtils.isEthereumBased(c.options) : !networkUtils.isEthereumBased(c.options);
+      const accounts = Object.values(accountsMap).flat(2);
+
+      return accounts.some((a) => accountUtils.isChainIdAndCryptoTypeMatch(a, c));
     });
 
     setChains(filteredChains);
