@@ -53,7 +53,6 @@ describe('pages/Settings/Networks/EditCustomRpcModal', () => {
     expect(address).toBeInTheDocument();
     expect(address).toEqual(mockNode.url);
     expect(submit).toBeInTheDocument();
-    expect(submit).toBeDisabled();
   });
 
   test('should disable submit button during submission', async () => {

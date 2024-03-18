@@ -6,7 +6,7 @@ import { ExtendedChain } from '@entities/network';
 import { CustomRpcForm, RpcCheckResult } from '../lib/types';
 import { manageNetworkModel } from '@pages/Settings/Networks/model/manage-network-model';
 import { fieldRules } from '../lib/utils';
-import { RpcNode } from '@/src/renderer/shared/core';
+import { RpcNode } from '@shared/core';
 
 const $editCustomRpcForm = createForm({
   fields: {

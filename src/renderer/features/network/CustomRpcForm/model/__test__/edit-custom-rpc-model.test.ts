@@ -2,7 +2,7 @@ import { fork, allSettled } from 'effector';
 
 import { editCustomRpcModel } from '../edit-custom-rpc-model';
 import { ConnectionStatus, RpcNode } from '@shared/core';
-import { ExtendedChain } from '@/src/renderer/entities/network';
+import { ExtendedChain } from '@entities/network';
 import { RpcCheckResult } from '../../lib/types';
 
 describe('features/network/CustomRpcForm/edit-custom-rpc-model', () => {

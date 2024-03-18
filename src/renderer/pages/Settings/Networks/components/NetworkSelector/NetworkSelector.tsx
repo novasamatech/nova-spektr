@@ -12,7 +12,7 @@ import { CommonInputStyles, CommonInputStylesTheme } from '@shared/ui/Inputs/com
 import { ConnectionType } from '@shared/core';
 import type { Theme } from '@shared/ui/types';
 import type { RpcNode } from '@shared/core';
-import { addCustomRpcModel, editCustomRpcModel } from '@/src/renderer/features/network';
+import { addCustomRpcModel, editCustomRpcModel } from '@features/network';
 
 export const OptionsContainerStyle =
   'mt-1 absolute z-20 py-1 px-1 w-full border border-token-container-border rounded bg-input-background shadow-card-shadow';
