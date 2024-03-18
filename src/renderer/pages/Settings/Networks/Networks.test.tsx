@@ -27,9 +27,14 @@ jest.mock('@app/providers', () => ({
 
 jest.mock('./components', () => ({
   NetworkSelector: () => <div>NetworkSelector</div>,
-  CustomRpcModal: ({ onClose }: any) => (
+  EditCustomRpcModal: ({ onClose }: any) => (
     <button type="button" onClick={() => onClose({ name: 'edit_node', url: 'wss://edit_url.com' })}>
       editCustomRpc
+    </button>
+  ),
+  AddCustomRpcModal: ({ onClose }: any) => (
+    <button type="button" onClick={() => onClose({ name: 'edit_node', url: 'wss://edit_url.com' })}>
+      addCustomRpc
     </button>
   ),
 }));

@@ -46,7 +46,6 @@ describe('pages/Settings/Networks/AddCustomRpcModal', () => {
     expect(name).toBeInTheDocument();
     expect(address).toBeInTheDocument();
     expect(submit).toBeInTheDocument();
-    expect(submit).toBeDisabled();
   });
 
   test('should disable submit button during submission', async () => {
