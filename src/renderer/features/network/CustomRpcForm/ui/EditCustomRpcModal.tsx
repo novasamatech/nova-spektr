@@ -5,7 +5,7 @@ import { useUnit } from 'effector-react';
 import { BaseModal, Button, Input, InputHint, Alert } from '@shared/ui';
 import { useI18n } from '@app/providers';
 import { OperationTitle } from '@entities/chain';
-import { RpcCheckResult, addCustomRpcModel } from '@features/network';
+import { RpcCheckResult, editCustomRpcModel } from '@features/network';
 
 // const MODAL_ANIMATION = 300;
 
@@ -18,18 +18,17 @@ type Props = {
 
 export const EditCustomRpcModal = ({ isOpen, onClose }: Props) => {
   const { t } = useI18n();
-  const rpcCheckResult = useUnit(addCustomRpcModel.$rpcConnectivityResult);
-  const isNodeExist = useUnit(addCustomRpcModel.$isNodeExist);
-  const network = useUnit(addCustomRpcModel.$selectedNetwork);
+  const rpcCheckResult = useUnit(editCustomRpcModel.$rpcConnectivityResult);
+  const network = useUnit(editCustomRpcModel.$selectedNetwork);
 
   useEffect(() => {
-    addCustomRpcModel.events.formInitiated();
+    editCustomRpcModel.events.formInitiated();
   }, []);
 
   const {
     fields: { name, url },
     submit,
-  } = useForm(addCustomRpcModel.$addCustomRpcForm);
+  } = useForm(editCustomRpcModel.$editCustomRpcForm);
 
   const onSubmit = (event: FormEvent) => {
     event.preventDefault();
@@ -82,11 +81,8 @@ export const EditCustomRpcModal = ({ isOpen, onClose }: Props) => {
               {t(url?.errorText())}
             </InputHint>
           </div>
-          <InputHint active={rpcCheckResult === RpcCheckResult.VALID && !isNodeExist} variant="success">
+          <InputHint active={rpcCheckResult === RpcCheckResult.VALID} variant="success">
             {t('settings.networks.addressConnected')}
-          </InputHint>
-          <InputHint active={isNodeExist === true} variant="error">
-            {t('settings.networks.nodeExist')}
           </InputHint>
           <Alert
             active={rpcCheckResult === RpcCheckResult.INVALID}
@@ -102,7 +98,7 @@ export const EditCustomRpcModal = ({ isOpen, onClose }: Props) => {
 
         <div className="flex justify-end mt-7 w-full">
           <Button type="submit" isLoading={isLoading} disabled={isLoading}>
-            {t('settings.networks.addNodeButton')}
+            {t('settings.networks.editNodeButton')}
           </Button>
         </div>
       </form>

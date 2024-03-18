@@ -1,32 +1,22 @@
 import { createEffect, createEvent, createStore, sample } from 'effector';
 import { createForm } from 'effector-forms';
 
-import { validateWsAddress } from '@renderer/shared/lib/utils';
 import { networkService, RpcValidation } from '@shared/api/network';
 import { ExtendedChain } from '@entities/network';
 import { CustomRpcForm, NodeExistParam, RpcCheckResult } from '../lib/types';
 import { manageNetworkModel } from '@pages/Settings/Networks/model/manage-network-model';
+import { fieldRules } from '../lib/utils';
 
 const $addCustomRpcForm = createForm({
   fields: {
     name: {
       init: '',
-      rules: [
-        { name: 'required', errorText: 'settings.networks.requiredNameError', validator: Boolean },
-        {
-          name: 'minMaxLength',
-          errorText: 'settings.networks.maxLengthNameError',
-          validator: (val) => val.length <= 50 && val.length >= 3,
-        },
-      ],
+      rules: fieldRules.name,
       validateOn: ['blur'],
     },
     url: {
       init: '',
-      rules: [
-        { name: 'required', errorText: 'settings.networks.addressEmpty', validator: Boolean },
-        { name: 'wsAddressValidation', errorText: 'settings.networks.addressInvalidUrl', validator: validateWsAddress },
-      ],
+      rules: fieldRules.url,
     },
   },
   validateOn: ['submit'],
@@ -161,15 +151,16 @@ sample({
 // if we are done checking the form data and it is valid
 // we can proceed with saving the new rpc node
 sample({
-  clock: [isNodeExistFx.doneData, checkRpcNodeFx.doneData],
+  clock: [isNodeExistFx.doneData, checkRpcNodeFx.doneData, $addCustomRpcForm.$isValid],
   source: {
     rpcConnectivityResult: $rpcConnectivityResult,
     isNodeExist: $isNodeExist,
     network: $selectedNetwork,
     form: $addCustomRpcForm.$values,
+    isValid: $addCustomRpcForm.$isValid,
   },
-  filter: ({ isNodeExist, rpcConnectivityResult }) => {
-    return !isNodeExist && rpcConnectivityResult === RpcCheckResult.VALID;
+  filter: ({ isNodeExist, rpcConnectivityResult, isValid }) => {
+    return isValid && !isNodeExist && rpcConnectivityResult === RpcCheckResult.VALID;
   },
   target: saveRpcNodeFx,
 });

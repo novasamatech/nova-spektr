@@ -22,6 +22,8 @@ import {
   ActiveNetwork,
   NetworksFilter,
   networksFilterModel,
+  EditCustomRpcModal,
+  editCustomRpcModel,
 } from '@features/network';
 
 import './model/networks-overview-model';
@@ -40,10 +42,15 @@ export const Networks = () => {
   const inactiveNetworks = useUnit(inactiveNetworksModel.$inactiveNetworks);
   const connections = useUnit(networkModel.$connections);
   const filterQuery = useUnit(networksFilterModel.$filterQuery);
-  const [isAddRpcModalOpen, setRpcModalOpen] = useUnit([
+  const [isAddRpcModalOpen, setAddRpcModalOpen] = useUnit([
     addCustomRpcModel.$isProcessStarted,
     addCustomRpcModel.events.processStarted,
   ]);
+  const [isEditRpcModalOpen, setEditRpcModalOpen] = useUnit([
+    editCustomRpcModel.$isProcessStarted,
+    editCustomRpcModel.events.processStarted,
+  ]);
+  // const nodeToEdit = useUnit(editCustomRpcModel.events.nodeSelected);
 
   // const [isCustomRpcOpen, toggleCustomRpc] = useToggle();
   const [isNetworksModalOpen, toggleNetworksModal] = useToggle(true);
@@ -153,18 +160,32 @@ export const Networks = () => {
     };
   };
 
-  const changeCustomNode = (network: ExtendedChain) => (node?: RpcNode | undefined) => {
-    // setNodeToEdit(node);
-    // setNetwork(network);
-    addCustomRpcModel.events.networkChanged(network);
+  // const changeCustomNode = (network: ExtendedChain) => (node?: RpcNode | undefined) => {
+  // setNodeToEdit(node);
+  // setNetwork(network);
+  // setAddRpcModalOpen(true);
+  // toggleCustomRpc();
+  // };
 
-    setRpcModalOpen(true);
+  const closeAddCustomRpcModal = () => {
     // toggleCustomRpc();
+    setAddRpcModalOpen(false);
+
+    // if (node && network && network.connection.activeNode === nodeToEdit) {
+    //   manageNetworkModel.events.rpcNodeUpdated({ chainId: network.chainId, oldNode: nodeToEdit, rpcNode: node });
+    // } else if (node && network) {
+    //   manageNetworkModel.events.rpcNodeAdded({ chainId: network.chainId, rpcNode: node });
+    // }
+
+    // setTimeout(() => {
+    //   setNodeToEdit(undefined);
+    //   setNetwork(undefined);
+    // }, DEFAULT_TRANSITION);
   };
 
-  const closeCustomRpcModal = () => {
+  const closeEditCustomRpcModal = () => {
     // toggleCustomRpc();
-    setRpcModalOpen(false);
+    setEditRpcModalOpen(false);
 
     // if (node && network && network.connection.activeNode === nodeToEdit) {
     //   manageNetworkModel.events.rpcNodeUpdated({ chainId: network.chainId, oldNode: nodeToEdit, rpcNode: node });
@@ -202,7 +223,6 @@ export const Networks = () => {
                 onConnect={connectToNode(network)}
                 onDisconnect={disableNetwork(network)}
                 onRemoveCustomNode={removeCustomNode(network.chainId)}
-                onChangeCustomNode={changeCustomNode(network)}
               />
             </InactiveNetwork>
           )}
@@ -220,7 +240,6 @@ export const Networks = () => {
                 onConnect={connectToNode(network)}
                 onDisconnect={disableNetwork(network)}
                 onRemoveCustomNode={removeCustomNode(network.chainId)}
-                onChangeCustomNode={changeCustomNode(network)}
               />
             </ActiveNetwork>
           )}
@@ -229,7 +248,8 @@ export const Networks = () => {
         <EmptyNetworks />
       </div>
 
-      <AddCustomRpcModal isOpen={isAddRpcModalOpen} onClose={closeCustomRpcModal} />
+      <AddCustomRpcModal isOpen={isAddRpcModalOpen} onClose={closeAddCustomRpcModal} />
+      <EditCustomRpcModal isOpen={isEditRpcModalOpen} onClose={closeEditCustomRpcModal} />
     </BaseModal>
   );
 };

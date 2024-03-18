@@ -1,32 +1,23 @@
 import { createEffect, createEvent, createStore, sample } from 'effector';
 import { createForm } from 'effector-forms';
 
-import { validateWsAddress } from '@renderer/shared/lib/utils';
 import { networkService, RpcValidation } from '@shared/api/network';
 import { ExtendedChain } from '@entities/network';
-import { CustomRpcForm, NodeExistParam, RpcCheckResult } from '../lib/types';
+import { CustomRpcForm, RpcCheckResult } from '../lib/types';
 import { manageNetworkModel } from '@pages/Settings/Networks/model/manage-network-model';
+import { fieldRules } from '../lib/utils';
+import { RpcNode } from '@/src/renderer/shared/core';
 
 const $editCustomRpcForm = createForm({
   fields: {
     name: {
       init: '',
-      rules: [
-        { name: 'required', errorText: 'settings.networks.requiredNameError', validator: Boolean },
-        {
-          name: 'minMaxLength',
-          errorText: 'settings.networks.maxLengthNameError',
-          validator: (val) => val.length <= 50 && val.length >= 3,
-        },
-      ],
+      rules: fieldRules.name,
       validateOn: ['blur'],
     },
     url: {
       init: '',
-      rules: [
-        { name: 'required', errorText: 'settings.networks.addressEmpty', validator: Boolean },
-        { name: 'wsAddressValidation', errorText: 'settings.networks.addressInvalidUrl', validator: validateWsAddress },
-      ],
+      rules: fieldRules.url,
     },
   },
   validateOn: ['submit'],
@@ -34,13 +25,13 @@ const $editCustomRpcForm = createForm({
 
 const formInitiated = createEvent();
 const networkChanged = createEvent<ExtendedChain>();
+const nodeSelected = createEvent<RpcNode>();
 const rpcConnectivityChecked = createEvent<RpcCheckResult>();
-const nodeExistChecked = createEvent<boolean>();
 const processStarted = createEvent<boolean>();
 
+const $selectedNode = createStore<RpcNode | null>(null);
 const $selectedNetwork = createStore<ExtendedChain | null>(null);
 const $rpcConnectivityResult = createStore<RpcCheckResult>(RpcCheckResult.INIT);
-const $isNodeExist = createStore<boolean>(false);
 const $isProcessStarted = createStore<boolean>(false);
 
 const checkRpcNodeFx = createEffect(
@@ -69,45 +60,33 @@ const checkRpcNodeFx = createEffect(
   },
 );
 
-const saveRpcNodeFx = createEffect(
+const editRpcNodeFx = createEffect(
   async ({
     network,
     form,
+    nodeToEdit,
   }: {
     network: ExtendedChain | null;
     form: CustomRpcForm;
     rpcConnectivityResult: RpcCheckResult;
-    isNodeExist: boolean;
+    nodeToEdit: RpcNode | null;
   }) => {
     if (!network) return;
+    if (!nodeToEdit) return;
 
-    manageNetworkModel.events.rpcNodeAdded({
-      chainId: network?.chainId,
-      rpcNode: {
-        name: form.name,
-        url: form.url,
-      },
+    manageNetworkModel.events.rpcNodeUpdated({
+      chainId: network.chainId,
+      oldNode: nodeToEdit,
+      rpcNode: { url: form.url, name: form.name },
     });
 
     processStarted(false);
   },
 );
 
-const isNodeExistFx = createEffect(({ network, url }: NodeExistParam): boolean => {
-  if (!network) {
-    nodeExistChecked(false);
-
-    return false;
-  }
-
-  const defaultNodes = network.nodes;
-  const customNodes = network.connection.customNodes || [];
-
-  const result = defaultNodes.some(({ url: u }) => u === url) || customNodes.some(({ url: u }) => u === url);
-
-  nodeExistChecked(result);
-
-  return result;
+const updateInitialValuesFx = createEffect(({ url, name }: RpcNode) => {
+  $editCustomRpcForm.fields.url.onChange(url);
+  $editCustomRpcForm.fields.name.onChange(name);
 });
 
 const resetFormFx = createEffect(() => {
@@ -116,7 +95,6 @@ const resetFormFx = createEffect(() => {
 });
 
 const resetRpcValidationFx = createEffect(() => {
-  nodeExistChecked(false);
   rpcConnectivityChecked(RpcCheckResult.INIT);
 });
 
@@ -142,48 +120,49 @@ sample({
 });
 
 sample({
-  clock: rpcConnectivityChecked,
-  target: $rpcConnectivityResult,
+  clock: nodeSelected,
+  target: [$selectedNode, updateInitialValuesFx],
 });
 
 sample({
-  clock: nodeExistChecked,
-  target: $isNodeExist,
+  clock: rpcConnectivityChecked,
+  target: $rpcConnectivityResult,
 });
 
 // when the form is submitted, we need to check if the node is responding
 sample({
   clock: $editCustomRpcForm.submit,
   source: { network: $selectedNetwork, url: $editCustomRpcForm.fields.url.$value },
-  target: [checkRpcNodeFx, isNodeExistFx],
+  target: checkRpcNodeFx,
 });
 
 // if we are done checking the form data and it is valid
-// we can proceed with saving the new rpc node
+// we can proceed with editing the rpc node
 sample({
-  clock: [isNodeExistFx.doneData, checkRpcNodeFx.doneData],
+  clock: checkRpcNodeFx.doneData,
   source: {
     rpcConnectivityResult: $rpcConnectivityResult,
-    isNodeExist: $isNodeExist,
     network: $selectedNetwork,
     form: $editCustomRpcForm.$values,
+    nodeToEdit: $selectedNode,
+    isValid: $editCustomRpcForm.$isValid,
   },
-  filter: ({ isNodeExist, rpcConnectivityResult }) => {
-    return !isNodeExist && rpcConnectivityResult === RpcCheckResult.VALID;
+  filter: ({ rpcConnectivityResult, network, nodeToEdit, isValid }) => {
+    return isValid && rpcConnectivityResult === RpcCheckResult.VALID && network !== null && nodeToEdit !== null;
   },
-  target: saveRpcNodeFx,
+  target: editRpcNodeFx,
 });
 
 export const editCustomRpcModel = {
-  $addCustomRpcForm: $editCustomRpcForm,
+  $editCustomRpcForm,
   $rpcConnectivityResult,
   $selectedNetwork,
-  $isNodeExist,
   $isProcessStarted,
 
   events: {
     formInitiated,
     networkChanged,
     processStarted,
+    nodeSelected,
   },
 };
