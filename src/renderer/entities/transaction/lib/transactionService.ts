@@ -8,45 +8,51 @@ import { useState } from 'react';
 
 import { Transaction, TransactionType } from '@entities/transaction/model/transaction';
 import { createTxMetadata, toAccountId } from '@shared/lib/utils';
-import { ITransactionService, HashData, ExtrinsicResultParams } from './common/types';
-import { getExtrinsic, getUnsignedTransaction, wrapAsMulti } from './extrinsicService';
+import { getExtrinsic, getUnsignedTransaction, wrapAsMulti, wrapAsProxy } from './extrinsicService';
+import type { AccountId, Address, ChainId, HexString, Threshold, Account } from '@shared/core';
 import { decodeDispatchError } from './common/utils';
 import { useCallDataDecoder } from './callDataDecoder';
-import type { AccountId, Address, ChainId, HexString, Threshold, MultisigAccount } from '@shared/core';
+import { accountUtils } from '../../wallet';
+import {
+  ITransactionService,
+  HashData,
+  ExtrinsicResultParams,
+  TxWrappers,
+  TxWrappers_OLD,
+  WrapAsMulti,
+} from './common/types';
 
-type WrapAsMulti = {
-  account: MultisigAccount;
-  signatoryId: AccountId;
-};
-
-type WrapAsProxy = {
-  // TBD
-};
-
-export type TxWrappers = WrapAsMulti | WrapAsProxy;
-
-const shouldWrapAsMulti = (wrapper: TxWrappers): wrapper is WrapAsMulti =>
+const shouldWrapAsMulti = (wrapper: TxWrappers_OLD): wrapper is WrapAsMulti =>
   'signatoryId' in wrapper && 'account' in wrapper;
 
-export const getSignedExtrinsic = async (
+export const transactionService = {
+  hasMultisig,
+  hasProxy,
+
+  getSignedExtrinsic,
+  submitAndWatchExtrinsic,
+  getWrappedTransactions,
+};
+
+async function getSignedExtrinsic(
   unsigned: UnsignedTransaction,
   signature: HexString,
   api: ApiPromise,
-): Promise<string> => {
+): Promise<string> {
   const metadataRpc = await api.rpc.state.getMetadata();
 
   return construct.signedTx(unsigned, signature, {
     registry: api.registry as TypeRegistry,
     metadataRpc: metadataRpc.toHex(),
   });
-};
+}
 
-export const submitAndWatchExtrinsic = (
+function submitAndWatchExtrinsic(
   tx: string,
   unsigned: UnsignedTransaction,
   api: ApiPromise,
   callback: (executed: boolean, params: ExtrinsicResultParams | string) => void,
-) => {
+) {
   let extrinsicCalls = 0;
 
   const callIndex = api.createType('Call', unsigned.method).callIndex;
@@ -115,13 +121,54 @@ export const submitAndWatchExtrinsic = (
     .catch((error) => {
       callback(false, (error as Error).message || 'Error');
     });
+}
+
+function hasMultisig(txWrappers: TxWrappers): boolean {
+  return txWrappers.includes('multisig');
+}
+
+function hasProxy(txWrappers: TxWrappers): boolean {
+  return txWrappers.includes('proxy');
+}
+
+type WrapperParams = {
+  api: ApiPromise;
+  addressPrefix: number;
+  account?: Account;
+  signerAccountId?: AccountId;
 };
+type WrappedTransactions = {
+  transaction: Transaction;
+  multisigTx: Transaction | null;
+};
+function getWrappedTransactions(
+  txWrappers: TxWrappers,
+  transaction: Transaction,
+  { api, addressPrefix, account, signerAccountId }: WrapperParams,
+): WrappedTransactions {
+  const hasSignatory = account && accountUtils.isMultisigAccount(account) && signerAccountId;
+
+  return txWrappers.reduce<WrappedTransactions>(
+    (acc, wrapper) => {
+      if (hasMultisig([wrapper]) && hasSignatory) {
+        acc.transaction = wrapAsMulti(api, acc.transaction, account, signerAccountId, addressPrefix);
+        acc.multisigTx = acc.transaction;
+      }
+      if (hasProxy([wrapper])) {
+        acc.transaction = wrapAsProxy(api, acc.transaction, addressPrefix);
+      }
+
+      return acc;
+    },
+    { transaction, multisigTx: null },
+  );
+}
 
 export const useTransaction = (): ITransactionService => {
   const { decodeCallData } = useCallDataDecoder();
 
   const [txs, setTxs] = useState<Transaction[]>([]);
-  const [wrappers, setWrappers] = useState<TxWrappers[]>([]);
+  const [wrappers, setWrappers] = useState<TxWrappers_OLD[]>([]);
 
   const createPayload = async (
     transaction: Transaction,

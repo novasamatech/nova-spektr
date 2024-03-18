@@ -224,11 +224,11 @@ const Destination = () => {
       )}
     </div>
   );
-  const suffixElement = (
-    <Button size="sm" pallet="secondary" onClick={() => formModel.events.myselfClicked()}>
-      {t('transfer.myselfButton')}
-    </Button>
-  );
+  // const suffixElement = (
+  //   <Button size="sm" pallet="secondary" onClick={() => formModel.events.myselfClicked()}>
+  //     {t('transfer.myselfButton')}
+  //   </Button>
+  // );
 
   return (
     <div className="flex flex-col gap-y-2">
@@ -315,7 +315,7 @@ const FeeSection = () => {
 
   const api = useUnit(formModel.$api);
   const chain = useUnit(formModel.$chain);
-  const fakeTx = useUnit(formModel.$fakeTx);
+  const transaction = useUnit(formModel.$transaction);
   const isMultisig = useUnit(formModel.$isMultisig);
 
   if (!chain) return null;
@@ -334,7 +334,7 @@ const FeeSection = () => {
       <FeeWithLabel
         api={api}
         asset={chain.assets[0]}
-        transaction={fakeTx}
+        transaction={transaction}
         onFeeChange={formModel.events.feeChanged}
         onFeeLoading={formModel.events.isFeeLoadingChanged}
       />

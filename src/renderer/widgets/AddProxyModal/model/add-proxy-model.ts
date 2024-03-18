@@ -1,7 +1,7 @@
 import { createEvent, createStore, sample } from 'effector';
 import { spread, delay } from 'patronum';
 
-import { Transaction, TransactionType } from '@entities/transaction';
+import { Transaction, TransactionType, transactionService } from '@entities/transaction';
 import { toAddress, toAccountId } from '@shared/lib/utils';
 import { walletSelectModel } from '@features/wallets';
 import { walletModel, walletUtils } from '@entities/wallet';
@@ -10,7 +10,6 @@ import { proxyModel, proxyUtils } from '@entities/proxy';
 import { networkModel } from '@entities/network';
 import { balanceSubModel } from '@features/balances';
 import { Step, TxWrappers, AddProxyStore } from '../lib/types';
-import { addProxyUtils } from '../lib/add-proxy-utils';
 import { formModel } from './form-model';
 import { confirmModel } from './confirm-model';
 import { signModel } from './sign-model';
@@ -96,7 +95,7 @@ sample({
       args: { delegate, proxyType, delay: 0 },
     };
 
-    return addProxyUtils.getWrappedTransactions(txWrappers, transaction, {
+    return transactionService.getWrappedTransactions(txWrappers, transaction, {
       api: apis[chain.chainId],
       addressPrefix: chain.addressPrefix,
       account,
@@ -154,7 +153,7 @@ sample({
     txWrappers: $txWrappers,
   },
   filter: (proxyData) => {
-    const isMultisigRequired = !addProxyUtils.hasMultisig(proxyData.txWrappers) || Boolean(proxyData.multisigTx);
+    const isMultisigRequired = !transactionService.hasMultisig(proxyData.txWrappers) || Boolean(proxyData.multisigTx);
 
     return Boolean(proxyData.addProxyStore) && Boolean(proxyData.transaction) && isMultisigRequired;
   },

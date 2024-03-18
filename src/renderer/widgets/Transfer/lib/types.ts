@@ -1,4 +1,4 @@
-import { Address, Chain, Account, ProxyType } from '@shared/core';
+import type { Account, Address, Chain, Asset } from '@shared/core';
 
 export const enum Step {
   NONE,
@@ -14,10 +14,16 @@ export const enum SubmitStep {
   ERROR,
 }
 
-export type TransferStore = {
+export type NetworkStore = {
   chain: Chain;
+  asset: Asset;
+};
+
+export type TransferStore = {
   account: Account;
   signatory?: Account;
+  amount: string;
+  destination: Address;
   description: string;
 };
 

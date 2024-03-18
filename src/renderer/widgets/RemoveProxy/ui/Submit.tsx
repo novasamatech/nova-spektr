@@ -137,7 +137,7 @@ export const Submit = ({ api, tx, multisigTx, account, unsignedTx, signature, on
       {...getResultProps()}
       onClose={handleClose}
     >
-      {errorMessage && <Button onClick={closeErrorMessage}>{t('operation.feeErrorButton')}</Button>}
+      {errorMessage && <Button onClick={closeErrorMessage}>{t('operation.submitErrorButton')}</Button>}
     </OperationResult>
   );
 };

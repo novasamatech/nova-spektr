@@ -463,7 +463,6 @@
     },
     "detailsTitle": "Details",
     "explorerLink": "View in explorer",
-    "feeErrorButton": "Close",
     "feeErrorMessage": "Insufficient funds to pay the network fee",
     "feeErrorTitle": "Error",
     "goBackButton": "Back",
@@ -497,6 +496,7 @@
       "executed": "Executed",
       "signing": "On signing"
     },
+    "submitErrorButton": "Close",
     "successMessage": "Operation Approved",
     "successRejectMessage": "Operation Rejected",
     "walletConnect": {

@@ -7,6 +7,7 @@ import { useModalClose } from '@shared/lib/hooks';
 import { OperationTitle } from '@entities/chain';
 import { useI18n } from '@app/providers';
 import type { Chain, Asset } from '@shared/core';
+import { Paths } from '@shared/routes';
 import { Step } from '../lib/types';
 import { TransferForm } from './TransferForm';
 import { Confirmation } from './Confirmation';
@@ -14,7 +15,6 @@ import { SignTransfer } from './SignTransfer';
 import { SubmitTransfer } from './SubmitTransfer';
 import { transferUtils } from '../lib/transfer-utils';
 import { transferModel } from '../model/transfer-model';
-import { Paths } from '@shared/routes';
 
 type Props = {
   chain: Chain;

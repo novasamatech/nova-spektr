@@ -3,9 +3,11 @@ import { createForm } from 'effector-forms';
 import { spread } from 'patronum';
 import { BN } from '@polkadot/util';
 
-import { Chain, Account, Asset, AssetType } from '@shared/core';
+import { Chain, Account, Asset, AssetType, Address, PartialBy } from '@shared/core';
 import { walletModel, walletUtils, accountUtils, permissionUtils } from '@entities/wallet';
 import { balanceModel, balanceUtils } from '@entities/balance';
+import { networkModel, networkUtils } from '@entities/network';
+import { Transaction, TransactionType } from '@entities/transaction';
 import {
   transferableAmount,
   dictionary,
@@ -14,12 +16,24 @@ import {
   getAssetId,
   formatAmount,
   validateAddress,
+  toShortAddress,
 } from '@shared/lib/utils';
-import { networkModel, networkUtils } from '@entities/network';
-import { Transaction, TransactionType } from '@entities/transaction';
+
+type FormParams = {
+  account: Account;
+  signatory: Account;
+  destination: Address;
+  amount: string;
+  description: string;
+};
+
+type FormSubmitEvent = {
+  transaction: Transaction;
+  formData: PartialBy<FormParams, 'signatory'>;
+};
 
 const formInitiated = createEvent<{ chain: Chain; asset: Asset }>();
-const formSubmitted = createEvent();
+const formSubmitted = createEvent<FormSubmitEvent>();
 
 const feeChanged = createEvent<string>();
 const multisigDepositChanged = createEvent<string>();
@@ -41,7 +55,7 @@ const $isFeeLoading = createStore<boolean>(true);
 const $isMultisig = createStore<boolean>(false);
 const $isProxy = createStore<boolean>(false);
 
-const $transferForm = createForm({
+const $transferForm = createForm<FormParams>({
   fields: {
     account: {
       init: {} as Account,
@@ -61,7 +75,7 @@ const $transferForm = createForm({
           validator: (value, _, { fee, isMultisig, signatoryBalance, multisigDeposit }) => {
             if (!isMultisig) return true;
 
-            return new BN(multisigDeposit).add(new BN(fee)).lte(new BN(signatoryBalance[0]));
+            return new BN(multisigDeposit).add(new BN(fee)).lte(new BN(signatoryBalance[1]));
           },
         },
       ],
@@ -106,7 +120,7 @@ const $transferForm = createForm({
             accountBalance: $accountBalance,
           }),
           validator: (value, _, { asset, isMultisig, accountBalance }) => {
-            if (!isMultisig) return true;
+            // if (!isMultisig) return true;
 
             const amountBN = new BN(formatAmount(value, asset.precision));
             // const xcmFeeBN = new BN(xcmFee || 0);
@@ -281,7 +295,7 @@ const $api = combine(
   { skipVoid: false },
 );
 
-const $fakeTx = combine(
+const $transaction = combine(
   {
     chain: $chain,
     asset: $asset,
@@ -301,10 +315,10 @@ const $fakeTx = combine(
 
     return {
       chainId: chain.chainId,
-      address: toAddress(TEST_ACCOUNTS[0], { prefix: chain.addressPrefix }),
+      address: toAddress(form.account.accountId, { prefix: chain.addressPrefix }),
       type: isNative ? TransactionType.TRANSFER : TransferType[asset.type!],
       args: {
-        dest: toAddress(form.destination || TEST_ACCOUNTS[1], { prefix: chain.addressPrefix }),
+        dest: toAddress(form.destination || TEST_ACCOUNTS[0], { prefix: chain.addressPrefix }),
         value: formatAmount(form.amount, asset.precision) || '1',
         ...(!isNative && { asset: getAssetId(asset) }),
       },
@@ -418,7 +432,26 @@ sample({ clock: isFeeLoadingChanged, target: $isFeeLoading });
 
 sample({
   clock: $transferForm.formValidated,
-  fn: () => {},
+  source: {
+    chain: $chain,
+    asset: $asset,
+    transaction: $transaction,
+  },
+  filter: ({ chain, asset, transaction }) => {
+    return Boolean(chain) && Boolean(asset) && Boolean(transaction);
+  },
+  fn: ({ asset, transaction }, formData) => {
+    const amount = formatAmount(formData.amount, asset!.precision);
+    const signatory = Object.keys(formData.signatory).length > 0 ? formData.signatory : undefined;
+    // TODO: update after i18n effector integration
+    const multisigDescription = `Transfer ${amount} ${asset!.symbol} to ${toShortAddress(formData.destination)}`;
+    const description = signatory ? formData.description || multisigDescription : '';
+
+    return {
+      transaction: transaction!,
+      formData: { ...formData, amount, signatory, description },
+    };
+  },
   target: formSubmitted,
 });
 
@@ -436,7 +469,7 @@ export const formModel = {
   $multisigDeposit,
 
   $api,
-  $fakeTx,
+  $transaction,
   $isMultisig,
   $isChainConnected,
   $canSubmit,

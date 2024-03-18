@@ -39,18 +39,18 @@ export const SubmitTransfer = ({ isOpen, onClose }: Props) => {
 
   const getResultProps = (step: SubmitStep, message: string): ResultProps => {
     if (submitTransferUtils.isLoadingStep(step)) {
-      return { title: t('proxy.submitInProgress'), variant: 'loading' };
+      return { title: t('transfer.inProgress'), variant: 'loading' };
     }
     if (submitTransferUtils.isSuccessStep(step)) {
-      return { title: t('proxy.submitSuccess'), variant: 'success' };
+      return { title: t('transfer.successMessage'), variant: 'success' };
     }
 
-    return { title: t('proxy.submitError'), variant: 'error', description: message };
+    return { title: t('operation.feeErrorTitle'), variant: 'error', description: message };
   };
 
   return (
     <OperationResult isOpen={isOpen} {...getResultProps(step, message)} onClose={onClose}>
-      {submitTransferUtils.isErrorStep(step) && <Button onClick={onClose}>{t('proxy.submitErrorButton')}</Button>}
+      {submitTransferUtils.isErrorStep(step) && <Button onClick={onClose}>{t('operation.submitErrorButton')}</Button>}
     </OperationResult>
   );
 };
