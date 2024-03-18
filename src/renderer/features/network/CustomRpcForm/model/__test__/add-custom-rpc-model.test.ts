@@ -5,7 +5,7 @@ import { ConnectionStatus } from '@shared/core';
 import { ExtendedChain } from '@/src/renderer/entities/network';
 import { RpcCheckResult } from '../../lib/types';
 
-describe('features/network/CustomRpcCreationForm/custom-rpc-creation-model', () => {
+describe('features/network/CustomRpcForm/add-custom-rpc-model', () => {
   test('should have error for wrong node url', async () => {
     const scope = fork({});
 

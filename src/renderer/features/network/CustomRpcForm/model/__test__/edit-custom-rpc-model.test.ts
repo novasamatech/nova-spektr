@@ -1,11 +1,20 @@
 import { fork, allSettled } from 'effector';
 
 import { editCustomRpcModel } from '../edit-custom-rpc-model';
-import { ConnectionStatus } from '@shared/core';
+import { ConnectionStatus, RpcNode } from '@shared/core';
 import { ExtendedChain } from '@/src/renderer/entities/network';
 import { RpcCheckResult } from '../../lib/types';
 
-describe('features/network/CustomRpcCreationForm/custom-rpc-creation-model', () => {
+describe('features/network/CustomRpcForm/edit-custom-rpc-model', () => {
+  test('should have the form pre-filled on launch', async () => {
+    const scope = fork({});
+    const mockNode = { name: 'some name', url: 'some url' } as RpcNode;
+
+    await allSettled(editCustomRpcModel.events.nodeSelected, { scope, params: mockNode });
+
+    expect(scope.getState(editCustomRpcModel.$editCustomRpcForm.$values)).toEqual(mockNode);
+  });
+
   test('should have error for wrong node url', async () => {
     const scope = fork({});
 
@@ -54,7 +63,7 @@ describe('features/network/CustomRpcCreationForm/custom-rpc-creation-model', () 
     expect(scope.getState(name.$errors)[0].rule).toEqual('minMaxLength');
   });
 
-  test('should have the node already existing', async () => {
+  test('should not have the node already existing', async () => {
     const scope = fork({});
 
     const network = {
@@ -64,18 +73,16 @@ describe('features/network/CustomRpcCreationForm/custom-rpc-creation-model', () 
       nodes: [{ url: 'wss://some-rpc.com', name: 'node' }],
     };
 
-    expect(scope.getState(editCustomRpcModel.$isNodeExist)).toEqual(false);
-
     const { name, url } = editCustomRpcModel.$editCustomRpcForm.fields;
     await allSettled(name.onChange, { scope, params: 'some name' });
     await allSettled(url.onChange, { scope, params: 'wss://some-rpc.com' });
     await allSettled(editCustomRpcModel.events.networkChanged, { scope, params: network as unknown as ExtendedChain });
     await allSettled(editCustomRpcModel.$editCustomRpcForm.submit, { scope });
 
-    expect(scope.getState(editCustomRpcModel.$isNodeExist)).toEqual(true);
+    expect(scope.getState(editCustomRpcModel.$editCustomRpcForm.$isValid)).toEqual(true);
   });
 
-  test.only('should have the wrong network state', async () => {
+  test('should have the wrong network state', async () => {
     const scope = fork({});
 
     const network = {
@@ -98,7 +105,6 @@ describe('features/network/CustomRpcCreationForm/custom-rpc-creation-model', () 
     await allSettled(editCustomRpcModel.events.networkChanged, { scope, params: network as unknown as ExtendedChain });
     await allSettled(editCustomRpcModel.$editCustomRpcForm.submit, { scope });
 
-    expect(scope.getState(editCustomRpcModel.$isNodeExist)).toEqual(false);
     expect(scope.getState(editCustomRpcModel.$rpcConnectivityResult)).toEqual(RpcCheckResult.LOADING);
   });
 });
