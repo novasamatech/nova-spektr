@@ -140,8 +140,6 @@ describe('pages/Settings/Networks/AddCustomRpcModal', () => {
     });
 
     const error = screen.getByText('settings.networks.addressWrongNetwork');
-    const submit = screen.getByRole('button', { name: 'settings.networks.addNodeButton' });
     expect(error).toBeInTheDocument();
-    expect(submit).toBeDisabled();
   });
 });

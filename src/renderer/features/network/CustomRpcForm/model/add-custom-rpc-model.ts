@@ -12,14 +12,13 @@ const $addCustomRpcForm = createForm({
     name: {
       init: '',
       rules: fieldRules.name,
-      validateOn: ['blur'],
     },
     url: {
       init: '',
       rules: fieldRules.url,
     },
   },
-  validateOn: ['submit'],
+  validateOn: ['blur'],
 });
 
 const formInitiated = createEvent();

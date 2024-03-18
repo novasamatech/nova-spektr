@@ -25,6 +25,7 @@ export const AddCustomRpcModal = ({ isOpen, onClose }: Props) => {
   const {
     fields: { name, url },
     submit,
+    isValid,
   } = useForm(addCustomRpcModel.$addCustomRpcForm);
 
   const onSubmit = (event: FormEvent) => {
@@ -95,7 +96,7 @@ export const AddCustomRpcModal = ({ isOpen, onClose }: Props) => {
         </div>
 
         <div className="flex justify-end mt-7 w-full">
-          <Button type="submit" isLoading={isLoading} disabled={isLoading || !url.value || !name.value}>
+          <Button type="submit" isLoading={isLoading} disabled={isLoading || !isValid}>
             {t('settings.networks.addNodeButton')}
           </Button>
         </div>

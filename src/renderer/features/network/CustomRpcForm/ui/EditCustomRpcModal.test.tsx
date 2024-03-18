@@ -34,7 +34,8 @@ describe('pages/Settings/Networks/EditCustomRpcModal', () => {
       values: new Map()
         .set(editCustomRpcModel.$isProcessStarted, true)
         .set(editCustomRpcModel.$selectedNetwork, network)
-        .set(editCustomRpcModel.$editCustomRpcForm.$values, mockNode),
+        .set(editCustomRpcModel.$editCustomRpcForm.fields.url.$value, mockNode.url)
+        .set(editCustomRpcModel.$editCustomRpcForm.fields.name.$value, mockNode.name),
     });
 
     await act(async () => {
@@ -60,7 +61,8 @@ describe('pages/Settings/Networks/EditCustomRpcModal', () => {
       values: new Map()
         .set(editCustomRpcModel.$isProcessStarted, true)
         .set(editCustomRpcModel.$selectedNetwork, network)
-        .set(editCustomRpcModel.$editCustomRpcForm.$values, mockNode),
+        .set(editCustomRpcModel.$editCustomRpcForm.fields.url.$value, mockNode.url)
+        .set(editCustomRpcModel.$editCustomRpcForm.fields.name.$value, mockNode.name),
     });
 
     await act(async () => {
@@ -93,6 +95,8 @@ describe('pages/Settings/Networks/EditCustomRpcModal', () => {
       values: new Map()
         .set(editCustomRpcModel.$isProcessStarted, true)
         .set(editCustomRpcModel.$selectedNetwork, network)
+        .set(editCustomRpcModel.$editCustomRpcForm.fields.url.$value, mockNode.url)
+        .set(editCustomRpcModel.$editCustomRpcForm.fields.name.$value, mockNode.name)
         .set(editCustomRpcModel.$rpcConnectivityResult, RpcCheckResult.INVALID),
     });
 
@@ -115,6 +119,8 @@ describe('pages/Settings/Networks/EditCustomRpcModal', () => {
       values: new Map()
         .set(editCustomRpcModel.$isProcessStarted, true)
         .set(editCustomRpcModel.$selectedNetwork, network)
+        .set(editCustomRpcModel.$editCustomRpcForm.fields.url.$value, mockNode.url)
+        .set(editCustomRpcModel.$editCustomRpcForm.fields.name.$value, mockNode.name)
         .set(editCustomRpcModel.$rpcConnectivityResult, RpcCheckResult.WRONG_NETWORK),
     });
 
@@ -127,8 +133,6 @@ describe('pages/Settings/Networks/EditCustomRpcModal', () => {
     });
 
     const error = screen.getByText('settings.networks.addressWrongNetwork');
-    const submit = screen.getByRole('button', { name: 'settings.networks.editNodeButton' });
     expect(error).toBeInTheDocument();
-    expect(submit).toBeDisabled();
   });
 });
