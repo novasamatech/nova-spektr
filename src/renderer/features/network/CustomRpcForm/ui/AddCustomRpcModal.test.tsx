@@ -20,23 +20,6 @@ describe('pages/Settings/Networks/AddCustomRpcModal', () => {
     onClose: () => {},
   };
 
-  // const fillTheForm = async ({ payload, skipName, skipAddress }: Partial<any> = {}) => {
-  //   const formPayload = payload || { name: 'test_name', url: 'wss://localhost:3000' };
-  //   const user = userEvent.setup({ delay: null });
-
-  //   if (!skipName) {
-  //     const name = screen.getByPlaceholderText('settings.networks.namePlaceholder');
-  //     await act(async () => user.type(name, formPayload.name));
-  //   }
-
-  //   if (!skipAddress) {
-  //     const address = screen.getByPlaceholderText('settings.networks.addressPlaceholder');
-  //     await act(async () => user.type(address, formPayload.url));
-  //   }
-
-  //   return formPayload;
-  // };
-
   const network = {
     chainId: '0x01',
     connection: { chainId: '0x01', id: '0x01' },
