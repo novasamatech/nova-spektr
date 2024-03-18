@@ -21,7 +21,7 @@ describe('features/network/CustomRpcForm/edit-custom-rpc-model', () => {
     const { name, url } = editCustomRpcModel.$editCustomRpcForm.fields;
     await allSettled(name.onChange, { scope, params: 'some name' });
     await allSettled(url.onChange, { scope, params: 'wrong url' });
-    await allSettled(editCustomRpcModel.$editCustomRpcForm.submit, { scope });
+    await allSettled(editCustomRpcModel.$editCustomRpcForm.validate, { scope });
 
     expect(scope.getState(name.$errors)).toEqual([]);
     expect(scope.getState(url.$errors)[0].rule).toEqual('wsAddressValidation');
@@ -33,7 +33,7 @@ describe('features/network/CustomRpcForm/edit-custom-rpc-model', () => {
     const { name, url } = editCustomRpcModel.$editCustomRpcForm.fields;
     await allSettled(name.onChange, { scope, params: 'some name' });
     await allSettled(url.onChange, { scope, params: '' });
-    await allSettled(editCustomRpcModel.$editCustomRpcForm.submit, { scope });
+    await allSettled(editCustomRpcModel.$editCustomRpcForm.validate, { scope });
 
     expect(scope.getState(name.$errors)).toEqual([]);
     expect(scope.getState(url.$errors)[0].rule).toEqual('required');
@@ -45,7 +45,7 @@ describe('features/network/CustomRpcForm/edit-custom-rpc-model', () => {
     const { name, url } = editCustomRpcModel.$editCustomRpcForm.fields;
     await allSettled(name.onChange, { scope, params: 'some long name that is more than 50 characters long limit' });
     await allSettled(url.onChange, { scope, params: 'wss://some-rpc.com' });
-    await allSettled(editCustomRpcModel.$editCustomRpcForm.submit, { scope });
+    await allSettled(editCustomRpcModel.$editCustomRpcForm.validate, { scope });
 
     expect(scope.getState(url.$errors)).toEqual([]);
     expect(scope.getState(name.$errors)[0].rule).toEqual('minMaxLength');
@@ -57,7 +57,7 @@ describe('features/network/CustomRpcForm/edit-custom-rpc-model', () => {
     const { name, url } = editCustomRpcModel.$editCustomRpcForm.fields;
     await allSettled(name.onChange, { scope, params: 'ab' });
     await allSettled(url.onChange, { scope, params: 'wss://some-rpc.com' });
-    await allSettled(editCustomRpcModel.$editCustomRpcForm.submit, { scope });
+    await allSettled(editCustomRpcModel.$editCustomRpcForm.validate, { scope });
 
     expect(scope.getState(url.$errors)).toEqual([]);
     expect(scope.getState(name.$errors)[0].rule).toEqual('minMaxLength');
