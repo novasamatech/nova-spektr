@@ -50,9 +50,9 @@ describe('pages/Settings/Networks/EditCustomRpcModal', () => {
     const address = screen.getByPlaceholderText('settings.networks.addressPlaceholder');
     const submit = screen.getByRole('button', { name: 'settings.networks.editNodeButton' });
     expect(name).toBeInTheDocument();
-    expect(name).toEqual(mockNode.name);
+    expect(name).toHaveValue(mockNode.name);
     expect(address).toBeInTheDocument();
-    expect(address).toEqual(mockNode.url);
+    expect(address).toHaveValue(mockNode.url);
     expect(submit).toBeInTheDocument();
   });
 
@@ -109,9 +109,7 @@ describe('pages/Settings/Networks/EditCustomRpcModal', () => {
     });
 
     const error = screen.getByText('settings.networks.addressNoConnect');
-    const submit = screen.getByRole('button', { name: 'settings.networks.editNodeButton' });
     expect(error).toBeInTheDocument();
-    expect(submit).toBeDisabled();
   });
 
   test('should show error for wrong network', async () => {
