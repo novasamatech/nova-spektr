@@ -21,6 +21,7 @@ import {
 
 type FormParams = {
   account: Account;
+  xcmChain: Chain;
   signatory: Account;
   destination: Address;
   amount: string;
@@ -29,7 +30,7 @@ type FormParams = {
 
 type FormSubmitEvent = {
   transaction: Transaction;
-  formData: PartialBy<FormParams, 'signatory'>;
+  formData: PartialBy<FormParams, 'signatory' | 'xcmChain'>;
 };
 
 const formInitiated = createEvent<{ chain: Chain; asset: Asset }>();
@@ -80,9 +81,9 @@ const $transferForm = createForm<FormParams>({
         },
       ],
     },
-    // xcmChain: {
-    //   init: {} as Chain,
-    // },
+    xcmChain: {
+      init: {} as Chain,
+    },
     destination: {
       init: '',
       rules: [
@@ -463,6 +464,7 @@ export const formModel = {
   $chain,
   $asset,
   $accounts,
+  // $xcmChains,
   $accountBalance,
 
   $fee,

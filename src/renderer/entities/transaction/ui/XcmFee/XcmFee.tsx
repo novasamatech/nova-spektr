@@ -5,7 +5,7 @@ import { useUnit } from 'effector-react';
 
 import { AssetBalance } from '@entities/asset';
 import { DecodedTransaction, FeeLoader, Transaction } from '@entities/transaction';
-import { estimateFee, XcmConfig } from '@shared/api/xcm';
+import { XcmConfig, xcmService } from '@shared/api/xcm';
 import { toLocalChainId } from '@shared/lib/utils';
 import type { Asset } from '@shared/core';
 import { priceProviderModel } from '@entities/price';
@@ -57,15 +57,17 @@ export const XcmFee = memo(
       const configXcmTransfer = configAsset?.xcmTransfers.find((t) => t.destination.chainId === destinationChainId);
 
       if (originChainId && configXcmTransfer && configAsset) {
-        estimateFee(
-          config,
-          config.assetsLocation[configAsset.assetLocation],
-          originChainId,
-          configXcmTransfer,
-          api,
-          transaction.args.xcmAsset,
-          transaction.args.xcmDest,
-        ).then((fee) => handleFee(fee.toString()));
+        xcmService
+          .getEstimatedFee(
+            config,
+            config.assetsLocation[configAsset.assetLocation],
+            originChainId,
+            configXcmTransfer,
+            api,
+            transaction.args.xcmAsset,
+            transaction.args.xcmDest,
+          )
+          .then((fee) => handleFee(fee.toString()));
       } else {
         handleFee('0');
       }

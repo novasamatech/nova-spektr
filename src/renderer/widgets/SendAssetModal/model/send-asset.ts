@@ -3,17 +3,7 @@ import { ApiPromise } from '@polkadot/api';
 import { BN } from '@polkadot/util';
 import { createGate } from 'effector-react';
 
-import {
-  XcmConfig,
-  XcmTransfer,
-  getAvailableDirections,
-  AssetXCM,
-  getAssetLocation,
-  getVersionedAccountLocation,
-  estimateRequiredDestWeight,
-  getVersionedDestinationLocation,
-  XcmTransferType,
-} from '@shared/api/xcm';
+import { XcmConfig, XcmTransfer, AssetXCM, XcmTransferType, xcmService } from '@shared/api/xcm';
 import { xcmModel } from '@entities/xcm';
 import { toLocalChainId, getParachainId } from '@shared/lib/utils';
 import type { AccountId, Asset, Chain, ChainId } from '@shared/core';
@@ -79,7 +69,7 @@ sample({
   fn: ({ config, props: { chain, asset } }) => {
     if (!config || !asset || !chain) return [];
 
-    return getAvailableDirections(config.chains, asset.assetId, chain.chainId);
+    return xcmService.getAvailableDirections(config.chains, asset.assetId, chain.chainId);
   },
   target: $destinations,
 });
@@ -148,8 +138,8 @@ sample({
 
     return (
       (xcmTransfer.type === XcmTransferType.XTOKENS && accountId
-        ? getVersionedDestinationLocation(api, xcmTransfer.type, chain, paraId || undefined, accountId)
-        : getVersionedDestinationLocation(api, xcmTransfer.type, chain, paraId || undefined)) || null
+        ? xcmService.getVersionedDestinationLocation(api, xcmTransfer.type, chain, paraId || undefined, accountId)
+        : xcmService.getVersionedDestinationLocation(api, xcmTransfer.type, chain, paraId || undefined)) || null
     );
   },
   target: $txDest,
@@ -165,7 +155,7 @@ sample({
   fn: ({ xcmTransfer, accountId, props: { api } }) => {
     if (!accountId || accountId === '0x00' || !api || !xcmTransfer) return null;
 
-    return getVersionedAccountLocation(api, xcmTransfer.type, accountId) || null;
+    return xcmService.getVersionedAccountLocation(api, xcmTransfer.type, accountId) || null;
   },
   target: $txBeneficiary,
 });
@@ -185,12 +175,14 @@ sample({
   fn: ({ config, xcmTransfer, props: { chain }, asset }) => {
     if (!config || !xcmTransfer || !chain || !asset) return '';
 
-    return estimateRequiredDestWeight(
-      config,
-      config.assetsLocation[asset.assetLocation],
-      toLocalChainId(chain.chainId)!,
-      xcmTransfer,
-    ).toString();
+    return xcmService
+      .getEstimatedRequiredDestWeight(
+        config,
+        config.assetsLocation[asset.assetLocation],
+        toLocalChainId(chain.chainId)!,
+        xcmTransfer,
+      )
+      .toString();
   },
   target: $xcmWeight,
 });
@@ -210,7 +202,9 @@ sample({
     const resultAmount = new BN(amount || 0).add(new BN(xcmFee || 0));
     const isArray = xcmTransfer.type !== XcmTransferType.XTOKENS;
 
-    return getAssetLocation(api, xcmTransfer.type, xcmAsset, config.assetsLocation, resultAmount, isArray) || null;
+    return (
+      xcmService.getAssetLocation(api, xcmTransfer.type, xcmAsset, config.assetsLocation, resultAmount, isArray) || null
+    );
   },
   target: $txAsset,
 });

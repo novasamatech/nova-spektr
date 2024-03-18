@@ -29,7 +29,7 @@ export const TransferForm = ({ onGoBack }: Props) => {
         {/*<ProxyFeeAlert />*/}
         <AccountSelector />
         <SignatorySelector />
-        {/*<XcmChainSelector />*/}
+        <XcmChainSelector />
         <Destination />
         <Amount />
         <Description />
@@ -186,27 +186,31 @@ const SignatorySelector = () => {
   );
 };
 
-// const XcmChainSelector = () => {
-//   const { t } = useI18n();
-//
-//   const {
-//     fields: { xcmChain },
-//   } = useForm(formModel.$transferForm);
-//
-//   const options = [] as DropdownOption<Chain>[];
-//
-//   return (
-//     // {Boolean(destinations?.length) && (
-//     <Select
-//       label={t('transfer.destinationChainLabel')}
-//       placeholder={t('transfer.destinationChainPlaceholder')}
-//       invalid={xcmChain.hasError()}
-//       selectedId={xcmChain.value.chainId}
-//       options={options}
-//       onChange={({ value }) => xcmChain.onChange(value)}
-//     />
-//   );
-// };
+const XcmChainSelector = () => {
+  const { t } = useI18n();
+
+  const {
+    fields: { xcmChain },
+  } = useForm(formModel.$transferForm);
+
+  const xcmChains = useUnit(formModel.$xcmChains);
+
+  if (xcmChains.length === 0) return null;
+
+  const options = [] as DropdownOption<Chain>[];
+
+  return (
+    // {Boolean(destinations?.length) && (
+    <Select
+      label={t('transfer.destinationChainLabel')}
+      placeholder={t('transfer.destinationChainPlaceholder')}
+      invalid={xcmChain.hasError()}
+      selectedId={xcmChain.value.chainId}
+      options={options}
+      onChange={({ value }) => xcmChain.onChange(value)}
+    />
+  );
+};
 
 const Destination = () => {
   const { t } = useI18n();

@@ -13,7 +13,7 @@ import { DEFAULT_TRANSITION, getRelaychainAsset, toAddress } from '@shared/lib/u
 import { useToggle } from '@shared/lib/hooks';
 import { BaseModal, Button, Loader } from '@shared/ui';
 import { Signing } from '@features/operation';
-import type { Account, ChainId, HexString } from '@shared/core';
+import { Account, ChainId, HexString, MultisigAccount } from '@shared/core';
 import { walletModel, walletUtils } from '@entities/wallet';
 import { priceProviderModel } from '@entities/price';
 import { StakingPopover } from '../components/StakingPopover/StakingPopover';
@@ -135,7 +135,7 @@ export const Unstake = () => {
       setWrappers([
         {
           signatoryId: signer.accountId,
-          account: accounts[0],
+          account: accounts[0] as MultisigAccount,
         },
       ]);
       setSigner(signer);

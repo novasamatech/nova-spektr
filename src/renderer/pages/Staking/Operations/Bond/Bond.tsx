@@ -10,7 +10,7 @@ import { Paths } from '@shared/routes';
 import { Transaction, TransactionType, useTransaction } from '@entities/transaction';
 import { Confirmation, NoAsset, Submit, Validators } from '../components';
 import { useToggle } from '@shared/lib/hooks';
-import { RewardsDestination } from '@shared/core';
+import { RewardsDestination, MultisigAccount } from '@shared/core';
 import type { Account, Address, ChainId, HexString } from '@shared/core';
 import { BaseModal, Button, Loader } from '@shared/ui';
 import InitOperation, { BondResult } from './InitOperation/InitOperation';
@@ -157,7 +157,7 @@ export const Bond = () => {
       setWrappers([
         {
           signatoryId: signer.accountId,
-          account: txAccounts[0],
+          account: txAccounts[0] as MultisigAccount,
         },
       ]);
     }

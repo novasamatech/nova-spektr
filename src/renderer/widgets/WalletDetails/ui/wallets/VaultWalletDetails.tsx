@@ -51,7 +51,7 @@ export const VaultWalletDetails = ({ wallet, root, accountsMap, onClose }: Props
     const filteredChains = chainList.filter((c) => {
       const accounts = Object.values(accountsMap).flat(2);
 
-      return accounts.some((a) => accountUtils.isChainIdAndCryptoTypeMatch(a, c));
+      return accounts.some((a) => accountUtils.isChainAndCryptoMatch(a, c));
     });
 
     setChains(filteredChains);
