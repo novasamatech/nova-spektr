@@ -25,7 +25,7 @@ export const xcmService = {
   getXcmConfig,
   saveXcmConfig,
 
-  getAvailableDirections,
+  getAvailableTransfers,
   getEstimatedFee,
   getEstimatedRequiredDestWeight,
 
@@ -52,7 +52,7 @@ function saveXcmConfig(config: XcmConfig) {
   localStorage.setItem(XCM_KEY, JSON.stringify(config));
 }
 
-function getAvailableDirections(chains: ChainXCM[], assetId: number, chainId: ChainId): XcmTransfer[] {
+function getAvailableTransfers(chains: ChainXCM[], assetId: number, chainId: ChainId): XcmTransfer[] {
   const chain = chains.find((c) => c.chainId === toLocalChainId(chainId));
   const asset = chain?.assets.find((a) => a.assetId === assetId);
 
@@ -118,7 +118,7 @@ function getAssetLocation(
   asset: AssetXCM,
   assets: Record<AssetName, AssetLocation>,
   amount: BN,
-  isArray: boolean = true,
+  isArray = true,
 ): Object | undefined {
   const PathMap: Record<PathType, () => Object | undefined> = {
     relative: () => xcmUtils.getRelativeAssetLocation(assets[asset.assetLocation].multiLocation),
@@ -139,9 +139,7 @@ function getAssetLocation(
     },
   };
 
-  return {
-    [assetVersionType]: isArray ? [assetObject] : assetObject,
-  };
+  return { [assetVersionType]: isArray ? [assetObject] : assetObject };
 }
 
 function getVersionedDestinationLocation(

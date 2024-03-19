@@ -69,7 +69,7 @@ sample({
   fn: ({ config, props: { chain, asset } }) => {
     if (!config || !asset || !chain) return [];
 
-    return xcmService.getAvailableDirections(config.chains, asset.assetId, chain.chainId);
+    return xcmService.getAvailableTransfers(config.chains, asset.assetId, chain.chainId);
   },
   target: $destinations,
 });

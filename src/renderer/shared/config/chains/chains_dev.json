@@ -1,5 +1,659 @@
 [
   {
+    "name": "Acala",
+    "specName": "polkadot",
+    "addressPrefix": 10,
+    "chainId": "0xfc41b9bd8ef8fe53d58c7ea67c794c7ec9a73daf05e6d54b14ff6342c99ba64c",
+    "parentId": "0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3",
+    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/chains/Acala.svg",
+    "options": [
+      "multisig"
+    ],
+    "nodes": [
+      {
+        "url": "wss://rpc-acala.luckyfriday.io",
+        "name": "LuckyFriday node"
+      },
+      {
+        "url": "wss://acala-polkadot.api.onfinality.io/public-ws",
+        "name": "OnFinality node"
+      },
+      {
+        "url": "wss://acala-rpc-0.aca-api.network",
+        "name": "Acala Foundation 0 node"
+      },
+      {
+        "url": "wss://acala-rpc-1.aca-api.network",
+        "name": "Acala Foundation 1 node"
+      },
+      {
+        "url": "wss://acala-rpc-2.aca-api.network/ws",
+        "name": "Acala Foundation 2 node"
+      },
+      {
+        "url": "wss://acala-rpc-3.aca-api.network/ws",
+        "name": "Acala Foundation 3 node"
+      },
+      {
+        "url": "wss://acala.polkawallet.io",
+        "name": "Polkawallet node"
+      },
+      {
+        "url": "wss://acala-rpc.dwellir.com",
+        "name": "Dwellir node"
+      }
+    ],
+    "assets": [
+      {
+        "assetId": 0,
+        "symbol": "ACA",
+        "precision": 12,
+        "priceId": "acala",
+        "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Acala_(ACA).svg",
+        "name": "Acala"
+      },
+      {
+        "assetId": 1,
+        "symbol": "LDOT",
+        "precision": 10,
+        "type": "orml",
+        "priceId": "liquid-staking-dot",
+        "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/lDOT.svg",
+        "typeExtras": {
+          "currencyIdScale": "0x0003",
+          "currencyIdType": "AcalaPrimitivesCurrencyCurrencyId",
+          "existentialDeposit": "500000000",
+          "transfersEnabled": true
+        },
+        "name": "Liquid DOT"
+      },
+      {
+        "assetId": 2,
+        "symbol": "aSEED",
+        "precision": 12,
+        "type": "orml",
+        "priceId": "ausd-seed-acala",
+        "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/aSEED.svg",
+        "typeExtras": {
+          "currencyIdScale": "0x0001",
+          "currencyIdType": "AcalaPrimitivesCurrencyCurrencyId",
+          "existentialDeposit": "100000000000",
+          "transfersEnabled": true
+        },
+        "name": "Acala SEED"
+      },
+      {
+        "assetId": 3,
+        "symbol": "DOT",
+        "precision": 10,
+        "type": "orml",
+        "priceId": "polkadot",
+        "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Polkadot_(DOT).svg",
+        "typeExtras": {
+          "currencyIdScale": "0x0002",
+          "currencyIdType": "AcalaPrimitivesCurrencyCurrencyId",
+          "existentialDeposit": "100000000",
+          "transfersEnabled": true
+        },
+        "name": "Polkadot"
+      },
+      {
+        "assetId": 4,
+        "symbol": "lcDOT",
+        "precision": 10,
+        "type": "orml",
+        "priceId": "polkadot",
+        "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/lcDOT.svg",
+        "typeExtras": {
+          "currencyIdScale": "0x040d000000",
+          "currencyIdType": "AcalaPrimitivesCurrencyCurrencyId",
+          "existentialDeposit": "100000000",
+          "transfersEnabled": true
+        },
+        "name": "Crowdloan DOT"
+      },
+      {
+        "assetId": 5,
+        "symbol": "GLMR",
+        "precision": 18,
+        "type": "orml",
+        "priceId": "moonbeam",
+        "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Moonbeam_(GLMR).svg",
+        "typeExtras": {
+          "currencyIdScale": "0x050000",
+          "currencyIdType": "AcalaPrimitivesCurrencyCurrencyId",
+          "existentialDeposit": "100000000000000000",
+          "transfersEnabled": true
+        },
+        "name": "Moonbeam"
+      },
+      {
+        "assetId": 6,
+        "symbol": "PARA",
+        "precision": 12,
+        "type": "orml",
+        "priceId": "parallel-finance",
+        "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/PARA.svg",
+        "typeExtras": {
+          "currencyIdScale": "0x050100",
+          "currencyIdType": "AcalaPrimitivesCurrencyCurrencyId",
+          "existentialDeposit": "100000000000",
+          "transfersEnabled": true
+        },
+        "name": "Parallel Finance"
+      },
+      {
+        "assetId": 7,
+        "symbol": "TAP",
+        "precision": 12,
+        "type": "orml",
+        "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Tapio_(TAP).svg",
+        "typeExtras": {
+          "currencyIdScale": "0x0004",
+          "currencyIdType": "AcalaPrimitivesCurrencyCurrencyId",
+          "existentialDeposit": "1000000000000",
+          "transfersEnabled": true
+        },
+        "name": "TAP"
+      },
+      {
+        "assetId": 8,
+        "symbol": "tDOT",
+        "precision": 10,
+        "type": "orml",
+        "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/tDOT.svg",
+        "typeExtras": {
+          "currencyIdScale": "0x0300000000",
+          "currencyIdType": "AcalaPrimitivesCurrencyCurrencyId",
+          "existentialDeposit": "100000000",
+          "transfersEnabled": true
+        },
+        "name": "tDOT"
+      },
+      {
+        "assetId": 9,
+        "symbol": "INTR",
+        "precision": 10,
+        "type": "orml",
+        "priceId": "interlay",
+        "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Interlay_(INTR).svg",
+        "typeExtras": {
+          "currencyIdScale": "0x050400",
+          "currencyIdType": "AcalaPrimitivesCurrencyCurrencyId",
+          "existentialDeposit": "1000000000",
+          "transfersEnabled": true
+        },
+        "name": "Interlay"
+      },
+      {
+        "assetId": 10,
+        "symbol": "ASTR",
+        "precision": 18,
+        "type": "orml",
+        "priceId": "astar",
+        "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Astar_(ASTR).svg",
+        "typeExtras": {
+          "currencyIdScale": "0x050200",
+          "currencyIdType": "AcalaPrimitivesCurrencyCurrencyId",
+          "existentialDeposit": "100000000000000000",
+          "transfersEnabled": true
+        },
+        "name": "Astar"
+      },
+      {
+        "assetId": 11,
+        "symbol": "EQ",
+        "precision": 9,
+        "type": "orml",
+        "priceId": "equilibrium-token",
+        "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Equilibrium_(EQ).svg",
+        "typeExtras": {
+          "currencyIdScale": "0x050700",
+          "currencyIdType": "AcalaPrimitivesCurrencyCurrencyId",
+          "existentialDeposit": "1000000000",
+          "transfersEnabled": true
+        },
+        "name": "Equilibrium"
+      },
+      {
+        "assetId": 12,
+        "symbol": "iBTC",
+        "precision": 8,
+        "type": "orml",
+        "priceId": "bitcoin",
+        "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/iBTC.svg",
+        "typeExtras": {
+          "currencyIdScale": "0x050300",
+          "currencyIdType": "AcalaPrimitivesCurrencyCurrencyId",
+          "existentialDeposit": "100",
+          "transfersEnabled": true
+        },
+        "name": "Interlay Bitcoin"
+      },
+      {
+        "assetId": 13,
+        "symbol": "DAI",
+        "precision": 18,
+        "type": "orml",
+        "priceId": "dai",
+        "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/DAI.svg",
+        "typeExtras": {
+          "currencyIdScale": "0x0254a37a01cd75b616d63e0ab665bffdb0143c52ae",
+          "currencyIdType": "AcalaPrimitivesCurrencyCurrencyId",
+          "existentialDeposit": "10000000000000000",
+          "transfersEnabled": true
+        },
+        "name": "DAI"
+      },
+      {
+        "assetId": 14,
+        "symbol": "USDT",
+        "precision": 6,
+        "type": "orml",
+        "priceId": "tether",
+        "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/USDT.svg",
+        "typeExtras": {
+          "currencyIdScale": "0x050c00",
+          "currencyIdType": "AcalaPrimitivesCurrencyCurrencyId",
+          "existentialDeposit": "10000",
+          "transfersEnabled": true
+        },
+        "name": "USD Tether"
+      }
+    ],
+    "explorers": [
+      {
+        "name": "Subscan",
+        "extrinsic": "https://acala.subscan.io/extrinsic/{hash}",
+        "account": "https://acala.subscan.io/account/{address}",
+        "multisig": "https://acala.subscan.io/multisig_extrinsic/{index}?call_hash={callHash}"
+      },
+      {
+        "name": "Sub.ID",
+        "account": "https://sub.id/{address}"
+      },
+      {
+        "name": "Polkaholic",
+        "account": "https://polkaholic.io/account/{address}",
+        "extrinsic": "https://polkaholic.io/tx/{hash}"
+      }
+    ],
+    "externalApi": {
+      "history": [
+        {
+          "type": "subquery",
+          "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-acala"
+        }
+      ]
+    }
+  },
+  {
+    "name": "HydraDX",
+    "specName": "polkadot",
+    "addressPrefix": 63,
+    "chainId": "0xafdc188f45c71dacbaa0b62e16a91f726c7b8699a9748cdf715459de6b7f366d",
+    "parentId": "0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3",
+    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/chains/HydraDX.svg",
+    "options": [
+      "multisig"
+    ],
+    "nodes": [
+      {
+        "url": "wss://hydradx-rpc.dwellir.com",
+        "name": "Dwellir node"
+      },
+      {
+        "url": "wss://rpc.hydradx.cloud",
+        "name": "Calactic Council node"
+      }
+    ],
+    "assets": [
+      {
+        "assetId": 0,
+        "symbol": "HDX",
+        "precision": 12,
+        "priceId": "hydradx",
+        "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/HydraDX_(HDX).svg",
+        "name": "HydraDX"
+      },
+      {
+        "assetId": 1,
+        "symbol": "DOT",
+        "precision": 10,
+        "type": "orml",
+        "priceId": "polkadot",
+        "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Polkadot_(DOT).svg",
+        "typeExtras": {
+          "currencyIdScale": "0x05000000",
+          "currencyIdType": "u32",
+          "existentialDeposit": "17540000",
+          "transfersEnabled": true
+        },
+        "name": "Polkadot"
+      },
+      {
+        "assetId": 2,
+        "symbol": "DAI-Acala",
+        "precision": 18,
+        "type": "orml",
+        "priceId": "dai",
+        "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/DAI-Acala.svg",
+        "typeExtras": {
+          "currencyIdScale": "0x02000000",
+          "currencyIdType": "u32",
+          "existentialDeposit": "10000000000000000",
+          "transfersEnabled": true
+        },
+        "name": "DAI on Acala"
+      },
+      {
+        "assetId": 3,
+        "symbol": "LRNA",
+        "precision": 12,
+        "type": "orml",
+        "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Lerna_(LRNA).svg",
+        "typeExtras": {
+          "currencyIdScale": "0x01000000",
+          "currencyIdType": "u32",
+          "existentialDeposit": "400000000",
+          "transfersEnabled": true
+        },
+        "name": "LRNA"
+      },
+      {
+        "assetId": 4,
+        "symbol": "WETH-Acala",
+        "precision": 18,
+        "type": "orml",
+        "priceId": "ethereum-wormhole",
+        "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/WETH-Acala.svg",
+        "typeExtras": {
+          "currencyIdScale": "0x04000000",
+          "currencyIdType": "u32",
+          "existentialDeposit": "7000000000000",
+          "transfersEnabled": true
+        },
+        "name": "WETH-Acala"
+      },
+      {
+        "assetId": 5,
+        "symbol": "WBTC-Acala",
+        "precision": 8,
+        "type": "orml",
+        "priceId": "wrapped-bitcoin",
+        "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/WBTC-Acala.svg",
+        "typeExtras": {
+          "currencyIdScale": "0x03000000",
+          "currencyIdType": "u32",
+          "existentialDeposit": "44",
+          "transfersEnabled": true
+        },
+        "name": "WBTC-Acala"
+      },
+      {
+        "assetId": 6,
+        "symbol": "iBTC",
+        "precision": 8,
+        "type": "orml",
+        "priceId": "bitcoin",
+        "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/iBTC.svg",
+        "typeExtras": {
+          "currencyIdScale": "0x0b000000",
+          "currencyIdType": "u32",
+          "existentialDeposit": "36",
+          "transfersEnabled": true
+        },
+        "name": "Interlay Bitcoin"
+      },
+      {
+        "assetId": 7,
+        "symbol": "ZTG",
+        "precision": 10,
+        "type": "orml",
+        "priceId": "zeitgeist",
+        "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Zeitgeist_(ZTG).svg",
+        "typeExtras": {
+          "currencyIdScale": "0x0c000000",
+          "currencyIdType": "u32",
+          "existentialDeposit": "1204151916",
+          "transfersEnabled": true
+        },
+        "name": "Zeitgeist"
+      },
+      {
+        "assetId": 8,
+        "symbol": "ASTR",
+        "precision": 18,
+        "type": "orml",
+        "priceId": "astar",
+        "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Astar_(ASTR).svg",
+        "typeExtras": {
+          "currencyIdScale": "0x09000000",
+          "currencyIdType": "u32",
+          "existentialDeposit": "147058823529412000",
+          "transfersEnabled": true
+        },
+        "name": "Astar"
+      },
+      {
+        "assetId": 9,
+        "symbol": "USDT",
+        "precision": 6,
+        "type": "orml",
+        "priceId": "tether",
+        "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/USDT.svg",
+        "typeExtras": {
+          "currencyIdScale": "0x0a000000",
+          "currencyIdType": "u32",
+          "existentialDeposit": "10000",
+          "transfersEnabled": true
+        },
+        "name": "USD Tether"
+      },
+      {
+        "assetId": 10,
+        "symbol": "CFG",
+        "precision": 18,
+        "type": "orml",
+        "priceId": "centrifuge",
+        "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Centrifuge_(CFG).svg",
+        "typeExtras": {
+          "currencyIdScale": "0x0d000000",
+          "currencyIdType": "u32",
+          "existentialDeposit": "32467532467532500",
+          "transfersEnabled": true
+        },
+        "name": "Centrifuge"
+      },
+      {
+        "assetId": 11,
+        "symbol": "BNC",
+        "precision": 12,
+        "type": "orml",
+        "priceId": "bifrost-native-coin",
+        "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Bifrost_(BNC).svg",
+        "typeExtras": {
+          "currencyIdScale": "0x0e000000",
+          "currencyIdType": "u32",
+          "existentialDeposit": "68795189840",
+          "transfersEnabled": true
+        },
+        "name": "Bifrost"
+      },
+      {
+        "assetId": 12,
+        "symbol": "DAI-Moonbeam",
+        "precision": 18,
+        "type": "orml",
+        "priceId": "dai",
+        "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/DAI-Moonbeam.svg",
+        "typeExtras": {
+          "currencyIdScale": "0x12000000",
+          "currencyIdType": "u32",
+          "existentialDeposit": "10000000000000000",
+          "transfersEnabled": true
+        },
+        "name": "DAI-Moonbeam"
+      },
+      {
+        "assetId": 13,
+        "symbol": "WBTC-Moonbeam",
+        "precision": 8,
+        "type": "orml",
+        "priceId": "wrapped-bitcoin",
+        "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/WBTC-Moonbeam.svg",
+        "typeExtras": {
+          "currencyIdScale": "0x13000000",
+          "currencyIdType": "u32",
+          "existentialDeposit": "34",
+          "transfersEnabled": true
+        },
+        "name": "WBTC-Moonbeam"
+      },
+      {
+        "assetId": 14,
+        "symbol": "WETH-Moonbeam",
+        "precision": 18,
+        "type": "orml",
+        "priceId": "ethereum-wormhole",
+        "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/WETH-Moonbeam.svg",
+        "typeExtras": {
+          "currencyIdScale": "0x14000000",
+          "currencyIdType": "u32",
+          "existentialDeposit": "7000000000000",
+          "transfersEnabled": true
+        },
+        "name": "WETH-Moonbeam"
+      },
+      {
+        "assetId": 15,
+        "symbol": "USDC",
+        "precision": 6,
+        "type": "orml",
+        "priceId": "usd-coin",
+        "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/USDC.svg",
+        "typeExtras": {
+          "currencyIdScale": "0x16000000",
+          "currencyIdType": "u32",
+          "existentialDeposit": "10000",
+          "transfersEnabled": true
+        },
+        "name": "USD Coin"
+      },
+      {
+        "assetId": 16,
+        "symbol": "GLMR",
+        "precision": 18,
+        "type": "orml",
+        "priceId": "moonbeam",
+        "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Moonbeam_(GLMR).svg",
+        "typeExtras": {
+          "currencyIdScale": "0x10000000",
+          "currencyIdType": "u32",
+          "existentialDeposit": "34854864344868000",
+          "transfersEnabled": true
+        },
+        "name": "Moonbeam"
+      },
+      {
+        "assetId": 17,
+        "symbol": "INTR",
+        "precision": 10,
+        "type": "orml",
+        "priceId": "interlay",
+        "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Interlay_(INTR).svg",
+        "typeExtras": {
+          "currencyIdScale": "0x11000000",
+          "currencyIdType": "u32",
+          "existentialDeposit": "6164274209",
+          "transfersEnabled": true
+        },
+        "name": "Interlay"
+      },
+      {
+        "assetId": 18,
+        "symbol": "SUB",
+        "precision": 10,
+        "type": "orml",
+        "priceId": "subsocial",
+        "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Subsocial_(SUB).svg",
+        "typeExtras": {
+          "currencyIdScale": "0x18000000",
+          "currencyIdType": "u32",
+          "existentialDeposit": "20000000",
+          "transfersEnabled": true
+        },
+        "name": "Subsocial"
+      },
+      {
+        "assetId": 19,
+        "symbol": "vDOT",
+        "precision": 10,
+        "type": "orml",
+        "priceId": "voucher-dot",
+        "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/vDOT.svg",
+        "typeExtras": {
+          "currencyIdScale": "0x0f000000",
+          "currencyIdType": "u32",
+          "existentialDeposit": "18761726",
+          "transfersEnabled": true
+        },
+        "name": "vDOT"
+      },
+      {
+        "assetId": 20,
+        "symbol": "PHA",
+        "precision": 12,
+        "type": "orml",
+        "priceId": "pha",
+        "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Phala_(PHA).svg",
+        "typeExtras": {
+          "currencyIdScale": "0x08000000",
+          "currencyIdType": "u32",
+          "existentialDeposit": "54945054945",
+          "transfersEnabled": true
+        },
+        "name": "Phala"
+      },
+      {
+        "assetId": 21,
+        "symbol": "USDC-Moonbeam",
+        "precision": 6,
+        "type": "orml",
+        "priceId": "usd-coin",
+        "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/USDC.svg",
+        "typeExtras": {
+          "currencyIdScale": "0x15000000",
+          "currencyIdType": "u32",
+          "existentialDeposit": "10000",
+          "transfersEnabled": true
+        },
+        "name": "USDC-Moonbeam"
+      }
+    ],
+    "explorers": [
+      {
+        "name": "Subscan",
+        "extrinsic": "https://hydradx.subscan.io/extrinsic/{hash}",
+        "account": "https://hydradx.subscan.io/account/{address}",
+        "multisig": "https://hydradx.subscan.io/multisig_extrinsic/{index}?call_hash={callHash}"
+      },
+      {
+        "name": "Polkaholic",
+        "account": "https://polkaholic.io/account/{address}",
+        "extrinsic": "https://polkaholic.io/tx/{hash}"
+      }
+    ],
+    "externalApi": {
+      "history": [
+        {
+          "type": "subquery",
+          "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-hydra"
+        }
+      ]
+    }
+  },
+  {
     "name": "Polkadot",
     "specName": "polkadot",
     "addressPrefix": 0,

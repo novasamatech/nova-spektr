@@ -3,11 +3,12 @@ import { createForm } from 'effector-forms';
 import { spread } from 'patronum';
 import { BN } from '@polkadot/util';
 
-import { Chain, Account, Asset, AssetType, Address, PartialBy } from '@shared/core';
+import { Chain, Account, Asset, AssetType, Address, PartialBy, type ChainId } from '@shared/core';
 import { walletModel, walletUtils, accountUtils, permissionUtils } from '@entities/wallet';
 import { balanceModel, balanceUtils } from '@entities/balance';
 import { networkModel, networkUtils } from '@entities/network';
 import { Transaction, TransactionType } from '@entities/transaction';
+import { xcmTransferModel } from './xcm-transfer-model';
 import {
   transferableAmount,
   dictionary,
@@ -271,6 +272,30 @@ const $signatories = combine(
   },
 );
 
+const $chains = combine(
+  {
+    chain: $chain,
+    chains: networkModel.$chains,
+    statuses: networkModel.$connectionStatuses,
+    transferDirections: xcmTransferModel.$transferDirections,
+  },
+  ({ chain, chains, statuses, transferDirections }) => {
+    if (!chain || !transferDirections) return [];
+
+    const xcmChains = transferDirections.reduce<Chain[]>((acc, chain) => {
+      const chainId = `0x${chain.destination.chainId}` as ChainId;
+
+      if (statuses[chainId] && networkUtils.isConnectedStatus(statuses[chainId])) {
+        acc.push(chains[chainId]);
+      }
+
+      return acc;
+    }, []);
+
+    return [chain].concat(xcmChains);
+  },
+);
+
 const $isChainConnected = combine(
   {
     chain: $chain,
@@ -314,6 +339,23 @@ const $transaction = combine(
 
     // TODO: XCM here
 
+    // if (isXcmTransfer) {
+    //   const destinationChain = formData?.destinationChain?.value;
+    //   transactionType = getXcmTransferType(xcmTransfer.type);
+    //
+    //   args = {
+    //     ...args,
+    //     destinationChain,
+    //     xcmFee: xcmFee,
+    //     xcmAsset: xcmAsset || undefined,
+    //     xcmDest: xcmDest || undefined,
+    //     xcmBeneficiary: xcmBeneficiary || undefined,
+    //     xcmWeight: xcmWeight,
+    //   };
+    // } else {
+    //   transactionType = isNativeTransfer ? TransactionType.TRANSFER : TransferType[asset.type!];
+    // }
+
     return {
       chainId: chain.chainId,
       address: toAddress(form.account.accountId, { prefix: chain.addressPrefix }),
@@ -356,7 +398,7 @@ sample({
 
 sample({
   clock: formInitiated,
-  target: $transferForm.reset,
+  target: [$transferForm.reset, xcmTransferModel.events.xcmStarted],
 });
 
 sample({
@@ -421,6 +463,12 @@ sample({
   target: $signatoryBalance,
 });
 
+sample({
+  clock: $transferForm.fields.xcmChain.onChange,
+  fn: (chain) => chain.chainId,
+  target: xcmTransferModel.events.xcmChainSelected,
+});
+
 // Deposits
 
 sample({ clock: multisigDepositChanged, target: $multisigDeposit });
@@ -464,7 +512,7 @@ export const formModel = {
   $chain,
   $asset,
   $accounts,
-  // $xcmChains,
+  $chains,
   $accountBalance,
 
   $fee,

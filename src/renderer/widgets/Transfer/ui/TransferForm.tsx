@@ -2,14 +2,15 @@ import { useForm } from 'effector-forms';
 import { FormEvent } from 'react';
 import { useUnit } from 'effector-react';
 
-import { Select, Input, Identicon, Icon, Button, InputHint, AmountInput } from '@shared/ui';
+import { Select, Input, Identicon, Icon, Button, InputHint, AmountInput, HelpText } from '@shared/ui';
 import { formModel } from '../model/form-model';
 import { useI18n } from '@app/providers';
-import { MultisigAccount } from '@shared/core';
+import { MultisigAccount, Chain } from '@shared/core';
 import { accountUtils, AccountAddress } from '@entities/wallet';
 import { toAddress, toShortAddress, validateAddress } from '@shared/lib/utils';
 import { AssetBalance } from '@entities/asset';
 import { MultisigDepositWithLabel, FeeWithLabel } from '@entities/transaction';
+import { ChainTitle } from '@entities/chain';
 
 type Props = {
   onGoBack: () => void;
@@ -193,20 +194,35 @@ const XcmChainSelector = () => {
     fields: { xcmChain },
   } = useForm(formModel.$transferForm);
 
-  const xcmChains = useUnit(formModel.$xcmChains);
+  const chains = useUnit(formModel.$chains);
 
-  if (xcmChains.length === 0) return null;
+  if (chains.length <= 1) return null;
 
-  const options = [] as DropdownOption<Chain>[];
+  const getXcmOptions = (chains: Chain[]) => {
+    const [nativeLabel, xcmLabel] = ['transfer.onChainPlaceholder', 'transfer.crossChainPlaceholder'].map(
+      (title, index) => ({
+        id: index.toString(),
+        value: index.toString(),
+        element: <HelpText className="text-text-secondary">{t(title)}</HelpText>,
+        disabled: true,
+      }),
+    );
+    const [nativeChain, ...xcmChains] = chains.map((chain) => ({
+      id: chain.chainId,
+      value: chain,
+      element: <ChainTitle chainId={chain.chainId} fontClass="text-text-primary" />,
+    }));
+
+    return [nativeLabel, nativeChain, xcmLabel, ...xcmChains];
+  };
 
   return (
-    // {Boolean(destinations?.length) && (
     <Select
       label={t('transfer.destinationChainLabel')}
       placeholder={t('transfer.destinationChainPlaceholder')}
       invalid={xcmChain.hasError()}
       selectedId={xcmChain.value.chainId}
-      options={options}
+      options={getXcmOptions(chains)}
       onChange={({ value }) => xcmChain.onChange(value)}
     />
   );
