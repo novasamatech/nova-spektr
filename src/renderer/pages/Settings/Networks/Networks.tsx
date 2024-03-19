@@ -6,13 +6,14 @@ import { useI18n, useConfirmContext } from '@app/providers';
 import { Paths } from '@shared/routes';
 import { BaseModal, InfoLink } from '@shared/ui';
 import { useToggle } from '@shared/lib/hooks';
-import { AddCustomRpcModal, NetworkSelector } from './components';
+import { NetworkSelector } from './components';
 import { DEFAULT_TRANSITION } from '@shared/lib/utils';
 import type { RpcNode, ChainId } from '@shared/core';
 import { ConnectionType } from '@shared/core';
 import { networkModel, ExtendedChain, networkUtils } from '@entities/network';
 import { manageNetworkModel } from './model/manage-network-model';
 import {
+  AddCustomRpcModal,
   addCustomRpcModel,
   EmptyNetworks,
   NetworkList,
