@@ -18,7 +18,10 @@ export type VerifyRpcConnectivityFxParams = {
   url: string;
 };
 
-export type NodeExistParam = VerifyRpcConnectivityFxParams;
+export type NodeExistParam = {
+  network: ExtendedChain;
+  url: string;
+};
 
 export type EditRpcNodeFxParams = {
   network: ExtendedChain;

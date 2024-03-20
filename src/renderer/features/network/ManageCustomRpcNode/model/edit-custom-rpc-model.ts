@@ -35,8 +35,8 @@ const $isProcessStarted = createStore<boolean>(false);
 const $isLoading = createStore<boolean>(false);
 
 const verifyRpcConnectivityFx = createEffect(
-  async ({ network, url }: VerifyRpcConnectivityFxParams): Promise<RpcConnectivityResult> => {
-    const validationResult = await networkService.validateRpcNode(network.chainId, url);
+  async ({ chainId, url }: VerifyRpcConnectivityFxParams): Promise<RpcConnectivityResult> => {
+    const validationResult = await networkService.validateRpcNode(chainId, url);
 
     return customRpcConstants.RpcValidationMapping[validationResult];
   },
@@ -94,8 +94,9 @@ sample({
 sample({
   clock: $editCustomRpcForm.submit,
   source: { network: $selectedNetwork, url: $editCustomRpcForm.fields.url.$value },
-  filter: (params: { network: ExtendedChain | null; url: string }): params is VerifyRpcConnectivityFxParams =>
+  filter: (params: { network: ExtendedChain | null; url: string }): params is { network: ExtendedChain; url: string } =>
     !!params.network,
+  fn: ({ network, url }) => ({ chainId: network.chainId, url }),
   target: verifyRpcConnectivityFx,
 });
 
