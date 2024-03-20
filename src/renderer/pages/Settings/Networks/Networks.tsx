@@ -190,9 +190,14 @@ export const Networks = () => {
             <InactiveNetwork networkItem={network}>
               <NetworkSelector
                 networkItem={network}
+                openEditRpcModal={() => editCustomRpcModel.events.processStarted(true)}
+                openAddRpcModal={() => addCustomRpcModel.events.processStarted(true)}
+                onAddRpcNetworkChange={addCustomRpcModel.events.networkChanged}
+                onRemoveCustomNode={removeCustomNode(network.chainId)}
+                onEditRpcNetworkChange={editCustomRpcModel.events.networkChanged}
                 onConnect={connectToNode(network)}
                 onDisconnect={disableNetwork(network)}
-                onRemoveCustomNode={removeCustomNode(network.chainId)}
+                onSelectNode={editCustomRpcModel.events.nodeSelected}
               />
             </InactiveNetwork>
           )}
@@ -207,9 +212,14 @@ export const Networks = () => {
             <ActiveNetwork networkItem={network}>
               <NetworkSelector
                 networkItem={network}
+                openEditRpcModal={() => editCustomRpcModel.events.processStarted(true)}
+                openAddRpcModal={() => addCustomRpcModel.events.processStarted(true)}
+                onAddRpcNetworkChange={addCustomRpcModel.events.networkChanged}
+                onRemoveCustomNode={removeCustomNode(network.chainId)}
+                onEditRpcNetworkChange={editCustomRpcModel.events.networkChanged}
                 onConnect={connectToNode(network)}
                 onDisconnect={disableNetwork(network)}
-                onRemoveCustomNode={removeCustomNode(network.chainId)}
+                onSelectNode={editCustomRpcModel.events.nodeSelected}
               />
             </ActiveNetwork>
           )}

@@ -1,12 +1,12 @@
 import { createEffect, createEvent, createStore, sample } from 'effector';
 import { createForm } from 'effector-forms';
 
-import { networkService, RpcValidation } from '@shared/api/network';
+import { networkService } from '@shared/api/network';
 import { ExtendedChain } from '@entities/network';
 import { CustomRpcForm, RpcCheckResult } from '../lib/types';
 import { manageNetworkModel } from '@pages/Settings/Networks/model/manage-network-model';
-import { fieldRules } from '../lib/utils';
 import { RpcNode } from '@shared/core';
+import { RpcValidationMapping, fieldRules } from '../lib/constants';
 
 const $editCustomRpcForm = createForm({
   fields: {
@@ -19,7 +19,7 @@ const $editCustomRpcForm = createForm({
       rules: fieldRules.url,
     },
   },
-  validateOn: ['blur'],
+  validateOn: ['change'],
 });
 
 const formInitiated = createEvent();
@@ -27,35 +27,24 @@ const networkChanged = createEvent<ExtendedChain>();
 const nodeSelected = createEvent<RpcNode>();
 const rpcConnectivityChecked = createEvent<RpcCheckResult>();
 const processStarted = createEvent<boolean>();
+const rpcConnectivityCheckStarted = createEvent<boolean>();
 
 const $selectedNode = createStore<RpcNode | null>(null);
 const $selectedNetwork = createStore<ExtendedChain | null>(null);
 const $rpcConnectivityResult = createStore<RpcCheckResult>(RpcCheckResult.INIT);
 const $isProcessStarted = createStore<boolean>(false);
+const $isLoading = createStore<boolean>(false);
 
 const checkRpcNodeFx = createEffect(
-  async ({ network, url }: { network: ExtendedChain | null; url: string }): Promise<RpcCheckResult | null> => {
-    if (!network) return null;
+  async ({ network, url }: { network: ExtendedChain | null; url: string }): Promise<RpcCheckResult> => {
+    if (!network) return RpcCheckResult.INIT;
 
-    try {
-      rpcConnectivityChecked(RpcCheckResult.LOADING);
-      const validationResult = await networkService.validateRpcNode(network.chainId, url);
+    rpcConnectivityCheckStarted(true);
+    const validationResult = await networkService.validateRpcNode(network.chainId, url);
+    rpcConnectivityCheckStarted(false);
+    const result = RpcValidationMapping[validationResult];
 
-      const RpcValidationMapping = {
-        [RpcValidation.INVALID]: RpcCheckResult.INVALID,
-        [RpcValidation.VALID]: RpcCheckResult.VALID,
-        [RpcValidation.WRONG_NETWORK]: RpcCheckResult.WRONG_NETWORK,
-      };
-
-      const result = RpcValidationMapping[validationResult];
-      rpcConnectivityChecked(result);
-
-      return result;
-    } catch (error) {
-      console.warn(error);
-
-      return null;
-    }
+    return result;
   },
 );
 
@@ -107,6 +96,11 @@ sample({
   target: resetFormFx,
 });
 
+sample({
+  clock: rpcConnectivityCheckStarted,
+  target: $isLoading,
+});
+
 // reset the rpc validations when the url field is changed
 sample({
   clock: $editCustomRpcForm.fields.url.onChange,
@@ -132,7 +126,13 @@ sample({
 sample({
   clock: $editCustomRpcForm.submit,
   source: { network: $selectedNetwork, url: $editCustomRpcForm.fields.url.$value },
+  filter: ({ network }: { network: ExtendedChain | null }) => !!network,
   target: checkRpcNodeFx,
+});
+
+sample({
+  clock: checkRpcNodeFx.doneData,
+  target: rpcConnectivityChecked,
 });
 
 // if we are done checking the form data and it is valid
@@ -152,11 +152,23 @@ sample({
   target: editRpcNodeFx,
 });
 
+sample({
+  clock: checkRpcNodeFx.fail,
+  fn: ({ error }: { error: Error }) => {
+    console.warn(error);
+    rpcConnectivityCheckStarted(false);
+
+    return RpcCheckResult.INIT;
+  },
+  target: rpcConnectivityChecked,
+});
+
 export const editCustomRpcModel = {
   $editCustomRpcForm,
   $rpcConnectivityResult,
   $selectedNetwork,
   $isProcessStarted,
+  $isLoading,
 
   events: {
     formInitiated,

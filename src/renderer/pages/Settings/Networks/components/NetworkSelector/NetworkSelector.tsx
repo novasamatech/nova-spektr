@@ -1,6 +1,6 @@
 import { Listbox, Transition } from '@headlessui/react';
 import { useState, Fragment, useEffect } from 'react';
-import { useUnit } from 'effector-react';
+import { EventCallable } from 'effector';
 
 import { cnTw } from '@shared/lib/utils';
 import { Icon, FootnoteText, IconButton, Button, HelpText } from '@shared/ui';
@@ -12,7 +12,6 @@ import { CommonInputStyles, CommonInputStylesTheme } from '@shared/ui/Inputs/com
 import { ConnectionType } from '@shared/core';
 import type { Theme } from '@shared/ui/types';
 import type { RpcNode } from '@shared/core';
-import { addCustomRpcModel, editCustomRpcModel } from '@features/network';
 
 export const OptionsContainerStyle =
   'mt-1 absolute z-20 py-1 px-1 w-full border border-token-container-border rounded bg-input-background shadow-card-shadow';
@@ -31,6 +30,11 @@ type Props = {
   onDisconnect: () => void;
   onConnect: (type: ConnectionType, node?: RpcNode) => void;
   onRemoveCustomNode: (node: RpcNode) => void;
+  onAddRpcNetworkChange: EventCallable<ExtendedChain>;
+  onEditRpcNetworkChange: EventCallable<ExtendedChain>;
+  openEditRpcModal: () => void;
+  openAddRpcModal: () => void;
+  onSelectNode: (payload: RpcNode) => RpcNode;
 };
 
 export const NetworkSelector = ({
@@ -39,14 +43,14 @@ export const NetworkSelector = ({
   onDisconnect,
   onConnect,
   onRemoveCustomNode,
+  onAddRpcNetworkChange,
+  onEditRpcNetworkChange,
+  openAddRpcModal,
+  openEditRpcModal,
+  onSelectNode,
 }: Props) => {
   const { t } = useI18n();
   const [ref, scroll] = useScrollTo<HTMLDivElement>(TRANSITION_DURATION);
-  const openAddCustomNodeModal = useUnit(addCustomRpcModel.events.processStarted);
-  const openEditCustomNodeModal = useUnit(editCustomRpcModel.events.processStarted);
-  const selectNetwork = useUnit(addCustomRpcModel.events.networkChanged);
-  const selectEditCustomNodeNetwork = useUnit(editCustomRpcModel.events.networkChanged);
-  const selectNode = useUnit(editCustomRpcModel.events.nodeSelected);
 
   const { connection, nodes } = networkItem;
   const { canUseLightClient, connectionType, activeNode, customNodes } = connection;
@@ -77,8 +81,8 @@ export const NetworkSelector = ({
 
   const changeConnection = async (payload?: SelectorPayload) => {
     if (!payload) {
-      selectNetwork(networkItem);
-      openAddCustomNodeModal(true);
+      onAddRpcNetworkChange(networkItem);
+      openAddRpcModal();
     } else if (payload.type === ConnectionType.DISABLED) {
       onDisconnect();
     } else {
@@ -87,9 +91,9 @@ export const NetworkSelector = ({
   };
 
   const onEditCustomNode = (node: RpcNode) => {
-    selectEditCustomNodeNetwork(networkItem);
-    selectNode(node);
-    openEditCustomNodeModal(true);
+    onEditRpcNetworkChange(networkItem);
+    onSelectNode(node);
+    openEditRpcModal();
   };
 
   const isCustomNode = (url: string): boolean => {

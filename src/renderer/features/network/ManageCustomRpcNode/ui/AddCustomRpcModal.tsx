@@ -5,27 +5,30 @@ import { useUnit } from 'effector-react';
 import { BaseModal, Button, Input, InputHint, Alert } from '@shared/ui';
 import { useI18n } from '@app/providers';
 import { OperationTitle } from '@entities/chain';
-import { RpcCheckResult, editCustomRpcModel } from '@features/network';
+import { RpcCheckResult, addCustomRpcModel } from '@features/network';
 
 type Props = {
   isOpen: boolean;
   onClose: () => void;
 };
 
-export const EditCustomRpcModal = ({ isOpen, onClose }: Props) => {
+export const AddCustomRpcModal = ({ isOpen, onClose }: Props) => {
   const { t } = useI18n();
-  const rpcCheckResult = useUnit(editCustomRpcModel.$rpcConnectivityResult);
-  const network = useUnit(editCustomRpcModel.$selectedNetwork);
+  const rpcCheckResult = useUnit(addCustomRpcModel.$rpcConnectivityResult);
+  const isNodeExist = useUnit(addCustomRpcModel.$isNodeExist);
+  const network = useUnit(addCustomRpcModel.$selectedNetwork);
+  const isLoading = useUnit(addCustomRpcModel.$isLoading);
 
   useEffect(() => {
-    editCustomRpcModel.events.formInitiated();
+    addCustomRpcModel.events.formInitiated();
   }, []);
 
   const {
     fields: { name, url },
     submit,
     isValid,
-  } = useForm(editCustomRpcModel.$editCustomRpcForm);
+    isDirty,
+  } = useForm(addCustomRpcModel.$addCustomRpcForm);
 
   const onSubmit = (event: FormEvent) => {
     event.preventDefault();
@@ -33,14 +36,12 @@ export const EditCustomRpcModal = ({ isOpen, onClose }: Props) => {
     submit();
   };
 
-  const isLoading = rpcCheckResult === RpcCheckResult.LOADING;
-
   if (!network) return null;
 
   return (
     <BaseModal
       closeButton
-      title={<OperationTitle title={'settings.networks.titleAdd'} chainId={network.chainId} />}
+      title={<OperationTitle title={'settings.networks.titleEdit'} chainId={network.chainId} />}
       headerClass="py-3 pl-5 pr-3"
       isOpen={isOpen}
       onClose={onClose}
@@ -57,7 +58,7 @@ export const EditCustomRpcModal = ({ isOpen, onClose }: Props) => {
               onChange={name.onChange}
             />
             <InputHint variant="error" active={name?.hasError()}>
-              {t(name?.errorText())}
+              {t(name.errorText())}
             </InputHint>
           </div>
           <div className="flex flex-col gap-y-2">
@@ -73,11 +74,14 @@ export const EditCustomRpcModal = ({ isOpen, onClose }: Props) => {
               {t('settings.networks.addressHint')}
             </InputHint>
             <InputHint variant="error" active={url?.hasError()}>
-              {t(url?.errorText())}
+              {t(url.errorText())}
             </InputHint>
           </div>
-          <InputHint active={rpcCheckResult === RpcCheckResult.VALID} variant="success">
+          <InputHint active={rpcCheckResult === RpcCheckResult.VALID && !isNodeExist} variant="success">
             {t('settings.networks.addressConnected')}
+          </InputHint>
+          <InputHint active={isNodeExist === true} variant="error">
+            {t('settings.networks.nodeExist')}
           </InputHint>
           <Alert
             active={rpcCheckResult === RpcCheckResult.INVALID}
@@ -92,8 +96,8 @@ export const EditCustomRpcModal = ({ isOpen, onClose }: Props) => {
         </div>
 
         <div className="flex justify-end mt-7 w-full">
-          <Button type="submit" isLoading={isLoading} disabled={isLoading || !isValid}>
-            {t('settings.networks.editNodeButton')}
+          <Button type="submit" isLoading={isLoading} disabled={isLoading || !isValid || !isDirty}>
+            {t('settings.networks.addNodeButton')}
           </Button>
         </div>
       </form>
