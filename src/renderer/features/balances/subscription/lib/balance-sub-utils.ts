@@ -1,4 +1,4 @@
-import { Account, Wallet, ChainId } from '@shared/core';
+import { Account, Wallet, ChainId, Chain } from '@shared/core';
 import { accountUtils, walletUtils } from '@entities/wallet';
 import { dictionary } from '@shared/lib/utils';
 import { SubAccounts } from './types';
@@ -8,8 +8,8 @@ export const balanceSubUtils = {
   getNewAccounts,
 };
 
-function getAccountsToSubscribe(wallet: Wallet, walletAccounts: Account[], accounts: Account[]): Account[] {
-  if (walletUtils.isMultisig(wallet) && accountUtils.isMultisigAccount(walletAccounts[0])) {
+function getAccountsToSubscribe(wallet: Wallet, walletAccounts: Account[], accounts?: Account[]): Account[] {
+  if (walletUtils.isMultisig(wallet) && accountUtils.isMultisigAccount(walletAccounts[0]) && accounts) {
     const accountsMap = dictionary(accounts, 'accountId');
 
     return walletAccounts[0].signatories.reduce((acc, signatory) => {
@@ -28,14 +28,15 @@ function getAccountsToSubscribe(wallet: Wallet, walletAccounts: Account[], accou
   return walletAccounts;
 }
 
-function getNewAccounts(subAccounts: SubAccounts, accountsToSub: Account[]): SubAccounts {
+function getNewAccounts(
+  subAccounts: SubAccounts,
+  accountsToSub: Account[],
+  chains: Record<ChainId, Chain>,
+): SubAccounts {
   const chainIds = Object.keys(subAccounts) as ChainId[];
 
   const newSubAccounts = accountsToSub.reduce<SubAccounts>((acc, account) => {
-    const isBaseAccount = accountUtils.isBaseAccount(account);
-    const isMultisigAccount = accountUtils.isMultisigAccount(account);
-
-    const chainsToUpdate = isBaseAccount || isMultisigAccount ? chainIds : [account.chainId];
+    const chainsToUpdate = chainIds.filter((chainId) => accountUtils.isChainAndCryptoMatch(account, chains[chainId]));
 
     chainsToUpdate.forEach((chainId) => {
       if (!acc[chainId]) {

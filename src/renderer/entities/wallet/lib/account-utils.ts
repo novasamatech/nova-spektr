@@ -1,6 +1,9 @@
 import { u8aToHex } from '@polkadot/util';
 import { createKeyMulti } from '@polkadot/util-crypto';
+import keyBy from 'lodash/keyBy';
 
+// TODO: resolve cross import
+import { networkUtils } from '@entities/network';
 import { dictionary } from '@shared/lib/utils';
 import { walletUtils } from './wallet-utils';
 import { AccountType, ChainType, CryptoType, ProxyType } from '@shared/core';
@@ -19,8 +22,6 @@ import type {
   Chain,
   ChainId,
 } from '@shared/core';
-// TODO: resolve cross import
-import { networkUtils } from '@entities/network';
 
 export const accountUtils = {
   isBaseAccount,
@@ -36,6 +37,7 @@ export const accountUtils = {
   getAccountsAndShardGroups,
   getMultisigAccountId,
   getWalletAccounts,
+  getSignatoryAccounts,
   getBaseAccount,
   getDerivationPath,
   getAccountsForBalances,
@@ -146,6 +148,12 @@ function getBaseAccount(accounts: Account[], walletId?: ID): BaseAccount | undef
 
 function getWalletAccounts<T extends Account>(walletId: ID, accounts: T[]): T[] {
   return accounts.filter((account) => account.walletId === walletId);
+}
+
+function getSignatoryAccounts<T extends Account>(accountIds: AccountId[], accounts: T[]): T[] {
+  const accountsMap = keyBy(accounts, 'accountId');
+
+  return accountIds.map((id) => accountsMap[id]);
 }
 
 type DerivationPathLike = Pick<ChainAccount, 'derivationPath'>;

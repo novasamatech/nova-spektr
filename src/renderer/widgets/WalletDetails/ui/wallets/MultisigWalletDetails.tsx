@@ -56,15 +56,8 @@ export const MultisigWalletDetails = ({
 
   const [chains, setChains] = useState<Chain[]>([]);
 
-  const isEthereumBased = accountUtils.isEthereumBased(account);
-
   useEffect(() => {
-    const chainList = Object.values(allChains);
-    const filteredChains = chainList.filter((c) => {
-      return isEthereumBased ? networkUtils.isEthereumBased(c.options) : !networkUtils.isEthereumBased(c.options);
-    });
-
-    setChains(filteredChains);
+    setChains(Object.values(allChains));
   }, []);
 
   const chain = account.chainId && allChains[account.chainId];
@@ -72,7 +65,9 @@ export const MultisigWalletDetails = ({
 
   const multisigChains = useMemo(() => {
     return Object.values(chains).filter((chain) => {
-      return networkUtils.isMultisigSupported(chain.options) && accountUtils.isChainIdMatch(account, chain.chainId);
+      return (
+        networkUtils.isMultisigSupported(chain.options) && accountUtils.isChainIdAndCryptoTypeMatch(account, chain)
+      );
     });
   }, [chains]);
 

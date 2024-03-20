@@ -1,3 +1,5 @@
+import keyBy from 'lodash/keyBy';
+
 import type { AccountId, Balance, ChainId, OmitFirstArg } from '@shared/core';
 
 export const balanceUtils = {
@@ -6,6 +8,7 @@ export const balanceUtils = {
   getBalanceWrapped,
   getNetworkBalances,
   getAccountsBalances,
+  getMergeBalances,
 };
 
 function getAssetBalances(balances: Balance[], accountIds: AccountId[], chainId: ChainId, assetId: string): Balance[] {
@@ -32,4 +35,26 @@ function getAccountsBalances(balances: Balance[], accountIds: AccountId[]): Bala
   const accountsMap = new Set(accountIds);
 
   return balances.filter((balance) => accountsMap.has(balance.accountId));
+}
+
+function getMergeBalances(oldBalances: Balance[], newBalances: Balance[]): Balance[] {
+  const newBalancesMap = keyBy(newBalances, (b) => `${b.chainId}_${b.assetId}_${b.accountId}`);
+
+  const updatedBalances = oldBalances.map((balance) => {
+    const { chainId, assetId, accountId } = balance;
+    const newBalance = newBalancesMap[`${chainId}_${assetId}_${accountId}`];
+
+    if (newBalance) {
+      balance.free = newBalance?.free || balance.free;
+      balance.frozen = newBalance?.frozen || balance.frozen;
+      balance.reserved = newBalance?.reserved || balance.reserved;
+      balance.locked = newBalance?.locked || balance.locked;
+
+      delete newBalancesMap[`${chainId}_${assetId}_${accountId}`];
+    }
+
+    return balance;
+  });
+
+  return updatedBalances.concat(Object.values(newBalancesMap));
 }
