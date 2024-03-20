@@ -11,6 +11,7 @@ import {
 } from '../lib/custom-rpc-types';
 import { manageNetworkModel } from '@pages/Settings/Networks/model/manage-network-model';
 import { customRpcConstants } from '../lib/custom-rpc-constants';
+import { customRpcUtils } from '../lib/custom-rpc-utils';
 
 const $addCustomRpcForm = createForm({
   fields: {
@@ -155,7 +156,7 @@ sample({
   filter: (params): params is SaveRpcNodeFxParams => {
     const { isNodeExist, rpcConnectivityResult, isFormValid } = params;
 
-    return isFormValid && !isNodeExist && rpcConnectivityResult === RpcConnectivityResult.VALID;
+    return isFormValid && !isNodeExist && customRpcUtils.isRpcConnectivityValid(rpcConnectivityResult);
   },
   target: saveRpcNodeFx,
 });

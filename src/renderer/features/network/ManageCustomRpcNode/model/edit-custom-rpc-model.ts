@@ -7,6 +7,7 @@ import { VerifyRpcConnectivityFxParams, EditRpcNodeFxParams, RpcConnectivityResu
 import { manageNetworkModel } from '@pages/Settings/Networks/model/manage-network-model';
 import { RpcNode } from '@shared/core';
 import { customRpcConstants } from '../lib/custom-rpc-constants';
+import { customRpcUtils } from '../lib/custom-rpc-utils';
 
 const $editCustomRpcForm = createForm({
   fields: {
@@ -120,7 +121,10 @@ sample({
     const { rpcConnectivityResult, network, nodeToEdit, isFormValid } = params;
 
     return (
-      isFormValid && rpcConnectivityResult === RpcConnectivityResult.VALID && network !== null && nodeToEdit !== null
+      isFormValid &&
+      customRpcUtils.isRpcConnectivityValid(rpcConnectivityResult) &&
+      network !== null &&
+      nodeToEdit !== null
     );
   },
   target: editRpcNodeFx,

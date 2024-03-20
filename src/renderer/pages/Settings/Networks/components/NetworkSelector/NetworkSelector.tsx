@@ -1,6 +1,5 @@
 import { Listbox, Transition } from '@headlessui/react';
 import { useState, Fragment, useEffect } from 'react';
-import { EventCallable } from 'effector';
 
 import { cnTw } from '@shared/lib/utils';
 import { Icon, FootnoteText, IconButton, Button, HelpText } from '@shared/ui';
@@ -30,8 +29,8 @@ type Props = {
   onDisconnect: () => void;
   onConnect: (type: ConnectionType, node?: RpcNode) => void;
   onRemoveCustomNode: (node: RpcNode) => void;
-  onAddRpcNetworkChange: EventCallable<ExtendedChain>;
-  onEditRpcNetworkChange: EventCallable<ExtendedChain>;
+  onAddRpcNetworkChange: (network: ExtendedChain) => void;
+  onEditRpcNetworkChange: (network: ExtendedChain) => void;
   openEditRpcModal: () => void;
   openAddRpcModal: () => void;
   onSelectNode: (payload: RpcNode) => RpcNode;
