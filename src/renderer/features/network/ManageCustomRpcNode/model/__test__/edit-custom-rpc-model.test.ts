@@ -3,7 +3,7 @@ import { fork, allSettled } from 'effector';
 import { editCustomRpcModel } from '../edit-custom-rpc-model';
 import { ConnectionStatus, RpcNode } from '@shared/core';
 import { ExtendedChain } from '@entities/network';
-import { RpcCheckResult } from '../../lib/types';
+import { RpcCheckResult } from '../../lib/custom-rpc-types';
 
 describe('features/network/CustomRpcForm/edit-custom-rpc-model', () => {
   test('should have the form pre-filled on launch', async () => {

@@ -1,5 +1,5 @@
 export { addCustomRpcModel, AddCustomRpcModal, editCustomRpcModel, EditCustomRpcModal } from './ManageCustomRpcNode';
-export { RpcCheckResult } from './ManageCustomRpcNode/lib/types';
+export { RpcCheckResult } from './ManageCustomRpcNode/lib/custom-rpc-types';
 export {
   NetworkList,
   ActiveNetwork,

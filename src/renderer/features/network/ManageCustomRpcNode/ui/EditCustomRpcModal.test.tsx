@@ -6,7 +6,7 @@ import { Provider } from 'effector-react';
 import { EditCustomRpcModal } from './EditCustomRpcModal';
 import { editCustomRpcModel } from '../model/edit-custom-rpc-model';
 import { ConnectionStatus, RpcNode } from '@shared/core';
-import { RpcCheckResult } from '../lib/types';
+import { RpcCheckResult } from '../lib/custom-rpc-types';
 
 jest.mock('@app/providers', () => ({
   useI18n: jest.fn().mockReturnValue({

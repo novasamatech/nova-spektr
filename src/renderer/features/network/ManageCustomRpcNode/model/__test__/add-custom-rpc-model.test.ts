@@ -3,7 +3,7 @@ import { fork, allSettled } from 'effector';
 import { addCustomRpcModel } from '../add-custom-rpc-model';
 import { ConnectionStatus } from '@shared/core';
 import { ExtendedChain } from '@entities/network';
-import { RpcCheckResult } from '../../lib/types';
+import { RpcCheckResult } from '../../lib/custom-rpc-types';
 
 describe('features/network/CustomRpcForm/add-custom-rpc-model', () => {
   test('should have error for wrong node url', async () => {

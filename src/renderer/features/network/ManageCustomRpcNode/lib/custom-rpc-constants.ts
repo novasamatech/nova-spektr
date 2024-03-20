@@ -1,11 +1,11 @@
-import { RpcCheckResult } from './types';
-import { validateWsAddress } from './utils';
+import { RpcCheckResult } from './custom-rpc-types';
+import { customRpcUtils } from './custom-rpc-utils';
 import { RpcValidation } from '@shared/api/network';
 
 const RPC_NAME_MAX_LENGTH = 50;
 const RPC_NAME_MIN_LENGTH = 3;
 
-export const fieldRules = {
+const FieldRules = {
   name: [
     { name: 'required', errorText: 'settings.networks.requiredNameError', validator: Boolean },
     {
@@ -16,12 +16,21 @@ export const fieldRules = {
   ],
   url: [
     { name: 'required', errorText: 'settings.networks.addressEmpty', validator: Boolean },
-    { name: 'wsAddressValidation', errorText: 'settings.networks.addressInvalidUrl', validator: validateWsAddress },
+    {
+      name: 'wsAddressValidation',
+      errorText: 'settings.networks.addressInvalidUrl',
+      validator: customRpcUtils.validateWsAddress,
+    },
   ],
 };
 
-export const RpcValidationMapping = {
+const RpcValidationMapping = {
   [RpcValidation.INVALID]: RpcCheckResult.INVALID,
   [RpcValidation.VALID]: RpcCheckResult.VALID,
   [RpcValidation.WRONG_NETWORK]: RpcCheckResult.WRONG_NETWORK,
+};
+
+export const customRpcConstants = {
+  RpcValidationMapping,
+  FieldRules,
 };

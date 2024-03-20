@@ -70,7 +70,7 @@ export const CreateContactForm = ({ onSubmit }: Props) => {
           onChange={address?.onChange}
         />
         <InputHint variant="error" active={address?.hasError()}>
-          {t(address?.errorText())}
+          {t(address.errorText())}
         </InputHint>
       </div>
 

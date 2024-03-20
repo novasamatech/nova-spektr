@@ -3,20 +3,20 @@ import { createForm } from 'effector-forms';
 
 import { networkService } from '@shared/api/network';
 import { ExtendedChain } from '@entities/network';
-import { CheckRpcNodeFxParams, EditRpcNodeFxParams, RpcCheckResult } from '../lib/types';
+import { CheckRpcNodeFxParams, EditRpcNodeFxParams, RpcCheckResult } from '../lib/custom-rpc-types';
 import { manageNetworkModel } from '@pages/Settings/Networks/model/manage-network-model';
 import { RpcNode } from '@shared/core';
-import { RpcValidationMapping, fieldRules } from '../lib/constants';
+import { customRpcConstants } from '../lib/custom-rpc-constants';
 
 const $editCustomRpcForm = createForm({
   fields: {
     name: {
       init: '',
-      rules: fieldRules.name,
+      rules: customRpcConstants.FieldRules.name,
     },
     url: {
       init: '',
-      rules: fieldRules.url,
+      rules: customRpcConstants.FieldRules.url,
     },
   },
   validateOn: ['change'],
@@ -36,7 +36,7 @@ const $isLoading = createStore<boolean>(false);
 
 const checkRpcNodeFx = createEffect(async ({ network, url }: CheckRpcNodeFxParams): Promise<RpcCheckResult> => {
   const validationResult = await networkService.validateRpcNode(network.chainId, url);
-  const result = RpcValidationMapping[validationResult];
+  const result = customRpcConstants.RpcValidationMapping[validationResult];
 
   return result;
 });
