@@ -43,7 +43,7 @@ export const AssetsList = () => {
         return (
           activeWallet &&
           accountUtils.isNonBaseVaultAccount(account, activeWallet) &&
-          accountUtils.isChainIdAndCryptoTypeMatch(account, chain)
+          accountUtils.isChainAndCryptoMatch(account, chain)
         );
       });
     });

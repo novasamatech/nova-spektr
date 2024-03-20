@@ -50,7 +50,7 @@ const bondWithoutController = (
 
 export const getUnsignedTransaction: Record<
   TransactionType,
-  (args: Transaction, info: BaseTxInfo, options: OptionsWithMeta, api: ApiPromise) => UnsignedTransaction
+  (transaction: Transaction, info: BaseTxInfo, options: OptionsWithMeta, api: ApiPromise) => UnsignedTransaction
 > = {
   [TransactionType.TRANSFER]: (transaction, info, options, api) => {
     // @ts-ignore
@@ -302,7 +302,7 @@ export const getUnsignedTransaction: Record<
       options,
     );
   },
-  [TransactionType.ADD_PROXY]: (transaction, info, options, api) => {
+  [TransactionType.ADD_PROXY]: (transaction, info, options) => {
     return methods.proxy.addProxy(
       {
         delegate: transaction.args.delegate,
@@ -313,7 +313,7 @@ export const getUnsignedTransaction: Record<
       options,
     );
   },
-  [TransactionType.REMOVE_PROXY]: (transaction, info, options, api) => {
+  [TransactionType.REMOVE_PROXY]: (transaction, info, options) => {
     return methods.proxy.removeProxy(
       {
         delegate: transaction.args.delegate,
@@ -423,19 +423,19 @@ export const getExtrinsic: Record<
 };
 
 export const wrapAsMulti = (
+  api: ApiPromise,
+  transaction: Transaction,
   account: MultisigAccount,
   signerAccountId: AccountId,
-  transaction: Transaction,
-  api: ApiPromise,
   addressPrefix: number,
 ): Transaction => {
   const extrinsic = getExtrinsic[transaction.type](transaction.args, api);
   const callData = extrinsic.method.toHex();
   const callHash = extrinsic.method.hash.toHex();
 
-  const otherSignatories = account.signatories.reduce<Address[]>((acc, s) => {
-    if (s.accountId !== signerAccountId) {
-      acc.push(toAddress(s.accountId, { prefix: addressPrefix }));
+  const otherSignatories = account.signatories.reduce<Address[]>((acc, { accountId }) => {
+    if (accountId !== signerAccountId) {
+      acc.push(toAddress(accountId, { prefix: addressPrefix }));
     }
 
     return acc;
@@ -448,6 +448,27 @@ export const wrapAsMulti = (
     args: {
       threshold: account.threshold,
       otherSignatories: otherSignatories.sort(),
+      maybeTimepoint: null,
+      callData,
+      callHash,
+    },
+  };
+};
+
+// TODO: finish in "Create proxy operation for add/remove proxy"
+// https://github.com/novasamatech/nova-spektr/issues/1445
+export const wrapAsProxy = (api: ApiPromise, transaction: Transaction, addressPrefix: number): Transaction => {
+  const extrinsic = getExtrinsic[transaction.type](transaction.args, api);
+  const callData = extrinsic.method.toHex();
+  const callHash = extrinsic.method.hash.toHex();
+
+  return {
+    chainId: transaction.chainId,
+    address: toAddress('', { prefix: addressPrefix }),
+    type: TransactionType.PROXY,
+    args: {
+      // real: '',
+      // forceProxyType: '',
       maybeTimepoint: null,
       callData,
       callHash,

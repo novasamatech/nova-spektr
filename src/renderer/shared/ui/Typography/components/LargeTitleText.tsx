@@ -1,5 +1,5 @@
 import { cnTw } from '@shared/lib/utils';
-import TextBase from '../common/TextBase';
+import { TextBase } from '../common/TextBase';
 import { TypographyProps } from '../common/types';
 
 export const LargeTitleText = ({ className, as = 'h1', ...props }: TypographyProps) => (

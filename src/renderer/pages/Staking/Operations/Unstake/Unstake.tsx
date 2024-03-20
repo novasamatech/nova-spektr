@@ -37,7 +37,7 @@ export const Unstake = () => {
   const [searchParams] = useSearchParams();
   const params = useParams<{ chainId: ChainId }>();
 
-  const { api, chain } = useNetworkData(params.chainId || ('' as ChainId));
+  const { api, chain } = useNetworkData(params.chainId);
 
   const [isUnstakeModalOpen, toggleUnstakeModal] = useToggle(true);
 

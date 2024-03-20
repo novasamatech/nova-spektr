@@ -89,7 +89,7 @@ export const NetworkInfo = ({
   return (
     <Plate className="flex flex-col gap-y-3 w-full">
       <div className="grid grid-cols-[178px,repeat(2,122px),28px] items-center gap-x-6">
-        <div className="flex flex-col gap-2">
+        <div className="flex flex-col gap-y-2">
           <FootnoteText className="text-text-secondary">{t('staking.overview.networkLabel')}</FootnoteText>
           <Select
             placeholder={t('staking.overview.networkPlaceholder')}

@@ -126,7 +126,7 @@ export const priceProviderModel = {
     priceProviderChanged,
     assetsPricesRequested,
   },
-  watch: {
+  output: {
     fiatFlagChangedDone: saveFiatFlagFx.done,
     fiatFlagChangedFail: saveFiatFlagFx.fail,
     fiatFlagLoaded: getFiatFlagFx.done,
