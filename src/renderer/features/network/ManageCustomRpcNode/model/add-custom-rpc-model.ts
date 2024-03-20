@@ -3,7 +3,7 @@ import { createForm } from 'effector-forms';
 
 import { networkService } from '@shared/api/network';
 import { ExtendedChain } from '@entities/network';
-import { CustomRpcForm, NodeExistParam, RpcCheckResult } from '../lib/types';
+import { CheckRpcNodeFxParams, NodeExistParam, RpcCheckResult, SaveRpcNodeFxParams } from '../lib/types';
 import { manageNetworkModel } from '@pages/Settings/Networks/model/manage-network-model';
 import { fieldRules, RpcValidationMapping } from '../lib/constants';
 
@@ -33,46 +33,24 @@ const $isNodeExist = createStore<boolean>(false);
 const $isProcessStarted = createStore<boolean>(false);
 const $isLoading = createStore<boolean>(false);
 
-const checkRpcNodeFx = createEffect(
-  async ({ network, url }: { network: ExtendedChain | null; url: string }): Promise<RpcCheckResult> => {
-    if (!network) return RpcCheckResult.INIT;
+const checkRpcNodeFx = createEffect(async ({ network, url }: CheckRpcNodeFxParams): Promise<RpcCheckResult> => {
+  const validationResult = await networkService.validateRpcNode(network.chainId, url);
+  const result = RpcValidationMapping[validationResult];
 
-    const validationResult = await networkService.validateRpcNode(network.chainId, url);
-    const result = RpcValidationMapping[validationResult];
+  return result;
+});
 
-    return result;
-  },
-);
-
-const saveRpcNodeFx = createEffect(
-  async ({
-    network,
-    form,
-  }: {
-    network: ExtendedChain | null;
-    form: CustomRpcForm;
-    rpcConnectivityResult: RpcCheckResult;
-    isNodeExist: boolean;
-  }) => {
-    if (!network) return;
-
-    manageNetworkModel.events.rpcNodeAdded({
-      chainId: network?.chainId,
-      rpcNode: {
-        name: form.name,
-        url: form.url,
-      },
-    });
-
-    processStarted(false);
-  },
-);
+const saveRpcNodeFx = createEffect(async ({ network, form }: SaveRpcNodeFxParams) => {
+  manageNetworkModel.events.rpcNodeAdded({
+    chainId: network?.chainId,
+    rpcNode: {
+      name: form.name,
+      url: form.url,
+    },
+  });
+});
 
 const isNodeExistFx = createEffect(({ network, url }: NodeExistParam): boolean => {
-  if (!network) {
-    return false;
-  }
-
   const defaultNodes = network.nodes;
   const customNodes = network.connection.customNodes || [];
 
@@ -146,6 +124,7 @@ sample({
 sample({
   clock: $addCustomRpcForm.submit,
   source: { network: $selectedNetwork, url: $addCustomRpcForm.fields.url.$value },
+  filter: (params: { network: ExtendedChain | null; url: string }): params is CheckRpcNodeFxParams => !!params.network,
   target: [checkRpcNodeFx, isNodeExistFx],
 });
 
@@ -163,12 +142,24 @@ sample({
     isNodeExist: $isNodeExist,
     network: $selectedNetwork,
     form: $addCustomRpcForm.$values,
-    isValid: $addCustomRpcForm.$isValid,
+    isFormValid: $addCustomRpcForm.$isValid,
   },
-  filter: ({ isNodeExist, rpcConnectivityResult, isValid }) => {
-    return isValid && !isNodeExist && rpcConnectivityResult === RpcCheckResult.VALID;
+  filter: (params: {
+    isNodeExist: boolean;
+    rpcConnectivityResult: RpcCheckResult;
+    isFormValid: boolean;
+  }): params is SaveRpcNodeFxParams => {
+    const { isNodeExist, rpcConnectivityResult, isFormValid } = params;
+
+    return isFormValid && !isNodeExist && rpcConnectivityResult === RpcCheckResult.VALID;
   },
   target: saveRpcNodeFx,
+});
+
+sample({
+  clock: saveRpcNodeFx.done,
+  fn: () => false,
+  target: processStarted,
 });
 
 export const addCustomRpcModel = {

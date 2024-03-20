@@ -1,3 +1,4 @@
+import { RpcNode } from '@shared/core';
 import { ExtendedChain } from '@entities/network';
 
 export const enum RpcCheckResult {
@@ -12,7 +13,25 @@ export type CustomRpcForm = {
   url: string;
 };
 
-export type NodeExistParam = {
-  network: ExtendedChain | null;
+export type CheckRpcNodeFxParams = {
+  network: ExtendedChain;
   url: string;
+};
+
+export type NodeExistParam = CheckRpcNodeFxParams;
+
+export type EditRpcNodeFxParams = {
+  network: ExtendedChain;
+  form: CustomRpcForm;
+  rpcConnectivityResult: RpcCheckResult;
+  nodeToEdit: RpcNode;
+  isFormValid: true;
+};
+
+export type SaveRpcNodeFxParams = {
+  network: ExtendedChain;
+  form: CustomRpcForm;
+  rpcConnectivityResult: RpcCheckResult;
+  isNodeExist: false;
+  isFormValid: true;
 };
