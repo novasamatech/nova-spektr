@@ -5,7 +5,8 @@ import { useUnit } from 'effector-react';
 import { BaseModal, Button, Input, InputHint, Alert } from '@shared/ui';
 import { useI18n } from '@app/providers';
 import { OperationTitle } from '@entities/chain';
-import { RpcCheckResult, addCustomRpcModel } from '@features/network';
+import { addCustomRpcModel } from '@features/network';
+import { customRpcUtils } from '../lib/custom-rpc-utils';
 
 type Props = {
   isOpen: boolean;
@@ -14,7 +15,7 @@ type Props = {
 
 export const AddCustomRpcModal = ({ isOpen, onClose }: Props) => {
   const { t } = useI18n();
-  const rpcCheckResult = useUnit(addCustomRpcModel.$rpcConnectivityResult);
+  const rpcConnectivityResult = useUnit(addCustomRpcModel.$rpcConnectivityResult);
   const isNodeExist = useUnit(addCustomRpcModel.$isNodeExist);
   const network = useUnit(addCustomRpcModel.$selectedNetwork);
   const isLoading = useUnit(addCustomRpcModel.$isLoading);
@@ -32,7 +33,6 @@ export const AddCustomRpcModal = ({ isOpen, onClose }: Props) => {
 
   const onSubmit = (event: FormEvent) => {
     event.preventDefault();
-
     submit();
   };
 
@@ -77,19 +77,22 @@ export const AddCustomRpcModal = ({ isOpen, onClose }: Props) => {
               {t(url.errorText())}
             </InputHint>
           </div>
-          <InputHint active={rpcCheckResult === RpcCheckResult.VALID && !isNodeExist} variant="success">
+          <InputHint
+            active={customRpcUtils.isRpcConnectivityValid(rpcConnectivityResult) && !isNodeExist}
+            variant="success"
+          >
             {t('settings.networks.addressConnected')}
           </InputHint>
           <InputHint active={isNodeExist === true} variant="error">
             {t('settings.networks.nodeExist')}
           </InputHint>
           <Alert
-            active={rpcCheckResult === RpcCheckResult.INVALID}
+            active={customRpcUtils.isRpcConnectivityInvalid(rpcConnectivityResult)}
             title={t('settings.networks.addressNoConnect')}
             variant="error"
           />
           <Alert
-            active={rpcCheckResult === RpcCheckResult.WRONG_NETWORK}
+            active={customRpcUtils.isRpcConnectivityWrongNetwork(rpcConnectivityResult)}
             title={t('settings.networks.addressWrongNetwork', { networkName: network.name })}
             variant="error"
           />

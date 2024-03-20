@@ -5,7 +5,8 @@ import { useUnit } from 'effector-react';
 import { BaseModal, Button, Input, InputHint, Alert } from '@shared/ui';
 import { useI18n } from '@app/providers';
 import { OperationTitle } from '@entities/chain';
-import { RpcCheckResult, editCustomRpcModel } from '@features/network';
+import { editCustomRpcModel } from '@features/network';
+import { customRpcUtils } from '../lib/custom-rpc-utils';
 
 type Props = {
   isOpen: boolean;
@@ -14,7 +15,7 @@ type Props = {
 
 export const EditCustomRpcModal = ({ isOpen, onClose }: Props) => {
   const { t } = useI18n();
-  const rpcCheckResult = useUnit(editCustomRpcModel.$rpcConnectivityResult);
+  const rpcConnectivityResult = useUnit(editCustomRpcModel.$rpcConnectivityResult);
   const network = useUnit(editCustomRpcModel.$selectedNetwork);
   const isLoading = useUnit(editCustomRpcModel.$isLoading);
 
@@ -76,16 +77,16 @@ export const EditCustomRpcModal = ({ isOpen, onClose }: Props) => {
               {t(url.errorText())}
             </InputHint>
           </div>
-          <InputHint active={rpcCheckResult === RpcCheckResult.VALID} variant="success">
+          <InputHint active={customRpcUtils.isRpcConnectivityValid(rpcConnectivityResult)} variant="success">
             {t('settings.networks.addressConnected')}
           </InputHint>
           <Alert
-            active={rpcCheckResult === RpcCheckResult.INVALID}
+            active={customRpcUtils.isRpcConnectivityInvalid(rpcConnectivityResult)}
             title={t('settings.networks.addressNoConnect')}
             variant="error"
           />
           <Alert
-            active={rpcCheckResult === RpcCheckResult.WRONG_NETWORK}
+            active={customRpcUtils.isRpcConnectivityWrongNetwork(rpcConnectivityResult)}
             title={t('settings.networks.addressWrongNetwork', { networkName: network.name })}
             variant="error"
           />
