@@ -105,6 +105,6 @@ describe('features/network/CustomRpcForm/edit-custom-rpc-model', () => {
     await allSettled(editCustomRpcModel.events.networkChanged, { scope, params: network as unknown as ExtendedChain });
     await allSettled(editCustomRpcModel.$editCustomRpcForm.submit, { scope });
 
-    expect(scope.getState(editCustomRpcModel.$rpcConnectivityResult)).toEqual(RpcCheckResult.LOADING);
+    expect(scope.getState(editCustomRpcModel.$isLoading)).toEqual(true);
   });
 });

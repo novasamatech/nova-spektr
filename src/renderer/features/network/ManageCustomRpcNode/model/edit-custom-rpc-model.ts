@@ -19,7 +19,7 @@ const $editCustomRpcForm = createForm({
       rules: customRpcConstants.FieldRules.url,
     },
   },
-  validateOn: ['change'],
+  validateOn: ['submit'],
 });
 
 const formInitiated = createEvent();
@@ -47,22 +47,11 @@ const editRpcNodeFx = createEffect(async ({ network, form, nodeToEdit }: EditRpc
     oldNode: nodeToEdit,
     rpcNode: { url: form.url, name: form.name },
   });
-
-  processStarted(false);
 });
 
 const updateInitialValuesFx = createEffect(({ url, name }: RpcNode) => {
   $editCustomRpcForm.fields.url.onChange(url);
   $editCustomRpcForm.fields.name.onChange(name);
-});
-
-const resetFormFx = createEffect(() => {
-  resetRpcValidationFx();
-  $editCustomRpcForm.reset;
-});
-
-const resetRpcValidationFx = createEffect(() => {
-  rpcConnectivityChecked(RpcCheckResult.INIT);
 });
 
 sample({
@@ -72,7 +61,7 @@ sample({
 
 sample({
   clock: formInitiated,
-  target: resetFormFx,
+  target: [$rpcConnectivityResult.reinit, $editCustomRpcForm.reset],
 });
 
 sample({
@@ -80,10 +69,9 @@ sample({
   target: $isLoading,
 });
 
-// reset the rpc validations when the url field is changed
 sample({
   clock: $editCustomRpcForm.fields.url.onChange,
-  target: resetRpcValidationFx,
+  target: $rpcConnectivityResult.reinit,
 });
 
 sample({
@@ -141,6 +129,11 @@ sample({
     return RpcCheckResult.INIT;
   },
   target: rpcConnectivityChecked,
+});
+
+sample({
+  clock: editRpcNodeFx.doneData,
+  target: $isProcessStarted.reinit,
 });
 
 export const editCustomRpcModel = {

@@ -18,7 +18,7 @@ const $addCustomRpcForm = createForm({
       rules: customRpcConstants.FieldRules.url,
     },
   },
-  validateOn: ['change'],
+  validateOn: ['submit'],
 });
 
 const formInitiated = createEvent();
@@ -59,16 +59,6 @@ const isNodeExistFx = createEffect(({ network, url }: NodeExistParam): boolean =
   return result;
 });
 
-const resetFormFx = createEffect(() => {
-  resetRpcValidationFx();
-  $addCustomRpcForm.reset;
-});
-
-const resetRpcValidationFx = createEffect(() => {
-  nodeExistChecked(false);
-  rpcConnectivityChecked(RpcCheckResult.INIT);
-});
-
 sample({
   clock: processStarted,
   target: $isProcessStarted,
@@ -76,7 +66,7 @@ sample({
 
 sample({
   clock: formInitiated,
-  target: resetFormFx,
+  target: [$rpcConnectivityResult.reinit, $isNodeExist.reinit, $addCustomRpcForm.reset],
 });
 
 sample({
@@ -87,7 +77,7 @@ sample({
 // reset the rpc validations when the url field is changed
 sample({
   clock: $addCustomRpcForm.fields.url.onChange,
-  target: resetRpcValidationFx,
+  target: [$rpcConnectivityResult.reinit, $isNodeExist.reinit],
 });
 
 sample({
@@ -136,7 +126,7 @@ sample({
 // if we are done checking the form data and it is valid
 // we can proceed with saving the new rpc node
 sample({
-  clock: [isNodeExistFx.doneData, checkRpcNodeFx.doneData, $addCustomRpcForm.$isValid],
+  clock: [isNodeExistFx.doneData, checkRpcNodeFx.doneData],
   source: {
     rpcConnectivityResult: $rpcConnectivityResult,
     isNodeExist: $isNodeExist,
@@ -158,8 +148,7 @@ sample({
 
 sample({
   clock: saveRpcNodeFx.done,
-  fn: () => false,
-  target: processStarted,
+  target: $isProcessStarted.reinit,
 });
 
 export const addCustomRpcModel = {

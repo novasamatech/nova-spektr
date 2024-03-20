@@ -101,6 +101,6 @@ describe('features/network/CustomRpcForm/add-custom-rpc-model', () => {
     await allSettled(addCustomRpcModel.$addCustomRpcForm.submit, { scope });
 
     expect(scope.getState(addCustomRpcModel.$isNodeExist)).toEqual(false);
-    expect(scope.getState(addCustomRpcModel.$rpcConnectivityResult)).toEqual(RpcCheckResult.LOADING);
+    expect(scope.getState(addCustomRpcModel.$isLoading)).toEqual(true);
   });
 });
