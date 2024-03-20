@@ -37,9 +37,8 @@ const $isLoading = createStore<boolean>(false);
 const verifyRpcConnectivityFx = createEffect(
   async ({ network, url }: VerifyRpcConnectivityFxParams): Promise<RpcConnectivityResult> => {
     const validationResult = await networkService.validateRpcNode(network.chainId, url);
-    const result = customRpcConstants.RpcValidationMapping[validationResult];
 
-    return result;
+    return customRpcConstants.RpcValidationMapping[validationResult];
   },
 );
 
