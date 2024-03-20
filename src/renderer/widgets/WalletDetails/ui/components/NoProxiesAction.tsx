@@ -1,14 +1,15 @@
 import { Icon, SmallTitleText, FootnoteText, Button } from '@shared/ui';
 import { useI18n } from '@app/providers';
-import { ProxyPopover } from '@entities/proxy/ui/ProxyPopover';
+import { ProxyPopover } from '@entities/proxy';
 import { cnTw } from '@shared/lib/utils';
 
 type Props = {
   canCreateProxy?: boolean;
   className?: string;
+  onAddProxy: () => void;
 };
 
-export const NoProxiesAction = ({ className, canCreateProxy = true }: Props) => {
+export const NoProxiesAction = ({ className, canCreateProxy = true, onAddProxy }: Props) => {
   const { t } = useI18n();
 
   return (
@@ -23,7 +24,9 @@ export const NoProxiesAction = ({ className, canCreateProxy = true }: Props) => 
           <FootnoteText className="text-text-tertiary mb-4">
             {t('walletDetails.common.emptyProxyDescription')}
           </FootnoteText>
-          <Button size="sm">{t('walletDetails.common.addProxyButton')}</Button>
+          <Button size="sm" onClick={onAddProxy}>
+            {t('walletDetails.common.addProxyButton')}
+          </Button>
         </>
       )}
     </div>

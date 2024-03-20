@@ -9,11 +9,13 @@ type Props = {
   className?: string;
 };
 
-const ChainFontStyle = 'font-manrope text-header-title text-text-primary truncate';
-
 export const OperationTitle = ({ title, chainId, className }: Props) => (
   <div className={cnTw('flex flex-1 items-center h-7 truncate', className)}>
     <HeaderTitleText>{title}</HeaderTitleText>
-    <ChainTitle className="ml-1.5 gap-x-1.5 overflow-hidden" chainId={chainId} fontClass={ChainFontStyle} />
+    <ChainTitle
+      chainId={chainId}
+      className="ml-1.5 gap-x-1.5 overflow-hidden"
+      fontClass="font-manrope text-header-title text-text-primary truncate"
+    />
   </div>
 );

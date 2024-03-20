@@ -42,10 +42,10 @@ export const Select = forwardRef<HTMLButtonElement, Props>(
       invalid,
       selectedId,
       options,
-      onChange,
       position = 'down',
       tabIndex,
       theme = 'light',
+      onChange,
     },
     ref,
   ) => {
@@ -128,7 +128,7 @@ export const Select = forwardRef<HTMLButtonElement, Props>(
     if (!label) return selectElement;
 
     return (
-      <div className="flex flex-col gap-2">
+      <div className="flex flex-col gap-y-2">
         <LabelText className="cursor-pointer text-text-tertiary font-medium" htmlFor={id}>
           {label}
         </LabelText>

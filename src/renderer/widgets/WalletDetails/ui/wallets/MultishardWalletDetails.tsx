@@ -5,16 +5,17 @@ import { useModalClose, useToggle } from '@shared/lib/hooks';
 import { MultishardAccountsList, WalletCardLg } from '@entities/wallet';
 import { useI18n } from '@app/providers';
 import type { Wallet } from '@shared/core';
-import type { MultishardMap } from '../../lib/types';
-import { walletDetailsUtils } from '../../lib/utils';
 import { RenameWalletModal } from '@features/wallets/RenameWallet';
 import { IconNames } from '@shared/ui/Icon/data';
 import { ForgetWalletModal } from '@features/wallets/ForgetWallet';
 import { TabItem } from '@shared/ui/Tabs/common/types';
-// import { ProxiesList } from '../components/ProxiesList';
-import { walletProviderModel } from '../../model/wallet-provider-model';
-// import { NoProxiesAction } from '../components/NoProxiesAction';
 import { networkModel } from '@entities/network';
+import { addProxyModel, AddProxy } from '@widgets/AddProxyModal';
+import { ProxiesList } from '../components/ProxiesList';
+import { NoProxiesAction } from '../components/NoProxiesAction';
+import type { MultishardMap } from '../../lib/types';
+import { walletDetailsUtils } from '../../lib/utils';
+import { walletProviderModel } from '../../model/wallet-provider-model';
 
 type Props = {
   wallet: Wallet;
@@ -48,6 +49,11 @@ export const MultishardWalletDetails = ({ wallet, accounts, onClose }: Props) =>
       title: t('walletDetails.common.forgetButton'),
       onClick: toggleConfirmForget,
     },
+    {
+      icon: 'addCircle' as IconNames,
+      title: t('walletDetails.common.addProxyAction'),
+      onClick: addProxyModel.events.flowStarted,
+    },
   ];
 
   const ActionButton = (
@@ -68,15 +74,19 @@ export const MultishardWalletDetails = ({ wallet, accounts, onClose }: Props) =>
       title: t('walletDetails.common.accountTabTitle'),
       panel: <MultishardAccountsList accounts={accounts} chains={Object.values(chains)} className="h-[419px]" />,
     },
-    // {
-    //   id: 'proxies',
-    //   title: t('walletDetails.common.proxiesTabTitle'),
-    //   panel: hasProxies ? (
-    //     <ProxiesList className="h-[403px] mt-4" canCreateProxy={canCreateProxy} />
-    //   ) : (
-    //     <NoProxiesAction className="h-[403px] mt-4" canCreateProxy={canCreateProxy} />
-    //   ),
-    // },
+    {
+      id: 'proxies',
+      title: t('walletDetails.common.proxiesTabTitle'),
+      panel: hasProxies ? (
+        <ProxiesList className="h-[403px] mt-4" canCreateProxy={canCreateProxy} />
+      ) : (
+        <NoProxiesAction
+          className="h-[403px] mt-4"
+          canCreateProxy={canCreateProxy}
+          onAddProxy={addProxyModel.events.flowStarted}
+        />
+      ),
+    },
   ];
 
   return (
@@ -104,6 +114,8 @@ export const MultishardWalletDetails = ({ wallet, accounts, onClose }: Props) =>
         onClose={toggleConfirmForget}
         onForget={onClose}
       />
+
+      <AddProxy />
     </BaseModal>
   );
 };

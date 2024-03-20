@@ -10,9 +10,8 @@ import { toAddress, getCreatedDateFromApi } from '@shared/lib/utils';
 import { useDebounce, useTaskQueue } from '@shared/lib/hooks';
 import { Task } from '@shared/lib/hooks/useTaskQueue';
 import type { MultisigAccount, ChainId } from '@shared/core';
-import { ConnectionStatus } from '@shared/core';
 import { walletModel, accountUtils } from '@entities/wallet';
-import { networkModel } from '@entities/network';
+import { networkModel, networkUtils } from '@entities/network';
 
 type MultisigChainContextProps = {
   addTask: (task: Task) => void;
@@ -126,7 +125,7 @@ export const MultisigChainProvider = ({ children }: PropsWithChildren) => {
   };
 
   const availableConnectionsAmount = Object.values(debouncedConnectionStatuses).filter(
-    (status) => status === ConnectionStatus.CONNECTED,
+    networkUtils.isConnectedStatus,
   ).length;
 
   useEffect(() => {

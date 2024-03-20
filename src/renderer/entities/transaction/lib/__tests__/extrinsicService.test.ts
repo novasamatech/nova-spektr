@@ -43,8 +43,7 @@ describe('entities/transaction/lib/extrinsicService.ts', () => {
     } as unknown as MultisigAccount;
 
     const transaction = wrapAsMulti(
-      multisigAccount,
-      TEST_ACCOUNTS[0],
+      api,
       {
         address: TEST_ADDRESS,
         args: {
@@ -55,7 +54,8 @@ describe('entities/transaction/lib/extrinsicService.ts', () => {
         chainId: '0x1234000000000000000000000000000000000000000000000000000000000000',
         type: TransactionType.ADD_PROXY,
       },
-      api,
+      multisigAccount,
+      TEST_ACCOUNTS[0],
       42,
     );
 

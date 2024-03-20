@@ -11,9 +11,10 @@ import { IconNames } from '@shared/ui/Icon/data';
 import { RenameWalletModal } from '@features/wallets/RenameWallet';
 import { ForgetWalletModal } from '@features/wallets/ForgetWallet';
 import { TabItem } from '@shared/ui/Tabs/common/types';
-// import { ProxiesList } from '../components/ProxiesList';
+import { ProxiesList } from '../components/ProxiesList';
+import { NoProxiesAction } from '../components/NoProxiesAction';
 import { walletProviderModel } from '../../model/wallet-provider-model';
-// import { NoProxiesAction } from '../components/NoProxiesAction';
+import { addProxyModel, AddProxy } from '@widgets/AddProxyModal';
 
 type Props = {
   wallet: Wallet;
@@ -55,6 +56,11 @@ export const SimpleWalletDetails = ({ wallet, account, onClose }: Props) => {
       title: t('walletDetails.common.forgetButton'),
       onClick: toggleConfirmForget,
     },
+    {
+      icon: 'addCircle' as IconNames,
+      title: t('walletDetails.common.addProxyAction'),
+      onClick: addProxyModel.events.flowStarted,
+    },
   ];
 
   const ActionButton = (
@@ -75,15 +81,19 @@ export const SimpleWalletDetails = ({ wallet, account, onClose }: Props) => {
       title: t('walletDetails.common.accountTabTitle'),
       panel: <AccountsList accountId={account.accountId} chains={Object.values(chains)} className="h-[362px]" />,
     },
-    // {
-    //   id: 'proxies',
-    //   title: t('walletDetails.common.proxiesTabTitle'),
-    //   panel: hasProxies ? (
-    //     <ProxiesList canCreateProxy={canCreateProxy} className="h-[388px]" />
-    //   ) : (
-    //     <NoProxiesAction className="h-[388px]" canCreateProxy={canCreateProxy} />
-    //   ),
-    // },
+    {
+      id: 'proxies',
+      title: t('walletDetails.common.proxiesTabTitle'),
+      panel: hasProxies ? (
+        <ProxiesList canCreateProxy={canCreateProxy} className="h-[388px]" />
+      ) : (
+        <NoProxiesAction
+          className="h-[388px]"
+          canCreateProxy={canCreateProxy}
+          onAddProxy={addProxyModel.events.flowStarted}
+        />
+      ),
+    },
   ];
 
   return (
@@ -115,6 +125,8 @@ export const SimpleWalletDetails = ({ wallet, account, onClose }: Props) => {
         onClose={toggleConfirmForget}
         onForget={onClose}
       />
+
+      <AddProxy />
     </BaseModal>
   );
 };

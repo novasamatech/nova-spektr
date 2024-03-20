@@ -10,6 +10,7 @@ describe('ui/Combobox/Combobox', () => {
   const defaultProps = {
     placeholder: 'Select option',
     options,
+    onInput: () => {},
     onChange: () => {},
   };
 

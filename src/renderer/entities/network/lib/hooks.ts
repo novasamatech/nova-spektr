@@ -13,7 +13,7 @@ type NetworkData = {
   extendedChain: ExtendedChain;
 };
 
-export const useNetworkData = (chainId: ChainId): NetworkData => {
+export const useNetworkData = (chainId = '0x00' as ChainId): NetworkData => {
   const apis = useUnit(networkModel.$apis);
   const chains = useUnit(networkModel.$chains);
   const connectionStatuses = useUnit(networkModel.$connectionStatuses);

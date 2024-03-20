@@ -74,7 +74,7 @@ export const Input = forwardRef<HTMLInputElement, Props>(
     }
 
     return (
-      <div className="flex flex-col gap-2">
+      <div className="flex flex-col gap-y-2">
         <LabelText className="text-text-tertiary font-medium" htmlFor={id}>
           {label}
         </LabelText>

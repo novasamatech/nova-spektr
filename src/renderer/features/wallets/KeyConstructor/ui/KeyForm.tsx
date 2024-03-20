@@ -6,7 +6,7 @@ import { constructorModel } from '../model/constructor-model';
 import { Button, Input, Checkbox, FootnoteText, Select, InputHint } from '@shared/ui';
 import { ShardInfoPopover } from './ShardInfoPopover';
 import { ChainTitle } from '@entities/chain';
-import { chainsService } from '@shared/api/network';
+import { networkModel } from '@entities/network';
 import { KeyType } from '@shared/core';
 import { useI18n } from '@app/providers';
 
@@ -20,6 +20,7 @@ export const KeyForm = () => {
     fields: { network, keyType, isSharded, shards, keyName, derivationPath },
   } = useForm(constructorModel.$constructorForm);
 
+  const chains = useUnit(networkModel.$chains);
   const isKeyTypeSharded = useUnit(constructorModel.$isKeyTypeSharded);
   const derivationEnabled = useUnit(constructorModel.$derivationEnabled);
 
@@ -30,7 +31,7 @@ export const KeyForm = () => {
   }, []);
 
   const networks = useMemo(() => {
-    return chainsService.getChainsData({ sort: true }).map((chain) => ({
+    return Object.values(chains).map((chain) => ({
       id: chain.chainId,
       value: chain,
       element: (

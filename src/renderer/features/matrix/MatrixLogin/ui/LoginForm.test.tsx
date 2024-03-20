@@ -1,9 +1,10 @@
-import { render, screen, act } from '@testing-library/react';
+import { render, screen, act, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { Provider } from 'effector-react';
-import { fork } from 'effector';
+import { fork, Scope } from 'effector';
 
 import { LoginForm } from './LoginForm';
+import { matrixModel } from '@entities/matrix';
 
 jest.mock('react-i18next', () => ({ Trans: (props: any) => props.i18nKey }));
 
@@ -14,12 +15,12 @@ jest.mock('@app/providers', () => ({
 }));
 
 describe('pages/Settings/Matrix/LoginForm', () => {
-  const setupForm = async (withCredentials = false) => {
+  const setupForm = async (scope: Scope, withCredentials = false) => {
     const user = userEvent.setup({ delay: null });
 
     await act(async () => {
       render(
-        <Provider value={fork()}>
+        <Provider value={scope}>
           <LoginForm redirectStep="step" />
         </Provider>,
       );
@@ -51,20 +52,36 @@ describe('pages/Settings/Matrix/LoginForm', () => {
   });
 
   test('should submit button be disabled', async () => {
-    await setupForm();
+    const scope = fork({
+      values: new Map().set(matrixModel.$matrix, {
+        loginFlows: jest.fn().mockResolvedValue({ password: true, sso: [] }),
+        setHomeserver: jest.fn().mockResolvedValue({}),
+        loginWithCreds: jest.fn().mockResolvedValue(Promise.resolve()),
+      }),
+    });
+
+    await setupForm(scope, false);
 
     const button = screen.getByRole('button', { name: 'settings.matrix.logInButton' });
-    expect(button).toBeDisabled();
+    waitFor(() => expect(button).toBeDisabled());
   });
 
   test('should disable submit button during submission', async () => {
-    await setupForm(true);
+    const scope = fork({
+      values: new Map().set(matrixModel.$matrix, {
+        loginFlows: jest.fn().mockResolvedValue({ password: true, sso: [] }),
+        setHomeserver: jest.fn(),
+        loginWithCreds: jest.fn().mockResolvedValue(Promise.resolve()),
+      }),
+    });
+
+    await setupForm(scope, true);
 
     const button = screen.getByRole('button', { name: 'settings.matrix.logInButton' });
     expect(button).toBeEnabled();
 
     await act(async () => button.click());
 
-    expect(button).toBeDisabled();
+    waitFor(() => expect(button).toBeDisabled());
   });
 });

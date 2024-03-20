@@ -4,7 +4,7 @@ import { isHex, hexToU8a, bnMin, BN_TWO, BN } from '@polkadot/util';
 import { blake2AsHex } from '@polkadot/util-crypto';
 import { u32 } from '@polkadot/types';
 
-import { Address, CallData, CallHash, XcmPallets } from '@shared/core';
+import { Address, CallData, CallHash, XcmPallets, ProxyType } from '@shared/core';
 import { XcmTransferType } from '../../api/xcm';
 import { DEFAULT_TIME, ONE_DAY, THRESHOLD } from './constants';
 
@@ -121,8 +121,8 @@ export const getCreatedDateFromApi = async (neededBlock: number, api: ApiPromise
 
 export const getTypeVersion = (api: ApiPromise, typeName: string): string => {
   return (
-    getTypeVersions(api, typeName)
-      .filter((value: string) => {
+    getTypeEnumValues(api, typeName)
+      .filter((value) => {
         const isV3 = value === V3_LABEL;
         const isUnused = value.toLowerCase().includes(UNUSED_LABEL);
 
@@ -132,7 +132,18 @@ export const getTypeVersion = (api: ApiPromise, typeName: string): string => {
   );
 };
 
-export const getTypeVersions = (api: ApiPromise, typeName: string): string[] => {
+export const getProxyTypes = (api: ApiPromise): ProxyType[] => {
+  const type = api.tx.proxy.addProxy.meta.args[1].type.toString();
+  const excludedTypes = ['SudoBalances'];
+
+  return getTypeEnumValues<ProxyType>(api, type).filter((value) => {
+    const isUnused = value.toLowerCase().includes(UNUSED_LABEL);
+
+    return !isUnused && !excludedTypes.includes(value);
+  });
+};
+
+export const getTypeEnumValues = <T extends string>(api: ApiPromise, typeName: string): T[] => {
   // @ts-ignore
   return api.createType(typeName).defKeys;
 };

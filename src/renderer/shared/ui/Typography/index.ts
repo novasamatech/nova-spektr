@@ -8,7 +8,7 @@ import { LargeTitleText } from './components/LargeTitleText';
 import { HeaderTitleText } from './components/HeaderTitleText';
 import { LabelText } from './components/LabelText';
 import { HelpText } from './components/HelpText';
-import TextBase from './common/TextBase';
+import { TextBase } from './common/TextBase';
 
 export {
   TextBase,

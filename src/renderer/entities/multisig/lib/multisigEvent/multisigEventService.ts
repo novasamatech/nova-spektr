@@ -99,10 +99,7 @@ export const useMultisigEvent = ({ addTask }: Props): IMultisigEventService => {
       const oldEvent = events.find((e) => [...pendingStatuses, event.status].includes(e.status));
 
       if (oldEvent) {
-        updateEvent({
-          ...oldEvent,
-          ...event,
-        });
+        updateEvent({ ...oldEvent, ...event });
       } else {
         addEvent(event);
       }

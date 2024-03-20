@@ -16,7 +16,13 @@ import {
   ExplorersPopover,
 } from '@entities/wallet';
 import { AssetBalance } from '@entities/asset';
-import { MultisigTxInitStatus, DepositWithLabel, Fee, useTransaction, Transaction } from '@entities/transaction';
+import {
+  MultisigTxInitStatus,
+  MultisigDepositWithLabel,
+  Fee,
+  useTransaction,
+  Transaction,
+} from '@entities/transaction';
 import AccountsModal from '../AccountsModal/AccountsModal';
 import { DestinationType } from '../../common/types';
 import { cnTw } from '@shared/lib/utils';
@@ -196,7 +202,7 @@ export const Confirmation = ({
           <hr className="border-filter-border" />
 
           {accountUtils.isMultisigAccount(accounts[0]) && (
-            <DepositWithLabel api={api} asset={asset} threshold={accounts[0].threshold} />
+            <MultisigDepositWithLabel api={api} asset={asset} threshold={accounts[0].threshold} />
           )}
           <DetailRow label={t('staking.networkFee', { count: accounts.length })}>
             <Fee api={api} asset={asset} transaction={transaction} onFeeLoading={setFeeLoading} />

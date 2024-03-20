@@ -37,7 +37,7 @@ export const RenameWalletModal = ({ wallet, isOpen, onClose }: Props) => {
   return (
     <BaseModal isOpen={isOpen} closeButton title={t('walletDetails.common.renameTitle')} onClose={onClose}>
       <form className="flex flex-col pt-4 gap-4" onSubmit={submitForm}>
-        <div className="flex flex-col gap-2">
+        <div className="flex flex-col gap-y-2">
           <Input
             name="name"
             className="w-full"

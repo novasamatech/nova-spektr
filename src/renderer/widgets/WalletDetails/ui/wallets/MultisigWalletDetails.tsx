@@ -14,14 +14,14 @@ import {
   accountUtils,
 } from '@entities/wallet';
 import { useI18n } from '@app/providers';
-// TODO: think about combining balances and wallets
 import { WalletFiatBalance } from '@features/wallets/WalletSelect/ui/WalletFiatBalance';
 import { IconNames } from '@shared/ui/Icon/data';
 import { RenameWalletModal } from '@features/wallets/RenameWallet';
 import { ForgetWalletModal } from '@features/wallets/ForgetWallet';
-// import { ProxiesList } from '../components/ProxiesList';
+import { addProxyModel, AddProxy } from '@widgets/AddProxyModal';
+import { ProxiesList } from '../components/ProxiesList';
+import { NoProxiesAction } from '../components/NoProxiesAction';
 import { walletProviderModel } from '../../model/wallet-provider-model';
-// import { NoProxiesAction } from '../components/NoProxiesAction';
 import { networkUtils, networkModel } from '@entities/network';
 import { matrixModel, matrixUtils } from '@entities/matrix';
 
@@ -81,6 +81,11 @@ export const MultisigWalletDetails = ({
       icon: 'forget' as IconNames,
       title: t('walletDetails.common.forgetButton'),
       onClick: toggleConfirmForget,
+    },
+    {
+      icon: 'addCircle' as IconNames,
+      title: t('walletDetails.common.addProxyAction'),
+      onClick: addProxyModel.events.flowStarted,
     },
   ];
 
@@ -229,15 +234,19 @@ export const MultisigWalletDetails = ({
                 </div>
               ),
             },
-            // {
-            //   id: 3,
-            //   title: t('walletDetails.common.proxiesTabTitle'),
-            //   panel: hasProxies ? (
-            //     <ProxiesList className="h-[387px]" canCreateProxy={canCreateProxy} />
-            //   ) : (
-            //     <NoProxiesAction className="h-[387px]" canCreateProxy={canCreateProxy} />
-            //   ),
-            // },
+            {
+              id: 3,
+              title: t('walletDetails.common.proxiesTabTitle'),
+              panel: hasProxies ? (
+                <ProxiesList className="h-[387px]" canCreateProxy={canCreateProxy} />
+              ) : (
+                <NoProxiesAction
+                  className="h-[387px]"
+                  canCreateProxy={canCreateProxy}
+                  onAddProxy={addProxyModel.events.flowStarted}
+                />
+              ),
+            },
           ]}
         />
       </div>
@@ -250,6 +259,8 @@ export const MultisigWalletDetails = ({
         onClose={toggleConfirmForget}
         onForget={onClose}
       />
+
+      <AddProxy />
     </BaseModal>
   );
 };

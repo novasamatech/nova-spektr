@@ -152,7 +152,7 @@ export const SelectSignatories = ({ isActive, wallets, accounts, contacts, onSel
   const selectedContactsLength = Object.values(selectedContacts).length;
 
   const WalletsTab = hasWallets ? (
-    <div className="flex flex-col gap-2">
+    <div className="flex flex-col gap-y-2">
       {Boolean(disabledWallets) && (
         <FootnoteText className="text-text-tertiary px-2">{t('createMultisigAccount.availableLabel')}</FootnoteText>
       )}

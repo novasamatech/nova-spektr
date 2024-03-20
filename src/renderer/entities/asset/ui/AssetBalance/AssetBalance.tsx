@@ -5,7 +5,7 @@ import type { Asset } from '@shared/core';
 
 type Props = {
   value: string;
-  asset: Asset; // maybe change type to Asset | number to allow pass just asset id and then get asset by id
+  asset?: Asset; // maybe change type to Asset | number to allow pass just asset id and then get asset by id
   className?: string;
   showIcon?: boolean;
   imgClassName?: string;
@@ -14,6 +14,9 @@ type Props = {
 
 export const AssetBalance = ({ value, asset, className, showIcon, imgClassName, wrapperClassName }: Props) => {
   const { t } = useI18n();
+
+  if (!asset) return null;
+
   const { precision, symbol, icon, name } = asset;
   const { value: formattedValue, decimalPlaces, suffix } = formatBalance(value, precision);
 

@@ -38,7 +38,7 @@ export const ChangeValidators = () => {
   const [searchParams] = useSearchParams();
   const params = useParams<{ chainId: ChainId }>();
 
-  const { api, chain, connection } = useNetworkData(params.chainId || ('' as ChainId));
+  const { api, chain, connection } = useNetworkData(params.chainId);
 
   const [isValidatorsModalOpen, toggleValidatorsModal] = useToggle(true);
 

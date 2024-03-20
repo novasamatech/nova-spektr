@@ -48,7 +48,7 @@ type Params = {
 };
 
 sample({
-  clock: [priceProviderModel.watch.fiatFlagLoaded, currencyModel.watch.activeCurrencyLoaded, formInitiated],
+  clock: [priceProviderModel.output.fiatFlagLoaded, currencyModel.output.activeCurrencyLoaded, formInitiated],
   source: {
     fiatFlag: priceProviderModel.$fiatFlag,
     currency: currencyModel.$activeCurrency,
@@ -73,7 +73,7 @@ sample({
 
 sample({
   clock: combineEvents({
-    events: [priceProviderModel.watch.fiatFlagChangedDone, currencyModel.watch.currencyChangedDone],
+    events: [priceProviderModel.output.fiatFlagChangedDone, currencyModel.output.currencyChangedDone],
   }),
   target: attach({
     source: $callbacks,

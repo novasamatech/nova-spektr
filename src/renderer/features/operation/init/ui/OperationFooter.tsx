@@ -1,8 +1,8 @@
 import { ApiPromise } from '@polkadot/api';
 
-import { Icon, FootnoteText, Tooltip } from '@shared/ui';
+import { FootnoteText } from '@shared/ui';
 import { useI18n } from '@app/providers';
-import { Transaction, Deposit, Fee, XcmTypes } from '@entities/transaction';
+import { Transaction, XcmTypes, FeeWithLabel, MultisigDepositWithLabel } from '@entities/transaction';
 import { XcmConfig } from '@shared/api/xcm';
 import { XcmFee } from '@entities/transaction/ui/XcmFee/XcmFee';
 import type { Asset, Account } from '@shared/core';
@@ -45,41 +45,34 @@ export const OperationFooter = ({
   return (
     <div className="flex flex-col gap-y-2">
       {account && accountUtils.isMultisigAccount(account) && (
-        <div className="flex justify-between items-center gap-x-2">
-          <div className="flex items-center gap-x-1">
-            <Icon className="text-text-tertiary" name="lock" size={12} />
-            <FootnoteText className="text-text-tertiary">{t('staking.networkDepositLabel')}</FootnoteText>
-            <Tooltip content={t('staking.tooltips.depositDescription')} offsetPx={-90}>
-              <Icon name="info" className="cursor-pointer hover:text-icon-hover" size={16} />
-            </Tooltip>
-          </div>
-          <FootnoteText>
-            <Deposit api={api} asset={asset} threshold={account.threshold} onDepositChange={onDepositChange} />
-          </FootnoteText>
-        </div>
+        <MultisigDepositWithLabel
+          api={api}
+          asset={asset}
+          threshold={account.threshold}
+          onDepositChange={onDepositChange}
+        />
       )}
 
-      <div className="flex justify-between items-center gap-x-2">
-        <FootnoteText className="text-text-tertiary">{t('staking.networkFee', { count: totalAccounts })}</FootnoteText>
-        <FootnoteText className="text-text-tertiary">
-          <Fee api={api} asset={asset} transaction={feeTx} onFeeChange={onFeeChange} onFeeLoading={onFeeLoading} />
-        </FootnoteText>
-      </div>
+      <FeeWithLabel
+        label={t('staking.networkFee', { count: totalAccounts })}
+        api={api}
+        asset={asset}
+        multiply={totalAccounts}
+        transaction={feeTx}
+        onFeeChange={onFeeChange}
+        onFeeLoading={onFeeLoading}
+      />
 
       {totalAccounts > 1 && (
-        <div className="flex justify-between items-center gap-x-2">
-          <FootnoteText className="text-text-tertiary">{t('staking.networkFeeTotal')}</FootnoteText>
-          <FootnoteText className="text-text-tertiary">
-            <Fee
-              api={api}
-              asset={asset}
-              multiply={totalAccounts}
-              transaction={feeTx}
-              onFeeChange={onFeeChange}
-              onFeeLoading={onFeeLoading}
-            />
-          </FootnoteText>
-        </div>
+        <FeeWithLabel
+          label={t('staking.networkFeeTotal')}
+          api={api}
+          asset={asset}
+          multiply={totalAccounts}
+          transaction={feeTx}
+          onFeeChange={onFeeChange}
+          onFeeLoading={onFeeLoading}
+        />
       )}
 
       {isXcmTransfer && xcmConfig && xcmAsset && (
