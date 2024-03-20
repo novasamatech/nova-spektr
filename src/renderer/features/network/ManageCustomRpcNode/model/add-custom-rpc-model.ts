@@ -26,7 +26,6 @@ const networkChanged = createEvent<ExtendedChain>();
 const rpcConnectivityChecked = createEvent<RpcCheckResult>();
 const nodeExistChecked = createEvent<boolean>();
 const processStarted = createEvent<boolean>();
-const rpcConnectivityCheckStarted = createEvent<boolean>();
 
 const $selectedNetwork = createStore<ExtendedChain | null>(null);
 const $rpcConnectivityResult = createStore<RpcCheckResult>(RpcCheckResult.INIT);
@@ -38,9 +37,7 @@ const checkRpcNodeFx = createEffect(
   async ({ network, url }: { network: ExtendedChain | null; url: string }): Promise<RpcCheckResult> => {
     if (!network) return RpcCheckResult.INIT;
 
-    rpcConnectivityCheckStarted(true);
     const validationResult = await networkService.validateRpcNode(network.chainId, url);
-    rpcConnectivityCheckStarted(false);
     const result = RpcValidationMapping[validationResult];
 
     return result;
@@ -105,7 +102,7 @@ sample({
 });
 
 sample({
-  clock: rpcConnectivityCheckStarted,
+  clock: checkRpcNodeFx.pending,
   target: $isLoading,
 });
 
@@ -139,7 +136,6 @@ sample({
   clock: checkRpcNodeFx.fail,
   fn: ({ error }: { error: Error }) => {
     console.warn(error);
-    rpcConnectivityCheckStarted(false);
 
     return RpcCheckResult.INIT;
   },
