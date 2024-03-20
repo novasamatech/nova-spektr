@@ -43,14 +43,8 @@ export const Networks = () => {
   const inactiveNetworks = useUnit(inactiveNetworksModel.$inactiveNetworks);
   const connections = useUnit(networkModel.$connections);
   const filterQuery = useUnit(networksFilterModel.$filterQuery);
-  const [isAddRpcModalOpen, setAddRpcModalOpen] = useUnit([
-    addCustomRpcModel.$isProcessStarted,
-    addCustomRpcModel.events.processStarted,
-  ]);
-  const [isEditRpcModalOpen, setEditRpcModalOpen] = useUnit([
-    editCustomRpcModel.$isProcessStarted,
-    editCustomRpcModel.events.processStarted,
-  ]);
+  const isAddRpcModalOpen = useUnit(addCustomRpcModel.$isProcessStarted);
+  const isEditRpcModalOpen = useUnit(editCustomRpcModel.$isProcessStarted);
 
   const [isNetworksModalOpen, toggleNetworksModal] = useToggle(true);
 
@@ -159,13 +153,13 @@ export const Networks = () => {
 
   const closeAddCustomRpcModal = () => {
     setTimeout(() => {
-      setAddRpcModalOpen(false);
+      addCustomRpcModel.events.processStarted(false);
     }, DEFAULT_TRANSITION);
   };
 
   const closeEditCustomRpcModal = () => {
     setTimeout(() => {
-      setEditRpcModalOpen(false);
+      editCustomRpcModel.events.processStarted(false);
     }, DEFAULT_TRANSITION);
   };
 
