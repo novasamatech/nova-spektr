@@ -60,6 +60,7 @@ const $isXcmFeeLoading = restore(isXcmFeeLoadingChanged, false);
 
 const $isMultisig = createStore<boolean>(false);
 const $isProxy = createStore<boolean>(false);
+const $isXcm = createStore<boolean>(false);
 
 const $transferForm = createForm<FormParams>({
   fields: {
@@ -81,7 +82,7 @@ const $transferForm = createForm<FormParams>({
           validator: (_s, _f, { fee, isMultisig, signatoryBalance, multisigDeposit }) => {
             if (!isMultisig) return true;
 
-            return new BN(multisigDeposit).add(new BN(fee)).lte(new BN(signatoryBalance[1]));
+            return new BN(multisigDeposit).add(new BN(fee)).lte(new BN(signatoryBalance[0]));
           },
         },
       ],
@@ -121,17 +122,16 @@ const $transferForm = createForm<FormParams>({
           name: 'notEnoughBalance',
           errorText: 'transfer.notEnoughBalanceError',
           source: combine({
+            isXcm: $isXcm,
+            xcmFee: xcmTransferModel.$xcmFee,
             asset: $asset,
             accountBalance: $accountBalance,
           }),
-          validator: (value, _, { asset, accountBalance }) => {
-            // if (!isMultisig) return true;
-
+          validator: (value, _, { isXcm, xcmFee, asset, accountBalance }) => {
             const amountBN = new BN(formatAmount(value, asset.precision));
-            // const xcmFeeBN = new BN(xcmFee || 0);
+            const xcmFeeBN = new BN(isXcm ? xcmFee : '0');
 
-            return amountBN.lte(new BN(accountBalance[0]));
-            // return amountBN.add(xcmFeeBN).lte(new BN(accountBalance));
+            return amountBN.add(xcmFeeBN).lte(new BN(accountBalance[0]));
           },
         },
         {
@@ -139,22 +139,22 @@ const $transferForm = createForm<FormParams>({
           errorText: 'transfer.notEnoughBalanceForFeeError',
           source: combine({
             fee: $fee,
+            isXcm: $isXcm,
+            xcmFee: xcmTransferModel.$xcmFee,
             asset: $asset,
             isNative: $isNative,
             isMultisig: $isMultisig,
             accountBalance: $accountBalance,
           }),
-          validator: (value, _, { fee, asset, isNative, isMultisig, accountBalance }) => {
+          validator: (value, _, { asset, isNative, isMultisig, isXcm, accountBalance, ...rest }) => {
             if (isMultisig) return true;
 
             const amountBN = new BN(formatAmount(value, asset.precision));
-            // const xcmFeeBN = new BN(xcmFee || 0);
+            const xcmFeeBN = new BN(isXcm ? rest.xcmFee : '0');
 
             return isNative
-              ? new BN(fee).add(amountBN).lte(new BN(accountBalance[1]))
-              : new BN(fee).lte(new BN(accountBalance[1]));
-
-            // return new BN(fee).add(amountBN).add(xcmFeeBN).lte(new BN(balance));
+              ? new BN(rest.fee).add(amountBN).add(xcmFeeBN).lte(new BN(accountBalance[1]))
+              : new BN(rest.fee).lte(new BN(accountBalance[1]));
           },
         },
       ],
@@ -313,18 +313,6 @@ const $isChainConnected = combine(
   },
 );
 
-const $isXcm = combine(
-  {
-    chain: $chain,
-    xcmChain: $transferForm.fields.xcmChain.$value,
-  },
-  ({ chain, xcmChain }) => {
-    if (!chain) return false;
-
-    return chain.chainId !== xcmChain?.chainId;
-  },
-);
-
 const $api = combine(
   {
     apis: networkModel.$apis,
@@ -405,14 +393,23 @@ sample({
 
 sample({
   clock: formInitiated,
-  source: $chain,
-  filter: Boolean,
+  filter: ({ chain, asset }) => Boolean(chain) && Boolean(asset),
+  fn: ({ chain }) => chain,
   target: $transferForm.fields.xcmChain.onChange,
+});
+
+sample({
+  clock: $transferForm.fields.xcmChain.onChange,
+  source: $chain,
+  filter: (chain) => Boolean(chain),
+  fn: (chain, xcmChain) => chain!.chainId !== xcmChain.chainId,
+  target: $isXcm,
 });
 
 sample({
   clock: formInitiated,
   source: $accounts,
+  filter: (accounts) => accounts.length > 0,
   fn: (accounts) => accounts[0].account,
   target: $transferForm.fields.account.onChange,
 });

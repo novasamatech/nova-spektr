@@ -28,9 +28,9 @@ export const TransferForm = ({ onGoBack }: Props) => {
     <div className="pb-4 px-5">
       <form id="transfer-form" className="flex flex-col gap-y-4 mt-4" onSubmit={submitForm}>
         {/*<ProxyFeeAlert />*/}
+        <XcmChainSelector />
         <AccountSelector />
         <SignatorySelector />
-        <XcmChainSelector />
         <Destination />
         <Amount />
         <Description />

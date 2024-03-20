@@ -288,6 +288,261 @@
     }
   },
   {
+    "name": "Parallel",
+    "specName": "polkadot",
+    "addressPrefix": 172,
+    "chainId": "0xe61a41c53f5dcd0beb09df93b34402aada44cb05117b71059cce40a2723a4e97",
+    "parentId": "0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3",
+    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/chains/Parallel.svg",
+    "options": [
+      "multisig"
+    ],
+    "nodes": [
+      {
+        "url": "wss://parallel-rpc.dwellir.com",
+        "name": "Dwellir node"
+      },
+      {
+        "url": "wss://rpc.parallel.fi",
+        "name": "Parallel node"
+      }
+    ],
+    "assets": [
+      {
+        "assetId": 0,
+        "symbol": "PARA",
+        "precision": 12,
+        "priceId": "parallel-finance",
+        "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/PARA.svg",
+        "name": "Parallel Finance"
+      },
+      {
+        "assetId": 1,
+        "symbol": "DOT",
+        "precision": 10,
+        "type": "statemine",
+        "priceId": "polkadot",
+        "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Polkadot_(DOT).svg",
+        "typeExtras": {
+          "assetId": "101"
+        },
+        "name": "Polkadot"
+      },
+      {
+        "assetId": 2,
+        "symbol": "sDOT",
+        "precision": 10,
+        "type": "statemine",
+        "priceId": "polkadot",
+        "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/sDOT.svg",
+        "typeExtras": {
+          "assetId": "1001"
+        },
+        "name": "s Polkadot"
+      },
+      {
+        "assetId": 3,
+        "symbol": "ACA",
+        "precision": 12,
+        "type": "statemine",
+        "priceId": "acala",
+        "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Acala_(ACA).svg",
+        "typeExtras": {
+          "assetId": "108"
+        },
+        "name": "Acala"
+      },
+      {
+        "assetId": 4,
+        "symbol": "aSEED",
+        "precision": 12,
+        "type": "statemine",
+        "priceId": "ausd-seed-acala",
+        "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/aSEED.svg",
+        "typeExtras": {
+          "assetId": "104"
+        },
+        "name": "Acala SEED"
+      },
+      {
+        "assetId": 5,
+        "symbol": "LDOT",
+        "precision": 10,
+        "type": "statemine",
+        "priceId": "liquid-staking-dot",
+        "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/lDOT.svg",
+        "typeExtras": {
+          "assetId": "110"
+        },
+        "name": "Liquid DOT"
+      },
+      {
+        "assetId": 6,
+        "symbol": "GLMR",
+        "precision": 18,
+        "type": "statemine",
+        "priceId": "moonbeam",
+        "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Moonbeam_(GLMR).svg",
+        "typeExtras": {
+          "assetId": "114"
+        },
+        "name": "Moonbeam"
+      },
+      {
+        "assetId": 7,
+        "symbol": "cDOT-6/13",
+        "precision": 10,
+        "type": "statemine",
+        "priceId": "polkadot",
+        "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Default.svg",
+        "typeExtras": {
+          "assetId": "200060013"
+        },
+        "name": "Special DOT token"
+      },
+      {
+        "assetId": 8,
+        "symbol": "cDOT-7/14",
+        "precision": 10,
+        "type": "statemine",
+        "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Default.svg",
+        "typeExtras": {
+          "assetId": "200070014"
+        },
+        "name": "Special DOT token"
+      },
+      {
+        "assetId": 9,
+        "symbol": "cDOT-8/15",
+        "precision": 10,
+        "type": "statemine",
+        "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Default.svg",
+        "typeExtras": {
+          "assetId": "200080015"
+        },
+        "name": "Special DOT token"
+      },
+      {
+        "assetId": 10,
+        "symbol": "cDOT-9/16",
+        "precision": 10,
+        "type": "statemine",
+        "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Default.svg",
+        "typeExtras": {
+          "assetId": "200090016"
+        },
+        "name": "Special DOT token"
+      },
+      {
+        "assetId": 11,
+        "symbol": "cDOT-10/17",
+        "precision": 10,
+        "type": "statemine",
+        "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Default.svg",
+        "typeExtras": {
+          "assetId": "200100017"
+        },
+        "name": "Special DOT token"
+      },
+      {
+        "assetId": 12,
+        "symbol": "INTR",
+        "precision": 10,
+        "type": "statemine",
+        "priceId": "interlay",
+        "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Interlay_(INTR).svg",
+        "typeExtras": {
+          "assetId": "120"
+        },
+        "name": "Interlay"
+      },
+      {
+        "assetId": 13,
+        "symbol": "iBTC",
+        "precision": 8,
+        "type": "statemine",
+        "priceId": "bitcoin",
+        "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/iBTC.svg",
+        "typeExtras": {
+          "assetId": "122"
+        },
+        "name": "Interlay Bitcoin"
+      },
+      {
+        "assetId": 14,
+        "symbol": "USDT",
+        "precision": 6,
+        "type": "statemine",
+        "priceId": "tether",
+        "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/USDT.svg",
+        "typeExtras": {
+          "assetId": "102"
+        },
+        "name": "USD Tether"
+      },
+      {
+        "assetId": 15,
+        "symbol": "CLV",
+        "precision": 18,
+        "type": "statemine",
+        "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/CLV_(CLV).svg",
+        "typeExtras": {
+          "assetId": "130"
+        },
+        "name": "Clover Finance"
+      },
+      {
+        "assetId": 16,
+        "symbol": "ASTR",
+        "precision": 18,
+        "type": "statemine",
+        "priceId": "astar",
+        "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Astar_(ASTR).svg",
+        "typeExtras": {
+          "assetId": "112"
+        },
+        "name": "Astar"
+      },
+      {
+        "assetId": 17,
+        "symbol": "PHA",
+        "precision": 12,
+        "type": "statemine",
+        "priceId": "pha",
+        "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Phala_(PHA).svg",
+        "typeExtras": {
+          "assetId": "115"
+        },
+        "name": "Phala"
+      }
+    ],
+    "explorers": [
+      {
+        "name": "Subscan",
+        "extrinsic": "https://parallel.subscan.io/extrinsic/{hash}",
+        "account": "https://parallel.subscan.io/account/{address}",
+        "multisig": "https://parallel.subscan.io/multisig_extrinsic/{index}?call_hash={callHash}"
+      },
+      {
+        "name": "Sub.ID",
+        "account": "https://sub.id/{address}"
+      },
+      {
+        "name": "Polkaholic",
+        "account": "https://polkaholic.io/account/{address}",
+        "extrinsic": "https://polkaholic.io/tx/{hash}"
+      }
+    ],
+    "externalApi": {
+      "history": [
+        {
+          "type": "subquery",
+          "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-parallel"
+        }
+      ]
+    }
+  },
+  {
     "name": "HydraDX",
     "specName": "polkadot",
     "addressPrefix": 63,
