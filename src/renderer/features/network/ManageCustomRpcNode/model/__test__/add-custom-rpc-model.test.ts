@@ -3,7 +3,7 @@ import { fork, allSettled } from 'effector';
 import { addCustomRpcModel } from '../add-custom-rpc-model';
 import { ConnectionStatus } from '@shared/core';
 import { ExtendedChain } from '@entities/network';
-import { RpcCheckResult } from '../../lib/custom-rpc-types';
+import { RpcConnectivityResult } from '../../lib/custom-rpc-types';
 
 describe('features/network/CustomRpcForm/add-custom-rpc-model', () => {
   test('should have error for wrong node url', async () => {
@@ -90,7 +90,7 @@ describe('features/network/CustomRpcForm/add-custom-rpc-model', () => {
       nodes: [{ url: 'wss://some-rpc.com', name: 'node' }],
     };
 
-    expect(scope.getState(addCustomRpcModel.$rpcConnectivityResult)).toEqual(RpcCheckResult.INIT);
+    expect(scope.getState(addCustomRpcModel.$rpcConnectivityResult)).toEqual(RpcConnectivityResult.INIT);
 
     const { name, url } = addCustomRpcModel.$addCustomRpcForm.fields;
     await allSettled(name.onChange, { scope, params: 'some name' });

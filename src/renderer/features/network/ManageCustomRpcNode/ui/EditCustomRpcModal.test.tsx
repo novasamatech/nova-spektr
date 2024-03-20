@@ -6,7 +6,7 @@ import { Provider } from 'effector-react';
 import { EditCustomRpcModal } from './EditCustomRpcModal';
 import { editCustomRpcModel } from '../model/edit-custom-rpc-model';
 import { ConnectionStatus, RpcNode } from '@shared/core';
-import { RpcCheckResult } from '../lib/custom-rpc-types';
+import { RpcConnectivityResult } from '../lib/custom-rpc-types';
 
 jest.mock('@app/providers', () => ({
   useI18n: jest.fn().mockReturnValue({
@@ -97,7 +97,7 @@ describe('pages/Settings/Networks/EditCustomRpcModal', () => {
         .set(editCustomRpcModel.$selectedNetwork, network)
         .set(editCustomRpcModel.$editCustomRpcForm.fields.url.$value, mockNode.url)
         .set(editCustomRpcModel.$editCustomRpcForm.fields.name.$value, mockNode.name)
-        .set(editCustomRpcModel.$rpcConnectivityResult, RpcCheckResult.INVALID),
+        .set(editCustomRpcModel.$rpcConnectivityResult, RpcConnectivityResult.INVALID),
     });
 
     await act(async () => {
@@ -119,7 +119,7 @@ describe('pages/Settings/Networks/EditCustomRpcModal', () => {
         .set(editCustomRpcModel.$selectedNetwork, network)
         .set(editCustomRpcModel.$editCustomRpcForm.fields.url.$value, mockNode.url)
         .set(editCustomRpcModel.$editCustomRpcForm.fields.name.$value, mockNode.name)
-        .set(editCustomRpcModel.$rpcConnectivityResult, RpcCheckResult.WRONG_NETWORK),
+        .set(editCustomRpcModel.$rpcConnectivityResult, RpcConnectivityResult.WRONG_NETWORK),
     });
 
     await act(async () => {

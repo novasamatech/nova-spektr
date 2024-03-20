@@ -1,4 +1,4 @@
-import { RpcCheckResult } from './custom-rpc-types';
+import { RpcConnectivityResult } from './custom-rpc-types';
 import { customRpcUtils } from './custom-rpc-utils';
 import { RpcValidation } from '@shared/api/network';
 
@@ -25,9 +25,9 @@ const FieldRules = {
 };
 
 const RpcValidationMapping = {
-  [RpcValidation.INVALID]: RpcCheckResult.INVALID,
-  [RpcValidation.VALID]: RpcCheckResult.VALID,
-  [RpcValidation.WRONG_NETWORK]: RpcCheckResult.WRONG_NETWORK,
+  [RpcValidation.INVALID]: RpcConnectivityResult.INVALID,
+  [RpcValidation.VALID]: RpcConnectivityResult.VALID,
+  [RpcValidation.WRONG_NETWORK]: RpcConnectivityResult.WRONG_NETWORK,
 };
 
 export const customRpcConstants = {

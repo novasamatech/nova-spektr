@@ -6,7 +6,7 @@ import { Provider } from 'effector-react';
 import { AddCustomRpcModal } from './AddCustomRpcModal';
 import { addCustomRpcModel } from '../model/add-custom-rpc-model';
 import { ConnectionStatus } from '@shared/core';
-import { RpcCheckResult } from '../lib/custom-rpc-types';
+import { RpcConnectivityResult } from '../lib/custom-rpc-types';
 
 jest.mock('@app/providers', () => ({
   useI18n: jest.fn().mockReturnValue({
@@ -105,7 +105,7 @@ describe('pages/Settings/Networks/AddCustomRpcModal', () => {
       values: new Map()
         .set(addCustomRpcModel.$isProcessStarted, true)
         .set(addCustomRpcModel.$selectedNetwork, network)
-        .set(addCustomRpcModel.$rpcConnectivityResult, RpcCheckResult.INVALID),
+        .set(addCustomRpcModel.$rpcConnectivityResult, RpcConnectivityResult.INVALID),
     });
 
     await act(async () => {
@@ -127,7 +127,7 @@ describe('pages/Settings/Networks/AddCustomRpcModal', () => {
       values: new Map()
         .set(addCustomRpcModel.$isProcessStarted, true)
         .set(addCustomRpcModel.$selectedNetwork, network)
-        .set(addCustomRpcModel.$rpcConnectivityResult, RpcCheckResult.WRONG_NETWORK),
+        .set(addCustomRpcModel.$rpcConnectivityResult, RpcConnectivityResult.WRONG_NETWORK),
     });
 
     await act(async () => {

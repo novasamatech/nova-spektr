@@ -3,7 +3,7 @@ import { fork, allSettled } from 'effector';
 import { editCustomRpcModel } from '../edit-custom-rpc-model';
 import { ConnectionStatus, RpcNode } from '@shared/core';
 import { ExtendedChain } from '@entities/network';
-import { RpcCheckResult } from '../../lib/custom-rpc-types';
+import { RpcConnectivityResult } from '../../lib/custom-rpc-types';
 
 describe('features/network/CustomRpcForm/edit-custom-rpc-model', () => {
   test('should have the form pre-filled on launch', async () => {
@@ -96,7 +96,7 @@ describe('features/network/CustomRpcForm/edit-custom-rpc-model', () => {
       nodes: [{ url: 'wss://some-rpc.com', name: 'node' }],
     };
 
-    expect(scope.getState(editCustomRpcModel.$rpcConnectivityResult)).toEqual(RpcCheckResult.INIT);
+    expect(scope.getState(editCustomRpcModel.$rpcConnectivityResult)).toEqual(RpcConnectivityResult.INIT);
 
     const { name, url } = editCustomRpcModel.$editCustomRpcForm.fields;
     await allSettled(name.onChange, { scope, params: 'some name' });

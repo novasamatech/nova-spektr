@@ -3,7 +3,7 @@ import { createForm } from 'effector-forms';
 
 import { networkService } from '@shared/api/network';
 import { ExtendedChain } from '@entities/network';
-import { CheckRpcNodeFxParams, EditRpcNodeFxParams, RpcCheckResult } from '../lib/custom-rpc-types';
+import { VerifyRpcConnectivityFxParams, EditRpcNodeFxParams, RpcConnectivityResult } from '../lib/custom-rpc-types';
 import { manageNetworkModel } from '@pages/Settings/Networks/model/manage-network-model';
 import { RpcNode } from '@shared/core';
 import { customRpcConstants } from '../lib/custom-rpc-constants';
@@ -25,21 +25,23 @@ const $editCustomRpcForm = createForm({
 const formInitiated = createEvent();
 const networkChanged = createEvent<ExtendedChain>();
 const nodeSelected = createEvent<RpcNode>();
-const rpcConnectivityChecked = createEvent<RpcCheckResult>();
+const rpcConnectivityVerified = createEvent<RpcConnectivityResult>();
 const processStarted = createEvent<boolean>();
 
 const $selectedNode = createStore<RpcNode | null>(null);
 const $selectedNetwork = createStore<ExtendedChain | null>(null);
-const $rpcConnectivityResult = createStore<RpcCheckResult>(RpcCheckResult.INIT);
+const $rpcConnectivityResult = createStore<RpcConnectivityResult>(RpcConnectivityResult.INIT);
 const $isProcessStarted = createStore<boolean>(false);
 const $isLoading = createStore<boolean>(false);
 
-const checkRpcNodeFx = createEffect(async ({ network, url }: CheckRpcNodeFxParams): Promise<RpcCheckResult> => {
-  const validationResult = await networkService.validateRpcNode(network.chainId, url);
-  const result = customRpcConstants.RpcValidationMapping[validationResult];
+const verifyRpcConnectivityFx = createEffect(
+  async ({ network, url }: VerifyRpcConnectivityFxParams): Promise<RpcConnectivityResult> => {
+    const validationResult = await networkService.validateRpcNode(network.chainId, url);
+    const result = customRpcConstants.RpcValidationMapping[validationResult];
 
-  return result;
-});
+    return result;
+  },
+);
 
 const editRpcNodeFx = createEffect(async ({ network, form, nodeToEdit }: EditRpcNodeFxParams) => {
   manageNetworkModel.events.rpcNodeUpdated({
@@ -65,7 +67,7 @@ sample({
 });
 
 sample({
-  clock: checkRpcNodeFx.pending,
+  clock: verifyRpcConnectivityFx.pending,
   target: $isLoading,
 });
 
@@ -85,7 +87,7 @@ sample({
 });
 
 sample({
-  clock: rpcConnectivityChecked,
+  clock: rpcConnectivityVerified,
   target: $rpcConnectivityResult,
 });
 
@@ -93,19 +95,20 @@ sample({
 sample({
   clock: $editCustomRpcForm.submit,
   source: { network: $selectedNetwork, url: $editCustomRpcForm.fields.url.$value },
-  filter: (params: { network: ExtendedChain | null; url: string }): params is CheckRpcNodeFxParams => !!params.network,
-  target: checkRpcNodeFx,
+  filter: (params: { network: ExtendedChain | null; url: string }): params is VerifyRpcConnectivityFxParams =>
+    !!params.network,
+  target: verifyRpcConnectivityFx,
 });
 
 sample({
-  clock: checkRpcNodeFx.doneData,
-  target: rpcConnectivityChecked,
+  clock: verifyRpcConnectivityFx.doneData,
+  target: rpcConnectivityVerified,
 });
 
 // if we are done checking the form data and it is valid
 // we can proceed with editing the rpc node
 sample({
-  clock: checkRpcNodeFx.doneData,
+  clock: verifyRpcConnectivityFx.doneData,
   source: {
     rpcConnectivityResult: $rpcConnectivityResult,
     network: $selectedNetwork,
@@ -116,19 +119,21 @@ sample({
   filter: (params): params is EditRpcNodeFxParams => {
     const { rpcConnectivityResult, network, nodeToEdit, isFormValid } = params;
 
-    return isFormValid && rpcConnectivityResult === RpcCheckResult.VALID && network !== null && nodeToEdit !== null;
+    return (
+      isFormValid && rpcConnectivityResult === RpcConnectivityResult.VALID && network !== null && nodeToEdit !== null
+    );
   },
   target: editRpcNodeFx,
 });
 
 sample({
-  clock: checkRpcNodeFx.fail,
+  clock: verifyRpcConnectivityFx.fail,
   fn: ({ error }: { error: Error }) => {
     console.warn(error);
 
-    return RpcCheckResult.INIT;
+    return RpcConnectivityResult.INIT;
   },
-  target: rpcConnectivityChecked,
+  target: rpcConnectivityVerified,
 });
 
 sample({

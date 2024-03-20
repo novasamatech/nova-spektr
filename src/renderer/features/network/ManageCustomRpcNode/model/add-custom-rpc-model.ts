@@ -3,7 +3,12 @@ import { createForm } from 'effector-forms';
 
 import { networkService } from '@shared/api/network';
 import { ExtendedChain } from '@entities/network';
-import { CheckRpcNodeFxParams, NodeExistParam, RpcCheckResult, SaveRpcNodeFxParams } from '../lib/custom-rpc-types';
+import {
+  VerifyRpcConnectivityFxParams,
+  NodeExistParam,
+  RpcConnectivityResult,
+  SaveRpcNodeFxParams,
+} from '../lib/custom-rpc-types';
 import { manageNetworkModel } from '@pages/Settings/Networks/model/manage-network-model';
 import { customRpcConstants } from '../lib/custom-rpc-constants';
 
@@ -23,22 +28,24 @@ const $addCustomRpcForm = createForm({
 
 const formInitiated = createEvent();
 const networkChanged = createEvent<ExtendedChain>();
-const rpcConnectivityChecked = createEvent<RpcCheckResult>();
-const nodeExistChecked = createEvent<boolean>();
+const rpcConnectivityVerified = createEvent<RpcConnectivityResult>();
+const nodeExistVerified = createEvent<boolean>();
 const processStarted = createEvent<boolean>();
 
 const $selectedNetwork = createStore<ExtendedChain | null>(null);
-const $rpcConnectivityResult = createStore<RpcCheckResult>(RpcCheckResult.INIT);
+const $rpcConnectivityResult = createStore<RpcConnectivityResult>(RpcConnectivityResult.INIT);
 const $isNodeExist = createStore<boolean>(false);
 const $isProcessStarted = createStore<boolean>(false);
 const $isLoading = createStore<boolean>(false);
 
-const checkRpcNodeFx = createEffect(async ({ network, url }: CheckRpcNodeFxParams): Promise<RpcCheckResult> => {
-  const validationResult = await networkService.validateRpcNode(network.chainId, url);
-  const result = customRpcConstants.RpcValidationMapping[validationResult];
+const verifyRpcConnectivityFx = createEffect(
+  async ({ network, url }: VerifyRpcConnectivityFxParams): Promise<RpcConnectivityResult> => {
+    const validationResult = await networkService.validateRpcNode(network.chainId, url);
+    const result = customRpcConstants.RpcValidationMapping[validationResult];
 
-  return result;
-});
+    return result;
+  },
+);
 
 const saveRpcNodeFx = createEffect(async ({ network, form }: SaveRpcNodeFxParams) => {
   manageNetworkModel.events.rpcNodeAdded({
@@ -70,7 +77,7 @@ sample({
 });
 
 sample({
-  clock: checkRpcNodeFx.pending,
+  clock: verifyRpcConnectivityFx.pending,
   target: $isLoading,
 });
 
@@ -86,47 +93,48 @@ sample({
 });
 
 sample({
-  clock: rpcConnectivityChecked,
+  clock: rpcConnectivityVerified,
   target: $rpcConnectivityResult,
 });
 
 sample({
-  clock: nodeExistChecked,
+  clock: nodeExistVerified,
   target: $isNodeExist,
 });
 
 sample({
-  clock: checkRpcNodeFx.doneData,
-  target: rpcConnectivityChecked,
+  clock: verifyRpcConnectivityFx.doneData,
+  target: rpcConnectivityVerified,
 });
 
 sample({
-  clock: checkRpcNodeFx.fail,
+  clock: verifyRpcConnectivityFx.fail,
   fn: ({ error }: { error: Error }) => {
     console.warn(error);
 
-    return RpcCheckResult.INIT;
+    return RpcConnectivityResult.INIT;
   },
   target: $rpcConnectivityResult,
 });
 
-// when the form is submitted, we need to check if the node is responding
+// when the form is submitted, we need to verify if the node is responding
 sample({
   clock: $addCustomRpcForm.submit,
   source: { network: $selectedNetwork, url: $addCustomRpcForm.fields.url.$value },
-  filter: (params: { network: ExtendedChain | null; url: string }): params is CheckRpcNodeFxParams => !!params.network,
-  target: [checkRpcNodeFx, isNodeExistFx],
+  filter: (params: { network: ExtendedChain | null; url: string }): params is VerifyRpcConnectivityFxParams =>
+    !!params.network,
+  target: [verifyRpcConnectivityFx, isNodeExistFx],
 });
 
 sample({
   clock: isNodeExistFx.doneData,
-  target: nodeExistChecked,
+  target: nodeExistVerified,
 });
 
-// if we are done checking the form data and it is valid
+// if we are done verifying the form data and it is valid
 // we can proceed with saving the new rpc node
 sample({
-  clock: [isNodeExistFx.doneData, checkRpcNodeFx.doneData],
+  clock: [isNodeExistFx.doneData, verifyRpcConnectivityFx.doneData],
   source: {
     rpcConnectivityResult: $rpcConnectivityResult,
     isNodeExist: $isNodeExist,
@@ -136,12 +144,12 @@ sample({
   },
   filter: (params: {
     isNodeExist: boolean;
-    rpcConnectivityResult: RpcCheckResult;
+    rpcConnectivityResult: RpcConnectivityResult;
     isFormValid: boolean;
   }): params is SaveRpcNodeFxParams => {
     const { isNodeExist, rpcConnectivityResult, isFormValid } = params;
 
-    return isFormValid && !isNodeExist && rpcConnectivityResult === RpcCheckResult.VALID;
+    return isFormValid && !isNodeExist && rpcConnectivityResult === RpcConnectivityResult.VALID;
   },
   target: saveRpcNodeFx,
 });
