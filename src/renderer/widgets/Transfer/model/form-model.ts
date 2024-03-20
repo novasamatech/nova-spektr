@@ -1,14 +1,15 @@
-import { createEvent, createStore, combine, sample } from 'effector';
+import { createEvent, createStore, combine, sample, restore } from 'effector';
 import { createForm } from 'effector-forms';
 import { spread } from 'patronum';
 import { BN } from '@polkadot/util';
 
-import { Chain, Account, Asset, AssetType, Address, PartialBy, type ChainId } from '@shared/core';
+import { Chain, Account, Asset, Address, PartialBy, type ChainId } from '@shared/core';
 import { walletModel, walletUtils, accountUtils, permissionUtils } from '@entities/wallet';
 import { balanceModel, balanceUtils } from '@entities/balance';
 import { networkModel, networkUtils } from '@entities/network';
 import { Transaction, TransactionType } from '@entities/transaction';
 import { xcmTransferModel } from './xcm-transfer-model';
+import { TransferType } from '../lib/constants';
 import {
   transferableAmount,
   dictionary,
@@ -18,6 +19,7 @@ import {
   formatAmount,
   validateAddress,
   toShortAddress,
+  toAccountId,
 } from '@shared/lib/utils';
 
 type FormParams = {
@@ -40,6 +42,7 @@ const formSubmitted = createEvent<FormSubmitEvent>();
 const feeChanged = createEvent<string>();
 const multisigDepositChanged = createEvent<string>();
 const isFeeLoadingChanged = createEvent<boolean>();
+const isXcmFeeLoadingChanged = createEvent<boolean>();
 
 const myselfClicked = createEvent();
 
@@ -50,9 +53,10 @@ const $isNative = createStore<boolean>(false);
 const $accountBalance = createStore<string[]>(['0', '0']);
 const $signatoryBalance = createStore<string[]>(['0', '0']);
 
-const $fee = createStore<string>('0');
-const $multisigDeposit = createStore<string>('0');
-const $isFeeLoading = createStore<boolean>(true);
+const $fee = restore(feeChanged, '0');
+const $multisigDeposit = restore(multisigDepositChanged, '0');
+const $isFeeLoading = restore(isFeeLoadingChanged, true);
+const $isXcmFeeLoading = restore(isXcmFeeLoadingChanged, false);
 
 const $isMultisig = createStore<boolean>(false);
 const $isProxy = createStore<boolean>(false);
@@ -74,7 +78,7 @@ const $transferForm = createForm<FormParams>({
             multisigDeposit: $multisigDeposit,
             signatoryBalance: $signatoryBalance,
           }),
-          validator: (value, _, { fee, isMultisig, signatoryBalance, multisigDeposit }) => {
+          validator: (_s, _f, { fee, isMultisig, signatoryBalance, multisigDeposit }) => {
             if (!isMultisig) return true;
 
             return new BN(multisigDeposit).add(new BN(fee)).lte(new BN(signatoryBalance[1]));
@@ -118,10 +122,9 @@ const $transferForm = createForm<FormParams>({
           errorText: 'transfer.notEnoughBalanceError',
           source: combine({
             asset: $asset,
-            isMultisig: $isMultisig,
             accountBalance: $accountBalance,
           }),
-          validator: (value, _, { asset, isMultisig, accountBalance }) => {
+          validator: (value, _, { asset, accountBalance }) => {
             // if (!isMultisig) return true;
 
             const amountBN = new BN(formatAmount(value, asset.precision));
@@ -169,6 +172,8 @@ const $transferForm = createForm<FormParams>({
   },
   validateOn: ['submit'],
 });
+
+// Computed
 
 const $proxyWallet = combine(
   {
@@ -308,6 +313,18 @@ const $isChainConnected = combine(
   },
 );
 
+const $isXcm = combine(
+  {
+    chain: $chain,
+    xcmChain: $transferForm.fields.xcmChain.$value,
+  },
+  ({ chain, xcmChain }) => {
+    if (!chain) return false;
+
+    return chain.chainId !== xcmChain?.chainId;
+  },
+);
+
 const $api = combine(
   {
     apis: networkModel.$apis,
@@ -326,44 +343,28 @@ const $transaction = combine(
     chain: $chain,
     asset: $asset,
     isNative: $isNative,
+    isXcm: $isXcm,
     form: $transferForm.$values,
+    xcmData: xcmTransferModel.$xcmData,
     isConnected: $isChainConnected,
   },
-  ({ chain, asset, isNative, form, isConnected }): Transaction | undefined => {
-    if (!chain || !asset || !isConnected) return undefined;
+  ({ chain, asset, isNative, isXcm, form, xcmData, isConnected }): Transaction | undefined => {
+    if (!chain || !asset || !isConnected || (isXcm && !xcmData)) return undefined;
 
-    const TransferType: Record<AssetType, TransactionType> = {
-      [AssetType.ORML]: TransactionType.ORML_TRANSFER,
-      [AssetType.STATEMINE]: TransactionType.ASSET_TRANSFER,
-    };
-
-    // TODO: XCM here
-
-    // if (isXcmTransfer) {
-    //   const destinationChain = formData?.destinationChain?.value;
-    //   transactionType = getXcmTransferType(xcmTransfer.type);
-    //
-    //   args = {
-    //     ...args,
-    //     destinationChain,
-    //     xcmFee: xcmFee,
-    //     xcmAsset: xcmAsset || undefined,
-    //     xcmDest: xcmDest || undefined,
-    //     xcmBeneficiary: xcmBeneficiary || undefined,
-    //     xcmWeight: xcmWeight,
-    //   };
-    // } else {
-    //   transactionType = isNativeTransfer ? TransactionType.TRANSFER : TransferType[asset.type!];
-    // }
+    let transactionType = isNative ? TransactionType.TRANSFER : TransferType[asset.type!];
+    if (isXcm && xcmData) {
+      transactionType = xcmData.transactionType;
+    }
 
     return {
       chainId: chain.chainId,
       address: toAddress(form.account.accountId, { prefix: chain.addressPrefix }),
-      type: isNative ? TransactionType.TRANSFER : TransferType[asset.type!],
+      type: transactionType,
       args: {
         dest: toAddress(form.destination || TEST_ACCOUNTS[0], { prefix: chain.addressPrefix }),
         value: formatAmount(form.amount, asset.precision) || '1',
         ...(!isNative && { asset: getAssetId(asset) }),
+        ...(isXcm && xcmData?.args),
       },
     };
   },
@@ -374,9 +375,10 @@ const $canSubmit = combine(
   {
     isFormValid: $transferForm.$isValid,
     isFeeLoading: $isFeeLoading,
+    isXcmFeeLoading: $isXcmFeeLoading,
   },
-  ({ isFormValid, isFeeLoading }) => {
-    return isFormValid && !isFeeLoading;
+  ({ isFormValid, isFeeLoading, isXcmFeeLoading }) => {
+    return isFormValid && !isFeeLoading && !isXcmFeeLoading;
   },
 );
 
@@ -403,6 +405,13 @@ sample({
 
 sample({
   clock: formInitiated,
+  source: $chain,
+  filter: Boolean,
+  target: $transferForm.fields.xcmChain.onChange,
+});
+
+sample({
+  clock: formInitiated,
   source: $accounts,
   fn: (accounts) => accounts[0].account,
   target: $transferForm.fields.account.onChange,
@@ -412,7 +421,7 @@ sample({
   clock: $transferForm.fields.account.onChange,
   source: walletModel.$activeWallet,
   filter: (_, account) => Boolean(account),
-  fn: (wallet, account): Record<string, boolean> => {
+  fn: (wallet): Record<string, boolean> => {
     if (!wallet) return { isMultisig: false, isProxy: false };
     if (walletUtils.isMultisig(wallet)) return { isMultisig: true, isProxy: false };
     if (!walletUtils.isProxied(wallet)) return { isMultisig: false, isProxy: false };
@@ -463,19 +472,27 @@ sample({
   target: $signatoryBalance,
 });
 
+// XCM model Bindings
+
 sample({
   clock: $transferForm.fields.xcmChain.onChange,
   fn: (chain) => chain.chainId,
   target: xcmTransferModel.events.xcmChainSelected,
 });
 
-// Deposits
+sample({
+  clock: $transferForm.fields.destination.onChange,
+  fn: toAccountId,
+  target: xcmTransferModel.events.destinationChanged,
+});
 
-sample({ clock: multisigDepositChanged, target: $multisigDeposit });
-
-sample({ clock: feeChanged, target: $fee });
-
-sample({ clock: isFeeLoadingChanged, target: $isFeeLoading });
+sample({
+  clock: $transferForm.fields.amount.onChange,
+  source: $asset,
+  filter: Boolean,
+  fn: (asset, amount) => formatAmount(amount, asset!.precision),
+  target: xcmTransferModel.events.amountChanged,
+});
 
 // Submit
 
@@ -521,8 +538,12 @@ export const formModel = {
   $api,
   $transaction,
   $isMultisig,
+  $isXcm,
   $isChainConnected,
   $canSubmit,
+
+  $xcmConfig: xcmTransferModel.$config,
+  $xcmApi: xcmTransferModel.$apiDestination,
 
   events: {
     formInitiated,
@@ -531,6 +552,8 @@ export const formModel = {
     feeChanged,
     multisigDepositChanged,
     isFeeLoadingChanged,
+    isXcmFeeLoadingChanged,
+    xcmFeeChanged: xcmTransferModel.events.xcmFeeChanged,
   },
   output: {
     formSubmitted,

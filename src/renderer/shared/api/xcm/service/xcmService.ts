@@ -60,11 +60,11 @@ function getAvailableTransfers(chains: ChainXCM[], assetId: number, chainId: Cha
 }
 
 async function getEstimatedFee(
+  api: ApiPromise,
   config: XcmConfig,
   assetLocation: AssetLocation,
   originChain: string,
   xcmTransfer: XcmTransfer,
-  api?: ApiPromise,
   xcmAsset?: object,
   xcmDest?: object,
 ): Promise<BN> {
@@ -72,7 +72,7 @@ async function getEstimatedFee(
     return xcmUtils.getEstimatedFeeFromConfig(config, assetLocation, originChain, xcmTransfer);
   }
 
-  if (api && xcmAsset && xcmDest) {
+  if (xcmAsset && xcmDest) {
     const xcmAssetLocation = Object.values(xcmAsset)[0][0].id.Concrete;
     const xcmDestLocation = Object.values(xcmDest as object)[0];
 

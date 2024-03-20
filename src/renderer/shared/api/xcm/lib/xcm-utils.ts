@@ -250,9 +250,7 @@ async function estimateFeeFromApi(
   destLocation: object,
 ): Promise<Balance> {
   const pallet = api.tx.xcmPallet ? 'xcmPallet' : 'polkadotXcm';
-
   const xcmVersion = getTypeVersion(api, 'VersionedXcm');
-
   const message = {
     [xcmVersion]: instructions.map((i) => INSTRUCTION_OBJECT[i](assetLocation, destLocation)),
   };
@@ -262,12 +260,7 @@ async function estimateFeeFromApi(
   try {
     paymentInfo = await api.tx[pallet].execute(message, 0).paymentInfo(TEST_ACCOUNTS[0]);
   } catch (e) {
-    paymentInfo = await api.tx[pallet]
-      .execute(message, {
-        refTime: '0',
-        proofSize: '0',
-      })
-      .paymentInfo(TEST_ACCOUNTS[0]);
+    paymentInfo = await api.tx[pallet].execute(message, { refTime: '0', proofSize: '0' }).paymentInfo(TEST_ACCOUNTS[0]);
   }
 
   return paymentInfo.partialFee;

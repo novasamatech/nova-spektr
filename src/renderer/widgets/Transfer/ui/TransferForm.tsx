@@ -3,14 +3,14 @@ import { FormEvent } from 'react';
 import { useUnit } from 'effector-react';
 
 import { Select, Input, Identicon, Icon, Button, InputHint, AmountInput, HelpText } from '@shared/ui';
-import { formModel } from '../model/form-model';
 import { useI18n } from '@app/providers';
 import { MultisigAccount, Chain } from '@shared/core';
 import { accountUtils, AccountAddress } from '@entities/wallet';
 import { toAddress, toShortAddress, validateAddress } from '@shared/lib/utils';
 import { AssetBalance } from '@entities/asset';
-import { MultisigDepositWithLabel, FeeWithLabel } from '@entities/transaction';
+import { MultisigDepositWithLabel, FeeWithLabel, XcmFeeWithLabel } from '@entities/transaction';
 import { ChainTitle } from '@entities/chain';
+import { formModel } from '../model/form-model';
 
 type Props = {
   onGoBack: () => void;
@@ -335,10 +335,15 @@ const FeeSection = () => {
 
   const api = useUnit(formModel.$api);
   const chain = useUnit(formModel.$chain);
+  const asset = useUnit(formModel.$asset);
   const transaction = useUnit(formModel.$transaction);
   const isMultisig = useUnit(formModel.$isMultisig);
 
-  if (!chain) return null;
+  const isXcm = useUnit(formModel.$isXcm);
+  const xcmConfig = useUnit(formModel.$xcmConfig);
+  const xcmApi = useUnit(formModel.$xcmApi);
+
+  if (!chain || !asset) return null;
 
   return (
     <div className="flex flex-col gap-y-2">
@@ -359,7 +364,16 @@ const FeeSection = () => {
         onFeeLoading={formModel.events.isFeeLoadingChanged}
       />
 
-      {/* TODO: xcm fee */}
+      {isXcm && xcmApi && xcmConfig && (
+        <XcmFeeWithLabel
+          api={xcmApi}
+          config={xcmConfig}
+          asset={asset}
+          transaction={transaction}
+          onFeeChange={formModel.events.xcmFeeChanged}
+          onFeeLoading={formModel.events.isXcmFeeLoadingChanged}
+        />
+      )}
     </div>
   );
 };

@@ -86,6 +86,7 @@ export const SendAssetModal = ({ chain, asset }: Props) => {
   }, [account, signatory]);
 
   const onInitResult = (transferTx: Transaction, description?: string) => {
+    console.log('=== tx', transferTx);
     setTxs([transferTx]);
     setDescription(description || '');
     setActiveStep(Step.CONFIRMATION);

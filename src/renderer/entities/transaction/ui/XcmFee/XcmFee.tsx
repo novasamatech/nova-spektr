@@ -12,7 +12,7 @@ import { priceProviderModel } from '@entities/price';
 import { AssetFiatBalance } from '@entities/price/ui/AssetFiatBalance';
 
 type Props = {
-  api?: ApiPromise;
+  api: ApiPromise;
   multiply?: number;
   asset: Asset;
   config: XcmConfig;
@@ -23,10 +23,11 @@ type Props = {
 };
 
 export const XcmFee = memo(
-  ({ multiply = 1, config, asset, transaction, className, onFeeChange, onFeeLoading, api }: Props) => {
+  ({ api, multiply = 1, config, asset, transaction, className, onFeeChange, onFeeLoading }: Props) => {
+    const fiatFlag = useUnit(priceProviderModel.$fiatFlag);
+
     const [fee, setFee] = useState('0');
     const [isLoading, setIsLoading] = useState(false);
-    const fiatFlag = useUnit(priceProviderModel.$fiatFlag);
 
     const updateFee = (fee: string) => {
       setFee(fee);
@@ -59,11 +60,11 @@ export const XcmFee = memo(
       if (originChainId && configXcmTransfer && configAsset) {
         xcmService
           .getEstimatedFee(
+            api,
             config,
             config.assetsLocation[configAsset.assetLocation],
             originChainId,
             configXcmTransfer,
-            api,
             transaction.args.xcmAsset,
             transaction.args.xcmDest,
           )

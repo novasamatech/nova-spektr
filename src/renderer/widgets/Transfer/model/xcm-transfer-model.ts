@@ -7,6 +7,7 @@ import { toLocalChainId, getParachainId } from '@shared/lib/utils';
 import type { AccountId, Asset, Chain, ChainId } from '@shared/core';
 import { networkModel } from '@entities/network';
 import { xcmModel } from '@entities/xcm';
+import { xcmTransferUtils } from '../lib/xcm-transfer-utils';
 
 const xcmStarted = createEvent<{ chain: Chain; asset: Asset }>();
 const xcmChainSelected = createEvent<ChainId>();
@@ -17,7 +18,7 @@ const destinationChanged = createEvent<AccountId>();
 const $config = createStore<XcmConfig | null>(null);
 const $networkStore = restore(xcmStarted, null);
 const $xcmChain = restore(xcmChainSelected, null);
-const $xcmFee = restore(xcmFeeChanged, null);
+const $xcmFee = restore(xcmFeeChanged, '0');
 const $xcmParaId = createStore<number | null>(null);
 
 const $amount = restore(amountChanged, null);
@@ -82,17 +83,16 @@ const $transferDirection = combine(
 const $xcmWeight = combine(
   {
     config: $config,
-    network: $networkStore,
     transferDirection: $transferDirection,
     xcmAsset: $xcmAsset,
   },
-  ({ config, network, transferDirection, xcmAsset }) => {
-    if (!config || !network || !transferDirection || !xcmAsset) return '';
+  ({ config, transferDirection, xcmAsset }) => {
+    if (!config || !transferDirection || !xcmAsset) return '';
 
     const weight = xcmService.getEstimatedRequiredDestWeight(
       config,
       config.assetsLocation[xcmAsset.assetLocation],
-      toLocalChainId(network.chain.chainId)!,
+      transferDirection.destination.chainId,
       transferDirection,
     );
 
@@ -100,23 +100,46 @@ const $xcmWeight = combine(
   },
 );
 
-const $txDestination = combine(
+const $api = combine(
   {
     apis: networkModel.$apis,
+    network: $networkStore,
+  },
+  ({ apis, network }) => {
+    if (!network) return undefined;
+
+    return apis[network.chain.chainId];
+  },
+);
+
+const $apiDestination = combine(
+  {
+    apis: networkModel.$apis,
+    transferDirection: $transferDirection,
+  },
+  ({ apis, transferDirection }) => {
+    if (!transferDirection) return undefined;
+
+    return apis[`0x${transferDirection.destination.chainId}` as ChainId];
+  },
+);
+
+const $txDestination = combine(
+  {
+    api: $apiDestination,
     destination: $destination,
     network: $networkStore,
     xcmParaId: $xcmParaId,
     transferDirection: $transferDirection,
   },
-  ({ apis, destination, network, xcmParaId, transferDirection }) => {
-    if (!network || xcmParaId === null || !transferDirection) return undefined;
+  (params) => {
+    const { api, destination, network, xcmParaId, transferDirection } = params;
 
-    const chainId = `0x${transferDirection.destination.chainId}` as ChainId;
-    if (!apis[chainId]) return undefined;
+    if (!api || !network || xcmParaId === null || !transferDirection) return undefined;
 
     if (transferDirection.type === XcmTransferType.XTOKENS && destination) {
       return xcmService.getVersionedDestinationLocation(
-        apis[chainId],
+        api,
         transferDirection.type,
         network.chain,
         xcmParaId || undefined,
@@ -125,7 +148,7 @@ const $txDestination = combine(
     }
 
     return xcmService.getVersionedDestinationLocation(
-      apis[chainId],
+      api,
       transferDirection.type,
       network.chain,
       xcmParaId || undefined,
@@ -136,49 +159,69 @@ const $txDestination = combine(
 
 const $txBeneficiary = combine(
   {
-    apis: networkModel.$apis,
+    api: $apiDestination,
     destination: $destination,
-    network: $networkStore,
     transferDirection: $transferDirection,
   },
-  ({ apis, destination, network, transferDirection }) => {
-    if (!destination || !network || !transferDirection) return undefined;
+  (params) => {
+    const { api, destination, transferDirection } = params;
 
-    const chainId = `0x${transferDirection.destination.chainId}` as ChainId;
-    if (!apis[chainId]) return undefined;
+    if (!api || !destination || !transferDirection) return undefined;
 
-    return xcmService.getVersionedAccountLocation(apis[chainId], transferDirection.type, destination);
+    return xcmService.getVersionedAccountLocation(api, transferDirection.type, destination);
   },
   { skipVoid: false },
 );
 
 const $txAsset = combine(
   {
-    apis: networkModel.$apis,
+    api: $apiDestination,
     config: $config,
-    network: $networkStore,
     amount: $amount,
     transferDirection: $transferDirection,
     xcmAsset: $xcmAsset,
     xcmFee: $xcmFee,
   },
-  ({ apis, config, network, amount, transferDirection, xcmAsset, xcmFee }) => {
-    if (!config || !network || !transferDirection || !xcmAsset) return undefined;
+  (params) => {
+    const { api, config, transferDirection, xcmAsset } = params;
 
-    const chainId = `0x${transferDirection.destination.chainId}` as ChainId;
-    if (!apis[chainId]) return undefined;
+    if (!api || !config || !transferDirection || !xcmAsset) return undefined;
 
-    const resultAmount = new BN(amount || 0).add(new BN(xcmFee || 0));
+    const resultAmount = new BN(params.amount || 0).add(new BN(params.xcmFee || 0));
     const isArray = transferDirection.type !== XcmTransferType.XTOKENS;
 
     return xcmService.getAssetLocation(
-      apis[chainId],
+      api,
       transferDirection.type,
       xcmAsset,
       config.assetsLocation,
       resultAmount,
       isArray,
     );
+  },
+  { skipVoid: false },
+);
+
+const $xcmData = combine(
+  {
+    api: $api,
+    xcmFee: $xcmFee,
+    xcmAsset: $txAsset,
+    xcmChain: $xcmChain,
+    xcmWeight: $xcmWeight,
+    xcmDest: $txDestination,
+    xcmBeneficiary: $txBeneficiary,
+    transferDirection: $transferDirection,
+  },
+  ({ api, xcmChain, transferDirection, ...rest }) => {
+    if (!api || !transferDirection || !xcmChain) return undefined;
+
+    const transactionType = xcmTransferUtils.getXcmTransferType(api, transferDirection.type);
+
+    return {
+      transactionType,
+      args: { destinationChain: xcmChain, ...rest },
+    };
   },
   { skipVoid: false },
 );
@@ -214,14 +257,11 @@ sample({
 });
 
 export const xcmTransferModel = {
-  $transferDirections,
-  $xcmAsset,
+  $config,
+  $apiDestination,
+  $xcmData,
   $xcmFee,
-  $xcmWeight,
-
-  $txDestination,
-  $txBeneficiary,
-  $txAsset,
+  $transferDirections,
 
   events: {
     xcmStarted,
