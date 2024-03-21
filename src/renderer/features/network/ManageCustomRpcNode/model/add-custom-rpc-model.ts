@@ -57,15 +57,6 @@ const saveRpcNodeFx = createEffect(async ({ network, form }: SaveRpcNodeFxParams
   });
 });
 
-// const isNodeExistFx = createEffect(({ network, url }: NodeExistParam): boolean => {
-//   const defaultNodes = network.nodes;
-//   const customNodes = network.connection.customNodes || [];
-
-//   const result = defaultNodes.some(({ url: u }) => u === url) || customNodes.some(({ url: u }) => u === url);
-
-//   return result;
-// });
-
 sample({
   clock: processStarted,
   target: $isProcessStarted,
