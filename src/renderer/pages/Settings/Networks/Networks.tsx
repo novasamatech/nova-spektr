@@ -5,7 +5,7 @@ import { useUnit } from 'effector-react';
 import { useI18n, useConfirmContext } from '@app/providers';
 import { Paths } from '@shared/routes';
 import { BaseModal, InfoLink } from '@shared/ui';
-import { useToggle } from '@shared/lib/hooks';
+import { useModalClose, useToggle } from '@shared/lib/hooks';
 import { NetworkSelector } from './components';
 import { DEFAULT_TRANSITION } from '@shared/lib/utils';
 import type { RpcNode, ChainId } from '@shared/core';
@@ -43,8 +43,17 @@ export const Networks = () => {
   const inactiveNetworks = useUnit(inactiveNetworksModel.$inactiveNetworks);
   const connections = useUnit(networkModel.$connections);
   const filterQuery = useUnit(networksFilterModel.$filterQuery);
-  const isAddRpcModalOpen = useUnit(addCustomRpcModel.$isFlowStarted);
-  const isEditRpcModalOpen = useUnit(editCustomRpcModel.$isFlowStarted);
+  const isAddFlowStarted = useUnit(addCustomRpcModel.$isFlowStarted);
+  const isEditFlowStarted = useUnit(editCustomRpcModel.$isFlowStarted);
+
+  const [isAddCustomRpcModalOpen, closeAddCustomRpcModal] = useModalClose(
+    isAddFlowStarted,
+    addCustomRpcModel.events.flowFinished,
+  );
+  const [isEditCustomRpcModalOpen, closeEditCustomRpcModal] = useModalClose(
+    isEditFlowStarted,
+    editCustomRpcModel.events.flowFinished,
+  );
 
   const [isNetworksModalOpen, toggleNetworksModal] = useToggle(true);
 
@@ -151,18 +160,6 @@ export const Networks = () => {
     };
   };
 
-  const closeAddCustomRpcModal = () => {
-    setTimeout(() => {
-      addCustomRpcModel.events.flowFinished();
-    }, DEFAULT_TRANSITION);
-  };
-
-  const closeEditCustomRpcModal = () => {
-    setTimeout(() => {
-      editCustomRpcModel.events.flowFinished();
-    }, DEFAULT_TRANSITION);
-  };
-
   return (
     <BaseModal
       closeButton
@@ -222,8 +219,8 @@ export const Networks = () => {
         <EmptyNetworks />
       </div>
 
-      <AddCustomRpcModal isOpen={isAddRpcModalOpen} onClose={closeAddCustomRpcModal} />
-      <EditCustomRpcModal isOpen={isEditRpcModalOpen} onClose={closeEditCustomRpcModal} />
+      <AddCustomRpcModal isOpen={isAddCustomRpcModalOpen} onClose={closeAddCustomRpcModal} />
+      <EditCustomRpcModal isOpen={isEditCustomRpcModalOpen} onClose={closeEditCustomRpcModal} />
     </BaseModal>
   );
 };
