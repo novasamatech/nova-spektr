@@ -5,7 +5,7 @@ import { useUnit } from 'effector-react';
 
 import { AmountInput, Button, Combobox, Identicon, Input, InputHint, RadioGroup } from '@shared/ui';
 import { useI18n } from '@app/providers';
-import { validateAddress } from '@shared/lib/utils';
+import { validateAddress, isStringsMatchQuery, toAddress } from '@shared/lib/utils';
 import { RadioOption } from '@shared/ui/RadioGroup/common/types';
 import { DropdownOption, ComboboxOption } from '@shared/ui/Dropdowns/common/types';
 import { getDestinationAccounts, getPayoutAccountOption } from '../../common/utils';
@@ -13,6 +13,7 @@ import type { Asset, Address, ChainId, AccountId } from '@shared/core';
 import { RewardsDestination } from '@shared/core';
 import { walletModel, accountUtils } from '@entities/wallet';
 import { useAssetBalances } from '@entities/balance';
+import { operationFormModel } from './operation-form-model';
 
 const getDestinations = (t: TFunction): RadioOption<RewardsDestination>[] => {
   const Options = [
@@ -81,6 +82,7 @@ export const OperationForm = ({
   const { t } = useI18n();
   const dbAccounts = useUnit(walletModel.$accounts);
   const dbWallets = useUnit(walletModel.$wallets);
+  const destinationQuery = useUnit(operationFormModel.$destinationQuery);
 
   const destinations = getDestinations(t);
 
@@ -133,8 +135,9 @@ export const OperationForm = ({
   useEffect(() => {
     const payoutAccounts = destAccounts.reduce<DropdownOption<Address>[]>((acc, account) => {
       const isChainIdMatch = accountUtils.isChainIdMatch(account, chainId);
+      const address = toAddress(account.accountId, { prefix: addressPrefix });
 
-      if (isChainIdMatch) {
+      if (isChainIdMatch && isStringsMatchQuery(destinationQuery, [account.name, address])) {
         const balance = balances.find((b) => b.accountId === account.accountId);
         const option = getPayoutAccountOption(account, { asset, addressPrefix, balance });
 
@@ -145,7 +148,7 @@ export const OperationForm = ({
     }, []);
 
     setPayoutAccounts(payoutAccounts);
-  }, [destAccounts.length, balances]);
+  }, [destAccounts.length, balances, destinationQuery]);
 
   const validateDestination = (): boolean => {
     if (destination === RewardsDestination.RESTAKE) return true;
@@ -242,6 +245,8 @@ export const OperationForm = ({
                   <RadioGroup.Option option={destinations[1]}>
                     <Combobox
                       placeholder={t('staking.bond.payoutAccountPlaceholder')}
+                      query={destinationQuery}
+                      value={activePayout}
                       options={payoutAccounts}
                       disabled={destinationField.disabled}
                       invalid={Boolean(error)}
@@ -254,6 +259,7 @@ export const OperationForm = ({
                           canCopy={false}
                         />
                       }
+                      onInput={operationFormModel.events.destinationQueryChanged}
                       onChange={(option) => setActivePayout(option.value)}
                     />
                   </RadioGroup.Option>

@@ -13,6 +13,13 @@ import { ForgetStep } from '../../lib/constants';
 import { Animation } from '@shared/ui/Animation/Animation';
 import { IconNames } from '@shared/ui/Icon/data';
 import { RenameWalletModal } from '@features/wallets/RenameWallet';
+import { forgetWalletModel } from '@features/wallets/ForgetWallet';
+import { TabItem } from '@shared/ui/Tabs/common/types';
+import { addProxyModel, AddProxy } from '@widgets/AddProxyModal';
+import { walletProviderModel } from '../../model/wallet-provider-model';
+import { WalletConnectAccounts } from '../components/WalletConnectAccounts';
+import { ProxiesList } from '../components/ProxiesList';
+import { NoProxiesAction } from '../components/NoProxiesAction';
 import {
   BaseModal,
   Button,
@@ -23,12 +30,6 @@ import {
   StatusModal,
   Tabs,
 } from '@shared/ui';
-import { TabItem } from '@shared/ui/Tabs/common/types';
-// import { ProxiesList } from '../components/ProxiesList';
-import { walletProviderModel } from '../../model/wallet-provider-model';
-// import { NoProxiesAction } from '../components/NoProxiesAction';
-import { WalletConnectAccounts } from '../components/WalletConnectAccounts';
-import { forgetWalletModel } from '@features/wallets/ForgetWallet';
 
 type Props = {
   wallet: WalletConnectWallet;
@@ -81,6 +82,11 @@ export const WalletConnectDetails = ({ wallet, accounts, onClose }: Props) => {
       title: t('walletDetails.walletConnect.refreshButton'),
       onClick: wcDetailsModel.events.confirmReconnectShown,
     },
+    {
+      icon: 'addCircle' as IconNames,
+      title: t('walletDetails.common.addProxyAction'),
+      onClick: addProxyModel.events.flowStarted,
+    },
   ];
 
   const ActionButton = (
@@ -101,15 +107,19 @@ export const WalletConnectDetails = ({ wallet, accounts, onClose }: Props) => {
       title: t('walletDetails.common.accountTabTitle'),
       panel: <WalletConnectAccounts wallet={wallet} accounts={accounts} />,
     },
-    // {
-    //   id: 'proxies',
-    //   title: t('walletDetails.common.proxiesTabTitle'),
-    //   panel: hasProxies ? (
-    //     <ProxiesList className="h-[395px] mt-6" canCreateProxy={canCreateProxy} />
-    //   ) : (
-    //     <NoProxiesAction className="h-[395px] mt-6" canCreateProxy={canCreateProxy} />
-    //   ),
-    // },
+    {
+      id: 'proxies',
+      title: t('walletDetails.common.proxiesTabTitle'),
+      panel: hasProxies ? (
+        <ProxiesList className="h-[395px] mt-6" canCreateProxy={canCreateProxy} />
+      ) : (
+        <NoProxiesAction
+          className="h-[395px] mt-6"
+          canCreateProxy={canCreateProxy}
+          onAddProxy={addProxyModel.events.flowStarted}
+        />
+      ),
+    },
   ];
 
   return (
@@ -200,6 +210,8 @@ export const WalletConnectDetails = ({ wallet, accounts, onClose }: Props) => {
       </div>
 
       <RenameWalletModal wallet={wallet} isOpen={isRenameModalOpen} onClose={toggleIsRenameModalOpen} />
+
+      <AddProxy />
     </BaseModal>
   );
 };

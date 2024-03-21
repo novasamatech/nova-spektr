@@ -1,4 +1,5 @@
 import { useUnit } from 'effector-react';
+import noop from 'lodash/noop';
 
 import { ProxiedAccount, ProxyType, Wallet } from '@shared/core';
 import { useI18n } from '@app/providers';
@@ -9,9 +10,9 @@ import { BaseModal, DropdownIconButton, FootnoteText, Icon, Tabs } from '@shared
 import { AccountsList, WalletCardLg, WalletIcon } from '@entities/wallet';
 import { RenameWalletModal } from '@features/wallets/RenameWallet';
 import { TabItem } from '@shared/ui/Tabs/common/types';
-// import { ProxiesList } from '../components/ProxiesList';
+import { ProxiesList } from '../components/ProxiesList';
+import { NoProxiesAction } from '../components/NoProxiesAction';
 import { walletProviderModel } from '../../model/wallet-provider-model';
-// import { NoProxiesAction } from '../components/NoProxiesAction';
 
 const ProxyTypeOperation: Record<ProxyType, string> = {
   [ProxyType.ANY]: 'proxy.operations.any',
@@ -73,15 +74,15 @@ export const ProxiedWalletDetails = ({ wallet, proxyWallet, proxiedAccount, onCl
         />
       ),
     },
-    // {
-    //   id: 'proxies',
-    //   title: t('walletDetails.common.proxiesTabTitle'),
-    //   panel: hasProxies ? (
-    //     <ProxiesList className="h-[353px]" canCreateProxy={canCreateProxy} />
-    //   ) : (
-    //     <NoProxiesAction className="h-[353px]" canCreateProxy={canCreateProxy} />
-    //   ),
-    // },
+    {
+      id: 'proxies',
+      title: t('walletDetails.common.proxiesTabTitle'),
+      panel: hasProxies ? (
+        <ProxiesList className="h-[353px]" canCreateProxy={canCreateProxy} />
+      ) : (
+        <NoProxiesAction className="h-[353px]" canCreateProxy={canCreateProxy} onAddProxy={noop} />
+      ),
+    },
   ];
 
   return (

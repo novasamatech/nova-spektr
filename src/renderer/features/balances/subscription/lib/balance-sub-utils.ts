@@ -36,17 +36,15 @@ function getNewAccounts(
   const chainIds = Object.keys(subAccounts) as ChainId[];
 
   const newSubAccounts = accountsToSub.reduce<SubAccounts>((acc, account) => {
-    const chainsToUpdate = chainIds.filter((chainId) =>
-      accountUtils.isChainIdAndCryptoTypeMatch(account, chains[chainId]),
-    );
+    const chainsToUpdate = chainIds.filter((chainId) => accountUtils.isChainAndCryptoMatch(account, chains[chainId]));
 
     chainsToUpdate.forEach((chainId) => {
-      if (acc[chainId] && acc[chainId][account.walletId]) {
-        acc[chainId][account.walletId].push(account.accountId);
-      } else if (acc[chainId]) {
-        acc[chainId][account.walletId] = [account.accountId];
-      } else {
+      if (!acc[chainId]) {
         acc[chainId] = { [account.walletId]: [account.accountId] };
+      } else if (acc[chainId][account.walletId]) {
+        acc[chainId][account.walletId].push(account.accountId);
+      } else {
+        acc[chainId][account.walletId] = [account.accountId];
       }
     });
 

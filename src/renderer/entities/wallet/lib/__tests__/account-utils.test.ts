@@ -191,3 +191,16 @@ describe('entities/wallet/lib/account-utils#getDerivationPath', () => {
     expect(result).toEqual(accounts[2]);
   });
 });
+
+describe('entities/wallet/lib/account-utils#isChainDependant', () => {
+  test.each([
+    [{ type: AccountType.BASE }, false], // BaseAccount
+    [{ type: AccountType.CHAIN, chainId: '0x00' }, true], // ChainAccount
+    [{ type: AccountType.WALLET_CONNECT, chainId: '0x00' }, true], // WalletConnectAccount
+    [{ type: AccountType.MULTISIG, chainId: undefined }, false], // MultisigAccount milti_chain
+    [{ type: AccountType.MULTISIG, chainId: '0x00' }, true], // MultisigAccount single_chain
+    [{ type: AccountType.PROXIED, chainId: '0x00' }, true], // ProxiedAccount
+  ])('should be chain dependant or not', (account, expected) => {
+    expect(accountUtils.isChainDependant(account as Account)).toEqual(expected);
+  });
+});
