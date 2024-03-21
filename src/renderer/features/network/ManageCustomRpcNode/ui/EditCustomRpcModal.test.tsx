@@ -32,7 +32,7 @@ describe('pages/Settings/Networks/EditCustomRpcModal', () => {
   test('should render component', async () => {
     const scope = fork({
       values: new Map()
-        .set(editCustomRpcModel.$isProcessStarted, true)
+        .set(editCustomRpcModel.$isFlowStarted, true)
         .set(editCustomRpcModel.$selectedNetwork, network)
         .set(editCustomRpcModel.$editCustomRpcForm.fields.url.$value, mockNode.url)
         .set(editCustomRpcModel.$editCustomRpcForm.fields.name.$value, mockNode.name),
@@ -59,7 +59,7 @@ describe('pages/Settings/Networks/EditCustomRpcModal', () => {
   test('should disable submit button during submission', async () => {
     const scope = fork({
       values: new Map()
-        .set(editCustomRpcModel.$isProcessStarted, true)
+        .set(editCustomRpcModel.$isFlowStarted, true)
         .set(editCustomRpcModel.$selectedNetwork, network)
         .set(editCustomRpcModel.$editCustomRpcForm.fields.url.$value, mockNode.url)
         .set(editCustomRpcModel.$editCustomRpcForm.fields.name.$value, mockNode.name),
@@ -93,7 +93,7 @@ describe('pages/Settings/Networks/EditCustomRpcModal', () => {
   test('should show error for invalid address', async () => {
     const scope = fork({
       values: new Map()
-        .set(editCustomRpcModel.$isProcessStarted, true)
+        .set(editCustomRpcModel.$isFlowStarted, true)
         .set(editCustomRpcModel.$selectedNetwork, network)
         .set(editCustomRpcModel.$editCustomRpcForm.fields.url.$value, mockNode.url)
         .set(editCustomRpcModel.$editCustomRpcForm.fields.name.$value, mockNode.name)
@@ -115,7 +115,7 @@ describe('pages/Settings/Networks/EditCustomRpcModal', () => {
   test('should show error for wrong network', async () => {
     const scope = fork({
       values: new Map()
-        .set(editCustomRpcModel.$isProcessStarted, true)
+        .set(editCustomRpcModel.$isFlowStarted, true)
         .set(editCustomRpcModel.$selectedNetwork, network)
         .set(editCustomRpcModel.$editCustomRpcForm.fields.url.$value, mockNode.url)
         .set(editCustomRpcModel.$editCustomRpcForm.fields.name.$value, mockNode.name)

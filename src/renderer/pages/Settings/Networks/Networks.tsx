@@ -43,8 +43,8 @@ export const Networks = () => {
   const inactiveNetworks = useUnit(inactiveNetworksModel.$inactiveNetworks);
   const connections = useUnit(networkModel.$connections);
   const filterQuery = useUnit(networksFilterModel.$filterQuery);
-  const isAddRpcModalOpen = useUnit(addCustomRpcModel.$isProcessStarted);
-  const isEditRpcModalOpen = useUnit(editCustomRpcModel.$isProcessStarted);
+  const isAddRpcModalOpen = useUnit(addCustomRpcModel.$isFlowStarted);
+  const isEditRpcModalOpen = useUnit(editCustomRpcModel.$isFlowStarted);
 
   const [isNetworksModalOpen, toggleNetworksModal] = useToggle(true);
 
@@ -153,13 +153,13 @@ export const Networks = () => {
 
   const closeAddCustomRpcModal = () => {
     setTimeout(() => {
-      addCustomRpcModel.events.processStarted(false);
+      addCustomRpcModel.events.flowFinished();
     }, DEFAULT_TRANSITION);
   };
 
   const closeEditCustomRpcModal = () => {
     setTimeout(() => {
-      editCustomRpcModel.events.processStarted(false);
+      editCustomRpcModel.events.flowFinished();
     }, DEFAULT_TRANSITION);
   };
 
@@ -184,8 +184,8 @@ export const Networks = () => {
             <InactiveNetwork networkItem={network}>
               <NetworkSelector
                 networkItem={network}
-                openEditRpcModal={() => editCustomRpcModel.events.processStarted(true)}
-                openAddRpcModal={() => addCustomRpcModel.events.processStarted(true)}
+                openEditRpcModal={editCustomRpcModel.events.flowStarted}
+                openAddRpcModal={addCustomRpcModel.events.flowStarted}
                 onAddRpcNetworkChange={addCustomRpcModel.events.networkChanged}
                 onRemoveCustomNode={removeCustomNode(network.chainId)}
                 onEditRpcNetworkChange={editCustomRpcModel.events.networkChanged}
@@ -206,8 +206,8 @@ export const Networks = () => {
             <ActiveNetwork networkItem={network}>
               <NetworkSelector
                 networkItem={network}
-                openEditRpcModal={() => editCustomRpcModel.events.processStarted(true)}
-                openAddRpcModal={() => addCustomRpcModel.events.processStarted(true)}
+                openEditRpcModal={editCustomRpcModel.events.flowStarted}
+                openAddRpcModal={addCustomRpcModel.events.flowStarted}
                 onAddRpcNetworkChange={addCustomRpcModel.events.networkChanged}
                 onRemoveCustomNode={removeCustomNode(network.chainId)}
                 onEditRpcNetworkChange={editCustomRpcModel.events.networkChanged}

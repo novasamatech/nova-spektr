@@ -14,7 +14,7 @@ export type CustomRpcForm = {
 };
 
 export type VerifyRpcConnectivityFxParams = {
-  network: ExtendedChain;
+  chainId: ExtendedChain['chainId'];
   url: string;
 };
 

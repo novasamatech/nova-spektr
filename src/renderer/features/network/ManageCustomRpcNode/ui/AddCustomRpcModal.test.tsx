@@ -29,7 +29,7 @@ describe('pages/Settings/Networks/AddCustomRpcModal', () => {
 
   test('should render component', async () => {
     const scope = fork({
-      values: new Map().set(addCustomRpcModel.$isProcessStarted, true).set(addCustomRpcModel.$selectedNetwork, network),
+      values: new Map().set(addCustomRpcModel.$isFlowStarted, true).set(addCustomRpcModel.$selectedNetwork, network),
     });
 
     await act(async () => {
@@ -50,7 +50,7 @@ describe('pages/Settings/Networks/AddCustomRpcModal', () => {
 
   test('should disable submit button during submission', async () => {
     const scope = fork({
-      values: new Map().set(addCustomRpcModel.$isProcessStarted, true).set(addCustomRpcModel.$selectedNetwork, network),
+      values: new Map().set(addCustomRpcModel.$isFlowStarted, true).set(addCustomRpcModel.$selectedNetwork, network),
     });
 
     await act(async () => {
@@ -81,7 +81,7 @@ describe('pages/Settings/Networks/AddCustomRpcModal', () => {
   test('should show error for existing address', async () => {
     const scope = fork({
       values: new Map()
-        .set(addCustomRpcModel.$isProcessStarted, true)
+        .set(addCustomRpcModel.$isFlowStarted, true)
         .set(addCustomRpcModel.$selectedNetwork, network)
         .set(addCustomRpcModel.$isNodeExist, true),
     });
@@ -103,7 +103,7 @@ describe('pages/Settings/Networks/AddCustomRpcModal', () => {
   test('should show error for invalid address', async () => {
     const scope = fork({
       values: new Map()
-        .set(addCustomRpcModel.$isProcessStarted, true)
+        .set(addCustomRpcModel.$isFlowStarted, true)
         .set(addCustomRpcModel.$selectedNetwork, network)
         .set(addCustomRpcModel.$rpcConnectivityResult, RpcConnectivityResult.INVALID),
     });
@@ -125,7 +125,7 @@ describe('pages/Settings/Networks/AddCustomRpcModal', () => {
   test('should show error for wrong network', async () => {
     const scope = fork({
       values: new Map()
-        .set(addCustomRpcModel.$isProcessStarted, true)
+        .set(addCustomRpcModel.$isFlowStarted, true)
         .set(addCustomRpcModel.$selectedNetwork, network)
         .set(addCustomRpcModel.$rpcConnectivityResult, RpcConnectivityResult.WRONG_NETWORK),
     });

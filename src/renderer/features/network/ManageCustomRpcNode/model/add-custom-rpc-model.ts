@@ -31,12 +31,13 @@ const formInitiated = createEvent();
 const networkChanged = createEvent<ExtendedChain>();
 const rpcConnectivityVerified = createEvent<RpcConnectivityResult>();
 const nodeExistVerified = createEvent<boolean>();
-const processStarted = createEvent<boolean>();
+const flowStarted = createEvent();
+const flowFinished = createEvent();
 
 const $selectedNetwork = createStore<ExtendedChain | null>(null);
 const $rpcConnectivityResult = createStore<RpcConnectivityResult>(RpcConnectivityResult.INIT);
 const $isNodeExist = createStore<boolean>(false);
-const $isProcessStarted = createStore<boolean>(false);
+const $isFlowStarted = createStore<boolean>(false);
 const $isLoading = createStore<boolean>(false);
 
 const verifyRpcConnectivityFx = createEffect(
@@ -58,8 +59,15 @@ const saveRpcNodeFx = createEffect(async ({ network, form }: SaveRpcNodeFxParams
 });
 
 sample({
-  clock: processStarted,
-  target: $isProcessStarted,
+  clock: flowStarted,
+  fn: () => true,
+  target: $isFlowStarted,
+});
+
+sample({
+  clock: flowFinished,
+  fn: () => false,
+  target: $isFlowStarted,
 });
 
 sample({
@@ -154,7 +162,7 @@ sample({
 
 sample({
   clock: saveRpcNodeFx.done,
-  target: $isProcessStarted.reinit,
+  target: $isFlowStarted.reinit,
 });
 
 export const addCustomRpcModel = {
@@ -162,12 +170,13 @@ export const addCustomRpcModel = {
   $rpcConnectivityResult,
   $selectedNetwork,
   $isNodeExist,
-  $isProcessStarted,
+  $isFlowStarted,
   $isLoading,
 
   events: {
     formInitiated,
     networkChanged,
-    processStarted,
+    flowStarted,
+    flowFinished,
   },
 };
