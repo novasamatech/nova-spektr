@@ -56,12 +56,12 @@ type SignedExtrinsicParams = {
 const getSignedExtrinsicFx = createEffect(({ api, signature, unsignedTx }: SignedExtrinsicParams): Promise<string> => {
   return getSignedExtrinsic(unsignedTx, signature, api);
 });
-
 type SubmitExtrinsicParams = {
   api: ApiPromise;
   unsignedTx: UnsignedTransaction;
   extrinsic: string;
 };
+
 const submitExtrinsicFx = createEffect(({ api, unsignedTx, extrinsic }: SubmitExtrinsicParams): void => {
   const boundExtrinsicSucceeded = scopeBind(extrinsicSucceeded, { safe: true });
   const boundExtrinsicFailed = scopeBind(extrinsicFailed, { safe: true });
@@ -233,8 +233,11 @@ export const submitModel = {
     formSubmitted,
   },
 
+  /* Internal API (tests only) */
   __tests__: {
     getSignedExtrinsicFx,
     submitExtrinsicFx,
+    saveMultisigTxFx,
+    sendMatrixApproveFx,
   },
 };

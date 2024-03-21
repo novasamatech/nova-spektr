@@ -39,6 +39,7 @@ import { storageService } from '@shared/api/storage';
 
 const workerStarted = createEvent();
 const connected = createEvent<ChainId>();
+const proxiedWalletsCreated = createEvent<ProxiedWalletsParams>();
 const proxiedAccountsRemoved = createEvent<ProxiedAccount[]>();
 const depositsReceived = createEvent<ProxyDeposits>();
 
@@ -405,8 +406,14 @@ sample({
   target: notificationModel.events.notificationsAdded,
 });
 
+sample({
+  clock: proxiedWalletsCreated,
+  target: createProxiedWalletsFx,
+});
+
 export const proxiesModel = {
   events: {
     workerStarted,
+    proxiedWalletsCreated,
   },
 };
