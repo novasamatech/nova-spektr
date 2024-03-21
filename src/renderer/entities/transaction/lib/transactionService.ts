@@ -138,7 +138,7 @@ type WrapperParams = {
   signerAccountId?: AccountId;
 };
 type WrappedTransactions = {
-  transaction: Transaction;
+  wrappedTx: Transaction;
   multisigTx: Transaction | null;
 };
 function getWrappedTransactions(
@@ -151,16 +151,16 @@ function getWrappedTransactions(
   return txWrappers.reduce<WrappedTransactions>(
     (acc, wrapper) => {
       if (hasMultisig([wrapper]) && hasSignatory) {
-        acc.transaction = wrapAsMulti(api, acc.transaction, account, signerAccountId, addressPrefix);
-        acc.multisigTx = acc.transaction;
+        acc.wrappedTx = wrapAsMulti(api, acc.wrappedTx, account, signerAccountId, addressPrefix);
+        acc.multisigTx = acc.wrappedTx;
       }
       if (hasProxy([wrapper])) {
-        acc.transaction = wrapAsProxy(api, acc.transaction, addressPrefix);
+        acc.wrappedTx = wrapAsProxy(api, acc.wrappedTx, addressPrefix);
       }
 
       return acc;
     },
-    { transaction, multisigTx: null },
+    { wrappedTx: transaction, multisigTx: null },
   );
 }
 

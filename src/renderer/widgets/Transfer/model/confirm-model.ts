@@ -1,17 +1,11 @@
-import { createEvent, combine, sample, createStore } from 'effector';
-import { spread } from 'patronum';
+import { createEvent, combine, sample, restore } from 'effector';
 
 import { Chain, Account, Address, Asset } from '@shared/core';
 import { networkModel } from '@entities/network';
-import { Transaction } from '@entities/transaction';
 import { walletModel, walletUtils } from '@entities/wallet';
 
 type Input = {
-  transaction: Transaction;
-  payload: ConfirmData;
-};
-
-type ConfirmData = {
+  xcmChain: Chain;
   chain: Chain;
   asset: Asset;
   account: Account;
@@ -19,13 +13,15 @@ type ConfirmData = {
   amount: string;
   destination: Address;
   description: string;
+  fee: string;
+  xcmFee: string;
+  multisigDeposit: string;
 };
 
 const formInitiated = createEvent<Input>();
 const formSubmitted = createEvent();
 
-const $confirmStore = createStore<ConfirmData | null>(null);
-const $transaction = createStore<Transaction | null>(null);
+const $confirmStore = restore(formInitiated, null);
 
 const $api = combine(
   {
@@ -61,20 +57,24 @@ const $signerWallet = combine(
   },
 );
 
+const $isXcm = combine($confirmStore, (confirmStore) => {
+  if (!confirmStore) return false;
+
+  return confirmStore.xcmChain.chainId !== confirmStore.chain.chainId;
+});
+
 sample({
   clock: formInitiated,
-  target: spread({
-    transaction: $transaction,
-    payload: $confirmStore,
-  }),
+  target: $confirmStore,
 });
 
 export const confirmModel = {
   $confirmStore,
-  $transaction,
   $initiatorWallet,
   $signerWallet,
+
   $api,
+  $isXcm,
   events: {
     formInitiated,
   },

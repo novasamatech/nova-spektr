@@ -27,7 +27,7 @@ export const Transfer = ({ chain, asset }: Props) => {
   const navigate = useNavigate();
 
   const step = useUnit(transferModel.$step);
-  // const xcmChain = useUnit(transferModel.$xcmChain);
+  const xcmChain = useUnit(transferModel.$xcmChain);
 
   const [isModalOpen, closeModal] = useModalClose(!transferUtils.isNoneStep(step), () => {
     navigate(Paths.ASSETS);
@@ -40,10 +40,8 @@ export const Transfer = ({ chain, asset }: Props) => {
 
   if (transferUtils.isSubmitStep(step)) return <SubmitTransfer isOpen={isModalOpen} onClose={closeModal} />;
 
-  const getModalTitle = (chain: Chain, asset: Asset): String | ReactNode => {
-    // TODO: refactor this trash
-    const operationTitle = 'transfer.title';
-    //   destinationChain && destinationChain !== chain.chainId ? 'transfer.xcmTitle' : 'transfer.title';
+  const getModalTitle = (chain: Chain, asset: Asset, xcmChain?: Chain): String | ReactNode => {
+    const operationTitle = xcmChain ? 'transfer.xcmTitle' : 'transfer.title';
 
     return <OperationTitle title={`${t(operationTitle, { asset: asset.symbol })}`} chainId={chain.chainId} />;
   };
@@ -53,7 +51,7 @@ export const Transfer = ({ chain, asset }: Props) => {
       closeButton
       contentClass=""
       isOpen={isModalOpen}
-      title={getModalTitle(chain, asset)}
+      title={getModalTitle(chain, asset, xcmChain)}
       onClose={closeModal}
     >
       {transferUtils.isInitStep(step) && <TransferForm onGoBack={closeModal} />}

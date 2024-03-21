@@ -20,6 +20,7 @@ export type NetworkStore = {
 };
 
 export type TransferStore = {
+  xcmChain: Chain;
   account: Account;
   signatory?: Account;
   amount: string;

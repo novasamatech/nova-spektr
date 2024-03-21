@@ -1,4 +1,4 @@
-import { createEvent, createStore, sample, restore } from 'effector';
+import { createEvent, createStore, sample, restore, combine } from 'effector';
 import { spread, delay } from 'patronum';
 
 import { Transaction, transactionService } from '@entities/transaction';
@@ -20,11 +20,23 @@ const $step = createStore<Step>(Step.NONE);
 const $transferStore = createStore<TransferStore | null>(null);
 const $networkStore = restore<NetworkStore | null>(flowStarted, null);
 
-const $pureTx = createStore<Transaction | null>(null);
-const $wrappedTx = createStore<Transaction | null>(null);
+const $transaction = createStore<Transaction | null>(null);
 const $multisigTx = createStore<Transaction | null>(null);
 
 const $txWrappers = createStore<TxWrappers>([]);
+
+const $xcmChain = combine(
+  {
+    transferStore: $transferStore,
+    network: $networkStore,
+  },
+  ({ transferStore, network }) => {
+    if (!network || !transferStore) return undefined;
+
+    return transferStore.xcmChain.chainId === network.chain.chainId ? undefined : transferStore.xcmChain;
+  },
+  { skipVoid: false },
+);
 
 sample({ clock: stepChanged, target: $step });
 
@@ -41,10 +53,8 @@ sample({
 
 sample({
   clock: formModel.output.formSubmitted,
-  target: spread({
-    transaction: $pureTx,
-    formData: $transferStore,
-  }),
+  fn: ({ formData }) => formData,
+  target: $transferStore,
 });
 
 sample({
@@ -80,35 +90,24 @@ sample({
     return transactionService.getWrappedTransactions(txWrappers, transaction, {
       api: apis[chainId],
       addressPrefix: addressPrefix,
-      account,
       signerAccountId: signatory?.accountId,
+      account,
     });
   },
   target: spread({
-    transaction: $wrappedTx,
+    wrappedTx: $transaction,
     multisigTx: $multisigTx,
   }),
 });
 
 sample({
   clock: formModel.output.formSubmitted,
-  source: {
-    networkStore: $networkStore,
-    pureTx: $pureTx,
-  },
-  filter: ({ networkStore, pureTx }) => Boolean(networkStore) && Boolean(pureTx),
-  fn: ({ networkStore, pureTx }, { formData }) => {
-    const payload = {
-      ...formData,
-      chain: networkStore!.chain,
-      asset: networkStore!.asset,
-    };
-
-    return {
-      event: { payload, transaction: pureTx! },
-      step: Step.CONFIRM,
-    };
-  },
+  source: $networkStore,
+  filter: (network: NetworkStore | null): network is NetworkStore => Boolean(network),
+  fn: ({ chain, asset }, { formData }) => ({
+    event: { ...formData, chain, asset },
+    step: Step.CONFIRM,
+  }),
   target: spread({
     event: confirmModel.events.formInitiated,
     step: stepChanged,
@@ -120,17 +119,17 @@ sample({
   source: {
     transferStore: $transferStore,
     networkStore: $networkStore,
-    pureTx: $pureTx,
+    transaction: $transaction,
   },
-  filter: ({ transferStore, networkStore, pureTx }) => {
-    return Boolean(transferStore) && Boolean(transferStore) && Boolean(pureTx);
+  filter: ({ transferStore, networkStore, transaction }) => {
+    return Boolean(transferStore) && Boolean(networkStore) && Boolean(transaction);
   },
-  fn: ({ transferStore, networkStore, pureTx }) => ({
+  fn: ({ transferStore, networkStore, transaction }) => ({
     event: {
       chain: networkStore!.chain,
       account: transferStore!.account,
       signatory: transferStore!.signatory,
-      transaction: pureTx!,
+      transaction: transaction!,
     },
     step: Step.SIGN,
   }),
@@ -145,7 +144,7 @@ sample({
   source: {
     transferStore: $transferStore,
     networkStore: $networkStore,
-    transaction: $pureTx,
+    transaction: $transaction,
     multisigTx: $multisigTx,
     txWrappers: $txWrappers,
   },
@@ -187,6 +186,7 @@ sample({
 
 export const transferModel = {
   $step,
+  $xcmChain,
   events: {
     flowStarted,
     stepChanged,

@@ -1,14 +1,13 @@
-import { useState } from 'react';
 import { useUnit } from 'effector-react';
 
-import { Button, DetailRow, FootnoteText, Icon } from '@shared/ui';
+import { Button, DetailRow, FootnoteText, Icon, Tooltip } from '@shared/ui';
 import { useI18n } from '@app/providers';
 import { SignButton } from '@entities/operation/ui/SignButton';
 import { AddressWithExplorers, WalletIcon, ExplorersPopover, WalletCardSm, accountUtils } from '@entities/wallet';
 import { cnTw } from '@shared/lib/utils';
 import { AssetBalance } from '@entities/asset';
 import { AssetFiatBalance } from '@entities/price/ui/AssetFiatBalance';
-import { MultisigDepositWithLabel, FeeWithLabel } from '@entities/transaction';
+import { ChainTitle } from '@entities/chain';
 import { confirmModel } from '../model/confirm-model';
 
 type Props = {
@@ -18,21 +17,19 @@ type Props = {
 export const Confirmation = ({ onGoBack }: Props) => {
   const { t } = useI18n();
 
+  const api = useUnit(confirmModel.$api);
+  const isXcm = useUnit(confirmModel.$isXcm);
+
   const confirmStore = useUnit(confirmModel.$confirmStore);
-  const transaction = useUnit(confirmModel.$transaction);
   const initiatorWallet = useUnit(confirmModel.$initiatorWallet);
   const signerWallet = useUnit(confirmModel.$signerWallet);
-  const api = useUnit(confirmModel.$api);
 
-  if (!confirmStore || !transaction || !api || !initiatorWallet) return null;
-
-  const [isFeeLoading, setIsFeeLoading] = useState(true);
+  if (!confirmStore || !api || !initiatorWallet) return null;
 
   return (
     <div className="flex flex-col items-center pt-4 gap-y-4 pb-4 px-5">
       <div className="flex flex-col items-center gap-y-3 mb-2">
-        <Icon name="transferConfirm" size={60} />
-        {/*<Icon className="text-icon-default" name={isXcmTransfer ? 'crossChainConfirm' : 'transferConfirm'} size={60} />*/}
+        <Icon className="text-icon-default" name={isXcm ? 'crossChainConfirm' : 'transferConfirm'} size={60} />
 
         <div className={cnTw('flex flex-col gap-y-1 items-center')}>
           <AssetBalance
@@ -82,23 +79,22 @@ export const Confirmation = ({ onGoBack }: Props) => {
 
         <hr className="border-filter-border w-full pr-2" />
 
-        {/*<div>XCM section</div>*/}
-        {/*{transaction?.args.destinationChain && (*/}
-        {/*  <DetailRow label={t('operation.details.destinationChain')}>*/}
-        {/*    <ChainTitle*/}
-        {/*      chainId={transaction.args.destinationChain}*/}
-        {/*      fontClass="text-text-primary text-footnote"*/}
-        {/*      className="px-2"*/}
-        {/*    />*/}
-        {/*  </DetailRow>*/}
-        {/*)}*/}
+        {isXcm && (
+          <DetailRow label={t('operation.details.destinationChain')}>
+            <ChainTitle
+              className="px-2"
+              fontClass="text-text-primary text-footnote"
+              chainId={confirmStore.xcmChain.chainId}
+            />
+          </DetailRow>
+        )}
 
         <DetailRow label={t('operation.details.recipient')}>
           <AddressWithExplorers
             type="short"
             explorers={confirmStore.chain.explorers}
             addressFont="text-footnote text-inherit"
-            address={transaction.args.dest}
+            address={confirmStore.destination}
             addressPrefix={confirmStore.chain.addressPrefix}
             wrapperClassName="text-text-secondary"
           />
@@ -107,19 +103,46 @@ export const Confirmation = ({ onGoBack }: Props) => {
         <hr className="border-filter-border w-full pr-2" />
 
         {accountUtils.isMultisigAccount(confirmStore.account) && (
-          <MultisigDepositWithLabel
-            api={api}
-            asset={confirmStore.chain.assets[0]}
-            threshold={confirmStore.account.threshold}
-          />
+          <DetailRow
+            className="text-text-primary"
+            label={
+              <>
+                <Icon className="text-text-tertiary" name="lock" size={12} />
+                <FootnoteText className="text-text-tertiary">{t('staking.multisigDepositLabel')}</FootnoteText>
+                <Tooltip content={t('staking.tooltips.depositDescription')} offsetPx={-90}>
+                  <Icon name="info" className="hover:text-icon-hover cursor-pointer" size={16} />
+                </Tooltip>
+              </>
+            }
+          >
+            <div className="flex flex-col gap-y-0.5 items-end">
+              <AssetBalance value={confirmStore.multisigDeposit} asset={confirmStore.chain.assets[0]} />
+              <AssetFiatBalance asset={confirmStore.chain.assets[0]} amount={confirmStore.multisigDeposit} />
+            </div>
+          </DetailRow>
         )}
 
-        <FeeWithLabel
-          api={api}
-          asset={confirmStore.chain.assets[0]}
-          transaction={transaction}
-          onFeeLoading={setIsFeeLoading}
-        />
+        <DetailRow
+          label={<FootnoteText className="text-text-tertiary">{t('operation.networkFee')}</FootnoteText>}
+          className="text-text-primary"
+        >
+          <div className="flex flex-col gap-y-0.5 items-end">
+            <AssetBalance value={confirmStore.fee} asset={confirmStore.chain.assets[0]} />
+            <AssetFiatBalance asset={confirmStore.chain.assets[0]} amount={confirmStore.fee} />
+          </div>
+        </DetailRow>
+
+        {isXcm && (
+          <DetailRow
+            label={<FootnoteText className="text-text-tertiary">{t('operation.xcmFee')}</FootnoteText>}
+            className="text-text-primary"
+          >
+            <div className="flex flex-col gap-y-0.5 items-end">
+              <AssetBalance value={confirmStore.xcmFee} asset={confirmStore.chain.assets[0]} />
+              <AssetFiatBalance asset={confirmStore.chain.assets[0]} amount={confirmStore.xcmFee} />
+            </div>
+          </DetailRow>
+        )}
       </dl>
 
       <div className="flex w-full justify-between mt-3">
@@ -127,11 +150,7 @@ export const Confirmation = ({ onGoBack }: Props) => {
           {t('operation.goBackButton')}
         </Button>
 
-        <SignButton
-          disabled={isFeeLoading}
-          type={(signerWallet || initiatorWallet).type}
-          onClick={confirmModel.output.formSubmitted}
-        />
+        <SignButton type={(signerWallet || initiatorWallet).type} onClick={confirmModel.output.formSubmitted} />
       </div>
     </div>
   );

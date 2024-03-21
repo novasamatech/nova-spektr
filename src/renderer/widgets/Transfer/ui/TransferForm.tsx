@@ -94,14 +94,13 @@ const AccountSelector = () => {
   } = useForm(formModel.$transferForm);
 
   const accounts = useUnit(formModel.$accounts);
-  const chain = useUnit(formModel.$chain);
-  const asset = useUnit(formModel.$asset);
+  const network = useUnit(formModel.$networkStore);
 
-  if (!chain || !asset || accounts.length <= 1) return null;
+  if (!network || accounts.length <= 1) return null;
 
   const options = accounts.map(({ account, balances }) => {
     const isShard = accountUtils.isShardAccount(account);
-    const address = toAddress(account.accountId, { prefix: chain.addressPrefix });
+    const address = toAddress(account.accountId, { prefix: network.chain.addressPrefix });
 
     return {
       id: account.id.toString(),
@@ -115,7 +114,7 @@ const AccountSelector = () => {
             name={isShard ? toShortAddress(address, 16) : account.name}
             canCopy={false}
           />
-          <AssetBalance value={balances[0]} asset={asset} />
+          <AssetBalance value={balances[0]} asset={network.asset} />
         </div>
       ),
     };
@@ -143,14 +142,13 @@ const SignatorySelector = () => {
 
   const signatories = useUnit(formModel.$signatories);
   const isMultisig = useUnit(formModel.$isMultisig);
-  const chain = useUnit(formModel.$chain);
-  const asset = useUnit(formModel.$asset);
+  const network = useUnit(formModel.$networkStore);
 
-  if (!chain || !asset || !isMultisig) return null;
+  if (!network || !isMultisig) return null;
 
   const options = signatories.map(({ signer, balances }) => {
     const isShard = accountUtils.isShardAccount(signer);
-    const address = toAddress(signer.accountId, { prefix: chain.addressPrefix });
+    const address = toAddress(signer.accountId, { prefix: network.chain.addressPrefix });
 
     return {
       id: signer.id.toString(),
@@ -164,7 +162,7 @@ const SignatorySelector = () => {
             name={isShard ? address : signer.name}
             canCopy={false}
           />
-          <AssetBalance value={balances[0]} asset={asset} />
+          <AssetBalance value={balances[0]} asset={network.asset} />
         </div>
       ),
     };
@@ -277,9 +275,9 @@ const Amount = () => {
   } = useForm(formModel.$transferForm);
 
   const [balance] = useUnit(formModel.$accountBalance);
-  const asset = useUnit(formModel.$asset);
+  const network = useUnit(formModel.$networkStore);
 
-  if (!asset) return null;
+  if (!network) return null;
 
   return (
     <div className="flex flex-col gap-y-2">
@@ -289,7 +287,7 @@ const Amount = () => {
         balance={balance}
         balancePlaceholder={t('general.input.availableLabel')}
         placeholder={t('general.input.amountLabel')}
-        asset={asset}
+        asset={network.asset}
         onChange={amount.onChange}
       />
       <InputHint active={amount.hasError()} variant="error">
@@ -334,8 +332,7 @@ const FeeSection = () => {
   } = useForm(formModel.$transferForm);
 
   const api = useUnit(formModel.$api);
-  const chain = useUnit(formModel.$chain);
-  const asset = useUnit(formModel.$asset);
+  const network = useUnit(formModel.$networkStore);
   const transaction = useUnit(formModel.$transaction);
   const isMultisig = useUnit(formModel.$isMultisig);
 
@@ -343,14 +340,14 @@ const FeeSection = () => {
   const xcmConfig = useUnit(formModel.$xcmConfig);
   const xcmApi = useUnit(formModel.$xcmApi);
 
-  if (!chain || !asset) return null;
+  if (!network) return null;
 
   return (
     <div className="flex flex-col gap-y-2">
       {isMultisig && (
         <MultisigDepositWithLabel
           api={api}
-          asset={chain.assets[0]}
+          asset={network.chain.assets[0]}
           threshold={(account.value as MultisigAccount).threshold}
           onDepositChange={formModel.events.multisigDepositChanged}
         />
@@ -358,7 +355,7 @@ const FeeSection = () => {
 
       <FeeWithLabel
         api={api}
-        asset={chain.assets[0]}
+        asset={network.chain.assets[0]}
         transaction={transaction}
         onFeeChange={formModel.events.feeChanged}
         onFeeLoading={formModel.events.isFeeLoadingChanged}
@@ -368,7 +365,7 @@ const FeeSection = () => {
         <XcmFeeWithLabel
           api={xcmApi}
           config={xcmConfig}
-          asset={asset}
+          asset={network.asset}
           transaction={transaction}
           onFeeChange={formModel.events.xcmFeeChanged}
           onFeeLoading={formModel.events.isXcmFeeLoadingChanged}

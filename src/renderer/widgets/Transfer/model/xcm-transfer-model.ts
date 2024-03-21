@@ -12,6 +12,7 @@ import { xcmTransferUtils } from '../lib/xcm-transfer-utils';
 const xcmStarted = createEvent<{ chain: Chain; asset: Asset }>();
 const xcmChainSelected = createEvent<ChainId>();
 const xcmFeeChanged = createEvent<string>();
+const isXcmFeeLoadingChanged = createEvent<boolean>();
 const amountChanged = createEvent<string>();
 const destinationChanged = createEvent<AccountId>();
 
@@ -19,6 +20,7 @@ const $config = createStore<XcmConfig | null>(null);
 const $networkStore = restore(xcmStarted, null);
 const $xcmChain = restore(xcmChainSelected, null);
 const $xcmFee = restore(xcmFeeChanged, '0');
+const $isXcmFeeLoading = restore(isXcmFeeLoadingChanged, true);
 const $xcmParaId = createStore<number | null>(null);
 
 const $amount = restore(amountChanged, null);
@@ -110,6 +112,7 @@ const $api = combine(
 
     return apis[network.chain.chainId];
   },
+  { skipVoid: false },
 );
 
 const $apiDestination = combine(
@@ -122,6 +125,7 @@ const $apiDestination = combine(
 
     return apis[`0x${transferDirection.destination.chainId}` as ChainId];
   },
+  { skipVoid: false },
 );
 
 const $txDestination = combine(
@@ -261,12 +265,14 @@ export const xcmTransferModel = {
   $apiDestination,
   $xcmData,
   $xcmFee,
+  $isXcmFeeLoading,
   $transferDirections,
 
   events: {
     xcmStarted,
     xcmChainSelected,
     xcmFeeChanged,
+    isXcmFeeLoadingChanged,
     amountChanged,
     destinationChanged,
   },

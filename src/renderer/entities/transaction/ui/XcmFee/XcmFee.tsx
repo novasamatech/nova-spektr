@@ -75,7 +75,7 @@ export const XcmFee = memo(
     }, [transaction]);
 
     if (isLoading) {
-      return <FeeLoader fiatFlag={!!fiatFlag} />;
+      return <FeeLoader fiatFlag={Boolean(fiatFlag)} />;
     }
 
     const totalFee = new BN(fee).muln(multiply).toString();

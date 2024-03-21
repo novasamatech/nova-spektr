@@ -10,6 +10,8 @@ type Props = {
 };
 
 export const Icon = ({ as = 'svg', name, size = 24, className, alt = '' }: Props) => {
+  if (!name) return null;
+
   let iconType = as;
   let IconComponent = AllIcons[name][as];
 

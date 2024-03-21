@@ -3,13 +3,14 @@ import { createForm } from 'effector-forms';
 import { spread } from 'patronum';
 import { BN } from '@polkadot/util';
 
-import { Chain, Account, Asset, Address, PartialBy, type ChainId } from '@shared/core';
+import { Chain, Account, Address, PartialBy, type ChainId } from '@shared/core';
 import { walletModel, walletUtils, accountUtils, permissionUtils } from '@entities/wallet';
 import { balanceModel, balanceUtils } from '@entities/balance';
 import { networkModel, networkUtils } from '@entities/network';
 import { Transaction, TransactionType } from '@entities/transaction';
 import { xcmTransferModel } from './xcm-transfer-model';
 import { TransferType } from '../lib/constants';
+import { NetworkStore } from '../lib/types';
 import {
   transferableAmount,
   dictionary,
@@ -33,21 +34,23 @@ type FormParams = {
 
 type FormSubmitEvent = {
   transaction: Transaction;
-  formData: PartialBy<FormParams, 'signatory' | 'xcmChain'>;
+  formData: PartialBy<FormParams, 'signatory'> & {
+    fee: string;
+    xcmFee: string;
+    multisigDeposit: string;
+  };
 };
 
-const formInitiated = createEvent<{ chain: Chain; asset: Asset }>();
+const formInitiated = createEvent<NetworkStore>();
 const formSubmitted = createEvent<FormSubmitEvent>();
 
 const feeChanged = createEvent<string>();
 const multisigDepositChanged = createEvent<string>();
 const isFeeLoadingChanged = createEvent<boolean>();
-const isXcmFeeLoadingChanged = createEvent<boolean>();
 
 const myselfClicked = createEvent();
 
-const $chain = createStore<Chain | null>(null);
-const $asset = createStore<Asset | null>(null);
+const $networkStore = restore(formInitiated, null);
 const $isNative = createStore<boolean>(false);
 
 const $accountBalance = createStore<string[]>(['0', '0']);
@@ -56,7 +59,6 @@ const $signatoryBalance = createStore<string[]>(['0', '0']);
 const $fee = restore(feeChanged, '0');
 const $multisigDeposit = restore(multisigDepositChanged, '0');
 const $isFeeLoading = restore(isFeeLoadingChanged, true);
-const $isXcmFeeLoading = restore(isXcmFeeLoadingChanged, false);
 
 const $isMultisig = createStore<boolean>(false);
 const $isProxy = createStore<boolean>(false);
@@ -124,11 +126,11 @@ const $transferForm = createForm<FormParams>({
           source: combine({
             isXcm: $isXcm,
             xcmFee: xcmTransferModel.$xcmFee,
-            asset: $asset,
+            network: $networkStore,
             accountBalance: $accountBalance,
           }),
-          validator: (value, _, { isXcm, xcmFee, asset, accountBalance }) => {
-            const amountBN = new BN(formatAmount(value, asset.precision));
+          validator: (value, _, { isXcm, xcmFee, network, accountBalance }) => {
+            const amountBN = new BN(formatAmount(value, network.asset.precision));
             const xcmFeeBN = new BN(isXcm ? xcmFee : '0');
 
             return amountBN.add(xcmFeeBN).lte(new BN(accountBalance[0]));
@@ -141,15 +143,15 @@ const $transferForm = createForm<FormParams>({
             fee: $fee,
             isXcm: $isXcm,
             xcmFee: xcmTransferModel.$xcmFee,
-            asset: $asset,
+            network: $networkStore,
             isNative: $isNative,
             isMultisig: $isMultisig,
             accountBalance: $accountBalance,
           }),
-          validator: (value, _, { asset, isNative, isMultisig, isXcm, accountBalance, ...rest }) => {
+          validator: (value, _, { network, isNative, isMultisig, isXcm, accountBalance, ...rest }) => {
             if (isMultisig) return true;
 
-            const amountBN = new BN(formatAmount(value, asset.precision));
+            const amountBN = new BN(formatAmount(value, network.asset.precision));
             const xcmFeeBN = new BN(isXcm ? rest.xcmFee : '0');
 
             return isNative
@@ -194,20 +196,20 @@ const $proxyWallet = combine(
 
 const $accounts = combine(
   {
-    chain: $chain,
-    asset: $asset,
+    network: $networkStore,
     wallet: walletModel.$activeWallet,
     accounts: walletModel.$activeAccounts,
     balances: balanceModel.$balances,
   },
-  ({ chain, asset, wallet, accounts, balances }) => {
-    if (!wallet || !chain || !asset) return [];
+  ({ network, wallet, accounts, balances }) => {
+    if (!wallet || !network) return [];
 
+    const { chain, asset } = network;
     const isPolkadotVault = walletUtils.isPolkadotVault(wallet);
     const walletAccounts = accounts.filter((account) => {
       if (isPolkadotVault && accountUtils.isBaseAccount(account)) return false;
 
-      return accountUtils.isChainAndCryptoMatch(account, chain);
+      return accountUtils.isChainAndCryptoMatch(account, network.chain);
     });
 
     return walletAccounts.map((account) => {
@@ -233,23 +235,26 @@ const $accounts = combine(
 
 const $signatories = combine(
   {
-    chain: $chain,
-    asset: $asset,
+    network: $networkStore,
     wallet: walletModel.$activeWallet,
     wallets: walletModel.$wallets,
     account: $transferForm.fields.account.$value,
     accounts: walletModel.$accounts,
     balances: balanceModel.$balances,
   },
-  ({ chain, asset, wallet, wallets, account, accounts, balances }) => {
-    if (!wallet || !chain || !asset || !accountUtils.isMultisigAccount(account)) return [];
+  ({ network, wallet, wallets, account, accounts, balances }) => {
+    if (!wallet || !network || !accountUtils.isMultisigAccount(account)) return [];
 
+    const { chain, asset } = network;
     const signers = dictionary(account.signatories, 'accountId', () => true);
 
     return wallets.reduce<{ signer: Account; balances: string[] }[]>((acc, wallet) => {
-      if (!permissionUtils.canCreateMultisigTx(wallet, accounts)) return acc;
+      const walletAccounts = accountUtils.getWalletAccounts(wallet.id, accounts);
+      const isAvailable = permissionUtils.canCreateMultisigTx(wallet, walletAccounts);
 
-      const signer = accounts.find((a) => signers[a.accountId] && accountUtils.isChainAndCryptoMatch(a, chain));
+      if (!isAvailable) return acc;
+
+      const signer = walletAccounts.find((a) => signers[a.accountId] && accountUtils.isChainAndCryptoMatch(a, chain));
 
       if (signer) {
         const balance = balanceUtils.getBalance(balances, signer.accountId, chain.chainId, asset.assetId.toString());
@@ -279,13 +284,13 @@ const $signatories = combine(
 
 const $chains = combine(
   {
-    chain: $chain,
+    network: $networkStore,
     chains: networkModel.$chains,
     statuses: networkModel.$connectionStatuses,
     transferDirections: xcmTransferModel.$transferDirections,
   },
-  ({ chain, chains, statuses, transferDirections }) => {
-    if (!chain || !transferDirections) return [];
+  ({ network, chains, statuses, transferDirections }) => {
+    if (!network || !transferDirections) return [];
 
     const xcmChains = transferDirections.reduce<Chain[]>((acc, chain) => {
       const chainId = `0x${chain.destination.chainId}` as ChainId;
@@ -297,48 +302,48 @@ const $chains = combine(
       return acc;
     }, []);
 
-    return [chain].concat(xcmChains);
+    return [network.chain].concat(xcmChains);
   },
 );
 
 const $isChainConnected = combine(
   {
-    chain: $chain,
+    network: $networkStore,
     statuses: networkModel.$connectionStatuses,
   },
-  ({ chain, statuses }) => {
-    if (!chain) return false;
+  ({ network, statuses }) => {
+    if (!network) return false;
 
-    return networkUtils.isConnectedStatus(statuses[chain.chainId]);
+    return networkUtils.isConnectedStatus(statuses[network.chain.chainId]);
   },
 );
 
 const $api = combine(
   {
     apis: networkModel.$apis,
-    chain: $chain,
+    network: $networkStore,
   },
-  ({ apis, chain }) => {
-    if (!chain) return undefined;
+  ({ apis, network }) => {
+    if (!network) return undefined;
 
-    return apis[chain.chainId];
+    return apis[network.chain.chainId];
   },
   { skipVoid: false },
 );
 
 const $transaction = combine(
   {
-    chain: $chain,
-    asset: $asset,
+    network: $networkStore,
     isNative: $isNative,
     isXcm: $isXcm,
     form: $transferForm.$values,
     xcmData: xcmTransferModel.$xcmData,
     isConnected: $isChainConnected,
   },
-  ({ chain, asset, isNative, isXcm, form, xcmData, isConnected }): Transaction | undefined => {
-    if (!chain || !asset || !isConnected || (isXcm && !xcmData)) return undefined;
+  ({ network, isNative, isXcm, form, xcmData, isConnected }): Transaction | undefined => {
+    if (!network || !isConnected || (isXcm && !xcmData)) return undefined;
 
+    const { chain, asset } = network;
     let transactionType = isNative ? TransactionType.TRANSFER : TransferType[asset.type!];
     if (isXcm && xcmData) {
       transactionType = xcmData.transactionType;
@@ -363,7 +368,7 @@ const $canSubmit = combine(
   {
     isFormValid: $transferForm.$isValid,
     isFeeLoading: $isFeeLoading,
-    isXcmFeeLoading: $isXcmFeeLoading,
+    isXcmFeeLoading: xcmTransferModel.$isXcmFeeLoading,
   },
   ({ isFormValid, isFeeLoading, isXcmFeeLoading }) => {
     return isFormValid && !isFeeLoading && !isXcmFeeLoading;
@@ -374,16 +379,8 @@ const $canSubmit = combine(
 
 sample({
   clock: formInitiated,
-  fn: ({ chain, asset }) => ({
-    chain,
-    asset,
-    isNative: getAssetId(chain.assets[0]) === getAssetId(asset),
-  }),
-  target: spread({
-    chain: $chain,
-    asset: $asset,
-    isNative: $isNative,
-  }),
+  fn: ({ chain, asset }) => getAssetId(chain.assets[0]) === getAssetId(asset),
+  target: $isNative,
 });
 
 sample({
@@ -400,9 +397,9 @@ sample({
 
 sample({
   clock: $transferForm.fields.xcmChain.onChange,
-  source: $chain,
-  filter: (chain) => Boolean(chain),
-  fn: (chain, xcmChain) => chain!.chainId !== xcmChain.chainId,
+  source: $networkStore,
+  filter: (network: NetworkStore | null): network is NetworkStore => Boolean(network),
+  fn: ({ chain }, xcmChain) => chain.chainId !== xcmChain.chainId,
   target: $isXcm,
 });
 
@@ -485,9 +482,9 @@ sample({
 
 sample({
   clock: $transferForm.fields.amount.onChange,
-  source: $asset,
-  filter: Boolean,
-  fn: (asset, amount) => formatAmount(amount, asset!.precision),
+  source: $networkStore,
+  filter: (network: NetworkStore | null): network is NetworkStore => Boolean(network),
+  fn: ({ asset }, amount) => formatAmount(amount, asset.precision),
   target: xcmTransferModel.events.amountChanged,
 });
 
@@ -496,23 +493,26 @@ sample({
 sample({
   clock: $transferForm.formValidated,
   source: {
-    chain: $chain,
-    asset: $asset,
+    network: $networkStore,
     transaction: $transaction,
+    fee: $fee,
+    xcmFee: xcmTransferModel.$xcmFee,
+    multisigDeposit: $multisigDeposit,
   },
-  filter: ({ chain, asset, transaction }) => {
-    return Boolean(chain) && Boolean(asset) && Boolean(transaction);
+  filter: ({ network, transaction }) => {
+    return Boolean(network) && Boolean(transaction);
   },
-  fn: ({ asset, transaction }, formData) => {
-    const amount = formatAmount(formData.amount, asset!.precision);
+  fn: ({ network, transaction, ...fee }, formData) => {
     const signatory = Object.keys(formData.signatory).length > 0 ? formData.signatory : undefined;
     // TODO: update after i18n effector integration
-    const multisigDescription = `Transfer ${amount} ${asset!.symbol} to ${toShortAddress(formData.destination)}`;
-    const description = signatory ? formData.description || multisigDescription : '';
+    const shortAddress = toShortAddress(formData.destination);
+    const defaultText = `Transfer ${formData.amount} ${network!.asset.symbol} to ${shortAddress}`;
+    const description = signatory ? formData.description || defaultText : '';
+    const amount = formatAmount(formData.amount, network!.asset.precision);
 
     return {
       transaction: transaction!,
-      formData: { ...formData, amount, signatory, description },
+      formData: { ...formData, amount, signatory, description, ...fee },
     };
   },
   target: formSubmitted,
@@ -523,8 +523,6 @@ export const formModel = {
   $proxyWallet,
   $signatories,
 
-  $chain,
-  $asset,
   $accounts,
   $chains,
   $accountBalance,
@@ -533,6 +531,7 @@ export const formModel = {
   $multisigDeposit,
 
   $api,
+  $networkStore,
   $transaction,
   $isMultisig,
   $isXcm,
@@ -549,7 +548,7 @@ export const formModel = {
     feeChanged,
     multisigDepositChanged,
     isFeeLoadingChanged,
-    isXcmFeeLoadingChanged,
+    isXcmFeeLoadingChanged: xcmTransferModel.events.isXcmFeeLoadingChanged,
     xcmFeeChanged: xcmTransferModel.events.xcmFeeChanged,
   },
   output: {
