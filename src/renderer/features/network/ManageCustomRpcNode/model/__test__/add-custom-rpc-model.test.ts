@@ -4,6 +4,7 @@ import { addCustomRpcModel } from '../add-custom-rpc-model';
 import { ConnectionStatus } from '@shared/core';
 import { ExtendedChain } from '@entities/network';
 import { RpcConnectivityResult } from '../../lib/custom-rpc-types';
+import { TEST_CHAIN_ID } from '@shared/lib/utils';
 
 describe('features/network/CustomRpcForm/add-custom-rpc-model', () => {
   test('should have error for wrong node url', async () => {
@@ -78,10 +79,10 @@ describe('features/network/CustomRpcForm/add-custom-rpc-model', () => {
 
     const network = {
       specName: 'polkadot',
-      chainId: '0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3',
+      chainId: TEST_CHAIN_ID,
       connection: {
-        chainId: '0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3',
-        id: '0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3',
+        chainId: TEST_CHAIN_ID,
+        id: TEST_CHAIN_ID,
       },
       connectionStatus: ConnectionStatus.CONNECTED,
       nodes: [{ url: 'wss://some-rpc.com', name: 'node' }],
