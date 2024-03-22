@@ -221,7 +221,6 @@ async function getProxies({
         ep.accountId === p.accountId &&
         ep.chainId === p.chainId &&
         ep.proxyAccountId === p.proxyAccountId &&
-        ep.proxyVariant === p.proxyVariant &&
         ep.delay === p.delay &&
         ep.proxyType === p.proxyType,
     );
