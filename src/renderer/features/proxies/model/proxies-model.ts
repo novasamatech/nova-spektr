@@ -163,14 +163,15 @@ const createProxiedWalletsFx = createEffect(
         signingType: SigningType.WATCH_ONLY,
       } as Wallet;
 
-      // TODO: use chain data, when ethereum chains support
+      const isEthereumChain = networkUtils.isEthereumBased(chains[proxied.chainId].options);
+
       const accounts = [
         {
           ...proxied,
           name: walletName,
           type: AccountType.PROXIED,
-          chainType: ChainType.SUBSTRATE,
-          cryptoType: CryptoType.SR25519,
+          chainType: isEthereumChain ? ChainType.ETHEREUM : ChainType.SUBSTRATE,
+          cryptoType: isEthereumChain ? CryptoType.ETHEREUM : CryptoType.SR25519,
         } as ProxiedAccount,
       ];
 
@@ -264,8 +265,8 @@ spread({
     proxiedAccountsToRemove: proxiedAccountsRemoved,
     proxiedAccountsToAdd: attach({
       source: networkModel.$chains,
-      effect: createProxiedWalletsFx,
       mapParams: (proxiedAccounts: ProxiedAccount[], chains) => ({ proxiedAccounts, chains }),
+      effect: createProxiedWalletsFx,
     }),
     deposits: depositsReceived,
   },
