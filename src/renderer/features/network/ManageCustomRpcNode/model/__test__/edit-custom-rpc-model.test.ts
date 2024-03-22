@@ -82,7 +82,7 @@ describe('features/network/CustomRpcForm/edit-custom-rpc-model', () => {
     expect(scope.getState(editCustomRpcModel.$editCustomRpcForm.$isValid)).toEqual(true);
   });
 
-  test('should have the wrong network state', async () => {
+  test('should have an error with wrong network state', async () => {
     const scope = fork();
 
     const network = {
@@ -96,15 +96,13 @@ describe('features/network/CustomRpcForm/edit-custom-rpc-model', () => {
       nodes: [{ url: 'wss://some-rpc.com', name: 'node' }],
     };
 
-    expect(scope.getState(editCustomRpcModel.$rpcConnectivityResult)).toEqual(RpcConnectivityResult.INIT);
-
     const { name, url } = editCustomRpcModel.$editCustomRpcForm.fields;
     await allSettled(name.onChange, { scope, params: 'some name' });
-    // this is a kusama node
+    // this is a kusama node whereas we selected polkadot as a network
     await allSettled(url.onChange, { scope, params: 'wss://rockx-ksm.w3node.com/polka-public-ksm/ws' });
     await allSettled(editCustomRpcModel.events.networkChanged, { scope, params: network as unknown as ExtendedChain });
     await allSettled(editCustomRpcModel.$editCustomRpcForm.submit, { scope });
 
-    expect(scope.getState(editCustomRpcModel.$isLoading)).toEqual(true);
+    expect(scope.getState(editCustomRpcModel.$rpcConnectivityResult)).toEqual(RpcConnectivityResult.WRONG_NETWORK);
   });
 });
