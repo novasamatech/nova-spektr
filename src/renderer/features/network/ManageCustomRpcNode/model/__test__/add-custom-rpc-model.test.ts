@@ -12,7 +12,7 @@ describe('features/network/CustomRpcForm/add-custom-rpc-model', () => {
     const { name, url } = addCustomRpcModel.$addCustomRpcForm.fields;
     await allSettled(name.onChange, { scope, params: 'some name' });
     await allSettled(url.onChange, { scope, params: 'wrong url' });
-    await allSettled(addCustomRpcModel.$addCustomRpcForm.validate, { scope });
+    await allSettled(addCustomRpcModel.$addCustomRpcForm.submit, { scope });
 
     expect(scope.getState(name.$errors)).toEqual([]);
     expect(scope.getState(url.$errors)[0].rule).toEqual('wsAddressValidation');
@@ -24,7 +24,7 @@ describe('features/network/CustomRpcForm/add-custom-rpc-model', () => {
     const { name, url } = addCustomRpcModel.$addCustomRpcForm.fields;
     await allSettled(name.onChange, { scope, params: 'some name' });
     await allSettled(url.onChange, { scope, params: '' });
-    await allSettled(addCustomRpcModel.$addCustomRpcForm.validate, { scope });
+    await allSettled(addCustomRpcModel.$addCustomRpcForm.submit, { scope });
 
     expect(scope.getState(name.$errors)).toEqual([]);
     expect(scope.getState(url.$errors)[0].rule).toEqual('required');
@@ -36,7 +36,7 @@ describe('features/network/CustomRpcForm/add-custom-rpc-model', () => {
     const { name, url } = addCustomRpcModel.$addCustomRpcForm.fields;
     await allSettled(name.onChange, { scope, params: 'some long name that is more than 50 characters long limit' });
     await allSettled(url.onChange, { scope, params: 'wss://some-rpc.com' });
-    await allSettled(addCustomRpcModel.$addCustomRpcForm.validate, { scope });
+    await allSettled(addCustomRpcModel.$addCustomRpcForm.submit, { scope });
 
     expect(scope.getState(url.$errors)).toEqual([]);
     expect(scope.getState(name.$errors)[0].rule).toEqual('minMaxLength');
@@ -48,7 +48,7 @@ describe('features/network/CustomRpcForm/add-custom-rpc-model', () => {
     const { name, url } = addCustomRpcModel.$addCustomRpcForm.fields;
     await allSettled(name.onChange, { scope, params: 'ab' });
     await allSettled(url.onChange, { scope, params: 'wss://some-rpc.com' });
-    await allSettled(addCustomRpcModel.$addCustomRpcForm.validate, { scope });
+    await allSettled(addCustomRpcModel.$addCustomRpcForm.submit, { scope });
 
     expect(scope.getState(url.$errors)).toEqual([]);
     expect(scope.getState(name.$errors)[0].rule).toEqual('minMaxLength');
@@ -70,7 +70,6 @@ describe('features/network/CustomRpcForm/add-custom-rpc-model', () => {
     await allSettled(name.onChange, { scope, params: 'some name' });
     await allSettled(url.onChange, { scope, params: 'wss://some-rpc.com' });
     await allSettled(addCustomRpcModel.events.networkChanged, { scope, params: network as unknown as ExtendedChain });
-    await allSettled(addCustomRpcModel.$addCustomRpcForm.validate, { scope });
     await allSettled(addCustomRpcModel.$addCustomRpcForm.submit, { scope });
 
     expect(scope.getState(addCustomRpcModel.$isNodeExist)).toEqual(true);
@@ -97,7 +96,6 @@ describe('features/network/CustomRpcForm/add-custom-rpc-model', () => {
     // this is a kusama node
     await allSettled(url.onChange, { scope, params: 'wss://rockx-ksm.w3node.com/polka-public-ksm/ws' });
     await allSettled(addCustomRpcModel.events.networkChanged, { scope, params: network as unknown as ExtendedChain });
-    await allSettled(addCustomRpcModel.$addCustomRpcForm.validate, { scope });
     await allSettled(addCustomRpcModel.$addCustomRpcForm.submit, { scope });
 
     expect(scope.getState(addCustomRpcModel.$isNodeExist)).toEqual(false);

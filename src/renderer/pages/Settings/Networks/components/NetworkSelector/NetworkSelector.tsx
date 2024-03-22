@@ -33,7 +33,7 @@ type Props = {
   onEditRpcNetworkChange: (network: ExtendedChain) => void;
   openEditRpcModal: () => void;
   openAddRpcModal: () => void;
-  onSelectNode: (payload: RpcNode) => RpcNode;
+  onSelectNode: (node: RpcNode) => void;
 };
 
 export const NetworkSelector = ({

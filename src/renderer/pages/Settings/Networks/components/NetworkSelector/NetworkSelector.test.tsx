@@ -72,8 +72,12 @@ describe('pages/Settings/Networks/NetworkSelector', () => {
     networkItem: defaultNetwork,
     onDisconnect: noop,
     onConnect: noop,
+    onEditRpcNetworkChange: noop,
+    openEditRpcModal: noop,
+    openAddRpcModal: noop,
     onRemoveCustomNode: noop,
-    onChangeCustomNode: noop,
+    onAddRpcNetworkChange: noop,
+    onSelectNode: noop,
   };
 
   test('should render component', () => {
