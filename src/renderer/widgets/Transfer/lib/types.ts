@@ -27,5 +27,3 @@ export type TransferStore = {
   destination: Address;
   description: string;
 };
-
-export type TxWrappers = ('proxy' | 'multisig')[];

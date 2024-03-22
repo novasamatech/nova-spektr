@@ -3,24 +3,22 @@ import { createForm } from 'effector-forms';
 import { spread } from 'patronum';
 import { BN } from '@polkadot/util';
 
-import { Chain, Account, Address, PartialBy, type ChainId } from '@shared/core';
+import { Chain, Account, Address, PartialBy, type ChainId, MultisigAccount, ProxyType } from '@shared/core';
 import { walletModel, walletUtils, accountUtils, permissionUtils } from '@entities/wallet';
 import { balanceModel, balanceUtils } from '@entities/balance';
 import { networkModel, networkUtils } from '@entities/network';
-import { Transaction, TransactionType } from '@entities/transaction';
+import { Transaction, transactionBuilder, transactionService, TxWrappers } from '@entities/transaction';
 import { xcmTransferModel } from './xcm-transfer-model';
-import { TransferType } from '../lib/constants';
 import { NetworkStore } from '../lib/types';
 import {
   transferableAmount,
   dictionary,
-  toAddress,
-  TEST_ACCOUNTS,
   getAssetId,
   formatAmount,
   validateAddress,
   toShortAddress,
   toAccountId,
+  toAddress,
 } from '@shared/lib/utils';
 
 type FormParams = {
@@ -33,7 +31,10 @@ type FormParams = {
 };
 
 type FormSubmitEvent = {
-  transaction: Transaction;
+  transaction: {
+    wrappedTx: Transaction;
+    multisigTx?: Transaction;
+  };
   formData: PartialBy<FormParams, 'signatory'> & {
     fee: string;
     xcmFee: string;
@@ -331,47 +332,93 @@ const $api = combine(
   { skipVoid: false },
 );
 
-const $transaction = combine(
+const $pureTx = combine(
   {
     network: $networkStore,
-    isNative: $isNative,
     isXcm: $isXcm,
     form: $transferForm.$values,
     xcmData: xcmTransferModel.$xcmData,
     isConnected: $isChainConnected,
   },
-  ({ network, isNative, isXcm, form, xcmData, isConnected }): Transaction | undefined => {
+  ({ network, isXcm, form, xcmData, isConnected }): Transaction | undefined => {
     if (!network || !isConnected || (isXcm && !xcmData)) return undefined;
 
-    const { chain, asset } = network;
-    let transactionType = isNative ? TransactionType.TRANSFER : TransferType[asset.type!];
-    if (isXcm && xcmData) {
-      transactionType = xcmData.transactionType;
-    }
+    return transactionBuilder.buildTransfer({
+      chain: network.chain,
+      asset: network.asset,
+      accountId: form.account.accountId,
+      amount: form.amount,
+      destination: form.destination,
+      xcmData,
+    });
+  },
+  { skipVoid: false },
+);
 
-    return {
-      chainId: chain.chainId,
-      address: toAddress(form.account.accountId, { prefix: chain.addressPrefix }),
-      type: transactionType,
-      args: {
-        dest: toAddress(form.destination || TEST_ACCOUNTS[0], { prefix: chain.addressPrefix }),
-        value: formatAmount(form.amount, asset.precision) || '1',
-        ...(!isNative && { asset: getAssetId(asset) }),
-        ...(isXcm && xcmData?.args),
-      },
-    };
+const $txWrappers = combine(
+  {
+    account: $transferForm.fields.account.$value,
+    wallet: walletModel.$activeWallet,
+    wallets: walletModel.$wallets,
+  },
+  ({ account, wallet, wallets }): TxWrappers => {
+    if (!wallet) return [];
+    if (walletUtils.isMultisig(wallet)) return ['multisig'];
+    if (!walletUtils.isProxied(wallet)) return [];
+
+    const accountWallet = walletUtils.getWalletById(wallets, account.walletId);
+
+    return walletUtils.isMultisig(accountWallet) ? ['multisig', 'proxy'] : ['proxy'];
+  },
+);
+
+const $transaction = combine(
+  {
+    apis: networkModel.$apis,
+    networkStore: $networkStore,
+    pureTx: $pureTx,
+    txWrappers: $txWrappers,
+    formData: $transferForm.$values,
+    isMultisig: $isMultisig,
+    isProxy: $isProxy,
+  },
+  ({ apis, networkStore, pureTx, txWrappers, formData, isMultisig, isProxy }) => {
+    if (!networkStore || !pureTx || !formData.account.accountId) return undefined;
+
+    const prefix = networkStore.chain.addressPrefix;
+
+    return transactionService.getWrappedTransaction({
+      api: apis[networkStore.chain.chainId],
+      transaction: pureTx,
+      txWrappers,
+      ...(isMultisig && {
+        multisig: {
+          signer: toAddress(formData.signatory.accountId, { prefix }),
+          threshold: (formData.account as MultisigAccount).threshold,
+          signatories: (formData.account as MultisigAccount).signatories.map((s) => toAddress(s.accountId, { prefix })),
+        },
+      }),
+      ...(isProxy && {
+        proxy: {
+          signer: toAddress(formData.account.accountId, { prefix }),
+          proxied: '5GmedEVixRJoE8TjMePLqz7DnnQG1d5517sXdiAvAF2t7EYW',
+          proxyType: ProxyType.ANY,
+        },
+      }),
+    });
   },
   { skipVoid: false },
 );
 
 const $canSubmit = combine(
   {
+    isXcm: $isXcm,
     isFormValid: $transferForm.$isValid,
     isFeeLoading: $isFeeLoading,
     isXcmFeeLoading: xcmTransferModel.$isXcmFeeLoading,
   },
-  ({ isFormValid, isFeeLoading, isXcmFeeLoading }) => {
-    return isFormValid && !isFeeLoading && !isXcmFeeLoading;
+  ({ isXcm, isFormValid, isFeeLoading, isXcmFeeLoading }) => {
+    return isFormValid && !isFeeLoading && (!isXcm || !isXcmFeeLoading);
   },
 );
 
@@ -532,6 +579,7 @@ export const formModel = {
 
   $api,
   $networkStore,
+  $pureTx,
   $transaction,
   $isMultisig,
   $isXcm,

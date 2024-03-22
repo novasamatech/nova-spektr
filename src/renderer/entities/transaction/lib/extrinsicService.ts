@@ -5,10 +5,9 @@ import { SubmittableExtrinsic } from '@polkadot/api/types';
 
 import { Transaction, TransactionType } from '@entities/transaction/model/transaction';
 import { getMaxWeight, hasDestWeight, isControllerMissing, isOldMultisigPallet } from './common/utils';
-import { toAddress } from '@shared/lib/utils';
 import * as xcmMethods from '@entities/transaction/lib/common/xcmMethods';
 import { DEFAULT_FEE_ASSET_ITEM } from '@entities/transaction';
-import type { AccountId, Address, MultisigAccount } from '@shared/core';
+import { Address, ProxyType } from '@shared/core';
 
 type BalancesTransferArgs = Parameters<typeof methods.balances.transfer>[0];
 type BondWithoutContollerArgs = Omit<Parameters<typeof methods.staking.bond>[0], 'controller'>;
@@ -422,31 +421,28 @@ export const getExtrinsic: Record<
   },
 };
 
-export const wrapAsMulti = (
-  api: ApiPromise,
-  transaction: Transaction,
-  account: MultisigAccount,
-  signerAccountId: AccountId,
-  addressPrefix: number,
-): Transaction => {
+type WrapAsMultiParams = {
+  api: ApiPromise;
+  transaction: Transaction;
+  multisig: {
+    signer: Address;
+    threshold: number;
+    signatories: Address[];
+  };
+};
+export const wrapAsMulti = ({ api, transaction, multisig }: WrapAsMultiParams): Transaction => {
   const extrinsic = getExtrinsic[transaction.type](transaction.args, api);
   const callData = extrinsic.method.toHex();
   const callHash = extrinsic.method.hash.toHex();
 
-  const otherSignatories = account.signatories.reduce<Address[]>((acc, { accountId }) => {
-    if (accountId !== signerAccountId) {
-      acc.push(toAddress(accountId, { prefix: addressPrefix }));
-    }
-
-    return acc;
-  }, []);
+  const otherSignatories = multisig.signatories.filter((signatory) => signatory !== multisig.signer);
 
   return {
     chainId: transaction.chainId,
-    address: toAddress(signerAccountId, { prefix: addressPrefix }),
+    address: multisig.signer,
     type: TransactionType.MULTISIG_AS_MULTI,
     args: {
-      threshold: account.threshold,
+      threshold: multisig.threshold,
       otherSignatories: otherSignatories.sort(),
       maybeTimepoint: null,
       callData,
@@ -455,23 +451,23 @@ export const wrapAsMulti = (
   };
 };
 
-// TODO: finish in "Create proxy operation for add/remove proxy"
-// https://github.com/novasamatech/nova-spektr/issues/1445
-export const wrapAsProxy = (api: ApiPromise, transaction: Transaction, addressPrefix: number): Transaction => {
-  const extrinsic = getExtrinsic[transaction.type](transaction.args, api);
-  const callData = extrinsic.method.toHex();
-  const callHash = extrinsic.method.hash.toHex();
-
+type WrapAsProxyParams = {
+  transaction: Transaction;
+  proxy: {
+    signer: Address;
+    proxied: Address;
+    proxyType: ProxyType;
+  };
+};
+export const wrapAsProxy = ({ transaction, proxy }: WrapAsProxyParams): Transaction => {
   return {
     chainId: transaction.chainId,
-    address: toAddress('', { prefix: addressPrefix }),
+    address: proxy.proxied,
     type: TransactionType.PROXY,
     args: {
-      // real: '',
-      // forceProxyType: '',
-      maybeTimepoint: null,
-      callData,
-      callHash,
+      real: proxy.signer,
+      forceProxyType: proxy.proxyType,
+      transaction,
     },
   };
 };

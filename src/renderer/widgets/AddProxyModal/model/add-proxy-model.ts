@@ -5,7 +5,7 @@ import { Transaction, TransactionType, transactionService } from '@entities/tran
 import { toAddress, toAccountId } from '@shared/lib/utils';
 import { walletSelectModel } from '@features/wallets';
 import { walletModel, walletUtils } from '@entities/wallet';
-import type { ProxyGroup, NoID } from '@shared/core';
+import { ProxyGroup, NoID, MultisigAccount } from '@shared/core';
 import { proxyModel, proxyUtils } from '@entities/proxy';
 import { networkModel } from '@entities/network';
 import { balanceSubModel } from '@features/balances';
@@ -95,11 +95,21 @@ sample({
       args: { delegate, proxyType, delay: 0 },
     };
 
-    return transactionService.getWrappedTransactions(txWrappers, transaction, {
+    const isMultisig = transactionService.hasMultisig(txWrappers);
+
+    return transactionService.getWrappedTransaction({
       api: apis[chain.chainId],
-      addressPrefix: chain.addressPrefix,
-      account,
-      signerAccountId: signatory?.accountId,
+      transaction,
+      txWrappers,
+      ...(isMultisig && {
+        multisig: {
+          signer: toAddress(signatory!.accountId, { prefix: chain.addressPrefix }),
+          threshold: (account as MultisigAccount).threshold,
+          signatories: (account as MultisigAccount).signatories.map((s) =>
+            toAddress(s.accountId, { prefix: chain.addressPrefix }),
+          ),
+        },
+      }),
     });
   },
   target: spread({

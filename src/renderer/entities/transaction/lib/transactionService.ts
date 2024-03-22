@@ -7,12 +7,11 @@ import { blake2AsU8a, signatureVerify } from '@polkadot/util-crypto';
 import { useState } from 'react';
 
 import { Transaction, TransactionType } from '@entities/transaction/model/transaction';
-import { createTxMetadata, toAccountId } from '@shared/lib/utils';
+import { createTxMetadata, toAccountId, toAddress } from '@shared/lib/utils';
 import { getExtrinsic, getUnsignedTransaction, wrapAsMulti, wrapAsProxy } from './extrinsicService';
-import type { AccountId, Address, ChainId, HexString, Threshold, Account } from '@shared/core';
+import { AccountId, Address, ChainId, HexString, Threshold, ProxyType } from '@shared/core';
 import { decodeDispatchError } from './common/utils';
 import { useCallDataDecoder } from './callDataDecoder';
-import { accountUtils } from '../../wallet';
 import {
   ITransactionService,
   HashData,
@@ -27,11 +26,10 @@ const shouldWrapAsMulti = (wrapper: TxWrappers_OLD): wrapper is WrapAsMulti =>
 
 export const transactionService = {
   hasMultisig,
-  hasProxy,
 
   getSignedExtrinsic,
   submitAndWatchExtrinsic,
-  getWrappedTransactions,
+  getWrappedTransaction,
 };
 
 async function getSignedExtrinsic(
@@ -127,40 +125,39 @@ function hasMultisig(txWrappers: TxWrappers): boolean {
   return txWrappers.includes('multisig');
 }
 
-function hasProxy(txWrappers: TxWrappers): boolean {
-  return txWrappers.includes('proxy');
-}
-
 type WrapperParams = {
   api: ApiPromise;
-  addressPrefix: number;
-  account?: Account;
-  signerAccountId?: AccountId;
+  transaction: Transaction;
+  txWrappers: TxWrappers;
+  multisig?: {
+    signer: Address;
+    threshold: number;
+    signatories: Address[];
+  };
+  proxy?: {
+    signer: Address;
+    proxied: Address;
+    proxyType: ProxyType;
+  };
 };
 type WrappedTransactions = {
   wrappedTx: Transaction;
-  multisigTx: Transaction | null;
+  multisigTx?: Transaction;
 };
-function getWrappedTransactions(
-  txWrappers: TxWrappers,
-  transaction: Transaction,
-  { api, addressPrefix, account, signerAccountId }: WrapperParams,
-): WrappedTransactions {
-  const hasSignatory = account && accountUtils.isMultisigAccount(account) && signerAccountId;
-
+function getWrappedTransaction({ api, transaction, txWrappers, multisig, proxy }: WrapperParams): WrappedTransactions {
   return txWrappers.reduce<WrappedTransactions>(
     (acc, wrapper) => {
-      if (hasMultisig([wrapper]) && hasSignatory) {
-        acc.wrappedTx = wrapAsMulti(api, acc.wrappedTx, account, signerAccountId, addressPrefix);
+      if (wrapper === 'multisig' && multisig) {
+        acc.wrappedTx = wrapAsMulti({ api, transaction: acc.wrappedTx, multisig });
         acc.multisigTx = acc.wrappedTx;
       }
-      if (hasProxy([wrapper])) {
-        acc.wrappedTx = wrapAsProxy(api, acc.wrappedTx, addressPrefix);
+      if (wrapper === 'proxy' && proxy) {
+        acc.wrappedTx = wrapAsProxy({ transaction: acc.wrappedTx, proxy });
       }
 
       return acc;
     },
-    { wrappedTx: transaction, multisigTx: null },
+    { wrappedTx: transaction, multisigTx: undefined },
   );
 }
 
@@ -236,7 +233,15 @@ export const useTransaction = (): ITransactionService => {
   const wrapTx = (transaction: Transaction, api: ApiPromise, addressPrefix: number) => {
     wrappers.forEach((wrapper) => {
       if (shouldWrapAsMulti(wrapper)) {
-        transaction = wrapAsMulti(api, transaction, wrapper.account, wrapper.signatoryId, addressPrefix);
+        transaction = wrapAsMulti({
+          api,
+          transaction,
+          multisig: {
+            signer: toAddress(wrapper.signatoryId, { prefix: addressPrefix }),
+            threshold: wrapper.account.threshold,
+            signatories: wrapper.account.signatories.map((s) => toAddress(s.accountId, { prefix: addressPrefix })),
+          },
+        });
       }
     });
 

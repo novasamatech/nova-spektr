@@ -1,10 +1,8 @@
 import { createEvent, createStore, sample, restore, combine } from 'effector';
 import { spread, delay } from 'patronum';
 
-import { Transaction, transactionService } from '@entities/transaction';
-import { walletModel, walletUtils } from '@entities/wallet';
-import { networkModel } from '@entities/network';
-import { Step, TxWrappers, TransferStore, NetworkStore } from '../lib/types';
+import { Transaction } from '@entities/transaction';
+import { Step, TransferStore, NetworkStore } from '../lib/types';
 import { formModel } from './form-model';
 import { confirmModel } from './confirm-model';
 import { signModel } from './sign-model';
@@ -22,8 +20,6 @@ const $networkStore = restore<NetworkStore | null>(flowStarted, null);
 
 const $transaction = createStore<Transaction | null>(null);
 const $multisigTx = createStore<Transaction | null>(null);
-
-const $txWrappers = createStore<TxWrappers>([]);
 
 const $xcmChain = combine(
   {
@@ -53,50 +49,15 @@ sample({
 
 sample({
   clock: formModel.output.formSubmitted,
-  fn: ({ formData }) => formData,
-  target: $transferStore,
-});
-
-sample({
-  clock: formModel.output.formSubmitted,
-  source: {
-    wallet: walletModel.$activeWallet,
-    wallets: walletModel.$wallets,
-  },
-  fn: ({ wallet, wallets }, { formData }): TxWrappers => {
-    if (!wallet) return [];
-    if (walletUtils.isMultisig(wallet)) return ['multisig'];
-    if (!walletUtils.isProxied(wallet)) return [];
-
-    const accountWallet = walletUtils.getWalletById(wallets, formData.account.walletId);
-
-    return walletUtils.isMultisig(accountWallet) ? ['multisig', 'proxy'] : ['proxy'];
-  },
-  target: $txWrappers,
-});
-
-sample({
-  clock: formModel.output.formSubmitted,
-  source: {
-    apis: networkModel.$apis,
-    networkStore: $networkStore,
-    txWrappers: $txWrappers,
-  },
-  filter: ({ networkStore }) => Boolean(networkStore),
-  fn: ({ txWrappers, apis, networkStore }, { transaction, formData }) => {
-    const { account, signatory } = formData;
-    const { chainId, addressPrefix } = networkStore!.chain;
-
-    return transactionService.getWrappedTransactions(txWrappers, transaction, {
-      api: apis[chainId],
-      addressPrefix: addressPrefix,
-      signerAccountId: signatory?.accountId,
-      account,
-    });
-  },
+  fn: ({ transaction, formData }) => ({
+    transaction: transaction.wrappedTx,
+    multisigTx: transaction.multisigTx || null,
+    transferStore: formData,
+  }),
   target: spread({
-    wrappedTx: $transaction,
+    transaction: $transaction,
     multisigTx: $multisigTx,
+    transferStore: $transferStore,
   }),
 });
 
@@ -146,13 +107,9 @@ sample({
     networkStore: $networkStore,
     transaction: $transaction,
     multisigTx: $multisigTx,
-    txWrappers: $txWrappers,
   },
   filter: (transferData) => {
-    const isMultisigRequired =
-      !transactionService.hasMultisig(transferData.txWrappers) || Boolean(transferData.multisigTx);
-
-    return Boolean(transferData.transferStore) && Boolean(transferData.transaction) && isMultisigRequired;
+    return Boolean(transferData.transferStore) && Boolean(transferData.transaction);
   },
   fn: (transferData, signParams) => ({
     event: {
@@ -162,7 +119,7 @@ sample({
       signatory: transferData.transferStore!.signatory,
       description: transferData.transferStore!.description,
       transaction: transferData.transaction!,
-      multisigTx: transferData.multisigTx!,
+      multisigTx: transferData.multisigTx || undefined,
     },
     step: Step.SUBMIT,
   }),
@@ -173,6 +130,7 @@ sample({
 });
 
 // TODO: navigate to operations / assets
+// TODO: clear form on submit
 sample({
   clock: delay(submitModel.output.formSubmitted, 2000),
   target: flowFinished,
