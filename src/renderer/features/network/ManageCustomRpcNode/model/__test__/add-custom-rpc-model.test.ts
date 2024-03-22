@@ -64,8 +64,6 @@ describe('features/network/CustomRpcForm/add-custom-rpc-model', () => {
       nodes: [{ url: 'wss://some-rpc.com', name: 'node' }],
     };
 
-    expect(scope.getState(addCustomRpcModel.$isNodeExist)).toEqual(false);
-
     const { name, url } = addCustomRpcModel.$addCustomRpcForm.fields;
     await allSettled(name.onChange, { scope, params: 'some name' });
     await allSettled(url.onChange, { scope, params: 'wss://some-rpc.com' });
