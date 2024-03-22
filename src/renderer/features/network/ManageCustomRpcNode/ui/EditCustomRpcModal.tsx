@@ -5,7 +5,7 @@ import { useUnit } from 'effector-react';
 import { BaseModal, Button, Input, InputHint, Alert } from '@shared/ui';
 import { useI18n } from '@app/providers';
 import { OperationTitle } from '@entities/chain';
-import { editCustomRpcModel } from '@features/network';
+import { editCustomRpcModel } from '../model/edit-custom-rpc-model';
 import { customRpcUtils } from '../lib/custom-rpc-utils';
 
 type Props = {
