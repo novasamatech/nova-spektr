@@ -25,15 +25,9 @@ describe('widgets/AddPureProxyModal/model/add-proxy-model', () => {
   test('should go through the process of proxy create', async () => {
     const scope = fork({
       values: new Map()
-        .set(networkModel.$apis, {
-          '0x00': testApi,
-        })
-        .set(networkModel.$chains, {
-          '0x00': testChain,
-        })
-        .set(networkModel.$connectionStatuses, {
-          '0x00': ConnectionStatus.CONNECTED,
-        })
+        .set(networkModel.$apis, { '0x00': testApi })
+        .set(networkModel.$chains, { '0x00': testChain })
+        .set(networkModel.$connectionStatuses, { '0x00': ConnectionStatus.CONNECTED })
         .set(walletModel.$wallets, [initiatorWallet, signerWallet]),
     });
 
@@ -58,9 +52,7 @@ describe('widgets/AddPureProxyModal/model/add-proxy-model', () => {
 
     expect(scope.getState(addProxyModel.$step)).toEqual(Step.CONFIRM);
 
-    await allSettled(confirmModel.output.formSubmitted, {
-      scope,
-    });
+    await allSettled(confirmModel.output.formSubmitted, { scope });
 
     expect(scope.getState(addProxyModel.$step)).toEqual(Step.SIGN);
 
@@ -74,9 +66,7 @@ describe('widgets/AddPureProxyModal/model/add-proxy-model', () => {
 
     expect(scope.getState(addProxyModel.$step)).toEqual(Step.SUBMIT);
 
-    await allSettled(submitModel.output.formSubmitted, {
-      scope,
-    });
+    await allSettled(submitModel.output.formSubmitted, { scope });
 
     expect(scope.getState(addProxyModel.$step)).toEqual(Step.NONE);
   });

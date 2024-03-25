@@ -15,9 +15,7 @@ describe('widgets/AddPureProxyModal/model/sign-model', () => {
   test('should fill data for sign model for multisig account', async () => {
     const scope = fork({
       values: new Map()
-        .set(networkModel.$apis, {
-          '0x00': testApi,
-        })
+        .set(networkModel.$apis, { '0x00': testApi })
         .set(walletModel.$wallets, [initiatorWallet, signerWallet]),
     });
 

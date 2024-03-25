@@ -1,4 +1,4 @@
-import { createEvent, createStore, sample, combine, createEffect } from 'effector';
+import { createEvent, createStore, sample, combine, createEffect, restore } from 'effector';
 import { ApiPromise } from '@polkadot/api';
 import { createForm } from 'effector-forms';
 import { BN } from '@polkadot/util';
@@ -52,12 +52,14 @@ const feeChanged = createEvent<string>();
 const isFeeLoadingChanged = createEvent<boolean>();
 const isProxyDepositLoadingChanged = createEvent<boolean>();
 
-const $fee = createStore<string>('0');
+// Deposits
+
 const $oldProxyDeposit = createStore<string>('0');
-const $newProxyDeposit = createStore<string>('0');
-const $multisigDeposit = createStore<string>('0');
-const $isFeeLoading = createStore<boolean>(true);
-const $isProxyDepositLoading = createStore<boolean>(true);
+const $newProxyDeposit = restore(proxyDepositChanged, '0');
+const $isProxyDepositLoading = restore(isProxyDepositLoadingChanged, false);
+const $multisigDeposit = restore(multisigDepositChanged, '0');
+const $fee = restore(feeChanged, '0');
+const $isFeeLoading = restore(isFeeLoadingChanged, false);
 
 const $proxyQuery = createStore<string>('');
 const $maxProxies = createStore<number>(0);
@@ -465,18 +467,6 @@ sample({
   }),
 });
 
-// Deposits
-
-sample({ clock: proxyDepositChanged, target: $newProxyDeposit });
-
-sample({ clock: isProxyDepositLoadingChanged, target: $isProxyDepositLoading });
-
-sample({ clock: multisigDepositChanged, target: $multisigDeposit });
-
-sample({ clock: feeChanged, target: $fee });
-
-sample({ clock: isFeeLoadingChanged, target: $isFeeLoading });
-
 // Submit
 
 sample({
@@ -491,7 +481,7 @@ sample({
     const proxied = toAddress(formData.account.accountId, {
       prefix: formData.chain.addressPrefix,
     });
-    const multisigDescription = `Add proxy for ${proxied}`; // TODO: update after i18n effector integration
+    const multisigDescription = `Add pure proxy for ${proxied}`; // TODO: update after i18n effector integration
     const description = signatory ? formData.description || multisigDescription : '';
 
     return {

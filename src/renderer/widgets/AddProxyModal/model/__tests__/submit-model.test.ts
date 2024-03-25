@@ -5,28 +5,30 @@ import { submitModel } from '../submit-model';
 import { networkModel } from '@entities/network';
 import { walletModel } from '@entities/wallet';
 import { Account, Chain } from '@shared/core';
-import { Transaction } from '@entities/transaction';
+import { Transaction, getSignedExtrinsic, submitAndWatchExtrinsic } from '@entities/transaction';
 import { SubmitStep } from '../../lib/types';
 import { initiatorWallet, testApi } from './mock';
 
-describe('widgets/AddPureProxyModal/model/confirm-model', () => {
+jest.mock('@entities/transaction', () => {
+  return {
+    ...jest.requireActual('@entities/transaction'),
+    getSignedExtrinsic: jest.fn(),
+    submitAndWatchExtrinsic: jest.fn(),
+  };
+});
+
+describe('widgets/AddPureProxyModal/model/submit-model', () => {
   beforeEach(() => {
     jest.restoreAllMocks();
   });
 
-  test('should fill data for confirm model for polkadot vault account', async () => {
-    const getSignedExtrinsicMock = jest.fn();
-    const submitExtrinsicMock = jest.fn();
-
+  test('should fill data for submit model for polkadot vault account', async () => {
     const scope = fork({
       values: new Map()
         .set(networkModel.$apis, {
           '0x00': testApi,
         })
         .set(walletModel.$wallets, [initiatorWallet]),
-      handlers: new Map()
-        .set(submitModel.__tests__.getSignedExtrinsicFx, getSignedExtrinsicMock)
-        .set(submitModel.__tests__.submitExtrinsicFx, submitExtrinsicMock),
     });
 
     const store = {
@@ -51,7 +53,7 @@ describe('widgets/AddPureProxyModal/model/confirm-model', () => {
 
     await allSettled(submitModel.events.submitStarted, { scope });
 
-    expect(getSignedExtrinsicMock).toBeCalled();
-    expect(submitExtrinsicMock).toBeCalled();
+    expect(getSignedExtrinsic).toBeCalled();
+    expect(submitAndWatchExtrinsic).toBeCalled();
   });
 });

@@ -345,8 +345,4 @@ export const addPureProxiedModel = {
   outputs: {
     flowFinished,
   },
-
-  __tests__: {
-    getPureProxyFx,
-  },
 };

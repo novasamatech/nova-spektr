@@ -4,6 +4,9 @@ import { Chain, SigningType, Wallet, WalletType } from '@shared/core';
 
 export const testApi = {
   key: 'test-api',
+  registry: {
+    chainSS58: 42,
+  },
 } as unknown as ApiPromise;
 
 export const testChain = {

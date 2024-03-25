@@ -19,15 +19,9 @@ describe('widgets/AddPureProxyModal/model/form-model', () => {
   test('should fill data for form model for multisig account', async () => {
     const scope = fork({
       values: new Map()
-        .set(networkModel.$apis, {
-          '0x00': testApi,
-        })
-        .set(networkModel.$chains, {
-          '0x00': testChain,
-        })
-        .set(networkModel.$connectionStatuses, {
-          '0x00': ConnectionStatus.CONNECTED,
-        })
+        .set(networkModel.$apis, { '0x00': testApi })
+        .set(networkModel.$chains, { '0x00': testChain })
+        .set(networkModel.$connectionStatuses, { '0x00': ConnectionStatus.CONNECTED })
         .set(walletModel.$wallets, [initiatorWallet, signerWallet]),
     });
 

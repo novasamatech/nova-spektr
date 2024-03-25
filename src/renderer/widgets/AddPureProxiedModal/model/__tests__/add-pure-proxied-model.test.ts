@@ -1,5 +1,6 @@
 import { allSettled, fork } from 'effector';
 import { UnsignedTransaction } from '@substrate/txwrapper-polkadot';
+import { Event } from '@polkadot/types/interfaces';
 
 import { addPureProxiedModel } from '../add-pure-proxied-model';
 import { networkModel } from '@entities/network';
@@ -11,6 +12,7 @@ import { formModel } from '../form-model';
 import { confirmModel } from '../confirm-model';
 import { signModel } from '../sign-model';
 import { submitModel } from '../submit-model';
+import { subscriptionService } from '@entities/chain';
 
 describe('widgets/AddPureProxyModal/model/add-pure-proxied-model', () => {
   beforeEach(() => {
@@ -18,21 +20,18 @@ describe('widgets/AddPureProxyModal/model/add-pure-proxied-model', () => {
   });
 
   test('should go through the process of pure proxied create', async () => {
-    const getPureProxyMock = jest.fn(() => '0x01');
+    jest.spyOn(subscriptionService, 'subscribeEvents').mockImplementation((api, params, callback) => {
+      callback({ data: [{ toHex: () => '0x01' }] } as unknown as Event);
+
+      return new Promise(() => {});
+    });
 
     const scope = fork({
       values: new Map()
-        .set(networkModel.$apis, {
-          '0x00': testApi,
-        })
-        .set(networkModel.$chains, {
-          '0x00': testChain,
-        })
-        .set(networkModel.$connectionStatuses, {
-          '0x00': ConnectionStatus.CONNECTED,
-        })
+        .set(networkModel.$apis, { '0x00': testApi })
+        .set(networkModel.$chains, { '0x00': testChain })
+        .set(networkModel.$connectionStatuses, { '0x00': ConnectionStatus.CONNECTED })
         .set(walletModel.$wallets, [initiatorWallet, signerWallet]),
-      handlers: new Map().set(addPureProxiedModel.__tests__.getPureProxyFx, getPureProxyMock),
     });
 
     await allSettled(addPureProxiedModel.events.flowStarted, { scope });

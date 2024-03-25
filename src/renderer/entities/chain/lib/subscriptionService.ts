@@ -4,7 +4,11 @@ import { Event } from '@polkadot/types/interfaces';
 import { Vec } from '@polkadot/types';
 import { FrameSystemEventRecord } from '@polkadot/types/lookup';
 
-import { Params } from './common/types';
+type Params = {
+  method?: string;
+  section?: string;
+  data: any[];
+};
 
 export const subscriptionService = {
   subscribeEvents,

@@ -232,12 +232,4 @@ export const submitModel = {
   output: {
     formSubmitted,
   },
-
-  /* Internal API (tests only) */
-  __tests__: {
-    getSignedExtrinsicFx,
-    submitExtrinsicFx,
-    saveMultisigTxFx,
-    sendMatrixApproveFx,
-  },
 };
