@@ -65,9 +65,7 @@ export const MultisigWalletDetails = ({
 
   const multisigChains = useMemo(() => {
     return Object.values(chains).filter((chain) => {
-      return (
-        networkUtils.isMultisigSupported(chain.options) && accountUtils.isChainIdAndCryptoTypeMatch(account, chain)
-      );
+      return networkUtils.isMultisigSupported(chain.options) && accountUtils.isChainAndCryptoMatch(account, chain);
     });
   }, [chains]);
 
@@ -111,7 +109,7 @@ export const MultisigWalletDetails = ({
       isOpen={isModalOpen}
       onClose={closeModal}
     >
-      <div className="flex flex-col w-full">
+      <div className="flex flex-col gap-y-4 w-full">
         <div className="py-6 px-5 border-b border-divider">
           <WalletCardLg wallet={wallet} />
         </div>
@@ -119,12 +117,12 @@ export const MultisigWalletDetails = ({
         <Tabs
           unmount={false}
           tabClassName="whitespace-nowrap"
-          tabsClassName="mx-4 mt-4"
+          tabsClassName="mx-4"
           items={[
             {
               id: 1,
               title: t('walletDetails.multisig.networksTab'),
-              panel: <AccountsList accountId={account.accountId} chains={multisigChains} className="h-[361px]" />,
+              panel: <AccountsList accountId={account.accountId} chains={multisigChains} className="h-[345px]" />,
             },
             {
               id: 2,
@@ -238,10 +236,10 @@ export const MultisigWalletDetails = ({
               id: 3,
               title: t('walletDetails.common.proxiesTabTitle'),
               panel: hasProxies ? (
-                <ProxiesList className="h-[387px]" canCreateProxy={canCreateProxy} />
+                <ProxiesList className="h-[371px]" canCreateProxy={canCreateProxy} />
               ) : (
                 <NoProxiesAction
-                  className="h-[387px]"
+                  className="h-[371px]"
                   canCreateProxy={canCreateProxy}
                   onAddProxy={addProxyModel.events.flowStarted}
                 />
