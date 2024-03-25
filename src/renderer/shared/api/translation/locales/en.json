@@ -537,6 +537,8 @@
     "modalTitles": {
       "addProxy": "Add delegated authority (proxy)",
       "addProxyOn": "Add delegated authority (proxy) on",
+      "addPureProxy": "Create pure proxy",
+      "addPureProxyOn": "Create pure proxy on",
       "approve": "Approve",
       "destinationOn": "Set reward destination on",
       "nominateOn": "Change Validators on",
@@ -558,6 +560,7 @@
     "title": "Operations",
     "titles": {
       "addProxy": "Add delegated authority (proxy)",
+      "createPureProxy": "Add delegated authority (proxy)",
       "crossChainTransfer": "Cross-chain transfer",
       "destination": "Set reward destination",
       "nominate": "Change Validators",
@@ -631,6 +634,13 @@
     "proxyDepositHint": "The deposit stays reserved on your account until the proxy is removed",
     "proxyDepositLabel": "Proxy deposit",
     "proxyTooltip": "Delegated authorities (proxies)",
+    "pureProxyTooltip": {
+      "button": "Pure proxies",
+      "description1": "A Pure Proxy is an account that you can create using one of your existing accounts. Pure Proxies can only carry out transactions when another account instructs it to. When you create a Pure Proxy the account that created it is automatically given the \"Any\" Delegated Authority access type meaning it can instruct the Pure Proxy to carry out any transaction, this can be changed once the Pure Proxy is created.",
+      "description2": "Pure Proxies provide additional account management features such as:<ul><li>Enhanced Security: They cannot be stolen because they do not have a private key.</li><li>Simplified and Secure Account Management: Pure Proxies can help to simplify the management of complex account relationships</li><li>Multisig Account Management: Using a Pure Proxy makes it easier to change multisig signatories that can control your assets as a delegated authority.</li></ul>",
+      "title1": "What is a Pure Proxy?",
+      "title2": "Why should I create a Pure Proxy?"
+    },
     "submitError": "Error",
     "submitErrorButton": "Close",
     "submitInProgress": "Submitting operation...",
@@ -1083,6 +1093,7 @@
       "accountTabTitle": "Accounts",
       "addProxyAction": "Add delegated authority",
       "addProxyButton": "Add delegated authority",
+      "addPureProxiedAction": "Add pure proxy",
       "cancelButton": "Cancel",
       "confirmRemoveProxyCancel": "Cancel",
       "confirmRemoveProxyDescription": "The account will lose access to your wallet. Are you sure?",

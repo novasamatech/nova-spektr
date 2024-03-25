@@ -6,12 +6,17 @@ import { proxyUtils } from '@entities/proxy';
 
 export const proxiesUtils = {
   isRegularProxy,
+  isPureProxy,
   getNotification,
   isProxiedAvailable,
 };
 
 function isRegularProxy(chain: Chain): boolean {
   return Boolean(chain.options?.includes(ChainOptions.REGULAR_PROXY));
+}
+
+function isPureProxy(chain: Chain): boolean {
+  return Boolean(chain.options?.includes(ChainOptions.PURE_PROXY));
 }
 
 type GetNotificationParams = {

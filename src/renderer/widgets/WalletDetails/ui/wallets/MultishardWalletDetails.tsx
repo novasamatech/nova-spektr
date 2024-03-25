@@ -16,6 +16,7 @@ import { NoProxiesAction } from '../components/NoProxiesAction';
 import type { MultishardMap } from '../../lib/types';
 import { walletDetailsUtils } from '../../lib/utils';
 import { walletProviderModel } from '../../model/wallet-provider-model';
+import { AddPureProxied, addPureProxiedModel } from '@widgets/AddPureProxiedModal';
 
 type Props = {
   wallet: Wallet;
@@ -54,13 +55,18 @@ export const MultishardWalletDetails = ({ wallet, accounts, onClose }: Props) =>
       title: t('walletDetails.common.addProxyAction'),
       onClick: addProxyModel.events.flowStarted,
     },
+    {
+      icon: 'addCircle' as IconNames,
+      title: t('walletDetails.common.addPureProxiedAction'),
+      onClick: addPureProxiedModel.events.flowStarted,
+    },
   ];
 
   const ActionButton = (
     <DropdownIconButton name="more">
       <DropdownIconButton.Items>
         {Options.map((option) => (
-          <DropdownIconButton.Item key={option.icon}>
+          <DropdownIconButton.Item key={option.title}>
             <DropdownIconButton.Option option={option} />
           </DropdownIconButton.Item>
         ))}
@@ -116,6 +122,7 @@ export const MultishardWalletDetails = ({ wallet, accounts, onClose }: Props) =>
       />
 
       <AddProxy />
+      <AddPureProxied />
     </BaseModal>
   );
 };

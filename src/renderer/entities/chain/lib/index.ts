@@ -1,2 +1,1 @@
-export * from './chainSubscriptionService';
-export * from './common/types';
+export * from './subscriptionService';

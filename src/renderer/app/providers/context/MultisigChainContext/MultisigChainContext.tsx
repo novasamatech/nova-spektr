@@ -3,7 +3,7 @@ import { VoidFn } from '@polkadot/api/types';
 import { Event } from '@polkadot/types/interfaces';
 import { useUnit } from 'effector-react';
 
-import { useChainSubscription } from '@entities/chain';
+import { subscriptionService } from '@entities/chain';
 import { useMultisigTx, useMultisigEvent } from '@entities/multisig';
 import { MultisigTxFinalStatus, SigningStatus } from '@entities/transaction';
 import { toAddress, getCreatedDateFromApi } from '@shared/lib/utils';
@@ -39,7 +39,6 @@ export const MultisigChainProvider = ({ children }: PropsWithChildren) => {
 
   const { updateEvent, getEvents, addEventWithQueue } = useMultisigEvent({ addTask });
 
-  const { subscribeEvents } = useChainSubscription();
   const debouncedApis = useDebounce(apis, 1000);
   const debouncedConnectionStatuses = useDebounce(connectionStatuses, 1000);
 
@@ -147,7 +146,7 @@ export const MultisigChainProvider = ({ children }: PropsWithChildren) => {
         data: [undefined, undefined, toAddress(account.accountId, { prefix: addressPrefix })],
       };
 
-      const unsubscribeSuccessEvent = await subscribeEvents(api, successParams, (event: Event) => {
+      const unsubscribeSuccessEvent = await subscriptionService.subscribeEvents(api, successParams, (event: Event) => {
         console.log(
           `Receive MultisigExecuted event for ${
             account.accountId
@@ -173,7 +172,7 @@ export const MultisigChainProvider = ({ children }: PropsWithChildren) => {
         method: 'MultisigCancelled',
         data: [undefined, undefined, toAddress(account.accountId, { prefix: addressPrefix })],
       };
-      const unsubscribeCancelEvent = await subscribeEvents(api, cancelParams, (event: Event) => {
+      const unsubscribeCancelEvent = await subscriptionService.subscribeEvents(api, cancelParams, (event: Event) => {
         console.log(`Receive MultisigCancelled event for ${account.accountId} with call hash ${event.data[3].toHex()}`);
 
         eventCallback(
