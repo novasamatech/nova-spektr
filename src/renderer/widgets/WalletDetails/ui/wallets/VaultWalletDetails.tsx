@@ -163,7 +163,7 @@ export const VaultWalletDetails = ({ wallet, root, accountsMap, onClose }: Props
           </ContextMenu>
 
           <VaultAccountsList
-            className="h-[354px] mt-4 pb-4 px-5"
+            className="h-[338px] mt-4 pb-4 px-5"
             chains={Object.values(chains)}
             accountsMap={accountsMap}
             onShardClick={vaultDetailsModel.events.shardsSelected}
@@ -196,7 +196,7 @@ export const VaultWalletDetails = ({ wallet, root, accountsMap, onClose }: Props
       isOpen={isModalOpen}
       onClose={closeModal}
     >
-      <div className="flex flex-col w-full">
+      <div className="flex flex-col gap-y-4 w-full">
         <div className="py-6 px-5 border-b border-divider">
           <WalletCardLg wallet={wallet} />
         </div>

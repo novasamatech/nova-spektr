@@ -45,7 +45,7 @@ export const WalletConnectAccounts = ({ wallet, accounts }: Props) => {
   return (
     <>
       {wcDetailsUtils.isNotStarted(reconnectStep, wallet.isConnected) && (
-        <MultiAccountsList accounts={accountsList} className="h-[377px]" headerClassName="pt-4 pb-2" />
+        <MultiAccountsList accounts={accountsList} className="h-[361px]" headerClassName="pt-4 pb-2" />
       )}
 
       {wcDetailsUtils.isReadyToReconnect(reconnectStep, wallet.isConnected) && (
