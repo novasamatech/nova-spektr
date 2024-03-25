@@ -24,6 +24,7 @@ import { NoProxiesAction } from '../components/NoProxiesAction';
 import { walletProviderModel } from '../../model/wallet-provider-model';
 import { networkUtils, networkModel } from '@entities/network';
 import { matrixModel, matrixUtils } from '@entities/matrix';
+import { AddPureProxied, addPureProxiedModel } from '@widgets/AddPureProxiedModal';
 
 type Props = {
   wallet: Wallet;
@@ -85,13 +86,18 @@ export const MultisigWalletDetails = ({
       title: t('walletDetails.common.addProxyAction'),
       onClick: addProxyModel.events.flowStarted,
     },
+    {
+      icon: 'addCircle' as IconNames,
+      title: t('walletDetails.common.addPureProxiedAction'),
+      onClick: addPureProxiedModel.events.flowStarted,
+    },
   ];
 
   const ActionButton = (
     <DropdownIconButton name="more">
       <DropdownIconButton.Items>
         {Options.map((option) => (
-          <DropdownIconButton.Item key={option.icon}>
+          <DropdownIconButton.Item key={option.title}>
             <DropdownIconButton.Option option={option} />
           </DropdownIconButton.Item>
         ))}
@@ -259,6 +265,7 @@ export const MultisigWalletDetails = ({
       />
 
       <AddProxy />
+      <AddPureProxied />
     </BaseModal>
   );
 };
