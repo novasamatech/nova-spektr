@@ -105,7 +105,7 @@ export const MultishardWalletDetails = ({ wallet, accounts, onClose }: Props) =>
       isOpen={isModalOpen}
       onClose={closeModal}
     >
-      <div className="flex flex-col w-full">
+      <div className="flex flex-col gap-y-4 w-full">
         <div className="py-6 px-5 border-b border-divider">
           <WalletCardLg wallet={wallet} />
         </div>

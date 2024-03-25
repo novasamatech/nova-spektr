@@ -117,10 +117,10 @@ export const WalletConnectDetails = ({ wallet, accounts, onClose }: Props) => {
       id: 'proxies',
       title: t('walletDetails.common.proxiesTabTitle'),
       panel: hasProxies ? (
-        <ProxiesList className="h-[395px] mt-6" canCreateProxy={canCreateProxy} />
+        <ProxiesList className="h-[379px] mt-6" canCreateProxy={canCreateProxy} />
       ) : (
         <NoProxiesAction
-          className="h-[395px] mt-6"
+          className="h-[379px] mt-6"
           canCreateProxy={canCreateProxy}
           onAddProxy={addProxyModel.events.flowStarted}
         />
@@ -138,7 +138,7 @@ export const WalletConnectDetails = ({ wallet, accounts, onClose }: Props) => {
       isOpen={isModalOpen}
       onClose={closeModal}
     >
-      <div className="flex flex-col h-full w-full">
+      <div className="flex flex-col gap-y-4 h-full w-full">
         <div className="py-6 px-5 border-b border-divider">
           <WalletCardLg full wallet={wallet} />
         </div>
