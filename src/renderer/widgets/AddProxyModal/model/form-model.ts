@@ -199,7 +199,7 @@ const $proxiedAccounts = combine(
     balances: balanceModel.$balances,
   },
   ({ wallet, accounts, chain, balances }) => {
-    if (!wallet || !chain.assets) return [];
+    if (!wallet || !chain.chainId) return [];
 
     const isPolkadotVault = walletUtils.isPolkadotVault(wallet);
     const walletAccounts = accountUtils.getWalletAccounts(wallet.id, accounts).filter((account) => {
@@ -231,7 +231,7 @@ const $signatories = combine(
     balances: balanceModel.$balances,
   },
   ({ wallet, wallets, account, accounts, chain, balances }) => {
-    if (!wallet || !chain || !account || !accountUtils.isMultisigAccount(account)) return [];
+    if (!wallet || !chain.chainId || !account || !accountUtils.isMultisigAccount(account)) return [];
 
     const signers = dictionary(account.signatories, 'accountId', () => true);
 
@@ -269,7 +269,7 @@ const $proxyAccounts = combine(
     query: $proxyQuery,
   },
   ({ wallets, accounts, chain, query }) => {
-    if (!chain) return [];
+    if (!chain.chainId) return [];
 
     return accountUtils.getAccountsForBalances(wallets, accounts, (account) => {
       const isChainAndCryptoMatch = accountUtils.isChainAndCryptoMatch(account, chain);
@@ -288,7 +288,7 @@ const $proxyTypes = combine(
     chain: $proxyForm.fields.chain.$value,
   },
   ({ apis, statuses, chain }) => {
-    if (!chain) return [];
+    if (!chain.chainId) return [];
 
     return networkUtils.isConnectedStatus(statuses[chain.chainId])
       ? getProxyTypes(apis[chain.chainId])
@@ -304,7 +304,7 @@ const $isChainConnected = combine(
     statuses: networkModel.$connectionStatuses,
   },
   ({ chain, statuses }) => {
-    if (!chain) return false;
+    if (!chain.chainId) return false;
 
     return networkUtils.isConnectedStatus(statuses[chain.chainId]);
   },
@@ -329,7 +329,7 @@ const $fakeTx = combine(
     isConnected: $isChainConnected,
   },
   ({ isConnected, chain }): Transaction | undefined => {
-    if (!chain || !isConnected) return undefined;
+    if (!chain.chainId || !isConnected) return undefined;
 
     return {
       chainId: chain.chainId,
