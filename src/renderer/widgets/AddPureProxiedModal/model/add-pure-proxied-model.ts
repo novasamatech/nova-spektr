@@ -4,7 +4,7 @@ import { Event } from '@polkadot/types/interfaces';
 import { ApiPromise } from '@polkadot/api';
 import { UnsubscribePromise } from '@polkadot/api/types';
 
-import { Transaction, TransactionType } from '@entities/transaction';
+import { Transaction, TransactionType, TxWrapper, transactionService } from '@entities/transaction';
 import { toAddress } from '@shared/lib/utils';
 import { walletSelectModel } from '@features/wallets';
 import { walletModel, walletUtils } from '@entities/wallet';
@@ -16,8 +16,8 @@ import {
   AccountId,
   PartialProxiedAccount,
   ProxyVariant,
+  Account,
 } from '@shared/core';
-import { wrapAsMulti, wrapAsProxy } from '@entities/transaction/lib/extrinsicService';
 import { proxyModel, proxyUtils } from '@entities/proxy';
 import { networkModel } from '@entities/network';
 import { balanceSubModel } from '@features/balances';
@@ -134,26 +134,24 @@ sample({
       args: { proxyType: ProxyType.ANY, delay: 0, index: 0 },
     };
 
-    return txWrappers.reduce<{ transaction: Transaction; multisigTx: Transaction | null }>(
-      (acc, wrapper) => {
-        if (addPureProxiedUtils.hasMultisig([wrapper])) {
-          acc.transaction = wrapAsMulti(
-            apis[chain.chainId],
-            acc.transaction,
-            account as MultisigAccount,
-            signatory!.accountId,
-            chain.addressPrefix,
-          );
-          acc.multisigTx = acc.transaction;
-        }
-        if (addPureProxiedUtils.hasProxy([wrapper])) {
-          acc.transaction = wrapAsProxy(apis[chain.chainId], acc.transaction, chain.addressPrefix);
-        }
+    const isMultisig = txWrappers.includes('multisig');
+    const txWrappersAdapter: TxWrapper[] = isMultisig
+      ? [
+          {
+            kind: 'multisig',
+            multisigAccount: account as MultisigAccount,
+            signatories: (account as MultisigAccount).signatories.map((s) => ({ accountId: s.accountId })) as Account[],
+            signer: { accountId: signatory!.accountId } as Account,
+          },
+        ]
+      : [];
 
-        return acc;
-      },
-      { transaction, multisigTx: null },
-    );
+    return transactionService.getWrappedTransaction({
+      api: apis[chain.chainId],
+      addressPrefix: chain.addressPrefix,
+      transaction,
+      txWrappers: txWrappersAdapter,
+    });
   },
   target: spread({
     transaction: $transaction,
