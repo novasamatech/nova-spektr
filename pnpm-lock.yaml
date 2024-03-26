@@ -197,8 +197,8 @@ devDependencies:
     specifier: ^17.0.3
     version: 17.0.3
   '@electron/notarize':
-    specifier: ^1.2.3
-    version: 1.2.3
+    specifier: ^2.3.0
+    version: 2.3.0
   '@headlessui/tailwindcss':
     specifier: ^0.1.2
     version: 0.1.2(tailwindcss@3.3.5)
@@ -351,7 +351,7 @@ devDependencies:
     version: 2.26.0(@typescript-eslint/parser@5.30.4)(eslint@8.19.0)
   eslint-plugin-jest-dom:
     specifier: ^5.1.0
-    version: 5.1.0(@testing-library/dom@8.20.1)(eslint@8.19.0)
+    version: 5.1.0(@testing-library/dom@9.3.4)(eslint@8.19.0)
   eslint-plugin-json:
     specifier: ^3.1.0
     version: 3.1.0
@@ -2557,18 +2557,19 @@ packages:
       - supports-color
     dev: false
 
-  /@electron/notarize@1.2.3:
-    resolution: {integrity: sha512-9oRzT56rKh5bspk3KpAVF8lPKHYQrBnRwcgiOeR0hdilVEQmszDaAu0IPCPrwwzJN0ugNs0rRboTreHMt/6mBQ==}
+  /@electron/notarize@2.1.0:
+    resolution: {integrity: sha512-Q02xem1D0sg4v437xHgmBLxI2iz/fc0D4K7fiVWHa/AnW8o7D751xyKNXgziA6HrTOme9ul1JfWN5ark8WH1xA==}
     engines: {node: '>= 10.0.0'}
     dependencies:
       debug: 4.3.4(supports-color@5.5.0)
       fs-extra: 9.1.0
+      promise-retry: 2.0.1
     transitivePeerDependencies:
       - supports-color
     dev: true
 
-  /@electron/notarize@2.1.0:
-    resolution: {integrity: sha512-Q02xem1D0sg4v437xHgmBLxI2iz/fc0D4K7fiVWHa/AnW8o7D751xyKNXgziA6HrTOme9ul1JfWN5ark8WH1xA==}
+  /@electron/notarize@2.3.0:
+    resolution: {integrity: sha512-EiTBU0BwE7HZZjAG1fFWQaiQpCuPrVGn7jPss1kUjD6eTTdXXd29RiZqEqkgN7xqt/Pgn4g3I7Saqovanrfj3w==}
     engines: {node: '>= 10.0.0'}
     dependencies:
       debug: 4.3.4(supports-color@5.5.0)
@@ -11008,7 +11009,7 @@ packages:
       - supports-color
     dev: true
 
-  /eslint-plugin-jest-dom@5.1.0(@testing-library/dom@8.20.1)(eslint@8.19.0):
+  /eslint-plugin-jest-dom@5.1.0(@testing-library/dom@9.3.4)(eslint@8.19.0):
     resolution: {integrity: sha512-JIXZp+E/h/aGlP/rQc4tuOejiHlZXg65qw8JAJMIJA5VsdjOkss/SYcRSqBrQuEOytEM8JvngUjcz31d1RrCrA==}
     engines: {node: ^12.22.0 || ^14.17.0 || >=16.0.0, npm: '>=6', yarn: '>=1'}
     peerDependencies:
@@ -11019,7 +11020,7 @@ packages:
         optional: true
     dependencies:
       '@babel/runtime': 7.23.6
-      '@testing-library/dom': 8.20.1
+      '@testing-library/dom': 9.3.4
       eslint: 8.19.0
       requireindex: 1.2.0
     dev: true
