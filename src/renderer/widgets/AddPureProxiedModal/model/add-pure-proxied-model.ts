@@ -154,7 +154,7 @@ sample({
     });
   },
   target: spread({
-    transaction: $transaction,
+    wrappedTx: $transaction,
     multisigTx: $multisigTx,
   }),
 });
