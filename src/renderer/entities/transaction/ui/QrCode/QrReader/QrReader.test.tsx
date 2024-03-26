@@ -77,8 +77,8 @@ describe('ui/QrCode/QrReader', () => {
     });
 
     expect(spyStart).toBeCalledTimes(1);
-    expect(spyError).not.toBeCalled();
-    expect(spyCameraList).not.toBeCalled();
+    expect(spyError).not.toHaveBeenCalled();
+    expect(spyCameraList).not.toHaveBeenCalled();
   });
 
   test('should throw error on camera start', async () => {
@@ -89,7 +89,7 @@ describe('ui/QrCode/QrReader', () => {
       render(<QrReader onStart={spyStart} onResult={() => {}} onError={spyError} />);
     });
 
-    expect(spyStart).not.toBeCalled();
+    expect(spyStart).not.toHaveBeenCalled();
     expect(spyError).toBeCalledWith(QR_READER_ERRORS[QrError.USER_DENY]);
   });
 
@@ -103,15 +103,15 @@ describe('ui/QrCode/QrReader', () => {
       const callbacks = render(<QrReader onResult={() => {}} />);
       rerender = callbacks.rerender;
     });
-    expect(spyError).not.toBeCalled();
+    expect(spyError).not.toHaveBeenCalled();
 
     await act(async () => {
       rerender(<QrReader cameraId="camera_2" onStart={spyStart} onResult={() => {}} onError={spyError} />);
     });
 
-    expect(spyStop).toBeCalled();
-    expect(spyStart).toBeCalled();
-    expect(spyError).not.toBeCalled();
+    expect(spyStop).toHaveBeenCalled();
+    expect(spyStart).toHaveBeenCalled();
+    expect(spyError).not.toHaveBeenCalled();
   });
 
   test('should throw error on camera switch', async () => {
@@ -127,7 +127,7 @@ describe('ui/QrCode/QrReader', () => {
       const callbacks = render(<QrReader cameraId="camera_1" onResult={() => {}} onError={spyError} />);
       rerender = callbacks.rerender;
     });
-    expect(spyError).not.toBeCalled();
+    expect(spyError).not.toHaveBeenCalled();
 
     await act(async () => {
       rerender(<QrReader cameraId="camera_2" onResult={() => {}} onError={spyError} />);

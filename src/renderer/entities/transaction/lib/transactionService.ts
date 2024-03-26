@@ -9,10 +9,7 @@ import { useState } from 'react';
 import { Transaction, TransactionType } from '@entities/transaction/model/transaction';
 import { createTxMetadata, toAccountId, dictionary } from '@shared/lib/utils';
 import { getExtrinsic, getUnsignedTransaction, wrapAsMulti, wrapAsProxy } from './extrinsicService';
-import { decodeDispatchError } from './common/utils';
-import { useCallDataDecoder } from './callDataDecoder';
-import { walletUtils, accountUtils } from '../../wallet';
-import type {
+import {
   AccountId,
   Address,
   ChainId,
@@ -23,6 +20,8 @@ import type {
   MultisigAccount,
   ProxiedAccount,
 } from '@shared/core';
+import { decodeDispatchError } from './common/utils';
+import { useCallDataDecoder } from './callDataDecoder';
 import {
   ITransactionService,
   HashData,
@@ -33,6 +32,7 @@ import {
   MultisigTxWrapper,
   ProxyTxWrapper,
 } from './common/types';
+import { walletUtils, accountUtils } from '../../wallet';
 
 const shouldWrapAsMulti = (wrapper: TxWrappers_OLD): wrapper is WrapAsMulti =>
   'signatoryId' in wrapper && 'account' in wrapper;
@@ -153,7 +153,7 @@ type TxWrappersParams = {
 };
 /**
  * Get array of transaction wrappers (proxy/multisig)
- * Every wrapper recursively calls getTxWrappers until it finds regular wallet
+ * Every wrapper recursively calls getTxWrappers until it finds regular account
  * @param wallet wallet that requires wrapping
  * @param params wallets, accounts and signatories
  * @return {Array}
@@ -278,69 +278,6 @@ export const useTransaction = (): ITransactionService => {
 
   const [txs, setTxs] = useState<Transaction[]>([]);
   const [wrappers, setWrappers] = useState<TxWrappers_OLD[]>([]);
-
-  const createPayload = async (
-    transaction: Transaction,
-    api: ApiPromise,
-  ): Promise<{
-    unsigned: UnsignedTransaction;
-    payload: Uint8Array;
-  }> => {
-    const { info, options, registry } = await createTxMetadata(transaction.address, api);
-
-    const unsigned = getUnsignedTransaction[transaction.type](transaction, info, options, api);
-    if (options.signedExtensions?.includes('ChargeAssetTxPayment')) {
-      unsigned.assetId = undefined;
-    }
-    const signingPayloadHex = construct.signingPayload(unsigned, { registry });
-
-    return {
-      unsigned,
-      payload: hexToU8a(signingPayloadHex),
-    };
-  };
-
-  const getTransactionHash = (transaction: Transaction, api: ApiPromise): HashData => {
-    const extrinsic = getExtrinsic[transaction.type](transaction.args, api);
-
-    return {
-      callData: extrinsic.method.toHex(),
-      callHash: extrinsic.method.hash.toHex(),
-    };
-  };
-
-  const getTransactionFee = async (transaction: Transaction, api: ApiPromise): Promise<string> => {
-    const extrinsic = getExtrinsic[transaction.type](transaction.args, api);
-    const paymentInfo = await extrinsic.paymentInfo(transaction.address);
-
-    return paymentInfo.partialFee.toString();
-  };
-
-  const getExtrinsicWeight = async (extrinsic: SubmittableExtrinsic<'promise'>): Promise<Weight> => {
-    const paymentInfo = await extrinsic.paymentInfo(extrinsic.signer);
-
-    return paymentInfo.weight;
-  };
-
-  const getTxWeight = async (transaction: Transaction, api: ApiPromise): Promise<Weight> => {
-    const extrinsic = getExtrinsic[transaction.type](transaction.args, api);
-    const { weight } = await extrinsic.paymentInfo(transaction.address);
-
-    return weight;
-  };
-
-  const getMultisigDeposit = (threshold: Threshold, api: ApiPromise): string => {
-    const { depositFactor, depositBase } = api.consts.multisig;
-    const deposit = depositFactor.muln(threshold).add(depositBase);
-
-    return deposit.toString();
-  };
-
-export const useTransaction = (): ITransactionService => {
-  const { decodeCallData } = useCallDataDecoder();
-
-  const [txs, setTxs] = useState<Transaction[]>([]);
-  const [wrappers, setWrappers] = useState<TxWrappers[]>([]);
 
   const createPayload = async (
     transaction: Transaction,

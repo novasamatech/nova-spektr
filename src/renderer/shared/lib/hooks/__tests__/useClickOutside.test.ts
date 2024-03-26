@@ -36,11 +36,11 @@ describe('hooks/useClickOutside', () => {
 
     const { unmount } = renderHook(() => useClickOutside([{ current: ref }], handler));
 
-    expect(document.addEventListener).toBeCalled();
+    expect(document.addEventListener).toHaveBeenCalled();
     fireDocumentEvent.mouseDown(document.body);
     expect(handler).toBeCalledTimes(1);
     unmount();
-    expect(document.removeEventListener).toBeCalled();
+    expect(document.removeEventListener).toHaveBeenCalled();
   });
 
   test('should not call handler for the same ref', () => {
@@ -53,7 +53,7 @@ describe('hooks/useClickOutside', () => {
 
     renderHook(() => useClickOutside([{ current: ref }], handler));
     fireDocumentEvent.mouseDown(ref);
-    expect(handler).not.toBeCalled();
+    expect(handler).not.toHaveBeenCalled();
   });
 
   test('should not call handler if there is no ref', () => {
@@ -66,6 +66,6 @@ describe('hooks/useClickOutside', () => {
 
     renderHook(() => useClickOutside([{ current: null }], handler));
     fireDocumentEvent.mouseDown(document.body);
-    expect(handler).not.toBeCalled();
+    expect(handler).not.toHaveBeenCalled();
   });
 });
