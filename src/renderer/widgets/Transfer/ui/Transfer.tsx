@@ -38,6 +38,10 @@ export const Transfer = ({ chain, asset }: Props) => {
     transferModel.events.flowStarted({ chain, asset });
   }, []);
 
+  useEffect(() => {
+    transferModel.events.navigateApiChanged({ navigate });
+  }, []);
+
   if (transferUtils.isSubmitStep(step)) return <SubmitTransfer isOpen={isModalOpen} onClose={closeModal} />;
 
   const getModalTitle = (chain: Chain, asset: Asset, xcmChain?: Chain): String | ReactNode => {

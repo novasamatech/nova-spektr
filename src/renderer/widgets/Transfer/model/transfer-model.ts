@@ -1,5 +1,6 @@
-import { createEvent, createStore, sample, restore, combine } from 'effector';
+import { createEvent, createStore, sample, restore, combine, createApi, attach } from 'effector';
 import { spread, delay } from 'patronum';
+import { NavigateFunction } from 'react-router-dom';
 
 import { Transaction } from '@entities/transaction';
 import { Step, TransferStore, NetworkStore } from '../lib/types';
@@ -7,6 +8,12 @@ import { formModel } from './form-model';
 import { confirmModel } from './confirm-model';
 import { signModel } from './sign-model';
 import { submitModel } from './submit-model';
+import { Paths } from '@shared/routes';
+
+const $navigation = createStore<{ navigate: NavigateFunction } | null>(null);
+const navigationApi = createApi($navigation, {
+  navigateApiChanged: (state, { navigate }) => ({ ...state, navigate }),
+});
 
 const stepChanged = createEvent<Step>();
 
@@ -129,8 +136,6 @@ sample({
   }),
 });
 
-// TODO: navigate to operations / assets
-// TODO: clear form on submit
 sample({
   clock: delay(submitModel.output.formSubmitted, 2000),
   target: flowFinished,
@@ -142,12 +147,21 @@ sample({
   target: stepChanged,
 });
 
+sample({
+  clock: flowFinished,
+  target: attach({
+    source: $navigation,
+    effect: (state) => state?.navigate(Paths.ASSETS, { replace: true }),
+  }),
+});
+
 export const transferModel = {
   $step,
   $xcmChain,
   events: {
     flowStarted,
     stepChanged,
+    navigateApiChanged: navigationApi.navigateApiChanged,
   },
   output: {
     flowFinished,

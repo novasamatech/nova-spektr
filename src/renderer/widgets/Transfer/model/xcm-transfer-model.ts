@@ -10,6 +10,7 @@ import { xcmModel } from '@entities/xcm';
 import { xcmTransferUtils } from '../lib/xcm-transfer-utils';
 
 const xcmStarted = createEvent<{ chain: Chain; asset: Asset }>();
+const xcmConfigLoaded = createEvent();
 const xcmChainSelected = createEvent<ChainId>();
 const xcmFeeChanged = createEvent<string>();
 const isXcmFeeLoadingChanged = createEvent<boolean>();
@@ -232,6 +233,11 @@ const $xcmData = combine(
 
 sample({
   clock: xcmStarted,
+  target: xcmConfigLoaded,
+});
+
+sample({
+  clock: xcmConfigLoaded,
   target: [getConfigFx, fetchConfigFx],
 });
 
@@ -270,6 +276,7 @@ export const xcmTransferModel = {
 
   events: {
     xcmStarted,
+    xcmConfigLoaded,
     xcmChainSelected,
     xcmFeeChanged,
     isXcmFeeLoadingChanged,

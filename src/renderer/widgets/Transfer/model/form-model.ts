@@ -547,6 +547,7 @@ sample({
 sample({
   clock: $transferForm.fields.signatory.$value,
   source: $signatories,
+  filter: (signatories) => signatories.length > 0,
   fn: (signatories, signatory) => {
     const match = signatories[0].find(({ signer }) => signer.id === signatory.id);
 

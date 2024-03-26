@@ -199,7 +199,7 @@ const $proxiedAccounts = combine(
     balances: balanceModel.$balances,
   },
   ({ wallet, accounts, chain, balances }) => {
-    if (!wallet || !chain) return [];
+    if (!wallet || !chain.assets) return [];
 
     const isPolkadotVault = walletUtils.isPolkadotVault(wallet);
     const walletAccounts = accountUtils.getWalletAccounts(wallet.id, accounts).filter((account) => {
