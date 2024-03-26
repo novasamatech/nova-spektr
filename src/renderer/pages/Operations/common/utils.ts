@@ -41,6 +41,7 @@ const TransactionTitles: Record<TransactionType, string> = {
   [TransactionType.BATCH_ALL]: 'operations.titles.unknown',
   // Proxy
   [TransactionType.ADD_PROXY]: 'operations.titles.addProxy',
+  [TransactionType.CREATE_PURE_PROXY]: 'operations.titles.createPureProxy',
   [TransactionType.REMOVE_PROXY]: 'operations.titles.removeProxy',
   [TransactionType.PROXY]: 'operations.titles.proxy',
 };
@@ -79,6 +80,7 @@ const TransactionTitlesModal: Record<TransactionType, (crossChain: boolean) => s
   [TransactionType.BATCH_ALL]: () => 'operations.modalTitles.unknownOn',
   // Proxy
   [TransactionType.ADD_PROXY]: () => 'operations.modalTitles.addProxy',
+  [TransactionType.CREATE_PURE_PROXY]: () => 'operations.modalTitles.createPureProxy',
   [TransactionType.REMOVE_PROXY]: () => 'operations.modalTitles.removeProxy',
   [TransactionType.PROXY]: () => 'operations.modalTitles.proxy',
 };

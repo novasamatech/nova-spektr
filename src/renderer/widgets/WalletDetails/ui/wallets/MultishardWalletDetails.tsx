@@ -10,6 +10,7 @@ import { IconNames } from '@shared/ui/Icon/data';
 import { ForgetWalletModal } from '@features/wallets/ForgetWallet';
 import { TabItem } from '@shared/ui/Tabs/common/types';
 import { networkModel } from '@entities/network';
+import { AddPureProxied, addPureProxiedModel } from '@widgets/AddPureProxiedModal';
 import { addProxyModel, AddProxy } from '@widgets/AddProxyModal';
 import { ProxiesList } from '../components/ProxiesList';
 import { NoProxiesAction } from '../components/NoProxiesAction';
@@ -54,13 +55,18 @@ export const MultishardWalletDetails = ({ wallet, accounts, onClose }: Props) =>
       title: t('walletDetails.common.addProxyAction'),
       onClick: addProxyModel.events.flowStarted,
     },
+    {
+      icon: 'addCircle' as IconNames,
+      title: t('walletDetails.common.addPureProxiedAction'),
+      onClick: addPureProxiedModel.events.flowStarted,
+    },
   ];
 
   const ActionButton = (
     <DropdownIconButton name="more">
       <DropdownIconButton.Items>
         {Options.map((option) => (
-          <DropdownIconButton.Item key={option.icon}>
+          <DropdownIconButton.Item key={option.title}>
             <DropdownIconButton.Option option={option} />
           </DropdownIconButton.Item>
         ))}
@@ -99,7 +105,7 @@ export const MultishardWalletDetails = ({ wallet, accounts, onClose }: Props) =>
       isOpen={isModalOpen}
       onClose={closeModal}
     >
-      <div className="flex flex-col w-full">
+      <div className="flex flex-col gap-y-4 w-full">
         <div className="py-6 px-5 border-b border-divider">
           <WalletCardLg wallet={wallet} />
         </div>
@@ -116,6 +122,7 @@ export const MultishardWalletDetails = ({ wallet, accounts, onClose }: Props) =>
       />
 
       <AddProxy />
+      <AddPureProxied />
     </BaseModal>
   );
 };

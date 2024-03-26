@@ -21,6 +21,7 @@ import { ShardsList } from '../components/ShardsList';
 import { vaultDetailsModel } from '../../model/vault-details-model';
 import { walletDetailsUtils } from '../../lib/utils';
 import { VaultMap } from '../../lib/types';
+import { AddPureProxied, addPureProxiedModel } from '@widgets/AddPureProxiedModal';
 
 type Props = {
   wallet: Wallet;
@@ -126,13 +127,18 @@ export const VaultWalletDetails = ({ wallet, root, accountsMap, onClose }: Props
       title: t('walletDetails.common.addProxyAction'),
       onClick: addProxyModel.events.flowStarted,
     },
+    {
+      icon: 'addCircle' as IconNames,
+      title: t('walletDetails.common.addPureProxiedAction'),
+      onClick: addPureProxiedModel.events.flowStarted,
+    },
   ];
 
   const ActionButton = (
     <DropdownIconButton name="more">
       <DropdownIconButton.Items>
         {Options.map((option) => (
-          <DropdownIconButton.Item key={option.icon}>
+          <DropdownIconButton.Item key={option.title}>
             <DropdownIconButton.Option option={option} />
           </DropdownIconButton.Item>
         ))}
@@ -163,7 +169,7 @@ export const VaultWalletDetails = ({ wallet, root, accountsMap, onClose }: Props
           </ContextMenu>
 
           <VaultAccountsList
-            className="h-[354px] mt-4 pb-4 px-5"
+            className="h-[338px] mt-4 pb-4 px-5"
             chains={Object.values(chains)}
             accountsMap={accountsMap}
             onShardClick={vaultDetailsModel.events.shardsSelected}
@@ -196,7 +202,7 @@ export const VaultWalletDetails = ({ wallet, root, accountsMap, onClose }: Props
       isOpen={isModalOpen}
       onClose={closeModal}
     >
-      <div className="flex flex-col w-full">
+      <div className="flex flex-col gap-y-4 w-full">
         <div className="py-6 px-5 border-b border-divider">
           <WalletCardLg wallet={wallet} />
         </div>
@@ -237,6 +243,7 @@ export const VaultWalletDetails = ({ wallet, root, accountsMap, onClose }: Props
       />
 
       <AddProxy />
+      <AddPureProxied />
     </BaseModal>
   );
 };

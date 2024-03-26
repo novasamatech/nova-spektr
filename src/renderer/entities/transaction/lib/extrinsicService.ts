@@ -312,6 +312,17 @@ export const getUnsignedTransaction: Record<
       options,
     );
   },
+  [TransactionType.CREATE_PURE_PROXY]: (transaction, info, options) => {
+    return methods.proxy.createPure(
+      {
+        proxyType: transaction.args.proxyType,
+        delay: transaction.args.delay,
+        index: transaction.args.index,
+      },
+      info,
+      options,
+    );
+  },
   [TransactionType.REMOVE_PROXY]: (transaction, info, options) => {
     return methods.proxy.removeProxy(
       {
@@ -418,6 +429,9 @@ export const getExtrinsic: Record<
     const call = getExtrinsic[tx.type](tx.args, api).method;
 
     return api.tx.proxy.proxy(real, forceProxyType, call);
+  },
+  [TransactionType.CREATE_PURE_PROXY]: ({ proxyType, delay, index }, api) => {
+    return api.tx.proxy.createPure(proxyType, delay, index);
   },
 };
 

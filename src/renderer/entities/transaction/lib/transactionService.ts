@@ -336,6 +336,69 @@ export const useTransaction = (): ITransactionService => {
     return deposit.toString();
   };
 
+export const useTransaction = (): ITransactionService => {
+  const { decodeCallData } = useCallDataDecoder();
+
+  const [txs, setTxs] = useState<Transaction[]>([]);
+  const [wrappers, setWrappers] = useState<TxWrappers[]>([]);
+
+  const createPayload = async (
+    transaction: Transaction,
+    api: ApiPromise,
+  ): Promise<{
+    unsigned: UnsignedTransaction;
+    payload: Uint8Array;
+  }> => {
+    const { info, options, registry } = await createTxMetadata(transaction.address, api);
+
+    const unsigned = getUnsignedTransaction[transaction.type](transaction, info, options, api);
+    if (options.signedExtensions?.includes('ChargeAssetTxPayment')) {
+      unsigned.assetId = undefined;
+    }
+    const signingPayloadHex = construct.signingPayload(unsigned, { registry });
+
+    return {
+      unsigned,
+      payload: hexToU8a(signingPayloadHex),
+    };
+  };
+
+  const getTransactionHash = (transaction: Transaction, api: ApiPromise): HashData => {
+    const extrinsic = getExtrinsic[transaction.type](transaction.args, api);
+
+    return {
+      callData: extrinsic.method.toHex(),
+      callHash: extrinsic.method.hash.toHex(),
+    };
+  };
+
+  const getTransactionFee = async (transaction: Transaction, api: ApiPromise): Promise<string> => {
+    const extrinsic = getExtrinsic[transaction.type](transaction.args, api);
+    const paymentInfo = await extrinsic.paymentInfo(transaction.address);
+
+    return paymentInfo.partialFee.toString();
+  };
+
+  const getExtrinsicWeight = async (extrinsic: SubmittableExtrinsic<'promise'>): Promise<Weight> => {
+    const paymentInfo = await extrinsic.paymentInfo(extrinsic.signer);
+
+    return paymentInfo.weight;
+  };
+
+  const getTxWeight = async (transaction: Transaction, api: ApiPromise): Promise<Weight> => {
+    const extrinsic = getExtrinsic[transaction.type](transaction.args, api);
+    const { weight } = await extrinsic.paymentInfo(transaction.address);
+
+    return weight;
+  };
+
+  const getMultisigDeposit = (threshold: Threshold, api: ApiPromise): string => {
+    const { depositFactor, depositBase } = api.consts.multisig;
+    const deposit = depositFactor.muln(threshold).add(depositBase);
+
+    return deposit.toString();
+  };
+
   const verifySignature = (payload: Uint8Array, signature: HexString, accountId: AccountId): Boolean => {
     const payloadToVerify = payload.length > 256 ? blake2AsU8a(payload) : payload;
 
