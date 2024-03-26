@@ -13,6 +13,8 @@ import type {
   AccountId,
   ChainId,
   MultisigAccount,
+  Account,
+  ProxiedAccount,
 } from '@shared/core';
 import { DecodedTransaction, Transaction, TransactionType } from '@entities/transaction/model/transaction';
 
@@ -96,7 +98,20 @@ export interface XTokenPalletTransferArgs extends Args {
   destWeight?: number;
 }
 
-export type TxWrappers = ('proxy' | 'multisig')[];
+export type MultisigTxWrapper = {
+  kind: 'multisig';
+  multisigAccount: MultisigAccount;
+  signatories: Account[];
+  signer: Account;
+};
+
+export type ProxyTxWrapper = {
+  kind: 'proxy';
+  proxyAccount: Account;
+  proxiedAccount: ProxiedAccount;
+};
+
+export type TxWrapper = MultisigTxWrapper | ProxyTxWrapper;
 
 export type WrapAsMulti = {
   account: MultisigAccount;

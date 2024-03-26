@@ -146,7 +146,7 @@ const SignatorySelector = () => {
 
   if (!network || !isMultisig) return null;
 
-  const options = signatories.map(({ signer, balances }) => {
+  const options = signatories[0].map(({ signer, balances }) => {
     const isShard = accountUtils.isShardAccount(signer);
     const address = toAddress(signer.accountId, { prefix: network.chain.addressPrefix });
 
@@ -349,7 +349,7 @@ const FeeSection = () => {
         <MultisigDepositWithLabel
           api={api}
           asset={network.chain.assets[0]}
-          threshold={(account.value as MultisigAccount).threshold}
+          threshold={(account.value as MultisigAccount).threshold || 1}
           onDepositChange={formModel.events.multisigDepositChanged}
         />
       )}

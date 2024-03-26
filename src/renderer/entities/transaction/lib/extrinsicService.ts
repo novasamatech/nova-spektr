@@ -6,8 +6,8 @@ import { SubmittableExtrinsic } from '@polkadot/api/types';
 import { Transaction, TransactionType } from '@entities/transaction/model/transaction';
 import { getMaxWeight, hasDestWeight, isControllerMissing, isOldMultisigPallet } from './common/utils';
 import * as xcmMethods from '@entities/transaction/lib/common/xcmMethods';
-import { DEFAULT_FEE_ASSET_ITEM } from '@entities/transaction';
-import { Address, ProxyType } from '@shared/core';
+import { DEFAULT_FEE_ASSET_ITEM, MultisigTxWrapper, ProxyTxWrapper } from '@entities/transaction';
+import { toAddress } from '@shared/lib/utils';
 
 type BalancesTransferArgs = Parameters<typeof methods.balances.transfer>[0];
 type BondWithoutContollerArgs = Omit<Parameters<typeof methods.staking.bond>[0], 'controller'>;
@@ -423,26 +423,25 @@ export const getExtrinsic: Record<
 
 type WrapAsMultiParams = {
   api: ApiPromise;
+  addressPrefix: number;
   transaction: Transaction;
-  multisig: {
-    signer: Address;
-    threshold: number;
-    signatories: Address[];
-  };
+  txWrapper: MultisigTxWrapper;
 };
-export const wrapAsMulti = ({ api, transaction, multisig }: WrapAsMultiParams): Transaction => {
+export const wrapAsMulti = ({ api, addressPrefix, transaction, txWrapper }: WrapAsMultiParams): Transaction => {
   const extrinsic = getExtrinsic[transaction.type](transaction.args, api);
   const callData = extrinsic.method.toHex();
   const callHash = extrinsic.method.hash.toHex();
 
-  const otherSignatories = multisig.signatories.filter((signatory) => signatory !== multisig.signer);
+  const otherSignatories = txWrapper.signatories
+    .filter((signatory) => signatory.accountId !== txWrapper.signer.accountId)
+    .map((signatory) => toAddress(signatory.accountId, { prefix: addressPrefix }));
 
   return {
     chainId: transaction.chainId,
-    address: multisig.signer,
+    address: toAddress(txWrapper.signer.accountId, { prefix: addressPrefix }),
     type: TransactionType.MULTISIG_AS_MULTI,
     args: {
-      threshold: multisig.threshold,
+      threshold: txWrapper.multisigAccount.threshold,
       otherSignatories: otherSignatories.sort(),
       maybeTimepoint: null,
       callData,
@@ -452,21 +451,18 @@ export const wrapAsMulti = ({ api, transaction, multisig }: WrapAsMultiParams): 
 };
 
 type WrapAsProxyParams = {
+  addressPrefix: number;
   transaction: Transaction;
-  proxy: {
-    signer: Address;
-    proxied: Address;
-    proxyType: ProxyType;
-  };
+  txWrapper: ProxyTxWrapper;
 };
-export const wrapAsProxy = ({ transaction, proxy }: WrapAsProxyParams): Transaction => {
+export const wrapAsProxy = ({ addressPrefix, transaction, txWrapper }: WrapAsProxyParams): Transaction => {
   return {
     chainId: transaction.chainId,
-    address: proxy.proxied,
+    address: toAddress(txWrapper.proxiedAccount.proxyAccountId, { prefix: addressPrefix }),
     type: TransactionType.PROXY,
     args: {
-      real: proxy.signer,
-      forceProxyType: proxy.proxyType,
+      real: toAddress(txWrapper.proxyAccount.accountId, { prefix: addressPrefix }),
+      forceProxyType: txWrapper.proxiedAccount.proxyType,
       transaction,
     },
   };

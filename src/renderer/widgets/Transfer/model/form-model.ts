@@ -1,15 +1,30 @@
 import { createEvent, createStore, combine, sample, restore } from 'effector';
 import { createForm } from 'effector-forms';
-import { spread } from 'patronum';
 import { BN } from '@polkadot/util';
 
-import { Chain, Account, Address, PartialBy, type ChainId, MultisigAccount, ProxyType } from '@shared/core';
-import { walletModel, walletUtils, accountUtils, permissionUtils } from '@entities/wallet';
+import { walletModel, walletUtils, accountUtils } from '@entities/wallet';
 import { balanceModel, balanceUtils } from '@entities/balance';
 import { networkModel, networkUtils } from '@entities/network';
-import { Transaction, transactionBuilder, transactionService, TxWrappers } from '@entities/transaction';
 import { xcmTransferModel } from './xcm-transfer-model';
 import { NetworkStore } from '../lib/types';
+import {
+  Transaction,
+  transactionBuilder,
+  transactionService,
+  TxWrapper,
+  MultisigTxWrapper,
+  ProxyTxWrapper,
+} from '@entities/transaction';
+import {
+  Chain,
+  Account,
+  Address,
+  PartialBy,
+  type ChainId,
+  MultisigAccount,
+  ProxiedAccount,
+  Wallet,
+} from '@shared/core';
 import {
   transferableAmount,
   dictionary,
@@ -18,7 +33,6 @@ import {
   validateAddress,
   toShortAddress,
   toAccountId,
-  toAddress,
 } from '@shared/lib/utils';
 
 type FormParams = {
@@ -60,10 +74,43 @@ const $signatoryBalance = createStore<string[]>(['0', '0']);
 const $fee = restore(feeChanged, '0');
 const $multisigDeposit = restore(multisigDepositChanged, '0');
 const $isFeeLoading = restore(isFeeLoadingChanged, true);
-
-const $isMultisig = createStore<boolean>(false);
-const $isProxy = createStore<boolean>(false);
 const $isXcm = createStore<boolean>(false);
+
+const $selectedSignatories = createStore<Account[]>([]);
+
+const $txWrappers = combine(
+  {
+    wallet: walletModel.$activeWallet,
+    wallets: walletModel.$wallets,
+    activeAccounts: walletModel.$activeAccounts,
+    accounts: walletModel.$accounts,
+    network: $networkStore,
+    signatories: $selectedSignatories,
+  },
+  ({ wallet, activeAccounts, accounts, wallets, network, signatories }) => {
+    if (!wallet || !network) return [];
+
+    const account = activeAccounts[0];
+    const walletFiltered = wallets.filter((wallet) => {
+      return !walletUtils.isProxied(wallet) && !walletUtils.isWatchOnly(wallet);
+    });
+    const chainFilteredAccounts = accounts.filter((account) => {
+      return accountUtils.isChainAndCryptoMatch(account, network.chain);
+    });
+
+    return getTxWrappers({
+      wallet,
+      wallets: walletFiltered,
+      account,
+      accounts: chainFilteredAccounts,
+      signatories,
+    });
+  },
+);
+
+$txWrappers.watch((v) => {
+  console.log('=== wrapper', v);
+});
 
 const $transferForm = createForm<FormParams>({
   fields: {
@@ -78,12 +125,12 @@ const $transferForm = createForm<FormParams>({
           errorText: 'proxy.addProxy.notEnoughMultisigTokens',
           source: combine({
             fee: $fee,
-            isMultisig: $isMultisig,
+            txWrappers: $txWrappers,
             multisigDeposit: $multisigDeposit,
             signatoryBalance: $signatoryBalance,
           }),
-          validator: (_s, _f, { fee, isMultisig, signatoryBalance, multisigDeposit }) => {
-            if (!isMultisig) return true;
+          validator: (_s, _f, { fee, txWrappers, signatoryBalance, multisigDeposit }) => {
+            if (!transactionService.hasMultisig(txWrappers)) return true;
 
             return new BN(multisigDeposit).add(new BN(fee)).lte(new BN(signatoryBalance[0]));
           },
@@ -146,11 +193,11 @@ const $transferForm = createForm<FormParams>({
             xcmFee: xcmTransferModel.$xcmFee,
             network: $networkStore,
             isNative: $isNative,
-            isMultisig: $isMultisig,
+            txWrappers: $txWrappers,
             accountBalance: $accountBalance,
           }),
-          validator: (value, _, { network, isNative, isMultisig, isXcm, accountBalance, ...rest }) => {
-            if (isMultisig) return true;
+          validator: (value, _, { network, isNative, txWrappers, isXcm, accountBalance, ...rest }) => {
+            if (transactionService.hasMultisig(txWrappers)) return true;
 
             const amountBN = new BN(formatAmount(value, network.asset.precision));
             const xcmFeeBN = new BN(isXcm ? rest.xcmFee : '0');
@@ -237,46 +284,37 @@ const $accounts = combine(
 const $signatories = combine(
   {
     network: $networkStore,
-    wallet: walletModel.$activeWallet,
-    wallets: walletModel.$wallets,
-    account: $transferForm.fields.account.$value,
-    accounts: walletModel.$accounts,
+    txWrappers: $txWrappers,
     balances: balanceModel.$balances,
   },
-  ({ network, wallet, wallets, account, accounts, balances }) => {
-    if (!wallet || !network || !accountUtils.isMultisigAccount(account)) return [];
+  ({ network, txWrappers, balances }) => {
+    if (!network) return [];
 
     const { chain, asset } = network;
-    const signers = dictionary(account.signatories, 'accountId', () => true);
 
-    return wallets.reduce<{ signer: Account; balances: string[] }[]>((acc, wallet) => {
-      const walletAccounts = accountUtils.getWalletAccounts(wallet.id, accounts);
-      const isAvailable = permissionUtils.canCreateMultisigTx(wallet, walletAccounts);
+    return txWrappers.reduce<Array<{ signer: Account; balances: string[] }[]>>((acc, wrapper) => {
+      if (!transactionService.hasMultisig([wrapper])) return acc;
 
-      if (!isAvailable) return acc;
-
-      const signer = walletAccounts.find((a) => signers[a.accountId] && accountUtils.isChainAndCryptoMatch(a, chain));
-
-      if (signer) {
-        const balance = balanceUtils.getBalance(balances, signer.accountId, chain.chainId, asset.assetId.toString());
+      const balancedSignatories = (wrapper as MultisigTxWrapper).signatories.map((signatory) => {
+        const balance = balanceUtils.getBalance(balances, signatory.accountId, chain.chainId, asset.assetId.toString());
 
         let nativeBalance = balance;
         if (asset.assetId !== chain.assets[0].assetId) {
           nativeBalance = balanceUtils.getBalance(
             balances,
-            signer.accountId,
+            signatory.accountId,
             chain.chainId,
             chain.assets[0].assetId.toString(),
           );
         }
 
-        acc.push({
-          signer,
+        return {
+          signer: signatory,
           balances: [transferableAmount(balance), transferableAmount(nativeBalance)],
-        });
+        };
+      });
 
-        delete signers[signer.accountId];
-      }
+      acc.push(balancedSignatories);
 
       return acc;
     }, []);
@@ -355,60 +393,33 @@ const $pureTx = combine(
   { skipVoid: false },
 );
 
-const $txWrappers = combine(
-  {
-    account: $transferForm.fields.account.$value,
-    wallet: walletModel.$activeWallet,
-    wallets: walletModel.$wallets,
-  },
-  ({ account, wallet, wallets }): TxWrappers => {
-    if (!wallet) return [];
-    if (walletUtils.isMultisig(wallet)) return ['multisig'];
-    if (!walletUtils.isProxied(wallet)) return [];
-
-    const accountWallet = walletUtils.getWalletById(wallets, account.walletId);
-
-    return walletUtils.isMultisig(accountWallet) ? ['multisig', 'proxy'] : ['proxy'];
-  },
-);
-
 const $transaction = combine(
   {
     apis: networkModel.$apis,
     networkStore: $networkStore,
     pureTx: $pureTx,
     txWrappers: $txWrappers,
-    formData: $transferForm.$values,
-    isMultisig: $isMultisig,
-    isProxy: $isProxy,
   },
-  ({ apis, networkStore, pureTx, txWrappers, formData, isMultisig, isProxy }) => {
-    if (!networkStore || !pureTx || !formData.account.accountId) return undefined;
-
-    const prefix = networkStore.chain.addressPrefix;
+  ({ apis, networkStore, pureTx, txWrappers }) => {
+    if (!networkStore || !pureTx) return undefined;
 
     return transactionService.getWrappedTransaction({
       api: apis[networkStore.chain.chainId],
+      addressPrefix: networkStore.chain.addressPrefix,
       transaction: pureTx,
       txWrappers,
-      ...(isMultisig && {
-        multisig: {
-          signer: toAddress(formData.signatory.accountId, { prefix }),
-          threshold: (formData.account as MultisigAccount).threshold,
-          signatories: (formData.account as MultisigAccount).signatories.map((s) => toAddress(s.accountId, { prefix })),
-        },
-      }),
-      ...(isProxy && {
-        proxy: {
-          signer: toAddress(formData.account.accountId, { prefix }),
-          proxied: '5GmedEVixRJoE8TjMePLqz7DnnQG1d5517sXdiAvAF2t7EYW',
-          proxyType: ProxyType.ANY,
-        },
-      }),
     });
   },
   { skipVoid: false },
 );
+
+$transaction.watch((v) => {
+  console.log('=== tx', v);
+});
+
+const $isMultisig = combine($txWrappers, (txWrappers) => {
+  return transactionService.hasMultisig(txWrappers);
+});
 
 const $canSubmit = combine(
   {
@@ -458,41 +469,12 @@ sample({
   target: $transferForm.fields.account.onChange,
 });
 
-sample({
-  clock: $transferForm.fields.account.onChange,
-  source: walletModel.$activeWallet,
-  filter: (_, account) => Boolean(account),
-  fn: (wallet): Record<string, boolean> => {
-    if (!wallet) return { isMultisig: false, isProxy: false };
-    if (walletUtils.isMultisig(wallet)) return { isMultisig: true, isProxy: false };
-    if (!walletUtils.isProxied(wallet)) return { isMultisig: false, isProxy: false };
-
-    return {
-      isMultisig: walletUtils.isMultisig(wallet),
-      isProxy: true,
-    };
-  },
-  target: spread({
-    isMultisig: $isMultisig,
-    isProxy: $isProxy,
-  }),
+$transferForm.$values.watch((x) => {
+  console.log('=== vals', x.amount);
 });
 
 sample({
   clock: $transferForm.fields.account.onChange,
-  source: {
-    signatories: $signatories,
-    isMultisig: $isMultisig,
-  },
-  filter: ({ isMultisig, signatories }) => {
-    return isMultisig && signatories.length > 0;
-  },
-  fn: ({ signatories }) => signatories[0].signer,
-  target: $transferForm.fields.signatory.onChange,
-});
-
-sample({
-  clock: $transferForm.fields.account.$value,
   source: $accounts,
   fn: (accounts, account) => {
     const match = accounts.find((a) => a.account.id === account.id);
@@ -506,11 +488,17 @@ sample({
   clock: $transferForm.fields.signatory.$value,
   source: $signatories,
   fn: (signatories, signatory) => {
-    const match = signatories.find(({ signer }) => signer.id === signatory.id);
+    const match = signatories[0].find(({ signer }) => signer.id === signatory.id);
 
     return match?.balances || ['0', '0'];
   },
   target: $signatoryBalance,
+});
+
+sample({
+  clock: $transferForm.fields.signatory.$value,
+  fn: (signatory) => [signatory],
+  target: $selectedSignatories,
 });
 
 // XCM model Bindings
@@ -603,3 +591,81 @@ export const formModel = {
     formSubmitted,
   },
 };
+
+type TxWrappersParams = {
+  wallets: Wallet[];
+  wallet: Wallet;
+  accounts: Account[];
+  account: Account;
+  signatories?: Account[];
+};
+function getTxWrappers({ wallets, wallet, accounts, account, signatories = [] }: TxWrappersParams): TxWrapper[] {
+  if (walletUtils.isMultisig(wallet)) {
+    const signersMap = dictionary((account as MultisigAccount).signatories, 'accountId', () => true);
+
+    const sigs = wallets.reduce<Account[]>((acc, wallet) => {
+      const walletAccounts = accountUtils.getWalletAccounts((wallet as Wallet).id, accounts);
+      const signer = walletAccounts.find((a) => signersMap[a.accountId]);
+
+      if (signer) {
+        acc.push(signer);
+      }
+
+      return acc;
+    }, []);
+
+    const wrapper: MultisigTxWrapper = {
+      kind: 'multisig',
+      multisigAccount: account as MultisigAccount,
+      signatories: sigs,
+      signer: signatories[0] || ({} as Account),
+    };
+
+    if (signatories.length === 0) return [wrapper];
+    const signatoryAccount = sigs.find((s) => s.id === signatories[0].id);
+
+    if (!signatoryAccount) return [wrapper];
+    const signatoryWallet = walletUtils.getWalletById(wallets, signatoryAccount.walletId);
+
+    const nextWrappers = getTxWrappers({
+      wallets,
+      wallet: signatoryWallet as Wallet,
+      accounts,
+      account: signatoryAccount as Account,
+      signatories: signatories.slice(1),
+    });
+
+    return [wrapper, ...nextWrappers];
+  }
+
+  if (walletUtils.isProxied(wallet)) {
+    const proxiesMap = wallets.reduce<{ wallet: Wallet; account: Account }[]>((acc, wallet) => {
+      const walletAccounts = accountUtils.getWalletAccounts(wallet.id, accounts);
+      const match = walletAccounts.find((a) => a.accountId === (account as ProxiedAccount).proxyAccountId);
+
+      if (match) {
+        acc.push({ wallet, account: match });
+      }
+
+      return acc;
+    }, []);
+
+    const wrapper: ProxyTxWrapper = {
+      kind: 'proxy',
+      proxyAccount: proxiesMap[0].account,
+      proxiedAccount: account as ProxiedAccount,
+    };
+
+    const nextWrappers = getTxWrappers({
+      wallets,
+      wallet: proxiesMap[0].wallet,
+      accounts,
+      account: proxiesMap[0].account,
+      signatories,
+    });
+
+    return [wrapper, ...nextWrappers];
+  }
+
+  return [];
+}
