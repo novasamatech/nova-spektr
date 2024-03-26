@@ -7,11 +7,22 @@ import { blake2AsU8a, signatureVerify } from '@polkadot/util-crypto';
 import { useState } from 'react';
 
 import { Transaction, TransactionType } from '@entities/transaction/model/transaction';
-import { createTxMetadata, toAccountId } from '@shared/lib/utils';
+import { createTxMetadata, toAccountId, dictionary } from '@shared/lib/utils';
 import { getExtrinsic, getUnsignedTransaction, wrapAsMulti, wrapAsProxy } from './extrinsicService';
-import { AccountId, Address, ChainId, HexString, Threshold, Account } from '@shared/core';
 import { decodeDispatchError } from './common/utils';
 import { useCallDataDecoder } from './callDataDecoder';
+import { walletUtils, accountUtils } from '../../wallet';
+import type {
+  AccountId,
+  Address,
+  ChainId,
+  HexString,
+  Threshold,
+  Account,
+  Wallet,
+  MultisigAccount,
+  ProxiedAccount,
+} from '@shared/core';
 import {
   ITransactionService,
   HashData,
@@ -32,6 +43,7 @@ export const transactionService = {
 
   getSignedExtrinsic,
   submitAndWatchExtrinsic,
+  getTxWrappers,
   getWrappedTransaction,
 };
 
@@ -130,6 +142,99 @@ function hasMultisig(txWrappers: TxWrapper[]): boolean {
 
 function hasProxy(txWrappers: TxWrapper[]): boolean {
   return txWrappers.some((wrapper) => wrapper.kind === 'proxy');
+}
+
+type TxWrappersParams = {
+  wallets: Wallet[];
+  wallet: Wallet;
+  accounts: Account[];
+  account: Account;
+  signatories?: Account[];
+};
+/**
+ * Get array of transaction wrappers (proxy/multisig)
+ * Every wrapper recursively calls getTxWrappers until it finds regular wallet
+ * @param wallet wallet that requires wrapping
+ * @param params wallets, accounts and signatories
+ * @return {Array}
+ */
+function getTxWrappers({ wallet, ...params }: TxWrappersParams): TxWrapper[] {
+  if (walletUtils.isMultisig(wallet)) {
+    return getMultisigWrapper(params);
+  }
+
+  if (walletUtils.isProxied(wallet)) {
+    return getProxyWrapper(params);
+  }
+
+  return [];
+}
+
+function getMultisigWrapper({ wallets, accounts, account, signatories = [] }: Omit<TxWrappersParams, 'wallet'>) {
+  const signersMap = dictionary((account as MultisigAccount).signatories, 'accountId', () => true);
+
+  const sigs = wallets.reduce<Account[]>((acc, wallet) => {
+    const walletAccounts = accountUtils.getWalletAccounts((wallet as Wallet).id, accounts);
+    const signer = walletAccounts.find((a) => signersMap[a.accountId]);
+
+    if (signer) {
+      acc.push(signer);
+    }
+
+    return acc;
+  }, []);
+
+  const wrapper: MultisigTxWrapper = {
+    kind: 'multisig',
+    multisigAccount: account as MultisigAccount,
+    signatories: sigs,
+    signer: signatories[0] || ({} as Account),
+  };
+
+  if (signatories.length === 0) return [wrapper];
+  const signatoryAccount = sigs.find((s) => s.id === signatories[0].id);
+
+  if (!signatoryAccount) return [wrapper];
+  const signatoryWallet = walletUtils.getWalletById(wallets, signatoryAccount.walletId);
+
+  const nextWrappers = getTxWrappers({
+    wallets,
+    wallet: signatoryWallet as Wallet,
+    accounts,
+    account: signatoryAccount as Account,
+    signatories: signatories.slice(1),
+  });
+
+  return [wrapper, ...nextWrappers];
+}
+
+function getProxyWrapper({ wallets, accounts, account, signatories = [] }: Omit<TxWrappersParams, 'wallet'>) {
+  const proxiesMap = wallets.reduce<{ wallet: Wallet; account: Account }[]>((acc, wallet) => {
+    const walletAccounts = accountUtils.getWalletAccounts(wallet.id, accounts);
+    const match = walletAccounts.find((a) => a.accountId === (account as ProxiedAccount).proxyAccountId);
+
+    if (match) {
+      acc.push({ wallet, account: match });
+    }
+
+    return acc;
+  }, []);
+
+  const wrapper: ProxyTxWrapper = {
+    kind: 'proxy',
+    proxyAccount: proxiesMap[0].account,
+    proxiedAccount: account as ProxiedAccount,
+  };
+
+  const nextWrappers = getTxWrappers({
+    wallets,
+    wallet: proxiesMap[0].wallet,
+    accounts,
+    account: proxiesMap[0].account,
+    signatories,
+  });
+
+  return [wrapper, ...nextWrappers];
 }
 
 type WrapperParams = {

@@ -2,9 +2,10 @@ import { createEvent, restore, combine, sample } from 'effector';
 import { UnsignedTransaction } from '@substrate/txwrapper-polkadot';
 import { once } from 'patronum';
 
-import { Chain, Account, type HexString } from '@shared/core';
+import type { Chain, Account, HexString } from '@shared/core';
 import { Transaction } from '@entities/transaction';
 import { networkModel } from '@entities/network';
+import { walletModel, walletUtils } from '@entities/wallet';
 
 type Input = {
   chain: Chain;
@@ -34,6 +35,19 @@ const $api = combine(
   },
 );
 
+const $signerWallet = combine(
+  {
+    store: $signStore,
+    wallets: walletModel.$wallets,
+  },
+  ({ store, wallets }) => {
+    if (!store) return undefined;
+
+    return walletUtils.getWalletById(wallets, store.account.walletId);
+  },
+  { skipVoid: false },
+);
+
 sample({
   clock: once({ source: dataReceived, reset: formInitiated }),
   target: formSubmitted,
@@ -42,6 +56,7 @@ sample({
 export const signModel = {
   $signStore,
   $api,
+  $signerWallet,
   events: {
     formInitiated,
     dataReceived,

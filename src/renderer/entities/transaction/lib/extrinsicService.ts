@@ -458,10 +458,10 @@ type WrapAsProxyParams = {
 export const wrapAsProxy = ({ addressPrefix, transaction, txWrapper }: WrapAsProxyParams): Transaction => {
   return {
     chainId: transaction.chainId,
-    address: toAddress(txWrapper.proxiedAccount.proxyAccountId, { prefix: addressPrefix }),
+    address: toAddress(txWrapper.proxyAccount.accountId, { prefix: addressPrefix }),
     type: TransactionType.PROXY,
     args: {
-      real: toAddress(txWrapper.proxyAccount.accountId, { prefix: addressPrefix }),
+      real: toAddress(txWrapper.proxiedAccount.accountId, { prefix: addressPrefix }),
       forceProxyType: txWrapper.proxiedAccount.proxyType,
       transaction,
     },

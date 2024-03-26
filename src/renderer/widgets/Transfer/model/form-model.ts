@@ -7,27 +7,16 @@ import { balanceModel, balanceUtils } from '@entities/balance';
 import { networkModel, networkUtils } from '@entities/network';
 import { xcmTransferModel } from './xcm-transfer-model';
 import { NetworkStore } from '../lib/types';
+import type { Chain, Account, Address, PartialBy, ChainId, ProxiedAccount } from '@shared/core';
 import {
   Transaction,
   transactionBuilder,
   transactionService,
-  TxWrapper,
   MultisigTxWrapper,
   ProxyTxWrapper,
 } from '@entities/transaction';
 import {
-  Chain,
-  Account,
-  Address,
-  PartialBy,
-  type ChainId,
-  MultisigAccount,
-  ProxiedAccount,
-  Wallet,
-} from '@shared/core';
-import {
   transferableAmount,
-  dictionary,
   getAssetId,
   formatAmount,
   validateAddress,
@@ -50,6 +39,7 @@ type FormSubmitEvent = {
     multisigTx?: Transaction;
   };
   formData: PartialBy<FormParams, 'signatory'> & {
+    proxiedAccount?: ProxiedAccount;
     fee: string;
     xcmFee: string;
     multisigDeposit: string;
@@ -70,6 +60,7 @@ const $isNative = createStore<boolean>(false);
 
 const $accountBalance = createStore<string[]>(['0', '0']);
 const $signatoryBalance = createStore<string[]>(['0', '0']);
+const $proxyBalance = createStore<string[]>(['0', '0']);
 
 const $fee = restore(feeChanged, '0');
 const $multisigDeposit = restore(multisigDepositChanged, '0');
@@ -98,7 +89,7 @@ const $txWrappers = combine(
       return accountUtils.isChainAndCryptoMatch(account, network.chain);
     });
 
-    return getTxWrappers({
+    return transactionService.getTxWrappers({
       wallet,
       wallets: walletFiltered,
       account,
@@ -108,14 +99,37 @@ const $txWrappers = combine(
   },
 );
 
-$txWrappers.watch((v) => {
-  console.log('=== wrapper', v);
+const $isMultisig = combine($txWrappers, (txWrappers) => {
+  return transactionService.hasMultisig(txWrappers);
+});
+
+const $isProxy = combine($txWrappers, (txWrappers) => {
+  return transactionService.hasProxy(txWrappers);
 });
 
 const $transferForm = createForm<FormParams>({
   fields: {
     account: {
       init: {} as Account,
+      // rules: [
+      //   {
+      //     name: 'noProxyFee',
+      //     source: combine({
+      //       isProxy: $isProxy,
+      //       isXcm: $isXcm,
+      //       fee: $fee,
+      //       xcmFee: xcmTransferModel.$xcmFee,
+      //       proxyBalance: $proxyBalance,
+      //     }),
+      //     validator: (_a, _f, { isProxy, isXcm, proxyBalance, ...rest }) => {
+      //       if (!isProxy) return true;
+      //
+      //       const xcmFeeBN = new BN(isXcm ? rest.xcmFee : '0');
+      //
+      //       return new BN(rest.fee).add(xcmFeeBN).lte(new BN(proxyBalance[1]));
+      //     },
+      //   },
+      // ],
     },
     signatory: {
       init: {} as Account,
@@ -125,12 +139,12 @@ const $transferForm = createForm<FormParams>({
           errorText: 'proxy.addProxy.notEnoughMultisigTokens',
           source: combine({
             fee: $fee,
-            txWrappers: $txWrappers,
+            isMultisig: $isMultisig,
             multisigDeposit: $multisigDeposit,
             signatoryBalance: $signatoryBalance,
           }),
-          validator: (_s, _f, { fee, txWrappers, signatoryBalance, multisigDeposit }) => {
-            if (!transactionService.hasMultisig(txWrappers)) return true;
+          validator: (_s, _f, { fee, isMultisig, signatoryBalance, multisigDeposit }) => {
+            if (!isMultisig) return true;
 
             return new BN(multisigDeposit).add(new BN(fee)).lte(new BN(signatoryBalance[0]));
           },
@@ -172,16 +186,13 @@ const $transferForm = createForm<FormParams>({
           name: 'notEnoughBalance',
           errorText: 'transfer.notEnoughBalanceError',
           source: combine({
-            isXcm: $isXcm,
-            xcmFee: xcmTransferModel.$xcmFee,
             network: $networkStore,
             accountBalance: $accountBalance,
           }),
-          validator: (value, _, { isXcm, xcmFee, network, accountBalance }) => {
+          validator: (value, _, { network, accountBalance }) => {
             const amountBN = new BN(formatAmount(value, network.asset.precision));
-            const xcmFeeBN = new BN(isXcm ? xcmFee : '0');
 
-            return amountBN.add(xcmFeeBN).lte(new BN(accountBalance[0]));
+            return amountBN.lte(new BN(accountBalance[0]));
           },
         },
         {
@@ -193,18 +204,17 @@ const $transferForm = createForm<FormParams>({
             xcmFee: xcmTransferModel.$xcmFee,
             network: $networkStore,
             isNative: $isNative,
-            txWrappers: $txWrappers,
+            isMultisig: $isMultisig,
             accountBalance: $accountBalance,
           }),
-          validator: (value, _, { network, isNative, txWrappers, isXcm, accountBalance, ...rest }) => {
-            if (transactionService.hasMultisig(txWrappers)) return true;
-
-            const amountBN = new BN(formatAmount(value, network.asset.precision));
+          validator: (value, _, { network, isNative, isMultisig, isXcm, accountBalance, ...rest }) => {
+            const feeBN = new BN(isMultisig ? '0' : rest.fee);
             const xcmFeeBN = new BN(isXcm ? rest.xcmFee : '0');
+            const amountBN = new BN(formatAmount(value, network.asset.precision));
 
             return isNative
-              ? new BN(rest.fee).add(amountBN).add(xcmFeeBN).lte(new BN(accountBalance[1]))
-              : new BN(rest.fee).lte(new BN(accountBalance[1]));
+              ? feeBN.add(amountBN).add(xcmFeeBN).lte(new BN(accountBalance[1]))
+              : feeBN.add(xcmFeeBN).lte(new BN(accountBalance[1]));
           },
         },
       ],
@@ -225,19 +235,32 @@ const $transferForm = createForm<FormParams>({
 
 // Computed
 
+const $realAccount = combine(
+  {
+    txWrappers: $txWrappers,
+    account: $transferForm.fields.account.$value,
+  },
+  ({ txWrappers, account }) => {
+    if (txWrappers.length === 0) return account;
+
+    if (transactionService.hasMultisig([txWrappers[0]])) {
+      return (txWrappers[0] as MultisigTxWrapper).multisigAccount;
+    }
+
+    return (txWrappers[0] as ProxyTxWrapper).proxyAccount;
+  },
+);
+
 const $proxyWallet = combine(
   {
-    wallet: walletModel.$activeWallet,
+    isProxy: $isProxy,
+    proxyAccount: $realAccount,
     wallets: walletModel.$wallets,
-    account: $transferForm.fields.account.$value,
-    accounts: walletModel.$accounts,
   },
-  ({ wallet, wallets, account, accounts }) => {
-    if (!wallet || !accountUtils.isProxiedAccount(account)) return undefined;
+  ({ isProxy, proxyAccount, wallets }) => {
+    if (!isProxy) return undefined;
 
-    const proxyAccount = accounts.find((a) => a.accountId === account.proxyAccountId);
-
-    return proxyAccount ? walletUtils.getWalletById(wallets, proxyAccount.id) : undefined;
+    return walletUtils.getWalletById(wallets, proxyAccount.walletId);
   },
   { skipVoid: false },
 );
@@ -413,13 +436,21 @@ const $transaction = combine(
   { skipVoid: false },
 );
 
-$transaction.watch((v) => {
-  console.log('=== tx', v);
-});
-
-const $isMultisig = combine($txWrappers, (txWrappers) => {
-  return transactionService.hasMultisig(txWrappers);
-});
+// const $totalFee = combine(
+//   {
+//     isXcm: $isXcm,
+//     fee: $fee,
+//     xcmFee: xcmTransferModel.$xcmFee,
+//     network: $networkStore,
+//   },
+//   ({ isXcm, fee, xcmFee, network }) => {
+//     if (!network) return '0';
+//
+//     const xcmFeeBN = new BN(isXcm ? xcmFee : '0');
+//
+//     return formatBalance(new BN(fee).add(xcmFeeBN).toString(), network.asset.precision).value;
+//   },
+// );
 
 const $canSubmit = combine(
   {
@@ -469,10 +500,6 @@ sample({
   target: $transferForm.fields.account.onChange,
 });
 
-$transferForm.$values.watch((x) => {
-  console.log('=== vals', x.amount);
-});
-
 sample({
   clock: $transferForm.fields.account.onChange,
   source: $accounts,
@@ -483,6 +510,39 @@ sample({
   },
   target: $accountBalance,
 });
+
+// sample({
+//   clock: $realAccount,
+//   source: {
+//     isProxy: $isProxy,
+//     isNative: $isNative,
+//     balances: balanceModel.$balances,
+//     network: $networkStore,
+//   },
+//   filter: ({ isProxy, network }) => isProxy && Boolean(network),
+//   fn: ({ isNative, balances, network }, proxyAccount) => {
+//     console.log('=== new', proxyAccount.accountId);
+//     const balance = balanceUtils.getBalance(
+//       balances,
+//       proxyAccount.accountId,
+//       network!.chain.chainId,
+//       network!.asset.assetId.toString(),
+//     );
+//
+//     let nativeBalance = balance;
+//     if (!isNative) {
+//       nativeBalance = balanceUtils.getBalance(
+//         balances,
+//         proxyAccount.accountId,
+//         network!.chain.chainId,
+//         network!.chain.assets[0].assetId.toString(),
+//       );
+//     }
+//
+//     return [transferableAmount(balance), transferableAmount(nativeBalance)];
+//   },
+//   target: $proxyBalance,
+// });
 
 sample({
   clock: $transferForm.fields.signatory.$value,
@@ -528,8 +588,10 @@ sample({
 sample({
   clock: $transferForm.formValidated,
   source: {
+    realAccount: $realAccount,
     network: $networkStore,
     transaction: $transaction,
+    isProxy: $isProxy,
     fee: $fee,
     xcmFee: xcmTransferModel.$xcmFee,
     multisigDeposit: $multisigDeposit,
@@ -537,7 +599,7 @@ sample({
   filter: ({ network, transaction }) => {
     return Boolean(network) && Boolean(transaction);
   },
-  fn: ({ network, transaction, ...fee }, formData) => {
+  fn: ({ realAccount, network, transaction, isProxy, ...fee }, formData) => {
     const signatory = Object.keys(formData.signatory).length > 0 ? formData.signatory : undefined;
     // TODO: update after i18n effector integration
     const shortAddress = toShortAddress(formData.destination);
@@ -547,7 +609,15 @@ sample({
 
     return {
       transaction: transaction!,
-      formData: { ...formData, amount, signatory, description, ...fee },
+      formData: {
+        ...fee,
+        ...formData,
+        account: realAccount,
+        amount,
+        signatory,
+        description,
+        ...(isProxy && { proxiedAccount: formData.account as ProxiedAccount }),
+      },
     };
   },
   target: formSubmitted,
@@ -561,9 +631,11 @@ export const formModel = {
   $accounts,
   $chains,
   $accountBalance,
+  $proxyBalance,
 
   $fee,
   $multisigDeposit,
+  // $totalFee,
 
   $api,
   $networkStore,
@@ -591,81 +663,3 @@ export const formModel = {
     formSubmitted,
   },
 };
-
-type TxWrappersParams = {
-  wallets: Wallet[];
-  wallet: Wallet;
-  accounts: Account[];
-  account: Account;
-  signatories?: Account[];
-};
-function getTxWrappers({ wallets, wallet, accounts, account, signatories = [] }: TxWrappersParams): TxWrapper[] {
-  if (walletUtils.isMultisig(wallet)) {
-    const signersMap = dictionary((account as MultisigAccount).signatories, 'accountId', () => true);
-
-    const sigs = wallets.reduce<Account[]>((acc, wallet) => {
-      const walletAccounts = accountUtils.getWalletAccounts((wallet as Wallet).id, accounts);
-      const signer = walletAccounts.find((a) => signersMap[a.accountId]);
-
-      if (signer) {
-        acc.push(signer);
-      }
-
-      return acc;
-    }, []);
-
-    const wrapper: MultisigTxWrapper = {
-      kind: 'multisig',
-      multisigAccount: account as MultisigAccount,
-      signatories: sigs,
-      signer: signatories[0] || ({} as Account),
-    };
-
-    if (signatories.length === 0) return [wrapper];
-    const signatoryAccount = sigs.find((s) => s.id === signatories[0].id);
-
-    if (!signatoryAccount) return [wrapper];
-    const signatoryWallet = walletUtils.getWalletById(wallets, signatoryAccount.walletId);
-
-    const nextWrappers = getTxWrappers({
-      wallets,
-      wallet: signatoryWallet as Wallet,
-      accounts,
-      account: signatoryAccount as Account,
-      signatories: signatories.slice(1),
-    });
-
-    return [wrapper, ...nextWrappers];
-  }
-
-  if (walletUtils.isProxied(wallet)) {
-    const proxiesMap = wallets.reduce<{ wallet: Wallet; account: Account }[]>((acc, wallet) => {
-      const walletAccounts = accountUtils.getWalletAccounts(wallet.id, accounts);
-      const match = walletAccounts.find((a) => a.accountId === (account as ProxiedAccount).proxyAccountId);
-
-      if (match) {
-        acc.push({ wallet, account: match });
-      }
-
-      return acc;
-    }, []);
-
-    const wrapper: ProxyTxWrapper = {
-      kind: 'proxy',
-      proxyAccount: proxiesMap[0].account,
-      proxiedAccount: account as ProxiedAccount,
-    };
-
-    const nextWrappers = getTxWrappers({
-      wallets,
-      wallet: proxiesMap[0].wallet,
-      accounts,
-      account: proxiesMap[0].account,
-      signatories,
-    });
-
-    return [wrapper, ...nextWrappers];
-  }
-
-  return [];
-}

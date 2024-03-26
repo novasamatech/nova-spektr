@@ -1,6 +1,6 @@
 import { createEvent, combine, sample, restore } from 'effector';
 
-import { Chain, Account, Address, Asset } from '@shared/core';
+import { Chain, Account, Address, Asset, type ProxiedAccount } from '@shared/core';
 import { networkModel } from '@entities/network';
 import { walletModel, walletUtils } from '@entities/wallet';
 
@@ -9,10 +9,12 @@ type Input = {
   chain: Chain;
   asset: Asset;
   account: Account;
+  proxiedAccount?: ProxiedAccount;
   signatory?: Account;
   amount: string;
   destination: Address;
   description: string;
+
   fee: string;
   xcmFee: string;
   multisigDeposit: string;
@@ -39,10 +41,24 @@ const $initiatorWallet = combine(
     wallets: walletModel.$wallets,
   },
   ({ store, wallets }) => {
-    if (!store) return null;
+    if (!store) return undefined;
 
     return walletUtils.getWalletById(wallets, store.account.walletId);
   },
+  { skipVoid: false },
+);
+
+const $proxiedWallet = combine(
+  {
+    store: $confirmStore,
+    wallets: walletModel.$wallets,
+  },
+  ({ store, wallets }) => {
+    if (!store || !store.proxiedAccount) return undefined;
+
+    return walletUtils.getWalletById(wallets, store.proxiedAccount.walletId);
+  },
+  { skipVoid: false },
 );
 
 const $signerWallet = combine(
@@ -51,10 +67,11 @@ const $signerWallet = combine(
     wallets: walletModel.$wallets,
   },
   ({ store, wallets }) => {
-    if (!store) return null;
+    if (!store) return undefined;
 
     return walletUtils.getWalletById(wallets, store.signatory?.walletId || store.account.walletId);
   },
+  { skipVoid: false },
 );
 
 const $isXcm = combine($confirmStore, (confirmStore) => {
@@ -71,6 +88,7 @@ sample({
 export const confirmModel = {
   $confirmStore,
   $initiatorWallet,
+  $proxiedWallet,
   $signerWallet,
 
   $api,

@@ -2,7 +2,6 @@ import { useForm } from 'effector-forms';
 import { FormEvent } from 'react';
 import { useUnit } from 'effector-react';
 
-import { Select, Input, Identicon, Icon, Button, InputHint, AmountInput, HelpText } from '@shared/ui';
 import { useI18n } from '@app/providers';
 import { MultisigAccount, Chain } from '@shared/core';
 import { accountUtils, AccountAddress } from '@entities/wallet';
@@ -11,6 +10,7 @@ import { AssetBalance } from '@entities/asset';
 import { MultisigDepositWithLabel, FeeWithLabel, XcmFeeWithLabel } from '@entities/transaction';
 import { ChainTitle } from '@entities/chain';
 import { formModel } from '../model/form-model';
+import { Select, Input, Identicon, Icon, Button, InputHint, AmountInput, HelpText } from '@shared/ui';
 
 type Props = {
   onGoBack: () => void;
@@ -59,29 +59,32 @@ export const TransferForm = ({ onGoBack }: Props) => {
 
 // const ProxyFeeAlert = () => {
 //   const {
-//     fields: { amount },
+//     fields: { account },
 //   } = useForm(formModel.$transferForm);
 //
-//   const [isAlertOpen, setIsAlertOpen] = useState(true);
+//   const totalFee = useUnit(formModel.$totalFee);
+//   const [_, nativeBalance] = useUnit(formModel.$proxyBalance);
+//   const network = useUnit(formModel.$networkStore);
+//   const proxyWallet = useUnit(formModel.$proxyWallet);
 //
-//   // const proxyWallet = useUnit(formModel.$proxyWallet);
-//   //
-//   // if (!proxyWallet) return null;
+//   if (!network || !proxyWallet || !account.hasError()) return null;
 //
 //   return (
-//     <Alert
-//       title="Not enough tokens to pay the fee"
-//       variant="warn"
-//       active={isAlertOpen}
-//       onClose={() => setIsAlertOpen(false)}
-//     >
-//       <Alert.Item withDot={false}>
-//         Delegated authority
-//         {/*<WalletCardSm wallet={proxyWallet} />*/}
-//         doesn't have enough balance to pay the network fee of 0.00 DOT.
-//         <br />
-//         Available balance to pay fee: 0.00 DOT
-//       </Alert.Item>
+//     <Alert active title="Not enough tokens to pay the fee" variant="warn" onClose={account.resetErrors}>
+//       <div className="flex flex-wrap">
+//         <FootnoteText className="text-text-secondary tracking-tight max-w-full">Delegated authority</FootnoteText>
+//         <div className="inline-flex gap-x-1 items-center ml-1">
+//           <WalletIcon type={proxyWallet.type} size={16} />
+//           <FootnoteText className="text-text-secondary transition-colors truncate">{proxyWallet.name}</FootnoteText>
+//         </div>
+//         <FootnoteText className="text-text-secondary tracking-tight max-w-full">
+//           doesn&apos;t have enough balance to pay the network fee of {totalFee}
+//           {network.asset.symbol}
+//           <br />
+//           Available balance to pay fee: {formatBalance(nativeBalance, network.asset.precision).value}{' '}
+//           {network.asset.symbol}
+//         </FootnoteText>
+//       </div>
 //     </Alert>
 //   );
 // };
