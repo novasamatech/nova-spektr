@@ -1,4 +1,4 @@
-import { RpcNode } from '@shared/core';
+import { RpcNode, ChainId } from '@shared/core';
 import { ExtendedChain } from '@entities/network';
 
 export const enum RpcConnectivityResult {
@@ -14,7 +14,7 @@ export type CustomRpcForm = {
 };
 
 export type VerifyRpcConnectivityFxParams = {
-  chainId: ExtendedChain['chainId'];
+  chainId: ChainId;
   url: string;
 };
 

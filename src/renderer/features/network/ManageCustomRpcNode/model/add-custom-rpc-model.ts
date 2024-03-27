@@ -3,15 +3,23 @@ import { createForm } from 'effector-forms';
 
 import { networkService } from '@shared/api/network';
 import { ExtendedChain } from '@entities/network';
+import { manageNetworkModel } from '@pages/Settings/Networks/model/manage-network-model';
+import { customRpcConstants } from '../lib/custom-rpc-constants';
+import { customRpcUtils } from '../lib/custom-rpc-utils';
 import {
   VerifyRpcConnectivityFxParams,
   NodeExistParam,
   RpcConnectivityResult,
   SaveRpcNodeFxParams,
 } from '../lib/custom-rpc-types';
-import { manageNetworkModel } from '@pages/Settings/Networks/model/manage-network-model';
-import { customRpcConstants } from '../lib/custom-rpc-constants';
-import { customRpcUtils } from '../lib/custom-rpc-utils';
+
+const formInitiated = createEvent();
+const flowStarted = createEvent();
+const flowFinished = createEvent();
+
+const networkChanged = createEvent<ExtendedChain>();
+const rpcConnectivityVerified = createEvent<RpcConnectivityResult>();
+const nodeExistVerified = createEvent<boolean>();
 
 const $addCustomRpcForm = createForm({
   fields: {
@@ -27,15 +35,9 @@ const $addCustomRpcForm = createForm({
   validateOn: ['submit'],
 });
 
-const formInitiated = createEvent();
-const networkChanged = createEvent<ExtendedChain>();
-const rpcConnectivityVerified = createEvent<RpcConnectivityResult>();
-const nodeExistVerified = createEvent<boolean>();
-const flowStarted = createEvent();
-const flowFinished = createEvent();
-
 const $selectedNetwork = createStore<ExtendedChain | null>(null);
 const $rpcConnectivityResult = createStore<RpcConnectivityResult>(RpcConnectivityResult.INIT);
+
 const $isNodeExist = createStore<boolean>(false);
 const $isFlowStarted = createStore<boolean>(false);
 const $isLoading = createStore<boolean>(false);
@@ -119,24 +121,28 @@ sample({
 // when the form is submitted, we need to verify if the node is responding
 sample({
   clock: $addCustomRpcForm.submit,
-  source: { network: $selectedNetwork, url: $addCustomRpcForm.fields.url.$value },
+  source: {
+    network: $selectedNetwork,
+    url: $addCustomRpcForm.fields.url.$value,
+  },
   filter: (params: { network: ExtendedChain | null; url: string }): params is { network: ExtendedChain; url: string } =>
-    !!params.network,
+    Boolean(params.network),
   fn: ({ network, url }) => ({ chainId: network.chainId, url }),
-  target: [verifyRpcConnectivityFx],
+  target: verifyRpcConnectivityFx,
 });
 
 sample({
   clock: $addCustomRpcForm.submit,
-  source: { network: $selectedNetwork, url: $addCustomRpcForm.fields.url.$value },
+  source: {
+    network: $selectedNetwork,
+    url: $addCustomRpcForm.fields.url.$value,
+  },
   filter: (params: { network: ExtendedChain | null; url: string }): params is NodeExistParam => !!params.network,
   fn: ({ network, url }: NodeExistParam): boolean => {
     const defaultNodes = network.nodes;
     const customNodes = network.connection.customNodes || [];
 
-    const result = defaultNodes.some(({ url: u }) => u === url) || customNodes.some(({ url: u }) => u === url);
-
-    return result;
+    return defaultNodes.some(({ url: u }) => u === url) || customNodes.some(({ url: u }) => u === url);
   },
   target: nodeExistVerified,
 });

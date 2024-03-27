@@ -9,6 +9,14 @@ import { RpcNode } from '@shared/core';
 import { customRpcConstants } from '../lib/custom-rpc-constants';
 import { customRpcUtils } from '../lib/custom-rpc-utils';
 
+const formInitiated = createEvent();
+const flowStarted = createEvent();
+const flowFinished = createEvent();
+
+const networkChanged = createEvent<ExtendedChain>();
+const nodeSelected = createEvent<RpcNode>();
+const rpcConnectivityVerified = createEvent<RpcConnectivityResult>();
+
 const $editCustomRpcForm = createForm({
   fields: {
     name: {
@@ -23,16 +31,10 @@ const $editCustomRpcForm = createForm({
   validateOn: ['submit'],
 });
 
-const formInitiated = createEvent();
-const networkChanged = createEvent<ExtendedChain>();
-const nodeSelected = createEvent<RpcNode>();
-const rpcConnectivityVerified = createEvent<RpcConnectivityResult>();
-const flowStarted = createEvent();
-const flowFinished = createEvent();
-
 const $selectedNode = createStore<RpcNode | null>(null);
 const $selectedNetwork = createStore<ExtendedChain | null>(null);
 const $rpcConnectivityResult = createStore<RpcConnectivityResult>(RpcConnectivityResult.INIT);
+
 const $isFlowStarted = createStore<boolean>(false);
 const $isLoading = createStore<boolean>(false);
 
@@ -44,7 +46,7 @@ const verifyRpcConnectivityFx = createEffect(
   },
 );
 
-const editRpcNodeFx = createEffect(async ({ network, form, nodeToEdit }: EditRpcNodeFxParams) => {
+const editRpcNodeFx = createEffect(({ network, form, nodeToEdit }: EditRpcNodeFxParams) => {
   manageNetworkModel.events.rpcNodeUpdated({
     chainId: network.chainId,
     oldNode: nodeToEdit,
@@ -102,9 +104,12 @@ sample({
 // when the form is submitted, we need to check if the node is responding
 sample({
   clock: $editCustomRpcForm.submit,
-  source: { network: $selectedNetwork, url: $editCustomRpcForm.fields.url.$value },
+  source: {
+    network: $selectedNetwork,
+    url: $editCustomRpcForm.fields.url.$value,
+  },
   filter: (params: { network: ExtendedChain | null; url: string }): params is { network: ExtendedChain; url: string } =>
-    !!params.network,
+    Boolean(params.network),
   fn: ({ network, url }) => ({ chainId: network.chainId, url }),
   target: verifyRpcConnectivityFx,
 });

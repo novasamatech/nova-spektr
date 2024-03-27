@@ -15,13 +15,6 @@ type Props = {
 
 export const EditCustomRpcModal = ({ isOpen, onClose }: Props) => {
   const { t } = useI18n();
-  const rpcConnectivityResult = useUnit(editCustomRpcModel.$rpcConnectivityResult);
-  const network = useUnit(editCustomRpcModel.$selectedNetwork);
-  const isLoading = useUnit(editCustomRpcModel.$isLoading);
-
-  useEffect(() => {
-    editCustomRpcModel.events.formInitiated();
-  }, []);
 
   const {
     fields: { name, url },
@@ -30,9 +23,16 @@ export const EditCustomRpcModal = ({ isOpen, onClose }: Props) => {
     isDirty,
   } = useForm(editCustomRpcModel.$editCustomRpcForm);
 
+  const network = useUnit(editCustomRpcModel.$selectedNetwork);
+  const rpcConnectivityResult = useUnit(editCustomRpcModel.$rpcConnectivityResult);
+  const isLoading = useUnit(editCustomRpcModel.$isLoading);
+
+  useEffect(() => {
+    editCustomRpcModel.events.formInitiated();
+  }, []);
+
   const onSubmit = (event: FormEvent) => {
     event.preventDefault();
-
     submit();
   };
 
@@ -57,10 +57,11 @@ export const EditCustomRpcModal = ({ isOpen, onClose }: Props) => {
               value={name.value}
               onChange={name.onChange}
             />
-            <InputHint variant="error" active={name?.hasError()}>
+            <InputHint variant="error" active={name.hasError()}>
               {t(name.errorText())}
             </InputHint>
           </div>
+
           <div className="flex flex-col gap-y-2">
             <Input
               label={t('settings.networks.addressLabel')}
@@ -73,13 +74,15 @@ export const EditCustomRpcModal = ({ isOpen, onClose }: Props) => {
             <InputHint active variant="hint">
               {t('settings.networks.addressHint')}
             </InputHint>
-            <InputHint variant="error" active={url?.hasError()}>
+            <InputHint variant="error" active={url.hasError()}>
               {t(url.errorText())}
             </InputHint>
           </div>
+
           <InputHint active={customRpcUtils.isRpcConnectivityValid(rpcConnectivityResult)} variant="success">
             {t('settings.networks.addressConnected')}
           </InputHint>
+
           <Alert
             active={customRpcUtils.isRpcConnectivityInvalid(rpcConnectivityResult)}
             title={t('settings.networks.addressNoConnect')}
