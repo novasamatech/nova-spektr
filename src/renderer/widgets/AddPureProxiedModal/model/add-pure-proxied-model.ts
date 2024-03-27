@@ -230,7 +230,7 @@ sample({
 
 sample({
   clock: combineEvents({
-    events: [getPureProxyFx.doneData, proxiesModel.output.proxiedWalletsCreationFinished],
+    events: [getPureProxyFx.doneData, proxiesModel.output.walletsCreated],
     reset: flowStarted,
   }),
   source: {

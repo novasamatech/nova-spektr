@@ -419,6 +419,6 @@ export const proxiesModel = {
   },
 
   output: {
-    proxiedWalletsCreationFinished: createProxiedWalletsFx.doneData,
+    walletsCreated: createProxiedWalletsFx.doneData,
   },
 };
