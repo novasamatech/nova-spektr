@@ -12,8 +12,7 @@ type Input = {
   description: string;
   transaction: Transaction;
 
-  oldProxyDeposit: string;
-  proxyNumber: number;
+  proxyDeposit: string;
 };
 
 const formInitiated = createEvent<Input>();

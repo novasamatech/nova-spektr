@@ -219,15 +219,13 @@ const FeeSection = () => {
   const api = useUnit(formModel.$api);
   const fakeTx = useUnit(formModel.$fakeTx);
   const isMultisig = useUnit(formModel.$isMultisig);
-  const oldProxyDeposit = useUnit(formModel.$oldProxyDeposit);
-  const activeProxies = useUnit(formModel.$activeProxies);
 
   return (
     <div className="flex flex-col gap-y-2">
       <ProxyDepositWithLabel
         api={api}
-        deposit={oldProxyDeposit}
-        proxyNumber={activeProxies.length + 1}
+        proxyNumber={1}
+        deposit={'0'}
         asset={chain.value.assets[0]}
         onDepositChange={formModel.events.proxyDepositChanged}
         onDepositLoading={formModel.events.isProxyDepositLoadingChanged}

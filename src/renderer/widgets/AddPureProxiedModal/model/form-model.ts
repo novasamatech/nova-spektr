@@ -1,5 +1,4 @@
-import { createEvent, createStore, sample, combine, createEffect, restore } from 'effector';
-import { ApiPromise } from '@polkadot/api';
+import { createEvent, createStore, sample, combine, restore } from 'effector';
 import { createForm } from 'effector-forms';
 import { BN } from '@polkadot/util';
 import { spread } from 'patronum';
@@ -9,7 +8,6 @@ import { networkModel, networkUtils } from '@entities/network';
 import { walletSelectModel } from '@features/wallets';
 import { proxiesUtils } from '@features/proxies/lib/proxies-utils';
 import { walletUtils, accountUtils, walletModel, permissionUtils } from '@entities/wallet';
-import { proxyService } from '@shared/api/proxy';
 import { TransactionType, Transaction } from '@entities/transaction';
 import { balanceModel, balanceUtils } from '@entities/balance';
 import {
@@ -38,8 +36,6 @@ type FormParams = {
 
 type FormSubmitEvent = PartialBy<FormParams, 'signatory'> & {
   proxyDeposit: string;
-  oldProxyDeposit: string;
-  proxyNumber: number;
 };
 
 const formInitiated = createEvent();
@@ -54,8 +50,7 @@ const isProxyDepositLoadingChanged = createEvent<boolean>();
 
 // Deposits
 
-const $oldProxyDeposit = createStore<string>('0');
-const $newProxyDeposit = restore(proxyDepositChanged, '0');
+const $proxyDeposit = restore(proxyDepositChanged, '0');
 const $isProxyDepositLoading = restore(isProxyDepositLoadingChanged, false);
 const $multisigDeposit = restore(multisigDepositChanged, '0');
 const $fee = restore(feeChanged, '0');
@@ -91,7 +86,7 @@ const $proxyForm = createForm<FormParams>({
           name: 'notEnoughTokens',
           source: combine({
             fee: $fee,
-            proxyDeposit: $newProxyDeposit,
+            proxyDeposit: $proxyDeposit,
             balances: balanceModel.$balances,
             isMultisig: $isMultisig,
           }),
@@ -119,7 +114,7 @@ const $proxyForm = createForm<FormParams>({
           source: combine({
             fee: $fee,
             multisigDeposit: $multisigDeposit,
-            proxyDeposit: $newProxyDeposit,
+            proxyDeposit: $proxyDeposit,
             balances: balanceModel.$balances,
             isMultisig: $isMultisig,
           }),
@@ -326,18 +321,6 @@ const $canSubmit = combine(
   },
 );
 
-type ProxyParams = {
-  api: ApiPromise;
-  address: Address;
-};
-const getAccountProxiesFx = createEffect(({ api, address }: ProxyParams): Promise<ProxyAccounts> => {
-  return proxyService.getProxiesForAccount(api, address);
-});
-
-const getMaxProxiesFx = createEffect((api: ApiPromise): number => {
-  return proxyService.getMaxProxies(api);
-});
-
 // Fields connections
 
 sample({
@@ -412,71 +395,15 @@ sample({
   target: $proxyForm.fields.signatory.onChange,
 });
 
-sample({
-  clock: $proxyForm.fields.chain.onChange,
-  source: networkModel.$apis,
-  filter: (_, chain) => Boolean(chain),
-  fn: (apis, chain) => apis[chain!.chainId],
-  target: getMaxProxiesFx,
-});
-
-sample({
-  clock: getMaxProxiesFx.done,
-  source: {
-    chain: $proxyForm.fields.chain.$value,
-    apis: networkModel.$apis,
-  },
-  filter: ({ chain, apis }, { params }) => {
-    return apis[chain.chainId].genesisHash === params.genesisHash;
-  },
-  fn: (_, { result }) => result,
-  target: $maxProxies,
-});
-
-sample({
-  clock: $proxyForm.fields.chain.onChange,
-  source: {
-    apis: networkModel.$apis,
-    account: $proxyForm.fields.account.$value,
-    isChainConnected: $isChainConnected,
-  },
-  filter: ({ isChainConnected, account }) => isChainConnected && Boolean(account),
-  fn: ({ apis, account }, chain) => ({
-    api: apis[chain.chainId],
-    address: toAddress(account.accountId, { prefix: chain.addressPrefix }),
-  }),
-  target: getAccountProxiesFx,
-});
-
-sample({
-  clock: getAccountProxiesFx.done,
-  source: {
-    chain: $proxyForm.fields.chain.$value,
-    apis: networkModel.$apis,
-  },
-  filter: ({ chain, apis }, { params }) => {
-    return apis[chain.chainId].genesisHash === params.api.genesisHash;
-  },
-  fn: (_, { result }) => ({
-    activeProxies: result.accounts,
-    oldProxyDeposit: result.deposit,
-  }),
-  target: spread({
-    activeProxies: $activeProxies,
-    oldProxyDeposit: $oldProxyDeposit,
-  }),
-});
-
 // Submit
 
 sample({
   clock: $proxyForm.formValidated,
   source: {
-    newProxyDeposit: $newProxyDeposit,
-    oldProxyDeposit: $oldProxyDeposit,
+    proxyDeposit: $proxyDeposit,
     proxies: $activeProxies,
   },
-  fn: ({ newProxyDeposit, oldProxyDeposit, proxies }, formData) => {
+  fn: ({ proxyDeposit }, formData) => {
     const signatory = Object.keys(formData.signatory).length > 0 ? formData.signatory : undefined;
     const proxied = toAddress(formData.account.accountId, {
       prefix: formData.chain.addressPrefix,
@@ -488,9 +415,7 @@ sample({
       ...formData,
       signatory,
       description,
-      proxyDeposit: newProxyDeposit,
-      oldProxyDeposit,
-      proxyNumber: proxies.length + 1,
+      proxyDeposit,
     };
   },
   target: formSubmitted,
@@ -505,9 +430,7 @@ export const formModel = {
   $proxyTypes,
   $proxyQuery,
 
-  $activeProxies,
-  $oldProxyDeposit,
-  $newProxyDeposit,
+  $proxyDeposit,
   $multisigDeposit,
   $fee,
 

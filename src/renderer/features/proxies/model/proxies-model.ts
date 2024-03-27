@@ -417,4 +417,8 @@ export const proxiesModel = {
     workerStarted,
     proxiedWalletsCreated,
   },
+
+  output: {
+    walletsCreated: createProxiedWalletsFx.doneData,
+  },
 };

@@ -75,8 +75,8 @@ export const Confirm = ({ onGoBack }: Props) => {
 
         <ProxyDepositWithLabel
           api={api}
-          deposit={confirmStore.oldProxyDeposit}
-          proxyNumber={confirmStore.proxyNumber}
+          proxyNumber={1}
+          deposit={'0'}
           asset={confirmStore.chain.assets[0]}
           onDepositLoading={setIsProxyDepositLoading}
         />
