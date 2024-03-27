@@ -1,5 +1,5 @@
 import { createEffect, createEvent, createStore, sample } from 'effector';
-import { delay, spread } from 'patronum';
+import { combineEvents, delay, spread } from 'patronum';
 import { Event } from '@polkadot/types/interfaces';
 import { ApiPromise } from '@polkadot/api';
 import { UnsubscribePromise } from '@polkadot/api/types';
@@ -229,16 +229,18 @@ sample({
 });
 
 sample({
-  clock: getPureProxyFx.doneData,
+  clock: combineEvents({
+    events: [getPureProxyFx.doneData, proxiesModel.output.walletsCreated],
+    reset: flowStarted,
+  }),
   source: {
-    wallet: walletSelectModel.$walletForDetails,
     addProxyStore: $addProxyStore,
     proxyGroups: proxyModel.$proxyGroups,
   },
-  filter: ({ wallet, addProxyStore }) => Boolean(wallet) && Boolean(addProxyStore),
-  fn: ({ wallet, addProxyStore, proxyGroups }, accountId) => {
+  filter: ({ addProxyStore }, [accountId, wallet]) => Boolean(wallet.wallets[0].id) && Boolean(addProxyStore),
+  fn: ({ addProxyStore, proxyGroups }, [accountId, wallet]) => {
     const newProxyGroup: NoID<ProxyGroup> = {
-      walletId: wallet!.id,
+      walletId: wallet.wallets[0].id,
       chainId: addProxyStore!.chain.chainId,
       proxiedAccountId: accountId,
       totalDeposit: addProxyStore!.proxyDeposit,
