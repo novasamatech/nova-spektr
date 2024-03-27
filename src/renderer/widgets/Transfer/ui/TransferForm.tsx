@@ -4,13 +4,24 @@ import { useUnit } from 'effector-react';
 
 import { useI18n } from '@app/providers';
 import { MultisigAccount, Chain } from '@shared/core';
-import { accountUtils, AccountAddress } from '@entities/wallet';
-import { toAddress, toShortAddress, validateAddress } from '@shared/lib/utils';
+import { accountUtils, AccountAddress, WalletIcon } from '@entities/wallet';
+import { toAddress, toShortAddress, validateAddress, formatBalance } from '@shared/lib/utils';
 import { AssetBalance } from '@entities/asset';
 import { MultisigDepositWithLabel, FeeWithLabel, XcmFeeWithLabel } from '@entities/transaction';
 import { ChainTitle } from '@entities/chain';
 import { formModel } from '../model/form-model';
-import { Select, Input, Identicon, Icon, Button, InputHint, AmountInput, HelpText } from '@shared/ui';
+import {
+  Select,
+  Input,
+  Identicon,
+  Icon,
+  Button,
+  InputHint,
+  AmountInput,
+  HelpText,
+  Alert,
+  FootnoteText,
+} from '@shared/ui';
 
 type Props = {
   onGoBack: () => void;
@@ -27,7 +38,7 @@ export const TransferForm = ({ onGoBack }: Props) => {
   return (
     <div className="pb-4 px-5">
       <form id="transfer-form" className="flex flex-col gap-y-4 mt-4" onSubmit={submitForm}>
-        {/*<ProxyFeeAlert />*/}
+        <ProxyFeeAlert />
         <XcmChainSelector />
         <AccountSelector />
         <SignatorySelector />
@@ -57,37 +68,38 @@ export const TransferForm = ({ onGoBack }: Props) => {
   );
 };
 
-// const ProxyFeeAlert = () => {
-//   const {
-//     fields: { account },
-//   } = useForm(formModel.$transferForm);
-//
-//   const totalFee = useUnit(formModel.$totalFee);
-//   const [_, nativeBalance] = useUnit(formModel.$proxyBalance);
-//   const network = useUnit(formModel.$networkStore);
-//   const proxyWallet = useUnit(formModel.$proxyWallet);
-//
-//   if (!network || !proxyWallet || !account.hasError()) return null;
-//
-//   return (
-//     <Alert active title="Not enough tokens to pay the fee" variant="warn" onClose={account.resetErrors}>
-//       <div className="flex flex-wrap">
-//         <FootnoteText className="text-text-secondary tracking-tight max-w-full">Delegated authority</FootnoteText>
-//         <div className="inline-flex gap-x-1 items-center ml-1">
-//           <WalletIcon type={proxyWallet.type} size={16} />
-//           <FootnoteText className="text-text-secondary transition-colors truncate">{proxyWallet.name}</FootnoteText>
-//         </div>
-//         <FootnoteText className="text-text-secondary tracking-tight max-w-full">
-//           doesn&apos;t have enough balance to pay the network fee of {totalFee}
-//           {network.asset.symbol}
-//           <br />
-//           Available balance to pay fee: {formatBalance(nativeBalance, network.asset.precision).value}{' '}
-//           {network.asset.symbol}
-//         </FootnoteText>
-//       </div>
-//     </Alert>
-//   );
-// };
+const ProxyFeeAlert = () => {
+  const {
+    fields: { account },
+  } = useForm(formModel.$transferForm);
+
+  const fee = useUnit(formModel.$fee);
+  const [_, nativeBalance] = useUnit(formModel.$proxyBalance);
+  const network = useUnit(formModel.$networkStore);
+  const proxyWallet = useUnit(formModel.$proxyWallet);
+
+  if (!network || !proxyWallet || !account.hasError()) return null;
+
+  const formattedFee = formatBalance(fee, network.asset.precision).value;
+  const formattedBalance = formatBalance(nativeBalance, network.asset.precision).value;
+
+  return (
+    <Alert active title="Not enough tokens to pay the fee" variant="warn" onClose={account.resetErrors}>
+      <FootnoteText className="text-text-secondary tracking-tight max-w-full">
+        Delegated authority
+        <span className="inline-flex gap-x-1 items-center mx-1 align-bottom max-w-[200px]">
+          <WalletIcon className="shrink-0" type={proxyWallet.type} size={16} />
+          <FootnoteText as="span" className="text-text-secondary transition-colors truncate">
+            {proxyWallet.name}
+          </FootnoteText>
+        </span>
+        doesn&apos;t have enough balance to pay the network fee of {formattedFee} {network.asset.symbol}
+        <br />
+        Available balance to pay fee: {formattedBalance} {network.asset.symbol}
+      </FootnoteText>
+    </Alert>
+  );
+};
 
 const AccountSelector = () => {
   const { t } = useI18n();

@@ -245,7 +245,7 @@ type WrapperParams = {
 };
 type WrappedTransactions = {
   wrappedTx: Transaction;
-  multisigTx: Transaction | null;
+  multisigTx?: Transaction;
 };
 function getWrappedTransaction({ api, addressPrefix, transaction, txWrappers }: WrapperParams): WrappedTransactions {
   return txWrappers.reduce<WrappedTransactions>(
@@ -269,7 +269,7 @@ function getWrappedTransaction({ api, addressPrefix, transaction, txWrappers }: 
 
       return acc;
     },
-    { wrappedTx: transaction, multisigTx: null },
+    { wrappedTx: transaction, multisigTx: undefined },
   );
 }
 

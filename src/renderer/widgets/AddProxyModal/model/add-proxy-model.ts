@@ -107,12 +107,14 @@ sample({
         ]
       : [];
 
-    return transactionService.getWrappedTransaction({
+    const { wrappedTx, multisigTx } = transactionService.getWrappedTransaction({
       api: apis[chain.chainId],
       addressPrefix: chain.addressPrefix,
       transaction,
       txWrappers: txWrappersAdapter,
     });
+
+    return { wrappedTx, multisigTx: multisigTx || null };
   },
   target: spread({
     wrappedTx: $transaction,

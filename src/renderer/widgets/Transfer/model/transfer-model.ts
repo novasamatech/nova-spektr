@@ -144,7 +144,7 @@ sample({
 sample({
   clock: flowFinished,
   fn: () => Step.NONE,
-  target: stepChanged,
+  target: [stepChanged, formModel.events.formCleared],
 });
 
 sample({
