@@ -4,7 +4,7 @@ import { useUnit } from 'effector-react';
 
 import { useI18n } from '@app/providers';
 import { MultisigAccount, Chain } from '@shared/core';
-import { accountUtils, AccountAddress, WalletIcon } from '@entities/wallet';
+import { accountUtils, AccountAddress, WalletIcon, AccountSelectModal } from '@entities/wallet';
 import { toAddress, toShortAddress, validateAddress, formatBalance } from '@shared/lib/utils';
 import { AssetBalance } from '@entities/asset';
 import { MultisigDepositWithLabel, FeeWithLabel, XcmFeeWithLabel } from '@entities/transaction';
@@ -55,15 +55,7 @@ export const TransferForm = ({ onGoBack }: Props) => {
       {/*  {t('transfer.multisigTransactionExist')}*/}
       {/*</InputHint>*/}
 
-      {/*{accounts && (*/}
-      {/*  <AccountSelectModal*/}
-      {/*    isOpen={isSelectAccountModalOpen}*/}
-      {/*    accounts={destinationChainAccounts}*/}
-      {/*    chain={chain}*/}
-      {/*    onClose={() => setSelectAccountModalOpen(false)}*/}
-      {/*    onSelect={handleAccountSelect}*/}
-      {/*  />*/}
-      {/*)}*/}
+      <MyselfAccount />
     </div>
   );
 };
@@ -248,6 +240,8 @@ const Destination = () => {
     fields: { destination },
   } = useForm(formModel.$transferForm);
 
+  const isMyselfXcmEnabled = useUnit(formModel.$isMyselfXcmEnabled);
+
   const prefixElement = (
     <div className="flex h-auto items-center">
       {validateAddress(destination.value) ? (
@@ -257,11 +251,11 @@ const Destination = () => {
       )}
     </div>
   );
-  // const suffixElement = (
-  //   <Button size="sm" pallet="secondary" onClick={() => formModel.events.myselfClicked()}>
-  //     {t('transfer.myselfButton')}
-  //   </Button>
-  // );
+  const suffixElement = (
+    <Button size="sm" pallet="secondary" onClick={() => formModel.events.myselfClicked()}>
+      {t('transfer.myselfButton')}
+    </Button>
+  );
 
   return (
     <div className="flex flex-col gap-y-2">
@@ -272,7 +266,7 @@ const Destination = () => {
         invalid={destination.hasError()}
         value={destination.value}
         prefixElement={prefixElement}
-        // suffixElement={suffixElement} TODO: isXcmTransfer
+        suffixElement={isMyselfXcmEnabled && suffixElement}
         onChange={destination.onChange}
       />
       <InputHint active={destination.hasError()} variant="error">
@@ -388,6 +382,29 @@ const FeeSection = () => {
         />
       )}
     </div>
+  );
+};
+
+const MyselfAccount = () => {
+  const {
+    fields: { xcmChain },
+  } = useForm(formModel.$transferForm);
+
+  const isXcm = useUnit(formModel.$isXcm);
+  const network = useUnit(formModel.$networkStore);
+  const destinationAccounts = useUnit(formModel.$destinationAccounts);
+  const isMyselfXcmOpened = useUnit(formModel.$isMyselfXcmOpened);
+
+  if (!isXcm || !network || destinationAccounts.length === 0) return null;
+
+  return (
+    <AccountSelectModal
+      isOpen={isMyselfXcmOpened}
+      accounts={destinationAccounts}
+      chain={xcmChain.value}
+      onClose={formModel.events.xcmDestinationCancelled}
+      onSelect={({ accountId }) => formModel.events.xcmDestinationSelected(accountId)}
+    />
   );
 };
 

@@ -8,7 +8,7 @@ import { balanceModel, balanceUtils } from '@entities/balance';
 import { networkModel, networkUtils } from '@entities/network';
 import { xcmTransferModel } from './xcm-transfer-model';
 import { NetworkStore } from '../lib/types';
-import type { Chain, Account, Address, PartialBy, ChainId, ProxiedAccount } from '@shared/core';
+import type { Chain, Account, Address, PartialBy, ChainId, ProxiedAccount, AccountId } from '@shared/core';
 import {
   Transaction,
   transactionBuilder,
@@ -23,6 +23,7 @@ import {
   validateAddress,
   toShortAddress,
   toAccountId,
+  toAddress,
 } from '@shared/lib/utils';
 
 type FormParams = {
@@ -55,11 +56,15 @@ const multisigDepositChanged = createEvent<string>();
 const isFeeLoadingChanged = createEvent<boolean>();
 
 const myselfClicked = createEvent();
+const xcmDestinationSelected = createEvent<AccountId>();
+const xcmDestinationCancelled = createEvent();
 
 const $networkStore = restore(formInitiated, null);
 const $isNative = createStore<boolean>(false);
 const $isMultisig = createStore<boolean>(false);
 const $isProxy = createStore<boolean>(false);
+
+const $isMyselfXcmOpened = createStore<boolean>(false).reset(xcmDestinationCancelled);
 
 const $accountBalance = createStore<string[]>(['0', '0']);
 const $signatoryBalance = createStore<string[]>(['0', '0']);
@@ -427,6 +432,40 @@ const $transaction = combine(
   { skipVoid: false },
 );
 
+const $destinationAccounts = combine(
+  {
+    isXcm: $isXcm,
+    wallet: walletModel.$activeWallet,
+    accounts: walletModel.$activeAccounts,
+    chain: $transferForm.fields.xcmChain.$value,
+  },
+  ({ isXcm, wallet, accounts, chain }) => {
+    if (!isXcm || !wallet || !chain.chainId || accounts.length === 0) return [];
+
+    const isPolkadotVault = walletUtils.isPolkadotVault(wallet);
+
+    return accounts.filter((account) => {
+      if (accountUtils.isBaseAccount(account) && isPolkadotVault) return false;
+
+      return accountUtils.isChainAndCryptoMatch(account, chain);
+    });
+  },
+);
+
+const $isMyselfXcmEnabled = combine(
+  {
+    isXcm: $isXcm,
+    destinationAccounts: $destinationAccounts,
+  },
+  ({ isXcm, destinationAccounts }) => {
+    return isXcm && destinationAccounts.length > 0;
+  },
+);
+
+$destinationAccounts.watch((x) => {
+  console.log('=== de', x);
+});
+
 const $canSubmit = combine(
   {
     isXcm: $isXcm,
@@ -488,6 +527,11 @@ sample({
 });
 
 sample({
+  clock: $transferForm.fields.xcmChain.onChange,
+  target: $transferForm.fields.destination.reset,
+});
+
+sample({
   clock: $transferForm.fields.account.onChange,
   source: $accounts,
   fn: (accounts, account) => {
@@ -546,6 +590,43 @@ sample({
   clock: $transferForm.fields.signatory.$value,
   fn: (signatory) => [signatory],
   target: $selectedSignatories,
+});
+
+sample({
+  clock: myselfClicked,
+  source: {
+    xcmChain: $transferForm.fields.xcmChain.$value,
+    destinationAccounts: $destinationAccounts,
+  },
+  filter: ({ xcmChain, destinationAccounts }) => {
+    return Boolean(xcmChain.chainId) && destinationAccounts.length === 1;
+  },
+  fn: ({ xcmChain, destinationAccounts }) => {
+    return toAddress(destinationAccounts[0].accountId, { prefix: xcmChain.addressPrefix });
+  },
+  target: $transferForm.fields.destination.onChange,
+});
+
+sample({
+  clock: myselfClicked,
+  source: $destinationAccounts,
+  filter: (destinationAccounts) => destinationAccounts.length > 1,
+  fn: () => true,
+  target: $isMyselfXcmOpened,
+});
+
+sample({
+  clock: xcmDestinationSelected,
+  source: $transferForm.fields.xcmChain.$value,
+  filter: (xcmChain) => Boolean(xcmChain.chainId),
+  fn: ({ addressPrefix }, accountId) => ({
+    canSelect: false,
+    destination: toAddress(accountId, { prefix: addressPrefix }),
+  }),
+  target: spread({
+    canSelect: $isMyselfXcmOpened,
+    destination: $transferForm.fields.destination.onChange,
+  }),
 });
 
 // XCM model Bindings
@@ -615,6 +696,10 @@ export const formModel = {
   $proxyWallet,
   $signatories,
 
+  $destinationAccounts,
+  $isMyselfXcmEnabled,
+  $isMyselfXcmOpened,
+
   $accounts,
   $chains,
   $accountBalance,
@@ -622,7 +707,6 @@ export const formModel = {
 
   $fee,
   $multisigDeposit,
-  // $totalFee,
 
   $api,
   $networkStore,
@@ -639,7 +723,10 @@ export const formModel = {
   events: {
     formInitiated,
     formCleared: $transferForm.reset,
+
     myselfClicked,
+    xcmDestinationSelected,
+    xcmDestinationCancelled,
 
     feeChanged,
     multisigDepositChanged,
