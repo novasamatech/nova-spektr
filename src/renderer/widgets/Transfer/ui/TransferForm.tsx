@@ -1,6 +1,7 @@
 import { useForm } from 'effector-forms';
 import { FormEvent } from 'react';
 import { useUnit } from 'effector-react';
+import { Trans } from 'react-i18next';
 
 import { useI18n } from '@app/providers';
 import { MultisigAccount, Chain } from '@shared/core';
@@ -51,16 +52,14 @@ export const TransferForm = ({ onGoBack }: Props) => {
       </div>
       <ActionsSection onGoBack={onGoBack} />
 
-      {/*<InputHint className="mt-2" active={multisigTxExist} variant="error">*/}
-      {/*  {t('transfer.multisigTransactionExist')}*/}
-      {/*</InputHint>*/}
-
       <MyselfAccount />
     </div>
   );
 };
 
 const ProxyFeeAlert = () => {
+  const { t } = useI18n();
+
   const {
     fields: { account },
   } = useForm(formModel.$transferForm);
@@ -75,19 +74,24 @@ const ProxyFeeAlert = () => {
   const formattedFee = formatBalance(fee, network.asset.precision).value;
   const formattedBalance = formatBalance(nativeBalance, network.asset.precision).value;
 
+  const wallet = (
+    <span className="inline-flex gap-x-1 items-center mx-1 align-bottom max-w-[200px]">
+      <WalletIcon className="shrink-0" type={proxyWallet.type} size={16} />
+      <FootnoteText as="span" className="text-text-secondary transition-colors truncate">
+        {proxyWallet.name}
+      </FootnoteText>
+    </span>
+  );
+
   return (
     <Alert active title="Not enough tokens to pay the fee" variant="warn" onClose={account.resetErrors}>
       <FootnoteText className="text-text-secondary tracking-tight max-w-full">
-        Delegated authority
-        <span className="inline-flex gap-x-1 items-center mx-1 align-bottom max-w-[200px]">
-          <WalletIcon className="shrink-0" type={proxyWallet.type} size={16} />
-          <FootnoteText as="span" className="text-text-secondary transition-colors truncate">
-            {proxyWallet.name}
-          </FootnoteText>
-        </span>
-        doesn&apos;t have enough balance to pay the network fee of {formattedFee} {network.asset.symbol}
-        <br />
-        Available balance to pay fee: {formattedBalance} {network.asset.symbol}
+        <Trans
+          t={t}
+          i18nKey="operation.proxyFeeError"
+          components={{ wallet }}
+          values={{ fee: formattedFee, balance: formattedBalance, symbol: network.asset.symbol }}
+        />
       </FootnoteText>
     </Alert>
   );
@@ -130,8 +134,8 @@ const AccountSelector = () => {
   return (
     <div className="flex flex-col gap-y-2">
       <Select
-        label={t('proxy.addProxy.accountLabel')}
-        placeholder={t('proxy.addProxy.accountPlaceholder')}
+        label={t('operation.selectAccountLabel')}
+        placeholder={t('operation.selectAccount')}
         selectedId={account.value.id?.toString()}
         options={options}
         onChange={({ value }) => account.onChange(value)}
@@ -178,8 +182,8 @@ const SignatorySelector = () => {
   return (
     <div className="flex flex-col gap-y-2">
       <Select
-        label={t('proxy.addProxy.signatoryLabel')}
-        placeholder={t('proxy.addProxy.signatoryPlaceholder')}
+        label={t('operation.selectSignatoryLabel')}
+        placeholder={t('operation.selectSignatory')}
         selectedId={signatory.value.id?.toString()}
         options={options}
         invalid={signatory.hasError()}

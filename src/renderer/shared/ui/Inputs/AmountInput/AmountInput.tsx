@@ -113,12 +113,7 @@ export const AmountInput = ({
     }
 
     return (
-      <AssetBalance
-        className="inline text-text-primary text-footnote"
-        value={balance}
-        asset={asset}
-        showIcon={false}
-      />
+      <AssetBalance className="inline text-text-primary text-footnote" value={balance} asset={asset} showIcon={false} />
     );
   }, [balance]);
 

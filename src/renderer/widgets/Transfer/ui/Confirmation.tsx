@@ -49,12 +49,12 @@ export const Confirmation = ({ onGoBack }: Props) => {
       <dl className="flex flex-col gap-y-4 w-full">
         {proxiedWallet && confirmStore.proxiedAccount && (
           <>
-            <DetailRow label="Sender wallet (proxied)" className="flex gap-x-2">
+            <DetailRow label={t('transfer.senderProxiedWallet')} className="flex gap-x-2">
               <WalletIcon type={proxiedWallet.type} size={16} />
               <FootnoteText className="pr-2">{proxiedWallet.name}</FootnoteText>
             </DetailRow>
 
-            <DetailRow label="Sender account">
+            <DetailRow label={t('transfer.senderAccount')}>
               <AddressWithExplorers
                 type="short"
                 explorers={confirmStore.chain.explorers}
@@ -67,12 +67,12 @@ export const Confirmation = ({ onGoBack }: Props) => {
 
             <hr className="border-filter-border w-full pr-2" />
 
-            <DetailRow label="Signing wallet" className="flex gap-x-2">
+            <DetailRow label={t('transfer.signingWallet')} className="flex gap-x-2">
               <WalletIcon type={initiatorWallet.type} size={16} />
               <FootnoteText className="pr-2">{initiatorWallet.name}</FootnoteText>
             </DetailRow>
 
-            <DetailRow label="Signing account">
+            <DetailRow label={t('transfer.signingAccount')}>
               <AddressWithExplorers
                 type="short"
                 explorers={confirmStore.chain.explorers}

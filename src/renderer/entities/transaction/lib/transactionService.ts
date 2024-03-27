@@ -173,7 +173,7 @@ function getTxWrappers({ wallet, ...params }: TxWrappersParams): TxWrapper[] {
 function getMultisigWrapper({ wallets, accounts, account, signatories = [] }: Omit<TxWrappersParams, 'wallet'>) {
   const signersMap = dictionary((account as MultisigAccount).signatories, 'accountId', () => true);
 
-  const sigs = wallets.reduce<Account[]>((acc, wallet) => {
+  const signers = wallets.reduce<Account[]>((acc, wallet) => {
     const walletAccounts = accountUtils.getWalletAccounts((wallet as Wallet).id, accounts);
     const signer = walletAccounts.find((a) => signersMap[a.accountId]);
 
@@ -187,12 +187,12 @@ function getMultisigWrapper({ wallets, accounts, account, signatories = [] }: Om
   const wrapper: MultisigTxWrapper = {
     kind: 'multisig',
     multisigAccount: account as MultisigAccount,
-    signatories: sigs,
+    signatories: signers,
     signer: signatories[0] || ({} as Account),
   };
 
   if (signatories.length === 0) return [wrapper];
-  const signatoryAccount = sigs.find((s) => s.id === signatories[0].id);
+  const signatoryAccount = signers.find((s) => s.id === signatories[0].id);
 
   if (!signatoryAccount) return [wrapper];
   const signatoryWallet = walletUtils.getWalletById(wallets, signatoryAccount.walletId);

@@ -469,6 +469,7 @@
     "inProgress": "Submitting approval...",
     "logButton": "Log",
     "networkFee": "Network fee",
+    "proxyFeeError": "Delegated authority<wallet />doesn't have enough balance to pay the network fee of {fee} {symbol}<br />Available balance to pay fee: {balance} {symbol}",
     "rejectButton": "Reject",
     "rejectInProgress": "Submitting Rejection...",
     "rejectReason": {
@@ -479,7 +480,9 @@
       "title": "Enter reject reason"
     },
     "selectAccount": "Select account",
+    "selectAccountLabel": "Account",
     "selectSignatory": "Select signatory",
+    "selectSignatoryLabel": "Signatory",
     "selectSignatoryTitle": "Select signatory",
     "sign": {
       "novaWallet": "Sign with Nova Wallet",
@@ -1070,8 +1073,12 @@
     "requiredAmountError": "Please enter amount",
     "requiredDescriptionError": "Description is required",
     "requiredRecipientError": "Please enter recipient address",
+    "senderAccount": "Sender account",
     "senderLabel": "Sender",
+    "senderProxiedWallet": "Sender wallet (proxied)",
     "signatoryLabel": "Signatory",
+    "signingAccount": "Signing account",
+    "signingWallet": "Signing wallet",
     "startSigningButton": "Sign with Polkadot Vault",
     "successMessage": "Operation Success",
     "swapToCryptoModeAlt": "swap input to crypto",

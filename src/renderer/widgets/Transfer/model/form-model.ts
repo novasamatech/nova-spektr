@@ -24,6 +24,7 @@ import {
   toShortAddress,
   toAccountId,
   toAddress,
+  dictionary,
 } from '@shared/lib/utils';
 
 type FormParams = {
@@ -217,7 +218,12 @@ const $txWrappers = combine(
     const walletFiltered = wallets.filter((wallet) => {
       return !walletUtils.isProxied(wallet) && !walletUtils.isWatchOnly(wallet);
     });
+    const walletsMap = dictionary(walletFiltered, 'id');
     const chainFilteredAccounts = accounts.filter((account) => {
+      if (accountUtils.isBaseAccount(account) && walletUtils.isPolkadotVault(walletsMap[account.walletId])) {
+        return false;
+      }
+
       return accountUtils.isChainAndCryptoMatch(account, network.chain);
     });
 
@@ -461,10 +467,6 @@ const $isMyselfXcmEnabled = combine(
     return isXcm && destinationAccounts.length > 0;
   },
 );
-
-$destinationAccounts.watch((x) => {
-  console.log('=== de', x);
-});
 
 const $canSubmit = combine(
   {
