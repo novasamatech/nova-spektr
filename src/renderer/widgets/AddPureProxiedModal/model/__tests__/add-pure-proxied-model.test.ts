@@ -53,9 +53,7 @@ describe('widgets/AddPureProxyModal/model/add-pure-proxied-model', () => {
 
     expect(scope.getState(addPureProxiedModel.$step)).toEqual(Step.CONFIRM);
 
-    await allSettled(confirmModel.output.formSubmitted, {
-      scope,
-    });
+    await allSettled(confirmModel.output.formSubmitted, { scope });
 
     expect(scope.getState(addPureProxiedModel.$step)).toEqual(Step.SIGN);
 
@@ -69,9 +67,7 @@ describe('widgets/AddPureProxyModal/model/add-pure-proxied-model', () => {
 
     expect(scope.getState(addPureProxiedModel.$step)).toEqual(Step.SUBMIT);
 
-    await allSettled(submitModel.output.formSubmitted, {
-      scope,
-    });
+    await allSettled(submitModel.output.formSubmitted, { scope });
 
     expect(scope.getState(addPureProxiedModel.$step)).toEqual(Step.NONE);
   });

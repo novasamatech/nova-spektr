@@ -216,12 +216,13 @@ sample({
   source: {
     subAccounts: $subAccounts,
     accounts: walletModel.$accounts,
+    wallets: walletModel.$wallets,
     chains: networkModel.$chains,
   },
   filter: (_, wallet) => Boolean(wallet),
-  fn: ({ subAccounts, accounts, chains }, wallet) => {
+  fn: ({ subAccounts, accounts, wallets, chains }, wallet) => {
     const walletAccounts = accountUtils.getWalletAccounts(wallet!.id, accounts);
-    const accountsToSub = balanceSubUtils.getAccountsToSubscribe(wallet!, walletAccounts, accounts);
+    const accountsToSub = balanceSubUtils.getAccountsToSubscribe(wallet!, wallets, walletAccounts, accounts);
 
     return balanceSubUtils.getNewAccounts(subAccounts, accountsToSub, chains);
   },

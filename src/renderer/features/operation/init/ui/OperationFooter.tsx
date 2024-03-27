@@ -75,15 +75,15 @@ export const OperationFooter = ({
         />
       )}
 
-      {isXcmTransfer && xcmConfig && xcmAsset && (
+      {isXcmTransfer && xcmConfig && xcmAsset && reserveApi && (
         <div className="flex justify-between items-center gap-x-2">
           <FootnoteText className="text-text-tertiary">{t('operation.xcmFee')}</FootnoteText>
           <FootnoteText className="text-text-tertiary">
             <XcmFee
+              api={reserveApi}
               asset={xcmAsset}
               transaction={feeTx}
               config={xcmConfig}
-              api={reserveApi}
               onFeeChange={onXcmFeeChange}
               onFeeLoading={onFeeLoading}
             />

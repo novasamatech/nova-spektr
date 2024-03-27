@@ -218,7 +218,7 @@ export const RemoveProxy = ({ isOpen, proxyAccount, onClose }: Props) => {
         description={t('operation.feeErrorMessage')}
         onClose={toggleFeeModal}
       >
-        <Button onClick={toggleFeeModal}>{t('operation.feeErrorButton')}</Button>
+        <Button onClick={toggleFeeModal}>{t('operation.submitErrorButton')}</Button>
       </OperationResult>
     </BaseModal>
   );

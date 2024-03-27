@@ -233,7 +233,7 @@ const RejectTx = ({ tx, account, connection }: Props) => {
           description={t('operation.feeErrorMessage')}
           onClose={toggleFeeModal}
         >
-          <Button onClick={toggleFeeModal}>{t('operation.feeErrorButton')}</Button>
+          <Button onClick={toggleFeeModal}>{t('operation.submitErrorButton')}</Button>
         </OperationResult>
       </BaseModal>
 

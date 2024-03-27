@@ -8,11 +8,18 @@ export const balanceSubUtils = {
   getNewAccounts,
 };
 
-function getAccountsToSubscribe(wallet: Wallet, walletAccounts: Account[], accounts?: Account[]): Account[] {
-  if (walletUtils.isMultisig(wallet) && accountUtils.isMultisigAccount(walletAccounts[0]) && accounts) {
+function getAccountsToSubscribe(
+  wallet: Wallet,
+  wallets: Wallet[],
+  walletAccounts: Account[],
+  accounts: Account[],
+): Account[] {
+  const firstAccount = walletAccounts[0];
+
+  if (walletUtils.isMultisig(wallet) && accountUtils.isMultisigAccount(firstAccount)) {
     const accountsMap = dictionary(accounts, 'accountId');
 
-    return walletAccounts[0].signatories.reduce((acc, signatory) => {
+    return firstAccount.signatories.reduce((acc, signatory) => {
       if (accountsMap[signatory.accountId]) {
         acc.push(accountsMap[signatory.accountId]);
       }
@@ -23,6 +30,18 @@ function getAccountsToSubscribe(wallet: Wallet, walletAccounts: Account[], accou
 
   if (walletUtils.isPolkadotVault(wallet)) {
     return walletAccounts.filter((account) => !accountUtils.isBaseAccount(account));
+  }
+
+  if (walletUtils.isProxied(wallet) && accountUtils.isProxiedAccount(firstAccount)) {
+    const proxyAccounts = accounts.filter((account) => account.accountId === firstAccount.proxyAccountId);
+    const proxyWallet = wallets.find((wallet) => {
+      return proxyAccounts.some((a) => a.walletId === wallet.id) && !walletUtils.isWatchOnly(wallet);
+    });
+    const proxyAccount = proxyAccounts.find((account) => account.walletId === proxyWallet?.id);
+
+    if (!proxyWallet || !proxyAccount) return [firstAccount];
+
+    return [firstAccount, ...getAccountsToSubscribe(proxyWallet, wallets, [proxyAccount], accounts)];
   }
 
   return walletAccounts;

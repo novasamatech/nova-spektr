@@ -33,6 +33,6 @@ describe('ui/Dropdowns/DropdownButton', () => {
 
     await act(() => optionButton.click());
 
-    expect(spySelected).toBeCalled();
+    expect(spySelected).toHaveBeenCalled();
   });
 });

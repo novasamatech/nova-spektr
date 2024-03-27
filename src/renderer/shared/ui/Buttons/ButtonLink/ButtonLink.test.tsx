@@ -48,6 +48,6 @@ describe('ui/Buttons/ButtonLink', () => {
     const buttonLink = screen.getByRole('link');
     await act(() => buttonLink.click());
 
-    expect(spyCallback).toBeCalled();
+    expect(spyCallback).toHaveBeenCalled();
   });
 });

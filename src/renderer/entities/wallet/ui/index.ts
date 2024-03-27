@@ -15,5 +15,5 @@ export { MultishardAccountsList } from './MultishardAccountsList/MultishardAccou
 export { VaultAccountsList } from './VaultAccountsList/VaultAccountsList';
 export { ContactItem } from './ContactItem/ContactItem';
 export { ExplorersPopover } from './ExplorersPopover/ExplorersPopover';
-export type { AccountAddressProps } from './AccountAddress/AccountAddress';
 export { CheckPermission } from './CheckPermission/CheckPermission';
+export { AccountSelectModal } from './AccountSelectModal/AccountSelectModal';

@@ -20,6 +20,7 @@ import { walletProviderModel } from '../../model/wallet-provider-model';
 import { WalletConnectAccounts } from '../components/WalletConnectAccounts';
 import { ProxiesList } from '../components/ProxiesList';
 import { NoProxiesAction } from '../components/NoProxiesAction';
+import { AddPureProxied, addPureProxiedModel } from '@widgets/AddPureProxiedModal';
 import {
   BaseModal,
   Button,
@@ -30,7 +31,6 @@ import {
   StatusModal,
   Tabs,
 } from '@shared/ui';
-import { AddPureProxied, addPureProxiedModel } from '@widgets/AddPureProxiedModal';
 
 type Props = {
   wallet: WalletConnectWallet;

@@ -169,7 +169,7 @@ export const VaultWalletDetails = ({ wallet, root, accountsMap, onClose }: Props
           </ContextMenu>
 
           <VaultAccountsList
-            className="h-[338px] mt-4 pb-4 px-5"
+            className="h-[321px] mt-4 pb-4 px-5"
             chains={Object.values(chains)}
             accountsMap={accountsMap}
             onShardClick={vaultDetailsModel.events.shardsSelected}
@@ -181,10 +181,10 @@ export const VaultWalletDetails = ({ wallet, root, accountsMap, onClose }: Props
       id: 'proxies',
       title: t('walletDetails.common.proxiesTabTitle'),
       panel: hasProxies ? (
-        <ProxiesList className="h-[403px] mt-4" canCreateProxy={canCreateProxy} />
+        <ProxiesList className="h-[371px] mt-4" canCreateProxy={canCreateProxy} />
       ) : (
         <NoProxiesAction
-          className="h-[403px] mt-4"
+          className="h-[371px] mt-4"
           canCreateProxy={canCreateProxy}
           onAddProxy={addProxyModel.events.flowStarted}
         />

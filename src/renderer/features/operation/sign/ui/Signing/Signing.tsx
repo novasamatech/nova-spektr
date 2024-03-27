@@ -15,6 +15,7 @@ export const SigningFlow: Record<SigningType, (props: InnerSigningProps) => JSX.
 };
 
 export const Signing = (props: SigningProps) => {
+  // TODO: not always __activeWallet__ is a signing wallet, need to rely on __signerWaller__
   const activeWallet = useUnit(walletModel.$activeWallet);
   const wallets = useUnit(walletModel.$wallets);
 

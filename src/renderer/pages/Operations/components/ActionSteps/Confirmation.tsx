@@ -18,7 +18,7 @@ import { type Account, type MultisigAccount } from '@shared/core';
 import Details from '../Details';
 import { getAssetById } from '@shared/lib/utils';
 import { getTransactionFromMultisigTx } from '@entities/multisig';
-import { sendAssetModel } from '@widgets/SendAssetModal';
+import { xcmTransferModel } from '@widgets/Transfer';
 import { SignButton } from '@entities/operation/ui/SignButton';
 import { walletModel } from '@entities/wallet';
 import { getIconName } from '@entities/transaction/lib/transactionConfirmIcon';
@@ -40,13 +40,13 @@ export const Confirmation = ({ tx, account, connection, signatory, feeTx, onSign
   const wallets = useUnit(walletModel.$wallets);
   const wallet = wallets.find((w) => w.id === signatory?.walletId);
 
-  const xcmConfig = useUnit(sendAssetModel.$finalConfig);
+  const xcmConfig = useUnit(xcmTransferModel.$config);
   const asset = getAssetById(tx.transaction?.args.assetId, connection.assets) || connection.assets[0];
 
   const transaction = getTransactionFromMultisigTx(tx);
 
   useEffect(() => {
-    sendAssetModel.events.xcmConfigRequested();
+    xcmTransferModel.events.xcmConfigLoaded();
   }, []);
 
   return (

@@ -76,7 +76,7 @@ export const AssetCard = ({ chainId, asset, balance }: Props) => {
         <div className="flex gap-x-2 ml-3">
           <CheckPermission operationType={OperationType.TRANSFER} wallet={activeWallet} accounts={activeAccounts}>
             <Link
-              to={createLink(Paths.SEND_ASSET, {}, { chainId: [chainId], assetId: [asset.assetId] })}
+              to={createLink(Paths.TRANSFER_ASSET, {}, { chainId: [chainId], assetId: [asset.assetId] })}
               onClick={(e) => e.stopPropagation()}
             >
               <Icon name="sendArrow" size={20} />

@@ -5,7 +5,7 @@ import { useUnit } from 'effector-react';
 
 import { useI18n } from '@app/providers';
 import { Paths } from '@shared/routes';
-import { ChainId, HexString } from '@shared/core';
+import { ChainId, HexString, MultisigAccount } from '@shared/core';
 import { Transaction, TransactionType, useTransaction } from '@entities/transaction';
 import InitOperation, { RestakeResult } from './InitOperation/InitOperation';
 import { Confirmation, Submit, NoAsset } from '../components';
@@ -135,7 +135,7 @@ export const Restake = () => {
       setWrappers([
         {
           signatoryId: signer.accountId,
-          account: accounts[0],
+          account: accounts[0] as MultisigAccount,
         },
       ]);
       setSigner(signer);

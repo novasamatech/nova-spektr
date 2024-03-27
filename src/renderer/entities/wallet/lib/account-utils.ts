@@ -2,8 +2,6 @@ import { u8aToHex } from '@polkadot/util';
 import { createKeyMulti } from '@polkadot/util-crypto';
 import keyBy from 'lodash/keyBy';
 
-// TODO: resolve cross import
-import { networkUtils } from '@entities/network';
 import { dictionary } from '@shared/lib/utils';
 import { walletUtils } from './wallet-utils';
 import { AccountType, ChainType, CryptoType, ProxyType } from '@shared/core';
@@ -22,6 +20,8 @@ import type {
   Chain,
   ChainId,
 } from '@shared/core';
+// TODO: resolve cross import
+import { networkUtils } from '@entities/network';
 
 export const accountUtils = {
   isBaseAccount,
@@ -103,7 +103,7 @@ function isChainAndCryptoMatch(account: Account, chain: Chain): boolean {
 function isCryptoTypeMatch(account: Account, chain: Chain): boolean {
   const cryptoType = networkUtils.isEthereumBased(chain.options) ? CryptoType.ETHEREUM : CryptoType.SR25519;
 
-  return !isWalletConnectAccount(account) ? account.cryptoType === cryptoType : true;
+  return isWalletConnectAccount(account) || account.cryptoType === cryptoType;
 }
 
 function isMultisigAccount(account: Pick<Account, 'type'>): account is MultisigAccount {

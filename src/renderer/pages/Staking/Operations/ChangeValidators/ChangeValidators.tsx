@@ -15,7 +15,7 @@ import InitOperation, { ValidatorsResult } from './InitOperation/InitOperation';
 import { useNetworkData, networkUtils } from '@entities/network';
 import { OperationTitle } from '@entities/chain';
 import { Signing } from '@features/operation';
-import type { Account, ChainId, HexString, Address } from '@shared/core';
+import { Account, ChainId, HexString, Address, MultisigAccount } from '@shared/core';
 import { walletModel, walletUtils } from '@entities/wallet';
 import { priceProviderModel } from '@entities/price';
 import { StakingPopover } from '../components/StakingPopover/StakingPopover';
@@ -146,7 +146,7 @@ export const ChangeValidators = () => {
       setWrappers([
         {
           signatoryId: signer.accountId,
-          account: txAccounts[0],
+          account: txAccounts[0] as MultisigAccount,
         },
       ]);
     }
