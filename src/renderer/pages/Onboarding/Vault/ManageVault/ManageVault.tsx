@@ -188,7 +188,7 @@ export const ManageVault = ({ seedInfo, onBack, onClose, onComplete }: Props) =>
               onChange={name?.onChange}
             />
             <InputHint variant="error" active={name?.hasError()}>
-              {t(name?.errorText())}
+              {t(name.errorText())}
             </InputHint>
           </div>
 

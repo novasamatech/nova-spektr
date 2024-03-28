@@ -50,7 +50,7 @@ export const EditContactForm = ({ contactToEdit, onSubmit }: Props) => {
           onChange={name?.onChange}
         />
         <InputHint variant="error" active={name?.hasError()}>
-          {t(name?.errorText())}
+          {t(name.errorText())}
         </InputHint>
       </div>
 
@@ -76,7 +76,7 @@ export const EditContactForm = ({ contactToEdit, onSubmit }: Props) => {
           {t('addressBook.editContact.editWarning')}
         </InputHint>
         <InputHint variant="error" active={address?.hasError()}>
-          {t(address?.errorText())}
+          {t(address.errorText())}
         </InputHint>
       </div>
 

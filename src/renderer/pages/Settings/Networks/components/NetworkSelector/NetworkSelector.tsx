@@ -29,7 +29,11 @@ type Props = {
   onDisconnect: () => void;
   onConnect: (type: ConnectionType, node?: RpcNode) => void;
   onRemoveCustomNode: (node: RpcNode) => void;
-  onChangeCustomNode: (node?: RpcNode) => void;
+  onAddRpcNetworkChange: (network: ExtendedChain) => void;
+  onEditRpcNetworkChange: (network: ExtendedChain) => void;
+  openEditRpcModal: () => void;
+  openAddRpcModal: () => void;
+  onSelectNode: (node: RpcNode) => void;
 };
 
 export const NetworkSelector = ({
@@ -38,7 +42,11 @@ export const NetworkSelector = ({
   onDisconnect,
   onConnect,
   onRemoveCustomNode,
-  onChangeCustomNode,
+  onAddRpcNetworkChange,
+  onEditRpcNetworkChange,
+  openAddRpcModal,
+  openEditRpcModal,
+  onSelectNode,
 }: Props) => {
   const { t } = useI18n();
   const [ref, scroll] = useScrollTo<HTMLDivElement>(TRANSITION_DURATION);
@@ -72,12 +80,19 @@ export const NetworkSelector = ({
 
   const changeConnection = async (payload?: SelectorPayload) => {
     if (!payload) {
-      onChangeCustomNode();
+      onAddRpcNetworkChange(networkItem);
+      openAddRpcModal();
     } else if (payload.type === ConnectionType.DISABLED) {
       onDisconnect();
     } else {
       onConnect(payload.type, payload.node);
     }
+  };
+
+  const onEditCustomNode = (node: RpcNode) => {
+    onEditRpcNetworkChange(networkItem);
+    onSelectNode(node);
+    openEditRpcModal();
   };
 
   const isCustomNode = (url: string): boolean => {
@@ -140,7 +155,7 @@ export const NetworkSelector = ({
                               name="edit"
                               onClick={(event) => {
                                 event.stopPropagation();
-                                onChangeCustomNode(node);
+                                onEditCustomNode(node);
                               }}
                             />
                             {activeNode?.url !== node.url && (

@@ -31,7 +31,7 @@ export const CreateContactForm = ({ onSubmit }: Props) => {
     submit();
   };
 
-  const canShowIdenticon = address?.value && !address?.hasError();
+  const canShowIdenticon = address.value && !address.hasError();
 
   return (
     <form className="flex flex-col pt-4 gap-4" onSubmit={submitForm}>
@@ -42,12 +42,12 @@ export const CreateContactForm = ({ onSubmit }: Props) => {
           wrapperClass="h-[42px]"
           label={t('addressBook.createContact.nameLabel')}
           placeholder={t('addressBook.createContact.namePlaceholder')}
-          invalid={name?.hasError()}
-          value={name?.value}
-          onChange={name?.onChange}
+          invalid={name.hasError()}
+          value={name.value}
+          onChange={name.onChange}
         />
-        <InputHint variant="error" active={name?.hasError()}>
-          {t(name?.errorText())}
+        <InputHint variant="error" active={name.hasError()}>
+          {t(name.errorText())}
         </InputHint>
       </div>
 
@@ -58,19 +58,15 @@ export const CreateContactForm = ({ onSubmit }: Props) => {
           className="w-full ml-2"
           label={t('addressBook.createContact.accountIdLabel')}
           placeholder={t('addressBook.createContact.accountIdPlaceholder')}
-          invalid={address?.hasError()}
-          value={address?.value}
+          invalid={address.hasError()}
+          value={address.value}
           prefixElement={
-            canShowIdenticon ? (
-              <Identicon address={address?.value} background={false} />
-            ) : (
-              <Icon name="emptyIdenticon" />
-            )
+            canShowIdenticon ? <Identicon address={address.value} background={false} /> : <Icon name="emptyIdenticon" />
           }
-          onChange={address?.onChange}
+          onChange={address.onChange}
         />
-        <InputHint variant="error" active={address?.hasError()}>
-          {t(address?.errorText())}
+        <InputHint variant="error" active={address.hasError()}>
+          {t(address.errorText())}
         </InputHint>
       </div>
 
@@ -81,13 +77,13 @@ export const CreateContactForm = ({ onSubmit }: Props) => {
           wrapperClass="h-[42px]"
           label={t('addressBook.createContact.matrixIdLabel')}
           placeholder={t('addressBook.createContact.matrixIdPlaceholder')}
-          invalid={matrixId?.hasError()}
-          value={matrixId?.value}
-          onChange={matrixId?.onChange}
+          invalid={matrixId.hasError()}
+          value={matrixId.value}
+          onChange={matrixId.onChange}
         />
-        <InputHint active={!matrixId?.hasError()}>{t('addressBook.createContact.matrixIdHint')}</InputHint>
-        <InputHint variant="error" active={matrixId?.hasError()}>
-          {t(matrixId?.errorText())}
+        <InputHint active={!matrixId.hasError()}>{t('addressBook.createContact.matrixIdHint')}</InputHint>
+        <InputHint variant="error" active={matrixId.hasError()}>
+          {t(matrixId.errorText())}
         </InputHint>
       </div>
 

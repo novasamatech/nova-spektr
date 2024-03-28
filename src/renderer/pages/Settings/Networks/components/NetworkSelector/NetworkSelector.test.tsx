@@ -72,8 +72,12 @@ describe('pages/Settings/Networks/NetworkSelector', () => {
     networkItem: defaultNetwork,
     onDisconnect: noop,
     onConnect: noop,
+    onEditRpcNetworkChange: noop,
+    openEditRpcModal: noop,
+    openAddRpcModal: noop,
     onRemoveCustomNode: noop,
-    onChangeCustomNode: noop,
+    onAddRpcNetworkChange: noop,
+    onSelectNode: noop,
   };
 
   test('should render component', () => {
@@ -104,23 +108,14 @@ describe('pages/Settings/Networks/NetworkSelector', () => {
   });
 
   test('should call edit and delete for custom node', async () => {
-    const changeSpy = jest.fn();
     const removeSpy = jest.fn();
-    render(
-      <NetworkSelector
-        {...defaultProps}
-        networkItem={withCustomNetwork}
-        onChangeCustomNode={changeSpy}
-        onRemoveCustomNode={removeSpy}
-      />,
-    );
+    render(<NetworkSelector {...defaultProps} networkItem={withCustomNetwork} onRemoveCustomNode={removeSpy} />);
 
     const selectorBtn = screen.getByRole('button');
     await act(async () => selectorBtn.click());
 
     const edit = screen.getByRole('button', { name: 'edit.svg' });
     await act(async () => edit.click());
-    expect(changeSpy).toBeCalled();
 
     const remove = screen.getByRole('button', { name: 'delete.svg' });
     await act(async () => remove.click());

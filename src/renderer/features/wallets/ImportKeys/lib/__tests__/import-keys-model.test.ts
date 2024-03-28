@@ -6,7 +6,7 @@ import { importKeysModelMock } from '@features/wallets/ImportKeys/lib/mocks/impo
 
 describe('features/ImportKeys/lib/import-keys-model', () => {
   test('should check import file structure', async () => {
-    const scope = fork({});
+    const scope = fork();
 
     await allSettled(importKeysModel.events.resetValues, { scope, params: { root: '0x00', derivations: [] } });
     await allSettled(importKeysModel.events.fileUploaded, { scope, params: importKeysModelMock.invalidFileStructure });
@@ -15,7 +15,7 @@ describe('features/ImportKeys/lib/import-keys-model', () => {
   });
 
   test('should check vault public address in import file', async () => {
-    const scope = fork({});
+    const scope = fork();
 
     await allSettled(importKeysModel.events.resetValues, { scope, params: { root: '0x01', derivations: [] } });
     await allSettled(importKeysModel.events.fileUploaded, { scope, params: importKeysModelMock.fileData });
@@ -24,7 +24,7 @@ describe('features/ImportKeys/lib/import-keys-model', () => {
   });
 
   test('should save invalid derivations paths in $validationError', async () => {
-    const scope = fork({});
+    const scope = fork();
 
     await allSettled(importKeysModel.events.resetValues, { scope, params: { root: '0x00', derivations: [] } });
     await allSettled(importKeysModel.events.fileUploaded, { scope, params: importKeysModelMock.invalidPaths });
