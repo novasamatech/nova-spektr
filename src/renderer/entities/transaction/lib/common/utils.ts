@@ -65,6 +65,14 @@ export const isAddProxyTransaction = (transaction?: Transaction | DecodedTransac
   return transaction?.type === TransactionType.ADD_PROXY;
 };
 
+export const isCreatePureProxyTransaction = (transaction?: Transaction | DecodedTransaction): boolean => {
+  return transaction?.type === TransactionType.CREATE_PURE_PROXY;
+};
+
 export const isRemoveProxyTransaction = (transaction?: Transaction | DecodedTransaction): boolean => {
   return transaction?.type === TransactionType.REMOVE_PROXY;
+};
+
+export const isRemovePureProxyTransaction = (transaction?: Transaction | DecodedTransaction): boolean => {
+  return transaction?.type === TransactionType.REMOVE_PURE_PROXY;
 };

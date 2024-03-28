@@ -4,13 +4,15 @@ import { cnTw } from '@shared/lib/utils';
 import { ChainTitle } from '@entities/chain';
 import { useI18n } from '@app/providers';
 import { Accordion, ConfirmModal, FootnoteText, HelpText, SmallTitleText } from '@shared/ui';
-import type { ProxyAccount } from '@shared/core';
+import { ProxyVariant, type ProxyAccount } from '@shared/core';
 import { networkModel } from '@entities/network';
 import { AssetBalance } from '@entities/asset';
 import { walletProviderModel } from '../../model/wallet-provider-model';
 import { ProxyAccountWithActions } from './ProxyAccountWithActions';
 import { useToggle } from '@shared/lib/hooks';
 import { RemoveProxy } from '@widgets/RemoveProxy';
+import { RemovePureProxy, removePureProxyModel } from '../../../RemovePureProxyModal';
+import { accountUtils } from '@/src/renderer/entities/wallet';
 
 type Props = {
   canCreateProxy?: boolean;
@@ -21,6 +23,7 @@ export const ProxiesList = ({ className, canCreateProxy = true }: Props) => {
   const { t } = useI18n();
 
   const chains = useUnit(networkModel.$chains);
+  const accounts = useUnit(walletProviderModel.$accounts);
   const chainsProxies = useUnit(walletProviderModel.$chainsProxies);
   const walletProxyGroups = useUnit(walletProviderModel.$walletProxyGroups);
   const proxyForRemoval = useUnit(walletProviderModel.$proxyForRemoval);
@@ -29,8 +32,12 @@ export const ProxiesList = ({ className, canCreateProxy = true }: Props) => {
   const [isRemoveProxyOpen, toggleIsRemoveProxyOpen] = useToggle();
 
   const handleDeleteProxy = (proxyAccount: ProxyAccount) => {
-    walletProviderModel.events.removeProxy(proxyAccount);
-    toggleIsRemoveConfirmOpen();
+    if (accountUtils.isProxiedAccount(accounts[0]) && accounts[0].proxyVariant === ProxyVariant.PURE) {
+      removePureProxyModel.events.flowStarted();
+    } else {
+      walletProviderModel.events.removeProxy(proxyAccount);
+      toggleIsRemoveConfirmOpen();
+    }
   };
 
   return (
@@ -102,6 +109,7 @@ export const ProxiesList = ({ className, canCreateProxy = true }: Props) => {
       </ConfirmModal>
 
       <RemoveProxy isOpen={isRemoveProxyOpen} proxyAccount={proxyForRemoval} onClose={toggleIsRemoveProxyOpen} />
+      <RemovePureProxy />
     </div>
   );
 };

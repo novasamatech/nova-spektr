@@ -47,7 +47,12 @@ type GetPureProxyParams = {
   api: ApiPromise;
   accountId: AccountId;
 };
-const getPureProxyFx = createEffect(({ api, accountId }: GetPureProxyParams): Promise<AccountId> => {
+type GetPureProxyResult = {
+  accountId: AccountId;
+  blockNumber: number;
+  extrinsicIndex: number;
+};
+const getPureProxyFx = createEffect(({ api, accountId }: GetPureProxyParams): Promise<GetPureProxyResult> => {
   return new Promise((resolve) => {
     const pureCreatedParams = {
       section: 'proxy',
@@ -62,7 +67,14 @@ const getPureProxyFx = createEffect(({ api, accountId }: GetPureProxyParams): Pr
         fn();
       });
 
-      resolve(event.data[0].toHex());
+      const accountId = event.data[0].toHex();
+      const extrinsicIndex = event.index.toHuman();
+
+      resolve({
+        accountId,
+        blockNumber: 0,
+        extrinsicIndex: 0,
+      });
     });
   });
 });
@@ -237,8 +249,8 @@ sample({
     addProxyStore: $addProxyStore,
     proxyGroups: proxyModel.$proxyGroups,
   },
-  filter: ({ addProxyStore }, [accountId, wallet]) => Boolean(wallet.wallets[0].id) && Boolean(addProxyStore),
-  fn: ({ addProxyStore, proxyGroups }, [accountId, wallet]) => {
+  filter: ({ addProxyStore }, [_, wallet]) => Boolean(wallet.wallets[0].id) && Boolean(addProxyStore),
+  fn: ({ addProxyStore, proxyGroups }, [{ accountId }, wallet]) => {
     const newProxyGroup: NoID<ProxyGroup> = {
       walletId: wallet.wallets[0].id,
       chainId: addProxyStore!.chain.chainId,
@@ -275,7 +287,7 @@ sample({
   source: $addProxyStore,
   filter: (addPureProxiedStore: AddPureProxiedStore | null): addPureProxiedStore is AddPureProxiedStore =>
     Boolean(addPureProxiedStore),
-  fn: (addPureProxiedStore, accountId) => [
+  fn: (addPureProxiedStore, { accountId }) => [
     {
       accountId: addPureProxiedStore.account.accountId,
       proxiedAccountId: accountId,
@@ -293,7 +305,7 @@ sample({
   filter: (addPureProxiedStore: AddPureProxiedStore | null): addPureProxiedStore is AddPureProxiedStore => {
     return Boolean(addPureProxiedStore);
   },
-  fn: ({ chain, account }, accountId) => {
+  fn: ({ chain, account }, { accountId, blockNumber, extrinsicIndex }) => {
     const proxiedAccount = {
       accountId,
       chainId: chain.chainId,
@@ -301,6 +313,8 @@ sample({
       delay: 0,
       proxyType: ProxyType.ANY,
       proxyVariant: ProxyVariant.PURE,
+      blockNumber,
+      extrinsicIndex,
     } as PartialProxiedAccount;
 
     return {
