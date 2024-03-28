@@ -38,6 +38,7 @@ type FormParams = {
 
 type FormSubmitEvent = {
   transaction: {
+    pureTx: Transaction;
     wrappedTx: Transaction;
     multisigTx?: Transaction;
   };
@@ -660,17 +661,18 @@ sample({
   source: {
     realAccount: $realAccount,
     network: $networkStore,
+    pureTx: $pureTx,
     transaction: $transaction,
     isProxy: $isProxy,
     fee: $fee,
     xcmFee: xcmTransferModel.$xcmFee,
     multisigDeposit: $multisigDeposit,
   },
-  filter: ({ network, transaction }) => {
-    return Boolean(network) && Boolean(transaction);
+  filter: ({ network, pureTx, transaction }) => {
+    return Boolean(network) && Boolean(pureTx) && Boolean(transaction);
   },
-  fn: ({ realAccount, network, transaction, isProxy, ...fee }, formData) => {
-    const signatory = Object.keys(formData.signatory).length > 0 ? formData.signatory : undefined;
+  fn: ({ realAccount, network, pureTx, transaction, isProxy, ...fee }, formData) => {
+    const signatory = formData.signatory.accountId ? formData.signatory : undefined;
     // TODO: update after i18n effector integration
     const shortAddress = toShortAddress(formData.destination);
     const defaultText = `Transfer ${formData.amount} ${network!.asset.symbol} to ${shortAddress}`;
@@ -678,7 +680,11 @@ sample({
     const amount = formatAmount(formData.amount, network!.asset.precision);
 
     return {
-      transaction: transaction!,
+      transaction: {
+        pureTx: pureTx!,
+        wrappedTx: transaction!.wrappedTx,
+        multisigTx: transaction!.multisigTx,
+      },
       formData: {
         ...fee,
         ...formData,

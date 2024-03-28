@@ -25,6 +25,7 @@ const $step = createStore<Step>(Step.NONE);
 const $transferStore = createStore<TransferStore | null>(null);
 const $networkStore = restore<NetworkStore | null>(flowStarted, null);
 
+const $pureTx = createStore<Transaction | null>(null);
 const $transaction = createStore<Transaction | null>(null);
 const $multisigTx = createStore<Transaction | null>(null);
 
@@ -57,11 +58,13 @@ sample({
 sample({
   clock: formModel.output.formSubmitted,
   fn: ({ transaction, formData }) => ({
+    pureTx: transaction.pureTx,
     transaction: transaction.wrappedTx,
     multisigTx: transaction.multisigTx || null,
     transferStore: formData,
   }),
   target: spread({
+    pureTx: $pureTx,
     transaction: $transaction,
     multisigTx: $multisigTx,
     transferStore: $transferStore,
@@ -112,11 +115,11 @@ sample({
   source: {
     transferStore: $transferStore,
     networkStore: $networkStore,
-    transaction: $transaction,
+    pureTx: $pureTx,
     multisigTx: $multisigTx,
   },
   filter: (transferData) => {
-    return Boolean(transferData.transferStore) && Boolean(transferData.transaction);
+    return Boolean(transferData.transferStore) && Boolean(transferData.pureTx);
   },
   fn: (transferData, signParams) => ({
     event: {
@@ -125,7 +128,7 @@ sample({
       account: transferData.transferStore!.account,
       signatory: transferData.transferStore!.signatory,
       description: transferData.transferStore!.description,
-      transaction: transferData.transaction!,
+      transaction: transferData.pureTx!,
       multisigTx: transferData.multisigTx || undefined,
     },
     step: Step.SUBMIT,
