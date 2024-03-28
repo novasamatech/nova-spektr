@@ -64,7 +64,7 @@ const $warningForm = createForm<FormParams>({
       ],
     },
   },
-  validateOn: ['submit'],
+  validateOn: ['change', 'submit'],
 });
 
 sample({
