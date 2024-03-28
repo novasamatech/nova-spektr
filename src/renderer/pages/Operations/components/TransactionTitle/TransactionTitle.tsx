@@ -16,6 +16,7 @@ type Props = {
 export const TransactionTitle = ({ tx, description, className, children }: PropsWithChildren<Props>) => {
   const { t } = useI18n();
 
+  console.log('=== tx', tx);
   const title = getTransactionTitle(tx);
 
   return (

@@ -563,6 +563,7 @@
     "title": "Operations",
     "titles": {
       "addProxy": "Add delegated authority (proxy)",
+      "approveMultisig": "Approve multisig operation",
       "createPureProxy": "Add delegated authority (proxy)",
       "crossChainTransfer": "Cross-chain transfer",
       "destination": "Set reward destination",

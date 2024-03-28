@@ -96,6 +96,10 @@ export const getTransactionTitle = (transaction?: Transaction | DecodedTransacti
     return getTransactionTitle(transaction.args?.transactions?.[0]);
   }
 
+  if (transaction.type === TransactionType.PROXY) {
+    return getTransactionTitle(transaction.args?.transaction);
+  }
+
   return TransactionTitles[transaction.type];
 };
 
@@ -111,6 +115,10 @@ export const getModalTransactionTitle = (
 
   if (transaction.type === TransactionType.BATCH_ALL) {
     return getModalTransactionTitle(crossChain, transaction.args?.transactions?.[0]);
+  }
+
+  if (transaction.type === TransactionType.PROXY) {
+    return getModalTransactionTitle(crossChain, transaction.args?.transaction);
   }
 
   return TransactionTitlesModal[transaction.type](crossChain);
@@ -176,6 +184,12 @@ export const getTransactionAmount = (tx: Transaction | DecodedTransaction): stri
     );
 
     return getTransactionAmount(txMatch);
+  }
+  if (txType === TransactionType.PROXY) {
+    const transaction = tx.args?.transaction;
+    if (!transaction) return null;
+
+    return getTransactionAmount(transaction);
   }
 
   return null;

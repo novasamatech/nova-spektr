@@ -33,12 +33,12 @@ function buildTransfer({ chain, accountId, destination, asset, amount, xcmData }
 
   return {
     chainId: chain.chainId,
-    address: accountId,
+    address: toAddress(accountId, { prefix: chain.addressPrefix }),
     type: transactionType,
     args: {
       dest: toAddress(destination || TEST_ACCOUNTS[0], { prefix: chain.addressPrefix }),
       value: formatAmount(amount, asset.precision) || '1',
-      ...(!asset.type && { asset: getAssetId(asset) }),
+      ...(Boolean(asset.type) && { asset: getAssetId(asset) }),
       ...xcmData?.args,
     },
   };

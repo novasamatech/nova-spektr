@@ -55,12 +55,12 @@ type SignedExtrinsicParams = {
 const getSignedExtrinsicFx = createEffect(({ api, signature, unsignedTx }: SignedExtrinsicParams): Promise<string> => {
   return transactionService.getSignedExtrinsic(unsignedTx, signature, api);
 });
+
 type SubmitExtrinsicParams = {
   api: ApiPromise;
   unsignedTx: UnsignedTransaction;
   extrinsic: string;
 };
-
 const submitExtrinsicFx = createEffect(({ api, unsignedTx, extrinsic }: SubmitExtrinsicParams): void => {
   const boundExtrinsicSucceeded = scopeBind(extrinsicSucceeded, { safe: true });
   const boundExtrinsicFailed = scopeBind(extrinsicFailed, { safe: true });
@@ -80,6 +80,7 @@ type SaveMultisigParams = {
   multisigAccount: MultisigAccount;
   params: ExtrinsicResultParams;
   hooks: Callbacks;
+  description?: string;
 };
 
 type SaveMultisigResult = {
@@ -93,8 +94,9 @@ const saveMultisigTxFx = createEffect(
     multisigAccount,
     params,
     hooks,
+    description,
   }: SaveMultisigParams): Promise<SaveMultisigResult> => {
-    const { transaction: tx, event } = buildMultisigTx(transaction, multisigTx, params, multisigAccount);
+    const { transaction: tx, event } = buildMultisigTx(transaction, multisigTx, params, multisigAccount, description);
 
     hooks.addEventWithQueue(event);
     await hooks.addMultisigTx(tx);
@@ -176,11 +178,12 @@ sample({
     return matrixUtils.isLoggedIn(loginStatus) && Boolean(submitStore?.multisigTx);
   },
   fn: ({ submitStore, hooks }, params) => ({
-    transaction: submitStore?.transaction!,
-    multisigTx: submitStore?.multisigTx!,
-    multisigAccount: submitStore?.account! as MultisigAccount,
     params,
     hooks: hooks!,
+    transaction: submitStore!.transaction,
+    multisigTx: submitStore!.multisigTx!,
+    multisigAccount: submitStore!.account as MultisigAccount,
+    description: submitStore!.description,
   }),
   target: saveMultisigTxFx,
 });

@@ -245,12 +245,14 @@ type WrapperParams = {
 };
 type WrappedTransactions = {
   wrappedTx: Transaction;
+  coreTx: Transaction;
   multisigTx?: Transaction;
 };
 function getWrappedTransaction({ api, addressPrefix, transaction, txWrappers }: WrapperParams): WrappedTransactions {
   return txWrappers.reduce<WrappedTransactions>(
     (acc, txWrapper) => {
       if (hasMultisig([txWrapper])) {
+        acc.coreTx = acc.wrappedTx;
         acc.wrappedTx = wrapAsMulti({
           api,
           addressPrefix,
@@ -269,7 +271,7 @@ function getWrappedTransaction({ api, addressPrefix, transaction, txWrappers }: 
 
       return acc;
     },
-    { wrappedTx: transaction, multisigTx: undefined },
+    { wrappedTx: transaction, multisigTx: undefined, coreTx: transaction },
   );
 }
 
