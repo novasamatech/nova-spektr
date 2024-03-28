@@ -39,7 +39,7 @@ export type PartialProxyAccount = Omit<ProxyAccount, 'chainId'>;
 
 export type PartialProxiedAccount = Pick<
   ProxiedAccount,
-  'chainId' | 'proxyAccountId' | 'accountId' | 'delay' | 'proxyType' | 'proxyVariant'
+  'chainId' | 'proxyAccountId' | 'accountId' | 'delay' | 'proxyType' | 'proxyVariant' | 'blockNumber' | 'extrinsicIndex'
 >;
 
 export type ProxyDeposits = {

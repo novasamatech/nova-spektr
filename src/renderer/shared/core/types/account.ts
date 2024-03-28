@@ -49,6 +49,8 @@ export type ProxiedAccount = BaseAccount & {
   delay: number;
   proxyType: ProxyType;
   proxyVariant: ProxyVariant;
+  blockNumber?: number;
+  extrinsicIndex?: number;
 };
 
 export type Account = BaseAccount | ChainAccount | MultisigAccount | WalletConnectAccount | ProxiedAccount;
