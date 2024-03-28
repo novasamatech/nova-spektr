@@ -37,10 +37,10 @@ type FormParams = {
 };
 
 type FormSubmitEvent = {
-  transaction: {
-    pureTx: Transaction;
+  transactions: {
     wrappedTx: Transaction;
     multisigTx?: Transaction;
+    coreTx: Transaction;
   };
   formData: PartialBy<FormParams, 'signatory'> & {
     proxiedAccount?: ProxiedAccount;
@@ -661,17 +661,16 @@ sample({
   source: {
     realAccount: $realAccount,
     network: $networkStore,
-    pureTx: $pureTx,
     transaction: $transaction,
     isProxy: $isProxy,
     fee: $fee,
     xcmFee: xcmTransferModel.$xcmFee,
     multisigDeposit: $multisigDeposit,
   },
-  filter: ({ network, pureTx, transaction }) => {
-    return Boolean(network) && Boolean(pureTx) && Boolean(transaction);
+  filter: ({ network, transaction }) => {
+    return Boolean(network) && Boolean(transaction);
   },
-  fn: ({ realAccount, network, pureTx, transaction, isProxy, ...fee }, formData) => {
+  fn: ({ realAccount, network, transaction, isProxy, ...fee }, formData) => {
     const signatory = formData.signatory.accountId ? formData.signatory : undefined;
     // TODO: update after i18n effector integration
     const shortAddress = toShortAddress(formData.destination);
@@ -680,10 +679,10 @@ sample({
     const amount = formatAmount(formData.amount, network!.asset.precision);
 
     return {
-      transaction: {
-        pureTx: pureTx!,
+      transactions: {
         wrappedTx: transaction!.wrappedTx,
         multisigTx: transaction!.multisigTx,
+        coreTx: transaction!.coreTx,
       },
       formData: {
         ...fee,

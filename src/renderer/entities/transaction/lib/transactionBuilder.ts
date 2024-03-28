@@ -38,7 +38,7 @@ function buildTransfer({ chain, accountId, destination, asset, amount, xcmData }
     args: {
       dest: toAddress(destination || TEST_ACCOUNTS[0], { prefix: chain.addressPrefix }),
       value: formatAmount(amount, asset.precision) || '1',
-      ...(!asset.type && { asset: getAssetId(asset) }),
+      ...(Boolean(asset.type) && { asset: getAssetId(asset) }),
       ...xcmData?.args,
     },
   };

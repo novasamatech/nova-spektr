@@ -1,5 +1,6 @@
 import cn from 'classnames';
 import { useUnit } from 'effector-react';
+import { useMemo } from 'react';
 
 import { useI18n } from '@app/providers';
 import { AddressWithExplorers, WalletCardSm, walletModel, ExplorersPopover } from '@entities/wallet';
@@ -7,14 +8,6 @@ import { Icon, Button, FootnoteText, DetailRow } from '@shared/ui';
 import { copyToClipboard, truncate, cnTw, getAssetById } from '@shared/lib/utils';
 import { useToggle } from '@shared/lib/hooks';
 import { ExtendedChain, networkUtils } from '@entities/network';
-import {
-  MultisigTransaction,
-  Transaction,
-  isAddProxyTransaction,
-  isManageProxyTransaction,
-  isRemoveProxyTransaction,
-  isXcmTransaction,
-} from '@entities/transaction';
 import { AddressStyle, DescriptionBlockStyle, InteractionStyle } from '../common/constants';
 import { getMultisigExtrinsicLink } from '../common/utils';
 import { AssetBalance } from '@entities/asset';
@@ -26,6 +19,15 @@ import { singnatoryUtils } from '@entities/signatory';
 import { chainsService } from '@shared/api/network';
 import { proxyUtils } from '@entities/proxy';
 import { matrixModel } from '@entities/matrix';
+import {
+  MultisigTransaction,
+  Transaction,
+  isAddProxyTransaction,
+  isManageProxyTransaction,
+  isRemoveProxyTransaction,
+  isXcmTransaction,
+  isProxyTransaction,
+} from '@entities/transaction';
 
 type Props = {
   tx: MultisigTransaction;
@@ -71,6 +73,16 @@ export const OperationCardDetails = ({ tx, account, extendedChain }: Props) => {
   const extrinsicLink = getMultisigExtrinsicLink(callHash, indexCreated, blockCreated, explorers);
   const validatorsAsset =
     tx.transaction && getAssetById(tx.transaction.args.asset, chainsService.getChainById(tx.chainId)?.assets);
+
+  const destination = useMemo((): Address | undefined => {
+    if (!tx.transaction) return undefined;
+
+    if (isProxyTransaction(tx.transaction)) {
+      return tx.transaction.args.transaction.args.dest;
+    }
+
+    return tx.transaction.args.dest;
+  }, [tx]);
 
   const valueClass = 'text-text-secondary';
   const depositorWallet =
@@ -139,13 +151,13 @@ export const OperationCardDetails = ({ tx, account, extendedChain }: Props) => {
         </>
       )}
 
-      {transaction?.args.dest && (
+      {destination && (
         <DetailRow label={t('operation.details.recipient')} className={valueClass}>
           <AddressWithExplorers
             type="short"
             explorers={explorers}
             addressFont={AddressStyle}
-            accountId={transaction.args.dest}
+            address={destination}
             addressPrefix={addressPrefix}
             wrapperClassName="-mr-2 min-w-min"
           />

@@ -25,9 +25,9 @@ const $step = createStore<Step>(Step.NONE);
 const $transferStore = createStore<TransferStore | null>(null);
 const $networkStore = restore<NetworkStore | null>(flowStarted, null);
 
-const $pureTx = createStore<Transaction | null>(null);
-const $transaction = createStore<Transaction | null>(null);
+const $wrappedTx = createStore<Transaction | null>(null);
 const $multisigTx = createStore<Transaction | null>(null);
+const $coreTx = createStore<Transaction | null>(null);
 
 const $xcmChain = combine(
   {
@@ -57,16 +57,16 @@ sample({
 
 sample({
   clock: formModel.output.formSubmitted,
-  fn: ({ transaction, formData }) => ({
-    pureTx: transaction.pureTx,
-    transaction: transaction.wrappedTx,
-    multisigTx: transaction.multisigTx || null,
+  fn: ({ transactions, formData }) => ({
+    wrappedTx: transactions.wrappedTx,
+    multisigTx: transactions.multisigTx || null,
+    coreTx: transactions.coreTx,
     transferStore: formData,
   }),
   target: spread({
-    pureTx: $pureTx,
-    transaction: $transaction,
+    wrappedTx: $wrappedTx,
     multisigTx: $multisigTx,
+    coreTx: $coreTx,
     transferStore: $transferStore,
   }),
 });
@@ -90,17 +90,17 @@ sample({
   source: {
     transferStore: $transferStore,
     networkStore: $networkStore,
-    transaction: $transaction,
+    wrappedTx: $wrappedTx,
   },
-  filter: ({ transferStore, networkStore, transaction }) => {
-    return Boolean(transferStore) && Boolean(networkStore) && Boolean(transaction);
+  filter: ({ transferStore, networkStore, wrappedTx }) => {
+    return Boolean(transferStore) && Boolean(networkStore) && Boolean(wrappedTx);
   },
-  fn: ({ transferStore, networkStore, transaction }) => ({
+  fn: ({ transferStore, networkStore, wrappedTx }) => ({
     event: {
       chain: networkStore!.chain,
       account: transferStore!.account,
       signatory: transferStore!.signatory,
-      transaction: transaction!,
+      transaction: wrappedTx!,
     },
     step: Step.SIGN,
   }),
@@ -115,12 +115,10 @@ sample({
   source: {
     transferStore: $transferStore,
     networkStore: $networkStore,
-    pureTx: $pureTx,
     multisigTx: $multisigTx,
+    coreTx: $coreTx,
   },
-  filter: (transferData) => {
-    return Boolean(transferData.transferStore) && Boolean(transferData.pureTx);
-  },
+  filter: (transferData) => Boolean(transferData.transferStore),
   fn: (transferData, signParams) => ({
     event: {
       ...signParams,
@@ -128,7 +126,7 @@ sample({
       account: transferData.transferStore!.account,
       signatory: transferData.transferStore!.signatory,
       description: transferData.transferStore!.description,
-      transaction: transferData.pureTx!,
+      transaction: transferData.coreTx!,
       multisigTx: transferData.multisigTx || undefined,
     },
     step: Step.SUBMIT,
