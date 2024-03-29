@@ -1,2 +1,2 @@
 export * from './lib/types';
-export * from './xcmService';
+export { xcmService } from './service/xcmService';

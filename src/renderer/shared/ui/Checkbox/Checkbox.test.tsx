@@ -31,7 +31,7 @@ describe('ui/Checkbox', () => {
 
     input = screen.getByRole('checkbox');
     expect(input).toBeChecked();
-    expect(toggleCheck).toBeCalled();
+    expect(toggleCheck).toHaveBeenCalled();
     expect(isChecked).toEqual(true);
   });
 });
