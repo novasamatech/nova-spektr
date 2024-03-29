@@ -37,9 +37,10 @@ type FormParams = {
 };
 
 type FormSubmitEvent = {
-  transaction: {
+  transactions: {
     wrappedTx: Transaction;
     multisigTx?: Transaction;
+    coreTx: Transaction;
   };
   formData: PartialBy<FormParams, 'signatory'> & {
     proxiedAccount?: ProxiedAccount;
@@ -670,7 +671,7 @@ sample({
     return Boolean(network) && Boolean(transaction);
   },
   fn: ({ realAccount, network, transaction, isProxy, ...fee }, formData) => {
-    const signatory = Object.keys(formData.signatory).length > 0 ? formData.signatory : undefined;
+    const signatory = formData.signatory.accountId ? formData.signatory : undefined;
     // TODO: update after i18n effector integration
     const shortAddress = toShortAddress(formData.destination);
     const defaultText = `Transfer ${formData.amount} ${network!.asset.symbol} to ${shortAddress}`;
@@ -678,7 +679,11 @@ sample({
     const amount = formatAmount(formData.amount, network!.asset.precision);
 
     return {
-      transaction: transaction!,
+      transactions: {
+        wrappedTx: transaction!.wrappedTx,
+        multisigTx: transaction!.multisigTx,
+        coreTx: transaction!.coreTx,
+      },
       formData: {
         ...fee,
         ...formData,
