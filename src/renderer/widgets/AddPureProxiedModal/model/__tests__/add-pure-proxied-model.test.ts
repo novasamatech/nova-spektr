@@ -15,6 +15,10 @@ import { submitModel } from '../submit-model';
 import { subscriptionService } from '@entities/chain';
 
 describe('widgets/AddPureProxyModal/model/add-pure-proxied-model', () => {
+  beforeAll(() => {
+    jest.useFakeTimers();
+  });
+
   beforeEach(() => {
     jest.restoreAllMocks();
   });
@@ -23,7 +27,7 @@ describe('widgets/AddPureProxyModal/model/add-pure-proxied-model', () => {
     jest.spyOn(subscriptionService, 'subscribeEvents').mockImplementation((api, params, callback) => {
       callback({ data: [{ toHex: () => '0x01' }] } as unknown as Event);
 
-      return new Promise(() => {});
+      return Promise.resolve(() => {});
     });
 
     const scope = fork({
@@ -42,12 +46,10 @@ describe('widgets/AddPureProxyModal/model/add-pure-proxied-model', () => {
     await allSettled(formModel.output.formSubmitted, {
       scope,
       params: {
-        proxyDeposit: '1',
-        oldProxyDeposit: '0',
-        proxyNumber: 1,
         chain: testChain,
         account: { accountId: '0x00' } as unknown as Account,
         description: '',
+        proxyDeposit: '1',
       },
     });
 
@@ -67,7 +69,10 @@ describe('widgets/AddPureProxyModal/model/add-pure-proxied-model', () => {
 
     expect(scope.getState(addPureProxiedModel.$step)).toEqual(Step.SUBMIT);
 
-    await allSettled(submitModel.output.formSubmitted, { scope });
+    const action = allSettled(submitModel.output.formSubmitted, { scope });
+
+    await jest.runAllTimersAsync();
+    await action;
 
     expect(scope.getState(addPureProxiedModel.$step)).toEqual(Step.NONE);
   });

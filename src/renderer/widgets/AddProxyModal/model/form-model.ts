@@ -407,6 +407,7 @@ sample({
 sample({
   clock: $proxyForm.fields.chain.onChange,
   source: $proxiedAccounts,
+  filter: (proxiedAccounts) => proxiedAccounts.length > 0,
   fn: (proxiedAccounts) => proxiedAccounts[0].account,
   target: $proxyForm.fields.account.onChange,
 });

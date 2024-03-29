@@ -3,7 +3,7 @@ import { createForm } from 'effector-forms';
 import { BN } from '@polkadot/util';
 import { spread } from 'patronum';
 
-import { Address, ProxyType, Chain, Account, PartialBy } from '@shared/core';
+import { ProxyType, Chain, Account, PartialBy } from '@shared/core';
 import { networkModel, networkUtils } from '@entities/network';
 import { walletSelectModel } from '@features/wallets';
 import { proxiesUtils } from '@features/proxies/lib/proxies-utils';
@@ -17,15 +17,8 @@ import {
   TEST_ACCOUNTS,
   dictionary,
   transferableAmount,
+  toShortAddress,
 } from '@shared/lib/utils';
-
-type ProxyAccounts = {
-  accounts: {
-    address: Address;
-    proxyType: ProxyType;
-  }[];
-  deposit: string;
-};
 
 type FormParams = {
   chain: Chain;
@@ -48,8 +41,6 @@ const feeChanged = createEvent<string>();
 const isFeeLoadingChanged = createEvent<boolean>();
 const isProxyDepositLoadingChanged = createEvent<boolean>();
 
-// Deposits
-
 const $proxyDeposit = restore(proxyDepositChanged, '0');
 const $isProxyDepositLoading = restore(isProxyDepositLoadingChanged, false);
 const $multisigDeposit = restore(multisigDepositChanged, '0');
@@ -57,8 +48,6 @@ const $fee = restore(feeChanged, '0');
 const $isFeeLoading = restore(isFeeLoadingChanged, false);
 
 const $proxyQuery = createStore<string>('');
-const $maxProxies = createStore<number>(0);
-const $activeProxies = createStore<ProxyAccounts['accounts']>([]);
 
 const $isMultisig = createStore<boolean>(false);
 const $isProxy = createStore<boolean>(false);
@@ -67,17 +56,6 @@ const $proxyForm = createForm<FormParams>({
   fields: {
     chain: {
       init: {} as Chain,
-      rules: [
-        {
-          name: 'maxProxies',
-          errorText: 'proxy.addProxy.maxProxiesError',
-          source: combine({
-            maxProxies: $maxProxies,
-            proxies: $activeProxies,
-          }),
-          validator: (_v, _f, { maxProxies, proxies }) => maxProxies > proxies.length,
-        },
-      ],
     },
     account: {
       init: {} as Account,
@@ -353,6 +331,7 @@ sample({
 sample({
   clock: $proxyForm.fields.chain.onChange,
   source: $proxiedAccounts,
+  filter: (proxiedAccounts) => proxiedAccounts.length > 0,
   fn: (proxiedAccounts) => proxiedAccounts[0].account,
   target: $proxyForm.fields.account.onChange,
 });
@@ -399,16 +378,13 @@ sample({
 
 sample({
   clock: $proxyForm.formValidated,
-  source: {
-    proxyDeposit: $proxyDeposit,
-    proxies: $activeProxies,
-  },
-  fn: ({ proxyDeposit }, formData) => {
+  source: $proxyDeposit,
+  fn: (proxyDeposit, formData) => {
     const signatory = Object.keys(formData.signatory).length > 0 ? formData.signatory : undefined;
-    const proxied = toAddress(formData.account.accountId, {
+    const proxiedAddress = toAddress(formData.account.accountId, {
       prefix: formData.chain.addressPrefix,
     });
-    const multisigDescription = `Add pure proxy for ${proxied}`; // TODO: update after i18n effector integration
+    const multisigDescription = `Add pure proxy for ${toShortAddress(proxiedAddress)}`; // TODO: update after i18n effector integration
     const description = signatory ? formData.description || multisigDescription : '';
 
     return {

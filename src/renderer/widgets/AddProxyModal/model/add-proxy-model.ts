@@ -23,7 +23,8 @@ const flowFinished = createEvent();
 const $step = createStore<Step>(Step.NONE);
 
 const $addProxyStore = createStore<AddProxyStore | null>(null);
-const $transaction = createStore<Transaction | null>(null);
+const $wrappedTx = createStore<Transaction | null>(null);
+const $coreTx = createStore<Transaction | null>(null);
 const $multisigTx = createStore<Transaction | null>(null);
 
 const $txWrappers = createStore<TxWrappers>([]);
@@ -107,27 +108,28 @@ sample({
         ]
       : [];
 
-    const { wrappedTx, multisigTx } = transactionService.getWrappedTransaction({
+    const transactions = transactionService.getWrappedTransaction({
       api: apis[chain.chainId],
       addressPrefix: chain.addressPrefix,
       transaction,
       txWrappers: txWrappersAdapter,
     });
 
-    return { wrappedTx, multisigTx: multisigTx || null };
+    return { ...transactions, multisigTx: transactions.multisigTx || null };
   },
   target: spread({
-    wrappedTx: $transaction,
+    wrappedTx: $wrappedTx,
+    coreTx: $coreTx,
     multisigTx: $multisigTx,
   }),
 });
 
 sample({
   clock: formModel.output.formSubmitted,
-  source: $transaction,
-  filter: (transaction: Transaction | null): transaction is Transaction => Boolean(transaction),
-  fn: (transaction, formData) => ({
-    event: { ...formData, transaction },
+  source: $wrappedTx,
+  filter: (wrappedTx: Transaction | null): wrappedTx is Transaction => Boolean(wrappedTx),
+  fn: (wrappedTx, formData) => ({
+    event: { ...formData, transaction: wrappedTx },
     step: Step.CONFIRM,
   }),
   target: spread({
@@ -140,15 +142,15 @@ sample({
   clock: confirmModel.output.formSubmitted,
   source: {
     addProxyStore: $addProxyStore,
-    transaction: $transaction,
+    wrappedTx: $wrappedTx,
   },
-  filter: ({ addProxyStore, transaction }) => Boolean(addProxyStore) && Boolean(transaction),
-  fn: ({ addProxyStore, transaction }) => ({
+  filter: ({ addProxyStore, wrappedTx }) => Boolean(addProxyStore) && Boolean(wrappedTx),
+  fn: ({ addProxyStore, wrappedTx }) => ({
     event: {
       chain: addProxyStore!.chain,
       account: addProxyStore!.account,
       signatory: addProxyStore!.signatory,
-      transaction: transaction!,
+      transaction: wrappedTx!,
     },
     step: Step.SIGN,
   }),
@@ -162,11 +164,13 @@ sample({
   clock: signModel.output.formSubmitted,
   source: {
     addProxyStore: $addProxyStore,
-    transaction: $transaction,
+    coreTx: $coreTx,
     multisigTx: $multisigTx,
     txWrappers: $txWrappers,
   },
-  filter: (proxyData) => Boolean(proxyData.addProxyStore) && Boolean(proxyData.transaction),
+  filter: (proxyData) => {
+    return Boolean(proxyData.addProxyStore) && Boolean(proxyData.coreTx);
+  },
   fn: (proxyData, signParams) => ({
     event: {
       ...signParams,
@@ -174,7 +178,7 @@ sample({
       account: proxyData.addProxyStore!.account,
       signatory: proxyData.addProxyStore!.signatory,
       description: proxyData.addProxyStore!.description,
-      transaction: proxyData.transaction!,
+      transaction: proxyData.coreTx!,
       multisigTx: proxyData.multisigTx || undefined,
     },
     step: Step.SUBMIT,

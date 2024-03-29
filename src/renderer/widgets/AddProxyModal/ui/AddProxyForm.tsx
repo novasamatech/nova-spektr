@@ -94,7 +94,7 @@ const AccountSelector = () => {
 
   const proxiedAccounts = useUnit(formModel.$proxiedAccounts);
 
-  if (proxiedAccounts.length === 1) return null;
+  if (proxiedAccounts.length <= 1) return null;
 
   const options = proxiedAccounts.map(({ account, balance }) => {
     const isShard = accountUtils.isShardAccount(account);

@@ -101,7 +101,9 @@ export const ProxiesList = ({ className, canCreateProxy = true }: Props) => {
         </FootnoteText>
       </ConfirmModal>
 
-      <RemoveProxy isOpen={isRemoveProxyOpen} proxyAccount={proxyForRemoval} onClose={toggleIsRemoveProxyOpen} />
+      {proxyForRemoval && (
+        <RemoveProxy isOpen={isRemoveProxyOpen} proxyAccount={proxyForRemoval} onClose={toggleIsRemoveProxyOpen} />
+      )}
     </div>
   );
 };

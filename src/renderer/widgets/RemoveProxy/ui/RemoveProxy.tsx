@@ -16,19 +16,17 @@ import { SignatorySelectModal } from '@pages/Operations/components/modals/Signat
 import { useToggle } from '@shared/lib/hooks';
 import { balanceModel, balanceUtils } from '@entities/balance';
 import { Submit } from './Submit';
-import { removeProxyModel, Step } from '@widgets/RemoveProxy/model/remove-proxy-model';
 import { accountUtils } from '@entities/wallet';
+import { removeProxyModel, Step } from '../model/remove-proxy-model';
 
 type Props = {
   isOpen: boolean;
+  proxyAccount: ProxyAccount;
   onClose: () => void;
-  proxyAccount: ProxyAccount | null;
 };
 
 export const RemoveProxy = ({ isOpen, proxyAccount, onClose }: Props) => {
   const { t } = useI18n();
-
-  if (!proxyAccount) return null;
 
   const proxiedAccount = useUnit(removeProxyModel.$proxiedAccount);
   const proxiedWallet = useUnit(removeProxyModel.$proxiedWallet);
