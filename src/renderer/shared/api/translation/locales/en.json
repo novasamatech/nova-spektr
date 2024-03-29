@@ -545,6 +545,8 @@
       "addPureProxy": "Create pure proxy",
       "addPureProxyOn": "Create pure proxy on",
       "approve": "Approve",
+      "approveMultisig": "Approve multisig operation",
+      "createPureProxy": "Add delegated authority (pure proxy)",
       "destinationOn": "Set reward destination on",
       "nominateOn": "Change Validators on",
       "proxy": "Proxy",
@@ -568,7 +570,7 @@
     "titles": {
       "addProxy": "Add delegated authority (proxy)",
       "approveMultisig": "Approve multisig operation",
-      "createPureProxy": "Add delegated authority (proxy)",
+      "createPureProxy": "Add delegated authority (pure proxy)",
       "crossChainTransfer": "Cross-chain transfer",
       "destination": "Set reward destination",
       "nominate": "Change Validators",
