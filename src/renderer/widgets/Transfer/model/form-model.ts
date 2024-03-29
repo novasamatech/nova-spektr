@@ -27,6 +27,8 @@ import {
   dictionary,
 } from '@shared/lib/utils';
 
+type BalanceMap = Record<'balance' | 'native', string>;
+
 type FormParams = {
   account: Account;
   xcmChain: Chain;
@@ -68,9 +70,9 @@ const $isProxy = createStore<boolean>(false);
 
 const $isMyselfXcmOpened = createStore<boolean>(false).reset(xcmDestinationCancelled);
 
-const $accountBalance = createStore<string[]>(['0', '0']);
-const $signatoryBalance = createStore<string[]>(['0', '0']);
-const $proxyBalance = createStore<string[]>(['0', '0']);
+const $accountBalance = createStore<BalanceMap>({ balance: '0', native: '0' });
+const $signatoryBalance = createStore<BalanceMap>({ balance: '0', native: '0' });
+const $proxyBalance = createStore<BalanceMap>({ balance: '0', native: '0' });
 
 const $fee = restore(feeChanged, '0');
 const $multisigDeposit = restore(multisigDepositChanged, '0');
@@ -301,7 +303,7 @@ const $accounts = combine(
 
       return {
         account,
-        balances: [transferableAmount(balance), transferableAmount(nativeBalance)],
+        balances: { balance: transferableAmount(balance), native: transferableAmount(nativeBalance) },
       };
     });
   },
@@ -318,7 +320,7 @@ const $signatories = combine(
 
     const { chain, asset } = network;
 
-    return txWrappers.reduce<Array<{ signer: Account; balances: string[] }[]>>((acc, wrapper) => {
+    return txWrappers.reduce<Array<{ signer: Account; balances: BalanceMap }[]>>((acc, wrapper) => {
       if (!transactionService.hasMultisig([wrapper])) return acc;
 
       const balancedSignatories = (wrapper as MultisigTxWrapper).signatories.map((signatory) => {
@@ -336,7 +338,7 @@ const $signatories = combine(
 
         return {
           signer: signatory,
-          balances: [transferableAmount(balance), transferableAmount(nativeBalance)],
+          balances: { balance: transferableAmount(balance), native: transferableAmount(nativeBalance) },
         };
       });
 
@@ -540,7 +542,7 @@ sample({
   fn: (accounts, account) => {
     const match = accounts.find((a) => a.account.id === account.id);
 
-    return match?.balances || ['0', '0'];
+    return match?.balances || { balance: '0', native: '0' };
   },
   target: $accountBalance,
 });
@@ -572,7 +574,7 @@ sample({
       );
     }
 
-    return [transferableAmount(balance), transferableAmount(nativeBalance)];
+    return { balance: transferableAmount(balance), native: transferableAmount(nativeBalance) };
   },
   target: $proxyBalance,
 });
@@ -584,7 +586,7 @@ sample({
   fn: (signatories, signatory) => {
     const match = signatories[0].find(({ signer }) => signer.id === signatory.id);
 
-    return match?.balances || ['0', '0'];
+    return match?.balances || { balance: '0', native: '0' };
   },
   target: $signatoryBalance,
 });

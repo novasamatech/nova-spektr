@@ -19,6 +19,7 @@ import {
   TEST_ACCOUNTS,
   dictionary,
   transferableAmount,
+  toShortAddress,
 } from '@shared/lib/utils';
 
 type ProxyAccounts = {
@@ -533,10 +534,10 @@ sample({
   },
   fn: ({ newProxyDeposit, oldProxyDeposit, proxies }, formData) => {
     const signatory = Object.keys(formData.signatory).length > 0 ? formData.signatory : undefined;
-    const proxied = toAddress(formData.account.accountId, {
+    const proxiedAddress = toAddress(formData.account.accountId, {
       prefix: formData.chain.addressPrefix,
     });
-    const multisigDescription = `Add proxy for ${proxied}`; // TODO: update after i18n effector integration
+    const multisigDescription = `Add proxy for ${toShortAddress(proxiedAddress)}`; // TODO: update after i18n effector integration
     const description = signatory ? formData.description || multisigDescription : '';
 
     return {

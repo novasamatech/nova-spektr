@@ -4,7 +4,7 @@ import { Event } from '@polkadot/types/interfaces';
 import { ApiPromise } from '@polkadot/api';
 import { UnsubscribePromise } from '@polkadot/api/types';
 
-import { Transaction, TransactionType, TxWrapper, transactionService } from '@entities/transaction';
+import { Transaction, TransactionType, TxWrapper, transactionService, WrapperKind } from '@entities/transaction';
 import { toAddress } from '@shared/lib/utils';
 import { walletSelectModel } from '@features/wallets';
 import { walletModel, walletUtils } from '@entities/wallet';
@@ -138,7 +138,7 @@ sample({
     const txWrappersAdapter: TxWrapper[] = isMultisig
       ? [
           {
-            kind: 'multisig',
+            kind: WrapperKind.MULTISIG,
             multisigAccount: account as MultisigAccount,
             signatories: (account as MultisigAccount).signatories.map((s) => ({ accountId: s.accountId })) as Account[],
             signer: { accountId: signatory!.accountId } as Account,

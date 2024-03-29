@@ -52,7 +52,7 @@ export const TransferForm = ({ onGoBack }: Props) => {
       </div>
       <ActionsSection onGoBack={onGoBack} />
 
-      <MyselfAccount />
+      <MyselfAccountModal />
     </div>
   );
 };
@@ -65,14 +65,14 @@ const ProxyFeeAlert = () => {
   } = useForm(formModel.$transferForm);
 
   const fee = useUnit(formModel.$fee);
-  const [_, nativeBalance] = useUnit(formModel.$proxyBalance);
+  const { native } = useUnit(formModel.$proxyBalance);
   const network = useUnit(formModel.$networkStore);
   const proxyWallet = useUnit(formModel.$proxyWallet);
 
   if (!network || !proxyWallet || !account.hasError()) return null;
 
   const formattedFee = formatBalance(fee, network.asset.precision).value;
-  const formattedBalance = formatBalance(nativeBalance, network.asset.precision).value;
+  const formattedBalance = formatBalance(native, network.asset.precision).value;
 
   const wallet = (
     <span className="inline-flex gap-x-1 items-center mx-1 align-bottom max-w-[200px]">
@@ -125,7 +125,7 @@ const AccountSelector = () => {
             name={isShard ? toShortAddress(address, 16) : account.name}
             canCopy={false}
           />
-          <AssetBalance value={balances[0]} asset={network.asset} />
+          <AssetBalance value={balances.balance} asset={network.asset} />
         </div>
       ),
     };
@@ -173,7 +173,7 @@ const SignatorySelector = () => {
             name={isShard ? address : signer.name}
             canCopy={false}
           />
-          <AssetBalance value={balances[0]} asset={network.asset} />
+          <AssetBalance value={balances.balance} asset={network.asset} />
         </div>
       ),
     };
@@ -287,7 +287,7 @@ const Amount = () => {
     fields: { amount },
   } = useForm(formModel.$transferForm);
 
-  const [balance] = useUnit(formModel.$accountBalance);
+  const { balance } = useUnit(formModel.$accountBalance);
   const network = useUnit(formModel.$networkStore);
 
   if (!network) return null;
@@ -389,7 +389,7 @@ const FeeSection = () => {
   );
 };
 
-const MyselfAccount = () => {
+const MyselfAccountModal = () => {
   const {
     fields: { xcmChain },
   } = useForm(formModel.$transferForm);

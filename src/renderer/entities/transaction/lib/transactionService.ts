@@ -31,6 +31,7 @@ import {
   TxWrapper,
   MultisigTxWrapper,
   ProxyTxWrapper,
+  WrapperKind,
 } from './common/types';
 import { walletUtils, accountUtils } from '../../wallet';
 
@@ -137,11 +138,11 @@ function submitAndWatchExtrinsic(
 }
 
 function hasMultisig(txWrappers: TxWrapper[]): boolean {
-  return txWrappers.some((wrapper) => wrapper.kind === 'multisig');
+  return txWrappers.some((wrapper) => wrapper.kind === WrapperKind.MULTISIG);
 }
 
 function hasProxy(txWrappers: TxWrapper[]): boolean {
-  return txWrappers.some((wrapper) => wrapper.kind === 'proxy');
+  return txWrappers.some((wrapper) => wrapper.kind === WrapperKind.PROXY);
 }
 
 type TxWrappersParams = {
@@ -185,7 +186,7 @@ function getMultisigWrapper({ wallets, accounts, account, signatories = [] }: Om
   }, []);
 
   const wrapper: MultisigTxWrapper = {
-    kind: 'multisig',
+    kind: WrapperKind.MULTISIG,
     multisigAccount: account as MultisigAccount,
     signatories: signers,
     signer: signatories[0] || ({} as Account),
@@ -221,7 +222,7 @@ function getProxyWrapper({ wallets, accounts, account, signatories = [] }: Omit<
   }, []);
 
   const wrapper: ProxyTxWrapper = {
-    kind: 'proxy',
+    kind: WrapperKind.PROXY,
     proxyAccount: proxiesMap[0].account,
     proxiedAccount: account as ProxiedAccount,
   };
@@ -352,7 +353,7 @@ export const useTransaction = (): ITransactionService => {
           addressPrefix,
           transaction,
           txWrapper: {
-            kind: 'multisig',
+            kind: WrapperKind.MULTISIG,
             multisigAccount: wrapper.account,
             signatories: wrapper.account.signatories.map((s) => ({ accountId: s.accountId })) as Account[],
             signer: { accountId: wrapper.signatoryId } as Account,

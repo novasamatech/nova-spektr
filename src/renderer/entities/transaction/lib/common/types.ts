@@ -98,15 +98,20 @@ export interface XTokenPalletTransferArgs extends Args {
   destWeight?: number;
 }
 
+export const enum WrapperKind {
+  MULTISIG = 'multisig',
+  PROXY = 'proxy',
+}
+
 export type MultisigTxWrapper = {
-  kind: 'multisig';
+  kind: WrapperKind.MULTISIG;
   multisigAccount: MultisigAccount;
   signatories: Account[];
   signer: Account;
 };
 
 export type ProxyTxWrapper = {
-  kind: 'proxy';
+  kind: WrapperKind.PROXY;
   proxyAccount: Account;
   proxiedAccount: ProxiedAccount;
 };
