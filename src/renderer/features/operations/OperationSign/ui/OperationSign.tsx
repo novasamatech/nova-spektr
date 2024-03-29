@@ -2,19 +2,19 @@ import { useUnit } from 'effector-react';
 
 import { SigningType } from '@shared/core';
 import { walletModel } from '@entities/wallet';
-import { SigningProps, InnerSigningProps } from '../../model/types';
-import { VaultSigning } from '../VaultSigning/VaultSigning';
-import { WalletConnect } from '../WalletConnect/WalletConnect';
+import { SigningProps, InnerSigningProps } from '../lib/types';
+import { Vault } from './Vault';
+import { WalletConnect } from './WalletConnect';
 
-export const SigningFlow: Record<SigningType, (props: InnerSigningProps) => JSX.Element | null> = {
-  [SigningType.MULTISIG]: (props) => <VaultSigning {...props} />,
-  [SigningType.POLKADOT_VAULT]: (props) => <VaultSigning {...props} />,
-  [SigningType.PARITY_SIGNER]: (props) => <VaultSigning {...props} />,
+const SigningFlow: Record<SigningType, (props: InnerSigningProps) => JSX.Element | null> = {
+  [SigningType.MULTISIG]: (props) => <Vault {...props} />,
+  [SigningType.POLKADOT_VAULT]: (props) => <Vault {...props} />,
+  [SigningType.PARITY_SIGNER]: (props) => <Vault {...props} />,
   [SigningType.WALLET_CONNECT]: (props) => <WalletConnect {...props} />,
   [SigningType.WATCH_ONLY]: () => null,
 };
 
-export const Signing = (props: SigningProps) => {
+export const OperationSign = (props: SigningProps) => {
   // TODO: not always __activeWallet__ is a signing wallet, need to rely on __signerWaller__
   const activeWallet = useUnit(walletModel.$activeWallet);
   const wallets = useUnit(walletModel.$wallets);

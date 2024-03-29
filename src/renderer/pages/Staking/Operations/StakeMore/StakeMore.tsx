@@ -13,7 +13,7 @@ import { useToggle } from '@shared/lib/hooks';
 import { Account, ChainId, HexString, MultisigAccount } from '@shared/core';
 import { BaseModal, Button, Loader } from '@shared/ui';
 import { OperationTitle } from '@entities/chain';
-import { Signing } from '@features/operation';
+import { OperationSign } from '@features/operations';
 import { walletModel, walletUtils } from '@entities/wallet';
 import { priceProviderModel } from '@entities/price';
 import { StakingPopover } from '../components/StakingPopover/StakingPopover';
@@ -197,7 +197,7 @@ export const StakeMore = () => {
           </Confirmation>
         )}
         {activeStep === Step.SIGNING && (
-          <Signing
+          <OperationSign
             chainId={chainId}
             api={api}
             addressPrefix={addressPrefix}

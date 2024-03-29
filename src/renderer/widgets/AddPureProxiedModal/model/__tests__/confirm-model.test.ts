@@ -25,15 +25,10 @@ describe('widgets/AddPureProxyModal/model/confirm-model', () => {
       signatory: { walletId: 2 } as unknown as Account,
       description: '',
       transaction: {} as Transaction,
-
-      oldProxyDeposit: '0',
-      proxyNumber: 0,
+      proxyDeposit: '0',
     };
 
-    await allSettled(confirmModel.events.formInitiated, {
-      scope,
-      params: store,
-    });
+    await allSettled(confirmModel.events.formInitiated, { scope, params: store });
 
     expect(scope.getState(confirmModel.$api)).toEqual(testApi);
     expect(scope.getState(confirmModel.$confirmStore)).toEqual(store);
@@ -43,11 +38,7 @@ describe('widgets/AddPureProxyModal/model/confirm-model', () => {
 
   test('should fill data for confirm model for polkadot vault account', async () => {
     const scope = fork({
-      values: new Map()
-        .set(networkModel.$apis, {
-          '0x00': testApi,
-        })
-        .set(walletModel.$wallets, [initiatorWallet]),
+      values: new Map().set(networkModel.$apis, { '0x00': testApi }).set(walletModel.$wallets, [initiatorWallet]),
     });
 
     const store = {
@@ -55,15 +46,10 @@ describe('widgets/AddPureProxyModal/model/confirm-model', () => {
       account: { walletId: 1 } as unknown as Account,
       description: '',
       transaction: {} as Transaction,
-
-      oldProxyDeposit: '0',
-      proxyNumber: 0,
+      proxyDeposit: '0',
     };
 
-    await allSettled(confirmModel.events.formInitiated, {
-      scope,
-      params: store,
-    });
+    await allSettled(confirmModel.events.formInitiated, { scope, params: store });
 
     expect(scope.getState(confirmModel.$api)).toEqual(testApi);
     expect(scope.getState(confirmModel.$confirmStore)).toEqual(store);

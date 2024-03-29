@@ -7,10 +7,10 @@ import { ValidationErrors, toAddress } from '@shared/lib/utils';
 import { useTransaction, ScanMultiframeQr, ScanSingleframeQr, QrReaderWrapper } from '@entities/transaction';
 import { walletModel, accountUtils, walletUtils } from '@entities/wallet';
 import type { HexString, Address } from '@shared/core';
-import type { InnerSigningProps } from '../../model/types';
-import { transformEcdsaSignature } from '../../lib/utils';
+import type { InnerSigningProps } from '../lib/types';
+import { operationSignUtils } from '../lib/operation-sign-utils';
 
-export const VaultSigning = ({
+export const Vault = ({
   chainId,
   api,
   addressPrefix,
@@ -43,8 +43,8 @@ export const VaultSigning = ({
   const handleSignature = async (data: string | string[]): Promise<void> => {
     const isMultishard = Array.isArray(data);
     const signatures = isMultishard
-      ? (data as HexString[]).map(transformEcdsaSignature)
-      : [data as HexString].map(transformEcdsaSignature);
+      ? (data as HexString[]).map(operationSignUtils.transformEcdsaSignature)
+      : [data as HexString].map(operationSignUtils.transformEcdsaSignature);
 
     const accountIds = isMultiframe ? accounts.map((t) => t.accountId) : [(signatory || accounts[0])?.accountId];
 

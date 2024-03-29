@@ -18,7 +18,7 @@ import { OperationTitle } from '@entities/chain';
 import { DestinationType } from '../common/types';
 import { UnstakingDuration } from '@pages/Staking/Overview/components';
 import { useNetworkData, networkUtils } from '@entities/network';
-import { Signing } from '@features/operation';
+import { OperationSign } from '@features/operations';
 import { walletModel, walletUtils } from '@entities/wallet';
 import { priceProviderModel } from '@entities/price';
 import { StakingPopover } from '../components/StakingPopover/StakingPopover';
@@ -250,7 +250,7 @@ export const Bond = () => {
           </Confirmation>
         )}
         {activeStep === Step.SIGNING && (
-          <Signing
+          <OperationSign
             chainId={chainId}
             api={api}
             addressPrefix={addressPrefix}

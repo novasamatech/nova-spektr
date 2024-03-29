@@ -5,6 +5,14 @@ import { Transaction } from '@entities/transaction';
 import { ValidationErrors } from '@shared/lib/utils';
 import type { Account, ChainId, HexString, Wallet } from '@shared/core';
 
+export const enum ReconnectStep {
+  NOT_STARTED,
+  READY_TO_RECONNECT,
+  RECONNECTING,
+  REJECTED,
+  SUCCESS,
+}
+
 export type SigningProps = {
   signerWaller?: Wallet;
   chainId: ChainId;

@@ -3,8 +3,8 @@ import { BN } from '@polkadot/util';
 import { useEffect, useState } from 'react';
 import { useUnit } from 'effector-react';
 
-import { OperationFooter, OperationHeader } from '@features/operation';
 import { useI18n } from '@app/providers';
+import { OperationFooter, OperationHeader } from '@features/operations';
 import { Transaction, TransactionType, OperationError } from '@entities/transaction';
 import { formatAmount, stakeableAmount, toAddress, nonNullable, TEST_ADDRESS } from '@shared/lib/utils';
 import { validatorsService } from '@entities/staking';

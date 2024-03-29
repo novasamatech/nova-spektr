@@ -13,11 +13,11 @@ import wallet_connect_confirm from '@shared/assets/video/wallet_connect_confirm.
 import wallet_connect_confirm_webm from '@shared/assets/video/wallet_connect_confirm.webm';
 import { HexString } from '@shared/core';
 import { Animation } from '@shared/ui/Animation/Animation';
-import { walletConnectSignModel } from '../../model/wallet-connect-sign-model';
-import { isConnectedStep, isReadyToReconnectStep, isReconnectingStep, isRejectedStep } from '../../lib/utils';
 import { walletModel } from '@entities/wallet';
-import { signModel } from '../../model/sign-model';
-import type { InnerSigningProps } from '../../model/types';
+import { InnerSigningProps } from '../lib/types';
+import { signWcModel } from '../model/sign-wc-model';
+import { operationSignModel } from '../model/operation-sign-model';
+import { operationSignUtils } from '../lib/operation-sign-utils';
 
 export const WalletConnect = ({
   api,
@@ -34,10 +34,10 @@ export const WalletConnect = ({
 
   const session = useUnit(walletConnectModel.$session);
   const client = useUnit(walletConnectModel.$client);
-  const reconnectStep = useUnit(walletConnectSignModel.$reconnectStep);
-  const isSigningRejected = useUnit(walletConnectSignModel.$isSigningRejected);
-  const signature = useUnit(walletConnectSignModel.$signature);
-  const isStatusShown = useUnit(walletConnectSignModel.$isStatusShown);
+  const reconnectStep = useUnit(signWcModel.$reconnectStep);
+  const isSigningRejected = useUnit(signWcModel.$isSigningRejected);
+  const signature = useUnit(signWcModel.$signature);
+  const isStatusShown = useUnit(signWcModel.$isStatusShown);
   const storedAccounts = useUnit(walletModel.$accounts);
 
   const chains = chainsService.getChainsData();
@@ -49,7 +49,7 @@ export const WalletConnect = ({
   const transaction = transactions[0];
   const account = signatory || accounts[0];
 
-  useGate(signModel.SignerGate, account);
+  useGate(operationSignModel.SignerGate, account);
 
   useEffect(() => {
     if (txPayload || !client) return;
@@ -64,7 +64,7 @@ export const WalletConnect = ({
 
       setupTransaction().catch(() => console.warn('WalletConnect | setupTransaction() failed'));
     } else {
-      walletConnectSignModel.events.reconnectModalShown();
+      signWcModel.events.reconnectModalShown();
     }
   }, [transaction, api]);
 
@@ -102,7 +102,7 @@ export const WalletConnect = ({
   };
 
   const reconnect = () => {
-    walletConnectSignModel.events.reconnectStarted({
+    signWcModel.events.reconnectStarted({
       chains: walletConnectUtils.getWalletConnectChains(chains),
       pairing: { topic: account.signingExtras?.pairingTopic },
     });
@@ -111,7 +111,7 @@ export const WalletConnect = ({
   const signTransaction = async () => {
     if (!api || !client || !session) return;
 
-    walletConnectSignModel.events.signingStarted({
+    signWcModel.events.signingStarted({
       client,
       payload: {
         // eslint-disable-next-line i18next/no-literal-string
@@ -143,34 +143,34 @@ export const WalletConnect = ({
   const walletName = session?.peer.metadata.name || t('operation.walletConnect.defaultWalletName');
 
   const getStatusProps = () => {
-    if (isReconnectingStep(reconnectStep)) {
+    if (operationSignUtils.isReconnectingStep(reconnectStep)) {
       return {
         title: t('operation.walletConnect.reconnect.reconnecting'),
         content: <Animation variant="loading" loop />,
         onClose: () => {
-          walletConnectSignModel.events.reconnectAborted();
+          signWcModel.events.reconnectAborted();
           onGoBack();
         },
       };
     }
 
-    if (isConnectedStep(reconnectStep)) {
+    if (operationSignUtils.isConnectedStep(reconnectStep)) {
       return {
         title: t('operation.walletConnect.reconnect.connected'),
         content: <Animation variant="success" />,
         onClose: () => {
-          walletConnectSignModel.events.reconnectDone();
+          signWcModel.events.reconnectDone();
           setupTransaction();
         },
       };
     }
 
-    if (isRejectedStep(reconnectStep)) {
+    if (operationSignUtils.isRejectedStep(reconnectStep)) {
       return {
         title: t('operation.walletConnect.rejected'),
         content: <Animation variant="error" />,
         onClose: () => {
-          walletConnectSignModel.events.reconnectAborted();
+          signWcModel.events.reconnectAborted();
           onGoBack();
         },
       };
@@ -181,7 +181,7 @@ export const WalletConnect = ({
         title: t('operation.walletConnect.rejected'),
         content: <Animation variant="error" />,
         onClose: () => {
-          walletConnectSignModel.events.reset();
+          signWcModel.events.reset();
           onGoBack();
         },
       };
@@ -231,7 +231,7 @@ export const WalletConnect = ({
 
       <ConfirmModal
         panelClass="w-[300px]"
-        isOpen={isReadyToReconnectStep(reconnectStep)}
+        isOpen={operationSignUtils.isReadyToReconnectStep(reconnectStep)}
         confirmText={t('operation.walletConnect.reconnect.confirmButton')}
         cancelText={t('operation.walletConnect.reconnect.cancelButton')}
         onClose={onGoBack}

@@ -2,7 +2,7 @@ import { useUnit } from 'effector-react';
 import { UnsignedTransaction } from '@substrate/txwrapper-polkadot';
 
 import type { HexString } from '@shared/core';
-import { Signing } from '@features/operation';
+import { OperationSign } from '@features/operations';
 import { signModel } from '../model/sign-model';
 
 type Props = {
@@ -24,7 +24,7 @@ export const Sign = ({ onGoBack }: Props) => {
   };
 
   return (
-    <Signing
+    <OperationSign
       api={api}
       chainId={signStore.chain.chainId}
       addressPrefix={signStore.chain.addressPrefix}
