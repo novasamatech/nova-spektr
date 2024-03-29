@@ -14,6 +14,7 @@ import { getTransactionFromMultisigTx } from '@entities/multisig';
 import type { Address, MultisigAccount, ProxyType, Validator } from '@shared/core';
 import { useValidatorsMap, SelectedValidatorsModal } from '@entities/staking';
 import { proxyUtils } from '@entities/proxy';
+import { getDestination } from '../common/utils';
 import {
   MultisigTransaction,
   Transaction,
@@ -76,15 +77,7 @@ export const Details = ({ tx, account, extendedChain, signatory }: Props) => {
     return { wallet: proxiedWallet, account: proxiedAccount };
   }, [tx, wallets, accounts]);
 
-  const destination = useMemo((): Address | undefined => {
-    if (!tx.transaction) return undefined;
-
-    if (isProxyTransaction(tx.transaction)) {
-      return tx.transaction.args.transaction.args.dest;
-    }
-
-    return tx.transaction.args.dest;
-  }, [tx]);
+  const destination = useMemo(() => getDestination(tx), [tx]);
 
   const hasSender = isXcmTransaction(tx.transaction) || isTransferTransaction(tx.transaction);
 
@@ -109,14 +102,14 @@ export const Details = ({ tx, account, extendedChain, signatory }: Props) => {
 
       {proxied && (
         <>
-          <DetailRow label="Sender wallet (proxied)">
+          <DetailRow label={t('operation.details.senderProxiedWallet')}>
             <div className="flex gap-x-2 items-center max-w-none">
               <WalletIcon type={proxied.wallet.type} size={16} />
               <FootnoteText>{proxied.wallet.name}</FootnoteText>
             </div>
           </DetailRow>
 
-          <DetailRow label="Sender account" className="text-text-secondary">
+          <DetailRow label={t('operation.details.senderAccount')} className="text-text-secondary">
             <AddressWithExplorers
               explorers={explorers}
               addressFont={AddressStyle}

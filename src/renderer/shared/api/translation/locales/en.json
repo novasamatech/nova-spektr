@@ -457,6 +457,8 @@
       "rejectReason": "Reject reason",
       "revokeFor": "Revoke for",
       "sender": "Sender",
+      "senderAccount": "Sender account",
+      "senderProxiedWallet": "Sender wallet (proxied)",
       "timePoint": "Time Point",
       "toNetwork": "To network",
       "validators": "Validators"

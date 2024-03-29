@@ -9,7 +9,7 @@ import { copyToClipboard, truncate, cnTw, getAssetById } from '@shared/lib/utils
 import { useToggle } from '@shared/lib/hooks';
 import { ExtendedChain, networkUtils } from '@entities/network';
 import { AddressStyle, DescriptionBlockStyle, InteractionStyle } from '../common/constants';
-import { getMultisigExtrinsicLink } from '../common/utils';
+import { getMultisigExtrinsicLink, getDestination } from '../common/utils';
 import { AssetBalance } from '@entities/asset';
 import { ChainTitle } from '@entities/chain';
 import type { Address, MultisigAccount, ProxyType, Validator } from '@shared/core';
@@ -26,7 +26,6 @@ import {
   isManageProxyTransaction,
   isRemoveProxyTransaction,
   isXcmTransaction,
-  isProxyTransaction,
 } from '@entities/transaction';
 
 type Props = {
@@ -74,15 +73,7 @@ export const OperationCardDetails = ({ tx, account, extendedChain }: Props) => {
   const validatorsAsset =
     tx.transaction && getAssetById(tx.transaction.args.asset, chainsService.getChainById(tx.chainId)?.assets);
 
-  const destination = useMemo((): Address | undefined => {
-    if (!tx.transaction) return undefined;
-
-    if (isProxyTransaction(tx.transaction)) {
-      return tx.transaction.args.transaction.args.dest;
-    }
-
-    return tx.transaction.args.dest;
-  }, [tx]);
+  const destination = useMemo(() => getDestination(tx), [tx]);
 
   const valueClass = 'text-text-secondary';
   const depositorWallet =

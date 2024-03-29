@@ -2,8 +2,18 @@ import { TFunction } from 'react-i18next';
 
 import { accountUtils, walletUtils } from '@entities/wallet';
 import { formatSectionAndMethod, toAddress } from '@shared/lib/utils';
-import { TransferTypes, XcmTypes } from '@entities/transaction';
-import type { Account, AccountId, ChainId, Contact, Explorer, HexString, Signatory, Wallet } from '@shared/core';
+import { TransferTypes, XcmTypes, isProxyTransaction } from '@entities/transaction';
+import type {
+  Account,
+  AccountId,
+  ChainId,
+  Contact,
+  Explorer,
+  HexString,
+  Signatory,
+  Wallet,
+  Address,
+} from '@shared/core';
 import {
   DecodedTransaction,
   MultisigEvent,
@@ -251,4 +261,14 @@ export const getSignatoryAccounts = (
 
     return acc;
   }, []);
+};
+
+export const getDestination = (tx: MultisigTransaction): Address | undefined => {
+  if (!tx.transaction) return undefined;
+
+  if (isProxyTransaction(tx.transaction)) {
+    return tx.transaction.args.transaction.args.dest;
+  }
+
+  return tx.transaction.args.dest;
 };
