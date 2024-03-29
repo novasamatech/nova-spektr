@@ -118,7 +118,9 @@ sample({
     multisigTx: $multisigTx,
     coreTx: $coreTx,
   },
-  filter: (transferData) => Boolean(transferData.transferStore),
+  filter: (transferData) => {
+    return Boolean(transferData.transferStore) && Boolean(transferData.coreTx);
+  },
   fn: (transferData, signParams) => ({
     event: {
       ...signParams,
