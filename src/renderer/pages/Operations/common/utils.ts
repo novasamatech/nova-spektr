@@ -2,8 +2,18 @@ import { TFunction } from 'react-i18next';
 
 import { accountUtils, walletUtils } from '@entities/wallet';
 import { formatSectionAndMethod, toAddress } from '@shared/lib/utils';
-import { TransferTypes, XcmTypes } from '@entities/transaction';
-import type { Account, AccountId, ChainId, Contact, Explorer, HexString, Signatory, Wallet } from '@shared/core';
+import { TransferTypes, XcmTypes, isProxyTransaction } from '@entities/transaction';
+import type {
+  Account,
+  AccountId,
+  ChainId,
+  Contact,
+  Explorer,
+  HexString,
+  Signatory,
+  Wallet,
+  Address,
+} from '@shared/core';
 import {
   DecodedTransaction,
   MultisigEvent,
@@ -96,6 +106,10 @@ export const getTransactionTitle = (transaction?: Transaction | DecodedTransacti
     return getTransactionTitle(transaction.args?.transactions?.[0]);
   }
 
+  if (transaction.type === TransactionType.PROXY) {
+    return getTransactionTitle(transaction.args?.transaction);
+  }
+
   return TransactionTitles[transaction.type];
 };
 
@@ -111,6 +125,10 @@ export const getModalTransactionTitle = (
 
   if (transaction.type === TransactionType.BATCH_ALL) {
     return getModalTransactionTitle(crossChain, transaction.args?.transactions?.[0]);
+  }
+
+  if (transaction.type === TransactionType.PROXY) {
+    return getModalTransactionTitle(crossChain, transaction.args?.transaction);
   }
 
   return TransactionTitlesModal[transaction.type](crossChain);
@@ -177,6 +195,12 @@ export const getTransactionAmount = (tx: Transaction | DecodedTransaction): stri
 
     return getTransactionAmount(txMatch);
   }
+  if (txType === TransactionType.PROXY) {
+    const transaction = tx.args?.transaction;
+    if (!transaction) return null;
+
+    return getTransactionAmount(transaction);
+  }
 
   return null;
 };
@@ -237,4 +261,14 @@ export const getSignatoryAccounts = (
 
     return acc;
   }, []);
+};
+
+export const getDestination = (tx: MultisigTransaction): Address | undefined => {
+  if (!tx.transaction) return undefined;
+
+  if (isProxyTransaction(tx.transaction)) {
+    return tx.transaction.args.transaction.args.dest;
+  }
+
+  return tx.transaction.args.dest;
 };

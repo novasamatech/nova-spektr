@@ -10,7 +10,7 @@ import InitOperation, { StakeMoreResult } from './InitOperation/InitOperation';
 import { Confirmation, NoAsset, Submit } from '../components';
 import { DEFAULT_TRANSITION, getRelaychainAsset, toAddress } from '@shared/lib/utils';
 import { useToggle } from '@shared/lib/hooks';
-import type { Account, ChainId, HexString } from '@shared/core';
+import { Account, ChainId, HexString, MultisigAccount } from '@shared/core';
 import { BaseModal, Button, Loader } from '@shared/ui';
 import { OperationTitle } from '@entities/chain';
 import { Signing } from '@features/operation';
@@ -142,7 +142,7 @@ export const StakeMore = () => {
       setWrappers([
         {
           signatoryId: signer.accountId,
-          account: accounts[0],
+          account: accounts[0] as MultisigAccount,
         },
       ]);
       setSigner(signer);

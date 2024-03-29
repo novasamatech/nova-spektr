@@ -8,7 +8,7 @@ export const Paths = {
 
   // Assets
   ASSETS: '/assets',
-  SEND_ASSET: '/assets/send',
+  TRANSFER_ASSET: '/assets/transfer',
   RECEIVE_ASSET: '/assets/receive',
 
   // Navigation

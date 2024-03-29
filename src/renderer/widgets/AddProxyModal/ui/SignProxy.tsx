@@ -10,10 +10,11 @@ type Props = {
 };
 
 export const SignProxy = ({ onGoBack }: Props) => {
-  const signStore = useUnit(signModel.$signStore);
   const api = useUnit(signModel.$api);
+  const signStore = useUnit(signModel.$signStore);
+  const signerWallet = useUnit(signModel.$signerWallet);
 
-  if (!signStore || !api) return null;
+  if (!api || !signStore || !signerWallet) return null;
 
   const onSignResult = (signatures: HexString[], unsignedTxs: UnsignedTransaction[]) => {
     signModel.events.dataReceived({
@@ -27,6 +28,7 @@ export const SignProxy = ({ onGoBack }: Props) => {
       api={api}
       chainId={signStore.chain.chainId}
       addressPrefix={signStore.chain.addressPrefix}
+      signerWaller={signerWallet}
       accounts={[signStore.account]}
       signatory={signStore.signatory || undefined}
       transactions={[signStore.transaction]}

@@ -11,12 +11,12 @@ const $networks = createStore<Chain[]>([]);
 const $activeNetworks = combine(
   {
     networks: $networks,
-    connectionStatuses: networkModel.$connectionStatuses,
+    statuses: networkModel.$connectionStatuses,
     connections: networkModel.$connections,
   },
-  ({ networks, connectionStatuses, connections }) => {
+  ({ networks, statuses, connections }) => {
     return networksListUtils
-      .getExtendedChain(networks, connections, connectionStatuses)
+      .getExtendedChain(networks, connections, statuses)
       .filter((chain) => networkUtils.isEnabledConnection(chain.connection));
   },
 );

@@ -5,7 +5,7 @@ import { useUnit } from 'effector-react';
 
 import { useI18n } from '@app/providers';
 import { Paths } from '@shared/routes';
-import { ChainId, HexString } from '@shared/core';
+import { ChainId, HexString, MultisigAccount } from '@shared/core';
 import { Transaction, TransactionType, useTransaction } from '@entities/transaction';
 import type { Account } from '@shared/core';
 import InitOperation, { RedeemResult } from './InitOperation/InitOperation';
@@ -147,7 +147,7 @@ export const Redeem = () => {
       setWrappers([
         {
           signatoryId: signer.accountId,
-          account: accounts[0],
+          account: accounts[0] as MultisigAccount,
         },
       ]);
       setSigner(signer);

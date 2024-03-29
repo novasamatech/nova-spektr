@@ -32,7 +32,7 @@ export const ROUTES_CONFIG: RouteObject[] = [
         path: Paths.ASSETS,
         element: <Assets />,
         children: [
-          { path: Paths.SEND_ASSET, element: <SendAsset /> },
+          { path: Paths.TRANSFER_ASSET, element: <SendAsset /> },
           { path: Paths.RECEIVE_ASSET, element: <ReceiveAsset /> },
         ],
       },

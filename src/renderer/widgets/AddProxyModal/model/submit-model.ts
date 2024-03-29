@@ -3,19 +3,18 @@ import { UnsignedTransaction } from '@substrate/txwrapper-polkadot';
 import { ApiPromise } from '@polkadot/api';
 
 import type { Chain, Account, HexString, MultisigAccount } from '@shared/core';
-import {
-  Transaction,
-  MultisigTransaction,
-  ExtrinsicResultParams,
-  MultisigEvent,
-  getSignedExtrinsic,
-  submitAndWatchExtrinsic,
-} from '@entities/transaction';
 import { networkModel } from '@entities/network';
 import { ISecureMessenger } from '@shared/api/matrix';
 import { SubmitStep } from '../lib/types';
 import { matrixModel, matrixUtils } from '@entities/matrix';
 import { buildMultisigTx } from '@entities/multisig';
+import {
+  Transaction,
+  MultisigTransaction,
+  ExtrinsicResultParams,
+  MultisigEvent,
+  transactionService,
+} from '@entities/transaction';
 
 type Input = {
   chain: Chain;
@@ -54,7 +53,7 @@ type SignedExtrinsicParams = {
   unsignedTx: UnsignedTransaction;
 };
 const getSignedExtrinsicFx = createEffect(({ api, signature, unsignedTx }: SignedExtrinsicParams): Promise<string> => {
-  return getSignedExtrinsic(unsignedTx, signature, api);
+  return transactionService.getSignedExtrinsic(unsignedTx, signature, api);
 });
 
 type SubmitExtrinsicParams = {
@@ -66,7 +65,7 @@ const submitExtrinsicFx = createEffect(({ api, unsignedTx, extrinsic }: SubmitEx
   const boundExtrinsicSucceeded = scopeBind(extrinsicSucceeded, { safe: true });
   const boundExtrinsicFailed = scopeBind(extrinsicFailed, { safe: true });
 
-  submitAndWatchExtrinsic(extrinsic, unsignedTx, api, async (executed, params) => {
+  transactionService.submitAndWatchExtrinsic(extrinsic, unsignedTx, api, async (executed, params) => {
     if (executed) {
       boundExtrinsicSucceeded(params as ExtrinsicResultParams);
     } else {

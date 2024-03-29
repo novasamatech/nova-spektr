@@ -142,7 +142,7 @@ export const MultisigWalletDetails = ({
                     })}
                   </FootnoteText>
 
-                  <div className="overflow-y-auto mt-4 h-[353px]">
+                  <div className="overflow-y-auto mt-4 h-[337px]">
                     {!chain && signatoryWallets.length > 0 && (
                       <div className="flex flex-col gap-y-2">
                         <FootnoteText className="text-text-tertiary px-5">

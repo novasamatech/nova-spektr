@@ -7,52 +7,66 @@ import { blake2AsU8a, signatureVerify } from '@polkadot/util-crypto';
 import { useState } from 'react';
 
 import { Transaction, TransactionType } from '@entities/transaction/model/transaction';
-import { createTxMetadata, toAccountId } from '@shared/lib/utils';
-import { ITransactionService, HashData, ExtrinsicResultParams } from './common/types';
-import { getExtrinsic, getUnsignedTransaction, wrapAsMulti } from './extrinsicService';
+import { createTxMetadata, toAccountId, dictionary } from '@shared/lib/utils';
+import { getExtrinsic, getUnsignedTransaction, wrapAsMulti, wrapAsProxy } from './extrinsicService';
+import {
+  AccountId,
+  Address,
+  ChainId,
+  HexString,
+  Threshold,
+  Account,
+  Wallet,
+  MultisigAccount,
+  ProxiedAccount,
+} from '@shared/core';
 import { decodeDispatchError } from './common/utils';
 import { useCallDataDecoder } from './callDataDecoder';
-import type { AccountId, Address, ChainId, HexString, Threshold, MultisigAccount } from '@shared/core';
+import {
+  ITransactionService,
+  HashData,
+  ExtrinsicResultParams,
+  WrapAsMulti,
+  TxWrappers_OLD,
+  TxWrapper,
+  MultisigTxWrapper,
+  ProxyTxWrapper,
+  WrapperKind,
+} from './common/types';
+import { walletUtils, accountUtils } from '../../wallet';
 
-type WrapAsMulti = {
-  account: MultisigAccount;
-  signatoryId: AccountId;
-};
-
-type WrapAsProxy = {
-  // TBD
-};
-
-export type TxWrappers = WrapAsMulti | WrapAsProxy;
-
-const shouldWrapAsMulti = (wrapper: TxWrappers): wrapper is WrapAsMulti =>
+const shouldWrapAsMulti = (wrapper: TxWrappers_OLD): wrapper is WrapAsMulti =>
   'signatoryId' in wrapper && 'account' in wrapper;
 
-export const createRegistry = async (api: ApiPromise) => {
-  const metadataRpc = await api.rpc.state.getMetadata();
+export const transactionService = {
+  hasMultisig,
+  hasProxy,
 
-  return {
-    registry: api.registry as unknown as TypeRegistry,
-    metadataRpc: metadataRpc.toHex(),
-  };
+  getSignedExtrinsic,
+  submitAndWatchExtrinsic,
+  getTxWrappers,
+  getWrappedTransaction,
 };
 
-export const getSignedExtrinsic = async (
+async function getSignedExtrinsic(
   unsigned: UnsignedTransaction,
   signature: HexString,
   api: ApiPromise,
-): Promise<string> => {
-  const { metadataRpc, registry } = await createRegistry(api);
+): Promise<string> {
+  const metadataRpc = await api.rpc.state.getMetadata();
 
-  return construct.signedTx(unsigned, signature, { registry, metadataRpc });
-};
+  return construct.signedTx(unsigned, signature, {
+    registry: api.registry as TypeRegistry,
+    metadataRpc: metadataRpc.toHex(),
+  });
+}
 
-export const submitAndWatchExtrinsic = (
+function submitAndWatchExtrinsic(
   tx: string,
   unsigned: UnsignedTransaction,
   api: ApiPromise,
   callback: (executed: boolean, params: ExtrinsicResultParams | string) => void,
-) => {
+) {
   let extrinsicCalls = 0;
 
   const callIndex = api.createType('Call', unsigned.method).callIndex;
@@ -121,13 +135,152 @@ export const submitAndWatchExtrinsic = (
     .catch((error) => {
       callback(false, (error as Error).message || 'Error');
     });
+}
+
+function hasMultisig(txWrappers: TxWrapper[]): boolean {
+  return txWrappers.some((wrapper) => wrapper.kind === WrapperKind.MULTISIG);
+}
+
+function hasProxy(txWrappers: TxWrapper[]): boolean {
+  return txWrappers.some((wrapper) => wrapper.kind === WrapperKind.PROXY);
+}
+
+type TxWrappersParams = {
+  wallets: Wallet[];
+  wallet: Wallet;
+  accounts: Account[];
+  account: Account;
+  signatories?: Account[];
 };
+/**
+ * Get array of transaction wrappers (proxy/multisig)
+ * Every wrapper recursively calls getTxWrappers until it finds regular account
+ * @param wallet wallet that requires wrapping
+ * @param params wallets, accounts and signatories
+ * @return {Array}
+ */
+function getTxWrappers({ wallet, ...params }: TxWrappersParams): TxWrapper[] {
+  if (walletUtils.isMultisig(wallet)) {
+    return getMultisigWrapper(params);
+  }
+
+  if (walletUtils.isProxied(wallet)) {
+    return getProxyWrapper(params);
+  }
+
+  return [];
+}
+
+function getMultisigWrapper({ wallets, accounts, account, signatories = [] }: Omit<TxWrappersParams, 'wallet'>) {
+  const signersMap = dictionary((account as MultisigAccount).signatories, 'accountId', () => true);
+
+  const signers = wallets.reduce<Account[]>((acc, wallet) => {
+    const walletAccounts = accountUtils.getWalletAccounts((wallet as Wallet).id, accounts);
+    const signer = walletAccounts.find((a) => signersMap[a.accountId]);
+
+    if (signer) {
+      acc.push(signer);
+    }
+
+    return acc;
+  }, []);
+
+  const wrapper: MultisigTxWrapper = {
+    kind: WrapperKind.MULTISIG,
+    multisigAccount: account as MultisigAccount,
+    signatories: signers,
+    signer: signatories[0] || ({} as Account),
+  };
+
+  if (signatories.length === 0) return [wrapper];
+  const signatoryAccount = signers.find((s) => s.id === signatories[0].id);
+
+  if (!signatoryAccount) return [wrapper];
+  const signatoryWallet = walletUtils.getWalletById(wallets, signatoryAccount.walletId);
+
+  const nextWrappers = getTxWrappers({
+    wallets,
+    wallet: signatoryWallet as Wallet,
+    accounts,
+    account: signatoryAccount as Account,
+    signatories: signatories.slice(1),
+  });
+
+  return [wrapper, ...nextWrappers];
+}
+
+function getProxyWrapper({ wallets, accounts, account, signatories = [] }: Omit<TxWrappersParams, 'wallet'>) {
+  const proxiesMap = wallets.reduce<{ wallet: Wallet; account: Account }[]>((acc, wallet) => {
+    const walletAccounts = accountUtils.getWalletAccounts(wallet.id, accounts);
+    const match = walletAccounts.find((a) => a.accountId === (account as ProxiedAccount).proxyAccountId);
+
+    if (match) {
+      acc.push({ wallet, account: match });
+    }
+
+    return acc;
+  }, []);
+
+  const wrapper: ProxyTxWrapper = {
+    kind: WrapperKind.PROXY,
+    proxyAccount: proxiesMap[0].account,
+    proxiedAccount: account as ProxiedAccount,
+  };
+
+  const nextWrappers = getTxWrappers({
+    wallets,
+    wallet: proxiesMap[0].wallet,
+    accounts,
+    account: proxiesMap[0].account,
+    signatories,
+  });
+
+  return [wrapper, ...nextWrappers];
+}
+
+type WrapperParams = {
+  api: ApiPromise;
+  addressPrefix: number;
+  transaction: Transaction;
+  txWrappers: TxWrapper[];
+};
+type WrappedTransactions = {
+  wrappedTx: Transaction;
+  coreTx: Transaction;
+  multisigTx?: Transaction;
+};
+function getWrappedTransaction({ api, addressPrefix, transaction, txWrappers }: WrapperParams): WrappedTransactions {
+  return txWrappers.reduce<WrappedTransactions>(
+    (acc, txWrapper) => {
+      if (hasMultisig([txWrapper])) {
+        acc.coreTx = acc.wrappedTx;
+        acc.wrappedTx = wrapAsMulti({
+          api,
+          addressPrefix,
+          transaction: acc.wrappedTx,
+          txWrapper: txWrapper as MultisigTxWrapper,
+        });
+        acc.multisigTx = acc.wrappedTx;
+      }
+      if (hasProxy([txWrapper])) {
+        acc.wrappedTx = wrapAsProxy({
+          addressPrefix,
+          transaction: acc.wrappedTx,
+          txWrapper: txWrapper as ProxyTxWrapper,
+        });
+      }
+
+      return acc;
+    },
+    { wrappedTx: transaction, multisigTx: undefined, coreTx: transaction },
+  );
+}
 
 export const useTransaction = (): ITransactionService => {
   const { decodeCallData } = useCallDataDecoder();
 
   const [txs, setTxs] = useState<Transaction[]>([]);
-  const [wrappers, setWrappers] = useState<TxWrappers[]>([]);
+  const [wrappers, setWrappers] = useState<TxWrappers_OLD[]>([]);
 
   const createPayload = async (
     transaction: Transaction,
@@ -195,7 +348,17 @@ export const useTransaction = (): ITransactionService => {
   const wrapTx = (transaction: Transaction, api: ApiPromise, addressPrefix: number) => {
     wrappers.forEach((wrapper) => {
       if (shouldWrapAsMulti(wrapper)) {
-        transaction = wrapAsMulti(api, transaction, wrapper.account, wrapper.signatoryId, addressPrefix);
+        transaction = wrapAsMulti({
+          api,
+          addressPrefix,
+          transaction,
+          txWrapper: {
+            kind: WrapperKind.MULTISIG,
+            multisigAccount: wrapper.account,
+            signatories: wrapper.account.signatories.map((s) => ({ accountId: s.accountId })) as Account[],
+            signer: { accountId: wrapper.signatoryId } as Account,
+          },
+        });
       }
     });
 

@@ -1,16 +1,15 @@
 import { createEvent, createStore, sample } from 'effector';
 import { spread, delay } from 'patronum';
 
-import { Transaction, TransactionType } from '@entities/transaction';
+import { Transaction, TransactionType, transactionService, TxWrapper, WrapperKind } from '@entities/transaction';
 import { toAddress, toAccountId } from '@shared/lib/utils';
 import { walletSelectModel } from '@features/wallets';
 import { walletModel, walletUtils } from '@entities/wallet';
-import type { ProxyGroup, NoID } from '@shared/core';
+import { ProxyGroup, NoID, MultisigAccount, Account } from '@shared/core';
 import { proxyModel, proxyUtils } from '@entities/proxy';
 import { networkModel } from '@entities/network';
 import { balanceSubModel } from '@features/balances';
 import { Step, TxWrappers, AddProxyStore } from '../lib/types';
-import { addProxyUtils } from '../lib/add-proxy-utils';
 import { formModel } from './form-model';
 import { confirmModel } from './confirm-model';
 import { signModel } from './sign-model';
@@ -96,15 +95,29 @@ sample({
       args: { delegate, proxyType, delay: 0 },
     };
 
-    return addProxyUtils.getWrappedTransactions(txWrappers, transaction, {
+    const isMultisig = txWrappers.includes('multisig');
+    const txWrappersAdapter: TxWrapper[] = isMultisig
+      ? [
+          {
+            kind: WrapperKind.MULTISIG,
+            multisigAccount: account as MultisigAccount,
+            signatories: (account as MultisigAccount).signatories.map((s) => ({ accountId: s.accountId })) as Account[],
+            signer: { accountId: signatory!.accountId } as Account,
+          },
+        ]
+      : [];
+
+    const { wrappedTx, multisigTx } = transactionService.getWrappedTransaction({
       api: apis[chain.chainId],
       addressPrefix: chain.addressPrefix,
-      account,
-      signerAccountId: signatory?.accountId,
+      transaction,
+      txWrappers: txWrappersAdapter,
     });
+
+    return { wrappedTx, multisigTx: multisigTx || null };
   },
   target: spread({
-    transaction: $transaction,
+    wrappedTx: $transaction,
     multisigTx: $multisigTx,
   }),
 });
@@ -153,11 +166,7 @@ sample({
     multisigTx: $multisigTx,
     txWrappers: $txWrappers,
   },
-  filter: (proxyData) => {
-    const isMultisigRequired = !addProxyUtils.hasMultisig(proxyData.txWrappers) || Boolean(proxyData.multisigTx);
-
-    return Boolean(proxyData.addProxyStore) && Boolean(proxyData.transaction) && isMultisigRequired;
-  },
+  filter: (proxyData) => Boolean(proxyData.addProxyStore) && Boolean(proxyData.transaction),
   fn: (proxyData, signParams) => ({
     event: {
       ...signParams,
@@ -166,7 +175,7 @@ sample({
       signatory: proxyData.addProxyStore!.signatory,
       description: proxyData.addProxyStore!.description,
       transaction: proxyData.transaction!,
-      multisigTx: proxyData.multisigTx!,
+      multisigTx: proxyData.multisigTx || undefined,
     },
     step: Step.SUBMIT,
   }),

@@ -1,1 +1,1 @@
-export * as xcmModel from './model/xcm-model';
+export { xcmModel } from './model/xcm-model';

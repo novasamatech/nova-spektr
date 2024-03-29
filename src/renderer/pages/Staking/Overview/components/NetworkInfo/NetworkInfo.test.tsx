@@ -128,7 +128,7 @@ describe('pages/Staking/Overview/NetworkInfo', () => {
       render(<NetworkInfo {...defaultProps} />);
     });
 
-    expect(spyGet).toBeCalled();
+    expect(spyGet).toHaveBeenCalled();
 
     const button = screen.getByText('WND chain');
     await act(async () => button.click());

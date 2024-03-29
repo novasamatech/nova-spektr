@@ -1,7 +1,7 @@
 import { Wallet, WalletType } from '@shared/core';
 import { walletUtils } from '../wallet-utils';
 
-describe('entities/wallet/lib/wallet-utils.ts', () => {
+describe('entities/wallet/lib/wallet-xcm-utils.ts', () => {
   test('isPolkadotVault should return true if wallet type is PolkadotVault', () => {
     const wallet: Pick<Wallet, 'type'> = { type: WalletType.POLKADOT_VAULT };
 

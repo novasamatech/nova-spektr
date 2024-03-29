@@ -95,7 +95,7 @@ describe('features/wallets/ForgetModel', () => {
     await allSettled(forgetWalletModel.events.callbacksChanged, { scope, params: { onDeleteFinished: spyCallback } });
     await allSettled(forgetWalletModel.events.forgetWallet, { scope, params: wallet });
 
-    expect(spyCallback).toBeCalled();
+    expect(spyCallback).toHaveBeenCalled();
   });
 
   test('should delete wallet and accounts', async () => {

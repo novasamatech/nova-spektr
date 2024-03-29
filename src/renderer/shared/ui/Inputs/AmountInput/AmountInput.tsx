@@ -105,20 +105,15 @@ export const AmountInput = ({
     if (Array.isArray(balance)) {
       return (
         <span className="flex gap-x-1">
-          <AssetBalance className="text-text-tertiary text-footnote" value={balance[0]} asset={asset} />
+          <AssetBalance className="text-text-primary text-footnote" value={balance[0]} asset={asset} />
           <span>-</span>
-          <AssetBalance className="text-text-tertiary text-footnote" value={balance[1]} asset={asset} />
+          <AssetBalance className="text-text-primary text-footnote" value={balance[1]} asset={asset} />
         </span>
       );
     }
 
     return (
-      <AssetBalance
-        className="inline text-text-tertiary text-footnote"
-        value={balance}
-        asset={asset}
-        showIcon={false}
-      />
+      <AssetBalance className="inline text-text-primary text-footnote" value={balance} asset={asset} showIcon={false} />
     );
   }, [balance]);
 
@@ -129,7 +124,7 @@ export const AmountInput = ({
         <FootnoteText as="span" className="text-text-tertiary">
           {balancePlaceholder || t('general.input.availableLabel')}
         </FootnoteText>
-        <FootnoteText as="span"> {getBalance()}</FootnoteText>
+        <FootnoteText as="span">{getBalance()}</FootnoteText>
       </span>
     </div>
   );

@@ -36,12 +36,13 @@ export const Combobox = ({
   onChange,
   ...inputProps
 }: Props) => {
+  const defaultValue = { id: '-1', value, element: value };
   const selectedOption = options.find((option) => option.value === value);
 
   const nothingFound = query.length > 0 && options.length === 0;
 
   return (
-    <HeadlessCombobox value={selectedOption || {}} disabled={disabled} onChange={onChange}>
+    <HeadlessCombobox value={selectedOption || defaultValue} disabled={disabled} onChange={onChange}>
       <div className={cnTw('relative', className)}>
         <HeadlessCombobox.Input
           as={Input}
