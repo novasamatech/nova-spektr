@@ -8,8 +8,7 @@ import {
   MultisigTransaction,
   ExtrinsicResultParams,
   MultisigEvent,
-  getSignedExtrinsic,
-  submitAndWatchExtrinsic,
+  transactionService,
 } from '@entities/transaction';
 import { networkModel } from '@entities/network';
 import { ISecureMessenger } from '@shared/api/matrix';
@@ -54,7 +53,7 @@ type SignedExtrinsicParams = {
   unsignedTx: UnsignedTransaction;
 };
 const getSignedExtrinsicFx = createEffect(({ api, signature, unsignedTx }: SignedExtrinsicParams): Promise<string> => {
-  return getSignedExtrinsic(unsignedTx, signature, api);
+  return transactionService.getSignedExtrinsic(unsignedTx, signature, api);
 });
 
 type SubmitExtrinsicParams = {
@@ -66,7 +65,7 @@ const submitExtrinsicFx = createEffect(({ api, unsignedTx, extrinsic }: SubmitEx
   const boundExtrinsicSucceeded = scopeBind(extrinsicSucceeded, { safe: true });
   const boundExtrinsicFailed = scopeBind(extrinsicFailed, { safe: true });
 
-  submitAndWatchExtrinsic(extrinsic, unsignedTx, api, async (executed, params) => {
+  transactionService.submitAndWatchExtrinsic(extrinsic, unsignedTx, api, async (executed, params) => {
     if (executed) {
       boundExtrinsicSucceeded(params as ExtrinsicResultParams);
     } else {

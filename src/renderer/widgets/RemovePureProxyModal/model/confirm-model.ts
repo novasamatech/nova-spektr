@@ -40,6 +40,7 @@ const $initiatorWallet = combine(
 
     return walletUtils.getWalletById(wallets, store.account.walletId);
   },
+  { skipVoid: false },
 );
 
 const $proxyWallet = combine(
@@ -57,6 +58,7 @@ const $proxyWallet = combine(
 
     return walletUtils.getWalletById(wallets, account.walletId);
   },
+  { skipVoid: false },
 );
 
 const $signerWallet = combine(
@@ -69,6 +71,7 @@ const $signerWallet = combine(
 
     return walletUtils.getWalletById(wallets, store.signatory?.walletId || store.account.walletId);
   },
+  { skipVoid: false },
 );
 
 export const confirmModel = {

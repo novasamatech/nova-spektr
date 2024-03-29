@@ -36,7 +36,7 @@ export const Warning = ({ onGoBack }: Props) => {
           placeholder={t('general.input.descriptionPlaceholder')}
           value={passphrase.value}
           onChange={passphrase.onChange}
-          onPaste={handlePaste}
+          // onPaste={handlePaste}
         />
         <FootnoteText as="p" className="text-text-tertiary">
           <Trans t={t} i18nKey="pureProxyRemove.warning.inputHint" />

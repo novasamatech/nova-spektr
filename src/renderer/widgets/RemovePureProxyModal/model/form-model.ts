@@ -293,14 +293,8 @@ const getAccountProxiesFx = createEffect(({ api, address }: ProxyParams): Promis
 // Fields connections
 
 sample({
-  clock: $isMultisig,
-  source: {
-    formStore: $formStore,
-  },
-  filter: (_, isMultisig) => {
-    return !isMultisig;
-  },
-  fn: ({ formStore }) => {
+  clock: formInitiated,
+  fn: (formStore) => {
     return {
       ...formStore,
       signatory: undefined,
