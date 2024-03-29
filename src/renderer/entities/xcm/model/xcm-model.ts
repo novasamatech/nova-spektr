@@ -1,16 +1,18 @@
 import { createEffect, sample } from 'effector';
 
 import { kernelModel } from '@shared/core';
-import { XcmConfig, getXcmConfig, fetchXcmConfig, saveXcmConfig } from '@shared/api/xcm';
+import { XcmConfig, xcmService } from '@shared/api/xcm';
 
 const getConfigFx = createEffect((): XcmConfig | null => {
-  return getXcmConfig();
+  return xcmService.getXcmConfig();
 });
+
 const fetchConfigFx = createEffect((): Promise<XcmConfig> => {
-  return fetchXcmConfig();
+  return xcmService.fetchXcmConfig();
 });
+
 const saveConfigFx = createEffect((config: XcmConfig) => {
-  return saveXcmConfig(config);
+  return xcmService.saveXcmConfig(config);
 });
 
 sample({
@@ -23,8 +25,10 @@ sample({
   target: saveConfigFx,
 });
 
-export const effects = {
-  getConfigFx,
-  fetchConfigFx,
-  saveConfigFx,
+export const xcmModel = {
+  effects: {
+    getConfigFx,
+    fetchConfigFx,
+    saveConfigFx,
+  },
 };

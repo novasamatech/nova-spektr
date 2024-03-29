@@ -79,9 +79,9 @@ export const getCurrentBlockNumber = async (api: ApiPromise): Promise<number> =>
 };
 
 export async function getParachainId(api: ApiPromise): Promise<number> {
-  const parachainId = (await api.query.parachainInfo.parachainId()) as unknown as u32;
+  const parachainId = await api.query.parachainInfo.parachainId();
 
-  return parachainId.toNumber();
+  return (parachainId as u32).toNumber();
 }
 
 export const getExpectedBlockTime = (api: ApiPromise): BN => {
@@ -120,16 +120,15 @@ export const getCreatedDateFromApi = async (neededBlock: number, api: ApiPromise
 };
 
 export const getTypeVersion = (api: ApiPromise, typeName: string): string => {
-  return (
-    getTypeEnumValues(api, typeName)
-      .filter((value) => {
-        const isV3 = value === V3_LABEL;
-        const isUnused = value.toLowerCase().includes(UNUSED_LABEL);
+  const enumValues = getTypeEnumValues(api, typeName);
+  const notV3orUnused = enumValues.filter((value) => {
+    const isV3 = value === V3_LABEL;
+    const isUnused = value.toLowerCase().includes(UNUSED_LABEL);
 
-        return !isV3 && !isUnused;
-      })
-      .pop() || ''
-  );
+    return !isV3 && !isUnused;
+  });
+
+  return notV3orUnused.pop() || '';
 };
 
 export const getProxyTypes = (api: ApiPromise): ProxyType[] => {

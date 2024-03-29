@@ -14,7 +14,7 @@ import { DestinationType } from '../common/types';
 import { BaseModal, Button, Loader } from '@shared/ui';
 import { OperationTitle } from '@entities/chain';
 import { Signing } from '@features/operation';
-import { RewardsDestination } from '@shared/core';
+import { RewardsDestination, MultisigAccount } from '@shared/core';
 import type { Account, Address, ChainId, HexString } from '@shared/core';
 import { walletModel, walletUtils } from '@entities/wallet';
 import { priceProviderModel } from '@entities/price';
@@ -139,7 +139,7 @@ export const Destination = () => {
       setWrappers([
         {
           signatoryId: signer.accountId,
-          account: accounts[0],
+          account: accounts[0] as MultisigAccount,
         },
       ]);
       setSigner(signer);

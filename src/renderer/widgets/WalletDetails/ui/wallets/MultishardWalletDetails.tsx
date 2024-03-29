@@ -10,13 +10,13 @@ import { IconNames } from '@shared/ui/Icon/data';
 import { ForgetWalletModal } from '@features/wallets/ForgetWallet';
 import { TabItem } from '@shared/ui/Tabs/common/types';
 import { networkModel } from '@entities/network';
+import { AddPureProxied, addPureProxiedModel } from '@widgets/AddPureProxiedModal';
 import { addProxyModel, AddProxy } from '@widgets/AddProxyModal';
 import { ProxiesList } from '../components/ProxiesList';
 import { NoProxiesAction } from '../components/NoProxiesAction';
 import type { MultishardMap } from '../../lib/types';
 import { walletDetailsUtils } from '../../lib/utils';
 import { walletProviderModel } from '../../model/wallet-provider-model';
-import { AddPureProxied, addPureProxiedModel } from '@widgets/AddPureProxiedModal';
 
 type Props = {
   wallet: Wallet;
@@ -78,16 +78,16 @@ export const MultishardWalletDetails = ({ wallet, accounts, onClose }: Props) =>
     {
       id: 'accounts',
       title: t('walletDetails.common.accountTabTitle'),
-      panel: <MultishardAccountsList accounts={accounts} chains={Object.values(chains)} className="h-[419px]" />,
+      panel: <MultishardAccountsList accounts={accounts} chains={Object.values(chains)} className="h-[387px]" />,
     },
     {
       id: 'proxies',
       title: t('walletDetails.common.proxiesTabTitle'),
       panel: hasProxies ? (
-        <ProxiesList className="h-[403px] mt-4" canCreateProxy={canCreateProxy} />
+        <ProxiesList className="h-[371px] mt-4" canCreateProxy={canCreateProxy} />
       ) : (
         <NoProxiesAction
-          className="h-[403px] mt-4"
+          className="h-[371px] mt-4"
           canCreateProxy={canCreateProxy}
           onAddProxy={addProxyModel.events.flowStarted}
         />

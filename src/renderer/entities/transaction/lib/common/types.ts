@@ -4,9 +4,19 @@ import { Weight } from '@polkadot/types/interfaces';
 import { SubmittableExtrinsic } from '@polkadot/api/types';
 import { AnyJson } from '@polkadot/types/types';
 
-import type { Address, CallData, HexString, Timepoint, Threshold, AccountId, ChainId } from '@shared/core';
+import type {
+  Address,
+  CallData,
+  HexString,
+  Timepoint,
+  Threshold,
+  AccountId,
+  ChainId,
+  MultisigAccount,
+  Account,
+  ProxiedAccount,
+} from '@shared/core';
 import { DecodedTransaction, Transaction, TransactionType } from '@entities/transaction/model/transaction';
-import { TxWrappers } from '@entities/transaction';
 
 // =====================================================
 // =========== ITransactionService interface ===========
@@ -36,7 +46,7 @@ export type ITransactionService = {
   verifySignature: (payload: Uint8Array, signature: HexString, accountId: AccountId) => Boolean;
   setTxs: (txs: Transaction[]) => void;
   txs: Transaction[];
-  setWrappers: (wrappers: TxWrappers[]) => void;
+  setWrappers: (wrappers: TxWrappers_OLD[]) => void;
   wrapTx: (tx: Transaction, api: ApiPromise, addressPrefix: number) => Transaction;
   buildTransaction: (
     type: TransactionType,
@@ -87,3 +97,30 @@ export interface XTokenPalletTransferArgs extends Args {
   destWeightLimit?: AnyJson;
   destWeight?: number;
 }
+
+export const enum WrapperKind {
+  MULTISIG = 'multisig',
+  PROXY = 'proxy',
+}
+
+export type MultisigTxWrapper = {
+  kind: WrapperKind.MULTISIG;
+  multisigAccount: MultisigAccount;
+  signatories: Account[];
+  signer: Account;
+};
+
+export type ProxyTxWrapper = {
+  kind: WrapperKind.PROXY;
+  proxyAccount: Account;
+  proxiedAccount: ProxiedAccount;
+};
+
+export type TxWrapper = MultisigTxWrapper | ProxyTxWrapper;
+
+export type WrapAsMulti = {
+  account: MultisigAccount;
+  signatoryId: AccountId;
+};
+
+export type TxWrappers_OLD = WrapAsMulti;

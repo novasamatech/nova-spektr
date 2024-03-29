@@ -1,4 +1,5 @@
 import { TransactionType } from '../../model/transaction';
+import { AssetType } from '@shared/core';
 
 export const MAX_WEIGHT = {
   refTime: '0',
@@ -11,6 +12,11 @@ export const BOND_WITH_CONTROLLER_ARGS_AMOUNT = 3;
 
 export const CONTROLLER_ARG_NAME = 'controller';
 export const DEST_WEIGHT_ARG_NAME = 'destWeight';
+
+export const TransferType: Record<AssetType, TransactionType> = {
+  [AssetType.ORML]: TransactionType.ORML_TRANSFER,
+  [AssetType.STATEMINE]: TransactionType.ASSET_TRANSFER,
+};
 
 export const TRANSFER_SECTIONS = ['balances', 'assets', 'currencies', 'tokens'];
 
