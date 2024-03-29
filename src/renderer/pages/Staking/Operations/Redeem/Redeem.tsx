@@ -14,7 +14,7 @@ import { getRelaychainAsset, toAddress, DEFAULT_TRANSITION } from '@shared/lib/u
 import { useToggle } from '@shared/lib/hooks';
 import { OperationTitle } from '@entities/chain';
 import { BaseModal, Button, Loader } from '@shared/ui';
-import { OperationSign } from '@features/operations';
+import { SigningSwitch } from '@features/operations';
 import { walletModel, walletUtils } from '@entities/wallet';
 import { priceProviderModel } from '@entities/price';
 import { useNetworkData } from '@entities/network';
@@ -197,7 +197,7 @@ export const Redeem = () => {
           />
         )}
         {activeStep === Step.SIGNING && (
-          <OperationSign
+          <SigningSwitch
             chainId={chainId}
             api={api}
             addressPrefix={addressPrefix}

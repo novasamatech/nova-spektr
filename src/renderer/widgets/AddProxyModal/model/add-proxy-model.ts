@@ -9,10 +9,10 @@ import { ProxyGroup, NoID, MultisigAccount, Account } from '@shared/core';
 import { proxyModel, proxyUtils } from '@entities/proxy';
 import { networkModel } from '@entities/network';
 import { balanceSubModel } from '@features/balances';
+import { signModel } from '@features/operations';
 import { Step, TxWrappers, AddProxyStore } from '../lib/types';
 import { formModel } from './form-model';
 import { confirmModel } from './confirm-model';
-import { signModel } from './sign-model';
 import { submitModel } from './submit-model';
 
 const stepChanged = createEvent<Step>();

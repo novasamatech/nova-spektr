@@ -13,7 +13,7 @@ import { useToggle } from '@shared/lib/hooks';
 import { DestinationType } from '../common/types';
 import { BaseModal, Button, Loader } from '@shared/ui';
 import { OperationTitle } from '@entities/chain';
-import { OperationSign } from '@features/operations';
+import { SigningSwitch } from '@features/operations';
 import { RewardsDestination, MultisigAccount } from '@shared/core';
 import type { Account, Address, ChainId, HexString } from '@shared/core';
 import { walletModel, walletUtils } from '@entities/wallet';
@@ -199,7 +199,7 @@ export const Destination = () => {
           />
         )}
         {activeStep === Step.SIGNING && (
-          <OperationSign
+          <SigningSwitch
             chainId={chainId}
             api={api}
             addressPrefix={addressPrefix}

@@ -12,7 +12,7 @@ import { Confirmation, NoAsset, Submit } from '../components';
 import { DEFAULT_TRANSITION, getRelaychainAsset, toAddress } from '@shared/lib/utils';
 import { useToggle } from '@shared/lib/hooks';
 import { BaseModal, Button, Loader } from '@shared/ui';
-import { OperationSign } from '@features/operations';
+import { SigningSwitch } from '@features/operations';
 import { Account, ChainId, HexString, MultisigAccount } from '@shared/core';
 import { walletModel, walletUtils } from '@entities/wallet';
 import { priceProviderModel } from '@entities/price';
@@ -210,7 +210,7 @@ export const Unstake = () => {
           </Confirmation>
         )}
         {activeStep === Step.SIGNING && (
-          <OperationSign
+          <SigningSwitch
             chainId={chainId}
             api={api}
             addressPrefix={addressPrefix}

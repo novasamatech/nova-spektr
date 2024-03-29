@@ -1,28 +1,39 @@
 import { useUnit } from 'effector-react';
+import { UnsignedTransaction } from '@substrate/txwrapper-polkadot';
 
-import { SigningType } from '@shared/core';
-import { walletModel } from '@entities/wallet';
-import { SigningProps, InnerSigningProps } from '../lib/types';
-import { Vault } from './Vault';
-import { WalletConnect } from './WalletConnect';
+import type { HexString } from '@shared/core';
+import { SigningSwitch } from './SigningSwitch';
+import { signModel } from '../model/sign-model';
 
-const SigningFlow: Record<SigningType, (props: InnerSigningProps) => JSX.Element | null> = {
-  [SigningType.MULTISIG]: (props) => <Vault {...props} />,
-  [SigningType.POLKADOT_VAULT]: (props) => <Vault {...props} />,
-  [SigningType.PARITY_SIGNER]: (props) => <Vault {...props} />,
-  [SigningType.WALLET_CONNECT]: (props) => <WalletConnect {...props} />,
-  [SigningType.WATCH_ONLY]: () => null,
+type Props = {
+  onGoBack: () => void;
 };
 
-export const OperationSign = (props: SigningProps) => {
-  // TODO: not always __activeWallet__ is a signing wallet, need to rely on __signerWaller__
-  const activeWallet = useUnit(walletModel.$activeWallet);
-  const wallets = useUnit(walletModel.$wallets);
+export const OperationSign = ({ onGoBack }: Props) => {
+  const api = useUnit(signModel.$api);
+  const signStore = useUnit(signModel.$signStore);
+  const signerWallet = useUnit(signModel.$signerWallet);
 
-  const signatoryWallet = wallets.find((w) => w.id === props.signatory?.walletId);
-  const wallet = signatoryWallet || props.signerWaller || activeWallet;
+  if (!api || !signStore || !signerWallet) return null;
 
-  if (!wallet) return null;
+  const onSignResult = (signatures: HexString[], unsignedTxs: UnsignedTransaction[]) => {
+    signModel.events.dataReceived({
+      signature: signatures[0],
+      unsignedTx: unsignedTxs[0],
+    });
+  };
 
-  return SigningFlow[wallet.signingType]({ ...props, wallet });
+  return (
+    <SigningSwitch
+      api={api}
+      chainId={signStore.chain.chainId}
+      addressPrefix={signStore.chain.addressPrefix}
+      signerWaller={signerWallet}
+      accounts={[signStore.account]}
+      signatory={signStore.signatory || undefined}
+      transactions={[signStore.transaction]}
+      onGoBack={onGoBack}
+      onResult={onSignResult}
+    />
+  );
 };

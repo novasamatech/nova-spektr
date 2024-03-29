@@ -14,7 +14,7 @@ import { BaseModal, Button, Loader } from '@shared/ui';
 import InitOperation, { ValidatorsResult } from './InitOperation/InitOperation';
 import { useNetworkData, networkUtils } from '@entities/network';
 import { OperationTitle } from '@entities/chain';
-import { OperationSign } from '@features/operations';
+import { SigningSwitch } from '@features/operations';
 import { Account, ChainId, HexString, Address, MultisigAccount } from '@shared/core';
 import { walletModel, walletUtils } from '@entities/wallet';
 import { priceProviderModel } from '@entities/price';
@@ -217,7 +217,7 @@ export const ChangeValidators = () => {
           </Confirmation>
         )}
         {activeStep === Step.SIGNING && (
-          <OperationSign
+          <SigningSwitch
             chainId={chainId}
             api={api}
             addressPrefix={addressPrefix}
