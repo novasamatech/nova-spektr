@@ -612,11 +612,11 @@
       "signatoryPlaceholder": "Select signatory"
     },
     "details": {
+      "accessType": "Access type",
       "account": "Your account",
       "accountProxied": "Account (proxied)",
       "delegateTo": "Delegate to",
       "grantAccessType": "Grant access type",
-      "accessType": "Access type",
       "revokeAccessType": "Revoke access type",
       "revokeFor": "Revoke for",
       "signatory": "Signatory",
@@ -660,6 +660,17 @@
     "submitSuccess": "Operation Success",
     "tooltipPart1": "Proxied wallets are wallet which have set one of your accounts in Nova Spektr as delegated authority (Proxies).",
     "tooltipPart2": "This means that you can control certain functions of these wallets based on the access type granted to you by the proxied wallet."
+  },
+  "pureProxyRemove": {
+    "warning": {
+      "inputHint": "Enter the sentence <i>“I understand that I will not be able to manage this wallet”</i> in the field above",
+      "isCorrectProxyCheckbox": "I am certain that I am removing <strong>the correct delegated authority</strong> from this Pure Proxy",
+      "isInaccessibleCheckbox": "I understand that once this delegated authority is removed then <strong>the pure proxy will become permanently inaccessible and cannot be restored</strong>",
+      "isIrreversibleCheckbox": "I understand that this <strong>process is irreversible</strong> and cannot be undone",
+      "lossOfFundsCheckbox": "I am aware that this operation carries <strong>the risk of potential permanent loss of funds</strong> in my proxy wallet",
+      "revokeAuthorityButton": "Revoke authority",
+      "warningMessage": "If you remove the link to this account then you will permanently lose control of the proxied wallet. Find out more on instruction of wiki"
+    }
   },
   "qrReader": {
     "parsingLabel": "Parsing data",
@@ -1210,16 +1221,5 @@
     "ledgerImageAlt": "Icon of Ledger option",
     "omniEnterpriseLabel": "Nova Spektr",
     "welcomeToLabel": "Welcome to"
-  },
-  "pureProxyRemove": {
-    "warning": {
-      "revokeAuthorityButton": "Revoke authority",
-      "warningMessage": "If you remove the link to this account then you will permanently lose control of the proxied wallet. Find out more on instruction of wiki",
-      "inputHint": "Enter the sentence <i>“I understand that I will not be able to manage this wallet”</i> in the field above",
-      "isCorrectProxyCheckbox": "I am certain that I am removing <strong>the correct delegated authority</strong> from this Pure Proxy",
-      "isIrreversibleCheckbox": "I understand that this <strong>process is irreversible</strong> and cannot be undone",
-      "isInaccessibleCheckbox": "I understand that once this delegated authority is removed then <strong>the pure proxy will become permanently inaccessible and cannot be restored</strong>",
-      "lossOfFundsCheckbox": "I am aware that this operation carries <strong>the risk of potential permanent loss of funds</strong> in my proxy wallet"
-    }
   }
 }
