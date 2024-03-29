@@ -26,8 +26,7 @@ describe('widgets/AddPureProxyModal/model/confirm-model', () => {
       description: '',
       transaction: {} as Transaction,
 
-      oldProxyDeposit: '0',
-      proxyNumber: 0,
+      proxyDeposit: '0',
     };
 
     await allSettled(confirmModel.events.formInitiated, {
@@ -56,8 +55,7 @@ describe('widgets/AddPureProxyModal/model/confirm-model', () => {
       description: '',
       transaction: {} as Transaction,
 
-      oldProxyDeposit: '0',
-      proxyNumber: 0,
+      proxyDeposit: '0',
     };
 
     await allSettled(confirmModel.events.formInitiated, {
