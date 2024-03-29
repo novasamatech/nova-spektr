@@ -4,12 +4,12 @@ import { UnsignedTransaction } from '@substrate/txwrapper-polkadot';
 import { addProxyModel } from '../add-proxy-model';
 import { networkModel } from '@entities/network';
 import { walletModel } from '@entities/wallet';
+import { signModel } from '@features/operations';
 import { initiatorWallet, signerWallet, testApi, testChain } from './mock';
 import { Account, ConnectionStatus, ProxyType } from '@shared/core';
 import { Step } from '../../lib/types';
 import { formModel } from '../form-model';
 import { confirmModel } from '../confirm-model';
-import { signModel } from '../sign-model';
 import { submitModel } from '../submit-model';
 
 jest.mock('@shared/lib/utils', () => ({
