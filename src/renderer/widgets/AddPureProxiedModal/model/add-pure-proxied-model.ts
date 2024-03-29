@@ -16,6 +16,7 @@ import {
   PartialProxiedAccount,
   ProxyVariant,
   Account,
+  Timepoint,
 } from '@shared/core';
 import { proxyModel, proxyUtils } from '@entities/proxy';
 import { networkModel } from '@entities/network';
@@ -46,37 +47,37 @@ const $txWrappers = createStore<TxWrappers>([]);
 type GetPureProxyParams = {
   api: ApiPromise;
   accountId: AccountId;
+  timepoint: Timepoint;
 };
 type GetPureProxyResult = {
   accountId: AccountId;
   blockNumber: number;
   extrinsicIndex: number;
 };
-const getPureProxyFx = createEffect(({ api, accountId }: GetPureProxyParams): Promise<GetPureProxyResult> => {
-  return new Promise((resolve) => {
-    const pureCreatedParams = {
-      section: 'proxy',
-      method: 'PureCreated',
-      data: [undefined, toAddress(accountId, { prefix: api.registry.chainSS58 })],
-    };
+const getPureProxyFx = createEffect(
+  ({ api, accountId, timepoint }: GetPureProxyParams): Promise<GetPureProxyResult> => {
+    return new Promise((resolve) => {
+      const pureCreatedParams = {
+        section: 'proxy',
+        method: 'PureCreated',
+        data: [undefined, toAddress(accountId, { prefix: api.registry.chainSS58 })],
+      };
 
-    let unsubscribe: UnsubscribePromise;
-    unsubscribe = subscriptionService.subscribeEvents(api, pureCreatedParams, (event) => {
-      unsubscribe?.then((fn) => fn());
+      let unsubscribe: UnsubscribePromise;
+      unsubscribe = subscriptionService.subscribeEvents(api, pureCreatedParams, (event) => {
+        unsubscribe?.then((fn) => fn());
 
-      const accountId = event.data[0].toHex();
-      const extrinsicIndex = event.index.toHuman();
+        const accountId = event.data[0].toHex();
 
-      console.log('xcm', event.toHuman(), extrinsicIndex);
-
-      resolve({
-        accountId,
-        blockNumber: 0,
-        extrinsicIndex: 0,
+        resolve({
+          accountId,
+          blockNumber: timepoint.height,
+          extrinsicIndex: timepoint.index,
+        });
       });
     });
-  });
-});
+  },
+);
 
 sample({ clock: stepChanged, target: $step });
 
@@ -273,9 +274,10 @@ sample({
     params: $addProxyStore,
   },
   filter: ({ params }) => Boolean(params),
-  fn: ({ apis, params }) => ({
+  fn: ({ apis, params }, submitData) => ({
     api: apis[params!.chain.chainId],
     accountId: params!.account.accountId,
+    timepoint: submitData.timepoint,
   }),
   target: getPureProxyFx,
 });

@@ -29,7 +29,7 @@ type Input = {
 
 const formInitiated = createEvent<Input>();
 const submitStarted = createEvent();
-const formSubmitted = createEvent();
+const formSubmitted = createEvent<ExtrinsicResultParams>();
 
 const extrinsicSucceeded = createEvent<ExtrinsicResultParams>();
 const extrinsicFailed = createEvent<string>();
