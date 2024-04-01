@@ -8,11 +8,10 @@ import type { Chain } from '@shared/core';
 import { Step } from '../lib/types';
 import { RemovePureProxyForm } from './RemovePureProxyForm';
 import { Confirmation } from './Confirm';
-import { Sign } from './Sign';
-import { Submit } from './Submit';
 import { removePureProxyUtils } from '../lib/remove-pure-proxy-utils';
 import { removePureProxyModel } from '../model/remove-pure-proxy-model';
 import { Warning } from './Warning';
+import { OperationSign, OperationSubmit } from '@features/operations';
 
 export const RemovePureProxy = () => {
   const { t } = useI18n();
@@ -31,7 +30,7 @@ export const RemovePureProxy = () => {
     return <OperationTitle title={t('operations.modalTitles.removePureProxyOn')} chainId={chain.chainId} />;
   };
 
-  if (removePureProxyUtils.isSubmitStep(step)) return <Submit isOpen={isModalOpen} onClose={closeModal} />;
+  if (removePureProxyUtils.isSubmitStep(step)) return <OperationSubmit isOpen={isModalOpen} onClose={closeModal} />;
 
   return (
     <BaseModal closeButton contentClass="" isOpen={isModalOpen} title={getModalTitle(step, chain)} onClose={closeModal}>
@@ -41,7 +40,7 @@ export const RemovePureProxy = () => {
         <Confirmation onGoBack={() => removePureProxyModel.events.stepChanged(Step.INIT)} />
       )}
       {removePureProxyUtils.isSignStep(step) && (
-        <Sign onGoBack={() => removePureProxyModel.events.stepChanged(Step.CONFIRM)} />
+        <OperationSign onGoBack={() => removePureProxyModel.events.stepChanged(Step.CONFIRM)} />
       )}
     </BaseModal>
   );
