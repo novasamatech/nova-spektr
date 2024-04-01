@@ -8,10 +8,9 @@ import { OperationTitle } from '@entities/chain';
 import { useI18n } from '@app/providers';
 import type { Chain, Asset } from '@shared/core';
 import { Paths } from '@shared/routes';
-import { OperationSign } from '@features/operations';
+import { OperationSign, OperationSubmit } from '@features/operations';
 import { TransferForm } from './TransferForm';
 import { Confirmation } from './Confirmation';
-import { SubmitTransfer } from './SubmitTransfer';
 import { transferUtils } from '../lib/transfer-utils';
 import { transferModel } from '../model/transfer-model';
 import { Step } from '../lib/types';
@@ -42,7 +41,7 @@ export const Transfer = ({ chain, asset }: Props) => {
     transferModel.events.navigateApiChanged({ navigate });
   }, []);
 
-  if (transferUtils.isSubmitStep(step)) return <SubmitTransfer isOpen={isModalOpen} onClose={closeModal} />;
+  if (transferUtils.isSubmitStep(step)) return <OperationSubmit isOpen={isModalOpen} onClose={closeModal} />;
 
   const getModalTitle = (chain: Chain, asset: Asset, xcmChain?: Chain): String | ReactNode => {
     const operationTitle = xcmChain ? 'transfer.xcmTitle' : 'transfer.title';
