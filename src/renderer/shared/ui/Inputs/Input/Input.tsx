@@ -14,7 +14,6 @@ type NewType = {
   suffixElement?: ReactNode;
   theme?: Theme;
   onChange?: (value: string) => void;
-  // @ts-ignore
   onPaste?: (event: ClipboardEvent) => void;
 };
 
