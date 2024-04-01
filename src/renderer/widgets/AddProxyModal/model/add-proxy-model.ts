@@ -2,6 +2,7 @@ import { createEvent, createStore, sample } from 'effector';
 import { spread, delay } from 'patronum';
 
 import { Transaction, TransactionType, transactionService, TxWrapper, WrapperKind } from '@entities/transaction';
+import { signModel } from '@features/operations/OperationSign/model/sign-model';
 import { toAddress, toAccountId } from '@shared/lib/utils';
 import { walletSelectModel } from '@features/wallets';
 import { walletModel, walletUtils } from '@entities/wallet';
@@ -9,7 +10,6 @@ import { ProxyGroup, NoID, MultisigAccount, Account } from '@shared/core';
 import { proxyModel, proxyUtils } from '@entities/proxy';
 import { networkModel } from '@entities/network';
 import { balanceSubModel } from '@features/balances';
-import { signModel } from '@features/operations';
 import { Step, TxWrappers, AddProxyStore } from '../lib/types';
 import { formModel } from './form-model';
 import { confirmModel } from './confirm-model';

@@ -4,7 +4,7 @@ import { Event } from '@polkadot/types/interfaces';
 
 import { networkModel } from '@entities/network';
 import { walletModel } from '@entities/wallet';
-import { signModel } from '@features/operations';
+import { signModel } from '@features/operations/OperationSign/model/sign-model';
 import { initiatorWallet, signerWallet, testApi, testChain } from './mock';
 import { Account, ConnectionStatus } from '@shared/core';
 import { subscriptionService } from '@entities/chain';
