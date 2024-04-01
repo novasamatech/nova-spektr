@@ -3,12 +3,12 @@ import { spread, delay } from 'patronum';
 import { NavigateFunction } from 'react-router-dom';
 
 import { Transaction } from '@entities/transaction';
+import { signModel } from '@features/operations/OperationSign/model/sign-model';
+import { submitModel } from '@features/operations/OperationSubmit';
+import { Paths } from '@shared/routes';
 import { Step, TransferStore, NetworkStore } from '../lib/types';
 import { formModel } from './form-model';
 import { confirmModel } from './confirm-model';
-import { signModel } from './sign-model';
-import { submitModel } from './submit-model';
-import { Paths } from '@shared/routes';
 
 const $navigation = createStore<{ navigate: NavigateFunction } | null>(null);
 const navigationApi = createApi($navigation, {

@@ -10,7 +10,7 @@ import { FootnoteText, Header } from '@shared/ui';
 import { MultisigTransactionDS } from '@shared/api/storage';
 import { useMultisigTx, useMultisigEvent } from '@entities/multisig';
 import { MultisigEvent, MultisigTransactionKey } from '@entities/transaction';
-import { OperationsFilter } from '@features/operation';
+import { OperationsFilter } from '@features/operations';
 import { walletModel, accountUtils } from '@entities/wallet';
 import { priceProviderModel } from '@entities/price';
 import { networkModel } from '@entities/network';

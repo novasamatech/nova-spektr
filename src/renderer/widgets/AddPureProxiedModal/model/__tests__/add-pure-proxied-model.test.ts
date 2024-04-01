@@ -2,17 +2,18 @@ import { allSettled, fork } from 'effector';
 import { UnsignedTransaction } from '@substrate/txwrapper-polkadot';
 import { Event } from '@polkadot/types/interfaces';
 
-import { addPureProxiedModel } from '../add-pure-proxied-model';
 import { networkModel } from '@entities/network';
 import { walletModel } from '@entities/wallet';
+import { signModel } from '@features/operations/OperationSign/model/sign-model';
+import { submitModel } from '@features/operations/OperationSubmit';
+import { storageService } from '@shared/api/storage';
 import { initiatorWallet, signerWallet, testApi, testChain } from './mock';
 import { Account, ConnectionStatus } from '@shared/core';
+import { subscriptionService } from '@entities/chain';
 import { Step } from '../../lib/types';
 import { formModel } from '../form-model';
 import { confirmModel } from '../confirm-model';
-import { signModel } from '../sign-model';
-import { submitModel } from '../submit-model';
-import { subscriptionService } from '@entities/chain';
+import { addPureProxiedModel } from '../add-pure-proxied-model';
 
 describe('widgets/AddPureProxyModal/model/add-pure-proxied-model', () => {
   beforeAll(() => {
@@ -24,6 +25,11 @@ describe('widgets/AddPureProxyModal/model/add-pure-proxied-model', () => {
   });
 
   test('should go through the process of pure proxied create', async () => {
+    jest.spyOn(storageService.proxies, 'createAll').mockResolvedValue([]);
+    jest.spyOn(storageService.proxyGroups, 'createAll').mockResolvedValue([]);
+    jest.spyOn(storageService.proxies, 'updateAll').mockResolvedValue([]);
+    jest.spyOn(storageService.proxyGroups, 'updateAll').mockResolvedValue([]);
+
     jest.spyOn(subscriptionService, 'subscribeEvents').mockImplementation((api, params, callback) => {
       callback({ data: [{ toHex: () => '0x01' }] } as unknown as Event);
 

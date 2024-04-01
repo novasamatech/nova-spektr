@@ -5,12 +5,11 @@ import { useModalClose } from '@shared/lib/hooks';
 import { OperationTitle } from '@entities/chain';
 import { useI18n } from '@app/providers';
 import type { Chain } from '@shared/core';
+import { OperationSign, OperationSubmit } from '@features/operations';
 import { Step } from '../lib/types';
 import { AddPureProxiedForm } from './AddPureProxiedForm';
 import { Confirm } from './Confirm';
-import { Sign } from './Sign';
-import { Submit } from './Submit';
-import { addPureProxiedUtils } from '../lib/add-utils';
+import { addPureProxiedUtils } from '../lib/add-pure-proxied-utils';
 import { addPureProxiedModel } from '../model/add-pure-proxied-model';
 
 export const AddPureProxied = () => {
@@ -30,7 +29,7 @@ export const AddPureProxied = () => {
     return <OperationTitle title={t('operations.modalTitles.addPureProxyOn')} chainId={chain.chainId} />;
   };
 
-  if (addPureProxiedUtils.isSubmitStep(step)) return <Submit isOpen={isModalOpen} onClose={closeModal} />;
+  if (addPureProxiedUtils.isSubmitStep(step)) return <OperationSubmit isOpen={isModalOpen} onClose={closeModal} />;
 
   return (
     <BaseModal closeButton contentClass="" isOpen={isModalOpen} title={getModalTitle(step, chain)} onClose={closeModal}>
@@ -39,7 +38,7 @@ export const AddPureProxied = () => {
         <Confirm onGoBack={() => addPureProxiedModel.events.stepChanged(Step.INIT)} />
       )}
       {addPureProxiedUtils.isSignStep(step) && (
-        <Sign onGoBack={() => addPureProxiedModel.events.stepChanged(Step.CONFIRM)} />
+        <OperationSign onGoBack={() => addPureProxiedModel.events.stepChanged(Step.CONFIRM)} />
       )}
     </BaseModal>
   );
