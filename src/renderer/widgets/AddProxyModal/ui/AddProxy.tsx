@@ -35,7 +35,9 @@ export const AddProxy = () => {
       {addProxyUtils.isConfirmStep(step) && (
         <Confirmation onGoBack={() => addProxyModel.events.stepChanged(Step.INIT)} />
       )}
-      {addProxyUtils.isSignStep(step) && <OperationSign onGoBack={() => addProxyModel.events.stepChanged(Step.CONFIRM)} />}
+      {addProxyUtils.isSignStep(step) && (
+        <OperationSign onGoBack={() => addProxyModel.events.stepChanged(Step.CONFIRM)} />
+      )}
     </BaseModal>
   );
 };
