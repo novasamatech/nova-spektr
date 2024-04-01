@@ -1,6 +1,6 @@
 import { SubmitStep } from './types';
 
-export const submitProxyUtils = {
+export const submitUtils = {
   isLoadingStep,
   isSuccessStep,
   isErrorStep,

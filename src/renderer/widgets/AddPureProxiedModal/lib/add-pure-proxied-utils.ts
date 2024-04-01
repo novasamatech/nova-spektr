@@ -1,4 +1,4 @@
-import { Step, TxWrappers } from './types';
+import { Step } from './types';
 
 export const addPureProxiedUtils = {
   isNoneStep,
@@ -6,9 +6,6 @@ export const addPureProxiedUtils = {
   isConfirmStep,
   isSignStep,
   isSubmitStep,
-
-  hasMultisig,
-  hasProxy,
 };
 
 function isNoneStep(step: Step): boolean {
@@ -29,12 +26,4 @@ function isSignStep(step: Step): boolean {
 
 function isSubmitStep(step: Step): boolean {
   return step === Step.SUBMIT;
-}
-
-function hasMultisig(txWrappers: TxWrappers): boolean {
-  return txWrappers.includes('multisig');
-}
-
-function hasProxy(txWrappers: TxWrappers): boolean {
-  return txWrappers.includes('proxy');
 }

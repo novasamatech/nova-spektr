@@ -7,7 +7,7 @@ import { useTaskQueue } from '@shared/lib/hooks';
 import { OperationResult } from '@entities/transaction';
 import { useMultisigTx, useMultisigEvent } from '@entities/multisig';
 import { SubmitStep } from '../lib/types';
-import { submitProxyUtils } from '../lib/submit-proxy-utils';
+import { submitUtils } from '../lib/submit-utils';
 import { submitModel } from '../model/submit-model';
 
 type ResultProps = Pick<ComponentProps<typeof OperationResult>, 'title' | 'description' | 'variant'>;
@@ -17,7 +17,7 @@ type Props = {
   onClose: () => void;
 };
 
-export const SubmitProxy = ({ isOpen, onClose }: Props) => {
+export const OperationSubmit = ({ isOpen, onClose }: Props) => {
   const { t } = useI18n();
 
   const submitStore = useUnit(submitModel.$submitStore);
@@ -38,19 +38,19 @@ export const SubmitProxy = ({ isOpen, onClose }: Props) => {
   if (!submitStore) return null;
 
   const getResultProps = (step: SubmitStep, message: string): ResultProps => {
-    if (submitProxyUtils.isLoadingStep(step)) {
-      return { title: t('proxy.submitInProgress'), variant: 'loading' };
+    if (submitUtils.isLoadingStep(step)) {
+      return { title: t('transfer.inProgress'), variant: 'loading' };
     }
-    if (submitProxyUtils.isSuccessStep(step)) {
-      return { title: t('proxy.submitSuccess'), variant: 'success' };
+    if (submitUtils.isSuccessStep(step)) {
+      return { title: t('transfer.successMessage'), variant: 'success' };
     }
 
-    return { title: t('proxy.submitError'), variant: 'error', description: message };
+    return { title: t('operation.feeErrorTitle'), variant: 'error', description: message };
   };
 
   return (
     <OperationResult isOpen={isOpen} {...getResultProps(step, message)} onClose={onClose}>
-      {submitProxyUtils.isErrorStep(step) && <Button onClick={onClose}>{t('proxy.submitErrorButton')}</Button>}
+      {submitUtils.isErrorStep(step) && <Button onClick={onClose}>{t('operation.submitErrorButton')}</Button>}
     </OperationResult>
   );
 };

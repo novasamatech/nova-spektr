@@ -5,9 +5,9 @@ import { ApiPromise } from '@polkadot/api';
 import type { Chain, Account, HexString, MultisigAccount } from '@shared/core';
 import { networkModel } from '@entities/network';
 import { ISecureMessenger } from '@shared/api/matrix';
-import { SubmitStep } from '../lib/types';
 import { matrixModel, matrixUtils } from '@entities/matrix';
 import { buildMultisigTx } from '@entities/multisig';
+import { SubmitStep } from '../lib/types';
 import {
   Transaction,
   MultisigTransaction,
@@ -23,6 +23,7 @@ type Input = {
   description: string;
   transaction: Transaction;
   multisigTx?: Transaction;
+
   signature: HexString;
   unsignedTx: UnsignedTransaction;
 };
@@ -100,7 +101,7 @@ const saveMultisigTxFx = createEffect(
 
     hooks.addEventWithQueue(event);
     await hooks.addMultisigTx(tx);
-    console.log(`New transfer transaction was created with call hash ${tx.callHash}`);
+    console.log(`New transaction was created with call hash ${tx.callHash}`);
 
     return { transaction: tx, event };
   },
