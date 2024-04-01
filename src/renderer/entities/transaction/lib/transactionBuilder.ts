@@ -5,6 +5,7 @@ import { Chain, ChainId, Asset, AccountId } from '@shared/core';
 
 export const transactionBuilder = {
   buildTransfer,
+  buildUnstake,
 };
 
 type TransferParams = {
@@ -40,6 +41,25 @@ function buildTransfer({ chain, accountId, destination, asset, amount, xcmData }
       value: formatAmount(amount, asset.precision) || '1',
       ...(Boolean(asset.type) && { asset: getAssetId(asset) }),
       ...xcmData?.args,
+    },
+  };
+}
+
+type UnstakeParams = {
+  chain: Chain;
+  asset: Asset;
+  accountId: AccountId;
+  amount: string;
+};
+function buildUnstake({ chain, accountId, asset, amount }: UnstakeParams): Transaction {
+  return {
+    chainId: chain.chainId,
+    address: toAddress(accountId, { prefix: chain.addressPrefix }),
+    type: TransactionType.UNSTAKE,
+    args: {
+      dest: toAddress(TEST_ACCOUNTS[0], { prefix: chain.addressPrefix }),
+      value: formatAmount(amount, asset.precision) || '1',
+      ...(Boolean(asset.type) && { asset: getAssetId(asset) }),
     },
   };
 }
