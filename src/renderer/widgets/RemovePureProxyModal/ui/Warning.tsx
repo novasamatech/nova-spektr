@@ -80,13 +80,14 @@ const ActionSection = ({ onGoBack }: Props) => {
   const { t } = useI18n();
 
   const canSubmit = useUnit(warningModel.$canSubmit);
+  const { isDirty } = useForm(warningModel.$warningForm);
 
   return (
     <div className="flex justify-between items-center mt-4">
       <Button variant="text" onClick={onGoBack}>
         {t('operation.goBackButton')}
       </Button>
-      <Button form="remove-pure-proxy-warning-form" pallet="error" type="submit" disabled={!canSubmit}>
+      <Button form="remove-pure-proxy-warning-form" pallet="error" type="submit" disabled={!canSubmit || !isDirty}>
         {t('pureProxyRemove.warning.revokeAuthorityButton')}
       </Button>
     </div>
