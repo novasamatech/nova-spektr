@@ -22,7 +22,7 @@ jest.mock('@entities/multisig', () => ({
 }));
 
 jest.mock('./components/Operation', () => () => 'Operation');
-jest.mock('@features/operation', () => ({
+jest.mock('@features/operations', () => ({
   OperationsFilter: () => 'filter',
 }));
 

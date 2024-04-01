@@ -6,7 +6,7 @@ import { useI18n } from '@app/providers';
 import { getOperationErrors, Transaction, TransactionType } from '@entities/transaction';
 import { validatorsService } from '@entities/staking';
 import { toAddress, nonNullable } from '@shared/lib/utils';
-import { OperationFooter, OperationHeader } from '@features/operation';
+import { OperationFooter, OperationHeader } from '@features/operations';
 import { OperationForm } from '../../components';
 import { Balance as AccountBalance, Account, Asset, MultisigAccount, ChainId, AccountId, Wallet } from '@shared/core';
 import { accountUtils, walletModel, walletUtils } from '@entities/wallet';

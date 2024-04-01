@@ -6,7 +6,7 @@ import { useI18n } from '@app/providers';
 import { getOperationErrors, Transaction, TransactionType } from '@entities/transaction';
 import type { Asset, Account, Balance as AccountBalance, Address, ChainId, AccountId, Wallet } from '@shared/core';
 import { toAddress, nonNullable, TEST_ADDRESS } from '@shared/lib/utils';
-import { OperationFooter, OperationHeader } from '@features/operation';
+import { OperationFooter, OperationHeader } from '@features/operations';
 import { OperationForm } from '../../components';
 import {
   validateBalanceForFeeDeposit,

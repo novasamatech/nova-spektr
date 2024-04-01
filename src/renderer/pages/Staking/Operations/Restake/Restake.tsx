@@ -13,7 +13,7 @@ import { getRelaychainAsset, toAddress, DEFAULT_TRANSITION } from '@shared/lib/u
 import { useToggle } from '@shared/lib/hooks';
 import { BaseModal, Button, Loader } from '@shared/ui';
 import { OperationTitle } from '@entities/chain';
-import { Signing } from '@features/operation';
+import { SigningSwitch } from '@features/operations';
 import type { Account } from '@shared/core';
 import { walletModel, walletUtils } from '@entities/wallet';
 import { priceProviderModel } from '@entities/price';
@@ -197,7 +197,7 @@ export const Restake = () => {
           </Confirmation>
         )}
         {activeStep === Step.SIGNING && (
-          <Signing
+          <SigningSwitch
             chainId={chainId}
             api={api}
             addressPrefix={addressPrefix}

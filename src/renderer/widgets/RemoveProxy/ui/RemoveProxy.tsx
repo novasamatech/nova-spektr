@@ -10,7 +10,7 @@ import { useI18n } from '@app/providers';
 import { Confirmation } from './Confirmation';
 import { networkModel, useNetworkData } from '@entities/network';
 import { OperationResult, TransactionType, useTransaction, validateBalance } from '@entities/transaction';
-import { Signing } from '@features/operation';
+import { SigningSwitch } from '@features/operations';
 import { toAddress, transferableAmount } from '@shared/lib/utils';
 import { SignatorySelectModal } from '@pages/Operations/components/modals/SignatorySelectModal';
 import { useToggle } from '@shared/lib/hooks';
@@ -184,7 +184,7 @@ export const RemoveProxy = ({ isOpen, proxyAccount, onClose }: Props) => {
       )}
 
       {activeStep === Step.SIGNING && proxiedWallet && proxiedAccount && (
-        <Signing
+        <SigningSwitch
           signerWaller={proxiedWallet}
           chainId={chain.chainId}
           api={api}

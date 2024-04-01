@@ -8,13 +8,13 @@ import { OperationTitle } from '@entities/chain';
 import { useI18n } from '@app/providers';
 import type { Chain, Asset } from '@shared/core';
 import { Paths } from '@shared/routes';
-import { Step } from '../lib/types';
+import { OperationSign } from '@features/operations';
 import { TransferForm } from './TransferForm';
 import { Confirmation } from './Confirmation';
-import { SignTransfer } from './SignTransfer';
 import { SubmitTransfer } from './SubmitTransfer';
 import { transferUtils } from '../lib/transfer-utils';
 import { transferModel } from '../model/transfer-model';
+import { Step } from '../lib/types';
 
 type Props = {
   chain: Chain;
@@ -63,7 +63,7 @@ export const Transfer = ({ chain, asset }: Props) => {
         <Confirmation onGoBack={() => transferModel.events.stepChanged(Step.INIT)} />
       )}
       {transferUtils.isSignStep(step) && (
-        <SignTransfer onGoBack={() => transferModel.events.stepChanged(Step.CONFIRM)} />
+        <OperationSign onGoBack={() => transferModel.events.stepChanged(Step.CONFIRM)} />
       )}
     </BaseModal>
   );

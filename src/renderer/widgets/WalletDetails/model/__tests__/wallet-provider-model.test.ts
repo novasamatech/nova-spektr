@@ -8,7 +8,7 @@ import { walletModel } from '@entities/wallet';
 import { networkModel } from '@entities/network';
 
 // @widgets/RemoveProxy export of RemoveProxy causes chain of imports up to wallet-connect model which causes error
-jest.mock('@features/operation', () => ({
+jest.mock('@features/operations', () => ({
   Signing: () => null,
 }));
 

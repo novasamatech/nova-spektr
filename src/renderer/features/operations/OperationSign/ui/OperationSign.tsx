@@ -2,14 +2,14 @@ import { useUnit } from 'effector-react';
 import { UnsignedTransaction } from '@substrate/txwrapper-polkadot';
 
 import type { HexString } from '@shared/core';
-import { Signing } from '@features/operation';
+import { SigningSwitch } from './SigningSwitch';
 import { signModel } from '../model/sign-model';
 
 type Props = {
   onGoBack: () => void;
 };
 
-export const SignProxy = ({ onGoBack }: Props) => {
+export const OperationSign = ({ onGoBack }: Props) => {
   const api = useUnit(signModel.$api);
   const signStore = useUnit(signModel.$signStore);
   const signerWallet = useUnit(signModel.$signerWallet);
@@ -24,7 +24,7 @@ export const SignProxy = ({ onGoBack }: Props) => {
   };
 
   return (
-    <Signing
+    <SigningSwitch
       api={api}
       chainId={signStore.chain.chainId}
       addressPrefix={signStore.chain.addressPrefix}

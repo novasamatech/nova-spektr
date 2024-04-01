@@ -6,12 +6,11 @@ import { EngineTypes } from '@walletconnect/types';
 import { walletConnectModel, type InitReconnectParams } from '@entities/walletConnect';
 import { toAccountId } from '@shared/lib/utils';
 import { chainsService } from '@shared/api/network';
-import { WalletConnectAccount } from '@shared/core';
-import { ReconnectStep } from '../lib/constants';
+import { WalletConnectAccount, type HexString } from '@shared/core';
 import { walletModel } from '@entities/wallet';
-import { isConnectedStep, isReconnectingStep, isRejectedStep, isTopicExists } from '../lib/utils';
-import { signModel } from './sign-model';
-import { SignResponse } from '../lib/types';
+import { operationSignModel } from './operation-sign-model';
+import { ReconnectStep } from '../lib/types';
+import { operationSignUtils } from '../lib/operation-sign-utils';
 
 type SignParams = {
   client: Client;
@@ -36,14 +35,18 @@ const $isStatusShown = combine(
   },
   ({ reconnectStep, isSigningRejected }): boolean => {
     return (
-      isReconnectingStep(reconnectStep) ||
-      isConnectedStep(reconnectStep) ||
-      isRejectedStep(reconnectStep) ||
+      operationSignUtils.isReconnectingStep(reconnectStep) ||
+      operationSignUtils.isConnectedStep(reconnectStep) ||
+      operationSignUtils.isRejectedStep(reconnectStep) ||
       isSigningRejected
     );
   },
 );
 
+type SignResponse = {
+  payload: string;
+  signature: HexString;
+};
 const signFx = createEffect(({ client, payload }: SignParams): Promise<SignResponse> => {
   return client.request(payload);
 });
@@ -85,12 +88,17 @@ sample({
 sample({
   clock: walletConnectModel.events.connected,
   source: {
-    signer: signModel.$signer,
+    signer: operationSignModel.$signer,
     accounts: walletModel.$accounts,
     step: $reconnectStep,
     session: walletConnectModel.$session,
   },
-  filter: ({ step, session }) => (isReconnectingStep(step) || isConnectedStep(step)) && isTopicExists(session),
+  filter: ({ step, session }) => {
+    return (
+      (operationSignUtils.isReconnectingStep(step) || operationSignUtils.isConnectedStep(step)) &&
+      operationSignUtils.isTopicExist(session)
+    );
+  },
   fn: ({ accounts, signer, session }) => ({
     accounts: accounts.filter((a) => a.walletId === signer?.walletId),
     topic: session?.topic!,
@@ -104,7 +112,7 @@ sample({
   }),
   source: {
     newAccounts: walletConnectModel.$accounts,
-    signer: signModel.$signer,
+    signer: operationSignModel.$signer,
     accounts: walletModel.$accounts,
   },
   filter: ({ signer }) => Boolean(signer?.walletId),
@@ -135,7 +143,7 @@ sample({
 sample({
   clock: walletConnectModel.events.connectionRejected,
   source: $reconnectStep,
-  filter: isReconnectingStep,
+  filter: operationSignUtils.isReconnectingStep,
   fn: () => ReconnectStep.REJECTED,
   target: $reconnectStep,
 });
@@ -151,7 +159,7 @@ sample({
   target: reset,
 });
 
-export const walletConnectSignModel = {
+export const signWcModel = {
   $reconnectStep,
   $isSigningRejected,
   $signature,

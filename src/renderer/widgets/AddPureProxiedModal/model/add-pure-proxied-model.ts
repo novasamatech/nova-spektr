@@ -7,26 +7,18 @@ import { Transaction, TransactionType, TxWrapper, transactionService, WrapperKin
 import { toAddress } from '@shared/lib/utils';
 import { walletSelectModel } from '@features/wallets';
 import { walletModel, walletUtils } from '@entities/wallet';
-import {
-  type MultisigAccount,
-  type ProxyGroup,
-  type NoID,
-  ProxyType,
-  AccountId,
-  PartialProxiedAccount,
-  ProxyVariant,
-  Account,
-} from '@shared/core';
+import type { MultisigAccount, ProxyGroup, NoID, AccountId, PartialProxiedAccount, Account } from '@shared/core';
+import { signModel } from '@features/operations/OperationSign/model/sign-model';
+import { ProxyType, ProxyVariant } from '@shared/core';
 import { proxyModel, proxyUtils } from '@entities/proxy';
 import { networkModel } from '@entities/network';
 import { balanceSubModel } from '@features/balances';
+import { proxiesModel } from '@features/proxies';
 import { Step, TxWrappers, AddPureProxiedStore } from '../lib/types';
 import { formModel } from './form-model';
 import { confirmModel } from './confirm-model';
-import { signModel } from './sign-model';
 import { submitModel } from './submit-model';
 import { subscriptionService } from '@entities/chain';
-import { proxiesModel } from '@features/proxies';
 
 const stepChanged = createEvent<Step>();
 

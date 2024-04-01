@@ -8,7 +8,7 @@ import { Transaction, TransactionType, OperationError } from '@entities/transact
 import type { Account, Asset, Balance as AccountBalance, ChainId, AccountId, Wallet } from '@shared/core';
 import { redeemableAmount, formatBalance, nonNullable, toAddress } from '@shared/lib/utils';
 import { StakingMap, useStakingData, useEra } from '@entities/staking';
-import { OperationFooter, OperationHeader } from '@features/operation';
+import { OperationFooter, OperationHeader } from '@features/operations';
 import { walletModel, accountUtils, walletUtils } from '@entities/wallet';
 import { OperationForm } from '../../components';
 import {

@@ -5,10 +5,10 @@ import { useModalClose } from '@shared/lib/hooks';
 import { OperationTitle } from '@entities/chain';
 import { useI18n } from '@app/providers';
 import type { Chain } from '@shared/core';
+import { OperationSign } from '@features/operations';
 import { Step } from '../lib/types';
 import { AddPureProxiedForm } from './AddPureProxiedForm';
 import { Confirm } from './Confirm';
-import { Sign } from './Sign';
 import { Submit } from './Submit';
 import { addPureProxiedUtils } from '../lib/add-utils';
 import { addPureProxiedModel } from '../model/add-pure-proxied-model';
@@ -39,7 +39,7 @@ export const AddPureProxied = () => {
         <Confirm onGoBack={() => addPureProxiedModel.events.stepChanged(Step.INIT)} />
       )}
       {addPureProxiedUtils.isSignStep(step) && (
-        <Sign onGoBack={() => addPureProxiedModel.events.stepChanged(Step.CONFIRM)} />
+        <OperationSign onGoBack={() => addPureProxiedModel.events.stepChanged(Step.CONFIRM)} />
       )}
     </BaseModal>
   );
