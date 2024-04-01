@@ -12,7 +12,7 @@ sample({
   target: $signer,
 });
 
-export const signModel = {
+export const operationSignModel = {
   SignerGate,
   $signer,
 };
