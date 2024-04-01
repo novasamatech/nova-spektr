@@ -8,7 +8,7 @@ import { SignButton } from '@entities/operation/ui/SignButton';
 import { AddressWithExplorers, WalletIcon, accountUtils, ExplorersPopover, WalletCardSm } from '@entities/wallet';
 import { proxyUtils } from '@entities/proxy';
 import { confirmModel } from '../model/confirm-model';
-import { toAddress } from '@/src/renderer/shared/lib/utils';
+import { toAddress } from '@shared/lib/utils';
 
 type Props = {
   onGoBack: () => void;

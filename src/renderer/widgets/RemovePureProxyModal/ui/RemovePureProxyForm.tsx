@@ -2,7 +2,7 @@ import { useForm } from 'effector-forms';
 import { FormEvent } from 'react';
 import { useUnit } from 'effector-react';
 
-import { Button, Select, Input, InputHint } from '@shared/ui';
+import { Button, Select, Input, InputHint, Alert } from '@shared/ui';
 import { useI18n } from '@app/providers';
 import { AccountAddress, accountUtils } from '@entities/wallet';
 import { toAddress } from '@shared/lib/utils';
@@ -31,7 +31,7 @@ export const RemovePureProxyForm = ({ onGoBack }: Props) => {
       </form>
       <div className="flex flex-col gap-y-6 pt-6 pb-4">
         <FeeSection />
-        {/* <FeeError /> */}
+        <FeeError />
       </div>
       <ActionSection onGoBack={onGoBack} />
     </div>
@@ -151,23 +151,23 @@ const FeeSection = () => {
   );
 };
 
-// const FeeError = () => {
-//   const { t } = useI18n();
+const FeeError = () => {
+  const { t } = useI18n();
 
-//   const {
-//     fields: { account },
-//   } = useForm(formModel.$proxyForm);
+  const {
+    fields: { signatory },
+  } = useForm(formModel.$proxyForm);
 
-//   const isMultisig = useUnit(formModel.$isMultisig);
+  const isMultisig = useUnit(formModel.$isMultisig);
 
-//   return (
-//     <Alert title={t('proxy.addProxy.balanceAlertTitle')} active={account.hasError()} variant="error">
-//       <Alert.Item withDot={false}>
-//         {isMultisig ? t('proxy.addProxy.balanceAlertMultisig') : t('proxy.addProxy.balanceAlertRegular')}
-//       </Alert.Item>
-//     </Alert>
-//   );
-// };
+  return (
+    <Alert title={t('proxy.addProxy.balanceAlertTitle')} active={signatory.hasError()} variant="error">
+      <Alert.Item withDot={false}>
+        {isMultisig ? t('proxy.addProxy.balanceAlertMultisig') : t('proxy.addProxy.balanceAlertRegular')}
+      </Alert.Item>
+    </Alert>
+  );
+};
 
 const ActionSection = ({ onGoBack }: Props) => {
   const { t } = useI18n();

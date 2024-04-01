@@ -1,4 +1,4 @@
-import { ReactNode, ComponentPropsWithoutRef, forwardRef, useId } from 'react';
+import { ReactNode, ComponentPropsWithoutRef, forwardRef, useId, ClipboardEvent } from 'react';
 
 import { cnTw } from '@shared/lib/utils';
 import { LabelText } from '../../Typography';
@@ -15,7 +15,7 @@ type NewType = {
   theme?: Theme;
   onChange?: (value: string) => void;
   // @ts-ignore
-  onPaste?: (event: ClipboardEvent<HTMLInputElement>) => void;
+  onPaste?: (event: ClipboardEvent) => void;
 };
 
 export type Props = Pick<ComponentPropsWithoutRef<'input'>, HTMLInputProps> & NewType;

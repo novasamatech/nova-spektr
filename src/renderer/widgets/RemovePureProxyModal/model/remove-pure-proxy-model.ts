@@ -101,7 +101,7 @@ sample({
   fn: ({ proxies, chain }) => {
     if (!chain) return Step.WARNING;
 
-    const chainProxies = proxies[chain!.chainId] || [];
+    const chainProxies = proxies[chain.chainId] || [];
     const anyProxies = chainProxies.filter((proxy) => proxy.proxyType === ProxyType.ANY);
 
     return anyProxies.length > 1 ? Step.INIT : Step.WARNING;
