@@ -96,7 +96,7 @@ const $transferForm = createForm<FormParams>({
           validator: (_a, _f, { isProxy, proxyBalance, fee }) => {
             if (!isProxy) return true;
 
-            return new BN(fee).lte(new BN(proxyBalance[1]));
+            return new BN(fee).lte(new BN(proxyBalance.native));
           },
         },
       ],
@@ -116,7 +116,7 @@ const $transferForm = createForm<FormParams>({
           validator: (_s, _f, { fee, isMultisig, signatoryBalance, multisigDeposit }) => {
             if (!isMultisig) return true;
 
-            return new BN(multisigDeposit).add(new BN(fee)).lte(new BN(signatoryBalance[0]));
+            return new BN(multisigDeposit).add(new BN(fee)).lte(new BN(signatoryBalance.balance));
           },
         },
       ],
@@ -162,7 +162,7 @@ const $transferForm = createForm<FormParams>({
           validator: (value, _, { network, accountBalance }) => {
             const amountBN = new BN(formatAmount(value, network.asset.precision));
 
-            return amountBN.lte(new BN(accountBalance[0]));
+            return amountBN.lte(new BN(accountBalance.balance));
           },
         },
         {
@@ -184,8 +184,8 @@ const $transferForm = createForm<FormParams>({
             const amountBN = new BN(formatAmount(value, network.asset.precision));
 
             return isNative
-              ? feeBN.add(amountBN).add(xcmFeeBN).lte(new BN(accountBalance[1]))
-              : feeBN.add(xcmFeeBN).lte(new BN(accountBalance[1]));
+              ? feeBN.add(amountBN).add(xcmFeeBN).lte(new BN(accountBalance.native))
+              : feeBN.add(xcmFeeBN).lte(new BN(accountBalance.native));
           },
         },
       ],
