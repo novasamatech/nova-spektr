@@ -20,16 +20,14 @@ export const OperationResult = ({
   isOpen,
   children,
   onClose,
-}: PropsWithChildren<Props>) => {
-  return (
-    <StatusModal
-      content={<Animation variant={variant} {...VariantAnimationProps[variant]} />}
-      title={title}
-      description={description}
-      isOpen={isOpen}
-      onClose={onClose}
-    >
-      {children}
-    </StatusModal>
-  );
-};
+}: PropsWithChildren<Props>) => (
+  <StatusModal
+    content={<Animation variant={variant} {...VariantAnimationProps[variant]} />}
+    title={title}
+    description={description}
+    isOpen={isOpen}
+    onClose={onClose}
+  >
+    {children}
+  </StatusModal>
+);

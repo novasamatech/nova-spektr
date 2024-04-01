@@ -21,13 +21,13 @@ import {
 import { proxyModel, proxyUtils } from '@entities/proxy';
 import { networkModel } from '@entities/network';
 import { balanceSubModel } from '@features/balances';
+import { proxiesModel } from '@features/proxies';
 import { Step, TxWrappers, AddPureProxiedStore } from '../lib/types';
 import { formModel } from './form-model';
 import { confirmModel } from './confirm-model';
-import { signModel } from './sign-model';
-import { submitModel } from './submit-model';
 import { subscriptionService } from '@entities/chain';
-import { proxiesModel } from '@features/proxies';
+import { signModel } from '@features/operations/OperationSign/model/sign-model';
+import { submitModel } from '@features/operations/OperationSubmit';
 
 const stepChanged = createEvent<Step>();
 

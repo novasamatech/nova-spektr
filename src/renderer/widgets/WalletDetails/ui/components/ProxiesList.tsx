@@ -12,7 +12,7 @@ import { ProxyAccountWithActions } from './ProxyAccountWithActions';
 import { useToggle } from '@shared/lib/hooks';
 import { RemoveProxy } from '@widgets/RemoveProxy';
 import { RemovePureProxy, removePureProxyModel } from '../../../RemovePureProxyModal';
-import { accountUtils } from '@/src/renderer/entities/wallet';
+import { accountUtils } from '@entities/wallet';
 
 type Props = {
   canCreateProxy?: boolean;

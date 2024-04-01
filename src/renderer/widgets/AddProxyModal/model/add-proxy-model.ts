@@ -2,6 +2,8 @@ import { createEvent, createStore, sample } from 'effector';
 import { spread, delay } from 'patronum';
 
 import { Transaction, TransactionType, transactionService, TxWrapper, WrapperKind } from '@entities/transaction';
+import { signModel } from '@features/operations/OperationSign/model/sign-model';
+import { submitModel } from '@features/operations/OperationSubmit';
 import { toAddress, toAccountId } from '@shared/lib/utils';
 import { walletSelectModel } from '@features/wallets';
 import { walletModel, walletUtils } from '@entities/wallet';
@@ -12,8 +14,6 @@ import { balanceSubModel } from '@features/balances';
 import { Step, TxWrappers, AddProxyStore } from '../lib/types';
 import { formModel } from './form-model';
 import { confirmModel } from './confirm-model';
-import { signModel } from './sign-model';
-import { submitModel } from './submit-model';
 
 const stepChanged = createEvent<Step>();
 

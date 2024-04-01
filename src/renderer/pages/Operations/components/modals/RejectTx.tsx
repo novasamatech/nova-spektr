@@ -14,7 +14,7 @@ import { getMultisigSignOperationTitle } from '../../common/utils';
 import RejectReasonModal from './RejectReasonModal';
 import { Submit } from '../ActionSteps/Submit';
 import { Confirmation } from '../ActionSteps/Confirmation';
-import { Signing } from '@features/operation';
+import { SigningSwitch } from '@features/operations';
 import { OperationTitle } from '@entities/chain';
 import { walletModel, walletUtils } from '@entities/wallet';
 import { priceProviderModel } from '@entities/price';
@@ -207,7 +207,7 @@ const RejectTx = ({ tx, account, connection }: Props) => {
           />
         )}
         {activeStep === Step.SIGNING && rejectTx && connection.api && signAccount && (
-          <Signing
+          <SigningSwitch
             chainId={tx.chainId}
             api={connection.api}
             addressPrefix={connection?.addressPrefix}

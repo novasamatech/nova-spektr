@@ -8,12 +8,6 @@ export const enum Step {
   SUBMIT,
 }
 
-export const enum SubmitStep {
-  LOADING,
-  SUCCESS,
-  ERROR,
-}
-
 export type AddPureProxiedStore = {
   chain: Chain;
   account: Account;

@@ -1,5 +1,5 @@
 import { useForm } from 'effector-forms';
-import { FormEvent } from 'react';
+import { FormEvent, ClipboardEvent } from 'react';
 import { useUnit } from 'effector-react';
 import { Trans } from 'react-i18next';
 
@@ -36,7 +36,7 @@ export const Warning = ({ onGoBack }: Props) => {
           placeholder={t('general.input.descriptionPlaceholder')}
           value={passphrase.value}
           onChange={passphrase.onChange}
-          // onPaste={handlePaste}
+          onPaste={handlePaste}
         />
         <FootnoteText as="p" className="text-text-tertiary">
           <Trans t={t} i18nKey="pureProxyRemove.warning.inputHint" />
@@ -80,13 +80,14 @@ const ActionSection = ({ onGoBack }: Props) => {
   const { t } = useI18n();
 
   const canSubmit = useUnit(warningModel.$canSubmit);
+  const { isDirty } = useForm(warningModel.$warningForm);
 
   return (
     <div className="flex justify-between items-center mt-4">
       <Button variant="text" onClick={onGoBack}>
         {t('operation.goBackButton')}
       </Button>
-      <Button form="remove-pure-proxy-warning-form" pallet="error" type="submit" disabled={!canSubmit}>
+      <Button form="remove-pure-proxy-warning-form" pallet="error" type="submit" disabled={!canSubmit || !isDirty}>
         {t('pureProxyRemove.warning.revokeAuthorityButton')}
       </Button>
     </div>

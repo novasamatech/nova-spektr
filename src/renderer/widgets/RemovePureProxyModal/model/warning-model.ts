@@ -21,9 +21,7 @@ const $warningForm = createForm<FormParams>({
       rules: [
         {
           name: 'invalid',
-          validator: (value) => {
-            return value === PASSPHRASE;
-          },
+          validator: (value) => value === PASSPHRASE,
         },
       ],
     },
@@ -64,7 +62,7 @@ const $warningForm = createForm<FormParams>({
       ],
     },
   },
-  validateOn: ['change', 'submit'],
+  validateOn: ['submit'],
 });
 
 sample({

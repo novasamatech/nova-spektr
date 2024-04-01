@@ -10,12 +10,12 @@ import { balanceSubModel } from '@features/balances';
 import { Step, RemoveProxyStore } from '../lib/types';
 import { formModel } from './form-model';
 import { confirmModel } from './confirm-model';
-import { signModel } from './sign-model';
-import { submitModel } from './submit-model';
 import { walletProviderModel } from '../../WalletDetails/model/wallet-provider-model';
-import { Chain, ProxiedAccount, ProxyType } from '@/src/renderer/shared/core';
+import { Chain, ProxiedAccount, ProxyType } from '@shared/core';
 import { warningModel } from './warning-model';
-import { proxyModel } from '@/src/renderer/entities/proxy';
+import { proxyModel } from '@entities/proxy';
+import { signModel } from '@features/operations/OperationSign/model/sign-model';
+import { submitModel } from '@features/operations/OperationSubmit';
 
 const stepChanged = createEvent<Step>();
 
@@ -101,7 +101,7 @@ sample({
   fn: ({ proxies, chain }) => {
     if (!chain) return Step.WARNING;
 
-    const chainProxies = proxies[chain!.chainId] || [];
+    const chainProxies = proxies[chain.chainId] || [];
     const anyProxies = chainProxies.filter((proxy) => proxy.proxyType === ProxyType.ANY);
 
     return anyProxies.length > 1 ? Step.INIT : Step.WARNING;
