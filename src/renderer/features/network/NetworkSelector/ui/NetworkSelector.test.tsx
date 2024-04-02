@@ -1,8 +1,8 @@
 import { act, render, screen } from '@testing-library/react';
 import noop from 'lodash/noop';
 
-import { ConnectionStatus, ConnectionType } from '@shared/core';
-import { ExtendedChain } from '@entities/network';
+import { ConnectionType } from '@shared/core';
+import { ConnectionOptions } from '@entities/network';
 import { NetworkSelector } from './NetworkSelector';
 import { useScrollTo } from '@shared/lib/hooks';
 
@@ -19,53 +19,36 @@ describe('pages/Settings/Networks/NetworkSelector', () => {
     (useScrollTo as jest.Mock).mockReturnValue([{ current: {} }, noop]);
   });
 
-  const defaultNetwork: ExtendedChain = {
-    addressPrefix: 0,
-    specName: 'my_chain',
-    assets: [],
-    chainId: '0x123',
-    icon: '',
-    name: '',
-    nodes: [
-      { url: 'wss://westend-rpc.polkadot.io', name: 'Parity node' },
-      { url: 'wss://westend.api.onfinality.io/public-ws', name: 'OnFinality node' },
+  const defaultNetwork: ConnectionOptions = {
+    availableNodes: [{ type: ConnectionType.AUTO_BALANCE }, { type: ConnectionType.DISABLED }],
+    selectedNode: { type: ConnectionType.DISABLED },
+    isCustomNode: jest.fn().mockReturnValue(false),
+  };
+
+  const lightClientNetworks: ConnectionOptions = {
+    ...defaultNetwork,
+    availableNodes: [
+      { type: ConnectionType.AUTO_BALANCE },
+      { type: ConnectionType.DISABLED },
+      { type: ConnectionType.RPC_NODE, node: { url: 'wss://rpc.matrix.blockchain.enjin.io', name: 'Enjin node' } },
+      { type: ConnectionType.RPC_NODE, node: { url: 'wss://westend-rpc.polkadot.io', name: 'Parity node' } },
+      { type: ConnectionType.LIGHT_CLIENT },
     ],
-    connectionStatus: ConnectionStatus.DISCONNECTED,
-    connection: {
-      id: 0,
-      chainId: '0x123',
-      canUseLightClient: false,
-      connectionType: ConnectionType.DISABLED,
-      customNodes: [],
-    },
   };
 
-  const lightClientNetworks: ExtendedChain = {
+  const connectedNetwork: ConnectionOptions = {
     ...defaultNetwork,
-    connection: {
-      ...defaultNetwork.connection,
-      canUseLightClient: true,
-    },
+    activeNode: { url: 'wss://westend-rpc.polkadot.io', name: 'Parity node' },
   };
 
-  const connectedNetwork: ExtendedChain = {
-    ...defaultNetwork,
-    connectionStatus: ConnectionStatus.CONNECTED,
-    connection: {
-      ...defaultNetwork.connection,
-      connectionType: ConnectionType.RPC_NODE,
-      activeNode: { url: 'wss://westend-rpc.polkadot.io', name: 'Parity node' },
-    },
-  };
-
-  const withCustomNetwork: ExtendedChain = {
+  const withCustomNetwork: ConnectionOptions = {
     ...connectedNetwork,
-    nodes: [{ url: 'wss://westend.api.onfinality.io/public-ws', name: 'OnFinality node' }],
-    connection: {
-      ...connectedNetwork.connection,
-      activeNode: { url: 'wss://westend.api.onfinality.io/public-ws', name: 'OnFinality node' },
-      customNodes: [{ url: 'wss://westend-rpc.polkadot.io', name: 'My custom node' }],
-    },
+    availableNodes: [
+      { type: ConnectionType.AUTO_BALANCE },
+      { type: ConnectionType.DISABLED },
+      { type: ConnectionType.RPC_NODE, node: { url: 'wss://rpc.matrix.blockchain.enjin.io', name: 'Enjin node' } },
+    ],
+    isCustomNode: jest.fn().mockReturnValue(true),
   };
 
   const defaultProps = {

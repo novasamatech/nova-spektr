@@ -8,7 +8,7 @@ import { Paths } from '@shared/routes';
 import { BaseModal, InfoLink } from '@shared/ui';
 import { useToggle } from '@shared/lib/hooks';
 import { DEFAULT_TRANSITION } from '@shared/lib/utils';
-import { CustomRpcModal, NetworkSelector } from './components';
+import { CustomRpcModal } from './components';
 import type { RpcNode, ChainId } from '@shared/core';
 import { ConnectionType } from '@shared/core';
 import { networkModel, ExtendedChain, networkUtils } from '@entities/network';
@@ -22,6 +22,8 @@ import {
   ActiveNetwork,
   NetworksFilter,
   networksFilterModel,
+  NetworkSelector,
+  networkSelectorUtils,
 } from '@features/network';
 
 import './model/networks-overview-model';
@@ -194,7 +196,7 @@ export const Networks = () => {
           {(network) => (
             <InactiveNetwork networkItem={network}>
               <NetworkSelector
-                networkItem={network}
+                networkItem={networkSelectorUtils.getConnectionOptions(network)}
                 onConnect={connectToNode(network)}
                 onDisconnect={disableNetwork(network)}
                 onRemoveCustomNode={removeCustomNode(network.chainId)}
@@ -212,7 +214,7 @@ export const Networks = () => {
           {(network) => (
             <ActiveNetwork networkItem={network}>
               <NetworkSelector
-                networkItem={network}
+                networkItem={networkSelectorUtils.getConnectionOptions(network)}
                 onConnect={connectToNode(network)}
                 onDisconnect={disableNetwork(network)}
                 onRemoveCustomNode={removeCustomNode(network.chainId)}
