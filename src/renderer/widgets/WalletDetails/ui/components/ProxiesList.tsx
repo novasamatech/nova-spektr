@@ -32,7 +32,11 @@ export const ProxiesList = ({ className, canCreateProxy = true }: Props) => {
   const [isRemoveProxyOpen, toggleIsRemoveProxyOpen] = useToggle();
 
   const handleDeleteProxy = (proxyAccount: ProxyAccount) => {
-    if (accountUtils.isProxiedAccount(accounts[0]) && accounts[0].proxyVariant === ProxyVariant.PURE) {
+    if (
+      accountUtils.isProxiedAccount(accounts[0]) &&
+      accounts[0].proxyVariant === ProxyVariant.PURE &&
+      chainsProxies[proxyAccount.chainId].length === 1
+    ) {
       removePureProxyModel.events.flowStarted();
     } else {
       walletProviderModel.events.removeProxy(proxyAccount);
