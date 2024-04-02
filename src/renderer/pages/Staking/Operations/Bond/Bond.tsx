@@ -4,7 +4,7 @@ import { Navigate, useNavigate, useParams, useSearchParams } from 'react-router-
 import { useUnit } from 'effector-react';
 
 import { DEFAULT_TRANSITION, getRelaychainAsset, toAddress } from '@shared/lib/utils';
-import { ValidatorMap } from '@entities/staking';
+import { ValidatorMap, StakingPopover, UnstakingDuration } from '@entities/staking';
 import { useI18n } from '@app/providers';
 import { Paths } from '@shared/routes';
 import { Transaction, TransactionType, useTransaction } from '@entities/transaction';
@@ -15,13 +15,11 @@ import type { Account, Address, ChainId, HexString } from '@shared/core';
 import { BaseModal, Button, Loader } from '@shared/ui';
 import InitOperation, { BondResult } from './InitOperation/InitOperation';
 import { OperationTitle } from '@entities/chain';
-import { DestinationType } from '../common/types';
-import { UnstakingDuration } from '@pages/Staking/Overview/components';
 import { useNetworkData, networkUtils } from '@entities/network';
 import { SigningSwitch } from '@features/operations';
 import { walletModel, walletUtils } from '@entities/wallet';
 import { priceProviderModel } from '@entities/price';
-import { StakingPopover } from '../components/StakingPopover/StakingPopover';
+import { DestinationType } from '../common/types';
 
 const enum Step {
   INIT,

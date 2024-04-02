@@ -1,6 +1,14 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState, ReactNode } from 'react';
 import { useUnit } from 'effector-react';
 
+import { AssetBalance, AssetIcon } from '@entities/asset';
+import { useI18n } from '@app/providers';
+import { FootnoteText, HelpText, TitleText } from '../../Typography';
+import { Input } from '../Input/Input';
+import { IconButton } from '@shared/ui';
+import { useToggle } from '@shared/lib/hooks';
+import { currencyModel, useCurrencyRate } from '@entities/price';
+import type { Asset } from '@shared/core';
 import {
   cleanAmount,
   cnTw,
@@ -12,14 +20,6 @@ import {
   validatePrecision,
   validateSymbols,
 } from '@shared/lib/utils';
-import { AssetBalance, AssetIcon } from '@entities/asset';
-import { useI18n } from '@app/providers';
-import { FootnoteText, HelpText, TitleText } from '../../Typography';
-import { Input } from '../Input/Input';
-import { IconButton } from '@shared/ui';
-import { useToggle } from '@shared/lib/hooks';
-import { currencyModel, useCurrencyRate } from '@entities/price';
-import type { Asset } from '@shared/core';
 
 type Props = {
   name?: string;
@@ -28,7 +28,7 @@ type Props = {
   disabled?: boolean;
   asset: Asset;
   balancePlaceholder?: string;
-  balance?: string | string[];
+  balance?: string | string[] | ReactNode;
   invalid?: boolean;
   showCurrency?: boolean;
   onChange?: (value: string) => void;
@@ -111,10 +111,18 @@ export const AmountInput = ({
         </span>
       );
     }
+    if (typeof balance === 'string') {
+      return (
+        <AssetBalance
+          className="inline text-text-primary text-footnote"
+          value={balance}
+          asset={asset}
+          showIcon={false}
+        />
+      );
+    }
 
-    return (
-      <AssetBalance className="inline text-text-primary text-footnote" value={balance} asset={asset} showIcon={false} />
-    );
+    return balance;
   }, [balance]);
 
   const label = (

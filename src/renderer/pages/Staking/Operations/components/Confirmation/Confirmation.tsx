@@ -7,6 +7,16 @@ import { Icon, Button, FootnoteText, CaptionText, InputHint, DetailRow } from '@
 import { useI18n } from '@app/providers';
 import { useToggle } from '@shared/lib/hooks';
 import { Validator } from '@shared/core/types/validator';
+import { AssetBalance } from '@entities/asset';
+import { DestinationType } from '../../common/types';
+import { cnTw } from '@shared/lib/utils';
+import { useMultisigTx } from '@entities/multisig';
+import { RewardsDestination, WalletType } from '@shared/core';
+import type { Account, Asset, Explorer } from '@shared/core';
+import { AssetFiatBalance } from '@entities/price/ui/AssetFiatBalance';
+import { SelectedValidatorsModal, AccountsModal } from '@entities/staking';
+import { SignButton } from '@entities/operation/ui/SignButton';
+import { getIconName } from '@entities/transaction/lib/transactionConfirmIcon';
 import {
   AddressWithExplorers,
   WalletCardSm,
@@ -15,7 +25,6 @@ import {
   walletModel,
   ExplorersPopover,
 } from '@entities/wallet';
-import { AssetBalance } from '@entities/asset';
 import {
   MultisigTxInitStatus,
   MultisigDepositWithLabel,
@@ -23,16 +32,6 @@ import {
   useTransaction,
   Transaction,
 } from '@entities/transaction';
-import AccountsModal from '../AccountsModal/AccountsModal';
-import { DestinationType } from '../../common/types';
-import { cnTw } from '@shared/lib/utils';
-import { useMultisigTx } from '@entities/multisig';
-import { RewardsDestination, WalletType } from '@shared/core';
-import type { Account, Asset, Explorer } from '@shared/core';
-import { AssetFiatBalance } from '@entities/price/ui/AssetFiatBalance';
-import { SelectedValidatorsModal } from '@entities/staking';
-import { SignButton } from '@entities/operation/ui/SignButton';
-import { getIconName } from '@entities/transaction/lib/transactionConfirmIcon';
 
 const ActionStyle = 'group hover:bg-action-background-hover px-2 py-1 rounded';
 

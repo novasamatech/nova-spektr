@@ -174,9 +174,9 @@ sample({
   fn: ({ addProxyStore, wrappedTx }) => ({
     event: {
       chain: addProxyStore!.chain,
-      account: addProxyStore!.account,
+      accounts: [addProxyStore!.account],
       signatory: addProxyStore!.signatory,
-      transaction: wrappedTx!,
+      transactions: [wrappedTx!],
     },
     step: Step.SIGN,
   }),
@@ -204,8 +204,8 @@ sample({
       account: proxyData.addProxyStore!.account,
       signatory: proxyData.addProxyStore!.signatory,
       description: proxyData.addProxyStore!.description,
-      transaction: proxyData.coreTx!,
-      multisigTx: proxyData.multisigTx || undefined,
+      transactions: [proxyData.coreTx!],
+      multisigTxs: proxyData.multisigTx ? [proxyData.multisigTx] : undefined,
     },
     step: Step.SUBMIT,
   }),

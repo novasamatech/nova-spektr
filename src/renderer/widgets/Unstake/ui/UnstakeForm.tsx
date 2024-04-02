@@ -10,7 +10,17 @@ import { toAddress, toShortAddress, formatBalance } from '@shared/lib/utils';
 import { AssetBalance } from '@entities/asset';
 import { MultisigDepositWithLabel, FeeWithLabel } from '@entities/transaction';
 import { formModel } from '../model/form-model';
-import { Select, Input, Button, InputHint, Alert, FootnoteText } from '@shared/ui';
+import {
+  Select,
+  Input,
+  Button,
+  InputHint,
+  Alert,
+  FootnoteText,
+  AmountInput,
+  MultiSelect,
+  Shimmering,
+} from '@shared/ui';
 
 type Props = {
   onGoBack: () => void;
@@ -27,9 +37,11 @@ export const UnstakeForm = ({ onGoBack }: Props) => {
   return (
     <div className="pb-4 px-5">
       <form id="transfer-form" className="flex flex-col gap-y-4 mt-4" onSubmit={submitForm}>
+        {/* TODO: add proxy validation */}
         <ProxyFeeAlert />
-        <AccountSelector />
+        <AccountsSelector />
         <SignatorySelector />
+        <Amount />
         <Description />
       </form>
       <div className="flex flex-col gap-y-6 pt-6 pb-4">
@@ -44,7 +56,7 @@ const ProxyFeeAlert = () => {
   const { t } = useI18n();
 
   const {
-    fields: { account },
+    fields: { shards },
   } = useForm(formModel.$unstakeForm);
 
   const fee = useUnit(formModel.$fee);
@@ -52,7 +64,7 @@ const ProxyFeeAlert = () => {
   const network = useUnit(formModel.$networkStore);
   const proxyWallet = useUnit(formModel.$proxyWallet);
 
-  if (!network || !proxyWallet || !account.hasError()) return null;
+  if (!network || !proxyWallet || !shards.hasError()) return null;
 
   const formattedFee = formatBalance(fee, network.asset.precision).value;
   const formattedBalance = formatBalance(balance, network.asset.precision).value;
@@ -67,7 +79,7 @@ const ProxyFeeAlert = () => {
   );
 
   return (
-    <Alert active title="Not enough tokens to pay the fee" variant="warn" onClose={account.resetErrors}>
+    <Alert active title="Not enough tokens to pay the fee" variant="warn" onClose={shards.resetErrors}>
       <FootnoteText className="text-text-secondary tracking-tight max-w-full">
         <Trans
           t={t}
@@ -80,12 +92,11 @@ const ProxyFeeAlert = () => {
   );
 };
 
-// TODO: multiselect
-const AccountSelector = () => {
+const AccountsSelector = () => {
   const { t } = useI18n();
 
   const {
-    fields: { account },
+    fields: { shards },
   } = useForm(formModel.$unstakeForm);
 
   const accounts = useUnit(formModel.$accounts);
@@ -93,7 +104,7 @@ const AccountSelector = () => {
 
   if (!network || accounts.length <= 1) return null;
 
-  const options = accounts.map(({ account, balance }) => {
+  const options = accounts.map(({ account, balances }) => {
     const isShard = accountUtils.isShardAccount(account);
     const address = toAddress(account.accountId, { prefix: network.chain.addressPrefix });
 
@@ -109,7 +120,7 @@ const AccountSelector = () => {
             name={isShard ? toShortAddress(address, 16) : account.name}
             canCopy={false}
           />
-          <AssetBalance value={balance} asset={network.asset} />
+          <AssetBalance value={balances.stake} asset={network.asset} />
         </div>
       ),
     };
@@ -117,13 +128,18 @@ const AccountSelector = () => {
 
   return (
     <div className="flex flex-col gap-y-2">
-      <Select
-        label={t('operation.selectAccountLabel')}
-        placeholder={t('operation.selectAccount')}
-        selectedId={account.value.id?.toString()}
+      <MultiSelect
+        label={t('staking.bond.accountLabel')}
+        placeholder={t('staking.bond.accountPlaceholder')}
+        multiPlaceholder={t('staking.bond.manyAccountsPlaceholder')}
+        invalid={shards.hasError()}
+        selectedIds={shards.value.map((acc) => acc.id.toString())}
         options={options}
-        onChange={({ value }) => account.onChange(value)}
+        onChange={(values) => shards.onChange(values.map(({ value }) => value))}
       />
+      <InputHint variant="error" active={shards.hasError()}>
+        {t(shards.errorText())}
+      </InputHint>
     </div>
   );
 };
@@ -139,7 +155,7 @@ const SignatorySelector = () => {
   const isMultisig = useUnit(formModel.$isMultisig);
   const network = useUnit(formModel.$networkStore);
 
-  if (!network || !isMultisig) return null;
+  if (!network || !isMultisig || signatories.length === 0) return null;
 
   const options = signatories[0].map(({ signer, balance }) => {
     const isShard = accountUtils.isShardAccount(signer);
@@ -180,35 +196,36 @@ const SignatorySelector = () => {
   );
 };
 
-// const Amount = () => {
-//   const { t } = useI18n();
-//
-//   const {
-//     fields: { amount },
-//   } = useForm(formModel.$unstakeForm);
-//
-//   const { balance } = useUnit(formModel.$accountBalance);
-//   const network = useUnit(formModel.$networkStore);
-//
-//   if (!network) return null;
-//
-//   return (
-//     <div className="flex flex-col gap-y-2">
-//       <AmountInput
-//         invalid={amount.hasError()}
-//         value={amount.value}
-//         balance={balance}
-//         balancePlaceholder={t('general.input.availableLabel')}
-//         placeholder={t('general.input.amountLabel')}
-//         asset={network.asset}
-//         onChange={amount.onChange}
-//       />
-//       <InputHint active={amount.hasError()} variant="error">
-//         {t(amount.errorText())}
-//       </InputHint>
-//     </div>
-//   );
-// };
+const Amount = () => {
+  const { t } = useI18n();
+
+  const {
+    fields: { amount },
+  } = useForm(formModel.$unstakeForm);
+
+  const unstakeBalanceRange = useUnit(formModel.$unstakeBalanceRange);
+  const isStakingLoading = useUnit(formModel.$isStakingLoading);
+  const network = useUnit(formModel.$networkStore);
+
+  if (!network) return null;
+
+  return (
+    <div className="flex flex-col gap-y-2">
+      <AmountInput
+        invalid={amount.hasError()}
+        value={amount.value}
+        balance={isStakingLoading ? <Shimmering width={50} height={10} /> : unstakeBalanceRange}
+        balancePlaceholder={t('general.input.availableLabel')}
+        placeholder={t('general.input.amountLabel')}
+        asset={network.asset}
+        onChange={amount.onChange}
+      />
+      <InputHint active={amount.hasError()} variant="error">
+        {t(amount.errorText())}
+      </InputHint>
+    </div>
+  );
+};
 
 const Description = () => {
   const { t } = useI18n();
@@ -240,16 +257,18 @@ const Description = () => {
 };
 
 const FeeSection = () => {
+  const { t } = useI18n();
+
   const {
-    fields: { account },
+    fields: { shards },
   } = useForm(formModel.$unstakeForm);
 
   const api = useUnit(formModel.$api);
   const network = useUnit(formModel.$networkStore);
-  const transaction = useUnit(formModel.$transaction);
+  const transactions = useUnit(formModel.$transactions);
   const isMultisig = useUnit(formModel.$isMultisig);
 
-  if (!network) return null;
+  if (!network || shards.value.length === 0) return null;
 
   return (
     <div className="flex flex-col gap-y-2">
@@ -257,18 +276,31 @@ const FeeSection = () => {
         <MultisigDepositWithLabel
           api={api}
           asset={network.chain.assets[0]}
-          threshold={(account.value as MultisigAccount).threshold || 1}
+          threshold={(shards.value[0] as MultisigAccount).threshold || 1}
           onDepositChange={formModel.events.multisigDepositChanged}
         />
       )}
 
       <FeeWithLabel
+        label={t('staking.networkFee', { count: shards.value.length || 1 })}
         api={api}
         asset={network.chain.assets[0]}
-        transaction={transaction?.wrappedTx}
+        transaction={transactions?.[0]?.wrappedTx}
         onFeeChange={formModel.events.feeChanged}
         onFeeLoading={formModel.events.isFeeLoadingChanged}
       />
+
+      {transactions && transactions.length > 1 && (
+        <FeeWithLabel
+          label={t('staking.networkFeeTotal')}
+          api={api}
+          asset={network.chain.assets[0]}
+          multiply={transactions.length}
+          transaction={transactions[0].wrappedTx}
+          onFeeChange={formModel.events.totalFeeChanged}
+          onFeeLoading={formModel.events.isFeeLoadingChanged}
+        />
+      )}
     </div>
   );
 };

@@ -1,21 +1,20 @@
 import { createEvent, combine, sample, restore } from 'effector';
 
-import { Chain, Account, Address, Asset, type ProxiedAccount } from '@shared/core';
+import { Chain, Account, Asset, type ProxiedAccount } from '@shared/core';
 import { networkModel } from '@entities/network';
 import { walletModel, walletUtils } from '@entities/wallet';
 
 type Input = {
-  xcmChain: Chain;
   chain: Chain;
   asset: Asset;
-  account: Account;
+  shards: Account[];
   proxiedAccount?: ProxiedAccount;
   signatory?: Account;
   amount: string;
-  destination: Address;
   description: string;
 
   fee: string;
+  totalFee: string;
   multisigDeposit: string;
 };
 
@@ -42,7 +41,7 @@ const $initiatorWallet = combine(
   ({ store, wallets }) => {
     if (!store) return undefined;
 
-    return walletUtils.getWalletById(wallets, store.account.walletId);
+    return walletUtils.getWalletById(wallets, store.shards[0].walletId);
   },
   { skipVoid: false },
 );
@@ -68,7 +67,7 @@ const $signerWallet = combine(
   ({ store, wallets }) => {
     if (!store) return undefined;
 
-    return walletUtils.getWalletById(wallets, store.signatory?.walletId || store.account.walletId);
+    return walletUtils.getWalletById(wallets, store.signatory?.walletId || store.shards[0].walletId);
   },
   { skipVoid: false },
 );
