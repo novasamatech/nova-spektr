@@ -7,4 +7,4 @@ export {
   activeNetworksModel,
 } from './NetworkList';
 export { NetworksFilter, networksFilterModel } from './NetworksFilter';
-export { NetworkSelector, networkSelectorUtils } from './NetworkSelector';
+export { NetworkSelector, networkSelectorModel, networkSelectorUtils } from './NetworkSelector';
