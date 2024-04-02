@@ -2,7 +2,7 @@ import { useUnit } from 'effector-react';
 
 import { BaseModal, DropdownIconButton, Tabs } from '@shared/ui';
 import { useModalClose, useToggle } from '@shared/lib/hooks';
-import { MultishardAccountsList, WalletCardLg } from '@entities/wallet';
+import { MultishardAccountsList, WalletCardLg, permissionUtils } from '@entities/wallet';
 import { useI18n } from '@app/providers';
 import type { Wallet } from '@shared/core';
 import { RenameWalletModal } from '@features/wallets/RenameWallet';
@@ -34,6 +34,8 @@ export const MultishardWalletDetails = ({ wallet, accounts, onClose }: Props) =>
   const [isRenameModalOpen, toggleIsRenameModalOpen] = useToggle();
   const [isConfirmForgetOpen, toggleConfirmForget] = useToggle();
 
+  const accountsList = [...accounts.values()].map((a) => Object.values(a)).flat(2);
+
   const Options = [
     {
       icon: 'rename' as IconNames,
@@ -50,17 +52,26 @@ export const MultishardWalletDetails = ({ wallet, accounts, onClose }: Props) =>
       title: t('walletDetails.common.forgetButton'),
       onClick: toggleConfirmForget,
     },
-    {
+  ];
+
+  if (
+    permissionUtils.canCreateAnyProxy(wallet, accountsList) ||
+    permissionUtils.canCreateNonAnyProxy(wallet, accountsList)
+  ) {
+    Options.push({
       icon: 'addCircle' as IconNames,
       title: t('walletDetails.common.addProxyAction'),
       onClick: addProxyModel.events.flowStarted,
-    },
-    {
+    });
+  }
+
+  if (permissionUtils.canCreateAnyProxy(wallet, accountsList)) {
+    Options.push({
       icon: 'addCircle' as IconNames,
       title: t('walletDetails.common.addPureProxiedAction'),
       onClick: addPureProxiedModel.events.flowStarted,
-    },
-  ];
+    });
+  }
 
   const ActionButton = (
     <DropdownIconButton name="more">

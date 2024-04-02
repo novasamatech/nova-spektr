@@ -12,6 +12,7 @@ import { ProxyDepositWithLabel, MultisigDepositWithLabel, FeeWithLabel } from '@
 import { formModel } from '../model/form-model';
 import { AssetBalance } from '@entities/asset';
 import { MultisigAccount } from '@shared/core';
+import { DropdownOption } from '@shared/ui/types';
 
 type Props = {
   onGoBack: () => void;
@@ -142,11 +143,13 @@ const SignatorySelector = () => {
 
   if (!isMultisig) return null;
 
-  const options = signatories.map(({ signer, balance }) => {
+  const options = signatories.reduce<DropdownOption[]>((acc, { signer, balance }) => {
+    if (!signer?.id) return acc;
+
     const isShard = accountUtils.isShardAccount(signer);
     const address = toAddress(signer.accountId, { prefix: chain.value.addressPrefix });
 
-    return {
+    acc.push({
       id: signer.id.toString(),
       value: signer,
       element: (
@@ -161,8 +164,10 @@ const SignatorySelector = () => {
           <AssetBalance value={balance} asset={chain.value.assets[0]} />
         </div>
       ),
-    };
-  });
+    });
+
+    return acc;
+  }, []);
 
   return (
     <div className="flex flex-col gap-y-2">

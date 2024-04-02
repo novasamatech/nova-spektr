@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 
 import { BaseModal, ContextMenu, DropdownIconButton, HelpText, IconButton, Tabs } from '@shared/ui';
 import { useModalClose, useToggle } from '@shared/lib/hooks';
-import { RootAccountLg, VaultAccountsList, WalletCardLg, accountUtils } from '@entities/wallet';
+import { RootAccountLg, VaultAccountsList, WalletCardLg, accountUtils, permissionUtils } from '@entities/wallet';
 import { useI18n } from '@app/providers';
 import { Account, BaseAccount, Chain, ChainAccount, DraftAccount, KeyType, ShardAccount, Wallet } from '@shared/core';
 import { copyToClipboard, toAddress } from '@shared/lib/utils';
@@ -46,6 +46,8 @@ export const VaultWalletDetails = ({ wallet, root, accountsMap, onClose }: Props
   const [isConfirmForgetOpen, toggleConfirmForget] = useToggle();
 
   const [chains, setChains] = useState<Chain[]>([]);
+
+  const accountsList = Object.values(accountsMap).flat(2);
 
   useEffect(() => {
     const chainList = Object.values(allChains);
@@ -122,17 +124,26 @@ export const VaultWalletDetails = ({ wallet, root, accountsMap, onClose }: Props
       title: t('walletDetails.common.forgetButton'),
       onClick: toggleConfirmForget,
     },
-    {
+  ];
+
+  if (
+    permissionUtils.canCreateAnyProxy(wallet, accountsList) ||
+    permissionUtils.canCreateNonAnyProxy(wallet, accountsList)
+  ) {
+    Options.push({
       icon: 'addCircle' as IconNames,
       title: t('walletDetails.common.addProxyAction'),
       onClick: addProxyModel.events.flowStarted,
-    },
-    {
+    });
+  }
+
+  if (permissionUtils.canCreateAnyProxy(wallet, accountsList)) {
+    Options.push({
       icon: 'addCircle' as IconNames,
       title: t('walletDetails.common.addPureProxiedAction'),
       onClick: addPureProxiedModel.events.flowStarted,
-    },
-  ];
+    });
+  }
 
   const ActionButton = (
     <DropdownIconButton name="more">
