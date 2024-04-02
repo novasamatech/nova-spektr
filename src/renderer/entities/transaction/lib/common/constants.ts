@@ -31,7 +31,6 @@ export const ManageProxyTypes = [
   TransactionType.ADD_PROXY,
   TransactionType.REMOVE_PROXY,
   TransactionType.CREATE_PURE_PROXY,
-  TransactionType.REMOVE_PURE_PROXY,
 ];
 
 export const XcmTypes = [
