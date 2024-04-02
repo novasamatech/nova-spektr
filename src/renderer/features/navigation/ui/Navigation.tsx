@@ -5,18 +5,21 @@ import { MultisigTxInitStatus } from '@entities/transaction';
 import { NavItem, Props as NavItemProps } from './NavItem';
 import { networkModel } from '@entities/network';
 import { Paths } from '@shared/routes';
-import { walletModel } from '@entities/wallet';
+import { walletModel, walletUtils } from '@entities/wallet';
 import { BodyText } from '@shared/ui';
 
 export const Navigation = () => {
   const chains = useUnit(networkModel.$chains);
   const activeAccounts = useUnit(walletModel.$activeAccounts);
+  const activeWallet = useUnit(walletModel.$activeWallet);
 
   const { getLiveAccountMultisigTxs } = useMultisigTx({});
 
-  const txs = getLiveAccountMultisigTxs(activeAccounts.map((a) => a.accountId)).filter(
-    (tx) => tx.status === MultisigTxInitStatus.SIGNING && chains[tx.chainId],
-  );
+  const txs = walletUtils.isMultisig(activeWallet)
+    ? getLiveAccountMultisigTxs(activeAccounts.map((a) => a.accountId)).filter(
+        (tx) => tx.status === MultisigTxInitStatus.SIGNING && chains[tx.chainId],
+      )
+    : [];
 
   const NavItems: NavItemProps[] = [
     { icon: 'asset', title: 'navigation.balancesLabel', link: Paths.ASSETS },
