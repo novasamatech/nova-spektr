@@ -1,4 +1,4 @@
-import { ReactNode, ComponentPropsWithoutRef, forwardRef, useId } from 'react';
+import { ReactNode, ComponentPropsWithoutRef, forwardRef, useId, ClipboardEvent } from 'react';
 
 import { cnTw } from '@shared/lib/utils';
 import { LabelText } from '../../Typography';
@@ -6,7 +6,7 @@ import { HTMLInputProps } from '../common/types';
 import { CommonInputStyles, CommonInputStylesTheme } from '../common/styles';
 import { Theme } from '../../Dropdowns/common/types';
 
-export type Props = Pick<ComponentPropsWithoutRef<'input'>, HTMLInputProps> & {
+type NewType = {
   label?: ReactNode;
   invalid?: boolean;
   wrapperClass?: string;
@@ -14,7 +14,10 @@ export type Props = Pick<ComponentPropsWithoutRef<'input'>, HTMLInputProps> & {
   suffixElement?: ReactNode;
   theme?: Theme;
   onChange?: (value: string) => void;
+  onPaste?: (event: ClipboardEvent) => void;
 };
+
+export type Props = Pick<ComponentPropsWithoutRef<'input'>, HTMLInputProps> & NewType;
 
 export const Input = forwardRef<HTMLInputElement, Props>(
   (
@@ -27,6 +30,7 @@ export const Input = forwardRef<HTMLInputElement, Props>(
       prefixElement,
       suffixElement,
       onChange,
+      onPaste,
       disabled,
       spellCheck = false,
       theme = 'light',
@@ -63,6 +67,7 @@ export const Input = forwardRef<HTMLInputElement, Props>(
           disabled={disabled}
           spellCheck={spellCheck}
           onChange={(event) => onChange?.(event.target.value)}
+          onPaste={(event) => onPaste?.(event)}
           {...props}
         />
         {suffixElement}

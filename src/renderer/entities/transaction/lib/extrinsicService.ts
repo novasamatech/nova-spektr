@@ -334,6 +334,20 @@ export const getUnsignedTransaction: Record<
       options,
     );
   },
+  [TransactionType.REMOVE_PURE_PROXY]: (transaction, info, options) => {
+    return methods.proxy.killPure(
+      {
+        spawner: transaction.args.spawner,
+        proxyType: transaction.args.proxyType,
+        index: transaction.args.index,
+        height: transaction.args.height,
+        extIndex: transaction.args.extIndex,
+      },
+      info,
+      options,
+    );
+  },
+
   [TransactionType.PROXY]: (transaction, info, options, api) => {
     const tx = transaction.args.transaction as Transaction;
     const call = getUnsignedTransaction[tx.type](tx, info, options, api).method;
@@ -422,6 +436,9 @@ export const getExtrinsic: Record<
   },
   [TransactionType.REMOVE_PROXY]: ({ delegate, proxyType, delay }, api) => {
     return api.tx.proxy.removeProxy(delegate, proxyType, delay);
+  },
+  [TransactionType.REMOVE_PURE_PROXY]: ({ spawner, proxyType, index, height, extIndex }, api) => {
+    return api.tx.proxy.killPure(spawner, proxyType, index, height, extIndex);
   },
   // TODO: Check that this method works correctly
   [TransactionType.PROXY]: ({ real, forceProxyType, transaction }, api) => {

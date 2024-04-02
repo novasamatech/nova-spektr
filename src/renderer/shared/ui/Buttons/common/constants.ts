@@ -11,7 +11,8 @@ export const ViewClass: Record<`${Variant}_${Pallet}`, string> = {
     'text-button-text border-0 bg-primary-button-background-default active:bg-bg-primary-button-background-inactive hover:bg-primary-button-background-hover disabled:bg-primary-button-background-inactive',
   fill_secondary:
     'text-text-primary bg-secondary-button-background hover:bg-secondary-button-background-hover active:bg-secondary-button-background-active disabled:text-button-text-inactive disabled:bg-action-background-hover',
-  fill_error: 'bg-negative-action-background text-text-negative', // missing: disabled, active, hover
+  fill_error:
+    'bg-negative-action-background text-text-negative disabled:text-button-text-inactive disabled:bg-action-background-hover', // missing: disabled, active, hover
 };
 
 export const SizeClass = {

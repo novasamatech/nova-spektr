@@ -36,6 +36,7 @@ import { balanceModel } from '@entities/balance';
 import { notificationModel } from '@entities/notification';
 import { proxiesUtils } from '../lib/proxies-utils';
 import { storageService } from '@shared/api/storage';
+import { dictionary } from '@shared/lib/utils';
 
 const workerStarted = createEvent();
 const connected = createEvent<ChainId>();
@@ -130,10 +131,17 @@ const getProxiesFx = createEffect(
         proxiedAccountsToAdd.map((p) => p.accountId),
       );
 
+      const pureProxiesMap = dictionary(pureProxies, 'accountId');
+
       for (let i in proxiedAccountsToAdd) {
-        proxiedAccountsToAdd[i].proxyVariant = pureProxies.includes(proxiedAccountsToAdd[i].accountId)
-          ? ProxyVariant.PURE
-          : ProxyVariant.REGULAR;
+        const pureProxy = pureProxiesMap[proxiedAccountsToAdd[i].accountId];
+        if (pureProxy) {
+          proxiedAccountsToAdd[i].proxyVariant = ProxyVariant.PURE;
+          proxiedAccountsToAdd[i].blockNumber = pureProxy.blockNumber;
+          proxiedAccountsToAdd[i].extrinsicIndex = pureProxy.extrinsicIndex;
+        } else {
+          proxiedAccountsToAdd[i].proxyVariant = ProxyVariant.REGULAR;
+        }
       }
     }
 
