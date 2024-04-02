@@ -11,7 +11,7 @@ import { Step, RemoveProxyStore } from '../lib/types';
 import { formModel } from './form-model';
 import { confirmModel } from './confirm-model';
 import { walletProviderModel } from '../../WalletDetails/model/wallet-provider-model';
-import { Chain, ProxiedAccount, ProxyType } from '@shared/core';
+import { Chain, ProxiedAccount, ProxyType, ProxyVariant } from '@shared/core';
 import { warningModel } from './warning-model';
 import { proxyModel } from '@entities/proxy';
 import { signModel } from '@features/operations/OperationSign/model/sign-model';
@@ -64,18 +64,20 @@ const $txWrappers = combine(
   },
 );
 
-const $isLastProxy = combine(
+const $shouldRemovePureProxy = combine(
   {
     proxies: walletProviderModel.$chainsProxies,
+    account: $account,
     chain: $chain,
   },
-  ({ proxies, chain }) => {
-    if (!chain) return true;
+  ({ proxies, account, chain }) => {
+    if (!chain || !account) return true;
 
     const chainProxies = proxies[chain.chainId] || [];
     const anyProxies = chainProxies.filter((proxy) => proxy.proxyType === ProxyType.ANY);
+    const isPureProxy = (account as ProxiedAccount).proxyVariant === ProxyVariant.PURE;
 
-    return anyProxies.length === 1;
+    return isPureProxy && anyProxies.length === 1;
   },
 );
 
@@ -116,7 +118,7 @@ sample({
 sample({
   clock: flowStarted,
   source: {
-    isLastProxy: $isLastProxy,
+    shouldRemovePureProxy: $shouldRemovePureProxy,
   },
   target: warningModel.events.formInitiated,
 });
@@ -171,13 +173,13 @@ sample({
     txWrappers: $txWrappers,
     apis: networkModel.$apis,
     data: $removeProxyStore,
-    isLastProxy: $isLastProxy,
+    shouldRemovePureProxy: $shouldRemovePureProxy,
   },
-  fn: ({ txWrappers, apis, data, isLastProxy }, formData) => {
+  fn: ({ txWrappers, apis, data, shouldRemovePureProxy }, formData) => {
     const account = data!.account as ProxiedAccount;
     const chain = data!.chain;
 
-    const type = isLastProxy ? TransactionType.REMOVE_PURE_PROXY : TransactionType.REMOVE_PROXY;
+    const type = shouldRemovePureProxy ? TransactionType.REMOVE_PURE_PROXY : TransactionType.REMOVE_PROXY;
     const args =
       type === TransactionType.REMOVE_PURE_PROXY
         ? {
@@ -355,6 +357,8 @@ export const removePureProxyModel = {
   $step,
   $chain,
   $account,
+  $shouldRemovePureProxy,
+
   events: {
     flowStarted,
     stepChanged,

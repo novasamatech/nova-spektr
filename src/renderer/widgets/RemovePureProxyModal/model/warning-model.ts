@@ -12,7 +12,7 @@ type FormParams = {
 };
 
 type Input = {
-  isLastProxy: boolean;
+  shouldRemovePureProxy: boolean;
 };
 
 const formInitiated = createEvent<Input>();
@@ -76,7 +76,7 @@ sample({
 
 sample({
   clock: formInitiated,
-  filter: ({ isLastProxy }) => !isLastProxy,
+  filter: ({ shouldRemovePureProxy }) => !shouldRemovePureProxy,
   target: formSubmitted,
 });
 

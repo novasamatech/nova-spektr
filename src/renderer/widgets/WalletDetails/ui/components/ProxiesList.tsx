@@ -4,7 +4,7 @@ import { cnTw } from '@shared/lib/utils';
 import { ChainTitle } from '@entities/chain';
 import { useI18n } from '@app/providers';
 import { Accordion, ConfirmModal, FootnoteText, HelpText, SmallTitleText } from '@shared/ui';
-import { ProxyVariant, type ProxyAccount } from '@shared/core';
+import { type ProxyAccount } from '@shared/core';
 import { networkModel } from '@entities/network';
 import { AssetBalance } from '@entities/asset';
 import { walletProviderModel } from '../../model/wallet-provider-model';
@@ -32,7 +32,7 @@ export const ProxiesList = ({ className, canCreateProxy = true }: Props) => {
   const [isRemoveProxyOpen, toggleIsRemoveProxyOpen] = useToggle();
 
   const handleDeleteProxy = (proxyAccount: ProxyAccount) => {
-    if (accountUtils.isProxiedAccount(accounts[0]) && accounts[0].proxyVariant === ProxyVariant.PURE) {
+    if (accountUtils.isProxiedAccount(accounts[0])) {
       removePureProxyModel.events.flowStarted();
     } else {
       walletProviderModel.events.removeProxy(proxyAccount);
