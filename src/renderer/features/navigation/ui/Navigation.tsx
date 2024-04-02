@@ -15,11 +15,9 @@ export const Navigation = () => {
 
   const { getLiveAccountMultisigTxs } = useMultisigTx({});
 
-  const txs = walletUtils.isMultisig(activeWallet)
-    ? getLiveAccountMultisigTxs(activeAccounts.map((a) => a.accountId)).filter(
-        (tx) => tx.status === MultisigTxInitStatus.SIGNING && chains[tx.chainId],
-      )
-    : [];
+  const txs = getLiveAccountMultisigTxs(
+    walletUtils.isMultisig(activeWallet) ? activeAccounts.map((a) => a.accountId) : [],
+  ).filter((tx) => tx.status === MultisigTxInitStatus.SIGNING && chains[tx.chainId]);
 
   const NavItems: NavItemProps[] = [
     { icon: 'asset', title: 'navigation.balancesLabel', link: Paths.ASSETS },
