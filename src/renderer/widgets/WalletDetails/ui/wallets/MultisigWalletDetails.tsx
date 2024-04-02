@@ -12,6 +12,7 @@ import {
   WalletCardLg,
   WalletCardMd,
   accountUtils,
+  permissionUtils,
 } from '@entities/wallet';
 import { useI18n } from '@app/providers';
 import { WalletFiatBalance } from '@features/wallets/WalletSelect/ui/WalletFiatBalance';
@@ -81,17 +82,23 @@ export const MultisigWalletDetails = ({
       title: t('walletDetails.common.forgetButton'),
       onClick: toggleConfirmForget,
     },
-    {
+  ];
+
+  if (permissionUtils.canCreateAnyProxy(wallet, [account]) || permissionUtils.canCreateNonAnyProxy(wallet, [account])) {
+    Options.push({
       icon: 'addCircle' as IconNames,
       title: t('walletDetails.common.addProxyAction'),
       onClick: addProxyModel.events.flowStarted,
-    },
-    {
+    });
+  }
+
+  if (permissionUtils.canCreateAnyProxy(wallet, [account])) {
+    Options.push({
       icon: 'addCircle' as IconNames,
       title: t('walletDetails.common.addPureProxiedAction'),
       onClick: addPureProxiedModel.events.flowStarted,
-    },
-  ];
+    });
+  }
 
   const ActionButton = (
     <DropdownIconButton name="more">
