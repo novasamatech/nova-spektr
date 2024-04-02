@@ -11,7 +11,7 @@ import { Step, RemoveProxyStore } from '../lib/types';
 import { formModel } from './form-model';
 import { confirmModel } from './confirm-model';
 import { walletProviderModel } from '../../WalletDetails/model/wallet-provider-model';
-import { Chain, ProxiedAccount, ProxyType } from '@shared/core';
+import { Chain, ProxiedAccount, ProxyType, ProxyVariant } from '@shared/core';
 import { warningModel } from './warning-model';
 import { proxyModel } from '@entities/proxy';
 import { signModel } from '@features/operations/OperationSign/model/sign-model';
@@ -64,6 +64,23 @@ const $txWrappers = combine(
   },
 );
 
+const $shouldRemovePureProxy = combine(
+  {
+    proxies: walletProviderModel.$chainsProxies,
+    account: $account,
+    chain: $chain,
+  },
+  ({ proxies, account, chain }) => {
+    if (!chain || !account) return true;
+
+    const chainProxies = proxies[chain.chainId] || [];
+    const anyProxies = chainProxies.filter((proxy) => proxy.proxyType === ProxyType.ANY);
+    const isPureProxy = (account as ProxiedAccount).proxyVariant === ProxyVariant.PURE;
+
+    return isPureProxy && anyProxies.length === 1;
+  },
+);
+
 sample({ clock: stepChanged, target: $step });
 
 sample({
@@ -94,23 +111,15 @@ sample({
 
 sample({
   clock: flowStarted,
-  source: {
-    proxies: walletProviderModel.$chainsProxies,
-    chain: $chain,
-  },
-  fn: ({ proxies, chain }) => {
-    if (!chain) return Step.WARNING;
-
-    const chainProxies = proxies[chain.chainId] || [];
-    const anyProxies = chainProxies.filter((proxy) => proxy.proxyType === ProxyType.ANY);
-
-    return anyProxies.length > 1 ? Step.INIT : Step.WARNING;
-  },
+  fn: () => Step.WARNING,
   target: stepChanged,
 });
 
 sample({
   clock: flowStarted,
+  source: {
+    shouldRemovePureProxy: $shouldRemovePureProxy,
+  },
   target: warningModel.events.formInitiated,
 });
 
@@ -164,22 +173,33 @@ sample({
     txWrappers: $txWrappers,
     apis: networkModel.$apis,
     data: $removeProxyStore,
+    shouldRemovePureProxy: $shouldRemovePureProxy,
   },
-  fn: ({ txWrappers, apis, data }, formData) => {
+  fn: ({ txWrappers, apis, data, shouldRemovePureProxy }, formData) => {
     const account = data!.account as ProxiedAccount;
     const chain = data!.chain;
+
+    const type = shouldRemovePureProxy ? TransactionType.REMOVE_PURE_PROXY : TransactionType.REMOVE_PROXY;
+    const args =
+      type === TransactionType.REMOVE_PURE_PROXY
+        ? {
+            spawner: data!.spawner,
+            proxyType: data!.proxyType,
+            index: 0,
+            height: account.blockNumber,
+            extIndex: account.extrinsicIndex,
+          }
+        : {
+            delegate: data!.spawner,
+            proxyType: data!.proxyType,
+            delay: 0,
+          };
 
     const transaction: Transaction = {
       chainId: chain.chainId,
       address: toAddress(account.accountId, { prefix: chain.addressPrefix }),
-      type: TransactionType.REMOVE_PURE_PROXY,
-      args: {
-        spawner: data!.spawner,
-        proxyType: data!.proxyType,
-        index: 0,
-        height: account.blockNumber,
-        extIndex: account.extrinsicIndex,
-      },
+      type,
+      args,
     };
 
     return transactionService.getWrappedTransaction({
@@ -337,6 +357,8 @@ export const removePureProxyModel = {
   $step,
   $chain,
   $account,
+  $shouldRemovePureProxy,
+
   events: {
     flowStarted,
     stepChanged,

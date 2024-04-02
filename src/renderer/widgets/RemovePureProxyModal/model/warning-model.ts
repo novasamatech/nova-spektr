@@ -11,7 +11,11 @@ type FormParams = {
   lossOfFunds: boolean;
 };
 
-const formInitiated = createEvent();
+type Input = {
+  shouldRemovePureProxy: boolean;
+};
+
+const formInitiated = createEvent<Input>();
 const formSubmitted = createEvent();
 
 const $warningForm = createForm<FormParams>({
@@ -68,6 +72,12 @@ const $warningForm = createForm<FormParams>({
 sample({
   clock: formInitiated,
   target: $warningForm.reset,
+});
+
+sample({
+  clock: formInitiated,
+  filter: ({ shouldRemovePureProxy }) => !shouldRemovePureProxy,
+  target: formSubmitted,
 });
 
 sample({
