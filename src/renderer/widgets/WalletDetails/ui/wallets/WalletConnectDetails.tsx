@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { useUnit } from 'effector-react';
 
 import { useModalClose, useToggle } from '@shared/lib/hooks';
-import { WalletCardLg } from '@entities/wallet';
+import { WalletCardLg, permissionUtils } from '@entities/wallet';
 import { useI18n } from '@app/providers';
 import { chainsService } from '@shared/api/network';
 import { walletConnectUtils } from '@entities/walletConnect';
@@ -83,17 +83,23 @@ export const WalletConnectDetails = ({ wallet, accounts, onClose }: Props) => {
       title: t('walletDetails.walletConnect.refreshButton'),
       onClick: wcDetailsModel.events.confirmReconnectShown,
     },
-    {
+  ];
+
+  if (permissionUtils.canCreateAnyProxy(wallet, accounts) || permissionUtils.canCreateNonAnyProxy(wallet, accounts)) {
+    Options.push({
       icon: 'addCircle' as IconNames,
       title: t('walletDetails.common.addProxyAction'),
       onClick: addProxyModel.events.flowStarted,
-    },
-    {
+    });
+  }
+
+  if (permissionUtils.canCreateAnyProxy(wallet, accounts)) {
+    Options.push({
       icon: 'addCircle' as IconNames,
       title: t('walletDetails.common.addPureProxiedAction'),
       onClick: addPureProxiedModel.events.flowStarted,
-    },
-  ];
+    });
+  }
 
   const ActionButton = (
     <DropdownIconButton name="more">

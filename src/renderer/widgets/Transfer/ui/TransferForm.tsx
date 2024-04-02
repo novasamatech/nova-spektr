@@ -23,6 +23,7 @@ import {
   Alert,
   FootnoteText,
 } from '@shared/ui';
+import { DropdownOption } from '@shared/ui/types';
 
 type Props = {
   onGoBack: () => void;
@@ -157,11 +158,13 @@ const SignatorySelector = () => {
 
   if (!network || !isMultisig) return null;
 
-  const options = signatories[0].map(({ signer, balances }) => {
+  const options = signatories[0].reduce<DropdownOption[]>((acc, { signer, balances }) => {
+    if (!signer?.id) return acc;
+
     const isShard = accountUtils.isShardAccount(signer);
     const address = toAddress(signer.accountId, { prefix: network.chain.addressPrefix });
 
-    return {
+    acc.push({
       id: signer.id.toString(),
       value: signer,
       element: (
@@ -176,8 +179,10 @@ const SignatorySelector = () => {
           <AssetBalance value={balances.balance} asset={network.asset} />
         </div>
       ),
-    };
-  });
+    });
+
+    return acc;
+  }, []);
 
   return (
     <div className="flex flex-col gap-y-2">
