@@ -64,6 +64,21 @@ const $txWrappers = combine(
   },
 );
 
+const $isLastProxy = combine(
+  {
+    proxies: walletProviderModel.$chainsProxies,
+    chain: $chain,
+  },
+  ({ proxies, chain }) => {
+    if (!chain) return true;
+
+    const chainProxies = proxies[chain.chainId] || [];
+    const anyProxies = chainProxies.filter((proxy) => proxy.proxyType === ProxyType.ANY);
+
+    return anyProxies.length === 1;
+  },
+);
+
 sample({ clock: stepChanged, target: $step });
 
 sample({
@@ -94,23 +109,15 @@ sample({
 
 sample({
   clock: flowStarted,
-  source: {
-    proxies: walletProviderModel.$chainsProxies,
-    chain: $chain,
-  },
-  fn: ({ proxies, chain }) => {
-    if (!chain) return Step.WARNING;
-
-    const chainProxies = proxies[chain.chainId] || [];
-    const anyProxies = chainProxies.filter((proxy) => proxy.proxyType === ProxyType.ANY);
-
-    return anyProxies.length > 1 ? Step.INIT : Step.WARNING;
-  },
+  fn: () => Step.WARNING,
   target: stepChanged,
 });
 
 sample({
   clock: flowStarted,
+  source: {
+    isLastProxy: $isLastProxy,
+  },
   target: warningModel.events.formInitiated,
 });
 
@@ -164,22 +171,33 @@ sample({
     txWrappers: $txWrappers,
     apis: networkModel.$apis,
     data: $removeProxyStore,
+    isLastProxy: $isLastProxy,
   },
-  fn: ({ txWrappers, apis, data }, formData) => {
+  fn: ({ txWrappers, apis, data, isLastProxy }, formData) => {
     const account = data!.account as ProxiedAccount;
     const chain = data!.chain;
+
+    const type = isLastProxy ? TransactionType.REMOVE_PURE_PROXY : TransactionType.REMOVE_PROXY;
+    const args =
+      type === TransactionType.REMOVE_PURE_PROXY
+        ? {
+            spawner: data!.spawner,
+            proxyType: data!.proxyType,
+            index: 0,
+            height: account.blockNumber,
+            extIndex: account.extrinsicIndex,
+          }
+        : {
+            delegate: data!.spawner,
+            proxyType: data!.proxyType,
+            delay: 0,
+          };
 
     const transaction: Transaction = {
       chainId: chain.chainId,
       address: toAddress(account.accountId, { prefix: chain.addressPrefix }),
-      type: TransactionType.REMOVE_PURE_PROXY,
-      args: {
-        spawner: data!.spawner,
-        proxyType: data!.proxyType,
-        index: 0,
-        height: account.blockNumber,
-        extIndex: account.extrinsicIndex,
-      },
+      type,
+      args,
     };
 
     return transactionService.getWrappedTransaction({
