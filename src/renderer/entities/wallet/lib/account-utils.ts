@@ -4,7 +4,7 @@ import keyBy from 'lodash/keyBy';
 
 import { dictionary } from '@shared/lib/utils';
 import { walletUtils } from './wallet-utils';
-import { AccountType, ChainType, CryptoType, ProxyType } from '@shared/core';
+import { AccountType, ChainType, CryptoType, ProxyType, ProxyVariant } from '@shared/core';
 import type {
   ID,
   AccountId,
@@ -32,6 +32,7 @@ export const accountUtils = {
   isChainAndCryptoMatch,
   isWalletConnectAccount,
   isProxiedAccount,
+  isPureProxiedAccount,
   isShardAccount,
   isAccountWithShards,
   getAccountsAndShardGroups,
@@ -112,6 +113,10 @@ function isMultisigAccount(account: Pick<Account, 'type'>): account is MultisigA
 
 function isProxiedAccount(account: Pick<Account, 'type'>): account is ProxiedAccount {
   return account.type === AccountType.PROXIED;
+}
+
+function isPureProxiedAccount(account: Account): account is ProxiedAccount {
+  return account.type === AccountType.PROXIED && (account as ProxiedAccount).proxyVariant === ProxyVariant.PURE;
 }
 
 function getAccountsAndShardGroups(accounts: Account[]): Array<ChainAccount | ShardAccount[]> {

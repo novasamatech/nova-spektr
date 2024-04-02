@@ -18,6 +18,7 @@ export const RemovePureProxy = () => {
 
   const step = useUnit(removePureProxyModel.$step);
   const chain = useUnit(removePureProxyModel.$chain);
+  const shouldRemovePureProxy = useUnit(removePureProxyModel.$shouldRemovePureProxy);
 
   const [isModalOpen, closeModal] = useModalClose(
     !removePureProxyUtils.isNoneStep(step),
@@ -25,9 +26,17 @@ export const RemovePureProxy = () => {
   );
 
   const getModalTitle = (step: Step, chain?: Chain) => {
-    if (removePureProxyUtils.isInitStep(step) || !chain) return t('operations.modalTitles.removePureProxy');
+    if (removePureProxyUtils.isInitStep(step) || !chain)
+      return t(shouldRemovePureProxy ? 'operations.modalTitles.removePureProxy' : 'operations.modalTitles.removeProxy');
 
-    return <OperationTitle title={t('operations.modalTitles.removePureProxyOn')} chainId={chain.chainId} />;
+    return (
+      <OperationTitle
+        title={t(
+          shouldRemovePureProxy ? 'operations.modalTitles.removePureProxyOn' : 'operations.modalTitles.removeProxyOn',
+        )}
+        chainId={chain.chainId}
+      />
+    );
   };
 
   if (removePureProxyUtils.isSubmitStep(step)) return <OperationSubmit isOpen={isModalOpen} onClose={closeModal} />;
