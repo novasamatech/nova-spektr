@@ -553,6 +553,8 @@
       "redeemOn": "Withdraw Unstaked { asset } on",
       "reject": "Reject",
       "removeProxy": "Revoke delegated authority (proxy)",
+      "removePureProxy": "Revoke delegated authority (pure proxy)",
+      "removePureProxyOn": "Revoke delegated authority (pure proxy) on",
       "restakeOn": "Restake { asset } on",
       "stakeMoreOn": "Stake More { asset } on",
       "startStakingOn": "Start Staking { asset } on",
@@ -610,13 +612,16 @@
       "signatoryPlaceholder": "Select signatory"
     },
     "details": {
+      "accessType": "Access type",
       "account": "Your account",
+      "accountProxied": "Account (proxied)",
       "delegateTo": "Delegate to",
       "grantAccessType": "Grant access type",
       "revokeAccessType": "Revoke access type",
       "revokeFor": "Revoke for",
       "signatory": "Signatory",
-      "wallet": "Your wallet"
+      "wallet": "Your wallet",
+      "walletProxied": "Wallet (proxied)"
     },
     "names": {
       "any": "All operations",
@@ -655,6 +660,17 @@
     "submitSuccess": "Operation Success",
     "tooltipPart1": "Proxied wallets are wallet which have set one of your accounts in Nova Spektr as delegated authority (Proxies).",
     "tooltipPart2": "This means that you can control certain functions of these wallets based on the access type granted to you by the proxied wallet."
+  },
+  "pureProxyRemove": {
+    "warning": {
+      "inputHint": "Enter the sentence <i>“I understand that I will not be able to manage this wallet”</i> in the field above",
+      "isCorrectProxyCheckbox": "I am certain that I am removing <strong>the correct delegated authority</strong> from this Pure Proxy",
+      "isInaccessibleCheckbox": "I understand that once this delegated authority is removed then <strong>the pure proxy will become permanently inaccessible and cannot be restored</strong>",
+      "isIrreversibleCheckbox": "I understand that this <strong>process is irreversible</strong> and cannot be undone",
+      "lossOfFundsCheckbox": "I am aware that this operation carries <strong>the risk of potential permanent loss of funds</strong> in my proxy wallet",
+      "revokeAuthorityButton": "Revoke authority",
+      "warningMessage": "If you remove the link to this account then you will permanently lose control of the proxied wallet. Find out more on instruction of wiki"
+    }
   },
   "qrReader": {
     "parsingLabel": "Parsing data",

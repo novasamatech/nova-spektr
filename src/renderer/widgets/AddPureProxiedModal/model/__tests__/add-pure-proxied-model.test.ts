@@ -75,7 +75,18 @@ describe('widgets/AddPureProxyModal/model/add-pure-proxied-model', () => {
 
     expect(scope.getState(addPureProxiedModel.$step)).toEqual(Step.SUBMIT);
 
-    const action = allSettled(submitModel.output.formSubmitted, { scope });
+    const action = allSettled(submitModel.output.formSubmitted, {
+      scope,
+      params: {
+        timepoint: {
+          height: 1,
+          index: 1,
+        },
+        extrinsicHash: '0x00',
+        isFinalApprove: true,
+        multisigError: '',
+      },
+    });
 
     await jest.runAllTimersAsync();
     await action;

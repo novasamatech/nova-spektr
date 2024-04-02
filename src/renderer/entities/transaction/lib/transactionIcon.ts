@@ -30,6 +30,7 @@ const TransactionIcons: Record<TransactionType, IconNames> = {
   [TransactionType.ADD_PROXY]: 'proxyMst',
   [TransactionType.CREATE_PURE_PROXY]: 'proxyMst',
   [TransactionType.REMOVE_PROXY]: 'proxyMst',
+  [TransactionType.REMOVE_PURE_PROXY]: 'proxyMst',
   [TransactionType.PROXY]: 'unknownMst',
 };
 

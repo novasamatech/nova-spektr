@@ -23,6 +23,7 @@ import {
   isManageProxyTransaction,
   isAddProxyTransaction,
   isRemoveProxyTransaction,
+  isRemovePureProxyTransaction,
   isProxyTransaction,
 } from '@entities/transaction';
 
@@ -207,6 +208,19 @@ export const Details = ({ tx, account, extendedChain, signatory }: Props) => {
             addressFont={AddressStyle}
             type="short"
             accountId={transaction?.args.delegate}
+            addressPrefix={addressPrefix}
+            wrapperClassName="-mr-2 min-w-min"
+          />
+        </DetailRow>
+      )}
+
+      {isRemovePureProxyTransaction(tx.transaction) && (
+        <DetailRow label={t('operation.details.revokeFor')} className="text-text-secondary">
+          <AddressWithExplorers
+            explorers={explorers}
+            addressFont={AddressStyle}
+            type="short"
+            accountId={transaction?.args.spawner}
             addressPrefix={addressPrefix}
             wrapperClassName="-mr-2 min-w-min"
           />
