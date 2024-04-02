@@ -8755,6 +8755,12 @@
           "type": "subquery",
           "url": "https://api.subquery.network/sq/stepanLav/novasama-test-kusama"
         }
+      ],
+      "proxy": [
+        {
+          "type": "subquery",
+          "url": "https://api.subquery.network/sq/nova-wallet/novasama-testnet-proxy"
+        }
       ]
     }
   },
