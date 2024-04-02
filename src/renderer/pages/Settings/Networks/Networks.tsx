@@ -11,7 +11,7 @@ import { DEFAULT_TRANSITION } from '@shared/lib/utils';
 import { CustomRpcModal } from './components';
 import type { RpcNode, ChainId } from '@shared/core';
 import { ConnectionType } from '@shared/core';
-import { networkModel, ExtendedChain, networkUtils } from '@entities/network';
+import { networkModel, ExtendedChain, networkUtils, SelectorPayload } from '@entities/network';
 import { manageNetworkModel } from './model/manage-network-model';
 import {
   EmptyNetworks,
@@ -24,6 +24,7 @@ import {
   networksFilterModel,
   NetworkSelector,
   networkSelectorUtils,
+  networkSelectorModel,
 } from '@features/network';
 
 import './model/networks-overview-model';
@@ -122,7 +123,7 @@ export const Networks = () => {
       }
       if (!proceed) return;
 
-      manageNetworkModel.events.chainDisabled(connection.chainId);
+      networkSelectorModel.events.chainDisabled(connection.chainId);
     };
   };
 
@@ -143,11 +144,11 @@ export const Networks = () => {
       }
 
       if (type === ConnectionType.LIGHT_CLIENT) {
-        manageNetworkModel.events.lightClientSelected(chainId);
+        networkSelectorModel.events.lightClientSelected(chainId);
       } else if (type === ConnectionType.AUTO_BALANCE) {
-        manageNetworkModel.events.autoBalanceSelected(chainId);
+        networkSelectorModel.events.autoBalanceSelected(chainId);
       } else if (node) {
-        manageNetworkModel.events.rpcNodeSelected({ chainId, node });
+        networkSelectorModel.events.rpcNodeSelected({ chainId, node });
       }
     };
   };
@@ -176,6 +177,22 @@ export const Networks = () => {
     }, DEFAULT_TRANSITION);
   };
 
+  const changeConnection = (network: ExtendedChain) => {
+    const handleChangeCustomNode = changeCustomNode(network);
+    const handleDisableNetwork = disableNetwork(network);
+    const handleConnectToNode = connectToNode(network);
+
+    return async (payload?: SelectorPayload) => {
+      if (!payload) {
+        handleChangeCustomNode();
+      } else if (payload.type === ConnectionType.DISABLED) {
+        handleDisableNetwork();
+      } else {
+        handleConnectToNode(payload.type, payload.node);
+      }
+    };
+  };
+
   return (
     <BaseModal
       closeButton
@@ -197,8 +214,7 @@ export const Networks = () => {
             <InactiveNetwork networkItem={network}>
               <NetworkSelector
                 networkItem={networkSelectorUtils.getConnectionOptions(network)}
-                onConnect={connectToNode(network)}
-                onDisconnect={disableNetwork(network)}
+                onChange={changeConnection(network)}
                 onRemoveCustomNode={removeCustomNode(network.chainId)}
                 onChangeCustomNode={changeCustomNode(network)}
               />
@@ -215,8 +231,7 @@ export const Networks = () => {
             <ActiveNetwork networkItem={network}>
               <NetworkSelector
                 networkItem={networkSelectorUtils.getConnectionOptions(network)}
-                onConnect={connectToNode(network)}
-                onDisconnect={disableNetwork(network)}
+                onChange={changeConnection(network)}
                 onRemoveCustomNode={removeCustomNode(network.chainId)}
                 onChangeCustomNode={changeCustomNode(network)}
               />

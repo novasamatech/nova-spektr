@@ -36,8 +36,7 @@ const Title = {
 type Props = {
   networkItem: ConnectionOptions;
   theme?: Theme;
-  onDisconnect: () => void;
-  onConnect: (type: ConnectionType, node?: RpcNode) => void;
+  onChange: (value: SelectorPayload) => void;
   onRemoveCustomNode: (node: RpcNode) => void;
   onChangeCustomNode: (node?: RpcNode) => void;
 };
@@ -45,8 +44,7 @@ type Props = {
 export const NetworkSelector = ({
   networkItem,
   theme = 'light',
-  onDisconnect,
-  onConnect,
+  onChange,
   onRemoveCustomNode,
   onChangeCustomNode,
 }: Props) => {
@@ -55,18 +53,8 @@ export const NetworkSelector = ({
 
   const { availableNodes, selectedNode, activeNode, isCustomNode } = networkItem;
 
-  const changeConnection = async (payload?: SelectorPayload) => {
-    if (!payload) {
-      onChangeCustomNode();
-    } else if (payload.type === ConnectionType.DISABLED) {
-      onDisconnect();
-    } else {
-      onConnect(payload.type, payload.node);
-    }
-  };
-
   return (
-    <Listbox value={selectedNode || {}} onChange={changeConnection}>
+    <Listbox value={selectedNode || {}} onChange={onChange}>
       {({ open }) => (
         <div className="relative">
           <Listbox.Button
