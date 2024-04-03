@@ -6,6 +6,7 @@ import { OperationTitle } from '@entities/chain';
 import { useI18n } from '@app/providers';
 import { OperationSign, OperationSubmit } from '@features/operations';
 import { BondForm } from './BondForm';
+import { Validators } from './Validators';
 import { Confirmation } from './Confirmation';
 import { bondUtils } from '../lib/bond-utils';
 import { bondModel } from '../model/bond-model';
@@ -37,6 +38,7 @@ export const Bond = () => {
       onClose={closeModal}
     >
       {bondUtils.isInitStep(step) && <BondForm onGoBack={closeModal} />}
+      {bondUtils.isValidatorsStep(step) && <Validators onGoBack={closeModal} />}
       {bondUtils.isConfirmStep(step) && <Confirmation onGoBack={() => bondModel.events.stepChanged(Step.INIT)} />}
       {bondUtils.isSignStep(step) && (
         <OperationSign onGoBack={() => bondModel.events.stepChanged(Step.CONFIRM)} />

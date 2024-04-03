@@ -1,17 +1,22 @@
-import { createEffect, attach, createEvent, createStore, combine, sample, restore, scopeBind } from 'effector';
+import { createEvent, createStore, combine, sample, restore } from 'effector';
 import { spread } from 'patronum';
 import { createForm } from 'effector-forms';
 import { BN } from '@polkadot/util';
-import { ApiPromise } from '@polkadot/api';
-import noop from 'lodash/noop';
 
 import { walletModel, walletUtils, accountUtils } from '@entities/wallet';
 import { balanceModel, balanceUtils } from '@entities/balance';
 import { networkModel, networkUtils } from '@entities/network';
-import type { Account, PartialBy, ProxiedAccount, Chain, Asset, Address, ChainId } from '@shared/core';
-import { useStakingData, StakingMap } from '@entities/staking';
-import { transferableAmount, getRelaychainAsset, toAddress, dictionary, formatAmount } from '@shared/lib/utils';
+import type { Account, PartialBy, ProxiedAccount, Chain, Asset, Address } from '@shared/core';
 import { NetworkStore } from '../lib/types';
+import {
+  transferableAmount,
+  getRelaychainAsset,
+  toAddress,
+  dictionary,
+  formatAmount,
+  isStringsMatchQuery,
+  TEST_ADDRESS,
+} from '@shared/lib/utils';
 import {
   Transaction,
   transactionBuilder,
@@ -20,12 +25,11 @@ import {
   ProxyTxWrapper,
 } from '@entities/transaction';
 
-type BalanceMap = { balance: string; stake: string };
-
 type FormParams = {
   shards: Account[];
   signatory: Account;
   amount: string;
+  destination: string;
   description: string;
 };
 
@@ -45,8 +49,8 @@ type FormSubmitEvent = {
 
 const formInitiated = createEvent<NetworkStore>();
 const formSubmitted = createEvent<FormSubmitEvent>();
-const stakingSet = createEvent<StakingMap>();
 const formCleared = createEvent();
+const destinationQueryChanged = createEvent<string>();
 
 const feeChanged = createEvent<string>();
 const totalFeeChanged = createEvent<string>();
@@ -54,16 +58,14 @@ const multisigDepositChanged = createEvent<string>();
 const isFeeLoadingChanged = createEvent<boolean>();
 
 const $networkStore = createStore<{ chain: Chain; asset: Asset } | null>(null);
-const $staking = restore(stakingSet, null);
-const $minBond = createStore<string>('0');
-const $stakingUnsub = createStore<() => void>(noop);
 
 const $shards = createStore<Account[]>([]);
+const $destinationQuery = restore(destinationQueryChanged, '');
 const $isMultisig = createStore<boolean>(false);
 const $isProxy = createStore<boolean>(false);
 
-const $accountsBalances = createStore<BalanceMap[]>([]);
-const $unstakeBalanceRange = createStore<string | string[]>('0');
+const $accountsBalances = createStore<string[]>([]);
+const $bondBalanceRange = createStore<string | string[]>('0');
 const $signatoryBalance = createStore<string>('0');
 const $proxyBalance = createStore<string>('0');
 
@@ -74,7 +76,7 @@ const $isFeeLoading = restore(isFeeLoadingChanged, true);
 
 const $selectedSignatories = createStore<Account[]>([]);
 
-const $unstakeForm = createForm<FormParams>({
+const $bondForm = createForm<FormParams>({
   fields: {
     shards: {
       init: [] as Account[],
@@ -153,36 +155,46 @@ const $unstakeForm = createForm<FormParams>({
           errorText: 'transfer.requiredAmountError',
           validator: (value) => value !== '0',
         },
-        {
-          name: 'notEnoughBalance',
-          errorText: 'transfer.notEnoughBalanceError',
-          source: combine({
-            network: $networkStore,
-            unstakeBalanceRange: $unstakeBalanceRange,
-          }),
-          validator: (value, _, { network, unstakeBalanceRange }) => {
-            const amountBN = new BN(formatAmount(value, network.asset.precision));
-            const unstakeBalance = Array.isArray(unstakeBalanceRange) ? unstakeBalanceRange[1] : unstakeBalanceRange;
-
-            return amountBN.lte(new BN(unstakeBalance));
-          },
-        },
-        {
-          name: 'insufficientBalanceForFee',
-          errorText: 'transfer.notEnoughBalanceForFeeError',
-          source: combine({
-            network: $networkStore,
-            accountsBalances: $accountsBalances,
-          }),
-          validator: (value, form, { network, accountsBalances }) => {
-            const amountBN = new BN(formatAmount(value, network.asset.precision));
-
-            return form.shards.every((_: Account, index: number) => {
-              return amountBN.lte(new BN(accountsBalances[index].balance));
-            });
-          },
-        },
+        // {
+        //   name: 'notEnoughBalance',
+        //   errorText: 'transfer.notEnoughBalanceError',
+        //   source: combine({
+        //     network: $networkStore,
+        //     unstakeBalanceRange: $unstakeBalanceRange,
+        //   }),
+        //   validator: (value, _, { network, unstakeBalanceRange }) => {
+        //     const amountBN = new BN(formatAmount(value, network.asset.precision));
+        //     const unstakeBalance = Array.isArray(unstakeBalanceRange) ? unstakeBalanceRange[1] : unstakeBalanceRange;
+        //
+        //     return amountBN.lte(new BN(unstakeBalance));
+        //   },
+        // },
+        // {
+        //   name: 'insufficientBalanceForFee',
+        //   errorText: 'transfer.notEnoughBalanceForFeeError',
+        //   source: combine({
+        //     network: $networkStore,
+        //     accountsBalances: $accountsBalances,
+        //   }),
+        //   validator: (value, form, { network, accountsBalances }) => {
+        //     const amountBN = new BN(formatAmount(value, network.asset.precision));
+        //
+        //     return form.shards.every((_: Account, index: number) => {
+        //       return amountBN.lte(new BN(accountsBalances[index].balance));
+        //     });
+        //   },
+        // },
       ],
+    },
+    destination: {
+      init: '' as Address,
+      // rules: [
+      //   {
+      //     name: 'maxLength',
+      //     errorText: 'transfer.descriptionLengthError',
+      //     validator: (value) => !value || value.length <= 120,
+      //   },
+      // ],
     },
     description: {
       init: '',
@@ -196,22 +208,6 @@ const $unstakeForm = createForm<FormParams>({
     },
   },
   validateOn: ['submit'],
-});
-
-// Effects
-type StakingParams = {
-  chainId: ChainId;
-  api: ApiPromise;
-  addresses: Address[];
-};
-const subscribeStakingFx = createEffect(({ chainId, api, addresses }: StakingParams): Promise<() => void> => {
-  const boundStakingSet = scopeBind(stakingSet, { safe: true });
-
-  return useStakingData().subscribeStaking(chainId, api, addresses, boundStakingSet);
-});
-
-const getMinNominatorBondFx = createEffect((api: ApiPromise): Promise<string> => {
-  return useStakingData().getMinNominatorBond(api);
 });
 
 // Computed
@@ -253,7 +249,7 @@ const $txWrappers = combine(
 const $realAccounts = combine(
   {
     txWrappers: $txWrappers,
-    shards: $unstakeForm.fields.shards.$value,
+    shards: $bondForm.fields.shards.$value,
   },
   ({ txWrappers, shards }) => {
     if (shards.length === 0) return [];
@@ -286,23 +282,17 @@ const $accounts = combine(
     network: $networkStore,
     wallet: walletModel.$activeWallet,
     shards: $shards,
-    staking: $staking,
     balances: balanceModel.$balances,
   },
-  ({ network, wallet, shards, staking, balances }) => {
-    if (!wallet || !network || !staking) return [];
+  ({ network, wallet, shards, balances }) => {
+    if (!wallet || !network) return [];
 
     const { chain, asset } = network;
 
     return shards.map((shard) => {
       const balance = balanceUtils.getBalance(balances, shard.accountId, chain.chainId, asset.assetId.toString());
-      const address = toAddress(shard.accountId, { prefix: chain.addressPrefix });
-      const activeStake = staking[address]?.active || '0';
 
-      return {
-        account: shard,
-        balances: { balance: transferableAmount(balance), stake: activeStake },
-      };
+      return { account: shard, balance: transferableAmount(balance) };
     });
   },
 );
@@ -334,6 +324,26 @@ const $signatories = combine(
   },
 );
 
+const $destinationAccounts = combine(
+  {
+    wallets: walletModel.$wallets,
+    accounts: walletModel.$accounts,
+    network: $networkStore,
+    query: $destinationQuery,
+  },
+  ({ wallets, accounts, network, query }) => {
+    if (!network) return [];
+
+    return accountUtils.getAccountsForBalances(wallets, accounts, (account) => {
+      const isChainAndCryptoMatch = accountUtils.isChainAndCryptoMatch(account, network.chain);
+      const isShardAccount = accountUtils.isShardAccount(account);
+      const address = toAddress(account.accountId, { prefix: network.chain.addressPrefix });
+
+      return isChainAndCryptoMatch && !isShardAccount && isStringsMatchQuery(query, [account.name, address]);
+    });
+  },
+);
+
 const $isChainConnected = combine(
   {
     network: $networkStore,
@@ -362,27 +372,21 @@ const $api = combine(
 const $pureTxs = combine(
   {
     network: $networkStore,
-    form: $unstakeForm.$values,
-    staking: $staking,
-    minBond: $minBond,
+    form: $bondForm.$values,
     isConnected: $isChainConnected,
   },
-  ({ network, form, staking, minBond, isConnected }) => {
+  ({ network, form, isConnected }) => {
     if (!network || !isConnected) return undefined;
 
-    const amount = formatAmount(form.amount, network.asset.precision);
-
     return form.shards.map((shard) => {
-      const address = toAddress(shard.accountId, { prefix: network.chain.addressPrefix });
-      const leftAmount = new BN(staking?.[address]?.active || '0').sub(new BN(amount));
-      const chill = leftAmount.lte(new BN(minBond));
-
-      return transactionBuilder.buildUnstake({
+      return transactionBuilder.buildBondNominate({
         chain: network.chain,
         asset: network.asset,
         accountId: shard.accountId,
         amount: form.amount || '0',
-        chill,
+        destination: form.destination,
+        nominators: Array(10).fill(TEST_ADDRESS),
+        // nominators: Array(maxValidators).fill(address),
       });
     });
   },
@@ -413,12 +417,11 @@ const $transactions = combine(
 
 const $canSubmit = combine(
   {
-    isFormValid: $unstakeForm.$isValid,
+    isFormValid: $bondForm.$isValid,
     isFeeLoading: $isFeeLoading,
-    isStakingLoading: subscribeStakingFx.pending,
   },
-  ({ isFormValid, isFeeLoading, isStakingLoading }) => {
-    return isFormValid && !isFeeLoading && !isStakingLoading;
+  ({ isFormValid, isFeeLoading }) => {
+    return isFormValid && !isFeeLoading;
   },
 );
 
@@ -426,7 +429,7 @@ const $canSubmit = combine(
 
 sample({
   clock: formInitiated,
-  target: [$unstakeForm.reset, $selectedSignatories.reinit],
+  target: [$bondForm.reset, $selectedSignatories.reinit],
 });
 
 sample({
@@ -444,97 +447,31 @@ sample({
 
 sample({
   clock: formInitiated,
-  source: $api,
-  filter: (api): api is ApiPromise => Boolean(api),
-  target: getMinNominatorBondFx,
-});
-
-sample({
-  clock: getMinNominatorBondFx.doneData,
-  target: $minBond,
-});
-
-sample({
-  clock: formInitiated,
-  source: {
-    networkStore: $networkStore,
-    api: $api,
-    shards: $shards,
-  },
-  filter: ({ networkStore, api }) => {
-    return Boolean(networkStore) && Boolean(api);
-  },
-  fn: ({ networkStore, api, shards }) => {
-    const addresses = shards.map((shard) => toAddress(shard.accountId, { prefix: networkStore!.chain.addressPrefix }));
-
-    return {
-      chainId: networkStore!.chain.chainId,
-      api: api!,
-      addresses,
-    };
-  },
-  target: subscribeStakingFx,
-});
-
-sample({
-  clock: subscribeStakingFx.doneData,
-  target: $stakingUnsub,
-});
-
-sample({
-  source: {
-    staking: $staking,
-    networkStore: $networkStore,
-    shards: $unstakeForm.fields.shards.$value,
-  },
-  filter: ({ staking, networkStore }) => Boolean(staking) && Boolean(networkStore),
-  fn: ({ staking, networkStore, shards }) => {
-    if (shards.length === 0) return '0';
-
-    const stakedBalances = shards.map((shard) => {
-      const address = toAddress(shard.accountId, { prefix: networkStore!.chain.addressPrefix });
-
-      return staking![address]?.active || '0';
-    });
-
-    const minStakedBalance = stakedBalances.reduce<string>((acc, balance) => {
-      if (!balance) return acc;
-
-      return new BN(balance).lt(new BN(acc)) ? balance : acc;
-    }, stakedBalances[0]);
-
-    return ['0', minStakedBalance];
-  },
-  target: $unstakeBalanceRange,
-});
-
-sample({
-  clock: formInitiated,
   source: $shards,
   filter: (shards) => shards.length > 0,
   fn: (shards) => shards,
-  target: $unstakeForm.fields.shards.onChange,
+  target: $bondForm.fields.shards.onChange,
 });
 
-sample({
-  source: {
-    accounts: $accounts,
-    shards: $unstakeForm.fields.shards.$value,
-  },
-  fn: ({ accounts, shards }) => {
-    return accounts.reduce<{ balance: string; stake: string }[]>((acc, { account, balances }) => {
-      if (shards.includes(account)) {
-        acc.push(balances);
-      }
+// sample({
+//   source: {
+//     accounts: $accounts,
+//     shards: $bondForm.fields.shards.$value,
+//   },
+//   fn: ({ accounts, shards }) => {
+//     return accounts.reduce<{ balance: string; stake: string }[]>((acc, { account, balance }) => {
+//       if (shards.includes(account)) {
+//         acc.push(balance);
+//       }
+//
+//       return acc;
+//     }, []);
+//   },
+//   target: $accountsBalances,
+// });
 
-      return acc;
-    }, []);
-  },
-  target: $accountsBalances,
-});
-
 sample({
-  clock: $unstakeForm.fields.signatory.onChange,
+  clock: $bondForm.fields.signatory.onChange,
   source: $signatories,
   filter: (signatories) => signatories.length > 0,
   fn: (signatories, signatory) => {
@@ -546,19 +483,19 @@ sample({
 });
 
 sample({
-  clock: $unstakeForm.fields.signatory.$value,
+  clock: $bondForm.fields.signatory.$value,
   fn: (signatory) => [signatory],
   target: $selectedSignatories,
 });
 
 sample({
-  clock: $unstakeForm.fields.shards.onChange,
-  target: $unstakeForm.fields.amount.resetErrors,
+  clock: $bondForm.fields.shards.onChange,
+  target: $bondForm.fields.amount.resetErrors,
 });
 
 sample({
-  clock: $unstakeForm.fields.amount.onChange,
-  target: $unstakeForm.fields.shards.resetErrors,
+  clock: $bondForm.fields.amount.onChange,
+  target: $bondForm.fields.shards.resetErrors,
 });
 
 sample({
@@ -599,7 +536,7 @@ sample({
 // Submit
 
 sample({
-  clock: $unstakeForm.formValidated,
+  clock: $bondForm.formValidated,
   source: {
     realAccounts: $realAccounts,
     network: $networkStore,
@@ -617,7 +554,7 @@ sample({
 
     const signatory = formData.signatory.accountId ? formData.signatory : undefined;
     // TODO: update after i18n effector integration
-    const defaultText = `Unstake ${formData.amount} ${network!.asset.symbol}`;
+    const defaultText = `Bond ${formData.amount} ${network!.asset.symbol}`;
     const description = signatory ? formData.description || defaultText : '';
     const amount = formatAmount(rest.amount, network!.asset.precision);
 
@@ -642,26 +579,19 @@ sample({
 });
 
 sample({
-  clock: formSubmitted,
-  target: attach({
-    source: $stakingUnsub,
-    effect: (unsub) => unsub(),
-  }),
-});
-
-sample({
   clock: formCleared,
-  target: [$unstakeForm.reset, $shards.reinit],
+  target: [$bondForm.reset, $shards.reinit],
 });
 
 export const formModel = {
-  $unstakeForm,
+  $bondForm,
   $proxyWallet,
   $signatories,
+  $destinationAccounts,
 
   $accounts,
   $accountsBalances,
-  $unstakeBalanceRange,
+  $bondBalanceRange,
   $proxyBalance,
 
   $fee,
@@ -672,12 +602,12 @@ export const formModel = {
   $transactions,
   $isMultisig,
   $isChainConnected,
-  $isStakingLoading: subscribeStakingFx.pending,
   $canSubmit,
 
   events: {
     formInitiated,
     formCleared,
+    destinationQueryChanged,
 
     feeChanged,
     totalFeeChanged,

@@ -10,8 +10,8 @@ const TABLE_GRID_CELLS = 'grid-cols-[1fr,128px,128px,40px]';
 
 type TableProps = {
   validators: Validator[];
-  children: (validator: Validator, rowStyle: string) => JSX.Element;
   listClassName?: string;
+  children: (validator: Validator, rowStyle: string) => JSX.Element;
 };
 
 const ValidatorsTableRoot = ({ validators, children, listClassName }: TableProps) => {

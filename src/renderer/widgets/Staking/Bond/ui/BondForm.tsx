@@ -9,7 +9,7 @@ import { toAddress, toShortAddress, formatBalance } from '@shared/lib/utils';
 import { AssetBalance } from '@entities/asset';
 import { MultisigDepositWithLabel, FeeWithLabel } from '@entities/transaction';
 import { formModel } from '../model/form-model';
-import { Select, Input, Button, InputHint, AmountInput, MultiSelect, Shimmering } from '@shared/ui';
+import { Select, Input, Button, InputHint, AmountInput, MultiSelect } from '@shared/ui';
 import { DropdownOption } from '@shared/ui/types';
 
 type Props = {
@@ -17,7 +17,7 @@ type Props = {
 };
 
 export const BondForm = ({ onGoBack }: Props) => {
-  const { submit } = useForm(formModel.$unstakeForm);
+  const { submit } = useForm(formModel.$bondForm);
 
   const submitForm = (event: FormEvent) => {
     event.preventDefault();
@@ -31,6 +31,7 @@ export const BondForm = ({ onGoBack }: Props) => {
         <AccountsSelector />
         <SignatorySelector />
         <Amount />
+        {/* TODO: <Destination />*/}
         <Description />
       </form>
       <div className="flex flex-col gap-y-6 pt-6 pb-4">
@@ -44,7 +45,7 @@ export const BondForm = ({ onGoBack }: Props) => {
 const ProxyFeeAlert = () => {
   const {
     fields: { shards },
-  } = useForm(formModel.$unstakeForm);
+  } = useForm(formModel.$bondForm);
 
   const fee = useUnit(formModel.$fee);
   const balance = useUnit(formModel.$proxyBalance);
@@ -72,14 +73,14 @@ const AccountsSelector = () => {
 
   const {
     fields: { shards },
-  } = useForm(formModel.$unstakeForm);
+  } = useForm(formModel.$bondForm);
 
   const accounts = useUnit(formModel.$accounts);
   const network = useUnit(formModel.$networkStore);
 
   if (!network || accounts.length <= 1) return null;
 
-  const options = accounts.map(({ account, balances }) => {
+  const options = accounts.map(({ account, balance }) => {
     const isShard = accountUtils.isShardAccount(account);
     const address = toAddress(account.accountId, { prefix: network.chain.addressPrefix });
 
@@ -95,7 +96,7 @@ const AccountsSelector = () => {
             name={isShard ? toShortAddress(address, 16) : account.name}
             canCopy={false}
           />
-          <AssetBalance value={balances.stake} asset={network.asset} />
+          <AssetBalance value={balance} asset={network.asset} />
         </div>
       ),
     };
@@ -124,7 +125,7 @@ const SignatorySelector = () => {
 
   const {
     fields: { signatory },
-  } = useForm(formModel.$unstakeForm);
+  } = useForm(formModel.$bondForm);
 
   const signatories = useUnit(formModel.$signatories);
   const isMultisig = useUnit(formModel.$isMultisig);
@@ -180,11 +181,10 @@ const Amount = () => {
 
   const {
     fields: { amount },
-  } = useForm(formModel.$unstakeForm);
+  } = useForm(formModel.$bondForm);
 
-  const unstakeBalanceRange = useUnit(formModel.$unstakeBalanceRange);
-  const isStakingLoading = useUnit(formModel.$isStakingLoading);
   const network = useUnit(formModel.$networkStore);
+  const bondBalanceRange = useUnit(formModel.$bondBalanceRange);
 
   if (!network) return null;
 
@@ -193,7 +193,7 @@ const Amount = () => {
       <AmountInput
         invalid={amount.hasError()}
         value={amount.value}
-        balance={isStakingLoading ? <Shimmering width={50} height={10} /> : unstakeBalanceRange}
+        balance={bondBalanceRange}
         balancePlaceholder={t('general.input.availableLabel')}
         placeholder={t('general.input.amountLabel')}
         asset={network.asset}
@@ -206,12 +206,65 @@ const Amount = () => {
   );
 };
 
+// const Destination = () => {
+//   const { t } = useI18n();
+//
+//   const {
+//     fields: { destination },
+//   } = useForm(formModel.$bondForm);
+//
+//   const destinationAccounts = useUnit(bondModel.$destinationAccounts);
+//
+//   const options = [
+//     { value: '', title: t('staking.bond.restakeRewards') },
+//     { value: destination.value, title: t('staking.bond.transferableRewards') },
+//   ].map((dest, index) => ({
+//     id: index.toString(),
+//     value: dest.value,
+//     title: dest.title,
+//   }));
+//
+//   return (
+//     <div className="flex flex-col gap-y-2">
+//       <RadioGroup
+//         label={t('staking.bond.rewardsDestinationLabel')}
+//         className="col-span-2"
+//         activeId={options.find((d) => d.value === value)?.id}
+//         options={options}
+//         onChange={(option) => onChange(option.value)}
+//       >
+//         <RadioGroup.Option option={options[0]} />
+//         <RadioGroup.Option option={options[1]}>
+//           <Combobox
+//             placeholder={t('staking.bond.payoutAccountPlaceholder')}
+//             query={destinationQuery}
+//             value={activePayout}
+//             options={destinationAccounts}
+//             disabled={false}
+//             // disabled={destinationField.disabled}
+//             // invalid={Boolean(error)}
+//             prefixElement={
+//               <Identicon className="mr-1" address={activePayout} size={20} background={false} canCopy={false} />
+//             }
+//             onInput={destination.onChange}
+//             onChange={(option) => setActivePayout(option.value)}
+//           />
+//         </RadioGroup.Option>
+//       </RadioGroup>
+//
+//       <InputHint active={destination.hasError()} variant="error">
+//         {t('staking.bond.incorrectAddressError')}
+//       </InputHint>
+//     </div>
+//   );
+// };
+
 const Description = () => {
   const { t } = useI18n();
 
   const {
     fields: { description },
-  } = useForm(formModel.$unstakeForm);
+  } = useForm(formModel.$bondForm);
 
   const isMultisig = useUnit(formModel.$isMultisig);
 
@@ -240,7 +293,7 @@ const FeeSection = () => {
 
   const {
     fields: { shards },
-  } = useForm(formModel.$unstakeForm);
+  } = useForm(formModel.$bondForm);
 
   const api = useUnit(formModel.$api);
   const network = useUnit(formModel.$networkStore);

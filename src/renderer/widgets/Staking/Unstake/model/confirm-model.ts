@@ -1,4 +1,4 @@
-import { createEvent, combine, sample, restore } from 'effector';
+import { createEvent, combine, restore } from 'effector';
 
 import { Chain, Account, Asset, type ProxiedAccount } from '@shared/core';
 import { networkModel } from '@entities/network';
@@ -71,11 +71,6 @@ const $signerWallet = combine(
   },
   { skipVoid: false },
 );
-
-sample({
-  clock: formInitiated,
-  target: $confirmStore,
-});
 
 export const confirmModel = {
   $confirmStore,

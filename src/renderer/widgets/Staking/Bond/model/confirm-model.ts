@@ -1,6 +1,6 @@
-import { createEvent, combine, sample, restore } from 'effector';
+import { createEvent, combine, restore } from 'effector';
 
-import { Chain, Account, Asset, type ProxiedAccount } from '@shared/core';
+import { Chain, Account, Asset, type ProxiedAccount, Validator } from '@shared/core';
 import { networkModel } from '@entities/network';
 import { walletModel, walletUtils } from '@entities/wallet';
 
@@ -8,9 +8,11 @@ type Input = {
   chain: Chain;
   asset: Asset;
   shards: Account[];
+  validators: Validator[];
   proxiedAccount?: ProxiedAccount;
   signatory?: Account;
   amount: string;
+  destination: string;
   description: string;
 
   fee: string;
@@ -71,11 +73,6 @@ const $signerWallet = combine(
   },
   { skipVoid: false },
 );
-
-sample({
-  clock: formInitiated,
-  target: $confirmStore,
-});
 
 export const confirmModel = {
   $confirmStore,

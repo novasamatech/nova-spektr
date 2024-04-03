@@ -1,11 +1,14 @@
 import { Transaction, TransactionType } from '../model/transaction';
 import { TransferType } from './common/constants';
-import { toAddress, TEST_ACCOUNTS, formatAmount, getAssetId } from '@shared/lib/utils';
-import { Chain, ChainId, Asset, AccountId } from '@shared/core';
+import { toAddress, TEST_ACCOUNTS, formatAmount, getAssetId, TEST_ADDRESS } from '@shared/lib/utils';
+import { Chain, ChainId, Asset, AccountId, Address } from '@shared/core';
 
 export const transactionBuilder = {
   buildTransfer,
   buildUnstake,
+  buildBondNominate,
+  buildBond,
+  buildNominate,
   buildChill,
   buildBatchAll,
 };
@@ -44,6 +47,62 @@ function buildTransfer({ chain, accountId, destination, asset, amount, xcmData }
       ...(Boolean(asset.type) && { asset: getAssetId(asset) }),
       ...xcmData?.args,
     },
+  };
+}
+
+type BondNominateParams = BondParams & NominateParams;
+function buildBondNominate({
+  chain,
+  accountId,
+  destination,
+  asset,
+  amount,
+  nominators,
+}: BondNominateParams): Transaction {
+  const bondTx = buildBond({ chain, asset, accountId, destination, amount });
+  const nominateTx = buildNominate({ chain, accountId, nominators });
+
+  return {
+    chainId: chain.chainId,
+    address: toAddress(accountId, { prefix: chain.addressPrefix }),
+    type: TransactionType.BATCH_ALL,
+    args: { transactions: [bondTx, nominateTx] },
+  };
+}
+
+type BondParams = {
+  chain: Chain;
+  asset: Asset;
+  accountId: AccountId;
+  destination: Address;
+  amount: string;
+};
+function buildBond({ chain, asset, accountId, destination, amount }: BondParams): Transaction {
+  const controller = destination ? toAddress(destination, { prefix: chain.addressPrefix }) : '';
+
+  return {
+    chainId: chain.chainId,
+    address: toAddress(accountId, { prefix: chain.addressPrefix }),
+    type: TransactionType.BOND,
+    args: {
+      value: formatAmount(amount, asset.precision),
+      controller,
+      payee: { Account: TEST_ADDRESS },
+    },
+  };
+}
+
+type NominateParams = {
+  chain: Chain;
+  accountId: AccountId;
+  nominators: Address[];
+};
+function buildNominate({ chain, accountId, nominators }: NominateParams): Transaction {
+  return {
+    chainId: chain.chainId,
+    address: toAddress(accountId, { prefix: chain.addressPrefix }),
+    type: TransactionType.NOMINATE,
+    args: { targets: nominators },
   };
 }
 

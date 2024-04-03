@@ -8,6 +8,7 @@ import { Step, BondStore, NetworkStore } from '../lib/types';
 import { formModel } from './form-model';
 import { confirmModel } from './confirm-model';
 import { nonNullable, getRelaychainAsset } from '@shared/lib/utils';
+import { validatorsModel } from './validators-model';
 
 const stepChanged = createEvent<Step>();
 
@@ -47,7 +48,7 @@ sample({
       wrappedTxs,
       multisigTxs: multisigTxs.length === 0 ? null : multisigTxs,
       coreTxs,
-      unstakeStore: formData,
+      unstakeStore: { ...formData, nominators: [] },
     };
   },
   target: spread({
@@ -67,10 +68,25 @@ sample({
     step: Step.CONFIRM,
   }),
   target: spread({
-    event: confirmModel.events.formInitiated,
+    event: validatorsModel.events.formInitiated,
     step: stepChanged,
   }),
 });
+
+// TODO: return actual validators somehow and rebuild the transaction
+// sample({
+//   clock: validatorsModel.output.formSubmitted,
+//   source: $networkStore,
+//   filter: (network: NetworkStore | null): network is NetworkStore => Boolean(network),
+//   fn: ({ chain }, { formData }) => ({
+//     event: { ...formData, chain, asset: getRelaychainAsset(chain.assets)! },
+//     step: Step.CONFIRM,
+//   }),
+//   target: spread({
+//     event: confirmModel.events.formInitiated,
+//     step: stepChanged,
+//   }),
+// });
 
 sample({
   clock: confirmModel.output.formSubmitted,

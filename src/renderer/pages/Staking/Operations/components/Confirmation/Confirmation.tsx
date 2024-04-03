@@ -240,7 +240,6 @@ export const Confirmation = ({
         amounts={amounts}
         chainId={transaction?.chainId}
         asset={asset}
-        explorers={explorers}
         addressPrefix={addressPrefix}
         onClose={toggleAccounts}
       />
