@@ -14,7 +14,8 @@ import { priceProviderModel } from '@entities/price';
 import { NominatorInfo } from './common/types';
 import { useNetworkData, networkUtils } from '@entities/network';
 import { ChainId, Chain, Address, Account, Stake, Validator, ShardAccount, ChainAccount } from '@shared/core';
-import { Unstake, unstakeModel } from '@widgets/Unstake';
+import { Bond, bondModel } from '@widgets/Staking/Bond';
+import { Unstake, unstakeModel } from '@widgets/Staking/Unstake';
 import {
   useEra,
   useStakingData,
@@ -226,14 +227,19 @@ export const Overview = () => {
       return;
     }
 
-    if (path === Paths.UNSTAKE) {
+    if (path === Paths.UNSTAKE || path === Paths.BOND) {
       const shards = accounts.filter((account) => {
         const address = toAddress(account.accountId, { prefix: addressPrefix });
 
         return selectedNominators.includes(address);
       });
 
-      unstakeModel.events.flowStarted({
+      const model = {
+        [Paths.BOND]: bondModel.events.flowStarted,
+        [Paths.UNSTAKE]: unstakeModel.events.flowStarted,
+      };
+
+      model[path]({
         chain: activeChain,
         shards: uniqBy(shards, 'accountId'),
       });
@@ -324,6 +330,7 @@ export const Overview = () => {
         onClose={toggleNominators}
       />
 
+      <Bond />
       <Unstake />
       <Outlet />
     </>
