@@ -15,7 +15,7 @@ import { Submit } from '../ActionSteps/Submit';
 import { Confirmation } from '../ActionSteps/Confirmation';
 import { SignatorySelectModal } from './SignatorySelectModal';
 import { useMultisigEvent } from '@entities/multisig';
-import { Signing } from '@features/operation';
+import { SigningSwitch } from '@features/operations';
 import { permissionUtils, walletModel } from '@entities/wallet';
 import { priceProviderModel } from '@entities/price';
 import type { Address, HexString, Timepoint, MultisigAccount, Account } from '@shared/core';
@@ -248,7 +248,7 @@ const ApproveTx = ({ tx, account, connection }: Props) => {
         )}
 
         {activeStep === Step.SIGNING && approveTx && connection.api && signAccount && (
-          <Signing
+          <SigningSwitch
             chainId={tx.chainId}
             api={connection.api}
             addressPrefix={connection?.addressPrefix}
@@ -277,7 +277,7 @@ const ApproveTx = ({ tx, account, connection }: Props) => {
           description={t('operation.feeErrorMessage')}
           onClose={toggleFeeModal}
         >
-          <Button onClick={toggleFeeModal}>{t('operation.feeErrorButton')}</Button>
+          <Button onClick={toggleFeeModal}>{t('operation.submitErrorButton')}</Button>
         </OperationResult>
       </BaseModal>
 

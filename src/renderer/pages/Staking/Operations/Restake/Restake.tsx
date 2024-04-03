@@ -5,7 +5,7 @@ import { useUnit } from 'effector-react';
 
 import { useI18n } from '@app/providers';
 import { Paths } from '@shared/routes';
-import { ChainId, HexString } from '@shared/core';
+import { ChainId, HexString, MultisigAccount } from '@shared/core';
 import { Transaction, TransactionType, useTransaction } from '@entities/transaction';
 import InitOperation, { RestakeResult } from './InitOperation/InitOperation';
 import { Confirmation, Submit, NoAsset } from '../components';
@@ -13,7 +13,7 @@ import { getRelaychainAsset, toAddress, DEFAULT_TRANSITION } from '@shared/lib/u
 import { useToggle } from '@shared/lib/hooks';
 import { BaseModal, Button, Loader } from '@shared/ui';
 import { OperationTitle } from '@entities/chain';
-import { Signing } from '@features/operation';
+import { SigningSwitch } from '@features/operations';
 import type { Account } from '@shared/core';
 import { walletModel, walletUtils } from '@entities/wallet';
 import { priceProviderModel } from '@entities/price';
@@ -135,7 +135,7 @@ export const Restake = () => {
       setWrappers([
         {
           signatoryId: signer.accountId,
-          account: accounts[0],
+          account: accounts[0] as MultisigAccount,
         },
       ]);
       setSigner(signer);
@@ -197,7 +197,7 @@ export const Restake = () => {
           </Confirmation>
         )}
         {activeStep === Step.SIGNING && (
-          <Signing
+          <SigningSwitch
             chainId={chainId}
             api={api}
             addressPrefix={addressPrefix}

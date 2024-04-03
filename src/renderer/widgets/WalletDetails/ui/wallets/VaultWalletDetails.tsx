@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 
 import { BaseModal, ContextMenu, DropdownIconButton, HelpText, IconButton, Tabs } from '@shared/ui';
 import { useModalClose, useToggle } from '@shared/lib/hooks';
-import { RootAccountLg, VaultAccountsList, WalletCardLg, accountUtils } from '@entities/wallet';
+import { RootAccountLg, VaultAccountsList, WalletCardLg, accountUtils, permissionUtils } from '@entities/wallet';
 import { useI18n } from '@app/providers';
 import { Account, BaseAccount, Chain, ChainAccount, DraftAccount, KeyType, ShardAccount, Wallet } from '@shared/core';
 import { copyToClipboard, toAddress } from '@shared/lib/utils';
@@ -21,6 +21,7 @@ import { ShardsList } from '../components/ShardsList';
 import { vaultDetailsModel } from '../../model/vault-details-model';
 import { walletDetailsUtils } from '../../lib/utils';
 import { VaultMap } from '../../lib/types';
+import { AddPureProxied, addPureProxiedModel } from '@widgets/AddPureProxiedModal';
 
 type Props = {
   wallet: Wallet;
@@ -45,6 +46,8 @@ export const VaultWalletDetails = ({ wallet, root, accountsMap, onClose }: Props
   const [isConfirmForgetOpen, toggleConfirmForget] = useToggle();
 
   const [chains, setChains] = useState<Chain[]>([]);
+
+  const accountsList = Object.values(accountsMap).flat(2);
 
   useEffect(() => {
     const chainList = Object.values(allChains);
@@ -121,18 +124,32 @@ export const VaultWalletDetails = ({ wallet, root, accountsMap, onClose }: Props
       title: t('walletDetails.common.forgetButton'),
       onClick: toggleConfirmForget,
     },
-    {
+  ];
+
+  if (
+    permissionUtils.canCreateAnyProxy(wallet, accountsList) ||
+    permissionUtils.canCreateNonAnyProxy(wallet, accountsList)
+  ) {
+    Options.push({
       icon: 'addCircle' as IconNames,
       title: t('walletDetails.common.addProxyAction'),
       onClick: addProxyModel.events.flowStarted,
-    },
-  ];
+    });
+  }
+
+  if (permissionUtils.canCreateAnyProxy(wallet, accountsList)) {
+    Options.push({
+      icon: 'addCircle' as IconNames,
+      title: t('walletDetails.common.addPureProxiedAction'),
+      onClick: addPureProxiedModel.events.flowStarted,
+    });
+  }
 
   const ActionButton = (
     <DropdownIconButton name="more">
       <DropdownIconButton.Items>
         {Options.map((option) => (
-          <DropdownIconButton.Item key={option.icon}>
+          <DropdownIconButton.Item key={option.title}>
             <DropdownIconButton.Option option={option} />
           </DropdownIconButton.Item>
         ))}
@@ -163,7 +180,7 @@ export const VaultWalletDetails = ({ wallet, root, accountsMap, onClose }: Props
           </ContextMenu>
 
           <VaultAccountsList
-            className="h-[354px] mt-4 pb-4 px-5"
+            className="h-[321px] mt-4 pb-4 px-5"
             chains={Object.values(chains)}
             accountsMap={accountsMap}
             onShardClick={vaultDetailsModel.events.shardsSelected}
@@ -175,10 +192,10 @@ export const VaultWalletDetails = ({ wallet, root, accountsMap, onClose }: Props
       id: 'proxies',
       title: t('walletDetails.common.proxiesTabTitle'),
       panel: hasProxies ? (
-        <ProxiesList className="h-[403px] mt-4" canCreateProxy={canCreateProxy} />
+        <ProxiesList className="h-[371px] mt-4" canCreateProxy={canCreateProxy} />
       ) : (
         <NoProxiesAction
-          className="h-[403px] mt-4"
+          className="h-[371px] mt-4"
           canCreateProxy={canCreateProxy}
           onAddProxy={addProxyModel.events.flowStarted}
         />
@@ -196,7 +213,7 @@ export const VaultWalletDetails = ({ wallet, root, accountsMap, onClose }: Props
       isOpen={isModalOpen}
       onClose={closeModal}
     >
-      <div className="flex flex-col w-full">
+      <div className="flex flex-col gap-y-4 w-full">
         <div className="py-6 px-5 border-b border-divider">
           <WalletCardLg wallet={wallet} />
         </div>
@@ -237,6 +254,7 @@ export const VaultWalletDetails = ({ wallet, root, accountsMap, onClose }: Props
       />
 
       <AddProxy />
+      <AddPureProxied />
     </BaseModal>
   );
 };

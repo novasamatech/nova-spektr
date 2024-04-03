@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 
 import { BaseModal, DropdownIconButton, Tabs } from '@shared/ui';
 import { useModalClose, useToggle } from '@shared/lib/hooks';
-import { AccountsList, WalletCardLg, accountUtils, walletUtils } from '@entities/wallet';
+import { AccountsList, WalletCardLg, accountUtils, permissionUtils, walletUtils } from '@entities/wallet';
 import { networkModel, networkUtils } from '@entities/network';
 import { useI18n } from '@app/providers';
 import type { BaseAccount, Chain, Wallet } from '@shared/core';
@@ -15,6 +15,7 @@ import { ProxiesList } from '../components/ProxiesList';
 import { NoProxiesAction } from '../components/NoProxiesAction';
 import { walletProviderModel } from '../../model/wallet-provider-model';
 import { addProxyModel, AddProxy } from '@widgets/AddProxyModal';
+import { AddPureProxied, addPureProxiedModel } from '@widgets/AddPureProxiedModal';
 
 type Props = {
   wallet: Wallet;
@@ -56,18 +57,29 @@ export const SimpleWalletDetails = ({ wallet, account, onClose }: Props) => {
       title: t('walletDetails.common.forgetButton'),
       onClick: toggleConfirmForget,
     },
-    {
+  ];
+
+  if (permissionUtils.canCreateAnyProxy(wallet, [account]) || permissionUtils.canCreateNonAnyProxy(wallet, [account])) {
+    Options.push({
       icon: 'addCircle' as IconNames,
       title: t('walletDetails.common.addProxyAction'),
       onClick: addProxyModel.events.flowStarted,
-    },
-  ];
+    });
+  }
+
+  if (permissionUtils.canCreateAnyProxy(wallet, [account])) {
+    Options.push({
+      icon: 'addCircle' as IconNames,
+      title: t('walletDetails.common.addPureProxiedAction'),
+      onClick: addPureProxiedModel.events.flowStarted,
+    });
+  }
 
   const ActionButton = (
     <DropdownIconButton name="more">
       <DropdownIconButton.Items>
         {Options.map((option) => (
-          <DropdownIconButton.Item key={option.icon}>
+          <DropdownIconButton.Item key={option.title}>
             <DropdownIconButton.Option option={option} />
           </DropdownIconButton.Item>
         ))}
@@ -127,6 +139,7 @@ export const SimpleWalletDetails = ({ wallet, account, onClose }: Props) => {
       />
 
       <AddProxy />
+      <AddPureProxied />
     </BaseModal>
   );
 };

@@ -119,6 +119,6 @@ describe('pages/Settings/Networks/NetworkSelector', () => {
 
     const remove = screen.getByRole('button', { name: 'delete.svg' });
     await act(async () => remove.click());
-    expect(removeSpy).toBeCalled();
+    expect(removeSpy).toHaveBeenCalled();
   });
 });

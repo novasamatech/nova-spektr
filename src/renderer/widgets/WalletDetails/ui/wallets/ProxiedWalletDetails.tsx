@@ -54,7 +54,7 @@ export const ProxiedWalletDetails = ({ wallet, proxyWallet, proxiedAccount, onCl
     <DropdownIconButton name="more">
       <DropdownIconButton.Items>
         {Options.map((option) => (
-          <DropdownIconButton.Item key={option.icon}>
+          <DropdownIconButton.Item key={option.title}>
             <DropdownIconButton.Option option={option} />
           </DropdownIconButton.Item>
         ))}

@@ -12,8 +12,8 @@ import { Confirmation, NoAsset, Submit } from '../components';
 import { DEFAULT_TRANSITION, getRelaychainAsset, toAddress } from '@shared/lib/utils';
 import { useToggle } from '@shared/lib/hooks';
 import { BaseModal, Button, Loader } from '@shared/ui';
-import { Signing } from '@features/operation';
-import type { Account, ChainId, HexString } from '@shared/core';
+import { SigningSwitch } from '@features/operations';
+import { Account, ChainId, HexString, MultisigAccount } from '@shared/core';
 import { walletModel, walletUtils } from '@entities/wallet';
 import { priceProviderModel } from '@entities/price';
 import { StakingPopover } from '../components/StakingPopover/StakingPopover';
@@ -135,7 +135,7 @@ export const Unstake = () => {
       setWrappers([
         {
           signatoryId: signer.accountId,
-          account: accounts[0],
+          account: accounts[0] as MultisigAccount,
         },
       ]);
       setSigner(signer);
@@ -210,7 +210,7 @@ export const Unstake = () => {
           </Confirmation>
         )}
         {activeStep === Step.SIGNING && (
-          <Signing
+          <SigningSwitch
             chainId={chainId}
             api={api}
             addressPrefix={addressPrefix}

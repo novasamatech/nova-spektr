@@ -2,11 +2,9 @@ import { u8aToHex } from '@polkadot/util';
 import { createKeyMulti } from '@polkadot/util-crypto';
 import keyBy from 'lodash/keyBy';
 
-// TODO: resolve cross import
-import { networkUtils } from '@entities/network';
 import { dictionary } from '@shared/lib/utils';
 import { walletUtils } from './wallet-utils';
-import { AccountType, ChainType, CryptoType, ProxyType } from '@shared/core';
+import { AccountType, ChainType, CryptoType, ProxyType, ProxyVariant } from '@shared/core';
 import type {
   ID,
   AccountId,
@@ -22,6 +20,8 @@ import type {
   Chain,
   ChainId,
 } from '@shared/core';
+// TODO: resolve cross import
+import { networkUtils } from '@entities/network';
 
 export const accountUtils = {
   isBaseAccount,
@@ -32,6 +32,7 @@ export const accountUtils = {
   isChainAndCryptoMatch,
   isWalletConnectAccount,
   isProxiedAccount,
+  isPureProxiedAccount,
   isShardAccount,
   isAccountWithShards,
   getAccountsAndShardGroups,
@@ -103,7 +104,7 @@ function isChainAndCryptoMatch(account: Account, chain: Chain): boolean {
 function isCryptoTypeMatch(account: Account, chain: Chain): boolean {
   const cryptoType = networkUtils.isEthereumBased(chain.options) ? CryptoType.ETHEREUM : CryptoType.SR25519;
 
-  return !isWalletConnectAccount(account) ? account.cryptoType === cryptoType : true;
+  return isWalletConnectAccount(account) || account.cryptoType === cryptoType;
 }
 
 function isMultisigAccount(account: Pick<Account, 'type'>): account is MultisigAccount {
@@ -112,6 +113,10 @@ function isMultisigAccount(account: Pick<Account, 'type'>): account is MultisigA
 
 function isProxiedAccount(account: Pick<Account, 'type'>): account is ProxiedAccount {
   return account.type === AccountType.PROXIED;
+}
+
+function isPureProxiedAccount(account: Account): account is ProxiedAccount {
+  return account.type === AccountType.PROXIED && (account as ProxiedAccount).proxyVariant === ProxyVariant.PURE;
 }
 
 function getAccountsAndShardGroups(accounts: Account[]): Array<ChainAccount | ShardAccount[]> {

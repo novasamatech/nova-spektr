@@ -5,7 +5,7 @@ import { useUnit } from 'effector-react';
 
 import { useI18n } from '@app/providers';
 import { Paths } from '@shared/routes';
-import { ChainId, HexString } from '@shared/core';
+import { ChainId, HexString, MultisigAccount } from '@shared/core';
 import { Transaction, TransactionType, useTransaction } from '@entities/transaction';
 import type { Account } from '@shared/core';
 import InitOperation, { RedeemResult } from './InitOperation/InitOperation';
@@ -14,7 +14,7 @@ import { getRelaychainAsset, toAddress, DEFAULT_TRANSITION } from '@shared/lib/u
 import { useToggle } from '@shared/lib/hooks';
 import { OperationTitle } from '@entities/chain';
 import { BaseModal, Button, Loader } from '@shared/ui';
-import { Signing } from '@features/operation';
+import { SigningSwitch } from '@features/operations';
 import { walletModel, walletUtils } from '@entities/wallet';
 import { priceProviderModel } from '@entities/price';
 import { useNetworkData } from '@entities/network';
@@ -147,7 +147,7 @@ export const Redeem = () => {
       setWrappers([
         {
           signatoryId: signer.accountId,
-          account: accounts[0],
+          account: accounts[0] as MultisigAccount,
         },
       ]);
       setSigner(signer);
@@ -197,7 +197,7 @@ export const Redeem = () => {
           />
         )}
         {activeStep === Step.SIGNING && (
-          <Signing
+          <SigningSwitch
             chainId={chainId}
             api={api}
             addressPrefix={addressPrefix}

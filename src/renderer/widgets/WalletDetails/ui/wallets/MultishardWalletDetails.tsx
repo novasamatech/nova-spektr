@@ -2,7 +2,7 @@ import { useUnit } from 'effector-react';
 
 import { BaseModal, DropdownIconButton, Tabs } from '@shared/ui';
 import { useModalClose, useToggle } from '@shared/lib/hooks';
-import { MultishardAccountsList, WalletCardLg } from '@entities/wallet';
+import { MultishardAccountsList, WalletCardLg, permissionUtils } from '@entities/wallet';
 import { useI18n } from '@app/providers';
 import type { Wallet } from '@shared/core';
 import { RenameWalletModal } from '@features/wallets/RenameWallet';
@@ -10,6 +10,7 @@ import { IconNames } from '@shared/ui/Icon/data';
 import { ForgetWalletModal } from '@features/wallets/ForgetWallet';
 import { TabItem } from '@shared/ui/Tabs/common/types';
 import { networkModel } from '@entities/network';
+import { AddPureProxied, addPureProxiedModel } from '@widgets/AddPureProxiedModal';
 import { addProxyModel, AddProxy } from '@widgets/AddProxyModal';
 import { ProxiesList } from '../components/ProxiesList';
 import { NoProxiesAction } from '../components/NoProxiesAction';
@@ -33,6 +34,8 @@ export const MultishardWalletDetails = ({ wallet, accounts, onClose }: Props) =>
   const [isRenameModalOpen, toggleIsRenameModalOpen] = useToggle();
   const [isConfirmForgetOpen, toggleConfirmForget] = useToggle();
 
+  const accountsList = [...accounts.values()].map((a) => Object.values(a)).flat(2);
+
   const Options = [
     {
       icon: 'rename' as IconNames,
@@ -49,18 +52,32 @@ export const MultishardWalletDetails = ({ wallet, accounts, onClose }: Props) =>
       title: t('walletDetails.common.forgetButton'),
       onClick: toggleConfirmForget,
     },
-    {
+  ];
+
+  if (
+    permissionUtils.canCreateAnyProxy(wallet, accountsList) ||
+    permissionUtils.canCreateNonAnyProxy(wallet, accountsList)
+  ) {
+    Options.push({
       icon: 'addCircle' as IconNames,
       title: t('walletDetails.common.addProxyAction'),
       onClick: addProxyModel.events.flowStarted,
-    },
-  ];
+    });
+  }
+
+  if (permissionUtils.canCreateAnyProxy(wallet, accountsList)) {
+    Options.push({
+      icon: 'addCircle' as IconNames,
+      title: t('walletDetails.common.addPureProxiedAction'),
+      onClick: addPureProxiedModel.events.flowStarted,
+    });
+  }
 
   const ActionButton = (
     <DropdownIconButton name="more">
       <DropdownIconButton.Items>
         {Options.map((option) => (
-          <DropdownIconButton.Item key={option.icon}>
+          <DropdownIconButton.Item key={option.title}>
             <DropdownIconButton.Option option={option} />
           </DropdownIconButton.Item>
         ))}
@@ -72,16 +89,16 @@ export const MultishardWalletDetails = ({ wallet, accounts, onClose }: Props) =>
     {
       id: 'accounts',
       title: t('walletDetails.common.accountTabTitle'),
-      panel: <MultishardAccountsList accounts={accounts} chains={Object.values(chains)} className="h-[419px]" />,
+      panel: <MultishardAccountsList accounts={accounts} chains={Object.values(chains)} className="h-[387px]" />,
     },
     {
       id: 'proxies',
       title: t('walletDetails.common.proxiesTabTitle'),
       panel: hasProxies ? (
-        <ProxiesList className="h-[403px] mt-4" canCreateProxy={canCreateProxy} />
+        <ProxiesList className="h-[371px] mt-4" canCreateProxy={canCreateProxy} />
       ) : (
         <NoProxiesAction
-          className="h-[403px] mt-4"
+          className="h-[371px] mt-4"
           canCreateProxy={canCreateProxy}
           onAddProxy={addProxyModel.events.flowStarted}
         />
@@ -99,7 +116,7 @@ export const MultishardWalletDetails = ({ wallet, accounts, onClose }: Props) =>
       isOpen={isModalOpen}
       onClose={closeModal}
     >
-      <div className="flex flex-col w-full">
+      <div className="flex flex-col gap-y-4 w-full">
         <div className="py-6 px-5 border-b border-divider">
           <WalletCardLg wallet={wallet} />
         </div>
@@ -116,6 +133,7 @@ export const MultishardWalletDetails = ({ wallet, accounts, onClose }: Props) =>
       />
 
       <AddProxy />
+      <AddPureProxied />
     </BaseModal>
   );
 };

@@ -1,4 +1,5 @@
 import { TransactionType } from '../../model/transaction';
+import { AssetType } from '@shared/core';
 
 export const MAX_WEIGHT = {
   refTime: '0',
@@ -12,6 +13,11 @@ export const BOND_WITH_CONTROLLER_ARGS_AMOUNT = 3;
 export const CONTROLLER_ARG_NAME = 'controller';
 export const DEST_WEIGHT_ARG_NAME = 'destWeight';
 
+export const TransferType: Record<AssetType, TransactionType> = {
+  [AssetType.ORML]: TransactionType.ORML_TRANSFER,
+  [AssetType.STATEMINE]: TransactionType.ASSET_TRANSFER,
+};
+
 export const TRANSFER_SECTIONS = ['balances', 'assets', 'currencies', 'tokens'];
 
 export const XCM_SECTIONS = ['xcmPallet', 'polkadotXcm', 'xTokens'];
@@ -21,7 +27,11 @@ export const PROXY_SECTION = 'proxy';
 export const MULTISIG_SECTION = 'multisig';
 
 export const TransferTypes = [TransactionType.TRANSFER, TransactionType.ASSET_TRANSFER, TransactionType.ORML_TRANSFER];
-export const ManageProxyTypes = [TransactionType.ADD_PROXY, TransactionType.REMOVE_PROXY];
+export const ManageProxyTypes = [
+  TransactionType.ADD_PROXY,
+  TransactionType.REMOVE_PROXY,
+  TransactionType.CREATE_PURE_PROXY,
+];
 
 export const XcmTypes = [
   TransactionType.XCM_TELEPORT,

@@ -36,9 +36,11 @@ import { balanceModel } from '@entities/balance';
 import { notificationModel } from '@entities/notification';
 import { proxiesUtils } from '../lib/proxies-utils';
 import { storageService } from '@shared/api/storage';
+import { dictionary } from '@shared/lib/utils';
 
 const workerStarted = createEvent();
 const connected = createEvent<ChainId>();
+const proxiedWalletsCreated = createEvent<ProxiedWalletsParams>();
 const proxiedAccountsRemoved = createEvent<ProxiedAccount[]>();
 const depositsReceived = createEvent<ProxyDeposits>();
 
@@ -129,10 +131,17 @@ const getProxiesFx = createEffect(
         proxiedAccountsToAdd.map((p) => p.accountId),
       );
 
+      const pureProxiesMap = dictionary(pureProxies, 'accountId');
+
       for (let i in proxiedAccountsToAdd) {
-        proxiedAccountsToAdd[i].proxyVariant = pureProxies.includes(proxiedAccountsToAdd[i].accountId)
-          ? ProxyVariant.PURE
-          : ProxyVariant.REGULAR;
+        const pureProxy = pureProxiesMap[proxiedAccountsToAdd[i].accountId];
+        if (pureProxy) {
+          proxiedAccountsToAdd[i].proxyVariant = ProxyVariant.PURE;
+          proxiedAccountsToAdd[i].blockNumber = pureProxy.blockNumber;
+          proxiedAccountsToAdd[i].extrinsicIndex = pureProxy.extrinsicIndex;
+        } else {
+          proxiedAccountsToAdd[i].proxyVariant = ProxyVariant.REGULAR;
+        }
       }
     }
 
@@ -162,14 +171,15 @@ const createProxiedWalletsFx = createEffect(
         signingType: SigningType.WATCH_ONLY,
       } as Wallet;
 
-      // TODO: use chain data, when ethereum chains support
+      const isEthereumChain = networkUtils.isEthereumBased(chains[proxied.chainId].options);
+
       const accounts = [
         {
           ...proxied,
           name: walletName,
           type: AccountType.PROXIED,
-          chainType: ChainType.SUBSTRATE,
-          cryptoType: CryptoType.SR25519,
+          chainType: isEthereumChain ? ChainType.ETHEREUM : ChainType.SUBSTRATE,
+          cryptoType: isEthereumChain ? CryptoType.ETHEREUM : CryptoType.SR25519,
         } as ProxiedAccount,
       ];
 
@@ -263,8 +273,8 @@ spread({
     proxiedAccountsToRemove: proxiedAccountsRemoved,
     proxiedAccountsToAdd: attach({
       source: networkModel.$chains,
-      effect: createProxiedWalletsFx,
       mapParams: (proxiedAccounts: ProxiedAccount[], chains) => ({ proxiedAccounts, chains }),
+      effect: createProxiedWalletsFx,
     }),
     deposits: depositsReceived,
   },
@@ -405,8 +415,18 @@ sample({
   target: notificationModel.events.notificationsAdded,
 });
 
+sample({
+  clock: proxiedWalletsCreated,
+  target: createProxiedWalletsFx,
+});
+
 export const proxiesModel = {
   events: {
     workerStarted,
+    proxiedWalletsCreated,
+  },
+
+  output: {
+    walletsCreated: createProxiedWalletsFx.doneData,
   },
 };

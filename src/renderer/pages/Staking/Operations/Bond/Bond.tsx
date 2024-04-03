@@ -10,7 +10,7 @@ import { Paths } from '@shared/routes';
 import { Transaction, TransactionType, useTransaction } from '@entities/transaction';
 import { Confirmation, NoAsset, Submit, Validators } from '../components';
 import { useToggle } from '@shared/lib/hooks';
-import { RewardsDestination } from '@shared/core';
+import { RewardsDestination, MultisigAccount } from '@shared/core';
 import type { Account, Address, ChainId, HexString } from '@shared/core';
 import { BaseModal, Button, Loader } from '@shared/ui';
 import InitOperation, { BondResult } from './InitOperation/InitOperation';
@@ -18,7 +18,7 @@ import { OperationTitle } from '@entities/chain';
 import { DestinationType } from '../common/types';
 import { UnstakingDuration } from '@pages/Staking/Overview/components';
 import { useNetworkData, networkUtils } from '@entities/network';
-import { Signing } from '@features/operation';
+import { SigningSwitch } from '@features/operations';
 import { walletModel, walletUtils } from '@entities/wallet';
 import { priceProviderModel } from '@entities/price';
 import { StakingPopover } from '../components/StakingPopover/StakingPopover';
@@ -157,7 +157,7 @@ export const Bond = () => {
       setWrappers([
         {
           signatoryId: signer.accountId,
-          account: txAccounts[0],
+          account: txAccounts[0] as MultisigAccount,
         },
       ]);
     }
@@ -250,7 +250,7 @@ export const Bond = () => {
           </Confirmation>
         )}
         {activeStep === Step.SIGNING && (
-          <Signing
+          <SigningSwitch
             chainId={chainId}
             api={api}
             addressPrefix={addressPrefix}

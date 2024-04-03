@@ -4,10 +4,10 @@ import { SubmittableExtrinsic } from '@polkadot/api/types';
 import { HexString } from '@polkadot/util/types';
 import { Type } from '@polkadot/types';
 
-import { parseXcmPalletExtrinsic, parseXTokensExtrinsic, decodeXcm } from '@shared/api/xcm';
 import { DecodedTransaction, TransactionType } from '@entities/transaction/model/transaction';
 import type { Address, CallData, ChainId } from '@shared/core';
 import { ICallDataDecoder } from './common/types';
+import { xcmService } from '@shared/api/xcm';
 import {
   BOND_WITH_CONTROLLER_ARGS_AMOUNT,
   OLD_MULTISIG_ARGS_AMOUNT,
@@ -184,48 +184,48 @@ export const useCallDataDecoder = (): ICallDataDecoder => {
       };
     },
     [TransactionType.XCM_LIMITED_TRANSFER]: (decoded, chainId): Record<string, any> => {
-      const parsedData = parseXcmPalletExtrinsic({
+      const parsedData = xcmService.parseXcmPalletExtrinsic({
         dest: decoded.args[0].toHuman(),
         beneficiary: decoded.args[1].toHuman(),
         assets: decoded.args[2].toHuman(),
       });
 
-      return decodeXcm(chainId, parsedData);
+      return xcmService.decodeXcm(chainId, parsedData);
     },
     [TransactionType.XCM_TELEPORT]: (decoded, chainId): Record<string, any> => {
-      const parsedData = parseXcmPalletExtrinsic({
+      const parsedData = xcmService.parseXcmPalletExtrinsic({
         dest: decoded.args[0].toHuman(),
         beneficiary: decoded.args[1].toHuman(),
         assets: decoded.args[2].toHuman(),
       });
 
-      return decodeXcm(chainId, parsedData);
+      return xcmService.decodeXcm(chainId, parsedData);
     },
     [TransactionType.POLKADOT_XCM_LIMITED_TRANSFER]: (decoded, chainId): Record<string, any> => {
-      const parsedData = parseXcmPalletExtrinsic({
+      const parsedData = xcmService.parseXcmPalletExtrinsic({
         dest: decoded.args[0].toHuman(),
         beneficiary: decoded.args[1].toHuman(),
         assets: decoded.args[2].toHuman(),
       });
 
-      return decodeXcm(chainId, parsedData);
+      return xcmService.decodeXcm(chainId, parsedData);
     },
     [TransactionType.POLKADOT_XCM_TELEPORT]: (decoded, chainId): Record<string, any> => {
-      const parsedData = parseXcmPalletExtrinsic({
+      const parsedData = xcmService.parseXcmPalletExtrinsic({
         dest: decoded.args[0].toHuman(),
         beneficiary: decoded.args[1].toHuman(),
         assets: decoded.args[2].toHuman(),
       });
 
-      return decodeXcm(chainId, parsedData);
+      return xcmService.decodeXcm(chainId, parsedData);
     },
     [TransactionType.XTOKENS_TRANSFER_MULTIASSET]: (decoded, chainId): Record<string, any> => {
-      const parsedData = parseXTokensExtrinsic({
+      const parsedData = xcmService.parseXTokensExtrinsic({
         asset: decoded.args[0].toHuman(),
         dest: decoded.args[1].toHuman(),
       });
 
-      return decodeXcm(chainId, parsedData);
+      return xcmService.decodeXcm(chainId, parsedData);
     },
     [TransactionType.BOND]: (decoded): Record<string, any> => {
       const args: Record<string, any> = {};
@@ -323,11 +323,27 @@ export const useCallDataDecoder = (): ICallDataDecoder => {
         delay: decoded.args[2].toString(),
       };
     },
+    [TransactionType.CREATE_PURE_PROXY]: (decoded): Record<string, any> => {
+      return {
+        proxyType: decoded.args[0].toString(),
+        delay: decoded.args[1].toString(),
+        index: decoded.args[2].toString(),
+      };
+    },
     [TransactionType.REMOVE_PROXY]: (decoded): Record<string, any> => {
       return {
         delegate: decoded.args[0].toString(),
         proxyType: decoded.args[1].toString(),
         delay: decoded.args[2].toString(),
+      };
+    },
+    [TransactionType.REMOVE_PURE_PROXY]: (decoded): Record<string, any> => {
+      return {
+        spawner: decoded.args[0].toString(),
+        proxyType: decoded.args[1].toString(),
+        index: decoded.args[2].toString(),
+        height: decoded.args[3].toString(),
+        extIndex: decoded.args[4].toString(),
       };
     },
     [TransactionType.PROXY]: (decoded): Record<string, any> => {
@@ -415,6 +431,8 @@ export const useCallDataDecoder = (): ICallDataDecoder => {
       addProxy: TransactionType.ADD_PROXY,
       removeProxy: TransactionType.REMOVE_PROXY,
       proxy: TransactionType.PROXY,
+      createPure: TransactionType.CREATE_PURE_PROXY,
+      killPure: TransactionType.REMOVE_PURE_PROXY,
     }[method];
   };
 

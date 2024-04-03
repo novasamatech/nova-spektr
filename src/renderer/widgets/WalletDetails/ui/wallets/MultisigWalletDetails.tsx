@@ -12,6 +12,7 @@ import {
   WalletCardLg,
   WalletCardMd,
   accountUtils,
+  permissionUtils,
 } from '@entities/wallet';
 import { useI18n } from '@app/providers';
 import { WalletFiatBalance } from '@features/wallets/WalletSelect/ui/WalletFiatBalance';
@@ -24,6 +25,7 @@ import { NoProxiesAction } from '../components/NoProxiesAction';
 import { walletProviderModel } from '../../model/wallet-provider-model';
 import { networkUtils, networkModel } from '@entities/network';
 import { matrixModel, matrixUtils } from '@entities/matrix';
+import { AddPureProxied, addPureProxiedModel } from '@widgets/AddPureProxiedModal';
 
 type Props = {
   wallet: Wallet;
@@ -65,9 +67,7 @@ export const MultisigWalletDetails = ({
 
   const multisigChains = useMemo(() => {
     return Object.values(chains).filter((chain) => {
-      return (
-        networkUtils.isMultisigSupported(chain.options) && accountUtils.isChainIdAndCryptoTypeMatch(account, chain)
-      );
+      return networkUtils.isMultisigSupported(chain.options) && accountUtils.isChainAndCryptoMatch(account, chain);
     });
   }, [chains]);
 
@@ -82,18 +82,29 @@ export const MultisigWalletDetails = ({
       title: t('walletDetails.common.forgetButton'),
       onClick: toggleConfirmForget,
     },
-    {
+  ];
+
+  if (permissionUtils.canCreateAnyProxy(wallet, [account]) || permissionUtils.canCreateNonAnyProxy(wallet, [account])) {
+    Options.push({
       icon: 'addCircle' as IconNames,
       title: t('walletDetails.common.addProxyAction'),
       onClick: addProxyModel.events.flowStarted,
-    },
-  ];
+    });
+  }
+
+  if (permissionUtils.canCreateAnyProxy(wallet, [account])) {
+    Options.push({
+      icon: 'addCircle' as IconNames,
+      title: t('walletDetails.common.addPureProxiedAction'),
+      onClick: addPureProxiedModel.events.flowStarted,
+    });
+  }
 
   const ActionButton = (
     <DropdownIconButton name="more">
       <DropdownIconButton.Items>
         {Options.map((option) => (
-          <DropdownIconButton.Item key={option.icon}>
+          <DropdownIconButton.Item key={option.title}>
             <DropdownIconButton.Option option={option} />
           </DropdownIconButton.Item>
         ))}
@@ -111,7 +122,7 @@ export const MultisigWalletDetails = ({
       isOpen={isModalOpen}
       onClose={closeModal}
     >
-      <div className="flex flex-col w-full">
+      <div className="flex flex-col gap-y-4 w-full">
         <div className="py-6 px-5 border-b border-divider">
           <WalletCardLg wallet={wallet} />
         </div>
@@ -119,12 +130,12 @@ export const MultisigWalletDetails = ({
         <Tabs
           unmount={false}
           tabClassName="whitespace-nowrap"
-          tabsClassName="mx-4 mt-4"
+          tabsClassName="mx-4"
           items={[
             {
               id: 1,
               title: t('walletDetails.multisig.networksTab'),
-              panel: <AccountsList accountId={account.accountId} chains={multisigChains} className="h-[361px]" />,
+              panel: <AccountsList accountId={account.accountId} chains={multisigChains} className="h-[345px]" />,
             },
             {
               id: 2,
@@ -138,7 +149,7 @@ export const MultisigWalletDetails = ({
                     })}
                   </FootnoteText>
 
-                  <div className="overflow-y-auto mt-4 h-[353px]">
+                  <div className="overflow-y-auto mt-4 h-[337px]">
                     {!chain && signatoryWallets.length > 0 && (
                       <div className="flex flex-col gap-y-2">
                         <FootnoteText className="text-text-tertiary px-5">
@@ -238,10 +249,10 @@ export const MultisigWalletDetails = ({
               id: 3,
               title: t('walletDetails.common.proxiesTabTitle'),
               panel: hasProxies ? (
-                <ProxiesList className="h-[387px]" canCreateProxy={canCreateProxy} />
+                <ProxiesList className="h-[371px]" canCreateProxy={canCreateProxy} />
               ) : (
                 <NoProxiesAction
-                  className="h-[387px]"
+                  className="h-[371px]"
                   canCreateProxy={canCreateProxy}
                   onAddProxy={addProxyModel.events.flowStarted}
                 />
@@ -261,6 +272,7 @@ export const MultisigWalletDetails = ({
       />
 
       <AddProxy />
+      <AddPureProxied />
     </BaseModal>
   );
 };

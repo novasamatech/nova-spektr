@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { useUnit } from 'effector-react';
 
 import { useModalClose, useToggle } from '@shared/lib/hooks';
-import { WalletCardLg } from '@entities/wallet';
+import { WalletCardLg, permissionUtils } from '@entities/wallet';
 import { useI18n } from '@app/providers';
 import { chainsService } from '@shared/api/network';
 import { walletConnectUtils } from '@entities/walletConnect';
@@ -20,6 +20,7 @@ import { walletProviderModel } from '../../model/wallet-provider-model';
 import { WalletConnectAccounts } from '../components/WalletConnectAccounts';
 import { ProxiesList } from '../components/ProxiesList';
 import { NoProxiesAction } from '../components/NoProxiesAction';
+import { AddPureProxied, addPureProxiedModel } from '@widgets/AddPureProxiedModal';
 import {
   BaseModal,
   Button,
@@ -82,18 +83,29 @@ export const WalletConnectDetails = ({ wallet, accounts, onClose }: Props) => {
       title: t('walletDetails.walletConnect.refreshButton'),
       onClick: wcDetailsModel.events.confirmReconnectShown,
     },
-    {
+  ];
+
+  if (permissionUtils.canCreateAnyProxy(wallet, accounts) || permissionUtils.canCreateNonAnyProxy(wallet, accounts)) {
+    Options.push({
       icon: 'addCircle' as IconNames,
       title: t('walletDetails.common.addProxyAction'),
       onClick: addProxyModel.events.flowStarted,
-    },
-  ];
+    });
+  }
+
+  if (permissionUtils.canCreateAnyProxy(wallet, accounts)) {
+    Options.push({
+      icon: 'addCircle' as IconNames,
+      title: t('walletDetails.common.addPureProxiedAction'),
+      onClick: addPureProxiedModel.events.flowStarted,
+    });
+  }
 
   const ActionButton = (
     <DropdownIconButton name="more">
       <DropdownIconButton.Items>
         {Options.map((option) => (
-          <DropdownIconButton.Item key={option.icon}>
+          <DropdownIconButton.Item key={option.title}>
             <DropdownIconButton.Option option={option} />
           </DropdownIconButton.Item>
         ))}
@@ -111,10 +123,10 @@ export const WalletConnectDetails = ({ wallet, accounts, onClose }: Props) => {
       id: 'proxies',
       title: t('walletDetails.common.proxiesTabTitle'),
       panel: hasProxies ? (
-        <ProxiesList className="h-[395px] mt-6" canCreateProxy={canCreateProxy} />
+        <ProxiesList className="h-[379px] mt-6" canCreateProxy={canCreateProxy} />
       ) : (
         <NoProxiesAction
-          className="h-[395px] mt-6"
+          className="h-[379px] mt-6"
           canCreateProxy={canCreateProxy}
           onAddProxy={addProxyModel.events.flowStarted}
         />
@@ -132,7 +144,7 @@ export const WalletConnectDetails = ({ wallet, accounts, onClose }: Props) => {
       isOpen={isModalOpen}
       onClose={closeModal}
     >
-      <div className="flex flex-col h-full w-full">
+      <div className="flex flex-col gap-y-4 h-full w-full">
         <div className="py-6 px-5 border-b border-divider">
           <WalletCardLg full wallet={wallet} />
         </div>
@@ -212,6 +224,7 @@ export const WalletConnectDetails = ({ wallet, accounts, onClose }: Props) => {
       <RenameWalletModal wallet={wallet} isOpen={isRenameModalOpen} onClose={toggleIsRenameModalOpen} />
 
       <AddProxy />
+      <AddPureProxied />
     </BaseModal>
   );
 };

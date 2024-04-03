@@ -10,25 +10,23 @@ import { useI18n } from '@app/providers';
 import { Confirmation } from './Confirmation';
 import { networkModel, useNetworkData } from '@entities/network';
 import { OperationResult, TransactionType, useTransaction, validateBalance } from '@entities/transaction';
-import { Signing } from '@features/operation';
+import { SigningSwitch } from '@features/operations';
 import { toAddress, transferableAmount } from '@shared/lib/utils';
 import { SignatorySelectModal } from '@pages/Operations/components/modals/SignatorySelectModal';
 import { useToggle } from '@shared/lib/hooks';
 import { balanceModel, balanceUtils } from '@entities/balance';
 import { Submit } from './Submit';
-import { removeProxyModel, Step } from '@widgets/RemoveProxy/model/remove-proxy-model';
 import { accountUtils } from '@entities/wallet';
+import { removeProxyModel, Step } from '../model/remove-proxy-model';
 
 type Props = {
   isOpen: boolean;
+  proxyAccount: ProxyAccount;
   onClose: () => void;
-  proxyAccount: ProxyAccount | null;
 };
 
 export const RemoveProxy = ({ isOpen, proxyAccount, onClose }: Props) => {
   const { t } = useI18n();
-
-  if (!proxyAccount) return null;
 
   const proxiedAccount = useUnit(removeProxyModel.$proxiedAccount);
   const proxiedWallet = useUnit(removeProxyModel.$proxiedWallet);
@@ -185,8 +183,8 @@ export const RemoveProxy = ({ isOpen, proxyAccount, onClose }: Props) => {
         />
       )}
 
-      {activeStep === Step.SIGNING && proxiedAccount && (
-        <Signing
+      {activeStep === Step.SIGNING && proxiedWallet && proxiedAccount && (
+        <SigningSwitch
           signerWaller={proxiedWallet}
           chainId={chain.chainId}
           api={api}
@@ -218,7 +216,7 @@ export const RemoveProxy = ({ isOpen, proxyAccount, onClose }: Props) => {
         description={t('operation.feeErrorMessage')}
         onClose={toggleFeeModal}
       >
-        <Button onClick={toggleFeeModal}>{t('operation.feeErrorButton')}</Button>
+        <Button onClick={toggleFeeModal}>{t('operation.submitErrorButton')}</Button>
       </OperationResult>
     </BaseModal>
   );

@@ -2,8 +2,18 @@ import { TFunction } from 'react-i18next';
 
 import { accountUtils, walletUtils } from '@entities/wallet';
 import { formatSectionAndMethod, toAddress } from '@shared/lib/utils';
-import { TransferTypes, XcmTypes } from '@entities/transaction';
-import type { Account, AccountId, ChainId, Contact, Explorer, HexString, Signatory, Wallet } from '@shared/core';
+import { TransferTypes, XcmTypes, isProxyTransaction } from '@entities/transaction';
+import type {
+  Account,
+  AccountId,
+  ChainId,
+  Contact,
+  Explorer,
+  HexString,
+  Signatory,
+  Wallet,
+  Address,
+} from '@shared/core';
 import {
   DecodedTransaction,
   MultisigEvent,
@@ -41,7 +51,9 @@ const TransactionTitles: Record<TransactionType, string> = {
   [TransactionType.BATCH_ALL]: 'operations.titles.unknown',
   // Proxy
   [TransactionType.ADD_PROXY]: 'operations.titles.addProxy',
+  [TransactionType.CREATE_PURE_PROXY]: 'operations.titles.createPureProxy',
   [TransactionType.REMOVE_PROXY]: 'operations.titles.removeProxy',
+  [TransactionType.REMOVE_PURE_PROXY]: 'operations.titles.removePureProxy',
   [TransactionType.PROXY]: 'operations.titles.proxy',
 };
 
@@ -79,7 +91,9 @@ const TransactionTitlesModal: Record<TransactionType, (crossChain: boolean) => s
   [TransactionType.BATCH_ALL]: () => 'operations.modalTitles.unknownOn',
   // Proxy
   [TransactionType.ADD_PROXY]: () => 'operations.modalTitles.addProxy',
+  [TransactionType.CREATE_PURE_PROXY]: () => 'operations.modalTitles.createPureProxy',
   [TransactionType.REMOVE_PROXY]: () => 'operations.modalTitles.removeProxy',
+  [TransactionType.REMOVE_PURE_PROXY]: () => 'operations.modalTitles.removePureProxy',
   [TransactionType.PROXY]: () => 'operations.modalTitles.proxy',
 };
 
@@ -92,6 +106,10 @@ export const getTransactionTitle = (transaction?: Transaction | DecodedTransacti
 
   if (transaction.type === TransactionType.BATCH_ALL) {
     return getTransactionTitle(transaction.args?.transactions?.[0]);
+  }
+
+  if (transaction.type === TransactionType.PROXY) {
+    return getTransactionTitle(transaction.args?.transaction);
   }
 
   return TransactionTitles[transaction.type];
@@ -109,6 +127,10 @@ export const getModalTransactionTitle = (
 
   if (transaction.type === TransactionType.BATCH_ALL) {
     return getModalTransactionTitle(crossChain, transaction.args?.transactions?.[0]);
+  }
+
+  if (transaction.type === TransactionType.PROXY) {
+    return getModalTransactionTitle(crossChain, transaction.args?.transaction);
   }
 
   return TransactionTitlesModal[transaction.type](crossChain);
@@ -175,6 +197,12 @@ export const getTransactionAmount = (tx: Transaction | DecodedTransaction): stri
 
     return getTransactionAmount(txMatch);
   }
+  if (txType === TransactionType.PROXY) {
+    const transaction = tx.args?.transaction;
+    if (!transaction) return null;
+
+    return getTransactionAmount(transaction);
+  }
 
   return null;
 };
@@ -235,4 +263,14 @@ export const getSignatoryAccounts = (
 
     return acc;
   }, []);
+};
+
+export const getDestination = (tx: MultisigTransaction): Address | undefined => {
+  if (!tx.transaction) return undefined;
+
+  if (isProxyTransaction(tx.transaction)) {
+    return tx.transaction.args.transaction.args.dest;
+  }
+
+  return tx.transaction.args.dest;
 };
