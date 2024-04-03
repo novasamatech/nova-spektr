@@ -106,7 +106,7 @@ sample({
     coreTxs: $coreTxs,
   },
   filter: (transferData) => {
-    return Boolean(transferData.unstakeStore) && Boolean(transferData.coreTxs);
+    return Boolean(transferData.unstakeStore) && Boolean(transferData.coreTxs) && Boolean(transferData.networkStore);
   },
   fn: (transferData, signParams) => ({
     event: {

@@ -7,7 +7,7 @@ import { AmountInput, Button, Combobox, Identicon, Input, InputHint, RadioGroup 
 import { useI18n } from '@app/providers';
 import { validateAddress, isStringsMatchQuery, toAddress } from '@shared/lib/utils';
 import { RadioOption } from '@shared/ui/RadioGroup/common/types';
-import { DropdownOption, ComboboxOption } from '@shared/ui/Dropdowns/common/types';
+import { DropdownOption, ComboboxOption } from '@shared/ui/types';
 import { getDestinationAccounts, getPayoutAccountOption } from '../../common/utils';
 import type { Asset, Address, ChainId, AccountId } from '@shared/core';
 import { RewardsDestination } from '@shared/core';

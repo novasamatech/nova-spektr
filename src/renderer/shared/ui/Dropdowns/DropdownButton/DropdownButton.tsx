@@ -1,6 +1,6 @@
 import cn from 'classnames';
 import { Menu } from '@headlessui/react';
-import { ComponentProps, ReactNode } from 'react';
+import { ComponentProps } from 'react';
 import { Link } from 'react-router-dom';
 
 import { FootnoteText } from '../../Typography';
@@ -8,19 +8,9 @@ import { Icon } from '../../Icon/Icon';
 import { IconNames } from '../../Icon/data';
 import { Button } from '../../Buttons';
 import { cnTw } from '@shared/lib/utils';
+import { ButtonDropdownOption } from '../common/types';
 
 type ButtonProps = ComponentProps<typeof Button>;
-
-type OptionBase = {
-  id: string;
-  title: string;
-  icon: IconNames | ReactNode;
-};
-
-type LinkOption = OptionBase & { to: string };
-type ButtonOption = OptionBase & { onClick: ButtonProps['onClick'] };
-
-export type ButtonDropdownOption = LinkOption | ButtonOption;
 
 type Props = {
   title: string;

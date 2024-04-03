@@ -10,6 +10,7 @@ import { AssetBalance } from '@entities/asset';
 import { MultisigDepositWithLabel, FeeWithLabel } from '@entities/transaction';
 import { formModel } from '../model/form-model';
 import { Select, Input, Button, InputHint, AmountInput, MultiSelect, Shimmering } from '@shared/ui';
+import { DropdownOption } from '@shared/ui/types';
 
 type Props = {
   onGoBack: () => void;
@@ -131,11 +132,13 @@ const SignatorySelector = () => {
 
   if (!network || !isMultisig || signatories.length === 0) return null;
 
-  const options = signatories[0].map(({ signer, balance }) => {
+  const options = signatories[0].reduce<DropdownOption[]>((acc, { signer, balance }) => {
+    if (!signer?.id) return acc;
+
     const isShard = accountUtils.isShardAccount(signer);
     const address = toAddress(signer.accountId, { prefix: network.chain.addressPrefix });
 
-    return {
+    acc.push({
       id: signer.id.toString(),
       value: signer,
       element: (
@@ -150,8 +153,10 @@ const SignatorySelector = () => {
           <AssetBalance value={balance} asset={network.asset} />
         </div>
       ),
-    };
-  });
+    });
+
+    return acc;
+  }, []);
 
   return (
     <div className="flex flex-col gap-y-2">
