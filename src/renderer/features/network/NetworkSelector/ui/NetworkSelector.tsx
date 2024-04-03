@@ -5,7 +5,7 @@ import { TFunction } from 'react-i18next';
 import { cnTw } from '@shared/lib/utils';
 import { Icon, FootnoteText, IconButton, Button, HelpText } from '@shared/ui';
 import { useI18n } from '@app/providers';
-import { ConnectionOptions, SelectorPayload } from '@entities/network';
+import type { ConnectionOptions, SelectorPayload } from '../lib/types';
 import { SelectButtonStyle, OptionStyle } from '@shared/ui/Dropdowns/common/constants';
 import { useScrollTo } from '@shared/lib/hooks';
 import { CommonInputStyles, CommonInputStylesTheme } from '@shared/ui/Inputs/common/styles';
@@ -35,6 +35,8 @@ const Title = {
 
 type Props = {
   networkItem: ConnectionOptions;
+  nodesList: any[];
+  selectedConnection: any;
   theme?: Theme;
   onChange: (value: SelectorPayload) => void;
   onRemoveCustomNode: (node: RpcNode) => void;
@@ -43,6 +45,8 @@ type Props = {
 
 export const NetworkSelector = ({
   networkItem,
+  nodesList,
+  selectedConnection,
   theme = 'light',
   onChange,
   onRemoveCustomNode,
@@ -51,7 +55,7 @@ export const NetworkSelector = ({
   const { t } = useI18n();
   const [ref, scroll] = useScrollTo<HTMLDivElement>(TRANSITION_DURATION);
 
-  const { availableNodes, selectedNode, activeNode, isCustomNode } = networkItem;
+  const { availableNodes, selectedNode, isCustomNode } = networkItem;
 
   return (
     <Listbox value={selectedNode || {}} onChange={onChange}>
@@ -104,7 +108,7 @@ export const NetworkSelector = ({
                           </FootnoteText>
                           {node?.url && <HelpText className="text-text-tertiary truncate">{node.url}</HelpText>}
                         </div>
-                        {node && isCustomNode(node.url) && (
+                        {data.isCustom && (
                           <>
                             <IconButton
                               name="edit"
@@ -113,7 +117,7 @@ export const NetworkSelector = ({
                                 onChangeCustomNode(node);
                               }}
                             />
-                            {activeNode?.url !== node.url && (
+                            {selectedNode?.node?.url !== node.url && (
                               <IconButton
                                 name="delete"
                                 onClick={(event) => {
