@@ -11,8 +11,9 @@ import { DEFAULT_TRANSITION } from '@shared/lib/utils';
 import { CustomRpcModal } from './components';
 import type { RpcNode, ChainId } from '@shared/core';
 import { ConnectionType } from '@shared/core';
-import { networkModel, ExtendedChain, networkUtils, SelectorPayload } from '@entities/network';
+import { networkModel, ExtendedChain, networkUtils } from '@entities/network';
 import { manageNetworkModel } from './model/manage-network-model';
+import { SelectorPayload } from '@features/network/NetworkSelector';
 import {
   EmptyNetworks,
   NetworkList,
@@ -28,6 +29,7 @@ import {
 } from '@features/network';
 
 import './model/networks-overview-model';
+import { networksModel } from './model/networks-overview-model';
 
 const MAX_LIGHT_CLIENTS = 3;
 
@@ -43,6 +45,8 @@ export const Networks = () => {
   const inactiveNetworks = useUnit(inactiveNetworksModel.$inactiveNetworks);
   const connections = useUnit(networkModel.$connections);
   const filterQuery = useUnit(networksFilterModel.$filterQuery);
+
+  const enabledNodeListMap = useUnit(networksModel.$enabledNodeListMap);
 
   const [isCustomRpcOpen, toggleCustomRpc] = useToggle();
   const [isNetworksModalOpen, toggleNetworksModal] = useToggle(true);
@@ -213,11 +217,21 @@ export const Networks = () => {
           {(network) => (
             <InactiveNetwork networkItem={network}>
               <NetworkSelector
+                nodesList={enabledNodeListMap[network.chainId].nodes}
+                selectedConnection={enabledNodeListMap[network.chainId].selected}
+
+
                 networkItem={networkSelectorUtils.getConnectionOptions(network)}
                 onChange={changeConnection(network)}
                 onRemoveCustomNode={removeCustomNode(network.chainId)}
                 onChangeCustomNode={changeCustomNode(network)}
               />
+              {/*<NetworkSelector*/}
+              {/*  networkItem={networkSelectorUtils.getConnectionOptions(network)}*/}
+              {/*  onChange={changeConnection(network)}*/}
+              {/*  onRemoveCustomNode={removeCustomNode(network.chainId)}*/}
+              {/*  onChangeCustomNode={changeCustomNode(network)}*/}
+              {/*/>*/}
             </InactiveNetwork>
           )}
         </NetworkList>
