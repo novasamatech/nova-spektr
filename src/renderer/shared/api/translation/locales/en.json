@@ -471,7 +471,8 @@
     "inProgress": "Submitting approval...",
     "logButton": "Log",
     "networkFee": "Network fee",
-    "proxyFeeError": "Delegated authority<wallet />doesn't have enough balance to pay the network fee of {fee} {symbol}<br />Available balance to pay fee: {balance} {symbol}",
+    "proxyFeeErrorDescription": "Delegated authority<wallet />doesn't have enough balance to pay the network fee of {fee} {symbol}<br />Available balance to pay fee: {balance} {symbol}",
+    "proxyFeeErrorTitle": "Not enough tokens to pay the fee",
     "rejectButton": "Reject",
     "rejectInProgress": "Submitting Rejection...",
     "rejectReason": {
@@ -1068,6 +1069,7 @@
     "networkDeposit": "Multisig deposit",
     "networkDepositHint": "The deposit stays locked on the depositor’s account until the multisig operation is executed or rejected",
     "networkFee": "Network fee",
+    "noSignatoryError": "Please select operation signatory",
     "notEnoughBalanceError": "Not enough funds to transfer specific amount",
     "notEnoughBalanceForDepositError": "Insufficient balance to pay deposit and network fee",
     "notEnoughBalanceForFeeError": "Insufficient balance to pay network fee",

@@ -1,26 +1,15 @@
 import { useForm } from 'effector-forms';
 import { FormEvent } from 'react';
 import { useUnit } from 'effector-react';
-import { Trans } from 'react-i18next';
 
 import { useI18n } from '@app/providers';
 import { MultisigAccount } from '@shared/core';
-import { accountUtils, AccountAddress, WalletIcon } from '@entities/wallet';
+import { accountUtils, AccountAddress, ProxyWalletAlert } from '@entities/wallet';
 import { toAddress, toShortAddress, formatBalance } from '@shared/lib/utils';
 import { AssetBalance } from '@entities/asset';
 import { MultisigDepositWithLabel, FeeWithLabel } from '@entities/transaction';
 import { formModel } from '../model/form-model';
-import {
-  Select,
-  Input,
-  Button,
-  InputHint,
-  Alert,
-  FootnoteText,
-  AmountInput,
-  MultiSelect,
-  Shimmering,
-} from '@shared/ui';
+import { Select, Input, Button, InputHint, AmountInput, MultiSelect, Shimmering } from '@shared/ui';
 
 type Props = {
   onGoBack: () => void;
@@ -37,7 +26,6 @@ export const UnstakeForm = ({ onGoBack }: Props) => {
   return (
     <div className="pb-4 px-5">
       <form id="transfer-form" className="flex flex-col gap-y-4 mt-4" onSubmit={submitForm}>
-        {/* TODO: add proxy validation */}
         <ProxyFeeAlert />
         <AccountsSelector />
         <SignatorySelector />
@@ -53,8 +41,6 @@ export const UnstakeForm = ({ onGoBack }: Props) => {
 };
 
 const ProxyFeeAlert = () => {
-  const { t } = useI18n();
-
   const {
     fields: { shards },
   } = useForm(formModel.$unstakeForm);
@@ -69,26 +55,14 @@ const ProxyFeeAlert = () => {
   const formattedFee = formatBalance(fee, network.asset.precision).value;
   const formattedBalance = formatBalance(balance, network.asset.precision).value;
 
-  const wallet = (
-    <span className="inline-flex gap-x-1 items-center mx-1 align-bottom max-w-[200px]">
-      <WalletIcon className="shrink-0" type={proxyWallet.type} size={16} />
-      <FootnoteText as="span" className="text-text-secondary transition-colors truncate">
-        {proxyWallet.name}
-      </FootnoteText>
-    </span>
-  );
-
   return (
-    <Alert active title="Not enough tokens to pay the fee" variant="warn" onClose={shards.resetErrors}>
-      <FootnoteText className="text-text-secondary tracking-tight max-w-full">
-        <Trans
-          t={t}
-          i18nKey="operation.proxyFeeError"
-          components={{ wallet }}
-          values={{ fee: formattedFee, balance: formattedBalance, symbol: network.asset.symbol }}
-        />
-      </FootnoteText>
-    </Alert>
+    <ProxyWalletAlert
+      wallet={proxyWallet}
+      fee={formattedFee}
+      balance={formattedBalance}
+      symbol={network.asset.symbol}
+      onClose={shards.resetErrors}
+    />
   );
 };
 

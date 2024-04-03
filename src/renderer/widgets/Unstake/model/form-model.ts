@@ -115,7 +115,7 @@ const $unstakeForm = createForm<FormParams>({
       rules: [
         {
           name: 'noSignatorySelected',
-          errorText: 'noSignatorySelected',
+          errorText: 'transfer.noSignatoryError',
           source: $isMultisig,
           validator: (signatory, _, isMultisig) => {
             if (!isMultisig) return true;
@@ -154,8 +154,8 @@ const $unstakeForm = createForm<FormParams>({
           validator: (value) => value !== '0',
         },
         {
-          name: 'outOfRange',
-          errorText: 'outOfRange',
+          name: 'notEnoughBalance',
+          errorText: 'transfer.notEnoughBalanceError',
           source: combine({
             network: $networkStore,
             unstakeBalanceRange: $unstakeBalanceRange,
@@ -168,8 +168,8 @@ const $unstakeForm = createForm<FormParams>({
           },
         },
         {
-          name: 'notEnoughBalance',
-          errorText: 'transfer.notEnoughBalanceError',
+          name: 'insufficientBalanceForFee',
+          errorText: 'transfer.notEnoughBalanceForFeeError',
           source: combine({
             network: $networkStore,
             accountsBalances: $accountsBalances,

@@ -105,6 +105,16 @@ const $transferForm = createForm<FormParams>({
       init: {} as Account,
       rules: [
         {
+          name: 'noSignatorySelected',
+          errorText: 'transfer.noSignatoryError',
+          source: $isMultisig,
+          validator: (signatory, _, isMultisig) => {
+            if (!isMultisig) return true;
+
+            return Object.keys(signatory).length > 0;
+          },
+        },
+        {
           name: 'notEnoughTokens',
           errorText: 'proxy.addProxy.notEnoughMultisigTokens',
           source: combine({
