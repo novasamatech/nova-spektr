@@ -323,11 +323,27 @@ export const useCallDataDecoder = (): ICallDataDecoder => {
         delay: decoded.args[2].toString(),
       };
     },
+    [TransactionType.CREATE_PURE_PROXY]: (decoded): Record<string, any> => {
+      return {
+        proxyType: decoded.args[0].toString(),
+        delay: decoded.args[1].toString(),
+        index: decoded.args[2].toString(),
+      };
+    },
     [TransactionType.REMOVE_PROXY]: (decoded): Record<string, any> => {
       return {
         delegate: decoded.args[0].toString(),
         proxyType: decoded.args[1].toString(),
         delay: decoded.args[2].toString(),
+      };
+    },
+    [TransactionType.REMOVE_PURE_PROXY]: (decoded): Record<string, any> => {
+      return {
+        spawner: decoded.args[0].toString(),
+        proxyType: decoded.args[1].toString(),
+        index: decoded.args[2].toString(),
+        height: decoded.args[3].toString(),
+        extIndex: decoded.args[4].toString(),
       };
     },
     [TransactionType.PROXY]: (decoded): Record<string, any> => {
@@ -415,6 +431,8 @@ export const useCallDataDecoder = (): ICallDataDecoder => {
       addProxy: TransactionType.ADD_PROXY,
       removeProxy: TransactionType.REMOVE_PROXY,
       proxy: TransactionType.PROXY,
+      createPure: TransactionType.CREATE_PURE_PROXY,
+      killPure: TransactionType.REMOVE_PURE_PROXY,
     }[method];
   };
 

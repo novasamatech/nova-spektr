@@ -23,6 +23,7 @@ import {
   isManageProxyTransaction,
   isAddProxyTransaction,
   isRemoveProxyTransaction,
+  isRemovePureProxyTransaction,
   isProxyTransaction,
 } from '@entities/transaction';
 
@@ -187,7 +188,7 @@ export const Details = ({ tx, account, extendedChain, signatory }: Props) => {
 
       {isDividerVisible && <hr className="border-filter-border" />}
 
-      {isAddProxyTransaction(tx.transaction) && (
+      {isAddProxyTransaction(transaction) && (
         <DetailRow label={t('operation.details.delegateTo')} className="text-text-secondary">
           <AddressWithExplorers
             explorers={explorers}
@@ -200,7 +201,7 @@ export const Details = ({ tx, account, extendedChain, signatory }: Props) => {
         </DetailRow>
       )}
 
-      {isRemoveProxyTransaction(tx.transaction) && (
+      {isRemoveProxyTransaction(transaction) && (
         <DetailRow label={t('operation.details.revokeFor')} className="text-text-secondary">
           <AddressWithExplorers
             explorers={explorers}
@@ -213,7 +214,27 @@ export const Details = ({ tx, account, extendedChain, signatory }: Props) => {
         </DetailRow>
       )}
 
-      {isManageProxyTransaction(tx.transaction) && (
+      {isRemovePureProxyTransaction(transaction) && (
+        <>
+          <DetailRow label={t('operation.details.revokeAccessType')}>
+            <FootnoteText className="text-text-secondary">
+              {t(proxyUtils.getProxyTypeName(transaction?.args.proxyType as ProxyType))}
+            </FootnoteText>
+          </DetailRow>
+          <DetailRow label={t('operation.details.revokeFor')} className="text-text-secondary">
+            <AddressWithExplorers
+              explorers={explorers}
+              addressFont={AddressStyle}
+              type="short"
+              accountId={transaction?.args.spawner}
+              addressPrefix={addressPrefix}
+              wrapperClassName="-mr-2 min-w-min"
+            />
+          </DetailRow>
+        </>
+      )}
+
+      {isManageProxyTransaction(transaction) && (
         <DetailRow label={t('operation.details.accessType')}>
           <FootnoteText className="text-text-secondary">
             {t(proxyUtils.getProxyTypeName(transaction?.args.proxyType as ProxyType))}

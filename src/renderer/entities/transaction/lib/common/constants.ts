@@ -27,7 +27,11 @@ export const PROXY_SECTION = 'proxy';
 export const MULTISIG_SECTION = 'multisig';
 
 export const TransferTypes = [TransactionType.TRANSFER, TransactionType.ASSET_TRANSFER, TransactionType.ORML_TRANSFER];
-export const ManageProxyTypes = [TransactionType.ADD_PROXY, TransactionType.REMOVE_PROXY];
+export const ManageProxyTypes = [
+  TransactionType.ADD_PROXY,
+  TransactionType.REMOVE_PROXY,
+  TransactionType.CREATE_PURE_PROXY,
+];
 
 export const XcmTypes = [
   TransactionType.XCM_TELEPORT,
