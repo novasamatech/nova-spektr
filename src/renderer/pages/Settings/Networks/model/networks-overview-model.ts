@@ -1,12 +1,13 @@
 import { sample, combine } from 'effector';
 
-import { ConnectionType, RpcNode } from '@shared/core';
+import { ChainId, ConnectionType, RpcNode } from '@shared/core';
 import {
   networksFilterModel,
   activeNetworksModel,
   inactiveNetworksModel,
   networkSelectorUtils,
 } from '@features/network';
+import { ConnectionList } from '@/src/renderer/features/network/NetworkSelector';
 
 sample({
   clock: networksFilterModel.$filteredNetworks,
@@ -23,24 +24,31 @@ const Predicates: Record<
   [ConnectionType.RPC_NODE]: (data, active) => data.node?.url === active?.url,
 };
 
-// map with nodes and selected ones
 const $enabledNodeListMap = combine(activeNetworksModel.$activeNetworks, (list) => {
-  // return list.reduce<{ chainId: ChainId, { node: any[]; selected: any } }>((acc, item) => {
-  return list.reduce<any>((acc, item) => {
+  return list.reduce<Record<ChainId, { nodes: ConnectionList[]; selectedNode?: ConnectionList }>>((acc, item) => {
     const nodes = networkSelectorUtils.getConnectionsList(item);
-    const selected = nodes.find((node) =>
-      Predicates[item.connection.connectionType](
-        { type: item.connection.connectionType, node: node.node },
-        item.connection.activeNode,
-      ),
+    const selectedNode = nodes.find((node) =>
+      Predicates[item.connection.connectionType]({ type: node.type, node: node.node }, item.connection.activeNode),
     );
 
-    acc[item.chainId] = { nodes, selected };
+    acc[item.chainId] = { nodes, selectedNode };
 
     return acc;
   }, {});
 });
 
-export const networksModel = {
+const $disabledNodeListMap = combine(inactiveNetworksModel.$inactiveNetworks, (list) => {
+  return list.reduce<Record<ChainId, { nodes: ConnectionList[]; selectedNode?: ConnectionList }>>((acc, item) => {
+    const nodes = networkSelectorUtils.getConnectionsList(item);
+    const selectedNode = nodes.find((node) => node.type === item.connection.connectionType);
+
+    acc[item.chainId] = { nodes, selectedNode };
+
+    return acc;
+  }, {});
+});
+
+export const networksOverviewModel = {
   $enabledNodeListMap,
+  $disabledNodeListMap,
 };

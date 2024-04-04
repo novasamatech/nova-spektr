@@ -3,17 +3,14 @@ import { delay, spread } from 'patronum';
 
 import { ProviderWithMetadata } from '@/src/renderer/shared/api/network';
 import { networkModel, networkUtils } from '@entities/network';
-import { ChainId, Connection, ConnectionType, RpcNode } from '@shared/core';
-import { storageService } from '@shared/api/storage';
+import { ChainId, ConnectionType, RpcNode } from '@shared/core';
 
 const lightClientSelected = createEvent<ChainId>();
 const autoBalanceSelected = createEvent<ChainId>();
 const rpcNodeSelected = createEvent<{ chainId: ChainId; node: RpcNode }>();
 const chainDisabled = createEvent<ChainId>();
 
-const updateConnectionFx = createEffect((connection: Connection): Promise<Connection | undefined> => {
-  return storageService.connections.put(connection);
-});
+const updateConnectionFx = networkModel.effects.updateConnectionFx;
 
 type DisconnectParams = {
   chainId: ChainId;

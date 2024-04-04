@@ -5,7 +5,7 @@ import { TFunction } from 'react-i18next';
 import { cnTw } from '@shared/lib/utils';
 import { Icon, FootnoteText, IconButton, Button, HelpText } from '@shared/ui';
 import { useI18n } from '@app/providers';
-import type { ConnectionOptions, SelectorPayload } from '../lib/types';
+import type { ConnectionList, SelectorPayload } from '../lib/types';
 import { SelectButtonStyle, OptionStyle } from '@shared/ui/Dropdowns/common/constants';
 import { useScrollTo } from '@shared/lib/hooks';
 import { CommonInputStyles, CommonInputStylesTheme } from '@shared/ui/Inputs/common/styles';
@@ -34,9 +34,8 @@ const Title = {
 };
 
 type Props = {
-  networkItem: ConnectionOptions;
-  nodesList: any[];
-  selectedConnection: any;
+  nodesList: ConnectionList[];
+  selectedConnection?: ConnectionList;
   theme?: Theme;
   onChange: (value: SelectorPayload) => void;
   onRemoveCustomNode: (node: RpcNode) => void;
@@ -44,7 +43,6 @@ type Props = {
 };
 
 export const NetworkSelector = ({
-  networkItem,
   nodesList,
   selectedConnection,
   theme = 'light',
@@ -55,10 +53,8 @@ export const NetworkSelector = ({
   const { t } = useI18n();
   const [ref, scroll] = useScrollTo<HTMLDivElement>(TRANSITION_DURATION);
 
-  const { availableNodes, selectedNode, isCustomNode } = networkItem;
-
   return (
-    <Listbox value={selectedNode || {}} onChange={onChange}>
+    <Listbox value={selectedConnection || {}} onChange={onChange}>
       {({ open }) => (
         <div className="relative">
           <Listbox.Button
@@ -72,7 +68,7 @@ export const NetworkSelector = ({
             onClick={scroll}
           >
             <FootnoteText className="truncate">
-              {(selectedNode && Title[selectedNode.type].title(t, selectedNode.node?.name)) ||
+              {(selectedConnection && Title[selectedConnection.type].title(t, selectedConnection.node?.name)) ||
                 t('settings.networks.selectorPlaceholder')}
             </FootnoteText>
             <Icon name="down" size={16} />
@@ -89,8 +85,8 @@ export const NetworkSelector = ({
           >
             <div ref={ref} className={OptionsContainerStyle}>
               <Listbox.Options className="max-h-64 overflow-y-auto overscroll-contain">
-                {availableNodes.map((data) => {
-                  const { type, node } = data;
+                {nodesList.map((data) => {
+                  const { type, node, isCustom } = data;
 
                   return (
                     <Listbox.Option
@@ -108,7 +104,7 @@ export const NetworkSelector = ({
                           </FootnoteText>
                           {node?.url && <HelpText className="text-text-tertiary truncate">{node.url}</HelpText>}
                         </div>
-                        {data.isCustom && (
+                        {node && isCustom && (
                           <>
                             <IconButton
                               name="edit"
@@ -117,7 +113,7 @@ export const NetworkSelector = ({
                                 onChangeCustomNode(node);
                               }}
                             />
-                            {selectedNode?.node?.url !== node.url && (
+                            {selectedConnection?.node?.url !== node.url && (
                               <IconButton
                                 name="delete"
                                 onClick={(event) => {

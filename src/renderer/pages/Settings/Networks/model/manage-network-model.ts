@@ -1,8 +1,7 @@
-import { createEffect, createEvent, sample, attach } from 'effector';
+import { createEvent, sample, attach } from 'effector';
 
 import { networkModel } from '@entities/network';
-import { ChainId, Connection, RpcNode } from '@shared/core';
-import { storageService } from '@shared/api/storage';
+import { ChainId, RpcNode } from '@shared/core';
 
 // TODO: create 2 features for Network selection & Manage custom RPC
 type NodeEventParams = {
@@ -15,9 +14,7 @@ const rpcNodeAdded = createEvent<NodeEventParams>();
 const rpcNodeUpdated = createEvent<NodeEventParams>();
 const rpcNodeRemoved = createEvent<NodeEventParams>();
 
-const updateConnectionFx = createEffect((connection: Connection): Promise<Connection | undefined> => {
-  return storageService.connections.put(connection);
-});
+const updateConnectionFx = networkModel.effects.updateConnectionFx;
 
 const addRpcNodeFx = attach({ effect: updateConnectionFx });
 const removeRpcNodeFx = attach({ effect: updateConnectionFx });
