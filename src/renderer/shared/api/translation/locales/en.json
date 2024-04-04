@@ -1071,7 +1071,7 @@
     "amountPlaceholder": "0",
     "continueButton": "Continue",
     "crossChainPlaceholder": "Cross-chain",
-    "descriptionLengthError": "Description cannot exceed 120 symbols",
+    "descriptionLengthError": "Description cannot exceed { maxLength } symbols",
     "destinationChainLabel": "Recipient network",
     "destinationChainPlaceholder": "Select recipient network",
     "editOperationButton": "Edit operation",
