@@ -81,6 +81,26 @@ export const getTransactionOptions = (t: TFunction) => {
       element: t('operations.titles.unstake'),
     },
     {
+      id: TransactionType.ADD_PROXY,
+      value: TransactionType.ADD_PROXY,
+      element: t('operations.titles.addProxy'),
+    },
+    {
+      id: TransactionType.REMOVE_PROXY,
+      value: TransactionType.REMOVE_PROXY,
+      element: t('operations.titles.removeProxy'),
+    },
+    {
+      id: TransactionType.CREATE_PURE_PROXY,
+      value: TransactionType.CREATE_PURE_PROXY,
+      element: t('operations.titles.createPureProxy'),
+    },
+    {
+      id: TransactionType.REMOVE_PURE_PROXY,
+      value: TransactionType.REMOVE_PURE_PROXY,
+      element: t('operations.titles.removePureProxy'),
+    },
+    {
       id: UNKNOWN_TYPE,
       value: UNKNOWN_TYPE,
       element: t('operations.titles.unknown'),

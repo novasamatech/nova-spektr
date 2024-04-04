@@ -17,10 +17,7 @@ export const OperationSign = ({ onGoBack }: Props) => {
   if (!api || !signStore || !signerWallet) return null;
 
   const onSignResult = (signatures: HexString[], unsignedTxs: UnsignedTransaction[]) => {
-    signModel.events.dataReceived({
-      signature: signatures[0],
-      unsignedTx: unsignedTxs[0],
-    });
+    signModel.events.dataReceived({ signatures, unsignedTxs });
   };
 
   return (
@@ -29,9 +26,9 @@ export const OperationSign = ({ onGoBack }: Props) => {
       chainId={signStore.chain.chainId}
       addressPrefix={signStore.chain.addressPrefix}
       signerWaller={signerWallet}
-      accounts={[signStore.account]}
+      accounts={signStore.accounts}
       signatory={signStore.signatory || undefined}
-      transactions={[signStore.transaction]}
+      transactions={signStore.transactions}
       onGoBack={onGoBack}
       onResult={onSignResult}
     />

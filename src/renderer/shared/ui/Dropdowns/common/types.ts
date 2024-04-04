@@ -1,4 +1,4 @@
-import { ReactNode } from 'react';
+import { ReactNode, MouseEvent } from 'react';
 
 import { IconNames } from '@shared/ui/Icon/data';
 
@@ -24,3 +24,14 @@ export type DropdownIconButtonOption = {
   title: string;
   onClick: () => void;
 };
+
+type OptionBase = {
+  id: string;
+  title: string;
+  icon: IconNames | ReactNode;
+};
+
+type LinkOption = OptionBase & { to: string };
+type ButtonOption = OptionBase & { onClick?: (event: MouseEvent<HTMLButtonElement>) => void };
+
+export type ButtonDropdownOption = LinkOption | ButtonOption;

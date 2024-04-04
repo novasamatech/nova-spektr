@@ -36,9 +36,9 @@ describe('widgets/AddPureProxyModal/model/submit-model', () => {
     const store = {
       chain: { chainId: '0x00' } as unknown as Chain,
       account: { walletId: 1 } as unknown as Account,
-      transaction: {} as Transaction,
-      unsignedTx: {} as UnsignedTransaction,
-      signature: '0x00',
+      transactions: [{}] as Transaction[],
+      unsignedTxs: [{}] as UnsignedTransaction[],
+      signatures: ['0x00'],
       description: '',
     };
 

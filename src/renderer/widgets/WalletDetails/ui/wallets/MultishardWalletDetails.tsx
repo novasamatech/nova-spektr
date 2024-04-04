@@ -8,7 +8,7 @@ import type { Wallet } from '@shared/core';
 import { RenameWalletModal } from '@features/wallets/RenameWallet';
 import { IconNames } from '@shared/ui/Icon/data';
 import { ForgetWalletModal } from '@features/wallets/ForgetWallet';
-import { TabItem } from '@shared/ui/Tabs/common/types';
+import { TabItem } from '@shared/ui/types';
 import { networkModel } from '@entities/network';
 import { AddPureProxied, addPureProxiedModel } from '@widgets/AddPureProxiedModal';
 import { addProxyModel, AddProxy } from '@widgets/AddProxyModal';

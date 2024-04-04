@@ -5,6 +5,9 @@ import { Chain, ChainId, Asset, AccountId } from '@shared/core';
 
 export const transactionBuilder = {
   buildTransfer,
+  buildUnstake,
+  buildChill,
+  buildBatchAll,
 };
 
 type TransferParams = {
@@ -41,5 +44,60 @@ function buildTransfer({ chain, accountId, destination, asset, amount, xcmData }
       ...(Boolean(asset.type) && { asset: getAssetId(asset) }),
       ...xcmData?.args,
     },
+  };
+}
+
+type UnstakeParams = {
+  chain: Chain;
+  asset: Asset;
+  accountId: AccountId;
+  amount: string;
+  withChill?: boolean;
+};
+function buildUnstake({ chain, accountId, asset, amount, withChill }: UnstakeParams): Transaction {
+  const address = toAddress(accountId, { prefix: chain.addressPrefix });
+
+  const unstakeTx: Transaction = {
+    chainId: chain.chainId,
+    address,
+    type: TransactionType.UNSTAKE,
+    args: {
+      value: formatAmount(amount, asset.precision),
+    },
+  };
+
+  if (!withChill) return unstakeTx;
+
+  return buildBatchAll({
+    chain,
+    accountId,
+    transactions: [buildChill({ chain, accountId }), unstakeTx],
+  });
+}
+
+type ChillParams = {
+  chain: Chain;
+  accountId: AccountId;
+};
+function buildChill({ chain, accountId }: ChillParams): Transaction {
+  return {
+    chainId: chain.chainId,
+    address: toAddress(accountId, { prefix: chain.addressPrefix }),
+    type: TransactionType.CHILL,
+    args: {},
+  };
+}
+
+type BatchParams = {
+  chain: Chain;
+  accountId: AccountId;
+  transactions: Transaction[];
+};
+function buildBatchAll({ chain, accountId, transactions }: BatchParams): Transaction {
+  return {
+    chainId: chain.chainId,
+    address: toAddress(accountId, { prefix: chain.addressPrefix }),
+    type: TransactionType.BATCH_ALL,
+    args: { transactions },
   };
 }

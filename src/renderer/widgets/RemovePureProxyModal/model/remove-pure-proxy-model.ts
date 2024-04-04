@@ -175,7 +175,7 @@ sample({
     data: $removeProxyStore,
     shouldRemovePureProxy: $shouldRemovePureProxy,
   },
-  fn: ({ txWrappers, apis, data, shouldRemovePureProxy }, formData) => {
+  fn: ({ txWrappers, apis, data, shouldRemovePureProxy }) => {
     const account = data!.account as ProxiedAccount;
     const chain = data!.chain;
 
@@ -248,9 +248,9 @@ sample({
   fn: ({ removeProxyStore, transaction }) => ({
     event: {
       chain: removeProxyStore!.chain,
-      account: removeProxyStore!.account,
+      accounts: [removeProxyStore!.account],
       signatory: removeProxyStore!.signatory,
-      transaction: transaction!,
+      transactions: [transaction!],
     },
     step: Step.SIGN,
   }),
@@ -269,9 +269,7 @@ sample({
     txWrappers: $txWrappers,
   },
   filter: (proxyData) => {
-    const isMultisigRequired = !transactionService.hasMultisig(proxyData.txWrappers) || Boolean(proxyData.multisigTx);
-
-    return Boolean(proxyData.removeProxyStore) && Boolean(proxyData.transaction) && isMultisigRequired;
+    return Boolean(proxyData.removeProxyStore) && Boolean(proxyData.transaction);
   },
   fn: (proxyData, signParams) => ({
     event: {
@@ -280,8 +278,8 @@ sample({
       account: proxyData.removeProxyStore!.account,
       signatory: proxyData.removeProxyStore!.signatory,
       description: proxyData.removeProxyStore!.description,
-      transaction: proxyData.transaction!,
-      multisigTx: proxyData.multisigTx!,
+      transactions: [proxyData.transaction!],
+      multisigTxs: proxyData.multisigTx ? [proxyData.multisigTx] : undefined,
     },
     step: Step.SUBMIT,
   }),

@@ -3,7 +3,7 @@ import cn from 'classnames';
 import { ReactNode } from 'react';
 
 import { AccountAddress, accountUtils, WalletIcon, walletUtils } from '@entities/wallet';
-import { DropdownOption } from '@shared/ui/Dropdowns/common/types';
+import { DropdownOption } from '@shared/ui/types';
 import { AssetBalance } from '@entities/asset';
 import { FootnoteText } from '@shared/ui';
 import { WalletType } from '@shared/core';

@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 
 import { InputHint, Select } from '@shared/ui';
 import { useI18n } from '@app/providers';
-import { DropdownOption, DropdownResult } from '@shared/ui/Dropdowns/common/types';
+import { DropdownOption, DropdownResult } from '@shared/ui/types';
 import { OperationErrorType } from '@entities/transaction';
 import { accountUtils } from '@entities/wallet';
 import type { Account, MultisigAccount, ChainId } from '@shared/core';

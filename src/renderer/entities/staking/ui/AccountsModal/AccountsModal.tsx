@@ -1,10 +1,9 @@
 import { useI18n } from '@app/providers';
-import { BaseModal, BodyText, Identicon, Truncate, IconButton } from '@shared/ui';
-import { cnTw, stakeableAmount } from '@shared/lib/utils';
+import { BaseModal, BodyText, Identicon, Truncate } from '@shared/ui';
+import { cnTw, stakeableAmount, toAddress } from '@shared/lib/utils';
 import type { Account, Asset, ChainId, Explorer, AccountId } from '@shared/core';
-import { AssetBalance } from '@entities/asset';
-import { useAssetBalances } from '@entities/balance';
-import { ExplorersPopover } from '@entities/wallet';
+import { AssetBalance } from '../../../asset';
+import { useAssetBalances } from '../../../balance';
 
 type Props = {
   isOpen: boolean;
@@ -17,7 +16,7 @@ type Props = {
   onClose: () => void;
 };
 
-const AccountsModal = ({ isOpen, accounts, asset, chainId, explorers, addressPrefix, onClose }: Props) => {
+export const AccountsModal = ({ isOpen, accounts, asset, chainId, explorers, addressPrefix, onClose }: Props) => {
   const { t } = useI18n();
 
   const accountIds = accounts.map((account) => account.accountId);
@@ -52,15 +51,9 @@ const AccountsModal = ({ isOpen, accounts, asset, chainId, explorers, addressPre
                   ellipsis="..."
                   start={4}
                   end={4}
-                  text={account.accountId}
+                  text={toAddress(account.accountId, { prefix: addressPrefix })}
                 />
               </div>
-              <ExplorersPopover
-                button={<IconButton name="info" />}
-                address={account.accountId}
-                explorers={explorers}
-                addressPrefix={addressPrefix}
-              />
             </div>
             <AssetBalance
               value={findBalance(account.accountId)}
@@ -73,5 +66,3 @@ const AccountsModal = ({ isOpen, accounts, asset, chainId, explorers, addressPre
     </BaseModal>
   );
 };
-
-export default AccountsModal;

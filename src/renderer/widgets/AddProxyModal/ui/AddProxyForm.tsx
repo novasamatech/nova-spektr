@@ -8,11 +8,16 @@ import { ChainTitle } from '@entities/chain';
 import { ProxyPopover, proxyUtils } from '@entities/proxy';
 import { AccountAddress, accountUtils } from '@entities/wallet';
 import { toAddress, toShortAddress } from '@shared/lib/utils';
-import { ProxyDepositWithLabel, MultisigDepositWithLabel, FeeWithLabel } from '@entities/transaction';
 import { formModel } from '../model/form-model';
 import { AssetBalance } from '@entities/asset';
 import { MultisigAccount } from '@shared/core';
 import { DropdownOption } from '@shared/ui/types';
+import {
+  ProxyDepositWithLabel,
+  MultisigDepositWithLabel,
+  FeeWithLabel,
+  DESCRIPTION_LENGTH,
+} from '@entities/transaction';
 
 type Props = {
   onGoBack: () => void;
@@ -298,7 +303,7 @@ const DescriptionInput = () => {
       />
       <InputHint variant="error" active={description.hasError()}>
         {description.errorText({
-          maxLength: t('proxy.addProxy.maxLengthDescriptionError', { maxLength: 120 }),
+          maxLength: t('proxy.addProxy.maxLengthDescriptionError', { maxLength: DESCRIPTION_LENGTH }),
         })}
       </InputHint>
     </div>

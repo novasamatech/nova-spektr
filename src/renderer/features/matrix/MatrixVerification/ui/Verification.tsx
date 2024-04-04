@@ -5,7 +5,7 @@ import { useUnit } from 'effector-react';
 
 import { useI18n } from '@app/providers';
 import { Button, Input, InputHint, FootnoteText, InputFile, Tabs, Icon } from '@shared/ui';
-import { TabItem } from '@shared/ui/Tabs/common/types';
+import { TabItem } from '@shared/ui/types';
 import { matrixModel } from '@entities/matrix';
 
 type VerifyForm = {

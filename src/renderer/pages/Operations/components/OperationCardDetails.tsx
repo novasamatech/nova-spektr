@@ -22,9 +22,11 @@ import { matrixModel } from '@entities/matrix';
 import {
   MultisigTransaction,
   Transaction,
+  TransactionType,
   isAddProxyTransaction,
   isManageProxyTransaction,
   isRemoveProxyTransaction,
+  isRemovePureProxyTransaction,
   isXcmTransaction,
 } from '@entities/transaction';
 
@@ -59,8 +61,9 @@ export const OperationCardDetails = ({ tx, account, extendedChain }: Props) => {
   const allValidators = Object.values(validatorsMap);
 
   const startStakingValidators: Address[] =
-    (tx.transaction?.type === 'batchAll' &&
-      tx.transaction.args.transactions.find((tx: Transaction) => tx.type === 'nominate')?.args?.targets) ||
+    (tx.transaction?.type === TransactionType.BATCH_ALL &&
+      tx.transaction.args.transactions.find((tx: Transaction) => tx.type === TransactionType.NOMINATE)?.args
+        ?.targets) ||
     [];
 
   const selectedValidators: Validator[] =
@@ -71,7 +74,7 @@ export const OperationCardDetails = ({ tx, account, extendedChain }: Props) => {
   const depositorSignatory = account?.signatories.find((s) => s.accountId === depositor);
   const extrinsicLink = getMultisigExtrinsicLink(callHash, indexCreated, blockCreated, explorers);
   const validatorsAsset =
-    tx.transaction && getAssetById(tx.transaction.args.asset, chainsService.getChainById(tx.chainId)?.assets);
+    transaction && getAssetById(transaction.args.asset, chainsService.getChainById(tx.chainId)?.assets);
 
   const destination = useMemo(() => getDestination(tx), [tx]);
 
@@ -115,7 +118,7 @@ export const OperationCardDetails = ({ tx, account, extendedChain }: Props) => {
         </DetailRow>
       )}
 
-      {isXcmTransaction(tx.transaction) && (
+      {isXcmTransaction(transaction) && (
         <>
           {account && (
             <DetailRow label={t('operation.details.sender')} className={valueClass}>
@@ -155,7 +158,7 @@ export const OperationCardDetails = ({ tx, account, extendedChain }: Props) => {
         </DetailRow>
       )}
 
-      {isAddProxyTransaction(tx.transaction) && (
+      {isAddProxyTransaction(transaction) && (
         <DetailRow label={t('operation.details.delegateTo')} className={valueClass}>
           <AddressWithExplorers
             explorers={explorers}
@@ -168,7 +171,7 @@ export const OperationCardDetails = ({ tx, account, extendedChain }: Props) => {
         </DetailRow>
       )}
 
-      {isRemoveProxyTransaction(tx.transaction) && (
+      {isRemoveProxyTransaction(transaction) && (
         <DetailRow label={t('operation.details.revokeFor')} className={valueClass}>
           <AddressWithExplorers
             explorers={explorers}
@@ -181,7 +184,20 @@ export const OperationCardDetails = ({ tx, account, extendedChain }: Props) => {
         </DetailRow>
       )}
 
-      {isManageProxyTransaction(tx.transaction) && (
+      {isRemovePureProxyTransaction(transaction) && (
+        <DetailRow label={t('operation.details.revokeFor')} className={valueClass}>
+          <AddressWithExplorers
+            explorers={explorers}
+            addressFont={AddressStyle}
+            type="short"
+            accountId={tx.transaction?.args.real}
+            addressPrefix={addressPrefix}
+            wrapperClassName="-mr-2 min-w-min"
+          />
+        </DetailRow>
+      )}
+
+      {isManageProxyTransaction(transaction) && (
         <DetailRow label={t('operation.details.accessType')} className={valueClass}>
           <FootnoteText className={valueClass}>
             {t(proxyUtils.getProxyTypeName(transaction?.args.proxyType as ProxyType))}

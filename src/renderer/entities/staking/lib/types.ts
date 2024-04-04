@@ -10,7 +10,7 @@ export interface IStakingDataService {
   subscribeStaking: (
     chainId: ChainId,
     api: ApiPromise,
-    accounts: Address[],
+    addresses: Address[],
     callback: (staking: StakingMap) => void,
   ) => Promise<() => void>;
   getMinNominatorBond: (api: ApiPromise) => Promise<string>;

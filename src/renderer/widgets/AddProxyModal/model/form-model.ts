@@ -10,7 +10,7 @@ import { walletSelectModel } from '@features/wallets';
 import { proxiesUtils } from '@features/proxies/lib/proxies-utils';
 import { walletUtils, accountUtils, walletModel, permissionUtils } from '@entities/wallet';
 import { proxyService } from '@shared/api/proxy';
-import { TransactionType, Transaction } from '@entities/transaction';
+import { TransactionType, Transaction, DESCRIPTION_LENGTH } from '@entities/transaction';
 import { balanceModel, balanceUtils } from '@entities/balance';
 import {
   getProxyTypes,
@@ -178,7 +178,7 @@ const $proxyForm = createForm<FormParams>({
       rules: [
         {
           name: 'maxLength',
-          validator: (value) => !value || value.length <= 120,
+          validator: (value) => !value || value.length <= DESCRIPTION_LENGTH,
         },
       ],
     },
