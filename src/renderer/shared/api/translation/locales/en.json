@@ -1011,6 +1011,7 @@
     "unstake": {
       "confirmUnstakeSubtitle": "Confirmation",
       "initUnstakeSubtitle": "Unstake",
+      "noUnstakeBalanceError": "Some accounts have not enough balance",
       "stakedPlaceholder": "Staked",
       "title": "Unstake { asset } on",
       "transferable": "Transferable"

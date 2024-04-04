@@ -52,9 +52,9 @@ type UnstakeParams = {
   asset: Asset;
   accountId: AccountId;
   amount: string;
-  chill?: boolean;
+  withChill?: boolean;
 };
-function buildUnstake({ chain, accountId, asset, amount, chill }: UnstakeParams): Transaction {
+function buildUnstake({ chain, accountId, asset, amount, withChill }: UnstakeParams): Transaction {
   const address = toAddress(accountId, { prefix: chain.addressPrefix });
 
   const unstakeTx: Transaction = {
@@ -66,7 +66,7 @@ function buildUnstake({ chain, accountId, asset, amount, chill }: UnstakeParams)
     },
   };
 
-  if (!chill) return unstakeTx;
+  if (!withChill) return unstakeTx;
 
   return buildBatchAll({
     chain,
