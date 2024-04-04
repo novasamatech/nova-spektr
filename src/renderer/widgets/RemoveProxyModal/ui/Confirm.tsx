@@ -1,13 +1,14 @@
 import { useState } from 'react';
 import { useUnit } from 'effector-react';
 
-import { FeeWithLabel, ProxyDepositWithLabel, MultisigDepositWithLabel } from '@entities/transaction';
+import { FeeWithLabel, MultisigDepositWithLabel } from '@entities/transaction';
 import { Button, DetailRow, FootnoteText, Icon } from '@shared/ui';
 import { useI18n } from '@app/providers';
 import { SignButton } from '@entities/operation/ui/SignButton';
 import { AddressWithExplorers, WalletIcon, accountUtils, ExplorersPopover, WalletCardSm } from '@entities/wallet';
 import { proxyUtils } from '@entities/proxy';
 import { confirmModel } from '../model/confirm-model';
+import { toAddress } from '@shared/lib/utils';
 
 type Props = {
   onGoBack: () => void;
@@ -20,13 +21,11 @@ export const Confirmation = ({ onGoBack }: Props) => {
   const initiatorWallet = useUnit(confirmModel.$initiatorWallet);
   const signerWallet = useUnit(confirmModel.$signerWallet);
   const proxiedWallet = useUnit(confirmModel.$proxiedWallet);
-
   const api = useUnit(confirmModel.$api);
 
-  if (!confirmStore || !api || !initiatorWallet) return null;
-
   const [isFeeLoading, setIsFeeLoading] = useState(true);
-  const [isProxyDepositLoading, setIsProxyDepositLoading] = useState(true);
+
+  if (!confirmStore || !api || !initiatorWallet) return null;
 
   return (
     <div className="flex flex-col items-center pt-4 gap-y-4 pb-4 px-5">
@@ -49,10 +48,10 @@ export const Confirmation = ({ onGoBack }: Props) => {
             <DetailRow label={t('transfer.senderAccount')}>
               <AddressWithExplorers
                 type="short"
-                explorers={confirmStore.chain.explorers}
+                explorers={confirmStore.chain!.explorers}
                 addressFont="text-footnote text-inherit"
                 accountId={confirmStore.proxiedAccount.accountId}
-                addressPrefix={confirmStore.chain.addressPrefix}
+                addressPrefix={confirmStore.chain!.addressPrefix}
                 wrapperClassName="text-text-secondary"
               />
             </DetailRow>
@@ -67,10 +66,10 @@ export const Confirmation = ({ onGoBack }: Props) => {
             <DetailRow label={t('transfer.signingAccount')}>
               <AddressWithExplorers
                 type="short"
-                explorers={confirmStore.chain.explorers}
+                explorers={confirmStore.chain!.explorers}
                 addressFont="text-footnote text-inherit"
                 accountId={confirmStore.proxiedAccount.proxyAccountId}
-                addressPrefix={confirmStore.chain.addressPrefix}
+                addressPrefix={confirmStore.chain!.addressPrefix}
                 wrapperClassName="text-text-secondary"
               />
             </DetailRow>
@@ -87,10 +86,10 @@ export const Confirmation = ({ onGoBack }: Props) => {
             <DetailRow label={t('proxy.details.account')}>
               <AddressWithExplorers
                 type="short"
-                explorers={confirmStore.chain.explorers}
+                explorers={confirmStore.chain!.explorers}
                 addressFont="text-footnote text-inherit"
-                accountId={confirmStore.account.accountId}
-                addressPrefix={confirmStore.chain.addressPrefix}
+                accountId={confirmStore.account!.accountId}
+                addressPrefix={confirmStore.chain!.addressPrefix}
                 wrapperClassName="text-text-secondary"
               />
             </DetailRow>
@@ -102,49 +101,41 @@ export const Confirmation = ({ onGoBack }: Props) => {
             <ExplorersPopover
               button={<WalletCardSm wallet={signerWallet} />}
               address={confirmStore.signatory.accountId}
-              explorers={confirmStore.chain.explorers}
-              addressPrefix={confirmStore.chain.addressPrefix}
+              explorers={confirmStore.chain?.explorers}
+              addressPrefix={confirmStore.chain?.addressPrefix}
             />
           </DetailRow>
         )}
 
         <hr className="border-filter-border w-full pr-2" />
 
-        <DetailRow label={t('proxy.details.grantAccessType')} className="pr-2">
+        <DetailRow label={t('proxy.details.accessType')} className="pr-2">
           <FootnoteText>{t(proxyUtils.getProxyTypeName(confirmStore.proxyType))}</FootnoteText>
         </DetailRow>
 
-        <DetailRow label={t('proxy.details.delegateTo')}>
+        <DetailRow label={t('proxy.details.revokeFor')}>
           <AddressWithExplorers
             type="short"
-            explorers={confirmStore.chain.explorers}
+            explorers={confirmStore.chain?.explorers}
             addressFont="text-footnote text-inherit"
-            address={confirmStore.delegate}
+            address={toAddress(confirmStore.delegate, { prefix: confirmStore.chain?.addressPrefix })}
             wrapperClassName="text-text-secondary"
           />
         </DetailRow>
 
         <hr className="border-filter-border w-full pr-2" />
 
-        <ProxyDepositWithLabel
-          api={api}
-          deposit={confirmStore.proxyDeposit}
-          proxyNumber={confirmStore.proxyNumber}
-          asset={confirmStore.chain.assets[0]}
-          onDepositLoading={setIsProxyDepositLoading}
-        />
-
-        {accountUtils.isMultisigAccount(confirmStore.account) && (
+        {accountUtils.isMultisigAccount(confirmStore.account!) && (
           <MultisigDepositWithLabel
             api={api}
-            asset={confirmStore.chain.assets[0]}
+            asset={confirmStore.chain!.assets[0]}
             threshold={confirmStore.account.threshold}
           />
         )}
 
         <FeeWithLabel
           api={api}
-          asset={confirmStore.chain.assets[0]}
+          asset={confirmStore.chain!.assets[0]}
           transaction={confirmStore.transaction}
           onFeeLoading={setIsFeeLoading}
         />
@@ -156,8 +147,8 @@ export const Confirmation = ({ onGoBack }: Props) => {
         </Button>
 
         <SignButton
-          disabled={isFeeLoading || isProxyDepositLoading}
-          type={(signerWallet || initiatorWallet).type}
+          disabled={isFeeLoading}
+          type={(signerWallet || initiatorWallet)?.type}
           onClick={confirmModel.output.formSubmitted}
         />
       </div>
