@@ -49,8 +49,6 @@ const SignatorySelector = () => {
   const isMultisig = useUnit(formModel.$isMultisig);
   const chain = useUnit(removeProxyModel.$chain);
 
-  console.log('xcmAA', isMultisig);
-
   if (!isMultisig || !chain) return null;
 
   const options = signatories.map(({ signer, balance }) => {
