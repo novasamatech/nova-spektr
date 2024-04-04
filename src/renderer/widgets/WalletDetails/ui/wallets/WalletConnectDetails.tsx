@@ -14,7 +14,7 @@ import { Animation } from '@shared/ui/Animation/Animation';
 import { IconNames } from '@shared/ui/Icon/data';
 import { RenameWalletModal } from '@features/wallets/RenameWallet';
 import { forgetWalletModel } from '@features/wallets/ForgetWallet';
-import { TabItem } from '@shared/ui/Tabs/common/types';
+import { TabItem } from '@shared/ui/types';
 import { addProxyModel, AddProxy } from '@widgets/AddProxyModal';
 import { walletProviderModel } from '../../model/wallet-provider-model';
 import { WalletConnectAccounts } from '../components/WalletConnectAccounts';

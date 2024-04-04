@@ -6,7 +6,7 @@ import { Button, Select, Input, InputHint, Alert } from '@shared/ui';
 import { useI18n } from '@app/providers';
 import { AccountAddress, accountUtils } from '@entities/wallet';
 import { toAddress } from '@shared/lib/utils';
-import { MultisigDepositWithLabel, FeeWithLabel } from '@entities/transaction';
+import { MultisigDepositWithLabel, FeeWithLabel, DESCRIPTION_LENGTH } from '@entities/transaction';
 import { formModel } from '../model/form-model';
 import { AssetBalance } from '@entities/asset';
 import { MultisigAccount } from '@shared/core';
@@ -113,7 +113,7 @@ const DescriptionInput = () => {
       />
       <InputHint variant="error" active={description.hasError()}>
         {description.errorText({
-          maxLength: t('proxy.addProxy.maxLengthDescriptionError', { maxLength: 120 }),
+          maxLength: t('proxy.addProxy.maxLengthDescriptionError', { maxLength: DESCRIPTION_LENGTH }),
         })}
       </InputHint>
     </div>

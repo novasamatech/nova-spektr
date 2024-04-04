@@ -3,7 +3,7 @@ import { decodeAddress, encodeAddress, ethereumEncode } from '@polkadot/util-cry
 import { useState } from 'react';
 
 import { Icon, Loader, Button, CaptionText, FootnoteText, Select, SmallTitleText } from '@shared/ui';
-import { DropdownOption, DropdownResult } from '@shared/ui/Dropdowns/common/types';
+import { DropdownOption, DropdownResult } from '@shared/ui/types';
 import { useI18n } from '@app/providers';
 import { cnTw } from '@shared/lib/utils';
 import {

@@ -17,3 +17,4 @@ export { ContactItem } from './ContactItem/ContactItem';
 export { ExplorersPopover } from './ExplorersPopover/ExplorersPopover';
 export { CheckPermission } from './CheckPermission/CheckPermission';
 export { AccountSelectModal } from './AccountSelectModal/AccountSelectModal';
+export { ProxyWalletAlert } from './ProxyWalletAlert/ProxyWalletAlert';

@@ -9,14 +9,14 @@ import { walletModel, walletUtils } from '@entities/wallet';
 
 type Input = {
   chain: Chain;
-  account: Account;
+  accounts: Account[];
   signatory?: Account;
-  transaction: Transaction;
+  transactions: Transaction[];
 };
 
 type SignatureData = {
-  signature: HexString;
-  unsignedTx: UnsignedTransaction;
+  signatures: HexString[];
+  unsignedTxs: UnsignedTransaction[];
 };
 
 const formInitiated = createEvent<Input>();
@@ -43,7 +43,7 @@ const $signerWallet = combine(
   ({ store, wallets }) => {
     if (!store) return undefined;
 
-    return walletUtils.getWalletById(wallets, store.account.walletId);
+    return walletUtils.getWalletById(wallets, store.accounts[0].walletId);
   },
   { skipVoid: false },
 );

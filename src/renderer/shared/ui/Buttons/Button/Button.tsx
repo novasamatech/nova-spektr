@@ -14,11 +14,11 @@ type Props = {
   pallet?: Pallet;
   size?: keyof typeof SizeClass;
   disabled?: boolean;
+  tabIndex?: number;
+  isLoading?: boolean;
   prefixElement?: ReactNode;
   suffixElement?: ReactNode;
   onClick?: (event: MouseEvent<HTMLButtonElement>) => void;
-  tabIndex?: number;
-  isLoading?: boolean;
 };
 
 export const Button = forwardRef<HTMLButtonElement, PropsWithChildren<Props>>(

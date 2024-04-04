@@ -9,7 +9,7 @@ import { IconNames } from '@shared/ui/Icon/data';
 import { BaseModal, DropdownIconButton, FootnoteText, Icon, Tabs } from '@shared/ui';
 import { AccountsList, WalletCardLg, WalletIcon } from '@entities/wallet';
 import { RenameWalletModal } from '@features/wallets/RenameWallet';
-import { TabItem } from '@shared/ui/Tabs/common/types';
+import { TabItem } from '@shared/ui/types';
 import { ProxiesList } from '../components/ProxiesList';
 import { NoProxiesAction } from '../components/NoProxiesAction';
 import { walletProviderModel } from '../../model/wallet-provider-model';
