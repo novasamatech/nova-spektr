@@ -68,8 +68,8 @@ describe('widgets/AddPureProxyModal/model/add-pure-proxied-model', () => {
     await allSettled(signModel.output.formSubmitted, {
       scope,
       params: {
-        signature: '0x00',
-        unsignedTx: {} as unknown as UnsignedTransaction,
+        signatures: ['0x00'],
+        unsignedTxs: [{}] as unknown as UnsignedTransaction[],
       },
     });
 

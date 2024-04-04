@@ -1,10 +1,11 @@
 import { useState, useEffect, useMemo } from 'react';
-import { useNavigate, Outlet } from 'react-router-dom';
 import { useUnit } from 'effector-react';
+import uniqBy from 'lodash/uniqBy';
+import { useNavigate, Outlet } from 'react-router-dom';
 
 import { Header } from '@shared/ui';
 import { getRelaychainAsset, toAddress } from '@shared/lib/utils';
-import { createLink, type PathType } from '@shared/routes';
+import { type PathType, Paths, createLink } from '@shared/routes';
 import { useGraphql, useI18n } from '@app/providers';
 import { useToggle } from '@shared/lib/hooks';
 import { AboutStaking, NetworkInfo, NominatorsList, Actions, InactiveChain } from './components';
@@ -13,6 +14,7 @@ import { priceProviderModel } from '@entities/price';
 import { NominatorInfo } from './common/types';
 import { useNetworkData, networkUtils } from '@entities/network';
 import { ChainId, Chain, Address, Account, Stake, Validator, ShardAccount, ChainAccount } from '@shared/core';
+import { Unstake, unstakeModel } from '@widgets/Unstake';
 import {
   useEra,
   useStakingData,
@@ -25,10 +27,11 @@ import {
 
 export const Overview = () => {
   const { t } = useI18n();
+  const navigate = useNavigate();
+
   const activeWallet = useUnit(walletModel.$activeWallet);
   const activeAccounts = useUnit(walletModel.$activeAccounts);
 
-  const navigate = useNavigate();
   const { changeClient } = useGraphql();
 
   const { subscribeActiveEra } = useEra();
@@ -215,23 +218,38 @@ export const Overview = () => {
   );
 
   const navigateToStake = (path: PathType, addresses?: Address[]) => {
+    if (!activeChain) return;
+
     if (addresses) {
       setSelectedNominators(addresses);
 
       return;
     }
 
-    const accountsMap = accounts.reduce<Record<Address, number>>((acc, account) => {
-      if (account.id) {
-        acc[toAddress(account.accountId, { prefix: addressPrefix })] = account.id;
-      }
+    if (path === Paths.UNSTAKE) {
+      const shards = accounts.filter((account) => {
+        const address = toAddress(account.accountId, { prefix: addressPrefix });
 
-      return acc;
-    }, {});
+        return selectedNominators.includes(address);
+      });
 
-    const stakeAccountIds = selectedNominators.map((nominator) => accountsMap[nominator]);
+      unstakeModel.events.flowStarted({
+        chain: activeChain,
+        shards: uniqBy(shards, 'accountId'),
+      });
+    } else {
+      const accountsMap = accounts.reduce<Record<Address, number>>((acc, account) => {
+        if (account.id) {
+          acc[toAddress(account.accountId, { prefix: addressPrefix })] = account.id;
+        }
 
-    navigate(createLink(path, { chainId }, { id: stakeAccountIds }));
+        return acc;
+      }, {});
+
+      const stakeAccountIds = selectedNominators.map((nominator) => accountsMap[nominator]);
+
+      navigate(createLink(path, { chainId }, { id: stakeAccountIds }));
+    }
   };
 
   const totalStakes = Object.values(staking).map((stake) => stake?.total || '0');
@@ -306,6 +324,7 @@ export const Overview = () => {
         onClose={toggleNominators}
       />
 
+      <Unstake />
       <Outlet />
     </>
   );

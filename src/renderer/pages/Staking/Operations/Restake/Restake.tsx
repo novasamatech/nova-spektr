@@ -17,8 +17,8 @@ import { SigningSwitch } from '@features/operations';
 import type { Account } from '@shared/core';
 import { walletModel, walletUtils } from '@entities/wallet';
 import { priceProviderModel } from '@entities/price';
-import { StakingPopover } from '../components/StakingPopover/StakingPopover';
 import { useNetworkData } from '@entities/network';
+import { StakingPopover } from '@entities/staking';
 
 const enum Step {
   INIT,

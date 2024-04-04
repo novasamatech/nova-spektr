@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useUnit } from 'effector-react';
 
-import { DropdownOption, DropdownResult } from '@shared/ui/Dropdowns/common/types';
+import { DropdownOption, DropdownResult } from '@shared/ui/types';
 import { InputHint, Select } from '@shared/ui';
 import { useI18n } from '@app/providers';
 import { OperationErrorType } from '@entities/transaction';

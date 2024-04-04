@@ -12,7 +12,7 @@ import { DerivationsAddressModal, ImportKeysModal, KeyConstructor } from '@featu
 import { RenameWalletModal } from '@features/wallets/RenameWallet';
 import { ForgetWalletModal } from '@features/wallets/ForgetWallet';
 import { networkModel } from '@entities/network';
-import { TabItem } from '@shared/ui/Tabs/common/types';
+import { TabItem } from '@shared/ui/types';
 import { addProxyModel, AddProxy } from '@widgets/AddProxyModal';
 import { ProxiesList } from '../components/ProxiesList';
 import { walletProviderModel } from '../../model/wallet-provider-model';

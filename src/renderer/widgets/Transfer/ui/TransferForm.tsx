@@ -1,28 +1,16 @@
 import { useForm } from 'effector-forms';
 import { FormEvent } from 'react';
 import { useUnit } from 'effector-react';
-import { Trans } from 'react-i18next';
 
 import { useI18n } from '@app/providers';
 import { MultisigAccount, Chain } from '@shared/core';
-import { accountUtils, AccountAddress, WalletIcon, AccountSelectModal } from '@entities/wallet';
+import { accountUtils, AccountAddress, AccountSelectModal, ProxyWalletAlert } from '@entities/wallet';
 import { toAddress, toShortAddress, validateAddress, formatBalance } from '@shared/lib/utils';
 import { AssetBalance } from '@entities/asset';
 import { MultisigDepositWithLabel, FeeWithLabel, XcmFeeWithLabel } from '@entities/transaction';
 import { ChainTitle } from '@entities/chain';
 import { formModel } from '../model/form-model';
-import {
-  Select,
-  Input,
-  Identicon,
-  Icon,
-  Button,
-  InputHint,
-  AmountInput,
-  HelpText,
-  Alert,
-  FootnoteText,
-} from '@shared/ui';
+import { Select, Input, Identicon, Icon, Button, InputHint, AmountInput, HelpText } from '@shared/ui';
 import { DropdownOption } from '@shared/ui/types';
 
 type Props = {
@@ -59,8 +47,6 @@ export const TransferForm = ({ onGoBack }: Props) => {
 };
 
 const ProxyFeeAlert = () => {
-  const { t } = useI18n();
-
   const {
     fields: { account },
   } = useForm(formModel.$transferForm);
@@ -75,26 +61,14 @@ const ProxyFeeAlert = () => {
   const formattedFee = formatBalance(fee, network.asset.precision).value;
   const formattedBalance = formatBalance(native, network.asset.precision).value;
 
-  const wallet = (
-    <span className="inline-flex gap-x-1 items-center mx-1 align-bottom max-w-[200px]">
-      <WalletIcon className="shrink-0" type={proxyWallet.type} size={16} />
-      <FootnoteText as="span" className="text-text-secondary transition-colors truncate">
-        {proxyWallet.name}
-      </FootnoteText>
-    </span>
-  );
-
   return (
-    <Alert active title="Not enough tokens to pay the fee" variant="warn" onClose={account.resetErrors}>
-      <FootnoteText className="text-text-secondary tracking-tight max-w-full">
-        <Trans
-          t={t}
-          i18nKey="operation.proxyFeeError"
-          components={{ wallet }}
-          values={{ fee: formattedFee, balance: formattedBalance, symbol: network.asset.symbol }}
-        />
-      </FootnoteText>
-    </Alert>
+    <ProxyWalletAlert
+      wallet={proxyWallet}
+      fee={formattedFee}
+      balance={formattedBalance}
+      symbol={network.asset.symbol}
+      onClose={account.resetErrors}
+    />
   );
 };
 
