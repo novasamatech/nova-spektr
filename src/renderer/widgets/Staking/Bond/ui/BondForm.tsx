@@ -1,16 +1,27 @@
 import { useForm } from 'effector-forms';
-import { FormEvent } from 'react';
+import { FormEvent, useState } from 'react';
 import { useUnit } from 'effector-react';
 
 import { useI18n } from '@app/providers';
-import { MultisigAccount } from '@shared/core';
+import { MultisigAccount, Address, RewardsDestination } from '@shared/core';
 import { accountUtils, AccountAddress, ProxyWalletAlert } from '@entities/wallet';
-import { toAddress, toShortAddress, formatBalance } from '@shared/lib/utils';
+import { toAddress, toShortAddress, formatBalance, validateAddress } from '@shared/lib/utils';
 import { AssetBalance } from '@entities/asset';
 import { MultisigDepositWithLabel, FeeWithLabel } from '@entities/transaction';
+import { DropdownOption, RadioOption } from '@shared/ui/types';
 import { formModel } from '../model/form-model';
-import { Select, Input, Button, InputHint, AmountInput, MultiSelect } from '@shared/ui';
-import { DropdownOption } from '@shared/ui/types';
+import {
+  Select,
+  Input,
+  Button,
+  InputHint,
+  AmountInput,
+  MultiSelect,
+  RadioGroup,
+  Combobox,
+  Identicon,
+  Icon,
+} from '@shared/ui';
 
 type Props = {
   onGoBack: () => void;
@@ -31,7 +42,7 @@ export const BondForm = ({ onGoBack }: Props) => {
         <AccountsSelector />
         <SignatorySelector />
         <Amount />
-        {/* TODO: <Destination />*/}
+        <Destination />
         <Description />
       </form>
       <div className="flex flex-col gap-y-6 pt-6 pb-4">
@@ -206,58 +217,99 @@ const Amount = () => {
   );
 };
 
-// const Destination = () => {
-//   const { t } = useI18n();
-//
-//   const {
-//     fields: { destination },
-//   } = useForm(formModel.$bondForm);
-//
-//   const destinationAccounts = useUnit(bondModel.$destinationAccounts);
-//
-//   const options = [
-//     { value: '', title: t('staking.bond.restakeRewards') },
-//     { value: destination.value, title: t('staking.bond.transferableRewards') },
-//   ].map((dest, index) => ({
-//     id: index.toString(),
-//     value: dest.value,
-//     title: dest.title,
-//   }));
-//
-//   return (
-//     <div className="flex flex-col gap-y-2">
-//       <RadioGroup
-//         label={t('staking.bond.rewardsDestinationLabel')}
-//         className="col-span-2"
-//         activeId={options.find((d) => d.value === value)?.id}
-//         options={options}
-//         onChange={(option) => onChange(option.value)}
-//       >
-//         <RadioGroup.Option option={options[0]} />
-//         <RadioGroup.Option option={options[1]}>
-//           <Combobox
-//             placeholder={t('staking.bond.payoutAccountPlaceholder')}
-//             query={destinationQuery}
-//             value={activePayout}
-//             options={destinationAccounts}
-//             disabled={false}
-//             // disabled={destinationField.disabled}
-//             // invalid={Boolean(error)}
-//             prefixElement={
-//               <Identicon className="mr-1" address={activePayout} size={20} background={false} canCopy={false} />
-//             }
-//             onInput={destination.onChange}
-//             onChange={(option) => setActivePayout(option.value)}
-//           />
-//         </RadioGroup.Option>
-//       </RadioGroup>
-//
-//       <InputHint active={destination.hasError()} variant="error">
-//         {t('staking.bond.incorrectAddressError')}
-//       </InputHint>
-//     </div>
-//   );
-// };
+const Destination = () => {
+  const { t } = useI18n();
+
+  const {
+    fields: { destination },
+  } = useForm(formModel.$bondForm);
+
+  const network = useUnit(formModel.$networkStore);
+  const destinationAccounts = useUnit(formModel.$destinationAccounts);
+  const destinationQuery = useUnit(formModel.$destinationQuery);
+
+  const [payout, setPayout] = useState<Address>('');
+  const [activeOptionId, setActiveOptionId] = useState<string>('0');
+
+  if (!network) return null;
+
+  const options: RadioOption<{ type: RewardsDestination; value: Address }>[] = [
+    { title: t('staking.bond.restakeRewards'), value: '', rewardType: RewardsDestination.RESTAKE },
+    { title: t('staking.bond.transferableRewards'), value: payout, rewardType: RewardsDestination.TRANSFERABLE },
+  ].map((dest, index) => ({
+    id: index.toString(),
+    value: { type: dest.rewardType, value: dest.value },
+    title: dest.title,
+  }));
+
+  const destinationOptions = destinationAccounts.map((account) => {
+    const isShard = accountUtils.isShardAccount(account);
+    const address = toAddress(account.accountId, { prefix: network.chain.addressPrefix });
+
+    return {
+      id: account.id.toString(),
+      value: address,
+      element: (
+        <div className="flex justify-between w-full" key={account.id}>
+          <AccountAddress
+            size={20}
+            type="short"
+            address={address}
+            name={isShard ? toShortAddress(address, 20) : account.name}
+            canCopy={false}
+          />
+        </div>
+      ),
+    };
+  });
+
+  const prefixElement = (
+    <div className="flex h-auto items-center">
+      {validateAddress(payout) ? (
+        <Identicon className="mr-1" address={payout} size={20} background={false} canCopy={false} />
+      ) : (
+        <Icon className="mr-2" size={20} name="emptyIdenticon" />
+      )}
+    </div>
+  );
+
+  return (
+    <RadioGroup
+      label={t('staking.bond.rewardsDestinationLabel')}
+      className="col-span-2"
+      activeId={activeOptionId}
+      options={options}
+      onChange={(option) => {
+        setActiveOptionId(option.id);
+        destination.onChange(option.value.value);
+        formModel.events.destinationTypeChanged(option.value.type);
+      }}
+    >
+      <RadioGroup.Option option={options[0]} />
+      <RadioGroup.Option option={options[1]}>
+        <div className="flex flex-col gap-y-2">
+          <Combobox
+            placeholder={t('staking.bond.payoutAccountPlaceholder')}
+            query={destinationQuery}
+            value={payout}
+            options={destinationOptions}
+            invalid={destination.hasError()}
+            prefixElement={prefixElement}
+            onInput={formModel.events.destinationQueryChanged}
+            onChange={({ value }) => {
+              setPayout(value);
+              destination.onChange(value);
+            }}
+          />
+
+          <InputHint active={destination.hasError()} variant="error">
+            {t('staking.bond.incorrectAddressError')}
+          </InputHint>
+        </div>
+      </RadioGroup.Option>
+    </RadioGroup>
+  );
+};
 
 const Description = () => {
   const { t } = useI18n();

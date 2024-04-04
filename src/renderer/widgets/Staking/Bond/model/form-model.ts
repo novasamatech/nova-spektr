@@ -6,7 +6,7 @@ import { BN } from '@polkadot/util';
 import { walletModel, walletUtils, accountUtils } from '@entities/wallet';
 import { balanceModel, balanceUtils } from '@entities/balance';
 import { networkModel, networkUtils } from '@entities/network';
-import type { Account, PartialBy, ProxiedAccount, Chain, Asset, Address } from '@shared/core';
+import { Account, PartialBy, ProxiedAccount, Chain, Asset, Address, RewardsDestination } from '@shared/core';
 import { NetworkStore } from '../lib/types';
 import {
   transferableAmount,
@@ -17,6 +17,7 @@ import {
   isStringsMatchQuery,
   TEST_ADDRESS,
   stakeableAmount,
+  validateAddress,
 } from '@shared/lib/utils';
 import {
   Transaction,
@@ -30,7 +31,7 @@ type FormParams = {
   shards: Account[];
   signatory: Account;
   amount: string;
-  destination: string;
+  destination: Address;
   description: string;
 };
 
@@ -52,6 +53,7 @@ const formInitiated = createEvent<NetworkStore>();
 const formSubmitted = createEvent<FormSubmitEvent>();
 const formCleared = createEvent();
 const destinationQueryChanged = createEvent<string>();
+const destinationTypeChanged = createEvent<RewardsDestination>();
 
 const feeChanged = createEvent<string>();
 const totalFeeChanged = createEvent<string>();
@@ -62,6 +64,8 @@ const $networkStore = createStore<{ chain: Chain; asset: Asset } | null>(null);
 
 const $shards = createStore<Account[]>([]);
 const $destinationQuery = restore(destinationQueryChanged, '');
+const $destinationType = restore(destinationTypeChanged, RewardsDestination.RESTAKE);
+
 const $isMultisig = createStore<boolean>(false);
 const $isProxy = createStore<boolean>(false);
 
@@ -108,7 +112,7 @@ const $bondForm = createForm<FormParams>({
 
             const amountBN = new BN(formatAmount(form.amount, network.asset.precision));
 
-            return shards.every((_, index) => amountBN.lte(new BN(accountsBalances[index].stakeable)));
+            return shards.every((_, index) => amountBN.lte(new BN(accountsBalances[index])));
           },
         },
       ],
@@ -186,7 +190,7 @@ const $bondForm = createForm<FormParams>({
             const amountBN = new BN(formatAmount(value, network.asset.precision));
 
             return form.shards.every((_: Account, index: number) => {
-              return amountBN.add(feeBN).lte(new BN(accountsBalances[index].stakeable));
+              return amountBN.add(feeBN).lte(new BN(accountsBalances[index]));
             });
           },
         },
@@ -194,13 +198,18 @@ const $bondForm = createForm<FormParams>({
     },
     destination: {
       init: '' as Address,
-      // rules: [
-      //   {
-      //     name: 'maxLength',
-      //     errorText: 'transfer.descriptionLengthError',
-      //     validator: (value) => !value || value.length <= 120,
-      //   },
-      // ],
+      rules: [
+        {
+          name: 'required',
+          errorText: 'proxy.addProxy.proxyAddressRequiredError',
+          source: $destinationType,
+          validator: (value, _, destinationType) => {
+            if (destinationType === RewardsDestination.RESTAKE) return true;
+
+            return validateAddress(value);
+          },
+        },
+      ],
     },
     description: {
       init: '',
@@ -548,7 +557,7 @@ sample({
       network!.asset.assetId.toString(),
     );
 
-    return transferableAmount(balance);
+    return stakeableAmount(balance);
   },
   target: $proxyBalance,
 });
@@ -608,6 +617,8 @@ export const formModel = {
   $proxyWallet,
   $signatories,
   $destinationAccounts,
+  $destinationQuery,
+  $destinationType,
 
   $accounts,
   $accountsBalances,
@@ -628,6 +639,7 @@ export const formModel = {
     formInitiated,
     formCleared,
     destinationQueryChanged,
+    destinationTypeChanged,
 
     feeChanged,
     totalFeeChanged,
