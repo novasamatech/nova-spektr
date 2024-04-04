@@ -7,7 +7,7 @@ type Props = {
   children: ReactNode;
 };
 
-export const StakingPopover = ({ labelText, children }: PropsWithChildren<Props>) => (
+const StakingRoot = ({ labelText, children }: PropsWithChildren<Props>) => (
   <Popover
     offsetPx={1}
     contentClass="p-4"
@@ -18,10 +18,12 @@ export const StakingPopover = ({ labelText, children }: PropsWithChildren<Props>
   </Popover>
 );
 
-const PopoverListItem = ({ children }: PropsWithChildren) => (
+const ListItem = ({ children }: PropsWithChildren) => (
   <li>
     <FootnoteText className="text-text-secondary">{children}</FootnoteText>
   </li>
 );
 
-StakingPopover.Item = PopoverListItem;
+export const StakingPopover = Object.assign(StakingRoot, {
+  Item: ListItem,
+});

@@ -6,7 +6,7 @@ import { useUnit } from 'effector-react';
 import { useI18n } from '@app/providers';
 import { Paths } from '@shared/routes';
 import { Transaction, TransactionType, useTransaction } from '@entities/transaction';
-import { ValidatorMap } from '@entities/staking';
+import { ValidatorMap, StakingPopover } from '@entities/staking';
 import { toAddress, getRelaychainAsset, DEFAULT_TRANSITION } from '@shared/lib/utils';
 import { Confirmation, Submit, Validators, NoAsset } from '../components';
 import { useToggle } from '@shared/lib/hooks';
@@ -18,7 +18,6 @@ import { SigningSwitch } from '@features/operations';
 import { Account, ChainId, HexString, Address, MultisigAccount } from '@shared/core';
 import { walletModel, walletUtils } from '@entities/wallet';
 import { priceProviderModel } from '@entities/price';
-import { StakingPopover } from '../components/StakingPopover/StakingPopover';
 
 const enum Step {
   INIT,

@@ -41,9 +41,9 @@ describe('widgets/AddPureProxyModal/model/sign-model', () => {
 
     const store = {
       chain: { chainId: '0x00' } as unknown as Chain,
-      account: { walletId: 1 } as unknown as Account,
+      accounts: [{ walletId: 1 }] as unknown as Account[],
       signer: { walletId: 2 } as unknown as Account,
-      transaction: {} as Transaction,
+      transactions: [{}] as Transaction[],
     };
 
     await allSettled(signModel.events.formInitiated, { scope, params: store });

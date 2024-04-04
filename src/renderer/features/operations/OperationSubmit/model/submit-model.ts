@@ -21,11 +21,11 @@ type Input = {
   account: Account;
   signatory?: Account;
   description: string;
-  transaction: Transaction;
-  multisigTx?: Transaction;
+  transactions: Transaction[];
+  multisigTxs?: Transaction[];
 
-  signature: HexString;
-  unsignedTx: UnsignedTransaction;
+  signatures: HexString[];
+  unsignedTxs: UnsignedTransaction[];
 };
 
 const formInitiated = createEvent<Input>();
@@ -50,34 +50,42 @@ const $hooksApi = createApi($hooks, {
 
 type SignedExtrinsicParams = {
   api: ApiPromise;
-  signature: HexString;
-  unsignedTx: UnsignedTransaction;
+  signatures: HexString[];
+  unsignedTxs: UnsignedTransaction[];
 };
-const getSignedExtrinsicFx = createEffect(({ api, signature, unsignedTx }: SignedExtrinsicParams): Promise<string> => {
-  return transactionService.getSignedExtrinsic(unsignedTx, signature, api);
-});
+const getSignedExtrinsicsFx = createEffect(
+  ({ api, signatures, unsignedTxs }: SignedExtrinsicParams): Promise<string[]> => {
+    const requests = signatures.map((signature, index) => {
+      return transactionService.getSignedExtrinsic(unsignedTxs[index], signature, api);
+    });
+
+    return Promise.all(requests);
+  },
+);
 
 type SubmitExtrinsicParams = {
   api: ApiPromise;
-  unsignedTx: UnsignedTransaction;
-  extrinsic: string;
+  extrinsics: string[];
+  unsignedTxs: UnsignedTransaction[];
 };
-const submitExtrinsicFx = createEffect(({ api, unsignedTx, extrinsic }: SubmitExtrinsicParams): void => {
+const submitExtrinsicsFx = createEffect(({ api, extrinsics, unsignedTxs }: SubmitExtrinsicParams): void => {
   const boundExtrinsicSucceeded = scopeBind(extrinsicSucceeded, { safe: true });
   const boundExtrinsicFailed = scopeBind(extrinsicFailed, { safe: true });
 
-  transactionService.submitAndWatchExtrinsic(extrinsic, unsignedTx, api, async (executed, params) => {
-    if (executed) {
-      boundExtrinsicSucceeded(params as ExtrinsicResultParams);
-    } else {
-      boundExtrinsicFailed(params as string);
-    }
+  extrinsics.forEach((extrinsic, index) => {
+    transactionService.submitAndWatchExtrinsic(extrinsic, unsignedTxs[index], api, (executed, params) => {
+      if (executed) {
+        boundExtrinsicSucceeded(params as ExtrinsicResultParams);
+      } else {
+        boundExtrinsicFailed(params as string);
+      }
+    });
   });
 });
 
 type SaveMultisigParams = {
-  transaction: Transaction;
-  multisigTx: Transaction;
+  transactions: Transaction[];
+  multisigTxs: Transaction[];
   multisigAccount: MultisigAccount;
   params: ExtrinsicResultParams;
   hooks: Callbacks;
@@ -85,50 +93,61 @@ type SaveMultisigParams = {
 };
 
 type SaveMultisigResult = {
-  transaction: MultisigTransaction;
-  event: MultisigEvent;
+  transactions: MultisigTransaction[];
+  events: MultisigEvent[];
 };
 const saveMultisigTxFx = createEffect(
-  async ({
-    transaction,
-    multisigTx,
+  ({
+    transactions,
+    multisigTxs,
     multisigAccount,
     params,
     hooks,
     description,
-  }: SaveMultisigParams): Promise<SaveMultisigResult> => {
-    const { transaction: tx, event } = buildMultisigTx(transaction, multisigTx, params, multisigAccount, description);
+  }: SaveMultisigParams): SaveMultisigResult => {
+    const { txs, events } = transactions.reduce<{ txs: MultisigTransaction[]; events: MultisigEvent[] }>(
+      (acc, transaction, index) => {
+        const multisigData = buildMultisigTx(transaction, multisigTxs[index], params, multisigAccount, description);
 
-    hooks.addEventWithQueue(event);
-    await hooks.addMultisigTx(tx);
-    console.log(`New transaction was created with call hash ${tx.callHash}`);
+        hooks.addEventWithQueue(multisigData.event);
+        hooks.addMultisigTx(multisigData.transaction);
+        acc.txs.push(multisigData.transaction);
+        acc.events.push(multisigData.event);
+        console.log(`New transaction was created with call hash ${multisigData.transaction.callHash}`);
 
-    return { transaction: tx, event };
+        return acc;
+      },
+      { txs: [], events: [] },
+    );
+
+    return { transactions: txs, events };
   },
 );
 
 type ApproveParams = {
   matrix: ISecureMessenger;
   matrixRoomId: string;
-  multisigTx: MultisigTransaction;
+  multisigTxs: MultisigTransaction[];
   description: string;
   params: ExtrinsicResultParams;
 };
 const sendMatrixApproveFx = createEffect(
-  async ({ matrix, matrixRoomId, multisigTx, description, params }: ApproveParams): Promise<void> => {
-    await matrix.sendApprove(matrixRoomId, {
-      description,
-      senderAccountId: multisigTx.depositor!,
-      chainId: multisigTx.chainId,
-      callHash: multisigTx.callHash,
-      callData: multisigTx.callData,
-      extrinsicTimepoint: params.timepoint,
-      extrinsicHash: params.extrinsicHash,
-      error: Boolean(params.multisigError),
-      callTimepoint: {
-        height: multisigTx.blockCreated || params.timepoint.height,
-        index: multisigTx.indexCreated || params.timepoint.index,
-      },
+  ({ matrix, matrixRoomId, multisigTxs, description, params }: ApproveParams) => {
+    multisigTxs.forEach((tx) => {
+      matrix.sendApprove(matrixRoomId, {
+        description,
+        senderAccountId: tx.depositor!,
+        chainId: tx.chainId,
+        callHash: tx.callHash,
+        callData: tx.callData,
+        extrinsicTimepoint: params.timepoint,
+        extrinsicHash: params.extrinsicHash,
+        error: Boolean(params.multisigError),
+        callTimepoint: {
+          height: tx.blockCreated || params.timepoint.height,
+          index: tx.indexCreated || params.timepoint.index,
+        },
+      });
     });
   },
 );
@@ -142,24 +161,22 @@ sample({
     apis: networkModel.$apis,
   },
   filter: ({ params }) => Boolean(params),
-  fn: ({ apis, params }) => {
-    return {
-      api: apis[params!.chain.chainId],
-      signature: params!.signature,
-      unsignedTx: params!.unsignedTx,
-    };
-  },
-  target: getSignedExtrinsicFx,
+  fn: ({ apis, params }) => ({
+    api: apis[params!.chain.chainId],
+    signatures: params!.signatures,
+    unsignedTxs: params!.unsignedTxs,
+  }),
+  target: getSignedExtrinsicsFx,
 });
 
 sample({
-  clock: getSignedExtrinsicFx.done,
+  clock: getSignedExtrinsicsFx.done,
   fn: ({ params, result }) => ({
     api: params.api,
-    unsignedTx: params.unsignedTx,
-    extrinsic: result,
+    extrinsics: result,
+    unsignedTxs: params.unsignedTxs,
   }),
-  target: submitExtrinsicFx,
+  target: submitExtrinsicsFx,
 });
 
 sample({
@@ -176,13 +193,13 @@ sample({
     hooks: $hooks,
   },
   filter: ({ submitStore, loginStatus }) => {
-    return matrixUtils.isLoggedIn(loginStatus) && Boolean(submitStore?.multisigTx);
+    return matrixUtils.isLoggedIn(loginStatus) && Boolean(submitStore?.multisigTxs);
   },
   fn: ({ submitStore, hooks }, params) => ({
     params,
     hooks: hooks!,
-    transaction: submitStore!.transaction,
-    multisigTx: submitStore!.multisigTx!,
+    transactions: submitStore!.transactions,
+    multisigTxs: submitStore!.multisigTxs!,
     multisigAccount: submitStore!.account as MultisigAccount,
     description: submitStore!.description,
   }),
@@ -199,14 +216,14 @@ sample({
   filter: ({ loginStatus, submitStore }) => {
     return (
       matrixUtils.isLoggedIn(loginStatus) &&
-      Boolean(submitStore?.multisigTx) &&
+      Boolean(submitStore?.multisigTxs) &&
       Boolean((submitStore!.account as MultisigAccount).matrixRoomId)
     );
   },
   fn: ({ matrix, submitStore }, { params, result }) => ({
     matrix,
     matrixRoomId: (submitStore?.account as MultisigAccount).matrixRoomId!,
-    multisigTx: result.transaction,
+    multisigTxs: result.transactions,
     description: submitStore?.description!,
     params: params.params,
   }),

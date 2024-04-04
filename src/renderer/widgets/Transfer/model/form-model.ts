@@ -15,6 +15,7 @@ import {
   transactionService,
   MultisigTxWrapper,
   ProxyTxWrapper,
+  DESCRIPTION_LENGTH,
 } from '@entities/transaction';
 import {
   transferableAmount,
@@ -104,6 +105,16 @@ const $transferForm = createForm<FormParams>({
     signatory: {
       init: {} as Account,
       rules: [
+        {
+          name: 'noSignatorySelected',
+          errorText: 'transfer.noSignatoryError',
+          source: $isMultisig,
+          validator: (signatory, _, isMultisig) => {
+            if (!isMultisig) return true;
+
+            return Object.keys(signatory).length > 0;
+          },
+        },
         {
           name: 'notEnoughTokens',
           errorText: 'proxy.addProxy.notEnoughMultisigTokens',
@@ -196,7 +207,7 @@ const $transferForm = createForm<FormParams>({
         {
           name: 'maxLength',
           errorText: 'transfer.descriptionLengthError',
-          validator: (value) => !value || value.length <= 120,
+          validator: (value) => !value || value.length <= DESCRIPTION_LENGTH,
         },
       ],
     },

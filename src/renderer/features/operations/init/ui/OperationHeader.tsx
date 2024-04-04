@@ -2,7 +2,7 @@ import { useUnit } from 'effector-react';
 
 import { SingleSelectMultishardHeader } from './SingleSelectMultishardHeader';
 import { MultiSelectMultishardHeader } from './MultiSelectMultishardHeader';
-import { DropdownOption } from '@shared/ui/Dropdowns/common/types';
+import { DropdownOption } from '@shared/ui/types';
 import { MultisigOperationHeader } from './MultisigOperationHeader';
 import { OperationError, OperationErrorType } from '@entities/transaction';
 import { accountUtils, walletModel, walletUtils } from '@entities/wallet';

@@ -19,6 +19,10 @@ jest.mock('@shared/lib/utils', () => ({
 }));
 
 describe('widgets/AddPureProxyModal/model/add-proxy-model', () => {
+  beforeAll(() => {
+    jest.useFakeTimers();
+  });
+
   beforeEach(() => {
     jest.restoreAllMocks();
   });
@@ -65,14 +69,28 @@ describe('widgets/AddPureProxyModal/model/add-proxy-model', () => {
     await allSettled(signModel.output.formSubmitted, {
       scope,
       params: {
-        signature: '0x00',
-        unsignedTx: {} as unknown as UnsignedTransaction,
+        signatures: ['0x00'],
+        unsignedTxs: [{}] as unknown as UnsignedTransaction[],
       },
     });
 
     expect(scope.getState(addProxyModel.$step)).toEqual(Step.SUBMIT);
 
-    await allSettled(submitModel.output.formSubmitted, { scope });
+    const action = allSettled(submitModel.output.formSubmitted, {
+      scope,
+      params: {
+        timepoint: {
+          height: 1,
+          index: 1,
+        },
+        extrinsicHash: '0x00',
+        isFinalApprove: true,
+        multisigError: '',
+      },
+    });
+
+    await jest.runAllTimersAsync();
+    await action;
 
     expect(scope.getState(addProxyModel.$step)).toEqual(Step.NONE);
   });

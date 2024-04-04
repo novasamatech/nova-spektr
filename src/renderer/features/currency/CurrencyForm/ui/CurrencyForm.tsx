@@ -4,7 +4,7 @@ import { useUnit } from 'effector-react';
 
 import { Switch, FootnoteText, HelpText, Button, Select } from '@shared/ui';
 import { useI18n } from '@app/providers';
-import { DropdownOption } from '@shared/ui/Dropdowns/common/types';
+import { DropdownOption } from '@shared/ui/types';
 import { CurrencyItem } from '@shared/api/price-provider';
 import { Callbacks, currencyFormModel } from '../model/currency-form';
 

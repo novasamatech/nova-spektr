@@ -27,8 +27,10 @@ export const Fee = memo(({ api, multiply = 1, asset, transaction, className, onF
   const [isLoading, setIsLoading] = useState(true);
 
   const updateFee = (fee: string) => {
-    setFee(fee);
-    onFeeChange?.(fee);
+    const totalFee = new BN(fee).muln(multiply).toString();
+
+    setFee(totalFee);
+    onFeeChange?.(totalFee);
   };
 
   useEffect(() => {
@@ -56,12 +58,10 @@ export const Fee = memo(({ api, multiply = 1, asset, transaction, className, onF
 
   if (isLoading) return <FeeLoader fiatFlag={Boolean(fiatFlag)} />;
 
-  const totalFee = new BN(fee).muln(multiply).toString();
-
   return (
     <div className="flex flex-col gap-y-0.5 items-end">
-      <AssetBalance value={totalFee} asset={asset} className={className} />
-      <AssetFiatBalance asset={asset} amount={totalFee} />
+      <AssetBalance value={fee} asset={asset} className={className} />
+      <AssetFiatBalance asset={asset} amount={fee} />
     </div>
   );
 });

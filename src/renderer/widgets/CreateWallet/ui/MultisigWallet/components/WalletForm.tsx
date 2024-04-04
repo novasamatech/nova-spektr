@@ -4,7 +4,11 @@ import { useEffect } from 'react';
 
 import { Alert, Button, Input, InputHint, Select, SmallTitleText } from '@shared/ui';
 import { useI18n } from '@app/providers';
-import { DropdownOption, DropdownResult } from '@shared/ui/Dropdowns/common/types';
+import { DropdownOption, DropdownResult } from '@shared/ui/types';
+import { accountUtils, walletModel, walletUtils } from '@entities/wallet';
+import { networkModel, networkUtils } from '@entities/network';
+import { ChainTitle } from '@entities/chain';
+import { matrixModel } from '@entities/matrix';
 import {
   CryptoType,
   type AccountId,
@@ -13,10 +17,6 @@ import {
   type MultisigAccount,
   type Signatory,
 } from '@shared/core';
-import { accountUtils, walletModel, walletUtils } from '@entities/wallet';
-import { networkModel, networkUtils } from '@entities/network';
-import { ChainTitle } from '@entities/chain';
-import { matrixModel } from '@entities/matrix';
 
 type MultisigAccountForm = {
   name: string;
