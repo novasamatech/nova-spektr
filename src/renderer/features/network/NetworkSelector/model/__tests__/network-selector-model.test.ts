@@ -1,11 +1,11 @@
 import { fork, allSettled } from 'effector';
 
 import { networkModel } from '@entities/network';
-import { manageNetworkModel } from '../manage-network-model';
 import { ConnectionType, Connection, RpcNode } from '@shared/core';
 import { storageService } from '@shared/api/storage';
+import { networkSelectorModel } from '../network-selector-model';
 
-describe('pages/Settings/Networks/model/manage-network-model', () => {
+describe('features/network/NetworkSelector/model', () => {
   const getMockConnection = (type: ConnectionType, activeNode?: RpcNode): Connection => ({
     id: 1,
     chainId: '0x01',
@@ -34,7 +34,7 @@ describe('pages/Settings/Networks/model/manage-network-model', () => {
       values: new Map().set(networkModel.$connections, { '0x01': mockConnection }),
     });
 
-    await allSettled(manageNetworkModel.events.chainDisabled, { scope, params: mockConnection.chainId });
+    await allSettled(networkSelectorModel.events.chainDisabled, { scope, params: mockConnection.chainId });
 
     expect(scope.getState(networkModel.$connections)).toEqual({ '0x01': updatedConnection });
   });
@@ -53,7 +53,7 @@ describe('pages/Settings/Networks/model/manage-network-model', () => {
       values: new Map().set(networkModel.$connections, { '0x01': mockConnection }),
     });
 
-    await allSettled(manageNetworkModel.events.lightClientSelected, { scope, params: mockConnection.chainId });
+    await allSettled(networkSelectorModel.events.lightClientSelected, { scope, params: mockConnection.chainId });
 
     expect(scope.getState(networkModel.$connections)).toEqual({ '0x01': updatedConnection });
   });
@@ -73,7 +73,7 @@ describe('pages/Settings/Networks/model/manage-network-model', () => {
       values: new Map().set(networkModel.$connections, { '0x01': mockConnection }),
     });
 
-    await allSettled(manageNetworkModel.events.rpcNodeSelected, {
+    await allSettled(networkSelectorModel.events.rpcNodeSelected, {
       scope,
       params: { chainId: mockConnection.chainId, node },
     });

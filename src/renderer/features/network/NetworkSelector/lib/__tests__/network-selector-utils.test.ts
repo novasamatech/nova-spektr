@@ -16,35 +16,57 @@ const defaultNetwork: ExtendedChain = {
     chainId: '0x123',
     canUseLightClient: false,
     connectionType: ConnectionType.AUTO_BALANCE,
-    customNodes: [{ url: 'wss://custom.io', name: 'node' }],
+    customNodes: [],
   },
 };
 
-describe('getConnectionOptions should return correct data', () => {
-  test('should return correct connection options', () => {
-    const options = networkSelectorUtils.getConnectionOptions(defaultNetwork);
-    expect(options.availableNodes).toEqual([
+describe('features/network/NetworkSelector/lib/network-selector-utils', () => {
+  test('should return correct ConnectionList array for defaultNetwork', () => {
+    const expected = [
       { type: ConnectionType.AUTO_BALANCE },
       { type: ConnectionType.DISABLED },
-      { type: ConnectionType.RPC_NODE, node: { url: 'wss://westend-rpc.polkadot.io', name: 'Parity node' } },
-      { type: ConnectionType.RPC_NODE, node: { url: 'wss://custom.io', name: 'node' } },
-    ]);
-    expect(options.selectedNode).toEqual({ type: ConnectionType.AUTO_BALANCE });
-    expect(options.isCustomNode('wss://custom.io')).toEqual(true);
-    expect(options.isCustomNode('http://unknownnode.com')).toEqual(false);
+      {
+        type: ConnectionType.RPC_NODE,
+        node: { url: 'wss://westend-rpc.polkadot.io', name: 'Parity node' },
+        isCustom: false,
+      },
+    ];
+    expect(networkSelectorUtils.getConnectionsList(defaultNetwork)).toEqual(expected);
   });
 
   test('should return light client option', () => {
-    const options = networkSelectorUtils.getConnectionOptions({
+    const nodeList = networkSelectorUtils.getConnectionsList({
       ...defaultNetwork,
       connection: { ...defaultNetwork.connection, canUseLightClient: true },
     });
-    expect(options.availableNodes).toEqual([
+    const expected = [
       { type: ConnectionType.LIGHT_CLIENT },
       { type: ConnectionType.AUTO_BALANCE },
       { type: ConnectionType.DISABLED },
-      { type: ConnectionType.RPC_NODE, node: { url: 'wss://westend-rpc.polkadot.io', name: 'Parity node' } },
-      { type: ConnectionType.RPC_NODE, node: { url: 'wss://custom.io', name: 'node' } },
-    ]);
+      {
+        type: ConnectionType.RPC_NODE,
+        node: { url: 'wss://westend-rpc.polkadot.io', name: 'Parity node' },
+        isCustom: false,
+      },
+    ];
+    expect(nodeList).toEqual(expected);
+  });
+
+  test('should return custom node', () => {
+    const nodeList = networkSelectorUtils.getConnectionsList({
+      ...defaultNetwork,
+      connection: { ...defaultNetwork.connection, customNodes: [{ url: 'wss://custom.io', name: 'node' }] },
+    });
+    const expected = [
+      { type: ConnectionType.AUTO_BALANCE },
+      { type: ConnectionType.DISABLED },
+      {
+        type: ConnectionType.RPC_NODE,
+        node: { url: 'wss://westend-rpc.polkadot.io', name: 'Parity node' },
+        isCustom: false,
+      },
+      { type: ConnectionType.RPC_NODE, node: { url: 'wss://custom.io', name: 'node' }, isCustom: true },
+    ];
+    expect(nodeList).toEqual(expected);
   });
 });

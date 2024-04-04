@@ -6,8 +6,8 @@ export type SelectorPayload = {
   node?: RpcNode;
 };
 
-export type ConnectionOptions = {
-  availableNodes: SelectorPayload[];
-  selectedNode?: SelectorPayload;
-  isCustomNode: (url: string) => boolean;
+export type ConnectionList = {
+  type: ConnectionType;
+  node?: RpcNode;
+  isCustom?: boolean;
 };
