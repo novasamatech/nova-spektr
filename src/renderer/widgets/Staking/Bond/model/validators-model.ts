@@ -1,5 +1,4 @@
-import { createEvent, combine, sample, restore, createStore } from 'effector';
-import { createEffect } from 'effector/effector.cjs';
+import { createEvent, createEffect, combine, sample, restore, createStore } from 'effector';
 import { ApiPromise } from '@polkadot/api';
 
 import { Chain, Asset } from '@shared/core';

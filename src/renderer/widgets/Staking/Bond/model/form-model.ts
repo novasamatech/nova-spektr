@@ -16,6 +16,7 @@ import {
   formatAmount,
   isStringsMatchQuery,
   TEST_ADDRESS,
+  stakeableAmount,
 } from '@shared/lib/utils';
 import {
   Transaction,
@@ -95,8 +96,8 @@ const $bondForm = createForm<FormParams>({
           },
         },
         {
-          name: 'noUnstakeBalance',
-          errorText: 'No unstake balance',
+          name: 'noBondBalance',
+          errorText: 'staking.bond.noBondBalanceError',
           source: combine({
             isProxy: $isProxy,
             network: $networkStore,
@@ -107,7 +108,7 @@ const $bondForm = createForm<FormParams>({
 
             const amountBN = new BN(formatAmount(form.amount, network.asset.precision));
 
-            return shards.every((_, index) => amountBN.lte(new BN(accountsBalances[index].stake)));
+            return shards.every((_, index) => amountBN.lte(new BN(accountsBalances[index].stakeable)));
           },
         },
       ],
@@ -155,35 +156,40 @@ const $bondForm = createForm<FormParams>({
           errorText: 'transfer.requiredAmountError',
           validator: (value) => value !== '0',
         },
-        // {
-        //   name: 'notEnoughBalance',
-        //   errorText: 'transfer.notEnoughBalanceError',
-        //   source: combine({
-        //     network: $networkStore,
-        //     unstakeBalanceRange: $unstakeBalanceRange,
-        //   }),
-        //   validator: (value, _, { network, unstakeBalanceRange }) => {
-        //     const amountBN = new BN(formatAmount(value, network.asset.precision));
-        //     const unstakeBalance = Array.isArray(unstakeBalanceRange) ? unstakeBalanceRange[1] : unstakeBalanceRange;
-        //
-        //     return amountBN.lte(new BN(unstakeBalance));
-        //   },
-        // },
-        // {
-        //   name: 'insufficientBalanceForFee',
-        //   errorText: 'transfer.notEnoughBalanceForFeeError',
-        //   source: combine({
-        //     network: $networkStore,
-        //     accountsBalances: $accountsBalances,
-        //   }),
-        //   validator: (value, form, { network, accountsBalances }) => {
-        //     const amountBN = new BN(formatAmount(value, network.asset.precision));
-        //
-        //     return form.shards.every((_: Account, index: number) => {
-        //       return amountBN.lte(new BN(accountsBalances[index].balance));
-        //     });
-        //   },
-        // },
+        {
+          name: 'notEnoughBalance',
+          errorText: 'transfer.notEnoughBalanceError',
+          source: combine({
+            network: $networkStore,
+            bondBalanceRange: $bondBalanceRange,
+          }),
+          validator: (value, _, { network, bondBalanceRange }) => {
+            const amountBN = new BN(formatAmount(value, network.asset.precision));
+            const bondBalance = Array.isArray(bondBalanceRange) ? bondBalanceRange[1] : bondBalanceRange;
+
+            return amountBN.lte(new BN(bondBalance));
+          },
+        },
+        {
+          name: 'insufficientBalanceForFee',
+          errorText: 'transfer.notEnoughBalanceForFeeError',
+          source: combine({
+            fee: $fee,
+            isMultisig: $isMultisig,
+            network: $networkStore,
+            accountsBalances: $accountsBalances,
+          }),
+          validator: (value, form, { network, fee, isMultisig, accountsBalances }) => {
+            if (isMultisig) return true;
+
+            const feeBN = new BN(fee);
+            const amountBN = new BN(formatAmount(value, network.asset.precision));
+
+            return form.shards.every((_: Account, index: number) => {
+              return amountBN.add(feeBN).lte(new BN(accountsBalances[index].stakeable));
+            });
+          },
+        },
       ],
     },
     destination: {
@@ -292,7 +298,7 @@ const $accounts = combine(
     return shards.map((shard) => {
       const balance = balanceUtils.getBalance(balances, shard.accountId, chain.chainId, asset.assetId.toString());
 
-      return { account: shard, balance: transferableAmount(balance) };
+      return { account: shard, balance: stakeableAmount(balance) };
     });
   },
 );
@@ -453,22 +459,36 @@ sample({
   target: $bondForm.fields.shards.onChange,
 });
 
-// sample({
-//   source: {
-//     accounts: $accounts,
-//     shards: $bondForm.fields.shards.$value,
-//   },
-//   fn: ({ accounts, shards }) => {
-//     return accounts.reduce<{ balance: string; stake: string }[]>((acc, { account, balance }) => {
-//       if (shards.includes(account)) {
-//         acc.push(balance);
-//       }
-//
-//       return acc;
-//     }, []);
-//   },
-//   target: $accountsBalances,
-// });
+sample({
+  source: {
+    accounts: $accounts,
+    shards: $bondForm.fields.shards.$value,
+  },
+  fn: ({ accounts, shards }) => {
+    return accounts.reduce<string[]>((acc, { account, balance }) => {
+      if (shards.includes(account)) acc.push(balance);
+
+      return acc;
+    }, []);
+  },
+  target: $accountsBalances,
+});
+
+sample({
+  source: $accountsBalances,
+  fn: (accountsBalances) => {
+    if (accountsBalances.length === 0) return '0';
+
+    const minBondBalance = accountsBalances.reduce<string>((acc, balance) => {
+      if (!balance) return acc;
+
+      return new BN(balance).lt(new BN(acc)) ? balance : acc;
+    }, accountsBalances[0]);
+
+    return minBondBalance === '0' ? '0' : ['0', minBondBalance];
+  },
+  target: $bondBalanceRange,
+});
 
 sample({
   clock: $bondForm.fields.signatory.onChange,

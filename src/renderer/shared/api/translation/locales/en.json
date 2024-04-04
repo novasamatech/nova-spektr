@@ -879,6 +879,7 @@
       "goToStakingButton": "Back to Staking",
       "incorrectAddressError": "Please enter correct address",
       "manyAccountsPlaceholder": "Multiple accounts selected",
+      "noBondBalanceError": "Some accounts have not enough balance",
       "noStakingAssetDescription": "No staking asset was found for { chainName }",
       "noStakingAssetLabel": "No staking asset",
       "payoutAccountLabel": "Payout account",
@@ -1011,6 +1012,7 @@
     "unstake": {
       "confirmUnstakeSubtitle": "Confirmation",
       "initUnstakeSubtitle": "Unstake",
+      "noUnstakeBalanceError": "Some accounts have not enough balance",
       "stakedPlaceholder": "Staked",
       "title": "Unstake { asset } on",
       "transferable": "Transferable"

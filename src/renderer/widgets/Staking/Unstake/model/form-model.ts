@@ -94,7 +94,7 @@ const $unstakeForm = createForm<FormParams>({
         },
         {
           name: 'noUnstakeBalance',
-          errorText: 'No unstake balance',
+          errorText: 'staking.unstake.noUnstakeBalanceError',
           source: combine({
             isProxy: $isProxy,
             network: $networkStore,
