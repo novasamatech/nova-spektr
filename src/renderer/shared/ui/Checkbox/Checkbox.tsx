@@ -5,7 +5,6 @@ import { cnTw } from '@shared/lib/utils';
 import './Checkbox.css';
 
 type Props = {
-  defaultChecked?: boolean;
   position?: 'right' | 'left';
   checked?: boolean;
   semiChecked?: boolean;
@@ -20,7 +19,6 @@ type Props = {
 export const Checkbox = ({
   checked,
   semiChecked,
-  defaultChecked,
   position = 'right',
   disabled,
   readOnly,
@@ -35,7 +33,6 @@ export const Checkbox = ({
     <input
       type="checkbox"
       name="checkbox"
-      defaultChecked={defaultChecked}
       disabled={disabled}
       readOnly={readOnly}
       checked={checked}

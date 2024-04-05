@@ -7,9 +7,11 @@ import { useI18n } from '@app/providers';
 import { Transaction, TransactionType, OperationError } from '@entities/transaction';
 import type { Account, Asset, Balance as AccountBalance, ChainId, AccountId, Wallet } from '@shared/core';
 import { redeemableAmount, formatBalance, nonNullable, toAddress } from '@shared/lib/utils';
-import { StakingMap, useStakingData, useEra } from '@entities/staking';
+import { StakingMap, useStakingData } from '@entities/staking';
 import { OperationFooter, OperationHeader } from '@features/operations';
 import { walletModel, accountUtils, walletUtils } from '@entities/wallet';
+import { eraService } from '@entities/staking/api';
+import { useAssetBalances } from '@entities/balance';
 import { OperationForm } from '../../components';
 import {
   getSignatoryOption,
@@ -17,7 +19,6 @@ import {
   validateBalanceForFeeDeposit,
   getRedeemAccountOption,
 } from '../../common/utils';
-import { useAssetBalances } from '@entities/balance';
 
 export type RedeemResult = {
   accounts: Account[];
@@ -40,7 +41,6 @@ const InitOperation = ({ api, chainId, accounts, addressPrefix, asset, onResult 
   const activeWallet = useUnit(walletModel.$activeWallet);
 
   const { subscribeStaking } = useStakingData();
-  const { subscribeActiveEra } = useEra();
 
   const [fee, setFee] = useState('');
   const [feeLoading, setFeeLoading] = useState(true);
@@ -94,7 +94,7 @@ const InitOperation = ({ api, chainId, accounts, addressPrefix, asset, onResult 
     let unsubEra: () => void | undefined;
     let unsubStaking: () => void | undefined;
     (async () => {
-      unsubEra = await subscribeActiveEra(api, setEra);
+      unsubEra = await eraService.subscribeActiveEra(api, setEra);
       unsubStaking = await subscribeStaking(chainId, api, addresses, setStaking);
     })();
 

@@ -28,6 +28,7 @@ export const Bond = () => {
     <BaseModal
       closeButton
       contentClass=""
+      panelClass="w-max"
       isOpen={isModalOpen}
       title={
         <OperationTitle
@@ -38,11 +39,9 @@ export const Bond = () => {
       onClose={closeModal}
     >
       {bondUtils.isInitStep(step) && <BondForm onGoBack={closeModal} />}
-      {bondUtils.isValidatorsStep(step) && <Validators onGoBack={closeModal} />}
-      {bondUtils.isConfirmStep(step) && <Confirmation onGoBack={() => bondModel.events.stepChanged(Step.INIT)} />}
-      {bondUtils.isSignStep(step) && (
-        <OperationSign onGoBack={() => bondModel.events.stepChanged(Step.CONFIRM)} />
-      )}
+      {bondUtils.isValidatorsStep(step) && <Validators onGoBack={() => bondModel.events.stepChanged(Step.INIT)} />}
+      {bondUtils.isConfirmStep(step) && <Confirmation onGoBack={() => bondModel.events.stepChanged(Step.VALIDATORS)} />}
+      {bondUtils.isSignStep(step) && <OperationSign onGoBack={() => bondModel.events.stepChanged(Step.CONFIRM)} />}
     </BaseModal>
   );
 };

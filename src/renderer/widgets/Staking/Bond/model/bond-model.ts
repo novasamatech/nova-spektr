@@ -63,9 +63,9 @@ sample({
   clock: formModel.output.formSubmitted,
   source: $networkStore,
   filter: (network: NetworkStore | null): network is NetworkStore => Boolean(network),
-  fn: ({ chain }, { formData }) => ({
-    event: { ...formData, chain, asset: getRelaychainAsset(chain.assets)! },
-    step: Step.CONFIRM,
+  fn: ({ chain }) => ({
+    event: { chain, asset: getRelaychainAsset(chain.assets)! },
+    step: Step.VALIDATORS,
   }),
   target: spread({
     event: validatorsModel.events.formInitiated,
@@ -150,7 +150,7 @@ sample({
 sample({
   clock: flowFinished,
   fn: () => Step.NONE,
-  target: [stepChanged, formModel.events.formCleared],
+  target: [stepChanged, formModel.events.formCleared, validatorsModel.events.formCleared],
 });
 
 export const bondModel = {
