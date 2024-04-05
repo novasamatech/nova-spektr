@@ -15,6 +15,7 @@ import { Chain, ProxiedAccount, ProxyType, ProxyVariant } from '@shared/core';
 import { signModel } from '@features/operations/OperationSign/model/sign-model';
 import { submitModel } from '@features/operations/OperationSubmit';
 import { proxyModel } from '@/src/renderer/entities/proxy';
+import { toAccountId } from '@/src/renderer/features/proxies/lib/worker-utils';
 
 const stepChanged = createEvent<Step>();
 
@@ -268,17 +269,15 @@ sample({
 sample({
   clock: submitModel.output.formSubmitted,
   source: {
-    chain: $chain,
-    account: $account,
+    store: $removeProxyStore,
     chainProxies: walletProviderModel.$chainsProxies,
   },
-  filter: ({ chain, account }) => Boolean(chain) && Boolean(account),
-  fn: ({ chainProxies, account, chain }) => {
-    const proxy = chainProxies[chain!.chainId].find(
+  fn: ({ store, chainProxies }) => {
+    const proxy = chainProxies[store!.chain.chainId].find(
       (proxy) =>
-        proxy.accountId === (account as ProxiedAccount).proxyAccountId &&
-        proxy.proxyType === (account as ProxiedAccount).proxyType &&
-        proxy.proxiedAccountId === account!.accountId,
+        proxy.accountId === toAccountId(store!.delegate) &&
+        proxy.proxyType === store!.proxyType &&
+        proxy.proxiedAccountId === store!.account.accountId,
     );
 
     return proxy ? [proxy] : [];
