@@ -70,12 +70,12 @@ describe('features/network/NetworkSelector/lib/network-selector-utils', () => {
     expect(nodeList).toEqual(expected);
   });
 
-  test('should return false if for canDeleteNode if node is selected', () => {
+  test('should return false for canDeleteNode if node is selected', () => {
     expect(
       networkSelectorUtils.canDeleteNode('wss://westend-rpc.polkadot.io', 'wss://westend-rpc.polkadot.io'),
     ).toEqual(false);
   });
-  test('should return true if for canDeleteNode if node is  not selected', () => {
+  test('should return true for canDeleteNode if node is not selected', () => {
     expect(networkSelectorUtils.canDeleteNode('wss://westend-rpc.polkadot.io', 'wss://node-rpc.polkadot.io')).toEqual(
       true,
     );
