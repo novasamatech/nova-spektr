@@ -5,7 +5,7 @@ import { ConnectionType, Connection, RpcNode } from '@shared/core';
 import { storageService } from '@shared/api/storage';
 import { networkSelectorModel } from '../network-selector-model';
 
-describe('features/network/NetworkSelector/model', () => {
+describe('features/network/NetworkSelector/model/network-selector-model', () => {
   const getMockConnection = (type: ConnectionType, activeNode?: RpcNode): Connection => ({
     id: 1,
     chainId: '0x01',

@@ -5,13 +5,14 @@ import { TFunction } from 'react-i18next';
 import { cnTw } from '@shared/lib/utils';
 import { Icon, FootnoteText, IconButton, Button, HelpText } from '@shared/ui';
 import { useI18n } from '@app/providers';
-import type { ConnectionList, SelectorPayload } from '../lib/types';
 import { SelectButtonStyle, OptionStyle } from '@shared/ui/Dropdowns/common/constants';
 import { useScrollTo } from '@shared/lib/hooks';
 import { CommonInputStyles, CommonInputStylesTheme } from '@shared/ui/Inputs/common/styles';
 import { ConnectionType } from '@shared/core';
+import { networkSelectorUtils } from '../lib/network-selector-utils';
 import type { Theme } from '@shared/ui/types';
 import type { RpcNode } from '@shared/core';
+import type { ConnectionItem, SelectorPayload } from '../lib/types';
 
 const OptionsContainerStyle =
   'mt-1 absolute z-20 py-1 px-1 w-full border border-token-container-border rounded bg-input-background shadow-card-shadow';
@@ -34,8 +35,8 @@ const Title = {
 };
 
 type Props = {
-  nodesList: ConnectionList[];
-  selectedConnection?: ConnectionList;
+  nodesList: ConnectionItem[];
+  selectedConnection?: ConnectionItem;
   theme?: Theme;
   onChange: (value: SelectorPayload) => void;
   onRemoveCustomNode: (node: RpcNode) => void;
@@ -113,7 +114,7 @@ export const NetworkSelector = ({
                                 onChangeCustomNode(node);
                               }}
                             />
-                            {selectedConnection?.node?.url !== node.url && (
+                            {networkSelectorUtils.canDeleteNode(node.url, selectedConnection?.node?.url) && (
                               <IconButton
                                 name="delete"
                                 onClick={(event) => {

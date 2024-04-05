@@ -1,12 +1,13 @@
 import { ExtendedChain } from '@entities/network';
 import { ConnectionType } from '@shared/core';
-import { ConnectionList } from './types';
+import { ConnectionItem } from './types';
 
 export const networkSelectorUtils = {
   getConnectionsList,
+  canDeleteNode,
 };
 
-function getConnectionsList(networkItem: ExtendedChain): ConnectionList[] {
+function getConnectionsList(networkItem: ExtendedChain): ConnectionItem[] {
   const { connection, nodes } = networkItem;
   const { canUseLightClient, customNodes } = connection;
 
@@ -16,8 +17,20 @@ function getConnectionsList(networkItem: ExtendedChain): ConnectionList[] {
     { type: ConnectionType.DISABLED },
   ];
 
-  const customs = (customNodes || []).map((node) => ({ node, type: ConnectionType.RPC_NODE, isCustom: true }));
-  const nodesWithType = nodes.map((node) => ({ node, type: ConnectionType.RPC_NODE, isCustom: false }));
+  const customs = (customNodes || []).map((node) => ({
+    node,
+    type: ConnectionType.RPC_NODE,
+    isCustom: true,
+  }));
+  const nodesWithType = nodes.map((node) => ({
+    node,
+    type: ConnectionType.RPC_NODE,
+    isCustom: false,
+  }));
 
   return [...actionNodes, ...nodesWithType, ...customs];
+}
+
+function canDeleteNode(nodeUrl: string, selectedConnectionUrl?: string): boolean {
+  return selectedConnectionUrl !== nodeUrl;
 }
