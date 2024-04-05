@@ -286,21 +286,6 @@ sample({
 });
 
 sample({
-  clock: submitModel.output.formSubmitted,
-  source: {
-    wallet: walletSelectModel.$walletForDetails,
-    chainProxies: walletProviderModel.$chainsProxies,
-  },
-  filter: ({ chainProxies, wallet }) => {
-    const proxies = Object.values(chainProxies).flat();
-
-    return Boolean(wallet) && proxies.length === 1;
-  },
-  fn: ({ wallet }) => wallet!.id,
-  target: walletModel.events.walletRemoved,
-});
-
-sample({
   clock: delay(submitModel.output.formSubmitted, 2000),
   target: flowFinished,
 });
