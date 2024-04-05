@@ -21,10 +21,10 @@ const flowFinished = createEvent();
 
 const $step = createStore<Step>(Step.NONE);
 
-const $addProxyStore = createStore<AddProxyStore | null>(null);
-const $wrappedTx = createStore<Transaction | null>(null);
-const $coreTx = createStore<Transaction | null>(null);
-const $multisigTx = createStore<Transaction | null>(null);
+const $addProxyStore = createStore<AddProxyStore | null>(null).reset(flowFinished);
+const $wrappedTx = createStore<Transaction | null>(null).reset(flowFinished);
+const $coreTx = createStore<Transaction | null>(null).reset(flowFinished);
+const $multisigTx = createStore<Transaction | null>(null).reset(flowFinished);
 
 sample({ clock: stepChanged, target: $step });
 

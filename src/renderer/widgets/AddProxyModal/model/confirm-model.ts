@@ -22,7 +22,7 @@ type Input = {
 const formInitiated = createEvent<Input>();
 const formSubmitted = createEvent();
 
-const $confirmStore = restore<Input>(formInitiated, null);
+const $confirmStore = restore<Input>(formInitiated, null).reset(formSubmitted);
 
 const $api = combine(
   {

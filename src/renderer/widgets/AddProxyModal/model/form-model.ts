@@ -71,19 +71,19 @@ const feeChanged = createEvent<string>();
 const isFeeLoadingChanged = createEvent<boolean>();
 const isProxyDepositLoadingChanged = createEvent<boolean>();
 
-const $fee = createStore<string>('0');
-const $oldProxyDeposit = createStore<string>('0');
-const $newProxyDeposit = createStore<string>('0');
-const $multisigDeposit = createStore<string>('0');
-const $isFeeLoading = createStore<boolean>(true);
-const $isProxyDepositLoading = createStore<boolean>(true);
+const $fee = createStore<string>('0').reset(formSubmitted);
+const $oldProxyDeposit = createStore<string>('0').reset(formSubmitted);
+const $newProxyDeposit = createStore<string>('0').reset(formSubmitted);
+const $multisigDeposit = createStore<string>('0').reset(formSubmitted);
+const $isFeeLoading = createStore<boolean>(true).reset(formSubmitted);
+const $isProxyDepositLoading = createStore<boolean>(true).reset(formSubmitted);
 
-const $proxyQuery = createStore<string>('');
-const $maxProxies = createStore<number>(0);
-const $activeProxies = createStore<ProxyAccounts['accounts']>([]);
+const $proxyQuery = createStore<string>('').reset(formSubmitted);
+const $maxProxies = createStore<number>(0).reset(formSubmitted);
+const $activeProxies = createStore<ProxyAccounts['accounts']>([]).reset(formSubmitted);
 
-const $isMultisig = createStore<boolean>(false);
-const $isProxy = createStore<boolean>(false);
+const $isMultisig = createStore<boolean>(false).reset(formSubmitted);
+const $isProxy = createStore<boolean>(false).reset(formSubmitted);
 
 const $proxyForm = createForm<FormParams>({
   fields: {

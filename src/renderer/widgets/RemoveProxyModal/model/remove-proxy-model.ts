@@ -86,17 +86,20 @@ sample({
   clock: flowStarted,
   source: {
     proxyAccount: walletProviderModel.$proxyForRemoval,
+    selectedWallet: walletSelectModel.$walletForDetails,
     wallets: walletModel.$wallets,
     chains: networkModel.$chains,
     allAccounts: walletModel.$accounts,
   },
   filter: ({ proxyAccount }) => Boolean(proxyAccount),
-  fn: ({ chains, proxyAccount, allAccounts }) => {
+  fn: ({ chains, selectedWallet, proxyAccount, allAccounts }) => {
     const chain = chains[proxyAccount!.chainId];
+    const proxiedSelected = walletUtils.isProxied(selectedWallet);
 
-    const signerAccount = allAccounts.find((a) => a.accountId === proxyAccount!.accountId);
-    const account = allAccounts.find(
-      (a) => accountUtils.isProxiedAccount(a) && a.accountId === proxyAccount!.proxiedAccountId,
+    const account = allAccounts.find((a) =>
+      a.accountId === proxyAccount!.proxiedAccountId && proxiedSelected
+        ? accountUtils.isProxiedAccount(a)
+        : a.walletId === selectedWallet!.id,
     );
 
     const store = {
@@ -106,7 +109,7 @@ sample({
       proxyType: proxyAccount!.proxyType,
       delay: proxyAccount!.delay,
       description: '',
-      signatory: signerAccount,
+      signatory: account,
     };
 
     return store;
@@ -188,18 +191,18 @@ sample({
 
 sample({
   clock: formModel.output.formSubmitted,
-  source: { transaction: $transaction, chain: $chain, account: $account },
-  filter: ({ transaction, chain, account }) => {
-    return Boolean(transaction) && Boolean(chain) && Boolean(account);
+  source: { transaction: $transaction, chain: $chain, account: $account, store: $removeProxyStore },
+  filter: ({ transaction, chain, account, store }) => {
+    return Boolean(transaction) && Boolean(chain) && Boolean(account) && Boolean(store);
   },
-  fn: ({ transaction, chain, account }, formData) => ({
+  fn: ({ transaction, chain, account, store }, formData) => ({
     event: {
       ...formData,
       chain: chain as Chain,
-      account: account as ProxiedAccount,
+      account,
       transaction: transaction as Transaction,
-      delegate: (account as ProxiedAccount).proxyAccountId,
-      proxyType: ProxyType.ANY,
+      delegate: store!.delegate,
+      proxyType: store!.proxyType,
     },
     step: Step.CONFIRM,
   }),
