@@ -45,9 +45,9 @@ describe('pages/Settings/Networks/model/networks-overview-model', () => {
 
     await allSettled(activeNetworksModel.events.networksChanged, { scope, params: chains });
 
-    const enabledNodeListMap = scope.getState(networksOverviewModel.$enabledNodeListMap);
+    const activeConnectionsMap = scope.getState(networksOverviewModel.$activeConnectionsMap);
 
-    expect(enabledNodeListMap).toEqual(expected);
+    expect(activeConnectionsMap).toEqual(expected);
   });
 
   test('should correctly map disabled networks to their connection lists', async () => {
@@ -64,8 +64,8 @@ describe('pages/Settings/Networks/model/networks-overview-model', () => {
 
     await allSettled(inactiveNetworksModel.events.networksChanged, { scope, params: chains });
 
-    const disabledNodeListMap = scope.getState(networksOverviewModel.$disabledNodeListMap);
+    const inactiveConnectionsMap = scope.getState(networksOverviewModel.$inactiveConnectionsMap);
 
-    expect(disabledNodeListMap).toEqual(expected);
+    expect(inactiveConnectionsMap).toEqual(expected);
   });
 });
