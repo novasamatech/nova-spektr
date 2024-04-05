@@ -42,8 +42,8 @@ export const Networks = () => {
   const inactiveNetworks = useUnit(inactiveNetworksModel.$inactiveNetworks);
   const connections = useUnit(networkModel.$connections);
   const filterQuery = useUnit(networksFilterModel.$filterQuery);
-  const enabledNodeListMap = useUnit(networksOverviewModel.$enabledNodeListMap);
-  const disabledNodeListMap = useUnit(networksOverviewModel.$disabledNodeListMap);
+  const activeConnectionsMap = useUnit(networksOverviewModel.$activeConnectionsMap);
+  const inactiveConnectionsMap = useUnit(networksOverviewModel.$inactiveConnectionsMap);
 
   const [isCustomRpcOpen, toggleCustomRpc] = useToggle();
   const [isNetworksModalOpen, toggleNetworksModal] = useToggle(true);
@@ -214,8 +214,8 @@ export const Networks = () => {
           {(network) => (
             <InactiveNetwork networkItem={network}>
               <NetworkSelector
-                nodesList={disabledNodeListMap[network.chainId].nodes}
-                selectedConnection={disabledNodeListMap[network.chainId].selectedNode}
+                nodesList={inactiveConnectionsMap[network.chainId].nodes}
+                selectedConnection={inactiveConnectionsMap[network.chainId].selectedNode}
                 onChange={changeConnection(network)}
                 onRemoveCustomNode={removeCustomNode(network.chainId)}
                 onChangeCustomNode={changeCustomNode(network)}
@@ -232,8 +232,8 @@ export const Networks = () => {
           {(network) => (
             <ActiveNetwork networkItem={network}>
               <NetworkSelector
-                nodesList={enabledNodeListMap[network.chainId].nodes}
-                selectedConnection={enabledNodeListMap[network.chainId].selectedNode}
+                nodesList={activeConnectionsMap[network.chainId].nodes}
+                selectedConnection={activeConnectionsMap[network.chainId].selectedNode}
                 onChange={changeConnection(network)}
                 onRemoveCustomNode={removeCustomNode(network.chainId)}
                 onChangeCustomNode={changeCustomNode(network)}

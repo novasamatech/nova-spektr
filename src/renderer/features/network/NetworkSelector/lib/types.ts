@@ -6,7 +6,7 @@ export type SelectorPayload = {
   node?: RpcNode;
 };
 
-export type ConnectionList = {
+export type ConnectionItem = {
   type: ConnectionType;
   node?: RpcNode;
   isCustom?: boolean;

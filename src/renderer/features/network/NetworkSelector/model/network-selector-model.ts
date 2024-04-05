@@ -1,7 +1,6 @@
-import { createEvent, sample, createEffect, attach } from 'effector';
+import { createEvent, sample, attach } from 'effector';
 import { delay, spread } from 'patronum';
 
-import { ProviderWithMetadata } from '@/src/renderer/shared/api/network';
 import { networkModel, networkUtils } from '@entities/network';
 import { ChainId, ConnectionType, RpcNode } from '@shared/core';
 
@@ -10,21 +9,8 @@ const autoBalanceSelected = createEvent<ChainId>();
 const rpcNodeSelected = createEvent<{ chainId: ChainId; node: RpcNode }>();
 const chainDisabled = createEvent<ChainId>();
 
-const updateConnectionFx = networkModel.effects.updateConnectionFx;
-
-type DisconnectParams = {
-  chainId: ChainId;
-  providers: Record<ChainId, ProviderWithMetadata>;
-};
-const disconnectProviderFx = createEffect(async ({ chainId, providers }: DisconnectParams): Promise<ChainId> => {
-  await providers[chainId].disconnect();
-
-  providers[chainId].on('connected', () => undefined);
-  providers[chainId].on('disconnected', () => undefined);
-  providers[chainId].on('error', () => undefined);
-
-  return chainId;
-});
+const updateConnectionFx = attach({ effect: networkModel.effects.updateConnectionFx });
+const disconnectProviderFx = attach({ effect: networkModel.effects.disconnectProviderFx });
 
 const reconnectProviderFx = attach({ effect: disconnectProviderFx });
 
@@ -67,6 +53,7 @@ sample({
   fn: (connections, chainId) => ({
     ...connections[chainId],
     connectionType: ConnectionType.DISABLED,
+    activeNode: undefined,
   }),
   target: updateConnectionFx,
 });

@@ -1,6 +1,7 @@
 import { createEvent, sample, attach } from 'effector';
+import { spread } from 'patronum';
 
-import { networkModel } from '@entities/network';
+import { networkModel, networkUtils } from '@entities/network';
 import { ChainId, RpcNode } from '@shared/core';
 
 // TODO: create 2 features for Network selection & Manage custom RPC
@@ -14,10 +15,11 @@ const rpcNodeAdded = createEvent<NodeEventParams>();
 const rpcNodeUpdated = createEvent<NodeEventParams>();
 const rpcNodeRemoved = createEvent<NodeEventParams>();
 
-const updateConnectionFx = networkModel.effects.updateConnectionFx;
+const updateConnectionFx = attach({ effect: networkModel.effects.updateConnectionFx });
 
 const addRpcNodeFx = attach({ effect: updateConnectionFx });
 const removeRpcNodeFx = attach({ effect: updateConnectionFx });
+const reconnectProviderFx = attach({ effect: networkModel.effects.disconnectProviderFx });
 
 sample({
   clock: rpcNodeAdded,
@@ -77,6 +79,34 @@ sample({
     activeNode: chains[connection.chainId].nodes[0],
   }),
   target: updateConnectionFx,
+});
+
+sample({
+  clock: updateConnectionFx.doneData,
+  source: networkModel.$connections,
+  filter: (connection) => Boolean(connection),
+  fn: (connections, connection) => ({
+    ...connections,
+    [connection!.chainId]: connection,
+  }),
+  target: networkModel.$connections,
+});
+
+sample({
+  clock: updateConnectionFx.doneData,
+  source: networkModel.$providers,
+  filter: (_, connection) => {
+    return Boolean(connection) && networkUtils.isEnabledConnection(connection!);
+  },
+  fn: (providers, connection) => {
+    const chainId = connection!.chainId;
+
+    return providers[chainId] ? { reconnect: { chainId, providers } } : { start: chainId };
+  },
+  target: spread({
+    start: networkModel.events.chainConnected,
+    reconnect: reconnectProviderFx,
+  }),
 });
 
 export const manageNetworkModel = {

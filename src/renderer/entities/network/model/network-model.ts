@@ -101,6 +101,20 @@ const updateConnectionFx = createEffect((connection: Connection): Promise<Connec
   return storageService.connections.put(connection);
 });
 
+type DisconnectParams = {
+  chainId: ChainId;
+  providers: Record<ChainId, ProviderWithMetadata>;
+};
+const disconnectProviderFx = createEffect(async ({ chainId, providers }: DisconnectParams): Promise<ChainId> => {
+  await providers[chainId].disconnect();
+
+  providers[chainId].on('connected', () => undefined);
+  providers[chainId].on('disconnected', () => undefined);
+  providers[chainId].on('error', () => undefined);
+
+  return chainId;
+});
+
 type CreateProviderParams = {
   chainId: ChainId;
   nodes: string[];
@@ -407,5 +421,6 @@ export const networkModel = {
   },
   effects: {
     updateConnectionFx,
+    disconnectProviderFx,
   },
 };

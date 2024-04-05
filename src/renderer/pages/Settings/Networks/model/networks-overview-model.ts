@@ -1,31 +1,22 @@
 import { sample, combine } from 'effector';
 
-import { ChainId, ConnectionType, RpcNode } from '@shared/core';
+import { ChainId } from '@shared/core';
+import type { ConnectionItem } from '@features/network/NetworkSelector';
 import {
   networksFilterModel,
   activeNetworksModel,
   inactiveNetworksModel,
   networkSelectorUtils,
 } from '@features/network';
-import { ConnectionList } from '@/src/renderer/features/network/NetworkSelector';
+import { Predicates } from '../lib/constants';
 
 sample({
   clock: networksFilterModel.$filteredNetworks,
   target: [activeNetworksModel.events.networksChanged, inactiveNetworksModel.events.networksChanged],
 });
 
-const Predicates: Record<
-  ConnectionType,
-  (data: { type: ConnectionType; node?: RpcNode }, active?: RpcNode) => boolean
-> = {
-  [ConnectionType.LIGHT_CLIENT]: (data) => data.type === ConnectionType.LIGHT_CLIENT,
-  [ConnectionType.AUTO_BALANCE]: (data) => data.type === ConnectionType.AUTO_BALANCE,
-  [ConnectionType.DISABLED]: (data) => data.type === ConnectionType.DISABLED,
-  [ConnectionType.RPC_NODE]: (data, active) => data.node?.url === active?.url,
-};
-
-const $enabledNodeListMap = combine(activeNetworksModel.$activeNetworks, (list) => {
-  return list.reduce<Record<ChainId, { nodes: ConnectionList[]; selectedNode?: ConnectionList }>>((acc, item) => {
+const $activeConnectionsMap = combine(activeNetworksModel.$activeNetworks, (list) => {
+  return list.reduce<Record<ChainId, { nodes: ConnectionItem[]; selectedNode?: ConnectionItem }>>((acc, item) => {
     const nodes = networkSelectorUtils.getConnectionsList(item);
     const selectedNode = nodes.find((node) =>
       Predicates[item.connection.connectionType]({ type: node.type, node: node.node }, item.connection.activeNode),
@@ -37,10 +28,10 @@ const $enabledNodeListMap = combine(activeNetworksModel.$activeNetworks, (list) 
   }, {});
 });
 
-const $disabledNodeListMap = combine(inactiveNetworksModel.$inactiveNetworks, (list) => {
-  return list.reduce<Record<ChainId, { nodes: ConnectionList[]; selectedNode?: ConnectionList }>>((acc, item) => {
+const $inactiveConnectionsMap = combine(inactiveNetworksModel.$inactiveNetworks, (list) => {
+  return list.reduce<Record<ChainId, { nodes: ConnectionItem[]; selectedNode: ConnectionItem }>>((acc, item) => {
     const nodes = networkSelectorUtils.getConnectionsList(item);
-    const selectedNode = nodes.find((node) => node.type === item.connection.connectionType);
+    const selectedNode = nodes.find((node) => node.type === item.connection.connectionType)!;
 
     acc[item.chainId] = { nodes, selectedNode };
 
@@ -49,6 +40,6 @@ const $disabledNodeListMap = combine(inactiveNetworksModel.$inactiveNetworks, (l
 });
 
 export const networksOverviewModel = {
-  $enabledNodeListMap,
-  $disabledNodeListMap,
+  $activeConnectionsMap,
+  $inactiveConnectionsMap,
 };
