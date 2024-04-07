@@ -42,7 +42,7 @@ type RowProps = {
   explorers?: Explorer[];
 };
 
-const ValidatorRow = ({ validator, explorers = [], asset }: RowProps) => (
+const ValidatorRow = ({ validator, asset, explorers = [] }: RowProps) => (
   <>
     <div className="flex gap-x-2 items-center mr-auto" data-testid="validator">
       <Identicon address={validator.address} background={false} size={20} />
@@ -76,27 +76,17 @@ const ValidatorRow = ({ validator, explorers = [], asset }: RowProps) => (
   </>
 );
 
-const ValidatorShortRow = ({ validator, explorers = [] }: RowProps) => (
-  <>
-    <div className="flex gap-x-2 items-center mr-auto">
-      <Identicon address={validator.address} background={false} size={20} />
-      <div className="flex flex-col max-w-[276px]">
-        {validator.identity ? (
-          <BodyText className="text-text-secondary">{getComposedIdentity(validator.identity)}</BodyText>
-        ) : (
-          <Truncate
-            className="text-body text-text-secondary"
-            ellipsis="..."
-            start={4}
-            end={4}
-            text={validator.address}
-          />
-        )}
-      </div>
+const ValidatorShortRow = ({ validator }: Pick<RowProps, 'validator'>) => (
+  <div className="flex gap-x-2 items-center mr-auto">
+    <Identicon address={validator.address} background={false} size={20} />
+    <div className="flex flex-col max-w-[276px]">
+      {validator.identity ? (
+        <BodyText className="text-text-secondary">{getComposedIdentity(validator.identity)}</BodyText>
+      ) : (
+        <Truncate className="text-body text-text-secondary" ellipsis="..." start={4} end={4} text={validator.address} />
+      )}
     </div>
-
-    <ExplorersPopover button={<IconButton name="info" />} address={validator.address} explorers={explorers} />
-  </>
+  </div>
 );
 
 export const ValidatorsTable = Object.assign(ValidatorsTableRoot, {

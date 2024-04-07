@@ -12,9 +12,9 @@ jest.mock('@app/providers', () => ({
 }));
 
 jest.mock('@entities/transaction', () => ({
-  useTransaction: jest.fn().mockReturnValue({
+  transactionService: {
     getTransactionFee: jest.fn().mockResolvedValue('12'),
-  }),
+  },
   FeeLoader: ({ fiatFlag }: any) => <div>{fiatFlag ? 'fiat' : 'crypto'}</div>,
 }));
 

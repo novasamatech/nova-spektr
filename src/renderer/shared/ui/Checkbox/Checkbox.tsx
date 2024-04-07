@@ -10,7 +10,6 @@ type Props = {
   semiChecked?: boolean;
   disabled?: boolean;
   readOnly?: boolean;
-  value?: any;
   className?: string;
   onChange?: (event: ChangeEvent<HTMLInputElement>, semiChecked?: boolean) => void;
   tabIndex?: number;
@@ -22,7 +21,6 @@ export const Checkbox = ({
   position = 'right',
   disabled,
   readOnly,
-  value,
   className = 'text-text-primary',
   children,
   onChange,
@@ -36,7 +34,6 @@ export const Checkbox = ({
       disabled={disabled}
       readOnly={readOnly}
       checked={checked}
-      value={value}
       className={cnTw(
         'checkbox relative shrink-0 appearance-none w-4 h-4 text-white outline-offset-1',
         'rounded border border-filter-border bg-button-text',

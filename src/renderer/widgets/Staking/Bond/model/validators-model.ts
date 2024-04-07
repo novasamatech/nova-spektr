@@ -2,7 +2,7 @@ import { createEvent, createEffect, combine, sample, restore, createStore } from
 import { ApiPromise } from '@polkadot/api';
 import { pending } from 'patronum';
 
-import { Chain, Asset, Validator, EraIndex, Address } from '@shared/core';
+import { Chain, Asset, Validator, EraIndex } from '@shared/core';
 import { networkModel, networkUtils } from '@entities/network';
 import { validatorsService, ValidatorMap } from '@entities/staking';
 import { eraService } from '@entities/staking/api';
@@ -14,7 +14,7 @@ type Input = {
 };
 
 const formInitiated = createEvent<Input>();
-const formSubmitted = createEvent<Address[]>();
+const formSubmitted = createEvent<Validator[]>();
 const formCleared = createEvent();
 const queryChanged = createEvent<string>();
 const validatorToggled = createEvent<Validator>();
@@ -26,7 +26,7 @@ const $validatorsStore = restore(formInitiated, null).reset(formCleared);
 const $era = createStore<EraIndex | null>(null).reset(formCleared);
 const $maxValidators = createStore<number>(0).reset(formCleared);
 const $validators = createStore<Validator[]>([]).reset(formCleared);
-const $selectedValidators = createStore<Record<Address, boolean>>({}).reset(formCleared);
+const $selectedValidators = createStore<ValidatorMap>({}).reset(formCleared);
 
 const getActiveEraFx = createEffect((api: ApiPromise): Promise<EraIndex | undefined> => {
   return eraService.getActiveEra(api);
@@ -146,7 +146,7 @@ sample({
   fn: (selectedValidators, validator) => {
     const { [validator.address]: validatorToRemove, ...rest } = selectedValidators;
 
-    return validatorToRemove ? rest : { ...rest, [validator.address]: true };
+    return validatorToRemove ? rest : { ...rest, [validator.address]: validator };
   },
   target: $selectedValidators,
 });
@@ -158,7 +158,7 @@ sample({
     selectedAmount: $selectedAmount,
   },
   filter: ({ selectedAmount }) => Boolean(selectedAmount),
-  fn: ({ selectedValidators }) => Object.keys(selectedValidators),
+  fn: ({ selectedValidators }) => Object.values(selectedValidators),
   target: formSubmitted,
 });
 

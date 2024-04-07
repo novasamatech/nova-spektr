@@ -1,4 +1,4 @@
-import type { Account, Chain, ProxiedAccount, Address } from '@shared/core';
+import type { Account, Chain, Address, Wallet, Validator } from '@shared/core';
 
 export const enum Step {
   NONE,
@@ -9,20 +9,22 @@ export const enum Step {
   SUBMIT,
 }
 
-export type NetworkStore = {
-  chain: Chain;
+export type WalletData = {
+  wallet: Wallet;
   shards: Account[];
+  chain: Chain;
 };
 
-export type BondStore = {
+export type BondData = {
   shards: Account[];
-  proxiedAccount?: ProxiedAccount;
   signatory?: Account;
   amount: string;
   destination: Address;
-  nominators: Address[];
+  validators: Validator[];
   description: string;
+};
 
+export type FeeData = {
   fee: string;
   totalFee: string;
   multisigDeposit: string;

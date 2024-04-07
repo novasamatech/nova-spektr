@@ -245,12 +245,7 @@ export const Confirmation = ({
       />
 
       {validatorsExist && (
-        <SelectedValidatorsModal
-          isOpen={isValidatorsOpen}
-          validators={validators}
-          explorers={explorers}
-          onClose={toggleValidators}
-        />
+        <SelectedValidatorsModal isOpen={isValidatorsOpen} validators={validators} onClose={toggleValidators} />
       )}
     </>
   );

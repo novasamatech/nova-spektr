@@ -16,11 +16,11 @@ export const Bond = () => {
   const { t } = useI18n();
 
   const step = useUnit(bondModel.$step);
-  const networkStore = useUnit(bondModel.$networkStore);
+  const walletData = useUnit(bondModel.$walletData);
 
   const [isModalOpen, closeModal] = useModalClose(!bondUtils.isNoneStep(step), bondModel.output.flowFinished);
 
-  if (!networkStore) return null;
+  if (!walletData) return null;
 
   if (bondUtils.isSubmitStep(step)) return <OperationSubmit isOpen={isModalOpen} onClose={closeModal} />;
 
@@ -32,8 +32,8 @@ export const Bond = () => {
       isOpen={isModalOpen}
       title={
         <OperationTitle
-          title={t('staking.bond.title', { asset: networkStore.chain.assets[0].symbol })}
-          chainId={networkStore.chain.chainId}
+          title={t('staking.bond.title', { asset: walletData.chain.assets[0].symbol })}
+          chainId={walletData.chain.chainId}
         />
       }
       onClose={closeModal}

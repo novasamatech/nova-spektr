@@ -7,6 +7,7 @@ import { walletModel, walletUtils } from '@entities/wallet';
 type Input = {
   chain: Chain;
   asset: Asset;
+
   shards: Account[];
   validators: Validator[];
   proxiedAccount?: ProxiedAccount;
@@ -14,16 +15,18 @@ type Input = {
   amount: string;
   destination: string;
   description: string;
-
-  fee: string;
-  totalFee: string;
-  multisigDeposit: string;
 };
 
 const formInitiated = createEvent<Input>();
 const formSubmitted = createEvent();
 
+const feeDataChanged = createEvent<Record<'fee' | 'totalFee' | 'multisigDeposit', string>>();
+const isFeeLoadingChanged = createEvent<boolean>();
+
 const $confirmStore = restore(formInitiated, null);
+
+const $feeData = restore(feeDataChanged, { fee: '0', totalFee: '0', multisigDeposit: '0' });
+const $isFeeLoading = restore(isFeeLoadingChanged, true);
 
 const $api = combine(
   {
@@ -74,15 +77,27 @@ const $signerWallet = combine(
   { skipVoid: false },
 );
 
+const $eraLength = combine($api, (api) => {
+  if (!api) return null;
+
+  return api.consts.staking.sessionsPerEra.toNumber();
+});
+
 export const confirmModel = {
   $confirmStore,
   $initiatorWallet,
   $proxiedWallet,
   $signerWallet,
+  $eraLength,
+
+  $feeData,
+  $isFeeLoading,
 
   $api,
   events: {
     formInitiated,
+    feeDataChanged,
+    isFeeLoadingChanged,
   },
   output: {
     formSubmitted,

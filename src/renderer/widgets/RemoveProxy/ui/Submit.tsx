@@ -4,13 +4,6 @@ import { ComponentProps, useEffect, useState } from 'react';
 import { useUnit } from 'effector-react';
 
 import { useI18n, useMultisigChainContext } from '@app/providers';
-import {
-  ExtrinsicResultParams,
-  MultisigTransaction,
-  OperationResult,
-  Transaction,
-  useTransaction,
-} from '@entities/transaction';
 import type { Account, MultisigAccount } from '@shared/core';
 import { HexString } from '@shared/core';
 import { buildMultisigTx, useMultisigEvent, useMultisigTx } from '@entities/multisig';
@@ -19,6 +12,13 @@ import { useToggle } from '@shared/lib/hooks';
 import { Button } from '@shared/ui';
 import { accountUtils } from '@entities/wallet';
 import { matrixModel } from '@entities/matrix';
+import {
+  ExtrinsicResultParams,
+  MultisigTransaction,
+  OperationResult,
+  Transaction,
+  transactionService,
+} from '@entities/transaction';
 
 type ResultProps = Pick<ComponentProps<typeof OperationResult>, 'title' | 'description' | 'variant'>;
 
@@ -40,7 +40,6 @@ export const Submit = ({ api, tx, multisigTx, account, unsignedTx, signature, on
 
   const { addTask } = useMultisigChainContext();
   const { addMultisigTx } = useMultisigTx({ addTask });
-  const { submitAndWatchExtrinsic, getSignedExtrinsic } = useTransaction();
   const { addEventWithQueue } = useMultisigEvent({ addTask });
 
   const [inProgress, toggleInProgress] = useToggle(true);
@@ -71,9 +70,9 @@ export const Submit = ({ api, tx, multisigTx, account, unsignedTx, signature, on
   const submitExtrinsic = async (signature: HexString) => {
     if (!unsignedTx) return;
 
-    const extrinsic = await getSignedExtrinsic(unsignedTx, signature, api);
+    const extrinsic = await transactionService.getSignedExtrinsic(unsignedTx, signature, api);
 
-    submitAndWatchExtrinsic(extrinsic, unsignedTx, api, async (executed, params) => {
+    transactionService.submitAndWatchExtrinsic(extrinsic, unsignedTx, api, async (executed, params) => {
       if (executed) {
         if (multisigTx && isMultisigAccount) {
           const result = buildMultisigTx(tx, multisigTx, params as ExtrinsicResultParams, account);

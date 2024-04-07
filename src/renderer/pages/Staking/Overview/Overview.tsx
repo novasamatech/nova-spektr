@@ -218,7 +218,7 @@ export const Overview = () => {
   );
 
   const navigateToStake = (path: PathType, addresses?: Address[]) => {
-    if (!activeChain) return;
+    if (!activeChain || !activeWallet) return;
 
     if (addresses) {
       setSelectedNominators(addresses);
@@ -239,6 +239,7 @@ export const Overview = () => {
       };
 
       model[path]({
+        wallet: activeWallet,
         chain: activeChain,
         shards: uniqBy(shards, 'accountId'),
       });

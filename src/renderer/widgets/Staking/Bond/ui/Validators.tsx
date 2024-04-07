@@ -63,7 +63,7 @@ export const Validators = ({ onGoBack }: Props) => {
           {(validator, rowStyle) => (
             <li key={validator.address} className="pl-5 hover:bg-hover group">
               <Checkbox
-                checked={selectedValidators[validator.address]}
+                checked={Boolean(selectedValidators[validator.address])}
                 disabled={validator.blocked}
                 onChange={() => validatorsModel.events.validatorToggled(validator)}
               >

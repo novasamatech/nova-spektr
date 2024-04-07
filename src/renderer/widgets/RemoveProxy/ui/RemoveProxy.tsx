@@ -9,7 +9,6 @@ import { BaseModal, Button, Loader } from '@shared/ui';
 import { useI18n } from '@app/providers';
 import { Confirmation } from './Confirmation';
 import { networkModel, useNetworkData } from '@entities/network';
-import { OperationResult, TransactionType, useTransaction, validateBalance } from '@entities/transaction';
 import { SigningSwitch } from '@features/operations';
 import { toAddress, transferableAmount } from '@shared/lib/utils';
 import { SignatorySelectModal } from '@pages/Operations/components/modals/SignatorySelectModal';
@@ -18,6 +17,13 @@ import { balanceModel, balanceUtils } from '@entities/balance';
 import { Submit } from './Submit';
 import { accountUtils } from '@entities/wallet';
 import { removeProxyModel, Step } from '../model/remove-proxy-model';
+import {
+  OperationResult,
+  TransactionType,
+  useTransaction,
+  validateBalance,
+  transactionService,
+} from '@entities/transaction';
 
 type Props = {
   isOpen: boolean;
@@ -43,7 +49,7 @@ export const RemoveProxy = ({ isOpen, proxyAccount, onClose }: Props) => {
   const balances = useUnit(balanceModel.$balances);
 
   const { api, extendedChain } = useNetworkData(chain.chainId);
-  const { getTransactionFee, setTxs, txs, setWrappers, wrapTx, buildTransaction } = useTransaction();
+  const { setTxs, txs, setWrappers, wrapTx, buildTransaction } = useTransaction();
 
   const nativeToken = chain.assets[0];
   const transaction = txs[0];
@@ -81,7 +87,7 @@ export const RemoveProxy = ({ isOpen, proxyAccount, onClose }: Props) => {
   const validateBalanceForFee = async (signAccount: Account): Promise<boolean> => {
     if (!extendedChain.api || !transaction || !signAccount.accountId || !nativeToken) return false;
 
-    const fee = await getTransactionFee(transaction, extendedChain.api);
+    const fee = await transactionService.getTransactionFee(transaction, extendedChain.api);
     const balance = balanceUtils.getBalance(
       balances,
       signAccount.accountId,
@@ -133,7 +139,7 @@ export const RemoveProxy = ({ isOpen, proxyAccount, onClose }: Props) => {
       transaction: transaction,
       assetId: nativeToken.assetId.toString(),
       getBalance: balanceUtils.getBalanceWrapped(balances),
-      getTransactionFee,
+      getTransactionFee: transactionService.getTransactionFee,
     });
 
   if (activeStep === Step.SUBMIT) {

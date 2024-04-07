@@ -179,7 +179,7 @@ sample({
       signatory: proxyData.addProxyStore!.signatory,
       description: proxyData.addProxyStore!.description,
       transactions: [proxyData.coreTx!],
-      multisigTxs: proxyData.multisigTx ? [proxyData.multisigTx] : undefined,
+      multisigTxs: proxyData.multisigTx ? [proxyData.multisigTx] : [],
     },
     step: Step.SUBMIT,
   }),

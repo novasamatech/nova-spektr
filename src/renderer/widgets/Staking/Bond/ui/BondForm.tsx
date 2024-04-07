@@ -3,13 +3,15 @@ import { FormEvent, useState } from 'react';
 import { useUnit } from 'effector-react';
 
 import { useI18n } from '@app/providers';
-import { MultisigAccount, Address, RewardsDestination } from '@shared/core';
+import { Address, RewardsDestination } from '@shared/core';
 import { accountUtils, AccountAddress, ProxyWalletAlert } from '@entities/wallet';
 import { toAddress, toShortAddress, formatBalance, validateAddress } from '@shared/lib/utils';
 import { AssetBalance } from '@entities/asset';
-import { MultisigDepositWithLabel, FeeWithLabel } from '@entities/transaction';
 import { DropdownOption, RadioOption } from '@shared/ui/types';
 import { formModel } from '../model/form-model';
+import { AssetFiatBalance } from '@entities/price/ui/AssetFiatBalance';
+import { FeeLoader } from '@entities/transaction';
+import { priceProviderModel } from '@entities/price';
 import {
   Select,
   Input,
@@ -21,6 +23,9 @@ import {
   Combobox,
   Identicon,
   Icon,
+  DetailRow,
+  FootnoteText,
+  Tooltip,
 } from '@shared/ui';
 
 type Props = {
@@ -36,7 +41,7 @@ export const BondForm = ({ onGoBack }: Props) => {
   };
 
   return (
-    <div className="pb-4 px-5">
+    <div className="pb-4 px-5 w-modal">
       <form id="transfer-form" className="flex flex-col gap-y-4 mt-4" onSubmit={submitForm}>
         <ProxyFeeAlert />
         <AccountsSelector />
@@ -58,14 +63,14 @@ const ProxyFeeAlert = () => {
     fields: { shards },
   } = useForm(formModel.$bondForm);
 
-  const fee = useUnit(formModel.$fee);
+  const feeData = useUnit(formModel.$feeData);
   const balance = useUnit(formModel.$proxyBalance);
   const network = useUnit(formModel.$networkStore);
   const proxyWallet = useUnit(formModel.$proxyWallet);
 
   if (!network || !proxyWallet || !shards.hasError()) return null;
 
-  const formattedFee = formatBalance(fee, network.asset.precision).value;
+  const formattedFee = formatBalance(feeData.fee, network.asset.precision).value;
   const formattedBalance = formatBalance(balance, network.asset.precision).value;
 
   return (
@@ -347,43 +352,69 @@ const FeeSection = () => {
     fields: { shards },
   } = useForm(formModel.$bondForm);
 
-  const api = useUnit(formModel.$api);
   const network = useUnit(formModel.$networkStore);
-  const transactions = useUnit(formModel.$transactions);
+  const feeData = useUnit(formModel.$feeData);
+  const isFeeLoading = useUnit(formModel.$isFeeLoading);
   const isMultisig = useUnit(formModel.$isMultisig);
+
+  const fiatFlag = useUnit(priceProviderModel.$fiatFlag);
 
   if (!network || shards.value.length === 0) return null;
 
   return (
     <div className="flex flex-col gap-y-2">
       {isMultisig && (
-        <MultisigDepositWithLabel
-          api={api}
-          asset={network.chain.assets[0]}
-          threshold={(shards.value[0] as MultisigAccount).threshold || 1}
-          onDepositChange={formModel.events.multisigDepositChanged}
-        />
+        <DetailRow
+          className="text-text-primary"
+          label={
+            <>
+              <Icon className="text-text-tertiary" name="lock" size={12} />
+              <FootnoteText className="text-text-tertiary">{t('staking.multisigDepositLabel')}</FootnoteText>
+              <Tooltip content={t('staking.tooltips.depositDescription')} offsetPx={-90}>
+                <Icon name="info" className="hover:text-icon-hover cursor-pointer" size={16} />
+              </Tooltip>
+            </>
+          }
+        >
+          <div className="flex flex-col gap-y-0.5 items-end">
+            <AssetBalance value={feeData.multisigDeposit} asset={network.chain.assets[0]} />
+            <AssetFiatBalance asset={network.chain.assets[0]} amount={feeData.multisigDeposit} />
+          </div>
+        </DetailRow>
       )}
 
-      <FeeWithLabel
-        label={t('staking.networkFee', { count: shards.value.length || 1 })}
-        api={api}
-        asset={network.chain.assets[0]}
-        transaction={transactions?.[0]?.wrappedTx}
-        onFeeChange={formModel.events.feeChanged}
-        onFeeLoading={formModel.events.isFeeLoadingChanged}
-      />
+      <DetailRow
+        label={
+          <FootnoteText className="text-text-tertiary">
+            {t('staking.networkFee', { count: shards.value.length || 1 })}
+          </FootnoteText>
+        }
+        className="text-text-primary"
+      >
+        {isFeeLoading ? (
+          <FeeLoader fiatFlag={Boolean(fiatFlag)} />
+        ) : (
+          <div className="flex flex-col gap-y-0.5 items-end">
+            <AssetBalance value={feeData.fee} asset={network.chain.assets[0]} />
+            <AssetFiatBalance asset={network.chain.assets[0]} amount={feeData.fee} />
+          </div>
+        )}
+      </DetailRow>
 
-      {transactions && transactions.length > 1 && (
-        <FeeWithLabel
-          label={t('staking.networkFeeTotal')}
-          api={api}
-          asset={network.chain.assets[0]}
-          multiply={transactions.length}
-          transaction={transactions[0].wrappedTx}
-          onFeeChange={formModel.events.totalFeeChanged}
-          onFeeLoading={formModel.events.isFeeLoadingChanged}
-        />
+      {shards.value.length > 1 && (
+        <DetailRow
+          label={<FootnoteText className="text-text-tertiary">{t('staking.networkFeeTotal')}</FootnoteText>}
+          className="text-text-primary"
+        >
+          {isFeeLoading ? (
+            <FeeLoader fiatFlag={Boolean(fiatFlag)} />
+          ) : (
+            <div className="flex flex-col gap-y-0.5 items-end">
+              <AssetBalance value={feeData.totalFee} asset={network.chain.assets[0]} />
+              <AssetFiatBalance asset={network.chain.assets[0]} amount={feeData.totalFee} />
+            </div>
+          )}
+        </DetailRow>
       )}
     </div>
   );
