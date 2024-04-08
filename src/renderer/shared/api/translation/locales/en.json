@@ -976,12 +976,6 @@
       "totalStakedLabel": "Total staked",
       "viewValidatorsOption": "View validators"
     },
-    "redeem": {
-      "availablePlaceholder": "Available",
-      "confirmRedeemSubtitle": "Confirmation",
-      "initRedeemSubtitle": "Redeem",
-      "title": "Withdraw unstaked { asset } on"
-    },
     "requiredAmountError": "Please enter amount",
     "restake": {
       "confirmRestakeSubtitle": "Confirmation",
@@ -1046,6 +1040,12 @@
       "noButton": "No",
       "stash": "This operation works with <strong>Stash</strong> accounts only.<br />Would you like to deselect <strong>Controller</strong> accounts to continue?",
       "yesButton": "Yes"
+    },
+    "withdraw": {
+      "availablePlaceholder": "Available",
+      "confirmRedeemSubtitle": "Confirmation",
+      "initRedeemSubtitle": "Redeem",
+      "title": "Withdraw unstaked { asset } on"
     }
   },
   "time": {

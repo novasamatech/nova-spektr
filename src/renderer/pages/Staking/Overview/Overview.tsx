@@ -24,6 +24,7 @@ import {
   useStakingRewards,
   ValidatorsModal,
 } from '@entities/staking';
+import { Withdraw, withdrawModel } from '@widgets/Withdraw';
 
 export const Overview = () => {
   const { t } = useI18n();
@@ -226,14 +227,19 @@ export const Overview = () => {
       return;
     }
 
-    if (path === Paths.UNSTAKE) {
+    if (path === Paths.UNSTAKE || path === Paths.REDEEM) {
       const shards = accounts.filter((account) => {
         const address = toAddress(account.accountId, { prefix: addressPrefix });
 
         return selectedNominators.includes(address);
       });
 
-      unstakeModel.events.flowStarted({
+      const model = {
+        [Paths.UNSTAKE]: unstakeModel.events.flowStarted,
+        [Paths.REDEEM]: withdrawModel.events.flowStarted,
+      };
+
+      model[path]({
         chain: activeChain,
         shards: uniqBy(shards, 'accountId'),
       });
@@ -325,6 +331,7 @@ export const Overview = () => {
       />
 
       <Unstake />
+      <Withdraw />
       <Outlet />
     </>
   );
