@@ -1,6 +1,6 @@
 import { Transaction, TransactionType } from '../model/transaction';
 import { TransferType } from './common/constants';
-import { toAddress, TEST_ACCOUNTS, formatAmount, getAssetId, TEST_ADDRESS } from '@shared/lib/utils';
+import { toAddress, TEST_ACCOUNTS, formatAmount, getAssetId } from '@shared/lib/utils';
 import { Chain, ChainId, Asset, AccountId, Address } from '@shared/core';
 
 export const transactionBuilder = {
@@ -9,7 +9,6 @@ export const transactionBuilder = {
   buildBondNominate,
   buildBondExtra,
   buildNominate,
-  buildBatchAll,
 };
 
 type TransferParams = {
@@ -77,16 +76,17 @@ type BondParams = {
   amount: string;
 };
 function buildBond({ chain, asset, accountId, destination, amount }: BondParams): Transaction {
-  const controller = destination ? toAddress(destination, { prefix: chain.addressPrefix }) : '';
+  const controller = toAddress(accountId, { prefix: chain.addressPrefix });
+  const payeeAddress = toAddress(destination, { prefix: chain.addressPrefix });
 
   return {
     chainId: chain.chainId,
-    address: toAddress(accountId, { prefix: chain.addressPrefix }),
+    address: controller,
     type: TransactionType.BOND,
     args: {
       value: formatAmount(amount, asset.precision),
       controller,
-      payee: { Account: TEST_ADDRESS }, // TODO: fix this
+      payee: destination ? { Account: payeeAddress } : 'Staked',
     },
   };
 }
