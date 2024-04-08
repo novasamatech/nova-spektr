@@ -2,13 +2,14 @@ import { BaseTxInfo, defineMethod, methods, OptionsWithMeta, UnsignedTransaction
 import { ApiPromise } from '@polkadot/api';
 import { methods as ormlMethods } from '@substrate/txwrapper-orml';
 import { SubmittableExtrinsic } from '@polkadot/api/types';
+import sortBy from 'lodash/sortBy';
 
 import { Transaction, TransactionType } from '@entities/transaction/model/transaction';
 import { getMaxWeight, hasDestWeight, isControllerMissing, isOldMultisigPallet } from './common/utils';
 import { toAddress } from '@shared/lib/utils';
 import * as xcmMethods from '@entities/transaction/lib/common/xcmMethods';
 import { DEFAULT_FEE_ASSET_ITEM } from '@entities/transaction';
-import type { AccountId, Address, MultisigAccount } from '@shared/core';
+import type { AccountId, MultisigAccount } from '@shared/core';
 
 type BalancesTransferArgs = Parameters<typeof methods.balances.transfer>[0];
 type BondWithoutContollerArgs = Omit<Parameters<typeof methods.staking.bond>[0], 'controller'>;
@@ -433,13 +434,9 @@ export const wrapAsMulti = (
   const callData = extrinsic.method.toHex();
   const callHash = extrinsic.method.hash.toHex();
 
-  const otherSignatories = account.signatories.reduce<Address[]>((acc, s) => {
-    if (s.accountId !== signerAccountId) {
-      acc.push(toAddress(s.accountId, { prefix: addressPrefix }));
-    }
-
-    return acc;
-  }, []);
+  const otherSignatories = sortBy(account.signatories, 'accountId')
+    .filter(({ accountId }) => accountId !== signerAccountId)
+    .map(({ accountId }) => toAddress(accountId, { prefix: addressPrefix }));
 
   return {
     chainId: transaction.chainId,
@@ -447,7 +444,7 @@ export const wrapAsMulti = (
     type: TransactionType.MULTISIG_AS_MULTI,
     args: {
       threshold: account.threshold,
-      otherSignatories: otherSignatories.sort(),
+      otherSignatories,
       maybeTimepoint: null,
       callData,
       callHash,
