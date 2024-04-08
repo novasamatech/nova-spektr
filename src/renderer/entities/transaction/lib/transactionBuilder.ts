@@ -9,6 +9,7 @@ export const transactionBuilder = {
   buildBondNominate,
   buildBond,
   buildNominate,
+  buildSetPayee,
   buildChill,
   buildBatchAll,
 };
@@ -103,6 +104,24 @@ function buildNominate({ chain, accountId, nominators }: NominateParams): Transa
     address: toAddress(accountId, { prefix: chain.addressPrefix }),
     type: TransactionType.NOMINATE,
     args: { targets: nominators },
+  };
+}
+
+type RewardDestinationParams = {
+  chain: Chain;
+  accountId: AccountId;
+  destination?: Address;
+};
+function buildSetPayee({ chain, accountId, destination }: RewardDestinationParams): Transaction {
+  const payee = destination ? { Account: destination } : 'Staked';
+
+  return {
+    chainId: chain.chainId,
+    address: toAddress(accountId, { prefix: chain.addressPrefix }),
+    type: TransactionType.DESTINATION,
+    args: {
+      payee,
+    },
   };
 }
 

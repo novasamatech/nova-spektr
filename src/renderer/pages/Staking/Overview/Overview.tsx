@@ -25,6 +25,7 @@ import {
   useStakingRewards,
   ValidatorsModal,
 } from '@entities/staking';
+import { RewardDestination, destinationModel } from '@widgets/Staking/RewardDestination';
 
 export const Overview = () => {
   const { t } = useI18n();
@@ -226,7 +227,7 @@ export const Overview = () => {
       return;
     }
 
-    if (path === Paths.UNSTAKE || path === Paths.BOND) {
+    if (path === Paths.UNSTAKE || path === Paths.BOND || path === Paths.DESTINATION) {
       const shards = accounts.filter((account) => {
         const address = toAddress(account.accountId, { prefix: addressPrefix });
 
@@ -236,6 +237,7 @@ export const Overview = () => {
       const model = {
         [Paths.BOND]: bondModel.events.flowStarted,
         [Paths.UNSTAKE]: unstakeModel.events.flowStarted,
+        [Paths.DESTINATION]: destinationModel.events.flowStarted,
       };
 
       model[path]({
@@ -332,6 +334,7 @@ export const Overview = () => {
 
       <BondNominate />
       <Unstake />
+      <RewardDestination />
       <Outlet />
     </>
   );
