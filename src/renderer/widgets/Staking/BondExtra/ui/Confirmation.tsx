@@ -8,7 +8,7 @@ import { cnTw, formatAmount } from '@shared/lib/utils';
 import { AssetBalance } from '@entities/asset';
 import { AssetFiatBalance } from '@entities/price/ui/AssetFiatBalance';
 import { confirmModel } from '../model/confirm-model';
-import { AccountsModal, StakingPopover, UnstakingDuration, SelectedValidatorsModal } from '@entities/staking';
+import { AccountsModal, StakingPopover } from '@entities/staking';
 import { useToggle } from '@shared/lib/hooks';
 import { FeeLoader } from '@entities/transaction';
 import { priceProviderModel } from '@entities/price';
@@ -20,8 +20,6 @@ type Props = {
 export const Confirmation = ({ onGoBack }: Props) => {
   const { t } = useI18n();
 
-  const api = useUnit(confirmModel.$api);
-
   const confirmStore = useUnit(confirmModel.$confirmStore);
   const initiatorWallet = useUnit(confirmModel.$initiatorWallet);
   const signerWallet = useUnit(confirmModel.$signerWallet);
@@ -29,20 +27,18 @@ export const Confirmation = ({ onGoBack }: Props) => {
 
   const feeData = useUnit(confirmModel.$feeData);
   const isFeeLoading = useUnit(confirmModel.$isFeeLoading);
-  const eraLength = useUnit(confirmModel.$eraLength);
 
   const fiatFlag = useUnit(priceProviderModel.$fiatFlag);
 
   const [isAccountsOpen, toggleAccounts] = useToggle();
-  const [isValidatorsOpen, toggleValidators] = useToggle();
 
-  if (!confirmStore || !api || !initiatorWallet || !eraLength) return null;
+  if (!confirmStore || !initiatorWallet) return null;
 
   return (
     <>
       <div className="flex flex-col items-center pt-4 gap-y-4 pb-4 px-5 w-modal">
         <div className="flex flex-col items-center gap-y-3 mb-2">
-          <Icon className="text-icon-default" name="startStakingConfirm" size={60} />
+          <Icon className="text-icon-default" name="stakeMoreConfirm" size={60} />
 
           <div className={cnTw('flex flex-col gap-y-1 items-center')}>
             <AssetBalance
@@ -144,32 +140,6 @@ export const Confirmation = ({ onGoBack }: Props) => {
             </DetailRow>
           )}
 
-          <DetailRow label={t('staking.confirmation.validatorsLabel')}>
-            <button
-              type="button"
-              className="flex items-center gap-x-1 px-2 py-1 rounded group hover:bg-action-background-hover"
-              onClick={toggleValidators}
-            >
-              <div className="rounded-[30px] px-1.5 py-[1px] bg-icon-accent">
-                <CaptionText className="text-white">{confirmStore.validators.length}</CaptionText>
-              </div>
-              <Icon className="group-hover:text-icon-hover" name="info" size={16} />
-            </button>
-          </DetailRow>
-
-          <hr className="border-filter-border w-full pr-2" />
-          <DetailRow label={t('staking.confirmation.rewardsDestinationLabel')}>
-            {confirmStore.destination ? (
-              <AddressWithExplorers
-                address={confirmStore.destination}
-                explorers={confirmStore.chain.explorers}
-                type="short"
-              />
-            ) : (
-              <FootnoteText>{t('staking.confirmation.restakeRewards')}</FootnoteText>
-            )}
-          </DetailRow>
-
           <hr className="border-filter-border w-full pr-2" />
 
           {accountUtils.isMultisigAccount(confirmStore.shards[0]) && (
@@ -226,20 +196,8 @@ export const Confirmation = ({ onGoBack }: Props) => {
             </DetailRow>
           )}
 
-          <StakingPopover labelText={t('staking.confirmation.hintTitleStartStaking')}>
-            <StakingPopover.Item>
-              {t('staking.confirmation.hintRewards')}
-              {' ('}
-              {t('time.hours_other', { count: eraLength })}
-              {')'}
-            </StakingPopover.Item>
-            <StakingPopover.Item>
-              {t('staking.confirmation.hintUnstakePeriod')} {'('}
-              <UnstakingDuration api={api} />
-              {')'}
-            </StakingPopover.Item>
-            <StakingPopover.Item>{t('staking.confirmation.hintNoRewards')}</StakingPopover.Item>
-            <StakingPopover.Item>{t('staking.confirmation.hintWithdraw')}</StakingPopover.Item>
+          <StakingPopover labelText={t('staking.confirmation.hintTitle')}>
+            <StakingPopover.Item>{t('staking.confirmation.hintNewRewards')}</StakingPopover.Item>
           </StakingPopover>
         </dl>
 
@@ -263,12 +221,6 @@ export const Confirmation = ({ onGoBack }: Props) => {
         asset={confirmStore.asset}
         addressPrefix={confirmStore.chain.addressPrefix}
         onClose={toggleAccounts}
-      />
-
-      <SelectedValidatorsModal
-        isOpen={isValidatorsOpen}
-        validators={confirmStore.validators}
-        onClose={toggleValidators}
       />
     </>
   );

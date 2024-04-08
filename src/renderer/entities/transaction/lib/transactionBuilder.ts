@@ -7,9 +7,8 @@ export const transactionBuilder = {
   buildTransfer,
   buildUnstake,
   buildBondNominate,
-  buildBond,
+  buildBondExtra,
   buildNominate,
-  buildChill,
   buildBatchAll,
 };
 
@@ -87,7 +86,18 @@ function buildBond({ chain, asset, accountId, destination, amount }: BondParams)
     args: {
       value: formatAmount(amount, asset.precision),
       controller,
-      payee: { Account: TEST_ADDRESS },
+      payee: { Account: TEST_ADDRESS }, // TODO: fix this
+    },
+  };
+}
+
+function buildBondExtra({ chain, asset, accountId, amount }: Omit<BondParams, 'destination'>): Transaction {
+  return {
+    chainId: chain.chainId,
+    address: toAddress(accountId, { prefix: chain.addressPrefix }),
+    type: TransactionType.STAKE_MORE,
+    args: {
+      maxAdditional: formatAmount(amount, asset.precision),
     },
   };
 }

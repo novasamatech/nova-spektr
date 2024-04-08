@@ -4,16 +4,14 @@ import { spread, delay } from 'patronum';
 import { BN } from '@polkadot/util';
 
 import { walletModel } from '@entities/wallet';
-import { TEST_ADDRESS, getRelaychainAsset, nonNullable } from '@shared/lib/utils';
+import { getRelaychainAsset, nonNullable } from '@shared/lib/utils';
 import { networkModel } from '@entities/network';
-import { validatorsService } from '@entities/staking';
 import { submitModel } from '@features/operations/OperationSubmit';
 import { signModel } from '@features/operations/OperationSign/model/sign-model';
 import { Account } from '@shared/core';
 import { Step, BondData, WalletData, FeeData } from '../lib/types';
-import { bondUtils } from '../lib/bond-utils';
+import { bondExtraUtils } from '../lib/bond-extra-utils';
 import { formModel } from './form-model';
-import { validatorsModel } from './validators-model';
 import { confirmModel } from './confirm-model';
 import {
   TxWrapper,
@@ -38,12 +36,6 @@ const $feeData = createStore<FeeData>({ fee: '0', totalFee: '0', multisigDeposit
 
 const $txWrappers = createStore<TxWrapper[]>([]);
 const $pureTxs = createStore<Transaction[]>([]);
-
-const $maxValidators = createStore<number>(0);
-
-const getMaxValidatorsFx = createEffect((api: ApiPromise): number => {
-  return validatorsService.getMaxValidators(api);
-});
 
 type FeeParams = {
   api: ApiPromise;
@@ -96,21 +88,6 @@ const $transactions = combine(
   { skipVoid: false },
 );
 
-// Max validators
-
-sample({
-  clock: $api.updates,
-  source: $maxValidators,
-  filter: (maxValidators, api) => !maxValidators && Boolean(api),
-  fn: (_, api) => api!,
-  target: getMaxValidatorsFx,
-});
-
-sample({
-  clock: getMaxValidatorsFx.doneData,
-  target: $maxValidators,
-});
-
 // Transaction & Form
 
 sample({
@@ -124,7 +101,7 @@ sample({
   fn: ({ walletData, wallets, accounts }, data) => {
     const signatories = 'signatory' in data && data.signatory ? [data.signatory] : [];
 
-    return bondUtils.getTxWrappers({
+    return bondExtraUtils.getTxWrappers({
       chain: walletData!.chain,
       wallet: walletData!.wallet,
       wallets,
@@ -158,20 +135,7 @@ sample({
 });
 
 sample({
-  clock: [$maxValidators.updates, formModel.output.formChanged, validatorsModel.output.formSubmitted],
-  source: $bondData,
-  filter: (bondData, data) => Boolean(bondData) || typeof data !== 'number',
-  fn: (bondData, data) => {
-    if (typeof data === 'number') {
-      return { ...(bondData || ({} as BondData)), validators: Array(data).fill({ address: TEST_ADDRESS }) };
-    }
-
-    if (Array.isArray(data)) {
-      return { ...bondData!, validators: data! };
-    }
-
-    return { ...data!, validators: bondData?.validators || [] };
-  },
+  clock: formModel.output.formChanged,
   target: $bondData,
 });
 
@@ -181,13 +145,11 @@ sample({
   filter: (walletData, bondData) => Boolean(walletData) && Boolean(bondData),
   fn: (walletData, bondData) => {
     return bondData!.shards.map((shard) => {
-      return transactionBuilder.buildBondNominate({
+      return transactionBuilder.buildBondExtra({
         chain: walletData!.chain,
         asset: walletData!.chain.assets[0],
         accountId: shard.accountId,
         amount: bondData!.amount,
-        destination: bondData!.destination,
-        nominators: bondData!.validators.map(({ address }) => address),
       });
     });
   },
@@ -268,20 +230,6 @@ sample({
 
 sample({
   clock: formModel.output.formSubmitted,
-  source: $walletData,
-  filter: (walletData: WalletData | null): walletData is WalletData => Boolean(walletData),
-  fn: ({ chain }) => ({
-    event: { chain, asset: getRelaychainAsset(chain.assets)! },
-    step: Step.VALIDATORS,
-  }),
-  target: spread({
-    event: validatorsModel.events.formInitiated,
-    step: stepChanged,
-  }),
-});
-
-sample({
-  clock: validatorsModel.output.formSubmitted,
   source: {
     bondData: $bondData,
     feeData: $feeData,
@@ -376,10 +324,10 @@ sample({
 sample({
   clock: flowFinished,
   fn: () => Step.NONE,
-  target: [stepChanged, formModel.events.formCleared, validatorsModel.events.formCleared],
+  target: [stepChanged, formModel.events.formCleared],
 });
 
-export const bondModel = {
+export const bondExtraModel = {
   $step,
   $walletData,
   events: {
