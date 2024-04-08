@@ -24,6 +24,7 @@ import {
   useStakingRewards,
   ValidatorsModal,
 } from '@entities/staking';
+import { Restake, restakeModel } from '@widgets/RestakeModal';
 
 export const Overview = () => {
   const { t } = useI18n();
@@ -237,6 +238,17 @@ export const Overview = () => {
         chain: activeChain,
         shards: uniqBy(shards, 'accountId'),
       });
+    } else if (path === Paths.RESTAKE) {
+      const shards = accounts.filter((account) => {
+        const address = toAddress(account.accountId, { prefix: addressPrefix });
+
+        return selectedNominators.includes(address);
+      });
+
+      restakeModel.events.flowStarted({
+        chain: activeChain,
+        shards: uniqBy(shards, 'accountId'),
+      });
     } else {
       const accountsMap = accounts.reduce<Record<Address, number>>((acc, account) => {
         if (account.id) {
@@ -325,6 +337,7 @@ export const Overview = () => {
       />
 
       <Unstake />
+      <Restake />
       <Outlet />
     </>
   );

@@ -6,6 +6,7 @@ import { Chain, ChainId, Asset, AccountId } from '@shared/core';
 export const transactionBuilder = {
   buildTransfer,
   buildUnstake,
+  buildRestake,
   buildChill,
   buildBatchAll,
 };
@@ -73,6 +74,27 @@ function buildUnstake({ chain, accountId, asset, amount, withChill }: UnstakePar
     accountId,
     transactions: [buildChill({ chain, accountId }), unstakeTx],
   });
+}
+
+type RestakeParams = {
+  chain: Chain;
+  asset: Asset;
+  accountId: AccountId;
+  amount: string;
+};
+function buildRestake({ chain, accountId, asset, amount }: RestakeParams): Transaction {
+  const address = toAddress(accountId, { prefix: chain.addressPrefix });
+
+  const restakeTx: Transaction = {
+    chainId: chain.chainId,
+    address,
+    type: TransactionType.RESTAKE,
+    args: {
+      value: formatAmount(amount, asset.precision),
+    },
+  };
+
+  return restakeTx;
 }
 
 type ChillParams = {
