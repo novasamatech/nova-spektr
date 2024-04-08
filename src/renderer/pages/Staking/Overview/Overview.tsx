@@ -13,11 +13,12 @@ import { accountUtils, permissionUtils, walletModel, walletUtils } from '@entiti
 import { priceProviderModel } from '@entities/price';
 import { NominatorInfo } from './common/types';
 import { useNetworkData, networkUtils } from '@entities/network';
+import { eraService } from '@entities/staking/api';
 import { ChainId, Chain, Address, Account, Stake, Validator, ShardAccount, ChainAccount } from '@shared/core';
 import { BondNominate, bondNominateModel } from '@widgets/Staking/BondNominate';
-import { BondExtra, bondExtraModel } from 'src/renderer/widgets/Staking/BondExtra';
+import { BondExtra, bondExtraModel } from '@widgets/Staking/BondExtra';
 import { Unstake, unstakeModel } from '@widgets/Staking/Unstake';
-import { eraService } from '@entities/staking/api';
+import { Withdraw, withdrawModel } from '@widgets/Withdraw';
 import {
   useStakingData,
   StakingMap,
@@ -227,7 +228,7 @@ export const Overview = () => {
       return;
     }
 
-    if (path === Paths.BOND || path === Paths.STAKE_MORE || path === Paths.UNSTAKE) {
+    if (path === Paths.BOND || path === Paths.STAKE_MORE || path === Paths.UNSTAKE || path === Paths.REDEEM) {
       const shards = accounts.filter((account) => {
         const address = toAddress(account.accountId, { prefix: addressPrefix });
 
@@ -238,6 +239,7 @@ export const Overview = () => {
         [Paths.BOND]: bondNominateModel.events.flowStarted,
         [Paths.STAKE_MORE]: bondExtraModel.events.flowStarted,
         [Paths.UNSTAKE]: unstakeModel.events.flowStarted,
+        [Paths.REDEEM]: withdrawModel.events.flowStarted,
       };
 
       model[path]({
@@ -335,6 +337,7 @@ export const Overview = () => {
       <BondNominate />
       <BondExtra />
       <Unstake />
+      <Withdraw />
 
       <Outlet />
     </>

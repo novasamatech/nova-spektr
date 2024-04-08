@@ -33,7 +33,7 @@ const $account = $removeProxyStore.map((store) => store?.account, { skipVoid: fa
 
 const $txWrappers = combine(
   {
-    wallet: walletModel.$activeWallet,
+    wallet: walletSelectModel.$walletForDetails,
     wallets: walletModel.$wallets,
     accounts: walletModel.$accounts,
     account: $account,

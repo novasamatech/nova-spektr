@@ -7,6 +7,7 @@ import { signModel } from '@features/operations/OperationSign/model/sign-model';
 import { submitModel } from '@features/operations/OperationSubmit';
 import { storageService } from '@shared/api/storage';
 import { initiatorWallet, signerWallet, testApi, testChain } from './mock';
+import { Transaction } from '@entities/transaction';
 import { Account, ConnectionStatus, ProxyType } from '@shared/core';
 import { Step } from '../../lib/types';
 import { formModel } from '../form-model';
@@ -18,11 +19,10 @@ jest.mock('@shared/lib/utils', () => ({
   getProxyTypes: jest.fn().mockReturnValue(['Any', 'Staking']),
 }));
 
-describe('widgets/AddPureProxyModal/model/add-proxy-model', () => {
+describe('widgets/AddProxyModal/model/add-proxy-model', () => {
   beforeAll(() => {
     jest.useFakeTimers();
   });
-
   beforeEach(() => {
     jest.restoreAllMocks();
   });
@@ -49,14 +49,19 @@ describe('widgets/AddPureProxyModal/model/add-proxy-model', () => {
     await allSettled(formModel.output.formSubmitted, {
       scope,
       params: {
-        proxyDeposit: '1',
-        oldProxyDeposit: '0',
-        proxyNumber: 1,
-        chain: testChain,
-        account: { accountId: '0x00' } as unknown as Account,
-        delegate: '0x00',
-        proxyType: ProxyType.ANY,
-        description: '',
+        transactions: {
+          wrappedTx: {} as Transaction,
+          coreTx: {} as Transaction,
+        },
+        formData: {
+          proxyDeposit: '1',
+          proxyNumber: 1,
+          chain: testChain,
+          account: { accountId: '0x00' } as unknown as Account,
+          delegate: '0x00',
+          proxyType: ProxyType.ANY,
+          description: '',
+        },
       },
     });
 

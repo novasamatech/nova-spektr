@@ -14,6 +14,7 @@ import { RewardsDestination } from '@shared/core';
 import { walletModel, accountUtils } from '@entities/wallet';
 import { useAssetBalances } from '@entities/balance';
 import { operationFormModel } from './operation-form-model';
+import { DESCRIPTION_LENGTH } from '@entities/transaction';
 
 const getDestinations = (t: TFunction): RadioOption<RewardsDestination>[] => {
   const Options = [
@@ -277,7 +278,7 @@ export const OperationForm = ({
           <Controller
             name="description"
             control={control}
-            rules={{ maxLength: 120 }}
+            rules={{ maxLength: DESCRIPTION_LENGTH }}
             render={({ field: { onChange, value }, fieldState: { error } }) => (
               <div className="flex flex-col gap-y-2">
                 <Input
@@ -292,7 +293,7 @@ export const OperationForm = ({
                 />
 
                 <InputHint active={error?.type === 'maxLength'} variant="error">
-                  <Trans t={t} i18nKey="transfer.descriptionLengthError" values={{ maxLength: 120 }} />
+                  <Trans t={t} i18nKey="transfer.descriptionLengthError" values={{ maxLength: DESCRIPTION_LENGTH }} />
                 </InputHint>
               </div>
             )}
