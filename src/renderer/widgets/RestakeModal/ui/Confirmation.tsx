@@ -33,7 +33,7 @@ export const Confirmation = ({ onGoBack }: Props) => {
     <>
       <div className="flex flex-col items-center pt-4 gap-y-4 pb-4 px-5">
         <div className="flex flex-col items-center gap-y-3 mb-2">
-          <Icon className="text-icon-default" name="unstakeConfirm" size={60} />
+          <Icon className="text-icon-default" name="returnToStakeConfirm" size={60} />
 
           <div className={cnTw('flex flex-col gap-y-1 items-center')}>
             <AssetBalance
