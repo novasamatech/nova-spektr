@@ -15,8 +15,9 @@ import { NominatorInfo } from './common/types';
 import { useNetworkData, networkUtils } from '@entities/network';
 import { ChainId, Chain, Address, Account, Stake, Validator, ShardAccount, ChainAccount } from '@shared/core';
 import { BondNominate, bondNominateModel } from '@widgets/Staking/BondNominate';
-import { BondExtra, bondExtraModel } from 'src/renderer/widgets/Staking/BondExtra';
+import { BondExtra, bondExtraModel } from '@widgets/Staking/BondExtra';
 import { Unstake, unstakeModel } from '@widgets/Staking/Unstake';
+import { nominateModel, Nominate } from '@widgets/Staking/Nominate';
 import { eraService } from '@entities/staking/api';
 import {
   useStakingData,
@@ -227,7 +228,7 @@ export const Overview = () => {
       return;
     }
 
-    if (path === Paths.BOND || path === Paths.STAKE_MORE || path === Paths.UNSTAKE) {
+    if (path === Paths.BOND || path === Paths.STAKE_MORE || path === Paths.VALIDATORS || path === Paths.UNSTAKE) {
       const shards = accounts.filter((account) => {
         const address = toAddress(account.accountId, { prefix: addressPrefix });
 
@@ -237,6 +238,7 @@ export const Overview = () => {
       const model = {
         [Paths.BOND]: bondNominateModel.events.flowStarted,
         [Paths.STAKE_MORE]: bondExtraModel.events.flowStarted,
+        [Paths.VALIDATORS]: nominateModel.events.flowStarted,
         [Paths.UNSTAKE]: unstakeModel.events.flowStarted,
       };
 
@@ -334,6 +336,7 @@ export const Overview = () => {
 
       <BondNominate />
       <BondExtra />
+      <Nominate />
       <Unstake />
 
       <Outlet />

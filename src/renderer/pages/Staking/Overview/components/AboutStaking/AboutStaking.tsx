@@ -106,15 +106,15 @@ export const AboutStaking = ({ api, era, asset, validators }: Props) => {
           <FootnoteText className="text-text-secondary">{t('staking.about.totalStakedLabel')}</FootnoteText>
           <div className="flex flex-col justify-self-end items-end">
             {totalStaked && asset ? (
-              <>
+              <div className="flex flex-col gap-y-0.5 items-end">
                 <AssetBalance value={totalStaked} asset={asset} className="text-footnote" />
                 <AssetFiatBalance amount={totalStaked} asset={asset} />
-              </>
+              </div>
             ) : (
-              <>
-                <Shimmering width={100} height={18} />
-                <Shimmering width={56} height={18} />
-              </>
+              <div className="flex flex-col gap-y-0.5 items-end">
+                <Shimmering width={100} height={16} />
+                <Shimmering width={56} height={16} />
+              </div>
             )}
           </div>
         </div>
@@ -123,15 +123,15 @@ export const AboutStaking = ({ api, era, asset, validators }: Props) => {
           <FootnoteText className="text-text-secondary">{t('staking.about.minimumStakeLabel')}</FootnoteText>
           <div className="flex flex-col justify-self-end items-end">
             {minimumStake && asset ? (
-              <>
+              <div className="flex flex-col gap-y-0.5 items-end">
                 <AssetBalance value={minimumStake} asset={asset} className="text-footnote" />
                 <AssetFiatBalance amount={minimumStake} asset={asset} />
-              </>
+              </div>
             ) : (
-              <>
-                <Shimmering width={100} height={18} />
-                <Shimmering width={56} height={18} />
-              </>
+              <div className="flex flex-col gap-y-0.5 items-end">
+                <Shimmering width={100} height={16} />
+                <Shimmering width={56} height={16} />
+              </div>
             )}
           </div>
         </div>
