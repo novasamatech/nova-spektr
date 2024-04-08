@@ -315,9 +315,9 @@ const $signatories = combine(
 
     const signers = dictionary(account.signatories, 'accountId', () => true);
 
-    return wallets.reduce<{ signer: Account; balance: string }[]>((acc, wallet) => {
+    const signatories = wallets.reduce<{ signer: Account; balance: string }[]>((acc, wallet) => {
       const walletAccounts = accountUtils.getWalletAccounts(wallet.id, accounts);
-      const isAvailable = permissionUtils.canCreateMultisigTx(wallet, walletAccounts);
+      const isAvailable = walletAccounts.length > 0 && permissionUtils.canCreateMultisigTx(wallet, walletAccounts);
 
       if (!isAvailable) return acc;
 
@@ -338,6 +338,8 @@ const $signatories = combine(
 
       return acc;
     }, []);
+
+    return signatories;
   },
 );
 
@@ -410,7 +412,7 @@ const $pureTx = combine(
     isConnected: $isChainConnected,
   },
   ({ form, account, isConnected }): Transaction | undefined => {
-    if (!isConnected || !account) return undefined;
+    if (!isConnected || !account || !form.delegate || !form.proxyType) return undefined;
 
     return {
       chainId: form.chain.chainId,

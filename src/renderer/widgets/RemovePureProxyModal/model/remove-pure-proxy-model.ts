@@ -24,8 +24,9 @@ const flowFinished = createEvent();
 
 const $step = createStore<Step>(Step.NONE);
 
-const $removeProxyStore = createStore<RemoveProxyStore | null>(null);
-const $transaction = createStore<Transaction | null>(null);
+const $removeProxyStore = createStore<RemoveProxyStore | null>(null).reset(flowFinished);
+
+const $wrappedTx = createStore<Transaction | null>(null);
 const $multisigTx = createStore<Transaction | null>(null);
 
 const $chain = $removeProxyStore.map((store) => store?.chain, { skipVoid: false });
@@ -95,7 +96,9 @@ sample({
     const proxiedAccount = accounts[0] as ProxiedAccount;
     const chain = chains[proxiedAccount.chainId];
 
-    const signerAccount = allAccounts.find((a) => a.accountId === proxiedAccount.proxyAccountId);
+    const signerAccount = allAccounts.find(
+      (a) => a.accountId === proxiedAccount.proxyAccountId && !accountUtils.isProxiedAccount(a),
+    );
 
     return {
       chain: chains[proxiedAccount.chainId],
@@ -210,23 +213,23 @@ sample({
     });
   },
   target: spread({
-    wrappedTx: $transaction,
+    wrappedTx: $wrappedTx,
     multisigTx: $multisigTx,
   }),
 });
 
 sample({
   clock: formModel.output.formSubmitted,
-  source: { transaction: $transaction, chain: $chain, account: $account },
-  filter: ({ transaction, chain, account }) => {
-    return Boolean(transaction) && Boolean(chain) && Boolean(account);
+  source: { wrappedTx: $wrappedTx, chain: $chain, account: $account },
+  filter: ({ wrappedTx, chain, account }) => {
+    return Boolean(wrappedTx) && Boolean(chain) && Boolean(account);
   },
-  fn: ({ transaction, chain, account }, formData) => ({
+  fn: ({ wrappedTx, chain, account }, formData) => ({
     event: {
       ...formData,
       chain: chain as Chain,
       account: account as ProxiedAccount,
-      transaction: transaction as Transaction,
+      transaction: wrappedTx as Transaction,
       spawner: (account as ProxiedAccount).proxyAccountId,
       proxyType: ProxyType.ANY,
     },
@@ -242,15 +245,15 @@ sample({
   clock: confirmModel.output.formSubmitted,
   source: {
     removeProxyStore: $removeProxyStore,
-    transaction: $transaction,
+    wrappedTx: $wrappedTx,
   },
-  filter: ({ removeProxyStore, transaction }) => Boolean(removeProxyStore) && Boolean(transaction),
-  fn: ({ removeProxyStore, transaction }) => ({
+  filter: ({ removeProxyStore, wrappedTx }) => Boolean(removeProxyStore) && Boolean(wrappedTx),
+  fn: ({ removeProxyStore, wrappedTx }) => ({
     event: {
       chain: removeProxyStore!.chain,
       accounts: [removeProxyStore!.account],
       signatory: removeProxyStore!.signatory,
-      transactions: [transaction!],
+      transactions: [wrappedTx!],
     },
     step: Step.SIGN,
   }),
@@ -264,12 +267,12 @@ sample({
   clock: signModel.output.formSubmitted,
   source: {
     removeProxyStore: $removeProxyStore,
-    transaction: $transaction,
+    wrappedTx: $wrappedTx,
     multisigTx: $multisigTx,
     txWrappers: $txWrappers,
   },
   filter: (proxyData) => {
-    return Boolean(proxyData.removeProxyStore) && Boolean(proxyData.transaction);
+    return Boolean(proxyData.removeProxyStore) && Boolean(proxyData.wrappedTx);
   },
   fn: (proxyData, signParams) => ({
     event: {
@@ -278,7 +281,7 @@ sample({
       account: proxyData.removeProxyStore!.account,
       signatory: proxyData.removeProxyStore!.signatory,
       description: proxyData.removeProxyStore!.description,
-      transactions: [proxyData.transaction!],
+      transactions: [proxyData.wrappedTx!],
       multisigTxs: proxyData.multisigTx ? [proxyData.multisigTx] : undefined,
     },
     step: Step.SUBMIT,
@@ -315,11 +318,12 @@ sample({
   source: {
     wallet: walletSelectModel.$walletForDetails,
     chainProxies: walletProviderModel.$chainsProxies,
+    removeProxyStore: $removeProxyStore,
   },
-  filter: ({ chainProxies, wallet }) => {
+  filter: ({ chainProxies, wallet, removeProxyStore }) => {
     const proxies = Object.values(chainProxies).flat();
 
-    return Boolean(wallet) && proxies.length === 1;
+    return Boolean(wallet) && Boolean(removeProxyStore) && proxies.length === 1;
   },
   fn: ({ wallet }) => wallet!.id,
   target: walletModel.events.walletRemoved,

@@ -162,8 +162,8 @@ sample({
     apis: networkModel.$apis,
     data: $removeProxyStore,
   },
-  fn: ({ txWrappers, apis, data }, formData) => {
-    const account = data!.account as ProxiedAccount;
+  fn: ({ txWrappers, apis, data }) => {
+    const account = data!.account;
     const chain = data!.chain;
 
     const transaction: Transaction = {
