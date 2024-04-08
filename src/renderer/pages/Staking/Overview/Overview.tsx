@@ -227,25 +227,19 @@ export const Overview = () => {
       return;
     }
 
-    if (path === Paths.UNSTAKE) {
+    if (path === Paths.UNSTAKE || path === Paths.RESTAKE) {
       const shards = accounts.filter((account) => {
         const address = toAddress(account.accountId, { prefix: addressPrefix });
 
         return selectedNominators.includes(address);
       });
 
-      unstakeModel.events.flowStarted({
-        chain: activeChain,
-        shards: uniqBy(shards, 'accountId'),
-      });
-    } else if (path === Paths.RESTAKE) {
-      const shards = accounts.filter((account) => {
-        const address = toAddress(account.accountId, { prefix: addressPrefix });
+      const model = {
+        [Paths.UNSTAKE]: unstakeModel.events.flowStarted,
+        [Paths.RESTAKE]: restakeModel.events.flowStarted,
+      };
 
-        return selectedNominators.includes(address);
-      });
-
-      restakeModel.events.flowStarted({
+      model[path]({
         chain: activeChain,
         shards: uniqBy(shards, 'accountId'),
       });

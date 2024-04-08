@@ -83,18 +83,14 @@ type RestakeParams = {
   amount: string;
 };
 function buildRestake({ chain, accountId, asset, amount }: RestakeParams): Transaction {
-  const address = toAddress(accountId, { prefix: chain.addressPrefix });
-
-  const restakeTx: Transaction = {
+  return {
     chainId: chain.chainId,
-    address,
+    address: toAddress(accountId, { prefix: chain.addressPrefix }),
     type: TransactionType.RESTAKE,
     args: {
       value: formatAmount(amount, asset.precision),
     },
   };
-
-  return restakeTx;
 }
 
 type ChillParams = {

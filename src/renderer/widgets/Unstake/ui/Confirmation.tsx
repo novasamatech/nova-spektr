@@ -114,7 +114,6 @@ export const Confirmation = ({ onGoBack }: Props) => {
                   <AddressWithExplorers
                     type="short"
                     wrapperClassName="text-text-secondary"
-                    // addressFont="text-footnote text-inherit"
                     explorers={confirmStore.chain.explorers}
                     accountId={confirmStore.shards[0].accountId}
                     addressPrefix={confirmStore.chain.addressPrefix}

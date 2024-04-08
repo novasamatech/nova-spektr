@@ -4,7 +4,7 @@ import { spread, delay } from 'patronum';
 import { Transaction } from '@entities/transaction';
 import { signModel } from '@features/operations/OperationSign/model/sign-model';
 import { submitModel } from '@features/operations/OperationSubmit';
-import { Step, UnstakeStore, NetworkStore } from '../lib/types';
+import { Step, RestakeStore, NetworkStore } from '../lib/types';
 import { formModel } from './form-model';
 import { confirmModel } from './confirm-model';
 import { nonNullable, getRelaychainAsset } from '@shared/lib/utils';
@@ -16,7 +16,7 @@ const flowFinished = createEvent();
 
 const $step = createStore<Step>(Step.NONE);
 
-const $unstakeStore = createStore<UnstakeStore | null>(null);
+const $restakeStore = createStore<RestakeStore | null>(null);
 const $networkStore = restore<NetworkStore | null>(flowStarted, null);
 
 const $wrappedTxs = createStore<Transaction[] | null>(null);
@@ -47,14 +47,14 @@ sample({
       wrappedTxs,
       multisigTxs: multisigTxs.length === 0 ? null : multisigTxs,
       coreTxs,
-      unstakeStore: formData,
+      restakeStore: formData,
     };
   },
   target: spread({
     wrappedTxs: $wrappedTxs,
     multisigTxs: $multisigTxs,
     coreTxs: $coreTxs,
-    unstakeStore: $unstakeStore,
+    restakeStore: $restakeStore,
   }),
 });
 
@@ -75,18 +75,18 @@ sample({
 sample({
   clock: confirmModel.output.formSubmitted,
   source: {
-    unstakeStore: $unstakeStore,
+    restakeStore: $restakeStore,
     networkStore: $networkStore,
     wrappedTxs: $wrappedTxs,
   },
-  filter: ({ unstakeStore, networkStore, wrappedTxs }) => {
-    return Boolean(unstakeStore) && Boolean(networkStore) && Boolean(wrappedTxs);
+  filter: ({ restakeStore, networkStore, wrappedTxs }) => {
+    return Boolean(restakeStore) && Boolean(networkStore) && Boolean(wrappedTxs);
   },
-  fn: ({ unstakeStore, networkStore, wrappedTxs }) => ({
+  fn: ({ restakeStore, networkStore, wrappedTxs }) => ({
     event: {
       chain: networkStore!.chain,
-      accounts: unstakeStore!.shards,
-      signatory: unstakeStore!.signatory,
+      accounts: restakeStore!.shards,
+      signatory: restakeStore!.signatory,
       transactions: wrappedTxs!,
     },
     step: Step.SIGN,
@@ -100,21 +100,21 @@ sample({
 sample({
   clock: signModel.output.formSubmitted,
   source: {
-    unstakeStore: $unstakeStore,
+    restakeStore: $restakeStore,
     networkStore: $networkStore,
     multisigTxs: $multisigTxs,
     coreTxs: $coreTxs,
   },
   filter: (transferData) => {
-    return Boolean(transferData.unstakeStore) && Boolean(transferData.coreTxs) && Boolean(transferData.networkStore);
+    return Boolean(transferData.restakeStore) && Boolean(transferData.coreTxs) && Boolean(transferData.networkStore);
   },
   fn: (transferData, signParams) => ({
     event: {
       ...signParams,
       chain: transferData.networkStore!.chain,
-      account: transferData.unstakeStore!.shards[0],
-      signatory: transferData.unstakeStore!.signatory,
-      description: transferData.unstakeStore!.description,
+      account: transferData.restakeStore!.shards[0],
+      signatory: transferData.restakeStore!.signatory,
+      description: transferData.restakeStore!.description,
       transactions: transferData.coreTxs!,
       multisigTxs: transferData.multisigTxs || undefined,
     },

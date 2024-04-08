@@ -182,7 +182,7 @@ const Amount = () => {
     fields: { amount },
   } = useForm(formModel.$restakeForm);
 
-  const unstakeBalanceRange = useUnit(formModel.$unstakeBalanceRange);
+  const restakeBalanceRange = useUnit(formModel.$restakeBalanceRange);
   const isStakingLoading = useUnit(formModel.$isStakingLoading);
   const network = useUnit(formModel.$networkStore);
 
@@ -193,7 +193,7 @@ const Amount = () => {
       <AmountInput
         invalid={amount.hasError()}
         value={amount.value}
-        balance={isStakingLoading ? <Shimmering width={50} height={10} /> : unstakeBalanceRange}
+        balance={isStakingLoading ? <Shimmering width={50} height={10} /> : restakeBalanceRange}
         balancePlaceholder={t('general.input.availableLabel')}
         placeholder={t('general.input.amountLabel')}
         asset={network.asset}

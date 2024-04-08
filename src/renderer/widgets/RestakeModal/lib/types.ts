@@ -13,7 +13,7 @@ export type NetworkStore = {
   shards: Account[];
 };
 
-export type UnstakeStore = {
+export type RestakeStore = {
   shards: Account[];
   proxiedAccount?: ProxiedAccount;
   signatory?: Account;

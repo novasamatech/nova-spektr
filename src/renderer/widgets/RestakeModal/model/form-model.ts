@@ -72,7 +72,7 @@ const $isMultisig = createStore<boolean>(false);
 const $isProxy = createStore<boolean>(false);
 
 const $accountsBalances = createStore<BalanceMap[]>([]);
-const $unstakeBalanceRange = createStore<string | string[]>(ZERO_BALANCE);
+const $restakeBalanceRange = createStore<string | string[]>(ZERO_BALANCE);
 const $signatoryBalance = createStore<string>(ZERO_BALANCE);
 const $proxyBalance = createStore<string>(ZERO_BALANCE);
 
@@ -167,13 +167,13 @@ const $restakeForm = createForm<FormParams>({
           errorText: 'transfer.notEnoughBalanceError',
           source: combine({
             network: $networkStore,
-            unstakeBalanceRange: $unstakeBalanceRange,
+            restakeBalanceRange: $restakeBalanceRange,
           }),
-          validator: (value, _, { network, unstakeBalanceRange }) => {
+          validator: (value, _, { network, restakeBalanceRange }) => {
             const amountBN = new BN(formatAmount(value, network.asset.precision));
-            const unstakeBalance = Array.isArray(unstakeBalanceRange) ? unstakeBalanceRange[1] : unstakeBalanceRange;
+            const restakeBalance = Array.isArray(restakeBalanceRange) ? restakeBalanceRange[1] : restakeBalanceRange;
 
-            return amountBN.lte(new BN(unstakeBalance));
+            return amountBN.lte(new BN(restakeBalance));
           },
         },
         {
@@ -505,7 +505,7 @@ sample({
 
     return unstakedBalances.length > 1 ? [ZERO_BALANCE, minUnstakedBalance] : minUnstakedBalance;
   },
-  target: $unstakeBalanceRange,
+  target: $restakeBalanceRange,
 });
 
 sample({
@@ -661,7 +661,7 @@ export const formModel = {
 
   $accounts,
   $accountsBalances,
-  $unstakeBalanceRange,
+  $restakeBalanceRange,
   $proxyBalance,
 
   $fee,
