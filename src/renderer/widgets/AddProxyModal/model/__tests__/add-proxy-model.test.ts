@@ -12,13 +12,14 @@ import { Step } from '../../lib/types';
 import { formModel } from '../form-model';
 import { confirmModel } from '../confirm-model';
 import { addProxyModel } from '../add-proxy-model';
+import { Transaction } from '@entities/transaction';
 
 jest.mock('@shared/lib/utils', () => ({
   ...jest.requireActual('@shared/lib/utils'),
   getProxyTypes: jest.fn().mockReturnValue(['Any', 'Staking']),
 }));
 
-describe('widgets/AddPureProxyModal/model/add-proxy-model', () => {
+describe('widgets/AddProxyModal/model/add-proxy-model', () => {
   beforeAll(() => {
     jest.useFakeTimers();
   });
@@ -49,14 +50,19 @@ describe('widgets/AddPureProxyModal/model/add-proxy-model', () => {
     await allSettled(formModel.output.formSubmitted, {
       scope,
       params: {
-        proxyDeposit: '1',
-        oldProxyDeposit: '0',
-        proxyNumber: 1,
-        chain: testChain,
-        account: { accountId: '0x00' } as unknown as Account,
-        delegate: '0x00',
-        proxyType: ProxyType.ANY,
-        description: '',
+        transactions: {
+          wrappedTx: {} as Transaction,
+          coreTx: {} as Transaction,
+        },
+        formData: {
+          proxyDeposit: '1',
+          proxyNumber: 1,
+          chain: testChain,
+          account: { accountId: '0x00' } as unknown as Account,
+          delegate: '0x00',
+          proxyType: ProxyType.ANY,
+          description: '',
+        },
       },
     });
 
