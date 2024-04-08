@@ -20,18 +20,10 @@ const OptionsContainerStyle =
 const TRANSITION_DURATION = 100;
 
 const Title = {
-  [ConnectionType.AUTO_BALANCE]: {
-    title: (t: TFunction) => t('settings.networks.selectorAutoBalance'),
-  },
-  [ConnectionType.DISABLED]: {
-    title: (t: TFunction) => t('settings.networks.selectorDisableNode'),
-  },
-  [ConnectionType.LIGHT_CLIENT]: {
-    title: (t: TFunction) => t('settings.networks.selectorLightClient'),
-  },
-  [ConnectionType.RPC_NODE]: {
-    title: (t: TFunction, nodeName?: string) => nodeName,
-  },
+  [ConnectionType.AUTO_BALANCE]: (t: TFunction) => t('settings.networks.selectorAutoBalance'),
+  [ConnectionType.DISABLED]: (t: TFunction) => t('settings.networks.selectorDisableNode'),
+  [ConnectionType.LIGHT_CLIENT]: (t: TFunction) => t('settings.networks.selectorLightClient'),
+  [ConnectionType.RPC_NODE]: (t: TFunction, nodeName?: string) => nodeName,
 };
 
 type Props = {
@@ -69,7 +61,7 @@ export const NetworkSelector = ({
             onClick={scroll}
           >
             <FootnoteText className="truncate">
-              {(selectedConnection && Title[selectedConnection.type].title(t, selectedConnection.node?.name)) ||
+              {(selectedConnection && Title[selectedConnection.type](t, selectedConnection.node?.name)) ||
                 t('settings.networks.selectorPlaceholder')}
             </FootnoteText>
             <Icon name="down" size={16} />
@@ -101,7 +93,7 @@ export const NetworkSelector = ({
                       <div className="flex items-center gap-x-4">
                         <div className="flex flex-col justify-center overflow-hidden flex-1 h-8 pr-1">
                           <FootnoteText className="text-text-secondary truncate">
-                            {Title[type].title(t, node?.name)}
+                            {Title[type](t, node?.name)}
                           </FootnoteText>
                           {node?.url && <HelpText className="text-text-tertiary truncate">{node.url}</HelpText>}
                         </div>

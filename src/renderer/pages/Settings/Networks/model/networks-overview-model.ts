@@ -10,11 +10,6 @@ import {
 } from '@features/network';
 import { Predicates } from '../lib/constants';
 
-sample({
-  clock: networksFilterModel.$filteredNetworks,
-  target: [activeNetworksModel.events.networksChanged, inactiveNetworksModel.events.networksChanged],
-});
-
 const $activeConnectionsMap = combine(activeNetworksModel.$activeNetworks, (list) => {
   return list.reduce<Record<ChainId, { nodes: ConnectionItem[]; selectedNode?: ConnectionItem }>>((acc, item) => {
     const nodes = networkSelectorUtils.getConnectionsList(item);
@@ -37,6 +32,11 @@ const $inactiveConnectionsMap = combine(inactiveNetworksModel.$inactiveNetworks,
 
     return acc;
   }, {});
+});
+
+sample({
+  clock: networksFilterModel.$filteredNetworks,
+  target: [activeNetworksModel.events.networksChanged, inactiveNetworksModel.events.networksChanged],
 });
 
 export const networksOverviewModel = {
