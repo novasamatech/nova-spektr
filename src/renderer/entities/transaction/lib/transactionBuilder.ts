@@ -82,18 +82,14 @@ type RedeemParams = {
   withChill?: boolean;
 };
 function buildRedeem({ chain, accountId }: RedeemParams): Transaction {
-  const address = toAddress(accountId, { prefix: chain.addressPrefix });
-
-  const redeemTx: Transaction = {
+  return {
     chainId: chain.chainId,
-    address,
+    address: toAddress(accountId, { prefix: chain.addressPrefix }),
     type: TransactionType.REDEEM,
     args: {
       numSlashingSpans: 1,
     },
   };
-
-  return redeemTx;
 }
 
 type ChillParams = {

@@ -105,18 +105,18 @@ sample({
     multisigTxs: $multisigTxs,
     coreTxs: $coreTxs,
   },
-  filter: (transferData) => {
-    return Boolean(transferData.withdrawStore) && Boolean(transferData.coreTxs) && Boolean(transferData.networkStore);
+  filter: (withdrawData) => {
+    return Boolean(withdrawData.withdrawStore) && Boolean(withdrawData.coreTxs) && Boolean(withdrawData.networkStore);
   },
-  fn: (transferData, signParams) => ({
+  fn: (withdrawData, signParams) => ({
     event: {
       ...signParams,
-      chain: transferData.networkStore!.chain,
-      account: transferData.withdrawStore!.shards[0],
-      signatory: transferData.withdrawStore!.signatory,
-      description: transferData.withdrawStore!.description,
-      transactions: transferData.coreTxs!,
-      multisigTxs: transferData.multisigTxs || undefined,
+      chain: withdrawData.networkStore!.chain,
+      account: withdrawData.withdrawStore!.shards[0],
+      signatory: withdrawData.withdrawStore!.signatory,
+      description: withdrawData.withdrawStore!.description,
+      transactions: withdrawData.coreTxs!,
+      multisigTxs: withdrawData.multisigTxs || undefined,
     },
     step: Step.SUBMIT,
   }),
