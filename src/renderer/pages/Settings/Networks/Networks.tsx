@@ -8,11 +8,13 @@ import { Paths } from '@shared/routes';
 import { BaseModal, InfoLink } from '@shared/ui';
 import { useToggle } from '@shared/lib/hooks';
 import { DEFAULT_TRANSITION } from '@shared/lib/utils';
-import { CustomRpcModal, NetworkSelector } from './components';
+import { CustomRpcModal } from './components';
 import type { RpcNode, ChainId } from '@shared/core';
 import { ConnectionType } from '@shared/core';
 import { networkModel, ExtendedChain, networkUtils } from '@entities/network';
 import { manageNetworkModel } from './model/manage-network-model';
+import { networksOverviewModel } from './model/networks-overview-model';
+import { SelectorPayload } from '@features/network/NetworkSelector';
 import {
   EmptyNetworks,
   NetworkList,
@@ -22,9 +24,9 @@ import {
   ActiveNetwork,
   NetworksFilter,
   networksFilterModel,
+  NetworkSelector,
+  networkSelectorModel,
 } from '@features/network';
-
-import './model/networks-overview-model';
 
 const MAX_LIGHT_CLIENTS = 3;
 
@@ -40,6 +42,8 @@ export const Networks = () => {
   const inactiveNetworks = useUnit(inactiveNetworksModel.$inactiveNetworks);
   const connections = useUnit(networkModel.$connections);
   const filterQuery = useUnit(networksFilterModel.$filterQuery);
+  const activeConnectionsMap = useUnit(networksOverviewModel.$activeConnectionsMap);
+  const inactiveConnectionsMap = useUnit(networksOverviewModel.$inactiveConnectionsMap);
 
   const [isCustomRpcOpen, toggleCustomRpc] = useToggle();
   const [isNetworksModalOpen, toggleNetworksModal] = useToggle(true);
@@ -120,7 +124,7 @@ export const Networks = () => {
       }
       if (!proceed) return;
 
-      manageNetworkModel.events.chainDisabled(connection.chainId);
+      networkSelectorModel.events.chainDisabled(connection.chainId);
     };
   };
 
@@ -141,11 +145,11 @@ export const Networks = () => {
       }
 
       if (type === ConnectionType.LIGHT_CLIENT) {
-        manageNetworkModel.events.lightClientSelected(chainId);
+        networkSelectorModel.events.lightClientSelected(chainId);
       } else if (type === ConnectionType.AUTO_BALANCE) {
-        manageNetworkModel.events.autoBalanceSelected(chainId);
+        networkSelectorModel.events.autoBalanceSelected(chainId);
       } else if (node) {
-        manageNetworkModel.events.rpcNodeSelected({ chainId, node });
+        networkSelectorModel.events.rpcNodeSelected({ chainId, node });
       }
     };
   };
@@ -174,6 +178,22 @@ export const Networks = () => {
     }, DEFAULT_TRANSITION);
   };
 
+  const changeConnection = (network: ExtendedChain) => {
+    const handleChangeCustomNode = changeCustomNode(network);
+    const handleDisableNetwork = disableNetwork(network);
+    const handleConnectToNode = connectToNode(network);
+
+    return async (payload?: SelectorPayload) => {
+      if (!payload) {
+        handleChangeCustomNode();
+      } else if (payload.type === ConnectionType.DISABLED) {
+        handleDisableNetwork();
+      } else {
+        handleConnectToNode(payload.type, payload.node);
+      }
+    };
+  };
+
   return (
     <BaseModal
       closeButton
@@ -194,9 +214,9 @@ export const Networks = () => {
           {(network) => (
             <InactiveNetwork networkItem={network}>
               <NetworkSelector
-                networkItem={network}
-                onConnect={connectToNode(network)}
-                onDisconnect={disableNetwork(network)}
+                nodesList={inactiveConnectionsMap[network.chainId].nodes}
+                selectedConnection={inactiveConnectionsMap[network.chainId].selectedNode}
+                onChange={changeConnection(network)}
                 onRemoveCustomNode={removeCustomNode(network.chainId)}
                 onChangeCustomNode={changeCustomNode(network)}
               />
@@ -212,9 +232,9 @@ export const Networks = () => {
           {(network) => (
             <ActiveNetwork networkItem={network}>
               <NetworkSelector
-                networkItem={network}
-                onConnect={connectToNode(network)}
-                onDisconnect={disableNetwork(network)}
+                nodesList={activeConnectionsMap[network.chainId].nodes}
+                selectedConnection={activeConnectionsMap[network.chainId].selectedNode}
+                onChange={changeConnection(network)}
                 onRemoveCustomNode={removeCustomNode(network.chainId)}
                 onChangeCustomNode={changeCustomNode(network)}
               />
