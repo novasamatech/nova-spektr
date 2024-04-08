@@ -6,6 +6,7 @@ import { Chain, ChainId, Asset, AccountId } from '@shared/core';
 export const transactionBuilder = {
   buildTransfer,
   buildUnstake,
+  buildRedeem,
   buildChill,
   buildBatchAll,
 };
@@ -73,6 +74,22 @@ function buildUnstake({ chain, accountId, asset, amount, withChill }: UnstakePar
     accountId,
     transactions: [buildChill({ chain, accountId }), unstakeTx],
   });
+}
+
+type RedeemParams = {
+  chain: Chain;
+  accountId: AccountId;
+  withChill?: boolean;
+};
+function buildRedeem({ chain, accountId }: RedeemParams): Transaction {
+  return {
+    chainId: chain.chainId,
+    address: toAddress(accountId, { prefix: chain.addressPrefix }),
+    type: TransactionType.REDEEM,
+    args: {
+      numSlashingSpans: 1,
+    },
+  };
 }
 
 type ChillParams = {
