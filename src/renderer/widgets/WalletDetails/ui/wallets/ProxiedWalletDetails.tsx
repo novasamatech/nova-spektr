@@ -7,12 +7,14 @@ import { networkModel } from '@entities/network';
 import { useModalClose, useToggle } from '@shared/lib/hooks';
 import { IconNames } from '@shared/ui/Icon/data';
 import { BaseModal, DropdownIconButton, FootnoteText, Icon, Tabs } from '@shared/ui';
-import { AccountsList, WalletCardLg, WalletIcon } from '@entities/wallet';
+import { AccountsList, WalletCardLg, WalletIcon, permissionUtils } from '@entities/wallet';
 import { RenameWalletModal } from '@features/wallets/RenameWallet';
 import { TabItem } from '@shared/ui/types';
 import { ProxiesList } from '../components/ProxiesList';
 import { NoProxiesAction } from '../components/NoProxiesAction';
 import { walletProviderModel } from '../../model/wallet-provider-model';
+import { AddProxy, addProxyModel } from '@widgets/AddProxyModal';
+import { AddPureProxied } from '@widgets/AddPureProxiedModal';
 
 const ProxyTypeOperation: Record<ProxyType, string> = {
   [ProxyType.ANY]: 'proxy.operations.any',
@@ -49,6 +51,17 @@ export const ProxiedWalletDetails = ({ wallet, proxyWallet, proxiedAccount, onCl
       onClick: toggleIsRenameModalOpen,
     },
   ];
+
+  if (
+    permissionUtils.canCreateAnyProxy(wallet, [proxiedAccount]) ||
+    permissionUtils.canCreateNonAnyProxy(wallet, [proxiedAccount])
+  ) {
+    Options.push({
+      icon: 'addCircle' as IconNames,
+      title: t('walletDetails.common.addProxyAction'),
+      onClick: addProxyModel.events.flowStarted,
+    });
+  }
 
   const ActionButton = (
     <DropdownIconButton name="more">
@@ -113,6 +126,9 @@ export const ProxiedWalletDetails = ({ wallet, proxyWallet, proxiedAccount, onCl
       </div>
 
       <RenameWalletModal wallet={wallet} isOpen={isRenameModalOpen} onClose={toggleIsRenameModalOpen} />
+
+      <AddProxy />
+      <AddPureProxied />
     </BaseModal>
   );
 };
