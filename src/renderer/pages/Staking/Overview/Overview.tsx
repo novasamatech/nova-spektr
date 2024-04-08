@@ -14,7 +14,7 @@ import { priceProviderModel } from '@entities/price';
 import { NominatorInfo } from './common/types';
 import { useNetworkData, networkUtils } from '@entities/network';
 import { ChainId, Chain, Address, Account, Stake, Validator, ShardAccount, ChainAccount } from '@shared/core';
-import { Bond, bondModel } from '@widgets/Staking/BondNominate';
+import { BondNominate, bondModel } from '@widgets/Staking/BondNominate';
 import { Unstake, unstakeModel } from '@widgets/Staking/Unstake';
 import { eraService } from '@entities/staking/api';
 import {
@@ -330,7 +330,7 @@ export const Overview = () => {
         onClose={toggleNominators}
       />
 
-      <Bond />
+      <BondNominate />
       <Unstake />
       <Outlet />
     </>

@@ -12,7 +12,7 @@ import { bondUtils } from '../lib/bond-utils';
 import { bondModel } from '../model/bond-model';
 import { Step } from '../lib/types';
 
-export const Bond = () => {
+export const BondNominate = () => {
   const { t } = useI18n();
 
   const step = useUnit(bondModel.$step);
