@@ -25,6 +25,7 @@ import {
   ValidatorsModal,
 } from '@entities/staking';
 import { Restake, restakeModel } from '@widgets/RestakeModal';
+import { Withdraw, withdrawModel } from '@widgets/Withdraw';
 
 export const Overview = () => {
   const { t } = useI18n();
@@ -227,7 +228,7 @@ export const Overview = () => {
       return;
     }
 
-    if (path === Paths.UNSTAKE || path === Paths.RESTAKE) {
+    if (path === Paths.UNSTAKE || path === Paths.RESTAKE || path === Paths.REDEEM) {
       const shards = accounts.filter((account) => {
         const address = toAddress(account.accountId, { prefix: addressPrefix });
 
@@ -237,6 +238,7 @@ export const Overview = () => {
       const model = {
         [Paths.UNSTAKE]: unstakeModel.events.flowStarted,
         [Paths.RESTAKE]: restakeModel.events.flowStarted,
+        [Paths.REDEEM]: withdrawModel.events.flowStarted,
       };
 
       model[path]({
@@ -332,6 +334,7 @@ export const Overview = () => {
 
       <Unstake />
       <Restake />
+      <Withdraw />
       <Outlet />
     </>
   );

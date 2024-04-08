@@ -7,6 +7,7 @@ export const transactionBuilder = {
   buildTransfer,
   buildUnstake,
   buildRestake,
+  buildRedeem,
   buildChill,
   buildBatchAll,
 };
@@ -89,6 +90,22 @@ function buildRestake({ chain, accountId, asset, amount }: RestakeParams): Trans
     type: TransactionType.RESTAKE,
     args: {
       value: formatAmount(amount, asset.precision),
+    },
+  };
+}
+
+type RedeemParams = {
+  chain: Chain;
+  accountId: AccountId;
+  withChill?: boolean;
+};
+function buildRedeem({ chain, accountId }: RedeemParams): Transaction {
+  return {
+    chainId: chain.chainId,
+    address: toAddress(accountId, { prefix: chain.addressPrefix }),
+    type: TransactionType.REDEEM,
+    args: {
+      numSlashingSpans: 1,
     },
   };
 }
