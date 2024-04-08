@@ -5,10 +5,10 @@ import { Chain, ChainId, Asset, AccountId, Address } from '@shared/core';
 
 export const transactionBuilder = {
   buildTransfer,
-  buildUnstake,
   buildBondNominate,
-  buildBond,
   buildNominate,
+  buildRedeem,
+  buildUnstake,
   buildChill,
   buildBatchAll,
 };
@@ -106,14 +106,30 @@ function buildNominate({ chain, accountId, nominators }: NominateParams): Transa
   };
 }
 
+type RedeemParams = {
+  chain: Chain;
+  accountId: AccountId;
+  withChill?: boolean;
+};
+function buildRedeem({ chain, accountId }: RedeemParams): Transaction {
+  return {
+    chainId: chain.chainId,
+    address: toAddress(accountId, { prefix: chain.addressPrefix }),
+    type: TransactionType.REDEEM,
+    args: {
+      numSlashingSpans: 1,
+    },
+  };
+}
+
 type UnstakeParams = {
   chain: Chain;
   asset: Asset;
   accountId: AccountId;
   amount: string;
-  chill?: boolean;
+  withChill?: boolean;
 };
-function buildUnstake({ chain, accountId, asset, amount, chill }: UnstakeParams): Transaction {
+function buildUnstake({ chain, accountId, asset, amount, withChill }: UnstakeParams): Transaction {
   const address = toAddress(accountId, { prefix: chain.addressPrefix });
 
   const unstakeTx: Transaction = {
@@ -125,7 +141,7 @@ function buildUnstake({ chain, accountId, asset, amount, chill }: UnstakeParams)
     },
   };
 
-  if (!chill) return unstakeTx;
+  if (!withChill) return unstakeTx;
 
   return buildBatchAll({
     chain,

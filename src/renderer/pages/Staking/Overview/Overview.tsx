@@ -13,10 +13,11 @@ import { accountUtils, permissionUtils, walletModel, walletUtils } from '@entiti
 import { priceProviderModel } from '@entities/price';
 import { NominatorInfo } from './common/types';
 import { useNetworkData, networkUtils } from '@entities/network';
+import { eraService } from '@entities/staking/api';
 import { ChainId, Chain, Address, Account, Stake, Validator, ShardAccount, ChainAccount } from '@shared/core';
 import { BondNominate, bondModel } from '@widgets/Staking/BondNominate';
 import { Unstake, unstakeModel } from '@widgets/Staking/Unstake';
-import { eraService } from '@entities/staking/api';
+import { Withdraw, withdrawModel } from '@widgets/Withdraw';
 import {
   useStakingData,
   StakingMap,
@@ -226,7 +227,7 @@ export const Overview = () => {
       return;
     }
 
-    if (path === Paths.UNSTAKE || path === Paths.BOND) {
+    if (path === Paths.BOND || path === Paths.UNSTAKE || path === Paths.REDEEM) {
       const shards = accounts.filter((account) => {
         const address = toAddress(account.accountId, { prefix: addressPrefix });
 
@@ -236,6 +237,7 @@ export const Overview = () => {
       const model = {
         [Paths.BOND]: bondModel.events.flowStarted,
         [Paths.UNSTAKE]: unstakeModel.events.flowStarted,
+        [Paths.REDEEM]: withdrawModel.events.flowStarted,
       };
 
       model[path]({
@@ -332,6 +334,7 @@ export const Overview = () => {
 
       <BondNominate />
       <Unstake />
+      <Withdraw />
       <Outlet />
     </>
   );
