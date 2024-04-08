@@ -77,7 +77,6 @@ type BondParams = {
 };
 function buildBond({ chain, asset, accountId, destination, amount }: BondParams): Transaction {
   const controller = toAddress(accountId, { prefix: chain.addressPrefix });
-  const payeeAddress = toAddress(destination, { prefix: chain.addressPrefix });
 
   return {
     chainId: chain.chainId,
@@ -86,7 +85,7 @@ function buildBond({ chain, asset, accountId, destination, amount }: BondParams)
     args: {
       value: formatAmount(amount, asset.precision),
       controller,
-      payee: destination ? { Account: payeeAddress } : 'Staked',
+      payee: destination ? { Account: destination } : 'Staked',
     },
   };
 }
