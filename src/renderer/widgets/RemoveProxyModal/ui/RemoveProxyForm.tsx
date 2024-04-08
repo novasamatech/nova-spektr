@@ -96,6 +96,7 @@ const DescriptionInput = () => {
   const {
     fields: { description },
   } = useForm(formModel.$proxyForm);
+
   const isMultisig = useUnit(formModel.$isMultisig);
 
   if (!isMultisig) return null;

@@ -63,14 +63,6 @@ export const ProxiedWalletDetails = ({ wallet, proxyWallet, proxiedAccount, onCl
     });
   }
 
-  // if (permissionUtils.canCreateAnyProxy(wallet, [proxiedAccount])) {
-  //   Options.push({
-  //     icon: 'addCircle' as IconNames,
-  //     title: t('walletDetails.common.addPureProxiedAction'),
-  //     onClick: addPureProxiedModel.events.flowStarted,
-  //   });
-  // }
-
   const ActionButton = (
     <DropdownIconButton name="more">
       <DropdownIconButton.Items>

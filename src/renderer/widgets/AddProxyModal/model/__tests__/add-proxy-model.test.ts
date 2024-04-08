@@ -12,7 +12,7 @@ import { Step } from '../../lib/types';
 import { formModel } from '../form-model';
 import { confirmModel } from '../confirm-model';
 import { addProxyModel } from '../add-proxy-model';
-import { Transaction } from '@/src/renderer/entities/transaction';
+import { Transaction } from '@entities/transaction';
 
 jest.mock('@shared/lib/utils', () => ({
   ...jest.requireActual('@shared/lib/utils'),

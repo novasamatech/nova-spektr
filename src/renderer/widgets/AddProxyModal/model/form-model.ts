@@ -457,7 +457,7 @@ const $fakeTx = combine(
     return {
       chainId: chain.chainId,
       address: toAddress(TEST_ACCOUNTS[0], { prefix: chain.addressPrefix }),
-      type: TransactionType.CREATE_PURE_PROXY,
+      type: TransactionType.ADD_PROXY,
       args: {
         delegate: toAddress(TEST_ACCOUNTS[0], { prefix: chain.addressPrefix }),
         proxyType: ProxyType.ANY,
