@@ -5,13 +5,11 @@ import { cnTw } from '@shared/lib/utils';
 import './Checkbox.css';
 
 type Props = {
-  defaultChecked?: boolean;
   position?: 'right' | 'left';
   checked?: boolean;
   semiChecked?: boolean;
   disabled?: boolean;
   readOnly?: boolean;
-  value?: any;
   className?: string;
   onChange?: (event: ChangeEvent<HTMLInputElement>, semiChecked?: boolean) => void;
   tabIndex?: number;
@@ -20,11 +18,9 @@ type Props = {
 export const Checkbox = ({
   checked,
   semiChecked,
-  defaultChecked,
   position = 'right',
   disabled,
   readOnly,
-  value,
   className = 'text-text-primary',
   children,
   onChange,
@@ -35,11 +31,9 @@ export const Checkbox = ({
     <input
       type="checkbox"
       name="checkbox"
-      defaultChecked={defaultChecked}
       disabled={disabled}
       readOnly={readOnly}
       checked={checked}
-      value={value}
       className={cnTw(
         'checkbox relative shrink-0 appearance-none w-4 h-4 text-white outline-offset-1',
         'rounded border border-filter-border bg-button-text',

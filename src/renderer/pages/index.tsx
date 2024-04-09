@@ -8,7 +8,7 @@ import { Operations } from './Operations/Operations';
 import { Notifications } from './Notifications/Notifications';
 import { Contacts, CreateContact, EditContact } from './AddressBook';
 import { Overview as Settings, Matrix, Currency, Networks } from './Settings';
-import { Overview as Staking, Bond, ChangeValidators, Restake, Destination, StakeMore } from './Staking';
+import { Overview as Staking, ChangeValidators, Restake, Destination, StakeMore } from './Staking';
 
 // React routes v6 hint:
 // https://github.com/remix-run/react-router/blob/main/docs/upgrading/v5.md#use-useroutes-instead-of-react-router-config
@@ -50,7 +50,6 @@ export const ROUTES_CONFIG: RouteObject[] = [
         path: Paths.STAKING,
         element: <Staking />,
         children: [
-          { path: Paths.BOND, element: <Bond /> },
           { path: Paths.RESTAKE, element: <Restake /> },
           { path: Paths.STAKE_MORE, element: <StakeMore /> },
           { path: Paths.DESTINATION, element: <Destination /> },

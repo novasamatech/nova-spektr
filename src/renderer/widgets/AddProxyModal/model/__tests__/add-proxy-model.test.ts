@@ -7,12 +7,12 @@ import { signModel } from '@features/operations/OperationSign/model/sign-model';
 import { submitModel } from '@features/operations/OperationSubmit';
 import { storageService } from '@shared/api/storage';
 import { initiatorWallet, signerWallet, testApi, testChain } from './mock';
+import { Transaction } from '@entities/transaction';
 import { Account, ConnectionStatus, ProxyType } from '@shared/core';
 import { Step } from '../../lib/types';
 import { formModel } from '../form-model';
 import { confirmModel } from '../confirm-model';
 import { addProxyModel } from '../add-proxy-model';
-import { Transaction } from '@entities/transaction';
 
 jest.mock('@shared/lib/utils', () => ({
   ...jest.requireActual('@shared/lib/utils'),
@@ -23,7 +23,6 @@ describe('widgets/AddProxyModal/model/add-proxy-model', () => {
   beforeAll(() => {
     jest.useFakeTimers();
   });
-
   beforeEach(() => {
     jest.restoreAllMocks();
   });

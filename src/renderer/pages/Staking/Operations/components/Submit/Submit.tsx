@@ -7,15 +7,6 @@ import { useUnit } from 'effector-react';
 import { useI18n, useMultisigChainContext } from '@app/providers';
 import { Paths } from '@shared/routes';
 import { HexString } from '@shared/core';
-import {
-  useTransaction,
-  ExtrinsicResultParams,
-  OperationResult,
-  Transaction,
-  MultisigEvent,
-  MultisigTransaction,
-  MultisigTxInitStatus,
-} from '@entities/transaction';
 import { toAccountId, DEFAULT_TRANSITION } from '@shared/lib/utils';
 import { Button } from '@shared/ui';
 import { useToggle } from '@shared/lib/hooks';
@@ -23,6 +14,15 @@ import { useMultisigTx, useMultisigEvent } from '@entities/multisig';
 import type { Account, MultisigAccount } from '@shared/core';
 import { accountUtils } from '@entities/wallet';
 import { matrixModel } from '@entities/matrix';
+import {
+  ExtrinsicResultParams,
+  OperationResult,
+  Transaction,
+  MultisigEvent,
+  MultisigTransaction,
+  MultisigTxInitStatus,
+  transactionService,
+} from '@entities/transaction';
 
 type ResultProps = Pick<ComponentProps<typeof OperationResult>, 'title' | 'description' | 'variant'>;
 
@@ -45,7 +45,6 @@ export const Submit = ({ api, accounts, txs, multisigTx, unsignedTx, signatures,
   const matrix = useUnit(matrixModel.$matrix);
 
   const navigate = useNavigate();
-  const { submitAndWatchExtrinsic, getSignedExtrinsic } = useTransaction();
   const { addTask } = useMultisigChainContext();
 
   const { addMultisigTx } = useMultisigTx({ addTask });
@@ -74,13 +73,13 @@ export const Submit = ({ api, accounts, txs, multisigTx, unsignedTx, signatures,
 
   const submitExtrinsic = async (signatures: HexString[]): Promise<void> => {
     const extrinsicRequests = unsignedTx.map((unsigned, index) => {
-      return getSignedExtrinsic(unsigned, signatures[index], api);
+      return transactionService.getSignedExtrinsic(unsigned, signatures[index], api);
     });
 
     const allExtrinsics = await Promise.all(extrinsicRequests);
 
     allExtrinsics.forEach((extrinsic, index) => {
-      submitAndWatchExtrinsic(extrinsic, unsignedTx[index], api, async (executed, params) => {
+      transactionService.submitAndWatchExtrinsic(extrinsic, unsignedTx[index], api, async (executed, params) => {
         if (executed) {
           const typedParams = params as ExtrinsicResultParams;
 

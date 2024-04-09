@@ -7,13 +7,13 @@ import { RadioOption, RadioResult } from './common/types';
 import { LabelText } from '@shared/ui';
 import './RadioGroup.css';
 
-type Props = {
+type Props<T extends any = any> = {
   name?: string;
   label?: string;
-  activeId?: RadioOption['id'];
-  options: RadioOption[];
+  activeId?: string;
+  options: RadioOption<T>[];
   className?: string;
-  onChange: (data: RadioResult) => void;
+  onChange: (data: RadioResult<T>) => void;
 };
 
 const RadioGroupRoot = ({
@@ -33,9 +33,7 @@ const RadioGroupRoot = ({
     </HeadlessRadioGroup>
   );
 
-  if (!label) {
-    return radioElement;
-  }
+  if (!label) return radioElement;
 
   return (
     <div className="flex flex-col gap-y-2">
