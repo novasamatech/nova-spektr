@@ -116,7 +116,7 @@ sample({
       signatory: transferData.restakeStore!.signatory,
       description: transferData.restakeStore!.description,
       transactions: transferData.coreTxs!,
-      multisigTxs: transferData.multisigTxs || undefined,
+      multisigTxs: transferData.multisigTxs || [],
     },
     step: Step.SUBMIT,
   }),

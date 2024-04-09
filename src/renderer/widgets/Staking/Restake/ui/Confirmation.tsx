@@ -202,7 +202,6 @@ export const Confirmation = ({ onGoBack }: Props) => {
         amounts={['0']}
         chainId={confirmStore.chain.chainId}
         asset={confirmStore.asset}
-        explorers={confirmStore.chain.explorers}
         addressPrefix={confirmStore.chain.addressPrefix}
         onClose={toggleAccounts}
       />

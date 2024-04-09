@@ -19,7 +19,7 @@ import { BondExtra, bondExtraModel } from '@widgets/Staking/BondExtra';
 import { Unstake, unstakeModel } from '@widgets/Staking/Unstake';
 import { Nominate, nominateModel } from '@widgets/Staking/Nominate';
 import { Withdraw, withdrawModel } from '@widgets/Staking/Withdraw';
-import { Restake, restakeModel } from '@widgets/RestakeModal';
+import { Restake, restakeModel } from '@widgets/Staking/Restake';
 import { NominatorInfo } from './common/types';
 import {
   useStakingData,

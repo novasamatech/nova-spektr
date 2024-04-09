@@ -10,6 +10,7 @@ import { balanceModel, balanceUtils } from '@entities/balance';
 import { networkModel, networkUtils } from '@entities/network';
 import type { Account, PartialBy, ProxiedAccount, Chain, Asset, Address, ChainId } from '@shared/core';
 import { useStakingData, StakingMap } from '@entities/staking';
+import { NetworkStore } from '../lib/types';
 import {
   transferableAmount,
   getRelaychainAsset,
@@ -19,7 +20,6 @@ import {
   ZERO_BALANCE,
   unlockingAmount,
 } from '@shared/lib/utils';
-import { NetworkStore } from '../lib/types';
 import {
   Transaction,
   transactionBuilder,

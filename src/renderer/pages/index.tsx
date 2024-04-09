@@ -49,9 +49,7 @@ export const ROUTES_CONFIG: RouteObject[] = [
       {
         path: Paths.STAKING,
         element: <Staking />,
-        children: [
-          { path: Paths.DESTINATION, element: <Destination /> },
-        ],
+        children: [{ path: Paths.DESTINATION, element: <Destination /> }],
       },
     ],
   },
