@@ -116,7 +116,7 @@ sample({
       signatory: withdrawData.withdrawStore!.signatory,
       description: withdrawData.withdrawStore!.description,
       transactions: withdrawData.coreTxs!,
-      multisigTxs: withdrawData.multisigTxs || undefined,
+      multisigTxs: withdrawData.multisigTxs || [],
     },
     step: Step.SUBMIT,
   }),

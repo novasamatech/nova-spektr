@@ -1,37 +1,29 @@
-import { createEvent, combine, sample, restore } from 'effector';
+import { createEvent, combine, restore } from 'effector';
 
-import { Chain, Account, Asset, type ProxiedAccount } from '@shared/core';
-import { networkModel } from '@entities/network';
+import { Chain, Account, Asset, type ProxiedAccount, Validator } from '@shared/core';
 import { walletModel, walletUtils } from '@entities/wallet';
 
 type Input = {
   chain: Chain;
   asset: Asset;
+
   shards: Account[];
+  validators: Validator[];
   proxiedAccount?: ProxiedAccount;
   signatory?: Account;
-  amount: string;
   description: string;
-
-  fee: string;
-  totalFee: string;
-  multisigDeposit: string;
 };
 
 const formInitiated = createEvent<Input>();
 const formSubmitted = createEvent();
 
+const feeDataChanged = createEvent<Record<'fee' | 'totalFee' | 'multisigDeposit', string>>();
+const isFeeLoadingChanged = createEvent<boolean>();
+
 const $confirmStore = restore(formInitiated, null);
 
-const $api = combine(
-  {
-    apis: networkModel.$apis,
-    store: $confirmStore,
-  },
-  ({ apis, store }) => {
-    return store ? apis[store.chain.chainId] : null;
-  },
-);
+const $feeData = restore(feeDataChanged, { fee: '0', totalFee: '0', multisigDeposit: '0' });
+const $isFeeLoading = restore(isFeeLoadingChanged, true);
 
 const $initiatorWallet = combine(
   {
@@ -72,20 +64,19 @@ const $signerWallet = combine(
   { skipVoid: false },
 );
 
-sample({
-  clock: formInitiated,
-  target: $confirmStore,
-});
-
 export const confirmModel = {
   $confirmStore,
   $initiatorWallet,
   $proxiedWallet,
   $signerWallet,
 
-  $api,
+  $feeData,
+  $isFeeLoading,
+
   events: {
     formInitiated,
+    feeDataChanged,
+    isFeeLoadingChanged,
   },
   output: {
     formSubmitted,

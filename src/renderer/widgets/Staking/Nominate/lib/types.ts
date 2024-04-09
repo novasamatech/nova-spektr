@@ -1,25 +1,28 @@
-import type { Account, Chain, ProxiedAccount } from '@shared/core';
+import type { Account, Chain, Wallet, Validator } from '@shared/core';
 
 export const enum Step {
   NONE,
   INIT,
+  VALIDATORS,
   CONFIRM,
   SIGN,
   SUBMIT,
 }
 
-export type NetworkStore = {
-  chain: Chain;
+export type WalletData = {
+  wallet: Wallet;
   shards: Account[];
+  chain: Chain;
 };
 
-export type UnstakeStore = {
+export type NominateData = {
   shards: Account[];
-  proxiedAccount?: ProxiedAccount;
   signatory?: Account;
-  amount: string;
+  validators: Validator[];
   description: string;
+};
 
+export type FeeData = {
   fee: string;
   totalFee: string;
   multisigDeposit: string;

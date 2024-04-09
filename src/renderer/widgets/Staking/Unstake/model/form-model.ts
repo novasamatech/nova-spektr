@@ -10,7 +10,14 @@ import { balanceModel, balanceUtils } from '@entities/balance';
 import { networkModel, networkUtils } from '@entities/network';
 import type { Account, PartialBy, ProxiedAccount, Chain, Asset, Address, ChainId } from '@shared/core';
 import { useStakingData, StakingMap } from '@entities/staking';
-import { transferableAmount, getRelaychainAsset, toAddress, dictionary, formatAmount } from '@shared/lib/utils';
+import {
+  transferableAmount,
+  getRelaychainAsset,
+  toAddress,
+  dictionary,
+  formatAmount,
+  ZERO_BALANCE,
+} from '@shared/lib/utils';
 import { NetworkStore } from '../lib/types';
 import {
   Transaction,
@@ -18,6 +25,7 @@ import {
   transactionService,
   MultisigTxWrapper,
   ProxyTxWrapper,
+  DESCRIPTION_LENGTH,
 } from '@entities/transaction';
 
 type BalanceMap = { balance: string; stake: string };
@@ -55,7 +63,7 @@ const isFeeLoadingChanged = createEvent<boolean>();
 
 const $networkStore = createStore<{ chain: Chain; asset: Asset } | null>(null);
 const $staking = restore(stakingSet, null);
-const $minBond = createStore<string>('0');
+const $minBond = createStore<string>(ZERO_BALANCE);
 const $stakingUnsub = createStore<() => void>(noop);
 
 const $shards = createStore<Account[]>([]);
@@ -63,13 +71,13 @@ const $isMultisig = createStore<boolean>(false);
 const $isProxy = createStore<boolean>(false);
 
 const $accountsBalances = createStore<BalanceMap[]>([]);
-const $unstakeBalanceRange = createStore<string | string[]>('0');
-const $signatoryBalance = createStore<string>('0');
-const $proxyBalance = createStore<string>('0');
+const $unstakeBalanceRange = createStore<string | string[]>(ZERO_BALANCE);
+const $signatoryBalance = createStore<string>(ZERO_BALANCE);
+const $proxyBalance = createStore<string>(ZERO_BALANCE);
 
-const $fee = restore(feeChanged, '0');
-const $totalFee = restore(totalFeeChanged, '0');
-const $multisigDeposit = restore(multisigDepositChanged, '0');
+const $fee = restore(feeChanged, ZERO_BALANCE);
+const $totalFee = restore(totalFeeChanged, ZERO_BALANCE);
+const $multisigDeposit = restore(multisigDepositChanged, ZERO_BALANCE);
 const $isFeeLoading = restore(isFeeLoadingChanged, true);
 
 const $selectedSignatories = createStore<Account[]>([]);
@@ -151,7 +159,7 @@ const $unstakeForm = createForm<FormParams>({
         {
           name: 'notZero',
           errorText: 'transfer.requiredAmountError',
-          validator: (value) => value !== '0',
+          validator: (value) => value !== ZERO_BALANCE,
         },
         {
           name: 'notEnoughBalance',
@@ -190,7 +198,7 @@ const $unstakeForm = createForm<FormParams>({
         {
           name: 'maxLength',
           errorText: 'transfer.descriptionLengthError',
-          validator: (value) => !value || value.length <= 120,
+          validator: (value) => !value || value.length <= DESCRIPTION_LENGTH,
         },
       ],
     },
@@ -297,7 +305,7 @@ const $accounts = combine(
     return shards.map((shard) => {
       const balance = balanceUtils.getBalance(balances, shard.accountId, chain.chainId, asset.assetId.toString());
       const address = toAddress(shard.accountId, { prefix: chain.addressPrefix });
-      const activeStake = staking[address]?.active || '0';
+      const activeStake = staking[address]?.active || ZERO_BALANCE;
 
       return {
         account: shard,
@@ -374,15 +382,15 @@ const $pureTxs = combine(
 
     return form.shards.map((shard) => {
       const address = toAddress(shard.accountId, { prefix: network.chain.addressPrefix });
-      const leftAmount = new BN(staking?.[address]?.active || '0').sub(new BN(amount));
-      const chill = leftAmount.lte(new BN(minBond));
+      const leftAmount = new BN(staking?.[address]?.active || ZERO_BALANCE).sub(new BN(amount));
+      const withChill = leftAmount.lte(new BN(minBond));
 
       return transactionBuilder.buildUnstake({
         chain: network.chain,
         asset: network.asset,
         accountId: shard.accountId,
-        amount: form.amount || '0',
-        chill,
+        amount: form.amount || ZERO_BALANCE,
+        withChill,
       });
     });
   },
@@ -489,12 +497,12 @@ sample({
   },
   filter: ({ staking, networkStore }) => Boolean(staking) && Boolean(networkStore),
   fn: ({ staking, networkStore, shards }) => {
-    if (shards.length === 0) return '0';
+    if (shards.length === 0) return ZERO_BALANCE;
 
     const stakedBalances = shards.map((shard) => {
       const address = toAddress(shard.accountId, { prefix: networkStore!.chain.addressPrefix });
 
-      return staking![address]?.active || '0';
+      return staking![address]?.active || ZERO_BALANCE;
     });
 
     const minStakedBalance = stakedBalances.reduce<string>((acc, balance) => {
@@ -503,7 +511,7 @@ sample({
       return new BN(balance).lt(new BN(acc)) ? balance : acc;
     }, stakedBalances[0]);
 
-    return ['0', minStakedBalance];
+    return [ZERO_BALANCE, minStakedBalance];
   },
   target: $unstakeBalanceRange,
 });
@@ -540,7 +548,7 @@ sample({
   fn: (signatories, signatory) => {
     const match = signatories[0].find(({ signer }) => signer.id === signatory.id);
 
-    return match?.balance || '0';
+    return match?.balance || ZERO_BALANCE;
   },
   target: $signatoryBalance,
 });
