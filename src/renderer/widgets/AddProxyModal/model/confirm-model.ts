@@ -1,6 +1,6 @@
 import { createEvent, combine, restore } from 'effector';
 
-import { Chain, Account, ProxyType, Address } from '@shared/core';
+import { Chain, Account, ProxyType, Address, ProxiedAccount } from '@shared/core';
 import { networkModel } from '@entities/network';
 import { Transaction } from '@entities/transaction';
 import { walletModel, walletUtils } from '@entities/wallet';
@@ -13,15 +13,16 @@ type Input = {
   delegate: Address;
   description: string;
   transaction: Transaction;
+  proxiedAccount?: ProxiedAccount;
 
-  oldProxyDeposit: string;
+  proxyDeposit: string;
   proxyNumber: number;
 };
 
 const formInitiated = createEvent<Input>();
 const formSubmitted = createEvent();
 
-const $confirmStore = restore<Input>(formInitiated, null);
+const $confirmStore = restore<Input>(formInitiated, null).reset(formSubmitted);
 
 const $api = combine(
   {
@@ -43,6 +44,20 @@ const $initiatorWallet = combine(
 
     return walletUtils.getWalletById(wallets, store.account.walletId);
   },
+  { skipVoid: false },
+);
+
+const $proxiedWallet = combine(
+  {
+    store: $confirmStore,
+    wallets: walletModel.$wallets,
+  },
+  ({ store, wallets }) => {
+    if (!store || !store.proxiedAccount) return undefined;
+
+    return walletUtils.getWalletById(wallets, store.proxiedAccount.walletId);
+  },
+  { skipVoid: false },
 );
 
 const $signerWallet = combine(
@@ -55,12 +70,14 @@ const $signerWallet = combine(
 
     return walletUtils.getWalletById(wallets, store.signatory?.walletId || store.account.walletId);
   },
+  { skipVoid: false },
 );
 
 export const confirmModel = {
   $confirmStore,
   $initiatorWallet,
   $signerWallet,
+  $proxiedWallet,
   $api,
   events: {
     formInitiated,

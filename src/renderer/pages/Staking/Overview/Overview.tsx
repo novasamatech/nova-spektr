@@ -11,12 +11,17 @@ import { useToggle } from '@shared/lib/hooks';
 import { AboutStaking, NetworkInfo, NominatorsList, Actions, InactiveChain } from './components';
 import { accountUtils, permissionUtils, walletModel, walletUtils } from '@entities/wallet';
 import { priceProviderModel } from '@entities/price';
-import { NominatorInfo } from './common/types';
 import { useNetworkData, networkUtils } from '@entities/network';
-import { ChainId, Chain, Address, Account, Stake, Validator, ShardAccount, ChainAccount } from '@shared/core';
-import { BondNominate, bondModel } from '@widgets/Staking/BondNominate';
-import { Unstake, unstakeModel } from '@widgets/Staking/Unstake';
 import { eraService } from '@entities/staking/api';
+import { ChainId, Chain, Address, Account, Stake, Validator, ShardAccount, ChainAccount } from '@shared/core';
+import { BondNominate, bondNominateModel } from '@widgets/Staking/BondNominate';
+import { BondExtra, bondExtraModel } from '@widgets/Staking/BondExtra';
+import { Unstake, unstakeModel } from '@widgets/Staking/Unstake';
+import { Nominate, nominateModel } from '@widgets/Staking/Nominate';
+import { Withdraw, withdrawModel } from '@widgets/Staking/Withdraw';
+import { Restake, restakeModel } from '@widgets/Staking/Restake';
+import { RewardDestination, destinationModel } from '@widgets/Staking/RewardDestination';
+import { NominatorInfo } from './common/types';
 import {
   useStakingData,
   StakingMap,
@@ -25,7 +30,6 @@ import {
   useStakingRewards,
   ValidatorsModal,
 } from '@entities/staking';
-import { RewardDestination, destinationModel } from '@widgets/Staking/RewardDestination';
 
 export const Overview = () => {
   const { t } = useI18n();
@@ -227,7 +231,15 @@ export const Overview = () => {
       return;
     }
 
-    if (path === Paths.UNSTAKE || path === Paths.BOND || path === Paths.DESTINATION) {
+    if (
+      path === Paths.BOND ||
+      path === Paths.STAKE_MORE ||
+      path === Paths.UNSTAKE ||
+      path === Paths.VALIDATORS ||
+      path === Paths.RESTAKE ||
+      path === Paths.REDEEM ||
+      path === Paths.DESTINATION
+    ) {
       const shards = accounts.filter((account) => {
         const address = toAddress(account.accountId, { prefix: addressPrefix });
 
@@ -235,8 +247,12 @@ export const Overview = () => {
       });
 
       const model = {
-        [Paths.BOND]: bondModel.events.flowStarted,
+        [Paths.BOND]: bondNominateModel.events.flowStarted,
+        [Paths.STAKE_MORE]: bondExtraModel.events.flowStarted,
         [Paths.UNSTAKE]: unstakeModel.events.flowStarted,
+        [Paths.RESTAKE]: restakeModel.events.flowStarted,
+        [Paths.VALIDATORS]: nominateModel.events.flowStarted,
+        [Paths.REDEEM]: withdrawModel.events.flowStarted,
         [Paths.DESTINATION]: destinationModel.events.flowStarted,
       };
 
@@ -333,8 +349,13 @@ export const Overview = () => {
       />
 
       <BondNominate />
+      <BondExtra />
       <Unstake />
+      <Nominate />
+      <Restake />
+      <Withdraw />
       <RewardDestination />
+
       <Outlet />
     </>
   );

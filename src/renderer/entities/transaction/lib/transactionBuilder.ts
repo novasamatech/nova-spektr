@@ -1,14 +1,16 @@
 import { Transaction, TransactionType } from '../model/transaction';
 import { TransferType } from './common/constants';
-import { toAddress, TEST_ACCOUNTS, formatAmount, getAssetId, TEST_ADDRESS } from '@shared/lib/utils';
+import { toAddress, TEST_ACCOUNTS, formatAmount, getAssetId } from '@shared/lib/utils';
 import { Chain, ChainId, Asset, AccountId, Address } from '@shared/core';
 
 export const transactionBuilder = {
   buildTransfer,
-  buildUnstake,
   buildBondNominate,
-  buildBond,
+  buildBondExtra,
   buildNominate,
+  buildRestake,
+  buildRedeem,
+  buildUnstake,
   buildSetPayee,
   buildChill,
   buildBatchAll,
@@ -79,16 +81,27 @@ type BondParams = {
   amount: string;
 };
 function buildBond({ chain, asset, accountId, destination, amount }: BondParams): Transaction {
-  const controller = destination ? toAddress(destination, { prefix: chain.addressPrefix }) : '';
+  const controller = toAddress(accountId, { prefix: chain.addressPrefix });
 
   return {
     chainId: chain.chainId,
-    address: toAddress(accountId, { prefix: chain.addressPrefix }),
+    address: controller,
     type: TransactionType.BOND,
     args: {
       value: formatAmount(amount, asset.precision),
       controller,
-      payee: { Account: TEST_ADDRESS },
+      payee: destination ? { Account: destination } : 'Staked',
+    },
+  };
+}
+
+function buildBondExtra({ chain, asset, accountId, amount }: Omit<BondParams, 'destination'>): Transaction {
+  return {
+    chainId: chain.chainId,
+    address: toAddress(accountId, { prefix: chain.addressPrefix }),
+    type: TransactionType.STAKE_MORE,
+    args: {
+      maxAdditional: formatAmount(amount, asset.precision),
     },
   };
 }
@@ -107,20 +120,18 @@ function buildNominate({ chain, accountId, nominators }: NominateParams): Transa
   };
 }
 
-type RewardDestinationParams = {
+type RedeemParams = {
   chain: Chain;
   accountId: AccountId;
-  destination?: Address;
+  withChill?: boolean;
 };
-function buildSetPayee({ chain, accountId, destination }: RewardDestinationParams): Transaction {
-  const payee = destination ? { Account: destination } : 'Staked';
-
+function buildRedeem({ chain, accountId }: RedeemParams): Transaction {
   return {
     chainId: chain.chainId,
     address: toAddress(accountId, { prefix: chain.addressPrefix }),
-    type: TransactionType.DESTINATION,
+    type: TransactionType.REDEEM,
     args: {
-      payee,
+      numSlashingSpans: 1,
     },
   };
 }
@@ -130,9 +141,9 @@ type UnstakeParams = {
   asset: Asset;
   accountId: AccountId;
   amount: string;
-  chill?: boolean;
+  withChill?: boolean;
 };
-function buildUnstake({ chain, accountId, asset, amount, chill }: UnstakeParams): Transaction {
+function buildUnstake({ chain, accountId, asset, amount, withChill }: UnstakeParams): Transaction {
   const address = toAddress(accountId, { prefix: chain.addressPrefix });
 
   const unstakeTx: Transaction = {
@@ -144,13 +155,46 @@ function buildUnstake({ chain, accountId, asset, amount, chill }: UnstakeParams)
     },
   };
 
-  if (!chill) return unstakeTx;
+  if (!withChill) return unstakeTx;
 
   return buildBatchAll({
     chain,
     accountId,
     transactions: [buildChill({ chain, accountId }), unstakeTx],
   });
+}
+
+type RestakeParams = {
+  chain: Chain;
+  asset: Asset;
+  accountId: AccountId;
+  amount: string;
+};
+function buildRestake({ chain, accountId, asset, amount }: RestakeParams): Transaction {
+  return {
+    chainId: chain.chainId,
+    address: toAddress(accountId, { prefix: chain.addressPrefix }),
+    type: TransactionType.RESTAKE,
+    args: {
+      value: formatAmount(amount, asset.precision),
+    },
+  };
+}
+
+type SetPayeeParams = {
+  chain: Chain;
+  accountId: AccountId;
+  destination?: Address;
+};
+function buildSetPayee({ chain, accountId, destination }: SetPayeeParams): Transaction {
+  return {
+    chainId: chain.chainId,
+    address: toAddress(accountId, { prefix: chain.addressPrefix }),
+    type: TransactionType.DESTINATION,
+    args: {
+      payee: destination ? { Account: destination } : 'Staked',
+    },
+  };
 }
 
 type ChillParams = {

@@ -7,11 +7,11 @@ import { getMetadataPortalMetadataUrl, TROUBLESHOOTING_URL } from '../common/con
 
 type Props = {
   countdown: number;
-  onQrReset: () => void;
   chainId: ChainId;
+  onQrReset: () => void;
 };
 
-export const QrGeneratorContainer = ({ countdown, onQrReset, chainId, children }: PropsWithChildren<Props>) => {
+export const QrGeneratorContainer = ({ countdown, chainId, children, onQrReset }: PropsWithChildren<Props>) => {
   const { t } = useI18n();
 
   return (

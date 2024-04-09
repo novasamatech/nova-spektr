@@ -42,7 +42,7 @@ export const Confirmation = ({ onGoBack }: Props) => {
     <>
       <div className="flex flex-col items-center pt-4 gap-y-4 pb-4 px-5 w-modal">
         <div className="flex flex-col items-center gap-y-3 mb-2">
-          <Icon className="text-icon-default" name="unstakeConfirm" size={60} />
+          <Icon className="text-icon-default" name="startStakingConfirm" size={60} />
 
           <div className={cnTw('flex flex-col gap-y-1 items-center')}>
             <AssetBalance
@@ -157,7 +157,7 @@ export const Confirmation = ({ onGoBack }: Props) => {
             </button>
           </DetailRow>
 
-          <hr className="border-filter-border w-full" />
+          <hr className="border-filter-border w-full pr-2" />
           <DetailRow label={t('staking.confirmation.rewardsDestinationLabel')}>
             {confirmStore.destination ? (
               <AddressWithExplorers
