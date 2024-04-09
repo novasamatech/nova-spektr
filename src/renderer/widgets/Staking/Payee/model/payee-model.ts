@@ -4,16 +4,14 @@ import { spread, delay } from 'patronum';
 import { BN } from '@polkadot/util';
 
 import { walletModel } from '@entities/wallet';
-import { TEST_ADDRESS, getRelaychainAsset, nonNullable } from '@shared/lib/utils';
+import { getRelaychainAsset, nonNullable } from '@shared/lib/utils';
 import { networkModel } from '@entities/network';
-import { validatorsService } from '@entities/staking';
 import { submitModel } from '@features/operations/OperationSubmit';
 import { signModel } from '@features/operations/OperationSign/model/sign-model';
 import { Account } from '@shared/core';
-import { Step, BondData, WalletData, FeeData } from '../lib/types';
-import { bondUtils } from '../lib/bond-utils';
+import { Step, PayeeData, WalletData, FeeData } from '../lib/types';
+import { payeeUtils } from '../lib/payee-utils';
 import { formModel } from './form-model';
-import { validatorsModel } from './validators-model';
 import { confirmModel } from './confirm-model';
 import {
   TxWrapper,
@@ -33,17 +31,11 @@ const flowFinished = createEvent();
 const $step = createStore<Step>(Step.NONE);
 
 const $walletData = restore<WalletData | null>(flowStarted, null);
-const $bondData = createStore<BondData | null>(null);
+const $payeeData = createStore<PayeeData | null>(null);
 const $feeData = createStore<FeeData>({ fee: '0', totalFee: '0', multisigDeposit: '0' });
 
 const $txWrappers = createStore<TxWrapper[]>([]);
 const $pureTxs = createStore<Transaction[]>([]);
-
-const $maxValidators = createStore<number>(0);
-
-const getMaxValidatorsFx = createEffect((api: ApiPromise): number => {
-  return validatorsService.getMaxValidators(api);
-});
 
 type FeeParams = {
   api: ApiPromise;
@@ -96,21 +88,6 @@ const $transactions = combine(
   { skipVoid: false },
 );
 
-// Max validators
-
-sample({
-  clock: $api.updates,
-  source: $maxValidators,
-  filter: (maxValidators, api) => !maxValidators && Boolean(api),
-  fn: (_, api) => api!,
-  target: getMaxValidatorsFx,
-});
-
-sample({
-  clock: getMaxValidatorsFx.doneData,
-  target: $maxValidators,
-});
-
 // Transaction & Form
 
 sample({
@@ -124,7 +101,7 @@ sample({
   fn: ({ walletData, wallets, accounts }, data) => {
     const signatories = 'signatory' in data && data.signatory ? [data.signatory] : [];
 
-    return bondUtils.getTxWrappers({
+    return payeeUtils.getTxWrappers({
       chain: walletData!.chain,
       wallet: walletData!.wallet,
       wallets,
@@ -158,36 +135,20 @@ sample({
 });
 
 sample({
-  clock: [$maxValidators.updates, formModel.output.formChanged, validatorsModel.output.formSubmitted],
-  source: $bondData,
-  filter: (bondData, data) => Boolean(bondData) || typeof data !== 'number',
-  fn: (bondData, data) => {
-    if (typeof data === 'number') {
-      return { ...(bondData || ({} as BondData)), validators: Array(data).fill({ address: TEST_ADDRESS }) };
-    }
-
-    if (Array.isArray(data)) {
-      return { ...bondData!, validators: data! };
-    }
-
-    return { ...data!, validators: bondData?.validators || [] };
-  },
-  target: $bondData,
+  clock: formModel.output.formChanged,
+  target: $payeeData,
 });
 
 sample({
-  clock: $bondData.updates,
+  clock: $payeeData.updates,
   source: $walletData,
-  filter: (walletData, bondData) => Boolean(walletData) && Boolean(bondData),
-  fn: (walletData, bondData) => {
-    return bondData!.shards.map((shard) => {
-      return transactionBuilder.buildBondNominate({
+  filter: (walletData, payeeData) => Boolean(walletData) && Boolean(payeeData),
+  fn: (walletData, payeeData) => {
+    return payeeData!.shards.map((shard) => {
+      return transactionBuilder.buildSetPayee({
         chain: walletData!.chain,
-        asset: walletData!.chain.assets[0],
         accountId: shard.accountId,
-        amount: bondData!.amount,
-        destination: bondData!.destination,
-        nominators: bondData!.validators.map(({ address }) => address),
+        destination: payeeData!.destination,
       });
     });
   },
@@ -268,35 +229,21 @@ sample({
 
 sample({
   clock: formModel.output.formSubmitted,
-  source: $walletData,
-  filter: (walletData: WalletData | null): walletData is WalletData => Boolean(walletData),
-  fn: ({ chain }) => ({
-    event: { chain, asset: getRelaychainAsset(chain.assets)! },
-    step: Step.VALIDATORS,
-  }),
-  target: spread({
-    event: validatorsModel.events.formInitiated,
-    step: stepChanged,
-  }),
-});
-
-sample({
-  clock: validatorsModel.output.formSubmitted,
   source: {
-    bondData: $bondData,
+    payeeData: $payeeData,
     feeData: $feeData,
     walletData: $walletData,
     txWrappers: $txWrappers,
   },
-  filter: ({ bondData, walletData }) => Boolean(bondData) && Boolean(walletData),
-  fn: ({ bondData, feeData, walletData, txWrappers }) => {
+  filter: ({ payeeData, walletData }) => Boolean(payeeData) && Boolean(walletData),
+  fn: ({ payeeData, feeData, walletData, txWrappers }) => {
     const wrapper = txWrappers.find(({ kind }) => kind === WrapperKind.PROXY) as ProxyTxWrapper;
 
     return {
       event: {
         chain: walletData!.chain,
         asset: getRelaychainAsset(walletData!.chain.assets)!,
-        ...bondData!,
+        ...payeeData!,
         ...feeData,
         ...(wrapper && { proxiedAccount: wrapper.proxiedAccount }),
         ...(wrapper && { shards: [wrapper.proxyAccount] }),
@@ -313,22 +260,22 @@ sample({
 sample({
   clock: confirmModel.output.formSubmitted,
   source: {
-    bondData: $bondData,
+    payeeData: $payeeData,
     walletData: $walletData,
     transactions: $transactions,
     txWrappers: $txWrappers,
   },
-  filter: ({ bondData, walletData, transactions }) => {
-    return Boolean(bondData) && Boolean(walletData) && Boolean(transactions);
+  filter: ({ payeeData, walletData, transactions }) => {
+    return Boolean(payeeData) && Boolean(walletData) && Boolean(transactions);
   },
-  fn: ({ bondData, walletData, transactions, txWrappers }) => {
+  fn: ({ payeeData, walletData, transactions, txWrappers }) => {
     const wrapper = txWrappers.find(({ kind }) => kind === WrapperKind.PROXY) as ProxyTxWrapper;
 
     return {
       event: {
         chain: walletData!.chain,
-        accounts: wrapper ? [wrapper.proxyAccount] : bondData!.shards,
-        signatory: bondData!.signatory,
+        accounts: wrapper ? [wrapper.proxyAccount] : payeeData!.shards,
+        signatory: payeeData!.signatory,
         transactions: transactions!.map((tx) => tx.wrappedTx),
       },
       step: Step.SIGN,
@@ -343,22 +290,22 @@ sample({
 sample({
   clock: signModel.output.formSubmitted,
   source: {
-    bondData: $bondData,
+    payeeData: $payeeData,
     walletData: $walletData,
     transactions: $transactions,
   },
-  filter: ({ bondData, walletData, transactions }) => {
-    return Boolean(bondData) && Boolean(walletData) && Boolean(transactions);
+  filter: ({ payeeData, walletData, transactions }) => {
+    return Boolean(payeeData) && Boolean(walletData) && Boolean(transactions);
   },
-  fn: (bondFlowData, signParams) => ({
+  fn: (payeeFlowData, signParams) => ({
     event: {
       ...signParams,
-      chain: bondFlowData.walletData!.chain,
-      account: bondFlowData.bondData!.shards[0],
-      signatory: bondFlowData.bondData!.signatory,
-      description: bondFlowData.bondData!.description,
-      transactions: bondFlowData.transactions!.map((tx) => tx.coreTx),
-      multisigTxs: bondFlowData.transactions!.map((tx) => tx.multisigTx).filter(nonNullable),
+      chain: payeeFlowData.walletData!.chain,
+      account: payeeFlowData.payeeData!.shards[0],
+      signatory: payeeFlowData.payeeData!.signatory,
+      description: payeeFlowData.payeeData!.description,
+      transactions: payeeFlowData.transactions!.map((tx) => tx.coreTx),
+      multisigTxs: payeeFlowData.transactions!.map((tx) => tx.multisigTx).filter(nonNullable),
     },
     step: Step.SUBMIT,
   }),
@@ -376,10 +323,10 @@ sample({
 sample({
   clock: flowFinished,
   fn: () => Step.NONE,
-  target: [stepChanged, formModel.events.formCleared, validatorsModel.events.formCleared],
+  target: [stepChanged, formModel.events.formCleared],
 });
 
-export const bondModel = {
+export const payeeModel = {
   $step,
   $walletData,
   events: {

@@ -347,7 +347,7 @@ const $pureTxs = combine(
     if (!network || !isConnected) return undefined;
 
     return form.shards.map((shard) => {
-      return transactionBuilder.buildRedeem({
+      return transactionBuilder.buildWithdraw({
         chain: network.chain,
         accountId: shard.accountId,
       });

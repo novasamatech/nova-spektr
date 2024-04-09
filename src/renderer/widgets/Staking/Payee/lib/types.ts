@@ -1,9 +1,8 @@
-import type { Account, Chain, Address, Wallet, Validator } from '@shared/core';
+import type { Account, Chain, Address, Wallet } from '@shared/core';
 
 export const enum Step {
   NONE,
   INIT,
-  VALIDATORS,
   CONFIRM,
   SIGN,
   SUBMIT,
@@ -15,12 +14,10 @@ export type WalletData = {
   chain: Chain;
 };
 
-export type BondNominateData = {
+export type PayeeData = {
   shards: Account[];
   signatory?: Account;
-  amount: string;
   destination: Address;
-  validators: Validator[];
   description: string;
 };
 

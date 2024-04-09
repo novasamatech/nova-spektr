@@ -9,7 +9,7 @@ import { networkModel } from '@entities/network';
 import { submitModel } from '@features/operations/OperationSubmit';
 import { signModel } from '@features/operations/OperationSign/model/sign-model';
 import { Account } from '@shared/core';
-import { Step, BondData, WalletData, FeeData } from '../lib/types';
+import { Step, BondExtraData, WalletData, FeeData } from '../lib/types';
 import { bondExtraUtils } from '../lib/bond-extra-utils';
 import { formModel } from './form-model';
 import { confirmModel } from './confirm-model';
@@ -31,7 +31,7 @@ const flowFinished = createEvent();
 const $step = createStore<Step>(Step.NONE);
 
 const $walletData = restore<WalletData | null>(flowStarted, null);
-const $bondData = createStore<BondData | null>(null);
+const $bondExtraData = createStore<BondExtraData | null>(null);
 const $feeData = createStore<FeeData>({ fee: '0', totalFee: '0', multisigDeposit: '0' });
 
 const $txWrappers = createStore<TxWrapper[]>([]);
@@ -136,20 +136,20 @@ sample({
 
 sample({
   clock: formModel.output.formChanged,
-  target: $bondData,
+  target: $bondExtraData,
 });
 
 sample({
-  clock: $bondData.updates,
+  clock: $bondExtraData.updates,
   source: $walletData,
-  filter: (walletData, bondData) => Boolean(walletData) && Boolean(bondData),
-  fn: (walletData, bondData) => {
-    return bondData!.shards.map((shard) => {
+  filter: (walletData, bondExtraData) => Boolean(walletData) && Boolean(bondExtraData),
+  fn: (walletData, bondExtraData) => {
+    return bondExtraData!.shards.map((shard) => {
       return transactionBuilder.buildBondExtra({
         chain: walletData!.chain,
         asset: walletData!.chain.assets[0],
         accountId: shard.accountId,
-        amount: bondData!.amount,
+        amount: bondExtraData!.amount,
       });
     });
   },
@@ -231,7 +231,7 @@ sample({
 sample({
   clock: formModel.output.formSubmitted,
   source: {
-    bondData: $bondData,
+    bondData: $bondExtraData,
     feeData: $feeData,
     walletData: $walletData,
     txWrappers: $txWrappers,
@@ -261,7 +261,7 @@ sample({
 sample({
   clock: confirmModel.output.formSubmitted,
   source: {
-    bondData: $bondData,
+    bondData: $bondExtraData,
     walletData: $walletData,
     transactions: $transactions,
     txWrappers: $txWrappers,
@@ -291,7 +291,7 @@ sample({
 sample({
   clock: signModel.output.formSubmitted,
   source: {
-    bondData: $bondData,
+    bondData: $bondExtraData,
     walletData: $walletData,
     transactions: $transactions,
   },
