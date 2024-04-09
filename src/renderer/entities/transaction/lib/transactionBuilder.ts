@@ -1,11 +1,12 @@
 import { Transaction, TransactionType } from '../model/transaction';
 import { TransferType } from './common/constants';
-import { toAddress, TEST_ACCOUNTS, formatAmount, getAssetId, TEST_ADDRESS } from '@shared/lib/utils';
+import { toAddress, TEST_ACCOUNTS, formatAmount, getAssetId } from '@shared/lib/utils';
 import { Chain, ChainId, Asset, AccountId, Address } from '@shared/core';
 
 export const transactionBuilder = {
   buildTransfer,
   buildBondNominate,
+  buildBondExtra,
   buildNominate,
   buildRedeem,
   buildUnstake,
@@ -78,16 +79,27 @@ type BondParams = {
   amount: string;
 };
 function buildBond({ chain, asset, accountId, destination, amount }: BondParams): Transaction {
-  const controller = destination ? toAddress(destination, { prefix: chain.addressPrefix }) : '';
+  const controller = toAddress(accountId, { prefix: chain.addressPrefix });
 
   return {
     chainId: chain.chainId,
-    address: toAddress(accountId, { prefix: chain.addressPrefix }),
+    address: controller,
     type: TransactionType.BOND,
     args: {
       value: formatAmount(amount, asset.precision),
       controller,
-      payee: { Account: TEST_ADDRESS },
+      payee: destination ? { Account: destination } : 'Staked',
+    },
+  };
+}
+
+function buildBondExtra({ chain, asset, accountId, amount }: Omit<BondParams, 'destination'>): Transaction {
+  return {
+    chainId: chain.chainId,
+    address: toAddress(accountId, { prefix: chain.addressPrefix }),
+    type: TransactionType.STAKE_MORE,
+    args: {
+      maxAdditional: formatAmount(amount, asset.precision),
     },
   };
 }
