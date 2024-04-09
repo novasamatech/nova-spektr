@@ -17,7 +17,8 @@ import { ChainId, Chain, Address, Account, Stake, Validator, ShardAccount, Chain
 import { BondNominate, bondNominateModel } from '@widgets/Staking/BondNominate';
 import { BondExtra, bondExtraModel } from '@widgets/Staking/BondExtra';
 import { Unstake, unstakeModel } from '@widgets/Staking/Unstake';
-import { Withdraw, withdrawModel } from '@widgets/Withdraw';
+import { Nominate, nominateModel } from '@widgets/Staking/Nominate';
+import { Withdraw, withdrawModel } from '@widgets/Staking/Withdraw';
 import { NominatorInfo } from './common/types';
 import {
   useStakingData,
@@ -228,7 +229,13 @@ export const Overview = () => {
       return;
     }
 
-    if (path === Paths.BOND || path === Paths.STAKE_MORE || path === Paths.UNSTAKE || path === Paths.REDEEM) {
+    if (
+      path === Paths.BOND ||
+      path === Paths.STAKE_MORE ||
+      path === Paths.UNSTAKE ||
+      path === Paths.VALIDATORS ||
+      path === Paths.REDEEM
+    ) {
       const shards = accounts.filter((account) => {
         const address = toAddress(account.accountId, { prefix: addressPrefix });
 
@@ -239,6 +246,7 @@ export const Overview = () => {
         [Paths.BOND]: bondNominateModel.events.flowStarted,
         [Paths.STAKE_MORE]: bondExtraModel.events.flowStarted,
         [Paths.UNSTAKE]: unstakeModel.events.flowStarted,
+        [Paths.VALIDATORS]: nominateModel.events.flowStarted,
         [Paths.REDEEM]: withdrawModel.events.flowStarted,
       };
 
@@ -337,6 +345,7 @@ export const Overview = () => {
       <BondNominate />
       <BondExtra />
       <Unstake />
+      <Nominate />
       <Withdraw />
 
       <Outlet />

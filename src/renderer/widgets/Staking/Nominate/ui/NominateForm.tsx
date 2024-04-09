@@ -3,21 +3,22 @@ import { FormEvent } from 'react';
 import { useUnit } from 'effector-react';
 
 import { useI18n } from '@app/providers';
-import { MultisigAccount } from '@shared/core';
 import { accountUtils, AccountAddress, ProxyWalletAlert } from '@entities/wallet';
 import { toAddress, toShortAddress, formatBalance } from '@shared/lib/utils';
 import { AssetBalance } from '@entities/asset';
-import { MultisigDepositWithLabel, FeeWithLabel } from '@entities/transaction';
-import { formModel } from '../model/form-model';
-import { Select, Input, Button, InputHint, AmountInput, MultiSelect, Shimmering } from '@shared/ui';
 import { DropdownOption } from '@shared/ui/types';
+import { formModel } from '../model/form-model';
+import { AssetFiatBalance } from '@entities/price/ui/AssetFiatBalance';
+import { FeeLoader } from '@entities/transaction';
+import { priceProviderModel } from '@entities/price';
+import { Select, Input, Button, InputHint, MultiSelect, Icon, DetailRow, FootnoteText, Tooltip } from '@shared/ui';
 
 type Props = {
   onGoBack: () => void;
 };
 
-export const UnstakeForm = ({ onGoBack }: Props) => {
-  const { submit } = useForm(formModel.$unstakeForm);
+export const NominateForm = ({ onGoBack }: Props) => {
+  const { submit } = useForm(formModel.$bondForm);
 
   const submitForm = (event: FormEvent) => {
     event.preventDefault();
@@ -25,12 +26,11 @@ export const UnstakeForm = ({ onGoBack }: Props) => {
   };
 
   return (
-    <div className="pb-4 px-5">
+    <div className="pb-4 px-5 w-modal">
       <form id="transfer-form" className="flex flex-col gap-y-4 mt-4" onSubmit={submitForm}>
         <ProxyFeeAlert />
         <AccountsSelector />
         <SignatorySelector />
-        <Amount />
         <Description />
       </form>
       <div className="flex flex-col gap-y-6 pt-6 pb-4">
@@ -44,16 +44,16 @@ export const UnstakeForm = ({ onGoBack }: Props) => {
 const ProxyFeeAlert = () => {
   const {
     fields: { shards },
-  } = useForm(formModel.$unstakeForm);
+  } = useForm(formModel.$bondForm);
 
-  const fee = useUnit(formModel.$fee);
+  const feeData = useUnit(formModel.$feeData);
   const balance = useUnit(formModel.$proxyBalance);
   const network = useUnit(formModel.$networkStore);
   const proxyWallet = useUnit(formModel.$proxyWallet);
 
   if (!network || !proxyWallet || !shards.hasError()) return null;
 
-  const formattedFee = formatBalance(fee, network.asset.precision).value;
+  const formattedFee = formatBalance(feeData.fee, network.asset.precision).value;
   const formattedBalance = formatBalance(balance, network.asset.precision).value;
 
   return (
@@ -72,14 +72,14 @@ const AccountsSelector = () => {
 
   const {
     fields: { shards },
-  } = useForm(formModel.$unstakeForm);
+  } = useForm(formModel.$bondForm);
 
   const accounts = useUnit(formModel.$accounts);
   const network = useUnit(formModel.$networkStore);
 
   if (!network || accounts.length <= 1) return null;
 
-  const options = accounts.map(({ account, balances }) => {
+  const options = accounts.map(({ account, balance }) => {
     const isShard = accountUtils.isShardAccount(account);
     const address = toAddress(account.accountId, { prefix: network.chain.addressPrefix });
 
@@ -95,7 +95,7 @@ const AccountsSelector = () => {
             name={isShard ? toShortAddress(address, 16) : account.name}
             canCopy={false}
           />
-          <AssetBalance value={balances.stake} asset={network.asset} />
+          <AssetBalance value={balance} asset={network.asset} />
         </div>
       ),
     };
@@ -124,7 +124,7 @@ const SignatorySelector = () => {
 
   const {
     fields: { signatory },
-  } = useForm(formModel.$unstakeForm);
+  } = useForm(formModel.$bondForm);
 
   const signatories = useUnit(formModel.$signatories);
   const isMultisig = useUnit(formModel.$isMultisig);
@@ -175,43 +175,12 @@ const SignatorySelector = () => {
   );
 };
 
-const Amount = () => {
-  const { t } = useI18n();
-
-  const {
-    fields: { amount },
-  } = useForm(formModel.$unstakeForm);
-
-  const unstakeBalanceRange = useUnit(formModel.$unstakeBalanceRange);
-  const isStakingLoading = useUnit(formModel.$isStakingLoading);
-  const network = useUnit(formModel.$networkStore);
-
-  if (!network) return null;
-
-  return (
-    <div className="flex flex-col gap-y-2">
-      <AmountInput
-        invalid={amount.hasError()}
-        value={amount.value}
-        balance={isStakingLoading ? <Shimmering width={50} height={10} /> : unstakeBalanceRange}
-        balancePlaceholder={t('general.input.availableLabel')}
-        placeholder={t('general.input.amountLabel')}
-        asset={network.asset}
-        onChange={amount.onChange}
-      />
-      <InputHint active={amount.hasError()} variant="error">
-        {t(amount.errorText())}
-      </InputHint>
-    </div>
-  );
-};
-
 const Description = () => {
   const { t } = useI18n();
 
   const {
     fields: { description },
-  } = useForm(formModel.$unstakeForm);
+  } = useForm(formModel.$bondForm);
 
   const isMultisig = useUnit(formModel.$isMultisig);
 
@@ -240,45 +209,71 @@ const FeeSection = () => {
 
   const {
     fields: { shards },
-  } = useForm(formModel.$unstakeForm);
+  } = useForm(formModel.$bondForm);
 
-  const api = useUnit(formModel.$api);
   const network = useUnit(formModel.$networkStore);
-  const transactions = useUnit(formModel.$transactions);
+  const feeData = useUnit(formModel.$feeData);
+  const isFeeLoading = useUnit(formModel.$isFeeLoading);
   const isMultisig = useUnit(formModel.$isMultisig);
+
+  const fiatFlag = useUnit(priceProviderModel.$fiatFlag);
 
   if (!network || shards.value.length === 0) return null;
 
   return (
     <div className="flex flex-col gap-y-2">
       {isMultisig && (
-        <MultisigDepositWithLabel
-          api={api}
-          asset={network.chain.assets[0]}
-          threshold={(shards.value[0] as MultisigAccount).threshold || 1}
-          onDepositChange={formModel.events.multisigDepositChanged}
-        />
+        <DetailRow
+          className="text-text-primary"
+          label={
+            <>
+              <Icon className="text-text-tertiary" name="lock" size={12} />
+              <FootnoteText className="text-text-tertiary">{t('staking.multisigDepositLabel')}</FootnoteText>
+              <Tooltip content={t('staking.tooltips.depositDescription')} offsetPx={-90}>
+                <Icon name="info" className="hover:text-icon-hover cursor-pointer" size={16} />
+              </Tooltip>
+            </>
+          }
+        >
+          <div className="flex flex-col gap-y-0.5 items-end">
+            <AssetBalance value={feeData.multisigDeposit} asset={network.chain.assets[0]} />
+            <AssetFiatBalance asset={network.chain.assets[0]} amount={feeData.multisigDeposit} />
+          </div>
+        </DetailRow>
       )}
 
-      <FeeWithLabel
-        label={t('staking.networkFee', { count: shards.value.length || 1 })}
-        api={api}
-        asset={network.chain.assets[0]}
-        transaction={transactions?.[0]?.wrappedTx}
-        onFeeChange={formModel.events.feeChanged}
-        onFeeLoading={formModel.events.isFeeLoadingChanged}
-      />
+      <DetailRow
+        label={
+          <FootnoteText className="text-text-tertiary">
+            {t('staking.networkFee', { count: shards.value.length || 1 })}
+          </FootnoteText>
+        }
+        className="text-text-primary"
+      >
+        {isFeeLoading ? (
+          <FeeLoader fiatFlag={Boolean(fiatFlag)} />
+        ) : (
+          <div className="flex flex-col gap-y-0.5 items-end">
+            <AssetBalance value={feeData.fee} asset={network.chain.assets[0]} />
+            <AssetFiatBalance asset={network.chain.assets[0]} amount={feeData.fee} />
+          </div>
+        )}
+      </DetailRow>
 
-      {transactions && transactions.length > 1 && (
-        <FeeWithLabel
-          label={t('staking.networkFeeTotal')}
-          api={api}
-          asset={network.chain.assets[0]}
-          multiply={transactions.length}
-          transaction={transactions[0].wrappedTx}
-          onFeeChange={formModel.events.totalFeeChanged}
-          onFeeLoading={formModel.events.isFeeLoadingChanged}
-        />
+      {shards.value.length > 1 && (
+        <DetailRow
+          label={<FootnoteText className="text-text-tertiary">{t('staking.networkFeeTotal')}</FootnoteText>}
+          className="text-text-primary"
+        >
+          {isFeeLoading ? (
+            <FeeLoader fiatFlag={Boolean(fiatFlag)} />
+          ) : (
+            <div className="flex flex-col gap-y-0.5 items-end">
+              <AssetBalance value={feeData.totalFee} asset={network.chain.assets[0]} />
+              <AssetFiatBalance asset={network.chain.assets[0]} amount={feeData.totalFee} />
+            </div>
+          )}
+        </DetailRow>
       )}
     </div>
   );

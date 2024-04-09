@@ -4,12 +4,13 @@ import { Button, DetailRow, FootnoteText, Icon, Tooltip, CaptionText } from '@sh
 import { useI18n } from '@app/providers';
 import { SignButton } from '@entities/operation/ui/SignButton';
 import { AddressWithExplorers, WalletIcon, ExplorersPopover, WalletCardSm, accountUtils } from '@entities/wallet';
-import { cnTw } from '@shared/lib/utils';
 import { AssetBalance } from '@entities/asset';
 import { AssetFiatBalance } from '@entities/price/ui/AssetFiatBalance';
 import { confirmModel } from '../model/confirm-model';
-import { AccountsModal, StakingPopover, UnstakingDuration } from '@entities/staking';
+import { StakingPopover, SelectedValidatorsModal, AccountsModal } from '@entities/staking';
 import { useToggle } from '@shared/lib/hooks';
+import { FeeLoader } from '@entities/transaction';
+import { priceProviderModel } from '@entities/price';
 
 type Props = {
   onGoBack: () => void;
@@ -18,31 +19,26 @@ type Props = {
 export const Confirmation = ({ onGoBack }: Props) => {
   const { t } = useI18n();
 
-  const api = useUnit(confirmModel.$api);
-
   const confirmStore = useUnit(confirmModel.$confirmStore);
   const initiatorWallet = useUnit(confirmModel.$initiatorWallet);
   const signerWallet = useUnit(confirmModel.$signerWallet);
   const proxiedWallet = useUnit(confirmModel.$proxiedWallet);
 
-  const [isAccountsOpen, toggleAccounts] = useToggle();
+  const feeData = useUnit(confirmModel.$feeData);
+  const isFeeLoading = useUnit(confirmModel.$isFeeLoading);
 
-  if (!confirmStore || !api || !initiatorWallet) return null;
+  const fiatFlag = useUnit(priceProviderModel.$fiatFlag);
+
+  const [isAccountsOpen, toggleAccounts] = useToggle();
+  const [isValidatorsOpen, toggleValidators] = useToggle();
+
+  if (!confirmStore || !initiatorWallet) return null;
 
   return (
     <>
-      <div className="flex flex-col items-center pt-4 gap-y-4 pb-4 px-5">
+      <div className="flex flex-col items-center pt-4 gap-y-4 pb-4 px-5 w-modal">
         <div className="flex flex-col items-center gap-y-3 mb-2">
-          <Icon className="text-icon-default" name="unstakeConfirm" size={60} />
-
-          <div className={cnTw('flex flex-col gap-y-1 items-center')}>
-            <AssetBalance
-              value={confirmStore.amount}
-              asset={confirmStore.asset}
-              className="font-manrope text-text-primary text-[32px] leading-[36px] font-bold"
-            />
-            <AssetFiatBalance asset={confirmStore.asset} amount={confirmStore.amount} className="text-headline" />
-          </div>
+          <Icon className="text-icon-default" name="changeValidatorsConfirm" size={60} />
 
           <FootnoteText className="py-2 px-3 rounded bg-block-background ml-3 text-text-secondary">
             {confirmStore.description}
@@ -99,10 +95,7 @@ export const Confirmation = ({ onGoBack }: Props) => {
                 {confirmStore.shards.length > 1 ? (
                   <button
                     type="button"
-                    className={cnTw(
-                      'flex items-center gap-x-1',
-                      'group hover:bg-action-background-hover px-2 py-1 rounded',
-                    )}
+                    className="flex items-center gap-x-1 group hover:bg-action-background-hover px-2 py-1 rounded"
                     onClick={toggleAccounts}
                   >
                     <div className="rounded-[30px] px-1.5 py-[1px] bg-icon-accent">
@@ -114,7 +107,6 @@ export const Confirmation = ({ onGoBack }: Props) => {
                   <AddressWithExplorers
                     type="short"
                     wrapperClassName="text-text-secondary"
-                    // addressFont="text-footnote text-inherit"
                     explorers={confirmStore.chain.explorers}
                     accountId={confirmStore.shards[0].accountId}
                     addressPrefix={confirmStore.chain.addressPrefix}
@@ -135,6 +127,19 @@ export const Confirmation = ({ onGoBack }: Props) => {
             </DetailRow>
           )}
 
+          <DetailRow label={t('staking.confirmation.validatorsLabel')}>
+            <button
+              type="button"
+              className="flex items-center gap-x-1 px-2 py-1 rounded group hover:bg-action-background-hover"
+              onClick={toggleValidators}
+            >
+              <div className="rounded-[30px] px-1.5 py-[1px] bg-icon-accent">
+                <CaptionText className="text-white">{confirmStore.validators.length}</CaptionText>
+              </div>
+              <Icon className="group-hover:text-icon-hover" name="info" size={16} />
+            </button>
+          </DetailRow>
+
           <hr className="border-filter-border w-full pr-2" />
 
           {accountUtils.isMultisigAccount(confirmStore.shards[0]) && (
@@ -151,46 +156,48 @@ export const Confirmation = ({ onGoBack }: Props) => {
               }
             >
               <div className="flex flex-col gap-y-0.5 items-end">
-                <AssetBalance value={confirmStore.multisigDeposit} asset={confirmStore.chain.assets[0]} />
-                <AssetFiatBalance asset={confirmStore.chain.assets[0]} amount={confirmStore.multisigDeposit} />
+                <AssetBalance value={feeData.multisigDeposit} asset={confirmStore.chain.assets[0]} />
+                <AssetFiatBalance asset={confirmStore.chain.assets[0]} amount={feeData.multisigDeposit} />
               </div>
             </DetailRow>
           )}
 
           <DetailRow
+            className="text-text-primary"
             label={
               <FootnoteText className="text-text-tertiary">
                 {t('staking.networkFee', { count: confirmStore.shards.length || 1 })}
               </FootnoteText>
             }
-            className="text-text-primary"
           >
-            <div className="flex flex-col gap-y-0.5 items-end">
-              <AssetBalance value={confirmStore.fee} asset={confirmStore.chain.assets[0]} />
-              <AssetFiatBalance asset={confirmStore.chain.assets[0]} amount={confirmStore.fee} />
-            </div>
+            {isFeeLoading ? (
+              <FeeLoader fiatFlag={Boolean(fiatFlag)} />
+            ) : (
+              <div className="flex flex-col gap-y-0.5 items-end">
+                <AssetBalance value={feeData.fee} asset={confirmStore.chain.assets[0]} />
+                <AssetFiatBalance asset={confirmStore.chain.assets[0]} amount={feeData.fee} />
+              </div>
+            )}
           </DetailRow>
 
           {confirmStore.shards.length > 1 && (
             <DetailRow
-              label={<FootnoteText className="text-text-tertiary">{t('staking.networkFeeTotal')}</FootnoteText>}
               className="text-text-primary"
+              label={<FootnoteText className="text-text-tertiary">{t('staking.networkFeeTotal')}</FootnoteText>}
             >
-              <div className="flex flex-col gap-y-0.5 items-end">
-                <AssetBalance value={confirmStore.totalFee} asset={confirmStore.chain.assets[0]} />
-                <AssetFiatBalance asset={confirmStore.chain.assets[0]} amount={confirmStore.totalFee} />
-              </div>
+              {isFeeLoading ? (
+                <FeeLoader fiatFlag={Boolean(fiatFlag)} />
+              ) : (
+                <div className="flex flex-col gap-y-0.5 items-end">
+                  <AssetBalance value={feeData.totalFee} asset={confirmStore.chain.assets[0]} />
+                  <AssetFiatBalance asset={confirmStore.chain.assets[0]} amount={feeData.totalFee} />
+                </div>
+              )}
             </DetailRow>
           )}
 
           <StakingPopover labelText={t('staking.confirmation.hintTitle')}>
-            <StakingPopover.Item>
-              {t('staking.confirmation.hintUnstakePeriod')} {' ('}
-              <UnstakingDuration api={api} />
-              {')'}
-            </StakingPopover.Item>
-            <StakingPopover.Item>{t('staking.confirmation.hintNoRewards')}</StakingPopover.Item>
-            <StakingPopover.Item>{t('staking.confirmation.hintWithdraw')}</StakingPopover.Item>
+            <StakingPopover.Item>{t('staking.confirmation.hintNewValidators')}</StakingPopover.Item>
           </StakingPopover>
         </dl>
 
@@ -199,19 +206,27 @@ export const Confirmation = ({ onGoBack }: Props) => {
             {t('operation.goBackButton')}
           </Button>
 
-          <SignButton type={(signerWallet || initiatorWallet).type} onClick={confirmModel.output.formSubmitted} />
+          <SignButton
+            disabled={isFeeLoading}
+            type={(signerWallet || initiatorWallet).type}
+            onClick={confirmModel.output.formSubmitted}
+          />
         </div>
       </div>
 
       <AccountsModal
         isOpen={isAccountsOpen}
         accounts={confirmStore.shards}
-        amounts={['0']}
         chainId={confirmStore.chain.chainId}
         asset={confirmStore.asset}
-        explorers={confirmStore.chain.explorers}
         addressPrefix={confirmStore.chain.addressPrefix}
         onClose={toggleAccounts}
+      />
+
+      <SelectedValidatorsModal
+        isOpen={isValidatorsOpen}
+        validators={confirmStore.validators}
+        onClose={toggleValidators}
       />
     </>
   );

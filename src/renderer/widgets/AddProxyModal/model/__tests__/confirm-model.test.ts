@@ -5,6 +5,7 @@ import { networkModel } from '@entities/network';
 import { walletModel } from '@entities/wallet';
 import { Account, Chain, ProxyType } from '@shared/core';
 import { Transaction } from '@entities/transaction';
+import { TEST_ADDRESS } from '@shared/lib/utils';
 import { initiatorWallet, signerWallet, testApi } from './mock';
 
 describe('widgets/AddPureProxyModal/model/confirm-model', () => {
@@ -25,10 +26,10 @@ describe('widgets/AddPureProxyModal/model/confirm-model', () => {
       signatory: { walletId: 2 } as unknown as Account,
       description: '',
       transaction: {} as Transaction,
-      delegate: '0x01',
+      delegate: TEST_ADDRESS,
       proxyType: ProxyType.ANY,
 
-      oldProxyDeposit: '0',
+      proxyDeposit: '0',
       proxyNumber: 0,
     };
 
@@ -48,10 +49,12 @@ describe('widgets/AddPureProxyModal/model/confirm-model', () => {
     const store = {
       chain: { chainId: '0x00' } as unknown as Chain,
       account: { walletId: 1 } as unknown as Account,
-      description: '',
       transaction: {} as Transaction,
+      proxyType: ProxyType.GOVERNANCE,
+      delegate: TEST_ADDRESS,
+      description: '',
 
-      oldProxyDeposit: '0',
+      proxyDeposit: '0',
       proxyNumber: 0,
     };
 

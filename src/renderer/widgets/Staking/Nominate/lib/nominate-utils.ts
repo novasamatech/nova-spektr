@@ -4,7 +4,7 @@ import { transactionService } from '@entities/transaction';
 import { Wallet, Account, Chain } from '@shared/core';
 import { Step } from './types';
 
-export const bondUtils = {
+export const nominateUtils = {
   isNoneStep,
   isInitStep,
   isValidatorsStep,
