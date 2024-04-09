@@ -23,10 +23,10 @@ import { balanceModel, balanceUtils } from '@entities/balance';
 import {
   Transaction,
   TransactionType,
-  useTransaction,
   OperationResult,
   validateBalance,
   isXcmTransaction,
+  transactionService,
 } from '@entities/transaction';
 
 type Props = {
@@ -49,8 +49,6 @@ const RejectTx = ({ tx, account, connection }: Props) => {
   const wallets = keyBy(useUnit(walletModel.$wallets), 'id');
 
   const balances = useUnit(balanceModel.$balances);
-
-  const { getTransactionFee } = useTransaction();
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isRejectReasonModalOpen, toggleRejectReasonModal] = useToggle();
@@ -89,7 +87,7 @@ const RejectTx = ({ tx, account, connection }: Props) => {
       transaction: rejectTx,
       assetId: nativeAsset.assetId.toString(),
       getBalance: balanceUtils.getBalanceWrapped(balances),
-      getTransactionFee,
+      getTransactionFee: transactionService.getTransactionFee,
     });
 
   useEffect(() => {
@@ -150,7 +148,7 @@ const RejectTx = ({ tx, account, connection }: Props) => {
   const validateBalanceForFee = async (signAccount: Account): Promise<boolean> => {
     if (!connection.api || !rejectTx || !signAccount.accountId || !nativeAsset) return false;
 
-    const fee = await getTransactionFee(rejectTx, connection.api);
+    const fee = await transactionService.getTransactionFee(rejectTx, connection.api);
     const balance = balanceUtils.getBalance(
       balances,
       signAccount.accountId,

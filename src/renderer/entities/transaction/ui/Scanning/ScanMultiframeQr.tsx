@@ -7,13 +7,14 @@ import { useEffect, useState } from 'react';
 import { useI18n } from '@app/providers';
 import { Transaction, useTransaction } from '@entities/transaction';
 import { toAddress } from '@shared/lib/utils';
-import { Button } from '@shared/ui';
+import { Button, FootnoteText } from '@shared/ui';
 import type { Account, BaseAccount, ChainId, ShardAccount } from '@shared/core';
 import { SigningType, Wallet } from '@shared/core';
 import { createSubstrateSignPayload, createMultipleSignPayload } from '../QrCode/QrGenerator/common/utils';
 import { TRANSACTION_BULK } from '../QrCode/common/constants';
 import { QrMultiframeGenerator } from '../QrCode/QrGenerator/QrMultiframeTxGenerator';
 import { QrGeneratorContainer } from '../QrCode/QrGeneratorContainer/QrGeneratorContainer';
+import { WalletIcon } from '../../../wallet';
 
 type Props = {
   api: ApiPromise;
@@ -103,16 +104,27 @@ export const ScanMultiframeQr = ({
 
   return (
     <div className="flex flex-col items-center w-full">
-      <div className="mt-10">
-        <QrGeneratorContainer countdown={countdown} chainId={chainId} onQrReset={setupTransactions}>
-          {bulkTxExist && encoder && <QrMultiframeGenerator payload={bulkTransactions} size={200} encoder={encoder} />}
-        </QrGeneratorContainer>
-      </div>
+      {accounts.length > 0 && (
+        <div className="flex items-center justify-center mb-1 h-8 w-full">
+          <div className="flex h-full justify-center items-center gap-x-0.5 ">
+            <FootnoteText className="text-text-secondary">{t('signing.signer')}</FootnoteText>
+
+            <div className="w-full flex gap-x-2 items-center px-2">
+              <WalletIcon className="shrink-0" type={signerWallet.type} size={16} />
+              <FootnoteText className="text-text-secondary w-max">{signerWallet.name}</FootnoteText>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <QrGeneratorContainer countdown={countdown} chainId={chainId} onQrReset={setupTransactions}>
+        {bulkTxExist && encoder && <QrMultiframeGenerator payload={bulkTransactions} size={200} encoder={encoder} />}
+      </QrGeneratorContainer>
+
       <div className="flex w-full justify-between mt-3">
         <Button variant="text" onClick={onGoBack}>
           {t('operation.goBackButton')}
         </Button>
-
         <Button disabled={!bulkTxExist || countdown === 0} onClick={() => onResult(unsignedTransactions, txPayloads)}>
           {t('signing.continueButton')}
         </Button>

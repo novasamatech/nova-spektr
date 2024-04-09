@@ -30,6 +30,7 @@ import {
   useCallDataDecoder,
   useTransaction,
   validateBalance,
+  transactionService,
 } from '@entities/transaction';
 
 type Props = {
@@ -52,7 +53,7 @@ const ApproveTx = ({ tx, account, connection }: Props) => {
   const accounts = useUnit(walletModel.$accounts);
   const balances = useUnit(balanceModel.$balances);
 
-  const { getTransactionFee, getExtrinsicWeight, getTxWeight } = useTransaction();
+  const { getExtrinsicWeight, getTxWeight } = useTransaction();
   const { getTxFromCallData } = useCallDataDecoder();
   const { getLiveTxEvents } = useMultisigEvent({});
   const events = getLiveTxEvents(tx.accountId, tx.chainId, tx.callHash, tx.blockCreated, tx.indexCreated);
@@ -166,7 +167,7 @@ const ApproveTx = ({ tx, account, connection }: Props) => {
   const validateBalanceForFee = async (signAccount: Account): Promise<boolean> => {
     if (!connection.api || !feeTx || !signAccount.accountId || !nativeAsset) return false;
 
-    const fee = await getTransactionFee(feeTx, connection.api);
+    const fee = await transactionService.getTransactionFee(feeTx, connection.api);
     const balance = balanceUtils.getBalance(
       balances,
       signAccount.accountId,
@@ -208,7 +209,7 @@ const ApproveTx = ({ tx, account, connection }: Props) => {
       transaction: approveTx,
       assetId: nativeAsset.assetId.toString(),
       getBalance: balanceUtils.getBalanceWrapped(balances),
-      getTransactionFee,
+      getTransactionFee: transactionService.getTransactionFee,
     });
 
   const thresholdReached = events.filter((e) => e.status === 'SIGNED').length === account.threshold - 1;

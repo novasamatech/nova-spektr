@@ -7,12 +7,12 @@ import { signModel } from '@features/operations/OperationSign/model/sign-model';
 import { submitModel } from '@features/operations/OperationSubmit';
 import { storageService } from '@shared/api/storage';
 import { initiatorWallet, signerWallet, testApi, testChain } from './mock';
+import { Transaction } from '@entities/transaction';
 import { Account, ConnectionStatus, ProxyType } from '@shared/core';
 import { Step } from '../../lib/types';
 import { formModel } from '../form-model';
 import { confirmModel } from '../confirm-model';
 import { addProxyModel } from '../add-proxy-model';
-import { Transaction } from '@entities/transaction';
 
 jest.mock('@shared/lib/utils', () => ({
   ...jest.requireActual('@shared/lib/utils'),
@@ -23,7 +23,6 @@ describe('widgets/AddProxyModal/model/add-proxy-model', () => {
   beforeAll(() => {
     jest.useFakeTimers();
   });
-
   beforeEach(() => {
     jest.restoreAllMocks();
   });
@@ -55,13 +54,15 @@ describe('widgets/AddProxyModal/model/add-proxy-model', () => {
           coreTx: {} as Transaction,
         },
         formData: {
-          proxyDeposit: '1',
-          proxyNumber: 1,
           chain: testChain,
           account: { accountId: '0x00' } as unknown as Account,
           delegate: '0x00',
           proxyType: ProxyType.ANY,
           description: '',
+          proxyDeposit: '1',
+          proxyNumber: 1,
+          fee: '1',
+          multisigDeposit: '0',
         },
       },
     });

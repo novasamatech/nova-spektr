@@ -30,15 +30,6 @@ export interface IStakingRewardsService {
 }
 
 // =====================================================
-// ========== IValidatorsService interface =============
-// =====================================================
-
-export interface IEraService {
-  subscribeActiveEra: (api: ApiPromise, callback: (era?: EraIndex) => void) => Promise<() => void>;
-  getTimeToEra: (api: ApiPromise, era?: EraIndex) => Promise<number>;
-}
-
-// =====================================================
 // ======================= General =====================
 // =====================================================
 

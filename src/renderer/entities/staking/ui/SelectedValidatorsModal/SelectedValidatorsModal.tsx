@@ -1,17 +1,15 @@
 import { BaseModal } from '@shared/ui';
 import { useI18n } from '@app/providers';
 import { Validator } from '@shared/core/types/validator';
-import type { Explorer } from '@shared/core';
 import { ValidatorsTable } from '@entities/staking/ui';
 
 type Props = {
   isOpen: boolean;
   validators: Validator[];
-  explorers?: Explorer[];
   onClose: () => void;
 };
 
-export const SelectedValidatorsModal = ({ isOpen, validators, explorers, onClose }: Props) => {
+export const SelectedValidatorsModal = ({ isOpen, validators, onClose }: Props) => {
   const { t } = useI18n();
 
   return (
@@ -30,7 +28,7 @@ export const SelectedValidatorsModal = ({ isOpen, validators, explorers, onClose
               key={validator.address}
               className="grid items-center pl-5 pr-2 shrink-0 h-10 grid-cols-[1fr,40px] hover:bg-hover group"
             >
-              <ValidatorsTable.ShortRow validator={validator} explorers={explorers} />
+              <ValidatorsTable.ShortRow validator={validator} />
             </li>
           ))}
         </ul>

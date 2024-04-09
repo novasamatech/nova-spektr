@@ -36,6 +36,8 @@ export const KeysList = () => {
         {keys.map((key, index) => {
           const keyData = accountUtils.isAccountWithShards(key) ? key[0] : key;
 
+          if (!chains[keyData.chainId]) return;
+
           return (
             <li key={keyData.id || keyData.derivationPath} className="flex items-center gap-x-3 py-1.5 pl-2">
               <ChainIcon

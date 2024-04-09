@@ -3,8 +3,8 @@ import { ReactNode, ComponentPropsWithoutRef, forwardRef, useId, ClipboardEvent 
 import { cnTw } from '@shared/lib/utils';
 import { LabelText } from '../../Typography';
 import { HTMLInputProps } from '../common/types';
-import { CommonInputStyles, CommonInputStylesTheme } from '../common/styles';
 import { Theme } from '../../Dropdowns/common/types';
+import { CommonInputStyles, CommonInputStylesTheme } from '../common/styles';
 
 type NewType = {
   label?: ReactNode;
@@ -59,7 +59,7 @@ export const Input = forwardRef<HTMLInputElement, Props>(
           id={id}
           className={cnTw(
             'focus:outline-none w-full placeholder:text-text-secondary',
-            disabled && 'text-text-tertiary placeholder:text-text-tertiary',
+            disabled && 'text-text-tertiary bg-transparent placeholder:text-text-tertiary',
             className,
           )}
           ref={ref}

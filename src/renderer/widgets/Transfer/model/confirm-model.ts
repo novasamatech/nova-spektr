@@ -1,4 +1,4 @@
-import { createEvent, combine, sample, restore } from 'effector';
+import { createEvent, combine, restore } from 'effector';
 
 import { Chain, Account, Address, Asset, type ProxiedAccount } from '@shared/core';
 import { networkModel } from '@entities/network';
@@ -78,11 +78,6 @@ const $isXcm = combine($confirmStore, (confirmStore) => {
   if (!confirmStore) return false;
 
   return confirmStore.xcmChain.chainId !== confirmStore.chain.chainId;
-});
-
-sample({
-  clock: formInitiated,
-  target: $confirmStore,
 });
 
 export const confirmModel = {
