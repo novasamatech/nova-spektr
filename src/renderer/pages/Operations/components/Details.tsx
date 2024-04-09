@@ -14,7 +14,7 @@ import { getTransactionFromMultisigTx } from '@entities/multisig';
 import type { Address, MultisigAccount, ProxyType, Validator } from '@shared/core';
 import { useValidatorsMap, SelectedValidatorsModal } from '@entities/staking';
 import { proxyUtils } from '@entities/proxy';
-import { getDestination } from '../common/utils';
+import { getDestination, getPayee } from '../common/utils';
 import {
   MultisigTransaction,
   Transaction,
@@ -79,6 +79,8 @@ export const Details = ({ tx, account, extendedChain, signatory }: Props) => {
   }, [tx, wallets, accounts]);
 
   const destination = useMemo(() => getDestination(tx), [tx]);
+
+  const payee = useMemo(() => getPayee(tx), [tx]);
 
   const hasSender = isXcmTransaction(tx.transaction) || isTransferTransaction(tx.transaction);
 
@@ -260,22 +262,22 @@ export const Details = ({ tx, account, extendedChain, signatory }: Props) => {
         </DetailRow>
       )}
 
-      {transaction?.args.payee && (
+      {payee && (
         <DetailRow
           label={t('operation.details.payee')}
-          className={transaction.args.payee.Account ? 'text-text-secondary' : 'pr-0'}
+          className={typeof payee === 'string' ? 'pr-0' : 'text-text-secondary'}
         >
-          {transaction.args.payee.Account ? (
+          {typeof payee === 'string' ? (
+            payee
+          ) : (
             <AddressWithExplorers
               explorers={explorers}
               addressFont={AddressStyle}
               type="short"
-              address={transaction.args.payee.Account}
+              address={payee.account}
               addressPrefix={addressPrefix}
               wrapperClassName="-mr-2 min-w-min"
             />
-          ) : (
-            transaction.args.payee
           )}
         </DetailRow>
       )}

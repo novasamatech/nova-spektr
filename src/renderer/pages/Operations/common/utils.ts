@@ -274,3 +274,13 @@ export const getDestination = (tx: MultisigTransaction): Address | undefined => 
 
   return tx.transaction.args.dest;
 };
+
+export const getPayee = (tx: MultisigTransaction): { account: Address } | string | undefined => {
+  if (!tx.transaction) return undefined;
+
+  if (isProxyTransaction(tx.transaction)) {
+    return tx.transaction.args.transaction.args.payee;
+  }
+
+  return tx.transaction.args.payee;
+};

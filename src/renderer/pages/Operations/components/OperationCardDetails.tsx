@@ -9,7 +9,7 @@ import { copyToClipboard, truncate, cnTw, getAssetById } from '@shared/lib/utils
 import { useToggle } from '@shared/lib/hooks';
 import { ExtendedChain, networkUtils } from '@entities/network';
 import { AddressStyle, DescriptionBlockStyle, InteractionStyle } from '../common/constants';
-import { getMultisigExtrinsicLink, getDestination } from '../common/utils';
+import { getMultisigExtrinsicLink, getDestination, getPayee } from '../common/utils';
 import { AssetBalance } from '@entities/asset';
 import { ChainTitle } from '@entities/chain';
 import type { Address, MultisigAccount, ProxyType, Validator } from '@shared/core';
@@ -77,6 +77,8 @@ export const OperationCardDetails = ({ tx, account, extendedChain }: Props) => {
     transaction && getAssetById(transaction.args.asset, chainsService.getChainById(tx.chainId)?.assets);
 
   const destination = useMemo(() => getDestination(tx), [tx]);
+
+  const payee = useMemo(() => getPayee(tx), [tx]);
 
   const valueClass = 'text-text-secondary';
   const depositorWallet =
@@ -230,19 +232,19 @@ export const OperationCardDetails = ({ tx, account, extendedChain }: Props) => {
         </>
       )}
 
-      {transaction?.args.payee && (
+      {payee && (
         <DetailRow label={t('operation.details.payee')} className={valueClass}>
-          {transaction.args.payee.Account ? (
+          {typeof payee === 'string' ? (
+            payee
+          ) : (
             <AddressWithExplorers
+              type="short"
               explorers={explorers}
               addressFont={AddressStyle}
-              type="short"
-              address={transaction.args.payee.Account}
+              address={payee.account}
               addressPrefix={addressPrefix}
               wrapperClassName="-mr-2 min-w-min"
             />
-          ) : (
-            transaction.args.payee
           )}
         </DetailRow>
       )}
