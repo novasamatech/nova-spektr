@@ -34,11 +34,11 @@ const flowFinished = createEvent();
 
 const $step = createStore<Step>(Step.NONE);
 
-const $addProxyStore = createStore<AddPureProxiedStore | null>(null);
+const $addProxyStore = createStore<AddPureProxiedStore | null>(null).reset(flowFinished);
 
-const $wrappedTx = createStore<Transaction | null>(null);
-const $multisigTx = createStore<Transaction | null>(null);
-const $coreTx = createStore<Transaction | null>(null);
+const $wrappedTx = createStore<Transaction | null>(null).reset(flowFinished);
+const $multisigTx = createStore<Transaction | null>(null).reset(flowFinished);
+const $coreTx = createStore<Transaction | null>(null).reset(flowFinished);
 
 const $txWrappers = combine(
   {
@@ -279,8 +279,8 @@ sample({
 sample({
   clock: getPureProxyFx.doneData,
   source: $addProxyStore,
-  filter: (addPureProxiedStore: AddPureProxiedStore | null): addPureProxiedStore is AddPureProxiedStore => {
-    return Boolean(addPureProxiedStore);
+  filter: (addProxyStore: AddPureProxiedStore | null): addProxyStore is AddPureProxiedStore => {
+    return Boolean(addProxyStore);
   },
   fn: ({ chain, account }, { accountId, blockNumber, extrinsicIndex }) => {
     const proxiedAccount: PartialProxiedAccount = {

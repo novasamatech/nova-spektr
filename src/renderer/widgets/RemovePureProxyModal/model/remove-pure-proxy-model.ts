@@ -26,8 +26,8 @@ const $step = createStore<Step>(Step.NONE);
 
 const $removeProxyStore = createStore<RemoveProxyStore | null>(null).reset(flowFinished);
 
-const $wrappedTx = createStore<Transaction | null>(null);
-const $multisigTx = createStore<Transaction | null>(null);
+const $wrappedTx = createStore<Transaction | null>(null).reset(flowFinished);
+const $multisigTx = createStore<Transaction | null>(null).reset(flowFinished);
 
 const $chain = $removeProxyStore.map((store) => store?.chain, { skipVoid: false });
 const $account = $removeProxyStore.map((store) => store?.account, { skipVoid: false });

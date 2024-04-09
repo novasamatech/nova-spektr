@@ -28,9 +28,6 @@ const multisigAccountUpdated = createEvent<MultisigUpdateParams>();
 const walletRemoved = createEvent<ID>();
 const walletsRemoved = createEvent<ID[]>();
 
-walletRemoved.watch((proxides) => console.log('xcmRemove1', proxides));
-walletsRemoved.watch((proxides) => console.log('xcmRemove2', proxides));
-
 const $wallets = createStore<Wallet[]>([]);
 const $activeWallet = combine(
   $wallets,
