@@ -8,6 +8,7 @@ export const transactionBuilder = {
   buildBondNominate,
   buildBondExtra,
   buildNominate,
+  buildRestake,
   buildRedeem,
   buildUnstake,
   buildChill,
@@ -160,6 +161,23 @@ function buildUnstake({ chain, accountId, asset, amount, withChill }: UnstakePar
     accountId,
     transactions: [buildChill({ chain, accountId }), unstakeTx],
   });
+}
+
+type RestakeParams = {
+  chain: Chain;
+  asset: Asset;
+  accountId: AccountId;
+  amount: string;
+};
+function buildRestake({ chain, accountId, asset, amount }: RestakeParams): Transaction {
+  return {
+    chainId: chain.chainId,
+    address: toAddress(accountId, { prefix: chain.addressPrefix }),
+    type: TransactionType.RESTAKE,
+    args: {
+      value: formatAmount(amount, asset.precision),
+    },
+  };
 }
 
 type ChillParams = {
