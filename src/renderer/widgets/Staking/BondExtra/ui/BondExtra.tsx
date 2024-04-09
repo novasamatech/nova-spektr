@@ -38,8 +38,12 @@ export const BondExtra = () => {
       onClose={closeModal}
     >
       {bondExtraUtils.isInitStep(step) && <BondForm onGoBack={closeModal} />}
-      {bondExtraUtils.isConfirmStep(step) && <Confirmation onGoBack={() => bondExtraModel.events.stepChanged(Step.INIT)} />}
-      {bondExtraUtils.isSignStep(step) && <OperationSign onGoBack={() => bondExtraModel.events.stepChanged(Step.CONFIRM)} />}
+      {bondExtraUtils.isConfirmStep(step) && (
+        <Confirmation onGoBack={() => bondExtraModel.events.stepChanged(Step.INIT)} />
+      )}
+      {bondExtraUtils.isSignStep(step) && (
+        <OperationSign onGoBack={() => bondExtraModel.events.stepChanged(Step.CONFIRM)} />
+      )}
     </BaseModal>
   );
 };

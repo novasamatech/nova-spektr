@@ -15,6 +15,7 @@ import {
   transactionService,
   MultisigTxWrapper,
   ProxyTxWrapper,
+  DESCRIPTION_LENGTH,
 } from '@entities/transaction';
 import {
   transferableAmount,
@@ -206,7 +207,7 @@ const $transferForm = createForm<FormParams>({
         {
           name: 'maxLength',
           errorText: 'transfer.descriptionLengthError',
-          validator: (value) => !value || value.length <= 120,
+          validator: (value) => !value || value.length <= DESCRIPTION_LENGTH,
         },
       ],
     },

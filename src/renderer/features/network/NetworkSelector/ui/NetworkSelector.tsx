@@ -1,93 +1,53 @@
 import { Listbox, Transition } from '@headlessui/react';
-import { useState, Fragment, useEffect } from 'react';
+import { Fragment } from 'react';
+import { TFunction } from 'react-i18next';
 
 import { cnTw } from '@shared/lib/utils';
 import { Icon, FootnoteText, IconButton, Button, HelpText } from '@shared/ui';
 import { useI18n } from '@app/providers';
-import { ExtendedChain } from '@entities/network';
 import { SelectButtonStyle, OptionStyle } from '@shared/ui/Dropdowns/common/constants';
 import { useScrollTo } from '@shared/lib/hooks';
 import { CommonInputStyles, CommonInputStylesTheme } from '@shared/ui/Inputs/common/styles';
 import { ConnectionType } from '@shared/core';
+import { networkSelectorUtils } from '../lib/network-selector-utils';
 import type { Theme } from '@shared/ui/types';
 import type { RpcNode } from '@shared/core';
+import type { ConnectionItem, SelectorPayload } from '../lib/types';
 
-export const OptionsContainerStyle =
+const OptionsContainerStyle =
   'mt-1 absolute z-20 py-1 px-1 w-full border border-token-container-border rounded bg-input-background shadow-card-shadow';
 
 const TRANSITION_DURATION = 100;
 
-type SelectorPayload = {
-  type: ConnectionType;
-  title?: string;
-  node?: RpcNode;
+const Title = {
+  [ConnectionType.AUTO_BALANCE]: (t: TFunction) => t('settings.networks.selectorAutoBalance'),
+  [ConnectionType.DISABLED]: (t: TFunction) => t('settings.networks.selectorDisableNode'),
+  [ConnectionType.LIGHT_CLIENT]: (t: TFunction) => t('settings.networks.selectorLightClient'),
+  [ConnectionType.RPC_NODE]: (t: TFunction, nodeName?: string) => nodeName,
 };
 
 type Props = {
-  networkItem: ExtendedChain;
+  nodesList: ConnectionItem[];
+  selectedConnection?: ConnectionItem;
   theme?: Theme;
-  onDisconnect: () => void;
-  onConnect: (type: ConnectionType, node?: RpcNode) => void;
+  onChange: (value: SelectorPayload) => void;
   onRemoveCustomNode: (node: RpcNode) => void;
   onChangeCustomNode: (node?: RpcNode) => void;
 };
 
 export const NetworkSelector = ({
-  networkItem,
+  nodesList,
+  selectedConnection,
   theme = 'light',
-  onDisconnect,
-  onConnect,
+  onChange,
   onRemoveCustomNode,
   onChangeCustomNode,
 }: Props) => {
   const { t } = useI18n();
   const [ref, scroll] = useScrollTo<HTMLDivElement>(TRANSITION_DURATION);
 
-  const { connection, nodes } = networkItem;
-  const { canUseLightClient, connectionType, activeNode, customNodes } = connection;
-
-  const [selectedNode, setSelectedNode] = useState<SelectorPayload>();
-  const [availableNodes, setAvailableNodes] = useState<SelectorPayload[]>([]);
-
-  useEffect(() => {
-    const actionNodes = canUseLightClient
-      ? [{ type: ConnectionType.LIGHT_CLIENT, title: t('settings.networks.selectorLightClient') }]
-      : [];
-    actionNodes.push({ type: ConnectionType.AUTO_BALANCE, title: t('settings.networks.selectorAutoBalance') });
-    actionNodes.push({ type: ConnectionType.DISABLED, title: t('settings.networks.selectorDisableNode') });
-
-    const networkNodes = nodes.concat(customNodes || []).map((node) => ({ type: ConnectionType.RPC_NODE, node }));
-
-    const Predicates: Record<ConnectionType, (n: SelectorPayload) => boolean> = {
-      [ConnectionType.LIGHT_CLIENT]: (data) => data.type === ConnectionType.LIGHT_CLIENT,
-      [ConnectionType.AUTO_BALANCE]: (data) => data.type === ConnectionType.AUTO_BALANCE,
-      [ConnectionType.DISABLED]: (data) => data.type === ConnectionType.DISABLED,
-      [ConnectionType.RPC_NODE]: (data) => data.node?.url === activeNode?.url,
-    };
-
-    const allNodes = [...actionNodes, ...networkNodes];
-    setAvailableNodes(allNodes);
-    setSelectedNode(allNodes.find(Predicates[connectionType]));
-  }, [networkItem]);
-
-  const changeConnection = async (payload?: SelectorPayload) => {
-    if (!payload) {
-      onChangeCustomNode();
-    } else if (payload.type === ConnectionType.DISABLED) {
-      onDisconnect();
-    } else {
-      onConnect(payload.type, payload.node);
-    }
-  };
-
-  const isCustomNode = (url: string): boolean => {
-    if (!customNodes) return false;
-
-    return customNodes.some((node) => node.url === url);
-  };
-
   return (
-    <Listbox value={selectedNode || {}} onChange={changeConnection}>
+    <Listbox value={selectedConnection || {}} onChange={onChange}>
       {({ open }) => (
         <div className="relative">
           <Listbox.Button
@@ -101,7 +61,8 @@ export const NetworkSelector = ({
             onClick={scroll}
           >
             <FootnoteText className="truncate">
-              {selectedNode?.node?.name || selectedNode?.title || t('settings.networks.selectorPlaceholder')}
+              {(selectedConnection && Title[selectedConnection.type](t, selectedConnection.node?.name)) ||
+                t('settings.networks.selectorPlaceholder')}
             </FootnoteText>
             <Icon name="down" size={16} />
           </Listbox.Button>
@@ -117,8 +78,8 @@ export const NetworkSelector = ({
           >
             <div ref={ref} className={OptionsContainerStyle}>
               <Listbox.Options className="max-h-64 overflow-y-auto overscroll-contain">
-                {availableNodes.map((data) => {
-                  const { type, node, title } = data;
+                {nodesList.map((data) => {
+                  const { type, node, isCustom } = data;
 
                   return (
                     <Listbox.Option
@@ -131,10 +92,12 @@ export const NetworkSelector = ({
                     >
                       <div className="flex items-center gap-x-4">
                         <div className="flex flex-col justify-center overflow-hidden flex-1 h-8 pr-1">
-                          <FootnoteText className="text-text-secondary truncate">{node?.name || title}</FootnoteText>
+                          <FootnoteText className="text-text-secondary truncate">
+                            {Title[type](t, node?.name)}
+                          </FootnoteText>
                           {node?.url && <HelpText className="text-text-tertiary truncate">{node.url}</HelpText>}
                         </div>
-                        {node && isCustomNode(node.url) && (
+                        {node && isCustom && (
                           <>
                             <IconButton
                               name="edit"
@@ -143,7 +106,7 @@ export const NetworkSelector = ({
                                 onChangeCustomNode(node);
                               }}
                             />
-                            {activeNode?.url !== node.url && (
+                            {networkSelectorUtils.canDeleteNode(node.url, selectedConnection?.node?.url) && (
                               <IconButton
                                 name="delete"
                                 onClick={(event) => {

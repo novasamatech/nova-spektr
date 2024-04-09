@@ -11,14 +11,14 @@ import { useToggle } from '@shared/lib/hooks';
 import { AboutStaking, NetworkInfo, NominatorsList, Actions, InactiveChain } from './components';
 import { accountUtils, permissionUtils, walletModel, walletUtils } from '@entities/wallet';
 import { priceProviderModel } from '@entities/price';
-import { NominatorInfo } from './common/types';
 import { useNetworkData, networkUtils } from '@entities/network';
+import { eraService } from '@entities/staking/api';
 import { ChainId, Chain, Address, Account, Stake, Validator, ShardAccount, ChainAccount } from '@shared/core';
 import { BondNominate, bondNominateModel } from '@widgets/Staking/BondNominate';
 import { BondExtra, bondExtraModel } from '@widgets/Staking/BondExtra';
 import { Unstake, unstakeModel } from '@widgets/Staking/Unstake';
-import { nominateModel, Nominate } from '@widgets/Staking/Nominate';
-import { eraService } from '@entities/staking/api';
+import { Withdraw, withdrawModel } from '@widgets/Withdraw';
+import { NominatorInfo } from './common/types';
 import {
   useStakingData,
   StakingMap,
@@ -228,7 +228,7 @@ export const Overview = () => {
       return;
     }
 
-    if (path === Paths.BOND || path === Paths.STAKE_MORE || path === Paths.VALIDATORS || path === Paths.UNSTAKE) {
+    if (path === Paths.BOND || path === Paths.STAKE_MORE || path === Paths.VALIDATORS || path === Paths.UNSTAKE || path === Paths.REDEEM) {
       const shards = accounts.filter((account) => {
         const address = toAddress(account.accountId, { prefix: addressPrefix });
 
@@ -238,8 +238,9 @@ export const Overview = () => {
       const model = {
         [Paths.BOND]: bondNominateModel.events.flowStarted,
         [Paths.STAKE_MORE]: bondExtraModel.events.flowStarted,
-        [Paths.VALIDATORS]: nominateModel.events.flowStarted,
         [Paths.UNSTAKE]: unstakeModel.events.flowStarted,
+        [Paths.VALIDATORS]: nominateModel.events.flowStarted,
+        [Paths.REDEEM]: withdrawModel.events.flowStarted,
       };
 
       model[path]({
@@ -336,8 +337,9 @@ export const Overview = () => {
 
       <BondNominate />
       <BondExtra />
-      <Nominate />
       <Unstake />
+      <Nominate />
+      <Withdraw />
 
       <Outlet />
     </>

@@ -4,15 +4,15 @@ import { cnTw } from '@shared/lib/utils';
 import { ChainTitle } from '@entities/chain';
 import { useI18n } from '@app/providers';
 import { Accordion, ConfirmModal, FootnoteText, HelpText, SmallTitleText } from '@shared/ui';
-import { type ProxyAccount } from '@shared/core';
 import { networkModel } from '@entities/network';
 import { AssetBalance } from '@entities/asset';
 import { walletProviderModel } from '../../model/wallet-provider-model';
 import { ProxyAccountWithActions } from './ProxyAccountWithActions';
 import { useToggle } from '@shared/lib/hooks';
-import { RemoveProxy } from '@widgets/RemoveProxy';
-import { RemovePureProxy, removePureProxyModel } from '../../../RemovePureProxyModal';
+import { RemovePureProxy, removePureProxyModel } from '@widgets/RemovePureProxyModal';
+import { RemoveProxy, removeProxyModel } from '@widgets/RemoveProxyModal';
 import { accountUtils } from '@entities/wallet';
+import { ProxyAccount } from '@/src/renderer/shared/core';
 
 type Props = {
   canCreateProxy?: boolean;
@@ -26,10 +26,8 @@ export const ProxiesList = ({ className, canCreateProxy = true }: Props) => {
   const accounts = useUnit(walletProviderModel.$accounts);
   const chainsProxies = useUnit(walletProviderModel.$chainsProxies);
   const walletProxyGroups = useUnit(walletProviderModel.$walletProxyGroups);
-  const proxyForRemoval = useUnit(walletProviderModel.$proxyForRemoval);
 
   const [isRemoveConfirmOpen, toggleIsRemoveConfirmOpen] = useToggle();
-  const [isRemoveProxyOpen, toggleIsRemoveProxyOpen] = useToggle();
 
   const handleDeleteProxy = (proxyAccount: ProxyAccount) => {
     if (accountUtils.isProxiedAccount(accounts[0])) {
@@ -97,7 +95,7 @@ export const ProxiesList = ({ className, canCreateProxy = true }: Props) => {
         onClose={toggleIsRemoveConfirmOpen}
         onConfirm={() => {
           toggleIsRemoveConfirmOpen();
-          toggleIsRemoveProxyOpen();
+          removeProxyModel.events.flowStarted();
         }}
       >
         <SmallTitleText align="center" className="mb-2">
@@ -108,10 +106,7 @@ export const ProxiesList = ({ className, canCreateProxy = true }: Props) => {
         </FootnoteText>
       </ConfirmModal>
 
-      {proxyForRemoval && (
-        <RemoveProxy isOpen={isRemoveProxyOpen} proxyAccount={proxyForRemoval} onClose={toggleIsRemoveProxyOpen} />
-      )}
-
+      <RemoveProxy />
       <RemovePureProxy />
     </div>
   );
