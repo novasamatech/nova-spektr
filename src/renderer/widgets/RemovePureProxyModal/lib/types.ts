@@ -23,5 +23,3 @@ export type RemoveProxyStore = {
   proxyType: ProxyType;
   description: string;
 };
-
-export type TxWrappers = ('proxy' | 'multisig')[];

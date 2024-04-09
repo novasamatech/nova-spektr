@@ -161,7 +161,7 @@ const $signatories = combine(
 
     return wallets.reduce<{ signer: Account; balance: string }[]>((acc, wallet) => {
       const walletAccounts = accountUtils.getWalletAccounts(wallet.id, accounts);
-      const isAvailable = permissionUtils.canCreateMultisigTx(wallet, walletAccounts);
+      const isAvailable = walletAccounts.length > 0 && permissionUtils.canCreateMultisigTx(wallet, walletAccounts);
 
       if (!isAvailable) return acc;
 

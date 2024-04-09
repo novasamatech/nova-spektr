@@ -102,11 +102,10 @@ sample({
 
     return {
       chain: chains[proxiedAccount.chainId],
-      account: proxiedAccount,
+      account: signerAccount!,
       spawner: toAddress(proxiedAccount.proxyAccountId, { prefix: chain.addressPrefix }),
       proxyType: proxiedAccount.proxyType,
       description: '',
-      signatory: signerAccount,
     };
   },
   target: $removeProxyStore,
