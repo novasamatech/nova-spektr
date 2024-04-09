@@ -11,7 +11,7 @@ import { Step, RemoveProxyStore } from '../lib/types';
 import { formModel } from './form-model';
 import { confirmModel } from './confirm-model';
 import { walletProviderModel } from '../../WalletDetails/model/wallet-provider-model';
-import { Chain, ProxiedAccount, ProxyType, ProxyVariant } from '@shared/core';
+import { Account, Chain, ProxiedAccount, ProxyAccount, ProxyType, ProxyVariant } from '@shared/core';
 import { signModel } from '@features/operations/OperationSign/model/sign-model';
 import { submitModel } from '@features/operations/OperationSubmit';
 import { proxyModel } from '@/src/renderer/entities/proxy';
@@ -19,7 +19,11 @@ import { toAccountId } from '@/src/renderer/features/proxies/lib/worker-utils';
 
 const stepChanged = createEvent<Step>();
 
-const flowStarted = createEvent();
+type Input = {
+  account: Account;
+  proxy: ProxyAccount;
+};
+const flowStarted = createEvent<Input>();
 const flowFinished = createEvent();
 
 const $step = createStore<Step>(Step.NONE);
@@ -93,24 +97,16 @@ sample({
     allAccounts: walletModel.$accounts,
   },
   filter: ({ proxyAccount }) => Boolean(proxyAccount),
-  fn: ({ chains, selectedWallet, proxyAccount, allAccounts }) => {
-    const chain = chains[proxyAccount!.chainId];
-    const proxiedSelected = walletUtils.isProxied(selectedWallet);
-
-    const account = allAccounts.find((a) =>
-      a.accountId === proxyAccount!.proxiedAccountId && proxiedSelected
-        ? accountUtils.isProxiedAccount(a)
-        : a.walletId === selectedWallet!.id,
-    );
+  fn: ({ chains }, { proxy, account }) => {
+    const chain = chains[proxy!.chainId];
 
     const store = {
       chain: chain!,
-      account: account!,
-      delegate: toAddress(proxyAccount!.accountId!, { prefix: chain!.addressPrefix }),
-      proxyType: proxyAccount!.proxyType,
-      delay: proxyAccount!.delay,
+      account,
+      delegate: toAddress(proxy!.accountId!, { prefix: chain!.addressPrefix }),
+      proxyType: proxy!.proxyType,
+      delay: proxy!.delay,
       description: '',
-      signatory: account,
     };
 
     return store;

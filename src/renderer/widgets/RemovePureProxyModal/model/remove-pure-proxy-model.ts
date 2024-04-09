@@ -11,7 +11,7 @@ import { Step, RemoveProxyStore } from '../lib/types';
 import { formModel } from './form-model';
 import { confirmModel } from './confirm-model';
 import { walletProviderModel } from '../../WalletDetails/model/wallet-provider-model';
-import { Chain, ProxiedAccount, ProxyType, ProxyVariant } from '@shared/core';
+import { Chain, ProxiedAccount, ProxyAccount, ProxyType, ProxyVariant } from '@shared/core';
 import { warningModel } from './warning-model';
 import { proxyModel } from '@entities/proxy';
 import { signModel } from '@features/operations/OperationSign/model/sign-model';
@@ -19,7 +19,11 @@ import { submitModel } from '@features/operations/OperationSubmit';
 
 const stepChanged = createEvent<Step>();
 
-const flowStarted = createEvent();
+type Input = {
+  account: ProxiedAccount;
+  proxy: ProxyAccount;
+};
+const flowStarted = createEvent<Input>();
 const flowFinished = createEvent();
 
 const $step = createStore<Step>(Step.NONE);
@@ -87,24 +91,16 @@ sample({ clock: stepChanged, target: $step });
 sample({
   clock: flowStarted,
   source: {
-    accounts: walletProviderModel.$accounts,
     chains: networkModel.$chains,
-    wallets: walletModel.$wallets,
-    allAccounts: walletModel.$accounts,
   },
-  fn: ({ accounts, chains, allAccounts }) => {
-    const proxiedAccount = accounts[0] as ProxiedAccount;
-    const chain = chains[proxiedAccount.chainId];
-
-    const signerAccount = allAccounts.find(
-      (a) => a.accountId === proxiedAccount.proxyAccountId && !accountUtils.isProxiedAccount(a),
-    );
+  fn: ({ chains }, { proxy, account }) => {
+    const chain = chains[account.chainId];
 
     return {
-      chain: chains[proxiedAccount.chainId],
-      account: signerAccount!,
-      spawner: toAddress(proxiedAccount.proxyAccountId, { prefix: chain.addressPrefix }),
-      proxyType: proxiedAccount.proxyType,
+      chain: chains[account.chainId],
+      account: account!,
+      spawner: toAddress(proxy.accountId, { prefix: chain.addressPrefix }),
+      proxyType: proxy.proxyType,
       description: '',
     };
   },
