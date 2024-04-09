@@ -19,6 +19,7 @@ import { BondExtra, bondExtraModel } from '@widgets/Staking/BondExtra';
 import { Unstake, unstakeModel } from '@widgets/Staking/Unstake';
 import { Nominate, nominateModel } from '@widgets/Staking/Nominate';
 import { Withdraw, withdrawModel } from '@widgets/Staking/Withdraw';
+import { Restake, restakeModel } from '@widgets/Staking/Restake';
 import { NominatorInfo } from './common/types';
 import {
   useStakingData,
@@ -234,6 +235,7 @@ export const Overview = () => {
       path === Paths.STAKE_MORE ||
       path === Paths.UNSTAKE ||
       path === Paths.VALIDATORS ||
+      path === Paths.RESTAKE ||
       path === Paths.REDEEM
     ) {
       const shards = accounts.filter((account) => {
@@ -246,6 +248,7 @@ export const Overview = () => {
         [Paths.BOND]: bondNominateModel.events.flowStarted,
         [Paths.STAKE_MORE]: bondExtraModel.events.flowStarted,
         [Paths.UNSTAKE]: unstakeModel.events.flowStarted,
+        [Paths.RESTAKE]: restakeModel.events.flowStarted,
         [Paths.VALIDATORS]: nominateModel.events.flowStarted,
         [Paths.REDEEM]: withdrawModel.events.flowStarted,
       };
@@ -346,6 +349,7 @@ export const Overview = () => {
       <BondExtra />
       <Unstake />
       <Nominate />
+      <Restake />
       <Withdraw />
 
       <Outlet />
