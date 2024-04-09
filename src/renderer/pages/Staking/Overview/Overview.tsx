@@ -13,10 +13,12 @@ import { accountUtils, permissionUtils, walletModel, walletUtils } from '@entiti
 import { priceProviderModel } from '@entities/price';
 import { NominatorInfo } from './common/types';
 import { useNetworkData, networkUtils } from '@entities/network';
+import { eraService } from '@entities/staking/api';
 import { ChainId, Chain, Address, Account, Stake, Validator, ShardAccount, ChainAccount } from '@shared/core';
-import { Unstake, unstakeModel } from '@widgets/Unstake';
+import { BondNominate, bondModel } from '@widgets/Staking/BondNominate';
+import { Unstake, unstakeModel } from '@widgets/Staking/Unstake';
+import { Withdraw, withdrawModel } from '@widgets/Withdraw';
 import {
-  useEra,
   useStakingData,
   StakingMap,
   ValidatorMap,
@@ -24,7 +26,6 @@ import {
   useStakingRewards,
   ValidatorsModal,
 } from '@entities/staking';
-import { Withdraw, withdrawModel } from '@widgets/Withdraw';
 
 export const Overview = () => {
   const { t } = useI18n();
@@ -35,7 +36,6 @@ export const Overview = () => {
 
   const { changeClient } = useGraphql();
 
-  const { subscribeActiveEra } = useEra();
   const { subscribeStaking } = useStakingData();
   const [isShowNominators, toggleNominators] = useToggle();
 
@@ -95,7 +95,7 @@ export const Overview = () => {
     setIsStakingLoading(true);
 
     (async () => {
-      unsubEra = await subscribeActiveEra(api, (era) => {
+      unsubEra = await eraService.subscribeActiveEra(api, (era) => {
         setChainEra({ [chainId]: era });
       });
       unsubStaking = await subscribeStaking(chainId, api, addresses, (staking) => {
@@ -219,7 +219,7 @@ export const Overview = () => {
   );
 
   const navigateToStake = (path: PathType, addresses?: Address[]) => {
-    if (!activeChain) return;
+    if (!activeChain || !activeWallet) return;
 
     if (addresses) {
       setSelectedNominators(addresses);
@@ -227,7 +227,7 @@ export const Overview = () => {
       return;
     }
 
-    if (path === Paths.UNSTAKE || path === Paths.REDEEM) {
+    if (path === Paths.BOND || path === Paths.UNSTAKE || path === Paths.REDEEM) {
       const shards = accounts.filter((account) => {
         const address = toAddress(account.accountId, { prefix: addressPrefix });
 
@@ -235,11 +235,13 @@ export const Overview = () => {
       });
 
       const model = {
+        [Paths.BOND]: bondModel.events.flowStarted,
         [Paths.UNSTAKE]: unstakeModel.events.flowStarted,
         [Paths.REDEEM]: withdrawModel.events.flowStarted,
       };
 
       model[path]({
+        wallet: activeWallet,
         chain: activeChain,
         shards: uniqBy(shards, 'accountId'),
       });
@@ -330,6 +332,7 @@ export const Overview = () => {
         onClose={toggleNominators}
       />
 
+      <BondNominate />
       <Unstake />
       <Withdraw />
       <Outlet />

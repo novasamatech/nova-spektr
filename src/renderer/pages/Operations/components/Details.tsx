@@ -180,7 +180,6 @@ export const Details = ({ tx, account, extendedChain, signatory }: Props) => {
           <SelectedValidatorsModal
             isOpen={isValidatorsOpen}
             validators={selectedValidators}
-            explorers={explorers}
             onClose={toggleValidators}
           />
         </>

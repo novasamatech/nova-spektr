@@ -1,15 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useUnit } from 'effector-react';
 
-import {
-  MultisigTransaction,
-  Transaction,
-  Fee,
-  MultisigDepositWithLabel,
-  isXcmTransaction,
-  XcmFee,
-  FeeLoader,
-} from '@entities/transaction';
 import { TransactionAmount } from '@pages/Operations/components/TransactionAmount';
 import { DetailRow, FootnoteText, Icon } from '@shared/ui';
 import { ExtendedChain } from '@entities/network';
@@ -23,6 +14,15 @@ import { walletModel } from '@entities/wallet';
 import { getIconName } from '@entities/transaction/lib/transactionConfirmIcon';
 import { priceProviderModel } from '@entities/price';
 import { Details } from '../Details';
+import {
+  MultisigTransaction,
+  Transaction,
+  Fee,
+  MultisigDepositWithLabel,
+  isXcmTransaction,
+  XcmFee,
+  FeeLoader,
+} from '@entities/transaction';
 
 type Props = {
   tx: MultisigTransaction;

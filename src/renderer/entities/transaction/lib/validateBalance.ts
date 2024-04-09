@@ -1,7 +1,7 @@
 import { BN } from '@polkadot/util';
 import { ApiPromise } from '@polkadot/api';
 
-import { ITransactionService, Transaction, OperationError, type OperationErrorType } from '@entities/transaction';
+import { Transaction, OperationError, type OperationErrorType } from '@entities/transaction';
 import { toAccountId, transferableAmount, ValidationErrors } from '@shared/lib/utils';
 import type { AccountId, Balance, ChainId, PartialBy } from '@shared/core';
 
@@ -11,7 +11,7 @@ type Props = {
   transaction: Transaction;
   assetId: string;
   getBalance: (accountId: AccountId, chainId: ChainId, assetId: string) => Balance | undefined;
-  getTransactionFee: ITransactionService['getTransactionFee'];
+  getTransactionFee: (tx: Transaction, api: ApiPromise) => Promise<string>;
 };
 
 export const validateBalance = async (

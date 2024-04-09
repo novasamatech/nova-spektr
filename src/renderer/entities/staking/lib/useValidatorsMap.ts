@@ -2,11 +2,9 @@ import { useEffect, useState } from 'react';
 import { ApiPromise } from '@polkadot/api';
 
 import { ValidatorMap } from './types';
-import { useEra, validatorsService } from '../api';
+import { validatorsService, eraService } from '../api';
 
 export const useValidatorsMap = (api?: ApiPromise, isLightClient?: boolean): ValidatorMap => {
-  const { subscribeActiveEra } = useEra();
-
   const [era, setEra] = useState<number>();
   const [validators, setValidators] = useState<ValidatorMap>({});
 
@@ -14,7 +12,7 @@ export const useValidatorsMap = (api?: ApiPromise, isLightClient?: boolean): Val
     let unsubEra: () => void | undefined;
 
     if (api?.query.staking) {
-      subscribeActiveEra(api, setEra).then((unsubFn) => (unsubEra = unsubFn));
+      eraService.subscribeActiveEra(api, setEra).then((unsubFn) => (unsubEra = unsubFn));
     }
 
     return () => {

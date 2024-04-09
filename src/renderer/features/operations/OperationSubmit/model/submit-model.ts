@@ -22,7 +22,7 @@ type Input = {
   signatory?: Account;
   description: string;
   transactions: Transaction[];
-  multisigTxs?: Transaction[];
+  multisigTxs: Transaction[];
 
   signatures: HexString[];
   unsignedTxs: UnsignedTransaction[];
@@ -193,13 +193,13 @@ sample({
     hooks: $hooks,
   },
   filter: ({ submitStore, loginStatus }) => {
-    return matrixUtils.isLoggedIn(loginStatus) && Boolean(submitStore?.multisigTxs);
+    return matrixUtils.isLoggedIn(loginStatus) && Boolean(submitStore?.multisigTxs.length);
   },
   fn: ({ submitStore, hooks }, params) => ({
     params,
     hooks: hooks!,
     transactions: submitStore!.transactions,
-    multisigTxs: submitStore!.multisigTxs!,
+    multisigTxs: submitStore!.multisigTxs,
     multisigAccount: submitStore!.account as MultisigAccount,
     description: submitStore!.description,
   }),
@@ -216,15 +216,15 @@ sample({
   filter: ({ loginStatus, submitStore }) => {
     return (
       matrixUtils.isLoggedIn(loginStatus) &&
-      Boolean(submitStore?.multisigTxs) &&
-      Boolean((submitStore!.account as MultisigAccount).matrixRoomId)
+      Boolean(submitStore?.multisigTxs.length) &&
+      Boolean((submitStore?.account as MultisigAccount).matrixRoomId)
     );
   },
   fn: ({ matrix, submitStore }, { params, result }) => ({
     matrix,
-    matrixRoomId: (submitStore?.account as MultisigAccount).matrixRoomId!,
+    matrixRoomId: (submitStore!.account as MultisigAccount).matrixRoomId!,
     multisigTxs: result.transactions,
-    description: submitStore?.description!,
+    description: submitStore!.description!,
     params: params.params,
   }),
   target: sendMatrixApproveFx,

@@ -18,8 +18,8 @@ import {
   Transaction,
   TransactionType,
   MultisigTransaction,
-  useTransaction,
   ExtrinsicResultParams,
+  transactionService,
 } from '@entities/transaction';
 
 type ResultProps = Pick<ComponentProps<typeof StatusModal>, 'title' | 'content' | 'description'>;
@@ -52,7 +52,6 @@ export const Submit = ({
   const { t } = useI18n();
 
   const matrix = useUnit(matrixModel.$matrix);
-  const { submitAndWatchExtrinsic, getSignedExtrinsic } = useTransaction();
   const { addTask } = useMultisigChainContext();
   const { updateMultisigTx } = useMultisigTx({ addTask });
   const { addEventWithQueue } = useMultisigEvent({ addTask });
@@ -66,9 +65,9 @@ export const Submit = ({
   }, []);
 
   const submitExtrinsic = async (signature: HexString) => {
-    const extrinsic = await getSignedExtrinsic(unsignedTx, signature, api);
+    const extrinsic = await transactionService.getSignedExtrinsic(unsignedTx, signature, api);
 
-    submitAndWatchExtrinsic(extrinsic, unsignedTx, api, async (executed, params) => {
+    transactionService.submitAndWatchExtrinsic(extrinsic, unsignedTx, api, async (executed, params) => {
       if (executed) {
         const typedParams = params as ExtrinsicResultParams;
 

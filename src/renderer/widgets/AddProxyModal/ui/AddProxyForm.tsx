@@ -2,12 +2,12 @@ import { useForm } from 'effector-forms';
 import { FormEvent } from 'react';
 import { useUnit } from 'effector-react';
 
-import { Button, Select, Input, InputHint, Combobox, Identicon, Alert } from '@shared/ui';
+import { Button, Select, Input, InputHint, Combobox, Identicon, Alert, Icon } from '@shared/ui';
 import { useI18n } from '@app/providers';
 import { ChainTitle } from '@entities/chain';
 import { ProxyPopover, proxyUtils } from '@entities/proxy';
 import { AccountAddress, accountUtils } from '@entities/wallet';
-import { toAddress, toShortAddress } from '@shared/lib/utils';
+import { toAddress, toShortAddress, validateAddress } from '@shared/lib/utils';
 import { formModel } from '../model/form-model';
 import { AssetBalance } from '@entities/asset';
 import { MultisigAccount } from '@shared/core';
@@ -224,6 +224,16 @@ const ProxyInput = () => {
     };
   });
 
+  const prefixElement = (
+    <div className="flex h-auto items-center">
+      {validateAddress(delegate.value) ? (
+        <Identicon className="mr-1" address={delegate.value} size={20} background={false} canCopy={false} />
+      ) : (
+        <Icon className="mr-2" size={20} name="emptyIdenticon" />
+      )}
+    </div>
+  );
+
   return (
     <div className="flex flex-col gap-y-2">
       <Combobox
@@ -233,9 +243,7 @@ const ProxyInput = () => {
         options={options}
         value={delegate.value}
         invalid={delegate.hasError()}
-        prefixElement={
-          <Identicon className="mr-1" address={delegate.value} size={20} background={false} canCopy={false} />
-        }
+        prefixElement={prefixElement}
         onInput={formModel.events.proxyQueryChanged}
         onChange={({ value }) => delegate.onChange(value)}
       />

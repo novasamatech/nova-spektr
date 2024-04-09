@@ -3,13 +3,6 @@ import { SignableWalletFamily, WalletType } from '@shared/core';
 import { Button, Icon } from '@shared/ui';
 import { IconNames } from '@shared/ui/Icon/data';
 
-type Props = {
-  type?: WalletType;
-  disabled?: boolean;
-  onClick?: () => void;
-  className?: string;
-};
-
 const WalletIcon: Record<SignableWalletFamily, IconNames> = {
   [WalletType.POLKADOT_VAULT]: 'vault',
   [WalletType.WALLET_CONNECT]: 'walletConnect',
@@ -30,7 +23,14 @@ const WalletText: Record<SignableWalletFamily, string> = {
 
 const UnkownWalletText = 'operation.sign.unknown';
 
-export const SignButton = ({ disabled, type, onClick, className }: Props) => {
+type Props = {
+  type?: WalletType; // TODO: should not be undefined
+  disabled?: boolean;
+  className?: string;
+  onClick?: () => void;
+};
+
+export const SignButton = ({ disabled, type, className, onClick }: Props) => {
   const { t } = useI18n();
 
   return (

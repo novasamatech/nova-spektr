@@ -1,7 +1,7 @@
 import { useI18n } from '@app/providers';
 import { BaseModal, BodyText, Identicon, Truncate } from '@shared/ui';
 import { cnTw, stakeableAmount, toAddress } from '@shared/lib/utils';
-import type { Account, Asset, ChainId, Explorer, AccountId } from '@shared/core';
+import type { Account, Asset, ChainId, AccountId } from '@shared/core';
 import { AssetBalance } from '../../../asset';
 import { useAssetBalances } from '../../../balance';
 
@@ -11,12 +11,11 @@ type Props = {
   amounts?: string[];
   asset: Asset;
   chainId: ChainId;
-  explorers?: Explorer[];
   addressPrefix: number;
   onClose: () => void;
 };
 
-export const AccountsModal = ({ isOpen, accounts, asset, chainId, explorers, addressPrefix, onClose }: Props) => {
+export const AccountsModal = ({ isOpen, accounts, asset, chainId, addressPrefix, onClose }: Props) => {
   const { t } = useI18n();
 
   const accountIds = accounts.map((account) => account.accountId);

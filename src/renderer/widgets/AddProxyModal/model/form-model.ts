@@ -27,6 +27,7 @@ import {
   dictionary,
   transferableAmount,
   toShortAddress,
+  validateAddress,
 } from '@shared/lib/utils';
 
 type ProxyAccounts = {
@@ -163,7 +164,7 @@ const $proxyForm = createForm<FormParams>({
         {
           name: 'required',
           errorText: 'proxy.addProxy.proxyAddressRequiredError',
-          validator: Boolean,
+          validator: validateAddress,
         },
         {
           name: 'sameAsProxied',

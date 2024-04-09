@@ -4,7 +4,7 @@ import { useEffect, useState, memo } from 'react';
 import { useUnit } from 'effector-react';
 
 import { AssetBalance } from '@entities/asset';
-import { FeeLoader, Transaction, useTransaction } from '@entities/transaction';
+import { FeeLoader, Transaction, transactionService } from '@entities/transaction';
 import type { Asset } from '@shared/core';
 import { priceProviderModel } from '@entities/price';
 import { AssetFiatBalance } from '@entities/price/ui/AssetFiatBalance';
@@ -20,7 +20,6 @@ type Props = {
 };
 
 export const Fee = memo(({ api, multiply = 1, asset, transaction, className, onFeeChange, onFeeLoading }: Props) => {
-  const { getTransactionFee } = useTransaction();
   const fiatFlag = useUnit(priceProviderModel.$fiatFlag);
 
   const [fee, setFee] = useState('');
@@ -46,7 +45,8 @@ export const Fee = memo(({ api, multiply = 1, asset, transaction, className, onF
       updateFee('0');
       setIsLoading(false);
     } else {
-      getTransactionFee(transaction, api)
+      transactionService
+        .getTransactionFee(transaction, api)
         .then(updateFee)
         .catch((error) => {
           updateFee('0');
