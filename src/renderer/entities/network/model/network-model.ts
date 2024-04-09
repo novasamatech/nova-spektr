@@ -384,6 +384,13 @@ sample({
 
 sample({
   clock: requestMetadataFx.doneData,
+  source: $metadata,
+  filter: (metadata, newMetadata) => {
+    return !metadata.some(
+      ({ chainId, version }) => chainId === newMetadata!.chainId && version === newMetadata!.version,
+    );
+  },
+  fn: (_, metadata) => metadata,
   target: saveMetadataFx,
 });
 
