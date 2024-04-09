@@ -13,7 +13,7 @@ export type NetworkStore = {
   shards: Account[];
 };
 
-export type WithdrawStore = {
+export type WithdrawData = {
   shards: Account[];
   proxiedAccount?: ProxiedAccount;
   signatory?: Account;

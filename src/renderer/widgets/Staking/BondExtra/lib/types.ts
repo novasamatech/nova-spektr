@@ -14,7 +14,7 @@ export type WalletData = {
   chain: Chain;
 };
 
-export type BondData = {
+export type BondExtraData = {
   shards: Account[];
   signatory?: Account;
   amount: string;

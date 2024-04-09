@@ -6,7 +6,7 @@ import {
   isTransferTransaction,
 } from '../common/utils';
 
-describe('entities/transaction/lib/common/utils', () => {
+describe('entities/transaction/lib/utils', () => {
   test('should return true for a transfer transactions', () => {
     const transferTransaction = {
       type: TransactionType.TRANSFER,

@@ -1,26 +1,24 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useUnit } from 'effector-react';
 import uniqBy from 'lodash/uniqBy';
-import { useNavigate, Outlet } from 'react-router-dom';
 
 import { Header } from '@shared/ui';
 import { getRelaychainAsset, toAddress } from '@shared/lib/utils';
-import { type PathType, Paths, createLink } from '@shared/routes';
+import { type PathType, Paths } from '@shared/routes';
 import { useGraphql, useI18n } from '@app/providers';
 import { useToggle } from '@shared/lib/hooks';
-import { AboutStaking, NetworkInfo, NominatorsList, Actions, InactiveChain } from './components';
 import { accountUtils, permissionUtils, walletModel, walletUtils } from '@entities/wallet';
 import { priceProviderModel } from '@entities/price';
 import { useNetworkData, networkUtils } from '@entities/network';
 import { eraService } from '@entities/staking/api';
 import { ChainId, Chain, Address, Account, Stake, Validator, ShardAccount, ChainAccount } from '@shared/core';
-import { BondNominate, bondNominateModel } from '@widgets/Staking/BondNominate';
-import { BondExtra, bondExtraModel } from '@widgets/Staking/BondExtra';
-import { Unstake, unstakeModel } from '@widgets/Staking/Unstake';
-import { Nominate, nominateModel } from '@widgets/Staking/Nominate';
-import { Withdraw, withdrawModel } from '@widgets/Staking/Withdraw';
-import { Restake, restakeModel } from '@widgets/Staking/Restake';
-import { NominatorInfo } from './common/types';
+import { NetworkInfo } from './NetworkInfo';
+import { AboutStaking } from './AboutStaking';
+import { Actions } from './Actions';
+import { NominatorsList } from './NominatorsList';
+import { InactiveChain } from './InactiveChain';
+import { NominatorInfo } from '../lib/types';
+import * as Operations from '@widgets/Staking';
 import {
   useStakingData,
   StakingMap,
@@ -30,9 +28,8 @@ import {
   ValidatorsModal,
 } from '@entities/staking';
 
-export const Overview = () => {
+export const Staking = () => {
   const { t } = useI18n();
-  const navigate = useNavigate();
 
   const activeWallet = useUnit(walletModel.$activeWallet);
   const activeAccounts = useUnit(walletModel.$activeAccounts);
@@ -230,47 +227,28 @@ export const Overview = () => {
       return;
     }
 
-    if (
-      path === Paths.BOND ||
-      path === Paths.STAKE_MORE ||
-      path === Paths.UNSTAKE ||
-      path === Paths.VALIDATORS ||
-      path === Paths.RESTAKE ||
-      path === Paths.REDEEM
-    ) {
-      const shards = accounts.filter((account) => {
-        const address = toAddress(account.accountId, { prefix: addressPrefix });
+    const shards = accounts.filter((account) => {
+      const address = toAddress(account.accountId, { prefix: addressPrefix });
 
-        return selectedNominators.includes(address);
-      });
+      return selectedNominators.includes(address);
+    });
 
-      const model = {
-        [Paths.BOND]: bondNominateModel.events.flowStarted,
-        [Paths.STAKE_MORE]: bondExtraModel.events.flowStarted,
-        [Paths.UNSTAKE]: unstakeModel.events.flowStarted,
-        [Paths.RESTAKE]: restakeModel.events.flowStarted,
-        [Paths.VALIDATORS]: nominateModel.events.flowStarted,
-        [Paths.REDEEM]: withdrawModel.events.flowStarted,
-      };
+    const model = {
+      [Paths.BOND]: Operations.bondNominateModel.events.flowStarted,
+      [Paths.STAKE_MORE]: Operations.bondExtraModel.events.flowStarted,
+      [Paths.UNSTAKE]: Operations.unstakeModel.events.flowStarted,
+      [Paths.RESTAKE]: Operations.restakeModel.events.flowStarted,
+      [Paths.VALIDATORS]: Operations.nominateModel.events.flowStarted,
+      [Paths.REDEEM]: Operations.withdrawModel.events.flowStarted,
+      [Paths.DESTINATION]: Operations.payeeModel.events.flowStarted,
+    };
 
-      model[path]({
-        wallet: activeWallet,
-        chain: activeChain,
-        shards: uniqBy(shards, 'accountId'),
-      });
-    } else {
-      const accountsMap = accounts.reduce<Record<Address, number>>((acc, account) => {
-        if (account.id) {
-          acc[toAddress(account.accountId, { prefix: addressPrefix })] = account.id;
-        }
-
-        return acc;
-      }, {});
-
-      const stakeAccountIds = selectedNominators.map((nominator) => accountsMap[nominator]);
-
-      navigate(createLink(path, { chainId }, { id: stakeAccountIds }));
-    }
+    // @ts-ignore
+    model[path]({
+      wallet: activeWallet,
+      chain: activeChain,
+      shards: uniqBy(shards, 'accountId'),
+    });
   };
 
   const totalStakes = Object.values(staking).map((stake) => stake?.total || '0');
@@ -345,14 +323,13 @@ export const Overview = () => {
         onClose={toggleNominators}
       />
 
-      <BondNominate />
-      <BondExtra />
-      <Unstake />
-      <Nominate />
-      <Restake />
-      <Withdraw />
-
-      <Outlet />
+      <Operations.BondNominate />
+      <Operations.BondExtra />
+      <Operations.Unstake />
+      <Operations.Nominate />
+      <Operations.Restake />
+      <Operations.Withdraw />
+      <Operations.Payee />
     </>
   );
 };
