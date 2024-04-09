@@ -1,13 +1,16 @@
 import { Transaction, TransactionType } from '../model/transaction';
 import { TransferType } from './common/constants';
 import { toAddress, TEST_ACCOUNTS, formatAmount, getAssetId } from '@shared/lib/utils';
-import { Chain, ChainId, Asset, AccountId } from '@shared/core';
+import { Chain, ChainId, Asset, AccountId, Address } from '@shared/core';
 
 export const transactionBuilder = {
   buildTransfer,
-  buildUnstake,
+  buildBondNominate,
+  buildBondExtra,
+  buildNominate,
   buildRestake,
   buildRedeem,
+  buildUnstake,
   buildChill,
   buildBatchAll,
 };
@@ -45,6 +48,89 @@ function buildTransfer({ chain, accountId, destination, asset, amount, xcmData }
       value: formatAmount(amount, asset.precision) || '1',
       ...(Boolean(asset.type) && { asset: getAssetId(asset) }),
       ...xcmData?.args,
+    },
+  };
+}
+
+type BondNominateParams = BondParams & NominateParams;
+function buildBondNominate({
+  chain,
+  accountId,
+  destination,
+  asset,
+  amount,
+  nominators,
+}: BondNominateParams): Transaction {
+  const bondTx = buildBond({ chain, asset, accountId, destination, amount });
+  const nominateTx = buildNominate({ chain, accountId, nominators });
+
+  return {
+    chainId: chain.chainId,
+    address: toAddress(accountId, { prefix: chain.addressPrefix }),
+    type: TransactionType.BATCH_ALL,
+    args: { transactions: [bondTx, nominateTx] },
+  };
+}
+
+type BondParams = {
+  chain: Chain;
+  asset: Asset;
+  accountId: AccountId;
+  destination: Address;
+  amount: string;
+};
+function buildBond({ chain, asset, accountId, destination, amount }: BondParams): Transaction {
+  const controller = toAddress(accountId, { prefix: chain.addressPrefix });
+
+  return {
+    chainId: chain.chainId,
+    address: controller,
+    type: TransactionType.BOND,
+    args: {
+      value: formatAmount(amount, asset.precision),
+      controller,
+      payee: destination ? { Account: destination } : 'Staked',
+    },
+  };
+}
+
+function buildBondExtra({ chain, asset, accountId, amount }: Omit<BondParams, 'destination'>): Transaction {
+  return {
+    chainId: chain.chainId,
+    address: toAddress(accountId, { prefix: chain.addressPrefix }),
+    type: TransactionType.STAKE_MORE,
+    args: {
+      maxAdditional: formatAmount(amount, asset.precision),
+    },
+  };
+}
+
+type NominateParams = {
+  chain: Chain;
+  accountId: AccountId;
+  nominators: Address[];
+};
+function buildNominate({ chain, accountId, nominators }: NominateParams): Transaction {
+  return {
+    chainId: chain.chainId,
+    address: toAddress(accountId, { prefix: chain.addressPrefix }),
+    type: TransactionType.NOMINATE,
+    args: { targets: nominators },
+  };
+}
+
+type RedeemParams = {
+  chain: Chain;
+  accountId: AccountId;
+  withChill?: boolean;
+};
+function buildRedeem({ chain, accountId }: RedeemParams): Transaction {
+  return {
+    chainId: chain.chainId,
+    address: toAddress(accountId, { prefix: chain.addressPrefix }),
+    type: TransactionType.REDEEM,
+    args: {
+      numSlashingSpans: 1,
     },
   };
 }
@@ -90,22 +176,6 @@ function buildRestake({ chain, accountId, asset, amount }: RestakeParams): Trans
     type: TransactionType.RESTAKE,
     args: {
       value: formatAmount(amount, asset.precision),
-    },
-  };
-}
-
-type RedeemParams = {
-  chain: Chain;
-  accountId: AccountId;
-  withChill?: boolean;
-};
-function buildRedeem({ chain, accountId }: RedeemParams): Transaction {
-  return {
-    chainId: chain.chainId,
-    address: toAddress(accountId, { prefix: chain.addressPrefix }),
-    type: TransactionType.REDEEM,
-    args: {
-      numSlashingSpans: 1,
     },
   };
 }

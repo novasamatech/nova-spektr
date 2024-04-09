@@ -240,18 +240,12 @@ export const Confirmation = ({
         amounts={amounts}
         chainId={transaction?.chainId}
         asset={asset}
-        explorers={explorers}
         addressPrefix={addressPrefix}
         onClose={toggleAccounts}
       />
 
       {validatorsExist && (
-        <SelectedValidatorsModal
-          isOpen={isValidatorsOpen}
-          validators={validators}
-          explorers={explorers}
-          onClose={toggleValidators}
-        />
+        <SelectedValidatorsModal isOpen={isValidatorsOpen} validators={validators} onClose={toggleValidators} />
       )}
     </>
   );

@@ -33,7 +33,7 @@ const $account = $removeProxyStore.map((store) => store?.account, { skipVoid: fa
 
 const $txWrappers = combine(
   {
-    wallet: walletModel.$activeWallet,
+    wallet: walletSelectModel.$walletForDetails,
     wallets: walletModel.$wallets,
     accounts: walletModel.$accounts,
     account: $account,
@@ -279,7 +279,7 @@ sample({
       signatory: proxyData.removeProxyStore!.signatory,
       description: proxyData.removeProxyStore!.description,
       transactions: [proxyData.transaction!],
-      multisigTxs: proxyData.multisigTx ? [proxyData.multisigTx] : undefined,
+      multisigTxs: proxyData.multisigTx ? [proxyData.multisigTx] : [],
     },
     step: Step.SUBMIT,
   }),

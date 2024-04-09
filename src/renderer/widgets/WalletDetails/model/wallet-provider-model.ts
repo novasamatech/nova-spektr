@@ -9,7 +9,6 @@ import { walletDetailsUtils } from '../lib/utils';
 import type { MultishardMap, VaultMap } from '../lib/types';
 import { proxyModel, proxyUtils } from '@entities/proxy';
 import { networkModel } from '@entities/network';
-import { removeProxyModel } from '@widgets/RemoveProxy';
 import type {
   Account,
   Signatory,
@@ -25,7 +24,7 @@ import type {
 
 const removeProxy = createEvent<ProxyAccount>();
 
-const $proxyForRemoval = createStore<ProxyAccount | null>(null).reset(removeProxyModel.events.proxyRemoved);
+const $proxyForRemoval = createStore<ProxyAccount | null>(null);
 
 const $accounts = combine(
   {

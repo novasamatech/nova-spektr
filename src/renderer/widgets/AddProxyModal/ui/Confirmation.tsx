@@ -19,6 +19,8 @@ export const Confirmation = ({ onGoBack }: Props) => {
   const confirmStore = useUnit(confirmModel.$confirmStore);
   const initiatorWallet = useUnit(confirmModel.$initiatorWallet);
   const signerWallet = useUnit(confirmModel.$signerWallet);
+  const proxiedWallet = useUnit(confirmModel.$proxiedWallet);
+
   const api = useUnit(confirmModel.$api);
 
   if (!confirmStore || !api || !initiatorWallet) return null;
@@ -37,21 +39,63 @@ export const Confirmation = ({ onGoBack }: Props) => {
       </div>
 
       <dl className="flex flex-col gap-y-4 w-full">
-        <DetailRow label={t('proxy.details.wallet')} className="flex gap-x-2">
-          <WalletIcon type={initiatorWallet.type} size={16} />
-          <FootnoteText className="pr-2">{initiatorWallet.name}</FootnoteText>
-        </DetailRow>
+        {proxiedWallet && confirmStore.proxiedAccount && (
+          <>
+            <DetailRow label={t('transfer.senderProxiedWallet')} className="flex gap-x-2">
+              <WalletIcon type={proxiedWallet.type} size={16} />
+              <FootnoteText className="pr-2">{proxiedWallet.name}</FootnoteText>
+            </DetailRow>
 
-        <DetailRow label={t('proxy.details.account')}>
-          <AddressWithExplorers
-            type="short"
-            explorers={confirmStore.chain.explorers}
-            addressFont="text-footnote text-inherit"
-            accountId={confirmStore.account.accountId}
-            addressPrefix={confirmStore.chain.addressPrefix}
-            wrapperClassName="text-text-secondary"
-          />
-        </DetailRow>
+            <DetailRow label={t('transfer.senderAccount')}>
+              <AddressWithExplorers
+                type="short"
+                explorers={confirmStore.chain.explorers}
+                addressFont="text-footnote text-inherit"
+                accountId={confirmStore.proxiedAccount.accountId}
+                addressPrefix={confirmStore.chain.addressPrefix}
+                wrapperClassName="text-text-secondary"
+              />
+            </DetailRow>
+
+            <hr className="border-filter-border w-full pr-2" />
+
+            <DetailRow label={t('transfer.signingWallet')} className="flex gap-x-2">
+              <WalletIcon type={initiatorWallet.type} size={16} />
+              <FootnoteText className="pr-2">{initiatorWallet.name}</FootnoteText>
+            </DetailRow>
+
+            <DetailRow label={t('transfer.signingAccount')}>
+              <AddressWithExplorers
+                type="short"
+                explorers={confirmStore.chain.explorers}
+                addressFont="text-footnote text-inherit"
+                accountId={confirmStore.proxiedAccount.proxyAccountId}
+                addressPrefix={confirmStore.chain.addressPrefix}
+                wrapperClassName="text-text-secondary"
+              />
+            </DetailRow>
+          </>
+        )}
+
+        {!proxiedWallet && (
+          <>
+            <DetailRow label={t('proxy.details.wallet')} className="flex gap-x-2">
+              <WalletIcon type={initiatorWallet.type} size={16} />
+              <FootnoteText className="pr-2">{initiatorWallet.name}</FootnoteText>
+            </DetailRow>
+
+            <DetailRow label={t('proxy.details.account')}>
+              <AddressWithExplorers
+                type="short"
+                explorers={confirmStore.chain.explorers}
+                addressFont="text-footnote text-inherit"
+                accountId={confirmStore.account.accountId}
+                addressPrefix={confirmStore.chain.addressPrefix}
+                wrapperClassName="text-text-secondary"
+              />
+            </DetailRow>
+          </>
+        )}
 
         {signerWallet && confirmStore.signatory && (
           <DetailRow label={t('proxy.details.signatory')}>
@@ -84,8 +128,8 @@ export const Confirmation = ({ onGoBack }: Props) => {
 
         <ProxyDepositWithLabel
           api={api}
-          deposit={confirmStore.oldProxyDeposit}
-          proxyNumber={confirmStore.proxyNumber}
+          deposit={'0'}
+          proxyNumber={confirmStore.proxyNumber || 1}
           asset={confirmStore.chain.assets[0]}
           onDepositLoading={setIsProxyDepositLoading}
         />
