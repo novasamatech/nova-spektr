@@ -17,7 +17,7 @@ export type WalletData = {
 export type PayeeData = {
   shards: Account[];
   signatory?: Account;
-  destination?: Address;
+  destination: Address;
   description: string;
 };
 

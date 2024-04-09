@@ -4,9 +4,8 @@ import { spread, delay } from 'patronum';
 import { BN } from '@polkadot/util';
 
 import { walletModel } from '@entities/wallet';
-import { TEST_ADDRESS, getRelaychainAsset, nonNullable } from '@shared/lib/utils';
+import { getRelaychainAsset, nonNullable } from '@shared/lib/utils';
 import { networkModel } from '@entities/network';
-import { validatorsService } from '@entities/staking';
 import { submitModel } from '@features/operations/OperationSubmit';
 import { signModel } from '@features/operations/OperationSign/model/sign-model';
 import { Account } from '@shared/core';
@@ -37,12 +36,6 @@ const $feeData = createStore<FeeData>({ fee: '0', totalFee: '0', multisigDeposit
 
 const $txWrappers = createStore<TxWrapper[]>([]);
 const $pureTxs = createStore<Transaction[]>([]);
-
-const $maxValidators = createStore<number>(0);
-
-const getMaxValidatorsFx = createEffect((api: ApiPromise): number => {
-  return validatorsService.getMaxValidators(api);
-});
 
 type FeeParams = {
   api: ApiPromise;
@@ -95,21 +88,6 @@ const $transactions = combine(
   { skipVoid: false },
 );
 
-// Max validators
-
-sample({
-  clock: $api.updates,
-  source: $maxValidators,
-  filter: (maxValidators, api) => !maxValidators && Boolean(api),
-  fn: (_, api) => api!,
-  target: getMaxValidatorsFx,
-});
-
-sample({
-  clock: getMaxValidatorsFx.doneData,
-  target: $maxValidators,
-});
-
 // Transaction & Form
 
 sample({
@@ -158,35 +136,19 @@ sample({
 
 sample({
   clock: formModel.output.formChanged,
-  source: $payeeData,
-  filter: (rewardDestinationData, data) => Boolean(rewardDestinationData) || typeof data !== 'number',
-  fn: (rewardDestinationData, data) => {
-    if (typeof data === 'number') {
-      return {
-        ...(rewardDestinationData || ({} as PayeeData)),
-        validators: Array(data).fill({ address: TEST_ADDRESS }),
-      };
-    }
-
-    if (Array.isArray(data)) {
-      return { ...rewardDestinationData!, validators: data! };
-    }
-
-    return { ...data! };
-  },
   target: $payeeData,
 });
 
 sample({
   clock: $payeeData.updates,
   source: $walletData,
-  filter: (walletData, rewardDestinationData) => Boolean(walletData) && Boolean(rewardDestinationData),
-  fn: (walletData, rewardDestinationData) => {
-    return rewardDestinationData!.shards.map((shard) => {
+  filter: (walletData, payeeData) => Boolean(walletData) && Boolean(payeeData),
+  fn: (walletData, payeeData) => {
+    return payeeData!.shards.map((shard) => {
       return transactionBuilder.buildSetPayee({
         chain: walletData!.chain,
         accountId: shard.accountId,
-        destination: rewardDestinationData!.destination,
+        destination: payeeData!.destination,
       });
     });
   },
@@ -268,20 +230,20 @@ sample({
 sample({
   clock: formModel.output.formSubmitted,
   source: {
-    rewardDestinationData: $payeeData,
+    payeeData: $payeeData,
     feeData: $feeData,
     walletData: $walletData,
     txWrappers: $txWrappers,
   },
-  filter: ({ rewardDestinationData, walletData }) => Boolean(rewardDestinationData) && Boolean(walletData),
-  fn: ({ rewardDestinationData, feeData, walletData, txWrappers }) => {
+  filter: ({ payeeData, walletData }) => Boolean(payeeData) && Boolean(walletData),
+  fn: ({ payeeData, feeData, walletData, txWrappers }) => {
     const wrapper = txWrappers.find(({ kind }) => kind === WrapperKind.PROXY) as ProxyTxWrapper;
 
     return {
       event: {
         chain: walletData!.chain,
         asset: getRelaychainAsset(walletData!.chain.assets)!,
-        ...rewardDestinationData!,
+        ...payeeData!,
         ...feeData,
         ...(wrapper && { proxiedAccount: wrapper.proxiedAccount }),
         ...(wrapper && { shards: [wrapper.proxyAccount] }),
@@ -298,22 +260,22 @@ sample({
 sample({
   clock: confirmModel.output.formSubmitted,
   source: {
-    rewardDestinationData: $payeeData,
+    payeeData: $payeeData,
     walletData: $walletData,
     transactions: $transactions,
     txWrappers: $txWrappers,
   },
-  filter: ({ rewardDestinationData, walletData, transactions }) => {
-    return Boolean(rewardDestinationData) && Boolean(walletData) && Boolean(transactions);
+  filter: ({ payeeData, walletData, transactions }) => {
+    return Boolean(payeeData) && Boolean(walletData) && Boolean(transactions);
   },
-  fn: ({ rewardDestinationData, walletData, transactions, txWrappers }) => {
+  fn: ({ payeeData, walletData, transactions, txWrappers }) => {
     const wrapper = txWrappers.find(({ kind }) => kind === WrapperKind.PROXY) as ProxyTxWrapper;
 
     return {
       event: {
         chain: walletData!.chain,
-        accounts: wrapper ? [wrapper.proxyAccount] : rewardDestinationData!.shards,
-        signatory: rewardDestinationData!.signatory,
+        accounts: wrapper ? [wrapper.proxyAccount] : payeeData!.shards,
+        signatory: payeeData!.signatory,
         transactions: transactions!.map((tx) => tx.wrappedTx),
       },
       step: Step.SIGN,
@@ -328,22 +290,22 @@ sample({
 sample({
   clock: signModel.output.formSubmitted,
   source: {
-    rewardDestinationData: $payeeData,
+    payeeData: $payeeData,
     walletData: $walletData,
     transactions: $transactions,
   },
-  filter: ({ rewardDestinationData, walletData, transactions }) => {
-    return Boolean(rewardDestinationData) && Boolean(walletData) && Boolean(transactions);
+  filter: ({ payeeData, walletData, transactions }) => {
+    return Boolean(payeeData) && Boolean(walletData) && Boolean(transactions);
   },
-  fn: (bondFlowData, signParams) => ({
+  fn: (payeeFlowData, signParams) => ({
     event: {
       ...signParams,
-      chain: bondFlowData.walletData!.chain,
-      account: bondFlowData.rewardDestinationData!.shards[0],
-      signatory: bondFlowData.rewardDestinationData!.signatory,
-      description: bondFlowData.rewardDestinationData!.description,
-      transactions: bondFlowData.transactions!.map((tx) => tx.coreTx),
-      multisigTxs: bondFlowData.transactions!.map((tx) => tx.multisigTx).filter(nonNullable),
+      chain: payeeFlowData.walletData!.chain,
+      account: payeeFlowData.payeeData!.shards[0],
+      signatory: payeeFlowData.payeeData!.signatory,
+      description: payeeFlowData.payeeData!.description,
+      transactions: payeeFlowData.transactions!.map((tx) => tx.coreTx),
+      multisigTxs: payeeFlowData.transactions!.map((tx) => tx.multisigTx).filter(nonNullable),
     },
     step: Step.SUBMIT,
   }),

@@ -9,11 +9,9 @@ export const transactionBuilder = {
   buildBondExtra,
   buildNominate,
   buildRestake,
-  buildRedeem,
+  buildWithdraw,
   buildUnstake,
   buildSetPayee,
-  buildChill,
-  buildBatchAll,
 };
 
 type TransferParams = {
@@ -90,7 +88,7 @@ function buildBond({ chain, asset, accountId, destination, amount }: BondParams)
     args: {
       value: formatAmount(amount, asset.precision),
       controller,
-      payee: destination ? { Account: destination } : 'Staked',
+      payee: destination === '' ? 'Staked' : { Account: destination },
     },
   };
 }
@@ -120,12 +118,11 @@ function buildNominate({ chain, accountId, nominators }: NominateParams): Transa
   };
 }
 
-type RedeemParams = {
+type WithdrawParams = {
   chain: Chain;
   accountId: AccountId;
-  withChill?: boolean;
 };
-function buildRedeem({ chain, accountId }: RedeemParams): Transaction {
+function buildWithdraw({ chain, accountId }: WithdrawParams): Transaction {
   return {
     chainId: chain.chainId,
     address: toAddress(accountId, { prefix: chain.addressPrefix }),
@@ -184,7 +181,7 @@ function buildRestake({ chain, accountId, asset, amount }: RestakeParams): Trans
 type SetPayeeParams = {
   chain: Chain;
   accountId: AccountId;
-  destination?: Address;
+  destination: Address;
 };
 function buildSetPayee({ chain, accountId, destination }: SetPayeeParams): Transaction {
   return {
@@ -192,7 +189,7 @@ function buildSetPayee({ chain, accountId, destination }: SetPayeeParams): Trans
     address: toAddress(accountId, { prefix: chain.addressPrefix }),
     type: TransactionType.DESTINATION,
     args: {
-      payee: destination ? { Account: destination } : 'Staked',
+      payee: destination === '' ? 'Staked' : { Account: destination },
     },
   };
 }
