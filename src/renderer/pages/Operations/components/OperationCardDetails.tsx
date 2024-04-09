@@ -1,6 +1,5 @@
 import cn from 'classnames';
 import { useUnit } from 'effector-react';
-import { useMemo } from 'react';
 
 import { useI18n } from '@app/providers';
 import { AddressWithExplorers, WalletCardSm, walletModel, ExplorersPopover } from '@entities/wallet';
@@ -9,16 +8,24 @@ import { copyToClipboard, truncate, cnTw, getAssetById } from '@shared/lib/utils
 import { useToggle } from '@shared/lib/hooks';
 import { ExtendedChain, networkUtils } from '@entities/network';
 import { AddressStyle, DescriptionBlockStyle, InteractionStyle } from '../common/constants';
-import { getMultisigExtrinsicLink, getDestination, getPayee } from '../common/utils';
 import { AssetBalance } from '@entities/asset';
 import { ChainTitle } from '@entities/chain';
-import type { Address, MultisigAccount, ProxyType, Validator } from '@shared/core';
+import type { Address, MultisigAccount, Validator } from '@shared/core';
 import { getTransactionFromMultisigTx } from '@entities/multisig';
 import { useValidatorsMap, ValidatorsModal } from '@entities/staking';
 import { singnatoryUtils } from '@entities/signatory';
 import { chainsService } from '@shared/api/network';
 import { proxyUtils } from '@entities/proxy';
 import { matrixModel } from '@entities/matrix';
+import {
+  getMultisigExtrinsicLink,
+  getDestination,
+  getPayee,
+  getDelegate,
+  getDestinationChain,
+  getReal,
+  getProxyType,
+} from '../common/utils';
 import {
   MultisigTransaction,
   Transaction,
@@ -43,6 +50,13 @@ export const OperationCardDetails = ({ tx, account, extendedChain }: Props) => {
   const activeWallet = useUnit(walletModel.$activeWallet);
   const wallets = useUnit(walletModel.$wallets);
   const accounts = useUnit(walletModel.$accounts);
+
+  const real = getReal(tx);
+  const payee = getPayee(tx);
+  const delegate = getDelegate(tx);
+  const proxyType = getProxyType(tx);
+  const destination = getDestination(tx);
+  const destinationChain = getDestinationChain(tx);
 
   const api = extendedChain?.api;
   const defaultAsset = extendedChain?.assets[0];
@@ -75,10 +89,6 @@ export const OperationCardDetails = ({ tx, account, extendedChain }: Props) => {
   const extrinsicLink = getMultisigExtrinsicLink(callHash, indexCreated, blockCreated, explorers);
   const validatorsAsset =
     transaction && getAssetById(transaction.args.asset, chainsService.getChainById(tx.chainId)?.assets);
-
-  const destination = useMemo(() => getDestination(tx), [tx]);
-
-  const payee = useMemo(() => getPayee(tx), [tx]);
 
   const valueClass = 'text-text-secondary';
   const depositorWallet =
@@ -139,9 +149,9 @@ export const OperationCardDetails = ({ tx, account, extendedChain }: Props) => {
             <ChainTitle chainId={tx.chainId} fontClass={valueClass} />
           </DetailRow>
 
-          {transaction?.args.destinationChain && (
+          {destinationChain && (
             <DetailRow label={t('operation.details.toNetwork')} className={valueClass}>
-              <ChainTitle chainId={transaction?.args.destinationChain} fontClass={valueClass} />
+              <ChainTitle chainId={destinationChain} fontClass={valueClass} />
             </DetailRow>
           )}
         </>
@@ -160,50 +170,48 @@ export const OperationCardDetails = ({ tx, account, extendedChain }: Props) => {
         </DetailRow>
       )}
 
-      {isAddProxyTransaction(transaction) && (
+      {isAddProxyTransaction(transaction) && delegate && (
         <DetailRow label={t('operation.details.delegateTo')} className={valueClass}>
           <AddressWithExplorers
             explorers={explorers}
             addressFont={AddressStyle}
             type="short"
-            accountId={transaction?.args.delegate}
+            address={delegate}
             addressPrefix={addressPrefix}
             wrapperClassName="-mr-2 min-w-min"
           />
         </DetailRow>
       )}
 
-      {isRemoveProxyTransaction(transaction) && (
+      {isRemoveProxyTransaction(transaction) && delegate && (
         <DetailRow label={t('operation.details.revokeFor')} className={valueClass}>
           <AddressWithExplorers
             explorers={explorers}
             addressFont={AddressStyle}
             type="short"
-            accountId={transaction?.args.delegate}
+            address={delegate}
             addressPrefix={addressPrefix}
             wrapperClassName="-mr-2 min-w-min"
           />
         </DetailRow>
       )}
 
-      {isRemovePureProxyTransaction(transaction) && (
+      {isRemovePureProxyTransaction(transaction) && real && (
         <DetailRow label={t('operation.details.revokeFor')} className={valueClass}>
           <AddressWithExplorers
             explorers={explorers}
             addressFont={AddressStyle}
             type="short"
-            accountId={tx.transaction?.args.real}
+            address={real}
             addressPrefix={addressPrefix}
             wrapperClassName="-mr-2 min-w-min"
           />
         </DetailRow>
       )}
 
-      {isManageProxyTransaction(transaction) && (
+      {isManageProxyTransaction(transaction) && proxyType && (
         <DetailRow label={t('operation.details.accessType')} className={valueClass}>
-          <FootnoteText className={valueClass}>
-            {t(proxyUtils.getProxyTypeName(transaction?.args.proxyType as ProxyType))}
-          </FootnoteText>
+          <FootnoteText className={valueClass}>{t(proxyUtils.getProxyTypeName(proxyType))}</FootnoteText>
         </DetailRow>
       )}
 

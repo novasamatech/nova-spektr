@@ -3,7 +3,7 @@ import { TFunction } from 'react-i18next';
 import { accountUtils, walletUtils } from '@entities/wallet';
 import { formatSectionAndMethod, toAddress } from '@shared/lib/utils';
 import { TransferTypes, XcmTypes, isProxyTransaction } from '@entities/transaction';
-import type {
+import {
   Account,
   AccountId,
   ChainId,
@@ -13,6 +13,7 @@ import type {
   Signatory,
   Wallet,
   Address,
+  ProxyType,
 } from '@shared/core';
 import {
   DecodedTransaction,
@@ -283,4 +284,54 @@ export const getPayee = (tx: MultisigTransaction): { account: Address } | string
   }
 
   return tx.transaction.args.payee;
+};
+
+export const getDelegate = (tx: MultisigTransaction): Address | undefined => {
+  if (!tx.transaction) return undefined;
+
+  if (isProxyTransaction(tx.transaction)) {
+    return tx.transaction.args.transaction.args.delegate;
+  }
+
+  return tx.transaction.args.delegate;
+};
+
+export const getDestinationChain = (tx: MultisigTransaction): ChainId | undefined => {
+  if (!tx.transaction) return undefined;
+
+  if (isProxyTransaction(tx.transaction)) {
+    return tx.transaction.args.transaction.args.destinationChain;
+  }
+
+  return tx.transaction.args.destinationChain;
+};
+
+export const getReal = (tx: MultisigTransaction): Address | undefined => {
+  if (!tx.transaction) return undefined;
+
+  if (isProxyTransaction(tx.transaction)) {
+    return tx.transaction.args.transaction.args.real;
+  }
+
+  return tx.transaction.args.real;
+};
+
+export const getSpawner = (tx: MultisigTransaction): AccountId | undefined => {
+  if (!tx.transaction) return undefined;
+
+  if (isProxyTransaction(tx.transaction)) {
+    return tx.transaction.args.transaction.args.spawner;
+  }
+
+  return tx.transaction.args.spawner;
+};
+
+export const getProxyType = (tx: MultisigTransaction): ProxyType | undefined => {
+  if (!tx.transaction) return undefined;
+
+  if (isProxyTransaction(tx.transaction)) {
+    return tx.transaction.args.transaction.args.proxyType;
+  }
+
+  return tx.transaction.args.proxyType;
 };
