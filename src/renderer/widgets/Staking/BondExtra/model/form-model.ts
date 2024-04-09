@@ -8,7 +8,7 @@ import { balanceModel, balanceUtils } from '@entities/balance';
 import { networkModel } from '@entities/network';
 import { Account, PartialBy, Chain, Asset } from '@shared/core';
 import { WalletData } from '../lib/types';
-import { transferableAmount, getRelaychainAsset, formatAmount, stakeableAmount } from '@shared/lib/utils';
+import { transferableAmount, getRelaychainAsset, formatAmount, stakeableAmount, ZERO_BALANCE } from '@shared/lib/utils';
 
 type FormParams = {
   shards: Account[];
@@ -35,16 +35,16 @@ const $shards = createStore<Account[]>([]);
 const $networkStore = createStore<{ chain: Chain; asset: Asset } | null>(null);
 
 const $accountsBalances = createStore<string[]>([]);
-const $bondBalanceRange = createStore<string | string[]>('0');
-const $signatoryBalance = createStore<string>('0');
-const $proxyBalance = createStore<string>('0');
+const $bondBalanceRange = createStore<string | string[]>(ZERO_BALANCE);
+const $signatoryBalance = createStore<string>(ZERO_BALANCE);
+const $proxyBalance = createStore<string>(ZERO_BALANCE);
 
 const $availableSignatories = createStore<Account[][]>([]);
 const $proxyAccount = createStore<Account | null>(null);
 const $isProxy = createStore<boolean>(false);
 const $isMultisig = createStore<boolean>(false);
 
-const $feeData = restore(feeDataChanged, { fee: '0', totalFee: '0', multisigDeposit: '0' });
+const $feeData = restore(feeDataChanged, { fee: ZERO_BALANCE, totalFee: ZERO_BALANCE, multisigDeposit: ZERO_BALANCE });
 const $isFeeLoading = restore(isFeeLoadingChanged, true);
 
 const $bondForm = createForm<FormParams>({
@@ -123,7 +123,7 @@ const $bondForm = createForm<FormParams>({
         {
           name: 'notZero',
           errorText: 'transfer.requiredAmountError',
-          validator: (value) => value !== '0',
+          validator: (value) => value !== ZERO_BALANCE,
         },
         {
           name: 'notEnoughBalance',
@@ -315,7 +315,7 @@ sample({
 sample({
   source: $accountsBalances,
   fn: (accountsBalances) => {
-    if (accountsBalances.length === 0) return '0';
+    if (accountsBalances.length === 0) return ZERO_BALANCE;
 
     const minBondBalance = accountsBalances.reduce<string>((acc, balance) => {
       if (!balance) return acc;
@@ -323,7 +323,7 @@ sample({
       return new BN(balance).lt(new BN(acc)) ? balance : acc;
     }, accountsBalances[0]);
 
-    return minBondBalance === '0' ? '0' : ['0', minBondBalance];
+    return minBondBalance === ZERO_BALANCE ? ZERO_BALANCE : [ZERO_BALANCE, minBondBalance];
   },
   target: $bondBalanceRange,
 });
@@ -335,7 +335,7 @@ sample({
   fn: (signatories, signatory) => {
     const match = signatories[0].find(({ signer }) => signer.id === signatory.id);
 
-    return match?.balance || '0';
+    return match?.balance || ZERO_BALANCE;
   },
   target: $signatoryBalance,
 });

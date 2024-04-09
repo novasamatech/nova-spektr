@@ -11,7 +11,6 @@ import { useToggle } from '@shared/lib/hooks';
 import { AboutStaking, NetworkInfo, NominatorsList, Actions, InactiveChain } from './components';
 import { accountUtils, permissionUtils, walletModel, walletUtils } from '@entities/wallet';
 import { priceProviderModel } from '@entities/price';
-import { NominatorInfo } from './common/types';
 import { useNetworkData, networkUtils } from '@entities/network';
 import { eraService } from '@entities/staking/api';
 import { ChainId, Chain, Address, Account, Stake, Validator, ShardAccount, ChainAccount } from '@shared/core';
@@ -19,6 +18,7 @@ import { BondNominate, bondNominateModel } from '@widgets/Staking/BondNominate';
 import { BondExtra, bondExtraModel } from '@widgets/Staking/BondExtra';
 import { Unstake, unstakeModel } from '@widgets/Staking/Unstake';
 import { Withdraw, withdrawModel } from '@widgets/Withdraw';
+import { NominatorInfo } from './common/types';
 import {
   useStakingData,
   StakingMap,
