@@ -10,7 +10,7 @@ import { validatorsService } from '@entities/staking';
 import { submitModel } from '@features/operations/OperationSubmit';
 import { signModel } from '@features/operations/OperationSign/model/sign-model';
 import { Account } from '@shared/core';
-import { Step, BondData, WalletData, FeeData } from '../lib/types';
+import { Step, BondNominateData, WalletData, FeeData } from '../lib/types';
 import { bondUtils } from '../lib/bond-utils';
 import { formModel } from './form-model';
 import { validatorsModel } from './validators-model';
@@ -33,7 +33,7 @@ const flowFinished = createEvent();
 const $step = createStore<Step>(Step.NONE);
 
 const $walletData = restore<WalletData | null>(flowStarted, null);
-const $bondData = createStore<BondData | null>(null);
+const $bondNominateData = createStore<BondNominateData | null>(null);
 const $feeData = createStore<FeeData>({ fee: '0', totalFee: '0', multisigDeposit: '0' });
 
 const $txWrappers = createStore<TxWrapper[]>([]);
@@ -159,11 +159,11 @@ sample({
 
 sample({
   clock: [$maxValidators.updates, formModel.output.formChanged, validatorsModel.output.formSubmitted],
-  source: $bondData,
+  source: $bondNominateData,
   filter: (bondData, data) => Boolean(bondData) || typeof data !== 'number',
   fn: (bondData, data) => {
     if (typeof data === 'number') {
-      return { ...(bondData || ({} as BondData)), validators: Array(data).fill({ address: TEST_ADDRESS }) };
+      return { ...(bondData || ({} as BondNominateData)), validators: Array(data).fill({ address: TEST_ADDRESS }) };
     }
 
     if (Array.isArray(data)) {
@@ -172,11 +172,11 @@ sample({
 
     return { ...data!, validators: bondData?.validators || [] };
   },
-  target: $bondData,
+  target: $bondNominateData,
 });
 
 sample({
-  clock: $bondData.updates,
+  clock: $bondNominateData.updates,
   source: $walletData,
   filter: (walletData, bondData) => Boolean(walletData) && Boolean(bondData),
   fn: (walletData, bondData) => {
@@ -283,7 +283,7 @@ sample({
 sample({
   clock: validatorsModel.output.formSubmitted,
   source: {
-    bondData: $bondData,
+    bondData: $bondNominateData,
     feeData: $feeData,
     walletData: $walletData,
     txWrappers: $txWrappers,
@@ -313,7 +313,7 @@ sample({
 sample({
   clock: confirmModel.output.formSubmitted,
   source: {
-    bondData: $bondData,
+    bondData: $bondNominateData,
     walletData: $walletData,
     transactions: $transactions,
     txWrappers: $txWrappers,
@@ -343,7 +343,7 @@ sample({
 sample({
   clock: signModel.output.formSubmitted,
   source: {
-    bondData: $bondData,
+    bondData: $bondNominateData,
     walletData: $walletData,
     transactions: $transactions,
   },

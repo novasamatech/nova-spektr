@@ -4,7 +4,7 @@ import { dictionary } from '@shared/lib/utils';
 import { transactionService } from '@entities/transaction';
 import { Wallet, Account, Chain } from '@shared/core';
 
-export const destinationUtils = {
+export const payeeUtils = {
   isNoneStep,
   isInitStep,
   isConfirmStep,

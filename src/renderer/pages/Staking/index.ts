@@ -1,1 +1,1 @@
-export { Overview } from './Overview/Overview';
+export { Staking } from './ui/Staking';

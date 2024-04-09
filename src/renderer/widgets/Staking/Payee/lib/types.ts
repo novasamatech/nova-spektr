@@ -14,7 +14,7 @@ export type WalletData = {
   chain: Chain;
 };
 
-export type RewardDestinationData = {
+export type PayeeData = {
   shards: Account[];
   signatory?: Account;
   destination?: Address;

@@ -10,8 +10,8 @@ import { validatorsService } from '@entities/staking';
 import { submitModel } from '@features/operations/OperationSubmit';
 import { signModel } from '@features/operations/OperationSign/model/sign-model';
 import { Account } from '@shared/core';
-import { Step, RewardDestinationData, WalletData, FeeData } from '../lib/types';
-import { destinationUtils } from '../lib/destination-utils';
+import { Step, PayeeData, WalletData, FeeData } from '../lib/types';
+import { payeeUtils } from '../lib/payee-utils';
 import { formModel } from './form-model';
 import { confirmModel } from './confirm-model';
 import {
@@ -32,7 +32,7 @@ const flowFinished = createEvent();
 const $step = createStore<Step>(Step.NONE);
 
 const $walletData = restore<WalletData | null>(flowStarted, null);
-const $rewardDestinationData = createStore<RewardDestinationData | null>(null);
+const $payeeData = createStore<PayeeData | null>(null);
 const $feeData = createStore<FeeData>({ fee: '0', totalFee: '0', multisigDeposit: '0' });
 
 const $txWrappers = createStore<TxWrapper[]>([]);
@@ -123,7 +123,7 @@ sample({
   fn: ({ walletData, wallets, accounts }, data) => {
     const signatories = 'signatory' in data && data.signatory ? [data.signatory] : [];
 
-    return destinationUtils.getTxWrappers({
+    return payeeUtils.getTxWrappers({
       chain: walletData!.chain,
       wallet: walletData!.wallet,
       wallets,
@@ -158,12 +158,12 @@ sample({
 
 sample({
   clock: formModel.output.formChanged,
-  source: $rewardDestinationData,
+  source: $payeeData,
   filter: (rewardDestinationData, data) => Boolean(rewardDestinationData) || typeof data !== 'number',
   fn: (rewardDestinationData, data) => {
     if (typeof data === 'number') {
       return {
-        ...(rewardDestinationData || ({} as RewardDestinationData)),
+        ...(rewardDestinationData || ({} as PayeeData)),
         validators: Array(data).fill({ address: TEST_ADDRESS }),
       };
     }
@@ -174,11 +174,11 @@ sample({
 
     return { ...data! };
   },
-  target: $rewardDestinationData,
+  target: $payeeData,
 });
 
 sample({
-  clock: $rewardDestinationData.updates,
+  clock: $payeeData.updates,
   source: $walletData,
   filter: (walletData, rewardDestinationData) => Boolean(walletData) && Boolean(rewardDestinationData),
   fn: (walletData, rewardDestinationData) => {
@@ -268,7 +268,7 @@ sample({
 sample({
   clock: formModel.output.formSubmitted,
   source: {
-    rewardDestinationData: $rewardDestinationData,
+    rewardDestinationData: $payeeData,
     feeData: $feeData,
     walletData: $walletData,
     txWrappers: $txWrappers,
@@ -298,7 +298,7 @@ sample({
 sample({
   clock: confirmModel.output.formSubmitted,
   source: {
-    rewardDestinationData: $rewardDestinationData,
+    rewardDestinationData: $payeeData,
     walletData: $walletData,
     transactions: $transactions,
     txWrappers: $txWrappers,
@@ -328,7 +328,7 @@ sample({
 sample({
   clock: signModel.output.formSubmitted,
   source: {
-    rewardDestinationData: $rewardDestinationData,
+    rewardDestinationData: $payeeData,
     walletData: $walletData,
     transactions: $transactions,
   },
@@ -364,7 +364,7 @@ sample({
   target: [stepChanged, formModel.events.formCleared],
 });
 
-export const destinationModel = {
+export const payeeModel = {
   $step,
   $walletData,
   events: {

@@ -31,7 +31,7 @@ type Props = {
   onGoBack: () => void;
 };
 
-export const RewardDestinationForm = ({ onGoBack }: Props) => {
+export const PayeeForm = ({ onGoBack }: Props) => {
   const { submit } = useForm(formModel.$bondForm);
 
   const submitForm = (event: FormEvent) => {

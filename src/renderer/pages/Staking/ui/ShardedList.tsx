@@ -8,8 +8,8 @@ import { ShardAccount } from '@shared/core/types/account';
 import { AssetBalance } from '@entities/asset';
 import { AssetFiatBalance } from '@entities/price/ui/AssetFiatBalance';
 import { useStakingData } from '@entities/staking';
-import { NominatorsItem } from '../NominatorItem/NominatorItem';
-import { NominatorInfo } from '../../../common/types';
+import { NominatorsItem } from './NominatorItem';
+import { NominatorInfo } from '../lib/types';
 
 type Props = {
   shardsStake: NominatorInfo<ShardAccount>[];
