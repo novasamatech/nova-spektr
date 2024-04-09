@@ -8,7 +8,7 @@ import { balanceModel, balanceUtils } from '@entities/balance';
 import { networkModel } from '@entities/network';
 import { Account, PartialBy, Chain, Asset } from '@shared/core';
 import { WalletData } from '../lib/types';
-import { transferableAmount, getRelaychainAsset, formatAmount, stakeableAmount } from '@shared/lib/utils';
+import { transferableAmount, getRelaychainAsset, formatAmount, stakeableAmount, ZERO_BALANCE } from '@shared/lib/utils';
 
 type FormParams = {
   shards: Account[];
@@ -34,15 +34,15 @@ const $shards = createStore<Account[]>([]);
 const $networkStore = createStore<{ chain: Chain; asset: Asset } | null>(null);
 
 const $accountsBalances = createStore<string[]>([]);
-const $signatoryBalance = createStore<string>('0');
-const $proxyBalance = createStore<string>('0');
+const $signatoryBalance = createStore<string>(ZERO_BALANCE);
+const $proxyBalance = createStore<string>(ZERO_BALANCE);
 
 const $availableSignatories = createStore<Account[][]>([]);
 const $proxyAccount = createStore<Account | null>(null);
 const $isProxy = createStore<boolean>(false);
 const $isMultisig = createStore<boolean>(false);
 
-const $feeData = restore(feeDataChanged, { fee: '0', totalFee: '0', multisigDeposit: '0' });
+const $feeData = restore(feeDataChanged, { fee: ZERO_BALANCE, totalFee: ZERO_BALANCE, multisigDeposit: ZERO_BALANCE });
 const $isFeeLoading = restore(isFeeLoadingChanged, true);
 
 const $bondForm = createForm<FormParams>({
@@ -268,7 +268,7 @@ sample({
   fn: (signatories, signatory) => {
     const match = signatories[0].find(({ signer }) => signer.id === signatory.id);
 
-    return match?.balance || '0';
+    return match?.balance || ZERO_BALANCE;
   },
   target: $signatoryBalance,
 });

@@ -54,13 +54,15 @@ describe('widgets/AddProxyModal/model/add-proxy-model', () => {
           coreTx: {} as Transaction,
         },
         formData: {
-          proxyDeposit: '1',
-          proxyNumber: 1,
           chain: testChain,
           account: { accountId: '0x00' } as unknown as Account,
           delegate: '0x00',
           proxyType: ProxyType.ANY,
           description: '',
+          proxyDeposit: '1',
+          proxyNumber: 1,
+          fee: '1',
+          multisigDeposit: '0',
         },
       },
     });
