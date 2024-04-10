@@ -132,14 +132,10 @@ const Signatories = () => {
 
   if (!isMultisig || !network) return null;
 
-  const signatoriesWithBalances = signatories[0].map(({ signer, balances }) => {
-    return { signer, balance: balances.balance };
-  });
-
   return (
     <SignatorySelector
       signatory={signatory.value}
-      signatories={signatoriesWithBalances}
+      signatories={signatories[0]}
       asset={network.chain.assets[0]}
       addressPrefix={network.chain.addressPrefix}
       hasError={signatory.hasError()}
