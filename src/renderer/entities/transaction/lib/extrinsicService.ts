@@ -2,6 +2,7 @@ import { BaseTxInfo, defineMethod, methods, OptionsWithMeta, UnsignedTransaction
 import { ApiPromise } from '@polkadot/api';
 import { methods as ormlMethods } from '@substrate/txwrapper-orml';
 import { SubmittableExtrinsic } from '@polkadot/api/types';
+import sortBy from 'lodash/sortBy';
 
 import { Transaction, TransactionType } from '@entities/transaction/model/transaction';
 import { getMaxWeight, hasDestWeight, isControllerMissing, isOldMultisigPallet } from './common/utils';
@@ -463,9 +464,9 @@ export const wrapAsMulti = ({ api, addressPrefix, transaction, txWrapper }: Wrap
   const callData = extrinsic.method.toHex();
   const callHash = extrinsic.method.hash.toHex();
 
-  const otherSignatories = txWrapper.signatories
-    .filter((signatory) => signatory.accountId !== txWrapper.signer.accountId)
-    .map((signatory) => toAddress(signatory.accountId, { prefix: addressPrefix }));
+  const otherSignatories = sortBy(txWrapper.signatories, 'accountId')
+    .filter(({ accountId }) => accountId !== txWrapper.signer.accountId)
+    .map(({ accountId }) => toAddress(accountId, { prefix: addressPrefix }));
 
   return {
     chainId: transaction.chainId,
@@ -473,7 +474,7 @@ export const wrapAsMulti = ({ api, addressPrefix, transaction, txWrapper }: Wrap
     type: TransactionType.MULTISIG_AS_MULTI,
     args: {
       threshold: txWrapper.multisigAccount.threshold,
-      otherSignatories: otherSignatories.sort(),
+      otherSignatories,
       maybeTimepoint: null,
       callData,
       callHash,
