@@ -259,5 +259,7 @@ export const walletModel = {
     walletRemovedSuccess: removeWalletFx.done,
     walletsRemoved,
   },
-  output: { workerDataStarted: merge([walletCreatedFx.doneData, multishardCreatedFx.doneData]) },
+  output: {
+    workerDataStarted: merge([walletCreatedFx.doneData, multishardCreatedFx.doneData]),
+  },
 };
