@@ -95,7 +95,7 @@ const AccountsSelector = () => {
             name={isShard ? toShortAddress(address, 16) : account.name}
             canCopy={false}
           />
-          <AssetBalance value={balances.redeemable} asset={network.asset} />
+          <AssetBalance value={balances.withdraw} asset={network.asset} />
         </div>
       ),
     };
@@ -152,7 +152,7 @@ const Amount = () => {
     fields: { amount },
   } = useForm(formModel.$withdrawForm);
 
-  const redeemableBalance = useUnit(formModel.$redeemableBalance);
+  const withdrawBalance = useUnit(formModel.$withdrawBalance);
   const isStakingLoading = useUnit(formModel.$isStakingLoading);
   const network = useUnit(formModel.$networkStore);
 
@@ -163,12 +163,11 @@ const Amount = () => {
       <AmountInput
         disabled
         invalid={amount.hasError()}
-        value={formatBalance(redeemableBalance, network.asset.precision).value}
-        balance={isStakingLoading ? <Shimmering width={50} height={10} /> : redeemableBalance}
+        value={formatBalance(amount.value, network.asset.precision).value}
+        balance={isStakingLoading ? <Shimmering width={50} height={10} /> : withdrawBalance}
         balancePlaceholder={t('general.input.availableLabel')}
         placeholder={t('general.input.amountLabel')}
         asset={network.asset}
-        onChange={amount.onChange}
       />
       <InputHint active={amount.hasError()} variant="error">
         {t(amount.errorText())}

@@ -8,7 +8,7 @@ import { cnTw } from '@shared/lib/utils';
 import { AssetBalance } from '@entities/asset';
 import { AssetFiatBalance } from '@entities/price/ui/AssetFiatBalance';
 import { confirmModel } from '../model/confirm-model';
-import { AccountsModal, StakingPopover, UnstakingDuration } from '@entities/staking';
+import { AccountsModal } from '@entities/staking';
 import { useToggle } from '@shared/lib/hooks';
 
 type Props = {
@@ -182,16 +182,6 @@ export const Confirmation = ({ onGoBack }: Props) => {
               </div>
             </DetailRow>
           )}
-
-          <StakingPopover labelText={t('staking.confirmation.hintTitle')}>
-            <StakingPopover.Item>
-              {t('staking.confirmation.hintUnstakePeriod')} {' ('}
-              <UnstakingDuration api={api} />
-              {')'}
-            </StakingPopover.Item>
-            <StakingPopover.Item>{t('staking.confirmation.hintNoRewards')}</StakingPopover.Item>
-            <StakingPopover.Item>{t('staking.confirmation.hintWithdraw')}</StakingPopover.Item>
-          </StakingPopover>
         </dl>
 
         <div className="flex w-full justify-between mt-3">

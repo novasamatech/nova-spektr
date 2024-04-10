@@ -158,7 +158,7 @@ const $unstakeForm = createForm<FormParams>({
         },
         {
           name: 'notZero',
-          errorText: 'transfer.requiredAmountError',
+          errorText: 'transfer.notZeroAmountError',
           validator: (value) => value !== ZERO_BALANCE,
         },
         {
