@@ -45,7 +45,7 @@ const $isMultisig = createStore<boolean>(false);
 const $feeData = restore(feeDataChanged, { fee: ZERO_BALANCE, totalFee: ZERO_BALANCE, multisigDeposit: ZERO_BALANCE });
 const $isFeeLoading = restore(isFeeLoadingChanged, true);
 
-const $bondForm = createForm<FormParams>({
+const $nominateForm = createForm<FormParams>({
   fields: {
     shards: {
       init: [] as Account[],
@@ -200,7 +200,7 @@ const $api = combine(
 
 const $canSubmit = combine(
   {
-    isFormValid: $bondForm.$isValid,
+    isFormValid: $nominateForm.$isValid,
     isFeeLoading: $isFeeLoading,
   },
   ({ isFormValid, isFeeLoading }) => {
@@ -212,7 +212,7 @@ const $canSubmit = combine(
 
 sample({
   clock: formInitiated,
-  target: $bondForm.reset,
+  target: $nominateForm.reset,
 });
 
 sample({
@@ -233,7 +233,7 @@ sample({
   source: $shards,
   filter: (shards) => shards.length > 0,
   fn: (shards) => shards,
-  target: $bondForm.fields.shards.onChange,
+  target: $nominateForm.fields.shards.onChange,
 });
 
 sample({
@@ -249,7 +249,7 @@ sample({
 sample({
   source: {
     accounts: $accounts,
-    shards: $bondForm.fields.shards.$value,
+    shards: $nominateForm.fields.shards.$value,
   },
   fn: ({ accounts, shards }) => {
     return accounts.reduce<string[]>((acc, { account, balance }) => {
@@ -262,7 +262,7 @@ sample({
 });
 
 sample({
-  clock: $bondForm.fields.signatory.onChange,
+  clock: $nominateForm.fields.signatory.onChange,
   source: $signatories,
   filter: (signatories) => signatories.length > 0,
   fn: (signatories, signatory) => {
@@ -299,7 +299,7 @@ sample({
 // Submit
 
 sample({
-  clock: $bondForm.$values.updates,
+  clock: $nominateForm.$values.updates,
   source: $networkStore,
   filter: (networkStore) => Boolean(networkStore),
   fn: (networkStore, formData) => {
@@ -313,17 +313,17 @@ sample({
 });
 
 sample({
-  clock: $bondForm.formValidated,
+  clock: $nominateForm.formValidated,
   target: formSubmitted,
 });
 
 sample({
   clock: formCleared,
-  target: [$bondForm.reset, $shards.reinit],
+  target: [$nominateForm.reset, $shards.reinit],
 });
 
 export const formModel = {
-  $bondForm,
+  $nominateForm,
   $proxyWallet,
   $signatories,
 

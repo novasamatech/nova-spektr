@@ -562,19 +562,6 @@ sample({
 
 sample({
   clock: $proxyForm.fields.chain.onChange,
-  source: {
-    signatories: $signatories,
-    isMultisig: $isMultisig,
-  },
-  filter: ({ isMultisig, signatories }) => {
-    return isMultisig && signatories.length > 0;
-  },
-  fn: ({ signatories }) => signatories[0].signer,
-  target: $proxyForm.fields.signatory.onChange,
-});
-
-sample({
-  clock: $proxyForm.fields.chain.onChange,
   source: $proxyTypes,
   fn: (types) => types[0],
   target: $proxyForm.fields.proxyType.onChange,

@@ -2,7 +2,7 @@ import { useUnit } from 'effector-react';
 
 import { Button, DetailRow, FootnoteText, Icon, Tooltip, CaptionText } from '@shared/ui';
 import { useI18n } from '@app/providers';
-import { SignButton } from '@entities/operation/ui/SignButton';
+import { SignButton } from '@entities/operations';
 import { AddressWithExplorers, WalletIcon, ExplorersPopover, WalletCardSm, accountUtils } from '@entities/wallet';
 import { AssetBalance } from '@entities/asset';
 import { AssetFiatBalance } from '@entities/price/ui/AssetFiatBalance';
