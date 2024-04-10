@@ -6,7 +6,7 @@ import { metadata } from './metadata';
 import { getExtrinsic } from '../extrinsicService';
 import { extrinsicTests } from '../mock/extrinsicService.mock';
 
-describe('entities/transaction/lib/extrinsicService.ts', () => {
+describe('entities/transaction/lib/extrinsicService', () => {
   const registry = new TypeRegistry();
   let provider: MockProvider;
   let api: ApiPromise;

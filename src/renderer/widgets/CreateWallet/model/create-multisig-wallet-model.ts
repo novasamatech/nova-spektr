@@ -1,4 +1,5 @@
 import { combine, createApi, createEffect, createEvent, createStore, sample } from 'effector';
+import sortBy from 'lodash/sortBy';
 
 import {
   AccountId,
@@ -151,7 +152,11 @@ sample({
     chainId: $chain,
     isEthereumChain: $isEthereumChain,
   },
-  fn: (sourceValues, resultValues) => ({ ...sourceValues, ...resultValues }),
+  fn: ({ signatories, ...rest }, resultValues) => ({
+    ...rest,
+    ...resultValues,
+    signatories: sortBy(signatories, 'accountId'),
+  }),
   target: createWalletFx,
 });
 
