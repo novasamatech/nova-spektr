@@ -9,6 +9,8 @@ import { walletDetailsUtils } from '../lib/utils';
 import type { MultishardMap, VaultMap } from '../lib/types';
 import { proxyModel, proxyUtils } from '@entities/proxy';
 import { networkModel } from '@entities/network';
+import { proxiesModel } from '@features/proxies';
+import { addProxyModel } from '../../AddProxyModal';
 import type {
   Account,
   Signatory,
@@ -233,6 +235,11 @@ const $hasProxies = combine($chainsProxies, (chainsProxies) => {
 sample({
   source: removeProxy,
   target: $proxyForRemoval,
+});
+
+sample({
+  clock: addProxyModel.output.flowFinished,
+  target: proxiesModel.events.workerStarted,
 });
 
 export const walletProviderModel = {

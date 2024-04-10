@@ -180,7 +180,7 @@ sample({
   fn: ({ chains }, { proxy, account }) => {
     const chain = chains[proxy!.chainId];
 
-    const store = {
+    return {
       chain: chain!,
       account,
       delegate: toAddress(proxy!.accountId!, { prefix: chain!.addressPrefix }),
@@ -188,8 +188,6 @@ sample({
       delay: proxy!.delay,
       description: '',
     };
-
-    return store;
   },
   target: $removeProxyStore,
 });
