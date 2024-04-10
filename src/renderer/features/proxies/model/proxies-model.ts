@@ -420,6 +420,11 @@ sample({
   target: createProxiedWalletsFx,
 });
 
+sample({
+  clock: proxyModel.output.proxyStatusUpdated,
+  target: startWorkerFx,
+});
+
 export const proxiesModel = {
   events: {
     workerStarted,

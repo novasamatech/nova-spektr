@@ -1,4 +1,4 @@
-import { combine, createEffect, createEvent, createStore, sample } from 'effector';
+import { combine, createEffect, createEvent, createStore, merge, sample } from 'effector';
 import groupBy from 'lodash/groupBy';
 
 import { type ProxyAccount, AccountId, ProxyGroup, NoID, ID } from '@shared/core';
@@ -190,5 +190,8 @@ export const proxyModel = {
     proxyGroupsAdded,
     proxyGroupsUpdated,
     proxyGroupsRemoved,
+  },
+  output: {
+    proxyStatusUpdated: merge([addProxiesFx, removeProxiesFx]),
   },
 };

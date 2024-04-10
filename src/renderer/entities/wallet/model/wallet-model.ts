@@ -1,4 +1,4 @@
-import { combine, createEffect, createEvent, createStore, sample } from 'effector';
+import { combine, createEffect, createEvent, createStore, merge, sample } from 'effector';
 import { spread, combineEvents } from 'patronum';
 
 import type {
@@ -171,12 +171,7 @@ sample({
 });
 
 sample({
-  clock: walletConnectCreated,
-  target: walletCreatedFx,
-});
-
-sample({
-  clock: [watchOnlyCreated, multisigCreated, singleshardCreated],
+  clock: [walletConnectCreated, watchOnlyCreated, multisigCreated, singleshardCreated],
   target: walletCreatedFx,
 });
 
@@ -264,4 +259,5 @@ export const walletModel = {
     walletRemovedSuccess: removeWalletFx.done,
     walletsRemoved,
   },
+  output: { workerDataStarted: merge([walletCreatedFx.doneData, multishardCreatedFx.doneData]) },
 };
