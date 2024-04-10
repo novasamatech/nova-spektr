@@ -309,15 +309,16 @@ sample({
 
 sample({
   clock: formModel.output.formSubmitted,
-  source: { wrappedTx: $wrappedTx, chain: $chain, account: $account },
+  source: { wrappedTx: $wrappedTx, chain: $chain, account: $account, realAccount: $realAccount },
   filter: ({ wrappedTx, chain, account }) => {
     return Boolean(wrappedTx) && Boolean(chain) && Boolean(account);
   },
-  fn: ({ wrappedTx, chain, account }, formData) => ({
+  fn: ({ wrappedTx, chain, realAccount, account }, formData) => ({
     event: {
       ...formData,
       chain: chain as Chain,
-      account: account as ProxiedAccount,
+      account: realAccount,
+      proxiedAccount: account as ProxiedAccount,
       transaction: wrappedTx as Transaction,
       spawner: (account as ProxiedAccount).proxyAccountId,
       proxyType: ProxyType.ANY,

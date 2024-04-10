@@ -279,15 +279,22 @@ sample({
 
 sample({
   clock: formModel.output.formSubmitted,
-  source: { transaction: $transaction, chain: $chain, account: $account, store: $removeProxyStore },
-  filter: ({ transaction, chain, account, store }) => {
-    return Boolean(transaction) && Boolean(chain) && Boolean(account) && Boolean(store);
+  source: {
+    transaction: $transaction,
+    chain: $chain,
+    account: $account,
+    realAccount: $realAccount,
+    store: $removeProxyStore,
   },
-  fn: ({ transaction, chain, account, store }, formData) => ({
+  filter: ({ transaction, chain, realAccount, account, store }) => {
+    return Boolean(transaction) && Boolean(chain) && Boolean(realAccount) && Boolean(account) && Boolean(store);
+  },
+  fn: ({ transaction, chain, account, realAccount, store }, formData) => ({
     event: {
       ...formData,
       chain: chain as Chain,
-      account,
+      account: realAccount,
+      proxiedAccount: accountUtils.isProxiedAccount(account!) ? account : undefined,
       transaction: transaction as Transaction,
       delegate: store!.delegate,
       proxyType: store!.proxyType,
