@@ -168,9 +168,13 @@ sample({
       totalDeposit: addProxyStore!.proxyDeposit,
     };
 
-    const proxyGroupExists = proxyGroups.some((group) => proxyUtils.isSameProxyGroup(group, newProxyGroup));
+    const existingProxyGroup = proxyGroups.find((group) => proxyUtils.isSameProxyGroup(group, newProxyGroup));
 
-    return proxyGroupExists ? { groupsUpdated: [newProxyGroup] } : { groupsAdded: [newProxyGroup] };
+    return existingProxyGroup
+      ? {
+          groupsUpdated: [{ id: existingProxyGroup.id, ...newProxyGroup }],
+        }
+      : { groupsAdded: [newProxyGroup] };
   },
   target: spread({
     groupsAdded: proxyModel.events.proxyGroupsAdded,
