@@ -51,7 +51,7 @@ const SignatorySelector = () => {
 
   if (!isMultisig || !chain) return null;
 
-  const options = signatories.map(({ signer, balance }) => {
+  const options = signatories?.map(({ signer, balance }) => {
     const isShard = accountUtils.isShardAccount(signer);
     const address = toAddress(signer.accountId, { prefix: chain.addressPrefix });
 
@@ -79,7 +79,7 @@ const SignatorySelector = () => {
         label={t('proxy.addProxy.signatoryLabel')}
         placeholder={t('proxy.addProxy.signatoryPlaceholder')}
         selectedId={signatory.value.id.toString()}
-        options={options}
+        options={options || []}
         invalid={signatory.hasError()}
         onChange={({ value }) => signatory.onChange(value)}
       />
@@ -126,7 +126,7 @@ const FeeSection = () => {
   const fakeTx = useUnit(formModel.$fakeTx);
   const isMultisig = useUnit(formModel.$isMultisig);
   const chain = useUnit(removeProxyModel.$chain);
-  const account = useUnit(removeProxyModel.$account);
+  const account = useUnit(removeProxyModel.$realAccount);
 
   if (!chain) return null;
 

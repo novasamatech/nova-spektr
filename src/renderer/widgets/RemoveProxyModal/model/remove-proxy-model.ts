@@ -1,8 +1,16 @@
 import { combine, createEvent, createStore, sample } from 'effector';
 import { spread, delay } from 'patronum';
 
-import { Transaction, TransactionType, transactionService } from '@entities/transaction';
-import { dictionary, toAddress } from '@shared/lib/utils';
+import {
+  Transaction,
+  TransactionType,
+  MultisigTxWrapper,
+  ProxyTxWrapper,
+  TxWrapper,
+  WrapperKind,
+  transactionService,
+} from '@entities/transaction';
+import { dictionary, toAddress, transferableAmount } from '@shared/lib/utils';
 import { walletSelectModel } from '@features/wallets';
 import { accountUtils, walletModel, walletUtils } from '@entities/wallet';
 import { networkModel } from '@entities/network';
@@ -16,6 +24,7 @@ import { signModel } from '@features/operations/OperationSign/model/sign-model';
 import { submitModel } from '@features/operations/OperationSubmit';
 import { proxyModel } from '@/src/renderer/entities/proxy';
 import { toAccountId } from '@/src/renderer/features/proxies/lib/worker-utils';
+import { balanceModel, balanceUtils } from '@/src/renderer/entities/balance';
 
 const stepChanged = createEvent<Step>();
 
@@ -32,6 +41,11 @@ const $removeProxyStore = createStore<RemoveProxyStore | null>(null);
 const $transaction = createStore<Transaction | null>(null);
 const $multisigTx = createStore<Transaction | null>(null);
 
+const $availableSignatories = createStore<Account[][]>([]);
+const $isProxy = createStore<boolean>(false);
+const $isMultisig = createStore<boolean>(false);
+const $selectedSignatories = createStore<Account[]>([]);
+
 const $chain = $removeProxyStore.map((store) => store?.chain, { skipVoid: false });
 const $account = $removeProxyStore.map((store) => store?.account, { skipVoid: false });
 
@@ -42,8 +56,9 @@ const $txWrappers = combine(
     accounts: walletModel.$accounts,
     account: $account,
     chain: $chain,
+    signatories: $selectedSignatories,
   },
-  ({ wallet, account, accounts, wallets, chain }) => {
+  ({ wallet, account, accounts, wallets, chain, signatories }) => {
     if (!wallet || !chain || !account) return [];
 
     const walletFiltered = wallets.filter((wallet) => {
@@ -63,7 +78,7 @@ const $txWrappers = combine(
       wallets: walletFiltered,
       account,
       accounts: chainFilteredAccounts,
-      signatories: [],
+      signatories,
     });
   },
 );
@@ -84,6 +99,72 @@ const $shouldRemovePureProxy = combine(
     return isPureProxy && anyProxies.length === 1;
   },
 );
+
+const $realAccount = combine(
+  {
+    txWrappers: $txWrappers,
+    account: $account,
+  },
+  ({ txWrappers, account }) => {
+    if (txWrappers.length === 0) return account;
+
+    if (transactionService.hasMultisig([txWrappers[0]])) {
+      return (txWrappers[0] as MultisigTxWrapper).multisigAccount;
+    }
+
+    return (txWrappers[0] as ProxyTxWrapper).proxyAccount;
+  },
+);
+
+const $signatories = combine(
+  {
+    chain: $chain,
+    availableSignatories: $availableSignatories,
+    balances: balanceModel.$balances,
+  },
+  ({ chain, availableSignatories, balances }) => {
+    if (!chain) return [];
+
+    return availableSignatories.reduce<Array<{ signer: Account; balance: string }[]>>((acc, signatories) => {
+      const balancedSignatories = signatories.map((signatory) => {
+        const balance = balanceUtils.getBalance(
+          balances,
+          signatory.accountId,
+          chain.chainId,
+          chain.assets[0].assetId.toString(),
+        );
+
+        return { signer: signatory, balance: transferableAmount(balance) };
+      });
+
+      acc.push(balancedSignatories);
+
+      return acc;
+    }, []);
+  },
+);
+
+sample({
+  clock: $txWrappers,
+  fn: (txWrappers: TxWrapper[]) => {
+    const signatories = txWrappers.reduce<Account[][]>((acc, wrapper) => {
+      if (wrapper.kind === WrapperKind.MULTISIG) acc.push(wrapper.signatories);
+
+      return acc;
+    }, []);
+
+    return {
+      signatories,
+      isProxy: transactionService.hasProxy(txWrappers),
+      isMultisig: transactionService.hasMultisig(txWrappers),
+    };
+  },
+  target: spread({
+    signatories: $availableSignatories,
+    isProxy: $isProxy,
+    isMultisig: $isMultisig,
+  }),
+});
 
 sample({ clock: stepChanged, target: $step });
 
@@ -139,16 +220,27 @@ sample({
   clock: flowStarted,
   source: {
     account: $account,
+    realAccount: $realAccount,
     chain: $chain,
+    signatories: $signatories,
   },
-  filter: ({ account, chain }) => {
-    return Boolean(account) && Boolean(chain);
+  filter: ({ account, realAccount, chain }) => {
+    return Boolean(account) && Boolean(realAccount) && Boolean(chain);
   },
-  fn: ({ account, chain }) => ({
-    account: account as ProxiedAccount,
+  fn: ({ account, realAccount, chain, signatories }) => ({
+    account: realAccount,
+    proxiedAccount: account as ProxiedAccount,
     chain,
+    signatories: signatories[0] || [],
   }),
   target: formModel.events.formInitiated,
+});
+
+sample({
+  clock: formModel.output.formSubmitted,
+  filter: ({ signatory }) => Boolean(signatory),
+  fn: ({ signatory }) => [signatory!],
+  target: $selectedSignatories,
 });
 
 sample({
@@ -214,13 +306,14 @@ sample({
   source: {
     removeProxyStore: $removeProxyStore,
     transaction: $transaction,
+    signatories: $selectedSignatories,
   },
   filter: ({ removeProxyStore, transaction }) => Boolean(removeProxyStore) && Boolean(transaction),
-  fn: ({ removeProxyStore, transaction }) => ({
+  fn: ({ removeProxyStore, signatories, transaction }) => ({
     event: {
       chain: removeProxyStore!.chain,
       accounts: [removeProxyStore!.account],
-      signatory: removeProxyStore!.signatory,
+      signatory: signatories?.[0],
       transactions: [transaction!],
     },
     step: Step.SIGN,
@@ -312,6 +405,10 @@ export const removeProxyModel = {
   $chain,
   $account,
   $shouldRemovePureProxy,
+  $realAccount,
+  $isMultisig,
+  $isProxy,
+  $signatories,
 
   events: {
     flowStarted,

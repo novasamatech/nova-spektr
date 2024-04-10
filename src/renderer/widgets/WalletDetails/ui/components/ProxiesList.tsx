@@ -12,7 +12,7 @@ import { useToggle } from '@shared/lib/hooks';
 import { RemovePureProxy, removePureProxyModel } from '@widgets/RemovePureProxyModal';
 import { RemoveProxy, removeProxyModel } from '@widgets/RemoveProxyModal';
 import { accountUtils } from '@entities/wallet';
-import { ProxiedAccount, ProxyAccount } from '@/src/renderer/shared/core';
+import { ProxiedAccount, ProxyAccount, ProxyType, ProxyVariant } from '@/src/renderer/shared/core';
 
 type Props = {
   canCreateProxy?: boolean;
@@ -32,7 +32,13 @@ export const ProxiesList = ({ className, canCreateProxy = true }: Props) => {
   const [isRemoveConfirmOpen, toggleIsRemoveConfirmOpen] = useToggle();
 
   const handleDeleteProxy = (proxyAccount: ProxyAccount) => {
-    if (chainsProxies[proxyAccount.chainId].length === 1) {
+    const chainProxies = chainsProxies[proxyAccount.chainId] || [];
+    const anyProxies = chainProxies.filter((proxy) => proxy.proxyType === ProxyType.ANY);
+    const isPureProxy = (accounts[0] as ProxiedAccount).proxyVariant === ProxyVariant.PURE;
+
+    const shouldRemovePureProxy = isPureProxy && anyProxies.length === 1;
+
+    if (shouldRemovePureProxy) {
       removePureProxyModel.events.flowStarted({
         account: accounts[0] as ProxiedAccount,
         proxy: proxyAccount,

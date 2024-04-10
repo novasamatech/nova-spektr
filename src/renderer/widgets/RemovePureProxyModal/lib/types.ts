@@ -1,4 +1,4 @@
-import { Address, Chain, Account, ProxyType } from '@shared/core';
+import { Address, Chain, Account, ProxyType, ProxiedAccount } from '@shared/core';
 
 export const enum Step {
   NONE,
@@ -18,6 +18,7 @@ export const enum SubmitStep {
 export type RemoveProxyStore = {
   chain: Chain;
   account: Account;
+  proxiedAccount?: ProxiedAccount;
   signatory?: Account;
   spawner: Address;
   proxyType: ProxyType;
