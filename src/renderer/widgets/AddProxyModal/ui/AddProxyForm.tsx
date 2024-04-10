@@ -11,7 +11,7 @@ import { toAddress, toShortAddress, validateAddress } from '@shared/lib/utils';
 import { formModel } from '../model/form-model';
 import { AssetBalance } from '@entities/asset';
 import { MultisigAccount } from '@shared/core';
-import { DropdownOption } from '@shared/ui/types';
+import { SignatorySelector } from '@entities/operations';
 import {
   ProxyDepositWithLabel,
   MultisigDepositWithLabel,
@@ -38,7 +38,7 @@ export const AddProxyForm = ({ onGoBack }: Props) => {
       <form id="add-proxy-form" className="flex flex-col gap-y-4 mt-4" onSubmit={submitProxy}>
         <NetworkSelector />
         <AccountSelector />
-        <SignatorySelector />
+        <Signatories />
         <ProxyInput />
         <ProxyTypeSelector />
         <DescriptionInput />
@@ -138,7 +138,7 @@ const AccountSelector = () => {
   );
 };
 
-const SignatorySelector = () => {
+const Signatories = () => {
   const { t } = useI18n();
 
   const {
@@ -150,46 +150,16 @@ const SignatorySelector = () => {
 
   if (!isMultisig) return null;
 
-  const options = signatories.reduce<DropdownOption[]>((acc, { signer, balance }) => {
-    if (!signer?.id) return acc;
-
-    const isShard = accountUtils.isShardAccount(signer);
-    const address = toAddress(signer.accountId, { prefix: chain.value.addressPrefix });
-
-    acc.push({
-      id: signer.id.toString(),
-      value: signer,
-      element: (
-        <div className="flex justify-between items-center w-full">
-          <AccountAddress
-            size={20}
-            type="short"
-            address={address}
-            name={isShard ? address : signer.name}
-            canCopy={false}
-          />
-          <AssetBalance value={balance} asset={chain.value.assets[0]} />
-        </div>
-      ),
-    });
-
-    return acc;
-  }, []);
-
   return (
-    <div className="flex flex-col gap-y-2">
-      <Select
-        label={t('proxy.addProxy.signatoryLabel')}
-        placeholder={t('proxy.addProxy.signatoryPlaceholder')}
-        selectedId={signatory.value.id.toString()}
-        options={options}
-        invalid={signatory.hasError()}
-        onChange={({ value }) => signatory.onChange(value)}
-      />
-      <InputHint variant="error" active={signatory.hasError()}>
-        {t(signatory.errorText())}
-      </InputHint>
-    </div>
+    <SignatorySelector
+      signatory={signatory.value}
+      signatories={signatories}
+      asset={chain.value.assets?.[0]}
+      addressPrefix={chain.value.addressPrefix}
+      hasError={signatory.hasError()}
+      errorText={t(signatory.errorText())}
+      onChange={signatory.onChange}
+    />
   );
 };
 

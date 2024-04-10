@@ -9,7 +9,7 @@ import { type Account, type MultisigAccount } from '@shared/core';
 import { getAssetById } from '@shared/lib/utils';
 import { getTransactionFromMultisigTx } from '@entities/multisig';
 import { xcmTransferModel } from '@widgets/Transfer';
-import { SignButton } from '@entities/operation/ui/SignButton';
+import { SignButton } from '@entities/operations';
 import { walletModel } from '@entities/wallet';
 import { getIconName } from '@entities/transaction/lib/transactionConfirmIcon';
 import { priceProviderModel } from '@entities/price';

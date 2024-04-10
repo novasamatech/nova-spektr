@@ -460,9 +460,15 @@ type WrapAsMultiParams = {
   txWrapper: MultisigTxWrapper;
 };
 export const wrapAsMulti = ({ api, addressPrefix, transaction, txWrapper }: WrapAsMultiParams): Transaction => {
-  const extrinsic = getExtrinsic[transaction.type](transaction.args, api);
-  const callData = extrinsic.method.toHex();
-  const callHash = extrinsic.method.hash.toHex();
+  let callData = '';
+  let callHash = '';
+  try {
+    const extrinsic = getExtrinsic[transaction.type](transaction.args, api);
+    callData = extrinsic.method.toHex();
+    callHash = extrinsic.method.hash.toHex();
+  } catch {
+    console.log(`🟡 ${transaction.type} - not enough data to construct Extrinsic`);
+  }
 
   const otherSignatories = sortBy(txWrapper.signatories, 'accountId')
     .filter(({ accountId }) => accountId !== txWrapper.signer.accountId)

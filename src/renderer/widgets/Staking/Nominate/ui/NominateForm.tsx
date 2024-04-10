@@ -6,19 +6,19 @@ import { useI18n } from '@app/providers';
 import { accountUtils, AccountAddress, ProxyWalletAlert } from '@entities/wallet';
 import { toAddress, toShortAddress, formatBalance } from '@shared/lib/utils';
 import { AssetBalance } from '@entities/asset';
-import { DropdownOption } from '@shared/ui/types';
 import { formModel } from '../model/form-model';
 import { AssetFiatBalance } from '@entities/price/ui/AssetFiatBalance';
 import { FeeLoader } from '@entities/transaction';
 import { priceProviderModel } from '@entities/price';
-import { Select, Input, Button, InputHint, MultiSelect, Icon, DetailRow, FootnoteText, Tooltip } from '@shared/ui';
+import { Input, Button, InputHint, MultiSelect, Icon, DetailRow, FootnoteText, Tooltip } from '@shared/ui';
+import { SignatorySelector } from '@entities/operations';
 
 type Props = {
   onGoBack: () => void;
 };
 
 export const NominateForm = ({ onGoBack }: Props) => {
-  const { submit } = useForm(formModel.$bondForm);
+  const { submit } = useForm(formModel.$nominateForm);
 
   const submitForm = (event: FormEvent) => {
     event.preventDefault();
@@ -30,7 +30,7 @@ export const NominateForm = ({ onGoBack }: Props) => {
       <form id="transfer-form" className="flex flex-col gap-y-4 mt-4" onSubmit={submitForm}>
         <ProxyFeeAlert />
         <AccountsSelector />
-        <SignatorySelector />
+        <Signatories />
         <Description />
       </form>
       <div className="flex flex-col gap-y-6 pt-6 pb-4">
@@ -44,7 +44,7 @@ export const NominateForm = ({ onGoBack }: Props) => {
 const ProxyFeeAlert = () => {
   const {
     fields: { shards },
-  } = useForm(formModel.$bondForm);
+  } = useForm(formModel.$nominateForm);
 
   const feeData = useUnit(formModel.$feeData);
   const balance = useUnit(formModel.$proxyBalance);
@@ -72,7 +72,7 @@ const AccountsSelector = () => {
 
   const {
     fields: { shards },
-  } = useForm(formModel.$bondForm);
+  } = useForm(formModel.$nominateForm);
 
   const accounts = useUnit(formModel.$accounts);
   const network = useUnit(formModel.$networkStore);
@@ -119,59 +119,29 @@ const AccountsSelector = () => {
   );
 };
 
-const SignatorySelector = () => {
+const Signatories = () => {
   const { t } = useI18n();
 
   const {
     fields: { signatory },
-  } = useForm(formModel.$bondForm);
+  } = useForm(formModel.$nominateForm);
 
   const signatories = useUnit(formModel.$signatories);
-  const isMultisig = useUnit(formModel.$isMultisig);
   const network = useUnit(formModel.$networkStore);
+  const isMultisig = useUnit(formModel.$isMultisig);
 
-  if (!network || !isMultisig || signatories.length === 0) return null;
-
-  const options = signatories[0].reduce<DropdownOption[]>((acc, { signer, balance }) => {
-    if (!signer?.id) return acc;
-
-    const isShard = accountUtils.isShardAccount(signer);
-    const address = toAddress(signer.accountId, { prefix: network.chain.addressPrefix });
-
-    acc.push({
-      id: signer.id.toString(),
-      value: signer,
-      element: (
-        <div className="flex justify-between items-center w-full">
-          <AccountAddress
-            size={20}
-            type="short"
-            address={address}
-            name={isShard ? address : signer.name}
-            canCopy={false}
-          />
-          <AssetBalance value={balance} asset={network.asset} />
-        </div>
-      ),
-    });
-
-    return acc;
-  }, []);
+  if (!isMultisig || !network) return null;
 
   return (
-    <div className="flex flex-col gap-y-2">
-      <Select
-        label={t('operation.selectSignatoryLabel')}
-        placeholder={t('operation.selectSignatory')}
-        selectedId={signatory.value.id?.toString()}
-        options={options}
-        invalid={signatory.hasError()}
-        onChange={({ value }) => signatory.onChange(value)}
-      />
-      <InputHint variant="error" active={signatory.hasError()}>
-        {t(signatory.errorText())}
-      </InputHint>
-    </div>
+    <SignatorySelector
+      signatory={signatory.value}
+      signatories={signatories[0]}
+      asset={network.chain.assets[0]}
+      addressPrefix={network.chain.addressPrefix}
+      hasError={signatory.hasError()}
+      errorText={t(signatory.errorText())}
+      onChange={signatory.onChange}
+    />
   );
 };
 
@@ -180,7 +150,7 @@ const Description = () => {
 
   const {
     fields: { description },
-  } = useForm(formModel.$bondForm);
+  } = useForm(formModel.$nominateForm);
 
   const isMultisig = useUnit(formModel.$isMultisig);
 
@@ -209,7 +179,7 @@ const FeeSection = () => {
 
   const {
     fields: { shards },
-  } = useForm(formModel.$bondForm);
+  } = useForm(formModel.$nominateForm);
 
   const network = useUnit(formModel.$networkStore);
   const feeData = useUnit(formModel.$feeData);
