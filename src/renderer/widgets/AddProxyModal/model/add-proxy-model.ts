@@ -10,12 +10,14 @@ import { balanceSubModel } from '@features/balances';
 import { Step, AddProxyStore } from '../lib/types';
 import { formModel } from './form-model';
 import { confirmModel } from './confirm-model';
+import { proxyModel, proxyUtils } from '@entities/proxy';
+import { NoID, ProxyGroup } from '@shared/core';
+import { toAccountId } from '@shared/lib/utils';
 
 const stepChanged = createEvent<Step>();
 
 const flowStarted = createEvent();
 const flowFinished = createEvent();
-const flowClosed = createEvent();
 
 const $step = createStore<Step>(Step.NONE);
 
@@ -131,6 +133,50 @@ sample({
 });
 
 sample({
+  clock: submitModel.output.formSubmitted,
+  source: $addProxyStore,
+  filter: (addProxyStore: AddProxyStore | null): addProxyStore is AddProxyStore => Boolean(addProxyStore),
+  fn: (addProxyStore) => [
+    {
+      accountId: toAccountId(addProxyStore.delegate),
+      proxiedAccountId: addProxyStore.account.accountId,
+      chainId: addProxyStore.chain.chainId,
+      proxyType: addProxyStore.proxyType,
+      delay: 0,
+    },
+  ],
+  target: proxyModel.events.proxiesAdded,
+});
+
+sample({
+  clock: submitModel.output.formSubmitted,
+  source: {
+    wallet: walletSelectModel.$walletForDetails,
+    addProxyStore: $addProxyStore,
+    proxyGroups: proxyModel.$proxyGroups,
+  },
+  filter: ({ wallet, addProxyStore }) => Boolean(wallet) && Boolean(addProxyStore),
+  fn: ({ wallet, addProxyStore, proxyGroups }) => {
+    const newProxyGroup: NoID<ProxyGroup> = {
+      walletId: wallet!.id,
+      chainId: addProxyStore!.chain.chainId,
+      proxiedAccountId: addProxyStore!.account.accountId,
+      totalDeposit: addProxyStore!.proxyDeposit,
+    };
+
+    const existingProxyGroup = proxyGroups.find((group) => proxyUtils.isSameProxyGroup(group, newProxyGroup));
+
+    return existingProxyGroup
+      ? { groupsUpdated: [{ id: existingProxyGroup.id, ...newProxyGroup }] }
+      : { groupsAdded: [newProxyGroup] };
+  },
+  target: spread({
+    groupsAdded: proxyModel.events.proxyGroupsAdded,
+    groupsUpdated: proxyModel.events.proxyGroupsUpdated,
+  }),
+});
+
+sample({
   clock: delay(submitModel.output.formSubmitted, 2000),
   target: flowFinished,
 });
@@ -165,6 +211,5 @@ export const addProxyModel = {
   },
   output: {
     flowFinished,
-    flowClosed,
   },
 };

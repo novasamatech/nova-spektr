@@ -20,7 +20,7 @@ export const AddPureProxied = () => {
 
   const [isModalOpen, closeModal] = useModalClose(
     !addPureProxiedUtils.isNoneStep(step),
-    addPureProxiedModel.outputs.flowClosed,
+    addPureProxiedModel.outputs.flowFinished,
   );
 
   const getModalTitle = (step: Step, chain?: Chain) => {
