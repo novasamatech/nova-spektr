@@ -85,7 +85,10 @@ sample({
   target: walletModel.$accounts,
 });
 
-sample({ clock: removeKeysFx.doneData, target: proxiesModel.events.workerStarted });
+sample({
+  clock: removeKeysFx.doneData,
+  target: proxiesModel.events.workerStarted,
+});
 
 sample({ clock: accountsCreated, target: createAccountsFx });
 
@@ -97,7 +100,10 @@ sample({
   target: walletModel.$accounts,
 });
 
-sample({ clock: createAccountsFx.doneData, target: proxiesModel.events.workerStarted });
+sample({
+  clock: createAccountsFx.doneData,
+  target: proxiesModel.events.workerStarted,
+});
 
 export const vaultDetailsModel = {
   $shards,

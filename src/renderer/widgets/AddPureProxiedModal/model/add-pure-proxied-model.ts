@@ -33,6 +33,7 @@ const stepChanged = createEvent<Step>();
 
 const flowStarted = createEvent();
 const flowFinished = createEvent();
+const flowClosed = createEvent();
 
 const $step = createStore<Step>(Step.NONE);
 
@@ -67,10 +68,8 @@ const getPureProxyFx = createEffect(
       unsubscribe = subscriptionService.subscribeEvents(api, pureCreatedParams, (event) => {
         unsubscribe?.then((fn) => fn());
 
-        const accountId = event.data[0].toHex();
-
         resolve({
-          accountId,
+          accountId: event.data[0].toHex(),
           blockNumber: timepoint.height,
           extrinsicIndex: timepoint.index,
         });
@@ -360,5 +359,6 @@ export const addPureProxiedModel = {
   },
   outputs: {
     flowFinished,
+    flowClosed,
   },
 };
