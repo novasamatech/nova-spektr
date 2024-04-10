@@ -192,6 +192,6 @@ export const proxyModel = {
     proxyGroupsRemoved,
   },
   output: {
-    proxyStatusUpdated: merge([addProxiesFx, removeProxiesFx]),
+    proxyStatusUpdated: merge([addProxiesFx.done, removeProxiesFx.done]),
   },
 };
