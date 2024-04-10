@@ -372,11 +372,17 @@ sample({
   fn: (networkStore, formData) => {
     const signatory = formData.signatory.accountId ? formData.signatory : undefined;
     // TODO: update after i18n effector integration
-    const shortAddress = toShortAddress(formData.destination);
+    const destinationAddress = toAddress(formData.destination, { prefix: networkStore!.chain.addressPrefix });
+    const shortAddress = toShortAddress(destinationAddress);
     const defaultText = `Change reward destination to ${shortAddress || 'restake'}`;
     const description = signatory ? formData.description || defaultText : '';
 
-    return { ...formData, signatory, description };
+    return {
+      ...formData,
+      destination: destinationAddress,
+      signatory,
+      description,
+    };
   },
   target: formChanged,
 });

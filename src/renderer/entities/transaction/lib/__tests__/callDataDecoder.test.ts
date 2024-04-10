@@ -147,7 +147,7 @@ describe('entities/transaction/lib/callDataDecoder', () => {
       address: TEST_ADDRESS,
       args: {
         payee: {
-          account: 'Cn1mVjBBvLJUWE8GQoeR7JduGt2GxhUXrx191ob3Si6HA9E',
+          Account: 'Cn1mVjBBvLJUWE8GQoeR7JduGt2GxhUXrx191ob3Si6HA9E',
         },
         value: '1000000000000',
       },
@@ -245,7 +245,22 @@ describe('entities/transaction/lib/callDataDecoder', () => {
     expect(transaction).toEqual({
       address: TEST_ADDRESS,
       args: {
-        payee: { account: 'Cn1mVjBBvLJUWE8GQoeR7JduGt2GxhUXrx191ob3Si6HA9E' },
+        payee: { Account: 'Cn1mVjBBvLJUWE8GQoeR7JduGt2GxhUXrx191ob3Si6HA9E' },
+      },
+      chainId: '0x1234000000000000000000000000000000000000000000000000000000000000',
+      method: 'setPayee',
+      section: 'staking',
+      type: 'payee',
+    });
+  });
+
+  test('should decode destination call with no payee', async () => {
+    const transaction = decodeCallData(api, TEST_ADDRESS, '0x060700');
+
+    expect(transaction).toEqual({
+      address: TEST_ADDRESS,
+      args: {
+        payee: 'Staked',
       },
       chainId: '0x1234000000000000000000000000000000000000000000000000000000000000',
       method: 'setPayee',
