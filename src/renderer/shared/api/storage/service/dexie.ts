@@ -69,9 +69,6 @@ class DexieStorage extends Dexie {
       metadata: '++id',
     });
 
-    // TODO: Remove
-    this.version(22);
-
     this.connections = this.table('connections');
     this.balances = this.table('balances');
     this.wallets = this.table('wallets');
