@@ -135,7 +135,9 @@ sample({
 sample({
   clock: submitModel.output.formSubmitted,
   source: $addProxyStore,
-  filter: (addProxyStore: AddProxyStore | null): addProxyStore is AddProxyStore => Boolean(addProxyStore),
+  filter: (addProxyStore: AddProxyStore | null): addProxyStore is AddProxyStore => {
+    return Boolean(addProxyStore);
+  },
   fn: (addProxyStore) => [
     {
       accountId: toAccountId(addProxyStore.delegate),
@@ -155,7 +157,9 @@ sample({
     addProxyStore: $addProxyStore,
     proxyGroups: proxyModel.$proxyGroups,
   },
-  filter: ({ wallet, addProxyStore }) => Boolean(wallet) && Boolean(addProxyStore),
+  filter: ({ wallet, addProxyStore }) => {
+    return Boolean(wallet) && Boolean(addProxyStore);
+  },
   fn: ({ wallet, addProxyStore, proxyGroups }) => {
     const newProxyGroup: NoID<ProxyGroup> = {
       walletId: wallet!.id,

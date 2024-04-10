@@ -1,4 +1,4 @@
-import { createEvent, createStore, sample, combine } from 'effector';
+import { createEvent, createStore, sample, combine, restore } from 'effector';
 import { createForm } from 'effector-forms';
 import { BN } from '@polkadot/util';
 import { spread } from 'patronum';
@@ -60,12 +60,13 @@ const isFeeLoadingChanged = createEvent<boolean>();
 const isProxyDepositLoadingChanged = createEvent<boolean>();
 
 // TODO: Don't erase data if come back from the next steps
-const $fee = createStore<string>(ZERO_BALANCE).reset(formSubmitted);
 const $oldProxyDeposit = createStore<string>(ZERO_BALANCE).reset(formSubmitted);
-const $newProxyDeposit = createStore<string>(ZERO_BALANCE).reset(formSubmitted);
-const $multisigDeposit = createStore<string>(ZERO_BALANCE).reset(formSubmitted);
-const $isFeeLoading = createStore<boolean>(true).reset(formSubmitted);
-const $isProxyDepositLoading = createStore<boolean>(true).reset(formSubmitted);
+
+const $fee = restore(feeChanged, ZERO_BALANCE).reset(formSubmitted);
+const $newProxyDeposit = restore(proxyDepositChanged, ZERO_BALANCE).reset(formSubmitted);
+const $multisigDeposit = restore(multisigDepositChanged, ZERO_BALANCE).reset(formSubmitted);
+const $isFeeLoading = restore(isFeeLoadingChanged, true).reset(formSubmitted);
+const $isProxyDepositLoading = restore(isProxyDepositLoadingChanged, true).reset(formSubmitted);
 
 const $proxyQuery = createStore<string>('').reset(formSubmitted);
 
@@ -489,9 +490,7 @@ sample({
     multisigDeposit: $multisigDeposit,
     proxyDeposit: $newProxyDeposit,
   },
-  filter: ({ transaction }) => {
-    return Boolean(transaction);
-  },
+  filter: ({ transaction }) => Boolean(transaction),
   fn: ({ proxyDeposit, multisigDeposit, realAccount, transaction, isProxy, fee }, formData) => {
     const signatory = formData.signatory.accountId ? formData.signatory : undefined;
     const proxiedAddress = toAddress(formData.account.accountId, {

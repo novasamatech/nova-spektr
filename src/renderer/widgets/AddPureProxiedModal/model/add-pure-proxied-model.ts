@@ -225,7 +225,9 @@ sample({
     addProxyStore: $addProxyStore,
     proxyGroups: proxyModel.$proxyGroups,
   },
-  filter: ({ addProxyStore }, [_, wallet]) => Boolean(wallet.wallets[0].id) && Boolean(addProxyStore),
+  filter: ({ addProxyStore }, [_, wallet]) => {
+    return Boolean(wallet.wallets[0].id) && Boolean(addProxyStore);
+  },
   fn: ({ addProxyStore, proxyGroups }, [{ accountId }, wallet]) => {
     const newProxyGroup: NoID<ProxyGroup> = {
       walletId: wallet.wallets[0].id,
