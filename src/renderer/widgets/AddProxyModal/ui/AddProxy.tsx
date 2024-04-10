@@ -18,7 +18,7 @@ export const AddProxy = () => {
   const step = useUnit(addProxyModel.$step);
   const chain = useUnit(addProxyModel.$chain);
 
-  const [isModalOpen, closeModal] = useModalClose(!addProxyUtils.isNoneStep(step), addProxyModel.output.flowFinished);
+  const [isModalOpen, closeModal] = useModalClose(!addProxyUtils.isNoneStep(step), addProxyModel.output.flowClosed);
 
   const getModalTitle = (step: Step, chain?: Chain) => {
     if (addProxyUtils.isInitStep(step) || !chain) return t('operations.modalTitles.addProxy');

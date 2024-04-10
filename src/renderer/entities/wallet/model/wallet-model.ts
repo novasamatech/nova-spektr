@@ -1,6 +1,11 @@
 import { combine, createEffect, createEvent, createStore, sample } from 'effector';
 import { spread, combineEvents } from 'patronum';
 
+import { WalletConnectAccount } from '@shared/core';
+import { storageService } from '@shared/api/storage';
+import { modelUtils } from '../lib/model-utils';
+import { accountUtils } from '../lib/account-utils';
+import { dictionary } from '@shared/lib/utils';
 import type {
   Account,
   BaseAccount,
@@ -11,11 +16,6 @@ import type {
   ProxiedAccount,
   Wallet,
 } from '@shared/core';
-import { WalletConnectAccount } from '@shared/core';
-import { storageService } from '@shared/api/storage';
-import { modelUtils } from '../lib/model-utils';
-import { accountUtils } from '../lib/account-utils';
-import { dictionary } from '@shared/lib/utils';
 
 const walletStarted = createEvent();
 const watchOnlyCreated = createEvent<CreateParams<BaseAccount>>();
@@ -171,12 +171,7 @@ sample({
 });
 
 sample({
-  clock: walletConnectCreated,
-  target: walletCreatedFx,
-});
-
-sample({
-  clock: [watchOnlyCreated, multisigCreated, singleshardCreated],
+  clock: [walletConnectCreated, watchOnlyCreated, multisigCreated, singleshardCreated],
   target: walletCreatedFx,
 });
 

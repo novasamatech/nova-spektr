@@ -9,6 +9,7 @@ import { WalletConnect } from '@pages/Onboarding/WalletConnect/WalletConnect';
 import { MultisigWallet } from './MultisigWallet/MultisigWallet';
 import { WalletType, WalletFamily } from '@shared/core';
 import { walletPairingModel } from '@features/wallets';
+import { proxiesModel } from '@features/proxies';
 import { Paths } from '@shared/routes';
 import { walletProviderModel } from '../model/wallet-provider-model';
 
@@ -38,7 +39,14 @@ export const CreateWalletProvider = () => {
 
   const props: ModalProps = {
     onClose: walletPairingModel.events.walletTypeCleared,
-    onComplete: walletProviderModel.events.completed,
+    onComplete: () => {
+      if (walletType !== WalletType.WATCH_ONLY) {
+        setTimeout(() => {
+          proxiesModel.events.workerStarted();
+        }, 1000);
+      }
+      walletProviderModel.events.completed();
+    },
   };
 
   return WalletModals[walletType](props);

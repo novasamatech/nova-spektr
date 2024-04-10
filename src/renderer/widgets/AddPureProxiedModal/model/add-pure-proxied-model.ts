@@ -95,10 +95,8 @@ const getPureProxyFx = createEffect(
       unsubscribe = subscriptionService.subscribeEvents(api, pureCreatedParams, (event) => {
         unsubscribe?.then((fn) => fn());
 
-        const accountId = event.data[0].toHex();
-
         resolve({
-          accountId,
+          accountId: event.data[0].toHex(),
           blockNumber: timepoint.height,
           extrinsicIndex: timepoint.index,
         });
@@ -217,34 +215,6 @@ sample({
 });
 
 sample({
-  clock: combineEvents({
-    events: [getPureProxyFx.doneData, proxiesModel.output.walletsCreated],
-    reset: flowStarted,
-  }),
-  source: {
-    addProxyStore: $addProxyStore,
-    proxyGroups: proxyModel.$proxyGroups,
-  },
-  filter: ({ addProxyStore }, [_, wallet]) => Boolean(wallet.wallets[0].id) && Boolean(addProxyStore),
-  fn: ({ addProxyStore, proxyGroups }, [{ accountId }, wallet]) => {
-    const newProxyGroup: NoID<ProxyGroup> = {
-      walletId: wallet.wallets[0].id,
-      chainId: addProxyStore!.chain.chainId,
-      proxiedAccountId: accountId,
-      totalDeposit: addProxyStore!.proxyDeposit,
-    };
-
-    const proxyGroupExists = proxyGroups.some((group) => proxyUtils.isSameProxyGroup(group, newProxyGroup));
-
-    return proxyGroupExists ? { groupsUpdated: [newProxyGroup] } : { groupsAdded: [newProxyGroup] };
-  },
-  target: spread({
-    groupsAdded: proxyModel.events.proxyGroupsAdded,
-    groupsUpdated: proxyModel.events.proxyGroupsUpdated,
-  }),
-});
-
-sample({
   clock: submitModel.output.formSubmitted,
   source: {
     apis: networkModel.$apis,
@@ -300,6 +270,34 @@ sample({
     };
   },
   target: proxiesModel.events.proxiedWalletsCreated,
+});
+
+sample({
+  clock: combineEvents({
+    events: [getPureProxyFx.doneData, proxiesModel.output.walletsCreated],
+    reset: flowStarted,
+  }),
+  source: {
+    addProxyStore: $addProxyStore,
+    proxyGroups: proxyModel.$proxyGroups,
+  },
+  filter: ({ addProxyStore }, [_, wallet]) => Boolean(wallet.wallets[0].id) && Boolean(addProxyStore),
+  fn: ({ addProxyStore, proxyGroups }, [{ accountId }, wallet]) => {
+    const newProxyGroup: NoID<ProxyGroup> = {
+      walletId: wallet.wallets[0].id,
+      chainId: addProxyStore!.chain.chainId,
+      proxiedAccountId: accountId,
+      totalDeposit: addProxyStore!.proxyDeposit,
+    };
+
+    const proxyGroupExists = proxyGroups.some((group) => proxyUtils.isSameProxyGroup(group, newProxyGroup));
+
+    return proxyGroupExists ? { groupsUpdated: [newProxyGroup] } : { groupsAdded: [newProxyGroup] };
+  },
+  target: spread({
+    groupsAdded: proxyModel.events.proxyGroupsAdded,
+    groupsUpdated: proxyModel.events.proxyGroupsUpdated,
+  }),
 });
 
 sample({
