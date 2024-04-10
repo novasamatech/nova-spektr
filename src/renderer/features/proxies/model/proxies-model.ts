@@ -206,7 +206,7 @@ const createProxiedWalletsFx = createEffect(
         if (!proxiedCreatedResult) return acc;
 
         acc.accounts.push(...proxiedCreatedResult.accounts);
-        acc.wallets = acc.wallets.concat(proxiedCreatedResult.wallet);
+        acc.wallets.push(proxiedCreatedResult.wallet);
 
         return acc;
       },

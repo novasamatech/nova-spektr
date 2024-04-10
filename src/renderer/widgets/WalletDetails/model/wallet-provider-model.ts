@@ -195,6 +195,7 @@ const $chainsProxies = combine(
 const $walletProxyGroups = combine(
   {
     wallet: walletSelectModel.$walletForDetails,
+    chainsProxies: $chainsProxies,
     groups: proxyModel.$walletsProxyGroups,
   },
   ({ wallet, groups }): ProxyGroup[] => {

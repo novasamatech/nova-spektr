@@ -1,4 +1,4 @@
-import { createEvent, createStore, sample, combine, createEffect } from 'effector';
+import { createEvent, createStore, sample, combine, createEffect, restore } from 'effector';
 import { ApiPromise } from '@polkadot/api';
 import { createForm } from 'effector-forms';
 import { BN } from '@polkadot/util';
@@ -28,6 +28,7 @@ import {
   transferableAmount,
   toShortAddress,
   validateAddress,
+  ZERO_BALANCE,
 } from '@shared/lib/utils';
 
 type ProxyAccounts = {
@@ -72,12 +73,13 @@ const feeChanged = createEvent<string>();
 const isFeeLoadingChanged = createEvent<boolean>();
 const isProxyDepositLoadingChanged = createEvent<boolean>();
 
-const $fee = createStore<string>('0').reset(formSubmitted);
 const $oldProxyDeposit = createStore<string>('0').reset(formSubmitted);
-const $newProxyDeposit = createStore<string>('0').reset(formSubmitted);
-const $multisigDeposit = createStore<string>('0').reset(formSubmitted);
-const $isFeeLoading = createStore<boolean>(true).reset(formSubmitted);
-const $isProxyDepositLoading = createStore<boolean>(true).reset(formSubmitted);
+
+const $fee = restore(feeChanged, ZERO_BALANCE).reset(formSubmitted);
+const $newProxyDeposit = restore(proxyDepositChanged, ZERO_BALANCE).reset(formSubmitted);
+const $multisigDeposit = restore(multisigDepositChanged, ZERO_BALANCE).reset(formSubmitted);
+const $isFeeLoading = restore(isFeeLoadingChanged, true).reset(formSubmitted);
+const $isProxyDepositLoading = restore(isProxyDepositLoadingChanged, true).reset(formSubmitted);
 
 const $proxyQuery = createStore<string>('').reset(formSubmitted);
 const $maxProxies = createStore<number>(0).reset(formSubmitted);
@@ -621,18 +623,6 @@ sample({
     oldProxyDeposit: $oldProxyDeposit,
   }),
 });
-
-// Deposits
-
-sample({ clock: proxyDepositChanged, target: $newProxyDeposit });
-
-sample({ clock: isProxyDepositLoadingChanged, target: $isProxyDepositLoading });
-
-sample({ clock: multisigDepositChanged, target: $multisigDeposit });
-
-sample({ clock: feeChanged, target: $fee });
-
-sample({ clock: isFeeLoadingChanged, target: $isFeeLoading });
 
 // Submit
 
