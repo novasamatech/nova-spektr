@@ -2,7 +2,7 @@ import Dexie from 'dexie';
 
 import { useTransactionStorage } from './transactionStorage';
 import { useMultisigEventStorage } from './multisigEventStorage';
-import { migrateEvents, migrateWallets } from '../migration';
+import { migrateEvents, migrateWallets, resetMetadata } from '../migration';
 import {
   DataStorage,
   IStorage,
@@ -68,6 +68,8 @@ class DexieStorage extends Dexie {
       notifications: '++id',
       metadata: '++id',
     });
+
+    this.version(22).upgrade(resetMetadata);
 
     this.connections = this.table('connections');
     this.balances = this.table('balances');

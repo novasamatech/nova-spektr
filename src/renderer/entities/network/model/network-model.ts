@@ -384,9 +384,15 @@ sample({
 
 sample({
   clock: requestMetadataFx.doneData,
+  source: $metadata,
+  filter: (metadata, newMetadata) => {
+    return metadata.every(({ chainId, version }) => {
+      return chainId !== newMetadata.chainId || version !== newMetadata.version;
+    });
+  },
+  fn: (_, metadata) => metadata,
   target: saveMetadataFx,
 });
-
 sample({
   clock: saveMetadataFx.doneData,
   source: $metadata,

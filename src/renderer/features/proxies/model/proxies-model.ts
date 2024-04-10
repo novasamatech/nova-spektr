@@ -237,7 +237,9 @@ sample({
   },
   filter: ({ endpoint }) => Boolean(endpoint),
   fn: ({ connections, chains, endpoint }) => ({
-    chains: Object.values(chains).filter(proxiesUtils.isRegularProxy),
+    chains: Object.values(chains).filter(
+      (chain) => proxiesUtils.isRegularProxy(chain) || proxiesUtils.isPureProxy(chain),
+    ),
     connections,
     endpoint: endpoint!,
   }),

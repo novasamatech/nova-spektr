@@ -52,7 +52,7 @@ const Signatories = () => {
   return (
     <SignatorySelector
       signatory={signatory.value}
-      signatories={signatories}
+      signatories={signatories || []}
       asset={chain.assets[0]}
       addressPrefix={chain.addressPrefix}
       hasError={signatory.hasError()}
@@ -97,7 +97,7 @@ const FeeSection = () => {
   const fakeTx = useUnit(formModel.$fakeTx);
   const isMultisig = useUnit(formModel.$isMultisig);
   const chain = useUnit(removePureProxyModel.$chain);
-  const account = useUnit(removePureProxyModel.$account);
+  const account = useUnit(removePureProxyModel.$realAccount);
 
   if (!chain) return null;
 
