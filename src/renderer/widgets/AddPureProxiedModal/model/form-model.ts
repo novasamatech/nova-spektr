@@ -475,31 +475,6 @@ sample({
   }),
 });
 
-sample({
-  clock: $proxyForm.fields.chain.onChange,
-  source: {
-    signatories: $signatories,
-    isMultisig: $isMultisig,
-  },
-  filter: ({ isMultisig, signatories }) => {
-    return isMultisig && signatories.length > 0;
-  },
-  fn: ({ signatories }) => signatories[0].signer,
-  target: $proxyForm.fields.signatory.onChange,
-});
-
-// Deposits
-
-sample({ clock: proxyDepositChanged, target: $newProxyDeposit });
-
-sample({ clock: isProxyDepositLoadingChanged, target: $isProxyDepositLoading });
-
-sample({ clock: multisigDepositChanged, target: $multisigDeposit });
-
-sample({ clock: feeChanged, target: $fee });
-
-sample({ clock: isFeeLoadingChanged, target: $isFeeLoading });
-
 // Submit
 
 sample({

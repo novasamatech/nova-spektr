@@ -16,6 +16,7 @@ import {
   isStringsMatchQuery,
   stakeableAmount,
   validateAddress,
+  toShortAddress,
 } from '@shared/lib/utils';
 
 type FormParams = {
@@ -60,7 +61,7 @@ const $isMultisig = createStore<boolean>(false);
 const $feeData = restore(feeDataChanged, { fee: '0', totalFee: '0', multisigDeposit: '0' });
 const $isFeeLoading = restore(isFeeLoadingChanged, true);
 
-const $bondForm = createForm<FormParams>({
+const $payeeForm = createForm<FormParams>({
   fields: {
     shards: {
       init: [] as Account[],
@@ -250,7 +251,7 @@ const $api = combine(
 
 const $canSubmit = combine(
   {
-    isFormValid: $bondForm.$isValid,
+    isFormValid: $payeeForm.$isValid,
     isFeeLoading: $isFeeLoading,
   },
   ({ isFormValid, isFeeLoading }) => {
@@ -262,7 +263,7 @@ const $canSubmit = combine(
 
 sample({
   clock: formInitiated,
-  target: $bondForm.reset,
+  target: $payeeForm.reset,
 });
 
 sample({
@@ -283,7 +284,7 @@ sample({
   source: $shards,
   filter: (shards) => shards.length > 0,
   fn: (shards) => shards,
-  target: $bondForm.fields.shards.onChange,
+  target: $payeeForm.fields.shards.onChange,
 });
 
 sample({
@@ -299,7 +300,7 @@ sample({
 sample({
   source: {
     accounts: $accounts,
-    shards: $bondForm.fields.shards.$value,
+    shards: $payeeForm.fields.shards.$value,
   },
   fn: ({ accounts, shards }) => {
     return accounts.reduce<string[]>((acc, { account, balance }) => {
@@ -328,7 +329,7 @@ sample({
 });
 
 sample({
-  clock: $bondForm.fields.signatory.onChange,
+  clock: $payeeForm.fields.signatory.onChange,
   source: $signatories,
   filter: (signatories) => signatories.length > 0,
   fn: (signatories, signatory) => {
@@ -365,13 +366,14 @@ sample({
 // Submit
 
 sample({
-  clock: $bondForm.$values.updates,
+  clock: $payeeForm.$values.updates,
   source: $networkStore,
   filter: (networkStore) => Boolean(networkStore),
   fn: (networkStore, formData) => {
     const signatory = formData.signatory.accountId ? formData.signatory : undefined;
     // TODO: update after i18n effector integration
-    const defaultText = `Change reward destination to ${formData.destination || 'restake'}`;
+    const shortAddress = toShortAddress(formData.destination);
+    const defaultText = `Change reward destination to ${shortAddress || 'restake'}`;
     const description = signatory ? formData.description || defaultText : '';
 
     return { ...formData, signatory, description };
@@ -380,17 +382,17 @@ sample({
 });
 
 sample({
-  clock: $bondForm.formValidated,
+  clock: $payeeForm.formValidated,
   target: formSubmitted,
 });
 
 sample({
   clock: formCleared,
-  target: [$bondForm.reset, $shards.reinit],
+  target: [$payeeForm.reset, $shards.reinit],
 });
 
 export const formModel = {
-  $bondForm,
+  $payeeForm,
   $proxyWallet,
   $signatories,
   $destinationAccounts,

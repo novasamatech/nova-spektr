@@ -2,15 +2,13 @@ import { useForm } from 'effector-forms';
 import { FormEvent } from 'react';
 import { useUnit } from 'effector-react';
 
-import { Button, Select, Input, InputHint, Alert } from '@shared/ui';
+import { Button, Input, InputHint, Alert } from '@shared/ui';
 import { useI18n } from '@app/providers';
-import { AccountAddress, accountUtils } from '@entities/wallet';
-import { toAddress } from '@shared/lib/utils';
 import { MultisigDepositWithLabel, FeeWithLabel } from '@entities/transaction';
-import { formModel } from '../model/form-model';
-import { AssetBalance } from '@entities/asset';
 import { MultisigAccount } from '@shared/core';
+import { SignatorySelector } from '@entities/operations';
 import { removeProxyModel } from '../model/remove-proxy-model';
+import { formModel } from '../model/form-model';
 
 type Props = {
   onGoBack: () => void;
@@ -26,7 +24,7 @@ export const RemoveProxyForm = ({ onGoBack }: Props) => {
   return (
     <div className="pb-4 px-5">
       <form id="add-proxy-form" className="flex flex-col gap-y-4 mt-4" onSubmit={submitProxy}>
-        <SignatorySelector />
+        <Signatories />
         <DescriptionInput />
       </form>
       <div className="flex flex-col gap-y-6 pt-6 pb-4">
@@ -38,7 +36,7 @@ export const RemoveProxyForm = ({ onGoBack }: Props) => {
   );
 };
 
-const SignatorySelector = () => {
+const Signatories = () => {
   const { t } = useI18n();
 
   const {
@@ -46,47 +44,21 @@ const SignatorySelector = () => {
   } = useForm(formModel.$proxyForm);
 
   const signatories = useUnit(formModel.$signatories);
-  const isMultisig = useUnit(formModel.$isMultisig);
   const chain = useUnit(removeProxyModel.$chain);
+  const isMultisig = useUnit(formModel.$isMultisig);
 
   if (!isMultisig || !chain) return null;
 
-  const options = signatories?.map(({ signer, balance }) => {
-    const isShard = accountUtils.isShardAccount(signer);
-    const address = toAddress(signer.accountId, { prefix: chain.addressPrefix });
-
-    return {
-      id: signer.id.toString(),
-      value: signer,
-      element: (
-        <div className="flex justify-between items-center w-full">
-          <AccountAddress
-            size={20}
-            type="short"
-            address={address}
-            name={isShard ? address : signer.name}
-            canCopy={false}
-          />
-          <AssetBalance value={balance} asset={chain.assets[0]} />
-        </div>
-      ),
-    };
-  });
-
   return (
-    <div className="flex flex-col gap-y-2">
-      <Select
-        label={t('proxy.addProxy.signatoryLabel')}
-        placeholder={t('proxy.addProxy.signatoryPlaceholder')}
-        selectedId={signatory.value.id.toString()}
-        options={options || []}
-        invalid={signatory.hasError()}
-        onChange={({ value }) => signatory.onChange(value)}
-      />
-      <InputHint variant="error" active={signatory.hasError()}>
-        {t(signatory.errorText())}
-      </InputHint>
-    </div>
+    <SignatorySelector
+      signatory={signatory.value}
+      signatories={signatories || []}
+      asset={chain.assets[0]}
+      addressPrefix={chain.addressPrefix}
+      hasError={signatory.hasError()}
+      errorText={t(signatory.errorText())}
+      onChange={signatory.onChange}
+    />
   );
 };
 

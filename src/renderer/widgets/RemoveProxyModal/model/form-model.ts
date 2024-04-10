@@ -301,19 +301,6 @@ sample({
 sample({
   clock: $chain,
   source: {
-    signatories: $signatories,
-    isMultisig: $isMultisig,
-  },
-  filter: ({ isMultisig, signatories }) => {
-    return isMultisig && (signatories || []).length > 0;
-  },
-  fn: ({ signatories }) => signatories?.[0].signer!,
-  target: $proxyForm.fields.signatory.onChange,
-});
-
-sample({
-  clock: $chain,
-  source: {
     apis: networkModel.$apis,
     account: $account,
     isChainConnected: $isChainConnected,
