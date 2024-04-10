@@ -4,13 +4,13 @@ import { chainsService } from '@shared/api/network';
 import { storageService } from '@shared/api/storage';
 import { walletModel, accountUtils } from '@entities/wallet';
 import type { ShardAccount, Chain, ChainId, ChainAccount, ID, DraftAccount, Account, AccountId } from '@shared/core';
+import { proxiesModel } from '@features/proxies';
 
 type AccountsCreatedParams = {
   walletId: ID;
   rootAccountId: AccountId;
   accounts: DraftAccount<ChainAccount | ShardAccount>[];
 };
-
 const shardsSelected = createEvent<ShardAccount[]>();
 const shardsCleared = createEvent();
 const accountsCreated = createEvent<AccountsCreatedParams>();
@@ -85,6 +85,11 @@ sample({
   target: walletModel.$accounts,
 });
 
+sample({
+  clock: removeKeysFx.doneData,
+  target: proxiesModel.events.workerStarted,
+});
+
 sample({ clock: accountsCreated, target: createAccountsFx });
 
 sample({
@@ -93,6 +98,11 @@ sample({
   filter: (_, newAccounts) => Boolean(newAccounts),
   fn: (accounts, newAccounts) => accounts.concat(newAccounts!),
   target: walletModel.$accounts,
+});
+
+sample({
+  clock: createAccountsFx.doneData,
+  target: proxiesModel.events.workerStarted,
 });
 
 export const vaultDetailsModel = {

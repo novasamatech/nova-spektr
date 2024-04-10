@@ -1,13 +1,15 @@
 import { useState } from 'react';
 import { useUnit } from 'effector-react';
 
-import { FeeWithLabel, ProxyDepositWithLabel, MultisigDepositWithLabel } from '@entities/transaction';
-import { Button, DetailRow, FootnoteText, Icon } from '@shared/ui';
+import { FeeWithLabel, MultisigDepositWithLabel } from '@entities/transaction';
+import { Button, DetailRow, FootnoteText, Icon, Tooltip } from '@shared/ui';
 import { useI18n } from '@app/providers';
 import { SignButton } from '@entities/operations';
 import { AddressWithExplorers, WalletIcon, accountUtils, ExplorersPopover, WalletCardSm } from '@entities/wallet';
 import { proxyUtils } from '@entities/proxy';
 import { confirmModel } from '../model/confirm-model';
+import { AssetBalance } from '@entities/asset';
+import { AssetFiatBalance } from '@entities/price/ui/AssetFiatBalance';
 
 type Props = {
   onGoBack: () => void;
@@ -26,7 +28,6 @@ export const Confirmation = ({ onGoBack }: Props) => {
   if (!confirmStore || !api || !initiatorWallet) return null;
 
   const [isFeeLoading, setIsFeeLoading] = useState(true);
-  const [isProxyDepositLoading, setIsProxyDepositLoading] = useState(true);
 
   return (
     <div className="flex flex-col items-center pt-4 gap-y-4 pb-4 px-5">
@@ -126,13 +127,23 @@ export const Confirmation = ({ onGoBack }: Props) => {
 
         <hr className="border-filter-border w-full pr-2" />
 
-        <ProxyDepositWithLabel
-          api={api}
-          deposit={'0'}
-          proxyNumber={confirmStore.proxyNumber || 1}
-          asset={confirmStore.chain.assets[0]}
-          onDepositLoading={setIsProxyDepositLoading}
-        />
+        <DetailRow
+          className="text-text-primary"
+          label={
+            <>
+              <Icon className="text-text-tertiary" name="lock" size={12} />
+              <FootnoteText className="text-text-tertiary">{t('proxy.proxyDepositLabel')}</FootnoteText>
+              <Tooltip content={t('proxy.proxyDepositHint')} offsetPx={-60}>
+                <Icon name="info" className="hover:text-icon-hover cursor-pointer" size={16} />
+              </Tooltip>
+            </>
+          }
+        >
+          <div className="flex flex-col gap-y-0.5 items-end">
+            <AssetBalance value={confirmStore.proxyDeposit} asset={confirmStore.chain.assets[0]} />
+            <AssetFiatBalance asset={confirmStore.chain.assets[0]} amount={confirmStore.proxyDeposit} />
+          </div>
+        </DetailRow>
 
         {accountUtils.isMultisigAccount(confirmStore.account) && (
           <MultisigDepositWithLabel
@@ -156,7 +167,7 @@ export const Confirmation = ({ onGoBack }: Props) => {
         </Button>
 
         <SignButton
-          disabled={isFeeLoading || isProxyDepositLoading}
+          disabled={isFeeLoading}
           type={(signerWallet || initiatorWallet).type}
           onClick={confirmModel.output.formSubmitted}
         />
