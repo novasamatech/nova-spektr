@@ -238,7 +238,7 @@ export const useCallDataDecoder = (): ICallDataDecoder => {
       let payee = decoded.args[index++].toString();
 
       try {
-        payee = JSON.parse(payee);
+        args.payee = JSON.parse(payee);
       } catch (e) {
         args.payee = payee;
         console.warn(e);
