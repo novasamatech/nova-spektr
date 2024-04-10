@@ -21,6 +21,7 @@ export const Confirmation = ({ onGoBack }: Props) => {
   const initiatorWallet = useUnit(confirmModel.$initiatorWallet);
   const signerWallet = useUnit(confirmModel.$signerWallet);
   const proxiedWallet = useUnit(confirmModel.$proxiedWallet);
+
   const api = useUnit(confirmModel.$api);
 
   const [isFeeLoading, setIsFeeLoading] = useState(true);

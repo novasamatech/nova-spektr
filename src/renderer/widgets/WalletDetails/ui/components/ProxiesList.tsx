@@ -12,7 +12,7 @@ import { useToggle } from '@shared/lib/hooks';
 import { RemovePureProxy, removePureProxyModel } from '@widgets/RemovePureProxyModal';
 import { RemoveProxy, removeProxyModel } from '@widgets/RemoveProxyModal';
 import { accountUtils } from '@entities/wallet';
-import { ProxyAccount } from '@/src/renderer/shared/core';
+import { ProxiedAccount, ProxyAccount, ProxyType, ProxyVariant } from '@shared/core';
 
 type Props = {
   canCreateProxy?: boolean;
@@ -24,18 +24,38 @@ export const ProxiesList = ({ className, canCreateProxy = true }: Props) => {
 
   const chains = useUnit(networkModel.$chains);
   const accounts = useUnit(walletProviderModel.$accounts);
+
   const chainsProxies = useUnit(walletProviderModel.$chainsProxies);
   const walletProxyGroups = useUnit(walletProviderModel.$walletProxyGroups);
+  const proxyForRemoval = useUnit(walletProviderModel.$proxyForRemoval);
 
   const [isRemoveConfirmOpen, toggleIsRemoveConfirmOpen] = useToggle();
 
   const handleDeleteProxy = (proxyAccount: ProxyAccount) => {
-    if (accountUtils.isProxiedAccount(accounts[0])) {
-      removePureProxyModel.events.flowStarted();
+    const chainProxies = chainsProxies[proxyAccount.chainId] || [];
+    const anyProxies = chainProxies.filter((proxy) => proxy.proxyType === ProxyType.ANY);
+    const isPureProxy = (accounts[0] as ProxiedAccount).proxyVariant === ProxyVariant.PURE;
+
+    const shouldRemovePureProxy = isPureProxy && anyProxies.length === 1;
+
+    if (shouldRemovePureProxy) {
+      removePureProxyModel.events.flowStarted({
+        account: accounts[0] as ProxiedAccount,
+        proxy: proxyAccount,
+      });
     } else {
       walletProviderModel.events.removeProxy(proxyAccount);
       toggleIsRemoveConfirmOpen();
     }
+  };
+
+  const handleConfirm = () => {
+    toggleIsRemoveConfirmOpen();
+
+    if (!proxyForRemoval) return;
+
+    const account = accounts.find((a) => accountUtils.isChainAndCryptoMatch(a, chains[proxyForRemoval.chainId]));
+    removeProxyModel.events.flowStarted({ account: account!, proxy: proxyForRemoval });
   };
 
   return (
@@ -93,10 +113,7 @@ export const ProxiesList = ({ className, canCreateProxy = true }: Props) => {
         confirmPallet="error"
         panelClass="w-[240px]"
         onClose={toggleIsRemoveConfirmOpen}
-        onConfirm={() => {
-          toggleIsRemoveConfirmOpen();
-          removeProxyModel.events.flowStarted();
-        }}
+        onConfirm={handleConfirm}
       >
         <SmallTitleText align="center" className="mb-2">
           {t('walletDetails.common.confirmRemoveProxyTitle')}

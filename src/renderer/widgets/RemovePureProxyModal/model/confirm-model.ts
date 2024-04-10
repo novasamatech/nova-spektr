@@ -12,7 +12,8 @@ type Input = {
   spawner: AccountId;
   proxyType: ProxyType;
   chain?: Chain;
-  account?: ProxiedAccount;
+  account?: Account;
+  proxiedAccount?: ProxiedAccount;
 };
 
 const formInitiated = createEvent<Input>();
@@ -52,7 +53,7 @@ const $proxyWallet = combine(
   ({ store, wallets, accounts }) => {
     if (!store || !store.account) return null;
 
-    const account = accounts.find((a) => a.accountId === store.account?.proxyAccountId);
+    const account = accounts.find((a) => a.accountId === (store.account as ProxiedAccount)?.proxyAccountId);
 
     if (!account) return null;
 
@@ -74,11 +75,25 @@ const $signerWallet = combine(
   { skipVoid: false },
 );
 
+const $proxiedWallet = combine(
+  {
+    store: $confirmStore,
+    wallets: walletModel.$wallets,
+  },
+  ({ store, wallets }) => {
+    if (!store || !store.proxiedAccount) return undefined;
+
+    return walletUtils.getWalletById(wallets, store.proxiedAccount.walletId);
+  },
+  { skipVoid: false },
+);
+
 export const confirmModel = {
   $confirmStore,
   $initiatorWallet,
   $signerWallet,
   $proxyWallet,
+  $proxiedWallet,
   $api,
 
   events: {

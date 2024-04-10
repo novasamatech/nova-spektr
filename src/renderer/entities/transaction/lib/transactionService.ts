@@ -281,6 +281,7 @@ function getWrappedTransaction({ api, addressPrefix, transaction, txWrappers }: 
         });
         acc.multisigTx = acc.wrappedTx;
       }
+
       if (hasProxy([txWrapper])) {
         acc.wrappedTx = wrapAsProxy({
           addressPrefix,

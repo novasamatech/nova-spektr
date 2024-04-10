@@ -61,6 +61,8 @@ export const SelectSignatories = ({ isActive, wallets, accounts, contacts, onSel
       (acc, wallet, index) => {
         const walletAccounts = accounts.filter((a) => a.walletId === wallet.id);
 
+        if (!walletAccounts.length) return acc;
+
         // TODO: Check why it can be empty
         const accountId = walletAccounts[0]?.accountId;
         const isSameAccounts = walletAccounts.every((a) => a.accountId === accountId);
