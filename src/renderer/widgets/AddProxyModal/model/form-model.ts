@@ -316,7 +316,7 @@ const $signatories = combine(
 
     const signers = dictionary(account.signatories, 'accountId', () => true);
 
-    const signatories = wallets.reduce<{ signer: Account; balance: string }[]>((acc, wallet) => {
+    return wallets.reduce<{ signer: Account; balance: string }[]>((acc, wallet) => {
       const walletAccounts = accountUtils.getWalletAccounts(wallet.id, accounts);
       const isAvailable = walletAccounts.length > 0 && permissionUtils.canCreateMultisigTx(wallet, walletAccounts);
 
@@ -339,8 +339,6 @@ const $signatories = combine(
 
       return acc;
     }, []);
-
-    return signatories;
   },
 );
 

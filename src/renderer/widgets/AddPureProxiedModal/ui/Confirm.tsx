@@ -27,7 +27,7 @@ export const Confirm = ({ onGoBack }: Props) => {
   return (
     <div className="flex flex-col items-center pt-4 gap-y-4 pb-4 px-5">
       <div className="flex flex-col items-center gap-y-3 mb-2">
-        <Icon className="text-icon-default" name={'proxyConfirm'} size={60} />
+        <Icon className="text-icon-default" name="proxyConfirm" size={60} />
 
         <FootnoteText className="py-2 px-3 rounded bg-block-background ml-3 text-text-secondary">
           {confirmStore.description}

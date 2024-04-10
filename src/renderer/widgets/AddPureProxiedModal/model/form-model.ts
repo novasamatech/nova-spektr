@@ -25,6 +25,7 @@ import {
   dictionary,
   transferableAmount,
   toShortAddress,
+  ZERO_BALANCE,
 } from '@shared/lib/utils';
 
 type FormParams = {
@@ -58,10 +59,10 @@ const feeChanged = createEvent<string>();
 const isFeeLoadingChanged = createEvent<boolean>();
 const isProxyDepositLoadingChanged = createEvent<boolean>();
 
-const $fee = createStore<string>('0').reset(formSubmitted);
-const $oldProxyDeposit = createStore<string>('0').reset(formSubmitted);
-const $newProxyDeposit = createStore<string>('0').reset(formSubmitted);
-const $multisigDeposit = createStore<string>('0').reset(formSubmitted);
+const $fee = createStore<string>(ZERO_BALANCE).reset(formSubmitted);
+const $oldProxyDeposit = createStore<string>(ZERO_BALANCE).reset(formSubmitted);
+const $newProxyDeposit = createStore<string>(ZERO_BALANCE).reset(formSubmitted);
+const $multisigDeposit = createStore<string>(ZERO_BALANCE).reset(formSubmitted);
 const $isFeeLoading = createStore<boolean>(true).reset(formSubmitted);
 const $isProxyDepositLoading = createStore<boolean>(true).reset(formSubmitted);
 

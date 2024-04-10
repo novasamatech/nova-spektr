@@ -10,7 +10,7 @@ import {
   WrapperKind,
   transactionService,
 } from '@entities/transaction';
-import { dictionary, toAddress, transferableAmount } from '@shared/lib/utils';
+import { dictionary, toAccountId, toAddress, transferableAmount } from '@shared/lib/utils';
 import { walletSelectModel } from '@features/wallets';
 import { accountUtils, walletModel, walletUtils } from '@entities/wallet';
 import { networkModel } from '@entities/network';
@@ -23,7 +23,6 @@ import { Account, Chain, ProxiedAccount, ProxyAccount, ProxyType, ProxyVariant }
 import { signModel } from '@features/operations/OperationSign/model/sign-model';
 import { submitModel } from '@features/operations/OperationSubmit';
 import { proxyModel } from '@entities/proxy';
-import { toAccountId } from '@features/proxies/lib/worker-utils';
 import { balanceModel, balanceUtils } from '@entities/balance';
 
 const stepChanged = createEvent<Step>();

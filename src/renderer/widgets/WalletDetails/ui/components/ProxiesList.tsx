@@ -49,6 +49,15 @@ export const ProxiesList = ({ className, canCreateProxy = true }: Props) => {
     }
   };
 
+  const handleConfirm = () => {
+    toggleIsRemoveConfirmOpen();
+    proxyForRemoval &&
+      removeProxyModel.events.flowStarted({
+        account: accounts.find((a) => accountUtils.isChainAndCryptoMatch(a, chains[proxyForRemoval?.chainId]))!,
+        proxy: proxyForRemoval,
+      });
+  };
+
   return (
     <div className={cnTw('flex flex-col', className)}>
       <div className="flex items-center px-5 pb-2">
@@ -104,14 +113,7 @@ export const ProxiesList = ({ className, canCreateProxy = true }: Props) => {
         confirmPallet="error"
         panelClass="w-[240px]"
         onClose={toggleIsRemoveConfirmOpen}
-        onConfirm={() => {
-          toggleIsRemoveConfirmOpen();
-          proxyForRemoval &&
-            removeProxyModel.events.flowStarted({
-              account: accounts.find((a) => accountUtils.isChainAndCryptoMatch(a, chains[proxyForRemoval?.chainId]))!,
-              proxy: proxyForRemoval,
-            });
-        }}
+        onConfirm={handleConfirm}
       >
         <SmallTitleText align="center" className="mb-2">
           {t('walletDetails.common.confirmRemoveProxyTitle')}
