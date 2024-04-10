@@ -23,5 +23,5 @@ function isMultisigOperation(notification: Notification): notification is Multis
 }
 
 function isProxyCreation(notification: Notification): notification is ProxyAction {
-  return notification.type === NotificationType.MULTISIG_INVITE;
+  return notification.type === NotificationType.PROXY_CREATED;
 }

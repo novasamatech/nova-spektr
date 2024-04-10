@@ -44,6 +44,7 @@ function getNotification({
       dateCreated: Date.now(),
       proxyType: proxied.proxyType,
       proxyAccountId: proxied.proxyAccountId,
+      proxyVariant: proxied.proxyVariant,
       proxyWalletName: accountsWalletsMap[proxied.proxyAccountId].name,
       proxyWalletType: accountsWalletsMap[proxied.proxyAccountId].type,
       proxiedAccountId: proxied.accountId,
