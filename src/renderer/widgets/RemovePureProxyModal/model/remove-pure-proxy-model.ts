@@ -24,7 +24,7 @@ import { warningModel } from './warning-model';
 import { proxyModel } from '@entities/proxy';
 import { signModel } from '@features/operations/OperationSign/model/sign-model';
 import { submitModel } from '@features/operations/OperationSubmit';
-import { balanceModel, balanceUtils } from '@/src/renderer/entities/balance';
+import { balanceModel, balanceUtils } from '@entities/balance';
 
 const stepChanged = createEvent<Step>();
 

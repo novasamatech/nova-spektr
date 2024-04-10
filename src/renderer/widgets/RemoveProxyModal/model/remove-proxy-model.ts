@@ -22,9 +22,9 @@ import { walletProviderModel } from '../../WalletDetails/model/wallet-provider-m
 import { Account, Chain, ProxiedAccount, ProxyAccount, ProxyType, ProxyVariant } from '@shared/core';
 import { signModel } from '@features/operations/OperationSign/model/sign-model';
 import { submitModel } from '@features/operations/OperationSubmit';
-import { proxyModel } from '@/src/renderer/entities/proxy';
-import { toAccountId } from '@/src/renderer/features/proxies/lib/worker-utils';
-import { balanceModel, balanceUtils } from '@/src/renderer/entities/balance';
+import { proxyModel } from '@entities/proxy';
+import { toAccountId } from '@features/proxies/lib/worker-utils';
+import { balanceModel, balanceUtils } from '@entities/balance';
 
 const stepChanged = createEvent<Step>();
 

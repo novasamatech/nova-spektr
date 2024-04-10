@@ -6,7 +6,7 @@ import { AddressWithExplorers, WalletIcon, ExplorersPopover, WalletCardSm, accou
 import { AssetBalance } from '@entities/asset';
 import { AssetFiatBalance } from '@entities/price/ui/AssetFiatBalance';
 import { confirmModel } from '../model/confirm-model';
-import { SignButton } from '@/src/renderer/entities/operations';
+import { SignButton } from '@entities/operations';
 
 type Props = {
   onGoBack: () => void;

@@ -9,7 +9,7 @@ import { AddressWithExplorers, WalletIcon, accountUtils, ExplorersPopover, Walle
 import { proxyUtils } from '@entities/proxy';
 import { confirmModel } from '../model/confirm-model';
 import { toAddress } from '@shared/lib/utils';
-import { ProxyType } from '@/src/renderer/shared/core';
+import { ProxyType } from '@shared/core';
 
 type Props = {
   onGoBack: () => void;
