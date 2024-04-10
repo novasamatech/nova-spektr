@@ -16,7 +16,6 @@ import {
   getRelaychainAsset,
   toAddress,
   dictionary,
-  formatAmount,
   ZERO_BALANCE,
   redeemableAmount,
 } from '@shared/lib/utils';
@@ -29,7 +28,7 @@ import {
   DESCRIPTION_LENGTH,
 } from '@entities/transaction';
 
-type BalanceMap = { balance: string; redeemable: string };
+type BalanceMap = { balance: string; withdraw: string };
 
 type FormParams = {
   shards: Account[];
@@ -74,8 +73,8 @@ const $isMultisig = createStore<boolean>(false);
 const $isProxy = createStore<boolean>(false);
 
 const $accountsBalances = createStore<BalanceMap[]>([]);
-const $redeemableBalance = createStore<string>(ZERO_BALANCE);
 const $signatoryBalance = createStore<string>(ZERO_BALANCE);
+const $withdrawBalance = createStore<string>(ZERO_BALANCE);
 const $proxyBalance = createStore<string>(ZERO_BALANCE);
 
 const $fee = restore(feeChanged, ZERO_BALANCE);
@@ -139,17 +138,28 @@ const $withdrawForm = createForm<FormParams>({
       init: '',
       rules: [
         {
+          name: 'required',
+          errorText: 'transfer.requiredAmountError',
+          validator: Boolean,
+        },
+        {
+          name: 'notZero',
+          errorText: 'transfer.notZeroAmountError',
+          validator: (value) => value !== ZERO_BALANCE,
+        },
+        {
           name: 'insufficientBalanceForFee',
           errorText: 'transfer.notEnoughBalanceForFeeError',
           source: combine({
-            network: $networkStore,
+            fee: $fee,
+            isMultisig: $isMultisig,
             accountsBalances: $accountsBalances,
           }),
-          validator: (value, form, { network, accountsBalances }) => {
-            const amountBN = new BN(formatAmount(value, network.asset.precision));
+          validator: (value, form, { fee, isMultisig, accountsBalances }) => {
+            if (isMultisig) return true;
 
             return form.shards.every((_: Account, index: number) => {
-              return amountBN.lte(new BN(accountsBalances[index].balance));
+              return new BN(fee).lte(new BN(accountsBalances[index].balance));
             });
           },
         },
@@ -275,11 +285,11 @@ const $accounts = combine(
     return shards.map((shard) => {
       const balance = balanceUtils.getBalance(balances, shard.accountId, chain.chainId, asset.assetId.toString());
       const address = toAddress(shard.accountId, { prefix: chain.addressPrefix });
-      const redeemable = redeemableAmount(staking[address]?.unlocking, era || 0);
+      const withdraw = redeemableAmount(staking[address]?.unlocking, era || 0);
 
       return {
         account: shard,
-        balances: { balance: transferableAmount(balance), redeemable },
+        balances: { balance: transferableAmount(balance), withdraw },
       };
     });
   },
@@ -455,15 +465,15 @@ sample({
   fn: (balances) => {
     if (balances.length === 0) return ZERO_BALANCE;
 
-    const totalRedeemable = balances.reduce<BN>((acc, { redeemable }) => {
-      if (!redeemable) return acc;
+    const totalWithdraw = balances.reduce<BN>((acc, { withdraw }) => {
+      if (!withdraw) return acc;
 
-      return new BN(redeemable).add(new BN(acc));
+      return new BN(withdraw).add(new BN(acc));
     }, new BN(ZERO_BALANCE));
 
-    return totalRedeemable.toString();
+    return totalWithdraw.toString();
   },
-  target: $redeemableBalance,
+  target: [$withdrawBalance, $withdrawForm.fields.amount.onChange],
 });
 
 sample({
@@ -479,7 +489,7 @@ sample({
     shards: $withdrawForm.fields.shards.$value,
   },
   fn: ({ accounts, shards }) => {
-    return accounts.reduce<{ balance: string; redeemable: string }[]>((acc, { account, balances }) => {
+    return accounts.reduce<BalanceMap[]>((acc, { account, balances }) => {
       if (shards.includes(account)) {
         acc.push(balances);
       }
@@ -558,7 +568,7 @@ sample({
 sample({
   clock: $withdrawForm.formValidated,
   source: {
-    amount: $redeemableBalance,
+    amount: $withdrawBalance,
     realAccounts: $realAccounts,
     network: $networkStore,
     transactions: $transactions,
@@ -626,7 +636,7 @@ export const formModel = {
 
   $accounts,
   $accountsBalances,
-  $redeemableBalance,
+  $withdrawBalance,
   $proxyBalance,
 
   $fee,

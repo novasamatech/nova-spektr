@@ -16,6 +16,7 @@ import {
   isStringsMatchQuery,
   stakeableAmount,
   validateAddress,
+  toShortAddress,
 } from '@shared/lib/utils';
 
 type FormParams = {
@@ -371,7 +372,8 @@ sample({
   fn: (networkStore, formData) => {
     const signatory = formData.signatory.accountId ? formData.signatory : undefined;
     // TODO: update after i18n effector integration
-    const defaultText = `Change reward destination to ${formData.destination || 'restake'}`;
+    const shortAddress = toShortAddress(formData.destination);
+    const defaultText = `Change reward destination to ${shortAddress || 'restake'}`;
     const description = signatory ? formData.description || defaultText : '';
 
     return { ...formData, signatory, description };

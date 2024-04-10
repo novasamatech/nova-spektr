@@ -1094,6 +1094,7 @@
     "notEnoughBalanceError": "Not enough funds to transfer specific amount",
     "notEnoughBalanceForDepositError": "Insufficient balance to pay deposit and network fee",
     "notEnoughBalanceForFeeError": "Insufficient balance to pay network fee",
+    "notZeroAmountError": "Value cannot be zero",
     "onChainPlaceholder": "On-chain",
     "pasteButton": "Paste",
     "recipientLabel": "Recipient",
