@@ -59,6 +59,7 @@ const feeChanged = createEvent<string>();
 const isFeeLoadingChanged = createEvent<boolean>();
 const isProxyDepositLoadingChanged = createEvent<boolean>();
 
+// TODO: Don't erase data if come back from the next steps
 const $fee = createStore<string>(ZERO_BALANCE).reset(formSubmitted);
 const $oldProxyDeposit = createStore<string>(ZERO_BALANCE).reset(formSubmitted);
 const $newProxyDeposit = createStore<string>(ZERO_BALANCE).reset(formSubmitted);
