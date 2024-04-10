@@ -6,7 +6,7 @@ import { BodyText, Identicon } from '@shared/ui';
 import { useI18n } from '@app/providers';
 import { toAddress } from '@shared/lib/utils';
 import { ChainTitle } from '@entities/chain';
-import { WalletType, ProxyAction } from '@shared/core';
+import { WalletType, ProxyAction, ProxyVariant } from '@shared/core';
 import { networkModel } from '@entities/network';
 import { ProxyTypeOperation } from '../../lib/constants';
 
@@ -19,7 +19,10 @@ export const ProxyCreatedNotification = ({ notification }: Props) => {
 
   const chains = useUnit(networkModel.$chains);
 
-  const address = toAddress(notification.proxyAccountId, { prefix: chains[notification.chainId].addressPrefix });
+  const accountId =
+    notification.proxyVariant === ProxyVariant.PURE ? notification.proxiedAccountId : notification.proxyAccountId;
+
+  const address = toAddress(accountId, { prefix: chains[notification.chainId].addressPrefix });
 
   return (
     <div className="flex gap-x-2">
