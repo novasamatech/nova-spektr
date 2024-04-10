@@ -15,5 +15,3 @@ export type AddPureProxiedStore = {
   description: string;
   proxyDeposit: string;
 };
-
-export type TxWrappers = ('proxy' | 'multisig')[];
