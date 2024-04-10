@@ -249,7 +249,7 @@ export const OperationCardDetails = ({ tx, account, extendedChain }: Props) => {
               type="short"
               explorers={explorers}
               addressFont={AddressStyle}
-              address={payee.account}
+              address={payee.Account}
               addressPrefix={addressPrefix}
               wrapperClassName="-mr-2 min-w-min"
             />
