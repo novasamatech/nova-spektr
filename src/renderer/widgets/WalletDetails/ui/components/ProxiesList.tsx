@@ -51,11 +51,11 @@ export const ProxiesList = ({ className, canCreateProxy = true }: Props) => {
 
   const handleConfirm = () => {
     toggleIsRemoveConfirmOpen();
-    proxyForRemoval &&
-      removeProxyModel.events.flowStarted({
-        account: accounts.find((a) => accountUtils.isChainAndCryptoMatch(a, chains[proxyForRemoval?.chainId]))!,
-        proxy: proxyForRemoval,
-      });
+
+    if (!proxyForRemoval) return;
+
+    const account = accounts.find((a) => accountUtils.isChainAndCryptoMatch(a, chains[proxyForRemoval.chainId]));
+    removeProxyModel.events.flowStarted({ account: account!, proxy: proxyForRemoval });
   };
 
   return (
