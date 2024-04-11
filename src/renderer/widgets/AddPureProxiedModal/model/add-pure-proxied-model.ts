@@ -15,6 +15,7 @@ import {
   PartialProxiedAccount,
   ProxyVariant,
   Timepoint,
+  Account,
 } from '@shared/core';
 import { proxyModel, proxyUtils } from '@entities/proxy';
 import { networkModel } from '@entities/network';
@@ -39,6 +40,7 @@ const $addProxyStore = createStore<AddPureProxiedStore | null>(null).reset(flowF
 const $wrappedTx = createStore<Transaction | null>(null).reset(flowFinished);
 const $multisigTx = createStore<Transaction | null>(null).reset(flowFinished);
 const $coreTx = createStore<Transaction | null>(null).reset(flowFinished);
+const $selectedSignatories = createStore<Account[]>([]);
 
 const $txWrappers = combine(
   {
@@ -46,8 +48,9 @@ const $txWrappers = combine(
     wallets: walletModel.$wallets,
     store: $addProxyStore,
     accounts: walletModel.$accounts,
+    signatories: $selectedSignatories,
   },
-  ({ wallet, store, accounts, wallets }) => {
+  ({ wallet, store, accounts, wallets, signatories }) => {
     if (!wallet || !store?.chain || !store.account.id) return [];
 
     const walletFiltered = wallets.filter((wallet) => {
@@ -67,7 +70,7 @@ const $txWrappers = combine(
       wallets: walletFiltered,
       account: store.account,
       accounts: chainFilteredAccounts,
-      signatories: [],
+      signatories,
     });
   },
 );
@@ -131,6 +134,13 @@ sample({
 sample({
   clock: flowStarted,
   target: formModel.events.formInitiated,
+});
+
+sample({
+  clock: formModel.output.formSubmitted,
+  filter: ({ formData }) => Boolean(formData.signatory),
+  fn: ({ formData }) => [formData.signatory!],
+  target: $selectedSignatories,
 });
 
 sample({
