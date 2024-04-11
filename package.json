@@ -8,6 +8,7 @@
   "author": {
     "name": "Novasama Technologies"
   },
+  
   "scripts": {
     "start": "pnpm clean:build && concurrently \"pnpm start:renderer\" \"pnpm start:main\" && watch",
     "start:dev": "pnpm clean:build && concurrently \"pnpm start:renderer:dev\" \"pnpm start:main:dev\" && watch",
