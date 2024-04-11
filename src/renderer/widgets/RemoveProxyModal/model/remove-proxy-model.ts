@@ -37,8 +37,9 @@ const flowFinished = createEvent();
 const $step = createStore<Step>(Step.NONE);
 
 const $removeProxyStore = createStore<RemoveProxyStore | null>(null);
-const $transaction = createStore<Transaction | null>(null);
-const $multisigTx = createStore<Transaction | null>(null);
+const $wrappedTx = createStore<Transaction | null>(null).reset(flowFinished);
+const $coreTx = createStore<Transaction | null>(null).reset(flowFinished);
+const $multisigTx = createStore<Transaction | null>(null).reset(flowFinished);
 
 const $availableSignatories = createStore<Account[][]>([]);
 const $isProxy = createStore<boolean>(false);
@@ -270,7 +271,8 @@ sample({
     });
   },
   target: spread({
-    wrappedTx: $transaction,
+    wrappedTx: $wrappedTx,
+    coreTx: $coreTx,
     multisigTx: $multisigTx,
   }),
 });
@@ -278,22 +280,22 @@ sample({
 sample({
   clock: formModel.output.formSubmitted,
   source: {
-    transaction: $transaction,
+    wrappedTx: $wrappedTx,
     chain: $chain,
     account: $account,
     realAccount: $realAccount,
     store: $removeProxyStore,
   },
-  filter: ({ transaction, chain, realAccount, account, store }) => {
-    return Boolean(transaction) && Boolean(chain) && Boolean(realAccount) && Boolean(account) && Boolean(store);
+  filter: ({ wrappedTx, chain, realAccount, account, store }) => {
+    return Boolean(wrappedTx) && Boolean(chain) && Boolean(realAccount) && Boolean(account) && Boolean(store);
   },
-  fn: ({ transaction, chain, account, realAccount, store }, formData) => ({
+  fn: ({ wrappedTx, chain, account, realAccount, store }, formData) => ({
     event: {
       ...formData,
       chain: chain as Chain,
       account: realAccount,
       proxiedAccount: accountUtils.isProxiedAccount(account!) ? account : undefined,
-      transaction: transaction as Transaction,
+      transaction: wrappedTx as Transaction,
       delegate: store!.delegate,
       proxyType: store!.proxyType,
     },
@@ -309,16 +311,16 @@ sample({
   clock: confirmModel.output.formSubmitted,
   source: {
     removeProxyStore: $removeProxyStore,
-    transaction: $transaction,
+    wrappedTx: $wrappedTx,
     signatories: $selectedSignatories,
   },
-  filter: ({ removeProxyStore, transaction }) => Boolean(removeProxyStore) && Boolean(transaction),
-  fn: ({ removeProxyStore, signatories, transaction }) => ({
+  filter: ({ removeProxyStore, wrappedTx }) => Boolean(removeProxyStore) && Boolean(wrappedTx),
+  fn: ({ removeProxyStore, signatories, wrappedTx }) => ({
     event: {
       chain: removeProxyStore!.chain,
       accounts: [removeProxyStore!.account],
       signatory: signatories?.[0],
-      transactions: [transaction!],
+      transactions: [wrappedTx!],
     },
     step: Step.SIGN,
   }),
@@ -332,14 +334,15 @@ sample({
   clock: signModel.output.formSubmitted,
   source: {
     removeProxyStore: $removeProxyStore,
-    transaction: $transaction,
+    wrappedTx: $wrappedTx,
+    coreTx: $coreTx,
     multisigTx: $multisigTx,
     txWrappers: $txWrappers,
   },
   filter: (proxyData) => {
     const isMultisigRequired = !transactionService.hasMultisig(proxyData.txWrappers) || Boolean(proxyData.multisigTx);
 
-    return Boolean(proxyData.removeProxyStore) && Boolean(proxyData.transaction) && isMultisigRequired;
+    return Boolean(proxyData.removeProxyStore) && Boolean(proxyData.wrappedTx) && isMultisigRequired;
   },
   fn: (proxyData, signParams) => ({
     event: {
@@ -348,8 +351,8 @@ sample({
       account: proxyData.removeProxyStore!.account,
       signatory: proxyData.removeProxyStore!.signatory,
       description: proxyData.removeProxyStore!.description,
-      transactions: [proxyData.transaction!],
-      multisigTxs: [proxyData.multisigTx!],
+      transactions: [proxyData.coreTx!],
+      multisigTxs: proxyData.multisigTx ? [proxyData.multisigTx] : [],
     },
     step: Step.SUBMIT,
   }),

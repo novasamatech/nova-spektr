@@ -214,8 +214,9 @@ const $txWrappers = combine(
     account: $proxyForm.fields.account.$value,
     chain: $proxyForm.fields.chain.$value,
     accounts: walletModel.$accounts,
+    signatory: $proxyForm.fields.signatory.$value,
   },
-  ({ wallet, account, chain, accounts, wallets }) => {
+  ({ wallet, account, chain, accounts, wallets, signatory }) => {
     if (!wallet || !chain || !account.id) return [];
 
     const walletFiltered = wallets.filter((wallet) => {
@@ -235,7 +236,7 @@ const $txWrappers = combine(
       wallets: walletFiltered,
       account,
       accounts: chainFilteredAccounts,
-      signatories: [],
+      signatories: signatory ? [signatory] : [],
     });
   },
 );

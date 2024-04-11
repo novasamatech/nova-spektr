@@ -40,6 +40,7 @@ const $step = createStore<Step>(Step.NONE);
 const $removeProxyStore = createStore<RemoveProxyStore | null>(null).reset(flowFinished);
 
 const $wrappedTx = createStore<Transaction | null>(null).reset(flowFinished);
+const $coreTx = createStore<Transaction | null>(null).reset(flowFinished);
 const $multisigTx = createStore<Transaction | null>(null).reset(flowFinished);
 
 const $availableSignatories = createStore<Account[][]>([]);
@@ -303,6 +304,7 @@ sample({
   },
   target: spread({
     wrappedTx: $wrappedTx,
+    coreTx: $coreTx,
     multisigTx: $multisigTx,
   }),
 });
@@ -363,10 +365,11 @@ sample({
     removeProxyStore: $removeProxyStore,
     wrappedTx: $wrappedTx,
     multisigTx: $multisigTx,
+    coreTx: $coreTx,
     txWrappers: $txWrappers,
   },
   filter: (proxyData) => {
-    return Boolean(proxyData.removeProxyStore) && Boolean(proxyData.wrappedTx);
+    return Boolean(proxyData.removeProxyStore) && Boolean(proxyData.wrappedTx) && Boolean(proxyData.coreTx);
   },
   fn: (proxyData, signParams) => ({
     event: {
@@ -375,7 +378,7 @@ sample({
       account: proxyData.removeProxyStore!.account,
       signatory: proxyData.removeProxyStore!.signatory,
       description: proxyData.removeProxyStore!.description,
-      transactions: [proxyData.wrappedTx!],
+      transactions: [proxyData.coreTx!],
       multisigTxs: proxyData.multisigTx ? [proxyData.multisigTx] : [],
     },
     step: Step.SUBMIT,
