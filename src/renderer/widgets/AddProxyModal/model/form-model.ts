@@ -272,7 +272,11 @@ const $proxyWallet = combine(
 );
 
 const $proxyChains = combine(
-  { chains: networkModel.$chains, accounts: walletModel.$accounts, wallet: walletSelectModel.$walletForDetails },
+  {
+    chains: networkModel.$chains,
+    accounts: walletModel.$accounts,
+    wallet: walletSelectModel.$walletForDetails,
+  },
   ({ chains, wallet, accounts }) => {
     if (!wallet) return [];
 
