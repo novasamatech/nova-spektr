@@ -213,9 +213,28 @@ const $proxyWallet = combine(
   { skipVoid: false },
 );
 
-const $proxyChains = combine(networkModel.$chains, (chains) => {
-  return Object.values(chains).filter(proxiesUtils.isRegularProxy);
-});
+const $proxyChains = combine(
+  {
+    chains: networkModel.$chains,
+    accounts: walletModel.$accounts,
+    wallet: walletSelectModel.$walletForDetails,
+  },
+  ({ chains, wallet, accounts }) => {
+    if (!wallet) return [];
+
+    const proxyChains = Object.values(chains).filter(proxiesUtils.isRegularProxy);
+    const isPolkadotVault = walletUtils.isPolkadotVault(wallet);
+    const walletAccounts = accountUtils.getWalletAccounts(wallet.id, accounts);
+
+    return proxyChains.filter((chain) => {
+      return walletAccounts.some((account) => {
+        if (isPolkadotVault && accountUtils.isBaseAccount(account)) return false;
+
+        return accountUtils.isChainAndCryptoMatch(account, chain);
+      });
+    });
+  },
+);
 
 const $proxiedAccounts = combine(
   {
