@@ -574,19 +574,19 @@ sample({
 });
 
 sample({
-  clock: $realAccounts.updates,
   source: {
     isProxy: $isProxy,
     balances: balanceModel.$balances,
     network: $networkStore,
+    proxyAccounts: $realAccounts,
   },
-  filter: ({ isProxy, network }, accounts) => {
-    return isProxy && Boolean(network) && accounts.length > 0;
+  filter: ({ isProxy, network, proxyAccounts }) => {
+    return isProxy && Boolean(network) && proxyAccounts.length > 0;
   },
-  fn: ({ balances, network }, accounts) => {
+  fn: ({ balances, network, proxyAccounts }) => {
     const balance = balanceUtils.getBalance(
       balances,
-      accounts[0].accountId,
+      proxyAccounts[0].accountId,
       network!.chain.chainId,
       network!.asset.assetId.toString(),
     );
