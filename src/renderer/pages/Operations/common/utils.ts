@@ -274,13 +274,13 @@ export const getDestination = (
 ): Address | undefined => {
   if (!tx.transaction) return undefined;
 
-  const addressPrefix = (destinationChain ? chains[destinationChain] : chains[tx.transaction.chainId])?.addressPrefix;
+  const chain = destinationChain ? chains[destinationChain] : chains[tx.transaction.chainId];
 
   if (isProxyTransaction(tx.transaction)) {
-    return toAddress(tx.transaction.args.transaction.args.dest, { prefix: addressPrefix });
+    return toAddress(tx.transaction.args.transaction.args.dest, { prefix: chain.addressPrefix });
   }
 
-  return toAddress(tx.transaction.args.dest, { prefix: addressPrefix });
+  return toAddress(tx.transaction.args.dest, { prefix: chain.addressPrefix });
 };
 
 export const getPayee = (tx: MultisigTransaction): { Account: Address } | string | undefined => {
