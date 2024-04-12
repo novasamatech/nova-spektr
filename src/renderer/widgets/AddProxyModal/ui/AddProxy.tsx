@@ -29,7 +29,14 @@ export const AddProxy = () => {
   if (addProxyUtils.isSubmitStep(step)) return <OperationSubmit isOpen={isModalOpen} onClose={closeModal} />;
 
   return (
-    <BaseModal closeButton contentClass="" isOpen={isModalOpen} title={getModalTitle(step, chain)} onClose={closeModal}>
+    <BaseModal
+      closeButton
+      contentClass=""
+      panelClass="max-h-full overflow-y-auto"
+      isOpen={isModalOpen}
+      title={getModalTitle(step, chain)}
+      onClose={closeModal}
+    >
       {addProxyUtils.isInitStep(step) && <AddProxyForm onGoBack={closeModal} />}
       {addProxyUtils.isConfirmStep(step) && (
         <Confirmation onGoBack={() => addProxyModel.events.stepChanged(Step.INIT)} />
