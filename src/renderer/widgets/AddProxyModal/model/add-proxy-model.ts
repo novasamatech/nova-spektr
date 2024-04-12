@@ -156,6 +156,12 @@ sample({
   target: stepChanged,
 });
 
+sample({
+  clock: flowClosed,
+  fn: () => Step.NONE,
+  target: stepChanged,
+});
+
 export const addProxyModel = {
   $step,
   $chain: $addProxyStore.map((store) => store?.chain, { skipVoid: false }),
