@@ -47,9 +47,7 @@ export const RemovePureProxy = () => {
       {removePureProxyUtils.isWarningStep(step) && <Warning onGoBack={closeModal} />}
       {removePureProxyUtils.isInitStep(step) && <RemovePureProxyForm onGoBack={closeModal} />}
       {removePureProxyUtils.isConfirmStep(step) && (
-        <Confirmation
-          onGoBack={() => (isMultisig ? removePureProxyModel.events.stepChanged(Step.INIT) : closeModal())}
-        />
+        <Confirmation onGoBack={() => removePureProxyModel.events.wentBackFromConfirm()} />
       )}
       {removePureProxyUtils.isSignStep(step) && (
         <OperationSign onGoBack={() => removePureProxyModel.events.stepChanged(Step.CONFIRM)} />

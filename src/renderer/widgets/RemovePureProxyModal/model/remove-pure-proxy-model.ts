@@ -1,4 +1,4 @@
-import { combine, createEvent, createStore, sample } from 'effector';
+import { combine, createEvent, createStore, sample, split } from 'effector';
 import { spread, delay } from 'patronum';
 
 import {
@@ -27,6 +27,8 @@ import { submitModel } from '@features/operations/OperationSubmit';
 import { balanceModel, balanceUtils } from '@entities/balance';
 
 const stepChanged = createEvent<Step>();
+const wentBackFromConfirm = createEvent();
+const stepChangedToInit = stepChanged.prepend(() => Step.INIT);
 
 type Input = {
   account: ProxiedAccount;
@@ -169,6 +171,18 @@ const $shouldRemovePureProxy = combine(
 );
 
 sample({ clock: stepChanged, target: $step });
+
+split({
+  clock: wentBackFromConfirm,
+  source: $isMultisig,
+  match: {
+    multisigWallet: (isMultisig) => isMultisig,
+  },
+  cases: {
+    multisigWallet: stepChangedToInit,
+    __: flowFinished,
+  },
+});
 
 sample({
   clock: flowStarted,
@@ -463,6 +477,7 @@ export const removePureProxyModel = {
   events: {
     flowStarted,
     stepChanged,
+    wentBackFromConfirm,
   },
   output: {
     flowFinished,

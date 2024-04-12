@@ -1,4 +1,4 @@
-import { combine, createEvent, createStore, sample } from 'effector';
+import { combine, createEvent, createStore, sample, split } from 'effector';
 import { spread, delay } from 'patronum';
 
 import {
@@ -26,6 +26,8 @@ import { proxyModel } from '@entities/proxy';
 import { balanceModel, balanceUtils } from '@entities/balance';
 
 const stepChanged = createEvent<Step>();
+const wentBackFromConfirm = createEvent();
+const stepChangedToInit = stepChanged.prepend(() => Step.INIT);
 
 type Input = {
   account: Account;
@@ -167,6 +169,18 @@ sample({
 });
 
 sample({ clock: stepChanged, target: $step });
+
+split({
+  clock: wentBackFromConfirm,
+  source: $isMultisig,
+  match: {
+    multisigWallet: (isMultisig) => isMultisig,
+  },
+  cases: {
+    multisigWallet: stepChangedToInit,
+    __: flowFinished,
+  },
+});
 
 sample({
   clock: flowStarted,
@@ -420,6 +434,7 @@ export const removeProxyModel = {
   events: {
     flowStarted,
     stepChanged,
+    wentBackFromConfirm,
   },
   output: {
     flowFinished,
