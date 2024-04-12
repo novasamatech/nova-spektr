@@ -303,14 +303,12 @@ sample({
     const existingProxyGroup = proxyGroups.find((group) => proxyUtils.isSameProxyGroup(group, newProxyGroup));
 
     return existingProxyGroup
-      ? {
-          groupsUpdated: [{ id: existingProxyGroup.id, ...newProxyGroup }],
-        }
-      : { groupsAdded: [newProxyGroup] };
+      ? { toUpdate: [{ id: existingProxyGroup.id, ...newProxyGroup }] }
+      : { toAdd: [newProxyGroup] };
   },
   target: spread({
-    groupsAdded: proxyModel.events.proxyGroupsAdded,
-    groupsUpdated: proxyModel.events.proxyGroupsUpdated,
+    toAdd: proxyModel.events.proxyGroupsAdded,
+    toUpdate: proxyModel.events.proxyGroupsUpdated,
   }),
 });
 

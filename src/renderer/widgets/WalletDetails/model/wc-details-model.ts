@@ -147,6 +147,8 @@ sample({
 
 sample({
   clock: walletModel.events.walletRemovedSuccess,
+  source: { forgetStep: $forgetStep },
+  filter: ({ forgetStep }) => forgetStep !== ForgetStep.NOT_STARTED,
   fn: () => ForgetStep.SUCCESS,
   target: $forgetStep,
 });

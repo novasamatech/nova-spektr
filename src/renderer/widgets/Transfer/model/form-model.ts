@@ -128,7 +128,7 @@ const $transferForm = createForm<FormParams>({
           validator: (_s, _f, { fee, isMultisig, signatoryBalance, multisigDeposit }) => {
             if (!isMultisig) return true;
 
-            return new BN(multisigDeposit).add(new BN(fee)).lte(new BN(signatoryBalance.balance));
+            return new BN(multisigDeposit).add(new BN(fee)).lte(new BN(signatoryBalance));
           },
         },
       ],

@@ -10,7 +10,7 @@ import { toAddress, getCreatedDateFromApi } from '@shared/lib/utils';
 import { useDebounce, useTaskQueue } from '@shared/lib/hooks';
 import { Task } from '@shared/lib/hooks/useTaskQueue';
 import type { MultisigAccount, ChainId } from '@shared/core';
-import { walletModel, accountUtils } from '@entities/wallet';
+import { accountUtils, walletModel } from '@entities/wallet';
 import { networkModel, networkUtils } from '@entities/network';
 
 type MultisigChainContextProps = {
@@ -135,7 +135,7 @@ export const MultisigChainProvider = ({ children }: PropsWithChildren) => {
       const chain = chains[chainId as ChainId];
       const addressPrefix = chain?.addressPrefix;
 
-      if (!api?.query.multisig || !account || !addressPrefix) return;
+      if (!api?.query.multisig || !account || !addressPrefix?.toString()) return;
 
       const unsubscribeMultisig = subscribeMultisigAccount(api, account as MultisigAccount);
       unsubscribeMultisigs.push(unsubscribeMultisig);
