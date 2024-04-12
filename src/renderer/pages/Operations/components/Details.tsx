@@ -6,7 +6,7 @@ import { AddressWithExplorers, WalletCardSm, WalletIcon, walletModel, ExplorersP
 import { Icon, FootnoteText, DetailRow, CaptionText } from '@shared/ui';
 import { useToggle } from '@shared/lib/hooks';
 import { cnTw, toAccountId } from '@shared/lib/utils';
-import { ExtendedChain, networkUtils } from '@entities/network';
+import { ExtendedChain, networkUtils, networkModel } from '@entities/network';
 import { AddressStyle, DescriptionBlockStyle, InteractionStyle } from '../common/constants';
 import { ChainTitle } from '@entities/chain';
 import { Account, Wallet } from '@shared/core';
@@ -40,13 +40,14 @@ export const Details = ({ tx, account, extendedChain, signatory }: Props) => {
   const activeWallet = useUnit(walletModel.$activeWallet);
   const wallets = useUnit(walletModel.$wallets);
   const accounts = useUnit(walletModel.$accounts);
+  const chains = useUnit(networkModel.$chains);
 
   const payee = getPayee(tx);
   const spawner = getSpawner(tx);
   const delegate = getDelegate(tx);
   const proxyType = getProxyType(tx);
-  const destination = getDestination(tx);
   const destinationChain = getDestinationChain(tx);
+  const destination = getDestination(tx, chains, destinationChain);
 
   const signatoryWallet = wallets.find((w) => w.id === signatory?.walletId);
 
@@ -273,7 +274,7 @@ export const Details = ({ tx, account, extendedChain, signatory }: Props) => {
               explorers={explorers}
               addressFont={AddressStyle}
               type="short"
-              address={payee.account}
+              address={payee.Account}
               addressPrefix={addressPrefix}
               wrapperClassName="-mr-2 min-w-min"
             />

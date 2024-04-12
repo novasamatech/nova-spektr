@@ -6,7 +6,7 @@ import { AddressWithExplorers, WalletCardSm, walletModel, ExplorersPopover } fro
 import { Icon, Button, FootnoteText, DetailRow } from '@shared/ui';
 import { copyToClipboard, truncate, cnTw, getAssetById } from '@shared/lib/utils';
 import { useToggle } from '@shared/lib/hooks';
-import { ExtendedChain, networkUtils } from '@entities/network';
+import { ExtendedChain, networkUtils, networkModel } from '@entities/network';
 import { AddressStyle, DescriptionBlockStyle, InteractionStyle } from '../common/constants';
 import { AssetBalance } from '@entities/asset';
 import { ChainTitle } from '@entities/chain';
@@ -23,8 +23,8 @@ import {
   getPayee,
   getDelegate,
   getDestinationChain,
-  getReal,
   getProxyType,
+  getSender,
 } from '../common/utils';
 import {
   MultisigTransaction,
@@ -50,13 +50,14 @@ export const OperationCardDetails = ({ tx, account, extendedChain }: Props) => {
   const activeWallet = useUnit(walletModel.$activeWallet);
   const wallets = useUnit(walletModel.$wallets);
   const accounts = useUnit(walletModel.$accounts);
+  const chains = useUnit(networkModel.$chains);
 
-  const real = getReal(tx);
   const payee = getPayee(tx);
+  const sender = getSender(tx);
   const delegate = getDelegate(tx);
   const proxyType = getProxyType(tx);
-  const destination = getDestination(tx);
   const destinationChain = getDestinationChain(tx);
+  const destination = getDestination(tx, chains, destinationChain);
 
   const api = extendedChain?.api;
   const defaultAsset = extendedChain?.assets[0];
@@ -132,13 +133,13 @@ export const OperationCardDetails = ({ tx, account, extendedChain }: Props) => {
 
       {isXcmTransaction(transaction) && (
         <>
-          {account && (
+          {sender && (
             <DetailRow label={t('operation.details.sender')} className={valueClass}>
               <AddressWithExplorers
                 explorers={explorers}
                 addressFont={AddressStyle}
                 type="short"
-                accountId={account.accountId}
+                address={sender}
                 addressPrefix={addressPrefix}
                 wrapperClassName="-mr-2 min-w-min"
               />
@@ -196,13 +197,13 @@ export const OperationCardDetails = ({ tx, account, extendedChain }: Props) => {
         </DetailRow>
       )}
 
-      {isRemovePureProxyTransaction(transaction) && real && (
+      {isRemovePureProxyTransaction(transaction) && sender && (
         <DetailRow label={t('operation.details.revokeFor')} className={valueClass}>
           <AddressWithExplorers
             explorers={explorers}
             addressFont={AddressStyle}
             type="short"
-            address={real}
+            address={sender}
             addressPrefix={addressPrefix}
             wrapperClassName="-mr-2 min-w-min"
           />
