@@ -36,7 +36,7 @@ export const RemoveProxy = () => {
     <BaseModal closeButton contentClass="" isOpen={isModalOpen} title={getModalTitle(step, chain)} onClose={closeModal}>
       {removeProxyUtils.isInitStep(step) && <RemoveProxyForm onGoBack={closeModal} />}
       {removeProxyUtils.isConfirmStep(step) && (
-        <Confirmation onGoBack={() => (isMultisig ? removeProxyModel.events.stepChanged(Step.INIT) : closeModal())} />
+        <Confirmation onGoBack={() => removeProxyModel.events.wentBackFromConfirm()} />
       )}
       {removeProxyUtils.isSignStep(step) && (
         <OperationSign onGoBack={() => removeProxyModel.events.stepChanged(Step.CONFIRM)} />
