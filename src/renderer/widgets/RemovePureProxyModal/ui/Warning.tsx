@@ -34,6 +34,7 @@ export const Warning = ({ onGoBack }: Props) => {
         <Input
           className="w-full"
           placeholder={t('general.input.descriptionPlaceholder')}
+          invalid={passphrase.isTouched && passphrase.hasError()}
           value={passphrase.value}
           onChange={passphrase.onChange}
           onPaste={handlePaste}
@@ -80,14 +81,13 @@ const ActionSection = ({ onGoBack }: Props) => {
   const { t } = useI18n();
 
   const canSubmit = useUnit(warningModel.$canSubmit);
-  const { isDirty } = useForm(warningModel.$warningForm);
 
   return (
     <div className="flex justify-between items-center mt-4">
       <Button variant="text" onClick={onGoBack}>
         {t('operation.goBackButton')}
       </Button>
-      <Button form="remove-pure-proxy-warning-form" pallet="error" type="submit" disabled={!canSubmit || !isDirty}>
+      <Button form="remove-pure-proxy-warning-form" pallet="error" type="submit" disabled={!canSubmit}>
         {t('pureProxyRemove.warning.revokeAuthorityButton')}
       </Button>
     </div>
