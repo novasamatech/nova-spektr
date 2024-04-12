@@ -355,8 +355,8 @@ sample({
     deposits: $deposits,
   },
   filter: ({ deposits }) => Boolean(deposits),
-  fn: ({ groups, deposits }, { wallets, accounts }) =>
-    deposits.reduce(
+  fn: ({ groups, deposits }, { wallets, accounts }) => {
+    return deposits.reduce(
       (acc, deposit) => {
         const { toAdd, toUpdate, toRemove } = proxyUtils.createProxyGroups(wallets, accounts, groups, deposit);
 
@@ -371,7 +371,8 @@ sample({
         toUpdate: [] as NoID<ProxyGroup>[],
         toRemove: [] as ProxyGroup[],
       },
-    ),
+    );
+  },
   target: spread({
     toAdd: proxyModel.events.proxyGroupsAdded,
     toUpdate: proxyModel.events.proxyGroupsUpdated,

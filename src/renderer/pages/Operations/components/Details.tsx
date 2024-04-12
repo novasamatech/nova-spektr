@@ -273,7 +273,7 @@ export const Details = ({ tx, account, extendedChain, signatory }: Props) => {
               explorers={explorers}
               addressFont={AddressStyle}
               type="short"
-              address={payee.account}
+              address={payee.Account}
               addressPrefix={addressPrefix}
               wrapperClassName="-mr-2 min-w-min"
             />
