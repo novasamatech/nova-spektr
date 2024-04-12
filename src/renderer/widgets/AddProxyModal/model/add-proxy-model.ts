@@ -151,13 +151,7 @@ sample({
 });
 
 sample({
-  clock: flowFinished,
-  fn: () => Step.NONE,
-  target: stepChanged,
-});
-
-sample({
-  clock: flowClosed,
+  clock: [flowFinished, flowClosed],
   fn: () => Step.NONE,
   target: stepChanged,
 });
