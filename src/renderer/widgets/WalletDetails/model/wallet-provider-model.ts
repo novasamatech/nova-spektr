@@ -201,7 +201,19 @@ const $walletProxyGroups = combine(
   ({ wallet, groups }): ProxyGroup[] => {
     if (!wallet || !groups[wallet.id]) return [];
 
-    return groups[wallet.id];
+    // TODO: Find why it can be doubled sometimes https://github.com/novasamatech/nova-spektr/issues/1655
+    const walletGroups = groups[wallet.id];
+    const filteredGroups = walletGroups.reduceRight((acc, group) => {
+      const id = `${group.chainId}_${group.proxiedAccountId}_${group.walletId}`;
+
+      if (!acc[id]) {
+        acc[id] = group;
+      }
+
+      return acc;
+    }, {} as Record<string, ProxyGroup>);
+
+    return Object.values(filteredGroups);
   },
 );
 
