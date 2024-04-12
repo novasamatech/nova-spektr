@@ -245,7 +245,7 @@ function parseXTokensExtrinsic(args: Omit<XTokenPalletTransferArgs, 'destWeight'
   if (!parsedPayload.isRelayToken) {
     const assetJunction = Object.keys(assetInterior)[0];
     const cols = xcmUtils.getJunctionCols<{ Parachain: number; GeneralKey: string }>(assetInterior, assetJunction);
-    parsedPayload.assetParachain = cols.Parachain;
+    parsedPayload.assetParachain = Number(xcmUtils.toRawString(cols.Parachain.toString()));
     parsedPayload.assetGeneralKey = cols.GeneralKey;
   }
 
@@ -257,7 +257,7 @@ function parseXTokensExtrinsic(args: Omit<XTokenPalletTransferArgs, 'destWeight'
   } else {
     const cols = xcmUtils.getJunctionCols<{ Parachain?: number }>(destInterior, destJunction);
     if (cols.Parachain) {
-      parsedPayload.destParachain = cols.Parachain;
+      parsedPayload.destParachain = Number(xcmUtils.toRawString(cols.Parachain.toString()));
       parsedPayload.toRelayChain = false;
     }
     parsedPayload.destAccountId = get(cols, 'AccountId32.id');

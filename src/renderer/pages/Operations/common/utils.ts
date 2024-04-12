@@ -14,6 +14,7 @@ import {
   Wallet,
   Address,
   ProxyType,
+  Chain,
 } from '@shared/core';
 import {
   DecodedTransaction,
@@ -266,14 +267,20 @@ export const getSignatoryAccounts = (
   }, []);
 };
 
-export const getDestination = (tx: MultisigTransaction): Address | undefined => {
+export const getDestination = (
+  tx: MultisigTransaction,
+  chains: Record<ChainId, Chain>,
+  destinationChain?: ChainId,
+): Address | undefined => {
   if (!tx.transaction) return undefined;
 
+  const chain = destinationChain ? chains[destinationChain] : chains[tx.transaction.chainId];
+
   if (isProxyTransaction(tx.transaction)) {
-    return tx.transaction.args.transaction.args.dest;
+    return toAddress(tx.transaction.args.transaction.args.dest, { prefix: chain.addressPrefix });
   }
 
-  return tx.transaction.args.dest;
+  return toAddress(tx.transaction.args.dest, { prefix: chain.addressPrefix });
 };
 
 export const getPayee = (tx: MultisigTransaction): { Account: Address } | string | undefined => {
@@ -306,14 +313,14 @@ export const getDestinationChain = (tx: MultisigTransaction): ChainId | undefine
   return tx.transaction.args.destinationChain;
 };
 
-export const getReal = (tx: MultisigTransaction): Address | undefined => {
+export const getSender = (tx: MultisigTransaction): Address | undefined => {
   if (!tx.transaction) return undefined;
 
   if (isProxyTransaction(tx.transaction)) {
-    return tx.transaction.args.transaction.args.real;
+    return tx.transaction.args.transaction.real;
   }
 
-  return tx.transaction.args.real;
+  return tx.transaction.address;
 };
 
 export const getSpawner = (tx: MultisigTransaction): AccountId | undefined => {
