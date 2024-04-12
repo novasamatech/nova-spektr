@@ -17,6 +17,7 @@ export const RemoveProxy = () => {
 
   const step = useUnit(removeProxyModel.$step);
   const chain = useUnit(removeProxyModel.$chain);
+  const isMultisig = useUnit(removeProxyModel.$isMultisig);
 
   const [isModalOpen, closeModal] = useModalClose(
     !removeProxyUtils.isNoneStep(step),
@@ -35,7 +36,7 @@ export const RemoveProxy = () => {
     <BaseModal closeButton contentClass="" isOpen={isModalOpen} title={getModalTitle(step, chain)} onClose={closeModal}>
       {removeProxyUtils.isInitStep(step) && <RemoveProxyForm onGoBack={closeModal} />}
       {removeProxyUtils.isConfirmStep(step) && (
-        <Confirmation onGoBack={() => removeProxyModel.events.stepChanged(Step.INIT)} />
+        <Confirmation onGoBack={() => (isMultisig ? removeProxyModel.events.stepChanged(Step.INIT) : closeModal())} />
       )}
       {removeProxyUtils.isSignStep(step) && (
         <OperationSign onGoBack={() => removeProxyModel.events.stepChanged(Step.CONFIRM)} />

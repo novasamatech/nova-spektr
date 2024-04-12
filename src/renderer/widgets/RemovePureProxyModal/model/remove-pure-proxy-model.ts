@@ -457,6 +457,7 @@ export const removePureProxyModel = {
   $chain,
   $account,
   $realAccount,
+  $isMultisig,
   $shouldRemovePureProxy,
 
   events: {

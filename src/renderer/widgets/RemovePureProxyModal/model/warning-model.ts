@@ -25,7 +25,7 @@ const $warningForm = createForm<FormParams>({
       rules: [
         {
           name: 'invalid',
-          validator: (value) => value === PASSPHRASE,
+          validator: (value) => value.toLowerCase().trim() === PASSPHRASE.toLowerCase(),
         },
       ],
     },
@@ -66,7 +66,7 @@ const $warningForm = createForm<FormParams>({
       ],
     },
   },
-  validateOn: ['submit'],
+  validateOn: ['change', 'submit'],
 });
 
 sample({
@@ -81,13 +81,18 @@ sample({
 });
 
 sample({
+  clock: formInitiated,
+  target: $warningForm.validate,
+});
+
+sample({
   clock: $warningForm.formValidated,
   target: formSubmitted,
 });
 
 export const warningModel = {
   $warningForm,
-  $canSubmit: $warningForm.$isValid,
+  $canSubmit: $warningForm.$eachValid,
 
   events: {
     formInitiated,
