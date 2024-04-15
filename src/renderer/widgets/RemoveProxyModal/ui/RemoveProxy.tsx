@@ -17,7 +17,6 @@ export const RemoveProxy = () => {
 
   const step = useUnit(removeProxyModel.$step);
   const chain = useUnit(removeProxyModel.$chain);
-  const isMultisig = useUnit(removeProxyModel.$isMultisig);
 
   const [isModalOpen, closeModal] = useModalClose(
     !removeProxyUtils.isNoneStep(step),
