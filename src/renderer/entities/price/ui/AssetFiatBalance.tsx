@@ -1,4 +1,4 @@
-import { useStoreMap, useUnit } from 'effector-react';
+import { useUnit } from 'effector-react';
 import BN from 'bignumber.js';
 
 import { Shimmering } from '@shared/ui';
@@ -20,17 +20,16 @@ export const AssetFiatBalance = ({ asset, amount, className }: Props) => {
 
   const currency = useUnit(currencyModel.$activeCurrency);
   const fiatFlag = useUnit(priceProviderModel.$fiatFlag);
-  const price = useStoreMap(priceProviderModel.$assetsPrices, (prices) => {
-    if (!currency || !prices || !asset.priceId || !prices[asset.priceId]) return;
-
-    return asset.priceId && prices[asset.priceId][currency.coingeckoId];
-  });
+  const prices = useUnit(priceProviderModel.$assetsPrices);
 
   if (!fiatFlag) return null;
 
   if (!asset.priceId || !amount) {
     return <FiatBalance amount={ZERO_BALANCE} className={className} />;
   }
+
+  const price =
+    currency && prices && asset.priceId && prices[asset.priceId] && prices[asset.priceId][currency.coingeckoId];
 
   if (!price) return <Shimmering width={56} height={18} />;
 
