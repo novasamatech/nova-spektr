@@ -18,7 +18,6 @@ type NodeEventParams = {
   oldNode?: RpcNode;
 };
 
-const rpcNodeAdded = createEvent<NodeEventParams>();
 const rpcNodeUpdated = createEvent<NodeEventParams>();
 const rpcNodeRemoved = createEvent<NodeEventParams>();
 
@@ -26,7 +25,6 @@ const updateConnectionFx = createEffect((connection: Connection): Promise<Connec
   return storageService.connections.put(connection);
 });
 
-const addRpcNodeFx = attach({ effect: updateConnectionFx });
 const removeRpcNodeFx = attach({ effect: updateConnectionFx });
 
 type DisconnectParams = {
@@ -45,20 +43,6 @@ const disconnectProviderFx = createEffect(async ({ chainId, providers }: Disconn
 
 const reconnectProviderFx = attach({ effect: disconnectProviderFx });
 
-sample({
-  clock: rpcNodeAdded,
-  source: networkModel.$connections,
-  fn: (connections, { chainId, rpcNode }) => {
-    const { customNodes, ...rest } = connections[chainId];
-
-    return {
-      ...rest,
-      customNodes: customNodes.concat(rpcNode),
-      activeNode: rpcNode,
-    };
-  },
-  target: addRpcNodeFx,
-});
 
 sample({
   clock: rpcNodeUpdated,
@@ -206,8 +190,8 @@ export const manageNetworkModel = {
     autoBalanceSelected,
     rpcNodeSelected,
     chainDisabled,
-    rpcNodeAdded,
-    rpcNodeUpdated,
-    rpcNodeRemoved,
+
+    // rpcNodeUpdated,
+    // rpcNodeRemoved,
   },
 };

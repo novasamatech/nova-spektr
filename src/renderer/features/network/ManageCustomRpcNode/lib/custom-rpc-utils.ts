@@ -1,4 +1,4 @@
-import { RpcConnectivityResult } from './custom-rpc-types';
+import { RpcConnectivityResult } from './types';
 
 export const customRpcUtils = {
   validateWsAddress,

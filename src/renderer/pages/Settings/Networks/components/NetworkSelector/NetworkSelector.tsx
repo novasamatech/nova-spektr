@@ -26,27 +26,21 @@ type SelectorPayload = {
 type Props = {
   networkItem: ExtendedChain;
   theme?: Theme;
-  onDisconnect: () => void;
+  onAddNode: () => void;
+  onEditNode: (node: RpcNode) => void;
+  onRemoveNode: (node: RpcNode) => void;
   onConnect: (type: ConnectionType, node?: RpcNode) => void;
-  onRemoveCustomNode: (node: RpcNode) => void;
-  onAddRpcNetworkChange: (network: ExtendedChain) => void;
-  onEditRpcNetworkChange: (network: ExtendedChain) => void;
-  openEditRpcModal: () => void;
-  openAddRpcModal: () => void;
-  onSelectNode: (node: RpcNode) => void;
+  onDisconnect: () => void;
 };
 
 export const NetworkSelector = ({
   networkItem,
   theme = 'light',
-  onDisconnect,
+  onAddNode,
+  onEditNode,
+  onRemoveNode,
   onConnect,
-  onRemoveCustomNode,
-  onAddRpcNetworkChange,
-  onEditRpcNetworkChange,
-  openAddRpcModal,
-  openEditRpcModal,
-  onSelectNode,
+  onDisconnect,
 }: Props) => {
   const { t } = useI18n();
   const [ref, scroll] = useScrollTo<HTMLDivElement>(TRANSITION_DURATION);
@@ -78,21 +72,14 @@ export const NetworkSelector = ({
     setSelectedNode(allNodes.find(Predicates[connectionType]));
   }, [networkItem]);
 
-  const changeConnection = async (payload?: SelectorPayload) => {
+  const onConnectionChange = async (payload?: SelectorPayload) => {
     if (!payload) {
-      onAddRpcNetworkChange(networkItem);
-      openAddRpcModal();
+      onAddNode();
     } else if (payload.type === ConnectionType.DISABLED) {
       onDisconnect();
     } else {
       onConnect(payload.type, payload.node);
     }
-  };
-
-  const onEditCustomNode = (node: RpcNode) => {
-    onEditRpcNetworkChange(networkItem);
-    onSelectNode(node);
-    openEditRpcModal();
   };
 
   const isCustomNode = (url: string): boolean => {
@@ -102,7 +89,7 @@ export const NetworkSelector = ({
   };
 
   return (
-    <Listbox value={selectedNode || {}} onChange={changeConnection}>
+    <Listbox value={selectedNode || {}} onChange={onConnectionChange}>
       {({ open }) => (
         <div className="relative">
           <Listbox.Button
@@ -155,7 +142,7 @@ export const NetworkSelector = ({
                               name="edit"
                               onClick={(event) => {
                                 event.stopPropagation();
-                                onEditCustomNode(node);
+                                onEditNode(node);
                               }}
                             />
                             {activeNode?.url !== node.url && (
@@ -163,7 +150,7 @@ export const NetworkSelector = ({
                                 name="delete"
                                 onClick={(event) => {
                                   event.stopPropagation();
-                                  onRemoveCustomNode(node);
+                                  onRemoveNode(node);
                                 }}
                               />
                             )}

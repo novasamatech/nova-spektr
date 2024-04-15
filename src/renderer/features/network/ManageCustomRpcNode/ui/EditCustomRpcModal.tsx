@@ -12,9 +12,10 @@ import { editCustomRpcModel } from '../model/edit-custom-rpc-model';
 export const EditCustomRpcModal = () => {
   const { submit } = useForm(editCustomRpcModel.$editCustomRpcForm);
 
+  const isFlowStarted = useUnit(editCustomRpcModel.$isFlowStarted);
   const network = useUnit(editCustomRpcModel.$selectedNetwork);
 
-  const [isModalOpen, closeModal] = useModalClose(false, editCustomRpcModel.events.flowFinished);
+  const [isModalOpen, closeModal] = useModalClose(isFlowStarted, editCustomRpcModel.events.flowFinished);
 
   // useEffect(() => {
   //   editCustomRpcModel.events.formInitiated();

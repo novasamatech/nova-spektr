@@ -1,11 +1,11 @@
-import { RpcConnectivityResult } from './custom-rpc-types';
+import { RpcConnectivityResult } from './types';
 import { customRpcUtils } from './custom-rpc-utils';
 import { RpcValidation } from '@shared/api/network';
 
 const RPC_NAME_MAX_LENGTH = 50;
 const RPC_NAME_MIN_LENGTH = 3;
 
-const FieldRules = {
+export const FieldRules = {
   name: [
     { name: 'required', errorText: 'settings.networks.requiredNameError', validator: Boolean },
     {
@@ -24,13 +24,8 @@ const FieldRules = {
   ],
 };
 
-const RpcValidationMapping = {
+export const RpcValidationMapping = {
   [RpcValidation.INVALID]: RpcConnectivityResult.INVALID,
   [RpcValidation.VALID]: RpcConnectivityResult.VALID,
   [RpcValidation.WRONG_NETWORK]: RpcConnectivityResult.WRONG_NETWORK,
-};
-
-export const customRpcConstants = {
-  RpcValidationMapping,
-  FieldRules,
 };

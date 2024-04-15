@@ -109,7 +109,7 @@ describe('pages/Settings/Networks/NetworkSelector', () => {
 
   test('should call edit and delete for custom node', async () => {
     const removeSpy = jest.fn();
-    render(<NetworkSelector {...defaultProps} networkItem={withCustomNetwork} onRemoveCustomNode={removeSpy} />);
+    render(<NetworkSelector {...defaultProps} networkItem={withCustomNetwork} onRemoveNode={removeSpy} />);
 
     const selectorBtn = screen.getByRole('button');
     await act(async () => selectorBtn.click());

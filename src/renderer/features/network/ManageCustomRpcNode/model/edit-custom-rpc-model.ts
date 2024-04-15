@@ -3,14 +3,13 @@ import { createForm } from 'effector-forms';
 
 import { networkService } from '@shared/api/network';
 import { ExtendedChain } from '@entities/network';
-import { VerifyRpcConnectivityFxParams, EditRpcNodeFxParams, RpcConnectivityResult } from '../lib/custom-rpc-types';
+import { VerifyRpcConnectivityFxParams, EditRpcNodeFxParams, RpcConnectivityResult } from '../lib/types';
 import { manageNetworkModel } from '@pages/Settings/Networks/model/manage-network-model';
 import { RpcNode } from '@shared/core';
-import { customRpcConstants } from '../lib/custom-rpc-constants';
+import { FieldRules, RpcValidationMapping } from '../lib/constants';
 import { customRpcUtils } from '../lib/custom-rpc-utils';
 
-const formInitiated = createEvent();
-const flowStarted = createEvent();
+const flowStarted = createEvent<RpcNode>();
 const flowFinished = createEvent();
 
 const networkChanged = createEvent<ExtendedChain>();
@@ -21,11 +20,11 @@ const $editCustomRpcForm = createForm({
   fields: {
     name: {
       init: '',
-      rules: customRpcConstants.FieldRules.name,
+      rules: FieldRules.name,
     },
     url: {
       init: '',
-      rules: customRpcConstants.FieldRules.url,
+      rules: FieldRules.url,
     },
   },
   validateOn: ['submit'],
@@ -42,7 +41,7 @@ const verifyRpcConnectivityFx = createEffect(
   async ({ chainId, url }: VerifyRpcConnectivityFxParams): Promise<RpcConnectivityResult> => {
     const validationResult = await networkService.validateRpcNode(chainId, url);
 
-    return customRpcConstants.RpcValidationMapping[validationResult];
+    return RpcValidationMapping[validationResult];
   },
 );
 
@@ -66,13 +65,7 @@ sample({
 });
 
 sample({
-  clock: flowFinished,
-  fn: () => false,
-  target: $isFlowStarted,
-});
-
-sample({
-  clock: formInitiated,
+  clock: flowStarted,
   target: [$rpcConnectivityResult.reinit, $editCustomRpcForm.reset],
 });
 
@@ -158,6 +151,12 @@ sample({
   target: $isFlowStarted.reinit,
 });
 
+sample({
+  clock: flowFinished,
+  fn: () => false,
+  target: $isFlowStarted,
+});
+
 export const editCustomRpcModel = {
   $editCustomRpcForm,
   $rpcConnectivityResult,
@@ -166,10 +165,9 @@ export const editCustomRpcModel = {
   $isLoading,
 
   events: {
-    formInitiated,
-    networkChanged,
-    nodeSelected,
     flowStarted,
     flowFinished,
+    networkChanged,
+    nodeSelected,
   },
 };

@@ -1,35 +1,34 @@
 import { createEffect, createEvent, createStore, sample } from 'effector';
 import { createForm } from 'effector-forms';
+import { combineEvents } from 'patronum';
 
 import { networkService } from '@shared/api/network';
 import { ExtendedChain } from '@entities/network';
-import { manageNetworkModel } from '@pages/Settings/Networks/model/manage-network-model';
-import { customRpcConstants } from '../lib/custom-rpc-constants';
+import { FieldRules, RpcValidationMapping } from '../lib/constants';
 import { customRpcUtils } from '../lib/custom-rpc-utils';
+import { Connection } from '@shared/core';
+import { storageService } from '@shared/api/storage';
 import {
   VerifyRpcConnectivityFxParams,
   NodeExistParam,
   RpcConnectivityResult,
   SaveRpcNodeFxParams,
-} from '../lib/custom-rpc-types';
+} from '../lib/types';
 
-const formInitiated = createEvent();
 const flowStarted = createEvent();
 const flowFinished = createEvent();
 
-const networkChanged = createEvent<ExtendedChain>();
-const rpcConnectivityVerified = createEvent<RpcConnectivityResult>();
 const nodeExistVerified = createEvent<boolean>();
 
 const $addCustomRpcForm = createForm({
   fields: {
     name: {
       init: '',
-      rules: customRpcConstants.FieldRules.name,
+      rules: FieldRules.name,
     },
     url: {
       init: '',
-      rules: customRpcConstants.FieldRules.url,
+      rules: FieldRules.url,
     },
   },
   validateOn: ['submit'],
@@ -40,25 +39,28 @@ const $rpcConnectivityResult = createStore<RpcConnectivityResult>(RpcConnectivit
 
 const $isNodeExist = createStore<boolean>(false);
 const $isFlowStarted = createStore<boolean>(false);
-const $isLoading = createStore<boolean>(false);
 
 const verifyRpcConnectivityFx = createEffect(
   async ({ chainId, url }: VerifyRpcConnectivityFxParams): Promise<RpcConnectivityResult> => {
     const validationResult = await networkService.validateRpcNode(chainId, url);
 
-    return customRpcConstants.RpcValidationMapping[validationResult];
+    return RpcValidationMapping[validationResult];
   },
 );
 
-const saveRpcNodeFx = createEffect(async ({ network, form }: SaveRpcNodeFxParams) => {
-  manageNetworkModel.events.rpcNodeAdded({
-    chainId: network?.chainId,
-    rpcNode: {
-      name: form.name,
-      url: form.url,
-    },
-  });
+const addRpcNodeFx = createEffect((connection: Connection): Promise<Connection | undefined> => {
+  return storageService.connections.put(connection);
 });
+
+// const saveRpcNodeFx = createEffect(({ network, form }: SaveRpcNodeFxParams) => {
+//   manageNetworkModel.events.rpcNodeAdded({
+//     chainId: network?.chainId,
+//     rpcNode: {
+//       name: form.name,
+//       url: form.url,
+//     },
+//   });
+// });
 
 sample({
   clock: flowStarted,
@@ -67,36 +69,15 @@ sample({
 });
 
 sample({
-  clock: flowFinished,
-  fn: () => false,
-  target: $isFlowStarted,
-});
-
-sample({
-  clock: formInitiated,
-  target: [$rpcConnectivityResult.reinit, $isNodeExist.reinit, $addCustomRpcForm.reset],
-});
-
-sample({
-  clock: verifyRpcConnectivityFx.pending,
-  target: $isLoading,
+  clock: flowStarted,
+  target: [$addCustomRpcForm.reset, $rpcConnectivityResult.reinit, $isNodeExist.reinit],
 });
 
 // reset the rpc validations when the url field is changed
-sample({
-  clock: $addCustomRpcForm.fields.url.onChange,
-  target: [$rpcConnectivityResult.reinit, $isNodeExist.reinit],
-});
-
-sample({
-  clock: networkChanged,
-  target: $selectedNetwork,
-});
-
-sample({
-  clock: rpcConnectivityVerified,
-  target: $rpcConnectivityResult,
-});
+// sample({
+//   clock: $addCustomRpcForm.fields.url.onChange,
+//   target: [$rpcConnectivityResult.reinit, $isNodeExist.reinit],
+// });
 
 sample({
   clock: nodeExistVerified,
@@ -104,23 +85,7 @@ sample({
 });
 
 sample({
-  clock: verifyRpcConnectivityFx.doneData,
-  target: rpcConnectivityVerified,
-});
-
-sample({
-  clock: verifyRpcConnectivityFx.fail,
-  fn: ({ error }: { error: Error }) => {
-    console.warn(error);
-
-    return RpcConnectivityResult.INIT;
-  },
-  target: $rpcConnectivityResult,
-});
-
-// when the form is submitted, we need to verify if the node is responding
-sample({
-  clock: $addCustomRpcForm.submit,
+  clock: $addCustomRpcForm.formValidated,
   source: {
     network: $selectedNetwork,
     url: $addCustomRpcForm.fields.url.$value,
@@ -132,7 +97,18 @@ sample({
 });
 
 sample({
-  clock: $addCustomRpcForm.submit,
+  clock: verifyRpcConnectivityFx.doneData,
+  target: $rpcConnectivityResult,
+});
+
+sample({
+  clock: verifyRpcConnectivityFx.fail,
+  fn: () => RpcConnectivityResult.INIT,
+  target: $rpcConnectivityResult,
+});
+
+sample({
+  clock: $addCustomRpcForm.formValidated,
   source: {
     network: $selectedNetwork,
     url: $addCustomRpcForm.fields.url.$value,
@@ -147,8 +123,7 @@ sample({
   target: nodeExistVerified,
 });
 
-// if we are done verifying the form data and it is valid
-// we can proceed with saving the new rpc node
+// TODO: validate existing node inside form schema
 sample({
   clock: [nodeExistVerified, verifyRpcConnectivityFx.doneData],
   source: {
@@ -163,12 +138,22 @@ sample({
 
     return isFormValid && !isNodeExist && customRpcUtils.isRpcConnectivityValid(rpcConnectivityResult);
   },
-  target: saveRpcNodeFx,
+  fn: (connections, { chainId, rpcNode }) => {
+    const { customNodes, ...rest } = connections[chainId];
+
+    return {
+      ...rest,
+      customNodes: customNodes.concat(rpcNode),
+      activeNode: rpcNode,
+    };
+  },
+  target: addRpcNodeFx,
 });
 
 sample({
-  clock: saveRpcNodeFx.done,
-  target: $isFlowStarted.reinit,
+  clock: flowFinished,
+  fn: () => false,
+  target: $isFlowStarted,
 });
 
 export const addCustomRpcModel = {
@@ -177,11 +162,9 @@ export const addCustomRpcModel = {
   $selectedNetwork,
   $isNodeExist,
   $isFlowStarted,
-  $isLoading,
+  $isLoading: verifyRpcConnectivityFx.pending,
 
   events: {
-    formInitiated,
-    networkChanged,
     flowStarted,
     flowFinished,
   },

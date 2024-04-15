@@ -12,9 +12,10 @@ import { useModalClose } from '@shared/lib/hooks';
 export const AddCustomRpcModal = () => {
   const { submit } = useForm(addCustomRpcModel.$addCustomRpcForm);
 
+  const isFlowStarted = useUnit(addCustomRpcModel.$isFlowStarted);
   const network = useUnit(addCustomRpcModel.$selectedNetwork);
 
-  const [isModalOpen, closeModal] = useModalClose(false, addCustomRpcModel.events.flowFinished);
+  const [isModalOpen, closeModal] = useModalClose(isFlowStarted, addCustomRpcModel.events.flowFinished);
 
   // useEffect(() => {
   //   addCustomRpcModel.events.formInitiated();
