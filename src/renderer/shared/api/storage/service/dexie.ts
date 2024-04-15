@@ -66,6 +66,10 @@ class DexieStorage extends Dexie {
       proxyGroups: '++id',
       connections: '++id',
       notifications: '++id',
+      metadata: null,
+    });
+
+    this.version(22).stores({
       metadata: '++id',
     });
 

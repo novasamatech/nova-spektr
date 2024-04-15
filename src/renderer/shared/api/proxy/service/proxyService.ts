@@ -30,7 +30,7 @@ async function getProxiesForAccount(api: ApiPromise, account: Address): Promise<
 
 function getProxyDeposit(api: ApiPromise, deposit: string, proxyNumber: number): string {
   const { proxyDepositFactor, proxyDepositBase } = api.consts.proxy;
-  const proxyDeposit = proxyDepositBase.muln(proxyNumber).add(proxyDepositFactor);
+  const proxyDeposit = proxyDepositFactor.muln(proxyNumber).add(proxyDepositBase);
 
   return proxyDeposit.sub(new BN(deposit)).toString();
 }

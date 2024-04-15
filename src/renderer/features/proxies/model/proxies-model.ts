@@ -206,7 +206,7 @@ const createProxiedWalletsFx = createEffect(
         if (!proxiedCreatedResult) return acc;
 
         acc.accounts.push(...proxiedCreatedResult.accounts);
-        acc.wallets = acc.wallets.concat(proxiedCreatedResult.wallet);
+        acc.wallets.push(proxiedCreatedResult.wallet);
 
         return acc;
       },
@@ -237,7 +237,9 @@ sample({
   },
   filter: ({ endpoint }) => Boolean(endpoint),
   fn: ({ connections, chains, endpoint }) => ({
-    chains: Object.values(chains).filter(proxiesUtils.isRegularProxy),
+    chains: Object.values(chains).filter(
+      (chain) => proxiesUtils.isRegularProxy(chain) || proxiesUtils.isPureProxy(chain),
+    ),
     connections,
     endpoint: endpoint!,
   }),
@@ -353,8 +355,8 @@ sample({
     deposits: $deposits,
   },
   filter: ({ deposits }) => Boolean(deposits),
-  fn: ({ groups, deposits }, { wallets, accounts }) =>
-    deposits.reduce(
+  fn: ({ groups, deposits }, { wallets, accounts }) => {
+    return deposits.reduce(
       (acc, deposit) => {
         const { toAdd, toUpdate, toRemove } = proxyUtils.createProxyGroups(wallets, accounts, groups, deposit);
 
@@ -369,7 +371,8 @@ sample({
         toUpdate: [] as NoID<ProxyGroup>[],
         toRemove: [] as ProxyGroup[],
       },
-    ),
+    );
+  },
   target: spread({
     toAdd: proxyModel.events.proxyGroupsAdded,
     toUpdate: proxyModel.events.proxyGroupsUpdated,

@@ -42,11 +42,29 @@ export const transactionService = {
   hasMultisig,
   hasProxy,
 
+  getTransactionFee,
+  getMultisigDeposit,
+
   getSignedExtrinsic,
   submitAndWatchExtrinsic,
+
   getTxWrappers,
   getWrappedTransaction,
 };
+
+async function getTransactionFee(transaction: Transaction, api: ApiPromise): Promise<string> {
+  const extrinsic = getExtrinsic[transaction.type](transaction.args, api);
+  const paymentInfo = await extrinsic.paymentInfo(transaction.address);
+
+  return paymentInfo.partialFee.toString();
+}
+
+function getMultisigDeposit(threshold: Threshold, api: ApiPromise): string {
+  const { depositFactor, depositBase } = api.consts.multisig;
+  const deposit = depositFactor.muln(threshold).add(depositBase);
+
+  return deposit.toString();
+}
 
 async function getSignedExtrinsic(
   unsigned: UnsignedTransaction,
@@ -193,9 +211,10 @@ function getMultisigWrapper({ wallets, accounts, account, signatories = [] }: Om
   };
 
   if (signatories.length === 0) return [wrapper];
-  const signatoryAccount = signers.find((s) => s.id === signatories[0].id);
 
+  const signatoryAccount = signers.find((s) => s.id === signatories[0].id);
   if (!signatoryAccount) return [wrapper];
+
   const signatoryWallet = walletUtils.getWalletById(wallets, signatoryAccount.walletId);
 
   const nextWrappers = getTxWrappers({
@@ -262,6 +281,7 @@ function getWrappedTransaction({ api, addressPrefix, transaction, txWrappers }: 
         });
         acc.multisigTx = acc.wrappedTx;
       }
+
       if (hasProxy([txWrapper])) {
         acc.wrappedTx = wrapAsProxy({
           addressPrefix,
@@ -312,13 +332,6 @@ export const useTransaction = (): ITransactionService => {
     };
   };
 
-  const getTransactionFee = async (transaction: Transaction, api: ApiPromise): Promise<string> => {
-    const extrinsic = getExtrinsic[transaction.type](transaction.args, api);
-    const paymentInfo = await extrinsic.paymentInfo(transaction.address);
-
-    return paymentInfo.partialFee.toString();
-  };
-
   const getExtrinsicWeight = async (extrinsic: SubmittableExtrinsic<'promise'>): Promise<Weight> => {
     const paymentInfo = await extrinsic.paymentInfo(extrinsic.signer);
 
@@ -330,13 +343,6 @@ export const useTransaction = (): ITransactionService => {
     const { weight } = await extrinsic.paymentInfo(transaction.address);
 
     return weight;
-  };
-
-  const getMultisigDeposit = (threshold: Threshold, api: ApiPromise): string => {
-    const { depositFactor, depositBase } = api.consts.multisig;
-    const deposit = depositFactor.muln(threshold).add(depositBase);
-
-    return deposit.toString();
   };
 
   const verifySignature = (payload: Uint8Array, signature: HexString, accountId: AccountId): Boolean => {
@@ -381,12 +387,8 @@ export const useTransaction = (): ITransactionService => {
 
   return {
     createPayload,
-    getSignedExtrinsic,
-    submitAndWatchExtrinsic,
-    getTransactionFee,
     getExtrinsicWeight,
     getTxWeight,
-    getMultisigDeposit,
     getTransactionHash,
     decodeCallData,
     verifySignature,

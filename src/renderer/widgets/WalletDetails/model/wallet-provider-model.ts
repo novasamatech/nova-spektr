@@ -9,7 +9,8 @@ import { walletDetailsUtils } from '../lib/utils';
 import type { MultishardMap, VaultMap } from '../lib/types';
 import { proxyModel, proxyUtils } from '@entities/proxy';
 import { networkModel } from '@entities/network';
-import { removeProxyModel } from '@widgets/RemoveProxy';
+import { proxiesModel } from '@features/proxies';
+import { addProxyModel } from '../../AddProxyModal';
 import type {
   Account,
   Signatory,
@@ -25,7 +26,7 @@ import type {
 
 const removeProxy = createEvent<ProxyAccount>();
 
-const $proxyForRemoval = createStore<ProxyAccount | null>(null).reset(removeProxyModel.events.proxyRemoved);
+const $proxyForRemoval = createStore<ProxyAccount | null>(null);
 
 const $accounts = combine(
   {
@@ -194,12 +195,25 @@ const $chainsProxies = combine(
 const $walletProxyGroups = combine(
   {
     wallet: walletSelectModel.$walletForDetails,
+    chainsProxies: $chainsProxies,
     groups: proxyModel.$walletsProxyGroups,
   },
   ({ wallet, groups }): ProxyGroup[] => {
     if (!wallet || !groups[wallet.id]) return [];
 
-    return groups[wallet.id];
+    // TODO: Find why it can be doubled sometimes https://github.com/novasamatech/nova-spektr/issues/1655
+    const walletGroups = groups[wallet.id];
+    const filteredGroups = walletGroups.reduceRight((acc, group) => {
+      const id = `${group.chainId}_${group.proxiedAccountId}_${group.walletId}`;
+
+      if (!acc[id]) {
+        acc[id] = group;
+      }
+
+      return acc;
+    }, {} as Record<string, ProxyGroup>);
+
+    return Object.values(filteredGroups);
   },
 );
 
@@ -234,6 +248,11 @@ const $hasProxies = combine($chainsProxies, (chainsProxies) => {
 sample({
   source: removeProxy,
   target: $proxyForRemoval,
+});
+
+sample({
+  clock: addProxyModel.output.flowFinished,
+  target: proxiesModel.events.workerStarted,
 });
 
 export const walletProviderModel = {

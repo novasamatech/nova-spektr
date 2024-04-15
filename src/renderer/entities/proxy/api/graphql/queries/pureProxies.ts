@@ -5,6 +5,8 @@ export const FILTER_PURE_PROXIED_ACCOUNT_IDS = gql`
     pureProxies(filter: { id: { in: $accountIds } }) {
       nodes {
         id
+        blockNumber
+        extrinsicIndex
       }
     }
   }

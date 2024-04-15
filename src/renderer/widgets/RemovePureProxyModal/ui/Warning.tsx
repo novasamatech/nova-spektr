@@ -34,6 +34,7 @@ export const Warning = ({ onGoBack }: Props) => {
         <Input
           className="w-full"
           placeholder={t('general.input.descriptionPlaceholder')}
+          invalid={passphrase.isTouched && passphrase.hasError()}
           value={passphrase.value}
           onChange={passphrase.onChange}
           onPaste={handlePaste}
@@ -42,28 +43,28 @@ export const Warning = ({ onGoBack }: Props) => {
           <Trans t={t} i18nKey="pureProxyRemove.warning.inputHint" />
         </FootnoteText>
         <div>
-          <Checkbox value={isCorrectProxy.value} onChange={({ target }) => isCorrectProxy.onChange(target.checked)}>
+          <Checkbox checked={isCorrectProxy.value} onChange={({ target }) => isCorrectProxy.onChange(target.checked)}>
             <FootnoteText>
               <Trans t={t} i18nKey="pureProxyRemove.warning.isCorrectProxyCheckbox" />
             </FootnoteText>
           </Checkbox>
         </div>
         <div>
-          <Checkbox value={isIrreversible.value} onChange={({ target }) => isIrreversible.onChange(target.checked)}>
+          <Checkbox checked={isIrreversible.value} onChange={({ target }) => isIrreversible.onChange(target.checked)}>
             <FootnoteText>
               <Trans t={t} i18nKey="pureProxyRemove.warning.isIrreversibleCheckbox" />
             </FootnoteText>
           </Checkbox>
         </div>
         <div>
-          <Checkbox value={isInaccessible.value} onChange={({ target }) => isInaccessible.onChange(target.checked)}>
+          <Checkbox checked={isInaccessible.value} onChange={({ target }) => isInaccessible.onChange(target.checked)}>
             <FootnoteText>
               <Trans t={t} i18nKey="pureProxyRemove.warning.isInaccessibleCheckbox" />
             </FootnoteText>
           </Checkbox>
         </div>
         <div>
-          <Checkbox value={lossOfFunds.value} onChange={({ target }) => lossOfFunds.onChange(target.checked)}>
+          <Checkbox checked={lossOfFunds.value} onChange={({ target }) => lossOfFunds.onChange(target.checked)}>
             <FootnoteText>
               <Trans t={t} i18nKey="pureProxyRemove.warning.lossOfFundsCheckbox" />
             </FootnoteText>
@@ -80,14 +81,13 @@ const ActionSection = ({ onGoBack }: Props) => {
   const { t } = useI18n();
 
   const canSubmit = useUnit(warningModel.$canSubmit);
-  const { isDirty } = useForm(warningModel.$warningForm);
 
   return (
     <div className="flex justify-between items-center mt-4">
       <Button variant="text" onClick={onGoBack}>
         {t('operation.goBackButton')}
       </Button>
-      <Button form="remove-pure-proxy-warning-form" pallet="error" type="submit" disabled={!canSubmit || !isDirty}>
+      <Button form="remove-pure-proxy-warning-form" pallet="error" type="submit" disabled={!canSubmit}>
         {t('pureProxyRemove.warning.revokeAuthorityButton')}
       </Button>
     </div>

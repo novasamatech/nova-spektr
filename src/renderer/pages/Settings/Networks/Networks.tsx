@@ -12,6 +12,8 @@ import type { RpcNode, ChainId } from '@shared/core';
 import { ConnectionType } from '@shared/core';
 import { networkModel, ExtendedChain, networkUtils } from '@entities/network';
 import { manageNetworkModel } from './model/manage-network-model';
+import { networksOverviewModel } from './model/networks-overview-model';
+import { SelectorPayload } from '@features/network/NetworkSelector';
 import {
   AddCustomRpcModal,
   addCustomRpcModel,
@@ -23,11 +25,11 @@ import {
   ActiveNetwork,
   NetworksFilter,
   networksFilterModel,
+  NetworkSelector,
+  networkSelectorModel,
   EditCustomRpcModal,
   editCustomRpcModel,
 } from '@features/network';
-
-import './model/networks-overview-model';
 
 const MAX_LIGHT_CLIENTS = 3;
 
@@ -43,8 +45,8 @@ export const Networks = () => {
   const inactiveNetworks = useUnit(inactiveNetworksModel.$inactiveNetworks);
   const connections = useUnit(networkModel.$connections);
   const filterQuery = useUnit(networksFilterModel.$filterQuery);
-  // const isAddFlowStarted = useUnit(addCustomRpcModel.$isFlowStarted);
-  // const isEditFlowStarted = useUnit(editCustomRpcModel.$isFlowStarted);
+  const activeConnectionsMap = useUnit(networksOverviewModel.$activeConnectionsMap);
+  const inactiveConnectionsMap = useUnit(networksOverviewModel.$inactiveConnectionsMap);
 
   // const [isAddCustomRpcModalOpen, closeAddCustomRpcModal] = useModalClose(
   //   isAddFlowStarted,
@@ -130,7 +132,7 @@ export const Networks = () => {
       }
       if (!proceed) return;
 
-      manageNetworkModel.events.chainDisabled(connection.chainId);
+      networkSelectorModel.events.chainDisabled(connection.chainId);
     };
   };
 
@@ -151,11 +153,11 @@ export const Networks = () => {
       }
 
       if (type === ConnectionType.LIGHT_CLIENT) {
-        manageNetworkModel.events.lightClientSelected(chainId);
+        networkSelectorModel.events.lightClientSelected(chainId);
       } else if (type === ConnectionType.AUTO_BALANCE) {
-        manageNetworkModel.events.autoBalanceSelected(chainId);
+        networkSelectorModel.events.autoBalanceSelected(chainId);
       } else if (node) {
-        manageNetworkModel.events.rpcNodeSelected({ chainId, node });
+        networkSelectorModel.events.rpcNodeSelected({ chainId, node });
       }
     };
   };
@@ -180,12 +182,11 @@ export const Networks = () => {
           {(network) => (
             <InactiveNetwork networkItem={network}>
               <NetworkSelector
-                networkItem={network}
-                onAddNode={addCustomRpcModel.events.flowStarted}
-                onEditNode={editCustomRpcModel.events.flowStarted}
-                onRemoveNode={removeCustomNode(network.chainId)}
-                onConnect={connectToNode(network)}
-                onDisconnect={disableNetwork(network)}
+                nodesList={inactiveConnectionsMap[network.chainId].nodes}
+                selectedConnection={inactiveConnectionsMap[network.chainId].selectedNode}
+                onChange={changeConnection(network)}
+                onRemoveCustomNode={removeCustomNode(network.chainId)}
+                onChangeCustomNode={changeCustomNode(network)}
               />
             </InactiveNetwork>
           )}
@@ -199,12 +200,11 @@ export const Networks = () => {
           {(network) => (
             <ActiveNetwork networkItem={network}>
               <NetworkSelector
-                networkItem={network}
-                onEditNode={editCustomRpcModel.events.flowStarted}
-                onAddNode={addCustomRpcModel.events.flowStarted}
-                onRemoveNode={removeCustomNode(network.chainId)}
-                onConnect={connectToNode(network)}
-                onDisconnect={disableNetwork(network)}
+                nodesList={activeConnectionsMap[network.chainId].nodes}
+                selectedConnection={activeConnectionsMap[network.chainId].selectedNode}
+                onChange={changeConnection(network)}
+                onRemoveCustomNode={removeCustomNode(network.chainId)}
+                onChangeCustomNode={changeCustomNode(network)}
               />
             </ActiveNetwork>
           )}

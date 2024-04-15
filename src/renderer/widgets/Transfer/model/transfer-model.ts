@@ -98,9 +98,9 @@ sample({
   fn: ({ transferStore, networkStore, wrappedTx }) => ({
     event: {
       chain: networkStore!.chain,
-      account: transferStore!.account,
+      accounts: [transferStore!.account],
       signatory: transferStore!.signatory,
-      transaction: wrappedTx!,
+      transactions: [wrappedTx!],
     },
     step: Step.SIGN,
   }),
@@ -119,7 +119,7 @@ sample({
     coreTx: $coreTx,
   },
   filter: (transferData) => {
-    return Boolean(transferData.transferStore) && Boolean(transferData.coreTx);
+    return Boolean(transferData.transferStore) && Boolean(transferData.coreTx) && Boolean(transferData.networkStore);
   },
   fn: (transferData, signParams) => ({
     event: {
@@ -128,8 +128,8 @@ sample({
       account: transferData.transferStore!.account,
       signatory: transferData.transferStore!.signatory,
       description: transferData.transferStore!.description,
-      transaction: transferData.coreTx!,
-      multisigTx: transferData.multisigTx || undefined,
+      transactions: [transferData.coreTx!],
+      multisigTxs: transferData.multisigTx ? [transferData.multisigTx] : [],
     },
     step: Step.SUBMIT,
   }),

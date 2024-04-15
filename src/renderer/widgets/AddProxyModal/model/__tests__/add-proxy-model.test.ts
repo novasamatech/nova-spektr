@@ -7,6 +7,7 @@ import { signModel } from '@features/operations/OperationSign/model/sign-model';
 import { submitModel } from '@features/operations/OperationSubmit';
 import { storageService } from '@shared/api/storage';
 import { initiatorWallet, signerWallet, testApi, testChain } from './mock';
+import { Transaction } from '@entities/transaction';
 import { Account, ConnectionStatus, ProxyType } from '@shared/core';
 import { Step } from '../../lib/types';
 import { formModel } from '../form-model';
@@ -18,7 +19,10 @@ jest.mock('@shared/lib/utils', () => ({
   getProxyTypes: jest.fn().mockReturnValue(['Any', 'Staking']),
 }));
 
-describe('widgets/AddPureProxyModal/model/add-proxy-model', () => {
+describe('widgets/AddProxyModal/model/add-proxy-model', () => {
+  beforeAll(() => {
+    jest.useFakeTimers();
+  });
   beforeEach(() => {
     jest.restoreAllMocks();
   });
@@ -45,14 +49,21 @@ describe('widgets/AddPureProxyModal/model/add-proxy-model', () => {
     await allSettled(formModel.output.formSubmitted, {
       scope,
       params: {
-        proxyDeposit: '1',
-        oldProxyDeposit: '0',
-        proxyNumber: 1,
-        chain: testChain,
-        account: { accountId: '0x00' } as unknown as Account,
-        delegate: '0x00',
-        proxyType: ProxyType.ANY,
-        description: '',
+        transactions: {
+          wrappedTx: {} as Transaction,
+          coreTx: {} as Transaction,
+        },
+        formData: {
+          chain: testChain,
+          account: { accountId: '0x00' } as unknown as Account,
+          delegate: '0x00',
+          proxyType: ProxyType.ANY,
+          description: '',
+          proxyDeposit: '1',
+          proxyNumber: 1,
+          fee: '1',
+          multisigDeposit: '0',
+        },
       },
     });
 
@@ -65,14 +76,28 @@ describe('widgets/AddPureProxyModal/model/add-proxy-model', () => {
     await allSettled(signModel.output.formSubmitted, {
       scope,
       params: {
-        signature: '0x00',
-        unsignedTx: {} as unknown as UnsignedTransaction,
+        signatures: ['0x00'],
+        unsignedTxs: [{}] as unknown as UnsignedTransaction[],
       },
     });
 
     expect(scope.getState(addProxyModel.$step)).toEqual(Step.SUBMIT);
 
-    await allSettled(submitModel.output.formSubmitted, { scope });
+    const action = allSettled(submitModel.output.formSubmitted, {
+      scope,
+      params: {
+        timepoint: {
+          height: 1,
+          index: 1,
+        },
+        extrinsicHash: '0x00',
+        isFinalApprove: true,
+        multisigError: '',
+      },
+    });
+
+    await jest.runAllTimersAsync();
+    await action;
 
     expect(scope.getState(addProxyModel.$step)).toEqual(Step.NONE);
   });

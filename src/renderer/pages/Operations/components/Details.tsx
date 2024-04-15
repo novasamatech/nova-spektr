@@ -6,15 +6,15 @@ import { AddressWithExplorers, WalletCardSm, WalletIcon, walletModel, ExplorersP
 import { Icon, FootnoteText, DetailRow, CaptionText } from '@shared/ui';
 import { useToggle } from '@shared/lib/hooks';
 import { cnTw, toAccountId } from '@shared/lib/utils';
-import { ExtendedChain, networkUtils } from '@entities/network';
+import { ExtendedChain, networkUtils, networkModel } from '@entities/network';
 import { AddressStyle, DescriptionBlockStyle, InteractionStyle } from '../common/constants';
 import { ChainTitle } from '@entities/chain';
 import { Account, Wallet } from '@shared/core';
 import { getTransactionFromMultisigTx } from '@entities/multisig';
-import type { Address, MultisigAccount, ProxyType, Validator } from '@shared/core';
+import type { Address, MultisigAccount, Validator } from '@shared/core';
 import { useValidatorsMap, SelectedValidatorsModal } from '@entities/staking';
 import { proxyUtils } from '@entities/proxy';
-import { getDestination } from '../common/utils';
+import { getDestination, getPayee, getDelegate, getProxyType, getDestinationChain, getSpawner } from '../common/utils';
 import {
   MultisigTransaction,
   Transaction,
@@ -40,6 +40,14 @@ export const Details = ({ tx, account, extendedChain, signatory }: Props) => {
   const activeWallet = useUnit(walletModel.$activeWallet);
   const wallets = useUnit(walletModel.$wallets);
   const accounts = useUnit(walletModel.$accounts);
+  const chains = useUnit(networkModel.$chains);
+
+  const payee = getPayee(tx);
+  const spawner = getSpawner(tx);
+  const delegate = getDelegate(tx);
+  const proxyType = getProxyType(tx);
+  const destinationChain = getDestinationChain(tx);
+  const destination = getDestination(tx, chains, destinationChain);
 
   const signatoryWallet = wallets.find((w) => w.id === signatory?.walletId);
 
@@ -77,8 +85,6 @@ export const Details = ({ tx, account, extendedChain, signatory }: Props) => {
 
     return { wallet: proxiedWallet, account: proxiedAccount };
   }, [tx, wallets, accounts]);
-
-  const destination = useMemo(() => getDestination(tx), [tx]);
 
   const hasSender = isXcmTransaction(tx.transaction) || isTransferTransaction(tx.transaction);
 
@@ -180,7 +186,6 @@ export const Details = ({ tx, account, extendedChain, signatory }: Props) => {
           <SelectedValidatorsModal
             isOpen={isValidatorsOpen}
             validators={selectedValidators}
-            explorers={explorers}
             onClose={toggleValidators}
           />
         </>
@@ -188,45 +193,43 @@ export const Details = ({ tx, account, extendedChain, signatory }: Props) => {
 
       {isDividerVisible && <hr className="border-filter-border" />}
 
-      {isAddProxyTransaction(transaction) && (
+      {isAddProxyTransaction(transaction) && delegate && (
         <DetailRow label={t('operation.details.delegateTo')} className="text-text-secondary">
           <AddressWithExplorers
             explorers={explorers}
             addressFont={AddressStyle}
             type="short"
-            accountId={transaction?.args.delegate}
+            address={delegate}
             addressPrefix={addressPrefix}
             wrapperClassName="-mr-2 min-w-min"
           />
         </DetailRow>
       )}
 
-      {isRemoveProxyTransaction(transaction) && (
+      {isRemoveProxyTransaction(transaction) && delegate && (
         <DetailRow label={t('operation.details.revokeFor')} className="text-text-secondary">
           <AddressWithExplorers
             explorers={explorers}
             addressFont={AddressStyle}
             type="short"
-            accountId={transaction?.args.delegate}
+            address={delegate}
             addressPrefix={addressPrefix}
             wrapperClassName="-mr-2 min-w-min"
           />
         </DetailRow>
       )}
 
-      {isRemovePureProxyTransaction(transaction) && (
+      {isRemovePureProxyTransaction(transaction) && proxyType && spawner && (
         <>
           <DetailRow label={t('operation.details.revokeAccessType')}>
-            <FootnoteText className="text-text-secondary">
-              {t(proxyUtils.getProxyTypeName(transaction?.args.proxyType as ProxyType))}
-            </FootnoteText>
+            <FootnoteText className="text-text-secondary">{t(proxyUtils.getProxyTypeName(proxyType))}</FootnoteText>
           </DetailRow>
           <DetailRow label={t('operation.details.revokeFor')} className="text-text-secondary">
             <AddressWithExplorers
               explorers={explorers}
               addressFont={AddressStyle}
               type="short"
-              accountId={transaction?.args.spawner}
+              accountId={spawner}
               addressPrefix={addressPrefix}
               wrapperClassName="-mr-2 min-w-min"
             />
@@ -234,17 +237,15 @@ export const Details = ({ tx, account, extendedChain, signatory }: Props) => {
         </>
       )}
 
-      {isManageProxyTransaction(transaction) && (
+      {isManageProxyTransaction(transaction) && proxyType && (
         <DetailRow label={t('operation.details.accessType')}>
-          <FootnoteText className="text-text-secondary">
-            {t(proxyUtils.getProxyTypeName(transaction?.args.proxyType as ProxyType))}
-          </FootnoteText>
+          <FootnoteText className="text-text-secondary">{t(proxyUtils.getProxyTypeName(proxyType))}</FootnoteText>
         </DetailRow>
       )}
 
-      {isXcmTransaction(tx.transaction) && transaction?.args.destinationChain && (
+      {isXcmTransaction(tx.transaction) && destinationChain && (
         <DetailRow label={t('operation.details.toNetwork')}>
-          <ChainTitle chainId={transaction?.args.destinationChain} />
+          <ChainTitle chainId={destinationChain} />
         </DetailRow>
       )}
 
@@ -261,22 +262,22 @@ export const Details = ({ tx, account, extendedChain, signatory }: Props) => {
         </DetailRow>
       )}
 
-      {transaction?.args.payee && (
+      {payee && (
         <DetailRow
           label={t('operation.details.payee')}
-          className={transaction.args.payee.Account ? 'text-text-secondary' : 'pr-0'}
+          className={typeof payee === 'string' ? 'pr-0' : 'text-text-secondary'}
         >
-          {transaction.args.payee.Account ? (
+          {typeof payee === 'string' ? (
+            payee
+          ) : (
             <AddressWithExplorers
               explorers={explorers}
               addressFont={AddressStyle}
               type="short"
-              address={transaction.args.payee.Account}
+              address={payee.Account}
               addressPrefix={addressPrefix}
               wrapperClassName="-mr-2 min-w-min"
             />
-          ) : (
-            transaction.args.payee
           )}
         </DetailRow>
       )}

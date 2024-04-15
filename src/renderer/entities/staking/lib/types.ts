@@ -10,7 +10,7 @@ export interface IStakingDataService {
   subscribeStaking: (
     chainId: ChainId,
     api: ApiPromise,
-    accounts: Address[],
+    addresses: Address[],
     callback: (staking: StakingMap) => void,
   ) => Promise<() => void>;
   getMinNominatorBond: (api: ApiPromise) => Promise<string>;
@@ -27,15 +27,6 @@ export interface IStakingDataService {
 export interface IStakingRewardsService {
   rewards: RewardsMap;
   isRewardsLoading: boolean;
-}
-
-// =====================================================
-// ========== IValidatorsService interface =============
-// =====================================================
-
-export interface IEraService {
-  subscribeActiveEra: (api: ApiPromise, callback: (era?: EraIndex) => void) => Promise<() => void>;
-  getTimeToEra: (api: ApiPromise, era?: EraIndex) => Promise<number>;
 }
 
 // =====================================================

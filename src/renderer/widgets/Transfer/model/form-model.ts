@@ -15,6 +15,7 @@ import {
   transactionService,
   MultisigTxWrapper,
   ProxyTxWrapper,
+  DESCRIPTION_LENGTH,
 } from '@entities/transaction';
 import {
   transferableAmount,
@@ -25,6 +26,7 @@ import {
   toAccountId,
   toAddress,
   dictionary,
+  ZERO_BALANCE,
 } from '@shared/lib/utils';
 
 type BalanceMap = Record<'balance' | 'native', string>;
@@ -70,12 +72,12 @@ const $isProxy = createStore<boolean>(false);
 
 const $isMyselfXcmOpened = createStore<boolean>(false).reset(xcmDestinationCancelled);
 
-const $accountBalance = createStore<BalanceMap>({ balance: '0', native: '0' });
-const $signatoryBalance = createStore<BalanceMap>({ balance: '0', native: '0' });
-const $proxyBalance = createStore<BalanceMap>({ balance: '0', native: '0' });
+const $accountBalance = createStore<BalanceMap>({ balance: ZERO_BALANCE, native: ZERO_BALANCE });
+const $signatoryBalance = createStore<string>(ZERO_BALANCE);
+const $proxyBalance = createStore<BalanceMap>({ balance: ZERO_BALANCE, native: ZERO_BALANCE });
 
-const $fee = restore(feeChanged, '0');
-const $multisigDeposit = restore(multisigDepositChanged, '0');
+const $fee = restore(feeChanged, ZERO_BALANCE);
+const $multisigDeposit = restore(multisigDepositChanged, ZERO_BALANCE);
 const $isFeeLoading = restore(isFeeLoadingChanged, true);
 const $isXcm = createStore<boolean>(false);
 
@@ -105,6 +107,16 @@ const $transferForm = createForm<FormParams>({
       init: {} as Account,
       rules: [
         {
+          name: 'noSignatorySelected',
+          errorText: 'transfer.noSignatoryError',
+          source: $isMultisig,
+          validator: (signatory, _, isMultisig) => {
+            if (!isMultisig) return true;
+
+            return Object.keys(signatory).length > 0;
+          },
+        },
+        {
           name: 'notEnoughTokens',
           errorText: 'proxy.addProxy.notEnoughMultisigTokens',
           source: combine({
@@ -116,7 +128,7 @@ const $transferForm = createForm<FormParams>({
           validator: (_s, _f, { fee, isMultisig, signatoryBalance, multisigDeposit }) => {
             if (!isMultisig) return true;
 
-            return new BN(multisigDeposit).add(new BN(fee)).lte(new BN(signatoryBalance.balance));
+            return new BN(multisigDeposit).add(new BN(fee)).lte(new BN(signatoryBalance));
           },
         },
       ],
@@ -149,8 +161,8 @@ const $transferForm = createForm<FormParams>({
         },
         {
           name: 'notZero',
-          errorText: 'transfer.requiredAmountError',
-          validator: (value) => value !== '0',
+          errorText: 'transfer.notZeroAmountError',
+          validator: (value) => value !== ZERO_BALANCE,
         },
         {
           name: 'notEnoughBalance',
@@ -179,8 +191,8 @@ const $transferForm = createForm<FormParams>({
             accountBalance: $accountBalance,
           }),
           validator: (value, _, { network, isNative, isProxy, isMultisig, isXcm, accountBalance, ...rest }) => {
-            const feeBN = new BN(isProxy || isMultisig ? '0' : rest.fee);
-            const xcmFeeBN = new BN(isXcm ? rest.xcmFee : '0');
+            const feeBN = new BN(isProxy || isMultisig ? ZERO_BALANCE : rest.fee);
+            const xcmFeeBN = new BN(isXcm ? rest.xcmFee : ZERO_BALANCE);
             const amountBN = new BN(formatAmount(value, network.asset.precision));
 
             return isNative
@@ -196,7 +208,7 @@ const $transferForm = createForm<FormParams>({
         {
           name: 'maxLength',
           errorText: 'transfer.descriptionLengthError',
-          validator: (value) => !value || value.length <= 120,
+          validator: (value) => !value || value.length <= DESCRIPTION_LENGTH,
         },
       ],
     },
@@ -318,28 +330,20 @@ const $signatories = combine(
   ({ network, txWrappers, balances }) => {
     if (!network) return [];
 
-    const { chain, asset } = network;
+    const { chain } = network;
 
-    return txWrappers.reduce<Array<{ signer: Account; balances: BalanceMap }[]>>((acc, wrapper) => {
+    return txWrappers.reduce<Array<{ signer: Account; balance: string }[]>>((acc, wrapper) => {
       if (!transactionService.hasMultisig([wrapper])) return acc;
 
       const balancedSignatories = (wrapper as MultisigTxWrapper).signatories.map((signatory) => {
-        const balance = balanceUtils.getBalance(balances, signatory.accountId, chain.chainId, asset.assetId.toString());
+        const balance = balanceUtils.getBalance(
+          balances,
+          signatory.accountId,
+          chain.chainId,
+          chain.assets[0].assetId.toString(),
+        );
 
-        let nativeBalance = balance;
-        if (asset.assetId !== chain.assets[0].assetId) {
-          nativeBalance = balanceUtils.getBalance(
-            balances,
-            signatory.accountId,
-            chain.chainId,
-            chain.assets[0].assetId.toString(),
-          );
-        }
-
-        return {
-          signer: signatory,
-          balances: { balance: transferableAmount(balance), native: transferableAmount(nativeBalance) },
-        };
+        return { signer: signatory, balance: transferableAmount(balance) };
       });
 
       acc.push(balancedSignatories);
@@ -542,7 +546,7 @@ sample({
   fn: (accounts, account) => {
     const match = accounts.find((a) => a.account.id === account.id);
 
-    return match?.balances || { balance: '0', native: '0' };
+    return match?.balances || { balance: ZERO_BALANCE, native: ZERO_BALANCE };
   },
   target: $accountBalance,
 });
@@ -586,7 +590,7 @@ sample({
   fn: (signatories, signatory) => {
     const match = signatories[0].find(({ signer }) => signer.id === signatory.id);
 
-    return match?.balances || { balance: '0', native: '0' };
+    return match?.balance || ZERO_BALANCE;
   },
   target: $signatoryBalance,
 });

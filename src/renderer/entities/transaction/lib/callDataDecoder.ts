@@ -238,11 +238,15 @@ export const useCallDataDecoder = (): ICallDataDecoder => {
       let payee = decoded.args[index++].toString();
 
       try {
-        payee = JSON.parse(payee);
+        args.payee = JSON.parse(payee);
       } catch (e) {
+        args.payee = payee;
         console.warn(e);
       }
-      args.payee = payee;
+
+      if (typeof args.payee === 'object') {
+        args.payee = { Account: Object.values(args.payee)[0] };
+      }
 
       return args;
     },
@@ -271,6 +275,10 @@ export const useCallDataDecoder = (): ICallDataDecoder => {
       } catch (e) {
         console.warn(e);
         args.payee = decoded.args[0].toString();
+      }
+
+      if (typeof args.payee === 'object') {
+        args.payee = { Account: Object.values(args.payee)[0] };
       }
 
       return args;

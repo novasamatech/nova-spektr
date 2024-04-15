@@ -472,7 +472,8 @@
     "inProgress": "Submitting approval...",
     "logButton": "Log",
     "networkFee": "Network fee",
-    "proxyFeeError": "Delegated authority<wallet />doesn't have enough balance to pay the network fee of {fee} {symbol}<br />Available balance to pay fee: {balance} {symbol}",
+    "proxyFeeErrorDescription": "Delegated authority<wallet />doesn't have enough balance to pay the network fee of {fee} {symbol}<br />Available balance to pay fee: {balance} {symbol}",
+    "proxyFeeErrorTitle": "Not enough tokens to pay the fee",
     "rejectButton": "Reject",
     "rejectInProgress": "Submitting Rejection...",
     "rejectReason": {
@@ -878,6 +879,7 @@
       "goToStakingButton": "Back to Staking",
       "incorrectAddressError": "Please enter correct address",
       "manyAccountsPlaceholder": "Multiple accounts selected",
+      "noBondBalanceError": "Some accounts don't have enough balance",
       "noStakingAssetDescription": "No staking asset was found for { chainName }",
       "noStakingAssetLabel": "No staking asset",
       "payoutAccountLabel": "Payout account",
@@ -975,12 +977,6 @@
       "totalStakedLabel": "Total staked",
       "viewValidatorsOption": "View validators"
     },
-    "redeem": {
-      "availablePlaceholder": "Available",
-      "confirmRedeemSubtitle": "Confirmation",
-      "initRedeemSubtitle": "Redeem",
-      "title": "Withdraw unstaked { asset } on"
-    },
     "requiredAmountError": "Please enter amount",
     "restake": {
       "confirmRestakeSubtitle": "Confirmation",
@@ -1010,6 +1006,7 @@
     "unstake": {
       "confirmUnstakeSubtitle": "Confirmation",
       "initUnstakeSubtitle": "Unstake",
+      "noUnstakeBalanceError": "Some accounts don't have enough balance",
       "stakedPlaceholder": "Staked",
       "title": "Unstake { asset } on",
       "transferable": "Transferable"
@@ -1044,6 +1041,12 @@
       "noButton": "No",
       "stash": "This operation works with <strong>Stash</strong> accounts only.<br />Would you like to deselect <strong>Controller</strong> accounts to continue?",
       "yesButton": "Yes"
+    },
+    "withdraw": {
+      "availablePlaceholder": "Available",
+      "confirmRedeemSubtitle": "Confirmation",
+      "initRedeemSubtitle": "Redeem",
+      "title": "Withdraw unstaked { asset } on"
     }
   },
   "time": {
@@ -1069,7 +1072,7 @@
     "amountPlaceholder": "0",
     "continueButton": "Continue",
     "crossChainPlaceholder": "Cross-chain",
-    "descriptionLengthError": "Description cannot exceed 120 symbols",
+    "descriptionLengthError": "Description cannot exceed { maxLength } symbols",
     "destinationChainLabel": "Recipient network",
     "destinationChainPlaceholder": "Select recipient network",
     "editOperationButton": "Edit operation",
@@ -1087,9 +1090,11 @@
     "networkDeposit": "Multisig deposit",
     "networkDepositHint": "The deposit stays locked on the depositor’s account until the multisig operation is executed or rejected",
     "networkFee": "Network fee",
+    "noSignatoryError": "Please select operation signatory",
     "notEnoughBalanceError": "Not enough funds to transfer specific amount",
     "notEnoughBalanceForDepositError": "Insufficient balance to pay deposit and network fee",
     "notEnoughBalanceForFeeError": "Insufficient balance to pay network fee",
+    "notZeroAmountError": "Value cannot be zero",
     "onChainPlaceholder": "On-chain",
     "pasteButton": "Paste",
     "recipientLabel": "Recipient",

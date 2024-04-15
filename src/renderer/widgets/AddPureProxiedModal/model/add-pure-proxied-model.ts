@@ -1,28 +1,27 @@
-import { createEffect, createEvent, createStore, sample } from 'effector';
+import { combine, createEffect, createEvent, createStore, sample } from 'effector';
 import { combineEvents, delay, spread } from 'patronum';
 import { ApiPromise } from '@polkadot/api';
 import { UnsubscribePromise } from '@polkadot/api/types';
 
-import { Transaction, TransactionType, TxWrapper, transactionService, WrapperKind } from '@entities/transaction';
-import { toAddress } from '@shared/lib/utils';
+import { Transaction, transactionService } from '@entities/transaction';
+import { dictionary, toAddress } from '@shared/lib/utils';
 import { walletSelectModel } from '@features/wallets';
-import { walletModel, walletUtils } from '@entities/wallet';
+import { accountUtils, walletModel, walletUtils } from '@entities/wallet';
 import {
-  type MultisigAccount,
   type ProxyGroup,
   type NoID,
   ProxyType,
   AccountId,
   PartialProxiedAccount,
   ProxyVariant,
-  Account,
   Timepoint,
+  Account,
 } from '@shared/core';
 import { proxyModel, proxyUtils } from '@entities/proxy';
 import { networkModel } from '@entities/network';
 import { balanceSubModel } from '@features/balances';
 import { proxiesModel } from '@features/proxies';
-import { Step, TxWrappers, AddPureProxiedStore } from '../lib/types';
+import { Step, AddPureProxiedStore } from '../lib/types';
 import { formModel } from './form-model';
 import { confirmModel } from './confirm-model';
 import { subscriptionService } from '@entities/chain';
@@ -36,13 +35,45 @@ const flowFinished = createEvent();
 
 const $step = createStore<Step>(Step.NONE);
 
-const $addProxyStore = createStore<AddPureProxiedStore | null>(null);
+const $addProxyStore = createStore<AddPureProxiedStore | null>(null).reset(flowFinished);
 
-const $wrappedTx = createStore<Transaction | null>(null);
-const $coreTx = createStore<Transaction | null>(null);
-const $multisigTx = createStore<Transaction | null>(null);
+const $wrappedTx = createStore<Transaction | null>(null).reset(flowFinished);
+const $multisigTx = createStore<Transaction | null>(null).reset(flowFinished);
+const $coreTx = createStore<Transaction | null>(null).reset(flowFinished);
+const $selectedSignatories = createStore<Account[]>([]);
 
-const $txWrappers = createStore<TxWrappers>([]);
+const $txWrappers = combine(
+  {
+    wallet: walletModel.$activeWallet,
+    wallets: walletModel.$wallets,
+    store: $addProxyStore,
+    accounts: walletModel.$accounts,
+    signatories: $selectedSignatories,
+  },
+  ({ wallet, store, accounts, wallets, signatories }) => {
+    if (!wallet || !store?.chain || !store.account.id) return [];
+
+    const walletFiltered = wallets.filter((wallet) => {
+      return !walletUtils.isProxied(wallet) && !walletUtils.isWatchOnly(wallet);
+    });
+    const walletsMap = dictionary(walletFiltered, 'id');
+    const chainFilteredAccounts = accounts.filter((account) => {
+      if (accountUtils.isBaseAccount(account) && walletUtils.isPolkadotVault(walletsMap[account.walletId])) {
+        return false;
+      }
+
+      return accountUtils.isChainAndCryptoMatch(account, store.chain);
+    });
+
+    return transactionService.getTxWrappers({
+      wallet,
+      wallets: walletFiltered,
+      account: store.account,
+      accounts: chainFilteredAccounts,
+      signatories,
+    });
+  },
+);
 
 type GetPureProxyParams = {
   api: ApiPromise;
@@ -67,10 +98,8 @@ const getPureProxyFx = createEffect(
       unsubscribe = subscriptionService.subscribeEvents(api, pureCreatedParams, (event) => {
         unsubscribe?.then((fn) => fn());
 
-        const accountId = event.data[0].toHex();
-
         resolve({
-          accountId,
+          accountId: event.data[0].toHex(),
           blockNumber: timepoint.height,
           extrinsicIndex: timepoint.index,
         });
@@ -109,77 +138,33 @@ sample({
 
 sample({
   clock: formModel.output.formSubmitted,
-  target: $addProxyStore,
+  filter: ({ formData }) => Boolean(formData.signatory),
+  fn: ({ formData }) => [formData.signatory!],
+  target: $selectedSignatories,
 });
 
 sample({
   clock: formModel.output.formSubmitted,
-  source: {
-    wallet: walletSelectModel.$walletForDetails,
-    wallets: walletModel.$wallets,
-  },
-  fn: ({ wallet, wallets }, { account }): TxWrappers => {
-    if (!wallet) return [];
-    if (walletUtils.isMultisig(wallet)) return ['multisig'];
-    if (!walletUtils.isProxied(wallet)) return [];
-
-    const accountWallet = walletUtils.getWalletById(wallets, account.walletId);
-
-    return walletUtils.isMultisig(accountWallet) ? ['multisig', 'proxy'] : ['proxy'];
-  },
-  target: $txWrappers,
-});
-
-sample({
-  clock: formModel.output.formSubmitted,
-  source: {
-    txWrappers: $txWrappers,
-    apis: networkModel.$apis,
-  },
-  fn: ({ txWrappers, apis }, formData) => {
-    const { chain, account, signatory } = formData;
-
-    const transaction: Transaction = {
-      chainId: chain.chainId,
-      address: toAddress(account.accountId, { prefix: chain.addressPrefix }),
-      type: TransactionType.CREATE_PURE_PROXY,
-      args: { proxyType: ProxyType.ANY, delay: 0, index: 0 },
-    };
-
-    const isMultisig = txWrappers.includes('multisig');
-    const txWrappersAdapter: TxWrapper[] = isMultisig
-      ? [
-          {
-            kind: WrapperKind.MULTISIG,
-            multisigAccount: account as MultisigAccount,
-            signatories: (account as MultisigAccount).signatories.map((s) => ({ accountId: s.accountId })) as Account[],
-            signer: { accountId: signatory!.accountId } as Account,
-          },
-        ]
-      : [];
-
-    const transactions = transactionService.getWrappedTransaction({
-      api: apis[chain.chainId],
-      addressPrefix: chain.addressPrefix,
-      transaction,
-      txWrappers: txWrappersAdapter,
-    });
-
-    return { ...transactions, multisigTx: transactions.multisigTx || null };
-  },
+  fn: ({ transactions, formData }) => ({
+    wrappedTx: transactions.wrappedTx,
+    multisigTx: transactions.multisigTx || null,
+    coreTx: transactions.coreTx,
+    addProxyStore: formData,
+  }),
   target: spread({
     wrappedTx: $wrappedTx,
-    coreTx: $coreTx,
     multisigTx: $multisigTx,
+    coreTx: $coreTx,
+    addProxyStore: $addProxyStore,
   }),
 });
 
 sample({
   clock: formModel.output.formSubmitted,
-  source: $wrappedTx,
-  filter: (wrappedTx: Transaction | null): wrappedTx is Transaction => Boolean(wrappedTx),
-  fn: (wrappedTx, formData) => ({
-    event: { ...formData, transaction: wrappedTx },
+  source: $addProxyStore,
+  filter: (network: AddPureProxiedStore | null): network is AddPureProxiedStore => Boolean(network),
+  fn: ({ chain }, { formData }) => ({
+    event: { ...formData, chain },
     step: Step.CONFIRM,
   }),
   target: spread({
@@ -198,9 +183,9 @@ sample({
   fn: ({ addProxyStore, wrappedTx }) => ({
     event: {
       chain: addProxyStore!.chain,
-      account: addProxyStore!.account,
+      accounts: [addProxyStore!.account],
       signatory: addProxyStore!.signatory,
-      transaction: wrappedTx!,
+      transactions: [wrappedTx!],
     },
     step: Step.SIGN,
   }),
@@ -228,42 +213,14 @@ sample({
       account: proxyData.addProxyStore!.account,
       signatory: proxyData.addProxyStore!.signatory,
       description: proxyData.addProxyStore!.description,
-      transaction: proxyData.coreTx!,
-      multisigTx: proxyData.multisigTx || undefined,
+      transactions: [proxyData.coreTx!],
+      multisigTxs: proxyData.multisigTx ? [proxyData.multisigTx] : [],
     },
     step: Step.SUBMIT,
   }),
   target: spread({
     event: submitModel.events.formInitiated,
     step: stepChanged,
-  }),
-});
-
-sample({
-  clock: combineEvents({
-    events: [getPureProxyFx.doneData, proxiesModel.output.walletsCreated],
-    reset: flowStarted,
-  }),
-  source: {
-    addProxyStore: $addProxyStore,
-    proxyGroups: proxyModel.$proxyGroups,
-  },
-  filter: ({ addProxyStore }, [_, wallet]) => Boolean(wallet.wallets[0].id) && Boolean(addProxyStore),
-  fn: ({ addProxyStore, proxyGroups }, [{ accountId }, wallet]) => {
-    const newProxyGroup: NoID<ProxyGroup> = {
-      walletId: wallet.wallets[0].id,
-      chainId: addProxyStore!.chain.chainId,
-      proxiedAccountId: accountId,
-      totalDeposit: addProxyStore!.proxyDeposit,
-    };
-
-    const proxyGroupExists = proxyGroups.some((group) => proxyUtils.isSameProxyGroup(group, newProxyGroup));
-
-    return proxyGroupExists ? { groupsUpdated: [newProxyGroup] } : { groupsAdded: [newProxyGroup] };
-  },
-  target: spread({
-    groupsAdded: proxyModel.events.proxyGroupsAdded,
-    groupsUpdated: proxyModel.events.proxyGroupsUpdated,
   }),
 });
 
@@ -302,8 +259,8 @@ sample({
 sample({
   clock: getPureProxyFx.doneData,
   source: $addProxyStore,
-  filter: (addPureProxiedStore: AddPureProxiedStore | null): addPureProxiedStore is AddPureProxiedStore => {
-    return Boolean(addPureProxiedStore);
+  filter: (addProxyStore: AddPureProxiedStore | null): addProxyStore is AddPureProxiedStore => {
+    return Boolean(addProxyStore);
   },
   fn: ({ chain, account }, { accountId, blockNumber, extrinsicIndex }) => {
     const proxiedAccount: PartialProxiedAccount = {
@@ -323,6 +280,36 @@ sample({
     };
   },
   target: proxiesModel.events.proxiedWalletsCreated,
+});
+
+sample({
+  clock: combineEvents({
+    events: [getPureProxyFx.doneData, proxiesModel.output.walletsCreated],
+    reset: flowStarted,
+  }),
+  source: {
+    addProxyStore: $addProxyStore,
+    proxyGroups: proxyModel.$proxyGroups,
+  },
+  filter: ({ addProxyStore }, [_, wallet]) => Boolean(wallet.wallets[0].id) && Boolean(addProxyStore),
+  fn: ({ addProxyStore, proxyGroups }, [{ accountId }, wallet]) => {
+    const newProxyGroup: NoID<ProxyGroup> = {
+      walletId: wallet.wallets[0].id,
+      chainId: addProxyStore!.chain.chainId,
+      proxiedAccountId: accountId,
+      totalDeposit: addProxyStore!.proxyDeposit,
+    };
+
+    const existingProxyGroup = proxyGroups.find((group) => proxyUtils.isSameProxyGroup(group, newProxyGroup));
+
+    return existingProxyGroup
+      ? { toUpdate: [{ id: existingProxyGroup.id, ...newProxyGroup }] }
+      : { toAdd: [newProxyGroup] };
+  },
+  target: spread({
+    toAdd: proxyModel.events.proxyGroupsAdded,
+    toUpdate: proxyModel.events.proxyGroupsUpdated,
+  }),
 });
 
 sample({

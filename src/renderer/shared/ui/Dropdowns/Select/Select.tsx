@@ -24,7 +24,7 @@ type Props<T extends any = any> = {
   label?: string;
   disabled?: boolean;
   invalid?: boolean;
-  selectedId?: DropdownOption['id'];
+  selectedId?: string;
   options: DropdownOption<T>[];
   position?: Position;
   tabIndex?: number;

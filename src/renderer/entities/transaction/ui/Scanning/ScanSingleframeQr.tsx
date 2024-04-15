@@ -66,8 +66,8 @@ export const ScanSingleframeQr = ({
 
   return (
     <div className="flex flex-col items-center w-full">
-      <div className="flex items-center justify-center mb-1 h-8 w-full">
-        {account && (
+      {account && (
+        <div className="flex items-center justify-center mb-1 h-8 w-full">
           <div className="flex h-full justify-center items-center gap-x-0.5 ">
             <FootnoteText className="text-text-secondary">{t('signing.signer')}</FootnoteText>
 
@@ -76,8 +76,8 @@ export const ScanSingleframeQr = ({
               <FootnoteText className="text-text-secondary w-max">{signerWallet.name}</FootnoteText>
             </div>
           </div>
-        )}
-      </div>
+        </div>
+      )}
 
       <QrGeneratorContainer countdown={countdown} chainId={chainId} onQrReset={setupTransaction}>
         {txPayload && (

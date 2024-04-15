@@ -1,17 +1,10 @@
-import { createEffect, createEvent, sample, attach } from 'effector';
-import { spread, delay } from 'patronum';
+import { createEvent, sample, attach } from 'effector';
+import { spread } from 'patronum';
 
 import { networkModel, networkUtils } from '@entities/network';
-import { ChainId, Connection, ConnectionType, RpcNode } from '@shared/core';
-import { storageService } from '@shared/api/storage';
-import { ProviderWithMetadata } from '@shared/api/network';
+import { ChainId, RpcNode } from '@shared/core';
 
 // TODO: create 2 features for Network selection & Manage custom RPC
-const lightClientSelected = createEvent<ChainId>();
-const autoBalanceSelected = createEvent<ChainId>();
-const rpcNodeSelected = createEvent<{ chainId: ChainId; node: RpcNode }>();
-const chainDisabled = createEvent<ChainId>();
-
 type NodeEventParams = {
   rpcNode: RpcNode;
   chainId: ChainId;
@@ -21,27 +14,10 @@ type NodeEventParams = {
 const rpcNodeUpdated = createEvent<NodeEventParams>();
 const rpcNodeRemoved = createEvent<NodeEventParams>();
 
-const updateConnectionFx = createEffect((connection: Connection): Promise<Connection | undefined> => {
-  return storageService.connections.put(connection);
-});
+const updateConnectionFx = attach({ effect: networkModel.effects.updateConnectionFx });
 
 const removeRpcNodeFx = attach({ effect: updateConnectionFx });
-
-type DisconnectParams = {
-  chainId: ChainId;
-  providers: Record<ChainId, ProviderWithMetadata>;
-};
-const disconnectProviderFx = createEffect(async ({ chainId, providers }: DisconnectParams): Promise<ChainId> => {
-  await providers[chainId].disconnect();
-
-  providers[chainId].on('connected', () => undefined);
-  providers[chainId].on('disconnected', () => undefined);
-  providers[chainId].on('error', () => undefined);
-
-  return chainId;
-});
-
-const reconnectProviderFx = attach({ effect: disconnectProviderFx });
+const reconnectProviderFx = attach({ effect: networkModel.effects.disconnectProviderFx });
 
 
 sample({
@@ -90,56 +66,6 @@ sample({
 });
 
 sample({
-  clock: rpcNodeSelected,
-  source: networkModel.$connections,
-  fn: (connections, { chainId, node }) => ({
-    ...connections[chainId],
-    connectionType: ConnectionType.RPC_NODE,
-    activeNode: node,
-  }),
-  target: updateConnectionFx,
-});
-
-sample({
-  clock: lightClientSelected,
-  source: networkModel.$connections,
-  fn: (connections, chainId) => ({
-    ...connections[chainId],
-    connectionType: ConnectionType.LIGHT_CLIENT,
-    activeNode: undefined,
-  }),
-  target: updateConnectionFx,
-});
-
-sample({
-  clock: autoBalanceSelected,
-  source: networkModel.$connections,
-  fn: (connections, chainId) => ({
-    ...connections[chainId],
-    connectionType: ConnectionType.AUTO_BALANCE,
-    activeNode: undefined,
-  }),
-  target: updateConnectionFx,
-});
-
-sample({
-  clock: chainDisabled,
-  source: networkModel.$connections,
-  fn: (connections, chainId) => ({
-    ...connections[chainId],
-    connectionType: ConnectionType.DISABLED,
-  }),
-  target: updateConnectionFx,
-});
-
-sample({
-  clock: chainDisabled,
-  source: networkModel.$providers,
-  fn: (providers, chainId) => ({ chainId, providers }),
-  target: disconnectProviderFx,
-});
-
-sample({
   clock: updateConnectionFx.doneData,
   source: networkModel.$connections,
   filter: (connection) => Boolean(connection),
@@ -167,31 +93,10 @@ sample({
   }),
 });
 
-sample({
-  clock: [disconnectProviderFx.doneData, reconnectProviderFx.doneData],
-  source: networkModel.$providers,
-  fn: (providers, chainId) => {
-    const { [chainId]: _, ...rest } = providers;
-
-    return rest;
-  },
-  target: networkModel.$providers,
-});
-
-delay({
-  source: reconnectProviderFx.doneData,
-  timeout: 500,
-  target: networkModel.events.chainConnected,
-});
-
 export const manageNetworkModel = {
   events: {
-    lightClientSelected,
-    autoBalanceSelected,
-    rpcNodeSelected,
-    chainDisabled,
-
-    // rpcNodeUpdated,
-    // rpcNodeRemoved,
+    rpcNodeAdded,
+    rpcNodeUpdated,
+    rpcNodeRemoved,
   },
 };

@@ -1,6 +1,19 @@
 import { useEffect, useState } from 'react';
 import { useUnit } from 'effector-react';
 
+import { TransactionAmount } from '@pages/Operations/components/TransactionAmount';
+import { DetailRow, FootnoteText, Icon } from '@shared/ui';
+import { ExtendedChain } from '@entities/network';
+import { useI18n } from '@app/providers';
+import { type Account, type MultisigAccount } from '@shared/core';
+import { getAssetById } from '@shared/lib/utils';
+import { getTransactionFromMultisigTx } from '@entities/multisig';
+import { xcmTransferModel } from '@widgets/Transfer';
+import { SignButton } from '@entities/operations';
+import { walletModel } from '@entities/wallet';
+import { getIconName } from '@entities/transaction/lib/transactionConfirmIcon';
+import { priceProviderModel } from '@entities/price';
+import { Details } from '../Details';
 import {
   MultisigTransaction,
   Transaction,
@@ -10,19 +23,6 @@ import {
   XcmFee,
   FeeLoader,
 } from '@entities/transaction';
-import { TransactionAmount } from '@pages/Operations/components/TransactionAmount';
-import { DetailRow, FootnoteText, Icon } from '@shared/ui';
-import { ExtendedChain } from '@entities/network';
-import { useI18n } from '@app/providers';
-import { type Account, type MultisigAccount } from '@shared/core';
-import { getAssetById } from '@shared/lib/utils';
-import { getTransactionFromMultisigTx } from '@entities/multisig';
-import { xcmTransferModel } from '@widgets/Transfer';
-import { SignButton } from '@entities/operation/ui/SignButton';
-import { walletModel } from '@entities/wallet';
-import { getIconName } from '@entities/transaction/lib/transactionConfirmIcon';
-import { priceProviderModel } from '@entities/price';
-import { Details } from '../Details';
 
 type Props = {
   tx: MultisigTransaction;
