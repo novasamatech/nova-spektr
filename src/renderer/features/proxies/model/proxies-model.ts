@@ -376,7 +376,6 @@ sample({
   target: spread({
     toAdd: proxyModel.events.proxyGroupsAdded,
     toUpdate: proxyModel.events.proxyGroupsUpdated,
-    toRemove: proxyModel.events.proxyGroupsRemoved,
   }),
 });
 
