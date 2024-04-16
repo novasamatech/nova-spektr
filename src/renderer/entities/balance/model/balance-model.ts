@@ -6,6 +6,7 @@ import { SAVE_TIMEOUT, BUFFER_DELAY } from '../lib/constants';
 import { storageService } from '@shared/api/storage';
 import { balanceUtils } from '../lib/balance-utils';
 
+const balancesSet = createEvent<Balance[]>();
 const balancesUpdated = createEvent<Balance[]>();
 const balancesRemoved = createEvent<ID[]>();
 
@@ -18,6 +19,11 @@ const insertBalancesFx = createEffect(async (balances: Balance[]): Promise<void>
 
 const removeBalancesFx = createEffect(async (ids: ID[]): Promise<void> => {
   await storageService.balances.deleteAll(ids);
+});
+
+sample({
+  clock: balancesSet,
+  target: $balancesBuffer,
 });
 
 sample({
@@ -47,8 +53,8 @@ sample({
 
 export const balanceModel = {
   $balances,
-  $balancesBuffer,
   events: {
+    balancesSet,
     balancesUpdated,
     balancesRemoved,
   },

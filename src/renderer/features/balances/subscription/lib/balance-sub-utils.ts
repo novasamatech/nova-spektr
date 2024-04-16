@@ -1,14 +1,14 @@
-import { Account, Wallet, ChainId, Chain } from '@shared/core';
+import { Account, Wallet, ChainId, Chain, ID } from '@shared/core';
 import { accountUtils, walletUtils } from '@entities/wallet';
 import { dictionary } from '@shared/lib/utils';
 import { SubAccounts } from './types';
 
 export const balanceSubUtils = {
-  getAccountsToSubscribe,
-  getNewAccounts,
+  getSiblingAccounts,
+  formSubAccounts,
 };
 
-function getAccountsToSubscribe(
+function getSiblingAccounts(
   wallet: Wallet,
   wallets: Wallet[],
   walletAccounts: Account[],
@@ -41,15 +41,16 @@ function getAccountsToSubscribe(
 
     if (!proxyWallet || !proxyAccount) return [firstAccount];
 
-    return [firstAccount, ...getAccountsToSubscribe(proxyWallet, wallets, [proxyAccount], accounts)];
+    return [firstAccount, ...getSiblingAccounts(proxyWallet, wallets, [proxyAccount], accounts)];
   }
 
   return walletAccounts;
 }
 
-function getNewAccounts(
-  subAccounts: SubAccounts,
+function formSubAccounts(
+  walletId: ID,
   accountsToSub: Account[],
+  subAccounts: SubAccounts,
   chains: Record<ChainId, Chain>,
 ): SubAccounts {
   const chainIds = Object.keys(subAccounts) as ChainId[];
@@ -59,11 +60,11 @@ function getNewAccounts(
 
     chainsToUpdate.forEach((chainId) => {
       if (!acc[chainId]) {
-        acc[chainId] = { [account.walletId]: [account.accountId] };
-      } else if (acc[chainId][account.walletId]) {
-        acc[chainId][account.walletId].push(account.accountId);
+        acc[chainId] = { [walletId]: [account.accountId] };
+      } else if (acc[chainId][walletId]) {
+        acc[chainId][walletId].push(account.accountId);
       } else {
-        acc[chainId][account.walletId] = [account.accountId];
+        acc[chainId][walletId] = [account.accountId];
       }
     });
 

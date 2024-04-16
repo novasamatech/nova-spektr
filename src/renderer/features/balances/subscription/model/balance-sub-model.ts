@@ -1,6 +1,6 @@
 import { ApiPromise } from '@polkadot/api';
 import { createEffect, createStore, sample, createEvent, scopeBind, attach } from 'effector';
-import { once, combineEvents, spread, previous, interval } from 'patronum';
+import { once, combineEvents, spread, previous } from 'patronum';
 import mapValues from 'lodash/mapValues';
 
 import { AccountId, Balance, ChainId, ConnectionStatus, Wallet, Chain, ID } from '@shared/core';
@@ -19,7 +19,7 @@ const balancesUpdated = createEvent<Balance[]>();
 
 const $subscriptions = createStore<Subscriptions>({});
 const $subAccounts = createStore<SubAccounts>({});
-const $subBalances = createStore<Balance[]>([]);
+const $balancesBucket = createStore<Balance[]>([]);
 
 const $previousWallet = previous(walletModel.$activeWallet);
 
@@ -131,27 +131,6 @@ const subscribeChainsFx = attach({
 });
 
 sample({
-  clock: balancesUpdated,
-  source: $subBalances,
-  fn: balanceUtils.getMergeBalances,
-  target: $subBalances,
-});
-
-sample({
-  clock: interval({
-    timeout: 300,
-    start: balancesUpdated,
-  }).tick,
-  source: {
-    subBalances: $subBalances,
-    isPending: populateBalancesFx.pending,
-  },
-  filter: ({ subBalances, isPending }) => !isPending && subBalances.length > 0,
-  fn: ({ subBalances }) => subBalances,
-  target: [balanceModel.events.balancesUpdated, $subBalances.reinit],
-});
-
-sample({
   clock: [unsubscribeWalletFx.doneData, unsubscribeChainFx.doneData, subscribeChainsFx.doneData],
   target: $subscriptions,
 });
@@ -185,7 +164,39 @@ sample({
 
 sample({
   clock: populateBalancesFx.doneData,
-  target: balanceModel.$balancesBuffer,
+  source: $balancesBucket,
+  fn: (balancesBucket, oldBalances) => {
+    if (balancesBucket.length === 0) return { set: oldBalances };
+
+    return {
+      bucket: [],
+      set: balanceUtils.getMergeBalances(oldBalances, balancesBucket),
+    };
+  },
+  target: spread({
+    bucket: $balancesBucket,
+    set: balanceModel.events.balancesSet,
+  }),
+});
+
+sample({
+  clock: balancesUpdated,
+  source: {
+    balancesBucket: $balancesBucket,
+    isPending: populateBalancesFx.pending,
+  },
+  fn: ({ balancesBucket, isPending }, newBalances) => {
+    const updatedBalances = balanceUtils.getMergeBalances(balancesBucket, newBalances);
+
+    return {
+      bucket: isPending ? updatedBalances : [],
+      update: updatedBalances,
+    };
+  },
+  target: spread({
+    bucket: $balancesBucket,
+    update: balanceModel.events.balancesUpdated,
+  }),
 });
 
 sample({
@@ -222,9 +233,9 @@ sample({
   filter: (_, wallet) => Boolean(wallet),
   fn: ({ subAccounts, accounts, wallets, chains }, wallet) => {
     const walletAccounts = accountUtils.getWalletAccounts(wallet!.id, accounts);
-    const accountsToSub = balanceSubUtils.getAccountsToSubscribe(wallet!, wallets, walletAccounts, accounts);
+    const accountsToSub = balanceSubUtils.getSiblingAccounts(wallet!, wallets, walletAccounts, accounts);
 
-    return balanceSubUtils.getNewAccounts(subAccounts, accountsToSub, chains);
+    return balanceSubUtils.formSubAccounts(wallet!.id, accountsToSub, subAccounts, chains);
   },
   target: $subAccounts,
 });

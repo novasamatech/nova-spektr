@@ -552,15 +552,15 @@ sample({
 });
 
 sample({
-  clock: $realAccount.updates,
   source: {
     isProxy: $isProxy,
     isNative: $isNative,
     balances: balanceModel.$balances,
     network: $networkStore,
+    proxyAccount: $realAccount,
   },
   filter: ({ isProxy, network }) => isProxy && Boolean(network),
-  fn: ({ isNative, balances, network }, proxyAccount) => {
+  fn: ({ isNative, balances, network, proxyAccount }) => {
     const balance = balanceUtils.getBalance(
       balances,
       proxyAccount.accountId,

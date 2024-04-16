@@ -261,6 +261,6 @@ describe('features/balances/subscription/model/balance-sub-model', () => {
     await jest.runAllTimersAsync();
     await action;
 
-    expect(scope.getState(balanceModel.$balancesBuffer)).toEqual([newBalances[0], newBalances[1]]);
+    expect(scope.getState(balanceModel.$balances)).toEqual([newBalances[0], newBalances[1]]);
   });
 });
