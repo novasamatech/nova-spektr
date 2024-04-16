@@ -17,10 +17,6 @@ export const EditCustomRpcModal = () => {
 
   const [isModalOpen, closeModal] = useModalClose(isFlowStarted, editCustomRpcModel.events.flowFinished);
 
-  // useEffect(() => {
-  //   editCustomRpcModel.events.formInitiated();
-  // }, []);
-
   const onSubmit = (event: FormEvent) => {
     event.preventDefault();
     submit();

@@ -1,4 +1,6 @@
-export { addCustomRpcModel, AddCustomRpcModal, editCustomRpcModel, EditCustomRpcModal } from './ManageCustomRpcNode';
+export { AddCustomRpcModal, EditCustomRpcModal, addCustomRpcModel, editCustomRpcModel } from './ManageCustomRpcNode';
+export { NetworksFilter, networksFilterModel } from './NetworksFilter';
+export { NetworkSelector, networkSelectorModel, networkSelectorUtils } from './NetworkSelector';
 export {
   NetworkList,
   ActiveNetwork,
@@ -7,5 +9,3 @@ export {
   inactiveNetworksModel,
   activeNetworksModel,
 } from './NetworkList';
-export { NetworksFilter, networksFilterModel } from './NetworksFilter';
-export { NetworkSelector, networkSelectorModel, networkSelectorUtils } from './NetworkSelector';

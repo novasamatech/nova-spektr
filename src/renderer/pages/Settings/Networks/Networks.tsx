@@ -6,30 +6,30 @@ import { useI18n, useConfirmContext } from '@app/providers';
 import { Paths } from '@shared/routes';
 import { BaseModal, InfoLink } from '@shared/ui';
 import { useToggle } from '@shared/lib/hooks';
-import { NetworkSelector } from './components';
 import { DEFAULT_TRANSITION } from '@shared/lib/utils';
 import type { RpcNode, ChainId } from '@shared/core';
 import { ConnectionType } from '@shared/core';
 import { networkModel, ExtendedChain, networkUtils } from '@entities/network';
+import { SelectorPayload } from '@features/network/NetworkSelector';
 import { manageNetworkModel } from './model/manage-network-model';
 import { networksOverviewModel } from './model/networks-overview-model';
-import { SelectorPayload } from '@features/network/NetworkSelector';
 import {
-  AddCustomRpcModal,
-  addCustomRpcModel,
   EmptyNetworks,
   NetworkList,
   InactiveNetwork,
-  activeNetworksModel,
-  inactiveNetworksModel,
   ActiveNetwork,
   NetworksFilter,
-  networksFilterModel,
   NetworkSelector,
+  AddCustomRpcModal,
+  // EditCustomRpcModal,
+  activeNetworksModel,
+  inactiveNetworksModel,
+  networksFilterModel,
   networkSelectorModel,
-  EditCustomRpcModal,
-  editCustomRpcModel,
+  addCustomRpcModel,
+  // editCustomRpcModel,
 } from '@features/network';
+import noop from 'lodash/noop';
 
 const MAX_LIGHT_CLIENTS = 3;
 
@@ -47,15 +47,6 @@ export const Networks = () => {
   const filterQuery = useUnit(networksFilterModel.$filterQuery);
   const activeConnectionsMap = useUnit(networksOverviewModel.$activeConnectionsMap);
   const inactiveConnectionsMap = useUnit(networksOverviewModel.$inactiveConnectionsMap);
-
-  // const [isAddCustomRpcModalOpen, closeAddCustomRpcModal] = useModalClose(
-  //   isAddFlowStarted,
-  //   addCustomRpcModel.events.flowFinished,
-  // );
-  // const [isEditCustomRpcModalOpen, closeEditCustomRpcModal] = useModalClose(
-  //   isEditFlowStarted,
-  //   editCustomRpcModel.events.flowFinished,
-  // );
 
   const [isNetworksModalOpen, toggleNetworksModal] = useToggle(true);
 
@@ -162,6 +153,43 @@ export const Networks = () => {
     };
   };
 
+  // const changeCustomNode = (network: ExtendedChain) => {
+  //   return (node?: RpcNode) => {
+  //     setNodeToEdit(node);
+  //     setNetwork(network);
+  //
+  //     toggleCustomRpc();
+  //   };
+  // };
+
+  // const closeCustomRpcModal = async (node?: RpcNode): Promise<void> => {
+  //   toggleCustomRpc();
+  //
+  //   if (node && network && network.connection.activeNode === nodeToEdit) {
+  //     manageNetworkModel.events.rpcNodeUpdated({ chainId: network.chainId, oldNode: nodeToEdit, rpcNode: node });
+  //   } else if (node && network) {
+  //     manageNetworkModel.events.rpcNodeAdded({ chainId: network.chainId, rpcNode: node });
+  //   }
+  //
+  //   setTimeout(() => {
+  //     setNodeToEdit(undefined);
+  //     setNetwork(undefined);
+  //   }, DEFAULT_TRANSITION);
+  // };
+
+  const changeConnection = (network: ExtendedChain) => {
+    const handleDisableNetwork = disableNetwork(network);
+    const handleConnectToNode = connectToNode(network);
+
+    return async (payload: SelectorPayload) => {
+      if (payload.type === ConnectionType.DISABLED) {
+        await handleDisableNetwork();
+      } else {
+        await handleConnectToNode(payload.type, payload.node);
+      }
+    };
+  };
+
   return (
     <BaseModal
       closeButton
@@ -185,8 +213,16 @@ export const Networks = () => {
                 nodesList={inactiveConnectionsMap[network.chainId].nodes}
                 selectedConnection={inactiveConnectionsMap[network.chainId].selectedNode}
                 onChange={changeConnection(network)}
+                onEditCustomNode={noop}
+                // onEditCustomNode={editCustomRpcModel.events.flowStarted}
                 onRemoveCustomNode={removeCustomNode(network.chainId)}
-                onChangeCustomNode={changeCustomNode(network)}
+                onAddCustomNode={() =>
+                  addCustomRpcModel.events.flowStarted({
+                    chainName: network.name,
+                    connection: network.connection,
+                    existingNodes: network.nodes,
+                  })
+                }
               />
             </InactiveNetwork>
           )}
@@ -203,8 +239,16 @@ export const Networks = () => {
                 nodesList={activeConnectionsMap[network.chainId].nodes}
                 selectedConnection={activeConnectionsMap[network.chainId].selectedNode}
                 onChange={changeConnection(network)}
+                onEditCustomNode={noop}
+                // onEditCustomNode={editCustomRpcModel.events.flowStarted}
                 onRemoveCustomNode={removeCustomNode(network.chainId)}
-                onChangeCustomNode={changeCustomNode(network)}
+                onAddCustomNode={() =>
+                  addCustomRpcModel.events.flowStarted({
+                    chainName: network.name,
+                    connection: network.connection,
+                    existingNodes: network.nodes,
+                  })
+                }
               />
             </ActiveNetwork>
           )}
@@ -214,7 +258,7 @@ export const Networks = () => {
       </div>
 
       <AddCustomRpcModal />
-      <EditCustomRpcModal />
+      {/*<EditCustomRpcModal />*/}
     </BaseModal>
   );
 };

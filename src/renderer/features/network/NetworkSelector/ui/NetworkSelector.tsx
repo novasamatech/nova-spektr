@@ -14,9 +14,6 @@ import type { Theme } from '@shared/ui/types';
 import type { RpcNode } from '@shared/core';
 import type { ConnectionItem, SelectorPayload } from '../lib/types';
 
-const OptionsContainerStyle =
-  'mt-1 absolute z-20 py-1 px-1 w-full border border-token-container-border rounded bg-input-background shadow-card-shadow';
-
 const TRANSITION_DURATION = 100;
 
 const Title = {
@@ -31,8 +28,9 @@ type Props = {
   selectedConnection?: ConnectionItem;
   theme?: Theme;
   onChange: (value: SelectorPayload) => void;
+  onEditCustomNode: (node: RpcNode) => void;
   onRemoveCustomNode: (node: RpcNode) => void;
-  onChangeCustomNode: (node?: RpcNode) => void;
+  onAddCustomNode: () => void;
 };
 
 export const NetworkSelector = ({
@@ -40,8 +38,9 @@ export const NetworkSelector = ({
   selectedConnection,
   theme = 'light',
   onChange,
+  onEditCustomNode,
   onRemoveCustomNode,
-  onChangeCustomNode,
+  onAddCustomNode,
 }: Props) => {
   const { t } = useI18n();
   const [ref, scroll] = useScrollTo<HTMLDivElement>(TRANSITION_DURATION);
@@ -76,7 +75,10 @@ export const NetworkSelector = ({
             leaveFrom="opacity-100 translate-y-1"
             leaveTo="opacity-0 translate-y-0"
           >
-            <div ref={ref} className={OptionsContainerStyle}>
+            <div
+              ref={ref}
+              className="mt-1 absolute z-20 py-1 px-1 w-full border border-token-container-border rounded bg-input-background shadow-card-shadow"
+            >
               <Listbox.Options className="max-h-64 overflow-y-auto overscroll-contain">
                 {nodesList.map((data) => {
                   const { type, node, isCustom } = data;
@@ -95,7 +97,7 @@ export const NetworkSelector = ({
                           <FootnoteText className="text-text-secondary truncate">
                             {Title[type](t, node?.name)}
                           </FootnoteText>
-                          {node?.url && <HelpText className="text-text-tertiary truncate">{node.url}</HelpText>}
+                          <HelpText className="text-text-tertiary truncate">{node?.url}</HelpText>
                         </div>
                         {node && isCustom && (
                           <>
@@ -103,7 +105,7 @@ export const NetworkSelector = ({
                               name="edit"
                               onClick={(event) => {
                                 event.stopPropagation();
-                                onChangeCustomNode(node);
+                                onEditCustomNode(node);
                               }}
                             />
                             {networkSelectorUtils.canDeleteNode(node.url, selectedConnection?.node?.url) && (
@@ -122,16 +124,15 @@ export const NetworkSelector = ({
                   );
                 })}
               </Listbox.Options>
-              <Listbox.Option as="div" value={null} className="h-8.5">
-                <Button
-                  size="sm"
-                  variant="text"
-                  className="w-full h-full justify-center"
-                  suffixElement={<Icon name="add" size={16} />}
-                >
-                  {t('settings.networks.addNodeButton')}
-                </Button>
-              </Listbox.Option>
+              <Button
+                size="sm"
+                variant="text"
+                className="w-full h-8.5 justify-center"
+                suffixElement={<Icon name="add" size={16} />}
+                onClick={onAddCustomNode}
+              >
+                {t('settings.networks.addNodeButton')}
+              </Button>
             </div>
           </Transition>
         </div>

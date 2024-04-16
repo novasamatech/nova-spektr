@@ -758,7 +758,6 @@
     "networks": {
       "activeNetworksLabel": "Active networks",
       "addNodeButton": "Add custom node",
-      "addressConnected": "Connection established",
       "addressEmpty": "Address can not be empty",
       "addressHint": "Example: wss://rpc.polkadot.io",
       "addressInvalidUrl": "The entered address is not valid",

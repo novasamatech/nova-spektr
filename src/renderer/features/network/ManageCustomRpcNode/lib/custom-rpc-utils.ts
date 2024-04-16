@@ -1,10 +1,10 @@
-import { RpcConnectivityResult } from './types';
+import { RpcValidation } from '@shared/api/network';
 
 export const customRpcUtils = {
   validateWsAddress,
-  isRpcConnectivityValid,
-  isRpcConnectivityInvalid,
-  isRpcConnectivityWrongNetwork,
+  isRpcValid,
+  isRpcInvalid,
+  isRpcWrongNetwork,
 };
 
 /**
@@ -16,14 +16,14 @@ function validateWsAddress(address: string): boolean {
   return /^ws(s)?:\/\/.+(\.[a-z]{2,}|:\d{4,5})(\/[a-z\d_-]+)*\W{0}\/?/i.test(address);
 }
 
-function isRpcConnectivityValid(result: RpcConnectivityResult): boolean {
-  return result === RpcConnectivityResult.VALID;
+function isRpcValid(result: RpcValidation): boolean {
+  return result === RpcValidation.VALID;
 }
 
-function isRpcConnectivityInvalid(result: RpcConnectivityResult): boolean {
-  return result === RpcConnectivityResult.INVALID;
+function isRpcInvalid(result: RpcValidation): boolean {
+  return result === RpcValidation.INVALID;
 }
 
-function isRpcConnectivityWrongNetwork(result: RpcConnectivityResult): boolean {
-  return result === RpcConnectivityResult.WRONG_NETWORK;
+function isRpcWrongNetwork(result: RpcValidation): boolean {
+  return result === RpcValidation.WRONG_NETWORK;
 }

@@ -12,26 +12,22 @@ import { useModalClose } from '@shared/lib/hooks';
 export const AddCustomRpcModal = () => {
   const { submit } = useForm(addCustomRpcModel.$addCustomRpcForm);
 
+  const chainId = useUnit(addCustomRpcModel.$chainId);
   const isFlowStarted = useUnit(addCustomRpcModel.$isFlowStarted);
-  const network = useUnit(addCustomRpcModel.$selectedNetwork);
 
-  const [isModalOpen, closeModal] = useModalClose(isFlowStarted, addCustomRpcModel.events.flowFinished);
-
-  // useEffect(() => {
-  //   addCustomRpcModel.events.formInitiated();
-  // }, []);
+  const [isModalOpen, closeModal] = useModalClose(isFlowStarted, addCustomRpcModel.output.flowFinished);
 
   const onSubmit = (event: FormEvent) => {
     event.preventDefault();
     submit();
   };
 
-  if (!network) return null;
+  if (!chainId) return null;
 
   return (
     <BaseModal
       closeButton
-      title={<OperationTitle title={'settings.networks.titleAdd'} chainId={network.chainId} />}
+      title={<OperationTitle title={'settings.networks.titleAdd'} chainId={chainId} />}
       headerClass="py-3 pl-5 pr-3"
       isOpen={isModalOpen}
       onClose={closeModal}
@@ -83,59 +79,45 @@ const UrlInput = () => {
   } = useForm(addCustomRpcModel.$addCustomRpcForm);
 
   const isLoading = useUnit(addCustomRpcModel.$isLoading);
-  const isNodeExist = useUnit(addCustomRpcModel.$isNodeExist);
-  const rpcConnectivityResult = useUnit(addCustomRpcModel.$rpcConnectivityResult);
 
   return (
-    <>
-      <div className="flex flex-col gap-y-2">
-        <Input
-          label={t('settings.networks.addressLabel')}
-          placeholder={t('settings.networks.addressPlaceholder')}
-          value={url.value}
-          invalid={url.hasError()}
-          disabled={isLoading}
-          onChange={url.onChange}
-        />
-        <InputHint active variant="hint">
-          {t('settings.networks.addressHint')}
-        </InputHint>
-        <InputHint variant="error" active={url?.hasError()}>
-          {t(url.errorText())}
-        </InputHint>
-      </div>
-
-      <InputHint
-        active={customRpcUtils.isRpcConnectivityValid(rpcConnectivityResult) && !isNodeExist}
-        variant="success"
-      >
-        {t('settings.networks.addressConnected')}
+    <div className="flex flex-col gap-y-2">
+      <Input
+        label={t('settings.networks.addressLabel')}
+        placeholder={t('settings.networks.addressPlaceholder')}
+        value={url.value}
+        invalid={url.hasError()}
+        disabled={isLoading}
+        onChange={url.onChange}
+      />
+      <InputHint variant="error" active={url.hasError()}>
+        {t(url.errorText())}
       </InputHint>
-      <InputHint active={isNodeExist} variant="error">
-        {t('settings.networks.nodeExist')}
+      <InputHint active variant="hint">
+        {t('settings.networks.addressHint')}
       </InputHint>
-    </>
+    </div>
   );
 };
 
 const Alerts = () => {
   const { t } = useI18n();
 
-  const network = useUnit(addCustomRpcModel.$selectedNetwork);
-  const rpcConnectivityResult = useUnit(addCustomRpcModel.$rpcConnectivityResult);
+  const chainName = useUnit(addCustomRpcModel.$chainName);
+  const rpcValidation = useUnit(addCustomRpcModel.$rpcValidation);
 
-  if (!network) return null;
+  if (!chainName || !rpcValidation) return null;
 
   return (
     <>
       <Alert
-        active={customRpcUtils.isRpcConnectivityInvalid(rpcConnectivityResult)}
+        active={customRpcUtils.isRpcInvalid(rpcValidation)}
         title={t('settings.networks.addressNoConnect')}
         variant="error"
       />
       <Alert
-        active={customRpcUtils.isRpcConnectivityWrongNetwork(rpcConnectivityResult)}
-        title={t('settings.networks.addressWrongNetwork', { networkName: network.name })}
+        active={customRpcUtils.isRpcWrongNetwork(rpcValidation)}
+        title={t('settings.networks.addressWrongNetwork', { networkName: chainName })}
         variant="error"
       />
     </>
@@ -145,13 +127,12 @@ const Alerts = () => {
 const ActionSection = () => {
   const { t } = useI18n();
 
-  const { isValid } = useForm(addCustomRpcModel.$addCustomRpcForm);
-
   const isLoading = useUnit(addCustomRpcModel.$isLoading);
+  const canSubmit = useUnit(addCustomRpcModel.$canSubmit);
 
   return (
     <div className="flex justify-end mt-7 w-full">
-      <Button type="submit" form="add-rpc-form" isLoading={isLoading} disabled={isLoading || !isValid}>
+      <Button type="submit" form="add-rpc-form" isLoading={isLoading} disabled={!canSubmit}>
         {t('settings.networks.addNodeButton')}
       </Button>
     </div>

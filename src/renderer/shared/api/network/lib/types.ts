@@ -8,9 +8,9 @@ export const enum ProviderType {
 }
 
 export const enum RpcValidation {
-  'INVALID',
-  'VALID',
-  'WRONG_NETWORK',
+  INVALID = 'invalid',
+  VALID = 'valid',
+  WRONG_NETWORK = 'wrong_network',
 }
 
 export type Subscription = {

@@ -3,7 +3,7 @@ import { fork, allSettled } from 'effector';
 import { addCustomRpcModel } from '../add-custom-rpc-model';
 import { ConnectionStatus } from '@shared/core';
 import { ExtendedChain } from '@entities/network';
-import { RpcConnectivityResult } from '../../lib/types';
+import { RpcConnectivity } from '../../lib/types';
 import { TEST_CHAIN_ID } from '@shared/lib/utils';
 
 describe('features/network/CustomRpcForm/add-custom-rpc-model', () => {
@@ -95,6 +95,6 @@ describe('features/network/CustomRpcForm/add-custom-rpc-model', () => {
     await allSettled(addCustomRpcModel.events.networkChanged, { scope, params: network as unknown as ExtendedChain });
     await allSettled(addCustomRpcModel.$addCustomRpcForm.submit, { scope });
 
-    expect(scope.getState(addCustomRpcModel.$rpcConnectivityResult)).toEqual(RpcConnectivityResult.WRONG_NETWORK);
+    expect(scope.getState(addCustomRpcModel.$rpcConnectivityResult)).toEqual(RpcConnectivity.WRONG_NETWORK);
   });
 });

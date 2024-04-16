@@ -1,9 +1,11 @@
-import { RpcConnectivityResult } from './types';
+import { RpcConnectivity } from './types';
 import { customRpcUtils } from './custom-rpc-utils';
 import { RpcValidation } from '@shared/api/network';
 
 const RPC_NAME_MAX_LENGTH = 50;
 const RPC_NAME_MIN_LENGTH = 3;
+
+export const CONNECTION_TIMEOUT = 3000;
 
 export const FieldRules = {
   name: [
@@ -24,8 +26,9 @@ export const FieldRules = {
   ],
 };
 
+// TODO: remove
 export const RpcValidationMapping = {
-  [RpcValidation.INVALID]: RpcConnectivityResult.INVALID,
-  [RpcValidation.VALID]: RpcConnectivityResult.VALID,
-  [RpcValidation.WRONG_NETWORK]: RpcConnectivityResult.WRONG_NETWORK,
+  [RpcValidation.INVALID]: RpcConnectivity.INVALID,
+  [RpcValidation.VALID]: RpcConnectivity.VALID,
+  [RpcValidation.WRONG_NETWORK]: RpcConnectivity.WRONG_NETWORK,
 };

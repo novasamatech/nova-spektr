@@ -19,7 +19,6 @@ const updateConnectionFx = attach({ effect: networkModel.effects.updateConnectio
 const removeRpcNodeFx = attach({ effect: updateConnectionFx });
 const reconnectProviderFx = attach({ effect: networkModel.effects.disconnectProviderFx });
 
-
 sample({
   clock: rpcNodeUpdated,
   source: networkModel.$connections,
@@ -95,7 +94,6 @@ sample({
 
 export const manageNetworkModel = {
   events: {
-    rpcNodeAdded,
     rpcNodeUpdated,
     rpcNodeRemoved,
   },

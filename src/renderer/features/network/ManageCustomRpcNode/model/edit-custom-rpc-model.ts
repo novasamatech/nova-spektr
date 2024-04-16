@@ -3,8 +3,7 @@ import { createForm } from 'effector-forms';
 
 import { networkService } from '@shared/api/network';
 import { ExtendedChain } from '@entities/network';
-import { VerifyRpcConnectivityFxParams, EditRpcNodeFxParams, RpcConnectivityResult } from '../lib/types';
-import { manageNetworkModel } from '@pages/Settings/Networks/model/manage-network-model';
+import { VerifyRpcParams, EditRpcNodeFxParams, RpcConnectivity } from '../lib/types';
 import { RpcNode } from '@shared/core';
 import { FieldRules, RpcValidationMapping } from '../lib/constants';
 import { customRpcUtils } from '../lib/custom-rpc-utils';
@@ -14,7 +13,7 @@ const flowFinished = createEvent();
 
 const networkChanged = createEvent<ExtendedChain>();
 const nodeSelected = createEvent<RpcNode>();
-const rpcConnectivityVerified = createEvent<RpcConnectivityResult>();
+const rpcConnectivityVerified = createEvent<RpcConnectivity>();
 
 const $editCustomRpcForm = createForm({
   fields: {
@@ -32,26 +31,32 @@ const $editCustomRpcForm = createForm({
 
 const $selectedNode = createStore<RpcNode | null>(null);
 const $selectedNetwork = createStore<ExtendedChain | null>(null);
-const $rpcConnectivityResult = createStore<RpcConnectivityResult>(RpcConnectivityResult.INIT);
+const $rpcConnectivityResult = createStore<RpcConnectivity>(RpcConnectivity.INIT);
 
 const $isFlowStarted = createStore<boolean>(false);
 const $isLoading = createStore<boolean>(false);
 
-const verifyRpcConnectivityFx = createEffect(
-  async ({ chainId, url }: VerifyRpcConnectivityFxParams): Promise<RpcConnectivityResult> => {
-    const validationResult = await networkService.validateRpcNode(chainId, url);
+const verifyRpcConnectivityFx = createEffect(async ({ chainId, url }: VerifyRpcParams): Promise<RpcConnectivity> => {
+  const validationResult = await networkService.validateRpcNode(chainId, url);
 
-    return RpcValidationMapping[validationResult];
-  },
-);
-
-const editRpcNodeFx = createEffect(({ network, form, nodeToEdit }: EditRpcNodeFxParams) => {
-  manageNetworkModel.events.rpcNodeUpdated({
-    chainId: network.chainId,
-    oldNode: nodeToEdit,
-    rpcNode: { url: form.url, name: form.name },
-  });
+  return RpcValidationMapping[validationResult];
 });
+
+// export type EditRpcNodeFxParams = {
+//   network: ExtendedChain;
+//   form: CustomRpcForm;
+//   rpcConnectivityResult: RpcConnectivity;
+//   nodeToEdit: RpcNode;
+//   isFormValid: true;
+// };
+//
+// const editRpcNodeFx = createEffect(({ network, form, nodeToEdit }: EditRpcNodeFxParams) => {
+//   manageNetworkModel.events.rpcNodeUpdated({
+//     chainId: network.chainId,
+//     oldNode: nodeToEdit,
+//     rpcNode: { url: form.url, name: form.name },
+//   });
+// });
 
 const updateInitialValuesFx = createEffect(({ url, name }: RpcNode) => {
   $editCustomRpcForm.fields.url.onChange(url);
@@ -141,7 +146,7 @@ sample({
   fn: ({ error }: { error: Error }) => {
     console.warn(error);
 
-    return RpcConnectivityResult.INIT;
+    return RpcConnectivity.INIT;
   },
   target: rpcConnectivityVerified,
 });

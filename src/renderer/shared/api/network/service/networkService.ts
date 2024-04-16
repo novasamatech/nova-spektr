@@ -70,7 +70,7 @@ function createWebsocketProvider({ nodes, metadata }: ProviderParams): ProviderW
 
 function validateRpcNode(chainId: ChainId, rpcUrl: string): Promise<RpcValidation> {
   return new Promise((resolve) => {
-    const provider = new WsProvider(rpcUrl);
+    const provider = new WsProvider(rpcUrl, false, undefined, 1000);
 
     provider.on('connected', async () => {
       let isNetworkMatch = false;
@@ -78,22 +78,17 @@ function validateRpcNode(chainId: ChainId, rpcUrl: string): Promise<RpcValidatio
         const api = await ApiPromise.create({ provider, throwOnConnect: true, throwOnUnknown: true });
         isNetworkMatch = chainId === api.genesisHash.toHex();
 
-        api.disconnect().catch(console.warn);
+        // api.disconnect().catch(console.warn);
       } catch (error) {
         console.warn(error);
       }
 
       provider.disconnect().catch(console.warn);
-
       resolve(isNetworkMatch ? RpcValidation.VALID : RpcValidation.WRONG_NETWORK);
     });
 
-    provider.on('error', async () => {
-      try {
-        await provider.disconnect();
-      } catch (error) {
-        console.warn(error);
-      }
+    provider.on('error', () => {
+      provider.disconnect().catch(console.warn);
       resolve(RpcValidation.INVALID);
     });
   });
