@@ -1,10 +1,12 @@
 import { RpcValidation } from '@shared/api/network';
+import { RpcNode } from '@shared/core';
 
 export const customRpcUtils = {
   validateWsAddress,
   isRpcValid,
   isRpcInvalid,
   isRpcWrongNetwork,
+  isSameNode,
 };
 
 /**
@@ -26,4 +28,8 @@ function isRpcInvalid(result: RpcValidation): boolean {
 
 function isRpcWrongNetwork(result: RpcValidation): boolean {
   return result === RpcValidation.WRONG_NETWORK;
+}
+
+function isSameNode(nodeOne: RpcNode, nodeTwo: RpcNode): boolean {
+  return nodeOne.name === nodeTwo.name && nodeOne.url === nodeTwo.url;
 }

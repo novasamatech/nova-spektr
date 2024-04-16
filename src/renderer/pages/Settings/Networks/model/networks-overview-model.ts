@@ -10,28 +10,40 @@ import {
 } from '@features/network';
 import { Predicates } from '../lib/constants';
 
+type ConnectionMap = {
+  [chainId: ChainId]: {
+    connections: ConnectionItem[];
+    activeConnection?: ConnectionItem
+  };
+}
+
 const $activeConnectionsMap = combine(activeNetworksModel.$activeNetworks, (list) => {
-  return list.reduce<Record<ChainId, { nodes: ConnectionItem[]; selectedNode?: ConnectionItem }>>((acc, item) => {
-    const nodes = networkSelectorUtils.getConnectionsList(item);
-    const selectedNode = nodes.find((node) =>
+  return list.reduce<ConnectionMap>((acc, item) => {
+    const connections = networkSelectorUtils.getConnectionsList(item);
+    const activeConnection = connections.find((node) =>
       Predicates[item.connection.connectionType]({ type: node.type, node: node.node }, item.connection.activeNode),
     );
 
-    acc[item.chainId] = { nodes, selectedNode };
+    acc[item.chainId] = { connections, activeConnection };
 
     return acc;
   }, {});
 });
 
 const $inactiveConnectionsMap = combine(inactiveNetworksModel.$inactiveNetworks, (list) => {
-  return list.reduce<Record<ChainId, { nodes: ConnectionItem[]; selectedNode: ConnectionItem }>>((acc, item) => {
-    const nodes = networkSelectorUtils.getConnectionsList(item);
-    const selectedNode = nodes.find((node) => node.type === item.connection.connectionType)!;
+  return list.reduce<ConnectionMap>((acc, item) => {
+    const connections = networkSelectorUtils.getConnectionsList(item);
+    const activeConnection = connections.find((node) => node.type === item.connection.connectionType)!;
 
-    acc[item.chainId] = { nodes, selectedNode };
+    acc[item.chainId] = { connections, activeConnection };
 
     return acc;
   }, {});
+});
+
+sample({
+  clock: networksFilterModel.$filteredNetworks,
+  target: [activeNetworksModel.events.networksChanged, inactiveNetworksModel.events.networksChanged],
 });
 
 sample({

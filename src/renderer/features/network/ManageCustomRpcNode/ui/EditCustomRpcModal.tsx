@@ -10,24 +10,26 @@ import { customRpcUtils } from '../lib/custom-rpc-utils';
 import { editCustomRpcModel } from '../model/edit-custom-rpc-model';
 
 export const EditCustomRpcModal = () => {
+  const { t } = useI18n();
+
   const { submit } = useForm(editCustomRpcModel.$editCustomRpcForm);
 
   const isFlowStarted = useUnit(editCustomRpcModel.$isFlowStarted);
-  const network = useUnit(editCustomRpcModel.$selectedNetwork);
+  const chainId = useUnit(editCustomRpcModel.$chainId);
 
-  const [isModalOpen, closeModal] = useModalClose(isFlowStarted, editCustomRpcModel.events.flowFinished);
+  const [isModalOpen, closeModal] = useModalClose(isFlowStarted, editCustomRpcModel.output.flowFinished);
 
   const onSubmit = (event: FormEvent) => {
     event.preventDefault();
     submit();
   };
 
-  if (!network) return null;
+  if (!chainId) return null;
 
   return (
     <BaseModal
       closeButton
-      title={<OperationTitle title={'settings.networks.titleEdit'} chainId={network.chainId} />}
+      title={<OperationTitle title={t('settings.networks.titleEdit')} chainId={chainId} />}
       headerClass="py-3 pl-5 pr-3"
       isOpen={isModalOpen}
       onClose={closeModal}
@@ -79,52 +81,45 @@ const UrlInput = () => {
   } = useForm(editCustomRpcModel.$editCustomRpcForm);
 
   const isLoading = useUnit(editCustomRpcModel.$isLoading);
-  const rpcConnectivityResult = useUnit(editCustomRpcModel.$rpcConnectivityResult);
 
   return (
-    <>
-      <div className="flex flex-col gap-y-2">
-        <Input
-          label={t('settings.networks.addressLabel')}
-          placeholder={t('settings.networks.addressPlaceholder')}
-          value={url.value}
-          invalid={url.hasError()}
-          disabled={isLoading}
-          onChange={url.onChange}
-        />
-        <InputHint active variant="hint">
-          {t('settings.networks.addressHint')}
-        </InputHint>
-        <InputHint variant="error" active={url.hasError()}>
-          {t(url.errorText())}
-        </InputHint>
-      </div>
-
-      <InputHint active={customRpcUtils.isRpcConnectivityValid(rpcConnectivityResult)} variant="success">
-        {t('settings.networks.addressConnected')}
+    <div className="flex flex-col gap-y-2">
+      <Input
+        label={t('settings.networks.addressLabel')}
+        placeholder={t('settings.networks.addressPlaceholder')}
+        value={url.value}
+        invalid={url.hasError()}
+        disabled={isLoading}
+        onChange={url.onChange}
+      />
+      <InputHint variant="error" active={url.hasError()}>
+        {t(url.errorText())}
       </InputHint>
-    </>
+      <InputHint active variant="hint">
+        {t('settings.networks.addressHint')}
+      </InputHint>
+    </div>
   );
 };
 
 const Alerts = () => {
   const { t } = useI18n();
 
-  const network = useUnit(editCustomRpcModel.$selectedNetwork);
-  const rpcConnectivityResult = useUnit(editCustomRpcModel.$rpcConnectivityResult);
+  const chainName = useUnit(editCustomRpcModel.$chainName);
+  const rpcValidation = useUnit(editCustomRpcModel.$rpcValidation);
 
-  if (!network) return null;
+  if (!chainName || !rpcValidation) return null;
 
   return (
     <>
       <Alert
-        active={customRpcUtils.isRpcConnectivityInvalid(rpcConnectivityResult)}
+        active={customRpcUtils.isRpcInvalid(rpcValidation)}
         title={t('settings.networks.addressNoConnect')}
         variant="error"
       />
       <Alert
-        active={customRpcUtils.isRpcConnectivityWrongNetwork(rpcConnectivityResult)}
-        title={t('settings.networks.addressWrongNetwork', { networkName: network.name })}
+        active={customRpcUtils.isRpcWrongNetwork(rpcValidation)}
+        title={t('settings.networks.addressWrongNetwork', { networkName: chainName })}
         variant="error"
       />
     </>
@@ -134,13 +129,12 @@ const Alerts = () => {
 const ActionSection = () => {
   const { t } = useI18n();
 
-  const { isValid } = useForm(editCustomRpcModel.$editCustomRpcForm);
-
   const isLoading = useUnit(editCustomRpcModel.$isLoading);
+  const canSubmit = useUnit(editCustomRpcModel.$canSubmit);
 
   return (
     <div className="flex justify-end mt-7 w-full">
-      <Button type="submit" form="edit-rpc-form" isLoading={isLoading} disabled={isLoading || !isValid}>
+      <Button type="submit" form="edit-rpc-form" isLoading={isLoading} disabled={!canSubmit}>
         {t('settings.networks.editNodeButton')}
       </Button>
     </div>

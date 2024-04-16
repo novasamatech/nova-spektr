@@ -10,6 +10,8 @@ import { customRpcUtils } from '../lib/custom-rpc-utils';
 import { useModalClose } from '@shared/lib/hooks';
 
 export const AddCustomRpcModal = () => {
+  const { t } = useI18n();
+
   const { submit } = useForm(addCustomRpcModel.$addCustomRpcForm);
 
   const chainId = useUnit(addCustomRpcModel.$chainId);
@@ -27,7 +29,7 @@ export const AddCustomRpcModal = () => {
   return (
     <BaseModal
       closeButton
-      title={<OperationTitle title={'settings.networks.titleAdd'} chainId={chainId} />}
+      title={<OperationTitle title={t('settings.networks.titleAdd')} chainId={chainId} />}
       headerClass="py-3 pl-5 pr-3"
       isOpen={isModalOpen}
       onClose={closeModal}

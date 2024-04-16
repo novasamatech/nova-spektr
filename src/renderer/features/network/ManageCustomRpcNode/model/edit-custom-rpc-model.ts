@@ -1,19 +1,40 @@
-import { createEffect, createEvent, createStore, sample } from 'effector';
+import { createEffect, createEvent, createStore, sample, scopeBind, combine } from 'effector';
 import { createForm } from 'effector-forms';
+import { spread, delay } from 'patronum';
+import { WsProvider } from '@polkadot/rpc-provider';
+import { ApiPromise } from '@polkadot/api';
 
-import { networkService } from '@shared/api/network';
-import { ExtendedChain } from '@entities/network';
-import { VerifyRpcParams, EditRpcNodeFxParams, RpcConnectivity } from '../lib/types';
-import { RpcNode } from '@shared/core';
-import { FieldRules, RpcValidationMapping } from '../lib/constants';
+import { RpcValidation } from '@shared/api/network';
+import { Connection, RpcNode, HexString } from '@shared/core';
+import { storageService } from '@shared/api/storage';
+import { networkModel } from '@entities/network';
 import { customRpcUtils } from '../lib/custom-rpc-utils';
+import { FieldRules, CONNECTION_TIMEOUT } from '../lib/constants';
 
-const flowStarted = createEvent<RpcNode>();
-const flowFinished = createEvent();
+type Input = {
+  chainName: string;
+  nodeToEdit: RpcNode;
+  connection: Connection;
+  existingNodes: RpcNode[];
+};
 
-const networkChanged = createEvent<ExtendedChain>();
-const nodeSelected = createEvent<RpcNode>();
-const rpcConnectivityVerified = createEvent<RpcConnectivity>();
+const flowStarted = createEvent<Input>();
+const flowFinished = createEvent<RpcNode>();
+
+const providerConnected = createEvent();
+const providerFailed = createEvent();
+
+const $chainName = createStore<string | null>(null).reset(flowFinished);
+const $nodeToEdit = createStore<RpcNode | null>(null).reset(flowFinished);
+$nodeToEdit.watch((x) => {
+  console.log('=== rpc', x);
+});
+const $connection = createStore<Connection | null>(null).reset(flowFinished);
+const $existingNodes = createStore<RpcNode[]>([]).reset(flowFinished);
+
+const $provider = createStore<WsProvider | null>(null);
+const $rpcValidation = createStore<RpcValidation | null>(null).reset(flowFinished);
+const $isLoading = createStore<boolean>(false).reset(flowFinished);
 
 const $editCustomRpcForm = createForm({
   fields: {
@@ -23,156 +44,233 @@ const $editCustomRpcForm = createForm({
     },
     url: {
       init: '',
-      rules: FieldRules.url,
+      rules: [
+        ...FieldRules.url,
+        {
+          name: 'nodeExist',
+          errorText: 'settings.networks.nodeExist',
+          source: combine({
+            nodeToEdit: $nodeToEdit,
+            existingNodes: $existingNodes,
+          }),
+          validator: (value, _, { nodeToEdit, existingNodes }): boolean => {
+            return existingNodes
+              .filter((node: RpcNode) => node.url !== nodeToEdit.url)
+              .every((node: RpcNode) => node.url !== value);
+          },
+        },
+      ],
     },
   },
   validateOn: ['submit'],
 });
 
-const $selectedNode = createStore<RpcNode | null>(null);
-const $selectedNetwork = createStore<ExtendedChain | null>(null);
-const $rpcConnectivityResult = createStore<RpcConnectivity>(RpcConnectivity.INIT);
+const getWsProviderFx = createEffect((url: string): WsProvider => {
+  const boundConnected = scopeBind(providerConnected, { safe: true });
+  const boundFailed = scopeBind(providerFailed, { safe: true });
 
-const $isFlowStarted = createStore<boolean>(false);
-const $isLoading = createStore<boolean>(false);
+  const provider = new WsProvider(url);
 
-const verifyRpcConnectivityFx = createEffect(async ({ chainId, url }: VerifyRpcParams): Promise<RpcConnectivity> => {
-  const validationResult = await networkService.validateRpcNode(chainId, url);
+  provider.on('connected', boundConnected);
+  provider.on('error', boundFailed);
 
-  return RpcValidationMapping[validationResult];
+  return provider;
 });
 
-// export type EditRpcNodeFxParams = {
-//   network: ExtendedChain;
-//   form: CustomRpcForm;
-//   rpcConnectivityResult: RpcConnectivity;
-//   nodeToEdit: RpcNode;
-//   isFormValid: true;
-// };
-//
-// const editRpcNodeFx = createEffect(({ network, form, nodeToEdit }: EditRpcNodeFxParams) => {
-//   manageNetworkModel.events.rpcNodeUpdated({
-//     chainId: network.chainId,
-//     oldNode: nodeToEdit,
-//     rpcNode: { url: form.url, name: form.name },
-//   });
-// });
+const disconnectProviderFx = createEffect((provider: WsProvider): Promise<void> => {
+  return provider.disconnect();
+});
 
-const updateInitialValuesFx = createEffect(({ url, name }: RpcNode) => {
-  $editCustomRpcForm.fields.url.onChange(url);
-  $editCustomRpcForm.fields.name.onChange(name);
+const getGenesisHashFx = createEffect(async (provider: WsProvider): Promise<HexString> => {
+  const api = await ApiPromise.create({ provider, throwOnConnect: true, throwOnUnknown: true });
+
+  return api.genesisHash.toHex();
+});
+
+const updateRpcNodeFx = createEffect(async ({ id, ...rest }: Connection): Promise<Connection | undefined> => {
+  const connectionId = await storageService.connections.update(id, rest);
+
+  return connectionId ? { id, ...rest } : undefined;
+});
+
+const $canSubmit = combine(
+  {
+    isValid: $editCustomRpcForm.$isValid,
+    isLoading: $isLoading,
+    rpcValidation: $rpcValidation,
+  },
+  ({ isValid, isLoading, rpcValidation }) => {
+    return isValid && !isLoading && (!rpcValidation || customRpcUtils.isRpcValid(rpcValidation));
+  },
+);
+
+sample({
+  clock: flowStarted,
+  target: spread({
+    chainName: $chainName,
+    nodeToEdit: $nodeToEdit,
+    connection: $connection,
+    existingNodes: $existingNodes,
+  }),
 });
 
 sample({
   clock: flowStarted,
-  fn: () => true,
-  target: $isFlowStarted,
-});
-
-sample({
-  clock: flowStarted,
-  target: [$rpcConnectivityResult.reinit, $editCustomRpcForm.reset],
-});
-
-sample({
-  clock: verifyRpcConnectivityFx.pending,
-  target: $isLoading,
+  fn: ({ nodeToEdit }) => nodeToEdit,
+  target: $editCustomRpcForm.setInitialForm,
 });
 
 sample({
   clock: $editCustomRpcForm.fields.url.onChange,
-  target: $rpcConnectivityResult.reinit,
+  target: $rpcValidation.reinit,
 });
 
 sample({
-  clock: networkChanged,
-  target: $selectedNetwork,
+  clock: $editCustomRpcForm.formValidated,
+  fn: () => true,
+  target: $isLoading,
 });
 
 sample({
-  clock: nodeSelected,
-  target: [$selectedNode, updateInitialValuesFx],
+  clock: $editCustomRpcForm.formValidated,
+  fn: ({ url }) => url,
+  target: getWsProviderFx,
 });
 
 sample({
-  clock: rpcConnectivityVerified,
-  target: $rpcConnectivityResult,
+  clock: getWsProviderFx.doneData,
+  target: $provider,
 });
 
-// when the form is submitted, we need to check if the node is responding
 sample({
-  clock: $editCustomRpcForm.submit,
+  clock: [delay(getWsProviderFx.doneData, CONNECTION_TIMEOUT), providerFailed],
+  source: $provider,
+  filter: (provider: WsProvider | null): provider is WsProvider => provider !== null,
+  fn: (provider) => ({
+    loading: false,
+    validation: RpcValidation.INVALID,
+    disconnect: provider,
+  }),
+  target: spread({
+    loading: $isLoading,
+    validation: $rpcValidation,
+    disconnect: disconnectProviderFx,
+  }),
+});
+
+sample({
+  clock: disconnectProviderFx.finally,
+  fn: () => null,
+  target: $provider,
+});
+
+sample({
+  clock: providerConnected,
+  source: $provider,
+  filter: (provider): provider is WsProvider => provider !== null,
+  target: getGenesisHashFx,
+});
+
+sample({
+  clock: getGenesisHashFx.doneData,
   source: {
-    network: $selectedNetwork,
-    url: $editCustomRpcForm.fields.url.$value,
+    connection: $connection,
+    provider: $provider,
   },
-  filter: (params: { network: ExtendedChain | null; url: string }): params is { network: ExtendedChain; url: string } =>
-    Boolean(params.network),
-  fn: ({ network, url }) => ({ chainId: network.chainId, url }),
-  target: verifyRpcConnectivityFx,
+  filter: ({ connection, provider }) => connection !== null && provider !== null,
+  fn: ({ connection, provider }, genesisHash) => ({
+    loading: false,
+    validation: connection!.chainId === genesisHash ? RpcValidation.VALID : RpcValidation.WRONG_NETWORK,
+    disconnect: provider!,
+  }),
+  target: spread({
+    loading: $isLoading,
+    validation: $rpcValidation,
+    disconnect: disconnectProviderFx,
+  }),
 });
 
 sample({
-  clock: verifyRpcConnectivityFx.doneData,
-  target: rpcConnectivityVerified,
-});
-
-// if we are done checking the form data and it is valid
-// we can proceed with editing the rpc node
-sample({
-  clock: verifyRpcConnectivityFx.doneData,
+  clock: getGenesisHashFx.doneData,
   source: {
-    rpcConnectivityResult: $rpcConnectivityResult,
-    network: $selectedNetwork,
-    form: $editCustomRpcForm.$values,
-    nodeToEdit: $selectedNode,
-    isFormValid: $editCustomRpcForm.$isValid,
+    connection: $connection,
+    nodeToEdit: $nodeToEdit,
+    formData: $editCustomRpcForm.$values,
+    rpcValidation: $rpcValidation,
   },
-  filter: (params): params is EditRpcNodeFxParams => {
-    const { rpcConnectivityResult, network, nodeToEdit, isFormValid } = params;
+  filter: ({ connection, nodeToEdit, rpcValidation }) => {
+    const hasConnection = connection !== null;
+    const hasNode = nodeToEdit !== null;
+    const validRpc = rpcValidation !== null && customRpcUtils.isRpcValid(rpcValidation);
 
-    return (
-      isFormValid &&
-      customRpcUtils.isRpcConnectivityValid(rpcConnectivityResult) &&
-      network !== null &&
-      nodeToEdit !== null
-    );
+    return hasConnection && hasNode && validRpc;
   },
-  target: editRpcNodeFx,
+  fn: ({ connection, nodeToEdit, formData }) => {
+    const customNodes = connection!.customNodes.map(node => {
+      return customRpcUtils.isSameNode(node, nodeToEdit!) ? formData : node;
+    });
+
+    return { ...connection!, customNodes };
+  },
+  target: updateRpcNodeFx,
 });
 
 sample({
-  clock: verifyRpcConnectivityFx.fail,
-  fn: ({ error }: { error: Error }) => {
-    console.warn(error);
-
-    return RpcConnectivity.INIT;
-  },
-  target: rpcConnectivityVerified,
+  clock: updateRpcNodeFx.doneData,
+  source: networkModel.$connections,
+  filter: (_, newConnection) => Boolean(newConnection),
+  fn: (connections, newConnection) => ({
+    ...connections,
+    [newConnection!.chainId]: newConnection,
+  }),
+  target: networkModel.$connections,
 });
 
 sample({
-  clock: editRpcNodeFx.doneData,
-  target: $isFlowStarted.reinit,
+  clock: updateRpcNodeFx.doneData,
+  source: $editCustomRpcForm.$values,
+  target: flowFinished,
 });
 
 sample({
   clock: flowFinished,
-  fn: () => false,
-  target: $isFlowStarted,
+  source: $provider,
+  filter: (provider: WsProvider | null): provider is WsProvider => provider !== null,
+  fn: (provider) => ({
+    loading: false,
+    disconnect: provider,
+  }),
+  target: spread({
+    loading: $isLoading,
+    disconnect: disconnectProviderFx,
+  }),
+});
+
+sample({
+  clock: flowFinished,
+  target: $editCustomRpcForm.reset,
 });
 
 export const editCustomRpcModel = {
   $editCustomRpcForm,
-  $rpcConnectivityResult,
-  $selectedNetwork,
-  $isFlowStarted,
+  $chainId: $connection.map((state) => state?.chainId || null),
+  $chainName,
+  $rpcValidation,
+  $isFlowStarted: $connection.map((state) => Boolean(state)),
   $isLoading,
+  $canSubmit,
 
   events: {
     flowStarted,
+  },
+
+  output: {
     flowFinished,
-    networkChanged,
-    nodeSelected,
   },
 };
+
+// {
+//   "url": "wss://rpc.ibp.network/westend", wss://westend-rpc.blockops.network/ws
+//   "name": "IBP network node"
+// },
+

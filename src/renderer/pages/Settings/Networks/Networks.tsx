@@ -21,15 +21,14 @@ import {
   NetworksFilter,
   NetworkSelector,
   AddCustomRpcModal,
-  // EditCustomRpcModal,
+  EditCustomRpcModal,
   activeNetworksModel,
   inactiveNetworksModel,
   networksFilterModel,
   networkSelectorModel,
   addCustomRpcModel,
-  // editCustomRpcModel,
+  editCustomRpcModel,
 } from '@features/network';
-import noop from 'lodash/noop';
 
 const MAX_LIGHT_CLIENTS = 3;
 
@@ -41,11 +40,13 @@ export const Networks = () => {
   const navigate = useNavigate();
   const { confirm } = useConfirmContext();
 
-  const activeNetworks = useUnit(activeNetworksModel.$activeNetworks);
-  const inactiveNetworks = useUnit(inactiveNetworksModel.$inactiveNetworks);
   const connections = useUnit(networkModel.$connections);
   const filterQuery = useUnit(networksFilterModel.$filterQuery);
+
+  const activeNetworks = useUnit(activeNetworksModel.$activeNetworks);
   const activeConnectionsMap = useUnit(networksOverviewModel.$activeConnectionsMap);
+
+  const inactiveNetworks = useUnit(inactiveNetworksModel.$inactiveNetworks);
   const inactiveConnectionsMap = useUnit(networksOverviewModel.$inactiveConnectionsMap);
 
   const [isNetworksModalOpen, toggleNetworksModal] = useToggle(true);
@@ -190,6 +191,23 @@ export const Networks = () => {
     };
   };
 
+  const onAddCustomNode = (network: ExtendedChain) => {
+    addCustomRpcModel.events.flowStarted({
+      chainName: network.name,
+      connection: network.connection,
+      existingNodes: network.nodes,
+    })
+  };
+
+  const onEditCustomNode = (network: ExtendedChain, node: RpcNode) => {
+    editCustomRpcModel.events.flowStarted({
+      chainName: network.name,
+      nodeToEdit: node,
+      connection: network.connection,
+      existingNodes: network.nodes,
+    })
+  };
+
   return (
     <BaseModal
       closeButton
@@ -210,19 +228,12 @@ export const Networks = () => {
           {(network) => (
             <InactiveNetwork networkItem={network}>
               <NetworkSelector
-                nodesList={inactiveConnectionsMap[network.chainId].nodes}
-                selectedConnection={inactiveConnectionsMap[network.chainId].selectedNode}
+                connectionList={inactiveConnectionsMap[network.chainId].connections}
+                activeConnection={inactiveConnectionsMap[network.chainId].activeConnection}
                 onChange={changeConnection(network)}
-                onEditCustomNode={noop}
-                // onEditCustomNode={editCustomRpcModel.events.flowStarted}
                 onRemoveCustomNode={removeCustomNode(network.chainId)}
-                onAddCustomNode={() =>
-                  addCustomRpcModel.events.flowStarted({
-                    chainName: network.name,
-                    connection: network.connection,
-                    existingNodes: network.nodes,
-                  })
-                }
+                onAddCustomNode={() => onAddCustomNode(network)}
+                onEditCustomNode={(node) => onEditCustomNode(network, node)}
               />
             </InactiveNetwork>
           )}
@@ -236,19 +247,12 @@ export const Networks = () => {
           {(network) => (
             <ActiveNetwork networkItem={network}>
               <NetworkSelector
-                nodesList={activeConnectionsMap[network.chainId].nodes}
-                selectedConnection={activeConnectionsMap[network.chainId].selectedNode}
+                connectionList={activeConnectionsMap[network.chainId].connections}
+                activeConnection={activeConnectionsMap[network.chainId].activeConnection}
                 onChange={changeConnection(network)}
-                onEditCustomNode={noop}
-                // onEditCustomNode={editCustomRpcModel.events.flowStarted}
                 onRemoveCustomNode={removeCustomNode(network.chainId)}
-                onAddCustomNode={() =>
-                  addCustomRpcModel.events.flowStarted({
-                    chainName: network.name,
-                    connection: network.connection,
-                    existingNodes: network.nodes,
-                  })
-                }
+                onAddCustomNode={() => onAddCustomNode(network)}
+                onEditCustomNode={(node) => onEditCustomNode(network, node)}
               />
             </ActiveNetwork>
           )}
@@ -258,7 +262,7 @@ export const Networks = () => {
       </div>
 
       <AddCustomRpcModal />
-      {/*<EditCustomRpcModal />*/}
+      <EditCustomRpcModal />
     </BaseModal>
   );
 };

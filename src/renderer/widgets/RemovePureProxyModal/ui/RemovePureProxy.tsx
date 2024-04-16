@@ -18,7 +18,6 @@ export const RemovePureProxy = () => {
 
   const step = useUnit(removePureProxyModel.$step);
   const chain = useUnit(removePureProxyModel.$chain);
-  const isMultisig = useUnit(removePureProxyModel.$isMultisig);
   const shouldRemovePureProxy = useUnit(removePureProxyModel.$shouldRemovePureProxy);
 
   const [isModalOpen, closeModal] = useModalClose(

@@ -1,6 +1,4 @@
-import { RpcConnectivity } from './types';
 import { customRpcUtils } from './custom-rpc-utils';
-import { RpcValidation } from '@shared/api/network';
 
 const RPC_NAME_MAX_LENGTH = 50;
 const RPC_NAME_MIN_LENGTH = 3;
@@ -24,11 +22,4 @@ export const FieldRules = {
       validator: customRpcUtils.validateWsAddress,
     },
   ],
-};
-
-// TODO: remove
-export const RpcValidationMapping = {
-  [RpcValidation.INVALID]: RpcConnectivity.INVALID,
-  [RpcValidation.VALID]: RpcConnectivity.VALID,
-  [RpcValidation.WRONG_NETWORK]: RpcConnectivity.WRONG_NETWORK,
 };

@@ -786,7 +786,7 @@
       "maxLengthNameError": "Name must be between 3 and 50 characters long",
       "nameLabel": "Name",
       "namePlaceholder": "Enter node name",
-      "nodeExist": "Node already exists",
+      "nodeExist": "RPC node already exists",
       "requiredNameError": "Name is required",
       "searchPlaceholder": "Search",
       "selectorAddNodeButton": "Add custom node",

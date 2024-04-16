@@ -8,7 +8,6 @@ import { RpcValidation } from '@shared/api/network';
 import { Connection, RpcNode, HexString } from '@shared/core';
 import { storageService } from '@shared/api/storage';
 import { networkModel } from '@entities/network';
-import { CustomRpcForm } from '../lib/types';
 import { customRpcUtils } from '../lib/custom-rpc-utils';
 import { FieldRules, CONNECTION_TIMEOUT } from '../lib/constants';
 
@@ -32,7 +31,7 @@ const $provider = createStore<WsProvider | null>(null);
 const $rpcValidation = createStore<RpcValidation | null>(null).reset(flowFinished);
 const $isLoading = createStore<boolean>(false).reset(flowFinished);
 
-const $addCustomRpcForm = createForm<CustomRpcForm>({
+const $addCustomRpcForm = createForm({
   fields: {
     name: {
       init: '',
@@ -204,10 +203,7 @@ sample({
 
 sample({
   clock: addRpcNodeFx.doneData,
-  filter: (newConnection: Connection | undefined): newConnection is Connection => {
-    return newConnection !== undefined && newConnection.customNodes.length > 0;
-  },
-  fn: (newConnection) => newConnection.customNodes.at(-1)!,
+  source: $addCustomRpcForm.$values,
   target: flowFinished,
 });
 
