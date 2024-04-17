@@ -4,10 +4,10 @@ import { spread, delay } from 'patronum';
 import { WsProvider } from '@polkadot/rpc-provider';
 import { ApiPromise } from '@polkadot/api';
 
-import { RpcValidation } from '@shared/api/network';
 import { Connection, RpcNode, HexString, ChainId } from '@shared/core';
 import { storageService } from '@shared/api/storage';
 import { networkModel } from '@entities/network';
+import { RpcValidation } from '../lib/types';
 import { customRpcUtils } from '../lib/custom-rpc-utils';
 import { FieldRules, CONNECTION_TIMEOUT } from '../lib/constants';
 
