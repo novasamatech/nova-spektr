@@ -1,11 +1,11 @@
-import { createEffect, createEvent, createStore, sample, scopeBind, combine } from 'effector';
+import { createEffect, createEvent, createStore, sample, scopeBind, combine, merge } from 'effector';
 import { createForm } from 'effector-forms';
 import { spread, delay } from 'patronum';
 import { WsProvider } from '@polkadot/rpc-provider';
 import { ApiPromise } from '@polkadot/api';
 
 import { RpcValidation } from '@shared/api/network';
-import { Connection, RpcNode, HexString } from '@shared/core';
+import { Connection, RpcNode, HexString, ChainId } from '@shared/core';
 import { storageService } from '@shared/api/storage';
 import { networkModel } from '@entities/network';
 import { customRpcUtils } from '../lib/custom-rpc-utils';
@@ -19,22 +19,21 @@ type Input = {
 };
 
 const flowStarted = createEvent<Input>();
-const flowFinished = createEvent<RpcNode>();
+const flowClosed = createEvent();
+const flowFinished = createEvent<{ chainId: ChainId; node: RpcNode }>();
+const storesReset = merge([flowClosed, flowFinished]);
 
 const providerConnected = createEvent();
 const providerFailed = createEvent();
 
-const $chainName = createStore<string | null>(null).reset(flowFinished);
-const $nodeToEdit = createStore<RpcNode | null>(null).reset(flowFinished);
-$nodeToEdit.watch((x) => {
-  console.log('=== rpc', x);
-});
-const $connection = createStore<Connection | null>(null).reset(flowFinished);
-const $existingNodes = createStore<RpcNode[]>([]).reset(flowFinished);
+const $chainName = createStore<string | null>(null).reset(storesReset);
+const $nodeToEdit = createStore<RpcNode | null>(null).reset(storesReset);
+const $connection = createStore<Connection | null>(null).reset(storesReset);
+const $existingNodes = createStore<RpcNode[]>([]).reset(storesReset);
 
 const $provider = createStore<WsProvider | null>(null);
-const $rpcValidation = createStore<RpcValidation | null>(null).reset(flowFinished);
-const $isLoading = createStore<boolean>(false).reset(flowFinished);
+const $rpcValidation = createStore<RpcValidation | null>(null).reset(storesReset);
+const $isLoading = createStore<boolean>(false).reset(storesReset);
 
 const $editCustomRpcForm = createForm({
   fields: {
@@ -78,6 +77,10 @@ const getWsProviderFx = createEffect((url: string): WsProvider => {
 });
 
 const disconnectProviderFx = createEffect((provider: WsProvider): Promise<void> => {
+  provider.on('connected', () => undefined);
+  provider.on('disconnected', () => undefined);
+  provider.on('error', () => undefined);
+
   return provider.disconnect();
 });
 
@@ -87,7 +90,7 @@ const getGenesisHashFx = createEffect(async (provider: WsProvider): Promise<HexS
   return api.genesisHash.toHex();
 });
 
-const updateRpcNodeFx = createEffect(async ({ id, ...rest }: Connection): Promise<Connection | undefined> => {
+const updateConnectionFx = createEffect(async ({ id, ...rest }: Connection): Promise<Connection | undefined> => {
   const connectionId = await storageService.connections.update(id, rest);
 
   return connectionId ? { id, ...rest } : undefined;
@@ -206,17 +209,17 @@ sample({
     return hasConnection && hasNode && validRpc;
   },
   fn: ({ connection, nodeToEdit, formData }) => {
-    const customNodes = connection!.customNodes.map(node => {
+    const customNodes = connection!.customNodes.map((node) => {
       return customRpcUtils.isSameNode(node, nodeToEdit!) ? formData : node;
     });
 
     return { ...connection!, customNodes };
   },
-  target: updateRpcNodeFx,
+  target: updateConnectionFx,
 });
 
 sample({
-  clock: updateRpcNodeFx.doneData,
+  clock: updateConnectionFx.doneData,
   source: networkModel.$connections,
   filter: (_, newConnection) => Boolean(newConnection),
   fn: (connections, newConnection) => ({
@@ -227,8 +230,13 @@ sample({
 });
 
 sample({
-  clock: updateRpcNodeFx.doneData,
+  clock: updateConnectionFx.doneData,
   source: $editCustomRpcForm.$values,
+  filter: (_, connection) => connection !== null,
+  fn: (formData, connection) => ({
+    chainId: connection!.chainId,
+    node: formData,
+  }),
   target: flowFinished,
 });
 
@@ -247,7 +255,7 @@ sample({
 });
 
 sample({
-  clock: flowFinished,
+  clock: storesReset,
   target: $editCustomRpcForm.reset,
 });
 
@@ -262,15 +270,10 @@ export const editCustomRpcModel = {
 
   events: {
     flowStarted,
+    flowClosed,
   },
 
   output: {
     flowFinished,
   },
 };
-
-// {
-//   "url": "wss://rpc.ibp.network/westend", wss://westend-rpc.blockops.network/ws
-//   "name": "IBP network node"
-// },
-

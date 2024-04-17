@@ -5,14 +5,12 @@ import { useUnit } from 'effector-react';
 import { useI18n, useConfirmContext } from '@app/providers';
 import { Paths } from '@shared/routes';
 import { BaseModal, InfoLink } from '@shared/ui';
-import { useToggle } from '@shared/lib/hooks';
-import { DEFAULT_TRANSITION } from '@shared/lib/utils';
+import { useModalClose } from '@shared/lib/hooks';
 import type { RpcNode, ChainId } from '@shared/core';
 import { ConnectionType } from '@shared/core';
 import { networkModel, ExtendedChain, networkUtils } from '@entities/network';
 import { SelectorPayload } from '@features/network/NetworkSelector';
-import { manageNetworkModel } from './model/manage-network-model';
-import { networksOverviewModel } from './model/networks-overview-model';
+import { networksOverviewModel } from '../model/networks-overview-model';
 import {
   EmptyNetworks,
   NetworkList,
@@ -23,6 +21,7 @@ import {
   AddCustomRpcModal,
   EditCustomRpcModal,
   activeNetworksModel,
+  removeCustomRpcModel,
   inactiveNetworksModel,
   networksFilterModel,
   networkSelectorModel,
@@ -49,12 +48,7 @@ export const Networks = () => {
   const inactiveNetworks = useUnit(inactiveNetworksModel.$inactiveNetworks);
   const inactiveConnectionsMap = useUnit(networksOverviewModel.$inactiveConnectionsMap);
 
-  const [isNetworksModalOpen, toggleNetworksModal] = useToggle(true);
-
-  const closeNetworksModal = () => {
-    toggleNetworksModal();
-    setTimeout(() => navigate(Paths.SETTINGS), DEFAULT_TRANSITION);
-  };
+  const [isNetworksModalOpen, closeModal] = useModalClose(true, () => navigate(Paths.SETTINGS));
 
   const confirmRemoveCustomNode = (name: string): Promise<boolean> => {
     return confirm({
@@ -101,19 +95,6 @@ export const Networks = () => {
     });
   };
 
-  const removeCustomNode = (chainId: ChainId) => {
-    return async (node: RpcNode): Promise<void> => {
-      const proceed = await confirmRemoveCustomNode(node.name);
-      if (!proceed) return;
-
-      try {
-        manageNetworkModel.events.rpcNodeRemoved({ chainId, rpcNode: node });
-      } catch (error) {
-        console.warn(error);
-      }
-    };
-  };
-
   const disableNetwork = ({ connection, name }: ExtendedChain) => {
     return async (): Promise<void> => {
       let proceed = false;
@@ -124,7 +105,7 @@ export const Networks = () => {
       }
       if (!proceed) return;
 
-      networkSelectorModel.events.chainDisabled(connection.chainId);
+      networkSelectorModel.events.networkDisabled(connection.chainId);
     };
   };
 
@@ -154,30 +135,6 @@ export const Networks = () => {
     };
   };
 
-  // const changeCustomNode = (network: ExtendedChain) => {
-  //   return (node?: RpcNode) => {
-  //     setNodeToEdit(node);
-  //     setNetwork(network);
-  //
-  //     toggleCustomRpc();
-  //   };
-  // };
-
-  // const closeCustomRpcModal = async (node?: RpcNode): Promise<void> => {
-  //   toggleCustomRpc();
-  //
-  //   if (node && network && network.connection.activeNode === nodeToEdit) {
-  //     manageNetworkModel.events.rpcNodeUpdated({ chainId: network.chainId, oldNode: nodeToEdit, rpcNode: node });
-  //   } else if (node && network) {
-  //     manageNetworkModel.events.rpcNodeAdded({ chainId: network.chainId, rpcNode: node });
-  //   }
-  //
-  //   setTimeout(() => {
-  //     setNodeToEdit(undefined);
-  //     setNetwork(undefined);
-  //   }, DEFAULT_TRANSITION);
-  // };
-
   const changeConnection = (network: ExtendedChain) => {
     const handleDisableNetwork = disableNetwork(network);
     const handleConnectToNode = connectToNode(network);
@@ -191,21 +148,28 @@ export const Networks = () => {
     };
   };
 
-  const onAddCustomNode = (network: ExtendedChain) => {
+  const removeCustomNode = async (chainId: ChainId, node: RpcNode) => {
+    const proceed = await confirmRemoveCustomNode(node.name);
+    if (!proceed) return;
+
+    removeCustomRpcModel.events.rpcNodeRemoved({ chainId, node });
+  };
+
+  const addCustomNode = (network: ExtendedChain) => {
     addCustomRpcModel.events.flowStarted({
       chainName: network.name,
       connection: network.connection,
-      existingNodes: network.nodes,
-    })
+      existingNodes: network.nodes.concat(network.connection.customNodes),
+    });
   };
 
-  const onEditCustomNode = (network: ExtendedChain, node: RpcNode) => {
+  const editCustomNode = (network: ExtendedChain, node: RpcNode) => {
     editCustomRpcModel.events.flowStarted({
       chainName: network.name,
       nodeToEdit: node,
       connection: network.connection,
-      existingNodes: network.nodes,
-    })
+      existingNodes: network.nodes.concat(network.connection.customNodes),
+    });
   };
 
   return (
@@ -215,7 +179,7 @@ export const Networks = () => {
       panelClass="w-[784px]"
       isOpen={isNetworksModalOpen}
       title={t('settings.networks.title')}
-      onClose={closeNetworksModal}
+      onClose={closeModal}
     >
       <NetworksFilter className="mx-5" />
 
@@ -231,9 +195,9 @@ export const Networks = () => {
                 connectionList={inactiveConnectionsMap[network.chainId].connections}
                 activeConnection={inactiveConnectionsMap[network.chainId].activeConnection}
                 onChange={changeConnection(network)}
-                onRemoveCustomNode={removeCustomNode(network.chainId)}
-                onAddCustomNode={() => onAddCustomNode(network)}
-                onEditCustomNode={(node) => onEditCustomNode(network, node)}
+                onRemoveCustomNode={(node) => removeCustomNode(network.chainId, node)}
+                onAddCustomNode={() => addCustomNode(network)}
+                onEditCustomNode={(node) => editCustomNode(network, node)}
               />
             </InactiveNetwork>
           )}
@@ -250,9 +214,9 @@ export const Networks = () => {
                 connectionList={activeConnectionsMap[network.chainId].connections}
                 activeConnection={activeConnectionsMap[network.chainId].activeConnection}
                 onChange={changeConnection(network)}
-                onRemoveCustomNode={removeCustomNode(network.chainId)}
-                onAddCustomNode={() => onAddCustomNode(network)}
-                onEditCustomNode={(node) => onEditCustomNode(network, node)}
+                onRemoveCustomNode={(node) => removeCustomNode(network.chainId, node)}
+                onAddCustomNode={() => addCustomNode(network)}
+                onEditCustomNode={(node) => editCustomNode(network, node)}
               />
             </ActiveNetwork>
           )}

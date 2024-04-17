@@ -17,7 +17,7 @@ export const EditCustomRpcModal = () => {
   const isFlowStarted = useUnit(editCustomRpcModel.$isFlowStarted);
   const chainId = useUnit(editCustomRpcModel.$chainId);
 
-  const [isModalOpen, closeModal] = useModalClose(isFlowStarted, editCustomRpcModel.output.flowFinished);
+  const [isModalOpen, closeModal] = useModalClose(isFlowStarted, editCustomRpcModel.events.flowClosed);
 
   const onSubmit = (event: FormEvent) => {
     event.preventDefault();

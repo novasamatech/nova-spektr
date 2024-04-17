@@ -26,6 +26,7 @@ import {
 
 const networkStarted = createEvent();
 const chainConnected = createEvent<ChainId>();
+const chainDisconnected = createEvent<ChainId>();
 const connectionStatusChanged = createEvent<{ chainId: ChainId; status: ConnectionStatus }>();
 
 const connected = createEvent<ChainId>();
@@ -97,24 +98,6 @@ const initConnectionsFx = createEffect((chains: Record<ChainId, Chain>) => {
   Object.keys(chains).forEach((chainId) => chainConnected(chainId as ChainId));
 });
 
-const updateConnectionFx = createEffect((connection: Connection): Promise<Connection | undefined> => {
-  return storageService.connections.put(connection);
-});
-
-type DisconnectParams = {
-  chainId: ChainId;
-  providers: Record<ChainId, ProviderWithMetadata>;
-};
-const disconnectProviderFx = createEffect(async ({ chainId, providers }: DisconnectParams): Promise<ChainId> => {
-  await providers[chainId].disconnect();
-
-  providers[chainId].on('connected', () => undefined);
-  providers[chainId].on('disconnected', () => undefined);
-  providers[chainId].on('error', () => undefined);
-
-  return chainId;
-});
-
 type CreateProviderParams = {
   chainId: ChainId;
   nodes: string[];
@@ -158,6 +141,10 @@ const createProviderFx = createEffect(
     return provider;
   },
 );
+
+const disconnectProviderFx = createEffect((provider: ProviderWithMetadata): Promise<void> => {
+  return provider.disconnect();
+});
 
 type CreateApiParams = {
   chainId: ChainId;
@@ -345,6 +332,14 @@ sample({
   target: $apis,
 });
 
+sample({
+  clock: chainDisconnected,
+  source: $providers,
+  filter: (providers, chainId) => Boolean(providers[chainId]),
+  fn: (providers, chainId) => providers[chainId],
+  target: disconnectProviderFx,
+});
+
 // =====================================================
 // ================ Metadata section ===================
 // =====================================================
@@ -415,18 +410,19 @@ sample({
 export const networkModel = {
   $chains,
   $apis,
-  $providers,
   $connectionStatuses,
   $connections,
+
   events: {
     networkStarted,
     chainConnected,
+    chainDisconnected,
   },
+
   output: {
     connectionStatusChanged,
   },
-  effects: {
-    updateConnectionFx,
-    disconnectProviderFx,
-  },
+
+  /* Internal API (tests only) */
+  _$providers: $providers,
 };

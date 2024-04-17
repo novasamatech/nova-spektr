@@ -1,22 +1,25 @@
 import { sample, combine } from 'effector';
 
 import { ChainId } from '@shared/core';
-import type { ConnectionItem } from '@features/network/NetworkSelector';
+import { Predicates } from '../lib/constants';
+import { networkModel, networkUtils } from '@entities/network';
+import { ConnectionItem, networkSelectorModel } from '@features/network/NetworkSelector';
+import { removeCustomRpcModel } from '@features/network/ManageCustomRpcNode';
 import {
   networksFilterModel,
   activeNetworksModel,
   inactiveNetworksModel,
   networkSelectorUtils,
+  editCustomRpcModel,
+  addCustomRpcModel,
 } from '@features/network';
-import { Predicates } from '../lib/constants';
 
 type ConnectionMap = {
   [chainId: ChainId]: {
     connections: ConnectionItem[];
-    activeConnection?: ConnectionItem
+    activeConnection?: ConnectionItem;
   };
-}
-
+};
 const $activeConnectionsMap = combine(activeNetworksModel.$activeNetworks, (list) => {
   return list.reduce<ConnectionMap>((acc, item) => {
     const connections = networkSelectorUtils.getConnectionsList(item);
@@ -49,6 +52,52 @@ sample({
 sample({
   clock: networksFilterModel.$filteredNetworks,
   target: [activeNetworksModel.events.networksChanged, inactiveNetworksModel.events.networksChanged],
+});
+
+sample({
+  clock: addCustomRpcModel.output.flowFinished,
+  source: networkModel.$connections,
+  filter: (connections, { chainId }) => {
+    return networkUtils.isEnabledConnection(connections[chainId]);
+  },
+  fn: (_, data) => data,
+  target: networkSelectorModel.events.rpcNodeSelected,
+});
+
+sample({
+  clock: editCustomRpcModel.output.flowFinished,
+  source: networkModel.$connections,
+  filter: (connections, { chainId, node }) => {
+    const isEnabled = networkUtils.isEnabledConnection(connections[chainId]);
+    const isRpc = networkUtils.isRpcConnection(connections[chainId]);
+    const activeNode = connections[chainId].activeNode;
+    const isEdited = activeNode?.name === node.name && activeNode?.url === node.url;
+
+    return isEnabled && isRpc && isEdited;
+  },
+  fn: (_, data) => data,
+  target: networkSelectorModel.events.rpcNodeSelected,
+});
+
+sample({
+  clock: removeCustomRpcModel.output.flowFinished,
+  source: {
+    chains: networkModel.$chains,
+    connections: networkModel.$connections,
+  },
+  filter: ({ connections }, { chainId, node }) => {
+    const isEnabled = networkUtils.isEnabledConnection(connections[chainId]);
+    const isRpc = networkUtils.isRpcConnection(connections[chainId]);
+    const activeNode = connections[chainId].activeNode;
+    const isDeleted = activeNode?.name === node.name && activeNode?.url === node.url;
+
+    return isEnabled && isRpc && isDeleted;
+  },
+  fn: ({ chains }, { chainId }) => ({
+    chainId,
+    node: chains[chainId].nodes[0],
+  }),
+  target: networkSelectorModel.events.rpcNodeSelected,
 });
 
 export const networksOverviewModel = {

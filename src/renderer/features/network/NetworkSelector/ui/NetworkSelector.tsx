@@ -9,7 +9,6 @@ import { SelectButtonStyle, OptionStyle } from '@shared/ui/Dropdowns/common/cons
 import { useScrollTo } from '@shared/lib/hooks';
 import { CommonInputStyles, CommonInputStylesTheme } from '@shared/ui/Inputs/common/styles';
 import { ConnectionType } from '@shared/core';
-import { networkSelectorUtils } from '../lib/network-selector-utils';
 import type { Theme } from '@shared/ui/types';
 import type { RpcNode } from '@shared/core';
 import type { ConnectionItem, SelectorPayload } from '../lib/types';
@@ -108,15 +107,13 @@ export const NetworkSelector = ({
                                 onEditCustomNode(node);
                               }}
                             />
-                            {networkSelectorUtils.canDeleteNode(node.url, activeConnection?.node?.url) && (
-                              <IconButton
-                                name="delete"
-                                onClick={(event) => {
-                                  event.stopPropagation();
-                                  onRemoveCustomNode(node);
-                                }}
-                              />
-                            )}
+                            <IconButton
+                              name="delete"
+                              onClick={(event) => {
+                                event.stopPropagation();
+                                onRemoveCustomNode(node);
+                              }}
+                            />
                           </>
                         )}
                       </div>
