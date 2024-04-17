@@ -3,14 +3,14 @@ import type { AccountId, ChainId, Threshold, ID, NoID } from './general';
 import { ChainType, CryptoType } from './general';
 import { ProxyType, ProxyVariant } from './proxy';
 
-type AbstractAccount = {
+type Account_NEW = {
   id: ID;
   walletId: ID;
   name: string;
   type: AccountType;
 };
 
-export type BaseAccount = AbstractAccount & {
+export type BaseAccount = Account_NEW & {
   accountId: AccountId;
   chainType: ChainType;
   cryptoType: CryptoType;

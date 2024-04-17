@@ -1,6 +1,14 @@
 import type { ID } from './general';
+import type {
+  BaseAccount,
+  ShardAccount,
+  ChainAccount,
+  MultisigAccount,
+  ProxiedAccount,
+  WalletConnectAccount,
+} from './account';
 
-type AbstractWallet = {
+type Wallet_NEW = {
   id: ID;
   name: string;
   type: WalletType;
@@ -8,30 +16,48 @@ type AbstractWallet = {
   signingType: SigningType;
 };
 
-export type PolkadotVaultWallet = AbstractWallet;
-export type SingleShardWallet = AbstractWallet;
-export type MultiShardWallet = AbstractWallet;
-export type WatchOnlyWallet = AbstractWallet;
-export type MultisigWallet = AbstractWallet;
-export type ProxiedWallet = AbstractWallet;
+export type PolkadotVaultWallet = Wallet_NEW & {
+  accounts: (BaseAccount | ChainAccount | ShardAccount)[];
+};
 
-export type WalletConnectWallet = AbstractWallet & {
+export type SingleShardWallet = Wallet_NEW & {
+  account: BaseAccount;
+};
+
+export type MultiShardWallet = Wallet_NEW & {
+  accounts: (BaseAccount | ChainAccount)[];
+};
+
+export type WatchOnlyWallet = Wallet_NEW & {
+  account: BaseAccount;
+};
+
+export type MultisigWallet = Wallet_NEW & {
+  account: MultisigAccount; // TODO: try to move signatories data out of account
+};
+
+export type ProxiedWallet = Wallet_NEW & {
+  account: ProxiedAccount;
+};
+
+export type WalletConnectWallet = Wallet_NEW & {
+  accounts: WalletConnectAccount[];
   isConnected: boolean;
 };
 
 export type NovaWalletWallet = WalletConnectWallet;
 
-export type Wallet =
-  | PolkadotVaultWallet
-  | SingleShardWallet
-  | MultiShardWallet
-  | WatchOnlyWallet
-  | MultisigWallet
-  | WalletConnectWallet
-  | NovaWalletWallet
-  | ProxiedWallet;
+// export type Wallet =
+//   | PolkadotVaultWallet
+//   | SingleShardWallet
+//   | MultiShardWallet
+//   | WatchOnlyWallet
+//   | MultisigWallet
+//   | WalletConnectWallet
+//   | NovaWalletWallet
+//   | ProxiedWallet;
 
-export type WalletsMap = Record<ID, Wallet>;
+export type WalletsMap = Record<ID, Wallet_NEW>;
 
 export const enum WalletType {
   WATCH_ONLY = 'wallet_wo',
