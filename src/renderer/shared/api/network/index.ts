@@ -1,4 +1,4 @@
-export { ProviderType, RpcValidation, type ProviderWithMetadata } from './lib/types';
+export { ProviderType, type ProviderWithMetadata } from './lib/types';
 export { networkService } from './service/networkService';
 export { chainsService } from './service/chainsService';
 export { metadataService } from './service/metadataService';

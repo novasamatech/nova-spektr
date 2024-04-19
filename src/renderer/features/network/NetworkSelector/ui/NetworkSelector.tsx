@@ -9,13 +9,9 @@ import { SelectButtonStyle, OptionStyle } from '@shared/ui/Dropdowns/common/cons
 import { useScrollTo } from '@shared/lib/hooks';
 import { CommonInputStyles, CommonInputStylesTheme } from '@shared/ui/Inputs/common/styles';
 import { ConnectionType } from '@shared/core';
-import { networkSelectorUtils } from '../lib/network-selector-utils';
 import type { Theme } from '@shared/ui/types';
 import type { RpcNode } from '@shared/core';
 import type { ConnectionItem, SelectorPayload } from '../lib/types';
-
-const OptionsContainerStyle =
-  'mt-1 absolute z-20 py-1 px-1 w-full border border-token-container-border rounded bg-input-background shadow-card-shadow';
 
 const TRANSITION_DURATION = 100;
 
@@ -27,27 +23,29 @@ const Title = {
 };
 
 type Props = {
-  nodesList: ConnectionItem[];
-  selectedConnection?: ConnectionItem;
+  connectionList: ConnectionItem[];
+  activeConnection?: ConnectionItem;
   theme?: Theme;
   onChange: (value: SelectorPayload) => void;
+  onEditCustomNode: (node: RpcNode) => void;
   onRemoveCustomNode: (node: RpcNode) => void;
-  onChangeCustomNode: (node?: RpcNode) => void;
+  onAddCustomNode: () => void;
 };
 
 export const NetworkSelector = ({
-  nodesList,
-  selectedConnection,
+  connectionList,
+  activeConnection,
   theme = 'light',
   onChange,
+  onEditCustomNode,
   onRemoveCustomNode,
-  onChangeCustomNode,
+  onAddCustomNode,
 }: Props) => {
   const { t } = useI18n();
   const [ref, scroll] = useScrollTo<HTMLDivElement>(TRANSITION_DURATION);
 
   return (
-    <Listbox value={selectedConnection || {}} onChange={onChange}>
+    <Listbox value={activeConnection || {}} onChange={onChange}>
       {({ open }) => (
         <div className="relative">
           <Listbox.Button
@@ -61,7 +59,7 @@ export const NetworkSelector = ({
             onClick={scroll}
           >
             <FootnoteText className="truncate">
-              {(selectedConnection && Title[selectedConnection.type](t, selectedConnection.node?.name)) ||
+              {(activeConnection && Title[activeConnection.type](t, activeConnection.node?.name)) ||
                 t('settings.networks.selectorPlaceholder')}
             </FootnoteText>
             <Icon name="down" size={16} />
@@ -76,9 +74,12 @@ export const NetworkSelector = ({
             leaveFrom="opacity-100 translate-y-1"
             leaveTo="opacity-0 translate-y-0"
           >
-            <div ref={ref} className={OptionsContainerStyle}>
+            <div
+              ref={ref}
+              className="mt-1 absolute z-20 py-1 px-1 w-full border border-token-container-border rounded bg-input-background shadow-card-shadow"
+            >
               <Listbox.Options className="max-h-64 overflow-y-auto overscroll-contain">
-                {nodesList.map((data) => {
+                {connectionList.map((data) => {
                   const { type, node, isCustom } = data;
 
                   return (
@@ -95,7 +96,7 @@ export const NetworkSelector = ({
                           <FootnoteText className="text-text-secondary truncate">
                             {Title[type](t, node?.name)}
                           </FootnoteText>
-                          {node?.url && <HelpText className="text-text-tertiary truncate">{node.url}</HelpText>}
+                          <HelpText className="text-text-tertiary truncate">{node?.url}</HelpText>
                         </div>
                         {node && isCustom && (
                           <>
@@ -103,18 +104,16 @@ export const NetworkSelector = ({
                               name="edit"
                               onClick={(event) => {
                                 event.stopPropagation();
-                                onChangeCustomNode(node);
+                                onEditCustomNode(node);
                               }}
                             />
-                            {networkSelectorUtils.canDeleteNode(node.url, selectedConnection?.node?.url) && (
-                              <IconButton
-                                name="delete"
-                                onClick={(event) => {
-                                  event.stopPropagation();
-                                  onRemoveCustomNode(node);
-                                }}
-                              />
-                            )}
+                            <IconButton
+                              name="delete"
+                              onClick={(event) => {
+                                event.stopPropagation();
+                                onRemoveCustomNode(node);
+                              }}
+                            />
                           </>
                         )}
                       </div>
@@ -122,16 +121,15 @@ export const NetworkSelector = ({
                   );
                 })}
               </Listbox.Options>
-              <Listbox.Option as="div" value={null} className="h-8.5">
-                <Button
-                  size="sm"
-                  variant="text"
-                  className="w-full h-full justify-center"
-                  suffixElement={<Icon name="add" size={16} />}
-                >
-                  {t('settings.networks.addNodeButton')}
-                </Button>
-              </Listbox.Option>
+              <Button
+                size="sm"
+                variant="text"
+                className="w-full h-8.5 justify-center"
+                suffixElement={<Icon name="add" size={16} />}
+                onClick={onAddCustomNode}
+              >
+                {t('settings.networks.addNodeButton')}
+              </Button>
             </div>
           </Transition>
         </div>
