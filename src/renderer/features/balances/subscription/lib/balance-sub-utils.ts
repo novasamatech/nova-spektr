@@ -9,11 +9,11 @@ export const balanceSubUtils = {
 };
 
 function getSiblingAccounts(
-  wallet: Wallet,
-  wallets: Wallet[],
-  walletAccounts: Account[],
-  accounts: Account[],
-): Account[] {
+  wallet: Wallet_NEW,
+  wallets: Wallet_NEW[],
+  walletAccounts: Account_NEW[],
+  accounts: Account_NEW[],
+): Account_NEW[] {
   const firstAccount = walletAccounts[0];
 
   if (walletUtils.isMultisig(wallet) && accountUtils.isMultisigAccount(firstAccount)) {
@@ -49,7 +49,7 @@ function getSiblingAccounts(
 
 function formSubAccounts(
   walletId: ID,
-  accountsToSub: Account[],
+  accountsToSub: Account_NEW[],
   subAccounts: SubAccounts,
   chains: Record<ChainId, Chain>,
 ): SubAccounts {

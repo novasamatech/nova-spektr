@@ -8,7 +8,7 @@ import { ZERO_BALANCE, totalAmount, includes, cnTw } from '@shared/lib/utils';
 import { ExtendedChain } from '@entities/network';
 import { useI18n } from '@app/providers';
 import { balanceSorter, sumBalances } from '../../common/utils';
-import type { AccountId, Chain, Asset, Balance, Account } from '@shared/core';
+import type { AccountId, Chain, Asset, Balance, Account_NEW } from '@shared/core';
 import { accountUtils } from '@entities/wallet';
 import { NetworkFiatBalance } from '../NetworkFiatBalance/NetworkFiatBalance';
 import { currencyModel, priceProviderModel } from '@entities/price';
@@ -19,7 +19,7 @@ import { AssetCard } from '../AssetCard/AssetCard';
 type Props = {
   searchSymbolOnly?: boolean;
   chain: Chain | ExtendedChain;
-  accounts: Account[];
+  accounts: Account_NEW[];
 };
 
 export const NetworkAssets = ({ chain, accounts, searchSymbolOnly }: Props) => {

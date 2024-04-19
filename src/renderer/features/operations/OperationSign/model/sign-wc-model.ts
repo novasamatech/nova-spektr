@@ -6,7 +6,7 @@ import { EngineTypes } from '@walletconnect/types';
 import { walletConnectModel, type InitReconnectParams } from '@entities/walletConnect';
 import { toAccountId } from '@shared/lib/utils';
 import { chainsService } from '@shared/api/network';
-import { WalletConnectAccount, type HexString } from '@shared/core';
+import { WcAccount, type HexString } from '@shared/core';
 import { walletModel } from '@entities/wallet';
 import { operationSignModel } from './operation-sign-model';
 import { ReconnectStep } from '../lib/types';
@@ -128,7 +128,7 @@ sample({
         ...oldAccountParams,
         chainId: chain?.chainId,
         accountId,
-      } as WalletConnectAccount;
+      } as WcAccount;
     });
 
     return {

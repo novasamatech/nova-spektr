@@ -4,7 +4,7 @@ import { createForm } from 'effector-forms';
 import { BN } from '@polkadot/util';
 import { spread } from 'patronum';
 
-import { Address, ProxyType, Chain, Account, PartialBy, ProxiedAccount } from '@shared/core';
+import { Address, ProxyType, Chain, Account_NEW, PartialBy, ProxiedAccount } from '@shared/core';
 import { networkModel, networkUtils } from '@entities/network';
 import { walletSelectModel } from '@features/wallets';
 import { proxiesUtils } from '@features/proxies/lib/proxies-utils';
@@ -41,8 +41,8 @@ type ProxyAccounts = {
 
 type FormParams = {
   chain: Chain;
-  account: Account;
-  signatory: Account;
+  account: Account_NEW;
+  signatory: Account_NEW;
   delegate: Address;
   proxyType: ProxyType;
   description: string;
@@ -105,7 +105,7 @@ const $proxyForm = createForm<FormParams>({
       ],
     },
     account: {
-      init: {} as Account,
+      init: {} as Account_NEW,
       rules: [
         {
           name: 'notEnoughTokens',
@@ -131,7 +131,7 @@ const $proxyForm = createForm<FormParams>({
       ],
     },
     signatory: {
-      init: {} as Account,
+      init: {} as Account_NEW,
       rules: [
         {
           name: 'notEnoughTokens',

@@ -38,7 +38,6 @@ export const WalletConnect = ({
   const isSigningRejected = useUnit(signWcModel.$isSigningRejected);
   const signature = useUnit(signWcModel.$signature);
   const isStatusShown = useUnit(signWcModel.$isStatusShown);
-  const storedAccounts = useUnit(walletModel.$accounts);
 
   const chains = chainsService.getChainsData();
 

@@ -8,7 +8,7 @@ import { accountUtils } from '@entities/wallet';
 import type { Account, MultisigAccount, ChainId } from '@shared/core';
 
 type Props = {
-  accounts: Account[];
+  accounts: Account_NEW[];
   chainId: ChainId;
   invalid?: boolean;
   error?: OperationErrorType;

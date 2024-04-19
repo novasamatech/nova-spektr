@@ -36,8 +36,8 @@ function isSubmitStep(step: Step): boolean {
 
 type TxWrapperParams = {
   chain: Chain;
-  wallet: Wallet;
-  wallets: Wallet[];
+  wallet: Wallet_NEW;
+  wallets: Wallet_NEW[];
   account: Account;
   accounts: Account[];
   signatories: Account[];

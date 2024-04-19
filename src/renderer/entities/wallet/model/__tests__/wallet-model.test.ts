@@ -22,9 +22,7 @@ describe('entities/wallet/model/wallet-model', () => {
 
     await allSettled(walletModel.events.walletStarted, { scope });
     expect(scope.getState(walletModel.$wallets)).toEqual(wallets);
-    expect(scope.getState(walletModel.$accounts)).toEqual(walletMock.accounts);
     expect(scope.getState(walletModel.$activeWallet)).toEqual(wallets[0]);
-    expect(scope.getState(walletModel.$activeAccounts)).toEqual([acc1, acc2]);
   });
 
   test('should update $wallets, $accounts on watchOnlyCreated', async () => {
@@ -36,7 +34,7 @@ describe('entities/wallet/model/wallet-model', () => {
     jest.spyOn(storageService.wallets, 'update').mockResolvedValue(3);
 
     const scope = fork({
-      values: new Map().set(walletModel.$wallets, wallets).set(walletModel.$accounts, walletMock.accounts),
+      values: new Map().set(walletModel.$wallets, wallets),
     });
 
     await allSettled(walletModel.events.watchOnlyCreated, {
@@ -45,7 +43,7 @@ describe('entities/wallet/model/wallet-model', () => {
     });
 
     expect(scope.getState(walletModel.$wallets)).toEqual(wallets.concat(newWallet));
-    expect(scope.getState(walletModel.$accounts)).toEqual(walletMock.accounts.concat(newAccounts[0]));
+    // expect(scope.getState(walletModel.$accounts)).toEqual(walletMock.accounts.concat(newAccounts[0]));
   });
 
   test('should update $wallets, $accounts on multishardCreated', async () => {
@@ -58,7 +56,7 @@ describe('entities/wallet/model/wallet-model', () => {
     jest.spyOn(storageService.wallets, 'update').mockResolvedValue(3);
 
     const scope = fork({
-      values: new Map().set(walletModel.$wallets, wallets).set(walletModel.$accounts, walletMock.accounts),
+      values: new Map().set(walletModel.$wallets, wallets),
     });
 
     expect(scope.getState(walletModel.$wallets)).toHaveLength(wallets.length);
@@ -68,7 +66,7 @@ describe('entities/wallet/model/wallet-model', () => {
     });
 
     expect(scope.getState(walletModel.$wallets)).toEqual(wallets.concat(newWallet));
-    expect(scope.getState(walletModel.$accounts)).toEqual(walletMock.accounts.concat(newAccounts));
+    // expect(scope.getState(walletModel.$accounts)).toEqual(walletMock.accounts.concat(newAccounts));
   });
 
   test('should update $wallets, $accounts on multisigAccountUpdated', async () => {
@@ -78,7 +76,7 @@ describe('entities/wallet/model/wallet-model', () => {
     jest.spyOn(storageService.accounts, 'update').mockResolvedValue(1);
 
     const scope = fork({
-      values: new Map().set(walletModel.$accounts, walletMock.accounts),
+      // values: new Map().set(walletModel.$accounts, walletMock.accounts),
     });
 
     await allSettled(walletModel.events.multisigAccountUpdated, {
@@ -89,7 +87,7 @@ describe('entities/wallet/model/wallet-model', () => {
     const upadatedAccounts = [...walletMock.accounts];
     upadatedAccounts[0] = updatedAccount;
 
-    expect(scope.getState(walletModel.$accounts)).toEqual(upadatedAccounts);
+    // expect(scope.getState(walletModel.$accounts)).toEqual(upadatedAccounts);
   });
 
   test('should update $wallets, $accounts on removeWallet', async () => {
@@ -103,7 +101,7 @@ describe('entities/wallet/model/wallet-model', () => {
     const deleteAccountsSpy = jest.spyOn(storageService.accounts, 'deleteAll').mockResolvedValue([1, 2, 3]);
 
     const scope = fork({
-      values: new Map().set(walletModel.$wallets, wallets).set(walletModel.$accounts, walletMock.accounts),
+      values: new Map().set(walletModel.$wallets, wallets),
     });
 
     await allSettled(walletModel.events.walletRemoved, {
@@ -113,7 +111,7 @@ describe('entities/wallet/model/wallet-model', () => {
 
     expect(deleteAccountsSpy).toHaveBeenCalledWith(removedAccounts.map((a) => a.id));
     expect(scope.getState(walletModel.$wallets)).toEqual(newWallets);
-    expect(scope.getState(walletModel.$accounts)).toEqual(newAccounts);
+    // expect(scope.getState(walletModel.$accounts)).toEqual(newAccounts);
   });
 
   test('should update $wallets, $accounts on removeWallets', async () => {
@@ -127,7 +125,7 @@ describe('entities/wallet/model/wallet-model', () => {
     const deleteAccountsSpy = jest.spyOn(storageService.accounts, 'deleteAll').mockResolvedValue([1, 2, 3]);
 
     const scope = fork({
-      values: new Map().set(walletModel.$wallets, wallets).set(walletModel.$accounts, walletMock.accounts),
+      values: new Map().set(walletModel.$wallets, wallets),
     });
 
     await allSettled(walletModel.events.walletsRemoved, {
@@ -137,6 +135,5 @@ describe('entities/wallet/model/wallet-model', () => {
 
     expect(deleteAccountsSpy).toHaveBeenCalledWith(removedAccounts.map((a) => a.id));
     expect(scope.getState(walletModel.$wallets)).toEqual(newWallets);
-    expect(scope.getState(walletModel.$accounts)).toEqual(newAccounts);
   });
 });

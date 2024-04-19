@@ -69,7 +69,6 @@ export const WalletForm = ({
 
   const matrix = useUnit(matrixModel.$matrix);
   const wallets = useUnit(walletModel.$wallets);
-  const accounts = useUnit(walletModel.$accounts);
   const chains = useUnit(networkModel.$chains);
 
   const {

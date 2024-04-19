@@ -18,7 +18,7 @@ import { useMultisigEvent } from '@entities/multisig';
 import { SigningSwitch } from '@features/operations';
 import { permissionUtils, walletModel } from '@entities/wallet';
 import { priceProviderModel } from '@entities/price';
-import type { Address, HexString, Timepoint, MultisigAccount, Account } from '@shared/core';
+import type { Address, HexString, Timepoint, MultisigAccount, Account_NEW } from '@shared/core';
 import { balanceModel, balanceUtils } from '@entities/balance';
 import { OperationTitle } from '@entities/chain';
 import {
@@ -50,7 +50,6 @@ const AllSteps = [Step.CONFIRMATION, Step.SIGNING, Step.SUBMIT];
 const ApproveTx = ({ tx, account, connection }: Props) => {
   const { t } = useI18n();
   const wallets = useUnit(walletModel.$wallets);
-  const accounts = useUnit(walletModel.$accounts);
   const balances = useUnit(balanceModel.$balances);
 
   const { getExtrinsicWeight, getTxWeight } = useTransaction();
@@ -63,7 +62,7 @@ const ApproveTx = ({ tx, account, connection }: Props) => {
   const [isFeeModalOpen, toggleFeeModal] = useToggle();
 
   const [activeStep, setActiveStep] = useState(Step.CONFIRMATION);
-  const [signAccount, setSignAccount] = useState<Account>();
+  const [signAccount, setSignAccount] = useState<Account_NEW>();
 
   const [feeTx, setFeeTx] = useState<Transaction>();
   const [approveTx, setApproveTx] = useState<Transaction>();
@@ -164,7 +163,7 @@ const ApproveTx = ({ tx, account, connection }: Props) => {
     };
   };
 
-  const validateBalanceForFee = async (signAccount: Account): Promise<boolean> => {
+  const validateBalanceForFee = async (signAccount: Account_NEW): Promise<boolean> => {
     if (!connection.api || !feeTx || !signAccount.accountId || !nativeAsset) return false;
 
     const fee = await transactionService.getTransactionFee(feeTx, connection.api);
@@ -180,7 +179,7 @@ const ApproveTx = ({ tx, account, connection }: Props) => {
     return new BN(fee).lte(new BN(transferableAmount(balance)));
   };
 
-  const selectSignerAccount = async (account: Account) => {
+  const selectSignerAccount = async (account: Account_NEW) => {
     setSignAccount(account);
     toggleSelectAccountModal();
 

@@ -1,14 +1,14 @@
 import { PropsWithChildren } from 'react';
 import { Navigate } from 'react-router-dom';
 
-import type { Account, Wallet } from '@shared/core';
+import type { Account_NEW, Wallet_NEW } from '@shared/core';
 import { OperationType } from '../../common/types';
 import { getOperationTypeFn } from '../../common/utils';
 
 type Props = {
   operationType: OperationType;
-  wallet?: Wallet;
-  accounts: Account[];
+  wallet?: Wallet_NEW;
+  accounts: Account_NEW[];
   redirectPath?: string;
 };
 

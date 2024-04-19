@@ -1,61 +1,58 @@
 import type { Signatory } from './signatory';
-import type { AccountId, ChainId, Threshold, ID, NoID } from './general';
+import type { AccountId, ChainId, Threshold, ID } from './general';
 import { ChainType, CryptoType } from './general';
 import { ProxyType, ProxyVariant } from './proxy';
 
-type Account_NEW = {
+export type Account_NEW = {
   id: ID;
   walletId: ID;
   name: string;
   type: AccountType;
-};
-
-export type BaseAccount = Account_NEW & {
   accountId: AccountId;
+  chainId: ChainId;
   chainType: ChainType;
-  cryptoType: CryptoType;
+  cryptoType?: CryptoType;
   signingExtras?: Record<string, any>;
 };
 
-export type ChainAccount = BaseAccount & {
+export type ChainAccount = Account_NEW & {
   baseId?: ID;
-  chainId: ChainId;
   keyType: KeyType;
   derivationPath: string;
+  // cryptoType: CryptoType;
 };
 
-export type ShardAccount = BaseAccount & {
+export type ShardAccount = Account_NEW & {
   groupId: string;
   keyType: KeyType;
-  chainId: ChainId;
   derivationPath: string;
+  // cryptoType: CryptoType;
 };
 
-export type MultisigAccount = BaseAccount & {
+export type MultisigAccount = Account_NEW & {
   signatories: Signatory[];
   threshold: Threshold;
   creatorAccountId: AccountId;
   matrixRoomId?: string;
   chainId?: ChainId;
+  // cryptoType: CryptoType;
 };
 
-export type WalletConnectAccount = Omit<BaseAccount, 'cryptoType'> & {
-  chainId: ChainId;
-};
+export type WcAccount = Account_NEW;
 
-export type ProxiedAccount = BaseAccount & {
+export type ProxiedAccount = Account_NEW & {
   proxyAccountId: AccountId;
-  chainId: ChainId;
   delay: number;
   proxyType: ProxyType;
   proxyVariant: ProxyVariant;
   blockNumber?: number;
+  // cryptoType: CryptoType;
   extrinsicIndex?: number;
 };
 
-export type Account = BaseAccount | ChainAccount | MultisigAccount | WalletConnectAccount | ProxiedAccount;
+// export type Account_NEW = BaseAccount | ChainAccount | MultisigAccount | WalletConnectAccount | ProxiedAccount;
 
-export type DraftAccount<T extends Account> = Omit<NoID<T>, 'accountId' | 'walletId' | 'baseId'>;
+// export type DraftAccount<T extends Account> = Omit<NoID<T>, 'accountId' | 'walletId' | 'baseId'>;
 
 export const enum AccountType {
   BASE = 'base',

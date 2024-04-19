@@ -2,7 +2,7 @@ import { ReactNode } from 'react';
 import { useUnit } from 'effector-react';
 
 import { useI18n } from '@app/providers';
-import type { Asset, Explorer, Address, Account } from '@shared/core';
+import type { Asset, Explorer, Address, Account_NEW } from '@shared/core';
 import { FootnoteText, Plate, Checkbox, Icon, Shimmering, IconButton } from '@shared/ui';
 import { ExplorersPopover, walletModel, walletUtils } from '@entities/wallet';
 import { AssetBalance } from '@entities/asset';
@@ -15,7 +15,7 @@ type Props = {
   asset?: Asset;
   explorers?: Explorer[];
   isStakingLoading: boolean;
-  stake: NominatorInfo<Account>;
+  stake: NominatorInfo<Account_NEW>;
   content: ReactNode;
   addressPrefix?: number;
   onToggleNominator: (nominator: Address, boolean: boolean) => void;
@@ -39,7 +39,7 @@ export const NominatorsItem = ({
 
   return (
     <Plate className="grid grid-cols-[1fr,104px,104px,20px] items-center gap-x-6">
-      {!walletUtils.isWatchOnly(activeWallet) && nominatorsLength > 1 ? (
+      {activeWallet && !walletUtils.isWatchOnly(activeWallet) && nominatorsLength > 1 ? (
         <Checkbox
           disabled={isStakingLoading}
           checked={stake.isSelected}

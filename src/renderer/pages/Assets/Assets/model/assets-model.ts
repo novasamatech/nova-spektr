@@ -2,16 +2,16 @@ import { createEvent, createEffect, createStore, sample, combine } from 'effecto
 
 import { localStorageService } from '@shared/api/local-storage';
 import { walletModel, accountUtils, walletUtils } from '@entities/wallet';
-import { Account } from '@shared/core';
+import { Account_NEW } from '@shared/core';
 import { HIDE_ZERO_BALANCES } from '../common/constants';
 
 const assetsStarted = createEvent();
 const queryChanged = createEvent<string>();
-const activeShardsSet = createEvent<Account[]>();
+const activeShardsSet = createEvent<Account_NEW[]>();
 const hideZeroBalancesChanged = createEvent<boolean>();
 
 const $query = createStore<string>('');
-const $activeShards = createStore<Account[]>([]);
+const $activeShards = createStore<Account_NEW[]>([]);
 const $hideZeroBalances = createStore<boolean>(false);
 
 const getHideZeroBalancesFx = createEffect((): boolean => {

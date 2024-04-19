@@ -4,20 +4,19 @@ import uniqBy from 'lodash/uniqBy';
 
 import { Header } from '@shared/ui';
 import { getRelaychainAsset, toAddress } from '@shared/lib/utils';
-import { type PathType, Paths } from '@shared/routes';
 import { useGraphql, useI18n } from '@app/providers';
 import { useToggle } from '@shared/lib/hooks';
 import { accountUtils, permissionUtils, walletModel, walletUtils } from '@entities/wallet';
 import { priceProviderModel } from '@entities/price';
 import { useNetworkData, networkUtils } from '@entities/network';
 import { eraService } from '@entities/staking/api';
-import { ChainId, Chain, Address, Account, Stake, Validator, ShardAccount, ChainAccount } from '@shared/core';
+import { ChainId, Chain, Address, Stake, Validator, ShardAccount, ChainAccount, Account_NEW } from '@shared/core';
 import { NetworkInfo } from './NetworkInfo';
 import { AboutStaking } from './AboutStaking';
 import { Actions } from './Actions';
 import { NominatorsList } from './NominatorsList';
 import { InactiveChain } from './InactiveChain';
-import { NominatorInfo } from '../lib/types';
+import { NominatorInfo, Operations as StakeOperations } from '../lib/types';
 import * as Operations from '@widgets/Staking';
 import {
   useStakingData,
@@ -32,7 +31,6 @@ export const Staking = () => {
   const { t } = useI18n();
 
   const activeWallet = useUnit(walletModel.$activeWallet);
-  const activeAccounts = useUnit(walletModel.$activeAccounts);
 
   const { changeClient } = useGraphql();
 
@@ -59,15 +57,16 @@ export const Staking = () => {
   const addressPrefix = activeChain?.addressPrefix;
   const explorers = activeChain?.explorers;
 
-  const accounts = activeAccounts.filter((account) => {
-    const isBaseAccount = accountUtils.isBaseAccount(account);
-    const isPolkadotVault = walletUtils.isPolkadotVault(activeWallet);
-    const hasManyAccounts = activeAccounts.length > 1;
+  const accounts =
+    activeWallet?.accounts.filter((account, _, collection) => {
+      const isBaseAccount = accountUtils.isBaseAccount(account);
+      const isPolkadotVault = walletUtils.isPolkadotVault(activeWallet);
+      const hasManyAccounts = collection.length > 1;
 
-    if (isPolkadotVault && isBaseAccount && hasManyAccounts) return false;
+      if (isPolkadotVault && isBaseAccount && hasManyAccounts) return false;
 
-    return accountUtils.isChainIdMatch(account, chainId);
-  }, []);
+      return accountUtils.isChainIdMatch(account, chainId);
+    }) || [];
 
   const addresses = accounts.map((a) => toAddress(a.accountId, { prefix: addressPrefix }));
 
@@ -108,9 +107,11 @@ export const Staking = () => {
       unsubEra?.();
       unsubStaking?.();
     };
-  }, [chainId, api, activeAccounts]);
+  }, [chainId, api, activeWallet]);
 
   useEffect(() => {
+    if (!activeWallet) return;
+
     const isMultisig = walletUtils.isMultisig(activeWallet);
     const isNovaWallet = walletUtils.isNovaWallet(activeWallet);
     const isWalletConnect = walletUtils.isWalletConnect(activeWallet);
@@ -160,14 +161,15 @@ export const Staking = () => {
     toggleNominators();
   };
 
-  const groupedAccounts = useMemo((): Array<Account | ChainAccount | ShardAccount[]> => {
+  const groupedAccounts = useMemo((): Array<Account_NEW | ChainAccount | ShardAccount[]> => {
+    if (!activeWallet) return [];
     if (!walletUtils.isPolkadotVault(activeWallet)) return accounts;
 
     return accountUtils.getAccountsAndShardGroups(accounts);
   }, [accounts, activeWallet]);
 
   const nominatorsInfo = useMemo(() => {
-    const getInfo = <T extends Account | ShardAccount>(address: Address, account: T): NominatorInfo<T> => ({
+    const getInfo = <T extends Account_NEW | ShardAccount>(address: Address, account: T): NominatorInfo<T> => ({
       address,
       account,
       stash: staking[address]?.stash,
@@ -177,7 +179,7 @@ export const Staking = () => {
       unlocking: staking[address]?.unlocking,
     });
 
-    return groupedAccounts.reduce<Array<NominatorInfo<Account> | NominatorInfo<ShardAccount>[]>>((acc, account) => {
+    return groupedAccounts.reduce<Array<NominatorInfo<Account_NEW> | NominatorInfo<ShardAccount>[]>>((acc, account) => {
       if (accountUtils.isAccountWithShards(account)) {
         const shardsGroup = account.map((shard) => {
           const address = toAddress(shard.accountId, { prefix: addressPrefix });
@@ -218,7 +220,7 @@ export const Staking = () => {
     [[], []],
   );
 
-  const navigateToStake = (path: PathType, addresses?: Address[]) => {
+  const navigateToStake = (operation: StakeOperations, addresses?: Address[]) => {
     if (!activeChain || !activeWallet) return;
 
     if (addresses) {
@@ -234,17 +236,16 @@ export const Staking = () => {
     });
 
     const model = {
-      [Paths.BOND]: Operations.bondNominateModel.events.flowStarted,
-      [Paths.STAKE_MORE]: Operations.bondExtraModel.events.flowStarted,
-      [Paths.UNSTAKE]: Operations.unstakeModel.events.flowStarted,
-      [Paths.RESTAKE]: Operations.restakeModel.events.flowStarted,
-      [Paths.VALIDATORS]: Operations.nominateModel.events.flowStarted,
-      [Paths.REDEEM]: Operations.withdrawModel.events.flowStarted,
-      [Paths.DESTINATION]: Operations.payeeModel.events.flowStarted,
+      [StakeOperations.BOND_NOMINATE]: Operations.bondNominateModel.events.flowStarted,
+      [StakeOperations.BOND_EXTRA]: Operations.bondExtraModel.events.flowStarted,
+      [StakeOperations.UNSTAKE]: Operations.unstakeModel.events.flowStarted,
+      [StakeOperations.RESTAKE]: Operations.restakeModel.events.flowStarted,
+      [StakeOperations.NOMINATE]: Operations.nominateModel.events.flowStarted,
+      [StakeOperations.WITHDRAW]: Operations.withdrawModel.events.flowStarted,
+      [StakeOperations.SET_PAYEE]: Operations.payeeModel.events.flowStarted,
     };
 
-    // @ts-ignore
-    model[path]({
+    model[operation]({
       wallet: activeWallet,
       chain: activeChain,
       shards: uniqBy(shards, 'accountId'),

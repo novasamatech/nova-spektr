@@ -1,13 +1,13 @@
 import { ReactNode, MouseEvent } from 'react';
 
-import type { Wallet } from '@shared/core';
+import type { Wallet_NEW } from '@shared/core';
 import { FootnoteText, IconButton } from '@shared/ui';
 import { cnTw } from '@shared/lib/utils';
 import { WalletIcon } from '../WalletIcon/WalletIcon';
 import { walletUtils } from '@entities/wallet';
 
 type Props = {
-  wallet: Wallet;
+  wallet: Wallet_NEW;
   description?: string | ReactNode;
   prefix?: ReactNode;
   hideIcon?: boolean;

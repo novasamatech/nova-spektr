@@ -11,7 +11,7 @@ import {
   ConnectionType,
   ProxyAccount,
   ProxiedAccount,
-  Account,
+  Account_NEW,
   AccountId,
   NoID,
   PartialProxiedAccount,
@@ -98,8 +98,8 @@ async function disconnect(chainId: ChainId) {
 
 type GetProxiesParams = {
   chainId: ChainId;
-  accountsForProxy: Record<AccountId, Account>;
-  accountsForProxied: Record<AccountId, Account>;
+  accountsForProxy: Record<AccountId, Account_NEW>;
+  accountsForProxied: Record<AccountId, Account_NEW>;
   proxiedAccounts: ProxiedAccount[];
   proxies: ProxyAccount[];
 };

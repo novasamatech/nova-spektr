@@ -6,7 +6,7 @@ import { Wallet, WalletType, SigningType, WalletFamily } from '@shared/core';
 import { storageService } from '@shared/api/storage';
 
 describe('features/wallets/WalletSelect/model/wallet-select-model', () => {
-  const wallets: Wallet[] = [
+  const wallets: Wallet_NEW[] = [
     {
       id: 1,
       signingType: SigningType.POLKADOT_VAULT,
@@ -23,7 +23,7 @@ describe('features/wallets/WalletSelect/model/wallet-select-model', () => {
     },
   ];
 
-  const newWallet: Wallet = {
+  const newWallet: Wallet_NEW = {
     id: 3,
     signingType: SigningType.POLKADOT_VAULT,
     type: WalletType.SINGLE_PARITY_SIGNER,

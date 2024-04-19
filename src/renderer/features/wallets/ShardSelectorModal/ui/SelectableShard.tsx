@@ -1,11 +1,11 @@
 import { cnTw, toAddress } from '@shared/lib/utils';
 import { BodyText, Checkbox, HelpText, Identicon, Truncate, IconButton } from '@shared/ui';
-import type { ChainAccount, ShardAccount, Explorer, BaseAccount, Wallet } from '@shared/core';
+import type { ChainAccount, ShardAccount, Explorer, BaseAccount, Wallet_NEW } from '@shared/core';
 import { ExplorersPopover, accountUtils, walletUtils } from '@entities/wallet';
 import { useI18n } from '@app/providers';
 
 type Props = {
-  wallet?: Wallet;
+  wallet?: Wallet_NEW;
   account: BaseAccount | ChainAccount | ShardAccount;
   addressPrefix?: number;
   explorers?: Explorer[];

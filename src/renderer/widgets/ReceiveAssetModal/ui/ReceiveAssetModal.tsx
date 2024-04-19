@@ -22,7 +22,6 @@ type Props = {
 export const ReceiveAssetModal = ({ chain, asset, onClose }: Props) => {
   const { t } = useI18n();
   const activeWallet = useUnit(walletModel.$activeWallet);
-  const activeAccounts = useUnit(walletModel.$activeAccounts);
 
   const [isModalOpen, toggleIsModalOpen] = useToggle(true);
   const [activeAccount, setActiveAccount] = useState<DropdownResult<number>>();

@@ -1,6 +1,6 @@
 import Client from '@walletconnect/sign-client';
 
-import type { Chain, Wallet, Account, ChainId } from '@shared/core';
+import type { Chain, Wallet_NEW, ChainId } from '@shared/core';
 import { walletUtils } from '@entities/wallet';
 import { FIRST_CHAIN_ID_SYMBOL, LAST_CHAIN_ID_SYMBOL } from './constants';
 
@@ -25,12 +25,8 @@ function isConnected(client: Client, sessionTopic: string): boolean {
   return sessions.some((session) => session.topic === sessionTopic);
 }
 
-function isConnectedByAccounts(client: Client, wallet: Wallet, accounts: Account[]): boolean {
+function isConnectedByAccounts(client: Client, wallet: Wallet_NEW): boolean {
   if (!walletUtils.isWalletConnectGroup(wallet)) return false;
 
-  const account = accounts.find((a) => a.walletId === wallet.id);
-
-  if (!account) return false;
-
-  return walletConnectUtils.isConnected(client, account.signingExtras?.sessionTopic);
+  return walletConnectUtils.isConnected(client, wallet.accounts[0].signingExtras?.sessionTopic);
 }

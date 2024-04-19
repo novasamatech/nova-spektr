@@ -5,7 +5,7 @@ import { once, spread } from 'patronum';
 import { GraphQLClient } from 'graphql-request';
 
 import type {
-  Account,
+  Account_NEW,
   AccountId,
   Chain,
   ChainId,
@@ -45,8 +45,8 @@ const proxiedAccountsRemoved = createEvent<ProxiedAccount[]>();
 const depositsReceived = createEvent<ProxyDeposits>();
 
 type WalletsAddedProps = {
-  wallets: Wallet[];
-  accounts: Account[];
+  wallets: Wallet_NEW[];
+  accounts: Account_NEW[];
 };
 const walletsAdded = createEvent<WalletsAddedProps>();
 
@@ -82,7 +82,7 @@ const startChainsFx = createEffect(({ chains, connections, endpoint }: StartChai
 type GetProxiesParams = {
   chainId: ChainId;
   chain: Chain;
-  accounts: Account[];
+  accounts: Account_NEW[];
   wallets: WalletsMap;
   proxies: ProxyAccount[];
   endpoint: Endpoint<any>;
@@ -158,7 +158,7 @@ type ProxiedWalletsParams = {
   chains: Record<ChainId, Chain>;
 };
 type ProxiedWalletsResult = {
-  wallets: Wallet[];
+  wallets: Wallet_NEW[];
   accounts: ProxiedAccount[];
 };
 const createProxiedWalletsFx = createEffect(

@@ -3,7 +3,7 @@ import { createForm } from 'effector-forms';
 import { spread } from 'patronum';
 
 import { accountUtils, KEY_NAMES, walletModel } from '@entities/wallet';
-import type { ChainAccount, ShardAccount, DraftAccount, BaseAccount, Wallet, Account, NoID } from '@shared/core';
+import type { ChainAccount, ShardAccount, DraftAccount, BaseAccount, Wallet_NEW, Account_NEW, NoID } from '@shared/core';
 import { AccountType, ChainType, CryptoType, KeyType } from '@shared/core';
 import { dictionary } from '@shared/lib/utils';
 import { storageService } from '@shared/api/storage';
@@ -19,7 +19,7 @@ export type Callbacks = {
 
 type VaultCreateParams = {
   root: Omit<NoID<BaseAccount>, 'walletId'>;
-  wallet: Omit<NoID<Wallet>, 'isActive'>;
+  wallet: Omit<NoID<Wallet_NEW>, 'isActive'>;
   accounts: DraftAccount<ChainAccount | ShardAccount>[];
 };
 
@@ -66,8 +66,8 @@ const $walletForm = createForm({
 });
 
 type CreateResult = {
-  wallet: Wallet;
-  accounts: Account[];
+  wallet: Wallet_NEW;
+  accounts: Account_NEW[];
 };
 const createVaultFx = createEffect(
   async ({ wallet, accounts, root }: VaultCreateParams): Promise<CreateResult | undefined> => {
@@ -85,7 +85,7 @@ const createVaultFx = createEffect(
       walletId: dbWallet.id,
     }));
 
-    const dbAccounts = await storageService.accounts.createAll(accountsToCreate as Account[]);
+    const dbAccounts = await storageService.accounts.createAll(accountsToCreate as Account_NEW[]);
 
     if (!dbAccounts || dbAccounts.length === 0) return undefined;
 

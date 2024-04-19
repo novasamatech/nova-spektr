@@ -3,7 +3,7 @@ import { createStore, createEvent, createEffect, sample } from 'effector';
 import { chainsService } from '@shared/api/network';
 import { storageService } from '@shared/api/storage';
 import { walletModel, accountUtils } from '@entities/wallet';
-import type { ShardAccount, Chain, ChainId, ChainAccount, ID, DraftAccount, Account, AccountId } from '@shared/core';
+import type { ShardAccount, Chain, ChainId, ChainAccount, ID, DraftAccount, Account_NEW, AccountId } from '@shared/core';
 import { proxiesModel } from '@features/proxies';
 
 type AccountsCreatedParams = {
@@ -31,14 +31,14 @@ const removeKeysFx = createEffect((ids: ID[]): Promise<ID[] | undefined> => {
 });
 
 const createAccountsFx = createEffect(
-  async ({ walletId, rootAccountId, accounts }: AccountsCreatedParams): Promise<Account[] | undefined> => {
+  async ({ walletId, rootAccountId, accounts }: AccountsCreatedParams): Promise<Account_NEW[] | undefined> => {
     const accountsToCreate = accounts.map((account) => ({
       ...account,
       ...(accountUtils.isChainAccount(account) && { baseId: rootAccountId }),
       walletId,
     }));
 
-    return storageService.accounts.createAll(accountsToCreate as Account[]);
+    return storageService.accounts.createAll(accountsToCreate as Account_NEW[]);
   },
 );
 

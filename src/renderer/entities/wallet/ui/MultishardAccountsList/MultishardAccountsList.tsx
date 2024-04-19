@@ -4,12 +4,12 @@ import { cnTw, RootExplorers } from '@shared/lib/utils';
 import { ContactItem, ExplorersPopover } from '@entities/wallet';
 import { useI18n } from '@app/providers';
 import { Accordion, FootnoteText, HelpText } from '@shared/ui';
-import type { BaseAccount, Chain, ChainAccount, ChainId } from '@shared/core';
+import type { Chain, ChainAccount, ChainId, Account_NEW } from '@shared/core';
 import { ChainTitle } from '@entities/chain';
 
 type Props = {
   chains: Chain[];
-  accounts: Map<BaseAccount, Record<ChainId, ChainAccount[]>>;
+  accounts: Map<Account_NEW, Record<ChainId, ChainAccount[]>>;
   className?: string;
 };
 

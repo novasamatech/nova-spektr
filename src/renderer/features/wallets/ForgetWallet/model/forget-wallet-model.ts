@@ -2,7 +2,7 @@ import { createEvent, sample, createEffect, createStore, createApi, attach, spli
 import uniq from 'lodash/uniq';
 import { spread } from 'patronum';
 
-import { Account, AccountId, ID, MultisigAccount, ProxyAccount, ProxyGroup, Wallet } from '@shared/core';
+import { Account_NEW, AccountId, ID, MultisigAccount, ProxyAccount, ProxyGroup, Wallet } from '@shared/core';
 import { accountUtils, walletModel, walletUtils } from '@entities/wallet';
 import { balanceModel } from '@entities/balance';
 import { useForgetMultisig } from '@entities/multisig';
@@ -33,8 +33,8 @@ const deleteMultisigOperationsFx = createEffect(async (account: MultisigAccount)
 });
 
 type CheckForProxiedWalletsParams = {
-  wallet: Wallet;
-  accounts: Account[];
+  wallet: Wallet_NEW;
+  accounts: Account_NEW[];
   proxies: Record<AccountId, ProxyAccount[]>;
   walletsProxyGroups: Record<Wallet['id'], ProxyGroup[]>;
 };
@@ -77,7 +77,7 @@ const findProxiedWalletsFx = createEffect(
 split({
   source: forgetWallet,
   match: {
-    multisigWallet: (wallet: Wallet) => walletUtils.isMultisig(wallet),
+    multisigWallet: (wallet: Wallet_NEW) => walletUtils.isMultisig(wallet),
   },
   cases: {
     multisigWallet: forgetMultisigWallet,

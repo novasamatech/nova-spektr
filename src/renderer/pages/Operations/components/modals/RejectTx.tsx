@@ -18,7 +18,7 @@ import { SigningSwitch } from '@features/operations';
 import { OperationTitle } from '@entities/chain';
 import { walletModel, walletUtils } from '@entities/wallet';
 import { priceProviderModel } from '@entities/price';
-import type { Address, HexString, Timepoint, MultisigAccount, Account } from '@shared/core';
+import type { Address, HexString, Timepoint, MultisigAccount, Account_NEW } from '@shared/core';
 import { balanceModel, balanceUtils } from '@entities/balance';
 import {
   Transaction,
@@ -45,7 +45,6 @@ const AllSteps = [Step.CONFIRMATION, Step.SIGNING, Step.SUBMIT];
 
 const RejectTx = ({ tx, account, connection }: Props) => {
   const { t } = useI18n();
-  const accounts = useUnit(walletModel.$accounts);
   const wallets = keyBy(useUnit(walletModel.$wallets), 'id');
 
   const balances = useUnit(balanceModel.$balances);
@@ -145,7 +144,7 @@ const RejectTx = ({ tx, account, connection }: Props) => {
     };
   };
 
-  const validateBalanceForFee = async (signAccount: Account): Promise<boolean> => {
+  const validateBalanceForFee = async (signAccount: Account_NEW): Promise<boolean> => {
     if (!connection.api || !rejectTx || !signAccount.accountId || !nativeAsset) return false;
 
     const fee = await transactionService.getTransactionFee(rejectTx, connection.api);

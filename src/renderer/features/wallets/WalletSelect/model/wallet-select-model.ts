@@ -5,7 +5,7 @@ import { once, previous } from 'patronum';
 import { getRoundedValue, totalAmount, dictionary } from '@shared/lib/utils';
 import { walletModel, accountUtils, walletUtils } from '@entities/wallet';
 import { currencyModel, priceProviderModel } from '@entities/price';
-import type { Wallet, ID } from '@shared/core';
+import type { Wallet_NEW, ID } from '@shared/core';
 import { networkModel } from '@entities/network';
 import { balanceModel } from '@entities/balance';
 import { storageService } from '@shared/api/storage';
@@ -58,7 +58,7 @@ const $walletForDetails = combine(
     walletId: $walletId,
     wallets: walletModel.$wallets,
   },
-  ({ wallets, walletId }): Wallet | undefined => {
+  ({ wallets, walletId }): Wallet_NEW | undefined => {
     if (!walletId) return;
 
     return walletUtils.getWalletById(wallets, walletId);

@@ -10,13 +10,12 @@ import type {
   AccountId,
   Threshold,
   MultisigAccount,
-  Account,
-  BaseAccount,
+  Account_NEW,
   ChainAccount,
   ShardAccount,
-  WalletConnectAccount,
+  WcAccount,
   ProxiedAccount,
-  Wallet,
+  Wallet_NEW,
   Chain,
   ChainId,
 } from '@shared/core';
@@ -57,33 +56,33 @@ function getMultisigAccountId(ids: AccountId[], threshold: Threshold, cryptoType
   return u8aToHex(isEthereum ? accountId.subarray(0, 20) : accountId);
 }
 
-function isBaseAccount(account: Pick<Account, 'type'>): account is BaseAccount {
+function isBaseAccount(account: Pick<Account_NEW, 'type'>): account is Account_NEW {
   return account.type === AccountType.BASE;
 }
 
-function isChainAccount(account: Pick<Account, 'type'>): account is ChainAccount {
+function isChainAccount(account: Pick<Account_NEW, 'type'>): account is ChainAccount {
   return account.type === AccountType.CHAIN;
 }
 
-function isWalletConnectAccount(account: Pick<Account, 'type'>): account is WalletConnectAccount {
+function isWalletConnectAccount(account: Pick<Account_NEW, 'type'>): account is WcAccount {
   return account.type === AccountType.WALLET_CONNECT;
 }
 
-function isShardAccount(account: Pick<Account, 'type'>): account is ShardAccount {
+function isShardAccount(account: Pick<Account_NEW, 'type'>): account is ShardAccount {
   return account.type === AccountType.SHARD;
 }
 
-function isAccountWithShards(accounts: Pick<Account, 'type'> | ShardAccount[]): accounts is ShardAccount[] {
+function isAccountWithShards(accounts: Pick<Account_NEW, 'type'> | ShardAccount[]): accounts is ShardAccount[] {
   return Array.isArray(accounts) && isShardAccount(accounts[0]);
 }
 
-function isChainDependant(account: Pick<Account, 'type'>): boolean {
+function isChainDependant(account: Pick<Account_NEW, 'type'>): boolean {
   if (isBaseAccount(account)) return false;
 
   return !isMultisigAccount(account) || Boolean(account.chainId);
 }
 
-function isChainIdMatch(account: Pick<Account, 'type'>, chainId: ChainId): boolean {
+function isChainIdMatch(account: Pick<Account_NEW, 'type'>, chainId: ChainId): boolean {
   if (!isChainDependant(account)) return true;
 
   const chainAccountMatch = isChainAccount(account) && account.chainId === chainId;
@@ -97,65 +96,65 @@ function isChainIdMatch(account: Pick<Account, 'type'>, chainId: ChainId): boole
   );
 }
 
-function isChainAndCryptoMatch(account: Account, chain: Chain): boolean {
+function isChainAndCryptoMatch(account: Account_NEW, chain: Chain): boolean {
   return isChainDependant(account) ? isChainIdMatch(account, chain.chainId) : isCryptoTypeMatch(account, chain);
 }
 
-function isCryptoTypeMatch(account: Account, chain: Chain): boolean {
+function isCryptoTypeMatch(account: Account_NEW, chain: Chain): boolean {
   const cryptoType = networkUtils.isEthereumBased(chain.options) ? CryptoType.ETHEREUM : CryptoType.SR25519;
 
-  return isWalletConnectAccount(account) || account.cryptoType === cryptoType;
+  return account.cryptoType === cryptoType || isWalletConnectAccount(account);
 }
 
-function isMultisigAccount(account: Pick<Account, 'type'>): account is MultisigAccount {
+function isMultisigAccount(account: Pick<Account_NEW, 'type'>): account is MultisigAccount {
   return account.type === AccountType.MULTISIG;
 }
 
-function isProxiedAccount(account: Pick<Account, 'type'>): account is ProxiedAccount {
+function isProxiedAccount(account: Pick<Account_NEW, 'type'>): account is ProxiedAccount {
   return account.type === AccountType.PROXIED;
 }
 
-function isPureProxiedAccount(account: Account): account is ProxiedAccount {
+function isPureProxiedAccount(account: Account_NEW): account is ProxiedAccount {
   return account.type === AccountType.PROXIED && (account as ProxiedAccount).proxyVariant === ProxyVariant.PURE;
 }
 
-function getAccountsAndShardGroups(accounts: Account[]): Array<ChainAccount | ShardAccount[]> {
+function getAccountsAndShardGroups(accounts: Account_NEW[]): Array<ChainAccount | ShardAccount[]> {
   const shardsIndexes: Record<string, number> = {};
 
   return accounts.reduce<Array<ChainAccount | ShardAccount[]>>((acc, account) => {
     if (accountUtils.isBaseAccount(account)) return acc;
 
     if (!accountUtils.isShardAccount(account)) {
-      acc.push(account as ChainAccount);
+      acc.push(account);
 
       return acc;
     }
 
-    const existingGroupIndex = shardsIndexes[account.groupId];
+    const existingGroupIndex = shardsIndexes[(account as ShardAccount).groupId];
     if (existingGroupIndex !== undefined) {
       (acc[existingGroupIndex] as ShardAccount[]).push(account);
     } else {
       acc.push([account]);
-      shardsIndexes[account.groupId] = acc.length - 1;
+      shardsIndexes[(account as ShardAccount).groupId] = acc.length - 1;
     }
 
     return acc;
   }, []);
 }
 
-function getBaseAccount(accounts: Account[], walletId?: ID): BaseAccount | undefined {
+function getBaseAccount(accounts: Account_NEW[], walletId?: ID): Account_NEW | undefined {
   return accounts.find((a) => {
     const walletMatch = !walletId || walletId === a.walletId;
 
     return walletMatch && isBaseAccount(a);
-  }) as BaseAccount;
+  }) as Account_NEW;
 }
 
-function getWalletAccounts<T extends Account>(walletId: ID, accounts: T[]): T[] {
+function getWalletAccounts<T extends Account_NEW>(walletId: ID, accounts: T[]): T[] {
   return accounts.filter((account) => account.walletId === walletId);
 }
 
-function getSignatoryAccounts<T extends Account>(accountIds: AccountId[], accounts: T[]): T[] {
+function getSignatoryAccounts<T extends Account_NEW>(accountIds: AccountId[], accounts: T[]): T[] {
   const accountsMap = keyBy(accounts, 'accountId');
 
   return accountIds.map((id) => accountsMap[id]);
@@ -169,10 +168,10 @@ function getDerivationPath(data: DerivationPathLike | DerivationPathLike[]): str
 }
 
 function getAccountsForBalances(
-  wallets: Wallet[],
-  accounts: Account[],
-  filterFn?: (account: Account) => boolean,
-): Account[] {
+  wallets: Wallet_NEW[],
+  accounts: Account_NEW[],
+  filterFn?: (account: Account_NEW) => boolean,
+): Account_NEW[] {
   const walletsMap = dictionary(wallets, 'id', walletUtils.isPolkadotVault);
 
   return accounts.filter((account) => {
@@ -194,10 +193,10 @@ function isStakingProxyType({ proxyType }: ProxiedAccount): boolean {
   return proxyType === ProxyType.STAKING;
 }
 
-function isNonBaseVaultAccount(account: Account, wallet: Wallet): boolean {
+function isNonBaseVaultAccount(account: Account_NEW, wallet: Wallet_NEW): boolean {
   return !walletUtils.isPolkadotVault(wallet) || !accountUtils.isBaseAccount(account);
 }
 
-function isEthereumBased({ chainType }: Account): boolean {
+function isEthereumBased({ chainType }: Account_NEW): boolean {
   return chainType === ChainType.ETHEREUM;
 }

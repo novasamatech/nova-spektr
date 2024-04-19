@@ -26,7 +26,7 @@ const SIGNATORY_ACCOUNT = {
 const props: Omit<ComponentProps<typeof OperationHeader>, 'accounts' | 'onSignatoryChange' | 'onAccountChange'> = {
   chainId: TEST_CHAIN_ID,
   getAccountOption: (account: Account) => ({ id: account.accountId, value: account, element: account.name }),
-  getSignatoryOption: (_: Wallet, account: Account) => ({
+  getSignatoryOption: (_: Wallet_NEW, account: Account) => ({
     id: account.accountId,
     value: account,
     element: account.name,

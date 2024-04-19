@@ -31,7 +31,6 @@ type Props = {
 export const MultiChainMultisigWallet = ({ isOpen, onClose, onComplete, onBack }: Props) => {
   const { t } = useI18n();
   const wallets = useUnit(walletModel.$wallets);
-  const accounts = useUnit(walletModel.$accounts);
   const contacts = useUnit(contactModel.$contacts);
 
   const matrix = useUnit(matrixModel.$matrix);

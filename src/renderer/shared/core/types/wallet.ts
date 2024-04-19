@@ -1,47 +1,29 @@
 import type { ID } from './general';
-import type {
-  BaseAccount,
-  ShardAccount,
-  ChainAccount,
-  MultisigAccount,
-  ProxiedAccount,
-  WalletConnectAccount,
-} from './account';
+import type { Account_NEW, ShardAccount, ChainAccount, MultisigAccount, ProxiedAccount, WcAccount } from './account';
 
-type Wallet_NEW = {
+export type Wallet_NEW<T extends Account_NEW = Account_NEW> = {
   id: ID;
   name: string;
   type: WalletType;
   isActive: boolean;
   signingType: SigningType;
+  accounts: T[];
 };
 
-export type PolkadotVaultWallet = Wallet_NEW & {
-  accounts: (BaseAccount | ChainAccount | ShardAccount)[];
-};
+export type PolkadotVaultWallet = Wallet_NEW<Account_NEW | ChainAccount | ShardAccount>;
 
-export type SingleShardWallet = Wallet_NEW & {
-  account: BaseAccount;
-};
+export type SingleShardWallet = Wallet_NEW;
 
-export type MultiShardWallet = Wallet_NEW & {
-  accounts: (BaseAccount | ChainAccount)[];
-};
+export type MultiShardWallet = Wallet_NEW<Account_NEW | ChainAccount>;
 
-export type WatchOnlyWallet = Wallet_NEW & {
-  account: BaseAccount;
-};
+export type WatchOnlyWallet = Wallet_NEW;
 
-export type MultisigWallet = Wallet_NEW & {
-  account: MultisigAccount; // TODO: try to move signatories data out of account
-};
+// TODO: try to move signatories data out of account
+export type MultisigWallet = Wallet_NEW<MultisigAccount>;
 
-export type ProxiedWallet = Wallet_NEW & {
-  account: ProxiedAccount;
-};
+export type ProxiedWallet = Wallet_NEW<ProxiedAccount>;
 
-export type WalletConnectWallet = Wallet_NEW & {
-  accounts: WalletConnectAccount[];
+export type WalletConnectWallet = Wallet_NEW<WcAccount> & {
   isConnected: boolean;
 };
 

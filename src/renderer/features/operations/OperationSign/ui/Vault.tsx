@@ -22,8 +22,6 @@ export const Vault = ({
   onGoBack,
   onResult,
 }: InnerSigningProps) => {
-  const allAccounts = useUnit(walletModel.$accounts);
-
   const { verifySignature } = useTransaction();
 
   const [countdown, resetCountdown] = useCountdown(api);

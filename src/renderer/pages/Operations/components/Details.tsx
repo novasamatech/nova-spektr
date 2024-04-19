@@ -9,7 +9,7 @@ import { cnTw, toAccountId } from '@shared/lib/utils';
 import { ExtendedChain, networkUtils, networkModel } from '@entities/network';
 import { AddressStyle, DescriptionBlockStyle, InteractionStyle } from '../common/constants';
 import { ChainTitle } from '@entities/chain';
-import { Account, Wallet } from '@shared/core';
+import { Wallet_NEW, Account_NEW } from '@shared/core';
 import { getTransactionFromMultisigTx } from '@entities/multisig';
 import type { Address, MultisigAccount, Validator } from '@shared/core';
 import { useValidatorsMap, SelectedValidatorsModal } from '@entities/staking';
@@ -30,7 +30,7 @@ import {
 type Props = {
   tx: MultisigTransaction;
   account?: MultisigAccount;
-  signatory?: Account;
+  signatory?: Account_NEW;
   extendedChain?: ExtendedChain;
 };
 
@@ -39,7 +39,6 @@ export const Details = ({ tx, account, extendedChain, signatory }: Props) => {
 
   const activeWallet = useUnit(walletModel.$activeWallet);
   const wallets = useUnit(walletModel.$wallets);
-  const accounts = useUnit(walletModel.$accounts);
   const chains = useUnit(networkModel.$chains);
 
   const payee = getPayee(tx);
@@ -74,7 +73,7 @@ export const Details = ({ tx, account, extendedChain, signatory }: Props) => {
   const selectedValidators: Validator[] =
     allValidators.filter((v) => (transaction?.args.targets || startStakingValidators).includes(v.address)) || [];
 
-  const proxied = useMemo((): { wallet: Wallet; account: Account } | undefined => {
+  const proxied = useMemo((): { wallet: Wallet_NEW; account: Account_NEW } | undefined => {
     if (!tx.transaction || !isProxyTransaction(tx.transaction)) return undefined;
 
     const proxiedAccountId = toAccountId(tx.transaction.args.real);

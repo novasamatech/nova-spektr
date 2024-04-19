@@ -13,8 +13,8 @@ type Props = {
   account?: MultisigAccount;
   invalid?: boolean;
   error?: OperationErrorType;
-  getSignatoryOption: (wallet: Wallet, account: Account) => DropdownOption<Account>;
-  onSignatoryChange: (account: Account) => void;
+  getSignatoryOption: (wallet: Wallet_NEW, account: Account_NEW) => DropdownOption<Account>;
+  onSignatoryChange: (account: Account_NEW) => void;
 };
 
 export const MultisigOperationHeader = ({
@@ -27,7 +27,6 @@ export const MultisigOperationHeader = ({
 }: Props) => {
   const { t } = useI18n();
 
-  const accounts = useUnit(walletModel.$accounts);
   const wallets = useUnit(walletModel.$wallets);
 
   const [signatoryOptions, setSignatoryOptions] = useState<DropdownOption<Account>[]>([]);
