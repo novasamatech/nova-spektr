@@ -8,7 +8,7 @@ import {
   ChainId,
   ProxyAccount,
   AccountType,
-  Account,
+  Account_NEW,
   ProxiedAccount,
   NoID,
   PartialProxiedAccount,
@@ -52,7 +52,7 @@ function isSameProxied(oldProxy: PartialProxiedAccount, newProxy: PartialProxied
   );
 }
 
-function isProxiedAccount(account: Pick<Account, 'type'>): account is ProxiedAccount {
+function isProxiedAccount(account: Pick<Account_NEW, 'type'>): account is ProxiedAccount {
   return account.type === AccountType.PROXIED;
 }
 

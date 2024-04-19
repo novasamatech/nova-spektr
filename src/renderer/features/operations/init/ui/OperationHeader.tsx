@@ -9,12 +9,12 @@ import { accountUtils, walletModel, walletUtils } from '@entities/wallet';
 import type { Account, ChainId, MultisigAccount, Wallet } from '@shared/core';
 
 type Props = {
-  accounts: Account[] | [MultisigAccount];
+  accounts: Account_NEW[] | [MultisigAccount];
   chainId: ChainId;
   isMultiselect?: boolean;
   errors?: OperationErrorType[];
   getAccountOption: (account: Account) => DropdownOption<Account>;
-  getSignatoryOption: (wallet: Wallet, account: Account) => DropdownOption<Account>;
+  getSignatoryOption: (wallet: Wallet_NEW, account: Account) => DropdownOption<Account>;
   onSignatoryChange: (account: Account) => void;
 } & AccountSelectProps;
 

@@ -25,7 +25,6 @@ export const AssetCard = ({ chainId, asset, balance }: Props) => {
 
   const fiatFlag = useUnit(priceProviderModel.$fiatFlag);
   const activeWallet = useUnit(walletModel.$activeWallet);
-  const activeAccounts = useUnit(walletModel.$activeAccounts);
 
   const [isExpanded, toggleExpanded] = useToggle();
 

@@ -1,7 +1,7 @@
 import { allSettled, fork } from 'effector';
 
 import {
-  Account,
+  Account_NEW,
   AccountType,
   ChainType,
   CryptoType,
@@ -50,7 +50,7 @@ const accountBase = {
   name: 'some account',
 };
 
-const walletAccounts: Account[] = [
+const walletAccounts: Account_NEW[] = [
   { ...accountBase, id: 1, accountId: TEST_ACCOUNTS[0] },
   { ...accountBase, id: 2, accountId: '0x00' },
 ];

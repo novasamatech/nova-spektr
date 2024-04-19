@@ -4,14 +4,14 @@ import { accountUtils, walletUtils } from '@entities/wallet';
 import { formatSectionAndMethod, toAddress } from '@shared/lib/utils';
 import { TransferTypes, XcmTypes, isProxyTransaction } from '@entities/transaction';
 import {
-  Account,
+  Account_NEW,
   AccountId,
   ChainId,
   Contact,
   Explorer,
   HexString,
   Signatory,
-  Wallet,
+  Wallet_NEW,
   Address,
   ProxyType,
   Chain,
@@ -213,7 +213,7 @@ export const getSignatoryName = (
   signatoryId: AccountId,
   txSignatories: Signatory[],
   contacts: Contact[],
-  accounts: Account[],
+  wallets: Wallet_NEW[],
   addressPrefix?: number,
 ): string => {
   const finderFn = <T extends { accountId: AccountId }>(collection: T[]): T | undefined => {
@@ -227,6 +227,7 @@ export const getSignatoryName = (
   const fromContact = finderFn(contacts)?.name;
   if (fromContact) return fromContact;
 
+  const accounts = wallets.map((wallet) => wallet.accounts).flat();
   const fromAccount = finderFn(accounts)?.name;
   if (fromAccount) return fromAccount;
 
@@ -234,15 +235,15 @@ export const getSignatoryName = (
 };
 
 export const getSignatoryAccounts = (
-  accounts: Account[],
-  wallets: Wallet[],
+  accounts: Account_NEW[],
+  wallets: Wallet_NEW[],
   events: MultisigEvent[],
   signatories: Signatory[],
   chainId: ChainId,
-): Account[] => {
+): Account_NEW[] => {
   const walletsMap = new Map(wallets.map((wallet) => [wallet.id, wallet]));
 
-  return signatories.reduce((acc: Account[], signatory) => {
+  return signatories.reduce((acc: Account_NEW[], signatory) => {
     const filteredAccounts = accounts.filter(
       (a) => a.accountId === signatory.accountId && !events.some((e) => e.accountId === a.accountId),
     );

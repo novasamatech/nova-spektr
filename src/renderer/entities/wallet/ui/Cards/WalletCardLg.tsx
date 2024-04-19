@@ -3,12 +3,12 @@ import { ReactNode } from 'react';
 import { useI18n } from '@app/providers';
 import { FootnoteText, StatusLabel } from '@shared/ui';
 import { cnTw } from '@shared/lib/utils';
-import type { Wallet } from '@shared/core';
+import type { Wallet_NEW } from '@shared/core';
 import { WalletIcon } from '../WalletIcon/WalletIcon';
 import { walletUtils } from '../../lib/wallet-utils';
 
 type Props = {
-  wallet: Wallet;
+  wallet: Wallet_NEW;
   description?: string | ReactNode;
   full?: boolean;
   className?: string;

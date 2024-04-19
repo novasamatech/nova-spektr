@@ -5,7 +5,7 @@ import { TransactionAmount } from '@pages/Operations/components/TransactionAmoun
 import { DetailRow, FootnoteText, Icon } from '@shared/ui';
 import { ExtendedChain } from '@entities/network';
 import { useI18n } from '@app/providers';
-import { type Account, type MultisigAccount } from '@shared/core';
+import { type Account_NEW, type MultisigAccount } from '@shared/core';
 import { getAssetById } from '@shared/lib/utils';
 import { getTransactionFromMultisigTx } from '@entities/multisig';
 import { xcmTransferModel } from '@widgets/Transfer';
@@ -27,7 +27,7 @@ import {
 type Props = {
   tx: MultisigTransaction;
   account: MultisigAccount;
-  signatory?: Account;
+  signatory?: Account_NEW;
   connection: ExtendedChain;
   feeTx?: Transaction;
   onSign: () => void;

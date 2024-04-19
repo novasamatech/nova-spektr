@@ -10,7 +10,7 @@ import { useToggle } from '@shared/lib/hooks';
 import { Button, StatusModal } from '@shared/ui';
 import { Animation } from '@shared/ui/Animation/Animation';
 import { matrixModel } from '@entities/matrix';
-import type { Account, HexString } from '@shared/core';
+import type { Account_NEW, HexString } from '@shared/core';
 import {
   MultisigEvent,
   MultisigTxFinalStatus,
@@ -26,7 +26,7 @@ type ResultProps = Pick<ComponentProps<typeof StatusModal>, 'title' | 'content' 
 
 type Props = {
   api: ApiPromise;
-  account?: Account;
+  account?: Account_NEW;
   tx: Transaction;
   multisigTx?: MultisigTransaction;
   matrixRoomId?: string;

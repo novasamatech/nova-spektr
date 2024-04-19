@@ -9,7 +9,6 @@ import { CheckPermission, OperationType, walletModel } from '@entities/wallet';
 export const ReceiveAsset = () => {
   const navigate = useNavigate();
   const activeWallet = useUnit(walletModel.$activeWallet);
-  const activeAccounts = useUnit(walletModel.$activeAccounts);
 
   return (
     <CheckPermission

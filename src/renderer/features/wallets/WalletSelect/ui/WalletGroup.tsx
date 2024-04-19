@@ -1,6 +1,6 @@
 import { Accordion, CaptionText, Icon } from '@shared/ui';
 import { useI18n } from '@app/providers';
-import { Wallet, WalletFamily, WalletType } from '@shared/core';
+import { Wallet_NEW, WalletFamily, WalletType } from '@shared/core';
 import { WalletCardMd, WalletIcon, walletUtils } from '@entities/wallet';
 import { WalletFiatBalance } from './WalletFiatBalance';
 import { walletSelectModel } from '../model/wallet-select-model';
@@ -17,7 +17,7 @@ export const GroupLabels: Record<WalletFamily, string> = {
 
 type Props = {
   type: WalletFamily;
-  wallets: Wallet[];
+  wallets: Wallet_NEW[];
 };
 
 export const WalletGroup = ({ type, wallets }: Props) => {

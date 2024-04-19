@@ -6,7 +6,7 @@ import { useI18n } from '@app/providers';
 import { forgetWalletModel } from '../model/forget-wallet-model';
 
 type Props = {
-  wallet: Wallet;
+  wallet: Wallet_NEW;
   isOpen: boolean;
   onClose: () => void;
   onForget: () => void;

@@ -7,7 +7,8 @@ export type { Contact } from './types/contact';
 export type { Signatory } from './types/signatory';
 
 export type {
-  Wallet,
+  // Wallet,
+  Wallet_NEW,
   WalletsMap,
   PolkadotVaultWallet,
   SingleShardWallet,
@@ -26,14 +27,14 @@ export { WalletType, SigningType } from './types/wallet';
 
 export { AccountType, KeyType } from './types/account';
 export type {
-  Account,
-  BaseAccount,
+  // Account,
+  Account_NEW,
   ChainAccount,
   MultisigAccount,
-  WalletConnectAccount,
+  WcAccount,
   ProxiedAccount,
   ShardAccount,
-  DraftAccount,
+  // DraftAccount,
 } from './types/account';
 
 export { AssetType, StakingType } from './types/asset';

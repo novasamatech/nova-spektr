@@ -1,4 +1,4 @@
-import { BaseAccount, ChainAccount } from '@shared/core';
+import { Account_NEW, ChainAccount } from '@shared/core';
 import { accountUtils } from '@entities/wallet';
 
 export const modelUtils = {
@@ -6,11 +6,11 @@ export const modelUtils = {
 };
 
 type AccountsGroup = {
-  base: BaseAccount[];
+  base: Account_NEW[];
   chains: ChainAccount[][];
 };
-function groupAccounts(accounts: Omit<BaseAccount | ChainAccount, 'id' | 'walletId'>[]): AccountsGroup {
-  return accounts.reduce<{ base: BaseAccount[]; chains: ChainAccount[][] }>(
+function groupAccounts(accounts: Omit<Account_NEW | ChainAccount, 'id' | 'walletId'>[]): AccountsGroup {
+  return accounts.reduce<{ base: Account_NEW[]; chains: ChainAccount[][] }>(
     (acc, account) => {
       const lastBaseIndex = acc.base.length - 1;
 

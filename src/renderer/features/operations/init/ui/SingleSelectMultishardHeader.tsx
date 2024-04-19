@@ -7,11 +7,11 @@ import { DropdownOption, DropdownResult } from '@shared/ui/types';
 import { OperationErrorType } from '@entities/transaction';
 
 type Props = {
-  accounts: Account[];
+  accounts: Account_NEW[];
   invalid?: boolean;
   error?: OperationErrorType;
-  getAccountOption: (account: Account) => DropdownOption<Account>;
-  onAccountsChange: (accounts: Account[]) => void;
+  getAccountOption: (account: Account_NEW) => DropdownOption<Account>;
+  onAccountsChange: (accounts: Account_NEW[]) => void;
 };
 
 export const SingleSelectMultishardHeader = ({

@@ -15,7 +15,6 @@ import {
   ConfirmDialogProvider,
   StatusModalProvider,
   I18Provider,
-  MatrixProvider,
   GraphqlProvider,
   MultisigChainProvider,
 } from './providers';
@@ -72,17 +71,15 @@ export const App = () => {
     <I18Provider>
       <ErrorBoundary FallbackComponent={FallbackScreen} onError={console.error}>
         <MultisigChainProvider>
-          <MatrixProvider>
-            <ConfirmDialogProvider>
-              <StatusModalProvider>
-                <GraphqlProvider>
-                  {getContent()}
-                  <CreateWalletProvider />
-                  <WalletDetailsProvider />
-                </GraphqlProvider>
-              </StatusModalProvider>
-            </ConfirmDialogProvider>
-          </MatrixProvider>
+          <ConfirmDialogProvider>
+            <StatusModalProvider>
+              <GraphqlProvider>
+                {getContent()}
+                <CreateWalletProvider />
+                <WalletDetailsProvider />
+              </GraphqlProvider>
+            </StatusModalProvider>
+          </ConfirmDialogProvider>
         </MultisigChainProvider>
       </ErrorBoundary>
     </I18Provider>

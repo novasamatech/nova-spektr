@@ -3,7 +3,7 @@ import { onError } from '@apollo/client/link/error';
 import { createContext, PropsWithChildren, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 
 import { chainsService } from '@shared/api/network';
-import { useSettingsStorage } from '@entities/settings';
+import { settingsStorage } from '@entities/settings';
 import { ExternalType, type ChainId } from '@shared/core';
 
 type GraphqlContextProps = {
@@ -27,8 +27,6 @@ const errorLink = onError(({ graphQLErrors, networkError }) => {
 });
 
 export const GraphqlProvider = ({ children }: PropsWithChildren) => {
-  const { getStakingNetwork } = useSettingsStorage();
-
   const chainUrls = useRef<Record<ChainId, string>>({});
   const [apolloClient, setApolloClient] = useState<ApolloClient<NormalizedCacheObject>>();
 
@@ -58,7 +56,7 @@ export const GraphqlProvider = ({ children }: PropsWithChildren) => {
       return acc;
     }, {});
 
-    changeClient(getStakingNetwork());
+    changeClient(settingsStorage.getStakingNetwork());
   }, []);
 
   const value = useMemo(() => ({ changeClient }), [changeClient]);

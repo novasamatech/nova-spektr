@@ -7,7 +7,6 @@ import { Transfer } from '@widgets/Transfer';
 
 export const SendAsset = () => {
   const activeWallet = useUnit(walletModel.$activeWallet);
-  const activeAccounts = useUnit(walletModel.$activeAccounts);
 
   return (
     <CheckPermission

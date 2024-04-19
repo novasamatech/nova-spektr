@@ -2,7 +2,7 @@ import { attach, combine, createApi, createEffect, createStore, sample } from 'e
 import { createForm } from 'effector-forms';
 import { not } from 'patronum';
 
-import { Wallet } from '@shared/core';
+import { Wallet_NEW } from '@shared/core';
 import { walletModel } from '@entities/wallet';
 import { storageService } from '@shared/api/storage';
 import { splice } from '@shared/lib/utils';
@@ -16,9 +16,9 @@ const callbacksApi = createApi($callbacks, {
   callbacksChanged: (state, props: Callbacks) => ({ ...state, ...props }),
 });
 
-const $walletToEdit = createStore<Wallet | null>(null);
+const $walletToEdit = createStore<Wallet_NEW | null>(null);
 const walletApi = createApi($walletToEdit, {
-  formInitiated: (state, props: Wallet) => ({ ...state, ...props }),
+  formInitiated: (state, props: Wallet_NEW) => ({ ...state, ...props }),
 });
 
 const $walletForm = createForm({
@@ -42,7 +42,7 @@ const $walletForm = createForm({
   validateOn: ['submit'],
 });
 
-const renameWalletFx = createEffect(async ({ id, ...rest }: Wallet): Promise<Wallet> => {
+const renameWalletFx = createEffect(async ({ id, ...rest }: Wallet_NEW): Promise<Wallet_NEW> => {
   await storageService.wallets.update(id, rest);
 
   return { id, ...rest };
@@ -62,8 +62,8 @@ sample({
 });
 
 type SourceParams = {
-  walletToEdit: Wallet;
-  wallets: Wallet[];
+  walletToEdit: Wallet_NEW;
+  wallets: Wallet_NEW[];
 };
 function validateNameExist(value: string, _: unknown, params: SourceParams): boolean {
   if (!value) return true;

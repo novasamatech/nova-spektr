@@ -17,7 +17,7 @@ import {
   SigningType,
   WalletType,
   AccountType,
-  WalletConnectAccount,
+  WcAccount,
 } from '@shared/core';
 
 const WalletLogo: Record<WalletTypeName, IconNames> = {
@@ -109,7 +109,7 @@ export const ManageStep = ({ accounts, type, pairingTopic, sessionTopic, onBack,
             pairingTopic,
             sessionTopic,
           },
-        } as Omit<NoID<WalletConnectAccount>, 'walletId'>;
+        } as Omit<NoID<WcAccount>, 'walletId'>;
       }),
     });
 

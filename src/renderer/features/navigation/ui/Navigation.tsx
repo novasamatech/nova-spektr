@@ -10,7 +10,6 @@ import { BodyText } from '@shared/ui';
 
 export const Navigation = () => {
   const chains = useUnit(networkModel.$chains);
-  const activeAccounts = useUnit(walletModel.$activeAccounts);
   const activeWallet = useUnit(walletModel.$activeWallet);
 
   const { getLiveAccountMultisigTxs } = useMultisigTx({});

@@ -20,7 +20,6 @@ export const AssetsList = () => {
   const activeShards = useUnit(assetsModel.$activeShards);
 
   const activeWallet = useUnit(walletModel.$activeWallet);
-  const activeAccounts = useUnit(walletModel.$activeAccounts);
   const balances = useUnit(balanceModel.$balances);
 
   const assetsPrices = useUnit(priceProviderModel.$assetsPrices);
