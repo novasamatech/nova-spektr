@@ -44,4 +44,5 @@ export const XcmTypes = [
 
 export const DEFAULT_FEE_ASSET_ITEM = 0;
 
+// TODO: Remove when validation functions will be completed
 export const DESCRIPTION_LENGTH = 120;

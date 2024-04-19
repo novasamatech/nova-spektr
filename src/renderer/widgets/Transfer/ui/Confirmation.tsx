@@ -189,7 +189,7 @@ export const Confirmation = ({ onGoBack }: Props) => {
           {t('operation.goBackButton')}
         </Button>
 
-        <SignButton type={(signerWallet || initiatorWallet).type} onClick={confirmModel.output.formSubmitted} />
+        <SignButton type={(signerWallet || initiatorWallet).type} onClick={confirmModel.events.confirmed} />
       </div>
     </div>
   );

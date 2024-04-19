@@ -86,7 +86,7 @@ sample({
 });
 
 sample({
-  clock: confirmModel.output.formSubmitted,
+  clock: confirmModel.output.formConfirmed,
   source: {
     transferStore: $transferStore,
     networkStore: $networkStore,

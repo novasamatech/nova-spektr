@@ -1,7 +1,6 @@
 import { createEvent, createStore, combine, sample, restore } from 'effector';
 import { spread } from 'patronum';
 import { createForm } from 'effector-forms';
-import { BN } from '@polkadot/util';
 
 import { walletModel, walletUtils, accountUtils } from '@entities/wallet';
 import { balanceModel, balanceUtils } from '@entities/balance';
@@ -15,19 +14,18 @@ import {
   transactionService,
   MultisigTxWrapper,
   ProxyTxWrapper,
-  DESCRIPTION_LENGTH,
 } from '@entities/transaction';
 import {
   transferableAmount,
   getAssetId,
   formatAmount,
-  validateAddress,
   toShortAddress,
   toAccountId,
   toAddress,
   dictionary,
   ZERO_BALANCE,
 } from '@shared/lib/utils';
+import { TransferRules } from '../lib/transfer-rules';
 
 type BalanceMap = Record<'balance' | 'native', string>;
 
@@ -88,49 +86,27 @@ const $transferForm = createForm<FormParams>({
     account: {
       init: {} as Account,
       rules: [
-        {
-          name: 'noProxyFee',
-          source: combine({
+        TransferRules.account.noProxyFee(
+          combine({
             fee: $fee,
             isProxy: $isProxy,
             proxyBalance: $proxyBalance,
           }),
-          validator: (_a, _f, { isProxy, proxyBalance, fee }) => {
-            if (!isProxy) return true;
-
-            return new BN(fee).lte(new BN(proxyBalance.native));
-          },
-        },
+        ),
       ],
     },
     signatory: {
       init: {} as Account,
       rules: [
-        {
-          name: 'noSignatorySelected',
-          errorText: 'transfer.noSignatoryError',
-          source: $isMultisig,
-          validator: (signatory, _, isMultisig) => {
-            if (!isMultisig) return true;
-
-            return Object.keys(signatory).length > 0;
-          },
-        },
-        {
-          name: 'notEnoughTokens',
-          errorText: 'proxy.addProxy.notEnoughMultisigTokens',
-          source: combine({
+        TransferRules.signatory.noSignatorySelected($isMultisig),
+        TransferRules.signatory.notEnoughTokens(
+          combine({
             fee: $fee,
             isMultisig: $isMultisig,
             multisigDeposit: $multisigDeposit,
-            signatoryBalance: $signatoryBalance,
+            balance: $signatoryBalance,
           }),
-          validator: (_s, _f, { fee, isMultisig, signatoryBalance, multisigDeposit }) => {
-            if (!isMultisig) return true;
-
-            return new BN(multisigDeposit).add(new BN(fee)).lte(new BN(signatoryBalance));
-          },
-        },
+        ),
       ],
     },
     xcmChain: {
@@ -138,79 +114,36 @@ const $transferForm = createForm<FormParams>({
     },
     destination: {
       init: '',
-      rules: [
-        {
-          name: 'required',
-          errorText: 'transfer.requiredRecipientError',
-          validator: Boolean,
-        },
-        {
-          name: 'incorrectRecipient',
-          errorText: 'transfer.incorrectRecipientError',
-          validator: validateAddress,
-        },
-      ],
+      rules: [TransferRules.destination.required, TransferRules.destination.incorrectRecipient],
     },
     amount: {
       init: '',
       rules: [
-        {
-          name: 'required',
-          errorText: 'transfer.requiredAmountError',
-          validator: Boolean,
-        },
-        {
-          name: 'notZero',
-          errorText: 'transfer.notZeroAmountError',
-          validator: (value) => value !== ZERO_BALANCE,
-        },
-        {
-          name: 'notEnoughBalance',
-          errorText: 'transfer.notEnoughBalanceError',
-          source: combine({
+        TransferRules.amount.required,
+        TransferRules.amount.notZero,
+        TransferRules.amount.notEnoughBalance(
+          combine({
             network: $networkStore,
-            accountBalance: $accountBalance,
+            balance: $accountBalance,
           }),
-          validator: (value, _, { network, accountBalance }) => {
-            const amountBN = new BN(formatAmount(value, network.asset.precision));
-
-            return amountBN.lte(new BN(accountBalance.balance));
-          },
-        },
-        {
-          name: 'insufficientBalanceForFee',
-          errorText: 'transfer.notEnoughBalanceForFeeError',
-          source: combine({
+        ),
+        TransferRules.amount.insufficientBalanceForFee(
+          combine({
             fee: $fee,
-            isXcm: $isXcm,
-            isProxy: $isProxy,
             xcmFee: xcmTransferModel.$xcmFee,
             network: $networkStore,
+            balance: $accountBalance,
             isNative: $isNative,
             isMultisig: $isMultisig,
-            accountBalance: $accountBalance,
+            isXcm: $isXcm,
+            isProxy: $isProxy,
           }),
-          validator: (value, _, { network, isNative, isProxy, isMultisig, isXcm, accountBalance, ...rest }) => {
-            const feeBN = new BN(isProxy || isMultisig ? ZERO_BALANCE : rest.fee);
-            const xcmFeeBN = new BN(isXcm ? rest.xcmFee : ZERO_BALANCE);
-            const amountBN = new BN(formatAmount(value, network.asset.precision));
-
-            return isNative
-              ? feeBN.add(amountBN).add(xcmFeeBN).lte(new BN(accountBalance.native))
-              : feeBN.add(xcmFeeBN).lte(new BN(accountBalance.native));
-          },
-        },
+        ),
       ],
     },
     description: {
       init: '',
-      rules: [
-        {
-          name: 'maxLength',
-          errorText: 'transfer.descriptionLengthError',
-          validator: (value) => !value || value.length <= DESCRIPTION_LENGTH,
-        },
-      ],
+      rules: [TransferRules.description.maxLength],
     },
   },
   validateOn: ['submit'],
