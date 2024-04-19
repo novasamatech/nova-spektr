@@ -59,15 +59,19 @@ async function getValidatorsStake_OLD(api: ApiPromise, era: EraIndex): Promise<V
   const data = await api.query.staking.erasStakersClipped.entries(era);
   const maxNominatorRewarded = getMaxNominatorRewarded(api);
 
-  return data.reduce((acc, [storageKey, type]) => {
+  return data.reduce<ValidatorMap>((acc, [storageKey, type]) => {
     const address = storageKey.args[1].toString();
-    const totalStake = type.total.toString();
-    const oversubscribed = type.others.length >= maxNominatorRewarded;
     const nominators = type.others.map((n) => ({ who: n.who.toString(), value: n.value.toString() }));
 
-    const payload = { totalStake, address, oversubscribed, nominators, ownStake: type.own.toString() };
+    acc[address] = {
+      address,
+      nominators,
+      totalStake: type.total.toString(),
+      oversubscribed: type.others.length >= maxNominatorRewarded,
+      ownStake: type.own.toString(),
+    } as Validator;
 
-    return { ...acc, [address]: payload };
+    return acc;
   }, {});
 }
 
@@ -85,10 +89,8 @@ async function getValidatorsStake(api: ApiPromise, era: EraIndex): Promise<Recor
 
     acc[address] = {
       address,
-      // @ts-ignore
       totalStake: type.value.total.toString(),
       oversubscribed: false,
-      // @ts-ignore
       ownStake: type.value.own.toString(),
       nominators: [],
     };
@@ -111,12 +113,16 @@ async function getValidatorsStake(api: ApiPromise, era: EraIndex): Promise<Recor
 async function getValidatorsPrefs(api: ApiPromise, era: EraIndex): Promise<ValidatorMap> {
   const data = await api.query.staking.erasValidatorPrefs.entries(era);
 
-  return data.reduce((acc, [storageKey, type]) => {
+  return data.reduce<ValidatorMap>((acc, [storageKey, type]) => {
     const address = storageKey.args[1].toString();
-    const commission = parseFloat(type.commission.toHuman() as string);
-    const payload = { address, commission, blocked: type.blocked.toHuman() };
 
-    return { ...acc, [address]: payload };
+    acc[address] = {
+      address,
+      commission: parseFloat(type.commission.toHuman() as string),
+      blocked: type.blocked.toHuman(),
+    } as Validator;
+
+    return acc;
   }, {});
 }
 
@@ -139,12 +145,14 @@ async function getIdentities(
   api: ApiPromise,
   addresses: Address[],
   isLightClient?: boolean,
-): Promise<Record<Address, Identity>> {
+): Promise<Record<Address, { identity: Identity }>> {
   const subIdentities = await getSubIdentities(api, addresses, isLightClient);
   const parentIdentities = await getParentIdentities(api, subIdentities, isLightClient);
 
-  return addresses.reduce((acc, address) => {
-    return { ...acc, [address]: { identity: parentIdentities[address] } };
+  return addresses.reduce<Record<Address, { identity: Identity }>>((acc, address) => {
+    acc[address] = { identity: parentIdentities[address] };
+
+    return acc;
   }, {});
 }
 
@@ -166,7 +174,11 @@ async function getSubIdentities(
     );
 
     return addresses.reduce<SubIdentity[]>((acc, subAddress) => {
-      const payload = { sub: subAddress, parent: subAddress, subName: '' };
+      const payload = {
+        sub: subAddress,
+        parent: subAddress,
+        subName: '',
+      };
 
       if (subIdentities[subAddress]) {
         const rawData = subIdentities[subAddress];
@@ -174,21 +186,30 @@ async function getSubIdentities(
         payload.subName = rawData[1].isRaw ? u8aToString(rawData[1].asRaw) : rawData[1].value.toString();
       }
 
-      return acc.concat(payload);
+      acc.push(payload);
+
+      return acc;
     }, []);
   }
 
   const subIdentities = await api.query.identity.superOf.multi(addresses);
 
   return subIdentities.reduce<SubIdentity[]>((acc, identity, index) => {
-    const payload = { sub: addresses[index], parent: addresses[index], subName: '' };
-    if (!identity.isNone) {
+    const payload = {
+      sub: addresses[index],
+      parent: addresses[index],
+      subName: '',
+    };
+
+    if (identity.isSome) {
       const [address, rawData] = identity.unwrap();
       payload.parent = address.toHuman();
       payload.subName = rawData.isRaw ? u8aToString(rawData.asRaw) : rawData.value.toString();
     }
 
-    return acc.concat(payload);
+    acc.push(payload);
+
+    return acc;
   }, []);
 }
 
@@ -222,22 +243,24 @@ async function getParentIdentities(
     if (!identity || identity.isNone) return acc;
 
     const { parent, sub, subName } = subIdentities[index];
-    const { info } = identity.unwrap(); // { judgements, info }
-    const { display, web, riot, email, twitter } = info;
+    const unwrappedIdentity = identity.unwrap();
+    // HINT: in runtime 1_4_0 unwrappedIdentity returns Option<(identity, rest)>
+    const data = 'info' in unwrappedIdentity ? unwrappedIdentity : unwrappedIdentity[0];
+    const { display, web, email, twitter } = data.info; // { data also includes: judgements, deposit }
 
-    const payload: Identity = {
+    acc[sub] = {
       subName,
       email: email.isRaw ? u8aToString(email.asRaw) : email.value.toString(),
-      riot: riot.isRaw ? u8aToString(riot.asRaw) : riot.value.toString(),
       twitter: twitter.isRaw ? u8aToString(twitter.asRaw) : twitter.value.toString(),
       website: web.isRaw ? u8aToString(web.asRaw) : web.value.toString(),
+      // riot: riot.isRaw ? u8aToString(riot.asRaw) : riot.value.toString(),
       parent: {
         address: parent,
         name: display.isRaw ? u8aToString(display.asRaw) : display.value.toString(),
       },
     };
 
-    return { ...acc, [sub]: payload };
+    return acc;
   }, {});
 }
 
@@ -307,13 +330,14 @@ async function getSlashingSpans(
     slashingSpans = await api.query.staking.slashingSpans.multi(addresses);
   }
 
-  return slashingSpans.reduce((acc, span, index) => {
+  return slashingSpans.reduce<Record<Address, { slashed: boolean }>>((acc, span, index) => {
     let validatorIsSlashed = false;
-    if (!span.isNone) {
-      const { lastNonzeroSlash } = span.unwrap();
-      validatorIsSlashed = era - lastNonzeroSlash.toNumber() < slashDeferDuration;
+    if (span.isSome) {
+      validatorIsSlashed = era - span.unwrap().lastNonzeroSlash.toNumber() < slashDeferDuration;
     }
 
-    return { ...acc, [addresses[index]]: { slashed: validatorIsSlashed } };
+    acc[addresses[index]] = { slashed: validatorIsSlashed };
+
+    return acc;
   }, {});
 }

@@ -5,8 +5,8 @@ export type Identity = {
   email: string;
   website: string;
   twitter: string;
-  riot: string;
   parent: ParentIdentity;
+  // riot: string;
 };
 
 type ParentIdentity = {
