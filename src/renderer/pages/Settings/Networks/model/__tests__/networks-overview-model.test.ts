@@ -32,8 +32,14 @@ describe('pages/Settings/Networks/model/networks-overview-model', () => {
 
   test('should correctly map active networks to their connection lists', async () => {
     const expected = {
-      '0x01': { nodes: [{ type: 'AUTO_BALANCE' }, { type: 'DISABLED' }], selectedNode: { type: 'AUTO_BALANCE' } },
-      '0x03': { nodes: [{ type: 'AUTO_BALANCE' }, { type: 'DISABLED' }], selectedNode: { type: 'AUTO_BALANCE' } },
+      '0x01': {
+        connections: [{ type: 'AUTO_BALANCE' }, { type: 'DISABLED' }],
+        activeConnection: { type: 'AUTO_BALANCE' },
+      },
+      '0x03': {
+        connections: [{ type: 'AUTO_BALANCE' }, { type: 'DISABLED' }],
+        activeConnection: { type: 'AUTO_BALANCE' },
+      },
     };
     jest.spyOn(networkSelectorUtils, 'getConnectionsList').mockReturnValue(connectionsList);
 
@@ -52,7 +58,10 @@ describe('pages/Settings/Networks/model/networks-overview-model', () => {
 
   test('should correctly map disabled networks to their connection lists', async () => {
     const expected = {
-      '0x02': { nodes: [{ type: 'AUTO_BALANCE' }, { type: 'DISABLED' }], selectedNode: { type: 'DISABLED' } },
+      '0x02': {
+        connections: [{ type: 'AUTO_BALANCE' }, { type: 'DISABLED' }],
+        activeConnection: { type: 'DISABLED' },
+      },
     };
     jest.spyOn(networkSelectorUtils, 'getConnectionsList').mockReturnValue(connectionsList);
 

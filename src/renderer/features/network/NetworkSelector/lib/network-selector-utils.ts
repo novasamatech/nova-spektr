@@ -4,7 +4,6 @@ import { ConnectionItem } from './types';
 
 export const networkSelectorUtils = {
   getConnectionsList,
-  canDeleteNode,
 };
 
 function getConnectionsList(networkItem: ExtendedChain): ConnectionItem[] {
@@ -29,8 +28,4 @@ function getConnectionsList(networkItem: ExtendedChain): ConnectionItem[] {
   }));
 
   return [...actionNodes, ...nodesWithType, ...customs];
-}
-
-function canDeleteNode(nodeUrl: string, selectedConnectionUrl?: string): boolean {
-  return selectedConnectionUrl !== nodeUrl;
 }
