@@ -6,7 +6,6 @@ export type Identity = {
   website: string;
   twitter: string;
   parent: ParentIdentity;
-  // riot: string;
 };
 
 type ParentIdentity = {

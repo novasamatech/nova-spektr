@@ -253,7 +253,6 @@ async function getParentIdentities(
       email: email.isRaw ? u8aToString(email.asRaw) : email.value.toString(),
       twitter: twitter.isRaw ? u8aToString(twitter.asRaw) : twitter.value.toString(),
       website: web.isRaw ? u8aToString(web.asRaw) : web.value.toString(),
-      // riot: riot.isRaw ? u8aToString(riot.asRaw) : riot.value.toString(),
       parent: {
         address: parent,
         name: display.isRaw ? u8aToString(display.asRaw) : display.value.toString(),
