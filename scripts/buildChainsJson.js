@@ -30,7 +30,7 @@ async function buildFullChainsJSON() {
   CHAINS_ENV.forEach(async (chain) => {
     const spektrChainsConfig = await getDataViaHttp(SPEKTR_CONFIG_URL, chain);
     await saveNewFile(spektrChainsConfig, chain);
-    console.log('Was successfuly generated for ' + chain);
+    console.log('Was successfully generated for ' + chain);
   });
 }
 

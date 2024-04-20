@@ -83,7 +83,7 @@ describe('features/wallets/ForgetModel', () => {
     jest.restoreAllMocks();
   });
 
-  test('should call success calback after wallet delete', async () => {
+  test('should call success callback after wallet delete', async () => {
     const spyCallback = jest.fn();
     storageService.wallets.delete = jest.fn();
     storageService.accounts.deleteAll = jest.fn();
