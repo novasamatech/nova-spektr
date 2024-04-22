@@ -12,8 +12,8 @@ import type {
   AccountId,
   ChainId,
   MultisigAccount,
-  Account_NEW,
   ProxiedAccount,
+  Account,
 } from '@shared/core';
 import { DecodedTransaction, Transaction, TransactionType } from '@entities/transaction/model/transaction';
 
@@ -96,13 +96,13 @@ export const enum WrapperKind {
 export type MultisigTxWrapper = {
   kind: WrapperKind.MULTISIG;
   multisigAccount: MultisigAccount;
-  signatories: Account_NEW[];
-  signer: Account_NEW;
+  signatories: Account[];
+  signer: Account;
 };
 
 export type ProxyTxWrapper = {
   kind: WrapperKind.PROXY;
-  proxyAccount: Account_NEW;
+  proxyAccount: Account;
   proxiedAccount: ProxiedAccount;
 };
 

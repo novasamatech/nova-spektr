@@ -5,7 +5,7 @@ import { UnsignedTransaction } from '@substrate/txwrapper-polkadot';
 import { useI18n } from '@app/providers';
 import { Button, FootnoteText } from '@shared/ui';
 import { WalletIcon } from '@entities/wallet'; // TODO: cross import
-import type { Account_NEW, ChainAccount, ChainId, ShardAccount, Wallet, Address, BaseAccount } from '@shared/core';
+import type { ChainAccount, ChainId, ShardAccount, Wallet, Address, BaseAccount, Account } from '@shared/core';
 import { CryptoType } from '@shared/core';
 import { QrGeneratorContainer } from '../QrCode/QrGeneratorContainer/QrGeneratorContainer';
 import { QrTxGenerator } from '../QrCode/QrGenerator/QrTxGenerator';
@@ -17,8 +17,8 @@ type Props = {
   chainId: ChainId;
   address: Address;
   transaction: Transaction;
-  account?: Account_NEW;
-  signerWallet: Wallet_NEW;
+  account?: Account;
+  signerWallet: Wallet;
   countdown: number;
   onGoBack: () => void;
   onResetCountdown: () => void;

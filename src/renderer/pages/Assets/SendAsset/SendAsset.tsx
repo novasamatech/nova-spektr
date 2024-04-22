@@ -9,12 +9,7 @@ export const SendAsset = () => {
   const activeWallet = useUnit(walletModel.$activeWallet);
 
   return (
-    <CheckPermission
-      operationType={OperationType.TRANSFER}
-      wallet={activeWallet}
-      accounts={activeAccounts}
-      redirectPath={Paths.ASSETS}
-    >
+    <CheckPermission operationType={OperationType.TRANSFER} wallet={activeWallet} redirectPath={Paths.ASSETS}>
       <AssetRouteGuard redirectPath={Paths.ASSETS}>
         {(chain, asset) => <Transfer chain={chain} asset={asset} />}
       </AssetRouteGuard>

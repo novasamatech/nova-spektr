@@ -9,16 +9,16 @@ import { useState } from 'react';
 import { Transaction, TransactionType } from '@entities/transaction/model/transaction';
 import { createTxMetadata, toAccountId, dictionary } from '@shared/lib/utils';
 import { getExtrinsic, getUnsignedTransaction, wrapAsMulti, wrapAsProxy } from './extrinsicService';
-import {
+import type {
   AccountId,
   Address,
   ChainId,
   HexString,
   Threshold,
-  Account_NEW,
-  Wallet_NEW,
+  Wallet,
   MultisigAccount,
   ProxiedAccount,
+  Account,
 } from '@shared/core';
 import { decodeDispatchError } from './common/utils';
 import { useCallDataDecoder } from './callDataDecoder';
@@ -33,7 +33,7 @@ import {
   ProxyTxWrapper,
   WrapperKind,
 } from './common/types';
-import { walletUtils, accountUtils } from '../../wallet';
+import { walletUtils } from '../../wallet';
 
 const shouldWrapAsMulti = (wrapper: TxWrappers_OLD): wrapper is WrapAsMulti =>
   'signatoryId' in wrapper && 'account' in wrapper;
@@ -164,11 +164,11 @@ function hasProxy(txWrappers: TxWrapper[]): boolean {
 }
 
 type TxWrappersParams = {
-  wallets: Wallet_NEW[];
-  wallet: Wallet_NEW;
-  accounts: Account_NEW[];
-  account: Account_NEW;
-  signatories?: Account_NEW[];
+  wallets: Wallet[];
+  wallet: Wallet;
+  accounts: Account[];
+  account: Account;
+  signatories?: Account[];
 };
 /**
  * Get array of transaction wrappers (proxy/multisig)
@@ -192,9 +192,8 @@ function getTxWrappers({ wallet, ...params }: TxWrappersParams): TxWrapper[] {
 function getMultisigWrapper({ wallets, accounts, account, signatories = [] }: Omit<TxWrappersParams, 'wallet'>) {
   const signersMap = dictionary((account as MultisigAccount).signatories, 'accountId', () => true);
 
-  const signers = wallets.reduce<Account_NEW[]>((acc, wallet) => {
-    const walletAccounts = accountUtils.getWalletAccounts((wallet as Wallet_NEW).id, accounts);
-    const signer = walletAccounts.find((a) => signersMap[a.accountId]);
+  const signers = wallets.reduce<Account[]>((acc, wallet) => {
+    const signer = wallet.accounts.find((a) => signersMap[a.accountId]);
 
     if (signer) {
       acc.push(signer);
@@ -207,7 +206,7 @@ function getMultisigWrapper({ wallets, accounts, account, signatories = [] }: Om
     kind: WrapperKind.MULTISIG,
     multisigAccount: account as MultisigAccount,
     signatories: signers,
-    signer: signatories[0] || ({} as Account_NEW),
+    signer: signatories[0] || ({} as Account),
   };
 
   if (signatories.length === 0) return [wrapper];
@@ -219,9 +218,9 @@ function getMultisigWrapper({ wallets, accounts, account, signatories = [] }: Om
 
   const nextWrappers = getTxWrappers({
     wallets,
-    wallet: signatoryWallet as Wallet_NEW,
+    wallet: signatoryWallet as Wallet,
     accounts,
-    account: signatoryAccount as Account_NEW,
+    account: signatoryAccount as Account,
     signatories: signatories.slice(1),
   });
 
@@ -229,9 +228,8 @@ function getMultisigWrapper({ wallets, accounts, account, signatories = [] }: Om
 }
 
 function getProxyWrapper({ wallets, accounts, account, signatories = [] }: Omit<TxWrappersParams, 'wallet'>) {
-  const proxiesMap = wallets.reduce<{ wallet: Wallet_NEW; account: Account_NEW }[]>((acc, wallet) => {
-    const walletAccounts = accountUtils.getWalletAccounts(wallet.id, accounts);
-    const match = walletAccounts.find((a) => a.accountId === (account as ProxiedAccount).proxyAccountId);
+  const proxiesMap = wallets.reduce<{ wallet: Wallet; account: Account }[]>((acc, wallet) => {
+    const match = wallet.accounts.find((a) => a.accountId === (account as ProxiedAccount).proxyAccountId);
 
     if (match) {
       acc.push({ wallet, account: match });
@@ -361,8 +359,8 @@ export const useTransaction = (): ITransactionService => {
           txWrapper: {
             kind: WrapperKind.MULTISIG,
             multisigAccount: wrapper.account,
-            signatories: wrapper.account.signatories.map((s) => ({ accountId: s.accountId })) as Account_NEW[],
-            signer: { accountId: wrapper.signatoryId } as Account_NEW,
+            signatories: wrapper.account.signatories.map((s) => ({ accountId: s.accountId })) as Account[],
+            signer: { accountId: wrapper.signatoryId } as Account,
           },
         });
       }

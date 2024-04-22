@@ -4,17 +4,17 @@ import { accountUtils, walletUtils } from '@entities/wallet';
 import { formatSectionAndMethod, toAddress } from '@shared/lib/utils';
 import { TransferTypes, XcmTypes, isProxyTransaction } from '@entities/transaction';
 import {
-  Account_NEW,
   AccountId,
   ChainId,
   Contact,
   Explorer,
   HexString,
   Signatory,
-  Wallet_NEW,
+  Wallet,
   Address,
   ProxyType,
   Chain,
+  Account,
 } from '@shared/core';
 import {
   DecodedTransaction,
@@ -213,7 +213,7 @@ export const getSignatoryName = (
   signatoryId: AccountId,
   txSignatories: Signatory[],
   contacts: Contact[],
-  wallets: Wallet_NEW[],
+  wallets: Wallet[],
   addressPrefix?: number,
 ): string => {
   const finderFn = <T extends { accountId: AccountId }>(collection: T[]): T | undefined => {
@@ -235,15 +235,15 @@ export const getSignatoryName = (
 };
 
 export const getSignatoryAccounts = (
-  accounts: Account_NEW[],
-  wallets: Wallet_NEW[],
+  accounts: Account[],
+  wallets: Wallet[],
   events: MultisigEvent[],
   signatories: Signatory[],
   chainId: ChainId,
-): Account_NEW[] => {
+): Account[] => {
   const walletsMap = new Map(wallets.map((wallet) => [wallet.id, wallet]));
 
-  return signatories.reduce((acc: Account_NEW[], signatory) => {
+  return signatories.reduce((acc: Account[], signatory) => {
     const filteredAccounts = accounts.filter(
       (a) => a.accountId === signatory.accountId && !events.some((e) => e.accountId === a.accountId),
     );

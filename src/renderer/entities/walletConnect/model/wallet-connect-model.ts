@@ -5,7 +5,7 @@ import { createEffect, createEvent, createStore, sample, scopeBind } from 'effec
 import keyBy from 'lodash/keyBy';
 
 import { nonNullable } from '@shared/lib/utils';
-import { ID, Account_NEW, WcAccount, kernelModel, Wallet_NEW } from '@shared/core';
+import { ID, BaseAccount, WcAccount, kernelModel, Wallet, Account } from '@shared/core';
 import { localStorageService } from '@shared/api/local-storage';
 import { storageService } from '@shared/api/storage';
 import { walletModel, walletUtils } from '@entities/wallet';
@@ -23,7 +23,7 @@ import {
 } from '../lib/constants';
 
 type SessionTopicParams = {
-  accounts: Account_NEW[];
+  accounts: Account[];
   topic: string;
 };
 
@@ -120,7 +120,7 @@ const logClientIdFx = createEffect(async (client: Client) => {
 });
 
 const sessionTopicUpdatedFx = createEffect(
-  async ({ accounts, topic }: SessionTopicParams): Promise<Account_NEW[] | undefined> => {
+  async ({ accounts, topic }: SessionTopicParams): Promise<BaseAccount[] | undefined> => {
     const updatedAccounts = accounts.map(({ signingExtras, ...rest }) => {
       const newSigningExtras = { ...signingExtras, sessionTopic: topic };
 
@@ -148,7 +148,7 @@ const removePairingFx = createEffect(async ({ client, topic }: { client: Client;
 });
 
 type UpdateParams = {
-  wallet: Wallet_NEW;
+  wallet: Wallet;
   accounts: WcAccount[];
 };
 const updateWcAccountsFx = createEffect(
@@ -369,7 +369,7 @@ sample({
 sample({
   clock: currentSessionTopicUpdated,
   source: walletModel.$activeWallet,
-  filter: (wallet: Wallet_NEW | null): wallet is Wallet_NEW => Boolean(wallet),
+  filter: (wallet: Wallet | null): wallet is Wallet => Boolean(wallet),
   fn: (wallet, topic) => ({
     accounts: wallet.accounts,
     topic,

@@ -1,12 +1,12 @@
 import { Popover } from '@headlessui/react';
 
-import type { Wallet_NEW } from '@shared/core';
+import type { Wallet } from '@shared/core';
 import { WalletFiatBalance } from './WalletFiatBalance';
 import { Icon } from '@shared/ui';
 import { WalletCardLg } from '@entities/wallet';
 
 type Props = {
-  wallet: Wallet_NEW;
+  wallet: Wallet;
 };
 export const WalletButton = ({ wallet }: Props) => {
   return (

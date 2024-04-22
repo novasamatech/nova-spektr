@@ -1,10 +1,8 @@
-import { Wallet_NEW, Account_NEW } from '@shared/core';
+import { Wallet } from '@shared/core';
 import { permissionUtils } from '../lib/permission-utils';
 import { OperationType } from './types';
 
-export function getOperationTypeFn(
-  operationType: OperationType,
-): (wallet: Wallet_NEW, accounts: Account_NEW[]) => boolean {
+export function getOperationTypeFn(operationType: OperationType): (wallet: Wallet) => boolean {
   return {
     [OperationType.TRANSFER]: permissionUtils.canTransfer,
     [OperationType.RECEIVE]: permissionUtils.canReceive,

@@ -1,5 +1,4 @@
 import {
-  Account_NEW,
   AccountId,
   AccountType,
   ChainAccount,
@@ -7,6 +6,7 @@ import {
   CryptoType,
   KeyType,
   ShardAccount,
+  Account,
 } from '@shared/core';
 import { TEST_ACCOUNTS, TEST_CHAIN_ID } from '@shared/lib/utils';
 import { accountUtils } from '@entities/wallet';
@@ -160,17 +160,17 @@ describe('entities/wallet/lib/account-utils#getDerivationPath', () => {
   });
 
   test('should return undefined if accounts array is empty', () => {
-    const accounts: Account_NEW[] = [];
+    const accounts: Account[] = [];
     const result = accountUtils.getBaseAccount(accounts);
 
     expect(result).toBeUndefined();
   });
 
   test('should return undefined if no account matches the walletId', () => {
-    const accounts: Account_NEW[] = [
-      { id: 1, walletId: 1, type: AccountType.BASE } as unknown as Account_NEW,
-      { id: 2, walletId: 2, type: AccountType.BASE } as unknown as Account_NEW,
-      { id: 3, walletId: 3, type: AccountType.BASE } as unknown as Account_NEW,
+    const accounts: Account[] = [
+      { id: 1, walletId: 1, type: AccountType.BASE } as unknown as Account,
+      { id: 2, walletId: 2, type: AccountType.BASE } as unknown as Account,
+      { id: 3, walletId: 3, type: AccountType.BASE } as unknown as Account,
     ];
     const walletId = 4;
     const result = accountUtils.getBaseAccount(accounts, walletId);
@@ -179,10 +179,10 @@ describe('entities/wallet/lib/account-utils#getDerivationPath', () => {
   });
 
   test('should return the first account that matches the walletId and is a base account', () => {
-    const accounts: Account_NEW[] = [
-      { id: 1, walletId: 1 } as unknown as Account_NEW,
-      { id: 2, walletId: 1 } as unknown as Account_NEW,
-      { id: 3, walletId: 1, type: AccountType.BASE } as unknown as Account_NEW,
+    const accounts: Account[] = [
+      { id: 1, walletId: 1 } as unknown as Account,
+      { id: 2, walletId: 1 } as unknown as Account,
+      { id: 3, walletId: 1, type: AccountType.BASE } as unknown as Account,
     ];
 
     const walletId = 1;
@@ -201,6 +201,6 @@ describe('entities/wallet/lib/account-utils#isChainDependant', () => {
     [{ type: AccountType.MULTISIG, chainId: '0x00' }, true], // MultisigAccount single_chain
     [{ type: AccountType.PROXIED, chainId: '0x00' }, true], // ProxiedAccount
   ])('should be chain dependant or not', (account, expected) => {
-    expect(accountUtils.isChainDependant(account as Account_NEW)).toEqual(expected);
+    expect(accountUtils.isChainDependant(account as Account)).toEqual(expected);
   });
 });

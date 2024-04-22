@@ -9,7 +9,7 @@ import { useI18n } from '@app/providers';
 import { MultisigTransactionDS } from '@shared/api/storage';
 import { useToggle } from '@shared/lib/hooks';
 import { ExtendedChain } from '@entities/network';
-import { TEST_ADDRESS, toAddress, transferableAmount, getAssetById, dictionary } from '@shared/lib/utils';
+import { TEST_ADDRESS, toAddress, transferableAmount, getAssetById } from '@shared/lib/utils';
 import { getMultisigSignOperationTitle, getSignatoryAccounts } from '../../common/utils';
 import { Submit } from '../ActionSteps/Submit';
 import { Confirmation } from '../ActionSteps/Confirmation';
@@ -18,7 +18,7 @@ import { useMultisigEvent } from '@entities/multisig';
 import { SigningSwitch } from '@features/operations';
 import { permissionUtils, walletModel } from '@entities/wallet';
 import { priceProviderModel } from '@entities/price';
-import type { Address, HexString, Timepoint, MultisigAccount, Account_NEW } from '@shared/core';
+import type { Address, HexString, Timepoint, MultisigAccount, BaseAccount, Account } from '@shared/core';
 import { balanceModel, balanceUtils } from '@entities/balance';
 import { OperationTitle } from '@entities/chain';
 import {
@@ -62,7 +62,7 @@ const ApproveTx = ({ tx, account, connection }: Props) => {
   const [isFeeModalOpen, toggleFeeModal] = useToggle();
 
   const [activeStep, setActiveStep] = useState(Step.CONFIRMATION);
-  const [signAccount, setSignAccount] = useState<Account_NEW>();
+  const [signAccount, setSignAccount] = useState<Account>();
 
   const [feeTx, setFeeTx] = useState<Transaction>();
   const [approveTx, setApproveTx] = useState<Transaction>();
@@ -76,8 +76,13 @@ const ApproveTx = ({ tx, account, connection }: Props) => {
   const nativeAsset = connection.assets[0];
   const asset = getAssetById(tx.transaction?.args.assetId, connection.assets);
 
-  const walletsMap = dictionary(wallets, 'id');
-  const availableAccounts = accounts.filter((a) => permissionUtils.canApproveMultisigTx(walletsMap[a.walletId], [a]));
+  const availableAccounts = wallets.reduce<Account[]>((acc, wallet) => {
+    if (permissionUtils.canApproveMultisigTx(wallet)) {
+      acc.push(...wallet.accounts);
+    }
+
+    return acc;
+  }, []);
 
   const unsignedAccounts = getSignatoryAccounts(availableAccounts, wallets, events, account.signatories, tx.chainId);
 
@@ -163,7 +168,7 @@ const ApproveTx = ({ tx, account, connection }: Props) => {
     };
   };
 
-  const validateBalanceForFee = async (signAccount: Account_NEW): Promise<boolean> => {
+  const validateBalanceForFee = async (signAccount: Account): Promise<boolean> => {
     if (!connection.api || !feeTx || !signAccount.accountId || !nativeAsset) return false;
 
     const fee = await transactionService.getTransactionFee(feeTx, connection.api);
@@ -179,7 +184,7 @@ const ApproveTx = ({ tx, account, connection }: Props) => {
     return new BN(fee).lte(new BN(transferableAmount(balance)));
   };
 
-  const selectSignerAccount = async (account: Account_NEW) => {
+  const selectSignerAccount = async (account: Account) => {
     setSignAccount(account);
     toggleSelectAccountModal();
 

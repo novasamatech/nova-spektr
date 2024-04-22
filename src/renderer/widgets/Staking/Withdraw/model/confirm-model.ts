@@ -7,9 +7,9 @@ import { walletModel, walletUtils } from '@entities/wallet';
 type Input = {
   chain: Chain;
   asset: Asset;
-  shards: Account[];
+  shards: BaseAccount[];
   proxiedAccount?: ProxiedAccount;
-  signatory?: Account;
+  signatory?: BaseAccount;
   amount: string;
   description: string;
 

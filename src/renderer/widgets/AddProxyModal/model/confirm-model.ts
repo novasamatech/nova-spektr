@@ -1,14 +1,14 @@
 import { createEvent, combine, restore } from 'effector';
 
-import { Chain, Account_NEW, ProxyType, Address, ProxiedAccount } from '@shared/core';
+import { Chain, BaseAccount, ProxyType, Address, ProxiedAccount } from '@shared/core';
 import { networkModel } from '@entities/network';
 import { Transaction } from '@entities/transaction';
 import { walletModel, walletUtils } from '@entities/wallet';
 
 type Input = {
   chain: Chain;
-  account: Account_NEW;
-  signatory?: Account_NEW;
+  account: Account;
+  signatory?: Account;
   proxyType: ProxyType;
   delegate: Address;
   description: string;

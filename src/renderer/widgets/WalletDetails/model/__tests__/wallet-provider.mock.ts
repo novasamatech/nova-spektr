@@ -2,7 +2,7 @@ import type { Account, AccountId, MultisigAccount, MultisigWallet, ProxyAccount,
 import { AccountType, ProxyType, SigningType, WalletType } from '@shared/core';
 import { TEST_ACCOUNTS, TEST_ADDRESS } from '@shared/lib/utils';
 
-const wallets: Wallet_NEW[] = [
+const wallets: Wallet[] = [
   {
     id: 1,
     signingType: SigningType.POLKADOT_VAULT,
@@ -19,7 +19,7 @@ const wallets: Wallet_NEW[] = [
   },
 ];
 
-const accounts: Account_NEW[] = [
+const accounts: Account[] = [
   {
     id: 1,
     accountId: TEST_ACCOUNTS[0],
@@ -53,7 +53,7 @@ const accounts: Account_NEW[] = [
   },
 ];
 
-const dupAccounts: Account_NEW[] = [
+const dupAccounts: Account[] = [
   {
     id: 1,
     walletId: 1,
@@ -143,7 +143,7 @@ const multisigAccount: MultisigAccount = {
   ],
 };
 
-const signatoriesAccounts: Account_NEW[] = [
+const signatoriesAccounts: Account[] = [
   {
     accountId: '0x01',
     id: 4,
@@ -164,7 +164,7 @@ const signatoriesAccounts: Account_NEW[] = [
   },
 ];
 
-const signatoriesWallets: Wallet_NEW[] = [
+const signatoriesWallets: Wallet[] = [
   {
     id: 3,
     name: 'Signatory 1 wallet',

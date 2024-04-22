@@ -6,7 +6,7 @@ export const walletSelectUtils = {
   getWalletByGroups,
 };
 
-function getWalletByGroups(wallets: Wallet_NEW[], query = ''): Record<WalletFamily, Wallet[]> {
+function getWalletByGroups(wallets: Wallet[], query = ''): Record<WalletFamily, Wallet[]> {
   const accumulator: Record<WalletFamily, Wallet[]> = {
     [WalletType.POLKADOT_VAULT]: [],
     [WalletType.MULTISIG]: [],

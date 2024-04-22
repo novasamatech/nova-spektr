@@ -2,15 +2,15 @@ import { BaseModal } from '@shared/ui';
 import { useI18n } from '@app/providers';
 import { SelectableSignatory } from '@entities/signatory';
 import { cnTw } from '@shared/lib/utils';
-import type { Asset, Account_NEW, Chain } from '@shared/core';
+import type { Asset, BaseAccount, Chain } from '@shared/core';
 
 type Props = {
   isOpen: boolean;
   chain: Chain;
   nativeAsset: Asset;
-  accounts: Account_NEW[];
+  accounts: Account[];
   onClose: () => void;
-  onSelect: (account: Account_NEW) => void;
+  onSelect: (account: Account) => void;
 };
 
 export const SignatorySelectModal = ({ isOpen, onClose, onSelect, accounts, nativeAsset, chain }: Props) => {

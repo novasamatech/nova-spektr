@@ -12,33 +12,25 @@ import { networkModel } from '@entities/network';
 import { proxiesModel } from '@features/proxies';
 import { addProxyModel } from '../../AddProxyModal';
 import type {
-  Account_NEW,
-  Signatory,
-  Wallet_NEW,
-  MultisigAccount,
   BaseAccount,
+  Signatory,
+  Wallet,
+  MultisigAccount,
   AccountId,
   ProxyAccount,
   ProxiedAccount,
   ChainId,
   ProxyGroup,
+  Account,
 } from '@shared/core';
 
 const removeProxy = createEvent<ProxyAccount>();
 
 const $proxyForRemoval = createStore<ProxyAccount | null>(null);
 
-const $accounts = combine(
-  {
-    accounts: walletModel.$accounts,
-    details: walletSelectModel.$walletForDetails,
-  },
-  ({ details, accounts }): Account_NEW[] => {
-    if (!details) return [];
-
-    return accountUtils.getWalletAccounts(details.id, accounts);
-  },
-);
+const $accounts = combine(walletSelectModel.$walletForDetails, (details): Account[] => {
+  return details ? details.accounts : [];
+});
 
 const $singleShardAccount = combine(
   $accounts,
@@ -128,14 +120,14 @@ const $signatoryWallets = combine(
     accounts: walletModel.$accounts,
     wallets: walletModel.$wallets,
   },
-  ({ walletAccounts, accounts, wallets }): [AccountId, Wallet_NEW][] => {
+  ({ walletAccounts, accounts, wallets }): [AccountId, Wallet][] => {
     const multisigAccount = walletAccounts[0];
     if (!multisigAccount || !accountUtils.isMultisigAccount(multisigAccount)) return [];
 
     const walletsMap = dictionary(wallets, 'id');
     const accountsMap = dictionary(accounts, 'accountId', (account) => account.walletId);
 
-    return multisigAccount.signatories.reduce<[AccountId, Wallet_NEW][]>((acc, signatory) => {
+    return multisigAccount.signatories.reduce<[AccountId, Wallet][]>((acc, signatory) => {
       const wallet = walletsMap[accountsMap[signatory.accountId]];
       if (wallet) {
         acc.push([signatory.accountId, wallet]);
@@ -224,7 +216,7 @@ const $proxyWallet = combine(
     wallets: walletModel.$wallets,
     detailsWallet: walletSelectModel.$walletForDetails,
   },
-  ({ walletAccounts, accounts, wallets, detailsWallet }): Wallet_NEW | undefined => {
+  ({ walletAccounts, accounts, wallets, detailsWallet }): Wallet | undefined => {
     if (!walletUtils.isProxied(detailsWallet)) return;
 
     const walletsMap = dictionary(wallets, 'id');

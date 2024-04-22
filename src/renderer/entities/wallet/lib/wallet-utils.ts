@@ -5,11 +5,12 @@ import type {
   PolkadotVaultGroup,
   PolkadotVaultWallet,
   SingleShardWallet,
-  Wallet_NEW,
   WalletConnectGroup,
   WalletConnectWallet,
   WatchOnlyWallet,
   ProxiedWallet,
+  Wallet,
+  Account,
 } from '@shared/core';
 import { ID, WalletType } from '@shared/core';
 
@@ -24,48 +25,55 @@ export const walletUtils = {
   isProxied,
   isWalletConnectGroup,
   isPolkadotVaultGroup,
+
   isValidSignatory,
   getWalletById,
+
+  getAccountsBy,
+  getWalletAndAccounts,
 };
 
-function isPolkadotVault(wallet?: Wallet_NEW): wallet is PolkadotVaultWallet {
+// Wallet types
+
+function isPolkadotVault(wallet?: Wallet): wallet is PolkadotVaultWallet {
   return wallet?.type === WalletType.POLKADOT_VAULT;
 }
 
-function isMultiShard(wallet?: Wallet_NEW): wallet is MultiShardWallet {
+function isMultiShard(wallet?: Wallet): wallet is MultiShardWallet {
   return wallet?.type === WalletType.MULTISHARD_PARITY_SIGNER;
 }
 
-function isSingleShard(wallet?: Wallet_NEW): wallet is SingleShardWallet {
+function isSingleShard(wallet?: Wallet): wallet is SingleShardWallet {
   return wallet?.type === WalletType.SINGLE_PARITY_SIGNER;
 }
 
-function isMultisig(wallet?: Wallet_NEW): wallet is MultisigWallet {
+function isMultisig(wallet?: Wallet): wallet is MultisigWallet {
   return wallet?.type === WalletType.MULTISIG;
 }
 
-function isWatchOnly(wallet?: Wallet_NEW): wallet is WatchOnlyWallet {
+function isWatchOnly(wallet?: Wallet): wallet is WatchOnlyWallet {
   return wallet?.type === WalletType.WATCH_ONLY;
 }
 
-function isNovaWallet(wallet?: Wallet_NEW): wallet is NovaWalletWallet {
+function isNovaWallet(wallet?: Wallet): wallet is NovaWalletWallet {
   return wallet?.type === WalletType.NOVA_WALLET;
 }
 
-function isWalletConnect(wallet?: Wallet_NEW): wallet is WalletConnectWallet {
+function isWalletConnect(wallet?: Wallet): wallet is WalletConnectWallet {
   return wallet?.type === WalletType.WALLET_CONNECT;
 }
+function isProxied(wallet?: Wallet): wallet is ProxiedWallet {
+  return wallet?.type === WalletType.PROXIED;
+}
 
-function isPolkadotVaultGroup(wallet?: Wallet_NEW): wallet is PolkadotVaultGroup {
+// Groups
+
+function isPolkadotVaultGroup(wallet?: Wallet): wallet is PolkadotVaultGroup {
   return isPolkadotVault(wallet) || isMultiShard(wallet) || isSingleShard(wallet);
 }
 
-function isWalletConnectGroup(wallet?: Wallet_NEW): wallet is WalletConnectGroup {
+function isWalletConnectGroup(wallet?: Wallet): wallet is WalletConnectGroup {
   return isNovaWallet(wallet) || isWalletConnect(wallet);
-}
-
-function isProxied(wallet?: Wallet_NEW): wallet is ProxiedWallet {
-  return wallet?.type === WalletType.PROXIED;
 }
 
 const VALID_SIGNATORY_WALLET_TYPES = [
@@ -74,12 +82,48 @@ const VALID_SIGNATORY_WALLET_TYPES = [
   WalletType.WALLET_CONNECT,
   WalletType.NOVA_WALLET,
 ];
-function isValidSignatory(wallet?: Pick<Wallet_NEW, 'type'>): boolean {
+function isValidSignatory(wallet?: Wallet): boolean {
   if (!wallet) return false;
 
   return VALID_SIGNATORY_WALLET_TYPES.includes(wallet.type);
 }
 
-function getWalletById(wallets: Wallet_NEW[], id: ID): Wallet_NEW | undefined {
+function getWalletById(wallets: Wallet[], id: ID): Wallet | undefined {
   return wallets.find((wallet) => wallet.id === id);
+}
+
+function getAccountsBy(wallets: Wallet[], accountFn: (account: Account) => boolean): Account[] {
+  return wallets.reduce<Account[]>((acc, wallet) => {
+    acc.push(...wallet.accounts.filter(accountFn));
+
+    return acc;
+  }, []);
+}
+
+function getWalletAndAccounts(
+  wallets: Wallet[],
+  predicates: {
+    walletFn?: (wallet: Wallet) => boolean;
+    accountFn?: (account: Account) => boolean;
+  },
+): { wallet: Wallet; accounts: Account[] } | undefined {
+  const { wallet, accounts } = wallets.reduce<{ wallet: Wallet | undefined; accounts: Account[] }>(
+    (acc, wallet) => {
+      if (acc.wallet) return acc;
+
+      if (!predicates.walletFn || predicates.walletFn(wallet)) {
+        const accounts = wallet.accounts.filter((account) => {
+          return !predicates.accountFn || predicates.accountFn(account);
+        });
+
+        acc.wallet = wallet;
+        acc.accounts = accounts;
+      }
+
+      return acc;
+    },
+    { wallet: undefined, accounts: [] },
+  );
+
+  return wallet && accounts.length > 0 ? { wallet, accounts } : undefined;
 }

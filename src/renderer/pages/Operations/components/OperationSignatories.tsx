@@ -4,7 +4,7 @@ import { useUnit } from 'effector-react';
 import { BodyText, Button, CaptionText, FootnoteText, Icon, SmallTitleText } from '@shared/ui';
 import { AddressWithName, WalletIcon, walletModel } from '@entities/wallet';
 import { getSignatoryName } from '@pages/Operations/common/utils';
-import { AccountId, MultisigAccount, Signatory, Wallet_NEW } from '@shared/core';
+import { AccountId, MultisigAccount, Signatory, Wallet } from '@shared/core';
 import { MultisigEvent, MultisigTransaction, SigningStatus } from '@entities/transaction';
 import { ExtendedChain } from '@entities/network';
 import { useI18n } from '@app/providers';
@@ -15,7 +15,7 @@ import LogModal from './LogModal';
 import { useMultisigEvent } from '@entities/multisig';
 import { SignatoryCard, singnatoryUtils } from '@entities/signatory';
 
-type WalletSignatory = Signatory & { wallet: Wallet_NEW };
+type WalletSignatory = Signatory & { wallet: Wallet };
 
 type Props = {
   tx: MultisigTransaction;

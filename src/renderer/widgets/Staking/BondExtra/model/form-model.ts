@@ -11,7 +11,7 @@ import { WalletData } from '../lib/types';
 import { transferableAmount, getRelaychainAsset, formatAmount, stakeableAmount, ZERO_BALANCE } from '@shared/lib/utils';
 
 type FormParams = {
-  shards: Account[];
+  shards: BaseAccount[];
   signatory: Account;
   amount: string;
   description: string;
@@ -24,14 +24,14 @@ const formCleared = createEvent();
 
 const txWrapperChanged = createEvent<{
   proxyAccount: Account | null;
-  signatories: Account[][];
+  signatories: BaseAccount[][];
   isProxy: boolean;
   isMultisig: boolean;
 }>();
 const feeDataChanged = createEvent<Record<'fee' | 'totalFee' | 'multisigDeposit', string>>();
 const isFeeLoadingChanged = createEvent<boolean>();
 
-const $shards = createStore<Account[]>([]);
+const $shards = createStore<BaseAccount[]>([]);
 const $networkStore = createStore<{ chain: Chain; asset: Asset } | null>(null);
 
 const $accountsBalances = createStore<string[]>([]);
@@ -39,7 +39,7 @@ const $bondBalanceRange = createStore<string | string[]>(ZERO_BALANCE);
 const $signatoryBalance = createStore<string>(ZERO_BALANCE);
 const $proxyBalance = createStore<string>(ZERO_BALANCE);
 
-const $availableSignatories = createStore<Account[][]>([]);
+const $availableSignatories = createStore<BaseAccount[][]>([]);
 const $proxyAccount = createStore<Account | null>(null);
 const $isProxy = createStore<boolean>(false);
 const $isMultisig = createStore<boolean>(false);
@@ -50,7 +50,7 @@ const $isFeeLoading = restore(isFeeLoadingChanged, true);
 const $bondForm = createForm<FormParams>({
   fields: {
     shards: {
-      init: [] as Account[],
+      init: [] as BaseAccount[],
       rules: [
         {
           name: 'noProxyFee',

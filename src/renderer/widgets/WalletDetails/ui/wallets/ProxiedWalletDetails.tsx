@@ -28,8 +28,8 @@ const ProxyTypeOperation: Record<ProxyType, string> = {
 };
 
 type Props = {
-  wallet: Wallet_NEW;
-  proxyWallet: Wallet_NEW;
+  wallet: Wallet;
+  proxyWallet: Wallet;
   proxiedAccount: ProxiedAccount;
   onClose: () => void;
 };

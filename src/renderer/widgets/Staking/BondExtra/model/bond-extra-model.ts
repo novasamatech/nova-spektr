@@ -8,7 +8,7 @@ import { getRelaychainAsset, nonNullable } from '@shared/lib/utils';
 import { networkModel } from '@entities/network';
 import { submitModel } from '@features/operations/OperationSubmit';
 import { signModel } from '@features/operations/OperationSign/model/sign-model';
-import { Account } from '@shared/core';
+import { BaseAccount } from '@shared/core';
 import { Step, BondExtraData, WalletData, FeeData } from '../lib/types';
 import { bondExtraUtils } from '../lib/bond-extra-utils';
 import { formModel } from './form-model';
@@ -116,7 +116,7 @@ sample({
 sample({
   clock: $txWrappers.updates,
   fn: (txWrappers) => {
-    const signatories = txWrappers.reduce<Account[][]>((acc, wrapper) => {
+    const signatories = txWrappers.reduce<BaseAccount[][]>((acc, wrapper) => {
       if (wrapper.kind === WrapperKind.MULTISIG) acc.push(wrapper.signatories);
 
       return acc;

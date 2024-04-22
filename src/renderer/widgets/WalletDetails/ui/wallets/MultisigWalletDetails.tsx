@@ -28,7 +28,7 @@ import { matrixModel, matrixUtils } from '@entities/matrix';
 import { AddPureProxied, addPureProxiedModel } from '@widgets/AddPureProxiedModal';
 
 type Props = {
-  wallet: Wallet_NEW;
+  wallet: Wallet;
   account: MultisigAccount;
   signatoryWallets: [AccountId, Wallet][];
   signatoryContacts: Signatory[];

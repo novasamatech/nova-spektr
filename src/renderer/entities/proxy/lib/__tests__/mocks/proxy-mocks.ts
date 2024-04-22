@@ -20,7 +20,7 @@ const newProxy: ProxyAccount = {
   delay: 0,
 };
 
-const wallets: Wallet_NEW[] = [
+const wallets: Wallet[] = [
   {
     id: 1,
     name: 'My first wallet',
@@ -36,7 +36,7 @@ const wallets: Wallet_NEW[] = [
     signingType: SigningType.WALLET_CONNECT,
   },
 ];
-const accounts: Account_NEW[] = [
+const accounts: Account[] = [
   {
     id: 1,
     walletId: 1,

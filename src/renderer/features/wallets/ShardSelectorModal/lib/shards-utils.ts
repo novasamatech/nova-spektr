@@ -1,6 +1,6 @@
 import set from 'lodash/set';
 
-import type { Account_NEW, Chain, ChainId, BaseAccount, ChainAccount, ShardAccount, ID, AccountId } from '@shared/core';
+import type { Chain, ChainId, ChainAccount, ShardAccount, ID, AccountId, Account, BaseAccount } from '@shared/core';
 import { accountUtils } from '@entities/wallet';
 import { toAddress, isStringsMatchQuery } from '@shared/lib/utils';
 import { RootTuple, ChainsMap, ChainTuple, SelectedStruct } from './types';
@@ -15,7 +15,7 @@ export const shardsUtils = {
   getSelectedShards,
 };
 
-function getFilteredAccounts(accounts: Account_NEW[], chains: Record<ChainId, Chain>, query = ''): Account_NEW[] {
+function getFilteredAccounts(accounts: Account[], chains: Record<ChainId, Chain>, query = ''): Account[] {
   return accounts.filter((account) => {
     if (accountUtils.isBaseAccount(account)) return true;
     if (!chains[account.chainId]) return false;
@@ -34,7 +34,7 @@ function getChainsMap<T>(chains: Record<ChainId, Chain>): ChainsMap<T> {
   }, {});
 }
 
-function getVaultChainsCounter(chains: Record<ChainId, Chain>, accounts: Account_NEW[]): SelectedStruct {
+function getVaultChainsCounter(chains: Record<ChainId, Chain>, accounts: Account[]): SelectedStruct {
   const { baseId, root, shards } = accounts.reduce<{
     baseId: ID;
     root: SelectedStruct;
@@ -76,7 +76,7 @@ function getVaultChainsCounter(chains: Record<ChainId, Chain>, accounts: Account
   return root;
 }
 
-function getMultishardtChainsCounter(chains: Record<ChainId, Chain>, accounts: Account_NEW[]): SelectedStruct {
+function getMultishardtChainsCounter(chains: Record<ChainId, Chain>, accounts: Account[]): SelectedStruct {
   const { roots, shards } = accounts.reduce<{
     roots: SelectedStruct;
     shards: Array<ChainAccount>;
@@ -120,7 +120,7 @@ function getChainCounter(chains: Record<ChainId, Chain>) {
   }, {});
 }
 
-function getStructForVault<T>(accounts: Account_NEW[], chainsMap: ChainsMap<T>): RootTuple[] {
+function getStructForVault<T>(accounts: Account[], chainsMap: ChainsMap<T>): RootTuple[] {
   let root: BaseAccount | undefined;
 
   accounts.forEach((account) => {
@@ -163,7 +163,7 @@ function getStructForVault<T>(accounts: Account_NEW[], chainsMap: ChainsMap<T>):
   return [[root, chainsTuples]];
 }
 
-function getStructForMultishard<T>(accounts: Account_NEW[], chainsMap: ChainsMap<T>): RootTuple[] {
+function getStructForMultishard<T>(accounts: Account[], chainsMap: ChainsMap<T>): RootTuple[] {
   const rootsMap: Record<ID, BaseAccount> = {};
   const roots: Map<BaseAccount, ChainTuple[]> = new Map();
 
@@ -199,7 +199,7 @@ function getStructForMultishard<T>(accounts: Account_NEW[], chainsMap: ChainsMap
   return [...roots.entries()];
 }
 
-function getSelectedShards(struct: SelectedStruct, accounts: Account_NEW[]): Account_NEW[] {
+function getSelectedShards(struct: SelectedStruct, accounts: Account[]): BaseAccount[] {
   const selectedMap = Object.values(struct).reduce<Record<AccountId, boolean>>((acc, chainMap) => {
     const { total, checked, ...chains } = chainMap;
     Object.values(chains).forEach((chain) => {

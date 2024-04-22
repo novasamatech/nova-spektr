@@ -35,10 +35,12 @@ export const AssetsList = () => {
   }, []);
 
   useEffect(() => {
+    if (!activeWallet) return;
+
     const isMultisig = walletUtils.isMultisig(activeWallet);
 
     const availableChains = Object.values(chains).filter((chain) => {
-      return activeAccounts.some((account) => {
+      return activeWallet.accounts.some((account) => {
         return (
           activeWallet &&
           accountUtils.isNonBaseVaultAccount(account, activeWallet) &&
@@ -64,7 +66,7 @@ export const AssetsList = () => {
     );
 
     setSortedChains(sortedChains);
-  }, [balances, assetsPrices]);
+  }, [activeWallet, balances, assetsPrices]);
 
   const searchSymbolOnly = sortedChains.some((chain) => {
     return chain.assets.some((asset) => isStringsMatchQuery(query, [asset.symbol, asset.name]));

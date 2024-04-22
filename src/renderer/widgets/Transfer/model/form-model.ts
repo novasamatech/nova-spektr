@@ -81,7 +81,7 @@ const $multisigDeposit = restore(multisigDepositChanged, ZERO_BALANCE);
 const $isFeeLoading = restore(isFeeLoadingChanged, true);
 const $isXcm = createStore<boolean>(false);
 
-const $selectedSignatories = createStore<Account[]>([]);
+const $selectedSignatories = createStore<BaseAccount[]>([]);
 
 const $transferForm = createForm<FormParams>({
   fields: {

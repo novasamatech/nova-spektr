@@ -13,7 +13,7 @@ import { getAssetById, SS58_DEFAULT_PREFIX, toAddress, getExtrinsicExplorer, sor
 import { useMultisigEvent } from '@entities/multisig';
 import { MultisigTransactionDS } from '@shared/api/storage';
 import { AssetBalance } from '@entities/asset';
-import type { Account_NEW, Contact, MultisigAccount, Wallet_NEW, AccountId, WalletsMap } from '@shared/core';
+import type { BaseAccount, Contact, MultisigAccount, Wallet, AccountId, WalletsMap } from '@shared/core';
 import { WalletIcon, walletModel, walletUtils } from '@entities/wallet';
 import { chainsService } from '@shared/api/network';
 
@@ -34,7 +34,7 @@ const EventMessage: Partial<Record<SigningStatus | 'INITIATED', string>> = {
   ERROR_CANCELLED: 'log.errorCancelledMessage',
 } as const;
 
-const getFilteredWalletsMap = (wallets: Wallet_NEW[]): WalletsMap => {
+const getFilteredWalletsMap = (wallets: Wallet[]): WalletsMap => {
   return wallets.reduce<WalletsMap>((acc, wallet) => {
     if (
       walletUtils.isValidSignatory(wallet) ||
@@ -49,7 +49,7 @@ const getFilteredWalletsMap = (wallets: Wallet_NEW[]): WalletsMap => {
 };
 
 const getFilteredAccountsMap = (walletsMap: WalletsMap) => {
-  return Object.values(walletsMap).reduce<Record<AccountId, Account_NEW>>((acc, wallet) => {
+  return Object.values(walletsMap).reduce<Record<AccountId, BaseAccount>>((acc, wallet) => {
     wallet.accounts.forEach((account) => {
       acc[account.accountId] = account;
     });

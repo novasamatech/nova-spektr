@@ -1,4 +1,4 @@
-import { WalletType, Wallet_NEW } from '@shared/core';
+import { WalletType, Wallet } from '@shared/core';
 import { singnatoryUtils } from '../utils';
 
 describe('entities/signatory/lib/utils', () => {
@@ -15,7 +15,7 @@ describe('entities/signatory/lib/utils', () => {
         name: 'Correct wallet',
         accounts: [{ walletId: '2', accountId: '0x01' }],
       },
-    ] as unknown as Wallet_NEW[];
+    ] as unknown as Wallet[];
 
     const signatory = singnatoryUtils.getSignatoryWallet(wallets, '0x01');
 

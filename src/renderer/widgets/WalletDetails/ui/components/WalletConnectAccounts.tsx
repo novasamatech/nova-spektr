@@ -19,7 +19,7 @@ type AccountItem = {
 
 type Props = {
   wallet: WalletConnectWallet;
-  accounts: Account_NEW[];
+  accounts: Account[];
 };
 
 export const WalletConnectAccounts = ({ wallet, accounts }: Props) => {

@@ -9,7 +9,7 @@ export const enum Step {
 }
 
 export type NetworkStore = {
-  wallet: Wallet_NEW;
+  wallet: Wallet;
   chain: Chain;
   shards: Account[];
 };

@@ -21,7 +21,7 @@ const enum SignatoryTabs {
 
 type Props = {
   isActive: boolean;
-  wallets: Wallet_NEW[];
+  wallets: Wallet[];
   accounts: (Account | MultisigAccount)[];
   contacts: Contact[];
   onSelect: (wallets: ExtendedWallet[], contacts: ExtendedContact[]) => void;
@@ -56,7 +56,7 @@ export const SelectSignatories = ({ isActive, wallets, accounts, contacts, onSel
 
     const { available, disabled } = wallets.reduce<{
       available: ExtendedWallet[];
-      disabled: Wallet_NEW[];
+      disabled: Wallet[];
     }>(
       (acc, wallet, index) => {
         const walletAccounts = accounts.filter((a) => a.walletId === wallet.id);

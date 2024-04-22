@@ -66,7 +66,7 @@ const $staking = restore(stakingSet, null);
 const $minBond = createStore<string>(ZERO_BALANCE);
 const $stakingUnsub = createStore<() => void>(noop);
 
-const $shards = createStore<Account[]>([]);
+const $shards = createStore<BaseAccount[]>([]);
 const $isMultisig = createStore<boolean>(false);
 const $isProxy = createStore<boolean>(false);
 
@@ -80,12 +80,12 @@ const $totalFee = restore(totalFeeChanged, ZERO_BALANCE);
 const $multisigDeposit = restore(multisigDepositChanged, ZERO_BALANCE);
 const $isFeeLoading = restore(isFeeLoadingChanged, true);
 
-const $selectedSignatories = createStore<Account[]>([]);
+const $selectedSignatories = createStore<BaseAccount[]>([]);
 
 const $unstakeForm = createForm<FormParams>({
   fields: {
     shards: {
-      init: [] as Account[],
+      init: [] as BaseAccount[],
       rules: [
         {
           name: 'noProxyFee',

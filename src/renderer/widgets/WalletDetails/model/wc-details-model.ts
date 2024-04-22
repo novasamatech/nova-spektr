@@ -6,7 +6,7 @@ import { walletConnectModel, InitConnectParams } from '@entities/walletConnect';
 import { ReconnectStep, ForgetStep } from '../lib/constants';
 import { walletProviderModel } from './wallet-provider-model';
 import { walletSelectModel } from '@features/wallets';
-import type { Wallet_NEW, WcAccount } from '@shared/core';
+import type { Wallet, WcAccount } from '@shared/core';
 import { chainsService } from '@shared/api/network';
 import { toAccountId } from '@shared/lib/utils';
 import { balanceModel } from '@entities/balance';
@@ -16,7 +16,7 @@ const confirmReconnectShown = createEvent();
 const reconnectStarted = createEvent<Omit<InitConnectParams, 'client'> & { currentSession: string }>();
 const reconnectAborted = createEvent();
 const sessionTopicUpdated = createEvent();
-const forgetButtonClicked = createEvent<Wallet_NEW>();
+const forgetButtonClicked = createEvent<Wallet>();
 const forgetModalClosed = createEvent();
 
 const $reconnectStep = createStore<ReconnectStep>(ReconnectStep.NOT_STARTED).reset(reset);
@@ -140,7 +140,7 @@ sample({
 sample({
   clock: forgetButtonClicked,
   source: walletSelectModel.$walletForDetails,
-  filter: (wallet): wallet is Wallet_NEW => wallet !== null,
+  filter: (wallet): wallet is Wallet => wallet !== null,
   fn: (wallet) => wallet!.id,
   target: walletModel.events.walletRemoved,
 });
