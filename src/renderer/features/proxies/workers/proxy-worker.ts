@@ -204,7 +204,6 @@ async function getProxies({
         console.log(`proxy-worker ${api.genesisHash}: proxy error`, e);
       }
     });
-
   } catch (e) {
     console.log(`proxy-worker ${api.genesisHash}: error in getProxies`, e);
   }
