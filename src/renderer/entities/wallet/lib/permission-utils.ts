@@ -1,4 +1,4 @@
-import { Account_NEW, Wallet_NEW } from '@shared/core';
+import { Wallet } from '@shared/core';
 import { walletUtils } from './wallet-utils';
 import { accountUtils } from './account-utils';
 
@@ -14,108 +14,95 @@ export const permissionUtils = {
   canRemoveProxy,
 };
 
-function canTransfer(wallet: Wallet_NEW, accounts: Account_NEW[]): boolean {
-  if (walletUtils.isWatchOnly(wallet)) {
-    return false;
-  }
-
-  if (walletUtils.isProxied(wallet) && accountUtils.isProxiedAccount(accounts[0])) {
-    return accountUtils.isAnyProxyType(accounts[0]);
-  }
+function canTransfer(wallet: Wallet): boolean {
+  if (walletUtils.isWatchOnly(wallet)) return false;
+  if (walletUtils.isProxied(wallet)) return accountUtils.isAnyProxyType(wallet.accounts[0]);
 
   return true;
 }
 
-function canReceive(wallet: Wallet_NEW, accounts: Account_NEW[]): boolean {
+function canReceive(wallet: Wallet): boolean {
   return !walletUtils.isWatchOnly(wallet);
 }
 
-function canStake(wallet: Wallet_NEW, accounts: Account_NEW[]): boolean {
-  if (walletUtils.isWatchOnly(wallet)) {
-    return false;
-  }
-
-  if (walletUtils.isProxied(wallet) && accountUtils.isProxiedAccount(accounts[0])) {
-    return (
-      accountUtils.isAnyProxyType(accounts[0]) ||
-      accountUtils.isStakingProxyType(accounts[0]) ||
-      accountUtils.isNonTransferProxyType(accounts[0])
-    );
-  }
-
-  return true;
-}
-function canCreateMultisigTx(wallet: Wallet_NEW, accounts: Account_NEW[]): boolean {
-  if (walletUtils.isWatchOnly(wallet)) {
-    return false;
-  }
-
-  if (walletUtils.isMultisig(wallet)) {
-    return false;
-  }
-
-  if (walletUtils.isProxied(wallet) && accountUtils.isProxiedAccount(accounts[0])) {
-    return accountUtils.isAnyProxyType(accounts[0]) || accountUtils.isNonTransferProxyType(accounts[0]);
-  }
-
-  return true;
-}
-function canApproveMultisigTx(wallet: Wallet_NEW, accounts: Account_NEW[]): boolean {
-  if (walletUtils.isWatchOnly(wallet)) {
-    return false;
-  }
-
-  if (walletUtils.isMultisig(wallet)) {
-    return false;
-  }
-
-  if (walletUtils.isProxied(wallet) && accountUtils.isProxiedAccount(accounts[0])) {
-    return accountUtils.isAnyProxyType(accounts[0]) || accountUtils.isNonTransferProxyType(accounts[0]);
-  }
-
-  return true;
-}
-function canRejectMultisigTx(wallet: Wallet_NEW): boolean {
-  if (walletUtils.isProxied(wallet)) {
-    return accountUtils.isAnyProxyType(wallet.accounts[0]) || accountUtils.isNonTransferProxyType(wallet.accounts[0]);
-  }
-
+function canStake(wallet: Wallet): boolean {
   if (walletUtils.isWatchOnly(wallet)) return false;
+  if (walletUtils.isProxied(wallet)) {
+    const isAnyProxy = accountUtils.isAnyProxyType(wallet.accounts[0]);
+    const isNonTransfer = accountUtils.isNonTransferProxyType(wallet.accounts[0]);
+    const isStaking = accountUtils.isStakingProxyType(wallet.accounts[0]);
 
-  return !walletUtils.isMultisig(wallet);
-}
-
-function canCreateAnyProxy(wallet: Wallet_NEW, accounts: Account_NEW[]): boolean {
-  if (walletUtils.isWatchOnly(wallet)) {
-    return false;
+    return isAnyProxy || isNonTransfer || isStaking;
   }
 
-  if (walletUtils.isProxied(wallet) && accountUtils.isProxiedAccount(accounts[0])) {
-    return accountUtils.isAnyProxyType(accounts[0]);
+  return true;
+}
+function canCreateMultisigTx(wallet: Wallet): boolean {
+  if (walletUtils.isWatchOnly(wallet)) return false;
+  if (walletUtils.isMultisig(wallet)) return false;
+  if (walletUtils.isProxied(wallet)) {
+    const isAnyProxy = accountUtils.isAnyProxyType(wallet.accounts[0]);
+    const isNonTransfer = accountUtils.isNonTransferProxyType(wallet.accounts[0]);
+
+    return isAnyProxy || isNonTransfer;
+  }
+
+  return true;
+}
+function canApproveMultisigTx(wallet: Wallet): boolean {
+  if (walletUtils.isWatchOnly(wallet)) return false;
+  if (walletUtils.isMultisig(wallet)) return false;
+
+  if (walletUtils.isProxied(wallet)) {
+    const isAnyProxy = accountUtils.isAnyProxyType(wallet.accounts[0]);
+    const isNonTransfer = accountUtils.isNonTransferProxyType(wallet.accounts[0]);
+
+    return isAnyProxy || isNonTransfer;
+  }
+
+  return true;
+}
+function canRejectMultisigTx(wallet: Wallet): boolean {
+  if (walletUtils.isWatchOnly(wallet)) return false;
+  if (walletUtils.isMultisig(wallet)) return false;
+  if (walletUtils.isProxied(wallet)) {
+    const isAnyProxy = accountUtils.isAnyProxyType(wallet.accounts[0]);
+    const isNonTransfer = accountUtils.isNonTransferProxyType(wallet.accounts[0]);
+
+    return isAnyProxy || isNonTransfer;
   }
 
   return true;
 }
 
-function canCreateNonAnyProxy(wallet: Wallet_NEW, accounts: Account_NEW[]): boolean {
-  if (walletUtils.isWatchOnly(wallet)) {
-    return false;
-  }
-
-  if (walletUtils.isProxied(wallet) && accountUtils.isProxiedAccount(accounts[0])) {
-    return accountUtils.isAnyProxyType(accounts[0]) || accountUtils.isNonTransferProxyType(accounts[0]);
+function canCreateAnyProxy(wallet: Wallet): boolean {
+  if (walletUtils.isWatchOnly(wallet)) return false;
+  if (walletUtils.isProxied(wallet)) {
+    return accountUtils.isAnyProxyType(wallet.accounts[0]);
   }
 
   return true;
 }
 
-function canRemoveProxy(wallet: Wallet_NEW, accounts: Account_NEW[]): boolean {
-  if (walletUtils.isWatchOnly(wallet)) {
-    return false;
+function canCreateNonAnyProxy(wallet: Wallet): boolean {
+  if (walletUtils.isWatchOnly(wallet)) return false;
+  if (walletUtils.isProxied(wallet)) {
+    const isAnyProxy = accountUtils.isAnyProxyType(wallet.accounts[0]);
+    const isNonTransfer = accountUtils.isNonTransferProxyType(wallet.accounts[0]);
+
+    return isAnyProxy || isNonTransfer;
   }
 
-  if (walletUtils.isProxied(wallet) && accountUtils.isProxiedAccount(accounts[0])) {
-    return accountUtils.isAnyProxyType(accounts[0]) || accountUtils.isNonTransferProxyType(accounts[0]);
+  return true;
+}
+
+function canRemoveProxy(wallet: Wallet): boolean {
+  if (walletUtils.isWatchOnly(wallet)) return false;
+  if (walletUtils.isProxied(wallet)) {
+    const isAnyProxy = accountUtils.isAnyProxyType(wallet.accounts[0]);
+    const isNonTransfer = accountUtils.isNonTransferProxyType(wallet.accounts[0]);
+
+    return isAnyProxy || isNonTransfer;
   }
 
   return true;

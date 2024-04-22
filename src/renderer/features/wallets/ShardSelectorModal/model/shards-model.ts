@@ -1,7 +1,7 @@
 import { createStore, createEvent, sample, combine, createApi, attach } from 'effector';
 import cloneDeep from 'lodash/cloneDeep';
 
-import type { Account_NEW } from '@shared/core';
+import type { BaseAccount, Account } from '@shared/core';
 import { walletModel, walletUtils } from '@entities/wallet';
 import { networkModel } from '@entities/network';
 import { shardsUtils } from '../lib/shards-utils';
@@ -17,7 +17,7 @@ import {
 } from '../lib/types';
 
 export type Callbacks = {
-  onConfirm: (shards: Account_NEW[]) => void;
+  onConfirm: (shards: Account[]) => void;
 };
 
 const $callbacks = createStore<Callbacks | null>(null);
@@ -54,7 +54,7 @@ const $filteredAccounts = combine(
     accounts: walletModel.$activeAccounts,
     chains: networkModel.$chains,
   },
-  ({ query, accounts, chains }): Account_NEW[] => {
+  ({ query, accounts, chains }): Account[] => {
     return shardsUtils.getFilteredAccounts(accounts, chains, query);
   },
 );
@@ -148,7 +148,7 @@ sample({
 
 type ConfirmParams = {
   struct: SelectedStruct;
-  accounts: Account_NEW[];
+  accounts: Account[];
 };
 sample({
   clock: shardsConfirmed,

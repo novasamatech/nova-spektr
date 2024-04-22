@@ -44,7 +44,7 @@ const isFeeLoadingChanged = createEvent<boolean>();
 
 const $networkStore = createStore<{ chain: Chain; asset: Asset } | null>(null);
 
-const $shards = createStore<Account[]>([]);
+const $shards = createStore<BaseAccount[]>([]);
 const $destinationQuery = restore(destinationQueryChanged, '');
 const $destinationType = restore(destinationTypeChanged, RewardsDestination.RESTAKE);
 
@@ -53,7 +53,7 @@ const $bondBalanceRange = createStore<string | string[]>('0');
 const $signatoryBalance = createStore<string>('0');
 const $proxyBalance = createStore<string>('0');
 
-const $availableSignatories = createStore<Account[][]>([]);
+const $availableSignatories = createStore<BaseAccount[][]>([]);
 const $proxyAccount = createStore<Account | null>(null);
 const $isProxy = createStore<boolean>(false);
 const $isMultisig = createStore<boolean>(false);
@@ -64,7 +64,7 @@ const $isFeeLoading = restore(isFeeLoadingChanged, true);
 const $payeeForm = createForm<FormParams>({
   fields: {
     shards: {
-      init: [] as Account[],
+      init: [] as BaseAccount[],
       rules: [
         {
           name: 'noProxyFee',

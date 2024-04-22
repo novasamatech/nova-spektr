@@ -1,12 +1,12 @@
 import { MouseEvent } from 'react';
 
-import { Wallet_NEW } from '@shared/core';
+import { Wallet } from '@shared/core';
 import { FootnoteText, IconButton } from '@shared/ui';
 import { WalletIcon } from '../WalletIcon/WalletIcon';
 import { cnTw } from '@shared/lib/utils';
 
 type Props = {
-  wallet: Wallet_NEW;
+  wallet: Wallet;
   iconSize?: number;
   className?: string;
   onClick?: () => void;

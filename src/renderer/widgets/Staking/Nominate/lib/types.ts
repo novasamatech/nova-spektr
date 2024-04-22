@@ -10,7 +10,7 @@ export const enum Step {
 }
 
 export type WalletData = {
-  wallet: Wallet_NEW;
+  wallet: Wallet;
   shards: Account[];
   chain: Chain;
 };

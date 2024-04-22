@@ -68,7 +68,7 @@ function getProxiedName({ accountId, proxyVariant, proxyType }: PartialProxiedAc
   return `${proxyType} ${proxyVariantLabel} ${address}`;
 }
 
-function getProxyGroups(wallets: Wallet_NEW[], accounts: Account_NEW[], deposits: ProxyDeposits): NoID<ProxyGroup>[] {
+function getProxyGroups(wallets: Wallet[], accounts: Account[], deposits: ProxyDeposits): NoID<ProxyGroup>[] {
   const walletMap = dictionary(wallets, 'id', () => []);
 
   const walletsAccounts = accounts.reduce<Record<ID, Account[]>>((acc, account) => {
@@ -108,8 +108,8 @@ type CreateProxyGroupResult = {
   toRemove: ProxyGroup[];
 };
 function createProxyGroups(
-  wallets: Wallet_NEW[],
-  accounts: Account_NEW[],
+  wallets: Wallet[],
+  accounts: Account[],
   groups: ProxyGroup[],
   deposits: ProxyDeposits,
 ): CreateProxyGroupResult {

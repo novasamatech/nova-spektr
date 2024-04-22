@@ -14,7 +14,7 @@ jest.mock('@app/providers', () => ({
 
 jest.mock('@entities/multisig', () => ({
   useMultisigTx: jest.fn().mockReturnValue({
-    getLiveAccountMultisigTxs: () => [{ name: 'Test Wallet_NEW', accountId: TEST_ACCOUNTS[0], chainId: '0x00' }],
+    getLiveAccountMultisigTxs: () => [{ name: 'Test Wallet', accountId: TEST_ACCOUNTS[0], chainId: '0x00' }],
   }),
   useMultisigEvent: jest.fn().mockReturnValue({
     getLiveEventsByKeys: jest.fn().mockResolvedValue([]),

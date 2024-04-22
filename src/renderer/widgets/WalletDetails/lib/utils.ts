@@ -3,7 +3,7 @@ import { stringify } from 'yaml';
 import { ForgetStep, ReconnectStep } from './constants';
 import { VaultMap, MultishardMap } from './types';
 import { accountUtils } from '@entities/wallet';
-import { Account_NEW, BaseAccount, ChainId, ChainAccount, Wallet_NEW, ShardAccount, KeyType } from '@shared/core';
+import { BaseAccount, BaseAccount, ChainId, ChainAccount, Wallet, ShardAccount, KeyType } from '@shared/core';
 import { downloadFiles, exportKeysUtils } from '@features/wallets/ExportKeys';
 
 export const wcDetailsUtils = {
@@ -47,7 +47,7 @@ function isForgetModalOpen(step: ForgetStep): boolean {
   return [ForgetStep.FORGETTING, ForgetStep.SUCCESS].includes(step);
 }
 
-function getVaultAccountsMap(accounts: Account_NEW[]): VaultMap {
+function getVaultAccountsMap(accounts: Account[]): VaultMap {
   const accountGroups = accountUtils.getAccountsAndShardGroups(accounts);
 
   return accountGroups.reduce<VaultMap>((acc, account) => {
@@ -64,7 +64,7 @@ function getVaultAccountsMap(accounts: Account_NEW[]): VaultMap {
   }, {});
 }
 
-function getMultishardMap(accounts: Account_NEW[]): MultishardMap {
+function getMultishardMap(accounts: Account[]): MultishardMap {
   return accounts.reduce<Map<BaseAccount, Record<ChainId, ChainAccount[]>>>((acc, account) => {
     if (accountUtils.isBaseAccount(account)) {
       acc.set(account, {});
@@ -87,7 +87,7 @@ function getMultishardMap(accounts: Account_NEW[]): MultishardMap {
   }, new Map());
 }
 
-function exportMultishardWallet(wallet: Wallet_NEW, accounts: MultishardMap) {
+function exportMultishardWallet(wallet: Wallet, accounts: MultishardMap) {
   const rootsAndAccounts = Array.from(accounts, ([root, accounts]) => ({ root, accounts }));
   const downloadData = rootsAndAccounts.map(({ root, accounts }, index) => {
     const accountsFlat = Object.values(accounts).flat();
@@ -108,7 +108,7 @@ function exportMultishardWallet(wallet: Wallet_NEW, accounts: MultishardMap) {
   downloadFiles(downloadData);
 }
 
-function exportVaultWallet(wallet: Wallet_NEW, root: BaseAccount, accounts: VaultMap) {
+function exportVaultWallet(wallet: Wallet, root: BaseAccount, accounts: VaultMap) {
   const accountsFlat = Object.values(accounts).flat();
   const exportStructure = exportKeysUtils.getExportStructure(root.accountId, accountsFlat);
 

@@ -1,7 +1,6 @@
 import { allSettled, fork } from 'effector';
 
 import {
-  Account_NEW,
   AccountType,
   ChainType,
   CryptoType,
@@ -10,6 +9,7 @@ import {
   ProxyVariant,
   SigningType,
   WalletType,
+  Account,
 } from '@shared/core';
 import { forgetWalletModel } from '../forget-wallet-model';
 import { storageService } from '@shared/api/storage';
@@ -50,7 +50,7 @@ const accountBase = {
   name: 'some account',
 };
 
-const walletAccounts: Account_NEW[] = [
+const walletAccounts: Account[] = [
   { ...accountBase, id: 1, accountId: TEST_ACCOUNTS[0] },
   { ...accountBase, id: 2, accountId: '0x00' },
 ];

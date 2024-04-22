@@ -9,13 +9,13 @@ export const enum Step {
 }
 
 export type WalletData = {
-  wallet: Wallet_NEW;
-  shards: Account[];
+  wallet: Wallet;
+  shards: BaseAccount[];
   chain: Chain;
 };
 
 export type BondExtraData = {
-  shards: Account[];
+  shards: BaseAccount[];
   signatory?: Account;
   amount: string;
   description: string;

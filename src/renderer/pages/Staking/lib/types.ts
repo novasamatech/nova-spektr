@@ -1,6 +1,6 @@
-import type { Account_NEW, Address, Unlocking } from '@shared/core';
+import type { BaseAccount, Address, Unlocking } from '@shared/core';
 
-export type NominatorInfo<T extends Account_NEW> = {
+export type NominatorInfo<T extends BaseAccount> = {
   address: Address;
   isSelected: boolean;
   stash?: Address;

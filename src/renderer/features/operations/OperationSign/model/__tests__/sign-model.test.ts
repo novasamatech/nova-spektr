@@ -41,7 +41,7 @@ describe('widgets/AddPureProxyModal/model/sign-model', () => {
 
     const store = {
       chain: { chainId: '0x00' } as unknown as Chain,
-      accounts: [{ walletId: 1 }] as unknown as Account[],
+      accounts: [{ walletId: 1 }] as unknown as BaseAccount[],
       signer: { walletId: 2 } as unknown as Account,
       transactions: [{}] as Transaction[],
     };

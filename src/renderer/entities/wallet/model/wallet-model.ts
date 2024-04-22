@@ -2,21 +2,22 @@ import { combine, createEffect, createEvent, createStore, sample } from 'effecto
 import { combineEvents } from 'patronum';
 import groupBy from 'lodash/groupBy';
 
-import type { ID, MultisigAccount, NoID, Wallet_NEW } from '@shared/core';
-import { Account_NEW } from '@shared/core';
+import type { ID, MultisigAccount, NoID, Wallet, Account, BaseAccount, ChainAccount } from '@shared/core';
 import { storageService } from '@shared/api/storage';
-import { modelUtils } from '../lib/model-utils';
 import { dictionary } from '@shared/lib/utils';
+import { modelUtils } from '../lib/model-utils';
 
-type CreateParams<T extends Account_NEW = Account_NEW> = {
-  wallet: Omit<NoID<Wallet_NEW>, 'isActive'>;
+type DbWallet = Omit<Wallet, 'accounts'>;
+
+type CreateParams<T extends Account = Account> = {
+  wallet: Omit<NoID<Wallet>, 'isActive' | 'accounts'>;
   accounts: Omit<NoID<T>, 'walletId'>[];
 };
 type MultisigUpdateParams = Partial<MultisigAccount> & { id: ID };
 
 const walletStarted = createEvent();
 const watchOnlyCreated = createEvent<CreateParams>();
-const multishardCreated = createEvent<CreateParams>();
+const multishardCreated = createEvent<CreateParams<BaseAccount | ChainAccount>>();
 const singleshardCreated = createEvent<CreateParams>();
 const multisigCreated = createEvent<CreateParams>();
 const walletConnectCreated = createEvent<CreateParams>();
@@ -25,18 +26,18 @@ const multisigAccountUpdated = createEvent<MultisigUpdateParams>();
 const walletRemoved = createEvent<ID>();
 const walletsRemoved = createEvent<ID[]>();
 
-const $wallets = createStore<Wallet_NEW[]>([]);
+const $wallets = createStore<Wallet[]>([]);
 
 // TODO: ideally it should be a feature
 const $activeWallet = combine($wallets, (wallets) => {
   return wallets.find((wallet) => wallet.isActive) || null;
 });
 
-const fetchAllAccountsFx = createEffect((): Promise<Account_NEW[]> => {
+const fetchAllAccountsFx = createEffect((): Promise<Account[]> => {
   return storageService.accounts.readAll();
 });
 
-const fetchAllWalletsFx = createEffect(async (): Promise<Wallet_NEW[]> => {
+const fetchAllWalletsFx = createEffect(async (): Promise<DbWallet[]> => {
   const wallets = await storageService.wallets.readAll();
 
   // Deactivate wallets except first one if more than one selected
@@ -59,8 +60,8 @@ const fetchAllWalletsFx = createEffect(async (): Promise<Wallet_NEW[]> => {
 });
 
 type CreateResult = {
-  wallet: Wallet_NEW;
-  accounts: Account_NEW[];
+  wallet: DbWallet;
+  accounts: Account[];
 };
 const walletCreatedFx = createEffect(async ({ wallet, accounts }: CreateParams): Promise<CreateResult | undefined> => {
   const dbWallet = await storageService.wallets.create({ ...wallet, isActive: false });
@@ -76,7 +77,7 @@ const walletCreatedFx = createEffect(async ({ wallet, accounts }: CreateParams):
 });
 
 const multishardCreatedFx = createEffect(
-  async ({ wallet, accounts }: CreateParams): Promise<CreateResult | undefined> => {
+  async ({ wallet, accounts }: CreateParams<BaseAccount | ChainAccount>): Promise<CreateResult | undefined> => {
     const dbWallet = await storageService.wallets.create({ ...wallet, isActive: false });
 
     if (!dbWallet) return undefined;
@@ -115,7 +116,7 @@ const multisigWalletUpdatedFx = createEffect(
   },
 );
 
-const removeWalletFx = createEffect(async (wallet: Wallet_NEW): Promise<ID> => {
+const removeWalletFx = createEffect(async (wallet: Wallet): Promise<ID> => {
   const accountIds = wallet.accounts.map((account) => account.id);
 
   await Promise.all([storageService.accounts.deleteAll(accountIds), storageService.wallets.delete(wallet.id)]);
@@ -123,7 +124,7 @@ const removeWalletFx = createEffect(async (wallet: Wallet_NEW): Promise<ID> => {
   return wallet.id;
 });
 
-const removeWalletsFx = createEffect(async (wallets: Wallet_NEW[]): Promise<ID[]> => {
+const removeWalletsFx = createEffect(async (wallets: Wallet[]): Promise<ID[]> => {
   const { walletIds, accountIds } = wallets.reduce<Record<'walletIds' | 'accountIds', ID[]>>(
     (acc, wallet) => {
       acc.walletIds.push(wallet.id);
@@ -149,7 +150,7 @@ sample({
   fn: ([accounts, wallets]) => {
     const accountsMap = groupBy(accounts, 'walletId');
 
-    return wallets.map((wallet) => ({ ...wallet, accounts: accountsMap[wallet.id] }));
+    return wallets.map((wallet) => ({ ...wallet, accounts: accountsMap[wallet.id] } as Wallet));
   },
   target: $wallets,
 });
@@ -168,7 +169,13 @@ sample({
   clock: [walletCreatedFx.doneData, multishardCreatedFx.doneData],
   source: $wallets,
   filter: (_, data) => Boolean(data),
-  fn: (wallets, data) => wallets.concat(data!.wallet),
+  fn: (wallets, data) => {
+    return wallets.map((wallet) => {
+      if (wallet.id !== data!.wallet.id) return wallet;
+
+      return { ...data!.wallet, accounts: data!.accounts } as Wallet;
+    });
+  },
   target: $wallets,
 });
 
@@ -182,10 +189,10 @@ sample({
   source: $wallets,
   filter: (_, data) => Boolean(data),
   fn: (wallets, data) => {
-    return wallets.map((wallet) => {
+    return wallets.map((wallet): Wallet => {
       if (wallet.id !== data!.walletId) return wallet;
 
-      return { ...wallet, accounts: [{ ...wallet.accounts[0], ...data }] };
+      return { ...wallet, accounts: [{ ...wallet.accounts[0], ...data }] } as Wallet;
     });
   },
   target: $wallets,
@@ -237,6 +244,7 @@ export const walletModel = {
   $wallets,
   $activeWallet,
   $isLoadingWallets: fetchAllWalletsFx.pending,
+
   events: {
     walletStarted,
     watchOnlyCreated,

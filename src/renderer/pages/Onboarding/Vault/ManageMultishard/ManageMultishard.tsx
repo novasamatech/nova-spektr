@@ -177,8 +177,18 @@ export const ManageMultishard = ({ seedInfo, onBack, onClose, onComplete }: Prop
       return acc;
     }, []);
 
+    // walletModel.events.multishardCreated({
+    //   wallet: {
+    //     name: walletName.trim(),
+    //     type: WalletType.MULTISHARD_PARITY_SIGNER,
+    //     signingType: SigningType.PARITY_SIGNER,
+    //   },
+    //   accounts: [],
+    // });
+
     walletModel.events.multishardCreated({
       wallet: {
+
         name: walletName.trim(),
         type: WalletType.MULTISHARD_PARITY_SIGNER,
         signingType: SigningType.PARITY_SIGNER,

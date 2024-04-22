@@ -11,12 +11,7 @@ export const ReceiveAsset = () => {
   const activeWallet = useUnit(walletModel.$activeWallet);
 
   return (
-    <CheckPermission
-      operationType={OperationType.RECEIVE}
-      wallet={activeWallet}
-      accounts={activeAccounts}
-      redirectPath={Paths.ASSETS}
-    >
+    <CheckPermission operationType={OperationType.RECEIVE} wallet={activeWallet} redirectPath={Paths.ASSETS}>
       <AssetRouteGuard redirectPath={Paths.ASSETS}>
         {(chain, asset) => <ReceiveAssetModal chain={chain} asset={asset} onClose={() => navigate(Paths.ASSETS)} />}
       </AssetRouteGuard>

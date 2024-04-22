@@ -20,7 +20,7 @@ import {
 } from '@shared/lib/utils';
 
 type FormParams = {
-  shards: Account[];
+  shards: BaseAccount[];
   signatory: Account;
   amount: string;
   destination: Address;
@@ -36,7 +36,7 @@ const destinationTypeChanged = createEvent<RewardsDestination>();
 
 const txWrapperChanged = createEvent<{
   proxyAccount: Account | null;
-  signatories: Account[][];
+  signatories: BaseAccount[][];
   isProxy: boolean;
   isMultisig: boolean;
 }>();
@@ -45,7 +45,7 @@ const isFeeLoadingChanged = createEvent<boolean>();
 
 const $networkStore = createStore<{ chain: Chain; asset: Asset } | null>(null);
 
-const $shards = createStore<Account[]>([]);
+const $shards = createStore<BaseAccount[]>([]);
 const $destinationQuery = restore(destinationQueryChanged, '');
 const $destinationType = restore(destinationTypeChanged, RewardsDestination.RESTAKE);
 
@@ -54,7 +54,7 @@ const $bondBalanceRange = createStore<string | string[]>(ZERO_BALANCE);
 const $signatoryBalance = createStore<string>(ZERO_BALANCE);
 const $proxyBalance = createStore<string>(ZERO_BALANCE);
 
-const $availableSignatories = createStore<Account[][]>([]);
+const $availableSignatories = createStore<BaseAccount[][]>([]);
 const $proxyAccount = createStore<Account | null>(null);
 const $isProxy = createStore<boolean>(false);
 const $isMultisig = createStore<boolean>(false);
@@ -69,7 +69,7 @@ const $feeData = restore(feeDataChanged, {
 const $bondForm = createForm<FormParams>({
   fields: {
     shards: {
-      init: [] as Account[],
+      init: [] as BaseAccount[],
       rules: [
         {
           name: 'noProxyFee',

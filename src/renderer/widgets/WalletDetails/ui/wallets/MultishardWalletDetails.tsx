@@ -19,7 +19,7 @@ import { walletDetailsUtils } from '../../lib/utils';
 import { walletProviderModel } from '../../model/wallet-provider-model';
 
 type Props = {
-  wallet: Wallet_NEW;
+  wallet: Wallet;
   accounts: MultishardMap;
   onClose: () => void;
 };

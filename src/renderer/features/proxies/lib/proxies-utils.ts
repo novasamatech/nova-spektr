@@ -21,8 +21,8 @@ function isPureProxy(chain: Chain): boolean {
 
 type GetNotificationParams = {
   proxiedAccounts: PartialProxiedAccount[];
-  wallets: Wallet_NEW[];
-  accounts: Account_NEW[];
+  wallets: Wallet[];
+  accounts: Account[];
   chains: Record<ChainId, Chain>;
   type: NotificationType;
 };
@@ -55,6 +55,6 @@ function getNotification({
   });
 }
 
-function isProxiedAvailable(wallet?: Wallet_NEW): boolean {
+function isProxiedAvailable(wallet?: Wallet): boolean {
   return !walletUtils.isWatchOnly(wallet) && !walletUtils.isProxied(wallet);
 }

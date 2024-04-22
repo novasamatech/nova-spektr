@@ -4,7 +4,7 @@ import { Trans } from 'react-i18next';
 import { useI18n } from '@app/providers';
 import { cnTw } from '@shared/lib/utils';
 import { FootnoteText, Tooltip, Icon, HelpText } from '@shared/ui';
-import type { Asset, Explorer, Address, Account_NEW, ShardAccount } from '@shared/core';
+import type { Asset, Explorer, Address, BaseAccount, ShardAccount } from '@shared/core';
 import { useStakingData } from '@entities/staking';
 import { AccountAddress, AddressWithName, accountUtils } from '@entities/wallet';
 import { NominatorsItem } from './NominatorItem';
@@ -13,7 +13,7 @@ import { TimeToEra } from './TimeToEra';
 import { NominatorInfo } from '../lib/types';
 
 type Props = {
-  nominators: Array<NominatorInfo<Account_NEW> | NominatorInfo<ShardAccount>[]>;
+  nominators: Array<NominatorInfo<BaseAccount> | NominatorInfo<ShardAccount>[]>;
   isStakingLoading: boolean;
   api?: ApiPromise;
   era?: number;
@@ -38,7 +38,7 @@ export const NominatorsList = ({
   const { t } = useI18n();
   const { getNextUnstakingEra, hasRedeem } = useStakingData();
 
-  const getUnstakeBadge = (stake: NominatorInfo<Account_NEW>) => {
+  const getUnstakeBadge = (stake: NominatorInfo<BaseAccount>) => {
     const nextUnstakingEra = getNextUnstakingEra(stake.unlocking, era);
     if (!nextUnstakingEra) return;
 
@@ -54,7 +54,7 @@ export const NominatorsList = ({
     );
   };
 
-  const getRedeemBadge = (stake: NominatorInfo<Account_NEW>) => {
+  const getRedeemBadge = (stake: NominatorInfo<BaseAccount>) => {
     if (!hasRedeem(stake.unlocking, era)) return;
 
     return (
@@ -67,7 +67,7 @@ export const NominatorsList = ({
     );
   };
 
-  const getContent = (stake: NominatorInfo<Account_NEW>) => (
+  const getContent = (stake: NominatorInfo<BaseAccount>) => (
     <>
       {accountUtils.isShardAccount(stake.account) ? (
         <AccountAddress addressFont="text-body" address={stake.address} />

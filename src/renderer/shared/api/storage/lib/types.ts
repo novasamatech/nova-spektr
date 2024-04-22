@@ -3,8 +3,6 @@ import { Table } from 'dexie';
 import { MultisigEvent, MultisigTransaction, MultisigTransactionKey } from '@entities/transaction/model/transaction';
 import type {
   ChainMetadata,
-  Account_NEW,
-  Wallet_NEW,
   Contact,
   AccountId,
   CallHash,
@@ -14,7 +12,9 @@ import type {
   Connection,
   Notification,
   ProxyGroup,
+  Wallet,
 } from '@shared/core';
+import { Account } from '../../../core/types/account';
 
 // =====================================================
 // ================ Storage interface ==================
@@ -70,9 +70,9 @@ type WithID<T extends Object> = { id?: ID } & T;
 export type MultisigTransactionDS = WithID<MultisigTransaction>;
 export type MultisigEventDS = WithID<MultisigEvent>;
 
-export type TWallet = Table<Wallet_NEW, Wallet_NEW['id']>;
+export type TWallet = Table<Omit<Wallet, 'accounts'>, Wallet['id']>;
 export type TContact = Table<Contact, Contact['id']>;
-export type TAccount = Table<Account_NEW, Account_NEW['id']>;
+export type TAccount = Table<Account, Account['id']>;
 export type TBalance = Table<Balance, Balance['id']>;
 export type TConnection = Table<Connection, Connection['id']>;
 export type TProxy = Table<ProxyAccount, ProxyAccount['id']>;

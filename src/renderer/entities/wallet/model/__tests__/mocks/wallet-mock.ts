@@ -1,17 +1,16 @@
 import {
   ID,
-  Wallet_NEW,
+  Wallet,
   WalletType,
   SigningType,
-  Account_NEW,
   AccountType,
   ChainType,
   CryptoType,
-  KeyType,
+  KeyType, Account,
 } from '@shared/core';
 import { TEST_ACCOUNTS, TEST_CHAIN_ID } from '@shared/lib/utils';
 
-function getWallets(activeId: ID): Wallet_NEW[] {
+function getWallets(activeId: ID): Wallet[] {
   return [
     {
       id: 1,
@@ -30,7 +29,7 @@ function getWallets(activeId: ID): Wallet_NEW[] {
   ].map((wallet) => ({ ...wallet, isActive: wallet.id === activeId }));
 }
 
-const accounts: Account_NEW[] = [
+const accounts: Account[] = [
   {
     id: 1,
     walletId: 1,

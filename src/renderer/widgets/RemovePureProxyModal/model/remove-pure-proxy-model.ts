@@ -45,10 +45,10 @@ const $wrappedTx = createStore<Transaction | null>(null).reset(flowFinished);
 const $coreTx = createStore<Transaction | null>(null).reset(flowFinished);
 const $multisigTx = createStore<Transaction | null>(null).reset(flowFinished);
 
-const $availableSignatories = createStore<Account[][]>([]);
+const $availableSignatories = createStore<BaseAccount[][]>([]);
 const $isProxy = createStore<boolean>(false);
 const $isMultisig = createStore<boolean>(false);
-const $selectedSignatories = createStore<Account[]>([]);
+const $selectedSignatories = createStore<BaseAccount[]>([]);
 
 const $chain = $removeProxyStore.map((store) => store?.chain, { skipVoid: false });
 const $account = $removeProxyStore.map((store) => store?.account, { skipVoid: false });
@@ -134,7 +134,7 @@ const $signatories = combine(
 sample({
   clock: $txWrappers,
   fn: (txWrappers: TxWrapper[]) => {
-    const signatories = txWrappers.reduce<Account[][]>((acc, wrapper) => {
+    const signatories = txWrappers.reduce<BaseAccount[][]>((acc, wrapper) => {
       if (wrapper.kind === WrapperKind.MULTISIG) acc.push(wrapper.signatories);
 
       return acc;

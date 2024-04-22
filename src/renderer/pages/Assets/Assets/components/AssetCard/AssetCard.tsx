@@ -73,7 +73,7 @@ export const AssetCard = ({ chainId, asset, balance }: Props) => {
           )}
         </div>
         <div className="flex gap-x-2 ml-3">
-          <CheckPermission operationType={OperationType.TRANSFER} wallet={activeWallet} accounts={activeAccounts}>
+          <CheckPermission operationType={OperationType.TRANSFER} wallet={activeWallet}>
             <Link
               to={createLink(Paths.TRANSFER_ASSET, {}, { chainId: [chainId], assetId: [asset.assetId] })}
               onClick={(e) => e.stopPropagation()}
@@ -81,7 +81,7 @@ export const AssetCard = ({ chainId, asset, balance }: Props) => {
               <Icon name="sendArrow" size={20} />
             </Link>
           </CheckPermission>
-          <CheckPermission operationType={OperationType.RECEIVE} wallet={activeWallet} accounts={activeAccounts}>
+          <CheckPermission operationType={OperationType.RECEIVE} wallet={activeWallet}>
             <Link
               to={createLink(Paths.RECEIVE_ASSET, {}, { chainId: [chainId], assetId: [asset.assetId] })}
               onClick={(e) => e.stopPropagation()}

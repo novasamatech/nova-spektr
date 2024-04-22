@@ -1,45 +1,70 @@
 import type { ID } from './general';
-import type { Account_NEW, ShardAccount, ChainAccount, MultisigAccount, ProxiedAccount, WcAccount } from './account';
+import type { BaseAccount, ShardAccount, ChainAccount, MultisigAccount, ProxiedAccount, WcAccount } from './account';
 
-export type Wallet_NEW<T extends Account_NEW = Account_NEW> = {
+export type AbstractWallet = {
   id: ID;
   name: string;
   type: WalletType;
   isActive: boolean;
   signingType: SigningType;
-  accounts: T[];
 };
 
-export type PolkadotVaultWallet = Wallet_NEW<Account_NEW | ChainAccount | ShardAccount>;
+export type PolkadotVaultWallet = AbstractWallet & {
+  type: WalletType.POLKADOT_VAULT;
+  accounts: Array<BaseAccount | ChainAccount | ShardAccount>;
+};
 
-export type SingleShardWallet = Wallet_NEW;
+export type SingleShardWallet = AbstractWallet & {
+  type: WalletType.SINGLE_PARITY_SIGNER;
+  accounts: BaseAccount[];
+};
 
-export type MultiShardWallet = Wallet_NEW<Account_NEW | ChainAccount>;
+export type MultiShardWallet = AbstractWallet & {
+  type: WalletType.MULTISHARD_PARITY_SIGNER;
+  accounts: Array<BaseAccount | ChainAccount>;
+};
 
-export type WatchOnlyWallet = Wallet_NEW;
+export type WatchOnlyWallet = AbstractWallet & {
+  type: WalletType.WATCH_ONLY;
+  accounts: BaseAccount[];
+};
 
 // TODO: try to move signatories data out of account
-export type MultisigWallet = Wallet_NEW<MultisigAccount>;
+export type MultisigWallet = AbstractWallet & {
+  type: WalletType.MULTISIG;
+  accounts: MultisigAccount[];
+};
 
-export type ProxiedWallet = Wallet_NEW<ProxiedAccount>;
+export type ProxiedWallet = AbstractWallet & {
+  type: WalletType.PROXIED;
+  accounts: ProxiedAccount[];
+};
 
-export type WalletConnectWallet = Wallet_NEW<WcAccount> & {
+export type WalletConnectWallet = AbstractWallet & {
+  type: WalletType.WALLET_CONNECT;
+  accounts: WcAccount[];
   isConnected: boolean;
 };
 
-export type NovaWalletWallet = WalletConnectWallet;
+export type NovaWalletWallet = AbstractWallet & {
+  type: WalletType.NOVA_WALLET;
+  accounts: WcAccount[];
+  isConnected: boolean;
+};
 
-// export type Wallet =
-//   | PolkadotVaultWallet
-//   | SingleShardWallet
-//   | MultiShardWallet
-//   | WatchOnlyWallet
-//   | MultisigWallet
-//   | WalletConnectWallet
-//   | NovaWalletWallet
-//   | ProxiedWallet;
+export type Wallet =
+  | PolkadotVaultWallet
+  | SingleShardWallet
+  | MultiShardWallet
+  | WatchOnlyWallet
+  | MultisigWallet
+  | WalletConnectWallet
+  | NovaWalletWallet
+  | ProxiedWallet;
 
-export type WalletsMap = Record<ID, Wallet_NEW>;
+export type WalletAccounts = Wallet['accounts'];
+
+export type WalletsMap = Record<ID, Wallet>;
 
 export const enum WalletType {
   WATCH_ONLY = 'wallet_wo',

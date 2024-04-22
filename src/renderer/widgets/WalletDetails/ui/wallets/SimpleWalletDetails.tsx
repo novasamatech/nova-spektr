@@ -18,7 +18,7 @@ import { addProxyModel, AddProxy } from '@widgets/AddProxyModal';
 import { AddPureProxied, addPureProxiedModel } from '@widgets/AddPureProxiedModal';
 
 type Props = {
-  wallet: Wallet_NEW;
+  wallet: Wallet;
   account: BaseAccount;
   onClose: () => void;
 };

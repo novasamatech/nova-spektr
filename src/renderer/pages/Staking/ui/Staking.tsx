@@ -10,7 +10,7 @@ import { accountUtils, permissionUtils, walletModel, walletUtils } from '@entiti
 import { priceProviderModel } from '@entities/price';
 import { useNetworkData, networkUtils } from '@entities/network';
 import { eraService } from '@entities/staking/api';
-import { ChainId, Chain, Address, Stake, Validator, ShardAccount, ChainAccount, Account_NEW } from '@shared/core';
+import { ChainId, Chain, Address, Stake, Validator, ShardAccount, ChainAccount, BaseAccount } from '@shared/core';
 import { NetworkInfo } from './NetworkInfo';
 import { AboutStaking } from './AboutStaking';
 import { Actions } from './Actions';
@@ -161,7 +161,7 @@ export const Staking = () => {
     toggleNominators();
   };
 
-  const groupedAccounts = useMemo((): Array<Account_NEW | ChainAccount | ShardAccount[]> => {
+  const groupedAccounts = useMemo((): Array<BaseAccount | ChainAccount | ShardAccount[]> => {
     if (!activeWallet) return [];
     if (!walletUtils.isPolkadotVault(activeWallet)) return accounts;
 
@@ -169,7 +169,7 @@ export const Staking = () => {
   }, [accounts, activeWallet]);
 
   const nominatorsInfo = useMemo(() => {
-    const getInfo = <T extends Account_NEW | ShardAccount>(address: Address, account: T): NominatorInfo<T> => ({
+    const getInfo = <T extends BaseAccount | ShardAccount>(address: Address, account: T): NominatorInfo<T> => ({
       address,
       account,
       stash: staking[address]?.stash,
@@ -179,7 +179,7 @@ export const Staking = () => {
       unlocking: staking[address]?.unlocking,
     });
 
-    return groupedAccounts.reduce<Array<NominatorInfo<Account_NEW> | NominatorInfo<ShardAccount>[]>>((acc, account) => {
+    return groupedAccounts.reduce<Array<NominatorInfo<BaseAccount> | NominatorInfo<ShardAccount>[]>>((acc, account) => {
       if (accountUtils.isAccountWithShards(account)) {
         const shardsGroup = account.map((shard) => {
           const address = toAddress(shard.accountId, { prefix: addressPrefix });

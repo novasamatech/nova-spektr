@@ -34,7 +34,7 @@ import {
 
 type Props = {
   wallet: WalletConnectWallet;
-  accounts: Account_NEW[];
+  accounts: Account[];
   onClose: () => void;
 };
 export const WalletConnectDetails = ({ wallet, accounts, onClose }: Props) => {

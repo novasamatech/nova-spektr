@@ -15,7 +15,7 @@ import {
   PartialProxiedAccount,
   ProxyVariant,
   Timepoint,
-  Account,
+  BaseAccount,
 } from '@shared/core';
 import { proxyModel, proxyUtils } from '@entities/proxy';
 import { networkModel } from '@entities/network';
@@ -40,7 +40,7 @@ const $addProxyStore = createStore<AddPureProxiedStore | null>(null).reset(flowF
 const $wrappedTx = createStore<Transaction | null>(null).reset(flowFinished);
 const $multisigTx = createStore<Transaction | null>(null).reset(flowFinished);
 const $coreTx = createStore<Transaction | null>(null).reset(flowFinished);
-const $selectedSignatories = createStore<Account[]>([]);
+const $selectedSignatories = createStore<BaseAccount[]>([]);
 
 const $txWrappers = combine(
   {

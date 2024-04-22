@@ -14,7 +14,7 @@ export const enum ReconnectStep {
 }
 
 export type SigningProps = {
-  signerWaller?: Wallet_NEW;
+  signerWaller?: Wallet;
   chainId: ChainId;
   api: ApiPromise;
   addressPrefix: number;
@@ -26,4 +26,4 @@ export type SigningProps = {
   onResult: (signatures: HexString[], unsignedTxs: UnsignedTransaction[]) => void;
 };
 
-export type InnerSigningProps = SigningProps & { wallet: Wallet_NEW };
+export type InnerSigningProps = SigningProps & { wallet: Wallet };

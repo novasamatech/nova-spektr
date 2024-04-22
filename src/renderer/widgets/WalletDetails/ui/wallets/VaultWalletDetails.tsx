@@ -24,7 +24,7 @@ import { VaultMap } from '../../lib/types';
 import { AddPureProxied, addPureProxiedModel } from '@widgets/AddPureProxiedModal';
 
 type Props = {
-  wallet: Wallet_NEW;
+  wallet: Wallet;
   root: BaseAccount;
   accountsMap: VaultMap;
   onClose: () => void;

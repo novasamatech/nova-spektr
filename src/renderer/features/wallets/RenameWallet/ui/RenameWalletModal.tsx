@@ -1,13 +1,13 @@
 import { useForm } from 'effector-forms';
 import { FormEvent, useEffect } from 'react';
 
-import { Wallet_NEW } from '@shared/core';
+import { Wallet } from '@shared/core';
 import { BaseModal, Button, Input, InputHint } from '@shared/ui';
 import { useI18n } from '@app/providers';
 import { renameWalletModel } from '../model/rename-wallet-model';
 
 type Props = {
-  wallet: Wallet_NEW;
+  wallet: Wallet;
   isOpen: boolean;
   onClose: () => void;
 };
