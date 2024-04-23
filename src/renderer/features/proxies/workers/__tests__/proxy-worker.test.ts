@@ -121,28 +121,26 @@ describe('features/proxies/workers/proxy-worker', () => {
       proxyType: 'Governance',
     };
 
-    set(state.apis, '0x01.query.proxy.proxies.keys', () => [
-      {
-        args: [
-          {
-            toHex: () => newProxy.proxiedAccountId,
-          },
-        ],
-      },
-    ]);
-    set(state.apis, '0x01.rpc.state.queryStorageAt', () => [
+    set(state.apis, '0x01.query.proxy.proxies.entries', () => [
       [
         {
-          toHuman: () => [
+          args: [
             {
-              delegate: newProxy.accountId,
-              proxyType: newProxy.proxyType,
-              delay: newProxy.delay,
+              toHex: () => newProxy.proxiedAccountId,
             },
           ],
         },
         {
-          toHuman: () => '1,002,050,000,000',
+          toHuman: () => [
+            [
+              {
+                delegate: newProxy.accountId,
+                proxyType: newProxy.proxyType,
+                delay: newProxy.delay,
+              },
+            ],
+            '1,002,050,000,000',
+          ],
         },
       ],
     ]);
@@ -326,28 +324,26 @@ describe('features/proxies/workers/proxy-worker', () => {
       proxyVariant: ProxyVariant.NONE,
     };
 
-    set(state.apis, '0x01.query.proxy.proxies.keys', () => [
-      {
-        args: [
-          {
-            toHex: () => '0x02',
-          },
-        ],
-      },
-    ]);
-    set(state.apis, '0x01.rpc.state.queryStorageAt', () => [
+    set(state.apis, '0x01.query.proxy.proxies.entries', () => [
       [
         {
-          toHuman: () => [
+          args: [
             {
-              delegate: '0x01',
-              proxyType: 'Governance',
-              delay: 0,
+              toHex: () => '0x02',
             },
           ],
         },
         {
-          toHuman: () => '1,002,050,000,000',
+          toHuman: () => [
+            [
+              {
+                delegate: '0x01',
+                proxyType: 'Governance',
+                delay: 0,
+              },
+            ],
+            '1,002,050,000,000',
+          ],
         },
       ],
     ]);
