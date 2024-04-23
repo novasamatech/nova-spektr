@@ -1,4 +1,4 @@
-import { RpcValidation } from '@shared/api/network';
+import { RpcValidation } from './types';
 import { RpcNode } from '@shared/core';
 
 export const customRpcUtils = {
