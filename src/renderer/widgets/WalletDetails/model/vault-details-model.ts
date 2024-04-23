@@ -3,8 +3,18 @@ import { createStore, createEvent, createEffect, sample } from 'effector';
 import { chainsService } from '@shared/api/network';
 import { storageService } from '@shared/api/storage';
 import { walletModel, accountUtils } from '@entities/wallet';
-import type { ShardAccount, Chain, ChainId, ChainAccount, ID, DraftAccount, BaseAccount, AccountId } from '@shared/core';
 import { proxiesModel } from '@features/proxies';
+import type {
+  ShardAccount,
+  Chain,
+  ChainId,
+  ChainAccount,
+  ID,
+  DraftAccount,
+  BaseAccount,
+  AccountId,
+  Wallet,
+} from '@shared/core';
 
 type AccountsCreatedParams = {
   walletId: ID;
@@ -16,11 +26,11 @@ const shardsCleared = createEvent();
 const accountsCreated = createEvent<AccountsCreatedParams>();
 
 const keysRemoved = createEvent<Array<ChainAccount | ShardAccount>>();
-const keysAdded = createEvent<DraftAccount<ChainAccount>[]>();
+const keysAdded = createEvent<Array<DraftAccount<ChainAccount | ShardAccount>>>();
 
 const $shards = createStore<ShardAccount[]>([]).reset(shardsCleared);
 const $chain = createStore<Chain>({} as Chain).reset(shardsCleared);
-const $keysToAdd = createStore<DraftAccount<ChainAccount>[]>([]).reset(accountsCreated);
+const $keysToAdd = createStore<Array<DraftAccount<ChainAccount | ShardAccount>>>([]).reset(accountsCreated);
 
 const chainSetFx = createEffect((chainId: ChainId): Chain | undefined => {
   return chainsService.getChainById(chainId);
@@ -31,14 +41,14 @@ const removeKeysFx = createEffect((ids: ID[]): Promise<ID[] | undefined> => {
 });
 
 const createAccountsFx = createEffect(
-  async ({ walletId, rootAccountId, accounts }: AccountsCreatedParams): Promise<BaseAccount[] | undefined> => {
+  ({ walletId, rootAccountId, accounts }: AccountsCreatedParams): Promise<BaseAccount[] | undefined> => {
     const accountsToCreate = accounts.map((account) => ({
       ...account,
       ...(accountUtils.isChainAccount(account) && { baseId: rootAccountId }),
       walletId,
     }));
 
-    return storageService.accounts.createAll(accountsToCreate as BaseAccount[]);
+    return storageService.accounts.createAll(accountsToCreate as (ChainAccount | ShardAccount)[]);
   },
 );
 
@@ -75,14 +85,18 @@ sample({
 
 sample({
   clock: removeKeysFx.doneData,
-  source: walletModel.$accounts,
-  filter: (_, ids): ids is number[] => Boolean(ids),
-  fn: (accounts, ids) => {
-    const idsMap = ids!.reduce<Record<ID, boolean>>((acc, id) => ({ ...acc, [id]: true }), {});
+  source: walletModel.$wallets,
+  filter: (_, ids) => Boolean(ids),
+  fn: (wallets, ids) => {
+    const removeMap = ids!.reduce<Record<ID, boolean>>((acc, id) => ({ ...acc, [id]: true }), {});
 
-    return accounts.filter((account) => !idsMap[account.id]);
+    return wallets.map((wallet) => {
+      const remainingAccounts = wallet.accounts.filter(({ id }) => !removeMap[id]);
+
+      return { ...wallet, accounts: remainingAccounts } as Wallet;
+    });
   },
-  target: walletModel.$accounts,
+  target: walletModel.$wallets,
 });
 
 sample({
@@ -93,11 +107,17 @@ sample({
 sample({ clock: accountsCreated, target: createAccountsFx });
 
 sample({
-  clock: createAccountsFx.doneData,
-  source: walletModel.$accounts,
-  filter: (_, newAccounts) => Boolean(newAccounts),
-  fn: (accounts, newAccounts) => accounts.concat(newAccounts!),
-  target: walletModel.$accounts,
+  clock: createAccountsFx.done,
+  source: walletModel.$wallets,
+  filter: (_, { result }) => Boolean(result),
+  fn: (wallets, { params, result }) => {
+    return wallets.map((wallet) => {
+      if (wallet.id !== params.walletId) return wallet;
+
+      return { ...wallet, accounts: [...wallet.accounts, ...result!] } as Wallet;
+    });
+  },
+  target: walletModel.$wallets,
 });
 
 sample({

@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useUnit } from 'effector-react';
 
-import { MultisigAccount, Signatory, Wallet, AccountId, Chain } from '@shared/core';
+import { Signatory, Wallet, AccountId, Chain, MultisigWallet } from '@shared/core';
 import { BaseModal, FootnoteText, Tabs, HelpText, DropdownIconButton } from '@shared/ui';
 import { RootExplorers } from '@shared/lib/utils';
 import { useModalClose, useToggle } from '@shared/lib/hooks';
@@ -28,8 +28,7 @@ import { matrixModel, matrixUtils } from '@entities/matrix';
 import { AddPureProxied, addPureProxiedModel } from '@widgets/AddPureProxiedModal';
 
 type Props = {
-  wallet: Wallet;
-  account: MultisigAccount;
+  wallet: MultisigWallet;
   signatoryWallets: [AccountId, Wallet][];
   signatoryContacts: Signatory[];
   signatoryAccounts: Signatory[];
@@ -37,7 +36,6 @@ type Props = {
 };
 export const MultisigWalletDetails = ({
   wallet,
-  account,
   signatoryWallets = [],
   signatoryContacts = [],
   signatoryAccounts = [],
@@ -62,12 +60,15 @@ export const MultisigWalletDetails = ({
     setChains(Object.values(allChains));
   }, []);
 
-  const chain = account.chainId && allChains[account.chainId];
+  const multisigAccount = wallet.accounts[0];
+  const chain = multisigAccount.chainId && allChains[multisigAccount.chainId];
   const explorers = chain?.explorers || RootExplorers;
 
   const multisigChains = useMemo(() => {
     return Object.values(chains).filter((chain) => {
-      return networkUtils.isMultisigSupported(chain.options) && accountUtils.isChainAndCryptoMatch(account, chain);
+      return (
+        networkUtils.isMultisigSupported(chain.options) && accountUtils.isChainAndCryptoMatch(multisigAccount, chain)
+      );
     });
   }, [chains]);
 
@@ -84,7 +85,7 @@ export const MultisigWalletDetails = ({
     },
   ];
 
-  if (permissionUtils.canCreateAnyProxy(wallet, [account]) || permissionUtils.canCreateNonAnyProxy(wallet, [account])) {
+  if (permissionUtils.canCreateAnyProxy(wallet) || permissionUtils.canCreateNonAnyProxy(wallet)) {
     Options.push({
       icon: 'addCircle' as IconNames,
       title: t('walletDetails.common.addProxyAction'),
@@ -92,7 +93,7 @@ export const MultisigWalletDetails = ({
     });
   }
 
-  if (permissionUtils.canCreateAnyProxy(wallet, [account])) {
+  if (permissionUtils.canCreateAnyProxy(wallet)) {
     Options.push({
       icon: 'addCircle' as IconNames,
       title: t('walletDetails.common.addPureProxiedAction'),
@@ -135,7 +136,9 @@ export const MultisigWalletDetails = ({
             {
               id: 1,
               title: t('walletDetails.multisig.networksTab'),
-              panel: <AccountsList accountId={account.accountId} chains={multisigChains} className="h-[345px]" />,
+              panel: (
+                <AccountsList accountId={multisigAccount.accountId} chains={multisigChains} className="h-[345px]" />
+              ),
             },
             {
               id: 2,
@@ -144,8 +147,8 @@ export const MultisigWalletDetails = ({
                 <div className="flex flex-col">
                   <FootnoteText className="text-text-tertiary px-5">
                     {t('walletDetails.multisig.thresholdLabel', {
-                      min: account.threshold,
-                      max: account.signatories.length,
+                      min: multisigAccount.threshold,
+                      max: multisigAccount.signatories.length,
                     })}
                   </FootnoteText>
 

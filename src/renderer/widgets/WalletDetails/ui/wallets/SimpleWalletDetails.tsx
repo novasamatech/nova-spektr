@@ -6,7 +6,7 @@ import { useModalClose, useToggle } from '@shared/lib/hooks';
 import { AccountsList, WalletCardLg, accountUtils, permissionUtils, walletUtils } from '@entities/wallet';
 import { networkModel, networkUtils } from '@entities/network';
 import { useI18n } from '@app/providers';
-import type { BaseAccount, Chain, Wallet } from '@shared/core';
+import type { Chain, SingleShardWallet, WatchOnlyWallet } from '@shared/core';
 import { IconNames } from '@shared/ui/Icon/data';
 import { RenameWalletModal } from '@features/wallets/RenameWallet';
 import { ForgetWalletModal } from '@features/wallets/ForgetWallet';
@@ -18,11 +18,10 @@ import { addProxyModel, AddProxy } from '@widgets/AddProxyModal';
 import { AddPureProxied, addPureProxiedModel } from '@widgets/AddPureProxiedModal';
 
 type Props = {
-  wallet: Wallet;
-  account: BaseAccount;
+  wallet: SingleShardWallet | WatchOnlyWallet;
   onClose: () => void;
 };
-export const SimpleWalletDetails = ({ wallet, account, onClose }: Props) => {
+export const SimpleWalletDetails = ({ wallet, onClose }: Props) => {
   const { t } = useI18n();
 
   const allChains = useUnit(networkModel.$chains);
@@ -35,7 +34,7 @@ export const SimpleWalletDetails = ({ wallet, account, onClose }: Props) => {
 
   const [chains, setChains] = useState<Chain[]>([]);
 
-  const isEthereumBased = accountUtils.isEthereumBased(account);
+  const isEthereumBased = accountUtils.isEthereumBased(wallet.accounts[0]);
 
   useEffect(() => {
     const chainList = Object.values(allChains);
@@ -59,7 +58,7 @@ export const SimpleWalletDetails = ({ wallet, account, onClose }: Props) => {
     },
   ];
 
-  if (permissionUtils.canCreateAnyProxy(wallet, [account]) || permissionUtils.canCreateNonAnyProxy(wallet, [account])) {
+  if (permissionUtils.canCreateAnyProxy(wallet) || permissionUtils.canCreateNonAnyProxy(wallet)) {
     Options.push({
       icon: 'addCircle' as IconNames,
       title: t('walletDetails.common.addProxyAction'),
@@ -67,7 +66,7 @@ export const SimpleWalletDetails = ({ wallet, account, onClose }: Props) => {
     });
   }
 
-  if (permissionUtils.canCreateAnyProxy(wallet, [account])) {
+  if (permissionUtils.canCreateAnyProxy(wallet)) {
     Options.push({
       icon: 'addCircle' as IconNames,
       title: t('walletDetails.common.addPureProxiedAction'),
@@ -91,7 +90,9 @@ export const SimpleWalletDetails = ({ wallet, account, onClose }: Props) => {
     {
       id: 'accounts',
       title: t('walletDetails.common.accountTabTitle'),
-      panel: <AccountsList accountId={account.accountId} chains={Object.values(chains)} className="h-[362px]" />,
+      panel: (
+        <AccountsList accountId={wallet.accounts[0].accountId} chains={Object.values(chains)} className="h-[362px]" />
+      ),
     },
     {
       id: 'proxies',
@@ -123,7 +124,7 @@ export const SimpleWalletDetails = ({ wallet, account, onClose }: Props) => {
           <WalletCardLg wallet={wallet} />
         </div>
         {walletUtils.isWatchOnly(wallet) && !hasProxies ? (
-          <AccountsList accountId={account.accountId} chains={Object.values(chains)} className="h-[412px]" />
+          <AccountsList accountId={wallet.accounts[0].accountId} chains={Object.values(chains)} className="h-[412px]" />
         ) : (
           <Tabs items={tabItems} panelClassName="" tabsClassName="mx-5" unmount={false} />
         )}

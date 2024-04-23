@@ -1,10 +1,9 @@
 import { createEvent, createStore, sample } from 'effector';
 import { combineEvents, spread } from 'patronum';
 
-import { accountUtils, walletModel } from '@entities/wallet';
+import { walletModel, walletUtils } from '@entities/wallet';
 import { walletConnectModel, InitConnectParams } from '@entities/walletConnect';
 import { ReconnectStep, ForgetStep } from '../lib/constants';
-import { walletProviderModel } from './wallet-provider-model';
 import { walletSelectModel } from '@features/wallets';
 import type { Wallet, WcAccount } from '@shared/core';
 import { chainsService } from '@shared/api/network';
@@ -24,8 +23,12 @@ const $forgetStep = createStore<ForgetStep>(ForgetStep.NOT_STARTED).reset(reset)
 
 sample({
   clock: forgetButtonClicked,
-  source: walletModel.$accounts,
-  fn: (accounts, wallet) => accountUtils.getWalletAccounts(wallet.id, accounts).map((a) => a.id),
+  source: walletModel.$wallets,
+  fn: (wallets, wallet) => {
+    const accounts = walletUtils.getAccountsBy(wallets, (account) => account.walletId === wallet.id);
+
+    return accounts.map((account) => account.id);
+  },
   target: balanceModel.events.balancesRemoved,
 });
 
@@ -50,12 +53,15 @@ sample({
   clock: walletConnectModel.events.connected,
   source: {
     step: $reconnectStep,
-    accounts: walletProviderModel.$accounts,
+    wallet: walletSelectModel.$walletForDetails,
     session: walletConnectModel.$session,
   },
-  filter: ({ step, accounts, session }) =>
-    step === ReconnectStep.RECONNECTING && accounts.length > 0 && Boolean(session?.topic),
-  fn: ({ accounts, session }) => ({ accounts, topic: session?.topic! }),
+  filter: ({ step, wallet, session }) =>
+    step === ReconnectStep.RECONNECTING && Boolean(wallet) && Boolean(session?.topic),
+  fn: ({ wallet, session }) => ({
+    accounts: wallet!.accounts,
+    topic: session?.topic!,
+  }),
   target: walletConnectModel.events.sessionTopicUpdated,
 });
 
@@ -64,32 +70,23 @@ sample({
     events: [reconnectStarted, walletConnectModel.events.sessionTopicUpdateDone, walletConnectModel.events.connected],
   }),
   source: {
-    newAccounts: walletConnectModel.$accounts,
-    accounts: walletProviderModel.$accounts,
     wallet: walletSelectModel.$walletForDetails,
+    newAccounts: walletConnectModel.$accounts,
   },
   filter: ({ wallet }) => Boolean(wallet),
-  fn: ({ accounts, wallet, newAccounts }) => {
-    const oldAccount = accounts.find((a) => a.walletId === wallet!.id);
-    const { id, ...oldAccountParams } = oldAccount!;
-
+  fn: ({ wallet, newAccounts }) => {
     const updatedAccounts = newAccounts.map((account) => {
       const [_, chainId, address] = account.split(':');
       const chain = chainsService.searchChain(chainId);
-      const accountId = toAccountId(address);
 
       return {
-        ...oldAccountParams,
+        ...wallet!.accounts[0],
         chainId: chain?.chainId,
-        accountId,
+        accountId: toAccountId(address),
       } as WcAccount;
     });
 
-    return {
-      walletId: wallet!.id,
-      accounts,
-      newAccounts: updatedAccounts,
-    };
+    return { walletId: wallet!.id, accounts: updatedAccounts };
   },
   target: walletConnectModel.events.accountsUpdated,
 });
@@ -112,17 +109,13 @@ sample({
   clock: forgetButtonClicked,
   source: {
     wallet: walletSelectModel.$walletForDetails,
-    accounts: walletModel.$accounts,
+    wallets: walletModel.$wallets,
   },
-  filter: ({ wallet }) => wallet !== null,
-  fn: ({ wallet, accounts }) => {
-    const account = accounts.find((a) => a.walletId === wallet!.id);
-
-    return {
-      sessionTopic: account?.signingExtras?.sessionTopic,
-      pairingTopic: account?.signingExtras?.pairingTopic,
-    };
-  },
+  filter: ({ wallet }) => Boolean(wallet),
+  fn: ({ wallet, wallets }) => ({
+    sessionTopic: wallet!.accounts[0].signingExtras?.sessionTopic,
+    pairingTopic: wallet!.accounts[0].signingExtras?.pairingTopic,
+  }),
   target: spread({
     targets: {
       sessionTopic: walletConnectModel.events.disconnectStarted,
