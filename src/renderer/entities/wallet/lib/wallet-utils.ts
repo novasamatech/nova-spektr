@@ -31,6 +31,7 @@ export const walletUtils = {
 
   getAccountsBy,
   getWalletAndAccounts,
+  getWalletsAndAccounts,
 };
 
 // Wallet types
@@ -107,6 +108,8 @@ function getWalletAndAccounts(
     accountFn?: (account: Account) => boolean;
   },
 ): { wallet: Wallet; accounts: Account[] } | undefined {
+  if (!predicates.walletFn && !predicates.accountFn) return undefined;
+
   const { wallet, accounts } = wallets.reduce<{ wallet: Wallet | undefined; accounts: Account[] }>(
     (acc, wallet) => {
       if (acc.wallet) return acc;
@@ -126,4 +129,30 @@ function getWalletAndAccounts(
   );
 
   return wallet && accounts.length > 0 ? { wallet, accounts } : undefined;
+}
+
+function getWalletsAndAccounts(
+  wallets: Wallet[],
+  predicates: {
+    walletFn?: (wallet: Wallet) => boolean;
+    accountFn?: (account: Account) => boolean;
+  },
+): { wallet: Wallet; accounts: Account[] }[] | undefined {
+  if (!predicates.walletFn && !predicates.accountFn) return undefined;
+
+  const result = wallets.reduce<{ wallet: Wallet; accounts: Account[] }[]>((acc, wallet) => {
+    if (!predicates.walletFn || predicates.walletFn(wallet)) {
+      const accounts = wallet.accounts.filter((account) => {
+        return !predicates.accountFn || predicates.accountFn(account);
+      });
+
+      if (accounts.length > 0) {
+        acc.push({ wallet, accounts });
+      }
+    }
+
+    return acc;
+  }, []);
+
+  return result.length > 0 ? result : undefined;
 }

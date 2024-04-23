@@ -3,7 +3,16 @@ import { stringify } from 'yaml';
 import { ForgetStep, ReconnectStep } from './constants';
 import { VaultMap, MultishardMap } from './types';
 import { accountUtils } from '@entities/wallet';
-import { BaseAccount, BaseAccount, ChainId, ChainAccount, Wallet, ShardAccount, KeyType } from '@shared/core';
+import {
+  BaseAccount,
+  ChainId,
+  ChainAccount,
+  Wallet,
+  ShardAccount,
+  KeyType,
+  PolkadotVaultWallet,
+  MultiShardWallet,
+} from '@shared/core';
 import { downloadFiles, exportKeysUtils } from '@features/wallets/ExportKeys';
 
 export const wcDetailsUtils = {
@@ -47,7 +56,7 @@ function isForgetModalOpen(step: ForgetStep): boolean {
   return [ForgetStep.FORGETTING, ForgetStep.SUCCESS].includes(step);
 }
 
-function getVaultAccountsMap(accounts: Account[]): VaultMap {
+function getVaultAccountsMap(accounts: PolkadotVaultWallet['accounts']): VaultMap {
   const accountGroups = accountUtils.getAccountsAndShardGroups(accounts);
 
   return accountGroups.reduce<VaultMap>((acc, account) => {
@@ -64,7 +73,7 @@ function getVaultAccountsMap(accounts: Account[]): VaultMap {
   }, {});
 }
 
-function getMultishardMap(accounts: Account[]): MultishardMap {
+function getMultishardMap(accounts: MultiShardWallet['accounts']): MultishardMap {
   return accounts.reduce<Map<BaseAccount, Record<ChainId, ChainAccount[]>>>((acc, account) => {
     if (accountUtils.isBaseAccount(account)) {
       acc.set(account, {});

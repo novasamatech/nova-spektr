@@ -1,6 +1,7 @@
 import uniqBy from 'lodash/uniqBy';
 import mapValues from 'lodash/mapValues';
 import { combine, createEvent, createStore, sample } from 'effector';
+import { isEmpty } from 'lodash';
 
 import { accountUtils, permissionUtils, walletModel, walletUtils } from '@entities/wallet';
 import { walletSelectModel } from '@features/wallets';
@@ -11,162 +12,112 @@ import { proxyModel, proxyUtils } from '@entities/proxy';
 import { networkModel } from '@entities/network';
 import { proxiesModel } from '@features/proxies';
 import { addProxyModel } from '../../AddProxyModal';
-import type {
-  BaseAccount,
-  Signatory,
-  Wallet,
-  MultisigAccount,
-  AccountId,
-  ProxyAccount,
-  ProxiedAccount,
-  ChainId,
-  ProxyGroup,
-  Account,
-} from '@shared/core';
+import type { BaseAccount, Signatory, Wallet, AccountId, ProxyAccount, ChainId, ProxyGroup } from '@shared/core';
 
 const removeProxy = createEvent<ProxyAccount>();
 
 const $proxyForRemoval = createStore<ProxyAccount | null>(null);
 
-const $accounts = combine(walletSelectModel.$walletForDetails, (details): Account[] => {
-  return details ? details.accounts : [];
+const $multiShardAccounts = combine(walletSelectModel.$walletForDetails, (wallet): MultishardMap => {
+  if (!wallet) return new Map();
+
+  return walletDetailsUtils.getMultishardMap(wallet.accounts);
 });
 
-const $singleShardAccount = combine(
-  $accounts,
-  (accounts): BaseAccount | undefined => {
-    return accountUtils.getBaseAccount(accounts);
-  },
-  { skipVoid: false },
-);
+const $canCreateProxy = combine(walletSelectModel.$walletForDetails, (wallet) => {
+  if (!wallet) return false;
 
-const $multiShardAccounts = combine($accounts, (accounts): MultishardMap => {
-  if (accounts.length === 0) return new Map();
+  const canCreateAnyProxy = permissionUtils.canCreateAnyProxy(wallet);
+  const canCreateNonAnyProxy = permissionUtils.canCreateNonAnyProxy(wallet);
 
-  return walletDetailsUtils.getMultishardMap(accounts);
+  return canCreateAnyProxy || canCreateNonAnyProxy;
 });
-
-const $multisigAccount = combine(
-  {
-    accounts: walletModel.$accounts,
-    details: walletSelectModel.$walletForDetails,
-  },
-  ({ details, accounts }): MultisigAccount | undefined => {
-    if (!details) return undefined;
-
-    const match = accounts.find((account) => account.walletId === details.id);
-
-    return match && accountUtils.isMultisigAccount(match) ? match : undefined;
-  },
-  { skipVoid: false },
-);
-
-const $canCreateProxy = combine(
-  {
-    accounts: $accounts,
-    wallet: walletSelectModel.$walletForDetails,
-  },
-  ({ accounts, wallet }) => {
-    if (!wallet) return false;
-
-    const canCreateAnyProxy = permissionUtils.canCreateAnyProxy(wallet, accounts);
-    const canCreateNonAnyProxy = permissionUtils.canCreateNonAnyProxy(wallet, accounts);
-
-    return canCreateAnyProxy || canCreateNonAnyProxy;
-  },
-);
 
 type VaultAccounts = {
   root: BaseAccount;
   accountsMap: VaultMap;
 };
 const $vaultAccounts = combine(
-  {
-    accounts: $accounts,
-    details: walletSelectModel.$walletForDetails,
-  },
-  ({ details, accounts }): VaultAccounts | undefined => {
-    if (!details) return undefined;
+  walletSelectModel.$walletForDetails,
+  (wallet): VaultAccounts | undefined => {
+    if (!wallet || !walletUtils.isMultiShard(wallet)) return undefined;
 
-    const root = accountUtils.getBaseAccount(accounts, details.id);
-    if (!root) return undefined;
+    const root = accountUtils.getBaseAccount(wallet.accounts);
+    const accountsMap = walletDetailsUtils.getVaultAccountsMap(wallet.accounts);
 
-    return {
-      root,
-      accountsMap: walletDetailsUtils.getVaultAccountsMap(accounts),
-    };
+    if (!root || isEmpty(accountsMap)) return undefined;
+
+    return { root, accountsMap };
   },
   { skipVoid: false },
 );
 
 const $signatoryContacts = combine(
   {
-    activeAccounts: $accounts,
-    accounts: walletModel.$accounts,
+    wallet: walletSelectModel.$walletForDetails,
+    wallets: walletModel.$wallets,
   },
-  ({ activeAccounts, accounts }): Signatory[] => {
-    const multisigAccount = activeAccounts[0];
-    if (!multisigAccount || !accountUtils.isMultisigAccount(multisigAccount)) return [];
+  ({ wallet, wallets }): Signatory[] => {
+    if (!wallet || !walletUtils.isMultisig(wallet)) return [];
 
-    const accountsMap = dictionary(accounts, 'accountId', () => true);
+    const signatoriesMap = dictionary(wallet.accounts[0].signatories, 'accountId');
+    const allSignatories = walletUtils.getAccountsBy(wallets, ({ accountId }) => signatoriesMap[accountId]);
+    const uniqueSignatories = uniqBy(allSignatories, 'accountId');
 
-    return multisigAccount.signatories.filter((signatory) => !accountsMap[signatory.accountId]);
+    return wallet.accounts[0].signatories.filter((signatory) => {
+      return uniqueSignatories.every((s) => s.accountId !== signatory.accountId);
+    });
   },
 );
 
 const $signatoryWallets = combine(
   {
-    walletAccounts: $accounts,
-    accounts: walletModel.$accounts,
+    wallet: walletSelectModel.$walletForDetails,
     wallets: walletModel.$wallets,
   },
-  ({ walletAccounts, accounts, wallets }): [AccountId, Wallet][] => {
-    const multisigAccount = walletAccounts[0];
-    if (!multisigAccount || !accountUtils.isMultisigAccount(multisigAccount)) return [];
+  ({ wallet, wallets }): [AccountId, Wallet][] => {
+    if (!wallet || !walletUtils.isMultisig(wallet)) return [];
 
-    const walletsMap = dictionary(wallets, 'id');
-    const accountsMap = dictionary(accounts, 'accountId', (account) => account.walletId);
+    const signatoriesMap = dictionary(wallet.accounts[0].signatories, 'accountId', () => true);
 
-    return multisigAccount.signatories.reduce<[AccountId, Wallet][]>((acc, signatory) => {
-      const wallet = walletsMap[accountsMap[signatory.accountId]];
-      if (wallet) {
-        acc.push([signatory.accountId, wallet]);
-      }
+    const walletsAndAccounts = walletUtils.getWalletsAndAccounts(wallets, {
+      accountFn: (a) => signatoriesMap[a.accountId],
+    });
 
-      return acc;
-    }, []);
+    if (!walletsAndAccounts) return [];
+
+    return walletsAndAccounts.map(({ wallet, accounts }) => [accounts[0].accountId, wallet]);
   },
 );
 
 const $signatoryAccounts = combine(
   {
-    walletAccounts: $accounts,
-    accounts: walletModel.$accounts,
+    wallet: walletSelectModel.$walletForDetails,
+    wallets: walletModel.$wallets,
   },
-  ({ walletAccounts, accounts }): Signatory[] => {
-    const multisigAccount = walletAccounts[0];
-    if (!multisigAccount || !accountUtils.isMultisigAccount(multisigAccount)) return [];
+  ({ wallet, wallets }): Signatory[] => {
+    if (!wallet || !walletUtils.isMultisig(wallet)) return [];
 
-    const accountsMap = dictionary(accounts, 'accountId');
+    const signatoriesMap = dictionary(wallet.accounts[0].signatories, 'accountId');
+    const allSignatories = walletUtils.getAccountsBy(wallets, ({ accountId }) => signatoriesMap[accountId]);
+    const uniqueSignatories = uniqBy(allSignatories, 'accountId');
 
-    return multisigAccount.signatories.reduce<Signatory[]>((acc, signatory) => {
-      if (accountsMap[signatory.accountId]) {
-        acc.push(signatory);
-      }
-
-      return acc;
-    }, []);
+    return wallet.accounts[0].signatories.filter((signatory) => {
+      return uniqueSignatories.some((s) => s.accountId === signatory.accountId);
+    });
   },
 );
 
 const $chainsProxies = combine(
   {
-    accounts: $accounts,
+    wallet: walletSelectModel.$walletForDetails,
     chains: networkModel.$chains,
     proxies: proxyModel.$proxies,
   },
-  ({ accounts, chains, proxies }): Record<ChainId, ProxyAccount[]> => {
-    const proxiesForAccounts = uniqBy(accounts, 'accountId').reduce<ProxyAccount[]>((acc, account) => {
+  ({ wallet, chains, proxies }): Record<ChainId, ProxyAccount[]> => {
+    if (!wallet) return {};
+
+    const proxiesForAccounts = uniqBy(wallet.accounts, 'accountId').reduce<ProxyAccount[]>((acc, account) => {
       if (proxies[account.accountId]) {
         acc.push(...proxies[account.accountId]);
       }
@@ -211,24 +162,16 @@ const $walletProxyGroups = combine(
 
 const $proxyWallet = combine(
   {
-    walletAccounts: $accounts,
-    accounts: walletModel.$accounts,
+    wallet: walletSelectModel.$walletForDetails,
     wallets: walletModel.$wallets,
-    detailsWallet: walletSelectModel.$walletForDetails,
   },
-  ({ walletAccounts, accounts, wallets, detailsWallet }): Wallet | undefined => {
-    if (!walletUtils.isProxied(detailsWallet)) return;
+  ({ wallet, wallets }): Wallet | undefined => {
+    if (!wallet || !walletUtils.isProxied(wallet)) return;
 
-    const walletsMap = dictionary(wallets, 'id');
-
-    const proxyAccount = accounts.find((a) => {
-      const isProxyMatch = a.accountId === (walletAccounts[0] as ProxiedAccount).proxyAccountId;
-      const isWatchOnly = walletUtils.isWatchOnly(walletsMap[a.walletId]);
-
-      return isProxyMatch && !isWatchOnly;
-    });
-
-    return proxyAccount && walletsMap[proxyAccount.walletId];
+    return walletUtils.getWalletAndAccounts(wallets, {
+      walletFn: (w) => !walletUtils.isWatchOnly(w),
+      accountFn: (a) => a.accountId === wallet.accounts[0].proxyAccountId,
+    })?.wallet;
   },
   { skipVoid: false },
 );
@@ -248,11 +191,7 @@ sample({
 });
 
 export const walletProviderModel = {
-  $accounts,
-
   $vaultAccounts,
-  $multisigAccount,
-  $singleShardAccount,
   $multiShardAccounts,
   $signatoryContacts,
   $signatoryWallets,
