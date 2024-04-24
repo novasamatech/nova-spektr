@@ -30,14 +30,14 @@ const txWrapperChanged = createEvent<{
 const feeDataChanged = createEvent<Record<'fee' | 'totalFee' | 'multisigDeposit', string>>();
 const isFeeLoadingChanged = createEvent<boolean>();
 
-const $shards = createStore<BaseAccount[]>([]);
+const $shards = createStore<Account[]>([]);
 const $networkStore = createStore<{ chain: Chain; asset: Asset } | null>(null);
 
 const $accountsBalances = createStore<string[]>([]);
 const $signatoryBalance = createStore<string>(ZERO_BALANCE);
 const $proxyBalance = createStore<string>(ZERO_BALANCE);
 
-const $availableSignatories = createStore<BaseAccount[][]>([]);
+const $availableSignatories = createStore<Account[][]>([]);
 const $proxyAccount = createStore<Account | null>(null);
 const $isProxy = createStore<boolean>(false);
 const $isMultisig = createStore<boolean>(false);
@@ -48,7 +48,7 @@ const $isFeeLoading = restore(isFeeLoadingChanged, true);
 const $nominateForm = createForm<FormParams>({
   fields: {
     shards: {
-      init: [] as BaseAccount[],
+      init: [] as Account[],
       rules: [
         {
           name: 'noProxyFee',

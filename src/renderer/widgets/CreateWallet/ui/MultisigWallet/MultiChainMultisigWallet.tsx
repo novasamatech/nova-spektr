@@ -140,7 +140,7 @@ export const MultiChainMultisigWallet = ({ isOpen, onClose, onComplete, onBack }
           <SelectSignatories
             isActive={activeStep === Step.INIT}
             wallets={wallets}
-            accounts={accounts}
+            accounts={wallets.map((wallet) => wallet.accounts).flat()}
             contacts={contacts}
             onSelect={(wallets, contacts) => {
               setSignatoryWallets(wallets);

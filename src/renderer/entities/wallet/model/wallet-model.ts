@@ -2,7 +2,7 @@ import { combine, createEffect, createEvent, createStore, sample } from 'effecto
 import { combineEvents } from 'patronum';
 import groupBy from 'lodash/groupBy';
 
-import type { ID, MultisigAccount, NoID, Wallet, Account, BaseAccount, ChainAccount } from '@shared/core';
+import type { ID, MultisigAccount, NoID, Wallet, Account, BaseAccount, ChainAccount, WcAccount } from '@shared/core';
 import { storageService } from '@shared/api/storage';
 import { dictionary } from '@shared/lib/utils';
 import { modelUtils } from '../lib/model-utils';
@@ -16,11 +16,11 @@ type CreateParams<T extends Account = Account> = {
 type MultisigUpdateParams = Partial<MultisigAccount> & { id: ID };
 
 const walletStarted = createEvent();
-const watchOnlyCreated = createEvent<CreateParams>();
+const watchOnlyCreated = createEvent<CreateParams<BaseAccount>>();
 const multishardCreated = createEvent<CreateParams<BaseAccount | ChainAccount>>();
-const singleshardCreated = createEvent<CreateParams>();
-const multisigCreated = createEvent<CreateParams>();
-const walletConnectCreated = createEvent<CreateParams>();
+const singleshardCreated = createEvent<CreateParams<BaseAccount>>();
+const multisigCreated = createEvent<CreateParams<MultisigAccount>>();
+const walletConnectCreated = createEvent<CreateParams<WcAccount>>();
 
 const multisigAccountUpdated = createEvent<MultisigUpdateParams>();
 const walletRemoved = createEvent<ID>();
@@ -29,9 +29,13 @@ const walletsRemoved = createEvent<ID[]>();
 const $wallets = createStore<Wallet[]>([]);
 
 // TODO: ideally it should be a feature
-const $activeWallet = combine($wallets, (wallets) => {
-  return wallets.find((wallet) => wallet.isActive) || null;
-});
+const $activeWallet = combine(
+  $wallets,
+  (wallets) => {
+    return wallets.find((wallet) => wallet.isActive);
+  },
+  { skipVoid: false },
+);
 
 const fetchAllAccountsFx = createEffect((): Promise<Account[]> => {
   return storageService.accounts.readAll();

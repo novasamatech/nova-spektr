@@ -1,13 +1,13 @@
 import { useI18n } from '@app/providers';
 import { BaseModal, BodyText, Identicon, Truncate } from '@shared/ui';
 import { cnTw, stakeableAmount, toAddress } from '@shared/lib/utils';
-import type { BaseAccount, Asset, ChainId, AccountId } from '@shared/core';
+import type { Asset, ChainId, AccountId, Account } from '@shared/core';
 import { AssetBalance } from '../../../asset';
 import { useAssetBalances } from '../../../balance';
 
 type Props = {
   isOpen: boolean;
-  accounts: BaseAccount[];
+  accounts: Account[];
   amounts?: string[];
   asset: Asset;
   chainId: ChainId;

@@ -223,30 +223,26 @@ const $txWrappers = combine(
     wallet: walletModel.$activeWallet,
     wallets: walletModel.$wallets,
     account: $transferForm.fields.account.$value,
-    accounts: walletModel.$accounts,
     network: $networkStore,
     signatories: $selectedSignatories,
   },
-  ({ wallet, account, accounts, wallets, network, signatories }) => {
+  ({ wallet, account, wallets, network, signatories }) => {
     if (!wallet || !network || !account.id) return [];
 
-    const walletFiltered = wallets.filter((wallet) => {
-      return !walletUtils.isProxied(wallet) && !walletUtils.isWatchOnly(wallet);
-    });
-    const walletsMap = dictionary(walletFiltered, 'id');
-    const chainFilteredAccounts = accounts.filter((account) => {
-      if (accountUtils.isBaseAccount(account) && walletUtils.isPolkadotVault(walletsMap[account.walletId])) {
-        return false;
-      }
+    const filteredWallets = walletUtils.getWalletsFilteredAccounts(wallets, {
+      walletFn: (w) => !walletUtils.isProxied(w) && !walletUtils.isWatchOnly(w),
+      accountFn: (a, w) => {
+        const isBase = accountUtils.isBaseAccount(a);
+        const isPolkadotVault = walletUtils.isPolkadotVault(w);
 
-      return accountUtils.isChainAndCryptoMatch(account, network.chain);
+        return (!isBase || !isPolkadotVault) && accountUtils.isChainAndCryptoMatch(a, network.chain);
+      },
     });
 
     return transactionService.getTxWrappers({
       wallet,
-      wallets: walletFiltered,
+      wallets: filteredWallets || [],
       account,
-      accounts: chainFilteredAccounts,
       signatories,
     });
   },

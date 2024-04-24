@@ -1,4 +1,4 @@
-import { Chain, BaseAccount } from '@shared/core';
+import type { Chain, Account } from '@shared/core';
 
 export const enum Step {
   NONE,

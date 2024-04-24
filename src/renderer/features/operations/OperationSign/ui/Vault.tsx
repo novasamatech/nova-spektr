@@ -1,11 +1,10 @@
 import { useEffect, useState } from 'react';
 import { UnsignedTransaction } from '@substrate/txwrapper-polkadot';
-import { useUnit } from 'effector-react';
 
 import { useCountdown } from '@shared/lib/hooks';
 import { ValidationErrors, toAddress } from '@shared/lib/utils';
 import { useTransaction, ScanMultiframeQr, ScanSingleframeQr, QrReaderWrapper } from '@entities/transaction';
-import { walletModel, accountUtils, walletUtils } from '@entities/wallet';
+import { accountUtils, walletUtils } from '@entities/wallet';
 import type { HexString, Address } from '@shared/core';
 import type { InnerSigningProps } from '../lib/types';
 import { operationSignUtils } from '../lib/operation-sign-utils';
@@ -76,7 +75,7 @@ export const Vault = ({
   const getSignerAddress = (): Address => {
     if (!walletUtils.isPolkadotVault(wallet)) return transactions[0].address;
 
-    const root = accountUtils.getBaseAccount(allAccounts, wallet.id);
+    const root = accountUtils.getBaseAccount(wallet.accounts, wallet.id);
 
     return root ? toAddress(root.accountId, { prefix: 1 }) : transactions[0].address;
   };

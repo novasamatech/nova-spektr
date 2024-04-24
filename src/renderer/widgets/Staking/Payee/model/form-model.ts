@@ -44,7 +44,7 @@ const isFeeLoadingChanged = createEvent<boolean>();
 
 const $networkStore = createStore<{ chain: Chain; asset: Asset } | null>(null);
 
-const $shards = createStore<BaseAccount[]>([]);
+const $shards = createStore<Account[]>([]);
 const $destinationQuery = restore(destinationQueryChanged, '');
 const $destinationType = restore(destinationTypeChanged, RewardsDestination.RESTAKE);
 
@@ -53,7 +53,7 @@ const $bondBalanceRange = createStore<string | string[]>('0');
 const $signatoryBalance = createStore<string>('0');
 const $proxyBalance = createStore<string>('0');
 
-const $availableSignatories = createStore<BaseAccount[][]>([]);
+const $availableSignatories = createStore<Account[][]>([]);
 const $proxyAccount = createStore<Account | null>(null);
 const $isProxy = createStore<boolean>(false);
 const $isMultisig = createStore<boolean>(false);
@@ -64,7 +64,7 @@ const $isFeeLoading = restore(isFeeLoadingChanged, true);
 const $payeeForm = createForm<FormParams>({
   fields: {
     shards: {
-      init: [] as BaseAccount[],
+      init: [] as Account[],
       rules: [
         {
           name: 'noProxyFee',
@@ -219,16 +219,19 @@ const $signatories = combine(
 const $destinationAccounts = combine(
   {
     wallets: walletModel.$wallets,
-    accounts: walletModel.$accounts,
     network: $networkStore,
     query: $destinationQuery,
   },
-  ({ wallets, accounts, network, query }) => {
+  ({ wallets, network, query }) => {
     if (!network) return [];
 
-    return accountUtils.getAccountsForBalances(wallets, accounts, (account) => {
-      const isChainAndCryptoMatch = accountUtils.isChainAndCryptoMatch(account, network.chain);
+    return walletUtils.getAccountsBy(wallets, (account, wallet) => {
+      const isPvWallet = walletUtils.isPolkadotVault(wallet);
+      const isBaseAccount = accountUtils.isBaseAccount(account);
+      if (isBaseAccount && isPvWallet) return false;
+
       const isShardAccount = accountUtils.isShardAccount(account);
+      const isChainAndCryptoMatch = accountUtils.isChainAndCryptoMatch(account, network.chain);
       const address = toAddress(account.accountId, { prefix: network.chain.addressPrefix });
 
       return isChainAndCryptoMatch && !isShardAccount && isStringsMatchQuery(query, [account.name, address]);

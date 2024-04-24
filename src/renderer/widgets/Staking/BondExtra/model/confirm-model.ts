@@ -7,7 +7,7 @@ type Input = {
   chain: Chain;
   asset: Asset;
 
-  shards: BaseAccount[];
+  shards: Account[];
   proxiedAccount?: ProxiedAccount;
   signatory?: Account;
   amount: string;

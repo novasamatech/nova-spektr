@@ -1,3 +1,5 @@
+import { isEmpty } from 'lodash';
+
 import type {
   MultiShardWallet,
   MultisigWallet,
@@ -11,8 +13,9 @@ import type {
   ProxiedWallet,
   Wallet,
   Account,
+  ID,
 } from '@shared/core';
-import { ID, WalletType } from '@shared/core';
+import { WalletType } from '@shared/core';
 
 export const walletUtils = {
   isPolkadotVault,
@@ -30,8 +33,8 @@ export const walletUtils = {
   getWalletById,
 
   getAccountsBy,
-  getWalletAndAccounts,
-  getWalletsAndAccounts,
+  getWalletFilteredAccounts,
+  getWalletsFilteredAccounts,
 };
 
 // Wallet types
@@ -93,61 +96,59 @@ function getWalletById(wallets: Wallet[], id: ID): Wallet | undefined {
   return wallets.find((wallet) => wallet.id === id);
 }
 
-function getAccountsBy(wallets: Wallet[], accountFn: (account: Account) => boolean): Account[] {
+function getAccountsBy(wallets: Wallet[], accountFn: (account: Account, wallet: Wallet) => boolean): Account[] {
   return wallets.reduce<Account[]>((acc, wallet) => {
-    acc.push(...wallet.accounts.filter(accountFn));
+    acc.push(...wallet.accounts.filter((account) => accountFn(account, wallet)));
 
     return acc;
   }, []);
 }
 
-function getWalletAndAccounts(
+function getWalletFilteredAccounts(
   wallets: Wallet[],
   predicates: {
     walletFn?: (wallet: Wallet) => boolean;
-    accountFn?: (account: Account) => boolean;
+    accountFn?: (account: Account, wallet: Wallet) => boolean;
   },
-): { wallet: Wallet; accounts: Account[] } | undefined {
+): Wallet | undefined {
   if (!predicates.walletFn && !predicates.accountFn) return undefined;
 
-  const { wallet, accounts } = wallets.reduce<{ wallet: Wallet | undefined; accounts: Account[] }>(
-    (acc, wallet) => {
-      if (acc.wallet) return acc;
+  const result = wallets.reduce((acc, wallet) => {
+    if (acc) return acc;
 
-      if (!predicates.walletFn || predicates.walletFn(wallet)) {
-        const accounts = wallet.accounts.filter((account) => {
-          return !predicates.accountFn || predicates.accountFn(account);
-        });
-
-        acc.wallet = wallet;
-        acc.accounts = accounts;
-      }
-
-      return acc;
-    },
-    { wallet: undefined, accounts: [] },
-  );
-
-  return wallet && accounts.length > 0 ? { wallet, accounts } : undefined;
-}
-
-function getWalletsAndAccounts(
-  wallets: Wallet[],
-  predicates: {
-    walletFn?: (wallet: Wallet) => boolean;
-    accountFn?: (account: Account) => boolean;
-  },
-): { wallet: Wallet; accounts: Account[] }[] | undefined {
-  if (!predicates.walletFn && !predicates.accountFn) return undefined;
-
-  const result = wallets.reduce<{ wallet: Wallet; accounts: Account[] }[]>((acc, wallet) => {
     if (!predicates.walletFn || predicates.walletFn(wallet)) {
       const accounts = wallet.accounts.filter((account) => {
-        return !predicates.accountFn || predicates.accountFn(account);
+        return !predicates.accountFn || predicates.accountFn(account, wallet);
       });
 
       if (accounts.length > 0) {
-        acc.push({ wallet, accounts });
+        acc = { ...wallet, accounts } as Wallet;
+      }
+    }
+
+    return acc;
+  }, {} as Wallet);
+
+  return isEmpty(result) ? undefined : result;
+}
+
+function getWalletsFilteredAccounts(
+  wallets: Wallet[],
+  predicates: {
+    walletFn?: (wallet: Wallet) => boolean;
+    accountFn?: (account: Account, wallet: Wallet) => boolean;
+  },
+): Wallet[] | undefined {
+  if (!predicates.walletFn && !predicates.accountFn) return undefined;
+
+  const result = wallets.reduce<Wallet[]>((acc, wallet) => {
+    if (!predicates.walletFn || predicates.walletFn(wallet)) {
+      const accounts = wallet.accounts.filter((account) => {
+        return !predicates.accountFn || predicates.accountFn(account, wallet);
+      });
+
+      if (accounts.length > 0) {
+        acc.push({ ...wallet, accounts } as Wallet);
       }
     }
 

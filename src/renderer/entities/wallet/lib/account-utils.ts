@@ -4,7 +4,6 @@ import keyBy from 'lodash/keyBy';
 
 // TODO: resolve cross import
 import { networkUtils } from '@entities/network';
-import { dictionary } from '@shared/lib/utils';
 import { walletUtils } from './wallet-utils';
 import { AccountType, ChainType, CryptoType, ProxyType, ProxyVariant } from '@shared/core';
 import type {
@@ -45,7 +44,6 @@ export const accountUtils = {
   getSignatoryAccounts,
   getBaseAccount,
   getDerivationPath,
-  getAccountsForBalances,
 
   isAnyProxyType,
   isNonTransferProxyType,
@@ -84,7 +82,7 @@ function isPureProxiedAccount(account: Partial<Account>): account is ProxiedAcco
 
 // Matchers
 
-function isAccountWithShards(accounts: BaseAccount | ShardAccount[]): accounts is ShardAccount[] {
+function isAccountWithShards(accounts: ChainAccount | ShardAccount[]): accounts is ShardAccount[] {
   return Array.isArray(accounts) && isShardAccount(accounts[0]);
 }
 
@@ -113,7 +111,7 @@ function isChainAndCryptoMatch(account: Account, chain: Chain): boolean {
 function isCryptoTypeMatch(account: Account, chain: Chain): boolean {
   const cryptoType = networkUtils.isEthereumBased(chain.options) ? CryptoType.ETHEREUM : CryptoType.SR25519;
 
-  return isWcAccount(account) || account.cryptoType === cryptoType;
+  return isWcAccount(account) || (account as BaseAccount).cryptoType === cryptoType;
 }
 
 function isEthereumBased(account: Account): boolean {
@@ -173,20 +171,6 @@ function getDerivationPath(data: DerivationPathLike | DerivationPathLike[]): str
   if (!Array.isArray(data)) return data.derivationPath;
 
   return data[0].derivationPath.replace(/\d+$/, `0..${data.length - 1}`);
-}
-
-function getAccountsForBalances(
-  wallets: Wallet[],
-  accounts: Account[],
-  filterFn?: (account: Account) => boolean,
-): Account[] {
-  const walletsMap = dictionary(wallets, 'id', walletUtils.isPolkadotVault);
-
-  return accounts.filter((account) => {
-    if (isBaseAccount(account) && walletsMap[account.walletId]) return false;
-
-    return filterFn?.(account) ?? true;
-  });
 }
 
 // Proxied accounts

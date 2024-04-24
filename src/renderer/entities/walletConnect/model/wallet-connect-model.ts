@@ -5,7 +5,7 @@ import { createEffect, createEvent, createStore, sample, scopeBind } from 'effec
 import keyBy from 'lodash/keyBy';
 
 import { nonNullable } from '@shared/lib/utils';
-import { ID, BaseAccount, WcAccount, kernelModel, Wallet, Account } from '@shared/core';
+import { ID, WcAccount, kernelModel, Wallet, Account } from '@shared/core';
 import { localStorageService } from '@shared/api/local-storage';
 import { storageService } from '@shared/api/storage';
 import { walletModel, walletUtils } from '@entities/wallet';
@@ -120,7 +120,7 @@ const logClientIdFx = createEffect(async (client: Client) => {
 });
 
 const sessionTopicUpdatedFx = createEffect(
-  async ({ accounts, topic }: SessionTopicParams): Promise<BaseAccount[] | undefined> => {
+  async ({ accounts, topic }: SessionTopicParams): Promise<Account[] | undefined> => {
     const updatedAccounts = accounts.map(({ signingExtras, ...rest }) => {
       const newSigningExtras = { ...signingExtras, sessionTopic: topic };
 
@@ -160,7 +160,7 @@ const updateWcAccountsFx = createEffect(
       storageService.accounts.createAll(accounts),
     ]);
 
-    return newAccounts;
+    return newAccounts as WcAccount[];
   },
 );
 
@@ -244,7 +244,7 @@ sample({
     return wallets.map((wallet) => {
       if (wallet.id !== params.wallet.id) return wallet;
 
-      return { ...wallet, accounts: params.accounts };
+      return { ...wallet, accounts: params.accounts } as Wallet;
     });
   },
   target: walletModel.$wallets,
@@ -369,7 +369,7 @@ sample({
 sample({
   clock: currentSessionTopicUpdated,
   source: walletModel.$activeWallet,
-  filter: (wallet: Wallet | null): wallet is Wallet => Boolean(wallet),
+  filter: (wallet: Wallet | undefined): wallet is Wallet => Boolean(wallet),
   fn: (wallet, topic) => ({
     accounts: wallet.accounts,
     topic,
@@ -394,7 +394,7 @@ sample({
       if (wallet.id !== walletId) return wallet;
       const accounts = wallet.accounts.map((account) => updatedMap[account.id] || account);
 
-      return { ...wallet, accounts };
+      return { ...wallet, accounts } as Wallet;
     });
   },
   target: walletModel.$wallets,

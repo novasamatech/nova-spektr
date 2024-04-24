@@ -8,7 +8,7 @@ import { getRelaychainAsset, nonNullable } from '@shared/lib/utils';
 import { networkModel } from '@entities/network';
 import { submitModel } from '@features/operations/OperationSubmit';
 import { signModel } from '@features/operations/OperationSign/model/sign-model';
-import { BaseAccount } from '@shared/core';
+import { Account } from '@shared/core';
 import { Step, BondExtraData, WalletData, FeeData } from '../lib/types';
 import { bondExtraUtils } from '../lib/bond-extra-utils';
 import { formModel } from './form-model';
@@ -95,10 +95,9 @@ sample({
   source: {
     walletData: $walletData,
     wallets: walletModel.$wallets,
-    accounts: walletModel.$accounts,
   },
   filter: ({ walletData }) => Boolean(walletData),
-  fn: ({ walletData, wallets, accounts }, data) => {
+  fn: ({ walletData, wallets }, data) => {
     const signatories = 'signatory' in data && data.signatory ? [data.signatory] : [];
 
     return bondExtraUtils.getTxWrappers({
@@ -106,7 +105,6 @@ sample({
       wallet: walletData!.wallet,
       wallets,
       account: walletData!.shards[0],
-      accounts,
       signatories,
     });
   },
@@ -116,7 +114,7 @@ sample({
 sample({
   clock: $txWrappers.updates,
   fn: (txWrappers) => {
-    const signatories = txWrappers.reduce<BaseAccount[][]>((acc, wrapper) => {
+    const signatories = txWrappers.reduce<Account[][]>((acc, wrapper) => {
       if (wrapper.kind === WrapperKind.MULTISIG) acc.push(wrapper.signatories);
 
       return acc;

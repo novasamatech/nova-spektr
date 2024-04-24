@@ -5,7 +5,7 @@ import { TransactionAmount } from '@pages/Operations/components/TransactionAmoun
 import { DetailRow, FootnoteText, Icon } from '@shared/ui';
 import { ExtendedChain } from '@entities/network';
 import { useI18n } from '@app/providers';
-import { type BaseAccount, type MultisigAccount } from '@shared/core';
+import { type MultisigAccount, Account } from '@shared/core';
 import { getAssetById } from '@shared/lib/utils';
 import { getTransactionFromMultisigTx } from '@entities/multisig';
 import { xcmTransferModel } from '@widgets/Transfer';

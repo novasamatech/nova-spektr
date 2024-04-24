@@ -12,7 +12,7 @@ import { usePrevious } from '@shared/lib/hooks';
 import { walletConnectUtils, walletConnectModel } from '@entities/walletConnect';
 import { chainsService } from '@shared/api/network';
 import { wcOnboardingModel } from '@pages/Onboarding/WalletConnect/model/wc-onboarding-model';
-import { NWQRConfig, Step, EXPIRE_TIMEOUT } from './lib/const';
+import { NWQRConfig, Step, EXPIRE_TIMEOUT } from './lib/constants';
 import { useStatusContext } from '@app/providers/context/StatusContext';
 import { WalletType } from '@shared/core';
 import { isNeedDisconnect } from './lib/utils';

@@ -2,7 +2,7 @@ import { ReactNode } from 'react';
 import { useUnit } from 'effector-react';
 
 import { useI18n } from '@app/providers';
-import type { Asset, Explorer, Address, BaseAccount } from '@shared/core';
+import type { Asset, Explorer, Address, Account } from '@shared/core';
 import { FootnoteText, Plate, Checkbox, Icon, Shimmering, IconButton } from '@shared/ui';
 import { ExplorersPopover, walletModel, walletUtils } from '@entities/wallet';
 import { AssetBalance } from '@entities/asset';
@@ -15,7 +15,7 @@ type Props = {
   asset?: Asset;
   explorers?: Explorer[];
   isStakingLoading: boolean;
-  stake: NominatorInfo<BaseAccount>;
+  stake: NominatorInfo<Account>;
   content: ReactNode;
   addressPrefix?: number;
   onToggleNominator: (nominator: Address, boolean: boolean) => void;

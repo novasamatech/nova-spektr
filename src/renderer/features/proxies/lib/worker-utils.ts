@@ -7,9 +7,6 @@ import {
   AccountId,
   ChainId,
   ProxyAccount,
-  AccountType,
-  BaseAccount,
-  ProxiedAccount,
   NoID,
   PartialProxiedAccount,
 } from '@shared/core';
@@ -18,7 +15,6 @@ export const proxyWorkerUtils = {
   toAccountId,
   isSameProxy,
   isSameProxied,
-  isProxiedAccount,
   isApiConnected,
   isDelayedProxy,
   getKnownChain,
@@ -50,10 +46,6 @@ function isSameProxied(oldProxy: PartialProxiedAccount, newProxy: PartialProxied
     oldProxy.proxyType === newProxy.proxyType &&
     oldProxy.delay === newProxy.delay
   );
-}
-
-function isProxiedAccount(account: Pick<BaseAccount, 'type'>): account is ProxiedAccount {
-  return account.type === AccountType.PROXIED;
 }
 
 function isApiConnected(apis: Record<ChainId, ApiPromise>, chainId: ChainId): boolean {

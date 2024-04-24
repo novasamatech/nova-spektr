@@ -25,14 +25,14 @@ function getSiblingAccounts(wallet: Wallet, wallets: Wallet[]): Account[] {
   if (walletUtils.isProxied(wallet)) {
     const proxiedAccount = wallet.accounts[0];
 
-    const proxy = walletUtils.getWalletAndAccounts(wallets, {
+    const proxy = walletUtils.getWalletFilteredAccounts(wallets, {
       walletFn: (wallet) => !walletUtils.isWatchOnly(wallet),
       accountFn: (account) => account.accountId === proxiedAccount.proxyAccountId,
     });
 
     if (!proxy) return [proxiedAccount];
 
-    return [proxiedAccount, ...getSiblingAccounts(proxy.wallet, wallets)];
+    return [proxiedAccount, ...getSiblingAccounts(proxy, wallets)];
   }
 
   return wallet.accounts;

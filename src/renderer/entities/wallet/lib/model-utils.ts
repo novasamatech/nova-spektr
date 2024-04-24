@@ -1,4 +1,4 @@
-import { ChainAccount, Account, BaseAccount } from '@shared/core';
+import type { ChainAccount, BaseAccount } from '@shared/core';
 import { accountUtils } from '@entities/wallet';
 
 export const modelUtils = {

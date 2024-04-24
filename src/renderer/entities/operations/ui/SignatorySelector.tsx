@@ -1,19 +1,19 @@
 import { useI18n } from '@app/providers';
 import { toAddress } from '@shared/lib/utils';
 import { Select, InputHint } from '@shared/ui';
-import { BaseAccount, Asset } from '@shared/core';
+import { Asset, Account } from '@shared/core';
 import type { DropdownOption } from '@shared/ui/types';
 import { AssetBalance } from '../../asset';
 import { accountUtils, AccountAddress } from '../../wallet';
 
 type Props = {
-  signatory?: BaseAccount;
-  signatories: { signer: BaseAccount; balance: string }[];
+  signatory?: Account;
+  signatories: { signer: Account; balance: string }[];
   asset?: Asset;
   addressPrefix: number;
   hasError: boolean;
   errorText: string;
-  onChange: (signatory: BaseAccount) => void;
+  onChange: (signatory: Account) => void;
 };
 
 export const SignatorySelector = ({

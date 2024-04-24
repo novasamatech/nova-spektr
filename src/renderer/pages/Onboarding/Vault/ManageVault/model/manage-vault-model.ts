@@ -1,18 +1,8 @@
 import { createApi, createEvent, createStore, sample, combine, createEffect, attach } from 'effector';
 import { createForm } from 'effector-forms';
-import { spread } from 'patronum';
 
 import { accountUtils, KEY_NAMES, walletModel } from '@entities/wallet';
-import type {
-  ChainAccount,
-  ShardAccount,
-  DraftAccount,
-  BaseAccount,
-  Wallet,
-  BaseAccount,
-  NoID,
-  Account,
-} from '@shared/core';
+import type { ChainAccount, ShardAccount, DraftAccount, BaseAccount, Wallet, NoID } from '@shared/core';
 import { AccountType, ChainType, CryptoType, KeyType } from '@shared/core';
 import { dictionary } from '@shared/lib/utils';
 import { storageService } from '@shared/api/storage';
@@ -28,7 +18,7 @@ export type Callbacks = {
 
 type VaultCreateParams = {
   root: Omit<NoID<BaseAccount>, 'walletId'>;
-  wallet: Omit<NoID<Wallet>, 'isActive'>;
+  wallet: Omit<NoID<Wallet>, 'isActive' | 'accounts'>;
   accounts: DraftAccount<ChainAccount | ShardAccount>[];
 };
 
@@ -74,12 +64,8 @@ const $walletForm = createForm({
   validateOn: ['submit'],
 });
 
-type CreateResult = {
-  wallet: Wallet;
-  accounts: Account[];
-};
 const createVaultFx = createEffect(
-  async ({ wallet, accounts, root }: VaultCreateParams): Promise<CreateResult | undefined> => {
+  async ({ wallet, accounts, root }: VaultCreateParams): Promise<Wallet | undefined> => {
     const dbWallet = await storageService.wallets.create({ ...wallet, isActive: false });
 
     if (!dbWallet) return undefined;
@@ -92,13 +78,13 @@ const createVaultFx = createEffect(
       ...account,
       ...(accountUtils.isChainAccount(account) && { baseId: dbRootAccount.id }),
       walletId: dbWallet.id,
-    }));
+    })) as (ChainAccount | ShardAccount)[];
 
-    const dbAccounts = await storageService.accounts.createAll(accountsToCreate as Account[]);
+    const dbAccounts = await storageService.accounts.createAll(accountsToCreate);
 
     if (!dbAccounts || dbAccounts.length === 0) return undefined;
 
-    return { wallet: dbWallet, accounts: [dbRootAccount, ...dbAccounts] };
+    return { ...dbWallet, accounts: [dbRootAccount, ...dbAccounts] };
   },
 );
 
@@ -160,21 +146,16 @@ sample({ clock: vaultCreated, target: createVaultFx });
 // TODO: should use factory
 sample({
   clock: createVaultFx.doneData,
-  source: { wallets: walletModel.$wallets, accounts: walletModel.$accounts },
+  source: walletModel.$wallets,
   filter: (_, data) => Boolean(data),
-  fn: ({ wallets, accounts }, data) => ({
-    wallets: wallets.concat(data!.wallet),
-    accounts: accounts.concat(data!.accounts),
-  }),
-  target: spread({
-    targets: { wallets: walletModel.$wallets, accounts: walletModel.$accounts },
-  }),
+  fn: (wallets, data) => wallets.concat(data!),
+  target: walletModel.$wallets,
 });
 
 sample({
   clock: createVaultFx.doneData,
-  filter: (data: CreateResult | undefined): data is CreateResult => Boolean(data),
-  fn: (data) => data.wallet.id,
+  filter: (data: Wallet | undefined): data is Wallet => Boolean(data),
+  fn: (data) => data.id,
   target: walletSelectModel.events.walletSelected,
 });
 
