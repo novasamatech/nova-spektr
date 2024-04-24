@@ -368,6 +368,8 @@ sample({
 
 sample({
   clock: delay(submitModel.output.formSubmitted, 2000),
+  source: $step,
+  filter: (step) => bondUtils.isSubmitStep(step),
   target: flowFinished,
 });
 

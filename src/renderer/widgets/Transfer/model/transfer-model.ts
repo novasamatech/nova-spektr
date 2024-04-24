@@ -9,6 +9,7 @@ import { Paths } from '@shared/routes';
 import { Step, TransferStore, NetworkStore } from '../lib/types';
 import { formModel } from './form-model';
 import { confirmModel } from './confirm-model';
+import { transferUtils } from '../lib/transfer-utils';
 
 const $navigation = createStore<{ navigate: NavigateFunction } | null>(null);
 const navigationApi = createApi($navigation, {
@@ -141,6 +142,8 @@ sample({
 
 sample({
   clock: delay(submitModel.output.formSubmitted, 2000),
+  source: $step,
+  filter: (step) => transferUtils.isSubmitStep(step),
   target: flowFinished,
 });
 

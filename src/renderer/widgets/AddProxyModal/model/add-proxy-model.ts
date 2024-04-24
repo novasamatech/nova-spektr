@@ -10,6 +10,7 @@ import { balanceSubModel } from '@features/balances';
 import { Step, AddProxyStore } from '../lib/types';
 import { formModel } from './form-model';
 import { confirmModel } from './confirm-model';
+import { addProxyUtils } from '../lib/add-proxy-utils';
 
 const stepChanged = createEvent<Step>();
 
@@ -132,6 +133,8 @@ sample({
 
 sample({
   clock: delay(submitModel.output.formSubmitted, 2000),
+  source: $step,
+  filter: (step) => addProxyUtils.isSubmitStep(step),
   target: flowFinished,
 });
 

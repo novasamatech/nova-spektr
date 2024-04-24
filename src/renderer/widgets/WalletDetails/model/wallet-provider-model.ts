@@ -12,16 +12,7 @@ import { proxyModel, proxyUtils } from '@entities/proxy';
 import { networkModel } from '@entities/network';
 import { proxiesModel } from '@features/proxies';
 import { addProxyModel } from '../../AddProxyModal';
-import type {
-  BaseAccount,
-  Signatory,
-  Wallet,
-  AccountId,
-  ProxyAccount,
-  ChainId,
-  ProxyGroup,
-  Account,
-} from '@shared/core';
+import type { BaseAccount, Signatory, Wallet, AccountId, ProxyAccount, ChainId, ProxyGroup } from '@shared/core';
 
 const removeProxy = createEvent<ProxyAccount>();
 
@@ -49,7 +40,7 @@ type VaultAccounts = {
 const $vaultAccounts = combine(
   walletSelectModel.$walletForDetails,
   (wallet): VaultAccounts | undefined => {
-    if (!wallet || !walletUtils.isMultiShard(wallet)) return undefined;
+    if (!wallet || !walletUtils.isPolkadotVault(wallet)) return undefined;
 
     const root = accountUtils.getBaseAccount(wallet.accounts);
     const accountsMap = walletDetailsUtils.getVaultAccountsMap(wallet.accounts);
@@ -126,7 +117,7 @@ const $chainsProxies = combine(
   ({ wallet, chains, proxies }): Record<ChainId, ProxyAccount[]> => {
     if (!wallet) return {};
 
-    const proxiesForAccounts = uniqBy(wallet.accounts as Account[], 'accountId').reduce<ProxyAccount[]>(
+    const proxiesForAccounts = uniqBy(wallet.accounts, 'accountId').reduce<ProxyAccount[]>(
       (acc, account) => {
         if (proxies[account.accountId]) {
           acc.push(...proxies[account.accountId]);
@@ -140,7 +131,9 @@ const $chainsProxies = combine(
     const chainsMap = mapValues(chains, () => []) as Record<ChainId, ProxyAccount[]>;
 
     return proxyUtils.sortAccountsByProxyType(proxiesForAccounts).reduce((acc, proxy) => {
-      acc[proxy.chainId].push(proxy);
+      if (acc[proxy.chainId]) {
+        acc[proxy.chainId].push(proxy);
+      }
 
       return acc;
     }, chainsMap);

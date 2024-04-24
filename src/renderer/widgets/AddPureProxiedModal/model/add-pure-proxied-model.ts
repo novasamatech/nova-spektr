@@ -22,6 +22,7 @@ import { networkModel } from '@entities/network';
 import { balanceSubModel } from '@features/balances';
 import { proxiesModel } from '@features/proxies';
 import { Step, AddPureProxiedStore } from '../lib/types';
+import { addPureProxiedUtils } from '../lib/add-pure-proxied-utils';
 import { formModel } from './form-model';
 import { confirmModel } from './confirm-model';
 import { subscriptionService } from '@entities/chain';
@@ -223,10 +224,11 @@ sample({
 sample({
   clock: submitModel.output.formSubmitted,
   source: {
+    step: $step,
     apis: networkModel.$apis,
     params: $addProxyStore,
   },
-  filter: ({ params }) => Boolean(params),
+  filter: ({ step, params }) => addPureProxiedUtils.isSubmitStep(step) && Boolean(params),
   fn: ({ apis, params }, submitData) => ({
     api: apis[params!.chain.chainId],
     accountId: params!.account.accountId,

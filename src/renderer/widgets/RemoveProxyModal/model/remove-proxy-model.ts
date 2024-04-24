@@ -24,6 +24,7 @@ import { signModel } from '@features/operations/OperationSign/model/sign-model';
 import { submitModel } from '@features/operations/OperationSubmit';
 import { proxyModel } from '@entities/proxy';
 import { balanceModel, balanceUtils } from '@entities/balance';
+import { removeProxyUtils } from '../lib/remove-proxy-utils';
 
 const stepChanged = createEvent<Step>();
 const wentBackFromConfirm = createEvent();
@@ -112,6 +113,7 @@ const $realAccount = combine(
 
     return (txWrappers[0] as ProxyTxWrapper).proxyAccount;
   },
+  { skipVoid: false },
 );
 
 const $signatories = combine(
@@ -372,9 +374,11 @@ sample({
 sample({
   clock: submitModel.output.formSubmitted,
   source: {
+    step: $step,
     store: $removeProxyStore,
     chainProxies: walletProviderModel.$chainsProxies,
   },
+  filter: ({ step }) => removeProxyUtils.isSubmitStep(step),
   fn: ({ store, chainProxies }) => {
     const proxy = chainProxies[store!.chain.chainId].find(
       (proxy) =>
@@ -390,6 +394,8 @@ sample({
 
 sample({
   clock: delay(submitModel.output.formSubmitted, 2000),
+  source: $step,
+  filter: (step) => removeProxyUtils.isSubmitStep(step),
   target: flowFinished,
 });
 
