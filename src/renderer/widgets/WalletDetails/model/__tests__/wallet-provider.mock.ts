@@ -1,5 +1,17 @@
-import type { Account, AccountId, MultisigAccount, MultisigWallet, ProxyAccount, Wallet } from '@shared/core';
-import { AccountType, ProxyType, SigningType, WalletType } from '@shared/core';
+import {
+  Account,
+  AccountId,
+  MultisigWallet,
+  ProxyAccount,
+  Wallet,
+  ChainAccount,
+  KeyType,
+  AccountType,
+  ProxyType,
+  SigningType,
+  WalletType,
+  ProxiedAccount,
+} from '@shared/core';
 import { TEST_ACCOUNTS, TEST_ADDRESS } from '@shared/lib/utils';
 
 const wallets: Wallet[] = [
@@ -9,6 +21,32 @@ const wallets: Wallet[] = [
     type: WalletType.POLKADOT_VAULT,
     isActive: true,
     name: 'My PV',
+    accounts: [
+      {
+        id: 1,
+        accountId: TEST_ACCOUNTS[0],
+        chainId: '0x01',
+        walletId: 1,
+        name: 'My account',
+        type: AccountType.CHAIN,
+        chainType: 0,
+        cryptoType: 0,
+        keyType: KeyType.GOVERNANCE,
+        derivationPath: '//chain/1',
+      } as unknown as ChainAccount,
+      {
+        id: 2,
+        accountId: TEST_ACCOUNTS[1],
+        chainId: '0x01',
+        walletId: 1,
+        name: 'My another account',
+        type: AccountType.CHAIN,
+        chainType: 0,
+        cryptoType: 0,
+        keyType: KeyType.GOVERNANCE,
+        derivationPath: '//chain/2',
+      } as unknown as ChainAccount,
+    ],
   },
   {
     id: 2,
@@ -16,44 +54,25 @@ const wallets: Wallet[] = [
     type: WalletType.PROXIED,
     isActive: false,
     name: 'My Proxied',
+    accounts: [
+      {
+        id: 3,
+        accountId: TEST_ACCOUNTS[2],
+        chainId: '0x01',
+        walletId: 2,
+        name: 'My proxied account',
+        type: AccountType.PROXIED,
+        proxyAccountId: TEST_ACCOUNTS[0],
+        chainType: 0,
+        cryptoType: 0,
+      } as unknown as ProxiedAccount,
+    ],
   },
 ];
 
-const accounts: Account[] = [
-  {
-    id: 1,
-    accountId: TEST_ACCOUNTS[0],
-    chainId: '0x01',
-    walletId: 1,
-    name: 'My account',
-    type: AccountType.CHAIN,
-    chainType: 0,
-    cryptoType: 0,
-  },
-  {
-    id: 2,
-    accountId: TEST_ACCOUNTS[1],
-    chainId: '0x01',
-    walletId: 1,
-    name: 'My another account',
-    type: AccountType.CHAIN,
-    chainType: 0,
-    cryptoType: 0,
-  },
-  {
-    id: 3,
-    accountId: TEST_ACCOUNTS[2],
-    chainId: '0x01',
-    walletId: 2,
-    name: 'My proxied account',
-    type: AccountType.PROXIED,
-    proxyAccountId: TEST_ACCOUNTS[0],
-    chainType: 0,
-    cryptoType: 0,
-  },
-];
+// const accounts: Account[] = [,];
 
-const dupAccounts: Account[] = [
+const dupAccounts = [
   {
     id: 1,
     walletId: 1,
@@ -118,27 +137,28 @@ const multisiigWallet: MultisigWallet = {
   type: WalletType.MULTISIG,
   isActive: false,
   signingType: SigningType.MULTISIG,
-};
-
-const multisigAccount: MultisigAccount = {
-  accountId: TEST_ACCOUNTS[0],
-  id: 3,
-  walletId: 2,
-  type: AccountType.MULTISIG,
-  name: 'Multisig account',
-  cryptoType: 0,
-  chainType: 0,
-  threshold: 2,
-  matrixRoomId: '0',
-  creatorAccountId: '0x0',
-  signatories: [
+  accounts: [
     {
-      accountId: '0x01',
-      address: TEST_ADDRESS,
-    },
-    {
-      accountId: '0x02',
-      address: TEST_ADDRESS,
+      accountId: TEST_ACCOUNTS[0],
+      id: 3,
+      walletId: 2,
+      type: AccountType.MULTISIG,
+      name: 'Multisig account',
+      cryptoType: 0,
+      chainType: 0,
+      threshold: 2,
+      matrixRoomId: '0',
+      creatorAccountId: '0x0',
+      signatories: [
+        {
+          accountId: '0x01',
+          address: TEST_ADDRESS,
+        },
+        {
+          accountId: '0x02',
+          address: TEST_ADDRESS,
+        },
+      ],
     },
   ],
 };
@@ -171,6 +191,7 @@ const signatoriesWallets: Wallet[] = [
     type: WalletType.SINGLE_PARITY_SIGNER,
     signingType: SigningType.PARITY_SIGNER,
     isActive: false,
+    accounts: [],
   },
   {
     id: 4,
@@ -178,18 +199,17 @@ const signatoriesWallets: Wallet[] = [
     type: WalletType.SINGLE_PARITY_SIGNER,
     signingType: SigningType.PARITY_SIGNER,
     isActive: false,
+    accounts: [],
   },
 ];
 
 export const walletProviderMock = {
   wallets,
-  accounts,
   dupAccounts,
   chains,
   proxyAccounts,
   proxies,
   multisiigWallet,
-  multisigAccount,
   signatoriesWallets,
   signatoriesAccounts,
 };

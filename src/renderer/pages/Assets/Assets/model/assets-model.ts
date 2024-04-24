@@ -51,7 +51,7 @@ sample({
 sample({
   clock: activeShardsSet,
   source: walletModel.$activeWallet,
-  filter: (wallet: Wallet | null): wallet is Wallet => Boolean(wallet),
+  filter: (wallet: Wallet | undefined): wallet is Wallet => Boolean(wallet),
   fn: (wallet, accounts) => {
     if (!walletUtils.isPolkadotVault(wallet)) return accounts;
 
@@ -62,7 +62,7 @@ sample({
 
 sample({
   clock: walletModel.$activeWallet,
-  filter: (wallet: Wallet | null): wallet is Wallet => Boolean(wallet),
+  filter: (wallet: Wallet | undefined): wallet is Wallet => Boolean(wallet),
   fn: (wallet) => {
     if (!walletUtils.isPolkadotVault(wallet)) return wallet.accounts;
 

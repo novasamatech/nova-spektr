@@ -290,7 +290,7 @@ export const Staking = () => {
             {networkIsActive && accounts.length > 0 && (
               <>
                 <Actions
-                  canInteract={!!activeWallet && permissionUtils.canStake(activeWallet, accounts)}
+                  canInteract={!!activeWallet && permissionUtils.canStake(activeWallet)}
                   stakes={selectedStakes}
                   isStakingLoading={isStakingLoading}
                   onNavigate={navigateToStake}

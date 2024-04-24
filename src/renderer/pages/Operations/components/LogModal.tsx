@@ -13,7 +13,7 @@ import { getAssetById, SS58_DEFAULT_PREFIX, toAddress, getExtrinsicExplorer, sor
 import { useMultisigEvent } from '@entities/multisig';
 import { MultisigTransactionDS } from '@shared/api/storage';
 import { AssetBalance } from '@entities/asset';
-import type { BaseAccount, Contact, MultisigAccount, Wallet, AccountId, WalletsMap } from '@shared/core';
+import type { Contact, MultisigAccount, Wallet, AccountId, WalletsMap, Account } from '@shared/core';
 import { WalletIcon, walletModel, walletUtils } from '@entities/wallet';
 import { chainsService } from '@shared/api/network';
 
@@ -49,7 +49,7 @@ const getFilteredWalletsMap = (wallets: Wallet[]): WalletsMap => {
 };
 
 const getFilteredAccountsMap = (walletsMap: WalletsMap) => {
-  return Object.values(walletsMap).reduce<Record<AccountId, BaseAccount>>((acc, wallet) => {
+  return Object.values(walletsMap).reduce<Record<AccountId, Account>>((acc, wallet) => {
     wallet.accounts.forEach((account) => {
       acc[account.accountId] = account;
     });

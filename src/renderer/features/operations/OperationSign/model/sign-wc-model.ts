@@ -7,7 +7,7 @@ import { walletConnectModel, type InitReconnectParams } from '@entities/walletCo
 import { toAccountId } from '@shared/lib/utils';
 import { chainsService } from '@shared/api/network';
 import { WcAccount, type HexString } from '@shared/core';
-import { walletModel } from '@entities/wallet';
+import { walletModel, walletUtils } from '@entities/wallet';
 import { operationSignModel } from './operation-sign-model';
 import { ReconnectStep } from '../lib/types';
 import { operationSignUtils } from '../lib/operation-sign-utils';
@@ -89,7 +89,7 @@ sample({
   clock: walletConnectModel.events.connected,
   source: {
     signer: operationSignModel.$signer,
-    accounts: walletModel.$accounts,
+    wallets: walletModel.$wallets,
     step: $reconnectStep,
     session: walletConnectModel.$session,
   },
@@ -99,8 +99,8 @@ sample({
       operationSignUtils.isTopicExist(session)
     );
   },
-  fn: ({ accounts, signer, session }) => ({
-    accounts: accounts.filter((a) => a.walletId === signer?.walletId),
+  fn: ({ wallets, signer, session }) => ({
+    accounts: walletUtils.getAccountsBy(wallets, (a) => a.walletId === signer?.walletId),
     topic: session?.topic!,
   }),
   target: walletConnectModel.events.sessionTopicUpdated,
@@ -111,13 +111,13 @@ sample({
     events: [reconnectStarted, walletConnectModel.events.sessionTopicUpdateDone, walletConnectModel.events.connected],
   }),
   source: {
-    newAccounts: walletConnectModel.$accounts,
     signer: operationSignModel.$signer,
-    accounts: walletModel.$accounts,
+    wallets: walletModel.$wallets,
+    newAccounts: walletConnectModel.$accounts,
   },
   filter: ({ signer }) => Boolean(signer?.walletId),
-  fn: ({ signer, accounts, newAccounts }) => {
-    const { id, ...oldAccountParams } = accounts.find((a) => a.walletId === signer?.walletId!)!;
+  fn: ({ signer, wallets, newAccounts }) => {
+    const { id, ...oldAccountParams } = walletUtils.getAccountsBy(wallets, (a) => a.walletId === signer?.walletId)[0];
 
     const updatedAccounts = newAccounts.map((account) => {
       const [_, chainId, address] = account.split(':');
@@ -131,11 +131,7 @@ sample({
       } as WcAccount;
     });
 
-    return {
-      walletId: signer?.walletId!,
-      accounts,
-      newAccounts: updatedAccounts,
-    };
+    return { walletId: signer?.walletId!, accounts: updatedAccounts };
   },
   target: walletConnectModel.events.accountsUpdated,
 });

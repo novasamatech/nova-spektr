@@ -15,7 +15,11 @@ export const shardsUtils = {
   getSelectedShards,
 };
 
-function getFilteredAccounts(accounts: Account[], chains: Record<ChainId, Chain>, query = ''): Account[] {
+function getFilteredAccounts(
+  accounts: (BaseAccount | ChainAccount | ShardAccount)[],
+  chains: Record<ChainId, Chain>,
+  query = '',
+): Account[] {
   return accounts.filter((account) => {
     if (accountUtils.isBaseAccount(account)) return true;
     if (!chains[account.chainId]) return false;
@@ -215,5 +219,5 @@ function getSelectedShards(struct: SelectedStruct, accounts: Account[]): BaseAcc
     return acc;
   }, {});
 
-  return accounts.filter((account) => selectedMap[account.accountId]);
+  return accounts.filter((account): account is BaseAccount => selectedMap[account.accountId]);
 }

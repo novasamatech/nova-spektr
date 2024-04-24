@@ -24,7 +24,7 @@ const formCleared = createEvent();
 
 const txWrapperChanged = createEvent<{
   proxyAccount: Account | null;
-  signatories: BaseAccount[][];
+  signatories: Account[][];
   isProxy: boolean;
   isMultisig: boolean;
 }>();
@@ -39,7 +39,7 @@ const $bondBalanceRange = createStore<string | string[]>(ZERO_BALANCE);
 const $signatoryBalance = createStore<string>(ZERO_BALANCE);
 const $proxyBalance = createStore<string>(ZERO_BALANCE);
 
-const $availableSignatories = createStore<BaseAccount[][]>([]);
+const $availableSignatories = createStore<Account[][]>([]);
 const $proxyAccount = createStore<Account | null>(null);
 const $isProxy = createStore<boolean>(false);
 const $isMultisig = createStore<boolean>(false);

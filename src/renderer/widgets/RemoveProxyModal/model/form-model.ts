@@ -118,15 +118,14 @@ const $proxyChains = combine(networkModel.$chains, (chains) => {
 const $proxiedAccounts = combine(
   {
     wallet: walletSelectModel.$walletForDetails,
-    accounts: walletModel.$accounts,
     chain: $chain,
     balances: balanceModel.$balances,
   },
-  ({ wallet, accounts, chain, balances }) => {
+  ({ wallet, chain, balances }) => {
     if (!wallet || !chain) return [];
 
     const isPolkadotVault = walletUtils.isPolkadotVault(wallet);
-    const walletAccounts = accountUtils.getWalletAccounts(wallet.id, accounts).filter((account) => {
+    const walletAccounts = wallet.accounts.filter((account) => {
       if (isPolkadotVault && accountUtils.isBaseAccount(account)) return false;
 
       return accountUtils.isChainAndCryptoMatch(account, chain);
@@ -148,16 +147,19 @@ const $proxiedAccounts = combine(
 const $proxyAccounts = combine(
   {
     wallets: walletModel.$wallets,
-    accounts: walletModel.$accounts,
     chain: $chain,
     query: $proxyQuery,
   },
-  ({ wallets, accounts, chain, query }) => {
+  ({ wallets, chain, query }) => {
     if (!chain) return [];
 
-    return accountUtils.getAccountsForBalances(wallets, accounts, (account) => {
-      const isChainAndCryptoMatch = accountUtils.isChainAndCryptoMatch(account, chain);
+    return walletUtils.getAccountsBy(wallets, (account, wallet) => {
+      const isPvWallet = walletUtils.isPolkadotVault(wallet);
+      const isBaseAccount = accountUtils.isBaseAccount(account);
+      if (isBaseAccount && isPvWallet) return false;
+
       const isShardAccount = accountUtils.isShardAccount(account);
+      const isChainAndCryptoMatch = accountUtils.isChainAndCryptoMatch(account, chain);
       const address = toAddress(account.accountId, { prefix: chain.addressPrefix });
 
       return isChainAndCryptoMatch && !isShardAccount && isStringsMatchQuery(query, [account.name, address]);

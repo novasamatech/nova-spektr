@@ -166,7 +166,6 @@ function hasProxy(txWrappers: TxWrapper[]): boolean {
 type TxWrappersParams = {
   wallets: Wallet[];
   wallet: Wallet;
-  accounts: Account[];
   account: Account;
   signatories?: Account[];
 };
@@ -189,7 +188,7 @@ function getTxWrappers({ wallet, ...params }: TxWrappersParams): TxWrapper[] {
   return [];
 }
 
-function getMultisigWrapper({ wallets, accounts, account, signatories = [] }: Omit<TxWrappersParams, 'wallet'>) {
+function getMultisigWrapper({ wallets, account, signatories = [] }: Omit<TxWrappersParams, 'wallet'>) {
   const signersMap = dictionary((account as MultisigAccount).signatories, 'accountId', () => true);
 
   const signers = wallets.reduce<Account[]>((acc, wallet) => {
@@ -219,7 +218,6 @@ function getMultisigWrapper({ wallets, accounts, account, signatories = [] }: Om
   const nextWrappers = getTxWrappers({
     wallets,
     wallet: signatoryWallet as Wallet,
-    accounts,
     account: signatoryAccount as Account,
     signatories: signatories.slice(1),
   });
@@ -227,7 +225,7 @@ function getMultisigWrapper({ wallets, accounts, account, signatories = [] }: Om
   return [wrapper, ...nextWrappers];
 }
 
-function getProxyWrapper({ wallets, accounts, account, signatories = [] }: Omit<TxWrappersParams, 'wallet'>) {
+function getProxyWrapper({ wallets, account, signatories = [] }: Omit<TxWrappersParams, 'wallet'>) {
   const proxiesMap = wallets.reduce<{ wallet: Wallet; account: Account }[]>((acc, wallet) => {
     const match = wallet.accounts.find((a) => a.accountId === (account as ProxiedAccount).proxyAccountId);
 
@@ -247,7 +245,6 @@ function getProxyWrapper({ wallets, accounts, account, signatories = [] }: Omit<
   const nextWrappers = getTxWrappers({
     wallets,
     wallet: proxiesMap[0].wallet,
-    accounts,
     account: proxiesMap[0].account,
     signatories,
   });

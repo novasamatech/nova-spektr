@@ -1,68 +1,65 @@
 import type { ID } from './general';
-import type { BaseAccount, ShardAccount, ChainAccount, MultisigAccount, ProxiedAccount, WcAccount } from './account';
+import type {
+  BaseAccount,
+  ShardAccount,
+  ChainAccount,
+  MultisigAccount,
+  ProxiedAccount,
+  WcAccount,
+  Account,
+} from './account';
 
-export type AbstractWallet = {
+export interface Wallet {
   id: ID;
   name: string;
   type: WalletType;
+  accounts: Account[];
   isActive: boolean;
   signingType: SigningType;
-};
+}
 
-export type PolkadotVaultWallet = AbstractWallet & {
+export interface PolkadotVaultWallet extends Wallet {
   type: WalletType.POLKADOT_VAULT;
-  accounts: Array<BaseAccount | ChainAccount | ShardAccount>;
-};
+  accounts: (BaseAccount | ChainAccount | ShardAccount)[];
+}
 
-export type SingleShardWallet = AbstractWallet & {
+export interface SingleShardWallet extends Wallet {
   type: WalletType.SINGLE_PARITY_SIGNER;
   accounts: BaseAccount[];
-};
+}
 
-export type MultiShardWallet = AbstractWallet & {
+export interface MultiShardWallet extends Wallet {
   type: WalletType.MULTISHARD_PARITY_SIGNER;
-  accounts: Array<BaseAccount | ChainAccount>;
-};
+  accounts: (BaseAccount | ChainAccount)[];
+}
 
-export type WatchOnlyWallet = AbstractWallet & {
+export interface WatchOnlyWallet extends Wallet {
   type: WalletType.WATCH_ONLY;
   accounts: BaseAccount[];
-};
+}
 
 // TODO: try to move signatories data out of account
-export type MultisigWallet = AbstractWallet & {
+export interface MultisigWallet extends Wallet {
   type: WalletType.MULTISIG;
   accounts: MultisigAccount[];
-};
+}
 
-export type ProxiedWallet = AbstractWallet & {
+export interface ProxiedWallet extends Wallet {
   type: WalletType.PROXIED;
   accounts: ProxiedAccount[];
-};
+}
 
-export type WalletConnectWallet = AbstractWallet & {
+export interface WalletConnectWallet extends Wallet {
   type: WalletType.WALLET_CONNECT;
   accounts: WcAccount[];
   isConnected: boolean;
-};
+}
 
-export type NovaWalletWallet = AbstractWallet & {
+export interface NovaWalletWallet extends Wallet {
   type: WalletType.NOVA_WALLET;
   accounts: WcAccount[];
   isConnected: boolean;
-};
-
-export type Wallet =
-  | PolkadotVaultWallet
-  | SingleShardWallet
-  | MultiShardWallet
-  | WatchOnlyWallet
-  | MultisigWallet
-  | WalletConnectWallet
-  | NovaWalletWallet
-  | ProxiedWallet;
-
-export type WalletAccounts = Wallet['accounts'];
+}
 
 export type WalletsMap = Record<ID, Wallet>;
 

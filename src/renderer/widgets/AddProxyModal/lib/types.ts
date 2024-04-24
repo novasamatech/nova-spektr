@@ -1,4 +1,5 @@
-import { Address, Chain, BaseAccount, ProxyType } from '@shared/core';
+import type { Address, Chain, Account } from '@shared/core';
+import { ProxyType } from '@shared/core';
 
 export const enum Step {
   NONE,
@@ -6,12 +7,6 @@ export const enum Step {
   CONFIRM,
   SIGN,
   SUBMIT,
-}
-
-export const enum SubmitStep {
-  LOADING,
-  SUCCESS,
-  ERROR,
 }
 
 export type AddProxyStore = {
@@ -23,5 +18,3 @@ export type AddProxyStore = {
   description: string;
   proxyDeposit: string;
 };
-
-export type TxWrappers = ('proxy' | 'multisig')[];

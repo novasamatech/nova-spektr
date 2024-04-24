@@ -8,7 +8,6 @@ export type { Signatory } from './types/signatory';
 
 export type {
   Wallet,
-  WalletAccounts,
   WalletsMap,
   PolkadotVaultWallet,
   SingleShardWallet,

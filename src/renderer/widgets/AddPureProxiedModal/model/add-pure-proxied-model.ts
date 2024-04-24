@@ -4,7 +4,7 @@ import { ApiPromise } from '@polkadot/api';
 import { UnsubscribePromise } from '@polkadot/api/types';
 
 import { Transaction, transactionService } from '@entities/transaction';
-import { dictionary, toAddress } from '@shared/lib/utils';
+import { toAddress } from '@shared/lib/utils';
 import { walletSelectModel } from '@features/wallets';
 import { accountUtils, walletModel, walletUtils } from '@entities/wallet';
 import {
@@ -15,7 +15,7 @@ import {
   PartialProxiedAccount,
   ProxyVariant,
   Timepoint,
-  BaseAccount,
+  Account,
 } from '@shared/core';
 import { proxyModel, proxyUtils } from '@entities/proxy';
 import { networkModel } from '@entities/network';
@@ -40,36 +40,32 @@ const $addProxyStore = createStore<AddPureProxiedStore | null>(null).reset(flowF
 const $wrappedTx = createStore<Transaction | null>(null).reset(flowFinished);
 const $multisigTx = createStore<Transaction | null>(null).reset(flowFinished);
 const $coreTx = createStore<Transaction | null>(null).reset(flowFinished);
-const $selectedSignatories = createStore<BaseAccount[]>([]);
+const $selectedSignatories = createStore<Account[]>([]);
 
 const $txWrappers = combine(
   {
     wallet: walletModel.$activeWallet,
     wallets: walletModel.$wallets,
     store: $addProxyStore,
-    accounts: walletModel.$accounts,
     signatories: $selectedSignatories,
   },
-  ({ wallet, store, accounts, wallets, signatories }) => {
+  ({ wallet, store, wallets, signatories }) => {
     if (!wallet || !store?.chain || !store.account.id) return [];
 
-    const walletFiltered = wallets.filter((wallet) => {
-      return !walletUtils.isProxied(wallet) && !walletUtils.isWatchOnly(wallet);
-    });
-    const walletsMap = dictionary(walletFiltered, 'id');
-    const chainFilteredAccounts = accounts.filter((account) => {
-      if (accountUtils.isBaseAccount(account) && walletUtils.isPolkadotVault(walletsMap[account.walletId])) {
-        return false;
-      }
+    const filteredWallets = walletUtils.getWalletsFilteredAccounts(wallets, {
+      walletFn: (w) => !walletUtils.isProxied(w) && !walletUtils.isWatchOnly(w),
+      accountFn: (a, w) => {
+        const isBase = accountUtils.isBaseAccount(a);
+        const isPolkadotVault = walletUtils.isPolkadotVault(w);
 
-      return accountUtils.isChainAndCryptoMatch(account, store.chain);
+        return (!isBase || !isPolkadotVault) && accountUtils.isChainAndCryptoMatch(a, store.chain);
+      },
     });
 
     return transactionService.getTxWrappers({
       wallet,
-      wallets: walletFiltered,
+      wallets: filteredWallets || [],
       account: store.account,
-      accounts: chainFilteredAccounts,
       signatories,
     });
   },

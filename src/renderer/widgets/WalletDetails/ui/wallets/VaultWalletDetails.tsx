@@ -5,6 +5,7 @@ import { BaseModal, ContextMenu, DropdownIconButton, HelpText, IconButton, Tabs 
 import { useModalClose, useToggle } from '@shared/lib/hooks';
 import { RootAccountLg, VaultAccountsList, WalletCardLg, accountUtils, permissionUtils } from '@entities/wallet';
 import { useI18n } from '@app/providers';
+import type { BaseAccount, Chain, ChainAccount, DraftAccount, ShardAccount, PolkadotVaultWallet } from '@shared/core';
 import { KeyType } from '@shared/core';
 import { copyToClipboard, toAddress } from '@shared/lib/utils';
 import { IconNames } from '@shared/ui/Icon/data';
@@ -22,15 +23,6 @@ import { vaultDetailsModel } from '../../model/vault-details-model';
 import { walletDetailsUtils } from '../../lib/utils';
 import { VaultMap } from '../../lib/types';
 import { AddPureProxied, addPureProxiedModel } from '@widgets/AddPureProxiedModal';
-import type {
-  Account,
-  BaseAccount,
-  Chain,
-  ChainAccount,
-  DraftAccount,
-  ShardAccount,
-  PolkadotVaultWallet,
-} from '@shared/core';
 
 type Props = {
   wallet: PolkadotVaultWallet;
@@ -89,7 +81,7 @@ export const VaultWalletDetails = ({ wallet, root, accountsMap, onClose }: Props
   const handleImportedKeys = (keys: DraftAccount<ChainAccount | ShardAccount>[]) => {
     toggleImportModal();
     const newKeys = keys.filter((key) => {
-      return key.keyType === KeyType.MAIN || !(key as Account).accountId;
+      return key.keyType === KeyType.MAIN || !(key as ChainAccount | ShardAccount).accountId;
     });
 
     vaultDetailsModel.events.keysAdded(newKeys);

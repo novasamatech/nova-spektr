@@ -36,7 +36,7 @@ const destinationTypeChanged = createEvent<RewardsDestination>();
 
 const txWrapperChanged = createEvent<{
   proxyAccount: Account | null;
-  signatories: BaseAccount[][];
+  signatories: Account[][];
   isProxy: boolean;
   isMultisig: boolean;
 }>();
@@ -54,7 +54,7 @@ const $bondBalanceRange = createStore<string | string[]>(ZERO_BALANCE);
 const $signatoryBalance = createStore<string>(ZERO_BALANCE);
 const $proxyBalance = createStore<string>(ZERO_BALANCE);
 
-const $availableSignatories = createStore<BaseAccount[][]>([]);
+const $availableSignatories = createStore<Account[][]>([]);
 const $proxyAccount = createStore<Account | null>(null);
 const $isProxy = createStore<boolean>(false);
 const $isMultisig = createStore<boolean>(false);
@@ -273,16 +273,19 @@ const $signatories = combine(
 const $destinationAccounts = combine(
   {
     wallets: walletModel.$wallets,
-    accounts: walletModel.$accounts,
     network: $networkStore,
     query: $destinationQuery,
   },
-  ({ wallets, accounts, network, query }) => {
+  ({ wallets, network, query }) => {
     if (!network) return [];
 
-    return accountUtils.getAccountsForBalances(wallets, accounts, (account) => {
-      const isChainAndCryptoMatch = accountUtils.isChainAndCryptoMatch(account, network.chain);
+    return walletUtils.getAccountsBy(wallets, (account, wallet) => {
+      const isPvWallet = walletUtils.isPolkadotVault(wallet);
+      const isBaseAccount = accountUtils.isBaseAccount(account);
+      if (isBaseAccount && isPvWallet) return false;
+
       const isShardAccount = accountUtils.isShardAccount(account);
+      const isChainAndCryptoMatch = accountUtils.isChainAndCryptoMatch(account, network.chain);
       const address = toAddress(account.accountId, { prefix: network.chain.addressPrefix });
 
       return isChainAndCryptoMatch && !isShardAccount && isStringsMatchQuery(query, [account.name, address]);

@@ -13,11 +13,11 @@ import {
   Chain,
   ChainType,
   ErrorType,
-  NoID,
   SigningType,
   WalletType,
   AccountType,
   WcAccount,
+  NoID,
 } from '@shared/core';
 
 const WalletLogo: Record<WalletTypeName, IconNames> = {
@@ -88,29 +88,27 @@ export const ManageStep = ({ accounts, type, pairingTopic, sessionTopic, onBack,
 
   // TODO: Rewrite with effector forms
   const submitHandler: SubmitHandler<WalletForm> = async ({ walletName }) => {
+    const wcAccounts = accounts.map((account) => {
+      const [_, chainId, address] = account.split(':');
+      const chain = chains.find((chain) => chain.chainId.includes(chainId));
+
+      return {
+        name: walletName.trim(),
+        accountId: toAccountId(address),
+        type: AccountType.WALLET_CONNECT,
+        chainType: ChainType.SUBSTRATE,
+        chainId: chain?.chainId,
+        signingExtras: { pairingTopic, sessionTopic },
+      } as Omit<NoID<WcAccount>, 'walletId'>;
+    });
+
     walletModel.events.walletConnectCreated({
       wallet: {
         name: walletName.trim(),
         type,
         signingType: SigningType.WALLET_CONNECT,
       },
-      accounts: accounts.map((account) => {
-        const [_, chainId, address] = account.split(':');
-        const chain = chains.find((chain) => chain.chainId.includes(chainId));
-        const accountId = toAccountId(address);
-
-        return {
-          name: walletName.trim(),
-          accountId,
-          type: AccountType.WALLET_CONNECT,
-          chainType: ChainType.SUBSTRATE,
-          chainId: chain?.chainId,
-          signingExtras: {
-            pairingTopic,
-            sessionTopic,
-          },
-        } as Omit<NoID<WcAccount>, 'walletId'>;
-      }),
+      accounts: wcAccounts,
     });
 
     reset();

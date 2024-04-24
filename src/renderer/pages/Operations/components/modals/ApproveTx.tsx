@@ -18,7 +18,7 @@ import { useMultisigEvent } from '@entities/multisig';
 import { SigningSwitch } from '@features/operations';
 import { permissionUtils, walletModel } from '@entities/wallet';
 import { priceProviderModel } from '@entities/price';
-import type { Address, HexString, Timepoint, MultisigAccount, BaseAccount, Account } from '@shared/core';
+import type { Address, HexString, Timepoint, MultisigAccount, Account } from '@shared/core';
 import { balanceModel, balanceUtils } from '@entities/balance';
 import { OperationTitle } from '@entities/chain';
 import {

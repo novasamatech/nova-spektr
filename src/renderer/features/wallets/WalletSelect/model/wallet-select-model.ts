@@ -5,7 +5,7 @@ import { once, previous } from 'patronum';
 import { getRoundedValue, totalAmount, dictionary } from '@shared/lib/utils';
 import { walletModel, accountUtils, walletUtils } from '@entities/wallet';
 import { currencyModel, priceProviderModel } from '@entities/price';
-import type { Wallet, ID } from '@shared/core';
+import type { Wallet, ID, Account } from '@shared/core';
 import { networkModel } from '@entities/network';
 import { balanceModel } from '@entities/balance';
 import { storageService } from '@shared/api/storage';
@@ -79,19 +79,18 @@ const $filteredWalletGroups = combine(
 const $walletBalance = combine(
   {
     wallet: walletModel.$activeWallet,
-    accounts: walletModel.$activeAccounts,
     chains: networkModel.$chains,
     balances: balanceModel.$balances,
     currency: currencyModel.$activeCurrency,
     prices: priceProviderModel.$assetsPrices,
   },
   (params): BigNumber => {
-    const { wallet, accounts, chains, balances, prices, currency } = params;
+    const { wallet, chains, balances, prices, currency } = params;
 
     if (!wallet || !prices || !balances || !currency?.coingeckoId) return new BigNumber(0);
 
     const isPolkadotVault = walletUtils.isPolkadotVault(wallet);
-    const accountMap = dictionary(accounts, 'accountId');
+    const accountMap = dictionary(wallet.accounts as Account[], 'accountId');
 
     return balances.reduce<BigNumber>((acc, balance) => {
       const account = accountMap[balance.accountId];

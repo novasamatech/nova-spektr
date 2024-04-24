@@ -43,7 +43,7 @@ const $wrappedTx = createStore<Transaction | null>(null).reset(flowFinished);
 const $coreTx = createStore<Transaction | null>(null).reset(flowFinished);
 const $multisigTx = createStore<Transaction | null>(null).reset(flowFinished);
 
-const $availableSignatories = createStore<BaseAccount[][]>([]);
+const $availableSignatories = createStore<Account[][]>([]);
 const $isProxy = createStore<boolean>(false);
 const $isMultisig = createStore<boolean>(false);
 const $selectedSignatories = createStore<BaseAccount[]>([]);
@@ -55,31 +55,27 @@ const $txWrappers = combine(
   {
     wallet: walletSelectModel.$walletForDetails,
     wallets: walletModel.$wallets,
-    accounts: walletModel.$accounts,
     account: $account,
     chain: $chain,
     signatories: $selectedSignatories,
   },
-  ({ wallet, account, accounts, wallets, chain, signatories }) => {
+  ({ wallet, account, wallets, chain, signatories }) => {
     if (!wallet || !chain || !account) return [];
 
-    const walletFiltered = wallets.filter((wallet) => {
-      return !walletUtils.isProxied(wallet) && !walletUtils.isWatchOnly(wallet);
-    });
-    const walletsMap = dictionary(walletFiltered, 'id');
-    const chainFilteredAccounts = accounts.filter((account) => {
-      if (accountUtils.isBaseAccount(account) && walletUtils.isPolkadotVault(walletsMap[account.walletId])) {
-        return false;
-      }
+    const filteredWallets = walletUtils.getWalletsFilteredAccounts(wallets, {
+      walletFn: (w) => !walletUtils.isProxied(w) && !walletUtils.isWatchOnly(w),
+      accountFn: (a, w) => {
+        const isBase = accountUtils.isBaseAccount(a);
+        const isPolkadotVault = walletUtils.isPolkadotVault(w);
 
-      return accountUtils.isChainAndCryptoMatch(account, chain);
+        return (!isBase || !isPolkadotVault) && accountUtils.isChainAndCryptoMatch(a, chain);
+      },
     });
 
     return transactionService.getTxWrappers({
       wallet,
-      wallets: walletFiltered,
+      wallets: filteredWallets || [],
       account,
-      accounts: chainFilteredAccounts,
       signatories,
     });
   },
@@ -149,7 +145,7 @@ const $signatories = combine(
 sample({
   clock: $txWrappers,
   fn: (txWrappers: TxWrapper[]) => {
-    const signatories = txWrappers.reduce<BaseAccount[][]>((acc, wrapper) => {
+    const signatories = txWrappers.reduce<Account[][]>((acc, wrapper) => {
       if (wrapper.kind === WrapperKind.MULTISIG) acc.push(wrapper.signatories);
 
       return acc;

@@ -1,10 +1,11 @@
 import { ApiPromise } from '@polkadot/api';
 import { Trans } from 'react-i18next';
+import { ReactNode } from 'react';
 
 import { useI18n } from '@app/providers';
 import { cnTw } from '@shared/lib/utils';
 import { FootnoteText, Tooltip, Icon, HelpText } from '@shared/ui';
-import type { Asset, Explorer, Address, BaseAccount, ShardAccount } from '@shared/core';
+import type { Asset, Explorer, Address, BaseAccount, ShardAccount, Account } from '@shared/core';
 import { useStakingData } from '@entities/staking';
 import { AccountAddress, AddressWithName, accountUtils } from '@entities/wallet';
 import { NominatorsItem } from './NominatorItem';
@@ -38,7 +39,7 @@ export const NominatorsList = ({
   const { t } = useI18n();
   const { getNextUnstakingEra, hasRedeem } = useStakingData();
 
-  const getUnstakeBadge = (stake: NominatorInfo<BaseAccount>) => {
+  const getUnstakeBadge = (stake: NominatorInfo<Account>) => {
     const nextUnstakingEra = getNextUnstakingEra(stake.unlocking, era);
     if (!nextUnstakingEra) return;
 
@@ -54,7 +55,7 @@ export const NominatorsList = ({
     );
   };
 
-  const getRedeemBadge = (stake: NominatorInfo<BaseAccount>) => {
+  const getRedeemBadge = (stake: NominatorInfo<Account>) => {
     if (!hasRedeem(stake.unlocking, era)) return;
 
     return (
@@ -67,7 +68,7 @@ export const NominatorsList = ({
     );
   };
 
-  const getContent = (stake: NominatorInfo<BaseAccount>) => (
+  const getContent = (stake: NominatorInfo<Account>): ReactNode => (
     <>
       {accountUtils.isShardAccount(stake.account) ? (
         <AccountAddress addressFont="text-body" address={stake.address} />

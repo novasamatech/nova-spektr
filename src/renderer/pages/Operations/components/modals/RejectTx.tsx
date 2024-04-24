@@ -71,7 +71,7 @@ const RejectTx = ({ tx, account, connection }: Props) => {
   const nativeAsset = connection.assets[0];
   const asset = getAssetById(tx.transaction?.args.assetId, connection.assets);
 
-  const signAccount = walletUtils.getWalletAndAccounts(wallets, {
+  const signAccount = walletUtils.getWalletFilteredAccounts(wallets, {
     walletFn: (wallet) => !walletUtils.isWatchOnly(wallet),
     accountFn: (account) => account.accountId === tx.depositor,
   })?.accounts[0];

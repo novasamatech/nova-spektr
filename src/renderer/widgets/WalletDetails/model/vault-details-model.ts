@@ -11,9 +11,9 @@ import type {
   ChainAccount,
   ID,
   DraftAccount,
-  BaseAccount,
   AccountId,
   Wallet,
+  Account,
 } from '@shared/core';
 
 type AccountsCreatedParams = {
@@ -41,7 +41,7 @@ const removeKeysFx = createEffect((ids: ID[]): Promise<ID[] | undefined> => {
 });
 
 const createAccountsFx = createEffect(
-  ({ walletId, rootAccountId, accounts }: AccountsCreatedParams): Promise<BaseAccount[] | undefined> => {
+  ({ walletId, rootAccountId, accounts }: AccountsCreatedParams): Promise<Account[] | undefined> => {
     const accountsToCreate = accounts.map((account) => ({
       ...account,
       ...(accountUtils.isChainAccount(account) && { baseId: rootAccountId }),
