@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
 import { groupBy, isEqual } from 'lodash';
-import { useUnit } from 'effector-react';
 
 import { cnTw, includes, isEthereumAccountId, isStringsMatchQuery, RootExplorers, toAddress } from '@shared/lib/utils';
 import { useI18n } from '@app/providers';
@@ -13,7 +12,6 @@ import {
   SearchInput,
   SmallTitleText,
   Tabs,
-  HelpText,
   Accordion,
   BodyText,
   CaptionText,
@@ -24,7 +22,6 @@ import { ExtendedAccount, ExtendedContact } from '../common/types';
 import { EmptyContactList } from '@entities/contact';
 import { type Contact, type Account, ShardAccount, Wallet, Chain } from '@shared/core';
 import { ContactItem, ExplorersPopover, WalletCardMd } from '@entities/wallet';
-import { matrixModel } from '@entities/matrix';
 import { networkUtils } from '@entities/network';
 
 const enum SignatoryTabs {
@@ -43,9 +40,6 @@ type Props = {
 
 export const SelectAccountSignatories = ({ isActive, accounts, wallets, contacts, chain, onSelect }: Props) => {
   const { t } = useI18n();
-
-  const matrix = useUnit(matrixModel.$matrix);
-  const loginStatus = useUnit(matrixModel.$loginStatus);
 
   const [query, setQuery] = useState('');
   const [accountsQuery, setAccountsQuery] = useState('');
@@ -67,12 +61,12 @@ export const SelectAccountSignatories = ({ isActive, accounts, wallets, contacts
         const isEthereumContact = isEthereumAccountId(c.accountId);
         const isEthereumChain = networkUtils.isEthereumBased(chain?.options);
 
-        return c.matrixId && isEthereumContact === isEthereumChain;
+        return isEthereumContact === isEthereumChain;
       })
       .map((contact, index) => ({ ...contact, index: index.toString() }));
 
     setContactList(addressBookContacts);
-  }, [contacts.length, loginStatus, chain]);
+  }, [contacts.length, chain]);
 
   useEffect(() => {
     setSelectedAccounts({});
@@ -91,7 +85,6 @@ export const SelectAccountSignatories = ({ isActive, accounts, wallets, contacts
             toAdd.push({
               ...a,
               index: a.accountId.toString(),
-              matrixId: matrix.userId,
               address,
             });
         });
@@ -106,7 +99,6 @@ export const SelectAccountSignatories = ({ isActive, accounts, wallets, contacts
           acc.push({
             ...account,
             index: account.accountId.toString(),
-            matrixId: matrix.userId,
             address: toAddress(account.accountId),
           });
         }
@@ -121,7 +113,7 @@ export const SelectAccountSignatories = ({ isActive, accounts, wallets, contacts
     );
 
     setAccountsList(groupedWithWallet);
-  }, [accounts.length, chain?.chainId, loginStatus, accountsQuery]);
+  }, [accounts.length, chain?.chainId, accountsQuery]);
 
   useEffect(() => {
     onSelect(selectedAccountsList, selectedContactsList);
@@ -168,7 +160,7 @@ export const SelectAccountSignatories = ({ isActive, accounts, wallets, contacts
   };
 
   const searchedContactList = contactList.filter((c) => {
-    return includes(c.address, query) || includes(c.matrixId, query) || includes(c.name, query);
+    return includes(c.address, query) || includes(c.name, query);
   });
 
   const hasAccounts = Boolean(accounts.length);
@@ -329,14 +321,7 @@ export const SelectAccountSignatories = ({ isActive, accounts, wallets, contacts
                         address={contact.accountId}
                       />
                     }
-                  >
-                    <ExplorersPopover.Group
-                      active={Boolean(contact.matrixId)}
-                      title={t('general.explorers.matrixIdTitle')}
-                    >
-                      <HelpText className="text-text-secondary break-all">{contact.matrixId}</HelpText>
-                    </ExplorersPopover.Group>
-                  </ExplorersPopover>
+                  />
                 </Checkbox>
               </li>
             );

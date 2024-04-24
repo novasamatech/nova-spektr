@@ -40,7 +40,7 @@ class DexieStorage extends Dexie {
       wallets: '++id,isActive,type',
       balances: '[accountId+chainId+assetId],[accountId+chainId]',
       accounts: '++id,isActive,walletId,rootId,signingType',
-      contacts: '++id,name,accountId,matrixId',
+      contacts: '++id,name,accountId',
       multisigTransactions:
         '[accountId+chainId+callHash+blockCreated+indexCreated],[accountId+status],[accountId+callHash],[callHash+status+chainId],accountId,status,callHash',
       notifications: '++id,type,read',
