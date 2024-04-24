@@ -1,5 +1,4 @@
 import { walletUtils, accountUtils } from '@entities/wallet';
-import { dictionary } from '@shared/lib/utils';
 import { transactionService } from '@entities/transaction';
 import { Wallet, Account, Chain } from '@shared/core';
 import { Step } from './types';

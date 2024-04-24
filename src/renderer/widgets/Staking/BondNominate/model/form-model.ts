@@ -20,7 +20,7 @@ import {
 } from '@shared/lib/utils';
 
 type FormParams = {
-  shards: BaseAccount[];
+  shards: Account[];
   signatory: Account;
   amount: string;
   destination: Address;
@@ -45,7 +45,7 @@ const isFeeLoadingChanged = createEvent<boolean>();
 
 const $networkStore = createStore<{ chain: Chain; asset: Asset } | null>(null);
 
-const $shards = createStore<BaseAccount[]>([]);
+const $shards = createStore<Account[]>([]);
 const $destinationQuery = restore(destinationQueryChanged, '');
 const $destinationType = restore(destinationTypeChanged, RewardsDestination.RESTAKE);
 
@@ -69,7 +69,7 @@ const $feeData = restore(feeDataChanged, {
 const $bondForm = createForm<FormParams>({
   fields: {
     shards: {
-      init: [] as BaseAccount[],
+      init: [] as Account[],
       rules: [
         {
           name: 'noProxyFee',

@@ -10,14 +10,7 @@ import { balanceModel, balanceUtils } from '@entities/balance';
 import { networkModel, networkUtils } from '@entities/network';
 import type { Account, PartialBy, ProxiedAccount, Chain, Asset, Address, ChainId } from '@shared/core';
 import { useStakingData, StakingMap } from '@entities/staking';
-import {
-  transferableAmount,
-  getRelaychainAsset,
-  toAddress,
-  dictionary,
-  formatAmount,
-  ZERO_BALANCE,
-} from '@shared/lib/utils';
+import { transferableAmount, getRelaychainAsset, toAddress, formatAmount, ZERO_BALANCE } from '@shared/lib/utils';
 import { NetworkStore } from '../lib/types';
 import {
   Transaction,
@@ -66,7 +59,7 @@ const $staking = restore(stakingSet, null);
 const $minBond = createStore<string>(ZERO_BALANCE);
 const $stakingUnsub = createStore<() => void>(noop);
 
-const $shards = createStore<BaseAccount[]>([]);
+const $shards = createStore<Account[]>([]);
 const $isMultisig = createStore<boolean>(false);
 const $isProxy = createStore<boolean>(false);
 
@@ -80,12 +73,12 @@ const $totalFee = restore(totalFeeChanged, ZERO_BALANCE);
 const $multisigDeposit = restore(multisigDepositChanged, ZERO_BALANCE);
 const $isFeeLoading = restore(isFeeLoadingChanged, true);
 
-const $selectedSignatories = createStore<BaseAccount[]>([]);
+const $selectedSignatories = createStore<Account[]>([]);
 
 const $unstakeForm = createForm<FormParams>({
   fields: {
     shards: {
-      init: [] as BaseAccount[],
+      init: [] as Account[],
       rules: [
         {
           name: 'noProxyFee',

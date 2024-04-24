@@ -14,7 +14,8 @@ import type {
   ProxyAccount,
   ProxyDeposits,
   Wallet,
-  WalletsMap, Account,
+  WalletsMap,
+  Account,
 } from '@shared/core';
 import {
   AccountType,
@@ -29,7 +30,7 @@ import {
   ExternalType,
 } from '@shared/core';
 import { networkModel, networkUtils } from '@entities/network';
-import { accountUtils, walletModel } from '@entities/wallet';
+import { accountUtils, walletModel, walletUtils } from '@entities/wallet';
 import { proxyModel, proxyUtils, pureProxiesService } from '@entities/proxy';
 import { balanceModel } from '@entities/balance';
 import { notificationModel } from '@entities/notification';
@@ -43,11 +44,7 @@ const proxiedWalletsCreated = createEvent<ProxiedWalletsParams>();
 const proxiedAccountsRemoved = createEvent<ProxiedAccount[]>();
 const depositsReceived = createEvent<ProxyDeposits>();
 
-type WalletsAddedProps = {
-  wallets: Wallet[];
-  accounts: Account[];
-};
-const walletsAdded = createEvent<WalletsAddedProps>();
+const walletsAdded = createEvent<Wallet[]>();
 
 const $endpoint = createStore<Endpoint<any> | null>(null);
 const $deposits = createStore<ProxyDeposits[]>([]);
@@ -205,7 +202,7 @@ const createProxiedWalletsFx = createEffect(
         if (!proxiedCreatedResult) return acc;
 
         acc.accounts.push(...proxiedCreatedResult.accounts);
-        acc.wallets.push(proxiedCreatedResult.wallet);
+        acc.wallets.push(proxiedCreatedResult.wallet as Wallet);
 
         return acc;
       },
@@ -248,21 +245,24 @@ sample({
 sample({
   clock: connected,
   source: {
-    accounts: walletModel.$accounts,
     chains: networkModel.$chains,
     proxies: proxyModel.$proxies,
     wallets: walletModel.$wallets,
     endpoint: $endpoint,
   },
   filter: ({ endpoint }) => Boolean(endpoint),
-  fn: ({ accounts, chains, wallets, proxies, endpoint }, chainId) => ({
-    chainId,
-    chain: chains[chainId],
-    accounts: accounts.filter((a) => accountUtils.isChainIdMatch(a, chainId)),
-    wallets,
-    proxies: Object.values(proxies).flat(),
-    endpoint: endpoint!,
-  }),
+  fn: ({ chains, wallets, proxies, endpoint }, chainId) => {
+    const accounts = walletUtils.getAccountsBy(wallets, (a) => accountUtils.isChainIdMatch(a, chainId));
+
+    return {
+      chainId,
+      chain: chains[chainId],
+      accounts,
+      wallets,
+      proxies: Object.values(proxies).flat(),
+      endpoint: endpoint!,
+    };
+  },
   target: getProxiesFx,
 });
 
@@ -311,40 +311,20 @@ sample({
 
 sample({
   clock: createProxiedWalletsFx.doneData,
-  source: {
-    wallets: walletModel.$wallets,
-    accounts: walletModel.$accounts,
-  },
+  source: walletModel.$wallets,
   filter: (_, data) => Boolean(data && data.wallets.length && data.accounts.length),
-  fn: ({ wallets, accounts }, data) => ({
-    wallets: wallets.concat(data.wallets),
-    accounts: accounts.concat(data.accounts),
-  }),
+  fn: (wallets, data) => {
+    const accountsMap = dictionary(data.accounts, 'walletId');
+    const newWallets = data.wallets.map((wallet) => ({ ...wallet, accounts: accountsMap[wallet.id] } as Wallet));
+
+    return wallets.concat(newWallets);
+  },
   target: walletsAdded,
 });
 
 sample({
   source: walletsAdded,
-  target: spread({
-    wallets: walletModel.$wallets,
-    accounts: walletModel.$accounts,
-  }),
-});
-
-sample({
-  clock: depositsReceived,
-  source: {
-    wallets: walletModel.$wallets,
-    accounts: walletModel.$accounts,
-    groups: proxyModel.$proxyGroups,
-  },
-  filter: (_, deposits) => Boolean(deposits),
-  fn: ({ wallets, accounts, groups }, deposits) => proxyUtils.createProxyGroups(wallets, accounts, groups, deposits!),
-  target: spread({
-    toAdd: proxyModel.events.proxyGroupsAdded,
-    toUpdate: proxyModel.events.proxyGroupsUpdated,
-    toRemove: proxyModel.events.proxyGroupsRemoved,
-  }),
+  target: walletModel.$wallets,
 });
 
 sample({
@@ -354,10 +334,10 @@ sample({
     deposits: $deposits,
   },
   filter: ({ deposits }) => Boolean(deposits),
-  fn: ({ groups, deposits }, { wallets, accounts }) => {
+  fn: ({ groups, deposits }, wallets) => {
     return deposits.reduce(
       (acc, deposit) => {
-        const { toAdd, toUpdate } = proxyUtils.createProxyGroups(wallets, accounts, groups, deposit);
+        const { toAdd, toUpdate } = proxyUtils.createProxyGroups(wallets, groups, deposit);
 
         return {
           toAdd: acc.toAdd.concat(toAdd),
@@ -377,17 +357,30 @@ sample({
 });
 
 sample({
+  clock: depositsReceived,
+  source: {
+    wallets: walletModel.$wallets,
+    groups: proxyModel.$proxyGroups,
+  },
+  filter: (_, deposits) => Boolean(deposits),
+  fn: ({ wallets, groups }, deposits) => proxyUtils.createProxyGroups(wallets, groups, deposits!),
+  target: spread({
+    toAdd: proxyModel.events.proxyGroupsAdded,
+    toUpdate: proxyModel.events.proxyGroupsUpdated,
+    toRemove: proxyModel.events.proxyGroupsRemoved,
+  }),
+});
+
+sample({
   clock: getProxiesFx.doneData,
   source: {
     wallets: walletModel.$wallets,
-    accounts: walletModel.$accounts,
     chains: networkModel.$chains,
   },
   filter: (_, data) => data.proxiedAccountsToAdd.length > 0,
-  fn: ({ wallets, accounts, chains }, data) =>
+  fn: ({ wallets, chains }, data) =>
     proxiesUtils.getNotification({
       wallets,
-      accounts,
       chains,
       proxiedAccounts: data.proxiedAccountsToAdd,
       type: NotificationType.PROXY_CREATED,
@@ -399,14 +392,12 @@ sample({
   clock: getProxiesFx.doneData,
   source: {
     wallets: walletModel.$wallets,
-    accounts: walletModel.$accounts,
     chains: networkModel.$chains,
   },
   filter: (_, data) => data.proxiedAccountsToRemove.length > 0,
-  fn: ({ wallets, accounts, chains }, data) =>
+  fn: ({ wallets, chains }, data) =>
     proxiesUtils.getNotification({
       wallets,
-      accounts,
       chains,
       proxiedAccounts: data.proxiedAccountsToRemove,
       type: NotificationType.PROXY_REMOVED,
