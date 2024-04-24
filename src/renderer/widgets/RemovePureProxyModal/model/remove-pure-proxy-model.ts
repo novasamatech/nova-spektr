@@ -25,6 +25,7 @@ import { proxyModel } from '@entities/proxy';
 import { signModel } from '@features/operations/OperationSign/model/sign-model';
 import { submitModel } from '@features/operations/OperationSubmit';
 import { balanceModel, balanceUtils } from '@entities/balance';
+import { removePureProxyUtils } from '../lib/remove-pure-proxy-utils';
 
 const stepChanged = createEvent<Step>();
 const wentBackFromConfirm = createEvent();
@@ -97,6 +98,7 @@ const $realAccount = combine(
 
     return (txWrappers[0] as ProxyTxWrapper).proxyAccount;
   },
+  { skipVoid: false },
 );
 
 const $signatories = combine(
@@ -402,11 +404,14 @@ sample({
 sample({
   clock: submitModel.output.formSubmitted,
   source: {
+    step: $step,
     chain: $chain,
     account: $account,
     chainProxies: walletProviderModel.$chainsProxies,
   },
-  filter: ({ chain, account }) => Boolean(chain) && Boolean(account),
+  filter: ({ step, chain, account }) => {
+    return removePureProxyUtils.isSubmitStep(step) && Boolean(chain) && Boolean(account);
+  },
   fn: ({ chainProxies, account, chain }) => {
     const proxy = chainProxies[chain!.chainId].find(
       (proxy) =>
@@ -423,14 +428,15 @@ sample({
 sample({
   clock: submitModel.output.formSubmitted,
   source: {
+    step: $step,
     wallet: walletSelectModel.$walletForDetails,
     chainProxies: walletProviderModel.$chainsProxies,
     removeProxyStore: $removeProxyStore,
   },
-  filter: ({ chainProxies, wallet, removeProxyStore }) => {
+  filter: ({ step, chainProxies, wallet, removeProxyStore }) => {
     const proxies = Object.values(chainProxies).flat();
 
-    return Boolean(wallet) && Boolean(removeProxyStore) && proxies.length === 1;
+    return removePureProxyUtils.isSubmitStep(step) && Boolean(wallet) && Boolean(removeProxyStore) && proxies.length === 1;
   },
   fn: ({ wallet }) => wallet!.id,
   target: walletModel.events.walletRemoved,
@@ -438,6 +444,8 @@ sample({
 
 sample({
   clock: delay(submitModel.output.formSubmitted, 2000),
+  source: $step,
+  filter: (step) => removePureProxyUtils.isSubmitStep(step),
   target: flowFinished,
 });
 
