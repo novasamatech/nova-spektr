@@ -1,18 +1,14 @@
-import { createEvent, createEffect, createStore, sample, combine } from 'effector';
+import { createEvent, createEffect, sample } from 'effector';
 
 import { localStorageService } from '@shared/api/local-storage';
+import type { Account } from '@shared/core';
 import { walletModel, accountUtils, walletUtils } from '@entities/wallet';
-import { Account } from '@shared/core';
+import { assetsModel } from '@entities/asset';
 import { HIDE_ZERO_BALANCES } from '../common/constants';
 
 const assetsStarted = createEvent();
-const queryChanged = createEvent<string>();
-const activeShardsSet = createEvent<Account[]>();
 const hideZeroBalancesChanged = createEvent<boolean>();
-
-const $query = createStore<string>('');
-const $activeShards = createStore<Account[]>([]);
-const $hideZeroBalances = createStore<boolean>(false);
+const activeShardsSet = createEvent<Account[]>();
 
 const getHideZeroBalancesFx = createEffect((): boolean => {
   return localStorageService.getFromStorage(HIDE_ZERO_BALANCES, false);
@@ -21,16 +17,6 @@ const getHideZeroBalancesFx = createEffect((): boolean => {
 const saveHideZeroBalancesFx = createEffect((value: boolean): boolean => {
   return localStorageService.saveToStorage(HIDE_ZERO_BALANCES, value);
 });
-
-const $accounts = combine(
-  {
-    accounts: walletModel.$activeAccounts,
-    wallet: walletModel.$activeWallet,
-  },
-  ({ accounts, wallet }) => {
-    return wallet ? accounts.filter((account) => accountUtils.isNonBaseVaultAccount(account, wallet)) : [];
-  },
-);
 
 sample({
   clock: assetsStarted,
@@ -44,12 +30,7 @@ sample({
 
 sample({
   clock: [saveHideZeroBalancesFx.doneData, getHideZeroBalancesFx.doneData],
-  target: $hideZeroBalances,
-});
-
-sample({
-  clock: queryChanged,
-  target: $query,
+  target: assetsModel.$hideZeroBalances,
 });
 
 sample({
@@ -62,18 +43,13 @@ sample({
       return account && !accountUtils.isBaseAccount(account);
     });
   },
-  target: $activeShards,
+  target: assetsModel.$activeShards,
 });
 
-export const assetsModel = {
-  $query,
-  $accounts,
-  $activeShards,
-  $hideZeroBalances,
+export const assetsViewModel = {
   events: {
     assetsStarted,
     activeShardsSet,
-    queryChanged,
     hideZeroBalancesChanged,
   },
 };

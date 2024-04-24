@@ -2,7 +2,8 @@ import { useUnit } from 'effector-react';
 
 import { Switch, IconButton, MenuPopover, SearchInput } from '@shared/ui';
 import { useI18n } from '@app/providers';
-import { assetsModel } from '../../model/assets-model';
+import { assetsModel } from '@entities/asset';
+import { assetsViewModel } from '../../model/assets-view-model';
 
 export const AssetsFilters = () => {
   const { t } = useI18n();
@@ -29,7 +30,7 @@ export const AssetsFilters = () => {
             checked={hideZeroBalances}
             labelPosition="right"
             className="gap-x-2"
-            onChange={assetsModel.events.hideZeroBalancesChanged}
+            onChange={assetsViewModel.events.hideZeroBalancesChanged}
           >
             {t('balances.hideZeroBalancesLabel')}
           </Switch>

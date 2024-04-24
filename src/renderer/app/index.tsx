@@ -9,7 +9,7 @@ import { networkModel } from '@entities/network';
 import { proxyModel } from '@entities/proxy';
 import { notificationModel } from '@entities/notification';
 import { proxiesModel } from '@features/proxies';
-import { assetsModel } from '@pages/Assets/Assets/model/assets-model';
+import { assetsViewModel } from '@pages/Assets/Assets/model/assets-view-model';
 import './i18n';
 import './index.css';
 import './styles/theme/default.css';
@@ -38,7 +38,7 @@ proxiesModel.events.workerStarted();
 walletModel.events.walletStarted();
 networkModel.events.networkStarted();
 proxyModel.events.proxyStarted();
-assetsModel.events.assetsStarted();
+assetsViewModel.events.assetsStarted();
 notificationModel.events.notificationsStarted();
 
 createRoot(container).render(
