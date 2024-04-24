@@ -361,9 +361,7 @@ const $api = combine(
     form: $proxyForm.$values,
   },
   ({ apis, form }) => {
-    if (!form.chain.chainId) return undefined;
-
-    return apis[form.chain.chainId];
+    return form.chain.chainId ? apis[form.chain.chainId] : undefined;
   },
   { skipVoid: false },
 );

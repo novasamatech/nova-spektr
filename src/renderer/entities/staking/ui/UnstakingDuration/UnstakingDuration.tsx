@@ -12,7 +12,7 @@ type Props = {
 export const UnstakingDuration = ({ api, className }: Props) => {
   const { getUnbondingPeriod } = useStakingData();
 
-  const [unstakingPeriod, setUnstakingPeriod] = useState('');
+  const [unstakingPeriod, setUnstakingPeriod] = useState('...');
 
   useEffect(() => {
     if (!api) return;

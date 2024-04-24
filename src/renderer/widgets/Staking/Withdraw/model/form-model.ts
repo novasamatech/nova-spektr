@@ -340,9 +340,7 @@ const $api = combine(
     network: $networkStore,
   },
   ({ apis, network }) => {
-    if (!network) return undefined;
-
-    return apis[network.chain.chainId];
+    return network ? apis[network.chain.chainId] : undefined;
   },
   { skipVoid: false },
 );

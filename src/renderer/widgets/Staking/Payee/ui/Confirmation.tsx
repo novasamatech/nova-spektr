@@ -19,8 +19,6 @@ type Props = {
 export const Confirmation = ({ onGoBack }: Props) => {
   const { t } = useI18n();
 
-  const api = useUnit(confirmModel.$api);
-
   const confirmStore = useUnit(confirmModel.$confirmStore);
   const initiatorWallet = useUnit(confirmModel.$initiatorWallet);
   const signerWallet = useUnit(confirmModel.$signerWallet);
@@ -28,13 +26,12 @@ export const Confirmation = ({ onGoBack }: Props) => {
 
   const feeData = useUnit(confirmModel.$feeData);
   const isFeeLoading = useUnit(confirmModel.$isFeeLoading);
-  const eraLength = useUnit(confirmModel.$eraLength);
 
   const fiatFlag = useUnit(priceProviderModel.$fiatFlag);
 
   const [isAccountsOpen, toggleAccounts] = useToggle();
 
-  if (!confirmStore || !api || !initiatorWallet || !eraLength) return null;
+  if (!confirmStore || !initiatorWallet) return null;
 
   return (
     <>
