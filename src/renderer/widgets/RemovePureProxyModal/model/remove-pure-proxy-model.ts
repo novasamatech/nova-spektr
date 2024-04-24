@@ -10,7 +10,7 @@ import {
   WrapperKind,
   transactionService,
 } from '@entities/transaction';
-import { dictionary, toAddress, transferableAmount } from '@shared/lib/utils';
+import { toAddress, transferableAmount } from '@shared/lib/utils';
 import { walletSelectModel } from '@features/wallets';
 import { accountUtils, walletModel, walletUtils } from '@entities/wallet';
 import { networkModel } from '@entities/network';

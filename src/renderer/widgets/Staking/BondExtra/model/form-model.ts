@@ -11,7 +11,7 @@ import { WalletData } from '../lib/types';
 import { transferableAmount, getRelaychainAsset, formatAmount, stakeableAmount, ZERO_BALANCE } from '@shared/lib/utils';
 
 type FormParams = {
-  shards: BaseAccount[];
+  shards: Account[];
   signatory: Account;
   amount: string;
   description: string;
@@ -31,7 +31,7 @@ const txWrapperChanged = createEvent<{
 const feeDataChanged = createEvent<Record<'fee' | 'totalFee' | 'multisigDeposit', string>>();
 const isFeeLoadingChanged = createEvent<boolean>();
 
-const $shards = createStore<BaseAccount[]>([]);
+const $shards = createStore<Account[]>([]);
 const $networkStore = createStore<{ chain: Chain; asset: Asset } | null>(null);
 
 const $accountsBalances = createStore<string[]>([]);
@@ -50,7 +50,7 @@ const $isFeeLoading = restore(isFeeLoadingChanged, true);
 const $bondForm = createForm<FormParams>({
   fields: {
     shards: {
-      init: [] as BaseAccount[],
+      init: [] as Account[],
       rules: [
         {
           name: 'noProxyFee',

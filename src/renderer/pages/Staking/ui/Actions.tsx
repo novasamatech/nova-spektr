@@ -32,26 +32,26 @@ export const Actions = ({ canInteract, stakes, isStakingLoading, onNavigate }: P
     );
   }
 
-  const operationsSummary = stakes.reduce<Record<string, number>>(
+  const operationsSummary = stakes.reduce<Record<Operations, number>>(
     (acc, stake) => {
-      acc.startStaking += stake.total ? 0 : 1;
-      acc.stakeMore += stake.total ? 1 : 0;
+      acc.bond_nominate += stake.total ? 0 : 1;
+      acc.bond_extra += stake.total ? 1 : 0;
       acc.unstake += stake.total ? 1 : 0;
-      acc.changeValidators += stake.total ? 1 : 0;
-      acc.destination += stake.total ? 1 : 0;
-      acc.returnToStake += stake.unlocking?.length > 0 ? 1 : 0;
-      acc.redeem += stake.total !== stake.active ? 1 : 0;
+      acc.nominate += stake.total ? 1 : 0;
+      acc.set_payee += stake.total ? 1 : 0;
+      acc.restake += stake.unlocking?.length > 0 ? 1 : 0;
+      acc.withdraw += stake.total !== stake.active ? 1 : 0;
 
       return acc;
     },
     {
-      startStaking: 0,
-      stakeMore: 0,
+      bond_nominate: 0,
+      bond_extra: 0,
       unstake: 0,
-      returnToStake: 0,
-      redeem: 0,
-      changeValidators: 0,
-      destination: 0,
+      nominate: 0,
+      set_payee: 0,
+      restake: 0,
+      withdraw: 0,
     },
   );
 
@@ -60,7 +60,7 @@ export const Actions = ({ canInteract, stakes, isStakingLoading, onNavigate }: P
     .reduce((acc, value) => acc + value, 0);
 
   const noStakes = stakes.length === 0;
-  const wrongOverlaps = operationsSummary.startStaking > 0 && otherActionsSum > 0;
+  const wrongOverlaps = operationsSummary.bond_nominate > 0 && otherActionsSum > 0;
 
   const isController = (stake: Stake): boolean => {
     return !stake.controller || toAccountId(stake.address) === toAccountId(stake.controller);

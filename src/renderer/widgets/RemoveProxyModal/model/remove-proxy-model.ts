@@ -10,7 +10,7 @@ import {
   WrapperKind,
   transactionService,
 } from '@entities/transaction';
-import { dictionary, toAccountId, toAddress, transferableAmount } from '@shared/lib/utils';
+import { toAccountId, toAddress, transferableAmount } from '@shared/lib/utils';
 import { walletSelectModel } from '@features/wallets';
 import { accountUtils, walletModel, walletUtils } from '@entities/wallet';
 import { networkModel } from '@entities/network';
@@ -46,7 +46,7 @@ const $multisigTx = createStore<Transaction | null>(null).reset(flowFinished);
 const $availableSignatories = createStore<Account[][]>([]);
 const $isProxy = createStore<boolean>(false);
 const $isMultisig = createStore<boolean>(false);
-const $selectedSignatories = createStore<BaseAccount[]>([]);
+const $selectedSignatories = createStore<Account[]>([]);
 
 const $chain = $removeProxyStore.map((store) => store?.chain, { skipVoid: false });
 const $account = $removeProxyStore.map((store) => store?.account, { skipVoid: false });
@@ -182,10 +182,7 @@ sample({
   clock: flowStarted,
   source: {
     proxyAccount: walletProviderModel.$proxyForRemoval,
-    selectedWallet: walletSelectModel.$walletForDetails,
-    wallets: walletModel.$wallets,
     chains: networkModel.$chains,
-    allAccounts: walletModel.$accounts,
   },
   filter: ({ proxyAccount }) => Boolean(proxyAccount),
   fn: ({ chains }, { proxy, account }) => {

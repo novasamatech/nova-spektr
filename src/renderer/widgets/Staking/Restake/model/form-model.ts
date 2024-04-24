@@ -15,7 +15,6 @@ import {
   transferableAmount,
   getRelaychainAsset,
   toAddress,
-  dictionary,
   formatAmount,
   ZERO_BALANCE,
   unlockingAmount,
@@ -67,7 +66,7 @@ const $staking = restore(stakingSet, null);
 const $minBond = createStore<string>(ZERO_BALANCE);
 const $stakingUnsub = createStore<() => void>(noop);
 
-const $shards = createStore<BaseAccount[]>([]);
+const $shards = createStore<Account[]>([]);
 const $isMultisig = createStore<boolean>(false);
 const $isProxy = createStore<boolean>(false);
 
@@ -81,12 +80,12 @@ const $totalFee = restore(totalFeeChanged, ZERO_BALANCE);
 const $multisigDeposit = restore(multisigDepositChanged, ZERO_BALANCE);
 const $isFeeLoading = restore(isFeeLoadingChanged, true);
 
-const $selectedSignatories = createStore<BaseAccount[]>([]);
+const $selectedSignatories = createStore<Account[]>([]);
 
 const $restakeForm = createForm<FormParams>({
   fields: {
     shards: {
-      init: [] as BaseAccount[],
+      init: [] as Account[],
       rules: [
         {
           name: 'noProxyFee',

@@ -11,14 +11,7 @@ import { networkModel, networkUtils } from '@entities/network';
 import type { Account, PartialBy, ProxiedAccount, Chain, Asset, Address, ChainId } from '@shared/core';
 import { useStakingData, StakingMap, eraService } from '@entities/staking';
 import { NetworkStore } from '../lib/types';
-import {
-  transferableAmount,
-  getRelaychainAsset,
-  toAddress,
-  dictionary,
-  ZERO_BALANCE,
-  redeemableAmount,
-} from '@shared/lib/utils';
+import { transferableAmount, getRelaychainAsset, toAddress, ZERO_BALANCE, redeemableAmount } from '@shared/lib/utils';
 import {
   Transaction,
   transactionBuilder,
@@ -31,8 +24,8 @@ import {
 type BalanceMap = { balance: string; withdraw: string };
 
 type FormParams = {
-  shards: BaseAccount[];
-  signatory: BaseAccount;
+  shards: Account[];
+  signatory: Account;
   amount: string;
   description: string;
 };
@@ -68,7 +61,7 @@ const $era = restore(eraSet, null);
 const $stakingUnsub = createStore<() => void>(noop);
 const $eraUnsub = createStore<() => void>(noop);
 
-const $shards = createStore<BaseAccount[]>([]);
+const $shards = createStore<Account[]>([]);
 const $isMultisig = createStore<boolean>(false);
 const $isProxy = createStore<boolean>(false);
 
@@ -82,12 +75,12 @@ const $totalFee = restore(totalFeeChanged, ZERO_BALANCE);
 const $multisigDeposit = restore(multisigDepositChanged, ZERO_BALANCE);
 const $isFeeLoading = restore(isFeeLoadingChanged, true);
 
-const $selectedSignatories = createStore<BaseAccount[]>([]);
+const $selectedSignatories = createStore<Account[]>([]);
 
 const $withdrawForm = createForm<FormParams>({
   fields: {
     shards: {
-      init: [] as BaseAccount[],
+      init: [] as Account[],
       rules: [
         {
           name: 'noProxyFee',
@@ -158,7 +151,7 @@ const $withdrawForm = createForm<FormParams>({
           validator: (value, form, { fee, isMultisig, accountsBalances }) => {
             if (isMultisig) return true;
 
-            return form.shards.every((_: BaseAccount, index: number) => {
+            return form.shards.every((_: Account, index: number) => {
               return new BN(fee).lte(new BN(accountsBalances[index].balance));
             });
           },
