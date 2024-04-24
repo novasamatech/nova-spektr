@@ -67,9 +67,7 @@ const $api = combine(
     walletData: $walletData,
   },
   ({ apis, walletData }) => {
-    if (!walletData) return undefined;
-
-    return apis[walletData.chain.chainId];
+    return walletData ? apis[walletData.chain.chainId] : undefined;
   },
   { skipVoid: false },
 );

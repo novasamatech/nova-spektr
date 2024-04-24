@@ -117,6 +117,7 @@ const $realAccount = combine(
 
     return (txWrappers[0] as ProxyTxWrapper).proxyAccount;
   },
+  { skipVoid: false },
 );
 
 const $signatories = combine(
