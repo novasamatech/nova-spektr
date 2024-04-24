@@ -1,12 +1,11 @@
 import { createEvent, createEffect, combine, sample, restore, createStore } from 'effector';
 import { ApiPromise } from '@polkadot/api';
-import { pending } from 'patronum';
+import { pending, spread } from 'patronum';
 
 import { Chain, Asset, Validator, EraIndex } from '@shared/core';
 import { networkModel, networkUtils } from '@entities/network';
 import { validatorsService, ValidatorMap } from '@entities/staking';
 import { eraService } from '@entities/staking/api';
-import { isStringsMatchQuery } from '@shared/lib/utils';
 
 type Input = {
   chain: Chain;
@@ -16,12 +15,15 @@ type Input = {
 const formInitiated = createEvent<Input>();
 const formSubmitted = createEvent<Validator[]>();
 const formCleared = createEvent();
+
 const queryChanged = createEvent<string>();
 const validatorToggled = createEvent<Validator>();
 const validatorsSubmitted = createEvent();
 
 const $query = restore(queryChanged, '').reset(formCleared);
-const $validatorsStore = restore(formInitiated, null).reset(formCleared);
+
+const $chain = createStore<Chain | null>(null).reset(formCleared);
+const $asset = createStore<Asset | null>(null).reset(formCleared);
 
 const $era = createStore<EraIndex | null>(null).reset(formCleared);
 const $maxValidators = createStore<number>(0).reset(formCleared);
@@ -48,10 +50,10 @@ const getValidatorsFx = createEffect(({ api, era, isLightClient }: ValidatorsPar
 const $api = combine(
   {
     apis: networkModel.$apis,
-    store: $validatorsStore,
+    chain: $chain,
   },
-  ({ apis, store }) => {
-    return store?.chain ? apis[store.chain.chainId] : undefined;
+  ({ apis, chain }) => {
+    return chain ? apis[chain.chainId] : undefined;
   },
   { skipVoid: false },
 );
@@ -65,11 +67,11 @@ const $filteredValidators = combine(
     if (!query) return validators;
 
     return validators.filter((validator) => {
-      return isStringsMatchQuery(query, [
-        validator.address,
-        validator.identity?.subName || '',
-        validator.identity?.parent.name || '',
-      ]);
+      const address = validator.address.toLowerCase();
+      const subName = validator.identity?.subName.toLowerCase() || '';
+      const parentName = validator.identity?.parent.name.toLowerCase() || '';
+
+      return parentName.includes(query) || subName.includes(query) || address.includes(query);
     });
   },
 );
@@ -87,6 +89,14 @@ const $canSubmit = combine(
     return selectedAmount > 0 && selectedAmount <= maxValidators;
   },
 );
+
+sample({
+  clock: formInitiated,
+  target: spread({
+    chain: $chain,
+    asset: $asset,
+  }),
+});
 
 sample({
   clock: $api.updates,
@@ -119,15 +129,15 @@ sample({
   clock: $era.updates,
   source: {
     api: $api,
+    chain: $chain,
     connections: networkModel.$connections,
-    validatorsStore: $validatorsStore,
     validators: $validators,
   },
-  filter: ({ validatorsStore, validators }, era) => {
-    return Boolean(validatorsStore) && Boolean(era) && validators.length === 0;
+  filter: ({ chain, validators }, era) => {
+    return Boolean(chain) && Boolean(era) && validators.length === 0;
   },
-  fn: ({ api, connections, validatorsStore }, era) => {
-    const isLightClient = networkUtils.isLightClientConnection(connections[validatorsStore!.chain.chainId]);
+  fn: ({ api, connections, chain }, era) => {
+    const isLightClient = networkUtils.isLightClientConnection(connections[chain!.chainId]);
 
     return { api: api!, era: era!, isLightClient };
   },
@@ -164,8 +174,9 @@ sample({
 });
 
 export const validatorsModel = {
+  $chain,
+  $asset,
   $query,
-  $validatorsStore,
   $validators: $filteredValidators,
   $maxValidators,
   $selectedValidators,
