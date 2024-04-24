@@ -2,18 +2,18 @@ import { useEffect, useState } from 'react';
 import { useUnit } from 'effector-react';
 
 import { useI18n } from '@app/providers';
-import { networkModel, networkUtils } from '@entities/network';
-import type { Chain } from '@shared/core';
-import { accountUtils, walletModel, walletUtils } from '@entities/wallet';
-import { priceProviderModel, currencyModel } from '@entities/price';
 import { isStringsMatchQuery } from '@shared/lib/utils';
+import type { Chain } from '@shared/core';
 import { Icon, BodyText } from '@shared/ui';
-import { NetworkAssets } from '../NetworkAssets/NetworkAssets';
-import { assetsModel } from '../../model/assets-model';
-import { balanceModel } from '@entities/balance';
 import { chainsService } from '@shared/api/network';
+import { assetsModel } from '@entities/asset';
+import { balanceModel } from '@entities/balance';
+import { priceProviderModel, currencyModel } from '@entities/price';
+import { accountUtils, walletModel, walletUtils } from '@entities/wallet';
+import { networkModel, networkUtils } from '@entities/network';
+import { NetworkAssets } from './NetworkAssets/NetworkAssets';
 
-export const AssetsList = () => {
+export const AssetsChainView = () => {
   const { t } = useI18n();
 
   const query = useUnit(assetsModel.$query);

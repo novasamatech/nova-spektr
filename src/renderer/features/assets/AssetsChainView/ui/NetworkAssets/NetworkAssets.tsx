@@ -2,18 +2,19 @@ import { useEffect, useMemo, useState } from 'react';
 import groupBy from 'lodash/groupBy';
 import { useUnit } from 'effector-react';
 
-import { Icon, CaptionText, Tooltip, Accordion } from '@shared/ui';
-import { ChainTitle } from '@entities/chain';
-import { ZERO_BALANCE, totalAmount, includes, cnTw } from '@shared/lib/utils';
-import { ExtendedChain } from '@entities/network';
 import { useI18n } from '@app/providers';
-import { balanceSorter, sumBalances } from '../../common/utils';
+import { Icon, CaptionText, Tooltip, Accordion } from '@shared/ui';
+import { ZERO_BALANCE, totalAmount, includes, cnTw } from '@shared/lib/utils';
 import type { AccountId, Chain, Asset, Balance, Account } from '@shared/core';
+import { sumBalances } from '@shared/api/network/service/chainsService';
+import { ExtendedChain } from '@entities/network';
+import { ChainTitle } from '@entities/chain';
 import { accountUtils } from '@entities/wallet';
-import { NetworkFiatBalance } from '../NetworkFiatBalance/NetworkFiatBalance';
 import { currencyModel, priceProviderModel } from '@entities/price';
 import { balanceModel } from '@entities/balance';
-import { assetsModel } from '../../model/assets-model';
+import { assetsModel } from '@entities/asset';
+import { balanceSorter } from '../../lib/utils';
+import { NetworkFiatBalance } from '../NetworkFiatBalance/NetworkFiatBalance';
 import { AssetCard } from '../AssetCard/AssetCard';
 
 type Props = {

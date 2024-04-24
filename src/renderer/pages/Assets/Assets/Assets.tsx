@@ -3,8 +3,9 @@ import { Outlet } from 'react-router-dom';
 import { useI18n } from '@app/providers';
 import { Header } from '@shared/ui';
 import { ShardSelectorButton, ShardSelectorModal } from '@features/wallets';
-import { AssetsFilters, AssetsList } from './components';
-import { assetsModel } from './model/assets-model';
+import { AssetsChainView } from '@features/assets';
+import { AssetsFilters } from './components';
+import { assetsViewModel } from './model/assets-view-model';
 
 export const Assets = () => {
   const { t } = useI18n();
@@ -17,10 +18,10 @@ export const Assets = () => {
         </Header>
         <ShardSelectorButton />
 
-        <AssetsList />
+        <AssetsChainView />
       </section>
 
-      <ShardSelectorModal onConfirm={assetsModel.events.activeShardsSet} />
+      <ShardSelectorModal onConfirm={assetsViewModel.events.activeShardsSet} />
       <Outlet />
     </>
   );
