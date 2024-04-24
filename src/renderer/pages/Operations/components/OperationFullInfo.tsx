@@ -15,7 +15,6 @@ import { OperationSignatories } from './OperationSignatories';
 import { useNetworkData } from '@entities/network';
 import { walletModel, permissionUtils } from '@entities/wallet';
 import { dictionary } from '@shared/lib/utils';
-import { matrixModel } from '@entities/matrix';
 
 type Props = {
   tx: MultisigTransactionDS;
@@ -29,7 +28,6 @@ const OperationFullInfo = ({ tx, account }: Props) => {
   const wallets = useUnit(walletModel.$wallets);
   const accounts = useUnit(walletModel.$accounts);
   const depositorAccounts = accounts.filter((a) => a.accountId === tx.depositor);
-  const matrix = useUnit(matrixModel.$matrix);
 
   const walletsMap = dictionary(wallets, 'id');
   const callData = tx.callData;
@@ -46,18 +44,18 @@ const OperationFullInfo = ({ tx, account }: Props) => {
 
     updateCallData(api, tx, callData as CallData);
 
-    if (!account?.matrixRoomId) return;
+    // if (!account?.matrixRoomId) return;
 
-    matrix.sendUpdate(account?.matrixRoomId, {
-      senderAccountId: tx.depositor || '0x00',
-      chainId: tx.chainId,
-      callHash: tx.callHash,
-      callData,
-      callTimepoint: {
-        index: tx.indexCreated || 0,
-        height: tx.blockCreated || 0,
-      },
-    });
+    // matrix.sendUpdate(account?.matrixRoomId, {
+    //   senderAccountId: tx.depositor || '0x00',
+    //   chainId: tx.chainId,
+    //   callHash: tx.callHash,
+    //   callData,
+    //   callTimepoint: {
+    //     index: tx.indexCreated || 0,
+    //     height: tx.blockCreated || 0,
+    //   },
+    // });
   };
 
   const isRejectAvailable = depositorAccounts.some((depositor) => {

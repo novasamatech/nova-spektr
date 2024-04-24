@@ -35,7 +35,6 @@ export type MultisigAccount = BaseAccount & {
   signatories: Signatory[];
   threshold: Threshold;
   creatorAccountId: AccountId;
-  matrixRoomId?: string;
   chainId?: ChainId;
 };
 

@@ -129,7 +129,6 @@ const multisigAccount: MultisigAccount = {
   cryptoType: 0,
   chainType: 0,
   threshold: 2,
-  matrixRoomId: '0',
   creatorAccountId: '0x0',
   signatories: [
     {

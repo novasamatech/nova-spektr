@@ -56,7 +56,6 @@ describe.skip('features/operation/init/OperationHeader', () => {
       name: 'multisig account',
       signatories: [SIGNATORY_ACCOUNT],
       threshold: 2,
-      matrixRoomId: '123',
       creatorAccountId: '0x00',
       ...accountProps,
     };

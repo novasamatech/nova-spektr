@@ -4,8 +4,6 @@ import { ApiPromise } from '@polkadot/api';
 
 import type { Chain, Account, HexString, MultisigAccount } from '@shared/core';
 import { networkModel } from '@entities/network';
-import { ISecureMessenger } from '@shared/api/matrix';
-import { matrixModel, matrixUtils } from '@entities/matrix';
 import { buildMultisigTx } from '@entities/multisig';
 import { SubmitStep } from '../lib/types';
 import {
@@ -124,33 +122,31 @@ const saveMultisigTxFx = createEffect(
   },
 );
 
-type ApproveParams = {
-  matrix: ISecureMessenger;
-  matrixRoomId: string;
-  multisigTxs: MultisigTransaction[];
-  description: string;
-  params: ExtrinsicResultParams;
-};
-const sendMatrixApproveFx = createEffect(
-  ({ matrix, matrixRoomId, multisigTxs, description, params }: ApproveParams) => {
-    multisigTxs.forEach((tx) => {
-      matrix.sendApprove(matrixRoomId, {
-        description,
-        senderAccountId: tx.depositor!,
-        chainId: tx.chainId,
-        callHash: tx.callHash,
-        callData: tx.callData,
-        extrinsicTimepoint: params.timepoint,
-        extrinsicHash: params.extrinsicHash,
-        error: Boolean(params.multisigError),
-        callTimepoint: {
-          height: tx.blockCreated || params.timepoint.height,
-          index: tx.indexCreated || params.timepoint.index,
-        },
-      });
-    });
-  },
-);
+// type ApproveParams = {
+//   multisigTxs: MultisigTransaction[];
+//   description: string;
+//   params: ExtrinsicResultParams;
+// };
+// const sendMatrixApproveFx = createEffect(
+//   ({ multisigTxs, description, params }: ApproveParams) => {
+//     multisigTxs.forEach((tx) => {
+//       // matrix.sendApprove(matrixRoomId, {
+//       //   description,
+//       //   senderAccountId: tx.depositor!,
+//       //   chainId: tx.chainId,
+//       //   callHash: tx.callHash,
+//       //   callData: tx.callData,
+//       //   extrinsicTimepoint: params.timepoint,
+//       //   extrinsicHash: params.extrinsicHash,
+//       //   error: Boolean(params.multisigError),
+//       //   callTimepoint: {
+//       //     height: tx.blockCreated || params.timepoint.height,
+//       //     index: tx.indexCreated || params.timepoint.index,
+//       //   },
+//       // });
+//     });
+//   },
+// );
 
 sample({ clock: formInitiated, target: $submitStep.reinit });
 
@@ -189,11 +185,11 @@ sample({
   clock: extrinsicSucceeded,
   source: {
     submitStore: $submitStore,
-    loginStatus: matrixModel.$loginStatus,
+    // loginStatus: matrixModel.$loginStatus,
     hooks: $hooks,
   },
-  filter: ({ submitStore, loginStatus }) => {
-    return matrixUtils.isLoggedIn(loginStatus) && Boolean(submitStore?.multisigTxs.length);
+  filter: ({ submitStore }) => {
+    return Boolean(submitStore?.multisigTxs.length);
   },
   fn: ({ submitStore, hooks }, params) => ({
     params,
@@ -204,30 +200,6 @@ sample({
     description: submitStore!.description,
   }),
   target: saveMultisigTxFx,
-});
-
-sample({
-  clock: saveMultisigTxFx.done,
-  source: {
-    matrix: matrixModel.$matrix,
-    loginStatus: matrixModel.$loginStatus,
-    submitStore: $submitStore,
-  },
-  filter: ({ loginStatus, submitStore }) => {
-    return (
-      matrixUtils.isLoggedIn(loginStatus) &&
-      Boolean(submitStore?.multisigTxs.length) &&
-      Boolean((submitStore?.account as MultisigAccount).matrixRoomId)
-    );
-  },
-  fn: ({ matrix, submitStore }, { params, result }) => ({
-    matrix,
-    matrixRoomId: (submitStore!.account as MultisigAccount).matrixRoomId!,
-    multisigTxs: result.transactions,
-    description: submitStore!.description!,
-    params: params.params,
-  }),
-  target: sendMatrixApproveFx,
 });
 
 sample({
