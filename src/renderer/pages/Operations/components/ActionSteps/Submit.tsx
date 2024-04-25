@@ -111,32 +111,6 @@ export const Submit = ({
     });
   };
 
-  // const sendMultisigEvent = (updatedTx: MultisigTransaction, params: ExtrinsicResultParams, rejectReason?: string) => {
-  //   if (!tx || !updatedTx || !matrixRoomId) return;
-
-  //   const payload = {
-  //     senderAccountId: toAccountId(tx.address),
-  //     chainId: updatedTx.chainId,
-  //     callHash: updatedTx.callHash,
-  //     extrinsicTimepoint: params.timepoint,
-  //     extrinsicHash: params.extrinsicHash,
-  //     error: Boolean(params.multisigError),
-  //     description: rejectReason,
-  //     callTimepoint: {
-  //       height: updatedTx.blockCreated || params.timepoint.height,
-  //       index: updatedTx.indexCreated || params.timepoint.index,
-  //     },
-  //   };
-
-  //   if (tx.type === TransactionType.MULTISIG_CANCEL_AS_MULTI) {
-  //     matrix.sendCancel(matrixRoomId, payload).catch(console.warn);
-  //   } else if (params.isFinalApprove) {
-  //     matrix.sendFinalApprove(matrixRoomId, { ...payload, callOutcome: updatedTx.status }).catch(console.warn);
-  //   } else {
-  //     matrix.sendApprove(matrixRoomId, payload).catch(console.warn);
-  //   }
-  // };
-
   const getResultProps = (): ResultProps => {
     if (inProgress) {
       return {

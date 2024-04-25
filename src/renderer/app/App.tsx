@@ -9,8 +9,6 @@ import { walletModel } from '@entities/wallet';
 import { ROUTES_CONFIG } from '@pages/index';
 import { Paths } from '@shared/routes';
 import { FallbackScreen } from '@shared/ui';
-import { walletPairingModel } from '@features/wallets';
-import { WalletType } from '@shared/core';
 import {
   ConfirmDialogProvider,
   StatusModalProvider,
@@ -39,21 +37,6 @@ export const App = () => {
 
     navigate(Paths.ONBOARDING, { replace: true });
   }, [isLoadingWallets, wallets.length]);
-
-  useEffect(() => {
-    const url = new URL(window.location.href);
-    if (!url.searchParams.has('step') || !url.searchParams.has('loginToken')) return;
-
-    const step = url.searchParams.get('step') as string;
-
-    url.searchParams.delete('step');
-    url.searchParams.delete('loginToken');
-    window.history.replaceState(null, '', url.href);
-
-    if (step === 'multisig_wallet') {
-      walletPairingModel.events.walletTypeSet(WalletType.MULTISIG);
-    }
-  }, []);
 
   const getContent = () => {
     if (splashScreenLoading || isLoadingWallets) return null;

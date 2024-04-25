@@ -118,10 +118,6 @@ const sharedConfig: Configuration = {
       Buffer: ['buffer', 'Buffer'],
     }),
 
-    // new CopyPlugin({
-    //   patterns: [{ from: 'node_modules/@matrix-org/olm/olm.wasm', to: '' }],
-    // }),
-
     new webpack.DefinePlugin({
       'process.env.PRODUCT_NAME': JSON.stringify(APP_CONFIG.TITLE),
       'process.env.VERSION': JSON.stringify(APP_CONFIG.VERSION),
