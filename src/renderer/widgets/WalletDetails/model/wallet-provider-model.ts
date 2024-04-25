@@ -265,6 +265,7 @@ export const walletProviderModel = {
   $hasProxies,
   $proxyForRemoval,
   $canCreateProxy,
+
   events: {
     removeProxy,
   },
