@@ -20,8 +20,6 @@ type Props = {
 export const Confirmation = ({ onGoBack }: Props) => {
   const { t } = useI18n();
 
-  const api = useUnit(confirmModel.$api);
-
   const confirmStore = useUnit(confirmModel.$confirmStore);
   const initiatorWallet = useUnit(confirmModel.$initiatorWallet);
   const signerWallet = useUnit(confirmModel.$signerWallet);
@@ -31,12 +29,13 @@ export const Confirmation = ({ onGoBack }: Props) => {
   const isFeeLoading = useUnit(confirmModel.$isFeeLoading);
   const eraLength = useUnit(confirmModel.$eraLength);
 
+  const api = useUnit(confirmModel.$api);
   const fiatFlag = useUnit(priceProviderModel.$fiatFlag);
 
   const [isAccountsOpen, toggleAccounts] = useToggle();
   const [isValidatorsOpen, toggleValidators] = useToggle();
 
-  if (!confirmStore || !api || !initiatorWallet || !eraLength) return null;
+  if (!confirmStore || !initiatorWallet) return null;
 
   return (
     <>
@@ -230,7 +229,7 @@ export const Confirmation = ({ onGoBack }: Props) => {
             <StakingPopover.Item>
               {t('staking.confirmation.hintRewards')}
               {' ('}
-              {t('time.hours_other', { count: eraLength })}
+              {t('time.hours_other', { count: eraLength || 0 })}
               {')'}
             </StakingPopover.Item>
             <StakingPopover.Item>

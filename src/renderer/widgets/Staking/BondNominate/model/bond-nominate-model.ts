@@ -9,11 +9,11 @@ import { networkModel } from '@entities/network';
 import { validatorsService } from '@entities/staking';
 import { submitModel } from '@features/operations/OperationSubmit';
 import { signModel } from '@features/operations/OperationSign/model/sign-model';
+import { validatorsModel } from '@features/staking';
 import { Account } from '@shared/core';
 import { Step, BondNominateData, WalletData, FeeData } from '../lib/types';
 import { bondUtils } from '../lib/bond-utils';
 import { formModel } from './form-model';
-import { validatorsModel } from './validators-model';
 import { confirmModel } from './confirm-model';
 import {
   TxWrapper,
@@ -67,9 +67,7 @@ const $api = combine(
     walletData: $walletData,
   },
   ({ apis, walletData }) => {
-    if (!walletData) return undefined;
-
-    return apis[walletData.chain.chainId];
+    return walletData ? apis[walletData.chain.chainId] : undefined;
   },
   { skipVoid: false },
 );
@@ -159,9 +157,14 @@ sample({
 
 sample({
   clock: [$maxValidators.updates, formModel.output.formChanged, validatorsModel.output.formSubmitted],
-  source: $bondNominateData,
-  filter: (bondData, data) => Boolean(bondData) || typeof data !== 'number',
-  fn: (bondData, data) => {
+  source: {
+    step: $step,
+    bondData: $bondNominateData,
+  },
+  filter: ({ step, bondData }, data) => {
+    return (!bondUtils.isNoneStep(step) && Boolean(bondData)) || typeof data !== 'number';
+  },
+  fn: ({ bondData }, data) => {
     if (typeof data === 'number') {
       return { ...(bondData || ({} as BondNominateData)), validators: Array(data).fill({ address: TEST_ADDRESS }) };
     }

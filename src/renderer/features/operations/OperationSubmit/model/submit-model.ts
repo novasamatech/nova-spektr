@@ -33,7 +33,7 @@ const formSubmitted = createEvent<ExtrinsicResultParams>();
 const extrinsicSucceeded = createEvent<ExtrinsicResultParams>();
 const extrinsicFailed = createEvent<string>();
 
-const $submitStore = restore<Input>(formInitiated, null);
+const $submitStore = restore<Input>(formInitiated, null).reset(formSubmitted);
 
 const $submitStep = createStore<{ step: SubmitStep; message: string }>({ step: SubmitStep.LOADING, message: '' });
 
