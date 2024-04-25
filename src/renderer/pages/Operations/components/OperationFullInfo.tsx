@@ -44,8 +44,6 @@ const OperationFullInfo = ({ tx, account }: Props) => {
 
     updateCallData(api, tx, callData as CallData);
 
-    // if (!account?.matrixRoomId) return;
-
     // matrix.sendUpdate(account?.matrixRoomId, {
     //   senderAccountId: tx.depositor || '0x00',
     //   chainId: tx.chainId,

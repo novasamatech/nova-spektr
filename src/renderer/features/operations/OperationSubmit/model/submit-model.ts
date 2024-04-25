@@ -122,32 +122,6 @@ const saveMultisigTxFx = createEffect(
   },
 );
 
-// type ApproveParams = {
-//   multisigTxs: MultisigTransaction[];
-//   description: string;
-//   params: ExtrinsicResultParams;
-// };
-// const sendMatrixApproveFx = createEffect(
-//   ({ multisigTxs, description, params }: ApproveParams) => {
-//     multisigTxs.forEach((tx) => {
-//       // matrix.sendApprove(matrixRoomId, {
-//       //   description,
-//       //   senderAccountId: tx.depositor!,
-//       //   chainId: tx.chainId,
-//       //   callHash: tx.callHash,
-//       //   callData: tx.callData,
-//       //   extrinsicTimepoint: params.timepoint,
-//       //   extrinsicHash: params.extrinsicHash,
-//       //   error: Boolean(params.multisigError),
-//       //   callTimepoint: {
-//       //     height: tx.blockCreated || params.timepoint.height,
-//       //     index: tx.indexCreated || params.timepoint.index,
-//       //   },
-//       // });
-//     });
-//   },
-// );
-
 sample({ clock: formInitiated, target: $submitStep.reinit });
 
 sample({
@@ -185,7 +159,6 @@ sample({
   clock: extrinsicSucceeded,
   source: {
     submitStore: $submitStore,
-    // loginStatus: matrixModel.$loginStatus,
     hooks: $hooks,
   },
   filter: ({ submitStore }) => {
