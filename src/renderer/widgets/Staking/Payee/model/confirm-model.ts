@@ -1,7 +1,6 @@
 import { createEvent, combine, restore } from 'effector';
 
 import { Chain, Account, Asset, type ProxiedAccount } from '@shared/core';
-import { networkModel } from '@entities/network';
 import { walletModel, walletUtils } from '@entities/wallet';
 
 type Input = {
@@ -25,16 +24,6 @@ const $confirmStore = restore(formInitiated, null);
 
 const $feeData = restore(feeDataChanged, { fee: '0', totalFee: '0', multisigDeposit: '0' });
 const $isFeeLoading = restore(isFeeLoadingChanged, true);
-
-const $api = combine(
-  {
-    apis: networkModel.$apis,
-    store: $confirmStore,
-  },
-  ({ apis, store }) => {
-    return store ? apis[store.chain.chainId] : null;
-  },
-);
 
 const $initiatorWallet = combine(
   {
@@ -75,23 +64,15 @@ const $signerWallet = combine(
   { skipVoid: false },
 );
 
-const $eraLength = combine($api, (api) => {
-  if (!api) return null;
-
-  return api.consts.staking.sessionsPerEra.toNumber();
-});
-
 export const confirmModel = {
   $confirmStore,
   $initiatorWallet,
   $proxiedWallet,
   $signerWallet,
-  $eraLength,
 
   $feeData,
   $isFeeLoading,
 
-  $api,
   events: {
     formInitiated,
     feeDataChanged,

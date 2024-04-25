@@ -197,13 +197,10 @@ const $isChainConnected = combine(
 const $api = combine(
   {
     apis: networkModel.$apis,
-    form: $proxyForm.$values,
     chain: $chain,
   },
   ({ apis, chain }) => {
-    if (!chain?.chainId) return undefined;
-
-    return apis[chain.chainId];
+    return chain?.chainId ? apis[chain.chainId] : undefined;
   },
   { skipVoid: false },
 );

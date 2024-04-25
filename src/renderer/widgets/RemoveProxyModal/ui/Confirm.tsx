@@ -26,7 +26,7 @@ export const Confirmation = ({ onGoBack }: Props) => {
 
   const [isFeeLoading, setIsFeeLoading] = useState(true);
 
-  if (!confirmStore || !api || !initiatorWallet) return null;
+  if (!confirmStore || !initiatorWallet) return null;
 
   return (
     <div className="flex flex-col items-center pt-4 gap-y-4 pb-4 px-5">
