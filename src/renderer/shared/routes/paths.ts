@@ -26,6 +26,9 @@ export const Paths = {
   CURRENCY: '/settings/currency',
   MATRIX: '/settings/matrix',
 
+  // Governance
+  VOTE: '/vote',
+
   // Staking
   STAKING: '/staking',
   BOND: '/staking/bond/:chainId',

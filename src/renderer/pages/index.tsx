@@ -8,6 +8,7 @@ import { Operations } from './Operations/Operations';
 import { Notifications } from './Notifications/Notifications';
 import { Contacts, CreateContact, EditContact } from './AddressBook';
 import { Overview as Settings, Matrix, Currency, Networks } from './Settings';
+import { Governance } from './Governance';
 import { Staking } from './Staking';
 
 // React routes v6 hint:
@@ -27,7 +28,8 @@ export const ROUTES_CONFIG: RouteObject[] = [
           { path: Paths.RECEIVE_ASSET, element: <ReceiveAsset /> },
         ],
       },
-      { path: Paths.OPERATIONS, element: <Operations /> },
+      { path: Paths.STAKING, element: <Staking /> },
+      { path: Paths.VOTE, element: <Governance /> },
       { path: Paths.NOTIFICATIONS, element: <Notifications /> },
       {
         path: Paths.ADDRESS_BOOK,
@@ -37,6 +39,7 @@ export const ROUTES_CONFIG: RouteObject[] = [
           { path: Paths.EDIT_CONTACT, element: <EditContact /> },
         ],
       },
+      { path: Paths.OPERATIONS, element: <Operations /> },
       {
         path: Paths.SETTINGS,
         element: <Settings />,
@@ -46,7 +49,6 @@ export const ROUTES_CONFIG: RouteObject[] = [
           { path: Paths.MATRIX, element: <Matrix /> },
         ],
       },
-      { path: Paths.STAKING, element: <Staking /> },
     ],
   },
   { path: '*', element: <Navigate to={Paths.ASSETS} replace /> },
