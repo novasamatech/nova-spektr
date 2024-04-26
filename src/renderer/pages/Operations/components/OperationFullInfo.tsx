@@ -44,18 +44,6 @@ const OperationFullInfo = ({ tx, account }: Props) => {
 
     updateCallData(api, tx, callData as CallData);
 
-    // matrix.sendUpdate(account?.matrixRoomId, {
-    //   senderAccountId: tx.depositor || '0x00',
-    //   chainId: tx.chainId,
-    //   callHash: tx.callHash,
-    //   callData,
-    //   callTimepoint: {
-    //     index: tx.indexCreated || 0,
-    //     height: tx.blockCreated || 0,
-    //   },
-    // });
-  };
-
   const isRejectAvailable = depositorAccounts.some((depositor) => {
     return permissionUtils.canRejectMultisigTx(walletsMap[depositor.walletId], [depositor]);
   });
