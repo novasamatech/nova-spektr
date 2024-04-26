@@ -25,8 +25,10 @@ export const Assets = () => {
     <>
       <section className="h-full flex flex-col">
         <Header title={t(title)} titleClass="py-[3px]" headerClass="pt-4 pb-[15px]">
-          <AssetsSearch />
-          <AssetsSettings />
+          <div className="flex items-center gap-x-3">
+            <AssetsSearch />
+            <AssetsSettings />
+          </div>
         </Header>
         <ShardSelectorButton />
 
