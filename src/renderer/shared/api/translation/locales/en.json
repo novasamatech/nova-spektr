@@ -73,10 +73,9 @@
     "saveShardsButton": "Continue",
     "searchPlaceholder": "Search",
     "selectedAccounts": "{ amount } accounts",
-    "title": "Assets",
+    "title": "Portfolio",
     "verificationFailedLabel": "verification failed",
     "verificationTooltip": "The balance may be wrong or outdated, please check your network connection",
-    "portfolioTitle": "Portfolio",
     "pageView": "Page view",
     "tokenCentric": "Token-centric",
     "chainCentric": "Chain-centric"
@@ -274,7 +273,7 @@
   },
   "navigation": {
     "addressBookLabel": "Address Book",
-    "balancesLabel": "Assets",
+    "balancesLabel": "Portfolio",
     "cameraDEVLabel": "Camera DEV",
     "chatDEVLabel": "Chat DEV",
     "historyLabel": "History",
