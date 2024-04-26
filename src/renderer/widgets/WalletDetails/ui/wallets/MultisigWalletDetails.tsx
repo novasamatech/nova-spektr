@@ -1,13 +1,8 @@
 import { useMemo } from 'react';
 import { useUnit } from 'effector-react';
 
-<<<<<<< HEAD
-import { MultisigAccount, Signatory, Wallet, AccountId, Chain } from '@shared/core';
-import { BaseModal, FootnoteText, Tabs, DropdownIconButton } from '@shared/ui';
-=======
 import { MultisigAccount, Signatory, Wallet, AccountId } from '@shared/core';
-import { BaseModal, FootnoteText, Tabs, HelpText, DropdownIconButton } from '@shared/ui';
->>>>>>> 3aa98166fc276ccf84ee4399884ee36256824d10
+import { BaseModal, FootnoteText, Tabs, DropdownIconButton } from '@shared/ui';
 import { RootExplorers } from '@shared/lib/utils';
 import { useModalClose, useToggle } from '@shared/lib/hooks';
 import { useI18n } from '@app/providers';
