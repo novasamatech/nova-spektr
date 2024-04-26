@@ -4,18 +4,18 @@ import { localStorageService } from '@shared/api/local-storage';
 import { AssetsPageView } from '@entities/asset';
 import { ASSETS_PAGE_VIEW, HIDE_ZERO_BALANCES } from '../lib/constants';
 
-const $hideZeroBalances = createStore<boolean>(false);
-const $assetsView = createStore(AssetsPageView.TOKEN_CENTRIC);
-
 const hideZeroBalancesChanged = createEvent<boolean>();
 const assetsViewChanged = createEvent<AssetsPageView>();
 const assetsStarted = createEvent();
+
+const $hideZeroBalances = createStore<boolean>(false);
+const $assetsView = createStore<AssetsPageView>(AssetsPageView.TOKEN_CENTRIC);
 
 const getAssetsViewFx = createEffect((): AssetsPageView => {
   return localStorageService.getFromStorage(ASSETS_PAGE_VIEW, AssetsPageView.TOKEN_CENTRIC);
 });
 
-const saveAssetsViewsFx = createEffect((value: AssetsPageView): AssetsPageView => {
+const saveAssetsViewFx = createEffect((value: AssetsPageView): AssetsPageView => {
   return localStorageService.saveToStorage(ASSETS_PAGE_VIEW, value);
 });
 
@@ -44,11 +44,11 @@ sample({
 
 sample({
   clock: assetsViewChanged,
-  target: saveAssetsViewsFx,
+  target: saveAssetsViewFx,
 });
 
 sample({
-  clock: [saveAssetsViewsFx.doneData, getAssetsViewFx.doneData],
+  clock: [saveAssetsViewFx.doneData, getAssetsViewFx.doneData],
   target: $assetsView,
 });
 
@@ -59,8 +59,5 @@ export const assetsSettingsModel = {
     hideZeroBalancesChanged,
     assetsViewChanged,
     assetsStarted,
-  },
-  outputs: {
-    assetsViewData: [saveAssetsViewsFx.doneData, getAssetsViewFx.doneData],
   },
 };
