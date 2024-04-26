@@ -12,11 +12,6 @@ if (!global.indexedDB) {
 }
 
 module.exports = async () => {
-  // Mock wasm file for Matrix library import:
-  // jest.mock('@matrix-org/olm/olm.wasm', () => {
-  //   return 'node_modules/@matrix-org/olm/olm.wasm';
-  // });
-
   // Load request before all other modules it is tricky solution for
   //      🔶 Matrix original error object: TypeError: this.opts.request is not a function 🔶
   // https://github.com/matrix-org/matrix-js-sdk/issues/2415#issuecomment-1188812401
