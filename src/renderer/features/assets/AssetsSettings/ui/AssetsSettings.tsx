@@ -7,7 +7,9 @@ import { assetsSettingsModel } from '../model/assets-settings-modal';
 
 export const AssetsSettings = () => {
   const { t } = useI18n();
+
   const assetsView = useUnit(assetsSettingsModel.$assetsView);
+  const hideZeroBalances = useUnit(assetsSettingsModel.$hideZeroBalances);
 
   const options = [
     {
@@ -21,8 +23,6 @@ export const AssetsSettings = () => {
       element: <FootnoteText>{t('balances.chainCentric')}</FootnoteText>,
     },
   ];
-
-  const hideZeroBalances = useUnit(assetsSettingsModel.$hideZeroBalances);
 
   return (
     <MenuPopover
@@ -47,7 +47,7 @@ export const AssetsSettings = () => {
             placeholder={t('settings.networks.selectorPlaceholder')}
             options={options}
             onChange={({ value }) => assetsSettingsModel.events.assetsViewChanged(value)}
-          />{' '}
+          />
         </>
       }
     >

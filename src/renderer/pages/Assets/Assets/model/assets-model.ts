@@ -3,9 +3,9 @@ import { createEvent, sample, createStore } from 'effector';
 import type { Account } from '@shared/core';
 import { walletModel, accountUtils, walletUtils } from '@entities/wallet';
 
-const $activeShards = createStore<Account[]>([]);
-
 const activeShardsSet = createEvent<Account[]>();
+
+const $activeShards = createStore<Account[]>([]);
 
 sample({
   clock: [activeShardsSet, walletModel.$activeAccounts],
