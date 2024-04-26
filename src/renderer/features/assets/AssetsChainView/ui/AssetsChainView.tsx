@@ -3,21 +3,22 @@ import { useUnit } from 'effector-react';
 
 import { useI18n } from '@app/providers';
 import { isStringsMatchQuery } from '@shared/lib/utils';
-import type { Chain } from '@shared/core';
+import type { Account, Chain } from '@shared/core';
 import { Icon, BodyText } from '@shared/ui';
 import { chainsService } from '@shared/api/network';
-import { assetsModel } from '@entities/asset';
 import { balanceModel } from '@entities/balance';
 import { priceProviderModel, currencyModel } from '@entities/price';
 import { accountUtils, walletModel, walletUtils } from '@entities/wallet';
 import { networkModel, networkUtils } from '@entities/network';
 import { NetworkAssets } from './NetworkAssets/NetworkAssets';
 
-export const AssetsChainView = () => {
+type Props = {
+  query: string;
+  activeShards: Account[];
+  hideZeroBalances: boolean;
+};
+export const AssetsChainView = ({ query, activeShards, hideZeroBalances }: Props) => {
   const { t } = useI18n();
-
-  const query = useUnit(assetsModel.$query);
-  const activeShards = useUnit(assetsModel.$activeShards);
 
   const activeWallet = useUnit(walletModel.$activeWallet);
   const activeAccounts = useUnit(walletModel.$activeAccounts);
@@ -81,6 +82,8 @@ export const AssetsChainView = () => {
               searchSymbolOnly={searchSymbolOnly}
               chain={chain}
               accounts={activeShards}
+              hideZeroBalances={hideZeroBalances}
+              query={query}
             />
           ))}
 

@@ -75,7 +75,11 @@
     "selectedAccounts": "{ amount } accounts",
     "title": "Assets",
     "verificationFailedLabel": "verification failed",
-    "verificationTooltip": "The balance may be wrong or outdated, please check your network connection"
+    "verificationTooltip": "The balance may be wrong or outdated, please check your network connection",
+    "portfolioTitle": "Portfolio",
+    "pageView": "Page view",
+    "tokenCentric": "Token-centric",
+    "chainCentric": "Chain-centric"
   },
   "basemodal": {
     "closeButton": "Close modal window"
