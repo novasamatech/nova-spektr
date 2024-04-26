@@ -43,6 +43,7 @@ const OperationFullInfo = ({ tx, account }: Props) => {
     if (!api || !tx) return;
 
     updateCallData(api, tx, callData as CallData);
+  };
 
   const isRejectAvailable = depositorAccounts.some((depositor) => {
     return permissionUtils.canRejectMultisigTx(walletsMap[depositor.walletId], [depositor]);
