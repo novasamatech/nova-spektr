@@ -12,22 +12,20 @@ import { ChainTitle } from '@entities/chain';
 import { accountUtils } from '@entities/wallet';
 import { currencyModel, priceProviderModel } from '@entities/price';
 import { balanceModel } from '@entities/balance';
-import { assetsModel } from '@entities/asset';
 import { balanceSorter } from '../../lib/utils';
-import { NetworkFiatBalance } from '../NetworkFiatBalance/NetworkFiatBalance';
+import { NetworkFiatBalance } from '../NetworkFiatBalance';
 import { AssetCard } from '../AssetCard/AssetCard';
 
 type Props = {
   searchSymbolOnly?: boolean;
   chain: Chain | ExtendedChain;
   accounts: Account[];
+  query: string;
+  hideZeroBalances: boolean;
 };
 
-export const NetworkAssets = ({ chain, accounts, searchSymbolOnly }: Props) => {
+export const NetworkAssets = ({ chain, accounts, query, hideZeroBalances, searchSymbolOnly }: Props) => {
   const { t } = useI18n();
-
-  const query = useUnit(assetsModel.$query);
-  const hideZeroBalances = useUnit(assetsModel.$hideZeroBalances);
 
   const assetsPrices = useUnit(priceProviderModel.$assetsPrices);
   const fiatFlag = useUnit(priceProviderModel.$fiatFlag);

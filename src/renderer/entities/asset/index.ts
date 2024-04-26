@@ -1,2 +1,2 @@
 export * from './ui';
-export { assetsModel } from './model/assets-model';
+export * from './lib/constants';
