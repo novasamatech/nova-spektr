@@ -25,7 +25,7 @@ async function getReferendums(api: ApiPromise): Promise<ReferendumsResult> {
           const rejected = referendum.asRejected;
 
           acc.rejected.push({
-            index: index.toString(),
+            index: index.args[0].toString(),
             blockHeight: rejected[0].toNumber(),
             type: ReferendumType.Rejected,
             decisionDeposit: null,
@@ -42,7 +42,7 @@ async function getReferendums(api: ApiPromise): Promise<ReferendumsResult> {
           const approved = referendum.asApproved;
 
           acc.approved.push({
-            index: index.toString(),
+            index: index.args[0].toString(),
             blockHeight: approved[0].toNumber(),
             type: ReferendumType.Approved,
             decisionDeposit: null,
@@ -63,7 +63,7 @@ async function getReferendums(api: ApiPromise): Promise<ReferendumsResult> {
           // readonly alarm: Option<ITuple<[u32, ITuple<[u32, u32]>]>>;
 
           acc.ongoing.push({
-            index: index.toString(),
+            index: index.args[0].toString(),
             enactment: ongoing.enactment.asAfter.toNumber(),
             blockHeight: ongoing.submitted.toNumber(),
             track: ongoing.track.toNumber(),

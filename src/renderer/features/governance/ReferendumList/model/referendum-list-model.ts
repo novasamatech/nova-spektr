@@ -3,14 +3,14 @@ import { ApiPromise } from '@polkadot/api';
 import { spread } from 'patronum';
 
 import { ReferendumInfo, ChainId } from '@shared/core';
-import { IGovernanceApi, governanceService } from '@shared/api/governance';
+import { IGovernanceApi, governanceService, subsquareService } from '@shared/api/governance';
 import { networkModel } from '@entities/network';
 
 const chainIdChanged = createEvent<ChainId>();
 const governanceApiChanged = createEvent<IGovernanceApi>();
 
 const $chainId = restore(chainIdChanged, null);
-const $governanceApi = restore(governanceApiChanged, null);
+const $governanceApi = restore(governanceApiChanged, subsquareService);
 
 const $referendums = createStore<ReferendumInfo[]>([]);
 const $referendumsRequested = createStore<boolean>(false);
@@ -29,7 +29,7 @@ type OffChainParams = {
   service: IGovernanceApi;
 };
 const requestOffChainReferendumsFx = createEffect(({ chainId, indices, service }: OffChainParams): Promise<any[]> => {
-  return Promise.resolve([]);
+  return service.getReferendumList(chainId);
 });
 
 const $api = combine(
@@ -85,7 +85,7 @@ sample({
   target: requestOffChainReferendumsFx,
 });
 
-// TODO: may be merge both effects reuslt into one sample
+// TODO: enrich referendums
 // sample({
 //   clock: requestOffChainReferendumsFx.doneData,
 //   source: $referendums,

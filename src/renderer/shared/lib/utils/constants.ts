@@ -50,6 +50,13 @@ export const RelayChains: Record<string, ChainId> = {
   ROCOCO: '0x6408de7737c59c238890533af25896a2c20608d8b380bb01029acb392781063e',
 };
 
+export const OpenGov: Record<ChainId, string> = {
+  [RelayChains.POLKADOT]: 'polkadot',
+  [RelayChains.KUSAMA]: 'kusama',
+  [RelayChains.WESTEND]: 'westend',
+  [RelayChains.ROCOCO]: 'rococo',
+};
+
 // Some chains incorrectly use these, i.e. it is set to values such as 0 or even 2
 // Use a low minimum validity threshold to check these against
 export const THRESHOLD = BN_THOUSAND.div(BN_TWO);
