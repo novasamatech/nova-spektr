@@ -27,7 +27,7 @@ export const Paths = {
   MATRIX: '/settings/matrix',
 
   // Governance
-  VOTE: '/vote',
+  GOVERNANCE: '/governance',
 
   // Staking
   STAKING: '/staking',

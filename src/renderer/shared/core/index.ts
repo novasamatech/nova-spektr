@@ -70,3 +70,6 @@ export type { Notification, MultisigInvite, MultisigOperation, ProxyAction } fro
 export { NotificationType } from './types/notification';
 
 export { XcmPallets } from './types/substrate';
+
+export { ReferendumType } from './types/referendum';
+export type { ReferendumInfo, ApprovedReferendum, RejectedReferendum, OngoingReferendum } from './types/referendum';

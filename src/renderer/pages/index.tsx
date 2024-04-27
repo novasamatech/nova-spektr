@@ -29,7 +29,7 @@ export const ROUTES_CONFIG: RouteObject[] = [
         ],
       },
       { path: Paths.STAKING, element: <Staking /> },
-      { path: Paths.VOTE, element: <Governance /> },
+      { path: Paths.GOVERNANCE, element: <Governance /> },
       { path: Paths.NOTIFICATIONS, element: <Notifications /> },
       {
         path: Paths.ADDRESS_BOOK,

@@ -22,7 +22,7 @@ export const Navigation = () => {
   const NavItems: NavItemProps[] = [
     { icon: 'asset', title: 'navigation.balancesLabel', link: Paths.ASSETS },
     { icon: 'staking', title: 'navigation.stakingLabel', link: Paths.STAKING },
-    { icon: 'governance', title: 'navigation.governance', link: Paths.VOTE },
+    { icon: 'governance', title: 'navigation.governance', link: Paths.GOVERNANCE },
     {
       icon: 'operations',
       title: 'navigation.mstOperationLabel',
