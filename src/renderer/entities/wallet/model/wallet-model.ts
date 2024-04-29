@@ -13,7 +13,6 @@ type CreateParams<T extends Account = Account> = {
   wallet: Omit<NoID<Wallet>, 'isActive' | 'accounts'>;
   accounts: Omit<NoID<T>, 'walletId'>[];
 };
-type MultisigUpdateParams = Partial<MultisigAccount> & { id: ID };
 
 const walletStarted = createEvent();
 const watchOnlyCreated = createEvent<CreateParams<BaseAccount>>();
@@ -22,7 +21,6 @@ const singleshardCreated = createEvent<CreateParams<BaseAccount>>();
 const multisigCreated = createEvent<CreateParams<MultisigAccount>>();
 const walletConnectCreated = createEvent<CreateParams<WcAccount>>();
 
-const multisigAccountUpdated = createEvent<MultisigUpdateParams>();
 const walletRemoved = createEvent<ID>();
 const walletsRemoved = createEvent<ID[]>();
 
@@ -112,14 +110,6 @@ const multishardCreatedFx = createEffect(
   },
 );
 
-const multisigWalletUpdatedFx = createEffect(
-  async (account: MultisigUpdateParams): Promise<MultisigUpdateParams | undefined> => {
-    const id = await storageService.accounts.update(account.id, account);
-
-    return id ? account : undefined;
-  },
-);
-
 const removeWalletFx = createEffect(async (wallet: Wallet): Promise<ID> => {
   const accountIds = wallet.accounts.map((account) => account.id);
 
@@ -174,30 +164,7 @@ sample({
   source: $wallets,
   filter: (_, data) => Boolean(data),
   fn: (wallets, data) => {
-    return wallets.map((wallet) => {
-      if (wallet.id !== data!.wallet.id) return wallet;
-
-      return { ...data!.wallet, accounts: data!.accounts } as Wallet;
-    });
-  },
-  target: $wallets,
-});
-
-sample({
-  clock: multisigAccountUpdated,
-  target: multisigWalletUpdatedFx,
-});
-
-sample({
-  clock: multisigWalletUpdatedFx.doneData,
-  source: $wallets,
-  filter: (_, data) => Boolean(data),
-  fn: (wallets, data) => {
-    return wallets.map((wallet): Wallet => {
-      if (wallet.id !== data!.walletId) return wallet;
-
-      return { ...wallet, accounts: [{ ...wallet.accounts[0], ...data }] } as Wallet;
-    });
+    return wallets.concat({ ...data!.wallet, accounts: data!.accounts });
   },
   target: $wallets,
 });
@@ -239,7 +206,7 @@ sample({
   clock: removeWalletsFx.doneData,
   source: $wallets,
   fn: (wallets, walletIds) => {
-    return wallets.filter((wallet) => walletIds.includes(wallet.id));
+    return wallets.filter((wallet) => !walletIds.includes(wallet.id));
   },
   target: $wallets,
 });
@@ -256,7 +223,6 @@ export const walletModel = {
     singleshardCreated,
     multisigCreated,
     walletConnectCreated,
-    multisigAccountUpdated,
     walletRemoved,
     walletRemovedSuccess: removeWalletFx.done,
     walletsRemoved,
