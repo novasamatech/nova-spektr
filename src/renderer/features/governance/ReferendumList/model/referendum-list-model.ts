@@ -19,10 +19,9 @@ const $referendumsRequested = createStore<boolean>(false);
 
 const requestOnChainReferendumsFx = createEffect(async (api: ApiPromise): Promise<ReferendumInfo[]> => {
   console.log('=== request');
-  const { ongoing, rejected, approved } = await governanceService.getReferendums(api);
+  const { ongoing } = await governanceService.getReferendums(api);
 
   return ongoing;
-  // return [...ongoing, ...rejected, ...approved];
 });
 
 type OffChainParams = {
