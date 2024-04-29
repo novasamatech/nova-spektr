@@ -4,6 +4,7 @@ import { ProviderInterface } from '@polkadot/rpc-provider/types';
 import { ApiPromise } from '@polkadot/api';
 import * as Sc from '@substrate/connect';
 
+import { proxyWorkerUtils } from '../lib/worker-utils';
 import {
   Chain,
   ChainId,
@@ -18,7 +19,6 @@ import {
   ProxyVariant,
   ProxyDeposits,
 } from '@shared/core';
-import { proxyWorkerUtils } from '../lib/worker-utils';
 
 export const proxyWorker = {
   initConnection,
