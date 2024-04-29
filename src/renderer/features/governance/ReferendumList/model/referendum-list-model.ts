@@ -32,6 +32,10 @@ const requestOffChainReferendumsFx = createEffect(({ chainId, indices, service }
   return service.getReferendumList(chainId);
 });
 
+const getVotesFx = createEffect((api: ApiPromise): Promise<any[]> => {
+  return governanceService.getVotesFor(api, '12mP4sjCfKbDyMRAEyLpkeHeoYtS5USY4x34n9NMwQrcEyoh');
+});
+
 const $api = combine(
   {
     chainId: $chainId,
@@ -83,6 +87,17 @@ sample({
     return { chainId: chainId!, indices: [], service: service! };
   },
   target: requestOffChainReferendumsFx,
+});
+
+sample({
+  clock: requestOnChainReferendumsFx.doneData,
+  source: $api,
+  fn: (api) => api!,
+  target: getVotesFx,
+});
+
+getVotesFx.doneData.watch((x) => {
+  console.log('=== votes', x);
 });
 
 // TODO: enrich referendums

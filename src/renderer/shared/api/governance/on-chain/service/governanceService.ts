@@ -1,10 +1,21 @@
 import { ApiPromise } from '@polkadot/api';
 import { BN_ZERO } from '@polkadot/util';
 
-import { OngoingReferendum, RejectedReferendum, ApprovedReferendum, ReferendumType } from '@shared/core';
+import { ReferendumType, VotingType } from '@shared/core';
+import type {
+  OngoingReferendum,
+  RejectedReferendum,
+  ApprovedReferendum,
+  Address,
+  StandardVote,
+  AccountVote,
+  SplitVote,
+  SplitAbstainVote,
+} from '@shared/core';
 
 export const governanceService = {
   getReferendums,
+  getVotesFor,
 };
 
 type ReferendumsResult = {
@@ -101,4 +112,54 @@ async function getReferendums(api: ApiPromise): Promise<ReferendumsResult> {
 
     return { ongoing: [], rejected: [], approved: [] };
   }
+}
+
+// async function getVotesFor(api: ApiPromise, accountId: AccountId): Promise<any[]> {
+async function getVotesFor(api: ApiPromise, address: Address): Promise<AccountVote[]> {
+  const votingEntries = await api.query.convictionVoting.votingFor.entries(address);
+
+  return votingEntries.reduce<AccountVote[]>((acc, [_, convictionVoting]) => {
+    if (convictionVoting.isDelegating) return acc;
+
+    convictionVoting.asCasting.votes.forEach((vote) => {
+      if (vote[1].isStandard) {
+        const standardVote = vote[1].asStandard;
+
+        acc.push({
+          index: vote[0].toString(),
+          type: VotingType.Standard,
+          vote: {
+            type: standardVote.vote.isAye ? 'aye' : 'nay',
+            conviction: standardVote.vote.conviction.type,
+          },
+          balance: standardVote.balance.toBn(),
+        } as StandardVote);
+      }
+
+      if (vote[1].isSplit) {
+        const splitVote = vote[1].asSplit;
+
+        acc.push({
+          index: vote[0].toString(),
+          type: VotingType.Split,
+          aye: splitVote.aye.toBn(),
+          nay: splitVote.nay.toBn(),
+        } as SplitVote);
+      }
+
+      if (vote[1].isSplitAbstain) {
+        const splitAbstainVote = vote[1].asSplitAbstain;
+
+        acc.push({
+          index: vote[0].toString(),
+          type: VotingType.SplitAbstain,
+          aye: splitAbstainVote.aye.toBn(),
+          nay: splitAbstainVote.nay.toBn(),
+          abstain: splitAbstainVote.abstain.toBn(),
+        } as SplitAbstainVote);
+      }
+    });
+
+    return acc;
+  }, []);
 }
