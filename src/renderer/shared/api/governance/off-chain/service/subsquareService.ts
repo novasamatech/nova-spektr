@@ -1,5 +1,5 @@
 import type { ChainId } from '@shared/core';
-import { OpenGov, isFulfilled } from '@shared/lib/utils';
+import { OpenGov, isFulfilled, dictionary } from '@shared/lib/utils';
 import type { IGovernanceApi } from '../lib/types';
 
 // TODO: use callback to return the data, instead of waiting all at once
@@ -15,9 +15,9 @@ export const subsquareService: IGovernanceApi = {
  * @param chainId chainId value
  * @return {Promise}
  */
-async function getReferendumList(chainId: ChainId): Promise<unknown[]> {
+async function getReferendumList(chainId: ChainId): Promise<Record<string, string>> {
   const chainName = getChainName(chainId);
-  if (!chainName) return [];
+  if (!chainName) return {};
 
   const getApiUrl = (chainName: string, page: number, size = 100): string => {
     return `https://${chainName}.subsquare.io/api/gov2/referendums?page=${page}&page_size=${size}&simple=true`;
@@ -31,12 +31,13 @@ async function getReferendumList(chainId: ChainId): Promise<unknown[]> {
       return fetch(getApiUrl(chainName, index + 1), { method: 'GET' });
     });
     const responses = await Promise.allSettled(requests);
-    const data = responses.filter(isFulfilled).map((res) => res.value.json());
-    const referendums = await Promise.all(data);
+    const dataRequests = responses.filter(isFulfilled).map((res) => res.value.json());
+    const dataResponses = await Promise.all(dataRequests);
+    const referendums = [...ping.items, ...dataResponses.flatMap((ref) => ref.items)];
 
-    return [...ping.items, ...referendums.flatMap((ref) => ref.items)];
+    return dictionary(referendums, 'referendumIndex', (item) => item.title);
   } catch {
-    return [];
+    return {};
   }
 }
 

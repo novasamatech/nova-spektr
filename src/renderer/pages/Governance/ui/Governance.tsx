@@ -14,7 +14,7 @@ export const Governance = () => {
 
   return (
     <section className="h-full flex flex-col">
-      <Header title={t('balances.title')} titleClass="py-[3px]" headerClass="pt-4 pb-[15px]">
+      <Header title={t('governance.title')} titleClass="py-[3px]" headerClass="pt-4 pb-[15px]">
         <ReferendumFilter />
       </Header>
 

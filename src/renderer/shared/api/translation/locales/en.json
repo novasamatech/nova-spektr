@@ -251,6 +251,9 @@
       "appName": "Nova Spektr"
     }
   },
+  "governance": {
+    "title": "Governance"
+  },
   "log": {
     "cancelledMessage": "rejected this operation",
     "error": "Error",

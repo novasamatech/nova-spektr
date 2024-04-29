@@ -1,18 +1,20 @@
 import { createStore, createEvent, createEffect, restore, sample, combine } from 'effector';
 import { ApiPromise } from '@polkadot/api';
 import { spread } from 'patronum';
+import { isEmpty } from 'lodash';
 
 import { ReferendumInfo, ChainId } from '@shared/core';
-import { IGovernanceApi, governanceService, polkassemblyService } from '@shared/api/governance';
+import { IGovernanceApi, governanceService, subsquareService } from '@shared/api/governance';
 import { networkModel } from '@entities/network';
 
 const chainIdChanged = createEvent<ChainId>();
 const governanceApiChanged = createEvent<IGovernanceApi>();
 
 const $chainId = restore(chainIdChanged, null);
-const $governanceApi = restore(governanceApiChanged, polkassemblyService);
+const $governanceApi = restore(governanceApiChanged, subsquareService);
 
-const $referendums = createStore<ReferendumInfo[]>([]);
+const $onChainReferendums = createStore<ReferendumInfo[]>([]);
+const $offChainReferendums = createStore<Record<string, string> | null>(null);
 const $referendumsRequested = createStore<boolean>(false);
 
 const requestOnChainReferendumsFx = createEffect(async (api: ApiPromise): Promise<ReferendumInfo[]> => {
@@ -25,12 +27,13 @@ const requestOnChainReferendumsFx = createEffect(async (api: ApiPromise): Promis
 
 type OffChainParams = {
   chainId: ChainId;
-  indices: number[];
   service: IGovernanceApi;
 };
-const requestOffChainReferendumsFx = createEffect(({ chainId, indices, service }: OffChainParams): Promise<any[]> => {
-  return service.getReferendumList(chainId);
-});
+const requestOffChainReferendumsFx = createEffect(
+  ({ chainId, service }: OffChainParams): Promise<Record<string, string>> => {
+    return service.getReferendumList(chainId);
+  },
+);
 
 const getVotesFx = createEffect((api: ApiPromise): Promise<any[]> => {
   return governanceService.getVotesFor(api, '12mP4sjCfKbDyMRAEyLpkeHeoYtS5USY4x34n9NMwQrcEyoh');
@@ -67,7 +70,7 @@ sample({
   clock: requestOnChainReferendumsFx.doneData,
   fn: (referendums) => ({ referendums, requested: true }),
   target: spread({
-    referendums: $referendums,
+    referendums: $onChainReferendums,
     requested: $referendumsRequested,
   }),
 });
@@ -76,17 +79,22 @@ sample({
   clock: requestOnChainReferendumsFx.doneData,
   source: {
     chainId: $chainId,
-    referendums: $referendums,
+    referendums: $onChainReferendums,
     service: $governanceApi,
   },
   filter: ({ chainId, referendums, service }) => {
     return Boolean(chainId) && referendums.length > 0 && Boolean(service);
   },
-  fn: ({ chainId, referendums, service }) => {
-    // TODO: get required indices from referendums
-    return { chainId: chainId!, indices: [], service: service! };
+  fn: ({ chainId, service }) => {
+    return { chainId: chainId!, service: service! };
   },
   target: requestOffChainReferendumsFx,
+});
+
+sample({
+  clock: requestOffChainReferendumsFx.doneData,
+  filter: (referendums) => !isEmpty(referendums),
+  target: $offChainReferendums,
 });
 
 sample({
@@ -100,16 +108,9 @@ getVotesFx.doneData.watch((x) => {
   console.log('=== votes', x);
 });
 
-// TODO: enrich referendums
-// sample({
-//   clock: requestOffChainReferendumsFx.doneData,
-//   source: $referendums,
-//   fn: (referendums) => referendums,
-//   target: $referendums,
-// });
-
 export const referendumListModel = {
-  $referendums,
+  $onChainReferendums: $onChainReferendums,
+  $offChainReferendums: $offChainReferendums,
 
   events: {
     chainIdChanged,

@@ -1,5 +1,5 @@
 import type { ChainId } from '@shared/core';
-import { OpenGov, isFulfilled } from '@shared/lib/utils';
+import { OpenGov, isFulfilled, dictionary } from '@shared/lib/utils';
 import type { IGovernanceApi } from '../lib/types';
 
 // TODO: use callback to return the data, instead of waiting all at once
@@ -14,9 +14,9 @@ export const polkassemblyService: IGovernanceApi = {
  * @param chainId chainId value
  * @return {Promise}
  */
-async function getReferendumList(chainId: ChainId): Promise<unknown[]> {
+async function getReferendumList(chainId: ChainId): Promise<Record<string, string>> {
   const chainName = getChainName(chainId);
-  if (!chainName) return [];
+  if (!chainName) return {};
 
   const getApiUrl = (page: number, size = 100): string => {
     return `https://api.polkassembly.io/api/v1/listing/on-chain-posts?proposalType=referendums_v2&page=${page}&listingLimit=${size}`;
@@ -33,12 +33,13 @@ async function getReferendumList(chainId: ChainId): Promise<unknown[]> {
       return fetch(getApiUrl(index + 1), { method: 'GET', headers });
     });
     const responses = await Promise.allSettled(requests);
-    const data = responses.filter(isFulfilled).map((res) => res.value.json());
-    const referendums = await Promise.all(data);
+    const dataRequests = responses.filter(isFulfilled).map((res) => res.value.json());
+    const dataResponses = await Promise.all(dataRequests);
+    const referendums = [...ping.posts, ...dataResponses.flatMap((ref) => ref.posts)];
 
-    return [...ping.items, ...referendums.flatMap((ref) => ref.items)];
+    return dictionary(referendums, 'post_id', (item) => item.title);
   } catch {
-    return [];
+    return {};
   }
 }
 

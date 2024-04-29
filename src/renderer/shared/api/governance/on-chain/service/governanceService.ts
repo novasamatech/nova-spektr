@@ -68,10 +68,6 @@ async function getReferendums(api: ApiPromise): Promise<ReferendumsResult> {
 
         if (referendum.isOngoing) {
           const ongoing = referendum.asOngoing;
-          // readonly origin: KitchensinkRuntimeOriginCaller;
-          // readonly proposal: FrameSupportPreimagesBounded;
-          // readonly inQueue: bool;
-          // readonly alarm: Option<ITuple<[u32, ITuple<[u32, u32]>]>>;
 
           acc.ongoing.push({
             index: index.args[0].toString(),
@@ -114,7 +110,6 @@ async function getReferendums(api: ApiPromise): Promise<ReferendumsResult> {
   }
 }
 
-// async function getVotesFor(api: ApiPromise, accountId: AccountId): Promise<any[]> {
 async function getVotesFor(api: ApiPromise, address: Address): Promise<AccountVote[]> {
   const votingEntries = await api.query.convictionVoting.votingFor.entries(address);
 
