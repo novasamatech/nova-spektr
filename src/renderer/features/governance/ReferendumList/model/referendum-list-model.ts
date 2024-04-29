@@ -3,14 +3,14 @@ import { ApiPromise } from '@polkadot/api';
 import { spread } from 'patronum';
 
 import { ReferendumInfo, ChainId } from '@shared/core';
-import { IGovernanceApi, governanceService, subsquareService } from '@shared/api/governance';
+import { IGovernanceApi, governanceService, polkassemblyService } from '@shared/api/governance';
 import { networkModel } from '@entities/network';
 
 const chainIdChanged = createEvent<ChainId>();
 const governanceApiChanged = createEvent<IGovernanceApi>();
 
 const $chainId = restore(chainIdChanged, null);
-const $governanceApi = restore(governanceApiChanged, subsquareService);
+const $governanceApi = restore(governanceApiChanged, polkassemblyService);
 
 const $referendums = createStore<ReferendumInfo[]>([]);
 const $referendumsRequested = createStore<boolean>(false);
