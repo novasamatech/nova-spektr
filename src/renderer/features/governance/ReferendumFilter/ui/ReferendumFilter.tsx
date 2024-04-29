@@ -1,3 +1,6 @@
 export const ReferendumFilter = () => {
-  return <div>Referendum filter</div>;
+  return (
+    // eslint-disable-next-line i18next/no-literal-string
+    <div>Referendum filter</div>
+  );
 };
