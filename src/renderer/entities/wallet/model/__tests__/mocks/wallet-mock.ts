@@ -6,28 +6,12 @@ import {
   AccountType,
   ChainType,
   CryptoType,
-  KeyType, Account,
+  KeyType,
+  Account,
+  BaseAccount,
+  ChainAccount,
 } from '@shared/core';
 import { TEST_ACCOUNTS, TEST_CHAIN_ID } from '@shared/lib/utils';
-
-function getWallets(activeId: ID): Wallet[] {
-  return [
-    {
-      id: 1,
-      name: 'My first wallet',
-      isActive: false,
-      type: WalletType.MULTISIG,
-      signingType: SigningType.MULTISIG,
-    },
-    {
-      id: 2,
-      name: 'My second wallet',
-      isActive: false,
-      type: WalletType.WATCH_ONLY,
-      signingType: SigningType.WATCH_ONLY,
-    },
-  ].map((wallet) => ({ ...wallet, isActive: wallet.id === activeId }));
-}
 
 const accounts: Account[] = [
   {
@@ -38,7 +22,7 @@ const accounts: Account[] = [
     accountId: TEST_ACCOUNTS[0],
     chainType: ChainType.SUBSTRATE,
     cryptoType: CryptoType.SR25519,
-  },
+  } as BaseAccount,
   {
     id: 2,
     walletId: 1,
@@ -51,7 +35,7 @@ const accounts: Account[] = [
     cryptoType: CryptoType.SR25519,
     keyType: KeyType.HOT,
     derivationPath: '//test/path_1',
-  },
+  } as ChainAccount,
   {
     id: 3,
     walletId: 2,
@@ -60,7 +44,7 @@ const accounts: Account[] = [
     accountId: TEST_ACCOUNTS[0],
     chainType: ChainType.SUBSTRATE,
     cryptoType: CryptoType.SR25519,
-  },
+  } as BaseAccount,
   {
     id: 4,
     walletId: 2,
@@ -73,8 +57,29 @@ const accounts: Account[] = [
     cryptoType: CryptoType.SR25519,
     keyType: KeyType.PUBLIC,
     derivationPath: '//test/path_2',
-  },
+  } as ChainAccount,
 ];
+
+function getWallets(activeId: ID): Wallet[] {
+  return [
+    {
+      id: 1,
+      name: 'My first wallet',
+      isActive: false,
+      type: WalletType.MULTISIG,
+      signingType: SigningType.MULTISIG,
+      accounts: [accounts[0], accounts[1]],
+    },
+    {
+      id: 2,
+      name: 'My second wallet',
+      isActive: false,
+      type: WalletType.WATCH_ONLY,
+      signingType: SigningType.WATCH_ONLY,
+      accounts: [accounts[2], accounts[3]],
+    },
+  ].map((wallet) => ({ ...wallet, isActive: wallet.id === activeId }));
+}
 
 const newWallet = {
   id: 3,
@@ -84,7 +89,7 @@ const newWallet = {
   isActive: false,
 };
 
-const newAccounts = [
+const newAccounts: Account[] = [
   {
     id: 4,
     walletId: 3,
@@ -93,7 +98,7 @@ const newAccounts = [
     accountId: TEST_ACCOUNTS[0],
     chainType: ChainType.SUBSTRATE,
     cryptoType: CryptoType.SR25519,
-  },
+  } as BaseAccount,
   {
     id: 5,
     walletId: 3,
@@ -106,7 +111,7 @@ const newAccounts = [
     cryptoType: CryptoType.SR25519,
     keyType: KeyType.PUBLIC,
     derivationPath: '//test/path_2',
-  },
+  } as ChainAccount,
 ];
 
 const newProxiedWallet = {
