@@ -4,12 +4,12 @@ import {
   AccountType,
   ChainType,
   CryptoType,
-  ProxiedAccount,
   ProxyType,
   ProxyVariant,
   SigningType,
   WalletType,
-  Account,
+  Wallet,
+  BaseAccount,
 } from '@shared/core';
 import { forgetWalletModel } from '../forget-wallet-model';
 import { storageService } from '@shared/api/storage';
@@ -40,35 +40,27 @@ const wallet = {
   isActive: false,
   type: WalletType.WATCH_ONLY,
   signingType: SigningType.WATCH_ONLY,
-};
-
-const accountBase = {
-  chainType: ChainType.SUBSTRATE,
-  cryptoType: CryptoType.SR25519,
-  walletId: wallet.id,
-  type: AccountType.BASE,
-  name: 'some account',
-};
-
-const walletAccounts: Account[] = [
-  { ...accountBase, id: 1, accountId: TEST_ACCOUNTS[0] },
-  { ...accountBase, id: 2, accountId: '0x00' },
-];
-
-const proxiedAccount: ProxiedAccount = {
-  id: 3,
-  accountId: '0x01',
-  proxyAccountId: '0x00',
-  chainId: TEST_CHAIN_ID,
-  delay: 0,
-  proxyType: ProxyType.ANY,
-  proxyVariant: ProxyVariant.REGULAR,
-  walletId: 2,
-  name: 'proxied',
-  type: AccountType.PROXIED,
-  chainType: 0,
-  cryptoType: 0,
-};
+  accounts: [
+    {
+      id: 1,
+      walletId: 1,
+      chainType: ChainType.SUBSTRATE,
+      cryptoType: CryptoType.SR25519,
+      type: AccountType.BASE,
+      name: 'first account',
+      accountId: TEST_ACCOUNTS[0],
+    } as BaseAccount,
+    {
+      id: 2,
+      walletId: 1,
+      chainType: ChainType.SUBSTRATE,
+      cryptoType: CryptoType.SR25519,
+      type: AccountType.BASE,
+      name: 'second account',
+      accountId: '0x00',
+    } as BaseAccount,
+  ],
+} as Wallet;
 
 const proxiedWallet = {
   id: 2,
@@ -76,6 +68,22 @@ const proxiedWallet = {
   isActive: true,
   type: WalletType.POLKADOT_VAULT,
   signingType: SigningType.POLKADOT_VAULT,
+  accounts: [
+    {
+      id: 3,
+      accountId: '0x01',
+      proxyAccountId: '0x00',
+      chainId: TEST_CHAIN_ID,
+      delay: 0,
+      proxyType: ProxyType.ANY,
+      proxyVariant: ProxyVariant.REGULAR,
+      walletId: 2,
+      name: 'proxied',
+      type: AccountType.PROXIED,
+      chainType: 0,
+      cryptoType: 0,
+    },
+  ],
 };
 
 describe('features/wallets/ForgetModel', () => {
@@ -89,7 +97,7 @@ describe('features/wallets/ForgetModel', () => {
     storageService.accounts.deleteAll = jest.fn();
 
     const scope = fork({
-      values: new Map().set(walletModel.$wallets, [wallet]).set(walletModel.$accounts, walletAccounts),
+      values: new Map().set(walletModel.$wallets, [wallet]),
     });
 
     await allSettled(forgetWalletModel.events.callbacksChanged, { scope, params: { onDeleteFinished: spyCallback } });
@@ -106,7 +114,7 @@ describe('features/wallets/ForgetModel', () => {
     storageService.accounts.deleteAll = spyDeleteAccounts;
 
     const scope = fork({
-      values: new Map().set(walletModel.$wallets, [wallet]).set(walletModel.$accounts, walletAccounts),
+      values: new Map().set(walletModel.$wallets, [wallet]),
     });
 
     await allSettled(forgetWalletModel.events.callbacksChanged, { scope, params: { onDeleteFinished: () => {} } });
@@ -123,7 +131,6 @@ describe('features/wallets/ForgetModel', () => {
     const scope = fork({
       values: new Map()
         .set(walletModel.$wallets, [wallet, proxiedWallet])
-        .set(walletModel.$accounts, [...walletAccounts, proxiedAccount])
         .set(proxyModel.$proxies, {
           '0x01': [
             {
@@ -152,6 +159,5 @@ describe('features/wallets/ForgetModel', () => {
     expect(scope.getState(proxyModel.$proxyGroups)).toEqual([]);
     expect(scope.getState(proxyModel.$proxies)).toEqual({});
     expect(scope.getState(walletModel.$wallets)).toEqual([]);
-    expect(scope.getState(walletModel.$accounts)).toEqual([]);
   });
 });

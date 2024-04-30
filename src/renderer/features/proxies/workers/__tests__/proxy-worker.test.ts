@@ -1,8 +1,8 @@
 import { ApiPromise } from '@polkadot/api';
 import set from 'lodash/set';
 
+import { proxyWorker, state } from '../proxy-worker';
 import {
-  Account,
   AccountType,
   Chain,
   ChainId,
@@ -12,8 +12,8 @@ import {
   ProxiedAccount,
   ProxyAccount,
   ProxyVariant,
+  BaseAccount,
 } from '@shared/core';
-import { proxyWorker, state } from '../proxy-worker';
 
 jest.mock('@polkadot/rpc-provider', () => ({
   ScProvider: function () {
@@ -157,7 +157,7 @@ describe('features/proxies/workers/proxy-worker', () => {
         accountId: '0x01',
         chainType: ChainType.SUBSTRATE,
         cryptoType: CryptoType.SR25519,
-      } as Account,
+      } as BaseAccount,
     };
     const accountsForProxied = {};
 
@@ -222,7 +222,7 @@ describe('features/proxies/workers/proxy-worker', () => {
         accountId: '0x01',
         chainType: ChainType.SUBSTRATE,
         cryptoType: CryptoType.SR25519,
-      } as Account,
+      } as BaseAccount,
     };
     const accountsForProxied = {};
 
@@ -290,7 +290,7 @@ describe('features/proxies/workers/proxy-worker', () => {
         accountId: '0x01',
         chainType: ChainType.SUBSTRATE,
         cryptoType: CryptoType.SR25519,
-      } as Account,
+      } as BaseAccount,
     };
     const accountsForProxied = {};
 
@@ -363,7 +363,7 @@ describe('features/proxies/workers/proxy-worker', () => {
         accountId: '0x01',
         chainType: ChainType.SUBSTRATE,
         cryptoType: CryptoType.SR25519,
-      } as Account,
+      } as BaseAccount,
     };
 
     const proxiedAccounts = [] as ProxiedAccount[];

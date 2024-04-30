@@ -1,4 +1,4 @@
-import { UserSettings } from '../common/constants';
+import { UserSettings } from '../lib/types';
 import { settingsStorage } from '../settingsStorage';
 
 describe('services/settings/settingsStorage', () => {
