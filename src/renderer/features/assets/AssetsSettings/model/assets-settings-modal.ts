@@ -1,21 +1,21 @@
 import { createEffect, createEvent, createStore, sample } from 'effector';
 
 import { localStorageService } from '@shared/api/local-storage';
-import { AssetsPageView } from '@entities/asset';
+import { AssetsListView } from '@entities/asset';
 import { ASSETS_PAGE_VIEW, HIDE_ZERO_BALANCES } from '../lib/constants';
 
 const hideZeroBalancesChanged = createEvent<boolean>();
-const assetsViewChanged = createEvent<AssetsPageView>();
+const assetsViewChanged = createEvent<AssetsListView>();
 const assetsStarted = createEvent();
 
 const $hideZeroBalances = createStore<boolean>(false);
-const $assetsView = createStore<AssetsPageView>(AssetsPageView.TOKEN_CENTRIC);
+const $assetsView = createStore<AssetsListView>(AssetsListView.TOKEN_CENTRIC);
 
-const getAssetsViewFx = createEffect((): AssetsPageView => {
-  return localStorageService.getFromStorage(ASSETS_PAGE_VIEW, AssetsPageView.TOKEN_CENTRIC);
+const getAssetsViewFx = createEffect((): AssetsListView => {
+  return localStorageService.getFromStorage(ASSETS_PAGE_VIEW, AssetsListView.TOKEN_CENTRIC);
 });
 
-const saveAssetsViewFx = createEffect((value: AssetsPageView): AssetsPageView => {
+const saveAssetsViewFx = createEffect((value: AssetsListView): AssetsListView => {
   return localStorageService.saveToStorage(ASSETS_PAGE_VIEW, value);
 });
 
