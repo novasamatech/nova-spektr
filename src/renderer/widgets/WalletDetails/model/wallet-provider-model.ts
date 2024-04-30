@@ -10,8 +10,6 @@ import { walletDetailsUtils } from '../lib/utils';
 import type { MultishardMap, VaultMap } from '../lib/types';
 import { proxyModel, proxyUtils } from '@entities/proxy';
 import { networkModel } from '@entities/network';
-import { proxiesModel } from '@features/proxies';
-import { addProxyModel } from '../../AddProxyModal';
 import type { BaseAccount, Signatory, Wallet, AccountId, ProxyAccount, ChainId, ProxyGroup } from '@shared/core';
 
 const removeProxy = createEvent<ProxyAccount>();
@@ -187,11 +185,6 @@ sample({
   target: $proxyForRemoval,
 });
 
-sample({
-  clock: addProxyModel.output.flowFinished,
-  target: proxiesModel.events.workerStarted,
-});
-
 export const walletProviderModel = {
   $vaultAccounts,
   $multiShardAccounts,
@@ -205,6 +198,7 @@ export const walletProviderModel = {
   $hasProxies,
   $proxyForRemoval,
   $canCreateProxy,
+
   events: {
     removeProxy,
   },

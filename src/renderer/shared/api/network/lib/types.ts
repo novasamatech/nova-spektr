@@ -7,12 +7,6 @@ export const enum ProviderType {
   LIGHT_CLIENT = 'sc',
 }
 
-export const enum RpcValidation {
-  'INVALID',
-  'VALID',
-  'WRONG_NETWORK',
-}
-
 export type Subscription = {
   type: string;
   method: string;

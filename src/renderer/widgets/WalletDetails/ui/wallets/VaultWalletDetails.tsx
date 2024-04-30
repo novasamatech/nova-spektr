@@ -49,8 +49,7 @@ export const VaultWalletDetails = ({ wallet, root, accountsMap, onClose }: Props
   const [chains, setChains] = useState<Chain[]>([]);
 
   useEffect(() => {
-    const chainList = Object.values(allChains);
-    const filteredChains = chainList.filter((c) => {
+    const filteredChains = Object.values(allChains).filter((c) => {
       const accounts = Object.values(accountsMap).flat(2);
 
       return accounts.some((a) => accountUtils.isChainAndCryptoMatch(a, c));

@@ -145,7 +145,7 @@ export const Staking = () => {
   }, [chainId, api, chainEra]);
 
   useEffect(() => {
-    if (!api) return;
+    if (!api || !selectedStash) return;
 
     validatorsService
       .getNominators(api, selectedStash, networkUtils.isLightClientConnection(connection))
@@ -164,7 +164,7 @@ export const Staking = () => {
     setValidators({});
   };
 
-  const openSelectedValidators = async (stash?: Address) => {
+  const openSelectedValidators = (stash?: Address) => {
     if (!api || !stash) return;
 
     setSelectedStash(stash);

@@ -13,7 +13,7 @@ describe('widgets/WalletDetails/model/vault-details-model', () => {
 
   test('should set $shards on shardsSelected', async () => {
     const shard = { id: 1, name: 'My shard' } as ShardAccount;
-    const scope = fork({});
+    const scope = fork();
 
     await allSettled(vaultDetailsModel.events.shardsSelected, { scope, params: [shard] });
     expect(scope.getState(vaultDetailsModel.$shards)).toEqual([shard]);
@@ -33,7 +33,7 @@ describe('widgets/WalletDetails/model/vault-details-model', () => {
 
   test('should set $keysToAdd on keysAdded', async () => {
     const key = { name: 'My shard' } as DraftAccount<ChainAccount>;
-    const scope = fork({});
+    const scope = fork();
 
     await allSettled(vaultDetailsModel.events.keysAdded, { scope, params: [key] });
     expect(scope.getState(vaultDetailsModel.$keysToAdd)).toEqual([key]);

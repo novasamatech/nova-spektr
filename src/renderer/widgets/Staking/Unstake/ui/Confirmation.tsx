@@ -18,16 +18,16 @@ type Props = {
 export const Confirmation = ({ onGoBack }: Props) => {
   const { t } = useI18n();
 
-  const api = useUnit(confirmModel.$api);
-
   const confirmStore = useUnit(confirmModel.$confirmStore);
   const initiatorWallet = useUnit(confirmModel.$initiatorWallet);
   const signerWallet = useUnit(confirmModel.$signerWallet);
   const proxiedWallet = useUnit(confirmModel.$proxiedWallet);
 
+  const api = useUnit(confirmModel.$api);
+
   const [isAccountsOpen, toggleAccounts] = useToggle();
 
-  if (!confirmStore || !api || !initiatorWallet) return null;
+  if (!confirmStore || !initiatorWallet) return null;
 
   return (
     <>

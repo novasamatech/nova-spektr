@@ -93,6 +93,8 @@ jobs:
           filename="${original%.*}"
           new="$filename"_x86_64.AppImage
           mv "$original" "$new"
+          # Update latest-linux.yml with new file name
+          sed -i "s/$original/$new/g" latest-linux.yml
 
       - name: Replace space by "-"
         run: |

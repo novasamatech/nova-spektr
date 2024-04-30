@@ -46,7 +46,7 @@ describe('entities/network/model/network-model', () => {
 
   test('should populate $chains on networkStarted', async () => {
     mockStorage({ chains: mockChainMap });
-    const scope = fork({});
+    const scope = fork();
 
     await allSettled(networkModel.events.networkStarted, { scope });
     expect(scope.getState(networkModel.$chains)).toEqual(mockChainMap);
@@ -54,7 +54,7 @@ describe('entities/network/model/network-model', () => {
 
   test('should set default $connectionStatuses on networkStarted', async () => {
     mockStorage({ chains: mockChainMap });
-    const scope = fork({});
+    const scope = fork();
 
     await allSettled(networkModel.events.networkStarted, { scope });
     expect(scope.getState(networkModel.$connectionStatuses)).toEqual({ '0x01': ConnectionStatus.DISCONNECTED });
@@ -63,7 +63,7 @@ describe('entities/network/model/network-model', () => {
   test('should set $connections on networkStarted', async () => {
     mockStorage({ chains: mockChainMap, connections: [mockConnection] });
 
-    const scope = fork({});
+    const scope = fork();
 
     await allSettled(networkModel.events.networkStarted, { scope });
     expect(scope.getState(networkModel.$connections)).toEqual({ '0x01': mockConnection });
@@ -76,7 +76,7 @@ describe('entities/network/model/network-model', () => {
       metadata: [mockMetadata],
     });
 
-    const scope = fork({});
+    const scope = fork();
 
     const spyCreateProvider = jest
       .spyOn(networkService, 'createProvider')
@@ -90,7 +90,7 @@ describe('entities/network/model/network-model', () => {
       { metadata: mockMetadata.metadata, nodes: ['http://localhost:8080'] },
       { onConnected: expect.any(Function), onDisconnected: expect.any(Function), onError: expect.any(Function) },
     );
-    expect(scope.getState(networkModel.$providers)).toEqual({
+    expect(scope.getState(networkModel._$providers)).toEqual({
       '0x01': { isConnected: true },
     });
   });
@@ -108,7 +108,7 @@ describe('entities/network/model/network-model', () => {
       metadata: [mockMetadata],
     });
 
-    const scope = fork({});
+    const scope = fork();
 
     const connectMock = jest.fn();
     const spyCreateProvider = jest
@@ -124,7 +124,7 @@ describe('entities/network/model/network-model', () => {
       { metadata: mockMetadata.metadata, nodes: [''] },
       { onConnected: expect.any(Function), onDisconnected: expect.any(Function), onError: expect.any(Function) },
     );
-    expect(scope.getState(networkModel.$providers)).toEqual({
+    expect(scope.getState(networkModel._$providers)).toEqual({
       '0x01': { connect: connectMock, isConnected: true },
     });
   });
