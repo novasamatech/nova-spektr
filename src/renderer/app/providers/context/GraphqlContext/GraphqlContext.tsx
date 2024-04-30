@@ -1,10 +1,10 @@
+import { createContext, PropsWithChildren, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { ApolloClient, ApolloProvider, from, HttpLink, InMemoryCache, NormalizedCacheObject } from '@apollo/client';
 import { onError } from '@apollo/client/link/error';
-import { createContext, PropsWithChildren, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 
+import { ExternalType, type ChainId } from '@shared/core';
 import { chainsService } from '@shared/api/network';
 import { settingsStorage } from '@entities/settings';
-import { ExternalType, type ChainId } from '@shared/core';
 
 type GraphqlContextProps = {
   changeClient: (chainId: ChainId) => void;
@@ -43,6 +43,7 @@ export const GraphqlProvider = ({ children }: PropsWithChildren) => {
 
   useEffect(() => {
     const chainsData = chainsService.getStakingChainsData();
+    const stakingChainId = settingsStorage.getStakingNetwork();
 
     chainUrls.current = chainsData.reduce((acc, chain) => {
       const subqueryMatch = chain.externalApi?.[ExternalType.STAKING].find((api) => api.type === 'subquery');
@@ -56,7 +57,7 @@ export const GraphqlProvider = ({ children }: PropsWithChildren) => {
       return acc;
     }, {});
 
-    changeClient(settingsStorage.getStakingNetwork());
+    changeClient(stakingChainId);
   }, []);
 
   const value = useMemo(() => ({ changeClient }), [changeClient]);
