@@ -3,13 +3,7 @@ import { decodeAddress } from '@polkadot/util-crypto';
 import { WellKnownChain } from '@substrate/connect';
 import { ApiPromise } from '@polkadot/api';
 
-import {
-  AccountId,
-  ChainId,
-  ProxyAccount,
-  NoID,
-  PartialProxiedAccount,
-} from '@shared/core';
+import type { AccountId, ChainId, ProxyAccount, NoID, PartialProxiedAccount } from '@shared/core';
 
 export const proxyWorkerUtils = {
   toAccountId,

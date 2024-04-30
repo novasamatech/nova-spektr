@@ -436,7 +436,9 @@ sample({
   filter: ({ step, chainProxies, wallet, removeProxyStore }) => {
     const proxies = Object.values(chainProxies).flat();
 
-    return removePureProxyUtils.isSubmitStep(step) && Boolean(wallet) && Boolean(removeProxyStore) && proxies.length === 1;
+    return (
+      removePureProxyUtils.isSubmitStep(step) && Boolean(wallet) && Boolean(removeProxyStore) && proxies.length === 1
+    );
   },
   fn: ({ wallet }) => wallet!.id,
   target: walletModel.events.walletRemoved,

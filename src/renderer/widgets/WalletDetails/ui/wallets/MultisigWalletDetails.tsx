@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { useUnit } from 'effector-react';
 
-import { MultisigAccount, Signatory, Wallet, AccountId, MultisigWallet } from '@shared/core';
+import { Signatory, Wallet, AccountId, MultisigWallet } from '@shared/core';
 import { BaseModal, FootnoteText, Tabs, HelpText, DropdownIconButton } from '@shared/ui';
 import { RootExplorers } from '@shared/lib/utils';
 import { useModalClose, useToggle } from '@shared/lib/hooks';
