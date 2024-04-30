@@ -13,8 +13,8 @@ const governanceApiChanged = createEvent<IGovernanceApi>();
 const $chainId = restore(chainIdChanged, null);
 const $governanceApi = restore(governanceApiChanged, subsquareService);
 
-const $onChainReferendums = createStore<ReferendumInfo[]>([]);
-const $offChainReferendums = createStore<Record<string, string> | null>(null);
+const $referendumsList = createStore<ReferendumInfo[]>([]);
+const $referendumsDetails = createStore<Record<string, string> | null>(null);
 const $referendumsRequested = createStore<boolean>(false);
 
 const requestOnChainReferendumsFx = createEffect(async (api: ApiPromise): Promise<ReferendumInfo[]> => {
@@ -69,7 +69,7 @@ sample({
   clock: requestOnChainReferendumsFx.doneData,
   fn: (referendums) => ({ referendums, requested: true }),
   target: spread({
-    referendums: $onChainReferendums,
+    referendums: $referendumsList,
     requested: $referendumsRequested,
   }),
 });
@@ -78,7 +78,7 @@ sample({
   clock: requestOnChainReferendumsFx.doneData,
   source: {
     chainId: $chainId,
-    referendums: $onChainReferendums,
+    referendums: $referendumsList,
     service: $governanceApi,
   },
   filter: ({ chainId, referendums, service }) => {
@@ -93,7 +93,7 @@ sample({
 sample({
   clock: requestOffChainReferendumsFx.doneData,
   filter: (referendums) => !isEmpty(referendums),
-  target: $offChainReferendums,
+  target: $referendumsDetails,
 });
 
 sample({
@@ -108,8 +108,8 @@ getVotesFx.doneData.watch((x) => {
 });
 
 export const referendumListModel = {
-  $onChainReferendums: $onChainReferendums,
-  $offChainReferendums: $offChainReferendums,
+  $referendumsList,
+  $referendumsDetails,
 
   events: {
     chainIdChanged,

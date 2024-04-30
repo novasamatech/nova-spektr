@@ -1,6 +1,7 @@
+import { isFulfilled, dictionary } from '@shared/lib/utils';
 import type { ChainId } from '@shared/core';
-import { OpenGov, isFulfilled, dictionary } from '@shared/lib/utils';
 import type { IGovernanceApi } from '../lib/types';
+import { offChainUtils } from '../lib/off-chain-utils';
 
 // TODO: use callback to return the data, instead of waiting all at once
 export const polkassemblyService: IGovernanceApi = {
@@ -15,7 +16,7 @@ export const polkassemblyService: IGovernanceApi = {
  * @return {Promise}
  */
 async function getReferendumList(chainId: ChainId): Promise<Record<string, string>> {
-  const chainName = getChainName(chainId);
+  const chainName = offChainUtils.getChainName(chainId);
   if (!chainName) return {};
 
   const getApiUrl = (page: number, size = 100): string => {
@@ -24,7 +25,7 @@ async function getReferendumList(chainId: ChainId): Promise<Record<string, strin
 
   try {
     const headers = new Headers();
-    headers.append('x-network', 'polkadot');
+    headers.append('x-network', chainName);
 
     const ping = await (await fetch(getApiUrl(1, 1), { method: 'GET', headers })).json();
     const iterations = Math.ceil(ping.count / 100);
@@ -50,20 +51,16 @@ async function getReferendumList(chainId: ChainId): Promise<Record<string, strin
  * @return {Promise}
  */
 async function getReferendumDetails(chainId: ChainId, index: number): Promise<unknown | undefined> {
-  const chainName = getChainName(chainId);
+  const chainName = offChainUtils.getChainName(chainId);
   if (!chainName) return undefined;
 
   try {
     const headers = new Headers();
-    headers.append('x-network', 'polkadot');
-    const api = `https://api.polkassembly.io/api/v1/posts/on-chain-post?proposalType=referendums_v2&postId=${index}`;
+    headers.append('x-network', chainName);
+    const apiUrl = `https://api.polkassembly.io/api/v1/posts/on-chain-post?proposalType=referendums_v2&postId=${index}`;
 
-    return (await fetch(api)).json();
+    return (await fetch(apiUrl)).json();
   } catch {
     return undefined;
   }
-}
-
-function getChainName(chainId: ChainId): string | undefined {
-  return OpenGov[chainId];
 }

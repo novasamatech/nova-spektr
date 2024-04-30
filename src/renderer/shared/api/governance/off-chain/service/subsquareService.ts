@@ -1,6 +1,7 @@
+import { isFulfilled, dictionary } from '@shared/lib/utils';
 import type { ChainId } from '@shared/core';
-import { OpenGov, isFulfilled, dictionary } from '@shared/lib/utils';
 import type { IGovernanceApi } from '../lib/types';
+import { offChainUtils } from '../lib/off-chain-utils';
 
 // TODO: use callback to return the data, instead of waiting all at once
 export const subsquareService: IGovernanceApi = {
@@ -16,7 +17,7 @@ export const subsquareService: IGovernanceApi = {
  * @return {Promise}
  */
 async function getReferendumList(chainId: ChainId): Promise<Record<string, string>> {
-  const chainName = getChainName(chainId);
+  const chainName = offChainUtils.getChainName(chainId);
   if (!chainName) return {};
 
   const getApiUrl = (chainName: string, page: number, size = 100): string => {
@@ -48,18 +49,14 @@ async function getReferendumList(chainId: ChainId): Promise<Record<string, strin
  * @return {Promise}
  */
 async function getReferendumDetails(chainId: ChainId, index: number): Promise<unknown | undefined> {
-  const chainName = getChainName(chainId);
+  const chainName = offChainUtils.getChainName(chainId);
   if (!chainName) return undefined;
 
-  const api = `https://${chainName}.subsquare.io/api/gov2/referendums/${index}`;
+  const apiUrl = `https://${chainName}.subsquare.io/api/gov2/referendums/${index}`;
 
   try {
-    return (await fetch(api)).json();
+    return (await fetch(apiUrl)).json();
   } catch {
     return undefined;
   }
-}
-
-function getChainName(chainId: ChainId): string | undefined {
-  return OpenGov[chainId];
 }
