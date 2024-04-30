@@ -39,28 +39,43 @@ describe('widgets/WalletDetails/model/vault-details-model', () => {
     expect(scope.getState(vaultDetailsModel.$keysToAdd)).toEqual([key]);
   });
 
-  test('should update $accounts on keysRemoved', async () => {
-    const key = { id: 1, name: 'My shard' } as ChainAccount;
+  test('should update $wallets on keysRemoved', async () => {
+    const wallet = {
+      id: 1,
+      name: 'My wallet',
+      accounts: [
+        { id: 1, walletId: 1, name: 'My first shard' },
+        { id: 2, walletId: 1, name: 'My second shard' },
+      ],
+    };
     jest.spyOn(storageService.accounts, 'deleteAll').mockResolvedValue([1]);
 
     const scope = fork({
-      values: new Map().set(walletModel.$accounts, [key]),
+      values: new Map().set(walletModel.$wallets, [wallet]),
     });
 
-    await allSettled(vaultDetailsModel.events.keysRemoved, { scope, params: [key] });
-    expect(scope.getState(walletModel.$accounts)).toEqual([]);
+    await allSettled(vaultDetailsModel.events.keysRemoved, { scope, params: [wallet.accounts[0]] });
+    expect(scope.getState(walletModel.$wallets)).toEqual([{ ...wallet, accounts: [wallet.accounts[1]] }]);
   });
 
-  test('should update $accounts on accountsCreated', async () => {
-    const walletId = 1;
-    const key = { id: 1, name: 'My shard' } as unknown as DraftAccount<ChainAccount>;
-    const params = { walletId, rootAccountId: TEST_ACCOUNTS[0], accounts: [key] };
+  test('should update $wallets on accountsCreated', async () => {
+    const wallet = {
+      id: 1,
+      name: 'My wallet',
+      accounts: [{ id: 1, walletId: 1, name: 'My first shard' }],
+    };
 
-    jest.spyOn(storageService.accounts, 'createAll').mockResolvedValue([{ walletId, ...key } as ChainAccount]);
+    const key = { id: 2, name: 'My second shard' } as unknown as DraftAccount<ChainAccount>;
+    const params = { walletId: wallet.id, rootAccountId: TEST_ACCOUNTS[0], accounts: [key] };
+    const newAccount = { walletId: wallet.id, ...key } as ChainAccount;
 
-    const scope = fork();
+    jest.spyOn(storageService.accounts, 'createAll').mockResolvedValue([newAccount]);
+
+    const scope = fork({
+      values: new Map().set(walletModel.$wallets, [wallet]),
+    });
 
     await allSettled(vaultDetailsModel.events.accountsCreated, { scope, params });
-    expect(scope.getState(walletModel.$accounts)).toEqual([{ walletId, ...key }]);
+    expect(scope.getState(walletModel.$wallets)).toEqual([{ ...wallet, accounts: [wallet.accounts[0], newAccount] }]);
   });
 });

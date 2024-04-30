@@ -117,16 +117,13 @@ const $chainsProxies = combine(
   ({ wallet, chains, proxies }): Record<ChainId, ProxyAccount[]> => {
     if (!wallet) return {};
 
-    const proxiesForAccounts = uniqBy(wallet.accounts, 'accountId').reduce<ProxyAccount[]>(
-      (acc, account) => {
-        if (proxies[account.accountId]) {
-          acc.push(...proxies[account.accountId]);
-        }
+    const proxiesForAccounts = uniqBy(wallet.accounts, 'accountId').reduce<ProxyAccount[]>((acc, account) => {
+      if (proxies[account.accountId]) {
+        acc.push(...proxies[account.accountId]);
+      }
 
-        return acc;
-      },
-      [],
-    );
+      return acc;
+    }, []);
 
     const chainsMap = mapValues(chains, () => []) as Record<ChainId, ProxyAccount[]>;
 

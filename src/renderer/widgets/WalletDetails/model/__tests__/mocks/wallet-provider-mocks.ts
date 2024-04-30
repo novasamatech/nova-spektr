@@ -1,5 +1,4 @@
 import {
-  Account,
   AccountId,
   MultisigWallet,
   ProxyAccount,
@@ -11,6 +10,7 @@ import {
   SigningType,
   WalletType,
   ProxiedAccount,
+  BaseAccount,
 } from '@shared/core';
 import { TEST_ACCOUNTS, TEST_ADDRESS } from '@shared/lib/utils';
 
@@ -69,8 +69,6 @@ const wallets: Wallet[] = [
     ],
   },
 ];
-
-// const accounts: Account[] = [,];
 
 const dupAccounts = [
   {
@@ -163,27 +161,6 @@ const multisiigWallet: MultisigWallet = {
   ],
 };
 
-const signatoriesAccounts: Account[] = [
-  {
-    accountId: '0x01',
-    id: 4,
-    walletId: 3,
-    type: AccountType.BASE,
-    name: 'singatory 1',
-    cryptoType: 0,
-    chainType: 0,
-  },
-  {
-    accountId: '0x02',
-    id: 5,
-    walletId: 4,
-    type: AccountType.BASE,
-    name: 'singatory 2',
-    cryptoType: 0,
-    chainType: 0,
-  },
-];
-
 const signatoriesWallets: Wallet[] = [
   {
     id: 3,
@@ -191,7 +168,17 @@ const signatoriesWallets: Wallet[] = [
     type: WalletType.SINGLE_PARITY_SIGNER,
     signingType: SigningType.PARITY_SIGNER,
     isActive: false,
-    accounts: [],
+    accounts: [
+      {
+        accountId: '0x01',
+        id: 4,
+        walletId: 3,
+        type: AccountType.BASE,
+        name: 'singatory 1',
+        cryptoType: 0,
+        chainType: 0,
+      } as BaseAccount,
+    ],
   },
   {
     id: 4,
@@ -199,11 +186,21 @@ const signatoriesWallets: Wallet[] = [
     type: WalletType.SINGLE_PARITY_SIGNER,
     signingType: SigningType.PARITY_SIGNER,
     isActive: false,
-    accounts: [],
+    accounts: [
+      {
+        accountId: '0x02',
+        id: 5,
+        walletId: 4,
+        type: AccountType.BASE,
+        name: 'singatory 2',
+        cryptoType: 0,
+        chainType: 0,
+      } as BaseAccount,
+    ],
   },
 ];
 
-export const walletProviderMock = {
+export const walletProviderMocks = {
   wallets,
   dupAccounts,
   chains,
@@ -211,5 +208,4 @@ export const walletProviderMock = {
   proxies,
   multisiigWallet,
   signatoriesWallets,
-  signatoriesAccounts,
 };
