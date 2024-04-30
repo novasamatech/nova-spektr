@@ -2,7 +2,7 @@ import { useUnit } from 'effector-react';
 
 import { Switch, IconButton, MenuPopover, Select, FootnoteText } from '@shared/ui';
 import { useI18n } from '@app/providers';
-import { AssetsPageView } from '@entities/asset';
+import { AssetsListView } from '@entities/asset';
 import { assetsSettingsModel } from '../model/assets-settings-modal';
 
 export const AssetsSettings = () => {
@@ -13,13 +13,13 @@ export const AssetsSettings = () => {
 
   const options = [
     {
-      id: AssetsPageView.TOKEN_CENTRIC.toString(),
-      value: AssetsPageView.TOKEN_CENTRIC,
+      id: AssetsListView.TOKEN_CENTRIC.toString(),
+      value: AssetsListView.TOKEN_CENTRIC,
       element: <FootnoteText>{t('balances.tokenCentric')}</FootnoteText>,
     },
     {
-      id: AssetsPageView.CHAIN_CENTRIC.toString(),
-      value: AssetsPageView.CHAIN_CENTRIC,
+      id: AssetsListView.CHAIN_CENTRIC.toString(),
+      value: AssetsListView.CHAIN_CENTRIC,
       element: <FootnoteText>{t('balances.chainCentric')}</FootnoteText>,
     },
   ];
