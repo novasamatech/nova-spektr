@@ -17,7 +17,6 @@ type Props = {
 export const Confirmation = ({ onGoBack }: Props) => {
   const { t } = useI18n();
 
-  const api = useUnit(confirmModel.$api);
   const isXcm = useUnit(confirmModel.$isXcm);
 
   const confirmStore = useUnit(confirmModel.$confirmStore);
@@ -25,7 +24,7 @@ export const Confirmation = ({ onGoBack }: Props) => {
   const signerWallet = useUnit(confirmModel.$signerWallet);
   const proxiedWallet = useUnit(confirmModel.$proxiedWallet);
 
-  if (!confirmStore || !api || !initiatorWallet) return null;
+  if (!confirmStore || !initiatorWallet) return null;
 
   return (
     <div className="flex flex-col items-center pt-4 gap-y-4 pb-4 px-5">

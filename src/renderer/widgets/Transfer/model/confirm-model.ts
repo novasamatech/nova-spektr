@@ -1,7 +1,6 @@
 import { createEvent, combine, restore } from 'effector';
 
 import { Chain, Account, Address, Asset, type ProxiedAccount } from '@shared/core';
-import { networkModel } from '@entities/network';
 import { walletModel, walletUtils } from '@entities/wallet';
 
 type Input = {
@@ -24,16 +23,6 @@ const formInitiated = createEvent<Input>();
 const formSubmitted = createEvent();
 
 const $confirmStore = restore(formInitiated, null);
-
-const $api = combine(
-  {
-    apis: networkModel.$apis,
-    store: $confirmStore,
-  },
-  ({ apis, store }) => {
-    return store ? apis[store.chain.chainId] : null;
-  },
-);
 
 const $initiatorWallet = combine(
   {
@@ -86,7 +75,6 @@ export const confirmModel = {
   $proxiedWallet,
   $signerWallet,
 
-  $api,
   $isXcm,
   events: {
     formInitiated,

@@ -37,8 +37,7 @@ export const SimpleWalletDetails = ({ wallet, onClose }: Props) => {
   const isEthereumBased = accountUtils.isEthereumBased(wallet.accounts[0]);
 
   useEffect(() => {
-    const chainList = Object.values(allChains);
-    const filteredChains = chainList.filter((c) => {
+    const filteredChains = Object.values(allChains).filter((c) => {
       return isEthereumBased ? networkUtils.isEthereumBased(c.options) : !networkUtils.isEthereumBased(c.options);
     });
 

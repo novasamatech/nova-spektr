@@ -22,6 +22,7 @@ import { walletProviderModel } from '../../WalletDetails/model/wallet-provider-m
 import { Account, Chain, ProxiedAccount, ProxyAccount, ProxyType, ProxyVariant } from '@shared/core';
 import { signModel } from '@features/operations/OperationSign/model/sign-model';
 import { submitModel } from '@features/operations/OperationSubmit';
+import { proxiesModel } from '@features/proxies';
 import { proxyModel } from '@entities/proxy';
 import { balanceModel, balanceUtils } from '@entities/balance';
 import { removeProxyUtils } from '../lib/remove-proxy-utils';
@@ -412,6 +413,11 @@ sample({
   },
   fn: ({ walletDetails }) => walletDetails!,
   target: balanceSubModel.events.walletToUnsubSet,
+});
+
+sample({
+  clock: flowFinished,
+  target: proxiesModel.events.workerStarted,
 });
 
 sample({

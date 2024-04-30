@@ -1,34 +1,44 @@
 import { sample, combine } from 'effector';
 
 import { ChainId } from '@shared/core';
-import type { ConnectionItem } from '@features/network/NetworkSelector';
+import { Predicates } from '../lib/constants';
+import { networkModel, networkUtils } from '@entities/network';
+import { ConnectionItem, networkSelectorModel } from '@features/network/NetworkSelector';
+import { removeCustomRpcModel } from '@features/network/ManageCustomRpcNode';
 import {
   networksFilterModel,
   activeNetworksModel,
   inactiveNetworksModel,
   networkSelectorUtils,
+  editCustomRpcModel,
+  addCustomRpcModel,
 } from '@features/network';
-import { Predicates } from '../lib/constants';
 
+type ConnectionMap = {
+  [chainId: ChainId]: {
+    connections: ConnectionItem[];
+    activeConnection?: ConnectionItem;
+  };
+};
 const $activeConnectionsMap = combine(activeNetworksModel.$activeNetworks, (list) => {
-  return list.reduce<Record<ChainId, { nodes: ConnectionItem[]; selectedNode?: ConnectionItem }>>((acc, item) => {
-    const nodes = networkSelectorUtils.getConnectionsList(item);
-    const selectedNode = nodes.find((node) =>
+  return list.reduce<ConnectionMap>((acc, item) => {
+    const connections = networkSelectorUtils.getConnectionsList(item);
+    const activeConnection = connections.find((node) =>
       Predicates[item.connection.connectionType]({ type: node.type, node: node.node }, item.connection.activeNode),
     );
 
-    acc[item.chainId] = { nodes, selectedNode };
+    acc[item.chainId] = { connections, activeConnection };
 
     return acc;
   }, {});
 });
 
 const $inactiveConnectionsMap = combine(inactiveNetworksModel.$inactiveNetworks, (list) => {
-  return list.reduce<Record<ChainId, { nodes: ConnectionItem[]; selectedNode: ConnectionItem }>>((acc, item) => {
-    const nodes = networkSelectorUtils.getConnectionsList(item);
-    const selectedNode = nodes.find((node) => node.type === item.connection.connectionType)!;
+  return list.reduce<ConnectionMap>((acc, item) => {
+    const connections = networkSelectorUtils.getConnectionsList(item);
+    const activeConnection = connections.find((node) => node.type === item.connection.connectionType)!;
 
-    acc[item.chainId] = { nodes, selectedNode };
+    acc[item.chainId] = { connections, activeConnection };
 
     return acc;
   }, {});
@@ -37,6 +47,57 @@ const $inactiveConnectionsMap = combine(inactiveNetworksModel.$inactiveNetworks,
 sample({
   clock: networksFilterModel.$filteredNetworks,
   target: [activeNetworksModel.events.networksChanged, inactiveNetworksModel.events.networksChanged],
+});
+
+sample({
+  clock: networksFilterModel.$filteredNetworks,
+  target: [activeNetworksModel.events.networksChanged, inactiveNetworksModel.events.networksChanged],
+});
+
+sample({
+  clock: addCustomRpcModel.output.flowFinished,
+  source: networkModel.$connections,
+  filter: (connections, { chainId }) => {
+    return networkUtils.isEnabledConnection(connections[chainId]);
+  },
+  fn: (_, data) => data,
+  target: networkSelectorModel.events.rpcNodeSelected,
+});
+
+sample({
+  clock: editCustomRpcModel.output.flowFinished,
+  source: networkModel.$connections,
+  filter: (connections, { chainId, node }) => {
+    const isEnabled = networkUtils.isEnabledConnection(connections[chainId]);
+    const isRpc = networkUtils.isRpcConnection(connections[chainId]);
+    const activeNode = connections[chainId].activeNode;
+    const isEdited = activeNode?.name === node.name && activeNode?.url === node.url;
+
+    return isEnabled && isRpc && isEdited;
+  },
+  fn: (_, data) => data,
+  target: networkSelectorModel.events.rpcNodeSelected,
+});
+
+sample({
+  clock: removeCustomRpcModel.output.flowFinished,
+  source: {
+    chains: networkModel.$chains,
+    connections: networkModel.$connections,
+  },
+  filter: ({ connections }, { chainId, node }) => {
+    const isEnabled = networkUtils.isEnabledConnection(connections[chainId]);
+    const isRpc = networkUtils.isRpcConnection(connections[chainId]);
+    const activeNode = connections[chainId].activeNode;
+    const isDeleted = activeNode?.name === node.name && activeNode?.url === node.url;
+
+    return isEnabled && isRpc && isDeleted;
+  },
+  fn: ({ chains }, { chainId }) => ({
+    chainId,
+    node: chains[chainId].nodes[0],
+  }),
+  target: networkSelectorModel.events.rpcNodeSelected,
 });
 
 export const networksOverviewModel = {

@@ -1,18 +1,20 @@
-import { createEvent, sample, attach } from 'effector';
-import { delay, spread } from 'patronum';
+import { createEvent, sample, createEffect, createStore } from 'effector';
+import { spread } from 'patronum';
 
 import { networkModel, networkUtils } from '@entities/network';
-import { ChainId, ConnectionType, RpcNode } from '@shared/core';
+import { ChainId, ConnectionType, RpcNode, Connection } from '@shared/core';
+import { storageService } from '@shared/api/storage';
 
 const lightClientSelected = createEvent<ChainId>();
 const autoBalanceSelected = createEvent<ChainId>();
 const rpcNodeSelected = createEvent<{ chainId: ChainId; node: RpcNode }>();
-const chainDisabled = createEvent<ChainId>();
+const networkDisabled = createEvent<ChainId>();
 
-const updateConnectionFx = attach({ effect: networkModel.effects.updateConnectionFx });
-const disconnectProviderFx = attach({ effect: networkModel.effects.disconnectProviderFx });
+const $reconnectMap = createStore<Record<ChainId, boolean>>({});
 
-const reconnectProviderFx = attach({ effect: disconnectProviderFx });
+const updateConnectionFx = createEffect((connection: Connection): Promise<Connection | undefined> => {
+  return storageService.connections.put(connection);
+});
 
 sample({
   clock: autoBalanceSelected,
@@ -48,7 +50,7 @@ sample({
 });
 
 sample({
-  clock: chainDisabled,
+  clock: networkDisabled,
   source: networkModel.$connections,
   fn: (connections, chainId) => ({
     ...connections[chainId],
@@ -59,55 +61,65 @@ sample({
 });
 
 sample({
-  clock: chainDisabled,
-  source: networkModel.$providers,
-  fn: (providers, chainId) => ({ chainId, providers }),
-  target: disconnectProviderFx,
+  clock: networkDisabled,
+  target: networkModel.events.chainDisconnected,
 });
 
 sample({
   clock: updateConnectionFx.doneData,
-  source: networkModel.$connections,
-  filter: (connection) => Boolean(connection),
-  fn: (connections, connection) => ({
-    ...connections,
-    [connection!.chainId]: connection,
-  }),
-  target: networkModel.$connections,
-});
-
-sample({
-  clock: updateConnectionFx.doneData,
-  source: networkModel.$providers,
-  filter: (_, connection) => {
-    return Boolean(connection) && networkUtils.isEnabledConnection(connection!);
+  source: {
+    reconnectMap: $reconnectMap,
+    connections: networkModel.$connections,
   },
-  fn: (providers, connection) => {
+  filter: (connection) => Boolean(connection),
+  fn: ({ reconnectMap, connections }, connection) => {
     const chainId = connection!.chainId;
+    const update = { ...connections, [chainId]: connection };
 
-    return providers[chainId] ? { reconnect: { chainId, providers } } : { start: chainId };
+    const isOldEnabled = networkUtils.isEnabledConnection(connections[chainId]);
+    const isNewEnabled = networkUtils.isEnabledConnection(connection!);
+    if (isOldEnabled && isNewEnabled) {
+      return { update, reconnectMap: { ...reconnectMap, [chainId]: true } };
+    }
+
+    return { update };
   },
   target: spread({
-    start: networkModel.events.chainConnected,
-    reconnect: reconnectProviderFx,
+    reconnectMap: $reconnectMap,
+    update: networkModel.$connections,
   }),
 });
 
 sample({
-  clock: [disconnectProviderFx.doneData, reconnectProviderFx.doneData],
-  source: networkModel.$providers,
-  fn: (providers, chainId) => {
-    const { [chainId]: _, ...rest } = providers;
+  clock: updateConnectionFx.doneData,
+  source: $reconnectMap,
+  filter: (_, connection) => Boolean(connection),
+  fn: (reconnectMap, connection) => {
+    const chainId = connection!.chainId;
 
-    return rest;
+    return reconnectMap[chainId] ? { disconnect: chainId } : { connect: chainId };
   },
-  target: networkModel.$providers,
+  target: spread({
+    connect: networkModel.events.chainConnected,
+    disconnect: networkModel.events.chainDisconnected,
+  }),
 });
 
-delay({
-  source: reconnectProviderFx.doneData,
-  timeout: 500,
-  target: networkModel.events.chainConnected,
+sample({
+  clock: networkModel.output.connectionStatusChanged,
+  source: $reconnectMap,
+  filter: (reconnectMap, { status, chainId }) => {
+    return reconnectMap[chainId] && networkUtils.isDisconnectedStatus(status);
+  },
+  fn: (reconnectMap, { chainId }) => {
+    const { [chainId]: _, ...rest } = reconnectMap;
+
+    return { reconnectMap: rest, connect: chainId };
+  },
+  target: spread({
+    connect: networkModel.events.chainConnected,
+    reconnectMap: $reconnectMap,
+  }),
 });
 
 export const networkSelectorModel = {
@@ -115,6 +127,6 @@ export const networkSelectorModel = {
     lightClientSelected,
     autoBalanceSelected,
     rpcNodeSelected,
-    chainDisabled,
+    networkDisabled,
   },
 };

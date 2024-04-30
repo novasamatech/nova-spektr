@@ -1,22 +1,14 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import { useUnit } from 'effector-react';
 
-import { Signatory, Wallet, AccountId, Chain, MultisigWallet } from '@shared/core';
+import { MultisigAccount, Signatory, Wallet, AccountId, MultisigWallet } from '@shared/core';
 import { BaseModal, FootnoteText, Tabs, HelpText, DropdownIconButton } from '@shared/ui';
 import { RootExplorers } from '@shared/lib/utils';
 import { useModalClose, useToggle } from '@shared/lib/hooks';
-import {
-  AccountsList,
-  ContactItem,
-  ExplorersPopover,
-  WalletCardLg,
-  WalletCardMd,
-  accountUtils,
-  permissionUtils,
-} from '@entities/wallet';
 import { useI18n } from '@app/providers';
 import { WalletFiatBalance } from '@features/wallets/WalletSelect/ui/WalletFiatBalance';
 import { IconNames } from '@shared/ui/Icon/data';
+import type { TabItem } from '@shared/ui/types';
 import { RenameWalletModal } from '@features/wallets/RenameWallet';
 import { ForgetWalletModal } from '@features/wallets/ForgetWallet';
 import { addProxyModel, AddProxy } from '@widgets/AddProxyModal';
@@ -26,6 +18,15 @@ import { walletProviderModel } from '../../model/wallet-provider-model';
 import { networkUtils, networkModel } from '@entities/network';
 import { matrixModel, matrixUtils } from '@entities/matrix';
 import { AddPureProxied, addPureProxiedModel } from '@widgets/AddPureProxiedModal';
+import {
+  AccountsList,
+  ContactItem,
+  ExplorersPopover,
+  WalletCardLg,
+  WalletCardMd,
+  accountUtils,
+  permissionUtils,
+} from '@entities/wallet';
 
 type Props = {
   wallet: MultisigWallet;
@@ -46,23 +47,16 @@ export const MultisigWalletDetails = ({
   const matrix = useUnit(matrixModel.$matrix);
   const loginStatus = useUnit(matrixModel.$loginStatus);
 
-  const allChains = useUnit(networkModel.$chains);
+  const chains = useUnit(networkModel.$chains);
   const hasProxies = useUnit(walletProviderModel.$hasProxies);
-  const canCreateProxy = useUnit(walletProviderModel.$canCreateProxy);
 
   const [isModalOpen, closeModal] = useModalClose(true, onClose);
   const [isRenameModalOpen, toggleIsRenameModalOpen] = useToggle();
   const [isConfirmForgetOpen, toggleConfirmForget] = useToggle();
 
-  const [chains, setChains] = useState<Chain[]>([]);
-
-  useEffect(() => {
-    setChains(Object.values(allChains));
-  }, []);
-
   const multisigAccount = wallet.accounts[0];
-  const chain = multisigAccount.chainId && allChains[multisigAccount.chainId];
-  const explorers = chain?.explorers || RootExplorers;
+  const singleChain = multisigAccount.chainId && chains[multisigAccount.chainId];
+  const explorers = singleChain?.explorers || RootExplorers;
 
   const multisigChains = useMemo(() => {
     return Object.values(chains).filter((chain) => {
@@ -71,6 +65,23 @@ export const MultisigWalletDetails = ({
       );
     });
   }, [chains]);
+
+  const canCreateProxy = useMemo(() => {
+    const anyProxy = permissionUtils.canCreateAnyProxy(wallet);
+    const nonAnyProxy = permissionUtils.canCreateNonAnyProxy(wallet);
+
+    if (!singleChain) return anyProxy || nonAnyProxy;
+
+    return (anyProxy || nonAnyProxy) && networkUtils.isProxySupported(singleChain?.options);
+  }, [singleChain]);
+
+  const canCreatePureProxy = useMemo(() => {
+    const anyProxy = permissionUtils.canCreateAnyProxy(wallet);
+
+    if (!singleChain) return anyProxy;
+
+    return anyProxy && networkUtils.isPureProxySupported(singleChain?.options);
+  }, [singleChain]);
 
   const Options = [
     {
@@ -85,7 +96,7 @@ export const MultisigWalletDetails = ({
     },
   ];
 
-  if (permissionUtils.canCreateAnyProxy(wallet) || permissionUtils.canCreateNonAnyProxy(wallet)) {
+  if (canCreateProxy) {
     Options.push({
       icon: 'addCircle' as IconNames,
       title: t('walletDetails.common.addProxyAction'),
@@ -93,7 +104,7 @@ export const MultisigWalletDetails = ({
     });
   }
 
-  if (permissionUtils.canCreateAnyProxy(wallet)) {
+  if (canCreatePureProxy) {
     Options.push({
       icon: 'addCircle' as IconNames,
       title: t('walletDetails.common.addPureProxiedAction'),
@@ -113,6 +124,141 @@ export const MultisigWalletDetails = ({
     </DropdownIconButton>
   );
 
+  const TabAccountList = {
+    id: 1,
+    title: t('walletDetails.multisig.networksTab'),
+    panel: <AccountsList accountId={multisigAccount.accountId} chains={multisigChains} className="h-[345px]" />,
+  };
+
+  const TabSignatories = {
+    id: 2,
+    title: t('walletDetails.multisig.signatoriesTab'),
+    panel: (
+      <div className="flex flex-col">
+        <FootnoteText className="text-text-tertiary px-5">
+          {t('walletDetails.multisig.thresholdLabel', {
+            min: multisigAccount.threshold,
+            max: multisigAccount.signatories.length,
+          })}
+        </FootnoteText>
+
+        <div className="overflow-y-auto mt-4 h-[337px]">
+          {!singleChain && signatoryWallets.length > 0 && (
+            <div className="flex flex-col gap-y-2">
+              <FootnoteText className="text-text-tertiary px-5">
+                {t('walletDetails.multisig.walletsGroup')} {signatoryWallets.length}
+              </FootnoteText>
+
+              <ul className="flex flex-col gap-y-2 px-3">
+                {signatoryWallets.map(([accountId, wallet]) => (
+                  <li key={wallet.id} className="flex items-center gap-x-2 py-1.5">
+                    <ExplorersPopover
+                      address={accountId}
+                      explorers={explorers}
+                      button={
+                        <WalletCardMd
+                          wallet={wallet}
+                          description={<WalletFiatBalance walletId={wallet.id} className="truncate" />}
+                        />
+                      }
+                    >
+                      <ExplorersPopover.Group
+                        active={matrixUtils.isLoggedIn(loginStatus)}
+                        title={t('general.explorers.matrixIdTitle')}
+                      >
+                        <HelpText className="text-text-secondary">{matrix.userId}</HelpText>
+                      </ExplorersPopover.Group>
+                    </ExplorersPopover>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {singleChain && signatoryAccounts?.length && (
+            <div className="flex flex-col gap-y-2 px-5">
+              <FootnoteText className="text-text-tertiary ">
+                {t('walletDetails.multisig.accountsGroup')} {signatoryAccounts.length}
+              </FootnoteText>
+
+              <ul className="flex flex-col gap-y-2">
+                {signatoryAccounts.map((signatory) => (
+                  <li key={signatory.accountId} className="flex items-center gap-x-2 py-1.5">
+                    <ExplorersPopover
+                      address={signatory.accountId}
+                      explorers={RootExplorers}
+                      button={
+                        <ContactItem
+                          name={signatory.name}
+                          address={signatory.accountId}
+                          addressPrefix={singleChain.addressPrefix}
+                        />
+                      }
+                    >
+                      <ExplorersPopover.Group
+                        active={matrixUtils.isLoggedIn(loginStatus)}
+                        title={t('general.explorers.matrixIdTitle')}
+                      >
+                        <HelpText className="text-text-secondary">{matrix.userId}</HelpText>
+                      </ExplorersPopover.Group>
+                    </ExplorersPopover>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {signatoryContacts.length > 0 && (
+            <div className="flex flex-col gap-y-2 mt-4 px-5">
+              <FootnoteText className="text-text-tertiary">
+                {t('walletDetails.multisig.contactsGroup')} {signatoryContacts.length}
+              </FootnoteText>
+
+              <ul className="flex flex-col gap-y-2">
+                {signatoryContacts.map((signatory) => (
+                  <li key={signatory.accountId} className="flex items-center gap-x-2 py-1.5">
+                    <ExplorersPopover
+                      address={signatory.accountId}
+                      explorers={explorers}
+                      button={<ContactItem name={signatory.name} address={signatory.accountId} />}
+                    >
+                      <ExplorersPopover.Group
+                        active={Boolean(signatory.matrixId)}
+                        title={t('general.explorers.matrixIdTitle')}
+                      >
+                        <HelpText className="text-text-secondary break-all">{signatory.matrixId}</HelpText>
+                      </ExplorersPopover.Group>
+                    </ExplorersPopover>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </div>
+      </div>
+    ),
+  };
+
+  const TabProxy = {
+    id: 3,
+    title: t('walletDetails.common.proxiesTabTitle'),
+    panel: hasProxies ? (
+      <ProxiesList className="h-[371px]" canCreateProxy={canCreateProxy} />
+    ) : (
+      <NoProxiesAction
+        className="h-[371px]"
+        canCreateProxy={canCreateProxy}
+        onAddProxy={addProxyModel.events.flowStarted}
+      />
+    ),
+  };
+
+  const TabItems: TabItem[] = [TabAccountList, TabSignatories];
+
+  if (canCreateProxy) {
+    TabItems.push(TabProxy);
+  }
+
   return (
     <BaseModal
       closeButton
@@ -128,141 +274,7 @@ export const MultisigWalletDetails = ({
           <WalletCardLg wallet={wallet} />
         </div>
 
-        <Tabs
-          unmount={false}
-          tabClassName="whitespace-nowrap"
-          tabsClassName="mx-4"
-          items={[
-            {
-              id: 1,
-              title: t('walletDetails.multisig.networksTab'),
-              panel: (
-                <AccountsList accountId={multisigAccount.accountId} chains={multisigChains} className="h-[345px]" />
-              ),
-            },
-            {
-              id: 2,
-              title: t('walletDetails.multisig.signatoriesTab'),
-              panel: (
-                <div className="flex flex-col">
-                  <FootnoteText className="text-text-tertiary px-5">
-                    {t('walletDetails.multisig.thresholdLabel', {
-                      min: multisigAccount.threshold,
-                      max: multisigAccount.signatories.length,
-                    })}
-                  </FootnoteText>
-
-                  <div className="overflow-y-auto mt-4 h-[337px]">
-                    {!chain && signatoryWallets.length > 0 && (
-                      <div className="flex flex-col gap-y-2">
-                        <FootnoteText className="text-text-tertiary px-5">
-                          {t('walletDetails.multisig.walletsGroup')} {signatoryWallets.length}
-                        </FootnoteText>
-
-                        <ul className="flex flex-col gap-y-2 px-3">
-                          {signatoryWallets.map(([accountId, wallet]) => (
-                            <li key={wallet.id} className="flex items-center gap-x-2 py-1.5">
-                              <ExplorersPopover
-                                address={accountId}
-                                explorers={explorers}
-                                button={
-                                  <WalletCardMd
-                                    wallet={wallet}
-                                    description={<WalletFiatBalance walletId={wallet.id} className="truncate" />}
-                                  />
-                                }
-                              >
-                                <ExplorersPopover.Group
-                                  active={matrixUtils.isLoggedIn(loginStatus)}
-                                  title={t('general.explorers.matrixIdTitle')}
-                                >
-                                  <HelpText className="text-text-secondary">{matrix.userId}</HelpText>
-                                </ExplorersPopover.Group>
-                              </ExplorersPopover>
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                    )}
-
-                    {chain && signatoryAccounts?.length && (
-                      <div className="flex flex-col gap-y-2 px-5">
-                        <FootnoteText className="text-text-tertiary ">
-                          {t('walletDetails.multisig.accountsGroup')} {signatoryAccounts.length}
-                        </FootnoteText>
-
-                        <ul className="flex flex-col gap-y-2">
-                          {signatoryAccounts.map((signatory) => (
-                            <li key={signatory.accountId} className="flex items-center gap-x-2 py-1.5">
-                              <ExplorersPopover
-                                address={signatory.accountId}
-                                explorers={RootExplorers}
-                                button={
-                                  <ContactItem
-                                    name={signatory.name}
-                                    address={signatory.accountId}
-                                    addressPrefix={chain.addressPrefix}
-                                  />
-                                }
-                              >
-                                <ExplorersPopover.Group
-                                  active={matrixUtils.isLoggedIn(loginStatus)}
-                                  title={t('general.explorers.matrixIdTitle')}
-                                >
-                                  <HelpText className="text-text-secondary">{matrix.userId}</HelpText>
-                                </ExplorersPopover.Group>
-                              </ExplorersPopover>
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                    )}
-
-                    {signatoryContacts.length > 0 && (
-                      <div className="flex flex-col gap-y-2 mt-4 px-5">
-                        <FootnoteText className="text-text-tertiary">
-                          {t('walletDetails.multisig.contactsGroup')} {signatoryContacts.length}
-                        </FootnoteText>
-
-                        <ul className="flex flex-col gap-y-2">
-                          {signatoryContacts.map((signatory) => (
-                            <li key={signatory.accountId} className="flex items-center gap-x-2 py-1.5">
-                              <ExplorersPopover
-                                address={signatory.accountId}
-                                explorers={explorers}
-                                button={<ContactItem name={signatory.name} address={signatory.accountId} />}
-                              >
-                                <ExplorersPopover.Group
-                                  active={Boolean(signatory.matrixId)}
-                                  title={t('general.explorers.matrixIdTitle')}
-                                >
-                                  <HelpText className="text-text-secondary break-all">{signatory.matrixId}</HelpText>
-                                </ExplorersPopover.Group>
-                              </ExplorersPopover>
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              ),
-            },
-            {
-              id: 3,
-              title: t('walletDetails.common.proxiesTabTitle'),
-              panel: hasProxies ? (
-                <ProxiesList className="h-[371px]" canCreateProxy={canCreateProxy} />
-              ) : (
-                <NoProxiesAction
-                  className="h-[371px]"
-                  canCreateProxy={canCreateProxy}
-                  onAddProxy={addProxyModel.events.flowStarted}
-                />
-              ),
-            },
-          ]}
-        />
+        <Tabs unmount={false} tabClassName="whitespace-nowrap" tabsClassName="mx-4" items={TabItems} />
       </div>
 
       <RenameWalletModal wallet={wallet} isOpen={isRenameModalOpen} onClose={toggleIsRenameModalOpen} />

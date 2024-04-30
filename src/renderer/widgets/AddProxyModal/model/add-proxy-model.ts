@@ -5,6 +5,7 @@ import { Transaction } from '@entities/transaction';
 import { signModel } from '@features/operations/OperationSign/model/sign-model';
 import { submitModel } from '@features/operations/OperationSubmit';
 import { walletSelectModel } from '@features/wallets';
+import { proxiesModel } from '@features/proxies';
 import { walletModel } from '@entities/wallet';
 import { balanceSubModel } from '@features/balances';
 import { Step, AddProxyStore } from '../lib/types';
@@ -151,6 +152,11 @@ sample({
   },
   fn: ({ walletDetails }) => walletDetails!,
   target: balanceSubModel.events.walletToUnsubSet,
+});
+
+sample({
+  clock: flowFinished,
+  target: proxiesModel.events.workerStarted,
 });
 
 sample({

@@ -31,8 +31,9 @@ const $api = combine(
     store: $signStore,
   },
   ({ apis, store }) => {
-    return store ? apis[store.chain.chainId] : null;
+    return store?.chain ? apis[store.chain.chainId] : undefined;
   },
+  { skipVoid: false },
 );
 
 const $signerWallet = combine(

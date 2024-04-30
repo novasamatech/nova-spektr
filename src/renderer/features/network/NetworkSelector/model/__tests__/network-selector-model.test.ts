@@ -34,7 +34,7 @@ describe('features/network/NetworkSelector/model/network-selector-model', () => 
       values: new Map().set(networkModel.$connections, { '0x01': mockConnection }),
     });
 
-    await allSettled(networkSelectorModel.events.chainDisabled, { scope, params: mockConnection.chainId });
+    await allSettled(networkSelectorModel.events.networkDisabled, { scope, params: mockConnection.chainId });
 
     expect(scope.getState(networkModel.$connections)).toEqual({ '0x01': updatedConnection });
   });
