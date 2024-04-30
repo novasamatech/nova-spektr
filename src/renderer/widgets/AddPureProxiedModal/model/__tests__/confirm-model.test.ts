@@ -24,13 +24,12 @@ describe('widgets/AddPureProxyModal/model/confirm-model', () => {
       account: { walletId: 1 } as unknown as Account,
       signatory: { walletId: 2 } as unknown as Account,
       description: '',
-      transaction: {} as Transaction,
-      proxyDeposit: '0',
+      fee: '0',
+      multisigDeposit: '0',
     };
 
     await allSettled(confirmModel.events.formInitiated, { scope, params: store });
 
-    expect(scope.getState(confirmModel.$api)).toEqual(testApi);
     expect(scope.getState(confirmModel.$confirmStore)).toEqual(store);
     expect(scope.getState(confirmModel.$initiatorWallet)).toEqual(initiatorWallet);
     expect(scope.getState(confirmModel.$signerWallet)).toEqual(signerWallet);
@@ -46,12 +45,12 @@ describe('widgets/AddPureProxyModal/model/confirm-model', () => {
       account: { walletId: 1 } as unknown as Account,
       description: '',
       transaction: {} as Transaction,
-      proxyDeposit: '0',
+      fee: '0',
+      multisigDeposit: '0',
     };
 
     await allSettled(confirmModel.events.formInitiated, { scope, params: store });
 
-    expect(scope.getState(confirmModel.$api)).toEqual(testApi);
     expect(scope.getState(confirmModel.$confirmStore)).toEqual(store);
     expect(scope.getState(confirmModel.$initiatorWallet)).toEqual(initiatorWallet);
     expect(scope.getState(confirmModel.$signerWallet)).toEqual(initiatorWallet);

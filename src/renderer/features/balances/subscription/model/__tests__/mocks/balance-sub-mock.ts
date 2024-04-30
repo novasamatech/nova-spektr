@@ -32,7 +32,7 @@ const accounts = [
     chainId: '0x02',
     cryptoType: CryptoType.SR25519,
   },
-] as Account[];
+] as unknown as Account[];
 
 const wallets = [
   { id: 1, isActive: true, name: 'My active wallet', accounts: [accounts[0], accounts[1]] },

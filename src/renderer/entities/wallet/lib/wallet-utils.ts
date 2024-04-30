@@ -1,5 +1,3 @@
-import { isEmpty } from 'lodash';
-
 import type {
   MultiShardWallet,
   MultisigWallet,
@@ -113,7 +111,7 @@ function getWalletFilteredAccounts(
 ): Wallet | undefined {
   if (!predicates.walletFn && !predicates.accountFn) return undefined;
 
-  const result = wallets.reduce((acc, wallet) => {
+  return wallets.reduce<Wallet | undefined>((acc, wallet) => {
     if (acc) return acc;
 
     if (!predicates.walletFn || predicates.walletFn(wallet)) {
@@ -127,9 +125,7 @@ function getWalletFilteredAccounts(
     }
 
     return acc;
-  }, {} as Wallet);
-
-  return isEmpty(result) ? undefined : result;
+  }, undefined);
 }
 
 function getWalletsFilteredAccounts(
