@@ -4070,7 +4070,9 @@
     "parentId": "0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3",
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/chains/HydraDX.svg",
     "options": [
-      "multisig"
+      "multisig",
+      "regular_proxy",
+      "pure_proxy"
     ],
     "nodes": [
       {
@@ -4526,6 +4528,12 @@
         {
           "type": "subquery",
           "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-hydra__bm92Y"
+        }
+      ],
+      "proxy": [
+        {
+          "type": "subquery",
+          "url": "https://api.subquery.network/sq/nova-wallet/proxy-hydradx"
         }
       ]
     }
