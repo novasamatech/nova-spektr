@@ -59,19 +59,18 @@ const feeChanged = createEvent<string>();
 const isFeeLoadingChanged = createEvent<boolean>();
 const isProxyDepositLoadingChanged = createEvent<boolean>();
 
-// TODO: Don't erase data if come back from the next steps
-const $oldProxyDeposit = createStore<string>(ZERO_BALANCE).reset(formSubmitted);
+const $oldProxyDeposit = createStore<string>(ZERO_BALANCE);
 
-const $fee = restore(feeChanged, ZERO_BALANCE).reset(formSubmitted);
-const $newProxyDeposit = restore(proxyDepositChanged, ZERO_BALANCE).reset(formSubmitted);
-const $multisigDeposit = restore(multisigDepositChanged, ZERO_BALANCE).reset(formSubmitted);
-const $isFeeLoading = restore(isFeeLoadingChanged, true).reset(formSubmitted);
-const $isProxyDepositLoading = restore(isProxyDepositLoadingChanged, true).reset(formSubmitted);
+const $fee = restore(feeChanged, ZERO_BALANCE);
+const $newProxyDeposit = restore(proxyDepositChanged, ZERO_BALANCE);
+const $multisigDeposit = restore(multisigDepositChanged, ZERO_BALANCE);
+const $isFeeLoading = restore(isFeeLoadingChanged, true);
+const $isProxyDepositLoading = restore(isProxyDepositLoadingChanged, true);
 
-const $proxyQuery = createStore<string>('').reset(formSubmitted);
+const $proxyQuery = createStore<string>('');
 
-const $isMultisig = createStore<boolean>(false).reset(formSubmitted);
-const $isProxy = createStore<boolean>(false).reset(formSubmitted);
+const $isMultisig = createStore<boolean>(false);
+const $isProxy = createStore<boolean>(false);
 
 const $proxyForm = createForm<FormParams>({
   fields: {
