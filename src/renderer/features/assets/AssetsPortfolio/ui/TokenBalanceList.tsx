@@ -50,7 +50,9 @@ export const TokenBalanceList = ({ asset }: Props) => {
               <div className="flex flex-col">
                 <BodyText>{asset.symbol}</BodyText>
                 <div className="flex items-center">
-                  <FootnoteText className="text-text-tertiary mr-1.5">{asset.chains.length} networks</FootnoteText>
+                  <FootnoteText className="text-text-tertiary mr-1.5">
+                    {t('balances.availableNetworks', { count: asset.chains.length })}
+                  </FootnoteText>
                   <ChainIcon src={chains[asset.chains[0].chainId].icon} name={asset.chains[0].name} size={18} />
                   <ChainIcon
                     className="mx-[-8px]"
