@@ -1,18 +1,13 @@
 import { KeyboardEvent } from 'react';
-import { Link } from 'react-router-dom';
 import { useUnit } from 'effector-react';
 
-import { BodyText, Icon, Shimmering } from '@shared/ui';
-import { AssetBalance, AssetDetails, AssetIcon } from '@entities/asset';
+import { BodyText, Shimmering } from '@shared/ui';
+import { AssetBalance, AssetDetails, AssetIcon, AssetLinks } from '@entities/asset';
 import { useToggle } from '@shared/lib/hooks';
 import { cnTw, KeyboardKey, totalAmount, transferableAmount } from '@shared/lib/utils';
 import { useI18n } from '@app/providers';
-import { Paths, createLink } from '@shared/routes';
 import { ChainId, Asset, Balance } from '@shared/core';
-import { TokenPrice } from '@entities/price/ui/TokenPrice';
-import { AssetFiatBalance } from '@entities/price/ui/AssetFiatBalance';
-import { priceProviderModel } from '@entities/price';
-import { CheckPermission, OperationType, walletModel } from '@entities/wallet';
+import { priceProviderModel, AssetFiatBalance, TokenPrice } from '@entities/price';
 
 type Props = {
   chainId: ChainId;
@@ -24,8 +19,6 @@ export const AssetCard = ({ chainId, asset, balance }: Props) => {
   const { t } = useI18n();
 
   const fiatFlag = useUnit(priceProviderModel.$fiatFlag);
-  const activeWallet = useUnit(walletModel.$activeWallet);
-  const activeAccounts = useUnit(walletModel.$activeAccounts);
 
   const [isExpanded, toggleExpanded] = useToggle();
 
@@ -73,24 +66,7 @@ export const AssetCard = ({ chainId, asset, balance }: Props) => {
             </div>
           )}
         </div>
-        <div className="flex gap-x-2 ml-3">
-          <CheckPermission operationType={OperationType.TRANSFER} wallet={activeWallet} accounts={activeAccounts}>
-            <Link
-              to={createLink(Paths.TRANSFER_ASSET, {}, { chainId: [chainId], assetId: [asset.assetId] })}
-              onClick={(e) => e.stopPropagation()}
-            >
-              <Icon name="sendArrow" size={20} />
-            </Link>
-          </CheckPermission>
-          <CheckPermission operationType={OperationType.RECEIVE} wallet={activeWallet} accounts={activeAccounts}>
-            <Link
-              to={createLink(Paths.RECEIVE_ASSET, {}, { chainId: [chainId], assetId: [asset.assetId] })}
-              onClick={(e) => e.stopPropagation()}
-            >
-              <Icon name="receiveArrow" size={20} />
-            </Link>
-          </CheckPermission>
-        </div>
+        <AssetLinks assetId={asset.assetId} chainId={chainId} />
       </div>
 
       {isExpanded && (

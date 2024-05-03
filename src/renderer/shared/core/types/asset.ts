@@ -1,3 +1,5 @@
+import { ChainId } from './general';
+
 export type Asset = {
   name: string;
   assetId: number;
@@ -29,4 +31,20 @@ export type OrmlExtras = {
   currencyIdType: string;
   existentialDeposit: string;
   transfersEnabled?: boolean;
+};
+
+export type TokenAsset = {
+  name: string;
+  precision: number;
+  icon: string;
+  priceId?: string;
+  symbol: string;
+  chains: {
+    chainId: ChainId;
+    name: string;
+    assetId: number;
+    assetSymbol: string;
+    type?: AssetType;
+    typeExtras?: StatemineExtras | OrmlExtras;
+  }[];
 };

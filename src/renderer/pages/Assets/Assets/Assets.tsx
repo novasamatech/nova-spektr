@@ -1,16 +1,20 @@
 import { Outlet } from 'react-router-dom';
 import { useUnit } from 'effector-react';
+import { useEffect } from 'react';
 
 import { useI18n } from '@app/providers';
 import { Header } from '@shared/ui';
 import { ShardSelectorButton, ShardSelectorModal } from '@features/wallets';
 import {
   AssetsChainView,
+  AssetsPortfolio,
   AssetsSearch,
   AssetsSettings,
   assetsSearchModel,
   assetsSettingsModel,
+  portfolioModel,
 } from '@features/assets';
+import { AssetsListView } from '@entities/asset';
 import { assetsModel } from './model/assets-model';
 
 export const Assets = () => {
@@ -19,6 +23,11 @@ export const Assets = () => {
   const activeShards = useUnit(assetsModel.$activeShards);
   const query = useUnit(assetsSearchModel.$query);
   const hideZeroBalances = useUnit(assetsSettingsModel.$hideZeroBalances);
+  const assetsView = useUnit(assetsSettingsModel.$assetsView);
+
+  useEffect(() => {
+    portfolioModel.events.setActiveView(assetsView);
+  }, [assetsView]);
 
   return (
     <>
@@ -30,8 +39,14 @@ export const Assets = () => {
           </div>
         </Header>
         <ShardSelectorButton />
-
-        <AssetsChainView query={query} activeShards={activeShards} hideZeroBalances={hideZeroBalances} />
+        <div className="flex flex-col gap-y-4 w-full h-full overflow-y-scroll">
+          {activeShards.length > 0 &&
+            (assetsView === AssetsListView.CHAIN_CENTRIC ? (
+              <AssetsChainView query={query} activeShards={activeShards} hideZeroBalances={hideZeroBalances} />
+            ) : (
+              <AssetsPortfolio />
+            ))}
+        </div>
       </section>
 
       <ShardSelectorModal onConfirm={assetsModel.events.activeShardsSet} />
