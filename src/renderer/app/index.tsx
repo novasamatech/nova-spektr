@@ -14,6 +14,7 @@ import './i18n';
 import './index.css';
 import './styles/theme/default.css';
 import '@features/balances';
+import { multisigsModel } from '../features/multisigs';
 
 log.variables.version = process.env.VERSION;
 log.variables.env = process.env.NODE_ENV;
@@ -40,6 +41,7 @@ networkModel.events.networkStarted();
 proxyModel.events.proxyStarted();
 assetsSettingsModel.events.assetsStarted();
 notificationModel.events.notificationsStarted();
+multisigsModel.events.multisigsDiscoveryStarted();
 
 createRoot(container).render(
   <HashRouter>
