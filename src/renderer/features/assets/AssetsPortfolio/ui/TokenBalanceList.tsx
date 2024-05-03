@@ -110,7 +110,7 @@ export const TokenBalanceList = ({ asset }: Props) => {
         <Accordion.Content className="mt-1">
           <ul className="flex flex-col gap-y-1.5 pl-6">
             {asset.chains.map((chain) => (
-              <NetworkCard key={chain.chainId} chain={chain} asset={asset} />
+              <NetworkCard key={chain.chainId + chain.assetId} chain={chain} asset={asset} />
             ))}
           </ul>
         </Accordion.Content>
