@@ -1,18 +1,27 @@
 import { cnTw, formatBalance } from '@shared/lib/utils';
 import { AssetIcon } from '@entities/asset';
 import { useI18n } from '@app/providers';
-import type { Asset } from '@shared/core';
+import type { Asset, TokenAsset } from '@shared/core';
 
 type Props = {
   value: string;
-  asset?: Asset; // maybe change type to Asset | number to allow pass just asset id and then get asset by id
+  asset?: Asset | TokenAsset; // maybe change type to Asset | number to allow pass just asset id and then get asset by id
   className?: string;
   showIcon?: boolean;
   imgClassName?: string;
   wrapperClassName?: string;
+  showSymbol?: boolean;
 };
 
-export const AssetBalance = ({ value, asset, className, showIcon, imgClassName, wrapperClassName }: Props) => {
+export const AssetBalance = ({
+  value,
+  asset,
+  className,
+  showIcon,
+  imgClassName,
+  wrapperClassName,
+  showSymbol = true,
+}: Props) => {
   const { t } = useI18n();
 
   if (!asset) return null;
@@ -27,7 +36,7 @@ export const AssetBalance = ({ value, asset, className, showIcon, imgClassName, 
 
   const balance = (
     <span className={cnTw('text-body text-text-primary', className)}>
-      {balanceValue} {suffix} {symbol}
+      {balanceValue} {suffix} {showSymbol && symbol}
     </span>
   );
 

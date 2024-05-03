@@ -33,10 +33,6 @@ export const AssetsChainView = ({ query, activeShards, hideZeroBalances }: Props
   const [sortedChains, setSortedChains] = useState<Chain[]>([]);
 
   useEffect(() => {
-    priceProviderModel.events.assetsPricesRequested({ includeRates: true });
-  }, []);
-
-  useEffect(() => {
     const isMultisig = walletUtils.isMultisig(activeWallet);
 
     const availableChains = Object.values(chains).filter((chain) => {
@@ -74,29 +70,27 @@ export const AssetsChainView = ({ query, activeShards, hideZeroBalances }: Props
 
   return (
     <div className="flex flex-col gap-y-4 w-full h-full overflow-y-scroll">
-      {activeShards.length > 0 && (
-        <ul className="flex flex-col gap-y-4 items-center w-full py-4">
-          {sortedChains.map((chain) => (
-            <NetworkAssets
-              key={chain.chainId}
-              searchSymbolOnly={searchSymbolOnly}
-              chain={chain}
-              accounts={activeShards}
-              hideZeroBalances={hideZeroBalances}
-              query={query}
-            />
-          ))}
+      <ul className="flex flex-col gap-y-4 items-center w-full py-4">
+        {sortedChains.map((chain) => (
+          <NetworkAssets
+            key={chain.chainId}
+            searchSymbolOnly={searchSymbolOnly}
+            chain={chain}
+            accounts={activeShards}
+            hideZeroBalances={hideZeroBalances}
+            query={query}
+          />
+        ))}
 
-          <div className="hidden only:flex flex-col items-center justify-center gap-y-8 w-full h-full">
-            <Icon as="img" name="emptyList" alt={t('balances.emptyStateLabel')} size={178} />
-            <BodyText align="center" className="text-text-tertiary">
-              {t('balances.emptyStateLabel')}
-              <br />
-              {t('balances.emptyStateDescription')}
-            </BodyText>
-          </div>
-        </ul>
-      )}
+        <div className="hidden only:flex flex-col items-center justify-center gap-y-8 w-full h-full">
+          <Icon as="img" name="emptyList" alt={t('balances.emptyStateLabel')} size={178} />
+          <BodyText align="center" className="text-text-tertiary">
+            {t('balances.emptyStateLabel')}
+            <br />
+            {t('balances.emptyStateDescription')}
+          </BodyText>
+        </div>
+      </ul>
     </div>
   );
 };
