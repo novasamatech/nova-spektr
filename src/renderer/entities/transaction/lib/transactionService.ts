@@ -45,8 +45,10 @@ export const transactionService = {
   getTransactionFee,
   getMultisigDeposit,
 
+  createPayload,
   getSignedExtrinsic,
   submitAndWatchExtrinsic,
+  signAndSubmit,
 
   getTxWrappers,
   getWrappedTransaction,
@@ -57,6 +59,45 @@ async function getTransactionFee(transaction: Transaction, api: ApiPromise): Pro
   const paymentInfo = await extrinsic.paymentInfo(transaction.address);
 
   return paymentInfo.partialFee.toString();
+}
+
+async function signAndSubmit(
+  transaction: Transaction,
+  signature: HexString,
+  api: ApiPromise,
+  callback: (executed: any, params: any) => void,
+) {
+  const extrinsic = getExtrinsic[transaction.type](transaction.args, api);
+  const { payload } = await createPayload(transaction, api);
+
+  extrinsic.addSignature(transaction.address, signature, payload);
+  extrinsic.send(({ status, events }) => {
+    if (status.isInBlock || status.isFinalized) {
+      events
+        // find/filter for failed events
+        .filter(({ event }) => api.events.system.ExtrinsicFailed.is(event))
+        // we know that data for system.ExtrinsicFailed is
+        // (DispatchError, DispatchInfo)
+        .forEach(
+          ({
+            event: {
+              data: [error, info],
+            },
+          }) => {
+            if ((error as any).isModule) {
+              // for module errors, we have the section indexed, lookup
+              const decoded = api.registry.findMetaError((error as any).asModule);
+              const { docs, method, section } = decoded;
+
+              console.log(`xcm ${section}.${method}: ${docs.join(' ')}`);
+            } else {
+              // Other, CannotLookup, BadOrigin, no extra info
+              console.log(error.toString());
+            }
+          },
+        );
+    }
+  });
 }
 
 function getMultisigDeposit(threshold: Threshold, api: ApiPromise): string {
@@ -296,32 +337,32 @@ function getWrappedTransaction({ api, addressPrefix, transaction, txWrappers }: 
   );
 }
 
+async function createPayload(
+  transaction: Transaction,
+  api: ApiPromise,
+): Promise<{
+  unsigned: UnsignedTransaction;
+  payload: Uint8Array;
+}> {
+  const { info, options, registry } = await createTxMetadata(transaction.address, api);
+
+  const unsigned = getUnsignedTransaction[transaction.type](transaction, info, options, api);
+  if (options.signedExtensions?.includes('ChargeAssetTxPayment')) {
+    unsigned.assetId = undefined;
+  }
+  const signingPayloadHex = construct.signingPayload(unsigned, { registry });
+
+  return {
+    unsigned,
+    payload: hexToU8a(signingPayloadHex),
+  };
+}
+
 export const useTransaction = (): ITransactionService => {
   const { decodeCallData } = useCallDataDecoder();
 
   const [txs, setTxs] = useState<Transaction[]>([]);
   const [wrappers, setWrappers] = useState<TxWrappers_OLD[]>([]);
-
-  const createPayload = async (
-    transaction: Transaction,
-    api: ApiPromise,
-  ): Promise<{
-    unsigned: UnsignedTransaction;
-    payload: Uint8Array;
-  }> => {
-    const { info, options, registry } = await createTxMetadata(transaction.address, api);
-
-    const unsigned = getUnsignedTransaction[transaction.type](transaction, info, options, api);
-    if (options.signedExtensions?.includes('ChargeAssetTxPayment')) {
-      unsigned.assetId = undefined;
-    }
-    const signingPayloadHex = construct.signingPayload(unsigned, { registry });
-
-    return {
-      unsigned,
-      payload: hexToU8a(signingPayloadHex),
-    };
-  };
 
   const getTransactionHash = (transaction: Transaction, api: ApiPromise): HashData => {
     const extrinsic = getExtrinsic[transaction.type](transaction.args, api);
@@ -386,7 +427,6 @@ export const useTransaction = (): ITransactionService => {
   };
 
   return {
-    createPayload,
     getExtrinsicWeight,
     getTxWeight,
     getTransactionHash,

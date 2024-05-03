@@ -5,7 +5,7 @@ import init, { Encoder } from 'raptorq';
 import { useEffect, useState } from 'react';
 
 import { useI18n } from '@app/providers';
-import { Transaction, useTransaction } from '@entities/transaction';
+import { Transaction, transactionService } from '@entities/transaction';
 import { toAddress } from '@shared/lib/utils';
 import { Button, FootnoteText } from '@shared/ui';
 import type { Account, BaseAccount, ChainId, ShardAccount } from '@shared/core';
@@ -44,7 +44,6 @@ export const ScanMultiframeQr = ({
   onResult,
 }: Props) => {
   const { t } = useI18n();
-  const { createPayload } = useTransaction();
 
   const [encoder, setEncoder] = useState<Encoder>();
   const [bulkTransactions, setBulkTransactions] = useState<Uint8Array>();
@@ -62,7 +61,7 @@ export const ScanMultiframeQr = ({
       const address = toAddress(account.accountId, { prefix: addressPrefix });
 
       return (async () => {
-        const { payload, unsigned } = await createPayload(transactions[index], api);
+        const { payload, unsigned } = await transactionService.createPayload(transactions[index], api);
 
         const signPayload = createSubstrateSignPayload(
           signerWallet.signingType === SigningType.POLKADOT_VAULT ? rootAddress! : address,

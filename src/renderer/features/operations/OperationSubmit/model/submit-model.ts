@@ -83,6 +83,28 @@ const submitExtrinsicsFx = createEffect(({ api, extrinsics, unsignedTxs }: Submi
   });
 });
 
+type SignAndSubmitExtrinsicParams = {
+  api: ApiPromise;
+  transactions: Transaction[];
+  signatures: HexString[];
+};
+const signAndSubmitExtrinsicsFx = createEffect(
+  ({ api, transactions, signatures }: SignAndSubmitExtrinsicParams): void => {
+    const boundExtrinsicSucceeded = scopeBind(extrinsicSucceeded, { safe: true });
+    const boundExtrinsicFailed = scopeBind(extrinsicFailed, { safe: true });
+
+    transactions.forEach((transaction, index) => {
+      transactionService.signAndSubmit(transaction, signatures[index], api, (executed, params) => {
+        if (executed) {
+          boundExtrinsicSucceeded(params as ExtrinsicResultParams);
+        } else {
+          boundExtrinsicFailed(params as string);
+        }
+      });
+    });
+  },
+);
+
 type SaveMultisigParams = {
   transactions: Transaction[];
   multisigTxs: Transaction[];
@@ -154,6 +176,21 @@ const sendMatrixApproveFx = createEffect(
 
 sample({ clock: formInitiated, target: $submitStep.reinit });
 
+// sample({
+//   clock: submitStarted,
+//   source: {
+//     params: $submitStore,
+//     apis: networkModel.$apis,
+//   },
+//   filter: ({ params }) => Boolean(params),
+//   fn: ({ apis, params }) => ({
+//     api: apis[params!.chain.chainId],
+//     signatures: params!.signatures,
+//     unsignedTxs: params!.unsignedTxs,
+//   }),
+//   target: getSignedExtrinsicsFx,
+// });
+
 sample({
   clock: submitStarted,
   source: {
@@ -164,20 +201,20 @@ sample({
   fn: ({ apis, params }) => ({
     api: apis[params!.chain.chainId],
     signatures: params!.signatures,
-    unsignedTxs: params!.unsignedTxs,
+    transactions: params!.transactions,
   }),
-  target: getSignedExtrinsicsFx,
+  target: signAndSubmitExtrinsicsFx,
 });
 
-sample({
-  clock: getSignedExtrinsicsFx.done,
-  fn: ({ params, result }) => ({
-    api: params.api,
-    extrinsics: result,
-    unsignedTxs: params.unsignedTxs,
-  }),
-  target: submitExtrinsicsFx,
-});
+// sample({
+//   clock: getSignedExtrinsicsFx.done,
+//   fn: ({ params, result }) => ({
+//     api: params.api,
+//     extrinsics: result,
+//     unsignedTxs: params.unsignedTxs,
+//   }),
+//   target: submitExtrinsicsFx,
+// });
 
 sample({
   clock: extrinsicFailed,
