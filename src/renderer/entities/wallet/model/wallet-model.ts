@@ -48,7 +48,7 @@ const $activeAccounts = combine(
   },
 );
 
-type CreateParams<T extends Account> = {
+export type CreateParams<T extends Account> = {
   wallet: Omit<NoID<Wallet>, 'isActive'>;
   accounts: Omit<NoID<T>, 'walletId'>[];
 };

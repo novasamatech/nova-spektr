@@ -262,7 +262,7 @@
       "multisig": [
         {
           "type": "subquery",
-          "url": "https://api.subquery.network/sq/nova-wallet/novasama-westend-proxy"
+          "url": "http://localhost:3000"
         }
       ]
     }
