@@ -67,6 +67,7 @@
     "accountsModalTitle": "Your accounts",
     "allAccounts": "All accounts",
     "assetsOnLabel": "Your assets on:",
+    "availableNetworks": "{count} networks",
     "balance": "Balance",
     "chainCentric": "Chain-centric",
     "emptyStateDescription": "Update the search or cancel filtering",
