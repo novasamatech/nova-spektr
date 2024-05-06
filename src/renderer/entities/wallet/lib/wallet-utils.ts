@@ -109,6 +109,7 @@ function getAccountsBy(wallets: Wallet[], accountFn: (account: Account, wallet: 
   }, []);
 }
 
+// TODO: Try to find more sufficient name
 function getWalletFilteredAccounts(
   wallets: Wallet[],
   predicates: {
@@ -118,21 +119,20 @@ function getWalletFilteredAccounts(
 ): Wallet | undefined {
   if (!predicates.walletFn && !predicates.accountFn) return undefined;
 
-  return wallets.reduce<Wallet | undefined>((acc, wallet) => {
-    if (acc) return acc;
+  const wallet = wallets.find((wallet) => {
+    return !predicates.walletFn || predicates.walletFn(wallet);
+  });
 
-    if (!predicates.walletFn || predicates.walletFn(wallet)) {
-      const accounts = wallet.accounts.filter((account) => {
-        return !predicates.accountFn || predicates.accountFn(account, wallet);
-      });
+  const accounts = wallet?.accounts.filter((account) => {
+    return !predicates.accountFn || predicates.accountFn(account, wallet);
+  });
 
-      if (accounts.length > 0) {
-        acc = { ...wallet, accounts } as Wallet;
-      }
-    }
-
-    return acc;
-  }, undefined);
+  if (wallet && accounts) {
+    return {
+      ...wallet,
+      accounts,
+    };
+  }
 }
 
 function getWalletsFilteredAccounts(
