@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react';
 import { UnsignedTransaction } from '@substrate/txwrapper-polkadot';
 import { BN } from '@polkadot/util';
 import { useUnit } from 'effector-react';
-import keyBy from 'lodash/keyBy';
 
 import { BaseModal, Button } from '@shared/ui';
 import { useI18n } from '@app/providers';
@@ -45,9 +44,9 @@ const AllSteps = [Step.CONFIRMATION, Step.SIGNING, Step.SUBMIT];
 
 const RejectTx = ({ tx, account, connection }: Props) => {
   const { t } = useI18n();
-  const accounts = useUnit(walletModel.$accounts);
-  const wallets = keyBy(useUnit(walletModel.$wallets), 'id');
+  // const wallets = keyBy(useUnit(walletModel.$wallets), 'id');
 
+  const wallets = useUnit(walletModel.$wallets);
   const balances = useUnit(balanceModel.$balances);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -72,13 +71,10 @@ const RejectTx = ({ tx, account, connection }: Props) => {
   const nativeAsset = connection.assets[0];
   const asset = getAssetById(tx.transaction?.args.assetId, connection.assets);
 
-  const signAccount = accounts.find((a) => {
-    const isDepositor = a.accountId === tx.depositor;
-    const wallet = wallets[a.walletId];
-    const isWatchOnly = walletUtils.isWatchOnly(wallet);
-
-    return isDepositor && wallet && !isWatchOnly;
-  });
+  const signAccount = walletUtils.getWalletFilteredAccounts(wallets, {
+    walletFn: (wallet) => !walletUtils.isWatchOnly(wallet),
+    accountFn: (account) => account.accountId === tx.depositor,
+  })?.accounts[0];
 
   const checkBalance = () =>
     validateBalance({

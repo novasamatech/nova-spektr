@@ -21,19 +21,18 @@ type Props = {
 // TODO: Divide into model + feature/entity
 export const ReceiveAssetModal = ({ chain, asset, onClose }: Props) => {
   const { t } = useI18n();
-  const activeWallet = useUnit(walletModel.$activeWallet);
-  const activeAccounts = useUnit(walletModel.$activeAccounts);
+  const wallet = useUnit(walletModel.$activeWallet);
 
   const [isModalOpen, toggleIsModalOpen] = useToggle(true);
   const [activeAccount, setActiveAccount] = useState<DropdownResult<number>>();
   const [activeAccountsOptions, setActiveAccountsOptions] = useState<DropdownOption<number>[]>([]);
 
   useEffect(() => {
-    if (walletUtils.isWatchOnly(activeWallet)) return;
+    if (!wallet || walletUtils.isWatchOnly(wallet)) return;
 
-    const accounts = activeAccounts.reduce<DropdownOption[]>((acc, account, index) => {
+    const accounts = wallet?.accounts.reduce<DropdownOption[]>((acc, account, index) => {
       const isBaseAccount = accountUtils.isBaseAccount(account);
-      const isPolkadotVault = walletUtils.isPolkadotVault(activeWallet);
+      const isPolkadotVault = walletUtils.isPolkadotVault(wallet);
       const isChainMatch = accountUtils.isChainIdMatch(account, chain.chainId);
 
       if (isPolkadotVault && isBaseAccount) return acc;
@@ -64,15 +63,15 @@ export const ReceiveAssetModal = ({ chain, asset, onClose }: Props) => {
 
     setActiveAccountsOptions(accounts);
     setActiveAccount({ id: accounts[0].id, value: accounts[0].value });
-  }, [activeAccounts.length, chain]);
+  }, [wallet, chain]);
 
   const closeReceiveModal = () => {
     toggleIsModalOpen();
     setTimeout(onClose, DEFAULT_TRANSITION);
   };
 
-  const isVault = walletUtils.isPolkadotVault(activeWallet) || walletUtils.isMultiShard(activeWallet);
-  const account = activeAccount ? activeAccounts[activeAccount.value] : undefined;
+  const isVault = walletUtils.isPolkadotVault(wallet) || walletUtils.isMultiShard(wallet);
+  const account = activeAccount ? wallet?.accounts[activeAccount.value] : undefined;
   const accountId = account?.accountId || '0x00';
   const prefix = chain.addressPrefix;
   const address = toAddress(accountId, { prefix });
@@ -89,7 +88,7 @@ export const ReceiveAssetModal = ({ chain, asset, onClose }: Props) => {
       closeButton
       onClose={closeReceiveModal}
     >
-      {isVault && activeAccounts.length > 1 && (
+      {isVault && wallet?.accounts.length > 1 && (
         <Select
           placeholder={t('receive.selectWalletPlaceholder')}
           className="w-full mb-6"

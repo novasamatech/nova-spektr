@@ -47,7 +47,6 @@ export const OperationCardDetails = ({ tx, account, extendedChain }: Props) => {
 
   const activeWallet = useUnit(walletModel.$activeWallet);
   const wallets = useUnit(walletModel.$wallets);
-  const accounts = useUnit(walletModel.$accounts);
   const chains = useUnit(networkModel.$chains);
 
   const payee = getPayee(tx);
@@ -91,7 +90,7 @@ export const OperationCardDetails = ({ tx, account, extendedChain }: Props) => {
 
   const valueClass = 'text-text-secondary';
   const depositorWallet =
-    depositorSignatory && singnatoryUtils.getSignatoryWallet(wallets, accounts, depositorSignatory.accountId);
+    depositorSignatory && singnatoryUtils.getSignatoryWallet(wallets, depositorSignatory.accountId);
 
   return (
     <dl className="flex flex-col gap-y-1 w-full">

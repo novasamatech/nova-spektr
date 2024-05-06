@@ -13,6 +13,7 @@ import { RemovePureProxy, removePureProxyModel } from '@widgets/RemovePureProxyM
 import { RemoveProxy, removeProxyModel } from '@widgets/RemoveProxyModal';
 import { accountUtils } from '@entities/wallet';
 import { ProxiedAccount, ProxyAccount, ProxyType, ProxyVariant } from '@shared/core';
+import { walletSelectModel } from '@features/wallets';
 
 type Props = {
   canCreateProxy?: boolean;
@@ -22,8 +23,8 @@ type Props = {
 export const ProxiesList = ({ className, canCreateProxy = true }: Props) => {
   const { t } = useI18n();
 
+  const wallet = useUnit(walletSelectModel.$walletForDetails);
   const chains = useUnit(networkModel.$chains);
-  const accounts = useUnit(walletProviderModel.$accounts);
 
   const chainsProxies = useUnit(walletProviderModel.$chainsProxies);
   const walletProxyGroups = useUnit(walletProviderModel.$walletProxyGroups);
@@ -34,13 +35,13 @@ export const ProxiesList = ({ className, canCreateProxy = true }: Props) => {
   const handleDeleteProxy = (proxyAccount: ProxyAccount) => {
     const chainProxies = chainsProxies[proxyAccount.chainId] || [];
     const anyProxies = chainProxies.filter((proxy) => proxy.proxyType === ProxyType.ANY);
-    const isPureProxy = (accounts[0] as ProxiedAccount).proxyVariant === ProxyVariant.PURE;
+    const isPureProxy = (wallet?.accounts[0] as ProxiedAccount).proxyVariant === ProxyVariant.PURE;
 
     const shouldRemovePureProxy = isPureProxy && anyProxies.length === 1;
 
     if (shouldRemovePureProxy) {
       removePureProxyModel.events.flowStarted({
-        account: accounts[0] as ProxiedAccount,
+        account: wallet?.accounts[0] as ProxiedAccount,
         proxy: proxyAccount,
       });
     } else {
@@ -52,9 +53,11 @@ export const ProxiesList = ({ className, canCreateProxy = true }: Props) => {
   const handleConfirm = () => {
     toggleIsRemoveConfirmOpen();
 
-    if (!proxyForRemoval) return;
+    if (!proxyForRemoval || !wallet) return;
 
-    const account = accounts.find((a) => accountUtils.isChainAndCryptoMatch(a, chains[proxyForRemoval.chainId]));
+    const account = wallet.accounts.find((a) => {
+      return accountUtils.isChainAndCryptoMatch(a, chains[proxyForRemoval.chainId]);
+    });
     removeProxyModel.events.flowStarted({ account: account!, proxy: proxyForRemoval });
   };
 

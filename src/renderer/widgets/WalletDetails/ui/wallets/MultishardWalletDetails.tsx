@@ -4,7 +4,7 @@ import { BaseModal, DropdownIconButton, Tabs } from '@shared/ui';
 import { useModalClose, useToggle } from '@shared/lib/hooks';
 import { MultishardAccountsList, WalletCardLg, permissionUtils } from '@entities/wallet';
 import { useI18n } from '@app/providers';
-import type { Wallet } from '@shared/core';
+import type { MultiShardWallet } from '@shared/core';
 import { RenameWalletModal } from '@features/wallets/RenameWallet';
 import { IconNames } from '@shared/ui/Icon/data';
 import { ForgetWalletModal } from '@features/wallets/ForgetWallet';
@@ -19,7 +19,7 @@ import { walletDetailsUtils } from '../../lib/utils';
 import { walletProviderModel } from '../../model/wallet-provider-model';
 
 type Props = {
-  wallet: Wallet;
+  wallet: MultiShardWallet;
   accounts: MultishardMap;
   onClose: () => void;
 };
@@ -33,8 +33,6 @@ export const MultishardWalletDetails = ({ wallet, accounts, onClose }: Props) =>
   const [isModalOpen, closeModal] = useModalClose(true, onClose);
   const [isRenameModalOpen, toggleIsRenameModalOpen] = useToggle();
   const [isConfirmForgetOpen, toggleConfirmForget] = useToggle();
-
-  const accountsList = [...accounts.values()].map((a) => Object.values(a)).flat(2);
 
   const Options = [
     {
@@ -54,10 +52,7 @@ export const MultishardWalletDetails = ({ wallet, accounts, onClose }: Props) =>
     },
   ];
 
-  if (
-    permissionUtils.canCreateAnyProxy(wallet, accountsList) ||
-    permissionUtils.canCreateNonAnyProxy(wallet, accountsList)
-  ) {
+  if (permissionUtils.canCreateAnyProxy(wallet) || permissionUtils.canCreateNonAnyProxy(wallet)) {
     Options.push({
       icon: 'addCircle' as IconNames,
       title: t('walletDetails.common.addProxyAction'),
@@ -65,7 +60,7 @@ export const MultishardWalletDetails = ({ wallet, accounts, onClose }: Props) =>
     });
   }
 
-  if (permissionUtils.canCreateAnyProxy(wallet, accountsList)) {
+  if (permissionUtils.canCreateAnyProxy(wallet)) {
     Options.push({
       icon: 'addCircle' as IconNames,
       title: t('walletDetails.common.addPureProxiedAction'),

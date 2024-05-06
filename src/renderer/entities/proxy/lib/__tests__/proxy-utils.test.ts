@@ -3,7 +3,7 @@ import { TEST_ACCOUNTS } from '@shared/lib/utils';
 import { proxyUtils } from '../proxy-utils';
 import { proxyMock } from './mocks/proxy-mocks';
 
-describe('entities/proxy/lib/utils', () => {
+describe('entities/proxy/lib/proxy-utils', () => {
   test('should return true for identical proxies', () => {
     const { oldProxy } = proxyMock;
     const result = proxyUtils.isSameProxy(oldProxy, oldProxy);
@@ -31,8 +31,8 @@ describe('entities/proxy/lib/utils', () => {
   });
 
   test('should return proxy group', () => {
-    const { wallets, accounts, deposits } = proxyMock;
-    const result = proxyUtils.getProxyGroups([wallets[0]], [accounts[0]], deposits[0]);
+    const { wallets, deposits } = proxyMock;
+    const result = proxyUtils.getProxyGroups([wallets[0]], deposits[0]);
 
     expect(result).toEqual([
       {
@@ -45,8 +45,8 @@ describe('entities/proxy/lib/utils', () => {
   });
 
   test('should return proxy group for Wallet Connect', () => {
-    const { wallets, accounts, deposits } = proxyMock;
-    const result = proxyUtils.getProxyGroups([wallets[1]], [accounts[1], accounts[2]], deposits[1]);
+    const { wallets, deposits } = proxyMock;
+    const result = proxyUtils.getProxyGroups([wallets[1]], deposits[1]);
 
     expect(result).toEqual([
       {

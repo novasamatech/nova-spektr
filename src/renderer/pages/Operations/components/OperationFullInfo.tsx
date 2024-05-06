@@ -14,7 +14,6 @@ import type { CallData, MultisigAccount } from '@shared/core';
 import { OperationSignatories } from './OperationSignatories';
 import { useNetworkData } from '@entities/network';
 import { walletModel, permissionUtils } from '@entities/wallet';
-import { dictionary } from '@shared/lib/utils';
 
 type Props = {
   tx: MultisigTransactionDS;
@@ -26,11 +25,6 @@ const OperationFullInfo = ({ tx, account }: Props) => {
   const { api, chain, connection, extendedChain } = useNetworkData(tx.chainId);
 
   const wallets = useUnit(walletModel.$wallets);
-  const accounts = useUnit(walletModel.$accounts);
-  const depositorAccounts = accounts.filter((a) => a.accountId === tx.depositor);
-
-  const walletsMap = dictionary(wallets, 'id');
-  const callData = tx.callData;
 
   const { addTask } = useMultisigChainContext();
   const { updateCallData } = useMultisigTx({ addTask });
@@ -45,8 +39,10 @@ const OperationFullInfo = ({ tx, account }: Props) => {
     updateCallData(api, tx, callData as CallData);
   };
 
-  const isRejectAvailable = depositorAccounts.some((depositor) => {
-    return permissionUtils.canRejectMultisigTx(walletsMap[depositor.walletId], [depositor]);
+  const isRejectAvailable = wallets.some((wallet) => {
+    const hasDepositor = wallet.accounts.some((account) => account.accountId === tx.depositor);
+
+    return hasDepositor && permissionUtils.canRejectMultisigTx(wallet);
   });
 
   return (
@@ -55,9 +51,9 @@ const OperationFullInfo = ({ tx, account }: Props) => {
         <div className="flex justify-between items-center mb-4 py-1">
           <SmallTitleText className="mr-auto">{t('operation.detailsTitle')}</SmallTitleText>
 
-          {(!callData || explorerLink) && (
+          {(!tx.callData || explorerLink) && (
             <div className="flex items-center">
-              {!callData && (
+              {!tx.callData && (
                 <Button pallet="primary" variant="text" size="sm" onClick={toggleCallDataModal}>
                   {t('operation.addCallDataButton')}
                 </Button>

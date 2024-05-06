@@ -8,6 +8,7 @@ import { Step, WithdrawData, NetworkStore } from '../lib/types';
 import { formModel } from './form-model';
 import { confirmModel } from './confirm-model';
 import { nonNullable, getRelaychainAsset } from '@shared/lib/utils';
+import { withdrawUtils } from '../lib/withdraw-utils';
 
 const stepChanged = createEvent<Step>();
 
@@ -128,6 +129,8 @@ sample({
 
 sample({
   clock: delay(submitModel.output.formSubmitted, 2000),
+  source: $step,
+  filter: (step) => withdrawUtils.isSubmitStep(step),
   target: flowFinished,
 });
 

@@ -12,7 +12,6 @@ import {
   WalletType,
 } from '@shared/core';
 import { accountUtils, walletModel, walletUtils } from '@entities/wallet';
-import { dictionary } from '@shared/lib/utils';
 import { networkModel, networkUtils } from '@entities/network';
 
 const reset = createEvent();
@@ -88,28 +87,23 @@ const createWalletFx = createEffect(
 
 const $availableAccounts = combine(
   {
-    accounts: walletModel.$accounts,
     wallets: walletModel.$wallets,
-    chain: $chain,
     chains: networkModel.$chains,
+    chain: $chain,
   },
-  ({ accounts, chain, wallets, chains }) => {
+  ({ chain, wallets, chains }) => {
     if (!chain) return [];
 
-    const walletsMap = dictionary(wallets, 'id');
+    const filteredAccounts = walletUtils.getAccountsBy(wallets, (a, w) => {
+      const isValidWallet = !walletUtils.isWatchOnly(w) && !walletUtils.isProxied(w);
+      const isChainMatch = accountUtils.isChainAndCryptoMatch(a, chains[chain]);
 
-    const chainAccounts = accounts.filter((account) => {
-      const wallet = walletsMap[account.walletId];
-      const isAvailableType =
-        !accountUtils.isMultisigAccount(account) && !walletUtils.isWatchOnly(wallet) && !walletUtils.isProxied(wallet);
-      const isChainIdMatch = accountUtils.isChainAndCryptoMatch(account, chains[chain]);
-
-      return isChainIdMatch && isAvailableType;
+      return isValidWallet && isChainMatch;
     });
 
-    const baseAccounts = chainAccounts.filter((a) => accountUtils.isBaseAccount(a) && a.name);
+    const baseAccounts = filteredAccounts.filter((a) => accountUtils.isBaseAccount(a) && a.name);
 
-    return [...accountUtils.getAccountsAndShardGroups(chainAccounts), ...baseAccounts];
+    return [...accountUtils.getAccountsAndShardGroups(filteredAccounts), ...baseAccounts];
   },
   { skipVoid: false },
 );

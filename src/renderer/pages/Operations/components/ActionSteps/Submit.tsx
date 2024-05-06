@@ -7,7 +7,7 @@ import { useMultisigTx, useMultisigEvent } from '@entities/multisig';
 import { useToggle } from '@shared/lib/hooks';
 import { Button, StatusModal } from '@shared/ui';
 import { Animation } from '@shared/ui/Animation/Animation';
-import type { Account, HexString } from '@shared/core';
+import type { HexString, Account } from '@shared/core';
 import {
   MultisigEvent,
   MultisigTxFinalStatus,

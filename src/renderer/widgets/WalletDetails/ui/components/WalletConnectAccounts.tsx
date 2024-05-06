@@ -8,7 +8,7 @@ import { Button, FootnoteText, Icon, SmallTitleText } from '@shared/ui';
 import wallet_connect_reconnect_webm from '@shared/assets/video/wallet_connect_reconnect.webm';
 import wallet_connect_reconnect from '@shared/assets/video/wallet_connect_reconnect.mp4';
 import { useI18n } from '@app/providers';
-import { Account, AccountId, Chain, WalletConnectWallet } from '@shared/core';
+import type { AccountId, Chain, WalletConnectGroup } from '@shared/core';
 import { wcDetailsModel } from '../../model/wc-details-model';
 import { networkModel } from '@entities/network';
 
@@ -18,18 +18,17 @@ type AccountItem = {
 };
 
 type Props = {
-  wallet: WalletConnectWallet;
-  accounts: Account[];
+  wallet: WalletConnectGroup;
 };
 
-export const WalletConnectAccounts = ({ wallet, accounts }: Props) => {
+export const WalletConnectAccounts = ({ wallet }: Props) => {
   const { t } = useI18n();
 
   const chains = Object.values(useUnit(networkModel.$chains));
   const reconnectStep = useUnit(wcDetailsModel.$reconnectStep);
 
   const accountsList = useMemo(() => {
-    const accountsMap = keyBy(accounts, 'chainId');
+    const accountsMap = keyBy(wallet.accounts, 'chainId');
 
     return chains.reduce<AccountItem[]>((acc, chain) => {
       const accountId = accountsMap[chain.chainId]?.accountId;
@@ -40,7 +39,7 @@ export const WalletConnectAccounts = ({ wallet, accounts }: Props) => {
 
       return acc;
     }, []);
-  }, [accounts]);
+  }, [wallet]);
 
   return (
     <>

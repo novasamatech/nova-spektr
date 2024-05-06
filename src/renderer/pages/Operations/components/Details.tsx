@@ -9,7 +9,7 @@ import { cnTw, toAccountId } from '@shared/lib/utils';
 import { ExtendedChain, networkUtils, networkModel } from '@entities/network';
 import { AddressStyle, DescriptionBlockStyle, InteractionStyle } from '../common/constants';
 import { ChainTitle } from '@entities/chain';
-import { Account, Wallet } from '@shared/core';
+import { Wallet, Account } from '@shared/core';
 import { getTransactionFromMultisigTx } from '@entities/multisig';
 import type { Address, MultisigAccount, Validator } from '@shared/core';
 import { useValidatorsMap, SelectedValidatorsModal } from '@entities/staking';
@@ -39,7 +39,6 @@ export const Details = ({ tx, account, extendedChain, signatory }: Props) => {
 
   const activeWallet = useUnit(walletModel.$activeWallet);
   const wallets = useUnit(walletModel.$wallets);
-  const accounts = useUnit(walletModel.$accounts);
   const chains = useUnit(networkModel.$chains);
 
   const payee = getPayee(tx);
@@ -78,13 +77,21 @@ export const Details = ({ tx, account, extendedChain, signatory }: Props) => {
     if (!tx.transaction || !isProxyTransaction(tx.transaction)) return undefined;
 
     const proxiedAccountId = toAccountId(tx.transaction.args.real);
-    const proxiedAccount = accounts.find((account) => account.accountId === proxiedAccountId);
-    const proxiedWallet = wallets.find((wallet) => wallet.id === proxiedAccount?.walletId);
+    const { wallet, account } = wallets.reduce<{ wallet?: Wallet; account?: Account }>(
+      (acc, wallet) => {
+        if (acc.wallet) return acc;
 
-    if (!proxiedAccount || !proxiedWallet) return undefined;
+        const account = wallet.accounts.find((account) => account.accountId === proxiedAccountId);
 
-    return { wallet: proxiedWallet, account: proxiedAccount };
-  }, [tx, wallets, accounts]);
+        return { wallet, account };
+      },
+      { wallet: undefined, account: undefined },
+    );
+
+    if (!wallet || !account) return undefined;
+
+    return { wallet, account };
+  }, [tx, wallets]);
 
   const hasSender = isXcmTransaction(tx.transaction) || isTransferTransaction(tx.transaction);
 
