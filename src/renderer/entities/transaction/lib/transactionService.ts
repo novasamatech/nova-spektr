@@ -5,6 +5,7 @@ import { construct, TypeRegistry, UnsignedTransaction } from '@substrate/txwrapp
 import { Weight } from '@polkadot/types/interfaces';
 import { blake2AsU8a, signatureVerify } from '@polkadot/util-crypto';
 import { useState } from 'react';
+import type { Signer, SignerResult } from '@polkadot/api/types';
 
 import { Transaction, TransactionType } from '@entities/transaction/model/transaction';
 import { createTxMetadata, toAccountId, dictionary } from '@shared/lib/utils';
@@ -34,6 +35,20 @@ import {
   WrapperKind,
 } from './common/types';
 import { walletUtils, accountUtils } from '../../wallet';
+
+class RawSigner implements Signer {
+  signature: HexString;
+
+  public constructor(signature: HexString) {
+    this.signature = signature;
+  }
+
+  public async signRaw(data: any): Promise<SignerResult> {
+    console.log('xcm', data, this.signature);
+
+    return { id: 1, signature: this.signature };
+  }
+}
 
 const shouldWrapAsMulti = (wrapper: TxWrappers_OLD): wrapper is WrapAsMulti =>
   'signatoryId' in wrapper && 'account' in wrapper;
@@ -68,36 +83,24 @@ async function signAndSubmit(
   callback: (executed: any, params: any) => void,
 ) {
   const extrinsic = getExtrinsic[transaction.type](transaction.args, api);
-  const { payload } = await createPayload(transaction, api);
+  const { payload, unsigned } = await createPayload(transaction, api);
 
-  extrinsic.addSignature(transaction.address, signature, payload);
-  extrinsic.send(({ status, events }) => {
-    if (status.isInBlock || status.isFinalized) {
-      events
-        // find/filter for failed events
-        .filter(({ event }) => api.events.system.ExtrinsicFailed.is(event))
-        // we know that data for system.ExtrinsicFailed is
-        // (DispatchError, DispatchInfo)
-        .forEach(
-          ({
-            event: {
-              data: [error, info],
-            },
-          }) => {
-            if ((error as any).isModule) {
-              // for module errors, we have the section indexed, lookup
-              const decoded = api.registry.findMetaError((error as any).asModule);
-              const { docs, method, section } = decoded;
+  const accountId = toAccountId(transaction.address);
 
-              console.log(`xcm ${section}.${method}: ${docs.join(' ')}`);
-            } else {
-              // Other, CannotLookup, BadOrigin, no extra info
-              console.log(error.toString());
-            }
-          },
-        );
-    }
+  console.log('xcmPayload', { unsigned, extrinsic, payload, accountId });
+
+  // extrinsic.addSignature(hexToU8a(toAccountId(transaction.address)), signature, payload);
+  const options = { signer: new RawSigner(signature), ...unsigned };
+
+  console.log('xcm', extrinsic);
+  // @ts-ignore
+  extrinsic.signAndSend(accountId, options, ({ status, events }) => {
+    console.log('xcm', status, events);
   });
+
+  // extrinsic.send(({ status, events }) => {
+  //   console.log('xcm', status, events);
+  // });
 }
 
 function getMultisigDeposit(threshold: Threshold, api: ApiPromise): string {
