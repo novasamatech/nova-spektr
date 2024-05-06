@@ -235,7 +235,12 @@
       "descriptionLabel": "Description",
       "descriptionPlaceholder": "Choose an operation description",
       "signerLabel": "Select signer",
-      "transferableLabel": "Transferable"
+      "transferableLabel": "Transferable",
+    },
+    "passwordInput": {
+      "passwordPlaceholder": "Enter password",
+      "passwordLabel": "Password",
+      "passwordVisibilityButton": "Show password",
     },
     "title": {
       "appName": "Nova Spektr"
