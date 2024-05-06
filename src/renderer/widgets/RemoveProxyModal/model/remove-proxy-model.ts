@@ -10,7 +10,7 @@ import {
   WrapperKind,
   transactionService,
 } from '@entities/transaction';
-import { dictionary, toAccountId, toAddress, transferableAmount } from '@shared/lib/utils';
+import { toAccountId, toAddress, transferableAmount } from '@shared/lib/utils';
 import { walletSelectModel } from '@features/wallets';
 import { accountUtils, walletModel, walletUtils } from '@entities/wallet';
 import { networkModel } from '@entities/network';
@@ -25,6 +25,7 @@ import { submitModel } from '@features/operations/OperationSubmit';
 import { proxiesModel } from '@features/proxies';
 import { proxyModel } from '@entities/proxy';
 import { balanceModel, balanceUtils } from '@entities/balance';
+import { removeProxyUtils } from '../lib/remove-proxy-utils';
 
 const stepChanged = createEvent<Step>();
 const wentBackFromConfirm = createEvent();
@@ -56,31 +57,27 @@ const $txWrappers = combine(
   {
     wallet: walletSelectModel.$walletForDetails,
     wallets: walletModel.$wallets,
-    accounts: walletModel.$accounts,
     account: $account,
     chain: $chain,
     signatories: $selectedSignatories,
   },
-  ({ wallet, account, accounts, wallets, chain, signatories }) => {
+  ({ wallet, account, wallets, chain, signatories }) => {
     if (!wallet || !chain || !account) return [];
 
-    const walletFiltered = wallets.filter((wallet) => {
-      return !walletUtils.isProxied(wallet) && !walletUtils.isWatchOnly(wallet);
-    });
-    const walletsMap = dictionary(walletFiltered, 'id');
-    const chainFilteredAccounts = accounts.filter((account) => {
-      if (accountUtils.isBaseAccount(account) && walletUtils.isPolkadotVault(walletsMap[account.walletId])) {
-        return false;
-      }
+    const filteredWallets = walletUtils.getWalletsFilteredAccounts(wallets, {
+      walletFn: (w) => !walletUtils.isProxied(w) && !walletUtils.isWatchOnly(w),
+      accountFn: (a, w) => {
+        const isBase = accountUtils.isBaseAccount(a);
+        const isPolkadotVault = walletUtils.isPolkadotVault(w);
 
-      return accountUtils.isChainAndCryptoMatch(account, chain);
+        return (!isBase || !isPolkadotVault) && accountUtils.isChainAndCryptoMatch(a, chain);
+      },
     });
 
     return transactionService.getTxWrappers({
       wallet,
-      wallets: walletFiltered,
+      wallets: filteredWallets || [],
       account,
-      accounts: chainFilteredAccounts,
       signatories,
     });
   },
@@ -188,10 +185,7 @@ sample({
   clock: flowStarted,
   source: {
     proxyAccount: walletProviderModel.$proxyForRemoval,
-    selectedWallet: walletSelectModel.$walletForDetails,
-    wallets: walletModel.$wallets,
     chains: networkModel.$chains,
-    allAccounts: walletModel.$accounts,
   },
   filter: ({ proxyAccount }) => Boolean(proxyAccount),
   fn: ({ chains }, { proxy, account }) => {
@@ -381,9 +375,11 @@ sample({
 sample({
   clock: submitModel.output.formSubmitted,
   source: {
+    step: $step,
     store: $removeProxyStore,
     chainProxies: walletProviderModel.$chainsProxies,
   },
+  filter: ({ step }) => removeProxyUtils.isSubmitStep(step),
   fn: ({ store, chainProxies }) => {
     const proxy = chainProxies[store!.chain.chainId].find(
       (proxy) =>
@@ -400,7 +396,7 @@ sample({
 sample({
   clock: delay(submitModel.output.formSubmitted, 2000),
   source: $step,
-  filter: (step) => step === Step.SUBMIT,
+  filter: (step) => removeProxyUtils.isSubmitStep(step),
   target: flowFinished,
 });
 

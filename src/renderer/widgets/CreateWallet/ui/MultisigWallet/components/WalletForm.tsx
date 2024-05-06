@@ -60,7 +60,6 @@ export const WalletForm = ({
   const { t } = useI18n();
 
   const wallets = useUnit(walletModel.$wallets);
-  const accounts = useUnit(walletModel.$accounts);
   const chains = useUnit(networkModel.$chains);
 
   const {
@@ -102,9 +101,7 @@ export const WalletForm = ({
     );
 
   const ownedSignatories = signatories.filter((s) => {
-    const walletIds = accounts.filter((a) => a.accountId === s.accountId).map((a) => a.walletId);
-
-    return wallets.some((wallet) => walletIds.includes(wallet.id) && walletUtils.isValidSignatory(wallet));
+    return walletUtils.getAccountsBy(wallets, (account) => account.accountId === s.accountId);
   });
 
   const hasOwnSignatory = ownedSignatories.length > 0;
@@ -117,20 +114,29 @@ export const WalletForm = ({
     onSubmit({ name, threshold: threshold.value, creatorId: creator.accountId });
   };
 
-  const hasNoAccount =
-    wallets.every((wallet) => !walletUtils.isWatchOnly(wallet) || !walletUtils.isMultisig(wallet)) &&
-    accounts.length === 0;
+  const noSignatoryWallet = wallets.every(
+    (wallet) => !walletUtils.isWatchOnly(wallet) || !walletUtils.isMultisig(wallet),
+  );
 
-  const accountAlreadyExists = accounts.filter(accountUtils.isMultisigAccount).some((account) => {
-    const isSameAccountId = account.accountId === multisigAccountId;
-    const isSameChainId = !(account as MultisigAccount).chainId || (account as MultisigAccount).chainId === chain;
+  const signatoriesWallets = walletUtils.getWalletsFilteredAccounts(wallets, {
+    walletFn: (w) => !walletUtils.isWatchOnly(w) && !walletUtils.isMultisig(w),
+    accountFn: (a) => signatories.some((s) => s.accountId === a.accountId),
+  });
 
-    return isSameAccountId && isSameChainId;
+  const existingWallet = walletUtils.getWalletFilteredAccounts(wallets, {
+    walletFn: (w) => walletUtils.isMultisig(w),
+    accountFn: (a) => {
+      const multisigAccount = a as MultisigAccount;
+      const isSameAccountId = a.accountId === multisigAccountId;
+      const isSameChainId = !multisigAccount.chainId || multisigAccount.chainId === chain;
+
+      return isSameAccountId && isSameChainId;
+    },
   });
 
   const hasTwoSignatories = signatories.length > 1;
 
-  const signatoriesAreValid = hasOwnSignatory && hasTwoSignatories && !accountAlreadyExists;
+  const signatoriesAreValid = signatoriesWallets && hasTwoSignatories && !existingWallet;
 
   const canContinue = isValid && signatoriesAreValid;
 
@@ -202,18 +208,18 @@ export const WalletForm = ({
         </div>
 
         <Alert
-          active={Boolean(signatories.length) && !hasOwnSignatory}
+          active={Boolean(signatories.length) && !signatoriesWallets}
           title={t('createMultisigAccount.walletAlertTitle')}
           variant="warn"
         >
           <Alert.Item withDot={false}>{t('createMultisigAccount.walletAlertText')}</Alert.Item>
         </Alert>
 
-        <Alert active={accountAlreadyExists} title={t('createMultisigAccount.multisigExistTitle')} variant="warn">
+        <Alert active={Boolean(existingWallet)} title={t('createMultisigAccount.multisigExistTitle')} variant="warn">
           <Alert.Item withDot={false}>{t('createMultisigAccount.multisigExistText')}</Alert.Item>
         </Alert>
 
-        <Alert active={hasNoAccount} title={t('createMultisigAccount.walletAlertTitle')} variant="warn">
+        <Alert active={noSignatoryWallet} title={t('createMultisigAccount.walletAlertTitle')} variant="warn">
           <Alert.Item withDot={false}>{t('createMultisigAccount.accountsAlertText')}</Alert.Item>
         </Alert>
 

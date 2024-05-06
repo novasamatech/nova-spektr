@@ -30,9 +30,8 @@ export const OperationSignatories = ({ tx, connection, account }: Props) => {
   const { signatories, accountId, chainId, callHash, blockCreated, indexCreated } = tx;
   const events = getLiveTxEvents(accountId, chainId, callHash, blockCreated, indexCreated);
 
-  const contacts = useUnit(contactModel.$contacts);
-  const accounts = useUnit(walletModel.$accounts);
   const wallets = useUnit(walletModel.$wallets);
+  const contacts = useUnit(contactModel.$contacts);
 
   const [isLogModalOpen, toggleLogModal] = useToggle();
   const [signatoriesList, setSignatories] = useState<Signatory[]>([]);
@@ -41,7 +40,7 @@ export const OperationSignatories = ({ tx, connection, account }: Props) => {
   const cancellation = events.filter((e) => e.status === 'CANCELLED');
 
   const walletSignatories: WalletSignatory[] = signatoriesList.reduce((acc: WalletSignatory[], signatory) => {
-    const signatoryWallet = singnatoryUtils.getSignatoryWallet(wallets, accounts, signatory.accountId);
+    const signatoryWallet = singnatoryUtils.getSignatoryWallet(wallets, signatory.accountId);
 
     if (signatoryWallet) {
       acc.push({ ...signatory, wallet: signatoryWallet });
@@ -142,7 +141,7 @@ export const OperationSignatories = ({ tx, connection, account }: Props) => {
                       signatory.accountId,
                       signatories,
                       contacts,
-                      accounts,
+                      wallets,
                       connection.addressPrefix,
                     )}
                     symbols={8}
@@ -164,7 +163,6 @@ export const OperationSignatories = ({ tx, connection, account }: Props) => {
         tx={tx}
         account={account}
         connection={connection}
-        accounts={accounts}
         contacts={contacts}
         onClose={toggleLogModal}
       />

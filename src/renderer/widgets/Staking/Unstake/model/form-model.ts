@@ -10,14 +10,7 @@ import { balanceModel, balanceUtils } from '@entities/balance';
 import { networkModel, networkUtils } from '@entities/network';
 import type { Account, PartialBy, ProxiedAccount, Chain, Asset, Address, ChainId } from '@shared/core';
 import { useStakingData, StakingMap } from '@entities/staking';
-import {
-  transferableAmount,
-  getRelaychainAsset,
-  toAddress,
-  dictionary,
-  formatAmount,
-  ZERO_BALANCE,
-} from '@shared/lib/utils';
+import { transferableAmount, getRelaychainAsset, toAddress, formatAmount, ZERO_BALANCE } from '@shared/lib/utils';
 import { NetworkStore } from '../lib/types';
 import {
   Transaction,
@@ -229,30 +222,26 @@ const $txWrappers = combine(
     wallet: walletModel.$activeWallet,
     wallets: walletModel.$wallets,
     shards: $shards,
-    accounts: walletModel.$accounts,
     network: $networkStore,
     signatories: $selectedSignatories,
   },
-  ({ wallet, shards, accounts, wallets, network, signatories }) => {
+  ({ wallet, shards, wallets, network, signatories }) => {
     if (!wallet || !network || shards.length !== 1) return [];
 
-    const walletFiltered = wallets.filter((wallet) => {
-      return !walletUtils.isProxied(wallet) && !walletUtils.isWatchOnly(wallet);
-    });
-    const walletsMap = dictionary(walletFiltered, 'id');
-    const chainFilteredAccounts = accounts.filter((account) => {
-      if (accountUtils.isBaseAccount(account) && walletUtils.isPolkadotVault(walletsMap[account.walletId])) {
-        return false;
-      }
+    const filteredWallets = walletUtils.getWalletsFilteredAccounts(wallets, {
+      walletFn: (w) => !walletUtils.isProxied(w) && !walletUtils.isWatchOnly(w),
+      accountFn: (a, w) => {
+        const isBase = accountUtils.isBaseAccount(a);
+        const isPolkadotVault = walletUtils.isPolkadotVault(w);
 
-      return accountUtils.isChainAndCryptoMatch(account, network.chain);
+        return (!isBase || !isPolkadotVault) && accountUtils.isChainAndCryptoMatch(a, network.chain);
+      },
     });
 
     return transactionService.getTxWrappers({
       wallet,
-      wallets: walletFiltered,
+      wallets: filteredWallets || [],
       account: shards[0],
-      accounts: chainFilteredAccounts,
       signatories,
     });
   },

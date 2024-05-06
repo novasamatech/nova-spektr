@@ -8,7 +8,7 @@ import { TabItem } from '@shared/ui/types';
 import { CreateContactModal } from '@widgets/ManageContactModal';
 import { ExtendedContact, ExtendedWallet } from '../common/types';
 import { EmptyContactList } from '@entities/contact';
-import { type Contact, type Wallet, type Account, type MultisigAccount, WalletType } from '@shared/core';
+import { type Contact, type Wallet, type Account, WalletType } from '@shared/core';
 import { ContactItem, ExplorersPopover, accountUtils, walletUtils } from '@entities/wallet';
 import { WalletItem } from './WalletItem';
 
@@ -20,7 +20,7 @@ const enum SignatoryTabs {
 type Props = {
   isActive: boolean;
   wallets: Wallet[];
-  accounts: (Account | MultisigAccount)[];
+  accounts: Account[];
   contacts: Contact[];
   onSelect: (wallets: ExtendedWallet[], contacts: ExtendedContact[]) => void;
 };

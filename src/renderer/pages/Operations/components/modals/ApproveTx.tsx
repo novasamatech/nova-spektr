@@ -9,7 +9,7 @@ import { useI18n } from '@app/providers';
 import { MultisigTransactionDS } from '@shared/api/storage';
 import { useToggle } from '@shared/lib/hooks';
 import { ExtendedChain } from '@entities/network';
-import { TEST_ADDRESS, toAddress, transferableAmount, getAssetById, dictionary } from '@shared/lib/utils';
+import { TEST_ADDRESS, toAddress, transferableAmount, getAssetById } from '@shared/lib/utils';
 import { getMultisigSignOperationTitle, getSignatoryAccounts } from '../../common/utils';
 import { Submit } from '../ActionSteps/Submit';
 import { Confirmation } from '../ActionSteps/Confirmation';
@@ -50,7 +50,6 @@ const AllSteps = [Step.CONFIRMATION, Step.SIGNING, Step.SUBMIT];
 const ApproveTx = ({ tx, account, connection }: Props) => {
   const { t } = useI18n();
   const wallets = useUnit(walletModel.$wallets);
-  const accounts = useUnit(walletModel.$accounts);
   const balances = useUnit(balanceModel.$balances);
 
   const { getExtrinsicWeight, getTxWeight } = useTransaction();
@@ -77,8 +76,13 @@ const ApproveTx = ({ tx, account, connection }: Props) => {
   const nativeAsset = connection.assets[0];
   const asset = getAssetById(tx.transaction?.args.assetId, connection.assets);
 
-  const walletsMap = dictionary(wallets, 'id');
-  const availableAccounts = accounts.filter((a) => permissionUtils.canApproveMultisigTx(walletsMap[a.walletId], [a]));
+  const availableAccounts = wallets.reduce<Account[]>((acc, wallet) => {
+    if (permissionUtils.canApproveMultisigTx(wallet)) {
+      acc.push(...wallet.accounts);
+    }
+
+    return acc;
+  }, []);
 
   const unsignedAccounts = getSignatoryAccounts(availableAccounts, wallets, events, account.signatories, tx.chainId);
 

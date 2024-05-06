@@ -1,16 +1,7 @@
 import sortBy from 'lodash/sortBy';
 
-import { splitCamelCaseString, toAddress, dictionary } from '@shared/lib/utils';
-import type {
-  ProxyAccount,
-  NoID,
-  ProxyGroup,
-  Wallet,
-  Account,
-  ProxyDeposits,
-  ID,
-  PartialProxiedAccount,
-} from '@shared/core';
+import { splitCamelCaseString, toAddress } from '@shared/lib/utils';
+import type { ProxyAccount, NoID, ProxyGroup, Wallet, ProxyDeposits, PartialProxiedAccount } from '@shared/core';
 import { ProxyType, ProxyVariant } from '@shared/core';
 import { ProxyTypeName } from './constants';
 import { accountUtils } from '../../wallet';
@@ -68,16 +59,8 @@ function getProxiedName({ accountId, proxyVariant, proxyType }: PartialProxiedAc
   return `${proxyType} ${proxyVariantLabel} ${address}`;
 }
 
-function getProxyGroups(wallets: Wallet[], accounts: Account[], deposits: ProxyDeposits): NoID<ProxyGroup>[] {
-  const walletMap = dictionary(wallets, 'id', () => []);
-
-  const walletsAccounts = accounts.reduce<Record<ID, Account[]>>((acc, account) => {
-    if (walletMap[account.walletId]) {
-      acc[account.walletId].push(account);
-    }
-
-    return acc;
-  }, walletMap);
+function getProxyGroups(wallets: Wallet[], deposits: ProxyDeposits): NoID<ProxyGroup>[] {
+  const walletsAccounts = wallets.map(({ accounts }) => accounts);
 
   return Object.values(walletsAccounts).reduce<NoID<ProxyGroup>[]>((acc, accounts) => {
     const walletProxyGroups = accounts.reduce<NoID<ProxyGroup>[]>((acc, account) => {
@@ -107,13 +90,8 @@ type CreateProxyGroupResult = {
   toUpdate: NoID<ProxyGroup>[];
   toRemove: ProxyGroup[];
 };
-function createProxyGroups(
-  wallets: Wallet[],
-  accounts: Account[],
-  groups: ProxyGroup[],
-  deposits: ProxyDeposits,
-): CreateProxyGroupResult {
-  const proxyGroups = getProxyGroups(wallets, accounts, deposits);
+function createProxyGroups(wallets: Wallet[], groups: ProxyGroup[], deposits: ProxyDeposits): CreateProxyGroupResult {
+  const proxyGroups = getProxyGroups(wallets, deposits);
 
   const { toAdd, toUpdate } = proxyGroups.reduce<Record<'toAdd' | 'toUpdate', NoID<ProxyGroup>[]>>(
     (acc, g) => {

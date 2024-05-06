@@ -1,25 +1,17 @@
-import keyBy from 'lodash/keyBy';
-
-import { Account, AccountId, Wallet } from '@shared/core';
+import { AccountId, Wallet } from '@shared/core';
 import { walletUtils } from '@entities/wallet';
 
 export const singnatoryUtils = {
   getSignatoryWallet,
 };
 
-function getSignatoryWallet(wallets: Wallet[], accounts: Account[], accountId: AccountId): Wallet | undefined {
-  const walletsMap = keyBy(wallets, 'id');
-
-  const signatoryAccount = accounts.find((account) => {
-    const accountIdMatch = accountId === account.accountId;
-    const wallet = walletsMap[account.walletId];
-
-    if (!accountIdMatch || !wallet) return;
+function getSignatoryWallet(wallets: Wallet[], accountId: AccountId): Wallet | undefined {
+  return wallets.find((wallet) => {
+    const hasMatch = wallet.accounts.some((account) => account.accountId === accountId);
 
     return (
-      walletUtils.isValidSignatory(wallet) || walletUtils.isPolkadotVault(wallet) || walletUtils.isMultiShard(wallet)
+      hasMatch &&
+      (walletUtils.isValidSignatory(wallet) || walletUtils.isPolkadotVault(wallet) || walletUtils.isMultiShard(wallet))
     );
   });
-
-  return signatoryAccount && walletsMap[signatoryAccount.walletId];
 }

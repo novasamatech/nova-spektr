@@ -2,7 +2,7 @@ import { createEvent, createEffect, createStore, sample, combine } from 'effecto
 
 import { localStorageService } from '@shared/api/local-storage';
 import { walletModel, accountUtils, walletUtils } from '@entities/wallet';
-import { Account } from '@shared/core';
+import { Account, Wallet } from '@shared/core';
 import { HIDE_ZERO_BALANCES } from '../common/constants';
 
 const assetsStarted = createEvent();
@@ -22,15 +22,11 @@ const saveHideZeroBalancesFx = createEffect((value: boolean): boolean => {
   return localStorageService.saveToStorage(HIDE_ZERO_BALANCES, value);
 });
 
-const $accounts = combine(
-  {
-    accounts: walletModel.$activeAccounts,
-    wallet: walletModel.$activeWallet,
-  },
-  ({ accounts, wallet }) => {
-    return wallet ? accounts.filter((account) => accountUtils.isNonBaseVaultAccount(account, wallet)) : [];
-  },
-);
+const $accounts = combine(walletModel.$activeWallet, (wallet) => {
+  if (!wallet) return [];
+
+  return wallet.accounts.filter((account) => accountUtils.isNonBaseVaultAccount(account, wallet));
+});
 
 sample({
   clock: assetsStarted,
@@ -53,14 +49,24 @@ sample({
 });
 
 sample({
-  clock: [activeShardsSet, walletModel.$activeAccounts],
+  clock: activeShardsSet,
   source: walletModel.$activeWallet,
+  filter: (wallet: Wallet | undefined): wallet is Wallet => Boolean(wallet),
   fn: (wallet, accounts) => {
     if (!walletUtils.isPolkadotVault(wallet)) return accounts;
 
-    return accounts.filter((account) => {
-      return account && !accountUtils.isBaseAccount(account);
-    });
+    return accounts.filter((account) => !accountUtils.isBaseAccount(account));
+  },
+  target: $activeShards,
+});
+
+sample({
+  clock: walletModel.$activeWallet,
+  filter: (wallet: Wallet | undefined): wallet is Wallet => Boolean(wallet),
+  fn: (wallet) => {
+    if (!walletUtils.isPolkadotVault(wallet)) return wallet.accounts;
+
+    return wallet.accounts.filter((account) => !accountUtils.isBaseAccount(account));
   },
   target: $activeShards,
 });
