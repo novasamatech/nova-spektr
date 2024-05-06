@@ -238,8 +238,8 @@
       "transferableLabel": "Transferable"
     },
     "passwordInput": {
-      "passwordPlaceholder": "Enter password",
       "passwordLabel": "Password",
+      "passwordPlaceholder": "Enter password",
       "passwordVisibilityButton": "Show password"
     },
     "title": {
