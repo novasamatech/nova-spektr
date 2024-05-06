@@ -6,9 +6,9 @@ import { Provider } from 'effector-react';
 
 import chains from '@shared/config/chains/chains.json';
 import { TEST_ACCOUNTS } from '@shared/lib/utils';
-import { AssetCard } from './AssetCard';
 import { type Chain, type Asset, type Balance, WalletType } from '@shared/core';
 import { walletModel } from '@entities/wallet';
+import { AssetCard } from './AssetCard';
 
 jest.mock('@app/providers', () => ({
   useI18n: jest.fn().mockReturnValue({
