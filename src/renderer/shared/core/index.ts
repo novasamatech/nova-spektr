@@ -30,7 +30,7 @@ export type {
   BaseAccount,
   ChainAccount,
   MultisigAccount,
-  WalletConnectAccount,
+  WcAccount,
   ProxiedAccount,
   ShardAccount,
   DraftAccount,

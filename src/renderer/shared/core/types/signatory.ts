@@ -4,5 +4,4 @@ export type Signatory = {
   name?: string;
   address: Address;
   accountId: AccountId;
-  matrixId?: string;
 };

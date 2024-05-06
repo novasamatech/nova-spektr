@@ -125,19 +125,13 @@ sample({
           accounts: [
             {
               threshold: threshold,
-              // todo remove this, it'll go away with the matrix removal
-              creatorAccountId: '0x',
               accountId: accountId,
               signatories: signatories.map((signatory) => ({
                 accountId: signatory,
-                // todo remove this, it'll go away with the matrix removal
-                matrixId: '',
                 address: toAddress(signatory),
               })),
               name: `Detected msig ${toAddress(accountId).slice(0, 7)}...`,
               chainId: chain.chainId,
-              // todo remove this, it'll go away with the matrix removal
-              matrixRoomId: '',
               cryptoType: isEthereumAccountId(accountId) ? CryptoType.ETHEREUM : CryptoType.SR25519,
               chainType: ChainType.SUBSTRATE,
               type: AccountType.MULTISIG,

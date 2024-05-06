@@ -2,7 +2,7 @@ import { createEvent, sample, createEffect, createStore, createApi, attach, spli
 import uniq from 'lodash/uniq';
 import { spread } from 'patronum';
 
-import { Account, AccountId, ID, MultisigAccount, ProxyAccount, ProxyGroup, Wallet } from '@shared/core';
+import { AccountId, ID, MultisigAccount, ProxyAccount, ProxyGroup, Wallet } from '@shared/core';
 import { accountUtils, walletModel, walletUtils } from '@entities/wallet';
 import { balanceModel } from '@entities/balance';
 import { useForgetMultisig } from '@entities/multisig';
@@ -34,7 +34,7 @@ const deleteMultisigOperationsFx = createEffect(async (account: MultisigAccount)
 
 type CheckForProxiedWalletsParams = {
   wallet: Wallet;
-  accounts: Account[];
+  wallets: Wallet[];
   proxies: Record<AccountId, ProxyAccount[]>;
   walletsProxyGroups: Record<Wallet['id'], ProxyGroup[]>;
 };
@@ -45,18 +45,25 @@ type CheckForProxiedWalletsResult = {
   proxyGroupsToDelete: ProxyGroup[];
 };
 const findProxiedWalletsFx = createEffect(
-  ({ wallet, accounts, proxies, walletsProxyGroups }: CheckForProxiedWalletsParams): CheckForProxiedWalletsResult => {
-    const walletAccountsIds = accountUtils.getWalletAccounts(wallet.id, accounts).map((a) => a.accountId);
+  ({ wallet, wallets, proxies, walletsProxyGroups }: CheckForProxiedWalletsParams): CheckForProxiedWalletsResult => {
+    const walletAccountsIds = wallet.accounts.map((a) => a.accountId);
 
-    const proxiedAccountsToDelete = accounts.filter(
-      (a) => accountUtils.isProxiedAccount(a) && walletAccountsIds.includes(a.proxyAccountId),
-    );
+    const proxiedAccountsToDelete = walletUtils.getAccountsBy(wallets, (a) => {
+      return accountUtils.isProxiedAccount(a) && walletAccountsIds.includes(a.proxyAccountId);
+    });
     const proxiedWalletsToDelete = uniq(proxiedAccountsToDelete.map((a) => a.walletId));
 
     const proxiesToDelete = proxiedAccountsToDelete
       .map((a) => a.accountId)
       .concat(walletAccountsIds)
-      .reduce<ProxyAccount[]>((acc, accountId) => (proxies[accountId] ? acc.concat(proxies[accountId]) : acc), []);
+      .reduce<ProxyAccount[]>((acc, accountId) => {
+        if (proxies[accountId]) {
+          acc.push(...proxies[accountId]);
+        }
+
+        return acc;
+      }, []);
+
     const proxyGroupsToDelete = proxiedWalletsToDelete.reduce((acc, walletId) => {
       if (walletsProxyGroups[walletId]) {
         acc.push(...walletsProxyGroups[walletId]);
@@ -88,8 +95,8 @@ split({
 sample({
   clock: [forgetWallet, forgetWcWallet],
   source: {
-    accounts: walletModel.$accounts,
     proxies: proxyModel.$proxies,
+    wallets: walletModel.$wallets,
     walletsProxyGroups: proxyModel.$walletsProxyGroups,
   },
   fn: (params, wallet) => ({ ...params, wallet }),
@@ -108,15 +115,13 @@ sample({
 
 sample({
   clock: [forgetSimpleWallet, forgetMultisigWallet],
-  source: walletModel.$accounts,
-  fn: (accounts, wallet) => accountUtils.getWalletAccounts(wallet.id, accounts).map((a) => a.id),
+  fn: (wallet) => wallet.accounts.map((a) => a.id),
   target: balanceModel.events.balancesRemoved,
 });
 
 sample({
   clock: forgetMultisigWallet,
-  source: walletModel.$accounts,
-  fn: (accounts, wallet) => accounts.find((a) => a.walletId === wallet.id) as MultisigAccount,
+  fn: (wallet) => wallet.accounts[0] as MultisigAccount,
   target: deleteMultisigOperationsFx,
 });
 

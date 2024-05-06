@@ -5,7 +5,6 @@ import { not } from 'patronum';
 import { contactModel } from '@entities/contact';
 import { Contact } from '@shared/core';
 import { toAccountId, validateAddress } from '@shared/lib/utils';
-import { validateFullUserName } from '@shared/api/matrix';
 
 export type Callbacks = {
   onSubmit: () => void;
@@ -54,10 +53,6 @@ const $contactForm = createForm({
         },
       ],
     },
-    matrixId: {
-      init: '',
-      rules: [{ name: 'invalid', errorText: 'addressBook.editContact.matrixIdError', validator: validateMatrixId }],
-    },
   },
   validateOn: ['change', 'submit'],
 });
@@ -71,7 +66,7 @@ sample({
 sample({
   clock: contactApi.formInitiated,
   filter: not($contactForm.$isDirty),
-  fn: ({ name, address, matrixId }) => ({ name, address, matrixId }),
+  fn: ({ name, address }) => ({ name, address }),
   target: $contactForm.setForm,
 });
 
@@ -96,12 +91,6 @@ function validateAddressExist(value: string, _: unknown, params: SourceParams): 
   const isUnique = params.contacts.every((contact) => contact.accountId !== accountId);
 
   return isSameAddress || isUnique;
-}
-
-function validateMatrixId(value: string): boolean {
-  if (!value) return true;
-
-  return validateFullUserName(value);
 }
 
 sample({

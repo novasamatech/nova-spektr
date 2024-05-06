@@ -6,7 +6,7 @@ import { useI18n } from '@renderer/app/providers';
 import { toAddress } from '@shared/lib/utils';
 import { derivationAddressUtils } from '../lib/utils';
 import { DdKeyQrReader } from './DdKeyQrReader';
-import type { AccountId, DraftAccount, ShardAccount, ChainAccount, Account } from '@shared/core';
+import type { AccountId, DraftAccount, ShardAccount, ChainAccount } from '@shared/core';
 import { DdAddressInfoDecoded, QrDerivationsGenerator, TROUBLESHOOTING_URL } from '@entities/transaction';
 
 const enum Step {
@@ -35,7 +35,7 @@ export const DerivationsAddressModal = ({ isOpen, rootAccountId, keys, onClose, 
   const handleScanResult = (result: DdAddressInfoDecoded[]) => {
     const derivedKeys = keyBy(result, (d) => `${d.derivationPath}${d.encryption}`);
     const accounts = derivationAddressUtils.createDerivedAccounts(derivedKeys, keys);
-    const newAccounts = accounts.filter((account) => !(account as Account).id);
+    const newAccounts = accounts.filter((account) => !(account as ShardAccount | ChainAccount).id);
 
     onComplete(newAccounts);
   };

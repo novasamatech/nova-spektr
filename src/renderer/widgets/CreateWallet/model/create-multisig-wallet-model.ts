@@ -1,19 +1,8 @@
 import { combine, createApi, createEffect, createEvent, createStore, sample } from 'effector';
 import sortBy from 'lodash/sortBy';
 
-import {
-  AccountId,
-  AccountType,
-  ChainId,
-  ChainType,
-  CryptoType,
-  Signatory,
-  SigningType,
-  WalletType,
-} from '@shared/core';
+import { AccountType, ChainId, ChainType, CryptoType, Signatory, SigningType, WalletType } from '@shared/core';
 import { accountUtils, walletModel, walletUtils } from '@entities/wallet';
-import { dictionary } from '@shared/lib/utils';
-import { matrixModel } from '@entities/matrix';
 import { networkModel, networkUtils } from '@entities/network';
 
 const reset = createEvent();
@@ -50,7 +39,6 @@ const $isEthereumChain = combine(
 );
 
 type CreateWalletParams = {
-  matrix: any;
   name: string;
   threshold: number;
   creatorId: string;
@@ -60,27 +48,10 @@ type CreateWalletParams = {
 };
 
 const createWalletFx = createEffect(
-  async ({ matrix, name, threshold, creatorId, signatories, chainId, isEthereumChain }: CreateWalletParams) => {
+  async ({ name, threshold, creatorId, signatories, chainId, isEthereumChain }: CreateWalletParams) => {
     const cryptoType = isEthereumChain ? CryptoType.ETHEREUM : CryptoType.SR25519;
     const accountIds = signatories.map((s) => s.accountId);
     const accountId = accountUtils.getMultisigAccountId(accountIds, threshold, cryptoType);
-    let roomId = matrix.joinedRooms(accountId)[0]?.roomId;
-    const isMyAccounts = signatories.every((s) => s.matrixId === matrix.userId);
-
-    if (!roomId && !isMyAccounts) {
-      // Create new room only if both conditions are met:
-      // 1. No existing roomId is found.
-      // 2. Not all signatories are controlled by the current user.
-      roomId = await matrix.createRoom({
-        creatorAccountId: creatorId,
-        accountName: name,
-        accountId: accountId,
-        threshold: threshold,
-        cryptoType,
-        chainId,
-        signatories: signatories.map(({ accountId, matrixId }) => ({ accountId, matrixId })),
-      });
-    }
 
     walletModel.events.multisigCreated({
       wallet: {
@@ -94,9 +65,7 @@ const createWalletFx = createEffect(
           chainId: chainId || undefined,
           name: name.trim(),
           accountId: accountId,
-          matrixRoomId: roomId,
           threshold: threshold,
-          creatorAccountId: creatorId as AccountId,
           cryptoType: isEthereumChain ? CryptoType.ETHEREUM : CryptoType.SR25519,
           chainType: isEthereumChain ? ChainType.ETHEREUM : ChainType.SUBSTRATE,
           type: AccountType.MULTISIG,
@@ -108,28 +77,23 @@ const createWalletFx = createEffect(
 
 const $availableAccounts = combine(
   {
-    accounts: walletModel.$accounts,
     wallets: walletModel.$wallets,
-    chain: $chain,
     chains: networkModel.$chains,
+    chain: $chain,
   },
-  ({ accounts, chain, wallets, chains }) => {
+  ({ chain, wallets, chains }) => {
     if (!chain) return [];
 
-    const walletsMap = dictionary(wallets, 'id');
+    const filteredAccounts = walletUtils.getAccountsBy(wallets, (a, w) => {
+      const isValidWallet = !walletUtils.isWatchOnly(w) && !walletUtils.isProxied(w);
+      const isChainMatch = accountUtils.isChainAndCryptoMatch(a, chains[chain]);
 
-    const chainAccounts = accounts.filter((account) => {
-      const wallet = walletsMap[account.walletId];
-      const isAvailableType =
-        !accountUtils.isMultisigAccount(account) && !walletUtils.isWatchOnly(wallet) && !walletUtils.isProxied(wallet);
-      const isChainIdMatch = accountUtils.isChainAndCryptoMatch(account, chains[chain]);
-
-      return isChainIdMatch && isAvailableType;
+      return isValidWallet && isChainMatch;
     });
 
-    const baseAccounts = chainAccounts.filter((a) => accountUtils.isBaseAccount(a) && a.name);
+    const baseAccounts = filteredAccounts.filter((a) => accountUtils.isBaseAccount(a) && a.name);
 
-    return [...accountUtils.getAccountsAndShardGroups(chainAccounts), ...baseAccounts];
+    return [...accountUtils.getAccountsAndShardGroups(filteredAccounts), ...baseAccounts];
   },
   { skipVoid: false },
 );
@@ -148,7 +112,6 @@ sample({
   clock: walletCreated,
   source: {
     signatories: $signatories,
-    matrix: matrixModel.$matrix,
     chainId: $chain,
     isEthereumChain: $isEthereumChain,
   },

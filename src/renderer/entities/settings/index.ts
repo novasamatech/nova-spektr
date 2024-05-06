@@ -1,1 +1,1 @@
-export * from './lib';
+export { settingsStorage } from './settingsStorage';
