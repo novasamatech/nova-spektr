@@ -1,30 +1,8 @@
-import { BN } from '@polkadot/util';
 import BigNumber from 'bignumber.js';
 
 import { Decimal, totalAmount } from '@shared/lib/utils';
 import { PriceObject } from '@shared/api/price-provider';
 import type { Asset, Balance } from '@shared/core';
-
-export const sumBalances = (firstBalance: Balance, secondBalance?: Balance): Balance => {
-  if (!secondBalance) return firstBalance;
-
-  return {
-    ...firstBalance,
-    verified: firstBalance.verified && secondBalance.verified,
-    free: sumValues(firstBalance.free, secondBalance.free),
-    reserved: sumValues(firstBalance.reserved, secondBalance.reserved),
-    frozen: sumValues(firstBalance.frozen, secondBalance.frozen),
-    locked: (firstBalance.locked || []).concat(secondBalance.locked || []),
-  };
-};
-
-export const sumValues = (firstValue?: string, secondValue?: string): string => {
-  if (firstValue && secondValue) {
-    return new BN(firstValue).add(new BN(secondValue)).toString();
-  }
-
-  return firstValue || '0';
-};
 
 const getBalanceBn = (balance: string, precision: number) => {
   const BNWithConfig = BigNumber.clone();
