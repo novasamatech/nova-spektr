@@ -252,7 +252,7 @@ export const getSignatoryAccounts = (
       const isChainMatch = accountUtils.isChainIdMatch(a, chainId);
       const wallet = walletsMap.get(a.walletId);
 
-      return isChainMatch && walletUtils.isValidSignatory(wallet);
+      return isChainMatch && walletUtils.isValidSignSignatory(wallet);
     });
 
     if (signatoryAccount) {

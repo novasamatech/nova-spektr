@@ -28,6 +28,7 @@ export const walletUtils = {
   isPolkadotVaultGroup,
 
   isValidSignatory,
+  isValidSignSignatory,
   getWalletById,
 
   getAccountsBy,
@@ -88,6 +89,12 @@ function isValidSignatory(wallet?: Wallet): boolean {
   if (!wallet) return false;
 
   return VALID_SIGNATORY_WALLET_TYPES.includes(wallet.type);
+}
+
+function isValidSignSignatory(wallet?: Wallet): boolean {
+  if (!wallet) return false;
+
+  return isValidSignatory(wallet) || isPolkadotVault(wallet);
 }
 
 function getWalletById(wallets: Wallet[], id: ID): Wallet | undefined {
