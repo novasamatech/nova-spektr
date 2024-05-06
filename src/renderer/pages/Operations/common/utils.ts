@@ -4,7 +4,6 @@ import { accountUtils, walletUtils } from '@entities/wallet';
 import { formatSectionAndMethod, toAddress } from '@shared/lib/utils';
 import { TransferTypes, XcmTypes, isProxyTransaction } from '@entities/transaction';
 import {
-  Account,
   AccountId,
   ChainId,
   Contact,
@@ -15,6 +14,7 @@ import {
   Address,
   ProxyType,
   Chain,
+  Account,
 } from '@shared/core';
 import {
   DecodedTransaction,
@@ -213,7 +213,7 @@ export const getSignatoryName = (
   signatoryId: AccountId,
   txSignatories: Signatory[],
   contacts: Contact[],
-  accounts: Account[],
+  wallets: Wallet[],
   addressPrefix?: number,
 ): string => {
   const finderFn = <T extends { accountId: AccountId }>(collection: T[]): T | undefined => {
@@ -227,6 +227,7 @@ export const getSignatoryName = (
   const fromContact = finderFn(contacts)?.name;
   if (fromContact) return fromContact;
 
+  const accounts = wallets.map((wallet) => wallet.accounts).flat();
   const fromAccount = finderFn(accounts)?.name;
   if (fromAccount) return fromAccount;
 

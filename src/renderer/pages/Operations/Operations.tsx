@@ -18,13 +18,14 @@ import { sortByDateDesc } from '@shared/lib/utils';
 
 export const Operations = () => {
   const { t, dateLocale } = useI18n();
-  const activeAccounts = useUnit(walletModel.$activeAccounts);
+
+  const activeWallet = useUnit(walletModel.$activeWallet);
   const chains = useUnit(networkModel.$chains);
 
   const { getLiveAccountMultisigTxs } = useMultisigTx({});
   const { getLiveEventsByKeys } = useMultisigEvent({});
 
-  const activeAccount = activeAccounts.at(0);
+  const activeAccount = activeWallet?.accounts.at(0);
   const account = activeAccount && accountUtils.isMultisigAccount(activeAccount) ? activeAccount : undefined;
 
   const allTxs = getLiveAccountMultisigTxs(account?.accountId ? [account.accountId] : []);

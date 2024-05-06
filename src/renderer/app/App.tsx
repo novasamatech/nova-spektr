@@ -7,15 +7,12 @@ import { CreateWalletProvider } from '@widgets/CreateWallet';
 import { WalletDetailsProvider } from '@widgets/WalletDetails';
 import { walletModel } from '@entities/wallet';
 import { ROUTES_CONFIG } from '@pages/index';
-import { Paths, createLink } from '@shared/routes';
+import { Paths } from '@shared/routes';
 import { FallbackScreen } from '@shared/ui';
-import { walletPairingModel } from '@features/wallets';
-import { WalletType } from '@shared/core';
 import {
   ConfirmDialogProvider,
   StatusModalProvider,
   I18Provider,
-  MatrixProvider,
   GraphqlProvider,
   MultisigChainProvider,
 } from './providers';
@@ -41,25 +38,6 @@ export const App = () => {
     navigate(Paths.ONBOARDING, { replace: true });
   }, [isLoadingWallets, wallets.length]);
 
-  useEffect(() => {
-    const url = new URL(window.location.href);
-    if (!url.searchParams.has('step') || !url.searchParams.has('loginToken')) return;
-
-    const loginToken = url.searchParams.get('loginToken') as string;
-    const step = url.searchParams.get('step') as string;
-
-    url.searchParams.delete('step');
-    url.searchParams.delete('loginToken');
-    window.history.replaceState(null, '', url.href);
-
-    if (step === 'settings_matrix') {
-      navigate(createLink(Paths.MATRIX, {}, { loginToken: [loginToken] }));
-    }
-    if (step === 'multisig_wallet') {
-      walletPairingModel.events.walletTypeSet(WalletType.MULTISIG);
-    }
-  }, []);
-
   const getContent = () => {
     if (splashScreenLoading || isLoadingWallets) return null;
 
@@ -72,17 +50,15 @@ export const App = () => {
     <I18Provider>
       <ErrorBoundary FallbackComponent={FallbackScreen} onError={console.error}>
         <MultisigChainProvider>
-          <MatrixProvider>
-            <ConfirmDialogProvider>
-              <StatusModalProvider>
-                <GraphqlProvider>
-                  {getContent()}
-                  <CreateWalletProvider />
-                  <WalletDetailsProvider />
-                </GraphqlProvider>
-              </StatusModalProvider>
-            </ConfirmDialogProvider>
-          </MatrixProvider>
+          <ConfirmDialogProvider>
+            <StatusModalProvider>
+              <GraphqlProvider>
+                {getContent()}
+                <CreateWalletProvider />
+                <WalletDetailsProvider />
+              </GraphqlProvider>
+            </StatusModalProvider>
+          </ConfirmDialogProvider>
         </MultisigChainProvider>
       </ErrorBoundary>
     </I18Provider>

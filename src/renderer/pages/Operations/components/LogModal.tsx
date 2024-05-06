@@ -13,7 +13,7 @@ import { getAssetById, SS58_DEFAULT_PREFIX, toAddress, getExtrinsicExplorer, sor
 import { useMultisigEvent } from '@entities/multisig';
 import { MultisigTransactionDS } from '@shared/api/storage';
 import { AssetBalance } from '@entities/asset';
-import type { Account, Contact, MultisigAccount, Wallet, AccountId, WalletsMap } from '@shared/core';
+import type { Contact, MultisigAccount, Wallet, AccountId, WalletsMap, Account } from '@shared/core';
 import { WalletIcon, walletModel, walletUtils } from '@entities/wallet';
 import { chainsService } from '@shared/api/network';
 
@@ -21,7 +21,6 @@ type Props = {
   tx: MultisigTransactionDS;
   account?: MultisigAccount;
   connection?: ExtendedChain;
-  accounts: Account[];
   contacts: Contact[];
   isOpen: boolean;
   onClose: () => void;
@@ -49,20 +48,24 @@ const getFilteredWalletsMap = (wallets: Wallet[]): WalletsMap => {
   }, {});
 };
 
-const getFilteredAccountsMap = (accounts: Account[], walletsMap: WalletsMap) =>
-  accounts.reduce<Record<AccountId, Account>>((acc, account) => {
-    if (walletsMap[account.walletId]) {
+const getFilteredAccountsMap = (walletsMap: WalletsMap) => {
+  return Object.values(walletsMap).reduce<Record<AccountId, Account>>((acc, wallet) => {
+    wallet.accounts.forEach((account) => {
       acc[account.accountId] = account;
-    }
+    });
 
     return acc;
   }, {});
+};
 
-const LogModal = ({ isOpen, onClose, tx, account, connection, contacts, accounts }: Props) => {
+const LogModal = ({ isOpen, onClose, tx, account, connection, contacts }: Props) => {
   const { t, dateLocale } = useI18n();
+
+  const wallets = useUnit(walletModel.$wallets);
+
   const { getLiveTxEvents } = useMultisigEvent({});
-  const filteredWalletsMap = getFilteredWalletsMap(useUnit(walletModel.$wallets));
-  const filteredAccountMap = getFilteredAccountsMap(accounts, filteredWalletsMap);
+  const filteredWalletsMap = getFilteredWalletsMap(wallets);
+  const filteredAccountMap = getFilteredAccountsMap(filteredWalletsMap);
   const events = getLiveTxEvents(tx.accountId, tx.chainId, tx.callHash, tx.blockCreated, tx.indexCreated);
 
   const { transaction, description, status } = tx;
@@ -86,7 +89,7 @@ const LogModal = ({ isOpen, onClose, tx, account, connection, contacts, accounts
       event.accountId,
       tx.signatories,
       contacts,
-      accounts,
+      wallets,
       connection?.addressPrefix,
     );
     const eventType = isCreatedEvent ? 'INITIATED' : event.status;

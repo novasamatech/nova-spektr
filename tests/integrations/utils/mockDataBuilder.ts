@@ -59,7 +59,6 @@ export class MockDataBuilder {
         name: `signatory_${i}`,
         address: addresses[i],
         accountId: accountIds[i],
-        matrixId: `@signatory_${i}:matrix.org`,
       });
     }
 
@@ -68,8 +67,6 @@ export class MockDataBuilder {
 
   buildMultisigAccount(threshold: number, signatoryNumber: number) {
     const baseAccount = this.buildAccount(false, false, 'signing_ms');
-    baseAccount['matrixRoomId'] = '!jHHkUALZSDIysXlSKk:matrix.org';
-    baseAccount['creatorAccountId'] = accountIds[0];
     baseAccount['threshold'] = threshold;
     baseAccount['signatories'] = this.generateSignatories(signatoryNumber);
 

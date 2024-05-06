@@ -4,6 +4,7 @@ import { ProviderInterface } from '@polkadot/rpc-provider/types';
 import { ApiPromise } from '@polkadot/api';
 import * as Sc from '@substrate/connect';
 
+import { proxyWorkerUtils } from '../lib/worker-utils';
 import {
   Chain,
   ChainId,
@@ -11,14 +12,13 @@ import {
   ConnectionType,
   ProxyAccount,
   ProxiedAccount,
-  Account,
+  BaseAccount,
   AccountId,
   NoID,
   PartialProxiedAccount,
   ProxyVariant,
   ProxyDeposits,
 } from '@shared/core';
-import { proxyWorkerUtils } from '../lib/worker-utils';
 
 export const proxyWorker = {
   initConnection,
@@ -98,8 +98,8 @@ async function disconnect(chainId: ChainId) {
 
 type GetProxiesParams = {
   chainId: ChainId;
-  accountsForProxy: Record<AccountId, Account>;
-  accountsForProxied: Record<AccountId, Account>;
+  accountsForProxy: Record<AccountId, BaseAccount>;
+  accountsForProxied: Record<AccountId, BaseAccount>;
   proxiedAccounts: ProxiedAccount[];
   proxies: ProxyAccount[];
 };
