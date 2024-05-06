@@ -49,6 +49,7 @@
     "test:system": "npx playwright test -j 4",
     "test:system-generator": "npx playwright codegen --ignore-https-errors https://localhost:3000",
     "test:system:ui-mod": "npx playwright test --ui",
+
     "lint": "eslint . --ext=js,ts,tsx,json",
     "lint:fix": "pnpm lint --fix",
     "lint:i18n-locale": "cross-env I18N=true eslint src/renderer/shared/api/translation/locales/ --ext=json --plugin i18n-json",
