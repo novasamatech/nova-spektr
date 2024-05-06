@@ -36,11 +36,7 @@ const EventMessage: Partial<Record<SigningStatus | 'INITIATED', string>> = {
 
 const getFilteredWalletsMap = (wallets: Wallet[]): WalletsMap => {
   return wallets.reduce<WalletsMap>((acc, wallet) => {
-    if (
-      walletUtils.isValidSignatory(wallet) ||
-      walletUtils.isPolkadotVault(wallet) ||
-      walletUtils.isMultiShard(wallet)
-    ) {
+    if (walletUtils.isValidSignSignatory(wallet)) {
       acc[wallet.id] = wallet;
     }
 
