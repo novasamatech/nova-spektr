@@ -146,7 +146,7 @@ function getWalletFilteredAccounts(
         return !predicates.accountFn || predicates.accountFn(account, wallet);
       });
 
-      // If accounts found, return the wallet with those accounts
+      // If accounts found, return the wallet with filtered accounts
       if (accounts.length > 0) {
         acc = { ...wallet, accounts } as Wallet;
       }
