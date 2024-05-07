@@ -93,7 +93,6 @@ export const Actions = ({ canInteract, stakes, isStakingLoading, onNavigate }: P
     const incorrectType = getIncorrectAccountType(operation);
 
     if (incorrectType) {
-      // setOperationType(operation);
       setOperation(path);
       setWarningMessage(
         t(incorrectType === ControllerTypes.STASH ? 'staking.warning.stash' : 'staking.warning.controller'),

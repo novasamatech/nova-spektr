@@ -1,23 +1,37 @@
 import { Outlet } from 'react-router-dom';
+import { useUnit } from 'effector-react';
 
 import { useI18n } from '@app/providers';
 import { Header } from '@shared/ui';
 import { ShardSelectorButton, ShardSelectorModal } from '@features/wallets';
-import { AssetsFilters, AssetsList } from './components';
+import {
+  AssetsChainView,
+  AssetsSearch,
+  AssetsSettings,
+  assetsSearchModel,
+  assetsSettingsModel,
+} from '@features/assets';
 import { assetsModel } from './model/assets-model';
 
 export const Assets = () => {
   const { t } = useI18n();
 
+  const activeShards = useUnit(assetsModel.$activeShards);
+  const query = useUnit(assetsSearchModel.$query);
+  const hideZeroBalances = useUnit(assetsSettingsModel.$hideZeroBalances);
+
   return (
     <>
       <section className="h-full flex flex-col">
         <Header title={t('balances.title')} titleClass="py-[3px]" headerClass="pt-4 pb-[15px]">
-          <AssetsFilters />
+          <div className="flex items-center gap-x-3">
+            <AssetsSearch />
+            <AssetsSettings />
+          </div>
         </Header>
         <ShardSelectorButton />
 
-        <AssetsList />
+        <AssetsChainView query={query} activeShards={activeShards} hideZeroBalances={hideZeroBalances} />
       </section>
 
       <ShardSelectorModal onConfirm={assetsModel.events.activeShardsSet} />
