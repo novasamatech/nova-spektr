@@ -44,8 +44,6 @@ class RawSigner implements Signer {
   }
 
   public async signRaw(data: any): Promise<SignerResult> {
-    console.log('xcm', data, this.signature);
-
     return { id: 1, signature: this.signature };
   }
 }
@@ -79,28 +77,23 @@ async function getTransactionFee(transaction: Transaction, api: ApiPromise): Pro
 async function signAndSubmit(
   transaction: Transaction,
   signature: HexString,
+  unsigned: UnsignedTransaction,
   api: ApiPromise,
   callback: (executed: any, params: any) => void,
 ) {
   const extrinsic = getExtrinsic[transaction.type](transaction.args, api);
-  const { payload, unsigned } = await createPayload(transaction, api);
 
   const accountId = toAccountId(transaction.address);
 
-  console.log('xcmPayload', { unsigned, extrinsic, payload, accountId });
-
-  // extrinsic.addSignature(hexToU8a(toAccountId(transaction.address)), signature, payload);
   const options = { signer: new RawSigner(signature), ...unsigned };
 
-  console.log('xcm', extrinsic);
   // @ts-ignore
-  extrinsic.signAndSend(accountId, options, ({ status, events }) => {
-    console.log('xcm', status, events);
+  extrinsic.signAndSend(accountId, options, (result) => {
+    const { status, events, txHash, txIndex } = result;
+    if (status.isInBlock || status.isFinalized) {
+      console.log('xcm', status, events, blockNumber: result.blockNumber, txHash, txIndex);
+    }
   });
-
-  // extrinsic.send(({ status, events }) => {
-  //   console.log('xcm', status, events);
-  // });
 }
 
 function getMultisigDeposit(threshold: Threshold, api: ApiPromise): string {

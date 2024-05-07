@@ -86,15 +86,16 @@ const submitExtrinsicsFx = createEffect(({ api, extrinsics, unsignedTxs }: Submi
 type SignAndSubmitExtrinsicParams = {
   api: ApiPromise;
   transactions: Transaction[];
+  unsignedTxs: UnsignedTransaction[];
   signatures: HexString[];
 };
 const signAndSubmitExtrinsicsFx = createEffect(
-  ({ api, transactions, signatures }: SignAndSubmitExtrinsicParams): void => {
+  ({ api, transactions, unsignedTxs, signatures }: SignAndSubmitExtrinsicParams): void => {
     const boundExtrinsicSucceeded = scopeBind(extrinsicSucceeded, { safe: true });
     const boundExtrinsicFailed = scopeBind(extrinsicFailed, { safe: true });
 
     transactions.forEach((transaction, index) => {
-      transactionService.signAndSubmit(transaction, signatures[index], api, (executed, params) => {
+      transactionService.signAndSubmit(transaction, signatures[index], unsignedTxs[index], api, (executed, params) => {
         if (executed) {
           boundExtrinsicSucceeded(params as ExtrinsicResultParams);
         } else {
@@ -202,6 +203,7 @@ sample({
     api: apis[params!.chain.chainId],
     signatures: params!.signatures,
     transactions: params!.transactions,
+    unsignedTxs: params!.unsignedTxs,
   }),
   target: signAndSubmitExtrinsicsFx,
 });
