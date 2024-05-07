@@ -5,11 +5,11 @@ import { GraphQLClient } from 'graphql-request';
 import type { Account, Chain, ChainId, Connection, MultisigAccount } from '@shared/core';
 import { AccountType, ChainType, CryptoType, ExternalType, SigningType, WalletType } from '@shared/core';
 import { networkModel, networkUtils } from '@entities/network';
-import { accountUtils, walletModel } from '@entities/wallet';
+import { accountUtils, walletModel, walletUtils } from '@entities/wallet';
 import { MultisigResult, multisigService } from '@entities/multisig/api/MultisigsService';
-import { multisigUtils } from '../lib/multisig-utils';
-import { isEthereumAccountId, toAddress } from '@/src/renderer/shared/lib/utils';
-import { CreateParams } from '@/src/renderer/entities/wallet/model/wallet-model';
+import { multisigUtils } from '../lib/mulitisigs-utils';
+import { isEthereumAccountId, toAddress } from '@shared/lib/utils';
+import { CreateParams } from '@entities/wallet/model/wallet-model';
 
 const multisigsDiscoveryStarted = createEvent();
 const chainConnected = createEvent<ChainId>();
@@ -50,6 +50,7 @@ const getMultisigsFx = createEffect(async ({ chain, accounts }: GetMultisigsPara
       accounts.map((account) => account.accountId),
     );
 
+    // todo remove
     indexedMultisigs.length > 0 && console.log('<><><><><><><><><><><><> indexedMultisigs', indexedMultisigs);
 
     return {
@@ -65,6 +66,7 @@ const getMultisigsFx = createEffect(async ({ chain, accounts }: GetMultisigsPara
 });
 
 const saveMultisigFx = createEffect((multisigsToAdd: CreateParams<MultisigAccount>[]) => {
+  // todo remove
   multisigsToAdd.length && console.log('<><><><><><><><><><><><> multisigToAdd', multisigsToAdd);
 
   multisigsToAdd.forEach((multisig) => walletModel.events.multisigCreated(multisig));
@@ -86,14 +88,13 @@ sample({
 sample({
   clock: chainConnected,
   source: {
-    accounts: walletModel.$accounts,
     chains: networkModel.$chains,
     wallets: walletModel.$wallets,
   },
-  fn: ({ accounts, chains, wallets }, chainId) => ({
+  fn: ({ chains, wallets }, chainId) => ({
     chainId,
     chain: chains[chainId],
-    accounts: accounts.filter((a) => accountUtils.isChainIdMatch(a, chainId)),
+    accounts: walletUtils.getAccountsBy(wallets, (a) => accountUtils.isChainIdMatch(a, chainId));
     wallets,
   }),
   target: getMultisigsFx,
@@ -102,16 +103,19 @@ sample({
 sample({
   clock: getMultisigsFx.doneData,
   source: {
-    accounts: walletModel.$accounts,
+    wallets: walletModel.$wallets,
   },
   filter: (_, { indexedMultisigs }) => {
     return indexedMultisigs.length > 0;
   },
-  fn: ({ accounts }, { indexedMultisigs, chain }) => {
+  fn: ({ wallets }, { indexedMultisigs, chain }) => {
     console.log('<><><><><><><><><><><><> indexedMultisigs', indexedMultisigs);
-    console.log(accounts);
+    console.log(wallets);
+    // we filter out the multisigs that we already have
     const multisigsToSave = indexedMultisigs.filter((multisigrResult) => {
-      return accounts.every((account) => account.accountId !== multisigrResult.accountId);
+      return walletUtils.getWalletsFilteredAccounts(wallets, {accountFn: (account) => 
+        account.accountId !== multisigrResult.accountId
+      } )
     });
 
     const result = multisigsToSave.map(
@@ -140,7 +144,7 @@ sample({
         } as CreateParams<MultisigAccount>),
     );
 
-    console.log('===> Creating', result);
+    console.log('<><><><><><><><><><><><> Creating', result);
 
     return result;
   },
