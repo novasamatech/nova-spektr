@@ -123,9 +123,10 @@ function getWalletFilteredAccounts(
     return !predicates.walletFn || predicates.walletFn(wallet);
   });
 
-  const accounts = wallet?.accounts.filter((account) => {
-    return !predicates.accountFn || predicates.accountFn(account, wallet);
-  });
+  const accounts = predicates.accountFn
+    ? // @ts-ignore
+      wallet?.accounts.filter((account) => predicates.accountFn(account, wallet))
+    : wallet?.accounts;
 
   if (wallet && accounts) {
     return {
