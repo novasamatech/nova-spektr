@@ -13,11 +13,10 @@ describe('features/balances/subscription/model/balance-sub-model', () => {
   const { wallets, newWallets, accounts } = balanceSubMock;
 
   const setupInitialState = async (scope: Scope) => {
-    const { chains, wallets, accounts } = balanceSubMock;
+    const { chains, wallets } = balanceSubMock;
 
     const actions = Promise.all([
       allSettled(networkModel.$chains, { scope, params: chains }),
-      allSettled(walletModel.$accounts, { scope, params: accounts }),
       allSettled(walletModel.$wallets, { scope, params: wallets }),
     ]);
 

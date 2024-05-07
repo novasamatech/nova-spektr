@@ -1,7 +1,7 @@
 import { createStore, createEvent, sample, combine, createApi, attach } from 'effector';
 import cloneDeep from 'lodash/cloneDeep';
 
-import type { Account } from '@shared/core';
+import type { Account, Wallet } from '@shared/core';
 import { walletModel, walletUtils } from '@entities/wallet';
 import { networkModel } from '@entities/network';
 import { shardsUtils } from '../lib/shards-utils';
@@ -51,11 +51,14 @@ const $isAccessDenied = combine(walletModel.$activeWallet, (wallet): boolean => 
 const $filteredAccounts = combine(
   {
     query: $query,
-    accounts: walletModel.$activeAccounts,
+    wallet: walletModel.$activeWallet,
     chains: networkModel.$chains,
   },
-  ({ query, accounts, chains }): Account[] => {
-    return shardsUtils.getFilteredAccounts(accounts, chains, query);
+  ({ query, wallet, chains }): Account[] => {
+    if (!wallet) return [];
+    if (!walletUtils.isMultiShard(wallet) && !walletUtils.isPolkadotVault(wallet)) return [];
+
+    return shardsUtils.getFilteredAccounts(wallet.accounts, chains, query);
   },
 );
 
@@ -86,13 +89,13 @@ const $initSelectedStructure = combine(
   {
     proceed: $canGetStructure,
     wallet: walletModel.$activeWallet,
-    accounts: walletModel.$activeAccounts,
     chains: networkModel.$chains,
   },
-  ({ proceed, wallet, accounts, chains }): SelectedStruct => {
+  ({ proceed, wallet, chains }): SelectedStruct => {
     if (!proceed || !wallet) return {};
+    if (!walletUtils.isMultiShard(wallet) && !walletUtils.isPolkadotVault(wallet)) return {};
 
-    const filteredAccounts = shardsUtils.getFilteredAccounts(accounts, chains);
+    const filteredAccounts = shardsUtils.getFilteredAccounts(wallet.accounts, chains);
 
     if (walletUtils.isPolkadotVault(wallet)) {
       return shardsUtils.getVaultChainsCounter(chains, filteredAccounts);
@@ -148,18 +151,19 @@ sample({
 
 type ConfirmParams = {
   struct: SelectedStruct;
-  accounts: Account[];
+  wallet?: Wallet;
 };
 sample({
   clock: shardsConfirmed,
   source: {
     struct: $selectedStructure,
-    accounts: walletModel.$activeAccounts,
+    wallet: walletModel.$activeWallet,
   },
+  filter: ({ wallet }) => Boolean(wallet),
   target: attach({
     source: $callbacks,
-    effect: (state, { struct, accounts }: ConfirmParams) => {
-      state?.onConfirm(shardsUtils.getSelectedShards(struct, accounts));
+    effect: (state, { struct, wallet }: ConfirmParams) => {
+      state?.onConfirm(shardsUtils.getSelectedShards(struct, wallet!.accounts));
     },
   }),
 });
