@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 import { useUnit } from 'effector-react';
 
 import { Signatory, Wallet, AccountId, MultisigWallet } from '@shared/core';
-import { BaseModal, FootnoteText, Tabs, HelpText, DropdownIconButton } from '@shared/ui';
+import { BaseModal, FootnoteText, Tabs, DropdownIconButton } from '@shared/ui';
 import { RootExplorers } from '@shared/lib/utils';
 import { useModalClose, useToggle } from '@shared/lib/hooks';
 import { useI18n } from '@app/providers';
@@ -16,7 +16,6 @@ import { ProxiesList } from '../components/ProxiesList';
 import { NoProxiesAction } from '../components/NoProxiesAction';
 import { walletProviderModel } from '../../model/wallet-provider-model';
 import { networkUtils, networkModel } from '@entities/network';
-import { matrixModel, matrixUtils } from '@entities/matrix';
 import { AddPureProxied, addPureProxiedModel } from '@widgets/AddPureProxiedModal';
 import {
   AccountsList,
@@ -43,9 +42,6 @@ export const MultisigWalletDetails = ({
   onClose,
 }: Props) => {
   const { t } = useI18n();
-
-  const matrix = useUnit(matrixModel.$matrix);
-  const loginStatus = useUnit(matrixModel.$loginStatus);
 
   const chains = useUnit(networkModel.$chains);
   const hasProxies = useUnit(walletProviderModel.$hasProxies);
@@ -161,14 +157,7 @@ export const MultisigWalletDetails = ({
                           description={<WalletFiatBalance walletId={wallet.id} className="truncate" />}
                         />
                       }
-                    >
-                      <ExplorersPopover.Group
-                        active={matrixUtils.isLoggedIn(loginStatus)}
-                        title={t('general.explorers.matrixIdTitle')}
-                      >
-                        <HelpText className="text-text-secondary">{matrix.userId}</HelpText>
-                      </ExplorersPopover.Group>
-                    </ExplorersPopover>
+                    />
                   </li>
                 ))}
               </ul>
@@ -194,14 +183,7 @@ export const MultisigWalletDetails = ({
                           addressPrefix={singleChain.addressPrefix}
                         />
                       }
-                    >
-                      <ExplorersPopover.Group
-                        active={matrixUtils.isLoggedIn(loginStatus)}
-                        title={t('general.explorers.matrixIdTitle')}
-                      >
-                        <HelpText className="text-text-secondary">{matrix.userId}</HelpText>
-                      </ExplorersPopover.Group>
-                    </ExplorersPopover>
+                    />
                   </li>
                 ))}
               </ul>
@@ -221,14 +203,7 @@ export const MultisigWalletDetails = ({
                       address={signatory.accountId}
                       explorers={explorers}
                       button={<ContactItem name={signatory.name} address={signatory.accountId} />}
-                    >
-                      <ExplorersPopover.Group
-                        active={Boolean(signatory.matrixId)}
-                        title={t('general.explorers.matrixIdTitle')}
-                      >
-                        <HelpText className="text-text-secondary break-all">{signatory.matrixId}</HelpText>
-                      </ExplorersPopover.Group>
-                    </ExplorersPopover>
+                    />
                   </li>
                 ))}
               </ul>
