@@ -1,7 +1,7 @@
 import { createEvent, sample, createStore } from 'effector';
 
+import type { Account, Wallet } from '@shared/core';
 import { walletModel, accountUtils, walletUtils } from '@entities/wallet';
-import { Account, Wallet } from '@shared/core';
 
 const activeShardsSet = createEvent<Account[]>();
 
