@@ -113,9 +113,14 @@ sample({
     console.log(wallets);
     // we filter out the multisigs that we already have
     const multisigsToSave = indexedMultisigs.filter((multisigrResult) => {
-      return walletUtils.getWalletsFilteredAccounts(wallets, {
+      const sameWallet = walletUtils.getWalletsFilteredAccounts(wallets, {
         accountFn: (account) => account.accountId !== multisigrResult.accountId,
       });
+
+      const isKnownWallet = sameWallet?.length;
+      isKnownWallet && console.log('<><><><><><> NOT SAVING ', toAddress(multisigrResult.accountId));
+
+      return !isKnownWallet;
     });
 
     const result = multisigsToSave.map(
