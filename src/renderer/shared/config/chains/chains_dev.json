@@ -262,7 +262,7 @@
       "multisig": [
         {
           "type": "subquery",
-          "url": "http://localhost:3000"
+          "url": "https://api.subquery.network/sq/nova-wallet/novasama-westend-proxy__bm92Y"
         }
       ]
     }
@@ -397,7 +397,7 @@
         "typeExtras": {
           "assetId": "69420"
         },
-        "name": "Chaos"feat/wallet_accs
+        "name": "Chaos"
       },
       {
         "assetId": 3,
@@ -4020,11 +4020,7 @@
     "chainId": "0xafdc188f45c71dacbaa0b62e16a91f726c7b8699a9748cdf715459de6b7f366d",
     "parentId": "0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3",
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/chains/HydraDX.svg",
-    "options": [
-      "multisig",
-      "regular_proxy",
-      "pure_proxy"
-    ],
+    "options": ["multisig", "regular_proxy", "pure_proxy"],
     "nodes": [
       {
         "url": "wss://hydradx-rpc.dwellir.com",
