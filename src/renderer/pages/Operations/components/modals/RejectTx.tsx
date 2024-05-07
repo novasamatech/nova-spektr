@@ -44,7 +44,6 @@ const AllSteps = [Step.CONFIRMATION, Step.SIGNING, Step.SUBMIT];
 
 const RejectTx = ({ tx, account, connection }: Props) => {
   const { t } = useI18n();
-  // const wallets = keyBy(useUnit(walletModel.$wallets), 'id');
 
   const wallets = useUnit(walletModel.$wallets);
   const balances = useUnit(balanceModel.$balances);
