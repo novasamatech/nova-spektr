@@ -236,7 +236,6 @@ const RejectTx = ({ tx, account, connection }: Props) => {
           tx={rejectTx}
           api={connection.api}
           multisigTx={tx}
-          matrixRoomId={account.matrixRoomId}
           account={signAccount}
           unsignedTx={unsignedTx}
           signature={signature}

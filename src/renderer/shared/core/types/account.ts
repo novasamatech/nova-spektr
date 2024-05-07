@@ -40,7 +40,6 @@ export interface MultisigAccount extends Account {
   signatories: Signatory[];
   threshold: Threshold;
   creatorAccountId: AccountId;
-  matrixRoomId?: string;
   chainId?: ChainId;
   cryptoType: CryptoType;
   type: AccountType.MULTISIG;

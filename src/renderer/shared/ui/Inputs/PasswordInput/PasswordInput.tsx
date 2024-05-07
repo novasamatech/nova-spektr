@@ -16,11 +16,15 @@ export const PasswordInput = forwardRef<HTMLInputElement, Props>(({ ...props }, 
     <Input
       ref={ref}
       type={isHidden ? 'password' : 'text'}
-      label={t('settings.matrix.passwordLabel')}
-      placeholder={t('settings.matrix.passwordPlaceholder')}
+      label={t('general.passwordInput.passwordLabel')}
+      placeholder={t('general.passwordInput.passwordPlaceholder')}
       suffixElement={
         <button type="button" className="ml-2" onClick={toggleVisibility}>
-          <Icon name={isHidden ? 'eyeSlashed' : 'eye'} size={20} alt={t('settings.matrix.passwordVisibilityButton')} />
+          <Icon
+            name={isHidden ? 'eyeSlashed' : 'eye'}
+            size={20}
+            alt={t('general.passwordInput.passwordVisibilityButton')}
+          />
         </button>
       }
       {...props}
