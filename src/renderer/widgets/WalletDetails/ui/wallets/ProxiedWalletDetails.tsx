@@ -1,7 +1,7 @@
 import { useUnit } from 'effector-react';
 import noop from 'lodash/noop';
 
-import { ProxiedAccount, ProxyType, Wallet } from '@shared/core';
+import { ProxyType, Wallet, ProxiedWallet } from '@shared/core';
 import { useI18n } from '@app/providers';
 import { networkModel } from '@entities/network';
 import { useModalClose, useToggle } from '@shared/lib/hooks';
@@ -28,13 +28,12 @@ const ProxyTypeOperation: Record<ProxyType, string> = {
 };
 
 type Props = {
-  wallet: Wallet;
+  wallet: ProxiedWallet;
   proxyWallet: Wallet;
-  proxiedAccount: ProxiedAccount;
   onClose: () => void;
 };
 
-export const ProxiedWalletDetails = ({ wallet, proxyWallet, proxiedAccount, onClose }: Props) => {
+export const ProxiedWalletDetails = ({ wallet, proxyWallet, onClose }: Props) => {
   const { t } = useI18n();
 
   const chains = useUnit(networkModel.$chains);
@@ -52,10 +51,7 @@ export const ProxiedWalletDetails = ({ wallet, proxyWallet, proxiedAccount, onCl
     },
   ];
 
-  if (
-    permissionUtils.canCreateAnyProxy(wallet, [proxiedAccount]) ||
-    permissionUtils.canCreateNonAnyProxy(wallet, [proxiedAccount])
-  ) {
+  if (permissionUtils.canCreateAnyProxy(wallet) || permissionUtils.canCreateNonAnyProxy(wallet)) {
     Options.push({
       icon: 'addCircle' as IconNames,
       title: t('walletDetails.common.addProxyAction'),
@@ -81,8 +77,8 @@ export const ProxiedWalletDetails = ({ wallet, proxyWallet, proxiedAccount, onCl
       title: t('walletDetails.common.accountTabTitle'),
       panel: (
         <AccountsList
-          accountId={proxiedAccount.accountId}
-          chains={[chains[proxiedAccount.chainId]]}
+          accountId={wallet.accounts[0].accountId}
+          chains={[chains[wallet.accounts[0].chainId]]}
           className="h-[327px]"
         />
       ),
@@ -119,7 +115,9 @@ export const ProxiedWalletDetails = ({ wallet, proxyWallet, proxiedAccount, onCl
             &nbsp;
             <FootnoteText className="whitespace-nowrap">{t('walletDetails.common.proxyToControl')}</FootnoteText>
             &nbsp;
-            <FootnoteText className="whitespace-nowrap">{t(ProxyTypeOperation[proxiedAccount.proxyType])}</FootnoteText>
+            <FootnoteText className="whitespace-nowrap">
+              {t(ProxyTypeOperation[wallet.accounts[0].proxyType])}
+            </FootnoteText>
           </div>
         </div>
         <Tabs items={tabItems} panelClassName="" unmount={false} tabsClassName="mx-5" />

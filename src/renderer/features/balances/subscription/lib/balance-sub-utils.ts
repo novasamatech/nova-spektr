@@ -1,4 +1,6 @@
-import { Account, Wallet, ChainId, Chain, ID } from '@shared/core';
+import uniqBy from 'lodash/uniqBy';
+
+import { Account, Wallet, ChainId, Chain, ID, MultisigAccount } from '@shared/core';
 import { accountUtils, walletUtils } from '@entities/wallet';
 import { dictionary } from '@shared/lib/utils';
 import { SubAccounts } from './types';
@@ -8,43 +10,32 @@ export const balanceSubUtils = {
   formSubAccounts,
 };
 
-function getSiblingAccounts(
-  wallet: Wallet,
-  wallets: Wallet[],
-  walletAccounts: Account[],
-  accounts: Account[],
-): Account[] {
-  const firstAccount = walletAccounts[0];
+function getSiblingAccounts(wallet: Wallet, wallets: Wallet[]): Account[] {
+  if (walletUtils.isMultisig(wallet)) {
+    const signatoriesMap = dictionary(wallet.accounts[0].signatories, 'accountId');
+    const signatories = walletUtils.getAccountsBy(wallets, (account) => signatoriesMap[account.accountId]);
 
-  if (walletUtils.isMultisig(wallet) && accountUtils.isMultisigAccount(firstAccount)) {
-    const accountsMap = dictionary(accounts, 'accountId');
-
-    return firstAccount.signatories.reduce((acc, signatory) => {
-      if (accountsMap[signatory.accountId]) {
-        acc.push(accountsMap[signatory.accountId]);
-      }
-
-      return acc;
-    }, walletAccounts);
+    return wallet.accounts.concat(uniqBy(signatories, 'accountId') as MultisigAccount[]);
   }
 
   if (walletUtils.isPolkadotVault(wallet)) {
-    return walletAccounts.filter((account) => !accountUtils.isBaseAccount(account));
+    return wallet.accounts.filter((account) => !accountUtils.isBaseAccount(account));
   }
 
-  if (walletUtils.isProxied(wallet) && accountUtils.isProxiedAccount(firstAccount)) {
-    const proxyAccounts = accounts.filter((account) => account.accountId === firstAccount.proxyAccountId);
-    const proxyWallet = wallets.find((wallet) => {
-      return proxyAccounts.some((a) => a.walletId === wallet.id) && !walletUtils.isWatchOnly(wallet);
+  if (walletUtils.isProxied(wallet)) {
+    const proxiedAccount = wallet.accounts[0];
+
+    const proxy = walletUtils.getWalletFilteredAccounts(wallets, {
+      walletFn: (wallet) => !walletUtils.isWatchOnly(wallet),
+      accountFn: (account) => account.accountId === proxiedAccount.proxyAccountId,
     });
-    const proxyAccount = proxyAccounts.find((account) => account.walletId === proxyWallet?.id);
 
-    if (!proxyWallet || !proxyAccount) return [firstAccount];
+    if (!proxy) return [proxiedAccount];
 
-    return [firstAccount, ...getSiblingAccounts(proxyWallet, wallets, [proxyAccount], accounts)];
+    return [proxiedAccount, ...getSiblingAccounts(proxy, wallets)];
   }
 
-  return walletAccounts;
+  return wallet.accounts;
 }
 
 function formSubAccounts(

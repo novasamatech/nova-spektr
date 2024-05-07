@@ -273,16 +273,19 @@ const $signatories = combine(
 const $destinationAccounts = combine(
   {
     wallets: walletModel.$wallets,
-    accounts: walletModel.$accounts,
     network: $networkStore,
     query: $destinationQuery,
   },
-  ({ wallets, accounts, network, query }) => {
+  ({ wallets, network, query }) => {
     if (!network) return [];
 
-    return accountUtils.getAccountsForBalances(wallets, accounts, (account) => {
-      const isChainAndCryptoMatch = accountUtils.isChainAndCryptoMatch(account, network.chain);
+    return walletUtils.getAccountsBy(wallets, (account, wallet) => {
+      const isPvWallet = walletUtils.isPolkadotVault(wallet);
+      const isBaseAccount = accountUtils.isBaseAccount(account);
+      if (isBaseAccount && isPvWallet) return false;
+
       const isShardAccount = accountUtils.isShardAccount(account);
+      const isChainAndCryptoMatch = accountUtils.isChainAndCryptoMatch(account, network.chain);
       const address = toAddress(account.accountId, { prefix: network.chain.addressPrefix });
 
       return isChainAndCryptoMatch && !isShardAccount && isStringsMatchQuery(query, [account.name, address]);

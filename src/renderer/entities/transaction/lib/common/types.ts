@@ -12,8 +12,8 @@ import type {
   AccountId,
   ChainId,
   MultisigAccount,
-  Account,
   ProxiedAccount,
+  Account,
 } from '@shared/core';
 import { DecodedTransaction, Transaction, TransactionType } from '@entities/transaction/model/transaction';
 

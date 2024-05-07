@@ -1,7 +1,7 @@
 import { Icon, BodyText } from '@shared/ui';
 import { useI18n } from '@app/providers';
 
-const EmptyState = () => {
+export const EmptyState = () => {
   const { t } = useI18n();
 
   return (
@@ -11,5 +11,3 @@ const EmptyState = () => {
     </div>
   );
 };
-
-export default EmptyState;

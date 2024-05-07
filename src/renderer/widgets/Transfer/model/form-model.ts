@@ -25,7 +25,6 @@ import {
   toShortAddress,
   toAccountId,
   toAddress,
-  dictionary,
   ZERO_BALANCE,
 } from '@shared/lib/utils';
 
@@ -223,30 +222,26 @@ const $txWrappers = combine(
     wallet: walletModel.$activeWallet,
     wallets: walletModel.$wallets,
     account: $transferForm.fields.account.$value,
-    accounts: walletModel.$accounts,
     network: $networkStore,
     signatories: $selectedSignatories,
   },
-  ({ wallet, account, accounts, wallets, network, signatories }) => {
+  ({ wallet, account, wallets, network, signatories }) => {
     if (!wallet || !network || !account.id) return [];
 
-    const walletFiltered = wallets.filter((wallet) => {
-      return !walletUtils.isProxied(wallet) && !walletUtils.isWatchOnly(wallet);
-    });
-    const walletsMap = dictionary(walletFiltered, 'id');
-    const chainFilteredAccounts = accounts.filter((account) => {
-      if (accountUtils.isBaseAccount(account) && walletUtils.isPolkadotVault(walletsMap[account.walletId])) {
-        return false;
-      }
+    const filteredWallets = walletUtils.getWalletsFilteredAccounts(wallets, {
+      walletFn: (w) => !walletUtils.isProxied(w) && !walletUtils.isWatchOnly(w),
+      accountFn: (a, w) => {
+        const isBase = accountUtils.isBaseAccount(a);
+        const isPolkadotVault = walletUtils.isPolkadotVault(w);
 
-      return accountUtils.isChainAndCryptoMatch(account, network.chain);
+        return (!isBase || !isPolkadotVault) && accountUtils.isChainAndCryptoMatch(a, network.chain);
+      },
     });
 
     return transactionService.getTxWrappers({
       wallet,
-      wallets: walletFiltered,
+      wallets: filteredWallets || [],
       account,
-      accounts: chainFilteredAccounts,
       signatories,
     });
   },
@@ -286,18 +281,17 @@ const $accounts = combine(
   {
     network: $networkStore,
     wallet: walletModel.$activeWallet,
-    accounts: walletModel.$activeAccounts,
     balances: balanceModel.$balances,
   },
-  ({ network, wallet, accounts, balances }) => {
+  ({ network, wallet, balances }) => {
     if (!wallet || !network) return [];
 
     const { chain, asset } = network;
-    const isPolkadotVault = walletUtils.isPolkadotVault(wallet);
-    const walletAccounts = accounts.filter((account) => {
-      if (isPolkadotVault && accountUtils.isBaseAccount(account)) return false;
+    const walletAccounts = walletUtils.getAccountsBy([wallet], (a, w) => {
+      const isBase = accountUtils.isBaseAccount(a);
+      const isPolkadotVault = walletUtils.isPolkadotVault(w);
 
-      return accountUtils.isChainAndCryptoMatch(account, network.chain);
+      return (!isBase || !isPolkadotVault) && accountUtils.isChainAndCryptoMatch(a, network.chain);
     });
 
     return walletAccounts.map((account) => {
@@ -447,18 +441,16 @@ const $destinationAccounts = combine(
   {
     isXcm: $isXcm,
     wallet: walletModel.$activeWallet,
-    accounts: walletModel.$activeAccounts,
     chain: $transferForm.fields.xcmChain.$value,
   },
-  ({ isXcm, wallet, accounts, chain }) => {
-    if (!isXcm || !wallet || !chain.chainId || accounts.length === 0) return [];
+  ({ isXcm, wallet, chain }) => {
+    if (!isXcm || !wallet || !chain.chainId) return [];
 
-    const isPolkadotVault = walletUtils.isPolkadotVault(wallet);
+    return walletUtils.getAccountsBy([wallet], (a, w) => {
+      const isBase = accountUtils.isBaseAccount(a);
+      const isPolkadotVault = walletUtils.isPolkadotVault(w);
 
-    return accounts.filter((account) => {
-      if (accountUtils.isBaseAccount(account) && isPolkadotVault) return false;
-
-      return accountUtils.isChainAndCryptoMatch(account, chain);
+      return (!isBase || !isPolkadotVault) && accountUtils.isChainAndCryptoMatch(a, chain);
     });
   },
 );

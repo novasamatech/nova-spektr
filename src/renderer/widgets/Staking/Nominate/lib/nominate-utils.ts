@@ -1,5 +1,4 @@
 import { walletUtils, accountUtils } from '@entities/wallet';
-import { dictionary } from '@shared/lib/utils';
 import { transactionService } from '@entities/transaction';
 import { Wallet, Account, Chain } from '@shared/core';
 import { Step } from './types';
@@ -44,27 +43,23 @@ type TxWrapperParams = {
   wallet: Wallet;
   wallets: Wallet[];
   account: Account;
-  accounts: Account[];
   signatories: Account[];
 };
-function getTxWrappers({ chain, wallet, wallets, account, accounts, signatories }: TxWrapperParams) {
-  const walletFiltered = wallets.filter((wallet) => {
-    return !walletUtils.isProxied(wallet) && !walletUtils.isWatchOnly(wallet);
-  });
-  const walletsMap = dictionary(walletFiltered, 'id');
-  const chainFilteredAccounts = accounts.filter((account) => {
-    if (accountUtils.isBaseAccount(account) && walletUtils.isPolkadotVault(walletsMap[account.walletId])) {
-      return false;
-    }
+function getTxWrappers({ chain, wallet, wallets, account, signatories }: TxWrapperParams) {
+  const filteredWallets = walletUtils.getWalletsFilteredAccounts(wallets, {
+    walletFn: (w) => !walletUtils.isProxied(w) && !walletUtils.isWatchOnly(w),
+    accountFn: (a, w) => {
+      const isBase = accountUtils.isBaseAccount(a);
+      const isPolkadotVault = walletUtils.isPolkadotVault(w);
 
-    return accountUtils.isChainAndCryptoMatch(account, chain);
+      return (!isBase || !isPolkadotVault) && accountUtils.isChainAndCryptoMatch(a, chain);
+    },
   });
 
   return transactionService.getTxWrappers({
     wallet,
-    wallets: walletFiltered,
+    wallets: filteredWallets || [],
     account,
-    accounts: chainFilteredAccounts,
     signatories,
   });
 }

@@ -2,14 +2,6 @@ import { act, render, renderHook, screen } from '@testing-library/react';
 
 import { GraphqlProvider, useGraphql } from './GraphqlContext';
 
-jest.mock('@shared/lib/hooks');
-
-jest.mock('@entities/settings', () => ({
-  useSettingsStorage: jest.fn().mockReturnValue({
-    getStakingNetwork: jest.fn().mockReturnValue('0x123'),
-  }),
-}));
-
 describe('context/GraphqlProvider', () => {
   test('should render children', async () => {
     await act(async () => {
