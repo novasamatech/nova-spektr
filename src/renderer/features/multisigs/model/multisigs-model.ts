@@ -94,7 +94,7 @@ sample({
   fn: ({ chains, wallets }, chainId) => ({
     chainId,
     chain: chains[chainId],
-    accounts: walletUtils.getAccountsBy(wallets, (a) => accountUtils.isChainIdMatch(a, chainId));
+    accounts: walletUtils.getAccountsBy(wallets, (a) => accountUtils.isChainIdMatch(a, chainId)),
     wallets,
   }),
   target: getMultisigsFx,
@@ -113,9 +113,9 @@ sample({
     console.log(wallets);
     // we filter out the multisigs that we already have
     const multisigsToSave = indexedMultisigs.filter((multisigrResult) => {
-      return walletUtils.getWalletsFilteredAccounts(wallets, {accountFn: (account) => 
-        account.accountId !== multisigrResult.accountId
-      } )
+      return walletUtils.getWalletsFilteredAccounts(wallets, {
+        accountFn: (account) => account.accountId !== multisigrResult.accountId,
+      });
     });
 
     const result = multisigsToSave.map(
@@ -134,7 +134,7 @@ sample({
                 accountId: signatory,
                 address: toAddress(signatory),
               })),
-              name: `Detected msig ${toAddress(accountId).slice(0, 7)}...`,
+              name: `Detected msig ${toAddress(accountId, { chunk: 5, prefix: chain.addressPrefix })}`,
               chainId: chain.chainId,
               cryptoType: isEthereumAccountId(accountId) ? CryptoType.ETHEREUM : CryptoType.SR25519,
               chainType: ChainType.SUBSTRATE,
