@@ -28,6 +28,7 @@ export const walletUtils = {
   isPolkadotVaultGroup,
 
   isValidSignatory,
+  isValidSignSignatory,
   getWalletById,
 
   getAccountsBy,
@@ -90,6 +91,12 @@ function isValidSignatory(wallet?: Wallet): boolean {
   return VALID_SIGNATORY_WALLET_TYPES.includes(wallet.type);
 }
 
+function isValidSignSignatory(wallet?: Wallet): boolean {
+  if (!wallet) return false;
+
+  return isValidSignatory(wallet) || isPolkadotVault(wallet);
+}
+
 function getWalletById(wallets: Wallet[], id: ID): Wallet | undefined {
   return wallets.find((wallet) => wallet.id === id);
 }
@@ -102,6 +109,7 @@ function getAccountsBy(wallets: Wallet[], accountFn: (account: Account, wallet: 
   }, []);
 }
 
+// TODO: Try to find more sufficient name
 function getWalletFilteredAccounts(
   wallets: Wallet[],
   predicates: {
@@ -111,21 +119,21 @@ function getWalletFilteredAccounts(
 ): Wallet | undefined {
   if (!predicates.walletFn && !predicates.accountFn) return undefined;
 
-  return wallets.reduce<Wallet | undefined>((acc, wallet) => {
-    if (acc) return acc;
+  const wallet = wallets.find((wallet) => {
+    return !predicates.walletFn || predicates.walletFn(wallet);
+  });
 
-    if (!predicates.walletFn || predicates.walletFn(wallet)) {
-      const accounts = wallet.accounts.filter((account) => {
-        return !predicates.accountFn || predicates.accountFn(account, wallet);
-      });
+  const accounts = predicates.accountFn
+    ? // @ts-ignore
+      wallet?.accounts.filter((account) => predicates.accountFn(account, wallet))
+    : wallet?.accounts;
 
-      if (accounts.length > 0) {
-        acc = { ...wallet, accounts } as Wallet;
-      }
-    }
-
-    return acc;
-  }, undefined);
+  if (wallet && accounts) {
+    return {
+      ...wallet,
+      accounts,
+    };
+  }
 }
 
 function getWalletsFilteredAccounts(

@@ -190,15 +190,3 @@ function isStakingProxyType(account: ProxiedAccount): boolean {
 function isNonBaseVaultAccount(account: Account, wallet: Wallet): boolean {
   return !walletUtils.isPolkadotVault(wallet) || !accountUtils.isBaseAccount(account);
 }
-
-// function getPvAccounts(wallet: PolkadotVaultWallet): Array<ChainAccount | ShardAccount> {
-//   return wallet.accounts.filter((account): account is ShardAccount | ChainAccount => {
-//     return isShardAccount(account) || isShardAccount(account);
-//   });
-// }
-
-// function getRealAccounts(wallet: Wallet): Account[] {
-//   if (walletUtils.isPolkadotVault(wallet)) return getPvAccounts(wallet);
-//
-//   return wallet.accounts;
-// }
