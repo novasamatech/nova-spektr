@@ -24,17 +24,9 @@ export const Paths = {
   SETTINGS: '/settings',
   NETWORK: '/settings/network',
   CURRENCY: '/settings/currency',
-  MATRIX: '/settings/matrix',
 
   // Staking
   STAKING: '/staking',
-  BOND: '/staking/bond/:chainId',
-  UNSTAKE: '/staking/unstake/:chainId',
-  DESTINATION: '/staking/destination/:chainId',
-  RESTAKE: '/staking/restake/:chainId',
-  REDEEM: '/staking/redeem/:chainId',
-  STAKE_MORE: '/staking/stake-more/:chainId',
-  VALIDATORS: '/staking/validators/:chainId',
 } as const;
 
 export type PathType = ObjectValues<typeof Paths>;

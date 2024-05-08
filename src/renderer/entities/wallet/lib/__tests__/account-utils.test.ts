@@ -1,5 +1,4 @@
 import {
-  Account,
   AccountId,
   AccountType,
   ChainAccount,
@@ -7,6 +6,7 @@ import {
   CryptoType,
   KeyType,
   ShardAccount,
+  Account,
 } from '@shared/core';
 import { TEST_ACCOUNTS, TEST_CHAIN_ID } from '@shared/lib/utils';
 import { accountUtils } from '@entities/wallet';

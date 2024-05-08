@@ -93,10 +93,9 @@ sample({
   source: {
     walletData: $walletData,
     wallets: walletModel.$wallets,
-    accounts: walletModel.$accounts,
   },
   filter: ({ walletData }) => Boolean(walletData),
-  fn: ({ walletData, wallets, accounts }, data) => {
+  fn: ({ walletData, wallets }, data) => {
     const signatories = 'signatory' in data && data.signatory ? [data.signatory] : [];
 
     return bondExtraUtils.getTxWrappers({
@@ -104,7 +103,6 @@ sample({
       wallet: walletData!.wallet,
       wallets,
       account: walletData!.shards[0],
-      accounts,
       signatories,
     });
   },
@@ -316,6 +314,8 @@ sample({
 
 sample({
   clock: delay(submitModel.output.formSubmitted, 2000),
+  source: $step,
+  filter: (step) => bondExtraUtils.isSubmitStep(step),
   target: flowFinished,
 });
 

@@ -142,16 +142,6 @@ describe('features/proxies/lib/worker-utils', () => {
     expect(result).toEqual(expectedAccountId);
   });
 
-  test('should return true if account type is PROXIED', () => {
-    const account = { type: AccountType.PROXIED };
-    expect(proxyWorkerUtils.isProxiedAccount(account)).toEqual(true);
-  });
-
-  test('should return false if account type is not PROXIED', () => {
-    const account = { type: AccountType.BASE };
-    expect(proxyWorkerUtils.isProxiedAccount(account)).toEqual(false);
-  });
-
   test('should return undefined if chainId is not found', () => {
     const result = proxyWorkerUtils.getKnownChain('0x01');
 

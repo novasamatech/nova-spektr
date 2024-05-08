@@ -7,7 +7,6 @@ import { useModalClose } from '@shared/lib/hooks';
 import { OperationTitle } from '@entities/chain';
 import { useI18n } from '@app/providers';
 import type { Chain, Asset } from '@shared/core';
-import { Paths } from '@shared/routes';
 import { OperationSign, OperationSubmit } from '@features/operations';
 import { TransferForm } from './TransferForm';
 import { Confirmation } from './Confirmation';
@@ -28,10 +27,7 @@ export const Transfer = ({ chain, asset }: Props) => {
   const step = useUnit(transferModel.$step);
   const xcmChain = useUnit(transferModel.$xcmChain);
 
-  const [isModalOpen, closeModal] = useModalClose(!transferUtils.isNoneStep(step), () => {
-    navigate(Paths.ASSETS);
-    transferModel.output.flowFinished();
-  });
+  const [isModalOpen, closeModal] = useModalClose(!transferUtils.isNoneStep(step), transferModel.output.flowFinished);
 
   useEffect(() => {
     transferModel.events.flowStarted({ chain, asset });

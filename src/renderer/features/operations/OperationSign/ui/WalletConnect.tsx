@@ -13,11 +13,11 @@ import wallet_connect_confirm from '@shared/assets/video/wallet_connect_confirm.
 import wallet_connect_confirm_webm from '@shared/assets/video/wallet_connect_confirm.webm';
 import { HexString } from '@shared/core';
 import { Animation } from '@shared/ui/Animation/Animation';
-import { walletModel } from '@entities/wallet';
 import { InnerSigningProps } from '../lib/types';
 import { signWcModel } from '../model/sign-wc-model';
 import { operationSignModel } from '../model/operation-sign-model';
 import { operationSignUtils } from '../lib/operation-sign-utils';
+import { walletModel, walletUtils } from '@entities/wallet';
 
 export const WalletConnect = ({
   api,
@@ -32,13 +32,13 @@ export const WalletConnect = ({
   const { verifySignature } = useTransaction();
   const [countdown, resetCountdown] = useCountdown(api);
 
+  const wallets = useUnit(walletModel.$wallets);
   const session = useUnit(walletConnectModel.$session);
   const client = useUnit(walletConnectModel.$client);
   const reconnectStep = useUnit(signWcModel.$reconnectStep);
   const isSigningRejected = useUnit(signWcModel.$isSigningRejected);
   const signature = useUnit(signWcModel.$signature);
   const isStatusShown = useUnit(signWcModel.$isStatusShown);
-  const storedAccounts = useUnit(walletModel.$accounts);
 
   const chains = chainsService.getChainsData();
 
@@ -55,8 +55,7 @@ export const WalletConnect = ({
     if (txPayload || !client) return;
 
     const sessions = client.session.getAll();
-    const storedAccount = storedAccounts.find((a) => a.walletId === account.walletId);
-
+    const storedAccount = walletUtils.getAccountsBy(wallets, (a) => a.walletId === account.walletId)[0];
     const storedSession = sessions.find((s) => s.topic === storedAccount?.signingExtras?.sessionTopic);
 
     if (storedSession) {
