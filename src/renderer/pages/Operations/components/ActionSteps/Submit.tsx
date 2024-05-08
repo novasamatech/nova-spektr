@@ -65,9 +65,7 @@ export const Submit = ({
   }, []);
 
   const submitExtrinsic = async (signature: HexString) => {
-    const extrinsic = await transactionService.getSignedExtrinsic(unsignedTx, signature, api);
-
-    transactionService.submitAndWatchExtrinsic(extrinsic, unsignedTx, api, async (executed, params) => {
+    transactionService.signAndSubmit(tx, signature, unsignedTx, api, async (executed, params) => {
       if (executed) {
         const typedParams = params as ExtrinsicResultParams;
 

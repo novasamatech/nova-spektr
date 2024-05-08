@@ -1,7 +1,7 @@
 import { ApiPromise } from '@polkadot/api';
 import { SubmittableExtrinsic } from '@polkadot/api/types';
 import { hexToU8a } from '@polkadot/util';
-import { construct, TypeRegistry, UnsignedTransaction } from '@substrate/txwrapper-polkadot';
+import { construct, UnsignedTransaction } from '@substrate/txwrapper-polkadot';
 import { Weight } from '@polkadot/types/interfaces';
 import { blake2AsU8a, signatureVerify } from '@polkadot/util-crypto';
 import { useState } from 'react';
@@ -26,7 +26,6 @@ import { useCallDataDecoder } from './callDataDecoder';
 import {
   ITransactionService,
   HashData,
-  ExtrinsicResultParams,
   WrapAsMulti,
   TxWrappers_OLD,
   TxWrapper,
@@ -59,8 +58,6 @@ export const transactionService = {
   getMultisigDeposit,
 
   createPayload,
-  getSignedExtrinsic,
-  submitAndWatchExtrinsic,
   signAndSubmit,
 
   getTxWrappers,
@@ -87,72 +84,19 @@ async function signAndSubmit(
 
   const options = { signer: new RawSigner(signature), ...unsigned };
 
-  // @ts-ignore
-  extrinsic.signAndSend(accountId, options, (result) => {
-    const { status, events, txHash, txIndex } = result;
-    if (status.isInBlock || status.isFinalized) {
-      console.log('xcm', status, events, blockNumber: result.blockNumber, txHash, txIndex);
-    }
-  });
-}
-
-function getMultisigDeposit(threshold: Threshold, api: ApiPromise): string {
-  const { depositFactor, depositBase } = api.consts.multisig;
-  const deposit = depositFactor.muln(threshold).add(depositBase);
-
-  return deposit.toString();
-}
-
-async function getSignedExtrinsic(
-  unsigned: UnsignedTransaction,
-  signature: HexString,
-  api: ApiPromise,
-): Promise<string> {
-  const metadataRpc = await api.rpc.state.getMetadata();
-
-  return construct.signedTx(unsigned, signature, {
-    registry: api.registry as TypeRegistry,
-    metadataRpc: metadataRpc.toHex(),
-  });
-}
-
-function submitAndWatchExtrinsic(
-  tx: string,
-  unsigned: UnsignedTransaction,
-  api: ApiPromise,
-  callback: (executed: boolean, params: ExtrinsicResultParams | string) => void,
-) {
-  let extrinsicCalls = 0;
-
-  const callIndex = api.createType('Call', unsigned.method).callIndex;
-  const { method, section } = api.registry.findMetaCall(callIndex);
-
-  api.rpc.author
-    .submitAndWatchExtrinsic(tx, async (result) => {
-      if (!result.isInBlock || extrinsicCalls > 1) return;
-
-      const signedBlock = await api.rpc.chain.getBlock();
-      const blockHeight = signedBlock.block.header.number.toNumber();
-      const apiAt = await api.at(signedBlock.block.header.hash);
-      const allRecords = await apiAt.query.system.events();
-
-      let actualTxHash = result.inner;
+  extrinsic
+    // @ts-ignore
+    .signAndSend(accountId, options, (result) => {
+      const { status, events, txHash, txIndex, blockNumber } = result as any;
+      let actualTxHash = txHash.toHex();
       let isFinalApprove = false;
       let multisigError = '';
-      let extrinsicIndex = 0;
+      let extrinsicIndex = txIndex;
+      let extrinsicSuccess = false;
 
-      // information for each contained extrinsic
-      signedBlock.block.extrinsics.forEach(({ method: extrinsicMethod, signer, hash }, index) => {
-        if (
-          toAccountId(signer.toString()) !== toAccountId(unsigned.address) ||
-          method !== extrinsicMethod.method ||
-          section !== extrinsicMethod.section
-        ) {
-          return;
-        }
-
-        allRecords.forEach(({ phase, event }) => {
-          if (!phase.isApplyExtrinsic || !phase.asApplyExtrinsic.eq(index)) return;
+      if (status.isInBlock) {
+        events.forEach(({ event, phase }: any) => {
+          if (!phase.isApplyExtrinsic || !phase.asApplyExtrinsic.eq(txIndex)) return;
 
           if (api.events.multisig.MultisigExecuted.is(event)) {
             isFinalApprove = true;
@@ -160,9 +104,7 @@ function submitAndWatchExtrinsic(
           }
 
           if (api.events.system.ExtrinsicSuccess.is(event)) {
-            extrinsicIndex = index;
-            actualTxHash = hash;
-            extrinsicCalls += 1;
+            extrinsicSuccess = true;
           }
 
           if (api.events.system.ExtrinsicFailed.is(event)) {
@@ -173,23 +115,28 @@ function submitAndWatchExtrinsic(
             callback(false, errorInfo);
           }
         });
-      });
+      }
 
-      if (extrinsicCalls === 1) {
+      if (extrinsicSuccess) {
         callback(true, {
           timepoint: {
             index: extrinsicIndex,
-            height: blockHeight,
+            height: blockNumber.toNumber(),
           },
-          extrinsicHash: actualTxHash.toHex(),
+          extrinsicHash: actualTxHash,
           isFinalApprove,
           multisigError,
         });
       }
     })
-    .catch((error) => {
-      callback(false, (error as Error).message || 'Error');
-    });
+    .catch((error) => callback(false, (error as Error).message || 'Error'));
+}
+
+function getMultisigDeposit(threshold: Threshold, api: ApiPromise): string {
+  const { depositFactor, depositBase } = api.consts.multisig;
+  const deposit = depositFactor.muln(threshold).add(depositBase);
+
+  return deposit.toString();
 }
 
 function hasMultisig(txWrappers: TxWrapper[]): boolean {
