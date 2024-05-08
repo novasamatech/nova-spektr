@@ -6,7 +6,7 @@ import type { Account, Chain, ChainId, Connection, MultisigAccount } from '@shar
 import { AccountType, ChainType, CryptoType, ExternalType, SigningType, WalletType } from '@shared/core';
 import { networkModel, networkUtils } from '@entities/network';
 import { accountUtils, walletModel, walletUtils } from '@entities/wallet';
-import { MultisigResult, multisigService } from '@entities/multisig/api/MultisigsService';
+import { MultisigResult, multisigService } from '@entities/multisig';
 import { multisigUtils } from '../lib/mulitisigs-utils';
 import { isEthereumAccountId, toAddress } from '@shared/lib/utils';
 import { CreateParams } from '@entities/wallet/model/wallet-model';
@@ -49,6 +49,7 @@ const getMultisigsFx = createEffect(async ({ chain, accounts }: GetMultisigsPara
       client,
       accounts.map((account) => account.accountId),
     );
+    console.log('----> indexedMultisigs', indexedMultisigs);
 
     // todo remove
     indexedMultisigs.length > 0 && console.log('<><><><><><><><><><><><> indexedMultisigs', indexedMultisigs);
@@ -109,18 +110,17 @@ sample({
     return indexedMultisigs.length > 0;
   },
   fn: ({ wallets }, { indexedMultisigs, chain }) => {
-    console.log('<><><><><><><><><><><><> indexedMultisigs', indexedMultisigs);
-    console.log(wallets);
-    // we filter out the multisigs that we already have
     const multisigsToSave = indexedMultisigs.filter((multisigrResult) => {
+      // we filter out the multisigs that we already have
       const sameWallet = walletUtils.getWalletsFilteredAccounts(wallets, {
-        accountFn: (account) => account.accountId !== multisigrResult.accountId,
+        accountFn: (account) => {
+          return account.accountId === multisigrResult.accountId;
+        },
       });
 
-      const isKnownWallet = sameWallet?.length;
-      isKnownWallet && console.log('<><><><><><> NOT SAVING ', toAddress(multisigrResult.accountId));
+      const isOwnWalletAlready = sameWallet?.length;
 
-      return !isKnownWallet;
+      return !isOwnWalletAlready;
     });
 
     const result = multisigsToSave.map(
@@ -148,8 +148,6 @@ sample({
           ],
         } as CreateParams<MultisigAccount>),
     );
-
-    console.log('<><><><><><><><><><><><> Creating', result);
 
     return result;
   },
