@@ -8,7 +8,8 @@ import { Address, CallData, CallHash, XcmPallets, ProxyType } from '@shared/core
 import { XcmTransferType } from '../../api/xcm';
 import { DEFAULT_TIME, ONE_DAY, THRESHOLD } from './constants';
 
-const V3_LABEL = 'V3';
+// TODO: Add V3, V4 support
+const SUPPORTED_VERSIONS = ['V2'];
 const UNUSED_LABEL = 'unused';
 
 /**
@@ -121,14 +122,9 @@ export const getCreatedDateFromApi = async (neededBlock: number, api: ApiPromise
 
 export const getTypeVersion = (api: ApiPromise, typeName: string): string => {
   const enumValues = getTypeEnumValues(api, typeName);
-  const notV3orUnused = enumValues.filter((value) => {
-    const isV3 = value === V3_LABEL;
-    const isUnused = value.toLowerCase().includes(UNUSED_LABEL);
+  const supportedVersions = enumValues.filter((value) => SUPPORTED_VERSIONS.includes(value));
 
-    return !isV3 && !isUnused;
-  });
-
-  return notV3orUnused.pop() || '';
+  return supportedVersions.pop() || '';
 };
 
 export const getProxyTypes = (api: ApiPromise): ProxyType[] => {
