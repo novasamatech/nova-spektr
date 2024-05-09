@@ -87,6 +87,15 @@ jobs:
         id: get_version
         run: echo ::set-output name=VERSION::${GITHUB_REF/refs\/tags\//}
 
+      - name: Rename Linux distr # In order to show that we do not support ARM yet.
+        run: |
+          original=$(find . -name "Nova*.AppImage" -type f)
+          filename="${original%.*}"
+          new="$filename"_x86_64.AppImage
+          mv "$original" "$new"
+          # Update latest-linux.yml with new file name
+          sed -i "s/$original/$new/g" latest-linux.yml
+
       - name: Replace space by "-"
         run: |
           for file in *; do

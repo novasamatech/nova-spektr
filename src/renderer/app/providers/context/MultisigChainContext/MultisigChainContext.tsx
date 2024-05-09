@@ -32,7 +32,7 @@ export const MultisigChainProvider = ({ children }: PropsWithChildren) => {
     updateCallData,
     updateCallDataFromChain,
   } = useMultisigTx({ addTask });
-  const activeAccounts = useUnit(walletModel.$activeAccounts);
+  const activeWallet = useUnit(walletModel.$activeWallet);
   const apis = useUnit(networkModel.$apis);
   const chains = useUnit(networkModel.$chains);
   const connectionStatuses = useUnit(networkModel.$connectionStatuses);
@@ -42,7 +42,7 @@ export const MultisigChainProvider = ({ children }: PropsWithChildren) => {
   const debouncedApis = useDebounce(apis, 1000);
   const debouncedConnectionStatuses = useDebounce(connectionStatuses, 1000);
 
-  const activeAccount = activeAccounts.at(0);
+  const activeAccount = activeWallet?.accounts[0];
   const account = activeAccount && accountUtils.isMultisigAccount(activeAccount) ? activeAccount : undefined;
 
   const txs = getLiveAccountMultisigTxs(account?.accountId ? [account.accountId] : []);

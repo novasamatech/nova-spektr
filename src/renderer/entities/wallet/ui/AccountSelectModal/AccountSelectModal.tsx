@@ -1,7 +1,7 @@
 import { BaseModal, Icon } from '@shared/ui';
 import { useI18n } from '@app/providers';
 import { cnTw } from '@shared/lib/utils';
-import { Account, Chain } from '@shared/core';
+import type { Chain, Account } from '@shared/core';
 import { AccountAddress } from '../AccountAddress/AccountAddress';
 import { accountUtils } from '../../lib/account-utils';
 

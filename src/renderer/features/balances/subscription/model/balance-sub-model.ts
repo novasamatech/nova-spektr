@@ -3,8 +3,9 @@ import { createEffect, createStore, sample, createEvent, scopeBind, attach } fro
 import { once, combineEvents, spread, previous } from 'patronum';
 import mapValues from 'lodash/mapValues';
 
-import { AccountId, Balance, ChainId, ConnectionStatus, Wallet, Chain, ID } from '@shared/core';
-import { accountUtils, walletModel } from '@entities/wallet';
+import type { AccountId, Balance, ChainId, Wallet, Chain, ID } from '@shared/core';
+import { ConnectionStatus } from '@shared/core';
+import { walletModel } from '@entities/wallet';
 import { networkModel, networkUtils } from '@entities/network';
 import { balanceModel, balanceUtils } from '@entities/balance';
 import { storageService } from '@shared/api/storage';
@@ -140,7 +141,7 @@ sample({
   filter: ([wallet]) => Boolean(wallet),
   fn: ([wallet, chains]) => ({
     subAccounts: mapValues(chains, () => ({ [wallet!.id]: [] })),
-    walletToSub: wallet,
+    walletToSub: wallet!,
   }),
   target: spread({
     subAccounts: $subAccounts,
@@ -226,14 +227,12 @@ sample({
   clock: [walletToSubSet, walletModel.$activeWallet],
   source: {
     subAccounts: $subAccounts,
-    accounts: walletModel.$accounts,
     wallets: walletModel.$wallets,
     chains: networkModel.$chains,
   },
   filter: (_, wallet) => Boolean(wallet),
-  fn: ({ subAccounts, accounts, wallets, chains }, wallet) => {
-    const walletAccounts = accountUtils.getWalletAccounts(wallet!.id, accounts);
-    const accountsToSub = balanceSubUtils.getSiblingAccounts(wallet!, wallets, walletAccounts, accounts);
+  fn: ({ subAccounts, wallets, chains }, wallet) => {
+    const accountsToSub = balanceSubUtils.getSiblingAccounts(wallet!, wallets);
 
     return balanceSubUtils.formSubAccounts(wallet!.id, accountsToSub, subAccounts, chains);
   },
