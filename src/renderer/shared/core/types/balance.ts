@@ -20,3 +20,11 @@ export type BalanceLock = {
   type: LockTypes;
   amount: string;
 };
+
+export type TokenBalance = {
+  verified?: boolean;
+  free?: string;
+  reserved?: string;
+  frozen?: string;
+  locked?: BalanceLock[];
+};
