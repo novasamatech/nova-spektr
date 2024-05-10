@@ -1,59 +1,66 @@
-import type { Signatory } from './signatory';
-import type { AccountId, ChainId, Threshold, ID, NoID } from './general';
+import type { AccountId, ChainId, ID, NoID, Threshold } from './general';
 import { ChainType, CryptoType } from './general';
+import { Signatory } from './signatory';
 import { ProxyType, ProxyVariant } from './proxy';
 
-type AbstractAccount = {
+export interface Account {
   id: ID;
   walletId: ID;
   name: string;
   type: AccountType;
-};
-
-export type BaseAccount = AbstractAccount & {
   accountId: AccountId;
   chainType: ChainType;
-  cryptoType: CryptoType;
   signingExtras?: Record<string, any>;
-};
+}
 
-export type ChainAccount = BaseAccount & {
+export interface BaseAccount extends Account {
+  type: AccountType.BASE;
+  cryptoType: CryptoType;
+}
+
+export interface ChainAccount extends Account {
   baseId?: ID;
-  chainId: ChainId;
   keyType: KeyType;
   derivationPath: string;
-};
+  chainId: ChainId;
+  cryptoType: CryptoType;
+  type: AccountType.CHAIN;
+}
 
-export type ShardAccount = BaseAccount & {
+export interface ShardAccount extends Account {
   groupId: string;
   keyType: KeyType;
-  chainId: ChainId;
   derivationPath: string;
-};
+  chainId: ChainId;
+  cryptoType: CryptoType;
+  type: AccountType.SHARD;
+}
 
-export type MultisigAccount = BaseAccount & {
+export interface MultisigAccount extends Account {
   signatories: Signatory[];
   threshold: Threshold;
   creatorAccountId: AccountId;
-  matrixRoomId?: string;
   chainId?: ChainId;
-};
+  cryptoType: CryptoType;
+  type: AccountType.MULTISIG;
+}
 
-export type WalletConnectAccount = Omit<BaseAccount, 'cryptoType'> & {
+export interface WcAccount extends Account {
   chainId: ChainId;
-};
+  type: AccountType.WALLET_CONNECT;
+}
 
-export type ProxiedAccount = BaseAccount & {
+export interface ProxiedAccount extends Account {
   proxyAccountId: AccountId;
-  chainId: ChainId;
   delay: number;
   proxyType: ProxyType;
   proxyVariant: ProxyVariant;
   blockNumber?: number;
   extrinsicIndex?: number;
-};
-
-export type Account = BaseAccount | ChainAccount | MultisigAccount | WalletConnectAccount | ProxiedAccount;
+  chainId: ChainId;
+  cryptoType: CryptoType;
+  type: AccountType.PROXIED;
+}
 
 export type DraftAccount<T extends Account> = Omit<NoID<T>, 'accountId' | 'walletId' | 'baseId'>;
 

@@ -2,74 +2,26 @@ import { useState } from 'react';
 import { Trans } from 'react-i18next';
 
 import { useI18n } from '@app/providers';
-import { SmallTitleText, DropdownButton, Button, BaseModal, Icon } from '@shared/ui';
 import { toAccountId } from '@shared/lib/utils';
 import { useToggle } from '@shared/lib/hooks';
 import { ButtonDropdownOption } from '@shared/ui/types';
-import { IconNames } from '@shared/ui/Icon/data';
-import { Paths, type PathType } from '@shared/routes';
 import type { Address, Stake } from '@shared/core';
-
-const enum AccountTypes {
-  STASH = 'stash',
-  CONTROLLER = 'controller',
-}
-
-const enum StakeActions {
-  START_STAKING = 'startStaking',
-  STAKE_MORE = 'stakeMore',
-  UNSTAKE = 'unstake',
-  RETURN_TO_STAKE = 'returnToStake',
-  REDEEM = 'redeem',
-  CHANGE_VALIDATORS = 'changeValidators',
-  DESTINATION = 'destination',
-}
-
-const StashActions: StakeActions[] = [StakeActions.STAKE_MORE];
-const ControllerActions: StakeActions[] = [
-  StakeActions.START_STAKING,
-  StakeActions.UNSTAKE,
-  StakeActions.RETURN_TO_STAKE,
-  StakeActions.REDEEM,
-  StakeActions.CHANGE_VALIDATORS,
-  StakeActions.DESTINATION,
-];
-
-const OperationOptions: Record<StakeActions, { icon: IconNames; title: string; path: PathType }> = {
-  [StakeActions.START_STAKING]: { icon: 'startStaking', title: 'staking.actions.startStakingLabel', path: Paths.BOND },
-  [StakeActions.STAKE_MORE]: { icon: 'stakeMore', title: 'staking.actions.stakeMoreLabel', path: Paths.STAKE_MORE },
-  [StakeActions.UNSTAKE]: { icon: 'unstake', title: 'staking.actions.unstakeLabel', path: Paths.UNSTAKE },
-  [StakeActions.RETURN_TO_STAKE]: {
-    icon: 'returnToStake',
-    title: 'staking.actions.returnToStakeLabel',
-    path: Paths.RESTAKE,
-  },
-  [StakeActions.REDEEM]: { icon: 'redeem', title: 'staking.actions.redeemLabel', path: Paths.REDEEM },
-  [StakeActions.CHANGE_VALIDATORS]: {
-    icon: 'changeValidators',
-    title: 'staking.actions.changeValidatorsLabel',
-    path: Paths.VALIDATORS,
-  },
-  [StakeActions.DESTINATION]: {
-    icon: 'destination',
-    title: 'staking.actions.destinationLabel',
-    path: Paths.DESTINATION,
-  },
-};
+import { Operations, ControllerTypes } from '../lib/types';
+import { SmallTitleText, DropdownButton, Button, BaseModal, Icon } from '@shared/ui';
+import { StashOperations, ControllerOperations, OperationOptions } from '../lib/constants';
 
 type Props = {
   canInteract: boolean;
   stakes: Stake[];
   isStakingLoading: boolean;
-  onNavigate: (path: PathType, addresses?: Address[]) => void;
+  onNavigate: (operation: Operations, addresses?: Address[]) => void;
 };
 
 export const Actions = ({ canInteract, stakes, isStakingLoading, onNavigate }: Props) => {
   const { t } = useI18n();
   const [isDialogOpen, toggleIsDialogOpen] = useToggle();
 
-  const [actionType, setActionType] = useState<StakeActions | null>(null);
-  const [actionPath, setActionPath] = useState<PathType>();
+  const [operation, setOperation] = useState<Operations>();
   const [warningMessage, setWarningMessage] = useState('');
 
   if (!canInteract) {
@@ -80,35 +32,35 @@ export const Actions = ({ canInteract, stakes, isStakingLoading, onNavigate }: P
     );
   }
 
-  const actionsSummary = stakes.reduce<Record<StakeActions, number>>(
+  const operationsSummary = stakes.reduce<Record<Operations, number>>(
     (acc, stake) => {
-      acc.startStaking += stake.total ? 0 : 1;
-      acc.stakeMore += stake.total ? 1 : 0;
+      acc.bond_nominate += stake.total ? 0 : 1;
+      acc.bond_extra += stake.total ? 1 : 0;
       acc.unstake += stake.total ? 1 : 0;
-      acc.changeValidators += stake.total ? 1 : 0;
-      acc.destination += stake.total ? 1 : 0;
-      acc.returnToStake += stake.unlocking?.length > 0 ? 1 : 0;
-      acc.redeem += stake.total !== stake.active ? 1 : 0;
+      acc.nominate += stake.total ? 1 : 0;
+      acc.set_payee += stake.total ? 1 : 0;
+      acc.restake += stake.unlocking?.length > 0 ? 1 : 0;
+      acc.withdraw += stake.total !== stake.active ? 1 : 0;
 
       return acc;
     },
     {
-      startStaking: 0,
-      stakeMore: 0,
+      bond_nominate: 0,
+      bond_extra: 0,
       unstake: 0,
-      returnToStake: 0,
-      redeem: 0,
-      changeValidators: 0,
-      destination: 0,
+      nominate: 0,
+      set_payee: 0,
+      restake: 0,
+      withdraw: 0,
     },
   );
 
-  const otherActionsSum = Object.values(actionsSummary)
+  const otherActionsSum = Object.values(operationsSummary)
     .slice(1)
     .reduce((acc, value) => acc + value, 0);
 
   const noStakes = stakes.length === 0;
-  const wrongOverlaps = actionsSummary.startStaking > 0 && otherActionsSum > 0;
+  const wrongOverlaps = operationsSummary.bond_nominate > 0 && otherActionsSum > 0;
 
   const isController = (stake: Stake): boolean => {
     return !stake.controller || toAccountId(stake.address) === toAccountId(stake.controller);
@@ -118,33 +70,32 @@ export const Actions = ({ canInteract, stakes, isStakingLoading, onNavigate }: P
     return !stake.stash || toAccountId(stake.address) === toAccountId(stake.stash);
   };
 
-  const getIncorrectAccountType = (action: StakeActions): AccountTypes | null => {
-    if (StashActions.includes(action)) {
-      return stakes.every(isStash) ? null : AccountTypes.STASH;
+  const getIncorrectAccountType = (operation: Operations): ControllerTypes | null => {
+    if (StashOperations.includes(operation)) {
+      return stakes.every(isStash) ? null : ControllerTypes.STASH;
     }
-    if (ControllerActions.includes(action)) {
-      return stakes.every(isController) ? null : AccountTypes.CONTROLLER;
+    if (ControllerOperations.includes(operation)) {
+      return stakes.every(isController) ? null : ControllerTypes.CONTROLLER;
     }
 
     return null;
   };
 
-  const getStakeAddresses = (accountType: AccountTypes): Address[] => {
+  const getStakeAddresses = (accountType: ControllerTypes): Address[] => {
     let filterFn: (value?: any) => boolean = () => true;
-    if (accountType === AccountTypes.STASH) filterFn = isStash;
-    if (accountType === AccountTypes.CONTROLLER) filterFn = isController;
+    if (accountType === ControllerTypes.STASH) filterFn = isStash;
+    if (accountType === ControllerTypes.CONTROLLER) filterFn = isController;
 
     return stakes.filter(filterFn).map((s) => s.address);
   };
 
-  const onClickAction = (action: StakeActions, path: PathType) => {
-    const incorrectType = getIncorrectAccountType(action);
+  const onClickAction = (operation: Operations, path: Operations) => {
+    const incorrectType = getIncorrectAccountType(operation);
 
     if (incorrectType) {
-      setActionType(action);
-      setActionPath(path);
+      setOperation(path);
       setWarningMessage(
-        t(incorrectType === AccountTypes.STASH ? 'staking.warning.stash' : 'staking.warning.controller'),
+        t(incorrectType === ControllerTypes.STASH ? 'staking.warning.stash' : 'staking.warning.controller'),
       );
 
       toggleIsDialogOpen();
@@ -154,25 +105,25 @@ export const Actions = ({ canInteract, stakes, isStakingLoading, onNavigate }: P
   };
 
   const onDeselectAccounts = () => {
-    if (!actionType || !actionPath) return;
+    if (!operation) return;
 
     toggleIsDialogOpen();
 
-    const incorrectType = getIncorrectAccountType(actionType);
+    const incorrectType = getIncorrectAccountType(operation);
 
     if (incorrectType) {
-      onNavigate(actionPath, getStakeAddresses(incorrectType));
+      onNavigate(operation, getStakeAddresses(incorrectType));
     } else {
-      onNavigate(actionPath);
+      onNavigate(operation);
     }
   };
 
   const getAvailableButtonOptions = (): ButtonDropdownOption[] => {
     if (noStakes || wrongOverlaps) return [];
 
-    return Object.entries(actionsSummary).reduce<ButtonDropdownOption[]>((acc, [key, value]) => {
+    return Object.entries(operationsSummary).reduce<ButtonDropdownOption[]>((acc, [key, value]) => {
       if (stakes.length === value) {
-        const typedKey = key as StakeActions;
+        const typedKey = key as Operations;
         const option = OperationOptions[typedKey];
 
         acc.push({
@@ -199,14 +150,6 @@ export const Actions = ({ canInteract, stakes, isStakingLoading, onNavigate }: P
     <>
       <div className="flex justify-between items-center">
         <SmallTitleText>{t('staking.overview.actionsTitle')}</SmallTitleText>
-        {/* TODO: implement filters in future */}
-        {/*<MultiSelect*/}
-        {/*  className="w-[200px] ml-4 mr-auto"*/}
-        {/*  placeholder={t('staking.actions.filterButton')}*/}
-        {/*  options={}*/}
-        {/*  selectedIds={activeFilters.map((f) => f.id)}*/}
-        {/*  onChange={setActiveFilters}*/}
-        {/*/>*/}
         <DropdownButton
           className="min-w-[228px] h-8.5"
           title={getActionButtonText()}
@@ -219,10 +162,10 @@ export const Actions = ({ canInteract, stakes, isStakingLoading, onNavigate }: P
         isOpen={isDialogOpen}
         title={
           <div className="flex items-center gap-2.5">
-            {actionType && (
+            {operation && (
               <>
-                <Icon name={OperationOptions[actionType].icon} />
-                <p>{t(OperationOptions[actionType].title)}</p>
+                <Icon name={OperationOptions[operation].icon} />
+                <p>{t(OperationOptions[operation].title)}</p>
               </>
             )}
           </div>

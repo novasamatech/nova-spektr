@@ -8,7 +8,7 @@ import { useI18n } from '@app/providers';
 import { Transaction, useTransaction } from '@entities/transaction';
 import { toAddress } from '@shared/lib/utils';
 import { Button, FootnoteText } from '@shared/ui';
-import type { Account, BaseAccount, ChainId, ShardAccount } from '@shared/core';
+import type { ChainId, ShardAccount, Account, BaseAccount } from '@shared/core';
 import { SigningType, Wallet } from '@shared/core';
 import { createSubstrateSignPayload, createMultipleSignPayload } from '../QrCode/QrGenerator/common/utils';
 import { TRANSACTION_BULK } from '../QrCode/common/constants';

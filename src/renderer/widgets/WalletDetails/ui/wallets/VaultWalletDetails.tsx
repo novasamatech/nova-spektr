@@ -5,7 +5,8 @@ import { BaseModal, ContextMenu, DropdownIconButton, HelpText, IconButton, Tabs 
 import { useModalClose, useToggle } from '@shared/lib/hooks';
 import { RootAccountLg, VaultAccountsList, WalletCardLg, accountUtils, permissionUtils } from '@entities/wallet';
 import { useI18n } from '@app/providers';
-import { Account, BaseAccount, Chain, ChainAccount, DraftAccount, KeyType, ShardAccount, Wallet } from '@shared/core';
+import type { BaseAccount, Chain, ChainAccount, DraftAccount, ShardAccount, PolkadotVaultWallet } from '@shared/core';
+import { KeyType } from '@shared/core';
 import { copyToClipboard, toAddress } from '@shared/lib/utils';
 import { IconNames } from '@shared/ui/Icon/data';
 import { DerivationsAddressModal, ImportKeysModal, KeyConstructor } from '@features/wallets';
@@ -24,7 +25,7 @@ import { VaultMap } from '../../lib/types';
 import { AddPureProxied, addPureProxiedModel } from '@widgets/AddPureProxiedModal';
 
 type Props = {
-  wallet: Wallet;
+  wallet: PolkadotVaultWallet;
   root: BaseAccount;
   accountsMap: VaultMap;
   onClose: () => void;
@@ -46,8 +47,6 @@ export const VaultWalletDetails = ({ wallet, root, accountsMap, onClose }: Props
   const [isConfirmForgetOpen, toggleConfirmForget] = useToggle();
 
   const [chains, setChains] = useState<Chain[]>([]);
-
-  const accountsList = Object.values(accountsMap).flat(2);
 
   useEffect(() => {
     const filteredChains = Object.values(allChains).filter((c) => {
@@ -81,7 +80,7 @@ export const VaultWalletDetails = ({ wallet, root, accountsMap, onClose }: Props
   const handleImportedKeys = (keys: DraftAccount<ChainAccount | ShardAccount>[]) => {
     toggleImportModal();
     const newKeys = keys.filter((key) => {
-      return key.keyType === KeyType.MAIN || !(key as Account).accountId;
+      return key.keyType === KeyType.MAIN || !(key as ChainAccount | ShardAccount).accountId;
     });
 
     vaultDetailsModel.events.keysAdded(newKeys);
@@ -125,10 +124,7 @@ export const VaultWalletDetails = ({ wallet, root, accountsMap, onClose }: Props
     },
   ];
 
-  if (
-    permissionUtils.canCreateAnyProxy(wallet, accountsList) ||
-    permissionUtils.canCreateNonAnyProxy(wallet, accountsList)
-  ) {
+  if (permissionUtils.canCreateAnyProxy(wallet) || permissionUtils.canCreateNonAnyProxy(wallet)) {
     Options.push({
       icon: 'addCircle' as IconNames,
       title: t('walletDetails.common.addProxyAction'),
@@ -136,7 +132,7 @@ export const VaultWalletDetails = ({ wallet, root, accountsMap, onClose }: Props
     });
   }
 
-  if (permissionUtils.canCreateAnyProxy(wallet, accountsList)) {
+  if (permissionUtils.canCreateAnyProxy(wallet)) {
     Options.push({
       icon: 'addCircle' as IconNames,
       title: t('walletDetails.common.addPureProxiedAction'),

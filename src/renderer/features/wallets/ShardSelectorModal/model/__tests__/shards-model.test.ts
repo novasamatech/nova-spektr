@@ -11,10 +11,7 @@ describe('features/wallet/model/shards-model', () => {
     const { vaultWallet, vaultAccounts, chainsMap } = shardsMock;
 
     const scope = fork({
-      values: new Map()
-        .set(walletModel.$wallets, [vaultWallet])
-        .set(walletModel.$accounts, vaultAccounts)
-        .set(networkModel.$chains, chainsMap),
+      values: new Map().set(walletModel.$wallets, [vaultWallet]).set(networkModel.$chains, chainsMap),
     });
 
     await allSettled(shardsModel.events.structureRequested, { scope, params: true });
@@ -33,10 +30,7 @@ describe('features/wallet/model/shards-model', () => {
     const { multishardWallet, multishardAccounts, chainsMap } = shardsMock;
 
     const scope = fork({
-      values: new Map()
-        .set(walletModel.$wallets, [multishardWallet])
-        .set(walletModel.$accounts, multishardAccounts)
-        .set(networkModel.$chains, chainsMap),
+      values: new Map().set(walletModel.$wallets, [multishardWallet]).set(networkModel.$chains, chainsMap),
     });
 
     await allSettled(shardsModel.events.structureRequested, { scope, params: true });

@@ -6,7 +6,7 @@ import { WalletCardLg, permissionUtils } from '@entities/wallet';
 import { useI18n } from '@app/providers';
 import { chainsService } from '@shared/api/network';
 import { walletConnectUtils } from '@entities/walletConnect';
-import type { Account, WalletConnectWallet } from '@shared/core';
+import type { WalletConnectGroup } from '@shared/core';
 import { wcDetailsModel } from '../../model/wc-details-model';
 import { wcDetailsUtils, walletDetailsUtils } from '../../lib/utils';
 import { ForgetStep } from '../../lib/constants';
@@ -33,11 +33,10 @@ import {
 } from '@shared/ui';
 
 type Props = {
-  wallet: WalletConnectWallet;
-  accounts: Account[];
+  wallet: WalletConnectGroup;
   onClose: () => void;
 };
-export const WalletConnectDetails = ({ wallet, accounts, onClose }: Props) => {
+export const WalletConnectDetails = ({ wallet, onClose }: Props) => {
   const { t } = useI18n();
 
   const hasProxies = useUnit(walletProviderModel.$hasProxies);
@@ -56,8 +55,8 @@ export const WalletConnectDetails = ({ wallet, accounts, onClose }: Props) => {
   const reconnect = () => {
     wcDetailsModel.events.reconnectStarted({
       chains: walletConnectUtils.getWalletConnectChains(chainsService.getChainsData()),
-      pairing: { topic: accounts[0].signingExtras?.pairingTopic },
-      currentSession: accounts[0].signingExtras?.sessionTopic,
+      pairing: { topic: wallet.accounts[0].signingExtras?.pairingTopic },
+      currentSession: wallet.accounts[0].signingExtras?.sessionTopic,
     });
   };
 
@@ -85,7 +84,7 @@ export const WalletConnectDetails = ({ wallet, accounts, onClose }: Props) => {
     },
   ];
 
-  if (permissionUtils.canCreateAnyProxy(wallet, accounts) || permissionUtils.canCreateNonAnyProxy(wallet, accounts)) {
+  if (permissionUtils.canCreateAnyProxy(wallet) || permissionUtils.canCreateNonAnyProxy(wallet)) {
     Options.push({
       icon: 'addCircle' as IconNames,
       title: t('walletDetails.common.addProxyAction'),
@@ -93,7 +92,7 @@ export const WalletConnectDetails = ({ wallet, accounts, onClose }: Props) => {
     });
   }
 
-  if (permissionUtils.canCreateAnyProxy(wallet, accounts)) {
+  if (permissionUtils.canCreateAnyProxy(wallet)) {
     Options.push({
       icon: 'addCircle' as IconNames,
       title: t('walletDetails.common.addPureProxiedAction'),
@@ -117,7 +116,7 @@ export const WalletConnectDetails = ({ wallet, accounts, onClose }: Props) => {
     {
       id: 'accounts',
       title: t('walletDetails.common.accountTabTitle'),
-      panel: <WalletConnectAccounts wallet={wallet} accounts={accounts} />,
+      panel: <WalletConnectAccounts wallet={wallet} />,
     },
     {
       id: 'proxies',

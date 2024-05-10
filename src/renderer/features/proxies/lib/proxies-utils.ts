@@ -1,6 +1,15 @@
-import type { Account, ProxyAction, NoID, Wallet, ChainId } from '@shared/core';
-import { NotificationType, Chain, type PartialProxiedAccount, ChainOptions } from '@shared/core';
-import { dictionary } from '@shared/lib/utils';
+import {
+  ProxyAction,
+  NoID,
+  Wallet,
+  ChainId,
+  AccountId,
+  WalletType,
+  NotificationType,
+  Chain,
+  type PartialProxiedAccount,
+  ChainOptions,
+} from '@shared/core';
 import { walletUtils } from '@entities/wallet';
 import { proxyUtils } from '@entities/proxy';
 
@@ -20,21 +29,25 @@ function isPureProxy(chain: Chain): boolean {
 }
 
 type GetNotificationParams = {
-  proxiedAccounts: PartialProxiedAccount[];
   wallets: Wallet[];
-  accounts: Account[];
+  proxiedAccounts: PartialProxiedAccount[];
   chains: Record<ChainId, Chain>;
   type: NotificationType;
 };
-function getNotification({
-  proxiedAccounts,
-  wallets,
-  accounts,
-  chains,
-  type,
-}: GetNotificationParams): NoID<ProxyAction>[] {
-  const walletsMap = dictionary(wallets, 'id', ({ name, type }) => ({ name, type }));
-  const accountsWalletsMap = dictionary(accounts, 'accountId', (account) => walletsMap[account.walletId]);
+function getNotification({ wallets, proxiedAccounts, chains, type }: GetNotificationParams): NoID<ProxyAction>[] {
+  const filteredWallets = walletUtils.getWalletsFilteredAccounts(wallets, {
+    accountFn: (a) => proxiedAccounts.some((p) => p.proxyAccountId === a.accountId),
+  });
+
+  if (!filteredWallets) return [];
+
+  const accountsMap = filteredWallets.reduce<Record<AccountId, { name: string; type: WalletType }>>((acc, wallet) => {
+    wallet.accounts.forEach((account) => {
+      acc[account.accountId] = { name: wallet.name, type: wallet.type };
+    });
+
+    return acc;
+  }, {});
 
   return proxiedAccounts.map((proxied) => {
     const addressPrefix = chains[proxied.chainId].addressPrefix;
@@ -45,8 +58,8 @@ function getNotification({
       proxyType: proxied.proxyType,
       proxyAccountId: proxied.proxyAccountId,
       proxyVariant: proxied.proxyVariant,
-      proxyWalletName: accountsWalletsMap[proxied.proxyAccountId].name,
-      proxyWalletType: accountsWalletsMap[proxied.proxyAccountId].type,
+      proxyWalletName: accountsMap[proxied.proxyAccountId].name,
+      proxyWalletType: accountsMap[proxied.proxyAccountId].type,
       proxiedAccountId: proxied.accountId,
       proxiedWalletName: proxyUtils.getProxiedName(proxied, addressPrefix),
       read: false,
