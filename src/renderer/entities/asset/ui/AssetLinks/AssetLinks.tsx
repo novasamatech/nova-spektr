@@ -13,11 +13,10 @@ type Props = {
 
 export const AssetLinks = ({ assetId, chainId }: Props) => {
   const activeWallet = useUnit(walletModel.$activeWallet);
-  const activeAccounts = useUnit(walletModel.$activeAccounts);
 
   return (
     <div className="flex gap-x-2 ml-3">
-      <CheckPermission operationType={OperationType.TRANSFER} wallet={activeWallet} accounts={activeAccounts}>
+      <CheckPermission operationType={OperationType.TRANSFER} wallet={activeWallet}>
         <Link
           to={createLink(Paths.TRANSFER_ASSET, {}, { chainId: [chainId], assetId: [assetId] })}
           onClick={(e) => e.stopPropagation()}
@@ -25,7 +24,7 @@ export const AssetLinks = ({ assetId, chainId }: Props) => {
           <Icon name="sendArrow" size={20} />
         </Link>
       </CheckPermission>
-      <CheckPermission operationType={OperationType.RECEIVE} wallet={activeWallet} accounts={activeAccounts}>
+      <CheckPermission operationType={OperationType.RECEIVE} wallet={activeWallet}>
         <Link
           to={createLink(Paths.RECEIVE_ASSET, {}, { chainId: [chainId], assetId: [assetId] })}
           onClick={(e) => e.stopPropagation()}

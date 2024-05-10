@@ -1,7 +1,7 @@
 import { createEffect, createEvent, createStore, sample } from 'effector';
 import { once } from 'patronum';
 
-import { Account, Chain, ChainId, TokenAsset, Wallet } from '@shared/core';
+import { Chain, ChainId, TokenAsset, Wallet } from '@shared/core';
 import { networkModel, networkUtils } from '@entities/network';
 import { accountUtils, walletModel, walletUtils } from '@entities/wallet';
 import { tokensService } from '../lib/tokensService';
@@ -14,20 +14,12 @@ const $tokens = createStore<TokenAsset[]>([]);
 const $activeTokens = createStore<TokenAsset[]>([]);
 
 const updateTokensFx = createEffect(
-  ({
-    activeAccounts,
-    activeWallet,
-    chains,
-  }: {
-    activeAccounts: Account[];
-    activeWallet?: Wallet;
-    chains: Record<ChainId, Chain>;
-  }): TokenAsset[] => {
+  ({ activeWallet, chains }: { activeWallet?: Wallet; chains: Record<ChainId, Chain> }): TokenAsset[] => {
     const tokens = tokensService.getTokensData();
 
     return tokens.reduce((acc, token) => {
       const filteredChains = token.chains.filter((chain) => {
-        return activeAccounts.some((account) => {
+        return activeWallet?.accounts.some((account) => {
           return (
             activeWallet &&
             accountUtils.isNonBaseVaultAccount(account, activeWallet) &&
@@ -54,12 +46,11 @@ sample({
   clock: [walletModel.$activeWallet, once(networkModel.events.networkStarted)],
   source: {
     activeView: $activeView,
-    activeAccounts: walletModel.$activeAccounts,
     activeWallet: walletModel.$activeWallet,
     chains: networkModel.$chains,
   },
-  filter: ({ activeView, activeAccounts, activeWallet }) => {
-    return Boolean(activeView === AssetsListView.TOKEN_CENTRIC && activeWallet && activeAccounts.length > 0);
+  filter: ({ activeView, activeWallet }) => {
+    return Boolean(activeView === AssetsListView.TOKEN_CENTRIC && activeWallet);
   },
   target: updateTokensFx,
 });

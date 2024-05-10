@@ -1,17 +1,14 @@
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
 import { useUnit } from 'effector-react';
 
-import { BodyText, FootnoteText, Icon, Shimmering } from '@shared/ui';
+import { BodyText, FootnoteText, Shimmering } from '@shared/ui';
 import { cnTw, totalAmount } from '@shared/lib/utils';
-import { Paths, createLink } from '@shared/routes';
 import { Balance, TokenAsset } from '@shared/core';
 import { AssetFiatBalance } from '@entities/price/ui/AssetFiatBalance';
 import { priceProviderModel } from '@entities/price';
-import { CheckPermission, OperationType, walletModel } from '@entities/wallet';
 import { ChainIcon } from '@entities/chain';
 import { balanceModel } from '@entities/balance';
-import { AssetBalance } from '@entities/asset';
+import { AssetBalance, AssetLinks } from '@entities/asset';
 import { networkModel } from '@entities/network';
 import { AssetChain } from '../lib/types';
 
@@ -23,8 +20,6 @@ type Props = {
 export const NetworkCard = ({ chain, asset }: Props) => {
   const chains = useUnit(networkModel.$chains);
   const fiatFlag = useUnit(priceProviderModel.$fiatFlag);
-  const activeWallet = useUnit(walletModel.$activeWallet);
-  const activeAccounts = useUnit(walletModel.$activeAccounts);
   const balances = useUnit(balanceModel.$balances);
   const [balance, setBalances] = useState<Balance>();
 
@@ -57,24 +52,7 @@ export const NetworkCard = ({ chain, asset }: Props) => {
             </div>
           )}
         </div>
-        <div className="flex gap-x-2 ml-3">
-          <CheckPermission operationType={OperationType.TRANSFER} wallet={activeWallet} accounts={activeAccounts}>
-            <Link
-              to={createLink(Paths.TRANSFER_ASSET, {}, { chainId: [chain.chainId], assetId: [chain.assetId] })}
-              onClick={(e) => e.stopPropagation()}
-            >
-              <Icon name="sendArrow" size={20} />
-            </Link>
-          </CheckPermission>
-          <CheckPermission operationType={OperationType.RECEIVE} wallet={activeWallet} accounts={activeAccounts}>
-            <Link
-              to={createLink(Paths.RECEIVE_ASSET, {}, { chainId: [chain.chainId], assetId: [chain.assetId] })}
-              onClick={(e) => e.stopPropagation()}
-            >
-              <Icon name="receiveArrow" size={20} />
-            </Link>
-          </CheckPermission>
-        </div>
+        <AssetLinks assetId={chain.assetId} chainId={chain.chainId} />
       </div>
     </li>
   );

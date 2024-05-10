@@ -24,7 +24,6 @@ export const TokenBalanceList = ({ asset }: Props) => {
   const fiatFlag = useUnit(priceProviderModel.$fiatFlag);
 
   const activeWallet = useUnit(walletModel.$activeWallet);
-  const activeAccounts = useUnit(walletModel.$activeAccounts);
   const balances = useUnit(balanceModel.$balances);
   const chains = useUnit(networkModel.$chains);
 
@@ -95,12 +94,12 @@ export const TokenBalanceList = ({ asset }: Props) => {
             </div>
 
             <div className="flex gap-x-2 ml-3">
-              <CheckPermission operationType={OperationType.TRANSFER} wallet={activeWallet} accounts={activeAccounts}>
+              <CheckPermission operationType={OperationType.TRANSFER} wallet={activeWallet}>
                 <Link to={createLink(Paths.TRANSFER_ASSET, {})} onClick={(e) => e.stopPropagation()}>
                   <Icon name="sendArrow" size={20} />
                 </Link>
               </CheckPermission>
-              <CheckPermission operationType={OperationType.RECEIVE} wallet={activeWallet} accounts={activeAccounts}>
+              <CheckPermission operationType={OperationType.RECEIVE} wallet={activeWallet}>
                 <Link to={createLink(Paths.RECEIVE_ASSET, {})} onClick={(e) => e.stopPropagation()}>
                   <Icon name="receiveArrow" size={20} />
                 </Link>
