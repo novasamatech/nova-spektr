@@ -1,15 +1,18 @@
 import { createEffect, createEvent, createStore, sample } from 'effector';
 import { once } from 'patronum';
 
-import { Chain, ChainId, TokenAsset, Wallet } from '@shared/core';
+import { Account, AccountId, Balance, Chain, ChainId, TokenAsset, TokenBalance, Wallet } from '@shared/core';
 import { networkModel, networkUtils } from '@entities/network';
 import { accountUtils, walletModel, walletUtils } from '@entities/wallet';
-import { tokensService } from '../lib/tokensService';
-import { AssetsListView } from '@/src/renderer/entities/asset';
+import { AssetsListView } from '@entities/asset';
+import { balanceModel, balanceUtils } from '@entities/balance';
+import { sumTokenBalances, tokensService } from '../lib/tokensService';
 
 const setActiveView = createEvent<AssetsListView>();
+const setAccounts = createEvent<Account[]>();
 
-const $activeView = createStore<AssetsListView>(AssetsListView.TOKEN_CENTRIC);
+const $activeView = createStore<AssetsListView | null>(null);
+const $accounts = createStore<Account[]>([]);
 const $tokens = createStore<TokenAsset[]>([]);
 const $activeTokens = createStore<TokenAsset[]>([]);
 
@@ -37,13 +40,60 @@ const updateTokensFx = createEffect(
   },
 );
 
+const populateTokensBalanceFx = createEffect(
+  ({
+    activeTokens,
+    balances,
+    accounts,
+  }: {
+    activeTokens: TokenAsset[];
+    balances: any;
+    accounts: Account[];
+  }): TokenAsset[] => {
+    return activeTokens.map((token) => {
+      let totalBalance = {} as TokenBalance;
+      const chainWithBalance = token.chains.map((chain) => {
+        const selectedAccountIds = accounts.reduce<AccountId[]>((acc, account) => {
+          if (accountUtils.isChainIdMatch(account, chain.chainId)) {
+            acc.push(account.accountId);
+          }
+
+          return acc;
+        }, []);
+
+        const accountsBalance = balanceUtils.getAssetBalances(
+          balances,
+          selectedAccountIds,
+          chain.chainId,
+          chain.assetId.toString(),
+        );
+
+        const assetBalance = accountsBalance.reduce<TokenBalance>((acc, balance) => {
+          return sumTokenBalances(balance, acc);
+        }, {} as Balance);
+
+        totalBalance = sumTokenBalances(assetBalance, totalBalance);
+
+        return { ...chain, balance: assetBalance };
+      });
+
+      return { ...token, chains: chainWithBalance, totalBalance };
+    });
+  },
+);
+
 sample({
   clock: setActiveView,
   target: $activeView,
 });
 
 sample({
-  clock: [walletModel.$activeWallet, once(networkModel.events.networkStarted)],
+  clock: setAccounts,
+  target: $accounts,
+});
+
+sample({
+  clock: [walletModel.$activeWallet, $activeView, once(networkModel.events.networkStarted)],
   source: {
     activeView: $activeView,
     activeWallet: walletModel.$activeWallet,
@@ -64,15 +114,15 @@ sample({
   clock: [networkModel.$connections, $tokens],
   source: {
     activeView: $activeView,
-    connections: networkModel.$connections,
     activeWallet: walletModel.$activeWallet,
+    connections: networkModel.$connections,
     chains: networkModel.$chains,
     tokens: $tokens,
   },
   filter: ({ connections, activeWallet, activeView }) => {
     return Boolean(activeView === AssetsListView.TOKEN_CENTRIC && Object.keys(connections).length && activeWallet);
   },
-  fn: ({ connections, chains, tokens, activeWallet }): TokenAsset[] => {
+  fn: ({ connections, chains, tokens, activeWallet, activeView }): TokenAsset[] => {
     const isMultisig = walletUtils.isMultisig(activeWallet);
 
     return tokens.reduce((acc, token) => {
@@ -95,10 +145,31 @@ sample({
   target: $activeTokens,
 });
 
+sample({
+  clock: [balanceModel.$balances, $accounts, $tokens],
+  source: {
+    activeView: $activeView,
+    activeTokens: $activeTokens,
+    accounts: $accounts,
+    balances: balanceModel.$balances,
+  },
+  filter: ({ activeView, balances }) => {
+    return Boolean(activeView === AssetsListView.TOKEN_CENTRIC && balances.length > 0);
+  },
+  target: populateTokensBalanceFx,
+});
+
+sample({
+  clock: populateTokensBalanceFx.doneData,
+  target: $activeTokens,
+});
+
 export const portfolioModel = {
   $activeTokens,
   $activeView,
+  $accounts,
   events: {
     setActiveView,
+    setAccounts,
   },
 };

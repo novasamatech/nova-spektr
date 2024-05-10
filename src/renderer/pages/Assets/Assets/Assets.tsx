@@ -27,7 +27,8 @@ export const Assets = () => {
 
   useEffect(() => {
     portfolioModel.events.setActiveView(assetsView);
-  }, [assetsView]);
+    portfolioModel.events.setAccounts(activeShards);
+  }, [assetsView, activeShards]);
 
   return (
     <>

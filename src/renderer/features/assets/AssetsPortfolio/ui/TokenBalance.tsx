@@ -1,9 +1,8 @@
 import { useUnit } from 'effector-react';
-import { useEffect, useState } from 'react';
 
 import { useI18n } from '@app/providers';
 import { Icon, Tooltip, BodyText, Plate, Shimmering, FootnoteText, CaptionText } from '@shared/ui';
-import type { Balance, TokenAsset } from '@shared/core';
+import type { TokenAsset } from '@shared/core';
 import { totalAmount } from '@shared/lib/utils';
 import { priceProviderModel, AssetFiatBalance, TokenPrice } from '@entities/price';
 import { balanceModel } from '@entities/balance';
@@ -17,26 +16,17 @@ type Props = {
 
 export const TokenBalance = ({ asset }: Props) => {
   const { t } = useI18n();
+  const chain = asset.chains[0];
 
   const fiatFlag = useUnit(priceProviderModel.$fiatFlag);
-
   const balances = useUnit(balanceModel.$balances);
   const chains = useUnit(networkModel.$chains);
-  const [balance, setBalances] = useState<Balance>();
 
   const hasFailedVerification = balances?.some((b) => b.verified !== undefined && !b.verified);
 
-  useEffect(() => {
-    const chainBalance = balances.find((b) => b.chainId == chain.chainId && chain.assetId.toString() == b.assetId);
-
-    setBalances(chainBalance);
-  }, [balances]);
-
-  const chain = asset.chains[0];
-
   return (
-    <Plate className="p-0 z-10 h-[52px] w-full items-center grid grid-cols-[1fr,100px,100px,60px] pl-[30px] pr-2">
-      <div className="flex gap-x-2">
+    <Plate className="p-0 z-10 h-[52px] w-full items-center flex pl-[30px] pr-2">
+      <div className="flex gap-x-2 flex-1">
         <div className="flex items-center gap-x-2">
           <AssetIcon src={asset.icon} name={asset.name} />
           <div>
@@ -59,14 +49,14 @@ export const TokenBalance = ({ asset }: Props) => {
       </div>
       <TokenPrice
         assetId={asset.priceId}
-        wrapperClassName="flex-col gap-0.5 items-end px-2"
+        wrapperClassName="flex-col gap-0.5 items-end px-2 w-[100px]"
         className="text-text-primar text-right"
       />
-      <div className="flex flex-col items-end">
-        {balance?.free ? (
+      <div className="flex flex-col items-end w-[100px]">
+        {chain.balance?.free ? (
           <>
-            <AssetBalance value={totalAmount(balance)} asset={asset} showSymbol={false} />
-            <AssetFiatBalance amount={totalAmount(balance)} asset={asset} />
+            <AssetBalance value={totalAmount(chain.balance)} asset={asset} showSymbol={false} />
+            <AssetFiatBalance amount={totalAmount(chain.balance)} asset={asset} />
           </>
         ) : (
           <div className="flex flex-col gap-y-1 items-end">

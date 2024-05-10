@@ -3,12 +3,11 @@ import { Link } from 'react-router-dom';
 
 import { useI18n } from '@app/providers';
 import { Icon, Tooltip, Accordion, BodyText, Shimmering, FootnoteText, Plate, HelpText } from '@shared/ui';
-import { cnTw } from '@shared/lib/utils';
+import { cnTw, totalAmount } from '@shared/lib/utils';
 import type { TokenAsset } from '@shared/core';
 import { Paths, createLink } from '@shared/routes';
 import { CheckPermission, OperationType, walletModel } from '@entities/wallet';
 import { priceProviderModel, AssetFiatBalance, TokenPrice } from '@entities/price';
-import { balanceModel } from '@entities/balance';
 import { AssetBalance, AssetIcon } from '@entities/asset';
 import { networkModel } from '@entities/network';
 import { ChainIcon } from '@entities/chain';
@@ -24,13 +23,7 @@ export const TokenBalanceList = ({ asset }: Props) => {
   const fiatFlag = useUnit(priceProviderModel.$fiatFlag);
 
   const activeWallet = useUnit(walletModel.$activeWallet);
-  const balances = useUnit(balanceModel.$balances);
   const chains = useUnit(networkModel.$chains);
-
-  const hasFailedVerification = balances?.some((b) => b.verified !== undefined && !b.verified);
-
-  // TODO WIP - delete it after sum balance function added
-  const totalBalance = 1;
 
   return (
     <Plate className="p-0 shadow-shards border-b-4 border-double z-10">
@@ -43,8 +36,8 @@ export const TokenBalanceList = ({ asset }: Props) => {
             'transition-colors rounded hover:bg-block-background-hover focus-visible:bg-block-background-hover h-[52px]',
           )}
         >
-          <div className="w-full items-center grid grid-cols-[1fr,100px,100px,60px]">
-            <div className="flex items-center gap-x-2">
+          <div className="w-full items-center flex">
+            <div className="flex items-center gap-x-2 flex-1">
               <AssetIcon src={asset.icon} name={asset.name} />
               <div className="flex flex-col">
                 <BodyText>{asset.symbol}</BodyText>
@@ -64,7 +57,7 @@ export const TokenBalanceList = ({ asset }: Props) => {
                       <HelpText className="text-white">+1</HelpText>
                     </div>
                   )}
-                  {hasFailedVerification && (
+                  {asset.totalBalance?.verified && (
                     <div className="flex items-center gap-x-2 text-text-warning ml-2.5">
                       <Tooltip content={t('balances.verificationTooltip')} pointer="up">
                         <Icon name="warn" className="cursor-pointer text-inherit" size={14} />
@@ -76,14 +69,14 @@ export const TokenBalanceList = ({ asset }: Props) => {
             </div>
             <TokenPrice
               assetId={asset.priceId}
-              wrapperClassName="flex-col gap-0.5 items-end px-2"
+              wrapperClassName="flex-col gap-0.5 items-end px-2 w-[100px]"
               className="text-text-primar text-right"
             />
-            <div className="flex flex-col items-end col-end-4">
-              {totalBalance ? (
+            <div className="flex flex-col items-end w-[100px]">
+              {asset.totalBalance?.free ? (
                 <>
-                  <AssetBalance value={'100000000'} asset={asset} showSymbol={false} />
-                  <AssetFiatBalance amount={'200000000'} asset={asset} />
+                  <AssetBalance value={totalAmount(asset.totalBalance)} asset={asset} showSymbol={false} />
+                  <AssetFiatBalance amount={totalAmount(asset.totalBalance)} asset={asset} />
                 </>
               ) : (
                 <div className="flex flex-col gap-y-1 items-end">
