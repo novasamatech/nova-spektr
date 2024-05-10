@@ -21,7 +21,6 @@ export const AssetsChainView = ({ query, activeShards, hideZeroBalances }: Props
   const { t } = useI18n();
 
   const activeWallet = useUnit(walletModel.$activeWallet);
-  const activeAccounts = useUnit(walletModel.$activeAccounts);
   const balances = useUnit(balanceModel.$balances);
 
   const assetsPrices = useUnit(priceProviderModel.$assetsPrices);
@@ -33,10 +32,12 @@ export const AssetsChainView = ({ query, activeShards, hideZeroBalances }: Props
   const [sortedChains, setSortedChains] = useState<Chain[]>([]);
 
   useEffect(() => {
+    if (!activeWallet) return;
+
     const isMultisig = walletUtils.isMultisig(activeWallet);
 
     const availableChains = Object.values(chains).filter((chain) => {
-      return activeAccounts.some((account) => {
+      return activeWallet.accounts.some((account) => {
         return (
           activeWallet &&
           accountUtils.isNonBaseVaultAccount(account, activeWallet) &&
@@ -62,7 +63,7 @@ export const AssetsChainView = ({ query, activeShards, hideZeroBalances }: Props
     );
 
     setSortedChains(sortedChains);
-  }, [balances, assetsPrices]);
+  }, [activeWallet, balances, assetsPrices]);
 
   const searchSymbolOnly = sortedChains.some((chain) => {
     return chain.assets.some((asset) => isStringsMatchQuery(query, [asset.symbol, asset.name]));

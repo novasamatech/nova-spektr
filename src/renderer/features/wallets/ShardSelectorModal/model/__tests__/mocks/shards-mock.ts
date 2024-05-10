@@ -9,22 +9,6 @@ import {
   WalletType,
 } from '@shared/core';
 
-const vaultWallet: PolkadotVaultWallet = {
-  id: 1,
-  isActive: true,
-  name: 'My Vault wallet',
-  signingType: SigningType.POLKADOT_VAULT,
-  type: WalletType.POLKADOT_VAULT,
-};
-
-const multishardWallet: MultiShardWallet = {
-  id: 2,
-  isActive: true,
-  name: 'My Multishard wallet',
-  signingType: SigningType.POLKADOT_VAULT,
-  type: WalletType.MULTISHARD_PARITY_SIGNER,
-};
-
 const vaultAccounts = [
   {
     id: 2,
@@ -129,6 +113,24 @@ const multishardAccounts = [
     accountId: '0x5a920a698b26cc691faf5ee41b454581348f8a68cce99c84c7fb82ce87605340',
   },
 ] as unknown as Array<BaseAccount | ChainAccount>;
+
+const vaultWallet: PolkadotVaultWallet = {
+  id: 1,
+  isActive: true,
+  name: 'My Vault wallet',
+  signingType: SigningType.POLKADOT_VAULT,
+  type: WalletType.POLKADOT_VAULT,
+  accounts: vaultAccounts,
+};
+
+const multishardWallet: MultiShardWallet = {
+  id: 2,
+  isActive: true,
+  name: 'My Multishard wallet',
+  signingType: SigningType.POLKADOT_VAULT,
+  type: WalletType.MULTISHARD_PARITY_SIGNER,
+  accounts: multishardAccounts,
+};
 
 const chainsMap = {
   '0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3': {

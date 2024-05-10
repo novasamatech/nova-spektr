@@ -2,7 +2,7 @@ import { ComponentProps, useState, useEffect } from 'react';
 import { useUnit } from 'effector-react';
 import noop from 'lodash/noop';
 
-import { BaseModal, HeaderTitleText, StatusLabel, Button, IconButton } from '@shared/ui';
+import { BaseModal, HeaderTitleText, Button, IconButton } from '@shared/ui';
 import { useI18n } from '@app/providers';
 import { useToggle } from '@shared/lib/hooks';
 import { OperationResult } from '@entities/transaction';
@@ -11,7 +11,6 @@ import { SelectSignatories, ConfirmSignatories, WalletForm } from './components'
 import { contactModel } from '@entities/contact';
 import { DEFAULT_TRANSITION } from '@shared/lib/utils';
 import { walletModel } from '@entities/wallet';
-import { matrixModel, matrixUtils } from '@entities/matrix';
 import { createMultisigWalletModel } from '../../model/create-multisig-wallet-model';
 
 type OperationResultProps = Pick<ComponentProps<typeof OperationResult>, 'variant' | 'description'>;
@@ -31,11 +30,7 @@ type Props = {
 export const MultiChainMultisigWallet = ({ isOpen, onClose, onComplete, onBack }: Props) => {
   const { t } = useI18n();
   const wallets = useUnit(walletModel.$wallets);
-  const accounts = useUnit(walletModel.$accounts);
   const contacts = useUnit(contactModel.$contacts);
-
-  const matrix = useUnit(matrixModel.$matrix);
-  const loginStatus = useUnit(matrixModel.$loginStatus);
 
   const isLoading = useUnit(createMultisigWalletModel.$isLoading);
   const error = useUnit(createMultisigWalletModel.$error);
@@ -102,7 +97,6 @@ export const MultiChainMultisigWallet = ({ isOpen, onClose, onComplete, onBack }
   const modalTitle = (
     <div className="flex justify-between items-center px-5 py-3 w-[464px] bg-white rounded-tl-lg">
       <HeaderTitleText className="py-[3px]">{t('createMultisigAccount.title')}</HeaderTitleText>
-      {matrixUtils.isLoggedIn(loginStatus) && <StatusLabel title={matrix.userId || ''} variant="success" />}
     </div>
   );
 
@@ -141,7 +135,7 @@ export const MultiChainMultisigWallet = ({ isOpen, onClose, onComplete, onBack }
           <SelectSignatories
             isActive={activeStep === Step.INIT}
             wallets={wallets}
-            accounts={accounts}
+            accounts={wallets.map((wallet) => wallet.accounts).flat()}
             contacts={contacts}
             onSelect={(wallets, contacts) => {
               setSignatoryWallets(wallets);

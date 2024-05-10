@@ -13,6 +13,7 @@ describe('features/wallets/WalletSelect/model/wallet-select-model', () => {
       type: WalletType.POLKADOT_VAULT,
       isActive: true,
       name: 'My PV',
+      accounts: [],
     },
     {
       id: 2,
@@ -20,6 +21,7 @@ describe('features/wallets/WalletSelect/model/wallet-select-model', () => {
       type: WalletType.WALLET_CONNECT,
       isActive: false,
       name: 'My WC',
+      accounts: [],
     },
   ];
 
@@ -29,6 +31,7 @@ describe('features/wallets/WalletSelect/model/wallet-select-model', () => {
     type: WalletType.SINGLE_PARITY_SIGNER,
     isActive: false,
     name: 'My new SPS',
+    accounts: [],
   };
 
   beforeEach(() => {

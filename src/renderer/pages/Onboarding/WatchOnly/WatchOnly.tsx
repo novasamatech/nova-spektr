@@ -5,11 +5,12 @@ import { useUnit } from 'effector-react';
 
 import { useI18n } from '@app/providers';
 import { toAccountId, validateAddress, DEFAULT_TRANSITION, isEthereumAccountId } from '@shared/lib/utils';
-import EmptyState from './EmptyState';
+import { EmptyState } from './EmptyState';
 import { AccountsList, walletModel } from '@entities/wallet';
 import { useToggle } from '@shared/lib/hooks';
 import type { AccountId, Chain } from '@shared/core';
 import { ErrorType, CryptoType, ChainType, WalletType, SigningType, AccountType } from '@shared/core';
+import { networkModel, networkUtils } from '@entities/network';
 import {
   Icon,
   Identicon,
@@ -21,7 +22,6 @@ import {
   SmallTitleText,
   IconButton,
 } from '@shared/ui';
-import { networkModel, networkUtils } from '@entities/network';
 
 type WalletForm = {
   walletName: string;

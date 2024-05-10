@@ -11,7 +11,7 @@ export const useValidatorsMap = (api?: ApiPromise, isLightClient?: boolean): Val
   useEffect(() => {
     let unsubEra: () => void | undefined;
 
-    if (api?.query.staking) {
+    if (api?.query.staking?.activeEra) {
       eraService.subscribeActiveEra(api, setEra).then((unsubFn) => (unsubEra = unsubFn));
     }
 

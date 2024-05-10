@@ -470,7 +470,7 @@ export const wrapAsMulti = ({ api, addressPrefix, transaction, txWrapper }: Wrap
     console.log(`🟡 ${transaction.type} - not enough data to construct Extrinsic`);
   }
 
-  const otherSignatories = sortBy(txWrapper.signatories, 'accountId')
+  const otherSignatories = sortBy(txWrapper.multisigAccount.signatories, 'accountId')
     .filter(({ accountId }) => accountId !== txWrapper.signer.accountId)
     .map(({ accountId }) => toAddress(accountId, { prefix: addressPrefix }));
 

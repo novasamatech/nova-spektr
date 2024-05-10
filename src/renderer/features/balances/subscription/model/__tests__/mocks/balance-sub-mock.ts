@@ -1,16 +1,6 @@
 import { ChainId, Chain, Wallet, AccountType, Account, CryptoType } from '@shared/core';
 import { TEST_ACCOUNTS } from '@shared/lib/utils';
 
-const wallets = [
-  { id: 1, isActive: true, name: 'My active wallet' },
-  { id: 2, isActive: false, name: 'My inactive wallet' },
-] as Wallet[];
-
-const newWallets = [
-  { ...wallets[0], isActive: false },
-  { ...wallets[1], isActive: true },
-];
-
 const accounts = [
   {
     id: 1,
@@ -42,7 +32,17 @@ const accounts = [
     chainId: '0x02',
     cryptoType: CryptoType.SR25519,
   },
-] as Account[];
+] as unknown as Account[];
+
+const wallets = [
+  { id: 1, isActive: true, name: 'My active wallet', accounts: [accounts[0], accounts[1]] },
+  { id: 2, isActive: false, name: 'My inactive wallet', accounts: [accounts[2], accounts[3]] },
+] as Wallet[];
+
+const newWallets = [
+  { ...wallets[0], isActive: false },
+  { ...wallets[1], isActive: true },
+];
 
 const chains = {
   '0x01': { name: 'My chain 1', chainId: '0x01' },
