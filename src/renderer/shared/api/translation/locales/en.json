@@ -427,7 +427,6 @@
     "yourAccountsLabel": "Here are your accounts"
   },
   "operation": {
-    "saveToBasket": "Save to basket",
     "addCallDataButton": "Add call data",
     "advanced": "Advanced",
     "approveButton": "Approve",
@@ -479,6 +478,7 @@
       "placeholder": "Reason...",
       "title": "Enter reject reason"
     },
+    "saveToBasket": "Save to basket",
     "selectAccount": "Select account",
     "selectAccountLabel": "Account",
     "selectSignatory": "Select signatory",
