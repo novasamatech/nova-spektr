@@ -8,8 +8,8 @@ import { AssetsListView } from '@entities/asset';
 import { balanceModel, balanceUtils } from '@entities/balance';
 import { sumTokenBalances, tokensService } from '../lib/tokensService';
 
-const setActiveView = createEvent<AssetsListView>();
-const setAccounts = createEvent<Account[]>();
+const activeViewSet = createEvent<AssetsListView>();
+const accountsSet = createEvent<Account[]>();
 
 const $activeView = createStore<AssetsListView | null>(null);
 const $accounts = createStore<Account[]>([]);
@@ -46,7 +46,7 @@ const populateTokensBalanceFx = createEffect(
     accounts,
   }: {
     activeTokens: TokenAsset[];
-    balances: any;
+    balances: Balance[];
     accounts: Account[];
   }): TokenAsset[] => {
     return activeTokens.map((token) => {
@@ -82,12 +82,12 @@ const populateTokensBalanceFx = createEffect(
 );
 
 sample({
-  clock: setActiveView,
+  clock: activeViewSet,
   target: $activeView,
 });
 
 sample({
-  clock: setAccounts,
+  clock: accountsSet,
   target: $accounts,
 });
 
@@ -168,7 +168,7 @@ export const portfolioModel = {
   $activeView,
   $accounts,
   events: {
-    setActiveView,
-    setAccounts,
+    activeViewSet,
+    accountsSet,
   },
 };

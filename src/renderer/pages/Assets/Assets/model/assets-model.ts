@@ -12,7 +12,7 @@ const $activeShards = createStore<Account[]>([]);
 sample({
   clock: [assetsSettingsModel.$assetsView, once(assetsSettingsModel.events.assetsStarted)],
   source: assetsSettingsModel.$assetsView,
-  target: portfolioModel.events.setActiveView,
+  target: portfolioModel.events.activeViewSet,
 });
 
 sample({
@@ -40,7 +40,7 @@ sample({
 
 sample({
   clock: $activeShards,
-  target: portfolioModel.events.setAccounts,
+  target: portfolioModel.events.accountsSet,
 });
 
 export const assetsModel = {
