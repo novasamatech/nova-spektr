@@ -46,7 +46,7 @@ export type TokenAsset = {
     name: string;
     assetId: number;
     assetSymbol: string;
-    balance: TokenBalance;
+    balance?: TokenBalance;
     type?: AssetType;
     typeExtras?: StatemineExtras | OrmlExtras;
   }[];
