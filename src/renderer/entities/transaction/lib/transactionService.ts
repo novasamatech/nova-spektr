@@ -74,61 +74,68 @@ async function getTransactionFee(transaction: Transaction, api: ApiPromise): Pro
 async function signAndSubmit(
   transaction: Transaction,
   signature: HexString,
-  unsigned: UnsignedTransaction,
+  { blockHash, era, nonce, tip, assetId }: UnsignedTransaction,
   api: ApiPromise,
   callback: (executed: any, params: any) => void,
 ) {
   const extrinsic = getExtrinsic[transaction.type](transaction.args, api);
-
   const accountId = toAccountId(transaction.address);
 
-  const options = { signer: new RawSigner(signature), ...unsigned };
-
   extrinsic
-    // @ts-ignore
-    .signAndSend(accountId, options, (result) => {
-      const { status, events, txHash, txIndex, blockNumber } = result as any;
-      let actualTxHash = txHash.toHex();
-      let isFinalApprove = false;
-      let multisigError = '';
-      let extrinsicIndex = txIndex;
-      let extrinsicSuccess = false;
+    .signAndSend(
+      accountId,
+      {
+        signer: new RawSigner(signature),
+        blockHash,
+        era: api.registry.createType('ExtrinsicEra', era),
+        nonce,
+        tip,
+        assetId,
+      },
+      (result) => {
+        const { status, events, txHash, txIndex, blockNumber } = result as any;
+        let actualTxHash = txHash.toHex();
+        let isFinalApprove = false;
+        let multisigError = '';
+        let extrinsicIndex = txIndex;
+        let extrinsicSuccess = false;
 
-      if (status.isInBlock) {
-        events.forEach(({ event, phase }: any) => {
-          if (!phase.isApplyExtrinsic || !phase.asApplyExtrinsic.eq(txIndex)) return;
+        if (status.isInBlock) {
+          events.forEach(({ event, phase }: any) => {
+            if (!phase.isApplyExtrinsic || !phase.asApplyExtrinsic.eq(txIndex)) return;
 
-          if (api.events.multisig.MultisigExecuted.is(event)) {
-            isFinalApprove = true;
-            multisigError = event.data[4].isErr ? decodeDispatchError(event.data[4].asErr, api) : '';
-          }
+            if (api.events.multisig.MultisigExecuted.is(event)) {
+              isFinalApprove = true;
+              multisigError = event.data[4].isErr ? decodeDispatchError(event.data[4].asErr, api) : '';
+            }
 
-          if (api.events.system.ExtrinsicSuccess.is(event)) {
-            extrinsicSuccess = true;
-          }
+            if (api.events.system.ExtrinsicSuccess.is(event)) {
+              extrinsicSuccess = true;
+            }
 
-          if (api.events.system.ExtrinsicFailed.is(event)) {
-            const [dispatchError] = event.data;
+            if (api.events.system.ExtrinsicFailed.is(event)) {
+              const [dispatchError] = event.data;
 
-            const errorInfo = decodeDispatchError(dispatchError, api);
+              const errorInfo = decodeDispatchError(dispatchError, api);
 
-            callback(false, errorInfo);
-          }
-        });
-      }
+              callback(false, errorInfo);
+            }
+          });
+        }
 
-      if (extrinsicSuccess) {
-        callback(true, {
-          timepoint: {
-            index: extrinsicIndex,
-            height: blockNumber.toNumber(),
-          },
-          extrinsicHash: actualTxHash,
-          isFinalApprove,
-          multisigError,
-        });
-      }
-    })
+        if (extrinsicSuccess) {
+          callback(true, {
+            timepoint: {
+              index: extrinsicIndex,
+              height: blockNumber.toNumber(),
+            },
+            extrinsicHash: actualTxHash,
+            isFinalApprove,
+            multisigError,
+          });
+        }
+      },
+    )
     .catch((error) => callback(false, (error as Error).message || 'Error'));
 }
 
