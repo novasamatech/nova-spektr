@@ -24,7 +24,6 @@ const updateTokensFx = createEffect(
       const filteredChains = token.chains.filter((chain) => {
         return activeWallet?.accounts.some((account) => {
           return (
-            activeWallet &&
             accountUtils.isNonBaseVaultAccount(account, activeWallet) &&
             accountUtils.isChainAndCryptoMatch(account, chains[chain.chainId])
           );
@@ -122,7 +121,7 @@ sample({
   filter: ({ connections, activeWallet, activeView }) => {
     return Boolean(activeView === AssetsListView.TOKEN_CENTRIC && Object.keys(connections).length && activeWallet);
   },
-  fn: ({ connections, chains, tokens, activeWallet, activeView }): TokenAsset[] => {
+  fn: ({ connections, chains, tokens, activeWallet }): TokenAsset[] => {
     const isMultisig = walletUtils.isMultisig(activeWallet);
 
     return tokens.reduce((acc, token) => {
