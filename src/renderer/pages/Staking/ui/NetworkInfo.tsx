@@ -5,7 +5,7 @@ import { Select, FootnoteText, Plate, IconButton, Shimmering } from '@shared/ui'
 import { DropdownOption, DropdownResult } from '@shared/ui/types';
 import { getRelaychainAsset } from '@shared/lib/utils';
 import { chainsService } from '@shared/api/network';
-import { useSettingsStorage } from '@entities/settings';
+import { settingsStorage } from '@entities/settings';
 import { ChainTitle } from '@entities/chain';
 import { useToggle } from '@shared/lib/hooks';
 import { useI18n } from '@app/providers';
@@ -34,7 +34,6 @@ export const NetworkInfo = ({
   onNetworkChange,
 }: PropsWithChildren<Props>) => {
   const { t } = useI18n();
-  const { getStakingNetwork, setStakingNetwork } = useSettingsStorage();
 
   const [isChildrenShown, toggleChildren] = useToggle();
   const [networks, setNetworks] = useState<DropdownOption<Chain>[]>([]);
@@ -63,7 +62,7 @@ export const NetworkInfo = ({
       return acc;
     }, []);
 
-    const settingsChainId = getStakingNetwork();
+    const settingsChainId = settingsStorage.getStakingNetwork();
     const settingsChain = relaychains.find((chain) => chain.id === settingsChainId);
 
     setNetworks(relaychains);
@@ -97,7 +96,7 @@ export const NetworkInfo = ({
             selectedId={activeNetwork?.id}
             onChange={(chain) => {
               setActiveNetwork(chain);
-              setStakingNetwork(chain.value.chainId);
+              settingsStorage.setStakingNetwork(chain.value.chainId);
               onNetworkChange(chain.value);
             }}
           />

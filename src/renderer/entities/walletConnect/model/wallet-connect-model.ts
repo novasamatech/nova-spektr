@@ -5,7 +5,7 @@ import { createEffect, createEvent, createStore, sample, scopeBind } from 'effec
 import keyBy from 'lodash/keyBy';
 
 import { nonNullable } from '@shared/lib/utils';
-import { ID, Account, WalletConnectAccount, kernelModel } from '@shared/core';
+import { ID, WcAccount, kernelModel, Wallet, Account } from '@shared/core';
 import { localStorageService } from '@shared/api/local-storage';
 import { storageService } from '@shared/api/storage';
 import { walletModel, walletUtils } from '@entities/wallet';
@@ -29,7 +29,7 @@ type SessionTopicParams = {
 
 type UpdateAccountsParams = {
   walletId: ID;
-  newAccounts: WalletConnectAccount[];
+  accounts: WcAccount[];
 };
 
 const connect = createEvent<Omit<InitConnectParams, 'client'>>();
@@ -94,9 +94,7 @@ const subscribeToEventsFx = createEffect((client: Client) => {
   });
 });
 
-const checkPersistedStateFx = createEffect(async (client: Client) => {
-  if (!client) return;
-
+const checkPersistedStateFx = createEffect((client: Client) => {
   const pairings = client.pairing.getAll({ active: true });
 
   // Set pairings
@@ -112,8 +110,6 @@ const checkPersistedStateFx = createEffect(async (client: Client) => {
 });
 
 const logClientIdFx = createEffect(async (client: Client) => {
-  if (!client) return;
-
   try {
     const clientId = await client.core.crypto.getClientId();
     console.log('WalletConnect ClientID: ', clientId);
@@ -128,7 +124,7 @@ const sessionTopicUpdatedFx = createEffect(
     const updatedAccounts = accounts.map(({ signingExtras, ...rest }) => {
       const newSigningExtras = { ...signingExtras, sessionTopic: topic };
 
-      return { ...rest, signingExtras: newSigningExtras } as Account;
+      return { ...rest, signingExtras: newSigningExtras };
     });
     const updated = await storageService.accounts.updateAll(updatedAccounts);
 
@@ -145,69 +141,28 @@ const createClientFx = createEffect(async (): Promise<Client | undefined> => {
   });
 });
 
-const updateWalletConnectAccountsFx = createEffect(
-  async ({
-    walletId,
-    newAccounts,
-    accounts,
-  }: {
-    walletId: ID;
-    accounts: Account[];
-    newAccounts: WalletConnectAccount[];
-  }): Promise<WalletConnectAccount[] | undefined> => {
-    const oldAccountIds = accounts.filter((account) => account.walletId === walletId).map(({ id }) => id);
-
-    await storageService.accounts.deleteAll(oldAccountIds);
-
-    const dbAccounts = await storageService.accounts.createAll(newAccounts);
-
-    if (!dbAccounts) return undefined;
-
-    return dbAccounts as WalletConnectAccount[];
-  },
-);
-
 const removePairingFx = createEffect(async ({ client, topic }: { client: Client; topic: string }): Promise<void> => {
   const reason = getSdkError('USER_DISCONNECTED');
 
   await client.pairing.delete(topic, reason);
 });
 
-sample({
-  clock: accountsUpdated,
-  source: {
-    accounts: walletModel.$accounts,
-  },
-  fn: ({ accounts }, { newAccounts, walletId }) => ({
-    accounts,
-    newAccounts,
-    walletId,
-  }),
-  target: updateWalletConnectAccountsFx,
-});
+type UpdateParams = {
+  wallet: Wallet;
+  accounts: WcAccount[];
+};
+const updateWcAccountsFx = createEffect(
+  async ({ wallet, accounts }: UpdateParams): Promise<WcAccount[] | undefined> => {
+    const oldAccountIds = wallet.accounts.map((account) => account.id);
 
-sample({
-  clock: updateWalletConnectAccountsFx.doneData,
-  source: {
-    accounts: walletModel.$accounts,
-  },
-  filter: (_, newAccounts) => Boolean(newAccounts?.length),
-  fn: ({ accounts }, newAccounts) => {
-    return accounts.filter((a) => a.walletId !== newAccounts![0].walletId).concat((newAccounts as Account[]) || []);
-  },
-  target: walletModel.$accounts,
-});
+    const [_, newAccounts] = await Promise.all([
+      storageService.accounts.deleteAll(oldAccountIds),
+      storageService.accounts.createAll(accounts),
+    ]);
 
-sample({
-  clock: kernelModel.events.appStarted,
-  target: createClientFx,
-});
-
-sample({
-  clock: createClientFx.doneData,
-  filter: (client): client is Client => client !== null,
-  target: [extendSessionsFx, subscribeToEventsFx, checkPersistedStateFx, logClientIdFx],
-});
+    return newAccounts as WcAccount[];
+  },
+);
 
 type InitConnectResult = {
   uri: string | undefined;
@@ -268,6 +223,42 @@ const disconnectFx = createEffect(async ({ client, session }: DisconnectParams) 
     topic: session.topic,
     reason,
   });
+});
+
+sample({
+  clock: accountsUpdated,
+  source: walletModel.$wallets,
+  fn: (wallets, { accounts, walletId }) => {
+    const wallet = wallets.find((wallet) => wallet.id === walletId)!;
+
+    return { wallet, accounts };
+  },
+  target: updateWcAccountsFx,
+});
+
+sample({
+  clock: updateWcAccountsFx.done,
+  source: walletModel.$wallets,
+  filter: (_, { result: accounts }) => Boolean(accounts?.length),
+  fn: (wallets, { result, params }) => {
+    return wallets.map((wallet) => {
+      if (wallet.id !== params.wallet.id) return wallet;
+
+      return { ...wallet, accounts: params.accounts } as Wallet;
+    });
+  },
+  target: walletModel.$wallets,
+});
+
+sample({
+  clock: kernelModel.events.appStarted,
+  target: createClientFx,
+});
+
+sample({
+  clock: createClientFx.doneData,
+  filter: (client): client is Client => client !== null,
+  target: [extendSessionsFx, subscribeToEventsFx, checkPersistedStateFx, logClientIdFx],
 });
 
 sample({
@@ -377,8 +368,12 @@ sample({
 
 sample({
   clock: currentSessionTopicUpdated,
-  source: walletModel.$activeAccounts,
-  fn: (accounts, topic) => ({ accounts, topic }),
+  source: walletModel.$activeWallet,
+  filter: (wallet: Wallet | undefined): wallet is Wallet => Boolean(wallet),
+  fn: (wallet, topic) => ({
+    accounts: wallet.accounts,
+    topic,
+  }),
   target: sessionTopicUpdatedFx,
 });
 
@@ -389,13 +384,20 @@ sample({
 
 sample({
   clock: sessionTopicUpdatedFx.doneData,
-  source: walletModel.$accounts,
-  fn: (accounts, updatedAccounts) => {
-    const updatedMap = keyBy(updatedAccounts, 'id');
+  source: walletModel.$wallets,
+  filter: (_, accounts) => Boolean(accounts?.length),
+  fn: (wallets, accounts) => {
+    const walletId = accounts![0].walletId;
+    const updatedMap = keyBy(accounts, 'id');
 
-    return accounts.map((account) => updatedMap[account.id] || account);
+    return wallets.map((wallet) => {
+      if (wallet.id !== walletId) return wallet;
+      const accounts = wallet.accounts.map((account) => updatedMap[account.id] || account);
+
+      return { ...wallet, accounts } as Wallet;
+    });
   },
-  target: walletModel.$accounts,
+  target: walletModel.$wallets,
 });
 
 sample({
@@ -410,26 +412,20 @@ sample({
 
 sample({
   clock: pairingRemoved,
-  source: { client: $client },
-  filter: ({ client }) => client !== null,
-  fn: ({ client }, topic) => ({
-    client: client!,
-    topic,
-  }),
+  source: $client,
+  filter: (client: Client | null): client is Client => client !== null,
+  fn: (client, topic) => ({ client, topic }),
   target: removePairingFx,
 });
 
 sample({
   clock: $client,
-  source: {
-    wallets: walletModel.$wallets,
-    accounts: walletModel.$accounts,
-  },
+  source: walletModel.$wallets,
   filter: (_, client) => Boolean(client),
-  fn: ({ wallets, accounts }, client) => {
+  fn: (wallets, client) => {
     return wallets.map((wallet) => {
       if (walletUtils.isWalletConnectGroup(wallet)) {
-        wallet.isConnected = walletConnectUtils.isConnectedByAccounts(client!, wallet, accounts);
+        wallet.isConnected = walletConnectUtils.isConnectedByAccounts(client!, wallet);
       }
 
       return wallet;
@@ -455,7 +451,7 @@ export const walletConnectModel = {
     sessionTopicUpdated,
     sessionTopicUpdateDone: sessionTopicUpdatedFx.doneData,
     accountsUpdated,
-    accountsUpdateDone: updateWalletConnectAccountsFx.doneData,
+    accountsUpdateDone: updateWcAccountsFx.doneData,
     pairingRemoved,
     reset,
   },
