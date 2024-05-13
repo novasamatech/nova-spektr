@@ -12,7 +12,10 @@ export const ReferendumList = () => {
       {referendumsList.map((referendum) => (
         <li key={referendum.index} className="border border-gray-400 rounded p-4 w-full">
           <div className="flex justify-between">
-            <FootnoteText>#{referendum.index}</FootnoteText>
+            <div>
+              <FootnoteText>#{referendum.index}</FootnoteText>
+              <button onClick={() => referendumListModel.events.referendumSelected(referendum.index)}>select</button>
+            </div>
             <FootnoteText>{referendumsDetails?.[referendum.index] || '...'}</FootnoteText>
           </div>
         </li>

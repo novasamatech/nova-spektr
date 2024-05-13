@@ -26,7 +26,10 @@ export interface ApprovedReferendum extends ReferendumInfo {
 
 export interface OngoingReferendum extends ReferendumInfo {
   track: number;
-  enactment: number;
+  enactment: {
+    value: BN;
+    type: 'At' | 'After';
+  };
   deciding: {
     since: BlockHeight;
     confirming: BlockHeight;

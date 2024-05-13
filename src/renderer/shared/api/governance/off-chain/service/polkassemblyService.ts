@@ -1,4 +1,4 @@
-import { isFulfilled, dictionary } from '@shared/lib/utils';
+import { dictionary } from '@shared/lib/utils';
 import type { ChainId } from '@shared/core';
 import type { IGovernanceApi } from '../lib/types';
 import { offChainUtils } from '../lib/off-chain-utils';
@@ -29,14 +29,8 @@ async function getReferendumList(chainId: ChainId): Promise<Record<string, strin
 
     const ping = await (await fetch(getApiUrl(1, 1), { method: 'GET', headers })).json();
     const iterations = Math.ceil(ping.count / 100);
-
-    const requests = Array.from({ length: iterations }, (_, index) => {
-      return fetch(getApiUrl(index + 1), { method: 'GET', headers });
-    });
-    const responses = await Promise.allSettled(requests);
-    const dataRequests = responses.filter(isFulfilled).map((res) => res.value.json());
-    const dataResponses = await Promise.all(dataRequests);
-    const referendums = [...ping.posts, ...dataResponses.flatMap((ref) => ref.posts)];
+    const remainders = await offChainUtils.getRemainingReferendums(iterations, getApiUrl);
+    const referendums = [...ping.posts, ...remainders.flatMap((r) => r.posts)];
 
     return dictionary(referendums, 'post_id', (item) => item.title);
   } catch {
@@ -50,7 +44,7 @@ async function getReferendumList(chainId: ChainId): Promise<Record<string, strin
  * @param index referendum index
  * @return {Promise}
  */
-async function getReferendumDetails(chainId: ChainId, index: number): Promise<unknown | undefined> {
+async function getReferendumDetails(chainId: ChainId, index: string): Promise<string | undefined> {
   const chainName = offChainUtils.getChainName(chainId);
   if (!chainName) return undefined;
 
@@ -59,7 +53,9 @@ async function getReferendumDetails(chainId: ChainId, index: number): Promise<un
     headers.append('x-network', chainName);
     const apiUrl = `https://api.polkassembly.io/api/v1/posts/on-chain-post?proposalType=referendums_v2&postId=${index}`;
 
-    return (await fetch(apiUrl)).json();
+    const details = await (await fetch(apiUrl)).json();
+
+    return details.content;
   } catch {
     return undefined;
   }

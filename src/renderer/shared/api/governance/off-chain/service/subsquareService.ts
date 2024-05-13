@@ -1,4 +1,4 @@
-import { isFulfilled, dictionary } from '@shared/lib/utils';
+import { dictionary } from '@shared/lib/utils';
 import type { ChainId } from '@shared/core';
 import type { IGovernanceApi } from '../lib/types';
 import { offChainUtils } from '../lib/off-chain-utils';
@@ -27,14 +27,8 @@ async function getReferendumList(chainId: ChainId): Promise<Record<string, strin
   try {
     const ping = await (await fetch(getApiUrl(chainName, 1, 1), { method: 'GET' })).json();
     const iterations = Math.ceil(ping.total / 100);
-
-    const requests = Array.from({ length: iterations }, (_, index) => {
-      return fetch(getApiUrl(chainName, index + 1), { method: 'GET' });
-    });
-    const responses = await Promise.allSettled(requests);
-    const dataRequests = responses.filter(isFulfilled).map((res) => res.value.json());
-    const dataResponses = await Promise.all(dataRequests);
-    const referendums = [...ping.items, ...dataResponses.flatMap((ref) => ref.items)];
+    const remainders = await offChainUtils.getRemainingReferendums(iterations, (index) => getApiUrl(chainName, index));
+    const referendums = [...ping.items, ...remainders.flatMap((r) => r.items)];
 
     return dictionary(referendums, 'referendumIndex', (item) => item.title);
   } catch {
@@ -48,14 +42,16 @@ async function getReferendumList(chainId: ChainId): Promise<Record<string, strin
  * @param index referendum index
  * @return {Promise}
  */
-async function getReferendumDetails(chainId: ChainId, index: number): Promise<unknown | undefined> {
+async function getReferendumDetails(chainId: ChainId, index: string): Promise<string | undefined> {
   const chainName = offChainUtils.getChainName(chainId);
   if (!chainName) return undefined;
 
   const apiUrl = `https://${chainName}.subsquare.io/api/gov2/referendums/${index}`;
 
   try {
-    return (await fetch(apiUrl)).json();
+    const details = await (await fetch(apiUrl)).json();
+
+    return details.content;
   } catch {
     return undefined;
   }

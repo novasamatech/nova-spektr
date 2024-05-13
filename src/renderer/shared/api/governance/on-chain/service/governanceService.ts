@@ -71,7 +71,10 @@ async function getReferendums(api: ApiPromise): Promise<ReferendumsResult> {
 
           acc.ongoing.push({
             index: index.args[0].toString(),
-            enactment: ongoing.enactment.asAfter.toNumber(),
+            enactment: {
+              value: ongoing.enactment.isAfter ? ongoing.enactment.asAfter.toBn() : ongoing.enactment.asAt.toBn(),
+              type: ongoing.enactment.type,
+            },
             blockHeight: ongoing.submitted.toNumber(),
             track: ongoing.track.toNumber(),
             deciding: ongoing.deciding.isSome

@@ -9,6 +9,8 @@ import { networkModel } from '@entities/network';
 
 const chainIdChanged = createEvent<ChainId>();
 const governanceApiChanged = createEvent<IGovernanceApi>();
+const referendumSelected = createEvent<string>();
+const referendumWithChainSelected = createEvent<{ chainId: ChainId; index: string }>();
 
 const $chainId = restore(chainIdChanged, null);
 const $governanceApi = restore(governanceApiChanged, subsquareService);
@@ -18,7 +20,6 @@ const $referendumsDetails = createStore<Record<string, string> | null>(null);
 const $referendumsRequested = createStore<boolean>(false);
 
 const requestOnChainReferendumsFx = createEffect(async (api: ApiPromise): Promise<ReferendumInfo[]> => {
-  console.log('=== request');
   const { ongoing } = await governanceService.getReferendums(api);
 
   return ongoing;
@@ -107,6 +108,14 @@ getVotesFx.doneData.watch((x) => {
   console.log('=== votes', x);
 });
 
+sample({
+  clock: referendumSelected,
+  source: $chainId,
+  filter: (chainId: ChainId | null): chainId is ChainId => Boolean(chainId),
+  fn: (chainId, index) => ({ chainId, index }),
+  target: referendumWithChainSelected,
+});
+
 export const referendumListModel = {
   $referendumsList,
   $referendumsDetails,
@@ -114,5 +123,9 @@ export const referendumListModel = {
   events: {
     chainIdChanged,
     governanceApiChanged,
+    referendumSelected,
+  },
+  output: {
+    referendumSelected: referendumWithChainSelected,
   },
 };
