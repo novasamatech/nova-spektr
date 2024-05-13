@@ -1,15 +1,18 @@
+import { useState } from 'react';
 import { ApiPromise } from '@polkadot/api';
-import { SubmittableExtrinsic } from '@polkadot/api/types';
+import { SubmittableExtrinsic, SignerOptions } from '@polkadot/api/types';
 import { hexToU8a } from '@polkadot/util';
 import { construct, UnsignedTransaction } from '@substrate/txwrapper-polkadot';
 import { Weight } from '@polkadot/types/interfaces';
 import { blake2AsU8a, signatureVerify } from '@polkadot/util-crypto';
-import { useState } from 'react';
-import type { Signer, SignerResult } from '@polkadot/api/types';
 
 import { Transaction, TransactionType } from '@entities/transaction/model/transaction';
 import { createTxMetadata, toAccountId, dictionary } from '@shared/lib/utils';
 import { getExtrinsic, getUnsignedTransaction, wrapAsMulti, wrapAsProxy } from './extrinsicService';
+import { decodeDispatchError } from './common/utils';
+import { useCallDataDecoder } from './callDataDecoder';
+import { walletUtils } from '../../wallet';
+import { RawSigner } from './RawSigner';
 import type {
   AccountId,
   Address,
@@ -21,8 +24,6 @@ import type {
   ProxiedAccount,
   Account,
 } from '@shared/core';
-import { decodeDispatchError } from './common/utils';
-import { useCallDataDecoder } from './callDataDecoder';
 import {
   ITransactionService,
   HashData,
@@ -33,22 +34,6 @@ import {
   ProxyTxWrapper,
   WrapperKind,
 } from './common/types';
-import { walletUtils } from '../../wallet';
-
-class RawSigner implements Signer {
-  signature: HexString;
-
-  public constructor(signature: HexString) {
-    this.signature = signature;
-  }
-
-  public async signRaw(data: any): Promise<SignerResult> {
-    return { id: 1, signature: this.signature };
-  }
-}
-
-const shouldWrapAsMulti = (wrapper: TxWrappers_OLD): wrapper is WrapAsMulti =>
-  'signatoryId' in wrapper && 'account' in wrapper;
 
 export const transactionService = {
   hasMultisig,
@@ -64,6 +49,9 @@ export const transactionService = {
   getWrappedTransaction,
 };
 
+const shouldWrapAsMulti = (wrapper: TxWrappers_OLD): wrapper is WrapAsMulti =>
+  'signatoryId' in wrapper && 'account' in wrapper;
+
 async function getTransactionFee(transaction: Transaction, api: ApiPromise): Promise<string> {
   const extrinsic = getExtrinsic[transaction.type](transaction.args, api);
   const paymentInfo = await extrinsic.paymentInfo(transaction.address);
@@ -74,68 +62,66 @@ async function getTransactionFee(transaction: Transaction, api: ApiPromise): Pro
 async function signAndSubmit(
   transaction: Transaction,
   signature: HexString,
-  { blockHash, era, nonce, tip, assetId }: UnsignedTransaction,
+  unsigned: UnsignedTransaction,
   api: ApiPromise,
   callback: (executed: any, params: any) => void,
 ) {
   const extrinsic = getExtrinsic[transaction.type](transaction.args, api);
   const accountId = toAccountId(transaction.address);
 
+  const options: Partial<SignerOptions> = {
+    era: api.registry.createType('ExtrinsicEra', unsigned.era),
+    signer: new RawSigner(signature),
+    assetId: unsigned.assetId,
+    tip: unsigned.tip,
+    nonce: unsigned.nonce,
+    blockHash: unsigned.blockHash,
+  };
+
   extrinsic
-    .signAndSend(
-      accountId,
-      {
-        signer: new RawSigner(signature),
-        blockHash,
-        era: api.registry.createType('ExtrinsicEra', era),
-        nonce,
-        tip,
-        assetId,
-      },
-      (result) => {
-        const { status, events, txHash, txIndex, blockNumber } = result as any;
-        let actualTxHash = txHash.toHex();
-        let isFinalApprove = false;
-        let multisigError = '';
-        let extrinsicIndex = txIndex;
-        let extrinsicSuccess = false;
+    .signAndSend(accountId, options, (result) => {
+      const { status, events, txHash, txIndex, blockNumber } = result as any;
+      let actualTxHash = txHash.toHex();
+      let isFinalApprove = false;
+      let multisigError = '';
+      let extrinsicIndex = txIndex;
+      let extrinsicSuccess = false;
 
-        if (status.isInBlock) {
-          events.forEach(({ event, phase }: any) => {
-            if (!phase.isApplyExtrinsic || !phase.asApplyExtrinsic.eq(txIndex)) return;
+      if (status.isInBlock) {
+        events.forEach(({ event, phase }: any) => {
+          if (!phase.isApplyExtrinsic || !phase.asApplyExtrinsic.eq(txIndex)) return;
 
-            if (api.events.multisig.MultisigExecuted.is(event)) {
-              isFinalApprove = true;
-              multisigError = event.data[4].isErr ? decodeDispatchError(event.data[4].asErr, api) : '';
-            }
+          if (api.events.multisig.MultisigExecuted.is(event)) {
+            isFinalApprove = true;
+            multisigError = event.data[4].isErr ? decodeDispatchError(event.data[4].asErr, api) : '';
+          }
 
-            if (api.events.system.ExtrinsicSuccess.is(event)) {
-              extrinsicSuccess = true;
-            }
+          if (api.events.system.ExtrinsicSuccess.is(event)) {
+            extrinsicSuccess = true;
+          }
 
-            if (api.events.system.ExtrinsicFailed.is(event)) {
-              const [dispatchError] = event.data;
+          if (api.events.system.ExtrinsicFailed.is(event)) {
+            const [dispatchError] = event.data;
 
-              const errorInfo = decodeDispatchError(dispatchError, api);
+            const errorInfo = decodeDispatchError(dispatchError, api);
 
-              callback(false, errorInfo);
-            }
-          });
-        }
+            callback(false, errorInfo);
+          }
+        });
+      }
 
-        if (extrinsicSuccess) {
-          callback(true, {
-            timepoint: {
-              index: extrinsicIndex,
-              height: blockNumber.toNumber(),
-            },
-            extrinsicHash: actualTxHash,
-            isFinalApprove,
-            multisigError,
-          });
-        }
-      },
-    )
+      if (extrinsicSuccess) {
+        callback(true, {
+          timepoint: {
+            index: extrinsicIndex,
+            height: blockNumber.toNumber(),
+          },
+          extrinsicHash: actualTxHash,
+          isFinalApprove,
+          multisigError,
+        });
+      }
+    })
     .catch((error) => callback(false, (error as Error).message || 'Error'));
 }
 
