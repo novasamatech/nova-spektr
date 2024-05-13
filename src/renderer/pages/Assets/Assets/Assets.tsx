@@ -1,6 +1,5 @@
 import { Outlet } from 'react-router-dom';
 import { useUnit } from 'effector-react';
-import { useEffect } from 'react';
 
 import { useI18n } from '@app/providers';
 import { Header } from '@shared/ui';
@@ -12,7 +11,6 @@ import {
   AssetsSettings,
   assetsSearchModel,
   assetsSettingsModel,
-  portfolioModel,
 } from '@features/assets';
 import { AssetsListView } from '@entities/asset';
 import { assetsModel } from './model/assets-model';
@@ -24,11 +22,6 @@ export const Assets = () => {
   const query = useUnit(assetsSearchModel.$query);
   const hideZeroBalances = useUnit(assetsSettingsModel.$hideZeroBalances);
   const assetsView = useUnit(assetsSettingsModel.$assetsView);
-
-  useEffect(() => {
-    portfolioModel.events.setActiveView(assetsView);
-    portfolioModel.events.setAccounts(activeShards);
-  }, [assetsView, activeShards]);
 
   return (
     <>
