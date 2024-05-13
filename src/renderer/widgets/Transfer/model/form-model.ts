@@ -698,6 +698,7 @@ export const formModel = {
   $transferForm,
   $proxyWallet,
   $signatories,
+  $txWrappers,
 
   $destinationAccounts,
   $isMyselfXcmEnabled,

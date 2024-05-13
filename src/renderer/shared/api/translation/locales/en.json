@@ -427,6 +427,7 @@
     "yourAccountsLabel": "Here are your accounts"
   },
   "operation": {
+    "saveToBasket": "Save to basket",
     "addCallDataButton": "Add call data",
     "advanced": "Advanced",
     "approveButton": "Approve",

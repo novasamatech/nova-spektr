@@ -653,6 +653,7 @@ export const formModel = {
   $unstakeForm,
   $proxyWallet,
   $signatories,
+  $txWrappers,
 
   $accounts,
   $accountsBalances,

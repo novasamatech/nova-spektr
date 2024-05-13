@@ -10,6 +10,7 @@ import { AssetFiatBalance } from '@entities/price/ui/AssetFiatBalance';
 import { confirmModel } from '../model/confirm-model';
 import { AccountsModal } from '@entities/staking';
 import { useToggle } from '@shared/lib/hooks';
+import { withdrawModel } from '../model/withdraw-model';
 
 type Props = {
   onGoBack: () => void;
@@ -187,7 +188,13 @@ export const Confirmation = ({ onGoBack }: Props) => {
             {t('operation.goBackButton')}
           </Button>
 
-          <SignButton type={(signerWallet || initiatorWallet).type} onClick={confirmModel.output.formSubmitted} />
+          <div className="flex gap-4">
+            <Button pallet="secondary" onClick={() => withdrawModel.events.txSaved()}>
+              {t('operation.saveToBasket')}
+            </Button>
+
+            <SignButton type={(signerWallet || initiatorWallet).type} onClick={confirmModel.output.formSubmitted} />
+          </div>
         </div>
       </div>
 

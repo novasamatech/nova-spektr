@@ -12,6 +12,7 @@ import { AccountsModal, StakingPopover, UnstakingDuration, SelectedValidatorsMod
 import { useToggle } from '@shared/lib/hooks';
 import { FeeLoader } from '@entities/transaction';
 import { priceProviderModel } from '@entities/price';
+import { bondNominateModel } from '../model/bond-nominate-model';
 
 type Props = {
   onGoBack: () => void;
@@ -247,11 +248,17 @@ export const Confirmation = ({ onGoBack }: Props) => {
             {t('operation.goBackButton')}
           </Button>
 
-          <SignButton
-            disabled={isFeeLoading}
-            type={(signerWallet || initiatorWallet).type}
-            onClick={confirmModel.output.formSubmitted}
-          />
+          <div className="flex gap-4">
+            <Button pallet="secondary" onClick={() => bondNominateModel.events.txSaved()}>
+              {t('operation.saveToBasket')}
+            </Button>
+
+            <SignButton
+              disabled={isFeeLoading}
+              type={(signerWallet || initiatorWallet).type}
+              onClick={confirmModel.output.formSubmitted}
+            />
+          </div>
         </div>
       </div>
 

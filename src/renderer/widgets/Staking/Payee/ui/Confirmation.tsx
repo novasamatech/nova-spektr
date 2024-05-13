@@ -11,6 +11,7 @@ import { AccountsModal } from '@entities/staking';
 import { useToggle } from '@shared/lib/hooks';
 import { FeeLoader } from '@entities/transaction';
 import { priceProviderModel } from '@entities/price';
+import { payeeModel } from '../model/payee-model';
 
 type Props = {
   onGoBack: () => void;
@@ -201,11 +202,17 @@ export const Confirmation = ({ onGoBack }: Props) => {
             {t('operation.goBackButton')}
           </Button>
 
-          <SignButton
-            disabled={isFeeLoading}
-            type={(signerWallet || initiatorWallet).type}
-            onClick={confirmModel.output.formSubmitted}
-          />
+          <div className="flex gap-4">
+            <Button pallet="secondary" onClick={() => payeeModel.events.txSaved()}>
+              {t('operation.saveToBasket')}
+            </Button>
+
+            <SignButton
+              disabled={isFeeLoading}
+              type={(signerWallet || initiatorWallet).type}
+              onClick={confirmModel.output.formSubmitted}
+            />
+          </div>
         </div>
       </div>
 

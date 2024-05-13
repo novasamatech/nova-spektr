@@ -70,3 +70,5 @@ export type { Notification, MultisigInvite, MultisigOperation, ProxyAction } fro
 export { NotificationType } from './types/notification';
 
 export { XcmPallets } from './types/substrate';
+
+export type { BasketTransaction } from './types/basket';

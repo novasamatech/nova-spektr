@@ -10,6 +10,8 @@ import { Step, TransferStore, NetworkStore } from '../lib/types';
 import { formModel } from './form-model';
 import { confirmModel } from './confirm-model';
 import { transferUtils } from '../lib/transfer-utils';
+import { BasketTransaction } from '@/src/renderer/shared/core';
+import { basketModel } from '@/src/renderer/entities/basket/model/basket-model';
 
 const $navigation = createStore<{ navigate: NavigateFunction } | null>(null);
 const navigationApi = createApi($navigation, {
@@ -20,6 +22,7 @@ const stepChanged = createEvent<Step>();
 
 const flowStarted = createEvent<NetworkStore>();
 const flowFinished = createEvent();
+const txSaved = createEvent();
 
 const $step = createStore<Step>(Step.NONE);
 
@@ -161,11 +164,39 @@ sample({
   }),
 });
 
+sample({
+  clock: txSaved,
+  source: {
+    transferStore: $transferStore,
+    coreTx: $coreTx,
+    txWrappers: formModel.$txWrappers,
+  },
+  filter: ({ transferStore, coreTx, txWrappers }: any) =>
+    Boolean(transferStore) && Boolean(coreTx) && Boolean(txWrappers),
+  fn: ({ transferStore, coreTx, txWrappers }) => {
+    const tx = {
+      initiatorWallet: transferStore!.account.walletId,
+      coreTx,
+      txWrappers,
+    } as BasketTransaction;
+
+    return [tx];
+  },
+  target: basketModel.events.transactionsCreated,
+});
+
+sample({
+  clock: txSaved,
+  fn: () => Step.NONE,
+  target: [stepChanged, formModel.events.formCleared],
+});
+
 export const transferModel = {
   $step,
   $xcmChain,
   events: {
     flowStarted,
+    txSaved,
     stepChanged,
     navigateApiChanged: navigationApi.navigateApiChanged,
   },

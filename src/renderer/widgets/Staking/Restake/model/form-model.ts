@@ -651,6 +651,7 @@ export const formModel = {
   $restakeForm,
   $proxyWallet,
   $signatories,
+  $txWrappers,
 
   $accounts,
   $accountsBalances,

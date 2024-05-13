@@ -9,11 +9,14 @@ import { formModel } from './form-model';
 import { confirmModel } from './confirm-model';
 import { nonNullable, getRelaychainAsset } from '@shared/lib/utils';
 import { restakeUtils } from '../lib/restake-utils';
+import { basketModel } from '@/src/renderer/entities/basket/model/basket-model';
+import { BasketTransaction } from '@/src/renderer/shared/core';
 
 const stepChanged = createEvent<Step>();
 
 const flowStarted = createEvent<NetworkStore>();
 const flowFinished = createEvent();
+const txSaved = createEvent();
 
 const $step = createStore<Step>(Step.NONE);
 
@@ -140,12 +143,44 @@ sample({
   target: [stepChanged, formModel.events.formCleared],
 });
 
+sample({
+  clock: txSaved,
+  source: {
+    store: $restakeStore,
+    coreTxs: $coreTxs,
+    txWrappers: formModel.$txWrappers,
+  },
+  filter: ({ store, coreTxs, txWrappers }: any) => {
+    return Boolean(store) && Boolean(coreTxs) && Boolean(txWrappers);
+  },
+  fn: ({ store, coreTxs, txWrappers }) => {
+    const txs = coreTxs!.map(
+      (coreTx) =>
+        ({
+          initiatorWallet: store!.shards[0].walletId,
+          coreTx,
+          txWrappers,
+        } as BasketTransaction),
+    );
+
+    return txs;
+  },
+  target: basketModel.events.transactionsCreated,
+});
+
+sample({
+  clock: txSaved,
+  fn: () => Step.NONE,
+  target: [stepChanged, formModel.events.formCleared],
+});
+
 export const restakeModel = {
   $step,
   $networkStore,
   events: {
     flowStarted,
     stepChanged,
+    txSaved,
   },
   output: {
     flowFinished,

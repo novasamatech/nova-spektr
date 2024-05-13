@@ -8,7 +8,7 @@ import { getRelaychainAsset, nonNullable } from '@shared/lib/utils';
 import { networkModel } from '@entities/network';
 import { submitModel } from '@features/operations/OperationSubmit';
 import { signModel } from '@features/operations/OperationSign/model/sign-model';
-import type { Account } from '@shared/core';
+import type { Account, BasketTransaction } from '@shared/core';
 import { Step, PayeeData, WalletData, FeeData } from '../lib/types';
 import { payeeUtils } from '../lib/payee-utils';
 import { formModel } from './form-model';
@@ -22,11 +22,13 @@ import {
   MultisigTxWrapper,
   ProxyTxWrapper,
 } from '@entities/transaction';
+import { basketModel } from '@/src/renderer/entities/basket/model/basket-model';
 
 const stepChanged = createEvent<Step>();
 
 const flowStarted = createEvent<WalletData>();
 const flowFinished = createEvent();
+const txSaved = createEvent();
 
 const $step = createStore<Step>(Step.NONE);
 
@@ -324,12 +326,44 @@ sample({
   target: [stepChanged, formModel.events.formCleared],
 });
 
+sample({
+  clock: txSaved,
+  source: {
+    store: $walletData,
+    coreTxs: $pureTxs,
+    txWrappers: $txWrappers,
+  },
+  filter: ({ store, coreTxs, txWrappers }: any) => {
+    return Boolean(store) && Boolean(coreTxs) && Boolean(txWrappers);
+  },
+  fn: ({ store, coreTxs, txWrappers }) => {
+    const txs = coreTxs!.map(
+      (coreTx) =>
+        ({
+          initiatorWallet: store!.wallet.id,
+          coreTx,
+          txWrappers,
+        } as BasketTransaction),
+    );
+
+    return txs;
+  },
+  target: basketModel.events.transactionsCreated,
+});
+
+sample({
+  clock: txSaved,
+  fn: () => Step.NONE,
+  target: [stepChanged, formModel.events.formCleared],
+});
+
 export const payeeModel = {
   $step,
   $walletData,
   events: {
     flowStarted,
     stepChanged,
+    txSaved,
   },
   output: {
     flowFinished,

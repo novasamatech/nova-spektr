@@ -620,6 +620,7 @@ export const formModel = {
   $withdrawForm,
   $proxyWallet,
   $signatories,
+  $txWrappers,
 
   $accounts,
   $accountsBalances,
