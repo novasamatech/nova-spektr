@@ -1,14 +1,12 @@
 import { createEffect, createEvent, createStore, sample } from 'effector';
 import { once } from 'patronum';
 
-import { Account, AccountId, Balance, Chain, ChainId, TokenAsset, TokenBalance, Wallet } from '@shared/core';
-import { ZERO_BALANCE, totalAmount } from '@shared/lib/utils';
+import { Account, Balance, Chain, ChainId, TokenAsset, Wallet } from '@shared/core';
 import { networkModel, networkUtils } from '@entities/network';
 import { accountUtils, walletModel, walletUtils } from '@entities/wallet';
 import { AssetsListView } from '@entities/asset';
-import { balanceModel, balanceUtils } from '@entities/balance';
-import { sumTokenBalances, tokensService } from '../lib/tokensService';
-import { AssetChain } from '../lib/types';
+import { balanceModel } from '@entities/balance';
+import { tokensService } from '../lib/tokensService';
 
 const activeViewSet = createEvent<AssetsListView>();
 const accountsSet = createEvent<Account[]>();
@@ -56,38 +54,15 @@ const populateTokensBalanceFx = createEffect(
     hideZeroBalances: boolean;
   }): TokenAsset[] => {
     return activeTokens.reduce((acc, token) => {
-      let totalBalance = {} as TokenBalance;
-      const chainWithBalance = token.chains.reduce((acc, chain) => {
-        const selectedAccountIds = accounts.reduce<AccountId[]>((acc, account) => {
-          if (accountUtils.isChainIdMatch(account, chain.chainId)) {
-            acc.push(account.accountId);
-          }
+      const [chainsWithBalance, totalBalance] = tokensService.getChainWithBalance(
+        balances,
+        token.chains,
+        hideZeroBalances,
+        accounts,
+      );
 
-          return acc;
-        }, []);
-
-        const accountsBalance = balanceUtils.getAssetBalances(
-          balances,
-          selectedAccountIds,
-          chain.chainId,
-          chain.assetId.toString(),
-        );
-
-        const assetBalance = accountsBalance.reduce<TokenBalance>((acc, balance) => {
-          return sumTokenBalances(balance, acc);
-        }, {} as Balance);
-
-        totalBalance = sumTokenBalances(assetBalance, totalBalance);
-
-        if (!hideZeroBalances || assetBalance.verified === false || totalAmount(assetBalance) !== ZERO_BALANCE) {
-          acc.push({ ...chain, balance: assetBalance });
-        }
-
-        return acc;
-      }, [] as AssetChain[]);
-
-      if (chainWithBalance.length > 0) {
-        acc.push({ ...token, chains: chainWithBalance, totalBalance });
+      if (chainsWithBalance.length > 0) {
+        acc.push({ ...token, chains: chainsWithBalance, totalBalance });
       }
 
       return acc;
@@ -163,7 +138,7 @@ sample({
 });
 
 sample({
-  clock: [balanceModel.$balances, $accounts, $tokens, $hideZeroBalances],
+  clock: [balanceModel.$balances, networkModel.$connections, $accounts, $tokens, $hideZeroBalances],
   source: {
     activeView: $activeView,
     activeTokens: $activeTokens,
