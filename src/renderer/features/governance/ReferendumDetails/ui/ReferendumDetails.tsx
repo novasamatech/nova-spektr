@@ -18,6 +18,7 @@ export const ReferendumDetails = () => {
           className="flex flex-col gap-y-1 basis-[678px] text-footnote"
           dangerouslySetInnerHTML={{ __html: details }}
         />
+        {/* eslint-disable-next-line i18next/no-literal-string */}
         <div className="flex flex-col gap-y-4 basis-[350px]">on-chain details</div>
       </div>
     </BaseModal>

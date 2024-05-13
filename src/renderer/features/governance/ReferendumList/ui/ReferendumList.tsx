@@ -14,6 +14,7 @@ export const ReferendumList = () => {
           <div className="flex justify-between">
             <div>
               <FootnoteText>#{referendum.index}</FootnoteText>
+              {/* eslint-disable-next-line i18next/no-literal-string */}
               <button onClick={() => referendumListModel.events.referendumSelected(referendum.index)}>select</button>
             </div>
             <FootnoteText>{referendumsDetails?.[referendum.index] || '...'}</FootnoteText>
