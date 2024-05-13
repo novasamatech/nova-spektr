@@ -19,13 +19,14 @@ import { Step, RemoveProxyStore } from '../lib/types';
 import { formModel } from './form-model';
 import { confirmModel } from './confirm-model';
 import { walletProviderModel } from '../../WalletDetails/model/wallet-provider-model';
-import { Account, Chain, ProxiedAccount, ProxyAccount, ProxyType, ProxyVariant } from '@shared/core';
+import { Account, BasketTransaction, Chain, ProxiedAccount, ProxyAccount, ProxyType, ProxyVariant } from '@shared/core';
 import { warningModel } from './warning-model';
 import { proxyModel } from '@entities/proxy';
 import { signModel } from '@features/operations/OperationSign/model/sign-model';
 import { submitModel } from '@features/operations/OperationSubmit';
 import { balanceModel, balanceUtils } from '@entities/balance';
 import { removePureProxyUtils } from '../lib/remove-pure-proxy-utils';
+import { basketModel } from '@entities/basket/model/basket-model';
 
 const stepChanged = createEvent<Step>();
 const wentBackFromConfirm = createEvent();
@@ -37,6 +38,7 @@ type Input = {
 };
 const flowStarted = createEvent<Input>();
 const flowFinished = createEvent();
+const txSaved = createEvent();
 
 const $step = createStore<Step>(Step.NONE);
 
@@ -445,6 +447,33 @@ sample({
 });
 
 sample({
+  clock: txSaved,
+  source: {
+    store: $removeProxyStore,
+    coreTx: $coreTx,
+    txWrappers: $txWrappers,
+  },
+  filter: ({ store, coreTx, txWrappers }: any) => {
+    return Boolean(store) && Boolean(coreTx) && Boolean(txWrappers);
+  },
+  fn: ({ store, coreTx, txWrappers }) => {
+    const tx = {
+      initiatorWallet: store!.account.walletId,
+      coreTx,
+      txWrappers,
+    } as BasketTransaction;
+
+    return [tx];
+  },
+  target: basketModel.events.transactionsCreated,
+});
+
+sample({
+  clock: txSaved,
+  target: flowFinished,
+});
+
+sample({
   clock: delay(submitModel.output.formSubmitted, 2000),
   source: $step,
   filter: (step) => removePureProxyUtils.isSubmitStep(step),
@@ -484,6 +513,7 @@ export const removePureProxyModel = {
     flowStarted,
     stepChanged,
     wentBackFromConfirm,
+    txSaved,
   },
   output: {
     flowFinished,

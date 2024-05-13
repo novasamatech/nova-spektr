@@ -689,6 +689,7 @@ export const formModel = {
   $proxyTypes,
   $proxyQuery,
   $proxyWallet,
+  $txWrappers,
 
   $activeProxies,
   $oldProxyDeposit,

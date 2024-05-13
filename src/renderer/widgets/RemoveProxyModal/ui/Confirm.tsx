@@ -9,6 +9,7 @@ import { AddressWithExplorers, WalletIcon, accountUtils, ExplorersPopover, Walle
 import { proxyUtils } from '@entities/proxy';
 import { confirmModel } from '../model/confirm-model';
 import { toAddress } from '@shared/lib/utils';
+import { removeProxyModel } from '../model/remove-proxy-model';
 
 type Props = {
   onGoBack: () => void;
@@ -147,11 +148,17 @@ export const Confirmation = ({ onGoBack }: Props) => {
           {t('operation.goBackButton')}
         </Button>
 
-        <SignButton
-          disabled={isFeeLoading}
-          type={(signerWallet || initiatorWallet)?.type}
-          onClick={confirmModel.output.formSubmitted}
-        />
+        <div className="flex gap-4">
+          <Button pallet="secondary" onClick={() => removeProxyModel.events.txSaved()}>
+            {t('operation.saveToBasket')}
+          </Button>
+
+          <SignButton
+            disabled={isFeeLoading}
+            type={(signerWallet || initiatorWallet)?.type}
+            onClick={confirmModel.output.formSubmitted}
+          />
+        </div>
       </div>
     </div>
   );

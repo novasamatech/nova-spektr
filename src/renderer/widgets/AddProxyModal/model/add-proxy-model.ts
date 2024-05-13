@@ -12,12 +12,15 @@ import { Step, AddProxyStore } from '../lib/types';
 import { formModel } from './form-model';
 import { confirmModel } from './confirm-model';
 import { addProxyUtils } from '../lib/add-proxy-utils';
+import { BasketTransaction } from '@shared/core';
+import { basketModel } from '@entities/basket/model/basket-model';
 
 const stepChanged = createEvent<Step>();
 
 const flowStarted = createEvent();
 const flowFinished = createEvent();
 const flowClosed = createEvent();
+const txSaved = createEvent();
 
 const $step = createStore<Step>(Step.NONE);
 
@@ -160,6 +163,33 @@ sample({
 });
 
 sample({
+  clock: txSaved,
+  source: {
+    store: $addProxyStore,
+    coreTx: $coreTx,
+    txWrappers: formModel.$txWrappers,
+  },
+  filter: ({ store, coreTx, txWrappers }: any) => {
+    return Boolean(store) && Boolean(coreTx) && Boolean(txWrappers);
+  },
+  fn: ({ store, coreTx, txWrappers }) => {
+    const tx = {
+      initiatorWallet: store!.account.walletId,
+      coreTx,
+      txWrappers,
+    } as BasketTransaction;
+
+    return [tx];
+  },
+  target: basketModel.events.transactionsCreated,
+});
+
+sample({
+  clock: txSaved,
+  target: flowFinished,
+});
+
+sample({
   clock: [flowFinished, flowClosed],
   fn: () => Step.NONE,
   target: stepChanged,
@@ -171,6 +201,7 @@ export const addProxyModel = {
   events: {
     flowStarted,
     stepChanged,
+    txSaved,
   },
   output: {
     flowFinished,

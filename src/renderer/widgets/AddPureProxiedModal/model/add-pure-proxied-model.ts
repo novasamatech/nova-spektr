@@ -16,6 +16,7 @@ import {
   ProxyVariant,
   Timepoint,
   Account,
+  BasketTransaction,
 } from '@shared/core';
 import { proxyModel, proxyUtils } from '@entities/proxy';
 import { networkModel } from '@entities/network';
@@ -28,11 +29,13 @@ import { confirmModel } from './confirm-model';
 import { subscriptionService } from '@entities/chain';
 import { signModel } from '@features/operations/OperationSign/model/sign-model';
 import { submitModel } from '@features/operations/OperationSubmit';
+import { basketModel } from '@entities/basket/model/basket-model';
 
 const stepChanged = createEvent<Step>();
 
 const flowStarted = createEvent();
 const flowFinished = createEvent();
+const txSaved = createEvent();
 
 const $step = createStore<Step>(Step.NONE);
 
@@ -311,6 +314,33 @@ sample({
 });
 
 sample({
+  clock: txSaved,
+  source: {
+    store: $addProxyStore,
+    coreTx: $coreTx,
+    txWrappers: formModel.$txWrappers,
+  },
+  filter: ({ store, coreTx, txWrappers }: any) => {
+    return Boolean(store) && Boolean(coreTx) && Boolean(txWrappers);
+  },
+  fn: ({ store, coreTx, txWrappers }) => {
+    const tx = {
+      initiatorWallet: store!.account.walletId,
+      coreTx,
+      txWrappers,
+    } as BasketTransaction;
+
+    return [tx];
+  },
+  target: basketModel.events.transactionsCreated,
+});
+
+sample({
+  clock: txSaved,
+  target: flowFinished,
+});
+
+sample({
   clock: delay(getPureProxyFx.doneData, 2000),
   target: flowFinished,
 });
@@ -342,6 +372,7 @@ export const addPureProxiedModel = {
   events: {
     flowStarted,
     stepChanged,
+    txSaved,
   },
   outputs: {
     flowFinished,
