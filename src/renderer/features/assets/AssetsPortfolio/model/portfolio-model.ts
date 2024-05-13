@@ -2,17 +2,21 @@ import { createEffect, createEvent, createStore, sample } from 'effector';
 import { once } from 'patronum';
 
 import { Account, AccountId, Balance, Chain, ChainId, TokenAsset, TokenBalance, Wallet } from '@shared/core';
+import { ZERO_BALANCE, totalAmount } from '@shared/lib/utils';
 import { networkModel, networkUtils } from '@entities/network';
 import { accountUtils, walletModel, walletUtils } from '@entities/wallet';
 import { AssetsListView } from '@entities/asset';
 import { balanceModel, balanceUtils } from '@entities/balance';
 import { sumTokenBalances, tokensService } from '../lib/tokensService';
+import { AssetChain } from '../lib/types';
 
 const activeViewSet = createEvent<AssetsListView>();
 const accountsSet = createEvent<Account[]>();
+const hideZeroBalancesSet = createEvent<boolean>();
 
 const $activeView = createStore<AssetsListView | null>(null);
 const $accounts = createStore<Account[]>([]);
+const $hideZeroBalances = createStore<boolean>(false);
 const $tokens = createStore<TokenAsset[]>([]);
 const $activeTokens = createStore<TokenAsset[]>([]);
 
@@ -44,14 +48,16 @@ const populateTokensBalanceFx = createEffect(
     activeTokens,
     balances,
     accounts,
+    hideZeroBalances,
   }: {
     activeTokens: TokenAsset[];
     balances: Balance[];
     accounts: Account[];
+    hideZeroBalances: boolean;
   }): TokenAsset[] => {
-    return activeTokens.map((token) => {
+    return activeTokens.reduce((acc, token) => {
       let totalBalance = {} as TokenBalance;
-      const chainWithBalance = token.chains.map((chain) => {
+      const chainWithBalance = token.chains.reduce((acc, chain) => {
         const selectedAccountIds = accounts.reduce<AccountId[]>((acc, account) => {
           if (accountUtils.isChainIdMatch(account, chain.chainId)) {
             acc.push(account.accountId);
@@ -73,11 +79,19 @@ const populateTokensBalanceFx = createEffect(
 
         totalBalance = sumTokenBalances(assetBalance, totalBalance);
 
-        return { ...chain, balance: assetBalance };
-      });
+        if (!hideZeroBalances || assetBalance.verified === false || totalAmount(assetBalance) !== ZERO_BALANCE) {
+          acc.push({ ...chain, balance: assetBalance });
+        }
 
-      return { ...token, chains: chainWithBalance, totalBalance };
-    });
+        return acc;
+      }, [] as AssetChain[]);
+
+      if (chainWithBalance.length > 0) {
+        acc.push({ ...token, chains: chainWithBalance, totalBalance });
+      }
+
+      return acc;
+    }, [] as TokenAsset[]);
   },
 );
 
@@ -89,6 +103,10 @@ sample({
 sample({
   clock: accountsSet,
   target: $accounts,
+});
+sample({
+  clock: hideZeroBalancesSet,
+  target: $hideZeroBalances,
 });
 
 sample({
@@ -110,7 +128,7 @@ sample({
 });
 
 sample({
-  clock: [networkModel.$connections, $tokens],
+  clock: [networkModel.$connections, $tokens, $hideZeroBalances],
   source: {
     activeView: $activeView,
     activeWallet: walletModel.$activeWallet,
@@ -145,12 +163,13 @@ sample({
 });
 
 sample({
-  clock: [balanceModel.$balances, $accounts, $tokens],
+  clock: [balanceModel.$balances, $accounts, $tokens, $hideZeroBalances],
   source: {
     activeView: $activeView,
     activeTokens: $activeTokens,
     accounts: $accounts,
     balances: balanceModel.$balances,
+    hideZeroBalances: $hideZeroBalances,
   },
   filter: ({ activeView, balances }) => {
     return Boolean(activeView === AssetsListView.TOKEN_CENTRIC && balances.length > 0);
@@ -165,10 +184,9 @@ sample({
 
 export const portfolioModel = {
   $activeTokens,
-  $activeView,
-  $accounts,
   events: {
     activeViewSet,
     accountsSet,
+    hideZeroBalancesSet,
   },
 };
