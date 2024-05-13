@@ -104,10 +104,6 @@ sample({
   target: getVotesFx,
 });
 
-getVotesFx.doneData.watch((x) => {
-  console.log('=== votes', x);
-});
-
 sample({
   clock: referendumSelected,
   source: $chainId,
