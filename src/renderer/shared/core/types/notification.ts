@@ -22,7 +22,6 @@ type BaseNotification = {
 type MultisigBaseNotification = BaseNotification & {
   multisigAccountId: AccountId;
   originatorAccountId: AccountId;
-  smpRoomId: string;
 };
 
 export type MultisigInvite = MultisigBaseNotification & {

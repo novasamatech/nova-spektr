@@ -46,7 +46,7 @@ module.exports = {
     icon: `${FOLDERS.RESOURCES}/icons/icon.png`,
     category: 'Finance',
     target: ['AppImage'],
-    artifactName: "Nova-Spektr-${version}_x86_64.AppImage",
+    artifactName: 'Nova-Spektr-${version}_x86_64.AppImage',
     desktop: {
       mimeTypes: [`x-scheme-handler/${ELECTRON_PROTOCOL}`],
       exec: `${ELECTRON_PROTOCOL} %U`,
