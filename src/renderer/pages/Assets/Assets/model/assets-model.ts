@@ -1,11 +1,19 @@
+import { once } from 'patronum';
 import { createEvent, sample, createStore } from 'effector';
 
 import type { Account, Wallet } from '@shared/core';
 import { walletModel, accountUtils, walletUtils } from '@entities/wallet';
+import { portfolioModel, assetsSettingsModel } from '@features/assets';
 
 const activeShardsSet = createEvent<Account[]>();
 
 const $activeShards = createStore<Account[]>([]);
+
+sample({
+  clock: [assetsSettingsModel.$assetsView, once(assetsSettingsModel.events.assetsStarted)],
+  source: assetsSettingsModel.$assetsView,
+  target: portfolioModel.events.setActiveView,
+});
 
 sample({
   clock: activeShardsSet,
@@ -28,6 +36,11 @@ sample({
     return wallet.accounts.filter((account) => !accountUtils.isBaseAccount(account));
   },
   target: $activeShards,
+});
+
+sample({
+  clock: $activeShards,
+  target: portfolioModel.events.setAccounts,
 });
 
 export const assetsModel = {
