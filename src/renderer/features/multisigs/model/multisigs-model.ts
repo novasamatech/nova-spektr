@@ -22,7 +22,7 @@ import { MultisigResult, multisigService } from '@entities/multisig';
 import { multisigUtils } from '../lib/mulitisigs-utils';
 import { isEthereumAccountId, toAddress } from '@shared/lib/utils';
 import { CreateParams } from '@entities/wallet/model/wallet-model';
-import { notificationModel } from '@/src/renderer/entities/notification';
+import { notificationModel } from '@entities/notification';
 
 const multisigsDiscoveryStarted = createEvent();
 const chainConnected = createEvent<ChainId>();
