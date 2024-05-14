@@ -31,7 +31,7 @@ const signatories = [
 jest.mock('@entities/multisig', () => ({
   ...jest.requireActual('@entities/multisig'),
   multisigService: {
-    filterMultisigsAccountIds: jest.fn().mockResolvedValue([
+    filterMultisigsAccounts: jest.fn().mockResolvedValue([
       {
         accountId: '0x00',
         threshold: 2,
@@ -42,12 +42,16 @@ jest.mock('@entities/multisig', () => ({
 }));
 
 describe('features/multisigs/model/multisigs-model', () => {
+  beforeEach(() => {
+    jest.restoreAllMocks();
+  });
+
   test('should create multisigs', async () => {
     const multisigCreation = jest.spyOn(walletModel.events, 'multisigCreated');
 
     const newMultisig = {
       wallet: {
-        name: `Detected msig F7Hs...`,
+        name: 'F7Hs',
         type: WalletType.MULTISIG,
         signingType: SigningType.MULTISIG,
       },
@@ -59,7 +63,7 @@ describe('features/multisigs/model/multisigs-model', () => {
             accountId,
             address,
           })),
-          name: `Detected msig F7Hs`,
+          name: 'F7Hs',
           chainId: '0x01',
           cryptoType: CryptoType.SR25519,
           chainType: ChainType.SUBSTRATE,
@@ -98,7 +102,7 @@ describe('features/multisigs/model/multisigs-model', () => {
     expect(multisigCreation).toHaveBeenCalledWith(newMultisig);
   });
 
-  test.only('should not create a multisig we already have', async () => {
+  test('should not create a multisig we already have', async () => {
     const multisigCreation = jest.spyOn(walletModel.events, 'multisigCreated');
 
     const scope = fork({

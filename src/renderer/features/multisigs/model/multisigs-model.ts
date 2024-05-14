@@ -32,7 +32,7 @@ type GetMultisigsParams = {
   accounts: Account[];
 };
 
-type StartChainsProps = {
+type StartChainsParams = {
   chains: Chain[];
   connections: Record<ChainId, Connection>;
 };
@@ -42,11 +42,14 @@ type GetMultisigsResult = {
   indexedMultisigs: MultisigResult[];
 };
 
-const connectChainsFx = createEffect(({ chains, connections }: StartChainsProps) => {
+const connectChainsFx = createEffect(({ chains, connections }: StartChainsParams) => {
   const boundConnected = scopeBind(chainConnected, { safe: true });
 
   chains.forEach((chain) => {
-    if (networkUtils.isDisabledConnection(connections[chain.chainId])) return;
+    if (networkUtils.isDisabledConnection(connections[chain.chainId])) {
+      return;
+    }
+
     boundConnected(chain.chainId);
   });
 });
@@ -58,7 +61,7 @@ const getMultisigsFx = createEffect(async ({ chain, accounts }: GetMultisigsPara
   if (multisigIndexerUrl && accounts.length) {
     const client = new GraphQLClient(multisigIndexerUrl);
 
-    const indexedMultisigs = await multisigService.filterMultisigsAccountIds(
+    const indexedMultisigs = await multisigService.filterMultisigsAccounts(
       client,
       accounts.map((account) => account.accountId),
     );
@@ -128,22 +131,22 @@ sample({
   fn: ({ wallets }, { indexedMultisigs, chain }) => {
     const multisigsToSave = indexedMultisigs.filter((multisigrResult) => {
       // we filter out the multisigs that we already have
-      const sameWallet = walletUtils.getWalletsFilteredAccounts(wallets, {
+      const sameWallet = walletUtils.getWalletFilteredAccounts(wallets, {
         accountFn: (account) => {
           return account.accountId === multisigrResult.accountId;
         },
       });
 
-      const isOwnWalletAlready = sameWallet?.length;
+      const walletAllreadyExist = Boolean(sameWallet);
 
-      return !isOwnWalletAlready;
+      return !walletAllreadyExist;
     });
 
     const walletsToSave = multisigsToSave.map(
       ({ threshold, accountId, signatories }) =>
         ({
           wallet: {
-            name: `Detected msig ${toAddress(accountId).slice(0, 7)}...`,
+            name: toAddress(accountId, { chunk: 5, prefix: chain.addressPrefix }),
             type: WalletType.MULTISIG,
             signingType: SigningType.MULTISIG,
           },
@@ -155,7 +158,7 @@ sample({
                 accountId: signatory,
                 address: toAddress(signatory),
               })),
-              name: `Detected msig ${toAddress(accountId, { chunk: 5, prefix: chain.addressPrefix })}`,
+              name: toAddress(accountId, { chunk: 5, prefix: chain.addressPrefix }),
               chainId: chain.chainId,
               cryptoType: isEthereumAccountId(accountId) ? CryptoType.ETHEREUM : CryptoType.SR25519,
               chainType: ChainType.SUBSTRATE,
@@ -167,7 +170,7 @@ sample({
 
     return walletsToSave;
   },
-  target: [saveMultisigFx],
+  target: saveMultisigFx,
 });
 
 export const multisigsModel = {
