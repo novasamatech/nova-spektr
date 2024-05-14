@@ -1,4 +1,4 @@
-import { TransactionType } from '../../model/transaction';
+import { TransactionType } from '../../../../shared/core/types/transaction';
 import { AssetType } from '@shared/core';
 
 export const MAX_WEIGHT = {

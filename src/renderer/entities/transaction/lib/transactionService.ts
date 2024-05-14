@@ -6,7 +6,7 @@ import { Weight } from '@polkadot/types/interfaces';
 import { blake2AsU8a, signatureVerify } from '@polkadot/util-crypto';
 import { useState } from 'react';
 
-import { Transaction, TransactionType } from '@entities/transaction/model/transaction';
+import { Transaction, TransactionType } from '@shared/core';
 import { createTxMetadata, toAccountId, dictionary } from '@shared/lib/utils';
 import { getExtrinsic, getUnsignedTransaction, wrapAsMulti, wrapAsProxy } from './extrinsicService';
 import type {

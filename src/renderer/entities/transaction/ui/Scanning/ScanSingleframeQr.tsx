@@ -9,7 +9,7 @@ import type { ChainAccount, ChainId, ShardAccount, Wallet, Address, BaseAccount,
 import { CryptoType } from '@shared/core';
 import { QrGeneratorContainer } from '../QrCode/QrGeneratorContainer/QrGeneratorContainer';
 import { QrTxGenerator } from '../QrCode/QrGenerator/QrTxGenerator';
-import { Transaction } from '../../model/transaction';
+import { Transaction } from '../../../../shared/core/types/transaction';
 import { useTransaction } from '../../lib';
 
 type Props = {

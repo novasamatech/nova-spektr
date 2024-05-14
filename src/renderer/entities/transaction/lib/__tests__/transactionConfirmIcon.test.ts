@@ -1,5 +1,5 @@
 import { getIconName } from '../transactionConfirmIcon';
-import { Transaction, TransactionType } from '../../model/transaction';
+import { Transaction, TransactionType } from '../../../../shared/core/types/transaction';
 
 describe('entities/transaction/lib/transactionConfirmIcon', () => {
   test('should get transfer confirm icon for transfer transaction', () => {

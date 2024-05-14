@@ -1,4 +1,4 @@
-import { Transaction, TransactionType } from '../model/transaction';
+import { Transaction, TransactionType } from '../../../shared/core/types/transaction';
 import { TransferType } from './common/constants';
 import { toAddress, TEST_ACCOUNTS, formatAmount, getAssetId } from '@shared/lib/utils';
 import { Chain, ChainId, Asset, AccountId, Address } from '@shared/core';

@@ -6,12 +6,7 @@ import { PendingMultisigTransaction } from './types';
 import { getCreatedDate, toAccountId } from '@shared/lib/utils';
 import { type DecodedTransaction, type ExtrinsicResultParams, TransactionType } from '@entities/transaction';
 import type { MultisigAccount, Address, ChainId } from '@shared/core';
-import {
-  MultisigEvent,
-  MultisigTransaction,
-  MultisigTxInitStatus,
-  Transaction,
-} from '@entities/transaction/model/transaction';
+import { MultisigEvent, MultisigTransaction, MultisigTxInitStatus, Transaction } from '@shared/core';
 
 type MultisigTxResult = {
   transaction: MultisigTransaction;

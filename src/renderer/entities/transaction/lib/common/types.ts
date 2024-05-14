@@ -15,7 +15,7 @@ import type {
   ProxiedAccount,
   Account,
 } from '@shared/core';
-import { DecodedTransaction, Transaction, TransactionType } from '@entities/transaction/model/transaction';
+import { DecodedTransaction, Transaction, TransactionType } from '@shared/core';
 
 // =====================================================
 // =========== ITransactionService interface ===========

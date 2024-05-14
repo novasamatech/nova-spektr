@@ -1,6 +1,6 @@
 import { Table } from 'dexie';
 
-import { MultisigEvent, MultisigTransaction, MultisigTransactionKey } from '@entities/transaction/model/transaction';
+import { MultisigEvent, MultisigTransaction, MultisigTransactionKey } from '@shared/core';
 import type {
   ChainMetadata,
   Contact,

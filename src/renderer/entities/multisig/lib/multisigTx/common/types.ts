@@ -3,7 +3,7 @@ import { U8aFixed } from '@polkadot/types';
 import { PalletMultisigMultisig } from '@polkadot/types/lookup';
 
 import { MultisigTransactionDS } from '@shared/api/storage';
-import { MultisigTransaction } from '@entities/transaction/model/transaction';
+import { MultisigTransaction } from '@shared/core';
 import type { CallData, AccountId, ChainId, CallHash, MultisigAccount } from '@shared/core';
 
 export interface IMultisigTxService {

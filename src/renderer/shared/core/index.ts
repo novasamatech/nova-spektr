@@ -71,4 +71,15 @@ export { NotificationType } from './types/notification';
 
 export { XcmPallets } from './types/substrate';
 
+export { TransactionType, MultisigTxInitStatus, MultisigTxFinalStatus } from './types/transaction';
+export type {
+  Transaction,
+  SigningStatus,
+  MultisigTxStatus,
+  DecodedTransaction,
+  MultisigEvent,
+  MultisigTransaction,
+  MultisigTransactionKey,
+} from './types/transaction';
+
 export type { BasketTransaction } from './types/basket';
