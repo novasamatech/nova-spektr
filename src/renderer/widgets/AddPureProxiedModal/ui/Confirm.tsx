@@ -8,6 +8,7 @@ import { AssetFiatBalance } from '@entities/price/ui/AssetFiatBalance';
 import { confirmModel } from '../model/confirm-model';
 import { SignButton } from '@entities/operations';
 import { addPureProxiedModel } from '../model/add-pure-proxied-model';
+import { basketUtils } from '@features/basket';
 
 type Props = {
   onGoBack: () => void;
@@ -142,9 +143,11 @@ export const Confirm = ({ onGoBack }: Props) => {
         </Button>
 
         <div className="flex gap-4">
-          <Button pallet="secondary" onClick={() => addPureProxiedModel.events.txSaved()}>
-            {t('operation.saveToBasket')}
-          </Button>
+          {basketUtils.isBasketAvailable(initiatorWallet) && (
+            <Button pallet="secondary" onClick={() => addPureProxiedModel.events.txSaved()}>
+              {t('operation.saveToBasket')}
+            </Button>
+          )}
 
           <SignButton type={(signerWallet || initiatorWallet).type} onClick={confirmModel.output.formSubmitted} />
         </div>

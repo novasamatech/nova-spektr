@@ -11,6 +11,7 @@ import { confirmModel } from '../model/confirm-model';
 import { toAddress } from '@shared/lib/utils';
 import { ProxyType } from '@shared/core';
 import { removePureProxyModel } from '../model/remove-pure-proxy-model';
+import { basketUtils } from '@features/basket';
 
 type Props = {
   onGoBack: () => void;
@@ -150,9 +151,11 @@ export const Confirmation = ({ onGoBack }: Props) => {
         </Button>
 
         <div className="flex gap-4">
-          <Button pallet="secondary" onClick={() => removePureProxyModel.events.txSaved()}>
-            {t('operation.saveToBasket')}
-          </Button>
+          {basketUtils.isBasketAvailable(initiatorWallet) && (
+            <Button pallet="secondary" onClick={() => removePureProxyModel.events.txSaved()}>
+              {t('operation.saveToBasket')}
+            </Button>
+          )}
 
           <SignButton
             disabled={isFeeLoading}

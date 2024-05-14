@@ -13,6 +13,7 @@ import { useToggle } from '@shared/lib/hooks';
 import { FeeLoader } from '@entities/transaction';
 import { priceProviderModel } from '@entities/price';
 import { bondNominateModel } from '../model/bond-nominate-model';
+import { basketUtils } from '@features/basket';
 
 type Props = {
   onGoBack: () => void;
@@ -249,9 +250,11 @@ export const Confirmation = ({ onGoBack }: Props) => {
           </Button>
 
           <div className="flex gap-4">
-            <Button pallet="secondary" onClick={() => bondNominateModel.events.txSaved()}>
-              {t('operation.saveToBasket')}
-            </Button>
+            {basketUtils.isBasketAvailable(initiatorWallet) && (
+              <Button pallet="secondary" onClick={() => bondNominateModel.events.txSaved()}>
+                {t('operation.saveToBasket')}
+              </Button>
+            )}
 
             <SignButton
               disabled={isFeeLoading}

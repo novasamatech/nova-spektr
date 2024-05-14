@@ -11,6 +11,7 @@ import { confirmModel } from '../model/confirm-model';
 import { AccountsModal, StakingPopover } from '@entities/staking';
 import { useToggle } from '@shared/lib/hooks';
 import { restakeModel } from '../model/restake-model';
+import { basketUtils } from '@features/basket';
 
 type Props = {
   onGoBack: () => void;
@@ -192,9 +193,11 @@ export const Confirmation = ({ onGoBack }: Props) => {
           </Button>
 
           <div className="flex gap-4">
-            <Button pallet="secondary" onClick={() => restakeModel.events.txSaved()}>
-              {t('operation.saveToBasket')}
-            </Button>
+            {basketUtils.isBasketAvailable(initiatorWallet) && (
+              <Button pallet="secondary" onClick={() => restakeModel.events.txSaved()}>
+                {t('operation.saveToBasket')}
+              </Button>
+            )}
 
             <SignButton type={(signerWallet || initiatorWallet).type} onClick={confirmModel.output.formSubmitted} />
           </div>
