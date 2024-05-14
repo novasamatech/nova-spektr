@@ -82,7 +82,7 @@ describe('features/multisigs/model/multisigs-model', () => {
     });
 
     await allSettled(multisigsModel.events.multisigsDiscoveryStarted, { scope });
-    await allSettled(networkModel.$connections, {
+    const action = await allSettled(networkModel.$connections, {
       scope,
       params: {
         '0x01': {
@@ -93,6 +93,9 @@ describe('features/multisigs/model/multisigs-model', () => {
         },
       },
     });
+
+    await jest.runAllTimersAsync();
+    await action;
 
     expect(multisigCreation).toHaveBeenCalledWith(newMultisig);
   });
@@ -116,7 +119,7 @@ describe('features/multisigs/model/multisigs-model', () => {
     });
 
     await allSettled(multisigsModel.events.multisigsDiscoveryStarted, { scope });
-    await allSettled(networkModel.$connections, {
+    const action = await allSettled(networkModel.$connections, {
       scope,
       params: {
         '0x01': {
@@ -127,6 +130,9 @@ describe('features/multisigs/model/multisigs-model', () => {
         },
       },
     });
+
+    await jest.runAllTimersAsync();
+    await action;
 
     expect(multisigCreation).not.toHaveBeenCalled();
   });
