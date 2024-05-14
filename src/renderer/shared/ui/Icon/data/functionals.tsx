@@ -69,6 +69,7 @@ import EditKeysImg, { ReactComponent as EditKeysSvg } from '@shared/assets/image
 import MoreImg, { ReactComponent as MoreSvg } from '@shared/assets/images/functionals/more.svg';
 import RenameImg, { ReactComponent as RenameSvg } from '@shared/assets/images/functionals/rename.svg';
 import ForgetImg, { ReactComponent as ForgetSvg } from '@shared/assets/images/functionals/forget.svg';
+import UpdateImg, { ReactComponent as UpdateSvg } from '@shared/assets/images/functionals/update.svg';
 
 const FunctionalImages = {
   copy: { svg: CopySvg, img: CopyImg },
@@ -120,6 +121,7 @@ const FunctionalImages = {
   more: { img: MoreImg, svg: MoreSvg },
   rename: { img: RenameImg, svg: RenameSvg },
   forget: { img: ForgetImg, svg: ForgetSvg },
+  update: { svg: UpdateSvg, img: UpdateImg },
 } as const;
 
 export type Functional = keyof typeof FunctionalImages;
