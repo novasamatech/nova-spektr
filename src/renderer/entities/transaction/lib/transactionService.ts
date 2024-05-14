@@ -5,6 +5,7 @@ import { hexToU8a } from '@polkadot/util';
 import { construct, UnsignedTransaction } from '@substrate/txwrapper-polkadot';
 import { Weight } from '@polkadot/types/interfaces';
 import { blake2AsU8a, signatureVerify } from '@polkadot/util-crypto';
+import type { Signer, SignerResult } from '@polkadot/api/types';
 
 import { Transaction, TransactionType } from '@entities/transaction/model/transaction';
 import { createTxMetadata, toAccountId, dictionary } from '@shared/lib/utils';
@@ -12,7 +13,6 @@ import { getExtrinsic, getUnsignedTransaction, wrapAsMulti, wrapAsProxy } from '
 import { decodeDispatchError } from './common/utils';
 import { useCallDataDecoder } from './callDataDecoder';
 import { walletUtils } from '../../wallet';
-import { RawSigner } from './RawSigner';
 import type {
   AccountId,
   Address,
@@ -49,6 +49,14 @@ export const transactionService = {
   getWrappedTransaction,
 };
 
+function createRawSigner(signature: HexString): Signer {
+  return {
+    signRaw: async (data: any): Promise<SignerResult> => {
+      return { id: 1, signature };
+    },
+  };
+}
+
 const shouldWrapAsMulti = (wrapper: TxWrappers_OLD): wrapper is WrapAsMulti =>
   'signatoryId' in wrapper && 'account' in wrapper;
 
@@ -71,7 +79,7 @@ async function signAndSubmit(
 
   const options: Partial<SignerOptions> = {
     era: api.registry.createType('ExtrinsicEra', unsigned.era),
-    signer: new RawSigner(signature),
+    signer: createRawSigner(signature),
     assetId: unsigned.assetId,
     tip: unsigned.tip,
     nonce: unsigned.nonce,
