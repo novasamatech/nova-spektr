@@ -123,6 +123,7 @@ const sharedConfig: Configuration = {
       'process.env.VERSION': JSON.stringify(APP_CONFIG.VERSION),
       'process.env.BUILD_SOURCE': JSON.stringify(process.env.BUILD_SOURCE),
       'process.env.CHAINS_FILE': JSON.stringify(process.env.CHAINS_FILE),
+      'process.env.TOKENS_FILE': JSON.stringify(process.env.TOKENS_FILE),
     }),
   ],
 };
