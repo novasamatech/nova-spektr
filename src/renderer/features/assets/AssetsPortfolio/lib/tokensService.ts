@@ -2,7 +2,7 @@ import tokensProd from '@shared/config/tokens/tokens.json';
 import tokensDev from '@shared/config/tokens/tokens_dev.json';
 import { sumValues } from '@shared/api/network/service/chainsService';
 import type { Account, AccountId, Balance, ChainId, TokenAsset, TokenBalance } from '@shared/core';
-import { ZERO_BALANCE, totalAmount } from '@shared/lib/utils';
+import { totalAmount, ZERO_BALANCE } from '@shared/lib/utils';
 import { balanceUtils } from '@entities/balance';
 import { accountUtils } from '@entities/wallet';
 import { AssetChain } from './types';
@@ -18,12 +18,8 @@ export const tokensService = {
   sumTokenBalances,
 };
 
-// TODO change to prod and dev files
 function getTokensData(): TokenAsset[] {
-  // const tokens = TOKENS[process.env.TOKENS_FILE || 'tokens'];
-  const tokens = TOKENS['tokens-dev'];
-
-  return tokens;
+  return TOKENS[process.env.TOKENS_FILE || 'tokens'];
 }
 
 function sumTokenBalances(firstBalance: TokenBalance, secondBalance?: TokenBalance | null): TokenBalance {
