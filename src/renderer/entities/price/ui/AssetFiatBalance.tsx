@@ -7,10 +7,10 @@ import { currencyModel } from '../model/currency-model';
 import { formatFiatBalance, ZERO_BALANCE } from '@shared/lib/utils';
 import { FiatBalance } from './FiatBalance';
 import { useI18n } from '@app/providers';
-import type { Asset, TokenAsset } from '@shared/core';
+import type { Asset, AssetByChains } from '@shared/core';
 
 type Props = {
-  asset: Asset | TokenAsset;
+  asset: Asset | AssetByChains;
   amount?: string;
   className?: string;
 };

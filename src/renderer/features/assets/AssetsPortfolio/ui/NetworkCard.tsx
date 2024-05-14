@@ -2,7 +2,7 @@ import { useUnit } from 'effector-react';
 
 import { BodyText, FootnoteText, Shimmering } from '@shared/ui';
 import { cnTw, totalAmount } from '@shared/lib/utils';
-import { TokenAsset } from '@shared/core';
+import { AssetByChains } from '@shared/core';
 import { AssetFiatBalance } from '@entities/price/ui/AssetFiatBalance';
 import { priceProviderModel } from '@entities/price';
 import { ChainIcon } from '@entities/chain';
@@ -12,7 +12,7 @@ import { AssetChain } from '../lib/types';
 
 type Props = {
   chain: AssetChain;
-  asset: TokenAsset;
+  asset: AssetByChains;
 };
 
 export const NetworkCard = ({ chain, asset }: Props) => {

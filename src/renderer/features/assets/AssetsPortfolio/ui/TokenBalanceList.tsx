@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 import { useI18n } from '@app/providers';
 import { Icon, Tooltip, Accordion, BodyText, Shimmering, FootnoteText, Plate, HelpText } from '@shared/ui';
 import { cnTw, totalAmount } from '@shared/lib/utils';
-import type { TokenAsset } from '@shared/core';
+import type { AssetByChains } from '@shared/core';
 import { Paths, createLink } from '@shared/routes';
 import { CheckPermission, OperationType, walletModel } from '@entities/wallet';
 import { priceProviderModel, AssetFiatBalance, TokenPrice } from '@entities/price';
@@ -14,7 +14,7 @@ import { ChainIcon } from '@entities/chain';
 import { NetworkCard } from './NetworkCard';
 
 type Props = {
-  asset: TokenAsset;
+  asset: AssetByChains;
 };
 
 export const TokenBalanceList = ({ asset }: Props) => {
@@ -104,7 +104,7 @@ export const TokenBalanceList = ({ asset }: Props) => {
         <Accordion.Content className="mt-1">
           <ul className="flex flex-col gap-y-1.5 pl-6">
             {asset.chains.map((chain) => (
-              <NetworkCard key={chain.chainId + chain.assetId} chain={chain} asset={asset} />
+              <NetworkCard key={`${chain.chainId}-${chain.assetId}`} chain={chain} asset={asset} />
             ))}
           </ul>
         </Accordion.Content>

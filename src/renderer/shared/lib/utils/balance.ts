@@ -86,7 +86,7 @@ export const formatBalance = (balance = '0', precision = 0): FormattedBalance =>
   };
 };
 
-export const totalAmount = (balance?: Balance | TokenBalance): string => {
+export const totalAmount = <T extends TokenBalance>(balance?: T): string => {
   if (!balance) return ZERO_BALANCE;
 
   const bnFree = new BN(balance.free || ZERO_BALANCE);

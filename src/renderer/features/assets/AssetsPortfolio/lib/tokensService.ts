@@ -1,7 +1,7 @@
 import tokensProd from '@shared/config/tokens/tokens.json';
 import tokensDev from '@shared/config/tokens/tokens_dev.json';
 import { sumValues } from '@shared/api/network/service/chainsService';
-import type { Account, AccountId, Balance, ChainId, TokenAsset, TokenBalance } from '@shared/core';
+import type { Account, AccountId, Balance, ChainId, AssetByChains, TokenBalance } from '@shared/core';
 import { totalAmount, ZERO_BALANCE } from '@shared/lib/utils';
 import { balanceUtils } from '@entities/balance';
 import { accountUtils } from '@entities/wallet';
@@ -18,7 +18,7 @@ export const tokensService = {
   sumTokenBalances,
 };
 
-function getTokensData(): TokenAsset[] {
+function getTokensData(): AssetByChains[] {
   return TOKENS[process.env.TOKENS_FILE || 'tokens'];
 }
 
@@ -33,6 +33,7 @@ function sumTokenBalances(firstBalance: TokenBalance, secondBalance?: TokenBalan
     locked: (firstBalance.locked || []).concat(secondBalance.locked || []),
   };
 }
+
 function getSelectedAccountIds(accounts: Account[], chainId: ChainId): AccountId[] {
   return accounts.reduce<AccountId[]>((acc, account) => {
     if (accountUtils.isChainIdMatch(account, chainId)) {
