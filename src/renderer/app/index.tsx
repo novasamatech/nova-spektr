@@ -16,8 +16,6 @@ import './styles/theme/default.css';
 import '@features/balances';
 import { multisigsModel } from '../features/multisigs';
 
-const MULTISIG_DISCOVERY_TIMEOUT = 30000;
-
 log.variables.version = process.env.VERSION;
 log.variables.env = process.env.NODE_ENV;
 log.transports.console.format = '{y}/{m}/{d} {h}:{i}:{s}.{ms} [{env}#{version}]-{processType} [{level}] > {text}';
@@ -43,7 +41,7 @@ networkModel.events.networkStarted();
 proxyModel.events.proxyStarted();
 assetsSettingsModel.events.assetsStarted();
 notificationModel.events.notificationsStarted();
-setInterval(multisigsModel.events.multisigsDiscoveryStarted, MULTISIG_DISCOVERY_TIMEOUT);
+multisigsModel.events.multisigsDiscoveryStarted();
 
 createRoot(container).render(
   <HashRouter>

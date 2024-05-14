@@ -1,12 +1,9 @@
-import { createEffect, createEvent, sample, scopeBind } from 'effector';
-import { once } from 'patronum';
+import { combine, createEffect, createEvent, sample } from 'effector';
+import { interval } from 'patronum';
 import { GraphQLClient } from 'graphql-request';
 
 import {
-  Account,
   Chain,
-  ChainId,
-  Connection,
   MultisigAccount,
   NotificationType,
   AccountType,
@@ -15,26 +12,32 @@ import {
   ExternalType,
   SigningType,
   WalletType,
+  Wallet,
 } from '@shared/core';
 import { networkModel, networkUtils } from '@entities/network';
 import { accountUtils, walletModel, walletUtils } from '@entities/wallet';
 import { MultisigResult, multisigService } from '@entities/multisig';
-import { multisigUtils } from '../lib/mulitisigs-utils';
 import { isEthereumAccountId, toAddress } from '@shared/lib/utils';
 import { CreateParams } from '@entities/wallet/model/wallet-model';
 import { notificationModel } from '@entities/notification';
+import { multisigUtils } from '../lib/mulitisigs-utils';
+
+const MULTISIG_DISCOVERY_TIMEOUT = 30000;
 
 const multisigsDiscoveryStarted = createEvent();
-const chainConnected = createEvent<ChainId>();
+const multisigSaved = createEvent<GetMultisigsResult>();
+
+const $chainsSupportingMultisigDiscovery = combine(networkModel.$chains, (chains) =>
+  Object.values(chains).filter(
+    (chain) => multisigUtils.isMultisigSupported(chain) && chain.externalApi?.[ExternalType.MULTISIG]?.[0]?.url,
+  ),
+);
+
+$chainsSupportingMultisigDiscovery.watch((c) => console.log('---> C :', c));
 
 type GetMultisigsParams = {
-  chain: Chain;
-  accounts: Account[];
-};
-
-type StartChainsParams = {
   chains: Chain[];
-  connections: Record<ChainId, Connection>;
+  wallets: Wallet[];
 };
 
 type GetMultisigsResult = {
@@ -42,40 +45,36 @@ type GetMultisigsResult = {
   indexedMultisigs: MultisigResult[];
 };
 
-const connectChainsFx = createEffect(({ chains, connections }: StartChainsParams) => {
-  const boundConnected = scopeBind(chainConnected, { safe: true });
-
+const getMultisigsFx = createEffect(({ chains, wallets }: GetMultisigsParams): void => {
   chains.forEach((chain) => {
-    if (networkUtils.isDisabledConnection(connections[chain.chainId])) {
-      return;
+    const accounts = walletUtils.getAccountsBy(wallets, (a) => accountUtils.isChainIdMatch(a, chain.chainId));
+    const multisigIndexerUrl = chain.externalApi?.[ExternalType.MULTISIG]?.[0]?.url;
+    if (multisigIndexerUrl && accounts.length) {
+      const client = new GraphQLClient(multisigIndexerUrl);
+
+      multisigService
+        .filterMultisigsAccounts(
+          client,
+          accounts.map((account) => account.accountId),
+        )
+        .then((indexedMultisigs) => {
+          const multisigsToSave = indexedMultisigs.filter((multisigrResult) => {
+            // we filter out the multisigs that we already have
+            const sameWallet = walletUtils.getWalletFilteredAccounts(wallets, {
+              accountFn: (account) => {
+                return account.accountId === multisigrResult.accountId;
+              },
+            });
+
+            const walletAllreadyExist = Boolean(sameWallet);
+
+            return !walletAllreadyExist;
+          });
+
+          multisigsToSave.length > 0 && multisigSaved({ indexedMultisigs: multisigsToSave, chain });
+        });
     }
-
-    boundConnected(chain.chainId);
   });
-});
-
-const getMultisigsFx = createEffect(async ({ chain, accounts }: GetMultisigsParams): Promise<GetMultisigsResult> => {
-  const multisigIndexerUrl =
-    networkUtils.isMultisigSupported(chain.options) && chain.externalApi?.[ExternalType.MULTISIG]?.[0]?.url;
-
-  if (multisigIndexerUrl && accounts.length) {
-    const client = new GraphQLClient(multisigIndexerUrl);
-
-    const indexedMultisigs = await multisigService.filterMultisigsAccounts(
-      client,
-      accounts.map((account) => account.accountId),
-    );
-
-    return {
-      indexedMultisigs,
-      chain,
-    };
-  }
-
-  return {
-    indexedMultisigs: [],
-    chain,
-  };
 });
 
 const saveMultisigFx = createEffect((multisigsToAdd: CreateParams<MultisigAccount>[]) => {
@@ -92,57 +91,31 @@ const saveMultisigFx = createEffect((multisigsToAdd: CreateParams<MultisigAccoun
   });
 });
 
-sample({
-  clock: [multisigsDiscoveryStarted, once(networkModel.$connections)],
-  source: {
-    connections: networkModel.$connections,
-    chains: networkModel.$chains,
-  },
-  fn: ({ connections, chains }) => ({
-    chains: Object.values(chains).filter((chain) => multisigUtils.isMultisigSupported(chain)),
-    connections,
-  }),
-  target: connectChainsFx,
+const { tick: multisigDiscoveryTriggered } = interval({
+  start: multisigsDiscoveryStarted,
+  timeout: MULTISIG_DISCOVERY_TIMEOUT,
 });
 
 sample({
-  clock: chainConnected,
+  clock: [multisigDiscoveryTriggered, $chainsSupportingMultisigDiscovery],
   source: {
-    chains: networkModel.$chains,
+    connections: networkModel.$connections,
+    chains: $chainsSupportingMultisigDiscovery,
     wallets: walletModel.$wallets,
   },
-  fn: ({ chains, wallets }, chainId) => ({
-    chainId,
-    chain: chains[chainId],
-    accounts: walletUtils.getAccountsBy(wallets, (a) => accountUtils.isChainIdMatch(a, chainId)),
-    wallets,
-  }),
+  fn: ({ chains, connections, wallets }) => {
+    return {
+      chains: chains.filter((chain) => !networkUtils.isDisabledConnection(connections[chain.chainId])),
+      wallets,
+    };
+  },
   target: getMultisigsFx,
 });
 
 sample({
-  clock: getMultisigsFx.doneData,
-  source: {
-    wallets: walletModel.$wallets,
-  },
-  filter: (_, { indexedMultisigs }) => {
-    return indexedMultisigs.length > 0;
-  },
-  fn: ({ wallets }, { indexedMultisigs, chain }) => {
-    const multisigsToSave = indexedMultisigs.filter((multisigrResult) => {
-      // we filter out the multisigs that we already have
-      const sameWallet = walletUtils.getWalletFilteredAccounts(wallets, {
-        accountFn: (account) => {
-          return account.accountId === multisigrResult.accountId;
-        },
-      });
-
-      const walletAllreadyExist = Boolean(sameWallet);
-
-      return !walletAllreadyExist;
-    });
-
-    const walletsToSave = multisigsToSave.map(
+  clock: multisigSaved,
+  fn: ({ indexedMultisigs, chain }) => {
+    const walletsToSave = indexedMultisigs.map(
       ({ threshold, accountId, signatories }) =>
         ({
           wallet: {
