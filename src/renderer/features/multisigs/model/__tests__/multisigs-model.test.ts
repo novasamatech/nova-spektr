@@ -32,9 +32,6 @@ const signatories = [
 describe('features/multisigs/model/multisigs-model', () => {
   beforeEach(() => {
     jest.restoreAllMocks();
-  });
-
-  test('should create multisigs', async () => {
     jest.spyOn(multisigService, 'filterMultisigsAccounts').mockResolvedValue([
       {
         accountId: '0x00',
@@ -42,6 +39,9 @@ describe('features/multisigs/model/multisigs-model', () => {
         signatories: ['0x01', '0x02', '0x03'],
       },
     ]);
+  });
+
+  test('should create multisigs', async () => {
     const multisigCreation = jest.spyOn(walletModel.events, 'multisigCreated');
 
     const newMultisig = {
@@ -99,13 +99,6 @@ describe('features/multisigs/model/multisigs-model', () => {
 
   test('should not create a multisig we already have', async () => {
     const multisigCreation = jest.spyOn(walletModel.events, 'multisigCreated');
-    jest.spyOn(multisigService, 'filterMultisigsAccounts').mockResolvedValue([
-      {
-        accountId: '0x00',
-        threshold: 2,
-        signatories: ['0x01', '0x02', '0x03'],
-      },
-    ]);
 
     const scope = fork({
       values: new Map()
