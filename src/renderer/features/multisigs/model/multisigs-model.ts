@@ -28,9 +28,9 @@ const multisigsDiscoveryStarted = createEvent();
 const multisigSaved = createEvent<GetMultisigsResult>();
 
 const $chainsSupportingMultisigDiscovery = combine(networkModel.$chains, (chains) =>
-  Object.values(chains).filter(
-    (chain) => multisigUtils.isMultisigSupported(chain) && chain.externalApi?.[ExternalType.MULTISIG]?.[0]?.url,
-  ),
+  Object.values(chains).filter((chain) => {
+    return multisigUtils.isMultisigSupported(chain) && chain.externalApi?.[ExternalType.MULTISIG]?.[0]?.url;
+  }),
 );
 
 $chainsSupportingMultisigDiscovery.watch((c) => console.log('---> C :', c));
