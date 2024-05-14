@@ -10,8 +10,7 @@ import { submitModel } from '../submit-model';
 
 jest.mock('@entities/transaction', () => ({
   transactionService: {
-    getSignedExtrinsic: jest.fn(),
-    submitAndWatchExtrinsic: jest.fn(),
+    signAndSubmit: jest.fn(),
   },
 }));
 
@@ -45,7 +44,6 @@ describe('widgets/AddPureProxyModal/model/submit-model', () => {
     await allSettled(submitModel.events.formInitiated, { scope, params: store });
     await allSettled(submitModel.events.submitStarted, { scope });
 
-    expect(transactionService.getSignedExtrinsic).toHaveBeenCalled();
-    expect(transactionService.submitAndWatchExtrinsic).toHaveBeenCalled();
+    expect(transactionService.signAndSubmit).toHaveBeenCalled();
   });
 });
