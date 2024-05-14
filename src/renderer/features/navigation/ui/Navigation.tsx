@@ -21,6 +21,8 @@ export const Navigation = () => {
   const NavItems: NavItemProps[] = [
     { icon: 'asset', title: 'navigation.balancesLabel', link: Paths.ASSETS },
     { icon: 'staking', title: 'navigation.stakingLabel', link: Paths.STAKING },
+    // TODO: turn on if you want to test governance
+    // { icon: 'governance', title: 'navigation.governance', link: Paths.GOVERNANCE },
     {
       icon: 'operations',
       title: 'navigation.mstOperationLabel',

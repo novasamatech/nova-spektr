@@ -25,6 +25,9 @@ export const Paths = {
   NETWORK: '/settings/network',
   CURRENCY: '/settings/currency',
 
+  // Governance
+  GOVERNANCE: '/governance',
+
   // Staking
   STAKING: '/staking',
 } as const;
