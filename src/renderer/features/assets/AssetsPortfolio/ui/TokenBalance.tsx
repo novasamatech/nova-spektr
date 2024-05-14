@@ -2,7 +2,7 @@ import { useUnit } from 'effector-react';
 
 import { useI18n } from '@app/providers';
 import { Icon, Tooltip, BodyText, Plate, Shimmering, FootnoteText, CaptionText } from '@shared/ui';
-import type { TokenAsset } from '@shared/core';
+import type { AssetByChains } from '@shared/core';
 import { totalAmount } from '@shared/lib/utils';
 import { priceProviderModel, AssetFiatBalance, TokenPrice } from '@entities/price';
 import { balanceModel } from '@entities/balance';
@@ -11,7 +11,7 @@ import { networkModel } from '@entities/network';
 import { ChainIcon } from '@entities/chain';
 
 type Props = {
-  asset: TokenAsset;
+  asset: AssetByChains;
 };
 
 export const TokenBalance = ({ asset }: Props) => {

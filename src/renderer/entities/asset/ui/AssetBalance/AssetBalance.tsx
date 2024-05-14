@@ -1,11 +1,11 @@
 import { cnTw, formatBalance } from '@shared/lib/utils';
 import { AssetIcon } from '@entities/asset';
 import { useI18n } from '@app/providers';
-import type { Asset, TokenAsset } from '@shared/core';
+import type { Asset, AssetByChains } from '@shared/core';
 
 type Props = {
   value: string;
-  asset?: Asset | TokenAsset; // maybe change type to Asset | number to allow pass just asset id and then get asset by id
+  asset?: Asset | AssetByChains; // maybe change type to Asset | number to allow pass just asset id and then get asset by id
   className?: string;
   showIcon?: boolean;
   imgClassName?: string;

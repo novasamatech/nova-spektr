@@ -1,7 +1,7 @@
 import { createEffect, createEvent, createStore, sample } from 'effector';
 import { once } from 'patronum';
 
-import { Account, Balance, Chain, ChainId, TokenAsset, Wallet } from '@shared/core';
+import { Account, Balance, Chain, ChainId, AssetByChains, Wallet } from '@shared/core';
 import { networkModel, networkUtils } from '@entities/network';
 import { accountUtils, walletModel, walletUtils } from '@entities/wallet';
 import { AssetsListView } from '@entities/asset';
@@ -15,44 +15,44 @@ const hideZeroBalancesSet = createEvent<boolean>();
 const $activeView = createStore<AssetsListView | null>(null);
 const $accounts = createStore<Account[]>([]);
 const $hideZeroBalances = createStore<boolean>(false);
-const $tokens = createStore<TokenAsset[]>([]);
-const $activeTokens = createStore<TokenAsset[]>([]);
+const $tokens = createStore<AssetByChains[]>([]);
+const $activeTokens = createStore<AssetByChains[]>([]);
 
-const updateTokensFx = createEffect(
-  ({ activeWallet, chains }: { activeWallet?: Wallet; chains: Record<ChainId, Chain> }): TokenAsset[] => {
-    const tokens = tokensService.getTokensData();
+type UpdateTokenParams = {
+  activeWallet?: Wallet;
+  chains: Record<ChainId, Chain>;
+};
 
-    return tokens.reduce((acc, token) => {
-      const filteredChains = token.chains.filter((chain) => {
-        return activeWallet?.accounts.some((account) => {
-          return (
-            accountUtils.isNonBaseVaultAccount(account, activeWallet) &&
-            accountUtils.isChainAndCryptoMatch(account, chains[chain.chainId])
-          );
-        });
+const updateTokensFx = createEffect(({ activeWallet, chains }: UpdateTokenParams): AssetByChains[] => {
+  const tokens = tokensService.getTokensData();
+
+  return tokens.reduce((acc, token) => {
+    const filteredChains = token.chains.filter((chain) => {
+      return activeWallet?.accounts.some((account) => {
+        return (
+          accountUtils.isNonBaseVaultAccount(account, activeWallet) &&
+          accountUtils.isChainAndCryptoMatch(account, chains[chain.chainId])
+        );
       });
+    });
 
-      if (filteredChains.length > 0) {
-        acc.push({ ...token, chains: filteredChains });
-      }
+    if (filteredChains.length > 0) {
+      acc.push({ ...token, chains: filteredChains });
+    }
 
-      return acc;
-    }, [] as TokenAsset[]);
-  },
-);
+    return acc;
+  }, [] as AssetByChains[]);
+});
+
+type PopulateBalanceParams = {
+  activeTokens: AssetByChains[];
+  balances: Balance[];
+  accounts: Account[];
+  hideZeroBalances: boolean;
+};
 
 const populateTokensBalanceFx = createEffect(
-  ({
-    activeTokens,
-    balances,
-    accounts,
-    hideZeroBalances,
-  }: {
-    activeTokens: TokenAsset[];
-    balances: Balance[];
-    accounts: Account[];
-    hideZeroBalances: boolean;
-  }): TokenAsset[] => {
+  ({ activeTokens, balances, accounts, hideZeroBalances }: PopulateBalanceParams): AssetByChains[] => {
     return activeTokens.reduce((acc, token) => {
       const [chainsWithBalance, totalBalance] = tokensService.getChainWithBalance(
         balances,
@@ -66,7 +66,7 @@ const populateTokensBalanceFx = createEffect(
       }
 
       return acc;
-    }, [] as TokenAsset[]);
+    }, [] as AssetByChains[]);
   },
 );
 
@@ -114,7 +114,7 @@ sample({
   filter: ({ connections, activeWallet, activeView }) => {
     return Boolean(activeView === AssetsListView.TOKEN_CENTRIC && Object.keys(connections).length && activeWallet);
   },
-  fn: ({ connections, chains, tokens, activeWallet }): TokenAsset[] => {
+  fn: ({ connections, chains, tokens, activeWallet }): AssetByChains[] => {
     const isMultisig = walletUtils.isMultisig(activeWallet);
 
     return tokens.reduce((acc, token) => {
@@ -131,7 +131,7 @@ sample({
       }
 
       return acc;
-    }, [] as TokenAsset[]);
+    }, [] as AssetByChains[]);
   },
 
   target: $activeTokens,

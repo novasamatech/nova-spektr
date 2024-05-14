@@ -14,6 +14,7 @@ sample({
   source: assetsSettingsModel.$assetsView,
   target: portfolioModel.events.activeViewSet,
 });
+
 sample({
   clock: [assetsSettingsModel.$hideZeroBalances],
   target: portfolioModel.events.hideZeroBalancesSet,

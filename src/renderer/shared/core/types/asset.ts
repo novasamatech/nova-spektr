@@ -34,7 +34,7 @@ export type OrmlExtras = {
   transfersEnabled?: boolean;
 };
 
-export type TokenAsset = {
+export type AssetByChains = {
   name: string;
   precision: number;
   icon: string;
