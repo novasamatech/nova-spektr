@@ -1,5 +1,5 @@
 import { combine, createEffect, createEvent, sample } from 'effector';
-import { interval } from 'patronum';
+import { interval, once } from 'patronum';
 import { GraphQLClient } from 'graphql-request';
 
 import {
@@ -27,13 +27,11 @@ const MULTISIG_DISCOVERY_TIMEOUT = 30000;
 const multisigsDiscoveryStarted = createEvent();
 const multisigSaved = createEvent<GetMultisigsResult>();
 
-const $chainsSupportingMultisigDiscovery = combine(networkModel.$chains, (chains) =>
-  Object.values(chains).filter((chain) => {
-    return multisigUtils.isMultisigSupported(chain) && chain.externalApi?.[ExternalType.MULTISIG]?.[0]?.url;
-  }),
-);
-
-$chainsSupportingMultisigDiscovery.watch((c) => console.log('---> C :', c));
+const $chainsSupportingMultisigDiscovery = combine(networkModel.$chains, (chains) => {
+  return Object.values(chains).filter((chain) => {
+    return multisigUtils.isMultisigSupported(chain) && Boolean(chain.externalApi?.[ExternalType.MULTISIG]?.[0]?.url);
+  });
+});
 
 type GetMultisigsParams = {
   chains: Chain[];
@@ -48,6 +46,8 @@ type GetMultisigsResult = {
 const getMultisigsFx = createEffect(({ chains, wallets }: GetMultisigsParams): void => {
   chains.forEach((chain) => {
     const accounts = walletUtils.getAccountsBy(wallets, (a) => accountUtils.isChainIdMatch(a, chain.chainId));
+    //todo remove
+    console.log('--> accounts', accounts);
     const multisigIndexerUrl = chain.externalApi?.[ExternalType.MULTISIG]?.[0]?.url;
     if (multisigIndexerUrl && accounts.length) {
       const client = new GraphQLClient(multisigIndexerUrl);
@@ -58,6 +58,8 @@ const getMultisigsFx = createEffect(({ chains, wallets }: GetMultisigsParams): v
           accounts.map((account) => account.accountId),
         )
         .then((indexedMultisigs) => {
+          // todo remove
+          console.log('indexedMultisigs', indexedMultisigs);
           const multisigsToSave = indexedMultisigs.filter((multisigrResult) => {
             // we filter out the multisigs that we already have
             const sameWallet = walletUtils.getWalletFilteredAccounts(wallets, {
@@ -67,12 +69,15 @@ const getMultisigsFx = createEffect(({ chains, wallets }: GetMultisigsParams): v
             });
 
             const walletAllreadyExist = Boolean(sameWallet);
+            // todo remove
+            console.log('===> walletAllreadyExist', walletAllreadyExist);
 
             return !walletAllreadyExist;
           });
 
           multisigsToSave.length > 0 && multisigSaved({ indexedMultisigs: multisigsToSave, chain });
-        });
+        })
+        .catch(console.error);
     }
   });
 });
@@ -97,15 +102,17 @@ const { tick: multisigDiscoveryTriggered } = interval({
 });
 
 sample({
-  clock: [multisigDiscoveryTriggered, $chainsSupportingMultisigDiscovery],
+  clock: [multisigDiscoveryTriggered, once(networkModel.$connections)],
   source: {
-    connections: networkModel.$connections,
     chains: $chainsSupportingMultisigDiscovery,
     wallets: walletModel.$wallets,
+    connections: networkModel.$connections,
   },
-  fn: ({ chains, connections, wallets }) => {
+  fn: ({ chains, wallets, connections }) => {
     return {
-      chains: chains.filter((chain) => !networkUtils.isDisabledConnection(connections[chain.chainId])),
+      chains: chains.filter(
+        (chain) => connections[chain.chainId] && !networkUtils.isDisabledConnection(connections[chain.chainId]),
+      ),
       wallets,
     };
   },

@@ -87,12 +87,6 @@
           "type": "subquery",
           "url": "https://api.subquery.network/sq/nova-wallet/novasama-polkadot-proxy"
         }
-      ],
-      "multisig": [
-        {
-          "type": "subquery",
-          "url": "https://api.subquery.network/sq/nova-wallet/novasama-polkadot-proxy"
-        }
       ]
     }
   },
@@ -180,12 +174,6 @@
         }
       ],
       "proxy": [
-        {
-          "type": "subquery",
-          "url": "https://api.subquery.network/sq/nova-wallet/novasama-kusama-proxy"
-        }
-      ],
-      "multisig": [
         {
           "type": "subquery",
           "url": "https://api.subquery.network/sq/nova-wallet/novasama-kusama-proxy"
@@ -4477,12 +4465,6 @@
           "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-hydra__bm92Y"
         }
       ],
-      "multisig": [
-        {
-          "type": "subquery",
-          "url": "https://api.subquery.network/sq/nova-wallet/novasama-hydra-proxy"
-        }
-      ],
       "proxy": [
         {
           "type": "subquery",
@@ -6059,12 +6041,6 @@
         {
           "type": "subquery",
           "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-tinkernet"
-        }
-      ],
-      "multisig": [
-        {
-          "type": "subquery",
-          "url": "https://api.subquery.network/sq/nova-wallet/novasama-rococo-proxy"
         }
       ]
     }
