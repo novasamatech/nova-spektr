@@ -1,9 +1,9 @@
-name: Update chains file
+name: Update config files
 
 on:
   workflow_dispatch:
     inputs:
-      file_path:
+      chains_file_path:
         description: 'Which version of chains.json will be used?'
         required: true
         type: string
@@ -12,7 +12,7 @@ on:
     - cron: '0 8 * * 1'
 
 jobs:
-  update-chains-file:
+  update-files:
     runs-on: ubuntu-latest
 
     steps:
@@ -23,7 +23,7 @@ jobs:
         run: |
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]
           then
-            echo "CHAINS_VERSION=${{ github.event.inputs.file_path }}" >> $GITHUB_ENV
+            echo "CHAINS_VERSION=${{ github.event.inputs.chains_file_path }}" >> $GITHUB_ENV
           else
             echo "CHAINS_VERSION=${{ secrets.SPEKTR_CONFIG_VERSION }}" >> $GITHUB_ENV
           fi
@@ -34,11 +34,16 @@ jobs:
       - name: 📝 Update chains file
         run: pnpm update:chains-file
 
+      - name: 📝 Update tokens file
+        run: pnpm update:tokens-file
+
       - name: ➡️ Make pull request
         uses: ./.github/workflows/make-pull-request
         with:
-          commit_path: src/renderer/shared/config/chains/*.json
-          commit_message: "ci: chains.json file"
-          pr_title: "Update chains.json file"
-          branch_name: update-chains-file
+          commit_path: |
+            src/renderer/shared/config/chains/*.json
+            src/renderer/shared/config/tokens/*.json
+          commit_message: "ci: update json files"
+          pr_title: "Update json files"
+          branch_name: update-config-files
           github_token: ${{ secrets.GITHUB_TOKEN }}

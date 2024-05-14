@@ -11,6 +11,7 @@ const TOKENS_ENV = ['tokens_dev.json', 'tokens.json'];
 async function getDataViaHttp(url, filePath) {
   try {
     const response = await axios.get(url + filePath);
+    
     return response.data;
   } catch (error) {
     console.log('Error: ', error?.message || 'getDataViaHttp failed');
