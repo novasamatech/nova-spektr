@@ -13,14 +13,19 @@ import {
   SigningType,
   WalletType,
   Wallet,
+  NoID,
 } from '@shared/core';
 import { networkModel, networkUtils } from '@entities/network';
 import { accountUtils, walletModel, walletUtils } from '@entities/wallet';
 import { MultisigResult, multisigService } from '@entities/multisig';
 import { isEthereumAccountId, toAddress } from '@shared/lib/utils';
-import { CreateParams } from '@entities/wallet/model/wallet-model';
 import { notificationModel } from '@entities/notification';
 import { multisigUtils } from '../lib/mulitisigs-utils';
+
+type SaveMultisigParams = {
+  wallet: Omit<NoID<Wallet>, 'isActive' | 'accounts'>;
+  accounts: Omit<NoID<MultisigAccount>, 'walletId'>[];
+};
 
 const MULTISIG_DISCOVERY_TIMEOUT = 30000;
 
@@ -82,7 +87,7 @@ const getMultisigsFx = createEffect(({ chains, wallets }: GetMultisigsParams): v
   });
 });
 
-const saveMultisigFx = createEffect((multisigsToAdd: CreateParams<MultisigAccount>[]) => {
+const saveMultisigFx = createEffect((multisigsToAdd: SaveMultisigParams[]) => {
   multisigsToAdd.forEach((multisig) => {
     walletModel.events.multisigCreated(multisig);
 
@@ -145,7 +150,7 @@ sample({
               type: AccountType.MULTISIG,
             },
           ],
-        } as CreateParams<MultisigAccount>),
+        } as SaveMultisigParams),
     );
 
     return walletsToSave;
