@@ -92,8 +92,7 @@ describe('features/multisigs/model/multisigs-model', () => {
         },
       },
     });
-    await allSettled(multisigsModel.events.multisigsDiscoveryStarted, { scope });
-    await jest.runAllTimersAsync();
+    allSettled(multisigsModel.events.multisigsDiscoveryStarted, { scope });
 
     expect(multisigCreation).toHaveBeenCalledWith(newMultisig);
   });
@@ -127,8 +126,7 @@ describe('features/multisigs/model/multisigs-model', () => {
         },
       },
     });
-    await allSettled(multisigsModel.events.multisigsDiscoveryStarted, { scope });
-    await jest.runAllTimersAsync();
+    allSettled(multisigsModel.events.multisigsDiscoveryStarted, { scope });
 
     expect(multisigCreation).not.toHaveBeenCalled();
   });

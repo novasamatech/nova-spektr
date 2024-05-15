@@ -51,9 +51,8 @@ type GetMultisigsResult = {
 const getMultisigsFx = createEffect(({ chains, wallets }: GetMultisigsParams): void => {
   chains.forEach((chain) => {
     const accounts = walletUtils.getAccountsBy(wallets, (a) => accountUtils.isChainIdMatch(a, chain.chainId));
-    //todo remove
-    console.log('--> accounts', accounts);
     const multisigIndexerUrl = chain.externalApi?.[ExternalType.MULTISIG]?.[0]?.url;
+
     if (multisigIndexerUrl && accounts.length) {
       const client = new GraphQLClient(multisigIndexerUrl);
 
@@ -63,8 +62,6 @@ const getMultisigsFx = createEffect(({ chains, wallets }: GetMultisigsParams): v
           accounts.map((account) => account.accountId),
         )
         .then((indexedMultisigs) => {
-          // todo remove
-          console.log('indexedMultisigs', indexedMultisigs);
           const multisigsToSave = indexedMultisigs.filter((multisigrResult) => {
             // we filter out the multisigs that we already have
             const sameWallet = walletUtils.getWalletFilteredAccounts(wallets, {
@@ -74,8 +71,6 @@ const getMultisigsFx = createEffect(({ chains, wallets }: GetMultisigsParams): v
             });
 
             const walletAllreadyExist = Boolean(sameWallet);
-            // todo remove
-            console.log('===> walletAllreadyExist', walletAllreadyExist);
 
             return !walletAllreadyExist;
           });
