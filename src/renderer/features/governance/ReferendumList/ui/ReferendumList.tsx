@@ -8,7 +8,7 @@ export const ReferendumList = () => {
   const referendumsDetails = useUnit(referendumListModel.$referendumsDetails);
 
   return (
-    <ul className="flex flex-col gap-y-1 w-[750px] mx-auto overflow-y-auto">
+    <ul className="flex flex-col gap-y-1">
       {referendumsList.map((referendum) => (
         <li key={referendum.index} className="border border-gray-400 rounded p-4 w-full">
           <div className="flex justify-between">
