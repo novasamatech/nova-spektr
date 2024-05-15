@@ -109,7 +109,6 @@ function getAccountsBy(wallets: Wallet[], accountFn: (account: Account, wallet: 
   }, []);
 }
 
-// TODO: Try to find more sufficient name
 /**
  * Returns a Wallet object that matches the provided predicates.
  * If no matching Wallet is found, returns undefined.
@@ -132,28 +131,19 @@ function getWalletFilteredAccounts(
     accountFn?: (account: Account, wallet: Wallet) => boolean;
   },
 ): Wallet | undefined {
-  // if no predicates are provided, return undefined
   if (!predicates.walletFn && !predicates.accountFn) return undefined;
 
-  return wallets.reduce<Wallet | undefined>((acc, wallet) => {
-    // If wallet with accounts already found return it
-    if (acc) return acc;
+  for (const wallet of wallets) {
+    if (predicates.walletFn && !predicates.walletFn(wallet)) continue;
 
-    // Check that wallet match the wallet predicate
-    if (!predicates.walletFn || predicates.walletFn(wallet)) {
-      // Find accounts that match the predicate
-      const accounts = wallet.accounts.filter((account) => {
-        return !predicates.accountFn || predicates.accountFn(account, wallet);
-      });
+    const accounts = wallet.accounts.filter((account) => {
+      return !predicates.accountFn || predicates.accountFn(account, wallet);
+    });
 
-      // If accounts found, return the wallet with filtered accounts
-      if (accounts.length > 0) {
-        acc = { ...wallet, accounts } as Wallet;
-      }
-    }
+    if (accounts.length > 0) return { ...wallet, accounts };
+  }
 
-    return acc;
-  }, undefined);
+  return undefined;
 }
 
 function getWalletsFilteredAccounts(

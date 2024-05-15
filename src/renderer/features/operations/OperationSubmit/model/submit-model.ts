@@ -46,40 +46,28 @@ const $hooksApi = createApi($hooks, {
   hooksChanged: (state, { addMultisigTx, addEventWithQueue }) => ({ ...state, addMultisigTx, addEventWithQueue }),
 });
 
-type SignedExtrinsicParams = {
+type SignAndSubmitExtrinsicParams = {
   api: ApiPromise;
-  signatures: HexString[];
+  transactions: Transaction[];
   unsignedTxs: UnsignedTransaction[];
+  signatures: HexString[];
 };
-const getSignedExtrinsicsFx = createEffect(
-  ({ api, signatures, unsignedTxs }: SignedExtrinsicParams): Promise<string[]> => {
-    const requests = signatures.map((signature, index) => {
-      return transactionService.getSignedExtrinsic(unsignedTxs[index], signature, api);
-    });
+const signAndSubmitExtrinsicsFx = createEffect(
+  ({ api, transactions, unsignedTxs, signatures }: SignAndSubmitExtrinsicParams): void => {
+    const boundExtrinsicSucceeded = scopeBind(extrinsicSucceeded, { safe: true });
+    const boundExtrinsicFailed = scopeBind(extrinsicFailed, { safe: true });
 
-    return Promise.all(requests);
+    transactions.forEach((transaction, index) => {
+      transactionService.signAndSubmit(transaction, signatures[index], unsignedTxs[index], api, (executed, params) => {
+        if (executed) {
+          boundExtrinsicSucceeded(params as ExtrinsicResultParams);
+        } else {
+          boundExtrinsicFailed(params as string);
+        }
+      });
+    });
   },
 );
-
-type SubmitExtrinsicParams = {
-  api: ApiPromise;
-  extrinsics: string[];
-  unsignedTxs: UnsignedTransaction[];
-};
-const submitExtrinsicsFx = createEffect(({ api, extrinsics, unsignedTxs }: SubmitExtrinsicParams): void => {
-  const boundExtrinsicSucceeded = scopeBind(extrinsicSucceeded, { safe: true });
-  const boundExtrinsicFailed = scopeBind(extrinsicFailed, { safe: true });
-
-  extrinsics.forEach((extrinsic, index) => {
-    transactionService.submitAndWatchExtrinsic(extrinsic, unsignedTxs[index], api, (executed, params) => {
-      if (executed) {
-        boundExtrinsicSucceeded(params as ExtrinsicResultParams);
-      } else {
-        boundExtrinsicFailed(params as string);
-      }
-    });
-  });
-});
 
 type SaveMultisigParams = {
   transactions: Transaction[];
@@ -134,19 +122,10 @@ sample({
   fn: ({ apis, params }) => ({
     api: apis[params!.chain.chainId],
     signatures: params!.signatures,
+    transactions: params!.transactions,
     unsignedTxs: params!.unsignedTxs,
   }),
-  target: getSignedExtrinsicsFx,
-});
-
-sample({
-  clock: getSignedExtrinsicsFx.done,
-  fn: ({ params, result }) => ({
-    api: params.api,
-    extrinsics: result,
-    unsignedTxs: params.unsignedTxs,
-  }),
-  target: submitExtrinsicsFx,
+  target: signAndSubmitExtrinsicsFx,
 });
 
 sample({

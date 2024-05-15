@@ -253,6 +253,9 @@
       "appName": "Nova Spektr"
     }
   },
+  "governance": {
+    "title": "Governance"
+  },
   "log": {
     "cancelledMessage": "rejected this operation",
     "error": "Error",
@@ -270,14 +273,12 @@
   "navigation": {
     "addressBookLabel": "Address Book",
     "balancesLabel": "Portfolio",
-    "cameraDEVLabel": "Camera DEV",
-    "chatDEVLabel": "Chat DEV",
+    "governance": "Governance",
     "historyLabel": "History",
     "mstOperationLabel": "Operations",
     "multipleWalletsLabel": "Multiple wallets",
     "notificationsLabel": "Notifications",
     "settingsLabel": "Settings",
-    "signingDEVLabel": "Signing DEV",
     "stakingLabel": "Staking",
     "transfersLabel": "Transfer",
     "unknownWalletLabel": "Unknown wallet",
