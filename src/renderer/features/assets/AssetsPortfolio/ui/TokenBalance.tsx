@@ -5,7 +5,6 @@ import { Icon, Tooltip, BodyText, Plate, Shimmering, FootnoteText, CaptionText }
 import type { AssetByChains } from '@shared/core';
 import { totalAmount } from '@shared/lib/utils';
 import { priceProviderModel, AssetFiatBalance, TokenPrice } from '@entities/price';
-import { balanceModel } from '@entities/balance';
 import { AssetBalance, AssetIcon, AssetLinks } from '@entities/asset';
 import { networkModel } from '@entities/network';
 import { ChainIcon } from '@entities/chain';
@@ -19,10 +18,7 @@ export const TokenBalance = ({ asset }: Props) => {
   const chain = asset.chains[0];
 
   const fiatFlag = useUnit(priceProviderModel.$fiatFlag);
-  const balances = useUnit(balanceModel.$balances);
   const chains = useUnit(networkModel.$chains);
-
-  const hasFailedVerification = balances?.some((b) => b.verified !== undefined && !b.verified);
 
   return (
     <Plate className="p-0 z-10 h-[52px] w-full items-center flex pl-[30px] pr-2">
@@ -34,7 +30,7 @@ export const TokenBalance = ({ asset }: Props) => {
             <div className="flex items-center gap-x-1.5 mr-3">
               <FootnoteText className="text-text-tertiary">{chain.name}</FootnoteText>
               <ChainIcon src={chains[chain.chainId].icon} name={chain.name} size={18} />
-              {hasFailedVerification && (
+              {chain.balance?.verified && (
                 <div className="flex items-center gap-x-2 text-text-warning">
                   {/* FIXME: tooltip not visible when first displayed network invalid. For now just render it below icon */}
                   <Tooltip content={t('balances.verificationTooltip')} pointer="up">

@@ -1,7 +1,7 @@
 import { BN, BN_TEN, BN_ZERO } from '@polkadot/util';
 import BigNumber from 'bignumber.js';
 
-import { type Balance, type Unlocking, LockTypes, TokenBalance } from '@shared/core';
+import { type Balance, type Unlocking, LockTypes, AssetBalance } from '@shared/core';
 import { ZERO_BALANCE } from './constants';
 
 const MAX_INTEGER = 15;
@@ -86,7 +86,7 @@ export const formatBalance = (balance = '0', precision = 0): FormattedBalance =>
   };
 };
 
-export const totalAmount = <T extends TokenBalance>(balance?: T): string => {
+export const totalAmount = <T extends AssetBalance>(balance?: T): string => {
   if (!balance) return ZERO_BALANCE;
 
   const bnFree = new BN(balance.free || ZERO_BALANCE);

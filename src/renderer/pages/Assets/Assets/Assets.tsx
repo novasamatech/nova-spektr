@@ -6,22 +6,21 @@ import { Header } from '@shared/ui';
 import { ShardSelectorButton, ShardSelectorModal } from '@features/wallets';
 import {
   AssetsChainView,
-  AssetsPortfolio,
+  AssetsPortfolioView,
   AssetsSearch,
   AssetsSettings,
   assetsSearchModel,
   assetsSettingsModel,
 } from '@features/assets';
-import { AssetsListView } from '@entities/asset';
 import { assetsModel } from './model/assets-model';
 
 export const Assets = () => {
   const { t } = useI18n();
 
+  const assetsView = useUnit(assetsSettingsModel.$assetsView);
   const activeShards = useUnit(assetsModel.$activeShards);
   const query = useUnit(assetsSearchModel.$query);
   const hideZeroBalances = useUnit(assetsSettingsModel.$hideZeroBalances);
-  const assetsView = useUnit(assetsSettingsModel.$assetsView);
 
   return (
     <>
@@ -34,12 +33,17 @@ export const Assets = () => {
         </Header>
         <ShardSelectorButton />
         <div className="flex flex-col gap-y-4 w-full h-full overflow-y-scroll">
-          {activeShards.length > 0 &&
-            (assetsView === AssetsListView.CHAIN_CENTRIC ? (
-              <AssetsChainView query={query} activeShards={activeShards} hideZeroBalances={hideZeroBalances} />
-            ) : (
-              <AssetsPortfolio />
-            ))}
+          {activeShards.length > 0 && (
+            <>
+              <AssetsPortfolioView />
+              <AssetsChainView
+                query={query}
+                activeShards={activeShards}
+                hideZeroBalances={hideZeroBalances}
+                assetsView={assetsView}
+              />
+            </>
+          )}
         </div>
       </section>
 

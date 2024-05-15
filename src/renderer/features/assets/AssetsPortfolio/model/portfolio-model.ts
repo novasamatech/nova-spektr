@@ -115,15 +115,15 @@ sample({
     return Boolean(activeView === AssetsListView.TOKEN_CENTRIC && Object.keys(connections).length && activeWallet);
   },
   fn: ({ connections, chains, tokens, activeWallet }): AssetByChains[] => {
-    const isMultisig = walletUtils.isMultisig(activeWallet);
+    const isMultisigWallet = walletUtils.isMultisig(activeWallet);
 
     return tokens.reduce((acc, token) => {
       const filteredChains = token.chains.filter((c) => {
         if (!connections[c.chainId]) return false;
         const isDisabled = networkUtils.isDisabledConnection(connections[c.chainId]);
-        const hasMultiPallet = !isMultisig || networkUtils.isMultisigSupported(chains[c.chainId].options);
+        const hasMultiPallet = networkUtils.isMultisigSupported(chains[c.chainId].options);
 
-        return !isDisabled && hasMultiPallet;
+        return !isDisabled && (!isMultisigWallet || hasMultiPallet);
       });
 
       if (filteredChains.length > 0) {
@@ -159,6 +159,7 @@ sample({
 
 export const portfolioModel = {
   $activeTokens,
+  $activeView,
   events: {
     activeViewSet,
     accountsSet,
