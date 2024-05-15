@@ -9,7 +9,7 @@ import { modelUtils } from '../lib/model-utils';
 
 type DbWallet = Omit<Wallet, 'accounts'>;
 
-export type CreateParams<T extends Account = Account> = {
+type CreateParams<T extends Account = Account> = {
   wallet: Omit<NoID<Wallet>, 'isActive' | 'accounts'>;
   accounts: Omit<NoID<T>, 'walletId'>[];
 };
