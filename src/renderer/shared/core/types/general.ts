@@ -4,6 +4,7 @@ export type NoID<T extends { id: K }, K extends any = ID> = Omit<T, 'id'>;
 export type HexString = `0x${string}`;
 export type Metadata = HexString;
 export type ChainId = HexString;
+export type BlockHeight = number;
 
 export type Address = string;
 export type AccountId = HexString;

@@ -3,7 +3,7 @@ import { UnsignedTransaction } from '@substrate/txwrapper-polkadot';
 import { useGate, useUnit } from 'effector-react';
 
 import { ValidationErrors } from '@shared/lib/utils';
-import { useTransaction } from '@entities/transaction';
+import { transactionService, useTransaction } from '@entities/transaction';
 import { useI18n } from '@app/providers';
 import { Button, ConfirmModal, Countdown, FootnoteText, SmallTitleText, StatusModal } from '@shared/ui';
 import { walletConnectModel, DEFAULT_POLKADOT_METHODS, walletConnectUtils } from '@entities/walletConnect';
@@ -29,7 +29,7 @@ export const WalletConnect = ({
   onResult,
 }: InnerSigningProps) => {
   const { t } = useI18n();
-  const { verifySignature, createPayload } = useTransaction();
+  const { verifySignature } = useTransaction();
   const [countdown, resetCountdown] = useCountdown(api);
 
   const wallets = useUnit(walletModel.$wallets);
@@ -87,7 +87,7 @@ export const WalletConnect = ({
 
   const setupTransaction = async (): Promise<void> => {
     try {
-      const { payload, unsigned } = await createPayload(transaction, api);
+      const { payload, unsigned } = await transactionService.createPayload(transaction, api);
 
       setTxPayload(payload);
       setUnsignedTx(unsigned);

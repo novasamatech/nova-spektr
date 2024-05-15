@@ -1,5 +1,5 @@
 import { ApiPromise } from '@polkadot/api';
-import { UnsignedTransaction, Args } from '@substrate/txwrapper-polkadot';
+import { Args } from '@substrate/txwrapper-polkadot';
 import { Weight } from '@polkadot/types/interfaces';
 import { SubmittableExtrinsic } from '@polkadot/api/types';
 import { AnyJson } from '@polkadot/types/types';
@@ -22,13 +22,6 @@ import { DecodedTransaction, Transaction, TransactionType } from '@entities/tran
 // =====================================================
 
 export type ITransactionService = {
-  createPayload: (
-    transaction: Transaction,
-    api: ApiPromise,
-  ) => Promise<{
-    unsigned: UnsignedTransaction;
-    payload: Uint8Array;
-  }>;
   getExtrinsicWeight: (extrinsic: SubmittableExtrinsic<'promise'>) => Promise<Weight>;
   getTxWeight: (transaction: Transaction, api: ApiPromise) => Promise<Weight>;
   getTransactionHash: (transaction: Transaction, api: ApiPromise) => HashData;
