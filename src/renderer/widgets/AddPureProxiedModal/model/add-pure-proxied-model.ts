@@ -343,7 +343,7 @@ export const addPureProxiedModel = {
     flowStarted,
     stepChanged,
   },
-  outputs: {
+  output: {
     flowFinished,
   },
 };

@@ -8,7 +8,7 @@ describe('ui/Buttons/ButtonBack', () => {
   });
 
   test('should render component', () => {
-    render(<IconButton name="balance" />);
+    render(<IconButton name="network" />);
 
     const children = screen.getByRole('button');
     expect(children).toBeInTheDocument();
