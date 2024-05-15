@@ -40,9 +40,7 @@ jobs:
       - name: ➡️ Make pull request
         uses: ./.github/workflows/make-pull-request
         with:
-          commit_path: |
-            src/renderer/shared/config/chains/*.json
-            src/renderer/shared/config/tokens/*.json
+          commit_path: src/renderer/shared/config/*
           commit_message: "ci: update json files"
           pr_title: "Update json files"
           branch_name: update-config-files
