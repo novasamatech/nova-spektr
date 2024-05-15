@@ -315,7 +315,8 @@ sample({
   filter: (_, data) => Boolean(data && data.wallets.length && data.accounts.length),
   fn: (wallets, data) => {
     const accountsMap = dictionary(data.accounts, 'walletId');
-    const newWallets = data.wallets.map((wallet) => ({ ...wallet, accounts: accountsMap[wallet.id] } as Wallet));
+
+    const newWallets = data.wallets.map((wallet) => ({ ...wallet, accounts: [accountsMap[wallet.id]] } as Wallet));
 
     return wallets.concat(newWallets);
   },
