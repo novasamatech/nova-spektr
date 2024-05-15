@@ -1,4 +1,4 @@
-import { TokenBalance } from './balance';
+import { AssetBalance } from './balance';
 import { ChainId } from './general';
 
 export type Asset = {
@@ -40,13 +40,13 @@ export type AssetByChains = {
   icon: string;
   symbol: string;
   priceId?: string;
-  totalBalance?: TokenBalance;
+  totalBalance?: AssetBalance;
   chains: {
     chainId: ChainId;
     name: string;
     assetId: number;
     assetSymbol: string;
-    balance?: TokenBalance;
+    balance?: AssetBalance;
     type?: AssetType;
     typeExtras?: StatemineExtras | OrmlExtras;
   }[];

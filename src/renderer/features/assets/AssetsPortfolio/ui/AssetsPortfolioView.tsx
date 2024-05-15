@@ -5,9 +5,10 @@ import { Icon, BodyText, FootnoteText } from '@shared/ui';
 import { priceProviderModel } from '@entities/price';
 import { walletModel } from '@entities/wallet';
 import { Wallet, WalletType } from '@shared/core';
-import { portfolioModel } from '../model/portfolio-model';
-import { TokenBalance } from './TokenBalance';
+import { AssetsListView } from '@entities/asset';
 import { TokenBalanceList } from './TokenBalanceList';
+import { TokenBalance } from './TokenBalance';
+import { portfolioModel } from '../model/portfolio-model';
 
 const getColStyle = (wallet?: Wallet) => {
   switch (wallet?.type) {
@@ -20,11 +21,16 @@ const getColStyle = (wallet?: Wallet) => {
   }
 };
 
-export const AssetsPortfolio = () => {
+export const AssetsPortfolioView = () => {
   const { t } = useI18n();
+
+  const activeView = useUnit(portfolioModel.$activeView);
   const fiatFlag = useUnit(priceProviderModel.$fiatFlag);
   const activeTokens = useUnit(portfolioModel.$activeTokens);
   const wallet = useUnit(walletModel.$activeWallet);
+
+  if (activeView !== AssetsListView.TOKEN_CENTRIC) return null;
+
   const colStyle = getColStyle(wallet);
 
   return (

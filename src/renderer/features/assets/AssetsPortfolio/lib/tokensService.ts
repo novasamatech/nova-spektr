@@ -1,7 +1,7 @@
 import tokensProd from '@shared/config/tokens/tokens.json';
 import tokensDev from '@shared/config/tokens/tokens_dev.json';
 import { sumValues } from '@shared/api/network/service/chainsService';
-import type { Account, AccountId, Balance, ChainId, AssetByChains, TokenBalance } from '@shared/core';
+import type { Account, AccountId, Balance, ChainId, AssetByChains, AssetBalance } from '@shared/core';
 import { totalAmount, ZERO_BALANCE } from '@shared/lib/utils';
 import { balanceUtils } from '@entities/balance';
 import { accountUtils } from '@entities/wallet';
@@ -22,7 +22,7 @@ function getTokensData(): AssetByChains[] {
   return TOKENS[process.env.TOKENS_FILE || 'tokens'];
 }
 
-function sumTokenBalances(firstBalance: TokenBalance, secondBalance?: TokenBalance | null): TokenBalance {
+function sumTokenBalances(firstBalance: AssetBalance, secondBalance?: AssetBalance | null): AssetBalance {
   if (!secondBalance) return firstBalance;
 
   return {
@@ -48,8 +48,8 @@ function getChainWithBalance(
   chains: AssetChain[],
   hideZeroBalances: boolean,
   accounts: Account[],
-): [AssetChain[], TokenBalance] {
-  let totalBalance = {} as TokenBalance;
+): [AssetChain[], AssetBalance] {
+  let totalBalance = {} as AssetBalance;
 
   const chainsWithBalance = chains.reduce((acc, chain) => {
     const selectedAccountIds = getSelectedAccountIds(accounts, chain.chainId);
@@ -61,7 +61,7 @@ function getChainWithBalance(
       chain.assetId.toString(),
     );
 
-    const assetBalance = accountsBalance.reduce<TokenBalance>((acc, balance) => {
+    const assetBalance = accountsBalance.reduce<AssetBalance>((acc, balance) => {
       return sumTokenBalances(balance, acc);
     }, {} as Balance);
 

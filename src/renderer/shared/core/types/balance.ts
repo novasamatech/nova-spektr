@@ -21,10 +21,4 @@ export type BalanceLock = {
   amount: string;
 };
 
-export type TokenBalance = {
-  verified?: boolean;
-  free?: string;
-  reserved?: string;
-  frozen?: string;
-  locked?: BalanceLock[];
-};
+export type AssetBalance = Pick<Balance, 'verified' | 'free' | 'reserved' | 'frozen' | 'locked'>;

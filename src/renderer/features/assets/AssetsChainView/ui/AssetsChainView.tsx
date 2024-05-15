@@ -10,14 +10,18 @@ import { balanceModel } from '@entities/balance';
 import { priceProviderModel, currencyModel } from '@entities/price';
 import { accountUtils, walletModel, walletUtils } from '@entities/wallet';
 import { networkModel, networkUtils } from '@entities/network';
+import { AssetsListView } from '@entities/asset';
 import { NetworkAssets } from './NetworkAssets/NetworkAssets';
 
 type Props = {
   query: string;
   activeShards: Account[];
   hideZeroBalances: boolean;
+  assetsView: AssetsListView;
 };
-export const AssetsChainView = ({ query, activeShards, hideZeroBalances }: Props) => {
+export const AssetsChainView = ({ query, activeShards, hideZeroBalances, assetsView }: Props) => {
+  if (assetsView !== AssetsListView.CHAIN_CENTRIC) return null;
+
   const { t } = useI18n();
 
   const activeWallet = useUnit(walletModel.$activeWallet);
