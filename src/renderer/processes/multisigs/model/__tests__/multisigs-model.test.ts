@@ -11,8 +11,8 @@ import {
   ChainType,
 } from '@shared/core';
 import { walletModel } from '@entities/wallet';
-import { multisigsModel } from '../multisigs-model';
 import { multisigService } from '@entities/multisig';
+import { multisigsModel } from '../multisigs-model';
 
 const signatories = [
   {
@@ -81,7 +81,7 @@ describe('features/multisigs/model/multisigs-model', () => {
         }),
     });
 
-    await allSettled(networkModel.$connections, {
+    allSettled(networkModel.$connections, {
       scope,
       params: {
         '0x01': {
@@ -115,7 +115,7 @@ describe('features/multisigs/model/multisigs-model', () => {
         }),
     });
 
-    await allSettled(networkModel.$connections, {
+    allSettled(networkModel.$connections, {
       scope,
       params: {
         '0x01': {

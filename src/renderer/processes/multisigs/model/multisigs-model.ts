@@ -1,24 +1,11 @@
-import { combine, createEffect, createEvent, sample } from 'effector';
+import { combine, createEffect, createEvent, sample, scopeBind } from 'effector';
 import { interval, once } from 'patronum';
 import { GraphQLClient } from 'graphql-request';
 
-import {
-  Chain,
-  MultisigAccount,
-  NotificationType,
-  AccountType,
-  ChainType,
-  CryptoType,
-  ExternalType,
-  SigningType,
-  WalletType,
-  Wallet,
-  NoID,
-} from '@shared/core';
+import { Chain, MultisigAccount, NotificationType, ExternalType, Wallet, NoID } from '@shared/core';
 import { networkModel, networkUtils } from '@entities/network';
 import { accountUtils, walletModel, walletUtils } from '@entities/wallet';
 import { MultisigResult, multisigService } from '@entities/multisig';
-import { isEthereumAccountId, toAddress } from '@shared/lib/utils';
 import { notificationModel } from '@entities/notification';
 import { multisigUtils } from '../lib/mulitisigs-utils';
 
@@ -55,6 +42,7 @@ const getMultisigsFx = createEffect(({ chains, wallets }: GetMultisigsParams) =>
   chains.forEach((chain) => {
     const accounts = walletUtils.getAccountsBy(wallets, (a) => accountUtils.isChainIdMatch(a, chain.chainId));
     const multisigIndexerUrl = chain.externalApi?.[ExternalType.MULTISIG]?.[0]?.url;
+    const boundMultisigSaved = scopeBind(multisigSaved, { safe: true });
 
     if (!multisigIndexerUrl || !accounts.length) {
       return;
@@ -75,14 +63,17 @@ const getMultisigsFx = createEffect(({ chains, wallets }: GetMultisigsParams) =>
           return !existingWallet;
         });
 
-        multisigsToSave.length > 0 && multisigSaved({ indexedMultisigs: multisigsToSave, chain });
+        if (multisigsToSave.length > 0) {
+          boundMultisigSaved({ indexedMultisigs: multisigsToSave, chain });
+        }
       })
       .catch(console.error);
   });
 });
 
-const saveMultisigFx = createEffect((multisigsToAdd: SaveMultisigParams[]) => {
-  multisigsToAdd.forEach((multisig) => {
+const saveMultisigFx = createEffect((multisigsToSave: SaveMultisigParams[]) => {
+  console.log('multisigsToAdd--> ', multisigsToSave);
+  multisigsToSave.forEach((multisig) => {
     walletModel.events.multisigCreated(multisig);
 
     notificationModel.events.notificationsAdded([
@@ -95,13 +86,18 @@ const saveMultisigFx = createEffect((multisigsToAdd: SaveMultisigParams[]) => {
   });
 });
 
-const { tick: multisigDiscoveryTriggered } = interval({
+sample({
+  clock: once(networkModel.$connections),
+  target: multisigsDiscoveryStarted,
+});
+
+const { tick: multisigsDiscoveryTriggered } = interval({
   start: multisigsDiscoveryStarted,
   timeout: MULTISIG_DISCOVERY_TIMEOUT,
 });
 
 sample({
-  clock: [multisigDiscoveryTriggered, once(networkModel.$connections)],
+  clock: multisigsDiscoveryTriggered,
   source: {
     chains: $multisigChains,
     wallets: walletModel.$wallets,
@@ -125,28 +121,7 @@ sample({
   fn: ({ indexedMultisigs, chain }) => {
     return indexedMultisigs.map(
       ({ threshold, accountId, signatories }) =>
-        ({
-          wallet: {
-            name: toAddress(accountId, { chunk: 5, prefix: chain.addressPrefix }),
-            type: WalletType.MULTISIG,
-            signingType: SigningType.MULTISIG,
-          },
-          accounts: [
-            {
-              threshold: threshold,
-              accountId: accountId,
-              signatories: signatories.map((signatory) => ({
-                accountId: signatory,
-                address: toAddress(signatory),
-              })),
-              name: toAddress(accountId, { chunk: 5, prefix: chain.addressPrefix }),
-              chainId: chain.chainId,
-              cryptoType: isEthereumAccountId(accountId) ? CryptoType.ETHEREUM : CryptoType.SR25519,
-              chainType: ChainType.SUBSTRATE,
-              type: AccountType.MULTISIG,
-            },
-          ],
-        } as SaveMultisigParams),
+        multisigUtils.buildMultisig({ threshold, accountId, signatories, chain }) as SaveMultisigParams,
     );
   },
   target: saveMultisigFx,
